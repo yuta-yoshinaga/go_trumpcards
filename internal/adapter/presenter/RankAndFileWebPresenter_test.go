@@ -28,8 +28,10 @@ func setupRankAndFileWebMockDefaults(fg *interfaces.MockRankAndFileGame) {
 		tableau[i] = make([]*domain.RankAndFileTableauCard, 4)
 		for j := range 4 {
 			tableau[i][j] = &domain.RankAndFileTableauCard{
-				Card:   domain.NewCard(domain.CardDesignSpade, j+1, false),
-				FaceUp: true,
+				Card: domain.NewCard(domain.CardDesignSpade, j+1, false),
+				// 配りどおり下 3 枚は伏せ。全部 true にすると、
+				// 伏せ札を出さない分岐が既定盤で一度も通らない。
+				FaceUp: j == 3,
 			}
 		}
 	}
@@ -84,19 +86,30 @@ func TestRankAndFileWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 5, result.Waste[0].Value)
 	})
 
-	t.Run("all face up", func(t *testing.T) {
+	// **伏せ札の中身を API に載せない。**クローン元の Forty Thieves は全部表向きなので
+	// 元のサブテストは「全部 FaceUp」を主張していたが、Rank and File でその盤は出ない。
+	// 載せてしまうと devtools から隠し札が読めるので、両側を見る。
+	t.Run("face-down cards carry no card", func(t *testing.T) {
 		fg := new(interfaces.MockRankAndFileGame)
 		setupRankAndFileOutputMock(fg)
 		p := new(RankAndFileWebPresenter)
 
 		result := parseRankAndFileOutput(t, p.Output(fg, nil))
-		// All cards should be face up
+		hidden, shown := 0, 0
 		for _, col := range result.Tableau {
 			for _, tc := range col {
-				assert.True(t, tc.FaceUp)
-				assert.NotNil(t, tc.Card)
+				if tc.FaceUp {
+					shown++
+					assert.NotNil(t, tc.Card, "表向きの札は中身が要る")
+					continue
+				}
+				hidden++
+				assert.Nil(t, tc.Card, "伏せ札に中身を載せない")
 			}
 		}
+		// 0 件を成功と読まないための下限。既定盤は 10 列 x (3 伏せ + 1 表)。
+		assert.Equal(t, 30, hidden)
+		assert.Equal(t, 10, shown)
 	})
 
 	t.Run("error message", func(t *testing.T) {

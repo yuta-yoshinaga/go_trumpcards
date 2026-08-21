@@ -27,8 +27,10 @@ func setupRankAndFileCuiMockDefaults(fg *interfaces.MockRankAndFileGame) {
 		tableau[i] = make([]*domain.RankAndFileTableauCard, 4)
 		for j := range 4 {
 			tableau[i][j] = &domain.RankAndFileTableauCard{
-				Card:   domain.NewCard(domain.CardDesignSpade, j+1, false),
-				FaceUp: true,
+				Card: domain.NewCard(domain.CardDesignSpade, j+1, false),
+				// 配りどおり。全部 true にすると、この既定盤では
+				// 伏せ札の描画が一度も通らない。
+				FaceUp: j == 3,
 			}
 		}
 	}
@@ -225,4 +227,35 @@ func TestRankAndFileCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(fg)
 		assert.Contains(t, result, "draw")
 	})
+}
+
+// **伏せ札を伏せて出すこと。**クローン元の Forty Thieves は 40 枚すべて表向きに
+// 配るので `FaceUp` を無視して描いても害が無かった。Rank and File は各列 4 枚の
+// うち 3 枚が伏せなので、無視すると CUI が隠し札を全部見せてしまう。
+func TestRankAndFileCuiPresenter_HidesFaceDownCards(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	fg := new(interfaces.MockRankAndFileGame)
+	setupRankAndFileCuiMockDefaults(fg)
+	fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "GetTableau")
+
+	var tableau [domain.RankAndFileTableauCnt][]*domain.RankAndFileTableauCard
+	// 配られたとおりの列: 下 3 枚が伏せ、最上段だけが表。
+	tableau[0] = []*domain.RankAndFileTableauCard{
+		{Card: domain.NewCard(domain.CardDesignHeart, 7, false), FaceUp: false},
+		{Card: domain.NewCard(domain.CardDesignSpade, 13, false), FaceUp: true},
+	}
+	fg.On("GetTableau").Return(tableau)
+
+	p := &RankAndFileCuiPresenter{}
+	out := p.Output(fg, nil)
+
+	assert.Contains(t, out, "[0]??", "伏せ札は ?? で出す")
+	// 負のコントロール: 表向きの札は今までどおり出る。?? を全部に出して
+	// 通してしまわないことを見る。
+	assert.Contains(t, out, cuiCardStr(domain.NewCard(domain.CardDesignSpade, 13, false)))
+	assert.NotContains(t, out, cuiCardStr(domain.NewCard(domain.CardDesignHeart, 7, false)),
+		"伏せ札の中身が漏れていない")
 }

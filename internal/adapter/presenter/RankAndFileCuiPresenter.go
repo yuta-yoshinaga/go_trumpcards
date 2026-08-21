@@ -17,6 +17,13 @@ import (
 func rankAndFileColumnStr(colCards []*domain.RankAndFileTableauCard) string {
 	parts := make([]string, len(colCards))
 	for j, tc := range colCards {
+		// **伏せ札は中身を出さない。**各列 4 枚のうち 3 枚が伏せで配られるので、
+		// FaceUp を無視するとこの CUI が隠し札を全部見せてしまう（クローン元の
+		// Forty Thieves は全部表向きなので無害だった）。
+		if !tc.FaceUp {
+			parts[j] = fmt.Sprintf(" [%d]??", j)
+			continue
+		}
 		parts[j] = fmt.Sprintf(" [%d]%s", j, cuiCardStr(tc.Card))
 	}
 	return strings.Join(parts, " ")
