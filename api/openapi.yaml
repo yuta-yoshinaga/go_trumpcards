@@ -388,6 +388,8 @@ tags:
     description: Egyptian Ratscrew (エジプシャン・ラットスクリュー) game - real-time reflex game where 1 human races a CPU to slap pairs/sandwiches; face-card chance battles add a strategic layer
   - name: bakersdozen
     description: Baker's Dozen (ベーカーズ・ダズン) game - single-player open-information solitaire with 13 tableau columns of 4 cards each; kings auto-move to the bottom of each column at deal time
+  - name: perseverance
+    description: Perseverance (パーシビアランス) game - Baker's Dozen variant; the four aces start on the foundations, leaving 12 tableau columns of 4, the tableau builds down in suit, same-suit runs move as a unit, and two unshuffled redeals are allowed
   - name: tonk
     description: Tonk (トンク) game - 2-player rummy variant with 5-card hands; instant Tonk win on a 49 or 50 point initial deal, knock when deadwood is 5 or less
   - name: thirtyone
@@ -11179,6 +11181,149 @@ paths:
                     type: boolean
                   isStalemate:
                     type: boolean
+                  undoToEscape:
+                    type: integer
+                  phase:
+                    type: integer
+                    description: "0=Playing, 1=GameClear, 2=GameOver"
+                  hint:
+                    type: object
+                    nullable: true
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toZone:
+                        type: string
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+
+  /perseverance/exec:
+    post:
+      tags:
+        - perseverance
+      summary: Execute a Perseverance game command
+      description: |
+        Send a command to advance the Perseverance (パーシビアランス) game
+        session identified by `sessionId`. Perseverance is a single-player
+        open-information solitaire using a single 52-card deck, and a variant
+        of Baker's Dozen. The four aces are lifted onto the foundations before
+        the deal, so 48 cards go to 12 tableau columns of 4 face-up cards,
+        with kings automatically moved to the bottom of each column. The 4
+        foundations build up by suit Ace→King. The tableau builds down in suit
+        (unlike Baker's Dozen, which ignores suit), and a descending same-suit
+        run moves as a unit. Empty columns cannot be filled. No stock or waste
+        pile.
+
+        When play stalls, `redeal` gathers the piles in reverse order and
+        re-deals them four at a time without shuffling, so the new board
+        follows from the old one. Two redeals are allowed.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All foundations complete |
+        | GameOver  | `2`   | Player gave up |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `move`         | `m`     | Move a card between tableau/foundation |
+        | `undo`         | `u`     | Undo the last action |
+        | `giveup`       | `g`     | Give up the current game |
+        | `hint`         | `h`     | Show a hint for the next move |
+        | `autocomplete` | `ac`    | Auto-move cards to foundations |
+        | `redeal`       | `rd`    | Gather and re-deal without shuffling (twice per game) |
+        | `log`          | `l`     | View action log |
+      operationId: perseveranceExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, undo, u, undo_n, giveup, g, hint, h, autocomplete, ac, redeal, rd, log, l]
+                from:
+                  $ref: '#/components/schemas/PerseveranceMoveZone'
+                to:
+                  $ref: '#/components/schemas/PerseveranceMoveZone'
+                n:
+                  type: integer
+                  description: Number of times to undo (for undo_n command)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              move:
+                summary: Move tableau column 0's top card (or its run) to column 5
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 0
+                  to:
+                    zone: tableau
+                    col: 5
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    description: 12 tableau columns, each an array of cards (with face-up flag)
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          card:
+                            nullable: true
+                            allOf:
+                              - $ref: '#/components/schemas/Card'
+                          faceUp:
+                            type: boolean
+                  foundation:
+                    type: array
+                    description: 4 foundation piles (cards by suit, A→K)
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  redealsLeft:
+                    type: integer
+                    description: Remaining redeals (0 to 2)
                   undoToEscape:
                     type: integer
                   phase:
@@ -29137,6 +29282,22 @@ components:
     BakersDozenMoveZone:
       type: object
       description: Source or target zone for a Baker's Dozen card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (tableau, foundation)
+          enum: [tableau, foundation]
+        col:
+          type: integer
+          description: Column index (required for tableau zone)
+        cardIndex:
+          type: integer
+          description: Optional / ignored. The server always operates on the top card of the source column; clients may omit this field. Retained for parity with FortyThievesMoveZone.
+    PerseveranceMoveZone:
+      type: object
+      description: Source or target zone for a Perseverance card move
       required:
         - zone
       properties:

@@ -195,6 +195,7 @@ import type {
   PanResponse,
   PasurResponse,
   PenguinResponse,
+  PerseveranceResponse,
   PigResponse,
   PigsTailResponse,
   PineappleResponse,
@@ -514,6 +515,7 @@ import { getPaiGowHint } from '../utils/hints/paigowHint';
 import { getPanHint } from '../utils/hints/panHint';
 import { getPasurHint } from '../utils/hints/pasurHint';
 import { getPenguinHint } from '../utils/hints/penguinHint';
+import { getPerseveranceHint } from '../utils/hints/perseveranceHint';
 import { getPigHint } from '../utils/hints/pigHint';
 import { getPigstailHint } from '../utils/hints/pigstailHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
@@ -790,6 +792,7 @@ export const hintFactories = {
   fortyandeight: (s) => getFortyAndEightHint(s as FortyAndEightResponse),
   sultan: (s) => getSultanHint(s as SultanResponse),
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
+  perseverance: (s) => getPerseveranceHint(s as PerseveranceResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   fortress: (s) => getFortressHint(s as FortressResponse),
   somerset: (s) => getSomersetHint(s as SomersetResponse),

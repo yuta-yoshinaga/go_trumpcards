@@ -345,7 +345,8 @@
     "stalactites": "Stalactites",
     "whitehead": "Whitehead",
     "curdsandwhey": "Curds and Whey",
-    "shamrocks": "Shamrocks"
+    "shamrocks": "Shamrocks",
+    "perseverance": "Perseverance"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1615,6 +1616,12 @@
     "penguin.playing": "Playing",
     "penguin.stalemate": "Stalemate",
     "penguin.stalemateWithEscape": "Stalemate. Undo {{count}} moves to find another play.",
+    "perseverance.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "perseverance.gameOver": "Game Over",
+    "perseverance.hintAvailable": "Hint available",
+    "perseverance.noHint": "No hint available",
+    "perseverance.playing": "Playing",
+    "perseverance.stalemate": "No moves remain. Redeal, undo, or give up.",
     "pig.eliminated": "You are out. The remaining players will finish it between them.",
     "pig.pass": "Choose a card to pass to your left. Everyone passes at the same time.",
     "pig.result.cpu": "CPU{{idx}} was the last one standing.",

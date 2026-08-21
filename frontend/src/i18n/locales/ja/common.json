@@ -345,7 +345,8 @@
     "stalactites": "スタラクタイト",
     "whitehead": "ホワイトヘッド",
     "curdsandwhey": "カーズ・アンド・ホエイ",
-    "shamrocks": "シャムロックス"
+    "shamrocks": "シャムロックス",
+    "perseverance": "パーシビアランス"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1615,6 +1616,12 @@
     "penguin.playing": "プレイ中",
     "penguin.stalemate": "手詰まりです",
     "penguin.stalemateWithEscape": "手詰まりです。{{count}}手戻ると別の手が打てます。",
+    "perseverance.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "perseverance.gameOver": "ゲームオーバー",
+    "perseverance.hintAvailable": "ヒントがあります",
+    "perseverance.noHint": "ヒントはありません",
+    "perseverance.playing": "プレイ中",
+    "perseverance.stalemate": "手詰まりです。集めて配り直すか、元に戻すかギブアップしてください。",
     "pig.eliminated": "あなたは脱落しました。残りのプレイヤーが決着するまで見守ります。",
     "pig.pass": "左隣へ渡す札を選んでください。全員が同時に渡します。",
     "pig.result.cpu": "CPU{{idx}} が最後まで残りました。",

@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した325種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した326種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -138,6 +138,7 @@ Go + Clean Architecture で実装した325種類のトランプゲーム。CLI �
 | フィフティワン (Fifty-one) | `fiftyone` | [CUI](docs/manual/cui/fiftyone.md) / [Web](docs/manual/web/fiftyone.md) |
 | ユーコン (Yukon) | `yukon` | [CUI](docs/manual/cui/yukon.md) / [Web](docs/manual/web/yukon.md) |
 | シャムロックス (Shamrocks) | `shamrocks` | [CUI](docs/manual/cui/shamrocks.md) / [Web](docs/manual/web/shamrocks.md) |
+| パーシビアランス (Perseverance) | `perseverance` | [CUI](docs/manual/cui/perseverance.md) / [Web](docs/manual/web/perseverance.md) |
 | カーズ・アンド・ホエイ (Curds and Whey) | `curdsandwhey` | [CUI](docs/manual/cui/curdsandwhey.md) / [Web](docs/manual/web/curdsandwhey.md) |
 | ホワイトヘッド (Whitehead) | `whitehead` | [CUI](docs/manual/cui/whitehead.md) / [Web](docs/manual/web/whitehead.md) |
 | スタラクタイト (Stalactites) | `stalactites` | [CUI](docs/manual/cui/stalactites.md) / [Web](docs/manual/web/stalactites.md) |

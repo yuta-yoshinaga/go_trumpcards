@@ -346,4 +346,12 @@ func init() {
 			return usecase.RestoreAlaskaInteractor(data, new(presenter.AlaskaWebPresenter))
 		},
 		controller.NewAlaskaWebControllerWithProvider)
+	games.RegisterKVGame("perseverance", games.CategoryExtra4,
+		func() usecase.PerseveranceInteractorIF {
+			return usecase.NewPerseveranceInteractor(domain.NewDefaultPerseverance(), new(presenter.PerseveranceWebPresenter))
+		},
+		func(data []byte) (usecase.PerseveranceInteractorIF, error) {
+			return usecase.RestorePerseveranceInteractor(data, new(presenter.PerseveranceWebPresenter))
+		},
+		controller.NewPerseveranceWebControllerWithProvider)
 }
