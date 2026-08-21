@@ -343,7 +343,8 @@
     "fortress": "Fortress",
     "somerset": "Somerset",
     "stalactites": "Stalactites",
-    "whitehead": "Whitehead"
+    "whitehead": "Whitehead",
+    "curdsandwhey": "Curds and Whey"
   },
   "sound": {
     "mute": "Mute sound",
@@ -907,6 +908,11 @@
     "cucumber.round.cpu": "CPU{{idx}} took the last trick and scored {{n}} penalty points.",
     "cucumber.round.you": "You took the last trick and scored {{n}} penalty points.",
     "cucumber.waiting": "Waiting for the other players.",
+    "curdsandwhey.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "curdsandwhey.gameOver": "Game Over",
+    "curdsandwhey.hintAvailable": "Hint available",
+    "curdsandwhey.noHint": "No hint available",
+    "curdsandwhey.playing": "Playing",
     "daifugo.result.rankings": "{{rankings}}",
     "desmoche.lose": "You finish behind",
     "desmoche.win": "You finish ahead",

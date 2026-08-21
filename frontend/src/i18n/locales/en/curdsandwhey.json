@@ -1,0 +1,33 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Curds and Whey",
+  "completedSuits": "Completed suits: {{count}} / 4",
+  "moveCount": "Moves: {{count}}",
+  "giveup": "Give up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "empty": "empty",
+  "selectSource": "Pick a card to move (a column top, or a same-suit descending run). Double-click to auto-move it to the best column",
+  "selectDestination": "Pick a destination column",
+  "noAutoMove": "No column available to move to",
+  "gameClear": "Game clear! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "A hint is available",
+  "tutorial": {
+    "columns": "Thirteen tableau columns. Move a top card or a same-suit descending run onto a card of the SAME SUIT one rank higher, or of the SAME RANK, or into an empty column.",
+    "rules": "A complete King-to-Ace same-suit run is removed automatically. Clear all four suits to win. There is no stock.",
+    "actionButtons": "Hint, undo and give-up controls.",
+    "resetButton": "Start a new game."
+  },
+  "cardPosAria": "{{card}} (column {{col}}, position {{pos}})",
+  "emptyColAria": "column {{col}} (empty)",
+  "frontendHint": {
+    "curdsandwheyMove": "Cards in this column can move to another"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "カーズ・アンド・ホエイ",
+  "completedSuits": "完成スート: {{count}} / 4",
+  "moveCount": "手数: {{count}}",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "undo": "元に戻す",
+  "empty": "空",
+  "selectSource": "動かすカード（列の最上位、または同スート降順の列）を選んでください。ダブルクリックで最適な列へ自動移動します",
+  "selectDestination": "移動先の列を選んでください",
+  "noAutoMove": "移動できる列が見つかりませんでした",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "tutorial": {
+    "columns": "13列のタブローです。各列の最上位カード、または同スート降順の連番列を移動できます。置けるのは**同スートで1つ上**か**同ランク**の札の上、または空列です。",
+    "rules": "同スートでK〜Aの完全な降順列が揃うと自動的に除去されます。4スート全て除去でクリアです。ストックはありません。",
+    "actionButtons": "ヒント・元に戻す・ギブアップなどの操作ボタンです。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "cardPosAria": "{{card}}（列{{col}}・上から{{pos}}枚目）",
+  "emptyColAria": "列{{col}}（空）",
+  "frontendHint": {
+    "curdsandwheyMove": "この列の札を別の列へ移せます"
+  }
+}

@@ -297,6 +297,14 @@ func init() {
 		},
 		controller.NewLaBelleLucieWebControllerWithProvider)
 
+	games.RegisterKVGame("curdsandwhey", games.CategoryClassic,
+		func() usecase.CurdsAndWheyInteractorIF {
+			return usecase.NewCurdsAndWheyInteractor(domain.NewDefaultCurdsAndWhey(), new(presenter.CurdsAndWheyWebPresenter))
+		},
+		func(data []byte) (usecase.CurdsAndWheyInteractorIF, error) {
+			return usecase.RestoreCurdsAndWheyInteractor(data, new(presenter.CurdsAndWheyWebPresenter))
+		},
+		controller.NewCurdsAndWheyWebControllerWithProvider)
 	games.RegisterKVGame("simplesimon", games.CategoryClassic,
 		func() usecase.SimpleSimonInteractorIF {
 			return usecase.NewSimpleSimonInteractor(domain.NewDefaultSimpleSimon(), new(presenter.SimpleSimonWebPresenter))

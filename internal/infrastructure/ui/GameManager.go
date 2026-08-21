@@ -6253,6 +6253,19 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("curdsandwhey",
+		func() usecase.CurdsAndWheyInteractorIF {
+			return usecase.NewCurdsAndWheyInteractor(domain.NewDefaultCurdsAndWhey(), new(presenter.CurdsAndWheyCuiPresenter))
+		},
+		controller.NewCurdsAndWheyCuiController,
+		CuiHelpSpec{
+			TitleKey: "curdsandwhey.helpTitle",
+			CommandKeys: []string{
+				"curdsandwhey.helpMove",
+				"curdsandwhey.helpUndo",
+				"curdsandwhey.helpGiveUp", "curdsandwhey.helpLog", "curdsandwhey.helpHint",
+			},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

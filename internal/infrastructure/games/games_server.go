@@ -1050,6 +1050,11 @@ func init() {
 			return usecase.NewLaBelleLucieInteractor(domain.NewDefaultLaBelleLucie(), new(presenter.LaBelleLucieWebPresenter))
 		},
 		controller.NewLaBelleLucieWebController)
+	BindWebControllerFor("curdsandwhey",
+		func() usecase.CurdsAndWheyInteractorIF {
+			return usecase.NewCurdsAndWheyInteractor(domain.NewDefaultCurdsAndWhey(), new(presenter.CurdsAndWheyWebPresenter))
+		},
+		controller.NewCurdsAndWheyWebController)
 	BindWebControllerFor("simplesimon",
 		func() usecase.SimpleSimonInteractorIF {
 			return usecase.NewSimpleSimonInteractor(domain.NewDefaultSimpleSimon(), new(presenter.SimpleSimonWebPresenter))

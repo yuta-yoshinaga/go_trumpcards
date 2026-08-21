@@ -343,7 +343,8 @@
     "fortress": "フォートレス",
     "somerset": "サマセット",
     "stalactites": "スタラクタイト",
-    "whitehead": "ホワイトヘッド"
+    "whitehead": "ホワイトヘッド",
+    "curdsandwhey": "カーズ・アンド・ホエイ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -907,6 +908,11 @@
     "cucumber.round.cpu": "CPU{{idx}} が最終トリックを取り、{{n}} 点の失点を負いました。",
     "cucumber.round.you": "あなたが最終トリックを取り、{{n}} 点の失点を負いました。",
     "cucumber.waiting": "相手の番です。",
+    "curdsandwhey.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "curdsandwhey.gameOver": "ゲームオーバー",
+    "curdsandwhey.hintAvailable": "ヒントがあります",
+    "curdsandwhey.noHint": "ヒントはありません",
+    "curdsandwhey.playing": "プレイ中",
     "daifugo.result.rankings": "{{rankings}}",
     "desmoche.lose": "及びませんでした",
     "desmoche.win": "最も多く稼ぎました",
