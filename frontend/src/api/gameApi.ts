@@ -273,6 +273,7 @@ export * from './games/slobberhannes';
 export * from './games/snap';
 export * from './games/soko';
 export * from './games/solowhist';
+export * from './games/somerset';
 export * from './games/spades';
 export * from './games/spanish21';
 export * from './games/speed';
@@ -549,6 +550,7 @@ export const games = [
   'spiderette',
   'mighty',
   'oasispoker',
+  'somerset',
   'fortress',
   'beleagueredcastle',
   'streetsandalleys',

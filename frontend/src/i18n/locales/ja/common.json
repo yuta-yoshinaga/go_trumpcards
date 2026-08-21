@@ -340,7 +340,8 @@
     "ironcross": "アイアンクロス",
     "baseballpoker": "ベースボールポーカー",
     "alaska": "アラスカ",
-    "fortress": "フォートレス"
+    "fortress": "フォートレス",
+    "somerset": "サマセット"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1919,6 +1920,12 @@
     "solowhist.result.humanWin": "ゲーム終了！ あなたの勝ちです！",
     "solowhist.roundEnd": "ラウンド終了 — 次のラウンドへ進んでください。",
     "solowhist.trickEnd": "トリック終了 — 次へ進んでください。",
+    "somerset.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "somerset.gameOver": "ゲームオーバー",
+    "somerset.hintAvailable": "ヒントがあります",
+    "somerset.noHint": "ヒントはありません",
+    "somerset.playing": "プレイ中",
+    "somerset.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
     "spades.bidPhase": "入札フェーズ — 入札してください。",
     "spades.hintRequested": "ヒントがあります",
     "spades.noHint": "ヒントはありません",

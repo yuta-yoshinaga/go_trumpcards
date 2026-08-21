@@ -2277,6 +2277,13 @@ export const RussianPokerPhase = {
   END: 6,
 } as const;
 
+/** Somerset phase constants (sync: internal/domain/Somerset.go). */
+export const SomersetPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Fortress phase constants (sync: internal/domain/Fortress.go). */
 export const FortressPhase = {
   PLAYING: 0,

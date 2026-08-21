@@ -1,0 +1,41 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "foundation": "組札",
+  "tableau": "場札",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "empty": "空",
+  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
+  "emptyColumnAriaLabel": "空のタブロー列 {{col}}",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "ファンデーションを2枚目以降まで進めると有効になります",
+  "undo": "元に戻す",
+  "stalemate": "手詰まりです",
+  "playing": "カードを移動してください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "gameOverSummary": "ファウンデーション {{count}}/52 枚（{{percent}}%）まで到達",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "tutorial": {
+    "foundation": "中央の4つの組札は**空の状態で始まります**。同じスートでA→Kの順に積み上げます。",
+    "tableau": "10列の場札に52枚すべてが表向きで配られます（2列が6枚、8列が5枚）。各列の右端のカードが移動可能です。",
+    "moves": "1枚ずつ、**異なる色**で1つ下のランクのカードに重ねられます。空の列には任意のカードを置けます。",
+    "controls": "ヒント・元に戻す・自動完成などの操作ボタンです。"
+  },
+  "frontendHint": {
+    "tableau": "タブロー列{{col}}",
+    "foundation": "組札"
+  },
+  "hintReason": {
+    "toFoundation": "このカードを組札に上げると後の展開が楽になります",
+    "toTableau": "示唆された場札への移動でロックされたカードを動かしましょう"
+  }
+}

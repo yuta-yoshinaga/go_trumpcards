@@ -11,6 +11,7 @@ import type {
   FortyThievesMoveZone,
   KingAlbertMoveZone,
   MaoResponse,
+  SomersetMoveZone,
   StreetsAndAlleysMoveZone,
   SultanMoveZone,
 } from '../../types/card';
@@ -55,6 +56,7 @@ export type {
   FortyAndEightMoveZone,
   FortyThievesMoveZone,
   KingAlbertMoveZone,
+  SomersetMoveZone,
   StreetsAndAlleysMoveZone,
   SultanMoveZone,
 };

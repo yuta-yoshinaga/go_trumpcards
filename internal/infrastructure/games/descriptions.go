@@ -330,6 +330,7 @@ var gameDescriptions = map[string]string{
 	"desmoche":            "デスモチェ（9枚配りのニカラグア式ラミー。ちょうど10枚を組めた者がポットを取り、誰も組めなければ持ち越し）",
 	"alaska":              "Alaska (アラスカ)",
 	"fortress":            "Fortress (フォートレス)",
+	"somerset":            "Somerset (サマセット)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).
