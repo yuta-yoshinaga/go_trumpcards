@@ -378,9 +378,6 @@ func (gc *BigBen) tableauHint() *BigBenHint {
 			if to == from {
 				continue
 			}
-			if len(gc.tableau[to]) == 0 && len(gc.tableau[from]) == 1 {
-				continue
-			}
 			if gc.canPlaceOnTableau(card, to) {
 				return &BigBenHint{FromZone: "tableau", FromCol: from, ToZone: "tableau", ToIdx: to}
 			}
@@ -621,11 +618,15 @@ const bigBenMaxSliceLen = 1000
 // `[{},{}]` -- the undo depth would survive but every snapshot would be blank,
 // and Undo would wipe the board instead of rewinding it (#4478).
 type bigBenSnapshotJSON struct {
-	Foundation  [BigBenFoundationCnt][]*Card           `json:"fd"`
-	Tableau     [BigBenTableauCnt][]*BigBenTableauCard `json:"tb"`
-	Phase       BigBenPhase                            `json:"ps"`
-	MoveCount   int                                    `json:"mc"`
-	IsStalemate bool                                   `json:"sl"`
+	Foundation [BigBenFoundationCnt][]*Card           `json:"fd"`
+	Tableau    [BigBenTableauCnt][]*BigBenTableauCard `json:"tb"`
+	// Stock も載せる。**メモリ上のスナップショットを直しただけでは足りない** ──
+	// Worker は毎リクエスト KV から組み直すので、ここに無い項は往復のたびに
+	// 消え、補充を undo した札が山札へ戻らなくなる。
+	Stock       []*Card     `json:"st"`
+	Phase       BigBenPhase `json:"ps"`
+	MoveCount   int         `json:"mc"`
+	IsStalemate bool        `json:"sl"`
 }
 
 // MarshalJSON implements json.Marshaler for bigBenSnapshot.
@@ -633,6 +634,7 @@ func (s *bigBenSnapshot) MarshalJSON() ([]byte, error) {
 	return json.Marshal(bigBenSnapshotJSON{
 		Foundation:  s.foundation,
 		Tableau:     s.tableau,
+		Stock:       s.stock,
 		Phase:       s.phase,
 		MoveCount:   s.moveCount,
 		IsStalemate: s.isStalemate,
@@ -655,8 +657,12 @@ func (s *bigBenSnapshot) UnmarshalJSON(data []byte) error {
 			return errors.New("bigben: snapshot pile exceeds maximum allowed size")
 		}
 	}
+	if len(j.Stock) > bigBenMaxSliceLen {
+		return errors.New("bigben: snapshot stock exceeds maximum allowed size")
+	}
 	s.foundation = j.Foundation
 	s.tableau = j.Tableau
+	s.stock = j.Stock
 	s.phase = j.Phase
 	s.moveCount = j.MoveCount
 	s.isStalemate = j.IsStalemate
@@ -665,13 +671,17 @@ func (s *bigBenSnapshot) UnmarshalJSON(data []byte) error {
 
 // bigBenJSON is the JSON wire format for BigBen.
 type bigBenJSON struct {
-	TrumpCards  *TrumpCards                            `json:"tc"`
-	Foundation  [BigBenFoundationCnt][]*Card           `json:"fd"`
-	Tableau     [BigBenTableauCnt][]*BigBenTableauCard `json:"tb"`
-	Phase       BigBenPhase                            `json:"ps"`
-	MoveCount   int                                    `json:"mc"`
-	ActionLog   []*ActionLogEntry                      `json:"al"`
-	IsStalemate bool                                   `json:"sl"`
+	TrumpCards *TrumpCards                            `json:"tc"`
+	Foundation [BigBenFoundationCnt][]*Card           `json:"fd"`
+	Tableau    [BigBenTableauCnt][]*BigBenTableauCard `json:"tb"`
+	// Stock は必ず載せる。Worker はリクエストごとに KV から盤を組み直すので、
+	// 載せ忘れると 1 回目の往復以降ずっと「山札が空」になり、補充が二度と
+	// 効かない。History と同じ理由 (#4478)。
+	Stock       []*Card           `json:"st"`
+	Phase       BigBenPhase       `json:"ps"`
+	MoveCount   int               `json:"mc"`
+	ActionLog   []*ActionLogEntry `json:"al"`
+	IsStalemate bool              `json:"sl"`
 	// History must round-trip: the Cloudflare Worker is stateless per request
 	// and rebuilds the game from KV every call, so an unpersisted undo stack
 	// means Undo/UndoN/UndoToEscape silently never work in production (#4478).
@@ -684,6 +694,7 @@ func (gc *BigBen) MarshalJSON() ([]byte, error) {
 		TrumpCards:  gc.trumpCards,
 		Foundation:  gc.foundation,
 		Tableau:     gc.tableau,
+		Stock:       gc.stock,
 		Phase:       gc.phase,
 		MoveCount:   gc.moveCount,
 		ActionLog:   gc.actionLog,
@@ -698,6 +709,9 @@ func (gc *BigBen) UnmarshalJSON(data []byte) error {
 	var j bigBenJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
+	}
+	if len(j.Stock) > bigBenMaxSliceLen {
+		return errors.New("bigben: stock exceeds maximum allowed size")
 	}
 	if len(j.ActionLog) > bigBenMaxSliceLen || len(j.History) > bigBenMaxSliceLen {
 		return errors.New("bigben: input array exceeds maximum allowed size")
@@ -723,6 +737,7 @@ func (gc *BigBen) UnmarshalJSON(data []byte) error {
 	}
 	gc.foundation = j.Foundation
 	gc.tableau = j.Tableau
+	gc.stock = j.Stock
 	gc.phase = j.Phase
 	gc.moveCount = j.MoveCount
 	gc.actionLog = j.ActionLog

@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -177,4 +178,55 @@ func TestBigBen_UndoingADealReturnsTheCardsToTheStock(t *testing.T) {
 	assert.Equal(t, 3, gc.GetStockCount(), "配った札は山札へ戻る")
 	assert.Len(t, gc.GetTableau()[0], 1)
 	assert.Equal(t, before, countAll(), "戻しても総枚数は変わらない")
+}
+
+// **山札は KV の往復も生き延びること。**Worker はリクエストごとに KV から盤を
+// 組み直すので、ワイヤ形式に載っていない項は毎回消える ── 補充が「1 回目の
+// 往復以降、常に山札が空」になる。**メモリ上のスナップショットを直しただけでは
+// 足りない。**
+func TestBigBen_StockSurvivesTheKVRoundTrip(t *testing.T) {
+	t.Run("the game itself", func(t *testing.T) {
+		gc := newTestBigBen()
+		before := gc.GetStockCount()
+		require.Positive(t, before, "配り直後は山札が残っている")
+
+		data, err := json.Marshal(gc)
+		require.NoError(t, err)
+		restored := NewDefaultBigBen()
+		require.NoError(t, json.Unmarshal(data, restored))
+
+		assert.Equal(t, before, restored.GetStockCount())
+		// 戻した盤で実際に配れること。枚数だけ合っていて配れないのでは意味がない。
+		require.NoError(t, restored.Deal())
+	})
+
+	t.Run("the undo history", func(t *testing.T) {
+		gc := newTestBigBen()
+		require.NoError(t, gc.Deal())
+		afterDeal := gc.GetStockCount()
+
+		data, err := json.Marshal(gc)
+		require.NoError(t, err)
+		restored := NewDefaultBigBen()
+		require.NoError(t, json.Unmarshal(data, restored))
+
+		require.True(t, restored.CanUndo())
+		require.NoError(t, restored.Undo())
+		assert.Greater(t, restored.GetStockCount(), afterDeal,
+			"配った札はアンドゥで山札へ戻る ── スナップショットの山札が往復していれば")
+	})
+
+	t.Run("an oversized stock is refused", func(t *testing.T) {
+		huge := make([]*Card, bigBenMaxSliceLen+1)
+		for i := range huge {
+			huge[i] = NewCard(CardDesignSpade, 1, true)
+		}
+		data, err := json.Marshal(&bigBenJSON{Stock: huge})
+		require.NoError(t, err)
+		assert.Error(t, NewDefaultBigBen().UnmarshalJSON(data))
+
+		data, err = json.Marshal(&bigBenSnapshotJSON{Stock: huge})
+		require.NoError(t, err)
+		assert.Error(t, new(bigBenSnapshot).UnmarshalJSON(data))
+	})
 }

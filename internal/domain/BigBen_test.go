@@ -69,9 +69,11 @@ func TestBigBen_Reset_SeedsTheClockAndDealsEightByFive(t *testing.T) {
 		dealt += len(pile)
 	}
 	assert.Equal(t, 40, dealt)
-	// 12 + 40 = 52, which is why this game has no stock at all, despite what
-	// #4399's rule 5 says.
+	// **配られるのは 52 枚だけ。**文字盤 12 + タブロー 40 で、2 組 104 枚の
+	// ちょうど半分。残る 52 枚は山札になる（クローン元は 1 組なのでここで
+	// 配り切っていた）。
 	assert.Equal(t, CardCnt, seeded+dealt)
+	assert.Equal(t, CardCnt, gc.GetStockCount(), "残り半分が山札")
 	assert.True(t, gc.AllFaceUp())
 	assert.False(t, gc.GetGameEndFlag())
 }
@@ -403,6 +405,8 @@ func TestBigBen_JSONRoundTrip(t *testing.T) {
 	require.NoError(t, json.Unmarshal(data, restored))
 	assert.Equal(t, gc.GetPhase(), restored.GetPhase())
 	assert.Equal(t, gc.GetMoveCount(), restored.GetMoveCount())
+	// **山札も往復すること。**載せ忘れると Worker で補充が二度と効かない。
+	assert.Equal(t, gc.GetStockCount(), restored.GetStockCount())
 	assert.Len(t, restored.GetFoundation()[0], 1)
 	assert.Len(t, restored.GetTableau()[0], BigBenColumnLen)
 }

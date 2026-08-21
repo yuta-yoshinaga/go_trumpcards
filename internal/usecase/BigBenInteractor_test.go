@@ -122,7 +122,9 @@ func TestRestoreBigBenInteractor(t *testing.T) {
 
 		restored, err := RestoreBigBenInteractor(data, p)
 		require.NoError(t, err)
-		assert.NotNil(t, restored)
+		require.NotNil(t, restored)
+		// **枚数まで見る。**NotNil だけでは、盤が空でも通ってしまう。
+		assert.Equal(t, d.GetStockCount(), restored.Game.GetStockCount())
 	})
 
 	t.Run("invalid json returns error", func(t *testing.T) {
