@@ -217,8 +217,8 @@ describe('SomersetPage', () => {
       expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(0);
     });
 
-    // ♠5 は ♥6 の上 (スート不問) と、空き列すべてに置ける。自分の列 #0 は
-    // 相手が ♠5 自身なので置けない。
+    // ♠5 は ♥6 の上 (Somerset は異色・降順。同色の ♣6 なら置けない) と、空き列
+    // すべてに置ける。自分の列 #0 は相手が ♠5 自身なので置けない。
     it('marks the ranks-down column and every empty column, but not the source column', async () => {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<SomersetPage />);

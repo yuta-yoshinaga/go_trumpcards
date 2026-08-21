@@ -16,12 +16,19 @@ describe('somersetLegalTargets', () => {
     expect(targets.foundation.size).toBe(0);
   });
 
-  // **タブローはスートを見ない。**ランクが1つ下がるかどうかだけ。
-  it('accepts any suit onto a tableau card one rank higher', () => {
+  // **Somerset は異色で1つ下がるときだけ。**クローン元の Fortress は「同スートで
+  // 隣接ランク」で、この関数はその規則のまま出荷されかけた (#6187 のレビューで発覚)。
+  it('accepts an alternating colour one rank higher, and rejects same colour / ascending', () => {
     const targets = somersetLegalTargets(
-      [[tc('SPADE', 6)], [tc('HEART', 6)], [tc('CLOVER', 9)]],
+      [
+        [tc('HEART', 6)],   // red over black 5, one higher -> legal
+        [tc('DIAMOND', 6)], // the other red suit           -> legal
+        [tc('CLOVER', 6)],  // same colour as the spade 5   -> NOT legal
+        [tc('HEART', 4)],   // alternating but ASCENDING    -> NOT legal
+        [tc('HEART', 8)],   // alternating but two apart    -> NOT legal
+      ],
       [[], [], [], []],
-      card('DIAMOND', 5),
+      card('SPADE', 5),
     );
     expect([...targets.tableau].sort()).toEqual([0, 1]);
   });
@@ -48,7 +55,8 @@ describe('somersetLegalTargets', () => {
   });
 
   it('offers a tableau column and a foundation at once when both accept', () => {
-    const targets = somersetLegalTargets([[tc('CLOVER', 6)]], [[card('SPADE', 4)], [], [], []], card('SPADE', 5));
+    // Alternating colour for the tableau (red 6 takes the black 5), same suit for the foundation.
+    const targets = somersetLegalTargets([[tc('HEART', 6)]], [[card('SPADE', 4)], [], [], []], card('SPADE', 5));
     expect(targets.tableau.has(0)).toBe(true);
     expect(targets.foundation.has(0)).toBe(true);
   });

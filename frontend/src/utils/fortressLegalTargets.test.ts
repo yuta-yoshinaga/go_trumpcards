@@ -16,12 +16,19 @@ describe('fortressLegalTargets', () => {
     expect(targets.foundation.size).toBe(0);
   });
 
-  // **タブローはスートを見ない。**ランクが1つ下がるかどうかだけ。
-  it('accepts any suit onto a tableau card one rank higher', () => {
+  // **Fortress は同スートで隣接ランク（昇順・降順どちらも）。**
+  // クローン元の Beleaguered Castle は「スートを見ずに1つ下」で、この関数はその規則の
+  // まま出荷されていた (#6187 のレビューで発覚)。合法手でない列を光らせていた。
+  it('accepts the same suit one rank higher OR lower, and rejects other suits', () => {
     const targets = fortressLegalTargets(
-      [[tc('SPADE', 6)], [tc('HEART', 6)], [tc('CLOVER', 9)]],
+      [
+        [tc('SPADE', 6)], // same suit, one higher -> legal
+        [tc('SPADE', 4)], // same suit, one lower  -> legal (Fortress builds both ways)
+        [tc('HEART', 6)], // adjacent rank, wrong suit -> NOT legal
+        [tc('SPADE', 8)], // same suit, two apart -> NOT legal
+      ],
       [[], [], [], []],
-      card('DIAMOND', 5),
+      card('SPADE', 5),
     );
     expect([...targets.tableau].sort()).toEqual([0, 1]);
   });
@@ -48,7 +55,8 @@ describe('fortressLegalTargets', () => {
   });
 
   it('offers a tableau column and a foundation at once when both accept', () => {
-    const targets = fortressLegalTargets([[tc('CLOVER', 6)]], [[card('SPADE', 4)], [], [], []], card('SPADE', 5));
+    // Same suit for the tableau (Fortress builds by suit), same suit for the foundation.
+    const targets = fortressLegalTargets([[tc('SPADE', 6)]], [[card('SPADE', 4)], [], [], []], card('SPADE', 5));
     expect(targets.tableau.has(0)).toBe(true);
     expect(targets.foundation.has(0)).toBe(true);
   });
