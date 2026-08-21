@@ -1457,6 +1457,13 @@ export const BakersDozenPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Rank and File phase constants (sync: internal/domain/RankAndFile.go). */
+export const RankAndFilePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Mrs. Mop phase constants (sync: internal/domain/MrsMop.go). */
 export const MrsMopPhase = {
   PLAYING: 0,

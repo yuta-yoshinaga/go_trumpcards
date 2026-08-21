@@ -6364,6 +6364,29 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("rankandfile",
+		func() usecase.RankAndFileInteractorIF {
+			return usecase.NewRankAndFileInteractor(domain.NewDefaultRankAndFile(), new(presenter.RankAndFileCuiPresenter))
+		},
+		controller.NewRankAndFileCuiController,
+		CuiHelpSpec{
+			TitleKey: "rankandfile.helpTitle",
+			ExampleKeys: []string{
+				"rankandfile.helpExampleHint",
+				"rankandfile.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"rankandfile.helpDraw",
+				"rankandfile.helpMove",
+				"rankandfile.helpMoveWF",
+				"rankandfile.helpMoveTF",
+				"rankandfile.helpMoveTT",
+				"rankandfile.helpGiveUp",
+				"rankandfile.helpHint",
+				"rankandfile.helpAutoComplete", "rankandfile.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

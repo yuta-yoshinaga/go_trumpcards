@@ -378,4 +378,12 @@ func init() {
 			return usecase.RestoreMrsMopInteractor(data, new(presenter.MrsMopWebPresenter))
 		},
 		controller.NewMrsMopWebControllerWithProvider)
+	games.RegisterKVGame("rankandfile", games.CategoryExtra4,
+		func() usecase.RankAndFileInteractorIF {
+			return usecase.NewRankAndFileInteractor(domain.NewDefaultRankAndFile(), new(presenter.RankAndFileWebPresenter))
+		},
+		func(data []byte) (usecase.RankAndFileInteractorIF, error) {
+			return usecase.RestoreRankAndFileInteractor(data, new(presenter.RankAndFileWebPresenter))
+		},
+		controller.NewRankAndFileWebControllerWithProvider)
 }

@@ -770,6 +770,11 @@ func init() {
 			return usecase.NewMrsMopInteractor(domain.NewDefaultMrsMop(), new(presenter.MrsMopWebPresenter))
 		},
 		controller.NewMrsMopWebController)
+	BindWebControllerFor("rankandfile",
+		func() usecase.RankAndFileInteractorIF {
+			return usecase.NewRankAndFileInteractor(domain.NewDefaultRankAndFile(), new(presenter.RankAndFileWebPresenter))
+		},
+		controller.NewRankAndFileWebController)
 	BindWebControllerFor("tonk",
 		func() usecase.TonkInteractorIF {
 			return usecase.NewTonkInteractor(domain.NewDefaultTonk(), new(presenter.TonkWebPresenter))

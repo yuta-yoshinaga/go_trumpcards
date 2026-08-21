@@ -1,0 +1,42 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "stock": "Stock",
+  "waste": "Waste",
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "moveCount": "Moves",
+  "draw": "Draw",
+  "giveup": "Give Up",
+  "empty": "Empty",
+  "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation {{idx}} (accepts an ace of any suit)",
+  "landscapeBanner": "Landscape mode recommended",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available when stock and waste are empty",
+  "undo": "Undo",
+  "stalemate": "Stalemate",
+  "playing": "Move cards to build foundations",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "hintAvailable": "Hint available",
+  "hintAnnouncement": "Hint: move {{card}} to {{dest}}",
+  "noHint": "No hint available",
+  "tutorial": {
+    "stockWaste": "Click the stock pile to draw one card. No recycling allowed.",
+    "foundation": "Build 8 foundation piles by suit from Ace to King.",
+    "tableau": "10 tableau columns. Move single cards in descending order of the same suit. Any card can fill an empty column.",
+    "controls": "Use hint, undo, and auto-complete buttons."
+  },
+  "frontendHint": {
+    "waste": "Waste",
+    "tableau": "Tableau column {{col}}",
+    "foundation": "Foundation",
+    "rankandfileMove": "This card can move",
+    "rankandfileDraw": "Nothing else can move — draw from the stock"
+  }
+}

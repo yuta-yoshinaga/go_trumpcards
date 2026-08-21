@@ -601,5 +601,10 @@
   "whitehead.promptToZone": "Enter destination (t=tableau, f=foundation):",
   "whitehead.invalidFromZone": "Invalid from zone: {{val}}. Use 'w' (waste) or 't' (tableau).",
   "whitehead.invalidToZone": "Invalid to zone: {{val}}. Use 't' (tableau) or 'f' (foundation).",
-  "whitehead.moveUsage": "Usage: m t <col> <idx> t <col>"
+  "whitehead.moveUsage": "Usage: m t <col> <idx> t <col>",
+  "rankandfile.promptSourceZone": "Enter source zone (w=waste, t=tableau):",
+  "rankandfile.promptToZone": "Enter destination (t=tableau, f=foundation):",
+  "rankandfile.invalidFromZone": "Invalid from zone: {{val}}. Use 'w' (waste) or 't' (tableau).",
+  "rankandfile.invalidToZone": "Invalid to zone: {{val}}. Use 't' (tableau) or 'f' (foundation).",
+  "rankandfile.moveUsage": "Usage: m t <col> <idx> t <col>"
 }

@@ -349,7 +349,8 @@
     "perseverance": "Perseverance",
     "fourteenout": "Fourteen Out",
     "narcotic": "Narcotic",
-    "mrsmop": "Mrs. Mop"
+    "mrsmop": "Mrs. Mop",
+    "rankandfile": "Rank and File"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1741,6 +1742,12 @@
     "rams.result.winner": "Player {{idx}} wins with {{chips}} chips.",
     "rams.roundEnd": "Round {{round}} is over. The pot stands at {{pot}} chips.",
     "rams.watching": "You dropped out of this round. Watching it play out.",
+    "rankandfile.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "rankandfile.gameOver": "Game Over",
+    "rankandfile.hintAvailable": "Hint available",
+    "rankandfile.noHint": "No hint available",
+    "rankandfile.playing": "Playing",
+    "rankandfile.stalemate": "No moves can lead to a win. Please undo or give up.",
     "reddog.result.playerLoses": "Player loses.",
     "reddog.result.playerWins": "You win!",
     "reddog.result.push": "Push!",

@@ -218,6 +218,7 @@ import type {
   PrsiResponse,
   PyramidResponse,
   RamsResponse,
+  RankAndFileResponse,
   RedDogResponse,
   ReversisResponse,
   RikkenResponse,
@@ -541,6 +542,7 @@ import { getPrimeroHint } from '../utils/hints/primeroHint';
 import { getPrsiHint } from '../utils/hints/prsiHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRamsHint } from '../utils/hints/ramsHint';
+import { getRankAndFileHint } from '../utils/hints/rankandfileHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
 import { getReversisHint } from '../utils/hints/reversisHint';
@@ -802,6 +804,7 @@ export const hintFactories = {
   fourteenout: (s) => getFourteenOutHint(s as FourteenOutResponse),
   narcotic: (s) => getNarcoticHint(s as NarcoticResponse),
   mrsmop: (s) => getMrsMopHint(s as MrsMopResponse),
+  rankandfile: (s) => getRankAndFileHint(s as RankAndFileResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   fortress: (s) => getFortressHint(s as FortressResponse),
   somerset: (s) => getSomersetHint(s as SomersetResponse),

@@ -257,6 +257,8 @@ tags:
     description: Durak (ドゥラーク) game
   - name: fortythieves
     description: Forty Thieves (フォーティシーブス) game
+  - name: rankandfile
+    description: Rank and File (ランク・アンド・ファイル) game - Forty Thieves variant; ten columns of four with the first three face down, tableau builds down in alternating colour, and any part of a sequence may move as a unit
   - name: paigow
     description: Pai Gow Poker (パイゴウポーカー) game
   - name: chinesepoker
@@ -10541,6 +10543,139 @@ paths:
                   $ref: '#/components/schemas/FortyThievesMoveZone'
                 to:
                   $ref: '#/components/schemas/FortyThievesMoveZone'
+                n:
+                  type: integer
+                  description: Number of times to undo (for undo_n command)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Draw a card from the stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              move:
+                summary: Move a card from waste to tableau column 0
+                value:
+                  command: move
+                  from:
+                    zone: waste
+                  to:
+                    zone: tableau
+                    col: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    description: 10 tableau columns, each an array of face-up cards
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  foundations:
+                    type: array
+                    description: 8 foundation piles (top card of each)
+                    items:
+                      nullable: true
+                      allOf:
+                        - $ref: '#/components/schemas/Card'
+                  waste:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                    description: Top card of the waste pile
+                  stockCount:
+                    type: integer
+                    description: Number of remaining cards in the stock
+                  moveCount:
+                    type: integer
+                  phase:
+                    type: integer
+                    description: "0=Playing, 1=GameClear, 2=GameOver"
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    items:
+                      type: array
+                  phase:
+                    type: integer
+                  message:
+                    type: string
+
+  /rankandfile/exec:
+    post:
+      tags:
+        - rankandfile
+      summary: Execute a Rank and File game command
+      description: |
+        Send a command to advance the Rank and File (ランク・アンド・ファイル)
+        game session identified by `sessionId`. Rank and File is a single-player
+        solitaire using 2 standard decks (104 cards), and a variant of Forty
+        Thieves. Ten tableau columns of four, **the first three face down and
+        the fourth face up**; the remaining 64 cards form a stock turned one at
+        a time to a waste, with no redeal. 8 foundations build up in suit A→K.
+
+        The tableau builds **down in alternating colour** (Forty Thieves builds
+        down in suit), and **any part of a sequence may move as a unit** (Forty
+        Thieves moves one card). An empty column accepts any card or sequence,
+        and a card exposed by a departure is turned face up.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All foundations complete |
+        | GameOver  | `2`   | No more moves available |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `draw`         | `d`     | Draw a card from the stock to the waste |
+        | `move`         | `m`     | Move a card between tableau/waste/foundation |
+        | `undo`         | `u`     | Undo the last action |
+        | `giveup`       | `g`     | Give up the current game |
+        | `hint`         | `h`     | Show a hint for the next move |
+        | `autocomplete` | `ac`    | Auto-move cards to foundations |
+        | `log`          | `l`     | View action log |
+      operationId: rankAndFileExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, undo, u, undo_n, giveup, g, hint, h, autocomplete, ac, log, l]
+                from:
+                  $ref: '#/components/schemas/RankAndFileMoveZone'
+                to:
+                  $ref: '#/components/schemas/RankAndFileMoveZone'
                 n:
                   type: integer
                   description: Number of times to undo (for undo_n command)
@@ -29600,6 +29735,26 @@ components:
         cardIndex:
           type: integer
           description: Card index within the column (required when moving from tableau)
+    RankAndFileMoveZone:
+      type: object
+      description: Source or target zone for a Rank and File card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (waste, tableau, foundation)
+          enum: [waste, tableau, foundation]
+        col:
+          type: integer
+          description: Column index (required for tableau zone)
+        cardIndex:
+          type: integer
+          description: >-
+            Index of the card to pick up within the column. Unlike Forty Thieves,
+            this is honoured: naming a card below the top moves that card and
+            everything above it, provided they form a descending alternating-colour
+            sequence. A broken sequence moves nothing.
     CrescentMoveZone:
       type: object
       description: Source or target zone for a Crescent Solitaire card move
