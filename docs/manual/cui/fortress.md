@@ -35,8 +35,8 @@ go run ./cmd/trumpcards --lang en fortress  # 英語モード
 
 ```mermaid
 flowchart TD
-    A[ゲーム開始 - reset] --> B[4枚のAを組札へ自動配置]
-    B --> B2[52枚を10列に配る]
+    A[ゲーム開始 - reset] --> B[組札は空のまま]
+    B --> B2[52枚すべてを10列に表向きで配る]
     B2 --> C{移動可能な手がある?}
     C -->|はい| D{プレイヤーのアクション}
     D -->|move| F[カードを移動]
