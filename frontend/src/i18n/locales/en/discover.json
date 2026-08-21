@@ -413,7 +413,8 @@
     "shamrocks": "Eighteen fans; stack by rank in either direction, suit ignored, three cards to a fan.",
     "perseverance": "Twelve columns, aces already up; build down in suit and move whole runs at once.",
     "fourteenout": "Pair exposed column tails that add to 14; K needs an A, and only 7+7 matches in rank.",
-    "narcotic": "Four piles; discard all four exposed cards when their ranks match. Redeals are unlimited."
+    "narcotic": "Four piles; discard all four exposed cards when their ranks match. Redeals are unlimited.",
+    "mrsmop": "Spider with nothing hidden: 104 cards into 13 columns, all face up, no stock."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -743,6 +744,7 @@
     "shamrocks": "One deal, no redeals — the three-card cap is what runs you out of room.",
     "perseverance": "The redeal never shuffles — the order you leave behind is the board you get back.",
     "fourteenout": "No redeal, so when a pair can be made two ways, choosing the wrong one is how you lose.",
-    "narcotic": "The redeal never shuffles — when a board comes back around with no move, that is the end."
+    "narcotic": "The redeal never shuffles — when a board comes back around with no move, that is the end.",
+    "mrsmop": "No luck at all — whether it can be won is settled at the deal; the rest is reading."
   }
 }

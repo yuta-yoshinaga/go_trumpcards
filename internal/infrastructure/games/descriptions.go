@@ -157,6 +157,7 @@ var gameDescriptions = map[string]string{
 	"perseverance":        "Perseverance (パーシビアランス)",
 	"fourteenout":         "Fourteen Out (フォーティーンアウト)",
 	"narcotic":            "Narcotic (ナルコティック)",
+	"mrsmop":              "Mrs. Mop (ミセス・モップ)",
 	"tonk":                "Tonk (トンク)",
 	"casinowar":           "Casino War (カジノウォー)",
 	"pitch":               "Pitch / Setback (ピッチ / セットバック)",

@@ -130,6 +130,8 @@ tags:
     description: Pinochle (ピノクル) game
   - name: spider
     description: Spider Solitaire (スパイダーソリティア) game
+  - name: mrsmop
+    description: Mrs. Mop (ミセス・モップ) game - open Spider variant; two full decks dealt into 13 columns of 8, all face up, with no stock and no extra deals. Build down regardless of suit, move same-suit runs as a unit, discard complete same-suit King-to-Ace sequences.
   - name: napoleon
     description: Napoleon (ナポレオン) game
   - name: indianpoker
@@ -3854,6 +3856,93 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SpiderResponse'
+
+  /mrsmop/exec:
+    post:
+      tags:
+        - mrsmop
+      summary: Execute a Mrs. Mop game command
+      description: |
+        Send a command to advance the Mrs. Mop game session identified by
+        `sessionId`. Mrs. Mop is an open Spider variant: two full decks
+        (104 cards) are dealt into **13 columns of 8, every card face up**.
+        There is no stock and no extra deal, so no information is hidden and
+        whether a game is winnable is decided at deal time.
+
+        The tableau builds down regardless of suit, but only a same-suit
+        descending run moves as a unit; an empty column accepts any card or
+        run. A complete K-through-A same-suit sequence in one column is
+        removed. 8 completed suits = game clear.
+
+        **The default is the proper 4-suit game.** 1- and 2-suit boards are
+        relaxed variants, not Mrs. Mop.
+
+        | Phase       | Value | Description |
+        |-------------|-------|-------------|
+        | Playing     | `0`   | Game in progress |
+        | GameClear   | `1`   | All 8 suits completed |
+        | GameOver    | `2`   | No move remains, or gave up |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `move`         | `m`     | Move cards between tableau columns |
+        | `giveup`       | `g`     | Give up |
+        | `hint`         | `h`     | Get a move suggestion |
+        | `autocomplete` | `ac`    | Auto-complete (when all face up) |
+        | `undo`         | `u`     | Undo last move |
+        | `undo_n`       |         | Undo N moves (requires `n` parameter) |
+        | `log`          | `l`     | View action log |
+      operationId: mrsmopExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MrsMopRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              resetWithDifficulty:
+                summary: Start a new game with 2-suit difficulty
+                value:
+                  command: reset
+                  config:
+                    difficulty: 2
+                  sessionId: my-session-001
+              deal:
+                summary: Deal cards from stock
+                value:
+                  command: deal
+                  sessionId: my-session-001
+              move:
+                summary: Move card(s) from column 3, index 2 to column 5
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 3
+                    cardIndex: 2
+                  to:
+                    zone: tableau
+                    col: 5
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MrsMopResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MrsMopResponse'
 
   /napoleon/exec:
     post:
@@ -42051,7 +42140,47 @@ components:
               enum: [1, 2, 4]
               description: "1=1-suit, 2=2-suit, 4=4-suit"
 
+    MrsMopRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, deal, move, giveup, hint, autocomplete, undo, undo_n, log]
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
+        sessionId:
+          type: string
+        from:
+          $ref: '#/components/schemas/MrsMopZone'
+        to:
+          $ref: '#/components/schemas/MrsMopZone'
+        config:
+          type: object
+          properties:
+            difficulty:
+              type: integer
+              enum: [1, 2, 4]
+              description: "1=1-suit, 2=2-suit, 4=4-suit"
+
     SpiderZone:
+      type: object
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          enum: [tableau]
+        col:
+          type: integer
+        cardIndex:
+          type: integer
+
+    MrsMopZone:
       type: object
       required:
         - zone
@@ -42074,7 +42203,27 @@ components:
         faceUp:
           type: boolean
 
+    MrsMopTableauCard:
+      type: object
+      required:
+        - faceUp
+      properties:
+        card:
+          $ref: '#/components/schemas/Card'
+        faceUp:
+          type: boolean
+
     SpiderHint:
+      type: object
+      properties:
+        fromCol:
+          type: integer
+        cardIndex:
+          type: integer
+        toCol:
+          type: integer
+
+    MrsMopHint:
       type: object
       properties:
         fromCol:
@@ -42141,6 +42290,64 @@ components:
 
     # -------------------------------------------------------------------------
     # Spiderette types
+    # -------------------------------------------------------------------------
+    MrsMopResponse:
+      type: object
+      required:
+        - tableau
+        - stockCount
+        - completedSuits
+        - phase
+        - moveCount
+        - canUndo
+        - isStalemate
+        - undoToEscape
+        - score
+        - difficulty
+        - message
+      properties:
+        tableau:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/MrsMopTableauCard'
+        stockCount:
+          type: integer
+        completedSuits:
+          type: integer
+        phase:
+          type: integer
+          enum: [0, 1, 2]
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
+        score:
+          type: integer
+        difficulty:
+          type: integer
+          enum: [1, 2, 4]
+        hint:
+          $ref: '#/components/schemas/MrsMopHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
+    # MrsMopette types
     # -------------------------------------------------------------------------
     SpideretteRequest:
       type: object

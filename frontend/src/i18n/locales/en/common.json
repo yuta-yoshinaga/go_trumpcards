@@ -348,7 +348,8 @@
     "shamrocks": "Shamrocks",
     "perseverance": "Perseverance",
     "fourteenout": "Fourteen Out",
-    "narcotic": "Narcotic"
+    "narcotic": "Narcotic",
+    "mrsmop": "Mrs. Mop"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1483,6 +1484,13 @@
     "montecarlo.noHint": "No hint available",
     "montecarlo.playing": "Playing",
     "montecarlo.stalemate": "No moves can lead to a win. Please undo or give up.",
+    "mrsmop.gameClear": "Game Clear! Moves: {{moveCount}} Score: {{score}}",
+    "mrsmop.gameOver": "Game Over",
+    "mrsmop.hintAvailable": "Hint available",
+    "mrsmop.noHint": "No hint available",
+    "mrsmop.playing": "Playing",
+    "mrsmop.stalemate": "No moves remain, and there is no redeal — undo or give up.",
+    "mrsmop.stalemateWithEscape": "No moves remain. Undoing {{count}} step(s) opens another line.",
     "mus.chicaPhase": "Chica — betting on the lowest hand.",
     "mus.discardPhase": "Discard phase — choose cards to exchange.",
     "mus.grandePhase": "Grande — betting on the highest hand.",

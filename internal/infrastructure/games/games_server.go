@@ -765,6 +765,11 @@ func init() {
 			return usecase.NewNarcoticInteractor(domain.NewDefaultNarcotic(), new(presenter.NarcoticWebPresenter))
 		},
 		controller.NewNarcoticWebController)
+	BindWebControllerFor("mrsmop",
+		func() usecase.MrsMopInteractorIF {
+			return usecase.NewMrsMopInteractor(domain.NewDefaultMrsMop(), new(presenter.MrsMopWebPresenter))
+		},
+		controller.NewMrsMopWebController)
 	BindWebControllerFor("tonk",
 		func() usecase.TonkInteractorIF {
 			return usecase.NewTonkInteractor(domain.NewDefaultTonk(), new(presenter.TonkWebPresenter))
