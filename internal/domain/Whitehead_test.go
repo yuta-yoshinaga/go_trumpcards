@@ -319,6 +319,43 @@ func whiteheadDeadTableau() [domain.WhiteheadTableauCnt][]*domain.WhiteheadTable
 // Whitehead builds down by SAME COLOUR. Klondike -- the domain this was cloned
 // from -- builds down by ALTERNATING colour, and only a King may take an empty
 // column. Each half gets a test plus a negative control.
+// TestWhitehead_HintFindsTableauMoves pins the priority that Klondike's
+// "reveal a hidden card" framing silently disabled.
+//
+// Klondike skips a column whose first face-up card is at index 0, because
+// moving it reveals nothing. In Whitehead EVERY card is face up, so that index
+// is always 0 and the whole tableau-to-tableau priority could never fire.
+//
+// That is not merely a missing hint: checkWhiteheadStalemate decides isStalemate
+// from this same GetHint, so any board whose only move is tableau-to-tableau --
+// including moving a card into an empty column -- was reported as stuck.
+func TestWhitehead_HintFindsTableauMoves(t *testing.T) {
+	t.Run("same-colour move between occupied columns", func(t *testing.T) {
+		k := twoColWH(t, domain.CardDesignSpade, 6, domain.CardDesignClover, 7)
+		k.SetStock(nil)
+		k.SetWaste(nil)
+		hint := k.GetHint()
+		require.NotNil(t, hint, "a legal black-6-onto-black-7 move must be hinted")
+		assert.Equal(t, "tableau", hint.FromZone)
+		assert.Equal(t, "tableau", hint.ToZone)
+	})
+
+	t.Run("move into an empty column", func(t *testing.T) {
+		k := newTestWhitehead()
+		k.Reset()
+		var tab [domain.WhiteheadTableauCnt][]*domain.WhiteheadTableauCard
+		tab[0] = []*domain.WhiteheadTableauCard{
+			makeTableauCardWH(domain.CardDesignSpade, 9, true),
+			makeTableauCardWH(domain.CardDesignHeart, 4, true),
+		}
+		k.SetTableau(tab)
+		k.SetStock(nil)
+		k.SetWaste(nil)
+		require.NotNil(t, k.GetHint(), "any card may move to an empty column")
+		assert.False(t, k.IsStalemate(), "a board with a legal move is not a stalemate")
+	})
+}
+
 func TestWhitehead_TableauRule(t *testing.T) {
 	t.Run("same colour descending is legal", func(t *testing.T) {
 		k := twoColWH(t, domain.CardDesignSpade, 6, domain.CardDesignClover, 7)
@@ -671,12 +708,14 @@ func TestWhitehead_GetHint(t *testing.T) {
 		assert.Nil(t, hint)
 	})
 
-	t.Run("skip all face-up tableau in hint", func(t *testing.T) {
+	// This case asserted Klondike's dead branch: "col 0 is all face up, so there
+	// is nothing to expose -- expect no hint". In Whitehead every column is all
+	// face up, so that reasoning would silence the hint on every board. The red
+	// 7 can legally move onto the red 8, and the hint must say so.
+	t.Run("all-face-up column still yields a tableau hint", func(t *testing.T) {
 		k := newTestWhitehead()
 		k.Reset()
 		var tab [domain.WhiteheadTableauCnt][]*domain.WhiteheadTableauCard
-		// All face up in col 0 - no face-down to expose, should skip
-		// A same-colour run moves as a group; the junction must be same-colour too.
 		tab[0] = []*domain.WhiteheadTableauCard{
 			makeTableauCardWH(domain.CardDesignHeart, 7, true),
 			makeTableauCardWH(domain.CardDesignDiamond, 6, true),
@@ -686,8 +725,8 @@ func TestWhitehead_GetHint(t *testing.T) {
 		k.SetWaste(nil)
 		k.SetStock(nil)
 		hint := k.GetHint()
-		// No hint for foundation, and tab[0] has no face-down cards to expose
-		assert.Nil(t, hint)
+		require.NotNil(t, hint)
+		assert.Equal(t, "tableau", hint.ToZone)
 	})
 
 	t.Run("tableau to tableau: no valid target", func(t *testing.T) {

@@ -384,33 +384,37 @@ func (k *Whitehead) GetHint() *WhiteheadHint {
 		if len(fromCards) == 0 {
 			continue
 		}
-		// 表向きの最初のカードを探す
-		firstFaceUp := -1
-		for i, tc := range fromCards {
-			if tc.FaceUp {
-				firstFaceUp = i
-				break
-			}
-		}
-		if firstFaceUp < 0 {
-			continue
-		}
-		// 裏カードがない列からの移動はスキップ（既に全部表）
-		if firstFaceUp == 0 {
-			continue
-		}
-		card := fromCards[firstFaceUp].Card
-		for toCol := 0; toCol < WhiteheadTableauCnt; toCol++ {
-			if toCol == fromCol {
+		// **Klondike の「伏せ札を掘る」枠組みは Whitehead では使えない。**
+		// あちらは「最初の表向き札が index 0 なら、動かしても何も現れない」
+		// として読み飛ばすが、Whitehead は全札が表向きなので index は常に 0
+		// になり、タブロー間の手が一つも提案されなくなる。
+		//
+		// checkWhiteheadStalemate はこの GetHint で手詰まりを判定するので、
+		// 「タブロー間の移動しか無い盤面」（空列への移動を含む）が
+		// すべて手詰まり扱いになっていた。
+		//
+		// 上の札から順に見て、置ける先がある最初の一手を返す。
+		for cardIndex := len(fromCards) - 1; cardIndex >= 0; cardIndex-- {
+			if !fromCards[cardIndex].FaceUp {
 				continue
 			}
-			if k.canPlaceOnTableau(card, toCol) {
-				return &WhiteheadHint{
-					FromZone:  "tableau",
-					FromCol:   fromCol,
-					CardIndex: firstFaceUp,
-					ToZone:    "tableau",
-					ToCol:     toCol,
+			card := fromCards[cardIndex].Card
+			for toCol := 0; toCol < WhiteheadTableauCnt; toCol++ {
+				if toCol == fromCol {
+					continue
+				}
+				// 列ごと空にして別の空列へ移すだけの手は進展が無いので除く。
+				if cardIndex == 0 && len(k.tableau[toCol]) == 0 {
+					continue
+				}
+				if k.canPlaceOnTableau(card, toCol) {
+					return &WhiteheadHint{
+						FromZone:  "tableau",
+						FromCol:   fromCol,
+						CardIndex: cardIndex,
+						ToZone:    "tableau",
+						ToCol:     toCol,
+					}
 				}
 			}
 		}

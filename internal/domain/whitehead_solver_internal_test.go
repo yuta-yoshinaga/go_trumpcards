@@ -30,13 +30,11 @@ func TestCheckWhiteheadStalemate_NoHintEmptyStockAndWaste(t *testing.T) {
 	// Empty stock and waste, no valid moves on tableau
 	k.stock = nil
 	k.waste = nil
-	var tableau [WhiteheadTableauCnt][]*WhiteheadTableauCard
-	// Cards that can't form any valid moves
-	tableau[0] = []*WhiteheadTableauCard{
-		{Card: NewCard(CardDesignSpade, 5, false), FaceUp: true},
-		{Card: NewCard(CardDesignSpade, 3, false), FaceUp: true},
-	}
-	k.tableau = tableau
+	// **Every column must be occupied.** This fixture filled only column 0 and
+	// asserted a stalemate, which was true only because GetHint's tableau
+	// priority was dead -- moving a card into any of the six empty columns is
+	// perfectly legal, so the board was never actually stuck.
+	k.tableau = deadTableauWH()
 	var foundation [WhiteheadFoundationCnt][]*Card
 	k.foundation = foundation
 
