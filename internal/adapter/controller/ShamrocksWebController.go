@@ -26,13 +26,12 @@ type ShamrocksWebOutputHint struct {
 
 // ShamrocksWebOutput シャムロックスのWebアウトプット。
 type ShamrocksWebOutput struct {
-	Fans        [][]*WebOutputCard      `json:"fans"`
-	Foundation  [][]*WebOutputCard      `json:"foundation"`
-	RedealsLeft int                     `json:"redealsLeft"`
-	Phase       int                     `json:"phase"`
-	MoveCount   int                     `json:"moveCount"`
-	CanUndo     bool                    `json:"canUndo"`
-	Hint        *ShamrocksWebOutputHint `json:"hint,omitempty"`
+	Fans       [][]*WebOutputCard      `json:"fans"`
+	Foundation [][]*WebOutputCard      `json:"foundation"`
+	Phase      int                     `json:"phase"`
+	MoveCount  int                     `json:"moveCount"`
+	CanUndo    bool                    `json:"canUndo"`
+	Hint       *ShamrocksWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 }
 
@@ -65,8 +64,6 @@ func shamrocksDispatch(bc *baseController, w http.ResponseWriter, li usecase.Sha
 			return true
 		}
 		bc.writePresenterResponse(w, li.MoveFanToFoundation(*param.From))
-	case "rd", "redeal":
-		bc.writePresenterResponse(w, li.Redeal())
 	case "g", "giveup":
 		bc.writePresenterResponse(w, li.GiveUp())
 	case "ac", "autocomplete":

@@ -77,10 +77,9 @@ func (p *ShamrocksWebPresenter) ActionLogOutput(g interfaces.ShamrocksGame) stri
 
 func (p *ShamrocksWebPresenter) buildBaseOutput(g interfaces.ShamrocksGame) *controller.ShamrocksWebOutput {
 	return &controller.ShamrocksWebOutput{
-		Phase:       int(g.GetPhase()),
-		MoveCount:   g.GetMoveCount(),
-		RedealsLeft: g.GetRedealsLeft(),
-		CanUndo:     g.CanUndo(),
+		Phase:     int(g.GetPhase()),
+		MoveCount: g.GetMoveCount(),
+		CanUndo:   g.CanUndo(),
 	}
 }
 

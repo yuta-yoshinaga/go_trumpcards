@@ -6,7 +6,6 @@ function makeState(overrides?: Partial<ShamrocksResponse>): ShamrocksResponse {
   return {
     fans: [[], [], []],
     foundation: [[], [], [], []],
-    redealsLeft: 2,
     phase: 0,
     moveCount: 0,
     canUndo: false,

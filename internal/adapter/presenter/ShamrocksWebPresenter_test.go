@@ -19,7 +19,11 @@ func TestShamrocksWebPresenter_Output(t *testing.T) {
 		g := domain.NewDefaultShamrocks()
 		g.Reset()
 		out := p.Output(g, nil)
-		for _, frag := range []string{`"fans"`, `"foundation"`, `"redealsLeft"`, `"canUndo"`, `"messageCode":"shamrocks.playing"`} {
+		// Shamrocks has no redeal, so the field La Belle Lucie ships must not
+		// appear on the wire either -- a client reading it would show "0 left"
+		// for a counter that never existed.
+		assert.NotContains(t, out, `"redealsLeft"`)
+		for _, frag := range []string{`"fans"`, `"foundation"`, `"canUndo"`, `"messageCode":"shamrocks.playing"`} {
 			assert.Contains(t, out, frag)
 		}
 	})

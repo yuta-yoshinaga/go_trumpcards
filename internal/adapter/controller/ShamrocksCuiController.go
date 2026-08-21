@@ -11,7 +11,6 @@ import (
 
 // shamrocksNoArgCommands maps no-arg CUI commands to interactor methods.
 var shamrocksNoArgCommands = cuiutil.NewCommandMap[usecase.ShamrocksInteractorIF]().
-	Add(usecase.ShamrocksInteractorIF.Redeal, "rd", "redeal").
 	Add(usecase.ShamrocksInteractorIF.GiveUp, "g", "giveup").
 	Add(usecase.ShamrocksInteractorIF.AutoComplete, "ac", "autocomplete").
 	Add(usecase.ShamrocksInteractorIF.Undo, "u", "undo").
@@ -34,7 +33,6 @@ func NewShamrocksCuiController(li usecase.ShamrocksInteractorIF) *ShamrocksCuiCo
 //	r / reset            新しいゲーム
 //	m <from> <to>        扇 from のトップを扇 to へ
 //	m <from> f           扇 from のトップをファウンデーションへ
-//	rd / redeal          集めてシャッフルし配り直す
 //	ac / autocomplete    出せる札を自動で出し切る
 //	u / undo             直近の手を取り消す
 //	g / giveup           投了

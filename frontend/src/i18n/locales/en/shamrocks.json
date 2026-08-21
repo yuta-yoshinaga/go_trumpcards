@@ -7,12 +7,8 @@
   "title": "Shamrocks",
   "foundation": "Foundation",
   "fan": "Fan",
-  "redealsLeft": "Redeals left: {{count}}",
-  "stuckRedeal": "Stuck — redeal recommended",
-  "stuckDeadlock": "No moves left — give up?",
-  "redealsLeftBadge": "{{count}} left",
+  "stuckDeadlock": "Stuck — no legal move remains",
   "moveCount": "Moves: {{count}}",
-  "redeal": "Gather & redeal",
   "giveup": "Give up",
   "hint": "Hint",
   "autoComplete": "Auto-complete",
@@ -28,7 +24,6 @@
   "tutorial": {
     "foundation": "The 4 foundations. Build each suit up from the Ace to the King; clear all 52 cards to win.",
     "fan": "Only the top card of each fan can move. Stack it onto a fan whose top is the next-higher card of the same suit.",
-    "redeal": "When stuck, gather the remaining cards, shuffle and redeal — up to 3 times.",
     "actionButtons": "Hint, auto-complete and undo controls.",
     "resetButton": "Start a new game."
   },

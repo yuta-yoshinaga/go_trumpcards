@@ -4,6 +4,8 @@ package domain
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -132,21 +134,10 @@ func TestShamrocks_EmptyFanTakesAnyCard(t *testing.T) {
 	assert.Equal(t, 1, len(g.fans[1]))
 }
 
-func TestShamrocks_HasNoRedeals(t *testing.T) {
-	g := newLlGameSH()
-	g.Reset()
-	// La Belle Lucie allows three redeals; Shamrocks has none.
-	assert.Equal(t, 0, g.GetRedealsLeft(), "Shamrocks does not redeal")
-	assert.Error(t, g.Redeal(), "redeal must be rejected")
-}
-
 func TestShamrocks_ResetDeals(t *testing.T) {
 	g := newLlGameSH()
 	if g.GetPhase() != ShamrocksPhasePlaying {
 		t.Fatalf("phase = %d, want Playing", g.GetPhase())
-	}
-	if g.GetRedealsLeft() != ShamrocksMaxRedeals {
-		t.Errorf("redeals = %d, want %d", g.GetRedealsLeft(), ShamrocksMaxRedeals)
 	}
 	total := 0
 	for _, fan := range g.GetFans() {
@@ -238,15 +229,15 @@ func fullSuitSH(design int) []*Card {
 	return s
 }
 
-// Shamrocks's redeal test is gone: Shamrocks has no redeal at all, so
-// there is no "spend one, then run out" behaviour to cover. That the feature is
-// unavailable is asserted in TestShamrocks_HasNoRedeals; keeping the original
-// here would have meant asserting a redeal that can never succeed.
+// La Belle Lucie's redeal tests are gone, and so is the redeal itself: the
+// gather-shuffle-redeal surface was removed from the domain, the interfaces,
+// both controllers and the UI rather than left in place returning an error.
+// A player who cannot move has simply lost, which TestShamrocks_GameOverWhenStuck
+// covers directly.
 
 func TestShamrocks_GameOverWhenStuck(t *testing.T) {
 	g := newLlGameSH()
 	llClearSH(g)
-	g.redealsLeft = 0
 	// Tops K♠ / 5♥ / 7♦ have no legal interaction and nothing reaches a foundation.
 	g.fans = [][]*Card{
 		{llCardSH(CardDesignSpade, 13)},
@@ -325,7 +316,7 @@ func TestShamrocks_AutoComplete(t *testing.T) {
 
 func TestShamrocks_JSONRoundTrip(t *testing.T) {
 	g := newLlGameSH()
-	_ = g.Redeal()
+	g.Reset()
 	data, err := json.Marshal(g)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
@@ -334,14 +325,12 @@ func TestShamrocks_JSONRoundTrip(t *testing.T) {
 	if err := json.Unmarshal(data, g2); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
-	if g2.GetRedealsLeft() != g.GetRedealsLeft() {
-		t.Errorf("redeals mismatch after round-trip")
-	}
 	if len(g2.GetFans()) != len(g.GetFans()) {
 		t.Errorf("fan count mismatch after round-trip")
 	}
-	// Reject an out-of-range redeal count.
-	if err := json.Unmarshal([]byte(`{"rd":99}`), NewDefaultShamrocks()); err == nil {
-		t.Error("expected error for invalid redeal count")
+	// Reject an absurd fan count rather than allocating it.
+	huge := fmt.Sprintf(`{"fn":[%s]}`, strings.Repeat("[],", shamrocksMaxSliceLen)+"[]")
+	if err := json.Unmarshal([]byte(huge), NewDefaultShamrocks()); err == nil {
+		t.Error("expected error for a fan count over the cap")
 	}
 }

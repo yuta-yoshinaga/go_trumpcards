@@ -15,8 +15,6 @@ type ShamrocksGame interface {
 	MoveFanToFan(from, to int) error
 	// MoveFanToFoundation 扇からファウンデーションへ移す。
 	MoveFanToFoundation(from int) error
-	// Redeal 集めてシャッフルし配り直す。
-	Redeal() error
 	// GiveUp 投了する。
 	GiveUp()
 	// AutoComplete 出せるファウンデーション手を自動で出し切る。
@@ -34,8 +32,6 @@ type ShamrocksGame interface {
 	GetPhase() domain.ShamrocksPhase
 	// GetMoveCount 累計手数を取得する。
 	GetMoveCount() int
-	// GetRedealsLeft 残り再シャッフル回数を取得する。
-	GetRedealsLeft() int
 	// HasAnyLegalMove 合法手が存在するかを返す (なければリディールが必要)。
 	HasAnyLegalMove() bool
 	// GetFans 扇の一覧を取得する。

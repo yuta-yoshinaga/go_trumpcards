@@ -16,13 +16,13 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
 import { ShamrocksPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { labelleLucieMovableFans } from '../utils/labelleLucieLegalMove';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { shamrocksMovableFans } from '../utils/shamrocksLegalMove';
 
 /** Shamrocks tutorial step definitions. */
 const LL_TUTORIAL_STEPS: TutorialStep[] = [
@@ -33,7 +33,6 @@ const LL_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
   { target: '[data-tutorial="ll-fans"]', messageKey: 'tutorial.fan', placement: 'top', advanceOn: 'next' },
-  { target: '[data-tutorial="ll-redeal"]', messageKey: 'tutorial.redeal', placement: 'top', advanceOn: 'next' },
   {
     target: '[data-tutorial="ll-reset-button"]',
     messageKey: 'tutorial.resetButton',
@@ -71,13 +70,13 @@ function ShamrocksPageContent() {
   }, []);
 
   // Clear a stale source selection (and any hint highlight) whenever the board
-  // changes (move, redeal, undo, auto-complete) so a selected/hinted index can't
+  // changes (move, undo, auto-complete) so a selected/hinted index can't
   // point at a different fan.
   // biome-ignore lint/correctness/useExhaustiveDependencies: deps are the change-trigger, not read in the body.
   useEffect(() => {
     setSelected(null);
     setShowHint(false);
-  }, [state?.moveCount, state?.redealsLeft]);
+  }, [state?.moveCount]);
 
   // Cancel a pending hint auto-dismiss timer on unmount.
   useEffect(() => () => window.clearTimeout(hintTimerRef.current ?? undefined), []);
@@ -102,21 +101,19 @@ function ShamrocksPageContent() {
   // **どの扇が動かせるかは、ヒント (4秒で消える) を押さないと分からなかった** (#5678)。
   // 同バッチの他ゲームと同じく「押す前に分かる」形にする。ヒントの強調とは別の
   // 控えめなリングにして、推奨手と混ざらないようにする。
-  const movableFans = labelleLucieMovableFans(state.fans, state.foundation);
+  const movableFans = shamrocksMovableFans(state.fans, state.foundation);
   // **同じ走査を 2 度しない。** 動かせる扇が 1 つも無いことが「詰み」。
   const hasLegalMove = movableFans.size > 0;
-  // No legal move left but redeals remain: recommend a redeal before the
-  // player wastes time hunting for a move that does not exist.
-  const stuck = canAct && state.redealsLeft > 0 && !hasLegalMove;
-  // No legal move left and redeals are exhausted: a true deadlock. Guide the
-  // player to give up instead of hunting for a move that cannot exist.
-  const deadlocked = canAct && state.redealsLeft <= 0 && !hasLegalMove;
+  // **Shamrocks はリディールを持たない。** 合法手が尽きた時点でそれが詰みで、
+  // 集め直して続ける道は無い。ラ・ベル・リュシー版はここを redealsLeft > 0 で
+  // 出し分けていたが、この盤ではリディール自体が存在しないので分岐も要らない。
+  const deadlocked = canAct && !hasLegalMove;
   const phaseName = phaseNames[state.phase] ?? '';
 
   const handleReset = () => {
     hideActionLog();
     setSelected(null);
-    // A reset keeps moveCount/redealsLeft unchanged from a fresh board, so the
+    // A reset keeps moveCount unchanged from a fresh board, so the
     // board-change effect may not fire — clear any stale hint highlight here.
     setShowHint(false);
     window.clearTimeout(hintTimerRef.current ?? undefined);
@@ -254,21 +251,7 @@ function ShamrocksPageContent() {
           {state.fans.map((fan, i) => renderFan(fan, i))}
         </div>
 
-        <div className="mt-2 text-ds-text-muted text-xs">
-          {t('redealsLeft', { count: state.redealsLeft })} · {t('moveCount', { count: state.moveCount })}
-        </div>
-        {stuck && (
-          <div
-            className="mt-1 flex items-center gap-2 text-ds-warning text-sm font-medium"
-            role="status"
-            data-testid="ll-stuck-banner"
-          >
-            <span>{t('stuckRedeal')}</span>
-            <span className="rounded-full bg-ds-warning/20 px-2 py-0.5 text-xs font-bold tabular-nums">
-              {t('redealsLeftBadge', { count: state.redealsLeft })}
-            </span>
-          </div>
-        )}
+        <div className="mt-2 text-ds-text-muted text-xs">{t('moveCount', { count: state.moveCount })}</div>
         {deadlocked && (
           <div
             className="mt-1 flex items-center gap-2 text-ds-danger text-sm font-medium"
@@ -303,18 +286,6 @@ function ShamrocksPageContent() {
       <GameFooter className={`${gameTheme.shamrocks.footer} px-3 py-2.5`}>
         <ErrorAlert message={error} onRetry={retry} />
         <div className="flex flex-wrap gap-2 items-center">
-          {canAct && (
-            <button
-              type="button"
-              className={`${btnWarning}${stuck ? ' motion-safe:animate-pulse' : ''}`}
-              onClick={() => exec('rd')}
-              disabled={loading || state.redealsLeft <= 0}
-              data-tutorial="ll-redeal"
-              data-testid="redeal-button"
-            >
-              {t('redeal')}
-            </button>
-          )}
           {canAct && (
             <button
               type="button"

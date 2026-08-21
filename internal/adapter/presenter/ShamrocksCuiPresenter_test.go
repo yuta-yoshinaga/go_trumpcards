@@ -27,9 +27,13 @@ func llStateSH(t *testing.T, js string) *domain.Shamrocks {
 func TestShamrocksCuiPresenter_StuckSaysDeadlock(t *testing.T) {
 	// La Belle Lucie's three redeal cases are gone: Shamrocks has none, so a
 	// board with no legal move is always a true deadlock and there is no
-	// "redeal recommended" state to reach.
+	// "redeal recommended" state to reach. Assert against literal wording, not
+	// against i18n.T of a key that no longer exists -- a deleted key makes T
+	// return the key itself and NotContains would pass for the wrong reason.
 	out := new(presenter.ShamrocksCuiPresenter).Output(llStateSH(t, `{"ph":0,"mc":0}`), nil)
-	assert.NotContains(t, out, "再配り", "no redeal wording in a game without redeals")
+	for _, frag := range []string{"再配り", "配り直", "シャッフル", "リディール"} {
+		assert.NotContains(t, out, frag, "no redeal wording in a game without redeals")
+	}
 }
 
 func TestShamrocksCuiPresenter_Output(t *testing.T) {
@@ -41,8 +45,9 @@ func TestShamrocksCuiPresenter_Output(t *testing.T) {
 		out := p.Output(g, nil)
 		assert.Contains(t, out, "Shamrocks")
 		// La Belle Lucie printed a "残りシャッフル" line; Shamrocks has no redeals,
-		// so that line is gone. What matters here is the 18-fan layout: 17 fans
-		// of three plus one of one.
+		// so that line is gone.
+		assert.NotContains(t, out, "残りシャッフル")
+		// What matters here is the 18-fan layout: 17 fans of three plus one of one.
 		assert.Contains(t, out, "扇17:")
 		assert.NotContains(t, out, "扇18:")
 	})
@@ -50,21 +55,18 @@ func TestShamrocksCuiPresenter_Output(t *testing.T) {
 	// **再配札が尽きた真の手詰まりは別物 (#4769)。**Web は ll-deadlock-banner を
 	// 出して giveup を点滅させるのに、CUI は何も言わず、合法手が無いまま延々と
 	// 手を探させていた。
-	t.Run("names the deadlock when no redeal is left either", func(t *testing.T) {
+	t.Run("names the deadlock when no legal move remains", func(t *testing.T) {
 		ace, _ := json.Marshal(domain.NewCard(domain.CardDesignSpade, 1, true))
-		js := fmt.Sprintf(`{"ph":0,"rd":0,"fd":[[%s],[],[],[]],"fn":[[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]}`, ace)
+		js := fmt.Sprintf(`{"ph":0,"fd":[[%s],[],[],[]],"fn":[[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]}`, ace)
 		out := p.Output(llStateSH(t, js), nil)
 		assert.Contains(t, out, i18n.T("shamrocks.stuckDeadlock"))
-		// **再配札を勧めてはいけない。**もう配り直せない。
-		assert.NotContains(t, out, i18n.T("shamrocks.redealRecommended"))
 	})
 
-	t.Run("says neither while a legal move exists", func(t *testing.T) {
+	t.Run("stays quiet while a legal move exists", func(t *testing.T) {
 		ace, _ := json.Marshal(domain.NewCard(domain.CardDesignSpade, 1, true))
-		js := fmt.Sprintf(`{"ph":0,"rd":0,"fd":[[],[],[],[]],"fn":[[%s],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]}`, ace)
+		js := fmt.Sprintf(`{"ph":0,"fd":[[],[],[],[]],"fn":[[%s],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]}`, ace)
 		out := p.Output(llStateSH(t, js), nil)
 		assert.NotContains(t, out, i18n.T("shamrocks.stuckDeadlock"))
-		assert.NotContains(t, out, i18n.T("shamrocks.redealRecommended"))
 	})
 
 	t.Run("game clear banner", func(t *testing.T) {

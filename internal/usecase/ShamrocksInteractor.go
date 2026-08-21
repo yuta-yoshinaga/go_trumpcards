@@ -18,8 +18,6 @@ type ShamrocksInteractorIF interface {
 	MoveFanToFan(from, to int) string
 	// MoveFanToFoundation 扇からファウンデーションへ移す。
 	MoveFanToFoundation(from int) string
-	// Redeal 集めてシャッフルし配り直す。
-	Redeal() string
 	// GiveUp 投了する。
 	GiveUp() string
 	// Hint ヒント取得。
@@ -59,11 +57,6 @@ func (li *ShamrocksInteractor) MoveFanToFan(from, to int) string {
 // MoveFanToFoundation 扇からファウンデーションへ移す。
 func (li *ShamrocksInteractor) MoveFanToFoundation(from int) string {
 	return execAndPresent(li.Game, li.op, func() error { return li.Game.MoveFanToFoundation(from) })
-}
-
-// Redeal 集めてシャッフルし配り直す。
-func (li *ShamrocksInteractor) Redeal() string {
-	return execAndPresent(li.Game, li.op, li.Game.Redeal)
 }
 
 // GiveUp 投了する。

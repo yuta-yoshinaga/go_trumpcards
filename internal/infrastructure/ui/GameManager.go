@@ -6278,7 +6278,6 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			CommandKeys: []string{
 				"shamrocks.helpMove",
-				"shamrocks.helpRedeal",
 				"shamrocks.helpAutoComplete",
 				"shamrocks.helpUndo",
 				"shamrocks.helpGiveUp", "shamrocks.helpLog", "shamrocks.helpHint",

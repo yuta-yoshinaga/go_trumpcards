@@ -37,9 +37,14 @@ func TestShamrocksWebController_Exec(t *testing.T) {
 	t.Run("fan to fan", func(t *testing.T) { run(t, `{"command":"mf","from":0,"to":1,"sessionId":"s1"}`, http.StatusOK) })
 	t.Run("fan to foundation", func(t *testing.T) { run(t, `{"command":"ff","from":0,"sessionId":"s1"}`, http.StatusOK) })
 	t.Run("simple commands", func(t *testing.T) {
-		for _, cmd := range []string{"rd", "g", "ac", "u", "hint", "log"} {
+		for _, cmd := range []string{"g", "ac", "u", "hint", "log"} {
 			run(t, `{"command":"`+cmd+`","sessionId":"s1"}`, http.StatusOK)
 		}
+	})
+	// **リディールは存在しない。**ラ・ベル・リュシー由来の rd をそのまま受けて
+	// しまうと、盤を配り直さないのに 200 を返す無言の no-op になる。
+	t.Run("redeal is not a Shamrocks command", func(t *testing.T) {
+		run(t, `{"command":"rd","sessionId":"s1"}`, http.StatusBadRequest)
 	})
 	t.Run("undo_n", func(t *testing.T) { run(t, `{"command":"undo_n","n":2,"sessionId":"s1"}`, http.StatusOK) })
 	t.Run("mf without to is a bad request", func(t *testing.T) { run(t, `{"command":"mf","from":0,"sessionId":"s1"}`, http.StatusBadRequest) })

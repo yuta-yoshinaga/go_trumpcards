@@ -35,7 +35,6 @@ func TestShamrocksInteractor_Commands(t *testing.T) {
 	assert.Contains(t, li.Reset(), `"phase"`)
 	assert.Contains(t, li.Hint(), `"phase"`)
 	assert.NotEmpty(t, li.ActionLog())
-	assert.Contains(t, li.Redeal(), `"redealsLeft"`)
 	assert.Contains(t, li.AutoComplete(), `"phase"`)
 
 	// Apply one hint-suggested legal move through the interactor.
@@ -69,6 +68,5 @@ func TestShamrocksInteractor_GiveUpThenBlocked(t *testing.T) {
 	assert.Contains(t, li.GiveUp(), `"phase"`)
 	assert.True(t, g.GetGameEndFlag())
 	// Actions after game end still produce output via the presenter.
-	assert.NotEmpty(t, li.Redeal())
 	assert.NotEmpty(t, li.MoveFanToFan(0, 1))
 }

@@ -5,7 +5,6 @@ package domain
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 )
 
 // Shamrocks (シャムロックス) 盤面定数。
@@ -14,9 +13,6 @@ const (
 	ShamrocksFoundationCnt = 4
 	// ShamrocksFanSize 1 つの扇 (fan) の初期枚数。
 	ShamrocksFanSize = 3
-	// ShamrocksMaxRedeals 再シャッフルの最大回数。**Shamrocks に再配りは無い**
-	// (issue 規則5)。La Belle Lucie は 3 回まで許す。
-	ShamrocksMaxRedeals = 0
 	// shamrocksMaxSliceLen JSON 復元時のスライス長上限。
 	shamrocksMaxSliceLen = 10000
 )
@@ -44,23 +40,21 @@ type ShamrocksHint struct {
 
 // Shamrocks Shamrocks (ファン・ソリティア) 本体。状態のみを保持する。
 type Shamrocks struct {
-	trumpCards  *TrumpCards
-	fans        [][]*Card
-	foundation  [ShamrocksFoundationCnt][]*Card
-	redealsLeft int
-	phase       ShamrocksPhase
-	moveCount   int
+	trumpCards *TrumpCards
+	fans       [][]*Card
+	foundation [ShamrocksFoundationCnt][]*Card
+	phase      ShamrocksPhase
+	moveCount  int
 	actionLogBase
 	history []*shamrocksSnapshot
 }
 
 // shamrocksSnapshot Undo 用スナップショット。
 type shamrocksSnapshot struct {
-	fans        [][]*Card
-	foundation  [ShamrocksFoundationCnt][]*Card
-	redealsLeft int
-	phase       ShamrocksPhase
-	moveCount   int
+	fans       [][]*Card
+	foundation [ShamrocksFoundationCnt][]*Card
+	phase      ShamrocksPhase
+	moveCount  int
 }
 
 // NewShamrocks コンストラクタ。
@@ -78,7 +72,6 @@ func (g *Shamrocks) Reset() {
 	g.trumpCards.Shuffle()
 	g.phase = ShamrocksPhasePlaying
 	g.moveCount = 0
-	g.redealsLeft = ShamrocksMaxRedeals
 	g.actionLog = nil
 	g.history = nil
 	for i := range g.foundation {
@@ -108,7 +101,7 @@ func (g *Shamrocks) dealFans(cards []*Card) {
 
 // --- rules ---
 
-// canPlaceOnFan 扇トップ dstTop に card を積めるか (同スート・降順)。
+// shamrocksCanStack 扇トップ dstTop に card を積めるか (スート不問・階級±1)。
 func shamrocksCanStack(card, dstTop *Card) bool {
 	if card == nil || dstTop == nil {
 		return false
@@ -227,28 +220,6 @@ func (g *Shamrocks) MoveFanToFoundation(from int) error {
 	return nil
 }
 
-// Redeal ファウンデーション以外のカードを集めてシャッフルし配り直す。
-func (g *Shamrocks) Redeal() error {
-	if g.phase != ShamrocksPhasePlaying {
-		return errors.New("shamrocks: game is not in playing phase")
-	}
-	if g.redealsLeft <= 0 {
-		return errors.New("shamrocks: no redeals left")
-	}
-	g.takeSnapshot()
-	var cards []*Card
-	for _, fan := range g.fans {
-		cards = append(cards, fan...)
-	}
-	rand.Shuffle(len(cards), func(i, j int) { cards[i], cards[j] = cards[j], cards[i] })
-	g.redealsLeft--
-	g.dealFans(cards)
-	g.moveCount++
-	g.appendLog("redeal", fmt.Sprintf("集めてシャッフル (残り%d回)", g.redealsLeft), nil)
-	g.checkGameOver()
-	return nil
-}
-
 // GiveUp 投了する。
 func (g *Shamrocks) GiveUp() {
 	if g.phase == ShamrocksPhasePlaying {
@@ -293,7 +264,7 @@ func (g *Shamrocks) checkGameOver() {
 	if g.phase != ShamrocksPhasePlaying {
 		return
 	}
-	if g.redealsLeft == 0 && !g.hasAnyLegalMove() {
+	if !g.hasAnyLegalMove() {
 		g.phase = ShamrocksPhaseGameOver
 		g.appendLog("gameover", "手詰まりです", nil)
 	}
@@ -349,7 +320,7 @@ func (g *Shamrocks) AutoComplete() error {
 
 // takeSnapshot 現在の状態を保存する。
 func (g *Shamrocks) takeSnapshot() {
-	snap := &shamrocksSnapshot{redealsLeft: g.redealsLeft, phase: g.phase, moveCount: g.moveCount}
+	snap := &shamrocksSnapshot{phase: g.phase, moveCount: g.moveCount}
 	snap.fans = make([][]*Card, len(g.fans))
 	for i, fan := range g.fans {
 		snap.fans[i] = make([]*Card, len(fan))
@@ -365,7 +336,6 @@ func (g *Shamrocks) takeSnapshot() {
 func (g *Shamrocks) restoreSnapshot(snap *shamrocksSnapshot) {
 	g.fans = snap.fans
 	g.foundation = snap.foundation
-	g.redealsLeft = snap.redealsLeft
 	g.phase = snap.phase
 	g.moveCount = snap.moveCount
 }
@@ -414,9 +384,6 @@ func (g *Shamrocks) GetGameEndFlag() bool { return g.phase != ShamrocksPhasePlay
 
 // GetMoveCount 累計手数。
 func (g *Shamrocks) GetMoveCount() int { return g.moveCount }
-
-// GetRedealsLeft 残り再シャッフル回数。
-func (g *Shamrocks) GetRedealsLeft() int { return g.redealsLeft }
 
 // HasAnyLegalMove はファウンデーション手・扇間移動のいずれかが存在するかを返す
 // (合法手がなければリディールが必要)。

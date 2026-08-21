@@ -549,7 +549,7 @@ tags:
   - name: russianbank
     description: Russian Bank / Crapette (ロシアンバンク/クラペット) — a 2-player competitive solitaire on two 52-card decks (104 cards) played 1 human vs 1 CPU; each player owns a 13-card reserve (stock) and a hand (talon), and the board has 8 shared foundations (built up A to K by suit) plus 4 shared tableau columns (built down in alternating colour; an empty column accepts any card); on your turn you make as many legal moves as you like from your reserve or waste tops, a tableau column top, or the opponent's reserve or waste tops onto the shared foundations and tableau, and when out of moves you discard one hand card to your waste to end the turn; if the CPU ends its turn leaving a forced foundation move you may call stop to catch the lapse; the first player to empty their reserve wins (if both are stuck the player with fewer reserve cards wins); commands pf with source to a foundation, mt with source and column to a tableau, d discard, s stop, u undo, sd setdifficulty, hint, log (l), reset (r), where source is r own reserve, w own waste, or opponent reserve, ow opponent waste, t0 to t3 tableau columns; phases 0 Idle, 1 Playing, 2 GameEnd
   - name: shamrocks
-    description: Shamrocks (シャムロックス) game - La Belle Lucie variant stacking by rank in either direction, three cards to a fan, no redeals
+    description: Shamrocks (シャムロックス) game - La Belle Lucie variant stacking by rank in either direction regardless of suit, three cards to a fan, no redeals
   - name: labellelucie
     description: La Belle Lucie (ラ・ベル・ルーシー) — a classic French single-player fan solitaire on a standard 52-card deck; the cards are dealt into 17 fans of three plus one single card, and only the top card of each fan can move; a fan top stacks onto another fan whose top is the next-higher card of the same suit (built down in suit), and an exposed Ace starts one of the 4 foundations which then build up in suit from Ace to King; when no legal move remains the player may gather all non-foundation cards, shuffle and redeal (up to 3 redeals); clearing all 52 cards to the foundations wins, while being stuck after the third redeal loses; commands mf with from and to fan indices, ff with from fan index to a foundation, rd redeal, ac autocomplete, u undo, g giveup, hint, log (l), reset (r); phases 0 Playing, 1 GameClear, 2 GameOver
   - name: curdsandwhey
@@ -25098,22 +25098,21 @@ paths:
       description: |
         Send a command to advance a Shamrocks session identified by `sessionId`.
         Shamrocks is a single-player fan solitaire. Only the top card of each fan
-        moves: onto another fan whose top is the next-higher same-suit card (`mf`), or up
-        from the Ace on a foundation (`ff`). When stuck, `rd` gathers, shuffles and redeals
-        (up to 3 times). Clear all 52 cards to win.
+        moves: onto another fan whose top is one rank above or below it, of any suit
+        (`mf`), or up from the Ace on a foundation (`ff`). A fan holds at most three
+        cards, and Shamrocks never re-deals. Clear all 52 cards to win.
 
         | Phase     | Value | Description |
         |-----------|-------|-------------|
         | Playing   | `0`   | Moving cards among fans and foundations |
         | GameClear | `1`   | All 52 cards reached the foundations |
-        | GameOver  | `2`   | Stuck after the last redeal, or gave up |
+        | GameOver  | `2`   | No legal move remains, or gave up |
 
         | Command | Description |
         |---------|-------------|
         | `reset` | Start / restart the game |
         | `mf`    | Move fan `from` top onto fan `to` |
         | `ff`    | Move fan `from` top onto a foundation |
-        | `rd`    | Gather, shuffle and redeal |
         | `ac`    | Auto-play every available foundation move |
         | `u`     | Undo the last move |
         | `undo_n`| Undo `n` moves |
@@ -60835,9 +60834,9 @@ components:
           type: string
           description: |
             Game command: `reset` (`r`), `mf` (fan to fan), `ff` (fan to foundation),
-            `rd` (redeal), `ac` (autocomplete), `u` (undo), `undo_n`, `g` (giveup),
+            `ac` (autocomplete), `u` (undo), `undo_n`, `g` (giveup),
             `hint`, `log` (`l`).
-          enum: [reset, r, mf, ff, rd, ac, u, undo_n, g, hint, log, l]
+          enum: [reset, r, mf, ff, ac, u, undo_n, g, hint, log, l]
           example: mf
         from:
           type: integer
@@ -60862,7 +60861,7 @@ components:
       properties:
         fans:
           type: array
-          description: The fans (top card is last); the count varies after a redeal
+          description: The fans (top card is last); 18 fans of three cards, never re-dealt
           items:
             type: array
             items:
@@ -60874,9 +60873,6 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
-        redealsLeft:
-          type: integer
-          description: Remaining gather-and-reshuffle redeals (0 to 3)
         phase:
           type: integer
           description: "Game phase: 0 Playing, 1 GameClear, 2 GameOver"

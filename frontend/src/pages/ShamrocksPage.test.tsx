@@ -18,7 +18,6 @@ function makeState(overrides: Partial<ShamrocksResponse> = {}): ShamrocksRespons
   return {
     fans: [[card('SPADE', 9)], [card('SPADE', 8)], [card('DIAMOND', 1)]],
     foundation: [[], [], [], []],
-    redealsLeft: 3,
     phase: 0,
     moveCount: 0,
     canUndo: false,
@@ -60,65 +59,41 @@ describe('ShamrocksPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('shows the stuck redeal banner when no legal move remains', async () => {
-    // No Aces, no foundation builds, no same-suit stacks -> stuck.
+  // **Shamrocks はリディールを持たない。**合法手が尽きたらそこで終わりなので、
+  // ラ・ベル・リュシー版の「リディールを勧める」中間バナーは存在しない。
+  it('shows the deadlock banner and pulses give up when no legal move remains', async () => {
+    // 5 / 9 / 2 -- no rank is within one of another, no Ace, no empty fan.
     mockExec.mockResolvedValue(
       makeState({
         fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]],
         foundation: [[], [], [], []],
-        redealsLeft: 3,
-      }),
-    );
-    renderWithProviders(<ShamrocksPage />);
-    await waitFor(() => expect(screen.getByTestId('ll-stuck-banner')).toBeInTheDocument());
-  });
-
-  it('hides the stuck banner when a legal move exists', async () => {
-    renderWithProviders(<ShamrocksPage />);
-    await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
-    expect(screen.queryByTestId('ll-stuck-banner')).not.toBeInTheDocument();
-  });
-
-  it('shows the deadlock banner and pulses give up when redeals are exhausted with no move', async () => {
-    // No legal move AND no redeals left -> true deadlock.
-    mockExec.mockResolvedValue(
-      makeState({
-        fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]],
-        foundation: [[], [], [], []],
-        redealsLeft: 0,
       }),
     );
     renderWithProviders(<ShamrocksPage />);
     await waitFor(() => expect(screen.getByTestId('ll-deadlock-banner')).toBeInTheDocument());
-    // The redeal-recommendation banner must not show when redeals are gone.
+    // There is no redeal to recommend, so no intermediate banner may appear.
     expect(screen.queryByTestId('ll-stuck-banner')).not.toBeInTheDocument();
     expect(screen.getByTestId('giveup-button').className).toContain('animate-pulse');
   });
 
-  it('hides the deadlock banner when a legal move exists even with no redeals', async () => {
-    // Redeals exhausted but a move (SPADE 8 stacks under SPADE 9) still exists.
-    mockExec.mockResolvedValue(
-      makeState({
-        fans: [[card('SPADE', 9)], [card('SPADE', 8)], [card('DIAMOND', 1)]],
-        redealsLeft: 0,
-      }),
-    );
+  it('hides the deadlock banner when a legal move exists', async () => {
+    // Default board: SPADE 8 stacks onto SPADE 9 (adjacent rank), DIAMOND A to a foundation.
     renderWithProviders(<ShamrocksPage />);
     await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
     expect(screen.queryByTestId('ll-deadlock-banner')).not.toBeInTheDocument();
     expect(screen.getByTestId('giveup-button').className).not.toContain('animate-pulse');
   });
 
-  it('hides the deadlock banner while redeals remain', async () => {
-    // No move, but redeals remain -> stuck banner, not the deadlock banner.
+  // **スート不問**なので、ラ・ベル・リュシーなら詰みの盤でも Shamrocks は動ける。
+  it('sees a cross-suit adjacent-rank move as legal', async () => {
     mockExec.mockResolvedValue(
       makeState({
-        fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]],
-        redealsLeft: 2,
+        fans: [[card('SPADE', 5)], [card('HEART', 6)], [card('CLOVER', 9)]],
+        foundation: [[], [], [], []],
       }),
     );
     renderWithProviders(<ShamrocksPage />);
-    await waitFor(() => expect(screen.getByTestId('ll-stuck-banner')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
     expect(screen.queryByTestId('ll-deadlock-banner')).not.toBeInTheDocument();
   });
 
@@ -146,12 +121,11 @@ describe('ShamrocksPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('ff', 2));
   });
 
-  it('redeals, auto-completes, hints and gives up', async () => {
+  it('auto-completes, undoes, hints and gives up', async () => {
     mockExec.mockResolvedValue(makeState({ canUndo: true }));
     renderWithProviders(<ShamrocksPage />);
-    await screen.findByTestId('redeal-button');
+    await screen.findByTestId('autocomplete-button');
     for (const [testid, cmd] of [
-      ['redeal-button', 'rd'],
       ['autocomplete-button', 'ac'],
       ['undo-button', 'u'],
       ['hint-button', 'hint'],
@@ -163,29 +137,45 @@ describe('ShamrocksPage', () => {
     }
   });
 
-  it('disables redeal when none are left', async () => {
-    mockExec.mockResolvedValue(makeState({ redealsLeft: 0 }));
+  // **リディールのボタンごと消えていること。**盤を配り直さないのに 200 を返す
+  // 無言の no-op を押させないため、UI 側にも残さない。
+  it('offers no redeal button at all', async () => {
     renderWithProviders(<ShamrocksPage />);
-    await waitFor(() => expect(screen.getByTestId('redeal-button')).toBeDisabled());
+    await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('redeal-button')).not.toBeInTheDocument();
   });
 
   it('hides action buttons at game over', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 2 }));
     renderWithProviders(<ShamrocksPage />);
     await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
-    expect(screen.queryByTestId('redeal-button')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('autocomplete-button')).not.toBeInTheDocument();
   });
 
   // #5678: どの扇が動かせるかは、ヒント (4秒で消える) を押さないと分からなかった。
-  // 既定の盤面: ♠9 / ♠8 / ♦A — ♠8 は ♠9 の上へ、♦A は空のファウンデーションへ動ける。
+  // 既定の盤面 ♠9 / ♠8 / ♦A は Shamrocks では**3 つとも動く**。ランクが 1 つ違えば
+  // 上でも下でもよいので ♠9→♠8 も ♠8→♠9 も合法で、♦A は空のファウンデーションへ行ける。
+  // (ラ・ベル・リュシーは同スート降順のみなので ♠9 は動けない。そちらの期待値のまま
+  //  クローンすると、通ってしまうのに間違っているテストになる。)
   it('marks the fans that can move without asking for a hint', async () => {
     renderWithProviders(<ShamrocksPage />);
 
     await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
-    expect(screen.getByTestId('fan-1')).toHaveAttribute('data-movable', 'true');
-    expect(screen.getByTestId('fan-2')).toHaveAttribute('data-movable', 'true');
-    // ♠9 の行き先 (♠10) は無い。
-    expect(screen.getByTestId('fan-0')).not.toHaveAttribute('data-movable');
+    for (const id of ['fan-0', 'fan-1', 'fan-2']) {
+      expect(screen.getByTestId(id)).toHaveAttribute('data-movable', 'true');
+    }
+  });
+
+  // 負のコントロール: 動かせない扇には印が付かないこと。5 / 9 / 2 はどれも
+  // 互いにランクが 2 以上離れていて、A も無い。
+  it('marks no fan when nothing can move', async () => {
+    mockExec.mockResolvedValue(makeState({ fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]] }));
+    renderWithProviders(<ShamrocksPage />);
+
+    await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
+    for (const id of ['fan-0', 'fan-1', 'fan-2']) {
+      expect(screen.getByTestId(id)).not.toHaveAttribute('data-movable');
+    }
   });
 
   it('marks nothing when the board is stuck', async () => {
