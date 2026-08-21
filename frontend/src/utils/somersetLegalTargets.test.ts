@@ -21,11 +21,11 @@ describe('somersetLegalTargets', () => {
   it('accepts an alternating colour one rank higher, and rejects same colour / ascending', () => {
     const targets = somersetLegalTargets(
       [
-        [tc('HEART', 6)],   // red over black 5, one higher -> legal
+        [tc('HEART', 6)], // red over black 5, one higher -> legal
         [tc('DIAMOND', 6)], // the other red suit           -> legal
-        [tc('CLOVER', 6)],  // same colour as the spade 5   -> NOT legal
-        [tc('HEART', 4)],   // alternating but ASCENDING    -> NOT legal
-        [tc('HEART', 8)],   // alternating but two apart    -> NOT legal
+        [tc('CLOVER', 6)], // same colour as the spade 5   -> NOT legal
+        [tc('HEART', 4)], // alternating but ASCENDING    -> NOT legal
+        [tc('HEART', 8)], // alternating but two apart    -> NOT legal
       ],
       [[], [], [], []],
       card('SPADE', 5),
