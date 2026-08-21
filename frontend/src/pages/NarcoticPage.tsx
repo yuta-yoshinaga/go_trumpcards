@@ -160,6 +160,10 @@ function NarcoticPageContent() {
   // Drag a movable top card onto an empty column to move it (the "Move [n]" buttons
   // remain as keyboard/tap-friendly fallbacks; D&D is additive, never required).
   // Declared before the early return so the hook order stays stable.
+  // **落とし先は空き列ではない。**クローン元の Aces Up は空き列を作業スペースに
+  // 使うのでそこへドロップさせるが、Narcotic の行き先は「同ランクを露出している
+  // 最も左の山」で、空の山は何も露出していないので**絶対に合法にならない**。
+  // 動かすのは掴んだ山なので、ドロップ先は行き先の山として受け取る。
   const dnd = useSolitaireDragDrop<{ zone: string; col: number }>({
     onMove: (source) => handleMove(source.col),
     isPlaying: state?.phase === NarcoticPhase.PLAYING,
@@ -232,22 +236,16 @@ function NarcoticPageContent() {
                   <div key={`col-${colIdx.toString()}`} className="flex flex-col items-center">
                     <div className="relative" style={{ width: cardWidth + cardGap, height: stackHeight }}>
                       {col.length === 0 ? (
-                        <DropZone
-                          isDropTarget={isDropping}
-                          onDragOver={dnd.handleDragOver(columnZone)}
-                          onDrop={dnd.handleDrop(columnZone)}
-                          onDragLeave={dnd.handleDragLeave}
+                        // **空の山は落とし先にならない。**何も露出していないので
+                        // 同ランクにもなり得ず、サーバは必ず弾く。クローン元の
+                        // Aces Up はここを DropZone にしていた。
+                        <div
+                          data-testid={`narcotic-empty-${colIdx.toString()}`}
+                          style={{ width: cardWidth, height: cardHeight }}
+                          className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
                         >
-                          <div
-                            data-testid={`narcotic-empty-${colIdx.toString()}`}
-                            style={{ width: cardWidth, height: cardHeight }}
-                            className={`rounded border-2 border-dashed ${
-                              isDropping || isHinted ? 'border-ds-warning' : 'border-white/30'
-                            } text-game-text-muted text-xs flex items-center justify-center`}
-                          >
-                            {t('empty')}
-                          </div>
-                        </DropZone>
+                          {t('empty')}
+                        </div>
                       ) : (
                         col.map((c, rowIdx) => {
                           const top = rowIdx * (cardHeight - rowOverlap);
@@ -259,24 +257,31 @@ function NarcoticPageContent() {
                                 className="absolute"
                                 style={{ top }}
                               >
-                                <button
-                                  type="button"
-                                  // **札のクリックは「重ねる」。**捨てるのは4枚
-                                  // まとまりなので、盤面全体のボタンに分けてある。
-                                  onClick={() => handleMove(colIdx)}
-                                  disabled={!isPlaying || busy || c.movable !== true}
-                                  aria-label={cardAlt(c.card)}
-                                  draggable={isPlaying && !busy && c.movable === true}
-                                  onDragStart={dnd.handleDragStart(columnZone)}
-                                  onDragEnd={dnd.handleDragEnd}
-                                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                                    isHinted ? 'ring-2 ring-ds-warning' : ''
-                                  } ${c.movable !== true ? 'opacity-90' : ''} ${
-                                    dnd.isDragSource(columnZone) ? 'opacity-50' : ''
-                                  }`}
+                                <DropZone
+                                  isDropTarget={isDropping}
+                                  onDragOver={dnd.handleDragOver(columnZone)}
+                                  onDrop={dnd.handleDrop(columnZone)}
+                                  onDragLeave={dnd.handleDragLeave}
                                 >
-                                  <AnimatedCard card={c.card} width={cardWidth} />
-                                </button>
+                                  <button
+                                    type="button"
+                                    // **札のクリックは「重ねる」。**捨てるのは4枚
+                                    // まとまりなので、盤面全体のボタンに分けてある。
+                                    onClick={() => handleMove(colIdx)}
+                                    disabled={!isPlaying || busy || c.movable !== true}
+                                    aria-label={cardAlt(c.card)}
+                                    draggable={isPlaying && !busy && c.movable === true}
+                                    onDragStart={dnd.handleDragStart(columnZone)}
+                                    onDragEnd={dnd.handleDragEnd}
+                                    className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
+                                      isHinted ? 'ring-2 ring-ds-warning' : ''
+                                    } ${c.movable !== true ? 'opacity-90' : ''} ${
+                                      dnd.isDragSource(columnZone) ? 'opacity-50' : ''
+                                    } ${isDropping ? 'ring-2 ring-ds-success' : ''}`}
+                                  >
+                                    <AnimatedCard card={c.card} width={cardWidth} />
+                                  </button>
+                                </DropZone>
                               </div>
                             );
                           }

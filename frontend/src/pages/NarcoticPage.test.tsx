@@ -195,7 +195,10 @@ describe('NarcoticPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('redeal'));
   });
 
-  it('dragging a movable top card onto an empty column dispatches move', async () => {
+  // **落とし先は空の山ではない。**Narcotic の行き先は「同ランクを露出している
+  // 最も左の山」で、空の山は何も露出していないので絶対に合法にならない。
+  // クローン元 (Aces Up) は空き列へドロップさせる。
+  it('dragging a stackable card onto the destination pile dispatches move', async () => {
     const buildDataTransfer = () => {
       const store: Record<string, string> = {};
       return {
@@ -208,20 +211,28 @@ describe('NarcoticPage', () => {
       };
     };
 
+    mockExec.mockResolvedValue({ ...playingState, columns: matchedColumns() });
     renderWithProviders(<NarcoticPage />);
-    await waitFor(() => expect(screen.getByTestId('narcotic-empty-2')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /♥ 7/ })[0]).toBeInTheDocument());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(playingState);
-
-    // Drag col1's movable 9♠ (the only movable top card) onto the empty col2.
     const dataTransfer = buildDataTransfer();
-    fireEvent.dragStart(screen.getByRole('button', { name: '♠ 9' }), { dataTransfer });
-    const dropZone = screen.getByTestId('narcotic-empty-2');
-    fireEvent.dragOver(dropZone, { dataTransfer });
-    fireEvent.drop(dropZone, { dataTransfer });
+    const source = screen.getAllByRole('button', { name: /♥ 7/ })[0];
+    const target = screen.getAllByRole('button', { name: /♠ 7/ })[0];
+    if (!source || !target) throw new Error('drag fixtures missing');
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', 1));
+    fireEvent.dragStart(source, { dataTransfer });
+    fireEvent.dragOver(target, { dataTransfer });
+    fireEvent.drop(target, { dataTransfer });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Number)));
+  });
+
+  it('offers no drop zone on an emptied pile', async () => {
+    renderWithProviders(<NarcoticPage />);
+    const empty = await screen.findByTestId('narcotic-empty-2');
+    // 空の山は presentation の div のままで、ドロップを受ける region にならない。
+    expect(empty.closest('[role="presentation"]')).toBeNull();
   });
 
   it('clicking giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {
