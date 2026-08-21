@@ -217,6 +217,7 @@ function SalicLawPageContent() {
                 // 土台の K (列に 1 枚しかないとき) は動かせないので、移動元には
                 // ならない ── ただし置き先としては唯一有効なので押せる。
                 const isTop = cardIdx === cards.length - 1 && !isBareKing;
+                const isSelectedHere = isTop && isSourceSelected('tableau', pileIdx);
                 return (
                   <div
                     key={`c-${pileIdx.toString()}-${cardIdx.toString()}`}
@@ -226,15 +227,22 @@ function SalicLawPageContent() {
                     <button
                       type="button"
                       onClick={() => {
-                        if (selectedSource) {
-                          game.handleSelectTarget(pileZone);
-                        } else if (isTop) {
-                          game.handleSelectSource(pileZone);
+                        if (!selectedSource) {
+                          if (isTop) game.handleSelectSource(pileZone);
+                          return;
                         }
+                        // **置き先は K だけの列に限る。**`dispatchMove` の再検査は
+                        // ドラッグしか通らず、ここはフックへ直行する。絞らないと、
+                        // どの列を押しても必ず拒まれる move が飛ぶ（レビュー指摘）。
+                        if (isBareKing) {
+                          game.handleSelectTarget(pileZone);
+                          return;
+                        }
+                        // 選択中の列をもう一度押したら解除。禁止するだけだと、
+                        // 選び直す手段がボタンから消える。
+                        if (isSelectedHere) game.handleSelectSource(pileZone);
                       }}
-                      // 置き先になれるのは K だけの列に限る。それ以外の列に
-                      // 選択中の札を落とせると、拒まれるまで分からない。
-                      disabled={!isPlaying || loading || (!isTop && !(selectedSource && isBareKing))}
+                      disabled={!isPlaying || loading || (selectedSource ? !(isBareKing || isSelectedHere) : !isTop)}
                       aria-label={isBareKing ? t('bareKingPileAriaLabel', { pile: pileIdx }) : cardAlt(card)}
                       aria-pressed={isTop ? isSourceSelected('tableau', pileIdx) : undefined}
                       data-testid={isBareKing ? `sl-bare-king-${pileIdx.toString()}` : undefined}

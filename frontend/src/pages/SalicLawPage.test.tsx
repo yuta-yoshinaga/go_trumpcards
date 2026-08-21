@@ -151,6 +151,42 @@ describe('SalicLawPage', () => {
     );
   });
 
+  // **クリック経路も置き先を絞る（レビュー指摘）。**`dispatchMove` の再検査は
+  // ドラッグしか通らない。クリックは `handleSelectTarget` からフックへ直行するので、
+  // ボタン側で止めないと、K だけでない列を押した瞬間にサーバが必ず拒む move が飛ぶ。
+  it('ignores a click on a column that is not a bare king while a source is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<SalicLawPage />);
+    // 列1 の上札 (♣A) を選ぶ。
+    const ace = await screen.findByRole('button', { name: '♣ A' });
+    fireEvent.click(ace);
+    await waitFor(() => expect(ace).toHaveAttribute('aria-pressed', 'true'));
+    mockExec.mockClear();
+
+    // 列0 の上札 (♠9) は K だけの列ではないので、置き先にならない。
+    const notATarget = screen.getByRole('button', { name: '♠ 9' });
+    expect(notATarget).toBeDisabled();
+    fireEvent.click(notATarget);
+
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  // 選択中の列をもう一度押したら解除できること。上の禁止で「押せない」だけに
+  // すると、選び直す手段がボタンから消える。
+  it('lets the selected column be clicked again to deselect', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<SalicLawPage />);
+    const ace = await screen.findByRole('button', { name: '♣ A' });
+    fireEvent.click(ace);
+    await waitFor(() => expect(ace).toHaveAttribute('aria-pressed', 'true'));
+    mockExec.mockClear();
+
+    fireEvent.click(ace);
+    await waitFor(() => expect(ace).toHaveAttribute('aria-pressed', 'false'));
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   // **ドラッグ経路も同じ規則を守る。**クリックはボタンを無効化して防いでいるが、
   // ドラッグは dispatchMove を直接通る（レビュー指摘）。まだ K が出ていない列は
   // 置き先ではない。
