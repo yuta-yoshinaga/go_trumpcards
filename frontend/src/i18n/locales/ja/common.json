@@ -349,7 +349,8 @@
     "perseverance": "パーシビアランス",
     "fourteenout": "フォーティーンアウト",
     "narcotic": "ナルコティック",
-    "mrsmop": "ミセス・モップ"
+    "mrsmop": "ミセス・モップ",
+    "rankandfile": "ランク・アンド・ファイル"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1741,6 +1742,12 @@
     "rams.result.winner": "プレイヤー{{idx}}の勝ちです（{{chips}}チップ）。",
     "rams.roundEnd": "ラウンド{{round}}が終了しました。ポットは {{pot}} チップです。",
     "rams.watching": "このラウンドは降りています。決着まで見ています。",
+    "rankandfile.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "rankandfile.gameOver": "ゲームオーバー",
+    "rankandfile.hintAvailable": "ヒントがあります",
+    "rankandfile.noHint": "ヒントはありません",
+    "rankandfile.playing": "プレイ中",
+    "rankandfile.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
     "reddog.result.playerLoses": "プレイヤーの負け",
     "reddog.result.playerWins": "勝利！",
     "reddog.result.push": "引き分け！",

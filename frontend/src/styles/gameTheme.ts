@@ -248,6 +248,7 @@ export type GameKey =
   | 'fourteenout'
   | 'narcotic'
   | 'mrsmop'
+  | 'rankandfile'
   | 'labellelucie'
   | 'curdsandwhey'
   | 'simplesimon'
@@ -830,6 +831,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   fourteenout: GREEN,
   narcotic: CASINO,
   mrsmop: GREEN,
+  rankandfile: CASINO,
   labellelucie: GREEN,
   curdsandwhey: GREEN,
   simplesimon: GREEN,

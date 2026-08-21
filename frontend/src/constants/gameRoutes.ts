@@ -1727,6 +1727,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 1, 5, 2], skill: [3, 4, 4, 2], social: [5, 1, 0, 2, 4], theme: [3, 3, 2, 1, 2, 3] },
       },
       {
+        path: '/rankandfile',
+        labelKey: 'nav.rankandfile',
+        icon: '🎖️',
+        page: 'RankAndFile',
+        profile: { mood: [5, 1, 5, 2], skill: [3, 4, 5, 2], social: [5, 1, 0, 2, 4], theme: [3, 3, 2, 1, 2, 3] },
+      },
+      {
         path: '/mrsmop',
         labelKey: 'nav.mrsmop',
         icon: '🧹',

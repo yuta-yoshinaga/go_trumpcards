@@ -601,5 +601,10 @@
   "whitehead.promptToZone": "移動先を入力してください (t=場札, f=組札):",
   "whitehead.invalidFromZone": "無効な移動元です: {{val}}。'w' (捨て札) または 't' (場札) を入力してください。",
   "whitehead.invalidToZone": "無効な移動先です: {{val}}。't' (場札) または 'f' (組札) を入力してください。",
-  "whitehead.moveUsage": "使い方: m t <列> <カードIdx> t <列>"
+  "whitehead.moveUsage": "使い方: m t <列> <カードIdx> t <列>",
+  "rankandfile.promptSourceZone": "移動元を入力してください (w=捨て札, t=場札):",
+  "rankandfile.promptToZone": "移動先を入力してください (t=場札, f=組札):",
+  "rankandfile.invalidFromZone": "無効な移動元です: {{val}}。'w' (捨て札) または 't' (場札) を入力してください。",
+  "rankandfile.invalidToZone": "無効な移動先です: {{val}}。't' (場札) または 'f' (組札) を入力してください。",
+  "rankandfile.moveUsage": "使い方: m t <列> <カードIdx> t <列>"
 }

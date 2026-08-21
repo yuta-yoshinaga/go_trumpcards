@@ -158,6 +158,7 @@ var gameDescriptions = map[string]string{
 	"fourteenout":         "Fourteen Out (フォーティーンアウト)",
 	"narcotic":            "Narcotic (ナルコティック)",
 	"mrsmop":              "Mrs. Mop (ミセス・モップ)",
+	"rankandfile":         "Rank and File (ランク・アンド・ファイル)",
 	"tonk":                "Tonk (トンク)",
 	"casinowar":           "Casino War (カジノウォー)",
 	"pitch":               "Pitch / Setback (ピッチ / セットバック)",
