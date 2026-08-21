@@ -1,0 +1,47 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "foundation": "組札",
+  "tableau": "場札",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "empty": "空",
+  "lastCardWarning": "この列は二度と使えなくなります",
+  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "undo": "元に戻す",
+  "stalemate": "手詰まりです",
+  "playing": "カードを移動してください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "tutorial": {
+    "foundation": "4つの組札に同じスートのカードをA→Kの順に積み上げます。",
+    "tableau": "13列の場札に4枚ずつカードが配られます。配り直し時にキングは自動的に各列の一番下に移動します。",
+    "moves": "1枚ずつ、スート関係なく1つ下のランクのカードに重ねられます。空の列はカードを置くことはできません。",
+    "controls": "ヒント・元に戻す・自動完成などの操作ボタンです。"
+  },
+  "frontendHint": {
+    "tableau": "タブロー列{{col}}",
+    "foundation": "組札"
+  },
+  "hintReason": {
+    "toFoundation": "このカードを組札に上げると後の展開が楽になります",
+    "toTableau": "示唆された場札への移動でロックされたカードを動かしましょう"
+  },
+  "kbd": {
+    "undo": "Z",
+    "hint": "H",
+    "autoComplete": "A",
+    "giveUp": "G"
+  },
+  "redealsLeft": "残り再配り: {{count}}回",
+  "redeal": "集めて配り直す"
+}

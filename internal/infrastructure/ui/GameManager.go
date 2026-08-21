@@ -6283,6 +6283,28 @@ var gameRegistry = []GameRegistryEntry{
 				"shamrocks.helpGiveUp", "shamrocks.helpLog", "shamrocks.helpHint",
 			},
 		}),
+	BindCuiFor("perseverance",
+		func() usecase.PerseveranceInteractorIF {
+			return usecase.NewPerseveranceInteractor(domain.NewDefaultPerseverance(), new(presenter.PerseveranceCuiPresenter))
+		},
+		controller.NewPerseveranceCuiController,
+		CuiHelpSpec{
+			TitleKey: "perseverance.helpTitle",
+			ExampleKeys: []string{
+				"perseverance.helpExampleHint",
+				"perseverance.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"perseverance.helpMoveTT",
+				"perseverance.helpMoveTF",
+				"perseverance.helpTargets",
+				"perseverance.helpRedeal",
+				"perseverance.helpGiveUp",
+				"perseverance.helpHint",
+				"perseverance.helpAutoComplete", "perseverance.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

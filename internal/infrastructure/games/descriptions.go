@@ -154,6 +154,7 @@ var gameDescriptions = map[string]string{
 	"slapjack":            "Slapjack (スラップジャック)",
 	"egyptianratscrew":    "Egyptian Ratscrew (エジプシャン・ラットスクリュー)",
 	"bakersdozen":         "Baker's Dozen (ベーカーズ・ダズン)",
+	"perseverance":        "Perseverance (パーシビアランス)",
 	"tonk":                "Tonk (トンク)",
 	"casinowar":           "Casino War (カジノウォー)",
 	"pitch":               "Pitch / Setback (ピッチ / セットバック)",
