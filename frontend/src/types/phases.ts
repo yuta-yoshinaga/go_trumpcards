@@ -1457,6 +1457,13 @@ export const BakersDozenPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Narcotic phase constants (sync: internal/domain/Narcotic.go). */
+export const NarcoticPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Fourteen Out phase constants (sync: internal/domain/FourteenOut.go). */
 export const FourteenOutPhase = {
   PLAYING: 0,
