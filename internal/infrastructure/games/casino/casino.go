@@ -494,4 +494,12 @@ func init() {
 		},
 		controller.NewHorseWebControllerWithProvider)
 
+	games.RegisterKVGame("followthequeen", games.CategoryCasino,
+		func() usecase.FollowTheQueenInteractorIF {
+			return usecase.NewFollowTheQueenInteractor(domain.NewDefaultFollowTheQueen(), new(presenter.FollowTheQueenWebPresenter))
+		},
+		func(data []byte) (usecase.FollowTheQueenInteractorIF, error) {
+			return usecase.RestoreFollowTheQueenInteractor(data, new(presenter.FollowTheQueenWebPresenter))
+		},
+		controller.NewFollowTheQueenWebControllerWithProvider)
 }

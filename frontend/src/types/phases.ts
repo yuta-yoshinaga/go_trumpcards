@@ -1389,6 +1389,26 @@ export const SevenCardStudRebuyPhaseType = {
   ADDON: 2,
 } as const;
 
+/** Follow the Queen phase constants (sync: internal/domain/FollowTheQueen.go). */
+export const FollowTheQueenPhase = {
+  INIT: 0,
+  THIRD_STREET: 1,
+  FOURTH_STREET: 2,
+  FIFTH_STREET: 3,
+  SIXTH_STREET: 4,
+  SEVENTH_STREET: 5,
+  SHOWDOWN: 6,
+  END: 7,
+  REBUY: 8,
+} as const;
+
+/** Follow the Queen rebuy phase type constants (sync: internal/domain/FollowTheQueen.go). */
+export const FollowTheQueenRebuyPhaseType = {
+  NONE: 0,
+  REBUY: 1,
+  ADDON: 2,
+} as const;
+
 /** Five Card Stud phase constants (sync: internal/domain/FiveCardStud.go). */
 export const FiveCardStudPhase = {
   INIT: 0,

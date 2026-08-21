@@ -176,6 +176,8 @@ tags:
     description: Go Fish (ゴーフィッシュ) game
   - name: pigtail
     description: Pig's Tail (ぶたのしっぽ) game
+  - name: followthequeen
+    description: Follow the Queen (フォロー・ザ・クイーン) game - Seven Card Stud where a face-up Queen makes the next card's rank wild
   - name: sevencardstud
     description: Seven Card Stud (セブンカード・スタッド) game
   - name: fivecardstud
@@ -6185,6 +6187,106 @@ paths:
                   message:
                     type: string
 
+  /followthequeen/exec:
+    post:
+      tags:
+        - followthequeen
+      summary: Execute a Follow the Queen game command
+      description: |
+        Send a command to advance the Follow the Queen game session identified
+        by `sessionId`.  Follow the Queen is Seven Card Stud with a moving wild
+        rank: whenever a Queen is dealt **face up**, the rank of the very next
+        face-up card becomes wild for every player, and the four Queens are
+        wild as well.  A later face-up Queen cancels the previous wild rank and
+        arms a new one; if that Queen is the last face-up card of the deal,
+        only the Queens stay wild.  `wildRank` reports the rank currently wild
+        (`0` while none is set).
+
+        Everything else matches Seven Card Stud: antes and a bring-in (lowest
+        door card), 2 hole cards + 1 door card on Third Street, one face-up
+        card each on Fourth through Sixth Street, one face-down card on Seventh
+        Street, and best 5 of 7 at showdown.  Table sizes 2-max through 7-max
+        are configurable (default 4, i.e. 1 human + 3 CPU).
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Init       | `0`   | Before any cards are dealt |
+        | ThirdSt    | `1`   | 2 hole cards + 1 door card; first betting round (bring-in) |
+        | FourthSt   | `2`   | 4th card (face-up); betting round |
+        | FifthSt    | `3`   | 5th card (face-up); betting round |
+        | SixthSt    | `4`   | 6th card (face-up); betting round |
+        | SeventhSt  | `5`   | 7th card (face-down); final betting round |
+        | Showdown   | `6`   | Hands evaluated; winners determined |
+        | End        | `7`   | Round complete; results displayed |
+        | Rebuy      | `8`   | Rebuy/addon decision phase |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `fold`  | `f`     | Fold and forfeit the pot |
+        | `check` | `ck`    | Pass without betting (only when no outstanding bet) |
+        | `call`  | `c`     | Match the current bet |
+        | `bet`   | `b`     | Place a bet (use `amount`) |
+        | `raise` | `ra`    | Raise by a specified amount on top of calling (use `amount`) |
+        | `allin` | `a`     | Go all-in with all remaining chips |
+        | `rebuy` | `rb`    | Buy back chips during rebuy period |
+        | `skiprebuy` | `sr` | Skip rebuy opportunity |
+        | `addon` | `ad`    | Add chips (one-time addon purchase) |
+        | `skipaddon` | `sa` | Skip addon opportunity |
+        | `muck`  | `m`     | Muck (hide) hand at showdown |
+        | `show`  | `sh`    | Show hand at showdown |
+        | `log`   | `l`     | View action log |
+        | `hint`  | `h`     | Get a hint for the next move |
+        | `quit`  | `q`     | End the session |
+      operationId: followthequeenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SevenCardStudRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              call:
+                summary: Call
+                value:
+                  command: call
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet of 40
+                value:
+                  command: bet
+                  amount: 40
+                  sessionId: my-session-001
+              allin:
+                summary: Go all-in
+                value:
+                  command: allin
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowTheQueenResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowTheQueenResponse'
   /sevencardstud/exec:
     post:
       tags:
@@ -46589,6 +46691,30 @@ components:
             type: integer
           example: [0, 1, 2]
 
+    FollowTheQueenResponse:
+      description: |
+        Seven Card Stud's response plus the rank that is currently wild.  The
+        page cannot derive `wildRank` on its own - it never sees the face-down
+        cards the deal walked past - so the server sends it.
+      allOf:
+        - $ref: '#/components/schemas/SevenCardStudResponse'
+        - type: object
+          required:
+            - wildRank
+            - humanHandRank
+          properties:
+            wildRank:
+              type: integer
+              description: Rank currently wild for every player (1=A, 11=J, 12=Q, 13=K); 0 while no face-up Queen has set one
+              minimum: 0
+              maximum: 13
+              example: 7
+            humanHandRank:
+              type: integer
+              description: The human's best hand rank right now (wild rule applied), or -1 with fewer than five cards or after folding. Sent because the wild evaluation lives in the domain.
+              minimum: -1
+              maximum: 10
+              example: 3
     SevenCardStudResponse:
       type: object
       required:

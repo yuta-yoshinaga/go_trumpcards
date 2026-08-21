@@ -6474,6 +6474,28 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("followthequeen",
+		func() usecase.FollowTheQueenInteractorIF {
+			return usecase.NewFollowTheQueenInteractor(domain.NewDefaultFollowTheQueen(), new(presenter.FollowTheQueenCuiPresenter))
+		},
+		controller.NewFollowTheQueenCuiController,
+		CuiHelpSpec{
+			TitleKey: "followthequeen.helpTitle",
+			ExampleKeys: []string{
+				"followthequeen.helpExampleFold",
+			},
+			CommandKeys: append([]string{
+				"followthequeen.helpFold",
+				"followthequeen.helpCheck",
+				"followthequeen.helpCall",
+				"followthequeen.helpBet",
+				"followthequeen.helpRaise",
+				"followthequeen.helpAllIn", "followthequeen.helpLog", "followthequeen.helpHint",
+			}, tournamentRebuyAddOnKeys...),
+			SettingKeys: append([]string{
+				"followthequeen.helpBettingLimit", "followthequeen.helpTournament",
+			}, studAnteKeys...),
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
