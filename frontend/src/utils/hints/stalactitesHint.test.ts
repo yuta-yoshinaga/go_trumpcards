@@ -126,4 +126,37 @@ describe('getStalactitesHint', () => {
     const hint = getStalactitesHint(state);
     expect(hint?.reason).toBe('frontendHint.cellsFilling');
   });
+
+  // The cases above all use baseRank 1 or same-suit pairs, so they pass against
+  // FreeCell's rule too. These three discriminate: each is a legal Stalactites
+  // foundation move that the cloned (suit + Ace) version reported as none.
+  it('sees a foundation move onto a DIFFERENT suit', () => {
+    const state = makeState({
+      tableau: [[card(H, 8)], [], [], [], [], [], [], []],
+      foundation: [[card(S, 7)], [], [], []],
+      baseRank: 7,
+      cells: [null, null, null, null],
+    });
+    expect(getStalactitesHint(state)?.reason).toBe('frontendHint.moveToFoundation');
+  });
+
+  it('sees a foundation move opening a pile at a non-Ace base rank', () => {
+    const state = makeState({
+      tableau: [[card(H, 7)], [], [], [], [], [], [], []],
+      foundation: [[], [], [], []],
+      baseRank: 7,
+      cells: [null, null, null, null],
+    });
+    expect(getStalactitesHint(state)?.reason).toBe('frontendHint.moveToFoundation');
+  });
+
+  it('sees the Ace that follows a King when the sequence wraps', () => {
+    const state = makeState({
+      tableau: [[card(C, 1)], [], [], [], [], [], [], []],
+      foundation: [[card(S, 13)], [], [], []],
+      baseRank: 12,
+      cells: [null, null, null, null],
+    });
+    expect(getStalactitesHint(state)?.reason).toBe('frontendHint.moveToFoundation');
+  });
 });

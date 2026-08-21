@@ -56,12 +56,18 @@ type stalactitesSolver struct {
 	iterations    int
 	maxIterations int
 	initialState  *stalactitesState
+	// baseRank はファンデーションの開始ランク。**これを持たないと、ソルバは
+	// FreeCell の規則（スート別パイル・A 始まり）で解けるかを判定してしまう。**
+	// baseRank が A になるのは 13 回に 1 回なので、大半の配りで手詰まり判定が
+	// 別のゲームの規則で計算されることになる。
+	baseRank int
 }
 
 func newStalactitesSolver(f *Stalactites) *stalactitesSolver {
 	s := &stalactitesSolver{
 		visited:       make(map[[52]uint16]struct{}),
 		maxIterations: StalactitesSolverMaxIterations,
+		baseRank:      f.baseRank,
 	}
 	state := &stalactitesState{}
 	// Deep copy tableau
@@ -146,8 +152,8 @@ func (s *stalactitesSolver) generateSuccessors(st *stalactitesState) []*stalacti
 			continue
 		}
 		card := st.tableau[col][len(st.tableau[col])-1]
-		fIdx := card.GetDesign() - 1
-		if fIdx >= 0 && fIdx < StalactitesFoundationCnt && stalactitesCanPlaceOnFoundation(card, fIdx, st.foundation) {
+		fIdx := stalactitesFoundationIndexFor(card, st.foundation, s.baseRank)
+		if fIdx >= 0 {
 			next := stalactitesCopyState(st)
 			next.tableau[col] = next.tableau[col][:len(next.tableau[col])-1]
 			next.foundation[fIdx]++
@@ -163,8 +169,8 @@ func (s *stalactitesSolver) generateSuccessors(st *stalactitesState) []*stalacti
 			continue
 		}
 		card := st.cells[cell]
-		fIdx := card.GetDesign() - 1
-		if fIdx >= 0 && fIdx < StalactitesFoundationCnt && stalactitesCanPlaceOnFoundation(card, fIdx, st.foundation) {
+		fIdx := stalactitesFoundationIndexFor(card, st.foundation, s.baseRank)
+		if fIdx >= 0 {
 			next := stalactitesCopyState(st)
 			next.cells[cell] = nil
 			next.foundation[fIdx]++
@@ -273,12 +279,33 @@ func (s *stalactitesSolver) canPlaceOnTableau(card *Card, col int, tableau [Stal
 	return isAlternateColor(card, topCard)
 }
 
-func stalactitesCanPlaceOnFoundation(card *Card, fIdx int, foundation [StalactitesFoundationCnt]int) bool {
-	count := foundation[fIdx]
-	if count == 0 {
-		return card.GetValue() == 1
+// stalactitesRankAtOffset は開始ランクから n 枚進んだランク。K の次は A。
+func stalactitesRankAtOffset(baseRank, n int) int {
+	return (baseRank-1+n)%CardValueMax + 1
+}
+
+// stalactitesCanPlaceOnFoundation は pile が次に受け取るランクかどうかを見る。
+// **スートは見ない。**パイルは「何枚積んだか」だけを持ち、次に必要なランクは
+// 開始ランクからの枚数で決まる（K の次は A に戻る）。
+func stalactitesCanPlaceOnFoundation(card *Card, fIdx int, foundation [StalactitesFoundationCnt]int, baseRank int) bool {
+	return card.GetValue() == stalactitesRankAtOffset(baseRank, foundation[fIdx])
+}
+
+// stalactitesFoundationIndexFor はその札を受け取れるパイルを返す（無ければ -1）。
+// ドメインの Stalactites.foundationIndexFor と同じ順序: 継続できるパイルを先に
+// 探し、無ければ空のパイルを使う。
+func stalactitesFoundationIndexFor(card *Card, foundation [StalactitesFoundationCnt]int, baseRank int) int {
+	for i := range StalactitesFoundationCnt {
+		if foundation[i] > 0 && stalactitesCanPlaceOnFoundation(card, i, foundation, baseRank) {
+			return i
+		}
 	}
-	return card.GetValue() == count+1
+	for i := range StalactitesFoundationCnt {
+		if foundation[i] == 0 && stalactitesCanPlaceOnFoundation(card, i, foundation, baseRank) {
+			return i
+		}
+	}
+	return -1
 }
 
 // stateKey returns the state key for the solver's initial state (used in tests).

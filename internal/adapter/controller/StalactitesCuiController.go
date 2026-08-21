@@ -101,11 +101,9 @@ func (c *StalactitesCuiController) handleMoveFromTableau(args []string) string {
 		if err != nil {
 			return invalidArg("invalidColumn", "val", args[2])
 		}
-		// Use cardIndex = -1 to signal top card; but the interactor expects actual index
-		// For CUI simplicity, top card: cardIndex is len-1, but we don't know from here
-		// Instead: use a large index that domain will reject, or pass last index
-		// Actually, let's use the same pattern as Klondike: m t <col> <idx> t <col>
-		// This branch handles: m t <fromCol> t <toCol> (move top card only)
+		// `m t <from> t <to>` names no card index, so it always means the top
+		// card. The controller cannot resolve that to a real index -- it has no
+		// board state -- so it passes -1 and the domain substitutes len-1.
 		return c.fi.MoveTableauToTableau(fromCol, -1, toCol)
 	case "c":
 		if len(args) < 3 {

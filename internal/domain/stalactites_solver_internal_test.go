@@ -12,6 +12,11 @@ import (
 func TestStalactitesSolver_NearComplete(t *testing.T) {
 	f := NewStalactites(NewTrumpCards(0))
 	f.Reset()
+	// These fixtures seed foundation piles as A..K, so pin the base rank to match.
+	// Reset picks it from the deal, and the solver counts ranks FROM the base --
+	// leaving it shuffled made these tests agree with the solver's old FreeCell
+	// model instead of exercising the real rule.
+	f.baseRank = 1
 
 	// Set up near-complete: all foundation at 12, one card left per suit on tableau
 	var tableau [StalactitesTableauCnt][]*Card
@@ -40,6 +45,11 @@ func TestStalactitesSolver_NearComplete(t *testing.T) {
 func TestStalactitesSolver_Blocked(t *testing.T) {
 	f := NewStalactites(NewTrumpCards(0))
 	f.Reset()
+	// These fixtures seed foundation piles as A..K, so pin the base rank to match.
+	// Reset picks it from the deal, and the solver counts ranks FROM the base --
+	// leaving it shuffled made these tests agree with the solver's old FreeCell
+	// model instead of exercising the real rule.
+	f.baseRank = 1
 
 	// Set up a blocked board: all free cells occupied, no valid moves
 	var tableau [StalactitesTableauCnt][]*Card
@@ -105,6 +115,11 @@ func TestStalactitesSolver_Blocked(t *testing.T) {
 func TestStalactitesSolver_AlreadySolved(t *testing.T) {
 	f := NewStalactites(NewTrumpCards(0))
 	f.Reset()
+	// These fixtures seed foundation piles as A..K, so pin the base rank to match.
+	// Reset picks it from the deal, and the solver counts ranks FROM the base --
+	// leaving it shuffled made these tests agree with the solver's old FreeCell
+	// model instead of exercising the real rule.
+	f.baseRank = 1
 
 	// All cards on foundation
 	var tableau [StalactitesTableauCnt][]*Card
@@ -142,6 +157,11 @@ func TestStalactitesSolver_IterationLimitReturnsTrue(t *testing.T) {
 func TestStalactitesSolver_StalactitesToFoundation(t *testing.T) {
 	f := NewStalactites(NewTrumpCards(0))
 	f.Reset()
+	// These fixtures seed foundation piles as A..K, so pin the base rank to match.
+	// Reset picks it from the deal, and the solver counts ranks FROM the base --
+	// leaving it shuffled made these tests agree with the solver's old FreeCell
+	// model instead of exercising the real rule.
+	f.baseRank = 1
 
 	// Ace in free cell, empty tableau, empty foundation -> should be solvable step
 	var tableau [StalactitesTableauCnt][]*Card
@@ -170,6 +190,11 @@ func TestStalactitesSolver_StalactitesToFoundation(t *testing.T) {
 func TestStalactitesSolver_StalactitesKingToFoundation(t *testing.T) {
 	f := NewStalactites(NewTrumpCards(0))
 	f.Reset()
+	// These fixtures seed foundation piles as A..K, so pin the base rank to match.
+	// Reset picks it from the deal, and the solver counts ranks FROM the base --
+	// leaving it shuffled made these tests agree with the solver's old FreeCell
+	// model instead of exercising the real rule.
+	f.baseRank = 1
 
 	// Card in free cell, move to tableau then to foundation
 	// Heart Queen (12) in stalactites, Spade King (13) on tableau
@@ -204,6 +229,11 @@ func TestStalactitesSolver_StalactitesKingToFoundation(t *testing.T) {
 func TestStalactitesSolver_StateKeyDifferentStates(t *testing.T) {
 	f := NewStalactites(NewTrumpCards(0))
 	f.Reset()
+	// These fixtures seed foundation piles as A..K, so pin the base rank to match.
+	// Reset picks it from the deal, and the solver counts ranks FROM the base --
+	// leaving it shuffled made these tests agree with the solver's old FreeCell
+	// model instead of exercising the real rule.
+	f.baseRank = 1
 
 	var tableau1 [StalactitesTableauCnt][]*Card
 	tableau1[0] = []*Card{NewCard(CardDesignSpade, 1, false)}
@@ -230,6 +260,11 @@ func TestStalactitesSolver_StateKeyDifferentStates(t *testing.T) {
 func TestStalactitesSolver_GameClearSkipsStalemate(t *testing.T) {
 	f := NewStalactites(NewTrumpCards(0))
 	f.Reset()
+	// These fixtures seed foundation piles as A..K, so pin the base rank to match.
+	// Reset picks it from the deal, and the solver counts ranks FROM the base --
+	// leaving it shuffled made these tests agree with the solver's old FreeCell
+	// model instead of exercising the real rule.
+	f.baseRank = 1
 
 	// Set up: all cards on foundation except one King on tableau
 	var tableau [StalactitesTableauCnt][]*Card
@@ -262,6 +297,11 @@ func TestStalactitesSolver_GameClearSkipsStalemate(t *testing.T) {
 func TestStalactitesSolver_GameClearViaStalactitesSkipsStalemate(t *testing.T) {
 	f := NewStalactites(NewTrumpCards(0))
 	f.Reset()
+	// These fixtures seed foundation piles as A..K, so pin the base rank to match.
+	// Reset picks it from the deal, and the solver counts ranks FROM the base --
+	// leaving it shuffled made these tests agree with the solver's old FreeCell
+	// model instead of exercising the real rule.
+	f.baseRank = 1
 
 	// All cards on foundation except one King in free cell
 	var tableau [StalactitesTableauCnt][]*Card
@@ -293,6 +333,11 @@ func TestStalactitesSolver_GameClearViaStalactitesSkipsStalemate(t *testing.T) {
 func TestStalactitesSolver_MemoizationPreventsRevisit(t *testing.T) {
 	f := NewStalactites(NewTrumpCards(0))
 	f.Reset()
+	// These fixtures seed foundation piles as A..K, so pin the base rank to match.
+	// Reset picks it from the deal, and the solver counts ranks FROM the base --
+	// leaving it shuffled made these tests agree with the solver's old FreeCell
+	// model instead of exercising the real rule.
+	f.baseRank = 1
 
 	// Simple blocked state: one card, no valid moves, all free cells full
 	var tableau [StalactitesTableauCnt][]*Card
@@ -333,6 +378,11 @@ func TestStalactitesSolver_AStarSolvableBoard(t *testing.T) {
 	// in solvable order on tableau (alternating color, descending)
 	f := NewStalactites(NewTrumpCards(0))
 	f.Reset()
+	// These fixtures seed foundation piles as A..K, so pin the base rank to match.
+	// Reset picks it from the deal, and the solver counts ranks FROM the base --
+	// leaving it shuffled made these tests agree with the solver's old FreeCell
+	// model instead of exercising the real rule.
+	f.baseRank = 1
 
 	var foundation [StalactitesFoundationCnt][]*Card
 	for i := 0; i < StalactitesFoundationCnt; i++ {

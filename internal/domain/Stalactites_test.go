@@ -88,6 +88,48 @@ func TestStalactitesReset(t *testing.T) {
 		"base rank is the rank of the first stalactite")
 }
 
+// TestStalactitesSolverUsesBaseRank pins the stalemate solver to the SAME rules
+// the game plays by.
+//
+// The solver kept FreeCell's model after the clone -- pile chosen by suit, empty
+// pile takes only an Ace -- and nothing noticed, because every solver test
+// seeded foundation state directly and so agreed with the solver's own wrong
+// model. checkStalemate() runs after almost every move and feeds IsStalemate(),
+// the stalemate message and the undo-to-escape count, so with a base rank other
+// than Ace (12 deals in 13) the player was told about a different game.
+//
+// The board below is one move from won under Stalactites' rules: each pile holds
+// 12 cards, and with base rank 7 the 13th card each wants is a 6. Under
+// FreeCell's model a 12-card pile wants a King, so the same board reads as
+// unwinnable -- which is exactly the wrong answer this test exists to catch.
+func TestStalactitesSolverUsesBaseRank(t *testing.T) {
+	f := newTestStalactites()
+	f.Reset()
+	clearTableauFCStal(f)
+	clearCellsStal(f)
+	f.baseRank = 7
+
+	var foundation [StalactitesFoundationCnt][]*Card
+	for i := range StalactitesFoundationCnt {
+		foundation[i] = make([]*Card, 12)
+		for j := range foundation[i] {
+			foundation[i][j] = makeCardStal(CardDesignSpade, stalactitesRankAtOffset(7, j))
+		}
+	}
+	f.SetFoundation(foundation)
+
+	// The four remaining cards are the 6s each pile now wants.
+	var cells [StalactitesCellCnt]*Card
+	for i, d := range []int{CardDesignSpade, CardDesignHeart, CardDesignClover, CardDesignDiamond} {
+		cells[i] = makeCardStal(d, 6)
+	}
+	f.SetCells(cells)
+
+	f.checkStalemate()
+	assert.False(t, f.IsStalemate(),
+		"every remaining card is playable at base rank 7; only FreeCell's model calls this dead")
+}
+
 // --- foundation: suit-agnostic, ascending, wrapping from the base rank ---
 
 // setBaseAndClear puts the deck into a known state: a chosen base rank, empty
@@ -590,6 +632,11 @@ func TestStalactitesMoveStalactitesToFoundationErrors(t *testing.T) {
 
 	t.Run("empty cell", func(t *testing.T) {
 		f := setupPlayingStalactites()
+		// Stalactites DEALS INTO the cells, so Reset leaves cell 0 occupied --
+		// this only errored when the dealt card happened to be unplayable, i.e.
+		// it failed roughly one run in thirteen. Empty it to test what the name
+		// says.
+		f.cells[0] = nil
 		err := f.MoveStalactitesToFoundation(0)
 		assert.Error(t, err)
 	})
