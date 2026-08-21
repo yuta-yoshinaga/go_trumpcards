@@ -38,5 +38,3 @@ export interface RankAndFileMoveZone {
   col?: number;
   cardIndex?: number;
 }
-
-// --- Forty and Eight (フォーティ・アンド・エイト) ---

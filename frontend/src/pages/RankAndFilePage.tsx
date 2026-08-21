@@ -604,7 +604,7 @@ function RankAndFilePageContent() {
                 dataTutorial="rf-reset-button"
               />
             </div>
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="forty-thieves-kbd-shortcuts" />
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="rankandfile-kbd-shortcuts" />
           </GameFooter>
         </>
       )}
