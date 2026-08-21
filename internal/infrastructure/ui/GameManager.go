@@ -6409,6 +6409,27 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("sthelena",
+		func() usecase.StHelenaInteractorIF {
+			return usecase.NewStHelenaInteractor(domain.NewDefaultStHelena(), new(presenter.StHelenaCuiPresenter))
+		},
+		controller.NewStHelenaCuiController,
+		CuiHelpSpec{
+			TitleKey: "sthelena.helpTitle",
+			ExampleKeys: []string{
+				"sthelena.helpExampleHint",
+				"sthelena.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"sthelena.helpMoveTT",
+				"sthelena.helpMoveTF",
+				"sthelena.helpRedeal",
+				"sthelena.helpGiveUp",
+				"sthelena.helpHint",
+				"sthelena.helpAutoComplete", "sthelena.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -160,6 +160,7 @@ var gameDescriptions = map[string]string{
 	"mrsmop":              "Mrs. Mop (ミセス・モップ)",
 	"rankandfile":         "Rank and File (ランク・アンド・ファイル)",
 	"saliclaw":            "Salic Law (サリカ法典)",
+	"sthelena":            "St. Helena (セント・ヘレナ)",
 	"tonk":                "Tonk (トンク)",
 	"casinowar":           "Casino War (カジノウォー)",
 	"pitch":               "Pitch / Setback (ピッチ / セットバック)",

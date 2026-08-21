@@ -895,6 +895,11 @@ func init() {
 			return usecase.NewCrescentInteractor(domain.NewDefaultCrescent(), new(presenter.CrescentWebPresenter))
 		},
 		controller.NewCrescentWebController)
+	BindWebControllerFor("sthelena",
+		func() usecase.StHelenaInteractorIF {
+			return usecase.NewStHelenaInteractor(domain.NewDefaultStHelena(), new(presenter.StHelenaWebPresenter))
+		},
+		controller.NewStHelenaWebController)
 	BindWebControllerFor("mississippistud",
 		func() usecase.MississippiStudInteractorIF {
 			return usecase.NewMississippiStudInteractor(domain.NewDefaultMississippiStud(), new(presenter.MississippiStudWebPresenter))
