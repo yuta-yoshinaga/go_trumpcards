@@ -1,0 +1,58 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Whitehead",
+  "stock": "Stock",
+  "waste": "Waste",
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "moveCount": "Moves",
+  "draw": "Draw",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available when stock is empty and every card is face up",
+  "undo": "Undo",
+  "empty": "Empty",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "foundationAriaLabel": "Foundation {{suit}} {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty Foundation ({{suit}})",
+  "drawMode": "Draw Mode",
+  "drawMode1": "Draw 1",
+  "drawMode3": "Draw 3",
+  "score": "Score",
+  "timer": "Time",
+  "timeBonus": "Time Bonus",
+  "totalScore": "Total Score",
+  "scoringMode": "Scoring Mode",
+  "scoringNone": "None",
+  "scoringVegas": "Vegas",
+  "tutorial": {
+    "stockWaste": "Click the stock pile to draw cards. Drawn cards can be moved to the tableau or foundation.",
+    "foundation": "Foundation piles. Build each suit from Ace to King. Complete all four to win.",
+    "tableau": "Tableau columns. Stack cards of the SAME colour in descending order (the opposite of Klondike). Any card may start a new column.",
+    "controls": "Control buttons: Undo, Hint, Auto-complete, and more.",
+    "hintDisplay": "Press the Hint button to see available moves.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "landscapeBanner": "Rotate to landscape for easier play",
+  "frontendHint": {
+    "moveToFoundation": "A card can be moved to the foundation",
+    "drawFromStock": "No obvious moves — try drawing from the stock",
+    "moveToEmptyColumn": "Move a card into the empty column (any card may go there)"
+  },
+  "stats": {
+    "winRate": "Win rate {{rate}}%",
+    "bestTime": "Best {{time}}",
+    "fewestMoves": "{{moves}} moves",
+    "newBest": "New personal best!"
+  },
+  "vegasFormula": "Vegas scoring: start at {{buyIn}}, then +{{perCard}} for every card sent to a foundation"
+}

@@ -1568,6 +1568,13 @@ export const gameCategories: readonly GameCategory[] = [
     icon: '🏔️',
     routes: [
       {
+        path: '/whitehead',
+        labelKey: 'nav.whitehead',
+        icon: '🤍',
+        page: 'Whitehead',
+        profile: { mood: [5, 1, 3, 3], skill: [4, 5, 3, 4], social: [5, 1, 0, 3, 3], theme: [3, 3, 3, 2, 3, 3] },
+      },
+      {
         path: '/klondike',
         labelKey: 'nav.klondike',
         icon: '⛏️',

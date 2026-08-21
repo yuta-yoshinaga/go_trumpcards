@@ -179,16 +179,28 @@ func TestStalactitesCuiPresenterHintToStalactites(t *testing.T) {
 	f.Reset()
 	f.SetPhase(domain.StalactitesPhasePlaying)
 
-	// Set up tableau with cards that can't go to foundation or other tableau,
-	// with all columns filled so there are no empty columns to use as fallback.
-	// Only the stalactites is a valid destination.
+	// Set up a board whose only legal destination is a cell: every column filled
+	// (no empty column to fall back on) and no card able to reach a foundation.
+	//
+	// **The ranks must avoid the base rank**, which Reset picks from the deal.
+	// Hardcoding 2/9/10 made this pass or fail on the shuffle -- when the base
+	// rank happened to be 2, the filler cards became foundation-playable and the
+	// hint pointed there instead.
+	base := f.GetBaseRank()
+	ranks := make([]int, 0, 3)
+	for v := 2; len(ranks) < 3 && v <= domain.CardValueMax; v++ {
+		if v != base {
+			ranks = append(ranks, v)
+		}
+	}
 	var tableau [domain.StalactitesTableauCnt][]*domain.Card
+	// Two non-adjacent ranks, so they cannot stack on each other either.
 	tableau[0] = []*domain.Card{
-		domain.NewCard(domain.CardDesignSpade, 10, false),
-		domain.NewCard(domain.CardDesignSpade, 9, false),
+		domain.NewCard(domain.CardDesignSpade, ranks[2], false),
+		domain.NewCard(domain.CardDesignSpade, ranks[0], false),
 	}
 	for i := 1; i < domain.StalactitesTableauCnt; i++ {
-		tableau[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)}
+		tableau[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, ranks[0], false)}
 	}
 	f.SetTableau(tableau)
 	var cells [domain.StalactitesCellCnt]*domain.Card

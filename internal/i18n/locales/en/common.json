@@ -596,5 +596,10 @@
   "stalactites.promptToZoneFromCell": "Enter destination (t=tableau, f=foundation):",
   "stalactites.invalidFromZone": "Invalid from zone: {{val}}. Use 't' (tableau) or 'c' (freecell).",
   "stalactites.invalidToZone": "Invalid to zone: {{val}}. Use 't' (tableau) or 'f' (foundation).",
-  "stalactites.moveUsage": "Usage: m t <col> f | m t <col> <idx> t <col> | m t <col> c <cell>"
+  "stalactites.moveUsage": "Usage: m t <col> f | m t <col> <idx> t <col> | m t <col> c <cell>",
+  "whitehead.promptSourceZone": "Enter source zone (w=waste, t=tableau):",
+  "whitehead.promptToZone": "Enter destination (t=tableau, f=foundation):",
+  "whitehead.invalidFromZone": "Invalid from zone: {{val}}. Use 'w' (waste) or 't' (tableau).",
+  "whitehead.invalidToZone": "Invalid to zone: {{val}}. Use 't' (tableau) or 'f' (foundation).",
+  "whitehead.moveUsage": "Usage: m t <col> <idx> t <col>"
 }

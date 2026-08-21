@@ -38,6 +38,14 @@ func init() {
 			return usecase.RestoreMemoryInteractor(data, new(presenter.MemoryWebPresenter))
 		},
 		controller.NewMemoryWebControllerWithProvider)
+	games.RegisterKVGame("whitehead", games.CategorySolo,
+		func() usecase.WhiteheadInteractorIF {
+			return usecase.NewWhiteheadInteractor(domain.NewDefaultWhitehead(), new(presenter.WhiteheadWebPresenter))
+		},
+		func(data []byte) (usecase.WhiteheadInteractorIF, error) {
+			return usecase.RestoreWhiteheadInteractor(data, new(presenter.WhiteheadWebPresenter))
+		},
+		controller.NewWhiteheadWebControllerWithProvider)
 	games.RegisterKVGame("klondike", games.CategorySolo,
 		func() usecase.KlondikeInteractorIF {
 			return usecase.NewKlondikeInteractor(domain.NewDefaultKlondike(), new(presenter.KlondikeWebPresenter))

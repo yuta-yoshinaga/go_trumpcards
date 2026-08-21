@@ -169,6 +169,23 @@ export const MemoryPhase = {
   GAME_END: 3,
 } as const;
 
+export const WhiteheadScoringMode = {
+  NONE: 0,
+  VEGAS: 1,
+} as const;
+
+export const WhiteheadVegas = {
+  BUY_IN: -52,
+  PER_CARD: 5,
+} as const;
+
+/** Whitehead phase constants (sync: internal/domain/Whitehead.go). */
+export const WhiteheadPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Klondike phase constants (sync: internal/domain/Klondike.go). */
 export const KlondikePhase = {
   PLAYING: 0,

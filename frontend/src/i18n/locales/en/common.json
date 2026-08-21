@@ -342,7 +342,8 @@
     "alaska": "Alaska",
     "fortress": "Fortress",
     "somerset": "Somerset",
-    "stalactites": "Stalactites"
+    "stalactites": "Stalactites",
+    "whitehead": "Whitehead"
   },
   "sound": {
     "mute": "Mute sound",
@@ -2215,6 +2216,13 @@
     "whist.result.team1Win": "Game Over! Team 1 wins!",
     "whist.roundEnd": "Round ended",
     "whist.trickEnd": "Trick ended",
+    "whitehead.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "whitehead.gameOver": "Game Over",
+    "whitehead.hintAvailable": "Hint available",
+    "whitehead.noHint": "No hint available",
+    "whitehead.playing": "Playing",
+    "whitehead.stalemate": "No moves can lead to a win. Please undo or give up.",
+    "whitehead.stalemateWithEscape": "Stalemate. Undo {{count}} moves to find another play.",
     "windmill.gameClear": "Game Clear! Moves: {{moveCount}}",
     "windmill.gameOver": "Game Over",
     "windmill.hintAvailable": "Hint available",
