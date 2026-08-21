@@ -1,0 +1,45 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア！",
+    "gameOver": "ゲームオーバー"
+  },
+  "stalactites": "セル",
+  "foundation": "ファンデーション",
+  "tableau": "タブロー",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "autoComplete": "オートコンプリート",
+  "autoCompleteNotReady": "すべてのカードをファウンデーションへ直接送れる状態になるとクリックできます",
+  "undo": "元に戻す",
+  "moveCount": "手数",
+  "empty": "空",
+  "hintAvailable": "ヒント",
+  "foundationAriaLabel": "{{suit}} ファンデーション ({{cardCount}}枚)",
+  "emptyFoundationAriaLabel": "{{suit}} ファンデーション (空)",
+  "emptyCellAriaLabel": "セル {{idx}} (空)",
+  "supermoveLimitTooltip": "一度に動かせるのは{{limit}}枚までです",
+  "supermoveLimitLabel": "一括移動上限: {{limit}}枚",
+  "supermoveToEmpty": "（空き列へは{{limit}}枚）",
+  "emptyColLimitTooltip": "空き列へ動かせるのは{{limit}}枚まで（選択中: {{size}}枚）",
+  "tutorial": {
+    "cells": "セルです。一時的にカードを置ける4つのスペースです。空きセルが多いほど多くのカードを一度に移動できます。",
+    "foundation": "ファウンデーションです。各スートをAからKまで順番に積み上げます。",
+    "tableau": "タブローです。カードを赤黒交互に降順で整理します。全カードが表向きです。",
+    "controls": "元に戻す、ヒント、自動完了などの操作ボタンです。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "stalactitesShort": "FC",
+  "frontendHint": {
+    "moveToFoundation": "組札に移動できるカードがあります",
+    "cellsFilling": "セルがほぼ満杯です — 空けることを検討しましょう",
+    "useEmptyColumn": "空の列があります — 整理に活用しましょう",
+    "useCells": "セルにカードを移動して手を広げましょう",
+    "zone": {
+      "tableau": "タブロー",
+      "stalactites": "セル",
+      "foundation": "ファンデーション"
+    }
+  }
+}

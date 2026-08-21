@@ -261,6 +261,7 @@ import type {
   SpiteAndMaliceResponse,
   SpoilFiveResponse,
   SpoonsResponse,
+  StalactitesResponse,
   StealingBundlesResponse,
   StreetsAndAlleysResponse,
   SuecaResponse,
@@ -578,6 +579,7 @@ import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
 import { getSpoilFiveHint } from '../utils/hints/spoilFiveHint';
 import { getSpoonsHint } from '../utils/hints/spoonsHint';
+import { getStalactitesHint } from '../utils/hints/stalactitesHint';
 import { getStealingBundlesHint } from '../utils/hints/stealingbundlesHint';
 import { getStreetsandalleysHint } from '../utils/hints/streetsandalleysHint';
 import { getSuecaHint } from '../utils/hints/suecaHint';
@@ -784,6 +786,7 @@ export const hintFactories = {
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   fortress: (s) => getFortressHint(s as FortressResponse),
   somerset: (s) => getSomersetHint(s as SomersetResponse),
+  stalactites: (s) => getStalactitesHint(s as StalactitesResponse),
   streetsandalleys: (s) => getStreetsandalleysHint(s as StreetsAndAlleysResponse),
   kille: (s) => getKilleHint(s as KilleResponse),
   kingalbert: (s) => getKingalbertHint(s as KingAlbertResponse),

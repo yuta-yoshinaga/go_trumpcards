@@ -233,6 +233,14 @@ func init() {
 			return usecase.RestoreSpideretteInteractor(data, new(presenter.SpideretteWebPresenter))
 		},
 		controller.NewSpideretteWebControllerWithProvider)
+	games.RegisterKVGame("stalactites", games.CategorySolo,
+		func() usecase.StalactitesInteractorIF {
+			return usecase.NewStalactitesInteractor(domain.NewDefaultStalactites(), new(presenter.StalactitesWebPresenter))
+		},
+		func(data []byte) (usecase.StalactitesInteractorIF, error) {
+			return usecase.RestoreStalactitesInteractor(data, new(presenter.StalactitesWebPresenter))
+		},
+		controller.NewStalactitesWebControllerWithProvider)
 	games.RegisterKVGame("somerset", games.CategorySolo,
 		func() usecase.SomersetInteractorIF {
 			return usecase.NewSomersetInteractor(domain.NewDefaultSomerset(), new(presenter.SomersetWebPresenter))

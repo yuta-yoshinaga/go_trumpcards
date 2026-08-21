@@ -341,7 +341,8 @@
     "baseballpoker": "ベースボールポーカー",
     "alaska": "アラスカ",
     "fortress": "フォートレス",
-    "somerset": "サマセット"
+    "somerset": "サマセット",
+    "stalactites": "スタラクタイト"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1965,6 +1966,13 @@
     "spoilfive.trickEnd": "トリック終了 — 次へ進んでください。",
     "spoons.result.cpuWin": "ゲーム終了！ CPUの勝利です。",
     "spoons.result.humanWin": "ゲーム終了！ あなたの勝利です！",
+    "stalactites.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "stalactites.gameOver": "ゲームオーバー",
+    "stalactites.hintAvailable": "ヒントがあります",
+    "stalactites.noHint": "ヒントはありません",
+    "stalactites.playing": "プレイ中",
+    "stalactites.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
+    "stalactites.stalemateWithEscape": "手詰まりです。{{count}}手戻ると別の手が打てます。",
     "stealingbundles.mustCapture": "取れる手があります。場から取るか、相手の束を奪ってください。",
     "stealingbundles.result.cpu": "CPU{{idx}} が {{n}} 枚でいちばん多く集めました。",
     "stealingbundles.result.you": "あなたの勝ちです。{{n}} 枚でいちばん多く集めました。",

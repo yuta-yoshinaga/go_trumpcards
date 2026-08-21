@@ -229,6 +229,7 @@ export type GameKey =
   | 'clocksolitaire'
   | 'fortythieves'
   | 'bakersdozen'
+  | 'stalactites'
   | 'somerset'
   | 'fortress'
   | 'beleagueredcastle'
@@ -803,6 +804,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   clocksolitaire: CASINO,
   fortythieves: CASINO,
   bakersdozen: CASINO,
+  stalactites: CASINO,
   somerset: CASINO,
   fortress: CASINO,
   beleagueredcastle: CASINO,
