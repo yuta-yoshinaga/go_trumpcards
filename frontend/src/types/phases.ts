@@ -1521,6 +1521,13 @@ export const ColoradoPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Sly Fox phase constants (sync: internal/domain/SlyFox.go). */
+export const SlyFoxPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Cribbage Squares phase constants (sync: internal/domain/CribbageSquares.go). */
 export const CribbageSquaresPhase = {
   PLAYING: 0,

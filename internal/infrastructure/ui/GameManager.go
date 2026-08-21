@@ -6430,6 +6430,28 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("slyfox",
+		func() usecase.SlyFoxInteractorIF {
+			return usecase.NewSlyFoxInteractor(domain.NewDefaultSlyFox(), new(presenter.SlyFoxCuiPresenter))
+		},
+		controller.NewSlyFoxCuiController,
+		CuiHelpSpec{
+			TitleKey: "slyfox.helpTitle",
+			ExampleKeys: []string{
+				"slyfox.helpExampleHint",
+				"slyfox.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"slyfox.helpDeal",
+				"slyfox.helpDealF",
+				"slyfox.helpMoveTF",
+				"slyfox.helpGiveUp",
+				"slyfox.helpHint",
+				"slyfox.helpAutoComplete",
+				"slyfox.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

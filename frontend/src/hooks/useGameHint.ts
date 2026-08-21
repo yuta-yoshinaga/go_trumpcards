@@ -259,6 +259,7 @@ import type {
   SkitgubbeResponse,
   SlapjackResponse,
   SlobberhannesResponse,
+  SlyFoxResponse,
   SnapResponse,
   SoloWhistResponse,
   SomersetResponse,
@@ -586,6 +587,7 @@ import { getSkatHint } from '../utils/hints/skatHint';
 import { getSkitgubbeHint } from '../utils/hints/skitgubbeHint';
 import { getSlapjackHint } from '../utils/hints/slapjackHint';
 import { getSlobberhannesHint } from '../utils/hints/slobberhannesHint';
+import { getSlyFoxHint } from '../utils/hints/slyfoxHint';
 import { getSnapHint } from '../utils/hints/snapHint';
 import { getSokoHint } from '../utils/hints/sokoHint';
 import { getSoloWhistHint } from '../utils/hints/soloWhistHint';
@@ -702,6 +704,7 @@ export const hintFactories = {
   soko: (s) => getSokoHint(s as FiveCardStudResponse),
   fourseasons: (s) => getFourSeasonsHint(s as FourSeasonsResponse),
   colorado: (s) => getColoradoHint(s as ColoradoResponse),
+  slyfox: (s) => getSlyFoxHint(s as SlyFoxResponse),
   cribbagesquares: (s) => getCribbageSquaresHint(s as CribbageSquaresResponse),
   diplomat: (s) => getDiplomatHint(s as DiplomatResponse),
   royalcotillion: (s) => getRoyalCotillionHint(s as RoyalCotillionResponse),

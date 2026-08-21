@@ -1,0 +1,54 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Sly Fox",
+  "stock": "Stock",
+  "tableau": "Reserve",
+  "foundation": "Foundation",
+  "foundations": "Foundations (↑=A→K, ↓=K→A)",
+  "ascending": "ascending",
+  "descending": "descending",
+  "moveCount": "Moves",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "autoComplete": "Auto Complete",
+  "selectTarget": "Choose a destination",
+  "deselect": "Cancel",
+  "empty": "Empty",
+  "nextRankBadge": "Next:{{rank}}",
+  "nextRankAria": "needs {{rank}} next",
+  "foundationCompleteAria": "complete",
+  "emptyPileAria": "Empty slot. A place to deal onto; it is never refilled",
+  "pileCountAria": "{{count}} cards",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "stalemate": "No moves left",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "landscapeBanner": "Landscape orientation recommended",
+  "frontendHint": {
+    "slyFoxTableau": "This reserve card can go to a foundation",
+    "slyFoxDealToFoundation": "The next card goes straight to a foundation (it does not count toward the twenty)",
+    "slyFoxDealToSlot": "This is the least costly slot to bury on"
+  },
+  "tutorial": {
+    "foundations": "Eight foundations. The left four build up from the aces, the right four down from the kings; two decks (104 cards) fit exactly. They start **empty** - an ace or king founds its pile when it turns up.",
+    "stock": "**There is no waste.** Pressing the stock enters a deal mode: choose a reserve slot, or a foundation that accepts the card. A card sent straight to a foundation does not count toward the twenty.",
+    "tableau": "Twenty reserve slots. **Until twenty cards have been dealt, the reserve cannot feed the foundations at all.** A placed card buries what is under it, and **an empty slot is never refilled** - choosing where to bury is the whole game.",
+    "controls": "Buttons for dealing, hints and undo.",
+    "resetButton": "Start a new game."
+  },
+  "nav": {
+    "slyfox": "SlyFox"
+  },
+  "deal": "Deal",
+  "dealAria": "Deal one card from the stock (you choose where it goes)",
+  "dealTarget": "where to deal",
+  "cycleLocked": "This round: {{dealt}}/{{cycle}} dealt - {{left}} more before the reserve opens",
+  "cycleOpen": "The reserve is open"
+}

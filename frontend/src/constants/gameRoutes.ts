@@ -2203,6 +2203,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 1, 4, 2], skill: [2, 4, 4, 2], social: [5, 1, 0, 2, 4], theme: [2, 4, 4, 1, 2, 4] },
       },
       {
+        path: '/slyfox',
+        labelKey: 'nav.slyfox',
+        icon: '🦊',
+        page: 'SlyFox',
+        profile: { mood: [5, 1, 4, 2], skill: [2, 4, 4, 2], social: [5, 1, 0, 2, 4], theme: [2, 4, 4, 1, 2, 4] },
+      },
+      {
         path: '/cribbagesquares',
         labelKey: 'nav.cribbagesquares',
         icon: '🔢',
