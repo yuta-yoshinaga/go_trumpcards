@@ -322,6 +322,7 @@ export const workerUrl: Record<string, string> = {
   perseverance: WORKER_EXTRA4,
   fourteenout: WORKER_EXTRA4,
   narcotic: WORKER_EXTRA4,
+  mrsmop: WORKER_EXTRA4,
   labellelucie: WORKER_CLASSIC,
   curdsandwhey: WORKER_CLASSIC,
   simplesimon: WORKER_CLASSIC,

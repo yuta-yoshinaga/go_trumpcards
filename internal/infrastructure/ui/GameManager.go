@@ -6344,6 +6344,26 @@ var gameRegistry = []GameRegistryEntry{
 				"narcotic.helpLog",
 			},
 		}),
+	BindCuiFor("mrsmop",
+		func() usecase.MrsMopInteractorIF {
+			return usecase.NewMrsMopInteractor(domain.NewDefaultMrsMop(), new(presenter.MrsMopCuiPresenter))
+		},
+		controller.NewMrsMopCuiController,
+		CuiHelpSpec{
+			TitleKey: "mrsmop.helpTitle",
+			ExampleKeys: []string{
+				"mrsmop.helpExampleHint",
+				"mrsmop.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"mrsmop.helpMove",
+				"mrsmop.helpGiveUp",
+				"mrsmop.helpHint",
+				"mrsmop.helpAutoComplete",
+				"mrsmop.helpMoveShorthand", "mrsmop.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

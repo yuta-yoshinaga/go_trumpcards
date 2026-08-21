@@ -181,6 +181,7 @@ export * from './games/mississippistud';
 export * from './games/missmilligan';
 export * from './games/montebank';
 export * from './games/montecarlo';
+export * from './games/mrsMop';
 export * from './games/mus';
 export * from './games/mushi';
 export * from './games/nainjaune';

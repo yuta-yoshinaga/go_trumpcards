@@ -370,4 +370,12 @@ func init() {
 			return usecase.RestoreNarcoticInteractor(data, new(presenter.NarcoticWebPresenter))
 		},
 		controller.NewNarcoticWebControllerWithProvider)
+	games.RegisterKVGame("mrsmop", games.CategoryExtra4,
+		func() usecase.MrsMopInteractorIF {
+			return usecase.NewMrsMopInteractor(domain.NewDefaultMrsMop(), new(presenter.MrsMopWebPresenter))
+		},
+		func(data []byte) (usecase.MrsMopInteractorIF, error) {
+			return usecase.RestoreMrsMopInteractor(data, new(presenter.MrsMopWebPresenter))
+		},
+		controller.NewMrsMopWebControllerWithProvider)
 }

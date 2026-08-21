@@ -348,7 +348,8 @@
     "shamrocks": "シャムロックス",
     "perseverance": "パーシビアランス",
     "fourteenout": "フォーティーンアウト",
-    "narcotic": "ナルコティック"
+    "narcotic": "ナルコティック",
+    "mrsmop": "ミセス・モップ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1483,6 +1484,13 @@
     "montecarlo.noHint": "ヒントはありません",
     "montecarlo.playing": "プレイ中",
     "montecarlo.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
+    "mrsmop.gameClear": "ゲームクリア！ 手数: {{moveCount}} スコア: {{score}}",
+    "mrsmop.gameOver": "ゲームオーバー",
+    "mrsmop.hintAvailable": "ヒントがあります",
+    "mrsmop.noHint": "ヒントはありません",
+    "mrsmop.playing": "プレイ中",
+    "mrsmop.stalemate": "手詰まりです。配り直しは無いので、元に戻すかギブアップしてください。",
+    "mrsmop.stalemateWithEscape": "手詰まりです。{{count}}手戻ると別の手が打てます。",
     "mus.chicaPhase": "チカ — 最も小さい手を競う賭けです。",
     "mus.discardPhase": "交換フェーズ — 交換するカードを選んでください。",
     "mus.grandePhase": "グランデ — 最も大きい手を競う賭けです。",

@@ -174,6 +174,7 @@ import type {
   MissMilliganResponse,
   MonteBankResponse,
   MonteCarloResponse,
+  MrsMopResponse,
   MushiResponse,
   MusResponse,
   NainJauneResponse,
@@ -495,6 +496,7 @@ import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
 import { getMissMilliganHint } from '../utils/hints/missmilliganHint';
 import { getMontebankHint } from '../utils/hints/montebankHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
+import { getMrsMopHint } from '../utils/hints/mrsMopHint';
 import { getMusHint } from '../utils/hints/musHint';
 import { getMushiHint } from '../utils/hints/mushiHint';
 import { getNainJauneHint } from '../utils/hints/nainjauneHint';
@@ -799,6 +801,7 @@ export const hintFactories = {
   perseverance: (s) => getPerseveranceHint(s as PerseveranceResponse),
   fourteenout: (s) => getFourteenOutHint(s as FourteenOutResponse),
   narcotic: (s) => getNarcoticHint(s as NarcoticResponse),
+  mrsmop: (s) => getMrsMopHint(s as MrsMopResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   fortress: (s) => getFortressHint(s as FortressResponse),
   somerset: (s) => getSomersetHint(s as SomersetResponse),

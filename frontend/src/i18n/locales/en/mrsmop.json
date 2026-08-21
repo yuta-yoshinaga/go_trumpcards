@@ -1,0 +1,51 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Mrs. Mop",
+  "completed": "Completed",
+  "tableau": "Tableau",
+  "moveCount": "Moves",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available when stock is empty and every card is face up",
+  "undo": "Undo",
+  "empty": "Empty",
+  "score": "Score",
+  "difficulty": "Difficulty",
+  "difficulty1": "1 Suit",
+  "difficulty2": "2 Suits",
+  "difficulty4": "4 Suits",
+  "gameClear": "Game Clear! Moves: {{moveCount}} Score: {{score}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "stalemate": "No more moves",
+  "tutorial": {
+    "stockPile": "Stock pile. Click to deal one card to each column. All columns must have cards.",
+    "tableau": "Tableau columns. A single card can go on any card one rank higher, regardless of suit. Only a same-suit descending run can be moved as a group. A King-to-Ace same-suit run is removed automatically.",
+    "completedSuits": "Number of completed suits. Complete all 8 to win.",
+    "controls": "Control buttons: Undo, Hint, Auto-complete.",
+    "difficulty": "Choose difficulty: 1 suit (easy), 2 suits (medium), 4 suits (hard).",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "landscapeBanner": "Rotate to landscape for easier play",
+  "frontendHint": {
+    "completeSuit": "A suit sequence is nearly complete — focus on finishing it",
+    "buildSameSuit": "A same-suit build move is available",
+    "revealFaceDown": "Move cards to reveal face-down cards underneath",
+    "useEmptyColumn": "An empty column is available — use it to reorganize",
+    "dealFromStock": "No obvious moves — try dealing from the stock"
+  },
+  "suitCompleted": "Suit complete!",
+  "stats": {
+    "winRate": "Win rate {{rate}}%",
+    "best": "Best {{score}}",
+    "fewestMoves": "{{moves}} moves",
+    "newBest": "New personal best!"
+  }
+}
