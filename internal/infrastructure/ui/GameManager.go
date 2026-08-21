@@ -6323,6 +6323,27 @@ var gameRegistry = []GameRegistryEntry{
 				"fourteenout.helpLog",
 			},
 		}),
+	BindCuiFor("narcotic",
+		func() usecase.NarcoticInteractorIF {
+			return usecase.NewNarcoticInteractor(domain.NewDefaultNarcotic(), new(presenter.NarcoticCuiPresenter))
+		},
+		controller.NewNarcoticCuiController,
+		CuiHelpSpec{
+			TitleKey: "narcotic.helpTitle",
+			ExampleKeys: []string{
+				"narcotic.helpExampleHint",
+			},
+			CommandKeys: []string{
+				"narcotic.helpDraw",
+				"narcotic.helpRemove",
+				"narcotic.helpMove",
+				"narcotic.helpRedeal",
+				"narcotic.helpUndo",
+				"narcotic.helpHint",
+				"narcotic.helpGiveUp",
+				"narcotic.helpLog",
+			},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

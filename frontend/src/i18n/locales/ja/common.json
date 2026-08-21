@@ -347,7 +347,8 @@
     "curdsandwhey": "カーズ・アンド・ホエイ",
     "shamrocks": "シャムロックス",
     "perseverance": "パーシビアランス",
-    "fourteenout": "フォーティーンアウト"
+    "fourteenout": "フォーティーンアウト",
+    "narcotic": "ナルコティック"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1528,6 +1529,12 @@
     "napoleonssquare.noHint": "ヒントはありません",
     "napoleonssquare.playing": "プレイ中",
     "napoleonssquare.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
+    "narcotic.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "narcotic.gameOver": "ゲームオーバー",
+    "narcotic.hintAvailable": "ヒントがあります",
+    "narcotic.noHint": "ヒントはありません",
+    "narcotic.playing": "プレイ中",
+    "narcotic.stalemate": "同じ盤面が繰り返しています。これ以上は進みません",
     "nertz.hintAvailable": "ヒントがあります",
     "nertz.lose": "あなたの負けです",
     "nertz.noHint": "ヒントはありません",

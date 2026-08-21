@@ -180,6 +180,7 @@ import type {
   NapoleonResponse,
   NapoleonsSquareResponse,
   NapResponse,
+  NarcoticResponse,
   NertzResponse,
   NinetyNineResponse,
   NiuNiuResponse,
@@ -500,6 +501,7 @@ import { getNainJauneHint } from '../utils/hints/nainjauneHint';
 import { getNapHint } from '../utils/hints/napHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNapoleonsSquareHint } from '../utils/hints/napoleonssquareHint';
+import { getNarcoticHint } from '../utils/hints/narcoticHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getNinetyNineHint } from '../utils/hints/ninetynineHint';
 import { getNiuNiuHint } from '../utils/hints/niuniuHint';
@@ -796,6 +798,7 @@ export const hintFactories = {
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
   perseverance: (s) => getPerseveranceHint(s as PerseveranceResponse),
   fourteenout: (s) => getFourteenOutHint(s as FourteenOutResponse),
+  narcotic: (s) => getNarcoticHint(s as NarcoticResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   fortress: (s) => getFortressHint(s as FortressResponse),
   somerset: (s) => getSomersetHint(s as SomersetResponse),

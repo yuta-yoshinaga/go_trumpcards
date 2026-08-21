@@ -484,6 +484,8 @@ tags:
     description: Truco (トゥルコ) - 2-player (1 human + 1 CPU) South-American trick-taking + bluffing game with a 40-card deck (8/9/10 removed). Deal 3 cards per hand (mano); win 2 of 3 bazas (tricks, no must-follow) to win the mano. Card strength (matadores) 1-spades > 1-clubs > 7-spades > 7-coins > all 3 > 2 > 1 > K > Q > J > 7 > 6 > 5 > 4; equal-strength bazas tie (parda). Declare Truco to raise the stake (Truco=2, Retruco=3, Vale Cuatro=4); opponent accepts (Quiero), declines (No Quiero = caller wins at the prior stake), or re-raises. First to the match target (default 15) wins.
   - name: acesup
     description: Aces Up (四つ葉のクローバー) - single-player solitaire with a standard 52-card deck. 4 tableau columns dealt 1 card each (48 to stock). Aces rank highest. Remove a column's top card when another column's top is the same suit and higher rank; deal one card onto each column; move a top card into an empty column. Win by clearing the board down to the four Aces.
+  - name: narcotic
+    description: Narcotic (ナルコティック), also known as Perpetual Motion - single-player solitaire with a standard 52-card deck. Four piles dealt one card each. Discard all four exposed cards when their ranks match; stack a duplicate onto the leftmost pile showing that rank. Unlimited unshuffled redeals gather the table from the right, so the game is lost only when a board recurs with no legal move.
   - name: whist
     description: Whist (ホイスト) - 4-player partnership trick-taking on a standard 52-card deck; 13-card hands, the last dealt card fixes the trump suit, must-follow trick play, the highest trump (or highest lead-suit card if none) wins each trick, and the team taking more than 6 tricks scores 1 point per trick over the book of 6.
   - name: catchten
@@ -22348,6 +22350,180 @@ paths:
                     type: integer
                   discardCount:
                     type: integer
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  message:
+                    type: string
+
+  /narcotic/exec:
+    post:
+      tags:
+        - narcotic
+      summary: Execute a Narcotic game command
+      description: |
+        Send a command to advance the Narcotic (ナルコティック) game session identified by
+        `sessionId`, also known as Perpetual Motion. It is a single-player solitaire using a
+        standard 52-card deck. Four piles are dealt one card each (48 cards to stock), and
+        only each pile's top card is exposed.
+
+        **When all four exposed cards share a rank, all four are discarded together** — the
+        only way cards leave the table, and `remove` therefore takes no `col`. A duplicate
+        rank may instead be **stacked onto the leftmost pile already showing that rank**;
+        moves go leftward only, so the same two cards cannot be shuffled back and forth.
+        `draw` deals one card onto each pile, even an emptied one.
+
+        **When the stock runs out, `redeal` gathers the table from the rightmost pile
+        leftward and re-deals it without shuffling, with no limit on redeals.** The next
+        stock therefore follows deterministically from the current board, which is what
+        makes the loss condition decidable: the game is over when the same board and stock
+        recur with no legal move, because play would repeat forever. Win by discarding the
+        whole deck.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All 52 cards discarded; player wins |
+        | GameOver   | `2`   | A board recurred with no legal move, or gave up |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`        | `r`  | Start / restart a game |
+        | `draw`         | `d`  | Deal one card onto each pile |
+        | `remove`       | `rm` | Discard all four exposed cards when their ranks match (no `col`) |
+        | `move`         | `mv` | Stack a pile's top card onto the leftmost pile showing that rank |
+        | `redeal`       | `rd` | Gather from the right and re-deal without shuffling (no limit) |
+        | `giveup`       | `g`  | Give up the current game |
+        | `hint`         | `h`  | Get a hint for the next move |
+        | `undo`         | `u`  | Undo the last action |
+        | `undo_n`       |      | Undo N actions (requires `n` parameter) |
+        | `log`          | `l`  | View action log |
+      operationId: narcoticExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, remove, rm, move, mv, redeal, rd, giveup, g, hint, h, undo, u, undo_n, log, l]
+                col:
+                  type: integer
+                  description: Pile index (0-3) for the move command. Not used by remove — all four are discarded together.
+                n:
+                  type: integer
+                  description: Number of undos to perform (required when command is undo_n)
+                  example: 3
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Deal to each column
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              remove:
+                summary: Discard the four matching exposed cards
+                value:
+                  command: remove
+                  sessionId: my-session-001
+              move:
+                summary: Stack pile 2 onto the leftmost pile showing its rank
+                value:
+                  command: move
+                  col: 2
+                  sessionId: my-session-001
+              redeal:
+                summary: Gather and re-deal once the stock is spent
+                value:
+                  command: redeal
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  columns:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          card:
+                            $ref: '#/components/schemas/Card'
+                          top:
+                            type: boolean
+                          removable:
+                            type: boolean
+                          movable:
+                            type: boolean
+                  stockCount:
+                    type: integer
+                  discardCount:
+                    type: integer
+                  redealCount:
+                    type: integer
+                    description: How many times the table has been gathered and re-dealt. Unbounded.
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                    description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+                    example: 0
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                  hint:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                      col:
+                        type: integer
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  columns:
+                    type: array
+                    items:
+                      type: array
+                  stockCount:
+                    type: integer
+                  discardCount:
+                    type: integer
+                  redealCount:
+                    type: integer
+                    description: How many times the table has been gathered and re-dealt. Unbounded.
                   phase:
                     type: integer
                   moveCount:

@@ -362,4 +362,12 @@ func init() {
 			return usecase.RestoreFourteenOutInteractor(data, new(presenter.FourteenOutWebPresenter))
 		},
 		controller.NewFourteenOutWebControllerWithProvider)
+	games.RegisterKVGame("narcotic", games.CategoryExtra4,
+		func() usecase.NarcoticInteractorIF {
+			return usecase.NewNarcoticInteractor(domain.NewDefaultNarcotic(), new(presenter.NarcoticWebPresenter))
+		},
+		func(data []byte) (usecase.NarcoticInteractorIF, error) {
+			return usecase.RestoreNarcoticInteractor(data, new(presenter.NarcoticWebPresenter))
+		},
+		controller.NewNarcoticWebControllerWithProvider)
 }

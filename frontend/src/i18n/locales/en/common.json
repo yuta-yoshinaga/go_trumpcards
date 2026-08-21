@@ -347,7 +347,8 @@
     "curdsandwhey": "Curds and Whey",
     "shamrocks": "Shamrocks",
     "perseverance": "Perseverance",
-    "fourteenout": "Fourteen Out"
+    "fourteenout": "Fourteen Out",
+    "narcotic": "Narcotic"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1528,6 +1529,12 @@
     "napoleonssquare.noHint": "No hint available",
     "napoleonssquare.playing": "Playing",
     "napoleonssquare.stalemate": "No moves can lead to a win. Please undo or give up.",
+    "narcotic.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "narcotic.gameOver": "Game Over",
+    "narcotic.hintAvailable": "Hint available",
+    "narcotic.noHint": "No hint available",
+    "narcotic.playing": "Playing",
+    "narcotic.stalemate": "The same board keeps returning — there is no further progress",
     "nertz.hintAvailable": "Hint available",
     "nertz.lose": "You lose",
     "nertz.noHint": "No hint available",

@@ -1,0 +1,48 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Narcotic",
+  "stock": "Stock",
+  "discard": "Discarded",
+  "discardPile": "Discards",
+  "moveCount": "Moves",
+  "redealCount": "Redeals",
+  "combo": "Combo ×{{count}}",
+  "draw": "Deal",
+  "remove": "Discard all four",
+  "removeAll": "Discard all four",
+  "move": "Stack",
+  "redeal": "Gather & redeal",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "empty": "Empty",
+  "playing": "Playing",
+  "stalemate": "The same board keeps returning — there is no further progress",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "noHint": "No hint available",
+  "hintReason": {
+    "remove": "All four exposed cards share a rank — discard them together",
+    "move": "Stack pile [{{col}}] onto the pile to its left showing the same rank",
+    "draw": "No move is available — deal one card to each of the four piles",
+    "redeal": "The stock is spent, but the table can be gathered and re-dealt (no limit)"
+  },
+  "tutorial": {
+    "columns": "Four piles. Only the front card of each is in play.",
+    "rules": "When all four exposed cards share a rank, discard all four together. Suit does not matter.",
+    "stock": "\"Deal\" gives one card to each of the four piles. Once the stock is spent, \"Gather & redeal\" keeps the game going — there is no limit.",
+    "controls": "The action buttons: discard, stack, deal and redeal.",
+    "resetButton": "Reset starts a new game."
+  },
+  "landscapeBanner": "Rotate to landscape for easier play",
+  "frontendHint": {
+    "narcoticRemove": "All four exposed cards match — discard them",
+    "narcoticMove": "Stack onto the pile to its left showing the same rank",
+    "narcoticDeal": "Deal one card to each of the four piles",
+    "narcoticRedeal": "Gather the table and re-deal (no limit)"
+  }
+}

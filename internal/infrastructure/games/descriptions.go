@@ -156,6 +156,7 @@ var gameDescriptions = map[string]string{
 	"bakersdozen":         "Baker's Dozen (ベーカーズ・ダズン)",
 	"perseverance":        "Perseverance (パーシビアランス)",
 	"fourteenout":         "Fourteen Out (フォーティーンアウト)",
+	"narcotic":            "Narcotic (ナルコティック)",
 	"tonk":                "Tonk (トンク)",
 	"casinowar":           "Casino War (カジノウォー)",
 	"pitch":               "Pitch / Setback (ピッチ / セットバック)",

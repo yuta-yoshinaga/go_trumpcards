@@ -196,6 +196,7 @@ export * from './games/nainjaune';
 export * from './games/nap';
 export * from './games/napoleon';
 export * from './games/napoleonssquare';
+export * from './games/narcotic';
 export * from './games/nertz';
 export * from './games/ninetynine';
 export * from './games/niuniu';
@@ -623,6 +624,7 @@ export const games = [
   'shamrocks',
   'perseverance',
   'fourteenout',
+  'narcotic',
   'labellelucie',
   'curdsandwhey',
   'simplesimon',
