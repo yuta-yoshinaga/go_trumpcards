@@ -26,25 +26,25 @@ import { curdsAndWheyAutoMoveTarget } from '../utils/curdsAndWheyAutoMoveTarget'
 import { isGrabbable, movableFromIndex } from '../utils/curdsAndWheyRun';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Simple Simon tutorial step definitions. */
-const SS_TUTORIAL_STEPS: TutorialStep[] = [
-  { target: '[data-tutorial="ss-columns"]', messageKey: 'tutorial.columns', placement: 'top', advanceOn: 'next' },
+/** Curds and Whey tutorial step definitions. */
+const CW_TUTORIAL_STEPS: TutorialStep[] = [
+  { target: '[data-tutorial="cw-columns"]', messageKey: 'tutorial.columns', placement: 'top', advanceOn: 'next' },
   {
-    target: '[data-tutorial="ss-controls"]',
+    target: '[data-tutorial="cw-controls"]',
     messageKey: 'tutorial.actionButtons',
     placement: 'top',
     advanceOn: 'next',
   },
   {
-    target: '[data-tutorial="ss-reset-button"]',
+    target: '[data-tutorial="cw-reset-button"]',
     messageKey: 'tutorial.resetButton',
     placement: 'top',
     advanceOn: 'next',
   },
 ];
 
-/** Maps numeric Simple Simon phases to i18n phase-label keys. */
-const SS_PHASE_KEYS: Readonly<Record<number, string>> = {
+/** Maps numeric Curds and Whey phases to i18n phase-label keys. */
+const CW_PHASE_KEYS: Readonly<Record<number, string>> = {
   [CurdsAndWheyPhase.PLAYING]: 'playing',
   [CurdsAndWheyPhase.GAME_CLEAR]: 'gameClear',
   [CurdsAndWheyPhase.GAME_OVER]: 'gameOver',
@@ -56,10 +56,10 @@ interface Selection {
   idx: number;
 }
 
-/** Renders the Simple Simon game page. */
-export const CurdsAndWheyPage = withTutorial(CurdsAndWheyPageContent, 'curdsandwhey', SS_TUTORIAL_STEPS);
+/** Renders the Curds and Whey game page. */
+export const CurdsAndWheyPage = withTutorial(CurdsAndWheyPageContent, 'curdsandwhey', CW_TUTORIAL_STEPS);
 
-/** Inner content of the Simple Simon page, wrapped by TutorialProvider. */
+/** Inner content of the Curds and Whey page, wrapped by TutorialProvider. */
 function CurdsAndWheyPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('curdsandwhey');
@@ -81,7 +81,7 @@ function CurdsAndWheyPageContent() {
     setAutoMoveNotice(null);
   }, [state?.moveCount]);
 
-  const phaseNames = usePhaseNames('curdsandwhey', SS_PHASE_KEYS);
+  const phaseNames = usePhaseNames('curdsandwhey', CW_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
   const w = Math.round(cardWidth * 0.58);
 
@@ -91,7 +91,7 @@ function CurdsAndWheyPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('curdsandwhey', state);
 
-  if (!state) return <GameSkeleton gameKey="curdsandwhey" layout={{ kind: 'tableau', topRow: 0, tableau: 10 }} />;
+  if (!state) return <GameSkeleton gameKey="curdsandwhey" layout={{ kind: 'tableau', topRow: 0, tableau: 13 }} />;
 
   const isClear = state.phase === CurdsAndWheyPhase.GAME_CLEAR;
   const isEnd = isClear || state.phase === CurdsAndWheyPhase.GAME_OVER;
@@ -225,16 +225,16 @@ function CurdsAndWheyPageContent() {
         <div className="text-ds-text-muted text-xs mb-1">
           {t('completedSuits', { count: state.completedSuits })} · {t('moveCount', { count: state.moveCount })}
         </div>
-        <div className="grid grid-cols-5 sm:grid-cols-10 gap-1 items-start" data-tutorial="ss-columns">
+        <div className="grid grid-cols-5 sm:grid-cols-10 gap-1 items-start" data-tutorial="cw-columns">
           {state.columns.map((column, i) => renderColumn(column, i))}
         </div>
         {canAct && (
-          <div className="mt-2 text-ds-text-primary text-xs" role="status" data-testid="ss-guidance">
+          <div className="mt-2 text-ds-text-primary text-xs" role="status" data-testid="cw-guidance">
             {selected === null ? t('selectSource') : t('selectDestination')}
           </div>
         )}
         {canAct && autoMoveNotice && (
-          <div className="mt-1 text-ds-text-muted text-xs" role="status" data-testid="ss-automove-notice">
+          <div className="mt-1 text-ds-text-muted text-xs" role="status" data-testid="cw-automove-notice">
             {autoMoveNotice}
           </div>
         )}
@@ -257,7 +257,7 @@ function CurdsAndWheyPageContent() {
 
       <GameFooter className={`${gameTheme.curdsandwhey.footer} px-3 py-2.5`}>
         <ErrorAlert message={error} onRetry={retry} />
-        <div className="flex flex-wrap gap-2 items-center" data-tutorial="ss-controls">
+        <div className="flex flex-wrap gap-2 items-center" data-tutorial="cw-controls">
           {canAct && state.canUndo && (
             <button
               type="button"
@@ -296,7 +296,7 @@ function CurdsAndWheyPageContent() {
             onReset={handleReset}
             requestConfirm={requestConfirm}
             loading={loading}
-            dataTutorial="ss-reset-button"
+            dataTutorial="cw-reset-button"
           />
         </div>
       </GameFooter>

@@ -15,7 +15,9 @@ const mockExec = vi.mocked(curdsandwheyApi.exec);
 const card = (design: Card['design'], value: number): Card => ({ design, value });
 
 function makeState(overrides: Partial<CurdsAndWheyResponse> = {}): CurdsAndWheyResponse {
-  const columns: Card[][] = Array.from({ length: 10 }, () => []);
+  // 13 columns: what the backend deals. The Curds and Whey fixtures this was
+  // cloned from built 10, which gave no coverage of the real board width.
+  const columns: Card[][] = Array.from({ length: 13 }, () => []);
   columns[0] = [card('SPADE', 9)];
   columns[1] = [card('SPADE', 8)];
   return {
@@ -46,7 +48,7 @@ describe('CurdsAndWheyPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('renders the 10 columns', async () => {
+  it('renders all 13 columns', async () => {
     renderWithProviders(<CurdsAndWheyPage />);
     await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
     expect(screen.getByTestId('column-9')).toBeInTheDocument();
@@ -73,7 +75,7 @@ describe('CurdsAndWheyPage', () => {
     // Empty column drop targets are named too.
     expect(screen.getByTestId('column-2-drop')).toHaveAttribute('aria-label', '列3（空）');
     // The selection guidance is a live region.
-    expect(screen.getByTestId('ss-guidance')).toHaveAttribute('role', 'status');
+    expect(screen.getByTestId('cw-guidance')).toHaveAttribute('role', 'status');
   });
 
   it('moves onto an empty column', async () => {
@@ -105,7 +107,7 @@ describe('CurdsAndWheyPage', () => {
     mockExec.mockResolvedValue(
       makeState({
         columns: (() => {
-          const cols: Card[][] = Array.from({ length: 10 }, () => []);
+          const cols: Card[][] = Array.from({ length: 13 }, () => []);
           cols[0] = [card('SPADE', 5)];
           cols[3] = [card('SPADE', 9), card('HEART', 6), card('HEART', 5), card('HEART', 4)];
           return cols;
@@ -147,7 +149,7 @@ describe('CurdsAndWheyPage', () => {
     mockExec.mockResolvedValue(
       makeState({
         columns: (() => {
-          const cols: Card[][] = Array.from({ length: 10 }, () => []);
+          const cols: Card[][] = Array.from({ length: 13 }, () => []);
           cols[0] = [card('SPADE', 2)];
           return cols;
         })(),
@@ -157,7 +159,7 @@ describe('CurdsAndWheyPage', () => {
     const srcCard = await screen.findByTestId('card-0-0');
     mockExec.mockClear();
     fireEvent.doubleClick(srcCard);
-    await waitFor(() => expect(screen.getByTestId('ss-automove-notice')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('cw-automove-notice')).toBeInTheDocument());
     expect(mockExec).not.toHaveBeenCalledWith('m', expect.anything());
   });
 

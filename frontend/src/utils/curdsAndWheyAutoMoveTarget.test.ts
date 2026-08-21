@@ -5,7 +5,8 @@ import { curdsAndWheyAutoMoveTarget } from './curdsAndWheyAutoMoveTarget';
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 /** Builds 10 columns from a sparse map so tests only spell out the relevant piles. */
-const board = (piles: Record<number, Card[]>): Card[][] => Array.from({ length: 10 }, (_, i) => piles[i] ?? []);
+// 13 columns, matching CurdsAndWheyColCnt. The Simple Simon original built 10.
+const board = (piles: Record<number, Card[]>): Card[][] => Array.from({ length: 13 }, (_, i) => piles[i] ?? []);
 
 describe('curdsAndWheyAutoMoveTarget', () => {
   it('returns null when the source card index is out of range', () => {
@@ -78,19 +79,13 @@ describe('curdsAndWheyAutoMoveTarget', () => {
   });
 
   it('never targets the source column even if its top would otherwise link', () => {
-    // col 0 top ♠8 links to ♠7, but ♠7 is IN col 0. Fill every other column so no
-    // empty fallback and no external value-8 top exists → no destination.
+    // col 0 top ♠8 links to ♠7, but ♠7 is IN col 0. **All twelve other columns
+    // must be occupied** -- filling only 1..9 left 10..12 empty once the fixture
+    // widened to the real 13, and the empty-column fallback answered 10.
+    const filler = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, [card('HEART', 2)]]));
     const columns = board({
       0: [card('SPADE', 8), card('SPADE', 7)],
-      1: [card('HEART', 2)],
-      2: [card('HEART', 2)],
-      3: [card('HEART', 2)],
-      4: [card('HEART', 2)],
-      5: [card('HEART', 2)],
-      6: [card('HEART', 2)],
-      7: [card('HEART', 2)],
-      8: [card('HEART', 2)],
-      9: [card('HEART', 2)],
+      ...filler,
     });
     expect(curdsAndWheyAutoMoveTarget(columns, 0, 1)).toBeNull();
   });
