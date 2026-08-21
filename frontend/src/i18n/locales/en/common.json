@@ -346,7 +346,8 @@
     "whitehead": "Whitehead",
     "curdsandwhey": "Curds and Whey",
     "shamrocks": "Shamrocks",
-    "perseverance": "Perseverance"
+    "perseverance": "Perseverance",
+    "fourteenout": "Fourteen Out"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1063,6 +1064,12 @@
     "fourseasons.hintAvailable": "Hint available",
     "fourseasons.noHint": "No hint available",
     "fourseasons.playing": "Playing",
+    "fourteenout.gameClear": "Game Clear! All 52 cards removed",
+    "fourteenout.gameOver": "Game Over",
+    "fourteenout.hintAvailable": "Hint available",
+    "fourteenout.noHint": "No hint available",
+    "fourteenout.playing": "Playing",
+    "fourteenout.stalemate": "Stuck — no two exposed cards add up to 14",
     "freebet.result.broke": "Out of chips. Game over.",
     "freecell.gameClear": "Game Clear! Moves: {{moveCount}}",
     "freecell.gameOver": "Game Over",

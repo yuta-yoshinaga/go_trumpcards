@@ -6305,6 +6305,24 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("fourteenout",
+		func() usecase.FourteenOutInteractorIF {
+			return usecase.NewFourteenOutInteractor(domain.NewDefaultFourteenOut(), new(presenter.FourteenOutCuiPresenter))
+		},
+		controller.NewFourteenOutCuiController,
+		CuiHelpSpec{
+			TitleKey: "fourteenout.helpTitle",
+			ExampleKeys: []string{
+				"fourteenout.helpExampleHint",
+			},
+			CommandKeys: []string{
+				"fourteenout.helpRemove",
+				"fourteenout.helpUndo",
+				"fourteenout.helpHint",
+				"fourteenout.helpGiveup",
+				"fourteenout.helpLog",
+			},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

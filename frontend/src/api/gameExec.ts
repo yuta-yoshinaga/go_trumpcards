@@ -320,6 +320,7 @@ export const workerUrl: Record<string, string> = {
   russianbank: WORKER_EXTRA4,
   shamrocks: WORKER_CLASSIC,
   perseverance: WORKER_EXTRA4,
+  fourteenout: WORKER_EXTRA4,
   labellelucie: WORKER_CLASSIC,
   curdsandwhey: WORKER_CLASSIC,
   simplesimon: WORKER_CLASSIC,

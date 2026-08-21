@@ -346,7 +346,8 @@
     "whitehead": "ホワイトヘッド",
     "curdsandwhey": "カーズ・アンド・ホエイ",
     "shamrocks": "シャムロックス",
-    "perseverance": "パーシビアランス"
+    "perseverance": "パーシビアランス",
+    "fourteenout": "フォーティーンアウト"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1063,6 +1064,12 @@
     "fourseasons.hintAvailable": "ヒントがあります",
     "fourseasons.noHint": "ヒントはありません",
     "fourseasons.playing": "プレイ中",
+    "fourteenout.gameClear": "ゲームクリア！ 52枚すべて取り除きました",
+    "fourteenout.gameOver": "ゲームオーバー",
+    "fourteenout.hintAvailable": "ヒントがあります",
+    "fourteenout.noHint": "ヒントはありません",
+    "fourteenout.playing": "プレイ中",
+    "fourteenout.stalemate": "手詰まりです。合計14になる組がもうありません",
     "freebet.result.broke": "チップが尽きました。ゲーム終了です。",
     "freecell.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "freecell.gameOver": "ゲームオーバー",

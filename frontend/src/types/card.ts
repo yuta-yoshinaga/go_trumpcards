@@ -113,6 +113,7 @@ export * from './games/fortyfives';
 export * from './games/fortythieves';
 export * from './games/fourcardpoker';
 export * from './games/fourseasons';
+export * from './games/fourteenout';
 export * from './games/freebet';
 export * from './games/freecell';
 export * from './games/frenchtarot';

@@ -755,6 +755,11 @@ func init() {
 			return usecase.NewPerseveranceInteractor(domain.NewDefaultPerseverance(), new(presenter.PerseveranceWebPresenter))
 		},
 		controller.NewPerseveranceWebController)
+	BindWebControllerFor("fourteenout",
+		func() usecase.FourteenOutInteractorIF {
+			return usecase.NewFourteenOutInteractor(domain.NewDefaultFourteenOut(), new(presenter.FourteenOutWebPresenter))
+		},
+		controller.NewFourteenOutWebController)
 	BindWebControllerFor("tonk",
 		func() usecase.TonkInteractorIF {
 			return usecase.NewTonkInteractor(domain.NewDefaultTonk(), new(presenter.TonkWebPresenter))
