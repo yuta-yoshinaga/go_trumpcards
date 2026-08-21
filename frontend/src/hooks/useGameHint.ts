@@ -26,6 +26,7 @@ import type {
   BhabhiResponse,
   BidEuchreResponse,
   BidWhistResponse,
+  BigBenResponse,
   BigTwoResponse,
   BisleyResponse,
   BlackHoleResponse,
@@ -348,6 +349,7 @@ import { getBeziqueHint } from '../utils/hints/beziqueHint';
 import { getBhabhiHint } from '../utils/hints/bhabhiHint';
 import { getBidEuchreHint } from '../utils/hints/bideuchreHint';
 import { getBidWhistHint } from '../utils/hints/bidwhistHint';
+import { getBigBenHint } from '../utils/hints/bigbenHint';
 import { getBigTwoHint } from '../utils/hints/bigtwoHint';
 import { getBisleyHint } from '../utils/hints/bisleyHint';
 import { getBlackHoleHint } from '../utils/hints/blackholeHint';
@@ -887,6 +889,7 @@ export const hintFactories = {
   bisley: (s) => getBisleyHint(s as BisleyResponse),
   napoleonssquare: (s) => getNapoleonsSquareHint(s as NapoleonsSquareResponse),
   grandfathersclock: (s) => getGrandfathersClockHint(s as GrandfathersClockResponse),
+  bigben: (s) => getBigBenHint(s as BigBenResponse),
   duchess: (s) => getDuchessHint(s as DuchessResponse),
   windmill: (s) => getWindmillHint(s as WindmillResponse),
   americantoad: (s) => getAmericanToadHint(s as AmericanToadResponse),

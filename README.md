@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した333種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した334種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -146,6 +146,7 @@ Go + Clean Architecture で実装した333種類のトランプゲーム。CLI �
 | サリカ法典 (Salic Law) | `saliclaw` | [CUI](docs/manual/cui/saliclaw.md) / [Web](docs/manual/web/saliclaw.md) |
 | セント・ヘレナ (St. Helena) | `sthelena` | [CUI](docs/manual/cui/sthelena.md) / [Web](docs/manual/web/sthelena.md) |
 | スライ・フォックス (Sly Fox) | `slyfox` | [CUI](docs/manual/cui/slyfox.md) / [Web](docs/manual/web/slyfox.md) |
+| ビッグ・ベン (Big Ben) | `bigben` | [CUI](docs/manual/cui/bigben.md) / [Web](docs/manual/web/bigben.md) |
 | カーズ・アンド・ホエイ (Curds and Whey) | `curdsandwhey` | [CUI](docs/manual/cui/curdsandwhey.md) / [Web](docs/manual/web/curdsandwhey.md) |
 | ホワイトヘッド (Whitehead) | `whitehead` | [CUI](docs/manual/cui/whitehead.md) / [Web](docs/manual/web/whitehead.md) |
 | スタラクタイト (Stalactites) | `stalactites` | [CUI](docs/manual/cui/stalactites.md) / [Web](docs/manual/web/stalactites.md) |

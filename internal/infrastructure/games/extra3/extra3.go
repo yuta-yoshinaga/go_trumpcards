@@ -333,4 +333,12 @@ func init() {
 			return usecase.RestoreSakuraInteractor(data, new(presenter.SakuraWebPresenter))
 		},
 		controller.NewSakuraWebControllerWithProvider)
+	games.RegisterKVGame("bigben", games.CategoryExtra3,
+		func() usecase.BigBenInteractorIF {
+			return usecase.NewBigBenInteractor(domain.NewDefaultBigBen(), new(presenter.BigBenWebPresenter))
+		},
+		func(data []byte) (usecase.BigBenInteractorIF, error) {
+			return usecase.RestoreBigBenInteractor(data, new(presenter.BigBenWebPresenter))
+		},
+		controller.NewBigBenWebControllerWithProvider)
 }

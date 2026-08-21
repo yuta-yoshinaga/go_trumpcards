@@ -312,6 +312,8 @@ tags:
     description: Napoleon's Square game - two-deck square solitaire; eight foundations seeded with the Aces, twelve columns of four, and same-suit runs that move as one unit
   - name: grandfathersclock
     description: Grandfather's Clock game - twelve clock faces, each finishing on the rank of the hour it occupies; no stock, all 52 cards dealt at the start
+  - name: bigben
+    description: Big Ben (ビッグ・ベン) game - two-deck clock solitaire; twelve faces run from the two of clubs at nine o'clock, each finishing on the rank of its own hour, with a stock that tops every column back up to three
   - name: missmilligan
     description: Miss Milligan game - two-deck solitaire dealt eight at a time onto every column, with a "waiving" rescue that holds one run aside once the stock is gone
   - name: duchess
@@ -16263,6 +16265,162 @@ paths:
               schema:
                 $ref: '#/components/schemas/GrandfathersClockResponse'
 
+  /bigben/exec:
+    post:
+      tags:
+        - bigben
+      summary: Execute a Big Ben game command
+      description: |
+        Send a command to advance the Big Ben (ビッグ・ベン) game session
+        identified by `sessionId`. Big Ben is a single-player solitaire using
+        2 standard decks (104 cards).
+
+        Twelve foundations form a clock face: **the two of clubs sits at nine
+        o'clock** and each position clockwise starts one rank higher in the suit
+        order clubs, hearts, spades, diamonds, ending on the king of diamonds at
+        eight o'clock. Each builds **up in suit, wrapping king to ace, until it
+        shows its own hour** and then accepts nothing more.
+
+        **Those totals close on the deck exactly**: the four positions from nine
+        to twelve take 8 cards each and the other eight take 9, so
+        4 x 8 + 8 x 9 = 104. "Every card on a foundation" and "every clock shows
+        its hour" are the same statement.
+
+        Eight columns of five are dealt below. They build **down in suit**, top
+        card only, and **an emptied column is never refilled**. The remaining 52
+        cards are the stock: `deal` tops every column up to three cards, or
+        gives one round if they all already have three. **There is no redeal**,
+        and `stockCount` reports what is left.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | Every clock face shows its hour |
+        | GameOver  | `2`   | No more moves available |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `deal`         | `d`     | Top every column up to three from the stock |
+        | `move`         | `m`     | Move a card to a clock face or another column |
+        | `undo`         | `u`     | Undo the last action |
+        | `giveup`       | `g`     | Give up the current game |
+        | `hint`         | `h`     | Show a hint for the next move |
+        | `autocomplete` | `ac`    | Auto-move cards to the clock faces |
+        | `log`          | `l`     | View action log |
+      operationId: bigBenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, deal, d, move, m, undo, u, undo_n, giveup, g, hint, h, autocomplete, ac, log, l]
+                from:
+                  $ref: '#/components/schemas/BigBenMoveZone'
+                to:
+                  $ref: '#/components/schemas/BigBenMoveZone'
+                n:
+                  type: integer
+                  description: Number of times to undo (for undo_n command)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              deal:
+                summary: Top every column back up to three
+                value:
+                  command: deal
+                  sessionId: my-session-001
+              move:
+                summary: Send the top of column 3 to the clock face at nine o'clock
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 3
+                  to:
+                    zone: foundation
+                    col: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    description: 8 columns building down in suit; an empty one is never refilled
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  foundation:
+                    type: array
+                    description: 12 clock faces, index 0 at nine o'clock through index 11 at eight
+                    items:
+                      type: object
+                      properties:
+                        cards:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Card'
+                        targetRank:
+                          type: integer
+                          description: The rank this face must reach - its own hour
+                        complete:
+                          type: boolean
+                  stockCount:
+                    type: integer
+                    description: Cards left to deal; there is no redeal
+                  phase:
+                    type: integer
+                    description: Current game phase (0=Playing, 1=GameClear, 2=GameOver)
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromZone:
+                        type: string
+                      fromCol:
+                        type: integer
+                      toZone:
+                        type: string
+                      toIdx:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+        '400':
+          description: Invalid request
+
   /missmilligan/exec:
     post:
       tags:
@@ -30529,6 +30687,19 @@ components:
           additionalProperties:
             type: string
 
+    BigBenMoveZone:
+      type: object
+      description: Source or target zone for a Big Ben card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (tableau, foundation)
+          enum: [tableau, foundation]
+        col:
+          type: integer
+          description: Tableau column 0..7, or clock face 0..11 (index 0 is nine o'clock)
     GrandfathersClockMoveZone:
       type: object
       description: Source or target zone for a Grandfather's Clock card move

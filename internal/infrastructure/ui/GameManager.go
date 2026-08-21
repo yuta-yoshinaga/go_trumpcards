@@ -6452,6 +6452,28 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("bigben",
+		func() usecase.BigBenInteractorIF {
+			return usecase.NewBigBenInteractor(domain.NewDefaultBigBen(), new(presenter.BigBenCuiPresenter))
+		},
+		controller.NewBigBenCuiController,
+		CuiHelpSpec{
+			TitleKey: "bigben.helpTitle",
+			ExampleKeys: []string{
+				"bigben.helpExampleHint",
+				"bigben.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"bigben.helpDeal",
+				"bigben.helpMoveTF",
+				"bigben.helpMoveTT",
+				"bigben.helpGiveUp",
+				"bigben.helpHint",
+				"bigben.helpAutoComplete",
+				"bigben.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
