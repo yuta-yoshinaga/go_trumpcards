@@ -32,6 +32,7 @@ export * from './games/bezique';
 export * from './games/bhabhi';
 export * from './games/bideuchre';
 export * from './games/bidwhist';
+export * from './games/bigben';
 export * from './games/bigtwo';
 export * from './games/bisley';
 export * from './games/blackhole';

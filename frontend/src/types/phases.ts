@@ -2406,6 +2406,13 @@ export const GrandfathersClockPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Big Ben phase constants (sync: internal/domain/BigBen.go). */
+export const BigBenPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Niu Niu phase constants (sync: internal/domain/NiuNiu.go). */
 export const NiuNiuPhase = {
   BET: 1,

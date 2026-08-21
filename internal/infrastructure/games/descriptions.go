@@ -162,6 +162,7 @@ var gameDescriptions = map[string]string{
 	"saliclaw":            "Salic Law (サリカ法典)",
 	"sthelena":            "St. Helena (セント・ヘレナ)",
 	"slyfox":              "Sly Fox (スライ・フォックス)",
+	"bigben":              "Big Ben (ビッグ・ベン)",
 	"tonk":                "Tonk (トンク)",
 	"casinowar":           "Casino War (カジノウォー)",
 	"pitch":               "Pitch / Setback (ピッチ / セットバック)",

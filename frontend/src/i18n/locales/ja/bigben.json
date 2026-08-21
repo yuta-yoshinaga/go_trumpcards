@@ -1,0 +1,45 @@
+{
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "文字盤を配り札より先へ進めると有効になります",
+  "cardPosAria": "{{card}}（列{{col}}・上から{{pos}}枚目）",
+  "empty": "空",
+  "emptyColumnAriaLabel": "空のタブロー列 {{col}}",
+  "emptyFaceAriaLabel": "空の文字盤{{idx}} ({{hour}}時)",
+  "faceAriaLabel": "文字盤{{idx}} ({{hour}}時) 目標{{target}} {{count}}枚",
+  "facesComplete": "完成 {{count}}/{{total}}",
+  "foundation": "文字盤",
+  "frontendHint": {
+    "tableau": "タブロー列{{col}}",
+    "foundation": "文字盤{{idx}}"
+  },
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "gameOverSummary": "文字盤 {{count}}/{{total}} 個を完成",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "hintAvailable": "ヒントがあります",
+  "hintReason": {
+    "toFoundation": "このカードを文字盤に上げると場が1枚軽くなります",
+    "toTableau": "示唆された場札への移動で下のカードを掘り出しましょう"
+  },
+  "hourLabel": "{{hour}}時",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "moveCount": "手数",
+  "noHint": "ヒントはありません",
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "playing": "カードを移動してください",
+  "stalemate": "手詰まりです",
+  "tableau": "場札",
+  "tutorial": {
+    "clock": "中央上段が12個の文字盤です。**9時の♣2から時計回り**に1ランクずつ上がり、8時の♦Kで一周します。同じスートで昇順（Kの次はAに折り返す）に積み上げます。",
+    "targets": "各文字盤の下の「→数字」がその文字盤の目標ランクで、**その文字盤の時刻**と同じです（9時なら9、12時ならQ）。目標に達した文字盤は完成印が付き、以後カードを受け付けません。**12個ぶんの合計はちょうど104枚**なので、全部完成させると全札が乗り切ります。",
+    "tableau": "場札は8列×5枚。**同じスートで1つ下**のランクに1枚ずつ重ねられます。**空いた列は二度と埋まりません。**残り52枚は山札で、手が尽きたら「配る」で各列3枚まで補充します（再配りはありません）。",
+    "controls": "配る・ヒント・元に戻す・自動完成などの操作ボタンです。"
+  },
+  "undo": "元に戻す",
+  "deal": "配る"
+}
