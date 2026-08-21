@@ -186,6 +186,8 @@ tags:
     description: Four Seasons / Corners (フォーシーズンズ) game - cross tableau with wraparound foundations
   - name: colorado
     description: Colorado (コロラド) game - two-deck solitaire with four ascending and four descending foundations
+  - name: slyfox
+    description: Sly Fox (スライ・フォックス) game - two-deck solitaire dealt into twenty reserve slots; four foundations build up from the aces and four down from the kings, and the reserve cannot feed them until twenty cards have been dealt
   - name: cribbagesquares
     description: Cribbage Squares (クリベッジ・スクエアズ) game - 4x4 grid scored as eight cribbage hands against a hidden starter
   - name: diplomat
@@ -6701,6 +6703,180 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ColoradoResponse'
+  /slyfox/exec:
+    post:
+      tags:
+        - slyfox
+      summary: Execute a Sly Fox game command
+      description: |
+        Send a command to advance the Sly Fox (スライ・フォックス) game session
+        identified by `sessionId`. Sly Fox is a single-player solitaire using
+        2 standard decks (104 cards).
+
+        Twenty reserve slots start with one card each; the other 84 form the
+        stock. The eight foundations start **empty** and build **up in suit
+        from the aces and down in suit from the kings** (8 x 13 = 104) — an ace
+        or king founds its pile when it turns up.
+
+        **There is no waste.** Each `deal` takes the next stock card and puts it
+        where you say: onto a reserve slot (`to.zone: tableau`) or straight onto
+        a foundation that accepts it (`to.zone: foundation`).
+
+        **The reserve is locked until twenty cards have been dealt onto it.**
+        You commit twenty placements before you may harvest any of them. A card
+        sent straight to a foundation does **not** count toward the twenty, so a
+        lucky draw is not punished. `reserveLocked` and `dealtThisCycle` report
+        the state, so a client can grey out the reserve instead of sending a
+        move the server will refuse. The lock also lifts once the stock is
+        empty, or the endgame would be unplayable.
+
+        Placing a card buries whatever is under it, and **an empty slot is never
+        refilled** — choosing where to bury is the whole game.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All foundations complete |
+        | GameOver  | `2`   | No more moves available |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `deal`         | `d`     | Deal the next stock card to the given destination |
+        | `move`         | `m`     | Send a reserve top to a foundation |
+        | `undo`         | `u`     | Undo the last action |
+        | `giveup`       | `g`     | Give up the current game |
+        | `hint`         | `h`     | Show a hint for the next move |
+        | `autocomplete` | `ac`    | Auto-move cards to foundations |
+        | `log`          | `l`     | View action log |
+      operationId: slyFoxExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, deal, d, move, m, undo, u, undo_n, giveup, g, hint, h, autocomplete, ac, log, l]
+                from:
+                  $ref: '#/components/schemas/SlyFoxMoveZone'
+                to:
+                  $ref: '#/components/schemas/SlyFoxMoveZone'
+                n:
+                  type: integer
+                  description: Number of times to undo (for undo_n command)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              deal:
+                summary: Deal the next card onto reserve slot 7
+                value:
+                  command: deal
+                  to:
+                    zone: tableau
+                    idx: 7
+                  sessionId: my-session-001
+              dealToFoundation:
+                summary: Deal the next card straight onto foundation 0 (does not count toward the twenty)
+                value:
+                  command: deal
+                  to:
+                    zone: foundation
+                    idx: 0
+                  sessionId: my-session-001
+              move:
+                summary: Send the top of reserve slot 3 to a foundation
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    idx: 3
+                  to:
+                    zone: foundation
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    description: 20 reserve slots; only the top card of each is available
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  foundation:
+                    type: array
+                    description: 8 foundations - 0..3 build up from the aces, 4..7 build down from the kings
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  foundationAscending:
+                    type: array
+                    description: Build direction per foundation; true is ace to king
+                    items:
+                      type: boolean
+                  stockCount:
+                    type: integer
+                  dealtThisCycle:
+                    type: integer
+                    description: Cards dealt onto the reserve this round; a card sent straight to a foundation is not counted
+                  dealCycle:
+                    type: integer
+                    description: How many cards make one round (20)
+                  reserveLocked:
+                    type: boolean
+                    description: Whether the reserve still cannot feed the foundations
+                  phase:
+                    type: integer
+                    description: Current game phase (0=Playing, 1=GameClear, 2=GameOver)
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromZone:
+                        type: string
+                      fromIdx:
+                        type: integer
+                      toZone:
+                        type: string
+                      toIdx:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+        '400':
+          description: Invalid request
+
   /cribbagesquares/exec:
     post:
       tags:
@@ -49454,6 +49630,24 @@ components:
         idx:
           type: integer
           description: Tableau pile index (0..19); omitted for the waste, the stock, and for a foundation (the server picks the pile)
+    SlyFoxMoveZone:
+      type: object
+      description: Source or target zone for a Sly Fox card move or deal
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: >-
+            Zone identifier. There is no waste, and the stock is never a move
+            source: a dealt card is placed by naming its destination.
+          enum: [tableau, foundation]
+        idx:
+          type: integer
+          description: >-
+            Reserve slot 0..19, or foundation 0..7 when dealing straight to one.
+            Omitted for a move's foundation destination, where the server picks
+            the pile.
     CribbageSquaresScore:
       type: object
       description: One hand's cribbage score breakdown

@@ -405,4 +405,12 @@ func init() {
 			return usecase.RestoreRikkenInteractor(data, new(presenter.RikkenWebPresenter))
 		},
 		controller.NewRikkenWebControllerWithProvider)
+	games.RegisterKVGame("slyfox", games.CategoryExtra2,
+		func() usecase.SlyFoxInteractorIF {
+			return usecase.NewSlyFoxInteractor(domain.NewDefaultSlyFox(), new(presenter.SlyFoxWebPresenter))
+		},
+		func(data []byte) (usecase.SlyFoxInteractorIF, error) {
+			return usecase.RestoreSlyFoxInteractor(data, new(presenter.SlyFoxWebPresenter))
+		},
+		controller.NewSlyFoxWebControllerWithProvider)
 }

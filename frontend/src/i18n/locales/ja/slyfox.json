@@ -1,0 +1,54 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "スライ・フォックス",
+  "stock": "山札",
+  "tableau": "リザーブ",
+  "foundation": "組札",
+  "foundations": "組札（↑=A→K、↓=K→A）",
+  "ascending": "昇順",
+  "descending": "降順",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "undo": "元に戻す",
+  "autoComplete": "オートコンプリート",
+  "selectTarget": "移動先を選択してください",
+  "deselect": "キャンセル",
+  "empty": "空",
+  "nextRankBadge": "次:{{rank}}",
+  "nextRankAria": "次に置くべきカード {{rank}}",
+  "foundationCompleteAria": "完成",
+  "emptyPileAria": "空き枠。配るときの置き場所になります（補充はされません）",
+  "pileCountAria": "{{count}}枚",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "stalemate": "手詰まりです",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "landscapeBanner": "横向き画面推奨",
+  "frontendHint": {
+    "slyFoxTableau": "リザーブのカードを組札に置けます",
+    "slyFoxDealToFoundation": "めくった札をそのまま組札へ送れます（20枚に数えません）",
+    "slyFoxDealToSlot": "この枠に配るのが一番損が小さいです"
+  },
+  "tutorial": {
+    "foundations": "組札は8つ。左の4つは A から K へ昇順（↑）、右の4つは K から A へ降順（↓）に積みます。52枚2組=104枚がちょうど収まります。**最初は空**で、A や K が出たときにそこから始まります。",
+    "stock": "**捨て札はありません。**山札を押すと配り先を選ぶモードに入り、リザーブの枠か、置ける組札を選びます。組札へ直接送った札は20枚に数えません。",
+    "tableau": "リザーブは20枠。**20枚配り切るまで、リザーブから組札へは1枚も送れません。**置いた札は下のカードを埋め、**空いた枠は補充されません** ── どこに埋めるかがこのゲームのすべてです。",
+    "controls": "操作ボタン。配る・ヒント・元に戻すなどが行えます。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "nav": {
+    "slyfox": "スライ・フォックス"
+  },
+  "deal": "配る",
+  "dealAria": "山札から1枚配る（配り先を選びます）",
+  "dealTarget": "配り先",
+  "cycleLocked": "この周: {{dealt}}/{{cycle}} 枚配り済み。あと {{left}} 枚でリザーブが開きます",
+  "cycleOpen": "リザーブは開いています"
+}

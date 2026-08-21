@@ -74,6 +74,7 @@ export const workerUrl: Record<string, string> = {
   soko: WORKER_CASINO,
   fourseasons: WORKER_SOLO,
   colorado: WORKER_CLASSIC,
+  slyfox: WORKER_EXTRA2,
   cribbagesquares: WORKER_EXTRA2,
   diplomat: WORKER_EXTRA,
   royalcotillion: WORKER_CLASSIC,
