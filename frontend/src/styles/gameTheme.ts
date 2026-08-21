@@ -62,6 +62,7 @@ export type GameKey =
   | 'pineapple'
   | 'crazypineapple'
   | 'irishpoker'
+  | 'followthequeen'
   | 'sevencardstud'
   | 'fivecardstud'
   | 'soko'
@@ -649,6 +650,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   pineapple: POKER,
   crazypineapple: POKER,
   irishpoker: POKER,
+  followthequeen: POKER,
   sevencardstud: POKER,
   fivecardstud: POKER,
   soko: POKER,

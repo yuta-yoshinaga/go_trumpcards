@@ -163,6 +163,7 @@ var gameDescriptions = map[string]string{
 	"sthelena":            "St. Helena (セント・ヘレナ)",
 	"slyfox":              "Sly Fox (スライ・フォックス)",
 	"bigben":              "Big Ben (ビッグ・ベン)",
+	"followthequeen":      "Follow the Queen (フォロー・ザ・クイーン)",
 	"tonk":                "Tonk (トンク)",
 	"casinowar":           "Casino War (カジノウォー)",
 	"pitch":               "Pitch / Setback (ピッチ / セットバック)",

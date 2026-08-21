@@ -102,6 +102,7 @@ import type {
   FiveCardStudResponse,
   FiveHundredResponse,
   FlowerGardenResponse,
+  FollowTheQueenResponse,
   FortressResponse,
   FortyAndEightResponse,
   FortyFivesResponse,
@@ -427,6 +428,7 @@ import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
 import { getFiveCardStudHint } from '../utils/hints/fivecardstudHint';
 import { getFiveHundredHint } from '../utils/hints/fivehundredHint';
 import { getFlowergardenHint } from '../utils/hints/flowergardenHint';
+import { getFollowTheQueenHint } from '../utils/hints/followthequeenHint';
 import { getFortressHint } from '../utils/hints/fortressHint';
 import { getFortyAndEightHint } from '../utils/hints/fortyandeightHint';
 import { getFortyFivesHint } from '../utils/hints/fortyFivesHint';
@@ -799,6 +801,7 @@ export const hintFactories = {
   osmosis: (s) => getOsmosisHint(s as OsmosisResponse),
   pinochle: (s) => getPinochleHint(s as PinochleResponse),
   twotenjack: (s) => getTwoTenJackHint(s as TwoTenJackResponse),
+  followthequeen: (s) => getFollowTheQueenHint(s as FollowTheQueenResponse),
   sevencardstud: (s) => getSevenCardStudHint(s as SevenCardStudResponse),
   // Hi-Lo shares the stud page and, with it, stud's absence of a frontend hint.
   sevencardstudhilo: (s) => getSevenCardStudHint(s as SevenCardStudResponse),

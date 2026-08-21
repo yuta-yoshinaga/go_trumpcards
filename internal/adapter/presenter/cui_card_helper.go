@@ -380,3 +380,23 @@ func cuiDiscardPileLines(pile []*domain.Card, key string) string {
 // cuiDiscardPerLine は捨て札一覧の 1 行あたりの枚数。20 枚超の山を 1 行に並べると
 // 折り返しで読めなくなる。
 const cuiDiscardPerLine = 8
+
+// cuiRankName は表示用のランク名を返す (A/J/Q/K は文字、それ以外は数字)。
+//
+// **Chinchón の presenter (extra タグ) から、タグの無いこのファイルへ移した。**
+// ランク名の表記に固有のゲームは無いのに置き場所が 1 バケットに縛られていて、
+// casino の Follow the Queen から呼んだ時点で stranded symbol になった。
+func cuiRankName(value int) string {
+	switch value {
+	case 1:
+		return "A"
+	case 11:
+		return "J"
+	case 12:
+		return "Q"
+	case 13:
+		return "K"
+	default:
+		return strconv.Itoa(value)
+	}
+}
