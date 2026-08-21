@@ -426,6 +426,8 @@ tags:
     description: Blackjack Switch (ブラックジャック・スイッチ) game - blackjack variant where the player plays two hands and may swap the second card between them; in return, naturals pay 1:1 and a dealer 22 is a push (not a bust)
   - name: montecarlo
     description: Monte Carlo Solitaire (モンテカルロ・ソリティア) game - 5x5 grid solitaire; remove 8-direction adjacent same-rank pairs, then deal to compress the board top-left and refill from the stock; clear all 52 cards to win
+  - name: fourteenout
+    description: Fourteen Out (フォーティーンアウト) game - the whole deck dealt into 12 columns (the first four hold five cards); remove any two exposed column tails whose ranks sum to 14, with no stock and no redeal; clear all 52 cards to win
   - name: contractrummy
     description: Contract Rummy (コントラクトラミー) game - 3-player rummy (1 human + 2 CPU) over 7 progressive rounds; each round has a fixed contract (sets / runs) the player must lay before going out; lowest cumulative penalty across rounds wins
   - name: kalooki
@@ -20472,6 +20474,73 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MonteCarloResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /fourteenout/exec:
+    post:
+      tags:
+        - fourteenout
+      summary: Execute a Fourteen Out game command
+      description: |
+        Send a command to advance the Fourteen Out (フォーティーンアウト) game
+        session identified by `sessionId`. The whole 52-card deck is dealt into
+        12 columns left to right, the first four holding five cards and the rest
+        four, so nothing is held back: there is no stock and no redeal.
+
+        Only the tail (last card) of each column is exposed. Any two exposed
+        cards whose ranks sum to 14 are removed together, and the cards beneath
+        them become exposed. Aces count 1 and J/Q/K count 11/12/13, so the pairs
+        are K+A, Q+2, J+3, 10+4, 9+5, 8+6, and 7+7 — the only same-rank pair.
+        Suit is ignored and the two columns need not be adjacent. Win by
+        clearing all 52 cards; when no pair remains, the game is lost.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Removing pairs |
+        | GameClear | `1`   | All 52 cards removed |
+        | GameOver  | `2`   | No pair remains, or gave up |
+
+        | Command  | Aliases       | Description |
+        |----------|---------------|-------------|
+        | `reset`  | `r`           | Start / restart a game |
+        | `remove` | `m`, `move`   | Remove two column tails summing to 14 (requires `fromCol`, `toCol`) |
+                | `undo`   | `u`           | Undo the last removal |
+        | `giveup` | `g`           | End the game as a loss |
+        | `hint`   | `h`           | Return a recommended pair, or nothing when none exists |
+        | `log`    | `l`           | View action log |
+      operationId: fourteenoutExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FourteenOutRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              remove:
+                summary: Remove the tails of columns 0 and 3 (they make 14)
+                value:
+                  command: remove
+                  fromCol: 0
+                  toCol: 3
+                  sessionId: my-session-001
+              hint:
+                summary: Ask the server for a hint
+                value:
+                  command: hint
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FourteenOutResponse'
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
 
@@ -54338,12 +54407,48 @@ components:
           description: Client-generated session identifier (max 256 characters)
           example: my-session-001
 
+    FourteenOutRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `remove` (`m`, `move`),
+            `undo` (`u`), `giveup` (`g`), `hint` (`h`), `log` (`l`).
+          enum: [r, reset, m, move, remove, u, undo, g, giveup, h, hint, log, l]
+          example: remove
+        fromCol:
+          type: integer
+          description: First column (0-11) for the `remove` command; its tail is taken.
+          minimum: 0
+          maximum: 11
+        toCol:
+          type: integer
+          description: Second column (0-11) for the `remove` command; its tail is taken.
+          minimum: 0
+          maximum: 11
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
     MonteCarloOutputCard:
       type: object
       description: A single cell in the 5x5 Monte Carlo board (empty when `card` is null).
       properties:
         card:
           description: Card on this cell, or null if the cell is empty (gap awaiting compression).
+          $ref: '#/components/schemas/Card'
+
+    FourteenOutOutputCard:
+      type: object
+      description: A single card in a Fourteen Out column.
+      properties:
+        card:
+          description: The card at this position in the column.
           $ref: '#/components/schemas/Card'
 
     MonteCarloHint:
@@ -54368,6 +54473,23 @@ components:
         toC:
           type: integer
           description: Second-cell column for `remove`.
+
+    FourteenOutHint:
+      type: object
+      description: Recommended next move - the two columns whose tails make 14.
+      required:
+        - action
+      properties:
+        action:
+          type: string
+          description: "Recommended action; always 'remove' -- there is no deal in this game."
+          enum: [remove]
+        fromCol:
+          type: integer
+          description: First column of the recommended pair.
+        toCol:
+          type: integer
+          description: Second column of the recommended pair.
 
     MonteCarloResponse:
       type: object
@@ -54416,6 +54538,56 @@ components:
           description: True when no remove pair exists and `deal` cannot change the board.
         hint:
           $ref: '#/components/schemas/MonteCarloHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    FourteenOutResponse:
+      type: object
+      description: Current state of the Fourteen Out game
+      required:
+        - columns
+        - phase
+        - removedCount
+        - removablePairs
+        - canUndo
+        - isStalemate
+        - message
+      properties:
+        columns:
+          type: array
+          description: "The 12 columns, left to right. Only the last card of each is in play; a cleared column is an empty array."
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/FourteenOutOutputCard'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        removedCount:
+          type: integer
+          description: Cards removed from the board so far (must reach 52 to win).
+          minimum: 0
+          maximum: 52
+        removablePairs:
+          type: integer
+          description: How many pairs summing to 14 are currently available.
+          minimum: 0
+        canUndo:
+          type: boolean
+          description: Whether the undo action is available.
+        isStalemate:
+          type: boolean
+          description: True when no two exposed cards sum to 14. With no stock, this is a loss.
+        hint:
+          $ref: '#/components/schemas/FourteenOutHint'
         message:
           type: string
         messageCode:

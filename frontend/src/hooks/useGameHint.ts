@@ -107,6 +107,7 @@ import type {
   FortyThievesResponse,
   FourCardPokerResponse,
   FourSeasonsResponse,
+  FourteenOutResponse,
   FreeBetResponse,
   FreeCellResponse,
   FrenchTarotResponse,
@@ -424,6 +425,7 @@ import { getFortyFivesHint } from '../utils/hints/fortyFivesHint';
 import { getFortyThievesHint } from '../utils/hints/fortythievesHint';
 import { getFourCardPokerHint } from '../utils/hints/fourcardpokerHint';
 import { getFourSeasonsHint } from '../utils/hints/fourseasonsHint';
+import { getFourteenOutHint } from '../utils/hints/fourteenoutHint';
 import { getFreebetHint } from '../utils/hints/freebetHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getFrenchTarotHint } from '../utils/hints/frenchtarotHint';
@@ -793,6 +795,7 @@ export const hintFactories = {
   sultan: (s) => getSultanHint(s as SultanResponse),
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
   perseverance: (s) => getPerseveranceHint(s as PerseveranceResponse),
+  fourteenout: (s) => getFourteenOutHint(s as FourteenOutResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   fortress: (s) => getFortressHint(s as FortressResponse),
   somerset: (s) => getSomersetHint(s as SomersetResponse),

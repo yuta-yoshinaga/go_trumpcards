@@ -1,0 +1,22 @@
+{
+  "helpTitle": "Fourteen Out (フォーティーンアウト)",
+  "helpRemove": "  m <col1> <col2>     2 列の末尾札を取り除く (合計 14。例: m 0 3)",
+  "helpGiveup": "  g, giveup           ギブアップ",
+  "helpHint": "  h, hint             ヒントを表示",
+  "helpLog": "  log, l              棋譜を表示",
+  "helpUndo": "  u, undo             1手戻す",
+  "playing": "プレイ中",
+  "stalemate": "手詰まりです。合計 14 になる組がもうありません",
+  "gameClear": "ゲームクリア！ 52 枚すべて取り除きました",
+  "gameOver": "ゲームオーバー",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "columnEmpty": "列{{col}}: (空)",
+  "columnLine": "列{{col}}: {{cards}}  ← {{tail}}",
+  "header": "取り除いた枚数: {{removed}}/52",
+  "hintLineRemove": "ヒント: 列{{col1}} と 列{{col2}} を取り除く",
+  "hintLineRemoveCard": "ヒント: 列{{col1}}の{{card1}} と 列{{col2}}の{{card2}} を取り除く (合計14)",
+  "helpExampleHint": "  h                   次の一手を教えてもらう",
+  "removablePairs": "除去可能: {{count}} 組",
+  "usageMC1C2": "使い方: m <列1> <列2> (例: m 0 3)"
+}

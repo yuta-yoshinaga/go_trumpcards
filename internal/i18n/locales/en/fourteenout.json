@@ -1,0 +1,22 @@
+{
+  "helpTitle": "Fourteen Out",
+  "helpRemove": "  m <col1> <col2>     remove two column tails summing to 14 (e.g. m 0 3)",
+  "helpGiveup": "  g, giveup           give up",
+  "helpHint": "  h, hint             show a hint",
+  "helpLog": "  log, l              show the action log",
+  "helpUndo": "  u, undo             undo one move",
+  "playing": "Playing",
+  "stalemate": "Stuck — no two exposed cards add up to 14",
+  "gameClear": "Game Clear! All 52 cards removed",
+  "gameOver": "Game Over",
+  "hintAvailable": "Hint available",
+  "noHint": "No hint available",
+  "columnEmpty": "col{{col}}: (empty)",
+  "columnLine": "col{{col}}: {{cards}}  <- {{tail}}",
+  "header": "Removed: {{removed}}/52",
+  "hintLineRemove": "Hint: remove col{{col1}} and col{{col2}}",
+  "hintLineRemoveCard": "Hint: remove {{card1}} in col{{col1}} and {{card2}} in col{{col2}} (they make 14)",
+  "helpExampleHint": "  h                   ask for the next move",
+  "removablePairs": "Removable pairs: {{count}}",
+  "usageMC1C2": "Usage: m <col1> <col2> (e.g. m 0 3)"
+}

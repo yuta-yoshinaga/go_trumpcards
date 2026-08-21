@@ -1457,6 +1457,13 @@ export const BakersDozenPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Fourteen Out phase constants (sync: internal/domain/FourteenOut.go). */
+export const FourteenOutPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Perseverance phase constants (sync: internal/domain/Perseverance.go). */
 export const PerseverancePhase = {
   PLAYING: 0,

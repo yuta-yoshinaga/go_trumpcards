@@ -354,4 +354,12 @@ func init() {
 			return usecase.RestorePerseveranceInteractor(data, new(presenter.PerseveranceWebPresenter))
 		},
 		controller.NewPerseveranceWebControllerWithProvider)
+	games.RegisterKVGame("fourteenout", games.CategoryExtra4,
+		func() usecase.FourteenOutInteractorIF {
+			return usecase.NewFourteenOutInteractor(domain.NewDefaultFourteenOut(), new(presenter.FourteenOutWebPresenter))
+		},
+		func(data []byte) (usecase.FourteenOutInteractorIF, error) {
+			return usecase.RestoreFourteenOutInteractor(data, new(presenter.FourteenOutWebPresenter))
+		},
+		controller.NewFourteenOutWebControllerWithProvider)
 }
