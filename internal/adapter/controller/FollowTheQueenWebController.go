@@ -91,7 +91,15 @@ type FollowTheQueenWebOutput struct {
 	// WildRank は現在ワイルドのランク (0 = ワイルド無し)。**画面に出すために送る** ——
 	// 表向きのクイーンが出た次のカードのランクが全員のワイルドになるので、
 	// いま何がワイルドかが分からないと自分の役すら読めない。
-	WildRank         int                                 `json:"wildRank"`
+	WildRank int `json:"wildRank"`
+	// HumanHandRank は人間の**現時点の**最善役位 (ショーダウン前も入る)。
+	//
+	// **ページ側で数え直させない。** ワイルド判定はドメインの `IsWild` と
+	// `evalFiveCardHandWithWilds` の 1 本しかなく、フロントの汎用評価器は
+	// ワイルドを知らない。ページが自分で数えると、Q を持っているだけで実際より
+	// 2 段階弱い役名が出る（CUI は最初から PeekBestHand を通していた）。
+	// フォールド中・手が 5 枚未満なら -1。
+	HumanHandRank    int                                 `json:"humanHandRank"`
 	Phase            int                                 `json:"phase"`
 	GameEndFlag      bool                                `json:"gameEndFlag"`
 	LastBet          int                                 `json:"lastBet"`

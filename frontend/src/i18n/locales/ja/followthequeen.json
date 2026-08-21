@@ -75,11 +75,9 @@
     "followthequeenRaisePair": "ペアがある。レイズで押していこう",
     "followthequeenRaiseWildOne": "ワイルドを1枚持っています（実質ペア以上）",
     "followthequeenRaiseWildTwo": "ワイルドを2枚持っています（スリーカード以上が確定）",
-    "followthequeenPlayLow": "8以下が5枚。ハイは苦しいがローで半分を取りにいける",
     "followthequeenCheckFree": "払う額は無い。ただで次の札を見よう",
     "followthequeenCallHigh": "高い札がある。コールして様子を見よう",
-    "followthequeenFoldWeak": "高い札もペアも無い。降りよう",
-    "followthequeenCheckLow": "8以下が5枚。払う額は無いので、ただで次の札を見よう"
+    "followthequeenFoldWeak": "高い札もペアも無い。降りよう"
   },
   "style": {
     "tag": "TAG",

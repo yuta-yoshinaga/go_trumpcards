@@ -59,6 +59,13 @@ export interface FollowTheQueenResponse extends BaseGameResponse {
    * see the face-down cards the deal walked past.
    */
   wildRank: number;
+  /**
+   * The human's best hand rank right now, or -1 when they have fewer than five
+   * cards or have folded. Sent by the server because the wild rule lives in the
+   * domain: the frontend's generic evaluator does not know that Queens are
+   * always wild, so computing it here reads a hand two ranks weaker than it is.
+   */
+  humanHandRank: number;
   pot: number;
   sidePots: FollowTheQueenSidePot[];
   dealerIdx: number;

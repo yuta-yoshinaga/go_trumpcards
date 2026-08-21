@@ -167,11 +167,13 @@ func (p *FollowTheQueenPlayer) PeekBestHand() (rank int, best []*Card) {
 	bestRank := -1
 	var bestCards []*Card
 	for _, combo := range combinations(all, 5) {
-		r := evalFiveCardHandWithWilds(combo, p.IsWild)
-		if r > bestRank || (r == bestRank && compareHighCardsSlice(combo, bestCards) > 0) {
+		// **置換後の 5 枚を持ち回る。** 元の combo を bestHand にすると、
+		// 同位の比較がワイルドの印刷された額面を読み、ワイルドで作った
+		// フォーカードが本物のフォーカードに勝ってしまう。
+		r, hand := evalFiveCardHandWithWilds(combo, p.IsWild)
+		if r > bestRank || (r == bestRank && compareHighCardsSlice(hand, bestCards) > 0) {
 			bestRank = r
-			bestCards = make([]*Card, 5)
-			copy(bestCards, combo)
+			bestCards = hand
 		}
 	}
 	return bestRank, bestCards

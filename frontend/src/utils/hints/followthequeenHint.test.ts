@@ -212,3 +212,31 @@ describe('getFollowTheQueenHint wild cards', () => {
     expect(getFollowTheQueenHint(s)?.reason).not.toBe('frontendHint.followthequeenRaisePair');
   });
 });
+
+// **押す手は Raise とは限らない。** `BettingControls` は負債があるときだけ
+// Call+Raise を、無いときは Bet+Check を描く。負債 0 で 'raise' を指すのは
+// 存在しないボタンを指すことで、#4643 で下のコール分岐について直したのと
+// 同じ誤りを、あとから足した攻めの分岐で繰り返していた。
+describe('getFollowTheQueenHint push action', () => {
+  const strong = {
+    wildRank: 9,
+    hole: [card('SPADE', 9), card('HEART', 6)],
+    door: [card('DIAMOND', 9)],
+  };
+
+  it('says bet, not raise, when nothing is owed', () => {
+    const hint = getFollowTheQueenHint(base({ lastBet: 0, ...strong }));
+    expect(hint?.targetAction).toBe('bet');
+  });
+
+  it('says raise when there is an outstanding bet', () => {
+    const hint = getFollowTheQueenHint(base({ lastBet: 20, ...strong }));
+    expect(hint?.targetAction).toBe('raise');
+  });
+
+  it('applies the same rule to the plain pair branch', () => {
+    const paired = { wildRank: 0, hole: [card('SPADE', 4), card('HEART', 4)], door: [card('DIAMOND', 8)] };
+    expect(getFollowTheQueenHint(base({ lastBet: 0, ...paired }))?.targetAction).toBe('bet');
+    expect(getFollowTheQueenHint(base({ lastBet: 20, ...paired }))?.targetAction).toBe('raise');
+  });
+});

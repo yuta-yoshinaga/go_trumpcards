@@ -77,5 +77,6 @@ func (s *FollowTheQueen) SetRaiseCount(count int) { s.raiseCount = count }
 // 無い。配りに依存したテストを書かないための helper。
 func (s *FollowTheQueen) SetWildRankForTest(rank int) {
 	s.wildRank = rank
+	s.queenPending = false
 	s.publishWildRank()
 }

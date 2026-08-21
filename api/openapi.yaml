@@ -46701,6 +46701,7 @@ components:
         - type: object
           required:
             - wildRank
+            - humanHandRank
           properties:
             wildRank:
               type: integer
@@ -46708,6 +46709,12 @@ components:
               minimum: 0
               maximum: 13
               example: 7
+            humanHandRank:
+              type: integer
+              description: The human's best hand rank right now (wild rule applied), or -1 with fewer than five cards or after folding. Sent because the wild evaluation lives in the domain.
+              minimum: -1
+              maximum: 10
+              example: 3
     SevenCardStudResponse:
       type: object
       required:

@@ -86,6 +86,25 @@ func TestFollowTheQueen_AnOrdinaryUpCardDoesNotMoveTheWild(t *testing.T) {
 	assert.Equal(t, 7, s.GetWildRank(), "普通の表向き札は何も変えない")
 }
 
+// dealtBoard は Reset 済みで、**配りに依存しない**盤を返す。
+//
+// Reset はシャッフルして実際に配るので、そのままでは (a) 3rd street で Q が出て
+// ワイルドが既に立っている、(b) Reset 内の CPU 行動で誰かが降りていて
+// dealStreetCard が 4 枚配らない、の二つが乱数で起きる。どちらもこの下の
+// テストの前提を壊す（実際に 12 回に 1 回落ちた）。両方をここで潰す。
+func dealtBoard(t *testing.T) *FollowTheQueen {
+	t.Helper()
+	s := newTestFollowTheQueen()
+	require.NoError(t, s.Reset())
+	for _, p := range s.players {
+		p.SetFolded(false)
+		p.SetAllIn(false)
+	}
+	s.SetWildRankForTest(0) // queenPending も落ちる
+	require.Equal(t, 0, s.GetWildRank())
+	return s
+}
+
 // stackUpcoming は山札を「次に引かれる位置」から cards の順に固定する。
 // 配置漏れは即座に止める —— 黙って飛ばされると、狙っていない配りを検査する
 // テストになる。
@@ -102,8 +121,7 @@ func stackUpcoming(t *testing.T, s *FollowTheQueen, cards ...*Card) {
 // ドメインのテストが全部緑のままだった)。ここは山札を積んで **本番の配布関数**
 // から流す。
 func TestFollowTheQueen_DealingAnUpQueenSetsTheWildThroughTheRealDealPath(t *testing.T) {
-	s := newTestFollowTheQueen()
-	require.NoError(t, s.Reset())
+	s := dealtBoard(t)
 
 	// 4th street の表向き配布を、Q → ♦7 → ... の順に固定する。
 	stackUpcoming(t, s,
@@ -128,8 +146,7 @@ func TestFollowTheQueen_DealingAnUpQueenSetsTheWildThroughTheRealDealPath(t *tes
 // noteUpCard を叩いてしまうと「伏せ札は noteUpCard を通らない」という肝心の
 // 取り決めを一度も検査しないことになる。
 func TestFollowTheQueen_DealingADownQueenDoesNotMoveTheWild(t *testing.T) {
-	s := newTestFollowTheQueen()
-	require.NoError(t, s.Reset())
+	s := dealtBoard(t)
 
 	// 先に表向きでワイルドを 7 に固定しておく。
 	stackUpcoming(t, s,
@@ -210,15 +227,38 @@ func TestFollowTheQueen_ResetSetsTheWildFromTheDoorCardsItDealt(t *testing.T) {
 
 // **ワイルドはリセットで消える。**前のハンドのワイルドが残ると、配る前から
 // 特定ランクが強い盤になる。
+//
+// **`NotEqual(7)` では検査にならない。** Reset は実際に配るので、新しい盤で
+// Q → 7 が出れば 7 は正当な答えになる（40 回に 1 回落ちた）。「持ち越した 7」と
+// 「配り直して出た 7」は値では区別できない。
+// そこで **表向きの Q が 1 枚も出なかった盤**だけを見る。その盤の正解は必ず 0 で、
+// クリアを外せば 7 のまま残るので、曖昧さなく落ちる。
 func TestFollowTheQueen_ResetClearsTheWildRank(t *testing.T) {
 	s := newTestFollowTheQueen()
-	s.noteUpCard(NewCard(CardDesignSpade, FollowTheQueenQueenValue, true))
-	s.noteUpCard(NewCard(CardDesignHeart, 7, true))
-	require.Equal(t, 7, s.GetWildRank())
 
-	require.NoError(t, s.Reset())
-	// 配りの途中で Q が出れば設定されうるので、「7 のまま」でないことを見る。
-	assert.NotEqual(t, 7, s.GetWildRank(), "前のハンドのワイルドは持ち越さない")
+	checked := 0
+	for round := 0; round < 300 && checked == 0; round++ {
+		s.SetWildRankForTest(7)
+		require.Equal(t, 7, s.GetWildRank())
+		require.NoError(t, s.Reset())
+
+		queenShown := false
+		for _, p := range s.players {
+			for _, c := range p.GetDoorCards() {
+				if c.GetValue() == FollowTheQueenQueenValue {
+					queenShown = true
+				}
+			}
+		}
+		if queenShown {
+			continue // この盤の答えは 0 とは限らない
+		}
+		assert.Equal(t, 0, s.GetWildRank(),
+			"表向きの Q が 1 枚も出ていない盤なのでワイルドは無いはず")
+		checked++
+	}
+	require.Equal(t, 1, checked,
+		"300 回配って Q 無しの盤が一度も出ていない —— 検査が一度も走っていない")
 }
 
 // **ワイルドが評価に届くこと。**ゲームだけが知っていて評価器が知らないと、
@@ -280,7 +320,7 @@ func TestFollowTheQueen_FourWildsMakeFiveOfAKind(t *testing.T) {
 		NewCard(CardDesignDiamond, FollowTheQueenQueenValue, true),
 		NewCard(CardDesignSpade, 3, true),
 	}
-	assert.Equal(t, PokerHandFiveOfAKind, evalFiveCardHandWithWilds(hand, wild))
+	assert.Equal(t, PokerHandFiveOfAKind, mustWildRank(evalFiveCardHandWithWilds(hand, wild)))
 
 	// 3 枚 + 同ランク 2 枚でもファイブカード。
 	hand2 := []*Card{
@@ -290,7 +330,7 @@ func TestFollowTheQueen_FourWildsMakeFiveOfAKind(t *testing.T) {
 		NewCard(CardDesignSpade, 3, true),
 		NewCard(CardDesignHeart, 3, true),
 	}
-	assert.Equal(t, PokerHandFiveOfAKind, evalFiveCardHandWithWilds(hand2, wild))
+	assert.Equal(t, PokerHandFiveOfAKind, mustWildRank(evalFiveCardHandWithWilds(hand2, wild)))
 
 	// 負のコントロール: ワイルド 3 枚 + バラバラ 2 枚はファイブカードにならない。
 	hand3 := []*Card{
@@ -300,7 +340,7 @@ func TestFollowTheQueen_FourWildsMakeFiveOfAKind(t *testing.T) {
 		NewCard(CardDesignSpade, 3, true),
 		NewCard(CardDesignHeart, 8, true),
 	}
-	assert.Less(t, evalFiveCardHandWithWilds(hand3, wild), PokerHandFiveOfAKind)
+	assert.Less(t, mustWildRank(evalFiveCardHandWithWilds(hand3, wild)), PokerHandFiveOfAKind)
 }
 
 // **ワイルドはゲームからプレイヤーへ配られること。**ゲームだけが知っていると、
@@ -342,6 +382,66 @@ func TestFollowTheQueen_TheWildSurvivesTheKVRoundTrip(t *testing.T) {
 	assert.True(t, restored.IsWild(NewCard(CardDesignClover, 7, false)))
 }
 
+// **盤そのものの往復も見る。** 上はプレイヤー 1 人分で、ゲーム側の wildRank /
+// queenPending が JSON に載っているかは一切見ていなかった。Worker は
+// リクエストごとに状態を持たないので、ここから落ちると **本番だけ**で壊れる:
+// 盤の途中で「ワイルドはまだ無し」に戻る。手元の CLI は 1 プロセスなので出ない。
+func TestFollowTheQueen_TheBoardsWildSurvivesTheKVRoundTrip(t *testing.T) {
+	s := dealtBoard(t)
+	stackUpcoming(t, s,
+		NewCard(CardDesignSpade, FollowTheQueenQueenValue, false),
+		NewCard(CardDesignDiamond, 7, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignHeart, 4, false),
+	)
+	s.dealStreetCard(true)
+	require.Equal(t, 7, s.GetWildRank())
+
+	data, err := json.Marshal(s)
+	require.NoError(t, err)
+	restored := NewDefaultFollowTheQueen()
+	require.NoError(t, json.Unmarshal(data, restored))
+
+	assert.Equal(t, 7, restored.GetWildRank(), "盤のワイルドが往復で消えている")
+	assert.True(t, restored.IsWild(NewCard(CardDesignClover, 7, false)))
+}
+
+// **保留中の Q も往復させる。** ストリートの最後の表向き札が Q だった場合、
+// 次のストリートの 1 枚目がワイルドを決める。その「保留」が JSON に載っていないと、
+// Worker では **ストリートをまたいだ瞬間にワイルドが動かなくなる** —— しかも
+// wildRank だけを見ている検査は全部通ってしまう (往復の前後で 0 のままなので)。
+func TestFollowTheQueen_APendingQueenSurvivesTheKVRoundTrip(t *testing.T) {
+	s := dealtBoard(t)
+
+	// このストリートの表向きを全員 Q で終える = 最後の 1 枚が Q。
+	stackUpcoming(t, s,
+		NewCard(CardDesignSpade, 3, false),
+		NewCard(CardDesignHeart, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignClover, FollowTheQueenQueenValue, false),
+	)
+	s.dealStreetCard(true)
+	require.Equal(t, 0, s.GetWildRank(), "Q を出した直後はまだワイルド未確定")
+
+	data, err := json.Marshal(s)
+	require.NoError(t, err)
+	restored := NewDefaultFollowTheQueen()
+	require.NoError(t, json.Unmarshal(data, restored))
+
+	// **復元した盤で配りを続ける。** フィールドを覗くのではなく、次の 1 枚が
+	// ワイルドを取ることを実際に起こさせる。
+	stackUpcoming(t, restored,
+		NewCard(CardDesignSpade, 8, false),
+		NewCard(CardDesignHeart, 9, false),
+		NewCard(CardDesignDiamond, 10, false),
+		NewCard(CardDesignClover, 6, false),
+	)
+	restored.dealStreetCard(true)
+
+	assert.Equal(t, 8, restored.GetWildRank(),
+		"保留中の Q が往復で失われ、次の札がワイルドを取っていない")
+}
+
 // **ワイルド 5 枚**（Q 4 枚 + ワイルドランク 1 枚）でもファイブカード。
 // 固定札が 1 枚も無いので、「残り 1 枚に合わせる」理屈が使えない形。
 func TestFollowTheQueen_FiveWildsAreStillFiveOfAKind(t *testing.T) {
@@ -353,5 +453,32 @@ func TestFollowTheQueen_FiveWildsAreStillFiveOfAKind(t *testing.T) {
 		NewCard(CardDesignDiamond, FollowTheQueenQueenValue, true),
 		NewCard(CardDesignSpade, 7, true),
 	}
-	assert.Equal(t, PokerHandFiveOfAKind, evalFiveCardHandWithWilds(hand, wild))
+	assert.Equal(t, PokerHandFiveOfAKind, mustWildRank(evalFiveCardHandWithWilds(hand, wild)))
+}
+
+// **全員オールインで畳むときに 8 枚配っていた。** `advancePhase` は先に
+// `s.phase` を次のストリートへ進めてその 1 枚を配り、そのあと
+// `dealRemainingStreets` を呼ぶ。ところが同関数のループが `s.phase` から
+// 始まっていたので、**いま配ったストリートをもう一度配る**。
+//
+// このゲームでは素のスタッドより悪い: 余分な表向き札が `noteUpCard` を通るので、
+// **ベッティングが全部終わったあとにワイルドが動く**。
+func TestFollowTheQueen_AllInShowdownDealsSevenCardsNotEight(t *testing.T) {
+	s := dealtBoard(t)
+	s.SetPhase(FollowTheQueenPhaseThirdStreet)
+
+	// 1 人を残して全員オールイン → advancePhase がショーダウンまで畳む。
+	for i, p := range s.players {
+		if i > 0 {
+			p.SetAllIn(true)
+		}
+	}
+	s.advancePhase()
+
+	for i, p := range s.players {
+		hole, door := len(p.GetHoleCards()), len(p.GetDoorCards())
+		assert.Equal(t, 7, hole+door,
+			"player %d は 7 枚のはず (hole=%d door=%d)", i, hole, door)
+		assert.Equal(t, 4, door, "player %d の表向きは 4 枚のはず", i)
+	}
 }

@@ -541,10 +541,15 @@ func (s *FollowTheQueen) dealStreetCard(faceUp bool) {
 	}
 }
 
-// dealRemainingStreets 残りのストリートのカードを全て配る
+// dealRemainingStreets は残りのストリートのカードを全て配る。
+//
+// **`s.phase + 1` から始めること。** 呼ばれる時点で `advancePhase` は既に
+// `s.phase` を次のストリートへ進め、その 1 枚を配り終えている。`s.phase` から
+// 回すと **いま配ったストリートをもう一度配り、1 人 8 枚**になる。
+// このゲームでは素のスタッドより実害が大きい: 余分な表向き札が `noteUpCard`
+// を通るので、ベッティングが全部終わったあとにワイルドが動く。
 func (s *FollowTheQueen) dealRemainingStreets() {
-	// 現在のフェーズから7th streetまでのカードを配る
-	for phase := s.phase; phase <= FollowTheQueenPhaseSeventhStreet; phase++ {
+	for phase := s.phase + 1; phase <= FollowTheQueenPhaseSeventhStreet; phase++ {
 		switch phase {
 		case FollowTheQueenPhaseFourthStreet, FollowTheQueenPhaseFifthStreet, FollowTheQueenPhaseSixthStreet:
 			s.dealStreetCard(true)
@@ -977,6 +982,13 @@ type followTheQueenJSON struct {
 	Profile          *BettingHumanProfileData  `json:"pf,omitempty"`
 	LastHumanPlayMs  int                       `json:"hm"`
 	BringInPlayerIdx int                       `json:"bi"`
+	// WildRank / QueenPending は **必ず両方載せる**。Worker はリクエストごとに
+	// 状態を持たないので、ここから落ちると本番だけで壊れる。WildRank が落ちれば
+	// 盤の途中で「ワイルドはまだ無し」に戻り、QueenPending が落ちれば
+	// **ストリートの最後の表向き札が Q だった場合に、次のストリートの 1 枚目が
+	// ワイルドを取り損ねる** —— どちらも手元の CLI では 1 プロセスなので出ない。
+	WildRank     int  `json:"wr,omitempty"`
+	QueenPending bool `json:"qp,omitempty"`
 }
 
 const followTheQueenMaxSliceLen = 1000
@@ -1011,6 +1023,8 @@ func (s *FollowTheQueen) MarshalJSON() ([]byte, error) {
 		ActionLog:        s.actionLog,
 		LastHumanPlayMs:  s.lastHumanPlayMs,
 		BringInPlayerIdx: s.bringInPlayerIdx,
+		WildRank:         s.wildRank,
+		QueenPending:     s.queenPending,
 	}
 	if s.humanProfile != nil {
 		d := s.humanProfile.Export()
@@ -1097,6 +1111,8 @@ func (s *FollowTheQueen) UnmarshalJSON(data []byte) error {
 	}
 	s.lastHumanPlayMs = j.LastHumanPlayMs
 	s.bringInPlayerIdx = j.BringInPlayerIdx
+	s.wildRank = j.WildRank
+	s.queenPending = j.QueenPending
 	if j.Profile != nil {
 		s.humanProfile = &BettingHumanProfile{}
 		s.humanProfile.Import(*j.Profile)

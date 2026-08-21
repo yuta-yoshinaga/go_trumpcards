@@ -75,11 +75,9 @@
     "followthequeenRaisePair": "You have a pair — raise",
     "followthequeenRaiseWildOne": "You hold a wild card — a pair at worst.",
     "followthequeenRaiseWildTwo": "You hold two wild cards — trips or better, guaranteed.",
-    "followthequeenPlayLow": "Five cards of eight or lower — weak for high, but live for half the pot",
     "followthequeenCheckFree": "Nothing to call — take the next card for free",
     "followthequeenCallHigh": "You hold a high card — call and see the next street",
-    "followthequeenFoldWeak": "No pair and no high card — fold",
-    "followthequeenCheckLow": "Five cards of eight or lower and nothing to call — take the next card for free"
+    "followthequeenFoldWeak": "No pair and no high card — fold"
   },
   "style": {
     "tag": "TAG",

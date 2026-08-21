@@ -41,7 +41,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
-import { evaluateBestHand, pokerHandKey } from '../utils/pokerSquaresUtils';
+import { type PokerHandRank, pokerHandKey } from '../utils/pokerSquaresUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /**
@@ -233,16 +233,17 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
   const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
   const cpuPlayers = useMemo(() => state?.players?.filter((p) => !p.isHuman) ?? [], [state?.players]);
 
-  // Live best-hand strength for the human, computed from their visible door +
-  // hole cards (best 5 of up to 7). Shown during the streets to aid betting
-  // decisions; the server-supplied `handName` takes over at showdown. Only the
-  // human's cards are used, so no opponent information leaks.
+  // Live best-hand strength for the human, **taken from the server**.
+  //
+  // It used to be computed here with the generic `evaluateBestHand`, which has
+  // no idea Queens are always wild — so a hand holding a Queen was announced two
+  // ranks weaker than the domain (and the CUI) said it was, in the one game
+  // whose whole point is the wilds. The domain already computes it with the wild
+  // rule applied; the page just renders it.
   const currentHandKey = useMemo(() => {
-    if (!humanPlayer) return null;
-    const cards = [...(humanPlayer.doorCards ?? []), ...(humanPlayer.holeCards ?? [])];
-    const rank = evaluateBestHand(cards);
-    return rank == null ? null : pokerHandKey(rank);
-  }, [humanPlayer]);
+    const rank = state?.humanHandRank ?? -1;
+    return rank < 0 ? null : pokerHandKey(rank as PokerHandRank);
+  }, [state?.humanHandRank]);
 
   const actionBindings = useMemo(
     () => [

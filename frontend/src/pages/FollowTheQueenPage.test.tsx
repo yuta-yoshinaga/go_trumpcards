@@ -75,6 +75,7 @@ const cpuPlayer = (id: number, overrides: Partial<import('../types/card').Follow
 const baseState: Omit<FollowTheQueenResponse, 'players' | 'phase' | 'message'> = {
   communityCard: null,
   wildRank: 0,
+  humanHandRank: -1,
   pot: 0,
   sidePots: [],
   dealerIdx: 0,
@@ -254,10 +255,53 @@ describe('FollowTheQueenPage', () => {
       ],
       doorCards: [{ design: 'CLOVER', value: 2 }],
     });
-    mockExec.mockResolvedValue({ ...thirdStreetState, players: [pairedHuman, cpuPlayer(1)] });
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [pairedHuman, cpuPlayer(1)],
+      humanHandRank: 1, // OnePair
+    });
     renderWithProviders(<FollowTheQueenPage />);
     const badge = await screen.findByTestId('scs-current-hand');
     expect(badge).toHaveTextContent('現在の役: ワンペア');
+  });
+
+  // **役はサーバの判定をそのまま出す。**ページで数え直していたときは、
+  // フロントの汎用評価器が「Q は常時ワイルド」を知らないので、Q を持っている
+  // だけで実際より 2 段階弱い役名が出ていた（CUI は正しかった）。
+  it('shows the wild-aware rank the server sent, not one recomputed from the cards', async () => {
+    const wildHuman = humanPlayer({
+      // Q♠ 10♦ 10♣ 3♥ + 8♠ ── Q はワイルドなので実際はスリーカード。
+      holeCards: [
+        { design: 'SPADE', value: 12 },
+        { design: 'DIAMOND', value: 10 },
+        { design: 'CLOVER', value: 10 },
+      ],
+      doorCards: [
+        { design: 'HEART', value: 3 },
+        { design: 'SPADE', value: 8 },
+      ],
+    });
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [wildHuman, cpuPlayer(1)],
+      humanHandRank: 3, // ThreeOfAKind
+    });
+    renderWithProviders(<FollowTheQueenPage />);
+    const badge = await screen.findByTestId('scs-current-hand');
+    expect(badge).toHaveTextContent('現在の役: スリーカード');
+    // 手札から素朴に数えると「ワンペア」になる ── その答えが出ていないこと。
+    expect(badge).not.toHaveTextContent('ワンペア');
+  });
+
+  it('hides the badge when the server reports no rank yet', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [humanPlayer(), cpuPlayer(1)],
+      humanHandRank: -1,
+    });
+    renderWithProviders(<FollowTheQueenPage />);
+    await waitFor(() => expect(screen.getByTestId('ftq-wild-rank')).toBeInTheDocument());
+    expect(screen.queryByTestId('scs-current-hand')).not.toBeInTheDocument();
   });
 
   it('does not show the live strength badge at showdown (server handName takes over)', async () => {

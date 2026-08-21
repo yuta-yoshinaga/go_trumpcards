@@ -22,6 +22,7 @@ func (p *FollowTheQueenWebPresenter) buildOutput(s interfaces.FollowTheQueenGame
 	resObj := new(controller.FollowTheQueenWebOutput)
 	resObj.Phase = s.GetPhase()
 	resObj.WildRank = s.GetWildRank()
+	resObj.HumanHandRank = followTheQueenHumanHandRank(s)
 	resObj.Pot = s.GetPot()
 	resObj.DealerIdx = s.GetDealerIdx()
 	resObj.CurrentTurn = s.GetCurrentTurn()
@@ -240,4 +241,23 @@ func (p *FollowTheQueenWebPresenter) getHandName(rank int) string {
 		return domain.PokerHandNames[rank]
 	}
 	return "Unknown"
+}
+
+// followTheQueenHumanHandRank は人間のいまの最善役位を返す (無ければ -1)。
+//
+// `PeekBestHand` は状態を変えないので描画から呼んで安全。ワイルドを見る評価は
+// ここ 1 本だけで、ページ側に複製しない。
+func followTheQueenHumanHandRank(s interfaces.FollowTheQueenGame) int {
+	for i := 0; i < s.GetPlayerCnt(); i++ {
+		player := s.GetPlayer(i)
+		if player == nil || !player.GetIsHuman() || player.GetFolded() {
+			continue
+		}
+		rank, best := player.PeekBestHand()
+		if len(best) == 0 {
+			return -1
+		}
+		return rank
+	}
+	return -1
 }

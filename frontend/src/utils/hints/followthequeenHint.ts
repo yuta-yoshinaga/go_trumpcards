@@ -48,19 +48,25 @@ export function getFollowTheQueenHint(state: FollowTheQueenResponse): HintResult
   // 既に払い込んでいる分は差し引く。同額まで出していれば負債はない。
   const owed = Math.max(0, state.lastBet - human.currentBet);
 
+  // **押す手は Raise とは限らない。**`BettingControls` は負債があるときだけ
+  // Call+Raise を、無いときは Bet+Check を描く。負債 0 で「レイズ」と言うのは
+  // 存在しないボタンを指すこと —— #4643 で下のコール分岐について直したのと
+  // 同じ誤りを、上に足した攻めの分岐で繰り返していた。
+  const pushAction = owed === 0 ? 'bet' : 'raise';
+
   // **ワイルドの枚数が他のどの条件より大きい。**ワイルド1枚は実質ペア以上、
   // 2枚ならスリーカード以上が確定する。ペア判定を先に置くと、同じ手を
   // 「ワンペア」と言ってしまい強さを2段階見誤る。
   const wilds = cards.filter((c) => isWild(c, state.wildRank)).length;
   if (wilds >= 2) {
-    return { targetAction: 'raise', reason: 'frontendHint.followthequeenRaiseWildTwo', confidence: 'strong' };
+    return { targetAction: pushAction, reason: 'frontendHint.followthequeenRaiseWildTwo', confidence: 'strong' };
   }
   if (wilds === 1) {
-    return { targetAction: 'raise', reason: 'frontendHint.followthequeenRaiseWildOne', confidence: 'moderate' };
+    return { targetAction: pushAction, reason: 'frontendHint.followthequeenRaiseWildOne', confidence: 'moderate' };
   }
 
   if (hasPair(cards)) {
-    return { targetAction: 'raise', reason: 'frontendHint.followthequeenRaisePair', confidence: 'moderate' };
+    return { targetAction: pushAction, reason: 'frontendHint.followthequeenRaisePair', confidence: 'moderate' };
   }
 
   // **払う額が無ければ「コール」ボタンは無い。**`lastBet` と `currentBet` は
