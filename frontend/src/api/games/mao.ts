@@ -14,6 +14,7 @@ import type {
   PerseveranceMoveZone,
   RankAndFileMoveZone,
   SomersetMoveZone,
+  StHelenaMoveZone,
   StreetsAndAlleysMoveZone,
   SultanMoveZone,
 } from '../../types/card';
@@ -61,6 +62,7 @@ export type {
   PerseveranceMoveZone,
   RankAndFileMoveZone,
   SomersetMoveZone,
+  StHelenaMoveZone,
   StreetsAndAlleysMoveZone,
   SultanMoveZone,
 };

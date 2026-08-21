@@ -271,6 +271,7 @@ import type {
   SpoonsResponse,
   StalactitesResponse,
   StealingBundlesResponse,
+  StHelenaResponse,
   StreetsAndAlleysResponse,
   SuecaResponse,
   SultanResponse,
@@ -598,6 +599,7 @@ import { getSpoilFiveHint } from '../utils/hints/spoilFiveHint';
 import { getSpoonsHint } from '../utils/hints/spoonsHint';
 import { getStalactitesHint } from '../utils/hints/stalactitesHint';
 import { getStealingBundlesHint } from '../utils/hints/stealingbundlesHint';
+import { getStHelenaHint } from '../utils/hints/sthelenaHint';
 import { getStreetsandalleysHint } from '../utils/hints/streetsandalleysHint';
 import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getSultanHint } from '../utils/hints/sultanHint';
@@ -909,6 +911,7 @@ export const hintFactories = {
   contractrummy: (s) => getContractRummyHint(s as ContractRummyResponse),
   carioca: (s) => getCariocaHint(s as CariocaResponse),
   crescent: (s) => getCrescentHint(s as CrescentResponse),
+  sthelena: (s) => getStHelenaHint(s as StHelenaResponse),
   spiderette: (s) => getSpideretteHint(s as SpideretteResponse),
   gaps: (s) => getGapsHint(s as GapsResponse),
   fourcardpoker: (s) => getFourCardPokerHint(s as FourCardPokerResponse),

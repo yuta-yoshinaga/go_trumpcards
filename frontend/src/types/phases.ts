@@ -2325,6 +2325,13 @@ export const CrescentPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** St. Helena phase constants (sync: internal/domain/StHelena.go). */
+export const StHelenaPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Oasis Poker phase constants (sync: internal/domain/OasisPoker.go). */
 export const OasisPokerPhase = {
   BET: 1,

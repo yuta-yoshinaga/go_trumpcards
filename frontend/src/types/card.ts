@@ -278,6 +278,7 @@ export * from './games/spoilfive';
 export * from './games/spoons';
 export * from './games/stalactites';
 export * from './games/stealingbundles';
+export * from './games/sthelena';
 export * from './games/streetsandalleys';
 export * from './games/sueca';
 export * from './games/sultan';

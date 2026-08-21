@@ -2251,6 +2251,13 @@ export const gameCategories: readonly GameCategory[] = [
         page: 'Crescent',
         profile: { mood: [5, 1, 4, 3], skill: [3, 4, 4, 3], social: [5, 1, 0, 3, 4], theme: [3, 4, 2, 1, 2, 3] },
       },
+      {
+        path: '/sthelena',
+        labelKey: 'nav.sthelena',
+        icon: '🏝️',
+        page: 'StHelena',
+        profile: { mood: [5, 1, 4, 3], skill: [3, 4, 4, 3], social: [5, 1, 0, 3, 4], theme: [3, 4, 2, 1, 2, 3] },
+      },
     ],
   },
   {

@@ -442,6 +442,8 @@ tags:
     description: Ultimate Texas Hold'em (アルティメット・テキサスホールデム) game - single-player vs dealer Texas Hold'em variant with Ante + equal Blind wagers, optional Trips side bet, and one-shot Play raise at Pre-flop (3x / 4x), Flop (2x) or River (1x); dealer must qualify with a pair or better
   - name: crescent
     description: Crescent Solitaire (クレセント・ソリティア) game - 2-deck (104-card) solitaire with 16 tableau piles arranged around 8 foundations (4 ascending from A, 4 descending from K); same-suit ±1 moves with A↔K wrap, top card only; up to 3 redeals reverse every tableau pile
+  - name: sthelena
+    description: St. Helena (セント・ヘレナ) game - 2-deck solitaire with 12 columns circling 8 foundations (4 kings building down, 4 aces building up); the tableau moves by rank alone with no king-ace wrap, and on the first deal a column only reaches the foundation row beside it until a redeal lifts the restriction
   - name: mississippistud
     description: Mississippi Stud (ミシシッピ・スタッド) game - single-player vs paytable casino poker; 2 hole cards plus 3 community cards revealed across 3rd / 4th / 5th Street, with 1x / 2x / 3x bet or fold at each street; winning hands paid per fixed paytable (pair of Jacks+ = 1:1, pair of 6s-10s = push)
   - name: belote
@@ -11037,6 +11039,160 @@ paths:
                     type: integer
                   message:
                     type: string
+
+  /sthelena/exec:
+    post:
+      tags:
+        - sthelena
+      summary: Execute a St. Helena game command
+      description: |
+        Send a command to advance the St. Helena (セント・ヘレナ) game session
+        identified by `sessionId`. St. Helena is a single-player solitaire using
+        2 standard decks (104 cards).
+
+        One king and one ace of each suit are dealt to the foundations as bases:
+        the **four kings build down in suit**, the **four aces build up in
+        suit**. The remaining 96 cards go into **twelve columns of eight**
+        arranged in a circle around them.
+
+        The tableau builds **up or down by rank ignoring suit**, one card at a
+        time. **A king and an ace do not connect**, and an **empty column
+        cannot be refilled**.
+
+        **On the first deal, a column can only reach the foundation row it sits
+        beside**: columns 0-3 (top) reach the king row, columns 6-9 (bottom)
+        reach the ace row, and columns 4, 5, 10 and 11 (the sides) reach either.
+        The **first of the two redeals lifts that restriction**. A redeal
+        gathers the columns starting from the last and deals them out again
+        without shuffling — that cross-column reshuffle is what creates new
+        moves.
+
+        `restrictionsActive` reports whether the first-deal restriction is still
+        in force, so a client can grey out the foundations a column cannot
+        reach instead of sending a move the server will refuse.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All foundations complete |
+        | GameOver  | `2`   | No more moves available |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `move`         | `m`     | Move a card between tableau/foundation |
+        | `redeal`       | `rd`    | Gather and deal again (up to 2; the first lifts the restriction) |
+        | `undo`         | `u`     | Undo the last action |
+        | `giveup`       | `g`     | Give up the current game |
+        | `hint`         | `h`     | Show a hint for the next move |
+        | `autocomplete` | `ac`    | Auto-move cards to foundations |
+        | `log`          | `l`     | View action log |
+      operationId: stHelenaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, redeal, rd, undo, u, undo_n, giveup, g, hint, h, autocomplete, ac, log, l]
+                from:
+                  $ref: '#/components/schemas/StHelenaMoveZone'
+                to:
+                  $ref: '#/components/schemas/StHelenaMoveZone'
+                n:
+                  type: integer
+                  description: Number of times to undo (for undo_n command)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              move:
+                summary: Send the top of column 6 to the ace foundation for spades
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 6
+                  to:
+                    zone: foundation
+                    col: 0
+                  sessionId: my-session-001
+              redeal:
+                summary: Gather and deal again
+                value:
+                  command: redeal
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    description: 12 columns arranged in a circle around the foundations
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  foundation:
+                    type: array
+                    description: 8 foundations - 0..3 build up from the aces, 4..7 build down from the kings
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  redealsRemaining:
+                    type: integer
+                  restrictionsActive:
+                    type: boolean
+                    description: Whether the first-deal reachability restriction is still in force
+                  phase:
+                    type: integer
+                    description: Current game phase (0=Playing, 1=GameClear, 2=GameOver)
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromCol:
+                        type: integer
+                      toZone:
+                        type: string
+                      toCol:
+                        type: integer
+                      redeal:
+                        type: boolean
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+        '400':
+          description: Invalid request
 
   /paigow/exec:
     post:
@@ -29943,6 +30099,21 @@ components:
         col:
           type: integer
           description: Column index (tableau column 0..15, or foundation id 0..7)
+    StHelenaMoveZone:
+      type: object
+      description: Source or target zone for a St. Helena card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (tableau, foundation)
+          enum: [tableau, foundation]
+        col:
+          type: integer
+          description: >-
+            Tableau column 0..11, or foundation id 0..7 (0..3 build up from the
+            aces, 4..7 build down from the kings).
     BakersDozenMoveZone:
       type: object
       description: Source or target zone for a Baker's Dozen card move

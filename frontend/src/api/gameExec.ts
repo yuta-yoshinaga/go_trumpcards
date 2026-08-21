@@ -247,6 +247,7 @@ export const workerUrl: Record<string, string> = {
   kalooki: WORKER_EXTRA,
   ultimatetexasholdem: WORKER_CASINO,
   crescent: WORKER_SOLO,
+  sthelena: WORKER_EXTRA,
   mississippistud: WORKER_CASINO,
   belote: WORKER_EXTRA3,
   spiderette: WORKER_SOLO,
