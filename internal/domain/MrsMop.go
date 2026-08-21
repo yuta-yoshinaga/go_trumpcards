@@ -656,9 +656,16 @@ func (s *MrsMop) UnmarshalJSON(data []byte) error {
 	if s.history == nil {
 		s.history = make([]*mrsMopSnapshot, 0)
 	}
-	s.difficulty = j.Difficulty
-	if s.difficulty == 0 {
+	// **KV から 0 が返っても4スートに落とす。**Spider から丸写しすると 1 スートに
+	// 落ちる ── ResetWithConfig / DefaultMrsMopConfig / NewDefaultMrsMop と食い違い、
+	// 復元した盤だけが緩和版に化ける。既定の統一はここも含めて初めて成立する。
+	switch j.Difficulty {
+	case MrsMopDifficulty1Suit:
 		s.difficulty = MrsMopDifficulty1Suit
+	case MrsMopDifficulty2Suit:
+		s.difficulty = MrsMopDifficulty2Suit
+	default:
+		s.difficulty = MrsMopDifficulty4Suit
 	}
 	s.isStalemate = j.IsStalemate
 	return nil

@@ -42,9 +42,16 @@ vi.mock('../providers/SoundProvider', async () => {
 
 const mockExec = vi.mocked(mrsMopApi.exec);
 
+/** Tableau column count. Sync: `domain.MrsMopTableauCnt`. */
+const MRSMOP_COLUMN_COUNT = 13;
+
+/**
+ * **13 列。**クローン元 (Spider) は 10 列で、モックも 10 列だった。モックが
+ * 実際の契約とずれていると、列数の取り違えをテストが守ってしまう。
+ */
 function makeTableau(cols: MrsMopTableauCard[][]): MrsMopTableauCard[][] {
   const result: MrsMopTableauCard[][] = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < MRSMOP_COLUMN_COUNT; i++) {
     result.push(cols[i] ?? []);
   }
   return result;
@@ -68,7 +75,7 @@ const playingState: MrsMopResponse = {
     [],
     [],
   ]),
-  stockCount: 50,
+  stockCount: 0, // Mrs. Mop has no stock
   completedSuits: 0,
   phase: 0,
   moveCount: 5,
@@ -135,7 +142,9 @@ describe('MrsMopPage', () => {
   it('announces and flashes when a new suit is completed', async () => {
     const filled: MrsMopResponse = {
       ...playingState,
-      tableau: makeTableau(Array.from({ length: 10 }, () => [{ card: card('SPADE', 13), faceUp: true }])),
+      tableau: makeTableau(
+        Array.from({ length: MRSMOP_COLUMN_COUNT }, () => [{ card: card('SPADE', 13), faceUp: true }]),
+      ),
     };
     // **「配る」ボタンは無い。**山札が無いので、盤を進めるのは移動だけ。
     // 状態を差し替えられる操作として undo を使う。

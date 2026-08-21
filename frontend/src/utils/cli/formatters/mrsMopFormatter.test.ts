@@ -5,7 +5,7 @@ import { formatMrsMopState } from './mrsMopFormatter';
 function makeState(overrides?: Partial<MrsMopResponse>): MrsMopResponse {
   return {
     tableau: [[{ card: { design: 'SPADE', value: 13 }, faceUp: true }], []],
-    stockCount: 50,
+    stockCount: 0,
     completedSuits: 1,
     phase: 0,
     moveCount: 7,
@@ -21,8 +21,9 @@ function makeState(overrides?: Partial<MrsMopResponse>): MrsMopResponse {
 describe('formatMrsMopState', () => {
   it('formats the basic state', () => {
     const output = formatMrsMopState(makeState());
-    expect(output).toContain('MrsMop Solitaire');
-    expect(output).toContain('stock: 50');
+    expect(output).toContain('Mrs. Mop');
+    // **山札の行は出ない。**Mrs. Mop に山札は無い。
+    expect(output).not.toContain('stock');
     expect(output).toContain('completed: 1/8');
     expect(output).toContain('moves: 7');
   });

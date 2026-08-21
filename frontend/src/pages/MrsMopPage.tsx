@@ -44,14 +44,11 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 // (クローンが `mrsMopMovableRun` という存在しない名前に書き換えていた)。
 import { isTableauAllFaceUp, spiderMovableRun } from '../utils/solitaireUtils';
 
-/** MrsMop Solitaire tutorial step definitions. */
+/** Tableau column count. Sync: `domain.MrsMopTableauCnt`. */
+const MRSMOP_COLUMN_COUNT = 13;
+
+/** Mrs. Mop tutorial step definitions. */
 const SPD_TUTORIAL_STEPS: TutorialStep[] = [
-  {
-    target: '[data-tutorial="spd-stock-pile"]',
-    messageKey: 'tutorial.stockPile',
-    placement: 'bottom',
-    advanceOn: 'next',
-  },
   {
     target: '[data-tutorial="spd-tableau"]',
     messageKey: 'tutorial.tableau',
@@ -84,7 +81,7 @@ const SPD_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Renders the MrsMop Solitaire game page with 10 tableau columns and stock. */
+/** Renders the Mrs. Mop game page: 13 tableau columns, all face up, no stock. */
 export const MrsMopPage = withTutorial(MrsMopPageContent, 'mrsmop', SPD_TUTORIAL_STEPS);
 /** Inner content of the MrsMop page, wrapped by TutorialProvider. */
 function MrsMopPageContent() {
@@ -139,7 +136,10 @@ function MrsMopPageContent() {
   // Responsive 10-column dimensions matching this page's `px-4` scroll container and `gap-0.5`
   // tableau so a 375 px viewport doesn't crush each card below 28 px (#1648). Stock uses the
   // same dimensions so cards don't visibly pop when the deal animation moves them to the tableau.
-  const tableau = useResponsiveTableau(10, { padX: 32, gapPx: 2, maxColCards });
+  // **13 列。**クローン元 (Spider) は 10 列で、そちらでは正しい。numCols は
+  // 利用可能幅を割ってモバイルのカード幅を出すので、10 で計算して 13 列描くと
+  // 潰れる ── このフックが numCols を取るのはまさにそれを防ぐため。
+  const tableau = useResponsiveTableau(MRSMOP_COLUMN_COUNT, { padX: 32, gapPx: 2, maxColCards });
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('mrsmop');
   const cliConfig: CliGameConfig<MrsMopResponse, Parameters<typeof mrsMopApi.exec>> = useMemo(
@@ -246,7 +246,8 @@ function MrsMopPageContent() {
     }
   }, [state?.completedSuits, playSound]);
 
-  if (!state) return <GameSkeleton gameKey="mrsmop" layout={{ kind: 'tableau', topRow: 3, tableau: 10 }} />;
+  if (!state)
+    return <GameSkeleton gameKey="mrsmop" layout={{ kind: 'tableau', topRow: 3, tableau: MRSMOP_COLUMN_COUNT }} />;
 
   const isPlaying = state.phase === MrsMopPhase.PLAYING;
   const isGameClear = state.phase === MrsMopPhase.GAME_CLEAR;

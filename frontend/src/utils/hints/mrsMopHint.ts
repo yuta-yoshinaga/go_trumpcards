@@ -29,11 +29,9 @@ export function getMrsMopHint(state: MrsMopResponse): HintResult | null {
     return { targetAction: 'move', reason: 'frontendHint.useEmptyColumn', confidence: 'moderate' };
   }
 
-  // Priority 5: Deal from stock
-  if (state.stockCount > 0) {
-    return { targetAction: 'deal', reason: 'frontendHint.dealFromStock', confidence: 'moderate' };
-  }
-
+  // **「山札から配る」は勧めない。**Mrs. Mop に山札は無く (GetStockCount は常に 0)、
+  // 配る操作も UI に無い。クローン元 (Spider) の Priority 5 をそのまま残すと、
+  // 実サーバでは絶対に到達しない枝になる。
   return null;
 }
 

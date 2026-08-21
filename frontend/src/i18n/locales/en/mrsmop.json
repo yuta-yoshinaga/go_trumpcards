@@ -26,7 +26,6 @@
   "hintAvailable": "Hint available",
   "stalemate": "No more moves",
   "tutorial": {
-    "stockPile": "Stock pile. Click to deal one card to each column. All columns must have cards.",
     "tableau": "Tableau columns. A single card can go on any card one rank higher, regardless of suit. Only a same-suit descending run can be moved as a group. A King-to-Ace same-suit run is removed automatically.",
     "completedSuits": "Number of completed suits. Complete all 8 to win.",
     "controls": "Control buttons: Undo, Hint, Auto-complete.",
@@ -38,8 +37,7 @@
     "completeSuit": "A suit sequence is nearly complete — focus on finishing it",
     "buildSameSuit": "A same-suit build move is available",
     "revealFaceDown": "Move cards to reveal face-down cards underneath",
-    "useEmptyColumn": "An empty column is available — use it to reorganize",
-    "dealFromStock": "No obvious moves — try dealing from the stock"
+    "useEmptyColumn": "An empty column is available — use it to reorganize"
   },
   "suitCompleted": "Suit complete!",
   "stats": {

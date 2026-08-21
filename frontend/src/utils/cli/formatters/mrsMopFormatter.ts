@@ -3,13 +3,14 @@ import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../f
 
 const DIFF_NAMES: Record<number, string> = { 1: '1 suit', 2: '2 suits', 4: '4 suits' };
 
-/** Format a MrsMop Solitaire game state as terminal text. */
+/** Format a Mrs. Mop game state as terminal text. */
 export function formatMrsMopState(state: MrsMopResponse): string {
   const lines: string[] = [];
 
-  lines.push(formatHeader('MrsMop Solitaire'));
+  lines.push(formatHeader('Mrs. Mop'));
   lines.push(
-    `stock: ${state.stockCount} | completed: ${state.completedSuits}/8 | diff: ${DIFF_NAMES[state.difficulty] ?? state.difficulty}`,
+    // **山札は出さない。**Mrs. Mop に山札は無く、常に 0 を出すと「まだ配れる」と読める。
+    `completed: ${state.completedSuits}/8 | diff: ${DIFF_NAMES[state.difficulty] ?? state.difficulty}`,
   );
   lines.push('----------');
 

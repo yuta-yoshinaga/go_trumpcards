@@ -118,3 +118,27 @@ func TestMrsMop_SnapshotTableauColumnRespectsMaxSliceLen(t *testing.T) {
 	err = json.Unmarshal(data, &restored)
 	require.Error(t, err, "oversized snapshot tableau column must be rejected")
 }
+
+// **既定の統一は UnmarshalJSON も含めて初めて成立する。**Spider から丸写しすると
+// 「保存値が 0 なら1スート」になり、復元した盤だけが緩和版に化ける
+// (ResetWithConfig / DefaultMrsMopConfig / NewDefaultMrsMop はどれも4スート)。
+func TestMrsMop_RestoreDefaultsToTheProperFourSuitGame(t *testing.T) {
+	t.Parallel()
+
+	for _, payload := range []string{`{}`, `{"df":0}`, `{"df":99}`} {
+		var restored MrsMop
+		require.NoError(t, json.Unmarshal([]byte(payload), &restored), "payload %s", payload)
+		assert.Equal(t, MrsMopDifficulty4Suit, restored.GetDifficulty(),
+			"payload %s must restore as the proper game, not the relaxed variant", payload)
+	}
+
+	// 明示的に保存された緩和版はそのまま戻る。
+	for _, tc := range []struct {
+		payload string
+		want    MrsMopDifficulty
+	}{{`{"df":1}`, MrsMopDifficulty1Suit}, {`{"df":2}`, MrsMopDifficulty2Suit}} {
+		var restored MrsMop
+		require.NoError(t, json.Unmarshal([]byte(tc.payload), &restored))
+		assert.Equal(t, tc.want, restored.GetDifficulty(), "payload %s", tc.payload)
+	}
+}

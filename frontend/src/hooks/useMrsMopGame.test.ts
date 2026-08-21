@@ -28,7 +28,7 @@ const defaultState: MrsMopResponse = {
       { card: { design: 'HEART', value: 5 }, faceUp: true },
     ],
   ],
-  stockCount: 50,
+  stockCount: 0,
   completedSuits: 0,
   phase: 0,
   moveCount: 0,

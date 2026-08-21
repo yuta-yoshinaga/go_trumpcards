@@ -15,7 +15,7 @@ function tc(design: Card['design'], value: number, faceUp = true): MrsMopTableau
 function makeState(overrides: Partial<MrsMopResponse> = {}): MrsMopResponse {
   return {
     tableau: [[tc(S, 10), tc(S, 9), tc(S, 8)], [tc(H, 5, false), tc(H, 7), tc(H, 6)], [], [], [], [], [], [], [], []],
-    stockCount: 20,
+    stockCount: 0,
     completedSuits: 0,
     phase: MrsMopPhase.PLAYING,
     moveCount: 0,
@@ -78,28 +78,6 @@ describe('getMrsMopHint', () => {
     });
     const hint = getMrsMopHint(state);
     expect(hint?.reason).toBe('frontendHint.useEmptyColumn');
-    expect(hint?.confidence).toBe('moderate');
-  });
-
-  it('suggests dealing from stock as fallback', () => {
-    // Values chosen so no same-suit adjacency exists (no card is value+1 of same design)
-    const state = makeState({
-      tableau: [
-        [tc(S, 1)],
-        [tc(H, 1)],
-        [tc(D, 1)],
-        [tc(C, 1)],
-        [tc(S, 13)],
-        [tc(H, 13)],
-        [tc(D, 13)],
-        [tc(C, 13)],
-        [tc(S, 7)],
-        [tc(H, 7)],
-      ],
-      stockCount: 10,
-    });
-    const hint = getMrsMopHint(state);
-    expect(hint?.reason).toBe('frontendHint.dealFromStock');
     expect(hint?.confidence).toBe('moderate');
   });
 
