@@ -440,6 +440,8 @@ tags:
     description: Oasis Poker (オアシスポーカー) game - Caribbean Stud variant adding a card-exchange phase between Bet and Action; exchange 1..5 cards for a fee equal to ante per card, then Call or Fold against the dealer
   - name: russianpoker
     description: Russian Poker (ロシアンポーカー) game - Oasis Poker evolution with 6th card purchase and force-qualify options; exchange cards, buy a 6th card, or force dealer's highest card exchange when dealer doesn't qualify
+  - name: fortress
+    description: Fortress (フォートレス) game - Beleaguered Castle variant dealing the whole deck to 10 columns, building same-suit in either direction
   - name: beleagueredcastle
     description: Beleaguered Castle (包囲された城) game - single-player open-information solitaire with 8 tableau columns of 6 cards each and 4 aces pre-seeded on the foundations; empty columns accept any card
   - name: piquet
@@ -11062,6 +11064,140 @@ paths:
         | `autocomplete` | `ac`    | Auto-move cards to foundations |
         | `log`          | `l`     | View action log |
       operationId: beleagueredCastleExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, undo, u, undo_n, giveup, g, hint, h, autocomplete, ac, log, l]
+                from:
+                  $ref: '#/components/schemas/BeleagueredCastleMoveZone'
+                to:
+                  $ref: '#/components/schemas/BeleagueredCastleMoveZone'
+                n:
+                  type: integer
+                  description: Number of times to undo (for undo_n command)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              move:
+                summary: Move tableau column 0's top card to column 5
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 0
+                  to:
+                    zone: tableau
+                    col: 5
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    description: 8 tableau columns, each an array of cards (with face-up flag)
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          card:
+                            nullable: true
+                            allOf:
+                              - $ref: '#/components/schemas/Card'
+                          faceUp:
+                            type: boolean
+                  foundation:
+                    type: array
+                    description: 4 foundation piles (cards by suit, A→K). Pre-seeded with the four aces at deal time.
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  phase:
+                    type: integer
+                    description: "0=Playing, 1=GameClear, 2=GameOver"
+                  hint:
+                    type: object
+                    nullable: true
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toZone:
+                        type: string
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+
+  /fortress/exec:
+    post:
+      tags:
+        - fortress
+      summary: Execute a Fortress game command
+      description: |
+        Send a command to advance the Fortress (フォートレス) game
+        session identified by `sessionId`. Fortress is a
+        single-player open-information solitaire using a single 52-card deck.
+        The 4 aces are pre-seeded onto the foundations at deal time and the
+        remaining 48 cards are dealt face-up into 8 tableau columns of 6 cards
+        each — visually arranged with 4 columns flanking the centred
+        foundations. Foundations build up by suit Ace→King. Tableau builds
+        rank-only descending (suit doesn't matter); only single-card moves are
+        allowed. Empty columns accept any card. No stock or waste pile.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All foundations complete |
+        | GameOver  | `2`   | Player gave up |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `move`         | `m`     | Move a card between tableau/foundation |
+        | `undo`         | `u`     | Undo the last action |
+        | `giveup`       | `g`     | Give up the current game |
+        | `hint`         | `h`     | Show a hint for the next move |
+        | `autocomplete` | `ac`    | Auto-move cards to foundations |
+        | `log`          | `l`     | View action log |
+      operationId: fortressExec
       requestBody:
         required: true
         content:

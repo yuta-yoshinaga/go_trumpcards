@@ -2277,6 +2277,13 @@ export const RussianPokerPhase = {
   END: 6,
 } as const;
 
+/** Fortress phase constants (sync: internal/domain/Fortress.go). */
+export const FortressPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Beleaguered Castle phase constants (sync: internal/domain/BeleagueredCastle.go). */
 export const BeleagueredCastlePhase = {
   PLAYING: 0,

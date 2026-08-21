@@ -100,6 +100,7 @@ import type {
   FiveCardStudResponse,
   FiveHundredResponse,
   FlowerGardenResponse,
+  FortressResponse,
   FortyAndEightResponse,
   FortyFivesResponse,
   FortyThievesResponse,
@@ -410,6 +411,7 @@ import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
 import { getFiveCardStudHint } from '../utils/hints/fivecardstudHint';
 import { getFiveHundredHint } from '../utils/hints/fivehundredHint';
 import { getFlowergardenHint } from '../utils/hints/flowergardenHint';
+import { getFortressHint } from '../utils/hints/fortressHint';
 import { getFortyAndEightHint } from '../utils/hints/fortyandeightHint';
 import { getFortyFivesHint } from '../utils/hints/fortyFivesHint';
 import { getFortyThievesHint } from '../utils/hints/fortythievesHint';
@@ -778,6 +780,7 @@ export const hintFactories = {
   sultan: (s) => getSultanHint(s as SultanResponse),
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
+  fortress: (s) => getFortressHint(s as FortressResponse),
   streetsandalleys: (s) => getStreetsandalleysHint(s as StreetsAndAlleysResponse),
   kille: (s) => getKilleHint(s as KilleResponse),
   kingalbert: (s) => getKingalbertHint(s as KingAlbertResponse),

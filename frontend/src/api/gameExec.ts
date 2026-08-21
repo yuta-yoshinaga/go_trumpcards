@@ -251,6 +251,7 @@ export const workerUrl: Record<string, string> = {
   mighty: WORKER_EXTRA4,
   oasispoker: WORKER_CASINO,
   russianpoker: WORKER_CASINO,
+  fortress: WORKER_SOLO,
   beleagueredcastle: WORKER_SOLO,
   piquet: WORKER_EXTRA4,
   callbreak: WORKER_CLASSIC,
