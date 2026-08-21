@@ -76,6 +76,7 @@ import type {
   CuarentaResponse,
   CuckooResponse,
   CucumberResponse,
+  CurdsAndWheyResponse,
   DaifugoResponse,
   DesmocheResponse,
   DeuceToSevenResponse,
@@ -389,6 +390,7 @@ import { getCruelHint } from '../utils/hints/cruelHint';
 import { getCuarentaHint } from '../utils/hints/cuarentaHint';
 import { getCuckooHint } from '../utils/hints/cuckooHint';
 import { getCucumberHint } from '../utils/hints/cucumberHint';
+import { getCurdsAndWheyHint } from '../utils/hints/curdsandwheyHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDesmocheHint } from '../utils/hints/desmocheHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
@@ -849,6 +851,7 @@ export const hintFactories = {
   briscola: (s) => getBriscolaHint(s as BriscolaResponse),
   acesup: (s) => getAcesUpHint(s as AcesUpResponse),
   blackhole: (s) => getBlackHoleHint(s as BlackHoleResponse),
+  curdsandwhey: (s) => getCurdsAndWheyHint(s as CurdsAndWheyResponse),
   simplesimon: (s) => getSimpleSimonHint(s as SimpleSimonResponse),
   literature: (s) => getLiteratureHint(s as LiteratureResponse),
   labellelucie: (s) => getLaBelleLucieHint(s as LaBelleLucieResponse),

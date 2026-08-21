@@ -261,6 +261,13 @@ export const LaBelleLuciePhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Curds and Whey phase values mirroring the Go `CurdsAndWheyPhase` enum. */
+export const CurdsAndWheyPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Simple Simon phase values mirroring the Go `SimpleSimonPhase` enum. */
 export const SimpleSimonPhase = {
   PLAYING: 0,

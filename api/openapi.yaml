@@ -550,6 +550,8 @@ tags:
     description: Russian Bank / Crapette (ロシアンバンク/クラペット) — a 2-player competitive solitaire on two 52-card decks (104 cards) played 1 human vs 1 CPU; each player owns a 13-card reserve (stock) and a hand (talon), and the board has 8 shared foundations (built up A to K by suit) plus 4 shared tableau columns (built down in alternating colour; an empty column accepts any card); on your turn you make as many legal moves as you like from your reserve or waste tops, a tableau column top, or the opponent's reserve or waste tops onto the shared foundations and tableau, and when out of moves you discard one hand card to your waste to end the turn; if the CPU ends its turn leaving a forced foundation move you may call stop to catch the lapse; the first player to empty their reserve wins (if both are stuck the player with fewer reserve cards wins); commands pf with source to a foundation, mt with source and column to a tableau, d discard, s stop, u undo, sd setdifficulty, hint, log (l), reset (r), where source is r own reserve, w own waste, or opponent reserve, ow opponent waste, t0 to t3 tableau columns; phases 0 Idle, 1 Playing, 2 GameEnd
   - name: labellelucie
     description: La Belle Lucie (ラ・ベル・ルーシー) — a classic French single-player fan solitaire on a standard 52-card deck; the cards are dealt into 17 fans of three plus one single card, and only the top card of each fan can move; a fan top stacks onto another fan whose top is the next-higher card of the same suit (built down in suit), and an exposed Ace starts one of the 4 foundations which then build up in suit from Ace to King; when no legal move remains the player may gather all non-foundation cards, shuffle and redeal (up to 3 redeals); clearing all 52 cards to the foundations wins, while being stuck after the third redeal loses; commands mf with from and to fan indices, ff with from fan index to a foundation, rd redeal, ac autocomplete, u undo, g giveup, hint, log (l), reset (r); phases 0 Playing, 1 GameClear, 2 GameOver
+  - name: curdsandwhey
+    description: Curds and Whey (カーズ・アンド・ホエイ) game - Simple Simon variant dealing 13 columns of 4, building same-suit or same-rank
   - name: simplesimon
     description: Simple Simon (シンプル・サイモン) — an easier Spider-family single-player solitaire on a standard 52-card deck; all 52 cards are dealt face-up into 10 columns (sizes 8,8,8,7,6,5,4,3,2,1) with no stock and no free cells; a column top, or a same-suit descending run, can be moved, and a card may be placed on any card one rank higher of any suit (only same-suit runs move as a group) while an empty column accepts anything; a complete King-to-Ace same-suit run is removed automatically and counts as a finished suit; clearing all four suits wins and running out of legal moves loses; commands m with fromCol, cardIndex and toCol, u undo, undo_n, g giveup, hint, log (l), reset (r); phases 0 Playing, 1 GameClear, 2 GameOver
   - name: doubleklondike
@@ -25147,6 +25149,67 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleSimonResponse'
+  /curdsandwhey/exec:
+    post:
+      tags:
+        - curdsandwhey
+      summary: Execute a Curds and Whey game command
+      description: |
+        Send a command to advance a Curds and Whey session identified by `sessionId`.
+        Curds and Whey is an easier Spider-family solitaire: all 52 cards are dealt
+        face-up into 10 columns with no stock. Move a column top or a same-suit
+        descending run with `m` (fromCol, cardIndex, toCol); a complete King-to-Ace
+        same-suit run is removed automatically. Clear all four suits to win.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Moving cards among the 10 columns |
+        | GameClear | `1`   | All four suits were removed |
+        | GameOver  | `2`   | No legal moves remain, or gave up |
+
+        | Command | Description |
+        |---------|-------------|
+        | `reset` | Start / restart the game |
+        | `m`     | Move `fromCol` from `cardIndex` onto `toCol` |
+        | `u`     | Undo the last move |
+        | `undo_n`| Undo `n` moves |
+        | `g`     | Give up |
+        | `hint`  | Request a move hint |
+        | `log`   | View action log |
+      operationId: curdsAndWheyExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurdsAndWheyRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              move:
+                summary: Move column 1 (from its top card) onto column 0
+                value:
+                  command: m
+                  fromCol: 1
+                  cardIndex: 0
+                  toCol: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurdsAndWheyResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurdsAndWheyResponse'
   /doubleklondike/exec:
     post:
       tags:
@@ -60727,6 +60790,87 @@ components:
           example: my-session-001
 
     SimpleSimonResponse:
+      type: object
+      description: Current state of the Simple Simon game
+      properties:
+        columns:
+          type: array
+          description: The 10 tableau columns (top card is last)
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        completedSuits:
+          type: integer
+          description: Number of complete K-A suits removed (0 to 4)
+        phase:
+          type: integer
+          description: "Game phase: 0 Playing, 1 GameClear, 2 GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        hint:
+          type: object
+          nullable: true
+          description: Optional move hint (present only on a hint request)
+          properties:
+            fromCol:
+              type: integer
+            cardIndex:
+              type: integer
+            toCol:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    CurdsAndWheyRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command: `reset` (`r`), `m` (move), `u` (undo), `undo_n`, `g` (giveup),
+            `hint`, `log` (`l`).
+          enum: [reset, r, m, u, undo_n, g, hint, log, l]
+          example: m
+        fromCol:
+          type: integer
+          description: Source column index; used with `m`.
+          minimum: 0
+          maximum: 9
+        cardIndex:
+          type: integer
+          description: Index within the source column of the first card to move; used with `m`.
+          minimum: 0
+        toCol:
+          type: integer
+          description: Destination column index; used with `m`.
+          minimum: 0
+          maximum: 9
+        n:
+          type: integer
+          description: Number of moves to undo; used with `undo_n`.
+          minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    CurdsAndWheyResponse:
       type: object
       description: Current state of the Simple Simon game
       properties:

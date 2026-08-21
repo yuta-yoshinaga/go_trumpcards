@@ -408,7 +408,8 @@
     "fortress": "All 52 cards face-up in 10 columns, building by suit in either direction.",
     "somerset": "All 52 cards face-up in 10 columns, building down by alternating colour.",
     "stalactites": "A FreeCell variant whose foundation base rank changes every deal, and suits are ignored.",
-    "whitehead": "An open Klondike variant: every card face-up, but you may only build by the same colour."
+    "whitehead": "An open Klondike variant: every card face-up, but you may only build by the same colour.",
+    "curdsandwhey": "Thirteen open columns; build down in suit, or park a card on its own rank."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -733,6 +734,7 @@
     "fortress": "Foundations start empty — scan all ten columns for a same-suit link.",
     "somerset": "No free cells, no stock — hunt alternating-colour runs across all ten columns.",
     "stalactites": "All four cells start occupied — build suit-agnostic wrapping runs to escape.",
-    "whitehead": "Nothing is hidden — the constraint is that only same-colour runs connect."
+    "whitehead": "Nothing is hidden — the constraint is that only same-colour runs connect.",
+    "curdsandwhey": "No stock, no foundations — assemble all four suits in place."
   }
 }

@@ -89,6 +89,7 @@ export * from './games/cruel';
 export * from './games/cuarenta';
 export * from './games/cuckoo';
 export * from './games/cucumber';
+export * from './games/curdsandwhey';
 export * from './games/daifugo';
 export * from './games/desmoche';
 export * from './games/deuceswild';
@@ -617,6 +618,7 @@ export const games = [
   'openfacechinese',
   'russianbank',
   'labellelucie',
+  'curdsandwhey',
   'simplesimon',
   'doubleklondike',
   'blackhole',
