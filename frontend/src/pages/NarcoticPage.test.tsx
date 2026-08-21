@@ -225,7 +225,10 @@ describe('NarcoticPage', () => {
     fireEvent.dragOver(target, { dataTransfer });
     fireEvent.drop(target, { dataTransfer });
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Number)));
+    // **動かすのは掴んだ山 (col1 の ♥7)。**行き先はサーバが「同ランクを露出して
+    // いる最も左の山」として決めるので、送るのは掴んだ列番号だけ。
+    // expect.any(Number) では別の山を動かしても通ってしまう。
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', 1));
   });
 
   it('offers no drop zone on an emptied pile', async () => {
