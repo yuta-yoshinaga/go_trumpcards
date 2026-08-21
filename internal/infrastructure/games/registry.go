@@ -1201,6 +1201,7 @@ var registry = []*Game{
 	// ベッティングの規則は種目側に置いたままにする。
 	{Name: "horse", Category: CategoryCasino},
 	{Name: "alaska", Category: CategoryExtra4},
+	{Name: "fortress", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.

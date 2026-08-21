@@ -885,6 +885,11 @@ func init() {
 			return usecase.NewOasisPokerInteractor(domain.NewDefaultOasisPoker(), new(presenter.OasisPokerWebPresenter))
 		},
 		controller.NewOasisPokerWebController)
+	BindWebControllerFor("fortress",
+		func() usecase.FortressInteractorIF {
+			return usecase.NewFortressInteractor(domain.NewDefaultFortress(), new(presenter.FortressWebPresenter))
+		},
+		controller.NewFortressWebController)
 	BindWebControllerFor("beleagueredcastle",
 		func() usecase.BeleagueredCastleInteractorIF {
 			return usecase.NewBeleagueredCastleInteractor(domain.NewDefaultBeleagueredCastle(), new(presenter.BeleagueredCastleWebPresenter))

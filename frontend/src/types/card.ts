@@ -106,6 +106,7 @@ export * from './games/fiftyone';
 export * from './games/fivecardstud';
 export * from './games/fivehundred';
 export * from './games/flowergarden';
+export * from './games/fortress';
 export * from './games/fortyandeight';
 export * from './games/fortyfives';
 export * from './games/fortythieves';

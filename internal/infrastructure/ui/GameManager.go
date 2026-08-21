@@ -6162,6 +6162,26 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("fortress",
+		func() usecase.FortressInteractorIF {
+			return usecase.NewFortressInteractor(domain.NewDefaultFortress(), new(presenter.FortressCuiPresenter))
+		},
+		controller.NewFortressCuiController,
+		CuiHelpSpec{
+			TitleKey: "fortress.helpTitle",
+			ExampleKeys: []string{
+				"fortress.helpExampleHint",
+				"fortress.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"fortress.helpMoveTT",
+				"fortress.helpMoveTF",
+				"fortress.helpGiveUp",
+				"fortress.helpHint",
+				"fortress.helpAutoComplete", "fortress.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

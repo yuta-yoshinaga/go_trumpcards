@@ -339,7 +339,8 @@
     "cincinnati": "Cincinnati",
     "ironcross": "Iron Cross",
     "baseballpoker": "Baseball Poker",
-    "alaska": "Alaska"
+    "alaska": "Alaska",
+    "fortress": "Fortress"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1015,6 +1016,12 @@
     "flowergarden.noHint": "No hint available",
     "flowergarden.playing": "Playing",
     "flowergarden.stalemate": "No moves can lead to a win. Please undo or give up.",
+    "fortress.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "fortress.gameOver": "Game Over",
+    "fortress.hintAvailable": "Hint available",
+    "fortress.noHint": "No hint available",
+    "fortress.playing": "Playing",
+    "fortress.stalemate": "No moves can lead to a win. Please undo or give up.",
     "fortyandeight.gameClear": "Game Clear! Moves: {{moveCount}}",
     "fortyandeight.gameOver": "Game Over",
     "fortyandeight.hintAvailable": "Hint available",

@@ -339,7 +339,8 @@
     "cincinnati": "シンシナティ",
     "ironcross": "アイアンクロス",
     "baseballpoker": "ベースボールポーカー",
-    "alaska": "アラスカ"
+    "alaska": "アラスカ",
+    "fortress": "フォートレス"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1015,6 +1016,12 @@
     "flowergarden.noHint": "ヒントはありません",
     "flowergarden.playing": "プレイ中",
     "flowergarden.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
+    "fortress.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "fortress.gameOver": "ゲームオーバー",
+    "fortress.hintAvailable": "ヒントがあります",
+    "fortress.noHint": "ヒントはありません",
+    "fortress.playing": "プレイ中",
+    "fortress.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
     "fortyandeight.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "fortyandeight.gameOver": "ゲームオーバー",
     "fortyandeight.hintAvailable": "ヒントがあります",

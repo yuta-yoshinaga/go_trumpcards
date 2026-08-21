@@ -329,6 +329,7 @@ var gameDescriptions = map[string]string{
 	"zwicker":             "ツヴィッカー（55枚のドイツ北部フィッシング。A・絵札は2つの値を持ち、場を空にするとZwickで1点）",
 	"desmoche":            "デスモチェ（9枚配りのニカラグア式ラミー。ちょうど10枚を組めた者がポットを取り、誰も組めなければ持ち越し）",
 	"alaska":              "Alaska (アラスカ)",
+	"fortress":            "Fortress (フォートレス)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

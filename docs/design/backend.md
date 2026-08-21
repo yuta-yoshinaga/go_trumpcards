@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全319ゲーム)](#12-ゲームドメイン-全319ゲーム)
+  - [1.2 ゲームドメイン (全320ゲーム)](#12-ゲームドメイン-全320ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -161,7 +161,7 @@ classDiagram
 
 #### 共有ミックスイン
 
-319 ゲームの多くが同じ関心事を持つので、以下は**埋め込みで共有**している。
+320 ゲームの多くが同じ関心事を持つので、以下は**埋め込みで共有**している。
 §1.2 以降の per-game クラス図に現れる `GetActionLog()` / `GetTricksTaken()` /
 `GetRoundScore()` などは、たいていここから昇格してきたメソッドで、
 per-game 型が自前で定義しているわけではない。
@@ -201,7 +201,7 @@ classDiagram
 新しいゲームでこれらを埋め込む場合、ゲーム側のコーデックがこの往復を壊していないか
 確認すること（[ADR-0031](../adr/0031-registry-consolidation.md) の登録手順を参照）。
 
-### 1.2 ゲームドメイン (全319ゲーム)
+### 1.2 ゲームドメイン (全320ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1732,7 +1732,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全319ゲーム共通)**
+**Interactor パターン (全320ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1817,8 +1817,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "319ゲーム × CUI/Web = 638 バインディング\n実装型は 612 種類 (CuiController 306 + WebController 306)\n差分は複数ゲームで共有される Controller\n(総称基底 GameWebController[I,P,O] は別)"
-    note for GameCuiPresenter "319ゲーム × CUI/Web = 638 バインディング\n実装型は 614 種類 (CuiPresenter 307 + WebPresenter 307)"
+    note for GameCuiController "320ゲーム × CUI/Web = 640 バインディング\n実装型は 614 種類 (CuiController 307 + WebController 307)\n差分は複数ゲームで共有される Controller\n(総称基底 GameWebController[I,P,O] は別)"
+    note for GameCuiPresenter "320ゲーム × CUI/Web = 640 バインディング\n実装型は 616 種類 (CuiPresenter 308 + WebPresenter 308)"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1857,8 +1857,8 @@ classDiagram
     }
 
     TrumpCardsWeb --> "*" gameEntry : registerAll() over games.All()
-    gameEntry --> GameWebController : holds 319 controllers
-    GameManager --> "*" CuiExecer : holds 319 games
+    gameEntry --> GameWebController : holds 320 controllers
+    GameManager --> "*" CuiExecer : holds 320 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
