@@ -283,14 +283,10 @@ func (cr *StHelena) Redeal() error {
 		gathered = append(gathered, cr.tableau[i]...)
 		cr.tableau[i] = nil
 	}
+	// 札はタブローから出ていく一方なので gathered は 96 枚以下、つまり col は
+	// 最大でも 95/8 = 11 に収まる。上限を跨ぐ枝は存在しない。
 	for i, tc := range gathered {
-		col := i / StHelenaTableauInitialSize
-		if col >= StHelenaTableauCnt {
-			// 組札へ送った枚数だけ全体が減るので、割り切れないぶんは
-			// 最後の列に寄せる（枚数が減っても列数は変えない）。
-			col = StHelenaTableauCnt - 1
-		}
-		cr.tableau[col] = append(cr.tableau[col], tc)
+		cr.tableau[i/StHelenaTableauInitialSize] = append(cr.tableau[i/StHelenaTableauInitialSize], tc)
 	}
 	// **制限はここで解ける。**規則の眼目で、解けないと後半に手が無くなる。
 	cr.restrictionsActive = false
@@ -320,7 +316,9 @@ func (cr *StHelena) GetHint() *StHelenaHint {
 		}
 		tc := cr.tableau[col][len(cr.tableau[col])-1]
 		for fIdx := range StHelenaFoundationCnt {
-			if cr.canPlaceOnFoundation(tc.Card, fIdx) {
+			// **届くかどうかも見る。**置けるだけでは送れない。見ないと、
+			// サーバが拒む手を毎レスポンスで指し続けることになる。
+			if cr.columnCanReach(col, fIdx) && cr.canPlaceOnFoundation(tc.Card, fIdx) {
 				return &StHelenaHint{FromCol: col, ToZone: "foundation", ToCol: fIdx}
 			}
 		}
@@ -360,7 +358,9 @@ func (cr *StHelena) AutoComplete() error {
 			}
 			tc := cr.tableau[col][len(cr.tableau[col])-1]
 			for fIdx := range StHelenaFoundationCnt {
-				if cr.canPlaceOnFoundation(tc.Card, fIdx) {
+				// **届くかどうかも見る。**手で送れば拒まれる手を、ここが
+				// 勝手に打ってしまうと制限そのものが無かったことになる。
+				if cr.columnCanReach(col, fIdx) && cr.canPlaceOnFoundation(tc.Card, fIdx) {
 					cr.tableau[col] = cr.tableau[col][:len(cr.tableau[col])-1]
 					cr.foundation[fIdx] = append(cr.foundation[fIdx], tc.Card)
 					cr.moveCount++
@@ -556,7 +556,16 @@ func (cr *StHelena) hasAnyLegalMove() bool {
 		}
 		tc := cr.tableau[col][len(cr.tableau[col])-1]
 		for fIdx := range StHelenaFoundationCnt {
-			if cr.canPlaceOnFoundation(tc.Card, fIdx) {
+			// 送れる手の定義は 1 つ。ここだけ緩めると、実際には打てない手を
+			// 数えて「まだ手がある」と言い続ける。
+			//
+			// **今日はこの項が結果を変えない。**制限が立つのは再配りが 2 回
+			// 残っている間だけで、checkStHelenaStalemate は再配りが残っていれば
+			// 手詰まりでないと即断するため、ここを緩めても IsStalemate は
+			// 変わらない ── つまりテストからは観測できない。それでも揃えて
+			// あるのは、どちらか一方の条件が動いた瞬間に食い違いがバグになる
+			// から。観測できないものを「テスト済み」と書かないためにここに残す。
+			if cr.columnCanReach(col, fIdx) && cr.canPlaceOnFoundation(tc.Card, fIdx) {
 				return true
 			}
 		}

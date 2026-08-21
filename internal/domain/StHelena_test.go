@@ -393,7 +393,10 @@ func TestStHelena_GetHint(t *testing.T) {
 		clearStHelenaTableau(cr)
 		clearStHelenaFoundation(cr)
 		var tab [domain.StHelenaTableauCnt][]*domain.StHelenaTableauCard
-		tab[3] = []*domain.StHelenaTableauCard{makeStHelenaTableauCard(domain.CardDesignSpade, 2)}
+		// **列 6 (下) から A 段へ。**クローン元のクレセントに送り先の制限が
+		// 無いので、元の盤は列 3 (上) から A 段へ送るヒントを期待していた ──
+		// このゲームではそれは拒まれる手で、ヒントが指してはいけない。
+		tab[6] = []*domain.StHelenaTableauCard{makeStHelenaTableauCard(domain.CardDesignSpade, 2)}
 		cr.SetTableau(tab)
 		var fnd [domain.StHelenaFoundationCnt][]*domain.Card
 		fnd[0] = []*domain.Card{makeStHelenaCard(domain.CardDesignSpade, 1)}
@@ -401,8 +404,10 @@ func TestStHelena_GetHint(t *testing.T) {
 		h := cr.GetHint()
 		require.NotNil(t, h)
 		assert.Equal(t, "foundation", h.ToZone)
-		assert.Equal(t, 3, h.FromCol)
+		assert.Equal(t, 6, h.FromCol)
 		assert.Equal(t, 0, h.ToCol)
+		// ヒントが指した手は必ず打てること。指すだけで打てないなら嘘になる。
+		assert.NoError(t, cr.MoveTableauToFoundation(h.FromCol, h.ToCol))
 	})
 
 	t.Run("priority 2: tableau to tableau", func(t *testing.T) {
@@ -450,7 +455,10 @@ func TestStHelena_AutoComplete(t *testing.T) {
 		clearStHelenaTableau(cr)
 		clearStHelenaFoundation(cr)
 		var tab [domain.StHelenaTableauCnt][]*domain.StHelenaTableauCard
-		tab[0] = []*domain.StHelenaTableauCard{
+		// **列 6 (下) から A 段へ。**元の盤は列 0 (上) から A 段へ送っていた ──
+		// 手で送れば拒まれる手なので、オートコンプリートが打てば制限が
+		// 無かったことになる。
+		tab[6] = []*domain.StHelenaTableauCard{
 			makeStHelenaTableauCard(domain.CardDesignSpade, 3),
 			makeStHelenaTableauCard(domain.CardDesignSpade, 2),
 		}
@@ -461,7 +469,7 @@ func TestStHelena_AutoComplete(t *testing.T) {
 		require.NoError(t, cr.AutoComplete())
 		got := cr.GetFoundation()
 		assert.Len(t, got[0], 3)
-		assert.Len(t, cr.GetTableau()[0], 0)
+		assert.Len(t, cr.GetTableau()[6], 0)
 	})
 
 	t.Run("error when not playing", func(t *testing.T) {

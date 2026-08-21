@@ -160,3 +160,55 @@ func TestStHelena_DealIsTwelveColumnsOfEight(t *testing.T) {
 	}
 	assert.Equal(t, domain.CardCnt*2, total, "104 枚すべてが盤上にある")
 }
+
+// **制限は「送れる手」の定義そのもの。**`MoveTableauToFoundation` だけに書くと、
+// 同じ盤を読む他の経路がそれを知らないまま先へ進む
+// ([[feedback_new_variant_needs_every_consumer]] の形)。
+func TestStHelena_TheRestrictionBindsEveryPathToAFoundation(t *testing.T) {
+	// 列 0 (上) の上札が A 段にちょうど乗る盤。手で送るのは拒まれるので、
+	// ヒントもオートコンプリートも同じ手を選んではいけない。
+	setup := func() *domain.StHelena {
+		cr := setupPlayingStHelena()
+		clearStHelenaTableau(cr)
+		clearStHelenaFoundation(cr)
+		var fnd [domain.StHelenaFoundationCnt][]*domain.Card
+		fnd[0] = []*domain.Card{makeStHelenaCard(domain.CardDesignSpade, 1)}
+		cr.SetFoundation(fnd)
+		var tb [domain.StHelenaTableauCnt][]*domain.StHelenaTableauCard
+		tb[0] = []*domain.StHelenaTableauCard{makeStHelenaTableauCard(domain.CardDesignSpade, 2)}
+		cr.SetTableau(tb)
+		return cr
+	}
+
+	// 前提: 手で送るのは拒まれる。ここが通ってしまうと以下は何も測らない。
+	require.Error(t, setup().MoveTableauToFoundation(0, 0))
+
+	t.Run("GetHint does not point at it", func(t *testing.T) {
+		h := setup().GetHint()
+		if h != nil && h.ToZone == "foundation" {
+			assert.Fail(t, "拒まれる手をヒントが指している", "col %d -> foundation %d", h.FromCol, h.ToCol)
+		}
+	})
+
+	t.Run("AutoComplete does not play it", func(t *testing.T) {
+		cr := setup()
+		_ = cr.AutoComplete()
+		assert.Len(t, cr.GetFoundation()[0], 1, "組札は種札のまま")
+		assert.Len(t, cr.GetTableau()[0], 1, "札は列に残る")
+	})
+
+	// 負のコントロール: 制限が解ければ、どちらの経路でも同じ手を選ぶ。
+	// 「常に送らない」実装でも上の 2 つは通ってしまう。
+	t.Run("both play it once the restriction is lifted", func(t *testing.T) {
+		cr := setup()
+		cr.SetRestrictionsActive(false)
+		h := cr.GetHint()
+		require.NotNil(t, h)
+		assert.Equal(t, "foundation", h.ToZone)
+
+		cr2 := setup()
+		cr2.SetRestrictionsActive(false)
+		require.NoError(t, cr2.AutoComplete())
+		assert.Len(t, cr2.GetFoundation()[0], 2)
+	})
+}
