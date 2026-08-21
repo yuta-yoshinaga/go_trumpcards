@@ -288,6 +288,14 @@ func init() {
 		},
 		controller.NewEscobaWebControllerWithProvider)
 
+	games.RegisterKVGame("shamrocks", games.CategoryClassic,
+		func() usecase.ShamrocksInteractorIF {
+			return usecase.NewShamrocksInteractor(domain.NewDefaultShamrocks(), new(presenter.ShamrocksWebPresenter))
+		},
+		func(data []byte) (usecase.ShamrocksInteractorIF, error) {
+			return usecase.RestoreShamrocksInteractor(data, new(presenter.ShamrocksWebPresenter))
+		},
+		controller.NewShamrocksWebControllerWithProvider)
 	games.RegisterKVGame("labellelucie", games.CategoryClassic,
 		func() usecase.LaBelleLucieInteractorIF {
 			return usecase.NewLaBelleLucieInteractor(domain.NewDefaultLaBelleLucie(), new(presenter.LaBelleLucieWebPresenter))

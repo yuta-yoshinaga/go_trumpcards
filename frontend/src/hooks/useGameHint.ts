@@ -238,6 +238,7 @@ import type {
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
+  ShamrocksResponse,
   SheepsheadResponse,
   ShelemResponse,
   ShengJiResponse,
@@ -557,6 +558,7 @@ import { getSetteEMezzoHint } from '../utils/hints/settemezzoHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevenCardStudHint } from '../utils/hints/sevencardstudHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
+import { getShamrocksHint } from '../utils/hints/shamrocksHint';
 import { getSheepsheadHint } from '../utils/hints/sheepsheadHint';
 import { getShelemHint } from '../utils/hints/shelemHint';
 import { getShengJiHint } from '../utils/hints/shengjiHint';
@@ -855,6 +857,7 @@ export const hintFactories = {
   simplesimon: (s) => getSimpleSimonHint(s as SimpleSimonResponse),
   literature: (s) => getLiteratureHint(s as LiteratureResponse),
   labellelucie: (s) => getLaBelleLucieHint(s as LaBelleLucieResponse),
+  shamrocks: (s) => getShamrocksHint(s as ShamrocksResponse),
   doubleklondike: (s) => getDoubleKlondikeHint(s as DoubleKlondikeResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),
   sirtommy: (s) => getSirTommyHint(s as SirTommyResponse),

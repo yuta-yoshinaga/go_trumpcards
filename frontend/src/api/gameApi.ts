@@ -257,6 +257,7 @@ export * from './games/sevenbridge';
 export * from './games/sevencardstud';
 export * from './games/sevencardstudhilo';
 export * from './games/sevens';
+export * from './games/shamrocks';
 export * from './games/sheepshead';
 export * from './games/shelem';
 export * from './games/shengji';
@@ -617,6 +618,7 @@ export const games = [
   'faro',
   'openfacechinese',
   'russianbank',
+  'shamrocks',
   'labellelucie',
   'curdsandwhey',
   'simplesimon',

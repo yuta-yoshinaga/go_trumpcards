@@ -334,6 +334,7 @@ var gameDescriptions = map[string]string{
 	"stalactites":         "Stalactites (スタラクタイト)",
 	"whitehead":           "Whitehead (ホワイトヘッド)",
 	"curdsandwhey":        "Curds and Whey (カーズ・アンド・ホエイ)",
+	"shamrocks":           "Shamrocks (シャムロックス)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

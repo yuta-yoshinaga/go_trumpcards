@@ -245,6 +245,7 @@ export * from './games/settemezzo';
 export * from './games/sevenbridge';
 export * from './games/sevencardstud';
 export * from './games/sevens';
+export * from './games/shamrocks';
 export * from './games/sheepshead';
 export * from './games/shelem';
 export * from './games/shengji';

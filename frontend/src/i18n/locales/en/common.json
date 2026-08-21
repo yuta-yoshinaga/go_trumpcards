@@ -344,7 +344,8 @@
     "somerset": "Somerset",
     "stalactites": "Stalactites",
     "whitehead": "Whitehead",
-    "curdsandwhey": "Curds and Whey"
+    "curdsandwhey": "Curds and Whey",
+    "shamrocks": "Shamrocks"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1833,6 +1834,11 @@
     "sevencardstud.result.mucked": "You mucked.",
     "sevencardstud.result.win": "You are the winner.",
     "sevens.result.rankings": "{{rankings}}",
+    "shamrocks.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "shamrocks.gameOver": "Game Over",
+    "shamrocks.hintAvailable": "Hint available",
+    "shamrocks.noHint": "No hint available",
+    "shamrocks.playing": "Playing",
     "sheepshead.buryPhase": "You are the picker — bury two cards.",
     "sheepshead.callPhase": "Choose a suit to call your partner.",
     "sheepshead.hintRequested": "A hint is available",
