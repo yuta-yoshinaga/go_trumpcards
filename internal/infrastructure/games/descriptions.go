@@ -331,6 +331,7 @@ var gameDescriptions = map[string]string{
 	"alaska":              "Alaska (アラスカ)",
 	"fortress":            "Fortress (フォートレス)",
 	"somerset":            "Somerset (サマセット)",
+	"stalactites":         "Stalactites (スタラクタイト)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

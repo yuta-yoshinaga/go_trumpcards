@@ -6202,6 +6202,33 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("stalactites",
+		func() usecase.StalactitesInteractorIF {
+			return usecase.NewStalactitesInteractor(domain.NewDefaultStalactites(), new(presenter.StalactitesCuiPresenter))
+		},
+		controller.NewStalactitesCuiController,
+		CuiHelpSpec{
+			TitleKey: "stalactites.helpTitle",
+			ExampleKeys: []string{
+				"stalactites.helpExampleMoveCell",
+				"stalactites.helpExampleHint",
+				"stalactites.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"stalactites.helpMove",
+				"stalactites.helpMoveTF",
+				"stalactites.helpMoveTT",
+				"stalactites.helpMoveTC",
+				"stalactites.helpMoveCT",
+				"stalactites.helpMoveCF",
+				"stalactites.helpGiveUp",
+				"stalactites.helpHint",
+				"stalactites.helpAutoComplete",
+				"stalactites.helpMoveShorthand",
+				"stalactites.helpFoundation", "stalactites.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

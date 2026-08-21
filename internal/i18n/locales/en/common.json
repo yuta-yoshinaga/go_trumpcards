@@ -590,5 +590,11 @@
   "notes": "Notes:",
   "hesitationFlagRequired0Off1On": "CPU hesitation flag is required (0=OFF, 1=ON).",
   "invalidHesitationFlag01": "Invalid CPU hesitation flag: {{val}}. Please enter 0-1.",
-  "playerCountRequired26": "Specify the player count (2-6)."
+  "playerCountRequired26": "Specify the player count (2-6).",
+  "stalactites.promptSourceZone": "Enter source zone (t=tableau, c=freecell):",
+  "stalactites.promptToZone": "Enter destination (t=tableau, f=foundation, c=freecell):",
+  "stalactites.promptToZoneFromCell": "Enter destination (t=tableau, f=foundation):",
+  "stalactites.invalidFromZone": "Invalid from zone: {{val}}. Use 't' (tableau) or 'c' (freecell).",
+  "stalactites.invalidToZone": "Invalid to zone: {{val}}. Use 't' (tableau) or 'f' (foundation).",
+  "stalactites.moveUsage": "Usage: m t <col> f | m t <col> <idx> t <col> | m t <col> c <cell>"
 }

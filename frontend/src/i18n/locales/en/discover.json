@@ -406,7 +406,8 @@
     "baseballpoker": "3s and 9s are wild. A face-up 4 pays you a card; a face-up 3 charges you the whole pot.",
     "alaska": "A Yukon variant that builds up or down by suit, with empty columns open to any card.",
     "fortress": "All 52 cards face-up in 10 columns, building by suit in either direction.",
-    "somerset": "All 52 cards face-up in 10 columns, building down by alternating colour."
+    "somerset": "All 52 cards face-up in 10 columns, building down by alternating colour.",
+    "stalactites": "A FreeCell variant whose foundation base rank changes every deal, and suits are ignored."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -729,6 +730,7 @@
     "baseballpoker": "The same 3 is a gift in the hole and a bill on the board.",
     "alaska": "Keep Yukon's free stack moves, but look for connections running either way.",
     "fortress": "Foundations start empty — scan all ten columns for a same-suit link.",
-    "somerset": "No free cells, no stock — hunt alternating-colour runs across all ten columns."
+    "somerset": "No free cells, no stock — hunt alternating-colour runs across all ten columns.",
+    "stalactites": "All four cells start occupied — build suit-agnostic wrapping runs to escape."
   }
 }

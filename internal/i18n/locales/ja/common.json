@@ -590,5 +590,11 @@
   "notes": "補足:",
   "hesitationFlagRequired0Off1On": "CPU の迷い時間演出の有無を指定してください (0=OFF, 1=ON)。",
   "invalidHesitationFlag01": "CPU の迷い時間演出の有無が不正です: {{val}}。0-1 を入力してください。",
-  "playerCountRequired26": "プレイヤー数を指定してください (2-6)。"
+  "playerCountRequired26": "プレイヤー数を指定してください (2-6)。",
+  "stalactites.promptSourceZone": "移動元を入力してください (t=場札, c=フリーセル):",
+  "stalactites.promptToZone": "移動先を入力してください (t=場札, f=組札, c=フリーセル):",
+  "stalactites.promptToZoneFromCell": "移動先を入力してください (t=場札, f=組札):",
+  "stalactites.invalidFromZone": "無効な移動元です: {{val}}。't' (場札) または 'c' (フリーセル) を入力してください。",
+  "stalactites.invalidToZone": "無効な移動先です: {{val}}。't' (場札) または 'f' (組札) を入力してください。",
+  "stalactites.moveUsage": "使い方: m t <列> f | m t <列> <カードIdx> t <列> | m t <列> c <セル>"
 }

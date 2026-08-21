@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した321種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した322種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -137,6 +137,7 @@ Go + Clean Architecture で実装した321種類のトランプゲーム。CLI �
 | 500 (Five Hundred / ファイブハンドレッド) | `fivehundred` | [CUI](docs/manual/cui/fivehundred.md) / [Web](docs/manual/web/fivehundred.md) |
 | フィフティワン (Fifty-one) | `fiftyone` | [CUI](docs/manual/cui/fiftyone.md) / [Web](docs/manual/web/fiftyone.md) |
 | ユーコン (Yukon) | `yukon` | [CUI](docs/manual/cui/yukon.md) / [Web](docs/manual/web/yukon.md) |
+| スタラクタイト (Stalactites) | `stalactites` | [CUI](docs/manual/cui/stalactites.md) / [Web](docs/manual/web/stalactites.md) |
 | サマセット (Somerset) | `somerset` | [CUI](docs/manual/cui/somerset.md) / [Web](docs/manual/web/somerset.md) |
 | フォートレス (Fortress) | `fortress` | [CUI](docs/manual/cui/fortress.md) / [Web](docs/manual/web/fortress.md) |
 | アラスカ (Alaska) | `alaska` | [CUI](docs/manual/cui/alaska.md) / [Web](docs/manual/web/alaska.md) |

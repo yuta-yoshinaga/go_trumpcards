@@ -341,7 +341,8 @@
     "baseballpoker": "Baseball Poker",
     "alaska": "Alaska",
     "fortress": "Fortress",
-    "somerset": "Somerset"
+    "somerset": "Somerset",
+    "stalactites": "Stalactites"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1965,6 +1966,13 @@
     "spoilfive.trickEnd": "Trick complete — continue.",
     "spoons.result.cpuWin": "Game over! The CPU wins.",
     "spoons.result.humanWin": "Game over! You win!",
+    "stalactites.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "stalactites.gameOver": "Game Over",
+    "stalactites.hintAvailable": "Hint available",
+    "stalactites.noHint": "No hint available",
+    "stalactites.playing": "Playing",
+    "stalactites.stalemate": "No moves can lead to a win. Please undo or give up.",
+    "stalactites.stalemateWithEscape": "Stalemate. Undo {{count}} moves to find another play.",
     "stealingbundles.mustCapture": "A capture is available. Take from the table or steal a bundle.",
     "stealingbundles.result.cpu": "CPU{{idx}} collected the most with {{n}} cards.",
     "stealingbundles.result.you": "You win. You collected the most with {{n}} cards.",
