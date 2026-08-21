@@ -14,8 +14,11 @@ export interface FortressLegalTargets {
  *
  * Sync: `Fortress.canPlaceOnTableau` / `canPlaceOnFoundation`.
  *
- * **タブローはスートを見ない。**ランクが1つ下がるかどうかだけ。ファンデーションは
- * 逆に同スートで1つ上がるときだけ。この2つを取り違えると、置けない列を光らせる。
+ * **タブローは同スートで隣接ランク（昇順・降順どちらも）。**ファンデーションは
+ * 同スートで1つ上がるときだけ。この2つを取り違えると、置けない列を光らせる。
+ *
+ * この関数はサーバ側の規則を二重に持っている。クローン元 (Beleaguered Castle) は
+ * 「スートを見ずに1つ下」だったので、規則を変えたらここも必ず直すこと。
  *
  * **空き列にはどのカードでも置ける。**姉妹の Baker's Dozen は空き列を埋められない
  * ので、そちらの規則を流用すると実際には打てる手を落とす (#4799)。
@@ -34,7 +37,9 @@ export function fortressLegalTargets(
       return;
     }
     const top = col[col.length - 1]?.card;
-    if (top && card.value === top.value - 1) result.tableau.add(idx);
+    if (!top || card.design !== top.design) return;
+    const diff = card.value - top.value;
+    if (diff === 1 || diff === -1) result.tableau.add(idx);
   });
 
   foundation.forEach((pile, idx) => {

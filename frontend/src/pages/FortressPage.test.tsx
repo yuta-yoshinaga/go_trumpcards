@@ -34,7 +34,7 @@ const playingState: FortressResponse = {
       { card: card('SPADE', 13), faceUp: true },
       { card: card('SPADE', 5), faceUp: true },
     ],
-    [{ card: card('HEART', 6), faceUp: true }],
+    [{ card: card('SPADE', 6), faceUp: true }],
     [],
     [],
     [],
@@ -217,7 +217,7 @@ describe('FortressPage', () => {
       expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(0);
     });
 
-    // ♠5 は ♥6 の上 (スート不問) と、空き列すべてに置ける。自分の列 #0 は
+    // ♠5 は ♠6 の上 (Fortress は同スート) と、空き列すべてに置ける。自分の列 #0 は
     // 相手が ♠5 自身なので置けない。
     it('marks the ranks-down column and every empty column, but not the source column', async () => {
       mockExec.mockResolvedValue(playingState);

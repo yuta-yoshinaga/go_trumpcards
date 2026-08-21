@@ -340,7 +340,8 @@
     "ironcross": "Iron Cross",
     "baseballpoker": "Baseball Poker",
     "alaska": "Alaska",
-    "fortress": "Fortress"
+    "fortress": "Fortress",
+    "somerset": "Somerset"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1919,6 +1920,12 @@
     "solowhist.result.humanWin": "Game over! You win!",
     "solowhist.roundEnd": "Round complete — go to the next round.",
     "solowhist.trickEnd": "Trick complete — continue.",
+    "somerset.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "somerset.gameOver": "Game Over",
+    "somerset.hintAvailable": "Hint available",
+    "somerset.noHint": "No hint available",
+    "somerset.playing": "Playing",
+    "somerset.stalemate": "No moves can lead to a win. Please undo or give up.",
     "spades.bidPhase": "Bidding phase — place your bid.",
     "spades.hintRequested": "A hint is available",
     "spades.noHint": "No hint available",

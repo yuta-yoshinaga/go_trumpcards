@@ -253,6 +253,7 @@ import type {
   SlobberhannesResponse,
   SnapResponse,
   SoloWhistResponse,
+  SomersetResponse,
   SpadesResponse,
   SpeedResponse,
   SpideretteResponse,
@@ -569,6 +570,7 @@ import { getSlobberhannesHint } from '../utils/hints/slobberhannesHint';
 import { getSnapHint } from '../utils/hints/snapHint';
 import { getSokoHint } from '../utils/hints/sokoHint';
 import { getSoloWhistHint } from '../utils/hints/soloWhistHint';
+import { getSomersetHint } from '../utils/hints/somersetHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
 import { getSpideretteHint } from '../utils/hints/spideretteHint';
@@ -781,6 +783,7 @@ export const hintFactories = {
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   fortress: (s) => getFortressHint(s as FortressResponse),
+  somerset: (s) => getSomersetHint(s as SomersetResponse),
   streetsandalleys: (s) => getStreetsandalleysHint(s as StreetsAndAlleysResponse),
   kille: (s) => getKilleHint(s as KilleResponse),
   kingalbert: (s) => getKingalbertHint(s as KingAlbertResponse),

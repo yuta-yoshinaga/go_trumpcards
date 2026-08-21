@@ -260,6 +260,7 @@ export * from './games/slapjack';
 export * from './games/slobberhannes';
 export * from './games/snap';
 export * from './games/solowhist';
+export * from './games/somerset';
 export * from './games/spades';
 export * from './games/speed';
 export * from './games/spider';

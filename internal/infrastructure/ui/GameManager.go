@@ -6182,6 +6182,26 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("somerset",
+		func() usecase.SomersetInteractorIF {
+			return usecase.NewSomersetInteractor(domain.NewDefaultSomerset(), new(presenter.SomersetCuiPresenter))
+		},
+		controller.NewSomersetCuiController,
+		CuiHelpSpec{
+			TitleKey: "somerset.helpTitle",
+			ExampleKeys: []string{
+				"somerset.helpExampleHint",
+				"somerset.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"somerset.helpMoveTT",
+				"somerset.helpMoveTF",
+				"somerset.helpGiveUp",
+				"somerset.helpHint",
+				"somerset.helpAutoComplete", "somerset.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
