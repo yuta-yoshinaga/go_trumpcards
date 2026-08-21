@@ -283,6 +283,7 @@ export type GameKey =
   | 'windmill'
   | 'americantoad'
   | 'congress'
+  | 'saliclaw'
   | 'terrace'
   | 'braid'
   | 'pontoon'
@@ -866,6 +867,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   windmill: CASINO,
   americantoad: CASINO,
   congress: CASINO,
+  saliclaw: CASINO,
   terrace: CASINO,
   braid: CASINO,
   pontoon: CASINO,
