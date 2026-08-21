@@ -1,0 +1,17 @@
+{
+  "helpTitle": "シャムロックス (Shamrocks)",
+  "helpMove": "  m <from> <to|f>      扇 from のトップを扇 to / ファウンデーション(f) へ",
+  "helpAutoComplete": "  ac                   出せる札を自動で出し切る",
+  "helpUndo": "  u / undo             直近の手を取り消す",
+  "helpGiveUp": "  g / giveup           投了する",
+  "foundationLabel": "ファウンデーション{{idx}}:",
+  "fanLabel": "扇{{idx}}:",
+  "hintToFan": "扇{{idx}}",
+  "hintToFoundation": "ファウンデーション",
+  "hintLine": "[HINT: 扇{{from}} を {{to}} へ]",
+  "foundationCount": "(計{{count}}枚)",
+  "stuckDeadlock": "これ以上動かせる手がありません。シャムロックスに再配札はありません — giveup でギブアップできます。",
+  "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
+  "helpHint": "  h                    助言を表示",
+  "helpLog": "  l                    行動ログを表示"
+}

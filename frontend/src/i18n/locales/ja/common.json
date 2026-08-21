@@ -344,7 +344,8 @@
     "somerset": "サマセット",
     "stalactites": "スタラクタイト",
     "whitehead": "ホワイトヘッド",
-    "curdsandwhey": "カーズ・アンド・ホエイ"
+    "curdsandwhey": "カーズ・アンド・ホエイ",
+    "shamrocks": "シャムロックス"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1833,6 +1834,11 @@
     "sevencardstud.result.mucked": "マックしました。",
     "sevencardstud.result.win": "あなたの勝ちです。",
     "sevens.result.rankings": "{{rankings}}",
+    "shamrocks.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "shamrocks.gameOver": "ゲームオーバー",
+    "shamrocks.hintAvailable": "ヒントがあります",
+    "shamrocks.noHint": "ヒントはありません",
+    "shamrocks.playing": "プレイ中",
     "sheepshead.buryPhase": "あなたがピッカーです — 埋める2枚を選んでください。",
     "sheepshead.callPhase": "パートナーを呼ぶスートを選んでください。",
     "sheepshead.hintRequested": "ヒントがあります",

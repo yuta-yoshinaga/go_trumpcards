@@ -548,6 +548,8 @@ tags:
     description: Open Face Chinese Poker / OFC (オープンフェイス・チャイニーズポーカー) — a solo-vs-CPU 2 to 4 player game on a standard 52-card deck blending solitaire and poker; cards are dealt one at a time and each must be committed immediately to one of three rows, Top (front, 3 cards), Middle (5 cards) or Bottom (back, 5 cards), and once placed a card cannot be moved; the three rows must rank in non-decreasing strength from Top to Bottom or the hand is fouled and scores nothing for the round; correctly placed strong rows earn royalty bonuses and a premium Top row (a pair of Queens or better) qualifies for Fantasyland; each round the rows are compared row by row against the other players, scoring points for every row won plus royalties, and the highest cumulative total after the target number of rounds wins; commands place (p, with row where 0 is front, 1 is middle, 2 is back; aliases front/f, middle/m, back/b), nextround (nr), setdifficulty (sd), setplayers (sp), log (l), reset (r); phases 0 Placing, 1 RoundEnd, 2 GameEnd
   - name: russianbank
     description: Russian Bank / Crapette (ロシアンバンク/クラペット) — a 2-player competitive solitaire on two 52-card decks (104 cards) played 1 human vs 1 CPU; each player owns a 13-card reserve (stock) and a hand (talon), and the board has 8 shared foundations (built up A to K by suit) plus 4 shared tableau columns (built down in alternating colour; an empty column accepts any card); on your turn you make as many legal moves as you like from your reserve or waste tops, a tableau column top, or the opponent's reserve or waste tops onto the shared foundations and tableau, and when out of moves you discard one hand card to your waste to end the turn; if the CPU ends its turn leaving a forced foundation move you may call stop to catch the lapse; the first player to empty their reserve wins (if both are stuck the player with fewer reserve cards wins); commands pf with source to a foundation, mt with source and column to a tableau, d discard, s stop, u undo, sd setdifficulty, hint, log (l), reset (r), where source is r own reserve, w own waste, or opponent reserve, ow opponent waste, t0 to t3 tableau columns; phases 0 Idle, 1 Playing, 2 GameEnd
+  - name: shamrocks
+    description: Shamrocks (シャムロックス) game - La Belle Lucie variant stacking by rank in either direction regardless of suit, three cards to a fan, no redeals
   - name: labellelucie
     description: La Belle Lucie (ラ・ベル・ルーシー) — a classic French single-player fan solitaire on a standard 52-card deck; the cards are dealt into 17 fans of three plus one single card, and only the top card of each fan can move; a fan top stacks onto another fan whose top is the next-higher card of the same suit (built down in suit), and an exposed Ace starts one of the 4 foundations which then build up in suit from Ace to King; when no legal move remains the player may gather all non-foundation cards, shuffle and redeal (up to 3 redeals); clearing all 52 cards to the foundations wins, while being stuck after the third redeal loses; commands mf with from and to fan indices, ff with from fan index to a foundation, rd redeal, ac autocomplete, u undo, g giveup, hint, log (l), reset (r); phases 0 Playing, 1 GameClear, 2 GameOver
   - name: curdsandwhey
@@ -25087,6 +25089,75 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LaBelleLucieResponse'
+
+  /shamrocks/exec:
+    post:
+      tags:
+        - shamrocks
+      summary: Execute a Shamrocks game command
+      description: |
+        Send a command to advance a Shamrocks session identified by `sessionId`.
+        Shamrocks is a single-player fan solitaire. Only the top card of each fan
+        moves: onto another fan whose top is one rank above or below it, of any suit
+        (`mf`), or up from the Ace on a foundation (`ff`). A fan holds at most three
+        cards, and Shamrocks never re-deals. Clear all 52 cards to win.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Moving cards among fans and foundations |
+        | GameClear | `1`   | All 52 cards reached the foundations |
+        | GameOver  | `2`   | No legal move remains, or gave up |
+
+        | Command | Description |
+        |---------|-------------|
+        | `reset` | Start / restart the game |
+        | `mf`    | Move fan `from` top onto fan `to` |
+        | `ff`    | Move fan `from` top onto a foundation |
+        | `ac`    | Auto-play every available foundation move |
+        | `u`     | Undo the last move |
+        | `undo_n`| Undo `n` moves |
+        | `g`     | Give up |
+        | `hint`  | Request a move hint |
+        | `log`   | View action log |
+      operationId: shamrocksExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShamrocksRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fanToFan:
+                summary: Move fan 1 top onto fan 0
+                value:
+                  command: mf
+                  from: 1
+                  to: 0
+                  sessionId: my-session-001
+              fanToFoundation:
+                summary: Move fan 2 top onto a foundation
+                value:
+                  command: ff
+                  from: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShamrocksResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShamrocksResponse'
 
   /simplesimon/exec:
     post:
@@ -60722,6 +60793,86 @@ components:
         redealsLeft:
           type: integer
           description: Remaining gather-and-reshuffle redeals (0 to 3)
+        phase:
+          type: integer
+          description: "Game phase: 0 Playing, 1 GameClear, 2 GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        hint:
+          type: object
+          nullable: true
+          description: Optional move hint (present only on a hint request)
+          properties:
+            fromFan:
+              type: integer
+            toFan:
+              type: integer
+            toFoundation:
+              type: boolean
+        message:
+          type: string
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    ShamrocksRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command: `reset` (`r`), `mf` (fan to fan), `ff` (fan to foundation),
+            `ac` (autocomplete), `u` (undo), `undo_n`, `g` (giveup),
+            `hint`, `log` (`l`).
+          enum: [reset, r, mf, ff, ac, u, undo_n, g, hint, log, l]
+          example: mf
+        from:
+          type: integer
+          description: Source fan index; used with `mf` and `ff`.
+          minimum: 0
+        to:
+          type: integer
+          description: Destination fan index; used with `mf`.
+          minimum: 0
+        n:
+          type: integer
+          description: Number of moves to undo; used with `undo_n`.
+          minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    ShamrocksResponse:
+      type: object
+      description: Current state of the La Belle Lucie game
+      properties:
+        fans:
+          type: array
+          description: The fans (top card is last); 18 fans of three cards, never re-dealt
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: The 4 foundations (A-up by suit)
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
         phase:
           type: integer
           description: "Game phase: 0 Playing, 1 GameClear, 2 GameOver"

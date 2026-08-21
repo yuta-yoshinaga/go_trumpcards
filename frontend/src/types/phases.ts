@@ -254,6 +254,13 @@ export const BristolPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Shamrocks phase values mirroring the Go `ShamrocksPhase` enum. */
+export const ShamrocksPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** La Belle Lucie phase values mirroring the Go `LaBelleLuciePhase` enum. */
 export const LaBelleLuciePhase = {
   PLAYING: 0,

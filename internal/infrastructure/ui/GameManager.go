@@ -6266,6 +6266,23 @@ var gameRegistry = []GameRegistryEntry{
 				"curdsandwhey.helpGiveUp", "curdsandwhey.helpLog", "curdsandwhey.helpHint",
 			},
 		}),
+	BindCuiFor("shamrocks",
+		func() usecase.ShamrocksInteractorIF {
+			return usecase.NewShamrocksInteractor(domain.NewDefaultShamrocks(), new(presenter.ShamrocksCuiPresenter))
+		},
+		controller.NewShamrocksCuiController,
+		CuiHelpSpec{
+			TitleKey: "shamrocks.helpTitle",
+			ExampleKeys: []string{
+				"shamrocks.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"shamrocks.helpMove",
+				"shamrocks.helpAutoComplete",
+				"shamrocks.helpUndo",
+				"shamrocks.helpGiveUp", "shamrocks.helpLog", "shamrocks.helpHint",
+			},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

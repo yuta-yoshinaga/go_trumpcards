@@ -153,18 +153,40 @@ func TestStalactitesCuiPresenterHintStalactites(t *testing.T) {
 	assert.Contains(t, result, "セル")
 }
 
+// stalactitesRanksAvoiding returns an adjacent (low, high) rank pair with
+// neither equal to base, so neither card can open a foundation. Stalactites'
+// base rank comes from the deal, so any fixture that hardcodes ranks is a coin
+// flip on the shuffle.
+func stalactitesRanksAvoiding(base int) (int, int) {
+	for high := 3; high <= domain.CardValueMax; high++ {
+		low := high - 1
+		if low != base && high != base {
+			return low, high
+		}
+	}
+	return 2, 3
+}
+
 func TestStalactitesCuiPresenterHintToTableau(t *testing.T) {
 	p := new(StalactitesCuiPresenter)
 	f := domain.NewStalactites(domain.NewTrumpCards(0))
 	f.Reset()
 	f.SetPhase(domain.StalactitesPhasePlaying)
 
-	// Place a card in free cell and a compatible card on tableau so hint suggests stalactites -> tableau
+	// A cell card that can only go onto the tableau, so the hint must name a
+	// column.
+	//
+	// **The ranks must avoid the base rank**, which Reset takes from the deal.
+	// Hardcoding 5 and 6 meant that whenever the deal made either of those the
+	// base rank, the card became foundation-playable and the higher-priority
+	// foundation hint won -- about one run in seven. This is the second flake of
+	// this exact shape in this file.
+	low, high := stalactitesRanksAvoiding(f.GetBaseRank())
 	var tableau [domain.StalactitesTableauCnt][]*domain.Card
-	tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 6, false)}
+	tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, high, false)}
 	f.SetTableau(tableau)
 	var cells [domain.StalactitesCellCnt]*domain.Card
-	cells[0] = domain.NewCard(domain.CardDesignHeart, 5, false)
+	cells[0] = domain.NewCard(domain.CardDesignHeart, low, false)
 	f.SetCells(cells)
 
 	result := p.HintOutput(f)
