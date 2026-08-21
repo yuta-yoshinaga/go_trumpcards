@@ -22,7 +22,11 @@ type FourteenOutWebOutputCard struct {
 	Card *WebOutputCard `json:"card"`
 }
 
-// FourteenOutWebOutputHint はヒント情報。Action は "remove" または "deal"。
+// FourteenOutWebOutputHint はヒント情報。
+//
+// **Action は常に "remove"。**クローン元の Monte Carlo は山札から補充できるので
+// "deal" も返したが、Fourteen Out は最初に配り切るため、勧める補充が存在しない。
+// 組が無ければヒント自体が nil になる。
 type FourteenOutWebOutputHint struct {
 	Action  string `json:"action"`
 	FromCol int    `json:"fromCol"`

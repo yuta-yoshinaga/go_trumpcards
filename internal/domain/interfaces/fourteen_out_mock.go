@@ -8,7 +8,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
-// MockFourteenOutGame はモンテカルロ・ソリティアのモック。
+// MockFourteenOutGame はフォーティーンアウト・ソリティアのモック。
 type MockFourteenOutGame struct {
 	mock.Mock
 }

@@ -4,7 +4,7 @@ package interfaces
 
 import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
-// FourteenOutGame はモンテカルロ・ソリティアのインタフェース。
+// FourteenOutGame はフォーティーンアウト・ソリティアのインタフェース。
 type FourteenOutGame interface {
 	// CountRemovablePairs 盤面に残っている取り除ける組の数
 	CountRemovablePairs() int
