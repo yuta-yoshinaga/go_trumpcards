@@ -1200,6 +1200,7 @@ var registry = []*Game{
 	// 正本と、いま何の種目の何ハンド目かという進行だけ ── 役の判定や
 	// ベッティングの規則は種目側に置いたままにする。
 	{Name: "horse", Category: CategoryCasino},
+	{Name: "alaska", Category: CategoryExtra4},
 }
 
 // All returns a value-level copy of the registry in canonical order.

@@ -320,6 +320,11 @@ func init() {
 			return usecase.NewYukonInteractor(domain.NewDefaultYukon(), new(presenter.YukonWebPresenter))
 		},
 		controller.NewYukonWebController)
+	BindWebControllerFor("alaska",
+		func() usecase.AlaskaInteractorIF {
+			return usecase.NewAlaskaInteractor(domain.NewDefaultAlaska(), new(presenter.AlaskaWebPresenter))
+		},
+		controller.NewAlaskaWebController)
 	BindWebControllerFor("russiansolitaire",
 		func() usecase.RussianSolitaireInteractorIF {
 			return usecase.NewRussianSolitaireInteractor(domain.NewDefaultRussianSolitaire(), new(presenter.RussianSolitaireWebPresenter))

@@ -403,7 +403,8 @@
     "montebank": "Suit is all that matters. Back a lone suit and it's even; back a duplicate and it bleeds.",
     "cincinnati": "Best five of ten — five in hand, five on the board, and the board is optional.",
     "ironcross": "Five community cards in a cross, but only the vertical or the horizontal three play. The centre is the one card both arms share.",
-    "baseballpoker": "3s and 9s are wild. A face-up 4 pays you a card; a face-up 3 charges you the whole pot."
+    "baseballpoker": "3s and 9s are wild. A face-up 4 pays you a card; a face-up 3 charges you the whole pot.",
+    "alaska": "A Yukon variant that builds up or down by suit, with empty columns open to any card."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -723,6 +724,7 @@
     "montebank": "One number decides every choice — nothing else to hide behind.",
     "cincinnati": "Five reveals means five chances to get out cheaply.",
     "ironcross": "One irreversible choice per hand, and the centre card lands last.",
-    "baseballpoker": "The same 3 is a gift in the hole and a bill on the board."
+    "baseballpoker": "The same 3 is a gift in the hole and a bill on the board.",
+    "alaska": "Keep Yukon's free stack moves, but look for connections running either way."
   }
 }

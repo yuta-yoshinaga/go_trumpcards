@@ -1501,6 +1501,13 @@ export const YukonPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Alaska phase constants (sync: internal/domain/Alaska.go). */
+export const AlaskaPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Russian Solitaire phase constants (sync: internal/domain/RussianSolitaire.go). */
 export const RussianSolitairePhase = {
   PLAYING: 0,

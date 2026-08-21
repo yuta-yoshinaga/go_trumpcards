@@ -338,4 +338,12 @@ func init() {
 			return usecase.RestoreMichiganInteractor(data, new(presenter.MichiganWebPresenter))
 		},
 		controller.NewMichiganWebControllerWithProvider)
+	games.RegisterKVGame("alaska", games.CategoryExtra4,
+		func() usecase.AlaskaInteractorIF {
+			return usecase.NewAlaskaInteractor(domain.NewDefaultAlaska(), new(presenter.AlaskaWebPresenter))
+		},
+		func(data []byte) (usecase.AlaskaInteractorIF, error) {
+			return usecase.RestoreAlaskaInteractor(data, new(presenter.AlaskaWebPresenter))
+		},
+		controller.NewAlaskaWebControllerWithProvider)
 }

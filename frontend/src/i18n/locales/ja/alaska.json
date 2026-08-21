@@ -1,0 +1,46 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "アラスカ",
+  "foundation": "組札",
+  "tableau": "場札",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "全カードが表向きになるとクリックできます",
+  "undo": "元に戻す",
+  "empty": "空",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "hintFromAria": "ヒント: このカードを{{dest}}へ移動",
+  "hintToAria": "ヒント: 移動先",
+  "hintAnnouncement": "ヒント: {{card}}を{{dest}}へ移動",
+  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
+  "stalemate": "手詰まりです",
+  "frontendHint": {
+    "moveToFoundation": "組札へ移動できるカードがあります",
+    "moveToTableau": "場札間で移動可能なカードがあります"
+  },
+  "tutorial": {
+    "foundation": "ここにA→Kの順でスート別にカードを積み上げます。",
+    "tableau": "ここにカードが並んでいます。表向きのカードをクリック/ドラッグして移動できます。タブロー間移動は同スートで昇順・降順どちらにも可能で、空の列には任意の札を置けます。",
+    "controls": "ヒント・ギブアップ・元に戻すなどの操作ボタンです。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "nav": {
+    "alaska": "アラスカ"
+  },
+  "tableauRule": "タブロー間の移動は「同じスートで1つ上または1つ下」。Yukonと違い交互色では繋げませんが、昇順・降順どちらにも積めます。空の列には任意の札を置けます。裏向きのカードは動かせません。",
+  "faceDownRule": "裏向きのカードは移動できません（表向きのカードのみ操作可能）",
+  "dismissRule": "ルール説明を閉じる",
+  "faceDownCardLabel": "列{{col}}、上から{{pos}}枚目、裏向き",
+  "blockMoveLabel": "{{n}}枚まとめて移動"
+}

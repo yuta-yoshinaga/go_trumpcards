@@ -2035,6 +2035,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 1, 4, 2], skill: [3, 4, 4, 2], social: [5, 1, 0, 2, 4], theme: [3, 3, 3, 1, 3, 3] },
       },
       {
+        path: '/alaska',
+        labelKey: 'nav.alaska',
+        icon: '🧊',
+        page: 'Alaska',
+        profile: { mood: [5, 1, 4, 2], skill: [3, 4, 4, 2], social: [5, 1, 0, 2, 4], theme: [3, 3, 3, 1, 3, 3] },
+      },
+      {
         path: '/russiansolitaire',
         labelKey: 'nav.russiansolitaire',
         icon: '🪆',
