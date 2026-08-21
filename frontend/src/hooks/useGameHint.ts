@@ -303,6 +303,7 @@ import type {
   WaspResponse,
   WattenResponse,
   WhistResponse,
+  WhiteheadResponse,
   WindmillResponse,
   WizardResponse,
   YanivResponse,
@@ -621,6 +622,7 @@ import { getWarHint } from '../utils/hints/warHint';
 import { getWaspHint } from '../utils/hints/waspHint';
 import { getWattenHint } from '../utils/hints/wattenHint';
 import { getWhistHint } from '../utils/hints/whistHint';
+import { getWhiteheadHint } from '../utils/hints/whiteheadHint';
 import { getWindmillHint } from '../utils/hints/windmillHint';
 import { getWizardHint } from '../utils/hints/wizardHint';
 import { getYanivHint } from '../utils/hints/yanivHint';
@@ -734,6 +736,7 @@ export const hintFactories = {
   prsi: (s) => getPrsiHint(s as PrsiResponse),
   speed: (s) => getSpeedHint(s as SpeedResponse),
   klondike: (s) => getKlondikeHint(s as KlondikeResponse),
+  whitehead: (s) => getWhiteheadHint(s as WhiteheadResponse),
   freecell: (s) => getFreeCellHint(s as FreeCellResponse),
   // Baker's Game shares the FreeCell response shape and stacking heuristics.
   bakersgame: (s) => getFreeCellHint(s as FreeCellResponse),

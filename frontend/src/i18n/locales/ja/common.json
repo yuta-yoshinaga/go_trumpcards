@@ -342,7 +342,8 @@
     "alaska": "アラスカ",
     "fortress": "フォートレス",
     "somerset": "サマセット",
-    "stalactites": "スタラクタイト"
+    "stalactites": "スタラクタイト",
+    "whitehead": "ホワイトヘッド"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -2215,6 +2216,13 @@
     "whist.result.team1Win": "ゲーム終了！ チーム1の勝ち！",
     "whist.roundEnd": "ラウンド終了",
     "whist.trickEnd": "トリック終了",
+    "whitehead.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "whitehead.gameOver": "ゲームオーバー",
+    "whitehead.hintAvailable": "ヒントがあります",
+    "whitehead.noHint": "ヒントはありません",
+    "whitehead.playing": "プレイ中",
+    "whitehead.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
+    "whitehead.stalemateWithEscape": "手詰まりです。{{count}}手戻ると別の手が打てます。",
     "windmill.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "windmill.gameOver": "ゲームオーバー",
     "windmill.hintAvailable": "ヒントがあります",

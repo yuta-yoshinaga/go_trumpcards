@@ -212,6 +212,7 @@ export type GameKey =
   | 'slapjack'
   | 'egyptianratscrew'
   // Solitaire
+  | 'whitehead'
   | 'klondike'
   | 'freecell'
   | 'bakersgame'
@@ -787,6 +788,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   slapjack: GREEN,
   egyptianratscrew: GREEN,
   // Solitaire
+  whitehead: CASINO,
   klondike: CASINO,
   freecell: CASINO,
   bakersgame: CASINO,

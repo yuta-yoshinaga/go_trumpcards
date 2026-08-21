@@ -596,5 +596,10 @@
   "stalactites.promptToZoneFromCell": "移動先を入力してください (t=場札, f=組札):",
   "stalactites.invalidFromZone": "無効な移動元です: {{val}}。't' (場札) または 'c' (フリーセル) を入力してください。",
   "stalactites.invalidToZone": "無効な移動先です: {{val}}。't' (場札) または 'f' (組札) を入力してください。",
-  "stalactites.moveUsage": "使い方: m t <列> f | m t <列> <カードIdx> t <列> | m t <列> c <セル>"
+  "stalactites.moveUsage": "使い方: m t <列> f | m t <列> <カードIdx> t <列> | m t <列> c <セル>",
+  "whitehead.promptSourceZone": "移動元を入力してください (w=捨て札, t=場札):",
+  "whitehead.promptToZone": "移動先を入力してください (t=場札, f=組札):",
+  "whitehead.invalidFromZone": "無効な移動元です: {{val}}。'w' (捨て札) または 't' (場札) を入力してください。",
+  "whitehead.invalidToZone": "無効な移動先です: {{val}}。't' (場札) または 'f' (組札) を入力してください。",
+  "whitehead.moveUsage": "使い方: m t <列> <カードIdx> t <列>"
 }

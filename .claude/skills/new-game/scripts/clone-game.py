@@ -16,6 +16,11 @@ renames. It does NOT touch shared registration files (registry.go, gameApi.ts,
 
 Dry-run by default; pass --apply to write.
 
+**--apply OVERWRITES existing destination files.** Run it once, at the start.
+Re-running it after you have edited the clone silently throws that work away --
+which is easy to do when a missed file sends you back to the script.
+If you need more files later, copy just those by hand.
+
 After running, three things still need doing by hand:
 
 1. The 17-ish shared registration files it lists (ordered insertion).
@@ -43,6 +48,31 @@ def variants(key: str, typ: str) -> list[tuple[str, str]]:
     lower, upper = key.lower(), key.upper()
     camel = typ[0].lower() + typ[1:]
     return [(typ, None), (camel, None), (upper, None), (lower, None)]
+
+
+# Prefixes that describe what a file DOES, not which game it belongs to. They
+# must be stripped before deciding ownership: useKlondikeGame.ts is klondike's,
+# but doubleKlondikeTargets.ts belongs to doubleklondike, and both put the key
+# after another word.
+GENERIC_PREFIXES = ("use", "get", "format", "parse", "check", "make", "new")
+
+
+def _camel_owns(stem: str, key: str) -> bool:
+    """True when the key is the first GAME word in stem.
+
+    `klondikeHint`, `KlondikeWebController` and `useKlondikeGame` belong to
+    klondike; `doubleKlondikeTargets` and `DoubleKlondike` do not -- there the
+    key is preceded by another game's word rather than a generic prefix.
+    """
+    low = stem.lower()
+    for pre in GENERIC_PREFIXES:
+        if low.startswith(pre) and low[len(pre):].startswith(key):
+            stem, low = stem[len(pre):], low[len(pre):]
+            break
+    if not low.startswith(key):
+        return False
+    rest = stem[len(key):]
+    return rest == "" or not rest[:1].islower() or rest[:1] in "_-."
 
 
 def rename(text: str, s_key, d_key, s_type, d_type) -> str:
@@ -81,15 +111,27 @@ def main() -> None:
     # in Japanese and never spells the ascii key, so cloning Fortress by content
     # silently skipped its Web manual. Union the content hits with a filename
     # walk so a file is found by EITHER route.
+    # Match the key as a WHOLE word, not a substring: cloning "klondike" must
+    # not drag in doubleklondike, and "war" must not drag in casinowar. A file
+    # belongs to the game when its name is the key, or the key delimited by a
+    # non-alphanumeric or a camelCase boundary.
+    key_re = re.compile(rf"(?:^|[^a-z0-9]){re.escape(s_key)}(?:[^a-z0-9]|$)", re.I)
+
+    def owns(name: str) -> bool:
+        stem = Path(name).stem
+        # strip common suffixes so Foo_test.go / fooCommands.ts still match
+        lowered = stem.lower()
+        return lowered == s_key or bool(key_re.search(stem)) or lowered.startswith(s_key) and not lowered[len(s_key):len(s_key) + 1].isalpha() or _camel_owns(stem, s_key)
+
     by_name = [
         str(p.relative_to(ROOT))
         for d in SEARCH
         for p in (ROOT / d).rglob("*")
-        if p.is_file() and s_key in p.name.lower()
+        if p.is_file() and owns(p.name)
     ]
     # only files whose NAME carries the key are per-game files; the rest are
     # shared registration points and need ordered manual insertion.
-    per_game = sorted(set(by_name) | {f for f in out if s_key in Path(f).name.lower()})
+    per_game = sorted(set(by_name) | {f for f in out if owns(Path(f).name)})
     shared = sorted(set(out) - set(per_game))
 
     print(f"per-game files to clone ({len(per_game)}):")

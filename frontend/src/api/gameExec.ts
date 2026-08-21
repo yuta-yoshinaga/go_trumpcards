@@ -170,6 +170,7 @@ export const workerUrl: Record<string, string> = {
   pinochle: WORKER_EXTRA2,
   pigtail: WORKER_EXTRA2,
   twotenjack: WORKER_CLASSIC,
+  whitehead: WORKER_SOLO,
   klondike: WORKER_SOLO,
   freecell: WORKER_SOLO,
   bakersgame: WORKER_SOLO,

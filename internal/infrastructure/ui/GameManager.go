@@ -6229,6 +6229,30 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("whitehead",
+		func() usecase.WhiteheadInteractorIF {
+			return usecase.NewWhiteheadInteractor(domain.NewDefaultWhitehead(), new(presenter.WhiteheadCuiPresenter))
+		},
+		controller.NewWhiteheadCuiController,
+		CuiHelpSpec{
+			TitleKey: "whitehead.helpTitle",
+			ExampleKeys: []string{
+				"whitehead.helpExampleDraw",
+			},
+			CommandKeys: []string{
+				"whitehead.helpDraw",
+				"whitehead.helpMove",
+				"whitehead.helpMoveWF",
+				"whitehead.helpMoveTF",
+				"whitehead.helpMoveTT",
+				"whitehead.helpGiveUp",
+				"whitehead.helpHint",
+				"whitehead.helpAutoComplete",
+				"whitehead.helpMoveShorthand",
+				"whitehead.helpFoundation", "whitehead.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -1,0 +1,58 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "ホワイトヘッド",
+  "stock": "山札",
+  "waste": "ウェイスト",
+  "foundation": "組札",
+  "tableau": "場札",
+  "moveCount": "手数",
+  "draw": "引く",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "山札が空で全カードが表向きになるとクリックできます",
+  "undo": "元に戻す",
+  "empty": "空",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
+  "drawMode": "ドローモード",
+  "drawMode1": "1枚引き",
+  "drawMode3": "3枚引き",
+  "score": "スコア",
+  "timer": "タイム",
+  "timeBonus": "タイムボーナス",
+  "totalScore": "合計スコア",
+  "scoringMode": "スコアモード",
+  "scoringNone": "なし",
+  "scoringVegas": "ベガス",
+  "tutorial": {
+    "stockWaste": "山札をクリックしてカードをめくります。めくったカードは場札やファウンデーションに移動できます。",
+    "foundation": "ファウンデーションです。各スートをAからKまで順番に積み上げます。全て積み上げれば勝利です。",
+    "tableau": "場札です。**同じ色**で降順にカードを重ねます（Klondike の交互色とは逆）。空いた列にはどの札でも置けます。",
+    "controls": "元に戻す、ヒント、自動完了などの操作ボタンです。",
+    "hintDisplay": "ヒントボタンを押すと、次に移動できるカードが表示されます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "frontendHint": {
+    "moveToFoundation": "組札に移動できるカードがあります",
+    "drawFromStock": "すぐにできる手がありません — 山札から引いてみましょう",
+    "moveToEmptyColumn": "空いた列に札を移しましょう（どの札でも置けます）"
+  },
+  "stats": {
+    "winRate": "勝率 {{rate}}%",
+    "bestTime": "ベスト {{time}}",
+    "fewestMoves": "最少 {{moves}}手",
+    "newBest": "自己ベスト更新！"
+  },
+  "vegasFormula": "ベガス方式: 買い切り {{buyIn}} 点から始まり、組札に1枚送るごとに +{{perCard}} 点"
+}

@@ -108,6 +108,11 @@ func init() {
 			return usecase.NewMemoryInteractor(domain.NewDefaultMemory(), new(presenter.MemoryWebPresenter))
 		},
 		controller.NewMemoryWebController)
+	BindWebControllerFor("whitehead",
+		func() usecase.WhiteheadInteractorIF {
+			return usecase.NewWhiteheadInteractor(domain.NewDefaultWhitehead(), new(presenter.WhiteheadWebPresenter))
+		},
+		controller.NewWhiteheadWebController)
 	BindWebControllerFor("klondike",
 		func() usecase.KlondikeInteractorIF {
 			return usecase.NewKlondikeInteractor(domain.NewDefaultKlondike(), new(presenter.KlondikeWebPresenter))
