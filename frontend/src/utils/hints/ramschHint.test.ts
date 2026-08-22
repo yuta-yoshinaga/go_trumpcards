@@ -44,6 +44,16 @@ describe('getRamschHint', () => {
     expect(i18n.t(key, { ns: 'ramsch' })).toBe(key);
   });
 
+  // **理由が空でも壊れない。** サーバは必ず理由を入れるが、KV の版ずれや
+  // 壊れた応答で空が届きうる。そのときも「解決しないキー」ではなく既定の
+  // 理由に落として、生の `hint.` を出さない。
+  it('falls back to a real reason when the response carries none', () => {
+    const hint = getRamschHint(state({ hint: { cardIndex: 1, reason: '' } }));
+    const key = hint?.reason ?? '';
+    expect(key).toBe('hint.avoid_points');
+    expect(i18n.t(key, { ns: 'ramsch' })).not.toBe(key);
+  });
+
   it('stays quiet once the hand is over or with no hint', () => {
     expect(getRamschHint(state({ gameEndFlag: true }))).toBeNull();
     expect(getRamschHint(state({ hint: undefined }))).toBeNull();
