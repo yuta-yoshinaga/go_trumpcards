@@ -55,6 +55,7 @@ time. Verify against the relevant national registry before relying on any row.
 | Mississippi Stud | Shuffle Master / Light & Wonder |
 | Ultimate Texas Hold'em | Shuffle Master / Light & Wonder |
 | Caribbean Stud Poker | Light & Wonder (formerly Scientific Games) |
+| Caribbean Draw Poker | Light & Wonder (formerly Scientific Games) |
 | Casino War | Shuffle Master / Bally lineage |
 | High Card Flush | Galaxy Gaming |
 | Texas Hold'em Bonus Poker | Galaxy Gaming |
@@ -317,3 +318,25 @@ If you own a mark listed here (or one that should be listed) and object to its
 use, please open an issue at
 <https://github.com/yuta-yoshinaga/go_trumpcards/issues> or email
 yuta.yoshinaga@gmail.com. We will rename or remove the game promptly.
+
+### Screening of 2026-08-22, Caribbean Draw Poker
+
+Run before adding the game (checklist step 0), searching the rights holder as
+well as the mark, via `scripts/jpo-trademark-search.mjs` against J-PlatPat.
+
+| Query | Result |
+|---|---|
+| mark `CARIBBEANDRAW` | 該当なし |
+| mark `カリビアンドロー` | 該当なし |
+| owner `ライトアンドワンダー` | 9 registrations, **none resembling** Caribbean Draw (RAGING RHINO, SPORTS BONANZA, ACCUMUL8, 300 SHIELDS, MIGHTY WAYS, JIN JI BAO XI, ENDLESS TREASURES, RAINBOW RICHES, GAME MAKER) |
+| owner `サイエンティフィックゲームズ` | 該当なし |
+| **canary** mark `ポケモン` | 17+ registrations returned — **proves the run was live**, so the 該当なし rows above are real absences rather than a dead search |
+
+A zero result is only meaningful next to a canary: a broken selector, an expired
+session or a layout change all return 該当なし indistinguishably. The canary is
+run separately from the screening queries — combining `--mark` with `--owner`
+intersects them, and an intersection of two unrelated parties is legitimately
+empty, which would have made a dead run look like a live one.
+
+Same treatment as the existing Three Card Poker / Caribbean Stud Poker entries:
+descriptive use of the game's common name, no branding, no logos.

@@ -16,6 +16,7 @@ export type GameKey =
   | 'threecard'
   | 'threecardrummy'
   | 'caribbeanstud'
+  | 'caribbeandraw'
   | 'oasispoker'
   | 'russianpoker'
   | 'texasholdembonus'
@@ -607,6 +608,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   threecard: CASINO,
   threecardrummy: CASINO,
   caribbeanstud: CASINO,
+  caribbeandraw: CASINO,
   oasispoker: CASINO,
   russianpoker: CASINO,
   texasholdembonus: POKER,

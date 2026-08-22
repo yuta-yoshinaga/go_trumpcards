@@ -53,6 +53,7 @@ export * from './games/calculation';
 export * from './games/callbreak';
 export * from './games/canasta';
 export * from './games/canfield';
+export * from './games/caribbeandraw';
 export * from './games/caribbeanstud';
 export * from './games/carioca';
 export * from './games/casinoholdem';

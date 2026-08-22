@@ -1,0 +1,109 @@
+{
+  "title": "Caribbean Draw Poker",
+  "jackpotHelpTitle": "What is the jackpot?",
+  "jackpotHelp": "The jackpot side bet is optional. It pays out — regardless of whether you beat the dealer — when your hand is a flush or better (flush, full house, four of a kind, straight flush, or royal flush). It is judged on your hand after the draw.",
+  "player": "Player",
+  "dealer": "Dealer",
+  "label": {
+    "chips": "Chips",
+    "ante": "Ante",
+    "jackpot": "Jackpot",
+    "play": "Play Bet",
+    "handRank": "Hand"
+  },
+  "button": {
+    "bet": "Bet",
+    "draw": "Exchange (fee {{cost}})",
+    "standPat": "Stand pat",
+    "play": "Call",
+    "fold": "Fold",
+    "reset": "Reset"
+  },
+  "phase": {
+    "bet": "Betting",
+    "draw": "Draw (exchange up to {{max}})",
+    "action": "Call or Fold",
+    "end": "Result"
+  },
+  "draw": {
+    "guide": "Pick up to {{max}} cards to exchange, or play the hand as dealt.",
+    "fee": "Exchange fee {{cost}} (the same as your ante). Standing pat is free.",
+    "selected": "Selected: {{count}} / {{max}}",
+    "cardSelected": "selected for exchange",
+    "maxReached": "You may exchange at most {{max}} cards."
+  },
+  "result": {
+    "playerWins": "You win!",
+    "dealerWins": "Dealer wins!",
+    "push": "Push!",
+    "fold": "Folded",
+    "dealerNotQualified": "Dealer does not qualify!"
+  },
+  "payout": {
+    "ante": "Ante",
+    "play": "Play",
+    "jackpot": "Jackpot",
+    "draw": "Draw fee",
+    "total": "Total"
+  },
+  "handRank": {
+    "0": "High Card",
+    "1": "Pair",
+    "2": "Two Pair",
+    "3": "Three of a Kind",
+    "4": "Straight",
+    "5": "Flush",
+    "6": "Full House",
+    "7": "Four of a Kind",
+    "8": "Straight Flush",
+    "9": "Royal Flush"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "betGuide": "Set your ante and optional jackpot side bet",
+  "payoutRef": {
+    "title": "Payout Table",
+    "playHeader": "Play Bet (on Call)",
+    "payRoyalFlush": "Royal Flush: 50:1",
+    "payStraightFlush": "Straight Flush: 20:1",
+    "payFourOfAKind": "Four of a Kind: 10:1",
+    "payFullHouse": "Full House: 5:1",
+    "payFlush": "Flush: 4:1",
+    "payStraight": "Straight: 3:1",
+    "payThreeOfAKind": "Three of a Kind: 2:1",
+    "payTwoPair": "Two Pair: 1:1",
+    "payPair": "Pair or less: 1:1",
+    "jackpotHeader": "Jackpot Side Bet",
+    "jackpotRoyalFlush": "Royal Flush: 10000x",
+    "jackpotStraightFlush": "Straight Flush: 2000x",
+    "jackpotFourOfAKind": "Four of a Kind: 200x",
+    "jackpotFullHouse": "Full House: 50x",
+    "jackpotFlush": "Flush: 25x",
+    "qualifyNote": "The dealer qualifies on a pair of 8s or better."
+  },
+  "dealerQualified": "Qualified",
+  "dealerNotQualified": "Not Qualified",
+  "tutorial": {
+    "betControls": "Set your ante and optional jackpot side bet, then press Bet.",
+    "drawControls": "Pick up to 2 cards to exchange and press Exchange, or stand pat and play the hand as dealt.",
+    "actionButtons": "Choose Call to bet 2x your ante, or Fold to forfeit.",
+    "results": "Check your results and payouts here."
+  },
+  "hint": {
+    "standPat": "Stand pat: you already hold a made hand",
+    "drawWeak": "Consider drawing: no made hand — discard what you cannot use and go for one",
+    "pairOrBetter": "Pair or better — call recommended",
+    "aceKingHigh": "Ace-King high — call recommended",
+    "weakHand": "Weak hand — fold recommended"
+  },
+  "hiddenCard": "Hidden card",
+  "session": {
+    "title": "Session Stats",
+    "tally": "{{wins}}W {{losses}}L {{pushes}}P",
+    "hands": "{{hands}} hands",
+    "net": "Net",
+    "clear": "Clear history",
+    "note": "Kept across resets (cleared on page reload)"
+  }
+}

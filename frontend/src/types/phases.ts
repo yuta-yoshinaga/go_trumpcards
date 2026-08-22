@@ -1190,6 +1190,20 @@ export const FourCardPokerPhase = {
   END: 3,
 } as const;
 
+/**
+ * Caribbean Draw Poker phase constants (sync: internal/domain/CaribbeanDraw.go).
+ *
+ * Unlike Caribbean Stud, a DRAW phase sits between BET and ACTION, so every
+ * value after BET is shifted by one — reusing the Stud numbering here would put
+ * the page in the wrong phase for the entire hand.
+ */
+export const CaribbeanDrawPhase = {
+  BET: 1,
+  DRAW: 2,
+  ACTION: 3,
+  END: 4,
+} as const;
+
 /** Caribbean Stud Poker phase constants (sync: internal/domain/CaribbeanStud.go). */
 export const CaribbeanStudPhase = {
   BET: 1,
