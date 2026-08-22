@@ -128,17 +128,38 @@ func TestDramahaInteractor_GetConfig(t *testing.T) {
 	mg.AssertCalled(t, "GetConfig")
 }
 
+// TestDramahaInteractor_ResetWithConfig_RejectsTableSizeTheDeckCannotDeal は、
+// 山に収まらない席数を黙って丸めず断ることを見る。
+//
+// **丸めるだけでは、頼んだ側に効いたのか無視されたのか分からない。**
+// ドラマハは 1 席が最悪 10 枚 (ホール 5 + 交換 5) 使い、ボードに 5 枚要るので
+// 必要枚数は 10N+5 —— 6-max は 65 枚、9-max は 95 枚で、52 枚の山に入らない。
+// CUI も Web API もこのインタラクタを通るので、判断はここ 1 箇所に置く。
+func TestDramahaInteractor_ResetWithConfig_RejectsTableSizeTheDeckCannotDeal(t *testing.T) {
+	for _, size := range []int{domain.HoldemTableSize6, domain.HoldemTableSize9} {
+		mg := new(interfaces.MockDramahaGame)
+		mp := new(presenter.MockDramahaPresenter)
+		hi := NewDramahaInteractor(mg, mp)
+
+		cfg := domain.DefaultDramahaConfig()
+		cfg.TableSize = size
+		mp.On("Output", mg, mock.Anything).Return("rejected")
+
+		assert.Equal(t, "rejected", hi.ResetWithConfig(cfg, nil))
+		mg.AssertNotCalled(t, "Resize", mock.Anything)
+		mg.AssertNotCalled(t, "Reset")
+	}
+}
+
+// TestDramahaInteractor_ResetWithConfig_TableSizeChange は上の負のコントロール。
+// **4 席まで断っていたら、上のテストは「常に断る」実装でも通る。**
 func TestDramahaInteractor_ResetWithConfig_TableSizeChange(t *testing.T) {
 	mg := new(interfaces.MockDramahaGame)
 	mp := new(presenter.MockDramahaPresenter)
 	hi := NewDramahaInteractor(mg, mp)
 
-	// **6-max を頼んでも 4 席で組む。** ドラマハは 1 席が最悪 10 枚
-	// (ホール 5 + 交換 5) 使い、ボードに 5 枚要るので 10N+5 枚必要 ——
-	// 6-max は 65 枚で 52 枚の山に収まらない。NewDramahaPlayersForTable が
-	// 4-max へ丸めるので、Resize に渡るのは 4 席。
 	cfg := domain.DefaultDramahaConfig()
-	cfg.TableSize = domain.HoldemTableSize6
+	cfg.TableSize = domain.HoldemTableSize4
 	mg.On("GetPlayerCnt").Return(2)
 	mg.On("Resize", mock.MatchedBy(func(players []*domain.DramahaPlayer) bool {
 		return len(players) == 4 && players[0].GetIsHuman()

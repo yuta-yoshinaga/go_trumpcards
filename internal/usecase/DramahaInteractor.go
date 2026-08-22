@@ -3,8 +3,12 @@
 package usecase
 
 import (
+	"errors"
+	"strconv"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
 
@@ -54,6 +58,13 @@ func (oi *DramahaInteractor) ResetWithConfig(cfg domain.DramahaConfig, profileDa
 	if err := cfg.Validate(); err != nil {
 		return oi.op.Output(oi.Game, err)
 	}
+	// **収まらない席数は黙って丸めず断る。** NewDramahaPlayersForTable は
+	// 安全のため 4 に丸めるが、丸めるだけだと「6 人卓にした」と頼んだ側には
+	// 効いたのか無視されたのか分からない。CUI も Web API もここを通るので、
+	// 判断はこの 1 箇所に置く。
+	if cfg.TableSize > 0 && cfg.TableSize != domain.HoldemTableSize4 {
+		return oi.op.Output(oi.Game, errDramahaTableSize(cfg.TableSize))
+	}
 	if cfg.TableSize > 0 && cfg.TableSize != oi.Game.GetPlayerCnt() {
 		oi.Game.Resize(domain.NewDramahaPlayersForTable(cfg.TableSize))
 	}
@@ -95,4 +106,12 @@ func RestoreDramahaInteractor(data []byte, op presenter.DramahaPresenter) (*Dram
 		return nil, err
 	}
 	return &DramahaInteractor{GameBase: GameBase[interfaces.DramahaGame]{Game: o}, op: op, tournamentActions: newTournamentActions[interfaces.DramahaGame](o, op)}, nil
+}
+
+// errDramahaTableSize は山に収まらない席数を断るエラー。
+//
+// ドラマハは 1 席が最悪 10 枚 (ホール 5 + 交換 5) 使い、ボードに 5 枚要るので
+// 必要枚数は 10N+5。52 枚に収まるのは 4-max だけ (6-max=65, 9-max=95)。
+func errDramahaTableSize(size int) error {
+	return errors.New(i18n.Tf("dramaha.tableSizeFixed", "val", strconv.Itoa(size)))
 }
