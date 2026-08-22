@@ -114,3 +114,50 @@ func TestSevenTwentySevenWebPresenter_Output_ShowsTheError(t *testing.T) {
 	out := s27Decode(t, p.Output(g, domain.ErrWrongPhase))
 	assert.Contains(t, out.Message, domain.ErrWrongPhase.Error())
 }
+
+// 試合終了メッセージが出ること。
+func TestSevenTwentySevenWebPresenter_Output_AnnouncesTheMatchWinner(t *testing.T) {
+	p := new(presenter.SevenTwentySevenWebPresenter)
+	g := domain.NewDefaultSevenTwentySeven()
+	cfg := g.GetConfig()
+	cfg.TargetRounds = 1
+	g.SetConfig(cfg)
+	g.Reset()
+
+	for guard := 0; guard < 60 && !g.GetGameEndFlag(); guard++ {
+		switch g.GetPhase() {
+		case domain.SevenTwentySevenPhaseDraw:
+			require.NoError(t, g.TakeCard(false))
+		case domain.SevenTwentySevenPhaseResult:
+			g.NextRound()
+		}
+	}
+	require.True(t, g.GetGameEndFlag())
+
+	out := s27Decode(t, p.Output(g, nil))
+	assert.True(t, out.GameEndFlag)
+	assert.GreaterOrEqual(t, out.MatchWinnerIdx, 0)
+	assert.NotEmpty(t, out.MessageCode, "終了のメッセージコードが出ていない")
+}
+
+// hint コマンド専用のレスポンス。
+func TestSevenTwentySevenWebPresenter_HintOutput(t *testing.T) {
+	p := new(presenter.SevenTwentySevenWebPresenter)
+	g := domain.NewDefaultSevenTwentySeven()
+	g.SetHandForTest(0, []*domain.Card{s27Card(domain.CardDesignSpade, 10), s27Card(domain.CardDesignHeart, 10)})
+
+	out := s27Decode(t, p.HintOutput(g))
+	require.NotNil(t, out.Hint)
+	assert.True(t, out.Hint.Draw)
+	assert.Equal(t, "chase_twentyseven", out.Hint.Reason)
+
+	// 助言できないときも壊れないこと。
+	g.SetStandingForTest(0, true)
+	assert.NotEmpty(t, p.HintOutput(g))
+}
+
+func TestSevenTwentySevenWebPresenter_ActionLogOutput(t *testing.T) {
+	p := new(presenter.SevenTwentySevenWebPresenter)
+	g := domain.NewDefaultSevenTwentySeven()
+	assert.NotEmpty(t, p.ActionLogOutput(g))
+}

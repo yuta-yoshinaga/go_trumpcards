@@ -116,3 +116,45 @@ func TestSevenTwentySeven_ScaledValuesMatchTheRealPoints(t *testing.T) {
 	assert.Equal(t, "7", SevenTwentySevenFormat(SevenTwentySevenLowTarget))
 	assert.Equal(t, "27", SevenTwentySevenFormat(SevenTwentySevenHighTarget))
 }
+
+// 空の手・nil を混ぜても壊れないこと（配布の途中で呼ばれる）。
+func TestSevenTwentySeven_HandlesEmptyAndNilCards(t *testing.T) {
+	empty, ok := SevenTwentySevenBestFor(nil, SevenTwentySevenLowTarget)
+	assert.True(t, ok, "空の手は 0 点で「生きている」扱い")
+	assert.Zero(t, empty)
+
+	withNil := []*Card{nil, s27(CardDesignSpade, 5), nil}
+	v, ok := SevenTwentySevenBestFor(withNil, SevenTwentySevenLowTarget)
+	require.True(t, ok)
+	assert.Equal(t, 10, v, "nil を飛ばして 5 点になるはず")
+}
+
+// 表示は 0.5 刻みまで。整数はそのまま。
+func TestSevenTwentySeven_FormatShowsHalves(t *testing.T) {
+	for _, tt := range []struct {
+		scaled int
+		want   string
+	}{{0, "0"}, {1, "0.5"}, {2, "1"}, {13, "6.5"}, {14, "7"}, {54, "27"}, {41, "20.5"}} {
+		assert.Equal(t, tt.want, SevenTwentySevenFormat(tt.scaled), "scaled %d", tt.scaled)
+	}
+}
+
+// 5 枚全部エースでも全通り出ること（組み合わせの上限側）。
+func TestSevenTwentySeven_AllAces(t *testing.T) {
+	hand := []*Card{
+		s27(CardDesignSpade, 1), s27(CardDesignHeart, 1), s27(CardDesignClover, 1),
+		s27(CardDesignDiamond, 1), s27(CardDesignSpade, 1),
+	}
+	totals := sevenTwentySevenTotals(hand)
+	assert.Len(t, totals, 6, "11 として数える枚数 0..5 の 6 通り")
+	assert.Equal(t, 10, totals[0], "全部 1 なら 5 点")
+	assert.Equal(t, 110, totals[5], "全部 11 なら 55 点")
+
+	// 7 側は 5 点が最良、27 側は 25 点 (A×2 高 + A×3 低 = 22+3)。
+	low, ok := SevenTwentySevenBestFor(hand, SevenTwentySevenLowTarget)
+	require.True(t, ok)
+	assert.Equal(t, 10, low)
+	high, ok := SevenTwentySevenBestFor(hand, SevenTwentySevenHighTarget)
+	require.True(t, ok)
+	assert.Equal(t, 50, high, "25 点になるはず")
+}

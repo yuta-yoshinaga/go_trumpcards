@@ -240,3 +240,106 @@ func TestSevenTwentySeven_SurvivesAKVRoundTrip(t *testing.T) {
 	require.NoError(t, restored.TakeCard(true))
 	assert.Greater(t, restored.GetPlayer(0).GetCardsSize(), before, "復元後に引けていない")
 }
+
+// **ラウンドをまたいで続くこと。** 持ち越し・アンティ・脱落・終了条件が
+// 一巡して初めて「対局」になる。
+func TestSevenTwentySeven_PlaysSeveralRoundsAndEnds(t *testing.T) {
+	g := newTestS27()
+	cfg := g.GetConfig()
+	cfg.TargetRounds = 3
+	g.SetConfig(cfg)
+	g.Reset()
+
+	rounds := 0
+	for guard := 0; guard < 200 && !g.GetGameEndFlag(); guard++ {
+		switch g.GetPhase() {
+		case SevenTwentySevenPhaseDraw:
+			require.NoError(t, g.TakeCard(g.CpuDrawsForTest(0)))
+		case SevenTwentySevenPhaseResult:
+			rounds++
+			g.NextRound()
+		default:
+			t.Fatalf("unexpected phase %d", g.GetPhase())
+		}
+	}
+	assert.True(t, g.GetGameEndFlag(), "%d ラウンド回っても終わらない", rounds)
+	// 規定ラウンドに到達して終わったこと。最後の settle で終了するので、
+	// NextRound は TargetRounds-1 回しか呼ばれない。
+	assert.Equal(t, cfg.TargetRounds, g.GetRoundNumber())
+	assert.GreaterOrEqual(t, rounds, cfg.TargetRounds-1)
+	// **勝者はチップ最多。** 全員のチップ合計は変わらない（ポットは必ず誰かへ）。
+	winner := g.GetMatchWinnerIdx()
+	require.GreaterOrEqual(t, winner, 0)
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		assert.LessOrEqual(t, g.GetPlayer(i).GetChips(), g.GetPlayer(winner).GetChips(),
+			"player %d が勝者よりチップを持っている", i)
+	}
+}
+
+// **持ち越したポットは次のラウンドの種銭になる。** 消えないこと。
+func TestSevenTwentySeven_TheCarriedPotSeedsTheNextRound(t *testing.T) {
+	g := newTestS27()
+	g.Reset()
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		g.SetHandForTest(i, []*Card{rc(CardDesignSpade, 10), rc(CardDesignHeart, 10), rc(CardDesignClover, 10)})
+	}
+	g.SetPotForTest(100)
+	g.StandEveryoneForTest()
+	g.SettleForTest()
+	require.Equal(t, 100, g.GetCarryPot())
+
+	g.NextRound()
+	// 新しいポット = 持ち越し + 全員のアンティ。
+	want := 100 + g.GetAnte()*g.GetPlayerCnt()
+	assert.Equal(t, want, g.GetPot(), "持ち越しが種銭になっていない")
+	assert.Zero(t, g.GetCarryPot(), "持ち越しが二重に残っている")
+}
+
+// アンティを払えなくなったプレイヤーは脱落する。
+func TestSevenTwentySeven_APlayerWhoCannotAnteDropsOut(t *testing.T) {
+	g := newTestS27()
+	g.Reset()
+	g.GetPlayer(1).SetChips(0)
+	g.SetPhase(SevenTwentySevenPhaseResult)
+	g.NextRound()
+	assert.True(t, g.GetPlayer(1).GetOut(), "アンティを払えないのに残っている")
+}
+
+// プレイヤーの JSON 往復。**Worker はここを通るので、落ちると本番だけで壊れる。**
+func TestSevenTwentySevenPlayer_JSONRoundTrip(t *testing.T) {
+	p := NewSevenTwentySevenPlayer(true, 200)
+	p.SetStanding(true)
+	p.SetOut(false)
+	p.SetRoundBet(35)
+	p.AddCard(rc(CardDesignSpade, 4))
+	p.AddCard(rc(CardDesignHeart, 13))
+
+	data, err := p.MarshalJSON()
+	require.NoError(t, err)
+
+	restored := NewSevenTwentySevenPlayer(false, 0)
+	require.NoError(t, restored.UnmarshalJSON(data))
+	assert.True(t, restored.GetIsHuman())
+	assert.True(t, restored.GetStanding(), "止まりの状態が往復で消えている")
+	assert.Equal(t, 200, restored.GetChips())
+	assert.Equal(t, 35, restored.GetRoundBet())
+	assert.Equal(t, 2, restored.GetCardsSize())
+}
+
+// 壊れたスナップショットは弾く（負のチップ・負の賭け）。
+func TestSevenTwentySevenPlayer_RejectsInvalidSnapshots(t *testing.T) {
+	for _, raw := range []string{`{"ch":-1}`, `{"rb":-5}`, `not json`} {
+		p := NewSevenTwentySevenPlayer(false, 0)
+		assert.Error(t, p.UnmarshalJSON([]byte(raw)), "raw=%s", raw)
+	}
+}
+
+// ClearHand は手札だけを空にする（チップは残る）。
+func TestSevenTwentySevenPlayer_ClearHand(t *testing.T) {
+	p := NewSevenTwentySevenPlayer(true, 200)
+	p.AddCard(rc(CardDesignSpade, 4))
+	p.SetRoundBet(10)
+	p.ClearHand()
+	assert.Zero(t, p.GetCardsSize())
+	assert.Equal(t, 200, p.GetChips(), "チップまで消えている")
+}

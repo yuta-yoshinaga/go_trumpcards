@@ -11,6 +11,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -65,4 +66,27 @@ func TestSevenTwentySevenWebController_ResetAndNextRound(t *testing.T) {
 		BaseWebInput: controller.BaseWebInput{Command: "nextround", SessionID: "s3"},
 	})
 	m.AssertCalled(t, "NextRound")
+}
+
+// **設定は reset のときだけ効く。** ToConfig が境界を丸めていること。
+func TestSevenTwentySevenWebController_ToConfigBounds(t *testing.T) {
+	tooSmall, tooBig := 0, 99
+	in := controller.SevenTwentySevenWebInput{
+		Config: &controller.SevenTwentySevenWebConfig{
+			PlayerCount:   &tooBig,
+			Ante:          &tooSmall,
+			StartingChips: &tooSmall,
+			TargetRounds:  &tooSmall,
+		},
+	}
+	cfg := in.ToConfig()
+	def := domain.DefaultSevenTwentySevenConfig()
+	assert.LessOrEqual(t, cfg.PlayerCount, domain.SevenTwentySevenMaxPlayerCount)
+	assert.GreaterOrEqual(t, cfg.PlayerCount, domain.SevenTwentySevenMinPlayerCount)
+	assert.Positive(t, cfg.Ante)
+	assert.Positive(t, cfg.StartingChips)
+	assert.Positive(t, cfg.TargetRounds)
+
+	// 設定が無ければ既定値。
+	assert.Equal(t, def, controller.SevenTwentySevenWebInput{}.ToConfig())
 }
