@@ -34,7 +34,9 @@
   "skatLabel": "Skat (goes to whoever wins the last trick)",
   "loserBadge": "most points — loses",
   "durchmarschBadge": "Durchmarsch",
-  "hintReasonAvoidPoints": "duck with a card worth nothing and take no points",
-  "hintReasonLeadLow": "lead something cheap so you do not put points on the table",
-  "hintReasonForcedDiscard": "only point cards are legal here, so give up the cheapest"
+  "hint": {
+    "avoid_points": "duck with a card worth nothing and take no points",
+    "lead_low": "lead something cheap so you do not put points on the table",
+    "forced_discard": "only point cards are legal here, so give up the cheapest"
+  }
 }

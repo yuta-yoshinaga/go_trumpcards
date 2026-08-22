@@ -34,7 +34,9 @@
   "skatLabel": "伏せ札（最終トリックの獲得者が受け取ります）",
   "loserBadge": "最多・失点",
   "durchmarschBadge": "Durchmarsch",
-  "hintReasonAvoidPoints": "点の無い札で降りて、失点を避けます",
-  "hintReasonLeadLow": "自分から点を出さないよう、安い札でリードします",
-  "hintReasonForcedDiscard": "点札しか出せないので、いちばん安く済ませます"
+  "hint": {
+    "avoid_points": "点の無い札で降りて、失点を避けます",
+    "lead_low": "自分から点を出さないよう、安い札でリードします",
+    "forced_discard": "点札しか出せないので、いちばん安く済ませます"
+  }
 }

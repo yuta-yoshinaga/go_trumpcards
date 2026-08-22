@@ -20,7 +20,10 @@ export function getRamschHint(state: RamschResponse): HintResult | null {
 
   return {
     targetAction: 'play',
-    reason: state.hint.reason ? `ramsch:${state.hint.reason}` : 'ramsch:hintReasonAvoidPoints',
+    // **`hint.<reason>` の形にする。** `ns:key` と書くと i18next の
+    // nsSeparator (既定 ':') が効いて名前空間解決になり、キーが見つからず
+    // 生の識別子 (`avoid_points`) がそのままツールチップに出る。
+    reason: `hint.${state.hint.reason || 'avoid_points'}`,
     confidence: 'moderate',
     targetPos: state.hint.cardIndex,
   };
