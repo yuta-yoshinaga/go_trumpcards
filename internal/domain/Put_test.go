@@ -789,3 +789,38 @@ func TestPutUnmarshalValidation(t *testing.T) {
 		t.Errorf("pendingLevel clamp = %d, want %d", c.GetPendingLevel(), PutLevelNone)
 	}
 }
+
+// TestPutHasNoReRaise は、応答フェーズで賭けを引き上げ返せないことを見る。
+//
+// **これがトゥルコとの分かれ目。** クローン元は Truco → Retruco → Vale Cuatro と
+// 3 段に伸ばせるが、プットの宣言は 1 段だけで、言われた側は受諾か降参かの二択。
+// UI 側の「引き上げる」ボタンはこの述語で出し分けているので、ここが true に
+// 戻ると押せない (あるいは存在しないはずの) ボタンが復活する。
+func TestPutHasNoReRaise(t *testing.T) {
+	g := twoHumanPut()
+	putSetupBaza(g, 0)
+
+	g.callPut(0)
+	if g.GetPhase() != PutPhaseRespond {
+		t.Fatalf("phase = %v, want Respond", g.GetPhase())
+	}
+	if g.GetPendingLevel() != PutLevelPut {
+		t.Fatalf("pendingLevel = %d, want %d", g.GetPendingLevel(), PutLevelPut)
+	}
+	for idx := 0; idx < 2; idx++ {
+		if g.canDeclare(idx) {
+			t.Errorf("seat %d could re-raise — Put has no ladder above %d", idx, PutMaxLevel)
+		}
+	}
+
+	// 受諾後も、そのハンド中はもう宣言できない (賭けは上限に達している)。
+	g.respond(1, true)
+	if g.GetAcceptedLevel() != PutLevelPut {
+		t.Fatalf("acceptedLevel = %d, want %d", g.GetAcceptedLevel(), PutLevelPut)
+	}
+	for idx := 0; idx < 2; idx++ {
+		if g.canDeclare(idx) {
+			t.Errorf("seat %d could declare again after the stake was doubled", idx)
+		}
+	}
+}

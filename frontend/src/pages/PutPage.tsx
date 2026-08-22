@@ -200,15 +200,11 @@ function PutPageContent() {
           data-tutorial="put-rankref"
         >
           <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rankRef.title')}</summary>
+          {/* **One order, no special cards.** Truco (the clone source) has
+              suit-specific matadores and a stripped deck; Put has neither, so
+              showing two tiers here would state a rule the game does not have. */}
           <div className="mt-2 text-ds-text-muted text-xs space-y-1">
-            <div>
-              <span className="font-semibold text-ds-text-primary">{t('rankRef.matadores')}</span>
-              <div className="mt-0.5">{t('rankRef.matadoresOrder')}</div>
-            </div>
-            <div>
-              <span className="font-semibold text-ds-text-primary">{t('rankRef.common')}</span>
-              <div className="mt-0.5">{t('rankRef.commonOrder')}</div>
-            </div>
+            <div className="mt-0.5 font-mono">{t('rankRef.order')}</div>
             <div className="pt-1">{t('rankRef.note')}</div>
           </div>
         </details>
@@ -285,11 +281,11 @@ function PutPageContent() {
               <button type="button" className={btnDanger} onClick={handleDecline} disabled={loading}>
                 {t('actions.decline')}
               </button>
-              {state.canDeclarePut && (
-                <button type="button" className={btnWarning} onClick={handlePut} disabled={loading}>
-                  {t('actions.raise')}
-                </button>
-              )}
+              {/* **応答フェーズに引き上げボタンは置かない。** プットの宣言は
+                  1 段だけで、言われた側は受諾か降参かの二択。クローン元の
+                  トゥルコは Retruco / Vale Cuatro へ伸ばせるのでここに
+                  「引き上げる」があったが、PutMaxLevel を絞った時点で
+                  canDeclarePut は必ず false になり、押せないボタンが残る。 */}
             </>
           )}
           {(isTrickEnd || isHandEnd) && (

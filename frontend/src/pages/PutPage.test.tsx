@@ -121,11 +121,14 @@ describe('PutPage', () => {
   it('renders the collapsible card-strength reference panel', async () => {
     renderWithProviders(<PutPage />);
     await waitFor(() => expect(screen.getByTestId('put-rank-ref')).toBeInTheDocument());
-    // Panel content mirrors the Go domain strength order (matadores first).
+    // Panel content mirrors the Go domain strength order: one tier, suits
+    // irrelevant. **Put has no matadores and no stripped deck** — the clone
+    // source (Truco) does, and showing its two-tier panel here would state a
+    // rule Put does not have.
     expect(screen.getByText('カードの強さ（強い順）')).toBeInTheDocument();
-    expect(screen.getByText('マタドール（特殊札・最強）')).toBeInTheDocument();
-    expect(screen.getByText('1♠ ＞ 1♣ ＞ 7♠ ＞ 7♦')).toBeInTheDocument();
-    expect(screen.getByText('3 ＞ 2 ＞ 1 ＞ K ＞ Q ＞ J ＞ 7 ＞ 6 ＞ 5 ＞ 4')).toBeInTheDocument();
+    expect(screen.getByText('3 ＞ 2 ＞ A ＞ K ＞ Q ＞ J ＞ 10 ＞ 9 ＞ 8 ＞ 7 ＞ 6 ＞ 5 ＞ 4')).toBeInTheDocument();
+    expect(screen.queryByText(/マタドール/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/8・9・10 は使いません/)).not.toBeInTheDocument();
   });
 
   it('shows human hand as 3 play buttons', async () => {
@@ -156,8 +159,8 @@ describe('PutPage', () => {
   it('shows accept/decline buttons in respond phase and dispatches accept', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, responderIdx: 0, putCallerIdx: 1, pendingLevel: 1 }));
     renderWithProviders(<PutPage />);
-    const acceptBtn = await screen.findByRole('button', { name: '受諾 (Quiero)' });
-    expect(screen.getByRole('button', { name: '拒否 (No Quiero)' })).toBeInTheDocument();
+    const acceptBtn = await screen.findByRole('button', { name: '受諾' });
+    expect(screen.getByRole('button', { name: '拒否' })).toBeInTheDocument();
 
     mockExec.mockClear();
     fireEvent.click(acceptBtn);
@@ -231,7 +234,7 @@ describe('PutPage', () => {
     );
     renderWithProviders(<PutPage />);
     await waitFor(() =>
-      expect(screen.getByTestId('hint-tooltip')).toHaveTextContent('強い札を出してこのバサを取りましょう'),
+      expect(screen.getByTestId('hint-tooltip')).toHaveTextContent('強い札を出してこのトリックを取りましょう'),
     );
     localStorage.removeItem('hint_enabled_put');
   });

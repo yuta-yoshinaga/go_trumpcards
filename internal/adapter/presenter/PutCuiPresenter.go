@@ -45,7 +45,7 @@ func (p *PutCuiPresenter) Output(g interfaces.PutGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("put.helpTitle"), func(sb *strings.Builder) {
 		sb.WriteString(i18n.Tf("put.header",
 			"hand", strconv.Itoa(g.GetHandNumber()),
-			"baza", strconv.Itoa(g.GetTrickNumber()),
+			"trick", strconv.Itoa(g.GetTrickNumber()),
 			"target", strconv.Itoa(g.GetMatchTarget())) + "\n")
 		sb.WriteString(i18n.Tf("put.matchLine",
 			"p0", strconv.Itoa(g.GetPlayerMatchPoints(0)),

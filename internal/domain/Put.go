@@ -481,6 +481,10 @@ func (t *Put) canDeclare(actor int) bool {
 	case PutPhasePlay:
 		return t.pendingLevel == 0 && t.acceptedLevel < PutMaxLevel
 	case PutPhaseRespond:
+		// **応答中は宣言できない。** プットの宣言は 1 段だけなので、
+		// 保留中のレベルは必ず PutMaxLevel と等しく、この比較は常に false。
+		// クローン元のトゥルコはここで Retruco / Vale Cuatro へ引き上げられる。
+		// 式のまま残してあるのは、上限が動いたときに嘘にならないため。
 		return t.pendingLevel < PutMaxLevel
 	default:
 		return false
