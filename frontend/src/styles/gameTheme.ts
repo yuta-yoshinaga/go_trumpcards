@@ -14,6 +14,7 @@ export type GameKey =
   | 'spanish21'
   | 'baccarat'
   | 'threecard'
+  | 'threecardrummy'
   | 'caribbeanstud'
   | 'oasispoker'
   | 'russianpoker'
@@ -604,6 +605,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   spanish21: BRIGHT_GREEN,
   baccarat: CASINO,
   threecard: CASINO,
+  threecardrummy: CASINO,
   caribbeanstud: CASINO,
   oasispoker: CASINO,
   russianpoker: CASINO,

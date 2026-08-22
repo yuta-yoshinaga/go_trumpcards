@@ -45,6 +45,7 @@ export const workerUrl: Record<string, string> = {
   deuceswild: WORKER_CASINO,
   jokerpoker: WORKER_CASINO,
   threecard: WORKER_CASINO,
+  threecardrummy: WORKER_CASINO,
   caribbeanstud: WORKER_CASINO,
   texasholdembonus: WORKER_CASINO,
   casinoholdem: WORKER_CASINO,

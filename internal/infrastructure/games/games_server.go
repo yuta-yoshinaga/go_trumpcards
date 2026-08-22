@@ -1700,4 +1700,9 @@ func init() {
 			return usecase.NewSevenTwentySevenInteractor(domain.NewDefaultSevenTwentySeven(), new(presenter.SevenTwentySevenWebPresenter))
 		},
 		controller.NewSevenTwentySevenWebController)
+	BindWebControllerFor("threecardrummy",
+		func() usecase.ThreeCardRummyInteractorIF {
+			return usecase.NewThreeCardRummyInteractor(domain.NewDefaultThreeCardRummy(), new(presenter.ThreeCardRummyWebPresenter))
+		},
+		controller.NewThreeCardRummyWebController)
 }

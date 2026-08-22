@@ -48,6 +48,7 @@ time. Verify against the relevant national registry before relying on any row.
 | Name in this project | Reported owner |
 |---|---|
 | Three Card Poker | Shuffle Master / Light & Wonder |
+| Three Card Rummy | Shuffle Master / Light & Wonder |
 | Four Card Poker | Shuffle Master / Light & Wonder |
 | Crazy 4 Poker | Shuffle Master / Light & Wonder |
 | Let It Ride | Shuffle Master / Light & Wonder |
@@ -269,6 +270,26 @@ offers no public API and its search is a single-page app, so a US sweep of this
 kind was not attempted — what is known about the US is the per-name research
 recorded in the inventory above (e.g. LET IT RIDE reg. 1840102, THREE CARD POKER
 reg. 2917863), not a systematic pass.
+
+### Screening of 2026-08-22, Three Card Rummy
+
+Run before adding the game (checklist step 0), searching the rights holder as
+well as the mark, since that is how `21+3` was found.
+
+- `THREECARDRUMMY` and `3CARDRUMMY`: **no registration.**
+- Owner `ライトアンドワンダー`: 9 marks, all slot / game titles
+  (RAGING RHINO, SPORTS BONANZA, ACCUMUL8, 300 SHIELDS, MIGHTY WAYS,
+  JIN JI BAO XI, ENDLESS TREASURES, RAINBOW RICHES, GAME MAKER).
+  **Nothing resembling this game's name.**
+- Owners `シャッフルマスター` and `サイエンティフィックゲームズ`: no marks.
+- Canary: owner `ギャラクシーゲーミング` returned the two known `２１＋３`
+  registrations, so the run was live rather than silently empty.
+
+The name is nonetheless a **casino table game licensed to operators**, so it is
+listed in the inventory above under the same descriptive-use reasoning as Three
+Card Poker rather than treated as a folk game. As everywhere in this file, the
+owner is **as commonly reported** — the J-PlatPat result above is the part that
+was actually verified.
 
 ## Policy for new games
 

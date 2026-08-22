@@ -502,4 +502,12 @@ func init() {
 			return usecase.RestoreFollowTheQueenInteractor(data, new(presenter.FollowTheQueenWebPresenter))
 		},
 		controller.NewFollowTheQueenWebControllerWithProvider)
+	games.RegisterKVGame("threecardrummy", games.CategoryCasino,
+		func() usecase.ThreeCardRummyInteractorIF {
+			return usecase.NewThreeCardRummyInteractor(domain.NewDefaultThreeCardRummy(), new(presenter.ThreeCardRummyWebPresenter))
+		},
+		func(data []byte) (usecase.ThreeCardRummyInteractorIF, error) {
+			return usecase.RestoreThreeCardRummyInteractor(data, new(presenter.ThreeCardRummyWebPresenter))
+		},
+		controller.NewThreeCardRummyWebControllerWithProvider)
 }

@@ -279,6 +279,7 @@
   "invalidCpuPlayerCountANumber03": "Invalid CPU player count: {{val}}. Please enter a number (0-3).",
   "invalidFlushBonusAmount": "Invalid Flush Bonus amount.",
   "invalidPairPlusAmount": "Invalid Pair Plus amount.",
+  "invalidLowBonusAmount": "Invalid Low Bonus amount.",
   "invalidStraightFlushBonusAmount": "Invalid Straight Flush Bonus amount.",
   "invalidAdjutantValue": "Invalid adjutant value: {{val}}.",
   "invalidAmountANumber": "Invalid amount. Please enter a number.",

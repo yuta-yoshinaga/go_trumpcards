@@ -279,6 +279,7 @@
   "invalidCpuPlayerCountANumber03": "CPU の人数が不正です: {{val}}。数値 (0-3) を入力してください。",
   "invalidFlushBonusAmount": "フラッシュボーナスの賭け金が不正です。",
   "invalidPairPlusAmount": "ペアプラスの賭け金が不正です。",
+  "invalidLowBonusAmount": "ローボーナスの賭け金が不正です。",
   "invalidStraightFlushBonusAmount": "ストレートフラッシュボーナスの賭け金が不正です。",
   "invalidAdjutantValue": "副官の指定が不正です: {{val}}。",
   "invalidAmountANumber": "金額が不正です。数値を入力してください。",

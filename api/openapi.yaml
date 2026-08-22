@@ -154,6 +154,8 @@ tags:
     description: Cribbage (クリベッジ) game
   - name: threecard
     description: Three Card Poker (スリーカードポーカー) game
+  - name: threecardrummy
+    description: Three Card Rummy (スリーカード・ラミー) game
   - name: caribbeanstud
     description: Caribbean Stud Poker (カリビアンスタッドポーカー) game
   - name: texasholdembonus
@@ -4801,6 +4803,114 @@ paths:
                     dealerQualified: false
                     playerHandRank: 0
                     dealerHandRank: 0
+                    message: param error.
+
+  /threecardrummy/exec:
+    post:
+      tags:
+        - threecardrummy
+      summary: Execute a Three Card Rummy game command
+      description: |
+        Send a command to advance the Three Card Rummy (スリーカード・ラミー) game session
+        identified by `sessionId`.  Three Card Rummy is a single-player casino game on a
+        standard 52-card deck, and its scoring runs the opposite way from the poker-based
+        tables: **the lower your three-card total, the better, and 0 is the best hand.**
+
+        Face cards count 10, an ace counts 1 (never 11), and every other card counts its
+        pip value -- except that three cards of the same rank, or three in suit and
+        sequence (a "meld"), count **0** rather than their face total.  The ace sits at
+        both ends of a run, so A-2-3 and Q-K-A both qualify; K-A-2 does not wrap.
+
+        The player antes and may add an optional Low Bonus side bet, then receives 3
+        cards while the dealer's 3 stay face down.  The player either plays (matching the
+        ante) or folds.  **The dealer qualifies on a total of 20 or less.**  When the
+        dealer fails to qualify the ante pays 1:1 and the play bet pushes regardless of
+        who was lower; otherwise the lower total wins and equal totals push.
+
+        The Ante Bonus pays on the player's own total whenever the hand is played
+        (a meld 9:1, 1-5 points 3:1, 6-10 points 1:1).  The Low Bonus is independent of
+        the dealer and is settled even on a fold (a meld 100:1, 1-5 points 20:1,
+        6-10 points 4:1).
+
+        The game proceeds through these phases:
+
+        | Phase  | Value | Description |
+        |--------|-------|-------------|
+        | Bet    | `1`   | Place the ante and an optional Low Bonus bet |
+        | Action | `2`   | Decide to play or fold |
+        | End    | `3`   | Round complete; shows the result and payouts |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place the ante (requires `amount`; optional `lowBonusBet`) |
+        | `rebet` | `rb`    | Repeat last round's ante and Low Bonus amounts (no `amount` needed) |
+        | `play`  | `p`     | Match the ante and see the dealer's hand |
+        | `fold`  | `f`     | Forfeit the ante (the Low Bonus is still settled) |
+        | `hint`  | `h`     | Get a hint for the next move |
+        | `log`   | `l`     | View action log |
+      operationId: threecardrummyExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThreeCardRummyRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 ante with a 50 Low Bonus
+                value:
+                  command: bet
+                  amount: 100
+                  lowBonusBet: 50
+                  sessionId: my-session-001
+              play:
+                summary: Match the ante
+                value:
+                  command: play
+                  sessionId: my-session-001
+              fold:
+                summary: Fold the hand
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreeCardRummyResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreeCardRummyResponse'
+              examples:
+                paramError:
+                  value:
+                    playerHand: []
+                    dealerHand: []
+                    phase: 0
+                    chips: 0
+                    anteBet: 0
+                    lowBonusBet: 0
+                    playBet: 0
+                    result: 0
+                    antePayout: 0
+                    playPayout: 0
+                    anteBonusPayout: 0
+                    lowBonusPayout: 0
+                    totalPayout: 0
+                    dealerQualified: false
+                    playerScore: 0
+                    dealerScore: 0
                     message: param error.
 
   /fourcardpoker/exec:
@@ -44788,6 +44898,153 @@ components:
           type: integer
           description: Dealer's hand rank (1=High Card, 2=Pair, 3=Flush, 4=Straight, 5=Three of a Kind, 6=Straight Flush)
           example: 1
+        message:
+          type: string
+          description: Game result or error message. Empty during bet/action phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Three Card Rummy
+    # -------------------------------------------------------------------------
+    ThreeCardRummyRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
+            `rebet` (`rb`), `play` (`p`), `fold` (`f`), `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, rb, rebet, p, play, f, fold, log, l, hint, h]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Ante bet amount.  Required for the `bet` command (minimum 10, must be a
+            multiple of 10).  Ignored for other commands.
+          minimum: 10
+          example: 100
+        lowBonusBet:
+          type: integer
+          description: |
+            Low Bonus side bet amount.  Optional; used with the `bet` command.
+            0 or omitted means no side bet.  Pays on how low the player's own total
+            is, independently of the dealer, so it is settled even on a fold.
+          minimum: 0
+          example: 50
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    ThreeCardRummyResponse:
+      type: object
+      description: Current state of the Three Card Rummy game
+      required:
+        - playerHand
+        - dealerHand
+        - phase
+        - chips
+        - anteBet
+        - lowBonusBet
+        - playBet
+        - result
+        - antePayout
+        - playPayout
+        - anteBonusPayout
+        - lowBonusPayout
+        - totalPayout
+        - dealerQualified
+        - playerScore
+        - dealerScore
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Cards in the player's hand (3 cards)
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          description: |
+            Cards in the dealer's hand (3 cards).  Every card is masked (empty `design`,
+            `value` 0) until the End phase -- seeing them would let the player compute the
+            dealer's total and remove the play/fold decision entirely.
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1 = Bet, 2 = Action, 3 = End"
+          enum: [1, 2, 3]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        anteBet:
+          type: integer
+          description: Current ante bet amount
+          example: 100
+        lowBonusBet:
+          type: integer
+          description: Current Low Bonus side bet amount
+          example: 50
+        playBet:
+          type: integer
+          description: Current play bet amount (equal to the ante once played)
+          example: 0
+        result:
+          type: integer
+          description: "Game result: 1 = Player wins, -1 = Dealer wins, 0 = Push/not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        antePayout:
+          type: integer
+          description: Payout from the ante bet
+          example: 0
+        playPayout:
+          type: integer
+          description: Payout from the play bet
+          example: 0
+        anteBonusPayout:
+          type: integer
+          description: Ante Bonus payout (a meld 9:1, 1-5 points 3:1, 6-10 points 1:1)
+          example: 0
+        lowBonusPayout:
+          type: integer
+          description: Low Bonus payout (a meld 100:1, 1-5 points 20:1, 6-10 points 4:1)
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout for the current round (sum of all payouts)
+          example: 0
+        dealerQualified:
+          type: boolean
+          description: Whether the dealer qualified (a total of 20 or less)
+          example: false
+        playerScore:
+          type: integer
+          description: |
+            Player's three-card total.  **Lower is better**, and 0 means a meld -- three
+            of a rank, or three in suit and sequence -- which is the best hand.  Set from
+            the deal onward, since the player can see their own cards.
+          example: 14
+        dealerScore:
+          type: integer
+          description: |
+            Dealer's three-card total, on the same lower-is-better scale.  Stays 0 until
+            the End phase, when the dealer's hand is revealed.
+          example: 0
         message:
           type: string
           description: Game result or error message. Empty during bet/action phase.
