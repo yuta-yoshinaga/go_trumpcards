@@ -657,15 +657,27 @@ func ramschCardPoints(c *Card) int {
 }
 
 // checkGameEnd determines whether the game should end.
+// checkGameEnd は誰かが罰点の上限に達したらゲームを終わらせる。
+//
+// **比較の向きに注意。** このゲームの累計スコアは罰点なので **常に 0 以下**で、
+// `TargetScore` は常に 1 以上（Validate / Web / CUI / フロントのどの経路でも
+// 下限 1）。Skat から持ってきた `>= TargetScore` のままだと **どの設定でも
+// 絶対に成立せず**、対局が永久に終わらない ── GameEnd フェーズも勝利演出も
+// 到達不能な死にコードになる（レビュー指摘）。
+//
+// 到達した人は**勝者ではなく脱落者**。勝つのは残りのうち失点が最も少ない人。
 func (s *Ramsch) checkGameEnd() {
+	limit := -s.config.TargetScore
 	for _, p := range s.players {
-		if p.GetCumulativeScore() >= s.config.TargetScore {
-			s.round.gameEndFlag = true
-			s.round.phase = RamschPhaseGameEnd
-			s.appendLog(-1, "game_end",
-				fmt.Sprintf("%s reaches %d points and wins!", playerName(s.players, s.findIndex(p)), p.GetCumulativeScore()), nil)
-			return
+		if p.GetCumulativeScore() > limit {
+			continue
 		}
+		s.round.gameEndFlag = true
+		s.round.phase = RamschPhaseGameEnd
+		s.appendLog(-1, "game_end",
+			fmt.Sprintf("%s hits %d penalty points; the match ends and the lowest total wins",
+				playerName(s.players, s.findIndex(p)), -p.GetCumulativeScore()), nil)
+		return
 	}
 }
 

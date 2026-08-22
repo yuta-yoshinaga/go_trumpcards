@@ -26,10 +26,6 @@ func NewRamschCuiController(si usecase.RamschInteractorIF) *RamschCuiController 
 //
 //	q / quit                     → quit ("bye.")
 //	r / reset                    → reset (config preserved)
-//	b / bid <0|1>                → pass (0) or accept (1) the active bid step
-//	ps / pickramsch <0|1>          → decline (0) or pick up (1) the ramsch
-//	d / discard <i> <j>          → discard the two cards at indices i and j
-//	g / game <type> [trumpSuit]  → declare game (1=Suit 2=Grand 3=Null)
 //	p / play <i>                 → play card i
 //	n / next                     → next trick
 //	nr / nextround               → score round and start next

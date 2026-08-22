@@ -335,3 +335,41 @@ func TestRamsch_DurchmarschIsDetectedFromTheTricksActuallyTaken(t *testing.T) {
 	g2.ResolveTrick()
 	assert.False(t, g2.IsDurchmarsch(), "9 トリックで Durchmarsch になっている")
 }
+
+// **対局が実際に終わること。** 累計スコアは罰点なので常に 0 以下、`TargetScore`
+// は常に 1 以上 ── Skat から持ってきた `>= TargetScore` のままでは**どの設定でも
+// 成立せず**、GameEnd フェーズも勝利演出も到達不能な死にコードだった（レビュー指摘）。
+// テストが 1 本も checkGameEnd を通っていなかったので気付けていなかった。
+func TestRamsch_TheMatchEndsWhenSomeoneHitsThePenaltyLimit(t *testing.T) {
+	g := newTestRamsch()
+	g.Reset()
+	cfg := g.GetConfig()
+	cfg.TargetScore = 100
+	g.SetConfig(cfg)
+
+	// 上限手前までは終わらない。
+	g.GetPlayer(1).SetCumulativeScore(-40)
+	g.SetPhase(RamschPhaseRoundEnd)
+	g.SetCardPointsForTest([RamschPlayerCnt]int{10, 50, 5})
+	g.ScoreRound()
+	assert.False(t, g.GetGameEndFlag(), "累計 -90 で終わっている（上限は -100）")
+	assert.NotEqual(t, RamschPhaseGameEnd, g.GetPhase())
+
+	// 上限に届いたら終わる。
+	g2 := newTestRamsch()
+	g2.Reset()
+	cfg2 := g2.GetConfig()
+	cfg2.TargetScore = 100
+	g2.SetConfig(cfg2)
+	g2.GetPlayer(1).SetCumulativeScore(-60)
+	g2.SetPhase(RamschPhaseRoundEnd)
+	g2.SetCardPointsForTest([RamschPlayerCnt]int{10, 50, 5})
+	g2.ScoreRound()
+	assert.True(t, g2.GetGameEndFlag(), "累計 -110 でも終わっていない")
+	assert.Equal(t, RamschPhaseGameEnd, g2.GetPhase())
+
+	// **到達した人は勝者ではない。** 勝つのは失点が最も少ない人。
+	assert.Equal(t, -110, g2.GetPlayer(1).GetCumulativeScore())
+	assert.Greater(t, g2.GetPlayer(0).GetCumulativeScore(), g2.GetPlayer(1).GetCumulativeScore(),
+		"上限に達した人より失点の少ない人がいる")
+}

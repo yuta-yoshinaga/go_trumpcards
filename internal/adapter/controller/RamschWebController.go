@@ -13,12 +13,9 @@ import (
 // RamschWebInput Ramsch Web input.
 type RamschWebInput struct {
 	BaseWebInput
-	Accept    *bool            `json:"accept,omitempty"`
-	Pickup    *bool            `json:"pickup,omitempty"`
-	DiscardA  *int             `json:"discardA,omitempty"`
-	DiscardB  *int             `json:"discardB,omitempty"`
-	GameType  *int             `json:"gameType,omitempty"`
-	TrumpSuit *int             `json:"trumpSuit,omitempty"`
+	// **入札系の入力は持たない。** Skat クローンの accept / pickup / discardA /
+	// discardB / gameType / trumpSuit は dispatcher が一切読まないので消してある。
+	// 残しておくと「送れば効きそうに見えて何も起きない」入力になる。
 	CardIndex *int             `json:"cardIndex,omitempty"`
 	Config    *RamschWebConfig `json:"config,omitempty"`
 }

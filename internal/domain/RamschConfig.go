@@ -20,7 +20,9 @@ const (
 // RamschConfig Ramsch game configuration
 type RamschConfig struct {
 	CpuDifficulty RamschCpuDifficulty
-	TargetScore   int // game-end target score (first to reach wins)
+	// TargetScore は**罰点の上限**。累計失点がこれに達した人が出た時点で対局終了で、
+	// 勝つのは残りのうち失点が最も少ない人。到達した人が勝つのではない。
+	TargetScore int
 }
 
 // DefaultRamschConfig returns the default configuration

@@ -13,14 +13,12 @@ export interface RamschConfigInput {
 /** API client for the Ramsch /ramsch/exec endpoint. */
 export const ramschApi = {
   exec: (
-    command: 'reset' | 'bid' | 'pickramsch' | 'discard' | 'game' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    // **入札系のコマンドは無い。** Skat クローンの 'bid' / 'pickramsch' /
+    // 'discard' / 'game' はバックエンドの dispatcher にも CLI のパーサにも無く、
+    // 残すと型は通るのに実行時に unknown command になる（OpenAPI の
+    // RamschRequest とも食い違う）。
+    command: 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
     args?: {
-      accept?: boolean;
-      pickup?: boolean;
-      discardA?: number;
-      discardB?: number;
-      gameType?: number;
-      trumpSuit?: number;
       cardIndex?: number;
       config?: RamschConfigInput;
     },
