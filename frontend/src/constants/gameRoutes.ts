@@ -1548,6 +1548,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 4, 4, 3], skill: [3, 4, 4, 2], social: [0, 5, 3, 3, 4], theme: [2, 2, 3, 2, 3, 2] },
       },
       {
+        path: '/ramsch',
+        labelKey: 'nav.ramsch',
+        icon: '🃏',
+        page: 'Ramsch',
+        profile: { mood: [1, 3, 5, 1], skill: [1, 4, 4, 1], social: [1, 3, 5, 1, 4], theme: [2, 5, 1, 1, 2, 3] },
+      },
+      {
         path: '/skat',
         labelKey: 'nav.skat',
         icon: '🇩🇪',

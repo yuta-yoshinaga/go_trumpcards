@@ -237,6 +237,7 @@ export * from './games/primero';
 export * from './games/prsi';
 export * from './games/pyramid';
 export * from './games/rams';
+export * from './games/ramsch';
 export * from './games/rankandfile';
 export * from './games/razz';
 export * from './games/reddog';
@@ -542,6 +543,7 @@ export const games = [
   'bidwhist',
   'spanish21',
   'spiteandmalice',
+  'ramsch',
   'skat',
   'shithead',
   'nertz',

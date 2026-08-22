@@ -467,8 +467,15 @@ func TestFollowTheQueen_AllInShowdownDealsSevenCardsNotEight(t *testing.T) {
 	s := dealtBoard(t)
 	s.SetPhase(FollowTheQueenPhaseThirdStreet)
 
-	// 1 人を残して全員オールイン → advancePhase がショーダウンまで畳む。
+	// **配った枚数の「増分」を見る。** Reset は人間の手番まで CPU を進めるので、
+	// 盤が 3rd street で止まっているとは限らず、絶対枚数は配りに依存する
+	// （実際に落ちた）。3rd street からショーダウンまでで増えるのは
+	// 表向き 3 枚 (4th/5th/6th) と伏せ 1 枚 (7th) —— 二重配りだと表が 4 枚になる。
+	beforeDoor := make([]int, len(s.players))
+	beforeHole := make([]int, len(s.players))
 	for i, p := range s.players {
+		beforeDoor[i] = len(p.GetDoorCards())
+		beforeHole[i] = len(p.GetHoleCards())
 		if i > 0 {
 			p.SetAllIn(true)
 		}
@@ -476,9 +483,9 @@ func TestFollowTheQueen_AllInShowdownDealsSevenCardsNotEight(t *testing.T) {
 	s.advancePhase()
 
 	for i, p := range s.players {
-		hole, door := len(p.GetHoleCards()), len(p.GetDoorCards())
-		assert.Equal(t, 7, hole+door,
-			"player %d は 7 枚のはず (hole=%d door=%d)", i, hole, door)
-		assert.Equal(t, 4, door, "player %d の表向きは 4 枚のはず", i)
+		assert.Equal(t, 3, len(p.GetDoorCards())-beforeDoor[i],
+			"player %d の表向きの増分が 3 でない (4th/5th/6th のはず)", i)
+		assert.Equal(t, 1, len(p.GetHoleCards())-beforeHole[i],
+			"player %d の伏せ札の増分が 1 でない (7th のはず)", i)
 	}
 }

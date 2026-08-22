@@ -1690,4 +1690,9 @@ func init() {
 			return usecase.NewHorseInteractor(domain.NewDefaultHorse(), new(presenter.HorseWebPresenter))
 		},
 		controller.NewHorseWebController)
+	BindWebControllerFor("ramsch",
+		func() usecase.RamschInteractorIF {
+			return usecase.NewRamschInteractor(domain.NewDefaultRamsch(), new(presenter.RamschWebPresenter))
+		},
+		controller.NewRamschWebController)
 }

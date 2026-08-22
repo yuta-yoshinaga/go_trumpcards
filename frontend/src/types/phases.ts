@@ -1019,6 +1019,18 @@ export const SpiderettePhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Ramsch phase constants (sync: internal/domain/Ramsch.go).
+ *
+ * **入札も宣言も無いので 4 つだけ。** Skat の Bid / Pickup / Discard /
+ * GameDeclaration に相当する局面がこのゲームには存在しない。
+ */
+export const RamschPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Skat phase constants (sync: internal/domain/Skat.go). */
 export const SkatPhase = {
   BID: 0,

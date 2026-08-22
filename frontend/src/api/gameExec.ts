@@ -219,6 +219,7 @@ export const workerUrl: Record<string, string> = {
   president: WORKER_CLASSIC,
   cassino: WORKER_CLASSIC,
   spiteandmalice: WORKER_EXTRA2,
+  ramsch: WORKER_EXTRA3,
   skat: WORKER_EXTRA3,
   shithead: WORKER_CLASSIC,
   nertz: WORKER_EXTRA2,

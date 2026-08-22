@@ -170,6 +170,7 @@ export type GameKey =
   | 'stealingbundles'
   | 'cucumber'
   | 'goofspiel'
+  | 'ramsch'
   | 'skat'
   | 'belote'
   | 'jass'
@@ -728,6 +729,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   catchten: CATCHTEN,
   pinochle: BLUE,
   piquet: BLUE,
+  ramsch: BLUE,
   skat: BLUE,
   belote: BLUE,
   jass: BLUE,
