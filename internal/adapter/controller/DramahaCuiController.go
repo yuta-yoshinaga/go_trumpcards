@@ -162,6 +162,17 @@ func (c *DramahaCuiController) Exec(command string) string {
 				if err != nil {
 					return invalidArg("holdem.invalidTableSize", "val", args[0]), true
 				}
+				// **黙って丸めない。** ドラマハは 1 席が最悪 10 枚
+				// (ホール 5 + 交換 5) 使い、ボードに 5 枚要るので 4-max
+				// までしか 52 枚の山に収まらない。頼まれた席数を無言で
+				// 4 に変えると、プレイヤーには効かなかったのか効いたのか
+				// 分からない。
+				// そもそも不正な値 (-1, 5, ...) はドメイン側の既存のエラーに
+				// 任せる。ここで断るのは「席数としては正しいが山が足りない」
+				// 6-max / 9-max だけ。
+				if domain.IsValidHoldemTableSize(v) && v != domain.HoldemTableSize4 {
+					return i18n.Tf("dramaha.tableSizeFixed", "val", strconv.Itoa(v)), true
+				}
 				cfg := c.oi.GetConfig()
 				cfg.TableSize = v
 				return c.oi.ResetWithConfig(cfg, nil), true

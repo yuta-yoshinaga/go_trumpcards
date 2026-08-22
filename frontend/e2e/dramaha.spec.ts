@@ -25,13 +25,19 @@ test.describe('Dramaha E2E', () => {
       await waitForLoaded(page);
     }
 
-    if (await standPat.isVisible().catch(() => false)) {
-      await standPat.click();
-      await waitForLoaded(page);
-      // **The hand must not stall here.** Before the fix, nothing drove the CPUs
-      // after a draw, so the turn sat on a CPU seat and the player was told
-      // "it is not your turn" forever.
-      await expect(standPat).toBeHidden({ timeout: 10_000 });
-    }
+    // **Assert we got here, before asserting anything about it.** The whole
+    // regression lives after the stand-pat click, so wrapping that assertion in
+    // `if (visible)` makes the test pass on every run that never reached the
+    // draw round -- which is every run where the loop above broke early.
+    await expect(standPat, 'never reached the draw round, so the stall regression was never exercised').toBeVisible({
+      timeout: 10_000,
+    });
+
+    await standPat.click();
+    await waitForLoaded(page);
+    // **The hand must not stall here.** Before the fix, nothing drove the CPUs
+    // after a draw, so the turn sat on a CPU seat and the player was told
+    // "it is not your turn" forever.
+    await expect(standPat).toBeHidden({ timeout: 10_000 });
   });
 });

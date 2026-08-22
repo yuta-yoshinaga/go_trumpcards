@@ -19,34 +19,59 @@ func dramahaChipTotal(g *Dramaha) int {
 	return n
 }
 
-// TestDramaha_TheDrawRoundDoesNotSettleTwice pins the re-entrancy fix.
+// TestDramaha_TheDrawRoundIsNotSkippedByTheAllInShortCircuit pins the early
+// return at the end of advancePhase's Flop case.
 //
-// **ドローの完了は advancePhase を入れ子に呼ぶ。** フロップの case が
-// autoDrawForCPUs を呼び、最後の CPU が引いた時点で Draw() が advancePhase を
-// もう一度走らせる。内側のフレームがターンを配って activeCnt ブロックまで
-// 実行し終えた後、外側のフレームが switch を抜けて**同じブロックを再実行**
-// すると resolveShowdown が二度走り、ポットが二重に配られる。
+// **落とすと人間が引かないままショーダウンに行く。** autoDrawForCPUs は最後の
+// CPU が引いた時点で Draw() 経由で advancePhase を入れ子に呼ぶ。return しないと
+// 外側のフレームが switch を抜けて `activeCnt <= 1` の短絡に落ち、残りのボードを
+// 配って決着させてしまう —— CPU は引き終えているのに、人間だけ 5 枚を引けない。
 //
-// 実測: 卓上の総額が 4000 → 4015 に増えた (本来 +5 は Omaha 由来の既存挙動で、
-// 差分の +10 がこのバグぶん)。
-func TestDramaha_TheDrawRoundDoesNotSettleTwice(t *testing.T) {
+// 卓上の総額では捕まらないことを実測した: この経路では finalizeShowdown が先に
+// ポットを 0 にしているので、二度目の resolveShowdown は空のポットを配って
+// 総額を変えない。**見るのは金額ではなく「人間の手番が残っているか」。**
+func TestDramaha_TheDrawRoundIsNotSkippedByTheAllInShortCircuit(t *testing.T) {
 	g := NewDefaultDramaha()
 	require.NoError(t, g.Reset())
 
-	// **人間が降りれば残りは CPU だけ** —— autoDrawForCPUs がその場で引き切り、
-	// 最後の 1 人の Draw() が advancePhase を入れ子に呼ぶ。これが再入経路。
-	// オールインは作らない: 賭けを伴わない SetAllIn はサイドポットの計算を
-	// 歪め、クローン元の Omaha でも同じ差分が出る (テスト設定の作り物)。
-	g.players[0].SetFolded(true)
+	// 席 0 (人間) を含む 3 席をオールインにして、活動席を席 3 の 1 つに絞る。
+	// オールインは**実際にチップをポットへ移して**作る。SetAllIn だけ立てると
+	// サイドポットの持ち分が嘘になる。
+	for _, i := range []int{0, 1, 2} {
+		stack := g.players[i].GetChips()
+		g.players[i].SetChips(0)
+		g.players[i].SetCurrentBet(stack)
+		g.players[i].SetAllIn(true)
+		g.pot += stack
+	}
+	activeCnt := 0
+	for _, p := range g.players {
+		if !p.GetFolded() && !p.GetAllIn() {
+			activeCnt++
+		}
+	}
+	require.LessOrEqual(t, activeCnt, 1,
+		"この短絡に落ちる盤でしか return の有無が効かない (activeCnt=%d)", activeCnt)
 
-	g.advancePhase() // -> Flop
+	// **フロップから入る。** プリフロップ時点で activeCnt <= 1 だと、
+	// PreFlop の case が先に短絡してボードを走り切ってしまい、Flop の case に
+	// 一度も入らない。この return が効くのは「フロップのベッティングで
+	// 活動席が 1 つに落ちた」ときだけなので、その盤を直接作る。
+	g.phase = DramahaPhaseFlop
+	g.communityCards = dramahaTestFlop()
+
 	before := dramahaChipTotal(g)
 
-	g.advancePhase() // -> Draw (CPU が引き切り、入れ子で先へ)
+	g.advancePhase() // Flop -> Draw (CPU が引き切り、入れ子で先へ)
 
+	assert.Equal(t, DramahaPhaseDraw, g.GetPhase(),
+		"人間がまだ引いていないのだからドローで待つ (短絡に落ちるとショーダウンへ飛ぶ)")
+	assert.False(t, g.drawnFlags[0], "人間の交換はこれから")
+	for i := 1; i < len(g.drawnFlags); i++ {
+		assert.True(t, g.drawnFlags[i], "CPU %d は自動で引き終えている", i)
+	}
 	assert.Equal(t, before, dramahaChipTotal(g),
-		"ドローラウンドを跨いでも卓上の総額は変わらない (二重決着ならポットぶん増える)")
-
+		"ドローを待っているあいだにポットは動かない")
 }
 
 // TestDramaha_TheDrawRoundWaitsForTheHuman は、人間が残っているあいだは

@@ -133,11 +133,15 @@ func TestDramahaInteractor_ResetWithConfig_TableSizeChange(t *testing.T) {
 	mp := new(presenter.MockDramahaPresenter)
 	hi := NewDramahaInteractor(mg, mp)
 
+	// **6-max を頼んでも 4 席で組む。** ドラマハは 1 席が最悪 10 枚
+	// (ホール 5 + 交換 5) 使い、ボードに 5 枚要るので 10N+5 枚必要 ——
+	// 6-max は 65 枚で 52 枚の山に収まらない。NewDramahaPlayersForTable が
+	// 4-max へ丸めるので、Resize に渡るのは 4 席。
 	cfg := domain.DefaultDramahaConfig()
 	cfg.TableSize = domain.HoldemTableSize6
-	mg.On("GetPlayerCnt").Return(4)
+	mg.On("GetPlayerCnt").Return(2)
 	mg.On("Resize", mock.MatchedBy(func(players []*domain.DramahaPlayer) bool {
-		return len(players) == 6 && players[0].GetIsHuman()
+		return len(players) == 4 && players[0].GetIsHuman()
 	})).Return()
 	mg.On("SetConfig", cfg).Return()
 	mg.On("Reset").Return(nil)

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestDramahaCuiController_Quit(t *testing.T) {
@@ -379,9 +381,10 @@ func TestDramahaCuiController_TableSize_Valid(t *testing.T) {
 	c := NewDramahaCuiController(mi)
 	mi.On("GetConfig").Return(domain.DefaultDramahaConfig())
 	cfg := domain.DefaultDramahaConfig()
-	cfg.TableSize = domain.HoldemTableSize6
+	cfg.TableSize = domain.HoldemTableSize4
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return("ts ok")
-	assert.Equal(t, "ts ok", c.Exec("ts 6"))
+	// 山に収まる唯一の席数。6/9 は TableSizeRejectsWhatTheDeckCannotDeal を参照。
+	assert.Equal(t, "ts ok", c.Exec("ts 4"))
 }
 
 func TestDramahaCuiController_TableSize_LongCommand(t *testing.T) {
@@ -389,9 +392,9 @@ func TestDramahaCuiController_TableSize_LongCommand(t *testing.T) {
 	c := NewDramahaCuiController(mi)
 	mi.On("GetConfig").Return(domain.DefaultDramahaConfig())
 	cfg := domain.DefaultDramahaConfig()
-	cfg.TableSize = domain.HoldemTableSize9
+	cfg.TableSize = domain.HoldemTableSize4
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return("ts ok")
-	assert.Equal(t, "ts ok", c.Exec("tablesize 9"))
+	assert.Equal(t, "ts ok", c.Exec("tablesize 4"))
 }
 
 func TestDramahaCuiController_TableSize_NoArgs(t *testing.T) {
@@ -572,4 +575,46 @@ func TestDramahaCuiController_Draw_BareCommandStandsPat(t *testing.T) {
 func TestDramahaCuiController_DrawIsAdvertised(t *testing.T) {
 	assert.Contains(t, dramahaArgfulCommands, "d")
 	assert.Contains(t, dramahaArgfulCommands, "draw")
+}
+
+// TestDramahaCuiController_TableSizeRejectsWhatTheDeckCannotDeal は、
+// 収まらない席数を頼まれたときに黙って丸めないことを見る。
+//
+// **丸めるだけだと、効いたのか無視されたのか画面から分からない。** しかも
+// `ts 6` は「6 人卓になった」と読めてしまう。実際にはドラマハは 1 席が最悪
+// 10 枚 (ホール 5 + 交換 5) 使い、ボードに 5 枚要るので 10N+5 ——
+// 6-max は 65 枚で、52 枚の山に収まらない。
+func TestDramahaCuiController_TableSizeRejectsWhatTheDeckCannotDeal(t *testing.T) {
+	for _, lang := range []string{"ja", "en"} {
+		t.Run(lang, func(t *testing.T) {
+			defer i18n.SetLang(i18n.Lang())
+			i18n.SetLang(lang)
+
+			for _, size := range []int{6, 9} {
+				mi := new(usecase.MockDramahaInteractor)
+				c := NewDramahaCuiController(mi)
+
+				out := c.Exec("ts " + strconv.Itoa(size))
+
+				assert.Contains(t, out, strconv.Itoa(size),
+					"断るなら、頼まれた数を見せる")
+				assert.NotContains(t, out, "{{", "プレースホルダが素通りしている")
+				mi.AssertNotCalled(t, "ResetWithConfig", mock.Anything, mock.Anything)
+			}
+		})
+	}
+}
+
+// TestDramahaCuiController_TableSizeAcceptsFourMax は上の負のコントロール。
+// **4 まで弾いていたら、上のテストは「常に断る」実装でも通る。**
+func TestDramahaCuiController_TableSizeAcceptsFourMax(t *testing.T) {
+	mi := new(usecase.MockDramahaInteractor)
+	mi.On("GetConfig").Return(domain.DefaultDramahaConfig())
+	mi.On("ResetWithConfig", mock.Anything, mock.Anything).Return("ok")
+	c := NewDramahaCuiController(mi)
+
+	out := c.Exec("ts 4")
+
+	assert.Equal(t, "ok", out)
+	mi.AssertCalled(t, "ResetWithConfig", mock.Anything, mock.Anything)
 }
