@@ -14,14 +14,16 @@ export interface RistikontraConfigInput {
 export type RistikontraCommand = 'reset' | 'play' | 'next' | 'log';
 
 /**
- * API client for the Pişti /ristikontra/exec endpoint.
+ * API client for the /ristikontra/exec endpoint.
  *
- * Pişti is a Turkish 2–4 player capture (fishing) game. On your turn you `play`
- * a hand card onto the central pile (`play` → `{ handIndex }`); matching the
- * pile's top rank, or playing a Jack, captures the whole pile, and capturing a
- * lone card scores a Pişti bonus. `next` starts the next game after one ends;
- * `reset` applies the config (player count, CPU difficulty); `log` fetches the
- * action log.
+ * Ristikontra is a Finnish capture (fishing) game, always 4 players in fixed
+ * 2-vs-2 partnerships. On your turn you `play` a hand card onto the central
+ * pile (`play` → `{ handIndex }`); **matching the pile top's rank** captures
+ * the whole pile — a Jack is an ordinary card, and there is no capture bonus.
+ * Immediately after a capture, laying the rank that made it steals the bundle
+ * (the counter the game is named for). `next` starts the next game after one
+ * ends; `reset` applies the config (CPU difficulty — the table is always 4);
+ * `log` fetches the action log.
  *   - `play` → `{ handIndex: number }`
  *   - `reset` → `{ config }`
  *   - `next` / `log` carry no extra fields.

@@ -24,10 +24,14 @@ describe('parseRistikontraCommand', () => {
     expect('error' in parseRistikontraCommand('sd')).toBe(true);
   });
 
-  it('parses sp into a reset with player-count config', () => {
-    expect(parseRistikontraCommand('sp 3')).toEqual({ args: ['reset', { config: { playerCnt: 3 } }] });
-    expect('error' in parseRistikontraCommand('sp 5')).toBe(true);
-    expect('error' in parseRistikontraCommand('sp 1')).toBe(true);
+  // **席数を変えるコマンドは無い。** リスティコントラは常に 2 対 2 の固定
+  // パートナーシップなので、他の席数ではチームが組めない。バックエンドが
+  // 弾くので、ここで受理すると「解釈できて実行だけ失敗する」動詞が残る。
+  it('rejects sp/setplayers — the table size is fixed', () => {
+    for (const input of ['sp 3', 'sp 4', 'setplayers 2', 'sp']) {
+      const got = parseRistikontraCommand(input);
+      expect('error' in got, `${input} must not parse`).toBe(true);
+    }
   });
 
   it('parses log and reset (short and long)', () => {

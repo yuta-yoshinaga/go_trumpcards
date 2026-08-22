@@ -4,12 +4,12 @@
 import type { BaseGameResponse, Card } from '../common';
 
 /**
- * Pişti game phase, mirroring the backend `RistikontraPhase` string values
+ * Ristikontra game phase, mirroring the backend `RistikontraPhase` string values
  * (internal/domain/Ristikontra.go). The phase is a string, not a numeric enum.
  */
 export type RistikontraPhase = 'play' | 'roundEnd' | 'gameEnd';
 
-/** A single Pişti player as returned from the API. */
+/** A single Ristikontra player as returned from the API. */
 export interface RistikontraPlayer {
   /** Seat index (0 = human). */
   id: number;
@@ -24,7 +24,7 @@ export interface RistikontraPlayer {
   finalScore: number;
 }
 
-/** Pişti configuration as returned from / sent to the API. */
+/** Ristikontra configuration as returned from / sent to the API. */
 export interface RistikontraConfig {
   /** Number of players (2-4). */
   playerCnt: number;
@@ -32,7 +32,7 @@ export interface RistikontraConfig {
   cpuDifficulty: number;
 }
 
-/** Server response for the Pişti game (POST /ristikontra/exec). */
+/** Server response for the Ristikontra game (POST /ristikontra/exec). */
 export interface RistikontraResponse extends BaseGameResponse {
   players: RistikontraPlayer[];
   /** Seat index whose turn it currently is. */
