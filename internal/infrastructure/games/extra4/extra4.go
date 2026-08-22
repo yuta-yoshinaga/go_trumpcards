@@ -386,4 +386,12 @@ func init() {
 			return usecase.RestoreRankAndFileInteractor(data, new(presenter.RankAndFileWebPresenter))
 		},
 		controller.NewRankAndFileWebControllerWithProvider)
+	games.RegisterKVGame("seventwentyseven", games.CategoryExtra4,
+		func() usecase.SevenTwentySevenInteractorIF {
+			return usecase.NewSevenTwentySevenInteractor(domain.NewDefaultSevenTwentySeven(), new(presenter.SevenTwentySevenWebPresenter))
+		},
+		func(data []byte) (usecase.SevenTwentySevenInteractorIF, error) {
+			return usecase.RestoreSevenTwentySevenInteractor(data, new(presenter.SevenTwentySevenWebPresenter))
+		},
+		controller.NewSevenTwentySevenWebControllerWithProvider)
 }

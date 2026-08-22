@@ -346,6 +346,7 @@ export type GameKey =
   | 'beggarmyneighbour'
   | 'allfours'
   | 'guts'
+  | 'seventwentyseven'
   | 'anaconda'
   | 'bouillotte'
   | 'primero'
@@ -935,6 +936,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   beggarmyneighbour: GREEN,
   allfours: ALLFOURS,
   guts: GUTS,
+  seventwentyseven: GUTS,
   anaconda: ANACONDA,
   bouillotte: BOUILLOTTE,
   primero: PRIMERO,

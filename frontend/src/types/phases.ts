@@ -2838,6 +2838,15 @@ export const AllFoursPhase = {
   GAME_END: 5,
 } as const;
 
+/** Seven Twenty-Seven phase constants (sync: internal/domain/SevenTwentySeven.go).
+ *
+ * **Draw は 1 回では終わらない。** 全員が「止まる」を選ぶまで繰り返す。
+ */
+export const SevenTwentySevenPhase = {
+  DRAW: 0,
+  RESULT: 1,
+} as const;
+
 /** Guts phase constants (sync: internal/domain/Guts.go). */
 export const GutsPhase = {
   DECLARE: 0,

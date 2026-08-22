@@ -622,6 +622,8 @@ tags:
     description: Gaigel (ガイゲル) game
   - name: gostop
     description: Go-Stop (ゴーストップ) game
+  - name: seventwentyseven
+    description: "Seven Twenty-Seven (セブン・トゥエンティセブン) game - the pot splits between the hand closest to 7 and the hand closest to 27; face cards are half a point and an ace is 1 or 11"
   - name: guts
     description: Guts (ガッツ) game
   - name: hachihachi
@@ -28512,6 +28514,80 @@ paths:
                 properties:
                   message:
                     type: string
+  /seventwentyseven/exec:
+    post:
+      tags:
+        - seventwentyseven
+      summary: Execute a Seven Twenty-Seven game command
+      description: |
+        Send a command to advance the Seven Twenty-Seven game session identified
+        by `sessionId`.  The pot is **split two ways**: the hand closest to **7**
+        without going over and the hand closest to **27** without going over each
+        take half, and one player taking both **scoops** the lot.
+
+        **Card values are the whole point.**  Face cards count **half a point**,
+        an ace counts **1 or 11** chosen independently per ace, and everything
+        else is its pip value.  Scores are therefore reported as strings
+        (`"6.5"`, `"21"`) rather than numbers, so the client never has to decide
+        how to round; a side that has gone over is reported as `"-"`.
+
+        Every player antes and receives 2 cards.  Each pass, a player takes
+        another card or stands pat; **standing is final for the round**, and the
+        round settles once everybody has stood — so a `stand` may return a
+        settled board directly.  Going over kills only that side, and if
+        everybody has gone over both ways the pot carries to the next round.
+
+        The game proceeds through these phases:
+
+        | Phase  | Value | Description |
+        |--------|-------|-------------|
+        | Draw   | `0`   | Players are taking cards or standing pat |
+        | Result | `1`   | Round settled; advance with `nextround` |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a match (accepts `config`) |
+        | `card`  | `c`     | Take one more card |
+        | `stand` | `s`     | Stand pat for the rest of the round |
+        | `nextround` | `n`, `nr` | Deal the next round |
+        | `hint`  | `h`     | Get a suggestion |
+        | `log`   | `l`     | View action log |
+      operationId: seventwentysevenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SevenTwentySevenRequest'
+            examples:
+              reset:
+                summary: Start a new match
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              card:
+                summary: Take another card
+                value:
+                  command: card
+                  sessionId: my-session-001
+              stand:
+                summary: Stand pat
+                value:
+                  command: stand
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenTwentySevenResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenTwentySevenResponse'
   /guts/exec:
     post:
       tags:
@@ -46403,6 +46479,166 @@ components:
     # -------------------------------------------------------------------------
     # Seven Card Stud
     # -------------------------------------------------------------------------
+    SevenTwentySevenRequest:
+      type: object
+      required:
+        - command
+      properties:
+        command:
+          type: string
+          description: Command to execute
+          enum: [reset, r, card, c, stand, s, nextround, next, n, nr, hint, h, log, l]
+          example: card
+        sessionId:
+          type: string
+          description: Session identifier
+          example: my-session-001
+        config:
+          type: object
+          description: Optional match configuration, applied on reset
+          properties:
+            playerCount:
+              type: integer
+              minimum: 2
+              maximum: 7
+            ante:
+              type: integer
+              minimum: 1
+              maximum: 1000
+            startingChips:
+              type: integer
+              minimum: 10
+              maximum: 100000
+            targetRounds:
+              type: integer
+              minimum: 1
+              maximum: 100
+    SevenTwentySevenResponse:
+      type: object
+      required:
+        - players
+        - phase
+        - roundNumber
+        - drawRound
+        - pot
+        - lowWinner
+        - highWinner
+        - gameEndFlag
+        - message
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/SevenTwentySevenPlayer'
+        phase:
+          type: integer
+          description: 0=Draw, 1=Result
+          minimum: 0
+          maximum: 1
+        roundNumber:
+          type: integer
+          minimum: 1
+        drawRound:
+          type: integer
+          description: Which pass of "card or stand" this is (1-based)
+          minimum: 0
+        pot:
+          type: integer
+          minimum: 0
+        carryPot:
+          type: integer
+          description: Chips carried over from rounds where everybody busted
+          minimum: 0
+        carryCount:
+          type: integer
+          minimum: 0
+        ante:
+          type: integer
+          minimum: 0
+        chips:
+          type: integer
+          description: The human's remaining stack
+          minimum: 0
+        lowWinner:
+          type: integer
+          description: Seat that took the 7 side, or -1
+          minimum: -1
+        highWinner:
+          type: integer
+          description: Seat that took the 27 side, or -1. Equal to lowWinner means a scoop.
+          minimum: -1
+        matchWinnerIdx:
+          type: integer
+          minimum: -1
+        result:
+          type: integer
+          description: The human's round result - 1=won a share, 0=none, -1=took neither side
+          minimum: -1
+          maximum: 1
+        gameEndFlag:
+          type: boolean
+        message:
+          type: string
+        messageCode:
+          type: string
+        hint:
+          $ref: '#/components/schemas/SevenTwentySevenHint'
+        config:
+          type: object
+          properties:
+            playerCount:
+              type: integer
+            ante:
+              type: integer
+            startingChips:
+              type: integer
+            targetRounds:
+              type: integer
+    SevenTwentySevenPlayer:
+      type: object
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        chips:
+          type: integer
+        standing:
+          type: boolean
+          description: Whether this player has said "no more cards" for the round
+        out:
+          type: boolean
+        roundBet:
+          type: integer
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          description: Populated for the human, and for everyone once the round settles
+          items:
+            $ref: '#/components/schemas/Card'
+        lowScore:
+          type: string
+          description: 'The 7-side total, already formatted ("6.5"), or "-" when over. Empty when the hand is hidden - the totals are the hand.'
+          example: "6.5"
+        highScore:
+          type: string
+          description: 'The 27-side total, already formatted ("21"), or "-" when over.'
+          example: "21"
+        wonLow:
+          type: boolean
+        wonHigh:
+          type: boolean
+          description: Both true means this player scooped the pot
+    SevenTwentySevenHint:
+      type: object
+      properties:
+        draw:
+          type: boolean
+          description: Whether to take another card. false means stand pat.
+        reason:
+          type: string
+          description: 'i18n reason suffix naming the side being chased (chase_seven, exactly_twentyseven, ...)'
     RamschRequest:
       type: object
       required:

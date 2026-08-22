@@ -150,6 +150,7 @@ var gameDescriptions = map[string]string{
 	"spiteandmalice":      "Spite and Malice (スパイト・アンド・マリス)",
 	"skat":                "Skat (スカート)",
 	"ramsch":              "Ramsch (ラムシュ)",
+	"seventwentyseven":    "Seven Twenty-Seven (セブン・トゥエンティセブン)",
 	"shithead":            "Shithead / Karma (シットヘッド)",
 	"nertz":               "Nertz / Pounce (ナーツ / パウンス)",
 	"slapjack":            "Slapjack (スラップジャック)",

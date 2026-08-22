@@ -298,6 +298,7 @@ export const workerUrl: Record<string, string> = {
   tablanet: WORKER_EXTRA3,
   trenteetquarante: WORKER_EXTRA4,
   guts: WORKER_EXTRA4,
+  seventwentyseven: WORKER_EXTRA4,
   anaconda: WORKER_EXTRA4,
   bouillotte: WORKER_EXTRA3,
   primero: WORKER_EXTRA3,

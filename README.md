@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した336種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した337種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -287,6 +287,7 @@ Go + Clean Architecture で実装した336種類のトランプゲーム。CLI �
 | オンブル (Ombre / Hombre) | `ombre` | [CUI](docs/manual/cui/ombre.md) / [Web](docs/manual/web/ombre.md) |
 | ウルティ (Ulti / Ultimó) | `ulti` | [CUI](docs/manual/cui/ulti.md) / [Web](docs/manual/web/ulti.md) |
 | ガッツ (Guts) | `guts` | [CUI](docs/manual/cui/guts.md) / [Web](docs/manual/web/guts.md) |
+| セブン・トゥエンティセブン (Seven Twenty-Seven) | `seventwentyseven` | [CUI](docs/manual/cui/seventwentyseven.md) / [Web](docs/manual/web/seventwentyseven.md) |
 | ブイヨット (Bouillotte) | `bouillotte` | [CUI](docs/manual/cui/bouillotte.md) / [Web](docs/manual/web/bouillotte.md) |
 | プリメロ (Primero) | `primero` | [CUI](docs/manual/cui/primero.md) / [Web](docs/manual/web/primero.md) |
 | ミシガン (Michigan) | `michigan` | [CUI](docs/manual/cui/michigan.md) / [Web](docs/manual/web/michigan.md) |

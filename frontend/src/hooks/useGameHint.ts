@@ -247,6 +247,7 @@ import type {
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
+  SevenTwentySevenResponse,
   ShamrocksResponse,
   SheepsheadResponse,
   ShelemResponse,
@@ -578,6 +579,7 @@ import { getSetteEMezzoHint } from '../utils/hints/settemezzoHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevenCardStudHint } from '../utils/hints/sevencardstudHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
+import { getSevenTwentySevenHint } from '../utils/hints/seventwentysevenHint';
 import { getShamrocksHint } from '../utils/hints/shamrocksHint';
 import { getSheepsheadHint } from '../utils/hints/sheepsheadHint';
 import { getShelemHint } from '../utils/hints/shelemHint';
@@ -981,6 +983,7 @@ export const hintFactories = {
   beggarmyneighbour: (s) => getBeggarMyNeighbourHint(s as BeggarMyNeighbourResponse),
   allfours: (s) => getAllFoursHint(s as AllFoursResponse),
   guts: (s) => getGutsHint(s as GutsResponse),
+  seventwentyseven: (s) => getSevenTwentySevenHint(s as SevenTwentySevenResponse),
   anaconda: (s) => getAnacondaHint(s as AnacondaResponse),
   bura: (s) => getBuraHint(s as BuraResponse),
   mushi: (s) => getMushiHint(s as MushiResponse),

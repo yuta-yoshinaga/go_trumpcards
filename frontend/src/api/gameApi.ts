@@ -266,6 +266,7 @@ export * from './games/sevenbridge';
 export * from './games/sevencardstud';
 export * from './games/sevencardstudhilo';
 export * from './games/sevens';
+export * from './games/seventwentyseven';
 export * from './games/shamrocks';
 export * from './games/sheepshead';
 export * from './games/shelem';
@@ -664,6 +665,7 @@ export const games = [
   'tablanet',
   'trenteetquarante',
   'guts',
+  'seventwentyseven',
   'anaconda',
   'bouillotte',
   'primero',
