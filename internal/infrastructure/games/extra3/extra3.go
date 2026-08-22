@@ -341,4 +341,12 @@ func init() {
 			return usecase.RestoreBigBenInteractor(data, new(presenter.BigBenWebPresenter))
 		},
 		controller.NewBigBenWebControllerWithProvider)
+	games.RegisterKVGame("ramsch", games.CategoryExtra3,
+		func() usecase.RamschInteractorIF {
+			return usecase.NewRamschInteractor(domain.NewDefaultRamsch(), new(presenter.RamschWebPresenter))
+		},
+		func(data []byte) (usecase.RamschInteractorIF, error) {
+			return usecase.RestoreRamschInteractor(data, new(presenter.RamschWebPresenter))
+		},
+		controller.NewRamschWebControllerWithProvider)
 }

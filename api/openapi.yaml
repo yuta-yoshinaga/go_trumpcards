@@ -346,6 +346,8 @@ tags:
     description: Terrace (Queen of Italy) game - the foundations build up in alternating colour from a player-chosen base rank, and the 11-card terrace feeds them and nothing else
   - name: spiteandmalice
     description: Spite and Malice (スパイト・アンド・マリス) game - 2-player race (1 human vs 1 CPU) to empty a goal pile by playing A→Q onto shared foundations; predecessor of Skip-Bo
+  - name: ramsch
+    description: "Ramsch (ラムシュ) game - Skat's misère variant with no bidding; jacks are always trump and the most card points loses"
   - name: skat
     description: Skat (スカート) game - Germany's national 3-player trick-taking game with a 32-card deck, ladder auction, and three game types (Suit / Grand / Null)
   - name: skitgubbe
@@ -18072,6 +18074,88 @@ paths:
               schema:
                 $ref: '#/components/schemas/SpiteAndMaliceResponse'
 
+  /ramsch/exec:
+    post:
+      tags:
+        - ramsch
+      summary: Execute a Ramsch game command
+      description: |
+        Send a command to advance the Ramsch game session identified by
+        `sessionId`.  Ramsch is Skat turned inside out: **there is no auction**,
+        nobody picks up the skat and nobody declares a contract, so play starts
+        the moment the cards are dealt.  The **four jacks are always the
+        trumps** (♣J > ♠J > ♥J > ♦J), which makes the card order identical to a
+        Skat Grand with no declarer; a jack never counts as a card of its
+        printed suit.
+
+        Three players receive 10 cards each from the 32-card Skat pack and two
+        go face down as the skat.  Ten tricks are played following suit.
+
+        **Card points are penalty points.**  A=11, 10=10, K=4, Q=3, J=2 (120 in
+        total), and whoever collects the most loses exactly that many; a tie for
+        most penalises everyone tied.  **The two skat cards go to the winner of
+        the last trick**, so all 120 points always land on somebody.  The one
+        way to win outright is **Durchmarsch**: sweep all ten tricks and the
+        other two players lose 120 each instead.
+
+        `loserIdx`, `durchmarsch` and `durchmarschIdx` report the outcome;
+        `skat` is only sent once the round is over, since revealing it earlier
+        would turn the endgame into perfect information.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Play      | `0`   | A trick is in progress |
+        | TrickEnd  | `1`   | Trick complete; advance with `next` |
+        | RoundEnd  | `2`   | Round scored; advance with `nextround` |
+        | GameEnd   | `3`   | A player reached the target score |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a match |
+        | `play`  | `p`     | Play a card (use `cardIndex`) |
+        | `next`  | `n`     | Advance to the next trick |
+        | `nextround` | `nr` | Score the round and deal the next |
+        | `hint`  | `h`     | Get a hint for the next move |
+        | `log`   | `l`     | View action log |
+      operationId: ramschExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RamschRequest'
+            examples:
+              reset:
+                summary: Start a new match
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the 3rd card in hand
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              next:
+                summary: Advance to the next trick
+                value:
+                  command: next
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RamschResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RamschResponse'
   /skat/exec:
     post:
       tags:
@@ -46319,6 +46403,160 @@ components:
     # -------------------------------------------------------------------------
     # Seven Card Stud
     # -------------------------------------------------------------------------
+    RamschRequest:
+      type: object
+      required:
+        - command
+      properties:
+        command:
+          type: string
+          description: Command to execute
+          enum: [reset, r, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: play
+        cardIndex:
+          type: integer
+          description: Index of the card to play (required for the play command)
+          minimum: 0
+          example: 2
+        sessionId:
+          type: string
+          description: Session identifier
+          example: my-session-001
+        config:
+          type: object
+          description: Optional match configuration, applied on reset
+          properties:
+            cpuDifficulty:
+              type: integer
+              description: 0=easy, 1=normal, 2=hard
+              minimum: 0
+              maximum: 2
+            targetScore:
+              type: integer
+              description: Penalty total that ends the match
+              minimum: 1
+    RamschResponse:
+      type: object
+      required:
+        - players
+        - phase
+        - roundNumber
+        - trickNumber
+        - currentPlayerIdx
+        - currentTrick
+        - dealerIdx
+        - loserIdx
+        - durchmarsch
+        - durchmarschIdx
+        - gameEndFlag
+        - message
+      properties:
+        players:
+          type: array
+          description: The three players. `cardPoints` is what they have collected - more is worse.
+          items:
+            $ref: '#/components/schemas/RamschPlayer'
+        phase:
+          type: integer
+          description: 0=Play, 1=TrickEnd, 2=RoundEnd, 3=GameEnd
+          minimum: 0
+          maximum: 3
+        roundNumber:
+          type: integer
+          minimum: 1
+        trickNumber:
+          type: integer
+          description: 1..10
+          minimum: 1
+          maximum: 10
+        currentPlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          description: Cards played so far in the current trick, in play order
+          items:
+            $ref: '#/components/schemas/RamschTrickCard'
+        forehandIdx:
+          type: integer
+          description: Leads the first trick (left of the dealer)
+        middlehandIdx:
+          type: integer
+        rearhandIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        skat:
+          type: array
+          description: The two face-down cards. Only sent once the round is over - they go to whoever wins the last trick, so revealing them earlier would make the endgame perfect information.
+          items:
+            $ref: '#/components/schemas/Card'
+        loserIdx:
+          type: integer
+          description: Who took the most card points and loses them. -1 while the round runs, on a tie, and on a Durchmarsch.
+          minimum: -1
+        durchmarsch:
+          type: boolean
+          description: Whether one player swept all ten tricks, which reverses the result
+        durchmarschIdx:
+          type: integer
+          description: Who swept, or -1
+          minimum: -1
+        gameEndFlag:
+          type: boolean
+        leadPlayerIdx:
+          type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        hint:
+          $ref: '#/components/schemas/RamschHint'
+    RamschPlayer:
+      type: object
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          description: Only populated for the human player
+          items:
+            $ref: '#/components/schemas/Card'
+        cardPoints:
+          type: integer
+          description: Card points collected this round. The most loses that many.
+          minimum: 0
+          maximum: 120
+        roundsWon:
+          type: integer
+        roundsLost:
+          type: integer
+        roundScore:
+          type: integer
+          description: This round's score. Zero or negative - it is a penalty.
+        cumulativeScore:
+          type: integer
+        trickCount:
+          type: integer
+    RamschTrickCard:
+      type: object
+      properties:
+        playerIdx:
+          type: integer
+        card:
+          $ref: '#/components/schemas/Card'
+    RamschHint:
+      type: object
+      description: Advice for the human's turn. Only a card index - there is no auction or contract to advise on.
+      properties:
+        cardIndex:
+          type: integer
+          minimum: 0
+        reason:
+          type: string
     SevenCardStudRequest:
       type: object
       required:

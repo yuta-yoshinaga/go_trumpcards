@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func makeCardStal(design, value int) *Card {
@@ -580,9 +581,23 @@ func TestStalactitesMoveStalactitesToTableauErrors(t *testing.T) {
 	})
 
 	t.Run("empty cell", func(t *testing.T) {
+		// **セルを実際に空にすること。** Stalactites は**セルに配る**ので、
+		// 配った直後のセルは埋まっている。空にせずに呼ぶと、通っていたのは
+		// 「セルが空」ではなく「その札はその列に置けない」からで、置ける配りが
+		// 出た瞬間に落ちる（パッケージ全体を走らせたときだけ再現した）。
 		f := setupPlayingStalactites()
+		clearCellsStal(f)
+		require.Nil(t, f.cells[0], "セルが空になっていない")
+
 		err := f.MoveStalactitesToTableau(0, 0)
 		assert.Error(t, err)
+
+		// **負のコントロール**: セルに札を戻し、置ける列を作れば通ること。
+		// これが無いと「常にエラー」でも上の assert は通る。
+		clearTableauFCStal(f)
+		f.tableau[0] = []*Card{makeCardStal(CardDesignSpade, 6)}
+		f.cells[0] = makeCardStal(CardDesignHeart, 5) // 異色の 1 つ下
+		assert.NoError(t, f.MoveStalactitesToTableau(0, 0))
 	})
 
 	t.Run("cannot place on tableau", func(t *testing.T) {

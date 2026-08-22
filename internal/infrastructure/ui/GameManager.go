@@ -6496,6 +6496,24 @@ var gameRegistry = []GameRegistryEntry{
 				"followthequeen.helpBettingLimit", "followthequeen.helpTournament",
 			}, studAnteKeys...),
 		}),
+	BindCuiFor("ramsch",
+		func() usecase.RamschInteractorIF {
+			return usecase.NewRamschInteractor(domain.NewDefaultRamsch(), new(presenter.RamschCuiPresenter))
+		},
+		controller.NewRamschCuiController,
+		CuiHelpSpec{
+			TitleKey: "ramsch.helpTitle",
+			ExampleKeys: []string{
+				"ramsch.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"ramsch.helpPlay",
+				"ramsch.helpNext",
+				"ramsch.helpNextRound", "ramsch.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"ramsch.helpSetDifficulty", "ramsch.helpSetTarget"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

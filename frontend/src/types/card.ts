@@ -227,6 +227,7 @@ export * from './games/primero';
 export * from './games/prsi';
 export * from './games/pyramid';
 export * from './games/rams';
+export * from './games/ramsch';
 export * from './games/rankandfile';
 export * from './games/reddog';
 export * from './games/reversis';

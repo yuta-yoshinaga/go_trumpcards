@@ -219,6 +219,7 @@ import type {
   PrimeroResponse,
   PrsiResponse,
   PyramidResponse,
+  RamschResponse,
   RamsResponse,
   RankAndFileResponse,
   RedDogResponse,
@@ -548,6 +549,7 @@ import { getPresidentHint } from '../utils/hints/presidentHint';
 import { getPrimeroHint } from '../utils/hints/primeroHint';
 import { getPrsiHint } from '../utils/hints/prsiHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
+import { getRamschHint } from '../utils/hints/ramschHint';
 import { getRamsHint } from '../utils/hints/ramsHint';
 import { getRankAndFileHint } from '../utils/hints/rankandfileHint';
 import { getRazzHint } from '../utils/hints/razzHint';
@@ -912,6 +914,7 @@ export const hintFactories = {
   macau: (s) => getMacauHint(s as MacauResponse),
   clocksolitaire: (s) => getClocksolitaireHint(s as ClockSolitaireResponse),
   spiteandmalice: (s) => getSpiteAndMaliceHint(s as SpiteAndMaliceResponse),
+  ramsch: (s) => getRamschHint(s as RamschResponse),
   skat: (s) => getSkatHint(s as SkatResponse),
   shithead: (s) => getShitheadHint(s as ShitheadResponse),
   nertz: (s) => getNertzHint(s as NertzResponse),

@@ -149,6 +149,7 @@ var gameDescriptions = map[string]string{
 	"trex":                "トリックス（王が5種の契約から選ぶ中東の20ディール。ドミノはJ起点で加点）",
 	"spiteandmalice":      "Spite and Malice (スパイト・アンド・マリス)",
 	"skat":                "Skat (スカート)",
+	"ramsch":              "Ramsch (ラムシュ)",
 	"shithead":            "Shithead / Karma (シットヘッド)",
 	"nertz":               "Nertz / Pounce (ナーツ / パウンス)",
 	"slapjack":            "Slapjack (スラップジャック)",

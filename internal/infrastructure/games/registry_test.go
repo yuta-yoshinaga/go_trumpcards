@@ -19,7 +19,7 @@ const (
 	expectedSolo    = 54
 	expectedExtra   = 38
 	expectedExtra2  = 49
-	expectedExtra3  = 40
+	expectedExtra3  = 41
 	expectedExtra4  = 45
 	expectedTotal   = expectedCasino + expectedClassic + expectedSolo + expectedExtra + expectedExtra2 + expectedExtra3 + expectedExtra4
 )

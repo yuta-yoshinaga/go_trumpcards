@@ -348,10 +348,29 @@ func TestRankAndFile_MoveTableauToTableau(t *testing.T) {
 
 	t.Run("invalid card index", func(t *testing.T) {
 		ft := setupPlayingRankAndFile()
-		err := ft.MoveTableauToTableau(0, -1, 1)
+		// **-1 を渡してはいけない。** -1 は「その列の上札」を意味する CUI 短縮形
+		// (`m <from> <to>`) で、合法な着手になりうる ── 配り次第でエラーにならず、
+		// このテストはパッケージ全体を走らせたときだけ落ちていた。
+		// 範囲外を見たいなら -2 と 100。
+		err := ft.MoveTableauToTableau(0, -2, 1)
 		assert.Error(t, err)
 		err = ft.MoveTableauToTableau(0, 100, 1)
 		assert.Error(t, err)
+	})
+
+	t.Run("card index -1 means the column's top card", func(t *testing.T) {
+		// 短縮形が生きていることを固定する。上のテストが -1 をエラー扱いに
+		// 戻されたら、ここが落ちて気付ける。
+		ft := setupPlayingRankAndFile()
+		top := ft.GetTableau()[0]
+		require.NotEmpty(t, top)
+		// -1 と「最後の添字」で同じ判定になること（成否は配りに依るので、
+		// 両者が一致することだけを見る）。
+		errShorthand := ft.MoveTableauToTableau(0, -1, 1)
+		ft2 := setupPlayingRankAndFile()
+		errExplicit := ft2.MoveTableauToTableau(0, len(top)-1, 1)
+		assert.Equal(t, errExplicit == nil, errShorthand == nil,
+			"-1 が「上札」として扱われていない")
 	})
 
 	t.Run("not playing phase", func(t *testing.T) {
