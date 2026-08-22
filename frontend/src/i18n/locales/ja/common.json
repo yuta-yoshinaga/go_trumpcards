@@ -2397,7 +2397,15 @@
     "zheng.result.rankings": "ゲーム終了！ {{rankings}}",
     "zwanzigerrufen.result.scores": "ゲーム終了！ 得点: {{scores}}",
     "zwicker.lose": "負けました",
-    "zwicker.win": "勝ちました"
+    "zwicker.win": "勝ちました",
+    "put.handEnd.p0": "ハンド終了 — あなたが {{stake}}点 獲得。",
+    "put.handEnd.p1": "ハンド終了 — CPUが {{stake}}点 獲得。",
+    "put.playPhase.follow": "あなたの番です — 出すカードを選んでください（フォロー義務はありません）。",
+    "put.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
+    "put.respondPhase": "Put 宣言に応答してください — 受諾すると賭け点が倍になります。",
+    "put.result.p0Win": "マッチ終了！ あなたの勝利です ({{p0}}-{{p1}})！",
+    "put.result.p1Win": "マッチ終了！ CPUの勝利です ({{p0}}-{{p1}})。",
+    "put.trickEnd": "トリック終了 — 次へ進んでください。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
@@ -2503,7 +2511,8 @@
       "surrender": "サレンダー",
       "truco": "トゥルーコを宣言する",
       "twist": "ツイスト",
-      "undo": "一手戻す"
+      "undo": "一手戻す",
+      "put": "Put を宣言する（賭け点が倍になる）"
     }
   },
   "legal": {
