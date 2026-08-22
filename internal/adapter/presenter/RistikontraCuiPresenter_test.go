@@ -143,17 +143,20 @@ func TestRistikontraCuiPresenter_MarksCapturingCards(t *testing.T) {
 		return g
 	}
 
-	t.Run("marks a same-rank card and a jack", func(t *testing.T) {
+	// **印が付くのは同ランクだけ。** クローン元のピシュティはジャックを万能の
+	// 捕獲札として印を付けていたが、このゲームのジャックはただの札。印を信じて
+	// 出したのに取れない、という嘘の合図になる。
+	t.Run("marks the same-rank card and never an off-rank jack", func(t *testing.T) {
 		g := seed([]*domain.Card{
-			card(domain.CardDesignSpade, 7),  // 0: 場のトップと同ランク
-			card(domain.CardDesignHeart, 11), // 1: ジャックは常に総取り
+			card(domain.CardDesignSpade, 7),  // 0: 場のトップと同ランク → 取れる
+			card(domain.CardDesignHeart, 11), // 1: ジャックだがランク違い → 取れない
 			card(domain.CardDesignClover, 3), // 2: 取れない
 		}, card(domain.CardDesignDiamond, 7), 0)
 
 		out := p.Output(g, nil)
 
 		assert.Contains(t, out, "[0]SPADE 7"+presenter.CuiLegalMark)
-		assert.Contains(t, out, "[1]"+color.Red("HEART 11")+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[1]"+color.Red("HEART 11")+presenter.CuiLegalMark)
 		assert.NotContains(t, out, "[2]CLOVER 3"+presenter.CuiLegalMark)
 	})
 
@@ -166,8 +169,9 @@ func TestRistikontraCuiPresenter_MarksCapturingCards(t *testing.T) {
 		assert.NotContains(t, out, "[0]SPADE 7"+presenter.CuiLegalMark)
 	})
 
-	// 場が空ならジャックだけが取れる (同ランク条件が成立しない)。
-	t.Run("only the jack captures onto an empty pile", func(t *testing.T) {
+	// **場が空なら何も取れない。** ピシュティならジャックが取れたが、
+	// 同ランク条件は場のトップが無いと成立しない。
+	t.Run("marks nothing onto an empty pile", func(t *testing.T) {
 		g := seed([]*domain.Card{
 			card(domain.CardDesignSpade, 7),
 			card(domain.CardDesignHeart, 11),
@@ -176,11 +180,12 @@ func TestRistikontraCuiPresenter_MarksCapturingCards(t *testing.T) {
 		out := p.Output(g, nil)
 
 		assert.NotContains(t, out, "[0]SPADE 7"+presenter.CuiLegalMark)
-		assert.Contains(t, out, "[1]"+color.Red("HEART 11")+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[1]"+color.Red("HEART 11")+presenter.CuiLegalMark)
 	})
 
 	t.Run("explains what the mark means", func(t *testing.T) {
-		g := seed([]*domain.Card{card(domain.CardDesignHeart, 11)}, nil, 0)
+		g := seed([]*domain.Card{card(domain.CardDesignHeart, 7)},
+			card(domain.CardDesignDiamond, 7), 0)
 
 		assert.Contains(t, p.Output(g, nil), i18n.T("ristikontra.captureLegend"))
 	})

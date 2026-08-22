@@ -4,5 +4,5 @@ package presenter
 
 import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
-// RistikontraPresenter は Pişti プレゼンターインタフェース。
+// RistikontraPresenter はリスティコントラ プレゼンターインタフェース。
 type RistikontraPresenter = GamePresenter[interfaces.RistikontraGame]

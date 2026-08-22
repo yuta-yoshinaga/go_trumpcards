@@ -8,7 +8,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
-// MockRistikontraInteractor は Pişti インタラクターモック。
+// MockRistikontraInteractor はリスティコントラ インタラクターモック。
 type MockRistikontraInteractor struct {
 	mock.Mock
 }

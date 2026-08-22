@@ -23,14 +23,14 @@ func (c RistikontraWebConfig) ToConfig() domain.RistikontraConfig {
 	}
 }
 
-// RistikontraWebInput は Pişti Web インプット。
+// RistikontraWebInput はリスティコントラ Web インプット。
 type RistikontraWebInput struct {
 	BaseWebInput
 	HandIndex int                   `json:"handIndex"`
 	Config    *RistikontraWebConfig `json:"config"`
 }
 
-// RistikontraWebOutputPlayer は Pişti Web アウトプットプレイヤー。
+// RistikontraWebOutputPlayer はリスティコントラ Web アウトプットプレイヤー。
 type RistikontraWebOutputPlayer struct {
 	ID            int              `json:"id"`
 	IsHuman       bool             `json:"isHuman"`
@@ -40,7 +40,7 @@ type RistikontraWebOutputPlayer struct {
 	FinalScore    int              `json:"finalScore"`
 }
 
-// RistikontraWebOutput は Pişti Web アウトプット。
+// RistikontraWebOutput はリスティコントラ Web アウトプット。
 type RistikontraWebOutput struct {
 	Players        []*RistikontraWebOutputPlayer `json:"players"`
 	CurrentTurn    int                           `json:"currentTurn"`
@@ -60,7 +60,7 @@ type RistikontraWebOutput struct {
 	WebOutputBase
 }
 
-// RistikontraWebController は Pişti Web コントローラークラス。
+// RistikontraWebController はリスティコントラ Web コントローラークラス。
 type RistikontraWebController = GameWebController[usecase.RistikontraInteractorIF, RistikontraWebInput, *RistikontraWebOutput]
 
 // NewRistikontraWebController, NewRistikontraWebControllerWithProvider are the standard

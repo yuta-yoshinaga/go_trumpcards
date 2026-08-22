@@ -54,10 +54,10 @@ import (
 	"math/rand"
 )
 
-// RistikontraPhase は Pişti のフェーズを表す。
+// RistikontraPhase はリスティコントラのフェーズを表す。
 type RistikontraPhase string
 
-// Pişti のフェーズ定数。
+// リスティコントラのフェーズ定数。
 const (
 	// RistikontraPhasePlay プレイ中 (カードを場へ出す)
 	RistikontraPhasePlay RistikontraPhase = "play"
@@ -87,7 +87,7 @@ type ristikontraState struct {
 	actionLogBase
 }
 
-// Ristikontra は Pişti ゲームの状態を保持する集約ルート。
+// Ristikontra はリスティコントラ ゲームの状態を保持する集約ルート。
 type Ristikontra struct {
 	trumpCards *TrumpCards
 	players    []*RistikontraPlayer
@@ -108,7 +108,7 @@ func NewRistikontra(trumpCards *TrumpCards, players []*RistikontraPlayer, config
 	}
 }
 
-// NewDefaultRistikontra はデフォルト設定 (4人: 1 human + 3 CPU) の Pişti を返す。
+// NewDefaultRistikontra はデフォルト設定 (4人: 1 human + 3 CPU) のリスティコントラを返す。
 func NewDefaultRistikontra() *Ristikontra {
 	config := DefaultRistikontraConfig()
 	players := makeRistikontraPlayers(config.PlayerCnt)
@@ -146,7 +146,7 @@ func (g *Ristikontra) Reset() {
 	g.dealInitialPile()
 }
 
-// NextRound は Pişti では新規ゲーム開始 (Reset) と同義。
+// NextRound はリスティコントラ では新規ゲーム開始 (Reset) と同義。
 // 1 ゲームは山札を配り切るまでの 1 セッションで完結するため、終局後の続行は
 // 新しいゲームの開始として扱う。
 func (g *Ristikontra) NextRound() {
@@ -245,7 +245,7 @@ func (g *Ristikontra) CpuPlay() {
 	_ = g.applyPlay(g.state.currentTurn, idx)
 }
 
-// applyPlay は cardIndex の手札を場へ出し、捕獲判定・Pişti 判定・手番進行を行う。
+// applyPlay は cardIndex の手札を場へ出し、捕獲判定・打ち返し判定・手番進行を行う。
 func (g *Ristikontra) applyPlay(playerIdx, cardIndex int) error {
 	player := g.players[playerIdx]
 	card := player.GetCard(cardIndex)
@@ -375,30 +375,21 @@ func (g *Ristikontra) finishGame() {
 // calcFinalScore は各プレイヤーの最終得点を計算する。
 // インデックスはプレイヤーシートに対応する。
 func (g *Ristikontra) calcFinalScore() []int {
-	n := len(g.players)
-	scores := make([]int, n)
-	cardCounts := make([]int, n)
-
-	// 最多枚数判定 (同点なら誰ももらえない)。
-	mostIdx := g.mostCapturedSeat()
-	for i, p := range g.players {
-		cardCounts[i] = p.CapturedCount()
-	}
-	tie := mostIdx < 0
-	mostVal := 0
-	if mostIdx >= 0 {
-		mostVal = g.players[mostIdx].CapturedCount()
-	}
-
-	for i, p := range g.players {
-		s := 0
-		for _, c := range p.GetCapturedCards() {
-			s += ristikontraCardPoints(c)
-		}
-		scores[i] = s
-	}
-	if !tie && mostVal > 0 && mostIdx >= 0 {
-		scores[mostIdx] += RistikontraScoreMostCards
+	// **表示する得点と勝敗の判定を同じ数字にする。**
+	//
+	// これはクローン元 (ピシュティ) の席ごとのカード点 (A +1 / 2♣ +2 /
+	// 10♦ +3 / J +1 に最多捕獲 +3) をそのまま持ってきていた。finishGame は
+	// チームの獲得枚数で勝者を決めるので、**負けたチームのほうが画面上の
+	// 得点は高い**という盤面が普通に出る。勝敗と表示が食い違うのは、
+	// プレイヤーにとっては「勝ったはずなのに負けと言われる」に等しい。
+	//
+	// リスティコントラの結果は枚数そのものなので、席にはその席が属する
+	// チームの合計を入れる。GetProvisionalScores と同じ数字が、そのまま
+	// 最終結果になる。
+	counts := g.calcTeamCardCounts()
+	scores := make([]int, len(g.players))
+	for i := range g.players {
+		scores[i] = counts[ristikontraTeamOf(i)]
 	}
 	return scores
 }
@@ -441,39 +432,14 @@ func (g *Ristikontra) GetProvisionalScores() []int {
 // GetProvisionalLeader は暫定の最多捕獲リーダーの席を返す (同数なら -1)。
 func (g *Ristikontra) GetProvisionalLeader() int { return g.mostCapturedSeat() }
 
-// ristikontraCardPoints は 1 枚のカードの基本得点を返す。
-//
-//	A (value 1)  → +1
-//	2♣           → +2
-//	10♦          → +3
-//	J (value 11) → +1
-//	その他       → 0
-func ristikontraCardPoints(c *Card) int {
-	if c == nil {
-		return 0
-	}
-	v := c.GetValue()
-	d := c.GetDesign()
-	pts := 0
-	if v == 1 {
-		pts += RistikontraScoreAce
-	}
-	if v == RistikontraJackValue {
-		pts += RistikontraScoreJack
-	}
-	if v == 2 && d == CardDesignClover {
-		pts += RistikontraScoreTwoClubs
-	}
-	if v == 10 && d == CardDesignDiamond {
-		pts += RistikontraScoreTenDiamonds
-	}
-	return pts
-}
-
 // chooseCpuCard は CPU の手番で出す手札インデックスを選ぶ。
 //   - Easy   : 合法手 (常に全札合法) からランダム。
-//   - Normal : 捕獲できる札を優先、無ければ最も価値の低い札を捨てる。
-//   - Hard   : Pişti / 高得点札を最優先で狙い、無ければ価値の低い札を捨てる。
+//   - Normal : 捕獲できる札を優先、無ければランクの低い札を捨てる。
+//   - Hard   : **打ち返しを最優先**、次に捕獲、無ければランクの低い札を捨てる。
+//
+// Hard の分岐はクローン元では「場が 1 枚なら Pişti を狙う」だったが、それは
+// ボーナスがあってこその優先順位で、しかも直後の一般分岐と同じ札を返す
+// 二度手間だった。このゲームで一番大きいのは打ち返しなので、そこを見る。
 func (g *Ristikontra) chooseCpuCard(playerIdx int) int {
 	player := g.players[playerIdx]
 	size := player.GetCardsSize()
@@ -481,17 +447,14 @@ func (g *Ristikontra) chooseCpuCard(playerIdx int) int {
 		return 0
 	}
 	top := g.pileTop()
-	pileSize := len(g.state.pile)
 
 	switch g.config.CpuDifficulty {
 	case RistikontraDifficultyEasy:
 		return rand.Intn(size)
 	case RistikontraDifficultyHard:
-		// Pişti が狙えるなら最優先。
-		if pileSize == 1 {
-			if idx := g.findCapturingCard(player, top); idx >= 0 {
-				return idx
-			}
+		// 直前の捕獲を奪えるなら、それが盤面で一番大きい振れ幅。
+		if idx := g.findCounterCard(player); idx >= 0 {
+			return idx
 		}
 		if idx := g.findCapturingCard(player, top); idx >= 0 {
 			return idx
@@ -503,6 +466,19 @@ func (g *Ristikontra) chooseCpuCard(playerIdx int) int {
 		}
 		return g.lowestValueCardIdx(player)
 	}
+}
+
+// findCounterCard は直前の捕獲を奪える手札のインデックスを返す (なければ -1)。
+func (g *Ristikontra) findCounterCard(player *RistikontraPlayer) int {
+	if g.state.counterCards == nil {
+		return -1
+	}
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if c := player.GetCard(i); c != nil && c.GetValue() == g.state.counterRank {
+			return i
+		}
+	}
+	return -1
 }
 
 // findCapturingCard は捕獲できる手札のインデックスを返す (なければ -1)。
@@ -526,19 +502,24 @@ func (g *Ristikontra) findCapturingCard(player *RistikontraPlayer, top *Card) in
 	return -1
 }
 
-// lowestValueCardIdx は最も得点価値の低い手札のインデックスを返す。
-// 同価値なら最初に見つかったものを返す。
+// lowestValueCardIdx は捨てるのに一番惜しくない手札のインデックスを返す。
+// 同値なら最初に見つかったものを返す。
+//
+// **札ごとの点数は無いので、ランクの低さで選ぶ。** クローン元のピシュティは
+// A +1 / 2♣ +2 / 10♦ +3 / J +1 という配点があり、それを避けて捨てていた。
+// リスティコントラの結果は枚数だけなので、その配点で選ぶと理由の無い基準に
+// なる (2♣ を後生大事に抱える、など)。低いランクほど後で捕獲に使いにくいので、
+// 先に手放す。
 func (g *Ristikontra) lowestValueCardIdx(player *RistikontraPlayer) int {
 	best := 0
-	bestPts := 1 << 30
+	bestRank := 1 << 30
 	for i := 0; i < player.GetCardsSize(); i++ {
 		c := player.GetCard(i)
 		if c == nil {
 			continue
 		}
-		pts := ristikontraCardPoints(c)
-		if pts < bestPts {
-			bestPts = pts
+		if v := c.GetValue(); v < bestRank {
+			bestRank = v
 			best = i
 		}
 	}

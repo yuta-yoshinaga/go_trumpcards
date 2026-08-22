@@ -8,7 +8,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
-// MockRistikontraGame は Pişti のゲームモック。
+// MockRistikontraGame はリスティコントラのゲームモック。
 type MockRistikontraGame struct {
 	mock.Mock
 }

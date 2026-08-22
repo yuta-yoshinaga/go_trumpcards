@@ -2,7 +2,7 @@
 
 package domain
 
-// Test helper methods for Pişti. They exist solely for cross-package test setup
+// Test helper methods for Ristikontra. They exist solely for cross-package test setup
 // (e.g. presenter tests) and are not part of the production game logic.
 
 // SetPile 場の山を設定する (テスト用)。

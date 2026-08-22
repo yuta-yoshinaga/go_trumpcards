@@ -177,13 +177,19 @@ function RistikontraPageContent() {
   const isHumanTurn = state.phase === 'play' && state.currentTurn === 0 && !isGameEnd;
   const humanWon = isGameEnd && state.winners.includes(0);
 
-  // On the human's turn, hint which cards can capture the pile: a Jack takes the whole
-  // pile (accent), and a card matching the pile-top rank captures it (success). Pure
-  // client-side derivation from pileTop + the hand.
-  const JACK_VALUE = 11;
+  // On the human's turn, ring the cards that actually do something:
+  //
+  //   - a card matching `counterRank` steals the bundle the last capture took
+  //     (accent — the biggest swing available), and
+  //   - a card matching the pile top captures the pile (success).
+  //
+  // **No Jack ring.** The clone source (Pişti) treats a Jack as a wild sweep and
+  // ringed every one of them; here a Jack that does not match is an ordinary
+  // card, and ringing it tells the player "this captures" when it does not.
   const captureRing = (c: Card): string => {
     if (!isHumanTurn) return '';
-    if (c.value === JACK_VALUE) return 'ring-2 ring-ds-accent motion-safe:animate-pulse';
+    if (state.counterRank > 0 && c.value === state.counterRank)
+      return 'ring-2 ring-ds-accent motion-safe:animate-pulse';
     if (state.pileTop && c.value === state.pileTop.value) return 'ring-2 ring-ds-success motion-safe:animate-pulse';
     return '';
   };

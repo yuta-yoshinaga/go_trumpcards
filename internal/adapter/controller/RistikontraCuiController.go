@@ -8,7 +8,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// RistikontraCuiController は Pişti CUI コントローラークラス。
+// RistikontraCuiController はリスティコントラ CUI コントローラークラス。
 type RistikontraCuiController struct {
 	pi usecase.RistikontraInteractorIF
 }

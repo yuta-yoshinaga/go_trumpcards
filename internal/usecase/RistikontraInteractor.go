@@ -8,7 +8,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
 
-// RistikontraInteractorIF は Pişti インタラクターインタフェース。
+// RistikontraInteractorIF はリスティコントラ インタラクターインタフェース。
 type RistikontraInteractorIF interface {
 	// Snapshot serialises game state for KV persistence.
 	Snapshot() ([]byte, error)
@@ -26,7 +26,7 @@ type RistikontraInteractorIF interface {
 	ActionLog() string
 }
 
-// RistikontraInteractor は Pişti インタラクター。
+// RistikontraInteractor はリスティコントラ インタラクター。
 type RistikontraInteractor struct {
 	GameBase[interfaces.RistikontraGame]
 	pp presenter.RistikontraPresenter

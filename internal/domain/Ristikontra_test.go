@@ -286,34 +286,69 @@ func TestRistikontra_FinishGame_EqualSplitIsADraw(t *testing.T) {
 	}
 }
 
-func TestRistikontra_FinalScore_MostCardsTieNoBonus(t *testing.T) {
-	g := ristikontraNewGame(2)
-	g.players[0].AddCaptured([]*Card{ristikontraCard(CardDesignSpade, 4), ristikontraCard(CardDesignSpade, 5)})
-	g.players[1].AddCaptured([]*Card{ristikontraCard(CardDesignHeart, 4), ristikontraCard(CardDesignHeart, 5)})
+// TestRistikontra_FinalScore_LevelTeamsShowTheSameTotal は、チームが並んだとき
+// 両チームが同じ数字を出すことを見る。
+//
+// クローン元は「同数なら最多捕獲の +3 を誰にも付けない」という規則で、
+// このテストはそれを見ていた。ボーナスそのものが無くなったので、代わりに
+// **引き分けが引き分けとして見える**ことを固定する。
+func TestRistikontra_FinalScore_LevelTeamsShowTheSameTotal(t *testing.T) {
+	g := ristikontraNewGame(RistikontraDefaultPlayerCnt)
+	for seat := 0; seat < RistikontraDefaultPlayerCnt; seat++ {
+		g.players[seat].AddCaptured(ristikontraCards(3))
+	}
+
 	scores := g.calcFinalScore()
-	if scores[0] != 0 || scores[1] != 0 {
-		t.Fatalf("tie on cards must award no most-cards bonus: %v", scores)
+	for seat, s := range scores {
+		if s != 6 {
+			t.Fatalf("seat %d shows %d, want 6 (3+3 per team): %v", seat, s, scores)
+		}
 	}
 }
 
-func TestRistikontra_CardPoints(t *testing.T) {
-	cases := []struct {
-		c    *Card
-		want int
-	}{
-		{ristikontraCard(CardDesignSpade, 1), 1},                    // Ace
-		{ristikontraCard(CardDesignClover, 2), 2},                   // 2♣
-		{ristikontraCard(CardDesignSpade, 2), 0},                    // 2♠ no value
-		{ristikontraCard(CardDesignDiamond, 10), 3},                 // 10♦
-		{ristikontraCard(CardDesignSpade, 10), 0},                   // 10♠ no value
-		{ristikontraCard(CardDesignHeart, RistikontraJackValue), 1}, // Jack
-		{ristikontraCard(CardDesignSpade, 7), 0},                    // filler
-		{nil, 0},
+// TestRistikontra_CpuDiscardsByRank は、CPU が捨てる札をランクで選ぶことを見る。
+//
+// クローン元のピシュティは A +1 / 2♣ +2 / 10♦ +3 / J +1 という配点があり、
+// それを避けて捨てていた。**リスティコントラの結果は枚数だけ**なので、その
+// 配点で選ぶと理由の無い基準になる —— 2♣ を後生大事に抱えて 3 を先に捨てる、
+// といった動きになる。
+func TestRistikontra_CpuDiscardsByRank(t *testing.T) {
+	g := ristikontraNewGame(RistikontraDefaultPlayerCnt)
+	p := g.GetPlayer(1)
+
+	// ピシュティの配点では 2♣ (+2) と 10♦ (+3) と A (+1) が「高い」ので
+	// 素の 3 より温存される。ランクで選べば 2♣ が最初に出る。
+	putRistikontraHand(p,
+		ristikontraCard(CardDesignDiamond, 10),
+		ristikontraCard(CardDesignClover, 2),
+		ristikontraCard(CardDesignSpade, 3),
+		ristikontraCard(CardDesignHeart, 1),
+	)
+
+	idx := g.lowestValueCardIdx(p)
+	if got := p.GetCard(idx).GetValue(); got != 1 {
+		t.Fatalf("lowest rank in hand is the ace (1), got value %d at index %d", got, idx)
 	}
-	for i, tc := range cases {
-		if got := ristikontraCardPoints(tc.c); got != tc.want {
-			t.Fatalf("case %d: points = %d, want %d", i, got, tc.want)
-		}
+
+	// エースを抜くと、次に低いのは 2♣。ピシュティの配点なら最後まで残る札。
+	putRistikontraHand(p,
+		ristikontraCard(CardDesignDiamond, 10),
+		ristikontraCard(CardDesignClover, 2),
+		ristikontraCard(CardDesignSpade, 3),
+	)
+	idx = g.lowestValueCardIdx(p)
+	if got := p.GetCard(idx).GetValue(); got != 2 {
+		t.Fatalf("lowest rank is the 2 (worth +2 in Pişti, nothing here), got %d", got)
+	}
+}
+
+// putRistikontraHand は手札を丸ごと入れ替える。
+func putRistikontraHand(p *RistikontraPlayer, cards ...*Card) {
+	for p.GetCardsSize() > 0 {
+		p.RemoveCard(0)
+	}
+	for _, c := range cards {
+		p.AddCard(c)
 	}
 }
 
@@ -509,4 +544,91 @@ func ristikontraCards(n int) []*Card {
 		out = append(out, ristikontraCard(CardDesignSpade, i%13+1))
 	}
 	return out
+}
+
+// TestRistikontra_FinalScoreAgreesWithTheWinner は、画面に出る得点と勝敗判定が
+// 同じ数字であることを見る。
+//
+// **食い違うと「勝ったはずなのに負けと言われる」。** 最終得点はクローン元の
+// 席ごとのカード点 (A +1 / 2♣ +2 / 10♦ +3 / J +1 に最多捕獲 +3) のままだったので、
+// 負けたチームのほうが高い得点を表示する盤面が普通に出ていた。
+// 得点は CUI / Web / CLI フォーマッタの 4 箇所に出るので、источник を 1 つにする。
+func TestRistikontra_FinalScoreAgreesWithTheWinner(t *testing.T) {
+	g := ristikontraNewGame(RistikontraDefaultPlayerCnt)
+
+	// **点数の高い札をわざと負けるチームに寄せる。** ピシュティの配点なら
+	// チーム 1 (A・2♣・10♦・J を持つ) が勝つが、枚数ではチーム 0 が勝つ。
+	g.players[0].AddCaptured(ristikontraCards(9)) // チーム 0
+	g.players[2].AddCaptured(ristikontraCards(9)) // チーム 0 = 18 枚
+	g.players[1].AddCaptured([]*Card{
+		ristikontraCard(CardDesignSpade, 1),                    // A
+		ristikontraCard(CardDesignClover, 2),                   // 2♣
+		ristikontraCard(CardDesignDiamond, 10),                 // 10♦
+		ristikontraCard(CardDesignHeart, RistikontraJackValue), // J
+	})
+	g.players[3].AddCaptured(ristikontraCards(1)) // チーム 1 = 5 枚
+	g.state.lastCaptureIdx = 0
+
+	g.finishGame()
+
+	winners := g.GetWinners()
+	if len(winners) != 2 || ristikontraTeamOf(winners[0]) != 0 {
+		t.Fatalf("winners = %v, want team 0 (18 cards vs 5)", winners)
+	}
+
+	scores := g.GetFinalScores()
+	for _, seat := range winners {
+		for other := range g.players {
+			if ristikontraTeamOf(other) == 0 {
+				continue
+			}
+			if scores[seat] <= scores[other] {
+				t.Fatalf("winning seat %d shows %d but losing seat %d shows %d — "+
+					"the displayed score contradicts the result (scores=%v)",
+					seat, scores[seat], other, scores[other], scores)
+			}
+		}
+	}
+	// パートナー同士は同じ数字を出す (チームの合計だから)。
+	if scores[0] != scores[2] || scores[1] != scores[3] {
+		t.Fatalf("partners must show the same total, got %v", scores)
+	}
+}
+
+// TestRistikontra_HardCpuPrefersTheCounter は、Hard の CPU が打ち返しを
+// 最優先することを見る。
+//
+// クローン元の Hard は「場が 1 枚なら Pişti を狙う」だったが、それは
+// ボーナスがあってこその優先順位で、しかも直後の一般分岐と同じ札を返す
+// 二度手間だった。このゲームで一番大きい振れ幅は打ち返し。
+func TestRistikontra_HardCpuPrefersTheCounter(t *testing.T) {
+	cfg := DefaultRistikontraConfig()
+	cfg.CpuDifficulty = RistikontraDifficultyHard
+	g := NewRistikontra(NewTrumpCards(0), makeRistikontraPlayers(RistikontraDefaultPlayerCnt), cfg)
+	g.state.pile = []*Card{}
+
+	// 席 0 が 9 で捕獲した直後。席 1 は 9 (奪える) と 4 (場のトップと同ランク) を持つ。
+	g.state.pile = []*Card{ristikontraCard(CardDesignSpade, 4)}
+	g.state.counterCards = []*Card{ristikontraCard(CardDesignHeart, 9)}
+	g.state.counterRank = 9
+	g.state.lastCaptureIdx = 0
+	putRistikontraHand(g.GetPlayer(1),
+		ristikontraCard(CardDesignClover, 4),  // 場のトップと同ランク = 普通の捕獲
+		ristikontraCard(CardDesignDiamond, 9), // 打ち返し
+	)
+
+	idx := g.chooseCpuCard(1)
+	if got := g.GetPlayer(1).GetCard(idx).GetValue(); got != 9 {
+		t.Fatalf("Hard should counter with the 9, played value %d", got)
+	}
+
+	// 奪える札が無ければ、普通の捕獲に落ちる。
+	putRistikontraHand(g.GetPlayer(1),
+		ristikontraCard(CardDesignClover, 4),
+		ristikontraCard(CardDesignDiamond, 13),
+	)
+	idx = g.chooseCpuCard(1)
+	if got := g.GetPlayer(1).GetCard(idx).GetValue(); got != 4 {
+		t.Fatalf("with no counter available it should capture with the 4, played %d", got)
+	}
 }

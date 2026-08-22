@@ -4,7 +4,7 @@ package domain
 
 import "encoding/json"
 
-// RistikontraCpuDifficulty は Pişti の CPU 難易度レベル。
+// RistikontraCpuDifficulty はリスティコントラの CPU 難易度レベル。
 type RistikontraCpuDifficulty int
 
 // RistikontraCpuDifficulty 定数
@@ -13,7 +13,7 @@ const (
 	RistikontraDifficultyEasy RistikontraCpuDifficulty = 0
 	// RistikontraDifficultyNormal 通常 (捕獲できる手を優先)
 	RistikontraDifficultyNormal RistikontraCpuDifficulty = 1
-	// RistikontraDifficultyHard 難しい (Pişti / 高得点札を狙う)
+	// RistikontraDifficultyHard 難しい (捕獲と打ち返しを狙う)
 	RistikontraDifficultyHard RistikontraCpuDifficulty = 2
 )
 
@@ -24,7 +24,7 @@ var RistikontraDifficultyNames = map[RistikontraCpuDifficulty]string{
 	RistikontraDifficultyHard:   "Hard",
 }
 
-// Pişti のプレイヤー数定数。
+// リスティコントラのプレイヤー数定数。
 const (
 	// RistikontraMinPlayerCnt 最小プレイヤー数 (4人)。
 	//
@@ -38,7 +38,7 @@ const (
 	RistikontraDefaultPlayerCnt = 4
 )
 
-// Pişti の配札・場札関連定数。
+// リスティコントラの配札・場札関連定数。
 const (
 	// RistikontraHandSize 一度に各プレイヤーへ配る枚数 (4枚)
 	RistikontraHandSize = 4
@@ -46,24 +46,14 @@ const (
 	RistikontraInitialPileSize = 4
 )
 
-// Pişti のスコア定数。
-const (
-	// RistikontraScoreMostCards 最多捕獲枚数ボーナス (+3)
-	RistikontraScoreMostCards = 3
-	// RistikontraScoreAce エース1枚あたり (+1)
-	RistikontraScoreAce = 1
-	// RistikontraScoreTwoClubs 2♣ (+2)
-	RistikontraScoreTwoClubs = 2
-	// RistikontraScoreTenDiamonds 10♦ (+3)
-	RistikontraScoreTenDiamonds = 3
-	// RistikontraScoreJack ジャック1枚あたり (+1)
-	RistikontraScoreJack = 1
-)
-
-// RistikontraJackValue はジャックのカード値。ジャックは常に捕獲を成立させるワイルド札。
+// RistikontraJackValue はジャックのカード値。
+//
+// **ワイルド札ではない。** クローン元のピシュティではジャックが何にでも
+// 重なって場を総取りしたが、リスティコントラのジャックはただの札で、
+// この定数は表示や比較のために額面を指すだけ。
 const RistikontraJackValue = 11
 
-// RistikontraConfig は Pişti のローカルルール設定。
+// RistikontraConfig はリスティコントラのローカルルール設定。
 type RistikontraConfig struct {
 	// PlayerCnt プレイヤー数 (2-4, デフォルト 4)。seat 0 が人間。
 	PlayerCnt int

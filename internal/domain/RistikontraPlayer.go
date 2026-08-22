@@ -4,8 +4,9 @@ package domain
 
 import "encoding/json"
 
-// RistikontraPlayer は Pişti のプレイヤー。
-// 基底の GamePlayer (手札) に加えて、捕獲した札の山と、累積した Pişti ボーナスを持つ。
+// RistikontraPlayer はリスティコントラのプレイヤー。
+// 基底の GamePlayer (手札) に加えて、捕獲した札の山を持つ。
+// **Pişti ボーナスは無い** —— 結果は獲得枚数だけで決まる。
 type RistikontraPlayer struct {
 	*GamePlayer
 	capturedCards []*Card

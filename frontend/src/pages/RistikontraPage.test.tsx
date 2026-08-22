@@ -282,23 +282,39 @@ describe('RistikontraPage', () => {
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
   });
 
-  it('highlights capturing hand cards: Jack in accent, pile-top match in success', async () => {
-    // Pile top is rank 5, so the SPADE 5 (index 0) captures (success); HEART J (index 1)
-    // always captures (accent); DIAMOND A (2) and CLOVER 9 (3) do not.
+  // **リングは実際に何かできる札にだけ付ける。**
+  // クローン元 (ピシュティ) はジャックを万能の捕獲札として全部にリングを
+  // 付けていた。このゲームのジャックはただの札なので、それを残すと
+  // 「これで取れる」という嘘の合図になる。
+  it('rings the pile-top match, and never a Jack that does not match', async () => {
+    // 場のトップは 5。SPADE 5 (index 0) は取れる。HEART J (index 1) は
+    // ランクが違うので**何もしない**。
     mockExec.mockResolvedValue(makeState({ pile: [card('CLOVER', 5)], pileTop: card('CLOVER', 5) }));
     renderWithProviders(<RistikontraPage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
     expect(screen.getByTestId('hand-card-0').className).toContain('ring-ds-success');
-    expect(screen.getByTestId('hand-card-1').className).toContain('ring-ds-accent');
+    expect(screen.getByTestId('hand-card-1').className).not.toContain('ring-ds-');
     expect(screen.getByTestId('hand-card-2').className).not.toContain('ring-ds-');
     expect(screen.getByTestId('hand-card-3').className).not.toContain('ring-ds-');
   });
 
-  it('highlights only the Jack when the pile is empty', async () => {
-    mockExec.mockResolvedValue(makeState({ pile: [], pileTop: null, pileCount: 0 }));
+  it('rings nothing when the pile is empty and no counter is open', async () => {
+    // ピシュティならジャックにリングが付く場面。ここでは出せる意味のある
+    // 札が 1 枚も無いので、リングはどこにも付かない。
+    mockExec.mockResolvedValue(makeState({ pile: [], pileTop: null, pileCount: 0, counterRank: 0 }));
     renderWithProviders(<RistikontraPage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-1')).toBeInTheDocument());
-    expect(screen.getByTestId('hand-card-1').className).toContain('ring-ds-accent');
+    for (const idx of [0, 1, 2, 3]) {
+      expect(screen.getByTestId(`hand-card-${idx}`).className).not.toContain('ring-ds-');
+    }
+  });
+
+  it('rings the counter rank in accent — the biggest swing on the board', async () => {
+    // 直前の捕獲が 9 で成立した。手札の CLOVER 9 (index 3) を出せば束ごと奪える。
+    mockExec.mockResolvedValue(makeState({ pile: [], pileTop: null, pileCount: 0, counterRank: 9 }));
+    renderWithProviders(<RistikontraPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-3')).toBeInTheDocument());
+    expect(screen.getByTestId('hand-card-3').className).toContain('ring-ds-accent');
     expect(screen.getByTestId('hand-card-0').className).not.toContain('ring-ds-');
   });
 

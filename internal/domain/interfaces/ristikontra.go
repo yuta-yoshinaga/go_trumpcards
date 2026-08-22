@@ -4,7 +4,7 @@ package interfaces
 
 import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
-// RistikontraGame は Pişti (リスティコントラ) のゲームインタフェース。
+// RistikontraGame はリスティコントラ (リスティコントラ) のゲームインタフェース。
 type RistikontraGame interface {
 	BaseGame
 	// Reset ゲームを初期化する (新規ゲーム開始)

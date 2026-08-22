@@ -10,7 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
-// RistikontraWebPresenter は Pişti Web プレゼンタークラス。
+// RistikontraWebPresenter はリスティコントラ Web プレゼンタークラス。
 type RistikontraWebPresenter struct{}
 
 // Output はゲーム状態を JSON 出力する。

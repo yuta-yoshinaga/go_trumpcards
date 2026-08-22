@@ -12,7 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// RistikontraCuiPresenter は Pişti CUI ビューを描画する。
+// RistikontraCuiPresenter はリスティコントラ CUI ビューを描画する。
 type RistikontraCuiPresenter struct{}
 
 // Output は現在のゲーム状態をアクティブロケールで描画する。
@@ -104,7 +104,11 @@ func ristikontraPlayerStr(pg interfaces.RistikontraGame, player *domain.Ristikon
 				if c == nil {
 					continue
 				}
-				if c.GetValue() == domain.RistikontraJackValue || (top != nil && c.GetValue() == top.GetValue()) {
+				// **ジャックは印を付けない。** クローン元のピシュティでは
+				// 万能の捕獲札だったが、このゲームで場を取れるのは
+				// 同ランクだけ。ジャックに印を付けると「これで取れる」と
+				// 嘘の合図を出すことになる。
+				if top != nil && c.GetValue() == top.GetValue() {
 					capturing = append(capturing, idx)
 				}
 			}
