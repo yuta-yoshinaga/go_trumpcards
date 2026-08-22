@@ -15,6 +15,7 @@ import {
   crazyeightsApi,
   daifugoApi,
   doubtApi,
+  dramahaApi,
   ginrummyApi,
   golfApi,
   gongzhuApi,
@@ -1915,6 +1916,82 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(omahaApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('dramahaApi', () => {
+    const payload = {
+      players: [],
+      communityCards: [],
+      pot: 0,
+      sidePots: [],
+      dealerIdx: 0,
+      currentTurn: 0,
+      phase: 1,
+      gameEndFlag: false,
+      lastBet: 0,
+      minRaise: 0,
+      roundResults: [],
+      cpuActions: [],
+      message: '',
+      handCount: 0,
+      smallBlind: 5,
+      bigBlind: 10,
+      tournamentMode: false,
+      blindLevelHands: 10,
+      blindMultiplier: 200,
+      tableSize: 4,
+    };
+
+    /** The JSON body of the last fetch, parsed. */
+    function lastBody(): Record<string, unknown> {
+      const init = mockFetch.mock.calls.at(-1)?.[1] as { body: string };
+      return JSON.parse(init.body);
+    }
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await dramahaApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/dramaha/exec', expect.objectContaining({ method: 'POST' }));
+      expect(lastBody()).toEqual({ command: 'reset', sessionId });
+      expect(result).toEqual(payload);
+    });
+
+    it('shares the Hold-em betting commands', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await dramahaApi.exec('raise', 80);
+      expect(lastBody()).toEqual({ command: 'raise', amount: 80, sessionId });
+    });
+
+    it('puts the draw indices at the top level of the body, where DramahaWebInput reads them', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await dramahaApi.exec('draw', undefined, { indices: [0, 2] });
+      expect(mockFetch).toHaveBeenCalledWith('/dramaha/exec', expect.objectContaining({ method: 'POST' }));
+      // NOT nested under `config`: the Go input has `indices` as a sibling of `command`.
+      expect(lastBody()).toEqual({ command: 'draw', indices: [0, 2], sessionId });
+    });
+
+    it('sends an empty list when the player stands pat', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await dramahaApi.exec('draw', undefined, { indices: [] });
+      expect(lastBody()).toEqual({ command: 'draw', indices: [], sessionId });
+    });
+
+    it('carries the table config through unchanged', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await dramahaApi.exec('reset', undefined, { smallBlind: 10, bigBlind: 20, cpuMetaAI: true });
+      expect(lastBody()).toEqual({
+        command: 'reset',
+        smallBlind: 10,
+        bigBlind: 20,
+        cpuMetaAI: true,
+        sessionId,
+      });
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(dramahaApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
   });
 

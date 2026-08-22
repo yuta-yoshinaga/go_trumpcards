@@ -1715,4 +1715,9 @@ func init() {
 			return usecase.NewSpeculationInteractor(domain.NewDefaultSpeculation(), new(presenter.SpeculationWebPresenter))
 		},
 		controller.NewSpeculationWebController)
+	BindWebControllerFor("dramaha",
+		func() usecase.DramahaInteractorIF {
+			return usecase.NewDramahaInteractor(domain.NewDefaultDramaha(), new(presenter.DramahaWebPresenter))
+		},
+		controller.NewDramahaWebController)
 }

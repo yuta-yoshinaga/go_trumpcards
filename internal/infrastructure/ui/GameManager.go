@@ -6589,6 +6589,28 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("dramaha",
+		func() usecase.DramahaInteractorIF {
+			return usecase.NewDramahaInteractor(domain.NewDefaultDramaha(), new(presenter.DramahaCuiPresenter))
+		},
+		controller.NewDramahaCuiController,
+		CuiHelpSpec{
+			TitleKey: "dramaha.helpTitle",
+			ExampleKeys: []string{
+				"dramaha.helpExampleBet",
+				"dramaha.helpExampleCall",
+				"dramaha.helpExampleRaise",
+				"dramaha.helpExampleDraw",
+			},
+			CommandKeys: []string{
+				"dramaha.helpCheck", "dramaha.helpBet", "dramaha.helpCall",
+				"dramaha.helpRaise", "dramaha.helpFold", "dramaha.helpAllIn",
+				"dramaha.helpDraw", "dramaha.helpLog",
+				"dramaha.helpBettingLimit", "dramaha.helpTournament",
+			},
+
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

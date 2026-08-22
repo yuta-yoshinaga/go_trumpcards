@@ -103,6 +103,7 @@ export * from './games/doubleklondike';
 export * from './games/doubt';
 export * from './games/doudizhu';
 export * from './games/dragontiger';
+export * from './games/dramaha';
 export * from './games/duchess';
 export * from './games/durak';
 export * from './games/easthaven';
@@ -364,6 +365,7 @@ export const games = [
   'holdem',
   'omaha',
   'omahahilo',
+  'dramaha',
   'bigo',
   'bigohilo',
   'courchevel',

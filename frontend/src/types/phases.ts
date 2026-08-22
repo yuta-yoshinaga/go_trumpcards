@@ -21,6 +21,7 @@
  *   - Napoleon:    internal/domain/Napoleon.go    (NapoleonPhaseBid, NapoleonPhaseTrumpDeclaration, NapoleonPhaseKittyExchange, NapoleonPhasePlay, NapoleonPhaseTrickEnd, NapoleonPhaseRoundEnd, NapoleonPhaseGameEnd)
  *   - OhHell:      internal/domain/OhHell.go      (OhHellPhaseBid, OhHellPhasePlay, OhHellPhaseTrickEnd, OhHellPhaseRoundEnd, OhHellPhaseGameEnd)
  *   - Omaha:       (alias of HoldemPhase)
+ *   - Dramaha:     internal/domain/Dramaha.go     (the Hold'em phases 0..7 plus DramahaPhaseDraw = 8)
  *   - Poker:       internal/domain/Poker.go       (PokerPhaseInit, PokerPhaseDeal, PokerPhaseExchange, PokerPhaseSecondBet, PokerPhaseEnd)
  *   - Pyramid:     internal/domain/Pyramid.go     (PyramidPhasePlaying, PyramidPhaseGameClear, PyramidPhaseGameOver)
  *   - ShortDeck:   (alias of HoldemPhase)
@@ -129,6 +130,23 @@ export const HoldemRebuyPhaseType = {
 export const OmahaPhase = HoldemPhase;
 /** Omaha Hold'em rebuy phase type constants (same as Holdem). */
 export const OmahaRebuyPhaseType = HoldemRebuyPhaseType;
+
+/**
+ * Dramaha phase constants (sync: internal/domain/Dramaha.go).
+ *
+ * The Hold'em phases 0..7 plus one Dramaha only has: `DRAW`, the single
+ * exchange round that runs **between the flop betting and the turn**. The
+ * backend deliberately numbers it 8 rather than renumbering the shared
+ * Hold'em constants, so a Dramaha state never lands in another game's branch.
+ * Its position in the ordering is not its number: DRAW (8) happens after
+ * FLOP (2) and before TURN (3).
+ */
+export const DramahaPhase = {
+  ...HoldemPhase,
+  DRAW: 8,
+} as const;
+/** Dramaha rebuy phase type constants (same as Holdem). */
+export const DramahaRebuyPhaseType = HoldemRebuyPhaseType;
 
 /** Pineapple Poker phase constants (extends Hold'em with DISCARD phase). */
 export const PineapplePhase = {
