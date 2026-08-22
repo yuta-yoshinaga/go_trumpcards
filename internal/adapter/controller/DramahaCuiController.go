@@ -162,6 +162,8 @@ func (c *DramahaCuiController) Exec(command string) string {
 				if err != nil {
 					return invalidArg("holdem.invalidTableSize", "val", args[0]), true
 				}
+				// 収まらない席数を断る判断は DramahaInteractor が持つ
+				// (CUI と Web API の両方がそこを通る)。ここでは渡すだけ。
 				cfg := c.oi.GetConfig()
 				cfg.TableSize = v
 				return c.oi.ResetWithConfig(cfg, nil), true

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func newInternalTestDramaha() *Dramaha {
@@ -352,10 +353,16 @@ func TestDramaha_GetEquity(t *testing.T) {
 	// The draw round has no betting decision to price, so the learning panel
 	// deliberately goes quiet there -- the same rule that silences it at
 	// showdown.
-	t.Run("returns nil during the draw round", func(t *testing.T) {
+	// **ドローラウンドこそ数字が要る。** 何枚捨てるかを決めている最中に
+	// 勝率とポットオッズが消えるのは、学習表示が一番効く瞬間の取りこぼし。
+	// DramahaPhaseDraw は 8 で River(4) より大きいので、素直に範囲で切ると
+	// ここだけ暗くなる —— それを踏んでいたのを直した。
+	t.Run("keeps the numbers lit during the draw round", func(t *testing.T) {
 		o := setup(DramahaPhaseDraw)
-		assert.Nil(t, o.GetEquity())
-		assert.Equal(t, 0.0, o.GetPotOdds())
+		result := o.GetEquity()
+		require.NotNil(t, result, "交換を選んでいる最中に勝率が消える")
+		assert.Greater(t, result.Equity, 0.0)
+		assert.Len(t, result.HandOdds, len(PokerHandNames))
 	})
 
 	t.Run("returns result during preflop", func(t *testing.T) {

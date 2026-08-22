@@ -29,6 +29,9 @@ func TestCalcDramahaEquity(t *testing.T) {
 			NewCard(CardDesignHeart, 1, false),
 			NewCard(CardDesignClover, 13, false),
 			NewCard(CardDesignDiamond, 13, false),
+			// ドラマハは常に 5 枚。4 枚の手札で相手に 5 枚配ると、卓では
+			// 起こりえない不利な比較になる。
+			NewCard(CardDesignSpade, 12, false),
 		}
 		communityCards := []*Card{
 			NewCard(CardDesignClover, 2, false),
@@ -39,8 +42,13 @@ func TestCalcDramahaEquity(t *testing.T) {
 		}
 		rng := rand.New(rand.NewSource(42))
 		result := CalcDramahaEquity(humanCards, communityCards, 1, 5000, rng)
-		// AA-KK two pair on low board — in Dramaha equity runs closer than Holdem
-		assert.Greater(t, result.Equity, 0.30)
+		// **AA-KK-Q は 2-7-9-4-6 のレインボー盤で「エースのワンペア」止まり。**
+		// オマハ式に手札ちょうど 2 枚を使うので、ポケットペアは盤が塗り替わらない
+		// 限り 1 ペアにしかならない (元のコメントの "two pair" は誤り)。
+		// 相手は 5 枚から C(5,2)=10 通りを持つため、裸のオーバーペアは後手に回る。
+		// 閾値 0.30 は相手に 4 枚しか配っていなかった頃の数字。
+		assert.Greater(t, result.Equity, 0.10, "0 や壊れた値を返していないこと")
+		assert.Less(t, result.Equity, 0.35, "裸のワンペアがこの盤で優勢になることはない")
 	})
 
 	t.Run("0 opponents returns equity 1.0", func(t *testing.T) {
@@ -49,6 +57,9 @@ func TestCalcDramahaEquity(t *testing.T) {
 			NewCard(CardDesignHeart, 1, false),
 			NewCard(CardDesignClover, 13, false),
 			NewCard(CardDesignDiamond, 13, false),
+			// ドラマハは常に 5 枚。4 枚の手札で相手に 5 枚配ると、卓では
+			// 起こりえない不利な比較になる。
+			NewCard(CardDesignSpade, 12, false),
 		}
 		rng := rand.New(rand.NewSource(42))
 		result := CalcDramahaEquity(humanCards, nil, 0, 5000, rng)
@@ -61,6 +72,9 @@ func TestCalcDramahaEquity(t *testing.T) {
 			NewCard(CardDesignHeart, 1, false),
 			NewCard(CardDesignClover, 13, false),
 			NewCard(CardDesignDiamond, 13, false),
+			// ドラマハは常に 5 枚。4 枚の手札で相手に 5 枚配ると、卓では
+			// 起こりえない不利な比較になる。
+			NewCard(CardDesignSpade, 12, false),
 		}
 		rng := rand.New(rand.NewSource(42))
 		result := CalcDramahaEquity(humanCards, nil, 1, 0, rng)
@@ -73,6 +87,9 @@ func TestCalcDramahaEquity(t *testing.T) {
 			NewCard(CardDesignHeart, 1, false),
 			NewCard(CardDesignClover, 13, false),
 			NewCard(CardDesignDiamond, 13, false),
+			// ドラマハは常に 5 枚。4 枚の手札で相手に 5 枚配ると、卓では
+			// 起こりえない不利な比較になる。
+			NewCard(CardDesignSpade, 12, false),
 		}
 		communityCards := []*Card{
 			NewCard(CardDesignClover, 2, false),
@@ -94,6 +111,9 @@ func TestCalcDramahaEquity(t *testing.T) {
 			NewCard(CardDesignHeart, 1, false),
 			NewCard(CardDesignClover, 13, false),
 			NewCard(CardDesignDiamond, 13, false),
+			// ドラマハは常に 5 枚。4 枚の手札で相手に 5 枚配ると、卓では
+			// 起こりえない不利な比較になる。
+			NewCard(CardDesignSpade, 12, false),
 		}
 		result := CalcDramahaEquity(humanCards, nil, 1, 100, nil)
 		assert.Greater(t, result.Equity, 0.0)
@@ -107,6 +127,9 @@ func TestCalcDramahaEquity_HandOdds(t *testing.T) {
 			NewCard(CardDesignHeart, 1, false),
 			NewCard(CardDesignClover, 13, false),
 			NewCard(CardDesignDiamond, 13, false),
+			// ドラマハは常に 5 枚。4 枚の手札で相手に 5 枚配ると、卓では
+			// 起こりえない不利な比較になる。
+			NewCard(CardDesignSpade, 12, false),
 		}
 		communityCards := []*Card{
 			NewCard(CardDesignClover, 2, false),
@@ -135,6 +158,9 @@ func TestCalcDramahaEquity_NeededCardsExceedsPool(t *testing.T) {
 			NewCard(CardDesignHeart, 1, false),
 			NewCard(CardDesignClover, 13, false),
 			NewCard(CardDesignDiamond, 13, false),
+			// ドラマハは常に 5 枚。4 枚の手札で相手に 5 枚配ると、卓では
+			// 起こりえない不利な比較になる。
+			NewCard(CardDesignSpade, 12, false),
 		}
 		communityCards := []*Card{
 			NewCard(CardDesignClover, 2, false),
@@ -207,6 +233,9 @@ func TestCalcDramahaEquity_DeterministicWithSeededRng(t *testing.T) {
 			NewCard(CardDesignHeart, 1, false),
 			NewCard(CardDesignClover, 13, false),
 			NewCard(CardDesignDiamond, 13, false),
+			// ドラマハは常に 5 枚。4 枚の手札で相手に 5 枚配ると、卓では
+			// 起こりえない不利な比較になる。
+			NewCard(CardDesignSpade, 12, false),
 		}
 		rng1 := rand.New(rand.NewSource(123))
 		result1 := CalcDramahaEquity(humanCards, nil, 1, 1000, rng1)

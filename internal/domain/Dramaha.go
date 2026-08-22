@@ -151,6 +151,10 @@ func (o *Dramaha) Reset() error {
 	o.minRaise = o.config.BigBlind
 	o.raiseCount = 0
 	o.actedFlags = make([]bool, len(o.players))
+	// **ドロー済みフラグも毎ハンド戻す。** 残したままだと、次のハンドで
+	// runOutDraw が「全員引き終えている」と判断して何も交換せず、オールインの
+	// 走り切りがドロー側のポットを「誰も引いていない手」で決めてしまう。
+	o.drawnFlags = make([]bool, len(o.players))
 	o.roundResults = make([]HoldemResult, 0)
 	o.cpuActions = make([]HoldemCpuAction, 0)
 	o.rebuyPhaseType = DramahaRebuyPhaseNone
@@ -567,14 +571,26 @@ func (o *Dramaha) advancePhase() {
 		if card != nil {
 			o.communityCards = append(o.communityCards, card)
 		}
-		o.appendLog(-1, "deal", "dealt turn", o.communityCards[3:])
+		// **配れなかったときは切らない。** DrawCard は山が尽きると nil を返し、
+		// append を飛ばすので、ボードが 3 枚のままここに来る。固定の添字で
+		// 切ると slice bounds out of range で落ちる —— KV から戻した盤は
+		// cap == len なので、Worker 経路では必ず落ちる。
+		if len(o.communityCards) > 3 {
+			o.appendLog(-1, "deal", "dealt turn", o.communityCards[3:])
+		}
 	case DramahaPhaseTurn:
 		o.phase = DramahaPhaseRiver
 		card := o.trumpCards.DrawCard()
 		if card != nil {
 			o.communityCards = append(o.communityCards, card)
 		}
-		o.appendLog(-1, "deal", "dealt river", o.communityCards[4:])
+		// **配れなかったときは切らない。** DrawCard は山が尽きると nil を返し、
+		// append を飛ばすので、ボードが 4 枚のままここに来る。固定の添字で
+		// 切ると slice bounds out of range で落ちる —— KV から戻した盤は
+		// cap == len なので、Worker 経路では必ず落ちる。
+		if len(o.communityCards) > 4 {
+			o.appendLog(-1, "deal", "dealt river", o.communityCards[4:])
+		}
 	case DramahaPhaseRiver:
 		o.phase = DramahaPhaseShowdown
 		o.appendLog(-1, "showdown", "showdown", nil)
@@ -1330,7 +1346,13 @@ func (o *Dramaha) GetRebuyPhaseType() int { return o.rebuyPhaseType }
 
 // GetEquity エクイティ計算結果を返す
 func (o *Dramaha) GetEquity() *HoldemEquityResult {
-	if o.phase < DramahaPhasePreFlop || o.phase > DramahaPhaseRiver {
+	// **ドローフェーズを外さない。** DramahaPhaseDraw は 8 で River(4) より
+	// 大きいので、素直に範囲で切ると交換の最中だけ数字が消える —— 何枚捨てるか
+	// を決めている、まさにその瞬間に。ベッティングを弾く 3 箇所
+	// (runCpuActions / PlayerAction / trackPostFlopStats) では除外が正しいが、
+	// 表示用のここでは逆。
+	if o.phase != DramahaPhaseDraw &&
+		(o.phase < DramahaPhasePreFlop || o.phase > DramahaPhaseRiver) {
 		return nil
 	}
 	var humanPlayer *DramahaPlayer
@@ -1359,7 +1381,9 @@ func (o *Dramaha) GetEquity() *HoldemEquityResult {
 
 // GetPotOdds ポットオッズを返す
 func (o *Dramaha) GetPotOdds() float64 {
-	if o.phase < DramahaPhasePreFlop || o.phase > DramahaPhaseRiver {
+	// GetEquity と同じ理由でドローフェーズを外さない (Draw=8 > River=4)。
+	if o.phase != DramahaPhaseDraw &&
+		(o.phase < DramahaPhasePreFlop || o.phase > DramahaPhaseRiver) {
 		return 0.0
 	}
 	humanCurrentBet := 0
@@ -1676,6 +1700,11 @@ func (o *Dramaha) Resize(players []*DramahaPlayer) {
 	o.players = players
 	n := len(players)
 	o.actedFlags = make([]bool, n)
+	// **席数を変えたら drawnFlags も作り直す。** 他の席数スライスと同じ扱い。
+	// 今は「ドローフェーズで作り直される」「runOutDraw が長さを見る」の二重の
+	// 網に救われているが、drawnFlags を先に添字で読む変更が入った瞬間に
+	// 範囲外で落ちる。
+	o.drawnFlags = make([]bool, n)
 	o.startingChips = make([]int, n)
 	o.vpipTracked = make([]bool, n)
 	o.pfrTracked = make([]bool, n)

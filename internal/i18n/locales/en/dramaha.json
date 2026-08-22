@@ -61,5 +61,6 @@
   "helpExampleDraw": "  d 1 3               exchange the 1st and 3rd cards",
   "phaseDraw": "Draw",
   "helpExampleBet": "  b 100               bet 100",
-  "resultDraw": "  Draw hand: {{cards}}\n"
+  "resultDraw": "  Draw hand: {{cards}}\n",
+  "tableSizeFixed": "Dramaha is 4-handed only — {{val}} seats would need more than the 52 cards in the deck (each seat can use up to 10)."
 }

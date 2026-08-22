@@ -6,17 +6,21 @@ import (
 	"math/rand"
 )
 
-// CalcDramahaEquity モンテカルロシミュレーションによるドラマハエクイティ計算
-// humanCards: 人間の手札(4枚), communityCards: コミュニティカード,
+// CalcDramahaEquity モンテカルロシミュレーションによるドラマハエクイティ計算。
+// humanCards: 人間の手札(5枚), communityCards: コミュニティカード,
 // activePlayers: アクティブ相手プレイヤー数, simulations: シミュレーション回数,
-// rng: 乱数生成器 (nilの場合はグローバルrand使用)
+// rng: 乱数生成器 (nilの場合はグローバルrand使用)。
+//
+// **相手にも 5 枚配る。** 以前はクローン元の Omaha に合わせて 4 枚を渡して
+// おり、ドラマハの卓では起こりえない配りを前提に勝率を出していた。
 func CalcDramahaEquity(humanCards, communityCards []*Card, activePlayers, simulations int, rng *rand.Rand) HoldemEquityResult {
-	return calcDramahaEquityWithHoleCount(humanCards, communityCards, activePlayers, simulations, rng, 4)
+	return calcDramahaEquityWithHoleCount(
+		humanCards, communityCards, activePlayers, simulations, rng, DramahaHoleCards)
 }
 
 // calcDramahaEquityWithHoleCount はドラマハ系エクイティ計算の共通実装。
 // holeCardCount で相手プレイヤーに配布するホールカード枚数を指定する
-// (ドラマハ=4, Big O=5)。CalcDramahaEquity は4枚版の薄いラッパー。
+// ドラマハは常に 5 枚 (DramahaHoleCards)。
 func calcDramahaEquityWithHoleCount(humanCards, communityCards []*Card, activePlayers, simulations int, rng *rand.Rand, holeCardCount int) HoldemEquityResult {
 	dramahaEval := func(holeCards, simCommunity []*Card) (int, []*Card) {
 		return evalBestFromDramaha(holeCards, simCommunity)

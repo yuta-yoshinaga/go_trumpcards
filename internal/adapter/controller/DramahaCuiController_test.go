@@ -379,9 +379,10 @@ func TestDramahaCuiController_TableSize_Valid(t *testing.T) {
 	c := NewDramahaCuiController(mi)
 	mi.On("GetConfig").Return(domain.DefaultDramahaConfig())
 	cfg := domain.DefaultDramahaConfig()
-	cfg.TableSize = domain.HoldemTableSize6
+	cfg.TableSize = domain.HoldemTableSize4
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return("ts ok")
-	assert.Equal(t, "ts ok", c.Exec("ts 6"))
+	// 山に収まる唯一の席数。6/9 は TableSizeRejectsWhatTheDeckCannotDeal を参照。
+	assert.Equal(t, "ts ok", c.Exec("ts 4"))
 }
 
 func TestDramahaCuiController_TableSize_LongCommand(t *testing.T) {
@@ -389,9 +390,9 @@ func TestDramahaCuiController_TableSize_LongCommand(t *testing.T) {
 	c := NewDramahaCuiController(mi)
 	mi.On("GetConfig").Return(domain.DefaultDramahaConfig())
 	cfg := domain.DefaultDramahaConfig()
-	cfg.TableSize = domain.HoldemTableSize9
+	cfg.TableSize = domain.HoldemTableSize4
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return("ts ok")
-	assert.Equal(t, "ts ok", c.Exec("tablesize 9"))
+	assert.Equal(t, "ts ok", c.Exec("tablesize 4"))
 }
 
 func TestDramahaCuiController_TableSize_NoArgs(t *testing.T) {
