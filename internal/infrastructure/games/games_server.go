@@ -1710,4 +1710,9 @@ func init() {
 			return usecase.NewCaribbeanDrawInteractor(domain.NewDefaultCaribbeanDraw(), new(presenter.CaribbeanDrawWebPresenter))
 		},
 		controller.NewCaribbeanDrawWebController)
+	BindWebControllerFor("speculation",
+		func() usecase.SpeculationInteractorIF {
+			return usecase.NewSpeculationInteractor(domain.NewDefaultSpeculation(), new(presenter.SpeculationWebPresenter))
+		},
+		controller.NewSpeculationWebController)
 }

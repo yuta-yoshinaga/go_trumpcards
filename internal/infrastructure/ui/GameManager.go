@@ -6570,6 +6570,25 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("speculation",
+		func() usecase.SpeculationInteractorIF {
+			return usecase.NewSpeculationInteractor(domain.NewDefaultSpeculation(), new(presenter.SpeculationCuiPresenter))
+		},
+		controller.NewSpeculationCuiController,
+		CuiHelpSpec{
+			TitleKey: "speculation.helpTitle",
+			ExampleKeys: []string{
+				"speculation.helpExampleBid",
+			},
+			CommandKeys: []string{
+				"speculation.helpFlip",
+				"speculation.helpBid",
+				"speculation.helpPass",
+				"speculation.helpSell",
+				"speculation.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

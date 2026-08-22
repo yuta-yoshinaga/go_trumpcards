@@ -269,6 +269,7 @@ import type {
   SoloWhistResponse,
   SomersetResponse,
   SpadesResponse,
+  SpeculationResponse,
   SpeedResponse,
   SpideretteResponse,
   SpiderResponse,
@@ -604,6 +605,7 @@ import { getSokoHint } from '../utils/hints/sokoHint';
 import { getSoloWhistHint } from '../utils/hints/soloWhistHint';
 import { getSomersetHint } from '../utils/hints/somersetHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
+import { getSpeculationHint } from '../utils/hints/speculationHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
 import { getSpideretteHint } from '../utils/hints/spideretteHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
@@ -866,6 +868,7 @@ export const hintFactories = {
   freebet: (s) => getFreebetHint(s as FreeBetResponse),
   banluck: (s) => getBanluckHint(s as BanLuckResponse),
   montebank: (s) => getMontebankHint(s as MonteBankResponse),
+  speculation: (s) => getSpeculationHint(s as SpeculationResponse),
   cincinnati: (s) => getCincinnatiHint(s as CincinnatiResponse),
   ironcross: (s) => getIroncrossHint(s as IronCrossResponse),
   baseballpoker: (s) => getBaseballpokerHint(s as BaseballPokerResponse),

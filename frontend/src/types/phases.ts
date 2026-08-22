@@ -2981,3 +2981,17 @@ export const ThreeCardRummyPhase = {
   ACTION: 2,
   END: 3,
 } as const;
+
+/**
+ * Speculation phase constants (sync: internal/domain/Speculation.go).
+ *
+ * **AUCTION is a stop, not a decoration.** The server only enters it when the
+ * human has to answer an offer, so a page that treats it as another FLIP turn
+ * leaves the round frozen with no way to accept or decline.
+ */
+export const SpeculationPhase = {
+  FLIP: 0,
+  AUCTION: 1,
+  RESULT: 2,
+  GAME_END: 3,
+} as const;

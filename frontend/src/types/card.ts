@@ -276,6 +276,7 @@ export * from './games/snap';
 export * from './games/solowhist';
 export * from './games/somerset';
 export * from './games/spades';
+export * from './games/speculation';
 export * from './games/speed';
 export * from './games/spider';
 export * from './games/spiderette';

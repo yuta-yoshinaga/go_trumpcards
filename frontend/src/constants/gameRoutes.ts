@@ -366,6 +366,13 @@ export const gameCategories: readonly GameCategory[] = [
         page: 'FourCardPoker',
         profile: { mood: [3, 3, 3, 3], skill: [4, 5, 3, 3], social: [3, 5, 2, 3, 3], theme: [5, 1, 1, 1, 4, 1] },
       },
+      {
+        path: '/speculation',
+        labelKey: 'nav.speculation',
+        icon: '🔨',
+        page: 'Speculation',
+        profile: { mood: [3, 4, 3, 3], skill: [3, 4, 3, 3], social: [3, 5, 3, 4, 3], theme: [4, 5, 1, 1, 3, 3] },
+      },
     ],
   },
   {
