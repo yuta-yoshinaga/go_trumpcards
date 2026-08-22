@@ -60,6 +60,8 @@ tags:
     description: Texas Hold'em game
   - name: omaha
     description: Omaha Hold'em game
+  - name: dramaha
+    description: Dramaha (ドラマハ) game
   - name: omahahilo
     description: Omaha Hi-Lo / 8 or Better (split-pot variant of Omaha)
   - name: bigo
@@ -1695,6 +1697,94 @@ paths:
                 $ref: '#/components/schemas/HoldemResponse'
         '400':
           description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+
+  /dramaha/exec:
+    post:
+      tags:
+        - dramaha
+      summary: Execute a Dramaha game command
+      description: |
+        Send a command to advance the Dramaha (ドラマハ) game session identified by
+        `sessionId`.  Dramaha is an American mixed-game split-pot variant whose idea
+        is **using the same five cards twice**.
+
+        Each seat receives **5 hole cards** (Omaha deals 4).  The board comes out
+        flop / turn / river with betting rounds, and **after the flop betting there is
+        a draw round** in which a seat may exchange any number of its hole cards, once.
+
+        At showdown the pot **always splits 50:50**:
+
+        - **Omaha side** — the best five from **exactly 2 hole cards + exactly 3 board
+          cards**, as in Omaha.
+        - **Draw side** — the five hole cards **as they are**, ignoring the board
+          entirely.
+
+        One player can take both halves.  Odd chips go to the Omaha side, by poker
+        convention.  **Unlike Omaha Hi-Lo there is no "did not qualify" case**: an
+        8-or-better low can fail to form, but five cards always make a hand, so the
+        pot always splits.
+
+        Phases are the Hold'em ones (0 Init, 1 PreFlop, 2 Flop, 3 Turn, 4 River,
+        5 Showdown, 6 End, 7 Rebuy) **plus 8 = Draw**, which occurs between Flop and
+        Turn.  The value is 8 rather than something between 2 and 3 because the other
+        constants alias Hold'em's; the betting-range checks therefore exclude it,
+        which is correct since a draw is not a betting round.
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `check` | `c`     | Check |
+        | `bet`   | `b`     | Bet (requires `amount`) |
+        | `call`  |         | Call |
+        | `raise` | `ra`    | Raise (requires `amount`) |
+        | `fold`  | `f`     | Fold |
+        | `allin` | `a`     | All-in |
+        | `draw`  | `d`     | Exchange hole cards (optional `indices`, **0-based**; omit or send `[]` to stand pat) |
+        | `hint`  | `h`     | Get a hint for the next move |
+        | `log`   | `l`     | View action log |
+      operationId: dramahaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DramahaRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+              draw:
+                summary: Exchange the 1st and 4th hole cards (0-based)
+                value:
+                  command: draw
+                  indices: [0, 3]
+                  sessionId: my-session-001
+              standPat:
+                summary: Stand pat — no exchange
+                value:
+                  command: draw
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
           content:
             application/json:
               schema:
@@ -38044,6 +38134,51 @@ components:
     # -------------------------------------------------------------------------
     # Texas Hold'em
     # -------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # Dramaha
+    # -------------------------------------------------------------------------
+    DramahaRequest:
+      type: object
+      description: |
+        Request payload for /dramaha/exec.  Identical to HoldemRequest apart from
+        `indices`, which only the `draw` command reads.
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `check` (`c`), `bet` (`b`),
+            `call`, `raise` (`ra`), `fold` (`f`), `allin` (`a`), `draw` (`d`),
+            `hint` (`h`), `log` (`l`).
+          example: draw
+        amount:
+          type: integer
+          description: Bet or raise amount. Required for `bet` and `raise`.
+          minimum: 0
+          example: 100
+        indices:
+          type: array
+          description: |
+            **Zero-based** positions of the hole cards to exchange, read only by the
+            `draw` command.  Omit the field or send an empty array to stand pat.
+            A seat may draw **once** per hand; a second attempt is rejected.
+          items:
+            type: integer
+            minimum: 0
+            maximum: 4
+          maxItems: 5
+          example: [0, 3]
+        humanPlayMs:
+          type: integer
+          description: Milliseconds the human took to act (used for the play profile).
+          minimum: 0
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
     HoldemRequest:
       type: object
       required:

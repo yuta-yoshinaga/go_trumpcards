@@ -518,4 +518,12 @@ func init() {
 			return usecase.RestoreCaribbeanDrawInteractor(data, new(presenter.CaribbeanDrawWebPresenter))
 		},
 		controller.NewCaribbeanDrawWebControllerWithProvider)
+	games.RegisterKVGame("dramaha", games.CategoryCasino,
+		func() usecase.DramahaInteractorIF {
+			return usecase.NewDramahaInteractor(domain.NewDefaultDramaha(), new(presenter.DramahaWebPresenter))
+		},
+		func(data []byte) (usecase.DramahaInteractorIF, error) {
+			return usecase.RestoreDramahaInteractor(data, new(presenter.DramahaWebPresenter))
+		},
+		controller.NewDramahaWebControllerWithProvider)
 }

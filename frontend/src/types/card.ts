@@ -95,6 +95,7 @@ export * from './games/doubleklondike';
 export * from './games/doubt';
 export * from './games/doudizhu';
 export * from './games/dragontiger';
+export * from './games/dramaha';
 export * from './games/duchess';
 export * from './games/durak';
 export * from './games/easthaven';

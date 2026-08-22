@@ -1,0 +1,121 @@
+{
+  "phase": {
+    "init": "初期化中",
+    "preFlop": "プリフロップ",
+    "flop": "フロップ",
+    "draw": "ドロー",
+    "turn": "ターン",
+    "river": "リバー",
+    "showdown": "ショーダウン",
+    "end": "結果",
+    "rebuy": "リバイ/アドオン"
+  },
+  "communityCards": "コミュニティカード",
+  "yourHand": "あなたの手札 (5枚)",
+  "splitRule": "ポットは常に二分: オマハ役 + ドロー役",
+  "splitRuleAria": "ポットは常に二分されます。同じ5枚を、ホール2枚とボード3枚で作るオマハ役と、5枚そのままのドロー役の両方で競います",
+  "omahaHand": "オマハ役",
+  "drawHand": "ドロー役",
+  "omahaHandRule": "ホール2枚 + ボード3枚",
+  "drawHandRule": "5枚そのまま (ボードは使いません)",
+  "handsUnavailable": "まだ判定できません",
+  "draw": {
+    "title": "ドローラウンド",
+    "prompt": "交換する札を選んでください。選ばずに交換しないこともできます。",
+    "exchange": "{{count}}枚を交換",
+    "standPat": "交換しない",
+    "selected": "選択中: {{count}}枚",
+    "onceOnly": "引き直せるのは1回だけです。"
+  },
+  "result": {
+    "omahaHalf": "オマハ側",
+    "drawHalf": "ドロー側",
+    "scoop": "🏆 スクープ! 両取り",
+    "wonHalves": "獲得: {{halves}}",
+    "wonNone": "獲得なし"
+  },
+  "hand": {
+    "highCard": "ハイカード",
+    "onePair": "ワンペア",
+    "twoPair": "ツーペア",
+    "threeOfAKind": "スリーカード",
+    "straight": "ストレート",
+    "flush": "フラッシュ",
+    "fullHouse": "フルハウス",
+    "fourOfAKind": "フォーカード",
+    "straightFlush": "ストレートフラッシュ",
+    "royalFlush": "ロイヤルフラッシュ"
+  },
+  "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
+  "rebuy": {
+    "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
+    "accept": "リバイ",
+    "skip": "スキップ"
+  },
+  "addon": {
+    "prompt": "アドオンしますか? ({{chips}}チップ)",
+    "accept": "アドオン",
+    "skip": "スキップ"
+  },
+  "muck": {
+    "prompt": "マックしますか?",
+    "muck": "マック",
+    "show": "ショー"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP（ボランタリー・プット・イン・ポット）: 自発的にポットに参加した割合",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR（プリフロップレイズ）: プリフロップでレイズした割合",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet（スリーベット）: 相手のレイズに対して再レイズした割合",
+    "af": "AF",
+    "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive：参加少なめだが入ったら強気",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive：参加多くかつ攻め志向",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive：参加少なめでコール中心",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive：参加多めだがコール中心",
+    "balanced": "BAL",
+    "balancedTooltip": "バランス型のスタイル"
+  },
+  "learning": {
+    "title": "ラーニングモード",
+    "toggle": "ラーニングモード",
+    "equity": "エクイティ",
+    "potOdds": "ポットオッズ",
+    "plusEV": "+EV (期待値プラス)",
+    "minusEV": "-EV (期待値マイナス)",
+    "handOdds": "ハンドオッズ"
+  },
+  "settings": {
+    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+  },
+  "tutorial": {
+    "communityCards": "コミュニティカードです。5枚が順次公開されます。",
+    "playerHand": "あなたのホールカード（5枚）です。この5枚を二通りに使います。",
+    "splitRule": "ポットは常に半分ずつ。オマハ役はホール2枚＋ボード3枚、ドロー役は5枚そのままで、ボードは使いません。",
+    "drawRound": "フロップのベッティングの後に1回だけ引き直せます。捨てた枚数だけ配り直されます。",
+    "actionButtons": "ベットアクションを選びます。",
+    "potDisplay": "ポットとブラインドレベルが表示されます。",
+    "cpuArea": "CPU対戦相手の情報です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "positiveEV": "期待値プラス — レイズ推奨",
+    "marginalEV": "期待値ほぼ均衡 — コール推奨",
+    "negativeEV": "期待値マイナス — フォールド推奨",
+    "strongHandRank": "強いハンド — レイズ推奨",
+    "decentHandRank": "まずまずのハンド — コール推奨",
+    "weakHandRank": "弱いハンド — フォールド推奨",
+    "scoopChance": "オマハ役もドロー役も強い — 両取りを狙ってレイズ推奨",
+    "drawHalfOnly": "オマハ役は弱いがドロー役が強い — ポットの半分は狙えるのでコール推奨",
+    "standPat": "5枚が既に役になっています — 交換しない",
+    "exchange": "役に絡まない{{count}}枚を交換"
+  }
+}

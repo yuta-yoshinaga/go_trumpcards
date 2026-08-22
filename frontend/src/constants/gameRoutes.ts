@@ -408,6 +408,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [1, 2, 5, 1], skill: [0, 2, 5, 0], social: [1, 3, 5, 1, 4], theme: [3, 1, 3, 1, 3, 1] },
       },
       {
+        path: '/dramaha',
+        labelKey: 'nav.dramaha',
+        icon: '🔀',
+        page: 'Dramaha',
+        profile: { mood: [1, 3, 5, 2], skill: [0, 2, 5, 1], social: [1, 3, 5, 1, 5], theme: [3, 1, 3, 1, 3, 1] },
+      },
+      {
         path: '/bigo',
         labelKey: 'nav.bigo',
         icon: '5️⃣',

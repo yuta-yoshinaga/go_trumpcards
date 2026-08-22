@@ -89,6 +89,7 @@ import type {
   DoubtResponse,
   DoudizhuResponse,
   DragonTigerResponse,
+  DramahaResponse,
   DuchessResponse,
   DurakResponse,
   EasthavenResponse,
@@ -420,6 +421,7 @@ import { getDoubleKlondikeHint } from '../utils/hints/doubleklondikeHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getDoudizhuHint } from '../utils/hints/doudizhuHint';
 import { getDragontigerHint } from '../utils/hints/dragontigerHint';
+import { getDramahaHint } from '../utils/hints/dramahaHint';
 import { getDuchessHint } from '../utils/hints/duchessHint';
 import { getDurakHint } from '../utils/hints/durakHint';
 import { getEasthavenHint } from '../utils/hints/easthavenHint';
@@ -691,6 +693,7 @@ export const hintFactories = {
   holdem: (s) => getHoldemHint(s as HoldemResponse),
   omaha: (s) => getOmahaHint(s as OmahaResponse),
   omahahilo: (s) => getOmahaHiLoHint(s as OmahaResponse),
+  dramaha: (s) => getDramahaHint(s as DramahaResponse),
   bigo: (s) => getOmahaHint(s as OmahaResponse),
   courchevel: (s) => getOmahaHint(s as OmahaResponse),
   bigohilo: (s) => getOmahaHiLoHint(s as OmahaResponse),

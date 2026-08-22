@@ -1,0 +1,121 @@
+{
+  "phase": {
+    "init": "Initializing",
+    "preFlop": "Pre-flop",
+    "flop": "Flop",
+    "draw": "Draw",
+    "turn": "Turn",
+    "river": "River",
+    "showdown": "Showdown",
+    "end": "Result",
+    "rebuy": "Rebuy/Add-on"
+  },
+  "communityCards": "Community cards",
+  "yourHand": "Your hand (5 cards)",
+  "splitRule": "Pot always splits: Omaha hand + draw hand",
+  "splitRuleAria": "The pot always splits. The same five cards play both as an Omaha hand of exactly 2 hole cards plus 3 board cards, and as a draw hand of all five as dealt",
+  "omahaHand": "Omaha hand",
+  "drawHand": "Draw hand",
+  "omahaHandRule": "2 hole + 3 board",
+  "drawHandRule": "all five as dealt (board ignored)",
+  "handsUnavailable": "Not decided yet",
+  "draw": {
+    "title": "Draw round",
+    "prompt": "Pick the cards to exchange, or stand pat and keep all five.",
+    "exchange": "Exchange {{count}}",
+    "standPat": "Stand pat",
+    "selected": "Selected: {{count}}",
+    "onceOnly": "You may draw only once."
+  },
+  "result": {
+    "omahaHalf": "Omaha half",
+    "drawHalf": "Draw half",
+    "scoop": "🏆 Scoop! took both halves",
+    "wonHalves": "Won: {{halves}}",
+    "wonNone": "Won nothing"
+  },
+  "hand": {
+    "highCard": "High card",
+    "onePair": "One pair",
+    "twoPair": "Two pair",
+    "threeOfAKind": "Three of a kind",
+    "straight": "Straight",
+    "flush": "Flush",
+    "fullHouse": "Full house",
+    "fourOfAKind": "Four of a kind",
+    "straightFlush": "Straight flush",
+    "royalFlush": "Royal flush"
+  },
+  "handNumber": "Hand #{{count}} (level-up every {{level}} hands)",
+  "rebuy": {
+    "prompt": "Rebuy? ({{chips}} chips, used {{used}}/{{max}})",
+    "accept": "Rebuy",
+    "skip": "Skip"
+  },
+  "addon": {
+    "prompt": "Add-on? ({{chips}} chips)",
+    "accept": "Add-on",
+    "skip": "Skip"
+  },
+  "muck": {
+    "prompt": "Muck?",
+    "muck": "Muck",
+    "show": "Show"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP (voluntarily put in pot): how often the player entered a pot by choice",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR (pre-flop raise): how often the player raised pre-flop",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet: how often the player re-raised an opponent's raise",
+    "af": "AF",
+    "afTooltip": "AF (aggression factor): bets and raises relative to calls"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive: enters few pots, but plays them hard",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive: enters many pots and attacks",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive: enters few pots, mostly calls",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive: enters many pots, mostly calls",
+    "balanced": "BAL",
+    "balancedTooltip": "A balanced style"
+  },
+  "learning": {
+    "title": "Learning mode",
+    "toggle": "Learning mode",
+    "equity": "Equity",
+    "potOdds": "Pot odds",
+    "plusEV": "+EV (positive expectation)",
+    "minusEV": "-EV (negative expectation)",
+    "handOdds": "Hand odds"
+  },
+  "settings": {
+    "cpuMetaAI": "Meta AI (CPUs learn your play style)"
+  },
+  "tutorial": {
+    "communityCards": "The community cards. Five are revealed street by street.",
+    "playerHand": "Your five hole cards. The same five play two different ways.",
+    "splitRule": "The pot always splits in half. The Omaha hand uses exactly 2 hole + 3 board cards; the draw hand uses all five as dealt and ignores the board.",
+    "drawRound": "After the flop betting you may exchange cards once. You are dealt as many as you discard.",
+    "actionButtons": "Choose your betting action.",
+    "potDisplay": "The pot and the blind level.",
+    "cpuArea": "Your CPU opponents.",
+    "resetButton": "Reset starts a new game."
+  },
+  "hint": {
+    "positiveEV": "Positive expectation — raise",
+    "marginalEV": "Roughly break-even — call",
+    "negativeEV": "Negative expectation — fold",
+    "strongHandRank": "Strong hand — raise",
+    "decentHandRank": "Decent hand — call",
+    "weakHandRank": "Weak hand — fold",
+    "scoopChance": "Both the Omaha hand and the draw hand are strong — raise for the scoop",
+    "drawHalfOnly": "The Omaha hand is weak but the draw hand is strong — half the pot is still in reach, so call",
+    "standPat": "Your five cards already make a hand — stand pat",
+    "exchange": "Exchange the {{count}} card(s) that make nothing"
+  }
+}

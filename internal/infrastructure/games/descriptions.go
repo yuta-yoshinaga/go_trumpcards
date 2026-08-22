@@ -53,6 +53,7 @@ var gameDescriptions = map[string]string{
 	"threecardrummy":      "Three Card Rummy (スリーカード・ラミー)",
 	"caribbeandraw":       "Caribbean Draw Poker (カリビアン・ドロー・ポーカー)",
 	"speculation":         "Speculation (スペキュレーション)",
+	"dramaha":             "Dramaha (ドラマハ)",
 	"ohhell":              "Oh Hell (オー・ヘル)",
 	"ninetynine":          "Ninety-Nine (ナインティナイン)",
 	"bridge":              "Contract Bridge (コントラクトブリッジ)",
