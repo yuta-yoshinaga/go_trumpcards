@@ -266,6 +266,7 @@ var gameDescriptions = map[string]string{
 	"courtpiece":          "Court Piece / Rang (コートピース)",
 	"bezique":             "Bezique (ベジーク)",
 	"ecarte":              "Écarté (エカルテ)",
+	"put":                 "Put (プット)",
 	"threecardbrag":       "Three Card Brag (スリーカード・ブラグ)",
 	"teenpatti":           "Teen Patti (ティーンパッティ)",
 	"scopone":             "Scopone (スコポーネ)",

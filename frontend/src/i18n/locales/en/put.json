@@ -1,0 +1,70 @@
+{
+  "currentTrick": "Current trick",
+  "title": "Put (プット)",
+  "subtitle": "South American / Spanish bluffing trick-taking — raise the stakes",
+  "header": {
+    "hand": "Hand",
+    "trick": "Trick",
+    "target": "Target",
+    "match": "Match",
+    "you": "You",
+    "cpu": "CPU",
+    "stake": "Stake",
+    "level": "Call",
+    "tricks": "Tricks won",
+    "cards": "Cards"
+  },
+  "level": {
+    "none": "None",
+    "put": "Put"
+  },
+  "phase": {
+    "play": "Play",
+    "respond": "Respond",
+    "trickEnd": "Trick over",
+    "handEnd": "Hand over",
+    "gameEnd": "Match over"
+  },
+  "actions": {
+    "play": "Play",
+    "put": "Call Put",
+    "accept": "Accept",
+    "decline": "Decline",
+    "next": "Next",
+    "reset": "Reset"
+  },
+  "result": {
+    "youWin": "You win! ({{p0}}-{{p1}})",
+    "cpuWin": "CPU wins ({{p0}}-{{p1}})"
+  },
+  "respondPrompt": "{{name}} called {{level}}. Respond.",
+  "hintReason": {
+    "leadStrong": "Lead with a strong card",
+    "leadLow": "Lead low to save your strong cards",
+    "followWin": "Play a stronger card to win this trick",
+    "followDump": "Dump a weak card and let this trick go",
+    "call": "Strong hand — declare Put",
+    "accept": "Accept and play it out",
+    "decline": "Weak hand — decline"
+  },
+  "caller": {
+    "you": "You",
+    "cpu": "CPU"
+  },
+  "tutorial": {
+    "score": "Match score. The first player to reach the target score wins.",
+    "trick": "Cards played to the table. The 3 is the strongest card and the 4 the weakest; suits do not matter.",
+    "hand": "Your hand — click a card to play it.",
+    "call": "Calling Put doubles the stake. The opponent may accept or decline — there is no re-raise.",
+    "rankRef": "Open “Card strength” to see the unusual order — the 3 is strongest and the 4 weakest."
+  },
+  "rankRef": {
+    "title": "Card strength (strongest first)",
+    "order": "3 > 2 > A > K > Q > J > 10 > 9 > 8 > 7 > 6 > 5 > 4",
+    "note": "Suits do not matter. Equal cards tie the trick. All 52 cards are used."
+  },
+  "settings": {
+    "title": "Settings",
+    "matchTarget": "Match target"
+  }
+}

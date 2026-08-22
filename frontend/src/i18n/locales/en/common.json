@@ -361,7 +361,8 @@
     "fourteenout": "Fourteen Out",
     "narcotic": "Narcotic",
     "mrsmop": "Mrs. Mop",
-    "rankandfile": "Rank and File"
+    "rankandfile": "Rank and File",
+    "put": "Put"
   },
   "sound": {
     "mute": "Mute sound",
@@ -2396,7 +2397,15 @@
     "zheng.result.rankings": "Game Over! {{rankings}}",
     "zwanzigerrufen.result.scores": "Game over! Scores: {{scores}}",
     "zwicker.lose": "The other team wins",
-    "zwicker.win": "Your team wins"
+    "zwicker.win": "Your team wins",
+    "put.handEnd.p0": "Hand over — you take {{stake}} point(s).",
+    "put.handEnd.p1": "Hand over — the CPU takes {{stake}} point(s).",
+    "put.playPhase.follow": "Your turn — pick a card to play (there is no must-follow).",
+    "put.playPhase.lead": "Your turn — pick a card to lead.",
+    "put.respondPhase": "Respond to the Put — accepting doubles the stake.",
+    "put.result.p0Win": "Match over! You win ({{p0}}-{{p1}})!",
+    "put.result.p1Win": "Match over! The CPU wins ({{p0}}-{{p1}}).",
+    "put.trickEnd": "Trick over — continue to the next one."
   },
   "manual": {
     "ariaLabel": "Game Manual",
@@ -2502,7 +2511,8 @@
       "surrender": "Surrender",
       "truco": "Call Truco",
       "twist": "Twist",
-      "undo": "Undo one move"
+      "undo": "Undo one move",
+      "put": "Declare Put (doubles the stake)"
     }
   },
   "legal": {

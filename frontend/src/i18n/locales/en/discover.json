@@ -426,7 +426,8 @@
     "fourteenout": "Pair exposed column tails that add to 14; K needs an A, and only 7+7 matches in rank.",
     "narcotic": "Four piles; discard all four exposed cards when their ranks match. Redeals are unlimited.",
     "mrsmop": "Spider with nothing hidden: 104 cards into 13 columns, all face up, no stock.",
-    "rankandfile": "Ten columns of four, three hidden; build down in alternating colour and move any sequence."
+    "rankandfile": "Ten columns of four, three hidden; build down in alternating colour and move any sequence.",
+    "put": "Three cards, three tricks — the 3 is the strongest card and the 4 the weakest. Say “Put” at any time to double the stake in this old English game of nerve."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -769,6 +770,7 @@
     "fourteenout": "No redeal, so when a pair can be made two ways, choosing the wrong one is how you lose.",
     "narcotic": "The redeal never shuffles — when a board comes back around with no move, that is the end.",
     "mrsmop": "No luck at all — whether it can be won is settled at the deal; the rest is reading.",
-    "rankandfile": "No redeal — every card you turn from the stock has to be spent or lost."
+    "rankandfile": "No redeal — every card you turn from the stock has to be spent or lost.",
+    "put": "Fold or see it — there is no re-raise."
   }
 }
