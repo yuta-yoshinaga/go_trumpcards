@@ -152,7 +152,12 @@ function CaribbeanDrawPageContent() {
   const recordedRef = useRef(false);
   const phase = state?.phase;
   const result = state?.result;
-  const net = state === null ? 0 : state.totalPayout - (state.anteBet + state.jackpotBet + state.playBet);
+  // **交換手数料も引く。** 1 ラウンドで卓から出ていくのは ante + jackpot +
+  // playBet + drawCost の 4 つで、戻ってくるのは totalPayout だけ。drawCost は
+  // 配当ではないので totalPayout に含まれず、ここで引き忘れると引いたラウンド
+  // だけセッション収支が手数料ぶん多く出る。
+  const net =
+    state === null ? 0 : state.totalPayout - (state.anteBet + state.jackpotBet + state.playBet + state.drawCost);
   useEffect(() => {
     if (phase === CaribbeanDrawPhase.END) {
       if (!recordedRef.current && result !== undefined) {

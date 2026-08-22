@@ -496,6 +496,31 @@ describe('CaribbeanDrawPage', () => {
       expect(netEl).toHaveClass('text-ds-error');
     });
 
+    it('subtracts the draw fee from the session net', async () => {
+      // **手数料は配当ではないので totalPayout に含まれない。** 引き忘れると
+      // 引いたラウンドだけ収支が手数料ぶん多く出る (実測: +500 と表示されて
+      // いたが実際は +400)。
+      // net = totalPayout(800) - (ante 100 + jackpot 0 + play 200 + draw 100) = +400
+      mockApi.mockResolvedValue({ ...endPhasePlayerWins, drawCost: 100 });
+      renderWithProviders(<CaribbeanDrawPage />);
+      await waitFor(() => expect(screen.getByTestId('cd-session-stats')).toBeInTheDocument());
+      const netEl = screen.getByTestId('cd-session-net');
+      expect(netEl).toHaveTextContent('収支: +400');
+      expect(netEl).not.toHaveTextContent('収支: +500');
+    });
+
+    it('turns a nominal win into a losing round when the draw fee outweighs it', async () => {
+      // 手数料が配当を食い切ることは実際に起きる。収支の符号まで変わるので、
+      // 引き忘れは「少し多い」では済まない。
+      // net = totalPayout(250) - (ante 100 + jackpot 0 + play 200 + draw 100) = -150
+      mockApi.mockResolvedValue({ ...endPhasePlayerWins, totalPayout: 250, drawCost: 100 });
+      renderWithProviders(<CaribbeanDrawPage />);
+      await waitFor(() => expect(screen.getByTestId('cd-session-stats')).toBeInTheDocument());
+      const netEl = screen.getByTestId('cd-session-net');
+      expect(netEl).toHaveTextContent('収支: -150');
+      expect(netEl).toHaveClass('text-ds-error');
+    });
+
     it('does not double-count the same END round on re-render', async () => {
       mockApi.mockResolvedValue(endPhasePlayerWins);
       renderWithProviders(<CaribbeanDrawPage />);
