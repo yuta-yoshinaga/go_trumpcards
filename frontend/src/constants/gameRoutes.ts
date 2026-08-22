@@ -975,6 +975,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 5, 2, 5], skill: [4, 2, 1, 4], social: [1, 4, 5, 2, 4], theme: [4, 2, 2, 2, 4, 1] },
       },
       {
+        path: '/seventwentyseven',
+        labelKey: 'nav.seventwentyseven',
+        icon: '7️⃣',
+        page: 'SevenTwentySeven',
+        profile: { mood: [3, 3, 4, 2], skill: [3, 3, 3, 2], social: [1, 3, 4, 2, 4], theme: [2, 1, 3, 1, 2, 1] },
+      },
+      {
         path: '/anaconda',
         labelKey: 'nav.anaconda',
         icon: '🐍',

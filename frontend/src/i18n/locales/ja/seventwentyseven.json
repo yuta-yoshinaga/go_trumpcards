@@ -1,0 +1,59 @@
+{
+  "title": "セブン・トゥエンティセブン",
+  "phase": {
+    "draw": "引く / 止まる",
+    "result": "結果"
+  },
+  "settings": {
+    "title": "設定",
+    "playerCount": "プレイヤー数",
+    "ante": "アンティ",
+    "startingChips": "初期チップ",
+    "targetRounds": "ラウンド数"
+  },
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "round": "ラウンド {{n}}",
+  "pot": "ポット {{amount}}",
+  "ante": "アンティ {{amount}}",
+  "chips": "チップ {{amount}}",
+  "roundBet": "賭け {{amount}}",
+  "playersTitle": "プレイヤー",
+  "targetsNote": "目標は 7 と 27 の2つ。超えたらその側は失格です。絵札=0.5点、A=1点または11点。",
+  "handLabel": "あなたの手札",
+  "scoreLabel": "7側 / 27側",
+  "badge": {
+    "out": "脱落",
+    "drawing": "まだ引く",
+    "standing": "止まった",
+    "wonLow": "7側を取得",
+    "wonHigh": "27側を取得",
+    "scoop": "両取り"
+  },
+  "cardButton": "カードを引く",
+  "standButton": "止まる",
+  "nextRound": "次のラウンド",
+  "roundResult": {
+    "title": "ラウンド結果",
+    "carry": "全員が両側とも超えました。ポット {{pot}} は次のラウンドへ持ち越し（{{count}} 回目）",
+    "scoop": "{{name}} が両側を制して {{pot}} を総取りしました",
+    "lowWinner": "7側: {{name}}（{{score}}）",
+    "highWinner": "27側: {{name}}（{{score}}）",
+    "lowEmpty": "7側: 生存者なし（27側が総取り）",
+    "highEmpty": "27側: 生存者なし（7側が総取り）"
+  },
+  "matchWinner": "{{name}} の勝ちです",
+  "hintReasonChaseSeven": "7側だけが生きています。まだ届いていないので引きます",
+  "hintReasonChaseTwentySeven": "27側を狙います。まだ届いていないので引きます",
+  "hintReasonExactlySeven": "7ちょうどです。引けば壊すだけ",
+  "hintReasonExactlyTwentySeven": "27ちょうどです。引けば壊すだけ",
+  "hintReasonStandPat": "ここで止めるのが安全です。1枚で超える危険があります",
+  "hintReasonBustBoth": "両側とも超えています。引いても得るものはありません",
+  "tutorial": {
+    "info": "ラウンド数・ポット・アンティです。",
+    "players": "各プレイヤーのチップと、7側 / 27側の得点です。",
+    "hand": "あなたの手札と、両側の得点です。",
+    "actions": "カードを引くか、止まるかを選びます。止まると以後このラウンドは配られません。",
+    "resetButton": "リセットして新しいゲームを始めます。"
+  }
+}

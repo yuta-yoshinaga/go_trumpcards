@@ -1695,4 +1695,9 @@ func init() {
 			return usecase.NewRamschInteractor(domain.NewDefaultRamsch(), new(presenter.RamschWebPresenter))
 		},
 		controller.NewRamschWebController)
+	BindWebControllerFor("seventwentyseven",
+		func() usecase.SevenTwentySevenInteractorIF {
+			return usecase.NewSevenTwentySevenInteractor(domain.NewDefaultSevenTwentySeven(), new(presenter.SevenTwentySevenWebPresenter))
+		},
+		controller.NewSevenTwentySevenWebController)
 }

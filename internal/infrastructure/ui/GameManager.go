@@ -6514,6 +6514,27 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"ramsch.helpSetDifficulty", "ramsch.helpSetTarget"},
 		}),
+	BindCuiFor("seventwentyseven",
+		func() usecase.SevenTwentySevenInteractorIF {
+			return usecase.NewSevenTwentySevenInteractor(domain.NewDefaultSevenTwentySeven(), new(presenter.SevenTwentySevenCuiPresenter))
+		},
+		controller.NewSevenTwentySevenCuiController,
+		CuiHelpSpec{
+			TitleKey: "seventwentyseven.helpTitle",
+			ExampleKeys: []string{
+				"seventwentyseven.helpExampleCard",
+			},
+			CommandKeys: []string{
+				"seventwentyseven.helpCard",
+				"seventwentyseven.helpStand",
+				"seventwentyseven.helpNextRound", "seventwentyseven.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys: []string{
+				"seventwentyseven.helpSetPlayers", "seventwentyseven.helpSetAnte",
+				"seventwentyseven.helpSetChips", "seventwentyseven.helpSetRounds",
+			},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
