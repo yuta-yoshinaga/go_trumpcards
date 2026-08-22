@@ -22,8 +22,8 @@ func NewSevenTwentySevenCuiController(ti usecase.SevenTwentySevenInteractorIF) *
 //
 //	q / quit                 → ゲーム終了 ("bye.")
 //	r / reset                → ゲームリセット (設定保持)
-//	i / in                   → イン宣言 (勝負に残る)
-//	o / out                  → アウト宣言 (降りる)
+//	c / card                 → カードを 1 枚引く
+//	s / stand                → 止まる (このラウンドはもう配られない)
 //	n / next / nr / nextround → 次のラウンドへ
 //	sp <n> / setplayers <n>  → プレイヤー数設定 (2-7)
 //	sa <n> / setante <n>     → アンティ額設定

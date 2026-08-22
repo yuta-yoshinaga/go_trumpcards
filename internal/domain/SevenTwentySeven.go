@@ -2,40 +2,45 @@
 
 // Package domain セブン・トゥエンティセブン (SevenTwentySeven) のドメインモデル。
 //
-// SevenTwentySeven はアメリカ発祥のシンプルなポーカー系「ヴァイイング (vying)」ポットゲーム。
-// 標準 52 枚デッキを使い、2〜7 人が全員アンティを入れてから 2 枚ずつ配られる。
+// アメリカの「dealer's choice」ホームゲーム。標準 52 枚デッキを使い、2〜7 人が
+// アンティを入れてから 2 枚ずつ配られる。**ポットは 2 つに割れる。**
 //
 // # 1 ラウンドの流れ
 //
 //  1. 全員がアンティをポットに払い、2 枚ずつ配られる。
-//  2. 全員が同時に「イン (勝負に残る)」か「アウト (降りる)」かを宣言する
-//     (人間が宣言し、CPU は手札の強さで自動判断する)。
-//  3. 「イン」のプレイヤー同士が 2 枚の手を比べる: ペアはノーペアに勝ち、ペア同士は
-//     ランクの高い方、ノーペア同士はハイカード→キッカーの順で比較する (A ハイ)。
-//  4. 最強手がポットを総取りする。
-//  5. 「イン」して負けたプレイヤーは、その時点のポット額を「マッチ」して支払い、
-//     それが次ラウンドのポットの種銭になる (エスカレーション / ペナルティ)。
+//  2. 各巡、各自が「もう 1 枚引く」か「止まる」かを選ぶ。**止まったらそのラウンドは
+//     もう配られない。** 引くと言った人にだけ 1 枚ずつ配る。
+//  3. 全員が止まった時点でショーダウン。
+//  4. **7 に最も近い (超えていない) 手**と **27 に最も近い (超えていない) 手**が
+//     それぞれポットの半分を取る。同じ人が両方を制したら総取り (スクープ)。
+//  5. 片側に生存者がいなければ、もう片方が総取りする。両側とも全滅ならポットは
+//     次ラウンドへ持ち越す。同点は分け合う。
 //
-// # エスカレーションと停止条件
+// # カードの点数
 //
-// マッチによりポットが膨らむため、勝負が続くほどリスクが高まる。本実装では以下を
-// 停止条件とする (決定的・有界):
+// ここがこのゲーム固有の値:
 //
-//   - 誰も「イン」しなかったラウンドは、ポットが丸ごと次ラウンドへ持ち越される。
-//   - ちょうど 1 人だけ「イン」したラウンドはクリーンウィン (マッチ発生なし)。ポットは
-//     勝者が総取りし、次ラウンドは新規アンティから始まる。
-//   - 2 人以上が「イン」したラウンドは、最強手が総取りし、他の「イン」プレイヤーは
-//     ポット額をマッチして次ラウンドの種銭に積む。
+//   - 絵札 (J/Q/K) = **0.5 点**
+//   - エース = **1 点 または 11 点** (1 枚ごとに選べる)
+//   - それ以外は数字どおり
 //
-// ゲームは「規定ラウンド数 (TargetRounds) を消化」または「アンティを払えるプレイヤーが
-// 2 人未満 (人間の脱落を含む)」で終了し、最終的にチップ最多のプレイヤーが勝者となる。
+// **点は ×2 の整数で保持する** (`seventwentyseven_score.go`)。絵札が 1、数字が 2n、
+// 目標が 14 / 54 になり、0.5 刻みを float64 の比較なしに正確に扱える。表示のときだけ
+// 2 で割る。Call Break が int×10 でスコアを持っているのと同じ判断。
+//
+// # 超過
+//
+// **超えた側だけが失格になる。** 19 点の手は 7 側では死んでいるが 27 側では生きている。
+// この非対称がゲームの読み合いそのもので、片側の判定を共有すると消える。
+//
+// # 停止条件
+//
+// 規定ラウンド数 (TargetRounds) を消化するか、アンティを払えるプレイヤーが 2 人未満
+// (人間の脱落を含む) になると終了し、チップ最多のプレイヤーが勝者となる。
 //
 // # デッキ
 //
-// 標準 52 枚 (ジョーカーなし)。NewTrumpCards(0) は extra ワーカーから到達可能。
-//
-// 本実装は extra ワーカーから到達可能なよう、手役評価・ポット精算ロジックをすべて
-// インラインで持つ (RedDog / ThreeCardBrag は casino ビルドタグで到達不可のため)。
+// 標準 52 枚 (ジョーカーなし)。NewTrumpCards(0) は extra4 ワーカーから到達可能。
 package domain
 
 import (
@@ -83,7 +88,6 @@ const (
 // sevenTwentySevenMaxSliceLen はデシリアライズ時のスライス長の上限。
 const sevenTwentySevenMaxSliceLen = 1000
 
-// sevenTwentySevenCpuStayHighCard は CPU がノーペアでも「イン」を宣言する最低ハイカードランク (J=11 以上)。
 // sevenTwentySevenCpuLowSlack / HighSlack は CPU が「まだ引く」と判断する余裕幅
 // （内部値）。0 にすると目標ちょうどでない限り引き続けて必ず超過するので、
 // 手前で止まる幅が要る。低い側は 1 枚で壊れるので狭く、高い側は広く取る。
@@ -112,8 +116,8 @@ type sevenTwentySevenState struct {
 	phase       SevenTwentySevenPhase
 	roundNumber int
 	pot         int // 現在のラウンドのポット
-	carryPot    int // 次ラウンドへ持ち越す種銭 (マッチ額 or 全員アウト時の持ち越し)
-	carryCount  int // 全員アウトでポットが連続繰り越しになった回数
+	carryPot    int // 次ラウンドへ持ち越す種銭 (全員が両側とも超えたラウンドのポット)
+	carryCount  int // 両側とも全滅してポットが連続繰り越しになった回数
 	// lowWinner / highWinner は 7 側 / 27 側それぞれの勝者 (-1 = 該当なし)。
 	// 同一人物なら総取り。どちらも -1 ならポットは次ラウンドへ持ち越す。
 	lowWinner      int
@@ -377,7 +381,7 @@ func (g *SevenTwentySeven) cpuDraws(p *SevenTwentySevenPlayer) bool {
 //     それぞれポットの半分を取る。
 //   - **同一人物が両方を制したら総取り。** これがこのゲームの狙いどころ。
 //   - 片側に生存者がいなければ、もう片方が総取り。両側とも全滅ならポットは
-//     次ラウンドへ持ち越す（Guts から引き継いだ carryPot）。
+//     次ラウンドへ持ち越す（carryPot）。
 //   - 同点は分け合う。
 func (g *SevenTwentySeven) settle() {
 	g.state.lowWinner = -1
@@ -656,6 +660,7 @@ type sevenTwentySevenJSON struct {
 	RoundNumber int                       `json:"rn"`
 	Pot         int                       `json:"pt"`
 	CarryPot    int                       `json:"cp"`
+	CarryCount  int                       `json:"cc"`
 	// **勝者は 2 人いる。** 7 側と 27 側それぞれ。同一人物なら総取り。
 	// 片方を落とすと、復元した盤で「なぜ半分しか貰えていないのか」が消える。
 	LowWinner      int                    `json:"lw"`
@@ -678,6 +683,7 @@ func (g *SevenTwentySeven) MarshalJSON() ([]byte, error) {
 		RoundNumber:    g.state.roundNumber,
 		Pot:            g.state.pot,
 		CarryPot:       g.state.carryPot,
+		CarryCount:     g.state.carryCount,
 		LowWinner:      g.state.lowWinner,
 		HighWinner:     g.state.highWinner,
 		DrawRound:      g.state.drawRound,
@@ -748,6 +754,7 @@ func (g *SevenTwentySeven) UnmarshalJSON(data []byte) error {
 		roundNumber:    j.RoundNumber,
 		pot:            j.Pot,
 		carryPot:       j.CarryPot,
+		carryCount:     j.CarryCount,
 		lowWinner:      j.LowWinner,
 		highWinner:     j.HighWinner,
 		drawRound:      j.DrawRound,

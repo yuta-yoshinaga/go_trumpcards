@@ -16,7 +16,7 @@ type SevenTwentySevenPlayer struct {
 	// 止まった人にはそのラウンド二度と配られない。
 	standing bool
 	out      bool // チップ不足でゲームから脱落したか
-	roundBet int  // このラウンドで支払った累計額 (アンティ + マッチ; 表示用)
+	roundBet int  // このラウンドで支払った累計額 (アンティ; 表示用)
 }
 
 // NewSevenTwentySevenPlayer はコンストラクタ。初期チップを付与する。
@@ -50,7 +50,7 @@ func (p *SevenTwentySevenPlayer) AddRoundBet(v int) { p.roundBet += v }
 // ClearHand 手札をクリアする (ディール準備・テスト用)。
 func (p *SevenTwentySevenPlayer) ClearHand() { p.Reset() }
 
-// ResetForRound はラウンド単位の状態をリセットする (手札・イン宣言・累計賭け額)。
+// ResetForRound はラウンド単位の状態をリセットする (手札・止まり・累計賭け額)。
 func (p *SevenTwentySevenPlayer) ResetForRound() {
 	p.standing = false
 	p.roundBet = 0

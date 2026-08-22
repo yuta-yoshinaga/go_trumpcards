@@ -1922,7 +1922,7 @@
     "seventwentyseven.roundEndHumanLose": "You took neither side.",
     "seventwentyseven.result.humanWin": "Game over. You win!",
     "seventwentyseven.result.cpuWin": "Game over. CPU {{player}} wins.",
-    "seventwentyseven.hintRequested": "Hint: {{hint}}",
+    "seventwentyseven.hintRequested": "A hint is available",
     "seventwentyseven.noHint": "Nothing to advise right now.",
     "sevencardstud.muck.prompt": "Muck or show your hand.",
     "followthequeen.result.folded": "You folded.",

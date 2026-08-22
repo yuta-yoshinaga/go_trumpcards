@@ -132,13 +132,21 @@ describe('SevenTwentySevenPage', () => {
     mockExec.mockResolvedValue({
       ...baseState,
       phase: SevenTwentySevenPhase.RESULT,
+      // **決着後の pot はサーバが 0 にする。** 40 のままの fixture は嘘で、
+      // 「0 を総取り」バグを隠していた。
+      pot: 0,
       lowWinner: 0,
       highWinner: 0,
       players: [player(0, { wonLow: true, wonHigh: true }), player(1), player(2), player(3)],
     });
     renderWithProviders(<SevenTwentySevenPage />);
-    await waitFor(() => expect(screen.getByTestId('s27-scoop-result')).toBeInTheDocument());
+    const banner = await screen.findByTestId('s27-scoop-result');
     expect(screen.queryByTestId('s27-low-result')).not.toBeInTheDocument();
+
+    // **金額を書かない。** ドメインは結果フェーズへ移る前に pot を 0 にするので、
+    // `{{pot}}` を入れると必ず「0 を総取り」になる。プレースホルダが残るのも不可。
+    expect(banner).not.toHaveTextContent('0');
+    expect(banner.textContent ?? '').not.toMatch(/\{\{/);
   });
 
   // 両側とも全滅したら持ち越しと言う。何も描かないとチップが動かない理由が消える。

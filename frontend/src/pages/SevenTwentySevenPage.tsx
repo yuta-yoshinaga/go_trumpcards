@@ -46,6 +46,12 @@ const SEVENTWENTYSEVEN_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
   {
+    target: '[data-tutorial="s27-players"]',
+    messageKey: 'tutorial.players',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
     target: '[data-tutorial="s27-hand"]',
     messageKey: 'tutorial.hand',
     placement: 'top',
@@ -70,7 +76,7 @@ const SEVENTWENTYSEVEN_PHASE_KEYS: Readonly<Record<number, string>> = {
   [SevenTwentySevenPhase.RESULT]: 'result',
 };
 
-/** Renders the SevenTwentySeven game page: a fast multi-player pot-vying gambling game. */
+/** Renders the Seven Twenty-Seven page: chase 7 and 27 at once, and the pot splits between them. */
 export const SevenTwentySevenPage = withTutorial(
   SevenTwentySevenPageContent,
   'seventwentyseven',
@@ -295,9 +301,11 @@ function SevenTwentySevenPageContent() {
                 <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
                 {state.lowWinner >= 0 && state.lowWinner === state.highWinner ? (
                   <div className="text-ds-success font-semibold" data-testid="s27-scoop-result">
+                    {/* **金額は入れられない。** ドメインは結果フェーズへ移る前に
+                        pot を 0 にするので、ここで `state.pot` を出すと必ず
+                        「0 を総取り」になる（CUI 側の文言も金額を持たない）。 */}
                     {t('roundResult.scoop', {
                       name: playerLabel(state.lowWinner, state.lowWinner === humanIdx),
-                      pot: state.pot,
                     })}
                   </div>
                 ) : (
@@ -384,7 +392,7 @@ function SevenTwentySevenPageContent() {
                 onReset={handleManualReset}
                 requestConfirm={requestConfirm}
                 loading={loading}
-                dataTutorial="sevenTwentySeven-reset-button"
+                dataTutorial="s27-reset-button"
               />
             </div>
           </GameFooter>

@@ -230,6 +230,8 @@ func TestSevenTwentySeven_SurvivesAKVRoundTrip(t *testing.T) {
 	assert.Equal(t, g.GetPhase(), restored.GetPhase())
 	assert.Equal(t, g.GetDrawRound(), restored.GetDrawRound())
 	assert.Equal(t, g.GetPot(), restored.GetPot())
+	assert.Equal(t, g.GetCarryPot(), restored.GetCarryPot())
+	assert.Equal(t, g.GetCarryCount(), restored.GetCarryCount())
 	for i := 0; i < g.GetPlayerCnt(); i++ {
 		assert.Equal(t, g.GetPlayer(i).GetCardsSize(), restored.GetPlayer(i).GetCardsSize(), "player %d の手札", i)
 		assert.Equal(t, g.GetPlayer(i).GetChips(), restored.GetPlayer(i).GetChips(), "player %d のチップ", i)
@@ -342,4 +344,33 @@ func TestSevenTwentySevenPlayer_ClearHand(t *testing.T) {
 	p.ClearHand()
 	assert.Zero(t, p.GetCardsSize())
 	assert.Equal(t, 200, p.GetChips(), "チップまで消えている")
+}
+
+// **持ち越し回数も往復すること。** 「carry #3」の表示に使うので、落ちると
+// Worker では何度持ち越しても毎回 1 回目として出る。0 == 0 に退化しないよう、
+// 実際に 2 回持ち越してから往復させる。
+func TestSevenTwentySeven_TheCarryCountSurvivesAKVRoundTrip(t *testing.T) {
+	g := newTestS27()
+	g.Reset()
+
+	bustEveryone := func() {
+		for i := 0; i < g.GetPlayerCnt(); i++ {
+			g.SetHandForTest(i, []*Card{rc(CardDesignSpade, 10), rc(CardDesignHeart, 10), rc(CardDesignClover, 10)})
+		}
+		g.SetPotForTest(100)
+		g.StandEveryoneForTest()
+		g.SettleForTest()
+	}
+	bustEveryone()
+	g.NextRound()
+	bustEveryone()
+	require.Equal(t, 2, g.GetCarryCount(), "2 回連続で持ち越していない")
+
+	data, err := g.MarshalJSON()
+	require.NoError(t, err)
+	restored := NewDefaultSevenTwentySeven()
+	require.NoError(t, restored.UnmarshalJSON(data))
+
+	assert.Equal(t, 2, restored.GetCarryCount(), "持ち越し回数が往復で消えている")
+	assert.Equal(t, g.GetCarryPot(), restored.GetCarryPot())
 }

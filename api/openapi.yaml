@@ -46487,7 +46487,7 @@ components:
         command:
           type: string
           description: Command to execute
-          enum: [reset, r, card, c, stand, s, nextround, n, nr, hint, h, log, l]
+          enum: [reset, r, card, c, stand, s, nextround, next, n, nr, hint, h, log, l]
           example: card
         sessionId:
           type: string
@@ -46504,12 +46504,15 @@ components:
             ante:
               type: integer
               minimum: 1
+              maximum: 1000
             startingChips:
               type: integer
               minimum: 10
+              maximum: 100000
             targetRounds:
               type: integer
               minimum: 1
+              maximum: 100
     SevenTwentySevenResponse:
       type: object
       required:

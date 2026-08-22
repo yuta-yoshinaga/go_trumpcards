@@ -1922,7 +1922,7 @@
     "seventwentyseven.roundEndHumanLose": "どちらの側も取れませんでした。",
     "seventwentyseven.result.humanWin": "ゲーム終了。あなたの勝ちです！",
     "seventwentyseven.result.cpuWin": "ゲーム終了。CPU {{player}} の勝ちです。",
-    "seventwentyseven.hintRequested": "助言: {{hint}}",
+    "seventwentyseven.hintRequested": "ヒントがあります",
     "seventwentyseven.noHint": "いま助言できることはありません。",
     "sevencardstud.muck.prompt": "マックしますか?",
     "followthequeen.result.folded": "フォールドしました。",
