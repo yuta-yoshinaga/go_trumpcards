@@ -17,10 +17,6 @@ func putLevelLabel(level int) string {
 	switch level {
 	case domain.PutLevelPut:
 		return i18n.T("put.levelPut")
-	case domain.PutLevelReput:
-		return i18n.T("put.levelReput")
-	case domain.PutLevelValeCuatro:
-		return i18n.T("put.levelValeCuatro")
 	default:
 		return i18n.T("put.levelNone")
 	}

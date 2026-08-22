@@ -2,20 +2,21 @@
 
 // Package domain プット (Put) のドメインモデル。
 //
-// Put は南米・スペインで人気のトリックテイキングとブラフ (ベッティング) を
-// 融合したゲーム。本実装は 2 人対戦 (人間 1 + CPU 1) のみを扱う。
+// Put はイングランドの古いギャンブル系トリックテイキング。本実装は 2 人対戦
+// (人間 1 + CPU 1) のみを扱う。南米のトゥルコ (Truco) はこのゲームの子孫で、
+// 本実装もトゥルコの骨格から派生している。
 //
-// 52 枚の標準デッキを使い、各ハンド
-// (hand) で 3 枚ずつ配って 3 バサ (baza / trick) を行い、2 バサ先取した側が
-// そのマノの勝者となる (マストフォローなし)。同強カード同士のバサは「パルダ
-// (parda / 引き分け)」となり、標準ルールでマノの勝者を決める。
+// 52 枚の標準デッキから 3 枚ずつ配り、3 トリックを行う。**マストフォロー無し**
+// で、どの札を出してもよい。2 トリック先取した側がそのハンドの勝者。同じ強さ
+// の札同士のトリックは引き分けとなり、標準ルールでハンドの勝者を決める。
 //
-// 最大の特徴は「Put」のベッティングで、プレイ中に Put→Reput→Vale Cuatro
-// と賭け点を引き上げられる。相手は受諾 (Quiero) / 拒否 (No Quiero = 直前点で
-// 即敗北) / 再引き上げ を選択する。マッチは設定点 (既定 15) 先取で勝利する。
+// **カードの強さは 3-2-A-K-Q-J-10-9-8-7-6-5-4** の順で、3 が最強、4 が最弱。
+// スートは一切関係しない (トゥルコのようなスート付きの特別札は無い)。
 //
-// カードの強さ (matadores) は Put 固有で、1-Espadas(♠) > 1-Bastos(♣) >
-// 7-Espadas(♠) > 7-Oros(♦) > 3 > 2 > 1(偽) > K > Q > J > 7(偽) > 6 > 5 > 4。
+// 最大の特徴は「Put」の宣言で、プレイ中の任意のタイミングで賭けを倍にできる。
+// 言われた側は**受諾か降参かの二択**で、賭けを引き上げ返す手は無い —— ここが
+// Truco → Retruco → Vale Cuatro と 3 段に伸ばせるトゥルコとの分かれ目。
+// マッチは設定点 (既定 15) 先取で勝利する。
 package domain
 
 import (
@@ -57,12 +58,13 @@ const (
 	PutLevelNone = 0
 	// PutLevelPut Put 宣言 (2点)
 	PutLevelPut = 1
-	// PutLevelReput Reput 宣言 (3点)
-	PutLevelReput = 2
-	// PutLevelValeCuatro Vale Cuatro 宣言 (4点)
-	PutLevelValeCuatro = 3
-	// PutMaxLevel 引き上げ可能な最大レベル
-	PutMaxLevel = PutLevelValeCuatro
+	// PutMaxLevel 引き上げ可能な最大レベル。
+	//
+	// **プットの宣言は 1 段だけ。** 「Put」と言われた側は受けるか降りるかの
+	// 二択で、賭けを更に引き上げる手はない。クローン元のトゥルコは
+	// Truco → Retruco → Vale Cuatro と 3 段に伸ばせるが、それを残すと
+	// プットに存在しない賭けが立つ。
+	PutMaxLevel = PutLevelPut
 )
 
 // PutHint ヒント情報。Action は "play" / "call" / "accept" / "decline"。
@@ -109,7 +111,6 @@ func PutCardStrength(c *Card) int {
 	return 0
 }
 
-
 // Put プットゲームクラス
 type Put struct {
 	trumpCards        *TrumpCards
@@ -128,7 +129,7 @@ type Put struct {
 	handStake         int // 現在の確定賭け点 (1..4)
 	acceptedLevel     int // 受諾済みベッティングレベル (0..3)
 	pendingLevel      int // 応答待ちで提示中のレベル (Respond 中のみ > 0)
-	putCallerIdx    int // 応答待ちの宣言者、それ以外は -1
+	putCallerIdx      int // 応答待ちの宣言者、それ以外は -1
 	matchTarget       int
 	playerMatchPoints []int
 	handWinnerIdx     int // 直近マノの勝者 (-1: 未確定)
@@ -144,7 +145,7 @@ func NewPut(trumpCards *TrumpCards, players []*PutPlayer, config PutConfig) *Put
 		players:           players,
 		config:            config,
 		responderIdx:      -1,
-		putCallerIdx:    -1,
+		putCallerIdx:      -1,
 		winnerIdx:         -1,
 		handWinnerIdx:     -1,
 		matchTarget:       config.normalized().MatchTarget,
@@ -196,7 +197,7 @@ func (t *Put) PlayerPlay(cardIndex int) error {
 	return nil
 }
 
-// DeclarePut 人間プレイヤーが Put を宣言 (または Reput/Vale Cuatro へ再引き上げ) する。
+// DeclarePut 人間プレイヤーが Put を宣言する (賭けが倍になる)。
 func (t *Put) DeclarePut() error {
 	if t.gameEndFlag {
 		return ErrGameEnded
@@ -733,10 +734,6 @@ func putLevelName(level int) string {
 	switch level {
 	case PutLevelPut:
 		return "Put"
-	case PutLevelReput:
-		return "Reput"
-	case PutLevelValeCuatro:
-		return "Vale Cuatro"
 	default:
 		return "Put"
 	}
@@ -881,9 +878,9 @@ func (t *Put) cpuRespondDecision(idx int) string {
 // putJSON is the JSON wire format for Put.
 type putJSON struct {
 	TrumpCards        *TrumpCards       `json:"tc"`
-	Players           []*PutPlayer    `json:"ps"`
-	Config            PutConfig       `json:"cf"`
-	Phase             PutPhase        `json:"ph"`
+	Players           []*PutPlayer      `json:"ps"`
+	Config            PutConfig         `json:"cf"`
+	Phase             PutPhase          `json:"ph"`
 	HandNumber        int               `json:"hn"`
 	TrickNumber       int               `json:"tn"`
 	CurrentPlayerIdx  int               `json:"ci"`
@@ -896,7 +893,7 @@ type putJSON struct {
 	HandStake         int               `json:"hs"`
 	AcceptedLevel     int               `json:"al"`
 	PendingLevel      int               `json:"pl"`
-	PutCallerIdx    int               `json:"tk"`
+	PutCallerIdx      int               `json:"tk"`
 	MatchTarget       int               `json:"mt"`
 	PlayerMatchPoints []int             `json:"pp"`
 	HandWinnerIdx     int               `json:"hw"`
@@ -924,7 +921,7 @@ func (t *Put) MarshalJSON() ([]byte, error) {
 		HandStake:         t.handStake,
 		AcceptedLevel:     t.acceptedLevel,
 		PendingLevel:      t.pendingLevel,
-		PutCallerIdx:    t.putCallerIdx,
+		PutCallerIdx:      t.putCallerIdx,
 		MatchTarget:       t.matchTarget,
 		PlayerMatchPoints: t.playerMatchPoints,
 		HandWinnerIdx:     t.handWinnerIdx,

@@ -1576,6 +1576,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 5, 4, 3], skill: [2, 4, 4, 2], social: [0, 4, 4, 3, 4], theme: [4, 4, 2, 1, 4, 2] },
       },
       {
+        path: '/put',
+        labelKey: 'nav.put',
+        icon: '🎴',
+        page: 'Put',
+        profile: { mood: [2, 5, 4, 3], skill: [2, 3, 4, 2], social: [0, 4, 4, 3, 4], theme: [4, 4, 2, 1, 4, 2] },
+      },
+      {
         path: '/spiteandmalice',
         labelKey: 'nav.spiteandmalice',
         icon: '😈',

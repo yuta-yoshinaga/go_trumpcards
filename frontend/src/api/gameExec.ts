@@ -322,6 +322,7 @@ export const workerUrl: Record<string, string> = {
   sixcardgolf: WORKER_EXTRA2,
   doudizhu: WORKER_EXTRA4,
   truco: WORKER_CLASSIC,
+  put: WORKER_EXTRA4,
   scopa: WORKER_CLASSIC,
   scopone: WORKER_CLASSIC,
   escoba: WORKER_CLASSIC,

@@ -13,7 +13,7 @@ import (
 // PutWebInput プットWebインプット
 type PutWebInput struct {
 	BaseWebInput
-	CardIndex *int            `json:"cardIndex,omitempty"`
+	CardIndex *int          `json:"cardIndex,omitempty"`
 	Config    *PutWebConfig `json:"config,omitempty"`
 }
 
@@ -42,26 +42,26 @@ type PutWebOutputHint struct {
 // PutWebOutput プットWebアウトプット
 type PutWebOutput struct {
 	Players          []*PutWebOutputPlayer `json:"players"`
-	Phase            int                     `json:"phase"`
-	HandNumber       int                     `json:"handNumber"`
-	TrickNumber      int                     `json:"trickNumber"`
-	CurrentPlayerIdx int                     `json:"currentPlayerIdx"`
-	ResponderIdx     int                     `json:"responderIdx"`
-	CurrentTrick     []*WebOutputTrickCard   `json:"currentTrick"`
-	TrickResults     []int                   `json:"trickResults"`
-	LeadPlayerIdx    int                     `json:"leadPlayerIdx"`
-	ManoIdx          int                     `json:"manoIdx"`
-	DealerIdx        int                     `json:"dealerIdx"`
-	HandStake        int                     `json:"handStake"`
-	AcceptedLevel    int                     `json:"acceptedLevel"`
-	PendingLevel     int                     `json:"pendingLevel"`
-	PutCallerIdx   int                     `json:"putCallerIdx"`
-	CanDeclarePut  bool                    `json:"canDeclarePut"`
-	MatchTarget      int                     `json:"matchTarget"`
-	MatchPoints      []int                   `json:"matchPoints"`
-	HandWinnerIdx    int                     `json:"handWinnerIdx"`
-	GameEndFlag      bool                    `json:"gameEndFlag"`
-	WinnerIdx        int                     `json:"winnerIdx"`
+	Phase            int                   `json:"phase"`
+	HandNumber       int                   `json:"handNumber"`
+	TrickNumber      int                   `json:"trickNumber"`
+	CurrentPlayerIdx int                   `json:"currentPlayerIdx"`
+	ResponderIdx     int                   `json:"responderIdx"`
+	CurrentTrick     []*WebOutputTrickCard `json:"currentTrick"`
+	TrickResults     []int                 `json:"trickResults"`
+	LeadPlayerIdx    int                   `json:"leadPlayerIdx"`
+	ManoIdx          int                   `json:"manoIdx"`
+	DealerIdx        int                   `json:"dealerIdx"`
+	HandStake        int                   `json:"handStake"`
+	AcceptedLevel    int                   `json:"acceptedLevel"`
+	PendingLevel     int                   `json:"pendingLevel"`
+	PutCallerIdx     int                   `json:"putCallerIdx"`
+	CanDeclarePut    bool                  `json:"canDeclarePut"`
+	MatchTarget      int                   `json:"matchTarget"`
+	MatchPoints      []int                 `json:"matchPoints"`
+	HandWinnerIdx    int                   `json:"handWinnerIdx"`
+	GameEndFlag      bool                  `json:"gameEndFlag"`
+	WinnerIdx        int                   `json:"winnerIdx"`
 	Hint             *PutWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config PutWebOutputConfig `json:"config"`

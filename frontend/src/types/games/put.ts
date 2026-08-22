@@ -48,7 +48,7 @@ export interface PutResponse extends BaseGameResponse {
   dealerIdx: number;
   /** Current agreed stake for the hand (1..4). */
   handStake: number;
-  /** Accepted betting level (0=none, 1=Put, 2=Reput, 3=Vale Cuatro). */
+  /** Accepted betting level (0=none, 1=Put). Put has no re-raise ladder. */
   acceptedLevel: number;
   /** Proposed level while awaiting a response (0 otherwise). */
   pendingLevel: number;

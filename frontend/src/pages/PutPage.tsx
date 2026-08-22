@@ -32,15 +32,18 @@ const PUT_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="put-call"]', messageKey: 'tutorial.call', placement: 'top', advanceOn: 'next' },
 ];
 
-/** Betting-level i18n key suffixes indexed by level (0=none .. 3=Vale Cuatro). */
-const LEVEL_KEYS = ['none', 'put', 'reput', 'valecuatro'] as const;
+/** Betting-level i18n key suffixes indexed by level (0=none, 1=put). */
+// **プットの宣言は 1 段だけ。** 「Put」と言われた側は受けるか降りるかの二択で、
+// 賭けを引き上げ返す手はない (クローン元のトゥルコは Retruco / Vale Cuatro へ
+// 伸ばせる)。バックエンドの PutMaxLevel と揃える。
+const LEVEL_KEYS = ['none', 'put'] as const;
 
 /**
  * Inner content for the Put page (wrapped by `withTutorial` below).
  *
  * Renders the 2-player South-American bluffing trick-taking game: a 40-card
  * deck with no must-follow rule, best-of-3 bazas per hand, and the "Put"
- * stake escalation (Put → Reput → Vale Cuatro) that the opponent may
+ * single stake-doubling declaration (Put) that the opponent may
  * accept, decline, or re-raise. First to the match target (default 15) wins.
  */
 /** Match-target choices, inside the domain's 1..60 range (PutConfig.go). */

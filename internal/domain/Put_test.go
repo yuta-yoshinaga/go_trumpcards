@@ -121,13 +121,13 @@ func TestPutCardStrengthIsATotalOrderOverTheDeck(t *testing.T) {
 }
 
 func TestPutLevelValue(t *testing.T) {
+	// プットの宣言は 1 段だけ (None=1点 / Put=2点)。クローン元のトゥルコの
+	// Reput / Vale Cuatro は存在しない。
 	cases := map[int]int{
-		PutLevelNone:       1,
-		PutLevelPut:        2,
-		PutLevelReput:      3,
-		PutLevelValeCuatro: 4,
-		-5:                 1,
-		99:                 PutMaxLevel + 1,
+		PutLevelNone: 1,
+		PutLevelPut:  2,
+		-5:           1,
+		99:           PutMaxLevel + 1,
 	}
 	for level, want := range cases {
 		if got := PutLevelValue(level); got != want {
@@ -354,7 +354,7 @@ func TestPutDeclineAfterAcceptedPut(t *testing.T) {
 	putSetupBaza(g, 0)
 	g.callPut(0)        // p0 calls Put
 	g.respond(1, true)  // p1 accepts -> stake 2
-	g.callPut(0)        // p0 calls Reput (pending=2)
+	g.callPut(0)        // p0 declares Put (pending=1)
 	g.respond(1, false) // p1 declines -> p0 wins at prior stake (2)
 	if g.GetHandWinnerIdx() != 0 {
 		t.Errorf("hand winner = %d, want 0", g.GetHandWinnerIdx())
@@ -371,22 +371,24 @@ func TestPutReRaiseChain(t *testing.T) {
 	if g.GetResponderIdx() != 1 {
 		t.Fatalf("responder = %d, want 1", g.GetResponderIdx())
 	}
-	g.callPut(1) // p1 re-raises to Reput (pending 2, responder 0)
-	if g.GetPendingLevel() != PutLevelReput || g.GetResponderIdx() != 0 || g.GetPutCallerIdx() != 1 {
-		t.Fatalf("after re-raise pending=%d responder=%d caller=%d", g.GetPendingLevel(), g.GetResponderIdx(), g.GetPutCallerIdx())
+	// **プットに再宣言は無い。** 「Put」と言われた側は受けるか降りるかの
+	// 二択で、賭けを引き上げ返す手はない (クローン元のトゥルコは Retruco へ
+	// 伸ばせる)。応答フェーズで相手が更に宣言できないことを見る。
+	if g.canDeclare(1) {
+		t.Error("プットでは応答側が賭けを引き上げ返せない")
 	}
-	g.respond(0, true)
-	if g.GetAcceptedLevel() != PutLevelReput || g.GetHandStake() != 3 {
-		t.Errorf("acceptedLevel=%d stake=%d, want 2/3", g.GetAcceptedLevel(), g.GetHandStake())
+	g.respond(1, true)
+	if g.GetAcceptedLevel() != PutLevelPut || g.GetHandStake() != 2 {
+		t.Errorf("acceptedLevel=%d stake=%d, want %d/2", g.GetAcceptedLevel(), g.GetHandStake(), PutLevelPut)
 	}
 }
 
 func TestPutCanDeclareMaxLevel(t *testing.T) {
 	g := twoHumanPut()
 	putSetupBaza(g, 0)
-	g.SetAcceptedLevel(PutLevelValeCuatro)
+	g.SetAcceptedLevel(PutMaxLevel)
 	if g.canDeclare(0) {
-		t.Error("canDeclare at Vale Cuatro should be false")
+		t.Error("すでに Put が受諾済みなら、それ以上は宣言できない")
 	}
 	// pending at max in respond phase -> cannot re-raise
 	g.SetPhase(PutPhaseRespond)

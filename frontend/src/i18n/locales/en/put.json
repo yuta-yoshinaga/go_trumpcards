@@ -1,37 +1,35 @@
 {
-  "currentTrick": "Current baza",
+  "currentTrick": "Current trick",
   "title": "Put (プット)",
   "subtitle": "South American / Spanish bluffing trick-taking — raise the stakes",
   "header": {
     "hand": "Hand",
-    "baza": "Baza",
+    "trick": "Trick",
     "target": "Target",
     "match": "Match",
     "you": "You",
     "cpu": "CPU",
     "stake": "Stake",
     "level": "Call",
-    "tricks": "Bazas won",
+    "tricks": "Tricks won",
     "cards": "Cards"
   },
   "level": {
     "none": "None",
-    "put": "Put",
-    "reput": "Reput",
-    "valecuatro": "Vale Cuatro"
+    "put": "Put"
   },
   "phase": {
     "play": "Play",
     "respond": "Respond",
-    "trickEnd": "Baza over",
+    "trickEnd": "Trick over",
     "handEnd": "Hand over",
     "gameEnd": "Match over"
   },
   "actions": {
     "play": "Play",
     "put": "Call Put",
-    "accept": "Accept (Quiero)",
-    "decline": "Decline (No Quiero)",
+    "accept": "Accept",
+    "decline": "Decline",
     "raise": "Raise",
     "next": "Next",
     "reset": "Reset"
@@ -44,11 +42,11 @@
   "hintReason": {
     "leadStrong": "Lead with a strong card",
     "leadLow": "Lead low to save your strong cards",
-    "followWin": "Play a stronger card to win this baza",
-    "followDump": "Dump a weak card and let this baza go",
+    "followWin": "Play a stronger card to win this trick",
+    "followDump": "Dump a weak card and let this trick go",
     "call": "Strong hand — declare Put",
-    "accept": "Accept (Quiero) and play it out",
-    "decline": "Weak hand — decline (No Quiero)"
+    "accept": "Accept and play it out",
+    "decline": "Weak hand — decline"
   },
   "caller": {
     "you": "You",
@@ -58,7 +56,7 @@
     "score": "Match score. The first player to reach the target score wins.",
     "trick": "Cards played to the table. The matadores (special cards) are strongest and follow their own ranking.",
     "hand": "Your hand — click a card to play it.",
-    "call": "Calling Put raises the stake (Put → Reput → Vale Cuatro). The opponent may accept, decline, or re-raise.",
+    "call": "Calling Put doubles the stake. The opponent may accept or decline — there is no re-raise.",
     "rankRef": "Open \"Card strength\" to see the unique ranking order, including the matadores."
   },
   "rankRef": {

@@ -220,6 +220,7 @@ import type {
   PresidentResponse,
   PrimeroResponse,
   PrsiResponse,
+  PutResponse,
   PyramidResponse,
   RamschResponse,
   RamsResponse,
@@ -555,6 +556,7 @@ import { getPreferenceHint } from '../utils/hints/preferenceHint';
 import { getPresidentHint } from '../utils/hints/presidentHint';
 import { getPrimeroHint } from '../utils/hints/primeroHint';
 import { getPrsiHint } from '../utils/hints/prsiHint';
+import { getPutHint } from '../utils/hints/putHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRamschHint } from '../utils/hints/ramschHint';
 import { getRamsHint } from '../utils/hints/ramsHint';
@@ -1015,6 +1017,7 @@ export const hintFactories = {
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),
   pan: (s) => getPanHint(s as PanResponse),
+  put: (s) => getPutHint(s as PutResponse),
   truco: (s) => getTrucoHint(s as TrucoResponse),
 } satisfies Record<string, HintFn>;
 

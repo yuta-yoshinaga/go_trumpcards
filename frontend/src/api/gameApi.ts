@@ -237,6 +237,7 @@ export * from './games/preference';
 export * from './games/president';
 export * from './games/primero';
 export * from './games/prsi';
+export * from './games/put';
 export * from './games/pyramid';
 export * from './games/rams';
 export * from './games/ramsch';
@@ -605,6 +606,7 @@ export const games = [
   'chinesepoker',
   'sixcardgolf',
   'doudizhu',
+  'put',
   'truco',
   'acesup',
   'schnapsen',

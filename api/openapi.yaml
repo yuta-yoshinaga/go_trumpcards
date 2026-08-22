@@ -506,6 +506,8 @@ tags:
     description: Dou Dizhu (斗地主) - 3-player asymmetric shedding game with a 54-card deck (52 + 2 jokers). 17 cards each plus a 3-card kitty. Players bid 1-3 to become the Landlord (takes the kitty, 20 cards) vs two cooperating Peasants. Card strength 3<...<2<SmallJoker<BigJoker. Combos include singles, pairs, trios, straights, consecutive pairs, airplanes, bombs (4-of-a-kind), and rockets (both jokers). Bombs/rockets beat any non-bomb play. Score = baseBid x 2^bombCount.
   - name: truco
     description: Truco (トゥルコ) - 2-player (1 human + 1 CPU) South-American trick-taking + bluffing game with a 40-card deck (8/9/10 removed). Deal 3 cards per hand (mano); win 2 of 3 bazas (tricks, no must-follow) to win the mano. Card strength (matadores) 1-spades > 1-clubs > 7-spades > 7-coins > all 3 > 2 > 1 > K > Q > J > 7 > 6 > 5 > 4; equal-strength bazas tie (parda). Declare Truco to raise the stake (Truco=2, Retruco=3, Vale Cuatro=4); opponent accepts (Quiero), declines (No Quiero = caller wins at the prior stake), or re-raises. First to the match target (default 15) wins.
+  - name: put
+    description: Put (プット) - 2-player (1 human + 1 CPU) English gambling trick-taking game, the ancestor of Truco. Deal 3 cards per hand from a 52-card deck; win 2 of 3 tricks (no must-follow) to win the hand. Card strength 3 > 2 > A > K > Q > J > 10 > 9 > 8 > 7 > 6 > 5 > 4, suits irrelevant; equal cards tie the trick. Declare Put at any time to double the stake; the opponent accepts or concedes — there is no re-raise. First to the match target (default 15) wins.
   - name: acesup
     description: Aces Up (四つ葉のクローバー) - single-player solitaire with a standard 52-card deck. 4 tableau columns dealt 1 card each (48 to stock). Aces rank highest. Remove a column's top card when another column's top is the same suit and higher rank; deal one card onto each column; move a top card into an empty column. Win by clearing the board down to the four Aces.
   - name: narcotic
@@ -23648,6 +23650,68 @@ paths:
               schema:
                 $ref: '#/components/schemas/TrucoResponse'
 
+  /put/exec:
+    post:
+      tags:
+        - put
+      summary: Execute a Put (トゥルコ) game command
+      description: |
+        Send a command to advance the Put match identified by `sessionId`.
+        The game has 2 players (1 human + 1 CPU). Each hand (hand) deals 3 cards;
+        a player may double the stake with `put` and the opponent responds with
+        `accept` / `decline` — **there is no re-raise**. Card strength is
+        3-2-A-K-Q-J-10-9-8-7-6-5-4 and suits do not matter; equal cards tie the
+        trick. Win 2 of 3 tricks (no must-follow) to win the hand.
+        First to the match target wins.
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`   | `r` | Start / restart a match |
+        | `play`    | `p` | Play the card at hand position `cardIndex` |
+        | `put`   | `t` | Declare Put — doubles the stake (no re-raise) |
+        | `accept`  | `a` | Accept the pending Put |
+        | `decline` | `d` | Decline the pending Put (caller wins at the prior stake) |
+        | `next`    | `n` | Advance to the next trick / hand |
+        | `hint`    | `h` | Return a move hint |
+        | `log`     | `l` | Return the action log |
+      operationId: putExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutRequest'
+            examples:
+              reset:
+                summary: Start a new match
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand position 0
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+              put:
+                summary: Declare Put
+                value:
+                  command: put
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PutResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PutResponse'
+
   /acesup/exec:
     post:
       tags:
@@ -37326,6 +37390,218 @@ components:
           type: object
           additionalProperties:
             type: string
+    # -------------------------------------------------------------------------
+    # Put
+    # -------------------------------------------------------------------------
+    PutConfig:
+      type: object
+      required:
+        - cpuDifficulty
+        - matchTarget
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: CPU difficulty (0=Normal)
+          enum: [0]
+          example: 0
+        matchTarget:
+          type: integer
+          description: Points needed to win the match (default 15)
+          minimum: 1
+          maximum: 60
+          example: 15
+
+    PutRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `play` (`p`),
+            `put` (`t`), `accept` (`a`), `decline` (`d`), `next` (`n`),
+            `hint` (`h`), `log` (`l`).
+          enum: [r, reset, p, play, t, put, a, accept, d, decline, n, next, h, hint, l, log]
+          example: play
+        cardIndex:
+          type: integer
+          nullable: true
+          description: Zero-based hand position to play (for the `play` command).
+          minimum: 0
+          example: 0
+        sessionId:
+          type: string
+          description: Unique session identifier (max 256 characters)
+          maxLength: 256
+          example: my-session-001
+        config:
+          allOf:
+            - $ref: '#/components/schemas/PutConfig'
+          nullable: true
+          description: |
+            Optional configuration for the `reset` command.
+            Omit (or set to null) to reuse the previous configuration.
+
+    PutPlayer:
+      type: object
+      required:
+        - id
+        - isHuman
+        - cardCount
+        - cards
+        - trickCount
+      properties:
+        id:
+          type: integer
+          example: 0
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          example: 3
+        cards:
+          type: array
+          description: Visible cards (only populated for the human player)
+          items:
+            $ref: '#/components/schemas/Card'
+        trickCount:
+          type: integer
+          description: Tricks won in the current hand
+
+    PutTrickCard:
+      type: object
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+        card:
+          $ref: '#/components/schemas/Card'
+
+    PutHint:
+      type: object
+      required:
+        - action
+        - reason
+      properties:
+        action:
+          type: string
+          description: Suggested action (play / call / accept / decline)
+        cardIndex:
+          type: integer
+          nullable: true
+        reason:
+          type: string
+
+    PutResponse:
+      type: object
+      required:
+        - players
+        - phase
+        - handNumber
+        - trickNumber
+        - currentPlayerIdx
+        - responderIdx
+        - currentTrick
+        - trickResults
+        - leadPlayerIdx
+        - handIdx
+        - dealerIdx
+        - handStake
+        - acceptedLevel
+        - pendingLevel
+        - putCallerIdx
+        - canDeclarePut
+        - matchTarget
+        - matchPoints
+        - handWinnerIdx
+        - gameEndFlag
+        - winnerIdx
+        - config
+        - message
+      properties:
+        players:
+          type: array
+          description: State of both players
+          items:
+            $ref: '#/components/schemas/PutPlayer'
+        phase:
+          type: integer
+          description: Phase (0=Play, 1=Respond, 2=TrickEnd, 3=HandEnd, 4=GameEnd)
+          enum: [0, 1, 2, 3, 4]
+        handNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        responderIdx:
+          type: integer
+          description: Player who must respond to a pending call (-1 when none)
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/PutTrickCard'
+        trickResults:
+          type: array
+          description: 'Outcome of each completed trick this hand: 0/1 = winner, -1 = parda (tie)'
+          items:
+            type: integer
+        leadPlayerIdx:
+          type: integer
+        handIdx:
+          type: integer
+          description: Elder hand (non-dealer); decides all-parda hands
+        dealerIdx:
+          type: integer
+        handStake:
+          type: integer
+          description: Current agreed stake for the hand (1..4)
+        acceptedLevel:
+          type: integer
+          description: Accepted betting level (0=none, 1=Put). Put has no re-raise ladder.
+          enum: [0, 1, 2, 3]
+        pendingLevel:
+          type: integer
+          description: Proposed level while awaiting a response (0 otherwise)
+        putCallerIdx:
+          type: integer
+          description: Index of the player whose call is pending (-1 otherwise)
+        canDeclarePut:
+          type: boolean
+        matchTarget:
+          type: integer
+        matchPoints:
+          type: array
+          description: Cumulative match points [p0, p1]
+          items:
+            type: integer
+        handWinnerIdx:
+          type: integer
+          description: Winner of the most recent hand (-1 = unresolved)
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: Match winner (-1 = unfinished)
+        hint:
+          allOf:
+            - $ref: '#/components/schemas/PutHint'
+          nullable: true
+        config:
+          $ref: '#/components/schemas/PutConfig'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
 
     # -------------------------------------------------------------------------
     # Big Two
