@@ -3,41 +3,31 @@ import type { HintResult } from '../../types/hint';
 import { PutPhase } from '../../types/phases';
 
 /**
- * Strength of a single Put card on the 40-card Spanish deck. Mirrors the
- * backend `PutCardStrength` ranking exactly: the four matadores (1♠ > 1♣ >
- * 7♠ > 7♦) sit above the common ladder (3 > 2 > 1 > K > Q > J > 7 > 6 > 5 > 4).
- * Unused ranks (8/9/10) and nil cards return 0.
+ * Strength of a single Put card. Mirrors the backend `PutCardStrength` in
+ * `internal/domain/Put.go` exactly.
+ *
+ * **Suits are irrelevant and all 52 cards are used.** The order is
+ * `3 > 2 > A > K > Q > J > 10 > 9 > 8 > 7 > 6 > 5 > 4`, so the 3 is the
+ * strongest card and the 4 the weakest. Nil cards return 0.
+ *
+ * This is the one place the clone source (Truco) differs most: Truco ranks
+ * four suit-specific *matadores* (1♠ > 1♣ > 7♠ > 7♦) above a common ladder and
+ * plays a 40-card Spanish deck with 8/9/10 removed. Carrying that here made the
+ * in-app hint call an 8, 9 or 10 worthless when they are really the 5th, 6th
+ * and 7th strongest ranks.
  */
 export function putCardStrength(c: Card | undefined): number {
   if (!c) return 0;
-  const { value: v, design: d } = c;
-  if (v === 1 && d === 'SPADE') return 14; // 1 de Espadas
-  if (v === 1 && d === 'CLOVER') return 13; // 1 de Bastos
-  if (v === 7 && d === 'SPADE') return 12; // 7 de Espadas
-  if (v === 7 && d === 'DIAMOND') return 11; // 7 de Oros
-  switch (v) {
+  switch (c.value) {
     case 3:
-      return 10;
+      return 13;
     case 2:
-      return 9;
-    case 1:
-      return 8;
-    case 13:
-      return 7;
-    case 12:
-      return 6;
-    case 11:
-      return 5;
-    case 7:
-      return 4;
-    case 6:
-      return 3;
-    case 5:
-      return 2;
-    case 4:
-      return 1;
+      return 12;
+    case 1: // A
+      return 11;
     default:
-      return 0;
+      // K(13)=10, Q(12)=9, J(11)=8, 10=7, ... 4=1 — monotonically decreasing.
+      return c.value >= 4 && c.value <= 13 ? c.value - 3 : 0;
   }
 }
 

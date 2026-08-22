@@ -53,7 +53,7 @@
   },
   "tutorial": {
     "score": "Match score. The first player to reach the target score wins.",
-    "trick": "Cards played to the table. The matadores (special cards) are strongest and follow their own ranking.",
+    "trick": "Cards played to the table. The 3 is the strongest card and the 4 the weakest; suits do not matter.",
     "hand": "Your hand — click a card to play it.",
     "call": "Calling Put doubles the stake. The opponent may accept or decline — there is no re-raise.",
     "rankRef": "Open “Card strength” to see the unusual order — the 3 is strongest and the 4 weakest."

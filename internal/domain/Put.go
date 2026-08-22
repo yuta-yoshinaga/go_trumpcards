@@ -126,8 +126,8 @@ type Put struct {
 	leadPlayerIdx     int
 	manoIdx           int // 親 (elder hand = 非ディーラー)。全パルダ時のタイブレーク
 	dealerIdx         int
-	handStake         int // 現在の確定賭け点 (1..4)
-	acceptedLevel     int // 受諾済みベッティングレベル (0..3)
+	handStake         int // 現在の確定賭け点 (1..2 — 宣言は 1 段だけ)
+	acceptedLevel     int // 受諾済みベッティングレベル (0..PutMaxLevel)
 	pendingLevel      int // 応答待ちで提示中のレベル (Respond 中のみ > 0)
 	putCallerIdx      int // 応答待ちの宣言者、それ以外は -1
 	matchTarget       int
@@ -734,13 +734,10 @@ func (t *Put) sortAllHands() {
 }
 
 // putLevelName ベッティングレベルの表示名を返す。
-func putLevelName(level int) string {
-	switch level {
-	case PutLevelPut:
-		return "Put"
-	default:
-		return "Put"
-	}
+func putLevelName(int) string {
+	// 宣言は 1 段だけなので、名前は常に "Put"。レベルを引数に残してあるのは
+	// 呼び出し側の形を変えないため。
+	return "Put"
 }
 
 // playHintReason プレイ推奨の理由キーを判定する。
@@ -781,8 +778,6 @@ func (t *Put) cpuActPlay(idx int) {
 // cpuActRespond CPU の応答フェーズ行動: 再引き上げ / 受諾 / 拒否。
 func (t *Put) cpuActRespond(idx int) {
 	switch t.cpuRespondDecision(idx) {
-	case "raise":
-		t.callPut(idx)
 	case "accept":
 		t.respond(idx, true)
 	default:
@@ -855,13 +850,17 @@ func (t *Put) cpuWantsToCall(idx int) bool {
 	}
 }
 
-// cpuRespondDecision CPU の応答を決定する ("raise" / "accept" / "decline")。
+// cpuRespondDecision CPU の応答を決定する ("accept" / "decline")。
+//
+// **引き上げ返す選択肢は無い。** プットの宣言は 1 段だけなので、CPU が応答する
+// 時点で pendingLevel は必ず PutMaxLevel。クローン元のトゥルコにはここに
+// `"raise"` の分岐があったが、この卓では到達しない。
+//
+// 強さの閾値は 1..13 のスケール (3=13 が最強、4=1 が最弱) で読む:
+// 12 以上 = 2 か 3、10 以上 = K 以上、7 以上 = 10 以上。
 func (t *Put) cpuRespondDecision(idx int) string {
 	top := t.handTopStrength(idx)
 	r := rand.Float64()
-	if t.pendingLevel < PutMaxLevel && top >= 12 && r < 0.4 {
-		return "raise"
-	}
 	if top >= 10 {
 		return "accept"
 	}

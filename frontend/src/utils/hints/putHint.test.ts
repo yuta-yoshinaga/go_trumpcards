@@ -33,18 +33,47 @@ const trick = (value: number, design = 'SPADE'): PutTrickCard =>
   ({ playerIdx: 1, card: card(value, design) }) as unknown as PutTrickCard;
 
 describe('putCardStrength', () => {
-  it('ranks the four matadores above every common card', () => {
-    expect(putCardStrength(card(1, 'SPADE'))).toBe(14); // 1 de Espadas
-    expect(putCardStrength(card(1, 'CLOVER'))).toBe(13); // 1 de Bastos
-    expect(putCardStrength(card(7, 'SPADE'))).toBe(12); // 7 de Espadas
-    expect(putCardStrength(card(7, 'DIAMOND'))).toBe(11); // 7 de Oros
-    expect(putCardStrength(card(3, 'HEART'))).toBe(10); // strongest common
-    expect(putCardStrength(card(4, 'HEART'))).toBe(1); // weakest common
+  // The order is 3-2-A-K-Q-J-10-9-8-7-6-5-4 and suits do not matter. These
+  // assertions used to encode Truco's ranking (four suit-specific matadores
+  // above a common ladder, 8/9/10 worth 0) — the clone source's rules, not
+  // Put's — so the suite was green while testing the wrong game.
+  it('ranks 3 highest and 4 lowest, matching the Go domain', () => {
+    expect(putCardStrength(card(3, 'HEART'))).toBe(13);
+    expect(putCardStrength(card(2, 'CLOVER'))).toBe(12);
+    expect(putCardStrength(card(1, 'SPADE'))).toBe(11);
+    expect(putCardStrength(card(13, 'SPADE'))).toBe(10);
+    expect(putCardStrength(card(4, 'HEART'))).toBe(1);
   });
 
-  it('returns 0 for unused ranks and undefined', () => {
-    expect(putCardStrength(card(8))).toBe(0);
+  it('uses all 52 cards — 8, 9 and 10 are real ranks, not dead ones', () => {
+    // Truco strips these from the deck; Put does not. Returning 0 made the
+    // in-app hint recommend discarding them as worthless.
+    expect(putCardStrength(card(10))).toBe(7);
+    expect(putCardStrength(card(9))).toBe(6);
+    expect(putCardStrength(card(8))).toBe(5);
+  });
+
+  it('ignores suit entirely', () => {
+    for (const value of [1, 3, 7, 13]) {
+      const want = putCardStrength(card(value, 'SPADE'));
+      for (const design of ['HEART', 'DIAMOND', 'CLOVER']) {
+        expect(putCardStrength(card(value, design))).toBe(want);
+      }
+    }
+  });
+
+  it('assigns each of the 13 ranks a distinct strength from 1 to 13', () => {
+    const seen = new Set<number>();
+    for (let v = 1; v <= 13; v++) seen.add(putCardStrength(card(v)));
+    expect(seen.size).toBe(13);
+    expect(Math.min(...seen)).toBe(1);
+    expect(Math.max(...seen)).toBe(13);
+  });
+
+  it('returns 0 for undefined and out-of-range values', () => {
     expect(putCardStrength(undefined)).toBe(0);
+    expect(putCardStrength(card(0))).toBe(0);
+    expect(putCardStrength(card(14))).toBe(0);
   });
 });
 

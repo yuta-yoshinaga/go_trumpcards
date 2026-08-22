@@ -41,10 +41,10 @@ const LEVEL_KEYS = ['none', 'put'] as const;
 /**
  * Inner content for the Put page (wrapped by `withTutorial` below).
  *
- * Renders the 2-player South-American bluffing trick-taking game: a 40-card
- * deck with no must-follow rule, best-of-3 bazas per hand, and the "Put"
- * single stake-doubling declaration (Put) that the opponent may
- * accept, decline, or re-raise. First to the match target (default 15) wins.
+ * Renders the 2-player English gambling trick-taking game: a full 52-card
+ * deck with no must-follow rule, best-of-3 tricks per hand, and the "Put"
+ * declaration that doubles the stake and which the opponent may only accept or
+ * decline — there is no re-raise. First to the match target (default 15) wins.
  */
 /** Match-target choices, inside the domain's 1..60 range (PutConfig.go). */
 const PUT_MATCH_TARGET_OPTIONS = [9, 12, 15, 18, 24, 30] as const;
