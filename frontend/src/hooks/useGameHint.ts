@@ -291,6 +291,7 @@ import type {
   ThirtyOneResponse,
   ThreeCardBragResponse,
   ThreeCardResponse,
+  ThreeCardRummyResponse,
   ThreeThirteenResponse,
   TichuResponse,
   TienLenResponse,
@@ -624,6 +625,7 @@ import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
 import { getThirtyOneHint } from '../utils/hints/thirtyoneHint';
 import { getThreeCardBragHint } from '../utils/hints/threeCardBragHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
+import { getThreeCardRummyHint } from '../utils/hints/threecardrummyHint';
 import { getThreeThirteenHint } from '../utils/hints/threethirteenHint';
 import { getTichuHint } from '../utils/hints/tichuHint';
 import { getTienLenHint } from '../utils/hints/tienlenHint';
@@ -697,6 +699,7 @@ export const hintFactories = {
   jokerpoker: (s) => getJokerPokerHint(s as VideoPokerResponse),
   indianpoker: (s) => getIndianPokerHint(s as IndianPokerResponse),
   threecard: (s) => getThreeCardHint(s as ThreeCardResponse),
+  threecardrummy: (s) => getThreeCardRummyHint(s as ThreeCardRummyResponse),
   tichu: (s) => getTichuHint(s as TichuResponse),
   highcardflush: (s) => getHighCardFlushHint(s as HighCardFlushResponse),
   escoba: (s) => getEscobaHint(s as EscobaResponse),

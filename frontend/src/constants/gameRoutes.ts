@@ -94,6 +94,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 3, 2, 5], skill: [5, 5, 2, 4], social: [3, 5, 2, 5, 2], theme: [5, 1, 1, 1, 4, 1] },
       },
       {
+        path: '/threecardrummy',
+        labelKey: 'nav.threecardrummy',
+        icon: '🃏',
+        page: 'ThreeCardRummy',
+        profile: { mood: [3, 3, 2, 4], skill: [4, 4, 2, 3], social: [3, 5, 2, 4, 2], theme: [5, 1, 1, 1, 4, 1] },
+      },
+      {
         path: '/caribbeanstud',
         labelKey: 'nav.caribbeanstud',
         icon: '🏝️',

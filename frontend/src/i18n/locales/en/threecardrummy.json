@@ -1,0 +1,70 @@
+{
+  "title": "Three Card Rummy",
+  "player": "Player",
+  "dealer": "Dealer",
+  "label": {
+    "chips": "Chips",
+    "ante": "Ante",
+    "lowBonus": "Low Bonus",
+    "play": "Play bet",
+    "score": "Score"
+  },
+  "button": {
+    "bet": "Bet",
+    "play": "Play",
+    "fold": "Fold",
+    "reset": "Reset",
+    "rebet": "Rebet the same ({{amount}})"
+  },
+  "phase": {
+    "bet": "Bet",
+    "action": "Play / fold",
+    "end": "Result"
+  },
+  "payout": {
+    "ante": "Ante",
+    "play": "Play",
+    "anteBonus": "Ante bonus",
+    "lowBonus": "Low bonus",
+    "total": "Total"
+  },
+  "betSlip": {
+    "ante": "Ante",
+    "lowBonus": "Low Bonus",
+    "playRequired": "Needed to play"
+  },
+  "score": {
+    "perfect": "0 (a meld — the best hand)",
+    "value": "{{score}}",
+    "hidden": "?"
+  },
+  "hintReason": {
+    "strongHand": "10 or less — play",
+    "lowEnoughToPlay": "Under the dealer's qualifying limit of 20 — play",
+    "weakHand": "20 or more leaves little to play for — fold"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "betGuide": "Set the ante and any low bonus, then bet",
+  "scoringNote": "The three cards total as low as possible; 0 is best. Face cards are 10, an ace is 1. Three of a rank, or three in suit and sequence, count 0.",
+  "qualifyNote": "The dealer qualifies on a total of 20 or less.",
+  "payoutRef": {
+    "title": "Payouts",
+    "anteBonusHeader": "Ante bonus (only if you play)",
+    "anteBonusPerfect": "0 (a meld): 9:1",
+    "anteBonusVeryLow": "1–5: 3:1",
+    "anteBonusLow": "6–10: 1:1",
+    "lowBonusHeader": "Low bonus (independent of the dealer)",
+    "lowBonusPerfect": "0 (a meld): 100:1",
+    "lowBonusVeryLow": "1–5: 20:1",
+    "lowBonusLow": "6–10: 4:1"
+  },
+  "dealerQualified": "Qualifies",
+  "dealerNotQualified": "Does not qualify",
+  "tutorial": {
+    "betControls": "Set the ante and an optional low bonus, then press Bet.",
+    "actionButtons": "Play to match the ante, or fold to give up the ante.",
+    "results": "Check the result and the payouts."
+  }
+}

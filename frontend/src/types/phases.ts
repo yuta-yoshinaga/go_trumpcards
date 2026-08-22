@@ -2957,3 +2957,13 @@ export const GoofspielPhase = {
   REVEAL: 1,
   GAME_END: 2,
 } as const;
+
+/** Three Card Rummy phase constants (sync: internal/domain/ThreeCardRummy.go).
+ *
+ * **1 始まり。** ベット→アクション→終了の 3 段で、0 は使わない。
+ */
+export const ThreeCardRummyPhase = {
+  BET: 1,
+  ACTION: 2,
+  END: 3,
+} as const;

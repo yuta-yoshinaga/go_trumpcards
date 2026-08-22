@@ -6535,6 +6535,23 @@ var gameRegistry = []GameRegistryEntry{
 				"seventwentyseven.helpSetChips", "seventwentyseven.helpSetRounds",
 			},
 		}),
+	BindCuiFor("threecardrummy",
+		func() usecase.ThreeCardRummyInteractorIF {
+			return usecase.NewThreeCardRummyInteractor(domain.NewDefaultThreeCardRummy(), new(presenter.ThreeCardRummyCuiPresenter))
+		},
+		controller.NewThreeCardRummyCuiController,
+		CuiHelpSpec{
+			TitleKey: "threecardrummy.helpTitle",
+			ExampleKeys: []string{
+				"threecardrummy.helpExampleBet",
+				"threecardrummy.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"threecardrummy.helpBet", "threecardrummy.helpRebet",
+				"threecardrummy.helpPlay", "threecardrummy.helpFold", "threecardrummy.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

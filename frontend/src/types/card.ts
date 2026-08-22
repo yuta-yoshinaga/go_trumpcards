@@ -298,6 +298,7 @@ export * from './games/texasholdembonus';
 export * from './games/thirtyone';
 export * from './games/threecard';
 export * from './games/threecardbrag';
+export * from './games/threecardrummy';
 export * from './games/threethirteen';
 export * from './games/tichu';
 export * from './games/tienlen';

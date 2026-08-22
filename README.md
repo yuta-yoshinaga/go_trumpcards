@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した337種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した338種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -67,6 +67,7 @@ Go + Clean Architecture で実装した337種類のトランプゲーム。CLI �
 | トリピークス (TriPeaks) | `tripeaks` | [CUI](docs/manual/cui/tripeaks.md) / [Web](docs/manual/web/tripeaks.md) |
 | クリベッジ (Cribbage) | `cribbage` | [CUI](docs/manual/cui/cribbage.md) / [Web](docs/manual/web/cribbage.md) |
 | スリーカードポーカー (Three Card Poker) | `threecard` | [CUI](docs/manual/cui/threecard.md) / [Web](docs/manual/web/threecard.md) |
+| スリーカード・ラミー (Three Card Rummy) | `threecardrummy` | [CUI](docs/manual/cui/threecardrummy.md) / [Web](docs/manual/web/threecardrummy.md) |
 | カリビアンスタッドポーカー (Caribbean Stud Poker) | `caribbeanstud` | [CUI](docs/manual/cui/caribbeanstud.md) / [Web](docs/manual/web/caribbeanstud.md) |
 | オアシスポーカー (Oasis Poker) | `oasispoker` | [CUI](docs/manual/cui/oasispoker.md) / [Web](docs/manual/web/oasispoker.md) |
 | ロシアンポーカー (Russian Poker) | `russianpoker` | [CUI](docs/manual/cui/russianpoker.md) / [Web](docs/manual/web/russianpoker.md) |

@@ -361,16 +361,40 @@ func TestRankAndFile_MoveTableauToTableau(t *testing.T) {
 	t.Run("card index -1 means the column's top card", func(t *testing.T) {
 		// 短縮形が生きていることを固定する。上のテストが -1 をエラー扱いに
 		// 戻されたら、ここが落ちて気付ける。
-		ft := setupPlayingRankAndFile()
-		top := ft.GetTableau()[0]
-		require.NotEmpty(t, top)
-		// -1 と「最後の添字」で同じ判定になること（成否は配りに依るので、
-		// 両者が一致することだけを見る）。
-		errShorthand := ft.MoveTableauToTableau(0, -1, 1)
-		ft2 := setupPlayingRankAndFile()
-		errExplicit := ft2.MoveTableauToTableau(0, len(top)-1, 1)
-		assert.Equal(t, errExplicit == nil, errShorthand == nil,
-			"-1 が「上札」として扱われていない")
+		//
+		// **盤面は組み立てる。** 以前は setupPlayingRankAndFile() を 2 回呼んで
+		// 「-1 を渡した盤」と「明示添字を渡した*別の*盤」の成否を比べていた。
+		// Reset() はシャッフルするので二つは別の配りで、合法性が食い違って
+		// 当然だった —— clean な develop でも落ちる (30 回中数回)。
+		build := func() *domain.RankAndFile {
+			ft := newTestRankAndFile()
+			ft.Reset()
+			clearRFTableau(ft)
+			var tableau [domain.RankAndFileTableauCnt][]*domain.RankAndFileTableauCard
+			// 列 0 の一番上が ♥4、列 1 の一番上が ♠5。黒→赤の降順なので合法。
+			tableau[0] = []*domain.RankAndFileTableauCard{
+				makeRFTableauCard(domain.CardDesignHeart, 9),
+				makeRFTableauCard(domain.CardDesignHeart, 4),
+			}
+			tableau[1] = []*domain.RankAndFileTableauCard{
+				makeRFTableauCard(domain.CardDesignSpade, 5),
+			}
+			ft.SetTableau(tableau)
+			return ft
+		}
+
+		shorthand := build()
+		explicit := build()
+		top := shorthand.GetTableau()[0]
+		require.Len(t, top, 2)
+
+		errShorthand := shorthand.MoveTableauToTableau(0, -1, 1)
+		errExplicit := explicit.MoveTableauToTableau(0, len(top)-1, 1)
+
+		require.NoError(t, errExplicit, "明示添字での移動は合法な盤面であること")
+		assert.NoError(t, errShorthand, "-1 が「上札」として扱われていない")
+		assert.Equal(t, explicit.GetTableau(), shorthand.GetTableau(),
+			"-1 と最後の添字で結果の盤面まで一致すること")
 	})
 
 	t.Run("not playing phase", func(t *testing.T) {
