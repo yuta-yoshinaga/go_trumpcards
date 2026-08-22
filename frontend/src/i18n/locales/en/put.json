@@ -1,0 +1,76 @@
+{
+  "currentTrick": "Current baza",
+  "title": "Put (プット)",
+  "subtitle": "South American / Spanish bluffing trick-taking — raise the stakes",
+  "header": {
+    "hand": "Hand",
+    "baza": "Baza",
+    "target": "Target",
+    "match": "Match",
+    "you": "You",
+    "cpu": "CPU",
+    "stake": "Stake",
+    "level": "Call",
+    "tricks": "Bazas won",
+    "cards": "Cards"
+  },
+  "level": {
+    "none": "None",
+    "put": "Put",
+    "reput": "Reput",
+    "valecuatro": "Vale Cuatro"
+  },
+  "phase": {
+    "play": "Play",
+    "respond": "Respond",
+    "trickEnd": "Baza over",
+    "handEnd": "Hand over",
+    "gameEnd": "Match over"
+  },
+  "actions": {
+    "play": "Play",
+    "put": "Call Put",
+    "accept": "Accept (Quiero)",
+    "decline": "Decline (No Quiero)",
+    "raise": "Raise",
+    "next": "Next",
+    "reset": "Reset"
+  },
+  "result": {
+    "youWin": "You win! ({{p0}}-{{p1}})",
+    "cpuWin": "CPU wins ({{p0}}-{{p1}})"
+  },
+  "respondPrompt": "{{name}} called {{level}}. Respond.",
+  "hintReason": {
+    "leadStrong": "Lead with a strong card",
+    "leadLow": "Lead low to save your strong cards",
+    "followWin": "Play a stronger card to win this baza",
+    "followDump": "Dump a weak card and let this baza go",
+    "call": "Strong hand — declare Put",
+    "accept": "Accept (Quiero) and play it out",
+    "decline": "Weak hand — decline (No Quiero)"
+  },
+  "caller": {
+    "you": "You",
+    "cpu": "CPU"
+  },
+  "tutorial": {
+    "score": "Match score. The first player to reach the target score wins.",
+    "trick": "Cards played to the table. The matadores (special cards) are strongest and follow their own ranking.",
+    "hand": "Your hand — click a card to play it.",
+    "call": "Calling Put raises the stake (Put → Reput → Vale Cuatro). The opponent may accept, decline, or re-raise.",
+    "rankRef": "Open \"Card strength\" to see the unique ranking order, including the matadores."
+  },
+  "rankRef": {
+    "title": "Card strength (strongest first)",
+    "matadores": "Matadores (special top cards)",
+    "matadoresOrder": "1♠ > 1♣ > 7♠ > 7♦",
+    "common": "Common cards",
+    "commonOrder": "3 > 2 > 1 > K > Q > J > 7 > 6 > 5 > 4",
+    "note": "The four matadores always rank highest. The plain 1s and 7s exclude the matadores. 8/9/10 are not used."
+  },
+  "settings": {
+    "title": "Settings",
+    "matchTarget": "Match target"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "currentTrick": "現在のバサ",
+  "title": "Put (プット)",
+  "subtitle": "南米・スペインの心理戦トリックテイキング — 賭け点を釣り上げるブラフ",
+  "header": {
+    "hand": "マノ",
+    "baza": "バサ",
+    "target": "目標",
+    "match": "マッチ得点",
+    "you": "あなた",
+    "cpu": "CPU",
+    "stake": "賭け点",
+    "level": "宣言",
+    "tricks": "獲得バサ",
+    "cards": "手札"
+  },
+  "level": {
+    "none": "通常",
+    "put": "Put",
+    "reput": "Reput",
+    "valecuatro": "Vale Cuatro"
+  },
+  "phase": {
+    "play": "プレイ",
+    "respond": "応答",
+    "trickEnd": "バサ終了",
+    "handEnd": "マノ終了",
+    "gameEnd": "マッチ終了"
+  },
+  "actions": {
+    "play": "出す",
+    "put": "Put を宣言",
+    "accept": "受諾 (Quiero)",
+    "decline": "拒否 (No Quiero)",
+    "raise": "引き上げる",
+    "next": "次へ",
+    "reset": "リセット"
+  },
+  "result": {
+    "youWin": "あなたの勝ち！ ({{p0}}-{{p1}})",
+    "cpuWin": "CPUの勝ち ({{p0}}-{{p1}})"
+  },
+  "respondPrompt": "{{name}} が {{level}} を宣言しました。応答してください。",
+  "hintReason": {
+    "leadStrong": "強いカードでリードしましょう",
+    "leadLow": "弱いカードでリードして強い札を温存",
+    "followWin": "強い札を出してこのバサを取りましょう",
+    "followDump": "弱い札を捨ててこのバサは捨てましょう",
+    "call": "強い手です。Put を宣言しましょう",
+    "accept": "受諾 (Quiero) して戦いましょう",
+    "decline": "手が弱いので拒否 (No Quiero) しましょう"
+  },
+  "caller": {
+    "you": "あなた",
+    "cpu": "CPU"
+  },
+  "tutorial": {
+    "score": "マッチ得点です。先に目標点に到達したプレイヤーの勝ちです。",
+    "trick": "場に出されたカードです。マタドール（特殊札）が最強で、独自の強さランキングがあります。",
+    "hand": "あなたの手札です。カードをクリックして出します。",
+    "call": "プットを宣言すると賭け金が上がります（プット→レプット→バレクアトロ）。相手は受諾/拒否/再上げを選べます。",
+    "rankRef": "「カードの強さ」を開くと、マタドールを含む独自の強さ順を確認できます。"
+  },
+  "rankRef": {
+    "title": "カードの強さ（強い順）",
+    "matadores": "マタドール（特殊札・最強）",
+    "matadoresOrder": "1♠ ＞ 1♣ ＞ 7♠ ＞ 7♦",
+    "common": "通常札",
+    "commonOrder": "3 ＞ 2 ＞ 1 ＞ K ＞ Q ＞ J ＞ 7 ＞ 6 ＞ 5 ＞ 4",
+    "note": "マタドール4枚が常に最強。通常の 1・7 はマタドールを除いた札です。8・9・10 は使いません。"
+  },
+  "settings": {
+    "title": "設定",
+    "matchTarget": "マッチ目標点"
+  }
+}

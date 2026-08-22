@@ -1720,4 +1720,9 @@ func init() {
 			return usecase.NewDramahaInteractor(domain.NewDefaultDramaha(), new(presenter.DramahaWebPresenter))
 		},
 		controller.NewDramahaWebController)
+	BindWebControllerFor("put",
+		func() usecase.PutInteractorIF {
+			return usecase.NewPutInteractor(domain.NewDefaultPut(), new(presenter.PutWebPresenter))
+		},
+		controller.NewPutWebController)
 }

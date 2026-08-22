@@ -394,4 +394,12 @@ func init() {
 			return usecase.RestoreSevenTwentySevenInteractor(data, new(presenter.SevenTwentySevenWebPresenter))
 		},
 		controller.NewSevenTwentySevenWebControllerWithProvider)
+	games.RegisterKVGame("put", games.CategoryExtra4,
+		func() usecase.PutInteractorIF {
+			return usecase.NewPutInteractor(domain.NewDefaultPut(), new(presenter.PutWebPresenter))
+		},
+		func(data []byte) (usecase.PutInteractorIF, error) {
+			return usecase.RestorePutInteractor(data, new(presenter.PutWebPresenter))
+		},
+		controller.NewPutWebControllerWithProvider)
 }

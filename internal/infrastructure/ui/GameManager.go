@@ -6611,6 +6611,18 @@ var gameRegistry = []GameRegistryEntry{
 
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("put",
+		func() usecase.PutInteractorIF {
+			return usecase.NewPutInteractor(domain.NewDefaultPut(), new(presenter.PutCuiPresenter))
+		},
+		controller.NewPutCuiController,
+		CuiHelpSpec{
+			TitleKey: "put.helpTitle",
+			ExampleKeys: []string{
+				"put.helpExamplePlay",
+			},
+			CommandKeys: []string{"put.helpPlay", "put.helpPut", "put.helpRespond", "put.helpNext", "put.helpLog", "put.helpHint"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
