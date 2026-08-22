@@ -32,6 +32,8 @@ type RistikontraGame interface {
 	GetPile() []*domain.Card
 	// GetPileTop 場の一番上の札を取得する (なければ nil)
 	GetPileTop() *domain.Card
+	// GetCounterRank 打ち返しの対象になっているランクを取得する (0 = 対象なし)
+	GetCounterRank() int
 	// GetLastCaptureIdx 最後に捕獲したプレイヤーを取得する (-1 = なし)
 	GetLastCaptureIdx() int
 	// GetPlayerCnt プレイヤー数を取得する

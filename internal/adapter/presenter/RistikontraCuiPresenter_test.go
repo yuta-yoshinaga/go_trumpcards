@@ -3,7 +3,6 @@ package presenter_test
 import (
 	"encoding/json"
 	"errors"
-	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -30,7 +29,9 @@ func TestRistikontraCuiPresenter_Output(t *testing.T) {
 	t.Run("initial state includes header", func(t *testing.T) {
 		g := newRistikontraForPresenter()
 		out := p.Output(g, nil)
-		assert.Contains(t, out, "Pişti")
+		assert.Contains(t, out, "Ristikontra")
+		// クローン元のタイトルが残っていないこと。
+		assert.NotContains(t, out, "Pişti")
 	})
 
 	t.Run("pile with top card rendered", func(t *testing.T) {
@@ -70,41 +71,42 @@ func TestRistikontraCuiPresenter_ActionLog(t *testing.T) {
 
 // **対局中の優劣を数値で出す。**リスティコントラ賞と捕獲枚数を別々に出すだけでは、
 // 複数プレイヤー分を毎回暗算することになる (#4892)。
+// TestRistikontraCuiPresenter_ShowsProvisionalScores は、途中経過が
+// **チームの獲得枚数**として出ることを見る。
+//
+// クローン元のピシュティは席ごとの近似スコア (確定ボーナス + 最多捕獲 +3) を
+// 出していた。リスティコントラは枚数がそのまま結果なので、席には自分の
+// チームの合計が入る —— パートナーが取った枚数も自分の行に乗る。
 func TestRistikontraCuiPresenter_ShowsProvisionalScores(t *testing.T) {
-	orig := color.NoColor()
-	color.SetNoColor(false) // リーダーの強調まで見る
-	defer color.SetNoColor(orig)
-
 	p := new(presenter.RistikontraCuiPresenter)
-	g := newRistikontraForPresenter()
+	g := domain.NewDefaultRistikontra()
 	g.Reset()
-	card := func() *domain.Card { return domain.NewCard(domain.CardDesignSpade, 2, false) }
 	give := func(seat, n int) {
 		cards := make([]*domain.Card, n)
 		for i := range cards {
-			cards[i] = card()
+			cards[i] = domain.NewCard(domain.CardDesignSpade, 2, false)
 		}
 		g.GetPlayer(seat).AddCaptured(cards)
 	}
 
-	// 単独リーダー → +3 が乗り、その行が強調される。
-	give(0, 5)
-	give(1, 3)
+	give(0, 5) // チーム 0
+	give(1, 3) // チーム 1
 	out := p.Output(g, nil)
-	assert.Contains(t, out, "暫定: "+strconv.Itoa(domain.RistikontraScoreMostCards)+"点")
-	assert.Contains(t, out, "カード点は集計時に加算")
+	assert.Contains(t, out, "暫定: 5点", "席 0 はチーム 0 の合計 5 を出す")
+	assert.Contains(t, out, "暫定: 3点", "席 1 はチーム 1 の合計 3 を出す")
 
-	// **同数になったら誰にも +3 は付かない** (受け入れ条件2)。
-	give(1, 2)
-	tied := p.Output(g, nil)
-	assert.NotContains(t, tied, "暫定: "+strconv.Itoa(domain.RistikontraScoreMostCards)+"点")
-	assert.Contains(t, tied, "暫定: 0点")
+	// **パートナーの捕獲が自分の行に乗る。**
+	give(2, 4)
+	partnered := p.Output(g, nil)
+	assert.Contains(t, partnered, "暫定: 9点", "チーム 0 は 5+4 = 9")
 
-	// **ゲーム終了後は最終スコアに切り替わる** (受け入れ条件3)。
+	// クローン元の近似スコアの注記はもう出さない。
+	assert.NotContains(t, partnered, "カード点は集計時に加算")
+
+	// **ゲーム終了後は最終スコアに切り替わる。**
 	g.SetGameEndFlagForTest(true)
 	ended := p.Output(g, nil)
 	assert.NotContains(t, ended, "暫定")
-	assert.NotContains(t, ended, "カード点は集計時に加算")
 }
 
 // ristikontraSetField は JSON 経由で Ristikontra の内部状態を差し替える (テスト用)。

@@ -23,6 +23,7 @@ func (pwp *RistikontraWebPresenter) Output(pg interfaces.RistikontraGame, lastEr
 
 	resObj.CurrentTurn = pg.GetCurrentTurn()
 	resObj.LastCaptureIdx = pg.GetLastCaptureIdx()
+	resObj.CounterRank = pg.GetCounterRank()
 	resObj.GameEndFlag = pg.GetGameEndFlag()
 	resObj.Phase = string(pg.GetPhase())
 	resObj.RemainingDeck = pg.GetRemainingDeck()
@@ -58,7 +59,6 @@ func (pwp *RistikontraWebPresenter) Output(pg interfaces.RistikontraGame, lastEr
 			CardCount:     player.GetCardsSize(),
 			Cards:         playerCardsToOutput(player, player.GetIsHuman()),
 			CapturedCount: player.CapturedCount(),
-			PistiBonus:    player.GetPistiBonus(),
 			FinalScore:    score,
 		})
 	}

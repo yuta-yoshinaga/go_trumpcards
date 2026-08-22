@@ -423,17 +423,17 @@ func (g *Ristikontra) mostCapturedSeat() int {
 
 // GetProvisionalScores は対局中の暫定スコアを返す。
 //
-// **カード点は含まない。**捕獲札の点数配分は最後に数えるので、途中で確実に
-// 分かるのはリスティコントラ賞と最多捕獲の +3 だけ。近似であることは呼び出し側が
-// 明示する (#4892)。**同数なら誰にも +3 は付かない。**
+// 各席には**その席が属するチームの合計枚数**が入る。勝敗はチーム単位なので、
+// 席ごとの枚数を見せると「自分は取っているのに負けている」が読めなくなる。
 func (g *Ristikontra) GetProvisionalScores() []int {
+	// **チームの獲得枚数をそのまま返す。** 札ごとの点数も Pişti ボーナスも
+	// 無いので、途中経過は「今どちらのチームが何枚持っているか」で言い切れる。
+	// クローン元のピシュティは最後にカード点を数えるため暫定値が近似だったが、
+	// ここは近似ではない。
+	counts := g.calcTeamCardCounts()
 	out := make([]int, len(g.players))
-	leader := g.mostCapturedSeat()
-	for i, p := range g.players {
-		out[i] = p.GetPistiBonus()
-		if i == leader {
-			out[i] += RistikontraScoreMostCards
-		}
+	for i := range g.players {
+		out[i] = counts[ristikontraTeamOf(i)]
 	}
 	return out
 }
@@ -573,6 +573,12 @@ func (g *Ristikontra) GetPhase() RistikontraPhase { return g.state.phase }
 func (g *Ristikontra) GetPile() []*Card { return g.state.pile }
 
 // GetPileTop は場の一番上の札を返す (なければ nil)。
+// GetCounterRank は打ち返しの対象になっているランクを返す (0 = 対象なし)。
+//
+// **直前の捕獲だけが的になる。** このランクを今この場で出せば束ごと奪えるので、
+// UI とヒントはここを見て「奪える手がある」と伝えられる。
+func (g *Ristikontra) GetCounterRank() int { return g.state.counterRank }
+
 func (g *Ristikontra) GetPileTop() *Card { return g.pileTop() }
 
 // GetLastCaptureIdx は最後に捕獲したプレイヤーを返す (-1 = なし)。

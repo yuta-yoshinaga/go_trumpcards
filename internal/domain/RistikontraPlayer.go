@@ -9,7 +9,6 @@ import "encoding/json"
 type RistikontraPlayer struct {
 	*GamePlayer
 	capturedCards []*Card
-	pistiBonus    int // このゲームで獲得した Pişti ボーナス点の累計
 }
 
 // NewRistikontraPlayer は RistikontraPlayer を構築する。
@@ -17,7 +16,6 @@ func NewRistikontraPlayer(isHuman bool) *RistikontraPlayer {
 	return &RistikontraPlayer{
 		GamePlayer:    NewGamePlayer(isHuman),
 		capturedCards: make([]*Card, 0),
-		pistiBonus:    0,
 	}
 }
 
@@ -54,20 +52,10 @@ func (p *RistikontraPlayer) ResetCaptured() {
 	p.capturedCards = make([]*Card, 0)
 }
 
-// GetPistiBonus は Pişti ボーナスの累計を取得する。
-func (p *RistikontraPlayer) GetPistiBonus() int { return p.pistiBonus }
-
-// AddPistiBonus は Pişti ボーナスを加算する。
-func (p *RistikontraPlayer) AddPistiBonus(n int) { p.pistiBonus += n }
-
-// ResetPistiBonus は Pişti ボーナスを 0 に戻す (新規ゲーム開始時)。
-func (p *RistikontraPlayer) ResetPistiBonus() { p.pistiBonus = 0 }
-
 // ristikontraPlayerJSON is the JSON wire format for RistikontraPlayer.
 type ristikontraPlayerJSON struct {
 	GamePlayer    *GamePlayer `json:"gp"`
 	CapturedCards []*Card     `json:"cc"`
-	PistiBonus    int         `json:"pb"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -75,7 +63,6 @@ func (p *RistikontraPlayer) MarshalJSON() ([]byte, error) {
 	return json.Marshal(ristikontraPlayerJSON{
 		GamePlayer:    p.GamePlayer,
 		CapturedCards: p.capturedCards,
-		PistiBonus:    p.pistiBonus,
 	})
 }
 
@@ -94,6 +81,5 @@ func (p *RistikontraPlayer) UnmarshalJSON(data []byte) error {
 	if p.capturedCards == nil {
 		p.capturedCards = make([]*Card, 0)
 	}
-	p.pistiBonus = j.PistiBonus
 	return nil
 }

@@ -37,7 +37,6 @@ type RistikontraWebOutputPlayer struct {
 	CardCount     int              `json:"cardCount"`
 	Cards         []*WebOutputCard `json:"cards"`
 	CapturedCount int              `json:"capturedCount"`
-	PistiBonus    int              `json:"pistiBonus"`
 	FinalScore    int              `json:"finalScore"`
 }
 
@@ -49,12 +48,15 @@ type RistikontraWebOutput struct {
 	PileTop        *WebOutputCard                `json:"pileTop"`
 	PileCount      int                           `json:"pileCount"`
 	LastCaptureIdx int                           `json:"lastCaptureIdx"`
-	GameEndFlag    bool                          `json:"gameEndFlag"`
-	Phase          string                        `json:"phase"`
-	Config         RistikontraWebConfig          `json:"config"`
-	RemainingDeck  int                           `json:"remainingDeck"`
-	Winners        []int                         `json:"winners"`
-	FinalScores    []int                         `json:"finalScores"`
+	// CounterRank は打ち返しの対象になっているランク (0 = 対象なし)。
+	// このランクを今出せば、直前の捕獲を束ごと奪える。
+	CounterRank   int                  `json:"counterRank"`
+	GameEndFlag   bool                 `json:"gameEndFlag"`
+	Phase         string               `json:"phase"`
+	Config        RistikontraWebConfig `json:"config"`
+	RemainingDeck int                  `json:"remainingDeck"`
+	Winners       []int                `json:"winners"`
+	FinalScores   []int                `json:"finalScores"`
 	WebOutputBase
 }
 

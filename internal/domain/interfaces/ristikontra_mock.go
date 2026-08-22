@@ -93,6 +93,12 @@ func (_m *MockRistikontraGame) GetLastCaptureIdx() int {
 	return ret.Get(0).(int)
 }
 
+// GetCounterRank モック
+func (_m *MockRistikontraGame) GetCounterRank() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetPlayerCnt モック
 func (_m *MockRistikontraGame) GetPlayerCnt() int {
 	ret := _m.Called()

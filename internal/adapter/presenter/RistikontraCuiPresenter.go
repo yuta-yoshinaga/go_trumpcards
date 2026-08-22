@@ -91,7 +91,7 @@ func ristikontraPlayerStr(pg interfaces.RistikontraGame, player *domain.Ristikon
 		"name", cuiPlayerName(player, i),
 		"hand", strconv.Itoa(player.GetCardsSize()),
 		"captured", strconv.Itoa(player.CapturedCount()),
-		"pisti", strconv.Itoa(player.GetPistiBonus())) + "\n")
+		"team", strconv.Itoa(i%2+1)) + "\n")
 	if player.GetIsHuman() {
 		// **場を取れるのは「場のトップと同ランク」か「ジャック(総取り)」** (#5672)。
 		// Web は該当札にリングを付けているのに、CUI は素の一覧で、毎ターン場の

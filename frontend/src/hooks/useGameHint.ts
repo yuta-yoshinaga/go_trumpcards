@@ -228,6 +228,7 @@ import type {
   RedDogResponse,
   ReversisResponse,
   RikkenResponse,
+  RistikontraResponse,
   RollingStoneResponse,
   RookResponse,
   RoyalCotillionResponse,
@@ -565,6 +566,7 @@ import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
 import { getReversisHint } from '../utils/hints/reversisHint';
 import { getRikkenHint } from '../utils/hints/rikkenHint';
+import { getRistikontraHint } from '../utils/hints/ristikontraHint';
 import { getRollingStoneHint } from '../utils/hints/rollingstoneHint';
 import { getRookHint } from '../utils/hints/rookHint';
 import { getRoyalCotillionHint } from '../utils/hints/royalcotillionHint';
@@ -690,6 +692,7 @@ export const hintFactories = {
   callbreak: (s) => getCallBreakHint(s as CallBreakResponse),
   tarneeb: (s) => getTarneebHint(s as TarneebResponse),
   pishti: (s) => getPishtiHint(s as PishtiResponse),
+  ristikontra: (s) => getRistikontraHint(s as RistikontraResponse),
   piquet: (s) => getPiquetHint(s as PiquetResponse),
   pitch: (s) => getPitchHint(s as PitchResponse),
   holdem: (s) => getHoldemHint(s as HoldemResponse),

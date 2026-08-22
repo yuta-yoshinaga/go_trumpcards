@@ -48,11 +48,24 @@ func TestRistikontraInteractor_Methods(t *testing.T) {
 		assert.Equal(t, mockOutput, pi.NextRound())
 	})
 
+	// **席数は 4 固定。** 2 対 2 の固定パートナーシップなので、3 人卓は
+	// そもそも通らない (クローン元のピシュティは 2〜4 人を選べた)。
 	t.Run("ResetWithConfig valid", func(t *testing.T) {
 		cfg := domain.DefaultRistikontraConfig()
-		cfg.PlayerCnt = 3
+		cfg.PlayerCnt = domain.RistikontraDefaultPlayerCnt
 		assert.Equal(t, mockOutput, pi.ResetWithConfig(cfg))
-		assert.Equal(t, 3, pi.GetConfig().PlayerCnt)
+		assert.Equal(t, domain.RistikontraDefaultPlayerCnt, pi.GetConfig().PlayerCnt)
+	})
+
+	t.Run("ResetWithConfig rejects a table that cannot form two teams", func(t *testing.T) {
+		before := pi.GetConfig().PlayerCnt
+		for _, n := range []int{2, 3} {
+			cfg := domain.DefaultRistikontraConfig()
+			cfg.PlayerCnt = n
+			assert.Equal(t, mockOutput, pi.ResetWithConfig(cfg))
+			assert.Equal(t, before, pi.GetConfig().PlayerCnt,
+				"a %d-player table must not be accepted", n)
+		}
 	})
 
 	t.Run("ResetWithConfig invalid returns output", func(t *testing.T) {
