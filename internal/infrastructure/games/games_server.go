@@ -1705,4 +1705,9 @@ func init() {
 			return usecase.NewThreeCardRummyInteractor(domain.NewDefaultThreeCardRummy(), new(presenter.ThreeCardRummyWebPresenter))
 		},
 		controller.NewThreeCardRummyWebController)
+	BindWebControllerFor("caribbeandraw",
+		func() usecase.CaribbeanDrawInteractorIF {
+			return usecase.NewCaribbeanDrawInteractor(domain.NewDefaultCaribbeanDraw(), new(presenter.CaribbeanDrawWebPresenter))
+		},
+		controller.NewCaribbeanDrawWebController)
 }

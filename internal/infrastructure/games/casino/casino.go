@@ -510,4 +510,12 @@ func init() {
 			return usecase.RestoreThreeCardRummyInteractor(data, new(presenter.ThreeCardRummyWebPresenter))
 		},
 		controller.NewThreeCardRummyWebControllerWithProvider)
+	games.RegisterKVGame("caribbeandraw", games.CategoryCasino,
+		func() usecase.CaribbeanDrawInteractorIF {
+			return usecase.NewCaribbeanDrawInteractor(domain.NewDefaultCaribbeanDraw(), new(presenter.CaribbeanDrawWebPresenter))
+		},
+		func(data []byte) (usecase.CaribbeanDrawInteractorIF, error) {
+			return usecase.RestoreCaribbeanDrawInteractor(data, new(presenter.CaribbeanDrawWebPresenter))
+		},
+		controller.NewCaribbeanDrawWebControllerWithProvider)
 }

@@ -158,6 +158,8 @@ tags:
     description: Three Card Rummy (スリーカード・ラミー) game
   - name: caribbeanstud
     description: Caribbean Stud Poker (カリビアンスタッドポーカー) game
+  - name: caribbeandraw
+    description: Caribbean Draw Poker (カリビアン・ドロー・ポーカー) game
   - name: texasholdembonus
     description: Texas Hold'em Bonus Poker (テキサスホールデムボーナスポーカー) game
   - name: ohhell
@@ -5248,6 +5250,102 @@ paths:
                     playerHandRank: 0
                     dealerHandRank: 0
                     message: param error.
+
+  /caribbeandraw/exec:
+    post:
+      tags:
+        - caribbeandraw
+      summary: Execute a Caribbean Draw Poker game command
+      description: |
+        Send a command to advance the Caribbean Draw Poker (カリビアン・ドロー・ポーカー)
+        game session identified by `sessionId`.  It is a Caribbean Stud table with a
+        **draw**: after the ante and the deal, the player may exchange up to two cards
+        for a fee equal to the ante before deciding to call or fold.  Standing pat is
+        free.
+
+        Two rules differ from `/caribbeanstud/exec` and are easy to miss:
+
+        - **The dealer qualifies on a pair of 8s or better**, not "a pair or A-K high".
+          An A-K high dealer qualifies at a Stud table but not here, and a pair of 7s
+          is short.  An ace counts 14 when the qualifying pair is compared.
+        - **The phase numbers shift**, because a draw phase sits in the middle.
+
+        When the dealer fails to qualify the ante pays 1:1 and the call pushes; the
+        player stakes 3x the ante and receives 4x back, so an unqualified dealer is
+        always a profit and `result` is reported as a win rather than by comparing
+        hands.  The progressive jackpot side bet is settled on the hand **after** the
+        draw and is evaluated even on a fold.
+
+        | Phase  | Value | Description |
+        |--------|-------|-------------|
+        | Bet    | `1`   | Place the ante and an optional jackpot side bet |
+        | Draw   | `2`   | Exchange up to 2 cards for a fee, or stand pat |
+        | Action | `3`   | Call (2x the ante) or fold |
+        | End    | `4`   | Round complete; shows the result and payouts |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place the ante (requires `amount`; optional `jackpotBet`) |
+        | `draw`  | `d`     | Exchange cards (optional `indices`; omit or send `[]` to stand pat) |
+        | `play`  | `p`     | Call — place 2x the ante and see the dealer's hand |
+        | `fold`  | `f`     | Forfeit the ante (the jackpot side bet is still settled) |
+        | `hint`  | `h`     | Get a hint for the next move |
+        | `log`   | `l`     | View action log |
+      operationId: caribbeandrawExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaribbeanDrawRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 ante with a 10 jackpot side bet
+                value:
+                  command: bet
+                  amount: 100
+                  jackpotBet: 10
+                  sessionId: my-session-001
+              draw:
+                summary: Exchange the 1st and 4th cards (0-based indices)
+                value:
+                  command: draw
+                  indices: [0, 3]
+                  sessionId: my-session-001
+              standPat:
+                summary: Stand pat — no exchange, no fee
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              play:
+                summary: Call
+                value:
+                  command: play
+                  sessionId: my-session-001
+              fold:
+                summary: Fold the hand
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaribbeanDrawResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaribbeanDrawResponse'
 
   /texasholdembonus/exec:
     post:
@@ -45198,6 +45296,169 @@ components:
         message:
           type: string
           description: Game result or error message. Empty during bet/action phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Caribbean Draw Poker
+    # -------------------------------------------------------------------------
+    CaribbeanDrawRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bet` (`b`), `draw` (`d`),
+            `play` (`p`), `fold` (`f`), `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, d, draw, p, play, f, fold, log, l, hint, h]
+          example: draw
+        amount:
+          type: integer
+          description: |
+            Ante bet amount.  Required for the `bet` command (minimum 10, must be a
+            multiple of 10).  Ignored for other commands.
+          minimum: 10
+          example: 100
+        jackpotBet:
+          type: integer
+          description: |
+            Progressive jackpot side bet.  Optional; used with the `bet` command.
+            Settled on the hand **after** the draw, and evaluated even on a fold.
+          minimum: 0
+          example: 10
+        indices:
+          type: array
+          description: |
+            **Zero-based** positions of the cards to exchange, used only by the `draw`
+            command.  At most 2, no duplicates, each within the 5-card hand.  Omit the
+            field or send an empty array to stand pat, which costs nothing; any
+            non-empty exchange is charged a fee equal to the ante.
+          items:
+            type: integer
+            minimum: 0
+            maximum: 4
+          maxItems: 2
+          example: [0, 3]
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    CaribbeanDrawResponse:
+      type: object
+      description: Current state of the Caribbean Draw Poker game
+      required:
+        - playerHand
+        - dealerHand
+        - phase
+        - chips
+        - anteBet
+        - jackpotBet
+        - playBet
+        - result
+        - antePayout
+        - playPayout
+        - jackpotPayout
+        - totalPayout
+        - dealerQualified
+        - drawCost
+        - playerHandRank
+        - dealerHandRank
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Cards in the player's hand (5 cards), after any exchange
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          description: |
+            Cards in the dealer's hand (5 cards).  Only the first is face up until the
+            End phase; the rest are masked (empty `design`, `value` 0).
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1 = Bet, 2 = Draw, 3 = Action, 4 = End"
+          enum: [1, 2, 3, 4]
+          example: 2
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        anteBet:
+          type: integer
+          description: Current ante bet amount
+          example: 100
+        jackpotBet:
+          type: integer
+          description: Current progressive jackpot side bet
+          example: 10
+        playBet:
+          type: integer
+          description: Current call amount (twice the ante once called)
+          example: 0
+        result:
+          type: integer
+          description: |
+            Game result: 1 = Player wins, -1 = Dealer wins, 0 = Push/not resolved.
+            **An unqualified dealer reports 1**, not the hand comparison: the player
+            stakes 3x the ante and receives 4x back, so the round is always a profit.
+          enum: [-1, 0, 1]
+          example: 0
+        antePayout:
+          type: integer
+          description: Payout from the ante bet
+          example: 0
+        playPayout:
+          type: integer
+          description: Payout from the call
+          example: 0
+        jackpotPayout:
+          type: integer
+          description: Progressive jackpot payout, settled on the post-draw hand
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout for the current round (sum of all payouts)
+          example: 0
+        dealerQualified:
+          type: boolean
+          description: |
+            Whether the dealer qualified — **a pair of 8s or better**, not Caribbean
+            Stud's "pair or A-K high".  An ace counts 14 when the pair is compared.
+          example: false
+        drawCost:
+          type: integer
+          description: |
+            Fee paid for the exchange this round, or 0 when the player stood pat.
+            It is not a payout, so it does not appear in `totalPayout`.
+          example: 100
+        playerHandRank:
+          type: integer
+          description: |
+            Player's hand rank (0=High Card … 9=Royal Flush).  Live from the deal and
+            re-evaluated after each draw, since it is the only basis for deciding what
+            to discard.
+          example: 1
+        dealerHandRank:
+          type: integer
+          description: Dealer's hand rank; 0 until the End phase reveals the hand
+          example: 0
+        message:
+          type: string
+          description: Game result or error message. Empty during the bet/draw/action phases.
           example: ""
         messageCode:
           type: string

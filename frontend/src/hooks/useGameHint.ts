@@ -47,6 +47,7 @@ import type {
   CallBreakResponse,
   CanastaResponse,
   CanfieldResponse,
+  CaribbeanDrawResponse,
   CaribbeanStudResponse,
   CariocaResponse,
   CasinoHoldemResponse,
@@ -374,6 +375,7 @@ import { getCalculationHint } from '../utils/hints/calculationHint';
 import { getCallBreakHint } from '../utils/hints/callbreakHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
+import { getCaribbeanDrawHint } from '../utils/hints/caribbeandrawHint';
 import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
 import { getCariocaHint } from '../utils/hints/cariocaHint';
 import { getCasinoHoldemHint } from '../utils/hints/casinoholdemHint';
@@ -788,6 +790,7 @@ export const hintFactories = {
   gofish: (s) => getGoFishHint(s as GoFishResponse),
   guandan: (s) => getGuandanHint(s as GuandanResponse),
   golf: (s) => getGolfHint(s as GolfResponse),
+  caribbeandraw: (s) => getCaribbeanDrawHint(s as CaribbeanDrawResponse),
   caribbeanstud: (s) => getCaribbeanStudHint(s as CaribbeanStudResponse),
   oasispoker: (s) => getOasisPokerHint(s as OasisPokerResponse),
   casinoholdem: (s) => getCasinoHoldemHint(s as CasinoHoldemResponse),

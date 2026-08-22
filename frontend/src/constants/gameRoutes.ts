@@ -108,6 +108,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 3, 3], skill: [3, 5, 3, 3], social: [3, 5, 2, 3, 3], theme: [5, 1, 1, 1, 4, 1] },
       },
       {
+        path: '/caribbeandraw',
+        labelKey: 'nav.caribbeandraw',
+        icon: '🌴',
+        page: 'CaribbeanDraw',
+        profile: { mood: [2, 3, 4, 3], skill: [3, 5, 4, 3], social: [3, 5, 2, 3, 3], theme: [5, 1, 1, 1, 4, 1] },
+      },
+      {
         path: '/oasispoker',
         labelKey: 'nav.oasispoker',
         icon: '🌴',

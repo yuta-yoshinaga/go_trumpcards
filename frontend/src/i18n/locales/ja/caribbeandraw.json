@@ -1,0 +1,109 @@
+{
+  "title": "カリビアン・ドロー・ポーカー",
+  "jackpotHelpTitle": "ジャックポットとは？",
+  "jackpotHelp": "ジャックポットのベットは任意です。フラッシュ以上の役（フラッシュ／フルハウス／フォーカード／ストレートフラッシュ／ロイヤルフラッシュ）が成立したときに、勝敗に関係なく配当が当たります。交換後の手札で判定します。",
+  "player": "プレイヤー",
+  "dealer": "ディーラー",
+  "label": {
+    "chips": "チップ",
+    "ante": "アンテ",
+    "jackpot": "ジャックポット",
+    "play": "プレイベット",
+    "handRank": "役"
+  },
+  "button": {
+    "bet": "ベット",
+    "draw": "交換する（手数料 {{cost}}）",
+    "standPat": "交換しない",
+    "play": "コール",
+    "fold": "フォールド",
+    "reset": "リセット"
+  },
+  "phase": {
+    "bet": "ベット",
+    "draw": "ドロー（最大{{max}}枚交換）",
+    "action": "コール/フォールド",
+    "end": "結果"
+  },
+  "draw": {
+    "guide": "交換する札を最大{{max}}枚まで選んでください。選ばずに勝負することもできます。",
+    "fee": "交換手数料 {{cost}}（アンテと同額）。交換しなければ無料です。",
+    "selected": "選択中: {{count}} / {{max}} 枚",
+    "cardSelected": "交換する札として選択済み",
+    "maxReached": "交換できるのは最大{{max}}枚までです。"
+  },
+  "result": {
+    "playerWins": "勝利！",
+    "dealerWins": "ディーラー勝利！",
+    "push": "引き分け！",
+    "fold": "フォールド",
+    "dealerNotQualified": "ディーラー未クオリファイ！"
+  },
+  "payout": {
+    "ante": "アンテ",
+    "play": "プレイ",
+    "jackpot": "ジャックポット",
+    "draw": "交換手数料",
+    "total": "合計"
+  },
+  "handRank": {
+    "0": "ハイカード",
+    "1": "ワンペア",
+    "2": "ツーペア",
+    "3": "スリーカード",
+    "4": "ストレート",
+    "5": "フラッシュ",
+    "6": "フルハウス",
+    "7": "フォーカード",
+    "8": "ストレートフラッシュ",
+    "9": "ロイヤルフラッシュ"
+  },
+  "settings": {
+    "title": "設定"
+  },
+  "betGuide": "アンテと任意のジャックポットを設定してベット",
+  "payoutRef": {
+    "title": "配当表",
+    "playHeader": "プレイ配当（コール時）",
+    "payRoyalFlush": "ロイヤルフラッシュ: 50:1",
+    "payStraightFlush": "ストレートフラッシュ: 20:1",
+    "payFourOfAKind": "フォーカード: 10:1",
+    "payFullHouse": "フルハウス: 5:1",
+    "payFlush": "フラッシュ: 4:1",
+    "payStraight": "ストレート: 3:1",
+    "payThreeOfAKind": "スリーカード: 2:1",
+    "payTwoPair": "ツーペア: 1:1",
+    "payPair": "ペア以下: 1:1",
+    "jackpotHeader": "ジャックポット（サイドベット）",
+    "jackpotRoyalFlush": "ロイヤルフラッシュ: 10000x",
+    "jackpotStraightFlush": "ストレートフラッシュ: 2000x",
+    "jackpotFourOfAKind": "フォーカード: 200x",
+    "jackpotFullHouse": "フルハウス: 50x",
+    "jackpotFlush": "フラッシュ: 25x",
+    "qualifyNote": "ディーラーは 8 のペア以上でクオリファイします。"
+  },
+  "dealerQualified": "クオリファイ",
+  "dealerNotQualified": "未クオリファイ",
+  "tutorial": {
+    "betControls": "アンテとオプションのジャックポットを設定し、ベットを押してください。",
+    "drawControls": "交換したい札を最大2枚まで選んで交換を押すか、そのまま勝負してください。",
+    "actionButtons": "コールでアンテの2倍を賭けるか、フォールドで降りるか選択してください。",
+    "results": "結果と配当を確認してください。"
+  },
+  "hint": {
+    "standPat": "そのまま勝負を推奨: 既に役が出来ています",
+    "drawWeak": "交換を検討: 役がありません。残す価値のない札を捨てて役を狙えます",
+    "pairOrBetter": "ペア以上 — コール推奨",
+    "aceKingHigh": "A-K ハイ — コール推奨",
+    "weakHand": "弱い手札 — フォールド推奨"
+  },
+  "hiddenCard": "非公開のカード",
+  "session": {
+    "title": "セッション成績",
+    "tally": "{{wins}}勝 {{losses}}敗 {{pushes}}分",
+    "hands": "{{hands}}ハンド",
+    "net": "収支",
+    "clear": "履歴をクリア",
+    "note": "リセットしても保持されます（ページ再読み込みで消去）"
+  }
+}

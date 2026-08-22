@@ -6552,6 +6552,24 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("caribbeandraw",
+		func() usecase.CaribbeanDrawInteractorIF {
+			return usecase.NewCaribbeanDrawInteractor(domain.NewDefaultCaribbeanDraw(), new(presenter.CaribbeanDrawCuiPresenter))
+		},
+		controller.NewCaribbeanDrawCuiController,
+		CuiHelpSpec{
+			TitleKey: "caribbeandraw.helpTitle",
+			ExampleKeys: []string{
+				"caribbeandraw.helpExampleBet",
+				"caribbeandraw.helpExampleDraw",
+				"caribbeandraw.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"caribbeandraw.helpBet", "caribbeandraw.helpDraw",
+				"caribbeandraw.helpPlay", "caribbeandraw.helpFold", "caribbeandraw.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
