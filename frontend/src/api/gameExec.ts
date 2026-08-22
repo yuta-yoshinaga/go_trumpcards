@@ -207,6 +207,7 @@ export const workerUrl: Record<string, string> = {
   fivehundred: WORKER_SOLO,
   yukon: WORKER_SOLO,
   alaska: WORKER_EXTRA4,
+  speculation: WORKER_EXTRA,
   russiansolitaire: WORKER_SOLO,
   scorpion: WORKER_SOLO,
   wasp: WORKER_SOLO,

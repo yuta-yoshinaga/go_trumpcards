@@ -290,6 +290,7 @@ export * from './games/solowhist';
 export * from './games/somerset';
 export * from './games/spades';
 export * from './games/spanish21';
+export * from './games/speculation';
 export * from './games/speed';
 export * from './games/spider';
 export * from './games/spiderette';
@@ -689,6 +690,7 @@ export const games = [
   'cego',
   'frenchtarot',
   'koenigrufen',
+  'speculation',
   'zheng',
 ] as const;
 

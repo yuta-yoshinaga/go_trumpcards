@@ -323,4 +323,12 @@ func init() {
 			return usecase.RestoreStHelenaInteractor(data, new(presenter.StHelenaWebPresenter))
 		},
 		controller.NewStHelenaWebControllerWithProvider)
+	games.RegisterKVGame("speculation", games.CategoryExtra,
+		func() usecase.SpeculationInteractorIF {
+			return usecase.NewSpeculationInteractor(domain.NewDefaultSpeculation(), new(presenter.SpeculationWebPresenter))
+		},
+		func(data []byte) (usecase.SpeculationInteractorIF, error) {
+			return usecase.RestoreSpeculationInteractor(data, new(presenter.SpeculationWebPresenter))
+		},
+		controller.NewSpeculationWebControllerWithProvider)
 }

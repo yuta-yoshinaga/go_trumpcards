@@ -36,6 +36,8 @@ tags:
     description: Ban Luck (バンラック) game
   - name: montebank
     description: Monte Bank (モンテバンク) game
+  - name: speculation
+    description: Speculation (スペキュレーション) game
   - name: cincinnati
     description: Cincinnati (シンシナティ) game
   - name: ironcross
@@ -10424,6 +10426,90 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MonteBankResponse'
+
+  /speculation/exec:
+    post:
+      tags:
+        - speculation
+      summary: Execute a Speculation game command
+      description: |
+        Send a command to advance the Speculation (スペキュレーション) game session
+        identified by `sessionId`.  Speculation is an 18th-19th century English
+        **auction** game for one human (seat 0) against 1-7 CPU seats.
+
+        Every seat antes into a pot and receives 3 face-down cards; one further card
+        is turned to fix the **trump suit**.  Seats take turns turning up their top
+        card.  **Only trumps matter** — a card of any other suit is irrelevant.  When
+        a turned card beats the best trump so far its owner takes the lead and an
+        auction opens: another player offers to buy that card, and the owner may
+        accept or decline.  When every face-down card has been turned, whoever holds
+        the best trump takes the pot.  **The ace counts 14**, above the king.
+
+        The face-down cards are never sent to the client — `seats[].hiddenCount`
+        gives the count only.  Sending them would tell a bidder exactly what to pay.
+
+        **"No seat" is `-1`, not `0`.**  Seat 0 is the human, so a client that treats
+        0 as "nobody" will point at the player.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Flip    | `0`   | Turn up the next face-down card |
+        | Auction | `1`   | An offer is on the table; accept, decline or raise |
+        | Result  | `2`   | The round is settled |
+        | GameEnd | `3`   | Every round has been played |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `flip`  | `f`     | Turn up the next face-down card |
+        | `accept`| `a`     | Accept the offer (sell, or buy) |
+        | `decline`| `d`    | Decline the offer |
+        | `bid`   |         | Raise and buy (requires `amount`, above `offerAmount`) |
+        | `next`  |         | Begin the next round after a result |
+        | `hint`  | `h`     | Get a hint for the next move |
+        | `log`   | `l`     | View action log |
+      operationId: speculationExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpeculationRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              flip:
+                summary: Turn up the next card
+                value:
+                  command: flip
+                  sessionId: my-session-001
+              accept:
+                summary: Accept the standing offer
+                value:
+                  command: accept
+                  sessionId: my-session-001
+              bid:
+                summary: Raise to 50 and buy
+                value:
+                  command: bid
+                  amount: 50
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeculationResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeculationResponse'
 
   /banluck/exec:
     post:
@@ -54373,6 +54459,170 @@ components:
           type: string
         messageCode:
           type: string
+    # -------------------------------------------------------------------------
+    # Speculation
+    # -------------------------------------------------------------------------
+    SpeculationRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `flip` (`f`),
+            `accept` (`a`), `decline` (`d`), `bid`, `next`, `hint` (`h`), `log` (`l`).
+          enum: [r, reset, f, flip, a, accept, d, decline, bid, next, hint, h, log, l]
+          example: flip
+        amount:
+          type: integer
+          description: |
+            Amount to raise to, used **only** by the `bid` command.  Must exceed the
+            current `offerAmount` and fit within the player's chips.  Required for
+            `bid`: an omitted amount is a parameter error, not a zero bid, since a
+            zero bid cannot be told apart from declining.
+          minimum: 1
+          example: 50
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    SpeculationSeat:
+      type: object
+      description: |
+        One seat's public state.  **The face-down cards are deliberately absent** —
+        only the count is published, because seeing them would tell a bidder exactly
+        what a card is worth.
+      required:
+        - name
+        - chips
+        - hiddenCount
+      properties:
+        name:
+          type: string
+          description: Display name; seat 0 is the human player
+          example: You
+        chips:
+          type: integer
+          description: Chips held by this seat
+          example: 190
+        hiddenCount:
+          type: integer
+          description: How many face-down cards this seat has left to turn
+          example: 3
+        best:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: The best trump this seat holds; absent when it holds none
+
+    SpeculationResponse:
+      type: object
+      description: Current state of the Speculation game
+      required:
+        - phase
+        - seats
+        - trumpSuit
+        - pot
+        - turnSeat
+        - bestSeat
+        - offerFrom
+        - offerTo
+        - offerAmount
+        - roundNo
+        - winnerSeat
+        - gameEndFlag
+        - message
+      properties:
+        phase:
+          type: integer
+          description: "Game phase: 0 = Flip, 1 = Auction, 2 = Result, 3 = GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        seats:
+          type: array
+          description: Every seat's public state, in seat order; index 0 is the human
+          items:
+            $ref: '#/components/schemas/SpeculationSeat'
+        trumpSuit:
+          type: integer
+          description: This round's trump suit; -1 before it is fixed
+          example: 0
+        trumpCard:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: The card turned to fix the trump suit; it belongs to no seat
+        pot:
+          type: integer
+          description: Chips staked this round, taken whole by the best trump
+          example: 40
+        turnSeat:
+          type: integer
+          description: The seat due to turn up its next card
+          example: 0
+        bestSeat:
+          type: integer
+          description: |
+            The seat holding the best trump, or **-1** when nobody does.  Seat 0 is a
+            real seat, so 0 must not be read as "nobody".
+          example: -1
+        offerFrom:
+          type: integer
+          description: The seat offering to buy, or -1 when no auction is open
+          example: -1
+        offerTo:
+          type: integer
+          description: The seat being offered to, or -1 when no auction is open
+          example: -1
+        offerAmount:
+          type: integer
+          description: The offer on the table; 0 when no auction is open
+          example: 0
+        roundNo:
+          type: integer
+          description: Rounds completed so far
+          example: 0
+        winnerSeat:
+          type: integer
+          description: |
+            The seat that took the last pot.  **-1 both before a result and when the
+            round was void** — no trump appeared, so the stakes were returned rather
+            than won.
+          example: -1
+        gameEndFlag:
+          type: boolean
+          description: Whether every round has been played
+          example: false
+        config:
+          type: object
+          description: The table settings in force
+          properties:
+            players:
+              type: integer
+              example: 4
+            initialChips:
+              type: integer
+              example: 200
+            stake:
+              type: integer
+              example: 10
+            rounds:
+              type: integer
+              example: 5
+        message:
+          type: string
+          description: Error message, or empty
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
     MonteBankResponse:
       type: object
       description: Response payload for /montebank/exec

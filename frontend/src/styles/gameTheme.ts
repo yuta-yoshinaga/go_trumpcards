@@ -47,6 +47,7 @@ export type GameKey =
   | 'freebet'
   | 'banluck'
   | 'montebank'
+  | 'speculation'
   | 'cincinnati'
   | 'ironcross'
   | 'baseballpoker'
@@ -639,6 +640,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   freebet: BRIGHT_GREEN,
   banluck: CASINO,
   montebank: GREEN,
+  speculation: GREEN,
   cincinnati: CASINO,
   ironcross: CASINO,
   baseballpoker: CASINO,
