@@ -6623,6 +6623,25 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			CommandKeys: []string{"put.helpPlay", "put.helpPut", "put.helpRespond", "put.helpNext", "put.helpLog", "put.helpHint"},
 		}),
+	BindCuiFor("ristikontra",
+		func() usecase.RistikontraInteractorIF {
+			return usecase.NewRistikontraInteractor(domain.NewDefaultRistikontra(), new(presenter.RistikontraCuiPresenter))
+		},
+		controller.NewRistikontraCuiController,
+		CuiHelpSpec{
+			TitleKey: "ristikontra.helpTitle",
+			ExampleKeys: []string{
+				"ristikontra.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"ristikontra.helpPlay",
+				"ristikontra.helpNext",
+				"ristikontra.helpLog",
+			},
+			SettingKeys: []string{
+				"ristikontra.helpSetDifficulty",
+			},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

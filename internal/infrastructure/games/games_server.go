@@ -1725,4 +1725,9 @@ func init() {
 			return usecase.NewPutInteractor(domain.NewDefaultPut(), new(presenter.PutWebPresenter))
 		},
 		controller.NewPutWebController)
+	BindWebControllerFor("ristikontra",
+		func() usecase.RistikontraInteractorIF {
+			return usecase.NewRistikontraInteractor(domain.NewDefaultRistikontra(), new(presenter.RistikontraWebPresenter))
+		},
+		controller.NewRistikontraWebController)
 }

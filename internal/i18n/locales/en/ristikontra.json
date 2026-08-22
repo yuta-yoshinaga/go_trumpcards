@@ -1,0 +1,20 @@
+{
+  "helpTitle": "Pişti",
+  "helpPlay": "  p <h>                    play hand card h onto the pile",
+  "helpNext": "  n                        start the next game",
+  "helpLog": "  log | l                  show the action log",
+  "helpSetDifficulty": "  sd [0-2]                 CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "playerLine": "{{name}}: hand {{hand}} / captured {{captured}} / Pişti {{pisti}}",
+  "captureLegend": "* = captures the pile (matches the top card, or a jack sweeps it)",
+  "pileLine": "Pile: top={{top}} ({{count}} cards)",
+  "pileEmpty": "Pile: empty",
+  "deckLine": "Stock: {{count}} left",
+  "gameEnd": "Game over!",
+  "scoreEntry": "  {{name}}: {{score}} pts",
+  "promptCurrentTurn": "Turn: {{name}}",
+  "promptHelp": "p <hand> to play a card (capture the pile by matching rank or with a Jack)",
+  "result.scores": "Game over. Scores: {{scores}}",
+  "provisional": "{{name}} provisional: {{score}}",
+  "provisionalNote": "Provisional totals count only pisti bonuses and most-cards (+3); card points are added at scoring",
+  "helpExamplePlay": "  p 0                      play hand card 0"
+}

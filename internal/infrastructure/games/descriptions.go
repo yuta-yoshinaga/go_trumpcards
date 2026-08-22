@@ -281,6 +281,7 @@ var gameDescriptions = map[string]string{
 	"kemps":               "Kemps (ケムプス)",
 	"cuckoo":              "Cuckoo (カッコー)",
 	"pishti":              "Pişti (ピシュティ)",
+	"ristikontra":         "Ristikontra (リスティコントラ)",
 	"cuarenta":            "Cuarenta (クアレンタ)",
 	"fivecardstud":        "Five Card Stud (ファイブカードスタッド)",
 	"faro":                "Faro (ファロ)",
