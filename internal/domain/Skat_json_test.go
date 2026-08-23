@@ -110,6 +110,14 @@ func TestSkatJSONRejectsBadShape(t *testing.T) {
 		{"wrong player count", `{"ps":[null,null]}`},
 		{"empty players", `{"ps":[]}`},
 		{"too many trick cards", `{"ps":[null,null,null],"ct":[{"pi":0},{"pi":1},{"pi":2},{"pi":0}]}`},
+		// **添字に使う値そのもの。** 長さだけ見ても、席番号が範囲外なら
+		// 次のリクエストで s.players[...] が panic する。
+		{"currentPlayerIdx out of range", `{"ps":[null,null,null],"ci":3}`},
+		{"currentPlayerIdx negative", `{"ps":[null,null,null],"ci":-1}`},
+		{"declarerIdx out of range", `{"ps":[null,null,null],"de":9}`},
+		{"declarerIdx below the -1 sentinel", `{"ps":[null,null,null],"de":-2}`},
+		{"dealerIdx out of range", `{"ps":[null,null,null],"di":7}`},
+		{"bidderIdx out of range", `{"ps":[null,null,null],"bi":42}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var s Skat

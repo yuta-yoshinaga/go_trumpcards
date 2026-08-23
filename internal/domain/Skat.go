@@ -1829,6 +1829,29 @@ func (s *Skat) UnmarshalJSON(data []byte) error {
 		}
 	}
 
+	// **添字に使う値そのものを検査する。** 長さだけ見ても、席番号が範囲外なら
+	// 次のリクエストで s.players[...] が panic する。currentPlayerIdx は
+	// 必ず実在の席、declarerIdx は -1 (未決定) か実在の席。
+	if j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= SkatPlayerCnt {
+		return fmt.Errorf("skat: currentPlayerIdx %d is not a seat (0-%d)",
+			j.CurrentPlayerIdx, SkatPlayerCnt-1)
+	}
+	if j.DeclarerIdx < -1 || j.DeclarerIdx >= SkatPlayerCnt {
+		return fmt.Errorf("skat: declarerIdx %d is neither -1 nor a seat (0-%d)",
+			j.DeclarerIdx, SkatPlayerCnt-1)
+	}
+	for name, idx := range map[string]int{
+		"leadPlayerIdx": j.LeadPlayerIdx, "dealerIdx": j.DealerIdx,
+		"forehandIdx": j.ForehandIdx, "middlehandIdx": j.MiddlehandIdx,
+		"rearhandIdx": j.RearhandIdx, "bidderIdx": j.BidderIdx,
+		"responderIdx": j.ResponderIdx, "round1Winner": j.Round1Winner,
+	} {
+		if idx < -1 || idx >= SkatPlayerCnt {
+			return fmt.Errorf("skat: %s %d is neither -1 nor a seat (0-%d)",
+				name, idx, SkatPlayerCnt-1)
+		}
+	}
+
 	s.trumpCards = j.TrumpCards
 	if s.trumpCards == nil {
 		s.trumpCards = newSkatDeck()
