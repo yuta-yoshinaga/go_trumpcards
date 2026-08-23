@@ -151,3 +151,44 @@ func quadrilleBidHighest(t *testing.T, gi *usecase.QuadrilleInteractor, cur quad
 	t.Fatalf("どのビッドでも盤面が進まなかった (phase=%d bidder=%d)", cur.Phase, cur.CurrentBidderIdx)
 	return cur
 }
+
+// TestQuadrilleInteractor_KingCallSurvivesTheWorkerRestore は、**Worker が
+// 実際に通る経路**で王呼びが保たれることを見る。
+//
+// extra4 の Worker はリクエストごとに Snapshot → KV → RestoreQuadrilleInteractor
+// で盤面を作り直す。ドメインの Marshal/Unmarshal を直接叩く試験は通っても、
+// この経路が落ちていれば王を呼んだ次のリクエストで味方が変わる。
+func TestQuadrilleInteractor_KingCallSurvivesTheWorkerRestore(t *testing.T) {
+	g := domain.NewDefaultQuadrille()
+	gi := usecase.NewQuadrilleInteractor(g, &presenter.QuadrilleWebPresenter{})
+	out := parseQuadrilleOut(t, gi.Reset())
+
+	for i := 0; i < domain.QuadrillePlayerCnt && out.Phase == int(domain.QuadrillePhaseBid); i++ {
+		out = quadrilleBidHighest(t, gi, out)
+	}
+	if out.Phase == int(domain.QuadrillePhaseKingCall) {
+		require.NotEmpty(t, out.CallableKingSuits)
+		out = parseQuadrilleOut(t, gi.CallKing(out.CallableKingSuits[0]))
+	}
+	require.Equal(t, int(domain.QuadrillePhasePlay), out.Phase)
+
+	// **ゼロ値と食い違う盤面であること。** 単独プレイだと呼ばれた王が -1 に
+	// なり、フィールドを落とした実装と区別が付かない。
+	if out.RoiSeul {
+		t.Skip("この配りは Roi seul なので、王呼びの往復を見る対象にならない")
+	}
+	require.NotEqual(t, -1, out.CalledKingSuit)
+
+	blob, err := gi.Snapshot()
+	require.NoError(t, err)
+	restored, err := usecase.RestoreQuadrilleInteractor(blob, &presenter.QuadrilleWebPresenter{})
+	require.NoError(t, err)
+
+	// 復元した盤面を**そのまま読み直す**。Hint は盤面を進めないので副作用が無い。
+	after := parseQuadrilleOut(t, restored.Hint())
+	assert.Equal(t, out.CalledKingSuit, after.CalledKingSuit, "呼ばれた王が Worker の復元で消えた")
+	assert.Equal(t, out.QuadrilleIdx, after.QuadrilleIdx, "落札者が Worker の復元で変わった")
+	assert.Equal(t, out.RoiSeul, after.RoiSeul)
+	// 伏せたままの相方は復元後も伏せられている。
+	assert.Equal(t, out.PartnerIdx, after.PartnerIdx, "相方の見え方が Worker の復元で変わった")
+}
