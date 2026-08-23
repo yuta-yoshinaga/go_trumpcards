@@ -203,8 +203,14 @@ func (tc *ThreeCard) resolve() {
 	tc.dealerQualified = tc.checkDealerQualifies()
 
 	// 勝敗判定
+	// **勝敗は精算に合わせる。** ディーラーが qualify しなかったときの精算には
+	// 特例（アンテ 1:1、もう一方のベットは返却）があり、手の強弱に関わらず
+	// プレイヤーはアンテぶん増える。手を比べただけで result を決めると、
+	// チップが増えているのに画面が「負け」と言う (#6213)。
 	cmp := compareThreeCardHands(tc.playerHand, tc.dealerHand)
-	if cmp > 0 {
+	if !tc.dealerQualified {
+		tc.result = GameResultWin
+	} else if cmp > 0 {
 		tc.result = GameResultWin
 	} else if cmp < 0 {
 		tc.result = GameResultLose

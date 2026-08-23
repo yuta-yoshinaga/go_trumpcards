@@ -244,8 +244,14 @@ func (hcf *HighCardFlush) resolve() {
 	hcf.dealerFlushLen = dealerBest.Length
 	hcf.dealerQualified = checkHCFDealerQualifies(dealerBest)
 
+	// **勝敗は精算に合わせる。** ディーラーが qualify しなかったときの精算には
+	// 特例（アンテ 1:1、もう一方のベットは返却）があり、手の強弱に関わらず
+	// プレイヤーはアンテぶん増える。手を比べただけで result を決めると、
+	// チップが増えているのに画面が「負け」と言う (#6213)。
 	cmp := compareHighCardFlushHands(playerBest, dealerBest)
 	switch {
+	case !hcf.dealerQualified:
+		hcf.result = GameResultWin
 	case cmp > 0:
 		hcf.result = GameResultWin
 	case cmp < 0:
