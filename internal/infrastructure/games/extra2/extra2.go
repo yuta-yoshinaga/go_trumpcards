@@ -381,6 +381,14 @@ func init() {
 			return usecase.RestorePolignacInteractor(data, new(presenter.PolignacWebPresenter))
 		},
 		controller.NewPolignacWebControllerWithProvider)
+	games.RegisterKVGame("julepe", games.CategoryExtra2,
+		func() usecase.JulepeInteractorIF {
+			return usecase.NewJulepeInteractor(domain.NewDefaultJulepe(), new(presenter.JulepeWebPresenter))
+		},
+		func(data []byte) (usecase.JulepeInteractorIF, error) {
+			return usecase.RestoreJulepeInteractor(data, new(presenter.JulepeWebPresenter))
+		},
+		controller.NewJulepeWebControllerWithProvider)
 	games.RegisterKVGame("rams", games.CategoryExtra2,
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

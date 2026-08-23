@@ -151,6 +151,7 @@ export * from './games/irishpoker';
 export * from './games/ironcross';
 export * from './games/israeliwhist';
 export * from './games/jass';
+export * from './games/julepe';
 export * from './games/kaiser';
 export * from './games/kalooki';
 export * from './games/karnoffel';

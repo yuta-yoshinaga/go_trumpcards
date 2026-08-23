@@ -22,6 +22,8 @@ tags:
     description: Andar Bahar (アンダーバハール) game
   - name: botifarra
     description: Botifarra (ボティファラ) game
+  - name: julepe
+    description: Julepe (フレペ) game
   - name: madrasso
     description: Madrasso (マドラッソ) game
   - name: quadrille
@@ -7890,6 +7892,82 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReversisResponse'
+  /julepe/exec:
+    post:
+      tags:
+        - julepe
+      summary: Execute a Rams game command
+      description: |
+        Send a command to advance the Julepe (フレペ) game session identified by
+        `sessionId`. Julepe, a Spanish Rams-family betting trick-taker for three to five players: each hand you choose to enter or drop, and an entrant who falls short of the required trick count pays into the pot and has their ante doubled next hand.
+
+        A **pot game for 3-5 players** (the table size is configurable) on the
+        32-card piquet pack. Five cards each, trump from the card turned after
+        the deal. Everyone antes, then each player chooses to **play** (`in`) or
+        **drop** (`out`); only those who played take part in the tricks.
+        **Playing and taking no trick at all costs an extra payment into the
+        pot**, while anyone who took tricks shares the pot in proportion. Most
+        chips after the configured rounds wins.
+      operationId: execRams
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, in, play, out, pass, card, c, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `card`)
+                config:
+                  type: object
+                  properties:
+                    playerCnt:
+                      type: integer
+                      description: Players at the table (3..5, default 4)
+                    rounds:
+                      type: integer
+                      description: Rounds to play (1..12, default 4)
+            examples:
+              reset:
+                summary: Start a new five-player game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+                  config:
+                    playerCnt: 5
+              playIn:
+                summary: Enter this round
+                value:
+                  command: in
+                  sessionId: my-session-001
+              card:
+                summary: Play the third card in hand
+                value:
+                  command: card
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RamsResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RamsResponse'
   /rams/exec:
     post:
       tags:

@@ -2015,6 +2015,15 @@ export const TarabishPhase = {
 } as const;
 
 /** Rams phase constants (sync: internal/domain/Rams.go). */
+/** Julepe phase constants (sync: internal/domain/Julepe.go). */
+export const JulepePhase = {
+  /** Before play: each player chooses to enter the round or drop. */
+  DECIDE: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 export const RamsPhase = {
   /** Before play: each player chooses to enter the round or drop. */
   DECIDE: 0,

@@ -144,6 +144,7 @@ import type {
   IronCrossResponse,
   IsraeliWhistResponse,
   JassResponse,
+  JulepeResponse,
   KaiserResponse,
   KalookiResponse,
   KarnoffelResponse,
@@ -485,6 +486,7 @@ import { getIroncrossHint } from '../utils/hints/ironcrossHint';
 import { getIsraeliWhistHint } from '../utils/hints/israeliwhistHint';
 import { getJassHint } from '../utils/hints/jassHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
+import { getJulepeHint } from '../utils/hints/julepeHint';
 import { getKaiserHint } from '../utils/hints/kaiserHint';
 import { getKalookiHint } from '../utils/hints/kalookiHint';
 import { getKarnoffelHint } from '../utils/hints/karnoffelHint';
@@ -862,6 +864,7 @@ export const hintFactories = {
   thirtyone: (s) => getThirtyOneHint(s as ThirtyOneResponse),
   yaniv: (s) => getYanivHint(s as YanivResponse),
   trappola: (s) => getTrappolaHint(s as TrappolaResponse),
+  julepe: (s) => getJulepeHint(s as JulepeResponse),
   madrasso: (s) => getMadrassoHint(s as MadrassoResponse),
   tressette: (s) => getTressetteHint(s as TressetteResponse),
   paigow: (s) => getPaiGowHint(s as PaiGowResponse),
