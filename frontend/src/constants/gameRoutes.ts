@@ -2516,6 +2516,13 @@ export const gameCategories: readonly GameCategory[] = [
         page: 'AllFours',
         profile: { mood: [3, 4, 3, 3], skill: [2, 4, 3, 2], social: [0, 5, 2, 2, 3], theme: [1, 2, 3, 3, 2, 2] },
       },
+      {
+        path: '/bauernschnapsen',
+        labelKey: 'nav.bauernschnapsen',
+        icon: '🇦🇹',
+        page: 'Bauernschnapsen',
+        profile: { mood: [2, 3, 4, 2], skill: [2, 4, 4, 2], social: [1, 3, 5, 2, 4], theme: [2, 5, 1, 1, 2, 3] },
+      },
     ],
   },
 ] as const;

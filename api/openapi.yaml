@@ -14,6 +14,8 @@ servers:
     description: Current server (resolves to the host serving the Swagger UI page)
 
 tags:
+  - name: bauernschnapsen
+    description: Bauernschnapsen (バウエルンシュナプセン) game
   - name: blackjack
     description: BlackJack game
   - name: andarbahar
@@ -28982,6 +28984,65 @@ paths:
         the session. Consult the in-app manual for the full command set and
         phase progression specific to this game.
       operationId: frenchtarotExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /bauernschnapsen/exec:
+    post:
+      tags:
+        - bauernschnapsen
+      summary: Execute a Bauernschnapsen (バウエルンシュナプセン) game command
+      description: |
+        Send a command to advance the Bauernschnapsen (バウエルンシュナプセン) game session identified by
+        `sessionId`. Bauernschnapsen, an Austrian four-player partnership game of the Schnapsen family played with a 20-card pack; every card is dealt, each seat bids a contract (Rufer, Farbenzwang or Bettel), and following suit is mandatory from the first trick.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: bauernschnapsenExec
       requestBody:
         required: true
         content:

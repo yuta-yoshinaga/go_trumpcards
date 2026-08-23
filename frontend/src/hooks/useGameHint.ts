@@ -19,6 +19,7 @@ import type {
   BarbuResponse,
   BaseballPokerResponse,
   BasraResponse,
+  BauernschnapsenResponse,
   BeggarMyNeighbourResponse,
   BeleagueredCastleResponse,
   BeloteResponse,
@@ -352,6 +353,7 @@ import { getBanluckHint } from '../utils/hints/banluckHint';
 import { getBarbuHint } from '../utils/hints/barbuHint';
 import { getBaseballpokerHint } from '../utils/hints/baseballpokerHint';
 import { getBasraHint } from '../utils/hints/basraHint';
+import { getBauernschnapsenHint } from '../utils/hints/bauernschnapsenHint';
 import { getBeggarMyNeighbourHint } from '../utils/hints/beggarmyneighbourHint';
 import { getBeleagueredcastleHint } from '../utils/hints/beleagueredcastleHint';
 import { getBeloteHint } from '../utils/hints/beloteHint';
@@ -720,6 +722,7 @@ export const hintFactories = {
   euchre: (s) => getEuchreHint(s as EuchreResponse),
   belote: (s) => getBeloteHint(s as BeloteResponse),
   jass: (s) => getJassHint(s as JassResponse),
+  bauernschnapsen: (s) => getBauernschnapsenHint(s as BauernschnapsenResponse),
   gaigel: (s) => getGaigelHint(s as GaigelResponse),
   bigtwo: (s) => getBigTwoHint(s as BigTwoResponse),
   threethirteen: (s) => getThreeThirteenHint(s as ThreeThirteenResponse),

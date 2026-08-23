@@ -1735,4 +1735,9 @@ func init() {
 			return usecase.NewBrusquembilleInteractor(domain.NewDefaultBrusquembille(), new(presenter.BrusquembilleWebPresenter))
 		},
 		controller.NewBrusquembilleWebController)
+	BindWebControllerFor("bauernschnapsen",
+		func() usecase.BauernschnapsenInteractorIF {
+			return usecase.NewBauernschnapsenInteractor(domain.NewDefaultBauernschnapsen(), new(presenter.BauernschnapsenWebPresenter))
+		},
+		controller.NewBauernschnapsenWebController)
 }

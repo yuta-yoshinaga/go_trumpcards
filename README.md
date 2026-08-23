@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した344種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した345種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -311,6 +311,7 @@ Go + Clean Architecture で実装した344種類のトランプゲーム。CLI �
 | ストリート・アンド・アレイズ (Streets and Alleys) | `streetsandalleys` | [CUI](docs/manual/cui/streetsandalleys.md) / [Web](docs/manual/web/streetsandalleys.md) |
 | スルタン (Sultan) | `sultan` | [CUI](docs/manual/cui/sultan.md) / [Web](docs/manual/web/sultan.md) |
 | ガイゲル (Gaigel) | `gaigel` | [CUI](docs/manual/cui/gaigel.md) / [Web](docs/manual/web/gaigel.md) |
+| バウエルンシュナプセン (Bauernschnapsen) | `bauernschnapsen` | [CUI](docs/manual/cui/bauernschnapsen.md) / [Web](docs/manual/web/bauernschnapsen.md) |
 | ヤス / シーバー (Jass / Schieber) | `jass` | [CUI](docs/manual/cui/jass.md) / [Web](docs/manual/web/jass.md) |
 | トゥシオンツ (Thousand / Tysiąc) | `tysiac` | [CUI](docs/manual/cui/tysiac.md) / [Web](docs/manual/web/tysiac.md) |
 | カラブレセッラ (Calabresella / Terziglio) | `calabresella` | [CUI](docs/manual/cui/calabresella.md) / [Web](docs/manual/web/calabresella.md) |
