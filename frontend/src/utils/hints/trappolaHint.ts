@@ -4,29 +4,31 @@ import { TrappolaPhase } from '../../types/phases';
 
 /**
  * Trappola trick strength (higher beats lower within the led suit).
- * Order: 3 > 2 > A > K > Q > J > 7 > 6 > 5 > 4.
+ *
+ * Order: **A > K > Q > J > 7 > 6 > 5 > 4 > 3** — this must stay in step with
+ * `trappolaStrength` in `internal/domain/Trappola.go`. The clone source
+ * (Tressette) ranks 3 and 2 highest, which is the exact reverse for A and 3,
+ * and its 40-card deck has 2s that this 36-card deck does not.
  */
 function strength(value: number): number {
   switch (value) {
-    case 3:
-      return 9;
-    case 2:
+    case 1: // Ace — strongest
       return 8;
-    case 1:
+    case 13: // King
       return 7;
-    case 13:
+    case 12: // Queen
       return 6;
-    case 12:
+    case 11: // Jack
       return 5;
-    case 11:
-      return 4;
     case 7:
-      return 3;
+      return 4;
     case 6:
-      return 2;
+      return 3;
     case 5:
+      return 2;
+    case 4:
       return 1;
-    default:
+    default: // 3 — weakest
       return 0;
   }
 }

@@ -572,3 +572,27 @@ func TestTrappolaDeclarationsScoreTheTeam(t *testing.T) {
 	}
 	require.True(t, seen, "40 ラウンド回して役が 1 つも出なかった —— 判定が死んでいる")
 }
+
+// TestTrappolaUnmarshalFallbackDeck は、デッキが欠けた JSON から復元したとき
+// **コンストラクタと同じ 36 枚デッキ**が作られることを見る。
+//
+// クローン元の 40 枚ブリスコラデッキが残っていると 2 が混じる。この 36 枚に
+// 2 は無いので、強さも点も既定の枝に落ちて静かにずれる (エラーにはならない)。
+func TestTrappolaUnmarshalFallbackDeck(t *testing.T) {
+	const okPlayers = `[{"gp":{},"th":{}},{"gp":{},"th":{}},{"gp":{},"th":{}},{"gp":{},"th":{}}]`
+	blob := `{"ph":0,"ps":` + okPlayers + `,"cf":{"cd":1,"tp":21},"lt":-1,"wt":-1,"li":0,"tc":null}`
+
+	var g domain.Trappola
+	require.NoError(t, json.Unmarshal([]byte(blob), &g))
+
+	deck := g.GetDeckForTest()
+	require.NotNil(t, deck)
+	assert.Equal(t, 36, deck.GetTotalCount(), "40 枚のクローン元デッキが作られている")
+
+	// **2 が入っていないこと。** 枚数が合っていても札位が違えば同じ壊れ方をする。
+	for i := 0; i < deck.GetTotalCount(); i++ {
+		c := deck.DrawCard()
+		require.NotNil(t, c)
+		assert.NotEqual(t, 2, c.GetValue(), "このデッキに 2 は無い")
+	}
+}

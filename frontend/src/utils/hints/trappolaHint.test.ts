@@ -77,8 +77,41 @@ describe('getTrappolaHint', () => {
   });
 
   it('suggests ducking when an opponent leads and the human cannot win', () => {
-    // Opponent (idx 1) leads ♠3 (strongest); human cannot beat it.
-    const hint = getTrappolaHint(makeState({ currentTrick: [{ playerIdx: 1, card: card('SPADE', 3) }] }));
+    // **3 is the WEAKEST card here, not the strongest.** The clone source
+    // (Tressette) ranks 3 highest, and the original fixture leaned on that —
+    // it asserted "cannot beat ♠3" while the human holds ♠A. Lead the Ace
+    // instead, which nothing in the hand can beat.
+    const hint = getTrappolaHint(
+      makeState({
+        players: [
+          { id: 0, isHuman: true, cardCount: 2, cards: [card('SPADE', 5), card('SPADE', 4)], trickCount: 0, teamId: 0 },
+          { id: 1, isHuman: false, cardCount: 2, cards: [], trickCount: 0, teamId: 1 },
+          { id: 2, isHuman: false, cardCount: 2, cards: [], trickCount: 0, teamId: 0 },
+          { id: 3, isHuman: false, cardCount: 2, cards: [], trickCount: 0, teamId: 1 },
+        ],
+        currentTrick: [{ playerIdx: 1, card: card('SPADE', 1) }],
+      }),
+    );
     expect(hint?.reason).toBe('hint.followDuck');
+  });
+
+  // **配りの向きが逆になっていないことを固定する。** クローン元の順が
+  // 残っていると、A を持っているのに「勝てない」と助言する。
+  it('treats the Ace as the strongest and the 3 as the weakest', () => {
+    const vsThree = getTrappolaHint(makeState({ currentTrick: [{ playerIdx: 1, card: card('SPADE', 3) }] }));
+    expect(vsThree?.reason).toBe('hint.followWin');
+
+    const vsAce = getTrappolaHint(
+      makeState({
+        players: [
+          { id: 0, isHuman: true, cardCount: 1, cards: [card('SPADE', 3)], trickCount: 0, teamId: 0 },
+          { id: 1, isHuman: false, cardCount: 1, cards: [], trickCount: 0, teamId: 1 },
+          { id: 2, isHuman: false, cardCount: 1, cards: [], trickCount: 0, teamId: 0 },
+          { id: 3, isHuman: false, cardCount: 1, cards: [], trickCount: 0, teamId: 1 },
+        ],
+        currentTrick: [{ playerIdx: 1, card: card('SPADE', 1) }],
+      }),
+    );
+    expect(vsAce?.reason).toBe('hint.followDuck');
   });
 });

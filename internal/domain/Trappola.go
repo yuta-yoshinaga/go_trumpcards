@@ -571,6 +571,9 @@ func trappolaStrength(value int) int {
 }
 
 // trappolaThirds カードの得点を 1/3点 単位で返す。A=3、2/3/J/Q/K=1、その他=0。
+// GetDeckForTest は山札を返す (テスト用)。
+func (g *Trappola) GetDeckForTest() *TrumpCards { return g.trumpCards }
+
 // TrappolaStrengthForTest は札位の強さを返す (テスト用)。
 func TrappolaStrengthForTest(value int) int { return trappolaStrength(value) }
 
@@ -773,7 +776,10 @@ func (g *Trappola) UnmarshalJSON(data []byte) error {
 	}
 	g.trumpCards = j.TrumpCards
 	if g.trumpCards == nil {
-		g.trumpCards = NewTrumpCardsBriscola()
+		// **コンストラクタと同じデッキでないといけない。** クローン元は 40 枚の
+		// ブリスコラデッキで、そのままだと 2 が混じる —— この 36 枚デッキに
+		// 2 は無いので、強さも点も既定の枝に落ちて静かにずれる。
+		g.trumpCards = NewTrumpCardsTrappola()
 	}
 	g.players = j.Players
 	if g.players == nil {
