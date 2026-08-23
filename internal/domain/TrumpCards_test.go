@@ -323,3 +323,61 @@ func TestTrumpCards_GetTotalCount(t *testing.T) {
 		}
 	})
 }
+
+// TestNewTrumpCardsTrappola は 36 枚が**4 スートに均等**であることを見る。
+//
+// issue #5423 は「36 枚は NewTrumpCardsWithSuits(36, suits) で構成できる」と
+// 書いていたが、あの関数はスートごとに値 1..13 を回して指定枚数で打ち切るので
+// 13+13+10+0 になり **ダイヤが 1 枚も入らない**。Skat が同じ形でダイヤ 0 枚の
+// まま出荷された前例があるので、スート別の枚数を明示的に数える。
+func TestNewTrumpCardsTrappola(t *testing.T) {
+	deck := domain.NewTrumpCardsTrappola()
+	if got := deck.GetTotalCount(); got != 36 {
+		t.Fatalf("GetTotalCount() = %d, want 36", got)
+	}
+
+	perSuit := map[int]int{}
+	perValue := map[int]int{}
+	for i := 0; i < 36; i++ {
+		c := deck.DrawCard()
+		if c == nil {
+			t.Fatalf("DrawCard() returned nil at %d", i)
+		}
+		perSuit[c.GetDesign()]++
+		perValue[c.GetValue()]++
+	}
+
+	// **4 スートが同じ枚数。** ここが崩れるのが例の壊れ方。
+	for suit := domain.CardDesignSpade; suit <= domain.CardDesignMax; suit++ {
+		if got, want := perSuit[suit], len(domain.TrappolaValues); got != want {
+			t.Errorf("suit %d has %d cards, want %d", suit, got, want)
+		}
+	}
+
+	// 札位は A,3,4,5,6,7,J,Q,K のみ。2 と 8,9,10 は入らない。
+	for _, v := range domain.TrappolaValues {
+		if got := perValue[v]; got != 4 {
+			t.Errorf("value %d appears %d times, want 4", v, got)
+		}
+	}
+	for _, v := range []int{2, 8, 9, 10} {
+		if got := perValue[v]; got != 0 {
+			t.Errorf("value %d appears %d times, want 0", v, got)
+		}
+	}
+
+	// **負のコントロール。** issue の推奨する作り方は実際に壊れる ——
+	// これが通らなくなったら NewTrumpCardsWithSuits の挙動が変わったので、
+	// 上のコメントごと見直すこと。
+	suits := []int{domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond}
+	bad := domain.NewTrumpCardsWithSuits(36, suits)
+	badDiamonds := 0
+	for i := 0; i < 36; i++ {
+		if c := bad.DrawCard(); c != nil && c.GetDesign() == domain.CardDesignDiamond {
+			badDiamonds++
+		}
+	}
+	if badDiamonds != 0 {
+		t.Errorf("NewTrumpCardsWithSuits(36) now yields %d diamonds -- revisit the comment above", badDiamonds)
+	}
+}

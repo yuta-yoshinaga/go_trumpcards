@@ -326,6 +326,7 @@ export * from './games/tichu';
 export * from './games/tienlen';
 export * from './games/toepen';
 export * from './games/tonk';
+export * from './games/trappola';
 export * from './games/trash';
 export * from './games/trenteetquarante';
 export * from './games/tressette';
@@ -615,6 +616,7 @@ export const games = [
   'truco',
   'acesup',
   'schnapsen',
+  'trappola',
   'tressette',
   'easthaven',
   'tichu',
