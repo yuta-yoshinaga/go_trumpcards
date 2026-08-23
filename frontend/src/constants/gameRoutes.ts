@@ -2440,6 +2440,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 4, 4, 3], skill: [3, 4, 4, 3], social: [1, 3, 5, 5, 4], theme: [3, 1, 3, 2, 4, 3] },
       },
       {
+        path: '/madrasso',
+        labelKey: 'nav.madrasso',
+        icon: '🇮🇹',
+        page: 'Madrasso',
+        profile: { mood: [3, 4, 4, 3], skill: [3, 4, 4, 3], social: [1, 3, 5, 5, 4], theme: [3, 1, 3, 2, 4, 3] },
+      },
+      {
         path: '/trappola',
         labelKey: 'nav.trappola',
         icon: '🇮🇹',

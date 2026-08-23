@@ -359,6 +359,14 @@ export const TrappolaPhase = {
   GAME_END: 3,
 } as const;
 
+/** Madrasso phase constants (sync: internal/domain/Madrasso.go). */
+export const MadrassoPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Tressette phase constants (sync: internal/domain/Tressette.go). */
 export const TressettePhase = {
   PLAY: 0,

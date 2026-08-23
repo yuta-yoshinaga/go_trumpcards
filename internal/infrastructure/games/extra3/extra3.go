@@ -21,6 +21,14 @@ import (
 )
 
 func init() {
+	games.RegisterKVGame("madrasso", games.CategoryExtra3,
+		func() usecase.MadrassoInteractorIF {
+			return usecase.NewMadrassoInteractor(domain.NewDefaultMadrasso(), new(presenter.MadrassoWebPresenter))
+		},
+		func(data []byte) (usecase.MadrassoInteractorIF, error) {
+			return usecase.RestoreMadrassoInteractor(data, new(presenter.MadrassoWebPresenter))
+		},
+		controller.NewMadrassoWebControllerWithProvider)
 	games.RegisterKVGame("toepen", games.CategoryExtra3,
 		func() usecase.ToepenInteractorIF {
 			return usecase.NewToepenInteractor(domain.NewDefaultToepen(), new(presenter.ToepenWebPresenter))

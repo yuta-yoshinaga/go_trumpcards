@@ -1,0 +1,81 @@
+{
+  "phase": {
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetPoints": "Target Points",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "teamLabel": "Team {{team}}",
+  "teamScore": "Team {{team}}: {{points}} pts (this round {{thirds}}/3)",
+  "yourTeam": "Your team",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "previousTrick": "Previous Trick",
+  "previousTrickEmpty": "No previous trick yet this round",
+  "previousTrickWinner": "Won by {{name}}",
+  "scores": "Scores",
+  "scoresTeam": "Team",
+  "scoresPoints": "Points",
+  "scoresTricks": "Tricks",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "hintAvailable": "Hint",
+  "hintReason": {
+    "lead_low": "Lead a low card to conserve points",
+    "follow_win": "Points on the table — win the trick",
+    "follow_duck": "Duck without winning",
+    "give_partner": "Partner is winning — give point cards",
+    "discard_low": "Cannot follow — discard a low card",
+    "trumpIn": "Cut with a trump",
+    "trump_in": "Cut with a trump"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. Each player plays one card, following the led suit (there is no trump).",
+    "playerHand": "Your hand. Click a card to select it. There is no trump suit.",
+    "playButton": "After selecting a card, play it with this button.",
+    "scoreTable": "Team scores. You (player 0) and player 2 are Team A; players 1 and 3 are Team B.",
+    "pointInfo": "Scoring: A = 1 point; face cards (K/Q/J) and 2/3 are 1/3 point each, plus 1/3 for the last trick. First team to the target (default 21) wins.",
+    "resetButton": "Use the reset button to start a new game."
+  },
+  "hint": {
+    "leadLow": "Lead a low card to conserve points",
+    "followWin": "Points on the table, so win with a higher card",
+    "followDuck": "Cannot/should not win, so duck",
+    "givePartner": "Partner is winning, so give them point cards",
+    "discardLow": "Cannot follow, so discard a low card",
+    "trumpIn": "Cut with a trump",
+    "trump_in": "Cut with a trump"
+  },
+  "pointLegend": {
+    "title": "Card Points",
+    "cardCol": "Card",
+    "pointCol": "Points",
+    "ace": "A (Ace)",
+    "aceValue": "1 pt",
+    "figures": "K / Q / J / 2 / 3",
+    "figuresValue": "1/3 pt",
+    "others": "Others (4-7, 10)",
+    "othersValue": "0 pt",
+    "lastTrick": "Last trick (ultima)",
+    "lastTrickValue": "+1/3 pt",
+    "note": "Each round totals 11 points. First team to reach the target (default 21) wins."
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available",
+  "scoresRoundPoints": "This round",
+  "roundPointsOf": "{{points}} / {{total}}",
+  "trumpSuit": "Trump: {{suit}}",
+  "noTrump": "Trump undecided"
+}

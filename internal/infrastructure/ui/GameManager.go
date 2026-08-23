@@ -6720,6 +6720,24 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"trappola.helpSetDifficulty", "trappola.helpSetTarget"},
 		}),
+	BindCuiFor("madrasso",
+		func() usecase.MadrassoInteractorIF {
+			return usecase.NewMadrassoInteractor(domain.NewDefaultMadrasso(), new(presenter.MadrassoCuiPresenter))
+		},
+		controller.NewMadrassoCuiController,
+		CuiHelpSpec{
+			TitleKey: "madrasso.helpTitle",
+			ExampleKeys: []string{
+				"madrasso.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"madrasso.helpPlay",
+				"madrasso.helpNext",
+				"madrasso.helpNextRound", "madrasso.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"madrasso.helpSetDifficulty", "madrasso.helpSetTarget"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

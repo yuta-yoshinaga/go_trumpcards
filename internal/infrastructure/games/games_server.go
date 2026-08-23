@@ -1145,6 +1145,11 @@ func init() {
 			return usecase.NewTrappolaInteractor(domain.NewDefaultTrappola(), new(presenter.TrappolaWebPresenter))
 		},
 		controller.NewTrappolaWebController)
+	BindWebControllerFor("madrasso",
+		func() usecase.MadrassoInteractorIF {
+			return usecase.NewMadrassoInteractor(domain.NewDefaultMadrasso(), new(presenter.MadrassoWebPresenter))
+		},
+		controller.NewMadrassoWebController)
 	BindWebControllerFor("tressette",
 		func() usecase.TressetteInteractorIF {
 			return usecase.NewTressetteInteractor(domain.NewDefaultTressette(), new(presenter.TressetteWebPresenter))
