@@ -51,9 +51,9 @@ func (p *BrusquembilleCuiPresenter) Output(b interfaces.BrusquembilleGame, lastE
 		} else {
 			sb.WriteString(i18n.T("brusquembille.trumpLineNone") + "\n")
 		}
+		// **全席ぶん並べる。** 席 0 と席 1 だけだと、3〜5 人卓で残りが消える。
 		sb.WriteString(i18n.Tf("brusquembille.pointsLine",
-			"p0", strconv.Itoa(b.GetPlayerPoints(0)),
-			"p1", strconv.Itoa(b.GetPlayerPoints(1))) + "\n")
+			"scores", brusquembilleCuiScoreSummary(b)) + "\n")
 
 		for i := 0; i < b.GetPlayerCnt(); i++ {
 			legal := []int(nil)
@@ -75,16 +75,15 @@ func (p *BrusquembilleCuiPresenter) Output(b interfaces.BrusquembilleGame, lastE
 		cuiErrorBlock(sb, lastErr)
 
 		if b.GetGameEndFlag() {
-			p0 := b.GetPlayerPoints(0)
-			p1 := b.GetPlayerPoints(1)
+			scores := brusquembilleCuiScoreSummary(b)
 			var banner string
-			switch b.GetWinnerIdx() {
-			case 0:
-				banner = i18n.Tf("brusquembille.gameEndP0", "p0", strconv.Itoa(p0), "p1", strconv.Itoa(p1))
-			case 1:
-				banner = i18n.Tf("brusquembille.gameEndP1", "p0", strconv.Itoa(p0), "p1", strconv.Itoa(p1))
+			switch w := b.GetWinnerIdx(); {
+			case w == 0:
+				banner = i18n.Tf("brusquembille.gameEndP0", "scores", scores)
+			case w > 0:
+				banner = i18n.Tf("brusquembille.gameEndCpu", "seat", strconv.Itoa(w), "scores", scores)
 			default:
-				banner = i18n.Tf("brusquembille.gameEndTie", "p0", strconv.Itoa(p0), "p1", strconv.Itoa(p1))
+				banner = i18n.Tf("brusquembille.gameEndTie", "scores", scores)
 			}
 			sb.WriteString(color.Green(banner) + "\n")
 			return
@@ -131,4 +130,13 @@ var brusquembilleHintReasonKeys = map[string]string{
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BrusquembilleCuiPresenter) ActionLogOutput(b interfaces.BrusquembilleGame) string {
 	return actionLogOutputTextForSeats[*domain.BrusquembillePlayer](b)
+}
+
+// brusquembilleCuiScoreSummary は全席の得点を "12-34-56" の形で返す。
+func brusquembilleCuiScoreSummary(b interfaces.BrusquembilleGame) string {
+	parts := make([]string, 0, b.GetPlayerCnt())
+	for i := 0; i < b.GetPlayerCnt(); i++ {
+		parts = append(parts, strconv.Itoa(b.GetPlayerPoints(i)))
+	}
+	return strings.Join(parts, "-")
 }

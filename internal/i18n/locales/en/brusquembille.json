@@ -5,11 +5,10 @@
   "header": "Trick: {{trick}}  Stock: {{stock}}",
   "trumpLine": "Trump (brusquembille): {{card}}",
   "trumpLineNone": "Trump (brusquembille): exhausted",
-  "pointsLine": "Points: You={{p0}}  CPU={{p1}}",
+  "pointsLine": "Points: {{scores}}",
   "playerLine": "{{name}}: tricks={{tricks}} points={{points}} cards={{cards}}",
-  "gameEndP0": "Game over! You win ({{p0}}-{{p1}})!",
-  "gameEndP1": "Game over! CPU wins ({{p0}}-{{p1}}).",
-  "gameEndTie": "Game over! It is a tie ({{p0}}-{{p1}}).",
+  "gameEndP0": "Game over! You win ({{scores}})!",
+  "gameEndTie": "Game over! It is a tie ({{scores}}).",
   "promptCurrentPlayer": "{{name}} to play",
   "promptPlay": "play <idx>: play a card",
   "promptTrickEnd": "Trick complete",
@@ -26,5 +25,6 @@
   "helpExampleNext": "  n                    read the trick result, then continue",
   "helpHint": "  h                    show a hint",
   "followLegend": "* = playable (the stock is gone, so you must follow the led suit)",
-  "helpSetPlayers": "  sp <2-5>             set the table size and restart (2-5 players)"
+  "helpSetPlayers": "  sp <2-5>             set the table size and restart (2-5 players)",
+  "gameEndCpu": "Game over! CPU {{seat}} wins ({{scores}})."
 }

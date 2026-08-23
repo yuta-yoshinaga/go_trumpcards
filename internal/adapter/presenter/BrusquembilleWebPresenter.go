@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -90,17 +91,15 @@ func (p *BrusquembilleWebPresenter) buildMessage(b interfaces.BrusquembilleGame,
 		return lastErr.Error(), "", nil
 	}
 	if b.GetGameEndFlag() {
-		p0 := b.GetPlayerPoints(0)
-		p1 := b.GetPlayerPoints(1)
-		params := map[string]string{
-			"p0": fmt.Sprintf("%d", p0),
-			"p1": fmt.Sprintf("%d", p1),
-		}
-		switch b.GetWinnerIdx() {
-		case 0:
+		// **全席の得点を出す。** 席 0 と席 1 だけ読むと、3〜5 人卓では
+		// 残りの席の得点が結果画面から消える —— しかも勝者がその席のときに。
+		params := map[string]string{"scores": brusquembilleScoreSummary(b)}
+		switch w := b.GetWinnerIdx(); {
+		case w == 0:
 			return "", "brusquembille.result.p0Win", params
-		case 1:
-			return "", "brusquembille.result.p1Win", params
+		case w > 0:
+			params["seat"] = fmt.Sprintf("%d", w)
+			return "", "brusquembille.result.cpuWin", params
 		default:
 			return "", "brusquembille.result.tie", params
 		}
@@ -142,4 +141,16 @@ func (p *BrusquembilleWebPresenter) HintOutput(b interfaces.BrusquembilleGame) s
 // ActionLogOutput 棋譜をJSON出力
 func (p *BrusquembilleWebPresenter) ActionLogOutput(b interfaces.BrusquembilleGame) string {
 	return actionLogOutputJSON(b)
+}
+
+// brusquembilleScoreSummary は全席の得点を "12-34-56" の形で返す。
+//
+// **席数は 2〜5 で可変。** 二人ぶんだけ組み立てると、卓が大きいときに
+// 得点表が途中で切れる。
+func brusquembilleScoreSummary(b interfaces.BrusquembilleGame) string {
+	parts := make([]string, 0, b.GetPlayerCnt())
+	for i := 0; i < b.GetPlayerCnt(); i++ {
+		parts = append(parts, fmt.Sprintf("%d", b.GetPlayerPoints(i)))
+	}
+	return strings.Join(parts, "-")
 }

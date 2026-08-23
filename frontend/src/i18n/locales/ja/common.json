@@ -2413,10 +2413,10 @@
     "brusquembille.noHint": "ヒントはありません",
     "brusquembille.playPhase.follow": "あなたの番です — 山札が尽きたので、リードスートに従ってください。",
     "brusquembille.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
-    "brusquembille.result.p0Win": "ゲーム終了！ あなたの勝利です（{{p0}}-{{p1}}）！",
-    "brusquembille.result.p1Win": "ゲーム終了！ CPU の勝利です（{{p0}}-{{p1}}）。",
-    "brusquembille.result.tie": "ゲーム終了！ 引き分けです（{{p0}}-{{p1}}）。",
-    "brusquembille.trickEnd": "トリック終了 — 次へ進んでください。"
+    "brusquembille.result.p0Win": "ゲーム終了！ あなたの勝利です（{{scores}}）！",
+    "brusquembille.result.tie": "ゲーム終了！ 引き分けです（{{scores}}）。",
+    "brusquembille.trickEnd": "トリック終了 — 次へ進んでください。",
+    "brusquembille.result.cpuWin": "ゲーム終了！ CPU {{seat}} の勝利です（{{scores}}）。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

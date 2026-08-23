@@ -64,7 +64,8 @@ func TestBrusquembilleCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "Brusquembille")
 		assert.Contains(t, out, "トリック: 1")
 		assert.Contains(t, out, "山札: 33枚")
-		assert.Contains(t, out, "得点: あなた=15  CPU=5")
+		// **全席ぶん並べる。** 3〜5 人卓では席 0/1 だけだと残りが消える。
+		assert.Contains(t, out, "得点: 15-5")
 		assert.Contains(t, out, "あなた:")
 		assert.Contains(t, out, "CPU 1:")
 		assert.Contains(t, out, "play <idx>")
@@ -103,7 +104,7 @@ func TestBrusquembilleCuiPresenter_Output(t *testing.T) {
 
 		out := p.Output(m, nil)
 		assert.Contains(t, out, "あなたの勝利")
-		assert.Contains(t, out, "(70-50)")
+		assert.Contains(t, out, "70-50")
 	})
 
 	t.Run("game end p1 banner", func(t *testing.T) {
@@ -118,7 +119,7 @@ func TestBrusquembilleCuiPresenter_Output(t *testing.T) {
 		m.On("GetPlayerPoints", 1).Return(80)
 
 		out := p.Output(m, nil)
-		assert.Contains(t, out, "CPUの勝利")
+		assert.Contains(t, out, "CPU 1 の勝利")
 	})
 
 	t.Run("game end tie banner", func(t *testing.T) {
@@ -240,4 +241,40 @@ func TestBrusquembilleCuiPresenter_MarksLegalCardsAfterTheStockRuns(t *testing.T
 		"追従できる 1 枚だけに印が付く: %q", handLine)
 	assert.Contains(t, late, i18n.T("brusquembille.followLegend"),
 		"印の意味を説明する:\n%s", late)
+}
+
+// TestBrusquembilleCuiPresenter_ReportsEverySeat は、得点行と結果バナーが
+// **卓の全席**を出すことを見る。
+//
+// **席 0 と席 1 だけ読むと、3〜5 人卓では残りの席が結果画面から消える** ——
+// しかも勝者がその席のときに。ドメインの勝者判定を全席にしても、表示側が
+// 二人ぶんのままだと画面の中で矛盾する。
+func TestBrusquembilleCuiPresenter_ReportsEverySeat(t *testing.T) {
+	m := new(interfaces.MockBrusquembilleGame)
+	m.On("GetTrickNumber").Return(1)
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
+	m.On("GetPhase").Return(domain.BrusquembillePhasePlay)
+	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
+	m.On("GetTrumpCard").Return((*domain.Card)(nil))
+	m.On("GetStockRemaining").Return(0)
+	m.On("IsFollowRequired").Return(false).Maybe()
+	m.On("GetValidPlayIndices", 0).Return([]int{}).Maybe()
+	m.On("GetGameEndFlag").Return(true)
+	// 席 3 (CPU 3) が最多で勝つ 4 人卓。
+	m.On("GetWinnerIdx").Return(3)
+	m.On("GetPlayerCnt").Return(4)
+	pts := []int{10, 20, 30, 60}
+	for i, v := range pts {
+		m.On("GetPlayer", i).Return(domain.NewBrusquembillePlayer(i == 0))
+		m.On("GetPlayerPoints", i).Return(v)
+	}
+
+	out := new(presenter.BrusquembilleCuiPresenter).Output(m, nil)
+
+	// 4 席ぶんの得点が全部出る。
+	assert.Contains(t, out, "10-20-30-60",
+		"全席の得点が出る (席 0/1 だけだと 30 と 60 が消える):\n%s", out)
+	// 勝者は席 3。「CPU の勝利」ではどの CPU か分からない。
+	assert.Contains(t, out, "CPU 3 の勝利", "勝った席を名指しする:\n%s", out)
 }

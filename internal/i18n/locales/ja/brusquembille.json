@@ -5,11 +5,10 @@
   "header": "トリック: {{trick}}  山札: {{stock}}枚",
   "trumpLine": "トランプ (ブリュスカンビーユ): {{card}}",
   "trumpLineNone": "トランプ (ブリュスカンビーユ): 使い切り",
-  "pointsLine": "得点: あなた={{p0}}  CPU={{p1}}",
+  "pointsLine": "得点: {{scores}}",
   "playerLine": "{{name}}: 獲得{{tricks}}トリック {{points}}点 {{cards}}枚",
-  "gameEndP0": "ゲーム終了！ あなたの勝利です ({{p0}}-{{p1}})！",
-  "gameEndP1": "ゲーム終了！ CPUの勝利です ({{p0}}-{{p1}})。",
-  "gameEndTie": "ゲーム終了！ 引き分けです ({{p0}}-{{p1}})。",
+  "gameEndP0": "ゲーム終了！ あなたの勝利です（{{scores}}）！",
+  "gameEndTie": "ゲーム終了！ 引き分けです（{{scores}}）。",
   "promptCurrentPlayer": "手番: {{name}}",
   "promptPlay": "play <idx>・・・カードを出す",
   "promptTrickEnd": "トリック終了",
@@ -26,5 +25,6 @@
   "helpExampleNext": "  n                    トリックの決着を見てから次へ",
   "helpHint": "  h                    助言を表示",
   "followLegend": "* = 出せる札（山札が尽きたのでリードスートに追従します）",
-  "helpSetPlayers": "  sp <2-5>             席数を変更して再開 (2〜5人)"
+  "helpSetPlayers": "  sp <2-5>             席数を変更して再開 (2〜5人)",
+  "gameEndCpu": "ゲーム終了！ CPU {{seat}} の勝利です（{{scores}}）。"
 }
