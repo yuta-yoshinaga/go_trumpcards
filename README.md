@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した343種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した344種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -31,6 +31,7 @@ Go + Clean Architecture で実装した343種類のトランプゲーム。CLI �
 | ドラマハ (Dramaha) | `dramaha` | [CUI](docs/manual/cui/dramaha.md) / [Web](docs/manual/web/dramaha.md) |
 | プット (Put) | `put` | [CUI](docs/manual/cui/put.md) / [Web](docs/manual/web/put.md) |
 | リスティコントラ (Ristikontra) | `ristikontra` | [CUI](docs/manual/cui/ristikontra.md) / [Web](docs/manual/web/ristikontra.md) |
+| ブリュスカンビーユ (Brusquembille) | `brusquembille` | [CUI](docs/manual/cui/brusquembille.md) / [Web](docs/manual/web/brusquembille.md) |
 | オマハ ハイロー (Omaha Hi-Lo / 8 or Better) | `omahahilo` | [CUI](docs/manual/cui/omahahilo.md) / [Web](docs/manual/web/omahahilo.md) |
 | 5カードオマハ (5 Card Omaha / Big O) | `bigo` | [CUI](docs/manual/cui/bigo.md) / [Web](docs/manual/web/bigo.md) |
 | 5カードオマハ ハイロー (5 Card Omaha Hi-Lo / Big O) | `bigohilo` | [CUI](docs/manual/cui/bigohilo.md) / [Web](docs/manual/web/bigohilo.md) |

@@ -1723,6 +1723,13 @@ export const BriscolaPhase = {
   GAME_END: 2,
 } as const;
 
+/** Brusquembille phase constants (sync: internal/domain/Brusquembille.go). */
+export const BrusquembillePhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  GAME_END: 2,
+} as const;
+
 /** Schnapsen phase constants (sync: internal/domain/Schnapsen.go). */
 export const SchnapsenPhase = {
   PLAY: 0,

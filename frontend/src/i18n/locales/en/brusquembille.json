@@ -1,0 +1,55 @@
+{
+  "currentTrick": "Current trick",
+  "title": "Brusquembille",
+  "subtitle": "Italian classic trick-taking — 40-card deck, no must-follow",
+  "header": {
+    "trick": "Trick",
+    "stock": "Stock",
+    "you": "You",
+    "cpu": "CPU",
+    "points": "Points",
+    "trump": "Trump (brusquembille)",
+    "trumpNone": "Trump: exhausted",
+    "tricks": "Tricks"
+  },
+  "phase": {
+    "play": "Play",
+    "trickEnd": "Trick complete",
+    "gameEnd": "Game over"
+  },
+  "actions": {
+    "play": "Play",
+    "next": "Next trick",
+    "reset": "Reset",
+    "hint": "Hint"
+  },
+  "hint": {
+    "available": "Hint",
+    "card": "Suggested card: [{{index}}]",
+    "lead_trump": "Lead a trump to seize the initiative",
+    "lead_low": "Lead a low card to keep your point cards",
+    "lead_value": "Play a high-value card to score",
+    "follow_cut": "Cut the trick with a trump",
+    "follow_win": "Win with a stronger card of the same suit",
+    "follow_dump": "You can't win — dump a low card"
+  },
+  "result": {
+    "youWin": "You win! ({{p0}}-{{p1}})",
+    "cpuWin": "CPU wins ({{p0}}-{{p1}})",
+    "tie": "Tie ({{p0}}-{{p1}})"
+  },
+  "message": {
+    "yourTurn": "Your turn — any card is playable (no must-follow)",
+    "cpuTurn": "CPU is playing...",
+    "trickComplete": "Trick complete — advance to the next",
+    "loading": "Loading..."
+  },
+  "tutorial": {
+    "trump": "The card laid sideways under the stock is the trump (brusquembille). Its suit beats every other suit.",
+    "trick": "Cards played to the table. Win with a higher card of the same suit, or any trump (no must-follow).",
+    "hand": "Your hand — click a card to play it. Brusquembille scores differently: A = 11, 3 = 10.",
+    "score": "Tricks, stock left, and points. The deck totals 120 points; reach 61 to win."
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
+}

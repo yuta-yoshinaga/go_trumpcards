@@ -216,6 +216,7 @@ var gameDescriptions = map[string]string{
 	"tarneeb":             "Tarneeb (ターニーブ)",
 	"highcardflush":       "High Card Flush (ハイカードフラッシュ)",
 	"briscola":            "Briscola (ブリスコラ)",
+	"brusquembille":       "Brusquembille (ブリュスカンビーユ)",
 	"gaps":                "Gaps / Montana (ギャップス)",
 	"fourcardpoker":       "Four Card Poker (フォーカードポーカー)",
 	"rummy500":            "Rummy 500 (500ラム)",

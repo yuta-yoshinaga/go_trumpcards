@@ -490,6 +490,8 @@ tags:
     description: High Card Flush (ハイカードフラッシュ) game - single-player casino table game. Both player and dealer get 7 cards; longest same-suit subset (flush length) decides the winner (ties broken by high card within the flush). Player places an Ante and optional Flush Bonus / Straight Flush Bonus side bets, then chooses Raise (1x/2x/3x capped by flush length) or Fold. Dealer qualifies on 3+ card flush with 9-high or better.
   - name: briscola
     description: Briscola (ブリスコラ) game - 2-player Italian trick-taking classic. 40-card deck (A,2-7,J,Q,K x 4 suits — no 8/9/10), 3-card hands replenished from the stock, face-up trump (briscola) decides the trump suit. No must-follow — any card is legal at any time. Intra-suit rank order A>3>K>Q>J>7>6>5>4>2; trump beats non-trump. Card points A=11, 3=10, K=4, Q=3, J=2 (total 120); >60 points wins, 60-60 is a tie.
+  - name: brusquembille
+    description: Brusquembille (ブリュスカンビーユ) - 17th-century French trick-taking game, an ancestor of both Briscola and Bezique, for 2-5 players on a 32-card French pack (7,8,9,10,J,Q,K,A x 4 suits). Two phases — while the stock lasts any card is legal, but once the stock and the face-up trump are gone, following the led suit becomes compulsory if you hold it. Intra-suit rank order A>10>K>Q>J>9>8>7 (the 10 sits second, above the King); trump beats non-trump. Card points A=11, 10=10, K=4, Q=3, J=2 (total 120); the highest total wins. Because 32 does not divide by 3 or 5, those table sizes remove the surplus low cards at deal time so every hand can empty.
   - name: schnapsen
     description: Schnapsen / Sixty-Six (シュナプセン / 66) game - 2-player Austrian/German trick-taking classic. 20-card deck (A,10,K,Q,J x 4 suits), 5-card hands replenished from the stock, face-up trump upcard decides the trump suit. Phase 1 (stock present) has no must-follow; phase 2 (stock exhausted) requires following suit, winning if able, else trumping. A marriage (K+Q of one suit, declared on lead) scores 20 (40 for trump). Intra-suit rank A>10>K>Q>J; card points A=11, 10=10, K=4, Q=3, J=2 (total 120). First to 66 wins the round; otherwise the last trick taker wins.
   - name: gaps
@@ -23081,6 +23083,102 @@ paths:
               schema:
                 $ref: '#/components/schemas/BriscolaResponse'
 
+  /brusquembille/exec:
+    post:
+      tags:
+        - brusquembille
+      summary: Execute a Brusquembille (ブリュスカンビーユ) game command
+      description: |
+        Send a command to advance the Brusquembille game session identified by
+        `sessionId`. Brusquembille is a 17th-century French trick-taking game —
+        an ancestor of both Briscola and Bezique — for **2-5 players**, played
+        with a **32-card French pack** (7,8,9,10,J,Q,K,A x 4 suits).
+
+        Each player holds 3 cards, replenished from the stock after each trick.
+        The face-up trump card at the bottom of the stock decides the trump suit.
+
+        **Two phases.** While the stock lasts, any card in hand is legal — as in
+        Briscola. **Once the stock and the face-up trump are gone, following the
+        led suit becomes compulsory** if you hold it; otherwise play anything.
+        Early on you can dump freely because you refill; late on you cannot.
+
+        Trick winner gets the trump-beats-non-trump treatment and the intra-suit
+        rank order **A>10>K>Q>J>9>8>7** — note the 10 sits second, above the
+        King. Card points A=11, **10**=10, K=4, Q=3, J=2 (total 120 per deal);
+        the highest total wins.
+
+        Because 32 does not divide by 3 or 5, those table sizes remove the
+        surplus low cards (two 7s) at deal time so every hand can empty.
+
+        Phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Play     | `0`   | Either player to act |
+        | TrickEnd | `1`   | Trick resolved; call `n`/`next` to continue |
+        | GameEnd  | `2`   | Every hand is empty; winnerIdx set |
+
+        Commands:
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset` / `r` |         | Restart with optional config |
+        | `play` / `p`  |         | Play card at index |
+        | `next` / `n`  |         | Advance to next trick (draw replenish + game-end detect) |
+        | `hint` / `h`  |         | Suggested move |
+        | `log` / `l`   |         | View action log |
+      operationId: brusquembilleExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, next, n, hint, h, log, l]
+                cardIndex:
+                  type: integer
+                  description: Card index for `play`/`p`
+                config:
+                  $ref: '#/components/schemas/BrusquembilleConfig'
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play hand[0]
+                value:
+                  command: p
+                  cardIndex: 0
+                  sessionId: my-session-001
+              next:
+                summary: Advance to next trick
+                value:
+                  command: n
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrusquembilleResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrusquembilleResponse'
+
   /schnapsen/exec:
     post:
       tags:
@@ -41100,6 +41198,107 @@ components:
           description: -1 = tie or unfinished, 0 = human, 1 = CPU
         config:
           $ref: '#/components/schemas/BriscolaConfig'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        hint:
+          type: object
+          nullable: true
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+            reason:
+              type: string
+
+    # -------------------------------------------------------------------------
+    # Brusquembille
+    # -------------------------------------------------------------------------
+    BrusquembilleConfig:
+      type: object
+      description: Brusquembille game configuration.
+      properties:
+        cpuDifficulty:
+          type: integer
+          minimum: 0
+          maximum: 0
+          description: "0 = Normal (only level supported in v1)"
+        playerCnt:
+          type: integer
+          minimum: 2
+          maximum: 5
+          default: 2
+          description: >-
+            Number of seats (2-5); seat 0 is the human. Because 32 does not
+            divide by 3 or 5, those table sizes drop the surplus low cards
+            (two 7s) at deal time so every hand can empty.
+
+    BrusquembilleResponse:
+      type: object
+      description: Current state of the Brusquembille game.
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              points:
+                type: integer
+                description: Cumulative points won in tricks (0-120)
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "0=Play, 1=TrickEnd, 2=GameEnd"
+          enum: [0, 1, 2]
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        trumpSuit:
+          type: integer
+          description: "1=♠, 2=♣, 3=♥, 4=♦"
+        trumpCard:
+          $ref: '#/components/schemas/Card'
+          description: Face-up trump card; omitted once the stock is exhausted.
+        dealerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        stockRemaining:
+          type: integer
+          description: Cards left in the stock, counting the face-up trump card.
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: -1 = tie or unfinished, 0 = human, 1 = CPU
+        config:
+          $ref: '#/components/schemas/BrusquembilleConfig'
         message:
           type: string
         messageCode:

@@ -363,7 +363,8 @@
     "mrsmop": "Mrs. Mop",
     "rankandfile": "Rank and File",
     "put": "Put",
-    "ristikontra": "Ristikontra"
+    "ristikontra": "Ristikontra",
+    "brusquembille": "Brusquembille"
   },
   "sound": {
     "mute": "Mute sound",
@@ -2407,7 +2408,15 @@
     "put.result.p0Win": "Match over! You win ({{p0}}-{{p1}})!",
     "put.result.p1Win": "Match over! The CPU wins ({{p0}}-{{p1}}).",
     "put.trickEnd": "Trick over — continue to the next one.",
-    "ristikontra.result.scores": "Game over. Cards captured: {{scores}}"
+    "ristikontra.result.scores": "Game over. Cards captured: {{scores}}",
+    "brusquembille.hintRequested": "A hint is available",
+    "brusquembille.noHint": "No hint available",
+    "brusquembille.playPhase.follow": "Your turn — the stock is gone, so you must follow the led suit.",
+    "brusquembille.playPhase.lead": "Your turn — pick a card to lead.",
+    "brusquembille.result.p0Win": "Game over! You win ({{p0}}-{{p1}})!",
+    "brusquembille.result.p1Win": "Game over! The CPU wins ({{p0}}-{{p1}}).",
+    "brusquembille.result.tie": "Game over! It is a tie ({{p0}}-{{p1}}).",
+    "brusquembille.trickEnd": "Trick over — continue to the next one."
   },
   "manual": {
     "ariaLabel": "Game Manual",

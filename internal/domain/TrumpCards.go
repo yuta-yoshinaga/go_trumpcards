@@ -68,6 +68,34 @@ func (t *TrumpCards) deckDrawFlagInit() {
 	}
 }
 
+// RemoveCardsByValue は指定した額面の札を最大 count 枚デッキから取り除き、
+// 実際に取り除いた枚数を返す。
+//
+// **配る前に呼ぶこと。** 既に引かれた札は動かさず、未使用の札だけを外す。
+// 席数でデッキが割り切れない卓 (32 枚を 3 人・5 人で分けるなど) で、
+// 低い札を抜いて枚数を揃えるために使う。どの札が抜けたかが決まっているので、
+// プレイヤーは残りを推測できる —— 無作為に捨てるとそれができない。
+func (t *TrumpCards) RemoveCardsByValue(value, count int) int {
+	if count <= 0 {
+		return 0
+	}
+	kept := make([]*Card, 0, len(t.deck))
+	removed := 0
+	for _, c := range t.deck {
+		if removed < count && c != nil && !c.GetDraw() && c.GetValue() == value {
+			removed++
+			continue
+		}
+		kept = append(kept, c)
+	}
+	if removed == 0 {
+		return 0
+	}
+	t.deck = kept
+	t.deckCnt = len(kept)
+	return removed
+}
+
 // Shuffle 山札シャッフル
 func (t *TrumpCards) Shuffle() {
 	n := len(t.deck)

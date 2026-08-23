@@ -191,6 +191,14 @@ func init() {
 			return usecase.RestoreBriscolaInteractor(data, new(presenter.BriscolaWebPresenter))
 		},
 		controller.NewBriscolaWebControllerWithProvider)
+	games.RegisterKVGame("brusquembille", games.CategoryClassic,
+		func() usecase.BrusquembilleInteractorIF {
+			return usecase.NewBrusquembilleInteractor(domain.NewDefaultBrusquembille(), new(presenter.BrusquembilleWebPresenter))
+		},
+		func(data []byte) (usecase.BrusquembilleInteractorIF, error) {
+			return usecase.RestoreBrusquembilleInteractor(data, new(presenter.BrusquembilleWebPresenter))
+		},
+		controller.NewBrusquembilleWebControllerWithProvider)
 	games.RegisterKVGame("truco", games.CategoryClassic,
 		func() usecase.TrucoInteractorIF {
 			return usecase.NewTrucoInteractor(domain.NewDefaultTruco(), new(presenter.TrucoWebPresenter))

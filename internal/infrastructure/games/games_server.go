@@ -1730,4 +1730,9 @@ func init() {
 			return usecase.NewRistikontraInteractor(domain.NewDefaultRistikontra(), new(presenter.RistikontraWebPresenter))
 		},
 		controller.NewRistikontraWebController)
+	BindWebControllerFor("brusquembille",
+		func() usecase.BrusquembilleInteractorIF {
+			return usecase.NewBrusquembilleInteractor(domain.NewDefaultBrusquembille(), new(presenter.BrusquembilleWebPresenter))
+		},
+		controller.NewBrusquembilleWebController)
 }

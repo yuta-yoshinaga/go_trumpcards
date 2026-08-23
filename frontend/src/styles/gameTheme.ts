@@ -148,6 +148,7 @@ export type GameKey =
   | 'callbreak'
   | 'tarneeb'
   | 'briscola'
+  | 'brusquembille'
   | 'schnapsen'
   | 'germanwhist'
   | 'slobberhannes'
@@ -753,6 +754,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   callbreak: BLUE,
   tarneeb: BLUE,
   briscola: BLUE,
+  brusquembille: BLUE,
   schnapsen: BLUE,
   germanwhist: BLUE,
   slobberhannes: BLUE,
