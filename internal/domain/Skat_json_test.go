@@ -113,7 +113,8 @@ func TestSkatJSONRejectsBadShape(t *testing.T) {
 		// **添字に使う値そのもの。** 長さだけ見ても、席番号が範囲外なら
 		// 次のリクエストで s.players[...] が panic する。
 		{"currentPlayerIdx out of range", `{"ps":[null,null,null],"ci":3}`},
-		{"currentPlayerIdx negative", `{"ps":[null,null,null],"ci":-1}`},
+		// -1 は「まだ誰の手番でもない」の番兵なので通す。
+		{"currentPlayerIdx below the -1 sentinel", `{"ps":[null,null,null],"ci":-2}`},
 		{"declarerIdx out of range", `{"ps":[null,null,null],"de":9}`},
 		{"declarerIdx below the -1 sentinel", `{"ps":[null,null,null],"de":-2}`},
 		{"dealerIdx out of range", `{"ps":[null,null,null],"di":7}`},

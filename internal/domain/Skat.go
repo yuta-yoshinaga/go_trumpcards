@@ -1832,15 +1832,13 @@ func (s *Skat) UnmarshalJSON(data []byte) error {
 	// **添字に使う値そのものを検査する。** 長さだけ見ても、席番号が範囲外なら
 	// 次のリクエストで s.players[...] が panic する。currentPlayerIdx は
 	// 必ず実在の席、declarerIdx は -1 (未決定) か実在の席。
-	if j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= SkatPlayerCnt {
-		return fmt.Errorf("skat: currentPlayerIdx %d is not a seat (0-%d)",
-			j.CurrentPlayerIdx, SkatPlayerCnt-1)
-	}
-	if j.DeclarerIdx < -1 || j.DeclarerIdx >= SkatPlayerCnt {
-		return fmt.Errorf("skat: declarerIdx %d is neither -1 nor a seat (0-%d)",
-			j.DeclarerIdx, SkatPlayerCnt-1)
-	}
+	//
+	// **-1 は正当な値。** 配り終えてビッド中の卓は currentPlayerIdx も
+	// declarerIdx も -1 で、まだ誰の手番でも誰が declarer でもない。
+	// ここを 0 以上に絞ると、**ビッド中に保存された盤を全部拒否する** ——
+	// 直そうとしたバグより悪い (既存の RestoreFromJSON テストが捕まえた)。
 	for name, idx := range map[string]int{
+		"currentPlayerIdx": j.CurrentPlayerIdx, "declarerIdx": j.DeclarerIdx,
 		"leadPlayerIdx": j.LeadPlayerIdx, "dealerIdx": j.DealerIdx,
 		"forehandIdx": j.ForehandIdx, "middlehandIdx": j.MiddlehandIdx,
 		"rearhandIdx": j.RearhandIdx, "bidderIdx": j.BidderIdx,
