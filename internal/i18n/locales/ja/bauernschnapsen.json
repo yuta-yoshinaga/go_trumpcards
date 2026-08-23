@@ -40,5 +40,6 @@
   "contractFarbenzwang": "同スート縛り",
   "contractBettel": "ベテル",
   "promptContract": "契約を宣言してください",
-  "promptContractHelp": "c <0-3> [スート 1-4] (0=パス 1=通常 2=同スート縛り 3=ベテル / スート 1=S 2=C 3=H 4=D)"
+  "promptContractHelp": "c <0-3> [スート 1-4] (0=パス 1=通常 2=同スート縛り 3=ベテル / スート 1=S 2=C 3=H 4=D)",
+  "helpExampleContract": "  c 1 1                スペードを切り札に通常契約を宣言する"
 }

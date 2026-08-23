@@ -40,5 +40,6 @@
   "contractFarbenzwang": "Farbenzwang",
   "contractBettel": "Bettel",
   "promptContract": "Declare your contract",
-  "promptContractHelp": "c <0-3> [suit 1-4] (0=pass 1=Rufer 2=Farbenzwang 3=Bettel / suit 1=S 2=C 3=H 4=D)"
+  "promptContractHelp": "c <0-3> [suit 1-4] (0=pass 1=Rufer 2=Farbenzwang 3=Bettel / suit 1=S 2=C 3=H 4=D)",
+  "helpExampleContract": "  c 1 1                declare Rufer with spades as trump"
 }

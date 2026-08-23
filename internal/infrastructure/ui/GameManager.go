@@ -6665,6 +6665,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "bauernschnapsen.helpTitle",
 			ExampleKeys: []string{
+				"bauernschnapsen.helpExampleContract",
 				"bauernschnapsen.helpExamplePlay",
 			},
 			CommandKeys: []string{
