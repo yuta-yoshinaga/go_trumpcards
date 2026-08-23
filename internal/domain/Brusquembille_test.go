@@ -367,12 +367,19 @@ func TestBrusquembille_NextTrick_DrawReplenish(t *testing.T) {
 func TestBrusquembille_FullHand_GameEnds(t *testing.T) {
 	b := newTestBrusquembille()
 	b.Reset()
-	// Drive the game to completion by always letting human play idx 0
+	// **合法手を選ぶ。** 手札 0 番を決め打ちすると、山札が尽きた後半で
+	// 追従義務に引っかかって落ちる —— しかも配り依存なので、単体では通り、
+	// パッケージ全体を回したときだけ落ちる (実測: clean develop では 3/3 緑、
+	// 山札の引き方を変える別の修正を入れた途端に発現した)。
 	for !b.GetGameEndFlag() {
 		switch b.GetPhase() {
 		case domain.BrusquembillePhasePlay:
 			if b.IsHumanTurn() {
-				if err := b.PlayerPlay(0); err != nil {
+				valid := b.GetValidPlayIndices(0)
+				if len(valid) == 0 {
+					t.Fatalf("human has cards but no legal play")
+				}
+				if err := b.PlayerPlay(valid[0]); err != nil {
 					t.Fatalf("PlayerPlay: %v", err)
 				}
 			} else {

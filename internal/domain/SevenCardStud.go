@@ -587,8 +587,14 @@ func (s *SevenCardStud) dealStreetCard(faceUp bool) {
 
 // dealRemainingStreets 残りのストリートのカードを全て配る
 func (s *SevenCardStud) dealRemainingStreets() {
-	// 現在のフェーズから7th streetまでのカードを配る
-	for phase := s.phase; phase <= SevenCardStudPhaseSeventhStreet; phase++ {
+	// **次のストリートから配る。** advancePhase はフェーズを進めるのと同時に
+	// そのストリートの札を配るので、s.phase のストリートは既に配り終えている。
+	// s.phase から回すと 1 枚多く配り、7 枚のゲームが 8 枚になる ——
+	// 実測で 2000 ハンド中 318 件 (#6214)。
+	//
+	// 3rd street から走り切ると正しい枚数になるのは switch に 3rd が無いから
+	// で、意図した動きではなかった。
+	for phase := s.phase + 1; phase <= SevenCardStudPhaseSeventhStreet; phase++ {
 		switch phase {
 		case SevenCardStudPhaseFourthStreet, SevenCardStudPhaseFifthStreet, SevenCardStudPhaseSixthStreet:
 			s.dealStreetCard(true)
