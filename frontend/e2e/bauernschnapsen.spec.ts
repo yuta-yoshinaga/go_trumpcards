@@ -23,7 +23,9 @@ test.describe('Bauernschnapsen E2E', () => {
     const marriageButton = page.getByRole('button', { name: 'マリッジ' });
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
-    const handCards = page.locator('button[aria-pressed]:has(img)');
+    // **追従必須なので、出せない札は aria-disabled になる** (gongzhu / cribbage と同じ形)。
+    // 押しても API は呼ばれないので、ここで無言に空回りする。
+    const handCards = page.locator('button[aria-pressed]:has(img):not([aria-disabled="true"])');
     const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
 
     const MAX_TURNS = 80;
@@ -45,11 +47,8 @@ test.describe('Bauernschnapsen E2E', () => {
       }
 
       if (await playButton.isVisible()) {
-        // **出せる札だけを押す。** 追従必須なので、淡く表示された札を
-        // 押しても API は呼ばれず、ここで無言に空回りする。
-        const playable = handCards.and(page.locator(':not([aria-disabled="true"])'));
-        if ((await playable.count()) > 0) {
-          await playable.first().click();
+        if ((await handCards.count()) > 0) {
+          await handCards.first().click();
         }
         if (await marriageButton.isVisible()) {
           await marriageButton.click();
