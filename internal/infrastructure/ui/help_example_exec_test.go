@@ -3,6 +3,7 @@
 package ui
 
 import (
+	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
@@ -208,6 +209,11 @@ func TestCuiHelpExamplesAreNotQuietlyRefused(t *testing.T) {
 		}
 		ctrl := g.Controller()
 		ctrl.Exec("r")
+		// **例は「順に実行する手順」として書かれている。** blackjack の `h` は
+		// `b 100` が通った後でしか合法にならない。再確認で配り直すときも
+		// この前段を再現しないと、前提が欠けたせいの拒否を「実行できない
+		// コマンド」と読んでしまう。
+		var prior []string
 		for _, line := range examples {
 			cmd := helpExampleCommand(line)
 			if cmd == "" {
@@ -220,9 +226,13 @@ func TestCuiHelpExamplesAreNotQuietlyRefused(t *testing.T) {
 			// **配り依存で 1/3 ほど落ちる**フレークになっていた (#5620)。
 			// コマンドがヒントなら返事は定義上ヒントなので、ここでは測らない。
 			if cmd == "h" || cmd == "hint" {
+				prior = append(prior, cmd)
 				continue
 			}
 			checked++
+			// この時点の prior が「この手までに実行された手順」。
+			priorForCmd := append([]string(nil), prior...)
+			prior = append(prior, cmd)
 			out := ctrl.Exec(cmd)
 			if _, isErr := i18n.StripErrorPrefix(out); isErr {
 				continue // TestCuiHelpExamplesExecute owns the marked ones
@@ -234,9 +244,26 @@ func TestCuiHelpExamplesAreNotQuietlyRefused(t *testing.T) {
 			// the marked lines are removed keeps the two shapes apart: a
 			// properly marked refusal drops out, an unmarked one stays.
 			out = dropMarkedErrorLines(out)
-			if line, ok := exampleRefusalLine(out); ok {
-				bad = append(bad, entry.Name+": `"+cmd+"` -> "+line)
+			line, refused := exampleRefusalLine(out)
+			if !refused {
+				continue
 			}
+			// **1 回断られただけでは報告しない。**
+			//
+			// 断られる理由は 2 つあり、意味がまるで違う:
+			//
+			//   - ヘルプが「そもそも実行できないコマンド」を宣伝している (バグ)
+			//   - この配りではたまたま打てる手が無かった (バグではない)
+			//
+			// 出力の文字列からは区別が付かないので、**配り直して同じ手を
+			// もう一度試す**。何回配り直しても断られるなら前者、どこかで
+			// 通るなら後者。これが無いと、盤面都合の拒否を掴んで
+			// 配り依存で落ちる —— 実測で bisley の `ac` と acesup の `h` が
+			// この形で、クリーンな develop でも 3/20 再現した (#6216)。
+			if !refusedOnEveryDeal(entry, priorForCmd, cmd) {
+				continue
+			}
+			bad = append(bad, entry.Name+": `"+cmd+"` -> "+line)
 		}
 	}
 	if checked == 0 {
@@ -280,5 +307,135 @@ func TestDropMarkedErrorLinesKeepsTheUnmarkedOnes(t *testing.T) {
 	// Nothing marked, nothing to drop -- the input is returned untouched.
 	if got := dropMarkedErrorLines(board); got != board {
 		t.Errorf("an ordinary board must pass through unchanged, got %q", got)
+	}
+}
+
+// refusedOnEveryDealRetries は再確認で配り直す回数。
+//
+// 盤面都合の拒否が全回で揃う確率は指数的に下がる。実測で問題になった
+// 2 例はいずれも 1/3 程度の頻度だったので、5 回なら 1/243 未満になる。
+const refusedOnEveryDealRetries = 5
+
+// refusedOnEveryDeal は、配り直しても同じコマンドが (印の無い) 拒否を
+// 返し続けるかを返す。
+//
+// **一度でも通れば false。** 通ったということは、そのコマンドは実行可能で、
+// さっきの拒否は盤面の都合だったということ。
+func refusedOnEveryDeal(entry GameRegistryEntry, prior []string, cmd string) bool {
+	seq := replaySequence(prior, cmd)
+	return refusedEveryTime(func() string {
+		g := entry.NewCui()
+		ctrl := g.Controller()
+		var out string
+		for _, c := range seq {
+			out = ctrl.Exec(c)
+		}
+		return out
+	})
+}
+
+// replaySequence は 1 回の配りで叩くコマンド列を返す。
+//
+// **前段を再現してから試す。** 例は順に実行する手順として書かれている
+// (blackjack の `h` は `b 100` が通った後でしか合法にならない)。前段を飛ばすと
+// 前提が欠けたせいで毎回断られ、盤面都合の拒否を「実行できないコマンド」に
+// 化けさせる —— **毎回再現するぶんフレークより悪い** (在りもしないバグを
+// 探させる)。
+//
+// 組み立てを関数に出してあるのは、実際に何を叩くかをテストできるようにするため。
+func replaySequence(prior []string, cmd string) []string {
+	seq := make([]string, 0, len(prior)+2)
+	seq = append(seq, "r")
+	seq = append(seq, prior...)
+	return append(seq, cmd)
+}
+
+// refusedEveryTime は、配り直しに相当する exec を繰り返し、毎回 (印の無い)
+// 拒否が返るかを返す。
+//
+// exec を差し込めるようにしてあるのは、**true を返す側をテストできるように**
+// するため。実在のゲームで「毎回必ず印無しで断られるコマンド」はガードが
+// 探しているバグそのものなので、直っていればリポジトリ内に存在せず、
+// 実物では true の分岐を一度も踏めない。
+func refusedEveryTime(exec func() string) bool {
+	for i := 0; i < refusedOnEveryDealRetries; i++ {
+		out := exec()
+		if _, isErr := i18n.StripErrorPrefix(out); isErr {
+			// 印の付いた拒否は別のテストが見る。ここでは「断られていない」扱い。
+			return false
+		}
+		if _, refused := exampleRefusalLine(dropMarkedErrorLines(out)); !refused {
+			return false
+		}
+	}
+	return true
+}
+
+// TestRefusedEveryTimeSeparatesTheTwoRefusals は再確認の負のコントロール。
+//
+// **これが無いと「常に false を返す」実装でも本体のガードは緑になる。**
+// 区別したい 2 つ —— 「宣伝しているのに実行できない」と「この配りでは
+// たまたま打てなかった」—— を実際に区別できることを見る。
+func TestRefusedEveryTimeSeparatesTheTwoRefusals(t *testing.T) {
+	refusal := color.Red("Multiplier (1, 2 or 3) is required.") + "\n"
+	board := "Round: 1  Trick: 0\n"
+
+	// 毎回、印の無い拒否 → true。ガードが報告すべき形。
+	if !refusedEveryTime(func() string { return board + refusal }) {
+		t.Error("a refusal on every deal must be reported")
+	}
+
+	// 毎回ふつうの盤面 → false。
+	if refusedEveryTime(func() string { return board }) {
+		t.Error("an ordinary board must not count as a refusal")
+	}
+
+	// **一度でも通れば false。** 盤面都合の拒否はここで落ちる。
+	calls := 0
+	if refusedEveryTime(func() string {
+		calls++
+		if calls == refusedOnEveryDealRetries {
+			return board // 最後の 1 回だけ通る
+		}
+		return board + refusal
+	}) {
+		t.Error("a refusal that clears on some deal must not be reported")
+	}
+	if calls != refusedOnEveryDealRetries {
+		t.Errorf("re-checked %d times, want %d -- it must actually retry",
+			calls, refusedOnEveryDealRetries)
+	}
+
+	// 印の付いた拒否は別のテストの担当なので false。
+	marked := i18n.MarkErrorLine(color.Red("No card can be sent to a foundation")) + "\n"
+	if refusedEveryTime(func() string { return board + marked }) {
+		t.Error("a marked refusal is another test's business")
+	}
+}
+
+// TestReplaySequenceKeepsTheWorkedSteps は、再確認で叩くコマンド列が
+// **リセット → 前段 → 対象**の順になることを見る。
+//
+// 前段を落とすと、前提が欠けたせいの拒否を「実行できないコマンド」と
+// 読んでしまう。毎回再現するのでフレークには見えず、在りもしないバグを
+// 探させることになる。
+func TestReplaySequenceKeepsTheWorkedSteps(t *testing.T) {
+	got := replaySequence([]string{"b 100", "s"}, "h")
+	want := []string{"r", "b 100", "s", "h"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("replaySequence = %v, want %v", got, want)
+	}
+
+	// 前段が無いときはリセットと対象だけ。
+	if got := replaySequence(nil, "p 0"); !reflect.DeepEqual(got, []string{"r", "p 0"}) {
+		t.Errorf("replaySequence with no prior = %v, want [r p 0]", got)
+	}
+
+	// **呼び出し側の slice を書き換えないこと。** 書き換えると、次の例の
+	// 前段が壊れて後続の再確認が別の手順を踏む。
+	prior := []string{"b 100"}
+	_ = replaySequence(prior, "h")
+	if len(prior) != 1 || prior[0] != "b 100" {
+		t.Errorf("replaySequence mutated its input: %v", prior)
 	}
 }
