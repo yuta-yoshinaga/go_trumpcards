@@ -343,6 +343,7 @@ export type GameKey =
   | 'gongzhu'
   | 'trappola'
   | 'julepe'
+  | 'schafkopf'
   | 'madrasso'
   | 'tressette'
   | 'canasta'
@@ -945,6 +946,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   gongzhu: GREEN,
   trappola: GREEN,
   julepe: GREEN,
+  schafkopf: GREEN,
   madrasso: GREEN,
   tressette: GREEN,
   canasta: BLUE,

@@ -235,6 +235,7 @@ export const workerUrl: Record<string, string> = {
   yaniv: WORKER_SOLO,
   trappola: WORKER_EXTRA2,
   julepe: WORKER_EXTRA2,
+  schafkopf: WORKER_EXTRA4,
   madrasso: WORKER_EXTRA3,
   tressette: WORKER_CASINO,
   tonk: WORKER_CLASSIC,

@@ -580,6 +580,11 @@ func init() {
 			return usecase.NewJulepeInteractor(domain.NewDefaultJulepe(), new(presenter.JulepeWebPresenter))
 		},
 		controller.NewJulepeWebController)
+	BindWebControllerFor("schafkopf",
+		func() usecase.SchafkopfInteractorIF {
+			return usecase.NewSchafkopfInteractor(domain.NewDefaultSchafkopf(), new(presenter.SchafkopfWebPresenter))
+		},
+		controller.NewSchafkopfWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

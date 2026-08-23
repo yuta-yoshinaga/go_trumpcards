@@ -2014,7 +2014,18 @@ export const TarabishPhase = {
   GAME_END: 3,
 } as const;
 
-/** Rams phase constants (sync: internal/domain/Rams.go). */
+/** Schafkopf phase constants (sync: internal/domain/Schafkopf.go). */
+export const SchafkopfPhase = {
+  /** Each player in turn declares a contract or passes. */
+  PICK: 0,
+  /** Rufspiel only: the picker calls the ace that names a partner. */
+  CALL: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
 /** Julepe phase constants (sync: internal/domain/Julepe.go). */
 export const JulepePhase = {
   /** Before play: each player chooses to enter the round or drop. */
@@ -2024,6 +2035,7 @@ export const JulepePhase = {
   GAME_END: 3,
 } as const;
 
+/** Rams phase constants (sync: internal/domain/Rams.go). */
 export const RamsPhase = {
   /** Before play: each player chooses to enter the round or drop. */
   DECIDE: 0,

@@ -244,6 +244,7 @@ var gameDescriptions = map[string]string{
 	"tressette":           "Tressette (トレセッテ)",
 	"madrasso":            "Madrasso (マドラッソ)",
 	"julepe":              "Julepe (フレペ)",
+	"schafkopf":           "Schafkopf (シャーフコップ)",
 	"trappola":            "Trappola (トラッポラ)",
 	"easthaven":           "Easthaven (イーストヘイブン)",
 	"tichu":               "Tichu (ティチュー)",

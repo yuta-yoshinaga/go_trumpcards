@@ -6757,6 +6757,32 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("schafkopf",
+		func() usecase.SchafkopfInteractorIF {
+			return usecase.NewSchafkopfInteractor(domain.NewDefaultSchafkopf(), new(presenter.SchafkopfCuiPresenter))
+		},
+		controller.NewSchafkopfCuiController,
+		CuiHelpSpec{
+			TitleKey: "schafkopf.helpTitle",
+			ExampleKeys: []string{
+				"schafkopf.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"schafkopf.helpPick",
+				"schafkopf.helpWenz",
+				"schafkopf.helpSolo",
+				"schafkopf.helpPass",
+				"schafkopf.helpCall",
+				"schafkopf.helpPlay",
+				"schafkopf.helpNext",
+				"schafkopf.helpNextRound", "schafkopf.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys: []string{
+				"schafkopf.helpSetDifficulty",
+				"schafkopf.helpSetChips",
+			},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
