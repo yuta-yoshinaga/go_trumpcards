@@ -224,6 +224,7 @@ import type {
   PrsiResponse,
   PutResponse,
   PyramidResponse,
+  QuadrilleResponse,
   RamschResponse,
   RamsResponse,
   RankAndFileResponse,
@@ -563,6 +564,7 @@ import { getPrimeroHint } from '../utils/hints/primeroHint';
 import { getPrsiHint } from '../utils/hints/prsiHint';
 import { getPutHint } from '../utils/hints/putHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
+import { getQuadrilleHint } from '../utils/hints/quadrilleHint';
 import { getRamschHint } from '../utils/hints/ramschHint';
 import { getRamsHint } from '../utils/hints/ramsHint';
 import { getRankAndFileHint } from '../utils/hints/rankandfileHint';
@@ -971,6 +973,7 @@ export const hintFactories = {
   tysiac: (s) => getTysiacHint(s as TysiacResponse),
   calabresella: (s) => getCalabresellaHint(s as CalabresellaResponse),
   ombre: (s) => getOmbreHint(s as OmbreResponse),
+  quadrille: (s) => getQuadrilleHint(s as QuadrilleResponse),
   ulti: (s) => getUltiHint(s as UltiResponse),
   scarto: (s) => getScartoHint(s as ScartoResponse),
   shengji: (s) => getShengJiHint(s as ShengJiResponse),

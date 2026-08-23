@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した345種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した346種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -292,6 +292,7 @@ Go + Clean Architecture で実装した345種類のトランプゲーム。CLI �
 | ナインティナイン (Ninety-Nine) | `ninetynine` | [CUI](docs/manual/cui/ninetynine.md) / [Web](docs/manual/web/ninetynine.md) |
 | インドラミー (Indian Rummy) | `indianrummy` | [CUI](docs/manual/cui/indianrummy.md) / [Web](docs/manual/web/indianrummy.md) |
 | オンブル (Ombre / Hombre) | `ombre` | [CUI](docs/manual/cui/ombre.md) / [Web](docs/manual/web/ombre.md) |
+| カドリール (Quadrille) | `quadrille` | [CUI](docs/manual/cui/quadrille.md) / [Web](docs/manual/web/quadrille.md) |
 | ウルティ (Ulti / Ultimó) | `ulti` | [CUI](docs/manual/cui/ulti.md) / [Web](docs/manual/web/ulti.md) |
 | ガッツ (Guts) | `guts` | [CUI](docs/manual/cui/guts.md) / [Web](docs/manual/web/guts.md) |
 | セブン・トゥエンティセブン (Seven Twenty-Seven) | `seventwentyseven` | [CUI](docs/manual/cui/seventwentyseven.md) / [Web](docs/manual/web/seventwentyseven.md) |

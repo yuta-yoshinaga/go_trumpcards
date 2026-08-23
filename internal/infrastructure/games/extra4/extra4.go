@@ -194,6 +194,14 @@ func init() {
 			return usecase.RestoreNapoleonInteractor(data, new(presenter.NapoleonWebPresenter))
 		},
 		controller.NewNapoleonWebControllerWithProvider)
+	games.RegisterKVGame("quadrille", games.CategoryExtra4,
+		func() usecase.QuadrilleInteractorIF {
+			return usecase.NewQuadrilleInteractor(domain.NewDefaultQuadrille(), new(presenter.QuadrilleWebPresenter))
+		},
+		func(data []byte) (usecase.QuadrilleInteractorIF, error) {
+			return usecase.RestoreQuadrilleInteractor(data, new(presenter.QuadrilleWebPresenter))
+		},
+		controller.NewQuadrilleWebControllerWithProvider)
 	games.RegisterKVGame("ombre", games.CategoryExtra4,
 		func() usecase.OmbreInteractorIF {
 			return usecase.NewOmbreInteractor(domain.NewDefaultOmbre(), new(presenter.OmbreWebPresenter))

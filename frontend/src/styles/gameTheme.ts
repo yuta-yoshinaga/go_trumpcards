@@ -93,6 +93,7 @@ export type GameKey =
   | 'tysiac'
   | 'calabresella'
   | 'ombre'
+  | 'quadrille'
   | 'ulti'
   | 'scarto'
   | 'cego'
@@ -691,6 +692,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   tysiac: TYSIAC,
   calabresella: CALABRESELLA,
   ombre: OMBRE,
+  quadrille: OMBRE,
   ulti: ULTI,
   scarto: OMBRE,
   cego: OMBRE,

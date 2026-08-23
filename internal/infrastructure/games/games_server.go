@@ -1390,6 +1390,11 @@ func init() {
 			return usecase.NewCalabresellaInteractor(domain.NewDefaultCalabresella(), new(presenter.CalabresellaWebPresenter))
 		},
 		controller.NewCalabresellaWebController)
+	BindWebControllerFor("quadrille",
+		func() usecase.QuadrilleInteractorIF {
+			return usecase.NewQuadrilleInteractor(domain.NewDefaultQuadrille(), new(presenter.QuadrilleWebPresenter))
+		},
+		controller.NewQuadrilleWebController)
 	BindWebControllerFor("ombre",
 		func() usecase.OmbreInteractorIF {
 			return usecase.NewOmbreInteractor(domain.NewDefaultOmbre(), new(presenter.OmbreWebPresenter))
