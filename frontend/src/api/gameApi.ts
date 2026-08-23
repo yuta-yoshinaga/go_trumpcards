@@ -183,6 +183,7 @@ export * from './games/loba';
 export * from './games/loo';
 export * from './games/macau';
 export * from './games/machiavelli';
+export * from './games/madrasso';
 export * from './games/manille';
 export * from './games/mao';
 export * from './games/marias';
@@ -617,6 +618,7 @@ export const games = [
   'acesup',
   'schnapsen',
   'trappola',
+  'madrasso',
   'tressette',
   'easthaven',
   'tichu',

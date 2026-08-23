@@ -28,6 +28,7 @@ import type {
   KoenigrufenResponse,
   KoiKoiResponse,
   LooResponse,
+  MadrassoResponse,
   ManilleResponse,
   MariasResponse,
   MichiganResponse,
@@ -544,6 +545,54 @@ const baseTrappolaState: TrappolaResponse = {
  */
 export function makeTrappolaState(overrides?: Partial<TrappolaResponse>): TrappolaResponse {
   return { ...baseTrappolaState, ...overrides };
+}
+
+/** Base Madrasso state: a human Play turn with spades as the dealt trump. */
+const baseMadrassoState: MadrassoResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 10,
+      cards: [
+        { design: 'SPADE' as const, value: 1 },
+        { design: 'DIAMOND' as const, value: 13 },
+      ],
+      trickCount: 0,
+      teamId: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamId: 1 },
+    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamId: 0 },
+    { id: 3, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamId: 1 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
+  leadPlayerIdx: 0,
+  teamScores: [0, 0],
+  // **整数点。** クローン元 (トレセッテ) の 1/3 点ではない。
+  teamRoundPoints: [0, 0],
+  // 配りで決まる切り札。トレセッテには無い概念。
+  trumpSuit: 1,
+  playableIndices: [0, 1],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 21 },
+};
+
+/**
+ * Creates a {@link MadrassoResponse} with sensible defaults (a human Play turn).
+ *
+ * @param overrides - Partial MadrassoResponse fields to override.
+ * @returns A complete MadrassoResponse suitable for use in tests.
+ */
+export function makeMadrassoState(overrides?: Partial<MadrassoResponse>): MadrassoResponse {
+  return { ...baseMadrassoState, ...overrides };
 }
 
 /** Base Sheepshead state used as the default for {@link makeSheepsheadState}. Defaults to a human Play turn. */

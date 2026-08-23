@@ -167,6 +167,7 @@ import type {
   LooResponse,
   MacauResponse,
   MachiavelliResponse,
+  MadrassoResponse,
   ManilleResponse,
   MaoResponse,
   MariasResponse,
@@ -507,6 +508,7 @@ import { getLobaHint } from '../utils/hints/lobaHint';
 import { getLooHint } from '../utils/hints/looHint';
 import { getMacauHint } from '../utils/hints/macauHint';
 import { getMachiavelliHint } from '../utils/hints/machiavelliHint';
+import { getMadrassoHint } from '../utils/hints/madrassoHint';
 import { getManilleHint } from '../utils/hints/manilleHint';
 import { getMaoHint } from '../utils/hints/maoHint';
 import { getMariasHint } from '../utils/hints/mariasHint';
@@ -860,6 +862,7 @@ export const hintFactories = {
   thirtyone: (s) => getThirtyOneHint(s as ThirtyOneResponse),
   yaniv: (s) => getYanivHint(s as YanivResponse),
   trappola: (s) => getTrappolaHint(s as TrappolaResponse),
+  madrasso: (s) => getMadrassoHint(s as MadrassoResponse),
   tressette: (s) => getTressetteHint(s as TressetteResponse),
   paigow: (s) => getPaiGowHint(s as PaiGowResponse),
   chinesepoker: (s) => getChinesePokerHint(s as ChinesePokerResponse),

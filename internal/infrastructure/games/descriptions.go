@@ -242,6 +242,7 @@ var gameDescriptions = map[string]string{
 	"bristol":             "Bristol (ブリストル)",
 	"bidwhist":            "Bid Whist (ビッド・ホイスト)",
 	"tressette":           "Tressette (トレセッテ)",
+	"madrasso":            "Madrasso (マドラッソ)",
 	"trappola":            "Trappola (トラッポラ)",
 	"easthaven":           "Easthaven (イーストヘイブン)",
 	"tichu":               "Tichu (ティチュー)",
