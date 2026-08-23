@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"sort"
@@ -1702,4 +1703,192 @@ func SkatBestBidEstimate(hand []*Card) SkatBidEstimate {
 		}
 	}
 	return best
+}
+
+// skatMaxSliceLen caps slice sizes during deserialisation so a crafted payload
+// cannot exhaust memory or drive an out-of-bounds access during play.
+const skatMaxSliceLen = 1000
+
+// skatJSON is the JSON wire format for Skat.
+//
+// **すべての非公開フィールドをここに載せる。** Skat は非公開フィールドしか
+// 持たないので、この型が無いと `encoding/json` が出力するのは `{}` の 2 バイト
+// だけになる —— エラーは出ない。Cloudflare Worker はリクエストごとに KV から
+// 盤面を復元するので、保存が空だと**毎リクエスト初期状態の卓が作り直され**、
+// ゲームが進行しない (#6215)。
+type skatJSON struct {
+	TrumpCards *TrumpCards   `json:"tc"`
+	Players    []*SkatPlayer `json:"ps"`
+	Config     SkatConfig    `json:"cf"`
+
+	Phase            SkatPhase    `json:"ph"`
+	RoundNumber      int          `json:"rn"`
+	TrickNumber      int          `json:"tn"`
+	CurrentPlayerIdx int          `json:"ci"`
+	CurrentTrick     []*TrickCard `json:"ct"`
+	LeadPlayerIdx    int          `json:"li"`
+	DealerIdx        int          `json:"di"`
+	ForehandIdx      int          `json:"fi"`
+	MiddlehandIdx    int          `json:"mi"`
+	RearhandIdx      int          `json:"ri"`
+
+	BidderIdx    int                 `json:"bi"`
+	ResponderIdx int                 `json:"ei"`
+	BidStep      int                 `json:"bs"`
+	CurrentBid   int                 `json:"cb"`
+	AuctionRound int                 `json:"ar"`
+	Round1Winner int                 `json:"r1"`
+	DeclarerIdx  int                 `json:"de"`
+	PassedAtCall [SkatPlayerCnt]bool `json:"pa"`
+
+	PickedSkat   bool         `json:"pk"`
+	GameType     SkatGameType `json:"gt"`
+	TrumpSuit    int          `json:"ts"`
+	Skat         []*Card      `json:"sk"`
+	OriginalSkat []*Card      `json:"os"`
+	DeclarerHand []*Card      `json:"dh"`
+
+	GameValue        int                 `json:"gv"`
+	Breakdown        *SkatScoreBreakdown `json:"bd"`
+	DeclarerCardPts  int                 `json:"dp"`
+	DefendersCardPts int                 `json:"fp"`
+	WinnerSide       int                 `json:"ws"`
+	GameEndFlag      bool                `json:"ge"`
+
+	ActionLog []*ActionLogEntry `json:"al"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (s *Skat) MarshalJSON() ([]byte, error) {
+	r := &s.round
+	return json.Marshal(skatJSON{
+		TrumpCards: s.trumpCards,
+		Players:    s.players,
+		Config:     s.config,
+
+		Phase:            r.phase,
+		RoundNumber:      r.roundNumber,
+		TrickNumber:      r.trickNumber,
+		CurrentPlayerIdx: r.currentPlayerIdx,
+		CurrentTrick:     r.currentTrick,
+		LeadPlayerIdx:    r.leadPlayerIdx,
+		DealerIdx:        r.dealerIdx,
+		ForehandIdx:      r.forehandIdx,
+		MiddlehandIdx:    r.middlehandIdx,
+		RearhandIdx:      r.rearhandIdx,
+
+		BidderIdx:    r.bidderIdx,
+		ResponderIdx: r.responderIdx,
+		BidStep:      r.bidStep,
+		CurrentBid:   r.currentBid,
+		AuctionRound: r.auctionRound,
+		Round1Winner: r.round1Winner,
+		DeclarerIdx:  r.declarerIdx,
+		PassedAtCall: r.passedAtCall,
+
+		PickedSkat:   r.pickedSkat,
+		GameType:     r.gameType,
+		TrumpSuit:    r.trumpSuit,
+		Skat:         r.skat,
+		OriginalSkat: r.originalSkat,
+		DeclarerHand: r.declarerHand,
+
+		GameValue:        r.gameValue,
+		Breakdown:        r.breakdown,
+		DeclarerCardPts:  r.declarerCardPts,
+		DefendersCardPts: r.defendersCardPts,
+		WinnerSide:       r.winnerSide,
+		GameEndFlag:      r.gameEndFlag,
+
+		ActionLog: r.actionLog,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+//
+// 席数・トリックの枚数・可変長スライスの上限を検査してから取り込む。
+// 復元した値をそのまま添字に使う経路があるので、crafted payload で
+// 範囲外アクセスを起こさせないため。
+func (s *Skat) UnmarshalJSON(data []byte) error {
+	var j skatJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) != SkatPlayerCnt {
+		return fmt.Errorf("skat: expected %d players, got %d", SkatPlayerCnt, len(j.Players))
+	}
+	if len(j.CurrentTrick) > SkatPlayerCnt {
+		return fmt.Errorf("skat: current trick has %d cards (max %d)", len(j.CurrentTrick), SkatPlayerCnt)
+	}
+	for name, n := range map[string]int{
+		"skat": len(j.Skat), "originalSkat": len(j.OriginalSkat),
+		"declarerHand": len(j.DeclarerHand), "actionLog": len(j.ActionLog),
+	} {
+		if n > skatMaxSliceLen {
+			return fmt.Errorf("skat: %s has %d entries (max %d)", name, n, skatMaxSliceLen)
+		}
+	}
+
+	// **添字に使う値そのものを検査する。** 長さだけ見ても、席番号が範囲外なら
+	// 次のリクエストで s.players[...] が panic する。currentPlayerIdx は
+	// 必ず実在の席、declarerIdx は -1 (未決定) か実在の席。
+	//
+	// **-1 は正当な値。** 配り終えてビッド中の卓は currentPlayerIdx も
+	// declarerIdx も -1 で、まだ誰の手番でも誰が declarer でもない。
+	// ここを 0 以上に絞ると、**ビッド中に保存された盤を全部拒否する** ——
+	// 直そうとしたバグより悪い (既存の RestoreFromJSON テストが捕まえた)。
+	for name, idx := range map[string]int{
+		"currentPlayerIdx": j.CurrentPlayerIdx, "declarerIdx": j.DeclarerIdx,
+		"leadPlayerIdx": j.LeadPlayerIdx, "dealerIdx": j.DealerIdx,
+		"forehandIdx": j.ForehandIdx, "middlehandIdx": j.MiddlehandIdx,
+		"rearhandIdx": j.RearhandIdx, "bidderIdx": j.BidderIdx,
+		"responderIdx": j.ResponderIdx, "round1Winner": j.Round1Winner,
+	} {
+		if idx < -1 || idx >= SkatPlayerCnt {
+			return fmt.Errorf("skat: %s %d is neither -1 nor a seat (0-%d)",
+				name, idx, SkatPlayerCnt-1)
+		}
+	}
+
+	s.trumpCards = j.TrumpCards
+	if s.trumpCards == nil {
+		s.trumpCards = newSkatDeck()
+	}
+	s.players = j.Players
+	s.config = j.Config
+
+	s.round = skatRoundState{
+		phase:            j.Phase,
+		roundNumber:      j.RoundNumber,
+		trickNumber:      j.TrickNumber,
+		currentPlayerIdx: j.CurrentPlayerIdx,
+		currentTrick:     j.CurrentTrick,
+		leadPlayerIdx:    j.LeadPlayerIdx,
+		dealerIdx:        j.DealerIdx,
+		forehandIdx:      j.ForehandIdx,
+		middlehandIdx:    j.MiddlehandIdx,
+		rearhandIdx:      j.RearhandIdx,
+		bidderIdx:        j.BidderIdx,
+		responderIdx:     j.ResponderIdx,
+		bidStep:          j.BidStep,
+		currentBid:       j.CurrentBid,
+		auctionRound:     j.AuctionRound,
+		round1Winner:     j.Round1Winner,
+		declarerIdx:      j.DeclarerIdx,
+		passedAtCall:     j.PassedAtCall,
+		pickedSkat:       j.PickedSkat,
+		gameType:         j.GameType,
+		trumpSuit:        j.TrumpSuit,
+		skat:             j.Skat,
+		originalSkat:     j.OriginalSkat,
+		declarerHand:     j.DeclarerHand,
+		gameValue:        j.GameValue,
+		breakdown:        j.Breakdown,
+		declarerCardPts:  j.DeclarerCardPts,
+		defendersCardPts: j.DefendersCardPts,
+		winnerSide:       j.WinnerSide,
+		gameEndFlag:      j.GameEndFlag,
+	}
+	s.round.actionLog = j.ActionLog
+	return nil
 }
