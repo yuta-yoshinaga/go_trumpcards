@@ -239,8 +239,14 @@ func (op *OasisPoker) resolve() {
 	op.dealerHandRank = evalFiveCardHand(op.dealerHand)
 	op.dealerQualified = op.checkDealerQualifies()
 
+	// **勝敗は精算に合わせる。** ディーラーが qualify しなかったときの精算には
+	// 特例（アンテ 1:1、もう一方のベットは返却）があり、手の強弱に関わらず
+	// プレイヤーはアンテぶん増える。手を比べただけで result を決めると、
+	// チップが増えているのに画面が「負け」と言う (#6213)。
 	cmp := op.compareHands()
 	switch {
+	case !op.dealerQualified:
+		op.result = GameResultWin
 	case cmp > 0:
 		op.result = GameResultWin
 	case cmp < 0:
