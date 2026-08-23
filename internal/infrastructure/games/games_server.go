@@ -575,6 +575,11 @@ func init() {
 			return usecase.NewGoofspielInteractor(domain.NewDefaultGoofspiel(), new(presenter.GoofspielWebPresenter))
 		},
 		controller.NewGoofspielWebController)
+	BindWebControllerFor("julepe",
+		func() usecase.JulepeInteractorIF {
+			return usecase.NewJulepeInteractor(domain.NewDefaultJulepe(), new(presenter.JulepeWebPresenter))
+		},
+		controller.NewJulepeWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

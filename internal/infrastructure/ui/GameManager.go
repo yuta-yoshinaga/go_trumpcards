@@ -6738,6 +6738,25 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"madrasso.helpSetDifficulty", "madrasso.helpSetTarget"},
 		}),
+	BindCuiFor("julepe",
+		func() usecase.JulepeInteractorIF {
+			return usecase.NewJulepeInteractor(domain.NewDefaultJulepe(), new(presenter.JulepeCuiPresenter))
+		},
+		controller.NewJulepeCuiController,
+		CuiHelpSpec{
+			TitleKey: "julepe.helpTitle",
+			ExampleKeys: []string{
+				"julepe.helpExampleIn",
+			},
+			CommandKeys: []string{
+				"julepe.helpIn",
+				"julepe.helpOut",
+				"julepe.helpCard",
+				"julepe.helpNext",
+				"julepe.helpGiveUp", "julepe.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

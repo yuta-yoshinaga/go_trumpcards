@@ -160,6 +160,7 @@ export * from './games/ironcross';
 export * from './games/israeliwhist';
 export * from './games/jass';
 export * from './games/jokerpoker';
+export * from './games/julepe';
 export * from './games/kaiser';
 export * from './games/kalooki';
 export * from './games/karnoffel';
@@ -618,6 +619,7 @@ export const games = [
   'acesup',
   'schnapsen',
   'trappola',
+  'julepe',
   'madrasso',
   'tressette',
   'easthaven',
