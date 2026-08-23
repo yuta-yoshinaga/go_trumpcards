@@ -1,0 +1,58 @@
+{
+  "currentTrick": "現在のトリック",
+  "title": "Brusquembille (ブリュスカンビーユ)",
+  "subtitle": "イタリアの古典トリックテイキング — 40枚デッキ, must-followなし",
+  "header": {
+    "trick": "トリック",
+    "stock": "山札",
+    "you": "あなた",
+    "cpu": "CPU",
+    "points": "得点",
+    "trump": "トランプ (ブリュスカンビーユ)",
+    "trumpNone": "トランプ: 使い切り",
+    "tricks": "獲得"
+  },
+  "phase": {
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "actions": {
+    "play": "出す",
+    "next": "次のトリックへ",
+    "reset": "リセット",
+    "hint": "ヒント"
+  },
+  "hint": {
+    "available": "ヒント",
+    "card": "推奨カード: [{{index}}]",
+    "lead_trump": "切り札でリードして主導権を握りましょう",
+    "lead_low": "弱いカードでリードし、高得点札を温存しましょう",
+    "lead_value": "高得点札を出して得点を狙いましょう",
+    "follow_cut": "切り札で場のカードを刈り取りましょう",
+    "follow_win": "同じスートの強いカードで勝ちましょう",
+    "follow_dump": "勝てないので弱いカードを捨てましょう"
+  },
+  "result": {
+    "youWin": "あなたの勝ち！ ({{p0}}-{{p1}})",
+    "cpuWin": "CPUの勝ち ({{p0}}-{{p1}})",
+    "tie": "引き分け ({{p0}}-{{p1}})"
+  },
+  "message": {
+    "yourTurn": "あなたの番です — どのカードでも出せます (must-followなし)",
+    "cpuTurn": "CPUの番です…",
+    "trickComplete": "トリック完了 — 次へ進んでください",
+    "loading": "ロード中…"
+  },
+  "tutorial": {
+    "trump": "山札の一番下に横向きで差し込まれたカードが切り札です。このスートが最強になります。",
+    "trick": "場に出されたカードです。同じスートで強いカード、または切り札で勝てます (must-followなし)。",
+    "hand": "あなたの手札です。カードをクリックして出します。A=11点・3=10点と通常と点数が異なります。",
+    "score": "トリック数・山札残り・獲得点数です。全カード合計120点、61点以上で勝ちです。"
+  },
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "settings": {
+    "playerCount": "席数"
+  }
+}

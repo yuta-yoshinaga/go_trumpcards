@@ -428,7 +428,8 @@
     "mrsmop": "Spider with nothing hidden: 104 cards into 13 columns, all face up, no stock.",
     "rankandfile": "Ten columns of four, three hidden; build down in alternating colour and move any sequence.",
     "put": "Three cards, three tricks — the 3 is the strongest card and the 4 the weakest. Say “Put” at any time to double the stake in this old English game of nerve.",
-    "ristikontra": "Match the previous card's rank to sweep the pile — and if someone sweeps, laying that same rank steals it right back. A Finnish 2-vs-2 capture game."
+    "ristikontra": "Match the previous card's rank to sweep the pile — and if someone sweeps, laying that same rank steals it right back. A Finnish 2-vs-2 capture game.",
+    "brusquembille": "Play anything while the stock lasts; once it runs dry you must follow suit. What you threw away early decides the endgame in this 17th-century French ancestor."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -773,6 +774,7 @@
     "mrsmop": "No luck at all — whether it can be won is settled at the deal; the rest is reading.",
     "rankandfile": "No redeal — every card you turn from the stock has to be spent or lost.",
     "put": "Fold or see it — there is no re-raise.",
-    "ristikontra": "You and your partner win on your combined card count."
+    "ristikontra": "You and your partner win on your combined card count.",
+    "brusquembille": "An unusual order — the ten outranks the king."
   }
 }

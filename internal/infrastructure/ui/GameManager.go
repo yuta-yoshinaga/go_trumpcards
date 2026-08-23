@@ -6642,6 +6642,21 @@ var gameRegistry = []GameRegistryEntry{
 				"ristikontra.helpSetDifficulty",
 			},
 		}),
+	BindCuiFor("brusquembille",
+		func() usecase.BrusquembilleInteractorIF {
+			return usecase.NewBrusquembilleInteractor(domain.NewDefaultBrusquembille(), new(presenter.BrusquembilleCuiPresenter))
+		},
+		controller.NewBrusquembilleCuiController,
+		CuiHelpSpec{
+			TitleKey: "brusquembille.helpTitle",
+			ExampleKeys: []string{
+				"brusquembille.helpExamplePlay",
+				"brusquembille.helpExampleNext",
+			},
+			CommandKeys:       []string{"brusquembille.helpPlay", "brusquembille.helpNext", "brusquembille.helpHint"},
+			SettingKeys:       []string{"brusquembille.helpSetPlayers"},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -272,6 +272,7 @@ export const workerUrl: Record<string, string> = {
   tarneeb: WORKER_CASINO,
   highcardflush: WORKER_EXTRA4,
   briscola: WORKER_CLASSIC,
+  brusquembille: WORKER_CLASSIC,
   schnapsen: WORKER_SOLO,
   gaps: WORKER_SOLO,
   fourcardpoker: WORKER_CASINO,

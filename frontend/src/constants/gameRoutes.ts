@@ -1122,6 +1122,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 4, 3, 4], skill: [4, 4, 3, 3], social: [1, 3, 5, 4, 3], theme: [2, 5, 1, 1, 2, 3] },
       },
       {
+        path: '/brusquembille',
+        labelKey: 'nav.brusquembille',
+        icon: '🇫🇷',
+        page: 'Brusquembille',
+        profile: { mood: [3, 4, 3, 4], skill: [4, 4, 4, 3], social: [1, 3, 5, 4, 3], theme: [2, 5, 1, 1, 2, 3] },
+      },
+      {
         path: '/schnapsen',
         labelKey: 'nav.schnapsen',
         icon: '🇦🇹',
