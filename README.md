@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した346種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した347種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -247,6 +247,7 @@ Go + Clean Architecture で実装した346種類のトランプゲーム。CLI �
 | ブリストル (Bristol) | `bristol` | [CUI](docs/manual/cui/bristol.md) / [Web](docs/manual/web/bristol.md) |
 | ビッド・ホイスト (Bid Whist) | `bidwhist` | [CUI](docs/manual/cui/bidwhist.md) / [Web](docs/manual/web/bidwhist.md) |
 | トレセッテ (Tressette) | `tressette` | [CUI](docs/manual/cui/tressette.md) / [Web](docs/manual/web/tressette.md) |
+| トラッポラ (Trappola) | `trappola` | [CUI](docs/manual/cui/trappola.md) / [Web](docs/manual/web/trappola.md) |
 | シープスヘッド (Sheepshead) | `sheepshead` | [CUI](docs/manual/cui/sheepshead.md) / [Web](docs/manual/web/sheepshead.md) |
 | ドッペルコップ (Doppelkopf) | `doppelkopf` | [CUI](docs/manual/cui/doppelkopf.md) / [Web](docs/manual/web/doppelkopf.md) |
 | ムス (Mus) | `mus` | [CUI](docs/manual/cui/mus.md) / [Web](docs/manual/web/mus.md) |

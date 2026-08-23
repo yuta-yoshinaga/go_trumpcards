@@ -400,6 +400,34 @@ func NewTrumpCardsShortDeck() *TrumpCards {
 	return t
 }
 
+// TrappolaValues トラッポラの札位 (A,3,4,5,6,7,J,Q,K)。
+//
+// **36 枚だが ShortDeckValues とは別集合。** ショートデック / ナインティナインは
+// A,6..K で 2..5 を抜くのに対し、トラッポラは 2 と 8,9,10 を抜く。
+var TrappolaValues = []int{1, 3, 4, 5, 6, 7, 11, 12, 13}
+
+// NewTrumpCardsTrappola トラッポラ用36枚デッキコンストラクタ
+// A,3,4,5,6,7,J,Q,K (値: 1,3,4,5,6,7,11,12,13) × 4スート = 36枚
+//
+// **枚数を指定する NewTrumpCardsWithSuits では作れない。** あちらはスートごとに
+// 値 1..13 を回して指定枚数で打ち切るので、36 を渡すと 13+13+10+0 になり
+// ダイヤが 1 枚も入らない (実測)。NewTrumpCards32 と同じく値を並べて作る。
+func NewTrumpCardsTrappola() *TrumpCards {
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	totalCards := len(TrappolaValues) * len(suits) // 36
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for _, suit := range suits {
+		for _, val := range TrappolaValues {
+			t.deck = append(t.deck, NewCard(suit, val, false))
+		}
+	}
+	t.deckInit()
+	return t
+}
+
 // NewTrumpCardsNinetyNine ナインティナイン(David Parlett)用36枚デッキコンストラクタ
 // 正規のNinety-Nineパックは2,3,4,5を抜き、A,6,7,8,9,10,J,Q,K
 // (値: 1,6,7,8,9,10,11,12,13) × 4スート = 36枚で構成される。

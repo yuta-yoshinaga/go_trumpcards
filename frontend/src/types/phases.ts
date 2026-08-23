@@ -351,6 +351,14 @@ export const SpadesPhase = {
   GAME_END: 4,
 } as const;
 
+/** Trappola phase constants (sync: internal/domain/Trappola.go). */
+export const TrappolaPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Tressette phase constants (sync: internal/domain/Tressette.go). */
 export const TressettePhase = {
   PLAY: 0,

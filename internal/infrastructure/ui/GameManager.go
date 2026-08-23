@@ -6702,6 +6702,24 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"quadrille.helpSetDifficulty"},
 		}),
+	BindCuiFor("trappola",
+		func() usecase.TrappolaInteractorIF {
+			return usecase.NewTrappolaInteractor(domain.NewDefaultTrappola(), new(presenter.TrappolaCuiPresenter))
+		},
+		controller.NewTrappolaCuiController,
+		CuiHelpSpec{
+			TitleKey: "trappola.helpTitle",
+			ExampleKeys: []string{
+				"trappola.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"trappola.helpPlay",
+				"trappola.helpNext",
+				"trappola.helpNextRound", "trappola.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"trappola.helpSetDifficulty", "trappola.helpSetTarget"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

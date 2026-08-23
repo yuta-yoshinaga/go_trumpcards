@@ -21,6 +21,14 @@ import (
 )
 
 func init() {
+	games.RegisterKVGame("trappola", games.CategoryExtra2,
+		func() usecase.TrappolaInteractorIF {
+			return usecase.NewTrappolaInteractor(domain.NewDefaultTrappola(), new(presenter.TrappolaWebPresenter))
+		},
+		func(data []byte) (usecase.TrappolaInteractorIF, error) {
+			return usecase.RestoreTrappolaInteractor(data, new(presenter.TrappolaWebPresenter))
+		},
+		controller.NewTrappolaWebControllerWithProvider)
 	games.RegisterKVGame("chineseten", games.CategoryExtra2,
 		func() usecase.ChineseTenInteractorIF {
 			return usecase.NewChineseTenInteractor(domain.NewDefaultChineseTen(), new(presenter.ChineseTenWebPresenter))

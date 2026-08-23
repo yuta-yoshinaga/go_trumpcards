@@ -305,6 +305,7 @@ import type {
   TienLenResponse,
   ToepenResponse,
   TonkResponse,
+  TrappolaResponse,
   TrashResponse,
   TrenteEtQuaranteResponse,
   TressetteResponse,
@@ -647,6 +648,7 @@ import { getTichuHint } from '../utils/hints/tichuHint';
 import { getTienLenHint } from '../utils/hints/tienlenHint';
 import { getToepenHint } from '../utils/hints/toepenHint';
 import { getTonkHint } from '../utils/hints/tonkHint';
+import { getTrappolaHint } from '../utils/hints/trappolaHint';
 import { getTrashHint } from '../utils/hints/trashHint';
 import { getTrenteEtQuaranteHint } from '../utils/hints/trenteetquaranteHint';
 import { getTressetteHint } from '../utils/hints/tressetteHint';
@@ -857,6 +859,7 @@ export const hintFactories = {
   tonk: (s) => getTonkHint(s as TonkResponse),
   thirtyone: (s) => getThirtyOneHint(s as ThirtyOneResponse),
   yaniv: (s) => getYanivHint(s as YanivResponse),
+  trappola: (s) => getTrappolaHint(s as TrappolaResponse),
   tressette: (s) => getTressetteHint(s as TressetteResponse),
   paigow: (s) => getPaiGowHint(s as PaiGowResponse),
   chinesepoker: (s) => getChinesePokerHint(s as ChinesePokerResponse),

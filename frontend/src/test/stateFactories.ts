@@ -53,6 +53,7 @@ import type {
   TarocchiniResponse,
   TeenPattiResponse,
   ThreeCardBragResponse,
+  TrappolaResponse,
   TrenteEtQuaranteResponse,
   TressetteResponse,
   TrogguResponse,
@@ -498,6 +499,51 @@ const baseTressetteState: TressetteResponse = {
  */
 export function makeTressetteState(overrides?: Partial<TressetteResponse>): TressetteResponse {
   return { ...baseTressetteState, ...overrides };
+}
+
+/** Base Trappola state: a human Play turn. **9 cards each — the deck is 36, not 40.** */
+const baseTrappolaState: TrappolaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 9,
+      cards: [
+        { design: 'SPADE' as const, value: 1 },
+        { design: 'DIAMOND' as const, value: 13 },
+      ],
+      trickCount: 0,
+      teamId: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 9, cards: [], trickCount: 0, teamId: 1 },
+    { id: 2, isHuman: false, cardCount: 9, cards: [], trickCount: 0, teamId: 0 },
+    { id: 3, isHuman: false, cardCount: 9, cards: [], trickCount: 0, teamId: 1 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
+  leadPlayerIdx: 0,
+  teamScores: [0, 0],
+  teamRoundThirds: [0, 0],
+  playableIndices: [0, 1],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 21 },
+};
+
+/**
+ * Creates a {@link TrappolaResponse} with sensible defaults (a human Play turn).
+ *
+ * @param overrides - Partial TrappolaResponse fields to override.
+ * @returns A complete TrappolaResponse suitable for use in tests.
+ */
+export function makeTrappolaState(overrides?: Partial<TrappolaResponse>): TrappolaResponse {
+  return { ...baseTrappolaState, ...overrides };
 }
 
 /** Base Sheepshead state used as the default for {@link makeSheepsheadState}. Defaults to a human Play turn. */
