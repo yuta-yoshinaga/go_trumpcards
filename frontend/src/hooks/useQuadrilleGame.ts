@@ -25,10 +25,10 @@ export const TARGET_ROUNDS_OPTIONS = [3, 5, 7] as const;
  * (pass/entrar/solo with a chosen trump suit), play a card, plus trick/round
  * advancement.
  *
- * Quadrille is a 3-player soloist-vs-coalition trick-taker on a 40-card Spanish
- * deck. A Bid phase decides the Quadrille (bid winner), who names a trump suit and
- * plays alone against the coalition of the other two players. The command set
- * is built directly on {@link useGameApi}.
+ * Quadrille is a 4-player trick-taker on a 40-card Spanish deck. The winning
+ * bidder (the Quadrille) calls a King they do not hold, and its holder becomes
+ * a hidden partner, so play is two sides of two. The command set is built
+ * directly on {@link useGameApi}.
  */
 export function useQuadrilleGame() {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
