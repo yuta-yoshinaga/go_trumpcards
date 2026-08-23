@@ -810,3 +810,73 @@ func TestBauernschnapsen_TrickCountsSurviveTheWire(t *testing.T) {
 			"チーム %d のトリック数が往復で消えた", team)
 	}
 }
+
+// TestBauernschnapsen_AllPassFallsBackToRufer は、**全員がパスしたとき**の
+// 既定契約を見る。
+//
+// 宣言が 1 つも無いまま進むと切り札が未定のままトリックが始まり、比較が
+// 壊れる。ディーラーの左隣が、手札で一番枚数の多いスートを切り札にして
+// 通常契約を行う。
+func TestBauernschnapsen_AllPassFallsBackToRufer(t *testing.T) {
+	g := newBauernschnapsen()
+	g.Reset()
+	lead := g.GetCurrentPlayerIdx()
+	for i := range 4 {
+		require.NoError(t, g.DeclareContract((lead+i)%4,
+			domain.BauernschnapsenContractNone, domain.BauernschnapsenNoTrump))
+	}
+
+	assert.Equal(t, domain.BauernschnapsenContractRufer, g.GetContract(),
+		"全員パスなら既定の通常契約")
+	assert.Equal(t, lead, g.GetDeclarerIdx(), "ディーラーの左隣が宣言者になる")
+	assert.Equal(t, domain.BauernschnapsenPhasePlay, g.GetPhase())
+
+	// **切り札が本物のスートであること。** BauernschnapsenNoTrump のまま進むと
+	// どの札とも一致しない切り札ができ、画面には "UNKNOWN" が出る。
+	trump := g.GetTrumpSuit()
+	require.GreaterOrEqual(t, trump, domain.CardDesignSpade)
+	require.LessOrEqual(t, trump, domain.CardDesignMax)
+
+	// 選ばれたのは宣言者の手札で**一番枚数の多いスート**であること。
+	counts := map[int]int{}
+	p := g.GetPlayer(g.GetDeclarerIdx())
+	for i := 0; i < p.GetCardsSize(); i++ {
+		counts[p.GetCard(i).GetDesign()]++
+	}
+	for suit, n := range counts {
+		assert.LessOrEqual(t, n, counts[trump],
+			"スート %d が %d 枚あるのに切り札は %d (%d 枚)", suit, n, trump, counts[trump])
+	}
+}
+
+// TestBauernschnapsen_DefaultTrumpIsTheLongestSuit は、全員パス時に選ばれる
+// 切り札が**手札で一番長いスート**であることを、配りに依らない盤面で見る。
+//
+// 上の性質だけでは足りない: 5 枚を 4 スートに配ると同数が並びやすく、
+// たまたまスペードが最長なら「常にスペードを返す」実装でも通ってしまう。
+// ここでは**スペード以外**を明確に最長にする。
+func TestBauernschnapsen_DefaultTrumpIsTheLongestSuit(t *testing.T) {
+	for _, want := range []int{
+		domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond,
+	} {
+		g := newBauernschnapsen()
+		g.Reset()
+		lead := g.GetCurrentPlayerIdx()
+
+		// 先頭の席に「want が 4 枚 + スペード 1 枚」を持たせる。
+		p := g.GetPlayer(lead)
+		p.Reset()
+		for _, v := range []int{1, 10, 13, 12} {
+			p.AddCard(domain.NewCard(want, v, false))
+		}
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
+
+		for i := range 4 {
+			require.NoError(t, g.DeclareContract((lead+i)%4,
+				domain.BauernschnapsenContractNone, domain.BauernschnapsenNoTrump))
+		}
+
+		assert.Equal(t, want, g.GetTrumpSuit(),
+			"一番長いスート %d を切り札にすること (実際は %d)", want, g.GetTrumpSuit())
+	}
+}

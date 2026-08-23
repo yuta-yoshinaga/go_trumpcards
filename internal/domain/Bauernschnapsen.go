@@ -1312,14 +1312,6 @@ func (g *Bauernschnapsen) AddRoundPointsForTest(team, pts int) {
 	}
 }
 
-// RebeginRoundForTest re-deals and re-enters the play phase (テスト用)。
-func (g *Bauernschnapsen) RebeginRoundForTest() {
-	for _, p := range g.players {
-		p.ResetRound()
-	}
-	g.beginRound()
-}
-
 // GetConfigDeckHelper returns a fresh 20-card Bauernschnapsen deck (テスト用コンストラクタ補助)。
 func (g *Bauernschnapsen) GetConfigDeckHelper() *TrumpCards { return newBauernschnapsenDeck() }
 
