@@ -248,7 +248,7 @@ describe('RistikontraPage', () => {
   it('shows final scores on game end', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<RistikontraPage />);
-    await waitFor(() => expect(screen.getByText(/11点/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/11枚/)).toBeInTheDocument());
   });
 
   it('changes CPU difficulty via the settings panel and resets', async () => {
@@ -370,7 +370,7 @@ describe('RistikontraPage', () => {
   it('hides the provisional readout and shows the final score on game end', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<RistikontraPage />);
-    await waitFor(() => expect(screen.getByText(/11点/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/11枚/)).toBeInTheDocument());
     expect(screen.queryByTestId('ristikontra-provisional-0')).not.toBeInTheDocument();
     expect(screen.queryByTestId('ristikontra-provisional-note')).not.toBeInTheDocument();
   });

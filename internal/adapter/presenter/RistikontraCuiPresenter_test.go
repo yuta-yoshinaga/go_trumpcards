@@ -93,13 +93,13 @@ func TestRistikontraCuiPresenter_ShowsProvisionalScores(t *testing.T) {
 	give(0, 5) // チーム 0
 	give(1, 3) // チーム 1
 	out := p.Output(g, nil)
-	assert.Contains(t, out, "暫定: 5点", "席 0 はチーム 0 の合計 5 を出す")
-	assert.Contains(t, out, "暫定: 3点", "席 1 はチーム 1 の合計 3 を出す")
+	assert.Contains(t, out, "暫定: 5枚", "席 0 はチーム 0 の合計 5 を出す")
+	assert.Contains(t, out, "暫定: 3枚", "席 1 はチーム 1 の合計 3 を出す")
 
 	// **パートナーの捕獲が自分の行に乗る。**
 	give(2, 4)
 	partnered := p.Output(g, nil)
-	assert.Contains(t, partnered, "暫定: 9点", "チーム 0 は 5+4 = 9")
+	assert.Contains(t, partnered, "暫定: 9枚", "チーム 0 は 5+4 = 9")
 
 	// クローン元の近似スコアの注記はもう出さない。
 	assert.NotContains(t, partnered, "カード点は集計時に加算")

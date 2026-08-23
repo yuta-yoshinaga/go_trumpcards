@@ -110,7 +110,8 @@ func (pwp *RistikontraWebPresenter) buildResultMessage(pg interfaces.Ristikontra
 		if i < len(scores) {
 			score = scores[i]
 		}
-		msg += fmt.Sprintf("%s:%dpt ", name, score)
+		// **単位は枚。** 得点はチームの獲得枚数であって点数ではない。
+		msg += fmt.Sprintf("%s:%d cards ", name, score)
 	}
 	return msg
 }

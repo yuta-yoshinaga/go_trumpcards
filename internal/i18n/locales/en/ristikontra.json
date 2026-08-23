@@ -10,11 +10,11 @@
   "pileEmpty": "Pile: empty",
   "deckLine": "Stock: {{count}} left",
   "gameEnd": "Game over!",
-  "scoreEntry": "  {{name}}: {{score}} pts",
+  "scoreEntry": "  {{name}}: {{score}} cards",
   "promptCurrentTurn": "Turn: {{name}}",
   "promptHelp": "p <hand> to play a card (matching the top captures; matching the last capture steals it)",
   "result.scores": "Game over. Scores: {{scores}}",
-  "provisional": "{{name}} provisional: {{score}}",
+  "provisional": "{{name}} provisional: {{score}} cards",
   "provisionalNote": "Note: the running total is your team's captured cards (you + your partner)",
   "helpExamplePlay": "  p 0                      play hand card 0"
 }
