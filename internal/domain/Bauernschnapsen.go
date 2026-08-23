@@ -97,16 +97,32 @@ const (
 	BauernschnapsenContractBettel
 )
 
-// BauernschnapsenContractValue は契約の得点倍率を返す。
+// 契約の点。**宣言の強さ (上の定数の並び) と同じ順**でなければならない ——
+// 強い宣言のほうが安いと、競り上げる理由が無くなる。
+//
+// 目標 24 点に対して Rufer が 2 点なので、通常契約だけなら 12 ラウンドで決着する。
+// ベテルを一番高く置いたのは実測に拠る: 追従必須・切り札なしの 4 人卓では、
+// 宣言者が回避に回っても 1 ラウンドあたり 1 トリック近く取ってしまい、
+// 「1 つも取らない」は同スート縛りより通しにくい。
+const (
+	// BauernschnapsenValueRufer 通常契約の点
+	BauernschnapsenValueRufer = 2
+	// BauernschnapsenValueFarbenzwang 同スート縛りの点
+	BauernschnapsenValueFarbenzwang = 5
+	// BauernschnapsenValueBettel ベテルの点
+	BauernschnapsenValueBettel = 6
+)
+
+// BauernschnapsenContractValue は契約の得点を返す。
 // 難しい契約ほど成功時の見返りが大きい。
 func BauernschnapsenContractValue(c BauernschnapsenContract) int {
 	switch c {
 	case BauernschnapsenContractRufer:
-		return 1
+		return BauernschnapsenValueRufer
 	case BauernschnapsenContractFarbenzwang:
-		return 3
+		return BauernschnapsenValueFarbenzwang
 	case BauernschnapsenContractBettel:
-		return 2
+		return BauernschnapsenValueBettel
 	default:
 		return 0
 	}

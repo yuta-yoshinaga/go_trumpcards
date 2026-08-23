@@ -880,3 +880,37 @@ func TestBauernschnapsen_DefaultTrumpIsTheLongestSuit(t *testing.T) {
 			"一番長いスート %d を切り札にすること (実際は %d)", want, g.GetTrumpSuit())
 	}
 }
+
+// TestBauernschnapsen_ContractValuesFollowTheBidRank は、契約の点が
+// **宣言の強さと同じ順**であることを見る。
+//
+// 強い宣言のほうが安いと、競り上げる理由が無くなる（弱い契約を宣言して
+// 高い点を取れてしまう）。クローン直後は 1 / 3 / 2 になっていて、
+// 一番強い宣言のベテルが同スート縛りより安かった。
+func TestBauernschnapsen_ContractValuesFollowTheBidRank(t *testing.T) {
+	// **宣言の強さの順に並べる。** ここは定数の順そのもの。
+	ranked := []domain.BauernschnapsenContract{
+		domain.BauernschnapsenContractNone,
+		domain.BauernschnapsenContractRufer,
+		domain.BauernschnapsenContractFarbenzwang,
+		domain.BauernschnapsenContractBettel,
+	}
+	for i := 1; i < len(ranked); i++ {
+		prev := domain.BauernschnapsenContractValue(ranked[i-1])
+		cur := domain.BauernschnapsenContractValue(ranked[i])
+		assert.Greater(t, cur, prev,
+			"契約 %d (%d点) は 1 つ弱い契約 %d (%d点) より高くないといけない",
+			ranked[i], cur, ranked[i-1], prev)
+	}
+
+	// 並び自体が宣言の強さと一致していること。定数を並べ替えたら上のループは
+	// 意味を失うので、ここで固定する。
+	for i := 1; i < len(ranked); i++ {
+		require.Greater(t, ranked[i], ranked[i-1], "定数の並びが変わっている")
+	}
+
+	// パスは 0 点。宣言していないのに点が動いてはいけない。
+	assert.Equal(t, 0, domain.BauernschnapsenContractValue(domain.BauernschnapsenContractNone))
+	// 未知の値も 0 点に落ちる。
+	assert.Equal(t, 0, domain.BauernschnapsenContractValue(domain.BauernschnapsenContract(99)))
+}
