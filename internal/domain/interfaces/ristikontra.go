@@ -32,6 +32,8 @@ type RistikontraGame interface {
 	GetPile() []*domain.Card
 	// GetPileTop 場の一番上の札を取得する (なければ nil)
 	GetPileTop() *domain.Card
+	// GetTeamCardCounts チームごとの獲得枚数を取得する (length 2)
+	GetTeamCardCounts() []int
 	// GetCounterRank 打ち返しの対象になっているランクを取得する (0 = 対象なし)
 	GetCounterRank() int
 	// GetLastCaptureIdx 最後に捕獲したプレイヤーを取得する (-1 = なし)
@@ -48,6 +50,4 @@ type RistikontraGame interface {
 	GetFinalScores() []int
 	// GetProvisionalScores 対局中の暫定スコアを取得する
 	GetProvisionalScores() []int
-	// GetProvisionalLeader 暫定の最多捕獲リーダーの席を取得する (同数なら -1)
-	GetProvisionalLeader() int
 }

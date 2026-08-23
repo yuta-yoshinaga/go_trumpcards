@@ -21,12 +21,15 @@ func (p *RistikontraCuiPresenter) Output(pg interfaces.RistikontraGame, lastErr 
 		for i := 0; i < pg.GetPlayerCnt(); i++ {
 			b.WriteString(ristikontraPlayerStr(pg, pg.GetPlayer(i), i))
 		}
-		// **対局中の優劣を数値で出す。**リスティコントラ賞と捕獲枚数を別々に出すだけ
-		// では、複数プレイヤー分を毎回暗算することになる (#4892)。ゲーム終了後は
+		// **対局中の優劣を数値で出す。**席ごとの捕獲枚数を並べるだけでは、
+		// チームの合計を毎回暗算することになる (#4892)。ゲーム終了後は
 		// 下の最終スコアが出るので、ここでは出さない。
 		if !pg.GetGameEndFlag() {
 			prov := pg.GetProvisionalScores()
-			leader := pg.GetProvisionalLeader()
+			// **色を付けるのはリードしている「チーム」の席。**
+			// 単独の最多捕獲席を光らせると、負けているチームの席が
+			// リーダーとして光り、その隣に相手より低い得点が並ぶ。
+			teams := pg.GetTeamCardCounts()
 			for i := 0; i < pg.GetPlayerCnt() && i < len(prov); i++ {
 				pl := pg.GetPlayer(i)
 				if pl == nil {
@@ -34,7 +37,7 @@ func (p *RistikontraCuiPresenter) Output(pg interfaces.RistikontraGame, lastErr 
 				}
 				line := i18n.Tf("ristikontra.provisional",
 					"name", cuiPlayerName(pl, i), "score", strconv.Itoa(prov[i]))
-				if i == leader {
+				if len(teams) == 2 && teams[i%2] > teams[(i+1)%2] {
 					line = color.Yellow(line)
 				}
 				b.WriteString(line + "\n")

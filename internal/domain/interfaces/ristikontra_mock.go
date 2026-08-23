@@ -156,5 +156,14 @@ func (m *MockRistikontraGame) GetProvisionalScores() []int {
 	return nil
 }
 
+// GetTeamCardCounts モック
+func (m *MockRistikontraGame) GetTeamCardCounts() []int {
+	ret := m.Called()
+	if v, ok := ret.Get(0).([]int); ok {
+		return v
+	}
+	return nil
+}
+
 // GetProvisionalLeader モック
 func (m *MockRistikontraGame) GetProvisionalLeader() int { return m.Called().Int(0) }

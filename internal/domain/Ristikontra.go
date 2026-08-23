@@ -394,24 +394,6 @@ func (g *Ristikontra) calcFinalScore() []int {
 	return scores
 }
 
-// mostCapturedSeat は最多捕獲の単独リーダーの席を返す。同数、または誰も
-// 捕獲していなければ -1。
-func (g *Ristikontra) mostCapturedSeat() int {
-	best, bestSeat, tie := 0, -1, false
-	for i, p := range g.players {
-		cnt := p.CapturedCount()
-		if bestSeat == -1 || cnt > best {
-			best, bestSeat, tie = cnt, i, false
-		} else if cnt == best {
-			tie = true
-		}
-	}
-	if tie || best == 0 {
-		return -1
-	}
-	return bestSeat
-}
-
 // GetProvisionalScores は対局中の暫定スコアを返す。
 //
 // 各席には**その席が属するチームの合計枚数**が入る。勝敗はチーム単位なので、
@@ -428,9 +410,6 @@ func (g *Ristikontra) GetProvisionalScores() []int {
 	}
 	return out
 }
-
-// GetProvisionalLeader は暫定の最多捕獲リーダーの席を返す (同数なら -1)。
-func (g *Ristikontra) GetProvisionalLeader() int { return g.mostCapturedSeat() }
 
 // chooseCpuCard は CPU の手番で出す手札インデックスを選ぶ。
 //   - Easy   : 合法手 (常に全札合法) からランダム。

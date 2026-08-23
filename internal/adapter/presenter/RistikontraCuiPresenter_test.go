@@ -3,6 +3,7 @@ package presenter_test
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -189,4 +190,46 @@ func TestRistikontraCuiPresenter_MarksCapturingCards(t *testing.T) {
 
 		assert.Contains(t, p.Output(g, nil), i18n.T("ristikontra.captureLegend"))
 	})
+}
+
+// TestRistikontraCuiPresenter_HighlightsTheLeadingTeam は、色が付くのが
+// **リードしているチームの両席**であることを見る。
+//
+// **単独の最多捕獲席を光らせると勝敗と食い違う。** 席ごとの枚数が一番多くても、
+// パートナーと合わせた合計では負けていることがある。その席が「リーダー」として
+// 光り、すぐ隣に相手チームより低い得点が並ぶ —— 画面の中で矛盾する。
+func TestRistikontraCuiPresenter_HighlightsTheLeadingTeam(t *testing.T) {
+	p := new(presenter.RistikontraCuiPresenter)
+	g := domain.NewDefaultRistikontra()
+	g.Reset()
+	give := func(seat, n int) {
+		cards := make([]*domain.Card, n)
+		for i := range cards {
+			cards[i] = domain.NewCard(domain.CardDesignSpade, 2, false)
+		}
+		g.GetPlayer(seat).AddCaptured(cards)
+	}
+
+	// 席 1 が単独では最多 (9 枚) だが、チーム 0 の合計 (6+6=12) が上回る。
+	give(0, 6)
+	give(2, 6)
+	give(1, 9)
+	give(3, 1)
+
+	out := p.Output(g, nil)
+
+	yellow := func(seatLabel string) bool {
+		for _, line := range strings.Split(out, "\n") {
+			if strings.Contains(line, seatLabel) && strings.Contains(line, "暫定") {
+				return strings.Contains(line, "\x1b[33m")
+			}
+		}
+		return false
+	}
+
+	assert.True(t, yellow("あなた"), "リードしているチーム 0 の席 0 は光る:\n%s", out)
+	assert.True(t, yellow("CPU 2"), "そのパートナー (席 2) も光る:\n%s", out)
+	assert.False(t, yellow("CPU 1"),
+		"単独最多でも負けているチームの席は光らない:\n%s", out)
+	assert.False(t, yellow("CPU 3"), "その相方も光らない:\n%s", out)
 }
