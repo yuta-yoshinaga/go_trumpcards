@@ -1284,6 +1284,15 @@ export const WattenPhase = {
   GAME_END: 5,
 } as const;
 
+/** Bauernschnapsen phase constants (sync: internal/domain/Bauernschnapsen.go). */
+export const BauernschnapsenPhase = {
+  CONTRACT: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Gaigel phase constants (sync: internal/domain/Gaigel.go). */
 export const GaigelPhase = {
   PLAY: 0,

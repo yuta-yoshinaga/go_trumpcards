@@ -284,6 +284,7 @@ export const workerUrl: Record<string, string> = {
   sultan: WORKER_EXTRA,
   agnes: WORKER_EXTRA,
   jass: WORKER_EXTRA3,
+  bauernschnapsen: WORKER_EXTRA,
   gaigel: WORKER_EXTRA,
   king: WORKER_EXTRA,
   tysiac: WORKER_EXTRA,

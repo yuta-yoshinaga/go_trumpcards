@@ -6657,6 +6657,26 @@ var gameRegistry = []GameRegistryEntry{
 			SettingKeys:       []string{"brusquembille.helpSetPlayers"},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("bauernschnapsen",
+		func() usecase.BauernschnapsenInteractorIF {
+			return usecase.NewBauernschnapsenInteractor(domain.NewDefaultBauernschnapsen(), new(presenter.BauernschnapsenCuiPresenter))
+		},
+		controller.NewBauernschnapsenCuiController,
+		CuiHelpSpec{
+			TitleKey: "bauernschnapsen.helpTitle",
+			ExampleKeys: []string{
+				"bauernschnapsen.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"bauernschnapsen.helpContract",
+				"bauernschnapsen.helpPlay",
+				"bauernschnapsen.helpMarriage",
+				"bauernschnapsen.helpNext",
+				"bauernschnapsen.helpNextRound", "bauernschnapsen.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"bauernschnapsen.helpSetDifficulty", "bauernschnapsen.helpSetTarget"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

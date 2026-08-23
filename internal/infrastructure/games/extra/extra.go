@@ -147,6 +147,14 @@ func init() {
 			return usecase.RestoreGaigelInteractor(data, new(presenter.GaigelWebPresenter))
 		},
 		controller.NewGaigelWebControllerWithProvider)
+	games.RegisterKVGame("bauernschnapsen", games.CategoryExtra,
+		func() usecase.BauernschnapsenInteractorIF {
+			return usecase.NewBauernschnapsenInteractor(domain.NewDefaultBauernschnapsen(), new(presenter.BauernschnapsenWebPresenter))
+		},
+		func(data []byte) (usecase.BauernschnapsenInteractorIF, error) {
+			return usecase.RestoreBauernschnapsenInteractor(data, new(presenter.BauernschnapsenWebPresenter))
+		},
+		controller.NewBauernschnapsenWebControllerWithProvider)
 	games.RegisterKVGame("tysiac", games.CategoryExtra,
 		func() usecase.TysiacInteractorIF {
 			return usecase.NewTysiacInteractor(domain.NewDefaultTysiac(), new(presenter.TysiacWebPresenter))

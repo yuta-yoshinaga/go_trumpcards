@@ -296,6 +296,7 @@ var gameDescriptions = map[string]string{
 	"allfours":            "All Fours / Seven Up (オールフォーズ/セブンアップ)",
 	"prsi":                "Prší (プルシー/チェコ版クレイジーエイト)",
 	"jass":                "Jass (Schieber) (ヤス/シーバー)",
+	"bauernschnapsen":     "Bauernschnapsen (バウエルンシュナプセン)",
 	"gaigel":              "Gaigel (ガイゲル)",
 	"tysiac":              "Thousand / Tysiąc (サウザンド/トゥシオンツ)",
 	"calabresella":        "Calabresella / Terziglio (カラブレセッラ/テルツィーリオ)",

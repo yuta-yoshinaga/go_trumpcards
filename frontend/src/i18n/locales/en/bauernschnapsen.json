@@ -1,0 +1,90 @@
+{
+  "phase": {
+    "contract": "Contract",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetScore": "Target Score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "cards": "{{count}} cards",
+  "teamScores": "Team Scores",
+  "team": "Team {{n}}",
+  "teamYou": "Team {{n}} (You)",
+  "trumpSuit": "Trump: {{suit}}",
+  "noTrump": "No trump",
+  "currentTrick": "Current Trick",
+  "trickCount": "Tricks: {{count}}",
+  "roundPoints": "Round: {{points}} pts",
+  "marriagePoints": "Marriage: {{points}} pts",
+  "marriageButton": "Marriage",
+  "marriageBadge": "Marriage available (King + Queen)",
+  "declareMarriage": "Declare King + Queen for bonus points",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "declareContract": "Declare your contract",
+  "contractPending": "Contract: bidding",
+  "contractLine": "Contract: {{contract}} ({{name}})",
+  "contractPass": "Pass",
+  "contractRufer": "Rufer",
+  "contractFarbenzwang": "Farbenzwang",
+  "contractBettel": "Bettel",
+  "contractPassHelp": "Pass the bid to the next seat",
+  "contractRuferHelp": "Name a trump and take more than half the card points (61+)",
+  "contractFarbenzwangHelp": "Name a trump and concede no trick to the opponents",
+  "contractBettelHelp": "No trump — take no trick at all",
+  "mustFollow": "You must follow the led suit",
+  "playPhase": {
+    "lead": "Pick a card to lead (declare a marriage if you hold King + Queen)",
+    "follow": "Follow the led suit"
+  },
+  "trickEnd": "Trick complete — go to the next trick",
+  "roundEnd": "Round complete — go to the next round",
+  "suitSpade": "Spades",
+  "suitClover": "Clubs",
+  "suitHeart": "Hearts",
+  "suitDiamond": "Diamonds",
+  "hintPlay": "Suggested",
+  "result": {
+    "team0Win": "Team 0 wins",
+    "team1Win": "Team 1 wins"
+  },
+  "hint": {
+    "marriage": "Declare a marriage (King + Queen)",
+    "leadTrump": "Lead with trump",
+    "leadLow": "Lead a low card",
+    "leadValue": "Lead a high-value card",
+    "followCut": "Cut with trump",
+    "followWin": "Win the trick",
+    "followDump": "Discard a low-value card",
+    "duck": "Play a card that loses the trick (Bettel)"
+  },
+  "hintReason": {
+    "marriage": "Declare a marriage (King + Queen)",
+    "lead_trump": "Lead with trump",
+    "lead_low": "Lead a low card",
+    "lead_value": "Lead a high-value card",
+    "follow_cut": "Cut with trump",
+    "follow_win": "Win the trick",
+    "follow_dump": "Discard a low-value card",
+    "duck": "Play a card that loses the trick (Bettel)"
+  },
+  "tutorial": {
+    "trickDisplay": "The current trick. The highest card of the led suit (or the highest trump) wins.",
+    "playerHand": "Your hand. **Following suit is mandatory from the very first trick**, so play the led suit whenever you hold it.",
+    "playButton": "Press to play the selected card.",
+    "scoreTable": "Team scores. Making your contract scores its value; first to {{target}} points wins.",
+    "teamInfo": "The player across from you is your partner.",
+    "resetButton": "Press the reset button to start a new game."
+  }
+}
