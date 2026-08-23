@@ -11,7 +11,14 @@ import (
 // ゲームを 1 ハンド打ち切って、宣言された勝敗と実際のチップ増減を返す。
 type qualifyGame struct {
 	name string
-	// play は 1 ハンド打ち切り、(宣言された勝敗, 収支, 打ち切れたか) を返す。
+	// play は 1 ハンド打ち切り、(宣言された勝敗, アンテ+プレイの精算, 打ち切れたか)
+	// を返す。
+	//
+	// **サイドベットは含めない。** ThreeCard のアンテボーナスのように
+	// 「手役だけで無条件に払われる」配当があり、ショーダウンに負けても
+	// チップが増えることがある (実測 2/200000 ハンド: result=Lose net=+20
+	// anteBonus=40)。総収支で比べるとこれを矛盾と読んで**偽陽性で落ちる**。
+	// result が語っているのはアンテとプレイの精算なので、そこだけ比べる。
 	play func() (GameResult, int, bool)
 }
 
@@ -38,74 +45,66 @@ func TestQualifyResultAgreesWithSettlement(t *testing.T) {
 		{"CaribbeanStud", func() (GameResult, int, bool) {
 			g := NewDefaultCaribbeanStud()
 			g.Reset()
-			before := g.GetChips()
 			if g.Bet(10, 0) != nil || g.Play() != nil {
 				return 0, 0, false
 			}
-			return g.GetResult(), g.GetChips() - before, true
+			return g.GetResult(), settle(g.GetAntePayout(), g.GetPlayPayout(), g.GetAnteBet(), g.GetPlayBet()), true
 		}},
 		{"CaribbeanDraw", func() (GameResult, int, bool) {
 			g := NewDefaultCaribbeanDraw()
 			g.Reset()
-			before := g.GetChips()
 			if g.Bet(10, 0) != nil || g.Draw(nil) != nil || g.Play() != nil {
 				return 0, 0, false
 			}
-			return g.GetResult(), g.GetChips() - before, true
+			return g.GetResult(), settle(g.GetAntePayout(), g.GetPlayPayout(), g.GetAnteBet(), g.GetPlayBet()), true
 		}},
 		{"OasisPoker", func() (GameResult, int, bool) {
 			g := NewDefaultOasisPoker()
 			g.Reset()
-			before := g.GetChips()
 			if g.Bet(10, 0) != nil || g.Exchange(nil) != nil || g.Play() != nil {
 				return 0, 0, false
 			}
-			return g.GetResult(), g.GetChips() - before, true
+			return g.GetResult(), settle(g.GetAntePayout(), g.GetPlayPayout(), g.GetAnteBet(), g.GetPlayBet()), true
 		}},
 		{"RussianPoker", func() (GameResult, int, bool) {
 			g := NewDefaultRussianPoker()
 			g.Reset()
-			before := g.GetChips()
 			if g.Bet(10) != nil || g.Play() != nil {
 				return 0, 0, false
 			}
-			return g.GetResult(), g.GetChips() - before, true
+			return g.GetResult(), settle(g.GetAntePayout(), g.GetPlayPayout(), g.GetAnteBet(), g.GetPlayBet()), true
 		}},
 		{"ThreeCard", func() (GameResult, int, bool) {
 			g := NewDefaultThreeCard()
 			g.Reset()
-			before := g.GetChips()
 			if g.Bet(10, 0) != nil || g.Play() != nil {
 				return 0, 0, false
 			}
-			return g.GetResult(), g.GetChips() - before, true
+			return g.GetResult(), settle(g.GetAntePayout(), g.GetPlayPayout(), g.GetAnteBet(), g.GetPlayBet()), true
 		}},
 		{"ThreeCardRummy", func() (GameResult, int, bool) {
 			g := NewDefaultThreeCardRummy()
 			g.Reset()
-			before := g.GetChips()
 			if g.Bet(10, 0) != nil || g.Play() != nil {
 				return 0, 0, false
 			}
-			return g.GetResult(), g.GetChips() - before, true
+			return g.GetResult(), settle(g.GetAntePayout(), g.GetPlayPayout(), g.GetAnteBet(), g.GetPlayBet()), true
 		}},
 		{"HighCardFlush", func() (GameResult, int, bool) {
 			g := NewDefaultHighCardFlush()
 			g.Reset()
-			before := g.GetChips()
 			if g.Bet(10, 0, 0) != nil || g.Raise(1) != nil {
 				return 0, 0, false
 			}
-			return g.GetResult(), g.GetChips() - before, true
+			return g.GetResult(), settle(g.GetAntePayout(), g.GetRaisePayout(), g.GetAnteBet(), g.GetRaiseBet()), true
 		}},
 		{"UltimateTexasHoldem", func() (GameResult, int, bool) {
 			g := NewDefaultUltimateTexasHoldem()
 			g.Reset()
-			before := g.GetChips()
 			if g.Bet(10, 0) != nil {
 				return 0, 0, false
 			}
-			return g.GetResult(), g.GetChips() - before, true
+			return g.GetResult(), settle(g.GetAntePayout(), g.GetPlayPayout(), g.GetAnteBet(), g.GetPlayBet()), true
 		}},
 	}
 
@@ -137,4 +136,12 @@ func TestQualifyResultAgreesWithSettlement(t *testing.T) {
 			}
 		})
 	}
+}
+
+// settle はアンテとプレイ (レイズ) の精算だけを取り出した収支を返す。
+//
+// 配当は「賭けた額を含む」形で返るので、賭けた額を引くと純増減になる。
+// サイドベットは含めない —— result が語っているのはこの精算だから。
+func settle(antePayout, playPayout, anteBet, playBet int) int {
+	return (antePayout + playPayout) - (anteBet + playBet)
 }
