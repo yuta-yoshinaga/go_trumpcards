@@ -3,6 +3,7 @@
 package ui
 
 import (
+	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
@@ -208,6 +209,11 @@ func TestCuiHelpExamplesAreNotQuietlyRefused(t *testing.T) {
 		}
 		ctrl := g.Controller()
 		ctrl.Exec("r")
+		// **例は「順に実行する手順」として書かれている。** blackjack の `h` は
+		// `b 100` が通った後でしか合法にならない。再確認で配り直すときも
+		// この前段を再現しないと、前提が欠けたせいの拒否を「実行できない
+		// コマンド」と読んでしまう。
+		var prior []string
 		for _, line := range examples {
 			cmd := helpExampleCommand(line)
 			if cmd == "" {
@@ -220,9 +226,13 @@ func TestCuiHelpExamplesAreNotQuietlyRefused(t *testing.T) {
 			// **配り依存で 1/3 ほど落ちる**フレークになっていた (#5620)。
 			// コマンドがヒントなら返事は定義上ヒントなので、ここでは測らない。
 			if cmd == "h" || cmd == "hint" {
+				prior = append(prior, cmd)
 				continue
 			}
 			checked++
+			// この時点の prior が「この手までに実行された手順」。
+			priorForCmd := append([]string(nil), prior...)
+			prior = append(prior, cmd)
 			out := ctrl.Exec(cmd)
 			if _, isErr := i18n.StripErrorPrefix(out); isErr {
 				continue // TestCuiHelpExamplesExecute owns the marked ones
@@ -250,7 +260,7 @@ func TestCuiHelpExamplesAreNotQuietlyRefused(t *testing.T) {
 			// 通るなら後者。これが無いと、盤面都合の拒否を掴んで
 			// 配り依存で落ちる —— 実測で bisley の `ac` と acesup の `h` が
 			// この形で、クリーンな develop でも 3/20 再現した (#6216)。
-			if !refusedOnEveryDeal(entry, cmd) {
+			if !refusedOnEveryDeal(entry, priorForCmd, cmd) {
 				continue
 			}
 			bad = append(bad, entry.Name+": `"+cmd+"` -> "+line)
@@ -311,13 +321,33 @@ const refusedOnEveryDealRetries = 5
 //
 // **一度でも通れば false。** 通ったということは、そのコマンドは実行可能で、
 // さっきの拒否は盤面の都合だったということ。
-func refusedOnEveryDeal(entry GameRegistryEntry, cmd string) bool {
+func refusedOnEveryDeal(entry GameRegistryEntry, prior []string, cmd string) bool {
+	seq := replaySequence(prior, cmd)
 	return refusedEveryTime(func() string {
 		g := entry.NewCui()
 		ctrl := g.Controller()
-		ctrl.Exec("r")
-		return ctrl.Exec(cmd)
+		var out string
+		for _, c := range seq {
+			out = ctrl.Exec(c)
+		}
+		return out
 	})
+}
+
+// replaySequence は 1 回の配りで叩くコマンド列を返す。
+//
+// **前段を再現してから試す。** 例は順に実行する手順として書かれている
+// (blackjack の `h` は `b 100` が通った後でしか合法にならない)。前段を飛ばすと
+// 前提が欠けたせいで毎回断られ、盤面都合の拒否を「実行できないコマンド」に
+// 化けさせる —— **毎回再現するぶんフレークより悪い** (在りもしないバグを
+// 探させる)。
+//
+// 組み立てを関数に出してあるのは、実際に何を叩くかをテストできるようにするため。
+func replaySequence(prior []string, cmd string) []string {
+	seq := make([]string, 0, len(prior)+2)
+	seq = append(seq, "r")
+	seq = append(seq, prior...)
+	return append(seq, cmd)
 }
 
 // refusedEveryTime は、配り直しに相当する exec を繰り返し、毎回 (印の無い)
@@ -380,5 +410,32 @@ func TestRefusedEveryTimeSeparatesTheTwoRefusals(t *testing.T) {
 	marked := i18n.MarkErrorLine(color.Red("No card can be sent to a foundation")) + "\n"
 	if refusedEveryTime(func() string { return board + marked }) {
 		t.Error("a marked refusal is another test's business")
+	}
+}
+
+// TestReplaySequenceKeepsTheWorkedSteps は、再確認で叩くコマンド列が
+// **リセット → 前段 → 対象**の順になることを見る。
+//
+// 前段を落とすと、前提が欠けたせいの拒否を「実行できないコマンド」と
+// 読んでしまう。毎回再現するのでフレークには見えず、在りもしないバグを
+// 探させることになる。
+func TestReplaySequenceKeepsTheWorkedSteps(t *testing.T) {
+	got := replaySequence([]string{"b 100", "s"}, "h")
+	want := []string{"r", "b 100", "s", "h"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("replaySequence = %v, want %v", got, want)
+	}
+
+	// 前段が無いときはリセットと対象だけ。
+	if got := replaySequence(nil, "p 0"); !reflect.DeepEqual(got, []string{"r", "p 0"}) {
+		t.Errorf("replaySequence with no prior = %v, want [r p 0]", got)
+	}
+
+	// **呼び出し側の slice を書き換えないこと。** 書き換えると、次の例の
+	// 前段が壊れて後続の再確認が別の手順を踏む。
+	prior := []string{"b 100"}
+	_ = replaySequence(prior, "h")
+	if len(prior) != 1 || prior[0] != "b 100" {
+		t.Errorf("replaySequence mutated its input: %v", prior)
 	}
 }
