@@ -1,6 +1,6 @@
 {
   "phase": {
-    "decide": "Deciding",
+    "decide": "Look at your hand and the trump, then choose to enter or drop. **Dropping costs only the ante**; entering and falling short of the required tricks costs an extra payment and doubles your next ante.",
     "play": "Playing",
     "roundEnd": "Round over",
     "gameEnd": "Game over"
@@ -40,13 +40,13 @@
     "julepePlayIn": "You hold trumps or high cards — this is worth playing.",
     "julepePassOut": "Little chance of a trick. Drop out and lose only the ante.",
     "julepeTakeTrick": "No trick yet. Take one to avoid the extra payment.",
-    "julepeAlreadySafe": "One trick is banked. Now take what you can."
+    "julepeAlreadySafe": "You have made the required tricks — now take what you can."
   },
   "tutorial": {
     "pot": "Chips staked on this round, shared out among whoever takes tricks. It grows every time a player owes the extra payment.",
-    "decide": "Look at your hand and the trump card, then choose. **Dropping costs only the ante**; playing and taking no trick costs more.",
+    "decide": "Look at your hand and the trump, then choose to enter or drop. **Dropping costs only the ante**; entering and falling short of the required tricks costs an extra payment and doubles your next ante.",
     "trick": "Cards played this trick appear here. Trump beats everything, then the led suit.",
-    "hand": "Your hand. Legal cards carry a green ring. The first goal is simply to bank one trick."
+    "hand": "Your hand. Playable cards get a green border. Aim first at making the required trick count."
   },
   "dealerBadge": "dealer",
   "dealerAria": "the dealer this round (deciding and leading start to their left)"

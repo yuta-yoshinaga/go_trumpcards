@@ -519,14 +519,28 @@ func TestJulepe_GetHint_PlayPhaseSuggestsACard(t *testing.T) {
 }
 
 // 1 トリック取ったあとは追加支払いを免れているので、狙いが変わる。
+// **「安全」の線は規定トリック数であって 1 トリックではない。**
+//
+// クローン元のラムスは 1 トリックで罰を免れたので、その値で試すと
+// 新旧どちらの実装も同じ答えを返し、違いが見えない。既定の 4 人卓では
+// 規定は 2 なので、1 トリックは**まだ安全ではない**。
 func TestJulepe_GetHint_ChangesOnceSafe(t *testing.T) {
 	r := newTestJulepe(t)
 	require.NoError(t, r.Decide(true))
 	r.SetPhaseForTest(JulepePhasePlay)
 	r.SetCurrentPlayerIdxForTest(0)
-	r.GetPlayer(0).SetRoundTricks(1)
+	required := r.GetRequiredTricks()
+	require.Greater(t, required, 1, "規定が 1 だと `> 0` の実装と区別が付かない")
 
+	// 規定に 1 つ足りない: まだ安全ではない。
+	r.GetPlayer(0).SetRoundTricks(required - 1)
 	h := r.GetHint()
+	require.NotNil(t, h)
+	assert.Equal(t, "julepeTakeTrick", h.Reason, "規定に届いていないのに安全と言っている")
+
+	// 規定ちょうどで安全になる。
+	r.GetPlayer(0).SetRoundTricks(required)
+	h = r.GetHint()
 	require.NotNil(t, h)
 	assert.Equal(t, "julepeAlreadySafe", h.Reason)
 }

@@ -7,7 +7,7 @@ import type { HintResult } from '../../types/hint';
  *
  * The decision-phase hint carries no card index — it advises whether to enter
  * the round at all — so its `targetAction` names the decision rather than a
- * card. Banking that first trick is the one thing that removes the extra
+ * card. Reaching the **required trick count** is the one thing that removes the extra
  * payment, so it is reported as the stronger call.
  */
 export function getJulepeHint(state: JulepeResponse): HintResult | null {

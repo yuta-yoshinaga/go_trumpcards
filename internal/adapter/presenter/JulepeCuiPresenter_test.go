@@ -139,11 +139,13 @@ func TestJulepeCuiPresenterHintInPlayPhase(t *testing.T) {
 	fresh.SetCurrentPlayerIdxForTest(0)
 	assert.Contains(t, p.HintOutput(fresh), i18n.T("julepe.hintReasonTakeTrick"))
 
+	// **「安全」の線は規定トリック数であって 1 トリックではない。**
+	// 既定の卓では規定が 2 なので、1 トリックではまだ安全にならない。
 	safe := newJulepeForCui(t)
 	require.NoError(t, safe.Decide(true))
 	safe.SetPhaseForTest(domain.JulepePhasePlay)
 	safe.SetCurrentPlayerIdxForTest(0)
-	safe.GetPlayer(0).SetRoundTricks(1)
+	safe.GetPlayer(0).SetRoundTricks(safe.GetRequiredTricks())
 	assert.Contains(t, p.HintOutput(safe), i18n.T("julepe.hintReasonAlreadySafe"))
 }
 

@@ -629,7 +629,7 @@ func (r *Julepe) chooseCpuCard(playerIdx int) int {
 	p := r.players[playerIdx]
 
 	if len(r.currentTrick) == 0 {
-		// リードは一番強い札で。1 トリック取れば追加支払いを避けられる。
+		// リードは一番強い札で。規定トリック数に届けば追加支払いを免れる。
 		bestIdx, bestRank := valid[0], julepeRank(p.GetCard(valid[0]))
 		for _, i := range valid[1:] {
 			if rank := julepeRank(p.GetCard(i)); rank > bestRank {
@@ -698,8 +698,12 @@ func (r *Julepe) GetHint() *JulepeHint {
 		return nil
 	}
 	idx := r.chooseCpuCard(0)
+	// **「安全」の線は規定トリック数。** クローン元のラムスは 1 トリック取れば
+	// 罰を免れたので `> 0` で足りたが、こちらの規定は参加人数で変わる
+	// (既定の 4 人卓では 2)。`> 0` のままだと、1 トリックで「確保済み」と
+	// 助言しながら beast のまま次ラウンドのアンティが倍になる。
 	reason := "julepeTakeTrick"
-	if r.players[0].GetRoundTricks() > 0 {
+	if r.players[0].GetRoundTricks() >= r.GetRequiredTricks() {
 		reason = "julepeAlreadySafe"
 	}
 	return &JulepeHint{CardIndex: &idx, Reason: reason}
