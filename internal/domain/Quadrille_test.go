@@ -846,3 +846,90 @@ func TestQuadrille_RoiSeulWhenHoldingEveryKing(t *testing.T) {
 		quadrilleCard(domain.CardDesignHeart, 13))
 	assert.Equal(t, []int{domain.CardDesignDiamond}, g.GetCallableKingSuitsForTest(0))
 }
+
+// TestQuadrille_KingCallSurvivesTheWire は、**味方が確定した後の**盤面を
+// 往復させる。
+//
+// 王呼びが盤面から落ちると、復元後の partnerIdx はゼロ値の **0** になり、
+// 席 0 が誰の味方でもないのに落札者側として集計される。呼ばれた王も
+// 単独プレイの区別も消えるので、勝敗が静かに変わる。
+//
+// **ゼロ値と食い違う値で往復させる。** partnerIdx の「未確定」は -1 なので、
+// -1 のまま往復させてもフィールドを丸ごと消した実装が同じ答えを返す。
+func TestQuadrille_KingCallSurvivesTheWire(t *testing.T) {
+	g := newTestQuadrille()
+	g.SetQuadrilleIdx(1)
+	g.SetTrumpSuit(domain.CardDesignSpade)
+	g.SetPhase(domain.QuadrillePhasePlay)
+	g.SetCalledKingSuitForTest(domain.CardDesignHeart)
+	g.SetPartnerForTest(3, true) // 席 3、公開済み — どちらもゼロ値ではない
+
+	require.NotEqual(t, 0, g.GetPartnerIdx(), "ゼロ値と食い違う席であること")
+	require.NotEqual(t, 0, g.GetCalledKingSuit(), "ゼロ値と食い違うスートであること")
+
+	blob, err := json.Marshal(g)
+	require.NoError(t, err)
+	var got domain.Quadrille
+	require.NoError(t, json.Unmarshal(blob, &got))
+
+	assert.Equal(t, domain.CardDesignHeart, got.GetCalledKingSuit(), "呼ばれた王が往復で消えた")
+	assert.Equal(t, 3, got.GetPartnerIdx(), "味方が往復で消えた")
+	assert.False(t, got.IsRoiSeul())
+
+	// **伏せた状態も往復すること。** 公開フラグが落ちると、復元しただけで
+	// 相方が画面に漏れる (あるいは公開済みの相方が消える)。
+	h := newTestQuadrille()
+	h.SetQuadrilleIdx(1)
+	h.SetCalledKingSuitForTest(domain.CardDesignClover)
+	h.SetPartnerForTest(3, false)
+	blob2, err := json.Marshal(h)
+	require.NoError(t, err)
+	var got2 domain.Quadrille
+	require.NoError(t, json.Unmarshal(blob2, &got2))
+	assert.Equal(t, -1, got2.GetPartnerIdx(), "伏せたままのはずの相方が漏れている")
+
+	// 単独プレイも往復すること。
+	s := newTestQuadrille()
+	s.SetQuadrilleIdx(2)
+	s.SetRoiSeulForTest(true)
+	blob3, err := json.Marshal(s)
+	require.NoError(t, err)
+	var got3 domain.Quadrille
+	require.NoError(t, json.Unmarshal(blob3, &got3))
+	assert.True(t, got3.IsRoiSeul(), "単独プレイが往復で消えた")
+}
+
+// TestQuadrille_RestoreNormalisesAnAbsentKingCall は、**王呼びのフィールドが
+// 無い JSON** から復元しても、席 0 が勝手に味方にならないことを見る。
+//
+// Go は無いフィールドに 0 を入れるので、素直に信じると partnerIdx=0 に
+// なり、**席 0 が誰の味方でもないのに落札者側として集計される**。
+// calledKingSuit=0 もどの札とも一致しないので、味方が永久に公開されない。
+func TestQuadrille_RestoreNormalisesAnAbsentKingCall(t *testing.T) {
+	const okPlayers = `[{"gp":{},"th":{}},{"gp":{},"th":{}},{"gp":{},"th":{}},{"gp":{},"th":{}}]`
+	// 王呼びのフィールド (ck / pi / pr / rq) を一切持たない盤面。
+	blob := `{"ph":0,"ps":` + okPlayers + `,"wb":0,"cf":{"cd":1,"tr":5},"lt":-1,"wp":-1,"li":-1,"om":-1,"ts":-1}`
+
+	var g domain.Quadrille
+	require.NoError(t, json.Unmarshal([]byte(blob), &g))
+
+	assert.Equal(t, -1, g.GetCalledKingSuit(), "呼ばれていない王が 0 として残っている")
+	assert.Equal(t, -1, g.GetPartnerIdx(), "席 0 が勝手に味方になっている")
+	assert.False(t, g.IsRoiSeul())
+
+	// **負のコントロール。** ちゃんと書いてあれば素通しする。
+	withKing := `{"ph":2,"ps":` + okPlayers + `,"wb":1,"cf":{"cd":1,"tr":5},"lt":-1,"wp":-1,"li":0,"om":1,"ts":1,` +
+		`"ck":3,"pi":3,"pr":true}`
+	var h domain.Quadrille
+	require.NoError(t, json.Unmarshal([]byte(withKing), &h))
+	assert.Equal(t, domain.CardDesignHeart, h.GetCalledKingSuit())
+	assert.Equal(t, 3, h.GetPartnerIdx())
+
+	// 単独プレイなら味方は消える (前のディールの残骸を引きずらない)。
+	roi := `{"ph":2,"ps":` + okPlayers + `,"wb":1,"cf":{"cd":1,"tr":5},"lt":-1,"wp":-1,"li":0,"om":1,"ts":1,` +
+		`"ck":3,"pi":3,"pr":true,"rq":true}`
+	var s domain.Quadrille
+	require.NoError(t, json.Unmarshal([]byte(roi), &s))
+	assert.True(t, s.IsRoiSeul())
+	assert.Equal(t, -1, s.GetPartnerIdx(), "単独プレイに味方がいる")
+}

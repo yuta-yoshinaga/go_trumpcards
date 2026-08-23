@@ -1524,12 +1524,18 @@ type quadrilleJSON struct {
 	BidActed         [QuadrillePlayerCnt]bool         `json:"ba"`
 	PlayerScores     [QuadrillePlayerCnt]int          `json:"sc"`
 	LastTrickWinner  int                              `json:"lt"`
-	Outcome          QuadrilleOutcome                 `json:"oc"`
-	Result           QuadrilleResult                  `json:"rs"`
-	Scored           bool                             `json:"sd"`
-	GameEndFlag      bool                             `json:"ge"`
-	WinnerPlayer     int                              `json:"wp"`
-	ActionLog        []*ActionLogEntry                `json:"al"`
+	// 王呼びは盤面の一部。落とすと復元後に**味方が席 0 になる** (ゼロ値)。
+	// 呼ばれた王も単独プレイの区別も消えるので、勝敗の集計が静かに変わる。
+	CalledKingSuit  int               `json:"ck"`
+	PartnerIdx      int               `json:"pi"`
+	PartnerRevealed bool              `json:"pr"`
+	RoiSeul         bool              `json:"rq"`
+	Outcome         QuadrilleOutcome  `json:"oc"`
+	Result          QuadrilleResult   `json:"rs"`
+	Scored          bool              `json:"sd"`
+	GameEndFlag     bool              `json:"ge"`
+	WinnerPlayer    int               `json:"wp"`
+	ActionLog       []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1555,6 +1561,10 @@ func (g *Quadrille) MarshalJSON() ([]byte, error) {
 		BidActed:         g.bidActed,
 		PlayerScores:     g.playerScores,
 		LastTrickWinner:  g.lastTrickWinner,
+		CalledKingSuit:   g.calledKingSuit,
+		PartnerIdx:       g.partnerIdx,
+		PartnerRevealed:  g.partnerRevealed,
+		RoiSeul:          g.roiSeul,
 		Outcome:          g.outcome,
 		Result:           g.result,
 		Scored:           g.scored,
@@ -1662,6 +1672,19 @@ func (g *Quadrille) UnmarshalJSON(data []byte) error {
 			return errQuadrilleInvalidBid
 		}
 	}
+	// 王呼びも他のインデックス同様に検査する。**壊れた値を素通しすると
+	// quadrilleSideOf が誤った席を味方として数え、勝敗が変わる。**
+	//
+	// ただし 0 は「未指定」と「席 0 / スート 0」の区別が付かない ——
+	// JSON にフィールドが無ければ Go は 0 を入れるので、素直に信じると
+	// **席 0 が誰の味方でもないのに落札者側として数えられる**。
+	// 検査は範囲だけにして、整合は下の quadrilleNormaliseKingCall で取る。
+	if j.CalledKingSuit != 0 && !quadrilleTrumpInRangeOrUnset(j.CalledKingSuit) {
+		return errQuadrilleInvalidTrump
+	}
+	if !quadrilleInRangeOrUnset(j.PartnerIdx) {
+		return errQuadrilleInvalidIndex
+	}
 	if !quadrilleTrumpInRangeOrUnset(j.TrumpSuit) {
 		return errQuadrilleInvalidTrump
 	}
@@ -1707,6 +1730,8 @@ func (g *Quadrille) UnmarshalJSON(data []byte) error {
 	g.bidActed = j.BidActed
 	g.playerScores = j.PlayerScores
 	g.lastTrickWinner = j.LastTrickWinner
+	g.calledKingSuit, g.partnerIdx, g.partnerRevealed, g.roiSeul =
+		quadrilleNormaliseKingCall(j.CalledKingSuit, j.PartnerIdx, j.PartnerRevealed, j.RoiSeul)
 	g.outcome = j.Outcome
 	g.result = j.Result
 	g.scored = j.Scored
@@ -1714,4 +1739,27 @@ func (g *Quadrille) UnmarshalJSON(data []byte) error {
 	g.winnerPlayer = j.WinnerPlayer
 	g.actionLog = j.ActionLog
 	return nil
+}
+
+// quadrilleNormaliseKingCall は復元した王呼びの状態を整合させる。
+//
+// **0 は「未指定」と区別が付かない。** JSON にフィールドが無ければ Go は 0 を
+// 入れるので、そのまま信じると calledKingSuit=0 (どの札とも一致しないので
+// 味方が永久に公開されない) と partnerIdx=0 (席 0 が味方として数えられ、
+// 勝敗の集計が変わる) が同時に起きる。
+//
+// 王が呼ばれていない盤面に味方は存在しない、という不変条件で揃える。
+func quadrilleNormaliseKingCall(suit, partner int, revealed, roiSeul bool) (int, int, bool, bool) {
+	if roiSeul {
+		// 単独プレイに味方はいない。
+		return -1, -1, false, true
+	}
+	if !quadrilleValidSuit(suit) {
+		// 王が呼ばれていないので、味方も公開状態も無い。
+		return -1, -1, false, false
+	}
+	if partner < 0 || partner >= QuadrillePlayerCnt {
+		return suit, -1, false, false
+	}
+	return suit, partner, revealed, false
 }
