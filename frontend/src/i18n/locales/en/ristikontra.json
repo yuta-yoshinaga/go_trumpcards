@@ -1,0 +1,49 @@
+{
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "deck": "Stock: {{count}}",
+  "playersTitle": "Players",
+  "captured": "captured {{count}}",
+  "finalScore": "{{score}} cards",
+  "provisional": "Provisional {{score}} cards",
+  "provisionalNote": "The provisional score includes only locked-in Pişti bonuses and the most-cards +3. Card points (A, J, 2♣, 10♦) are not yet counted, so final scores will be higher.",
+  "pile": "Pile",
+  "pileTop": "Pile top",
+  "pileCount": "{{count}} cards",
+  "pileEmpty": "Pile is empty",
+  "yourHand": "Your hand",
+  "turnNotice": "Your turn — pick a card to play onto the pile.",
+  "playButton": "Play",
+  "nextGame": "Next game",
+  "finalScoresTitle": "Final scores",
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "phase": {
+    "play": "Play",
+    "roundEnd": "Round end",
+    "gameEnd": "Game over"
+  },
+  "win": "You win!",
+  "lose": "{{name}} wins.",
+  "tutorial": {
+    "info": "The remaining stock and each player's capture progress are shown here.",
+    "players": "Each player's hand size, captured count and team.",
+    "pile": "The centre pile. The top card and pile size are shown here.",
+    "hand": "Your hand. Click a card to play it — matching the pile top captures the pile.",
+    "resetButton": "Use this button to reset the game at any time."
+  },
+  "playCardAria": "Play {{card}}",
+  "captureHint": "can capture the pile",
+  "frontendHint": {
+    "ristikontraCounter": "You hold the rank that just captured — playing it now steals the whole bundle",
+    "ristikontraCapture": "Matches the top card — you take the pile",
+    "ristikontraLayLow": "Nothing captures — lay your lowest card"
+  },
+  "counterCelebration": "Countered! The bundle is yours",
+  "teamLabel": "Team {{team}}"
+}

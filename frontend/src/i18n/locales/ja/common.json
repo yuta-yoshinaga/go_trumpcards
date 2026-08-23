@@ -362,7 +362,8 @@
     "narcotic": "ナルコティック",
     "mrsmop": "ミセス・モップ",
     "rankandfile": "ランク・アンド・ファイル",
-    "put": "プット"
+    "put": "プット",
+    "ristikontra": "リスティコントラ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -2405,7 +2406,8 @@
     "put.respondPhase": "Put 宣言に応答してください — 受諾すると賭け点が倍になります。",
     "put.result.p0Win": "マッチ終了！ あなたの勝利です ({{p0}}-{{p1}})！",
     "put.result.p1Win": "マッチ終了！ CPUの勝利です ({{p0}}-{{p1}})。",
-    "put.trickEnd": "トリック終了 — 次へ進んでください。"
+    "put.trickEnd": "トリック終了 — 次へ進んでください。",
+    "ristikontra.result.scores": "ゲーム終了。獲得枚数: {{scores}}"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

@@ -572,6 +572,8 @@ tags:
     description: Cuckoo (カッコー) — a 4-player life-survival game (also known as Chase the Ace or Ranter-Go-Round) on a standard 52-card deck; each player holds exactly one card and starts with 3 lives (default); during the Turn phase a player either keeps their card or swaps it with a neighbour, while the dealer swaps with the stock instead of a neighbour; during the Refuse phase a player holding a King may refuse an incoming swap by revealing the King, blocking the exchange; after every player has acted the holder(s) of the lowest card lose a life (ties mean all tied holders lose one); a player reduced to 0 lives is eliminated and the last player standing wins; CPU difficulties Easy, Normal, Hard; commands keep (k), swap (s), refuse (rf), accept (ac), nextround (nr), setdifficulty (sd), log (l), reset (r); phases Turn (0), Refuse (1), RoundEnd (2), GameEnd (3); config cpuDifficulty (0 Easy, 1 Normal, 2 Hard) and initialLives (default 3)
   - name: pishti
     description: Pişti (ピシュティ) — a Turkish 2-4 player capture (fishing) game on a standard 52-card deck; each player is dealt 4 cards and plays one onto a central pile in turn; playing a card that matches the rank of the pile's top card, or playing a Jack (wild), captures the whole pile; capturing a lone card scores a Pişti (10 points; 20 for a Jack played onto a single Jack); hands are re-dealt 4 at a time until the stock runs out; final scoring most cards 3, each Ace 1, 2 of clubs 2, 10 of diamonds 3, each Jack 1, plus Pişti bonuses, and the highest total wins; CPU difficulties Easy, Normal, Hard; commands play (p, with handIndex), next (n), setdifficulty (sd), setplayers (sp), log (l), reset (r); phases play, roundEnd, gameEnd; config playerCnt (2-4, default 4) and cpuDifficulty (0 Easy, 1 Normal, 2 Hard)
+  - name: ristikontra
+    description: Ristikontra (リスティコントラ) - Finnish fishing game, always 4 players in fixed 2-vs-2 partnerships (seats 0/2 vs 1/3), standard 52-card deck, no trump suit. A card whose rank matches the pile top captures the whole pile. The mechanic it is named for is the counter (risti-kontra, meaning cross-counter) — immediately after a capture, laying another card of the rank that made it takes the bundle away from the capturer, and this repeats until somebody plays a different rank. Each team totals its captured cards and the larger total wins; an equal split is a draw.
   - name: cuarenta
     description: Cuarenta (クアレンタ) — a 4-player, 2-team Ecuadorian capture (fishing) game on a 40-card Spanish-style deck (the 8s, 9s and 10s are removed); teams are seats 0 and 2 (Team A) versus seats 1 and 3 (Team B); each player is dealt 5 cards and 4 cards are placed on the central table; on your turn you play one card, and if it matches the rank of any table card you capture all same-rank table cards (and may chain via ronda when 3 or more of a rank appear), otherwise the card is laid on the table; bonuses (all additive) are caída plus 2 (immediately capturing the very card the previous player just laid), limpia plus 1 (clearing the entire table), and ronda plus 1 per extra card beyond 2 (capturing a run of 3 or more of a rank); hands are re-dealt 5 at a time until the stock runs out, then the team that captured more than 20 of the 40 cards (the majority) gets a plus 6 most cards bonus; the first team to reach the target score (default 40) wins; CPU difficulties Easy, Normal, Hard; commands play (p, with handIndex), next (n), setdifficulty (sd), log (l), reset (r); phases play, roundEnd, gameEnd; config targetScore (default 40) and cpuDifficulty (0 Easy, 1 Normal, 2 Hard)
   - name: faro
@@ -26615,6 +26617,90 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PishtiResponse'
+
+  /ristikontra/exec:
+    post:
+      tags:
+        - ristikontra
+      summary: Execute a Ristikontra game command
+      description: |
+        Send a command to advance a Ristikontra session identified by `sessionId`.
+        Ristikontra is a Finnish capture (fishing) game played by **exactly 4
+        players in fixed 2-vs-2 partnerships** (seats 0/2 against seats 1/3; seat 0
+        is the human) on a standard 52-card deck. There is **no trump suit**.
+
+        Each player is dealt 4 cards and plays one onto a central pile in turn.
+        A card whose **rank matches the pile top** captures the whole pile — that is
+        the only way to capture. There is no wild Jack and no capture bonus.
+
+        The mechanic the game is named for is the **counter** (risti-kontra =
+        "cross-counter"): immediately after a capture, a player who lays another card
+        of **the rank that made that capture** takes the captured bundle away from the
+        capturer. This repeats — the bundle can be stolen back and forth for as long
+        as players keep matching that rank — and ends the moment somebody plays a
+        different rank.
+
+        Hands are re-dealt 4 at a time until the stock runs out. Any pile left over
+        goes to the team of the player who captured last, then **each team totals the
+        cards it captured and the larger total wins**; an equal split is a draw.
+
+        | Phase    | Value      | Description |
+        |----------|------------|-------------|
+        | play     | `play`     | Players take turns playing a hand card onto the pile |
+        | roundEnd | `roundEnd` | A deal was scored; the next deal is dealt automatically |
+        | gameEnd  | `gameEnd`  | The stock is exhausted and final scores are computed |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart the game (optional `config`) |
+        | `play`          | `p`     | Play hand card `handIndex` onto the pile |
+        | `next`          | `n`     | Start the next game after one ends |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (`config.cpuDifficulty` 0 Easy, 1 Normal, 2 Hard) |
+        | `log`           | `l`     | View action log |
+      operationId: ristikontraExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RistikontraRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the first hand card
+                value:
+                  command: play
+                  handIndex: 0
+                  sessionId: my-session-001
+              next:
+                summary: Start the next game
+                value:
+                  command: next
+                  sessionId: my-session-001
+              setdifficulty:
+                summary: Set CPU difficulty to Hard
+                value:
+                  command: setdifficulty
+                  config:
+                    cpuDifficulty: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RistikontraResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RistikontraResponse'
 
   /cuarenta/exec:
     post:
@@ -63530,6 +63616,132 @@ components:
             playerCnt:
               type: integer
               description: Number of players (2-4)
+            cpuDifficulty:
+              type: integer
+              description: CPU difficulty (0 Easy, 1 Normal, 2 Hard)
+        message:
+          type: string
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Ristikontra
+    # -------------------------------------------------------------------------
+    RistikontraRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `play` (`p`), `next` (`n`),
+            `setdifficulty` (`sd`), `log` (`l`).
+          enum: [reset, r, play, p, next, n, setdifficulty, sd, log, l]
+          example: play
+        handIndex:
+          type: integer
+          description: Index of the hand card to play onto the pile (used with `play`).
+          minimum: 0
+        config:
+          type: object
+          description: Optional game configuration (used with `reset` and `setdifficulty`).
+          properties:
+            playerCnt:
+              type: integer
+              description: >-
+                Number of players. Always 4 — Ristikontra is a fixed 2-vs-2
+                partnership (seats 0/2 against seats 1/3), so this is not a
+                choice. Accepted for shape compatibility only.
+              minimum: 4
+              maximum: 4
+            cpuDifficulty:
+              type: integer
+              description: CPU difficulty (0 Easy, 1 Normal, 2 Hard)
+              minimum: 0
+              maximum: 2
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    RistikontraResponse:
+      type: object
+      description: Current state of the Ristikontra game
+      properties:
+        phase:
+          type: string
+          description: "Game phase: play, roundEnd, gameEnd"
+          enum: [play, roundEnd, gameEnd]
+          example: play
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+        pile:
+          type: array
+          description: All cards currently on the central pile, bottom to top
+          items:
+            $ref: '#/components/schemas/Card'
+        pileTop:
+          description: The top card of the pile, or null when the pile is empty
+          $ref: '#/components/schemas/Card'
+        pileCount:
+          type: integer
+          description: Number of cards on the pile
+        lastCaptureIdx:
+          type: integer
+          description: Seat index of the most recent capturer, or -1
+        gameEndFlag:
+          type: boolean
+        remainingDeck:
+          type: integer
+          description: Number of cards remaining in the stock
+        winners:
+          type: array
+          description: Winning seat indices (may tie), empty until the game ends
+          items:
+            type: integer
+        finalScores:
+          type: array
+          description: Final scores indexed by seat, empty until the game ends
+          items:
+            type: integer
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+                description: Number of cards currently in hand
+              cards:
+                type: array
+                description: The player's hand cards (populated only for the human)
+                items:
+                  $ref: '#/components/schemas/Card'
+              capturedCount:
+                type: integer
+                description: Total number of cards captured so far
+              finalScore:
+                type: integer
+                description: Final score (populated once the game ends)
+        config:
+          type: object
+          properties:
+            playerCnt:
+              type: integer
+              description: Number of players. Always 4 (fixed 2-vs-2 partnership).
             cpuDifficulty:
               type: integer
               description: CPU difficulty (0 Easy, 1 Normal, 2 Hard)

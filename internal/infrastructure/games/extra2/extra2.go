@@ -61,6 +61,14 @@ func init() {
 			return usecase.RestorePishtiInteractor(data, new(presenter.PishtiWebPresenter))
 		},
 		controller.NewPishtiWebControllerWithProvider)
+	games.RegisterKVGame("ristikontra", games.CategoryExtra2,
+		func() usecase.RistikontraInteractorIF {
+			return usecase.NewRistikontraInteractor(domain.NewDefaultRistikontra(), new(presenter.RistikontraWebPresenter))
+		},
+		func(data []byte) (usecase.RistikontraInteractorIF, error) {
+			return usecase.RestoreRistikontraInteractor(data, new(presenter.RistikontraWebPresenter))
+		},
+		controller.NewRistikontraWebControllerWithProvider)
 	games.RegisterKVGame("faro", games.CategoryExtra2,
 		func() usecase.FaroInteractorIF {
 			return usecase.NewFaroInteractor(domain.NewDefaultFaro(), new(presenter.FaroWebPresenter))

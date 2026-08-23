@@ -362,7 +362,8 @@
     "narcotic": "Narcotic",
     "mrsmop": "Mrs. Mop",
     "rankandfile": "Rank and File",
-    "put": "Put"
+    "put": "Put",
+    "ristikontra": "Ristikontra"
   },
   "sound": {
     "mute": "Mute sound",
@@ -2405,7 +2406,8 @@
     "put.respondPhase": "Respond to the Put — accepting doubles the stake.",
     "put.result.p0Win": "Match over! You win ({{p0}}-{{p1}})!",
     "put.result.p1Win": "Match over! The CPU wins ({{p0}}-{{p1}}).",
-    "put.trickEnd": "Trick over — continue to the next one."
+    "put.trickEnd": "Trick over — continue to the next one.",
+    "ristikontra.result.scores": "Game over. Cards captured: {{scores}}"
   },
   "manual": {
     "ariaLabel": "Game Manual",

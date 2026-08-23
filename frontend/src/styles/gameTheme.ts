@@ -128,6 +128,7 @@ export type GameKey =
   | 'kemps'
   | 'cuckoo'
   | 'pishti'
+  | 'ristikontra'
   | 'cuarenta'
   | 'faro'
   | 'openfacechinese'
@@ -723,6 +724,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   kemps: KEMPS,
   cuckoo: CUCKOO,
   pishti: PISHTI,
+  ristikontra: PISHTI,
   cuarenta: CUARENTA,
   faro: FARO,
   openfacechinese: CASINO,

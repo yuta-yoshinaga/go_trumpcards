@@ -246,6 +246,7 @@ export * from './games/razz';
 export * from './games/reddog';
 export * from './games/reversis';
 export * from './games/rikken';
+export * from './games/ristikontra';
 export * from './games/rollingstone';
 export * from './games/rook';
 export * from './games/royalcotillion';
@@ -641,6 +642,7 @@ export const games = [
   'kemps',
   'cuckoo',
   'pishti',
+  'ristikontra',
   'cuarenta',
   'faro',
   'openfacechinese',
