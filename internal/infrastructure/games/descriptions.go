@@ -301,6 +301,7 @@ var gameDescriptions = map[string]string{
 	"tysiac":              "Thousand / Tysiąc (サウザンド/トゥシオンツ)",
 	"calabresella":        "Calabresella / Terziglio (カラブレセッラ/テルツィーリオ)",
 	"ombre":               "Ombre / Hombre (オンブル)",
+	"quadrille":           "Quadrille (カドリール)",
 	"ulti":                "Ulti / Ultimó (ウルティ)",
 	"king":                "King (キング)",
 	"cinch":               "Cinch / Double Pedro (シンチ/ダブルペドロ)",

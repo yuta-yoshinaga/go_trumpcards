@@ -6678,6 +6678,30 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"bauernschnapsen.helpSetDifficulty", "bauernschnapsen.helpSetTarget"},
 		}),
+	BindCuiFor("quadrille",
+		func() usecase.QuadrilleInteractorIF {
+			return usecase.NewQuadrilleInteractor(domain.NewDefaultQuadrille(), new(presenter.QuadrilleCuiPresenter))
+		},
+		controller.NewQuadrilleCuiController,
+		CuiHelpSpec{
+			TitleKey: "quadrille.helpTitle",
+			// **例文はフェーズ順。** 落札 → 王呼び → プレイの順でないと、
+			// 新規ゲームでそのまま打つと「フェーズが違う」で弾かれる。
+			ExampleKeys: []string{
+				"quadrille.helpExampleBid",
+				"quadrille.helpExampleKing",
+				"quadrille.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"quadrille.helpBid",
+				"quadrille.helpKing",
+				"quadrille.helpPlay",
+				"quadrille.helpNext",
+				"quadrille.helpNextRound", "quadrille.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"quadrille.helpSetDifficulty"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

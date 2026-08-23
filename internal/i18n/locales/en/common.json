@@ -607,5 +607,7 @@
   "rankandfile.promptToZone": "Enter destination (t=tableau, f=foundation):",
   "rankandfile.invalidFromZone": "Invalid from zone: {{val}}. Use 'w' (waste) or 't' (tableau).",
   "rankandfile.invalidToZone": "Invalid to zone: {{val}}. Use 't' (tableau) or 'f' (foundation).",
-  "rankandfile.moveUsage": "Usage: m t <col> <idx> t <col>"
+  "rankandfile.moveUsage": "Usage: m t <col> <idx> t <col>",
+  "kingSuitRequiredWords": "A king suit is required (spade/club/heart/diamond).",
+  "invalidKingSuitSCHD": "Invalid king suit: {{val}}. Use spade/club/heart/diamond."
 }

@@ -231,6 +231,7 @@ export * from './games/primero';
 export * from './games/prsi';
 export * from './games/put';
 export * from './games/pyramid';
+export * from './games/quadrille';
 export * from './games/rams';
 export * from './games/ramsch';
 export * from './games/rankandfile';

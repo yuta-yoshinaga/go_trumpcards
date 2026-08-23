@@ -1,0 +1,102 @@
+{
+  "title": "カドリール",
+  "phase": {
+    "bid": "入札",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ディール終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetRounds": "マッチのディール数",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ディール {{n}}",
+  "trick": "トリック {{n}}",
+  "winningBid": "入札: {{bid}}",
+  "trump": "切り札: {{suit}}",
+  "bidNone": "-",
+  "bidEntrar": "エントラール",
+  "bidSolo": "ソロ",
+  "bidPass": "パス",
+  "bidPhase": "入札 — まず宣言（エントラール／ソロ／パス）を選び、次に切り札スートを指定します。",
+  "chooseTrump": "切り札",
+  "chooseBidType": "宣言を選択",
+  "chooseTrumpFor": "{{bid}}の切り札を選択",
+  "confirmBid": "確定",
+  "bidBack": "戻る",
+  "suitNone": "-",
+  "suitSpade": "スペード",
+  "suitClub": "クラブ",
+  "suitHeart": "ハート",
+  "suitDiamond": "ダイヤ",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "roleQuadrille": "カドリール",
+  "roleCoalition": "連合",
+  "quadrilleBadge": "カドリール",
+  "score": "得点: {{score}}",
+  "playerScore": "{{name}}: {{score}}点",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のディール",
+  "outcomeNone": "-",
+  "outcomeSacar": "サカール（カドリール勝ち）",
+  "outcomePuesta": "プエスタ（並ばれ・カドリール負け）",
+  "outcomeCodille": "コディール（連合勝ち）",
+  "playPhase": {
+    "lead": "あなたの番です — リードするカードを選んでください。",
+    "follow": "あなたの番です — リードスートに従ってカードを選んでください。"
+  },
+  "trickEnd": "トリック終了 — 次へ進んでください。",
+  "roundEnd": "ディール終了 — 次のディールへ進んでください。",
+  "result": {
+    "humanWin": "ゲーム終了！ あなたの勝ち！",
+    "cpuWin": "ゲーム終了！ プレイヤー {{player}} の勝ち！"
+  },
+  "roundResult": {
+    "title": "ディール結果",
+    "outcome": "結果: {{outcome}}",
+    "quadrille": "カドリール: {{name}}"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "lead_high": "カドリールなので強い札でリードして主導する",
+    "lead_low": "連合なので低い札でリードして温存する",
+    "follow_win": "勝てるので取りに行く",
+    "follow_duck": "取れない／取る価値がないのでダック",
+    "give_partner": "味方が勝っているので上書きしない",
+    "discard_low": "フォローできないので低い札を捨てる",
+    "bid_entrar": "手堅い手なのでエントラールを宣言",
+    "bid_solo": "非常に強い手なのでソロを宣言",
+    "bid_pass": "弱い手なのでパスする"
+  },
+  "matador": {
+    "spadille": "スパディーユ (♠A)",
+    "manille": "マニーユ (切り札の7)",
+    "basto": "バスト (♣A)"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。リードされたスートにマストフォロー。切り札の強さは スパディーユ（♠A）＞マニーユ（切り札の7）＞バスト（♣A）＞プント（切り札のA、赤のみ）＞K＞Q＞J＞6..2。他スートは K＞Q＞J＞7..A（黒）／K＞Q＞J＞A..7（赤）。",
+    "playerHand": "あなたの手札です。出せるカードをクリックして選びます。カドリールは連合の2人を相手に1人で戦います。",
+    "playButton": "カードを選んだら、このボタンで出します。入札フェーズでは、まずエントラール／ソロ／パスを選び、エントラールかソロなら続けて切り札スートを選んで確定します。",
+    "info": "カドリールは40枚のスペイン式デッキ（8/9/10を除く）で遊ぶ4人用のトリックテイキングです。40枚を10枚ずつ配り切るので山札はありません。入札（パス／エントラール／ソロ）と切り札スートの指定でカドリールを決めたあと、**カドリールは自分が持っていない王を1枚指名**し、その王を持つ席が一時的な味方になります。呼ばれた王のスートは公開情報ですが、**誰が持っているかはその王が場に出るまで伏せられます**。王を4枚とも持っていた場合は単独プレイ（Roi seul）で3人を相手にします。切り札の強さはスパディーユ（♠A）＞マニーユ（切り札の7）＞バスト（♣A）＞プント（切り札のA、赤のみ）＞K＞Q＞J＞6..2。10トリックをカドリール側2席と相手側2席の合計で比べ、サカール（上回る）で得点、プエスタ（同数）で失点、コディール（下回る）で失点が倍になります。規定ディール数の後、累積得点最上位がマッチ勝者です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "chooseKing": "味方を呼ぶ王を選んでください",
+  "callKingOf": "{{suit}} の K",
+  "roiSeul": "単独プレイ (Roi seul)",
+  "kingUncalled": "王呼び: 未指名",
+  "kingCalledHidden": "呼ばれた王: {{suit}} の K (持ち主は伏せられています)",
+  "kingCalledRevealed": "呼ばれた王: {{suit}} の K → 味方: {{name}}"
+}

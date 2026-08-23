@@ -37,6 +37,7 @@ import type {
   OmbreResponse,
   PreferenceResponse,
   PrimeroResponse,
+  QuadrilleResponse,
   SakuraResponse,
   SambaPlayerData,
   SambaResponse,
@@ -1184,6 +1185,69 @@ const baseOmbreState: OmbreResponse = {
  */
 export function makeOmbreState(overrides?: Partial<OmbreResponse>): OmbreResponse {
   return { ...baseOmbreState, ...overrides };
+}
+
+/** Base Quadrille state: a human Play turn on a settled king call (trump = ♠, human is the Quadrille). */
+const baseQuadrilleState: QuadrilleResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 10,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isQuadrille: true,
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isQuadrille: false },
+    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isQuadrille: false },
+    { id: 3, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isQuadrille: false },
+  ],
+  phase: 2, // QuadrillePhase.PLAY — one higher than Ombre's, because of KING_CALL
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  currentBidderIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  forehandIdx: 0,
+  quadrilleIdx: 0,
+  winningBid: 1,
+  trumpSuit: 1,
+  currentTrick: [],
+  playerScores: [0, 0, 0, 0],
+  lastTrickWinner: -1,
+  outcome: 0,
+  result: 0,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  isHumanBidTurn: false,
+  isHumanKingCallTurn: false,
+  calledKingSuit: 3,
+  callableKingSuits: [],
+  // **相方は伏せたまま。** 呼ばれた王が場に出るまで -1。
+  partnerIdx: -1,
+  roiSeul: false,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 5 },
+};
+
+/**
+ * Creates a {@link QuadrilleResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial QuadrilleResponse fields to override.
+ * @returns A complete QuadrilleResponse suitable for use in tests.
+ */
+export function makeQuadrilleState(overrides?: Partial<QuadrilleResponse>): QuadrilleResponse {
+  return { ...baseQuadrilleState, ...overrides };
 }
 
 /** Base Ulti state used as the default for {@link makeUltiState}. Defaults to a human Play turn (declarer, Party contract, trump = ♠). */

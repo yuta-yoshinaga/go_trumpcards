@@ -438,7 +438,7 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全345ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全346ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -869,7 +869,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全345ゲーム()
+        ...全346ゲーム()
     }
 
     blackjackApi --> gameApi : uses postJson/gameExec
@@ -931,7 +931,7 @@ classDiagram
 
     reddogApi --> gameApi : uses postJson/gameExec
 
-    note for blackjackApi "全345ゲーム分のAPI Objectが存在\n(ゲーム一覧の SSoT は internal/infrastructure/games/registry.go。\nfrontend/src/api/gameApi.ts の games 配列と1:1対応)"
+    note for blackjackApi "全346ゲーム分のAPI Objectが存在\n(ゲーム一覧の SSoT は internal/infrastructure/games/registry.go。\nfrontend/src/api/gameApi.ts の games 配列と1:1対応)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -1866,7 +1866,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/BigO/ShortDeck/Pineapple/SevenCardStud/Razz)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全345ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全346ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1889,7 +1889,7 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (345ゲーム)
+        +Routes (346ゲーム)
     }
 
     class gameCategories {
@@ -1900,7 +1900,7 @@ classDiagram
         +solitaire
         +rummy
     }
-    note for gameCategories "6カテゴリの各メンバー構成 (全345ゲーム) は\nfrontend/src/constants/gameRoutes.ts が SSoT。\n個別の所属はそこで定義される"
+    note for gameCategories "6カテゴリの各メンバー構成 (全346ゲーム) は\nfrontend/src/constants/gameRoutes.ts が SSoT。\n個別の所属はそこで定義される"
 
     class TutorialProvider {
         +TutorialConfig config
@@ -1913,11 +1913,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 345 game pages
+    App --> GamePage : routes to 346 game pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "348名前空間: common + 345ゲーム固有 + tutorial + discover\n翻訳ファイル: locales/{ja,en}/<game>.json"
+    note for i18n "349名前空間: common + 346ゲーム固有 + tutorial + discover\n翻訳ファイル: locales/{ja,en}/<game>.json"
 ```
 
 ### 1.8 AI Game Concierge (/discover)

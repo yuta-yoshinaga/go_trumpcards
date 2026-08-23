@@ -1,0 +1,102 @@
+{
+  "title": "Quadrille",
+  "phase": {
+    "bid": "Bidding",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Deal End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetRounds": "Deals per Match",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Deal {{n}}",
+  "trick": "Trick {{n}}",
+  "winningBid": "Bid: {{bid}}",
+  "trump": "Trump: {{suit}}",
+  "bidNone": "-",
+  "bidEntrar": "Entrar",
+  "bidSolo": "Solo",
+  "bidPass": "Pass",
+  "bidPhase": "Bidding — first choose your bid (entrar / solo / pass), then pick a trump suit.",
+  "chooseTrump": "Trump",
+  "chooseBidType": "Choose bid",
+  "chooseTrumpFor": "Trump for {{bid}}",
+  "confirmBid": "Confirm",
+  "bidBack": "Back",
+  "suitNone": "-",
+  "suitSpade": "Spades",
+  "suitClub": "Clubs",
+  "suitHeart": "Hearts",
+  "suitDiamond": "Diamonds",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "roleQuadrille": "Quadrille",
+  "roleCoalition": "Coalition",
+  "quadrilleBadge": "Quadrille",
+  "score": "Score: {{score}}",
+  "playerScore": "{{name}}: {{score}} pts",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Deal",
+  "outcomeNone": "-",
+  "outcomeSacar": "Sacar (Quadrille wins)",
+  "outcomePuesta": "Puesta (tied — Quadrille loses)",
+  "outcomeCodille": "Codille (coalition wins)",
+  "playPhase": {
+    "lead": "Your turn — pick a card to lead.",
+    "follow": "Your turn — follow the led suit."
+  },
+  "trickEnd": "Trick complete — continue.",
+  "roundEnd": "Deal complete — go to the next deal.",
+  "result": {
+    "humanWin": "Game over! You win!",
+    "cpuWin": "Game over! Player {{player}} wins."
+  },
+  "roundResult": {
+    "title": "Deal Result",
+    "outcome": "Outcome: {{outcome}}",
+    "quadrille": "Quadrille: {{name}}"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_high": "You are Quadrille — lead a strong card to take control",
+    "lead_low": "You are coalition — lead a low card to conserve",
+    "follow_win": "You can win — take the trick",
+    "follow_duck": "Cannot/should not win — duck",
+    "give_partner": "Your side is winning — do not overtake",
+    "discard_low": "Cannot follow suit — discard a low card",
+    "bid_entrar": "Solid hand — declare entrar",
+    "bid_solo": "Very strong hand — declare solo",
+    "bid_pass": "Weak hand — pass"
+  },
+  "matador": {
+    "spadille": "Spadille (♠A)",
+    "manille": "Manille (7 of trump)",
+    "basto": "Basto (♣A)"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. You must follow the led suit. The trump group ranks Spadille (♠A) > Manille (7 of trump) > Basto (♣A) > Punto (Ace of trump, red trumps only) > K > Q > J > 6..2 of trump; other suits rank K > Q > J > 7..A (black) or K > Q > J > A..7 (red).",
+    "playerHand": "This is your hand. Click a playable card to select it. The Quadrille plays alone against the coalition of the other two players.",
+    "playButton": "Once a card is selected, play it with this button. In the Bid phase first choose entrar / solo / pass, then for entrar or solo pick a trump suit and confirm.",
+    "info": "Quadrille is a four-player trick-taking game on a 40-card Spanish deck (no 8/9/10). All 40 cards are dealt, ten each, so there is no stock. A bid phase (pass / entrar / solo) plus a chosen trump suit decides the Quadrille, who then **calls the King of a suit they do not hold**; whoever holds it becomes a temporary partner. The called suit is public, but **the holder stays hidden until that King is played**. Holding all four Kings forces a solo hand (Roi seul) against the other three. Trump ranking is Spadille (♠A) > Manille (the 7 of trump) > Basto (♣A) > Punto (the Ace of a red trump) > K > Q > J > 6..2. The ten tricks are compared side against side — Sacar (ahead) scores, Puesta (tied) penalises, Codille (behind) doubles the penalty. The highest cumulative score after the set number of deals wins the match.",
+    "resetButton": "Use the reset button to start a new game."
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available",
+  "chooseKing": "Call a king to find your partner",
+  "callKingOf": "K of {{suit}}",
+  "roiSeul": "Playing alone (Roi seul)",
+  "kingUncalled": "King call: not yet called",
+  "kingCalledHidden": "Called king: K of {{suit}} (holder hidden)",
+  "kingCalledRevealed": "Called king: K of {{suit}} -> partner: {{name}}"
+}

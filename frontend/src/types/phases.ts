@@ -468,6 +468,21 @@ export const CalabresellaPhase = {
   GAME_END: 5,
 } as const;
 
+/**
+ * Quadrille phase constants (sync: internal/domain/Quadrille.go).
+ *
+ * KING_CALL sits between the auction and play: the winning bidder names a King
+ * they do not hold, so every later phase is one higher than Ombre's.
+ */
+export const QuadrillePhase = {
+  BID: 0,
+  KING_CALL: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
 /** Ombre (Hombre) phase constants (sync: internal/domain/Ombre.go). */
 export const OmbrePhase = {
   BID: 0,
