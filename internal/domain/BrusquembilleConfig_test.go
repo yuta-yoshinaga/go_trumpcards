@@ -25,9 +25,30 @@ func TestBrusquembilleConfig_Validate(t *testing.T) {
 		wantErr bool
 	}{
 		{"default", domain.DefaultBrusquembilleConfig(), false},
-		{"normal explicit", domain.BrusquembilleConfig{CpuDifficulty: domain.BrusquembilleCpuDifficultyNormal}, false},
-		{"too low", domain.BrusquembilleConfig{CpuDifficulty: -1}, true},
-		{"too high", domain.BrusquembilleConfig{CpuDifficulty: 1}, true},
+		{"normal explicit", domain.BrusquembilleConfig{
+			CpuDifficulty: domain.BrusquembilleCpuDifficultyNormal,
+			PlayerCnt:     domain.BrusquembilleDefaultPlayerCnt,
+		}, false},
+		{"too low", domain.BrusquembilleConfig{
+			CpuDifficulty: -1, PlayerCnt: domain.BrusquembilleDefaultPlayerCnt,
+		}, true},
+		{"too high", domain.BrusquembilleConfig{
+			CpuDifficulty: 1, PlayerCnt: domain.BrusquembilleDefaultPlayerCnt,
+		}, true},
+		// **席数も検査する。** 素通しにすると範囲外の席数がそのまま設定に入り、
+		// 卓が組めないまま Reset される。
+		{"every seat count in range", domain.BrusquembilleConfig{
+			CpuDifficulty: domain.BrusquembilleCpuDifficultyNormal, PlayerCnt: 5,
+		}, false},
+		{"too few seats", domain.BrusquembilleConfig{
+			CpuDifficulty: domain.BrusquembilleCpuDifficultyNormal, PlayerCnt: 1,
+		}, true},
+		{"too many seats", domain.BrusquembilleConfig{
+			CpuDifficulty: domain.BrusquembilleCpuDifficultyNormal, PlayerCnt: 6,
+		}, true},
+		{"unset seat count", domain.BrusquembilleConfig{
+			CpuDifficulty: domain.BrusquembilleCpuDifficultyNormal,
+		}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

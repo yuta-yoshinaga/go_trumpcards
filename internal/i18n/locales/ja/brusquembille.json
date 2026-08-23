@@ -25,5 +25,6 @@
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpExampleNext": "  n                    トリックの決着を見てから次へ",
   "helpHint": "  h                    助言を表示",
-  "followLegend": "* = 出せる札（山札が尽きたのでリードスートに追従します）"
+  "followLegend": "* = 出せる札（山札が尽きたのでリードスートに追従します）",
+  "helpSetPlayers": "  sp <2-5>             席数を変更して再開 (2〜5人)"
 }

@@ -50,6 +50,11 @@ const BRUSQUEMBILLE_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
+/** Table sizes Brusquembille supports (the domain enforces the same range). */
+const BRUSQUEMBILLE_SEAT_OPTIONS = [2, 3, 4, 5];
+/** Default table size, matching `BrusquembilleDefaultPlayerCnt`. */
+const BRUSQUEMBILLE_DEFAULT_SEATS = 2;
+
 /**
  * Inner content for the Brusquembille page (wrapped by `withTutorial` below).
  *
@@ -78,16 +83,30 @@ function BrusquembillePageContent() {
     retry,
   } = useGameApi<BrusquembilleResponse, Parameters<typeof brusquembilleApi.exec>>(brusquembilleApi.exec);
   const { cardWidth } = useCardDimensions();
+  const [playerCnt, setPlayerCnt] = useState(BRUSQUEMBILLE_DEFAULT_SEATS);
 
-  // Initial reset on mount.
+  // Initial reset on mount. **席数を必ず添える** —— 添えないと初回だけ
+  // 既定の卓で始まり、リセットして初めて選んだ席数になる。
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only; playerCnt is the initial value here.
   useEffect(() => {
-    void dispatch('reset');
+    void dispatch('reset', undefined, { playerCnt });
   }, [dispatch]);
 
   const handleReset = useCallback(() => {
     hideActionLog();
-    void dispatch('reset');
-  }, [dispatch, hideActionLog]);
+    void dispatch('reset', undefined, { playerCnt });
+  }, [dispatch, hideActionLog, playerCnt]);
+
+  // **席数を選べなければ 2〜5 人卓は誰にも届かない。** ドメインが席数可変でも、
+  // 入口が無ければ既定の 2 人卓しか始まらない。
+  const handlePlayerCountChange = useCallback(
+    (value: string) => {
+      const n = Number(value);
+      setPlayerCnt(n);
+      void dispatch('reset', undefined, { playerCnt: n });
+    },
+    [dispatch],
+  );
 
   const handlePlay = useCallback(
     (idx: number) => {
@@ -352,7 +371,21 @@ function BrusquembillePageContent() {
 
       <SettingsPanel
         title={tc('settings.title')}
-        groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+        groups={[
+          {
+            items: [
+              {
+                type: 'select',
+                id: 'playerCnt',
+                label: t('settings.playerCount'),
+                value: playerCnt,
+                options: BRUSQUEMBILLE_SEAT_OPTIONS.map((n) => ({ value: n, label: String(n) })),
+                onSelect: handlePlayerCountChange,
+              },
+              hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+            ],
+          },
+        ]}
       />
 
       <ActionLogSection

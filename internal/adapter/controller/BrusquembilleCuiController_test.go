@@ -3,6 +3,7 @@
 package controller_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -95,4 +96,37 @@ func TestBrusquembilleCuiController_Exec(t *testing.T) {
 		assert.NotEqual(t, "bye.", got)
 		assert.NotEmpty(t, got)
 	})
+}
+
+// TestBrusquembilleCuiController_SetPlayers は、席数を変えるコマンドが
+// **実際にドメインまで届く**ことを見る。
+//
+// **入口が無ければ 2〜5 人卓は誰にも届かない。** ドメインを席数可変にしても、
+// コマンドもフォームも無ければ既定の 2 人卓しか始まらず、可変にした意味が無い。
+func TestBrusquembilleCuiController_SetPlayers(t *testing.T) {
+	for _, n := range []int{2, 3, 4, 5} {
+		m := new(mockUsecases.MockBrusquembilleInteractor)
+		m.On("GetConfig").Return(domain.DefaultBrusquembilleConfig())
+		m.On("ResetWithConfig", mock.MatchedBy(func(cfg domain.BrusquembilleConfig) bool {
+			return cfg.PlayerCnt == n
+		})).Return("ok")
+		c := controller.NewBrusquembilleCuiController(m)
+
+		assert.Equal(t, "ok", c.Exec("sp "+strconv.Itoa(n)), "sp %d が届かない", n)
+		m.AssertCalled(t, "ResetWithConfig", mock.Anything)
+	}
+}
+
+// TestBrusquembilleCuiController_SetPlayersRejectsOutOfRange は負のコントロール。
+// **どんな数でも通す実装だと、上のテストは通ってしまう。**
+func TestBrusquembilleCuiController_SetPlayersRejectsOutOfRange(t *testing.T) {
+	for _, n := range []string{"1", "6", "0", "-1"} {
+		m := new(mockUsecases.MockBrusquembilleInteractor)
+		m.On("GetConfig").Return(domain.DefaultBrusquembilleConfig()).Maybe()
+		m.On("ResetWithConfig", mock.Anything).Return("ok").Maybe()
+		c := controller.NewBrusquembilleCuiController(m)
+
+		c.Exec("sp " + n)
+		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
+	}
 }

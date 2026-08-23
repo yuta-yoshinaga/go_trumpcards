@@ -51,5 +51,8 @@
     "score": "Tricks, stock left, and points. The deck totals 120 points; reach 61 to win."
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "settings": {
+    "playerCount": "Players"
+  }
 }

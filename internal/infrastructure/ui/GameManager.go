@@ -6654,6 +6654,7 @@ var gameRegistry = []GameRegistryEntry{
 				"brusquembille.helpExampleNext",
 			},
 			CommandKeys:       []string{"brusquembille.helpPlay", "brusquembille.helpNext", "brusquembille.helpHint"},
+			SettingKeys:       []string{"brusquembille.helpSetPlayers"},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
 }

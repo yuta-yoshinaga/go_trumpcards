@@ -403,19 +403,28 @@ func TestBrusquembille_FullHand_GameEnds(t *testing.T) {
 func TestBrusquembilleDetermineWinner(t *testing.T) {
 	cases := []struct {
 		name   string
-		p0, p1 int
+		points []int
 		want   int
 	}{
-		{"p0 wins clearly", 80, 40, 0},
-		{"p1 wins clearly", 40, 80, 1},
-		{"p0 wins by 1", 61, 59, 0},
-		{"tie 60-60", 60, 60, -1},
-		{"both below threshold (degenerate)", 30, 30, -1},
+		// 2 人卓は従来どおり。合計 120 点を二人で分けるので、単独最多は必ず 60 点超。
+		{"p0 wins clearly", []int{80, 40}, 0},
+		{"p1 wins clearly", []int{40, 80}, 1},
+		{"p0 wins by 1", []int{61, 59}, 0},
+		{"tie 60-60", []int{60, 60}, -1},
+		{"both below threshold (degenerate)", []int{30, 30}, -1},
+
+		// **3 席以上を見る。** クローン元の「席 0 か席 1 か」の形のままだと、
+		// 席 2 以降がどれだけ取っても勝者にならない。
+		{"seat 2 takes the most at a 3-seat table", []int{30, 40, 50}, 2},
+		{"seat 4 takes the most at a 5-seat table", []int{20, 20, 20, 20, 40}, 4},
+		{"a three-way tie has no winner", []int{40, 40, 40}, -1},
+		{"the leader wins without passing 60", []int{50, 35, 35}, 0},
+		{"two seats level at the top is a draw", []int{50, 50, 20}, -1},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			if got := domain.BrusquembilleDetermineWinner(c.p0, c.p1); got != c.want {
-				t.Errorf("BrusquembilleDetermineWinner(%d, %d) = %d, want %d", c.p0, c.p1, got, c.want)
+			if got := domain.BrusquembilleDetermineWinner(c.points); got != c.want {
+				t.Errorf("BrusquembilleDetermineWinner(%v) = %d, want %d", c.points, got, c.want)
 			}
 		})
 	}
@@ -709,6 +718,75 @@ func TestBrusquembille_PlaysAtEveryTableSize(t *testing.T) {
 
 		if !b.GetGameEndFlag() {
 			t.Errorf("cnt=%d: game did not finish", cnt)
+		}
+	}
+}
+
+// TestBrusquembille_SeatCountIsReachableThroughConfig は、席数が
+// **設定を通して実際に効く**ことを見る。
+//
+// **ドメインが席数可変でも、設定が卓を組み直さなければ届かない。** 代入する
+// だけだと config は 4 人卓と言っているのに players は 2 人のままで、Reset
+// しても 2 人卓が始まる —— 設定が効いていないのに効いたように見える。
+//
+// 併せて、勝者が**全席**から選ばれることも見る。席 0/1 だけ比べる実装だと、
+// 席 2 以降がどれだけ取っても勝者にならない。
+func TestBrusquembille_SeatCountIsReachableThroughConfig(t *testing.T) {
+	for cnt := domain.BrusquembilleMinPlayerCnt; cnt <= domain.BrusquembilleMaxPlayerCnt; cnt++ {
+		b := domain.NewDefaultBrusquembille() // 既定は 2 人卓
+		cfg := b.GetConfig()
+		cfg.PlayerCnt = cnt
+		if err := cfg.Validate(); err != nil {
+			t.Fatalf("cnt=%d: config rejected: %v", cnt, err)
+		}
+		b.SetConfig(cfg)
+		b.Reset()
+
+		if got := b.GetPlayerCnt(); got != cnt {
+			t.Fatalf("cnt=%d: SetConfig did not rebuild the table (got %d seats)", cnt, got)
+		}
+
+		for step := 0; step < 600 && !b.GetGameEndFlag(); step++ {
+			if b.GetPhase() == domain.BrusquembillePhaseTrickEnd {
+				b.ResolveTrick()
+				b.NextTrick()
+				continue
+			}
+			cur := b.GetCurrentPlayerIdx()
+			if b.GetPlayer(cur).GetCardsSize() == 0 {
+				break
+			}
+			valid := b.GetValidPlayIndices(cur)
+			if len(valid) == 0 {
+				t.Fatalf("cnt=%d step=%d: seat %d has cards but no legal play", cnt, step, cur)
+			}
+			if cur == 0 {
+				if err := b.PlayerPlay(valid[0]); err != nil {
+					t.Fatalf("cnt=%d step=%d: %v", cnt, step, err)
+				}
+			} else {
+				b.CpuPlay()
+			}
+		}
+
+		if !b.GetGameEndFlag() {
+			t.Fatalf("cnt=%d: game did not finish", cnt)
+		}
+
+		// **勝者は全席から選ばれる。** 合計 120 点が卓に配られるので、
+		// 引き分け (-1) でなければ勝者は必ず有効な席で、最多得点でなければならない。
+		w := b.GetWinnerIdx()
+		if w == -1 {
+			continue
+		}
+		if w < 0 || w >= cnt {
+			t.Fatalf("cnt=%d: winner %d is not a seat at this table", cnt, w)
+		}
+		for seat := 0; seat < cnt; seat++ {
+			if seat != w && b.GetPlayerPoints(seat) > b.GetPlayerPoints(w) {
+				t.Fatalf("cnt=%d: seat %d has %d points but seat %d was declared the winner with %d",
+					cnt, seat, b.GetPlayerPoints(seat), w, b.GetPlayerPoints(w))
+			}
 		}
 	}
 }

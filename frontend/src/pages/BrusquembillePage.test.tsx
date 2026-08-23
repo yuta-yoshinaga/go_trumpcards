@@ -41,7 +41,7 @@ function makeState(overrides: Partial<BrusquembilleResponse> = {}): Brusquembill
     gameEndFlag: false,
     winnerIdx: -1,
     message: '',
-    config: { cpuDifficulty: 0 },
+    config: { cpuDifficulty: 0, playerCnt: 2 },
     validIndices: [0, 1, 2],
     followRequired: false,
     ...overrides,
@@ -59,7 +59,7 @@ beforeEach(() => {
 describe('BrusquembillePage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<BrusquembillePage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { playerCnt: 2 }));
   });
 
   it('renders header info (trick, stock, points)', async () => {
@@ -222,7 +222,7 @@ describe('BrusquembillePage', () => {
 
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { playerCnt: 2 }));
   });
 
   // #5608: ゲームが終わった後は失うものが無いので、共通の GameResetButton は
@@ -239,7 +239,7 @@ describe('BrusquembillePage', () => {
     fireEvent.click(next);
     // ダイアログを挟まずに走る。
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { playerCnt: 2 }));
   });
 
   it('shows the hint button on the human turn and requests a hint', async () => {
@@ -314,5 +314,36 @@ describe('BrusquembillePage legal moves', () => {
     for (const card of screen.getAllByRole('button', { name: /を出す/ })) {
       expect(card).toBeEnabled();
     }
+  });
+});
+
+// **席数を選べなければ 2〜5 人卓は誰にも届かない。**
+// ドメインが席数可変でも、フォームが無ければ既定の 2 人卓しか始まらない。
+describe('BrusquembillePage table size', () => {
+  it('offers every supported seat count and resets with the chosen one', async () => {
+    renderWithProviders(<BrusquembillePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const select = screen.getByLabelText('席数');
+    expect(select).toBeInTheDocument();
+    const options = Array.from(select.querySelectorAll('option')).map((o) => o.textContent);
+    expect(options).toEqual(['2', '3', '4', '5']);
+
+    mockExec.mockClear();
+    fireEvent.change(select, { target: { value: '4' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { playerCnt: 4 }));
+  });
+
+  it('keeps the chosen seat count on a later reset', async () => {
+    renderWithProviders(<BrusquembillePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    fireEvent.change(screen.getByLabelText('席数'), { target: { value: '5' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { playerCnt: 5 }));
+
+    // **リセットで既定に戻らないこと。** 戻ると選択が無かったことになる。
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { playerCnt: 5 }));
   });
 });

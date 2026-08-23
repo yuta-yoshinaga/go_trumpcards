@@ -28,6 +28,12 @@ func DefaultBrusquembilleConfig() BrusquembilleConfig {
 
 // Validate 設定値のドメインバリデーション
 func (c BrusquembilleConfig) Validate() error {
-	return ValidateRange("CPU difficulty", int(c.CpuDifficulty),
-		int(BrusquembilleCpuDifficultyNormal), int(BrusquembilleCpuDifficultyNormal))
+	if err := ValidateRange("CPU difficulty", int(c.CpuDifficulty),
+		int(BrusquembilleCpuDifficultyNormal), int(BrusquembilleCpuDifficultyNormal)); err != nil {
+		return err
+	}
+	// **席数も検査する。** ここを素通しにすると、範囲外の席数がそのまま
+	// 設定に入り、卓が組めないまま Reset される。
+	return ValidateRange("player count", c.PlayerCnt,
+		BrusquembilleMinPlayerCnt, BrusquembilleMaxPlayerCnt)
 }

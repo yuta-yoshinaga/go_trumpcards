@@ -25,5 +25,6 @@
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpExampleNext": "  n                    read the trick result, then continue",
   "helpHint": "  h                    show a hint",
-  "followLegend": "* = playable (the stock is gone, so you must follow the led suit)"
+  "followLegend": "* = playable (the stock is gone, so you must follow the led suit)",
+  "helpSetPlayers": "  sp <2-5>             set the table size and restart (2-5 players)"
 }

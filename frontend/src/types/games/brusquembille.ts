@@ -22,6 +22,8 @@ export interface BrusquembilleTrickCard {
 /** Brusquembille game configuration. */
 export interface BrusquembilleConfig {
   cpuDifficulty: number;
+  /** Number of seats (2-5); seat 0 is the human. */
+  playerCnt: number;
 }
 
 /** A suggested hint for Brusquembille. */

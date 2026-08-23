@@ -15,6 +15,8 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 )
 
 // ブリュスカンビーユの席数。**2〜5 人**で遊べる。
@@ -373,7 +375,18 @@ func (b *Brusquembille) IsHumanTurn() bool {
 func (b *Brusquembille) GetConfig() BrusquembilleConfig { return b.config }
 
 // SetConfig 設定変更
-func (b *Brusquembille) SetConfig(cfg BrusquembilleConfig) { b.config = cfg }
+// SetConfig は設定を差し替える。
+//
+// **席数が変わったら卓を組み直す。** 代入するだけだと、config は 4 人卓と
+// 言っているのに b.players は 2 人のままで、Reset しても 2 人卓が始まる ——
+// 設定が効いていないのに効いたように見える一番たちの悪い形。
+func (b *Brusquembille) SetConfig(cfg BrusquembilleConfig) {
+	b.config = cfg
+	if cfg.PlayerCnt > 0 && cfg.PlayerCnt != len(b.players) {
+		b.players = NewBrusquembillePlayersForTable(cfg.PlayerCnt)
+		b.playerPoints = make([]int, len(b.players))
+	}
+}
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 // 前半 (山札が残っている) は手札全てが対象。**山札が尽きた後半は
@@ -615,22 +628,38 @@ func (b *Brusquembille) allHandsEmpty() bool {
 func (b *Brusquembille) finishGame() {
 	b.gameEndFlag = true
 	b.phase = BrusquembillePhaseGameEnd
-	b.winnerIdx = BrusquembilleDetermineWinner(b.playerPoints[0], b.playerPoints[1])
-	detail := fmt.Sprintf("Game end: %d-%d", b.playerPoints[0], b.playerPoints[1])
+	b.winnerIdx = BrusquembilleDetermineWinner(b.playerPoints)
+	parts := make([]string, 0, len(b.playerPoints))
+	for _, pt := range b.playerPoints {
+		parts = append(parts, strconv.Itoa(pt))
+	}
+	detail := "Game end: " + strings.Join(parts, "-")
 	b.appendLog(-1, "game_end", detail, nil)
 }
 
-// BrusquembilleDetermineWinner 二人ブリュスカンビーユの勝者を決定する。
-// 60 を超えた側が勝ち。両者 <=60 (典型的には 60-60) は -1 (引き分け) を返す。
-func BrusquembilleDetermineWinner(p0, p1 int) int {
-	switch {
-	case p0 > BrusquembilleWinThreshold:
-		return 0
-	case p1 > BrusquembilleWinThreshold:
-		return 1
-	default:
+// BrusquembilleDetermineWinner は最多得点の席を返す。同点が並べば -1 (引き分け)。
+//
+// **全席を見る。** クローン元のブリスコラは 2 人固定なので「席 0 が 60 超なら
+// 席 0、そうでなく席 1 が 60 超なら席 1」で足りたが、この卓は 2〜5 席ある。
+// その形のまま席数だけ増やすと、**席 2 以降がどれだけ取っても勝者にならない**。
+//
+// 2 人卓では従来どおり「60 点超で勝ち、60-60 は引き分け」になる: 合計 120 点を
+// 二人で分けるので、単独最多は必ず 60 点超だから。3 席以上では 60 を超えなくても
+// 単独最多なら勝ちで、これが素直な一般化。
+func BrusquembilleDetermineWinner(points []int) int {
+	best, bestIdx, tied := -1, -1, false
+	for i, pt := range points {
+		switch {
+		case pt > best:
+			best, bestIdx, tied = pt, i, false
+		case pt == best:
+			tied = true
+		}
+	}
+	if tied || bestIdx < 0 {
 		return -1
 	}
+	return bestIdx
 }
 
 // sortAllHands 全プレイヤーの手札をソートする

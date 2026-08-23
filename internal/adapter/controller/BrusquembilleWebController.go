@@ -20,6 +20,8 @@ type BrusquembilleWebInput struct {
 // BrusquembilleWebConfig ブリュスカンビーユWeb設定
 type BrusquembilleWebConfig struct {
 	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
+	// PlayerCnt 席数 (2-5)。省略時は既定の 2。
+	PlayerCnt *int `json:"playerCnt,omitempty"`
 }
 
 // BrusquembilleWebOutputPlayer ブリュスカンビーユWebアウトプットプレイヤー
@@ -79,6 +81,9 @@ func (c *BrusquembilleWebConfig) ToConfig() domain.BrusquembilleConfig {
 	cfg.CpuDifficulty = domain.BrusquembilleCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
 		int(domain.BrusquembilleCpuDifficultyNormal), int(domain.BrusquembilleCpuDifficultyNormal),
 		int(cfg.CpuDifficulty)))
+	// **席数も読む。** 読まないと、設定を送っても常に 2 人卓になる。
+	cfg.PlayerCnt = webutil.BoundedIntPtr(c.PlayerCnt,
+		domain.BrusquembilleMinPlayerCnt, domain.BrusquembilleMaxPlayerCnt, cfg.PlayerCnt)
 	return cfg
 }
 
