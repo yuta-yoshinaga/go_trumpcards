@@ -745,3 +745,68 @@ func TestBauernschnapsen_NoMarriageUnderBettel(t *testing.T) {
 	assert.Empty(t, b.GetMarriageIndices(0), "ベテルでは宣言候補を出さないこと")
 	assert.Error(t, b.PlayerDeclareMarriage(0), "ベテルでは宣言を受け付けないこと")
 }
+
+// TestBauernschnapsen_TrickCountsSurviveTheWire は、**トリックを取った後の**盤面を
+// 往復させる。
+//
+// 契約の成否はトリック数で決まるので、これが落ちると復元後にベテルや
+// 同スート縛りが「0 トリック = 達成」に化ける。ゼロ値と一致する盤面
+// (1 トリックも取っていない盤面) で往復させても、フィールドを丸ごと消した
+// 実装が同じ答えを返すので何も見ていない。
+func TestBauernschnapsen_TrickCountsSurviveTheWire(t *testing.T) {
+	g := newBauernschnapsen()
+	g.Reset()
+	for g.GetPhase() == domain.BauernschnapsenPhaseContract {
+		if g.IsHumanContractTurn() {
+			require.NoError(t, g.DeclareContract(0,
+				domain.BauernschnapsenContractRufer, domain.CardDesignSpade))
+			continue
+		}
+		g.CpuDeclareContract()
+	}
+
+	// 2 トリック進めて、数が 0 でない盤面を作る。
+	tricks := 0
+	for step := 0; step < 100 && tricks < 2; step++ {
+		switch g.GetPhase() {
+		case domain.BauernschnapsenPhasePlay:
+			if g.GetPlayer(g.GetCurrentPlayerIdx()).GetIsHuman() {
+				idx := g.GetValidPlayIndices(0)
+				require.NotEmpty(t, idx)
+				require.NoError(t, g.PlayerPlay(idx[0]))
+			} else {
+				g.CpuPlay()
+			}
+		case domain.BauernschnapsenPhaseTrickEnd:
+			g.ResolveTrick()
+			g.NextTrick()
+			tricks++
+		default:
+			t.Fatalf("進めないフェーズ %d", g.GetPhase())
+		}
+	}
+	require.Equal(t, 2, tricks)
+
+	// **数がゼロ値と食い違っていること。** これが 0 のままなら、下の比較は
+	// フィールドを消した実装でも通ってしまう。
+	totalSeat := 0
+	for i := range 4 {
+		totalSeat += g.GetSeatTricks(i)
+	}
+	require.Equal(t, 2, totalSeat, "2 トリックぶん数えられていること")
+	require.Equal(t, 2, g.GetRoundTricks(0)+g.GetRoundTricks(1))
+
+	blob, err := json.Marshal(g)
+	require.NoError(t, err)
+	var got domain.Bauernschnapsen
+	require.NoError(t, json.Unmarshal(blob, &got))
+
+	for i := range 4 {
+		assert.Equal(t, g.GetSeatTricks(i), got.GetSeatTricks(i),
+			"席 %d のトリック数が往復で消えた", i)
+	}
+	for team := range 2 {
+		assert.Equal(t, g.GetRoundTricks(team), got.GetRoundTricks(team),
+			"チーム %d のトリック数が往復で消えた", team)
+	}
+}
