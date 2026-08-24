@@ -15,6 +15,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -156,4 +157,84 @@ func TestHorseWebConfig_ToConfigNeverYieldsAnInvalidConfig(t *testing.T) {
 			assert.NoError(t, got.Validate())
 		})
 	}
+}
+
+// **引き直しは Web からも打てる。** 命令が届かないと、2-7 トリプルドローの
+// 番でブラウザから送れる要求が 1 つも無くなる。
+func TestHorseWebController_Draw(t *testing.T) {
+	const mockOutput = `{"phase":0}`
+
+	newCtrl := func(hiMock *usecase.MockHorseInteractor) *controller.HorseWebController {
+		return controller.NewHorseWebController(func() uc.HorseInteractorIF { return hiMock })
+	}
+
+	run := func(t *testing.T, ctrl *controller.HorseWebController, body string) {
+		t.Helper()
+		var input controller.HorseWebInput
+		require.NoError(t, json.Unmarshal([]byte(body), &input))
+		recorded := execRequest(t, ctrl.Exec, &input)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(mockOutput)
+	}
+
+	t.Run("draw forwards the card indices", func(t *testing.T) {
+		hiMock := new(usecase.MockHorseInteractor)
+		hiMock.On("Exchange", mock.Anything).Return(mockOutput)
+		ctrl := newCtrl(hiMock)
+		defer ctrl.Stop()
+
+		run(t, ctrl, `{"command":"draw","cardIndices":[0,2],"sessionId":"s1"}`)
+		hiMock.AssertCalled(t, "Exchange", []int{0, 2})
+	})
+
+	// **空の要求はスタンドパット。** 「引かない」も 1 つの手なので、
+	// 弾いてしまうとその手が打てない。
+	t.Run("an empty list stands pat", func(t *testing.T) {
+		hiMock := new(usecase.MockHorseInteractor)
+		hiMock.On("Exchange", mock.Anything).Return(mockOutput)
+		ctrl := newCtrl(hiMock)
+		defer ctrl.Stop()
+
+		run(t, ctrl, `{"command":"draw","cardIndices":[],"sessionId":"s2"}`)
+		// 空かどうかだけを見る。nil と長さ 0 のスライスはどちらも
+		// 「1 枚も交換しない」で、ドメインは同じに扱う。
+		hiMock.AssertCalled(t, "Exchange", mock.MatchedBy(func(v []int) bool { return len(v) == 0 }))
+	})
+
+	t.Run("d is the short form", func(t *testing.T) {
+		hiMock := new(usecase.MockHorseInteractor)
+		hiMock.On("Exchange", mock.Anything).Return(mockOutput)
+		ctrl := newCtrl(hiMock)
+		defer ctrl.Stop()
+
+		run(t, ctrl, `{"command":"d","cardIndices":[4],"sessionId":"s3"}`)
+		hiMock.AssertCalled(t, "Exchange", []int{4})
+	})
+}
+
+// horseWebPresenterForTest は出力を見ない試験用のプレゼンター。
+//
+// **本物の presenter は使えない。** `internal/adapter/presenter` は
+// `internal/adapter/controller` を参照しているので、ここから引くと輪になる。
+type horseWebPresenterForTest struct{}
+
+func (horseWebPresenterForTest) Output(_ interfaces.HorseGame, _ error) string { return "{}" }
+func (horseWebPresenterForTest) HintOutput(_ interfaces.HorseGame) string      { return "{}" }
+func (horseWebPresenterForTest) ActionLogOutput(_ interfaces.HorseGame) string { return "{}" }
+
+// **バリアントは要求では変えられない。** 卓の素性なので、H.O.R.S.E. の設定を
+// 送るだけで 8 種目が 5 種目に化けてはいけない。
+func TestHorseWebController_ResetKeepsTheVariant(t *testing.T) {
+	g := domain.NewDefaultEightGame()
+	g.Reset()
+	hi := uc.NewHorseInteractor(g, new(horseWebPresenterForTest))
+
+	var input controller.HorseWebInput
+	require.NoError(t, json.Unmarshal(
+		[]byte(`{"command":"reset","config":{"seats":4,"handsPerDiscipline":3},"sessionId":"s1"}`), &input))
+	hi.ResetWithConfig(input.ToConfig())
+
+	assert.Equal(t, domain.HorseVariantEightGame, g.GetConfig().Variant, "8 種目の卓が 5 種目に化けた")
+	assert.Equal(t, 3, g.GetConfig().HandsPerDiscipline, "送った設定が反映されていない")
+	assert.Len(t, g.GetRotation(), 8)
 }

@@ -52,6 +52,18 @@ func (p *HorseWebPresenter) buildBase(g interfaces.HorseGame) *controller.HorseW
 	resObj.ToCall = g.GetToCall()
 	resObj.MinRaise = g.GetMinRaise()
 	resObj.TablePhase = g.GetTablePhase()
+	// **バリアントと種目の並びはサーバーが出す。** 画面がルート名から
+	// 「8 種目のはず」と決め打つと、5 種目の卓に 8 個の見出しが並ぶ。
+	resObj.Variant = int(g.GetVariant())
+	rotation := g.GetRotation()
+	resObj.Rotation = make([]int, 0, len(rotation))
+	for _, d := range rotation {
+		resObj.Rotation = append(resObj.Rotation, int(d))
+	}
+	// **引き直しの番はベットの番と別。** これを出さないと、ドローの盤面で
+	// ベットのボタンしか描けず、押せる手が 1 つも無くなる。
+	resObj.IsDrawPhase = g.IsDrawPhase()
+	resObj.DrawIndex = g.GetDrawIndex()
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerSeat = -1
 	if g.GetGameEndFlag() {

@@ -7,6 +7,10 @@ type HorseArgs = Parameters<typeof horseApi.exec>;
 const VALID_COMMANDS = [
   'f',
   'fold',
+  'd',
+  'draw',
+  'sp',
+  'stand',
   'x',
   'check',
   'c',
@@ -54,6 +58,24 @@ export function parseHorseCommand(input: string): CliParseResult<HorseArgs> {
     }
     case 'allin':
       return { args: ['action', { action: 'allin' }] };
+    case 'd':
+    case 'draw': {
+      // **番号は 0 始まり。** 引き直しのある他のゲーム (2-7 単体・ムス) と
+      // 同じ数え方にしないと、同じ操作が 1 枚ずれる。
+      const indices: number[] = [];
+      for (const raw of args) {
+        const n = Number.parseInt(raw, 10);
+        if (Number.isNaN(n) || String(n) !== raw.trim() || n < 0) return { error: 'Usage: d <idx>...' };
+        indices.push(n);
+      }
+      // **引数無しは打ち間違い。** 引かないと決めたなら sp と打つ ── ここで
+      // スタンドパットに読み替えると、番号を書き忘れた手が黙って通る。
+      if (indices.length === 0) return { error: 'Usage: d <idx>...' };
+      return { args: ['draw', { cardIndices: indices }] };
+    }
+    case 'sp':
+    case 'stand':
+      return { args: ['draw', { cardIndices: [] }] };
     case 'n':
     case 'next':
       return { args: ['next'] };
@@ -70,6 +92,21 @@ export function parseHorseCommand(input: string): CliParseResult<HorseArgs> {
     }
   }
 }
+
+/** Help text for Eight-Game Mix CLI mode. */
+export const EIGHT_GAME_HELP: string[] = [
+  'f / fold                         - Fold this hand',
+  'x / check                        - Check',
+  'c / call                         - Call the outstanding bet',
+  'b <amount>                       - Bet the given amount',
+  'raise <amount>                   - Raise to the given amount',
+  'allin                            - Push every chip in',
+  'd <idx>...                       - Exchange those cards (2-7 Triple Draw, 0-based)',
+  'sp / stand                       - Stand pat (2-7 Triple Draw)',
+  'n / next                         - Deal the next hand (the discipline may change)',
+  'h / hint                         - Show a hint',
+  'r / reset                        - Start a new match',
+];
 
 /** Help text for H.O.R.S.E. CLI mode. */
 export const HORSE_HELP: string[] = [

@@ -18,6 +18,8 @@ type HorseInteractorIF interface {
 	ResetWithConfig(cfg domain.HorseConfig) string
 	// Action 人間の手をいまの種目へ渡す
 	Action(action, amount, humanPlayMs int) string
+	// Exchange 引き直しをいまの種目へ渡す (ドロー系の種目のみ)
+	Exchange(indices []int) string
 	// NextHand 次のハンドへ進む
 	NextHand() string
 	// GetConfig 現在の設定を取得
@@ -47,7 +49,17 @@ func (hi *HorseInteractor) Reset() string {
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化。
+//
+// **バリアントは要求では変えられない。** どのローテーションを回すかは
+// 「いま遊んでいるゲーム」そのもので、設定の 1 項目ではない ── 要求から
+// 受け取ると、Eight-Game Mix の卓に H.O.R.S.E. の設定を送るだけで 8 種目が
+// 5 種目に化ける。
+//
+// **席数はここで丸めない。** バリアントに無い席数は `Validate` が弾き、卓は
+// いまの設定のまま残る ── 黙って別の席数に直すと、要求した卓とは違う卓が
+// 「成功」として返る。
 func (hi *HorseInteractor) ResetWithConfig(cfg domain.HorseConfig) string {
+	cfg.Variant = hi.Game.GetConfig().Variant
 	return resetWithValidatedConfig(hi.Game, hi.hp, cfg, hi.Game.SetConfig, hi.Reset)
 }
 
@@ -60,6 +72,20 @@ func (hi *HorseInteractor) Action(action, amount, humanPlayMs int) string {
 		return out
 	}
 	if err := hi.Game.PlayerAction(action, amount, humanPlayMs); err != nil {
+		return hi.hp.Output(hi.Game, err)
+	}
+	return hi.hp.Output(hi.Game, nil)
+}
+
+// Exchange 引き直しをいまの種目へ渡す。
+//
+// **空のスライスはスタンドパット。** 「引かない」も 1 つの手なので、
+// 何も選ばない呼び出しを弾いてはいけない。
+func (hi *HorseInteractor) Exchange(indices []int) string {
+	if out, blocked := guardGameEnd(hi.Game, hi.hp); blocked {
+		return out
+	}
+	if err := hi.Game.PlayerExchange(indices); err != nil {
 		return hi.hp.Output(hi.Game, err)
 	}
 	return hi.hp.Output(hi.Game, nil)

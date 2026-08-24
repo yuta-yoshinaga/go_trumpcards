@@ -98,6 +98,8 @@ func TestHorseInteractor_ResetWithConfig_Invalid(t *testing.T) {
 	gm := new(interfaces.MockHorseGame)
 	hp := new(presenter.MockHorsePresenter)
 	hp.On("Output", mock.Anything, mock.Anything).Return(horseMockOutput)
+	// バリアントは卓の素性なので、設定を差し替えるときも卓に訊く。
+	gm.On("GetConfig").Return(domain.DefaultHorseConfig())
 	hi := usecase.NewHorseInteractor(gm, hp)
 
 	// **3 席は種目が受け付けない卓サイズ。**
@@ -168,7 +170,8 @@ func TestHorseInteractor_SnapshotRoundTrip(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, hi.GetConfig(), restored.GetConfig())
 	// **復元した卓で打ち続けられる。**
-	assert.Contains(t, []string{"ok", "err:horse: not allowed in this phase"},
+	// 打てない局面で返るのは翻訳鍵。生の英文ではない (#5437)。
+	assert.Contains(t, []string{"ok", "err:horse.errWrongPhase"},
 		restored.Action(domain.HoldemActionFold, 0, 0))
 	_ = g
 }

@@ -6874,6 +6874,26 @@ var gameRegistry = []GameRegistryEntry{
 				"sevencardstud.helpBettingLimit", "sevencardstud.helpTournament",
 			}, studAnteKeys...),
 		}),
+	BindCuiFor("eightgame",
+		func() usecase.HorseInteractorIF {
+			return usecase.NewHorseInteractor(domain.NewDefaultEightGame(), new(presenter.HorseCuiPresenter))
+		},
+		controller.NewHorseCuiController,
+		CuiHelpSpec{
+			TitleKey: "eightgame.helpTitle",
+			ExampleKeys: []string{
+				"eightgame.helpExampleFold",
+			},
+			CommandKeys: []string{
+				"eightgame.helpAction",
+				// **引き直しは 8 種目のほうにしか出さない。** H.O.R.S.E. に
+				// ドロー系の種目は無く、載せると打てない手を勧めることになる。
+				"eightgame.helpDraw",
+				"eightgame.helpNext", "eightgame.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"eightgame.helpSetSeats", "eightgame.helpSetHands"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

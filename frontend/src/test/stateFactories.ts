@@ -4288,6 +4288,10 @@ const baseHorseState: HorseResponse = {
   tablePhase: 0,
   gameEndFlag: false,
   winnerSeat: -1,
+  variant: 0,
+  rotation: [0, 1, 2, 3, 4],
+  isDrawPhase: false,
+  drawIndex: 0,
   message: '',
   config: { seats: 4, initialChips: 1000, handsPerDiscipline: 2 },
 };

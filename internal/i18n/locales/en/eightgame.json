@@ -1,0 +1,10 @@
+{
+  "helpTitle": "Eight-Game Mix (8-discipline rotation)",
+  "helpExampleFold": "  f                                       fold this hand",
+  "helpAction": "  f / x / c / b <n> / raise <n> / allin   betting",
+  "helpDraw": "  d <idx...> / sp             draw (2-7 Triple Draw only)",
+  "helpNext": "  n                         next hand",
+  "helpHint": "  h                         show a hint",
+  "helpSetSeats": "  ss <4>                    seat count (4-handed only)",
+  "helpSetHands": "  sh <1-10>                 hands per discipline"
+}

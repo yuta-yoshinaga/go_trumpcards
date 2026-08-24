@@ -40,6 +40,8 @@ type HorseWebInput struct {
 	Action *string `json:"action,omitempty"`
 	// Amount ベット/レイズ額
 	Amount *int `json:"amount,omitempty"`
+	// CardIndices 引き直しで交換する札の位置 (0 始まり)。空 = スタンドパット。
+	CardIndices []int `json:"cardIndices,omitempty"`
 	// Config ゲーム設定
 	Config *HorseWebConfig `json:"config,omitempty"`
 }
@@ -91,6 +93,17 @@ type HorseWebOutput struct {
 	TablePhase  int  `json:"tablePhase"`
 	GameEndFlag bool `json:"gameEndFlag"`
 	WinnerSeat  int  `json:"winnerSeat"`
+	// Variant は回しているローテーション (0=H.O.R.S.E. / 1=Eight-Game Mix)。
+	//
+	// **画面がルート名から推測してはいけない。** 2 つのゲームが 1 つのページを
+	// 共有しているので、種目数も席数の選択肢もサーバーの答えで決まる。
+	Variant int `json:"variant"`
+	// Rotation は回す種目の並び。
+	Rotation []int `json:"rotation"`
+	// IsDrawPhase は引き直しを待っているか (2-7 トリプルドローのみ)。
+	IsDrawPhase bool `json:"isDrawPhase"`
+	// DrawIndex は何回目の引き直しか (1..3)。ドロー中でなければ 0。
+	DrawIndex int `json:"drawIndex"`
 	WebOutputBase
 	Config HorseWebOutputConfig `json:"config"`
 }
@@ -160,6 +173,10 @@ func horseDispatch(bc *baseController, w http.ResponseWriter, hi usecase.HorseIn
 			amount = *param.Amount
 		}
 		bc.writePresenterResponse(w, hi.Action(act, amount, 0))
+	case "d", "draw", "exchange":
+		// **札を 1 枚も指定しない要求はスタンドパット。** 「引かない」も手なので
+		// 空を弾いてはいけない。
+		bc.writePresenterResponse(w, hi.Exchange(param.CardIndices))
 	case "n", "next", "nexthand":
 		bc.writePresenterResponse(w, hi.NextHand())
 	default:

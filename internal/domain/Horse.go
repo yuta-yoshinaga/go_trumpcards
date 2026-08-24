@@ -28,11 +28,21 @@ const HorsePhaseMax = HorsePhaseGameEnd
 // horseMaxSliceLen は復元時に許すスライス長の上限。
 const horseMaxSliceLen = 512
 
-// エラー値。
+// エラー値 (`errors.Is` で判定するための番兵)。
+//
+// **画面に出るのはこの文字列ではない。** 返すのは `NewDomainErrorCode` で
+// くるんだものにして、文言は i18n 側に持たせる ── 生の
+// `horse: not allowed in this phase` が盤面の下に出ていた (実測)。
+//
+// **鍵は呼び出し側に literal で置く。** ヘルパ越しに渡すと
+// `check-message-codes.mjs` の網に掛からない (あの正規表現は
+// NewDomainErrorCode の第 2 引数がその場に書かれている形しか読まない) ので、
+// 翻訳が無いまま鍵が画面に出ても誰も気付かない。
 var (
 	errHorseFinished   = errors.New("horse: game already finished")
 	errHorseWrongPhase = errors.New("horse: not allowed in this phase")
 	errHorseNoTable    = errors.New("horse: no hand in progress")
+	errHorseNoDraw     = errors.New("horse: the current discipline has no draw")
 )
 
 // horseTable は H.O.R.S.E. が種目に対して必要とする操作だけを切り出したもの。
@@ -131,6 +141,25 @@ func NewHorse(config HorseConfig) *Horse {
 // NewDefaultHorse は既定の卓を構築する。
 func NewDefaultHorse() *Horse { return NewHorse(DefaultHorseConfig()) }
 
+// NewEightGame は Eight-Game Mix の卓を構築する。
+//
+// **オーケストレータは H.O.R.S.E. と同じもの。** 違うのは回す種目の並びだけで、
+// チップの持ち回しも精算も 1 つの実装が担当する ── 8 種目ぶんの進行を別に
+// 書くと、同じ規則を 2 か所で保つことになる。
+func NewEightGame(config HorseConfig) *Horse {
+	config.Variant = HorseVariantEightGame
+	return NewHorse(config)
+}
+
+// NewDefaultEightGame は既定の Eight-Game Mix 卓を構築する。
+func NewDefaultEightGame() *Horse { return NewHorse(DefaultEightGameConfig()) }
+
+// GetVariant はこの卓が回すローテーションを返す。
+func (g *Horse) GetVariant() HorseVariant { return g.config.Variant }
+
+// GetRotation はこの卓が回す種目の並びを返す。
+func (g *Horse) GetRotation() []HorseDiscipline { return HorseRotation(g.config.Variant) }
+
 // Reset はゲームを初期化する。
 func (g *Horse) Reset() {
 	for i, s := range g.seats {
@@ -138,7 +167,7 @@ func (g *Horse) Reset() {
 		s.isHuman = i == 0
 	}
 	g.phase = HorsePhaseHand
-	g.discipline = HorseHoldem
+	g.discipline = g.rotationAt(0)
 	g.handInDiscipline = 1
 	g.handNumber = 1
 	g.gameEndFlag = false
@@ -203,9 +232,60 @@ func (g *Horse) buildTable() (horseTable, horseEndPhase, func()) {
 		g.dealChipsTo(func(i, chips int) { players[i].SetChips(chips) })
 		t := NewSevenCardStudHiLo(NewTrumpCards(0), players, horseStudTableConfig(DefaultSevenCardStudConfig(), n))
 		return t, horseEndPhase{end: SevenCardStudPhaseEnd, rebuy: SevenCardStudPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return t.GetPlayer(i).GetChips() }) }
+	case HorseNLHoldem:
+		players := NewPlayersForTable(n)
+		g.dealChipsTo(func(i, chips int) { players[i].SetChips(chips) })
+		t := NewHoldem(NewTrumpCards(0), players, horseLimitConfig(horseTableConfig(DefaultHoldemConfig(), n), BettingLimitNoLimit))
+		return t, horseEndPhase{end: HoldemPhaseEnd, rebuy: HoldemPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return t.GetPlayer(i).GetChips() }) }
+	case HorsePLOmaha:
+		players := NewOmahaPlayersForTable(n)
+		g.dealChipsTo(func(i, chips int) { players[i].SetChips(chips) })
+		t := NewOmaha(NewTrumpCards(0), players, horseLimitConfig(horseTableConfig(DefaultOmahaConfig(), n), BettingLimitPotLimit))
+		return t, horseEndPhase{end: HoldemPhaseEnd, rebuy: HoldemPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return t.GetPlayer(i).GetChips() }) }
+	case HorseTripleDraw:
+		players := newHorseDeuceToSevenPlayers(n)
+		g.dealChipsTo(func(i, chips int) { players[i].SetChips(chips) })
+		t := NewDeuceToSeven(NewTrumpCards(0), players, horseDrawTableConfig(DefaultDeuceToSevenConfig(), n))
+		return t, horseEndPhase{end: DeuceToSevenPhaseEnd, rebuy: DeuceToSevenPhaseEnd}, func() { g.collectChipsFrom(func(i int) int { return t.GetPlayers()[i].GetChips() }) }
 	default:
 		return nil, horseEndPhase{}, nil
 	}
+}
+
+// horseLimitConfig はベッティングリミットだけを差し替える。
+//
+// **NLH と PLO は「同じ種目の別リミット」ではない。** Eight-Game Mix は
+// リミットホールデムとノーリミットホールデムを**別の種目として**回すので、
+// 卓を作るときにリミットを指定しないと、8 種目のうち 2 つが先に回した種目と
+// 同じものになる。
+func horseLimitConfig(cfg HoldemConfig, limit BettingLimitType) HoldemConfig {
+	cfg.BettingLimit = limit
+	return cfg
+}
+
+// horseDrawTableConfig は 2-7 Triple Draw の設定を席数に合わせる。
+//
+// **CPU の人数で卓の大きさが決まる。** ドロー系の設定は席数ではなく
+// 「CPU 何人と打つか」を持っているので、正本の席数から 1 (人間) を引いて渡す。
+func horseDrawTableConfig(cfg DeuceToSevenConfig, seats int) DeuceToSevenConfig {
+	cfg.CpuCount = seats - 1
+	return cfg
+}
+
+// newHorseDeuceToSevenPlayers は席数ぶんの 2-7 Triple Draw プレイヤーを作る。
+//
+// **席 0 が人間なのは他の種目と同じ。** CPU のスタイルは席順に配る ──
+// 全員同じスタイルにすると、卓の 3 人が同じ手を打つ。
+func newHorseDeuceToSevenPlayers(seats int) []*DeuceToSevenPlayer {
+	styles := []DeuceToSevenPlayStyle{
+		DeuceToSevenStyleConservative, DeuceToSevenStyleAggressive, DeuceToSevenStyleBluffer,
+	}
+	players := make([]*DeuceToSevenPlayer, 0, seats)
+	players = append(players, NewDeuceToSevenPlayer(true, DeuceToSevenStyleBalanced))
+	for i := 1; i < seats; i++ {
+		players = append(players, NewDeuceToSevenPlayer(false, styles[(i-1)%len(styles)]))
+	}
+	return players
 }
 
 // horseTableConfig は種目の設定を「いま座らせる人数」に合わせる。
@@ -281,10 +361,10 @@ func (g *Horse) collectChipsFrom(get func(i int) int) {
 // **種目が変わるのはここだけ。** ハンドの途中で切り替わることは無い。
 func (g *Horse) NextHand() error {
 	if g.gameEndFlag {
-		return errHorseFinished
+		return NewDomainErrorCode(errHorseFinished, "horse.errFinished", nil)
 	}
 	if g.phase != HorsePhaseHandEnd {
-		return errHorseWrongPhase
+		return NewDomainErrorCode(errHorseWrongPhase, "horse.errWrongPhase", nil)
 	}
 	if g.aliveSeats() < HorseMinSeats {
 		g.finish()
@@ -293,12 +373,39 @@ func (g *Horse) NextHand() error {
 	g.handNumber++
 	if g.handInDiscipline >= g.config.HandsPerDiscipline {
 		g.handInDiscipline = 1
-		g.discipline = (g.discipline + 1) % HorseDisciplineCount
+		g.discipline = g.nextDiscipline()
 	} else {
 		g.handInDiscipline++
 	}
 	g.startHand()
 	return nil
+}
+
+// rotationAt はこの卓のローテーションの i 番目の種目を返す。
+func (g *Horse) rotationAt(i int) HorseDiscipline {
+	rot := horseRotations[g.rotationVariant()]
+	return rot[((i%len(rot))+len(rot))%len(rot)]
+}
+
+// rotationVariant は範囲内に丸めたバリアントを返す。
+//
+// **範囲外を H.O.R.S.E. として扱う。** 設定は Validate を通っているが、
+// ゼロ値の `Horse{}` を直接組み立てる経路 (復元の途中など) でも
+// ローテーションの参照が落ちないようにする。
+func (g *Horse) rotationVariant() HorseVariant {
+	if g.config.Variant < 0 || int(g.config.Variant) >= len(horseRotations) {
+		return HorseVariantHorse
+	}
+	return g.config.Variant
+}
+
+// nextDiscipline はローテーション上の次の種目を返す。
+//
+// **番号の +1 ではない。** 種目の値は 8 つあり、H.O.R.S.E. が回すのはその
+// 先頭 5 つだけ ── `(d+1) % 種目数` で進めると、バリアントごとの並びと
+// 食い違う。
+func (g *Horse) nextDiscipline() HorseDiscipline {
+	return (g.discipline + 1) % HorseDisciplineCount
 }
 
 // --- 進行 ---
@@ -310,13 +417,13 @@ func (g *Horse) NextHand() error {
 // 二重に持つことになる。
 func (g *Horse) PlayerAction(action, amount, humanPlayMs int) error {
 	if g.gameEndFlag {
-		return errHorseFinished
+		return NewDomainErrorCode(errHorseFinished, "horse.errFinished", nil)
 	}
 	if g.phase != HorsePhaseHand {
-		return errHorseWrongPhase
+		return NewDomainErrorCode(errHorseWrongPhase, "horse.errWrongPhase", nil)
 	}
 	if g.table == nil {
-		return errHorseNoTable
+		return NewDomainErrorCode(errHorseNoTable, "horse.errNoTable", nil)
 	}
 	if err := g.table.PlayerAction(action, amount, humanPlayMs); err != nil {
 		return err
@@ -325,12 +432,46 @@ func (g *Horse) PlayerAction(action, amount, humanPlayMs int) error {
 	return nil
 }
 
+// horseMuckTable は「負けた手を伏せるか公開するか」を訊いてくる種目。
+//
+// Holdem / Omaha / SevenCardStud はショーダウンで人間が勝てなかったとき、
+// **その決定を待って止まる**。2-7 Triple Draw にはこの分岐が無いので、
+// インタフェースは必須にせず、実装している卓にだけ訊く。
+type horseMuckTable interface {
+	IsMuckAvailable() bool
+	ShowHand() error
+}
+
+// resolveShowdownDecision はショーダウンの待ちを解いて手を公開する。
+//
+// **これが無いとマッチが凍る。** 人間がコールして負けた手は
+// `resolveShowdown` が END へ進めずショーダウンに留まり、マック待ちになる ──
+// ところがオーケストレータにはその入力が無いので、**打てる手が 1 つも無い**
+// 盤面のまま次のハンドへも進めない (実測: 単独の H.O.R.S.E. でも再現する)。
+//
+// ミックスゲームでは伏せる意味が無いので公開して閉じる。卓の要約しか出さない
+// 画面では伏せ札と公開札の区別がそもそも現れず、CPU も履歴を読まない。
+func (g *Horse) resolveShowdownDecision() {
+	t, ok := g.table.(horseMuckTable)
+	if !ok || !t.IsMuckAvailable() {
+		return
+	}
+	if err := t.ShowHand(); err != nil {
+		return
+	}
+	g.appendLog("show", fmt.Sprintf("hand %d shown down", g.handNumber))
+}
+
 // settleIfHandOver は種目のハンドが終わっていれば残高を回収する。
 //
 // **回収はここ 1 か所。** 種目側の残高を正本に戻す経路を増やすと、二重に
 // 回収して増える経路ができる。
 func (g *Horse) settleIfHandOver() {
-	if g.table == nil || !g.tableHandIsOver() {
+	if g.table == nil {
+		return
+	}
+	g.resolveShowdownDecision()
+	if !g.tableHandIsOver() {
 		return
 	}
 	if g.harvest != nil {
@@ -562,9 +703,32 @@ func (g *Horse) playerCardsOf(ti int) (all, up []*Card) {
 		all = append(all, p.GetHoleCards()...)
 		all = append(all, up...)
 		return all, up
+	case *DeuceToSeven:
+		// **ドロー系は 1 枚も表を向かない。** 引いた枚数だけが公開情報で、
+		// 札そのものはショーダウンまで誰にも見えない。
+		p := horseDrawPlayer(t, ti)
+		if p == nil {
+			return nil, nil
+		}
+		for i := range p.GetCardsSize() {
+			all = append(all, p.GetCard(i))
+		}
+		return all, nil
 	default:
 		return nil, nil
 	}
+}
+
+// horseDrawPlayer は 2-7 Triple Draw の卓から席 ti のプレイヤーを返す。
+//
+// **スライスは毎回卓から引き直す。** 復元でプレイヤー列は丸ごと差し替わるので、
+// 掴んでおくと差し替え前の別人を読む。
+func horseDrawPlayer(t *DeuceToSeven, ti int) *DeuceToSevenPlayer {
+	players := t.GetPlayers()
+	if ti < 0 || ti >= len(players) {
+		return nil
+	}
+	return players[ti]
 }
 
 // GetSeatCards は指定席の「その席から見えている札」を返す。
@@ -627,6 +791,12 @@ func (g *Horse) GetToCall() int {
 			return 0
 		}
 		lastBet, mine = t.GetLastBet(), p.GetCurrentBet()
+	case *DeuceToSeven:
+		p := horseDrawPlayer(t, ti)
+		if p == nil {
+			return 0
+		}
+		lastBet, mine = t.GetLastBet(), p.GetCurrentBet()
 	default:
 		return 0
 	}
@@ -644,6 +814,8 @@ func (g *Horse) GetMinRaise() int {
 	case *Omaha:
 		return t.GetMinRaise()
 	case *SevenCardStud:
+		return t.GetMinRaise()
+	case *DeuceToSeven:
 		return t.GetMinRaise()
 	default:
 		return 0
@@ -677,6 +849,54 @@ func (g *Horse) GetSeatLiveChips(seat int) int {
 		if p := t.GetPlayer(ti); p != nil {
 			return p.GetChips()
 		}
+	case *DeuceToSeven:
+		if p := horseDrawPlayer(t, ti); p != nil {
+			return p.GetChips()
+		}
 	}
 	return g.seats[seat].chips
+}
+
+// --- ドロー (2-7 Triple Draw のときだけ動く) ---
+
+// IsDrawPhase はいまの種目が引き直しを待っているかを返す。
+//
+// **賭ける場面と引く場面は別の入力。** これを見ずにベットの面だけ出すと、
+// ドローの番で押せるボタンが 1 つも無くなり、Eight-Game Mix は 6 種目目で
+// 止まる。
+func (g *Horse) IsDrawPhase() bool {
+	t, ok := g.table.(*DeuceToSeven)
+	return ok && g.phase == HorsePhaseHand && t.GetPhase() == DeuceToSevenPhaseDraw
+}
+
+// GetDrawIndex は何回目の引き直しかを返す (1..3)。ドロー中でなければ 0。
+func (g *Horse) GetDrawIndex() int {
+	t, ok := g.table.(*DeuceToSeven)
+	if !ok || !g.IsDrawPhase() {
+		return 0
+	}
+	return t.GetDrawIndex()
+}
+
+// PlayerExchange は人間の引き直しをいまの種目へ渡す。
+//
+// **枚数も規則も種目に決めさせる。** 何枚まで引けるかはドロー系の規則で、
+// ここで真似ると同じ規則を 2 か所で持つことになる。空のスライスは
+// スタンドパット (引かない)。
+func (g *Horse) PlayerExchange(indices []int) error {
+	if g.gameEndFlag {
+		return NewDomainErrorCode(errHorseFinished, "horse.errFinished", nil)
+	}
+	if g.phase != HorsePhaseHand {
+		return NewDomainErrorCode(errHorseWrongPhase, "horse.errWrongPhase", nil)
+	}
+	t, ok := g.table.(*DeuceToSeven)
+	if !ok {
+		return NewDomainErrorCode(errHorseNoDraw, "horse.errNoDraw", nil)
+	}
+	if err := t.PlayerExchange(indices); err != nil {
+		return err
+	}
+	g.settleIfHandOver()
+	return nil
 }

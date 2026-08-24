@@ -895,6 +895,7 @@ export const hintFactories = {
   sakura: (s) => getSakuraHint(s as SakuraResponse),
   zwanzigerrufen: (s) => getZwanzigerrufenHint(s as ZwanzigerrufenResponse),
   troggu: (s) => getTrogguHint(s as TrogguResponse),
+  eightgame: (s) => getHorseHint(s as HorseResponse),
   horse: (s) => getHorseHint(s as HorseResponse),
   andarbahar: (s) => getAndarbaharHint(s as AndarBaharResponse),
   botifarra: (s) => getBotifarraHint(s as BotifarraResponse),

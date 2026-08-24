@@ -217,3 +217,110 @@ func TestHorseWebPresenter_HintAndLog(t *testing.T) {
 	assert.NotNil(t, log.Entries)
 	assert.Empty(t, log.Entries)
 }
+
+// newEightGameAtDraw は 2-7 トリプルドローの引き直し待ちまで進めた卓を返す。
+//
+// **配りに依存させない。** ベットの手数は配りで変わるので、引き直しの番が
+// 来るまで合法な手だけを打ち、来なければ配り直す。
+func newEightGameAtDraw(t *testing.T) *domain.Horse {
+	t.Helper()
+	for range 30 {
+		g := domain.NewDefaultEightGame()
+		g.Reset()
+		g.SetDisciplineForTest(domain.HorseTripleDraw)
+		for range 200 {
+			if g.IsDrawPhase() {
+				return g
+			}
+			if g.GetPhase() != domain.HorsePhaseHand || !g.IsHumanTurn() {
+				break
+			}
+			if err := g.PlayerAction(domain.HoldemActionCall, 0, 0); err != nil {
+				if err2 := g.PlayerAction(domain.HoldemActionCheck, 0, 0); err2 != nil {
+					break
+				}
+			}
+		}
+	}
+	t.Fatal("引き直しの番が来なかった")
+	return nil
+}
+
+// **画面の見出しはゲームの名前。** 2 つのゲームが 1 つの presenter を共有して
+// いるので、固定にすると Eight-Game Mix の画面が「H.O.R.S.E.」を名乗る。
+func TestHorseCuiPresenter_EightGameHasItsOwnTitle(t *testing.T) {
+	i18n.SetLang("ja")
+	p := &presenter.HorseCuiPresenter{}
+
+	g := domain.NewDefaultEightGame()
+	g.Reset()
+	out := p.Output(g, nil)
+	assert.Contains(t, out, i18n.T("eightgame.helpTitle"))
+	assert.NotContains(t, out, i18n.T("horse.helpTitle"))
+
+	assert.Contains(t, p.Output(newHorseForPresenter(t), nil), i18n.T("horse.helpTitle"))
+}
+
+// **引き直しの番はベットの案内では打てない。** ベットの行しか出さないと、
+// 何を打てばよいのかが画面のどこにも無い。
+func TestHorseCuiPresenter_DrawTurnPromptsForTheDraw(t *testing.T) {
+	i18n.SetLang("ja")
+	p := &presenter.HorseCuiPresenter{}
+	g := newEightGameAtDraw(t)
+
+	out := p.Output(g, nil)
+	assert.Contains(t, out, strings.SplitN(i18n.T("horse.promptDraw"), "{{", 2)[0])
+	assert.Contains(t, out, i18n.T("horse.promptDrawHelp"))
+	assert.NotContains(t, out, i18n.T("horse.promptPlayHelp"), "ベットの案内が残っている")
+	// **捨てる札を指す番号まで出す。** `d 0 2` と案内しておいて番号が画面に
+	// 無いと、どれが 0 番なのかが分からない。
+	assert.Contains(t, out, "[0]")
+	assert.Contains(t, out, "[4]")
+	assert.NotContains(t, out, "horse.", "生キーが出ている")
+}
+
+// ヒントも引き直しの番を知っている。
+func TestHorseCuiPresenter_DrawTurnHint(t *testing.T) {
+	i18n.SetLang("ja")
+	p := &presenter.HorseCuiPresenter{}
+	assert.Contains(t, p.HintOutput(newEightGameAtDraw(t)), i18n.T("horse.hintDraw"))
+}
+
+// **バリアントと種目の並びはサーバーが出す。** 画面がルート名から決め打つと、
+// 5 種目の卓に 8 個の見出しが並ぶ。
+func TestHorseWebPresenter_ReportsTheVariantAndRotation(t *testing.T) {
+	p := &presenter.HorseWebPresenter{}
+	var out struct {
+		Variant     int   `json:"variant"`
+		Rotation    []int `json:"rotation"`
+		IsDrawPhase bool  `json:"isDrawPhase"`
+		DrawIndex   int   `json:"drawIndex"`
+	}
+
+	g := domain.NewDefaultEightGame()
+	g.Reset()
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &out))
+	assert.Equal(t, int(domain.HorseVariantEightGame), out.Variant)
+	assert.Len(t, out.Rotation, 8)
+	assert.Equal(t, int(domain.HorseTripleDraw), out.Rotation[7])
+	assert.False(t, out.IsDrawPhase, "ホールデムの手が引き直しを名乗っている")
+	assert.Zero(t, out.DrawIndex)
+
+	require.NoError(t, json.Unmarshal([]byte(p.Output(newHorseForPresenter(t), nil)), &out))
+	assert.Equal(t, int(domain.HorseVariantHorse), out.Variant)
+	assert.Len(t, out.Rotation, 5)
+}
+
+// 引き直しの番であることと、何回目かが Web にも届く。
+func TestHorseWebPresenter_ReportsTheDrawTurn(t *testing.T) {
+	p := &presenter.HorseWebPresenter{}
+	var out struct {
+		IsDrawPhase bool `json:"isDrawPhase"`
+		DrawIndex   int  `json:"drawIndex"`
+		IsHumanTurn bool `json:"isHumanTurn"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(p.Output(newEightGameAtDraw(t), nil)), &out))
+	assert.True(t, out.IsDrawPhase)
+	assert.Contains(t, []int{1, 2, 3}, out.DrawIndex)
+	assert.True(t, out.IsHumanTurn, "手番でなければ画面は札を選ばせない")
+}
