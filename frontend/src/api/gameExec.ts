@@ -301,6 +301,7 @@ export const workerUrl: Record<string, string> = {
   ombre: WORKER_EXTRA4,
   quadrille: WORKER_EXTRA4,
   ulti: WORKER_EXTRA4,
+  piedmontesetarot: WORKER_EXTRA4,
   scarto: WORKER_EXTRA4,
   cego: WORKER_EXTRA4,
   frenchtarot: WORKER_EXTRA,

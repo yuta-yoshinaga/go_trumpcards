@@ -189,8 +189,16 @@ func TestUltimateTexasHoldem_Play_PreFlop4x_DealsAllCommunity(t *testing.T) {
 	assert.True(t, u.GetGameEndFlag())
 	assert.Len(t, u.GetCommunity(), 5)
 	// chips dropped by 400 (play bet) and were credited with any payouts
-	// determined by the random showdown. Just sanity-check upper bound.
-	assert.LessOrEqual(t, u.GetChips(), chipsBefore-400+5000)
+	// determined by the random showdown.
+	//
+	// **上限は配当表から出す。** 5000 と決め打っていたので、ロイヤルフラッシュ
+	// (ブラインド 500:1) が出た配りで落ちた ── 100 のアンテ/ブラインドなら
+	// ブラインドだけで 50,000 入る。同じパッケージにテストを足すと共有 RNG の
+	// 消費が変わるので発現率も動く、いかにも見つけにくい形だった (実測)。
+	maxPayout := 100*domain.UltimateTexasHoldemBlindPayRoyalFlush + // ブラインド
+		100*domain.UltimateTexasHoldemTripsPayRoyalFlush + // トリップス
+		100 + 400 + 100 + 400 // アンテ配当 + プレイ配当 + それぞれの返却
+	assert.LessOrEqual(t, u.GetChips(), chipsBefore-400+maxPayout)
 }
 
 func TestUltimateTexasHoldem_Play_PreFlop3x(t *testing.T) {

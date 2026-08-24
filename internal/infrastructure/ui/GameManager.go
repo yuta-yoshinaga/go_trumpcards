@@ -6894,6 +6894,25 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"eightgame.helpSetSeats", "eightgame.helpSetHands"},
 		}),
+	BindCuiFor("piedmontesetarot",
+		func() usecase.PiedmonteseTarotInteractorIF {
+			return usecase.NewPiedmonteseTarotInteractor(domain.NewDefaultPiedmonteseTarot(), new(presenter.PiedmonteseTarotCuiPresenter))
+		},
+		controller.NewPiedmonteseTarotCuiController,
+		CuiHelpSpec{
+			TitleKey: "piedmontesetarot.helpTitle",
+			ExampleKeys: []string{
+				"piedmontesetarot.helpExamplePlay",
+				"piedmontesetarot.helpExampleNext",
+			},
+			CommandKeys: []string{
+				"piedmontesetarot.helpScarto", "piedmontesetarot.helpPlay",
+				"piedmontesetarot.helpNext", "piedmontesetarot.helpNextRound",
+				"piedmontesetarot.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"piedmontesetarot.helpSetSeats", "piedmontesetarot.helpSetDifficulty"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
