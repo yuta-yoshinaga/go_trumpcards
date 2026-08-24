@@ -416,6 +416,8 @@ tags:
     description: Karnöffel
   - name: unsunkaruta
     description: 'Unsun Karuta (うんすんカルタ) - the Japanese 75-card five-suit trick-taker, eight players in two teams'
+  - name: quodlibet
+    description: 'Quodlibet - the Austrian compendium game; twelve deals in three wheels of four contracts, lowest penalty wins'
   - name: literature
     description: Literature
   - name: guandan
@@ -20887,6 +20889,120 @@ paths:
                   command: play
                   cardIndex: 0
                   declare: true
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /quodlibet/exec:
+    post:
+      tags:
+        - quodlibet
+      summary: Execute a Quodlibet game command
+      description: |
+        Send a command to advance the Quodlibet session identified by
+        `sessionId`. Quodlibet is an Austrian compendium game for four players
+        on a 32-card pack (7-8-9-10-J-Q-K-A, ace high), eight cards each, and
+        **no trump**.
+
+        **A game is twelve deals arranged as three wheels of four contracts.**
+        `roundNumber` is the wheel (1-3) and the dealer -- the *Bierkoenig* --
+        picks one of the four still unplayed **from that wheel only**;
+        `availableContracts` lists exactly those, and `availableContractNames`
+        gives the stable identifiers for i18n.
+
+        **Every score is a penalty and the lowest total wins.** `players[]`
+        carries `penalty` (the running total) and `dealPoints` (what the last
+        deal cost); `winners` names the seats currently on the fewest.
+
+        **Two of the twelve are not trick contracts.** Quadrature and Snack
+        are shed: `isShedding` is true, `playableIndices` follows the shed rule
+        rather than suit-following, and `canPass` says whether `pass` is legal
+        -- it is legal only when nothing can be played. Snack's layout is in
+        `tablePlaced` (per suit, the rank positions already placed, 0 = seven);
+        Quadrature's covered pile is in `stack`.
+
+        **The third wheel changes what you can see.** Under Open Trousers your
+        own hand comes back empty while the other seats' hands are populated;
+        under Good Hunting every hand is populated. `players[].cards` already
+        reflects this, so a client must not assume it only ever holds its own
+        hand.
+      operationId: quodlibetExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), contract (c), play (p), pass, nextdeal (nd), hint, log, quit (q)"
+                contract:
+                  type: integer
+                  description: >-
+                    Contract to play this deal, 0-11. Required for contract.
+                    Must be one of availableContracts.
+                cardIndex:
+                  type: integer
+                  description: Index of the card to play. Required for play.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0 = Easy, 1 = Normal, 2 = Hard.
+                    autoSelectContract:
+                      type: boolean
+                      description: >-
+                        Let the game pick each deal's contract instead of
+                        asking, for players who would rather not choose twelve
+                        times.
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              contract:
+                summary: Choose Minus for this deal
+                value:
+                  command: contract
+                  contract: 1
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at index 3
+                value:
+                  command: play
+                  cardIndex: 3
+                  sessionId: my-session-001
+              pass:
+                summary: Pass when nothing can be shed
+                value:
+                  command: pass
                   sessionId: my-session-001
       responses:
         '200':

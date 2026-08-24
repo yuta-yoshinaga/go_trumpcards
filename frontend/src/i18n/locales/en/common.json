@@ -170,6 +170,7 @@
     "kalooki": "Kalooki",
     "karnoffel": "Karnöffel",
     "unsunkaruta": "Unsun Karuta",
+    "quodlibet": "Quodlibet",
     "kemps": "Kemps",
     "kille": "Kille",
     "king": "King",
@@ -2544,7 +2545,19 @@
     "unsunkaruta.errNotLeader": "Only the player who led may declare.",
     "unsunkaruta.errCardRange": "That card number is out of range.",
     "unsunkaruta.hintRequested": "A hint is available.",
-    "unsunkaruta.noHint": "No hint available."
+    "unsunkaruta.noHint": "No hint available.",
+    "quodlibet.selectContract": "Choose a contract from this wheel.",
+    "quodlibet.playPhase": "Play a card.",
+    "quodlibet.shedPhase": "Play a card, or pass if you cannot.",
+    "quodlibet.dealEnd": "The deal is over.",
+    "quodlibet.result.draw": "Game over! The fewest penalty points are tied.",
+    "quodlibet.result.humanWin": "Game over! You finished on the fewest penalty points.",
+    "quodlibet.result.cpuWin": "Game over! A CPU finished on fewer penalty points.",
+    "quodlibet.errContractUnavailable": "That contract is not available this round: {{contract}}.",
+    "quodlibet.errCardRange": "That card number is out of range.",
+    "quodlibet.errCannotPass": "You have a playable card and cannot pass.",
+    "quodlibet.hintRequested": "A hint is available.",
+    "quodlibet.noHint": "No hint available."
   },
   "manual": {
     "ariaLabel": "Game Manual",

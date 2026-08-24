@@ -6932,6 +6932,25 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"unsunkaruta.helpSetDifficulty", "unsunkaruta.helpSetDeals"},
 		}),
+	BindCuiFor("quodlibet",
+		func() usecase.QuodlibetInteractorIF {
+			return usecase.NewQuodlibetInteractor(domain.NewDefaultQuodlibet(), new(presenter.QuodlibetCuiPresenter))
+		},
+		controller.NewQuodlibetCuiController,
+		CuiHelpSpec{
+			TitleKey: "quodlibet.helpTitle",
+			ExampleKeys: []string{
+				"quodlibet.helpExampleContract",
+				"quodlibet.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"quodlibet.helpContract", "quodlibet.helpPlay",
+				"quodlibet.helpPass", "quodlibet.helpNextDeal",
+				"quodlibet.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"quodlibet.helpSetDifficulty", "quodlibet.helpAuto"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

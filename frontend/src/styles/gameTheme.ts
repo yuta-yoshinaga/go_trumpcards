@@ -331,6 +331,7 @@ export type GameKey =
   | 'sixbidsolo'
   | 'karnoffel'
   | 'unsunkaruta'
+  | 'quodlibet'
   | 'literature'
   | 'guandan'
   | 'shengji'
@@ -941,6 +942,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   sixbidsolo: CASINO,
   karnoffel: GREEN,
   unsunkaruta: GREEN,
+  quodlibet: GREEN,
   literature: BLUE,
   guandan: GREEN,
   shengji: GREEN,

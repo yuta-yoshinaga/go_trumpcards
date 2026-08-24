@@ -43,6 +43,7 @@ import type {
   PreferenceResponse,
   PrimeroResponse,
   QuadrilleResponse,
+  QuodlibetResponse,
   SakuraResponse,
   SambaPlayerData,
   SambaResponse,
@@ -4492,4 +4493,90 @@ const baseUnsunKarutaState: UnsunKarutaResponse = {
  */
 export function makeUnsunKarutaState(overrides?: Partial<UnsunKarutaResponse>): UnsunKarutaResponse {
   return { ...baseUnsunKarutaState, ...overrides };
+}
+
+/** One 32-card Quodlibet card. */
+const quodCard = (design: 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND', value: number) => ({
+  design,
+  value,
+  color: design === 'HEART' || design === 'DIAMOND' ? 'red' : 'black',
+});
+
+/** A CPU seat; cards are hidden except in the third wheel. */
+const quodCpuSeat = (id: number, isDealer = false) => ({
+  id,
+  isHuman: false,
+  cardCount: 8,
+  cards: [],
+  trickCount: 0,
+  penalty: 0,
+  dealPoints: 0,
+  outRank: 0,
+  isDealer,
+});
+
+/**
+ * Base Quodlibet state used as the default for {@link makeQuodlibetState}.
+ * Defaults to the human dealing the first deal, so the contract choice is open.
+ */
+const baseQuodlibetState: QuodlibetResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 4,
+      cards: [quodCard('SPADE', 1), quodCard('SPADE', 9), quodCard('HEART', 13), quodCard('DIAMOND', 12)],
+      trickCount: 0,
+      penalty: 0,
+      dealPoints: 0,
+      outRank: 0,
+      isDealer: true,
+    },
+    quodCpuSeat(1),
+    quodCpuSeat(2),
+    quodCpuSeat(3),
+  ],
+  phase: 'selectContract',
+  dealNumber: 0,
+  totalDeals: 12,
+  roundNumber: 1,
+  dealerIdx: 0,
+  currentContract: -1,
+  currentContractName: 'unknown',
+  availableContracts: [0, 1, 2, 3],
+  availableContractNames: ['plus', 'minus', 'badNeighbour', 'alarich'],
+  isShedding: false,
+  trickNumber: 1,
+  trickCount: 8,
+  currentPlayerIdx: 1,
+  leadPlayerIdx: 1,
+  currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
+  playableIndices: [],
+  canPass: false,
+  tablePlaced: [[], [], [], []],
+  stack: [],
+  lastDeal: null,
+  dealHistory: [],
+  winners: [0, 1, 2, 3],
+  gameEndFlag: false,
+  isHumanTurn: true,
+  isContractPhase: true,
+  hint: null,
+  hintContract: -1,
+  config: { cpuDifficulty: 1, autoSelectContract: false },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link QuodlibetResponse} with sensible defaults (the human dealing
+ * the first deal, so the contract choice is open).
+ *
+ * @param overrides - Partial QuodlibetResponse fields to override.
+ * @returns A complete QuodlibetResponse suitable for use in tests.
+ */
+export function makeQuodlibetState(overrides?: Partial<QuodlibetResponse>): QuodlibetResponse {
+  return { ...baseQuodlibetState, ...overrides };
 }

@@ -1,0 +1,66 @@
+{
+  "title": "クオドリベット",
+  "phase": {
+    "selectContract": "種目選択",
+    "play": "プレイ",
+    "dealEnd": "ディール終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "autoSelectContract": "種目を自動で選ぶ",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "deal": "ディール {{n}}/{{total}}",
+  "wheel": "第 {{n}} の輪",
+  "contract": "種目: {{name}}",
+  "trick": "トリック {{n}}/{{total}}",
+  "contractName": {
+    "plus": "プラス",
+    "minus": "マイナス",
+    "badNeighbour": "悪い隣人",
+    "alarich": "アラリック",
+    "firstThreeAndLast": "1238",
+    "noReds": "赤なし",
+    "oberUnter": "オーバー／ウンター",
+    "bribe": "賄賂",
+    "open": "開いたズボン",
+    "hunt": "狩猟",
+    "quadrature": "四分",
+    "snack": "小食い",
+    "unknown": "-"
+  },
+  "currentTrick": "現在のトリック",
+  "shedArea": "場",
+  "shedEmpty": "まだ何も置かれていません。好きな札から始められます。",
+  "penaltyLegend": "罰点（少ないほうが勝ち）",
+  "penalty": "{{n}} 点",
+  "dealPoints": "{{n}} 点",
+  "dealerBadge": "親",
+  "chooseContract": "この輪の種目を選んでください",
+  "dealResult": "ディール結果（{{name}}）",
+  "winner": "罰点が最も少ないのは {{names}} です",
+  "playButton": "出す",
+  "passButton": "パス",
+  "nextDeal": "次のディール",
+  "restrictedTooltip": "いまは出せない札です。",
+  "hintAvailable": "ヒント",
+  "hint": {
+    "pick_contract": "この手札なら罰点が一番軽く済む種目です",
+    "avoid_penalty": "罰点になる札を引き受けずに済みます",
+    "shed_low": "端の札から出すと自分の連なりが途切れません",
+    "pass": "出せる札がありません",
+    "next_deal": "次のディールへ進んでください",
+    "none": "いまは勧める手がありません"
+  },
+  "tutorial": {
+    "info": "クオドリベットは 12 ディールを 3 つの「輪」に分け、輪ごとに 4 種目を 1 回ずつ打つオーストリアの複合ゲームです。親が選べるのは、その輪でまだ打たれていない種目だけです。",
+    "scores": "**点はすべて罰点で、最も少ない人が勝ちます。** 取るほど良い種目（プラス）と、取らないほど良い種目（マイナス・悪い隣人）が同じ卓に同居するので、いまどちらを打っているのかを必ず確かめてください。",
+    "playerHand": "あなたの手札です。出せる札だけがハイライトされます。第 3 の輪の「開いたズボン」では**自分の手札だけが伏せられ**、「狩猟」では全員のぶんが表になります。",
+    "playButton": "札を選んで「出す」。四分・小食いで出せる札が 1 枚も無いときだけ「パス」が出ます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}
