@@ -39,3 +39,42 @@ describe('formatSchafkopfState — the auction', () => {
     expect(formatSchafkopfState(makeSchafkopfState({ contract: 0 }))).toContain('contract: Rufspiel (called ace)');
   });
 });
+
+describe('formatSchafkopfState — the rest of the board', () => {
+  it('renders the trick, naming the human seat differently from a CPU', () => {
+    const out = formatSchafkopfState(
+      makeSchafkopfState({
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
+          { playerIdx: 1, card: { design: 'HEART', value: 13 } },
+        ],
+      }),
+    );
+    // 人間席と CPU 席で名前が変わることまで見る。
+    expect(out.split('\n').find((l) => l.startsWith('trick:'))).toBe('trick: あなた=♠A, CPU 1=♥K');
+  });
+
+  it('lists the callable suits by symbol during the call phase', () => {
+    const out = formatSchafkopfState(makeSchafkopfState({ phase: 1, callableSuits: [1, 3] }));
+    expect(out.split('\n').find((l) => l.startsWith('callable suits:'))).toBe('callable suits: ♠, ♥');
+  });
+
+  it('reports the round result only once the round is over', () => {
+    const over = formatSchafkopfState(
+      makeSchafkopfState({ phase: 4, roundPickerPoints: 71, roundMultiplier: 2, roundPickerWon: true }),
+    );
+    expect(over).toContain('round result: picker points=71 multiplier=x2 pickerWon=yes');
+    // まだプレイ中の盤で出すと、確定していない結果を確定として見せてしまう。
+    expect(formatSchafkopfState(makeSchafkopfState({ phase: 2 }))).not.toContain('round result:');
+  });
+
+  it('announces the winner when the game has ended', () => {
+    const out = formatSchafkopfState(
+      makeSchafkopfState({ phase: 5, gameEndFlag: true, winnerIdx: 0, message: 'ゲーム終了' }),
+    );
+    expect(out).toContain('ゲーム終了');
+    expect(out).toContain('Game Over! Winner:');
+    // 勝者が未確定 (-1) のうちは名乗らせない。
+    expect(formatSchafkopfState(makeSchafkopfState({ gameEndFlag: true, winnerIdx: -1 }))).not.toContain('Game Over!');
+  });
+});
