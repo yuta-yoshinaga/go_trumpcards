@@ -339,4 +339,12 @@ func init() {
 			return usecase.RestoreSpeculationInteractor(data, new(presenter.SpeculationWebPresenter))
 		},
 		controller.NewSpeculationWebControllerWithProvider)
+	games.RegisterKVGame("gleek", games.CategoryExtra,
+		func() usecase.GleekInteractorIF {
+			return usecase.NewGleekInteractor(domain.NewDefaultGleek(), new(presenter.GleekWebPresenter))
+		},
+		func(data []byte) (usecase.GleekInteractorIF, error) {
+			return usecase.RestoreGleekInteractor(data, new(presenter.GleekWebPresenter))
+		},
+		controller.NewGleekWebControllerWithProvider)
 }

@@ -1,0 +1,83 @@
+{
+  "title": "Gleek",
+  "phase": {
+    "bid": "Bidding",
+    "discard": "Discard",
+    "play": "Play",
+    "trickEnd": "Trick complete",
+    "roundEnd": "Deal over",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "targetRounds": "Deals per match",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Deal {{n}}",
+  "trick": "Trick {{n}}",
+  "trump": "Trump: {{suit}}",
+  "stockUnsold": "Stock: still being bid for (highest {{bid}})",
+  "stockSold": "Stock: bought by {{name}} for {{bid}}",
+  "ruffLine": "Ruff: {{name}} wins it with {{total}} in {{suit}}",
+  "meldGleek": "Gleek: {{name}} shows three {{rank}} ({{value}} from each opponent)",
+  "meldMournival": "Mournival: {{name}} shows four {{rank}} ({{value}} from each opponent)",
+  "rankAce": "aces",
+  "rankKing": "kings",
+  "rankQueen": "queens",
+  "rankJack": "jacks",
+  "suitNone": "-",
+  "suitSpade": "Spades",
+  "suitClub": "Clubs",
+  "suitHeart": "Hearts",
+  "suitDiamond": "Diamonds",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "points": "{{points}} points",
+  "currentTrick": "Current trick",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "buyerBadge": "Buyer",
+  "score": "score: {{score}}",
+  "bidPhase": "Bidding — highest {{bid}}. Raise or drop out.",
+  "discardPhase": "You have taken the stock — choose {{count}} cards to throw ({{selected}} selected)",
+  "raiseTo": "Raise to {{amount}}",
+  "dropOut": "Drop out",
+  "discardButton": "Throw {{count}} cards",
+  "playButton": "Play",
+  "nextTrick": "Next trick",
+  "nextRound": "Next deal",
+  "playPhase": {
+    "lead": "Your turn — choose a card to lead.",
+    "follow": "Your turn — follow the led suit."
+  },
+  "trickEnd": "Trick complete — advance to the next one.",
+  "roundEnd": "Deal over — advance to the next deal.",
+  "result": {
+    "humanWin": "Game over! You win!",
+    "cpuWin": "Game over! Player {{player}} wins!"
+  },
+  "roundResult": {
+    "title": "Deal result",
+    "par": "Points in this deal: {{total}}  par: {{par}} (each seat is settled against the difference)"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "bid_raise": "this hand gains enough from the stock to be worth the raise",
+    "bid_pass": "the price has passed what this hand is worth",
+    "discard_stock": "keep the trumps and your longest suit, throw the low cards elsewhere",
+    "lead_high": "lead high and take control",
+    "follow_win": "you can win this trick, so take it",
+    "follow_duck": "you cannot win it, so play cheap",
+    "discard_honour": "do not hand an honour to a trick you cannot win"
+  },
+  "tutorial": {
+    "trickDisplay": "The current trick. Follow suit if you can; trumps win. Each trick is worth 3 plus the value of any trump honours in it: Tib (A) 15, Tom (J) 9, Tumbler (6) 6, Towser (5) 5, Tiddy (4) 4, and the trump king and queen 3 each.",
+    "playerHand": "Your hand. Click a legal card to select it. In the discard phase you pick all seven cards first, then confirm.",
+    "playButton": "Play the selected card with this button. In the auction you either raise or drop out.",
+    "info": "Gleek is a three-player game on a 44-card pack (a standard deck minus the 2s and 3s) and **every one of its four stages moves points inside a single deal**. (1) The stock is auctioned: the eldest hand must open at 12 and may not pass, raises go up in twos, and the buyer pays half the bid to each opponent before taking the seven stock cards other than the turn-up and throwing seven of their own. (2) The ruff: the best single-suit total (A=11, courts=10, numerals at face value) collects 2 from each opponent, and a mournival of aces beats any ruff whatsoever. (3) The melds: three or four of a rank above ten, paid by each opponent — aces 4/8, kings 3/6, queens 2/4, jacks 1/2. (4) Twelve tricks, worth 3 apiece plus trump honours. The par each seat settles against is **the points this deal actually held** divided by three — the turn-up and the buyer's discards never reach the table, so that can be less than the 81 a deal could hold.",
+    "resetButton": "Start a fresh game with the reset button."
+  }
+}

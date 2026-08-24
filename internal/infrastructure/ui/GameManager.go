@@ -6830,6 +6830,30 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"germansolo.helpSetDifficulty"},
 		}),
+	BindCuiFor("gleek",
+		func() usecase.GleekInteractorIF {
+			return usecase.NewGleekInteractor(domain.NewDefaultGleek(), new(presenter.GleekCuiPresenter))
+		},
+		controller.NewGleekCuiController,
+		CuiHelpSpec{
+			TitleKey: "gleek.helpTitle",
+			// **例文はフェーズ順。** 競り → 捨て札 → プレイの順でないと、
+			// そのまま打つと「フェーズが違う」で弾かれる。
+			ExampleKeys: []string{
+				"gleek.helpExampleBid",
+				"gleek.helpExampleDiscard",
+				"gleek.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"gleek.helpBid",
+				"gleek.helpDiscard",
+				"gleek.helpPlay",
+				"gleek.helpNext",
+				"gleek.helpNextRound", "gleek.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"gleek.helpSetDifficulty"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

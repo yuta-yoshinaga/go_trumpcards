@@ -514,6 +514,20 @@ export const GermanSoloPhase = {
   GAME_END: 5,
 } as const;
 
+/**
+ * Gleek phase constants (sync: internal/domain/Gleek.go).
+ *
+ * DISCARD belongs to the buyer alone — every other seat waits through it.
+ */
+export const GleekPhase = {
+  BID: 0,
+  DISCARD: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
 /** Ombre (Hombre) phase constants (sync: internal/domain/Ombre.go). */
 export const OmbrePhase = {
   BID: 0,
