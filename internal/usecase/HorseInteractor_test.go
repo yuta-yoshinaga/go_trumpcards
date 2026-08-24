@@ -180,3 +180,52 @@ func TestHorseInteractor_RestoreRejectsGarbage(t *testing.T) {
 	_, err := usecase.RestoreHorseInteractor([]byte(`{`), &horsePassThrough{})
 	assert.Error(t, err)
 }
+
+// **引き直しもインタラクター経由で打てる。** ここが繋がっていないと、
+// 2-7 トリプルドローの番に CUI からも Web からも送る先が無い。
+func TestHorseInteractor_Exchange(t *testing.T) {
+	g := domain.NewDefaultEightGame()
+	hi := usecase.NewHorseInteractor(g, &horsePassThrough{})
+	require.Equal(t, "ok", hi.Reset())
+	g.SetDisciplineForTest(domain.HorseTripleDraw)
+
+	// 引き直しの番まで進める。ベットは全部コール (できなければチェック)。
+	for range 200 {
+		if g.IsDrawPhase() {
+			break
+		}
+		if !g.IsHumanTurn() {
+			break
+		}
+		if out := hi.Action(domain.HoldemActionCall, 0, 0); out != "ok" {
+			require.Equal(t, "ok", hi.Action(domain.HoldemActionCheck, 0, 0))
+		}
+	}
+	require.True(t, g.IsDrawPhase(), "引き直しの番が来なかった")
+
+	before := len(g.GetSeatCards(g.GetHumanSeat()))
+	assert.Equal(t, "ok", hi.Exchange([]int{0, 1}))
+	assert.Len(t, g.GetSeatCards(g.GetHumanSeat()), before, "引き直しで手札の枚数が変わった")
+}
+
+// **ドローの無い種目では断る。** 受け付けてしまうと、ベットの最中に手札が
+// 入れ替わる。
+func TestHorseInteractor_ExchangeRefusedOutsideADraw(t *testing.T) {
+	g := domain.NewDefaultEightGame()
+	hi := usecase.NewHorseInteractor(g, &horsePassThrough{})
+	require.Equal(t, "ok", hi.Reset())
+	require.Equal(t, domain.HorseHoldem, g.GetDiscipline())
+	assert.Equal(t, "err:horse.errNoDraw", hi.Exchange([]int{0}))
+}
+
+// 終わったマッチには何も渡さない (guardGameEnd の分岐)。
+func TestHorseInteractor_ExchangeAfterTheMatchEnds(t *testing.T) {
+	gm := new(interfaces.MockHorseGame)
+	hp := new(presenter.MockHorsePresenter)
+	hp.On("Output", mock.Anything, mock.Anything).Return(horseMockOutput)
+	gm.On("GetGameEndFlag").Return(true)
+	hi := usecase.NewHorseInteractor(gm, hp)
+
+	assert.Equal(t, horseMockOutput, hi.Exchange(nil))
+	gm.AssertNotCalled(t, "PlayerExchange", mock.Anything)
+}

@@ -45,29 +45,40 @@ func eightGamePlayHand(t *testing.T, g *Horse) int {
 	return steps
 }
 
-// **8 種目すべてを回る。** ローテーションを 1 種目でも取りこぼすと、
-// 「8 種目のミックス」を名乗る根拠がその種目には無い。
-func TestEightGame_RotatesThroughEveryDiscipline(t *testing.T) {
+// **8 種目すべてが実際に打てる。** 並びに載っているだけで卓が作れない種目が
+// あると、そのハンドでマッチが理由も出さずに終わる。
+//
+// **自然なローテーションを 8 ハンド待たない。** 席が飛べば `NextHand` が
+// そこでマッチを畳むので、「8 連続で誰も飛ばない配り」を待つ試験は配りに
+// 依存して落ちる (実測: 同じパッケージにテストを足しただけで発現した)。
+// 種目は直接指定して 1 ハンドずつ打ち切る。
+func TestEightGame_EveryDisciplineCanBePlayed(t *testing.T) {
 	t.Parallel()
-	seen := map[HorseDiscipline]bool{}
-	for range 25 {
+	for _, d := range HorseRotation(HorseVariantEightGame) {
 		g := NewEightGame(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
 		g.Reset()
-		for range len(HorseRotation(HorseVariantEightGame)) {
-			if g.GetGameEndFlag() {
-				break
-			}
-			seen[g.GetDiscipline()] = true
-			require.Positive(t, eightGamePlayHand(t, g), "ハンドを打つ前に終わっていた")
-			if g.GetGameEndFlag() {
-				break
-			}
-			require.NoError(t, g.NextHand())
-		}
+		g.discipline = d
+		g.startHand()
+		require.Equal(t, HorsePhaseHand, g.GetPhase(), "%s の卓が作れていない", HorseDisciplineName(d))
+		require.Positive(t, eightGamePlayHand(t, g), "%s のハンドが打てない", HorseDisciplineName(d))
+		assert.Equal(t, d, g.GetDiscipline(), "ハンドの途中で種目が変わった")
 	}
-	for _, d := range HorseRotation(HorseVariantEightGame) {
-		assert.True(t, seen[d], "%s のハンドを 1 度も打っていない", HorseDisciplineName(d))
+}
+
+// **並びの順に進む。** ローテーションが 1 つでもずれると、8 種目のうちどれかが
+// 二度回るか一度も来ない。
+func TestEightGame_AdvancesInRotationOrder(t *testing.T) {
+	t.Parallel()
+	rotation := HorseRotation(HorseVariantEightGame)
+	g := NewEightGame(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+	g.Reset()
+	got := make([]HorseDiscipline, 0, len(rotation)+1)
+	for range len(rotation) + 1 {
+		got = append(got, g.GetDiscipline())
+		g.discipline = g.nextDiscipline()
 	}
+	assert.Equal(t, append(append([]HorseDiscipline(nil), rotation...), rotation[0]), got,
+		"一周して先頭へ戻るまでが並び")
 }
 
 // **チップは種目をまたいでも湧かないし消えない。** 追加の 3 種目は卓の作り方が
@@ -303,4 +314,87 @@ func TestHorse_AShowdownLossDoesNotFreezeTheMatch(t *testing.T) {
 		}
 	}
 	assert.Zero(t, froze, "コールし続けただけで盤面が止まった")
+}
+
+// **既定の卓は 8 種目の 4 人卓。** 登録はこの入口から作るので、ここが
+// H.O.R.S.E. を返していると、ゲーム一覧に並ぶのは名前だけ違う同じ卓になる。
+func TestEightGame_DefaultTableIsAFourHandedEightGame(t *testing.T) {
+	t.Parallel()
+	g := NewDefaultEightGame()
+	assert.Equal(t, HorseVariantEightGame, g.GetVariant())
+	assert.Equal(t, HorseEightGameSeatSizes[0], g.GetConfig().Seats)
+	assert.Len(t, g.GetRotation(), 8)
+	g.Reset()
+	assert.Equal(t, HorseHoldem, g.GetDiscipline(), "並びの先頭はリミットホールデム")
+}
+
+// **ドロー系の卓でも画面の数字は答えられる。** ここが 0 のままだと、
+// 2-7 の番だけコール額も残高も出ない画面になる。
+func TestEightGame_DrawTableAnswersTheBoardQuestions(t *testing.T) {
+	t.Parallel()
+	g := NewDefaultEightGame()
+	g.Reset()
+	g.discipline = HorseTripleDraw
+	g.startHand()
+
+	human := g.GetHumanSeat()
+	assert.Empty(t, g.GetCommunityCards(), "ドロー系に共有札は無い")
+	assert.GreaterOrEqual(t, g.GetToCall(), 0)
+	assert.GreaterOrEqual(t, g.GetMinRaise(), 0)
+	assert.Positive(t, g.GetSeatLiveChips(human), "打っている最中の残高が出ない")
+	assert.Positive(t, g.GetPot(), "アンティを置いた卓のポットが 0")
+
+	// 卓の外の席は nil。**範囲外を読むと 1 手で落ちる。**
+	table, ok := g.table.(*DeuceToSeven)
+	require.True(t, ok)
+	assert.Nil(t, horseDrawPlayer(table, -1))
+	assert.Nil(t, horseDrawPlayer(table, g.GetSeatCount()))
+	assert.NotNil(t, horseDrawPlayer(table, 0))
+}
+
+// 引き直しも終わったマッチや打てない局面では断る。
+func TestEightGame_ExchangeRefusesOutsideAHand(t *testing.T) {
+	t.Parallel()
+	g := NewDefaultEightGame()
+	g.Reset()
+	g.discipline = HorseTripleDraw
+	g.startHand()
+
+	g.phase = HorsePhaseHandEnd
+	assert.ErrorIs(t, g.PlayerExchange(nil), errHorseWrongPhase)
+
+	g.gameEndFlag = true
+	assert.ErrorIs(t, g.PlayerExchange(nil), errHorseFinished)
+	assert.False(t, g.IsDrawPhase(), "終わったマッチが引き直しを名乗っている")
+	assert.Zero(t, g.GetDrawIndex())
+}
+
+// **知らないバリアントは H.O.R.S.E. として扱う。** ゼロ値の卓を組み立てる経路
+// (復元の途中など) でローテーションの参照が落ちると、次の 1 手で index out of
+// range になる。
+func TestHorse_RotationHelpersRejectAnUnknownVariant(t *testing.T) {
+	t.Parallel()
+	assert.Nil(t, HorseRotation(HorseVariant(-1)))
+	assert.Nil(t, HorseRotation(HorseVariant(99)))
+	assert.Equal(t, -1, HorseRotationIndex(HorseVariant(99), HorseHoldem))
+	assert.Equal(t, -1, HorseRotationIndex(HorseVariantHorse, HorseTripleDraw),
+		"H.O.R.S.E. の並びに 2-7 は無い")
+
+	var zero Horse
+	zero.config.Variant = HorseVariant(42)
+	assert.Equal(t, HorseVariantHorse, zero.rotationVariant())
+	assert.Equal(t, HorseHoldem, zero.rotationAt(0))
+	assert.Equal(t, HorseHoldem, zero.rotationAt(HorseDisciplineCount), "一周して先頭へ戻る")
+	assert.Equal(t, HorseStudHiLo, zero.rotationAt(-1), "負の位置も並びの中に収める")
+}
+
+// **並びの外にいる卓は先頭へ戻す。** 保存の書き換えや将来の種目追加で、
+// いまのローテーションに無い種目を指した卓が生まれうる。そこで詰まると
+// 「次のハンド」が永遠に同じ種目を配り直す。
+func TestHorse_AnOutOfRotationDisciplineFallsBackToTheStart(t *testing.T) {
+	t.Parallel()
+	g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+	g.Reset()
+	g.discipline = HorseTripleDraw // H.O.R.S.E. の並びには無い
+	assert.Equal(t, HorseHoldem, g.nextDiscipline())
 }

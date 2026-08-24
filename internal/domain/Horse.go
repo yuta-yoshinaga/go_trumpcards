@@ -405,7 +405,11 @@ func (g *Horse) rotationVariant() HorseVariant {
 // 先頭 5 つだけ ── `(d+1) % 種目数` で進めると、バリアントごとの並びと
 // 食い違う。
 func (g *Horse) nextDiscipline() HorseDiscipline {
-	return (g.discipline + 1) % HorseDisciplineCount
+	idx := HorseRotationIndex(g.rotationVariant(), g.discipline)
+	if idx < 0 {
+		return g.rotationAt(0)
+	}
+	return g.rotationAt(idx + 1)
 }
 
 // --- 進行 ---
