@@ -537,6 +537,13 @@ func TestPerseverance_Undo(t *testing.T) {
 func TestPerseverance_UndoToEscape(t *testing.T) {
 	t.Run("not stalemate", func(t *testing.T) {
 		bd := setupPlayingPerseverance()
+		// **膠着でないことを配りに任せない。** Perseverance は「同スート降順」
+		// かつ「空列は埋めない」というきつい規則なので、配った直後がそのまま
+		// 膠着になる手が実際にある ── その配りを引くと、「膠着でなければ 0」を
+		// 確かめるはずのこの検査が -1 を見て落ちる。isStalemate は
+		// setupPlayingPerseverance が Reset() を呼ぶかぎり配り次第なので、
+		// 前提のほうを固定する (対になる下の副検査が true を置くのと同じ形)。
+		bd.SetIsStalemate(false)
 		assert.Equal(t, 0, bd.UndoToEscape())
 	})
 
