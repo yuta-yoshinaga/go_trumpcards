@@ -1872,15 +1872,22 @@ func (g *GermanSolo) UnmarshalJSON(data []byte) error {
 		!germanSoloInRangeOrUnset(j.LastTrickWinner) || !germanSoloInRangeOrUnset(j.WinnerPlayer) {
 		return errGermanSoloInvalidIndex
 	}
-	// フェーズ依存の厳格化: play 以降は germanSolo・lead・trump が確定していなければ
-	// 後続処理で g.players[-1] / g.trumpSuit を参照して panic するため確定を要求する。
-	if j.Phase >= GermanSoloPhasePlay {
-		if !germanSoloInRange(j.DeclarerIdx) || !germanSoloInRange(j.LeadPlayerIdx) {
+	// フェーズ依存の厳格化。
+	//
+	// **エース呼び以降は落札者と切り札が確定している。** ここを通すと、落札者が
+	// -1 のままエース呼びフェーズに座った盤が復元でき、DeclareAce は「落札者だけです」で
+	// 弾かれ、CpuDeclareAce は何もせず、**誰も抜け出せないフェーズで止まる**。
+	if j.Phase >= GermanSoloPhaseAceCall {
+		if !germanSoloInRange(j.DeclarerIdx) {
 			return errGermanSoloInvalidIndex
 		}
 		if !germanSoloValidSuit(j.TrumpSuit) {
 			return errGermanSoloInvalidTrump
 		}
+	}
+	// プレイ以降はリード席も確定していないと g.players[-1] を参照して panic する。
+	if j.Phase >= GermanSoloPhasePlay && !germanSoloInRange(j.LeadPlayerIdx) {
+		return errGermanSoloInvalidIndex
 	}
 	if int(j.Phase) < GermanSoloPhaseMin || int(j.Phase) > GermanSoloPhaseMax {
 		return errGermanSoloInvalidPhase

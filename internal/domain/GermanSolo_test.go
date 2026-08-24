@@ -619,6 +619,33 @@ func TestGermanSolo_JSONRejectsOutOfRangeValues(t *testing.T) {
 	}
 }
 
+// **エース呼び以降は落札者と切り札が確定している。** 落札者が -1 のまま
+// エース呼びフェーズに座った盤を通すと、DeclareAce は「落札者だけです」で弾かれ、
+// CpuDeclareAce は何もせず、誰も抜け出せないフェーズで止まる。
+func TestGermanSolo_JSONRejectsAnAceCallWithNoDeclarer(t *testing.T) {
+	g := newTestGermanSolo()
+	g.SetDeclarerIdx(0)
+	g.SetTrumpSuit(domain.CardDesignHeart)
+	g.SetWinningBid(domain.GermanSoloBidFrage)
+	g.SetPhase(domain.GermanSoloPhaseAceCall)
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(data, new(domain.GermanSolo)), "落札者が居る盤は通ること")
+
+	var raw map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &raw))
+	for field, value := range map[string]string{"om": "-1", "ts": "-1"} {
+		mutated := map[string]json.RawMessage{}
+		for k, v := range raw {
+			mutated[k] = v
+		}
+		mutated[field] = json.RawMessage(value)
+		body, err := json.Marshal(mutated)
+		require.NoError(t, err)
+		require.Error(t, json.Unmarshal(body, new(domain.GermanSolo)), "field %s", field)
+	}
+}
+
 // **単独プレイに味方はいない。** 復元時に整合を取らないと、フィールドの
 // 欠けた JSON が席 0 を味方として数え、勝敗の集計が静かに変わる。
 func TestGermanSolo_JSONNormalisesAnInconsistentAceCall(t *testing.T) {
