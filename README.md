@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した350種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した351種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -99,6 +99,7 @@ Go + Clean Architecture で実装した350種類のトランプゲーム。CLI �
 | レヴェルシ (Reversis) | `reversis` | [CUI](docs/manual/cui/reversis.md) / [Web](docs/manual/web/reversis.md) |
 | ラムス (Rams) | `rams` | [CUI](docs/manual/cui/rams.md) / [Web](docs/manual/web/rams.md) |
 | フレペ (Julepe) | `julepe` | [CUI](docs/manual/cui/julepe.md) / [Web](docs/manual/web/julepe.md) |
+| コワンシュ (Coinche) | `coinche` | [CUI](docs/manual/cui/coinche.md) / [Web](docs/manual/web/coinche.md) |
 | シャーフコップ (Schafkopf) | `schafkopf` | [CUI](docs/manual/cui/schafkopf.md) / [Web](docs/manual/web/schafkopf.md) |
 | タラビッシュ (Tarabish) | `tarabish` | [CUI](docs/manual/cui/tarabish.md) / [Web](docs/manual/web/tarabish.md) |
 | バルート (Baloot) | `baloot` | [CUI](docs/manual/cui/baloot.md) / [Web](docs/manual/web/baloot.md) |

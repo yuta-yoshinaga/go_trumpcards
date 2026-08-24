@@ -64,6 +64,7 @@ import type {
   CinchResponse,
   CincinnatiResponse,
   ClockSolitaireResponse,
+  CoincheResponse,
   ColoradoResponse,
   ColourWhistResponse,
   CongressResponse,
@@ -403,6 +404,7 @@ import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getCincinnatiHint } from '../utils/hints/cincinnatiHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
+import { getCoincheHint } from '../utils/hints/coincheHint';
 import { getColoradoHint } from '../utils/hints/coloradoHint';
 import { getColourwhistHint } from '../utils/hints/colourwhistHint';
 import { getCongressHint } from '../utils/hints/congressHint';
@@ -731,6 +733,7 @@ export const hintFactories = {
   escoba: (s) => getEscobaHint(s as EscobaResponse),
   euchre: (s) => getEuchreHint(s as EuchreResponse),
   belote: (s) => getBeloteHint(s as BeloteResponse),
+  coinche: (s) => getCoincheHint(s as CoincheResponse),
   jass: (s) => getJassHint(s as JassResponse),
   bauernschnapsen: (s) => getBauernschnapsenHint(s as BauernschnapsenResponse),
   gaigel: (s) => getGaigelHint(s as GaigelResponse),

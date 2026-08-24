@@ -476,6 +476,8 @@ tags:
     description: Mississippi Stud (ミシシッピ・スタッド) game - single-player vs paytable casino poker; 2 hole cards plus 3 community cards revealed across 3rd / 4th / 5th Street, with 1x / 2x / 3x bet or fold at each street; winning hands paid per fixed paytable (pair of Jacks+ = 1:1, pair of 6s-10s = push)
   - name: belote
     description: Belote (ベロート) game - French 4-player partnership trick-taking on a 32-card deck (7-A × 4 suits); two-round bidding (take face-up suit / call other suit), strict obligation to follow / over-trump, last-trick bonus (Dix de Der +10) and K+Q-of-trumps bonus (Belote/Rebelote +20)
+  - name: coinche
+    description: Coinche (コワンシュ) game - the bidding form of Belote, where all 32 cards are dealt and the table then runs a contract auction (80-180 by tens, or Capot at 250) followed by coinche/surcoinche doubling; the round is judged against the declared target rather than against the opponents
   - name: spiderette
     description: Spiderette (スパイダレット) game - single-player solitaire combining Klondike's 7-column staircase deal with Spider's same-suit descending move rules on a single 52-card deck; clear all 4 suits to win
   - name: mighty
@@ -22745,6 +22747,104 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BeloteResponse'
+
+  /coinche/exec:
+    post:
+      tags:
+        - coinche
+      summary: Execute a Coinche game command
+      description: |
+        Send a command to advance the Coinche (コワンシュ) session identified
+        by `sessionId`. Coinche is the bidding form of French Belote: four
+        players in fixed partnerships on the 32-card deck, **all 32 cards
+        dealt out** (eight each, no turn-up and no stock), the human is
+        player 0 partnered with player 2.
+
+        **The auction is the difference from `belote`.** Each seat in turn
+        passes or names a target together with a trump suit; a bid must
+        strictly exceed the standing one, and the response carries
+        `biddablePoints` — exactly what this seat may still bid. The auction
+        closes after three consecutive passes following a bid. If nobody
+        bids, the seat left of the dealer takes the minimum contract rather
+        than the hand being redealt.
+
+        Then the doubling the game is named for: the defenders may `coinche`
+        (×2) and the declarers answer with `surcoinche` (×4).
+
+        **The contract, not the opponents, decides the round.** Taking more
+        card points than the other side is worth nothing if the declared
+        target was missed by one. A made contract scores
+        (contract + points taken) × multiplier; a failed one — *dedans* —
+        hands the defenders (162 + contract) × multiplier and the declarers
+        nothing. Belote/Rebelote (K+Q of trumps, +20) stays with whoever
+        declared it either way.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Contract auction (points + trump suit) |
+        | Double    | `1`   | coinche / surcoinche, or move on |
+        | Play      | `2`   | Trick play (follow-suit + obligation à couper / monter) |
+        | TrickEnd  | `3`   | Trick complete, advance with `next` |
+        | RoundEnd  | `4`   | 8 tricks complete, score and advance with `nextround` |
+        | GameEnd   | `5`   | Target score reached |
+
+        | Command      | Aliases | Description |
+        |--------------|---------|-------------|
+        | `reset`      | `r`     | Start / restart a game |
+        | `bid`        | `b`     | Bid `points` in `suit` |
+        | `pass`       | `pa`    | Pass in the auction |
+        | `coinche`    | `co`    | Defenders double the contract (×2) |
+        | `surcoinche` | `su`    | Declarers redouble (×4) |
+        | `decline`    | `ok`    | Move on without doubling |
+        | `play`       | `p`     | Play card by `cardIndex` |
+        | `next`       | `n`     | Advance to next trick |
+        | `nextround`  | `nr`    | Score round and start the next |
+        | `hint`       | `h`     | Suggest an action / card |
+        | `log`        | `l`     | View action log |
+      operationId: coincheExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoincheRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 110 in clubs
+                value:
+                  command: bid
+                  points: 110
+                  suit: 2
+                  sessionId: my-session-001
+              coinche:
+                summary: Double the opponents' contract
+                value:
+                  command: coinche
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at index 0
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoincheResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoincheResponse'
 
   /spiderette/exec:
     post:
@@ -58988,6 +59088,218 @@ components:
           type: string
           description: Client-generated session identifier (max 256 characters)
           example: my-session-001
+
+    CoincheRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bid, b, pass, pa, coinche, co, surcoinche, su, decline, ok, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: bid
+        sessionId:
+          type: string
+        points:
+          type: integer
+          description: "Contract target: 80-180 in tens, or 250 for Capot (all eight tricks). Required for `bid`."
+          enum: [80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 250]
+          example: 110
+        suit:
+          type: integer
+          description: "Trump suit for the bid (1=♠, 2=♣, 3=♥, 4=♦). Required for `bid`."
+          enum: [1, 2, 3, 4]
+          example: 2
+        cardIndex:
+          type: integer
+          description: Index into your hand. Required for `play`.
+          minimum: 0
+          example: 0
+        config:
+          $ref: '#/components/schemas/CoincheConfig'
+
+    CoincheConfig:
+      type: object
+      description: Coinche game configuration
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: 'CPU difficulty: 0=Easy, 1=Normal, 2=Hard'
+          enum: [0, 1, 2]
+          example: 1
+        targetScore:
+          type: integer
+          description: Score required to win the game (default 1000)
+          minimum: 1
+          example: 1000
+        dixDeDer:
+          type: integer
+          description: Bonus points awarded to the winner of the last trick (default 10)
+          minimum: 0
+          example: 10
+        enableBeloteRebelote:
+          type: boolean
+          description: Enable +20 bonus for K+Q of trumps in one hand
+          example: true
+
+    CoinchePlayer:
+      type: object
+      description: One Coinche player's public state
+      required:
+        - id
+        - isHuman
+        - cardCount
+        - cards
+        - team
+        - trickCount
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        team:
+          type: integer
+          enum: [0, 1]
+        trickCount:
+          type: integer
+
+    CoincheTrickCard:
+      type: object
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+        card:
+          $ref: '#/components/schemas/Card'
+
+    CoincheHint:
+      type: object
+      required:
+        - reason
+      properties:
+        cardIndex:
+          type: integer
+        bid:
+          type: integer
+          description: Suggested contract target; absent when passing is recommended.
+        suit:
+          type: integer
+          description: Suggested trump suit, paired with `bid`.
+        reason:
+          type: string
+
+    CoincheResponse:
+      type: object
+      description: Current state of the Coinche game
+      required:
+        - players
+        - phase
+        - roundNumber
+        - trickNumber
+        - currentPlayerIdx
+        - bidPlayerIdx
+        - dealerIdx
+        - trumpSuit
+        - contractPoints
+        - multiplier
+        - double
+        - biddablePoints
+        - makerTeam
+        - makerPlayerIdx
+        - currentTrick
+        - teamScores
+        - roundPoints
+        - roundBeloteBonus
+        - gameEndFlag
+        - winnerTeam
+        - leadPlayerIdx
+        - message
+        - config
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoinchePlayer'
+        phase:
+          type: integer
+          description: 'Game phase: 0=Bid, 1=Double, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd'
+          enum: [0, 1, 2, 3, 4, 5]
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+          enum: [0, 1, 2, 3, 4]
+        contractPoints:
+          type: integer
+          description: The contract that won the auction; 0 until it settles.
+        multiplier:
+          type: integer
+          description: "Settlement multiplier: 1 normally, 2 after a coinche, 4 after a surcoinche."
+          enum: [1, 2, 4]
+        double:
+          type: integer
+          description: '0=none, 1=coinche, 2=surcoinche'
+          enum: [0, 1, 2]
+        biddablePoints:
+          type: array
+          items:
+            type: integer
+          description: Contracts this seat may still bid — those above the standing bid. Empty once the auction has closed.
+        makerTeam:
+          type: integer
+        makerPlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoincheTrickCard'
+        teamScores:
+          type: array
+          items:
+            type: integer
+        roundPoints:
+          type: array
+          items:
+            type: integer
+        roundBeloteBonus:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        hint:
+          $ref: '#/components/schemas/CoincheHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          $ref: '#/components/schemas/CoincheConfig'
 
     BeloteConfig:
       type: object

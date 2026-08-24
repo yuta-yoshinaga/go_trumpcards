@@ -861,6 +861,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 3, 4, 2], skill: [3, 4, 4, 2], social: [1, 3, 5, 3, 4], theme: [2, 5, 1, 1, 2, 3] },
       },
       {
+        path: '/coinche',
+        labelKey: 'nav.coinche',
+        icon: '🇫🇷',
+        page: 'Coinche',
+        profile: { mood: [2, 4, 4, 2], skill: [4, 5, 3, 2], social: [1, 3, 5, 3, 4], theme: [2, 5, 1, 1, 2, 3] },
+      },
+      {
         path: '/belote',
         labelKey: 'nav.belote',
         icon: '🇫🇷',

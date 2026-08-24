@@ -8,6 +8,7 @@ import type {
   CallBreakResponse,
   CegoResponse,
   CinchResponse,
+  CoincheResponse,
   CourtPieceResponse,
   DoppelkopfResponse,
   EcarteResponse,
@@ -594,6 +595,59 @@ const baseMadrassoState: MadrassoResponse = {
  */
 export function makeMadrassoState(overrides?: Partial<MadrassoResponse>): MadrassoResponse {
   return { ...baseMadrassoState, ...overrides };
+}
+
+/** Base Coinche state used as the default for {@link makeCoincheState}. Defaults to the auction. */
+const baseCoincheState: CoincheResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 8,
+      cards: [
+        { design: 'SPADE' as const, value: 11 },
+        { design: 'HEART' as const, value: 10 },
+      ],
+      team: 0,
+      trickCount: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 8, cards: [], team: 1, trickCount: 0 },
+    { id: 2, isHuman: false, cardCount: 8, cards: [], team: 0, trickCount: 0 },
+    { id: 3, isHuman: false, cardCount: 8, cards: [], team: 1, trickCount: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 0,
+  currentPlayerIdx: 0,
+  bidPlayerIdx: 0,
+  dealerIdx: 3,
+  trumpSuit: 0,
+  contractPoints: 0,
+  multiplier: 1,
+  double: 0,
+  biddablePoints: [80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 250],
+  makerTeam: 0,
+  makerPlayerIdx: -1,
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundPoints: [0, 0],
+  roundBeloteBonus: [0, 0],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  leadPlayerIdx: 0,
+  message: '',
+  config: { cpuDifficulty: 1, targetScore: 1000, dixDeDer: 10, enableBeloteRebelote: true },
+};
+
+/**
+ * Creates a {@link CoincheResponse} with sensible defaults (the human on the
+ * opening bid turn). Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial CoincheResponse fields to override.
+ * @returns A complete CoincheResponse suitable for use in tests.
+ */
+export function makeCoincheState(overrides?: Partial<CoincheResponse>): CoincheResponse {
+  return { ...baseCoincheState, ...overrides };
 }
 
 /** Base Schafkopf state used as the default for {@link makeSchafkopfState}. Defaults to a human Play turn. */
