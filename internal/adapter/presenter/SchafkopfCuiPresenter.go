@@ -21,6 +21,10 @@ func schafkopfSuitLabel(suit int) string {
 		return "♣"
 	case domain.CardDesignHeart:
 		return "♥"
+	case domain.CardDesignDiamond:
+		// **♦ を落とさない。** Rufspiel の切り札は ♥ なので ♦ は呼べる
+		// フェイルスートであり、Solo は 4 スートのどれでも指名できる。
+		return "♦"
 	default:
 		return "-"
 	}

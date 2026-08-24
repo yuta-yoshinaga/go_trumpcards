@@ -68,7 +68,7 @@ export function useSchafkopfGame() {
     void exec('pick', { pick: false });
   }, [exec]);
 
-  /** Calls the partner suit (1=♠ 2=♣ 3=♥) in the Call phase. */
+  /** Calls the partner suit (1=♠ 2=♣ 4=♦) in the Call phase. */
   const handleCall = useCallback(
     (suit: number) => {
       void exec('call', { callSuit: suit });

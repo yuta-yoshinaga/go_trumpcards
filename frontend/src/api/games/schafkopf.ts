@@ -24,7 +24,7 @@ export type SchafkopfContract = 0 | 1 | 2;
  * The multi-phase flow maps each command to its own body field:
  *   - `pick` → `{ pick: boolean, contract?, soloSuit? }` (declare or pass)
  *     `contract` defaults to Rufspiel; `soloSuit` is required for Solo.
- *   - `call` → `{ callSuit: number }` (1=♠ 2=♣ 3=♥)
+ *   - `call` → `{ callSuit: number }` (1=♠ 2=♣ 4=♦; ♥ is trump, so never callable)
  *   - `play` → `{ cardIndex: number }`
  *   - `reset` → `{ config }`
  *   - `next` / `nextround` / `hint` / `log` carry no extra fields.

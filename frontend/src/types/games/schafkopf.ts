@@ -36,7 +36,7 @@ export interface SchafkopfConfig {
 /** A suggested hint for Schafkopf, computed by the backend. */
 export interface SchafkopfHint {
   cardIndices: number[];
-  /** Suggested called suit (0=none, 1=♠, 2=♣, 3=♥). Relevant in the Call phase. */
+  /** Suggested called suit (0=none, 1=♠, 2=♣, 4=♦). Relevant in the Call phase. */
   suit: number;
   /** Whether the hint recommends declaring a contract (Pick phase). */
   pick: boolean;
@@ -66,7 +66,7 @@ export interface SchafkopfResponse extends BaseGameResponse {
   beatableContracts: SchafkopfContract[];
   /** Index of the picker's partner, or -1 until revealed/round end. */
   partnerIdx: number;
-  /** Called partner suit (0=none, 1=♠, 2=♣, 3=♥). */
+  /** Called partner suit (0=none, 1=♠, 2=♣, 4=♦); ♥ is trump, so never callable. */
   calledSuit: number;
   /** Whether the partner has been revealed. */
   partnerRevealed: boolean;

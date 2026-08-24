@@ -75,10 +75,12 @@ func TestSchafkopf_ResetDealsHandsAndBlind(t *testing.T) {
 }
 
 func TestSchafkopf_CardClassification(t *testing.T) {
+	// **切り札スートはハート。** クローン元の米国版シープスヘッドはダイヤ
+	// だったが、バイエルンの Schafkopf は Herz。
 	trumps := []*Card{
 		skCard(CardDesignClover, 12), skCard(CardDesignDiamond, 12),
-		skCard(CardDesignHeart, 11), skCard(CardDesignDiamond, 1),
-		skCard(CardDesignDiamond, 7),
+		skCard(CardDesignHeart, 11), skCard(CardDesignHeart, 1),
+		skCard(CardDesignHeart, 7),
 	}
 	g := newSKGame(true) // 既定は Rufspiel
 	for _, c := range trumps {
@@ -89,7 +91,7 @@ func TestSchafkopf_CardClassification(t *testing.T) {
 			t.Errorf("%s suitID should be trump", cardStr(c))
 		}
 	}
-	fails := []*Card{skCard(CardDesignClover, 1), skCard(CardDesignSpade, 10), skCard(CardDesignHeart, 13)}
+	fails := []*Card{skCard(CardDesignClover, 1), skCard(CardDesignSpade, 10), skCard(CardDesignDiamond, 13)}
 	for _, c := range fails {
 		if g.isTrump(c) {
 			t.Errorf("%s should not be trump", cardStr(c))
@@ -101,12 +103,12 @@ func TestSchafkopf_CardClassification(t *testing.T) {
 }
 
 func TestSchafkopf_TrumpStrengthOrdering(t *testing.T) {
-	// Q♣ > Q♠ > Q♥ > Q♦ > J♣ > J♠ > J♥ > J♦ > A♦ > 10♦ > K♦ > 9♦ > 8♦ > 7♦ > フェイル A
+	// Q♣ > Q♠ > Q♥ > Q♦ > J♣ > J♠ > J♥ > J♦ > A♥ > 10♥ > K♥ > 9♥ > 8♥ > 7♥ > フェイル A
 	order := []*Card{
 		skCard(CardDesignClover, 12), skCard(CardDesignSpade, 12), skCard(CardDesignHeart, 12), skCard(CardDesignDiamond, 12),
 		skCard(CardDesignClover, 11), skCard(CardDesignSpade, 11), skCard(CardDesignHeart, 11), skCard(CardDesignDiamond, 11),
-		skCard(CardDesignDiamond, 1), skCard(CardDesignDiamond, 10), skCard(CardDesignDiamond, 13),
-		skCard(CardDesignDiamond, 9), skCard(CardDesignDiamond, 8), skCard(CardDesignDiamond, 7),
+		skCard(CardDesignHeart, 1), skCard(CardDesignHeart, 10), skCard(CardDesignHeart, 13),
+		skCard(CardDesignHeart, 9), skCard(CardDesignHeart, 8), skCard(CardDesignHeart, 7),
 		skCard(CardDesignClover, 1),
 	}
 	// Rufspiel の既定の並び。強さは契約で変わるので、契約を持つ盤で測る。
@@ -767,21 +769,21 @@ func TestSchafkopf_ChipsAreZeroSumAtThisTableSize(t *testing.T) {
 // 変わる**ことを見る。ここがクローン元 (米国版シープスヘッド) との核心の差で、
 // あちらは契約が 1 つしかないので切り札は固定だった。
 func TestSchafkopf_ContractChangesTheTrumpSet(t *testing.T) {
-	diamond7 := skCard(CardDesignDiamond, 7)
+	heart7 := skCard(CardDesignHeart, 7)
 	ober := skCard(CardDesignSpade, schafkopfOber)
 	unter := skCard(CardDesignHeart, schafkopfUnter)
-	plainHeart := skCard(CardDesignHeart, 10)
+	plainDiamond := skCard(CardDesignDiamond, 10)
 
-	t.Run("rufspiel: diamonds, Obers and Unters", func(t *testing.T) {
+	t.Run("rufspiel: hearts, Obers and Unters", func(t *testing.T) {
 		g := newSKGame(true)
 		g.SetContractForTest(SchafkopfContractRufspiel, 0)
-		for _, c := range []*Card{diamond7, ober, unter} {
+		for _, c := range []*Card{heart7, ober, unter} {
 			if !g.isTrump(c) {
 				t.Errorf("%s should be trump under Rufspiel", cardStr(c))
 			}
 		}
-		if g.isTrump(plainHeart) {
-			t.Errorf("%s should not be trump", cardStr(plainHeart))
+		if g.isTrump(plainDiamond) {
+			t.Errorf("%s should not be trump", cardStr(plainDiamond))
 		}
 	})
 
@@ -791,19 +793,21 @@ func TestSchafkopf_ContractChangesTheTrumpSet(t *testing.T) {
 		if !g.isTrump(unter) {
 			t.Error("the Unter must stay trump under Wenz")
 		}
-		// **Ober もダイヤも平札に落ちる。** ここが Wenz の全部。
+		// **Ober もハートも平札に落ちる。** ここが Wenz の全部。
 		if g.isTrump(ober) {
 			t.Error("the Ober must NOT be trump under Wenz")
 		}
-		if g.isTrump(diamond7) {
-			t.Error("diamonds must NOT be trump under Wenz")
+		if g.isTrump(heart7) {
+			t.Error("hearts must NOT be trump under Wenz")
 		}
 	})
 
 	t.Run("solo: the chosen suit plus Obers and Unters", func(t *testing.T) {
 		g := newSKGame(true)
-		g.SetContractForTest(SchafkopfContractSolo, CardDesignHeart)
-		if !g.isTrump(plainHeart) {
+		// **ハート以外の Solo を選ぶ。** ハートにすると Rufspiel と同じ
+		// 切り札集合になり、契約を見ていない実装でも通ってしまう。
+		g.SetContractForTest(SchafkopfContractSolo, CardDesignDiamond)
+		if !g.isTrump(plainDiamond) {
 			t.Error("the chosen suit must be trump under Solo")
 		}
 		for _, c := range []*Card{ober, unter} {
@@ -811,9 +815,9 @@ func TestSchafkopf_ContractChangesTheTrumpSet(t *testing.T) {
 				t.Errorf("%s should stay trump under Solo", cardStr(c))
 			}
 		}
-		// **選ばれなかったスートは平札。** Rufspiel と違いダイヤは特別ではない。
-		if g.isTrump(diamond7) {
-			t.Error("diamonds must NOT be trump when the Solo suit is hearts")
+		// **選ばれなかったスートは平札。** Rufspiel と違いハートは特別ではない。
+		if g.isTrump(heart7) {
+			t.Error("hearts must NOT be trump when the Solo suit is diamonds")
 		}
 	})
 }
@@ -824,12 +828,12 @@ func TestSchafkopf_ContractChangesTheTrumpSet(t *testing.T) {
 func TestSchafkopf_WenzChangesWhoWinsTheTrick(t *testing.T) {
 	trick := []*TrickCard{
 		{PlayerIdx: 0, Card: skCard(CardDesignClover, 1)},  // フェイル A (リード)
-		{PlayerIdx: 1, Card: skCard(CardDesignDiamond, 7)}, // ダイヤの 7
+		{PlayerIdx: 1, Card: skCard(CardDesignHeart, 7)},   // ハートの 7
 		{PlayerIdx: 2, Card: skCard(CardDesignClover, 10)}, // フェイル 10
 		{PlayerIdx: 3, Card: skCard(CardDesignClover, 9)},  // フェイル 9
 	}
 
-	// Rufspiel ではダイヤが切り札なので、7 でもフェイル A に勝つ。
+	// Rufspiel ではハートが切り札なので、7 でもフェイル A に勝つ。
 	ruf := newSKGame(false)
 	ruf.SetContractForTest(SchafkopfContractRufspiel, 0)
 	ruf.SetPhase(SchafkopfPhaseTrickEnd)
@@ -837,10 +841,10 @@ func TestSchafkopf_WenzChangesWhoWinsTheTrick(t *testing.T) {
 	ruf.SetCurrentTrick(trick)
 	ruf.ResolveTrick()
 	if got := ruf.GetLeadPlayerIdx(); got != 1 {
-		t.Errorf("Rufspiel winner = %d, want 1 (the diamond is trump)", got)
+		t.Errorf("Rufspiel winner = %d, want 1 (the heart is trump)", got)
 	}
 
-	// **Wenz ではダイヤは平札。** リードスートの最強札 (♣A) が勝つ。
+	// **Wenz ではハートは平札。** リードスートの最強札 (♣A) が勝つ。
 	wenz := newSKGame(false)
 	wenz.SetContractForTest(SchafkopfContractWenz, 0)
 	wenz.SetPhase(SchafkopfPhaseTrickEnd)
@@ -848,7 +852,7 @@ func TestSchafkopf_WenzChangesWhoWinsTheTrick(t *testing.T) {
 	wenz.SetCurrentTrick(trick)
 	wenz.ResolveTrick()
 	if got := wenz.GetLeadPlayerIdx(); got != 0 {
-		t.Errorf("Wenz winner = %d, want 0 (diamonds are plain under Wenz)", got)
+		t.Errorf("Wenz winner = %d, want 0 (hearts are plain under Wenz)", got)
 	}
 }
 
@@ -1067,5 +1071,79 @@ func TestSchafkopf_WenzJudgesTheLeadByTheContractToo(t *testing.T) {
 	ruf.ResolveTrick()
 	if got := ruf.GetLeadPlayerIdx(); got != 0 {
 		t.Errorf("Rufspiel winner = %d, want 0 — the Ober outranks the Unter", got)
+	}
+}
+
+// **Rufspiel の切り札スートはハート。** クローン元の米国版シープスヘッドは
+// ダイヤを切り札に置く。デッキ全体から数えて、切り札 14 枚 / フェイル 18 枚に
+// なることと、呼べるのがハート以外の 3 スートであることを固定する。
+func TestSchafkopf_RufspielTrumpsAreHeartsNotDiamonds(t *testing.T) {
+	g := newSKGame(true)
+	g.SetContractForTest(SchafkopfContractRufspiel, 0)
+
+	trumps, byDesign := 0, map[int]int{}
+	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
+		for _, v := range []int{1, 7, 8, 9, 10, schafkopfUnter, schafkopfOber, 13} {
+			if g.isTrump(skCard(suit, v)) {
+				trumps++
+				byDesign[suit]++
+			}
+		}
+	}
+	// Ober 4 + Unter 4 + ハート 6 (Ober/Unter を除く) = 14。
+	if trumps != 14 {
+		t.Errorf("trump count = %d, want 14 (4 Obers + 4 Unters + 6 more hearts)", trumps)
+	}
+	if byDesign[CardDesignHeart] != 8 {
+		t.Errorf("hearts that are trump = %d, want 8 (the whole suit)", byDesign[CardDesignHeart])
+	}
+	// **負のコントロール。** ダイヤは Ober と Unter の 2 枚だけが切り札。
+	if byDesign[CardDesignDiamond] != 2 {
+		t.Errorf("diamonds that are trump = %d, want 2 (its Ober and Unter only)", byDesign[CardDesignDiamond])
+	}
+
+	// 呼べるのはハート以外の 3 つ。ハートを呼べると切り札の A を呼ぶことになる。
+	fails := schafkopfFailSuits()
+	if len(fails) != 3 {
+		t.Fatalf("fail suits = %v, want 3", fails)
+	}
+	for _, s := range fails {
+		if s == CardDesignHeart {
+			t.Error("hearts are trump under Rufspiel and must not be callable")
+		}
+	}
+}
+
+// 契約が決まったら手札を並べ直す。配った直後の並びは Rufspiel の切り札構成で
+// 作られているので、Solo を宣言してもそのままだと切り札が平札の間に散らばる。
+func TestSchafkopf_HandIsResortedOnceTheContractIsKnown(t *testing.T) {
+	g := newSKGame(true)
+	g.Reset()
+	g.SetPhase(SchafkopfPhasePick)
+	g.SetCurrentPlayerIdx(0)
+	// ♦ Solo: ダイヤ全札 + Ober + Unter が切り札になる。
+	skSetHand(g.GetPlayer(0),
+		skCard(CardDesignClover, 1), skCard(CardDesignDiamond, 1),
+		skCard(CardDesignSpade, 10), skCard(CardDesignDiamond, 10),
+		skCard(CardDesignClover, 9), skCard(CardDesignDiamond, 9),
+		skCard(CardDesignSpade, 8), skCard(CardDesignDiamond, 8))
+
+	if err := g.PlayerDeclare(true, SchafkopfContractSolo, CardDesignDiamond); err != nil {
+		t.Fatalf("declare: %v", err)
+	}
+	skFinishAuction(g)
+
+	// 切り札が先頭にまとまっている。
+	p := g.GetPlayer(0)
+	seenFail := false
+	for i := 0; i < p.GetCardsSize(); i++ {
+		if g.isTrump(p.GetCard(i)) {
+			if seenFail {
+				t.Errorf("trump at index %d follows a plain card — the hand was not re-sorted", i)
+				break
+			}
+			continue
+		}
+		seenFail = true
 	}
 }

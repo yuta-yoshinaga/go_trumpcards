@@ -354,6 +354,10 @@ func (g *Schafkopf) applyCall(suit int) {
 
 // beginPlay プレイフェーズを開始する。リードはピックフェーズの先頭プレイヤー。
 func (g *Schafkopf) beginPlay() {
+	// **契約が決まってから並べ直す。** 配った直後の並びは Rufspiel の切り札
+	// 構成で作られている。Wenz や Solo を宣言しても並べ直さないと、切り札が
+	// 平札の間に散らばったまま表示され、どれが切り札か手札から読めない。
+	g.sortAllHands()
 	g.leadPlayerIdx = (g.dealerIdx + 1) % SchafkopfPlayerCnt
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.trickNumber = 1
@@ -745,13 +749,16 @@ func (g *Schafkopf) trickTopStrength(winnerIdx int) int {
 
 // --- Card classification ---
 
-// schafkopfIsTrump 切り札 (全 Q, 全 J, ダイヤ全札) か。
-// schafkopfIsTrump は Rufspiel / Solo の既定 (ダイヤ + Ober + Unter) を返す。
+// schafkopfIsTrump は Rufspiel の切り札 (全 Ober, 全 Unter, ハート全札) か
+// を返す。
+//
+// **ハートであってダイヤではない。** クローン元の米国版シープスヘッドは
+// ダイヤを切り札スートに置くが、バイエルンの Schafkopf は Herz。
 //
 // **契約によって切り札が変わる**ので、盤面の判定には g.isTrump を使うこと。
 // この関数は契約を持たない文脈 (札の分類テストなど) のための既定値。
 func schafkopfIsTrump(card *Card) bool {
-	return card.GetDesign() == CardDesignDiamond || card.GetValue() == schafkopfUnter || card.GetValue() == schafkopfOber
+	return card.GetDesign() == CardDesignHeart || card.GetValue() == schafkopfUnter || card.GetValue() == schafkopfOber
 }
 
 // schafkopfUnter / schafkopfOber は切り札の中核をなす 2 つの札位。
@@ -835,7 +842,8 @@ const schafkopfTrumpSuit = 0
 
 // schafkopfFailSuits フェイル (非切り札) スートの一覧。
 func schafkopfFailSuits() []int {
-	return []int{CardDesignClover, CardDesignSpade, CardDesignHeart}
+	// **ハートは切り札なので呼べない。** 呼べるのは残る 3 つのフェイル。
+	return []int{CardDesignClover, CardDesignSpade, CardDesignDiamond}
 }
 
 // schafkopfStrength トリックでの強さ。切り札はすべてフェイル札より強い。

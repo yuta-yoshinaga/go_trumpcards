@@ -29,7 +29,7 @@ func NewSchafkopfCuiController(si usecase.SchafkopfInteractorIF) *SchafkopfCuiCo
 //	wenz / w              → Wenz を宣言 (宣言フェーズ)
 //	solo / so <suit>      → Solo を宣言 (宣言フェーズ; 1=♠ 2=♣ 3=♥ 4=♦)
 //	pass                  → パス (宣言フェーズ)
-//	c <suit> / call <suit>   → 呼びスートを指定 (呼びフェーズ; 1=♠ 2=♣ 3=♥)
+//	c <suit> / call <suit>   → 呼びスートを指定 (呼びフェーズ; 1=♠ 2=♣ 4=♦)
 //	<n> / play <n>        → カードをプレイ (プレイフェーズ)
 //	n / next              → 次のトリックへ
 //	nr / nextround        → 次のラウンドへ (スコアリング)

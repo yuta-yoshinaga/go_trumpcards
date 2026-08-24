@@ -75,8 +75,8 @@ const SCHAFKOPF_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /**
- * Maps a suit id to its i18n suit key. Calls only ever use 1-3 (no diamond
- * ace to call), but a Solo can name any of the four.
+ * Maps a suit id to its i18n suit key. Hearts are trump under Rufspiel, so a
+ * call never names them; a Solo can name any of the four.
  */
 const SUIT_KEYS: Readonly<Record<number, string>> = { 1: 'spade', 2: 'club', 3: 'heart', 4: 'diamond' };
 
@@ -415,7 +415,7 @@ function SchafkopfPageContent() {
               )}
               {canCall &&
                 state.callableSuits.map((suit) => {
-                  // callableSuits are always 1-3 (♠♣♥), all present in SUIT_KEYS.
+                  // callableSuits are the three fail suits (♠♣♦), all present in SUIT_KEYS.
                   const suitName = t(`suit.${SUIT_KEYS[suit]}`);
                   return (
                     <button

@@ -50,7 +50,7 @@ export function parseSchafkopfCommand(input: string): CliParseResult<SchafkopfAr
       return { args: ['pick', { pick: false }] };
     case 'call': {
       const parsed = parseIntArg(args, 0);
-      if ('error' in parsed) return { error: 'Usage: call <suit> (1=spade 2=club 3=heart)' };
+      if ('error' in parsed) return { error: 'Usage: call <suit> (1=spade 2=club 4=diamond)' };
       return { args: ['call', { callSuit: parsed.value }] };
     }
     case 'p':
@@ -85,7 +85,7 @@ export const SCHAFKOPF_HELP: string[] = [
   'w/wenz           - Declare Wenz, only Unters are trump (Pick phase)',
   'so/solo <suit>   - Declare Solo, 1=spade 2=club 3=heart 4=diamond (Pick phase)',
   'pass             - Pass, declaring nothing (Pick phase)',
-  'call <suit>      - Call partner suit 1=spade 2=club 3=heart (Call phase)',
+  'call <suit>      - Call partner suit 1=spade 2=club 4=diamond (Call phase)',
   'p <idx>          - Play a card (Play phase)',
   'n/next           - Next trick',
   'nr/nextround     - Next round',

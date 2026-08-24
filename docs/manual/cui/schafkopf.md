@@ -126,7 +126,7 @@ flowchart TD
 | `solo <suit>` | `so <suit>` | Solo を宣言する（1=♠ 2=♣ 3=♥ 4=♦）（PICKフェーズ） |
 | `pass` | — | 宣言せずパスする（PICKフェーズ） |
 
-| `call <suit>` | `c <suit>` | 相棒のフェイルAを呼ぶ（1=♠ 2=♣ 3=♥）（CALLフェーズ） |
+| `call <suit>` | `c <suit>` | 相棒のフェイルAを呼ぶ（1=♠ 2=♣ 4=♦）（CALLフェーズ） |
 | `play <idx>` | — | 手札のidx番目のカードを出す（PLAYフェーズ） |
 | `next` | `n` | 次のトリックへ進む（トリック終了後） |
 | `nextround` | `nr` | チップ精算して次のラウンドへ |

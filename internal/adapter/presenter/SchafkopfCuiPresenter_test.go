@@ -83,11 +83,12 @@ func TestSchafkopfCuiPresenter_ListsTheCallableSuits(t *testing.T) {
 	}
 
 	t.Run("lists the suits with the number the command takes", func(t *testing.T) {
-		out := p.Output(callMock([]int{domain.CardDesignSpade, domain.CardDesignHeart}), nil)
-		// **行ごと照合する。**promptCallHelp が `1=♠ 2=♣ 3=♥` を常に出しているので、
+		// ♥ は切り札なので呼べない。呼べるのは ♠ ♣ ♦ の 3 つ。
+		out := p.Output(callMock([]int{domain.CardDesignSpade, domain.CardDesignDiamond}), nil)
+		// **行ごと照合する。**promptCallHelp が `1=♠ 2=♣ 4=♦` を常に出しているので、
 		// 断片で見ると呼べない ♣ の有無を判定できない。
 		// 番号を添えるのは、c コマンドが取るのが記号ではなく数字だから。
-		assert.Contains(t, out, "呼べるスート: 1=♠ 3=♥\n")
+		assert.Contains(t, out, "呼べるスート: 1=♠ 4=♦\n")
 	})
 
 	// 呼べるスートが 0 件でもクラッシュしない (受け入れ条件2)。

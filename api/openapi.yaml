@@ -8029,7 +8029,7 @@ paths:
                   description: "Trump suit for a Solo (1=♠, 2=♣, 3=♥, 4=♦); required when contract is 2"
                 callSuit:
                   type: integer
-                  description: "Fail suit whose ace names the partner (1=♠, 2=♣, 3=♥); required for `call`"
+                  description: "Fail suit whose ace names the partner (1=♠, 2=♣, 4=♦); ♥ is trump under Rufspiel so it is never callable; required for `call`"
                 cardIndex:
                   type: integer
                   description: Index into your hand (required for `play`)
@@ -60503,7 +60503,7 @@ components:
           description: Index of the secret partner (-1 until revealed, and always -1 for Wenz and Solo)
         calledSuit:
           type: integer
-          description: "Fail suit called by the declarer (1=♠, 2=♣, 3=♥, 0=none)"
+          description: "Fail suit called by the declarer (1=♠, 2=♣, 4=♦, 0=none)"
         partnerRevealed:
           type: boolean
           description: True once the partner has played the called ace

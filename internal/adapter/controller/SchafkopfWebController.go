@@ -19,7 +19,7 @@ type SchafkopfWebInput struct {
 	Contract *int `json:"contract,omitempty"`
 	// SoloSuit Solo の切り札スート (pick コマンド; 1=♠ 2=♣ 3=♥ 4=♦)
 	SoloSuit *int `json:"soloSuit,omitempty"`
-	// CallSuit 呼びスートのインデックス (call コマンド; 1=♠ 2=♣ 3=♥)
+	// CallSuit 呼びスートのインデックス (call コマンド; 1=♠ 2=♣ 4=♦)
 	CallSuit *int `json:"callSuit,omitempty"`
 	// CardIndex プレイするカードのインデックス (play コマンド)
 	CardIndex *int `json:"cardIndex,omitempty"`
