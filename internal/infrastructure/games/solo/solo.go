@@ -466,4 +466,12 @@ func init() {
 			return usecase.RestoreTuSacInteractor(data, new(presenter.TuSacWebPresenter))
 		},
 		controller.NewTuSacWebControllerWithProvider)
+	games.RegisterKVGame("quodlibet", games.CategorySolo,
+		func() usecase.QuodlibetInteractorIF {
+			return usecase.NewQuodlibetInteractor(domain.NewDefaultQuodlibet(), new(presenter.QuodlibetWebPresenter))
+		},
+		func(data []byte) (usecase.QuodlibetInteractorIF, error) {
+			return usecase.RestoreQuodlibetInteractor(data, new(presenter.QuodlibetWebPresenter))
+		},
+		controller.NewQuodlibetWebControllerWithProvider)
 }

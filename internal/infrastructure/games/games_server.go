@@ -1800,4 +1800,9 @@ func init() {
 			return usecase.NewBauernschnapsenInteractor(domain.NewDefaultBauernschnapsen(), new(presenter.BauernschnapsenWebPresenter))
 		},
 		controller.NewBauernschnapsenWebController)
+	BindWebControllerFor("quodlibet",
+		func() usecase.QuodlibetInteractorIF {
+			return usecase.NewQuodlibetInteractor(domain.NewDefaultQuodlibet(), new(presenter.QuodlibetWebPresenter))
+		},
+		controller.NewQuodlibetWebController)
 }

@@ -589,6 +589,19 @@ export const UnsunKarutaPhase = {
   GAME_END: 3,
 } as const;
 
+/**
+ * Quodlibet phase constants (sync: internal/domain/Quodlibet.go).
+ *
+ * **These are strings, not indices.** The domain names its phases, so a numeric
+ * comparison would silently be false everywhere.
+ */
+export const QuodlibetPhase = {
+  SELECT_CONTRACT: 'selectContract',
+  PLAY: 'play',
+  DEAL_END: 'dealEnd',
+  GAME_END: 'gameEnd',
+} as const;
+
 /** Königrufen (ケーニッヒルーフェン) phase constants (sync: internal/domain/Koenigrufen.go). */
 export const KoenigrufenPhase = {
   BID: 0,

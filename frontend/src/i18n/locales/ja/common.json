@@ -170,6 +170,7 @@
     "kalooki": "カルーキ",
     "karnoffel": "カルニッフェル",
     "unsunkaruta": "うんすんカルタ",
+    "quodlibet": "クオドリベット",
     "kemps": "ケムプス",
     "kille": "キッレ",
     "king": "キング",
@@ -2544,7 +2545,19 @@
     "unsunkaruta.errNotLeader": "宣言できるのはリードしたプレイヤーだけです。",
     "unsunkaruta.errCardRange": "カードの番号が範囲外です。",
     "unsunkaruta.hintRequested": "ヒントがあります。",
-    "unsunkaruta.noHint": "ヒントはありません。"
+    "unsunkaruta.noHint": "ヒントはありません。",
+    "quodlibet.selectContract": "この輪の種目を選んでください。",
+    "quodlibet.playPhase": "札を出してください。",
+    "quodlibet.shedPhase": "札を重ねてください（出せなければパス）。",
+    "quodlibet.dealEnd": "ディールが終わりました。",
+    "quodlibet.result.draw": "ゲーム終了！ 罰点が同点で引き分けです。",
+    "quodlibet.result.humanWin": "ゲーム終了！ 罰点が最も少ないのはあなたです。",
+    "quodlibet.result.cpuWin": "ゲーム終了！ CPU のほうが罰点が少なく済みました。",
+    "quodlibet.errContractUnavailable": "その種目はこの輪では選べません: {{contract}}。",
+    "quodlibet.errCardRange": "カードの番号が範囲外です。",
+    "quodlibet.errCannotPass": "出せる札があるのでパスできません。",
+    "quodlibet.hintRequested": "ヒントがあります。",
+    "quodlibet.noHint": "ヒントはありません。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

@@ -231,6 +231,7 @@ import type {
   PutResponse,
   PyramidResponse,
   QuadrilleResponse,
+  QuodlibetResponse,
   RamschResponse,
   RamsResponse,
   RankAndFileResponse,
@@ -580,6 +581,7 @@ import { getPrsiHint } from '../utils/hints/prsiHint';
 import { getPutHint } from '../utils/hints/putHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getQuadrilleHint } from '../utils/hints/quadrilleHint';
+import { getQuodlibetHint } from '../utils/hints/quodlibetHint';
 import { getRamschHint } from '../utils/hints/ramschHint';
 import { getRamsHint } from '../utils/hints/ramsHint';
 import { getRankAndFileHint } from '../utils/hints/rankandfileHint';
@@ -875,6 +877,7 @@ export const hintFactories = {
   kingalbert: (s) => getKingalbertHint(s as KingAlbertResponse),
   karnoffel: (s) => getKarnoffelHint(s as KarnoffelResponse),
   unsunkaruta: (s) => getUnsunKarutaHint(s as UnsunKarutaResponse),
+  quodlibet: (s) => getQuodlibetHint(s as QuodlibetResponse),
   king: (s) => getKingHint(s as KingResponse),
   flowergarden: (s) => getFlowergardenHint(s as FlowerGardenResponse),
   tonk: (s) => getTonkHint(s as TonkResponse),
