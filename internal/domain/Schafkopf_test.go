@@ -109,8 +109,11 @@ func TestSchafkopf_TrumpStrengthOrdering(t *testing.T) {
 		skCard(CardDesignDiamond, 9), skCard(CardDesignDiamond, 8), skCard(CardDesignDiamond, 7),
 		skCard(CardDesignClover, 1),
 	}
+	// Rufspiel の既定の並び。強さは契約で変わるので、契約を持つ盤で測る。
+	ruf := newSKGame(false)
+	ruf.SetContractForTest(SchafkopfContractRufspiel, 0)
 	for i := 1; i < len(order); i++ {
-		if schafkopfStrength(order[i-1]) <= schafkopfStrength(order[i]) {
+		if ruf.strength(order[i-1]) <= ruf.strength(order[i]) {
 			t.Errorf("strength order broken at %d: %s !> %s", i, cardStr(order[i-1]), cardStr(order[i]))
 		}
 	}
@@ -398,7 +401,7 @@ func TestSchafkopf_TrickTopStrengthGuard(t *testing.T) {
 	if got := g.trickTopStrength(99); got != -1<<30 {
 		t.Errorf("trickTopStrength(absent) = %d, want sentinel", got)
 	}
-	if got := g.trickTopStrength(0); got != schafkopfStrength(skCard(CardDesignClover, 1)) {
+	if got := g.trickTopStrength(0); got != g.strength(skCard(CardDesignClover, 1)) {
 		t.Errorf("trickTopStrength(0) = %d, want A♣ strength", got)
 	}
 }
@@ -1025,5 +1028,44 @@ func TestSchafkopf_SoloNeedsARealSuit(t *testing.T) {
 		if err := g.PlayerDeclare(true, SchafkopfContractSolo, suit); err != nil {
 			t.Errorf("solo suit %d should be accepted: %v", suit, err)
 		}
+	}
+}
+
+// **リードが「別契約なら切り札」の札でも、契約に従って比べる。**
+//
+// トリック判定は先頭札の強さを種にして残りと比べる。種だけ契約を見ない
+// 関数で取ると、Wenz で Ober をリードした瞬間に「Rufspiel なら切り札」の
+// 強さが座り、本物の切り札 (Unter) が負ける。
+// 既存のテストは常に ♣A (どちらの契約でも非切り札) をリードしていたので、
+// この形だけ素通りしていた。
+func TestSchafkopf_WenzJudgesTheLeadByTheContractToo(t *testing.T) {
+	// Wenz では Ober は切り札ではなく、Unter だけが切り札。
+	trick := []*TrickCard{
+		{PlayerIdx: 0, Card: skCard(CardDesignClover, schafkopfOber)},   // リード
+		{PlayerIdx: 1, Card: skCard(CardDesignDiamond, schafkopfUnter)}, // Wenz の切り札
+		{PlayerIdx: 2, Card: skCard(CardDesignClover, 9)},
+		{PlayerIdx: 3, Card: skCard(CardDesignClover, 8)},
+	}
+
+	wenz := newSKGame(false)
+	wenz.SetContractForTest(SchafkopfContractWenz, 0)
+	wenz.SetPhase(SchafkopfPhaseTrickEnd)
+	wenz.SetTrickNumber(1)
+	wenz.SetCurrentTrick(trick)
+	wenz.ResolveTrick()
+	if got := wenz.GetLeadPlayerIdx(); got != 1 {
+		t.Errorf("Wenz winner = %d, want 1 — the Unter is trump and the Ober is not", got)
+	}
+
+	// **負のコントロール。** 同じ 4 枚を Rufspiel で比べると、Ober が切り札
+	// なので先頭が勝つ。契約を見ていなければ両方が同じ答えになって差が出ない。
+	ruf := newSKGame(false)
+	ruf.SetContractForTest(SchafkopfContractRufspiel, 0)
+	ruf.SetPhase(SchafkopfPhaseTrickEnd)
+	ruf.SetTrickNumber(1)
+	ruf.SetCurrentTrick(trick)
+	ruf.ResolveTrick()
+	if got := ruf.GetLeadPlayerIdx(); got != 0 {
+		t.Errorf("Rufspiel winner = %d, want 0 — the Ober outranks the Unter", got)
 	}
 }

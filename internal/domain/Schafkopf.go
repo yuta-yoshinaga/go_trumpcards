@@ -627,7 +627,10 @@ func (g *Schafkopf) trickWinner() int {
 	}
 	leadSuit := g.suitID(g.currentTrick[0].Card)
 	winnerIdx := g.currentTrick[0].PlayerIdx
-	winnerStrength := schafkopfStrength(g.currentTrick[0].Card)
+	// **種も契約で測る。** 契約を見ない関数で取ると、Wenz で Ober を
+	// リードした瞬間に「Rufspiel なら切り札」の強さが座り、本物の切り札
+	// (Unter) が負ける。
+	winnerStrength := g.strength(g.currentTrick[0].Card)
 	for _, tc := range g.currentTrick[1:] {
 		// 勝負に絡むのは「切り札」または「リードスートに従った札」のみ。
 		// フェイルがリードされても切り札を出せば勝てる (切り札 > フェイル)。
@@ -737,7 +740,7 @@ func (g *Schafkopf) trickTopStrength(winnerIdx int) int {
 	if idx < 0 {
 		return -1 << 30
 	}
-	return schafkopfStrength(g.currentTrick[idx].Card)
+	return g.strength(g.currentTrick[idx].Card)
 }
 
 // --- Card classification ---
@@ -859,22 +862,6 @@ func (g *Schafkopf) strength(card *Card) int {
 	}
 	// 切り札スートの平札 (Rufspiel のダイヤ / Solo の選んだスート)。
 	return trumpBase + schafkopfFailRank(v)
-}
-
-// schafkopfStrength は Rufspiel の既定の強さを返す (契約を持たない文脈用)。
-func schafkopfStrength(card *Card) int {
-	const trumpBase = 100
-	v := card.GetValue()
-	if v == schafkopfOber {
-		return trumpBase + 30 + schafkopfTrumpSuitOrder(card.GetDesign())
-	}
-	if v == schafkopfUnter {
-		return trumpBase + 20 + schafkopfTrumpSuitOrder(card.GetDesign())
-	}
-	if card.GetDesign() == CardDesignDiamond {
-		return trumpBase + schafkopfFailRank(v)
-	}
-	return schafkopfFailRank(v)
 }
 
 // schafkopfTrumpSuitOrder Q/J の切り札内スート順位 (♣>♠>♥>♦)。
@@ -1260,12 +1247,12 @@ func (g *Schafkopf) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 
 	winners := filterIndices(follows, func(idx int) bool {
-		return schafkopfStrength(player.GetCard(idx)) > topStrength
+		return g.strength(player.GetCard(idx)) > topStrength
 	})
 
 	if partnerWinning {
 		nonWinners := filterIndices(follows, func(idx int) bool {
-			return schafkopfStrength(player.GetCard(idx)) < topStrength
+			return g.strength(player.GetCard(idx)) < topStrength
 		})
 		if len(nonWinners) > 0 {
 			return pickHighest(player, nonWinners, func(c *Card) int {

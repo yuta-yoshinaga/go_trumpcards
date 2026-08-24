@@ -25,8 +25,10 @@ func NewSchafkopfCuiController(si usecase.SchafkopfInteractorIF) *SchafkopfCuiCo
 //
 //	q / quit              → ゲーム終了 ("bye.")
 //	r / reset             → ゲームリセット (設定保持)
-//	pick / p              → ブラインドを取る (ピックフェーズ)
-//	pass                  → パス (ピックフェーズ)
+//	pick / p              → Rufspiel を宣言 (宣言フェーズ)
+//	wenz / w              → Wenz を宣言 (宣言フェーズ)
+//	solo / so <suit>      → Solo を宣言 (宣言フェーズ; 1=♠ 2=♣ 3=♥ 4=♦)
+//	pass                  → パス (宣言フェーズ)
 //	c <suit> / call <suit>   → 呼びスートを指定 (呼びフェーズ; 1=♠ 2=♣ 3=♥)
 //	<n> / play <n>        → カードをプレイ (プレイフェーズ)
 //	n / next              → 次のトリックへ
