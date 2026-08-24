@@ -824,7 +824,12 @@ func (s *SevenCardStud) resolveShowdown() {
 			result.WonAmount += wonLow[i]
 		}
 		s.roundResults = append(s.roundResults, result)
-		if p.GetIsHuman() && wonAmounts[i] == 0 {
+		// **読むのは合計であってハイの取り分ではない。** 留まる条件が
+		// `wonAmounts[i]` (ハイだけ) で、マックを出す条件が `WonAmount`
+		// (合計) だったので、**ローやスペードで半分だけ取った席**がその間に
+		// 落ちた ── 留まるのに訊かれないので、Web は押せるボタンが 1 つも
+		// 無い画面のまま止まる (実測)。
+		if p.GetIsHuman() && result.WonAmount == 0 {
 			humanLost = true
 		}
 	}
