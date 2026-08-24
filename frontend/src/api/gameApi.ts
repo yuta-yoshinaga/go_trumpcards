@@ -263,6 +263,7 @@ export * from './games/sakura';
 export * from './games/saliclaw';
 export * from './games/samba';
 export * from './games/scarto';
+export * from './games/schafkopf';
 export * from './games/schnapsen';
 export * from './games/scopa';
 export * from './games/scopone';
@@ -620,6 +621,7 @@ export const games = [
   'schnapsen',
   'trappola',
   'julepe',
+  'schafkopf',
   'madrasso',
   'tressette',
   'easthaven',

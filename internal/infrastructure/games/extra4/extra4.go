@@ -410,4 +410,12 @@ func init() {
 			return usecase.RestorePutInteractor(data, new(presenter.PutWebPresenter))
 		},
 		controller.NewPutWebControllerWithProvider)
+	games.RegisterKVGame("schafkopf", games.CategoryExtra4,
+		func() usecase.SchafkopfInteractorIF {
+			return usecase.NewSchafkopfInteractor(domain.NewDefaultSchafkopf(), new(presenter.SchafkopfWebPresenter))
+		},
+		func(data []byte) (usecase.SchafkopfInteractorIF, error) {
+			return usecase.RestoreSchafkopfInteractor(data, new(presenter.SchafkopfWebPresenter))
+		},
+		controller.NewSchafkopfWebControllerWithProvider)
 }

@@ -245,6 +245,7 @@ import type {
   SalicLawResponse,
   SambaResponse,
   ScartoResponse,
+  SchafkopfResponse,
   SchnapsenResponse,
   ScopaResponse,
   ScoponeResponse,
@@ -589,6 +590,7 @@ import { getSakuraHint } from '../utils/hints/sakuraHint';
 import { getSalicLawHint } from '../utils/hints/saliclawHint';
 import { getSambaHint } from '../utils/hints/sambaHint';
 import { getScartoHint } from '../utils/hints/scartoHint';
+import { getSchafkopfHint } from '../utils/hints/schafkopfHint';
 import { getSchnapsenHint } from '../utils/hints/schnapsenHint';
 import { getScopaHint } from '../utils/hints/scopaHint';
 import { getScoponeHint } from '../utils/hints/scoponeHint';
@@ -865,6 +867,7 @@ export const hintFactories = {
   yaniv: (s) => getYanivHint(s as YanivResponse),
   trappola: (s) => getTrappolaHint(s as TrappolaResponse),
   julepe: (s) => getJulepeHint(s as JulepeResponse),
+  schafkopf: (s) => getSchafkopfHint(s as SchafkopfResponse),
   madrasso: (s) => getMadrassoHint(s as MadrassoResponse),
   tressette: (s) => getTressetteHint(s as TressetteResponse),
   paigow: (s) => getPaiGowHint(s as PaiGowResponse),

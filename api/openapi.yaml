@@ -24,6 +24,8 @@ tags:
     description: Botifarra (ボティファラ) game
   - name: julepe
     description: Julepe (フレペ) game
+  - name: schafkopf
+    description: Schafkopf (シャーフコップ) game
   - name: madrasso
     description: Madrasso (マドラッソ) game
   - name: quadrille
@@ -7896,7 +7898,7 @@ paths:
     post:
       tags:
         - julepe
-      summary: Execute a Rams game command
+      summary: Execute a Julepe game command
       description: |
         Send a command to advance the Julepe (フレペ) game session identified by
         `sessionId`. Julepe, a Spanish Rams-family betting trick-taker for three to five players: each hand you choose to enter or drop, and an entrant who falls short of the required trick count pays into the pot and has their ante doubled next hand.
@@ -7908,7 +7910,7 @@ paths:
         **Playing and taking no trick at all costs an extra payment into the
         pot**, while anyone who took tricks shares the pot in proportion. Most
         chips after the configured rounds wins.
-      operationId: execRams
+      operationId: execJulepe
       requestBody:
         required: true
         content:
@@ -7968,6 +7970,121 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RamsResponse'
+  /schafkopf/exec:
+    post:
+      tags:
+        - schafkopf
+      summary: Execute a Schafkopf game command
+      description: |
+        Send a command to advance the Schafkopf (シャーフコップ) game session
+        identified by `sessionId`. Schafkopf is Bavaria's national card game:
+        four players, the 32-card German pack dealt out entirely (eight each,
+        no blind and nothing buried).
+
+        **The contract decides what counts as trump**, so it is chosen before
+        anything else. `pick` with `contract: 0` declares *Rufspiel* — the
+        standard trump (all Obers, all Unters and the whole of hearts) plus a
+        called fail ace that names a hidden partner. `contract: 1` declares
+        *Wenz*, where **only the four Unters are trump**, played alone.
+        `contract: 2` declares *Solo* over a named suit plus the Obers and
+        Unters, also played alone, and therefore **requires `soloSuit`** —
+        there is no default, because a Solo without a named trump is not a
+        legal declaration. `pick: false` passes.
+
+        Every seat speaks once, starting left of the dealer, and the
+        **highest-ranking contract wins** — not the first one declared. A
+        declaration that cannot outrank the standing bid is rejected, so the
+        response carries `beatableContracts`: exactly what this seat may still
+        declare. If everyone passes, the seat left of the dealer takes
+        Rufspiel.
+
+        Only Rufspiel reaches the `call` step. The declaring side needs 61 of
+        the 120 card points (A=11, 10=10, K=4, Ober=3, Unter=2); settlement is
+        zero-sum across the four seats.
+      operationId: execSchafkopf
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, pick, call, play, p, next, n, nextround, nr, hint, h, log, l]
+                sessionId:
+                  type: string
+                pick:
+                  type: boolean
+                  description: Declare a contract (true) or pass (false); required for `pick`
+                contract:
+                  type: integer
+                  description: "Contract to declare: 0=Rufspiel, 1=Wenz, 2=Solo (default 0)"
+                  enum: [0, 1, 2]
+                soloSuit:
+                  type: integer
+                  description: "Trump suit for a Solo (1=♠, 2=♣, 3=♥, 4=♦); required when contract is 2"
+                callSuit:
+                  type: integer
+                  description: "Fail suit whose ace names the partner (1=♠, 2=♣, 4=♦); ♥ is trump under Rufspiel so it is never callable; required for `call`"
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0=Easy, 1=Normal, 2=Hard
+                    baseChips:
+                      type: integer
+                    startChips:
+                      type: integer
+                    targetChips:
+                      type: integer
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              declareRufspiel:
+                summary: Declare Rufspiel, then call an ace
+                value:
+                  command: pick
+                  sessionId: my-session-001
+                  pick: true
+                  contract: 0
+              declareSolo:
+                summary: Declare a hearts Solo
+                value:
+                  command: pick
+                  sessionId: my-session-001
+                  pick: true
+                  contract: 2
+                  soloSuit: 3
+              play:
+                summary: Play the first card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 0
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchafkopfResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchafkopfResponse'
   /rams/exec:
     post:
       tags:
@@ -60314,6 +60431,137 @@ components:
             cpuDifficulty:
               type: integer
             baseChips:
+              type: integer
+            targetChips:
+              type: integer
+
+    SchafkopfResponse:
+      type: object
+      description: Current state of the Schafkopf game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              chips:
+                type: integer
+                description: Current chip count for this player
+        phase:
+          type: integer
+          description: "Game phase: 0=Pick, 1=Call, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd"
+          enum: [0, 1, 2, 3, 4, 5]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        pickerIdx:
+          type: integer
+          description: Index of the player who took the contract (-1 if not yet decided)
+        contract:
+          type: integer
+          description: "Contract in play, which decides what counts as trump: 0=Rufspiel, 1=Wenz, 2=Solo"
+          enum: [0, 1, 2]
+        soloSuit:
+          type: integer
+          description: "Trump suit named by a Solo (1=♠, 2=♣, 3=♥, 4=♦); 0 for other contracts"
+        beatableContracts:
+          type: array
+          items:
+            type: integer
+          description: Contracts this seat may still declare — those that outrank the standing bid. Empty once the auction has closed.
+        partnerIdx:
+          type: integer
+          description: Index of the secret partner (-1 until revealed, and always -1 for Wenz and Solo)
+        calledSuit:
+          type: integer
+          description: "Fail suit called by the declarer (1=♠, 2=♣, 4=♦, 0=none)"
+        partnerRevealed:
+          type: boolean
+          description: True once the partner has played the called ace
+        passCount:
+          type: integer
+          description: Number of players who have passed in the current round
+        callableSuits:
+          type: array
+          items:
+            type: integer
+          description: Fail-suit indices the declarer may legally call
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        roundPickerPoints:
+          type: integer
+          description: Card points taken by the declaring side this round
+        roundMultiplier:
+          type: integer
+          description: "Chip stake multiplier for this round: 1=normal, 2=Schneider, 3=Schwarz"
+        roundPickerWon:
+          type: boolean
+          description: True if the declaring side won the round (available at RoundEnd/GameEnd)
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: Index of the player who reached the target chip count (-1 if undecided)
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            suit:
+              type: integer
+            pick:
+              type: boolean
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties: true
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            baseChips:
+              type: integer
+            startChips:
               type: integer
             targetChips:
               type: integer

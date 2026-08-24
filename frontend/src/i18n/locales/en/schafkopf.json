@@ -1,0 +1,83 @@
+{
+  "phase": {
+    "pick": "Declare",
+    "call": "Call Partner",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetChips": "Target Chips",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "chips": "{{count}} chips",
+  "currentTrick": "Current Trick",
+  "picker": "Picker",
+  "partner": "Partner",
+  "partnerHidden": "(hidden)",
+  "calledSuit": "Called suit",
+  "none": "none",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "players": "Players",
+  "pickPrompt": "Declare a contract, or pass?",
+  "callPrompt": "Choose a suit to call your partner.",
+  "pickButton": "Rufspiel (call an ace)",
+  "passButton": "Pass",
+  "callButton": "Call {{suit}}",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "suit": {
+    "spade": "♠ Spades",
+    "club": "♣ Clubs",
+    "heart": "♥ Hearts",
+    "diamond": "♦ Diamonds"
+  },
+  "roundResult": {
+    "title": "Round Result",
+    "pickerPoints": "Picker team points: {{points}}",
+    "multiplier": "Multiplier: x{{multiplier}}",
+    "pickerWon": "Picker team won",
+    "pickerLost": "Picker team lost"
+  },
+  "passCount": "Passed: {{count}}",
+  "hintAvailable": "Hint",
+  "hint": {
+    "pick_take": "Strong hand - declaring is recommended",
+    "pick_pass": "Weak hand - passing is recommended",
+    "call_suit": "Calling this suit is recommended",
+    "lead_low": "Lead low to keep your strength",
+    "discard_low": "Cannot follow - discard a low card",
+    "follow_win": "Points are on the table - take the trick",
+    "follow_duck": "Cannot or need not win - duck"
+  },
+  "tutorial": {
+    "pick": "First comes the declaration. Choose Rufspiel (call an ace for a partner), Wenz (only Unters are trump) or Solo (your chosen suit plus Obers and Unters are trump) - or pass.",
+    "call": "After declaring Rufspiel you call a suit; whoever holds that ace becomes your hidden partner.",
+    "trickDisplay": "The current trick. Follow the led suit; trumps decide the winner, and which cards are trump depends on the contract.",
+    "playerHand": "Your hand. Click a playable card to select it.",
+    "playButton": "Once a card is selected, play it with this button.",
+    "info": "Card points: A=11, 10=10, K=4, Q=3, J=2. Of the 120 points, the declaring side wins by taking 61 or more. Chips move with the result.",
+    "resetButton": "Use the reset button to start a new game."
+  },
+  "callButtonAriaLabel": "Call {{suit}} (names your partner)",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available",
+  "wenzButton": "Wenz (Unters only)",
+  "soloButton": "{{suit}} Solo",
+  "soloButtonAriaLabel": "Declare a Solo with {{suit}} as trump",
+  "contractLabel": "Contract: {{contract}}",
+  "contractRufspiel": "Rufspiel (called ace)",
+  "contractWenz": "Wenz (Unters only)",
+  "contractSolo": "Solo ({{suit}})"
+}

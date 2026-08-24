@@ -529,6 +529,13 @@ func TestJulepe_GetHint_ChangesOnceSafe(t *testing.T) {
 	require.NoError(t, r.Decide(true))
 	r.SetPhaseForTest(JulepePhasePlay)
 	r.SetCurrentPlayerIdxForTest(0)
+
+	// **参加者を固定する。** 規定トリック数は参加人数から出るので、CPU の
+	// 参加判断に任せると配りごとに規定が動く。全員が降りた配りでは人間が
+	// 1 人だけ残って規定が 1 になり、この検査自体が落ちる (CI 実測)。
+	for i := range r.GetPlayerCnt() {
+		r.GetPlayer(i).SetInRound(true)
+	}
 	required := r.GetRequiredTricks()
 	require.Greater(t, required, 1, "規定が 1 だと `> 0` の実装と区別が付かない")
 
