@@ -1285,6 +1285,21 @@ export const UltimateTexasHoldemPhase = {
   END: 5,
 } as const;
 
+/** Coinche's top contract: all eight tricks (sync: internal/domain/Coinche.go). */
+export const COINCHE_CAPOT_POINTS = 250;
+
+/** Coinche phase constants (sync: internal/domain/Coinche.go). */
+export const CoinchePhase = {
+  /** Contract auction: each seat bids a target plus a trump suit, or passes. */
+  BID: 0,
+  /** Defenders may coinche (x2); declarers may answer with surcoinche (x4). */
+  DOUBLE: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
 /** Belote phase constants (sync: internal/domain/Belote.go). */
 export const BelotePhase = {
   BID_PICK_UP: 0,

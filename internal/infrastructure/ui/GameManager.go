@@ -6783,6 +6783,29 @@ var gameRegistry = []GameRegistryEntry{
 				"schafkopf.helpSetChips",
 			},
 		}),
+	BindCuiFor("coinche",
+		func() usecase.CoincheInteractorIF {
+			return usecase.NewCoincheInteractor(domain.NewDefaultCoinche(), new(presenter.CoincheCuiPresenter))
+		},
+		controller.NewCoincheCuiController,
+		CuiHelpSpec{
+			TitleKey: "coinche.helpTitle",
+			ExampleKeys: []string{
+				"coinche.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"coinche.helpBid",
+				"coinche.helpPass",
+				"coinche.helpCoinche",
+				"coinche.helpSurcoinche",
+				"coinche.helpDecline",
+				"coinche.helpPlay",
+				"coinche.helpNext",
+				"coinche.helpNextRound", "coinche.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"coinche.helpSetDifficulty", "coinche.helpSetTarget"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

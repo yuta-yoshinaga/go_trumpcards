@@ -75,6 +75,7 @@ export * from './games/chineseten';
 export * from './games/cinch';
 export * from './games/cincinnati';
 export * from './games/clocksolitaire';
+export * from './games/coinche';
 export * from './games/colorado';
 export * from './games/colourwhist';
 export * from './games/congress';
@@ -622,6 +623,7 @@ export const games = [
   'trappola',
   'julepe',
   'schafkopf',
+  'coinche',
   'madrasso',
   'tressette',
   'easthaven',

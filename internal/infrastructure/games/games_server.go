@@ -585,6 +585,11 @@ func init() {
 			return usecase.NewSchafkopfInteractor(domain.NewDefaultSchafkopf(), new(presenter.SchafkopfWebPresenter))
 		},
 		controller.NewSchafkopfWebController)
+	BindWebControllerFor("coinche",
+		func() usecase.CoincheInteractorIF {
+			return usecase.NewCoincheInteractor(domain.NewDefaultCoinche(), new(presenter.CoincheWebPresenter))
+		},
+		controller.NewCoincheWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

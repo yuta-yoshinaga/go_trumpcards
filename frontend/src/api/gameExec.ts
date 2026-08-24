@@ -236,6 +236,7 @@ export const workerUrl: Record<string, string> = {
   trappola: WORKER_EXTRA2,
   julepe: WORKER_EXTRA2,
   schafkopf: WORKER_EXTRA4,
+  coinche: WORKER_EXTRA3,
   madrasso: WORKER_EXTRA3,
   tressette: WORKER_CASINO,
   tonk: WORKER_CLASSIC,

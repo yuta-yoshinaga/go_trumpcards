@@ -357,4 +357,12 @@ func init() {
 			return usecase.RestoreRamschInteractor(data, new(presenter.RamschWebPresenter))
 		},
 		controller.NewRamschWebControllerWithProvider)
+	games.RegisterKVGame("coinche", games.CategoryExtra3,
+		func() usecase.CoincheInteractorIF {
+			return usecase.NewCoincheInteractor(domain.NewDefaultCoinche(), new(presenter.CoincheWebPresenter))
+		},
+		func(data []byte) (usecase.CoincheInteractorIF, error) {
+			return usecase.RestoreCoincheInteractor(data, new(presenter.CoincheWebPresenter))
+		},
+		controller.NewCoincheWebControllerWithProvider)
 }
