@@ -581,6 +581,14 @@ export const PiedmonteseTarotPhase = {
   GAME_END: 4,
 } as const;
 
+/** Unsun Karuta (うんすんカルタ) phase constants (sync: internal/domain/UnsunKaruta.go). */
+export const UnsunKarutaPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Königrufen (ケーニッヒルーフェン) phase constants (sync: internal/domain/Koenigrufen.go). */
 export const KoenigrufenPhase = {
   BID: 0,

@@ -414,6 +414,8 @@ tags:
     description: Six-Bid Solo
   - name: karnoffel
     description: Karnöffel
+  - name: unsunkaruta
+    description: 'Unsun Karuta (うんすんカルタ) - the Japanese 75-card five-suit trick-taker, eight players in two teams'
   - name: literature
     description: Literature
   - name: guandan
@@ -20800,6 +20802,113 @@ paths:
               schema:
                 $ref: '#/components/schemas/SixBidSoloResponse'
 
+  /unsunkaruta/exec:
+    post:
+      tags:
+        - unsunkaruta
+      summary: Execute an Unsun Karuta game command
+      description: |
+        Send a command to advance the Unsun Karuta (うんすんカルタ) session
+        identified by `sessionId`. The game is *hachinin-meri*, the form still
+        played in Hitoyoshi, Kumamoto.
+
+        **Seventy-five cards in five suits of fifteen.** Pao (batons), Isu
+        (swords), Kotsu (cups), Oru (coins) and the fifth suit Kuru (tomoe),
+        each running 1-9 plus six court cards (Sota, Uma, Kiri, Un, Sun,
+        Robai). Eight seats in two teams of four, alternating around the table,
+        so `players[].team` says who is on your side -- the seat number alone
+        does not.
+
+        **The pip order flips with the suit.** Nine is highest in the long
+        suits (Pao, Isu) and **one is highest in the round suits** (Kotsu, Oru,
+        Kuru). Cards carry no rank field, so a client that needs to sort or
+        compare must apply this rule; `trumpSuit` and `trumpSuitName` name the
+        suit turned up for the deal.
+
+        **Following suit is not automatic.** The leader may declare (meri when
+        leading a trump, monchi when leading a plain card) by sending `play`
+        with `declare: true`; only then must everyone follow. `mustFollow` says
+        whether the current trick carries the obligation, `canDeclare` whether
+        the human may declare right now, and `playableIndices` already accounts
+        for it.
+
+        Each trick is one *ko* to the winning team (`teamTricks`), and the team
+        with more after `config.targetDeals` deals wins (`teamScores`).
+      operationId: unsunKarutaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), play (p), next (n), nextround (nr), hint, log, quit (q)"
+                cardIndex:
+                  type: integer
+                  description: Index of the card to play. Required for play.
+                declare:
+                  type: boolean
+                  description: >-
+                    Declare meri / monchi with this lead, making the trick
+                    must-follow. Only meaningful when leading; absent = no
+                    declaration.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0 = Easy, 1 = Normal, 2 = Hard.
+                    targetDeals:
+                      type: integer
+                      description: Deals per match, 1-8 (eight seats, one deal each).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new match
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at index 3
+                value:
+                  command: play
+                  cardIndex: 3
+                  sessionId: my-session-001
+              declare:
+                summary: Lead index 0 and declare
+                value:
+                  command: play
+                  cardIndex: 0
+                  declare: true
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
   /karnoffel/exec:
     post:
       tags:

@@ -68,6 +68,7 @@ import type {
   TwoTenJackResponse,
   TysiacResponse,
   UltiResponse,
+  UnsunKarutaResponse,
   ViraResponse,
   WattenResponse,
   ZwanzigerrufenResponse,
@@ -4396,4 +4397,99 @@ const baseHorseState: HorseResponse = {
  */
 export function makeHorseState(overrides?: Partial<HorseResponse>): HorseResponse {
   return { ...baseHorseState, ...overrides };
+}
+
+/** One Unsun Karuta card face, procedurally rendered (ADR-0033). */
+const unsunCard = (
+  design: 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND' | 'JOKER',
+  value: number,
+  glyph: string,
+  label: string,
+) => ({
+  design,
+  value,
+  glyph,
+  label,
+  // 丸物 (コツ・オウル・クル) は赤、長物 (パオ・イス) は黒。
+  color: design === 'SPADE' || design === 'CLOVER' ? 'black' : 'red',
+  deck: 'unsun',
+});
+
+/** A CPU seat at the eight-handed table; cards are hidden. */
+const unsunCpuSeat = (id: number, isDealer = false) => ({
+  id,
+  isHuman: false,
+  team: id % 2,
+  cardCount: 9,
+  cards: [],
+  trickCount: 0,
+  isDealer,
+});
+
+/**
+ * Base Unsun Karuta state used as the default for {@link makeUnsunKarutaState}.
+ * Defaults to the human on lead, first trick of the first deal, kotsu trump.
+ */
+const baseUnsunKarutaState: UnsunKarutaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      team: 0,
+      cardCount: 4,
+      cards: [
+        unsunCard('SPADE', 9, '棒', '9'),
+        unsunCard('HEART', 1, '杯', '1'),
+        unsunCard('HEART', 13, '杯', 'ウン'),
+        unsunCard('JOKER', 5, '巴', '5'),
+      ],
+      trickCount: 0,
+      isDealer: false,
+    },
+    unsunCpuSeat(1),
+    unsunCpuSeat(2),
+    unsunCpuSeat(3),
+    unsunCpuSeat(4),
+    unsunCpuSeat(5),
+    unsunCpuSeat(6),
+    unsunCpuSeat(7, true),
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  trickCount: 9,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 7,
+  humanTeam: 0,
+  trumpSuit: 3,
+  trumpSuitName: 'kotsu',
+  trumpCard: unsunCard('HEART', 12, '杯', 'キリ'),
+  mustFollow: false,
+  declared: false,
+  canDeclare: true,
+  currentTrick: [],
+  teamTricks: [0, 0],
+  teamScores: [0, 0],
+  lastTrickWinner: -1,
+  result: 0,
+  playableIndices: [0, 1, 2, 3],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  hint: null,
+  config: { cpuDifficulty: 1, targetDeals: 4 },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link UnsunKarutaResponse} with sensible defaults (the human on
+ * lead in the first trick of a four-deal match).
+ *
+ * @param overrides - Partial UnsunKarutaResponse fields to override.
+ * @returns A complete UnsunKarutaResponse suitable for use in tests.
+ */
+export function makeUnsunKarutaState(overrides?: Partial<UnsunKarutaResponse>): UnsunKarutaResponse {
+  return { ...baseUnsunKarutaState, ...overrides };
 }

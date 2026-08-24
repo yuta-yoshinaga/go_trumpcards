@@ -2021,6 +2021,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 4, 4, 4], skill: [3, 4, 4, 4], social: [3, 4, 3, 4, 3], theme: [1, 5, 2, 1, 2, 5] },
       },
       {
+        path: '/unsunkaruta',
+        labelKey: 'nav.unsunkaruta',
+        icon: '🎴',
+        page: 'UnsunKaruta',
+        profile: { mood: [4, 4, 4, 4], skill: [3, 4, 4, 4], social: [4, 5, 3, 4, 3], theme: [1, 5, 2, 1, 2, 5] },
+      },
+      {
         path: '/shengji',
         labelKey: 'nav.shengji',
         icon: '🚜',

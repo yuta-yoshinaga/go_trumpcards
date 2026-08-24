@@ -169,6 +169,7 @@
     "kaiser": "Kaiser",
     "kalooki": "Kalooki",
     "karnoffel": "Karnöffel",
+    "unsunkaruta": "Unsun Karuta",
     "kemps": "Kemps",
     "kille": "Kille",
     "king": "King",
@@ -2531,7 +2532,19 @@
     "piedmontesetarot.errDiscardTrump": "Trumps cannot be buried unless nothing else is left.",
     "piedmontesetarot.errDiscardCourt": "Court cards cannot be buried.",
     "piedmontesetarot.hintRequested": "A hint is available.",
-    "piedmontesetarot.noHint": "No hint available."
+    "piedmontesetarot.noHint": "No hint available.",
+    "unsunkaruta.playPhase.lead": "You lead — choose whether to declare.",
+    "unsunkaruta.playPhase.mustFollow": "Declared: follow the led suit.",
+    "unsunkaruta.playPhase.free": "Play any card.",
+    "unsunkaruta.trickEnd": "The trick is decided.",
+    "unsunkaruta.roundEnd": "The deal is over.",
+    "unsunkaruta.result.draw": "Game over! It's a draw.",
+    "unsunkaruta.result.humanWin": "Game over! Your team wins.",
+    "unsunkaruta.result.cpuWin": "Game over! The opposing team wins.",
+    "unsunkaruta.errNotLeader": "Only the player who led may declare.",
+    "unsunkaruta.errCardRange": "That card number is out of range.",
+    "unsunkaruta.hintRequested": "A hint is available.",
+    "unsunkaruta.noHint": "No hint available."
   },
   "manual": {
     "ariaLabel": "Game Manual",

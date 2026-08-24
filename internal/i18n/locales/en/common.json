@@ -616,5 +616,7 @@
   "invalidAceSuitSCHD": "Invalid ace suit: {{val}}. Use spade/club/heart/diamond.",
   "discardIndicesRequired": "The indices of the cards to throw are required (e.g. discard 0 1 2 3 4 5 6).",
   "numberOfSeatsRequired34": "Number of seats is required (3 or 4).",
-  "invalidNumberOfSeats34": "Invalid number of seats: please enter 3 or 4."
+  "invalidNumberOfSeats34": "Invalid number of seats: please enter 3 or 4.",
+  "numberOfDealsRequired18": "Number of deals is required (1-8).",
+  "invalidNumberOfDeals18": "Invalid number of deals: {{val}}. Please enter 1-8."
 }

@@ -39,5 +39,11 @@
   "discardableList": "Discardable: {{cards}}",
   "discardableNone": "none",
   "discardableLegend": "* honours (trump 1/21, Matto) and court cards cannot be discarded",
-  "playableList": "Playable: {{cards}}"
+  "playableList": "Playable: {{cards}}",
+  "errScartoCount": "Discard exactly {{n}} card(s).",
+  "errCardRange": "That card number is out of range.",
+  "errDuplicateCard": "You cannot pick the same card twice.",
+  "errDiscardHonour": "Honours (trump 1, trump 21 and the Matto) cannot be buried.",
+  "errDiscardTrump": "Trumps cannot be buried unless you have no choice.",
+  "errDiscardCourt": "Court cards cannot be buried."
 }
