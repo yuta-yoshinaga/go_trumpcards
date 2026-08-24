@@ -409,21 +409,37 @@ func TestHorse_AnOutOfRotationDisciplineFallsBackToTheStart(t *testing.T) {
 func TestEightGame_NextHandWalksTheWholeRotation(t *testing.T) {
 	t.Parallel()
 	rotation := HorseRotation(HorseVariantEightGame)
-	g := NewEightGame(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
-	g.Reset()
+	want := append(append([]HorseDiscipline(nil), rotation...), rotation[0])
 
-	seen := make([]HorseDiscipline, 0, len(rotation)+1)
-	for range len(rotation) + 1 {
-		seen = append(seen, g.GetDiscipline())
-		require.Positive(t, eightGamePlayHand(t, g), "%s のハンドが打てない", HorseDisciplineName(g.GetDiscipline()))
-		for i := range g.GetSeatCount() {
-			g.SetSeatChips(i, HorseDefaultChips)
+	// **席が飛んだ配りは数えずにやり直す。** ハンドの途中で誰かが飛ぶと
+	// `settleIfHandOver` がその場でマッチを畳むので、あとから残高を戻しても
+	// 終局フラグは戻らない ── 「戻したのに終わっている」と鳴る試験は、実際
+	// 落ちた (パッケージに別のゲームのテストを足しただけで発現率が動いた)。
+	// 通し切れた回だけを見れば、並びの検査はそのまま成立する。
+	var seen []HorseDiscipline
+	for attempt := 0; attempt < 25 && len(seen) < len(want); attempt++ {
+		g := NewEightGame(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+		g.Reset()
+		run := make([]HorseDiscipline, 0, len(want))
+		for range len(want) {
+			run = append(run, g.GetDiscipline())
+			require.Positive(t, eightGamePlayHand(t, g),
+				"%s のハンドが打てない", HorseDisciplineName(g.GetDiscipline()))
+			// 残高を戻して、次のハンドが飛ばずに配られるようにする。
+			for i := range g.GetSeatCount() {
+				g.SetSeatChips(i, HorseDefaultChips)
+			}
+			if g.GetGameEndFlag() {
+				break // このハンドの途中で席が飛んだ回。数えない。
+			}
+			require.NoError(t, g.NextHand())
 		}
-		require.False(t, g.GetGameEndFlag(), "残高を戻したのにマッチが終わった")
-		require.NoError(t, g.NextHand())
+		if len(run) > len(seen) {
+			seen = run
+		}
 	}
 
-	assert.Equal(t, append(append([]HorseDiscipline(nil), rotation...), rotation[0]), seen,
-		"NextHand が並びの順に進んでいない")
+	require.Len(t, seen, len(want), "一周ぶん回れた配りが 25 回で 1 度も無かった")
+	assert.Equal(t, want, seen, "NextHand が並びの順に進んでいない")
 	assert.Contains(t, seen, HorseTripleDraw, "8 種目目に到達していない")
 }

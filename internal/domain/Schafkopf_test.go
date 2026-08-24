@@ -986,6 +986,16 @@ func TestSchafkopf_WenzAndSoloPlayAlone(t *testing.T) {
 				skCard(CardDesignSpade, 10), skCard(CardDesignHeart, 10),
 				skCard(CardDesignSpade, 9), skCard(CardDesignHeart, 9),
 				skCard(CardDesignSpade, 8), skCard(CardDesignHeart, 8))
+			// **呼ばれる側の A も置く。** 呼べるスートの条件は「ピッカーが持って
+			// いない」だけでなく「**他の誰かが持っている**」ことなので、席 0 の
+			// 手札を差し替えただけでは足りない ── 元々そこに配られていた A は
+			// 卓から消えるので、配りによっては呼べるスートが 0 になり、
+			// Rufspiel が単独戦として始まってしまう (実測で 8 回に 1 回)。
+			skSetHand(g.GetPlayer(1),
+				skCard(CardDesignSpade, 1), skCard(CardDesignClover, 1),
+				skCard(CardDesignSpade, 7), skCard(CardDesignClover, 7),
+				skCard(CardDesignSpade, schafkopfUnter), skCard(CardDesignClover, schafkopfUnter),
+				skCard(CardDesignHeart, 7), skCard(CardDesignClover, 8))
 
 			if err := g.PlayerDeclare(true, tc.contract, tc.soloSuit); err != nil {
 				t.Fatalf("declare: %v", err)
