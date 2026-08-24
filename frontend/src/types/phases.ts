@@ -499,6 +499,21 @@ export const QuadrillePhase = {
   GAME_END: 5,
 } as const;
 
+/**
+ * German Solo phase constants (sync: internal/domain/GermanSolo.go).
+ *
+ * ACE_CALL is entered only by the partner contracts (Frage / Mussfrage); Solo
+ * and Tout go straight from the auction to play.
+ */
+export const GermanSoloPhase = {
+  BID: 0,
+  ACE_CALL: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
 /** Ombre (Hombre) phase constants (sync: internal/domain/Ombre.go). */
 export const OmbrePhase = {
   BID: 0,

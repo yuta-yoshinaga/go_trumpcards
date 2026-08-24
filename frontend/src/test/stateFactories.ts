@@ -16,6 +16,7 @@ import type {
   FortyFivesResponse,
   FrenchTarotResponse,
   GanjifaResponse,
+  GermanSoloResponse,
   GongZhuResponse,
   GoStopBreakdown,
   GoStopResponse,
@@ -1453,6 +1454,75 @@ const baseQuadrilleState: QuadrilleResponse = {
  */
 export function makeQuadrilleState(overrides?: Partial<QuadrilleResponse>): QuadrilleResponse {
   return { ...baseQuadrilleState, ...overrides };
+}
+
+/** Base German Solo state used as the default for {@link makeGermanSoloState}. Defaults to a human Play turn (declarer, Solo contract, trump = ♠). */
+const baseGermanSoloState: GermanSoloResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 8,
+      cards: [
+        { design: 'CLOVER' as const, value: 12 },
+        { design: 'SPADE' as const, value: 7 },
+        { design: 'HEART' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isDeclarer: true,
+    },
+    { id: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 8, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 3, isHuman: false, cardCount: 8, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 2, // GermanSoloPhase.PLAY — one higher than Ombre's, because of ACE_CALL
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  currentBidderIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  forehandIdx: 0,
+  declarerIdx: 0,
+  winningBid: 3,
+  highestBid: 3,
+  biddableBids: [],
+  requiredTricks: 5,
+  declarerTricks: 0,
+  defenderTricks: 0,
+  trumpSuit: 1,
+  currentTrick: [],
+  playerScores: [0, 0, 0, 0],
+  lastTrickWinner: -1,
+  outcome: 0,
+  result: 0,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  isHumanBidTurn: false,
+  isHumanAceCallTurn: false,
+  calledAceSuit: -1,
+  callableAceSuits: [],
+  // **相方は伏せたまま。** 呼ばれたエースが場に出るまで -1。
+  partnerIdx: -1,
+  playsAlone: true,
+  hint: null,
+  hintAceSuit: 0,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 5 },
+};
+
+/**
+ * Creates a {@link GermanSoloResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial GermanSoloResponse fields to override.
+ * @returns A complete GermanSoloResponse suitable for use in tests.
+ */
+export function makeGermanSoloState(overrides?: Partial<GermanSoloResponse>): GermanSoloResponse {
+  return { ...baseGermanSoloState, ...overrides };
 }
 
 /** Base Ulti state used as the default for {@link makeUltiState}. Defaults to a human Play turn (declarer, Party contract, trump = ♠). */

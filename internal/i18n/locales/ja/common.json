@@ -609,5 +609,9 @@
   "rankandfile.invalidToZone": "無効な移動先です: {{val}}。't' (場札) または 'f' (組札) を入力してください。",
   "rankandfile.moveUsage": "使い方: m t <列> <カードIdx> t <列>",
   "kingSuitRequiredWords": "呼ぶ王のスートを指定してください (spade/club/heart/diamond)。",
-  "invalidKingSuitSCHD": "王のスートが不正です: {{val}}。spade/club/heart/diamond のいずれかを指定してください。"
+  "invalidKingSuitSCHD": "王のスートが不正です: {{val}}。spade/club/heart/diamond のいずれかを指定してください。",
+  "bidActionRequiredFrage": "入札の行動を指定してください (pass, frage <スート>, solo <スート>, tout <スート>)。",
+  "invalidBidActionFrage": "入札の行動が不正です: {{val}}。pass, frage <スート>, solo <スート>, tout <スート> のいずれかを入力してください。",
+  "aceSuitRequiredWords": "呼ぶエースのスートを指定してください (spade/club/heart/diamond)。",
+  "invalidAceSuitSCHD": "エースのスートが不正です: {{val}}。spade/club/heart/diamond のいずれかを指定してください。"
 }

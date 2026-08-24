@@ -307,6 +307,7 @@ var gameDescriptions = map[string]string{
 	"calabresella":        "Calabresella / Terziglio (カラブレセッラ/テルツィーリオ)",
 	"ombre":               "Ombre / Hombre (オンブル)",
 	"quadrille":           "Quadrille (カドリール)",
+	"germansolo":          "German Solo (ジャーマン・ソロ)",
 	"ulti":                "Ulti / Ultimó (ウルティ)",
 	"king":                "King (キング)",
 	"cinch":               "Cinch / Double Pedro (シンチ/ダブルペドロ)",

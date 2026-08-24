@@ -609,5 +609,9 @@
   "rankandfile.invalidToZone": "Invalid to zone: {{val}}. Use 't' (tableau) or 'f' (foundation).",
   "rankandfile.moveUsage": "Usage: m t <col> <idx> t <col>",
   "kingSuitRequiredWords": "A king suit is required (spade/club/heart/diamond).",
-  "invalidKingSuitSCHD": "Invalid king suit: {{val}}. Use spade/club/heart/diamond."
+  "invalidKingSuitSCHD": "Invalid king suit: {{val}}. Use spade/club/heart/diamond.",
+  "bidActionRequiredFrage": "Bid action is required (pass, frage <suit>, solo <suit>, or tout <suit>).",
+  "invalidBidActionFrage": "Invalid bid action: {{val}}. Please enter pass, frage <suit>, solo <suit>, or tout <suit>.",
+  "aceSuitRequiredWords": "An ace suit is required (spade/club/heart/diamond).",
+  "invalidAceSuitSCHD": "Invalid ace suit: {{val}}. Use spade/club/heart/diamond."
 }

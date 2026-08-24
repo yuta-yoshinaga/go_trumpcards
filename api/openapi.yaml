@@ -28,6 +28,8 @@ tags:
     description: Schafkopf (シャーフコップ) game
   - name: madrasso
     description: Madrasso (マドラッソ) game
+  - name: germansolo
+    description: German Solo (ジャーマン・ソロ) game - the German branch of the Ombre/Quadrille family on a 32-card pack, with the three fixed matadors (Spadille ♣Q, Manille = 7 of trumps, Basta ♠Q) and a Frage / Solo / Tout contract ladder; Frage calls an ace to gain a hidden partner, Solo and Tout are played alone
   - name: quadrille
     description: Quadrille (カドリール) game
   - name: rikken
@@ -30774,6 +30776,110 @@ paths:
                 properties:
                   message:
                     type: string
+  /germansolo/exec:
+    post:
+      tags:
+        - germansolo
+      summary: Execute a German Solo game command
+      description: |
+        Send a command to advance the German Solo (ジャーマン・ソロ) session
+        identified by `sessionId`. German Solo is the German branch of the
+        Ombre → Quadrille line, played by four seats on a **32-card pack**
+        (A, K, Q, J, 10, 9, 8, 7) dealt out eight each. The human is player 0.
+
+        **Three matadors outrank every other trump, whatever the trump suit
+        is:** Spadille (♣Q) > Manille (the 7 of the trump suit) > Basta (♠Q).
+        The two black queens are therefore always trumps, so a black plain
+        suit has no queen; the rest of the trump suit runs A > K > (Q) > J >
+        10 > 9 > 8, with the queen surviving as an ordinary trump only when
+        trumps are red. Plain suits run A > K > Q > J > 10 > 9 > 8 > 7.
+
+        **The auction is a ladder of three contracts.** `biddableBids` on the
+        response is exactly what this seat may still declare:
+
+        | Bid       | Value | Alone? | Tricks needed | Stake |
+        |-----------|-------|--------|---------------|-------|
+        | Mussfrage | `1`   | no     | 5             | 1     |
+        | Frage     | `2`   | no     | 5             | 2     |
+        | Solo      | `3`   | yes    | 5             | 4     |
+        | Tout      | `4`   | yes    | 8             | 8     |
+
+        Mussfrage cannot be declared — it is forced on the holder of Spadille
+        when every seat passes, so a deal never has to be thrown in. A Frage
+        (or Mussfrage) enters the **ace-call phase**: the declarer names an
+        ace they do not hold and that is not of the trump suit, and its holder
+        becomes a partner who stays hidden until that ace is played.
+
+        Scoring is zero-sum: on a made contract each defender pays the stake
+        and the declaring side shares the total (alone: +3×stake; with a
+        partner: +stake each). A failed contract reverses the signs. After
+        `targetRounds` deals the highest cumulative score wins.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Contract auction (bid + trump suit) |
+        | AceCall   | `1`   | Frage / Mussfrage only: name the partner's ace |
+        | Play      | `2`   | Trick play (must follow suit; trumps count as one suit) |
+        | TrickEnd  | `3`   | Trick complete, advance with `next` |
+        | RoundEnd  | `4`   | 8 tricks complete, score and advance with `nextround` |
+        | GameEnd   | `5`   | Target number of deals played |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `bid`       | `b`     | Declare `bid` with `trumpSuit` (or pass with `bid: 0`) |
+        | `ace`       | `a`     | Call the ace in `aceSuit` (ace-call phase) |
+        | `play`      | `p`     | Play card by `cardIndex` |
+        | `next`      | `n`     | Advance to next trick |
+        | `nextround` | `nr`    | Score deal and start the next |
+        | `hint`      | `h`     | Suggest an action / card |
+        | `log`       | `l`     | View action log |
+      operationId: germansoloExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GermanSoloRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Declare Solo with hearts as trumps
+                value:
+                  command: bid
+                  bid: 3
+                  trumpSuit: 3
+                  sessionId: my-session-001
+              ace:
+                summary: Call the ace of clubs to gain a partner
+                value:
+                  command: ace
+                  aceSuit: 2
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at index 0
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GermanSoloResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GermanSoloResponse'
+
   /quadrille/exec:
     post:
       tags:
@@ -59088,6 +59194,259 @@ components:
           type: string
           description: Client-generated session identifier (max 256 characters)
           example: my-session-001
+
+    GermanSoloRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bid, b, ace, a, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: bid
+        sessionId:
+          type: string
+        bid:
+          type: integer
+          description: "Contract: 0=pass, 2=Frage, 3=Solo, 4=Tout. 1 (Mussfrage) is forced on the Spadille holder when everyone passes and cannot be declared. Required for `bid`."
+          enum: [0, 2, 3, 4]
+          example: 3
+        trumpSuit:
+          type: integer
+          description: "Trump suit for the bid (1=♠, 2=♣, 3=♥, 4=♦). Required for every bid other than a pass."
+          enum: [1, 2, 3, 4]
+          example: 3
+        aceSuit:
+          type: integer
+          description: "Suit of the ace that names the partner (1=♠, 2=♣, 3=♥, 4=♦). Must be an ace the declarer does not hold and not of the trump suit. Required for `ace`."
+          enum: [1, 2, 3, 4]
+          example: 2
+        cardIndex:
+          type: integer
+          description: Index into your hand. Required for `play`.
+          minimum: 0
+          example: 0
+        config:
+          $ref: '#/components/schemas/GermanSoloConfig'
+
+    GermanSoloConfig:
+      type: object
+      description: German Solo game configuration
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: 'CPU difficulty: 0=Easy, 1=Normal, 2=Hard'
+          enum: [0, 1, 2]
+          example: 1
+        targetRounds:
+          type: integer
+          description: Number of deals that make up a match (default 5)
+          minimum: 1
+          example: 5
+
+    GermanSoloPlayer:
+      type: object
+      description: One German Solo player's public state
+      required:
+        - id
+        - isHuman
+        - cardCount
+        - cards
+        - trickCount
+        - score
+        - isDeclarer
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        trickCount:
+          type: integer
+        score:
+          type: integer
+        isDeclarer:
+          type: boolean
+
+    GermanSoloTrickCard:
+      type: object
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+        card:
+          $ref: '#/components/schemas/Card'
+
+    GermanSoloHint:
+      type: object
+      required:
+        - reason
+      properties:
+        cardIndices:
+          type: array
+          items:
+            type: integer
+        reason:
+          type: string
+
+    GermanSoloResponse:
+      type: object
+      description: Current state of the German Solo game
+      required:
+        - players
+        - phase
+        - roundNumber
+        - trickNumber
+        - currentPlayerIdx
+        - currentBidderIdx
+        - leadPlayerIdx
+        - dealerIdx
+        - forehandIdx
+        - declarerIdx
+        - winningBid
+        - highestBid
+        - biddableBids
+        - requiredTricks
+        - declarerTricks
+        - defenderTricks
+        - trumpSuit
+        - currentTrick
+        - playerScores
+        - outcome
+        - result
+        - playableIndices
+        - gameEndFlag
+        - winnerPlayer
+        - isHumanTurn
+        - isHumanBidTurn
+        - isHumanAceCallTurn
+        - calledAceSuit
+        - callableAceSuits
+        - partnerIdx
+        - playsAlone
+        - message
+        - config
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/GermanSoloPlayer'
+        phase:
+          type: integer
+          description: 'Game phase: 0=Bid, 1=AceCall, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd'
+          enum: [0, 1, 2, 3, 4, 5]
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        currentBidderIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        forehandIdx:
+          type: integer
+          description: Seat left of the dealer; bids first and leads the first trick.
+        declarerIdx:
+          type: integer
+          description: Seat that took the contract; -1 until the auction settles.
+        winningBid:
+          type: integer
+          description: 'Settled contract: 0=none, 1=Mussfrage, 2=Frage, 3=Solo, 4=Tout'
+          enum: [0, 1, 2, 3, 4]
+        highestBid:
+          type: integer
+          description: Highest bid standing in the auction; what a new bid must exceed.
+          enum: [0, 1, 2, 3, 4]
+        biddableBids:
+          type: array
+          items:
+            type: integer
+          description: Contracts this seat may still declare. Empty once the auction has closed.
+        requiredTricks:
+          type: integer
+          description: Tricks the declaring side needs (8 for Tout, otherwise 5).
+        declarerTricks:
+          type: integer
+        defenderTricks:
+          type: integer
+        trumpSuit:
+          type: integer
+          enum: [-1, 1, 2, 3, 4]
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/GermanSoloTrickCard'
+        playerScores:
+          type: array
+          items:
+            type: integer
+        outcome:
+          type: integer
+          description: 'Last deal: 0=undecided, 1=made, 2=failed'
+          enum: [0, 1, 2]
+        result:
+          type: integer
+          description: 'Match result from the human seat: -1=lose, 0=undecided/draw, 1=win'
+          enum: [-1, 0, 1]
+        playableIndices:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+        isHumanTurn:
+          type: boolean
+        isHumanBidTurn:
+          type: boolean
+        isHumanAceCallTurn:
+          type: boolean
+        calledAceSuit:
+          type: integer
+          description: Suit of the called ace; -1 until one is named.
+          enum: [-1, 1, 2, 3, 4]
+        callableAceSuits:
+          type: array
+          items:
+            type: integer
+          description: Aces the declarer may call — not held, and not of the trump suit.
+        partnerIdx:
+          type: integer
+          description: Partner's seat. **-1 while the called ace is still hidden**, which is most of the deal.
+        playsAlone:
+          type: boolean
+          description: True for Solo and Tout, and for a Frage where no ace could be called.
+        lastTrickWinner:
+          type: integer
+        hint:
+          $ref: '#/components/schemas/GermanSoloHint'
+        hintAceSuit:
+          type: integer
+          description: Suit the hint recommends calling in the ace-call phase (1=♠, 2=♣, 3=♥, 4=♦); 0 when there is no suit to recommend. The shared hint object carries card indices only, so the suit rides here.
+          enum: [0, 1, 2, 3, 4]
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          $ref: '#/components/schemas/GermanSoloConfig'
 
     CoincheRequest:
       type: object

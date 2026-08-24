@@ -420,4 +420,12 @@ func init() {
 			return usecase.RestoreBotifarraInteractor(data, new(presenter.BotifarraWebPresenter))
 		},
 		controller.NewBotifarraWebControllerWithProvider)
+	games.RegisterKVGame("germansolo", games.CategoryClassic,
+		func() usecase.GermanSoloInteractorIF {
+			return usecase.NewGermanSoloInteractor(domain.NewDefaultGermanSolo(), new(presenter.GermanSoloWebPresenter))
+		},
+		func(data []byte) (usecase.GermanSoloInteractorIF, error) {
+			return usecase.RestoreGermanSoloInteractor(data, new(presenter.GermanSoloWebPresenter))
+		},
+		controller.NewGermanSoloWebControllerWithProvider)
 }
