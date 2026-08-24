@@ -92,7 +92,10 @@ func TestGermanSoloCuiPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.GermanSoloPhaseTrickEnd)
 		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
+		// **このフェーズの行そのものを見る。** NotEmpty は常に真 —— 盤面の
+		// 共通部分だけで埋まるので、プロンプトを 2 行とも消しても通る。
+		assert.Contains(t, result, "トリック終了")
+		assert.Contains(t, result, "次のトリックへ")
 	})
 
 	t.Run("round end prompt", func(t *testing.T) {
@@ -111,7 +114,11 @@ func TestGermanSoloCuiPresenter_Output(t *testing.T) {
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetWinnerPlayer").Return(0)
 		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
+		// **バナーの中身を見る。** NotEmpty だと、勝者行を丸ごと落としても通る。
+		assert.Contains(t, result, "ゲーム終了")
+		assert.Contains(t, result, "あなた", "勝者の名前が入ること")
+		// ゲーム終了時はフェーズのプロンプトを出さずに打ち切る。
+		assert.NotContains(t, result, "マストフォロー")
 	})
 
 	t.Run("error block", func(t *testing.T) {

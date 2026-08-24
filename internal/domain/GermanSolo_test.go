@@ -492,10 +492,41 @@ func TestGermanSolo_CpuFoldsWhenTheHandCannotBeatTheStandingBid(t *testing.T) {
 }
 
 func TestGermanSolo_HintFollowsTheSameRuleAsTheCpu(t *testing.T) {
-	g := newTestGermanSolo()
-	hint := g.GetHint()
-	require.NotNil(t, hint, "人間の宣言手番ではヒントが出る")
-	assert.Contains(t, []string{"bid_pass", "bid_frage", "bid_solo", "bid_tout"}, hint.Reason)
+	// **どの宣言でも通る形にしない。** 4 つのうちどれかであることを見るだけだと、
+	// cpuChooseBidForHint を定数に置き換えても通ってしまい、「CPU と同じ関数を
+	// 読む」という不変条件を一度も確かめていないことになる。手札を固定して、
+	// その手札に対する唯一の正解を名指しする。
+	weak := []*domain.Card{
+		germanSoloCard(domain.CardDesignSpade, 8), germanSoloCard(domain.CardDesignSpade, 9),
+		germanSoloCard(domain.CardDesignClover, 8), germanSoloCard(domain.CardDesignClover, 9),
+		germanSoloCard(domain.CardDesignHeart, 8), germanSoloCard(domain.CardDesignHeart, 9),
+		germanSoloCard(domain.CardDesignDiamond, 8), germanSoloCard(domain.CardDesignDiamond, 9),
+	}
+	strong := []*domain.Card{
+		germanSoloCard(domain.CardDesignClover, 12), // Spadille
+		germanSoloCard(domain.CardDesignHeart, 7),   // Manille (♥ 切り札)
+		germanSoloCard(domain.CardDesignSpade, 12),  // Basta
+		germanSoloCard(domain.CardDesignHeart, 1), germanSoloCard(domain.CardDesignHeart, 13),
+		germanSoloCard(domain.CardDesignHeart, 11), germanSoloCard(domain.CardDesignDiamond, 1),
+		germanSoloCard(domain.CardDesignDiamond, 13),
+	}
+
+	for _, tc := range []struct {
+		name string
+		hand []*domain.Card
+		want string
+	}{
+		{"どの契約も支えられない手はパス", weak, "bid_pass"},
+		{"単独で 5 トリック取れる手はソロ", strong, "bid_solo"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newTestGermanSolo()
+			setGermanSoloHand(g, 0, tc.hand...)
+			hint := g.GetHint()
+			require.NotNil(t, hint, "人間の宣言手番ではヒントが出る")
+			assert.Equal(t, tc.want, hint.Reason)
+		})
+	}
 }
 
 func TestGermanSolo_HintSuggestsAnAceInTheAceCallPhase(t *testing.T) {

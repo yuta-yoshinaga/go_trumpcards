@@ -111,6 +111,48 @@ func TestGermanSoloInteractor_BidGameEnded(t *testing.T) {
 	gameMock.AssertNotCalled(t, "PlayerBid", mock.Anything, mock.Anything)
 }
 
+// **エース呼びを抜ける唯一の入口。** ここが動かないと Frage 落札の直後で盤が
+// 固まり、play は「フェーズが違う」で弾かれ続ける。
+func TestGermanSoloInteractor_CallAce(t *testing.T) {
+	tpMock := new(presenter.MockGermanSoloPresenter)
+	tpMock.On("Output", mock.Anything, mock.Anything).Return(germanSoloMockOutput)
+	gameMock := new(interfaces.MockGermanSoloGame)
+	gameMock.On("GetGameEndFlag").Return(false)
+	gameMock.On("GetPhase").Return(domain.GermanSoloPhasePlay)
+	gameMock.On("IsHumanTurn").Return(true)
+	gameMock.On("GetDeclarerIdx").Return(0)
+	gameMock.On("DeclareAce", 0, domain.CardDesignClover).Return(nil)
+
+	ci := usecase.NewGermanSoloInteractor(gameMock, tpMock)
+	assert.Equal(t, germanSoloMockOutput, ci.CallAce(domain.CardDesignClover))
+	gameMock.AssertCalled(t, "DeclareAce", 0, domain.CardDesignClover)
+}
+
+func TestGermanSoloInteractor_CallAceError(t *testing.T) {
+	tpMock := new(presenter.MockGermanSoloPresenter)
+	tpMock.On("Output", mock.Anything, mock.Anything).Return(germanSoloMockOutput)
+	gameMock := new(interfaces.MockGermanSoloGame)
+	gameMock.On("GetGameEndFlag").Return(false)
+	gameMock.On("GetDeclarerIdx").Return(0)
+	gameMock.On("DeclareAce", 0, domain.CardDesignHeart).Return(errors.New("cannot call"))
+
+	ci := usecase.NewGermanSoloInteractor(gameMock, tpMock)
+	assert.Equal(t, germanSoloMockOutput, ci.CallAce(domain.CardDesignHeart))
+	// 失敗したら盤は進めない。
+	gameMock.AssertNotCalled(t, "CpuPlay")
+}
+
+func TestGermanSoloInteractor_CallAceGameEnded(t *testing.T) {
+	tpMock := new(presenter.MockGermanSoloPresenter)
+	tpMock.On("Output", mock.Anything, mock.Anything).Return(germanSoloMockOutput)
+	gameMock := new(interfaces.MockGermanSoloGame)
+	gameMock.On("GetGameEndFlag").Return(true)
+
+	ci := usecase.NewGermanSoloInteractor(gameMock, tpMock)
+	assert.Equal(t, germanSoloMockOutput, ci.CallAce(domain.CardDesignClover))
+	gameMock.AssertNotCalled(t, "DeclareAce", mock.Anything, mock.Anything)
+}
+
 func TestGermanSoloInteractor_PlayResolvesTrick(t *testing.T) {
 	tpMock := new(presenter.MockGermanSoloPresenter)
 	tpMock.On("Output", mock.Anything, mock.Anything).Return(germanSoloMockOutput)
