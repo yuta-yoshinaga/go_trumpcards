@@ -66,8 +66,11 @@ type SchafkopfWebOutput struct {
 	PickerIdx        int                         `json:"pickerIdx"`
 	// Contract は切り札の構成そのもの。返さないと、Wenz の盤面で Ober が
 	// 切り札でない理由が画面から読み取れない。
-	Contract          int                     `json:"contract"`
-	SoloSuit          int                     `json:"soloSuit"`
+	Contract int `json:"contract"`
+	SoloSuit int `json:"soloSuit"`
+	// BeatableContracts は今この席が宣言できる契約。押せるのに必ず拒否
+	// されるボタンを描かないために要る。
+	BeatableContracts []int                   `json:"beatableContracts"`
 	PartnerIdx        int                     `json:"partnerIdx"`
 	CalledSuit        int                     `json:"calledSuit"`
 	PartnerRevealed   bool                    `json:"partnerRevealed"`

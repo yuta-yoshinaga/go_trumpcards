@@ -14,7 +14,12 @@ vi.mock('../api/gameApi', () => ({
 const mockExec = vi.mocked(schafkopfApi.exec);
 
 const playPhaseState = makeSchafkopfState();
-const pickPhaseState = makeSchafkopfState({ phase: 0, pickerIdx: -1, currentPlayerIdx: 0 });
+const pickPhaseState = makeSchafkopfState({
+  phase: 0,
+  pickerIdx: -1,
+  currentPlayerIdx: 0,
+  beatableContracts: [0, 1, 2],
+});
 const callPhaseState = makeSchafkopfState({ phase: 1, pickerIdx: 0, currentPlayerIdx: 0, callableSuits: [1, 2] });
 const trickEndState = makeSchafkopfState({
   phase: 3,
@@ -125,6 +130,21 @@ describe('SchafkopfPage', () => {
     // test that only checked `contract: 2`.
     fireEvent.click(screen.getByRole('button', { name: '♥ ハートを切り札にした Solo を宣言する' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pick', { pick: true, contract: 2, soloSuit: 3 }));
+  });
+
+  // **上回れない契約はボタンに出さない。** 出すと、押せるのに必ず拒否される
+  // 操作面ができる。
+  it('offers only the contracts that outrank the standing bid', async () => {
+    mockExec.mockResolvedValue(
+      makeSchafkopfState({ phase: 0, pickerIdx: -1, currentPlayerIdx: 0, beatableContracts: [2] }),
+    );
+    renderWithProviders(<SchafkopfPage />);
+
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /Solo/ })).toHaveLength(4));
+    expect(screen.queryByRole('button', { name: 'Rufspiel（A呼び）' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Wenz（Unterのみ切り札）' })).not.toBeInTheDocument();
+    // パスは常に残る。
+    expect(screen.getByRole('button', { name: 'パスする' })).toBeInTheDocument();
   });
 
   it('names the contract in play so the trump structure is readable', async () => {

@@ -38,6 +38,9 @@ func setupSchafkopfCuiMock() *interfaces.MockSchafkopfGame {
 	m.On("GetPassCount").Return(0)
 	m.On("GetContract").Return(domain.SchafkopfContractRufspiel)
 	m.On("GetSoloSuit").Return(0)
+	m.On("GetBeatableContracts").Return([]domain.SchafkopfContract{
+		domain.SchafkopfContractRufspiel, domain.SchafkopfContractWenz, domain.SchafkopfContractSolo,
+	})
 	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.SchafkopfPhasePick)

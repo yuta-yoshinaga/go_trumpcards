@@ -31,25 +31,26 @@ test.describe('Schafkopf E2E', () => {
   });
 
   // **契約は切り札の構成そのもの。** 画面に出ていないと、Wenz の盤面で Ober が
-  // 切り札でない理由が読み取れない。
-  test('names the contract in play once it is declared', async ({ page }) => {
+  // 切り札でない理由が読み取れない。宣言は Solo に上書きされうるので、
+  // 「何かの契約が名前で出ている」ことを見る。
+  test('names the contract in play once the auction closes', async ({ page }) => {
     await navigateTo(page, '/schafkopf');
     await declare(page, /Wenz/);
 
-    await expect(page.getByText(/契約:.*Wenz|Contract:.*Wenz/).first()).toBeVisible({ timeout: TIMEOUT_ACTION });
+    await expect(page.getByText(/契約:|Contract:/).first()).toBeVisible({ timeout: TIMEOUT_ACTION });
   });
 
-  // **Wenz と Solo は単独契約。** 呼びフェーズを飛ばしてプレイに入る。
-  test('a solo contract skips the call step and starts play', async ({ page }) => {
+  // 宣言すると競りは閉じ、宣言ボタンは消える。
+  test('declaring closes the auction for this seat', async ({ page }) => {
     await navigateTo(page, '/schafkopf');
     await declare(page, /Wenz/);
 
     await expect(page.getByRole('button', { name: /Rufspiel/ })).toHaveCount(0, { timeout: TIMEOUT_ACTION });
-    await expect(page.getByRole('button', { name: /を呼ぶ|Call /u })).toHaveCount(0, { timeout: TIMEOUT_ACTION });
   });
 
-  // Solo は押したボタンのスートがそのまま切り札になる。
-  test('a hearts Solo reports hearts as its trump', async ({ page }) => {
+  // Solo は最上位契約なので、宣言すれば必ず競りに勝つ。押したボタンの
+  // スートがそのまま切り札になる。
+  test('a hearts Solo wins the auction and reports hearts as its trump', async ({ page }) => {
     await navigateTo(page, '/schafkopf');
     await declare(page, /♥.*Solo|Solo.*♥/);
 
@@ -58,7 +59,8 @@ test.describe('Schafkopf E2E', () => {
 
   test('plays a card and the trick advances', async ({ page }) => {
     await navigateTo(page, '/schafkopf');
-    await declare(page, /Wenz/);
+    // Solo は最上位なので、宣言すれば必ず自分が契約を取ってリードできる。
+    await declare(page, /♥.*Solo|Solo.*♥/);
     await expect(playableCard(page).first()).toBeVisible({ timeout: TIMEOUT_ACTION });
 
     const before = await page

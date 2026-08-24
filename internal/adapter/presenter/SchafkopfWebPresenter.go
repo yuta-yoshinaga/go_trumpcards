@@ -50,6 +50,10 @@ func (p *SchafkopfWebPresenter) buildBase(g interfaces.SchafkopfGame) *controlle
 	resObj.PassCount = g.GetPassCount()
 	resObj.Contract = int(g.GetContract())
 	resObj.SoloSuit = g.GetSoloSuit()
+	resObj.BeatableContracts = []int{}
+	for _, c := range g.GetBeatableContracts() {
+		resObj.BeatableContracts = append(resObj.BeatableContracts, int(c))
+	}
 	resObj.CalledSuit = g.GetCalledSuit()
 	resObj.PartnerRevealed = g.IsPartnerRevealed()
 	resObj.RoundPickerPoints = g.GetRoundPickerPoints()

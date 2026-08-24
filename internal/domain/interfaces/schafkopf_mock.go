@@ -41,6 +41,12 @@ func (_m *MockSchafkopfGame) GetSoloSuit() int {
 	return ret.Get(0).(int)
 }
 
+// GetBeatableContracts モック
+func (_m *MockSchafkopfGame) GetBeatableContracts() []domain.SchafkopfContract {
+	ret := _m.Called()
+	return ret.Get(0).([]domain.SchafkopfContract)
+}
+
 // PlayerCall モック
 func (_m *MockSchafkopfGame) PlayerCall(suit int) error {
 	ret := _m.Called(suit)

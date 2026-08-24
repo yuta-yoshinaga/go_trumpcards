@@ -17,6 +17,8 @@ type SchafkopfGame interface {
 	GetContract() domain.SchafkopfContract
 	// GetSoloSuit Solo で選ばれた切り札スートを取得する
 	GetSoloSuit() int
+	// GetBeatableContracts 現在の手番で宣言できる契約を取得する
+	GetBeatableContracts() []domain.SchafkopfContract
 	// PlayerCall ピッカーが呼びスートを指定する
 	PlayerCall(suit int) error
 	// PlayerPlay プレイヤーがカードを出す

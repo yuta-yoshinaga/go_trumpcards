@@ -83,6 +83,11 @@ const SUIT_KEYS: Readonly<Record<number, string>> = { 1: 'spade', 2: 'club', 3: 
 /** Suits a Solo may name as trump. */
 const SOLO_SUITS = [1, 2, 3, 4] as const;
 
+/** Contract ids, matching `SchafkopfContract` in the Go domain. */
+const CONTRACT_RUFSPIEL = 0;
+const CONTRACT_WENZ = 1;
+const CONTRACT_SOLO = 2;
+
 /** Renders the Schafkopf game page: 4-player partnership trick-taking with declare/call/play phases. */
 export const SchafkopfPage = withTutorial(SchafkopfPageContent, 'schafkopf', SH_TUTORIAL_STEPS);
 
@@ -178,6 +183,8 @@ function SchafkopfPageContent() {
   const showPartner = state.partnerRevealed || isRoundEnd || isGameEnd;
   // The contract is what counts as trump, so it has to be on screen: without
   // it there is no way to tell why an Ober is not trump in a Wenz.
+  // 上回れない契約はボタンに出さない。押せるのに必ず拒否される操作面を作らない。
+  const beatable = state.beatableContracts ?? [];
   const contractLabel =
     state.contract === 1
       ? t('contractWenz')
@@ -344,6 +351,9 @@ function SchafkopfPageContent() {
                 isMobile={isMobile}
                 dataTutorialPrefix="sh"
                 validIndices={canPlay ? state.playableIndices : undefined}
+                // 出せる札にリングを出す。validIndices は出せない札を伏せる
+                // だけで、どれが出せるかを目で見つける手がかりにならない。
+                legalIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
               />
             )}
@@ -368,29 +378,36 @@ function SchafkopfPageContent() {
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="sh-action-buttons">
               {canPick && (
                 <>
-                  <button type="button" className={btnPrimary} onClick={handlePick} disabled={loading}>
-                    {t('pickButton')}
-                  </button>
-                  <button type="button" className={btnPrimary} onClick={() => handleDeclare(1)} disabled={loading}>
-                    {t('wenzButton')}
-                  </button>
+                  {/* Only the contracts that outrank the standing bid: a button
+                      the server is bound to refuse is worse than no button. */}
+                  {beatable.includes(CONTRACT_RUFSPIEL) && (
+                    <button type="button" className={btnPrimary} onClick={handlePick} disabled={loading}>
+                      {t('pickButton')}
+                    </button>
+                  )}
+                  {beatable.includes(CONTRACT_WENZ) && (
+                    <button type="button" className={btnPrimary} onClick={() => handleDeclare(1)} disabled={loading}>
+                      {t('wenzButton')}
+                    </button>
+                  )}
                   {/* Solo names its own trump, so each suit is its own button
                       rather than a declare-then-choose second step. */}
-                  {SOLO_SUITS.map((suit) => {
-                    const suitName = t(`suit.${SUIT_KEYS[suit]}`);
-                    return (
-                      <button
-                        key={`solo-${suit}`}
-                        type="button"
-                        className={btnPrimary}
-                        onClick={() => handleDeclare(2, suit)}
-                        disabled={loading}
-                        aria-label={t('soloButtonAriaLabel', { suit: suitName })}
-                      >
-                        {t('soloButton', { suit: suitName })}
-                      </button>
-                    );
-                  })}
+                  {beatable.includes(CONTRACT_SOLO) &&
+                    SOLO_SUITS.map((suit) => {
+                      const suitName = t(`suit.${SUIT_KEYS[suit]}`);
+                      return (
+                        <button
+                          key={`solo-${suit}`}
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleDeclare(2, suit)}
+                          disabled={loading}
+                          aria-label={t('soloButtonAriaLabel', { suit: suitName })}
+                        >
+                          {t('soloButton', { suit: suitName })}
+                        </button>
+                      );
+                    })}
                   <button type="button" className={btnSecondary} onClick={handlePass} disabled={loading}>
                     {t('passButton')}
                   </button>

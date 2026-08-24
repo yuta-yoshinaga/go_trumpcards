@@ -16,6 +16,8 @@
   "contractRufspiel": "Rufspiel (called ace)",
   "contractWenz": "Wenz (Unters only)",
   "contractSolo": "Solo ({{suit}})",
+  "beatableContracts": "Contracts you may declare: {{contracts}}",
+  "contractSoloAny": "Solo (name a suit)",
   "playerLine": "{{name}}: {{cards}} cards  Chips: {{chips}}  Tricks: {{tricks}}",
   "passCount": "Pass count: {{count}}",
   "gameEnd": "Game over! {{name}} wins!",

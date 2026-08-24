@@ -16,6 +16,8 @@
   "contractRufspiel": "Rufspiel（A呼び）",
   "contractWenz": "Wenz（Unterのみ切り札）",
   "contractSolo": "Solo（{{suit}}）",
+  "beatableContracts": "宣言できる契約: {{contracts}}",
+  "contractSoloAny": "Solo（スート指定）",
   "playerLine": "{{name}}: {{cards}}枚  チップ: {{chips}}  トリック: {{tricks}}",
   "passCount": "パス人数: {{count}}",
   "gameEnd": "ゲーム終了！{{name}}の勝利！",

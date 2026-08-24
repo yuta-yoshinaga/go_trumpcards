@@ -18,3 +18,24 @@ describe('formatSchafkopfState', () => {
     expect(formatSchafkopfState(makeSchafkopfState({ hint, messageCode: 'schafkopf.playing' }))).not.toContain('HINT');
   });
 });
+
+describe('formatSchafkopfState — the auction', () => {
+  it('lists only the contracts that outrank the standing bid', () => {
+    const out = formatSchafkopfState(makeSchafkopfState({ phase: 0, beatableContracts: [2] }));
+    // 行そのものを見る。`picker:` にも "pick" が入るので、素の contains では
+    // 案内していない語まで拾ってしまう。
+    const line = out.split('\n').find((l) => l.startsWith('you may declare:'));
+    expect(line).toBe('you may declare: solo <suit>');
+  });
+
+  it('says nothing about declaring once the auction has closed', () => {
+    const out = formatSchafkopfState(makeSchafkopfState({ phase: 2, beatableContracts: [] }));
+    expect(out).not.toContain('you may declare');
+  });
+
+  it('names the contract in play, with the suit a Solo chose', () => {
+    expect(formatSchafkopfState(makeSchafkopfState({ contract: 1 }))).toContain('contract: Wenz (Unters only)');
+    expect(formatSchafkopfState(makeSchafkopfState({ contract: 2, soloSuit: 3 }))).toContain('contract: Solo (♥)');
+    expect(formatSchafkopfState(makeSchafkopfState({ contract: 0 }))).toContain('contract: Rufspiel (called ace)');
+  });
+});

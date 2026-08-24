@@ -624,6 +624,7 @@ const baseSchafkopfState: SchafkopfResponse = {
   pickerIdx: 0,
   contract: 0,
   soloSuit: 0,
+  beatableContracts: [],
   partnerIdx: -1,
   calledSuit: 1,
   partnerRevealed: false,

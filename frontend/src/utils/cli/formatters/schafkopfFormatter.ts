@@ -15,6 +15,13 @@ const SUIT_NAMES = ['none', '♠', '♣', '♥', '♦'];
  * Render the contract in play. Solo carries its trump suit, because "Solo"
  * on its own does not say which colour is trump.
  */
+/** The command that declares each contract, for the "you may declare" line. */
+const CONTRACT_COMMANDS: Readonly<Record<number, string>> = {
+  0: 'pick',
+  1: 'wenz',
+  2: 'solo <suit>',
+};
+
 function contractLabel(state: SchafkopfResponse): string {
   switch (state.contract) {
     case 1:
@@ -56,6 +63,12 @@ export function formatSchafkopfState(state: SchafkopfResponse): string {
       return `${name}=${formatCard(tc.card)}`;
     });
     lines.push(`trick: ${trickParts.join(', ')}`);
+  }
+
+  // 上回れる契約だけを案内する。打てば必ず拒否されるコマンドは勧めない。
+  if (state.phase === 0 && (state.beatableContracts ?? []).length > 0) {
+    const names = state.beatableContracts.map((c) => CONTRACT_COMMANDS[c] ?? String(c));
+    lines.push(`you may declare: ${names.join(', ')}`);
   }
 
   if (state.callableSuits.length > 0) {

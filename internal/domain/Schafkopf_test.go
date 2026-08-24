@@ -145,6 +145,22 @@ func TestSchafkopf_CardPoints(t *testing.T) {
 	}
 }
 
+// **開幕は人間から話す。** 宣言はディーラーの左隣から始まるので、
+// ディーラーが 0 のままだと人間 (席 0) は毎回最後に話し、先に宣言した CPU
+// を上回れる契約しか選べない。開幕 500 配りで 3 契約すべてが選べた回数は
+// 0 だった (実測)。
+func TestSchafkopf_HumanSpeaksFirstOnTheOpeningDeal(t *testing.T) {
+	g := newSKGame(true)
+	g.Reset()
+
+	if got := g.GetCurrentPlayerIdx(); got != 0 {
+		t.Errorf("first to speak = %d, want 0 (the human)", got)
+	}
+	if got := len(g.GetBeatableContracts()); got != 3 {
+		t.Errorf("beatable contracts = %d, want 3 — nobody has bid yet", got)
+	}
+}
+
 func TestSchafkopf_PickFlow(t *testing.T) {
 	g := newSKGame(true)
 	g.Reset()
@@ -155,6 +171,11 @@ func TestSchafkopf_PickFlow(t *testing.T) {
 	if err := g.PlayerDeclare(true, SchafkopfContractRufspiel, 0); err != nil {
 		t.Fatalf("pick err: %v", err)
 	}
+	// 宣言しただけでは競りは閉じない。残る 3 席が発言してから確定する。
+	if g.GetPickerIdx() >= 0 {
+		t.Error("one declaration must not settle the auction")
+	}
+	skFinishAuction(g)
 	if g.GetPickerIdx() != 0 {
 		t.Errorf("picker = %d, want 0", g.GetPickerIdx())
 	}
@@ -166,6 +187,14 @@ func TestSchafkopf_PickFlow(t *testing.T) {
 	}
 }
 
+// skFinishAuction は人間が発言したあとの残り席をパスさせて競りを閉じる。
+// **1 人が宣言しても競りは閉じない。** 全員が発言してから最上位が取る。
+func skFinishAuction(g *Schafkopf) {
+	for g.GetPhase() == SchafkopfPhasePick {
+		g.resolvePick(g.GetCurrentPlayerIdx(), false, SchafkopfContractRufspiel, 0)
+	}
+}
+
 func TestSchafkopf_PassThenForcedPick(t *testing.T) {
 	g := newSKGame(false) // 全 CPU
 	g.Reset()
@@ -173,15 +202,91 @@ func TestSchafkopf_PassThenForcedPick(t *testing.T) {
 	// **席数から導く。** クローン元は 5 人卓だったので 4 回パスして 5 人目が
 	// 強制されていた。4 人卓では 3 回。
 	for i := 0; i < SchafkopfPlayerCnt-1; i++ {
-		g.resolvePick(g.GetCurrentPlayerIdx(), false)
+		g.resolvePick(g.GetCurrentPlayerIdx(), false, SchafkopfContractRufspiel, 0)
+		if g.GetPickerIdx() >= 0 {
+			t.Fatalf("picker settled after %d passes; every seat speaks first", i+1)
+		}
 	}
 	if got, want := g.GetPassCount(), SchafkopfPlayerCnt-1; got != want {
 		t.Fatalf("passCount = %d, want %d", got, want)
 	}
-	// 最後の席はパスできず強制ピック。
-	g.resolvePick(g.GetCurrentPlayerIdx(), false)
+	// 全員がパスしたら、ディーラーの左隣が Rufspiel を引き受ける。
+	g.resolvePick(g.GetCurrentPlayerIdx(), false, SchafkopfContractRufspiel, 0)
 	if g.GetPickerIdx() < 0 {
-		t.Errorf("last player should be forced to pick")
+		t.Errorf("someone must take the contract once everyone has passed")
+	}
+}
+
+// **先に言った席が契約を取る方式は成立しない。** 席順で先に来る CPU が
+// ほぼ毎回宣言してしまい、人間は一度も宣言フェーズに立てなくなる
+// (この形にする前の実測は 0/200)。全員が発言してから最上位が取る。
+func TestSchafkopf_HighestContractWinsRegardlessOfSeat(t *testing.T) {
+	g := newSKGame(false)
+	g.Reset()
+	g.SetCurrentPlayerIdx(0)
+
+	// 席 0 が Rufspiel、席 2 が Solo。席順では 0 が先だが、契約の順位で 2 が取る。
+	g.resolvePick(0, true, SchafkopfContractRufspiel, 0)
+	if g.GetPickerIdx() >= 0 {
+		t.Fatal("the first declaration must not close the auction")
+	}
+	g.resolvePick(1, false, SchafkopfContractRufspiel, 0)
+	g.resolvePick(2, true, SchafkopfContractSolo, CardDesignHeart)
+	g.resolvePick(3, false, SchafkopfContractRufspiel, 0)
+
+	if got := g.GetPickerIdx(); got != 2 {
+		t.Errorf("picker = %d, want 2 (Solo outranks Rufspiel)", got)
+	}
+	if got := g.GetContract(); got != SchafkopfContractSolo {
+		t.Errorf("contract = %v, want Solo", got)
+	}
+	if got := g.GetSoloSuit(); got != CardDesignHeart {
+		t.Errorf("solo suit = %d, want %d", got, CardDesignHeart)
+	}
+}
+
+// 同位では上書きしない。後から同じ契約を言っても順位は上がらないので、
+// 先に言った席が残る。
+func TestSchafkopf_EqualContractDoesNotDisplaceTheEarlierSeat(t *testing.T) {
+	g := newSKGame(false)
+	g.Reset()
+	g.SetCurrentPlayerIdx(0)
+
+	g.resolvePick(0, true, SchafkopfContractWenz, 0)
+	g.resolvePick(1, true, SchafkopfContractWenz, 0)
+	g.resolvePick(2, false, SchafkopfContractRufspiel, 0)
+	g.resolvePick(3, false, SchafkopfContractRufspiel, 0)
+
+	if got := g.GetPickerIdx(); got != 0 {
+		t.Errorf("picker = %d, want 0 (an equal bid does not outrank)", got)
+	}
+}
+
+// 上回れない契約はエラーで返す。ボタンにも出さないので、押せるのに必ず
+// 拒否される操作面ができない。
+func TestSchafkopf_CannotDeclareUnderTheStandingBid(t *testing.T) {
+	g := newSKGame(true)
+	g.Reset()
+	g.SetPhase(SchafkopfPhasePick)
+	g.SetCurrentPlayerIdx(0)
+
+	// まだ誰も宣言していない: 3 契約すべて宣言できる。
+	if got := len(g.GetBeatableContracts()); got != 3 {
+		t.Fatalf("beatable = %d, want 3 before anyone declares", got)
+	}
+
+	g.resolvePick(1, true, SchafkopfContractWenz, 0)
+	g.SetCurrentPlayerIdx(0)
+
+	if err := g.PlayerDeclare(true, SchafkopfContractRufspiel, 0); err == nil {
+		t.Error("Rufspiel must not beat a standing Wenz")
+	}
+	if got := g.GetBeatableContracts(); len(got) != 1 || got[0] != SchafkopfContractSolo {
+		t.Errorf("beatable = %v, want [Solo]", got)
+	}
+	// **負のコントロール。** 上回る契約は通る。
+	if err := g.PlayerDeclare(true, SchafkopfContractSolo, CardDesignHeart); err != nil {
+		t.Errorf("Solo should beat a standing Wenz: %v", err)
 	}
 }
 
@@ -878,6 +983,7 @@ func TestSchafkopf_WenzAndSoloPlayAlone(t *testing.T) {
 			if err := g.PlayerDeclare(true, tc.contract, tc.soloSuit); err != nil {
 				t.Fatalf("declare: %v", err)
 			}
+			skFinishAuction(g)
 
 			if tc.wantAlone {
 				if g.GetPhase() != SchafkopfPhasePlay {

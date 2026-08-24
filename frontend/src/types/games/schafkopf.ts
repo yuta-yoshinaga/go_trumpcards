@@ -59,6 +59,11 @@ export interface SchafkopfResponse extends BaseGameResponse {
   contract: SchafkopfContract;
   /** Trump suit chosen for a Solo (1=♠ 2=♣ 3=♥ 4=♦); 0 for other contracts. */
   soloSuit: number;
+  /**
+   * Contracts this seat may still declare — anything that outranks the
+   * standing bid. Empty once the auction has closed.
+   */
+  beatableContracts: SchafkopfContract[];
   /** Index of the picker's partner, or -1 until revealed/round end. */
   partnerIdx: number;
   /** Called partner suit (0=none, 1=♠, 2=♣, 3=♥). */

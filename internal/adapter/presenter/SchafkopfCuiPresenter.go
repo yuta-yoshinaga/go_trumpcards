@@ -58,6 +58,22 @@ func schafkopfPlayerStr(g interfaces.SchafkopfGame, i int) string {
 	return b.String()
 }
 
+// schafkopfBeatableNames は今この席が宣言できる契約の表示名を返す。
+func schafkopfBeatableNames(g interfaces.SchafkopfGame) []string {
+	var out []string
+	for _, c := range g.GetBeatableContracts() {
+		switch c {
+		case domain.SchafkopfContractWenz:
+			out = append(out, i18n.T("schafkopf.contractWenz"))
+		case domain.SchafkopfContractSolo:
+			out = append(out, i18n.T("schafkopf.contractSoloAny"))
+		default:
+			out = append(out, i18n.T("schafkopf.contractRufspiel"))
+		}
+	}
+	return out
+}
+
 // schafkopfContractLabel は採用された契約の表示名を返す。Solo だけは
 // 切り札スートまで見せないと、どの色が切り札か分からない。
 func schafkopfContractLabel(g interfaces.SchafkopfGame) string {
@@ -126,6 +142,12 @@ func (p *SchafkopfCuiPresenter) Output(g interfaces.SchafkopfGame, lastErr error
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("schafkopf.promptPick",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			// **上回れる契約だけを案内する。** 全部並べると、打てば必ず
+			// 拒否されるコマンドを勧めることになる (#6179 と同じ形)。
+			if names := schafkopfBeatableNames(g); len(names) > 0 {
+				b.WriteString(i18n.Tf("schafkopf.beatableContracts",
+					"contracts", strings.Join(names, " / ")) + "\n")
+			}
 			b.WriteString(i18n.T("schafkopf.promptPickHelp") + "\n")
 		case domain.SchafkopfPhaseCall:
 			pickerIdx := g.GetPickerIdx()

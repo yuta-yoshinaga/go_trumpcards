@@ -7991,6 +7991,13 @@ paths:
         there is no default, because a Solo without a named trump is not a
         legal declaration. `pick: false` passes.
 
+        Every seat speaks once, starting left of the dealer, and the
+        **highest-ranking contract wins** — not the first one declared. A
+        declaration that cannot outrank the standing bid is rejected, so the
+        response carries `beatableContracts`: exactly what this seat may still
+        declare. If everyone passes, the seat left of the dealer takes
+        Rufspiel.
+
         Only Rufspiel reaches the `call` step. The declaring side needs 61 of
         the 120 card points (A=11, 10=10, K=4, Ober=3, Unter=2); settlement is
         zero-sum across the four seats.
@@ -60486,6 +60493,11 @@ components:
         soloSuit:
           type: integer
           description: "Trump suit named by a Solo (1=♠, 2=♣, 3=♥, 4=♦); 0 for other contracts"
+        beatableContracts:
+          type: array
+          items:
+            type: integer
+          description: Contracts this seat may still declare — those that outrank the standing bid. Empty once the auction has closed.
         partnerIdx:
           type: integer
           description: Index of the secret partner (-1 until revealed, and always -1 for Wenz and Solo)

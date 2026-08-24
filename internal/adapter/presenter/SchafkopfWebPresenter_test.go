@@ -32,6 +32,9 @@ func setupSchafkopfWebMock() *interfaces.MockSchafkopfGame {
 	m.On("GetPassCount").Return(0)
 	m.On("GetContract").Return(domain.SchafkopfContractRufspiel)
 	m.On("GetSoloSuit").Return(0)
+	m.On("GetBeatableContracts").Return([]domain.SchafkopfContract{
+		domain.SchafkopfContractRufspiel, domain.SchafkopfContractWenz, domain.SchafkopfContractSolo,
+	})
 	m.On("GetCallableSuits").Return([]int(nil))
 	m.On("GetPlayableIndices", 0).Return([]int{0})
 	m.On("IsHumanTurn").Return(true)

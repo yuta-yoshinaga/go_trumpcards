@@ -80,8 +80,15 @@ type Schafkopf struct {
 	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
-	passCount        int // 現ピックフェーズでパスした人数
-	pickerIdx        int
+	passCount        int // 現ピックフェーズで発言を終えた人数
+	// **最上位の宣言を持ち回る。** 先に言った人が契約を取る方式にすると、
+	// 席順で先に来る CPU がほぼ毎回宣言してしまい、人間は一度も宣言
+	// フェーズに立てない (実測 0/200)。Solo > Wenz > Rufspiel の順位で
+	// 上書きしていき、全員が発言してから宣言者を確定する。
+	bestContract  SchafkopfContract
+	bestSoloSuit  int
+	bestBidderIdx int
+	pickerIdx     int
 	// contract は採用された契約、soloSuit は Solo で選ばれた切り札スート。
 	// **切り札の構成が契約で変わる**ので、盤面の一部として持つ。
 	contract        SchafkopfContract
@@ -126,7 +133,10 @@ func (g *Schafkopf) Reset() {
 	g.gameEndFlag = false
 	g.winnerIdx = -1
 	g.roundNumber = 1
-	g.dealerIdx = 0
+	// **開幕は人間から話す。** 宣言はディーラーの左隣から始まるので、
+	// ディーラーを人間の右隣に置く。0 にすると人間は毎回最後に話すことに
+	// なり、開幕の盤面で 3 契約すべてが選べる配りが一度も出ない (実測)。
+	g.dealerIdx = SchafkopfPlayerCnt - 1
 	for _, p := range g.players {
 		p.SetChips(g.config.StartChips)
 	}
@@ -153,6 +163,9 @@ func (g *Schafkopf) startRound() {
 	g.calledSuit = 0
 	g.partnerRevealed = false
 	g.passCount = 0
+	g.bestContract = SchafkopfContractRufspiel
+	g.bestSoloSuit = 0
+	g.bestBidderIdx = -1
 	// **契約はラウンドごとにやり直す。** 持ち越すと前ラウンドの Wenz が
 	// 次の配りでも切り札構成を支配し、盤面が静かに壊れる。
 	g.contract = SchafkopfContractRufspiel
@@ -203,9 +216,6 @@ func (g *Schafkopf) PlayerDeclare(pick bool, contract SchafkopfContract, soloSui
 	if !g.players[g.currentPlayerIdx].GetIsHuman() {
 		return ErrNotHumanTurn
 	}
-	if !pick && g.passCount >= SchafkopfPlayerCnt-1 {
-		return NewDomainError(ErrInvalidPlay, "最後のプレイヤーはパスできません")
-	}
 	if pick {
 		if contract < SchafkopfContractRufspiel || contract > SchafkopfContractSolo {
 			return NewDomainError(ErrInvalidPlay, "その契約は宣言できません")
@@ -216,29 +226,70 @@ func (g *Schafkopf) PlayerDeclare(pick bool, contract SchafkopfContract, soloSui
 			(soloSuit < CardDesignSpade || soloSuit > CardDesignMax) {
 			return NewDomainError(ErrInvalidCard, "切り札スートを指定してください")
 		}
-		g.contract = contract
-		g.soloSuit = soloSuit
+		if !g.beatsBestBid(contract) {
+			return NewDomainError(ErrInvalidPlay, "現在の宣言を上回る契約が必要です")
+		}
 	}
-	g.resolvePick(g.currentPlayerIdx, pick)
+	g.resolvePick(g.currentPlayerIdx, pick, contract, soloSuit)
 	return nil
 }
 
-// resolvePick ピック/パスを反映し、フェーズを進める。
-func (g *Schafkopf) resolvePick(playerIdx int, pick bool) {
-	// 4 人がパスした場合、最後のプレイヤーは強制的にピックする。
-	if !pick && g.passCount >= SchafkopfPlayerCnt-1 {
-		pick = true
+// beatsBestBid は contract が現在の最上位宣言を上回るかを返す。
+//
+// **同位では上書きしない。** 同じ契約を後の席が言っても順位は上がらない
+// ので、先に言った席の宣言が残る。
+func (g *Schafkopf) beatsBestBid(contract SchafkopfContract) bool {
+	if g.bestBidderIdx < 0 {
+		return true
 	}
-	if pick {
-		if !g.players[playerIdx].GetIsHuman() {
-			g.contract, g.soloSuit = g.cpuDecideContract(playerIdx)
+	return contract > g.bestContract
+}
+
+// GetBeatableContracts は現在の手番で宣言できる契約を返す。
+//
+// 上回れない契約をボタンに出すと、押せるのに必ず拒否される操作面ができる。
+func (g *Schafkopf) GetBeatableContracts() []SchafkopfContract {
+	var out []SchafkopfContract
+	for c := SchafkopfContractRufspiel; c <= SchafkopfContractSolo; c++ {
+		if g.beatsBestBid(c) {
+			out = append(out, c)
 		}
-		g.becomePicker(playerIdx)
+	}
+	return out
+}
+
+// resolvePick 宣言/パスを記録し、全員が発言したら宣言者を確定する。
+func (g *Schafkopf) resolvePick(playerIdx int, pick bool, contract SchafkopfContract, soloSuit int) {
+	if pick && g.beatsBestBid(contract) {
+		g.bestContract = contract
+		g.bestSoloSuit = soloSuit
+		g.bestBidderIdx = playerIdx
+		g.appendLog(playerIdx, "declare",
+			fmt.Sprintf("%s declares %s", playerName(g.players, playerIdx),
+				schafkopfContractName(contract)), nil)
+	} else {
+		g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
+	}
+
+	g.passCount++
+	g.currentPlayerIdx = (g.currentPlayerIdx + 1) % SchafkopfPlayerCnt
+	if g.passCount < SchafkopfPlayerCnt {
 		return
 	}
-	g.passCount++
-	g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
-	g.currentPlayerIdx = (g.currentPlayerIdx + 1) % SchafkopfPlayerCnt
+
+	// 全員が発言し終えた。誰も宣言していなければ、ディーラーの左隣が
+	// Rufspiel を引き受ける — 配り直しではなく必ず 1 ラウンド成立させる。
+	if g.bestBidderIdx < 0 {
+		g.bestBidderIdx = g.leadPlayerIdx
+		g.bestContract = SchafkopfContractRufspiel
+		g.bestSoloSuit = 0
+		g.appendLog(g.bestBidderIdx, "forced",
+			fmt.Sprintf("%s must take Rufspiel (all passed)",
+				playerName(g.players, g.bestBidderIdx)), nil)
+	}
+	g.contract = g.bestContract
+	g.soloSuit = g.bestSoloSuit
+	g.becomePicker(g.bestBidderIdx)
 }
 
 // becomePicker 宣言者を確定する。
@@ -345,7 +396,12 @@ func (g *Schafkopf) CpuPlay() {
 		if g.players[g.currentPlayerIdx].GetIsHuman() {
 			return
 		}
-		g.resolvePick(g.currentPlayerIdx, g.cpuDecidePick(g.currentPlayerIdx))
+		idx := g.currentPlayerIdx
+		contract, soloSuit := g.cpuDecideContract(idx)
+		// **上回れない契約は宣言できない。**手札が強くても、既に出ている
+		// 宣言より順位が下なら CPU はパスするしかない。
+		declare := g.cpuDecidePick(idx) && g.beatsBestBid(contract)
+		g.resolvePick(idx, declare, contract, soloSuit)
 	case SchafkopfPhaseCall:
 		if g.pickerIdx < 0 || g.players[g.pickerIdx].GetIsHuman() {
 			return
@@ -1083,7 +1139,9 @@ func (g *Schafkopf) cpuDecidePick(playerIdx int) bool {
 	trumpCnt, queenCnt := 0, 0
 	for i := 0; i < player.GetCardsSize(); i++ {
 		c := player.GetCard(i)
-		if g.isTrump(c) {
+		// 宣言前なので g.contract はまだ既定値。Rufspiel の切り札構成で
+		// 数える。
+		if schafkopfIsTrump(c) {
 			trumpCnt++
 		}
 		if c.GetValue() == 12 {
