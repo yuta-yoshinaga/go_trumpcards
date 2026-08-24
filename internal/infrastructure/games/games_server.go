@@ -1420,6 +1420,11 @@ func init() {
 			return usecase.NewQuadrilleInteractor(domain.NewDefaultQuadrille(), new(presenter.QuadrilleWebPresenter))
 		},
 		controller.NewQuadrilleWebController)
+	BindWebControllerFor("gleek",
+		func() usecase.GleekInteractorIF {
+			return usecase.NewGleekInteractor(domain.NewDefaultGleek(), new(presenter.GleekWebPresenter))
+		},
+		controller.NewGleekWebController)
 	BindWebControllerFor("germansolo",
 		func() usecase.GermanSoloInteractorIF {
 			return usecase.NewGermanSoloInteractor(domain.NewDefaultGermanSolo(), new(presenter.GermanSoloWebPresenter))

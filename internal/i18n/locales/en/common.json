@@ -613,5 +613,6 @@
   "bidActionRequiredFrage": "Bid action is required (pass, frage <suit>, solo <suit>, or tout <suit>).",
   "invalidBidActionFrage": "Invalid bid action: {{val}}. Please enter pass, frage <suit>, solo <suit>, or tout <suit>.",
   "aceSuitRequiredWords": "An ace suit is required (spade/club/heart/diamond).",
-  "invalidAceSuitSCHD": "Invalid ace suit: {{val}}. Use spade/club/heart/diamond."
+  "invalidAceSuitSCHD": "Invalid ace suit: {{val}}. Use spade/club/heart/diamond.",
+  "discardIndicesRequired": "The indices of the cards to throw are required (e.g. discard 0 1 2 3 4 5 6)."
 }

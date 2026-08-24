@@ -124,6 +124,7 @@ import type {
   GermanSoloResponse,
   GermanWhistResponse,
   GinRummyResponse,
+  GleekResponse,
   GoFishResponse,
   GolfResponse,
   GongZhuResponse,
@@ -467,6 +468,7 @@ import { getGapsHint } from '../utils/hints/gapsHint';
 import { getGermanSoloHint } from '../utils/hints/germansoloHint';
 import { getGermanWhistHint } from '../utils/hints/germanwhistHint';
 import { getGinRummyHint } from '../utils/hints/ginrummyHint';
+import { getGleekHint } from '../utils/hints/gleekHint';
 import { getGoFishHint } from '../utils/hints/gofishHint';
 import { getGolfHint } from '../utils/hints/golfHint';
 import { getGongZhuHint } from '../utils/hints/gongzhuHint';
@@ -737,6 +739,7 @@ export const hintFactories = {
   belote: (s) => getBeloteHint(s as BeloteResponse),
   coinche: (s) => getCoincheHint(s as CoincheResponse),
   germansolo: (s) => getGermanSoloHint(s as GermanSoloResponse),
+  gleek: (s) => getGleekHint(s as GleekResponse),
   jass: (s) => getJassHint(s as JassResponse),
   bauernschnapsen: (s) => getBauernschnapsenHint(s as BauernschnapsenResponse),
   gaigel: (s) => getGaigelHint(s as GaigelResponse),

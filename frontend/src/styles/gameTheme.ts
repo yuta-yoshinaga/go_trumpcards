@@ -182,6 +182,7 @@ export type GameKey =
   | 'belote'
   | 'coinche'
   | 'germansolo'
+  | 'gleek'
   | 'jass'
   | 'watten'
   | 'bauernschnapsen'
@@ -756,6 +757,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   belote: BLUE,
   coinche: BLUE,
   germansolo: BLUE,
+  gleek: BLUE,
   jass: BLUE,
   watten: WATTEN,
   bauernschnapsen: BLUE,

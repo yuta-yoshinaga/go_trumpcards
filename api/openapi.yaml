@@ -28,6 +28,8 @@ tags:
     description: Schafkopf (シャーフコップ) game
   - name: madrasso
     description: Madrasso (マドラッソ) game
+  - name: gleek
+    description: 'Gleek (グリーク) game - a 16th-century English three-hander on a 44-card pack that runs four scoring stages in one deal: an auction for the stock, the ruff (best single-suit total), gleek/mournival melds, and twelve tricks scored 3 apiece plus trump honours'
   - name: germansolo
     description: German Solo (ジャーマン・ソロ) game - the German branch of the Ombre/Quadrille family on a 32-card pack, with the three fixed matadors (Spadille ♣Q, Manille = 7 of trumps, Basta ♠Q) and a Frage / Solo / Tout contract ladder; Frage calls an ace to gain a hidden partner, Solo and Tout are played alone
   - name: quadrille
@@ -30776,6 +30778,109 @@ paths:
                 properties:
                   message:
                     type: string
+  /gleek/exec:
+    post:
+      tags:
+        - gleek
+      summary: Execute a Gleek game command
+      description: |
+        Send a command to advance the Gleek (グリーク) session identified by
+        `sessionId`. Gleek is a 16th–17th century English game for three seats
+        on a **44-card pack** (a standard deck minus the 2s and 3s). Twelve
+        cards each leaves an 8-card stock; its top card is turned to fix the
+        trump suit, and if that card is a Four (*Tiddy*) the dealer collects 4
+        from each opponent before a card is played. The human is player 0 and
+        is the eldest hand on the opening deal.
+
+        **One deal has four scoring stages.**
+
+        1. **The stock is auctioned.** The eldest hand must open at 12 and may
+           not pass; raises go up in twos (so that half a bid is always whole).
+           `nextBidAmount` on the response is exactly what this seat may bid —
+           0 once the ceiling is reached. The buyer pays half the bid *to each
+           opponent*, takes the seven stock cards other than the turn-up, and
+           throws seven of their own.
+        2. **The ruff.** The best single-suit total (A=11, courts=10, numerals
+           at face value) collects a stake from each opponent. A mournival of
+           aces beats any ruff whatsoever.
+        3. **The melds.** Three of a rank above ten is a *gleek*, four is a
+           *mournival*, paid by each opponent: aces 4/8, kings 3/6, queens 2/4,
+           jacks 1/2 — the mournival always exactly double.
+        4. **Twelve tricks.** Eldest leads, follow suit if you can, trumps win.
+           Each trick is worth 3 plus the value of any trump honours in it:
+           Tib (A) 15, Tom (J) 9, Tumbler (6) 6, Towser (5) 5, Tiddy (4) 4,
+           and the trump king and queen 3 each.
+
+        **The par each seat settles against is read from the deal.** The
+        turn-up and the buyer's discards never reach the table, so a deal holds
+        72–81 of a possible 81 points; `dealPoints` is what this deal actually
+        held and `par` is that divided by three. Each seat wins or loses the
+        difference between its own `trickPoints` and `par`.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Auction for the stock |
+        | Discard   | `1`   | The buyer throws seven cards |
+        | Play      | `2`   | Trick play (follow suit; trumps win) |
+        | TrickEnd  | `3`   | Trick complete, advance with `next` |
+        | RoundEnd  | `4`   | 12 tricks complete, score and advance with `nextround` |
+        | GameEnd   | `5`   | Target number of deals played |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `bid`       | `b`     | Bid `bid` (0 drops out) |
+        | `discard`   | `d`     | Throw the cards in `discardIndices` |
+        | `play`      | `p`     | Play card by `cardIndex` |
+        | `next`      | `n`     | Advance to next trick |
+        | `nextround` | `nr`    | Score deal and start the next |
+        | `hint`      | `h`     | Suggest an action / card |
+        | `log`       | `l`     | View action log |
+      operationId: gleekExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GleekRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Raise to 14
+                value:
+                  command: bid
+                  bid: 14
+                  sessionId: my-session-001
+              discard:
+                summary: Throw seven cards after buying the stock
+                value:
+                  command: discard
+                  discardIndices: [0, 1, 2, 3, 4, 5, 6]
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at index 0
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GleekResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GleekResponse'
+
   /germansolo/exec:
     post:
       tags:
@@ -59194,6 +59299,280 @@ components:
           type: string
           description: Client-generated session identifier (max 256 characters)
           example: my-session-001
+
+    GleekRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bid, b, discard, d, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: bid
+        sessionId:
+          type: string
+        bid:
+          type: integer
+          description: "Amount to raise to, or 0 to drop out. Must equal the response's `nextBidAmount`. Required for `bid`."
+          minimum: 0
+          example: 14
+        discardIndices:
+          type: array
+          items:
+            type: integer
+          description: Indices of the cards the buyer throws — exactly seven. Required for `discard`.
+          example: [0, 1, 2, 3, 4, 5, 6]
+        cardIndex:
+          type: integer
+          description: Index into your hand. Required for `play`.
+          minimum: 0
+          example: 0
+        config:
+          $ref: '#/components/schemas/GleekConfig'
+
+    GleekConfig:
+      type: object
+      description: Gleek game configuration
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: 'CPU difficulty: 0=Easy, 1=Normal, 2=Hard'
+          enum: [0, 1, 2]
+          example: 1
+        targetRounds:
+          type: integer
+          description: Number of deals that make up a match (default 5)
+          minimum: 1
+          example: 5
+
+    GleekPlayer:
+      type: object
+      description: One Gleek player's public state
+      required:
+        - id
+        - isHuman
+        - cardCount
+        - cards
+        - trickCount
+        - score
+        - isBuyer
+        - bid
+        - passed
+        - trickPoints
+        - ruff
+        - ruffSuit
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        trickCount:
+          type: integer
+        score:
+          type: integer
+        isBuyer:
+          type: boolean
+          description: Whether this seat bought the stock this deal.
+        bid:
+          type: integer
+          description: The amount this seat has bid; 0 if it never bid.
+        passed:
+          type: boolean
+          description: Whether this seat has dropped out of the auction.
+        trickPoints:
+          type: integer
+          description: Points taken in tricks this deal (3 per trick plus trump honours).
+        ruff:
+          type: integer
+          description: This seat's best single-suit total (A=11, courts=10, numerals at face value).
+        ruffSuit:
+          type: integer
+          description: The suit that total came from (1=♠, 2=♣, 3=♥, 4=♦); -1 before the ruff is scored.
+          enum: [-1, 1, 2, 3, 4]
+
+    GleekMeld:
+      type: object
+      description: One declared gleek (three of a rank) or mournival (four)
+      required:
+        - playerIdx
+        - rank
+        - count
+        - value
+      properties:
+        playerIdx:
+          type: integer
+        rank:
+          type: integer
+          description: 'Rank of the set: 1=ace, 13=king, 12=queen, 11=jack'
+          enum: [1, 11, 12, 13]
+        count:
+          type: integer
+          description: 3 for a gleek, 4 for a mournival
+          enum: [3, 4]
+        value:
+          type: integer
+          description: Points taken from each opponent
+
+    GleekTrickCard:
+      type: object
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+        card:
+          $ref: '#/components/schemas/Card'
+
+    GleekHint:
+      type: object
+      required:
+        - reason
+      properties:
+        cardIndices:
+          type: array
+          items:
+            type: integer
+        reason:
+          type: string
+
+    GleekResponse:
+      type: object
+      description: Current state of the Gleek game
+      required:
+        - players
+        - phase
+        - roundNumber
+        - trickNumber
+        - currentPlayerIdx
+        - currentBidderIdx
+        - leadPlayerIdx
+        - dealerIdx
+        - elderIdx
+        - buyerIdx
+        - winningBid
+        - highestBid
+        - nextBidAmount
+        - trumpSuit
+        - currentTrick
+        - playerScores
+        - discardCount
+        - ruffWinnerIdx
+        - melds
+        - dealPoints
+        - par
+        - playableIndices
+        - gameEndFlag
+        - winnerPlayer
+        - isHumanTurn
+        - isHumanBidTurn
+        - isHumanDiscardTurn
+        - message
+        - config
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/GleekPlayer'
+        phase:
+          type: integer
+          description: 'Game phase: 0=Bid, 1=Discard, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd'
+          enum: [0, 1, 2, 3, 4, 5]
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        currentBidderIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        elderIdx:
+          type: integer
+          description: Seat left of the dealer; opens the auction and leads the first trick.
+        buyerIdx:
+          type: integer
+          description: Seat that bought the stock; -1 until the auction closes.
+        winningBid:
+          type: integer
+        highestBid:
+          type: integer
+          description: Highest amount standing in the auction.
+        nextBidAmount:
+          type: integer
+          description: The only amount this seat may bid; 0 once the ceiling is reached.
+        trumpSuit:
+          type: integer
+          description: Fixed by the turn-up before the auction starts (1=♠, 2=♣, 3=♥, 4=♦).
+          enum: [1, 2, 3, 4]
+        turnUp:
+          $ref: '#/components/schemas/Card'
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/GleekTrickCard'
+        playerScores:
+          type: array
+          items:
+            type: integer
+        discardCount:
+          type: integer
+          description: How many cards the buyer must throw (seven).
+        ruffWinnerIdx:
+          type: integer
+          description: Seat that won the ruff; -1 until it is scored.
+        melds:
+          type: array
+          items:
+            $ref: '#/components/schemas/GleekMeld'
+        dealPoints:
+          type: integer
+          description: Points this deal actually held (72–81; the turn-up and the buyer's discards never reach the table).
+        par:
+          type: integer
+          description: dealPoints divided by three — what each seat is settled against.
+        lastTrickWinner:
+          type: integer
+        result:
+          type: integer
+          description: 'Match result from the human seat: -1=lose, 0=undecided/draw, 1=win'
+          enum: [-1, 0, 1]
+        playableIndices:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+        isHumanTurn:
+          type: boolean
+        isHumanBidTurn:
+          type: boolean
+        isHumanDiscardTurn:
+          type: boolean
+        hint:
+          $ref: '#/components/schemas/GleekHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          $ref: '#/components/schemas/GleekConfig'
 
     GermanSoloRequest:
       type: object

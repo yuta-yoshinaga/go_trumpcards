@@ -130,6 +130,7 @@ export * from './games/gaps';
 export * from './games/germansolo';
 export * from './games/germanwhist';
 export * from './games/ginrummy';
+export * from './games/gleek';
 export * from './games/gofish';
 export * from './games/golf';
 export * from './games/gongzhu';

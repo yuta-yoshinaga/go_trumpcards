@@ -308,6 +308,7 @@ var gameDescriptions = map[string]string{
 	"ombre":               "Ombre / Hombre (オンブル)",
 	"quadrille":           "Quadrille (カドリール)",
 	"germansolo":          "German Solo (ジャーマン・ソロ)",
+	"gleek":               "Gleek (グリーク)",
 	"ulti":                "Ulti / Ultimó (ウルティ)",
 	"king":                "King (キング)",
 	"cinch":               "Cinch / Double Pedro (シンチ/ダブルペドロ)",

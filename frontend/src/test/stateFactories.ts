@@ -17,6 +17,7 @@ import type {
   FrenchTarotResponse,
   GanjifaResponse,
   GermanSoloResponse,
+  GleekResponse,
   GongZhuResponse,
   GoStopBreakdown,
   GoStopResponse,
@@ -1523,6 +1524,101 @@ const baseGermanSoloState: GermanSoloResponse = {
  */
 export function makeGermanSoloState(overrides?: Partial<GermanSoloResponse>): GermanSoloResponse {
   return { ...baseGermanSoloState, ...overrides };
+}
+
+/** Base Gleek state used as the default for {@link makeGleekState}. Defaults to a human Play turn as the buyer, trump = ♥. */
+const baseGleekState: GleekResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 12,
+      cards: [
+        { design: 'HEART' as const, value: 1 },
+        { design: 'HEART' as const, value: 11 },
+        { design: 'SPADE' as const, value: 13 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isBuyer: true,
+      bid: 14,
+      passed: false,
+      trickPoints: 0,
+      ruff: 31,
+      ruffSuit: 3,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 12,
+      cards: [],
+      trickCount: 0,
+      score: 0,
+      isBuyer: false,
+      bid: 12,
+      passed: true,
+      trickPoints: 0,
+      ruff: 24,
+      ruffSuit: 1,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      cardCount: 12,
+      cards: [],
+      trickCount: 0,
+      score: 0,
+      isBuyer: false,
+      bid: 0,
+      passed: true,
+      trickPoints: 0,
+      ruff: 20,
+      ruffSuit: 2,
+    },
+  ],
+  phase: 2, // GleekPhase.PLAY
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  currentBidderIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 2,
+  elderIdx: 0,
+  buyerIdx: 0,
+  winningBid: 14,
+  highestBid: 14,
+  nextBidAmount: 16,
+  trumpSuit: 3,
+  turnUp: { design: 'HEART' as const, value: 4 },
+  currentTrick: [],
+  playerScores: [0, 0, 0],
+  discardCount: 7,
+  ruffWinnerIdx: 0,
+  melds: [],
+  dealPoints: 0,
+  par: 0,
+  lastTrickWinner: -1,
+  result: 0,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  isHumanBidTurn: false,
+  isHumanDiscardTurn: false,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 5 },
+};
+
+/**
+ * Creates a {@link GleekResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial GleekResponse fields to override.
+ * @returns A complete GleekResponse suitable for use in tests.
+ */
+export function makeGleekState(overrides?: Partial<GleekResponse>): GleekResponse {
+  return { ...baseGleekState, ...overrides };
 }
 
 /** Base Ulti state used as the default for {@link makeUltiState}. Defaults to a human Play turn (declarer, Party contract, trump = ♠). */
