@@ -334,6 +334,7 @@ export * from './games/twotenjack';
 export * from './games/tysiac';
 export * from './games/ulti';
 export * from './games/ultimatetexasholdem';
+export * from './games/unsunkaruta';
 export * from './games/videopoker';
 export * from './games/vint';
 export * from './games/vira';

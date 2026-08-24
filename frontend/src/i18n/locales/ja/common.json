@@ -169,6 +169,7 @@
     "kaiser": "カイザー",
     "kalooki": "カルーキ",
     "karnoffel": "カルニッフェル",
+    "unsunkaruta": "うんすんカルタ",
     "kemps": "ケムプス",
     "kille": "キッレ",
     "king": "キング",
@@ -2531,7 +2532,19 @@
     "piedmontesetarot.errDiscardTrump": "切り札は（やむを得ない場合を除き）捨てられません。",
     "piedmontesetarot.errDiscardCourt": "コート札は捨てられません。",
     "piedmontesetarot.hintRequested": "ヒントがあります。",
-    "piedmontesetarot.noHint": "ヒントはありません。"
+    "piedmontesetarot.noHint": "ヒントはありません。",
+    "unsunkaruta.playPhase.lead": "あなたのリードです。宣言するかどうかを選んでください。",
+    "unsunkaruta.playPhase.mustFollow": "宣言されています。台札のスートに従ってください。",
+    "unsunkaruta.playPhase.free": "好きな札を出せます。",
+    "unsunkaruta.trickEnd": "トリックが決まりました。",
+    "unsunkaruta.roundEnd": "ディールが終わりました。",
+    "unsunkaruta.result.draw": "ゲーム終了！ 引き分けです。",
+    "unsunkaruta.result.humanWin": "ゲーム終了！ あなたの組の勝ちです。",
+    "unsunkaruta.result.cpuWin": "ゲーム終了！ 相手の組の勝ちです。",
+    "unsunkaruta.errNotLeader": "宣言できるのはリードしたプレイヤーだけです。",
+    "unsunkaruta.errCardRange": "カードの番号が範囲外です。",
+    "unsunkaruta.hintRequested": "ヒントがあります。",
+    "unsunkaruta.noHint": "ヒントはありません。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

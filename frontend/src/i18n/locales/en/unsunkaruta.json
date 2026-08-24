@@ -1,0 +1,67 @@
+{
+  "title": "Unsun Karuta",
+  "phase": {
+    "play": "Play",
+    "trickEnd": "Trick end",
+    "roundEnd": "Deal end",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "targetDeals": "Deals per match",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Deal {{n}}",
+  "trick": "Trick {{n}}/{{total}}",
+  "trump": "Trump: {{suit}}",
+  "suit": {
+    "pao": "Pao (batons, long)",
+    "isu": "Isu (swords, long)",
+    "kotsu": "Kotsu (cups, round)",
+    "oru": "Oru (coins, round)",
+    "kuru": "Kuru (tomoe, round)",
+    "unknown": "-"
+  },
+  "team": "team {{n}}",
+  "teamTricks": "Tricks this deal - yours {{a}} / theirs {{b}}",
+  "teamScores": "Match - yours {{a}} / theirs {{b}}",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "dealerBadge": "Dealer",
+  "mustFollow": "Declared - follow the led suit (anything goes if you are void).",
+  "canDeclare": "You lead. \"Play and declare\" makes this trick must-follow for everyone.",
+  "playButton": "Play",
+  "declareButton": "Play and declare",
+  "nextTrick": "Next trick",
+  "nextRound": "Next deal",
+  "roundResult": {
+    "title": "Deal result",
+    "tricks": "yours {{a}} / theirs {{b}}",
+    "winner": "Team {{team}} wins",
+    "draw": "Draw"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_strong": "lead something strong and keep the initiative",
+    "follow_play": "take it if you can; drop cheaply when your side already leads",
+    "next_trick": "move on to the next trick",
+    "next_round": "move on to the next deal",
+    "none": "no suggestion right now"
+  },
+  "tutorial": {
+    "trickDisplay": "All eight seats play one card. The highest trump, or the highest card of the led suit if no trump was played, takes one \"ko\" for that team.",
+    "info": "Unsun Karuta is the oldest surviving Japanese trick-taking game: 75 cards in five suits of fifteen, eight players in two teams of four seated alternately - your neighbours are always opponents.",
+    "playerHand": "Your hand. **The pip order flips with the suit**: nine is highest in the long suits (Pao, Isu), one is highest in the round suits (Kotsu, Oru, Kuru). The court cards run Un > Sun > Sota > Robai > Kiri > Uma and all beat every pip.",
+    "playButton": "Select a card and press Play. When you lead you may also \"Play and declare\" (meri/monchi), which makes the trick must-follow for everyone.",
+    "resetButton": "The reset button starts a new game."
+  },
+  "hintRequested": "A hint is available",
+  "noHint": "No hint available"
+}

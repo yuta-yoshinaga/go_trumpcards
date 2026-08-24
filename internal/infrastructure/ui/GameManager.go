@@ -6913,6 +6913,25 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"piedmontesetarot.helpSetSeats", "piedmontesetarot.helpSetDifficulty"},
 		}),
+	BindCuiFor("unsunkaruta",
+		func() usecase.UnsunKarutaInteractorIF {
+			return usecase.NewUnsunKarutaInteractor(domain.NewDefaultUnsunKaruta(), new(presenter.UnsunKarutaCuiPresenter))
+		},
+		controller.NewUnsunKarutaCuiController,
+		CuiHelpSpec{
+			TitleKey: "unsunkaruta.helpTitle",
+			ExampleKeys: []string{
+				"unsunkaruta.helpExamplePlay",
+				"unsunkaruta.helpExampleMeri",
+			},
+			CommandKeys: []string{
+				"unsunkaruta.helpPlay", "unsunkaruta.helpMeri",
+				"unsunkaruta.helpNext", "unsunkaruta.helpNextRound",
+				"unsunkaruta.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"unsunkaruta.helpSetDifficulty", "unsunkaruta.helpSetDeals"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

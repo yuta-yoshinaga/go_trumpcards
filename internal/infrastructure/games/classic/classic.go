@@ -348,6 +348,14 @@ func init() {
 		},
 		controller.NewPrsiWebControllerWithProvider)
 
+	games.RegisterKVGame("unsunkaruta", games.CategoryClassic,
+		func() usecase.UnsunKarutaInteractorIF {
+			return usecase.NewUnsunKarutaInteractor(domain.NewDefaultUnsunKaruta(), new(presenter.UnsunKarutaWebPresenter))
+		},
+		func(data []byte) (usecase.UnsunKarutaInteractorIF, error) {
+			return usecase.RestoreUnsunKarutaInteractor(data, new(presenter.UnsunKarutaWebPresenter))
+		},
+		controller.NewUnsunKarutaWebControllerWithProvider)
 	games.RegisterKVGame("karnoffel", games.CategoryClassic,
 		func() usecase.KarnoffelInteractorIF {
 			return usecase.NewKarnoffelInteractor(domain.NewDefaultKarnoffel(), new(presenter.KarnoffelWebPresenter))

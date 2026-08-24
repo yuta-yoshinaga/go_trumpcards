@@ -145,6 +145,7 @@ export const workerUrl: Record<string, string> = {
   bideuchre: WORKER_EXTRA2,
   sixbidsolo: WORKER_EXTRA4,
   karnoffel: WORKER_CLASSIC,
+  unsunkaruta: WORKER_CLASSIC,
   literature: WORKER_EXTRA4,
   guandan: WORKER_EXTRA4,
   aluette: WORKER_EXTRA2,

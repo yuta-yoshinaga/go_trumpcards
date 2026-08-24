@@ -327,6 +327,7 @@ import type {
   TysiacResponse,
   UltimateTexasHoldemResponse,
   UltiResponse,
+  UnsunKarutaResponse,
   VideoPokerResponse,
   VintResponse,
   ViraResponse,
@@ -677,6 +678,7 @@ import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
 import { getTysiacHint } from '../utils/hints/tysiacHint';
 import { getUltiHint } from '../utils/hints/ultiHint';
 import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHint';
+import { getUnsunKarutaHint } from '../utils/hints/unsunKarutaHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
 import { getVintHint } from '../utils/hints/vintHint';
 import { getViraHint } from '../utils/hints/viraHint';
@@ -872,6 +874,7 @@ export const hintFactories = {
   kille: (s) => getKilleHint(s as KilleResponse),
   kingalbert: (s) => getKingalbertHint(s as KingAlbertResponse),
   karnoffel: (s) => getKarnoffelHint(s as KarnoffelResponse),
+  unsunkaruta: (s) => getUnsunKarutaHint(s as UnsunKarutaResponse),
   king: (s) => getKingHint(s as KingResponse),
   flowergarden: (s) => getFlowergardenHint(s as FlowerGardenResponse),
   tonk: (s) => getTonkHint(s as TonkResponse),

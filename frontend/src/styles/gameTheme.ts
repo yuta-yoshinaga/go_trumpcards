@@ -330,6 +330,7 @@ export type GameKey =
   | 'bideuchre'
   | 'sixbidsolo'
   | 'karnoffel'
+  | 'unsunkaruta'
   | 'literature'
   | 'guandan'
   | 'shengji'
@@ -939,6 +940,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   bideuchre: CASINO,
   sixbidsolo: CASINO,
   karnoffel: GREEN,
+  unsunkaruta: GREEN,
   literature: BLUE,
   guandan: GREEN,
   shengji: GREEN,

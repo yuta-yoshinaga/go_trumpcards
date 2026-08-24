@@ -1670,6 +1670,11 @@ func init() {
 			return usecase.NewSixBidSoloInteractor(domain.NewDefaultSixBidSolo(), new(presenter.SixBidSoloWebPresenter))
 		},
 		controller.NewSixBidSoloWebController)
+	BindWebControllerFor("unsunkaruta",
+		func() usecase.UnsunKarutaInteractorIF {
+			return usecase.NewUnsunKarutaInteractor(domain.NewDefaultUnsunKaruta(), new(presenter.UnsunKarutaWebPresenter))
+		},
+		controller.NewUnsunKarutaWebController)
 	BindWebControllerFor("karnoffel",
 		func() usecase.KarnoffelInteractorIF {
 			return usecase.NewKarnoffelInteractor(domain.NewDefaultKarnoffel(), new(presenter.KarnoffelWebPresenter))

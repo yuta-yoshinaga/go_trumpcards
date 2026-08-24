@@ -39,5 +39,11 @@
   "discardableList": "捨て可能: {{cards}}",
   "discardableNone": "なし",
   "discardableLegend": "※ オヌール (切り札1/21・Matto)・コート札は捨てられません",
-  "playableList": "出せる札: {{cards}}"
+  "playableList": "出せる札: {{cards}}",
+  "errScartoCount": "ちょうど {{n}} 枚を捨ててください。",
+  "errCardRange": "カードの番号が範囲外です。",
+  "errDuplicateCard": "同じカードを 2 回選べません。",
+  "errDiscardHonour": "オヌール（切り札1・21・マット）は捨てられません。",
+  "errDiscardTrump": "切り札は（やむを得ない場合を除き）捨てられません。",
+  "errDiscardCourt": "コート札は捨てられません。"
 }
