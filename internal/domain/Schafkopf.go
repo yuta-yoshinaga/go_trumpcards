@@ -843,7 +843,9 @@ const schafkopfTrumpSuit = 0
 // schafkopfFailSuits フェイル (非切り札) スートの一覧。
 func schafkopfFailSuits() []int {
 	// **ハートは切り札なので呼べない。** 呼べるのは残る 3 つのフェイル。
-	return []int{CardDesignClover, CardDesignSpade, CardDesignDiamond}
+	// スート ID の昇順。ヘルプが `1=♠ 2=♣ 4=♦` と並べているので、一覧が
+	// 別の順で出ると読み手が番号を数え直すことになる。
+	return []int{CardDesignSpade, CardDesignClover, CardDesignDiamond}
 }
 
 // schafkopfStrength トリックでの強さ。切り札はすべてフェイル札より強い。
