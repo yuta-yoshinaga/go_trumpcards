@@ -50,9 +50,14 @@ const (
 
 // CoincheContractPoints は宣言できる目標点。
 //
-// **80 から 10 刻みで 180、その上が Capot。** ベロートと違い、コワンシュは
+// **80 から 10 刻みで 160、その上が Capot。** ベロートと違い、コワンシュは
 // 「何点取るか」を競り上げるので、契約は数値そのものが順位になる。
-var CoincheContractPoints = []int{80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, CoincheCapotPoints}
+//
+// **160 で打ち止めなのは、1 ラウンドで動く点が 162 しかないから。** カード
+// 152 + Dix de Der 10 が上限なので、170 や 180 を並べると成功条件
+// (makerCardPts >= contractPoints) を満たしようがない契約を宣言できてしまう。
+// Capot だけはトリック数で判定するので、点の上限とは無関係に成立する。
+var CoincheContractPoints = []int{80, 90, 100, 110, 120, 130, 140, 150, 160, CoincheCapotPoints}
 
 // CoincheCapotPoints は Capot (全 8 トリック) の契約値。
 const CoincheCapotPoints = 250
@@ -1320,12 +1325,20 @@ func (b *Coinche) cpuSelectBid(playerIdx int) (points, suit int, ok bool) {
 
 	// 評価値 threshold で 80 点、以降 4 ごとに 10 点上積み。
 	want := CoincheContractPoints[0] + (score-threshold)/4*10
+
+	// **手札が支えられない契約には乗らない。** ここを落とすと、ループが
+	// 「今の契約の次の段」を返してしまい、80 がやっとの手札が 160 の上に
+	// 押し上げられる。CPU もヒントも同じ関数を読むので、人間が助言に
+	// 従っても取れない契約を掴む。
+	if want <= b.contractPoints {
+		return 0, 0, false
+	}
+
 	for _, pts := range CoincheContractPoints {
-		if pts > b.contractPoints && pts >= want {
+		if pts >= want {
 			return pts, suit, true
 		}
 	}
-	// 望む点が既に出ている契約以下なら降りる。
 	return 0, 0, false
 }
 

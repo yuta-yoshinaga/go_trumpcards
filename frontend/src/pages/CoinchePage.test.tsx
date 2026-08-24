@@ -55,7 +55,7 @@ function makeState(overrides: Partial<CoincheResponse> = {}): CoincheResponse {
     contractPoints: 0,
     multiplier: 1,
     double: 0,
-    biddablePoints: [80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 250],
+    biddablePoints: [80, 90, 100, 110, 120, 130, 140, 150, 160, 250],
     makerTeam: 0,
     makerPlayerIdx: -1,
     currentTrick: [],

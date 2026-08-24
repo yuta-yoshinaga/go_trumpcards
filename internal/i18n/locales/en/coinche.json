@@ -1,6 +1,6 @@
 {
   "helpTitle": "Coinche",
-  "helpBid": "  b <pts> <suit>       bid a contract (80-180 by 10, or 250=Capot; 1=S 2=C 3=H 4=D)",
+  "helpBid": "  b <pts> <suit>       bid a contract (80-160 by 10, or 250=Capot; 1=S 2=C 3=H 4=D)",
   "helpPass": "  pa                   pass (bid nothing)",
   "helpCoinche": "  co                   coinche (double the contract)",
   "helpSurcoinche": "  su                   surcoinche (double it again)",

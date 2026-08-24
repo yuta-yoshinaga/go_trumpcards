@@ -20,7 +20,8 @@ type CoincheConfig struct {
 	CpuDifficulty        CoincheCpuDifficulty `json:"cd"`
 	TargetScore          int                  `json:"ts"` // ゲーム終了スコア (先に到達したチームが勝利, デフォルト1000)
 	DixDeDer             int                  `json:"dd"` // 最終トリックボーナス (デフォルト10)
-	EnableBeloteRebelote bool                 `json:"br"` // K+Q トランプによるコワンシュ/レコワンシュ (+20) を有効化
+	EnableBeloteRebelote bool                 `json:"br"` // K+Q トランプによるベロート/ルベロート (+20) を有効化。この game で
+	// coinche は倍化のことなので、メルドの側は Belote/Rebelote と呼ぶ。
 }
 
 // DefaultCoincheConfig デフォルト設定を返す

@@ -13,7 +13,7 @@ import (
 // CoincheWebInput コワンシュWebインプット
 type CoincheWebInput struct {
 	BaseWebInput
-	// Points 宣言する目標点 (bid コマンド; 80..180 と 250=Capot)
+	// Points 宣言する目標点 (bid コマンド; 80..160 の 10 刻みと 250=Capot)
 	Points *int `json:"points,omitempty"`
 	// Suit 宣言する切り札スート (bid コマンド; 1=♠ 2=♣ 3=♥ 4=♦)
 	Suit      *int              `json:"suit,omitempty"`

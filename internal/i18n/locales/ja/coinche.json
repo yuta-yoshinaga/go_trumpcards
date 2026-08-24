@@ -1,6 +1,6 @@
 {
   "helpTitle": "Coinche (コワンシュ)",
-  "helpBid": "  b <点> <suit>        契約を宣言する（80〜180の10刻み / 250=Capot, 1=♠ 2=♣ 3=♥ 4=♦）",
+  "helpBid": "  b <点> <suit>        契約を宣言する（80〜160の10刻み / 250=Capot, 1=♠ 2=♣ 3=♥ 4=♦）",
   "helpPass": "  pa                   パス（宣言しない）",
   "helpCoinche": "  co                   コワンシュ（相手の契約を倍にする）",
   "helpSurcoinche": "  su                   シュルコワンシュ（さらに倍にする）",

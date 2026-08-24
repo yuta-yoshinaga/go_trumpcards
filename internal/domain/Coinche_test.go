@@ -981,3 +981,69 @@ func TestCoinche_DoublingTurnReachesTheHuman(t *testing.T) {
 		t.Errorf("defending team = %d, want 0 (the human's side)", got)
 	}
 }
+
+// **契約は届きうる値でなければならない。** 1 ラウンドで動くカード点は
+// 152 + Dix de Der 10 = 162 が上限なので、それを超える目標点は
+// `makerCardPts >= contractPoints` を満たしようがない。Capot だけは
+// トリック数で判定するので別扱い。
+func TestCoinche_EveryContractIsReachable(t *testing.T) {
+	cfg := domain.DefaultCoincheConfig()
+	max := domain.CoincheRoundCardPointsTotal + cfg.DixDeDer
+	for _, pts := range domain.CoincheContractPoints {
+		if pts == domain.CoincheCapotPoints {
+			continue // トリック数で判定するので点の上限とは無関係。
+		}
+		if pts > max {
+			t.Errorf("contract %d cannot be made: only %d card points exist in a round", pts, max)
+		}
+	}
+}
+
+// **上回れないなら降りる。** 手札が支えられる点が今の契約以下なら、
+// 席順の都合で「次の段」に押し上げられてはいけない。押し上げると、
+// CPU も (同じ関数を読む) ヒントも、絶対に取れない契約を掴む。
+func TestCoinche_CpuBid_FoldsWhenItsHandCannotBeatTheStandingBid(t *testing.T) {
+	b := newTestCoinche()
+	b.Reset()
+	// 席 0 が高い契約を置く。
+	b.SetBidPlayerIdx(0)
+	require.NoError(t, b.PlayerBid(150, domain.CardDesignHeart))
+
+	// **「宣言したい」けれど「上回れない」手札。** 弱すぎて宣言自体を
+	// 見送る手だと、この分岐に入る前に降りてしまい何も検査できない。
+	// ♠の J+9+K で評価 30 = 最低契約 80 相当。
+	b.SetBidPlayerIdx(1)
+	setupCoincheHand(b, 1, []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 11, false),
+		domain.NewCard(domain.CardDesignSpade, 9, false),
+		domain.NewCard(domain.CardDesignSpade, 13, false),
+		domain.NewCard(domain.CardDesignClover, 8, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+		domain.NewCard(domain.CardDesignDiamond, 8, false),
+		domain.NewCard(domain.CardDesignClover, 7, false),
+		domain.NewCard(domain.CardDesignHeart, 9, false),
+	})
+	// この手札が本当に「宣言したい」側であることを確かめる: 何も出ていない
+	// 盤なら宣言するはず。そうでなければ、下の検査は素通りしてしまう。
+	fresh := newTestCoinche()
+	fresh.Reset()
+	fresh.SetBidPlayerIdx(1)
+	setupCoincheHand(fresh, 1, []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 11, false),
+		domain.NewCard(domain.CardDesignSpade, 9, false),
+		domain.NewCard(domain.CardDesignSpade, 13, false),
+		domain.NewCard(domain.CardDesignClover, 8, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+		domain.NewCard(domain.CardDesignDiamond, 8, false),
+		domain.NewCard(domain.CardDesignClover, 7, false),
+		domain.NewCard(domain.CardDesignHeart, 9, false),
+	})
+	fresh.CpuBid()
+	require.NotZero(t, fresh.GetContractPoints(), "fixture is too weak to bid at all; it cannot test the fold path")
+
+	before := b.GetContractPoints()
+	b.CpuBid()
+	if got := b.GetContractPoints(); got != before {
+		t.Errorf("contract = %d, want it left at %d — this hand cannot support a higher bid", got, before)
+	}
+}

@@ -477,7 +477,7 @@ tags:
   - name: belote
     description: Belote (ベロート) game - French 4-player partnership trick-taking on a 32-card deck (7-A × 4 suits); two-round bidding (take face-up suit / call other suit), strict obligation to follow / over-trump, last-trick bonus (Dix de Der +10) and K+Q-of-trumps bonus (Belote/Rebelote +20)
   - name: coinche
-    description: Coinche (コワンシュ) game - the bidding form of Belote, where all 32 cards are dealt and the table then runs a contract auction (80-180 by tens, or Capot at 250) followed by coinche/surcoinche doubling; the round is judged against the declared target rather than against the opponents
+    description: Coinche (コワンシュ) game - the bidding form of Belote, where all 32 cards are dealt and the table then runs a contract auction (80-160 by tens, or Capot at 250) followed by coinche/surcoinche doubling; the round is judged against the declared target rather than against the opponents
   - name: spiderette
     description: Spiderette (スパイダレット) game - single-player solitaire combining Klondike's 7-column staircase deal with Spider's same-suit descending move rules on a single 52-card deck; clear all 4 suits to win
   - name: mighty
@@ -59103,8 +59103,8 @@ components:
           type: string
         points:
           type: integer
-          description: "Contract target: 80-180 in tens, or 250 for Capot (all eight tricks). Required for `bid`."
-          enum: [80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 250]
+          description: "Contract target: 80-160 in tens, or 250 for Capot (all eight tricks); only 162 points exist in a round, so the ladder stops at 160. Required for `bid`."
+          enum: [80, 90, 100, 110, 120, 130, 140, 150, 160, 250]
           example: 110
         suit:
           type: integer
