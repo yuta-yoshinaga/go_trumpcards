@@ -136,10 +136,21 @@ func TestStHelena_RedealGathersFromTheLastPileAndDealsAgain(t *testing.T) {
 
 	// **列をまたいで並べ替わっている。**その場で逆順にするだけなら、列0 の
 	// 中身は列0 のままになる。
-	firstBefore := before[0][0].Card
-	firstAfter := after[0][0].Card
-	moved := firstBefore.GetDesign() != firstAfter.GetDesign() || firstBefore.GetValue() != firstAfter.GetValue()
-	assert.True(t, moved, "集め直していれば列0の底は入れ替わる")
+	//
+	// **見るのは列 0 全体で、底の 1 枚ではない。** 104 枚のダブルデッキには
+	// 同じ札が 2 枚あるので、集め直した結果たまたま同じ絵柄・同じ数字が底に
+	// 戻ることがある ── 底 1 枚だけを見ていた頃は、`internal/domain` の一括
+	// 実行で 1% 前後の割合で落ちていた (実測)。8 枚すべてが一致する確率は
+	// 無視できる。
+	moved := false
+	for i := range before[0] {
+		b, a := before[0][i].Card, after[0][i].Card
+		if b.GetDesign() != a.GetDesign() || b.GetValue() != a.GetValue() {
+			moved = true
+			break
+		}
+	}
+	assert.True(t, moved, "集め直していれば列0の中身は入れ替わる")
 }
 
 // **12 列 × 8 枚で 96 枚。**種札 8 枚と合わせて 104 枚。クレセントの 16 × 6 の
