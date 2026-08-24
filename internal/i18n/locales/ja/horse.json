@@ -24,5 +24,15 @@
   "hintDiscipline": "[HINT: いまの種目は{{name}}です。規則はその種目のものに従います]",
   "result.winner": "ゲーム終了！ {{name}} の勝ち",
   "helpExampleFold": "  f                                       この手を降りる",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "discipline.nlHoldem": "ノーリミット・ホールデム",
+  "discipline.plOmaha": "ポットリミット・オマハ",
+  "discipline.tripleDraw": "2-7 トリプルドロー",
+  "promptDraw": "引き直し {{draw}} 回目 — 交換する札を選んでください",
+  "promptDrawHelp": "d <番号...>=交換（例: d 0 2）  sp=スタンドパット（引かない）",
+  "hintDraw": "[HINT: 引き直しの番です。d で交換する札を選ぶか、sp で引かずに進みます]",
+  "errFinished": "このマッチは終わっています。",
+  "errWrongPhase": "いまはその操作を受け付けません。",
+  "errNoTable": "進行中のハンドがありません。",
+  "errNoDraw": "いまの種目に引き直しはありません。"
 }

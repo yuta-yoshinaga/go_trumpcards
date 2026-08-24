@@ -1,0 +1,64 @@
+{
+  "title": "エイトゲーム・ミックス",
+  "phase": {
+    "play": "ベッティング",
+    "handEnd": "ハンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "seats": "席数",
+    "handsPerDiscipline": "種目ごとのハンド数"
+  },
+  "discipline.holdem": "テキサスホールデム",
+  "discipline.omahaHiLo": "オマハ ハイロー",
+  "discipline.razz": "ラズ",
+  "discipline.stud": "セブンカードスタッド",
+  "discipline.studHiLo": "スタッド ハイロー",
+  "hand": "ハンド {{n}}/{{total}}",
+  "handTotal": "通算 {{n}}",
+  "pot": "ポット {{pot}}",
+  "community": "場",
+  "chips": "{{chips}} チップ",
+  "you": "あなた",
+  "nextHand": "次のハンドへ",
+  "newGame": "新しいゲーム",
+  "result": {
+    "title": "最終結果",
+    "winner": "勝者: {{name}}",
+    "chips": "{{name}}: {{chips}} チップ"
+  },
+  "tutorial": {
+    "discipline": "いま打っている種目です。リミットホールデム→オマハハイロー→ラズ→スタッド→スタッドハイロー→ノーリミットホールデム→ポットリミットオマハ→2-7 トリプルドローの順に切り替わり、そのたびに規則が変わります。",
+    "seats": "各席の残高と、見えている札です。スタッド系ではCPUの表向きの札も見えます。2-7 トリプルドローは全員の札が伏せられます。",
+    "actions": "ベッティングの操作はどの種目でも同じです。2-7 トリプルドローの番だけ、捨てる札を選んで交換します。チップは種目をまたいで持ち越され、誰かが飛んだ時点でマッチが終わります。"
+  },
+  "frontendHint.horseNextHand": "ハンドが決着しました。次のハンドへ進んでください",
+  "frontendHint.horseDisciplineChanged": "種目が変わりました。規則を確かめてから打ってください",
+  "frontendHint.horseOmahaUsesTwo": "オマハは手札からちょうど2枚を使います",
+  "frontendHint.horseRazzWantsLow": "ラズは最も低い手が勝ちます",
+  "frontendHint.horsePlayTheDiscipline": "いまの種目の規則で打ってください",
+  "round.preflop": "プリフロップ",
+  "round.flop": "フロップ",
+  "round.turn": "ターン",
+  "round.river": "リバー",
+  "round.showdown": "ショーダウン",
+  "round.third": "サードストリート",
+  "round.fourth": "フォースストリート",
+  "round.fifth": "フィフスストリート",
+  "round.sixth": "シックスストリート",
+  "round.seventh": "セブンスストリート",
+  "discipline.nlHoldem": "ノーリミット・ホールデム",
+  "discipline.plOmaha": "ポットリミット・オマハ",
+  "discipline.tripleDraw": "2-7 トリプルドロー",
+  "round.deal": "配り終わり",
+  "round.betting": "ベッティング",
+  "round.drawing": "引き直し",
+  "draw": {
+    "prompt": "引き直し {{n}} 回目 — 交換する札を選んでください",
+    "toggle": "{{n}} 番目の札を選ぶ",
+    "exchange": "{{count}} 枚交換する",
+    "stand": "引かない（スタンドパット）"
+  },
+  "frontendHint.horseDrawTurn": "引き直しの番です。捨てる札を選ぶか、そのまま進んでください"
+}

@@ -1,0 +1,64 @@
+{
+  "title": "Eight-Game Mix",
+  "phase": {
+    "play": "Betting",
+    "handEnd": "Hand over",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "seats": "Seats",
+    "handsPerDiscipline": "Hands per discipline"
+  },
+  "discipline.holdem": "Texas Hold'em",
+  "discipline.omahaHiLo": "Omaha Hi-Lo",
+  "discipline.razz": "Razz",
+  "discipline.stud": "Seven-Card Stud",
+  "discipline.studHiLo": "Stud Hi-Lo",
+  "hand": "Hand {{n}}/{{total}}",
+  "handTotal": "{{n}} overall",
+  "pot": "Pot {{pot}}",
+  "community": "Board",
+  "chips": "{{chips}} chips",
+  "you": "You",
+  "nextHand": "Next hand",
+  "newGame": "New game",
+  "result": {
+    "title": "Final result",
+    "winner": "Winner: {{name}}",
+    "chips": "{{name}}: {{chips}} chips"
+  },
+  "tutorial": {
+    "discipline": "The discipline in play. The table rotates Limit Hold'em, Omaha Hi-Lo, Razz, Stud, Stud Hi-Lo, No-Limit Hold'em, Pot-Limit Omaha and 2-7 Triple Draw, and the rules change with it.",
+    "seats": "Chips and visible cards per seat. The stud disciplines show everyone's door cards; 2-7 Triple Draw shows nothing but your own hand.",
+    "actions": "Betting works the same in every discipline. Only 2-7 Triple Draw asks you to pick cards to exchange. Chips carry across disciplines, and the match ends as soon as a seat busts."
+  },
+  "frontendHint.horseNextHand": "The hand is settled — deal the next one",
+  "frontendHint.horseDisciplineChanged": "The discipline just changed; check the rules before you act",
+  "frontendHint.horseOmahaUsesTwo": "Omaha uses exactly two of your hole cards",
+  "frontendHint.horseRazzWantsLow": "In Razz the lowest hand wins",
+  "frontendHint.horsePlayTheDiscipline": "Play by the rules of the current discipline",
+  "round.preflop": "Pre-flop",
+  "round.flop": "Flop",
+  "round.turn": "Turn",
+  "round.river": "River",
+  "round.showdown": "Showdown",
+  "round.third": "3rd street",
+  "round.fourth": "4th street",
+  "round.fifth": "5th street",
+  "round.sixth": "6th street",
+  "round.seventh": "7th street",
+  "discipline.nlHoldem": "No-Limit Hold'em",
+  "discipline.plOmaha": "Pot-Limit Omaha",
+  "discipline.tripleDraw": "2-7 Triple Draw",
+  "round.deal": "Dealt",
+  "round.betting": "Betting",
+  "round.drawing": "Draw",
+  "draw": {
+    "prompt": "Draw {{n}} - pick the cards to exchange",
+    "toggle": "Select card {{n}}",
+    "exchange": "Exchange {{count}}",
+    "stand": "Stand pat"
+  },
+  "frontendHint.horseDrawTurn": "It is your draw. Pick the cards to exchange, or stand pat."
+}

@@ -61,5 +61,19 @@ export interface HorseResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   /** Seat with the most chips once the match is over, -1 while it runs. */
   winnerSeat: number;
+  /**
+   * Which rotation this table runs: 0 = H.O.R.S.E. (5), 1 = Eight-Game Mix (8).
+   *
+   * **The page must not infer this from the route.** Both games share one page,
+   * and the seat options, the discipline count and the draw controls all follow
+   * from the server's answer.
+   */
+  variant: number;
+  /** Discipline indices in the order this table rotates them. */
+  rotation: number[];
+  /** True while 2-7 Triple Draw waits for the human to exchange cards. */
+  isDrawPhase: boolean;
+  /** Which draw is running (1..3); 0 when no draw is pending. */
+  drawIndex: number;
   config: HorseConfigResponse;
 }

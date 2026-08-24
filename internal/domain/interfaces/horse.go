@@ -13,6 +13,8 @@ type HorseGame interface {
 	NextHand() error
 	// PlayerAction 人間の手をいまの種目へ渡す
 	PlayerAction(action, amount, humanPlayMs int) error
+	// PlayerExchange 引き直しをいまの種目へ渡す (ドロー系の種目のみ)
+	PlayerExchange(indices []int) error
 
 	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.HorseConfig
@@ -61,4 +63,12 @@ type HorseGame interface {
 	GetToCall() int
 	// GetMinRaise いまの種目の最小レイズ幅を取得する
 	GetMinRaise() int
+	// GetVariant この卓が回すローテーションを取得する
+	GetVariant() domain.HorseVariant
+	// GetRotation この卓が回す種目の並びを取得する
+	GetRotation() []domain.HorseDiscipline
+	// IsDrawPhase いまの種目が引き直しを待っているかを取得する
+	IsDrawPhase() bool
+	// GetDrawIndex 何回目の引き直しかを取得する (ドロー中でなければ 0)
+	GetDrawIndex() int
 }

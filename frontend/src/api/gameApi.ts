@@ -113,6 +113,7 @@ export * from './games/durak';
 export * from './games/easthaven';
 export * from './games/ecarte';
 export * from './games/egyptianratscrew';
+export * from './games/eightgame';
 export * from './games/eightoff';
 export * from './games/escoba';
 export * from './games/estimation';
@@ -709,6 +710,7 @@ export const games = [
   'sakura',
   'zwanzigerrufen',
   'troggu',
+  'eightgame',
   'horse',
   'aluette',
   'minchiate',

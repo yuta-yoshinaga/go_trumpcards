@@ -24,5 +24,15 @@
   "hintDiscipline": "[HINT: the current discipline is {{name}}; its own rules apply]",
   "result.winner": "Game over! {{name}} wins",
   "helpExampleFold": "  f                                       fold this hand",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "discipline.nlHoldem": "No-Limit Hold'em",
+  "discipline.plOmaha": "Pot-Limit Omaha",
+  "discipline.tripleDraw": "2-7 Triple Draw",
+  "promptDraw": "Draw {{draw}} - choose the cards to exchange",
+  "promptDrawHelp": "d <idx...>=exchange (e.g. d 0 2)  sp=stand pat (draw nothing)",
+  "hintDraw": "[HINT: it is your draw. Use d to exchange cards, or sp to stand pat]",
+  "errFinished": "This match is already over.",
+  "errWrongPhase": "That is not allowed right now.",
+  "errNoTable": "No hand is in progress.",
+  "errNoDraw": "The current discipline has no draw."
 }

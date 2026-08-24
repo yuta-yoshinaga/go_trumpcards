@@ -288,6 +288,7 @@
     "sevencardstud": "Seven Card Stud",
     "sevencardstudhilo": "Seven Card Stud Hi-Lo",
     "chicago": "Chicago",
+    "eightgame": "Eight-Game Mix",
     "sevens": "Sevens",
     "seventwentyseven": "Seven Twenty-Seven",
     "shamrocks": "Shamrocks",
@@ -2507,7 +2508,11 @@
     "zheng.result.rankings": "Game Over! {{rankings}}",
     "zwanzigerrufen.result.scores": "Game over! Scores: {{scores}}",
     "zwicker.lose": "The other team wins",
-    "zwicker.win": "Your team wins"
+    "zwicker.win": "Your team wins",
+    "horse.errFinished": "This match is already over.",
+    "horse.errWrongPhase": "That is not allowed right now.",
+    "horse.errNoTable": "No hand is in progress.",
+    "horse.errNoDraw": "The current discipline has no draw."
   },
   "manual": {
     "ariaLabel": "Game Manual",

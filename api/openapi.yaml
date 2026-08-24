@@ -314,6 +314,8 @@ tags:
     description: Seven Card Stud Hi-Lo
   - name: chicago
     description: 'Chicago - seven-card stud where half the pot goes to the highest spade held face-down rather than to a low hand'
+  - name: eightgame
+    description: 'Eight-Game Mix - eight poker disciplines rotating at one table, H.O.R.S.E. plus No-Limit Hold''em, Pot-Limit Omaha and 2-7 Triple Draw'
   - name: razz
     description: Razz (ラズ) game - lowball variant of Seven Card Stud
   - name: badugi
@@ -30651,6 +30653,99 @@ paths:
                 $ref: '#/components/schemas/TrogguResponse'
 
 
+  /eightgame/exec:
+    post:
+      tags:
+        - eightgame
+      summary: Execute an Eight-Game Mix game command
+      description: |
+        Send a command to advance the Eight-Game Mix session identified by
+        `sessionId`.
+
+        The same orchestrator as `/horse/exec`, with a longer rotation: the five
+        H.O.R.S.E. disciplines followed by **No-Limit Hold'em, Pot-Limit Omaha
+        and 2-7 Triple Draw**. Each leg is the standalone implementation of that
+        game driven as a sub-table, so hand rankings and betting rules are those
+        of the game played on its own; this endpoint owns the seats, the chips
+        and the rotation. The response is a `HorseResponse` and reports
+        `variant: 1` plus the full `rotation`, so a client never infers the
+        discipline list from the route.
+
+        **A betting limit is what separates two of the legs.** Limit Hold'em and
+        No-Limit Hold'em are different disciplines of the same game, as are
+        Omaha Hi-Lo and Pot-Limit Omaha (high only).
+
+        **`config.seats` accepts 4 only.** 2-7 Triple Draw seats at most four,
+        and a table that cannot be built ends the match without explanation;
+        the 52-card deck agrees, since nine players draw from a seven-card stub.
+        Any other value is refused rather than rounded, and the running variant
+        cannot be changed by a request.
+
+        **2-7 Triple Draw asks for a draw, not a bet.** While `isDrawPhase` is
+        true the seat to act exchanges cards instead of betting: send `draw`
+        with `cardIndices` (0-based positions in the five-card hand). An empty
+        or absent list stands pat, which is a legal move rather than an error.
+        `drawIndex` says which of the three draws is running.
+      operationId: execEightGame
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), action (a), draw (d), next (n), hint, log, quit (q)"
+                action:
+                  type: string
+                  enum: [fold, check, call, bet, raise, allin]
+                  description: Betting action. Required for action.
+                amount:
+                  type: integer
+                  description: Chips to put in. Required for bet and raise.
+                cardIndices:
+                  type: array
+                  description: >-
+                    Cards to exchange during a draw, 0-based. Empty or absent
+                    stands pat. Only meaningful for draw.
+                  items:
+                    type: integer
+                config:
+                  type: object
+                  properties:
+                    seats:
+                      type: integer
+                      description: Table size; 4 only.
+                    initialChips:
+                      type: integer
+                      description: Starting stack for every seat.
+                    handsPerDiscipline:
+                      type: integer
+                      description: Hands before the next discipline, 1-10 (default 2).
+                sessionId:
+                  type: string
+              example:
+                command: draw
+                cardIndices: [0, 2]
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HorseResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HorseResponse'
+
   /horse/exec:
     post:
       tags:
@@ -55564,7 +55659,24 @@ components:
                   $ref: '#/components/schemas/Card'
         discipline:
           type: integer
-          description: "0=Hold'em, 1=Omaha Hi-Lo, 2=Razz, 3=Stud, 4=Stud Hi-Lo"
+          description: >-
+            0=Hold'em, 1=Omaha Hi-Lo, 2=Razz, 3=Stud, 4=Stud Hi-Lo, and for
+            Eight-Game Mix 5=No-Limit Hold'em, 6=Pot-Limit Omaha,
+            7=2-7 Triple Draw.
+        variant:
+          type: integer
+          description: "Rotation this table runs: 0=H.O.R.S.E. (5 legs), 1=Eight-Game Mix (8 legs)"
+        rotation:
+          type: array
+          description: Discipline indices in the order this table rotates them.
+          items:
+            type: integer
+        isDrawPhase:
+          type: boolean
+          description: True while 2-7 Triple Draw waits for the human to exchange cards.
+        drawIndex:
+          type: integer
+          description: Which draw is running (1-3); 0 when no draw is pending.
         disciplineLetter:
           type: string
           description: The letter of H.O.R.S.E. currently in play.

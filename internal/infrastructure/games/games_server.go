@@ -1730,6 +1730,11 @@ func init() {
 			return usecase.NewTrogguInteractor(domain.NewDefaultTroggu(), new(presenter.TrogguWebPresenter))
 		},
 		controller.NewTrogguWebController)
+	BindWebControllerFor("eightgame",
+		func() usecase.HorseInteractorIF {
+			return usecase.NewHorseInteractor(domain.NewDefaultEightGame(), new(presenter.HorseWebPresenter))
+		},
+		controller.NewHorseWebController)
 	BindWebControllerFor("horse",
 		func() usecase.HorseInteractorIF {
 			return usecase.NewHorseInteractor(domain.NewDefaultHorse(), new(presenter.HorseWebPresenter))

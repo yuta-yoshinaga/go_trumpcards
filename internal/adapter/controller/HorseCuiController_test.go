@@ -160,3 +160,59 @@ func TestHorseCuiController_SettingsStayValid(t *testing.T) {
 		})
 	}
 }
+
+// **引き直しは Eight-Game Mix のためにある。** 同じコントローラーを 2 つの
+// ゲームが共有しているので、番号の数え方も席数の可否もここが唯一の入口になる。
+func TestHorseCuiController_Draw(t *testing.T) {
+	const mockOutput = `{"seats":[]}`
+
+	newMock := func(cfg domain.HorseConfig) *mockUsecases.MockHorseInteractor {
+		m := new(mockUsecases.MockHorseInteractor)
+		m.On("Exchange", mock.Anything).Return(mockOutput)
+		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
+		m.On("GetConfig").Return(cfg)
+		return m
+	}
+
+	// **番号は 0 始まり。** 2-7 単体やムスと同じ数え方にしないと、同じ操作が
+	// 1 枚ずれた札を捨てる。
+	t.Run("draw sends zero-based indices", func(t *testing.T) {
+		m := newMock(domain.DefaultEightGameConfig())
+		assert.Equal(t, mockOutput, controller.NewHorseCuiController(m).Exec("d 0 2"))
+		m.AssertCalled(t, "Exchange", []int{0, 2})
+	})
+
+	t.Run("stand pat sends nothing", func(t *testing.T) {
+		m := newMock(domain.DefaultEightGameConfig())
+		assert.Equal(t, mockOutput, controller.NewHorseCuiController(m).Exec("sp"))
+		m.AssertCalled(t, "Exchange", []int(nil))
+	})
+
+	// **読めない番号があれば 1 枚も捨てない。** 残りを「別の合法な手」として
+	// 打つと取り返しがつかない (#5390)。
+	for _, cmd := range []string{"d", "d x", "d 9", "d 0 x"} {
+		t.Run("rejects "+cmd, func(t *testing.T) {
+			m := newMock(domain.DefaultEightGameConfig())
+			out := controller.NewHorseCuiController(m).Exec(cmd)
+			assert.NotEqual(t, mockOutput, out)
+			m.AssertNotCalled(t, "Exchange", mock.Anything)
+		})
+	}
+
+	// **席数の可否はバリアントで変わる。** Eight-Game Mix は 4 人卓だけ ──
+	// 6 を通すと 6 種目目で理由も出さずにマッチが終わる。
+	t.Run("eight-game rejects a six-seat table", func(t *testing.T) {
+		m := newMock(domain.DefaultEightGameConfig())
+		out := controller.NewHorseCuiController(m).Exec("ss 6")
+		assert.Contains(t, out, msgKey("invalidNumberOfSeats469"))
+		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
+	})
+
+	t.Run("horse still accepts a six-seat table", func(t *testing.T) {
+		m := newMock(domain.DefaultHorseConfig())
+		assert.Equal(t, mockOutput, controller.NewHorseCuiController(m).Exec("ss 6"))
+		cfg := domain.DefaultHorseConfig()
+		cfg.Seats = 6
+		m.AssertCalled(t, "ResetWithConfig", cfg)
+	})
+}

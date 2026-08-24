@@ -288,6 +288,7 @@
     "sevencardstud": "セブンカードスタッド",
     "sevencardstudhilo": "セブンカードスタッド・ハイロー",
     "chicago": "シカゴ",
+    "eightgame": "エイトゲーム・ミックス",
     "sevens": "7並べ",
     "seventwentyseven": "セブン・トゥエンティセブン",
     "shamrocks": "シャムロックス",
@@ -2507,7 +2508,11 @@
     "zheng.result.rankings": "ゲーム終了！ {{rankings}}",
     "zwanzigerrufen.result.scores": "ゲーム終了！ 得点: {{scores}}",
     "zwicker.lose": "負けました",
-    "zwicker.win": "勝ちました"
+    "zwicker.win": "勝ちました",
+    "horse.errFinished": "このマッチは終わっています。",
+    "horse.errWrongPhase": "いまはその操作を受け付けません。",
+    "horse.errNoTable": "進行中のハンドがありません。",
+    "horse.errNoDraw": "いまの種目に引き直しはありません。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

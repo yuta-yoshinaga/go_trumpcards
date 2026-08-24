@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { horseApi as HorseApi } from '../api/gameApi';
-import { horseApi } from '../api/gameApi';
+import { eightGameApi, horseApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -26,7 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { HorseResponse } from '../types/card';
 import { HorsePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { HORSE_HELP, parseHorseCommand } from '../utils/cli/commands/horseCommands';
+import { EIGHT_GAME_HELP, HORSE_HELP, parseHorseCommand } from '../utils/cli/commands/horseCommands';
 import { formatHorseState } from '../utils/cli/formatters/horseFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -43,9 +43,18 @@ import { hintCheckboxItem } from '../utils/settingsItems';
  */
 const COMMUNITY_ROUND_KEYS = ['', 'preflop', 'flop', 'turn', 'river', 'showdown'] as const;
 const STUD_ROUND_KEYS = ['', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'showdown'] as const;
+/**
+ * 2-7 Triple Draw has neither community cards nor streets: it deals, then
+ * alternates draw and betting rounds. Phase numbers come from
+ * `DeuceToSevenPhase*` (1=deal 2=bet 3=draw 4=showdown 5=end).
+ */
+const DRAW_ROUND_KEYS = ['', 'deal', 'betting', 'drawing', 'showdown', 'showdown'] as const;
 
 /** Disciplines whose betting rounds are named after community cards. */
-const COMMUNITY_DISCIPLINES = new Set(['holdem', 'omahaHiLo']);
+const COMMUNITY_DISCIPLINES = new Set(['holdem', 'omahaHiLo', 'nlHoldem', 'plOmaha']);
+
+/** Disciplines that draw instead of dealing community cards or streets. */
+const DRAW_DISCIPLINES = new Set(['tripleDraw']);
 
 /** H.O.R.S.E. tutorial step definitions. */
 const HORSE_TUTORIAL_STEPS: TutorialStep[] = [
@@ -68,27 +77,52 @@ const HORSE_TUTORIAL_STEPS: TutorialStep[] = [
  */
 const SEAT_OPTIONS = [4, 6, 9] as const;
 
+/**
+ * Table sizes Eight-Game Mix accepts.
+ *
+ * **Four only.** 2-7 Triple Draw seats at most four (`DeuceToSevenCpuCountMax`
+ * is 3), and a table it cannot build ends the match without saying why — so a
+ * 6-seat option would quietly kill the game six hands in. The 52-card deck says
+ * the same thing: nine players draw from a seven-card stub.
+ */
+const EIGHT_GAME_SEAT_OPTIONS = [4] as const;
+
+/** The two rotations this page serves. */
+export type HorsePageGameKey = 'horse' | 'eightgame';
+
+/** Variant value the server reports for the Eight-Game Mix rotation. */
+const VARIANT_EIGHT_GAME = 1;
+
 /** Hands played before the table moves on to the next discipline. */
 const HANDS_OPTIONS = [1, 2, 3, 5, 10] as const;
 
 /** Renders the H.O.R.S.E. page: five poker disciplines rotating at one table. */
-export const HorsePage = withTutorial(HorsePageContent, 'horse', HORSE_TUTORIAL_STEPS);
+export const HorsePage = withTutorial(() => <HorsePageContent gameKey="horse" />, 'horse', HORSE_TUTORIAL_STEPS);
 
-/** Inner content of the H.O.R.S.E. page, wrapped by TutorialWrapper. */
-function HorsePageContent() {
+/**
+ * Inner content of the mixed-game page, wrapped by TutorialWrapper.
+ *
+ * **Both rotations share this page.** H.O.R.S.E. and Eight-Game Mix run the
+ * same orchestrator, so a second copy would be duplication rather than a
+ * feature — what differs (endpoint, seat options, whether a hand can call for a
+ * draw) comes from `gameKey` and from the server's own answer.
+ */
+export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('horse');
+    useGamePageSetup(gameKey);
   const [seats, setSeats] = useState(4);
   const [handsPerDiscipline, setHandsPerDiscipline] = useState(2);
   const [betAmount, setBetAmount] = useState(20);
+  const [drawSelection, setDrawSelection] = useState<number[]>([]);
 
-  const { loading, error, state, exec: callApi, retry } = useGameApi(horseApi.exec);
+  const api = gameKey === 'eightgame' ? eightGameApi : horseApi;
+  const { loading, error, state, exec: callApi, retry } = useGameApi(api.exec);
   const { cardWidth } = useCardDimensions();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('horse', state);
+  } = useGameHint(gameKey, state);
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
@@ -100,22 +134,24 @@ function HorsePageContent() {
     callApi('reset', { config: { seats, handsPerDiscipline } });
   }, [callApi, seats, handsPerDiscipline]);
 
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('horse');
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode(gameKey);
   const cliConfig: CliGameConfig<HorseResponse, Parameters<typeof HorseApi.exec>> = useMemo(
     () => ({
-      gameName: 'horse',
+      gameName: gameKey,
       parseCommand: parseHorseCommand,
       formatResponse: formatHorseState,
-      helpText: HORSE_HELP,
+      // **引き直しの案内は 8 種目のほうにだけ出す。** H.O.R.S.E. にドロー系の
+      // 種目は無いので、載せると打てない手を勧めることになる。
+      helpText: gameKey === 'eightgame' ? EIGHT_GAME_HELP : HORSE_HELP,
     }),
-    [],
+    [gameKey],
   );
   const { handleCommand } = useCliGame(callApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   if (!state) {
     return (
       <GameSkeleton
-        gameKey="horse"
+        gameKey={gameKey}
         layout={{ kind: 'community-poker', community: 5, opponents: 3, opponentCards: 0, footerHandSize: 2 }}
       />
     );
@@ -124,22 +160,32 @@ function HorsePageContent() {
   const isGameEnd = state.gameEndFlag;
   const isHandEnd = state.phase === HorsePhase.HAND_END && !isGameEnd;
   const isHumanTurn = state.isHumanTurn && !isGameEnd && state.phase === HorsePhase.HAND;
+  // **引き直しの番はベットの番ではない。** 同じ「あなたの手番」でも押す手が
+  // 違うので、両方を出すと betting と draw のボタンが並んで出る。
+  const isDrawTurn = isHumanTurn && state.isDrawPhase;
+  const isBetTurn = isHumanTurn && !state.isDrawPhase;
+  const humanCards = state.seats[state.humanSeat]?.cards ?? [];
+  const seatOptions = state.variant === VARIANT_EIGHT_GAME ? EIGHT_GAME_SEAT_OPTIONS : SEAT_OPTIONS;
   const humanWon = isGameEnd && state.winnerSeat === state.humanSeat;
   const phaseName = isGameEnd ? t('phase.gameEnd') : isHandEnd ? t('phase.handEnd') : t('phase.play');
   const disciplineName = t(`discipline.${state.disciplineName}`, { defaultValue: state.disciplineName });
   // **いま何回戦目のベットなのかを出す** (#5788)。生の数字ではなく種目に
   // 応じた名前にする——同じ 2 でもホールデムはフロップ、スタッドは 4th street。
-  const roundKeys = COMMUNITY_DISCIPLINES.has(state.disciplineName) ? COMMUNITY_ROUND_KEYS : STUD_ROUND_KEYS;
+  const roundKeys: readonly string[] = COMMUNITY_DISCIPLINES.has(state.disciplineName)
+    ? COMMUNITY_ROUND_KEYS
+    : DRAW_DISCIPLINES.has(state.disciplineName)
+      ? DRAW_ROUND_KEYS
+      : STUD_ROUND_KEYS;
   const roundKey: string | undefined = roundKeys[state.tablePhase];
   const roundLabel = roundKey ? t(`round.${roundKey}`) : '';
 
   return (
     <GamePageShell
-      title={tc('nav.horse')}
-      gameThemeBg={gameTheme.horse.bg}
+      title={tc(`nav.${gameKey}`)}
+      gameThemeBg={gameTheme[gameKey].bg}
       phaseName={phaseName}
       isHumanTurn={isHumanTurn}
-      gamePath="/horse"
+      gamePath={`/${gameKey}`}
       gameEndFlag={isGameEnd}
       winShow={humanWon}
       loading={loading}
@@ -250,7 +296,7 @@ function HorsePageContent() {
                     id: 'seats',
                     label: t('settings.seats'),
                     value: String(seats),
-                    options: SEAT_OPTIONS.map((v) => ({ value: String(v), label: String(v) })),
+                    options: seatOptions.map((v) => ({ value: String(v), label: String(v) })),
                     onSelect: (v: string) => setSeats(Number.parseInt(v, 10)),
                   },
                   {
@@ -267,9 +313,63 @@ function HorsePageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.horse.footer} px-4 py-2.5`}>
+          <GameFooter className={`${gameTheme[gameKey].footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="ho-actions">
-              {isHumanTurn && (
+              {isDrawTurn && (
+                <div className="flex flex-col items-center gap-2" data-testid="ho-draw">
+                  <div className="text-xs text-ds-text-muted">{t('draw.prompt', { n: state.drawIndex })}</div>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {humanCards.map((card, idx) => {
+                      const selected = drawSelection.includes(idx);
+                      return (
+                        <button
+                          type="button"
+                          key={`${card.design}-${card.value}`}
+                          className={`rounded ${selected ? 'ring-2 ring-ds-accent' : ''}`}
+                          aria-pressed={selected}
+                          aria-label={t('draw.toggle', { n: idx })}
+                          data-testid={`ho-draw-card-${idx}`}
+                          disabled={loading}
+                          onClick={() =>
+                            setDrawSelection((prev) =>
+                              prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
+                            )
+                          }
+                        >
+                          <AnimatedCard card={card} width={Math.round(cardWidth * 0.8)} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      disabled={loading || drawSelection.length === 0}
+                      data-testid="ho-draw-exchange"
+                      onClick={() => {
+                        callApi('draw', { cardIndices: [...drawSelection].sort((a, b) => a - b) });
+                        setDrawSelection([]);
+                      }}
+                    >
+                      {t('draw.exchange', { count: drawSelection.length })}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      disabled={loading}
+                      data-testid="ho-draw-stand"
+                      onClick={() => {
+                        callApi('draw', { cardIndices: [] });
+                        setDrawSelection([]);
+                      }}
+                    >
+                      {t('draw.stand')}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {isBetTurn && (
                 <BettingControls
                   inputId="ho-bet"
                   betAmount={betAmount}

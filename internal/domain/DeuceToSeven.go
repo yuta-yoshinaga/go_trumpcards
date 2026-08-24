@@ -882,6 +882,9 @@ func (d *DeuceToSeven) GetDrawIndex() int { return d.round.drawIndex }
 // GetPlayers returns the player slice.
 func (d *DeuceToSeven) GetPlayers() []*DeuceToSevenPlayer { return d.players }
 
+// GetPlayerCnt returns the number of seats at the table.
+func (d *DeuceToSeven) GetPlayerCnt() int { return len(d.players) }
+
 // GetPot returns the current pot value.
 func (d *DeuceToSeven) GetPot() int { return d.round.pot }
 

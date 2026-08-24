@@ -77,8 +77,12 @@ func (g *Horse) UnmarshalJSON(data []byte) error {
 	if j.Phase < HorsePhaseHand || j.Phase > HorsePhaseMax {
 		return fmt.Errorf("horse: invalid phase %d", j.Phase)
 	}
-	if j.Discipline < 0 || j.Discipline >= HorseDisciplineCount {
-		return fmt.Errorf("horse: invalid discipline %d", j.Discipline)
+	// **回さない種目を復元しない。** 種目の値は 8 つあるが、H.O.R.S.E. の卓が
+	// 回すのは 5 つだけ ── 保存を書き換えれば、5 種目の卓を 2-7 Triple Draw の
+	// 途中から復元できてしまい、「次のハンド」でローテーションの外に出る。
+	if HorseRotationIndex(j.Config.Variant, j.Discipline) < 0 {
+		return fmt.Errorf("horse: invalid discipline %d for variant %d",
+			j.Discipline, j.Config.Variant)
 	}
 	if j.HandInDisc < 1 || j.HandInDisc > j.Config.HandsPerDiscipline {
 		return fmt.Errorf("horse: hand-in-discipline %d out of range", j.HandInDisc)

@@ -310,6 +310,7 @@ var gameDescriptions = map[string]string{
 	"germansolo":          "German Solo (ジャーマン・ソロ)",
 	"gleek":               "Gleek (グリーク)",
 	"chicago":             "Chicago (シカゴ)",
+	"eightgame":           "Eight-Game Mix (エイトゲーム・ミックス)",
 	"ulti":                "Ulti / Ultimó (ウルティ)",
 	"king":                "King (キング)",
 	"cinch":               "Cinch / Double Pedro (シンチ/ダブルペドロ)",
