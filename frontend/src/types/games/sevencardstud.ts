@@ -50,6 +50,13 @@ export interface SevenCardStudResult {
    * {@link SevenCardStudResult.wonAmount} minus this.
    */
   wonLow?: number;
+  /** Chicago only. The highest spade this seat held **face-down**, if any. */
+  spadeCard?: Card | null;
+  /**
+   * Chicago only. Chips won as the spade half. The high half is
+   * {@link SevenCardStudResult.wonAmount} minus this.
+   */
+  wonSpade?: number;
 }
 
 /** Side pot in Seven Card Stud with eligible players. */
@@ -72,6 +79,13 @@ export interface SevenCardStudResponse extends BaseGameResponse {
    * renders the low breakdown without inferring the variant from the route.
    */
   isHiLo?: boolean;
+  /**
+   * Whether this session is the Chicago split, where half the pot goes to the
+   * highest spade in the hole. Sent for the same reason as
+   * {@link SevenCardStudResponse.isHiLo} — so the page does not infer the
+   * variant from the route.
+   */
+  isChicago?: boolean;
   gameEndFlag: boolean;
   lastBet: number;
   minRaise: number;

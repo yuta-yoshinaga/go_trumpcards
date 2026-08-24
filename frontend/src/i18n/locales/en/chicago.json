@@ -1,0 +1,104 @@
+{
+  "phase": {
+    "thirdStreet": "Third Street",
+    "fourthStreet": "Fourth Street",
+    "fifthStreet": "Fifth Street",
+    "sixthStreet": "Sixth Street",
+    "seventhStreet": "Seventh Street",
+    "showdown": "Showdown",
+    "end": "Result",
+    "init": "Initializing",
+    "rebuy": "Rebuy/Addon"
+  },
+  "doorCards": "Door Cards",
+  "holeCards": "Hole Cards",
+  "yourHand": "Your Hand",
+  "currentHand": "Current Hand",
+  "anteBringIn": "Ante/Bring-in",
+  "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
+  "rebuy": {
+    "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
+    "accept": "Rebuy",
+    "skip": "Skip"
+  },
+  "addon": {
+    "prompt": "Addon? ({{chips}} chips)",
+    "accept": "Addon",
+    "skip": "Skip"
+  },
+  "muck": {
+    "prompt": "Muck or show your hand.",
+    "muck": "Muck",
+    "show": "Show"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP (Voluntarily Put In Pot): % of hands where player voluntarily put chips in the pot",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR (Pre-Flop Raise): % of hands where player raised in the first round",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet: % of hands where player re-raised an opponent's raise",
+    "af": "AF",
+    "afTooltip": "AF (Aggression Factor): ratio of aggressive actions (bet/raise) to passive actions (call)"
+  },
+  "settings": {
+    "cpuMetaAI": "Meta-AI (CPU learns your play style)"
+  },
+  "tutorial": {
+    "playerHand": "Your cards. Some are face-down (only you see them) and some face-up (everyone sees them). The high hand is ordinary seven-card stud.",
+    "actionButtons": "Choose your action: Bet, Call, Raise, Fold, or All In.",
+    "potDisplay": "Shows the current pot size and ante levels.",
+    "cpuArea": "CPU opponent information. Cards are revealed at showdown.",
+    "resetButton": "Press the reset button to start a new game.",
+    "spade": "Half the pot goes to whoever holds **the highest spade among their face-down cards**. Face-up spades do not count. The ace of spades is the highest, then the king, the queen, and so on.",
+    "split": "At the showdown the pot halves: one half to the best hand, the other to the highest spade in the hole. The odd chip goes to the high side.",
+    "scoop": "If nobody holds a spade face-down, the high hand takes the whole pot. Taking both halves is called a scoop."
+  },
+  "hint": {
+    "strongHandRank": "Strong hand — raise recommended",
+    "decentHandRank": "Decent hand — call recommended",
+    "weakHandRank": "Weak hand — fold recommended"
+  },
+  "hand": {
+    "highCard": "High Card",
+    "onePair": "One Pair",
+    "twoPair": "Two Pair",
+    "threeOfAKind": "Three of a Kind",
+    "straight": "Straight",
+    "flush": "Flush",
+    "fullHouse": "Full House",
+    "fourOfAKind": "Four of a Kind",
+    "straightFlush": "Straight Flush",
+    "royalFlush": "Royal Flush"
+  },
+  "frontendHint": {
+    "sevencardstudBringIn": "You are forced in on the lowest door card — that is not a strong hand",
+    "sevencardstudRaisePair": "You have a pair — raise",
+    "sevencardstudPlayLow": "Five cards of eight or lower — weak for high, but live for half the pot",
+    "sevencardstudCheckFree": "Nothing to call — take the next card for free",
+    "sevencardstudCallHigh": "You hold a high card — call and see the next street",
+    "sevencardstudFoldWeak": "No pair and no high card — fold",
+    "sevencardstudCheckLow": "Five cards of eight or lower and nothing to call — take the next card for free"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive: plays few hands but bets strongly when in",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive: plays many hands and bets strongly",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive: plays few hands, mostly calls",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive: plays many hands but rarely raises",
+    "balanced": "BAL",
+    "balancedTooltip": "Balanced style"
+  },
+  "title": "Chicago",
+  "split": {
+    "title": "Pot split",
+    "hi": "High",
+    "spade": "Spade",
+    "winner": "{{name}} +{{amount}}",
+    "scoop": "{{name}} scoops! +{{total}}",
+    "hiTakesAll": "Nobody holds a spade face-down, so the high hand takes the whole pot."
+  }
+}

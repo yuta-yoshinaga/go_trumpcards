@@ -13,6 +13,25 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// sevenCardStudOutputTitle は同じエンジンを共有する 3 つのモードを見分ける
+// 見出しを返す。
+//
+// **どのモードで座っているかは盤面から読めない。** ストリートも賭けも同じなので、
+// 見出しが常に「Seven Card Stud」だと、ポットが半分になって初めて Hi-Lo や
+// Chicago だったと分かる。
+func sevenCardStudOutputTitle(s interfaces.SevenCardStudGame) string {
+	switch {
+	case s.GetIsChicago():
+		return i18n.T("chicago.outputTitle")
+	case s.GetIsHiLo():
+		return i18n.T("sevencardstudhilo.outputTitle")
+	case s.GetIsLowball():
+		return i18n.T("razz.outputTitle")
+	default:
+		return i18n.T("sevencardstud.outputTitle")
+	}
+}
+
 // SevenCardStudCuiPresenter renders the Seven Card Stud CUI view.
 type SevenCardStudCuiPresenter struct{}
 
@@ -23,7 +42,7 @@ func (p *SevenCardStudCuiPresenter) ActionLogOutput(s interfaces.SevenCardStudGa
 
 // Output renders the current game state for the active locale (#1699).
 func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastErr error) string {
-	return buildCuiOutput(i18n.T("sevencardstud.outputTitle"), func(b *strings.Builder) {
+	return buildCuiOutput(sevenCardStudOutputTitle(s), func(b *strings.Builder) {
 		cfg := s.GetConfig()
 		if cfg.TournamentMode {
 			b.WriteString(i18n.Tf("sevencardstud.tournamentLine",
@@ -196,6 +215,22 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 							b.WriteString(i18n.T("sevencardstud.wonScoop"))
 						}
 					}
+					// **Chicago も同じ理由で内訳を出す。** 合計だけだと、役で
+					// 勝ったのか伏せ札のスペードで勝ったのかが読めない。
+					if s.GetIsChicago() {
+						high := r.WonAmount - r.WonSpade
+						b.WriteString(i18n.Tf("chicago.wonSplit",
+							"high", strconv.Itoa(high),
+							"spade", strconv.Itoa(r.WonSpade)))
+						if high > 0 && r.WonSpade > 0 {
+							b.WriteString(i18n.T("sevencardstud.wonScoop"))
+						}
+					}
+				}
+				// **どの 1 枚で半分を取ったのかを出す。** 出さないと、ポットが
+				// 割れた理由が画面のどこにも現れない。
+				if s.GetIsChicago() && r.SpadeCard != nil {
+					b.WriteString(i18n.Tf("chicago.spadeCard", "card", cuiCardStrEmoji(r.SpadeCard)))
 				}
 				b.WriteString("\n")
 			}

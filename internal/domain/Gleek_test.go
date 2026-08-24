@@ -208,6 +208,9 @@ func TestGleek_ASeatThatDroppedOutNeverBuysTheStock(t *testing.T) {
 	raw["bd"] = json.RawMessage(`[16,14,0]`)
 	raw["pa"] = json.RawMessage(`[true,false,false]`)
 	raw["cbi"] = json.RawMessage(`2`)
+	// **席 2 を配りに依存させない。** Easy の CPU は必ずパスするので、席 2 が
+	// 競り上げて自分で落札してしまう配りが 3 回に 1 回ほど出る、という形を断つ。
+	raw["cf"] = json.RawMessage(`{"cd":0,"tr":3}`)
 	body, err := json.Marshal(raw)
 	require.NoError(t, err)
 

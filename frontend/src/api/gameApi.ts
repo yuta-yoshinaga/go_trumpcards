@@ -69,6 +69,7 @@ export * from './games/cassino';
 export * from './games/catchten';
 export * from './games/cego';
 export * from './games/chemindefer';
+export * from './games/chicago';
 export * from './games/chinchon';
 export * from './games/chinesepoker';
 export * from './games/chineseten';
@@ -437,6 +438,7 @@ export const games = [
   'baseballpoker',
   'razz',
   'sevencardstudhilo',
+  'chicago',
   'badugi',
   'deucetoseven',
   'hearts',

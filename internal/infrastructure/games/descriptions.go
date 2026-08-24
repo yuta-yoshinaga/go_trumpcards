@@ -309,6 +309,7 @@ var gameDescriptions = map[string]string{
 	"quadrille":           "Quadrille (カドリール)",
 	"germansolo":          "German Solo (ジャーマン・ソロ)",
 	"gleek":               "Gleek (グリーク)",
+	"chicago":             "Chicago (シカゴ)",
 	"ulti":                "Ulti / Ultimó (ウルティ)",
 	"king":                "King (キング)",
 	"cinch":               "Cinch / Double Pedro (シンチ/ダブルペドロ)",

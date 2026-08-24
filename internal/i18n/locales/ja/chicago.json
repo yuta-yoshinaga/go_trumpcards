@@ -1,0 +1,7 @@
+{
+  "helpTitle": "シカゴ (Chicago)",
+  "helpExampleF": "  f                    この手を降りる",
+  "wonSplit": "（役 {{high}} / スペード {{spade}}）",
+  "spadeCard": "  伏せ札の最高スペード: {{card}}",
+  "outputTitle": "Chicago (シカゴ)"
+}

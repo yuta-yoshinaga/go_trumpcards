@@ -198,6 +198,14 @@ func init() {
 			return usecase.RestoreSevenCardStudInteractor(data, new(presenter.SevenCardStudWebPresenter))
 		},
 		controller.NewSevenCardStudWebControllerWithProvider)
+	games.RegisterKVGame("chicago", games.CategoryCasino,
+		func() usecase.SevenCardStudInteractorIF {
+			return usecase.NewSevenCardStudInteractor(domain.NewDefaultSevenCardStudChicago(), new(presenter.SevenCardStudWebPresenter))
+		},
+		func(data []byte) (usecase.SevenCardStudInteractorIF, error) {
+			return usecase.RestoreSevenCardStudInteractor(data, new(presenter.SevenCardStudWebPresenter))
+		},
+		controller.NewSevenCardStudWebControllerWithProvider)
 	games.RegisterKVGame("sevencardstudhilo", games.CategoryCasino,
 		func() usecase.SevenCardStudInteractorIF {
 			return usecase.NewSevenCardStudInteractor(domain.NewDefaultSevenCardStudHiLo(), new(presenter.SevenCardStudWebPresenter))

@@ -375,6 +375,11 @@ func init() {
 			return usecase.NewSevenCardStudInteractor(domain.NewDefaultRazz(), new(presenter.SevenCardStudWebPresenter))
 		},
 		controller.NewSevenCardStudWebController)
+	BindWebControllerFor("chicago",
+		func() usecase.SevenCardStudInteractorIF {
+			return usecase.NewSevenCardStudInteractor(domain.NewDefaultSevenCardStudChicago(), new(presenter.SevenCardStudWebPresenter))
+		},
+		controller.NewSevenCardStudWebController)
 	BindWebControllerFor("sevencardstudhilo",
 		func() usecase.SevenCardStudInteractorIF {
 			return usecase.NewSevenCardStudInteractor(domain.NewDefaultSevenCardStudHiLo(), new(presenter.SevenCardStudWebPresenter))

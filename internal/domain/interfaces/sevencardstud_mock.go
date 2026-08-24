@@ -253,6 +253,12 @@ func (_m *MockSevenCardStudGame) GetIsLowball() bool {
 	return ret.Bool(0)
 }
 
+func (_m *MockSevenCardStudGame) GetIsChicago() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
+// GetIsHiLo モック
 func (_m *MockSevenCardStudGame) GetIsHiLo() bool {
 	ret := _m.Called()
 	return ret.Bool(0)
