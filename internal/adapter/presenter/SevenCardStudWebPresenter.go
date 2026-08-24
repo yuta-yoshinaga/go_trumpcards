@@ -22,6 +22,7 @@ func (p *SevenCardStudWebPresenter) buildOutput(s interfaces.SevenCardStudGame, 
 	resObj := new(controller.SevenCardStudWebOutput)
 	resObj.Phase = s.GetPhase()
 	resObj.IsHiLo = s.GetIsHiLo()
+	resObj.IsChicago = s.GetIsChicago()
 	resObj.Pot = s.GetPot()
 	resObj.DealerIdx = s.GetDealerIdx()
 	resObj.CurrentTurn = s.GetCurrentTurn()
@@ -176,6 +177,12 @@ func (p *SevenCardStudWebPresenter) buildRoundResultsOutput(s interfaces.SevenCa
 			result.WonLow = r.WonLow
 			if len(r.LowBestHand) > 0 {
 				result.LowBestHand = cardsToOutput(r.LowBestHand)
+			}
+			// **スペード側の内訳も同じ理由で出す。** どの 1 枚で半分を取ったのかを
+			// 出さないと、ポットが割れた理由が画面から読み取れない。
+			result.WonSpade = r.WonSpade
+			if r.SpadeCard != nil {
+				result.SpadeCard = cardToOutput(r.SpadeCard)
 			}
 		}
 		out = append(out, result)

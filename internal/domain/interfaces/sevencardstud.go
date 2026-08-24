@@ -68,4 +68,6 @@ type SevenCardStudGame interface {
 	GetIsLowball() bool
 	// GetIsHiLo Hi-Lo (8 or Better) スプリットかどうかを取得する
 	GetIsHiLo() bool
+	// GetIsChicago 「半分が伏せ札の最高スペードへ」のスプリットかどうかを取得する
+	GetIsChicago() bool
 }

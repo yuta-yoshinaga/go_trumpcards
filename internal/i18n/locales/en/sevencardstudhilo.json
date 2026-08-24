@@ -1,4 +1,5 @@
 {
   "helpTitle": "Seven Card Stud Hi-Lo",
-  "helpExampleF": "  f                    drop out of this hand"
+  "helpExampleF": "  f                    drop out of this hand",
+  "outputTitle": "Seven Card Stud Hi-Lo"
 }

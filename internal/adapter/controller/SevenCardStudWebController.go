@@ -69,6 +69,10 @@ type SevenCardStudWebOutputResult struct {
 	LowBestHand []*WebOutputCard `json:"lowBestHand,omitempty"`
 	// WonLow はローとして獲得したチップ (Hi-Lo のみ)。WonAmount はハイとローの合計。
 	WonLow int `json:"wonLow,omitempty"`
+	// SpadeCard は伏せ札の中で最も高いスペード (Chicago のみ)。1 枚も無ければ null。
+	SpadeCard *WebOutputCard `json:"spadeCard,omitempty"`
+	// WonSpade はスペード側として獲得したチップ (Chicago のみ)。WonAmount は合計。
+	WonSpade int `json:"wonSpade,omitempty"`
 }
 
 // SevenCardStudWebOutputSidePot セブンカードスタッドサイドポット
@@ -97,7 +101,10 @@ type SevenCardStudWebOutput struct {
 	Phase         int                              `json:"phase"`
 	// IsHiLo は 8-or-better のスプリットかどうか。ページがルート名から推測
 	// しなくて済むように送る。
-	IsHiLo           bool                               `json:"isHiLo,omitempty"`
+	IsHiLo bool `json:"isHiLo,omitempty"`
+	// IsChicago は「半分が伏せ札の最高スペードへ」のスプリットかどうか。
+	// IsHiLo と同じ理由で、ページがルート名から推測しなくて済むように載せる。
+	IsChicago        bool                               `json:"isChicago,omitempty"`
 	GameEndFlag      bool                               `json:"gameEndFlag"`
 	LastBet          int                                `json:"lastBet"`
 	MinRaise         int                                `json:"minRaise"`

@@ -312,6 +312,8 @@ tags:
     description: Red Dog (レッドドッグ) game
   - name: sevencardstudhilo
     description: Seven Card Stud Hi-Lo
+  - name: chicago
+    description: 'Chicago - seven-card stud where half the pot goes to the highest spade held face-down rather than to a low hand'
   - name: razz
     description: Razz (ラズ) game - lowball variant of Seven Card Stud
   - name: badugi
@@ -15413,6 +15415,83 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RedDogResponse'
+
+  /chicago/exec:
+    post:
+      tags:
+        - chicago
+      summary: Execute a Chicago game command
+      description: |
+        Send a command to advance the Chicago session identified by
+        `sessionId`. It shares the whole Seven Card Stud stack -- deal,
+        streets, betting and the response schema -- and differs only at the
+        showdown, where the pot splits.
+
+        * The **high** half is ordinary stud poker.
+        * The other half goes to the **highest spade held face-down**. Not a
+          five-card hand at all: one card, and one nobody else can see.
+        * **Face-up spades do not count.** A seat with no spade among its hole
+          cards simply cannot win that half.
+        * **If nobody holds a spade face-down, the high takes the whole pot** --
+          the same shape as an unfilled low in Hi-Lo.
+        * The **ace of spades is the highest spade**, even though its rank
+          value is 1.
+        * The community card dealt when the deck runs short is **not** a hole
+          card: it is face-up to the whole table, so it gives nobody the half.
+        * When the pot does split, the **odd chip goes to the high side** (the
+          usual poker convention).
+
+        Each showdown result carries `spadeCard` and `wonSpade`; `wonAmount` is
+        the high and spade winnings combined, so the chips on screen always add
+        up. `isChicago` is set on the response so the client does not have to
+        infer the variant from the route.
+      operationId: chicagoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SevenCardStudRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              call:
+                summary: Call
+                value:
+                  command: call
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet of 40
+                value:
+                  command: bet
+                  amount: 40
+                  sessionId: my-session-001
+              allin:
+                summary: Go all-in
+                value:
+                  command: allin
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenCardStudResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenCardStudResponse'
 
   /sevencardstudhilo/exec:
     post:
@@ -49203,6 +49282,18 @@ components:
           description: |
             Hi-Lo only. Chips won as the low half, out of the pot. `wonAmount` is
             the high and low winnings combined.
+        spadeCard:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: |
+            Chicago only. The highest spade this seat held face-down. Absent when
+            the seat held none, in which case it cannot win the spade half.
+        wonSpade:
+          type: integer
+          minimum: 0
+          description: |
+            Chicago only. Chips won as the spade half. The high half is
+            `wonAmount` minus this.
           example: 40
         mucked:
           type: boolean
@@ -49314,6 +49405,11 @@ components:
             Whether this session is the Hi-Lo (8 or Better) split. Sent so the
             client renders the low column without inferring the variant from the
             route.
+        isChicago:
+          type: boolean
+          description: |
+            Chicago only. True when this session splits the pot with the
+            highest spade held face-down instead of a low hand.
         gameEndFlag:
           type: boolean
           description: Whether the round has ended

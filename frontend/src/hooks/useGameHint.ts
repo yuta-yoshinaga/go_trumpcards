@@ -849,6 +849,7 @@ export const hintFactories = {
   sevencardstud: (s) => getSevenCardStudHint(s as SevenCardStudResponse),
   // Hi-Lo shares the stud page and, with it, stud's absence of a frontend hint.
   sevencardstudhilo: (s) => getSevenCardStudHint(s as SevenCardStudResponse),
+  chicago: (s) => getSevenCardStudHint(s as SevenCardStudResponse),
   razz: (s) => getRazzHint(s as SevenCardStudResponse),
   badugi: (s) => getBadugiHint(s as BadugiResponse),
   deucetoseven: (s) => getDeuceToSevenHint(s as DeuceToSevenResponse),

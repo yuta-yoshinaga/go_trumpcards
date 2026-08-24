@@ -480,3 +480,78 @@ func TestSevenCardStudWebPresenter_HintOutput(t *testing.T) {
 	// The web presenter computes hints client-side, so HintOutput mirrors Output.
 	assert.Equal(t, p.Output(s, nil), p.HintOutput(s))
 }
+
+// **#5435: ページはルート名からシカゴだと推測してはいけない。** 3 つのモードが
+// 同じページを共有しているので、割れた内訳を出すかどうかはサーバーが立てる
+// `isChicago` だけで決まる。スペードの札と取り分がここで落ちると、Web には
+// 「ポットが半分だけ入った」理由がどこにも出ない。
+func TestSevenCardStudWebPresenter_Output_Chicago(t *testing.T) {
+	p := new(presenter.SevenCardStudWebPresenter)
+
+	newChicago := func() *domain.SevenCardStud {
+		cfg := domain.DefaultSevenCardStudConfig()
+		return domain.NewSevenCardStudChicago(domain.NewTrumpCards(0),
+			domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
+	}
+
+	outputOf := func(s *domain.SevenCardStud) controller.SevenCardStudWebOutput {
+		var out controller.SevenCardStudWebOutput
+		_ = json.Unmarshal([]byte(p.Output(s, nil)), &out)
+		return out
+	}
+
+	t.Run("flags the mode so the shared page can branch", func(t *testing.T) {
+		assert.True(t, outputOf(newChicago()).IsChicago)
+		plain, _ := makeSevenCardStudForPresenter()
+		assert.False(t, outputOf(plain).IsChicago)
+	})
+
+	t.Run("carries the spade share and the deciding card", func(t *testing.T) {
+		s := newChicago()
+		s.SetPhase(domain.SevenCardStudPhaseEnd)
+		s.SetGameEndFlag(true)
+		s.SetRoundResults([]domain.SevenCardStudResult{{
+			PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush",
+			WonAmount: 100, WonSpade: 50,
+			SpadeCard: domain.NewCard(domain.CardDesignSpade, 1, false),
+		}})
+
+		r := outputOf(s).RoundResults[0]
+		assert.Equal(t, 50, r.WonSpade)
+		if assert.NotNil(t, r.SpadeCard) {
+			assert.Equal(t, "SPADE", r.SpadeCard.Design)
+			assert.Equal(t, 1, r.SpadeCard.Value)
+		}
+	})
+
+	// 伏せ札にスペードが無かった席は札を持たない。省略されるので `omitempty`
+	// のまま nil で届く。
+	t.Run("leaves the card unset when nobody held a spade", func(t *testing.T) {
+		s := newChicago()
+		s.SetPhase(domain.SevenCardStudPhaseEnd)
+		s.SetGameEndFlag(true)
+		s.SetRoundResults([]domain.SevenCardStudResult{{
+			PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100,
+		}})
+
+		r := outputOf(s).RoundResults[0]
+		assert.Nil(t, r.SpadeCard)
+		assert.Equal(t, 0, r.WonSpade)
+	})
+
+	// マックした席は手の情報を一切出さない。スペードもその 1 枚なので同じ扱い。
+	t.Run("hides the spade of a mucked hand", func(t *testing.T) {
+		s := newChicago()
+		s.SetPhase(domain.SevenCardStudPhaseEnd)
+		s.SetGameEndFlag(true)
+		s.SetRoundResults([]domain.SevenCardStudResult{{
+			PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush",
+			WonAmount: 0, WonSpade: 0, Mucked: true,
+			SpadeCard: domain.NewCard(domain.CardDesignSpade, 1, false),
+		}})
+
+		r := outputOf(s).RoundResults[0]
+		assert.True(t, r.Mucked)
+		assert.Nil(t, r.SpadeCard)
+	})
+}

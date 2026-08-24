@@ -45,6 +45,10 @@ type SevenCardStudResult struct {
 	LowBestHand []*Card
 	// WonLow はローとして獲得したチップ (Hi-Lo のみ)。WonAmount はハイとローの合計。
 	WonLow int
+	// SpadeCard は伏せ札の中で最も高いスペード (Chicago のみ、nil=1 枚も無い)。
+	SpadeCard *Card
+	// WonSpade はスペード側として獲得したチップ (Chicago のみ)。WonAmount は合計。
+	WonSpade int
 }
 
 // SevenCardStudCpuAction CPU行動記録
@@ -92,6 +96,7 @@ type SevenCardStud struct {
 	bringInPlayerIdx int  // ブリングインプレイヤーインデックス
 	lowball          bool // ローボール (Razz) モード
 	hiLo             bool // Hi-Lo (8 or Better) スプリットモード
+	chicago          bool // Chicago スプリットモード (半分は伏せ札の最高スペードへ)
 }
 
 // NewSevenCardStud コンストラクタ
@@ -135,6 +140,28 @@ func NewSevenCardStudHiLo(trumpCards *TrumpCards, players []*SevenCardStudPlayer
 	return s
 }
 
+// NewSevenCardStudChicago は Chicago を生成する。
+//
+// **ハイは通常のスタッドのまま、ポットの半分だけが別の基準で動く。** Hi-Lo が
+// 「8 以下の最良のロー」に半分を渡すのに対し、Chicago は**伏せ札の中で最も高い
+// スペード 1 枚**に渡す。5 枚の役ですらないので、ロー評価器は一切使わない。
+//
+// 資格の形も違う: Hi-Lo は「8 以下が作れなければ不成立」だが、Chicago は
+// 「伏せ札にスペードが 1 枚も無ければ不成立」。誰も持っていなければハイが総取り
+// するのは Hi-Lo と同じ。
+func NewSevenCardStudChicago(trumpCards *TrumpCards, players []*SevenCardStudPlayer, config SevenCardStudConfig) *SevenCardStud {
+	s := NewSevenCardStud(trumpCards, players, config)
+	s.chicago = true
+	return s
+}
+
+// NewDefaultSevenCardStudChicago returns Chicago with the default table size.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultSevenCardStudChicago() *SevenCardStud {
+	cfg := DefaultSevenCardStudConfig()
+	return NewSevenCardStudChicago(NewTrumpCards(0), NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
+}
+
 // NewDefaultSevenCardStudHiLo returns Seven Card Stud Hi-Lo (8 or Better) with
 // the default table size. Used as the single source of truth for CUI, Web, and
 // Worker construction sites.
@@ -164,6 +191,9 @@ func (s *SevenCardStud) GetIsLowball() bool { return s.lowball }
 
 // GetIsHiLo は Hi-Lo (8 or Better) スプリットかどうかを返す。
 func (s *SevenCardStud) GetIsHiLo() bool { return s.hiLo }
+
+// GetIsChicago は Chicago スプリット (半分が伏せ札の最高スペードへ) かどうかを返す。
+func (s *SevenCardStud) GetIsChicago() bool { return s.chicago }
 
 // Reset ゲーム初期化
 func (s *SevenCardStud) Reset() error {
@@ -720,6 +750,12 @@ func (s *SevenCardStud) resolveShowdown() {
 	// ハンド評価 (共有カードがある場合はそれも含める)
 	for _, p := range s.players {
 		if !p.GetFolded() {
+			// **共有カードを足す前にスペードを決める。** デッキが尽きたときの
+			// 共有カードは卓の全員に見えているので、伏せ札として数えると
+			// 全員が同じ 1 枚で半分を主張できてしまう。
+			if s.chicago {
+				p.EvalChicagoSpade()
+			}
 			if s.communityCard != nil {
 				p.AddHoleCard(s.communityCard)
 			}
@@ -746,7 +782,9 @@ func (s *SevenCardStud) resolveShowdown() {
 	var wonLow map[int]int
 	switch {
 	case s.hiLo:
-		wonAmounts, wonLow = s.distributeStudHiLoPots(bp)
+		wonAmounts, wonLow = s.distributeStudSplitPots(bp, s.findStudLowWinners)
+	case s.chicago:
+		wonAmounts, wonLow = s.distributeStudSplitPots(bp, s.findChicagoSpadeWinners)
 	case s.lowball:
 		wonAmounts = DistributePotsWithWinnerFunc(bp, s.sidePots, FindPotWinnersRazz)
 	default:
@@ -779,6 +817,12 @@ func (s *SevenCardStud) resolveShowdown() {
 			// 「勝ったのにチップが合わない」画面になる。
 			result.WonAmount += wonLow[i]
 		}
+		if s.chicago {
+			result.SpadeCard = p.GetChicagoSpade()
+			result.WonSpade = wonLow[i]
+			// Hi-Lo と同じ理由で、WonAmount はハイとスペードの合計にする。
+			result.WonAmount += wonLow[i]
+		}
 		s.roundResults = append(s.roundResults, result)
 		if p.GetIsHuman() && wonAmounts[i] == 0 {
 			humanLost = true
@@ -791,14 +835,18 @@ func (s *SevenCardStud) resolveShowdown() {
 	s.finalizeShowdown()
 }
 
-// distributeStudHiLoPots は各サイドポットをハイ/ロー 50:50 で分配する。
+// distributeStudSplitPots は各サイドポットをハイ / もう半分の基準で 50:50 に分ける。
 //
-// **qualifying なローが 1 人もいなければハイが全額を取る** —— これが 8 or Better
-// の肝で、ローを取りに行った人が空振りするとポットが丸ごとハイへ行く。
-// 奇数チップはハイ側に寄せる (ポーカー慣例)。
+// **半分の側に資格者が 1 人もいなければハイが全額を取る** —— これが Hi-Lo の
+// 8 or Better でも Chicago のスペードでも同じ肝で、半分を取りに行った人が空振り
+// するとポットが丸ごとハイへ行く。奇数チップはハイ側に寄せる (ポーカー慣例)。
+//
+// **半分側の勝者を決める関数だけを差し替える。** Hi-Lo と Chicago で違うのは
+// 「誰が半分を取るか」だけで、分配の手続きは 1 文字も違わない。ここを 2 本に
+// 割ると、片方だけ直したときに静かにずれる。
 //
 // 分配そのものは Omaha Hi-Lo と同じ helper (distributeAmongWinners) を通す。
-func (s *SevenCardStud) distributeStudHiLoPots(bp []BettingPlayer) (hi, lo map[int]int) {
+func (s *SevenCardStud) distributeStudSplitPots(bp []BettingPlayer, findSplitWinners func([]int) []int) (hi, lo map[int]int) {
 	hi = make(map[int]int)
 	lo = make(map[int]int)
 	for _, sp := range s.sidePots {
@@ -806,7 +854,7 @@ func (s *SevenCardStud) distributeStudHiLoPots(bp []BettingPlayer) (hi, lo map[i
 		if len(hiWinners) == 0 {
 			continue
 		}
-		loWinners := s.findStudLowWinners(sp.EligiblePlayers)
+		loWinners := findSplitWinners(sp.EligiblePlayers)
 
 		hiPot := sp.Amount
 		loPot := 0
@@ -846,6 +894,35 @@ func (s *SevenCardStud) findStudLowWinners(eligible []int) []int {
 			winners = []int{idx}
 		case cmp == 0:
 			winners = append(winners, idx)
+		}
+	}
+	return winners
+}
+
+// findChicagoSpadeWinners は対象プレイヤーのうち**伏せ札の最高スペード**を持つ
+// 人を返す。1 枚も持っていない人は対象外で、誰も持っていなければ nil。
+//
+// **同点は起きない。** スペードは 1 スート 13 枚しか無く、同じ札を 2 人が持つ
+// ことはないので、勝者は必ず 1 人。それでも slice を返すのは、分配の helper が
+// Hi-Lo と共通だから。
+func (s *SevenCardStud) findChicagoSpadeWinners(eligible []int) []int {
+	var winners []int
+	best := 0
+	for _, idx := range eligible {
+		if idx < 0 || idx >= len(s.players) {
+			continue
+		}
+		p := s.players[idx]
+		if p.GetFolded() {
+			continue
+		}
+		spade := p.GetChicagoSpade()
+		if spade == nil {
+			continue
+		}
+		if rank := cardRankForAceHigh(spade.GetValue()); rank > best {
+			best = rank
+			winners = []int{idx}
 		}
 	}
 	return winners
@@ -1101,6 +1178,7 @@ type sevenCardStudJSON struct {
 	BringInPlayerIdx int                      `json:"bi"`
 	Lowball          bool                     `json:"lw,omitempty"`
 	HiLo             bool                     `json:"hl,omitempty"`
+	Chicago          bool                     `json:"ch,omitempty"`
 }
 
 const sevenCardStudMaxSliceLen = 1000
@@ -1137,6 +1215,7 @@ func (s *SevenCardStud) MarshalJSON() ([]byte, error) {
 		BringInPlayerIdx: s.bringInPlayerIdx,
 		Lowball:          s.lowball,
 		HiLo:             s.hiLo,
+		Chicago:          s.chicago,
 	}
 	if s.humanProfile != nil {
 		d := s.humanProfile.Export()
@@ -1225,6 +1304,7 @@ func (s *SevenCardStud) UnmarshalJSON(data []byte) error {
 	s.bringInPlayerIdx = j.BringInPlayerIdx
 	s.lowball = j.Lowball
 	s.hiLo = j.HiLo
+	s.chicago = j.Chicago
 	if j.Profile != nil {
 		s.humanProfile = &BettingHumanProfile{}
 		s.humanProfile.Import(*j.Profile)

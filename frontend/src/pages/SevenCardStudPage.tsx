@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { sevenCardStudApi, sevenCardStudHiLoApi } from '../api/gameApi';
+import { chicagoApi, sevenCardStudApi, sevenCardStudHiLoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
@@ -19,6 +19,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { RoundResults } from '../components/RoundResults';
+import { StudChicagoSplit } from '../components/StudChicagoSplit';
 import { StudHiLoSplit } from '../components/StudHiLoSplit';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -92,7 +93,7 @@ const SCS_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** The two games that share this page. Hi-Lo differs only at the showdown, so
  * a second ~600-line copy would be duplication, not a feature. */
-export type StudPageGameKey = 'sevencardstud' | 'sevencardstudhilo';
+export type StudPageGameKey = 'sevencardstud' | 'sevencardstudhilo' | 'chicago';
 
 /** Renders the Seven Card Stud game page with door cards, betting, and showdown. */
 export const SevenCardStudPage = withTutorial(
@@ -111,7 +112,10 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
   const phaseNames = usePhaseNames(gameKey, SCS_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
   const isMobile = useIsMobile();
-  const api = gameKey === 'sevencardstudhilo' ? sevenCardStudHiLoApi : sevenCardStudApi;
+  // **どのモードでもエンドポイントは別。** 3 つとも同じレスポンス型だが、
+  // ルートが違うので API クライアントも分かれる。
+  const api =
+    gameKey === 'sevencardstudhilo' ? sevenCardStudHiLoApi : gameKey === 'chicago' ? chicagoApi : sevenCardStudApi;
   const { state, loading, error, exec: execApi, retry } = useGameApi(api.exec);
 
   // CLI mode
@@ -399,6 +403,9 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                 server marks with isHiLo rather than the page guessing from the
                 route. */}
             {isShowdown && state.isHiLo && <StudHiLoSplit results={state.roundResults} players={state.players ?? []} />}
+            {isShowdown && state.isChicago && (
+              <StudChicagoSplit results={state.roundResults} players={state.players ?? []} />
+            )}
 
             {/* Action log */}
             <ActionLogSection

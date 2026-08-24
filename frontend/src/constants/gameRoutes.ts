@@ -506,6 +506,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 5, 2], skill: [1, 3, 5, 2], social: [1, 3, 5, 2, 5], theme: [2, 1, 3, 1, 2, 1] },
       },
       {
+        path: '/chicago',
+        labelKey: 'nav.chicago',
+        icon: '♠️',
+        page: 'Chicago',
+        profile: { mood: [2, 3, 5, 2], skill: [1, 3, 5, 2], social: [1, 3, 5, 2, 5], theme: [2, 1, 3, 1, 2, 1] },
+      },
+      {
         path: '/badugi',
         labelKey: 'nav.badugi',
         icon: '🪷',

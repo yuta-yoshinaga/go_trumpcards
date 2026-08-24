@@ -6854,6 +6854,26 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"gleek.helpSetDifficulty"},
 		}),
+	BindCuiFor("chicago",
+		func() usecase.SevenCardStudInteractorIF {
+			return usecase.NewSevenCardStudInteractor(domain.NewDefaultSevenCardStudChicago(), new(presenter.SevenCardStudCuiPresenter))
+		},
+		controller.NewSevenCardStudCuiController,
+		CuiHelpSpec{
+			TitleKey:    "chicago.helpTitle",
+			ExampleKeys: []string{"chicago.helpExampleF"},
+			CommandKeys: append([]string{
+				"sevencardstud.helpFold",
+				"sevencardstud.helpCheck",
+				"sevencardstud.helpCall",
+				"sevencardstud.helpBet",
+				"sevencardstud.helpRaise",
+				"sevencardstud.helpAllIn", "sevencardstud.helpHint", "sevencardstud.helpLog",
+			}, tournamentRebuyAddOnKeys...),
+			SettingKeys: append([]string{
+				"sevencardstud.helpBettingLimit", "sevencardstud.helpTournament",
+			}, studAnteKeys...),
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

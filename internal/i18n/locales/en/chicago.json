@@ -1,0 +1,7 @@
+{
+  "helpTitle": "Chicago",
+  "helpExampleF": "  f                    Fold this hand",
+  "wonSplit": " (high {{high}} / spade {{spade}})",
+  "spadeCard": "  highest spade in the hole: {{card}}",
+  "outputTitle": "Chicago"
+}
