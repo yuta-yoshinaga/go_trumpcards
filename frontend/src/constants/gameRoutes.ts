@@ -659,6 +659,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 5, 2], skill: [2, 4, 5, 2], social: [1, 4, 5, 3, 5], theme: [2, 4, 2, 1, 2, 3] },
       },
       {
+        path: '/germansolo',
+        labelKey: 'nav.germansolo',
+        icon: '🇩🇪',
+        page: 'GermanSolo',
+        profile: { mood: [2, 3, 5, 2], skill: [3, 4, 5, 2], social: [1, 4, 5, 3, 5], theme: [2, 4, 2, 1, 2, 3] },
+      },
+      {
         path: '/ulti',
         labelKey: 'nav.ulti',
         icon: '🇭🇺',

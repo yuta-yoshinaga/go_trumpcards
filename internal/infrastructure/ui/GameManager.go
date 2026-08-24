@@ -6806,6 +6806,30 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"coinche.helpSetDifficulty", "coinche.helpSetTarget"},
 		}),
+	BindCuiFor("germansolo",
+		func() usecase.GermanSoloInteractorIF {
+			return usecase.NewGermanSoloInteractor(domain.NewDefaultGermanSolo(), new(presenter.GermanSoloCuiPresenter))
+		},
+		controller.NewGermanSoloCuiController,
+		CuiHelpSpec{
+			TitleKey: "germansolo.helpTitle",
+			// **例文はフェーズ順。** 落札 → エース呼び → プレイの順でないと、
+			// そのまま打つと「フェーズが違う」で弾かれる。
+			ExampleKeys: []string{
+				"germansolo.helpExampleBid",
+				"germansolo.helpExampleAce",
+				"germansolo.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"germansolo.helpBid",
+				"germansolo.helpAce",
+				"germansolo.helpPlay",
+				"germansolo.helpNext",
+				"germansolo.helpNextRound", "germansolo.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"germansolo.helpSetDifficulty"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -121,6 +121,7 @@ import type {
   GaigelResponse,
   GanjifaResponse,
   GapsResponse,
+  GermanSoloResponse,
   GermanWhistResponse,
   GinRummyResponse,
   GoFishResponse,
@@ -463,6 +464,7 @@ import { getFrenchTarotHint } from '../utils/hints/frenchtarotHint';
 import { getGaigelHint } from '../utils/hints/gaigelHint';
 import { getGanjifaHint } from '../utils/hints/ganjifaHint';
 import { getGapsHint } from '../utils/hints/gapsHint';
+import { getGermanSoloHint } from '../utils/hints/germansoloHint';
 import { getGermanWhistHint } from '../utils/hints/germanwhistHint';
 import { getGinRummyHint } from '../utils/hints/ginrummyHint';
 import { getGoFishHint } from '../utils/hints/gofishHint';
@@ -734,6 +736,7 @@ export const hintFactories = {
   euchre: (s) => getEuchreHint(s as EuchreResponse),
   belote: (s) => getBeloteHint(s as BeloteResponse),
   coinche: (s) => getCoincheHint(s as CoincheResponse),
+  germansolo: (s) => getGermanSoloHint(s as GermanSoloResponse),
   jass: (s) => getJassHint(s as JassResponse),
   bauernschnapsen: (s) => getBauernschnapsenHint(s as BauernschnapsenResponse),
   gaigel: (s) => getGaigelHint(s as GaigelResponse),

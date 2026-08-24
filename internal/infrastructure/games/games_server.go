@@ -1420,6 +1420,11 @@ func init() {
 			return usecase.NewQuadrilleInteractor(domain.NewDefaultQuadrille(), new(presenter.QuadrilleWebPresenter))
 		},
 		controller.NewQuadrilleWebController)
+	BindWebControllerFor("germansolo",
+		func() usecase.GermanSoloInteractorIF {
+			return usecase.NewGermanSoloInteractor(domain.NewDefaultGermanSolo(), new(presenter.GermanSoloWebPresenter))
+		},
+		controller.NewGermanSoloWebController)
 	BindWebControllerFor("ombre",
 		func() usecase.OmbreInteractorIF {
 			return usecase.NewOmbreInteractor(domain.NewDefaultOmbre(), new(presenter.OmbreWebPresenter))
