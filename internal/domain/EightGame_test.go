@@ -398,3 +398,32 @@ func TestHorse_AnOutOfRotationDisciplineFallsBackToTheStart(t *testing.T) {
 	g.discipline = HorseTripleDraw // H.O.R.S.E. の並びには無い
 	assert.Equal(t, HorseHoldem, g.nextDiscipline())
 }
+
+// **本番の経路で 8 種目を回り切る。** 種目を直接指定する試験や
+// `nextDiscipline` を直接歩かせる試験は、**`NextHand` から呼ばれていなくても
+// 通る** ── レビューで指摘された穴で、実際そこにミューテーションが残っていた。
+//
+// **席が飛ばないようにしてから回す。** 誰かが飛べば `NextHand` はマッチを畳むので、
+// 素直に回すと配り次第で 5 種目目までしか進まない。1 ハンドごとに全員の残高を
+// 戻せば、進むのはローテーションだけになる。
+func TestEightGame_NextHandWalksTheWholeRotation(t *testing.T) {
+	t.Parallel()
+	rotation := HorseRotation(HorseVariantEightGame)
+	g := NewEightGame(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+	g.Reset()
+
+	seen := make([]HorseDiscipline, 0, len(rotation)+1)
+	for range len(rotation) + 1 {
+		seen = append(seen, g.GetDiscipline())
+		require.Positive(t, eightGamePlayHand(t, g), "%s のハンドが打てない", HorseDisciplineName(g.GetDiscipline()))
+		for i := range g.GetSeatCount() {
+			g.SetSeatChips(i, HorseDefaultChips)
+		}
+		require.False(t, g.GetGameEndFlag(), "残高を戻したのにマッチが終わった")
+		require.NoError(t, g.NextHand())
+	}
+
+	assert.Equal(t, append(append([]HorseDiscipline(nil), rotation...), rotation[0]), seen,
+		"NextHand が並びの順に進んでいない")
+	assert.Contains(t, seen, HorseTripleDraw, "8 種目目に到達していない")
+}
