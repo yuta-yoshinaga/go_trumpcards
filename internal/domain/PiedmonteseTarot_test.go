@@ -471,3 +471,184 @@ func TestPiedmonteseTarot_HintFollowsThePhase(t *testing.T) {
 			"勧める札が出せない札だった")
 	}
 }
+
+// **既定の卓から全部見る。** 登録はこの入口から作るので、ここが配れないと
+// ゲーム一覧に並んだ瞬間に落ちる。参照系も画面が読む値なので、まとめて確かめる。
+func TestPiedmonteseTarot_DefaultTableAndAccessors(t *testing.T) {
+	t.Parallel()
+	g := NewDefaultPiedmonteseTarot()
+	g.Reset()
+
+	assert.Equal(t, PiedmonteseTarotDefaultSeats, g.GetPlayerCnt())
+	assert.Equal(t, DefaultPiedmonteseTarotConfig(), g.GetConfig())
+	assert.Equal(t, 19, g.HandSize())
+	assert.Equal(t, 2, g.TalonSize())
+	assert.Equal(t, 1, g.GetRoundNumber())
+	assert.Zero(t, g.GetTrickNumber(), "スカルトの前はトリックが始まっていない")
+	assert.Empty(t, g.GetCurrentTrick())
+	assert.Empty(t, g.GetScarto())
+	assert.Zero(t, g.GetScartoCount())
+	assert.Equal(t, -1, g.GetLastTrickWinner())
+	assert.Equal(t, -1, g.GetWinnerPlayer())
+	assert.Equal(t, PiedmonteseTarotOutcomeNone, g.GetOutcome())
+	assert.Equal(t, PiedmonteseTarotResultNone, g.GetResult())
+	assert.False(t, g.GetGameEndFlag())
+	assert.Len(t, g.GetPlayerScores(), PiedmonteseTarotDefaultSeats)
+	assert.Len(t, g.GetDealScores(), PiedmonteseTarotDefaultSeats)
+
+	// 範囲外は nil / 0 を返す。**落ちない**ことが要件。
+	assert.Nil(t, g.GetPlayer(-1))
+	assert.Nil(t, g.GetPlayer(g.GetPlayerCnt()))
+	assert.NotNil(t, g.GetPlayer(0))
+	assert.Zero(t, g.GetCardThirds(-1))
+	assert.Zero(t, g.GetCardThirds(99))
+	assert.Nil(t, g.GetPlayableIndices(-1))
+	assert.Nil(t, g.GetPlayableIndices(99))
+
+	// 設定は差し替えられる。
+	cfg := g.GetConfig()
+	cfg.TargetDeals = 3
+	g.SetConfig(cfg)
+	assert.Equal(t, 3, g.GetConfig().TargetDeals)
+}
+
+// **CPU だけでマッチを終わりまで回せる。** 人間が降りたあとも卓が進むことと、
+// CPU の戦略分岐 (取りにいく / 安く落とす / リード) を通す。
+func TestPiedmonteseTarot_CpuPlaysAMatchToTheEnd(t *testing.T) {
+	t.Parallel()
+	for _, seats := range PiedmonteseTarotSeatSizes {
+		cfg := DefaultPiedmonteseTarotConfig()
+		cfg.Seats = seats
+		cfg.TargetDeals = 2
+		g := NewPiedmonteseTarot(newPiedmonteseTarotPlayers(seats), cfg)
+		g.Reset()
+
+		for step := 0; step < 6000 && !g.GetGameEndFlag(); step++ {
+			switch g.GetPhase() {
+			case PiedmonteseTarotPhaseScarto:
+				if g.IsHumanScartoTurn() {
+					require.NoError(t, g.PlayerScarto(g.cpuSelectScarto(g.GetDealerIdx())))
+					continue
+				}
+				g.CpuScarto()
+			case PiedmonteseTarotPhasePlay:
+				if g.IsHumanTurn() {
+					require.NoError(t, g.PlayerPlay(g.cpuSelectPlayCard(g.GetCurrentPlayerIdx())))
+					continue
+				}
+				g.CpuPlay()
+			case PiedmonteseTarotPhaseTrickEnd:
+				g.ResolveTrick()
+				if g.GetPhase() == PiedmonteseTarotPhaseTrickEnd {
+					g.NextTrick()
+				}
+			case PiedmonteseTarotPhaseRoundEnd:
+				// **ScoreRound は二度呼んでも増えない。**
+				before := append([]int(nil), g.GetPlayerScores()...)
+				g.ScoreRound()
+				assert.Equal(t, before, g.GetPlayerScores(), "精算が二重に走っている")
+				g.NextRound()
+			default:
+				require.FailNow(t, "unexpected phase")
+			}
+		}
+		require.True(t, g.GetGameEndFlag(), "%d 人卓のマッチが終わらない", seats)
+		assert.Equal(t, PiedmonteseTarotPhaseGameEnd, g.GetPhase())
+		assert.GreaterOrEqual(t, g.GetLastTrickWinner(), 0, "最後のトリックの勝者が記録されていない")
+		assert.Contains(t, []PiedmonteseTarotOutcome{
+			PiedmonteseTarotOutcomeWin, PiedmonteseTarotOutcomeLoss, PiedmonteseTarotOutcomeNone,
+		}, g.GetOutcome())
+	}
+}
+
+// **終わったマッチと違うフェーズは断る。** 受け付けると、決着後の盤面が動く。
+func TestPiedmonteseTarot_RefusesPlaysOutsideThePhase(t *testing.T) {
+	t.Parallel()
+	g := newPiedmonteseTarotForTest(t, 4)
+	assert.ErrorIs(t, g.PlayerPlay(0), ErrWrongPhase, "スカルト中に札は出せない")
+
+	g.phase = PiedmonteseTarotPhasePlay
+	g.currentPlayerIdx = (findHumanIdx(g.GetPlayers()) + 1) % g.GetPlayerCnt()
+	assert.ErrorIs(t, g.PlayerPlay(0), ErrNotHumanTurn)
+
+	g.currentPlayerIdx = findHumanIdx(g.GetPlayers())
+	assert.ErrorIs(t, g.PlayerPlay(-1), ErrInvalidCard)
+	assert.ErrorIs(t, g.PlayerPlay(999), ErrInvalidCard)
+
+	g.gameEndFlag = true
+	assert.ErrorIs(t, g.PlayerPlay(0), ErrGameEnded)
+	assert.ErrorIs(t, g.PlayerScarto(nil), ErrGameEnded)
+	g.CpuScarto() // 終わった卓では何も起きない
+	g.CpuPlay()
+	assert.True(t, g.GetGameEndFlag())
+}
+
+// **札の綴りは棋譜に出る。** 切り札と Matto を数札と同じ形で書くと、
+// 棋譜からどの札か読めない。
+func TestPiedmonteseTarot_CardNames(t *testing.T) {
+	t.Parallel()
+	assert.Equal(t, "??", piedmonteseTarotCardStr(nil))
+	assert.Equal(t, "Matto", piedmonteseTarotCardStr(NewCard(Tarot78ExcuseDesign, 0, false)))
+	assert.Equal(t, "T21", piedmonteseTarotCardStr(NewCard(Tarot78TrumpDesign, 21, false)))
+	assert.Equal(t, "♠5", piedmonteseTarotCardStr(NewCard(CardDesignSpade, 5, false)))
+	assert.Equal(t, "♥14", piedmonteseTarotCardStr(NewCard(CardDesignHeart, Tarot78KingValue, false)))
+	assert.Equal(t, "?3", piedmonteseTarotCardStr(NewCard(99, 3, false)))
+}
+
+// **ヒントは席を見る。** 自分の手番でないときに勧めると、押せないボタンを
+// 光らせることになる。
+func TestPiedmonteseTarot_HintStaysQuietOffTurn(t *testing.T) {
+	t.Parallel()
+	g := newPiedmonteseTarotForTest(t, 4)
+	g.dealerIdx = (findHumanIdx(g.GetPlayers()) + 1) % g.GetPlayerCnt()
+	assert.Equal(t, "none", g.GetHint().Reason, "CPU のスカルトを人間に勧めている")
+
+	g.phase = PiedmonteseTarotPhasePlay
+	g.currentPlayerIdx = (findHumanIdx(g.GetPlayers()) + 1) % g.GetPlayerCnt()
+	assert.Equal(t, "none", g.GetHint().Reason)
+
+	g.phase = PiedmonteseTarotPhaseTrickEnd
+	assert.Equal(t, "next_trick", g.GetHint().Reason)
+	g.phase = PiedmonteseTarotPhaseRoundEnd
+	assert.Equal(t, "next_round", g.GetHint().Reason)
+	g.gameEndFlag = true
+	assert.Equal(t, "none", g.GetHint().Reason)
+}
+
+// **切り札がリードされた形も見る。** 上位切り札の義務はそこでしか働かない。
+func TestPiedmonteseTarot_TrumpLeadForcesAHigherTrump(t *testing.T) {
+	t.Parallel()
+	g := newPiedmonteseTarotForTest(t, 4)
+	p := g.GetPlayers()[0]
+	p.Reset()
+	for _, c := range []*Card{
+		NewCard(Tarot78TrumpDesign, 3, false),
+		NewCard(Tarot78TrumpDesign, 18, false),
+		NewCard(CardDesignHeart, 4, false),
+	} {
+		p.AddCard(c)
+	}
+	g.currentTrick = []*TrickCard{{PlayerIdx: 1, Card: NewCard(Tarot78TrumpDesign, 10, false)}}
+	assert.Equal(t, []int{1}, g.GetPlayableIndices(0), "10 を超える切り札があるならそれだけ")
+
+	// 上位が無ければ持っている切り札を出す。
+	p.Reset()
+	for _, c := range []*Card{
+		NewCard(Tarot78TrumpDesign, 3, false),
+		NewCard(CardDesignHeart, 4, false),
+	} {
+		p.AddCard(c)
+	}
+	assert.Equal(t, []int{0}, g.GetPlayableIndices(0))
+}
+
+// 点の書式は 1/3 単位で読める形になる (画面と棋譜が同じ数を出す)。
+func TestPiedmonteseTarot_FormatThirds(t *testing.T) {
+	t.Parallel()
+	for thirds, want := range map[int]string{
+		0: "0", 1: "0 1/3", 2: "0 2/3", 3: "1", 78: "26", 79: "26 1/3", 80: "26 2/3",
+		-3: "-1", -5: "-1 2/3",
+	} {
+		assert.Equal(t, want, PiedmonteseTarotFormatThirds(thirds), "%d thirds", thirds)
+	}
+}

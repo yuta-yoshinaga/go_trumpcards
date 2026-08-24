@@ -141,3 +141,59 @@ func TestPiedmonteseTarotInteractor_RestoreRejectsGarbage(t *testing.T) {
 	_, err := usecase.RestorePiedmonteseTarotInteractor([]byte(`{`), piedmonteseTarotPassThrough{})
 	assert.Error(t, err)
 }
+
+// **ディールの区切りもインタラクター経由で進む。** ここが繋がっていないと、
+// 精算のあと次が配られない。
+func TestPiedmonteseTarotInteractor_NextRoundDealsAgain(t *testing.T) {
+	hi, g := newPiedmonteseTarotReal()
+	require.Equal(t, "ok", hi.Reset())
+	require.Equal(t, "ok", hi.Discard(domain.PiedmonteseTarotCpuScartoForTest(g, g.GetDealerIdx())))
+
+	for step := 0; step < 400 && g.GetPhase() != domain.PiedmonteseTarotPhaseRoundEnd; step++ {
+		switch g.GetPhase() {
+		case domain.PiedmonteseTarotPhasePlay:
+			require.Equal(t, "ok", hi.Play(g.GetPlayableIndices(g.GetCurrentPlayerIdx())[0]))
+		case domain.PiedmonteseTarotPhaseTrickEnd:
+			require.Equal(t, "ok", hi.NextTrick())
+		default:
+			require.FailNow(t, "unexpected phase")
+		}
+	}
+	require.Equal(t, domain.PiedmonteseTarotPhaseRoundEnd, g.GetPhase())
+
+	round := g.GetRoundNumber()
+	assert.Equal(t, "ok", hi.NextRound())
+	assert.Equal(t, round+1, g.GetRoundNumber(), "次のディールが始まっていない")
+	// 配り直されている: 手札が戻っている (親はタロンぶん多い)。
+	assert.Positive(t, g.GetPlayer(0).GetCardsSize(), "配り直されていない")
+}
+
+// **打てない札は断る。** 受け付けると、フォロー義務のあるゲームで規則が消える。
+func TestPiedmonteseTarotInteractor_RefusesAnIllegalPlay(t *testing.T) {
+	hi, g := newPiedmonteseTarotReal()
+	require.Equal(t, "ok", hi.Reset())
+	require.Equal(t, "ok", hi.Discard(domain.PiedmonteseTarotCpuScartoForTest(g, g.GetDealerIdx())))
+	if !g.IsHumanTurn() || len(g.GetCurrentTrick()) == 0 {
+		t.Skip("この配りでは人間がリードなので、違反手を作れない")
+	}
+	valid := map[int]bool{}
+	for _, i := range g.GetPlayableIndices(g.GetCurrentPlayerIdx()) {
+		valid[i] = true
+	}
+	for i := 0; i < g.GetPlayer(g.GetCurrentPlayerIdx()).GetCardsSize(); i++ {
+		if !valid[i] {
+			assert.Contains(t, hi.Play(i), "err:", "違反手が通っている")
+			return
+		}
+	}
+}
+
+// 終わったマッチには何も渡さない。
+func TestPiedmonteseTarotInteractor_GuardsAfterTheMatchEnds(t *testing.T) {
+	hi, g := newPiedmonteseTarotReal()
+	require.Equal(t, "ok", hi.Reset())
+	g.SetGameEndForTest(0)
+	assert.Equal(t, "ok", hi.Discard(nil), "終局後は素通しの出力だけを返す")
+	assert.Equal(t, "ok", hi.Play(0))
+	assert.Equal(t, "ok", hi.NextRound())
+}

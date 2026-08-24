@@ -172,3 +172,169 @@ func TestPiedmonteseTarotWebPresenter_Output(t *testing.T) {
 		assert.NotNil(t, out)
 	})
 }
+
+// piedmonteseFinishedDeal は 1 ディールを打ち切った卓を返す。
+func piedmonteseFinishedDeal(t *testing.T, seats int) *domain.PiedmonteseTarot {
+	t.Helper()
+	cfg := domain.DefaultPiedmonteseTarotConfig()
+	cfg.Seats = seats
+	cfg.TargetDeals = 2
+	g := domain.NewPiedmonteseTarot(domain.NewPiedmonteseTarotPlayersForTest(seats), cfg)
+	g.Reset()
+	for step := 0; step < 6000; step++ {
+		switch g.GetPhase() {
+		case domain.PiedmonteseTarotPhaseScarto:
+			if g.IsHumanScartoTurn() {
+				require.NoError(t, g.PlayerScarto(domain.PiedmonteseTarotCpuScartoForTest(g, g.GetDealerIdx())))
+				continue
+			}
+			g.CpuScarto()
+		case domain.PiedmonteseTarotPhasePlay:
+			if g.IsHumanTurn() {
+				require.NoError(t, g.PlayerPlay(g.GetPlayableIndices(g.GetCurrentPlayerIdx())[0]))
+				continue
+			}
+			g.CpuPlay()
+		case domain.PiedmonteseTarotPhaseTrickEnd:
+			g.ResolveTrick()
+			if g.GetPhase() == domain.PiedmonteseTarotPhaseTrickEnd {
+				g.NextTrick()
+			}
+		default:
+			return g
+		}
+	}
+	require.FailNow(t, "ディールが終わらない")
+	return nil
+}
+
+// **精算の内訳を出す。** 取り分だけを並べると、変動の数字がどこから来たのか
+// 検算できない (席数倍ちがう)。
+func TestPiedmonteseTarotCuiPresenter_RoundEndBreakdown(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	i18n.SetLang("ja")
+	p := new(presenter.PiedmonteseTarotCuiPresenter)
+
+	g := piedmonteseFinishedDeal(t, 4)
+	out := p.Output(g, nil)
+
+	assert.Contains(t, out, strings.SplitN(i18n.T("piedmontesetarot.promptRoundEnd"), "{{", 2)[0])
+	assert.Contains(t, out, i18n.T("piedmontesetarot.roundEndFormulaLine"))
+	assert.Contains(t, out, strings.SplitN(i18n.T("piedmontesetarot.roundEndTotal"), "{{", 2)[0])
+	// 卓の合計は必ず 78 点。
+	assert.Contains(t, out, domain.PiedmonteseTarotFormatThirds(domain.PiedmonteseTarotTotalThirds))
+	// 席ごとの行が全部出る。
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		assert.Contains(t, out, domain.PiedmonteseTarotFormatThirds(g.GetCardThirds(i)))
+	}
+	assert.NotContains(t, out, "piedmontesetarot.", "生キーが出ている")
+
+	// 結果ラベルは 3 通りとも訳が引ける。
+	for _, o := range []domain.PiedmonteseTarotOutcome{
+		domain.PiedmonteseTarotOutcomeNone,
+		domain.PiedmonteseTarotOutcomeWin,
+		domain.PiedmonteseTarotOutcomeLoss,
+	} {
+		g.SetOutcomeForTest(o)
+		assert.NotContains(t, p.Output(g, nil), "outcome", "結果ラベルが生キー")
+	}
+}
+
+// 終局の画面は勝者を出す。
+func TestPiedmonteseTarotCuiPresenter_GameEnd(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	i18n.SetLang("ja")
+	p := new(presenter.PiedmonteseTarotCuiPresenter)
+
+	g := piedmonteseGame(4)
+	g.SetGameEndForTest(0)
+	out := p.Output(g, nil)
+	assert.Contains(t, out, strings.SplitN(i18n.T("piedmontesetarot.gameEnd"), "{{", 2)[0])
+
+	// 引き分けでも落ちない (勝者 -1)。
+	g.SetGameEndForTest(-1)
+	assert.NotEmpty(t, p.Output(g, nil))
+}
+
+// 棋譜はテキストで出る。
+func TestPiedmonteseTarotCuiPresenter_ActionLog(t *testing.T) {
+	i18n.SetLang("ja")
+	p := new(presenter.PiedmonteseTarotCuiPresenter)
+	assert.NotEmpty(t, p.ActionLogOutput(piedmonteseGame(4)))
+}
+
+// ヒントが札を伴わない場面 (次のトリックへ、など) も出せる。
+func TestPiedmonteseTarotCuiPresenter_HintWithoutCards(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	i18n.SetLang("ja")
+	p := new(presenter.PiedmonteseTarotCuiPresenter)
+
+	g := piedmonteseFinishedDeal(t, 4)
+	out := p.HintOutput(g)
+	assert.Contains(t, out, i18n.T("piedmontesetarot.hintReasonNextRound"))
+	assert.NotContains(t, out, "piedmontesetarot.hint", "理由キーが生で出ている")
+}
+
+// **プレイ中は出せる札だけを返す。** ここが空のままだと Web のボタンが
+// 1 つも押せない。
+func TestPiedmonteseTarotWebPresenter_PlayableIndicesOnTheHumanTurn(t *testing.T) {
+	p := new(presenter.PiedmonteseTarotWebPresenter)
+	g := piedmonteseGame(4)
+	require.NoError(t, g.PlayerScarto(domain.PiedmonteseTarotCpuScartoForTest(g, g.GetDealerIdx())))
+	for g.GetPhase() == domain.PiedmonteseTarotPhasePlay && !g.IsHumanTurn() {
+		g.CpuPlay()
+	}
+	if !g.IsHumanTurn() {
+		t.Skip("配りによっては人間の手番の前にトリックが揃う")
+	}
+	var out struct {
+		PlayableIndices []int `json:"playableIndices"`
+		IsHumanTurn     bool  `json:"isHumanTurn"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &out))
+	assert.True(t, out.IsHumanTurn)
+	assert.NotEmpty(t, out.PlayableIndices)
+}
+
+// **フェーズごとにメッセージコードが変わる。** 画面の案内が 1 種類しか出ないと、
+// いま何を待たれているのか分からない。
+func TestPiedmonteseTarotWebPresenter_MessageCodesPerPhase(t *testing.T) {
+	p := new(presenter.PiedmonteseTarotWebPresenter)
+	code := func(g *domain.PiedmonteseTarot) string {
+		var out struct {
+			MessageCode string `json:"messageCode"`
+		}
+		require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &out))
+		return out.MessageCode
+	}
+
+	g := piedmonteseGame(4)
+	assert.Equal(t, "piedmontesetarot.scartoPhase", code(g))
+
+	require.NoError(t, g.PlayerScarto(domain.PiedmonteseTarotCpuScartoForTest(g, g.GetDealerIdx())))
+	if g.GetPhase() == domain.PiedmonteseTarotPhasePlay {
+		want := "piedmontesetarot.playPhase.lead"
+		if len(g.GetCurrentTrick()) > 0 {
+			want = "piedmontesetarot.playPhase.follow"
+		}
+		assert.Equal(t, want, code(g))
+	}
+
+	done := piedmonteseFinishedDeal(t, 4)
+	assert.Contains(t, []string{
+		"piedmontesetarot.roundEnd", "piedmontesetarot.roundEnd.win", "piedmontesetarot.roundEnd.loss",
+	}, code(done))
+
+	done.SetGameEndForTest(0)
+	assert.Contains(t, []string{
+		"piedmontesetarot.result.humanWin", "piedmontesetarot.result.cpuWin", "piedmontesetarot.result.draw",
+	}, code(done))
+	done.SetGameEndForTest(-1)
+	assert.Equal(t, "piedmontesetarot.result.draw", code(done))
+}

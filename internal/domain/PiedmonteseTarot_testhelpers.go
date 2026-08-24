@@ -23,3 +23,13 @@ func (g *PiedmonteseTarot) SetDealerForTest(idx int) {
 	g.dealerIdx = idx
 	g.startRound()
 }
+
+// SetOutcomeForTest overrides the deal outcome (test only).
+func (g *PiedmonteseTarot) SetOutcomeForTest(o PiedmonteseTarotOutcome) { g.outcome = o }
+
+// SetGameEndForTest ends the match with the given winner (-1 = draw, test only).
+func (g *PiedmonteseTarot) SetGameEndForTest(winner int) {
+	g.gameEndFlag = true
+	g.phase = PiedmonteseTarotPhaseGameEnd
+	g.winnerPlayer = winner
+}
