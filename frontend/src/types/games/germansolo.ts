@@ -121,5 +121,11 @@ export interface GermanSoloResponse extends BaseGameResponse {
   /** 単独契約 (Solo / Tout)、または呼べるエースが無かった Frage。 */
   playsAlone: boolean;
   hint?: GermanSoloHint | null;
+  /**
+   * エース呼びフェーズでヒントが勧めるスート (0=なし)。
+   *
+   * 共有の hint オブジェクトは札の索引しか運べないので、スートはここに載る。
+   */
+  hintAceSuit: number;
   config: GermanSoloConfig;
 }

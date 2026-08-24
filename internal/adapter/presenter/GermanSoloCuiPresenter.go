@@ -208,6 +208,13 @@ func (p *GermanSoloCuiPresenter) HintOutput(g interfaces.GermanSoloGame) string 
 			"cards", strings.Join(cards, ", "),
 			"reason", reason)) + "\n"
 	}
+	// **エース呼びは「どのスートを呼ぶか」がヒントの中身。** 札を指さないので
+	// CardIndices は空で、スートを出さないと「呼べ」としか言っていないことになる。
+	if hint.Reason == "call_ace" && germanSoloSuitInRange(hint.SuitHint) {
+		return color.Yellow(i18n.Tf("germansolo.hintAce",
+			"suit", germanSoloTrumpLabel(hint.SuitHint),
+			"reason", reason)) + "\n"
+	}
 	// Bid-phase decisions carry no cards; render them as an action recommendation
 	// instead of the meaningless "recommended cards: -" line.
 	if actionKey, ok := germanSoloBidActionKeys[hint.Reason]; ok {

@@ -25,6 +25,9 @@ func (p *GermanSoloWebPresenter) Output(g interfaces.GermanSoloGame, lastErr err
 	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
 	if hint := g.GetHint(); hint != nil {
 		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
+		// **エース呼びのヒントは札でなくスートを指す。** ここで載せないと、
+		// 勧めるスートを計算しておいて捨てることになる。
+		resObj.HintAceSuit = hint.SuitHint
 	}
 
 	return marshalOrError(resObj)

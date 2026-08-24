@@ -49,6 +49,7 @@
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintDecision": "[HINT: recommend {{action}} ({{reason}})]",
+  "hintAce": "[HINT: call the ace of {{suit}} ({{reason}})]",
   "hintActionFrage": "Frage",
   "hintActionSolo": "Solo",
   "hintActionTout": "Tout",

@@ -1509,6 +1509,7 @@ const baseGermanSoloState: GermanSoloResponse = {
   partnerIdx: -1,
   playsAlone: true,
   hint: null,
+  hintAceSuit: 0,
   message: '',
   config: { cpuDifficulty: 1, targetRounds: 5 },
 };

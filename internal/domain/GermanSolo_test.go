@@ -502,6 +502,14 @@ func TestGermanSolo_HintSuggestsAnAceInTheAceCallPhase(t *testing.T) {
 	g := newTestGermanSolo()
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	g.SetDeclarerIdx(0)
+	// **手札を置き換える。** 配られたままだと、非切り札のエース 3 枚が
+	// 全部この席に入ったディール (実測 1.1%) で呼べるエースが無くなり、
+	// ヒントが nil になってテストだけが落ちる。
+	setGermanSoloHand(g, 0,
+		germanSoloCard(domain.CardDesignHeart, 7), germanSoloCard(domain.CardDesignHeart, 8),
+		germanSoloCard(domain.CardDesignClover, 9), germanSoloCard(domain.CardDesignClover, 10),
+		germanSoloCard(domain.CardDesignSpade, 8), germanSoloCard(domain.CardDesignSpade, 9),
+		germanSoloCard(domain.CardDesignDiamond, 8), germanSoloCard(domain.CardDesignDiamond, 9))
 	g.SetPhase(domain.GermanSoloPhaseAceCall)
 	hint := g.GetHint()
 	require.NotNil(t, hint)

@@ -268,6 +268,30 @@ describe('GermanSoloPage', () => {
 
   // **押したときは出る。**押していない側だけを見ていると、`isRequestedHint` を
   // 定数 false にしても通ってしまう。真の分岐も踏んでおく。
+  // **エース呼びのヒントはスートを名指しする。** 索引だけを出すと「呼べ」と
+  // しか言っていないことになる。
+  it('names the recommended suit in the hint banner during the ace call', async () => {
+    mockExec.mockResolvedValue(
+      makeGermanSoloState({
+        phase: GermanSoloPhase.ACE_CALL,
+        winningBid: 2,
+        playsAlone: false,
+        isHumanTurn: false,
+        isHumanAceCallTurn: true,
+        calledAceSuit: -1,
+        callableAceSuits: [2, 3],
+        hint: { cardIndices: [], reason: 'call_ace' },
+        hintAceSuit: 2,
+        messageCode: 'germansolo.hintRequested',
+      }),
+    );
+    renderWithProviders(<GermanSoloPage />);
+    // 呼べるエースのボタンにも「クラブ」が出るので、バナーの中で判定する。
+    const banner = await screen.findByTestId('germansolo-hint-live');
+    expect(banner).toHaveTextContent('手札に少ないスートのエースを呼ぶ');
+    expect(banner).toHaveTextContent('クラブ');
+  });
+
   it('renders the hint banner once the hint was requested', async () => {
     mockExec.mockResolvedValue({
       ...playPhaseState,

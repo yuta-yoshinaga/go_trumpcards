@@ -82,6 +82,9 @@ type GermanSoloWebOutput struct {
 	PartnerIdx         int                `json:"partnerIdx"`
 	PlaysAlone         bool               `json:"playsAlone"`
 	Hint               *WebOutputCardHint `json:"hint,omitempty"`
+	// HintAceSuit はエース呼びフェーズでヒントが勧めるスート (0=なし)。共有の
+	// WebOutputCardHint は札の索引しか運べないので、スートはここに載せる。
+	HintAceSuit int `json:"hintAceSuit"`
 	WebOutputBase
 	Config GermanSoloWebOutputConfig `json:"config"`
 }

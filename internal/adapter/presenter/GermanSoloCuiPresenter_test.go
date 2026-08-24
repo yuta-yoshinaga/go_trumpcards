@@ -208,6 +208,17 @@ func TestGermanSoloCuiPresenter_HintOutput(t *testing.T) {
 		assert.NotContains(t, result, "HINT: -")
 	})
 
+	// **エース呼びのヒントはスートを名指しする。** 札を指さないので、スートを
+	// 落とすと「呼べ」としか言っていない行になる。
+	t.Run("ace-call hint names the suit", func(t *testing.T) {
+		m, _ := setupGermanSoloCuiMockWithPlayers()
+		m.On("GetHint").Return(&domain.GermanSoloHint{Reason: "call_ace", SuitHint: domain.CardDesignClover})
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "クラブ")
+		assert.Contains(t, result, "味方の助けが大きい")
+		assert.NotContains(t, result, "HINT: -")
+	})
+
 	t.Run("non-bid empty-card hint falls back to the card line", func(t *testing.T) {
 		m, _ := setupGermanSoloCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.GermanSoloHint{CardIndices: nil, Reason: "discard_low"})

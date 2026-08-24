@@ -59433,6 +59433,10 @@ components:
           type: integer
         hint:
           $ref: '#/components/schemas/GermanSoloHint'
+        hintAceSuit:
+          type: integer
+          description: Suit the hint recommends calling in the ace-call phase (1=♠, 2=♣, 3=♥, 4=♦); 0 when there is no suit to recommend. The shared hint object carries card indices only, so the suit rides here.
+          enum: [0, 1, 2, 3, 4]
         message:
           type: string
         messageCode:

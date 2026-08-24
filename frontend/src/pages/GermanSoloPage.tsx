@@ -422,6 +422,9 @@ function GermanSoloPageContent() {
                   {state.hint.cardIndices &&
                     state.hint.cardIndices.length > 0 &&
                     ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                  {/* **エース呼びのヒントは札でなくスートを指す。** 索引だけを
+                      出すと「呼べ」としか言っていないことになる。 */}
+                  {state.hintAceSuit >= 1 && ` (${t(SUIT_KEYS[state.hintAceSuit] ?? 'suitNone')})`}
                 </div>
               )}
             </div>

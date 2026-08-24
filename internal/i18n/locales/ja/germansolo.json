@@ -49,6 +49,7 @@
   "hintNone": "ヒントはありません。",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintDecision": "[HINT: {{action}} を推奨 ({{reason}})]",
+  "hintAce": "[HINT: {{suit}} のエースを呼ぶのを推奨 ({{reason}})]",
   "hintActionFrage": "フラーゲ",
   "hintActionSolo": "ソロ",
   "hintActionTout": "トゥー",
