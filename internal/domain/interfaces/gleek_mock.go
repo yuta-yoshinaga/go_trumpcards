@@ -235,6 +235,12 @@ func (_m *MockGleekGame) GetTrickPoints() [domain.GleekPlayerCnt]int {
 	return ret.Get(0).([domain.GleekPlayerCnt]int)
 }
 
+// GetLastTrickWinner モック
+func (_m *MockGleekGame) GetLastTrickWinner() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 // DealPoints モック
 func (_m *MockGleekGame) DealPoints() int {
 	ret := _m.Called()

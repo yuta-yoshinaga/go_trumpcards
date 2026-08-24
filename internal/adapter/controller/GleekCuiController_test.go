@@ -35,10 +35,20 @@ func TestGleekCuiController_Exec(t *testing.T) {
 		assert.Equal(t, "bye.", controller.NewGleekCuiController(newMock()).Exec("quit"))
 	})
 
-	t.Run("reset preserves config", func(t *testing.T) {
-		m := newMock()
+	// **既定値で問い合わせて既定値を期待すると、読み込みを落としても通る。**
+	// 既定と違う設定を返すモックにして、その値が渡ることを見る。
+	t.Run("reset preserves the config it read", func(t *testing.T) {
+		kept := domain.DefaultGleekConfig()
+		kept.CpuDifficulty = domain.GleekCpuDifficultyHard
+		kept.TargetRounds = 7
+
+		m := new(mockUsecases.MockGleekInteractor)
+		m.On("GetConfig").Return(kept)
+		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
+
 		assert.Equal(t, mockOutput, controller.NewGleekCuiController(m).Exec("r"))
-		m.AssertCalled(t, "ResetWithConfig", domain.DefaultGleekConfig())
+		m.AssertCalled(t, "ResetWithConfig", kept)
+		m.AssertNotCalled(t, "ResetWithConfig", domain.DefaultGleekConfig())
 	})
 
 	t.Run("bid raises to the given amount", func(t *testing.T) {

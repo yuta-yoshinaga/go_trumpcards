@@ -798,9 +798,12 @@ func (g *Gleek) ResolveTrick() {
 	g.appendLog(winnerIdx, "trick_win",
 		fmt.Sprintf("%s wins trick %d for %d", playerName(g.players, winnerIdx), g.trickNumber, points), trickCards)
 
+	// **毎トリック記録する。** 最終トリックだけ入れると、画面は「誰が取ったか」を
+	// 出せないまま次へ進むボタンだけ出すことになり、棋譜を開くまで分からない。
+	g.lastTrickWinner = winnerIdx
+
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= GleekTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.phase = GleekPhaseRoundEnd
 		g.enterRoundEnd()
 		return
@@ -1460,6 +1463,9 @@ func (g *Gleek) GetMelds() []*GleekMeld { return g.melds }
 
 // GetTrickPoints 各席のトリック点を取得
 func (g *Gleek) GetTrickPoints() [GleekPlayerCnt]int { return g.trickPoints }
+
+// GetLastTrickWinner 直前のトリックを取った席を取得 (-1=まだ無い)
+func (g *Gleek) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // GetPlayerScores プレイヤー別累積点取得
 func (g *Gleek) GetPlayerScores() [GleekPlayerCnt]int { return g.playerScores }

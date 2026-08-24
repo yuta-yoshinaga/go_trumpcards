@@ -259,6 +259,9 @@ function GleekPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="gleek-trick-display"
+                  // **取った札を光らせる。** トリックが揃ってから次へ進むまでの間に
+                  // 誰が取ったのかを出さないと、棋譜を開くまで分からない。
+                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
                 />
               </div>
 

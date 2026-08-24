@@ -87,6 +87,8 @@ type GleekGame interface {
 	GetMelds() []*domain.GleekMeld
 	// GetTrickPoints 各席のトリック点を取得する
 	GetTrickPoints() [domain.GleekPlayerCnt]int
+	// GetLastTrickWinner 直前のトリックを取った席を取得する (-1=まだ無い)
+	GetLastTrickWinner() int
 	// DealPoints このディールで配られた点の合計を取得する
 	DealPoints() int
 	// Par 精算の基準点を取得する

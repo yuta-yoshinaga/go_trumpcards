@@ -171,6 +171,27 @@ describe('GleekPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
   });
 
+  // **取った札を光らせる。** トリックが揃ってから次へ進むまでの間に誰が取ったかを
+  // 出さないと、棋譜を開くまで分からない。
+  it('marks the winning card while the completed trick is on the table', async () => {
+    mockExec.mockResolvedValue(makeGleekState({ ...trickEndState, lastTrickWinner: 1 }));
+    renderWithProviders(<GleekPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    expect(screen.getByTestId('trick-winner-badge')).toBeInTheDocument();
+  });
+
+  it('marks nothing while the trick is still being played', async () => {
+    mockExec.mockResolvedValue(
+      makeGleekState({
+        currentTrick: [{ playerIdx: 1, card: { design: 'CLOVER', value: 13 } }],
+        lastTrickWinner: 1,
+      }),
+    );
+    renderWithProviders(<GleekPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
+
   // **基準点はそのディールから数える。** 上限を出すと、名札が場外に落ちた
   // ディールで説明が合わなくなる。
   it('renders the deal total and the par it is settled against', async () => {

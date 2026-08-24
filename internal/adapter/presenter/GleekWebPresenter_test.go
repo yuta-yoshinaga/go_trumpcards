@@ -42,6 +42,7 @@ func setupGleekWebMock() *interfaces.MockGleekGame {
 	})
 	m.On("GetMelds").Return([]*domain.GleekMeld{{PlayerIdx: 0, Rank: 13, Count: 3, Value: 3}})
 	m.On("GetTrickPoints").Return([domain.GleekPlayerCnt]int{9, 3, 0})
+	m.On("GetLastTrickWinner").Return(1)
 	m.On("DealPoints").Return(78)
 	m.On("Par").Return(26)
 	m.On("GetBids").Return([domain.GleekPlayerCnt]int{14, 12, 0})
@@ -93,6 +94,9 @@ func TestGleekWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, out.RuffWinnerIdx)
 		assert.Equal(t, 78, out.DealPoints)
 		assert.Equal(t, 26, out.Par)
+		// **直前のトリックを取った席を運ぶ。** -1 を固定で返していると、画面は
+		// 誰が取ったかを出せないまま次へ進むボタンだけを見せる。
+		assert.Equal(t, 1, out.LastTrickWinner)
 		require.Len(t, out.Melds, 1)
 		assert.Equal(t, 13, out.Melds[0].Rank)
 		assert.Equal(t, 3, out.Melds[0].Value)
