@@ -39,6 +39,7 @@ import type {
   MusResponse,
   NapResponse,
   OmbreResponse,
+  PiedmonteseTarotResponse,
   PreferenceResponse,
   PrimeroResponse,
   QuadrilleResponse,
@@ -1799,6 +1800,96 @@ const baseScartoState: ScartoResponse = {
  */
 export function makeScartoState(overrides?: Partial<ScartoResponse>): ScartoResponse {
   return { ...baseScartoState, ...overrides };
+}
+
+/** Base Tarocco Piemontese state used as the default for {@link makePiedmonteseTarotState}. Defaults to a human Play turn at a four-handed table. */
+const basePiedmonteseTarotState: PiedmonteseTarotResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 19,
+      cards: [
+        { design: 'HEART' as const, value: 13, glyph: '♥', label: 'D', color: 'red', deck: 'tarot' },
+        { design: 'SPADE' as const, value: 14, glyph: '♠', label: 'R', color: 'black', deck: 'tarot' },
+        { design: 'CLOVER' as const, value: 4, glyph: '♣', label: '4', color: 'black', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 21, glyph: '✦', label: '21', color: 'purple', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 0, glyph: '★', label: 'Matto', color: 'gold', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      cardThirds: 0,
+      cardPoints: '0',
+      score: 0,
+      isDealer: false,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 19,
+      cards: [],
+      trickCount: 0,
+      cardThirds: 0,
+      cardPoints: '0',
+      score: 0,
+      isDealer: false,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      cardCount: 19,
+      cards: [],
+      trickCount: 0,
+      cardThirds: 0,
+      cardPoints: '0',
+      score: 0,
+      isDealer: false,
+    },
+    {
+      id: 3,
+      isHuman: false,
+      cardCount: 19,
+      cards: [],
+      trickCount: 0,
+      cardThirds: 0,
+      cardPoints: '0',
+      score: 0,
+      isDealer: true,
+    },
+  ],
+  phase: 1,
+  roundNumber: 1,
+  trickNumber: 1,
+  trickCount: 19,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  scartoCount: 2,
+  talonSize: 2,
+  currentTrick: [],
+  playerScores: [0, 0, 0, 0],
+  dealScores: [0, 0, 0, 0],
+  lastTrickWinner: -1,
+  outcome: 0,
+  result: 0,
+  playableIndices: [0, 1, 2, 3, 4],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  isHumanScarto: false,
+  hint: null,
+  message: '',
+  config: { seats: 4, cpuDifficulty: 1, targetDeals: 4 },
+};
+
+/**
+ * Creates a {@link PiedmonteseTarotResponse} with sensible defaults (a human
+ * Play turn at a four-handed table). Any field can be overridden.
+ *
+ * @param overrides - Partial PiedmonteseTarotResponse fields to override.
+ * @returns A complete PiedmonteseTarotResponse suitable for use in tests.
+ */
+export function makePiedmonteseTarotState(overrides?: Partial<PiedmonteseTarotResponse>): PiedmonteseTarotResponse {
+  return { ...basePiedmonteseTarotState, ...overrides };
 }
 
 /** Base Königrufen state used as the default for {@link makeKoenigrufenState}. Defaults to a human Play turn (declarer, Rufer contract). */

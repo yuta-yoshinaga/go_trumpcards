@@ -234,6 +234,14 @@ func init() {
 			return usecase.RestoreRussianBankInteractor(data, new(presenter.RussianBankWebPresenter))
 		},
 		controller.NewRussianBankWebControllerWithProvider)
+	games.RegisterKVGame("piedmontesetarot", games.CategoryExtra4,
+		func() usecase.PiedmonteseTarotInteractorIF {
+			return usecase.NewPiedmonteseTarotInteractor(domain.NewDefaultPiedmonteseTarot(), new(presenter.PiedmonteseTarotWebPresenter))
+		},
+		func(data []byte) (usecase.PiedmonteseTarotInteractorIF, error) {
+			return usecase.RestorePiedmonteseTarotInteractor(data, new(presenter.PiedmonteseTarotWebPresenter))
+		},
+		controller.NewPiedmonteseTarotWebControllerWithProvider)
 	games.RegisterKVGame("scarto", games.CategoryExtra4,
 		func() usecase.ScartoInteractorIF {
 			return usecase.NewScartoInteractor(domain.NewDefaultScarto(), new(presenter.ScartoWebPresenter))

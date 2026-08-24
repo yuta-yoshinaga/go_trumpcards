@@ -1,0 +1,73 @@
+{
+  "title": "Tarocco Piemontese",
+  "phase": {
+    "scarto": "Scarto (discard)",
+    "play": "Play",
+    "trickEnd": "Trick end",
+    "roundEnd": "Deal end",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "seats": "Seats",
+    "cpuDifficulty": "CPU difficulty",
+    "targetDeals": "Deals per match",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Deal {{n}}",
+  "trick": "Trick {{n}}/{{total}}",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "points": "{{points}} pts",
+  "score": "Score: {{score}}",
+  "currentTrick": "Current trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "dealerBadge": "Dealer",
+  "scartoPhase": "Scarto - bury {{total}} card(s) from your hand ({{count}}/{{total}} selected). Honours (trumps 1 and 21, the Matto) and court cards cannot be buried.",
+  "scartoWaiting": "Waiting for the dealer's scarto...",
+  "scartoRestricted": "This card cannot be buried (honour or court card).",
+  "scartoUndiscardable": {
+    "excuse": "The Matto (Excuse) cannot be buried.",
+    "bout": "An honour (trump 1 or 21) cannot be buried.",
+    "trump": "Trumps cannot be buried unless nothing else is left.",
+    "court": "Court cards (V/C/D/R) cannot be buried."
+  },
+  "discardButton": "Bury ({{count}}/{{total}})",
+  "playButton": "Play",
+  "nextTrick": "Next trick",
+  "nextRound": "Next deal",
+  "outcomeNone": "Average",
+  "outcomeWin": "Above average",
+  "outcomeLoss": "Below average",
+  "roundResult": {
+    "title": "Deal result",
+    "outcome": "Your result: {{outcome}}",
+    "playerLine": "{{name}}: {{delta}} (total {{score}})",
+    "total": "Card points on the table: {{total}} (of 78)",
+    "earnedLine": "{{name}}: took {{points}} -> change {{scaled}}",
+    "formula": "change = seats ({{n}}) x your card points - table total"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "scarto_weak": "bury the cards that score nothing",
+    "lead_low": "lead a cheap card and keep the scoring ones",
+    "follow_play": "take it if you can, otherwise drop something cheap",
+    "overtrump": "a trump is out - beat it or drop cheaply",
+    "next_trick": "move on to the next trick",
+    "next_round": "move on to the next deal",
+    "none": "no suggestion right now"
+  },
+  "tutorial": {
+    "trickDisplay": "The current trick. Follow the led suit; if you cannot, you must trump, and if a trump is already out you must beat it when you can. Only the Matto is exempt - it is never captured and stays in your own pile.",
+    "playerHand": "Your hand. Click a card to select it. The 78-card tarot deck (four 14-card suits, 21 trumps and the Matto) is played by three or four.",
+    "playButton": "Select a card, then play it with this button. When you deal, the scarto buries the talon: two cards at four seats, three at three.",
+    "info": "Tarocco Piemontese is the tarot of Piedmont in northern Italy. Cards are counted in groups of three (each group worth its values minus two), 78 points in the whole deck. Every deal settles zero-sum against the table, and the highest cumulative score after the set number of deals wins.",
+    "resetButton": "The reset button starts a new game."
+  },
+  "hintRequested": "A hint is available",
+  "noHint": "No hint available"
+}

@@ -614,5 +614,7 @@
   "invalidBidActionFrage": "入札の行動が不正です: {{val}}。pass, frage <スート>, solo <スート>, tout <スート> のいずれかを入力してください。",
   "aceSuitRequiredWords": "呼ぶエースのスートを指定してください (spade/club/heart/diamond)。",
   "invalidAceSuitSCHD": "エースのスートが不正です: {{val}}。spade/club/heart/diamond のいずれかを指定してください。",
-  "discardIndicesRequired": "捨てる札の番号を指定してください (例: discard 0 1 2 3 4 5 6)。"
+  "discardIndicesRequired": "捨てる札の番号を指定してください (例: discard 0 1 2 3 4 5 6)。",
+  "numberOfSeatsRequired34": "席数を指定してください (3 または 4)。",
+  "invalidNumberOfSeats34": "席数が不正です。3 または 4 を入力してください。"
 }

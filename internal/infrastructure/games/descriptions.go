@@ -340,6 +340,7 @@ var gameDescriptions = map[string]string{
 	"minchiate":           "Minchiate (ミンキアーテ)",
 	"tarocchini":          "Tarocchini (タロッキーニ)",
 	"scarto":              "Scarto (スカルト)",
+	"piedmontesetarot":    "Tarocco Piemontese (ピエモンテ・タロッコ)",
 	"cego":                "Cego (チェゴ)",
 	"zheng":               "Zheng Shangyou (ジェンシャンヨウ)",
 	"nainjaune":           "ル・ナン・ジョーヌ（5区画の盤を持つフランスのストップス。スート無関係にランクが上がり、Kで止まる）",

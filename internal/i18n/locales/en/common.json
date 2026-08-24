@@ -443,7 +443,7 @@
   "cardIndexesRequiredTriple": "Card indexes are required (e.g. p 0 1 2 for a triple).",
   "cardIndicesRequired8FrontMiddle": "8 card indices are required (3 front + 5 middle).",
   "cardIndicesRequiredMeld": "Card indices are required (for example: m 0,2,5).",
-  "cardIndicesRequiredScartoN": "%d card indices are required (e.g. scarto 0 1 2 ...).",
+  "cardIndicesRequiredScartoN": "{{n}} card indices are required (e.g. scarto 0 1 2 ...).",
   "cardIndicesRequiredScartoTwo": "%d card indices are required (e.g. scarto 0 1).",
   "cardTableAndValueRequired": "Card index, table cards and a value are required (for example: b 0 1,2 9).",
   "fourIndicesAndSuitRequired": "Four card indices and a suit are required.",
@@ -614,5 +614,7 @@
   "invalidBidActionFrage": "Invalid bid action: {{val}}. Please enter pass, frage <suit>, solo <suit>, or tout <suit>.",
   "aceSuitRequiredWords": "An ace suit is required (spade/club/heart/diamond).",
   "invalidAceSuitSCHD": "Invalid ace suit: {{val}}. Use spade/club/heart/diamond.",
-  "discardIndicesRequired": "The indices of the cards to throw are required (e.g. discard 0 1 2 3 4 5 6)."
+  "discardIndicesRequired": "The indices of the cards to throw are required (e.g. discard 0 1 2 3 4 5 6).",
+  "numberOfSeatsRequired34": "Number of seats is required (3 or 4).",
+  "invalidNumberOfSeats34": "Invalid number of seats: please enter 3 or 4."
 }

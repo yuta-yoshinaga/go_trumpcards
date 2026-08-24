@@ -702,6 +702,8 @@ tags:
     description: Rook (ルーク) game
   - name: samba
     description: Samba (サンバ) game
+  - name: piedmontesetarot
+    description: 'Tarocco Piemontese (ピエモンテ・タロッコ) - the Piedmontese 78-card tarot for three or four players, counted in groups of three'
   - name: scarto
     description: Scarto (スカルト) game
   - name: streetsandalleys
@@ -31697,6 +31699,113 @@ paths:
                 summary: Start a new game
                 value:
                   command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /piedmontesetarot/exec:
+    post:
+      tags:
+        - piedmontesetarot
+      summary: Execute a Tarocco Piemontese game command
+      description: |
+        Send a command to advance the Tarocco Piemontese session identified by
+        `sessionId`.
+
+        The Piedmontese tarot on the 78-card French-suited pack, for **three or
+        four** players. The dealer picks up the talon and buries the same number
+        of cards (the scarto), then the table plays trump-priority tricks.
+
+        **The deal follows the table size and the rules name both:** four seats
+        get 19 cards each with a two-card talon, three seats 25 each with a
+        three-card talon. `config.seats` therefore accepts **3 or 4 only** --
+        any other value is refused rather than rounded, since a size the rules
+        do not name has no deal.
+
+        **Honours and court cards cannot be buried.** The scarto takes pip
+        cards; an ordinary trump is allowed only when too few pips remain.
+        `talonSize` says how many cards the burial takes, so a client never
+        hardcodes it.
+
+        **Scoring counts in groups of three**, each group worth its card values
+        minus two -- 78 points for the whole deck. A seat's captured pile is
+        rarely a multiple of three, so `cardThirds` carries the exact figure in
+        thirds and `cardPoints` the readable form ("26 1/3"). Each deal settles
+        zero-sum: `score_i = seats x thirds_i - table total`.
+      operationId: piedmonteseTarotExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), scarto, play, next (n), nextround (nr), hint, log, quit (q)"
+                cardIndices:
+                  type: array
+                  description: Cards the dealer buries; exactly `talonSize` of them.
+                  items:
+                    type: integer
+                cardIndex:
+                  type: integer
+                  description: Index of the card to play. Required for play.
+                config:
+                  type: object
+                  properties:
+                    seats:
+                      type: integer
+                      description: Table size; 3 or 4 only.
+                    cpuDifficulty:
+                      type: integer
+                      description: 0 = Easy, 1 = Normal, 2 = Hard.
+                    targetDeals:
+                      type: integer
+                      description: Deals that make up the match.
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new four-handed game
+                value:
+                  command: reset
+                  config:
+                    seats: 4
+                  sessionId: my-session-001
+              scarto:
+                summary: Bury the two-card talon
+                value:
+                  command: scarto
+                  cardIndices: [0, 1]
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at index 3
+                value:
+                  command: play
+                  cardIndex: 3
                   sessionId: my-session-001
       responses:
         '200':

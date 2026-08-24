@@ -210,6 +210,7 @@ import type {
   PasurResponse,
   PenguinResponse,
   PerseveranceResponse,
+  PiedmonteseTarotResponse,
   PigResponse,
   PigsTailResponse,
   PineappleResponse,
@@ -557,6 +558,7 @@ import { getPanHint } from '../utils/hints/panHint';
 import { getPasurHint } from '../utils/hints/pasurHint';
 import { getPenguinHint } from '../utils/hints/penguinHint';
 import { getPerseveranceHint } from '../utils/hints/perseveranceHint';
+import { getPiedmonteseTarotHint } from '../utils/hints/piedmonteseTarotHint';
 import { getPigHint } from '../utils/hints/pigHint';
 import { getPigstailHint } from '../utils/hints/pigstailHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
@@ -998,6 +1000,7 @@ export const hintFactories = {
   ombre: (s) => getOmbreHint(s as OmbreResponse),
   quadrille: (s) => getQuadrilleHint(s as QuadrilleResponse),
   ulti: (s) => getUltiHint(s as UltiResponse),
+  piedmontesetarot: (s) => getPiedmonteseTarotHint(s as PiedmonteseTarotResponse),
   scarto: (s) => getScartoHint(s as ScartoResponse),
   shengji: (s) => getShengJiHint(s as ShengJiResponse),
   cego: (s) => getCegoHint(s as CegoResponse),

@@ -566,6 +566,21 @@ export const ScartoPhase = {
   GAME_END: 4,
 } as const;
 
+/**
+ * Tarocco Piemontese phase constants (sync: internal/domain/PiedmonteseTarot.go).
+ *
+ * The same shape as {@link ScartoPhase} — both are Piedmontese tarot — but they
+ * are separate games, so the constants are declared separately rather than
+ * aliased: a change to one must not silently move the other.
+ */
+export const PiedmonteseTarotPhase = {
+  SCARTO: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Königrufen (ケーニッヒルーフェン) phase constants (sync: internal/domain/Koenigrufen.go). */
 export const KoenigrufenPhase = {
   BID: 0,

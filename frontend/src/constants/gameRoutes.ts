@@ -728,6 +728,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 5, 2], skill: [2, 4, 5, 2], social: [1, 3, 5, 3, 5], theme: [2, 4, 2, 1, 2, 3] },
       },
       {
+        path: '/piedmontesetarot',
+        labelKey: 'nav.piedmontesetarot',
+        icon: '🗼',
+        page: 'PiedmonteseTarot',
+        profile: { mood: [2, 3, 5, 2], skill: [2, 4, 5, 2], social: [1, 3, 5, 3, 5], theme: [2, 4, 2, 1, 2, 3] },
+      },
+      {
         path: '/cego',
         labelKey: 'nav.cego',
         icon: '🃏',
