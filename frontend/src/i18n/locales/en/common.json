@@ -385,7 +385,8 @@
     "zheng": "Zheng Shangyou",
     "zwanzigerrufen": "Zwanzigerrufen",
     "zwicker": "Zwicker",
-    "baccaratbanque": "Baccarat Banque"
+    "baccaratbanque": "Baccarat Banque",
+    "continentalrummy": "Continental Rummy"
   },
   "sound": {
     "mute": "Mute sound",
@@ -2663,7 +2664,26 @@
     "baccaratbanque.errGameEnded": "The bank has already ended.",
     "baccaratbanque.errNotBankerPhase": "This is not the moment for your draw decision.",
     "baccaratbanque.errNotResultPhase": "You can only give up the bank between coups.",
-    "baccaratbanque.errNaturalCannotDraw": "A natural cannot take a third card."
+    "baccaratbanque.errNaturalCannotDraw": "A natural cannot take a third card.",
+    "continentalrummy.drawPhase": "Draw from the stock or take the top discard.",
+    "continentalrummy.drawPhase.canGoOutOnDeal": "The dealt fifteen already go out - laying them without drawing is worth 10!",
+    "continentalrummy.discardPhase": "Throw one card.",
+    "continentalrummy.discardPhase.canGoOut": "You can go out - lay all fifteen down!",
+    "continentalrummy.roundEnd": "The round is over.",
+    "continentalrummy.roundEnd.washout": "The stock is spent and nobody went out.",
+    "continentalrummy.result.humanWin": "You win!",
+    "continentalrummy.result.cpuWin": "A CPU wins.",
+    "continentalrummy.result.draw": "A draw.",
+    "continentalrummy.hintRequested": "Hint shown.",
+    "continentalrummy.noHint": "No move to recommend right now.",
+    "continentalrummy.errGameEnded": "The game has already ended.",
+    "continentalrummy.errWrongPhase": "That command is not available in this phase.",
+    "continentalrummy.errNotYourTurn": "It is not your turn.",
+    "continentalrummy.errCardRange": "No card at index {{val}}.",
+    "continentalrummy.errDiscardEmpty": "The discard pile is empty.",
+    "continentalrummy.errNotAGoOut": "Those fifteen cards do not form a legal go-out. They must split as 3+3+3+3+3, 4+4+4+3 or 5+4+3+3 (sets are never melds).",
+    "continentalrummy.invalidRounds": "Invalid number of rounds: {{val}}. Please enter 1-10.",
+    "continentalrummy.invalidDifficulty": "Invalid difficulty: {{val}}. Please enter 0-2."
   },
   "manual": {
     "ariaLabel": "Game Manual",

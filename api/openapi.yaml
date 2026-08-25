@@ -432,6 +432,8 @@ tags:
     description: 'Costly Colours - the Shropshire ancestor of Cribbage; the count scores at 15, 25 and 31, and a ladder of colour combinations gives the game its name'
   - name: baccaratbanque
     description: 'Baccarat Banque - the two-tableau French baccarat; one bank deals to a right and a left punter at once and holds the bank until the shoe runs out'
+  - name: continentalrummy
+    description: 'Continental Rummy - the rummy with no sets at all; the whole fifteen-card hand goes down at once as sequences, in one of three fixed layouts'
   - name: literature
     description: Literature
   - name: guandan
@@ -21127,6 +21129,136 @@ paths:
                 value:
                   command: play
                   handIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /continentalrummy/exec:
+    post:
+      tags:
+        - continentalrummy
+      summary: Execute a Continental Rummy game command
+      description: |
+        Send a command to advance the Continental Rummy session identified by
+        `sessionId`. Continental Rummy is the European rummy whose one
+        distinguishing rule is that **sets are never melds** -- the entire hand
+        must be sequences. Played here as one human against three CPUs on
+        **two packs plus two jokers (106 cards)**, **fifteen cards each dealt
+        three at a time**.
+
+        **#5464 is wrong on five counts.** It sizes the pack as "decks =
+        players minus one", which would be three packs at this table; the real
+        rule brackets by seat count, and 2-5 players take **two packs and two
+        jokers**. It has players organising runs and laying them during play:
+        there are **no partial melds** -- all fifteen go down at once or
+        nothing does. It says any complete partition into runs wins; in fact
+        only **three layouts** are legal, and `layouts` reports them --
+        5x3, 4+4+4+3 and 5+4+3+3. Note what is missing: **three fives totals
+        fifteen and is still not a go-out.** It omits the deal size entirely.
+        And its scoring (losers count their remaining cards, lowest wins) is a
+        different rummy's: here the **winner collects from each opponent** on
+        a bonus tally, and the losers' cards are never counted.
+
+        A sequence is 3-5 cards of one suit; jokers are wild; the ace runs
+        high or low but never wraps. `goOutIdx` names the one card you can
+        throw to go out, or -1 -- the server solves the fifteen-card partition
+        so a client never has to.
+
+        **Going out on the deal is a separate command.** If the fifteen cards
+        dealt already form a legal layout you lay them down without drawing
+        and without throwing anything (`gooutdeal`), and that is the heavier
+        win -- 10 points against 7 for going out after a draw.
+        `canGoOutOnDeal` says when it is available; drawing first forfeits
+        the difference.
+
+        The bonus tally is 1 for going out, 2 per joker melded, 7 for going
+        out on the first turn, **10 for going out on the dealt fifteen**, 10
+        for using no joker and 10 for an all-one-suit hand; `lastResult`
+        breaks it down and reports what was collected from each opponent.
+
+        **One documented adaptation.** The sources say nothing about a spent
+        stock, and treating that as a washout measured at 161 of 200 rounds
+        ending with nobody out -- so the discards are turned back into a stock
+        (the top card stays) up to three times, which lifts it to 199 of 200.
+        Play runs a set number of rounds (`totalRounds`, 1-10, default 3) and
+        the largest tally wins.
+      operationId: continentalRummyExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), stock (ds), take (dd), discard (d), goout (g), gooutdeal (gd), next (n), hint, log, quit (q)"
+                handIndex:
+                  type: integer
+                  description: >-
+                    Index of the card to throw. Required for both discard and
+                    goout -- going out still costs one card, so it is never
+                    defaulted.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0 = Easy, 1 = Normal, 2 = Hard. Easy discards at random.
+                    totalRounds:
+                      type: integer
+                      description: Rounds to play, 1-10 (default 3).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              stock:
+                summary: Draw from the stock
+                value:
+                  command: stock
+                  sessionId: my-session-001
+              take:
+                summary: Lift the top discard
+                value:
+                  command: take
+                  sessionId: my-session-001
+              discard:
+                summary: Throw the card at index 0
+                value:
+                  command: discard
+                  handIndex: 0
+                  sessionId: my-session-001
+              goout:
+                summary: Lay all fifteen down, throwing the card at index 15
+                value:
+                  command: goout
+                  handIndex: 15
                   sessionId: my-session-001
       responses:
         '200':

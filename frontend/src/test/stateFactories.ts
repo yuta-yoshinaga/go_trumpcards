@@ -12,6 +12,7 @@ import type {
   CirullaResponse,
   CoincheResponse,
   CometResponse,
+  ContinentalRummyResponse,
   CostlyColoursResponse,
   CourtPieceResponse,
   DehlaPakadResponse,
@@ -5036,6 +5037,85 @@ const baseBaccaratBanqueState: BaccaratBanqueResponse = {
  */
 export function makeBaccaratBanqueState(overrides?: Partial<BaccaratBanqueResponse>): BaccaratBanqueResponse {
   return { ...baseBaccaratBanqueState, ...overrides };
+}
+
+/** Card helper for the Continental Rummy factories. */
+const contCard = (design: 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND' | 'JOKER', value: number) => ({
+  design,
+  value,
+});
+
+/** Three consecutive cards of one suit — one legal sequence. */
+const contRun = (design: 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND', from: number) => [
+  contCard(design, from),
+  contCard(design, from + 1),
+  contCard(design, from + 2),
+];
+
+/**
+ * Base Continental Rummy state used as the default for {@link makeContinentalRummyState}.
+ *
+ * Defaults to the human on the **discard** step of round 2 with sixteen cards
+ * — deliberately not round 1, so a test that asserts on the round cannot pass
+ * by reading a hardcoded 1. The hand is five clean sequences plus one loose
+ * card, so `goOutIdx` points at index 15.
+ */
+const baseContinentalRummyState: ContinentalRummyResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cards: [
+        ...contRun('SPADE', 2),
+        ...contRun('SPADE', 7),
+        ...contRun('HEART', 4),
+        ...contRun('CLOVER', 9),
+        ...contRun('DIAMOND', 5),
+        contCard('DIAMOND', 13),
+      ],
+      cardCount: 16,
+      melds: [],
+      score: 0,
+      isDealer: true,
+    },
+    { id: 1, isHuman: false, cards: [], cardCount: 15, melds: [], score: 0, isDealer: false },
+    { id: 2, isHuman: false, cards: [], cardCount: 15, melds: [], score: 0, isDealer: false },
+    { id: 3, isHuman: false, cards: [], cardCount: 15, melds: [], score: 0, isDealer: false },
+  ],
+  phase: 'discard',
+  roundNumber: 2,
+  totalRounds: 3,
+  currentPlayerIdx: 0,
+  dealerIdx: 0,
+  stockCount: 30,
+  discardTop: contCard('CLOVER', 4),
+  // **5+5+5 は入らない。** 合計 15 でも上がりにならないので、ここに足さないこと。
+  layouts: [
+    [3, 3, 3, 3, 3],
+    [4, 4, 4, 3],
+    [5, 4, 3, 3],
+  ],
+  gameEndFlag: false,
+  winnerIdx: -1,
+  isHumanTurn: true,
+  goOutIdx: 15,
+  canGoOutOnDeal: false,
+  hintDiscardIdx: 15,
+  hintReason: 'go_out',
+  config: { cpuDifficulty: 1, totalRounds: 3 },
+  message: '',
+  messageCode: 'continentalrummy.discardPhase.canGoOut',
+};
+
+/**
+ * Creates a {@link ContinentalRummyResponse} with sensible defaults (the human
+ * holding a completed hand on the discard step of round 2).
+ *
+ * @param overrides - Partial ContinentalRummyResponse fields to override.
+ * @returns A complete ContinentalRummyResponse suitable for use in tests.
+ */
+export function makeContinentalRummyState(overrides?: Partial<ContinentalRummyResponse>): ContinentalRummyResponse {
+  return { ...baseContinentalRummyState, ...overrides };
 }
 
 /**

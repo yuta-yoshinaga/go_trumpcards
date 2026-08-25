@@ -453,4 +453,12 @@ func init() {
 			return usecase.RestoreBaccaratBanqueInteractor(data, new(presenter.BaccaratBanqueWebPresenter))
 		},
 		controller.NewBaccaratBanqueWebControllerWithProvider)
+	games.RegisterKVGame("continentalrummy", games.CategoryExtra2,
+		func() usecase.ContinentalRummyInteractorIF {
+			return usecase.NewContinentalRummyInteractor(domain.NewDefaultContinentalRummy(), new(presenter.ContinentalRummyWebPresenter))
+		},
+		func(data []byte) (usecase.ContinentalRummyInteractorIF, error) {
+			return usecase.RestoreContinentalRummyInteractor(data, new(presenter.ContinentalRummyWebPresenter))
+		},
+		controller.NewContinentalRummyWebControllerWithProvider)
 }
