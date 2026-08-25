@@ -151,6 +151,7 @@ export const workerUrl: Record<string, string> = {
   sutda: WORKER_EXTRA2,
   cirulla: WORKER_EXTRA3,
   diloti: WORKER_CLASSIC,
+  comet: WORKER_SOLO,
   literature: WORKER_EXTRA4,
   guandan: WORKER_EXTRA4,
   aluette: WORKER_EXTRA2,

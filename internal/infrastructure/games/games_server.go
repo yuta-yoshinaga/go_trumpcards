@@ -1825,4 +1825,9 @@ func init() {
 			return usecase.NewDilotiInteractor(domain.NewDefaultDiloti(), new(presenter.DilotiWebPresenter))
 		},
 		controller.NewDilotiWebController)
+	BindWebControllerFor("comet",
+		func() usecase.CometInteractorIF {
+			return usecase.NewCometInteractor(domain.NewDefaultComet(), new(presenter.CometWebPresenter))
+		},
+		controller.NewCometWebController)
 }

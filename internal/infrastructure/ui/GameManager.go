@@ -7022,6 +7022,25 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			SettingKeys: []string{"diloti.helpSetDifficulty", "diloti.helpSetTarget"},
 		}),
+	BindCuiFor("comet",
+		func() usecase.CometInteractorIF {
+			return usecase.NewCometInteractor(domain.NewDefaultComet(), new(presenter.CometCuiPresenter))
+		},
+		controller.NewCometCuiController,
+		CuiHelpSpec{
+			TitleKey: "comet.helpTitle",
+			ExampleKeys: []string{
+				"comet.helpExamplePlay",
+				"comet.helpExamplePass",
+			},
+			CommandKeys: []string{
+				"comet.helpPlay", "comet.helpPass", "comet.helpNextRound",
+				"comet.helpHint", "comet.helpLog",
+			},
+			SettingKeys: []string{
+				"comet.helpSetDifficulty", "comet.helpSetPlayers", "comet.helpSetTarget",
+			},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

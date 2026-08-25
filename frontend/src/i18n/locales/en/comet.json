@@ -1,0 +1,49 @@
+{
+  "title": "Comet",
+  "phase": {
+    "play": "Play",
+    "roundEnd": "Round over",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "players": "Seats",
+    "targetScore": "Target score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}} (playing to {{target}})",
+  "dead": "Dead hand: {{n}}",
+  "pileLabel": "Sequence",
+  "pileEmpty": "(nothing played yet)",
+  "need": "Next rank needed: {{rank}} (**any suit**)",
+  "needAny": "You lead a new sequence - play any card.",
+  "cards": "{{n}} card(s)",
+  "score": "score {{n}}",
+  "dealerBadge": "Dealer",
+  "passButton": "Pass",
+  "goOut": "{{name}} went out for {{points}}",
+  "unplayedKings": "Kings never played: {{n}} (2 each)",
+  "heldWild": "{{name}} was left holding the Comet: -1",
+  "winner": "{{name}} wins!",
+  "nextRound": "Next round",
+  "restrictedTooltip": "You cannot play this now",
+  "hintAvailable": "Hint",
+  "hint": {
+    "go_out": "this card goes out",
+    "follow": "continues the sequence",
+    "comet": "nothing else is playable, so spend the Comet",
+    "king": "a king stops the sequence and lets you lead the next one",
+    "pass": "nothing you hold can be played",
+    "none": "no move to recommend right now"
+  },
+  "tutorial": {
+    "pile": "Sequences climb **by rank and ignore suit entirely** - ♠5 → ♥6 → ♠7 is normal. Play the rank named as needed, or pass if you cannot. **There is no rule that a suit starts from the ace**: the leader plays any card.",
+    "scores": "Going out is worth **1 point, plus 1 for every card left in an opponent's hand, plus 2 for each king that never came out**. **A player left holding the Comet (9 of diamonds) loses a point.**",
+    "playerHand": "Your hand. **Only playable cards can be picked.** The **9 of diamonds is the Comet** and stands in for any rank; playing it stops the sequence and lets you lead the next one.",
+    "playButton": "Pass appears only when nothing you hold is playable. When every seat passes, the last player to have played leads again.",
+    "resetButton": "The reset button starts a new game."
+  }
+}

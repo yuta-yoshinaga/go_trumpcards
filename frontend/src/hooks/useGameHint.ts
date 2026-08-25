@@ -68,6 +68,7 @@ import type {
   CoincheResponse,
   ColoradoResponse,
   ColourWhistResponse,
+  CometResponse,
   CongressResponse,
   ConquianResponse,
   ContractRummyResponse,
@@ -417,6 +418,7 @@ import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCoincheHint } from '../utils/hints/coincheHint';
 import { getColoradoHint } from '../utils/hints/coloradoHint';
 import { getColourwhistHint } from '../utils/hints/colourwhistHint';
+import { getCometHint } from '../utils/hints/cometHint';
 import { getCongressHint } from '../utils/hints/congressHint';
 import { getConquianHint } from '../utils/hints/conquianHint';
 import { getContractRummyHint } from '../utils/hints/contractrummyHint';
@@ -890,6 +892,7 @@ export const hintFactories = {
   sutda: (s) => getSutdaHint(s as SutdaResponse),
   cirulla: (s) => getCirullaHint(s as CirullaResponse),
   diloti: (s) => getDilotiHint(s as DilotiResponse),
+  comet: (s) => getCometHint(s as CometResponse),
   king: (s) => getKingHint(s as KingResponse),
   flowergarden: (s) => getFlowergardenHint(s as FlowerGardenResponse),
   tonk: (s) => getTonkHint(s as TonkResponse),

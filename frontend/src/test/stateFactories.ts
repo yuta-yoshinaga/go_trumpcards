@@ -10,6 +10,7 @@ import type {
   CinchResponse,
   CirullaResponse,
   CoincheResponse,
+  CometResponse,
   CourtPieceResponse,
   DehlaPakadResponse,
   DilotiResponse,
@@ -4910,4 +4911,55 @@ const baseDilotiState: DilotiResponse = {
  */
 export function makeDilotiState(overrides?: Partial<DilotiResponse>): DilotiResponse {
   return { ...baseDilotiState, ...overrides };
+}
+
+/**
+ * Base Comet state used as the default for {@link makeCometState}.
+ * Defaults to the human leading a fresh sequence at a four-seat table.
+ */
+const baseCometState: CometResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      // 手札 2 は 9♦ = コメット。どのランクの代わりにもなる。
+      cards: [cirCard('SPADE', 5), cirCard('HEART', 12), cirCard('DIAMOND', 9)],
+      cardCount: 3,
+      score: 0,
+      isDealer: false,
+    },
+    { id: 1, isHuman: false, cards: [], cardCount: 3, score: 0, isDealer: false },
+    { id: 2, isHuman: false, cards: [], cardCount: 3, score: 0, isDealer: false },
+    { id: 3, isHuman: false, cards: [], cardCount: 3, score: 0, isDealer: true },
+  ],
+  phase: 'play',
+  roundNumber: 1,
+  dealerIdx: 3,
+  currentPlayerIdx: 0,
+  pile: [],
+  need: 0,
+  deadCount: 3,
+  lastPlayerIdx: -1,
+  // 先頭なので 3 枚とも出せる。
+  playableIdxs: [0, 1, 2],
+  lastResult: null,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  isHumanTurn: true,
+  hintHandIdx: -1,
+  hintReason: '',
+  config: { cpuDifficulty: 1, players: 4, targetScore: 100 },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link CometResponse} with sensible defaults (the human leading a
+ * fresh sequence at a four-seat table).
+ *
+ * @param overrides - Partial CometResponse fields to override.
+ * @returns A complete CometResponse suitable for use in tests.
+ */
+export function makeCometState(overrides?: Partial<CometResponse>): CometResponse {
+  return { ...baseCometState, ...overrides };
 }

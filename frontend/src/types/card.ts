@@ -74,6 +74,7 @@ export * from './games/clocksolitaire';
 export * from './games/coinche';
 export * from './games/colorado';
 export * from './games/colourwhist';
+export * from './games/comet';
 export * from './games/congress';
 export * from './games/conquian';
 export * from './games/contractrummy';
