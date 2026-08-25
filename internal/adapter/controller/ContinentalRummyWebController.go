@@ -78,6 +78,11 @@ type ContinentalRummyWebOutput struct {
 	// **上がれるかはページ側で解き直さない。** 15 枚の分割問題なので、規則が
 	// 2 か所に増えるとどこかで食い違う。
 	GoOutIdx int `json:"goOutIdx"`
+	// CanGoOutOnDeal は引かずに、配られた 15 枚のまま上がれるか。
+	//
+	// **こちらは札を捨てない上がり。** 引いたあとの上がりとは加点が違う
+	// (10 点 vs 7 点) ので、別の入口として出す。
+	CanGoOutOnDeal bool `json:"canGoOutOnDeal"`
 	// HintDiscardIdx は捨てるとよい手札の位置。無ければ -1。
 	HintDiscardIdx int `json:"hintDiscardIdx"`
 	// HintReason は理由の識別子。
@@ -153,6 +158,10 @@ func continentalRummyDispatch(bc *baseController, w http.ResponseWriter, di usec
 			return true
 		}
 		bc.writePresenterResponse(w, di.GoOut(*param.HandIndex))
+	// **引かずに上がるほうは札を捨てない。** 加点が違う (10 点 vs 7 点) ので
+	// 別の命令にして、捨てる札を求めない。
+	case "gd", "gooutdeal":
+		bc.writePresenterResponse(w, di.GoOut(-1))
 	case "n", "next":
 		bc.writePresenterResponse(w, di.NextRound())
 	default:

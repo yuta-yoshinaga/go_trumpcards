@@ -2666,6 +2666,7 @@
     "baccaratbanque.errNotResultPhase": "いまはバンクを降りられるフェーズではありません。",
     "baccaratbanque.errNaturalCannotDraw": "ナチュラルなので 3 枚目は引けません。",
     "continentalrummy.drawPhase": "山札か捨て札の頭から 1 枚引いてください。",
+    "continentalrummy.drawPhase.canGoOutOnDeal": "配られた 15 枚のまま上がれます！ 引かずに上がると 10 点です。",
     "continentalrummy.discardPhase": "1 枚捨ててください。",
     "continentalrummy.discardPhase.canGoOut": "上がれます！ 15 枚を並べて上がれます。",
     "continentalrummy.roundEnd": "ラウンドが終わりました。",

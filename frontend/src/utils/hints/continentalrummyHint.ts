@@ -16,6 +16,14 @@ export function getContinentalrummyHint(state: ContinentalRummyResponse): HintRe
   if (!state.hintReason) return null;
 
   if (state.phase === CONTINENTAL_RUMMY_PHASE.DRAW) {
+    // **引かずに上がれるならそれを指す。** 引くと 10 点が 7 点に落ちる。
+    if (state.canGoOutOnDeal) {
+      return {
+        targetAction: 'gooutdeal',
+        reason: 'frontendHint.continentalrummy_go_out_on_deal',
+        confidence: 'strong',
+      };
+    }
     return {
       targetAction: state.hintReason === 'take_discard' ? 'take' : 'stock',
       reason: `frontendHint.continentalrummy_${state.hintReason}`,

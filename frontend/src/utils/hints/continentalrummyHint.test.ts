@@ -26,6 +26,19 @@ describe('getContinentalrummyHint', () => {
     });
   });
 
+  // **引かずに上がれるならそれを指す。** 引くと 10 点が 7 点に落ちる。
+  it('points at the deal go-out ahead of either draw', () => {
+    expect(
+      getContinentalrummyHint(
+        makeContinentalRummyState({ phase: 'draw', canGoOutOnDeal: true, hintReason: 'take_discard' }),
+      ),
+    ).toEqual({
+      targetAction: 'gooutdeal',
+      reason: 'frontendHint.continentalrummy_go_out_on_deal',
+      confidence: 'strong',
+    });
+  });
+
   it.each([
     ['take_discard', 'take', 'strong'],
     ['draw_stock', 'stock', 'moderate'],

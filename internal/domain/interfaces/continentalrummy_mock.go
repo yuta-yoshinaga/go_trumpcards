@@ -159,6 +159,13 @@ func (_m *MockContinentalRummyGame) CanGoOut() (int, bool) {
 	return r0, r1
 }
 
+// CanGoOutOnTheDeal モック
+func (_m *MockContinentalRummyGame) CanGoOutOnTheDeal() bool {
+	ret := _m.Called()
+	r, _ := ret.Get(0).(bool)
+	return r
+}
+
 // GetHint モック
 func (_m *MockContinentalRummyGame) GetHint() *domain.ContinentalRummyHint {
 	ret := _m.Called()

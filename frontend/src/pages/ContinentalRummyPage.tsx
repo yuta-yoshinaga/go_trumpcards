@@ -90,6 +90,8 @@ function ContinentalRummyPageContent() {
   // **上がれるかはサーバが解いた答えをそのまま使う。** 15 枚の分割問題を
   // ページ側で解き直すと、規則が 2 か所に増えてどこかで食い違う。
   const goOutIdx = state?.goOutIdx ?? -1;
+  // **引かずに上がるほうが重い (10 点 vs 7 点)。** 別の入口として出す。
+  const canGoOutOnDeal = canDraw && !!state?.canGoOutOnDeal;
 
   const handleGoOut = useCallback(() => {
     if (goOutIdx >= 0) execApi('goout', { handIndex: goOutIdx });
@@ -97,12 +99,13 @@ function ContinentalRummyPageContent() {
 
   const actionBindings = useMemo(
     () => [
+      { key: 'o', action: () => execApi('gooutdeal'), enabled: canGoOutOnDeal },
       { key: 's', action: () => execApi('stock'), enabled: canDraw },
       { key: 't', action: () => execApi('take'), enabled: canDraw && !!state?.discardTop },
       { key: 'g', action: handleGoOut, enabled: canDiscard && goOutIdx >= 0 },
       { key: 'n', action: () => execApi('next'), enabled: isRoundEnd },
     ],
-    [execApi, handleGoOut, canDraw, canDiscard, goOutIdx, isRoundEnd, state?.discardTop],
+    [execApi, handleGoOut, canDraw, canGoOutOnDeal, canDiscard, goOutIdx, isRoundEnd, state?.discardTop],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
@@ -291,6 +294,22 @@ function ContinentalRummyPageContent() {
             )}
 
             <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="continentalrummy-controls">
+              {/* **引かずに上がれるなら真っ先に見せる。** 引いてしまうと
+                  10 点が 7 点に落ちるので、順番が意味を持つ。 */}
+              {canGoOutOnDeal && (
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  data-hint-action="gooutdeal"
+                  aria-keyshortcuts="o"
+                  onClick={() => execApi('gooutdeal')}
+                  disabled={loading}
+                  data-testid="cont-goout-deal"
+                >
+                  {t('button.goOutOnDeal')}
+                </button>
+              )}
+
               {canDraw && (
                 <div className="flex gap-2">
                   <button

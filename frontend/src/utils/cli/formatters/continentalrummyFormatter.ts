@@ -42,7 +42,9 @@ export function formatContinentalRummyState(state: ContinentalRummyResponse): st
     lines.push(me.cards.map((c, i) => `[${i}]${formatCard(c)}`).join(' '));
   }
   // **上がれるときは黙っていない。** 15 枚の分割は目で追いきれない。
-  if (state.goOutIdx >= 0) {
+  if (state.canGoOutOnDeal) {
+    lines.push('The dealt fifteen already go out: gooutdeal (worth more than going out after a draw)');
+  } else if (state.goOutIdx >= 0) {
     lines.push(`You can go out: goout ${state.goOutIdx}`);
   }
 

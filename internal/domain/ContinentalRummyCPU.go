@@ -32,6 +32,13 @@ func (c *ContinentalRummy) runCpuTurns() {
 func (c *ContinentalRummy) playCpuTurn(seat int) {
 	p := c.players[seat]
 
+	// **引く前に、配られたままで上がれるかを見る。** ここを飛ばすと
+	// いちばん重い加点 (10 点) に誰も届かない。
+	if p.GetCardsSize() == ContinentalRummyHandSize && CanContinentalRummyGoOut(p.GetHand()) {
+		c.layDownAndGoOut(seat, -1)
+		return
+	}
+
 	// **引く前に、捨て札を取ったら上がれるかを見る。** ここを見ないと、
 	// 目の前の 1 枚で完成する手を素通りする。
 	if top := c.GetDiscardTop(); top != nil && c.discardCompletesFor(p, top) {
@@ -56,6 +63,7 @@ func (c *ContinentalRummy) playCpuTurn(seat int) {
 	i := c.cpuDiscardIdx(p)
 	card := p.RemoveCard(i)
 	c.discardPile = append(c.discardPile, card)
+	c.turnsThisRound[seat]++
 	c.appendLog(seat, "discard", fmt.Sprintf("seat %d discards", seat), []*Card{card})
 	c.advanceNoRecurse()
 }
@@ -140,6 +148,9 @@ func (c *ContinentalRummy) GetHint() *ContinentalRummyHint {
 	p := c.players[ContinentalRummyHumanIdx]
 	switch c.phase {
 	case ContinentalRummyPhaseDraw:
+		if c.CanGoOutOnTheDeal() {
+			return &ContinentalRummyHint{DiscardIdx: -1, GoOut: true, Reason: "go_out_on_deal"}
+		}
 		if top := c.GetDiscardTop(); top != nil && c.discardCompletesFor(p, top) {
 			return &ContinentalRummyHint{DiscardIdx: -1, Reason: "take_discard"}
 		}

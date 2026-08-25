@@ -51,6 +51,8 @@ type ContinentalRummyGame interface {
 	GetWinnerIdx() int
 	// CanGoOut いま上がれるかと、そのとき捨てる札を取得する
 	CanGoOut() (int, bool)
+	// CanGoOutOnTheDeal 引かずに、配られた 15 枚のまま上がれるかを取得する
+	CanGoOutOnTheDeal() bool
 	// GetHint ヒントを取得する
 	GetHint() *domain.ContinentalRummyHint
 }

@@ -7,6 +7,8 @@ describe('parseContinentalRummyCommand', () => {
     ['ds', 'stock'],
     ['take', 'take'],
     ['dd', 'take'],
+    ['gooutdeal', 'gooutdeal'],
+    ['gd', 'gooutdeal'],
     ['next', 'next'],
     ['n', 'next'],
     ['hint', 'hint'],

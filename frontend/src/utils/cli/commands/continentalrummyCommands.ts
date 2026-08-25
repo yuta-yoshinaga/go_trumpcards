@@ -13,6 +13,8 @@ const VALID_COMMANDS = [
   'd',
   'goout',
   'g',
+  'gooutdeal',
+  'gd',
   'next',
   'n',
   'hint',
@@ -34,6 +36,7 @@ export const CONTINENTALRUMMY_CLI_HELP = [
   'take (dd)        lift the top discard',
   'discard <idx>    throw the card at idx',
   'goout <idx>      lay all fifteen down, throwing the card at idx',
+  'gooutdeal (gd)  lay the dealt fifteen down without drawing (worth more)',
   'next (n)         go to the next round',
   'hint (h)         show a hint',
   'log (l)          show the action log',
@@ -67,6 +70,10 @@ export function parseContinentalRummyCommand(input: string): CliParseResult<Cont
       if ('error' in idx) return { error: GOOUT_USAGE };
       return { args: ['goout', { handIndex: idx.value }] };
     }
+    // **引かずに上がるほうは札を捨てない。** 加点が違うので別の命令。
+    case 'gd':
+    case 'gooutdeal':
+      return { args: ['gooutdeal'] };
     case 'n':
     case 'next':
       return { args: ['next'] };

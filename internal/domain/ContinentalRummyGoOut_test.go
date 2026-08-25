@@ -60,6 +60,36 @@ func TestFindContinentalRummyGoOut_LegalLayouts(t *testing.T) {
 	})
 }
 
+// **一番小さい番号の札が最大の組に入るとは限らない (レビュー指摘)。**
+//
+// 起点の組の大きさを「並べ替えた表の先頭」に固定していたころ、この手は
+// 合法な 5+4+3+3 なのに上がれないと判定されていた ── ♠2-3-4 が先頭に来ると
+// 起点はどう組んでも 3 枚組なので、size-5 を強いた瞬間に詰む。既存の 3 本は
+// どれも大きい組を先に並べて作っていたので、まとめて素通りしていた。
+func TestFindContinentalRummyGoOut_AnchorNeedNotBeInTheLargestGroup(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		hand []*Card
+	}{
+		{"5+4+3+3 with the smallest group first", contHand(
+			contRun(CardDesignSpade, 2, 3), contRun(CardDesignHeart, 5, 5),
+			contRun(CardDesignClover, 10, 4), contRun(CardDesignDiamond, 6, 3))},
+		{"4+4+4+3 with the three first", contHand(
+			contRun(CardDesignSpade, 2, 3), contRun(CardDesignHeart, 5, 4),
+			contRun(CardDesignClover, 9, 4), contRun(CardDesignDiamond, 3, 4))},
+		{"5+4+3+3 with the five last", contHand(
+			contRun(CardDesignSpade, 2, 3), contRun(CardDesignDiamond, 6, 3),
+			contRun(CardDesignClover, 10, 4), contRun(CardDesignHeart, 5, 5))},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Len(t, tc.hand, ContinentalRummyHandSize)
+			groups, ok := FindContinentalRummyGoOut(tc.hand)
+			require.True(t, ok, "合法な分割を見落としている")
+			assertContinentalPartition(t, tc.hand, groups)
+		})
+	}
+}
+
 // **5 枚 3 組は合計 15 でも上がりではない。** #5464 が落としている制約。
 func TestFindContinentalRummyGoOut_ThreeFivesIsNotALayout(t *testing.T) {
 	hand := contHand(

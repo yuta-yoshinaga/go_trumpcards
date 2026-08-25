@@ -40,6 +40,7 @@
   "reason.draw_stock": "捨て札の頭では届きません。山札から引きましょう。",
   "reason.take_discard": "捨て札の頭を取れば上がれます。",
   "reason.go_out": "上がれます。",
+  "reason.go_out_on_deal": "配られた 15 枚のまま上がれます。引かずに上がると 10 点です。",
   "reason.discard_loose": "どの並びにも寄与していない札から捨てましょう。",
   "hintDiscard": "おすすめ: {{idx}} 番を捨てる",
   "hintGoOut": "おすすめ: goout {{idx}}",

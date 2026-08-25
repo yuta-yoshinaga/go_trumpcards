@@ -94,6 +94,14 @@ export interface ContinentalRummyResponse extends BaseGameResponse {
    * page would put the rule in a second place and let the two disagree.
    */
   goOutIdx: number;
+  /**
+   * Whether the dealt fifteen already go out, before drawing.
+   *
+   * **This is the heavier win.** Laying them without ever drawing pays 10,
+   * against 7 for going out after one draw — so it is offered as its own
+   * action rather than folded into the ordinary go-out.
+   */
+  canGoOutOnDeal: boolean;
   /** The card worth throwing, or -1. */
   hintDiscardIdx: number;
   /** `draw_stock`, `take_discard`, `go_out` or `discard_loose`. */

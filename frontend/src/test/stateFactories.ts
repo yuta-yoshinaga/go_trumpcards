@@ -5099,6 +5099,7 @@ const baseContinentalRummyState: ContinentalRummyResponse = {
   winnerIdx: -1,
   isHumanTurn: true,
   goOutIdx: 15,
+  canGoOutOnDeal: false,
   hintDiscardIdx: 15,
   hintReason: 'go_out',
   config: { cpuDifficulty: 1, totalRounds: 3 },

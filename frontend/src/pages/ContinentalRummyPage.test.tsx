@@ -92,6 +92,22 @@ describe('ContinentalRummyPage', () => {
     expect(screen.queryByTestId('cont-goout')).not.toBeInTheDocument();
   });
 
+  // **引かずに上がるほうが重い (10 点 vs 7 点)。** 別のボタン・別の命令。
+  it('offers going out on the deal, ahead of drawing', async () => {
+    mockExec.mockResolvedValue(makeContinentalRummyState({ phase: 'draw', canGoOutOnDeal: true, goOutIdx: -1 }));
+    renderWithProviders(<ContinentalRummyPage />);
+    fireEvent.click(await screen.findByTestId('cont-goout-deal'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('gooutdeal'));
+    expect(mockExec).not.toHaveBeenCalledWith('goout', expect.anything());
+  });
+
+  // 負のコントロール: 配られたままで上がれないなら出さない。
+  it('hides the deal go-out when the dealt hand does not go out', async () => {
+    renderWithProviders(<ContinentalRummyPage />);
+    await screen.findByTestId('cont-layouts');
+    expect(screen.queryByTestId('cont-goout-deal')).not.toBeInTheDocument();
+  });
+
   it('discards the card that is clicked', async () => {
     mockExec.mockResolvedValue(discardState);
     renderWithProviders(<ContinentalRummyPage />);

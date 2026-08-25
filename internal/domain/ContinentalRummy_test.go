@@ -368,3 +368,120 @@ func TestContinentalRummy_HintSpeaksOnlyOnTheHumanTurn(t *testing.T) {
 	c.SetCurrentIdxForTest(1)
 	assert.Nil(t, c.GetHint())
 }
+
+// contWinningFifteen は上がれる 15 枚を返す。
+func contWinningFifteen() []*Card {
+	return contHand(
+		contRun(CardDesignSpade, 2, 3), contRun(CardDesignSpade, 7, 3),
+		contRun(CardDesignHeart, 4, 3), contRun(CardDesignClover, 9, 3),
+		contRun(CardDesignDiamond, 5, 3))
+}
+
+// **配られた 15 枚のまま上がれること (レビュー指摘)。**
+//
+// 以前は「引く → 捨てる」しか入口が無く、draw() が必ず drewThisRound を
+// 立ててから discard フェーズにしていたので、10 点の "dealt" 加点は**公開
+// API からは一度も出せなかった** ── 私有フィールドを直接触るテストだけが
+// 通っていて、到達可能性を誰も見ていなかった。
+func TestContinentalRummy_GoesOutOnTheDealtFifteen(t *testing.T) {
+	c := newContGame(t)
+	c.SetPhaseForTest(ContinentalRummyPhaseDraw)
+	c.SetCurrentIdxForTest(ContinentalRummyHumanIdx)
+	p := c.GetPlayer(ContinentalRummyHumanIdx)
+	p.ResetRound()
+	for _, card := range contWinningFifteen() {
+		p.AddCard(card)
+	}
+	require.Equal(t, ContinentalRummyHandSize, p.GetCardsSize())
+	require.True(t, c.CanGoOutOnTheDeal(), "配られたままで上がれると案内していない")
+
+	stock, discards := c.GetStockCount(), c.discardCountForTest()
+	require.NoError(t, c.GoOut(-1))
+
+	assert.Equal(t, ContinentalRummyPhaseRoundEnd, c.GetPhase())
+	assert.Len(t, p.GetMelds(), 5)
+	assert.Equal(t, 0, p.GetCardsSize())
+	// **引かず、捨てない。** 山も捨て札も動いていないこと。
+	assert.Equal(t, stock, c.GetStockCount(), "引かずに上がったのに山が減っている")
+	assert.Equal(t, discards, c.discardCountForTest(), "捨てずに上がったのに捨て札が増えている")
+
+	res := c.GetLastResult()
+	require.NotNil(t, res)
+	var dealt, firstTurn int
+	for _, b := range res.Bonuses {
+		switch b.Key {
+		case "dealt":
+			dealt = b.Points
+		case "firstTurn":
+			firstTurn = b.Points
+		}
+	}
+	assert.Equal(t, ContinentalRummyDealtPoints, dealt, "「配られた 15 枚のまま」の加点が出ていない")
+	assert.Equal(t, 0, firstTurn, "引かずに上がったのに「最初の手番で」の加点も付いている")
+	assert.Greater(t, dealt, ContinentalRummyFirstTurnPoints, "引かない上がりのほうが軽い")
+}
+
+// 負のコントロール: 形になっていない 15 枚では引かずに上がれない。
+func TestContinentalRummy_CannotGoOutOnTheDealWithABrokenHand(t *testing.T) {
+	c := newContGame(t)
+	c.SetPhaseForTest(ContinentalRummyPhaseDraw)
+	c.SetCurrentIdxForTest(ContinentalRummyHumanIdx)
+	p := c.GetPlayer(ContinentalRummyHumanIdx)
+	p.ResetRound()
+	hand := contWinningFifteen()
+	hand[14] = contCard(CardDesignDiamond, 13) // 1 組を壊す
+	for _, card := range hand {
+		p.AddCard(card)
+	}
+	assert.False(t, c.CanGoOutOnTheDeal())
+	assert.Error(t, c.GoOut(-1))
+	assert.Equal(t, ContinentalRummyPhaseDraw, c.GetPhase(), "断ったのにフェーズが進んでいる")
+}
+
+// **「最初の手番で」の加点はラウンドをまたいでも出ること (レビュー指摘)。**
+//
+// 以前は棋譜の discard を数えていて、棋譜は startRound で消えないので、
+// 2 ラウンド目以降は前のラウンドの捨て札まで数え、7 点が事実上 1 ラウンド目
+// にしか出なかった。
+func TestContinentalRummy_FirstTurnBonusSurvivesIntoLaterRounds(t *testing.T) {
+	cfg := DefaultContinentalRummyConfig()
+	cfg.TotalRounds = 5
+	c := NewContinentalRummy(cfg)
+	c.Reset()
+
+	// 1 ラウンド目に人間が何度か捨てて、棋譜に discard を積む。
+	for i := 0; i < 3; i++ {
+		c.SetPhaseForTest(ContinentalRummyPhaseDraw)
+		c.SetCurrentIdxForTest(ContinentalRummyHumanIdx)
+		require.NoError(t, c.DrawStock())
+		require.NoError(t, c.Discard(0))
+	}
+	require.NotEmpty(t, c.GetActionLog())
+
+	// 2 ラウンド目に入り、1 手番目に引いて上がる。
+	c.SetPhaseForTest(ContinentalRummyPhaseRoundEnd)
+	c.NextRound()
+	require.Equal(t, 2, c.GetRoundNumber())
+	c.SetPhaseForTest(ContinentalRummyPhaseDiscard)
+	c.SetCurrentIdxForTest(ContinentalRummyHumanIdx)
+	c.drewThisRound = make([]bool, ContinentalRummyPlayerCnt)
+	c.drewThisRound[ContinentalRummyHumanIdx] = true
+	p := c.GetPlayer(ContinentalRummyHumanIdx)
+	p.ResetRound()
+	for _, card := range contWinningFifteen() {
+		p.AddCard(card)
+	}
+	p.AddCard(contCard(CardDesignDiamond, 13))
+	idx, ok := c.CanGoOut()
+	require.True(t, ok)
+	require.NoError(t, c.GoOut(idx))
+
+	firstTurn := 0
+	for _, b := range c.GetLastResult().Bonuses {
+		if b.Key == "firstTurn" {
+			firstTurn = b.Points
+		}
+	}
+	assert.Equal(t, ContinentalRummyFirstTurnPoints, firstTurn,
+		"2 ラウンド目で「最初の手番で」の加点が消えている -- 棋譜を数えている")
+}

@@ -81,11 +81,14 @@ type ContinentalRummy struct {
 	// 「配られた 15 枚のまま上がった」の判定に要る。
 	drewThisRound []bool
 	// recycles はこのラウンドで捨て札を山に戻した回数。
-	recycles    int
-	lastResult  *ContinentalRummyRoundResult
-	gameEndFlag bool
-	winnerIdx   int
-	config      ContinentalRummyConfig
+	recycles int
+	// turnsThisRound は席ごとに、このラウンドで捨てた回数。
+	// **棋譜から数えないこと** ── 棋譜はラウンドをまたいで残る。
+	turnsThisRound []int
+	lastResult     *ContinentalRummyRoundResult
+	gameEndFlag    bool
+	winnerIdx      int
+	config         ContinentalRummyConfig
 }
 
 // NewDefaultContinentalRummy は既定の設定でゲームを作る。
@@ -125,6 +128,7 @@ func (c *ContinentalRummy) startRound() {
 	c.lastResult = nil
 	c.drewThisRound = make([]bool, ContinentalRummyPlayerCnt)
 	c.recycles = 0
+	c.turnsThisRound = make([]int, ContinentalRummyPlayerCnt)
 	for _, p := range c.players {
 		p.ResetRound()
 	}
@@ -225,6 +229,11 @@ func (c *ContinentalRummy) draw(fromStock bool) error {
 	}
 	c.players[c.currentIdx].AddCard(card)
 	c.drewThisRound[c.currentIdx] = true
+	logType := "drawStock"
+	if !fromStock {
+		logType = "takeDiscard"
+	}
+	c.appendLog(c.currentIdx, logType, fmt.Sprintf("seat %d draws", c.currentIdx), nil)
 	c.phase = ContinentalRummyPhaseDiscard
 	return nil
 }
@@ -240,6 +249,11 @@ func (c *ContinentalRummy) Discard(i int) error {
 			map[string]string{"val": fmt.Sprint(i)})
 	}
 	c.discardPile = append(c.discardPile, card)
+	c.turnsThisRound[c.currentIdx]++
+	// **人間の手も棋譜に載せる。** CPU の捨て札しか載っていないと、
+	// 読み返したときに自分が何をしたのかだけが抜けている。
+	c.appendLog(c.currentIdx, "discard",
+		fmt.Sprintf("seat %d discards", c.currentIdx), []*Card{card})
 	c.advance()
 	return nil
 }
@@ -247,7 +261,15 @@ func (c *ContinentalRummy) Discard(i int) error {
 // GoOut は 15 枚を並べて上がる。捨てる 1 枚を i で指定する。
 //
 // **部分メルドは無い。** 残り 15 枚が認められた形にならなければ断る。
+//
+// **引く前でも上がれる (レビュー指摘)。** 配られた 15 枚がそのまま形に
+// なっているなら、引かずに並べて上がるのが原典で、それがいちばん重い加点
+// (10 点) の対象。i に -1 を渡すとその「捨てずに上がる」形になる。
+// 引いたあとは 16 枚あるので、必ず 1 枚を名指す。
 func (c *ContinentalRummy) GoOut(i int) error {
+	if i < 0 {
+		return c.goOutOnTheDeal()
+	}
 	if err := c.guardTurn(ContinentalRummyPhaseDiscard); err != nil {
 		return err
 	}
@@ -266,6 +288,7 @@ func (c *ContinentalRummy) GoOut(i int) error {
 //
 // **並べた札は手札から消える。** 場に出したのに手元にも残っていると、次に
 // 誰かが数えたときに 15 枚が二重に数えられる。人間と CPU で同じ道を通す。
+// discardIdx が負なら「捨てずに」15 枚のまま並べる。
 func (c *ContinentalRummy) layDownAndGoOut(seat, discardIdx int) bool {
 	p := c.players[seat]
 	rest := make([]*Card, 0, ContinentalRummyHandSize)
@@ -287,10 +310,27 @@ func (c *ContinentalRummy) layDownAndGoOut(seat, discardIdx int) bool {
 		melds = append(melds, run)
 	}
 	p.SetMelds(melds)
-	c.discardPile = append(c.discardPile, p.GetCard(discardIdx))
+	if discardIdx >= 0 {
+		c.discardPile = append(c.discardPile, p.GetCard(discardIdx))
+	}
 	p.ClearHand()
 	c.finishRound(seat)
 	return true
+}
+
+// goOutOnTheDeal は引かずに、配られた 15 枚のまま上がる。
+func (c *ContinentalRummy) goOutOnTheDeal() error {
+	if err := c.guardTurn(ContinentalRummyPhaseDraw); err != nil {
+		return err
+	}
+	p := c.players[c.currentIdx]
+	if p.GetCardsSize() != ContinentalRummyHandSize || !CanContinentalRummyGoOut(p.GetHand()) {
+		return NewDomainErrorCode(ErrInvalidPlay, "continentalrummy.errNotAGoOut", nil)
+	}
+	if !c.layDownAndGoOut(c.currentIdx, -1) {
+		return NewDomainErrorCode(ErrInvalidPlay, "continentalrummy.errNotAGoOut", nil)
+	}
+	return nil
 }
 
 // guardTurn は終局・フェーズ・手番をまとめて見る。
@@ -371,15 +411,17 @@ func (c *ContinentalRummy) bonusesFor(seat int) []ContinentalRummyBonus {
 	return out
 }
 
-// roundTurnsTaken はその席がこのラウンドで何手番打ったかを棋譜から数える。
+// roundTurnsTaken はその席がこのラウンドで何手番打ったかを返す。
+//
+// **棋譜を数えてはいけない (レビュー指摘)。** 棋譜は Reset でしか消えず
+// startRound では消えないので、2 ラウンド目以降は前のラウンドの捨て札まで
+// 数えてしまい、「最初の手番で上がり」の 7 点が事実上 1 ラウンド目にしか
+// 出なくなる。ラウンドごとに数え直す専用のカウンタで持つ。
 func (c *ContinentalRummy) roundTurnsTaken(seat int) int {
-	n := 0
-	for _, e := range c.GetActionLog() {
-		if e.PlayerIdx == seat && e.ActionType == "discard" {
-			n++
-		}
+	if seat < 0 || seat >= len(c.turnsThisRound) {
+		return 1
 	}
-	return n + 1 // いま打っている手番ぶん
+	return c.turnsThisRound[seat] + 1 // いま打っている手番ぶん
 }
 
 // NextRound は次のラウンドへ進む。
@@ -449,6 +491,15 @@ func (c *ContinentalRummy) IsHumanTurn() bool {
 		(c.phase == ContinentalRummyPhaseDraw || c.phase == ContinentalRummyPhaseDiscard)
 }
 
+// CanGoOutOnTheDeal は引かずに、配られた 15 枚のまま上がれるかを返す。
+func (c *ContinentalRummy) CanGoOutOnTheDeal() bool {
+	if c.gameEndFlag || c.phase != ContinentalRummyPhaseDraw {
+		return false
+	}
+	p := c.players[c.currentIdx]
+	return p.GetCardsSize() == ContinentalRummyHandSize && CanContinentalRummyGoOut(p.GetHand())
+}
+
 // CanGoOut は人間がいま上がれるかを返す。上がれるなら捨てる札の候補も返す。
 func (c *ContinentalRummy) CanGoOut() (int, bool) {
 	if c.phase != ContinentalRummyPhaseDiscard {
@@ -500,6 +551,7 @@ type continentalRummyJSON struct {
 	RoundNumber int                          `json:"rn"`
 	Drew        []bool                       `json:"dr"`
 	Recycles    int                          `json:"rc"`
+	Turns       []int                        `json:"tu"`
 	LastResult  *ContinentalRummyRoundResult `json:"lr"`
 	GameEndFlag bool                         `json:"ge"`
 	WinnerIdx   int                          `json:"wi"`
@@ -512,7 +564,7 @@ func (c *ContinentalRummy) MarshalJSON() ([]byte, error) {
 	j := continentalRummyJSON{
 		Stock: c.stock, Discard: c.discardPile, Phase: c.phase,
 		CurrentIdx: c.currentIdx, DealerIdx: c.dealerIdx, RoundNumber: c.roundNumber,
-		Drew: c.drewThisRound, Recycles: c.recycles, LastResult: c.lastResult, GameEndFlag: c.gameEndFlag,
+		Drew: c.drewThisRound, Recycles: c.recycles, Turns: c.turnsThisRound, LastResult: c.lastResult, GameEndFlag: c.gameEndFlag,
 		WinnerIdx: c.winnerIdx, Config: c.config, ActionLog: c.GetActionLog(),
 	}
 	for _, p := range c.players {
@@ -547,6 +599,10 @@ func (c *ContinentalRummy) UnmarshalJSON(data []byte) error {
 	c.stock, c.discardPile, c.phase = j.Stock, j.Discard, j.Phase
 	c.currentIdx, c.dealerIdx, c.roundNumber = j.CurrentIdx, j.DealerIdx, j.RoundNumber
 	c.drewThisRound, c.recycles, c.lastResult = j.Drew, j.Recycles, j.LastResult
+	c.turnsThisRound = j.Turns
+	if c.turnsThisRound == nil {
+		c.turnsThisRound = make([]int, ContinentalRummyPlayerCnt)
+	}
 	c.gameEndFlag, c.winnerIdx, c.config = j.GameEndFlag, j.WinnerIdx, j.Config
 	c.actionLog = j.ActionLog
 	return nil

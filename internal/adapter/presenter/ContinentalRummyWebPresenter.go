@@ -41,10 +41,14 @@ func (p *ContinentalRummyWebPresenter) buildBase(g interfaces.ContinentalRummyGa
 		resObj.DiscardTop = cardToOutput(top)
 	}
 	// **上がれるかはサーバが解く。** 15 枚の分割問題をページ側で解き直さない。
+	// **1 回だけ解いて回す (レビュー指摘)。** 呼び出しごとに解き直すと、
+	// 同じ分割探索が 1 レスポンス中で何度も走るうえ、いつか食い違う。
 	resObj.GoOutIdx = -1
 	if idx, ok := g.CanGoOut(); ok {
 		resObj.GoOutIdx = idx
 	}
+	// 引く前に、配られた 15 枚のまま上がれるならそれも伝える。
+	resObj.CanGoOutOnDeal = g.CanGoOutOnTheDeal()
 	resObj.LastResult = p.lastResult(g)
 
 	cfg := g.GetConfig()
@@ -126,6 +130,9 @@ func (p *ContinentalRummyWebPresenter) buildMessage(g interfaces.ContinentalRumm
 	}
 	switch g.GetPhase() {
 	case domain.ContinentalRummyPhaseDraw:
+		if g.CanGoOutOnTheDeal() {
+			return "", "continentalrummy.drawPhase.canGoOutOnDeal", nil
+		}
 		return "", "continentalrummy.drawPhase", nil
 	case domain.ContinentalRummyPhaseDiscard:
 		if _, ok := g.CanGoOut(); ok {

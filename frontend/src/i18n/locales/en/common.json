@@ -2666,6 +2666,7 @@
     "baccaratbanque.errNotResultPhase": "You can only give up the bank between coups.",
     "baccaratbanque.errNaturalCannotDraw": "A natural cannot take a third card.",
     "continentalrummy.drawPhase": "Draw from the stock or take the top discard.",
+    "continentalrummy.drawPhase.canGoOutOnDeal": "The dealt fifteen already go out - laying them without drawing is worth 10!",
     "continentalrummy.discardPhase": "Throw one card.",
     "continentalrummy.discardPhase.canGoOut": "You can go out - lay all fifteen down!",
     "continentalrummy.roundEnd": "The round is over.",

@@ -26,6 +26,7 @@ func NewContinentalRummyCuiController(di usecase.ContinentalRummyInteractorIF) *
 //	take / dd                → 捨て札の一番上を取る
 //	discard / d <idx>        → 手札の idx 番を捨てる
 //	goout / g <idx>          → 15 枚を並べて上がる (idx は捨てる 1 枚)
+//	gooutdeal / gd           → 引かずに、配られた 15 枚のまま上がる
 //	next / n                 → 次のラウンドへ
 //	sd / setdifficulty <0-2> → CPU 難易度設定
 //	sr / setrounds <1-10>    → ラウンド数
@@ -37,7 +38,7 @@ func (c *ContinentalRummyCuiController) Exec(command string) string {
 		func(_ []string) string { return c.di.ResetWithConfig(c.di.GetConfig()) },
 		[]string{
 			"stock", "ds", "take", "dd", "discard", "d", "goout", "g",
-			"next", "n", "sd", "setdifficulty", "sr", "setrounds",
+			"gooutdeal", "gd", "next", "n", "sd", "setdifficulty", "sr", "setrounds",
 			"h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
@@ -54,6 +55,9 @@ func (c *ContinentalRummyCuiController) Exec(command string) string {
 			case "goout", "g":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex",
 					0, domain.ContinentalRummyHandSize, c.di.GoOut)
+			// **引かずに上がるほうは札を捨てない。** 加点が違うので別命令。
+			case "gooutdeal", "gd":
+				return c.di.GoOut(-1), true
 			case "next", "n":
 				return c.di.NextRound(), true
 			case "sd", "setdifficulty":

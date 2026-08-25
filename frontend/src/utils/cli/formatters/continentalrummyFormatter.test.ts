@@ -39,6 +39,12 @@ describe('formatContinentalRummyState', () => {
     expect(formatContinentalRummyState(makeContinentalRummyState({ goOutIdx: -1 }))).not.toContain('You can go out');
   });
 
+  it('announces the deal go-out ahead of the ordinary one', () => {
+    const out = formatContinentalRummyState(makeContinentalRummyState({ phase: 'draw', canGoOutOnDeal: true }));
+    expect(out).toContain('gooutdeal');
+    expect(out).not.toContain('You can go out: goout');
+  });
+
   // **加点は内訳で見せる。** 合計だけだと、どう上がると得なのかが伝わらない。
   it('breaks the settlement down and says what was collected from each opponent', () => {
     const out = formatContinentalRummyState(

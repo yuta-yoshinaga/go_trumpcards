@@ -21182,6 +21182,13 @@ paths:
         throw to go out, or -1 -- the server solves the fifteen-card partition
         so a client never has to.
 
+        **Going out on the deal is a separate command.** If the fifteen cards
+        dealt already form a legal layout you lay them down without drawing
+        and without throwing anything (`gooutdeal`), and that is the heavier
+        win -- 10 points against 7 for going out after a draw.
+        `canGoOutOnDeal` says when it is available; drawing first forfeits
+        the difference.
+
         The bonus tally is 1 for going out, 2 per joker melded, 7 for going
         out on the first turn, **10 for going out on the dealt fifteen**, 10
         for using no joker and 10 for an all-one-suit hand; `lastResult`
@@ -21206,7 +21213,7 @@ paths:
               properties:
                 command:
                   type: string
-                  description: "reset (r), stock (ds), take (dd), discard (d), goout (g), next (n), hint, log, quit (q)"
+                  description: "reset (r), stock (ds), take (dd), discard (d), goout (g), gooutdeal (gd), next (n), hint, log, quit (q)"
                 handIndex:
                   type: integer
                   description: >-

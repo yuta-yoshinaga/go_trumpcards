@@ -40,6 +40,7 @@
   "reason.draw_stock": "the top discard does not finish it - draw from the stock",
   "reason.take_discard": "the top discard completes your hand",
   "reason.go_out": "you can go out",
+  "reason.go_out_on_deal": "the dealt fifteen already go out - laying them without drawing is worth 10",
   "reason.discard_loose": "throw a card that no sequence is using",
   "hintDiscard": "Suggested: discard {{idx}}",
   "hintGoOut": "Suggested: goout {{idx}}",

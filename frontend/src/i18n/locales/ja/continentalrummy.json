@@ -39,5 +39,7 @@
   "frontendHint.continentalrummy_draw_stock": "捨て札の頭では届きません。山札から引きましょう",
   "frontendHint.continentalrummy_take_discard": "捨て札の頭を取れば上がれます",
   "frontendHint.continentalrummy_go_out": "上がれます。「上がる」を押しましょう",
-  "frontendHint.continentalrummy_discard_loose": "どの並びにも寄与していない札から捨てましょう"
+  "frontendHint.continentalrummy_discard_loose": "どの並びにも寄与していない札から捨てましょう",
+  "frontendHint.continentalrummy_go_out_on_deal": "配られた 15 枚のまま上がれます。引かずに上がると 10 点",
+  "button.goOutOnDeal": "引かずに上がる"
 }

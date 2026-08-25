@@ -13,7 +13,7 @@ import { gameExec } from '../gameExec';
  */
 export const continentalrummyApi = {
   exec: (
-    command: 'reset' | 'stock' | 'take' | 'discard' | 'goout' | 'next' | 'hint' | 'log',
+    command: 'reset' | 'stock' | 'take' | 'discard' | 'goout' | 'gooutdeal' | 'next' | 'hint' | 'log',
     params?: { handIndex?: number; config?: { cpuDifficulty?: number; totalRounds?: number } },
   ) => gameExec<ContinentalRummyResponse>('continentalrummy', { command, ...params }),
 };

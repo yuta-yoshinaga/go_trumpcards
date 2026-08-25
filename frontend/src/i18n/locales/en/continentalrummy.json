@@ -39,5 +39,7 @@
   "frontendHint.continentalrummy_draw_stock": "the top discard does not finish it - draw from the stock",
   "frontendHint.continentalrummy_take_discard": "the top discard completes your hand",
   "frontendHint.continentalrummy_go_out": "you can go out - press Go out",
-  "frontendHint.continentalrummy_discard_loose": "throw a card that no sequence is using"
+  "frontendHint.continentalrummy_discard_loose": "throw a card that no sequence is using",
+  "frontendHint.continentalrummy_go_out_on_deal": "the dealt fifteen already go out - worth 10 if you lay them without drawing",
+  "button.goOutOnDeal": "Go out on the deal"
 }
