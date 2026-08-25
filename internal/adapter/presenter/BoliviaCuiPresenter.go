@@ -61,6 +61,11 @@ func boliviaPlayerStr(player *domain.BoliviaPlayer, i int, showCards bool) strin
 	if player.HasEscalera() {
 		b.WriteString(i18n.T("bolivia.playerEscaleraTag"))
 	}
+	// **ゲーム名になっている役の印を落とさない (レビュー指摘)。** Web は
+	// 出しているのに CUI だけ黙っていた。
+	if player.HasBolivia() {
+		b.WriteString(i18n.T("bolivia.playerBoliviaTag"))
+	}
 	b.WriteString("\n")
 
 	for _, m := range player.GetMelds() {

@@ -1,4 +1,5 @@
 import type { BoliviaMeldData, BoliviaResponse } from '../../../types/card';
+import { BOLIVIA_MELD_KIND } from '../../../types/games/bolivia';
 import {
   formatCard,
   formatCardList,
@@ -18,8 +19,14 @@ const PHASE_NAMES: Record<number, string> = {
 
 /** Describe a meld's kind/completion state for terminal display. */
 function meldLabel(m: BoliviaMeldData): string {
-  if (m.kind === 1) {
-    return m.isBolivia ? '(bolivia)' : '(sequence)';
+  // **3 種類ある。** `isBolivia` が真になるのはワイルドのメルド (kind 2) だけで、
+  // シーケンス (kind 1) では決して真にならない ── 2 分岐のままだと完成した
+  // ボリビアが `(set)` と表示される (レビュー指摘)。
+  if (m.kind === BOLIVIA_MELD_KIND.ESCALERA) {
+    return m.isEscalera ? '(escalera)' : '(sequence)';
+  }
+  if (m.kind === BOLIVIA_MELD_KIND.WILD) {
+    return m.isBolivia ? '(bolivia)' : '(wild)';
   }
   if (m.isCanasta) return '(canasta)';
   return m.isNatural ? '(natural)' : '(set)';

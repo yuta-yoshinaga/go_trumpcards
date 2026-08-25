@@ -323,14 +323,14 @@ function BoliviaPageContent() {
                           <div key={mi} className="flex flex-wrap gap-1 mb-1">
                             <span className="text-xs text-ds-text-muted self-center mr-1">
                               {m.kind === 1
-                                ? m.isBolivia
-                                  ? t('bolivia')
-                                  : t('sequence')
-                                : m.isCanasta
-                                  ? m.isNatural
-                                    ? t('naturalCanasta')
-                                    : t('mixedCanasta')
-                                  : `(${m.cards.length})`}
+                                ? t('sequence')
+                                : m.kind === BOLIVIA_MELD_KIND.WILD
+                                  ? t(m.isBolivia ? 'boliviaMeld' : 'wildMeld')
+                                  : m.isCanasta
+                                    ? m.isNatural
+                                      ? t('naturalCanasta')
+                                      : t('mixedCanasta')
+                                    : `(${m.cards.length})`}
                             </span>
                             <span
                               data-testid={`sa-meld-progress-${pi}-${mi}`}

@@ -23,7 +23,7 @@
     "drawStock": "山札から引くことを推奨",
     "takeDiscardPile": "捨て札の山をまとめて引き取る選択も有効",
     "meldInitial": "初回メルド条件を満たしてメルド推奨",
-    "buildSamba": "同スート7枚の連続でエスカレラを狙いましょう",
+    "buildBolivia": "同スート7枚の連番でエスカレラを狙いましょう（上がりに必要です）",
     "meldExtend": "既存メルドに追加カードを出すと得点が伸びます",
     "discardHighSafe": "相手に使われにくい高ランクのカードを捨てる"
   },
@@ -90,5 +90,7 @@
   "meldKind.boliviaSuffix": "＝ボリビア",
   "tag.escalera": "★エスカレラ",
   "tag.bolivia": "★ボリビア",
-  "goOutRule": "上がるには完成メルド 2 個以上＋そのうち最低 1 本がエスカレラ"
+  "goOutRule": "上がるには完成メルド 2 個以上＋そのうち最低 1 本がエスカレラ",
+  "boliviaMeld": "ボリビア",
+  "wildMeld": "ワイルド"
 }

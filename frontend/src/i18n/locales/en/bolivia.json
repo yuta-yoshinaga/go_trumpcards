@@ -23,7 +23,7 @@
     "drawStock": "Draw from the stock pile",
     "takeDiscardPile": "Consider taking the discard pile",
     "meldInitial": "Make your initial meld to open",
-    "buildSamba": "Build a 7-card same-suit sequence for a escalera",
+    "buildBolivia": "Build a wild-free seven-card suited run - an escalera, which going out requires",
     "meldExtend": "Extend an existing meld for more points",
     "discardHighSafe": "Discard a high-rank card the opponent cannot use"
   },
@@ -90,5 +90,7 @@
   "meldKind.boliviaSuffix": " = bolivia",
   "tag.escalera": "*escalera",
   "tag.bolivia": "*bolivia",
-  "goOutRule": "Going out needs two completed melds, at least one an escalera"
+  "goOutRule": "Going out needs two completed melds, at least one an escalera",
+  "boliviaMeld": "bolivia",
+  "wildMeld": "wild"
 }

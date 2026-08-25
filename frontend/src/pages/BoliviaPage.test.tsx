@@ -272,4 +272,47 @@ describe('BoliviaPage', () => {
     // 負のコントロール: ワイルドのメルドをカナスタと呼ばない。
     expect(wild).not.toHaveTextContent('カナスタ');
   });
+
+  // **ラベルの側も 3 分岐であること (レビュー指摘)。** 進捗表示だけを直して
+  // ラベルを 2 分岐のまま残していたので、完成したボリビアが枚数表示に
+  // 落ちて、画面のどこにも「ボリビア」と出ていなかった。
+  it('labels a completed wild meld a bolivia in the meld label, not just the progress', async () => {
+    const base = makeBoliviaState();
+    mockExec.mockResolvedValue(
+      makeBoliviaState({
+        players: base.players.map((p, i) =>
+          i === 0
+            ? {
+                ...p,
+                melds: [
+                  {
+                    cards: [
+                      { design: 'SPADE', value: 2 },
+                      { design: 'HEART', value: 2 },
+                      { design: 'CLOVER', value: 2 },
+                      { design: 'DIAMOND', value: 2 },
+                      { design: 'JOKER', value: 0 },
+                      { design: 'JOKER', value: 0 },
+                      { design: 'JOKER', value: 0 },
+                    ],
+                    kind: 2,
+                    isNatural: false,
+                    isCanasta: false,
+                    isEscalera: false,
+                    isBolivia: true,
+                    rank: 0,
+                  },
+                ],
+              }
+            : p,
+        ),
+      }),
+    );
+    renderWithProviders(<BoliviaPage />);
+    const area = await screen.findByTestId('sa-meld-progress-0-0');
+    const row = area.parentElement as HTMLElement;
+    expect(row).toHaveTextContent('ボリビア');
+    // 負のコントロール: 枚数だけの表示に落ちていないこと。
+    expect(row).not.toHaveTextContent('(7)');
+  });
 });

@@ -229,7 +229,11 @@ func (p *BoliviaPlayer) UnmarshalJSON(data []byte) error {
 		if m == nil {
 			continue
 		}
-		if m.Kind != BoliviaMeldSet && m.Kind != BoliviaMeldEscalera {
+		// **種類は 3 つ。** クローン元は 2 つしか無いので、この許可リストに
+		// ワイルドを足し忘れると、**保存して読み戻すたびにボリビアが
+		// セットに化ける** ── Worker は毎リクエストで復元するので、
+		// 2500 点のメルドが次の 1 手で 300 点になる (レビュー指摘)。
+		if m.Kind != BoliviaMeldSet && m.Kind != BoliviaMeldEscalera && m.Kind != BoliviaMeldWild {
 			m.Kind = BoliviaMeldSet
 		}
 		p.melds = append(p.melds, m)

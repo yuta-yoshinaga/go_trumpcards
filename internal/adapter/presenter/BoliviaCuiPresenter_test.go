@@ -232,4 +232,25 @@ func TestBoliviaCuiPresenter_ShowsTheInitialMeldRequirement(t *testing.T) {
 
 		assert.NotContains(t, out, strings.Split(i18n.T("bolivia.promptMeldMinimum"), "{{")[0])
 	})
+	// **ゲーム名になっている役の印を出すこと (レビュー指摘)。** Web は出して
+	// いるのに CUI だけ黙っていた ── CUI/Web の食い違いは、よりによって
+	// この形式を名指す役の上で起きていた。
+	t.Run("a completed wild meld shows the bolivia tag", func(t *testing.T) {
+		m, players := setupBoliviaCuiMockWithPlayers()
+		players[0].AddMeld(&domain.BoliviaMeld{Kind: domain.BoliviaMeldWild, Cards: []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+			domain.NewCard(domain.CardDesignHeart, 2, false),
+			domain.NewCard(domain.CardDesignClover, 2, false),
+			domain.NewCard(domain.CardDesignDiamond, 2, false),
+			domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false),
+			domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false),
+			domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false),
+		}})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "★ボリビア")
+		assert.Contains(t, result, "ワイルド＝ボリビア")
+		// 負のコントロール: エスカレラの印は付かない。
+		assert.NotContains(t, result, "★エスカレラ")
+	})
+
 }

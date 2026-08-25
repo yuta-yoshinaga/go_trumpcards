@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -223,4 +224,43 @@ func TestBolivia_SignatureMeldsActuallyGetCompleted(t *testing.T) {
 	}
 	assert.Positive(t, escaleras, "30 局打ってエスカレラが 1 本も完成していない")
 	assert.Positive(t, bolivias, "30 局打ってボリビアが 1 つも完成していない")
+}
+
+// **保存して読み戻してもボリビアがボリビアのままであること (レビュー指摘)。**
+//
+// 復元時の Kind 許可リストはクローン元の 2 種類のままだったので、ワイルドの
+// メルドは黙ってセットに書き換えられていた。Worker は毎リクエストで復元する
+// ので、2500 点のメルドが次の 1 手で 300 点になる。
+func TestBolivia_WildMeldSurvivesAJSONRoundTrip(t *testing.T) {
+	p := NewBoliviaPlayer(true, 0)
+	wild := &BoliviaMeld{Kind: BoliviaMeldWild, Cards: []*Card{
+		bolCard(CardDesignSpade, 2), bolCard(CardDesignHeart, 2), bolCard(CardDesignClover, 2),
+		bolCard(CardDesignDiamond, 2), bolJoker(), bolJoker(), bolJoker()}}
+	esc := &BoliviaMeld{Kind: BoliviaMeldEscalera, IsNatural: true, Cards: []*Card{
+		bolCard(CardDesignHeart, 4), bolCard(CardDesignHeart, 5), bolCard(CardDesignHeart, 6),
+		bolCard(CardDesignHeart, 7), bolCard(CardDesignHeart, 8), bolCard(CardDesignHeart, 9),
+		bolCard(CardDesignHeart, 10)}}
+	p.SetMelds([]*BoliviaMeld{wild, esc})
+	require.True(t, p.HasBolivia())
+	require.True(t, p.HasEscalera())
+
+	data, err := json.Marshal(p)
+	require.NoError(t, err)
+	restored := NewBoliviaPlayer(true, 0)
+	require.NoError(t, json.Unmarshal(data, restored))
+
+	melds := restored.GetMelds()
+	require.Len(t, melds, 2)
+	assert.Equal(t, BoliviaMeldWild, melds[0].Kind, "ボリビアがセットに化けている")
+	assert.True(t, melds[0].IsBoliviaCanasta(), "復元後にボリビアと認識されない")
+	assert.Equal(t, BoliviaMeldEscalera, melds[1].Kind)
+	assert.True(t, restored.HasBolivia(), "復元後に HasBolivia が落ちている")
+	assert.True(t, restored.HasEscalera())
+
+	// 負のコントロール: 知らない Kind は今までどおりセットに丸める。
+	bogus := NewBoliviaPlayer(true, 0)
+	require.NoError(t, json.Unmarshal([]byte(`{"me":[{"kd":99,"ca":[]}]}`), bogus))
+	if got := bogus.GetMelds(); len(got) > 0 {
+		assert.Equal(t, BoliviaMeldSet, got[0].Kind)
+	}
 }
