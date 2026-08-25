@@ -390,3 +390,62 @@ func TestBolivia_EscaleraValidationRejectsWildsAndBrokenRuns(t *testing.T) {
 	assert.Error(t, g.validateNewEscalera([]*Card{
 		bolCard(CardDesignSpade, 4), bolCard(CardDesignSpade, 5)}), "2 枚で通っている")
 }
+
+// **旗と取り分は別の面。** `IsBoliviaCanasta()` が真になることと、その 2500 点が
+// 実際にチームの得点に載ることは違う ── 片方だけ直すと、画面に「ボリビア」と
+// 出ているのに点が動かない。
+func TestBolivia_ScoringPaysEachMeldKindItsOwnBonus(t *testing.T) {
+	sevenOfARank := func(v int) []*Card {
+		out := make([]*Card, 0, 7)
+		for i := 0; i < 7; i++ {
+			out = append(out, bolCard(CardDesignSpade, v))
+		}
+		return out
+	}
+	wildSeven := []*Card{
+		bolCard(CardDesignSpade, 2), bolCard(CardDesignHeart, 2), bolCard(CardDesignClover, 2),
+		bolCard(CardDesignDiamond, 2), bolJoker(), bolJoker(), bolJoker()}
+
+	// 同じ盤に 1 種類だけメルドを置き、増えた点から加点を逆算する。
+	roundScoreFor := func(t *testing.T, meld *BoliviaMeld) int {
+		t.Helper()
+		g := newBoliviaGame(t)
+		for _, p := range g.players {
+			p.SetMelds(nil)
+			p.SetRed3s(nil)
+			p.Reset() // 手札を空にして残り札の減点を消す
+			p.SetHasInitMeld(true)
+		}
+		cards := 0
+		if meld != nil {
+			g.players[0].SetMelds([]*BoliviaMeld{meld})
+			for _, c := range meld.Cards {
+				cards += BoliviaCardValue(c)
+			}
+		}
+		before := g.GetTeamScore(0)
+		g.scoreRound(-1, 0)
+		return g.GetTeamScore(0) - before - cards
+	}
+
+	assert.Equal(t, BoliviaNaturalCanastaBonus,
+		roundScoreFor(t, &BoliviaMeld{Kind: BoliviaMeldSet, IsNatural: true, Cards: sevenOfARank(5)}),
+		"ナチュラルカナスタの加点が出ていない")
+	assert.Equal(t, BoliviaEscaleraBonus,
+		roundScoreFor(t, &BoliviaMeld{Kind: BoliviaMeldEscalera, IsNatural: true, Cards: boliviaSeven(CardDesignHeart, 4)}),
+		"エスカレラの 1500 点が出ていない")
+	// **ここが本命。** ゲーム名になっている役がいちばん重い。
+	assert.Equal(t, BoliviaBoliviaBonus,
+		roundScoreFor(t, &BoliviaMeld{Kind: BoliviaMeldWild, Cards: wildSeven}),
+		"ボリビアの 2500 点が出ていない")
+
+	// 負のコントロール: 6 枚では未完成なので加点は無い。
+	assert.Equal(t, 0,
+		roundScoreFor(t, &BoliviaMeld{Kind: BoliviaMeldWild, Cards: wildSeven[:6]}),
+		"未完成のワイルドメルドに加点が付いている")
+	assert.Equal(t, 0, roundScoreFor(t, nil))
+
+	// **重さの順序**: ボリビア > エスカレラ > ナチュラルカナスタ。
+	assert.Greater(t, BoliviaBoliviaBonus, BoliviaEscaleraBonus)
+	assert.Greater(t, BoliviaEscaleraBonus, BoliviaNaturalCanastaBonus)
+}

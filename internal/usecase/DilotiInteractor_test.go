@@ -100,10 +100,7 @@ func TestDilotiInteractor_RejectsAnIllegalMove(t *testing.T) {
 
 // **局の区切りでは勝手に進まない。** 集計を読む時間を人間に渡す。
 func TestDilotiInteractor_StopsAtRoundEnd(t *testing.T) {
-	di, g := newDilotiReal()
-	require.Equal(t, "ok", di.Reset())
-	dilotiFinishRound(t, di, g)
-	require.Equal(t, domain.DilotiPhaseRoundEnd, g.GetPhase())
+	di, g := dilotiRoundEndedButGameDidNot(t)
 
 	res := g.GetLastResult()
 	require.NotNil(t, res)
@@ -206,6 +203,26 @@ func TestDilotiInteractor_SnapshotRestoreKeepsPlaying(t *testing.T) {
 func TestRestoreDilotiInteractor_RejectsGarbage(t *testing.T) {
 	_, err := usecase.RestoreDilotiInteractor([]byte("{"), dilotiPassThrough{})
 	assert.Error(t, err)
+}
+
+// dilotiRoundEndedButGameDidNot は「局は終わったが終局はしていない」盤を返す。
+//
+// **「局の終わり」と「終局」は別。** 61 点に届いた局はそのまま gameEnd へ進むので、
+// 素の Reset から 1 局打っただけの盤に roundEnd を期待すると、配りしだいで落ちる
+// ── CI で実際に落ちた (同じ SHA の別実行は通っており、配り依存であることも確認)。
+// 集計や NextRound を見る試験は、この前提を固定してから始める。
+func dilotiRoundEndedButGameDidNot(t *testing.T) (*usecase.DilotiInteractor, interfaces.DilotiGame) {
+	t.Helper()
+	for try := 0; try < 50; try++ {
+		di, g := newDilotiReal()
+		require.Equal(t, "ok", di.Reset())
+		dilotiFinishRound(t, di, g)
+		if g.GetPhase() == domain.DilotiPhaseRoundEnd {
+			return di, g
+		}
+	}
+	t.Fatal("50 局打っても『終局しない局の終わり』にならない -- 前提が崩れている")
+	return nil, nil
 }
 
 // dilotiFinishRound は現在の局を終了まで打つ。
