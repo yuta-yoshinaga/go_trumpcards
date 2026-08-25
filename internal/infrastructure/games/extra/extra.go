@@ -211,6 +211,14 @@ func init() {
 			return usecase.RestoreSambaInteractor(data, new(presenter.SambaWebPresenter))
 		},
 		controller.NewSambaWebControllerWithProvider)
+	games.RegisterKVGame("bolivia", games.CategoryExtra,
+		func() usecase.BoliviaInteractorIF {
+			return usecase.NewBoliviaInteractor(domain.NewDefaultBolivia(), new(presenter.BoliviaWebPresenter))
+		},
+		func(data []byte) (usecase.BoliviaInteractorIF, error) {
+			return usecase.RestoreBoliviaInteractor(data, new(presenter.BoliviaWebPresenter))
+		},
+		controller.NewBoliviaWebControllerWithProvider)
 	games.RegisterKVGame("machiavelli", games.CategoryExtra,
 		func() usecase.MachiavelliInteractorIF {
 			return usecase.NewMachiavelliInteractor(domain.NewDefaultMachiavelli(), new(presenter.MachiavelliWebPresenter))

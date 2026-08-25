@@ -4555,6 +4555,28 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			SettingKeys: []string{"samba.helpSetDifficulty", "samba.helpSetLimit"},
 		}),
+	BindCuiFor("bolivia",
+		func() usecase.BoliviaInteractorIF {
+			return usecase.NewBoliviaInteractor(domain.NewDefaultBolivia(), new(presenter.BoliviaCuiPresenter))
+		},
+		controller.NewBoliviaCuiController,
+		CuiHelpSpec{
+			TitleKey: "bolivia.helpTitle",
+			ExampleKeys: []string{
+				"bolivia.helpExampleDraw",
+				"bolivia.helpExampleDiscard",
+			},
+			CommandKeys: []string{
+				"bolivia.helpDrawStock",
+				"bolivia.helpDrawDiscard",
+				"bolivia.helpMeld",
+				"bolivia.helpSkipMeld",
+				"bolivia.helpDiscard",
+				"bolivia.helpGoOut",
+				"bolivia.helpNextRound", "bolivia.helpLog",
+			},
+			SettingKeys: []string{"bolivia.helpSetDifficulty", "bolivia.helpSetLimit"},
+		}),
 	BindCuiFor("anaconda",
 		func() usecase.AnacondaInteractorIF {
 			return usecase.NewAnacondaInteractor(domain.NewDefaultAnaconda(), new(presenter.AnacondaCuiPresenter))
