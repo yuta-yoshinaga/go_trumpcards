@@ -104,19 +104,36 @@ func (p *BaccaratBanqueCuiPresenter) writeResult(b *strings.Builder, g interface
 }
 
 // writeGameEnd はバンクが終わった理由を書く。
+//
+// **「配り切った」と「尽きた」を同じ文言にしない (レビュー指摘)。** バンクが
+// 普通に終わるのはシューを配り切ったときで、そのとき資金は残っている。
+// 「尽きました」と書くと嘘になるので、勝ち負けと終わり方の 2 軸で選ぶ。
 func (p *BaccaratBanqueCuiPresenter) writeGameEnd(b *strings.Builder, g interfaces.BaccaratBanqueGame) {
-	key := "baccaratbanque.endBroke"
-	switch {
-	case g.IsRetired():
-		key = "baccaratbanque.endRetired"
-	case g.GetWinnerIdx() == domain.BaccaratBanqueBankerIdx:
-		key = "baccaratbanque.endAhead"
-	}
+	key := "baccaratbanque.end" + baccaratBanqueEnding(g)
 	line := i18n.Tf(key, "n", strconv.Itoa(g.GetBankHeld()))
 	if g.GetWinnerIdx() == domain.BaccaratBanqueBankerIdx {
 		line = color.Green(line)
 	}
 	b.WriteString(line + "\n")
+}
+
+// baccaratBanqueEnding はバンクの終わり方を 1 語で返す。
+//
+// CUI と Web で同じ判断をするため、ここに 1 つだけ置く。**「配り切った」を
+// 「尽きた」と書かないのは表示側の都合ではなく事実の問題**なので、2 か所で
+// 分岐を持たない。
+func baccaratBanqueEnding(g interfaces.BaccaratBanqueGame) string {
+	switch {
+	case g.IsRetired():
+		return "Retired"
+	case g.GetEndReason() == domain.BaccaratBanqueEndBankrupt:
+		return "Broke"
+	case g.GetWinnerIdx() == domain.BaccaratBanqueBankerIdx:
+		return "Ahead"
+	default:
+		// シューを配り切って、増やせなかった ── 資金はまだある。
+		return "Behind"
+	}
 }
 
 // HintOutput renders the recommended move.

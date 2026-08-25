@@ -49,6 +49,26 @@ func banqueAtBankerDecision(t *testing.T) *domain.BaccaratBanque {
 	return b
 }
 
+// banqueSpendShoe は残高を chips にしてシューを配り切らせる。
+// **資金が残ったままシューが尽きる**のが普通の終わり方なので、そこを作れること。
+func banqueSpendShoe(t *testing.T, b *domain.BaccaratBanque, chips int) {
+	t.Helper()
+	b.GetPlayer(domain.BaccaratBanqueBankerIdx).SetChipsForTest(chips)
+	b.SetShoeForTest(nil)
+	b.NextCoup()
+	require.Equal(t, domain.BaccaratBanqueEndShoeExhausted, b.GetEndReason(),
+		"シューを配り切って終わっていない -- 前提が崩れている")
+}
+
+// banqueBankruptForTest は資金切れでバンクを畳ませる。
+func banqueBankruptForTest(t *testing.T, b *domain.BaccaratBanque) {
+	t.Helper()
+	b.GetPlayer(domain.BaccaratBanqueBankerIdx).SetChipsForTest(0)
+	b.SettleForTest()
+	require.Equal(t, domain.BaccaratBanqueEndBankrupt, b.GetEndReason(),
+		"資金切れで終わっていない -- 前提が崩れている")
+}
+
 func TestBaccaratBanqueCuiPresenter_Output(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)
@@ -115,6 +135,23 @@ func TestBaccaratBanqueCuiPresenter_Output(t *testing.T) {
 		// 負のコントロール: 終わる前は出ている。
 		assert.Contains(t, p.Output(banqueAtBankerDecision(t), nil),
 			i18n.Tf("baccaratbanque.bankHeld", "n", "2"))
+	})
+
+	// **「配り切った」と「尽きた」を同じ文言で出さない (レビュー指摘)。**
+	t.Run("a spent shoe with chips left is not reported as a broken bank", func(t *testing.T) {
+		behind := banqueAtBankerDecision(t)
+		require.NoError(t, behind.BankerDraw(false))
+		banqueSpendShoe(t, behind, 100)
+		out := p.Output(behind, nil)
+		assert.Contains(t, out, i18n.Tf("baccaratbanque.endBehind", "n", itoa(behind.GetBankHeld())))
+		assert.NotContains(t, out, i18n.Tf("baccaratbanque.endBroke", "n", itoa(behind.GetBankHeld())))
+
+		// 負のコントロール: 本当に尽きたときは「尽きた」と書く。
+		broke := banqueAtBankerDecision(t)
+		require.NoError(t, broke.BankerDraw(false))
+		banqueBankruptForTest(t, broke)
+		assert.Contains(t, p.Output(broke, nil),
+			i18n.Tf("baccaratbanque.endBroke", "n", itoa(broke.GetBankHeld())))
 	})
 
 	t.Run("an error is shown", func(t *testing.T) {
@@ -231,14 +268,32 @@ func TestBaccaratBanqueWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "baccaratbanque.resultPhase", out.MessageCode)
 	})
 
-	t.Run("retiring is reported apart from being broken", func(t *testing.T) {
-		b := banqueAtBankerDecision(t)
-		require.NoError(t, b.BankerDraw(false))
-		require.NoError(t, b.Retire())
-		out := decode(t, p.Output(b, nil))
-		assert.True(t, out.GameEndFlag)
-		assert.True(t, out.Retired)
-		assert.Equal(t, "baccaratbanque.result.retired", out.MessageCode)
+	// **終わり方は 4 通りあって、勝ち負けとは別の軸 (レビュー指摘)。** とくに
+	// 「シューを配り切って負け越した」は普通の終わり方で、資金は残っている ──
+	// それを「バンクが尽きた」と書くと嘘になる。
+	t.Run("each of the four endings has its own message", func(t *testing.T) {
+		for _, tc := range []struct {
+			name, want string
+			end        func(*domain.BaccaratBanque)
+		}{
+			{"retired", "baccaratbanque.result.endRetired",
+				func(b *domain.BaccaratBanque) { require.NoError(t, b.Retire()) }},
+			{"bankrupt", "baccaratbanque.result.endBroke",
+				func(b *domain.BaccaratBanque) { banqueBankruptForTest(t, b) }},
+			{"shoe spent, ahead", "baccaratbanque.result.endAhead",
+				func(b *domain.BaccaratBanque) { banqueSpendShoe(t, b, 2000) }},
+			{"shoe spent, behind", "baccaratbanque.result.endBehind",
+				func(b *domain.BaccaratBanque) { banqueSpendShoe(t, b, 100) }},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				b := banqueAtBankerDecision(t)
+				require.NoError(t, b.BankerDraw(false))
+				tc.end(b)
+				require.True(t, b.GetGameEndFlag(), "終局していない -- 前提が崩れている")
+				out := decode(t, p.Output(b, nil))
+				assert.Equal(t, tc.want, out.MessageCode)
+			})
+		}
 	})
 
 	t.Run("an error carries its message code", func(t *testing.T) {

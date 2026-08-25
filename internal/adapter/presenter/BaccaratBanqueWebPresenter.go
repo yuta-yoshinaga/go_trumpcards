@@ -108,13 +108,9 @@ func (p *BaccaratBanqueWebPresenter) buildMessage(g interfaces.BaccaratBanqueGam
 		return lastErr.Error(), code, params
 	}
 	if g.GetGameEndFlag() {
-		if g.IsRetired() {
-			return "", "baccaratbanque.result.retired", nil
-		}
-		if g.GetWinnerIdx() == domain.BaccaratBanqueBankerIdx {
-			return "", "baccaratbanque.result.bankerAhead", nil
-		}
-		return "", "baccaratbanque.result.bankerBehind", nil
+		// **CUI と同じ判断を使う。** 「配り切った」を「尽きた」と書かない
+		// のは表示側の都合ではなく事実の問題なので、2 か所で分岐を持たない。
+		return "", "baccaratbanque.result.end" + baccaratBanqueEnding(g), nil
 	}
 	switch g.GetPhase() {
 	case domain.BaccaratBanquePhaseBanker:

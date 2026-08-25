@@ -97,3 +97,6 @@ func (p *BaccaratBanquePlayer) UnmarshalJSON(data []byte) error {
 	p.chips, p.bet, p.drawn = j.Chips, j.Bet, j.Drawn
 	return nil
 }
+
+// SetChipsForTest はテスト用に残高を差し替える。
+func (p *BaccaratBanquePlayer) SetChipsForTest(n int) { p.chips = n }

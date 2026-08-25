@@ -17,8 +17,18 @@ const (
 	BaccaratBanqueRightIdx = 1
 	// BaccaratBanqueLeftIdx は左のタブロー。
 	BaccaratBanqueLeftIdx = 2
-	// BaccaratBanqueReshuffleFloor はこれを下回るとシューを組み直す。
+	// BaccaratBanqueReshuffleFloor は次のクーを配れなくなる残り枚数。
 	BaccaratBanqueReshuffleFloor = 12
+)
+
+// バンクの終わり方。**勝ち負けとは別の軸**で、資金が残っていてもシューは尽きる。
+const (
+	// BaccaratBanqueEndRetired はバンカーが自分から降りた。
+	BaccaratBanqueEndRetired = "retired"
+	// BaccaratBanqueEndBankrupt はバンクが賭け金を賄えなくなった。
+	BaccaratBanqueEndBankrupt = "bankrupt"
+	// BaccaratBanqueEndShoeExhausted はシューを配り切った。**資金は残っている。**
+	BaccaratBanqueEndShoeExhausted = "shoeExhausted"
 )
 
 // フェーズ。
@@ -66,8 +76,8 @@ type BaccaratBanque struct {
 	phase   string
 	// coupNumber は何回目のクーか。
 	coupNumber int
-	// pendingIdx は次に 3 枚目を決める子の席 (-1 = 子は済んだ)。
-	pendingIdx int
+	// endReason はバンクの終わり方。**「尽きた」と「配り切った」は違う。**
+	endReason string
 	// bankHeld はこのバンクで何クー続けているか。
 	//
 	// **1 回負けてもバンクは動かない。** シューを配り切るか、自分から退くか、
@@ -85,11 +95,10 @@ type BaccaratBanque struct {
 // NewBaccaratBanque はコンストラクタ。
 func NewBaccaratBanque(players []*BaccaratBanquePlayer, config BaccaratBanqueConfig) *BaccaratBanque {
 	return &BaccaratBanque{
-		players:    players,
-		config:     config,
-		phase:      BaccaratBanquePhasePunters,
-		pendingIdx: BaccaratBanqueRightIdx,
-		winnerIdx:  -1,
+		players:   players,
+		config:    config,
+		phase:     BaccaratBanquePhasePunters,
+		winnerIdx: -1,
 	}
 }
 
@@ -139,13 +148,11 @@ func (b *BaccaratBanque) NextCoup() {
 
 // startCoup は左右の子とバンカーに 2 枚ずつ配る。
 func (b *BaccaratBanque) startCoup() {
-	// **シューを配り切ったらバンクは終わり。** そこが 1 つの区切り。
+	// **シューを配り切ったらバンクは終わり。** 組み直して続けたりはしない ──
+	// バンクが 1 つのシューぶんなのがこの形式の区切り方。
 	if b.remaining() < BaccaratBanqueReshuffleFloor {
-		b.endBank("shoeExhausted")
-		if b.gameEndFlag {
-			return
-		}
-		b.buildShoe()
+		b.endBank(BaccaratBanqueEndShoeExhausted)
+		return
 	}
 	for _, p := range b.players {
 		p.ResetCoup()
@@ -170,7 +177,6 @@ func (b *BaccaratBanque) startCoup() {
 	}
 	b.appendLog(-1, "deal", fmt.Sprintf("coup %d dealt", b.coupNumber), nil)
 	b.phase = BaccaratBanquePhasePunters
-	b.pendingIdx = BaccaratBanqueRightIdx
 	b.resolvePunters()
 }
 
@@ -203,7 +209,6 @@ func (b *BaccaratBanque) resolvePunters() {
 			}
 		}
 	}
-	b.pendingIdx = -1
 	b.phase = BaccaratBanquePhaseBanker
 	// **バンカーがナチュラルなら引く余地は無い。** そのまま決着させる。
 	if BaccaratBanqueIsNatural(b.players[BaccaratBanqueBankerIdx].GetHand()) {
@@ -276,7 +281,7 @@ func (b *BaccaratBanque) settle() {
 
 	// **1 回負けてもバンクは動かない。** 資金が尽きたときだけ終わる。
 	if banker.GetChips() <= 0 {
-		b.endBank("bankrupt")
+		b.endBank(BaccaratBanqueEndBankrupt)
 	}
 }
 
@@ -292,15 +297,20 @@ func (b *BaccaratBanque) Retire() error {
 		return NewDomainErrorCode(ErrWrongPhase, "baccaratbanque.errNotResultPhase", nil)
 	}
 	b.retired = true
-	b.endBank("retired")
+	b.endBank(BaccaratBanqueEndRetired)
 	return nil
 }
 
 // endBank はバンクを畳んで終局する。
+//
+// **終わり方は 3 つあって、勝ち負けとは別の軸。** 「シューを配り切った」は
+// 資金が残っていても起きる普通の終わり方で、「バンクが尽きた」と同じ文言で
+// 出すと嘘になる (レビュー指摘)。理由を持っておいて表示側に渡す。
 func (b *BaccaratBanque) endBank(reason string) {
 	if b.gameEndFlag {
 		return
 	}
+	b.endReason = reason
 	b.gameEndFlag = true
 	b.phase = BaccaratBanquePhaseGameEnd
 	// **勝ち負けは元手と比べて決める。** 増えていればバンカーの勝ち。
@@ -310,6 +320,9 @@ func (b *BaccaratBanque) endBank(reason string) {
 	b.appendLog(-1, "bankEnd",
 		fmt.Sprintf("bank ends after %d coup(s): %s", b.bankHeld, reason), nil)
 }
+
+// GetEndReason はバンクの終わり方を返す。終わっていなければ空。
+func (b *BaccaratBanque) GetEndReason() string { return b.endReason }
 
 // IsHumanTurn は人間 (バンカー) の判断待ちかを返す。
 func (b *BaccaratBanque) IsHumanTurn() bool {
@@ -377,7 +390,7 @@ type baccaratBanqueJSON struct {
 	Config      BaccaratBanqueConfig      `json:"cf"`
 	Phase       string                    `json:"ph"`
 	CoupNumber  int                       `json:"cn"`
-	PendingIdx  int                       `json:"pi"`
+	EndReason   string                    `json:"er"`
 	BankHeld    int                       `json:"bh"`
 	Retired     bool                      `json:"rt"`
 	LastResult  *BaccaratBanqueCoupResult `json:"lr"`
@@ -393,7 +406,7 @@ type baccaratBanqueJSON struct {
 func (b *BaccaratBanque) MarshalJSON() ([]byte, error) {
 	return json.Marshal(baccaratBanqueJSON{
 		Shoe: b.shoe, DrawIdx: b.drawIdx, Players: b.players, Config: b.config,
-		Phase: b.phase, CoupNumber: b.coupNumber, PendingIdx: b.pendingIdx,
+		Phase: b.phase, CoupNumber: b.coupNumber, EndReason: b.endReason,
 		BankHeld: b.bankHeld, Retired: b.retired, LastResult: b.lastResult,
 		GameEndFlag: b.gameEndFlag, WinnerIdx: b.winnerIdx, ActionLog: b.actionLog,
 	})
@@ -411,7 +424,7 @@ func (b *BaccaratBanque) UnmarshalJSON(data []byte) error {
 			BaccaratBanquePlayerCnt, len(b.players))
 	}
 	b.shoe, b.drawIdx, b.config = j.Shoe, j.DrawIdx, j.Config
-	b.phase, b.coupNumber, b.pendingIdx = j.Phase, j.CoupNumber, j.PendingIdx
+	b.phase, b.coupNumber, b.endReason = j.Phase, j.CoupNumber, j.EndReason
 	b.bankHeld, b.retired = j.BankHeld, j.Retired
 	b.lastResult, b.gameEndFlag, b.winnerIdx = j.LastResult, j.GameEndFlag, j.WinnerIdx
 	b.actionLog = j.ActionLog

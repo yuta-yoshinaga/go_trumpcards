@@ -31,6 +31,7 @@
   "nextCoupHint": "Type nextcoup for the next coup, or retire to give up the bank.",
   "endRetired": "You gave up the bank after {{n}} coup(s).",
   "endAhead": "The shoe is spent - you held the bank for {{n}} coup(s) and finished ahead!",
+  "endBehind": "The shoe is spent - you held the bank for {{n}} coup(s) and finished behind, but with chips still in front of you.",
   "endBroke": "The bank is broken after {{n}} coup(s).",
   "actionDraw": "draw",
   "actionStand": "stand",

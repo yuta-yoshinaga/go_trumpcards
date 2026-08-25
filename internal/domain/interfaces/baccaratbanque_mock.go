@@ -85,6 +85,12 @@ func (_m *MockBaccaratBanqueGame) GetShoeRemaining() int {
 	return ret.Get(0).(int)
 }
 
+// GetEndReason モック
+func (_m *MockBaccaratBanqueGame) GetEndReason() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // IsRetired モック
 func (_m *MockBaccaratBanqueGame) IsRetired() bool {
 	ret := _m.Called()

@@ -35,6 +35,10 @@ type BaccaratBanqueGame interface {
 	GetShoeRemaining() int
 	// IsRetired バンカーが自分から降りたかを取得する
 	IsRetired() bool
+	// GetEndReason バンクの終わり方を取得する ("retired" / "bankrupt" /
+	// "shoeExhausted"、終わっていなければ空)。**「配り切った」と「尽きた」は
+	// 別の終わり方**で、前者では資金が残っている。
+	GetEndReason() string
 	// GetPlayerCnt 席数を取得する
 	GetPlayerCnt() int
 	// GetPlayer 指定席を取得する

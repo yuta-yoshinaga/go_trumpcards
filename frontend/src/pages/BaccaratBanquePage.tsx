@@ -216,7 +216,10 @@ function BaccaratBanquePageContent() {
                     className="text-ds-text-primary text-center text-sm"
                     data-testid={`banque-side-${s.seatIdx}`}
                   >
-                    {t(`role.${s.seatIdx === 1 ? 'right' : 'left'}`)}: {t(`outcome.${s.outcome}`)} ({s.delta})
+                    {/* **席の呼び名はその席が持っている。** ここで seatIdx から
+                        引き直すと、席の並びを変えた日に静かに左右が入れ替わる。 */}
+                    {t(`role.${state.players.find((p) => p.id === s.seatIdx)?.role ?? 'right'}`)}:{' '}
+                    {t(`outcome.${s.outcome}`)} ({s.delta})
                   </div>
                 ))}
                 <div
