@@ -86,4 +86,32 @@ describe('formatBoliviaState meld labels', () => {
     );
     expect(out).toContain('(canasta)');
   });
+
+  // **席の行にエスカレラの印が要る。** 上がりを止めているのはこちらで、
+  // クローン元は役が 2 種類しか無いのでボリビアの印しか無かった。
+  it('tags the escalera on the seat line, distinctly from a bolivia', () => {
+    const base = makeBoliviaState();
+    const out = formatBoliviaState(
+      makeBoliviaState({
+        players: base.players.map((p, i) => (i === 0 ? { ...p, hasEscalera: true, hasBolivia: false } : p)),
+      }),
+    );
+    // **席の行だけを見る。** "Bolivia" は見出しにも出るので、出力全体に対する
+    // 否定は決して成立しない ── それでは何も測っていない。
+    const seat = out.split('\n').find((l) => l.includes('team 0') && l.includes('[')) as string;
+    expect(seat).toContain('Escalera');
+    expect(seat).not.toContain('Bolivia');
+  });
+
+  it('tags a bolivia distinctly from an escalera', () => {
+    const base = makeBoliviaState();
+    const out = formatBoliviaState(
+      makeBoliviaState({
+        players: base.players.map((p, i) => (i === 0 ? { ...p, hasEscalera: false, hasBolivia: true } : p)),
+      }),
+    );
+    const seat = out.split('\n').find((l) => l.includes('team 0') && l.includes('[')) as string;
+    expect(seat).toContain('Bolivia');
+    expect(seat).not.toContain('Escalera');
+  });
 });

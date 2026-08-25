@@ -303,8 +303,31 @@ function BoliviaPageContent() {
                     >
                       <div className="text-ds-text-muted text-sm mb-1">
                         {playerName(p.id, p.isHuman)} ({t('teamLabel', { n: p.team })}) - {t('melds')}
-                        {p.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
-                        {p.hasBolivia && <span className="ml-1 text-ds-accent">▲</span>}
+                        {p.hasCanasta && (
+                          <span className="ml-2 text-ds-warning" title={t('tag.canasta')}>
+                            ★
+                          </span>
+                        )}
+                        {/* **エスカレラの印を落とさない。** 上がりを止めているのは
+                            こちらで、ボリビアは点が重いだけ。 */}
+                        {p.hasEscalera && (
+                          <span
+                            className="ml-1 text-ds-success"
+                            title={t('tag.escalera')}
+                            data-testid={`bo-tag-escalera-${p.id}`}
+                          >
+                            ◆
+                          </span>
+                        )}
+                        {p.hasBolivia && (
+                          <span
+                            className="ml-1 text-ds-accent"
+                            title={t('tag.bolivia')}
+                            data-testid={`bo-tag-bolivia-${p.id}`}
+                          >
+                            ▲
+                          </span>
+                        )}
                       </div>
                       {p.melds.map((m, mi) => {
                         // Progress toward the 7-card canasta (set) / bolivia (sequence)

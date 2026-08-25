@@ -50,6 +50,9 @@ export function formatBoliviaState(state: BoliviaResponse): string {
     const name = formatPlayerName(p.id, p.isHuman);
     const tags: string[] = [];
     if (p.hasCanasta) tags.push('Canasta');
+    // **エスカレラの印を落とさない。** 上がりを止めているのはこちらなので、
+    // 誰が持っているかが席の行に出ていないと、卓の状況が読めない。
+    if (p.hasEscalera) tags.push('Escalera');
     if (p.hasBolivia) tags.push('Bolivia');
     if (p.hasInitMeld) tags.push('Init Meld');
     const tagStr = tags.length > 0 ? ` [${tags.join(', ')}]` : '';

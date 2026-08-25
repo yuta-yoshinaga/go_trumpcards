@@ -93,5 +93,6 @@
   "tag.bolivia": "*bolivia",
   "goOutRule": "Going out needs two completed melds, at least one an escalera",
   "boliviaMeld": "bolivia",
-  "wildMeld": "wild"
+  "wildMeld": "wild",
+  "tag.canasta": "canasta"
 }

@@ -38,7 +38,7 @@ describe('BoliviaPage', () => {
   it('calls reset on mount with the default config', async () => {
     renderWithProviders(<BoliviaPage />);
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pointLimit: 10000 }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pointLimit: 15000 }),
     );
   });
 
@@ -135,7 +135,7 @@ describe('BoliviaPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pointLimit: 10000 }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pointLimit: 15000 }),
     );
     expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
   });
@@ -314,5 +314,38 @@ describe('BoliviaPage', () => {
     expect(row).toHaveTextContent('ボリビア');
     // 負のコントロール: 枚数だけの表示に落ちていないこと。
     expect(row).not.toHaveTextContent('(7)');
+  });
+
+  // **席の印もエスカレラとボリビアを別に出す。**
+  it('marks the escalera and the bolivia with distinct seat badges', async () => {
+    const base = makeBoliviaState();
+    mockExec.mockResolvedValue(
+      makeBoliviaState({
+        // 席の枠はメルドか赤3があるときだけ描かれるので、エスカレラを 1 本置く。
+        players: base.players.map((p, i) =>
+          i === 0
+            ? {
+                ...p,
+                hasEscalera: true,
+                hasBolivia: false,
+                melds: [
+                  {
+                    cards: Array.from({ length: 7 }, (_, k) => ({ design: 'HEART' as const, value: 4 + k })),
+                    kind: 1,
+                    isNatural: true,
+                    isCanasta: false,
+                    isEscalera: true,
+                    isBolivia: false,
+                    rank: 4,
+                  },
+                ],
+              }
+            : p,
+        ),
+      }),
+    );
+    renderWithProviders(<BoliviaPage />);
+    expect(await screen.findByTestId('bo-tag-escalera-0')).toBeInTheDocument();
+    expect(screen.queryByTestId('bo-tag-bolivia-0')).not.toBeInTheDocument();
   });
 });
