@@ -93,6 +93,7 @@ export * from './games/daifugo';
 export * from './games/dehlapakad';
 export * from './games/desmoche';
 export * from './games/deucetoseven';
+export * from './games/diloti';
 export * from './games/diplomat';
 export * from './games/doppelkopf';
 export * from './games/doubleattack';

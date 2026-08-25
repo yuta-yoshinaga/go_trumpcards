@@ -2056,6 +2056,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 4, 4, 3], skill: [4, 4, 4, 3], social: [3, 3, 4, 4, 2], theme: [2, 4, 2, 1, 3, 4] },
       },
       {
+        path: '/diloti',
+        labelKey: 'nav.diloti',
+        icon: '🎣',
+        page: 'Diloti',
+        profile: { mood: [4, 4, 4, 3], skill: [4, 5, 4, 3], social: [3, 3, 4, 4, 2], theme: [2, 4, 2, 1, 3, 4] },
+      },
+      {
         path: '/shengji',
         labelKey: 'nav.shengji',
         icon: '🚜',

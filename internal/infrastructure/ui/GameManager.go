@@ -7005,6 +7005,23 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			SettingKeys: []string{"cirulla.helpSetDifficulty", "cirulla.helpSetTarget"},
 		}),
+	BindCuiFor("diloti",
+		func() usecase.DilotiInteractorIF {
+			return usecase.NewDilotiInteractor(domain.NewDefaultDiloti(), new(presenter.DilotiCuiPresenter))
+		},
+		controller.NewDilotiCuiController,
+		CuiHelpSpec{
+			TitleKey: "diloti.helpTitle",
+			ExampleKeys: []string{
+				"diloti.helpExampleTake",
+				"diloti.helpExampleDeclare",
+			},
+			CommandKeys: []string{
+				"diloti.helpTake", "diloti.helpDeclare", "diloti.helpLay",
+				"diloti.helpNextRound", "diloti.helpHint", "diloti.helpLog",
+			},
+			SettingKeys: []string{"diloti.helpSetDifficulty", "diloti.helpSetTarget"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

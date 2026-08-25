@@ -1820,4 +1820,9 @@ func init() {
 			return usecase.NewCirullaInteractor(domain.NewDefaultCirulla(), new(presenter.CirullaWebPresenter))
 		},
 		controller.NewCirullaWebController)
+	BindWebControllerFor("diloti",
+		func() usecase.DilotiInteractorIF {
+			return usecase.NewDilotiInteractor(domain.NewDefaultDiloti(), new(presenter.DilotiWebPresenter))
+		},
+		controller.NewDilotiWebController)
 }

@@ -12,6 +12,7 @@ import type {
   CoincheResponse,
   CourtPieceResponse,
   DehlaPakadResponse,
+  DilotiResponse,
   DoppelkopfResponse,
   EcarteResponse,
   EscobaResponse,
@@ -4836,4 +4837,77 @@ const baseCirullaState: CirullaResponse = {
  */
 export function makeCirullaState(overrides?: Partial<CirullaResponse>): CirullaResponse {
   return { ...baseCirullaState, ...overrides };
+}
+
+/**
+ * Base Diloti state used as the default for {@link makeDilotiState}.
+ * Defaults to the human on turn with four cards and one declaration on the table.
+ */
+const baseDilotiState: DilotiResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cards: [cirCard('SPADE', 3), cirCard('HEART', 5), cirCard('CLOVER', 11)],
+      cardCount: 3,
+      capturedCount: 0,
+      xeri: 0,
+      score: 0,
+      isDealer: false,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cards: [],
+      cardCount: 3,
+      capturedCount: 0,
+      xeri: 0,
+      score: 0,
+      isDealer: true,
+    },
+  ],
+  phase: 'play',
+  roundNumber: 1,
+  dealerIdx: 1,
+  currentPlayerIdx: 0,
+  table: [cirCard('CLOVER', 3), cirCard('DIAMOND', 11), cirCard('SPADE', 2), cirCard('HEART', 1)],
+  declarations: [{ ownerIdx: 1, value: 5, groups: [[cirCard('SPADE', 5)]], isGroup: false }],
+  deckRemaining: 36,
+  lastCapturer: -1,
+  // 手札 0 (♠3) は場の [0] を取るか、[2]+[3] (2+1=3) を取れる。
+  // 手札 1 (♥5) は宣言 5 を取れる。手札 2 (♣J) は場の [1] (♦J) を取れる。
+  takeOptions: [
+    [
+      { tableIdxs: [0], declIdxs: [] },
+      { tableIdxs: [2, 3], declIdxs: [] },
+    ],
+    [{ tableIdxs: [], declIdxs: [0] }],
+    [{ tableIdxs: [1], declIdxs: [] }],
+  ],
+  declareOptions: [[], [{ value: 8, tableIdxs: [0] }], []],
+  canTrail: [true, true, false],
+  lastResult: null,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  isHumanTurn: true,
+  hintHandIdx: -1,
+  hintAction: '',
+  hintTableIdxs: [],
+  hintDeclIdxs: [],
+  hintDeclValue: 0,
+  hintReason: '',
+  config: { cpuDifficulty: 1, targetScore: 61 },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link DilotiResponse} with sensible defaults (the human on turn
+ * with four cards and one declaration on the table).
+ *
+ * @param overrides - Partial DilotiResponse fields to override.
+ * @returns A complete DilotiResponse suitable for use in tests.
+ */
+export function makeDilotiState(overrides?: Partial<DilotiResponse>): DilotiResponse {
+  return { ...baseDilotiState, ...overrides };
 }

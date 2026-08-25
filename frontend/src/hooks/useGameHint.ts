@@ -87,6 +87,7 @@ import type {
   DehlaPakadResponse,
   DesmocheResponse,
   DeuceToSevenResponse,
+  DilotiResponse,
   DiplomatResponse,
   DoppelkopfResponse,
   DoubleAttackResponse,
@@ -437,6 +438,7 @@ import { getDehlaPakadHint } from '../utils/hints/dehlaPakadHint';
 import { getDesmocheHint } from '../utils/hints/desmocheHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDeuceToSevenHint } from '../utils/hints/deuceToSevenHint';
+import { getDilotiHint } from '../utils/hints/dilotiHint';
 import { getDiplomatHint } from '../utils/hints/diplomatHint';
 import { getDoppelkopfHint } from '../utils/hints/doppelkopfHint';
 import { getDoubleattackHint } from '../utils/hints/doubleattackHint';
@@ -887,6 +889,7 @@ export const hintFactories = {
   dehlapakad: (s) => getDehlaPakadHint(s as DehlaPakadResponse),
   sutda: (s) => getSutdaHint(s as SutdaResponse),
   cirulla: (s) => getCirullaHint(s as CirullaResponse),
+  diloti: (s) => getDilotiHint(s as DilotiResponse),
   king: (s) => getKingHint(s as KingResponse),
   flowergarden: (s) => getFlowergardenHint(s as FlowerGardenResponse),
   tonk: (s) => getTonkHint(s as TonkResponse),

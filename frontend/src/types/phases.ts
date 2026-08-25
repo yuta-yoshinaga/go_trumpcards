@@ -637,6 +637,17 @@ export const CirullaPhase = {
   GAME_END: 'gameEnd',
 } as const;
 
+/**
+ * Diloti phase constants (sync: internal/domain/Diloti.go).
+ *
+ * **These are strings, not indices.**
+ */
+export const DilotiPhase = {
+  PLAY: 'play',
+  ROUND_END: 'roundEnd',
+  GAME_END: 'gameEnd',
+} as const;
+
 /** Königrufen (ケーニッヒルーフェン) phase constants (sync: internal/domain/Koenigrufen.go). */
 export const KoenigrufenPhase = {
   BID: 0,

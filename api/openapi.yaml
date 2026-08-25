@@ -424,6 +424,8 @@ tags:
     description: 'Sutda - the Korean two-card betting game on a 20-card hanafuda pack; 38 gwang-ttaeng is the top hand'
   - name: cirulla
     description: 'Cirulla - the Ligurian fishing game; Scopa captures plus sum-to-fifteen and the asso pigliatutto'
+  - name: diloti
+    description: 'Diloti - the Greek fishing game; captures sum to the played rank, declarations build piles, and a one-card sweep is a xeri'
   - name: literature
     description: Literature
   - name: guandan
@@ -21003,6 +21005,153 @@ paths:
                   command: play
                   handIndex: 0
                   captureIndices: [1, 2]
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /diloti/exec:
+    post:
+      tags:
+        - diloti
+      summary: Execute a Diloti game command
+      description: |
+        Send a command to advance the Diloti session identified by
+        `sessionId`. Diloti is a Greek fishing game on a standard 52-card
+        pack, played two-handed here with six cards each and four on the
+        table. When both hands empty, six more are dealt to each player and
+        **no further cards are added to the table**.
+
+        **Captures sum to the played card's own rank, not to ten.** A played
+        card takes any set of loose table cards totalling its value, and
+        several disjoint sets at once; a single matching card is just the
+        one-card case of that. Face cards are the exception: a jack, queen or
+        king takes **exactly one** face card of the same rank, never joins a
+        sum, and **cannot be laid off** while a matching face card is on the
+        table.
+
+        **Declaring is the game's name** (δηλώνω). A *plain* declaration
+        bundles the played card with loose table cards under a value of 2-10
+        that the declarer must be holding and may not spend elsewhere; an
+        opponent may **raise** it by adding a card. A *group* declaration
+        stacks a second set of the same value onto an existing pile, after
+        which it can no longer be raised and only a single card of that value
+        takes it -- all of it, never part.
+
+        Because those rules interact, the server enumerates the legal moves
+        rather than leaving a client to re-derive them. For the human's i-th
+        card, in hand order: `takeOptions[i]` holds the legal captures as
+        `{tableIdxs, declIdxs}` pairs, `declareOptions[i]` the declarations
+        that card could make, and `canTrail[i]` whether it may simply be laid
+        off. All three are empty while it is not their turn.
+
+        Send `action` (`capture`, `declare` or `trail`) with `handIndex`, plus
+        `tableIndices` / `declIndices` for a capture and `declValue` for a
+        declaration.
+
+        **A one-card sweep of the whole table is a xeri and scores 10** --
+        against just eleven fixed points a round (4 for most cards, 1 per ace,
+        2 for the 10 of diamonds, 1 for the 2 of clubs), so it usually decides
+        the round. The deal's very first play never counts as a xeri, nor does
+        the leftover table going to the last capturer when the stock runs out.
+        Play is to `config.targetScore`.
+      operationId: dilotiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), play (p), nextround (nr), hint, log, quit (q)"
+                handIndex:
+                  type: integer
+                  description: Index of the card to play. Required for play.
+                action:
+                  type: string
+                  enum: [capture, declare, trail]
+                  description: What to do with the played card. Required for play.
+                tableIndices:
+                  type: array
+                  items:
+                    type: integer
+                  description: >-
+                    Loose table cards to take or to fold into a declaration,
+                    taken from takeOptions or declareOptions.
+                declIndices:
+                  type: array
+                  items:
+                    type: integer
+                  description: >-
+                    Declarations to take, or the single declaration to raise or
+                    group onto.
+                declValue:
+                  type: integer
+                  description: Declared value, 2-10. Required for declare.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0 = Easy, 1 = Normal, 2 = Hard.
+                    targetScore:
+                      type: integer
+                      description: Points needed to win, 21-101.
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new match
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              trail:
+                summary: Lay the card at index 0 on the table
+                value:
+                  command: play
+                  handIndex: 0
+                  action: trail
+                  sessionId: my-session-001
+              capture:
+                summary: Take table cards 1 and 2 and declaration 0 with hand card 0
+                value:
+                  command: play
+                  handIndex: 0
+                  action: capture
+                  tableIndices: [1, 2]
+                  declIndices: [0]
+                  sessionId: my-session-001
+              declare:
+                summary: Declare 8 with hand card 0 and table card 1
+                value:
+                  command: play
+                  handIndex: 0
+                  action: declare
+                  tableIndices: [1]
+                  declValue: 8
                   sessionId: my-session-001
       responses:
         '200':
