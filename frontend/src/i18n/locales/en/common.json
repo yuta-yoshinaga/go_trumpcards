@@ -171,6 +171,7 @@
     "karnoffel": "Karnöffel",
     "unsunkaruta": "Unsun Karuta",
     "quodlibet": "Quodlibet",
+    "dehlapakad": "Dehla Pakad",
     "kemps": "Kemps",
     "kille": "Kille",
     "king": "King",
@@ -2557,7 +2558,17 @@
     "quodlibet.errCardRange": "That card number is out of range.",
     "quodlibet.errCannotPass": "You have a playable card and cannot pass.",
     "quodlibet.hintRequested": "A hint is available.",
-    "quodlibet.noHint": "No hint available."
+    "quodlibet.noHint": "No hint available.",
+    "dehlapakad.selectTrump": "Call the trump (only your first five cards are dealt).",
+    "dehlapakad.playPhase": "Play a card.",
+    "dehlapakad.playPhase.tensAtStake": "There are tens in the centre pile. Win this trick and the next, and the pile is yours.",
+    "dehlapakad.handEnd": "The hand is over.",
+    "dehlapakad.result.humanWin": "Game over! Your team takes the match.",
+    "dehlapakad.result.cpuWin": "Game over! The opposing team takes the match.",
+    "dehlapakad.errTrumpSuit": "Invalid trump suit (1=spade 2=club 3=heart 4=diamond).",
+    "dehlapakad.errCardRange": "That card number is out of range.",
+    "dehlapakad.hintRequested": "A hint is available.",
+    "dehlapakad.noHint": "No hint available."
   },
   "manual": {
     "ariaLabel": "Game Manual",

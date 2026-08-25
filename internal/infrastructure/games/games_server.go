@@ -1805,4 +1805,9 @@ func init() {
 			return usecase.NewQuodlibetInteractor(domain.NewDefaultQuodlibet(), new(presenter.QuodlibetWebPresenter))
 		},
 		controller.NewQuodlibetWebController)
+	BindWebControllerFor("dehlapakad",
+		func() usecase.DehlaPakadInteractorIF {
+			return usecase.NewDehlaPakadInteractor(domain.NewDefaultDehlaPakad(), new(presenter.DehlaPakadWebPresenter))
+		},
+		controller.NewDehlaPakadWebController)
 }

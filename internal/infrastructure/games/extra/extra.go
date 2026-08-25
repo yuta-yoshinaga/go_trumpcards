@@ -347,4 +347,12 @@ func init() {
 			return usecase.RestoreGleekInteractor(data, new(presenter.GleekWebPresenter))
 		},
 		controller.NewGleekWebControllerWithProvider)
+	games.RegisterKVGame("dehlapakad", games.CategoryExtra,
+		func() usecase.DehlaPakadInteractorIF {
+			return usecase.NewDehlaPakadInteractor(domain.NewDefaultDehlaPakad(), new(presenter.DehlaPakadWebPresenter))
+		},
+		func(data []byte) (usecase.DehlaPakadInteractorIF, error) {
+			return usecase.RestoreDehlaPakadInteractor(data, new(presenter.DehlaPakadWebPresenter))
+		},
+		controller.NewDehlaPakadWebControllerWithProvider)
 }

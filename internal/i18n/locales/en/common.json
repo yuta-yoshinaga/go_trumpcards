@@ -618,5 +618,7 @@
   "numberOfSeatsRequired34": "Number of seats is required (3 or 4).",
   "invalidNumberOfSeats34": "Invalid number of seats: please enter 3 or 4.",
   "numberOfDealsRequired18": "Number of deals is required (1-8).",
-  "invalidNumberOfDeals18": "Invalid number of deals: {{val}}. Please enter 1-8."
+  "invalidNumberOfDeals18": "Invalid number of deals: {{val}}. Please enter 1-8.",
+  "targetKotsRequired": "Please specify the number of kots.",
+  "invalidTargetKots": "Invalid number of kots: {{val}}."
 }

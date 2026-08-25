@@ -171,6 +171,7 @@
     "karnoffel": "カルニッフェル",
     "unsunkaruta": "うんすんカルタ",
     "quodlibet": "クオドリベット",
+    "dehlapakad": "デーラ・パカド",
     "kemps": "ケムプス",
     "kille": "キッレ",
     "king": "キング",
@@ -2557,7 +2558,17 @@
     "quodlibet.errCardRange": "カードの番号が範囲外です。",
     "quodlibet.errCannotPass": "出せる札があるのでパスできません。",
     "quodlibet.hintRequested": "ヒントがあります。",
-    "quodlibet.noHint": "ヒントはありません。"
+    "quodlibet.noHint": "ヒントはありません。",
+    "dehlapakad.selectTrump": "切り札を宣言してください（見えているのは最初の 5 枚だけ）。",
+    "dehlapakad.playPhase": "札を出してください。",
+    "dehlapakad.playPhase.tensAtStake": "中央の山に 10 が乗っています。ここを取り、次も取れば山ごと引き取れます。",
+    "dehlapakad.handEnd": "ハンドが終わりました。",
+    "dehlapakad.result.humanWin": "ゲーム終了！ あなたの組の勝ちです。",
+    "dehlapakad.result.cpuWin": "ゲーム終了！ 相手の組の勝ちです。",
+    "dehlapakad.errTrumpSuit": "切り札のスートが不正です（1=♠ 2=♣ 3=♥ 4=♦）。",
+    "dehlapakad.errCardRange": "カードの番号が範囲外です。",
+    "dehlapakad.hintRequested": "ヒントがあります。",
+    "dehlapakad.noHint": "ヒントはありません。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

@@ -618,5 +618,7 @@
   "numberOfSeatsRequired34": "席数を指定してください (3 または 4)。",
   "invalidNumberOfSeats34": "席数が不正です。3 または 4 を入力してください。",
   "numberOfDealsRequired18": "配る回数を指定してください (1-8)。",
-  "invalidNumberOfDeals18": "配る回数が不正です: {{val}}。1-8 を入力してください。"
+  "invalidNumberOfDeals18": "配る回数が不正です: {{val}}。1-8 を入力してください。",
+  "targetKotsRequired": "コート数を指定してください。",
+  "invalidTargetKots": "コート数が不正です: {{val}}。"
 }

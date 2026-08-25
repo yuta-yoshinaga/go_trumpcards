@@ -1,0 +1,62 @@
+{
+  "title": "Dehla Pakad",
+  "phase": {
+    "selectTrump": "Calling trump",
+    "play": "Play",
+    "handEnd": "Hand end",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "targetKots": "Kots to win",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "hand": "Hand {{n}} (first to {{target}} kot)",
+  "trump": "Trump: {{suit}}",
+  "trick": "Trick {{n}}/{{total}}",
+  "suit": {
+    "spade": "Spades",
+    "club": "Clubs",
+    "heart": "Hearts",
+    "diamond": "Diamonds",
+    "unknown": "-"
+  },
+  "currentTrick": "Current trick",
+  "centrePile": "{{n}} card(s) in the centre, {{tens}} of them ten(s)",
+  "pileGoesTo": "{{name}} takes the whole pile by winning the next trick too.",
+  "teamTens": "Tens - yours {{a}} / theirs {{b}}",
+  "teamKots": "Kots - yours {{a}} / theirs {{b}}",
+  "streak": "Team {{team}} has won {{n}} in a row (seven takes a kot)",
+  "team": "team {{n}}",
+  "cards": "{{count}} cards",
+  "dealerBadge": "Dealer",
+  "callTrump": "Call the trump (only your first five cards are dealt)",
+  "handResult": "Hand over - team {{team}} wins (tens {{a}} to {{b}})",
+  "kot": {
+    "allTens": "Kot! All four tens taken.",
+    "streak": "Kot! Seven hands in a row.",
+    "": ""
+  },
+  "winner": "Team {{team}} takes the match",
+  "playButton": "Play",
+  "nextHand": "Next hand",
+  "restrictedTooltip": "You must follow the led suit.",
+  "hintAvailable": "Hint",
+  "hint": {
+    "call_longest": "it is your longest suit in these five",
+    "take_the_ten": "winning this puts the pile's tens within reach",
+    "keep_the_lead": "win the next one too and the pile is yours",
+    "next_hand": "move on to the next hand",
+    "none": "no suggestion right now"
+  },
+  "tutorial": {
+    "centre": "**Winning a trick does not give you its cards.** They pile up here and are gathered in only when **the same player wins two tricks in a row** (the last trick is the one exception). How many tens are sitting here is what the next trick is really for.",
+    "scores": "The hand is decided by **how many of the four tens you take**, and the judgement is asymmetric: the non-dealer's side wins with two, the dealer's side needs three. Taking all four — or winning seven hands in a row — is a \"kot\".",
+    "playerHand": "Your hand. You must follow the led suit, and only the legal cards are highlighted. Your partner is CPU 2 opposite; your neighbours are always opponents.",
+    "playButton": "Select a card and press Play. The question is never \"can I take it\" but **can I take this one and the next**.",
+    "resetButton": "The reset button starts a new game."
+  }
+}

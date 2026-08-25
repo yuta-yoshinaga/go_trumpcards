@@ -10,6 +10,7 @@ import type {
   CinchResponse,
   CoincheResponse,
   CourtPieceResponse,
+  DehlaPakadResponse,
   DoppelkopfResponse,
   EcarteResponse,
   EscobaResponse,
@@ -4579,4 +4580,90 @@ const baseQuodlibetState: QuodlibetResponse = {
  */
 export function makeQuodlibetState(overrides?: Partial<QuodlibetResponse>): QuodlibetResponse {
   return { ...baseQuodlibetState, ...overrides };
+}
+
+/** One 52-card Dehla Pakad card. */
+const dpCard = (design: 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND', value: number) => ({
+  design,
+  value,
+  color: design === 'HEART' || design === 'DIAMOND' ? 'red' : 'black',
+});
+
+/** A CPU seat; cards are hidden. */
+const dpCpuSeat = (id: number, isDealer = false, isTrumpChooser = false) => ({
+  id,
+  isHuman: false,
+  team: id % 2,
+  cardCount: 5,
+  cards: [],
+  gatheredCount: 0,
+  isDealer,
+  isTrumpChooser,
+});
+
+/**
+ * Base Dehla Pakad state used as the default for {@link makeDehlaPakadState}.
+ * Defaults to the human calling the trump from the first five cards, which is
+ * where a fresh game opens (seat 3 deals, so seat 0 calls).
+ */
+const baseDehlaPakadState: DehlaPakadResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      team: 0,
+      cardCount: 5,
+      cards: [dpCard('SPADE', 1), dpCard('SPADE', 10), dpCard('HEART', 13), dpCard('CLOVER', 4), dpCard('DIAMOND', 7)],
+      gatheredCount: 0,
+      isDealer: false,
+      isTrumpChooser: true,
+    },
+    dpCpuSeat(1),
+    dpCpuSeat(2),
+    dpCpuSeat(3, true),
+  ],
+  phase: 'selectTrump',
+  handNumber: 1,
+  dealerIdx: 3,
+  trumpChooserIdx: 0,
+  trumpSuit: -1,
+  trumpSuitName: 'unknown',
+  trickNumber: 1,
+  trickCount: 13,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
+  prevTrickWinner: -1,
+  centrePileCount: 0,
+  centrePileTens: 0,
+  playableIndices: [],
+  teamTens: [0, 0],
+  teamKots: [0, 0],
+  humanTeam: 0,
+  streakTeam: -1,
+  streakCount: 0,
+  lastHand: null,
+  handHistory: [],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  isTrumpPhase: true,
+  hint: null,
+  hintTrumpSuit: -1,
+  config: { cpuDifficulty: 1, targetKots: 2 },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link DehlaPakadResponse} with sensible defaults (the human
+ * calling the trump on the first hand).
+ *
+ * @param overrides - Partial DehlaPakadResponse fields to override.
+ * @returns A complete DehlaPakadResponse suitable for use in tests.
+ */
+export function makeDehlaPakadState(overrides?: Partial<DehlaPakadResponse>): DehlaPakadResponse {
+  return { ...baseDehlaPakadState, ...overrides };
 }
