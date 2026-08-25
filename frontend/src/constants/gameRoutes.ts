@@ -2049,6 +2049,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 4, 3, 3], skill: [2, 3, 5, 4], social: [3, 3, 5, 4, 2], theme: [1, 5, 2, 1, 2, 5] },
       },
       {
+        path: '/cirulla',
+        labelKey: 'nav.cirulla',
+        icon: '🐟',
+        page: 'Cirulla',
+        profile: { mood: [4, 4, 4, 3], skill: [4, 4, 4, 3], social: [3, 3, 4, 4, 2], theme: [2, 4, 2, 1, 3, 4] },
+      },
+      {
         path: '/shengji',
         labelKey: 'nav.shengji',
         icon: '🚜',

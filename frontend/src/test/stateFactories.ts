@@ -8,6 +8,7 @@ import type {
   CallBreakResponse,
   CegoResponse,
   CinchResponse,
+  CirullaResponse,
   CoincheResponse,
   CourtPieceResponse,
   DehlaPakadResponse,
@@ -4761,4 +4762,78 @@ const baseSutdaState: SutdaResponse = {
  */
 export function makeSutdaState(overrides?: Partial<SutdaResponse>): SutdaResponse {
   return { ...baseSutdaState, ...overrides };
+}
+
+/** One 40-card Italian card for Cirulla. */
+const cirCard = (design: 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND', value: number) => ({
+  design,
+  value,
+  color: design === 'HEART' || design === 'DIAMOND' ? 'red' : 'black',
+});
+
+/**
+ * Base Cirulla state used as the default for {@link makeCirullaState}.
+ * Defaults to the human on turn with four cards on the table.
+ */
+const baseCirullaState: CirullaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cards: [cirCard('SPADE', 3), cirCard('HEART', 5), cirCard('DIAMOND', 1)],
+      cardCount: 3,
+      capturedCount: 0,
+      denariCount: 0,
+      hasSetteBello: false,
+      scope: 0,
+      bonusPoints: 0,
+      score: 0,
+      isDealer: false,
+      lastBonus: '',
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cards: [],
+      cardCount: 3,
+      capturedCount: 0,
+      denariCount: 0,
+      hasSetteBello: false,
+      scope: 0,
+      bonusPoints: 0,
+      score: 0,
+      isDealer: true,
+      lastBonus: '',
+    },
+  ],
+  phase: 'play',
+  roundNumber: 1,
+  dealerIdx: 1,
+  currentPlayerIdx: 0,
+  table: [cirCard('CLOVER', 7), cirCard('DIAMOND', 12), cirCard('SPADE', 2), cirCard('HEART', 6)],
+  deckRemaining: 30,
+  lastCapturer: -1,
+  // 手札 0 (♠3) は場の [2] を取れる。手札 2 (♦A) は場を総取りできる。
+  captureOptions: [[[2]], [], [[0, 1, 2, 3]]],
+  lastResult: null,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  isHumanTurn: true,
+  hintHandIdx: -1,
+  hintCaptureIdxs: [],
+  hintReason: '',
+  config: { cpuDifficulty: 1, targetScore: 51 },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link CirullaResponse} with sensible defaults (the human on turn
+ * with four cards on the table).
+ *
+ * @param overrides - Partial CirullaResponse fields to override.
+ * @returns A complete CirullaResponse suitable for use in tests.
+ */
+export function makeCirullaState(overrides?: Partial<CirullaResponse>): CirullaResponse {
+  return { ...baseCirullaState, ...overrides };
 }

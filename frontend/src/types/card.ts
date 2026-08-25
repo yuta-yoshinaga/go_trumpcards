@@ -69,6 +69,7 @@ export * from './games/chinesepoker';
 export * from './games/chineseten';
 export * from './games/cinch';
 export * from './games/cincinnati';
+export * from './games/cirulla';
 export * from './games/clocksolitaire';
 export * from './games/coinche';
 export * from './games/colorado';

@@ -1815,4 +1815,9 @@ func init() {
 			return usecase.NewSutdaInteractor(domain.NewDefaultSutda(), new(presenter.SutdaWebPresenter))
 		},
 		controller.NewSutdaWebController)
+	BindWebControllerFor("cirulla",
+		func() usecase.CirullaInteractorIF {
+			return usecase.NewCirullaInteractor(domain.NewDefaultCirulla(), new(presenter.CirullaWebPresenter))
+		},
+		controller.NewCirullaWebController)
 }

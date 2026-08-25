@@ -365,4 +365,12 @@ func init() {
 			return usecase.RestoreCoincheInteractor(data, new(presenter.CoincheWebPresenter))
 		},
 		controller.NewCoincheWebControllerWithProvider)
+	games.RegisterKVGame("cirulla", games.CategoryExtra3,
+		func() usecase.CirullaInteractorIF {
+			return usecase.NewCirullaInteractor(domain.NewDefaultCirulla(), new(presenter.CirullaWebPresenter))
+		},
+		func(data []byte) (usecase.CirullaInteractorIF, error) {
+			return usecase.RestoreCirullaInteractor(data, new(presenter.CirullaWebPresenter))
+		},
+		controller.NewCirullaWebControllerWithProvider)
 }

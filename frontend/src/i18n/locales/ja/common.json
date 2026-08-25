@@ -173,6 +173,7 @@
     "quodlibet": "クオドリベット",
     "dehlapakad": "デーラ・パカド",
     "sutda": "ソッタ",
+    "cirulla": "チルッラ",
     "kemps": "ケムプス",
     "kille": "キッレ",
     "king": "キング",
@@ -2579,7 +2580,17 @@
     "sutda.errCannotRaise": "これ以上レイズできません。",
     "sutda.errUnknownAction": "その行動は選べません: {{action}}。",
     "sutda.hintRequested": "ヒントがあります。",
-    "sutda.noHint": "ヒントはありません。"
+    "sutda.noHint": "ヒントはありません。",
+    "cirulla.playPhase": "札を出してください。",
+    "cirulla.playPhase.canCapture": "取れる札があります。取れるときは場に置けません。",
+    "cirulla.roundEnd": "ラウンドが終わりました。",
+    "cirulla.result.humanWin": "ゲーム終了！ あなたの勝ちです。",
+    "cirulla.result.cpuWin": "ゲーム終了！ CPU の勝ちです。",
+    "cirulla.errCardRange": "カードの番号が範囲外です。",
+    "cirulla.errMustCapture": "取れる札があるときは置けません。",
+    "cirulla.errInvalidCapture": "その組み合わせでは取れません。",
+    "cirulla.hintRequested": "ヒントがあります。",
+    "cirulla.noHint": "ヒントはありません。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

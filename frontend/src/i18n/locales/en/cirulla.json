@@ -1,0 +1,61 @@
+{
+  "title": "Cirulla",
+  "phase": {
+    "play": "Play",
+    "roundEnd": "Round end",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "targetScore": "Target score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}} (playing to {{target}})",
+  "deck": "{{n}} left in stock",
+  "tableLabel": "Table",
+  "tableEmpty": "(empty)",
+  "chooseCapture": "Choose what to take",
+  "noCapture": "This card captures nothing - you may lay it off.",
+  "takeGroup": "Take {{cards}}",
+  "layOffButton": "Lay off",
+  "score": "{{n}} pts",
+  "taken": "{{n}} taken ({{denari}} denari)",
+  "scope": "{{n}} scopa",
+  "dealerBadge": "Dealer",
+  "bonus": {
+    "barsega": "Barsega (total 9 or less) +3",
+    "barsegon": "Barsegon (three of a kind) +10"
+  },
+  "roundResult": "Round scoring",
+  "score.cards": "Most cards",
+  "roundTotal": "Round total: {{a}} - {{b}}",
+  "sweptDenari": "{{name}} took every denaro - that wins outright.",
+  "winner": "{{name}} wins",
+  "nextRound": "Next round",
+  "restrictedTooltip": "You cannot play that card right now.",
+  "hintAvailable": "Hint",
+  "hint": {
+    "capture": "it pulls in cards that score",
+    "sweep": "it clears the table (scopa)",
+    "lay_off": "nothing can be captured, so lay off cheaply",
+    "next_round": "move on to the next round",
+    "none": "no suggestion right now"
+  },
+  "tutorial": {
+    "table": "The table cards are numbered. Pick a card from your hand and **the groups it can take** appear as choices - a single card of the same value, a set summing to your card, a set that **plus your card makes fifteen**, and an **ace sweeping the whole table** when no ace lies on it. **Unlike Scopa, a same-value card on the table does not shut the other captures out.**",
+    "scores": "Points come from most cards, most denari, the 7 of diamonds, primiera, piccola, grande, scope and the deal bonuses. First to **51** wins - but **taking all ten denari wins outright**.",
+    "playerHand": "Your hand. **You cannot lay a card off while a capture is available.**",
+    "playButton": "Pick a card, then press the group you want to take. \"Lay off\" appears only when nothing can be captured.",
+    "resetButton": "The reset button starts a new game."
+  },
+  "score.denari": "Most denari",
+  "score.settebello": "Settebello (7 of diamonds)",
+  "score.primiera": "Primiera",
+  "score.piccola": "Piccola",
+  "score.grande": "Grande",
+  "score.scope": "Scope",
+  "score.bonus": "Deal bonuses"
+}

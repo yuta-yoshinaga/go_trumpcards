@@ -422,6 +422,8 @@ tags:
     description: 'Dehla Pakad - the Indian "catch the tens" partnership trick-taker; cards are gathered only on two consecutive tricks'
   - name: sutda
     description: 'Sutda - the Korean two-card betting game on a 20-card hanafuda pack; 38 gwang-ttaeng is the top hand'
+  - name: cirulla
+    description: 'Cirulla - the Ligurian fishing game; Scopa captures plus sum-to-fifteen and the asso pigliatutto'
   - name: literature
     description: Literature
   - name: guandan
@@ -20893,6 +20895,114 @@ paths:
                   command: play
                   cardIndex: 0
                   declare: true
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /cirulla/exec:
+    post:
+      tags:
+        - cirulla
+      summary: Execute a Cirulla game command
+      description: |
+        Send a command to advance the Cirulla session identified by
+        `sessionId`. Cirulla is the Ligurian cousin of Scopa on the same
+        40-card Italian pack (A-7 plus J-Q-K worth 8, 9 and 10), played
+        two-handed here with three cards each and four on the table.
+
+        **The sum-to-fifteen capture is added to Scopa's, not a replacement.**
+        A played card still takes a single card of the same value, or a set
+        summing to its own value; on top of that it may take a set whose total
+        *plus the played card* makes fifteen. An **ace played to a table with
+        no ace on it sweeps the whole table**.
+
+        Because those three rules interact, the server enumerates the legal
+        captures rather than leaving a client to re-derive them:
+        `captureOptions[i]` holds the legal table-index groups for the human's
+        i-th card, in hand order, and is empty while it is not their turn.
+        Send the chosen group as `captureIndices` alongside `handIndex`; omit
+        it to lay the card off, which is refused when a capture is available.
+
+        **Every deal of three carries a bonus, not just the first**: barsega
+        (the three total 9 or less) for 3 points and barsegon (three of a kind)
+        for 10, reported per seat in `players[].lastBonus`. Round scoring
+        (`lastResult.lines`) runs cards, denari, settebello, primiera, piccola
+        and grande, plus scope and the deal bonuses. Play is to
+        `config.targetScore`, and taking all ten denari (`lastResult
+        .sweptDenari`) wins outright.
+      operationId: cirullaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), play (p), nextround (nr), hint, log, quit (q)"
+                handIndex:
+                  type: integer
+                  description: Index of the card to play. Required for play.
+                captureIndices:
+                  type: array
+                  items:
+                    type: integer
+                  description: >-
+                    Table indices to capture, taken from captureOptions. Omit
+                    to lay the card off; laying off is refused when a capture
+                    is available.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0 = Easy, 1 = Normal, 2 = Hard.
+                    targetScore:
+                      type: integer
+                      description: Points needed to win, 11-51.
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new match
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              layOff:
+                summary: Lay the card at index 0 on the table
+                value:
+                  command: play
+                  handIndex: 0
+                  sessionId: my-session-001
+              capture:
+                summary: Capture table cards 1 and 2 with hand card 0
+                value:
+                  command: play
+                  handIndex: 0
+                  captureIndices: [1, 2]
                   sessionId: my-session-001
       responses:
         '200':
