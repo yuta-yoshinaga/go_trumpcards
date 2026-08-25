@@ -30,7 +30,7 @@ describe('useBoliviaGame', () => {
   it('calls reset on mount with default config', async () => {
     renderHook(() => useBoliviaGame(), { wrapper: createWrapper() });
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pointLimit: 10000 }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pointLimit: 15000 }),
     );
   });
 
@@ -183,7 +183,8 @@ describe('useBoliviaGame', () => {
     act(() => {
       result.current.handleConfigChange('pointLimit', 'abc');
     });
-    expect(result.current.boliviaConfig.pointLimit).toBe(10000);
+    // **サンバの 10000 ではない。** ドメインの既定と一致していること。
+    expect(result.current.boliviaConfig.pointLimit).toBe(15000);
   });
 
   it('clears selection on success', async () => {

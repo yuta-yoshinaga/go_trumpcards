@@ -5,10 +5,17 @@ import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
 
-/** Default Bolivia game configuration. */
+/**
+ * Default Bolivia game configuration.
+ *
+ * **The target is 15000, not Samba's 10000.** This value is sent on reset, so
+ * leaving the cloned 10000 here made the Web GUI play a different game from
+ * the CUI and from every line of the docs — the domain default
+ * (`BoliviaDefaultPointLimit`) is 15000.
+ */
 export const DEFAULT_BOLIVIA_CONFIG: BoliviaConfig = {
   cpuDifficulty: 1,
-  pointLimit: 10000,
+  pointLimit: 15000,
 };
 
 /** CPU difficulty level options for Bolivia. */
