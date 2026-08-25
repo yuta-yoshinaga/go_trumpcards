@@ -172,6 +172,7 @@
     "unsunkaruta": "Unsun Karuta",
     "quodlibet": "Quodlibet",
     "dehlapakad": "Dehla Pakad",
+    "sutda": "Sutda",
     "kemps": "Kemps",
     "kille": "Kille",
     "king": "King",
@@ -2568,7 +2569,17 @@
     "dehlapakad.errTrumpSuit": "Invalid trump suit (1=spade 2=club 3=heart 4=diamond).",
     "dehlapakad.errCardRange": "That card number is out of range.",
     "dehlapakad.hintRequested": "A hint is available.",
-    "dehlapakad.noHint": "No hint available."
+    "dehlapakad.noHint": "No hint available.",
+    "sutda.betPhase": "Choose your action.",
+    "sutda.betPhase.toCall": "There are chips to call.",
+    "sutda.showdown.won": "Showdown! You take the pot.",
+    "sutda.showdown.lost": "Showdown! The pot goes elsewhere.",
+    "sutda.result.humanWin": "Game over! You take the table.",
+    "sutda.result.cpuWin": "Game over! A CPU takes the table.",
+    "sutda.errCannotRaise": "You cannot raise any further.",
+    "sutda.errUnknownAction": "That action is not available: {{action}}.",
+    "sutda.hintRequested": "A hint is available.",
+    "sutda.noHint": "No hint available."
   },
   "manual": {
     "ariaLabel": "Game Manual",

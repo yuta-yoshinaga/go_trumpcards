@@ -615,6 +615,17 @@ export const DehlaPakadPhase = {
   GAME_END: 'gameEnd',
 } as const;
 
+/**
+ * Sutda phase constants (sync: internal/domain/Sutda.go).
+ *
+ * **These are strings, not indices.**
+ */
+export const SutdaPhase = {
+  BET: 'bet',
+  SHOWDOWN: 'showdown',
+  GAME_END: 'gameEnd',
+} as const;
+
 /** Königrufen (ケーニッヒルーフェン) phase constants (sync: internal/domain/Koenigrufen.go). */
 export const KoenigrufenPhase = {
   BID: 0,

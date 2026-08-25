@@ -297,6 +297,7 @@ import type {
   StreetsAndAlleysResponse,
   SuecaResponse,
   SultanResponse,
+  SutdaResponse,
   TablanetResponse,
   TarabishResponse,
   TarneebResponse,
@@ -650,6 +651,7 @@ import { getStHelenaHint } from '../utils/hints/sthelenaHint';
 import { getStreetsandalleysHint } from '../utils/hints/streetsandalleysHint';
 import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getSultanHint } from '../utils/hints/sultanHint';
+import { getSutdaHint } from '../utils/hints/sutdaHint';
 import { getTablanetHint } from '../utils/hints/tablanetHint';
 import { getTarabishHint } from '../utils/hints/tarabishHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
@@ -881,6 +883,7 @@ export const hintFactories = {
   unsunkaruta: (s) => getUnsunKarutaHint(s as UnsunKarutaResponse),
   quodlibet: (s) => getQuodlibetHint(s as QuodlibetResponse),
   dehlapakad: (s) => getDehlaPakadHint(s as DehlaPakadResponse),
+  sutda: (s) => getSutdaHint(s as SutdaResponse),
   king: (s) => getKingHint(s as KingResponse),
   flowergarden: (s) => getFlowergardenHint(s as FlowerGardenResponse),
   tonk: (s) => getTonkHint(s as TonkResponse),

@@ -6969,6 +6969,25 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"dehlapakad.helpSetDifficulty", "dehlapakad.helpSetKots"},
 		}),
+	BindCuiFor("sutda",
+		func() usecase.SutdaInteractorIF {
+			return usecase.NewSutdaInteractor(domain.NewDefaultSutda(), new(presenter.SutdaCuiPresenter))
+		},
+		controller.NewSutdaCuiController,
+		CuiHelpSpec{
+			TitleKey: "sutda.helpTitle",
+			ExampleKeys: []string{
+				"sutda.helpExampleCall",
+				"sutda.helpExampleRaise",
+			},
+			CommandKeys: []string{
+				"sutda.helpCall", "sutda.helpRaise",
+				"sutda.helpFold", "sutda.helpNextHand",
+				"sutda.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"sutda.helpSetDifficulty", "sutda.helpSetSeats"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

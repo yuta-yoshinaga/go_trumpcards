@@ -320,6 +320,7 @@ export * from './games/sthelena';
 export * from './games/streetsandalleys';
 export * from './games/sueca';
 export * from './games/sultan';
+export * from './games/sutda';
 export * from './games/tablanet';
 export * from './games/tarabish';
 export * from './games/tarneeb';
@@ -540,6 +541,7 @@ export const games = [
   'unsunkaruta',
   'quodlibet',
   'dehlapakad',
+  'sutda',
   'literature',
   'guandan',
   'shengji',

@@ -2042,6 +2042,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 4, 4, 4], skill: [3, 4, 4, 4], social: [4, 5, 3, 4, 3], theme: [2, 3, 3, 1, 2, 4] },
       },
       {
+        path: '/sutda',
+        labelKey: 'nav.sutda',
+        icon: '🎴',
+        page: 'Sutda',
+        profile: { mood: [5, 4, 3, 3], skill: [2, 3, 5, 4], social: [3, 3, 5, 4, 2], theme: [1, 5, 2, 1, 2, 5] },
+      },
+      {
         path: '/shengji',
         labelKey: 'nav.shengji',
         icon: '🚜',

@@ -57,6 +57,7 @@ import type {
   SpadesResponse,
   SpoilFiveResponse,
   SuecaResponse,
+  SutdaResponse,
   TablanetResponse,
   TarocchiniResponse,
   TeenPattiResponse,
@@ -4666,4 +4667,98 @@ const baseDehlaPakadState: DehlaPakadResponse = {
  */
 export function makeDehlaPakadState(overrides?: Partial<DehlaPakadResponse>): DehlaPakadResponse {
   return { ...baseDehlaPakadState, ...overrides };
+}
+
+/**
+ * One Sutda card.
+ *
+ * **The month does not survive in `design`.** The Go presenter runs every card
+ * through the shared 52-card design mapping, so months 1-4 come back as
+ * SPADE/CLOVER/HEART/DIAMOND and 5-10 all collapse to JOKER — the month lives
+ * in the procedural face's `label`, which is what the page reads. This factory
+ * reproduces that mapping rather than inventing a cleaner one.
+ */
+const sutdaCard = (month: number, copyIdx: number) => {
+  const designs = ['JOKER', 'SPADE', 'CLOVER', 'HEART', 'DIAMOND'] as const;
+  const gwang = copyIdx === 1 && [1, 3, 8].includes(month);
+  return {
+    design: (month <= 4 ? designs[month] : 'JOKER') as (typeof designs)[number],
+    value: copyIdx,
+    glyph: '🎴',
+    label: gwang ? `${month}光` : String(month),
+    color: gwang ? 'gold' : 'black',
+    deck: 'hanafuda',
+  };
+};
+
+/** A CPU seat; cards are hidden until the showdown. */
+const sutdaCpuSeat = (id: number, isDealer = false) => ({
+  id,
+  isHuman: false,
+  cardCount: 2,
+  cards: [],
+  chips: 990,
+  bet: 10,
+  folded: false,
+  revealed: false,
+  handName: '',
+  handRank: 0,
+  isDealer,
+});
+
+/**
+ * Base Sutda state used as the default for {@link makeSutdaState}. Defaults to
+ * the human on turn in the betting round with nothing yet to call.
+ */
+const baseSutdaState: SutdaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 2,
+      cards: [sutdaCard(3, 1), sutdaCard(8, 1)],
+      chips: 990,
+      bet: 10,
+      folded: false,
+      revealed: false,
+      handName: 'gwang38',
+      handRank: 903,
+      isDealer: false,
+    },
+    sutdaCpuSeat(1),
+    sutdaCpuSeat(2, true),
+  ],
+  phase: 'bet',
+  handNumber: 1,
+  dealerIdx: 2,
+  currentPlayerIdx: 0,
+  pot: 30,
+  currentBet: 10,
+  callAmount: 0,
+  canRaise: true,
+  raiseCount: 0,
+  maxRaises: 3,
+  betUnit: 20,
+  humanHandName: 'gwang38',
+  lastResult: null,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  isHumanTurn: true,
+  isShowdown: false,
+  hintAction: '',
+  hintReason: '',
+  config: { cpuDifficulty: 1, seats: 3, startChips: 1000 },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link SutdaResponse} with sensible defaults (the human on turn in
+ * the betting round holding the top hand).
+ *
+ * @param overrides - Partial SutdaResponse fields to override.
+ * @returns A complete SutdaResponse suitable for use in tests.
+ */
+export function makeSutdaState(overrides?: Partial<SutdaResponse>): SutdaResponse {
+  return { ...baseSutdaState, ...overrides };
 }

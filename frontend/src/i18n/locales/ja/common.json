@@ -172,6 +172,7 @@
     "unsunkaruta": "うんすんカルタ",
     "quodlibet": "クオドリベット",
     "dehlapakad": "デーラ・パカド",
+    "sutda": "ソッタ",
     "kemps": "ケムプス",
     "kille": "キッレ",
     "king": "キング",
@@ -2568,7 +2569,17 @@
     "dehlapakad.errTrumpSuit": "切り札のスートが不正です（1=♠ 2=♣ 3=♥ 4=♦）。",
     "dehlapakad.errCardRange": "カードの番号が範囲外です。",
     "dehlapakad.hintRequested": "ヒントがあります。",
-    "dehlapakad.noHint": "ヒントはありません。"
+    "dehlapakad.noHint": "ヒントはありません。",
+    "sutda.betPhase": "行動を選んでください。",
+    "sutda.betPhase.toCall": "コールに追加のチップが要ります。",
+    "sutda.showdown.won": "ショーダウン！ あなたがポットを取りました。",
+    "sutda.showdown.lost": "ショーダウン！ ポットは相手が取りました。",
+    "sutda.result.humanWin": "ゲーム終了！ あなたの勝ちです。",
+    "sutda.result.cpuWin": "ゲーム終了！ CPU の勝ちです。",
+    "sutda.errCannotRaise": "これ以上レイズできません。",
+    "sutda.errUnknownAction": "その行動は選べません: {{action}}。",
+    "sutda.hintRequested": "ヒントがあります。",
+    "sutda.noHint": "ヒントはありません。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
