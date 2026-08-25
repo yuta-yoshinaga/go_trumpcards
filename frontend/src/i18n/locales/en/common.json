@@ -173,6 +173,7 @@
     "quodlibet": "Quodlibet",
     "dehlapakad": "Dehla Pakad",
     "sutda": "Sutda",
+    "cirulla": "Cirulla",
     "kemps": "Kemps",
     "kille": "Kille",
     "king": "King",
@@ -2579,7 +2580,17 @@
     "sutda.errCannotRaise": "You cannot raise any further.",
     "sutda.errUnknownAction": "That action is not available: {{action}}.",
     "sutda.hintRequested": "A hint is available.",
-    "sutda.noHint": "No hint available."
+    "sutda.noHint": "No hint available.",
+    "cirulla.playPhase": "Play a card.",
+    "cirulla.playPhase.canCapture": "A capture is available - you cannot lay off.",
+    "cirulla.roundEnd": "The round is over.",
+    "cirulla.result.humanWin": "Game over! You win.",
+    "cirulla.result.cpuWin": "Game over! The CPU wins.",
+    "cirulla.errCardRange": "That card number is out of range.",
+    "cirulla.errMustCapture": "You must capture when a capture is available.",
+    "cirulla.errInvalidCapture": "That combination cannot be captured.",
+    "cirulla.hintRequested": "A hint is available.",
+    "cirulla.noHint": "No hint available."
   },
   "manual": {
     "ariaLabel": "Game Manual",

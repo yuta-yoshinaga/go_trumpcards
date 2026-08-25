@@ -626,6 +626,17 @@ export const SutdaPhase = {
   GAME_END: 'gameEnd',
 } as const;
 
+/**
+ * Cirulla phase constants (sync: internal/domain/Cirulla.go).
+ *
+ * **These are strings, not indices.**
+ */
+export const CirullaPhase = {
+  PLAY: 'play',
+  ROUND_END: 'roundEnd',
+  GAME_END: 'gameEnd',
+} as const;
+
 /** Königrufen (ケーニッヒルーフェン) phase constants (sync: internal/domain/Koenigrufen.go). */
 export const KoenigrufenPhase = {
   BID: 0,

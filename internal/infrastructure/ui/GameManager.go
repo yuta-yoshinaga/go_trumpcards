@@ -6988,6 +6988,23 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"sutda.helpSetDifficulty", "sutda.helpSetSeats"},
 		}),
+	BindCuiFor("cirulla",
+		func() usecase.CirullaInteractorIF {
+			return usecase.NewCirullaInteractor(domain.NewDefaultCirulla(), new(presenter.CirullaCuiPresenter))
+		},
+		controller.NewCirullaCuiController,
+		CuiHelpSpec{
+			TitleKey: "cirulla.helpTitle",
+			ExampleKeys: []string{
+				"cirulla.helpExamplePlay",
+				"cirulla.helpExampleCapture",
+			},
+			CommandKeys: []string{
+				"cirulla.helpPlay", "cirulla.helpNextRound",
+				"cirulla.helpHint", "cirulla.helpLog",
+			},
+			SettingKeys: []string{"cirulla.helpSetDifficulty", "cirulla.helpSetTarget"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

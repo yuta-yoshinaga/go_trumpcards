@@ -63,6 +63,7 @@ import type {
   ChineseTenResponse,
   CinchResponse,
   CincinnatiResponse,
+  CirullaResponse,
   ClockSolitaireResponse,
   CoincheResponse,
   ColoradoResponse,
@@ -410,6 +411,7 @@ import { getChinesePokerHint } from '../utils/hints/chinesepokerHint';
 import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getCincinnatiHint } from '../utils/hints/cincinnatiHint';
+import { getCirullaHint } from '../utils/hints/cirullaHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCoincheHint } from '../utils/hints/coincheHint';
 import { getColoradoHint } from '../utils/hints/coloradoHint';
@@ -884,6 +886,7 @@ export const hintFactories = {
   quodlibet: (s) => getQuodlibetHint(s as QuodlibetResponse),
   dehlapakad: (s) => getDehlaPakadHint(s as DehlaPakadResponse),
   sutda: (s) => getSutdaHint(s as SutdaResponse),
+  cirulla: (s) => getCirullaHint(s as CirullaResponse),
   king: (s) => getKingHint(s as KingResponse),
   flowergarden: (s) => getFlowergardenHint(s as FlowerGardenResponse),
   tonk: (s) => getTonkHint(s as TonkResponse),
