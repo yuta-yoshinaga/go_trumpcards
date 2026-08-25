@@ -1810,4 +1810,9 @@ func init() {
 			return usecase.NewDehlaPakadInteractor(domain.NewDefaultDehlaPakad(), new(presenter.DehlaPakadWebPresenter))
 		},
 		controller.NewDehlaPakadWebController)
+	BindWebControllerFor("sutda",
+		func() usecase.SutdaInteractorIF {
+			return usecase.NewSutdaInteractor(domain.NewDefaultSutda(), new(presenter.SutdaWebPresenter))
+		},
+		controller.NewSutdaWebController)
 }

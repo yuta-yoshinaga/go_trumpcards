@@ -437,4 +437,12 @@ func init() {
 			return usecase.RestoreSlyFoxInteractor(data, new(presenter.SlyFoxWebPresenter))
 		},
 		controller.NewSlyFoxWebControllerWithProvider)
+	games.RegisterKVGame("sutda", games.CategoryExtra2,
+		func() usecase.SutdaInteractorIF {
+			return usecase.NewSutdaInteractor(domain.NewDefaultSutda(), new(presenter.SutdaWebPresenter))
+		},
+		func(data []byte) (usecase.SutdaInteractorIF, error) {
+			return usecase.RestoreSutdaInteractor(data, new(presenter.SutdaWebPresenter))
+		},
+		controller.NewSutdaWebControllerWithProvider)
 }

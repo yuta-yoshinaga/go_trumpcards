@@ -1,0 +1,83 @@
+{
+  "title": "Sutda",
+  "phase": {
+    "bet": "Betting",
+    "showdown": "Showdown",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "seats": "Seats",
+    "startChips": "Starting chips",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "hand": "Hand {{n}}",
+  "pot": "Pot {{pot}} / current bet {{bet}}",
+  "chips": "{{n}} chips",
+  "bet": "bet {{n}}",
+  "dealerBadge": "Dealer",
+  "folded": "folded",
+  "handName": {
+    "gwang38": "38 Gwang-ttaeng",
+    "gwang18": "18 Gwang-ttaeng",
+    "gwang13": "13 Gwang-ttaeng",
+    "jangttaeng": "Jang-ttaeng (pair of 10)",
+    "ttaeng9": "Pair of 9",
+    "ttaeng8": "Pair of 8",
+    "ttaeng7": "Pair of 7",
+    "ttaeng6": "Pair of 6",
+    "ttaeng5": "Pair of 5",
+    "ttaeng4": "Pair of 4",
+    "ttaeng3": "Pair of 3",
+    "ttaeng2": "Pair of 2",
+    "ttaeng1": "Pair of 1",
+    "ali": "Ali (1+2)",
+    "doksa": "Doksa (1+4)",
+    "gupping": "Gu-pping (1+9)",
+    "jangpping": "Jang-pping (1+10)",
+    "jangsa": "Jangsa (4+10)",
+    "seryuk": "Seryuk (4+6)",
+    "gabo": "Gabo (9 kkeut)",
+    "kkeut8": "8 kkeut",
+    "kkeut7": "7 kkeut",
+    "kkeut6": "6 kkeut",
+    "kkeut5": "5 kkeut",
+    "kkeut4": "4 kkeut",
+    "kkeut3": "3 kkeut",
+    "kkeut2": "2 kkeut",
+    "kkeut1": "1 kkeut",
+    "mangtong": "Mangtong (0 kkeut)",
+    "none": "-"
+  },
+  "toCall": "{{n}} to call.",
+  "canCheck": "Nothing to call - you may check.",
+  "callButton": "Call ({{n}})",
+  "checkButton": "Check",
+  "raiseButton": "Raise (+{{n}})",
+  "foldButton": "Fold",
+  "nextHand": "Next hand",
+  "showdownResult": "Showdown: {{names}} takes {{pot}}.",
+  "winner": "{{name}} takes the table",
+  "action": {
+    "call": "call",
+    "raise": "raise",
+    "fold": "fold"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "strong_hand": "the hand is strong enough to build the pot",
+    "stay_in": "it is not bad enough to give up on",
+    "weak_hand": "that is too much to pay with this hand",
+    "next_hand": "move on to the next hand",
+    "none": "no suggestion right now"
+  },
+  "tutorial": {
+    "table": "Every seat's chips and current bet. **Opponents' cards stay hidden until the showdown**, and a seat that has given up is marked folded.",
+    "hand": "Your two cards and what they make. **Only months 1, 3 and 8 carry a gwang (bright)** - hanafuda's brights are months 1, 3, 8, 11 and 12, and 11-12 are not in a 20-card pack, so the top hand has exactly three forms: 38, 18 and 13.",
+    "actions": "Call (a check when nothing is owed), raise (three times per hand at most), or fold. **The weakest named pair still beats the strongest kkeut.**",
+    "resetButton": "The reset button starts a new game."
+  }
+}

@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した359種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した360種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -375,6 +375,7 @@ Go + Clean Architecture で実装した359種類のトランプゲーム。CLI �
 | うんすんカルタ (Unsun Karuta) | `unsunkaruta` | [CUI](docs/manual/cui/unsunkaruta.md) / [Web](docs/manual/web/unsunkaruta.md) |
 | クオドリベット (Quodlibet) | `quodlibet` | [CUI](docs/manual/cui/quodlibet.md) / [Web](docs/manual/web/quodlibet.md) |
 | デーラ・パカド (Dehla Pakad) | `dehlapakad` | [CUI](docs/manual/cui/dehlapakad.md) / [Web](docs/manual/web/dehlapakad.md) |
+| ソッタ (Sutda) | `sutda` | [CUI](docs/manual/cui/sutda.md) / [Web](docs/manual/web/sutda.md) |
 | リテラチャー (Literature) | `literature` | [CUI](docs/manual/cui/literature.md) / [Web](docs/manual/web/literature.md) |
 | 掼蛋 (Guandan) | `guandan` | [CUI](docs/manual/cui/guandan.md) / [Web](docs/manual/web/guandan.md) |
 | 升级 / 拖拉机 (Sheng Ji) | `shengji` | [CUI](docs/manual/cui/shengji.md) / [Web](docs/manual/web/shengji.md) |

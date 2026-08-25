@@ -420,6 +420,8 @@ tags:
     description: 'Quodlibet - the Austrian compendium game; twelve deals in three wheels of four contracts, lowest penalty wins'
   - name: dehlapakad
     description: 'Dehla Pakad - the Indian "catch the tens" partnership trick-taker; cards are gathered only on two consecutive tricks'
+  - name: sutda
+    description: 'Sutda - the Korean two-card betting game on a 20-card hanafuda pack; 38 gwang-ttaeng is the top hand'
   - name: literature
     description: Literature
   - name: guandan
@@ -20891,6 +20893,107 @@ paths:
                   command: play
                   cardIndex: 0
                   declare: true
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /sutda/exec:
+    post:
+      tags:
+        - sutda
+      summary: Execute a Sutda game command
+      description: |
+        Send a command to advance the Sutda session identified by `sessionId`.
+        Sutda is played on a **20-card hanafuda pack — months 1 to 10, two
+        cards each** — and every player holds exactly two cards.
+
+        **Only months 1, 3 and 8 contain a gwang (bright).** Hanafuda's brights
+        are months 1, 3, 8, 11 and 12, and 11-12 are not in a 1-10 pack, so
+        there are exactly three gwang-ttaeng: 38 > 18 > 13. Cards come back
+        with `deck: "hanafuda"` and a procedural face whose label carries the
+        bright mark, because month alone does not identify the card.
+
+        **Hand ranking, highest first:** gwang-ttaeng (38, 18, 13), ttaeng
+        (same-month pairs, 10 down to 1), the named pairs ali (1+2), doksa
+        (1+4), gu-pping (1+9), jang-pping (1+10), jangsa (4+10), seryuk (4+6),
+        and finally kkeut — the last digit of the two months added, gabo (9)
+        down to mangtong (0). The weakest named pair still beats the strongest
+        kkeut. `players[].handName` and `humanHandName` carry the stable
+        identifier for i18n.
+
+        **Opponents' cards stay hidden until the showdown.** `players[].cards`
+        is populated only for the human and for seats whose `revealed` is true.
+        One betting round on an ante: `callAmount` is what the human owes (0
+        means check), `canRaise` already accounts for the three-raise cap and
+        the seat's chips, and ties split the pot.
+      operationId: sutdaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), call, raise, fold, action (a), nexthand (nh), hint, log, quit (q)"
+                action:
+                  type: string
+                  description: >-
+                    call, raise or fold. Required for the action command; the
+                    three are also accepted as commands in their own right.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0 = Easy, 1 = Normal, 2 = Hard.
+                    seats:
+                      type: integer
+                      description: Seats at the table, 2-5 (human plus CPUs).
+                    startChips:
+                      type: integer
+                      description: Starting chips per seat, 100-10000.
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new table
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              call:
+                summary: Call the current bet
+                value:
+                  command: call
+                  sessionId: my-session-001
+              raise:
+                summary: Raise by one unit
+                value:
+                  command: action
+                  action: raise
                   sessionId: my-session-001
       responses:
         '200':
