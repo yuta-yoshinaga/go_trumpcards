@@ -154,6 +154,7 @@ export const workerUrl: Record<string, string> = {
   comet: WORKER_SOLO,
   costlycolours: WORKER_EXTRA,
   baccaratbanque: WORKER_EXTRA2,
+  continentalrummy: WORKER_EXTRA2,
   literature: WORKER_EXTRA4,
   guandan: WORKER_EXTRA4,
   aluette: WORKER_EXTRA2,

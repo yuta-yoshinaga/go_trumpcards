@@ -1840,4 +1840,9 @@ func init() {
 			return usecase.NewBaccaratBanqueInteractor(domain.NewDefaultBaccaratBanque(), new(presenter.BaccaratBanqueWebPresenter))
 		},
 		controller.NewBaccaratBanqueWebController)
+	BindWebControllerFor("continentalrummy",
+		func() usecase.ContinentalRummyInteractorIF {
+			return usecase.NewContinentalRummyInteractor(domain.NewDefaultContinentalRummy(), new(presenter.ContinentalRummyWebPresenter))
+		},
+		controller.NewContinentalRummyWebController)
 }

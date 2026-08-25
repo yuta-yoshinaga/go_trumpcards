@@ -290,6 +290,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 3, 4, 3], skill: [3, 4, 3, 4], social: [4, 4, 3, 3, 3], theme: [5, 1, 1, 2, 3, 1] },
       },
       {
+        path: '/continentalrummy',
+        labelKey: 'nav.continentalrummy',
+        icon: '🪜',
+        page: 'ContinentalRummy',
+        profile: { mood: [4, 4, 3, 3], skill: [4, 4, 4, 3], social: [3, 4, 4, 3, 3], theme: [2, 3, 2, 1, 3, 4] },
+      },
+      {
         path: '/crazyfourpoker',
         labelKey: 'nav.crazyfourpoker',
         icon: '🃏',

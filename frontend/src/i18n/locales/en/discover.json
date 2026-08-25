@@ -450,7 +450,8 @@
     "zheng": "Zheng Shangyou (争上游). The traditional Chinese climbing game that fathered Daifugo and Big Two. Four players split a 54-card deck (jokers included) and race to shed their hands, beating the table with singles, pairs, triples, straights, and pair runs — or passing. Strength runs 3<4<…<K<A<2<small joker<big joker, and suits never matter. A four-of-a-kind bomb tops any normal play, and the two-joker bomb beats everything. Finish order sets ranks 1st through 4th.",
     "zwanzigerrufen": "Austrian calling tarock. The declarer calls trump XX and whoever holds it is a secret ally; if everyone passes, taking the most points loses.",
     "zwicker": "A north-German fishing game on 55 cards. Aces and court cards each carry two values and you pick which.",
-    "baccaratbanque": "Baccarat Banque is the French form where **one bank plays two tableaux at once**, out of a three-pack shoe. **A loss does not move the bank** - unlike Chemin de Fer, the seat is yours until the shoe runs out or you retire."
+    "baccaratbanque": "Baccarat Banque is the French form where **one bank plays two tableaux at once**, out of a three-pack shoe. **A loss does not move the bank** - unlike Chemin de Fer, the seat is yours until the shoe runs out or you retire.",
+    "continentalrummy": "Continental Rummy is the rummy where **sets count for nothing**. All fifteen cards must be sequences, and they go down **all at once** - in one of exactly three shapes: 3+3+3+3+3, 4+4+4+3 or 5+4+3+3. **Three fives totals fifteen and is still not a go-out.**"
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -817,6 +818,7 @@
     "zheng": "The Chinese ancestor of Daifugo — suits never matter, and bombs or the joker bomb can flip the table.",
     "zwanzigerrufen": "Twelve tricks without knowing who is on your side.",
     "zwicker": "Clearing the table is a \"Zwick\", worth 1. A deal pays exactly 30, and level card counts leave the majority three unawarded.",
-    "baccaratbanque": "One bank against a right and a left tableau; a loss never costs you the seat."
+    "baccaratbanque": "One bank against a right and a left tableau; a loss never costs you the seat.",
+    "continentalrummy": "No sets at all - fifteen cards of pure sequences, laid down in one move."
   }
 }

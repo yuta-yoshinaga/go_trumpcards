@@ -84,6 +84,7 @@ export * from './games/colourwhist';
 export * from './games/comet';
 export * from './games/congress';
 export * from './games/conquian';
+export * from './games/continentalrummy';
 export * from './games/contractrummy';
 export * from './games/costlycolours';
 export * from './games/courchevel';
@@ -552,6 +553,7 @@ export const games = [
   'comet',
   'costlycolours',
   'baccaratbanque',
+  'continentalrummy',
   'literature',
   'guandan',
   'shengji',

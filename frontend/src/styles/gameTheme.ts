@@ -42,6 +42,7 @@ export type GameKey =
   | 'rikken'
   | 'colourwhist'
   | 'baccaratbanque'
+  | 'continentalrummy'
   | 'chemindefer'
   | 'crazyfourpoker'
   | 'doubleattack'
@@ -660,6 +661,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   rikken: BLUE,
   colourwhist: GREEN,
   baccaratbanque: GREEN,
+  continentalrummy: GREEN,
   chemindefer: GREEN,
   crazyfourpoker: GREEN,
   doubleattack: GREEN,

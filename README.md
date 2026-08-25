@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した365種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した366種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -381,6 +381,7 @@ Go + Clean Architecture で実装した365種類のトランプゲーム。CLI �
 | コメット (Comet) | `comet` | [CUI](docs/manual/cui/comet.md) / [Web](docs/manual/web/comet.md) |
 | コストリー・カラーズ (Costly Colours) | `costlycolours` | [CUI](docs/manual/cui/costlycolours.md) / [Web](docs/manual/web/costlycolours.md) |
 | バカラ・バンク (Baccarat Banque) | `baccaratbanque` | [CUI](docs/manual/cui/baccaratbanque.md) / [Web](docs/manual/web/baccaratbanque.md) |
+| コンチネンタル・ラミー (Continental Rummy) | `continentalrummy` | [CUI](docs/manual/cui/continentalrummy.md) / [Web](docs/manual/web/continentalrummy.md) |
 | リテラチャー (Literature) | `literature` | [CUI](docs/manual/cui/literature.md) / [Web](docs/manual/web/literature.md) |
 | 掼蛋 (Guandan) | `guandan` | [CUI](docs/manual/cui/guandan.md) / [Web](docs/manual/web/guandan.md) |
 | 升级 / 拖拉机 (Sheng Ji) | `shengji` | [CUI](docs/manual/cui/shengji.md) / [Web](docs/manual/web/shengji.md) |

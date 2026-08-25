@@ -72,6 +72,7 @@ import type {
   CometResponse,
   CongressResponse,
   ConquianResponse,
+  ContinentalRummyResponse,
   ContractRummyResponse,
   CostlyColoursResponse,
   CourtPieceResponse,
@@ -424,6 +425,7 @@ import { getColourwhistHint } from '../utils/hints/colourwhistHint';
 import { getCometHint } from '../utils/hints/cometHint';
 import { getCongressHint } from '../utils/hints/congressHint';
 import { getConquianHint } from '../utils/hints/conquianHint';
+import { getContinentalrummyHint } from '../utils/hints/continentalrummyHint';
 import { getContractRummyHint } from '../utils/hints/contractrummyHint';
 import { getCostlyColoursHint } from '../utils/hints/costlycoloursHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
@@ -930,6 +932,7 @@ export const hintFactories = {
   rikken: (s) => getRikkenHint(s as RikkenResponse),
   chemindefer: (s) => getChemindeferHint(s as ChemindeFerResponse),
   baccaratbanque: (s) => getBaccaratbanqueHint(s as BaccaratBanqueResponse),
+  continentalrummy: (s) => getContinentalrummyHint(s as ContinentalRummyResponse),
   crazyfourpoker: (s) => getCrazyfourpokerHint(s as CrazyFourPokerResponse),
   doubleattack: (s) => getDoubleattackHint(s as DoubleAttackResponse),
   freebet: (s) => getFreebetHint(s as FreeBetResponse),

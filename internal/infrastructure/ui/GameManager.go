@@ -7081,6 +7081,27 @@ var gameRegistry = []GameRegistryEntry{
 				"baccaratbanque.helpSetBet",
 			},
 		}),
+	BindCuiFor("continentalrummy",
+		func() usecase.ContinentalRummyInteractorIF {
+			return usecase.NewContinentalRummyInteractor(domain.NewDefaultContinentalRummy(), new(presenter.ContinentalRummyCuiPresenter))
+		},
+		controller.NewContinentalRummyCuiController,
+		CuiHelpSpec{
+			TitleKey: "continentalrummy.helpTitle",
+			ExampleKeys: []string{
+				"continentalrummy.helpExampleStock",
+				"continentalrummy.helpExampleDiscard",
+			},
+			CommandKeys: []string{
+				"continentalrummy.helpStock", "continentalrummy.helpTake",
+				"continentalrummy.helpDiscard", "continentalrummy.helpGoOut",
+				"continentalrummy.helpNext", "continentalrummy.helpHint",
+				"continentalrummy.helpLog",
+			},
+			SettingKeys: []string{
+				"continentalrummy.helpSetDifficulty", "continentalrummy.helpSetRounds",
+			},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
