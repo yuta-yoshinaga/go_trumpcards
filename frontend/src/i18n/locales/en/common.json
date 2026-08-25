@@ -386,7 +386,8 @@
     "zwanzigerrufen": "Zwanzigerrufen",
     "zwicker": "Zwicker",
     "baccaratbanque": "Baccarat Banque",
-    "continentalrummy": "Continental Rummy"
+    "continentalrummy": "Continental Rummy",
+    "bolivia": "Bolivia"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1962,11 +1963,17 @@
     "saliclaw.playing": "Move a card",
     "saliclaw.stalemate": "No moves left",
     "samba.discardPhase": "Discard a card or go out.",
+    "bolivia.discardPhase": "Discard a card or go out.",
     "samba.drawPhase": "Draw from stock or pick up the discard pile.",
+    "bolivia.drawPhase": "Draw from stock or pick up the discard pile.",
     "samba.meldPhase": "Meld cards or skip.",
+    "bolivia.meldPhase": "Meld cards or skip.",
     "samba.result.cpuWin": "Game over! The CPU team wins!",
+    "bolivia.result.cpuWin": "Game over! The CPU team wins!",
     "samba.result.humanWin": "Game over! Your team wins!",
+    "bolivia.result.humanWin": "Game over! Your team wins!",
     "samba.roundEnd": "Round over.",
+    "bolivia.roundEnd": "Round over.",
     "scarto.hintRequested": "A hint is available",
     "scarto.noHint": "No hint available",
     "scarto.playPhase.follow": "Your turn — follow the led suit (or play a trump if you cannot follow).",

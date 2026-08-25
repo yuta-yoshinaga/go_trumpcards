@@ -451,7 +451,8 @@
     "zwanzigerrufen": "Austrian calling tarock. The declarer calls trump XX and whoever holds it is a secret ally; if everyone passes, taking the most points loses.",
     "zwicker": "A north-German fishing game on 55 cards. Aces and court cards each carry two values and you pick which.",
     "baccaratbanque": "Baccarat Banque is the French form where **one bank plays two tableaux at once**, out of a three-pack shoe. **A loss does not move the bank** - unlike Chemin de Fer, the seat is yours until the shoe runs out or you retire.",
-    "continentalrummy": "Continental Rummy is the rummy where **sets count for nothing**. All fifteen cards must be sequences, and they go down **all at once** - in one of exactly three shapes: 3+3+3+3+3, 4+4+4+3 or 5+4+3+3. **Three fives totals fifteen and is still not a go-out.**"
+    "continentalrummy": "Continental Rummy is the rummy where **sets count for nothing**. All fifteen cards must be sequences, and they go down **all at once** - in one of exactly three shapes: 3+3+3+3+3, 4+4+4+3 or 5+4+3+3. **Three fives totals fifteen and is still not a go-out.**",
+    "bolivia": "Bolivia is the South American canasta that allows a meld of **nothing but wild cards** - seven of them is a bolivia, worth 2500. Going out needs at least one **escalera**: a wild-free suited seven-card run. Three packs, four players in two partnerships, first to 15000."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -819,6 +820,7 @@
     "zwanzigerrufen": "Twelve tricks without knowing who is on your side.",
     "zwicker": "Clearing the table is a \"Zwick\", worth 1. A deal pays exactly 30, and level card counts leave the majority three unawarded.",
     "baccaratbanque": "One bank against a right and a left tableau; a loss never costs you the seat.",
-    "continentalrummy": "No sets at all - fifteen cards of pure sequences, laid down in one move."
+    "continentalrummy": "No sets at all - fifteen cards of pure sequences, laid down in one move.",
+    "bolivia": "Seven wilds make a bolivia; going out needs a wild-free run called an escalera."
   }
 }

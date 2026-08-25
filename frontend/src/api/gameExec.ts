@@ -209,6 +209,7 @@ export const workerUrl: Record<string, string> = {
   threethirteen: WORKER_EXTRA,
   canasta: WORKER_EXTRA,
   samba: WORKER_EXTRA,
+  bolivia: WORKER_EXTRA,
   handandfoot: WORKER_EXTRA,
   burraco: WORKER_EXTRA,
   cribbage: WORKER_EXTRA3,

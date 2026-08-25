@@ -4,6 +4,8 @@ import type {
   BaccaratBanqueResponse,
   BasraResponse,
   BeziqueResponse,
+  BoliviaPlayerData,
+  BoliviaResponse,
   BouillotteResponse,
   CalabresellaResponse,
   CallBreakResponse,
@@ -4020,6 +4022,109 @@ const basePrimeroState: PrimeroResponse = {
  */
 export function makePrimeroState(overrides?: Partial<PrimeroResponse>): PrimeroResponse {
   return { ...basePrimeroState, ...overrides };
+}
+
+/** Base Bolivia players (seat 0 human on team 0; seats 1-3 hidden CPUs). */
+const baseBoliviaPlayers: BoliviaPlayerData[] = [
+  {
+    id: 0,
+    team: 0,
+    isHuman: true,
+    cardCount: 13,
+    cards: [
+      { design: 'SPADE', value: 7 },
+      { design: 'CLOVER', value: 7 },
+      { design: 'HEART', value: 7 },
+      { design: 'SPADE', value: 10 },
+      { design: 'CLOVER', value: 10 },
+    ],
+    melds: [],
+    red3Count: 0,
+    red3s: [],
+    roundScore: 0,
+    cumulativeScore: 0,
+    hasCanasta: false,
+    hasEscalera: false,
+    hasBolivia: false,
+    hasInitMeld: false,
+  },
+  {
+    id: 1,
+    team: 1,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    melds: [],
+    red3Count: 0,
+    red3s: [],
+    roundScore: 0,
+    cumulativeScore: 0,
+    hasCanasta: false,
+    hasEscalera: false,
+    hasBolivia: false,
+    hasInitMeld: false,
+  },
+  {
+    id: 2,
+    team: 0,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    melds: [],
+    red3Count: 0,
+    red3s: [],
+    roundScore: 0,
+    cumulativeScore: 0,
+    hasCanasta: false,
+    hasEscalera: false,
+    hasBolivia: false,
+    hasInitMeld: false,
+  },
+  {
+    id: 3,
+    team: 1,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    melds: [],
+    red3Count: 0,
+    red3s: [],
+    roundScore: 0,
+    cumulativeScore: 0,
+    hasCanasta: false,
+    hasEscalera: false,
+    hasBolivia: false,
+    hasInitMeld: false,
+  },
+];
+
+/** Base Bolivia state used as the default for {@link makeBoliviaState}. A 4-player 2-team Canasta variant with three decks; defaults to the human Draw phase (phase 0). */
+const baseBoliviaState: BoliviaResponse = {
+  players: baseBoliviaPlayers,
+  teamScores: [0, 0],
+  phase: 0,
+  roundNumber: 1,
+  currentPlayerIdx: 0,
+  discardTop: { design: 'SPADE', value: 5 },
+  drawPileCount: 90,
+  discardPileCount: 1,
+  isFrozen: false,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  message: '',
+  messageCode: 'bolivia.drawPhase',
+  config: { cpuDifficulty: 1, pointLimit: 10000 },
+};
+
+/**
+ * Creates a {@link BoliviaResponse} with sensible defaults (the human Draw
+ * phase, phase 0). Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial BoliviaResponse fields to override.
+ * @returns A complete BoliviaResponse suitable for use in tests.
+ */
+export function makeBoliviaState(overrides?: Partial<BoliviaResponse>): BoliviaResponse {
+  return { ...baseBoliviaState, ...overrides };
 }
 
 /** Base Samba players (seat 0 human on team 0; seats 1-3 hidden CPUs). */

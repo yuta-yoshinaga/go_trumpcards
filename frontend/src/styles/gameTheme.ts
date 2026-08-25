@@ -363,6 +363,7 @@ export type GameKey =
   | 'madrasso'
   | 'tressette'
   | 'canasta'
+  | 'bolivia'
   | 'samba'
   | 'handandfoot'
   | 'burraco'
@@ -982,6 +983,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   madrasso: GREEN,
   tressette: GREEN,
   canasta: BLUE,
+  bolivia: SAMBA,
   samba: SAMBA,
   handandfoot: BLUE,
   burraco: GREEN,

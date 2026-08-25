@@ -34,6 +34,7 @@ import type {
   BlackHoleResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
+  BoliviaResponse,
   BostonResponse,
   BotifarraResponse,
   BouillotteResponse,
@@ -387,6 +388,7 @@ import { getBisleyHint } from '../utils/hints/bisleyHint';
 import { getBlackHoleHint } from '../utils/hints/blackholeHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
+import { getBoliviaHint } from '../utils/hints/boliviaHint';
 import { getBostonHint } from '../utils/hints/bostonHint';
 import { getBotifarraHint } from '../utils/hints/botifarraHint';
 import { getBouillotteHint } from '../utils/hints/bouillotteHint';
@@ -932,6 +934,7 @@ export const hintFactories = {
   rikken: (s) => getRikkenHint(s as RikkenResponse),
   chemindefer: (s) => getChemindeferHint(s as ChemindeFerResponse),
   baccaratbanque: (s) => getBaccaratbanqueHint(s as BaccaratBanqueResponse),
+  bolivia: (s) => getBoliviaHint(s as BoliviaResponse),
   continentalrummy: (s) => getContinentalrummyHint(s as ContinentalRummyResponse),
   crazyfourpoker: (s) => getCrazyfourpokerHint(s as CrazyFourPokerResponse),
   doubleattack: (s) => getDoubleattackHint(s as DoubleAttackResponse),

@@ -45,6 +45,7 @@ export * from './games/bisley';
 export * from './games/blackhole';
 export * from './games/blackjack';
 export * from './games/blackjackswitch';
+export * from './games/bolivia';
 export * from './games/boston';
 export * from './games/botifarra';
 export * from './games/bouillotte';
@@ -478,6 +479,7 @@ export const games = [
   'threethirteen',
   'canasta',
   'samba',
+  'bolivia',
   'handandfoot',
   'burraco',
   'spider',
