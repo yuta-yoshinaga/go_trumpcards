@@ -142,10 +142,12 @@ func continentalRunFits(vals []int, jokers int, aceHigh bool) bool {
 	return span+jokers >= total // 余ったジョーカーは端に足せる
 }
 
-// ContinentalRummyCardValue は残り札を数えるときの 1 枚の点数。
+// ContinentalRummyCardValue は 1 枚の重さ。
 //
-// 精算は勝った側が集める方式なので通常は使わないが、CPU が手札の重さを測る
-// のに要る。ジョーカー 50 / A 11 / 絵札と 10 は 10 / それ以外は数字どおり。
+// **精算では使わない。** 勝った側が集める方式なので、負けた側の残り札は
+// 数えない。これは CPU が「同じくらい孤立しているなら重い札から捨てる」と
+// 判断するための目方。ジョーカー 50 / A 11 / 絵札と 10 は 10 / それ以外は
+// 数字どおり。
 func ContinentalRummyCardValue(c *Card) int {
 	switch {
 	case c == nil:

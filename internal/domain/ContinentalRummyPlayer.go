@@ -71,14 +71,5 @@ func (p *ContinentalRummyPlayer) ResetRound() {
 	p.melds = nil
 }
 
-// HandPoints は残り札の合計点を返す。CPU が手の重さを測るのに使う。
-func (p *ContinentalRummyPlayer) HandPoints() int {
-	total := 0
-	for _, c := range p.hand {
-		total += ContinentalRummyCardValue(c)
-	}
-	return total
-}
-
 // ClearHand は手札を空にする。上がって場に並べたときに使う。
 func (p *ContinentalRummyPlayer) ClearHand() { p.hand = p.hand[:0] }

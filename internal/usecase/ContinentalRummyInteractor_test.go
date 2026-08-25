@@ -171,3 +171,52 @@ func TestContinentalRummyInteractor_SnapshotRoundTrip(t *testing.T) {
 	require.Equal(t, "ok", restored.Discard(0))
 	assert.False(t, rg.GetGameEndFlag())
 }
+
+// **終わった盤は動かない。** 例外を投げるのではなく盤を出し直すのが
+// このリポジトリの約束 (guardGameEnd) なので、見るのは文言ではなく状態。
+func TestContinentalRummyInteractor_CommandsAfterTheGameEndedChangeNothing(t *testing.T) {
+	cfg := domain.DefaultContinentalRummyConfig()
+	cfg.TotalRounds = 1
+	g := domain.NewContinentalRummy(cfg)
+	ci := usecase.NewContinentalRummyInteractor(g, contPassThrough{})
+	ci.Reset()
+
+	// 上がれる手を仕込んで 1 ラウンドだけ打ち切らせる。
+	g.SetPhaseForTest(domain.ContinentalRummyPhaseDiscard)
+	g.SetCurrentIdxForTest(domain.ContinentalRummyHumanIdx)
+	p := g.GetPlayer(domain.ContinentalRummyHumanIdx)
+	p.ResetRound()
+	for _, run := range [][2]int{
+		{domain.CardDesignSpade, 2}, {domain.CardDesignSpade, 7},
+		{domain.CardDesignHeart, 4}, {domain.CardDesignClover, 9},
+		{domain.CardDesignDiamond, 5},
+	} {
+		for k := 0; k < 3; k++ {
+			p.AddCard(domain.NewCard(run[0], run[1]+k, true))
+		}
+	}
+	p.AddCard(domain.NewCard(domain.CardDesignDiamond, 13, true))
+	idx, ok := g.CanGoOut()
+	require.True(t, ok, "仕込んだ手で上がれない -- 前提が崩れている")
+	require.Equal(t, "ok", ci.GoOut(idx))
+	require.True(t, g.GetGameEndFlag(), "1 ラウンド設定なのに終局していない")
+
+	round, stock := g.GetRoundNumber(), g.GetStockCount()
+	score := p.GetScore()
+	for _, out := range []string{ci.DrawStock(), ci.DrawDiscard(), ci.Discard(0), ci.GoOut(0), ci.NextRound()} {
+		assert.NotContains(t, out, "panic")
+	}
+	assert.Equal(t, round, g.GetRoundNumber())
+	assert.Equal(t, stock, g.GetStockCount(), "終局後に山が減っている")
+	assert.Equal(t, score, p.GetScore())
+	assert.Equal(t, domain.ContinentalRummyPhaseGameEnd, g.GetPhase())
+}
+
+// **ラウンドの区切りでだけ次へ進む。** 打っている最中の next は無視される。
+func TestContinentalRummyInteractor_NextRoundOnlyAtTheRoundEnd(t *testing.T) {
+	ci, g := contAtHumanDraw(t)
+	round := g.GetRoundNumber()
+	assert.Equal(t, "ok", ci.NextRound())
+	assert.Equal(t, round, g.GetRoundNumber(), "打っている最中に次のラウンドへ進んでしまった")
+	assert.Equal(t, domain.ContinentalRummyPhaseDraw, g.GetPhase())
+}
