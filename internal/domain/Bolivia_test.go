@@ -406,19 +406,22 @@ func TestBolivia_ScoringPaysEachMeldKindItsOwnBonus(t *testing.T) {
 		bolCard(CardDesignSpade, 2), bolCard(CardDesignHeart, 2), bolCard(CardDesignClover, 2),
 		bolCard(CardDesignDiamond, 2), bolJoker(), bolJoker(), bolJoker()}
 
-	// 同じ盤に 1 種類だけメルドを置き、増えた点から加点を逆算する。
+	// **配らない盤で測る。** `Reset()` を通すと配りが混ざり、そのぶんの
+	// 変動が加点の逆算に乗って 3 回に 1 回落ちた ── 実測。この試験が見たいのは
+	// 「メルド 1 つにいくら付くか」だけなので、卓は手で組む。
 	roundScoreFor := func(t *testing.T, meld *BoliviaMeld) int {
 		t.Helper()
-		g := newBoliviaGame(t)
-		for _, p := range g.players {
-			p.SetMelds(nil)
-			p.SetRed3s(nil)
-			p.Reset() // 手札を空にして残り札の減点を消す
-			p.SetHasInitMeld(true)
+		players := make([]*BoliviaPlayer, 0, BoliviaPlayerCnt)
+		for i := 0; i < BoliviaPlayerCnt; i++ {
+			p := NewBoliviaPlayer(i == 0, i%BoliviaTeamCnt)
+			p.SetHasInitMeld(true) // 赤3の減算を避ける (枚数は 0 なので影響しない)
+			players = append(players, p)
 		}
+		g := NewBolivia(newBoliviaDeck(), players, DefaultBoliviaConfig())
+
 		cards := 0
 		if meld != nil {
-			g.players[0].SetMelds([]*BoliviaMeld{meld})
+			players[0].SetMelds([]*BoliviaMeld{meld})
 			for _, c := range meld.Cards {
 				cards += BoliviaCardValue(c)
 			}
