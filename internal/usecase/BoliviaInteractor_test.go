@@ -332,3 +332,81 @@ func TestBoliviaInteractor_RunCpuTurns(t *testing.T) {
 		gameMock.AssertCalled(t, "CpuPlay")
 	})
 }
+
+// boliviaPassThrough は「呼ばれたか」だけを見る素通しのプレゼンター。
+type boliviaPassThrough struct{}
+
+func (boliviaPassThrough) Output(_ interfaces.BoliviaGame, lastErr error) string {
+	if lastErr != nil {
+		return "err:" + lastErr.Error()
+	}
+	return "ok"
+}
+func (boliviaPassThrough) HintOutput(_ interfaces.BoliviaGame) string      { return "hint" }
+func (boliviaPassThrough) ActionLogOutput(_ interfaces.BoliviaGame) string { return "log" }
+
+// **Worker が毎リクエスト通る道を実際に通す。**
+//
+// ここが 0% のあいだに、復元でワイルドメルドがセットに化ける不具合を出荷
+// しかけた (レビュー指摘)。ドメインの往復テストだけでは、KV から戻す
+// `RestoreBoliviaInteractor` 経由で同じことが起きるかを誰も見ていない。
+func TestRestoreBoliviaInteractor_KeepsTheBoliviaAndKeepsPlaying(t *testing.T) {
+	g := domain.NewDefaultBolivia()
+	g.Reset()
+
+	// 人間の席にボリビアとエスカレラを置く。
+	seven := func(d, from int) []*domain.Card {
+		out := make([]*domain.Card, 0, 7)
+		for i := 0; i < 7; i++ {
+			out = append(out, domain.NewCard(d, from+i, true))
+		}
+		return out
+	}
+	wild := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 2, true),
+		domain.NewCard(domain.CardDesignHeart, 2, true),
+		domain.NewCard(domain.CardDesignClover, 2, true),
+		domain.NewCard(domain.CardDesignDiamond, 2, true),
+		domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, true),
+		domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, true),
+		domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, true),
+	}
+	g.GetPlayer(0).SetMelds([]*domain.BoliviaMeld{
+		{Kind: domain.BoliviaMeldWild, Cards: wild},
+		{Kind: domain.BoliviaMeldEscalera, IsNatural: true, Cards: seven(domain.CardDesignHeart, 4)},
+	})
+
+	bi := usecase.NewBoliviaInteractor(g, boliviaPassThrough{})
+	data, err := bi.Snapshot()
+	assert.NoError(t, err)
+	assert.Greater(t, len(data), 2, "snapshot が `{}` -- MarshalJSON が無い")
+
+	restored, err := usecase.RestoreBoliviaInteractor(data, boliviaPassThrough{})
+	assert.NoError(t, err)
+	rp := restored.Game.GetPlayer(0)
+
+	melds := rp.GetMelds()
+	assert.Len(t, melds, 2)
+	assert.Equal(t, domain.BoliviaMeldWild, melds[0].Kind, "復元でボリビアがセットに化けている")
+	assert.True(t, melds[0].IsBoliviaCanasta())
+	assert.True(t, rp.HasBolivia(), "復元後に HasBolivia が落ちている")
+	assert.True(t, rp.HasEscalera())
+
+	// 盤の続きも保たれていること。
+	assert.Equal(t, g.GetRoundNumber(), restored.Game.GetRoundNumber())
+	assert.Equal(t, g.GetPhase(), restored.Game.GetPhase())
+	// 復元した盤で指し続けられる。
+	assert.NotEmpty(t, restored.ActionLog())
+	// 復元した盤は元の盤と同じフェーズ規則で動く ── ドローは通り、
+	// フェーズ違いのメルドスキップは断られる。
+	assert.Equal(t, domain.BoliviaPhaseDraw, restored.Game.GetPhase())
+	assert.Contains(t, restored.SkipMeld(), "err:")
+	assert.Equal(t, "ok", restored.DrawFromStock())
+	assert.Equal(t, domain.BoliviaPhaseMeld, restored.Game.GetPhase())
+}
+
+// 壊れた JSON は素直に失敗すること。
+func TestRestoreBoliviaInteractor_RejectsGarbage(t *testing.T) {
+	_, err := usecase.RestoreBoliviaInteractor([]byte("not json"), boliviaPassThrough{})
+	assert.Error(t, err)
+}
