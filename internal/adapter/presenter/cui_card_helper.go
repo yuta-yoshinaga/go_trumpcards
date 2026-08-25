@@ -100,6 +100,31 @@ func cuiCardStrEmoji(card *domain.Card) string {
 	return s
 }
 
+// cuiCardStrEmojiRank renders a card as "♠K" — suit emoji plus the face label
+// rather than the raw value.
+//
+// **cuiCardStrEmoji prints the number.** That is right for the games whose
+// ranks really are numbers, but in a game where the ace, jack, queen and king
+// carry rules of their own it shows them as 1, 11, 12 and 13, sitting flush
+// against the 7-10 as if they were more of the same. Games that hinge on a
+// specific court card (Quodlibet's Ober/Unter, Dehla Pakad's tens against the
+// ace) use this instead.
+func cuiCardStrEmojiRank(card *domain.Card) string {
+	if card == nil {
+		return "??"
+	}
+	designs := []string{"🃏", "♠", "♣", "♥", "♦"}
+	d := card.GetDesign()
+	if d < 0 || d >= len(designs) {
+		d = 0
+	}
+	s := designs[d] + cuiRankLabel(card.GetValue())
+	if isRedSuit(card.GetDesign()) {
+		return color.Red(s)
+	}
+	return s
+}
+
 // cuiSuitName returns the suit name string for a given design constant.
 // Used by Daifugo and Sevens CUI presenters.
 func cuiSuitName(suit int) string {

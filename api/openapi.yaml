@@ -418,6 +418,8 @@ tags:
     description: 'Unsun Karuta (うんすんカルタ) - the Japanese 75-card five-suit trick-taker, eight players in two teams'
   - name: quodlibet
     description: 'Quodlibet - the Austrian compendium game; twelve deals in three wheels of four contracts, lowest penalty wins'
+  - name: dehlapakad
+    description: 'Dehla Pakad - the Indian "catch the tens" partnership trick-taker; cards are gathered only on two consecutive tricks'
   - name: literature
     description: Literature
   - name: guandan
@@ -20889,6 +20891,108 @@ paths:
                   command: play
                   cardIndex: 0
                   declare: true
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /dehlapakad/exec:
+    post:
+      tags:
+        - dehlapakad
+      summary: Execute a Dehla Pakad game command
+      description: |
+        Send a command to advance the Dehla Pakad session identified by
+        `sessionId`. Four players in two partnerships sitting opposite, on a
+        standard 52-card pack with the ace high.
+
+        **The deal comes in two parts.** Five cards go out first and the player
+        at `trumpChooserIdx` — the dealer's right — calls the trump from those
+        five alone; the remaining eight follow. While `trumpSuit` is -1 the
+        board is waiting for that call (`isTrumpPhase`).
+
+        **A trick does not hand its cards to the winner.** They pile up in the
+        centre (`centrePileCount`, `centrePileTens`) and are gathered in only
+        when the same player wins **two consecutive tricks**; the 13th trick's
+        winner takes whatever is left regardless. `prevTrickWinner` is who won
+        the last one, so a client can show whose next trick would collect the
+        pile. A ten can therefore be won repeatedly and still belong to nobody.
+
+        **A hand is decided by the four tens, asymmetrically.** The
+        non-dealer's side wins with two or three; the dealer's side needs
+        three — so a 2-2 split goes to the non-dealers. All four is a *kot*,
+        and so is winning seven consecutive hands (`streakTeam`,
+        `streakCount`), which is reachable because the deal only moves when the
+        dealer's side wins. `teamKots` is the match score; `config.targetKots`
+        is the target.
+      operationId: dehlaPakadExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), trump (t), play (p), nexthand (nh), hint, log, quit (q)"
+                trumpSuit:
+                  type: integer
+                  description: >-
+                    Trump suit to call, 1=spade 2=club 3=heart 4=diamond.
+                    Required for trump.
+                cardIndex:
+                  type: integer
+                  description: Index of the card to play. Required for play.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0 = Easy, 1 = Normal, 2 = Hard.
+                    targetKots:
+                      type: integer
+                      description: Kots needed to take the match, 1-5.
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new match
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              trump:
+                summary: Call hearts as trump
+                value:
+                  command: trump
+                  trumpSuit: 3
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at index 3
+                value:
+                  command: play
+                  cardIndex: 3
                   sessionId: my-session-001
       responses:
         '200':

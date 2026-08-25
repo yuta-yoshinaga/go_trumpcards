@@ -83,6 +83,7 @@ import type {
   CucumberResponse,
   CurdsAndWheyResponse,
   DaifugoResponse,
+  DehlaPakadResponse,
   DesmocheResponse,
   DeuceToSevenResponse,
   DiplomatResponse,
@@ -429,6 +430,7 @@ import { getCuckooHint } from '../utils/hints/cuckooHint';
 import { getCucumberHint } from '../utils/hints/cucumberHint';
 import { getCurdsAndWheyHint } from '../utils/hints/curdsandwheyHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
+import { getDehlaPakadHint } from '../utils/hints/dehlaPakadHint';
 import { getDesmocheHint } from '../utils/hints/desmocheHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDeuceToSevenHint } from '../utils/hints/deuceToSevenHint';
@@ -878,6 +880,7 @@ export const hintFactories = {
   karnoffel: (s) => getKarnoffelHint(s as KarnoffelResponse),
   unsunkaruta: (s) => getUnsunKarutaHint(s as UnsunKarutaResponse),
   quodlibet: (s) => getQuodlibetHint(s as QuodlibetResponse),
+  dehlapakad: (s) => getDehlaPakadHint(s as DehlaPakadResponse),
   king: (s) => getKingHint(s as KingResponse),
   flowergarden: (s) => getFlowergardenHint(s as FlowerGardenResponse),
   tonk: (s) => getTonkHint(s as TonkResponse),

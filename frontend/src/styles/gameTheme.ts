@@ -332,6 +332,7 @@ export type GameKey =
   | 'karnoffel'
   | 'unsunkaruta'
   | 'quodlibet'
+  | 'dehlapakad'
   | 'literature'
   | 'guandan'
   | 'shengji'
@@ -943,6 +944,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   karnoffel: GREEN,
   unsunkaruta: GREEN,
   quodlibet: GREEN,
+  dehlapakad: GREEN,
   literature: BLUE,
   guandan: GREEN,
   shengji: GREEN,

@@ -147,6 +147,7 @@ export const workerUrl: Record<string, string> = {
   karnoffel: WORKER_CLASSIC,
   unsunkaruta: WORKER_CLASSIC,
   quodlibet: WORKER_SOLO,
+  dehlapakad: WORKER_EXTRA,
   literature: WORKER_EXTRA4,
   guandan: WORKER_EXTRA4,
   aluette: WORKER_EXTRA2,

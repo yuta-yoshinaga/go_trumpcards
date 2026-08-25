@@ -6951,6 +6951,24 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"quodlibet.helpSetDifficulty", "quodlibet.helpAuto"},
 		}),
+	BindCuiFor("dehlapakad",
+		func() usecase.DehlaPakadInteractorIF {
+			return usecase.NewDehlaPakadInteractor(domain.NewDefaultDehlaPakad(), new(presenter.DehlaPakadCuiPresenter))
+		},
+		controller.NewDehlaPakadCuiController,
+		CuiHelpSpec{
+			TitleKey: "dehlapakad.helpTitle",
+			ExampleKeys: []string{
+				"dehlapakad.helpExampleTrump",
+				"dehlapakad.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"dehlapakad.helpTrump", "dehlapakad.helpPlay",
+				"dehlapakad.helpNextHand", "dehlapakad.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"dehlapakad.helpSetDifficulty", "dehlapakad.helpSetKots"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

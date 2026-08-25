@@ -13,28 +13,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// quodlibetCardStr は 32 枚デッキの札を「♠K」の形で返す。
-//
-// **共通の cuiCardStrEmoji は数値をそのまま出す。** それだと A・J・Q・K が
-// 1・11・12・13 と並び、7〜10 と地続きに見えてしまう ── このゲームは Q と J
-// にだけ点が付く種目 (オーバー / ウンター) を持つので、絵札が読めないと
-// 何を避ければよいのか画面から分からない。
-func quodlibetCardStr(card *domain.Card) string {
-	if card == nil {
-		return "??"
-	}
-	designs := []string{"🃏", "♠", "♣", "♥", "♦"}
-	d := card.GetDesign()
-	if d < 0 || d >= len(designs) {
-		d = 0
-	}
-	s := designs[d] + cuiRankLabel(card.GetValue())
-	if card.GetDesign() == domain.CardDesignHeart || card.GetDesign() == domain.CardDesignDiamond {
-		return color.Red(s)
-	}
-	return s
-}
-
 // QuodlibetCuiPresenter renders the Quodlibet CUI view.
 type QuodlibetCuiPresenter struct{}
 
@@ -114,7 +92,7 @@ func (p *QuodlibetCuiPresenter) writeSeats(b *strings.Builder, g interfaces.Quod
 func quodlibetIndexedHand(p *domain.QuodlibetPlayer) string {
 	parts := make([]string, p.GetCardsSize())
 	for i := 0; i < p.GetCardsSize(); i++ {
-		parts[i] = fmt.Sprintf("[%d]%s", i, quodlibetCardStr(p.GetCard(i)))
+		parts[i] = fmt.Sprintf("[%d]%s", i, cuiCardStrEmojiRank(p.GetCard(i)))
 	}
 	return strings.Join(parts, "  ")
 }
@@ -129,7 +107,7 @@ func (p *QuodlibetCuiPresenter) writeTable(b *strings.Builder, g interfaces.Quod
 	default:
 		cuiTrickBlock(b, g.GetCurrentTrick(),
 			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
-			func(tc *domain.TrickCard) string { return quodlibetCardStr(tc.Card) },
+			func(tc *domain.TrickCard) string { return cuiCardStrEmojiRank(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 	}
@@ -142,7 +120,7 @@ func (p *QuodlibetCuiPresenter) writeSnackTable(b *strings.Builder, g interfaces
 		parts := make([]string, 0, domain.QuodlibetHandSize)
 		for i := 0; i < domain.QuodlibetHandSize; i++ {
 			if placed[suit]&(uint16(1)<<uint(i)) != 0 {
-				parts = append(parts, quodlibetCardStr(domain.NewCard(suit, quodlibetValueAt(i), false)))
+				parts = append(parts, cuiCardStrEmojiRank(domain.NewCard(suit, quodlibetValueAt(i), false)))
 			}
 		}
 		line := i18n.T("quodlibet.tableEmpty")
@@ -172,7 +150,7 @@ func (p *QuodlibetCuiPresenter) writeStack(b *strings.Builder, g interfaces.Quod
 	}
 	parts := make([]string, 0, len(cards))
 	for _, c := range cards {
-		parts = append(parts, quodlibetCardStr(c))
+		parts = append(parts, cuiCardStrEmojiRank(c))
 	}
 	b.WriteString(i18n.Tf("quodlibet.stack", "cards", strings.Join(parts, " → ")) + "\n")
 }
@@ -232,7 +210,7 @@ func (p *QuodlibetCuiPresenter) writePlayPrompt(b *strings.Builder, g interfaces
 	parts := make([]string, 0, len(valid))
 	for _, i := range valid {
 		if i >= 0 && i < player.GetCardsSize() {
-			parts = append(parts, "["+strconv.Itoa(i)+"]"+quodlibetCardStr(player.GetCard(i)))
+			parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStrEmojiRank(player.GetCard(i)))
 		}
 	}
 	if len(parts) > 0 {
@@ -280,7 +258,7 @@ func (p *QuodlibetCuiPresenter) HintOutput(g interfaces.QuodlibetGame) string {
 	cards := make([]string, len(hint.CardIndices))
 	for i, idx := range hint.CardIndices {
 		if player != nil && idx >= 0 && idx < player.GetCardsSize() {
-			cards[i] = "[" + strconv.Itoa(idx) + "]" + quodlibetCardStr(player.GetCard(idx))
+			cards[i] = "[" + strconv.Itoa(idx) + "]" + cuiCardStrEmojiRank(player.GetCard(idx))
 			continue
 		}
 		cards[i] = strconv.Itoa(idx)

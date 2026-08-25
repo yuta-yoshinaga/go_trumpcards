@@ -602,6 +602,19 @@ export const QuodlibetPhase = {
   GAME_END: 'gameEnd',
 } as const;
 
+/**
+ * Dehla Pakad phase constants (sync: internal/domain/DehlaPakad.go).
+ *
+ * **These are strings, not indices.** A numeric comparison would silently be
+ * false everywhere.
+ */
+export const DehlaPakadPhase = {
+  SELECT_TRUMP: 'selectTrump',
+  PLAY: 'play',
+  HAND_END: 'handEnd',
+  GAME_END: 'gameEnd',
+} as const;
+
 /** Königrufen (ケーニッヒルーフェン) phase constants (sync: internal/domain/Koenigrufen.go). */
 export const KoenigrufenPhase = {
   BID: 0,

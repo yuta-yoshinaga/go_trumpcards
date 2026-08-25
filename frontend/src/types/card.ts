@@ -89,6 +89,7 @@ export * from './games/cuckoo';
 export * from './games/cucumber';
 export * from './games/curdsandwhey';
 export * from './games/daifugo';
+export * from './games/dehlapakad';
 export * from './games/desmoche';
 export * from './games/deucetoseven';
 export * from './games/diplomat';
