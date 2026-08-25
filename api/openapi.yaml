@@ -430,6 +430,8 @@ tags:
     description: 'Comet - the ancestor of the stops family; sequences climb by rank ignoring suit, and the 9 of diamonds is a wild Comet'
   - name: costlycolours
     description: 'Costly Colours - the Shropshire ancestor of Cribbage; the count scores at 15, 25 and 31, and a ladder of colour combinations gives the game its name'
+  - name: baccaratbanque
+    description: 'Baccarat Banque - the two-tableau French baccarat; one bank deals to a right and a left punter at once and holds the bank until the shoe runs out'
   - name: literature
     description: Literature
   - name: guandan
@@ -21125,6 +21127,113 @@ paths:
                 value:
                   command: play
                   handIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /baccaratbanque/exec:
+    post:
+      tags:
+        - baccaratbanque
+      summary: Execute a Baccarat Banque game command
+      description: |
+        Send a command to advance the Baccarat Banque session identified by
+        `sessionId`. Baccarat Banque (Baccarat a Deux Tableaux) is the French
+        casino form in which **one bank plays against two independent punter
+        hands at once** -- a right and a left tableau -- from a shoe of
+        **three packs, 156 cards**, inter-shuffled. The human holds the bank.
+
+        **The bank does not pass on a loss.** #5462 says it does ("the bank
+        moves to the next player when the banker loses") while its own summary
+        says the banker is fixed as long as they keep winning; both are wrong,
+        and the second is chemin de fer, not banque. In Baccarat Banque the
+        banker holds the bank **until the shoe is exhausted, until they
+        retire, or until the bank is broken** -- losing a coup takes chips but
+        never the seat. That is the single rule separating this game from
+        `chemindefer`, so `coupsHeld` counts up across losses and `retire` is
+        the only voluntary way out.
+
+        **The draw rules are the opposite way round from #5462's summary.**
+        It says the punters have discretion on every total except 5; in fact a
+        punter **must draw on 0-4**, **must stand on 6-7**, and has a free
+        choice **only on 5** -- and it is the **banker** who is free on every
+        total. A two-card 8 or 9 is a **natural** and neither side draws
+        against it. `punterTotals` and `punterDrew` report what the two
+        tableaux did before the bank decides.
+
+        Settlement is **per tableau, separately**: the bank wins, loses or ties
+        against each side on its own, so a coup can pay one side and collect
+        from the other. `lastResult` reports both outcomes and the bank's net.
+        Between coups send `nextcoup`, or `retire` to walk away with the
+        chips; the bank also ends when the shoe cannot deal another coup
+        (`shoeLeft`) or when the bank cannot cover the stakes.
+      operationId: baccaratBanqueExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), draw (d), stand (s), nextcoup (nc), retire, hint, log, quit (q)"
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0 = Easy, 1 = Normal, 2 = Hard. Easy decides the free choices at random.
+                    startChips:
+                      type: integer
+                      description: The bank's starting chips, 100-100000 (default 1000).
+                    betAmount:
+                      type: integer
+                      description: Stake each tableau puts up per coup, 10-500 (default 50).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new bank
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Take a third card
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              stand:
+                summary: Stand pat and settle both tableaux
+                value:
+                  command: stand
+                  sessionId: my-session-001
+              retire:
+                summary: Give up the bank between coups
+                value:
+                  command: retire
                   sessionId: my-session-001
       responses:
         '200':

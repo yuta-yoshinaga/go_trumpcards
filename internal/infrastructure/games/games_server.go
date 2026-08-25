@@ -1835,4 +1835,9 @@ func init() {
 			return usecase.NewCostlyColoursInteractor(domain.NewDefaultCostlyColours(), new(presenter.CostlyColoursWebPresenter))
 		},
 		controller.NewCostlyColoursWebController)
+	BindWebControllerFor("baccaratbanque",
+		func() usecase.BaccaratBanqueInteractorIF {
+			return usecase.NewBaccaratBanqueInteractor(domain.NewDefaultBaccaratBanque(), new(presenter.BaccaratBanqueWebPresenter))
+		},
+		controller.NewBaccaratBanqueWebController)
 }

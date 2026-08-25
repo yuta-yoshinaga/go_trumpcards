@@ -11,6 +11,7 @@ import type {
   AnacondaResponse,
   AndarBaharResponse,
   AuldLangSyneResponse,
+  BaccaratBanqueResponse,
   BaccaratResponse,
   BadugiResponse,
   BakersDozenResponse,
@@ -362,6 +363,7 @@ import { getAmericanToadHint } from '../utils/hints/americantoadHint';
 import { getAnacondaHint } from '../utils/hints/anacondaHint';
 import { getAndarbaharHint } from '../utils/hints/andarbaharHint';
 import { getAuldLangSyneHint } from '../utils/hints/auldlangsyneHint';
+import { getBaccaratbanqueHint } from '../utils/hints/baccaratbanqueHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
@@ -927,6 +929,7 @@ export const hintFactories = {
   botifarra: (s) => getBotifarraHint(s as BotifarraResponse),
   rikken: (s) => getRikkenHint(s as RikkenResponse),
   chemindefer: (s) => getChemindeferHint(s as ChemindeFerResponse),
+  baccaratbanque: (s) => getBaccaratbanqueHint(s as BaccaratBanqueResponse),
   crazyfourpoker: (s) => getCrazyfourpokerHint(s as CrazyFourPokerResponse),
   doubleattack: (s) => getDoubleattackHint(s as DoubleAttackResponse),
   freebet: (s) => getFreebetHint(s as FreeBetResponse),
