@@ -1510,6 +1510,11 @@ func init() {
 			return usecase.NewSambaInteractor(domain.NewDefaultSamba(), new(presenter.SambaWebPresenter))
 		},
 		controller.NewSambaWebController)
+	BindWebControllerFor("bolivia",
+		func() usecase.BoliviaInteractorIF {
+			return usecase.NewBoliviaInteractor(domain.NewDefaultBolivia(), new(presenter.BoliviaWebPresenter))
+		},
+		controller.NewBoliviaWebController)
 	BindWebControllerFor("anaconda",
 		func() usecase.AnacondaInteractorIF {
 			return usecase.NewAnacondaInteractor(domain.NewDefaultAnaconda(), new(presenter.AnacondaWebPresenter))

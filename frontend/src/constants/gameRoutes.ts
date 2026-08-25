@@ -2594,6 +2594,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 5, 1], skill: [1, 3, 5, 1], social: [1, 3, 5, 1, 4], theme: [2, 3, 3, 1, 2, 2] },
       },
       {
+        path: '/bolivia',
+        labelKey: 'nav.bolivia',
+        icon: '🇧🇴',
+        page: 'Bolivia',
+        profile: { mood: [2, 3, 5, 1], skill: [1, 3, 5, 1], social: [1, 3, 5, 1, 4], theme: [2, 3, 3, 1, 2, 2] },
+      },
+      {
         path: '/handandfoot',
         labelKey: 'nav.handandfoot',
         icon: '🃏',

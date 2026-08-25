@@ -722,6 +722,8 @@ tags:
     description: Rook (ルーク) game
   - name: samba
     description: Samba (サンバ) game
+  - name: bolivia
+    description: 'Bolivia - the canasta whose melds include seven wild cards (a bolivia); going out needs a wild-free suited seven-card sequence (an escalera)'
   - name: piedmontesetarot
     description: 'Tarocco Piemontese (ピエモンテ・タロッコ) - the Piedmontese 78-card tarot for three or four players, counted in groups of three'
   - name: scarto
@@ -32566,6 +32568,82 @@ paths:
         the session. Consult the in-app manual for the full command set and
         phase progression specific to this game.
       operationId: rookExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /bolivia/exec:
+    post:
+      tags:
+        - bolivia
+      summary: Execute a Samba (サンバ) game command
+      description: |
+        Send a command to advance the Bolivia session identified by
+        `sessionId`. Bolivia is the South American canasta for **four players
+        in two partnerships** on **three packs plus six jokers (162 cards)**,
+        fifteen each.
+
+        Its two signature melds are a **bolivia** -- **seven wild cards**
+        (twos and jokers, freely mixed), worth **2500** and closed to further
+        cards -- and an **escalera**, a **seven-card suited sequence with no
+        wilds**, worth **1500**. Melds report both as `isBolivia` and
+        `isEscalera`; a seat reports `hasBolivia` and `hasEscalera`.
+
+        **#5465 is wrong about the centrepiece.** It calls an escalera "a
+        special meld made only of threes". *Escalera* is Spanish for ladder
+        and threes have nothing to do with it -- in this family a red three
+        is a bonus laid on the table and a black three blocks the discard
+        pile, and neither is ever a meld. It also gives the pack as 52x2 plus
+        jokers, states going out as "a set number of canastas" -- dropping
+        the rule that binds, **two completed melds of which at least one is
+        an escalera**, so two canastas will not do -- and leaves the target
+        unstated. It is **15000**, not Samba's 10000.
+
+        Scoring is otherwise Samba's: natural canasta 500, mixed 300, red
+        threes 100 each and 800 for all six, 100 for going out.
+      operationId: boliviaExec
       requestBody:
         required: true
         content:

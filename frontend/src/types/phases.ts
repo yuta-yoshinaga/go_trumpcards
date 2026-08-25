@@ -1537,6 +1537,15 @@ export const SambaPhase = {
   GAME_END: 4,
 } as const;
 
+/** Bolivia phase constants (sync: internal/domain/Bolivia.go). */
+export const BoliviaPhase = {
+  DRAW: 0,
+  MELD: 1,
+  DISCARD: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Hand and Foot phase constants (sync: internal/domain/HandAndFoot.go). */
 export const HandAndFootPhase = {
   DRAW: 0,

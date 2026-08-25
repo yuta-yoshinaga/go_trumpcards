@@ -386,7 +386,8 @@
     "zwanzigerrufen": "ツヴァンツィガールーフェン",
     "zwicker": "ツヴィッカー",
     "baccaratbanque": "バカラ・バンク",
-    "continentalrummy": "コンチネンタル・ラミー"
+    "continentalrummy": "コンチネンタル・ラミー",
+    "bolivia": "ボリビア"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1962,11 +1963,17 @@
     "saliclaw.playing": "カードを移動してください",
     "saliclaw.stalemate": "手詰まりです",
     "samba.discardPhase": "カードを1枚捨てるか、上がってください",
+    "bolivia.discardPhase": "カードを1枚捨てるか、上がってください",
     "samba.drawPhase": "山札からカードを引くか、捨て札の山を取ってください",
+    "bolivia.drawPhase": "山札からカードを引くか、捨て札の山を取ってください",
     "samba.meldPhase": "メルドを出すか、スキップしてください",
+    "bolivia.meldPhase": "メルドを出すか、スキップしてください",
     "samba.result.cpuWin": "ゲーム終了！CPUチームの勝利です！",
+    "bolivia.result.cpuWin": "ゲーム終了！CPUチームの勝利です！",
     "samba.result.humanWin": "ゲーム終了！あなたのチームの勝利です！",
+    "bolivia.result.humanWin": "ゲーム終了！あなたのチームの勝利です！",
     "samba.roundEnd": "ラウンド終了",
+    "bolivia.roundEnd": "ラウンド終了",
     "scarto.hintRequested": "ヒントがあります",
     "scarto.noHint": "ヒントはありません",
     "scarto.playPhase.follow": "あなたの番です — リードスートに従って（フォローできなければ切り札を出して）カードを選んでください。",
