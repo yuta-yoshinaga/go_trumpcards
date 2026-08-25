@@ -704,7 +704,15 @@ func (g *Bolivia) PlayerGoOut() error {
 	player := g.players[g.currentPlayerIdx]
 
 	if !g.canGoOut(g.currentPlayerIdx) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("上がるにはチームで%d個以上のカナスタ/ボリビアが必要です", BoliviaGoOutRequiredMelds))
+		// **断る理由は正確に言う。** 数だけ足りていない場合と、エスカレラが
+		// 無い場合は直し方がまったく違う ── 「カナスタが N 個要る」とだけ
+		// 言われた側は、カナスタを増やし続けて永久に上がれない。
+		if g.teamCompletedCount(g.players[g.currentPlayerIdx].team) < BoliviaGoOutRequiredMelds {
+			return NewDomainError(ErrInvalidPlay,
+				fmt.Sprintf("上がるにはチームで完成メルドが%d個以上必要です", BoliviaGoOutRequiredMelds))
+		}
+		return NewDomainError(ErrInvalidPlay,
+			"上がるにはチームで最低1本のエスカレラ(ワイルド無しの同スート7枚連番)が必要です")
 	}
 
 	if player.GetCardsSize() == 1 {

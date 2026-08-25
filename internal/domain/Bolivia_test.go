@@ -264,3 +264,129 @@ func TestBolivia_WildMeldSurvivesAJSONRoundTrip(t *testing.T) {
 		assert.Equal(t, BoliviaMeldSet, got[0].Kind)
 	}
 }
+
+// boliviaHumanTurn は人間の手番 (ドローフェーズ) の盤を返す。
+func boliviaHumanTurn(t *testing.T) *Bolivia {
+	t.Helper()
+	g := newBoliviaGame(t)
+	g.currentPlayerIdx = 0
+	g.phase = BoliviaPhaseDraw
+	return g
+}
+
+// boliviaSeven は同スート連番 7 枚を返す。
+func boliviaSeven(design, from int) []*Card {
+	out := make([]*Card, 0, 7)
+	for i := 0; i < 7; i++ {
+		out = append(out, bolCard(design, from+i))
+	}
+	return out
+}
+
+// **人間の入口を実際に通す。**
+//
+// 規則を直接叩くテストだけでは、公開 API がその規則に繋がっているかを
+// 誰も見ていない ── ドロー・メルド・ディスカードの入口はどれも 0% だった。
+func TestBolivia_HumanTurnRunsThroughEveryPhase(t *testing.T) {
+	g := boliviaHumanTurn(t)
+	before := g.players[0].GetCardsSize()
+
+	assert.NoError(t, g.PlayerDrawFromStock())
+	assert.Equal(t, before+1, g.players[0].GetCardsSize())
+	assert.Equal(t, BoliviaPhaseMeld, g.GetPhase())
+
+	// 引く番でないのに二度引けない。
+	assert.Error(t, g.PlayerDrawFromStock())
+
+	assert.NoError(t, g.PlayerSkipMeld())
+	assert.Equal(t, BoliviaPhaseDiscard, g.GetPhase())
+
+	assert.NoError(t, g.PlayerDiscard(0))
+	assert.Equal(t, before, g.players[0].GetCardsSize())
+	// 手番が次の席へ渡っている。
+	assert.NotEqual(t, 0, g.GetCurrentPlayerIdx())
+}
+
+func TestBolivia_HumanActionsRejectTheWrongPhase(t *testing.T) {
+	g := boliviaHumanTurn(t)
+	// ドローフェーズではメルドも捨て札も上がりもできない。
+	assert.Error(t, g.PlayerMeld([][]int{{0, 1, 2}}))
+	assert.Error(t, g.PlayerSkipMeld())
+	assert.Error(t, g.PlayerDiscard(0))
+	assert.Error(t, g.PlayerGoOut())
+
+	// 範囲外の手札番号は断る。
+	require.NoError(t, g.PlayerDrawFromStock())
+	require.NoError(t, g.PlayerSkipMeld())
+	assert.Error(t, g.PlayerDiscard(-1))
+	assert.Error(t, g.PlayerDiscard(999))
+}
+
+// **断る理由を取り違えない。**
+//
+// 完成メルドが足りないのと、エスカレラが無いのは直し方がまったく違う。
+// 「カナスタが N 個要る」とだけ言われた側は、カナスタを増やし続けて
+// 永久に上がれない。
+func TestBolivia_GoOutRefusalNamesTheRealReason(t *testing.T) {
+	sevenOfARank := func(v int) []*Card {
+		out := make([]*Card, 0, 7)
+		for i := 0; i < 7; i++ {
+			out = append(out, bolCard(CardDesignSpade, v))
+		}
+		return out
+	}
+
+	t.Run("too few melds says so", func(t *testing.T) {
+		g := boliviaHumanTurn(t)
+		require.NoError(t, g.PlayerDrawFromStock())
+		require.NoError(t, g.PlayerSkipMeld())
+		err := g.PlayerGoOut()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "完成メルド")
+		assert.NotContains(t, err.Error(), "エスカレラ")
+	})
+
+	// **数は足りているがエスカレラが無い**とき、その一点を名指すこと。
+	t.Run("enough melds but no escalera says escalera", func(t *testing.T) {
+		g := boliviaHumanTurn(t)
+		g.players[0].SetMelds([]*BoliviaMeld{
+			{Kind: BoliviaMeldSet, IsNatural: true, Cards: sevenOfARank(5)},
+			{Kind: BoliviaMeldSet, IsNatural: true, Cards: sevenOfARank(9)},
+		})
+		require.Equal(t, 2, g.teamCompletedCount(0))
+		require.NoError(t, g.PlayerDrawFromStock())
+		require.NoError(t, g.PlayerSkipMeld())
+
+		err := g.PlayerGoOut()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "エスカレラ", "エスカレラが無いことを言っていない")
+
+		// 負のコントロール: パートナーがエスカレラを持てば上がれる。
+		// **上がりは手札を出し切ってから**なので、手札も 1 枚まで減らす。
+		g.players[2].SetMelds([]*BoliviaMeld{
+			{Kind: BoliviaMeldEscalera, IsNatural: true, Cards: boliviaSeven(CardDesignHeart, 4)},
+		})
+		for g.players[0].GetCardsSize() > 1 {
+			g.players[0].RemoveCard(0)
+		}
+		assert.NoError(t, g.PlayerGoOut(), "エスカレラを足しても上がれない")
+	})
+}
+
+// **エスカレラの検証はワイルドを拒む。**
+func TestBolivia_EscaleraValidationRejectsWildsAndBrokenRuns(t *testing.T) {
+	g := newBoliviaGame(t)
+	assert.NoError(t, g.validateNewEscalera([]*Card{
+		bolCard(CardDesignSpade, 4), bolCard(CardDesignSpade, 5), bolCard(CardDesignSpade, 6)}))
+	assert.Error(t, g.validateNewEscalera([]*Card{
+		bolCard(CardDesignSpade, 4), bolJoker(), bolCard(CardDesignSpade, 6)}),
+		"エスカレラにワイルドが入ってしまっている")
+	assert.Error(t, g.validateNewEscalera([]*Card{
+		bolCard(CardDesignSpade, 4), bolCard(CardDesignHeart, 5), bolCard(CardDesignSpade, 6)}),
+		"スートが混ざったのに通っている")
+	assert.Error(t, g.validateNewEscalera([]*Card{
+		bolCard(CardDesignSpade, 4), bolCard(CardDesignSpade, 6), bolCard(CardDesignSpade, 8)}),
+		"連番でないのに通っている")
+	assert.Error(t, g.validateNewEscalera([]*Card{
+		bolCard(CardDesignSpade, 4), bolCard(CardDesignSpade, 5)}), "2 枚で通っている")
+}
