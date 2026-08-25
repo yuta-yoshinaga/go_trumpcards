@@ -355,4 +355,12 @@ func init() {
 			return usecase.RestoreDehlaPakadInteractor(data, new(presenter.DehlaPakadWebPresenter))
 		},
 		controller.NewDehlaPakadWebControllerWithProvider)
+	games.RegisterKVGame("costlycolours", games.CategoryExtra,
+		func() usecase.CostlyColoursInteractorIF {
+			return usecase.NewCostlyColoursInteractor(domain.NewDefaultCostlyColours(), new(presenter.CostlyColoursWebPresenter))
+		},
+		func(data []byte) (usecase.CostlyColoursInteractorIF, error) {
+			return usecase.RestoreCostlyColoursInteractor(data, new(presenter.CostlyColoursWebPresenter))
+		},
+		controller.NewCostlyColoursWebControllerWithProvider)
 }

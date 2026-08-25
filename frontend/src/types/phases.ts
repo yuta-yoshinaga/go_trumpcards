@@ -642,6 +642,12 @@ export const CirullaPhase = {
  *
  * **These are strings, not indices.**
  */
+export const DilotiPhase = {
+  PLAY: 'play',
+  ROUND_END: 'roundEnd',
+  GAME_END: 'gameEnd',
+} as const;
+
 /**
  * Comet phase constants (sync: internal/domain/Comet.go).
  *
@@ -653,9 +659,16 @@ export const CometPhase = {
   GAME_END: 'gameEnd',
 } as const;
 
-export const DilotiPhase = {
+/**
+ * Costly Colours phase constants (sync: internal/domain/CostlyColours.go).
+ *
+ * **These are strings, not indices**, and the deal opens on `MOG` — the
+ * exchange offer — before any card is played.
+ */
+export const CostlyColoursPhase = {
+  MOG: 'mog',
   PLAY: 'play',
-  ROUND_END: 'roundEnd',
+  SHOW: 'show',
   GAME_END: 'gameEnd',
 } as const;
 

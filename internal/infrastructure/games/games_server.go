@@ -1830,4 +1830,9 @@ func init() {
 			return usecase.NewCometInteractor(domain.NewDefaultComet(), new(presenter.CometWebPresenter))
 		},
 		controller.NewCometWebController)
+	BindWebControllerFor("costlycolours",
+		func() usecase.CostlyColoursInteractorIF {
+			return usecase.NewCostlyColoursInteractor(domain.NewDefaultCostlyColours(), new(presenter.CostlyColoursWebPresenter))
+		},
+		controller.NewCostlyColoursWebController)
 }

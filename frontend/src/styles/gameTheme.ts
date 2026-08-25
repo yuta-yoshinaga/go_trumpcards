@@ -337,6 +337,7 @@ export type GameKey =
   | 'cirulla'
   | 'diloti'
   | 'comet'
+  | 'costlycolours'
   | 'literature'
   | 'guandan'
   | 'shengji'
@@ -953,6 +954,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   cirulla: GREEN,
   diloti: GREEN,
   comet: BLUE,
+  costlycolours: GREEN,
   literature: BLUE,
   guandan: GREEN,
   shengji: GREEN,

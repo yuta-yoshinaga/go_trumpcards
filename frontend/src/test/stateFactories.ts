@@ -11,6 +11,7 @@ import type {
   CirullaResponse,
   CoincheResponse,
   CometResponse,
+  CostlyColoursResponse,
   CourtPieceResponse,
   DehlaPakadResponse,
   DilotiResponse,
@@ -4962,4 +4963,56 @@ const baseCometState: CometResponse = {
  */
 export function makeCometState(overrides?: Partial<CometResponse>): CometResponse {
   return { ...baseCometState, ...overrides };
+}
+
+/**
+ * Base Costly Colours state used as the default for {@link makeCostlyColoursState}.
+ * Defaults to the exchange offer at the head of the first deal.
+ */
+const baseCostlyColoursState: CostlyColoursResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      // 手札 2 は ♥2 ── 持っているだけで点になる札。
+      cards: [cirCard('CLOVER', 9), cirCard('SPADE', 6), cirCard('HEART', 2)],
+      cardCount: 3,
+      played: [],
+      score: 0,
+      isDealer: false,
+      moggedIn: false,
+    },
+    { id: 1, isHuman: false, cards: [], cardCount: 3, played: [], score: 0, isDealer: true, moggedIn: false },
+  ],
+  phase: 'mog',
+  dealNumber: 1,
+  dealerIdx: 1,
+  currentPlayerIdx: 0,
+  turnUp: cirCard('CLOVER', 10),
+  pile: [],
+  total: 0,
+  wentOut: -1,
+  // 交換フェーズでは出せる札を渡さない。
+  playableIdxs: [],
+  lastResult: null,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  isHumanTurn: true,
+  hintHandIdx: -1,
+  hintAcceptMog: true,
+  hintReason: '',
+  config: { cpuDifficulty: 1, targetScore: 61 },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link CostlyColoursResponse} with sensible defaults (the exchange
+ * offer at the head of the first deal).
+ *
+ * @param overrides - Partial CostlyColoursResponse fields to override.
+ * @returns A complete CostlyColoursResponse suitable for use in tests.
+ */
+export function makeCostlyColoursState(overrides?: Partial<CostlyColoursResponse>): CostlyColoursResponse {
+  return { ...baseCostlyColoursState, ...overrides };
 }
