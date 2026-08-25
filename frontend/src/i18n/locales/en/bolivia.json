@@ -23,7 +23,8 @@
     "drawStock": "Draw from the stock pile",
     "takeDiscardPile": "Consider taking the discard pile",
     "meldInitial": "Make your initial meld to open",
-    "buildBolivia": "Build a wild-free seven-card suited run - an escalera, which going out requires",
+    "buildBolivia": "With wilds to spare, a bolivia (seven wilds, 2500) is worth going for",
+    "buildEscalera": "Build the escalera going out requires - a wild-free seven-card suited run",
     "meldExtend": "Extend an existing meld for more points",
     "discardHighSafe": "Discard a high-rank card the opponent cannot use"
   },

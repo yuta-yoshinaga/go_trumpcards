@@ -27,6 +27,14 @@ export function getBoliviaHint(state: BoliviaResponse): HintResult | null {
     if (!human.hasInitMeld) {
       return { targetAction: 'meld', reason: 'hint.meldInitial', confidence: 'moderate' };
     }
+    // **上がりに要るのはエスカレラ。** ここを `hasBolivia` で見ていると、
+    // 「ボリビアはあるがエスカレラが無い」── いちばん助言が要る局面 ── で
+    // 黙ってしまい、逆にエスカレラを持っている人に「エスカレラを作れ」と
+    // 言う。クローン元は役が 2 種類しか無いので同じ 1 本の旗で足りていた。
+    if (!human.hasEscalera) {
+      return { targetAction: 'meld', reason: 'hint.buildEscalera', confidence: 'strong' };
+    }
+    // エスカレラが揃っていて、ワイルドを抱えているならボリビアを狙う価値がある。
     if (!human.hasBolivia) {
       return { targetAction: 'meld', reason: 'hint.buildBolivia', confidence: 'moderate' };
     }
