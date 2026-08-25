@@ -1,0 +1,59 @@
+{
+  "title": "Costly Colours",
+  "phase": {
+    "mog": "Exchange",
+    "play": "The count",
+    "show": "Show",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "targetScore": "Target score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "deal": "Deal {{n}} (playing to {{target}})",
+  "turnUpLabel": "Turn-up (trump)",
+  "noTurnUp": "(none)",
+  "countLabel": "The count",
+  "pileEmpty": "(nothing played yet)",
+  "total": "Total {{n}} / 31",
+  "score": "score {{n}}",
+  "cards": "{{n}} card(s)",
+  "dealerBadge": "Dealer",
+  "mogAccept": "Exchange",
+  "mogRefuse": "Refuse (opponent pegs 1)",
+  "showTitle": "Deal score (you - CPU)",
+  "score.jackDeuce": "Jacks and deuces",
+  "score.rank": "Pairs and prials",
+  "score.colour": "Colours",
+  "combo.threeInColour": "Three in colour (2)",
+  "combo.threeInSuit": "Three in suit (3)",
+  "combo.fourInColourTwoSuit": "Four in colour, two in suit (4)",
+  "combo.fourInColourThreeSuit": "Four in colour, three in suit (5)",
+  "combo.costlyColours": "Costly Colours! Four in suit (6)",
+  "showTotal": "Total: {{a}} - {{b}}",
+  "winner": "{{name}} wins!",
+  "nextDeal": "Next deal",
+  "restrictedTooltip": "This would take the count past 31",
+  "hintAvailable": "Hint",
+  "hint": {
+    "fifteen": "makes fifteen and pegs",
+    "twenty_five": "makes twenty-five and pegs",
+    "thirty_one": "hits thirty-one exactly and closes the count",
+    "safe": "leaves your opponent little to peg",
+    "go": "nothing you hold fits under 31",
+    "mog_accept": "your hand improves, so take the exchange",
+    "mog_refuse": "you already hold a colour - refuse and give up 1",
+    "none": "no move to recommend right now"
+  },
+  "tutorial": {
+    "count": "The count scores at **15, 25 and 31** - **the 25 has no counterpart in Cribbage**. Each pays one per constituent card, and **no card may take the count past 31**. A prial (three alike) scores **9** and a double prial **18**.",
+    "scores": "The show counts **your three cards plus the turn-up**. It is a **ladder of colours**: three in colour 2, three in suit 3, four in colour 4-5, and **four in suit 6 - \"Costly Colours\"**. Alongside it, a **Jack or Deuce of the turned suit pegs 4, any other 2**.",
+    "playerHand": "Your hand. **Cards that would pass 31 cannot be picked.** Jacks and deuces score just for being held, so mind the order you spend them.",
+    "playButton": "Each deal opens with the **mog** - the exchange. **Refusing pegs 1 for your opponent**, so it is only worth it when you already hold a colour.",
+    "resetButton": "The reset button starts a new game."
+  }
+}

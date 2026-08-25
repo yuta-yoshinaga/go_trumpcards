@@ -1,0 +1,59 @@
+{
+  "title": "コストリー・カラーズ",
+  "phase": {
+    "mog": "交換",
+    "play": "数え上げ",
+    "show": "ショー",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetScore": "目標点",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "deal": "ディール {{n}}（{{target}} 点勝負）",
+  "turnUpLabel": "表の 1 枚（トランプ）",
+  "noTurnUp": "（無し）",
+  "countLabel": "数え上げ",
+  "pileEmpty": "（まだ何も出ていません）",
+  "total": "累計 {{n}} / 31",
+  "score": "得点 {{n}}",
+  "cards": "手札 {{n}} 枚",
+  "dealerBadge": "親",
+  "mogAccept": "交換する",
+  "mogRefuse": "断る（相手に 1 点）",
+  "showTitle": "このディールの集計（あなた - CPU）",
+  "score.jackDeuce": "J と 2",
+  "score.rank": "同位役",
+  "score.colour": "色とスート",
+  "combo.threeInColour": "3 枚同色（2 点）",
+  "combo.threeInSuit": "3 枚同スート（3 点）",
+  "combo.fourInColourTwoSuit": "4 枚同色・2 枚同スート（4 点）",
+  "combo.fourInColourThreeSuit": "4 枚同色・3 枚同スート（5 点）",
+  "combo.costlyColours": "コストリー・カラーズ！ 4 枚同スート（6 点）",
+  "showTotal": "合計: {{a}} - {{b}}",
+  "winner": "{{name}} の勝ち！",
+  "nextDeal": "次のディールへ",
+  "restrictedTooltip": "31 を超えるので出せません",
+  "hintAvailable": "ヒント",
+  "hint": {
+    "fifteen": "15 になって点が入ります",
+    "twenty_five": "25 になって点が入ります",
+    "thirty_one": "31 ちょうどで数え上げを畳めます",
+    "safe": "相手に節目を渡しにくい札です",
+    "go": "出せる札がありません",
+    "mog_accept": "手札が伸びるので交換に応じます",
+    "mog_refuse": "色役ができているので崩さず断ります（相手に 1 点）",
+    "none": "いまは勧める手がありません"
+  },
+  "tutorial": {
+    "count": "数え上げは **15・25・31** の 3 か所で点になります。**25 で点が入るのは Cribbage にはありません。** どの節目でも「作った枚数」ぶん入り、**31 を超える札は出せません**。プライアル（同位 3 枚）は **9 点**、ダブルプライアルは **18 点**です。",
+    "scores": "ショーは**自分の 3 枚 + 表の 1 枚**で数えます。**色とスートの梯子**が中心で、3 枚同色 2 → 3 枚同スート 3 → 4 枚同色 4〜5 →**4 枚同スート 6 点＝「コストリー・カラーズ」**。さらに**手札の J / 2 はトランプと同スートなら 4 点、それ以外は 2 点**です。",
+    "playerHand": "あなたの手札です。**31 を超える札は押せません。** J と 2 は持っているだけで点になるので、切る順番に気をつけてください。",
+    "playButton": "ディールの頭に**交換（mog）**を選びます。**断ると相手に 1 点**入るので、色役ができているときだけ断る価値があります。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

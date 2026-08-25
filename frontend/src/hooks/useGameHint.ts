@@ -72,6 +72,7 @@ import type {
   CongressResponse,
   ConquianResponse,
   ContractRummyResponse,
+  CostlyColoursResponse,
   CourtPieceResponse,
   CrazyEightsResponse,
   CrazyFourPokerResponse,
@@ -422,6 +423,7 @@ import { getCometHint } from '../utils/hints/cometHint';
 import { getCongressHint } from '../utils/hints/congressHint';
 import { getConquianHint } from '../utils/hints/conquianHint';
 import { getContractRummyHint } from '../utils/hints/contractrummyHint';
+import { getCostlyColoursHint } from '../utils/hints/costlycoloursHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyfourpokerHint } from '../utils/hints/crazyfourpokerHint';
@@ -893,6 +895,7 @@ export const hintFactories = {
   cirulla: (s) => getCirullaHint(s as CirullaResponse),
   diloti: (s) => getDilotiHint(s as DilotiResponse),
   comet: (s) => getCometHint(s as CometResponse),
+  costlycolours: (s) => getCostlyColoursHint(s as CostlyColoursResponse),
   king: (s) => getKingHint(s as KingResponse),
   flowergarden: (s) => getFlowergardenHint(s as FlowerGardenResponse),
   tonk: (s) => getTonkHint(s as TonkResponse),

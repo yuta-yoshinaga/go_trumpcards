@@ -7041,6 +7041,25 @@ var gameRegistry = []GameRegistryEntry{
 				"comet.helpSetDifficulty", "comet.helpSetPlayers", "comet.helpSetTarget",
 			},
 		}),
+	BindCuiFor("costlycolours",
+		func() usecase.CostlyColoursInteractorIF {
+			return usecase.NewCostlyColoursInteractor(domain.NewDefaultCostlyColours(), new(presenter.CostlyColoursCuiPresenter))
+		},
+		controller.NewCostlyColoursCuiController,
+		CuiHelpSpec{
+			TitleKey: "costlycolours.helpTitle",
+			ExampleKeys: []string{
+				"costlycolours.helpExampleMog",
+				"costlycolours.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"costlycolours.helpMog", "costlycolours.helpNoMog", "costlycolours.helpPlay",
+				"costlycolours.helpNextDeal", "costlycolours.helpHint", "costlycolours.helpLog",
+			},
+			SettingKeys: []string{
+				"costlycolours.helpSetDifficulty", "costlycolours.helpSetTarget",
+			},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

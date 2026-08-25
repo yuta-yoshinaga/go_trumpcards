@@ -122,8 +122,10 @@ func TestDilotiCuiPresenter_RoundResultAndHint(t *testing.T) {
 	i18n.SetLang("ja")
 	p := new(presenter.DilotiCuiPresenter)
 
-	d := dilotiGame()
-	dilotiRunToRoundEnd(t, d)
+	// **局の終わりが終局を兼ねることがある。** 1 局で 61 点に届く配りだと
+	// 集計ではなく勝者の行が出るので、集計だけを固定して待つ ── 素直に
+	// 1 局打って assert すると、その配りを引いた回だけ落ちる。
+	d := dilotiRoundEndedButNotOver(t)
 	out := p.Output(d, nil)
 	assert.Contains(t, out, i18n.T("diloti.resultTitle"))
 	assert.NotContains(t, out, "diloti.", "生キーが出ている")
@@ -278,6 +280,22 @@ func TestDilotiPresenters_ActionLogOutput(t *testing.T) {
 	var res map[string]any
 	require.NoError(t, json.Unmarshal([]byte(web.ActionLogOutput(d)), &res))
 	assert.Contains(t, res, "entries")
+}
+
+// dilotiRoundEndedButNotOver は「局は終わったが終局していない」盤を返す。
+//
+// 1 局で目標点に届く配りもあるので、そうでない配りを引くまで配り直す。
+func dilotiRoundEndedButNotOver(t *testing.T) *domain.Diloti {
+	t.Helper()
+	for try := 0; try < 50; try++ {
+		d := dilotiGame()
+		dilotiRunToRoundEnd(t, d)
+		if d.GetPhase() == domain.DilotiPhaseRoundEnd && !d.GetGameEndFlag() {
+			return d
+		}
+	}
+	t.Fatal("50 局打っても『終局しない局の終わり』にならない — 前提が崩れている")
+	return nil
 }
 
 // dilotiRunToRoundEnd は局を最後まで打つ。

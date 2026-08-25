@@ -78,6 +78,7 @@ export * from './games/comet';
 export * from './games/congress';
 export * from './games/conquian';
 export * from './games/contractrummy';
+export * from './games/costlycolours';
 export * from './games/courtpiece';
 export * from './games/crazyeights';
 export * from './games/crazyfourpoker';
