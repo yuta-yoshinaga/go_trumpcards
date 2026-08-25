@@ -436,4 +436,12 @@ func init() {
 			return usecase.RestoreGermanSoloInteractor(data, new(presenter.GermanSoloWebPresenter))
 		},
 		controller.NewGermanSoloWebControllerWithProvider)
+	games.RegisterKVGame("diloti", games.CategoryClassic,
+		func() usecase.DilotiInteractorIF {
+			return usecase.NewDilotiInteractor(domain.NewDefaultDiloti(), new(presenter.DilotiWebPresenter))
+		},
+		func(data []byte) (usecase.DilotiInteractorIF, error) {
+			return usecase.RestoreDilotiInteractor(data, new(presenter.DilotiWebPresenter))
+		},
+		controller.NewDilotiWebControllerWithProvider)
 }

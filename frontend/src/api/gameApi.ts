@@ -102,6 +102,7 @@ export * from './games/dehlapakad';
 export * from './games/desmoche';
 export * from './games/deuceswild';
 export * from './games/deucetoseven';
+export * from './games/diloti';
 export * from './games/diplomat';
 export * from './games/doppelkopf';
 export * from './games/doubleattack';
@@ -544,6 +545,7 @@ export const games = [
   'dehlapakad',
   'sutda',
   'cirulla',
+  'diloti',
   'literature',
   'guandan',
   'shengji',

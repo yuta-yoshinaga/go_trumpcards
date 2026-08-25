@@ -1,0 +1,63 @@
+{
+  "title": "ディロティ",
+  "phase": {
+    "play": "プレイ",
+    "roundEnd": "局の終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetScore": "目標点",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "局 {{n}}（{{target}} 点勝負）",
+  "deck": "山の残り: {{n}} 枚",
+  "tableLabel": "場札",
+  "tableEmpty": "（無し）",
+  "declarationsLabel": "宣言",
+  "declarationLine": "[{{idx}}] {{value}}（{{kind}} / {{owner}}）",
+  "declPlain": "単一",
+  "declGroup": "グループ・上げ不可",
+  "declShort": "宣言{{idx}}",
+  "chooseMove": "取る組か、宣言する値を選んでください",
+  "noCapture": "この札では取れません",
+  "takeGroup": "{{cards}} を取る",
+  "declareGroup": "{{value}} を宣言（{{cards}}）",
+  "layOffButton": "場に置く",
+  "score": "得点 {{n}}",
+  "taken": "取り札 {{n}} 枚",
+  "xeri": "クセリ {{n}}",
+  "dealerBadge": "親",
+  "roundResult": "この局の集計（あなた - CPU）",
+  "score.cards": "最多枚数",
+  "score.aces": "エース",
+  "score.tenOfDiamonds": "10♦",
+  "score.twoOfClubs": "2♣",
+  "score.xeri": "クセリ",
+  "roundTotal": "合計: {{a}} - {{b}}",
+  "winner": "{{name}} の勝ち！",
+  "nextRound": "次の局へ",
+  "restrictedTooltip": "いまは出せません",
+  "hintAvailable": "ヒント",
+  "action": {
+    "capture": "取る",
+    "declare": "宣言する",
+    "trail": "場に置く"
+  },
+  "hint": {
+    "capture": "点になる札を取れます",
+    "declare": "宣言して後で取り切れます",
+    "trail": "取れる手が無いので場に置きます",
+    "none": "いまは勧める手がありません"
+  },
+  "tutorial": {
+    "table": "場札には番号が付いています。手札を 1 枚選ぶと、**その札でできること**が候補として並びます ── 同ランクの 1 枚・合計が出した札に一致する組・場に積まれた**宣言**が混ざります。**合計 10 固定ではありません。基準は出した札のランクです。**",
+    "scores": "点になるのは最多枚数 4・エース 1 枚 1・10♦ 2・2♣ 1 の**合計 11 点**、そして **1 枚で場を払い切る「クセリ」1 回 10 点**です。クセリを取れるかどうかで局が決まります。",
+    "playerHand": "あなたの手札です。**同じランクの絵札が場にあるとき**と、**宣言を抱えているとき**は場に置けません。",
+    "playButton": "手札を選び、候補から「取る」か「宣言する」を押します。どちらも選ばないときだけ「場に置く」が出ます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}
