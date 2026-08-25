@@ -384,7 +384,8 @@
     "yukon": "ユーコン",
     "zheng": "争上游",
     "zwanzigerrufen": "ツヴァンツィガールーフェン",
-    "zwicker": "ツヴィッカー"
+    "zwicker": "ツヴィッカー",
+    "baccaratbanque": "バカラ・バンク"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -2649,7 +2650,20 @@
     "costlycolours.result.humanWin": "あなたの勝ちです！",
     "costlycolours.result.cpuWin": "CPU の勝ちです。",
     "costlycolours.hintRequested": "ヒントを表示しました。",
-    "costlycolours.noHint": "いまは勧める手がありません。"
+    "costlycolours.noHint": "いまは勧める手がありません。",
+    "baccaratbanque.puntersPhase": "左右の子が 3 枚目を決めています。",
+    "baccaratbanque.bankerPhase": "あなたの番です。どの合計でも引く / 引かないは自由です。",
+    "baccaratbanque.resultPhase": "クーが決着しました。左右それぞれと別勘定です。",
+    "baccaratbanque.result.endRetired": "バンクを降りました。",
+    "baccaratbanque.result.endAhead": "シューを配り切りました ── 勝ち越しです！",
+    "baccaratbanque.result.endBehind": "シューを配り切りました ── 負け越しでしたが、チップは残っています。",
+    "baccaratbanque.result.endBroke": "バンクが尽きました。",
+    "baccaratbanque.hintRequested": "助言を表示しました。",
+    "baccaratbanque.noHint": "いまは勧める手がありません。",
+    "baccaratbanque.errGameEnded": "バンクは既に終わっています。",
+    "baccaratbanque.errNotBankerPhase": "いまはあなたが引くかを決めるフェーズではありません。",
+    "baccaratbanque.errNotResultPhase": "いまはバンクを降りられるフェーズではありません。",
+    "baccaratbanque.errNaturalCannotDraw": "ナチュラルなので 3 枚目は引けません。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

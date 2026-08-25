@@ -1,6 +1,7 @@
 import type {
   AluetteResponse,
   AnacondaResponse,
+  BaccaratBanqueResponse,
   BasraResponse,
   BeziqueResponse,
   BouillotteResponse,
@@ -4963,6 +4964,78 @@ const baseCometState: CometResponse = {
  */
 export function makeCometState(overrides?: Partial<CometResponse>): CometResponse {
   return { ...baseCometState, ...overrides };
+}
+
+/** Face-up card helper for the Baccarat Banque factories. **Baccarat deals nothing hidden.** */
+const bbqCard = (design: 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND', value: number) => ({
+  design,
+  value,
+});
+
+/**
+ * Base Baccarat Banque state used as the default for {@link makeBaccaratBanqueState}.
+ *
+ * Defaults to the banker's decision on coup 2 — deliberately not coup 1, so a
+ * test that asserts on `bankHeld` cannot pass by reading a hardcoded 1.
+ * The right tableau has already been forced to draw at 3; the left stands at 7.
+ */
+const baseBaccaratBanqueState: BaccaratBanqueResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      role: 'banker',
+      cards: [bbqCard('SPADE', 3), bbqCard('HEART', 3)],
+      total: 6,
+      chips: 1000,
+      bet: 0,
+      drawn: false,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      role: 'right',
+      cards: [bbqCard('CLOVER', 1), bbqCard('DIAMOND', 2), bbqCard('SPADE', 10)],
+      total: 3,
+      chips: 1000,
+      bet: 50,
+      drawn: true,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      role: 'left',
+      cards: [bbqCard('HEART', 3), bbqCard('CLOVER', 4)],
+      total: 7,
+      chips: 1000,
+      bet: 50,
+      drawn: false,
+    },
+  ],
+  phase: 'banker',
+  coupNumber: 2,
+  bankHeld: 2,
+  shoeRemaining: 141,
+  retired: false,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  isHumanTurn: true,
+  hintDraw: true,
+  hintReason: 'behind_both',
+  config: { cpuDifficulty: 1, startChips: 1000, betAmount: 50 },
+  message: '',
+  messageCode: 'baccaratbanque.bankerPhase',
+};
+
+/**
+ * Creates a {@link BaccaratBanqueResponse} with sensible defaults (the banker's
+ * decision on the second coup of a bank that has already survived one).
+ *
+ * @param overrides - Partial BaccaratBanqueResponse fields to override.
+ * @returns A complete BaccaratBanqueResponse suitable for use in tests.
+ */
+export function makeBaccaratBanqueState(overrides?: Partial<BaccaratBanqueResponse>): BaccaratBanqueResponse {
+  return { ...baseBaccaratBanqueState, ...overrides };
 }
 
 /**

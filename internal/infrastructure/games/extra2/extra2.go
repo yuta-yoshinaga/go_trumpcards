@@ -445,4 +445,12 @@ func init() {
 			return usecase.RestoreSutdaInteractor(data, new(presenter.SutdaWebPresenter))
 		},
 		controller.NewSutdaWebControllerWithProvider)
+	games.RegisterKVGame("baccaratbanque", games.CategoryExtra2,
+		func() usecase.BaccaratBanqueInteractorIF {
+			return usecase.NewBaccaratBanqueInteractor(domain.NewDefaultBaccaratBanque(), new(presenter.BaccaratBanqueWebPresenter))
+		},
+		func(data []byte) (usecase.BaccaratBanqueInteractorIF, error) {
+			return usecase.RestoreBaccaratBanqueInteractor(data, new(presenter.BaccaratBanqueWebPresenter))
+		},
+		controller.NewBaccaratBanqueWebControllerWithProvider)
 }

@@ -20,6 +20,7 @@ export * from './games/anaconda';
 export * from './games/andarbahar';
 export * from './games/auldlangsyne';
 export * from './games/baccarat';
+export * from './games/baccaratbanque';
 export * from './games/badugi';
 export * from './games/bakersdozen';
 export * from './games/bakersgame';
@@ -550,6 +551,7 @@ export const games = [
   'diloti',
   'comet',
   'costlycolours',
+  'baccaratbanque',
   'literature',
   'guandan',
   'shengji',

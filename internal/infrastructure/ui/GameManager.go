@@ -7060,6 +7060,27 @@ var gameRegistry = []GameRegistryEntry{
 				"costlycolours.helpSetDifficulty", "costlycolours.helpSetTarget",
 			},
 		}),
+	BindCuiFor("baccaratbanque",
+		func() usecase.BaccaratBanqueInteractorIF {
+			return usecase.NewBaccaratBanqueInteractor(domain.NewDefaultBaccaratBanque(), new(presenter.BaccaratBanqueCuiPresenter))
+		},
+		controller.NewBaccaratBanqueCuiController,
+		CuiHelpSpec{
+			TitleKey: "baccaratbanque.helpTitle",
+			ExampleKeys: []string{
+				"baccaratbanque.helpExampleDraw",
+				"baccaratbanque.helpExampleStand",
+			},
+			CommandKeys: []string{
+				"baccaratbanque.helpDraw", "baccaratbanque.helpStand",
+				"baccaratbanque.helpNextCoup", "baccaratbanque.helpRetire",
+				"baccaratbanque.helpHint", "baccaratbanque.helpLog",
+			},
+			SettingKeys: []string{
+				"baccaratbanque.helpSetDifficulty", "baccaratbanque.helpSetChips",
+				"baccaratbanque.helpSetBet",
+			},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
