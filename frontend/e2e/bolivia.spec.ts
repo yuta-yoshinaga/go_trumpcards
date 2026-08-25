@@ -87,6 +87,22 @@ test.describe('Bolivia E2E', () => {
       break;
     }
 
-    expect(interactions).toBeGreaterThan(0);
+    // **1 回動いただけでは通さない。** クローン元の `> 0` は、最初のドローが
+    // 効いただけで緑になる ── それでは「フェーズが回る」ことを測っていない。
+    // 4 フェーズを一巡すれば必ず 4 回以上になる。
+    expect(interactions).toBeGreaterThanOrEqual(4);
+  });
+
+  // **このゲームを名指す言葉が画面に出ていること。**
+  //
+  // 上がりに要るのはエスカレラで、ボリビアは点が重いだけ ── その区別が
+  // 画面のどこにも無ければ、遊ぶ側はカナスタ 2 個で上がろうとして詰まる。
+  test('names the escalera requirement, not just canastas', async ({ page }) => {
+    await navigateTo(page, '/bolivia');
+    await expect(page.getByText(/ラウンド \d+/).first()).toBeVisible({ timeout: 15_000 });
+
+    // 上がりの条件がどこかに書いてあること。
+    const goOutRule = page.getByText(/エスカレラ/).first();
+    await expect(goOutRule).toBeVisible({ timeout: 10_000 });
   });
 });

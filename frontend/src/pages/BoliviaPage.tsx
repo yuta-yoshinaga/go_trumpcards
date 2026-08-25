@@ -258,6 +258,13 @@ function BoliviaPageContent() {
               {t('teamScores', { a: state.teamScores[0] ?? 0, b: state.teamScores[1] ?? 0 })}
             </div>
 
+            {/* **上がりの条件を書いておく。** カナスタ 2 個では上がれず、
+                最低 1 本のエスカレラが要る ── それが画面のどこにも無いと、
+                揃えたのに「上がる」が押せない理由が分からない。 */}
+            <div className="text-ds-text-muted text-center mb-2 text-xs" data-testid="bo-goout-rule">
+              {t('goOutRule')}
+            </div>
+
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
               <div>
