@@ -426,6 +426,8 @@ tags:
     description: 'Cirulla - the Ligurian fishing game; Scopa captures plus sum-to-fifteen and the asso pigliatutto'
   - name: diloti
     description: 'Diloti - the Greek fishing game; captures sum to the played rank, declarations build piles, and a one-card sweep is a xeri'
+  - name: comet
+    description: 'Comet - the ancestor of the stops family; sequences climb by rank ignoring suit, and the 9 of diamonds is a wild Comet'
   - name: literature
     description: Literature
   - name: guandan
@@ -21005,6 +21007,110 @@ paths:
                   command: play
                   handIndex: 0
                   captureIndices: [1, 2]
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /comet/exec:
+    post:
+      tags:
+        - comet
+      summary: Execute a Comet game command
+      description: |
+        Send a command to advance the Comet session identified by `sessionId`.
+        Comet is the 17th-century French ancestor of the stops family, played
+        here on a **51-card pack -- the standard 52 with the 8 of diamonds
+        removed** -- by 2 to 5 seats. Everything is dealt out and the remainder
+        is buried face down as a **dead hand**, whose size is reported in
+        `deadCount` but whose contents are never revealed.
+
+        **Sequences climb by rank and ignore suit entirely.** The first player
+        leads any card and the run climbs from there towards the king; whoever
+        holds the next rank plays it, in any suit, and a player with nothing
+        playable passes. `need` is the rank required next, or `0` when the seat
+        is leading a fresh sequence and may play anything.
+
+        The **9 of diamonds is the Comet**, a wild that stands in for any rank.
+        Both it and a **king stop the sequence**: the player who played one
+        leads the next. When every seat passes in turn, the last player to have
+        played leads again -- runs stop reliably because the 8 of diamonds is
+        gone and because cards sit in the dead hand, which is what the family
+        is named for.
+
+        `playableIdxs` holds the hand indices the human may play, and is empty
+        both when it is not their turn and when they must `pass`. Since the
+        Comet substitutes for any rank, the server computes this rather than
+        leaving a client to re-derive it.
+
+        Scoring is **1 for going out, 1 per card left in every opponent's hand,
+        and 2 for each king that never came out**, while a player left holding
+        the Comet **loses 1**. Play is to `config.targetScore`.
+      operationId: cometExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), play (p), pass, nextround (nr), hint, log, quit (q)"
+                handIndex:
+                  type: integer
+                  description: Index of the card to play. Required for play.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0 = Easy, 1 = Normal, 2 = Hard.
+                    players:
+                      type: integer
+                      description: Number of seats, 2-5.
+                    targetScore:
+                      type: integer
+                      description: Points needed to win, 20-200.
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new match
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at index 0
+                value:
+                  command: play
+                  handIndex: 0
+                  sessionId: my-session-001
+              pass:
+                summary: Pass when nothing is playable
+                value:
+                  command: pass
                   sessionId: my-session-001
       responses:
         '200':

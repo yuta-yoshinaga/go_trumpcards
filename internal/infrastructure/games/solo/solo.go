@@ -474,4 +474,12 @@ func init() {
 			return usecase.RestoreQuodlibetInteractor(data, new(presenter.QuodlibetWebPresenter))
 		},
 		controller.NewQuodlibetWebControllerWithProvider)
+	games.RegisterKVGame("comet", games.CategorySolo,
+		func() usecase.CometInteractorIF {
+			return usecase.NewCometInteractor(domain.NewDefaultComet(), new(presenter.CometWebPresenter))
+		},
+		func(data []byte) (usecase.CometInteractorIF, error) {
+			return usecase.RestoreCometInteractor(data, new(presenter.CometWebPresenter))
+		},
+		controller.NewCometWebControllerWithProvider)
 }

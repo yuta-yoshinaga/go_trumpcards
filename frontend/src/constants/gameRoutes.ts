@@ -2063,6 +2063,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 4, 4, 3], skill: [4, 5, 4, 3], social: [3, 3, 4, 4, 2], theme: [2, 4, 2, 1, 3, 4] },
       },
       {
+        path: '/comet',
+        labelKey: 'nav.comet',
+        icon: '☄️',
+        page: 'Comet',
+        profile: { mood: [4, 3, 4, 4], skill: [3, 3, 3, 4], social: [3, 4, 4, 3, 3], theme: [2, 3, 2, 1, 2, 5] },
+      },
+      {
         path: '/shengji',
         labelKey: 'nav.shengji',
         icon: '🚜',

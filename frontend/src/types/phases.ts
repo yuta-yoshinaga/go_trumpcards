@@ -642,6 +642,17 @@ export const CirullaPhase = {
  *
  * **These are strings, not indices.**
  */
+/**
+ * Comet phase constants (sync: internal/domain/Comet.go).
+ *
+ * **These are strings, not indices.**
+ */
+export const CometPhase = {
+  PLAY: 'play',
+  ROUND_END: 'roundEnd',
+  GAME_END: 'gameEnd',
+} as const;
+
 export const DilotiPhase = {
   PLAY: 'play',
   ROUND_END: 'roundEnd',
