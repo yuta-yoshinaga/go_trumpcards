@@ -89,9 +89,18 @@ func TestContinentalRummyInteractor_DrawStockAndDrawDiscardAreSeparate(t *testin
 		top := g.GetDiscardTop()
 		require.NotNil(t, top)
 		stock := g.GetStockCount()
+		hand := g.GetPlayer(domain.ContinentalRummyHumanIdx).GetCardsSize()
 		assert.Equal(t, "ok", ci.DrawDiscard())
 		assert.Equal(t, stock, g.GetStockCount(), "捨て札を取ったのに山が減っている")
-		assert.NotEqual(t, top, g.GetDiscardTop())
+		// **同じ札が複数あるので、額面で「違う札か」を見てはいけない。**
+		// このゲームは複数組のデッキから配るため、取り上げた ♥A の下にもう 1 枚
+		// ♥A が眠っていることがある。額面比較の assert.NotEqual はその配りで
+		// だけ落ちる —— 実装ではなく、**試験がデッキの枚数を取り違えていた**。
+		// 見るべきなのは「同じ 1 枚がまだ天面に残っていないこと」なので、
+		// 実体で比べる。
+		assert.NotSame(t, top, g.GetDiscardTop(), "取り上げた札がまだ天面にある")
+		assert.Equal(t, hand+1, g.GetPlayer(domain.ContinentalRummyHumanIdx).GetCardsSize(),
+			"取り上げた札が手札に入っていない")
 		assert.Equal(t, domain.ContinentalRummyPhaseDiscard, g.GetPhase())
 	})
 }
