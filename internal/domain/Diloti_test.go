@@ -274,7 +274,14 @@ func TestDiloti_PlaysARoundThrough(t *testing.T) {
 		}
 		d.CpuPlay()
 	}
-	require.Equal(t, DilotiPhaseRoundEnd, d.GetPhase(), "局が終わらない")
+	// **局の終わりは 2 通りある。** 得点が目標に届けば `finishRound` は
+	// そのまま終局へ進むので、局が正しく閉じても phase は GameEnd になる。
+	// 1 局の得点は最大 101 点、目標の上限も 101 点なので、**目標を上げても
+	// 起き得る** —— 「必ず RoundEnd」という前提はそもそも立たない。
+	// このテストが見たいのは「1 局を打ち切れること」と「札が保存されること」
+	// なので、終わり方の区別はしない (#6249)。
+	require.Contains(t, []string{DilotiPhaseRoundEnd, DilotiPhaseGameEnd}, d.GetPhase(),
+		"局が終わらない (phase が play のまま)")
 	assert.Equal(t, DilotiDeckSize, total(), "局の終わりで札が合わない")
 
 	res := d.GetLastResult()
@@ -393,7 +400,9 @@ func TestDiloti_SaveRestoreKeepsPlaying(t *testing.T) {
 		}
 		r.CpuPlay()
 	}
-	assert.Equal(t, DilotiPhaseRoundEnd, r.GetPhase(), "復元した盤で局が終わらない")
+	// 同上: 得点が目標に届けば復元した盤でもそのまま終局する (#6249)。
+	assert.Contains(t, []string{DilotiPhaseRoundEnd, DilotiPhaseGameEnd}, r.GetPhase(),
+		"復元した盤で局が終わらない (phase が play のまま)")
 }
 
 func TestDilotiConfig_Validate(t *testing.T) {
