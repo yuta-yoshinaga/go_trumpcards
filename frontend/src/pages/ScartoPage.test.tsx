@@ -31,6 +31,8 @@ const scartoPhaseState = makeScartoState({
   isHumanScarto: true,
   scartoCount: 0,
   playableIndices: [],
+  // サーバが返す「捨てられる札」。ピップ 3 枚は足りているので切り札は入らない。
+  discardableIndices: [0, 1, 2],
   players: [
     {
       id: 0,
@@ -41,6 +43,37 @@ const scartoPhaseState = makeScartoState({
         suit(3, 'HEART', '♥', '3'),
         suit(4, 'HEART', '♥', '4'),
         suit(14, 'SPADE', '♠', 'R'),
+        { design: 'JOKER' as const, value: 0, glyph: '★', label: 'Excuse', color: 'gold', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDealer: true,
+    },
+    { id: 1, isHuman: false, cardCount: 25, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDealer: false },
+    { id: 2, isHuman: false, cardCount: 25, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDealer: false },
+  ],
+});
+
+// 捨てられるピップが 1 枚しかない親の手。ドメインは非ブー切り札 (index 1, 2) を
+// 解禁するので、サーバはそれを discardableIndices に載せて返す。
+const shortOnPipsState = makeScartoState({
+  phase: 0,
+  isHumanTurn: false,
+  isHumanScarto: true,
+  scartoCount: 0,
+  playableIndices: [],
+  discardableIndices: [0, 1, 2],
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 28,
+      cards: [
+        suit(4, 'HEART', '♥', '4'),
+        { design: 'JOKER' as const, value: 8, glyph: 'A', label: 'T8', color: 'purple', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 12, glyph: 'A', label: 'T12', color: 'purple', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 21, glyph: 'A', label: 'T21', color: 'purple', deck: 'tarot' },
         { design: 'JOKER' as const, value: 0, glyph: '★', label: 'Excuse', color: 'gold', deck: 'tarot' },
       ],
       trickCount: 0,
@@ -318,5 +351,35 @@ describe('ScartoPage', () => {
     renderWithProviders(<ScartoPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByText(/\[0\], \[2\]/)).not.toBeInTheDocument();
+  });
+
+  // **#6236 の本体。** 捨てられるピップが 3 枚に満たない手では、ドメインは
+  // 非ブー切り札を捨てることを許す。以前は画面側が色だけを見て切り札を常に
+  // 除外していたので、**この手を引いた親は枚数を揃えられず先へ進めなかった**。
+  it('lets the dealer bury a trump when there are too few pips', async () => {
+    mockExec.mockResolvedValue(shortOnPipsState);
+    renderWithProviders(<ScartoPage />);
+
+    const cards = await screen.findAllByRole('button', { name: /♥|♠|★|A|T/ });
+    // 切り札 (index 1, 2) が選べること。
+    fireEvent.click(cards[0]);
+    fireEvent.click(cards[1]);
+    fireEvent.click(cards[2]);
+    const button = screen.getByRole('button', { name: /捨てる/ });
+    expect(button).toBeEnabled();
+    fireEvent.click(button);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('scarto', { cardIndices: [0, 1, 2] }));
+  });
+
+  // ブーとエクスキューズは、ピップが足りなくても捨てられない。
+  it('still refuses the bouts and the Excuse when pips run short', async () => {
+    mockExec.mockResolvedValue(shortOnPipsState);
+    renderWithProviders(<ScartoPage />);
+    const cards = await screen.findAllByRole('button', { name: /♥|♠|★|A|T/ });
+    // index 3 はブー (T21), index 4 はエクスキューズ。どちらも選択に加わらない。
+    fireEvent.click(cards[3]);
+    fireEvent.click(cards[4]);
+    const button = screen.getByRole('button', { name: /捨てる/ });
+    expect(button).toBeDisabled();
   });
 });

@@ -44,15 +44,6 @@ func scartoCuiCardStr(c *domain.Card) string {
 	}
 }
 
-// scartoCuiDiscardable は通常スカルトに出せる札か (非切り札・非エクスキューズ・非コートの
-// ピップ) を返す。ドメインの scartoDiscardable と同じ規則を提示側で再現する。
-func scartoCuiDiscardable(c *domain.Card) bool {
-	if c == nil || c.GetDesign() == domain.ScartoTrumpDesign || c.GetDesign() == domain.ScartoExcuseDesign {
-		return false
-	}
-	return c.GetValue() < domain.ScartoCourtMin
-}
-
 // scartoIndexedHand 人間手札をインデックス付きで表示する。
 func scartoIndexedHand(p *domain.ScartoPlayer) string {
 	parts := make([]string, p.GetCardsSize())
@@ -149,18 +140,29 @@ func (p *ScartoCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Scarto
 		// of the human dealer's cards may actually be discarded, plus the legend
 		// of excluded kinds so the choice isn't trial-and-error.
 		if dealer := g.GetPlayer(dealerIdx); dealer != nil && dealer.GetIsHuman() {
+			// **規則はドメインに訊く。** ここで作り直していたせいで切り札が常に
+			// 除外され、ピップが足りない手では捨てられる札が実際より少なく
+			// 見えていた (#6236)。
 			var idxs []string
-			for i := 0; i < dealer.GetCardsSize(); i++ {
-				if scartoCuiDiscardable(dealer.GetCard(i)) {
-					idxs = append(idxs, "["+strconv.Itoa(i)+"]"+scartoCuiCardStr(dealer.GetCard(i)))
-				}
+			for _, i := range g.GetDiscardableIndices() {
+				idxs = append(idxs, "["+strconv.Itoa(i)+"]"+scartoCuiCardStr(dealer.GetCard(i)))
 			}
 			list := strings.Join(idxs, "  ")
 			if list == "" {
 				list = i18n.T("scarto.discardableNone")
 			}
 			b.WriteString(i18n.Tf("scarto.discardableList", "cards", list) + "\n")
-			b.WriteString(i18n.T("scarto.discardableLegend") + "\n")
+			// **凡例は実際の可否に合わせる。** ピップが足りずに切り札が
+			// 捨てられる状況で「切り札は捨てられません」と出すと、一覧と
+			// 矛盾する (#6236)。
+			legend := "scarto.discardableLegend"
+			for _, i := range g.GetDiscardableIndices() {
+				if c := dealer.GetCard(i); c != nil && c.GetDesign() == domain.ScartoTrumpDesign {
+					legend = "scarto.discardableLegendTrumpOk"
+					break
+				}
+			}
+			b.WriteString(i18n.T(legend) + "\n")
 		}
 	case domain.ScartoPhasePlay:
 		currentIdx := g.GetCurrentPlayerIdx()

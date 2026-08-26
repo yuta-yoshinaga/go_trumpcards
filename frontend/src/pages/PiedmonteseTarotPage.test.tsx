@@ -30,6 +30,8 @@ const scartoState = makePiedmonteseTarotState({
   isHumanScarto: true,
   scartoCount: 0,
   playableIndices: [],
+  // サーバが返す「捨てられる札」。ピップ 2 枚でタロン 2 枚ぶん足りている。
+  discardableIndices: [0, 1],
   dealerIdx: 0,
   players: [
     {

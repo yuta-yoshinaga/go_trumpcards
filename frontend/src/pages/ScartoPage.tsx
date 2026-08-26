@@ -30,7 +30,7 @@ import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, ScartoResponse } from '../types/card';
+import type { ScartoResponse } from '../types/card';
 import { ScartoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseScartoCommand, SCARTO_HELP } from '../utils/cli/commands/scartoCommands';
@@ -80,16 +80,6 @@ const SCARTO_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Outcome i18n keys indexed by outcome value (0=none/average, 1=above average, 2=below average). */
 const OUTCOME_KEYS = ['outcomeNone', 'outcomeWin', 'outcomeLoss'] as const;
-
-/**
- * True for cards that may NOT be buried in the scarto: trumps (purple), the
- * Excuse (gold), and counting cards (Kings and courts — value ≥ 11). Only 0.5-pt
- * pips (value 1–10 of a plain suit) are buryable, mirroring the backend's
- * `scartoDiscardable` rule.
- */
-function isUndiscardable(card: Card): boolean {
-  return card?.color === 'purple' || card?.color === 'gold' || (card?.value ?? 0) >= 11;
-}
 
 /** Formats a card-point number with up to one decimal place, dropping a trailing `.0`. */
 function formatPoints(n: number): string {
@@ -174,11 +164,10 @@ function ScartoPageContent() {
   const totalCardPoints = state.players.reduce((sum, p) => sum + p.cardPoints, 0);
   const averageCardPoints = state.players.length > 0 ? totalCardPoints / state.players.length : 0;
 
-  // During the scarto, restrict selection to buryable pips (no trumps / Excuse / counting cards).
-  const discardableIndices =
-    canScarto && humanPlayer
-      ? humanPlayer.cards.map((c, i) => (isUndiscardable(c) ? -1 : i)).filter((i) => i >= 0)
-      : undefined;
+  // **捨てられる札はサーバが決める。** 色と値からここで組み立てると、
+  // 捨てられるピップが足りないときに解禁される非オヌール切り札が落ちる。
+  // その手を引いた親は、画面から枚数を揃えられなかった (#6236)。
+  const discardableIndices = canScarto ? state.discardableIndices : undefined;
 
   const handValidIndices = canPlay ? state.playableIndices : canScarto ? discardableIndices : undefined;
 
@@ -189,6 +178,9 @@ function ScartoPageContent() {
   const scartoTitleFor = (idx: number): string | undefined => {
     const card = humanPlayer?.cards[idx];
     if (!card) return undefined;
+    // いま実際に捨てられる札には理由を出さない。ピップが足りないときの
+    // 切り札は「捨てられない」ではなく捨てられるので、一覧と食い違う (#6236)。
+    if (discardableIndices?.includes(idx)) return undefined;
     const reason = scartoUndiscardableReason(card);
     return reason ? t(`scartoUndiscardable.${reason}`) : undefined;
   };

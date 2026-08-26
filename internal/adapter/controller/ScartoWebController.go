@@ -56,11 +56,14 @@ type ScartoWebOutput struct {
 	Outcome          int                         `json:"outcome"`
 	Result           int                         `json:"result"`
 	PlayableIndices  []int                       `json:"playableIndices"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	WinnerPlayer     int                         `json:"winnerPlayer"`
-	IsHumanTurn      bool                        `json:"isHumanTurn"`
-	IsHumanScarto    bool                        `json:"isHumanScarto"`
-	Hint             *WebOutputCardHint          `json:"hint,omitempty"`
+	// DiscardableIndices は親がスカルトに出せる札。**ピップが 3 枚に満たなければ
+	// 非ブー切り札も含む** —— 画面側で色や値から作ると再現できない (#6236)。
+	DiscardableIndices []int              `json:"discardableIndices"`
+	GameEndFlag        bool               `json:"gameEndFlag"`
+	WinnerPlayer       int                `json:"winnerPlayer"`
+	IsHumanTurn        bool               `json:"isHumanTurn"`
+	IsHumanScarto      bool               `json:"isHumanScarto"`
+	Hint               *WebOutputCardHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config ScartoWebOutputConfig `json:"config"`
 }

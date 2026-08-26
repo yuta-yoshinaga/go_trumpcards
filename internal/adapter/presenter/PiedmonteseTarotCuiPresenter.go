@@ -59,15 +59,6 @@ func piedmonteseTarotRankLabel(v int) string {
 	}
 }
 
-// piedmonteseTarotCuiDiscardable は通常のスカルトに出せる札かを返す。
-// ドメインの規則を提示側で再現したもの。
-func piedmonteseTarotCuiDiscardable(c *domain.Card) bool {
-	if c == nil || c.GetDesign() == domain.Tarot78TrumpDesign || c.GetDesign() == domain.Tarot78ExcuseDesign {
-		return false
-	}
-	return c.GetValue() < domain.Tarot78CourtMin
-}
-
 // piedmonteseTarotIndexedHand は人間の手札を番号付きで返す。
 func piedmonteseTarotIndexedHand(p *domain.PiedmonteseTarotPlayer) string {
 	parts := make([]string, p.GetCardsSize())
@@ -170,11 +161,12 @@ func (p *PiedmonteseTarotCuiPresenter) writePrompt(b *strings.Builder, g interfa
 		// **捨てられる札を並べて出す。** Web はボタンを無効化して示すが、CUI では
 		// 一覧が無いと総当たりになる。
 		if dealer := g.GetPlayer(dealerIdx); dealer != nil && dealer.GetIsHuman() {
+			// **規則はドメインに訊く。** ここで作り直していたせいで切り札が常に
+			// 除外され、ピップが足りない手では捨てられる札が実際より少なく
+			// 見えていた (#6236)。
 			var idxs []string
-			for i := 0; i < dealer.GetCardsSize(); i++ {
-				if piedmonteseTarotCuiDiscardable(dealer.GetCard(i)) {
-					idxs = append(idxs, "["+strconv.Itoa(i)+"]"+piedmonteseTarotCuiCardStr(dealer.GetCard(i)))
-				}
+			for _, i := range g.GetDiscardableIndices() {
+				idxs = append(idxs, "["+strconv.Itoa(i)+"]"+piedmonteseTarotCuiCardStr(dealer.GetCard(i)))
 			}
 			list := strings.Join(idxs, "  ")
 			if list == "" {

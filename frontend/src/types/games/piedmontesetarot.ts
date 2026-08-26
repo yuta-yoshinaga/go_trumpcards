@@ -89,6 +89,15 @@ export interface PiedmonteseTarotResponse extends BaseGameResponse {
   result: number;
   /** Indices in the human's hand that are legal to play. */
   playableIndices: number[];
+  /**
+   * Indices in the dealer's hand that may be buried in the scarto.
+   *
+   * **Computed by the domain, not derivable from the card faces.** When the
+   * dealer holds too few freely-buriable pips, ordinary (non-bout) trumps
+   * become legal, and a colour-based rule on the client cannot see that — which
+   * is why the dealer could not make up the count from the screen (#6236).
+   */
+  discardableIndices: number[];
   gameEndFlag: boolean;
   /** Winning seat index, or -1 for a draw / undecided. */
   winnerPlayer: number;

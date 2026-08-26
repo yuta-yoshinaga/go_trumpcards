@@ -40,13 +40,37 @@ func TestScartoCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, discardablePrefix)
 	})
 
-	t.Run("scarto phase with no discardable cards shows none", func(t *testing.T) {
+	// **ピップが足りない手では、非ブー切り札が一覧に出る。** この試験は以前
+	// 「切り札だけの手には捨てられる札が無い」と主張していたが、ドメインの検証は
+	// 前からその切り札を許していた ── 一覧を作る側だけが切り札を常に除外して
+	// いたので、この手を引いた親は画面から枚数を揃えられなかった (#6236)。
+	t.Run("scarto phase lists non-bout trumps when pips run short", func(t *testing.T) {
 		g := scartoCuiGame()
 		dealer := g.GetPlayer(g.GetDealerIdx())
 		dealer.Reset()
-		// A hand of only trumps has nothing legally discardable.
 		dealer.AddCard(domain.NewCard(domain.ScartoTrumpDesign, 3, false))
 		dealer.AddCard(domain.NewCard(domain.ScartoTrumpDesign, 8, false))
+		result := p.Output(g, nil)
+		assert.NotContains(t, result,
+			i18n.Tf("scarto.discardableList", "cards", i18n.T("scarto.discardableNone")),
+			"捨てられる札があるのに「なし」と出ている")
+		assert.Contains(t, result, "[0]", "非ブー切り札が一覧に出ていない")
+		assert.Contains(t, result, "[1]")
+		// 凡例も一覧と矛盾しないこと。
+		assert.Contains(t, result, i18n.T("scarto.discardableLegendTrumpOk"))
+		assert.NotContains(t, result, i18n.T("scarto.discardableLegend"))
+	})
+
+	// **本当に何も捨てられない手。** ブーとエクスキューズとコートだけなら、
+	// ピップが 0 枚でも捨てられる切り札が 1 枚も無い。
+	t.Run("scarto phase with genuinely nothing discardable shows none", func(t *testing.T) {
+		g := scartoCuiGame()
+		dealer := g.GetPlayer(g.GetDealerIdx())
+		dealer.Reset()
+		dealer.AddCard(domain.NewCard(domain.ScartoTrumpDesign, 1, false))  // ブー
+		dealer.AddCard(domain.NewCard(domain.ScartoTrumpDesign, 21, false)) // ブー
+		dealer.AddCard(domain.NewCard(domain.ScartoExcuseDesign, 0, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignSpade, domain.ScartoCourtMin, false))
 		result := p.Output(g, nil)
 		assert.Contains(t, result, i18n.Tf("scarto.discardableList", "cards", i18n.T("scarto.discardableNone")))
 	})

@@ -105,6 +105,9 @@ func (p *ScartoWebPresenter) buildBase(g interfaces.ScartoGame) *controller.Scar
 	resObj.IsHumanScarto = g.IsHumanScartoTurn()
 
 	resObj.PlayableIndices = p.playableIndices(g)
+	// 規則はドメインに 1 つだけ。画面側で色や値から作り直すと、ピップが
+	// 足りないときの切り札が落ちる (#6236)。
+	resObj.DiscardableIndices = g.GetDiscardableIndices()
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.ScartoWebOutputConfig{
