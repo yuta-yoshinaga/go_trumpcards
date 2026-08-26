@@ -142,9 +142,10 @@ func (p *ScartoCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Scarto
 		if dealer := g.GetPlayer(dealerIdx); dealer != nil && dealer.GetIsHuman() {
 			// **規則はドメインに訊く。** ここで作り直していたせいで切り札が常に
 			// 除外され、ピップが足りない手では捨てられる札が実際より少なく
-			// 見えていた (#6236)。
+			// 見えていた (#6236)。一覧と凡例は同じ 1 つの答えから作る。
+			discardable := g.GetDiscardableIndices()
 			var idxs []string
-			for _, i := range g.GetDiscardableIndices() {
+			for _, i := range discardable {
 				idxs = append(idxs, "["+strconv.Itoa(i)+"]"+scartoCuiCardStr(dealer.GetCard(i)))
 			}
 			list := strings.Join(idxs, "  ")
@@ -156,7 +157,7 @@ func (p *ScartoCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Scarto
 			// 捨てられる状況で「切り札は捨てられません」と出すと、一覧と
 			// 矛盾する (#6236)。
 			legend := "scarto.discardableLegend"
-			for _, i := range g.GetDiscardableIndices() {
+			for _, i := range discardable {
 				if c := dealer.GetCard(i); c != nil && c.GetDesign() == domain.ScartoTrumpDesign {
 					legend = "scarto.discardableLegendTrumpOk"
 					break

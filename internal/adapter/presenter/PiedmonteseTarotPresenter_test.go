@@ -25,12 +25,59 @@ func piedmonteseGame(seats int) *domain.PiedmonteseTarot {
 	return g
 }
 
+// piedmonteseTarotDiscardableLine は出力から「捨て可能:」の行だけを取り出す。
+// 出力全体に対して札のインデックスを探すと、**手札の一覧**に当たってしまう。
+func piedmonteseTarotDiscardableLine(t *testing.T, out string) string {
+	t.Helper()
+	prefix := strings.SplitN(i18n.T("piedmontesetarot.discardableList"), "{{", 2)[0]
+	for _, ln := range strings.Split(out, "\n") {
+		if strings.HasPrefix(ln, prefix) {
+			return ln
+		}
+	}
+	t.Fatalf("「捨て可能」の行が出力に無い:\n%s", out)
+	return ""
+}
+
 func TestPiedmonteseTarotCuiPresenter_Output(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)
 	defer color.SetNoColor(orig)
 	i18n.SetLang("ja")
 	p := new(presenter.PiedmonteseTarotCuiPresenter)
+
+	// **ピップが足りない手では、非オヌール切り札が一覧に出る。** ドメインの
+	// 規則は前からそれを許していたのに、CUI 側が切り札を常に除外していたので
+	// この手を引いた親は一覧から枚数を揃えられなかった。Scarto 側と同じ
+	// 配線レベルのガードを、こちらにも置く (#6236)。
+	t.Run("scarto phase lists non-honour trumps when pips run short", func(t *testing.T) {
+		g := piedmonteseGame(4)
+		dealer := g.GetPlayer(g.GetDealerIdx())
+		dealer.Reset()
+		dealer.AddCard(domain.NewCard(domain.Tarot78TrumpDesign, 10, false)) // 非オヌール切り札
+		dealer.AddCard(domain.NewCard(domain.Tarot78TrumpDesign, 21, false)) // Mondo (オヌール)
+		dealer.AddCard(domain.NewCard(domain.CardDesignSpade, domain.Tarot78CourtMin, false))
+		// **「捨て可能」の行だけを見る。** 出力全体を見ると手札の一覧
+		// (`[0]T10  [1]T21  [2]♠V`) に当たってしまい、何を確かめているのか
+		// 分からない試験になる。
+		line := piedmonteseTarotDiscardableLine(t, p.Output(g, nil))
+		assert.Contains(t, line, "[0]", "非オヌール切り札が一覧に出ていない")
+		assert.NotContains(t, line, "[1]", "オヌールが一覧に出ている")
+		assert.NotContains(t, line, "[2]", "コートが一覧に出ている")
+	})
+
+	// 本当に何も捨てられない手 (オヌールとコートだけ)。
+	t.Run("scarto phase with genuinely nothing discardable shows none", func(t *testing.T) {
+		g := piedmonteseGame(4)
+		dealer := g.GetPlayer(g.GetDealerIdx())
+		dealer.Reset()
+		dealer.AddCard(domain.NewCard(domain.Tarot78TrumpDesign, 1, false))
+		dealer.AddCard(domain.NewCard(domain.Tarot78TrumpDesign, 21, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignSpade, domain.Tarot78CourtMin, false))
+		line := piedmonteseTarotDiscardableLine(t, p.Output(g, nil))
+		assert.Contains(t, line, i18n.T("piedmontesetarot.discardableNone"))
+		assert.NotContains(t, line, "[", "何も捨てられないのに札が並んでいる")
+	})
 
 	t.Run("scarto phase lists what may be buried", func(t *testing.T) {
 		g := piedmonteseGame(4)

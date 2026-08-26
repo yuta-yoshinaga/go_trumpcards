@@ -24,6 +24,41 @@ const suit = (value: number, design: 'HEART' | 'SPADE' | 'CLOVER' | 'DIAMOND', g
 const playState = makePiedmonteseTarotState();
 
 /** The human deals: two cards to bury, a hand mixing pips, a Roi and the Matto. */
+
+// ピップが 1 枚しかない親の手。ドメインは非オヌール切り札 (index 1) を解禁するので、
+// サーバはそれを discardableIndices に載せて返す。
+const shortOnPipsState = makePiedmonteseTarotState({
+  phase: 0,
+  isHumanTurn: false,
+  isHumanScarto: true,
+  scartoCount: 0,
+  playableIndices: [],
+  discardableIndices: [0, 1],
+  dealerIdx: 0,
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 21,
+      cards: [
+        suit(2, 'HEART', '♥', '2'),
+        { design: 'JOKER' as const, value: 10, glyph: 'A', label: 'T10', color: 'purple', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 21, glyph: 'A', label: 'T21', color: 'purple', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 0, glyph: '★', label: 'Matto', color: 'gold', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      cardThirds: 0,
+      cardPoints: '0',
+      score: 0,
+      isDealer: true,
+    },
+
+    ...makePiedmonteseTarotState()
+      .players.slice(1)
+      .map((p) => ({ ...p, isDealer: false })),
+  ],
+});
+
 const scartoState = makePiedmonteseTarotState({
   phase: 0,
   isHumanTurn: false,
@@ -188,5 +223,30 @@ describe('PiedmonteseTarotPage', () => {
     );
     renderWithProviders(<PiedmonteseTarotPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
+  });
+
+  // **#6236 の本体（ピエモンテ側）。** Scarto 側と同じ配線レベルのガード。
+  // 捨てられるピップがタロンの枚数に満たない手では、非オヌール切り札を
+  // 選べなければならない。
+  it('lets the dealer bury a trump when there are too few pips', async () => {
+    mockExec.mockResolvedValue(shortOnPipsState);
+    renderWithProviders(<PiedmonteseTarotPage />);
+    const cards = await screen.findAllByRole('button', { name: /♥|★|A/ });
+    fireEvent.click(cards[0]);
+    fireEvent.click(cards[1]);
+    const button = screen.getByRole('button', { name: /捨てる/ });
+    expect(button).toBeEnabled();
+    fireEvent.click(button);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('scarto', { cardIndices: [0, 1] }));
+  });
+
+  // オヌールとエクスキューズは、ピップが足りなくても選べない。
+  it('still refuses the honours when pips run short', async () => {
+    mockExec.mockResolvedValue(shortOnPipsState);
+    renderWithProviders(<PiedmonteseTarotPage />);
+    const cards = await screen.findAllByRole('button', { name: /♥|★|A/ });
+    fireEvent.click(cards[2]);
+    fireEvent.click(cards[3]);
+    expect(screen.getByRole('button', { name: /捨てる/ })).toBeDisabled();
   });
 });
