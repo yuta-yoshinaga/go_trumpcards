@@ -48,6 +48,9 @@
   "hintReasonLeadTrump": "切り札をリード",
   "hintReasonDiscardWeak": "弱いカードを処理",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpExampleBid": "  b 4 1                アップタウンで 4 トリックを入札する",
+  "helpExampleTrump": "  t 1                  切り札にスペードを宣言する",
+  "helpExampleKitty": "  e 0 1 2 3 4 5        キティを取ったあと 6 枚を捨てる",
   "helpHint": "  h                    助言を表示",
   "helpLog": "  l                    行動ログを表示"
 }

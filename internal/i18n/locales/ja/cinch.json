@@ -32,5 +32,7 @@
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
   "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す",
+  "helpExampleBid": "  bid 7                     14 点のうち 7 点を入札する",
+  "helpExampleTrump": "  t 1                       落札後に切り札をスペードに決める",
   "helpHint": "  h                         助言を表示"
 }

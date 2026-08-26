@@ -12,6 +12,7 @@
   "helpLog": "  l                    show the action log",
   "helpExampleDraw": "  ds                   draw one from the stock to start your turn",
   "helpExampleDiscard": "  d 0                  discard the card at index 0",
+  "helpExampleSkipMeld": "  sm                   skip melding and go straight to the discard",
   "header": "Round: {{round}}  Stock: {{stock}}  Discard: {{discard}}",
   "teamScoreLine": "Team 0: {{t0}}  Team 1: {{t1}}",
   "frozenTag": " [frozen]",

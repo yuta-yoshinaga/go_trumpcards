@@ -12,6 +12,7 @@
   "helpLog": "  l                    行動ログを表示",
   "helpExampleDraw": "  ds                   手番の最初に山札から 1 枚引く",
   "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる",
+  "helpExampleSkipMeld": "  sm                   メルドせずに捨て札へ進む",
   "header": "ラウンド: {{round}}  山札: {{stock}}枚  廃棄山: {{discard}}枚",
   "teamScoreLine": "チーム0: {{t0}}点  チーム1: {{t1}}点",
   "frozenTag": " [フリーズ]",

@@ -42,6 +42,8 @@
   "hintReasonDiscardWeakest": "最弱カードを捨てる",
   "sittingOut": " 💤（休み）",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpExampleOrderUp": "  o                    ディーラーに表向きの札を取らせる",
+  "helpExampleDiscard": "  d 0                  取ったあとに 1 枚捨てる",
   "helpHint": "  h                    助言を表示",
   "hintScore": "  ハンド強度: {{score}} (オーダーアップ {{orderUp}}以上 / ゴーアローン {{goAlone}}以上)"
 }

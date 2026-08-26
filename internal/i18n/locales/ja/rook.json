@@ -50,5 +50,6 @@
   "hintReasonTrumpCut": "切り札で取る",
   "hintReasonDiscardWeak": "弱いカードを処理",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpExamplePass": "  pa                   入札せずにパスする",
   "helpHint": "  h                    助言を表示"
 }

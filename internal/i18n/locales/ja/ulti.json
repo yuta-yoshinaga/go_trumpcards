@@ -50,5 +50,6 @@
   "helpExampleBid": "  bid betli                 ベトリを宣言する",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
   "helpExampleNext": "  n                         トリックの決着を見てから次へ",
+  "helpExampleTalon": "  discard 0 1               タロンを取ったあと 2 枚を伏せて戻す",
   "helpHint": "  h                         助言を表示"
 }

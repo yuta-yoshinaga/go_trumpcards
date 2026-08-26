@@ -26,5 +26,6 @@
   "looedList": "ルー（罰）: {{names}}",
   "chipDeltaLine": "  {{name}}: {{delta}}",
   "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す",
+  "helpExampleDecide": "  d 1                       降りずにこの手に参加する",
   "helpHint": "  h                         助言を表示"
 }
