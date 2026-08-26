@@ -101,6 +101,15 @@ func TestKemps_PlayerSwap(t *testing.T) {
 	// 人間の手札とフィールドを確定状態にする。
 	kmSetHand(g.GetPlayer(0), kmCard(1, 2), kmCard(2, 3), kmCard(3, 4), kmCard(4, 5))
 	kmSetField(g, kmCard(1, 9), kmCard(2, 10), kmCard(3, 11), kmCard(4, 12))
+	// **他の席も固定する。** `afterExchange` の `firstFourHolder()` は全席を
+	// 走査するので、CPU に配られた手がフォーオブアカインドだと宣言ウィンドウが
+	// 開いて手番が進まず、下の「手番が次に進む」が落ちる。`newTestKemps` の
+	// `SetRand` は Kemps 自身の rng しか差し替えず、配りは `TrumpCards.Shuffle()`
+	// —— つまりグローバルの乱数 —— を通るので、この前提は固定されていなかった。
+	for i := 1; i < KempsPlayerCnt; i++ {
+		kmSetHand(g.GetPlayer(i), kmCard(1, 3), kmCard(2, 5), kmCard(3, 7), kmCard(4, 9))
+	}
+	require.Equal(t, -1, g.firstFourHolder(), "誰もフォーオブアカインドを持っていないこと")
 
 	require.NoError(t, g.PlayerSwap(0, 0))
 	// 取った 9 が手札に、出した 2 がフィールドに。
