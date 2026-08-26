@@ -49,5 +49,6 @@
   "goOutNeedRed": "red canastas {{have}}/{{need}}",
   "goOutNeedBlack": "black canastas {{have}}/{{need}}",
   "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
-  "helpExampleDiscard": "  d 0                  discard hand card 0"
+  "helpExampleDiscard": "  d 0                  discard hand card 0",
+  "helpExampleSkipMeld": "  sm                   skip melding and go straight to the discard"
 }

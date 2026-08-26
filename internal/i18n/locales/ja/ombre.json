@@ -49,5 +49,6 @@
   "matadorManille": "マニーユ",
   "matadorBasto": "バスト",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
+  "helpExampleBid": "  bid pass                  入札から降りる",
   "helpHint": "  h                         助言を表示"
 }

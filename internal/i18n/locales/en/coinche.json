@@ -35,6 +35,7 @@
   "hintPass": "[HINT: pass ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "helpExamplePlay": "  p 0                  play the card at index 0",
+  "helpExampleBid": "  b 120 1              bid 120 with spades as trump",
   "helpHint": "  h                    show a hint",
   "dixDeDerNotice": "Last trick: Dix de Der +{{points}} to the winning team"
 }

@@ -9,7 +9,6 @@
   "helpHint": "  h                         助言を表示",
   "helpExampleBid": "  bid solo s           スペードを切り札に Solo を宣言する (単独で 5 トリック)",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
-  "helpExampleAce": "  ace h               ハートの A を呼んで味方を作る",
   "round": "ディール: {{round}}  トリック: {{trick}}  切り札: {{trump}}",
   "contractLine": "契約: {{bid}}（必要 {{need}} トリック）  宣言側 {{tricks}} - 守備側 {{opp}}",
   "playerLine": "{{name}} ({{role}}): {{cards}}枚  得点: {{score}}  トリック: {{tricks}}",

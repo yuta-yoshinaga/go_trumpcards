@@ -42,6 +42,8 @@
   "hintReasonDiscardWeakest": "discard the weakest card",
   "sittingOut": " 💤(sitting out)",
   "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpExampleOrderUp": "  o                    order the dealer to pick the card up",
+  "helpExampleDiscard": "  d 0                  discard a card after picking it up",
   "helpHint": "  h                    show a hint",
   "hintScore": "  Hand strength: {{score}} (order up at {{orderUp}}+, go alone at {{goAlone}}+)"
 }

@@ -46,6 +46,8 @@
   "hintReasonLeadTrump": "lead a trump",
   "hintReasonDiscardWeak": "shed a weak card",
   "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpExampleBid": "  b 6 1                bid six tricks with spades as trump",
+  "helpExampleKitty": "  e 0 1 2              discard three cards after taking the kitty",
   "helpHint": "  h                    show a hint",
   "helpLog": "  l                    show the action log"
 }

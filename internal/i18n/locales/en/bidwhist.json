@@ -48,6 +48,9 @@
   "hintReasonLeadTrump": "Lead a trump",
   "hintReasonDiscardWeak": "Throw a weak card",
   "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpExampleBid": "  b 4 1                bid four tricks uptown",
+  "helpExampleTrump": "  t 1                  declare spades as trump",
+  "helpExampleKitty": "  e 0 1 2 3 4 5        discard six cards after taking the kitty",
   "helpHint": "  h                    show a hint",
   "helpLog": "  l                    show the action log"
 }

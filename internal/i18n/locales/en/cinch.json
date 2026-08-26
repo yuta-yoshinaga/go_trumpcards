@@ -32,5 +32,7 @@
   "result.humanWin": "Game over! You win!",
   "result.cpuWin": "Game over! Player {{player}} wins!",
   "helpExamplePlay": "  p 0                       play hand card 0",
+  "helpExampleBid": "  bid 7                     bid seven of the fourteen points",
+  "helpExampleTrump": "  t 1                       name spades as trump after winning the bid",
   "helpHint": "  h                         show a hint"
 }

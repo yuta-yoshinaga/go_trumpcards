@@ -39,5 +39,6 @@
   "promptDrawHelpFrozen": "  Note (frozen): taking the discard requires showing two natural matching cards from hand",
   "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
   "helpExampleDiscard": "  d 0                  discard hand card 0",
+  "helpExampleSkipMeld": "  sm                   skip melding and go straight to the discard",
   "helpLog": "  l                    show the action log"
 }

@@ -785,6 +785,8 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "euchre.helpTitle",
 			ExampleKeys: []string{
+				"euchre.helpExampleOrderUp",
+				"euchre.helpExampleDiscard",
 				"euchre.helpExamplePlay",
 			},
 			CommandKeys: []string{
@@ -2405,6 +2407,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "belote.helpTitle",
 			ExampleKeys: []string{
+				"belote.helpExampleTake",
 				"belote.helpExamplePlay",
 			},
 			CommandKeys: []string{
@@ -2879,6 +2882,8 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "sixcardgolf.helpTitle",
 			ExampleKeys: []string{
+				"sixcardgolf.helpExampleFlipFirst",
+				"sixcardgolf.helpExampleFlipSecond",
 				"sixcardgolf.helpExampleDraw",
 			},
 			CommandKeys: []string{"sixcardgolf.helpFlipInitial", "sixcardgolf.helpDrawStock", "sixcardgolf.helpDrawDiscard", "sixcardgolf.helpSwap", "sixcardgolf.helpDiscard", "sixcardgolf.helpFlip", "sixcardgolf.helpSkipFlip", "sixcardgolf.helpNextRound", "sixcardgolf.helpLog", "sixcardgolf.helpHint"},
@@ -3029,6 +3034,8 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "fivehundred.helpTitle",
 			ExampleKeys: []string{
+				"fivehundred.helpExampleBid",
+				"fivehundred.helpExampleKitty",
 				"fivehundred.helpExamplePlay",
 			},
 			CommandKeys: []string{
@@ -3100,6 +3107,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "yaniv.helpTitle",
 			ExampleKeys: []string{
+				"yaniv.helpExampleDiscard",
 				"yaniv.helpExampleDraw",
 			},
 			CommandKeys: []string{
@@ -3162,6 +3170,9 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "bidwhist.helpTitle",
 			ExampleKeys: []string{
+				"bidwhist.helpExampleBid",
+				"bidwhist.helpExampleTrump",
+				"bidwhist.helpExampleKitty",
 				"bidwhist.helpExamplePlay",
 			},
 			CommandKeys: []string{
@@ -3653,6 +3664,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "courtpiece.helpTitle",
 			ExampleKeys: []string{
+				"courtpiece.helpExampleTrump",
 				"courtpiece.helpExamplePlay",
 			},
 			CommandKeys: []string{
@@ -3791,6 +3803,7 @@ var gameRegistry = []GameRegistryEntry{
 			TitleKey: "handandfoot.helpTitle",
 			ExampleKeys: []string{
 				"handandfoot.helpExampleDraw",
+				"handandfoot.helpExampleSkipMeld",
 				"handandfoot.helpExampleDiscard",
 			},
 			CommandKeys: []string{
@@ -4316,6 +4329,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "ombre.helpTitle",
 			ExampleKeys: []string{
+				"ombre.helpExampleBid",
 				"ombre.helpExamplePlay",
 			},
 			CommandKeys: []string{
@@ -4336,6 +4350,7 @@ var gameRegistry = []GameRegistryEntry{
 			TitleKey: "ulti.helpTitle",
 			ExampleKeys: []string{
 				"ulti.helpExampleBid",
+				"ulti.helpExampleTalon",
 				"ulti.helpExamplePlay",
 				"ulti.helpExampleNext",
 			},
@@ -4371,6 +4386,8 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "cinch.helpTitle",
 			ExampleKeys: []string{
+				"cinch.helpExampleBid",
+				"cinch.helpExampleTrump",
 				"cinch.helpExamplePlay",
 			},
 			CommandKeys:       []string{"cinch.helpBid", "cinch.helpTrump", "cinch.helpPlay", "cinch.helpNext", "cinch.helpHint"},
@@ -4385,6 +4402,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "loo.helpTitle",
 			ExampleKeys: []string{
+				"loo.helpExampleDecide",
 				"loo.helpExamplePlay",
 			},
 			CommandKeys:       []string{"loo.helpDecide", "loo.helpPlay", "loo.helpNext", "loo.helpHint"},
@@ -4542,6 +4560,7 @@ var gameRegistry = []GameRegistryEntry{
 			TitleKey: "samba.helpTitle",
 			ExampleKeys: []string{
 				"samba.helpExampleDraw",
+				"samba.helpExampleSkipMeld",
 				"samba.helpExampleDiscard",
 			},
 			CommandKeys: []string{
@@ -4645,6 +4664,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "rook.helpTitle",
 			ExampleKeys: []string{
+				"rook.helpExamplePass",
 				"rook.helpExamplePlay",
 			},
 			CommandKeys:       []string{"rook.helpBid", "rook.helpPass", "rook.helpExchange", "rook.helpPlay", "rook.helpNext", "rook.helpNextRound", "rook.helpHint"},
@@ -6791,6 +6811,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "coinche.helpTitle",
 			ExampleKeys: []string{
+				"coinche.helpExampleBid",
 				"coinche.helpExamplePlay",
 			},
 			CommandKeys: []string{
@@ -6813,11 +6834,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewGermanSoloCuiController,
 		CuiHelpSpec{
 			TitleKey: "germansolo.helpTitle",
-			// **例文はフェーズ順。** 落札 → エース呼び → プレイの順でないと、
-			// そのまま打つと「フェーズが違う」で弾かれる。
+			// **例文はフェーズ順。** ソロ宣言 → プレイ。エース呼びは Frage を
+			// 宣言した局でしか合法にならないので例文から外してある(コマンド表
+			// には helpAce として残っている)。
 			ExampleKeys: []string{
 				"germansolo.helpExampleBid",
-				"germansolo.helpExampleAce",
 				"germansolo.helpExamplePlay",
 			},
 			CommandKeys: []string{
@@ -6837,11 +6858,12 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewGleekCuiController,
 		CuiHelpSpec{
 			TitleKey: "gleek.helpTitle",
-			// **例文はフェーズ順。** 競り → 捨て札 → プレイの順でないと、
-			// そのまま打つと「フェーズが違う」で弾かれる。
+			// **例文はフェーズ順。** 競り(降りる) → プレイ。捨て札はストックを
+			// 取った局でしか合法にならないので例文から外してある(コマンド表には
+			// helpDiscard として残っている)。競り上げ額は配りによって最低 16 か
+			// 18 に変わるので、固定額の例文は書けない。
 			ExampleKeys: []string{
-				"gleek.helpExampleBid",
-				"gleek.helpExampleDiscard",
+				"gleek.helpExamplePass",
 				"gleek.helpExamplePlay",
 			},
 			CommandKeys: []string{
@@ -6902,6 +6924,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "piedmontesetarot.helpTitle",
 			ExampleKeys: []string{
+				"piedmontesetarot.helpExampleScarto",
 				"piedmontesetarot.helpExamplePlay",
 				"piedmontesetarot.helpExampleNext",
 			},
@@ -7111,6 +7134,7 @@ var gameRegistry = []GameRegistryEntry{
 			TitleKey: "bolivia.helpTitle",
 			ExampleKeys: []string{
 				"bolivia.helpExampleDraw",
+				"bolivia.helpExampleSkipMeld",
 				"bolivia.helpExampleDiscard",
 			},
 			CommandKeys: []string{
