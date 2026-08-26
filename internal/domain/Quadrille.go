@@ -53,8 +53,12 @@ const QuadrillePlayerCnt = 4
 // 配り残していたが、こちらは 4 × 10 = 40 でちょうど尽きる。
 const QuadrilleHandSize = 10
 
-// QuadrilleTrickCount 1 ディールのトリック数
-const QuadrilleTrickCount = 9
+// QuadrilleTrickCount 1 ディールのトリック数。
+//
+// **手札の枚数と一致していなければならない。** クローン元のオンブルは
+// 3 人 × 9 枚でストックを 13 枚残す設計なので 9 で正しかったが、こちらは
+// 配り切りなので 10 打たないと全員の手札が 1 枚余ったままラウンドが締まる。
+const QuadrilleTrickCount = QuadrilleHandSize
 
 // QuadrilleDeckSize デッキ枚数 (52 - 8,9,10)
 const QuadrilleDeckSize = 40
@@ -180,6 +184,7 @@ type Quadrille struct {
 	outcome         QuadrilleOutcome // 直近ディールの結果
 	result          QuadrilleResult  // 人間視点のマッチ結果
 	scored          bool             // 当該ディールの得点計算済みか (RoundEnd 突入時に一度だけ)
+	trickResolved   bool             // 当該トリックを精算済みか (TrickEnd の間に二度呼ばれても一度だけ)
 	gameEndFlag     bool
 	winnerPlayer    int // -1=未確定
 	actionLogBase
@@ -259,6 +264,7 @@ func (g *Quadrille) startRound() {
 	g.trumpSuit = -1
 	g.outcome = QuadrilleOutcomeNone
 	g.scored = false
+	g.trickResolved = false
 	// **王呼びはディールごとにやり直す。** 持ち越すと前のディールの相方が
 	// そのまま味方として残り、勝敗の集計が静かにずれる。
 	g.calledKingSuit = -1
@@ -284,7 +290,7 @@ func (g *Quadrille) startRound() {
 	g.phase = QuadrillePhaseBid
 }
 
-// deal 各プレイヤーへ QuadrilleHandSize 枚を配る。残り 13 枚はストックとして未使用のまま残す。
+// deal 各プレイヤーへ QuadrilleHandSize 枚を配る。4 × 10 = 40 で配り切るのでストックは残らない。
 func (g *Quadrille) deal() {
 	for i := 0; i < QuadrilleHandSize; i++ {
 		for j := 0; j < QuadrillePlayerCnt; j++ {
@@ -731,6 +737,12 @@ func (g *Quadrille) ResolveTrick() {
 	if g.phase != QuadrillePhaseTrickEnd || len(g.currentTrick) != QuadrillePlayerCnt {
 		return
 	}
+	// **フェーズは NextTrick まで続き、currentTrick も残ったまま。** 上の条件
+	// だけでは二度目の呼び出しを止められず、同じ札束が勝者にもう一度積まれる。
+	if g.trickResolved {
+		return
+	}
+	g.trickResolved = true
 	winnerIdx := g.trickWinner()
 	trickCards := make([]*Card, len(g.currentTrick))
 	for i, tc := range g.currentTrick {
@@ -756,6 +768,7 @@ func (g *Quadrille) NextTrick() {
 		return
 	}
 	g.currentTrick = nil
+	g.trickResolved = false
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.trickNumber++
 	g.phase = QuadrillePhasePlay
@@ -937,14 +950,13 @@ func (g *Quadrille) getValidPlayIndices(playerIdx int) []int {
 	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
-// isCoalition playerIdx が連合 (非カドリール) 側か。
-func (g *Quadrille) isCoalition(playerIdx int) bool {
-	return playerIdx != g.quadrilleIdx
-}
-
-// sameSide a と b が同じ陣営 (両方カドリール or 両方連合) か。
+// sameSide a と b が同じ陣営 (両方カドリール側 or 両方連合) か。
+//
+// **呼ばれた王を持つ席は落札者の味方。** 「落札者かどうか」で測ると相方の席が
+// 連合に数えられ、CPU が自分の味方の勝っているトリックを上から取りに行く。
+// 判定は quadrilleSideOf ひとつに寄せる —— 陣営の定義が 2 つあったのが原因。
 func (g *Quadrille) sameSide(a, b int) bool {
-	return g.isCoalition(a) == g.isCoalition(b)
+	return g.quadrilleSideOf(a) == g.quadrilleSideOf(b)
 }
 
 // --- Card ranking (Quadrille matador ranking, inline) ---
@@ -1416,6 +1428,9 @@ func (g *Quadrille) SetPartnerForTest(idx int, revealed bool) {
 // SetRoiSeulForTest はテスト用に単独プレイを設定する。
 func (g *Quadrille) SetRoiSeulForTest(v bool) { g.roiSeul = v }
 
+// SameSideForTest はテスト用に 2 席が同じ陣営かを返す。
+func (g *Quadrille) SameSideForTest(a, b int) bool { return g.sameSide(a, b) }
+
 // SetCalledKingSuitForTest はテスト用に呼ばれた王のスートを設定する。
 func (g *Quadrille) SetCalledKingSuitForTest(suit int) { g.calledKingSuit = suit }
 
@@ -1533,6 +1548,7 @@ type quadrilleJSON struct {
 	Outcome         QuadrilleOutcome  `json:"oc"`
 	Result          QuadrilleResult   `json:"rs"`
 	Scored          bool              `json:"sd"`
+	TrickResolved   bool              `json:"tr"`
 	GameEndFlag     bool              `json:"ge"`
 	WinnerPlayer    int               `json:"wp"`
 	ActionLog       []*ActionLogEntry `json:"al"`
@@ -1568,6 +1584,7 @@ func (g *Quadrille) MarshalJSON() ([]byte, error) {
 		Outcome:          g.outcome,
 		Result:           g.result,
 		Scored:           g.scored,
+		TrickResolved:    g.trickResolved,
 		GameEndFlag:      g.gameEndFlag,
 		WinnerPlayer:     g.winnerPlayer,
 		ActionLog:        g.actionLog,
@@ -1735,6 +1752,7 @@ func (g *Quadrille) UnmarshalJSON(data []byte) error {
 	g.outcome = j.Outcome
 	g.result = j.Result
 	g.scored = j.Scored
+	g.trickResolved = j.TrickResolved
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerPlayer = j.WinnerPlayer
 	g.actionLog = j.ActionLog

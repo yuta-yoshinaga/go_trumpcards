@@ -217,6 +217,10 @@ func TestQuadrille_PlainSuit_AceLowAndOffSuit(t *testing.T) {
 	g.ResolveTrick()
 	assert.Equal(t, 1, g.GetLeadPlayerIdx(), "red plain Ace outranks 2 and 7")
 
+	// **次のトリックへ進んでから 2 つめを組む。** ResolveTrick が冪等になった
+	// ので、精算済みのまま札を差し替えても二度目は何もしない (#6230)。
+	g.NextTrick()
+
 	// Off-suit plain cannot win; a higher follower of the led suit does.
 	// Red ranking: diamond 3 outranks diamond 7.
 	g.SetTrickNumber(1)
@@ -932,4 +936,138 @@ func TestQuadrille_RestoreNormalisesAnAbsentKingCall(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(roi), &s))
 	assert.True(t, s.IsRoiSeul())
 	assert.Equal(t, -1, s.GetPartnerIdx(), "単独プレイに味方がいる")
+}
+
+// **40 枚を 4 人で配り切ったなら、10 トリック打って手札が尽きる。**
+// クローン元のオンブルは 3 人 × 9 枚でストックを 13 枚残す設計で、そちらの
+// TrickCount = 9 を引き継いだまま HandSize だけ 10 に直されていたため、
+// 毎ディール全員の手札が 1 枚残ったままラウンドが締まっていた (#6230)。
+func TestQuadrille_PlaysOutEveryDealtCard(t *testing.T) {
+	g := newTestQuadrille()
+	g.SetQuadrilleIdx(0)
+	g.SetWinningBid(domain.QuadrilleBidSolo)
+	g.SetTrumpSuit(domain.CardDesignHeart)
+	g.SetRoiSeulForTest(true)
+	g.SetPhase(domain.QuadrillePhasePlay)
+	g.SetLeadPlayerIdx(0)
+	g.SetCurrentPlayerIdx(0)
+	g.SetTrickNumber(1)
+
+	dealt := 0
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		dealt += g.GetPlayer(i).GetCardsSize()
+	}
+	require.Equal(t, domain.QuadrilleHandSize*domain.QuadrillePlayerCnt, dealt)
+
+	for step := 0; step < 400 && g.GetPhase() != domain.QuadrillePhaseRoundEnd; step++ {
+		switch g.GetPhase() {
+		case domain.QuadrillePhasePlay:
+			if g.IsHumanTurn() {
+				valid := g.GetPlayableIndices(g.GetCurrentPlayerIdx())
+				require.NotEmpty(t, valid)
+				require.NoError(t, g.PlayerPlay(valid[0]))
+				continue
+			}
+			g.CpuPlay()
+		case domain.QuadrillePhaseTrickEnd:
+			g.ResolveTrick()
+			g.NextTrick()
+		}
+	}
+	require.Equal(t, domain.QuadrillePhaseRoundEnd, g.GetPhase(), "ラウンドが締まること")
+
+	left := 0
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		left += g.GetPlayer(i).GetCardsSize()
+	}
+	assert.Equal(t, 0, left, "配った札は全部出る (手札が残らない)")
+
+	quad, coalition := g.GetSideTrickCounts()
+	assert.Equal(t, domain.QuadrilleHandSize, quad+coalition, "トリック数は配り札の枚数と一致する")
+}
+
+// **呼ばれた王を持つ席は落札者の味方。** sameSide が「落札者かどうか」だけを
+// 見ていたため、味方の席では partnerWinning が常に false になり、CPU は自分の
+// 味方が勝っているトリックを上から取りに行っていた (#6230)。
+func TestQuadrille_SameSideCountsTheCalledKingPartner(t *testing.T) {
+	g := newTestQuadrille()
+	g.SetQuadrilleIdx(0)
+	g.SetRoiSeulForTest(false)
+	g.SetPartnerForTest(2, true)
+
+	assert.True(t, g.SameSideForTest(0, 2), "落札者と相方は同じ側")
+	assert.True(t, g.SameSideForTest(2, 0), "対称であること")
+	assert.True(t, g.SameSideForTest(1, 3), "連合の 2 席は同じ側")
+	assert.False(t, g.SameSideForTest(0, 1), "落札者と連合は別の側")
+	assert.False(t, g.SameSideForTest(2, 3), "相方と連合は別の側")
+
+	// 負のコントロール: 単独プレイなら相方はいない。
+	g.SetRoiSeulForTest(true)
+	assert.False(t, g.SameSideForTest(0, 2), "roi seul では相方の席も敵")
+}
+
+// **同じトリックを二度精算しない。** ResolveTrick はトリック終了フェーズが
+// 続く間なら何度でも呼べてしまうので、二度目は何もしないこと (#6230)。
+func TestQuadrille_ResolveTrickIsIdempotent(t *testing.T) {
+	g := newTestQuadrille()
+	g.SetTrumpSuit(domain.CardDesignHeart)
+	g.SetQuadrilleIdx(0)
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.QuadrillePhaseTrickEnd)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: quadrilleCard(domain.CardDesignHeart, 13)},
+		{PlayerIdx: 1, Card: quadrilleCard(domain.CardDesignHeart, 7)},
+		{PlayerIdx: 2, Card: quadrilleCard(domain.CardDesignHeart, 6)},
+		{PlayerIdx: 3, Card: quadrilleCard(domain.CardDesignDiamond, 6)},
+	})
+	g.ResolveTrick()
+	g.ResolveTrick()
+	total := 0
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		total += g.GetPlayer(i).GetTrickCount()
+	}
+	assert.Equal(t, 1, total, "二度呼んでもトリックは 1 つ")
+}
+
+// **引き分け (Puesta) が起こりうること。** 側の取り分は必ず合計 TrickCount に
+// なるので、トリック数が奇数だと同数に並ぶことが構造的に不可能になる。
+// 9 トリックで出荷されていた間、Puesta は 300 ディール測って 0 回だった ——
+// ドキュメントに載っている 3 つの結果のうち 1 つが起き得なかった。
+// 5 対 5 を組んで Puesta を確かめる既存のテストは、**ゲームが決して作れない
+// 配分**を手で組んでいたので、それに気づけなかった (#6230)。
+func TestQuadrille_PuestaNeedsAnEvenTrickCount(t *testing.T) {
+	assert.Equal(t, 0, domain.QuadrilleTrickCount%2,
+		"総トリック数が奇数だと側が同数に並べず、Puesta が一度も起きない")
+}
+
+// **精算済みかどうかは保存して読み戻しても残る。** Worker は毎リクエストで
+// 盤を復元するので、このフラグを JSON に載せ忘れると、復元のたびに
+// 「まだ精算していない」状態に戻り、冪等性がリクエストごとに消える ——
+// つまり NextTrick を挟まずに 2 リクエスト来たら勝者に札束が二度積まれる。
+// フィールドを見比べるのではなく、**復元した盤で実際に呼んで**確かめる (#6230)。
+func TestQuadrille_ResolveTrickStaysIdempotentAcrossSaveRestore(t *testing.T) {
+	g := newTestQuadrille()
+	g.SetTrumpSuit(domain.CardDesignHeart)
+	g.SetQuadrilleIdx(0)
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.QuadrillePhaseTrickEnd)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: quadrilleCard(domain.CardDesignHeart, 13)},
+		{PlayerIdx: 1, Card: quadrilleCard(domain.CardDesignHeart, 7)},
+		{PlayerIdx: 2, Card: quadrilleCard(domain.CardDesignHeart, 6)},
+		{PlayerIdx: 3, Card: quadrilleCard(domain.CardDesignDiamond, 6)},
+	})
+	g.ResolveTrick()
+
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var restored domain.Quadrille
+	require.NoError(t, json.Unmarshal(data, &restored))
+
+	restored.ResolveTrick()
+	total := 0
+	for i := 0; i < restored.GetPlayerCnt(); i++ {
+		total += restored.GetPlayer(i).GetTrickCount()
+	}
+	assert.Equal(t, 1, total, "復元後に呼び直してもトリックは 1 つ")
 }

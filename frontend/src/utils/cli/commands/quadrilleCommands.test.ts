@@ -72,4 +72,23 @@ describe('parseQuadrilleCommand', () => {
     expect(QUADRILLE_HELP.length).toBeGreaterThan(0);
     expect(QUADRILLE_HELP.some((line) => line.includes('Play a card'))).toBe(true);
   });
+
+  // **落札した直後は王呼びフェーズ。** ここを解釈できないと、王を呼ぶまで
+  // play が「フェーズが違う」で弾かれ続け、CLI モードの人はそこから
+  // 一歩も進めなくなる (GUI にはボタンがあるので CLI だけの行き止まり) (#6230)。
+  it('parses the king call (short and long)', () => {
+    expect(parseQuadrilleCommand('king c')).toEqual({ args: ['king', { kingSuit: 2 }] });
+    expect(parseQuadrilleCommand('k h')).toEqual({ args: ['king', { kingSuit: 3 }] });
+    expect(parseQuadrilleCommand('king s')).toEqual({ args: ['king', { kingSuit: 1 }] });
+    expect(parseQuadrilleCommand('king d')).toEqual({ args: ['king', { kingSuit: 4 }] });
+  });
+
+  it('returns error for a king call without a valid suit', () => {
+    expect('error' in parseQuadrilleCommand('king')).toBe(true);
+    expect('error' in parseQuadrilleCommand('king x')).toBe(true);
+  });
+
+  it('advertises the king call in the help text', () => {
+    expect(QUADRILLE_HELP.some((l) => l.startsWith('king '))).toBe(true);
+  });
 });
