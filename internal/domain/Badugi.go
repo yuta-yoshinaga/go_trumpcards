@@ -95,6 +95,10 @@ type Badugi struct {
 	dealerIdx    int
 	humanProfile *BettingHumanProfile
 	round        badugiRoundState
+	// muck はこのハンドで捨てられた札。**山が尽きたらここを切り直して引く。**
+	// 4 席・手札 4 枚だと配った時点の山は 36 枚しかなく、3 回のドローで全員が
+	// 4 枚引くと最大 48 枚要るので、山切れは規則の範囲内で起きる。
+	muck []*Card
 }
 
 // NewBadugi constructs a Badugi game. Callers typically use NewDefaultBadugi
@@ -158,6 +162,8 @@ func (b *Badugi) Reset() error {
 	// Badugi always uses a 52-card deck (no jokers).
 	b.trumpCards = NewTrumpCards(0)
 	b.trumpCards.Shuffle()
+	// **マックはハンドごと。** 持ち越すと前のハンドの札が新しい山に混ざる。
+	b.muck = nil
 
 	activeSeatCount := b.config.CpuCount + 1
 	if activeSeatCount > len(b.players) {
@@ -296,21 +302,48 @@ func (b *Badugi) PlayerStand() error {
 func (b *Badugi) applyExchange(playerIdx int, indices []int) {
 	pl := b.players[playerIdx]
 	drawn := 0
+	// **今この席が捨てた札は、この交換のあいだマックに入れない。** 先に混ぜると
+	// 自分が捨てたばかりの札を引き直せてしまう (カジノでも現に引いている席の
+	// 捨て札は脇に置く)。引き終えてからまとめて積む。
+	var pending []*Card
 	for _, idx := range indices {
 		if idx < 0 || idx >= BadugiHandSize {
 			continue
 		}
-		newCard := b.trumpCards.DrawCard()
+		newCard := b.drawOrRecycleMuck()
 		if newCard == nil {
 			break
+		}
+		if old := pl.GetCard(idx); old != nil {
+			pending = append(pending, old)
 		}
 		pl.ExchangeCard(idx, newCard)
 		drawn++
 	}
+	b.muck = append(b.muck, pending...)
 	pl.SetDrawCount(drawn)
 	pl.AddToTotalDrawCount(drawn)
 	b.appendLog(playerIdx, "exchange",
 		fmt.Sprintf("draw %d: exchange %d card(s)", b.round.drawIndex, drawn), nil)
+}
+
+// drawOrRecycleMuck は山から 1 枚引く。山が尽きていたら捨て札を切り直して
+// そこから引く。**どちらも空のときだけ nil を返す** —— 呼び出し側が黙って
+// 打ち切ると、捨てたはずの札がそのまま手元に残る。
+func (b *Badugi) drawOrRecycleMuck() *Card {
+	if c := b.trumpCards.DrawCard(); c != nil {
+		return c
+	}
+	if len(b.muck) == 0 {
+		return nil
+	}
+	// 切り直しは 1 枚ごとではなく、山が尽きた最初の 1 回だけ意味がある。
+	// ここでは残りを毎回シャッフルせず、無作為な位置から 1 枚抜く —— 結果は
+	// 同じで、混ぜ直しのコストがドロー 1 回ぶんに収まる。
+	i := rand.Intn(len(b.muck))
+	c := b.muck[i]
+	b.muck = append(b.muck[:i], b.muck[i+1:]...)
+	return c
 }
 
 // bettingPlayers adapts the concrete player slice to the BettingPlayer
@@ -927,6 +960,7 @@ type badugiJSON struct {
 	DealerIdx  int                      `json:"di"`
 	Profile    *BettingHumanProfileData `json:"pf,omitempty"`
 	Round      badugiRoundStateJSON     `json:"rd"`
+	Muck       []*Card                  `json:"mk,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -936,6 +970,7 @@ func (b *Badugi) MarshalJSON() ([]byte, error) {
 		Players:    b.players,
 		Config:     b.config,
 		DealerIdx:  b.dealerIdx,
+		Muck:       b.muck,
 		Round: badugiRoundStateJSON{
 			Phase:           b.round.phase,
 			DrawIndex:       b.round.drawIndex,
@@ -971,7 +1006,8 @@ func (b *Badugi) UnmarshalJSON(data []byte) error {
 	if len(j.Players) > badugiMaxSliceLen || len(j.Round.ActedFlags) > badugiMaxSliceLen ||
 		len(j.Round.SidePots) > badugiMaxSliceLen || len(j.Round.StartingChips) > badugiMaxSliceLen ||
 		len(j.Round.RoundResults) > badugiMaxSliceLen || len(j.Round.CpuActions) > badugiMaxSliceLen ||
-		len(j.Round.CpuExchanges) > badugiMaxSliceLen || len(j.Round.ActionLog) > badugiMaxSliceLen {
+		len(j.Round.CpuExchanges) > badugiMaxSliceLen || len(j.Round.ActionLog) > badugiMaxSliceLen ||
+		len(j.Muck) > badugiMaxSliceLen {
 		return fmt.Errorf("badugi: input array exceeds maximum allowed size")
 	}
 	// Consistency check: per-player slices (ActedFlags, StartingChips) must
@@ -995,6 +1031,7 @@ func (b *Badugi) UnmarshalJSON(data []byte) error {
 	}
 	b.config = j.Config
 	b.dealerIdx = j.DealerIdx
+	b.muck = j.Muck
 	if j.Profile != nil {
 		b.humanProfile = &BettingHumanProfile{}
 		b.humanProfile.Import(*j.Profile)
