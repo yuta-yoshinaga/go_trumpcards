@@ -6834,8 +6834,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewGermanSoloCuiController,
 		CuiHelpSpec{
 			TitleKey: "germansolo.helpTitle",
-			// **例文はフェーズ順。** 落札 → エース呼び → プレイの順でないと、
-			// そのまま打つと「フェーズが違う」で弾かれる。
+			// **例文はフェーズ順。** ソロ宣言 → プレイ。エース呼びは Frage を
+			// 宣言した局でしか合法にならないので例文から外してある(コマンド表
+			// には helpAce として残っている)。
 			ExampleKeys: []string{
 				"germansolo.helpExampleBid",
 				"germansolo.helpExamplePlay",
@@ -6857,8 +6858,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewGleekCuiController,
 		CuiHelpSpec{
 			TitleKey: "gleek.helpTitle",
-			// **例文はフェーズ順。** 競り → 捨て札 → プレイの順でないと、
-			// そのまま打つと「フェーズが違う」で弾かれる。
+			// **例文はフェーズ順。** 競り(降りる) → プレイ。捨て札はストックを
+			// 取った局でしか合法にならないので例文から外してある(コマンド表には
+			// helpDiscard として残っている)。競り上げ額は配りによって最低 16 か
+			// 18 に変わるので、固定額の例文は書けない。
 			ExampleKeys: []string{
 				"gleek.helpExamplePass",
 				"gleek.helpExamplePlay",
