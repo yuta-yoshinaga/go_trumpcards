@@ -946,3 +946,48 @@ func TestSamba_GetMinimumMeldValue(t *testing.T) {
 	assert.Equal(t, 0, g.GetMinimumMeldValue(-1))
 	assert.Equal(t, 0, g.GetMinimumMeldValue(99))
 }
+
+// sambaPlayOutRound は 1 ラウンドを CPU だけで打ち切る。人間の席も CPU と同じ
+// 手順で進めるので、配りに依存せずメルドが十分な数できる。
+func sambaPlayOutRound(t *testing.T) *domain.Samba {
+	t.Helper()
+	// **全席を CPU にする。** `CpuPlay` は人間の席では何もしないので、既定の
+	// 卓のままだと 1 手も進まず「3 枚未満のメルドは 0 個」が**空虚に通る**。
+	players := make([]*domain.SambaPlayer, 0, domain.SambaPlayerCnt)
+	for k := 0; k < domain.SambaPlayerCnt; k++ {
+		players = append(players, domain.NewSambaPlayer(false, k%domain.SambaTeamCnt))
+	}
+	g := domain.NewSamba(domain.NewTrumpCardsWithDecks(3, 6), players, domain.DefaultSambaConfig())
+	g.Reset()
+	for step := 0; step < 4000; step++ {
+		ph := g.GetPhase()
+		if ph == domain.SambaPhaseRoundEnd || ph == domain.SambaPhaseGameEnd {
+			break
+		}
+		g.CpuPlay()
+	}
+	return g
+}
+
+// **場に 3 枚未満のメルドが残らないこと。**
+//
+// `cpuFindMelds` は同ランク 4 枚以上を「3 枚 + あまり」に割って提案していたので、
+// あまりが 1〜2 枚の**新規メルド**として場に残っていた ── 実測で 1405 個中 138 個。
+// `validateNewSet` は 3 枚未満を拒否するが、CPU の経路はそこを通らない。
+// あわせて、割ってしまうと 7 枚のカナスタも永久に組めない (#6247)。
+func TestSamba_NoMeldIsEverShorterThanThree(t *testing.T) {
+	tiny, total := 0, 0
+	for i := 0; i < 20; i++ {
+		g := sambaPlayOutRound(t)
+		for p := 0; p < g.GetPlayerCnt(); p++ {
+			for _, m := range g.GetPlayer(p).GetMelds() {
+				total++
+				if len(m.Cards) < 3 {
+					tiny++
+				}
+			}
+		}
+	}
+	require.Greater(t, total, 100, "メルドがほとんど作られていない -- 測っていない")
+	assert.Equal(t, 0, tiny, "3 枚未満のメルドが %d 個ある (全 %d 個)", tiny, total)
+}
