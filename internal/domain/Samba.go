@@ -940,15 +940,14 @@ func (g *Samba) cpuFindMelds(player *SambaPlayer) []sambaCpuGroup {
 	// 新規セットメルド (同ランク3枚以上、または2枚+ワイルド)
 	for _, cards := range byRank {
 		if len(cards) >= 3 {
-			groups = append(groups, sambaCpuGroup{cards: cards[:3], kind: SambaMeldSet, existingIdx: -1})
-			for _, c := range cards[:3] {
+			// **同ランクは 1 つの組にまとめて出す。** 「3 枚 + あまり」に割ると、
+			// あまりの 1〜2 枚が新規メルドとして場に残る ── `validateNewSet` は
+			// 3 枚未満を拒否するが、CPU の経路はそこを通らない。
+			// 割る理由も無い: セットに上限は無く、7 枚に届けばカナスタとして
+			// ボーナスが付くので、割るとその目も潰していた (#6247)。
+			groups = append(groups, sambaCpuGroup{cards: cards, kind: SambaMeldSet, existingIdx: -1})
+			for _, c := range cards {
 				used[c] = true
-			}
-			if len(cards) > 3 {
-				groups = append(groups, sambaCpuGroup{cards: cards[3:], kind: SambaMeldSet, existingIdx: -1})
-				for _, c := range cards[3:] {
-					used[c] = true
-				}
 			}
 		} else if len(cards) == 2 && len(wilds) > 0 {
 			meld := []*Card{cards[0], cards[1], wilds[0]}
