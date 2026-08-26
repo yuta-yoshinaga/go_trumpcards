@@ -442,9 +442,11 @@ func TestDispatchTarotDiscardPlay_EmptySliceIsNotMissing(t *testing.T) {
 }
 
 // dispatchTopCardMove consolidates bakersDozenMoveDispatch,
-// beleagueredCastleMoveDispatch and streetsAndAlleysMoveDispatch — solitaires
-// that move only the top card, so the domain resolves the index itself and the
-// client's cardIndex is never trusted.
+// beleagueredCastleMoveDispatch, fortressMoveDispatch, somersetMoveDispatch and
+// streetsAndAlleysMoveDispatch — solitaires that move only the top card, so the
+// domain resolves the index itself and the client's cardIndex is never trusted.
+// Their CLI mode used to offer `m t<c> <i> t<c>` all the same, which moved the
+// top card without saying so; the form is gone from the parsers and the help.
 func TestDispatchTopCardMove(t *testing.T) {
 	col := 2
 	cases := []struct {
