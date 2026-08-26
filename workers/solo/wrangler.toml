@@ -2,6 +2,19 @@ name = "go-trumpcards-solo"
 main = "./build/worker.mjs"
 compatibility_date = "2024-09-23"
 
+# **Workers のログを有効にする。**これが無いと Cloudflare は何も保存せず、
+# observability API は 7 日ぶんを問い合わせても 0 件を返す —— 本番で何が起きて
+# いるかを、本番を直接叩いて再現する以外に知る手段が無くなる。実際 klondike の
+# 503 (Cloudflare 1102) は、ログではなくデプロイ済み Worker への手動リクエストで
+# しか見つけられなかった。
+#
+# head_sampling_rate は 1 (全件)。この 7 本は無料枠の趣味プロジェクトで、
+# 取りこぼしを気にする量のトラフィックは無い。
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+
 # Production KV (Phase 2+: not yet wired in code)
 [[kv_namespaces]]
 binding = "GAME_SESSIONS"
