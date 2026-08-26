@@ -219,3 +219,41 @@ func TestScartoWebPresenterHintOutputMarksTheRequest(t *testing.T) {
 		t.Error("HintOutput must mark the response as a requested hint")
 	}
 }
+
+// **discardableIndices は人間の親のときだけ載る。** playableIndices が人間の
+// 手番以外で空を返すのと同じ約束で、伏せられた手の中身をレスポンスに載せない。
+// あわせて、規則がドメインと一致していること (切り札が要らないときは出ない) も見る。
+func TestScartoWebPresenter_DiscardableIndices(t *testing.T) {
+	p := &presenter.ScartoWebPresenter{}
+	decode := func(g *domain.Scarto) controller.ScartoWebOutput {
+		t.Helper()
+		var parsed controller.ScartoWebOutput
+		if err := json.Unmarshal([]byte(p.Output(g, nil)), &parsed); err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+		return parsed
+	}
+
+	g := newScartoGame()
+	g.Reset()
+	got := decode(g)
+	if !got.IsHumanScarto {
+		t.Fatalf("前提: リセット直後は人間の親のスカルト手番")
+	}
+	if len(got.DiscardableIndices) == 0 {
+		t.Errorf("人間の親なのに捨てられる札が 1 枚も載っていない")
+	}
+	// ドメインと一致していること。
+	want := g.GetDiscardableIndices()
+	if len(got.DiscardableIndices) != len(want) {
+		t.Errorf("discardableIndices = %v, ドメインは %v", got.DiscardableIndices, want)
+	}
+
+	// 親が CPU なら空。
+	g2 := newScartoGame()
+	g2.Reset()
+	g2.SetDealerIdx(1)
+	if got2 := decode(g2); len(got2.DiscardableIndices) != 0 {
+		t.Errorf("親が CPU のとき discardableIndices = %v, want empty", got2.DiscardableIndices)
+	}
+}

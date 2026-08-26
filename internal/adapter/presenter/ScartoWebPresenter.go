@@ -105,9 +105,7 @@ func (p *ScartoWebPresenter) buildBase(g interfaces.ScartoGame) *controller.Scar
 	resObj.IsHumanScarto = g.IsHumanScartoTurn()
 
 	resObj.PlayableIndices = p.playableIndices(g)
-	// 規則はドメインに 1 つだけ。画面側で色や値から作り直すと、ピップが
-	// 足りないときの切り札が落ちる (#6236)。
-	resObj.DiscardableIndices = g.GetDiscardableIndices()
+	resObj.DiscardableIndices = p.discardableIndices(g)
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.ScartoWebOutputConfig{
@@ -121,6 +119,24 @@ func (p *ScartoWebPresenter) buildBase(g interfaces.ScartoGame) *controller.Scar
 }
 
 // playableIndices 人間プレイヤーがプレイできるカードのインデックスを返す
+// discardableIndices は人間の親がいまスカルトに出せる札のインデックスを返す。
+//
+// 規則はドメインに 1 つだけ置き、画面側で色や値から作り直さない。作り直すと
+// ピップが足りないときに解禁される切り札が落ちる (#6236)。
+//
+// **親が CPU のときは空。** playableIndices が人間の手番以外で空を返すのと
+// 同じ約束で、伏せられた手の中身をレスポンスに載せない。
+func (p *ScartoWebPresenter) discardableIndices(g interfaces.ScartoGame) []int {
+	if !g.IsHumanScartoTurn() {
+		return make([]int, 0)
+	}
+	idx := g.GetDiscardableIndices()
+	if idx == nil {
+		return make([]int, 0)
+	}
+	return idx
+}
+
 func (p *ScartoWebPresenter) playableIndices(g interfaces.ScartoGame) []int {
 	if g.GetPhase() != domain.ScartoPhasePlay || !g.IsHumanTurn() {
 		return make([]int, 0)
