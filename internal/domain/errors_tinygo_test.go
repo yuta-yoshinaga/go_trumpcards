@@ -31,7 +31,7 @@ import (
 // the panic is in the shared request path, not in any game's logic.
 //
 // TestErrorMessageCodeUnwrapsByHand pins the behaviour, and
-// TestNoErrorsAsInDomain pins the mechanism -- the behaviour test alone would
+// TestNoErrorsAsAnywhereUnderInternal pins the mechanism -- the behaviour test alone would
 // stay green if someone rewrote the loop back into errors.As.
 
 // TestErrorMessageCodeUnwrapsByHand covers the chains ErrorMessageCode has to
@@ -73,16 +73,20 @@ func TestErrorMessageCodeUnwrapsByHand(t *testing.T) {
 	}
 }
 
-// TestNoErrorsAsInDomain fails if errors.As reappears anywhere a Worker binary
+// TestNoErrorsAsAnywhereUnderInternal fails if errors.As reappears anywhere a Worker binary
 // can link. A behaviour test cannot catch that: errors.As would return exactly
 // the same answers on the host and still take every Worker down.
-func TestNoErrorsAsInDomain(t *testing.T) {
-	// Walking up from internal/domain to the repository root.
-	roots := []string{"../domain", "../usecase", "../adapter", "../infrastructure", "../i18n"}
+func TestNoErrorsAsAnywhereUnderInternal(t *testing.T) {
+	// ".." is internal/, walked whole rather than as a list of package names:
+	// an explicit list silently stops covering a package that is added later,
+	// and internal/color was already missing from one. Packages no Worker
+	// links are swept up too, which is the safe direction to be wrong in --
+	// errors.As has no business anywhere under internal/.
+	const root = ".."
 
 	scanned := 0
 	var offenders []string
-	for _, root := range roots {
+	{
 		err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -121,7 +125,7 @@ func TestNoErrorsAsInDomain(t *testing.T) {
 
 	// A scan that parses nothing would report success while checking nothing.
 	if scanned < 100 {
-		t.Fatalf("scanned only %d files; the walk roots are wrong", scanned)
+		t.Fatalf("scanned only %d files; the walk root is wrong", scanned)
 	}
 	if len(offenders) > 0 {
 		t.Errorf("errors.As is unusable in TinyGo Worker builds (it reaches reflectlite's\n"+
