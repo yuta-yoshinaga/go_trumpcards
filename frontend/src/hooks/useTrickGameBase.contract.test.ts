@@ -94,4 +94,22 @@ describe('useTrickGameBase dispatch contract', () => {
     await (api.exec as AnyExec)('play', 7, 3);
     expect(sentBody().cardIndex).toBe(3);
   });
+
+  // **Belote だけはコマンド別に割り当てる。** `calltrump` は同じ 2 番目の
+  // スロットからスートを読む (`useBeloteGame.handleCallTrump` がそう渡す)。
+  // ここを取り違えると、入札が「切り札 undefined」で通ってしまう。
+  it('belote: calltrump reads the suit from the same slot, not the card index', async () => {
+    await (beloteApi.exec as AnyExec)('calltrump', undefined, 2);
+    const body = sentBody();
+    expect(body.command).toBe('calltrump');
+    expect(body.suit).toBe(2);
+    expect(body.cardIndex, 'calltrump must not send a card index').toBeUndefined();
+  });
+
+  it('belote: play sends a card index and no suit', async () => {
+    await (beloteApi.exec as AnyExec)('play', undefined, 2);
+    const body = sentBody();
+    expect(body.cardIndex).toBe(2);
+    expect(body.suit, 'play must not send a suit').toBeUndefined();
+  });
 });
