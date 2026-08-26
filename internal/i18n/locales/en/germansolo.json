@@ -9,7 +9,6 @@
   "helpHint": "  h                         Show a hint",
   "helpExampleBid": "  bid solo s           Declare Solo with spades as trumps (five tricks alone)",
   "helpExamplePlay": "  play 0                    Play card 0 from your hand",
-  "helpExampleAce": "  ace h               Call the Ace of hearts to gain a partner",
   "round": "Deal: {{round}}  Trick: {{trick}}  Trump: {{trump}}",
   "contractLine": "Contract: {{bid}} (needs {{need}} tricks)  declarers {{tricks}} - defenders {{opp}}",
   "playerLine": "{{name}} ({{role}}): {{cards}} cards  score: {{score}}  tricks: {{tricks}}",

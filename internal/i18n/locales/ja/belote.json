@@ -33,6 +33,7 @@
   "hintCallSuit": "[HINT: {{suit}}をコール ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpExampleTake": "  o                    表向きの札のスートを切り札にする",
   "helpHint": "  h                    助言を表示",
   "dixDeDerNotice": "最終トリック: 勝ったチームに Dix de Der +{{points}} 点"
 }

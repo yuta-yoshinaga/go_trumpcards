@@ -26,5 +26,6 @@
   "looedList": "Looed (penalised): {{names}}",
   "chipDeltaLine": "  {{name}}: {{delta}}",
   "helpExamplePlay": "  p 0                       play hand card 0",
+  "helpExampleDecide": "  d 1                       stay in the hand rather than dropping out",
   "helpHint": "  h                         show a hint"
 }

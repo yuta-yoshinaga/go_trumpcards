@@ -35,6 +35,7 @@
   "hintPass": "[HINT: パス ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpExampleBid": "  b 120 1              スペードを切り札に 120 を入札する",
   "helpHint": "  h                    助言を表示",
   "dixDeDerNotice": "最終トリック: 勝ったチームに Dix de Der +{{points}} 点"
 }

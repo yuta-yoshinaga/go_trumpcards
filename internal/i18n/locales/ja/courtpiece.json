@@ -30,5 +30,6 @@
   "hintReasonTrumpCut": "切り札で取る",
   "hintReasonDiscardHigh": "取れないので高い札を落とす",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpExampleTrump": "  t 1                  切り札にスペードを宣言する",
   "helpHint": "  h                    助言を表示"
 }

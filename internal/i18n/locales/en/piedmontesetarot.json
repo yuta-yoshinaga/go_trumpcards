@@ -8,6 +8,7 @@
   "helpSetDifficulty": "  sd [0-2]                  CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpExamplePlay": "  play 0                    play the card at index 0",
   "helpExampleNext": "  n                         look at the trick, then move on",
+  "helpExampleScarto": "  scarto 0 2                put two discardable cards down as the scarto",
   "helpHint": "  h                         show a hint",
   "round": "Deal: {{round}}  Trick: {{trick}}/{{tricks}}",
   "playerLine": "{{name}} ({{role}}): {{cards}} cards  score: {{score}}  tricks: {{tricks}}  card points: {{points}}",

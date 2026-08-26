@@ -23,5 +23,6 @@
   "promptRoundEndHelp": "nr / nextround: advance to next round",
   "limitLine": "Score limit: {{limit}} (out if exceeded)",
   "nearOut": " ⚠near out",
-  "helpExampleDraw": "  ds                   start the turn by drawing from the stock"
+  "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
+  "helpExampleDiscard": "  d 0                  discard hand card 0 to start your turn"
 }

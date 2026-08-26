@@ -50,5 +50,6 @@
   "hintReasonTrumpCut": "cut with a trump",
   "hintReasonDiscardWeak": "discard a weak card",
   "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpExamplePass": "  pa                   pass rather than bid",
   "helpHint": "  h                    show a hint"
 }

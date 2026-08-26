@@ -30,5 +30,6 @@
   "hintReasonTrumpCut": "ruff with a trump",
   "hintReasonDiscardHigh": "discard a high card you cannot win with",
   "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpExampleTrump": "  t 1                  call spades as trump",
   "helpHint": "  h                    show a hint"
 }
