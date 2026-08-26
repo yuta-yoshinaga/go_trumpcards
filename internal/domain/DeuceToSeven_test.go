@@ -565,3 +565,78 @@ func TestDeuceToSevenConfig_Validate(t *testing.T) {
 	cfg.CpuCount = DeuceToSevenCpuCountMax + 1
 	assert.Error(t, cfg.Validate())
 }
+
+// **山が尽きても交換は成立する。** 52 枚・4 席だと配った時点の山は 32 枚しか
+// なく、3 回のドローで全員が 5 枚引くと最大 60 枚要る。足りなくなった時点で
+// 黙って break していたので、**捨てたはずの札がそのまま手元に残り**、画面には
+// 何も出なかった。カジノの規則どおり、捨て札 (マック) を切り直して引く (#6233)。
+func TestDeuceToSeven_ExchangeRecyclesTheMuckWhenTheStockRunsOut(t *testing.T) {
+	dt, players := setupDeuceToSevenForHumanBet(1)
+	dt.SetPhase(DeuceToSevenPhaseDraw)
+	dt.SetCurrentTurn(0)
+
+	// 先に何度か交換して、捨て札を積んでおく (マックの元)。
+	dt.applyExchange(1, []int{0, 1, 2, 3, 4})
+	dt.applyExchange(2, []int{0, 1, 2, 3, 4})
+
+	// 山を空にする。
+	for dt.trumpCards.DrawCard() != nil {
+	}
+	require.Equal(t, 0, dt.trumpCards.GetRemainingCount(), "山が空になっていない")
+
+	before := make([]*Card, DeuceToSevenHandSize)
+	copy(before, players[0].cards)
+
+	dt.applyExchange(0, []int{0, 1, 2, 3, 4})
+
+	assert.Equal(t, DeuceToSevenHandSize, players[0].GetDrawCount(),
+		"引けた枚数が要求より少ない (山切れで黙って打ち切られた)")
+	after := players[0].cards
+	require.Len(t, after, DeuceToSevenHandSize)
+	for i := range before {
+		assert.NotSame(t, before[i], after[i],
+			"捨てたはずの札がそのまま手元に残っている (index %d)", i)
+	}
+
+	// 負のコントロール: 引いた札が自分の捨て札から戻ってきていないこと。
+	for _, b := range before {
+		for _, a := range after {
+			assert.NotSame(t, b, a, "自分が今捨てた札を引き直している")
+		}
+	}
+}
+
+// **マックは保存して読み戻しても残る。** Worker は毎リクエストで盤を復元する
+// ので、捨て札を JSON に載せ忘れると、復元のたびに「切り直せる札が無い」状態に
+// 戻り、山切れの交換がまた黙って打ち切られる。フィールドを見比べるのではなく、
+// **復元した盤で実際に交換して**確かめる (#6233)。
+func TestDeuceToSeven_MuckSurvivesSaveRestore(t *testing.T) {
+	dt, players := setupDeuceToSevenForHumanBet(1)
+	dt.SetPhase(DeuceToSevenPhaseDraw)
+	dt.applyExchange(1, []int{0, 1, 2, 3, 4})
+	dt.applyExchange(2, []int{0, 1, 2, 3, 4})
+	for dt.trumpCards.DrawCard() != nil {
+	}
+	require.NotEmpty(t, dt.muck, "マックに札が積まれていない")
+
+	data, err := json.Marshal(dt)
+	require.NoError(t, err)
+	var restored DeuceToSeven
+	require.NoError(t, json.Unmarshal(data, &restored))
+	require.Equal(t, 0, restored.trumpCards.GetRemainingCount(), "復元後も山は空")
+
+	// **札を額面で見比べてはいけない。** このフィクスチャは 4 席に同じ 5 枚を
+	// 配るので、引いた札がたまたま同じ額面になるのは普通に起きる。復元後は
+	// ポインタも別物なので実体比較もできない。見るべきなのは「5 枚とも引けた
+	// こと」と「その 5 枚がマックから出たこと」。
+	muckBefore := len(restored.muck)
+	require.GreaterOrEqual(t, muckBefore, DeuceToSevenHandSize, "復元後のマックが足りない")
+	restored.applyExchange(0, []int{0, 1, 2, 3, 4})
+
+	assert.Equal(t, DeuceToSevenHandSize, restored.players[0].GetDrawCount(),
+		"復元後に山切れの交換が打ち切られている (マックが JSON に載っていない)")
+	assert.Equal(t, 0, restored.trumpCards.GetRemainingCount(), "山から引いている")
+	// 引いた 5 枚がマックから出て、捨てた 5 枚がマックに戻る。
+	assert.Equal(t, muckBefore, len(restored.muck), "マックの出入りが合わない")
+	_ = players
+}

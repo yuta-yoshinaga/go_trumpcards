@@ -124,7 +124,7 @@ describe('CatchTenPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pointLimit: 41 }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1, pointLimit: 41 }),
     );
   });
 
@@ -135,7 +135,7 @@ describe('CatchTenPage', () => {
 
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.any(Object)));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 

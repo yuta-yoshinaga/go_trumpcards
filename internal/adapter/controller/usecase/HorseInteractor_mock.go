@@ -31,6 +31,12 @@ func (_m *MockHorseInteractor) Action(action, amount, humanPlayMs int) string {
 	return ret.Get(0).(string)
 }
 
+// Exchange モック
+func (_m *MockHorseInteractor) Exchange(indices []int) string {
+	ret := _m.Called(indices)
+	return ret.Get(0).(string)
+}
+
 // NextHand モック
 func (_m *MockHorseInteractor) NextHand() string {
 	ret := _m.Called()

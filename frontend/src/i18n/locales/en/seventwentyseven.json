@@ -1,0 +1,61 @@
+{
+  "title": "Seven Twenty-Seven",
+  "phase": {
+    "draw": "Card or stand",
+    "result": "Result"
+  },
+  "settings": {
+    "title": "Settings",
+    "playerCount": "Players",
+    "ante": "Ante",
+    "startingChips": "Starting chips",
+    "targetRounds": "Rounds"
+  },
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "round": "Round {{n}}",
+  "pot": "Pot {{amount}}",
+  "ante": "Ante {{amount}}",
+  "chips": "Chips {{amount}}",
+  "roundBet": "Bet {{amount}}",
+  "playersTitle": "Players",
+  "targetsNote": "Two targets: 7 and 27. Go over and that side is out. Face cards are 0.5, an ace is 1 or 11.",
+  "handLabel": "Your hand",
+  "scoreLabel": "low / high",
+  "badge": {
+    "out": "out",
+    "drawing": "still drawing",
+    "standing": "stood pat",
+    "wonLow": "took low",
+    "wonHigh": "took high",
+    "scoop": "scooped"
+  },
+  "cardButton": "Take a card",
+  "standButton": "Stand pat",
+  "nextRound": "Next round",
+  "roundResult": {
+    "title": "Round result",
+    "carry": "Everyone busted both ways. Pot {{pot}} carries over (carry #{{count}})",
+    "scoop": "{{name}} scooped both sides and takes the whole pot",
+    "lowWinner": "Low (7): {{name}} ({{score}})",
+    "highWinner": "High (27): {{name}} ({{score}})",
+    "lowEmpty": "Low (7): nobody survived — high takes it all",
+    "highEmpty": "High (27): nobody survived — low takes it all"
+  },
+  "matchWinner": "{{name}} wins the match",
+  "tutorial": {
+    "info": "Round number, pot and ante.",
+    "players": "Each player's chips and their low / high totals.",
+    "hand": "Your cards and what they come to on each side.",
+    "actions": "Take another card or stand pat. Standing is final for the round.",
+    "resetButton": "Reset and start a fresh match."
+  },
+  "hint": {
+    "chase_seven": "only the low side is alive and you are short of 7, so draw",
+    "chase_twentyseven": "you are chasing 27 and still short, so draw",
+    "exactly_seven": "exactly 7 — drawing can only break it",
+    "exactly_twentyseven": "exactly 27 — drawing can only break it",
+    "stand_pat": "standing is safer here; one card could put you over",
+    "bust_both": "you are over on both sides; drawing gains nothing"
+  }
+}

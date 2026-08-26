@@ -1,0 +1,42 @@
+{
+  "currentTrick": "現在のトリック",
+  "you": "あなた",
+  "round": "ラウンド",
+  "dealer": "ディーラー",
+  "player": "プレイヤー",
+  "tricks": "トリック",
+  "cardPoints": "カードポイント",
+  "total": "累計",
+  "play": "カードを出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetScore": "目標スコア",
+    "easy": "やさしい",
+    "normal": "ふつう",
+    "hard": "むずかしい"
+  },
+  "phase": {
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "tutorial": {
+    "trickDisplay": "トリックエリア。3人の出した札がここに並びます。",
+    "playerHand": "あなたの手札。出すカードを選択します。",
+    "resetButton": "ゲームをリセットします。"
+  },
+  "trumpFixed": "切り札はジャック4枚（♣J > ♠J > ♥J > ♦J）。入札はありません。",
+  "scoringNote": "点を最も多く取った人が、その点数を失います（取らないことが目標）。",
+  "skatLabel": "伏せ札（最終トリックの獲得者が受け取ります）",
+  "loserBadge": "最多・失点",
+  "durchmarschBadge": "Durchmarsch",
+  "hint": {
+    "avoid_points": "点の無い札で降りて、失点を避けます",
+    "lead_low": "自分から点を出さないよう、安い札でリードします",
+    "forced_discard": "点札しか出せないので、いちばん安く済ませます"
+  }
+}

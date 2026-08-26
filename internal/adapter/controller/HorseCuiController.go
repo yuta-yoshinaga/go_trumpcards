@@ -3,6 +3,8 @@
 package controller
 
 import (
+	"strings"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -28,6 +30,8 @@ func NewHorseCuiController(hi usecase.HorseInteractorIF) *HorseCuiController {
 //	b / bet <n>             → ベット
 //	raise <n>               → レイズ
 //	allin                   → オールイン
+//	d / draw <n...>         → 引き直し (2-7 トリプルドローのみ、0 始まり)
+//	sp / stand              → スタンドパット (引かない)
 //	n / next                → 次のハンドへ
 //	ss / setseats <4|6|9>   → 席数設定
 //	sh / sethands <1-10>    → 1 種目あたりのハンド数設定
@@ -41,6 +45,7 @@ func (c *HorseCuiController) Exec(command string) string {
 		},
 		[]string{
 			"f", "fold", "x", "check", "c", "call", "b", "bet", "raise", "allin",
+			"d", "draw", "sp", "stand",
 			"n", "next", "ss", "setseats", "sh", "sethands", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
@@ -61,6 +66,10 @@ func (c *HorseCuiController) Exec(command string) string {
 				})
 			case "allin":
 				return c.hi.Action(domain.HoldemActionAllIn, 0, 0), true
+			case "d", "draw":
+				return c.execDraw(args)
+			case "sp", "stand":
+				return c.hi.Exchange(nil), true
 			case "n", "next":
 				return c.hi.NextHand(), true
 			case "ss", "setseats":
@@ -80,21 +89,42 @@ func (c *HorseCuiController) Exec(command string) string {
 	)
 }
 
+// execDraw は引き直しを渡す。
+//
+// **番号は 0 始まり。** 引き直しのある他のゲーム (2-7 単体・ムス) が `d 0 2`
+// と数えるので、ここだけ 1 始まりにすると同じ卓の同じ操作が 1 枚ずれる。
+// 画面もドローの番だけ `[0]♠5` の形で番号を振る。
+//
+// **打ち間違いは打つ前に断る。** 1 つでも読めない番号があれば 1 枚も捨てない ──
+// 残りを「別の合法な手」として打ってしまうと、取り返しがつかない (#5390)。
+func (c *HorseCuiController) execDraw(args []string) (string, bool) {
+	if len(args) == 0 {
+		// 引数無しは「引かない」ではなく打ち間違い。スタンドパットは sp。
+		return invalidArg("invalidCardIndexUsageD"), true
+	}
+	indices, skipped := cuiutil.ParseBoundedIntSlice(args, 0, domain.DeuceToSevenHandSize-1)
+	if len(skipped) > 0 {
+		return invalidArg("invalidCardIndexPlain", "val", strings.Join(skipped, ", ")), true
+	}
+	return c.hi.Exchange(indices), true
+}
+
 // execSetSeats は席数を変える。
 //
-// **選べるのは 4 / 6 / 9 だけ。** 種目側の卓サイズと同じものしか作れないので、
-// 範囲で受けると 5 のような作れない数が通ってしまう。
+// **選べる数はバリアントで違う。** H.O.R.S.E. は 4 / 6 / 9 だが、
+// Eight-Game Mix は 4 人卓しか作れない (2-7 トリプルドローが 4 席まで) ──
+// 6 を通すと、6 種目目で理由も出さずにマッチが終わる。
 func (c *HorseCuiController) execSetSeats(args []string) (string, bool) {
 	if len(args) == 0 {
 		return invalidArg("numberOfSeatsRequired469"), true
 	}
+	cfg := c.hi.GetConfig()
 	return cuiutil.WithParsedIntKeys(args, "numberOfSeatsRequired469", "invalidNumberOfSeats46Or9",
 		cuiutil.NoMin, cuiutil.NoMax, func(v int) string {
-			if !domain.HorseValidSeats(v) {
+			cfg.Seats = v
+			if err := cfg.Validate(); err != nil {
 				return invalidArg("invalidNumberOfSeats469")
 			}
-			cfg := c.hi.GetConfig()
-			cfg.Seats = v
 			return c.hi.ResetWithConfig(cfg)
 		})
 }

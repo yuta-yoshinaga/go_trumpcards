@@ -179,7 +179,9 @@ function CatchTenPageContent() {
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
-    void dispatch('reset', undefined, {
+    // **設定は 4 番目のスロット。** 2 番目に置くと札のインデックスの席に座り、
+    // reset の設定が丸ごと落ちる (#6227)。
+    void dispatch('reset', undefined, undefined, {
       cpuDifficulty: catchtenConfig.cpuDifficulty,
       pointLimit: catchtenConfig.pointLimit,
     });

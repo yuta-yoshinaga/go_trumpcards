@@ -1,0 +1,49 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "ミセス・モップ",
+  "completed": "完成",
+  "tableau": "場札",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "山札が空で全カードが表向きになるとクリックできます",
+  "undo": "元に戻す",
+  "empty": "空",
+  "score": "スコア",
+  "difficulty": "難易度",
+  "difficulty1": "1スート",
+  "difficulty2": "2スート",
+  "difficulty4": "4スート",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}} スコア: {{score}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "stalemate": "手詰まりです",
+  "tutorial": {
+    "tableau": "タブローです。1枚だけなら、値が1つ大きいカードの上にスート不問で置けます。まとめて動かせるのは同スート降順に並んだ札だけです。K〜Aの同スート13枚が揃うと自動的に除去されます。",
+    "completedSuits": "完成したスートの数です。8スート全て完成すれば勝利です。",
+    "controls": "元に戻す、ヒント、自動完了などの操作ボタンです。",
+    "difficulty": "難易度を選べます。1スート（簡単）、2スート（普通）、4スート（難しい）。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "frontendHint": {
+    "completeSuit": "スート列がほぼ完成しています — 完成を目指しましょう",
+    "buildSameSuit": "同スートで積み重ねられるカードがあります",
+    "revealFaceDown": "カードを動かして裏向きのカードをめくりましょう",
+    "useEmptyColumn": "空の列があります — 整理に活用しましょう"
+  },
+  "suitCompleted": "スート完成！",
+  "stats": {
+    "winRate": "勝率 {{rate}}%",
+    "best": "ベスト {{score}}",
+    "fewestMoves": "最少 {{moves}}手",
+    "newBest": "自己ベスト更新！"
+  }
+}

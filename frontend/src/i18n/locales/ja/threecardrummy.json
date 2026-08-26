@@ -1,0 +1,70 @@
+{
+  "title": "スリーカード・ラミー",
+  "player": "プレイヤー",
+  "dealer": "ディーラー",
+  "label": {
+    "chips": "チップ",
+    "ante": "アンテ",
+    "lowBonus": "ローボーナス",
+    "play": "プレイベット",
+    "score": "点数"
+  },
+  "button": {
+    "bet": "ベット",
+    "play": "プレイ",
+    "fold": "フォールド",
+    "reset": "リセット",
+    "rebet": "同額で再ベット ({{amount}})"
+  },
+  "phase": {
+    "bet": "ベット",
+    "action": "プレイ/フォールド",
+    "end": "結果"
+  },
+  "payout": {
+    "ante": "アンテ",
+    "play": "プレイ",
+    "anteBonus": "アンテボーナス",
+    "lowBonus": "ローボーナス",
+    "total": "合計"
+  },
+  "betSlip": {
+    "ante": "アンテ",
+    "lowBonus": "ローボーナス",
+    "playRequired": "プレイに必要"
+  },
+  "score": {
+    "perfect": "0点（役 = 最強）",
+    "value": "{{score}}点",
+    "hidden": "？"
+  },
+  "hintReason": {
+    "strongHand": "10点以下の低い手 — プレイ推奨",
+    "lowEnoughToPlay": "ディーラーのクオリファイ上限(20点)より低い — プレイ推奨",
+    "weakHand": "20点以上あり勝ち目が薄い — フォールド推奨"
+  },
+  "settings": {
+    "title": "設定"
+  },
+  "betGuide": "アンテとローボーナスを設定してベット",
+  "scoringNote": "3枚の合計が低いほど強く、0点が最強。絵札=10、A=1。同ランク3枚か同スート連番3枚は0点。",
+  "qualifyNote": "ディーラーは合計20点以下でクオリファイします。",
+  "payoutRef": {
+    "title": "配当表",
+    "anteBonusHeader": "アンテボーナス（プレイした場合のみ）",
+    "anteBonusPerfect": "0点（役）: 9:1",
+    "anteBonusVeryLow": "1〜5点: 3:1",
+    "anteBonusLow": "6〜10点: 1:1",
+    "lowBonusHeader": "ローボーナス（ディーラーと無関係）",
+    "lowBonusPerfect": "0点（役）: 100:1",
+    "lowBonusVeryLow": "1〜5点: 20:1",
+    "lowBonusLow": "6〜10点: 4:1"
+  },
+  "dealerQualified": "クオリファイ",
+  "dealerNotQualified": "未クオリファイ",
+  "tutorial": {
+    "betControls": "アンテと任意のローボーナスを設定し、ベットを押してください。",
+    "actionButtons": "プレイでアンテと同額を賭けるか、フォールドで降りるか選択してください。",
+    "results": "結果と配当を確認してください。"
+  }
+}

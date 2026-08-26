@@ -39,6 +39,13 @@ const ALLOWED = new Map([
       ' #4483 の常時表示とは別の経路。',
   ],
   ['LaBelleLucie', 'showHint という自前のフラグでのみ読む。ヒントボタンが立て、次の手で降ろす。'],
+  [
+    'Shamrocks',
+    'LaBelleLucie のクローンで showHint の仕組みごと引き継いでいる。追跡して確認した:' +
+      ' showHint は useState(false) で始まり、true になるのは handleHint の中だけ、' +
+      ' handleHint を呼ぶのはヒントボタンの onClick だけ。reset/move と 4 秒後に false へ戻る。' +
+      ' isRequestedHint で門番をかけると、この既存の導線が動かなくなる。',
+  ],
   ['RussianBank', 'showHint という自前のフラグでのみ読む。ヒントボタンが立て、次の手で降ろす。'],
   [
     'Bura',

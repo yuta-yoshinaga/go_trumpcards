@@ -1,0 +1,57 @@
+{
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available when all tops can reach the foundations",
+  "direction": {
+    "asc": "Ascending",
+    "desc": "Descending"
+  },
+  "empty": "Empty",
+  "emptyFoundationAriaLabel": "Empty {{direction}} foundation ({{suit}})",
+  "foundation": "Foundation",
+  "foundationAriaLabel": "{{direction}} foundation {{suit}} {{count}} cards top {{top}}",
+  "frontendHint": {
+    "tableau": "Tableau column {{col}}",
+    "foundation": "Foundation {{id}}",
+    "redeal": "Redeal",
+    "stHelenaMove": "This card can move",
+    "stHelenaRedeal": "No move is available — redeal"
+  },
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "hintAvailable": "Hint available",
+  "landscapeBanner": "Landscape mode recommended",
+  "moveCount": "Moves",
+  "noHint": "No hint available",
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "playing": "Complete the eight foundations in suit (four up from the aces, four down from the kings)",
+  "redeal": "Redeal",
+  "redealUnavailable": "No redeals remaining",
+  "redealsLeft": "Redeals left: {{count}}",
+  "selectionMoves": "Selected card has {{count}} legal destination(s)",
+  "selectionNoMoves": "Selected card has no legal destination",
+  "stalemate": "Stalemate",
+  "stalemateAlert": "Stalemate. Undo {{count}} time(s) to escape.",
+  "tableau": "Tableau",
+  "tutorial": {
+    "foundations": "Eight foundations sit in the middle, seeded with one king and one ace of each suit. **The king row builds down, the ace row up**, in suit. All 104 cards wins.",
+    "tableau": "Twelve columns ring them. Only the top card moves, and it builds **up or down by rank ignoring suit**. **A king and an ace do not connect.** An empty column is never refilled.",
+    "restriction": "**On the first deal, where a column sits decides where it can send.** The top four reach the king row only, the bottom four the ace row only, and the four side columns either.",
+    "redeal": "Stuck? You get **two redeals**. Each gathers the columns from the last one and deals them out again without shuffling, so cards cross between columns. **The first redeal lifts the destination restriction.**",
+    "controls": "The footer buttons give you hints, auto-complete, undo, redeal and give up."
+  },
+  "undo": "Undo",
+  "gameOverSummary": "Reached {{count}}/104 cards on the foundations ({{percent}}%)",
+  "band": {
+    "top": "Top four - reach the king row only",
+    "side": "Sides - reach either row",
+    "bottom": "Bottom four - reach the ace row only"
+  },
+  "restrictionsActive": "First deal: top 4 reach the king row, bottom 4 the ace row, sides either",
+  "restrictionsLifted": "The destination restriction has been lifted"
+}

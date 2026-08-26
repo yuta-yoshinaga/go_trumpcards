@@ -1,0 +1,90 @@
+{
+  "phase": {
+    "contract": "契約",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetScore": "ターゲットスコア",
+    "easy": "やさしい",
+    "normal": "ふつう",
+    "hard": "むずかしい"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "cards": "{{count}}枚",
+  "teamScores": "チームスコア",
+  "team": "チーム{{n}}",
+  "teamYou": "チーム{{n}} (あなた)",
+  "trumpSuit": "切り札: {{suit}}",
+  "noTrump": "切り札なし",
+  "currentTrick": "現在のトリック",
+  "trickCount": "獲得トリック: {{count}}",
+  "roundPoints": "ラウンド: {{points}}点",
+  "marriagePoints": "マリッジ: {{points}}点",
+  "marriageButton": "マリッジ",
+  "marriageBadge": "マリッジ可能 (キング+クイーン)",
+  "declareMarriage": "キング+クイーンを宣言してボーナス点を獲得",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "declareContract": "契約を宣言してください",
+  "contractPending": "契約: 宣言中",
+  "contractLine": "契約: {{contract}} ({{name}})",
+  "contractPass": "パス",
+  "contractRufer": "通常",
+  "contractFarbenzwang": "同スート縛り",
+  "contractBettel": "ベテル",
+  "contractPassHelp": "宣言しないで次の席へ回す",
+  "contractRuferHelp": "切り札を決めて、自チームでカード点の過半 (61点以上) を取る",
+  "contractFarbenzwangHelp": "切り札を決めて、相手に1トリックも渡さない",
+  "contractBettelHelp": "切り札なしで、自分は1トリックも取らない",
+  "mustFollow": "リードされたスートに従う必要があります",
+  "playPhase": {
+    "lead": "リードするカードを選んでください (キング+クイーンを持っていればマリッジ宣言可)",
+    "follow": "リードスートに従ってカードを選んでください"
+  },
+  "trickEnd": "トリック終了 — 次のトリックへ進んでください",
+  "roundEnd": "ラウンド終了 — 次のラウンドへ進んでください",
+  "suitSpade": "スペード",
+  "suitClover": "クラブ",
+  "suitHeart": "ハート",
+  "suitDiamond": "ダイヤ",
+  "hintPlay": "推奨",
+  "result": {
+    "team0Win": "チーム0の勝ち",
+    "team1Win": "チーム1の勝ち"
+  },
+  "hint": {
+    "marriage": "マリッジ宣言 (キング+クイーン)",
+    "leadTrump": "切り札でリード",
+    "leadLow": "低いカードでリード",
+    "leadValue": "高得点のカードでリード",
+    "followCut": "切り札でカット",
+    "followWin": "トリックを取る",
+    "followDump": "低得点のカードを捨てる",
+    "duck": "トリックを取らない札を出す (ベテル)"
+  },
+  "hintReason": {
+    "marriage": "マリッジ宣言 (キング+クイーン)",
+    "lead_trump": "切り札でリード",
+    "lead_low": "低いカードでリード",
+    "lead_value": "高得点のカードでリード",
+    "follow_cut": "切り札でカット",
+    "follow_win": "トリックを取る",
+    "follow_dump": "低得点のカードを捨てる",
+    "duck": "トリックを取らない札を出す (ベテル)"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリック。リードスートの最強カード（または最強の切り札）が勝ちます。",
+    "playerHand": "あなたの手札。**最初のトリックからフォロースート義務**があるので、リードされたスートを持っていればそれを出します。",
+    "playButton": "選んだカードをプレイします。",
+    "scoreTable": "チームスコア。契約を達成した側にその点が入り、先に{{target}}点に到達したチームの勝ちです。",
+    "teamInfo": "向かいのプレイヤーはあなたのパートナーです。",
+    "resetButton": "リセットボタンで新しいゲームを開始します。"
+  }
+}

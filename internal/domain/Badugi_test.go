@@ -540,3 +540,67 @@ func TestBadugi_ResetProfileClears(t *testing.T) {
 	bd.ResetProfile()
 	assert.Nil(t, bd.GetHumanProfile())
 }
+
+// **山が尽きても交換は成立する。** 4 席・手札 4 枚だと配った時点の山は 36 枚しか
+// なく、3 回のドローで全員が 4 枚引くと最大 48 枚要る。足りなくなった時点で
+// 黙って break していたので、**捨てたはずの札がそのまま手元に残り**、画面には
+// 何も出なかった。カジノの規則どおり、捨て札 (マック) を切り直して引く (#6256)。
+func TestBadugi_ExchangeRecyclesTheMuckWhenTheStockRunsOut(t *testing.T) {
+	bd, players := setupBadugiForHumanBet(1)
+	bd.SetPhase(BadugiPhaseDraw)
+	bd.SetCurrentTurn(0)
+
+	// 先に何度か交換して、捨て札を積んでおく (マックの元)。
+	bd.applyExchange(1, []int{0, 1, 2, 3})
+	bd.applyExchange(2, []int{0, 1, 2, 3})
+
+	// 山を空にする。
+	for bd.trumpCards.DrawCard() != nil {
+	}
+	require.Equal(t, 0, bd.trumpCards.GetRemainingCount(), "山が空になっていない")
+
+	before := make([]*Card, BadugiHandSize)
+	copy(before, players[0].cards)
+
+	bd.applyExchange(0, []int{0, 1, 2, 3})
+
+	assert.Equal(t, BadugiHandSize, players[0].GetDrawCount(),
+		"引けた枚数が要求より少ない (山切れで黙って打ち切られた)")
+	after := players[0].cards
+	require.Len(t, after, BadugiHandSize)
+	// **負のコントロール: 自分が今捨てた札を引き直していないこと。**
+	for _, b := range before {
+		for _, a := range after {
+			assert.NotSame(t, b, a, "自分が今捨てた札を引き直している")
+		}
+	}
+}
+
+// **マックは保存して読み戻しても残る。** Worker は毎リクエストで盤を復元する
+// ので、捨て札を JSON に載せ忘れると、復元のたびに「切り直せる札が無い」状態に
+// 戻り、山切れの交換がまた黙って打ち切られる。**復元した盤で実際に交換して**
+// 確かめる (#6256)。
+func TestBadugi_MuckSurvivesSaveRestore(t *testing.T) {
+	bd, _ := setupBadugiForHumanBet(1)
+	bd.SetPhase(BadugiPhaseDraw)
+	bd.applyExchange(1, []int{0, 1, 2, 3})
+	bd.applyExchange(2, []int{0, 1, 2, 3})
+	for bd.trumpCards.DrawCard() != nil {
+	}
+	require.NotEmpty(t, bd.muck, "マックに札が積まれていない")
+
+	data, err := json.Marshal(bd)
+	require.NoError(t, err)
+	var restored Badugi
+	require.NoError(t, json.Unmarshal(data, &restored))
+	require.Equal(t, 0, restored.trumpCards.GetRemainingCount(), "復元後も山は空")
+
+	muckBefore := len(restored.muck)
+	require.GreaterOrEqual(t, muckBefore, BadugiHandSize, "復元後のマックが足りない")
+	restored.applyExchange(0, []int{0, 1, 2, 3})
+
+	assert.Equal(t, BadugiHandSize, restored.players[0].GetDrawCount(),
+		"復元後に山切れの交換が打ち切られている (マックが JSON に載っていない)")
+	assert.Equal(t, 0, restored.trumpCards.GetRemainingCount(), "山から引いている")
+	assert.Equal(t, muckBefore, len(restored.muck), "マックの出入りが合わない")
+}

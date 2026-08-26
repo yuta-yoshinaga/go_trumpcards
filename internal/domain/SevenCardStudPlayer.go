@@ -18,6 +18,7 @@ type SevenCardStudPlayer struct {
 	bestHand            []*Card                // ベスト5枚
 	lowQualifies        bool                   // 8-or-better のローが成立したか (Hi-Lo のみ)
 	lowBestHand         []*Card                // ローのベスト5枚 (Hi-Lo のみ)
+	chicagoSpade        *Card                  // 伏せ札の中で最高位のスペード (Chicago のみ、nil=1枚も無い)
 	playStyle           SevenCardStudPlayStyle // CPUプレイスタイル
 	totalHands          int                    // 総ハンド数 (セッション通算)
 	vpipCount           int                    // VPIP対象ハンド数
@@ -82,6 +83,9 @@ func (p *SevenCardStudPlayer) ClearCards() {
 	p.holeCards = p.holeCards[:0]
 	p.doorCards = p.doorCards[:0]
 	p.bestHand = nil
+	// **持ち越すと前のディールのスペードで半分を取る。** 手札を消して
+	// 評価結果だけ残すと、スペードを 1 枚も貰わなかった席が勝ち続ける。
+	p.chicagoSpade = nil
 }
 
 // GetTotalHands 総ハンド数取得
@@ -425,6 +429,39 @@ func (p *SevenCardStudPlayer) EvalBestLowHandEightOrBetter() bool {
 	p.lowQualifies = true
 	p.lowBestHand = bestCards
 	return true
+}
+
+// EvalChicagoSpade は**伏せ札の中**で最も高いスペードを選び、その有無を返す。
+//
+// **表札は数えない。** Chicago のポットの半分は「伏せて持っている最高のスペード」に
+// 行く。卓に見えている札を数えると、全員が同じ札を根拠にできてしまい、そもそも
+// 伏せ札を読み合うという賭けが消える。共有カード (デッキが尽きたときに配られる
+// 1 枚) も全員に見えているので、呼び出し側はそれを足す前にここを通す。
+//
+// エースは 1 だが**スペードの序列では最高**なので、ランクの比較には
+// cardRankForAceHigh を使う。
+func (p *SevenCardStudPlayer) EvalChicagoSpade() bool {
+	p.chicagoSpade = nil
+	for _, c := range p.holeCards {
+		if c == nil || c.GetDesign() != CardDesignSpade {
+			continue
+		}
+		if p.chicagoSpade == nil || cardRankForAceHigh(c.GetValue()) > cardRankForAceHigh(p.chicagoSpade.GetValue()) {
+			p.chicagoSpade = c
+		}
+	}
+	return p.chicagoSpade != nil
+}
+
+// GetChicagoSpade は伏せ札の中で最高位のスペードを返す (nil=1 枚も無い)。
+func (p *SevenCardStudPlayer) GetChicagoSpade() *Card { return p.chicagoSpade }
+
+// cardRankForAceHigh はエースを最高位として扱う札位を返す。
+func cardRankForAceHigh(value int) int {
+	if value == 1 {
+		return 14
+	}
+	return value
 }
 
 // GetLowQualifies は 8-or-better のローが成立したかを返す。

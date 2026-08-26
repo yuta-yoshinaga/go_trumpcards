@@ -6141,6 +6141,989 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"horse.helpSetSeats", "horse.helpSetHands"},
 		}),
+	BindCuiFor("alaska",
+		func() usecase.AlaskaInteractorIF {
+			return usecase.NewAlaskaInteractor(domain.NewDefaultAlaska(), new(presenter.AlaskaCuiPresenter))
+		},
+		controller.NewAlaskaCuiController,
+		CuiHelpSpec{
+			TitleKey: "alaska.helpTitle",
+			ExampleKeys: []string{
+				"alaska.helpExampleHint",
+				"alaska.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"alaska.helpMove",
+				"alaska.helpMoveTF",
+				"alaska.helpMoveTT",
+				"alaska.helpGiveUp",
+				"alaska.helpHint",
+				"alaska.helpAutoComplete", "alaska.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
+	BindCuiFor("fortress",
+		func() usecase.FortressInteractorIF {
+			return usecase.NewFortressInteractor(domain.NewDefaultFortress(), new(presenter.FortressCuiPresenter))
+		},
+		controller.NewFortressCuiController,
+		CuiHelpSpec{
+			TitleKey: "fortress.helpTitle",
+			ExampleKeys: []string{
+				"fortress.helpExampleHint",
+				"fortress.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"fortress.helpMoveTT",
+				"fortress.helpMoveTF",
+				"fortress.helpGiveUp",
+				"fortress.helpHint",
+				"fortress.helpAutoComplete", "fortress.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
+	BindCuiFor("somerset",
+		func() usecase.SomersetInteractorIF {
+			return usecase.NewSomersetInteractor(domain.NewDefaultSomerset(), new(presenter.SomersetCuiPresenter))
+		},
+		controller.NewSomersetCuiController,
+		CuiHelpSpec{
+			TitleKey: "somerset.helpTitle",
+			ExampleKeys: []string{
+				"somerset.helpExampleHint",
+				"somerset.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"somerset.helpMoveTT",
+				"somerset.helpMoveTF",
+				"somerset.helpGiveUp",
+				"somerset.helpHint",
+				"somerset.helpAutoComplete", "somerset.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
+	BindCuiFor("stalactites",
+		func() usecase.StalactitesInteractorIF {
+			return usecase.NewStalactitesInteractor(domain.NewDefaultStalactites(), new(presenter.StalactitesCuiPresenter))
+		},
+		controller.NewStalactitesCuiController,
+		CuiHelpSpec{
+			TitleKey: "stalactites.helpTitle",
+			ExampleKeys: []string{
+				"stalactites.helpExampleMoveCell",
+				"stalactites.helpExampleHint",
+				"stalactites.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"stalactites.helpMove",
+				"stalactites.helpMoveTF",
+				"stalactites.helpMoveTT",
+				"stalactites.helpMoveTC",
+				"stalactites.helpMoveCT",
+				"stalactites.helpMoveCF",
+				"stalactites.helpGiveUp",
+				"stalactites.helpHint",
+				"stalactites.helpAutoComplete",
+				"stalactites.helpMoveShorthand",
+				"stalactites.helpFoundation", "stalactites.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
+	BindCuiFor("whitehead",
+		func() usecase.WhiteheadInteractorIF {
+			return usecase.NewWhiteheadInteractor(domain.NewDefaultWhitehead(), new(presenter.WhiteheadCuiPresenter))
+		},
+		controller.NewWhiteheadCuiController,
+		CuiHelpSpec{
+			TitleKey: "whitehead.helpTitle",
+			ExampleKeys: []string{
+				"whitehead.helpExampleDraw",
+			},
+			CommandKeys: []string{
+				"whitehead.helpDraw",
+				"whitehead.helpMove",
+				"whitehead.helpMoveWF",
+				"whitehead.helpMoveTF",
+				"whitehead.helpMoveTT",
+				"whitehead.helpGiveUp",
+				"whitehead.helpHint",
+				"whitehead.helpAutoComplete",
+				"whitehead.helpMoveShorthand",
+				"whitehead.helpFoundation", "whitehead.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
+	BindCuiFor("curdsandwhey",
+		func() usecase.CurdsAndWheyInteractorIF {
+			return usecase.NewCurdsAndWheyInteractor(domain.NewDefaultCurdsAndWhey(), new(presenter.CurdsAndWheyCuiPresenter))
+		},
+		controller.NewCurdsAndWheyCuiController,
+		CuiHelpSpec{
+			TitleKey: "curdsandwhey.helpTitle",
+			CommandKeys: []string{
+				"curdsandwhey.helpMove",
+				"curdsandwhey.helpUndo",
+				"curdsandwhey.helpGiveUp", "curdsandwhey.helpLog", "curdsandwhey.helpHint",
+			},
+		}),
+	BindCuiFor("shamrocks",
+		func() usecase.ShamrocksInteractorIF {
+			return usecase.NewShamrocksInteractor(domain.NewDefaultShamrocks(), new(presenter.ShamrocksCuiPresenter))
+		},
+		controller.NewShamrocksCuiController,
+		CuiHelpSpec{
+			TitleKey: "shamrocks.helpTitle",
+			ExampleKeys: []string{
+				"shamrocks.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"shamrocks.helpMove",
+				"shamrocks.helpAutoComplete",
+				"shamrocks.helpUndo",
+				"shamrocks.helpGiveUp", "shamrocks.helpLog", "shamrocks.helpHint",
+			},
+		}),
+	BindCuiFor("perseverance",
+		func() usecase.PerseveranceInteractorIF {
+			return usecase.NewPerseveranceInteractor(domain.NewDefaultPerseverance(), new(presenter.PerseveranceCuiPresenter))
+		},
+		controller.NewPerseveranceCuiController,
+		CuiHelpSpec{
+			TitleKey: "perseverance.helpTitle",
+			ExampleKeys: []string{
+				"perseverance.helpExampleHint",
+				"perseverance.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"perseverance.helpMoveTT",
+				"perseverance.helpMoveTF",
+				"perseverance.helpTargets",
+				"perseverance.helpRedeal",
+				"perseverance.helpGiveUp",
+				"perseverance.helpHint",
+				"perseverance.helpAutoComplete", "perseverance.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
+	BindCuiFor("fourteenout",
+		func() usecase.FourteenOutInteractorIF {
+			return usecase.NewFourteenOutInteractor(domain.NewDefaultFourteenOut(), new(presenter.FourteenOutCuiPresenter))
+		},
+		controller.NewFourteenOutCuiController,
+		CuiHelpSpec{
+			TitleKey: "fourteenout.helpTitle",
+			ExampleKeys: []string{
+				"fourteenout.helpExampleHint",
+			},
+			CommandKeys: []string{
+				"fourteenout.helpRemove",
+				"fourteenout.helpUndo",
+				"fourteenout.helpHint",
+				"fourteenout.helpGiveup",
+				"fourteenout.helpLog",
+			},
+		}),
+	BindCuiFor("narcotic",
+		func() usecase.NarcoticInteractorIF {
+			return usecase.NewNarcoticInteractor(domain.NewDefaultNarcotic(), new(presenter.NarcoticCuiPresenter))
+		},
+		controller.NewNarcoticCuiController,
+		CuiHelpSpec{
+			TitleKey: "narcotic.helpTitle",
+			ExampleKeys: []string{
+				"narcotic.helpExampleHint",
+			},
+			CommandKeys: []string{
+				"narcotic.helpDraw",
+				"narcotic.helpRemove",
+				"narcotic.helpMove",
+				"narcotic.helpRedeal",
+				"narcotic.helpUndo",
+				"narcotic.helpHint",
+				"narcotic.helpGiveUp",
+				"narcotic.helpLog",
+			},
+		}),
+	BindCuiFor("mrsmop",
+		func() usecase.MrsMopInteractorIF {
+			return usecase.NewMrsMopInteractor(domain.NewDefaultMrsMop(), new(presenter.MrsMopCuiPresenter))
+		},
+		controller.NewMrsMopCuiController,
+		CuiHelpSpec{
+			TitleKey: "mrsmop.helpTitle",
+			ExampleKeys: []string{
+				"mrsmop.helpExampleHint",
+				"mrsmop.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"mrsmop.helpMove",
+				"mrsmop.helpGiveUp",
+				"mrsmop.helpHint",
+				"mrsmop.helpAutoComplete",
+				"mrsmop.helpMoveShorthand", "mrsmop.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
+	BindCuiFor("rankandfile",
+		func() usecase.RankAndFileInteractorIF {
+			return usecase.NewRankAndFileInteractor(domain.NewDefaultRankAndFile(), new(presenter.RankAndFileCuiPresenter))
+		},
+		controller.NewRankAndFileCuiController,
+		CuiHelpSpec{
+			TitleKey: "rankandfile.helpTitle",
+			ExampleKeys: []string{
+				"rankandfile.helpExampleHint",
+				"rankandfile.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"rankandfile.helpDraw",
+				"rankandfile.helpMove",
+				"rankandfile.helpMoveWF",
+				"rankandfile.helpMoveTF",
+				"rankandfile.helpMoveTT",
+				"rankandfile.helpGiveUp",
+				"rankandfile.helpHint",
+				"rankandfile.helpAutoComplete", "rankandfile.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
+	BindCuiFor("saliclaw",
+		func() usecase.SalicLawInteractorIF {
+			return usecase.NewSalicLawInteractor(domain.NewDefaultSalicLaw(), new(presenter.SalicLawCuiPresenter))
+		},
+		controller.NewSalicLawCuiController,
+		CuiHelpSpec{
+			TitleKey: "saliclaw.helpTitle",
+			ExampleKeys: []string{
+				"saliclaw.helpExampleHint",
+				"saliclaw.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"saliclaw.helpDraw",
+				"saliclaw.helpMoveTF",
+				"saliclaw.helpMoveTT",
+				"saliclaw.helpGiveUp",
+				"saliclaw.helpHint",
+				"saliclaw.helpAutoComplete",
+				"saliclaw.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
+	BindCuiFor("sthelena",
+		func() usecase.StHelenaInteractorIF {
+			return usecase.NewStHelenaInteractor(domain.NewDefaultStHelena(), new(presenter.StHelenaCuiPresenter))
+		},
+		controller.NewStHelenaCuiController,
+		CuiHelpSpec{
+			TitleKey: "sthelena.helpTitle",
+			ExampleKeys: []string{
+				"sthelena.helpExampleHint",
+				"sthelena.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"sthelena.helpMoveTT",
+				"sthelena.helpMoveTF",
+				"sthelena.helpRedeal",
+				"sthelena.helpGiveUp",
+				"sthelena.helpHint",
+				"sthelena.helpAutoComplete", "sthelena.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
+	BindCuiFor("slyfox",
+		func() usecase.SlyFoxInteractorIF {
+			return usecase.NewSlyFoxInteractor(domain.NewDefaultSlyFox(), new(presenter.SlyFoxCuiPresenter))
+		},
+		controller.NewSlyFoxCuiController,
+		CuiHelpSpec{
+			TitleKey: "slyfox.helpTitle",
+			ExampleKeys: []string{
+				"slyfox.helpExampleHint",
+				"slyfox.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"slyfox.helpDeal",
+				"slyfox.helpDealF",
+				"slyfox.helpMoveTF",
+				"slyfox.helpGiveUp",
+				"slyfox.helpHint",
+				"slyfox.helpAutoComplete",
+				"slyfox.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
+	BindCuiFor("bigben",
+		func() usecase.BigBenInteractorIF {
+			return usecase.NewBigBenInteractor(domain.NewDefaultBigBen(), new(presenter.BigBenCuiPresenter))
+		},
+		controller.NewBigBenCuiController,
+		CuiHelpSpec{
+			TitleKey: "bigben.helpTitle",
+			ExampleKeys: []string{
+				"bigben.helpExampleHint",
+				"bigben.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"bigben.helpDeal",
+				"bigben.helpMoveTF",
+				"bigben.helpMoveTT",
+				"bigben.helpGiveUp",
+				"bigben.helpHint",
+				"bigben.helpAutoComplete",
+				"bigben.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
+	BindCuiFor("followthequeen",
+		func() usecase.FollowTheQueenInteractorIF {
+			return usecase.NewFollowTheQueenInteractor(domain.NewDefaultFollowTheQueen(), new(presenter.FollowTheQueenCuiPresenter))
+		},
+		controller.NewFollowTheQueenCuiController,
+		CuiHelpSpec{
+			TitleKey: "followthequeen.helpTitle",
+			ExampleKeys: []string{
+				"followthequeen.helpExampleFold",
+			},
+			CommandKeys: append([]string{
+				"followthequeen.helpFold",
+				"followthequeen.helpCheck",
+				"followthequeen.helpCall",
+				"followthequeen.helpBet",
+				"followthequeen.helpRaise",
+				"followthequeen.helpAllIn", "followthequeen.helpLog", "followthequeen.helpHint",
+			}, tournamentRebuyAddOnKeys...),
+			SettingKeys: append([]string{
+				"followthequeen.helpBettingLimit", "followthequeen.helpTournament",
+			}, studAnteKeys...),
+		}),
+	BindCuiFor("ramsch",
+		func() usecase.RamschInteractorIF {
+			return usecase.NewRamschInteractor(domain.NewDefaultRamsch(), new(presenter.RamschCuiPresenter))
+		},
+		controller.NewRamschCuiController,
+		CuiHelpSpec{
+			TitleKey: "ramsch.helpTitle",
+			ExampleKeys: []string{
+				"ramsch.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"ramsch.helpPlay",
+				"ramsch.helpNext",
+				"ramsch.helpNextRound", "ramsch.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"ramsch.helpSetDifficulty", "ramsch.helpSetTarget"},
+		}),
+	BindCuiFor("seventwentyseven",
+		func() usecase.SevenTwentySevenInteractorIF {
+			return usecase.NewSevenTwentySevenInteractor(domain.NewDefaultSevenTwentySeven(), new(presenter.SevenTwentySevenCuiPresenter))
+		},
+		controller.NewSevenTwentySevenCuiController,
+		CuiHelpSpec{
+			TitleKey: "seventwentyseven.helpTitle",
+			ExampleKeys: []string{
+				"seventwentyseven.helpExampleCard",
+			},
+			CommandKeys: []string{
+				"seventwentyseven.helpCard",
+				"seventwentyseven.helpStand",
+				"seventwentyseven.helpNextRound", "seventwentyseven.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys: []string{
+				"seventwentyseven.helpSetPlayers", "seventwentyseven.helpSetAnte",
+				"seventwentyseven.helpSetChips", "seventwentyseven.helpSetRounds",
+			},
+		}),
+	BindCuiFor("threecardrummy",
+		func() usecase.ThreeCardRummyInteractorIF {
+			return usecase.NewThreeCardRummyInteractor(domain.NewDefaultThreeCardRummy(), new(presenter.ThreeCardRummyCuiPresenter))
+		},
+		controller.NewThreeCardRummyCuiController,
+		CuiHelpSpec{
+			TitleKey: "threecardrummy.helpTitle",
+			ExampleKeys: []string{
+				"threecardrummy.helpExampleBet",
+				"threecardrummy.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"threecardrummy.helpBet", "threecardrummy.helpRebet",
+				"threecardrummy.helpPlay", "threecardrummy.helpFold", "threecardrummy.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
+	BindCuiFor("caribbeandraw",
+		func() usecase.CaribbeanDrawInteractorIF {
+			return usecase.NewCaribbeanDrawInteractor(domain.NewDefaultCaribbeanDraw(), new(presenter.CaribbeanDrawCuiPresenter))
+		},
+		controller.NewCaribbeanDrawCuiController,
+		CuiHelpSpec{
+			TitleKey: "caribbeandraw.helpTitle",
+			ExampleKeys: []string{
+				"caribbeandraw.helpExampleBet",
+				"caribbeandraw.helpExampleDraw",
+				"caribbeandraw.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"caribbeandraw.helpBet", "caribbeandraw.helpDraw",
+				"caribbeandraw.helpPlay", "caribbeandraw.helpFold", "caribbeandraw.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
+	BindCuiFor("speculation",
+		func() usecase.SpeculationInteractorIF {
+			return usecase.NewSpeculationInteractor(domain.NewDefaultSpeculation(), new(presenter.SpeculationCuiPresenter))
+		},
+		controller.NewSpeculationCuiController,
+		CuiHelpSpec{
+			TitleKey: "speculation.helpTitle",
+			ExampleKeys: []string{
+				"speculation.helpExampleBid",
+			},
+			CommandKeys: []string{
+				"speculation.helpFlip",
+				"speculation.helpBid",
+				"speculation.helpPass",
+				"speculation.helpSell",
+				"speculation.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
+	BindCuiFor("dramaha",
+		func() usecase.DramahaInteractorIF {
+			return usecase.NewDramahaInteractor(domain.NewDefaultDramaha(), new(presenter.DramahaCuiPresenter))
+		},
+		controller.NewDramahaCuiController,
+		CuiHelpSpec{
+			TitleKey: "dramaha.helpTitle",
+			ExampleKeys: []string{
+				"dramaha.helpExampleBet",
+				"dramaha.helpExampleCall",
+				"dramaha.helpExampleRaise",
+				"dramaha.helpExampleDraw",
+			},
+			CommandKeys: []string{
+				"dramaha.helpCheck", "dramaha.helpBet", "dramaha.helpCall",
+				"dramaha.helpRaise", "dramaha.helpFold", "dramaha.helpAllIn",
+				"dramaha.helpDraw", "dramaha.helpLog",
+				"dramaha.helpBettingLimit", "dramaha.helpTournament",
+			},
+
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
+	BindCuiFor("put",
+		func() usecase.PutInteractorIF {
+			return usecase.NewPutInteractor(domain.NewDefaultPut(), new(presenter.PutCuiPresenter))
+		},
+		controller.NewPutCuiController,
+		CuiHelpSpec{
+			TitleKey: "put.helpTitle",
+			ExampleKeys: []string{
+				"put.helpExamplePlay",
+			},
+			CommandKeys: []string{"put.helpPlay", "put.helpPut", "put.helpRespond", "put.helpNext", "put.helpLog", "put.helpHint"},
+		}),
+	BindCuiFor("ristikontra",
+		func() usecase.RistikontraInteractorIF {
+			return usecase.NewRistikontraInteractor(domain.NewDefaultRistikontra(), new(presenter.RistikontraCuiPresenter))
+		},
+		controller.NewRistikontraCuiController,
+		CuiHelpSpec{
+			TitleKey: "ristikontra.helpTitle",
+			ExampleKeys: []string{
+				"ristikontra.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"ristikontra.helpPlay",
+				"ristikontra.helpNext",
+				"ristikontra.helpLog",
+			},
+			SettingKeys: []string{
+				"ristikontra.helpSetDifficulty",
+			},
+		}),
+	BindCuiFor("brusquembille",
+		func() usecase.BrusquembilleInteractorIF {
+			return usecase.NewBrusquembilleInteractor(domain.NewDefaultBrusquembille(), new(presenter.BrusquembilleCuiPresenter))
+		},
+		controller.NewBrusquembilleCuiController,
+		CuiHelpSpec{
+			TitleKey: "brusquembille.helpTitle",
+			ExampleKeys: []string{
+				"brusquembille.helpExamplePlay",
+				"brusquembille.helpExampleNext",
+			},
+			CommandKeys:       []string{"brusquembille.helpPlay", "brusquembille.helpNext", "brusquembille.helpHint"},
+			SettingKeys:       []string{"brusquembille.helpSetPlayers"},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
+	BindCuiFor("bauernschnapsen",
+		func() usecase.BauernschnapsenInteractorIF {
+			return usecase.NewBauernschnapsenInteractor(domain.NewDefaultBauernschnapsen(), new(presenter.BauernschnapsenCuiPresenter))
+		},
+		controller.NewBauernschnapsenCuiController,
+		CuiHelpSpec{
+			TitleKey: "bauernschnapsen.helpTitle",
+			ExampleKeys: []string{
+				"bauernschnapsen.helpExampleContract",
+				"bauernschnapsen.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"bauernschnapsen.helpContract",
+				"bauernschnapsen.helpPlay",
+				"bauernschnapsen.helpMarriage",
+				"bauernschnapsen.helpNext",
+				"bauernschnapsen.helpNextRound", "bauernschnapsen.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"bauernschnapsen.helpSetDifficulty", "bauernschnapsen.helpSetTarget"},
+		}),
+	BindCuiFor("quadrille",
+		func() usecase.QuadrilleInteractorIF {
+			return usecase.NewQuadrilleInteractor(domain.NewDefaultQuadrille(), new(presenter.QuadrilleCuiPresenter))
+		},
+		controller.NewQuadrilleCuiController,
+		CuiHelpSpec{
+			TitleKey: "quadrille.helpTitle",
+			// **例文はフェーズ順。** 落札 → 王呼び → プレイの順でないと、
+			// 新規ゲームでそのまま打つと「フェーズが違う」で弾かれる。
+			ExampleKeys: []string{
+				"quadrille.helpExampleBid",
+				"quadrille.helpExampleKing",
+				"quadrille.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"quadrille.helpBid",
+				"quadrille.helpKing",
+				"quadrille.helpPlay",
+				"quadrille.helpNext",
+				"quadrille.helpNextRound", "quadrille.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"quadrille.helpSetDifficulty"},
+		}),
+	BindCuiFor("trappola",
+		func() usecase.TrappolaInteractorIF {
+			return usecase.NewTrappolaInteractor(domain.NewDefaultTrappola(), new(presenter.TrappolaCuiPresenter))
+		},
+		controller.NewTrappolaCuiController,
+		CuiHelpSpec{
+			TitleKey: "trappola.helpTitle",
+			ExampleKeys: []string{
+				"trappola.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"trappola.helpPlay",
+				"trappola.helpNext",
+				"trappola.helpNextRound", "trappola.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"trappola.helpSetDifficulty", "trappola.helpSetTarget"},
+		}),
+	BindCuiFor("madrasso",
+		func() usecase.MadrassoInteractorIF {
+			return usecase.NewMadrassoInteractor(domain.NewDefaultMadrasso(), new(presenter.MadrassoCuiPresenter))
+		},
+		controller.NewMadrassoCuiController,
+		CuiHelpSpec{
+			TitleKey: "madrasso.helpTitle",
+			ExampleKeys: []string{
+				"madrasso.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"madrasso.helpPlay",
+				"madrasso.helpNext",
+				"madrasso.helpNextRound", "madrasso.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"madrasso.helpSetDifficulty", "madrasso.helpSetTarget"},
+		}),
+	BindCuiFor("julepe",
+		func() usecase.JulepeInteractorIF {
+			return usecase.NewJulepeInteractor(domain.NewDefaultJulepe(), new(presenter.JulepeCuiPresenter))
+		},
+		controller.NewJulepeCuiController,
+		CuiHelpSpec{
+			TitleKey: "julepe.helpTitle",
+			ExampleKeys: []string{
+				"julepe.helpExampleIn",
+			},
+			CommandKeys: []string{
+				"julepe.helpIn",
+				"julepe.helpOut",
+				"julepe.helpCard",
+				"julepe.helpNext",
+				"julepe.helpGiveUp", "julepe.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
+	BindCuiFor("schafkopf",
+		func() usecase.SchafkopfInteractorIF {
+			return usecase.NewSchafkopfInteractor(domain.NewDefaultSchafkopf(), new(presenter.SchafkopfCuiPresenter))
+		},
+		controller.NewSchafkopfCuiController,
+		CuiHelpSpec{
+			TitleKey: "schafkopf.helpTitle",
+			ExampleKeys: []string{
+				"schafkopf.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"schafkopf.helpPick",
+				"schafkopf.helpWenz",
+				"schafkopf.helpSolo",
+				"schafkopf.helpPass",
+				"schafkopf.helpCall",
+				"schafkopf.helpPlay",
+				"schafkopf.helpNext",
+				"schafkopf.helpNextRound", "schafkopf.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys: []string{
+				"schafkopf.helpSetDifficulty",
+				"schafkopf.helpSetChips",
+			},
+		}),
+	BindCuiFor("coinche",
+		func() usecase.CoincheInteractorIF {
+			return usecase.NewCoincheInteractor(domain.NewDefaultCoinche(), new(presenter.CoincheCuiPresenter))
+		},
+		controller.NewCoincheCuiController,
+		CuiHelpSpec{
+			TitleKey: "coinche.helpTitle",
+			ExampleKeys: []string{
+				"coinche.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"coinche.helpBid",
+				"coinche.helpPass",
+				"coinche.helpCoinche",
+				"coinche.helpSurcoinche",
+				"coinche.helpDecline",
+				"coinche.helpPlay",
+				"coinche.helpNext",
+				"coinche.helpNextRound", "coinche.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"coinche.helpSetDifficulty", "coinche.helpSetTarget"},
+		}),
+	BindCuiFor("germansolo",
+		func() usecase.GermanSoloInteractorIF {
+			return usecase.NewGermanSoloInteractor(domain.NewDefaultGermanSolo(), new(presenter.GermanSoloCuiPresenter))
+		},
+		controller.NewGermanSoloCuiController,
+		CuiHelpSpec{
+			TitleKey: "germansolo.helpTitle",
+			// **例文はフェーズ順。** 落札 → エース呼び → プレイの順でないと、
+			// そのまま打つと「フェーズが違う」で弾かれる。
+			ExampleKeys: []string{
+				"germansolo.helpExampleBid",
+				"germansolo.helpExampleAce",
+				"germansolo.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"germansolo.helpBid",
+				"germansolo.helpAce",
+				"germansolo.helpPlay",
+				"germansolo.helpNext",
+				"germansolo.helpNextRound", "germansolo.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"germansolo.helpSetDifficulty"},
+		}),
+	BindCuiFor("gleek",
+		func() usecase.GleekInteractorIF {
+			return usecase.NewGleekInteractor(domain.NewDefaultGleek(), new(presenter.GleekCuiPresenter))
+		},
+		controller.NewGleekCuiController,
+		CuiHelpSpec{
+			TitleKey: "gleek.helpTitle",
+			// **例文はフェーズ順。** 競り → 捨て札 → プレイの順でないと、
+			// そのまま打つと「フェーズが違う」で弾かれる。
+			ExampleKeys: []string{
+				"gleek.helpExampleBid",
+				"gleek.helpExampleDiscard",
+				"gleek.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"gleek.helpBid",
+				"gleek.helpDiscard",
+				"gleek.helpPlay",
+				"gleek.helpNext",
+				"gleek.helpNextRound", "gleek.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"gleek.helpSetDifficulty"},
+		}),
+	BindCuiFor("chicago",
+		func() usecase.SevenCardStudInteractorIF {
+			return usecase.NewSevenCardStudInteractor(domain.NewDefaultSevenCardStudChicago(), new(presenter.SevenCardStudCuiPresenter))
+		},
+		controller.NewSevenCardStudCuiController,
+		CuiHelpSpec{
+			TitleKey:    "chicago.helpTitle",
+			ExampleKeys: []string{"chicago.helpExampleF"},
+			CommandKeys: append([]string{
+				"sevencardstud.helpFold",
+				"sevencardstud.helpCheck",
+				"sevencardstud.helpCall",
+				"sevencardstud.helpBet",
+				"sevencardstud.helpRaise",
+				"sevencardstud.helpAllIn", "sevencardstud.helpHint", "sevencardstud.helpLog",
+			}, tournamentRebuyAddOnKeys...),
+			SettingKeys: append([]string{
+				"sevencardstud.helpBettingLimit", "sevencardstud.helpTournament",
+			}, studAnteKeys...),
+		}),
+	BindCuiFor("eightgame",
+		func() usecase.HorseInteractorIF {
+			return usecase.NewHorseInteractor(domain.NewDefaultEightGame(), new(presenter.HorseCuiPresenter))
+		},
+		controller.NewHorseCuiController,
+		CuiHelpSpec{
+			TitleKey: "eightgame.helpTitle",
+			ExampleKeys: []string{
+				"eightgame.helpExampleFold",
+			},
+			CommandKeys: []string{
+				"eightgame.helpAction",
+				// **引き直しは 8 種目のほうにしか出さない。** H.O.R.S.E. に
+				// ドロー系の種目は無く、載せると打てない手を勧めることになる。
+				"eightgame.helpDraw",
+				"eightgame.helpNext", "eightgame.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"eightgame.helpSetSeats", "eightgame.helpSetHands"},
+		}),
+	BindCuiFor("piedmontesetarot",
+		func() usecase.PiedmonteseTarotInteractorIF {
+			return usecase.NewPiedmonteseTarotInteractor(domain.NewDefaultPiedmonteseTarot(), new(presenter.PiedmonteseTarotCuiPresenter))
+		},
+		controller.NewPiedmonteseTarotCuiController,
+		CuiHelpSpec{
+			TitleKey: "piedmontesetarot.helpTitle",
+			ExampleKeys: []string{
+				"piedmontesetarot.helpExamplePlay",
+				"piedmontesetarot.helpExampleNext",
+			},
+			CommandKeys: []string{
+				"piedmontesetarot.helpScarto", "piedmontesetarot.helpPlay",
+				"piedmontesetarot.helpNext", "piedmontesetarot.helpNextRound",
+				"piedmontesetarot.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"piedmontesetarot.helpSetSeats", "piedmontesetarot.helpSetDifficulty"},
+		}),
+	BindCuiFor("unsunkaruta",
+		func() usecase.UnsunKarutaInteractorIF {
+			return usecase.NewUnsunKarutaInteractor(domain.NewDefaultUnsunKaruta(), new(presenter.UnsunKarutaCuiPresenter))
+		},
+		controller.NewUnsunKarutaCuiController,
+		CuiHelpSpec{
+			TitleKey: "unsunkaruta.helpTitle",
+			ExampleKeys: []string{
+				"unsunkaruta.helpExamplePlay",
+				"unsunkaruta.helpExampleMeri",
+			},
+			CommandKeys: []string{
+				"unsunkaruta.helpPlay", "unsunkaruta.helpMeri",
+				"unsunkaruta.helpNext", "unsunkaruta.helpNextRound",
+				"unsunkaruta.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"unsunkaruta.helpSetDifficulty", "unsunkaruta.helpSetDeals"},
+		}),
+	BindCuiFor("quodlibet",
+		func() usecase.QuodlibetInteractorIF {
+			return usecase.NewQuodlibetInteractor(domain.NewDefaultQuodlibet(), new(presenter.QuodlibetCuiPresenter))
+		},
+		controller.NewQuodlibetCuiController,
+		CuiHelpSpec{
+			TitleKey: "quodlibet.helpTitle",
+			ExampleKeys: []string{
+				"quodlibet.helpExampleContract",
+				"quodlibet.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"quodlibet.helpContract", "quodlibet.helpPlay",
+				"quodlibet.helpPass", "quodlibet.helpNextDeal",
+				"quodlibet.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"quodlibet.helpSetDifficulty", "quodlibet.helpAuto"},
+		}),
+	BindCuiFor("dehlapakad",
+		func() usecase.DehlaPakadInteractorIF {
+			return usecase.NewDehlaPakadInteractor(domain.NewDefaultDehlaPakad(), new(presenter.DehlaPakadCuiPresenter))
+		},
+		controller.NewDehlaPakadCuiController,
+		CuiHelpSpec{
+			TitleKey: "dehlapakad.helpTitle",
+			ExampleKeys: []string{
+				"dehlapakad.helpExampleTrump",
+				"dehlapakad.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"dehlapakad.helpTrump", "dehlapakad.helpPlay",
+				"dehlapakad.helpNextHand", "dehlapakad.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"dehlapakad.helpSetDifficulty", "dehlapakad.helpSetKots"},
+		}),
+	BindCuiFor("sutda",
+		func() usecase.SutdaInteractorIF {
+			return usecase.NewSutdaInteractor(domain.NewDefaultSutda(), new(presenter.SutdaCuiPresenter))
+		},
+		controller.NewSutdaCuiController,
+		CuiHelpSpec{
+			TitleKey: "sutda.helpTitle",
+			ExampleKeys: []string{
+				"sutda.helpExampleCall",
+				"sutda.helpExampleRaise",
+			},
+			CommandKeys: []string{
+				"sutda.helpCall", "sutda.helpRaise",
+				"sutda.helpFold", "sutda.helpNextHand",
+				"sutda.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"sutda.helpSetDifficulty", "sutda.helpSetSeats"},
+		}),
+	BindCuiFor("cirulla",
+		func() usecase.CirullaInteractorIF {
+			return usecase.NewCirullaInteractor(domain.NewDefaultCirulla(), new(presenter.CirullaCuiPresenter))
+		},
+		controller.NewCirullaCuiController,
+		CuiHelpSpec{
+			TitleKey: "cirulla.helpTitle",
+			ExampleKeys: []string{
+				"cirulla.helpExamplePlay",
+				"cirulla.helpExampleCapture",
+			},
+			CommandKeys: []string{
+				"cirulla.helpPlay", "cirulla.helpNextRound",
+				"cirulla.helpHint", "cirulla.helpLog",
+			},
+			SettingKeys: []string{"cirulla.helpSetDifficulty", "cirulla.helpSetTarget"},
+		}),
+	BindCuiFor("diloti",
+		func() usecase.DilotiInteractorIF {
+			return usecase.NewDilotiInteractor(domain.NewDefaultDiloti(), new(presenter.DilotiCuiPresenter))
+		},
+		controller.NewDilotiCuiController,
+		CuiHelpSpec{
+			TitleKey: "diloti.helpTitle",
+			ExampleKeys: []string{
+				"diloti.helpExampleTake",
+				"diloti.helpExampleDeclare",
+			},
+			CommandKeys: []string{
+				"diloti.helpTake", "diloti.helpDeclare", "diloti.helpLay",
+				"diloti.helpNextRound", "diloti.helpHint", "diloti.helpLog",
+			},
+			SettingKeys: []string{"diloti.helpSetDifficulty", "diloti.helpSetTarget"},
+		}),
+	BindCuiFor("comet",
+		func() usecase.CometInteractorIF {
+			return usecase.NewCometInteractor(domain.NewDefaultComet(), new(presenter.CometCuiPresenter))
+		},
+		controller.NewCometCuiController,
+		CuiHelpSpec{
+			TitleKey: "comet.helpTitle",
+			ExampleKeys: []string{
+				"comet.helpExamplePlay",
+				"comet.helpExamplePass",
+			},
+			CommandKeys: []string{
+				"comet.helpPlay", "comet.helpPass", "comet.helpNextRound",
+				"comet.helpHint", "comet.helpLog",
+			},
+			SettingKeys: []string{
+				"comet.helpSetDifficulty", "comet.helpSetPlayers", "comet.helpSetTarget",
+			},
+		}),
+	BindCuiFor("costlycolours",
+		func() usecase.CostlyColoursInteractorIF {
+			return usecase.NewCostlyColoursInteractor(domain.NewDefaultCostlyColours(), new(presenter.CostlyColoursCuiPresenter))
+		},
+		controller.NewCostlyColoursCuiController,
+		CuiHelpSpec{
+			TitleKey: "costlycolours.helpTitle",
+			ExampleKeys: []string{
+				"costlycolours.helpExampleMog",
+				"costlycolours.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"costlycolours.helpMog", "costlycolours.helpNoMog", "costlycolours.helpPlay",
+				"costlycolours.helpNextDeal", "costlycolours.helpHint", "costlycolours.helpLog",
+			},
+			SettingKeys: []string{
+				"costlycolours.helpSetDifficulty", "costlycolours.helpSetTarget",
+			},
+		}),
+	BindCuiFor("baccaratbanque",
+		func() usecase.BaccaratBanqueInteractorIF {
+			return usecase.NewBaccaratBanqueInteractor(domain.NewDefaultBaccaratBanque(), new(presenter.BaccaratBanqueCuiPresenter))
+		},
+		controller.NewBaccaratBanqueCuiController,
+		CuiHelpSpec{
+			TitleKey: "baccaratbanque.helpTitle",
+			ExampleKeys: []string{
+				"baccaratbanque.helpExampleDraw",
+				"baccaratbanque.helpExampleStand",
+			},
+			CommandKeys: []string{
+				"baccaratbanque.helpDraw", "baccaratbanque.helpStand",
+				"baccaratbanque.helpNextCoup", "baccaratbanque.helpRetire",
+				"baccaratbanque.helpHint", "baccaratbanque.helpLog",
+			},
+			SettingKeys: []string{
+				"baccaratbanque.helpSetDifficulty", "baccaratbanque.helpSetChips",
+				"baccaratbanque.helpSetBet",
+			},
+		}),
+	BindCuiFor("continentalrummy",
+		func() usecase.ContinentalRummyInteractorIF {
+			return usecase.NewContinentalRummyInteractor(domain.NewDefaultContinentalRummy(), new(presenter.ContinentalRummyCuiPresenter))
+		},
+		controller.NewContinentalRummyCuiController,
+		CuiHelpSpec{
+			TitleKey: "continentalrummy.helpTitle",
+			ExampleKeys: []string{
+				"continentalrummy.helpExampleStock",
+				"continentalrummy.helpExampleDiscard",
+			},
+			CommandKeys: []string{
+				"continentalrummy.helpStock", "continentalrummy.helpTake",
+				"continentalrummy.helpDiscard", "continentalrummy.helpGoOut",
+				"continentalrummy.helpNext", "continentalrummy.helpHint",
+				"continentalrummy.helpLog",
+			},
+			SettingKeys: []string{
+				"continentalrummy.helpSetDifficulty", "continentalrummy.helpSetRounds",
+			},
+		}),
+	BindCuiFor("bolivia",
+		func() usecase.BoliviaInteractorIF {
+			return usecase.NewBoliviaInteractor(domain.NewDefaultBolivia(), new(presenter.BoliviaCuiPresenter))
+		},
+		controller.NewBoliviaCuiController,
+		CuiHelpSpec{
+			TitleKey: "bolivia.helpTitle",
+			ExampleKeys: []string{
+				"bolivia.helpExampleDraw",
+				"bolivia.helpExampleDiscard",
+			},
+			CommandKeys: []string{
+				"bolivia.helpDrawStock",
+				"bolivia.helpDrawDiscard",
+				"bolivia.helpMeld",
+				"bolivia.helpSkipMeld",
+				"bolivia.helpDiscard",
+				"bolivia.helpGoOut",
+				"bolivia.helpNextRound", "bolivia.helpLog",
+			},
+			SettingKeys: []string{"bolivia.helpSetDifficulty", "bolivia.helpSetLimit"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

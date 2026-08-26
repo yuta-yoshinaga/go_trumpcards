@@ -8,19 +8,20 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 )
 
-// Expected per-bucket counts. The six Cloudflare Workers each compile one
+// Expected per-bucket counts. The seven Cloudflare Workers each compile one
 // bucket's games, so a mismatch here means a game's Category is wrong and it
 // would route to a worker whose binary does not contain it -- a 404 at runtime,
 // not a build failure. Only expectedTotal is invariant; the rest move whenever
 // games are rebucketed for size (ADR-0036).
 const (
-	expectedCasino  = 68
+	expectedCasino  = 65
 	expectedClassic = 53
-	expectedSolo    = 54
-	expectedExtra   = 46
-	expectedExtra2  = 52
-	expectedExtra3  = 45
-	expectedTotal   = expectedCasino + expectedClassic + expectedSolo + expectedExtra + expectedExtra2 + expectedExtra3
+	expectedSolo    = 56
+	expectedExtra   = 44
+	expectedExtra2  = 55
+	expectedExtra3  = 44
+	expectedExtra4  = 50
+	expectedTotal   = expectedCasino + expectedClassic + expectedSolo + expectedExtra + expectedExtra2 + expectedExtra3 + expectedExtra4
 )
 
 func TestAllReturnsExpectedTotal(t *testing.T) {
@@ -59,6 +60,7 @@ func TestByCategoryCounts(t *testing.T) {
 		{games.CategoryExtra, expectedExtra},
 		{games.CategoryExtra2, expectedExtra2},
 		{games.CategoryExtra3, expectedExtra3},
+		{games.CategoryExtra4, expectedExtra4},
 	}
 	for _, c := range cases {
 		t.Run(c.cat.String(), func(t *testing.T) {
@@ -77,6 +79,7 @@ func TestCategoryString(t *testing.T) {
 		games.CategoryExtra:   "extra",
 		games.CategoryExtra2:  "extra2",
 		games.CategoryExtra3:  "extra3",
+		games.CategoryExtra4:  "extra4",
 	}
 	for cat, want := range cases {
 		if got := cat.String(); got != want {
@@ -159,7 +162,8 @@ func TestAllEntriesAreValid(t *testing.T) {
 		}
 		switch g.Category {
 		case games.CategoryCasino, games.CategoryClassic, games.CategorySolo,
-			games.CategoryExtra, games.CategoryExtra2, games.CategoryExtra3:
+			games.CategoryExtra, games.CategoryExtra2, games.CategoryExtra3,
+			games.CategoryExtra4:
 			// valid
 		default:
 			t.Errorf("game %q has invalid Category %d", g.Name, int(g.Category))

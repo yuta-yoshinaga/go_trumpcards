@@ -1,0 +1,61 @@
+{
+  "title": "チルッラ",
+  "phase": {
+    "play": "プレイ",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetScore": "目標点",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}（{{target}} 点勝負）",
+  "deck": "山の残り {{n}} 枚",
+  "tableLabel": "場",
+  "tableEmpty": "（空）",
+  "chooseCapture": "取る組を選んでください",
+  "noCapture": "この札では取れません。場に置けます。",
+  "takeGroup": "場の {{cards}} を取る",
+  "layOffButton": "場に置く",
+  "score": "{{n}} 点",
+  "taken": "取り札 {{n}} 枚（デナリ {{denari}}）",
+  "scope": "スコパ {{n}}",
+  "dealerBadge": "親",
+  "bonus": {
+    "barsega": "バルセガ（合計 9 以下）+3",
+    "barsegon": "バルセゴン（同位 3 枚）+10"
+  },
+  "roundResult": "ラウンド集計",
+  "score.cards": "最多枚数",
+  "roundTotal": "ラウンド計: {{a}} - {{b}}",
+  "sweptDenari": "{{name}} がデナリを総取り！ その場で勝ちです。",
+  "winner": "{{name}} の勝ちです",
+  "nextRound": "次のラウンド",
+  "restrictedTooltip": "いまは出せない札です。",
+  "hintAvailable": "ヒント",
+  "hint": {
+    "capture": "点になる札を引き寄せられます",
+    "sweep": "場を空にできます（スコパ）",
+    "lay_off": "取れる札が無いので、安い札を置きます",
+    "next_round": "次のラウンドへ進んでください",
+    "none": "いまは勧める手がありません"
+  },
+  "tutorial": {
+    "table": "場札には番号が付いています。手札を 1 枚選ぶと、**その札で取れる組**が候補として並びます ── 同値の 1 枚・合計が出した札に一致する組・**出した札と足して 15 になる組**、そして場にアッソが無いときの **A の総取り**が混ざります。 **Scopa と違い、同値の札が場にあっても他の取り方は消えません。**",
+    "scores": "点になるのは最多枚数・最多デナリ・7♦・プリミエラ・ピッコラ・グランデ・スコパ、そして配札ボーナスです。**51 点**に先に届いた側の勝ちですが、**デナリ 10 枚を全部取るとその場で勝ち**です。",
+    "playerHand": "あなたの手札です。**取れる札があるときは場に置けません。**",
+    "playButton": "手札を選び、候補から取る組を押します。取れる札が無いときだけ「場に置く」が出ます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "score.denari": "最多デナリ",
+  "score.settebello": "セッテベッロ（7♦）",
+  "score.primiera": "プリミエラ",
+  "score.piccola": "ピッコラ",
+  "score.grande": "グランデ",
+  "score.scope": "スコパ",
+  "score.bonus": "配札ボーナス"
+}

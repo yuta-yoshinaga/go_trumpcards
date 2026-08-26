@@ -20,7 +20,7 @@ type HorseCuiPresenter struct{}
 // **出すのは打つのに要るものだけ。** どの種目の何ハンド目か、席の残高、そして
 // 見えている札 ── 役の判定や勝敗の内訳は種目側の実装が持っている。
 func (p *HorseCuiPresenter) Output(g interfaces.HorseGame, lastErr error) string {
-	return buildCuiOutput(i18n.T("horse.helpTitle"), func(b *strings.Builder) {
+	return buildCuiOutput(horseTitle(g), func(b *strings.Builder) {
 		cfg := g.GetConfig()
 		b.WriteString(i18n.Tf("horse.round",
 			"letter", g.GetDisciplineLetter(),
@@ -38,7 +38,13 @@ func (p *HorseCuiPresenter) Output(g interfaces.HorseGame, lastErr error) string
 				"chips", strconv.Itoa(g.GetSeatLiveChips(i)))
 			// **見えている札だけを並べる。** CPU の伏せ札はドメインが返さない。
 			if cards := g.GetSeatCards(i); len(cards) > 0 {
-				line += "  " + horseCardsText(cards)
+				// **捨てる札を指す番号は引く番にだけ出す。** 番号が無いまま
+				// `d 0 2` と案内しても、どれが 0 番なのかが画面から読めない。
+				if g.IsDrawPhase() && i == g.GetHumanSeat() {
+					line += "  " + horseIndexedCardsText(cards)
+				} else {
+					line += "  " + horseCardsText(cards)
+				}
 			}
 			if i == g.GetCurrentTurn() && g.GetPhase() == domain.HorsePhaseHand {
 				line = color.Yellow(line + i18n.T("horse.turnMark"))
@@ -57,6 +63,11 @@ func (p *HorseCuiPresenter) Output(g interfaces.HorseGame, lastErr error) string
 		case g.GetPhase() == domain.HorsePhaseHandEnd:
 			b.WriteString(i18n.T("horse.promptHandEnd") + "\n")
 			b.WriteString(i18n.T("horse.promptHandEndHelp") + "\n")
+		case g.IsDrawPhase():
+			// **引き直しの番はベットの番ではない。** 同じ「あなたの手番」でも
+			// 押す手が違うので、ベットの案内だけを出すと打ち方が分からない。
+			b.WriteString(i18n.Tf("horse.promptDraw", "draw", strconv.Itoa(g.GetDrawIndex())) + "\n")
+			b.WriteString(i18n.T("horse.promptDrawHelp") + "\n")
 		default:
 			// **コールに要る額まで出す。** ポットだけでは、チェックできる場面
 			// なのか賭けられているのかが読み取れない。
@@ -79,6 +90,9 @@ func (p *HorseCuiPresenter) HintOutput(g interfaces.HorseGame) string {
 	if g.GetPhase() == domain.HorsePhaseHandEnd {
 		return color.Yellow(i18n.T("horse.hintNextHand")) + "\n"
 	}
+	if g.IsDrawPhase() {
+		return color.Yellow(i18n.T("horse.hintDraw")) + "\n"
+	}
 	return color.Yellow(i18n.Tf("horse.hintDiscipline",
 		"name", i18n.T("horse.discipline."+domain.HorseDisciplineName(g.GetDiscipline())))) + "\n"
 }
@@ -88,7 +102,27 @@ func (p *HorseCuiPresenter) ActionLogOutput(g interfaces.HorseGame) string {
 	return actionLogOutputText(g)
 }
 
+// horseTitle は卓のバリアントに合わせた見出しを返す。
+//
+// **同じ presenter を 2 つのゲームが共有している。** 見出しを固定にすると、
+// Eight-Game Mix の画面が「H.O.R.S.E.」を名乗る。
+func horseTitle(g interfaces.HorseGame) string {
+	if g.GetVariant() == domain.HorseVariantEightGame {
+		return i18n.T("eightgame.helpTitle")
+	}
+	return i18n.T("horse.helpTitle")
+}
+
 // horseCardsText は札を 1 行に並べる。
 func horseCardsText(cards []*domain.Card) string {
 	return formatCardSlice(cards, cuiCardStr, " ")
+}
+
+// horseIndexedCardsText は札に 0 始まりの番号を振って並べる。
+func horseIndexedCardsText(cards []*domain.Card) string {
+	parts := make([]string, len(cards))
+	for i, c := range cards {
+		parts[i] = "[" + strconv.Itoa(i) + "]" + cuiCardStr(c)
+	}
+	return strings.Join(parts, " ")
 }

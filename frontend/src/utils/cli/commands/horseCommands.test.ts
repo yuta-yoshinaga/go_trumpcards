@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HORSE_HELP, parseHorseCommand } from './horseCommands';
+import { EIGHT_GAME_HELP, HORSE_HELP, parseHorseCommand } from './horseCommands';
 
 describe('parseHorseCommand', () => {
   it.each([
@@ -45,5 +45,32 @@ describe('parseHorseCommand', () => {
     for (const token of ['fold', 'check', 'call', 'b <amount>', 'raise <amount>', 'allin', 'next']) {
       expect(HORSE_HELP.join('\n')).toContain(token);
     }
+  });
+
+  // **番号は 0 始まり。** 引き直しのある他のゲームと数え方を揃えないと、
+  // 同じ `d 0 2` が 1 枚ずれた札を捨てる。
+  it('parses a draw as zero-based card indices', () => {
+    expect(parseHorseCommand('d 0 2')).toEqual({ args: ['draw', { cardIndices: [0, 2] }] });
+    expect(parseHorseCommand('draw 4')).toEqual({ args: ['draw', { cardIndices: [4] }] });
+  });
+
+  // **引数無しの d はスタンドパットではない。** 読み替えると、番号を書き忘れた
+  // 手が「引かない」として黙って通る。
+  it.each(['d', 'draw', 'd x', 'd -1', 'd 1.5'])('rejects %s', (input) => {
+    expect(parseHorseCommand(input)).toHaveProperty('error');
+  });
+
+  it('stands pat with an empty index list', () => {
+    expect(parseHorseCommand('sp')).toEqual({ args: ['draw', { cardIndices: [] }] });
+    expect(parseHorseCommand('stand')).toEqual({ args: ['draw', { cardIndices: [] }] });
+  });
+
+  // **引き直しの案内は 8 種目のほうにだけ。** H.O.R.S.E. にドロー系の種目は
+  // 無いので、載せると打てない手を勧めることになる。
+  it('documents the draw only in the Eight-Game help', () => {
+    expect(EIGHT_GAME_HELP.join('\n')).toContain('d <idx>...');
+    expect(EIGHT_GAME_HELP.join('\n')).toContain('sp / stand');
+    expect(HORSE_HELP.join('\n')).not.toContain('d <idx>...');
+    expect(HORSE_HELP.join('\n')).not.toContain('sp / stand');
   });
 });

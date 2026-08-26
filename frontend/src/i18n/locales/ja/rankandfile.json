@@ -1,0 +1,42 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "stock": "山札",
+  "waste": "ウェイスト",
+  "foundation": "組札",
+  "tableau": "場札",
+  "moveCount": "手数",
+  "draw": "引く",
+  "giveup": "ギブアップ",
+  "empty": "空",
+  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札 {{idx}}（どのスートのAでも置けます）",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "山札とウェイストが空になるとクリックできます",
+  "undo": "元に戻す",
+  "stalemate": "手詰まりです",
+  "playing": "カードを移動してください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "hintAvailable": "ヒントがあります",
+  "hintAnnouncement": "ヒント: {{card}}を{{dest}}へ移動",
+  "noHint": "ヒントはありません",
+  "tutorial": {
+    "stockWaste": "山札をクリックしてカードを1枚引きます。リサイクル（再ドロー）はできません。",
+    "foundation": "8つの組札に同じスートのカードをA→Kの順に積み上げます。",
+    "tableau": "10列の場札。同じスートの降順でカードを1枚ずつ移動できます。空の列にはどのカードでも置けます。",
+    "controls": "ヒント・元に戻す・自動完成などの操作ボタンです。"
+  },
+  "frontendHint": {
+    "waste": "捨て札",
+    "tableau": "タブロー列{{col}}",
+    "foundation": "組札",
+    "rankandfileMove": "この札を動かせます",
+    "rankandfileDraw": "他に動かせる札はありません。山札から引きましょう"
+  }
+}

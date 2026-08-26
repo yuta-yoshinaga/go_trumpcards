@@ -1,0 +1,17 @@
+{
+  "helpTitle": "Shamrocks",
+  "helpMove": "  m <from> <to|f>      move fan <from> top to fan <to> / foundation (f)",
+  "helpAutoComplete": "  ac                   auto-play every available foundation move",
+  "helpUndo": "  u / undo             undo the last move",
+  "helpGiveUp": "  g / giveup           give up",
+  "foundationLabel": "Foundation {{idx}}:",
+  "fanLabel": "Fan {{idx}}:",
+  "hintToFan": "fan {{idx}}",
+  "hintToFoundation": "a foundation",
+  "hintLine": "[HINT: move fan {{from}} to {{to}}]",
+  "foundationCount": "({{count}} cards)",
+  "stuckDeadlock": "No legal move remains, and Shamrocks has no redeal - type giveup to concede.",
+  "helpExampleAuto": "  ac                   send everything that can go to a foundation",
+  "helpHint": "  h                    show a hint",
+  "helpLog": "  l                    show the action log"
+}

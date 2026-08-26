@@ -31,7 +31,10 @@ import { assertFloor } from './lib/floor.mjs';
 const PAGES = process.argv[2] ?? fileURLToPath(new URL('../src/pages', import.meta.url));
 
 /** Pages that announce the hint through their own element rather than around `hintAvailable`. */
-const ANNOUNCES_ELSEWHERE = new Map([['FortyThievesPage.tsx', 'ft-hint-announcement']]);
+const ANNOUNCES_ELSEWHERE = new Map([
+  ['FortyThievesPage.tsx', 'ft-hint-announcement'],
+  ['RankAndFilePage.tsx', 'rf-hint-announcement'],
+]);
 
 /**
  * The opening tags enclosing `index`, innermost first.

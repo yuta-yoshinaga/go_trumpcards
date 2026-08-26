@@ -1,0 +1,20 @@
+{
+  "helpTitle": "Ristikontra (リスティコントラ)",
+  "helpPlay": "  p <h>                    手札h番を場に出す",
+  "helpNext": "  n                        次のゲームを開始する",
+  "helpLog": "  log | l                  棋譜を表示",
+  "helpSetDifficulty": "  sd [0-2]                 CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "playerLine": "{{name}}: 手札{{hand}} 獲得{{captured}} (チーム{{team}})",
+  "captureLegend": "* = 場を取れる札（場のトップと同ランク）。† = 直前の捕獲を奪える札",
+  "pileLine": "場: 上={{top}} ({{count}}枚)",
+  "pileEmpty": "場: なし",
+  "deckLine": "山札: 残り{{count}}枚",
+  "gameEnd": "ゲーム終了！",
+  "scoreEntry": "  {{name}}: {{score}}枚",
+  "promptCurrentTurn": "手番: {{name}}",
+  "promptHelp": "p <hand> で手札を場に出す (同ランクで場札を捕獲。直前の捕獲と同ランクなら奪い返し)",
+  "result.scores": "ゲーム終了。スコア: {{scores}}",
+  "provisional": "{{name}} 暫定: {{score}}枚",
+  "provisionalNote": "※ 暫定点はチームの獲得枚数です（あなた＋パートナー）",
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
+}

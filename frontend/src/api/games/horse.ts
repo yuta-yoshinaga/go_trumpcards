@@ -13,10 +13,12 @@ import { gameExec } from '../gameExec';
  */
 export const horseApi = {
   exec: (
-    command: 'reset' | 'action' | 'next' | 'hint' | 'log',
+    command: 'reset' | 'action' | 'draw' | 'next' | 'hint' | 'log',
     params?: {
       action?: 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin';
       amount?: number;
+      /** Cards to exchange in a draw round, 0-based. Omitted = stand pat. */
+      cardIndices?: number[];
       config?: { seats?: number; initialChips?: number; handsPerDiscipline?: number };
     },
   ) => gameExec<HorseResponse>('horse', { command, ...params }),

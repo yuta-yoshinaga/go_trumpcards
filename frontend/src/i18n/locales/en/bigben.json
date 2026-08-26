@@ -1,0 +1,45 @@
+{
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available once a clock face builds past the deal",
+  "cardPosAria": "{{card}} (column {{col}}, position {{pos}})",
+  "empty": "Empty",
+  "emptyColumnAriaLabel": "Empty tableau column {{col}}",
+  "emptyFaceAriaLabel": "Empty clock face {{idx}} ({{hour}} o'clock)",
+  "faceAriaLabel": "Clock face {{idx}} ({{hour}} o'clock), target {{target}}, {{count}} cards",
+  "facesComplete": "Done {{count}}/{{total}}",
+  "foundation": "Clock face",
+  "frontendHint": {
+    "tableau": "Tableau column {{col}}",
+    "foundation": "Clock face {{idx}}"
+  },
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "gameOverSummary": "Completed {{count}}/{{total}} clock faces",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "hintAvailable": "Hint available",
+  "hintReason": {
+    "toFoundation": "Send this card to a clock face to free up the board.",
+    "toTableau": "Apply the suggested tableau move to dig out the cards underneath."
+  },
+  "hourLabel": "{{hour}} o'clock",
+  "landscapeBanner": "Landscape mode recommended",
+  "moveCount": "Moves",
+  "noHint": "No hint available",
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "playing": "Move cards to build the clock faces",
+  "stalemate": "Stalemate",
+  "tableau": "Tableau",
+  "tutorial": {
+    "clock": "The twelve clock faces sit above. **♣2 is at nine o'clock** and each position clockwise starts one rank higher, ending on ♦K at eight. Each builds up in suit, wrapping king to ace.",
+    "targets": "The \"→\" under each face is the rank it must reach — **its own hour** (9 at nine o'clock, Q at twelve). A finished face is marked and accepts nothing more. **The twelve totals come to exactly 104**, so finishing them all uses the whole deck.",
+    "tableau": "Eight columns of five. Build **down in suit**, one card at a time. **An emptied column is never refilled.** The other 52 cards are the stock: when nothing moves, \"Deal\" tops every column back up to three. No redeal.",
+    "controls": "Buttons for dealing, hints, undo and auto-complete."
+  },
+  "undo": "Undo",
+  "deal": "Deal"
+}

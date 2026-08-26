@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全318ゲーム)](#12-ゲームドメイン-全318ゲーム)
+  - [1.2 ゲームドメイン (全367ゲーム)](#12-ゲームドメイン-全367ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -161,7 +161,7 @@ classDiagram
 
 #### 共有ミックスイン
 
-318 ゲームの多くが同じ関心事を持つので、以下は**埋め込みで共有**している。
+337 ゲームの多くが同じ関心事を持つので、以下は**埋め込みで共有**している。
 §1.2 以降の per-game クラス図に現れる `GetActionLog()` / `GetTricksTaken()` /
 `GetRoundScore()` などは、たいていここから昇格してきたメソッドで、
 per-game 型が自前で定義しているわけではない。
@@ -201,7 +201,7 @@ classDiagram
 新しいゲームでこれらを埋め込む場合、ゲーム側のコーデックがこの往復を壊していないか
 確認すること（[ADR-0031](../adr/0031-registry-consolidation.md) の登録手順を参照）。
 
-### 1.2 ゲームドメイン (全318ゲーム)
+### 1.2 ゲームドメイン (全367ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1732,7 +1732,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全318ゲーム共通)**
+**Interactor パターン (全367ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1817,8 +1817,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "318ゲーム × CUI/Web = 636 バインディング\n実装型は 610 種類 (CuiController 305 + WebController 305)\n差分は複数ゲームで共有される Controller\n(総称基底 GameWebController[I,P,O] は別)"
-    note for GameCuiPresenter "318ゲーム × CUI/Web = 636 バインディング\n実装型は 612 種類 (CuiPresenter 306 + WebPresenter 306)"
+    note for GameCuiController "367ゲーム × CUI/Web = 734 バインディング\n実装型は 704 種類 (CuiController 352 + WebController 352)\n差分は複数ゲームで共有される Controller\n(総称基底 GameWebController[I,P,O] は別)"
+    note for GameCuiPresenter "367ゲーム × CUI/Web = 734 バインディング\n実装型は 706 種類 (CuiPresenter 353 + WebPresenter 353)"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1857,8 +1857,8 @@ classDiagram
     }
 
     TrumpCardsWeb --> "*" gameEntry : registerAll() over games.All()
-    gameEntry --> GameWebController : holds 318 controllers
-    GameManager --> "*" CuiExecer : holds 318 games
+    gameEntry --> GameWebController : holds 367 controllers
+    GameManager --> "*" CuiExecer : holds 367 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1901,10 +1901,11 @@ classDiagram
     note for KVSessionProvider~T~ "Worker 用。リクエスト毎に KV から復元し、\nGameBase.Snapshot() の JSON を書き戻す。\nプロセスが持続しないので状態は毎回 KV 往復する"
 ```
 
-Worker 側はゲームをカテゴリ単位で 6 バイナリに分割している。
+Worker 側はゲームをカテゴリ単位で 7 バイナリに分割している。
 `Category` は**バイナリのサイズバケットであってユーザ向けの分類ではない**
 （[ADR-0032](../adr/0032-fourth-worker-capacity.md) /
-[ADR-0036](../adr/0036-fifth-sixth-worker-capacity.md)）。
+[ADR-0036](../adr/0036-fifth-sixth-worker-capacity.md) /
+[ADR-0037](../adr/0037-seventh-worker-capacity.md)）。
 
 ```mermaid
 classDiagram
@@ -1921,12 +1922,13 @@ classDiagram
         CategoryExtra
         CategoryExtra2
         CategoryExtra3
+        CategoryExtra4
     }
 
     Game --> Category : size bucket
 
     note for Game "registry.go が 318 件の Name+Category だけを持つ。\nゲーム実装への参照は持たないので、TinyGo が\n他カテゴリを dead-code elimination できる"
-    note for Category "6 バケットは 1 MB gzip 無料枠に収めるための分割。\n各 Worker は自分のカテゴリだけを blank import する"
+    note for Category "7 バケットは 1 MB gzip 無料枠に収めるための分割。\n各 Worker は自分のカテゴリだけを blank import する"
 ```
 
 詳細な per-worker のゲーム一覧とビルド手順は

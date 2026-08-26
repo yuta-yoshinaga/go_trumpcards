@@ -102,7 +102,7 @@ def main() -> None:
             # report claim the PokerHand* enums would strand when moving `poker`;
             # they live in the untagged poker_hand_rank.go and never move.
             first = s.split("\n", 1)[0]
-            if first.startswith("//go:build") and re.search(r"\b(casino|classic|solo|extra[23]?)\b", first):
+            if first.startswith("//go:build") and re.search(r"\b(casino|classic|solo|extra[234]?)\b", first):
                 d |= package_decls(s)
             r |= set(REF.findall(s))
         decls[t], refs[t] = d, r
@@ -136,7 +136,7 @@ def main() -> None:
     # moving elsewhere loses them. Reported separately because the fix differs --
     # widen the helper's tag rather than reconsider the move.
     owned = {p.resolve() for t in by_type for p in mg.game_files(t, all_types)}
-    tagre = re.compile(r"\b(casino|classic|solo|extra[23]?)\b")
+    tagre = re.compile(r"\b(casino|classic|solo|extra[234]?)\b")
     helpers = []
     for d in mg.SRC_DIRS:
         for p in (mg.ROOT / d).rglob("*.go"):

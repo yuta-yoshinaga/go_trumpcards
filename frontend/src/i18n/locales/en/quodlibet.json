@@ -1,0 +1,66 @@
+{
+  "title": "Quodlibet",
+  "phase": {
+    "selectContract": "Choosing contract",
+    "play": "Play",
+    "dealEnd": "Deal end",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "autoSelectContract": "Pick contracts automatically",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "deal": "Deal {{n}}/{{total}}",
+  "wheel": "Wheel {{n}}",
+  "contract": "Contract: {{name}}",
+  "trick": "Trick {{n}}/{{total}}",
+  "contractName": {
+    "plus": "Plus",
+    "minus": "Minus",
+    "badNeighbour": "Bad Neighbour",
+    "alarich": "Alarich",
+    "firstThreeAndLast": "1238",
+    "noReds": "No Reds",
+    "oberUnter": "Ober/Unter",
+    "bribe": "Bribe",
+    "open": "Open Trousers",
+    "hunt": "Good Hunting",
+    "quadrature": "Quadrature",
+    "snack": "Snack",
+    "unknown": "-"
+  },
+  "currentTrick": "Current trick",
+  "shedArea": "Table",
+  "shedEmpty": "Nothing down yet - you may start with anything.",
+  "penaltyLegend": "Penalty points (fewest wins)",
+  "penalty": "{{n}} pts",
+  "dealPoints": "{{n}} pts",
+  "dealerBadge": "Dealer",
+  "chooseContract": "Choose a contract from this wheel",
+  "dealResult": "Deal result ({{name}})",
+  "winner": "Fewest penalty points: {{names}}",
+  "playButton": "Play",
+  "passButton": "Pass",
+  "nextDeal": "Next deal",
+  "restrictedTooltip": "You cannot play that card right now.",
+  "hintAvailable": "Hint",
+  "hint": {
+    "pick_contract": "this hand takes the fewest penalty points there",
+    "avoid_penalty": "it keeps the penalty cards off your tricks",
+    "shed_low": "playing from the ends keeps your own run intact",
+    "pass": "you have nothing you can play",
+    "next_deal": "move on to the next deal",
+    "none": "no suggestion right now"
+  },
+  "tutorial": {
+    "info": "Quodlibet is an Austrian compendium game: twelve deals arranged as three \"wheels\" of four contracts each, one of every contract per wheel. The dealer may only pick from the wheel currently in play.",
+    "scores": "**Every score is a penalty and the fewest wins.** A contract you want to win tricks in (Plus) sits at the same table as ones you want to duck (Minus, Bad Neighbour), so always check which one is being played.",
+    "playerHand": "Your hand; only the legal cards are highlighted. In the third wheel, Open Trousers hides **your own hand from you alone**, and Good Hunting turns every hand face up.",
+    "playButton": "Select a card and press Play. Pass appears only when Quadrature or Snack leaves you with nothing playable.",
+    "resetButton": "The reset button starts a new game."
+  }
+}

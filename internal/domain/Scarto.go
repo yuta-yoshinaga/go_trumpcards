@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra4
 
 // Package domain スカルト (Scarto / Piedmontese Tarot) のドメインモデル。
 //
@@ -193,21 +193,10 @@ func NewDefaultScarto() *Scarto {
 	return NewScarto(players, DefaultScartoConfig())
 }
 
-// buildScartoDeck 78 枚タロットデッキを直接構築する。スート札 (design 1..4, value
-// 1..14) 56 枚 + 切り札 (design 5, value 1..21) 21 枚 + エクスキューズ (design 6, value 0)。
-func buildScartoDeck() []*Card {
-	deck := make([]*Card, 0, ScartoDeckSize)
-	for suit := 1; suit <= ScartoSuitCnt; suit++ {
-		for val := 1; val <= ScartoKingValue; val++ {
-			deck = append(deck, NewCard(suit, val, false))
-		}
-	}
-	for val := 1; val <= ScartoMaxTrump; val++ {
-		deck = append(deck, NewCard(ScartoTrumpDesign, val, false))
-	}
-	deck = append(deck, NewCard(ScartoExcuseDesign, ScartoExcuseValue, false))
-	return deck
-}
+// buildScartoDeck 78 枚タロットデッキを構築する。**中身は共有部品**
+// (`buildTarot78Deck`) —— 同じデッキで遊ぶ 4 人版 (PiedmonteseTarot) と
+// 1 文字も違わないので、2 か所に書くと片方だけ直した規則が生まれる。
+func buildScartoDeck() []*Card { return buildTarot78Deck() }
 
 // Reset ゲーム初期化
 func (g *Scarto) Reset() {
@@ -342,13 +331,7 @@ func (g *Scarto) doScarto(cardIndices []int) error {
 // validateScarto スカルトの合法性を検証する。得点札 (King/ブー/コート札) は捨てられない。
 // 捨てられるのは 0.5 点札 (非切り札のピップ)。それが 3 枚に満たない場合のみ非ブー切り札を許可。
 func (g *Scarto) validateScarto(player *ScartoPlayer, cardIndices []int) error {
-	discardable := 0
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if scartoDiscardable(player.GetCard(i)) {
-			discardable++
-		}
-	}
-	allowTrump := discardable < ScartoSurplus
+	allowTrump := g.scartoAllowsTrump(player)
 	for _, idx := range cardIndices {
 		c := player.GetCard(idx)
 		if c == nil {
@@ -374,6 +357,50 @@ func (g *Scarto) validateScarto(player *ScartoPlayer, cardIndices []int) error {
 }
 
 // scartoDiscardable 通常スカルトに出せる札か (非切り札・非エクスキューズ・非コートのピップ)。
+// scartoAllowsTrump は、いま親がブーでない切り札を捨てても良いかを返す。
+//
+// **捨てられるピップが 3 枚に満たないときだけ許す。** 規則をここ 1 か所に置き、
+// 検証も提示 (CUI の一覧・Web の選択可能インデックス) もこれを問い合わせる。
+// 以前は提示側が切り札を常に除外していたため、ピップが足りない手を親が引くと
+// **画面からは枚数を揃えられなかった** (#6236)。
+func (g *Scarto) scartoAllowsTrump(player *ScartoPlayer) bool {
+	discardable := 0
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if scartoDiscardable(player.GetCard(i)) {
+			discardable++
+		}
+	}
+	return discardable < ScartoSurplus
+}
+
+// GetDiscardableIndices は親がいまスカルトに出せる手札のインデックスを返す。
+// スカルトフェーズでなければ空を返す。
+func (g *Scarto) GetDiscardableIndices() []int {
+	if g.phase != ScartoPhaseScarto || g.dealerIdx < 0 || g.dealerIdx >= len(g.players) {
+		return []int{}
+	}
+	player := g.players[g.dealerIdx]
+	if player == nil {
+		return []int{}
+	}
+	allowTrump := g.scartoAllowsTrump(player)
+	idxs := make([]int, 0, player.GetCardsSize())
+	for i := 0; i < player.GetCardsSize(); i++ {
+		c := player.GetCard(i)
+		switch {
+		case c == nil, scartoIsExcuse(c), scartoIsBout(c):
+			continue
+		case scartoIsTrump(c):
+			if allowTrump {
+				idxs = append(idxs, i)
+			}
+		case c.GetValue() < ScartoCourtMin:
+			idxs = append(idxs, i)
+		}
+	}
+	return idxs
+}
+
 func scartoDiscardable(c *Card) bool {
 	if c == nil || scartoIsTrump(c) || scartoIsExcuse(c) {
 		return false
@@ -623,26 +650,14 @@ func scartoSettleDeal(half [ScartoPlayerCnt]int) [ScartoPlayerCnt]int {
 
 // --- Card classification / points ---
 
-// scartoIsTrump 切り札か。
-func scartoIsTrump(c *Card) bool {
-	return c != nil && c.GetDesign() == ScartoTrumpDesign
-}
+// scartoIsTrump 切り札かを返す。
+func scartoIsTrump(c *Card) bool { return tarot78IsTrump(c) }
 
-// scartoIsExcuse エクスキューズか。
-func scartoIsExcuse(c *Card) bool {
-	return c != nil && c.GetDesign() == ScartoExcuseDesign
-}
+// scartoIsExcuse エクスキューズ (Matto) かを返す。
+func scartoIsExcuse(c *Card) bool { return tarot78IsExcuse(c) }
 
-// scartoIsBout ブー (切り札1 / 切り札21 / Excuse) か。
-func scartoIsBout(c *Card) bool {
-	if c == nil {
-		return false
-	}
-	if scartoIsExcuse(c) {
-		return true
-	}
-	return scartoIsTrump(c) && (c.GetValue() == ScartoPetitValue || c.GetValue() == ScartoMaxTrump)
-}
+// scartoIsBout 3 大オヌール (Bagatto / Mondo / Matto) かを返す。
+func scartoIsBout(c *Card) bool { return tarot78IsBout(c) }
 
 // scartoCardHalfPoints カードのハーフポイント (点数×2) を返す。
 // Roi/各ブー = 9, Dame = 7, Cavalier = 5, Valet = 3, その他 = 1。
@@ -673,32 +688,7 @@ func scartoCardHalfPoints(c *Card) int {
 // --- Trick logic ---
 
 // ledSuit 現在のトリックのリードスートを返す。最初の非エクスキューズ札の design。
-// エクスキューズのみでスートが未確定なら -1。
-func (g *Scarto) ledSuit() int {
-	for _, tc := range g.currentTrick {
-		if tc == nil || tc.Card == nil {
-			continue
-		}
-		if !scartoIsExcuse(tc.Card) {
-			return tc.Card.GetDesign()
-		}
-	}
-	return -1
-}
-
-// highestTrumpInTrick 現在のトリック中の最強切り札の値を返す (0=切り札なし)。
-func (g *Scarto) highestTrumpInTrick() int {
-	best := 0
-	for _, tc := range g.currentTrick {
-		if tc == nil {
-			continue
-		}
-		if scartoIsTrump(tc.Card) && tc.Card.GetValue() > best {
-			best = tc.Card.GetValue()
-		}
-	}
-	return best
-}
+func (g *Scarto) ledSuit() int { return tarot78LedSuit(g.currentTrick) }
 
 // validatePlay マストフォロー + 切り札義務 + オーバートランプ義務を検証する。
 func (g *Scarto) validatePlay(playerIdx int, card *Card) error {
@@ -706,102 +696,9 @@ func (g *Scarto) validatePlay(playerIdx int, card *Card) error {
 }
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
+// **規則は 4 人版と共有** (`tarot78ValidPlayIndices`)。
 func (g *Scarto) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	n := player.GetCardsSize()
-	all := make([]int, 0, n)
-	for i := 0; i < n; i++ {
-		all = append(all, i)
-	}
-	if len(g.currentTrick) == 0 {
-		return all
-	}
-	led := g.ledSuit()
-	if led == -1 {
-		return all
-	}
-	excuseIdx := -1
-	for i := 0; i < n; i++ {
-		if scartoIsExcuse(player.GetCard(i)) {
-			excuseIdx = i
-		}
-	}
-	highestTrump := g.highestTrumpInTrick()
-	var base []int
-	if led == ScartoTrumpDesign {
-		base = g.trumpFollowIndices(player, highestTrump)
-	} else {
-		base = g.suitFollowIndices(player, led, highestTrump)
-	}
-	if excuseIdx >= 0 {
-		base = scartoAppendUnique(base, excuseIdx)
-	}
-	if len(base) == 0 {
-		return all
-	}
-	return base
-}
-
-// trumpFollowIndices 切り札がリードされた場合の合法な非エクスキューズ札を返す。
-func (g *Scarto) trumpFollowIndices(player *ScartoPlayer, highestTrump int) []int {
-	trumps := g.suitOf(player, ScartoTrumpDesign)
-	if len(trumps) == 0 {
-		return g.nonExcuseIndices(player)
-	}
-	higher := filterIndices(trumps, func(idx int) bool {
-		c := player.GetCard(idx)
-		return c != nil && c.GetValue() > highestTrump
-	})
-	if len(higher) > 0 {
-		return higher
-	}
-	return trumps
-}
-
-// suitFollowIndices スートがリードされた場合の合法な非エクスキューズ札を返す。
-func (g *Scarto) suitFollowIndices(player *ScartoPlayer, led, highestTrump int) []int {
-	ledCards := g.suitOf(player, led)
-	if len(ledCards) > 0 {
-		return ledCards
-	}
-	trumps := g.suitOf(player, ScartoTrumpDesign)
-	if len(trumps) == 0 {
-		return g.nonExcuseIndices(player)
-	}
-	higher := filterIndices(trumps, func(idx int) bool {
-		c := player.GetCard(idx)
-		return c != nil && c.GetValue() > highestTrump
-	})
-	if highestTrump > 0 && len(higher) > 0 {
-		return higher
-	}
-	return trumps
-}
-
-// suitOf 指定 design の (非エクスキューズ) 手札インデックスを返す。
-func (g *Scarto) suitOf(player *ScartoPlayer, design int) []int {
-	var out []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		c := player.GetCard(i)
-		if c == nil || scartoIsExcuse(c) {
-			continue
-		}
-		if c.GetDesign() == design {
-			out = append(out, i)
-		}
-	}
-	return out
-}
-
-// nonExcuseIndices エクスキューズを除く全手札インデックスを返す。
-func (g *Scarto) nonExcuseIndices(player *ScartoPlayer) []int {
-	var out []int
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if !scartoIsExcuse(player.GetCard(i)) {
-			out = append(out, i)
-		}
-	}
-	return out
+	return tarot78ValidPlayIndices(g.players[playerIdx], g.currentTrick)
 }
 
 // trickWinner トリックの勝者を決定する。切り札があれば最強切り札、無ければリードスートの最強札。
@@ -1120,16 +1017,6 @@ func scartoCardStr(c *Card) string {
 	return fmt.Sprintf("%s%d", s, c.GetValue())
 }
 
-// scartoAppendUnique スライスに未含有のインデックスを追加する。
-func scartoAppendUnique(indices []int, idx int) []int {
-	for _, v := range indices {
-		if v == idx {
-			return indices
-		}
-	}
-	return append(indices, idx)
-}
-
 // --- State getters / setters ---
 
 // GetPhase 現在のフェーズ取得
@@ -1173,6 +1060,11 @@ func (g *Scarto) GetDealerIdx() int { return g.dealerIdx }
 
 // SetDealerIdx 親インデックス設定 (テスト用)
 func (g *Scarto) SetDealerIdx(idx int) { g.dealerIdx = idx }
+
+// PlayerScartoValidateForTest はテスト用にスカルトの検証だけを実行する。
+func (g *Scarto) PlayerScartoValidateForTest(cardIndices []int) error {
+	return g.validateScarto(g.players[g.dealerIdx], cardIndices)
+}
 
 // GetScartoCount 親が捨てたスカルト札の枚数取得
 func (g *Scarto) GetScartoCount() int { return len(g.scarto) }

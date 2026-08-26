@@ -556,8 +556,16 @@ func (s *FiveCardStud) dealStreetCard(faceUp bool) {
 
 // dealRemainingStreets 残りのストリートのカードを全て配る
 func (s *FiveCardStud) dealRemainingStreets() {
-	// 現在のフェーズから5th streetまでのカードを配る (全て表向き)
-	for phase := s.phase; phase <= FiveCardStudPhaseFifthStreet; phase++ {
+	// **次のストリートから配る。** advancePhase はフェーズを進めるのと同時に
+	// そのストリートの札を配るので、s.phase のストリートは既に配り終えている。
+	// s.phase から回すと 1 枚多く配り、5 枚のゲームが 6 枚になる ——
+	// 実測で 2000 ハンド中 162 件 (#6214)。
+	//
+	// **3rd street のケースは残す。** セブンカードスタッドと違い、こちらは
+	// 配り終えた直後のフェーズが 3rd street の *手前* (手札 2 枚) なので、
+	// 3rd を落とすと今度は 1 枚足りなくなる —— 実測で 1822/2000 ハンドが
+	// 5 枚未満になった。多すぎるのと同じくらい悪い。
+	for phase := s.phase + 1; phase <= FiveCardStudPhaseFifthStreet; phase++ {
 		switch phase {
 		case FiveCardStudPhaseThirdStreet, FiveCardStudPhaseFourthStreet, FiveCardStudPhaseFifthStreet:
 			s.dealStreetCard(true)

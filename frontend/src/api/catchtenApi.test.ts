@@ -35,7 +35,7 @@ describe('catchtenApi', () => {
 
   it('reset hits /catchten/exec with command=reset', async () => {
     mockFetch.mockReturnValue(ok(payload));
-    const result = await catchtenApi.exec('reset');
+    const result = await catchtenApi.exec('reset', undefined);
     expect(mockFetch).toHaveBeenCalledWith('/catchten/exec', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -44,9 +44,12 @@ describe('catchtenApi', () => {
     expect(result).toEqual(payload);
   });
 
-  it('play sends command and cardIndex', async () => {
+  // **札のインデックスは 2 番目のスロット。** ここを 1 番目で書いていたので、
+  // クライアントが arg1 を読む実装のままでも試験が通り、Web から札が出せない
+  // 状態が出荷された (#6227)。
+  it('play sends the card index from the second slot', async () => {
     mockFetch.mockReturnValue(ok(payload));
-    await catchtenApi.exec('play', 3);
+    await catchtenApi.exec('play', undefined, 3);
     expect(mockFetch).toHaveBeenCalledWith(
       '/catchten/exec',
       expect.objectContaining({ body: JSON.stringify({ command: 'play', cardIndex: 3, sessionId }) }),
@@ -55,7 +58,7 @@ describe('catchtenApi', () => {
 
   it('next sends command=next', async () => {
     mockFetch.mockReturnValue(ok(payload));
-    await catchtenApi.exec('next');
+    await catchtenApi.exec('next', undefined);
     expect(mockFetch).toHaveBeenCalledWith(
       '/catchten/exec',
       expect.objectContaining({ body: JSON.stringify({ command: 'next', sessionId }) }),
@@ -64,7 +67,7 @@ describe('catchtenApi', () => {
 
   it('nextround sends command=nextround', async () => {
     mockFetch.mockReturnValue(ok(payload));
-    await catchtenApi.exec('nextround');
+    await catchtenApi.exec('nextround', undefined);
     expect(mockFetch).toHaveBeenCalledWith(
       '/catchten/exec',
       expect.objectContaining({ body: JSON.stringify({ command: 'nextround', sessionId }) }),
@@ -73,7 +76,7 @@ describe('catchtenApi', () => {
 
   it('reset with config includes cpuDifficulty and pointLimit', async () => {
     mockFetch.mockReturnValue(ok(payload));
-    await catchtenApi.exec('reset', undefined, { cpuDifficulty: 2, pointLimit: 51 });
+    await catchtenApi.exec('reset', undefined, undefined, { cpuDifficulty: 2, pointLimit: 51 });
     expect(mockFetch).toHaveBeenCalledWith(
       '/catchten/exec',
       expect.objectContaining({
@@ -84,6 +87,6 @@ describe('catchtenApi', () => {
 
   it('throws on HTTP error', async () => {
     mockFetch.mockReturnValue(err());
-    await expect(catchtenApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    await expect(catchtenApi.exec('reset', undefined)).rejects.toThrow('HTTP error: 500');
   });
 });

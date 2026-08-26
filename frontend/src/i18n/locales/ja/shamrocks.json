@@ -1,0 +1,34 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "シャムロックス",
+  "foundation": "組札",
+  "fan": "扇",
+  "stuckDeadlock": "手詰まり: 動かせる札がありません",
+  "moveCount": "手数: {{count}}",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "undo": "元に戻す",
+  "empty": "空",
+  "selectSource": "動かす扇の上札を選んでください",
+  "selectDestination": "移動先（扇または組札）を選んでください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "tutorial": {
+    "foundation": "4つの組札です。各スートのAからKへ昇順に積み上げ、52枚すべて揃えるとクリアです。",
+    "fan": "扇（ファン）の最上位カードだけを操作できます。同スートで1つ下のランクの扇の上札へ重ねられます。",
+    "actionButtons": "ヒント・自動完成・元に戻すなどの操作ボタンです。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "frontendHint": {
+    "shamrocksToFoundation": "この扇の札を台札へ上げられます",
+    "shamrocksToFan": "この扇の札を別の扇へ移せます"
+  }
+}

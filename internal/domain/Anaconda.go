@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra4
 
 // Package domain アナコンダ (Anaconda / Pass the Trash) のドメインモデル。
 //

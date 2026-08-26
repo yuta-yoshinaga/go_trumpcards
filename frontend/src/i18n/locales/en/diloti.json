@@ -1,0 +1,63 @@
+{
+  "title": "Diloti",
+  "phase": {
+    "play": "Play",
+    "roundEnd": "Round over",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "targetScore": "Target score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}} (playing to {{target}})",
+  "deck": "Stock: {{n}}",
+  "tableLabel": "Table",
+  "tableEmpty": "(empty)",
+  "declarationsLabel": "Declarations",
+  "declarationLine": "[{{idx}}] {{value}} ({{kind}} / {{owner}})",
+  "declPlain": "plain",
+  "declGroup": "group - cannot be raised",
+  "declShort": "decl {{idx}}",
+  "chooseMove": "Choose a group to take, or a value to declare",
+  "noCapture": "This card cannot take anything",
+  "takeGroup": "Take {{cards}}",
+  "declareGroup": "Declare {{value}} ({{cards}})",
+  "layOffButton": "Lay off",
+  "score": "score {{n}}",
+  "taken": "{{n}} taken",
+  "xeri": "xeri {{n}}",
+  "dealerBadge": "Dealer",
+  "roundResult": "Round score (you - CPU)",
+  "score.cards": "Most cards",
+  "score.aces": "Aces",
+  "score.tenOfDiamonds": "10 of diamonds",
+  "score.twoOfClubs": "2 of clubs",
+  "score.xeri": "Xeri",
+  "roundTotal": "Total: {{a}} - {{b}}",
+  "winner": "{{name}} wins!",
+  "nextRound": "Next round",
+  "restrictedTooltip": "You cannot play this now",
+  "hintAvailable": "Hint",
+  "action": {
+    "capture": "capture",
+    "declare": "declare",
+    "trail": "lay off"
+  },
+  "hint": {
+    "capture": "takes scoring cards",
+    "declare": "declares a pile you can take later",
+    "trail": "nothing to take, so lay the card off",
+    "none": "no move to recommend right now"
+  },
+  "tutorial": {
+    "table": "The table cards are numbered. Pick a hand card and the moves it can make appear - a same-rank card, a set summing to the played card, and any declaration on the table. **Captures do not sum to ten; they sum to the played card's own rank.**",
+    "scores": "Points come from most cards (4), each ace (1), the 10 of diamonds (2) and the 2 of clubs (1) - **eleven fixed points** - plus **10 for every xeri**, a one-card sweep of the whole table. The xeri usually decides the round.",
+    "playerHand": "Your hand. A card cannot be laid off while a **face card of the same rank** is on the table, or while you **owe a declaration**.",
+    "playButton": "Pick a card, then press a Take or Declare option. Lay off appears only when you choose neither.",
+    "resetButton": "The reset button starts a new game."
+  }
+}

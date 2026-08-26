@@ -1,6 +1,6 @@
 ---
 name: worker-budget-checker
-description: Read-only reporter of measured gzip headroom for the six TinyGo Cloudflare Workers (casino, classic, solo, extra, extra2, extra3), used to pick the bucket for a new or growing game. Reports each worker's gzip size against the 1 MB free-tier limit from a real build or a real CI artifact — never from an estimate. Use BEFORE assigning a Category to a new game, before moving a game between workers, and when the size-check CI step fails with "EXCEEDS free tier limit". MUST BE USED when adding a game to the registry.
+description: Read-only reporter of measured gzip headroom for the seven TinyGo Cloudflare Workers (casino, classic, solo, extra, extra2, extra3, extra4), used to pick the bucket for a new or growing game. Reports each worker's gzip size against the 1 MB free-tier limit from a real build or a real CI artifact — never from an estimate. Use BEFORE assigning a Category to a new game, before moving a game between workers, and when the size-check CI step fails with "EXCEEDS free tier limit". MUST BE USED when adding a game to the registry.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---

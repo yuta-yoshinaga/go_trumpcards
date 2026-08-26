@@ -1,0 +1,73 @@
+{
+  "title": "ピエモンテ・タロッコ",
+  "phase": {
+    "scarto": "スカルト（捨て札）",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ディール終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "seats": "席数",
+    "cpuDifficulty": "CPU難易度",
+    "targetDeals": "マッチのディール数",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ディール {{n}}",
+  "trick": "トリック {{n}}/{{total}}",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "points": "{{points}}点",
+  "score": "得点: {{score}}",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "dealerBadge": "親（ディーラー）",
+  "scartoPhase": "スカルト — タロンぶんの{{total}}枚を選んで伏せて捨てます（{{count}}/{{total}} 枚選択中）。オヌール（切り札1・21・マット）とコート札は捨てられません。",
+  "scartoWaiting": "親のスカルト（捨て札）を待っています…",
+  "scartoRestricted": "このカードは捨てられません（オヌール・コート札）。",
+  "scartoUndiscardable": {
+    "excuse": "マット（エクスキューズ）は捨てられません。",
+    "bout": "オヌール（切り札の1・21）は捨てられません。",
+    "trump": "切り札は（やむを得ない場合を除き）捨てられません。",
+    "court": "コート札（V・C・D・R）は捨てられません。"
+  },
+  "discardButton": "捨てる（{{count}}/{{total}}）",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のディール",
+  "outcomeNone": "平均どおり",
+  "outcomeWin": "平均より上",
+  "outcomeLoss": "平均より下",
+  "roundResult": {
+    "title": "ディール結果",
+    "outcome": "あなたの結果: {{outcome}}",
+    "playerLine": "{{name}}: {{delta}}（累計 {{score}}）",
+    "total": "卓のカード点合計: {{total}}点（78点）",
+    "earnedLine": "{{name}}: 獲得 {{points}}点 → 変動 {{scaled}}",
+    "formula": "変動 = 席数（{{n}}人）× 自分のカード点 − 卓の合計"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "scarto_weak": "点にならない札を捨てる",
+    "lead_low": "安い札でリードして点札を温存する",
+    "follow_play": "取れるなら取り、取れないなら安い札を落とす",
+    "overtrump": "切り札が出ている — 上位で応じるか安く落とす",
+    "next_trick": "次のトリックへ進む",
+    "next_round": "次のディールへ進む",
+    "none": "いまは勧める手がありません"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。リードされたスートにマストフォロー、フォローできなければ切り札、切り札が出ていれば可能な限り上位の切り札で応じます。マット（Matto）だけはいつでも出せ、取られずに自分の獲得札に残ります。",
+    "playerHand": "あなたの手札です。出せるカードをクリックして選びます。78枚のタロッコデッキ（4スート×14枚＋切り札21枚＋マット）を3人または4人で使います。",
+    "playButton": "カードを選んだら、このボタンで出します。あなたが親のときはスカルトでタロンぶん（4人卓なら2枚、3人卓なら3枚）を伏せて捨てます。",
+    "info": "ピエモンテ・タロッコは北イタリア・ピエモンテ州のタロッキです。点は3枚組で数え（組ごとに2点引く）、デッキ全体で78点。各ディールは卓の取り分に対するゼロサム精算で、規定ディール後の累計得点が最多の席が勝者です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
+}

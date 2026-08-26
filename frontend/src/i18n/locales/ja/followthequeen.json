@@ -1,0 +1,94 @@
+{
+  "phase": {
+    "thirdStreet": "サードストリート",
+    "fourthStreet": "フォースストリート",
+    "fifthStreet": "フィフスストリート",
+    "sixthStreet": "シックスストリート",
+    "seventhStreet": "セブンスストリート",
+    "showdown": "ショーダウン",
+    "end": "結果",
+    "init": "初期化中",
+    "rebuy": "リバイ/アドオン"
+  },
+  "doorCards": "ドアカード",
+  "holeCards": "ホールカード",
+  "yourHand": "あなたの手札",
+  "currentHand": "現在の役",
+  "anteBringIn": "アンティ/ブリングイン",
+  "wild": "ワイルド",
+  "wildNone": "まだ無し",
+  "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
+  "rebuy": {
+    "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
+    "accept": "リバイ",
+    "skip": "スキップ"
+  },
+  "addon": {
+    "prompt": "アドオンしますか? ({{chips}}チップ)",
+    "accept": "アドオン",
+    "skip": "スキップ"
+  },
+  "muck": {
+    "prompt": "マックしますか?",
+    "muck": "マック",
+    "show": "ショー"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP（ボランタリー・プット・イン・ポット）: 自発的にポットに参加した割合",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR（プリフロップレイズ）: 最初のラウンドでレイズした割合",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet（スリーベット）: 相手のレイズに対して再レイズした割合",
+    "af": "AF",
+    "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率"
+  },
+  "settings": {
+    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+  },
+  "tutorial": {
+    "playerHand": "あなたのホールカードとドアカードです。7枚のカードから最強の5枚を作ります。",
+    "actionButtons": "ベット・コール・レイズ・フォールドなどのアクションを選びます。",
+    "potDisplay": "現在のポットとアンテレベルが表示されます。",
+    "cpuArea": "CPU対戦相手の情報です。ショーダウン時にカードが公開されます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "strongHandRank": "強いハンド — レイズ推奨",
+    "decentHandRank": "まずまずのハンド — コール推奨",
+    "weakHandRank": "弱いハンド — フォールド推奨"
+  },
+  "hand": {
+    "highCard": "ハイカード",
+    "onePair": "ワンペア",
+    "twoPair": "ツーペア",
+    "threeOfAKind": "スリーカード",
+    "straight": "ストレート",
+    "flush": "フラッシュ",
+    "fullHouse": "フルハウス",
+    "fourOfAKind": "フォーカード",
+    "straightFlush": "ストレートフラッシュ",
+    "royalFlush": "ロイヤルフラッシュ"
+  },
+  "frontendHint": {
+    "followthequeenBringIn": "一番低い門札なので強制的に出させられている。強い手という意味ではない",
+    "followthequeenRaisePair": "ペアがある。レイズで押していこう",
+    "followthequeenRaiseWildOne": "ワイルドを1枚持っています（実質ペア以上）",
+    "followthequeenRaiseWildTwo": "ワイルドを2枚持っています（スリーカード以上が確定）",
+    "followthequeenCheckFree": "払う額は無い。ただで次の札を見よう",
+    "followthequeenCallHigh": "高い札がある。コールして様子を見よう",
+    "followthequeenFoldWeak": "高い札もペアも無い。降りよう"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive：参加少なめだが入ったら強気",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive：参加多くかつ攻め志向",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive：参加少なめでコール中心",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive：参加多めだがコール中心",
+    "balanced": "BAL",
+    "balancedTooltip": "バランス型のスタイル"
+  }
+}

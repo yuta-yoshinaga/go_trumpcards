@@ -1,0 +1,83 @@
+{
+  "title": "グリーク",
+  "phase": {
+    "bid": "競り",
+    "discard": "捨て札",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ディール終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetRounds": "マッチのディール数",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ディール {{n}}",
+  "trick": "トリック {{n}}",
+  "trump": "切り札: {{suit}}",
+  "stockUnsold": "ストック: 競り中（最高額 {{bid}}）",
+  "stockSold": "ストック: {{name}} が {{bid}} で落札",
+  "ruffLine": "ラフ: {{name}} が {{suit}} の {{total}} で獲得",
+  "meldGleek": "グリーク: {{name}} の{{rank}}3枚（各相手から {{value}}）",
+  "meldMournival": "マーニヴァル: {{name}} の{{rank}}4枚（各相手から {{value}}）",
+  "rankAce": "エース",
+  "rankKing": "キング",
+  "rankQueen": "クイーン",
+  "rankJack": "ジャック",
+  "suitNone": "-",
+  "suitSpade": "スペード",
+  "suitClub": "クラブ",
+  "suitHeart": "ハート",
+  "suitDiamond": "ダイヤ",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "points": "札点 {{points}}",
+  "currentTrick": "現在のトリック",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "buyerBadge": "落札者",
+  "score": "得点: {{score}}",
+  "bidPhase": "競り中 — 最高額 {{bid}}。競り上げるか降りてください。",
+  "discardPhase": "ストックを取り込みました — {{count}}枚選んでください（選択中 {{selected}}枚）",
+  "raiseTo": "{{amount}} まで競り上げる",
+  "dropOut": "降りる",
+  "discardButton": "{{count}}枚捨てる",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のディール",
+  "playPhase": {
+    "lead": "あなたの番です — リードするカードを選んでください。",
+    "follow": "あなたの番です — リードスートに従ってカードを選んでください。"
+  },
+  "trickEnd": "トリック終了 — 次へ進んでください。",
+  "roundEnd": "ディール終了 — 次のディールへ進んでください。",
+  "result": {
+    "humanWin": "ゲーム終了！ あなたの勝ち！",
+    "cpuWin": "ゲーム終了！ プレイヤー {{player}} の勝ち！"
+  },
+  "roundResult": {
+    "title": "ディール結果",
+    "par": "この配りの点: {{total}}  基準点: {{par}}（各席は自分の札点との差を受け取ります）"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "bid_raise": "この手札ならストックで伸びるので競り上げる",
+    "bid_pass": "手札に見合わない額なので降りる",
+    "discard_stock": "切り札と長いスートを残し、他スートの低い札を捨てる",
+    "lead_high": "リードは強い札で主導する",
+    "follow_win": "勝てるので取りに行く",
+    "follow_duck": "取れないので安い札で流す",
+    "discard_honour": "取れないトリックに名札を渡さない"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。マストフォローで、切り札が最強。1トリック3点に加え、切り札の名札が点を持ちます（Tib=A 15点、Tom=J 9点、Tumbler=6 6点、Towser=5 5点、Tiddy=4 4点、切り札のKとQが3点）。",
+    "playerHand": "あなたの手札です。出せる札をクリックして選びます。捨て札フェーズでは7枚まとめて選んでから確定します。",
+    "playButton": "カードを選んだら、このボタンで出します。競りフェーズでは「競り上げる」か「降りる」を選びます。",
+    "info": "グリークは44枚（52枚から2と3を抜いたもの）で遊ぶ3人用のゲームで、**1ディールの中で4つの段階すべてで点が動きます**。(1) ストックの競り: エルダーは12から始めて降りられず、以降2刻み。落札者は半額を各相手に払い、表向きの札を除く7枚を取り込んで7枚捨てます。(2) ラフ: 同一スートの合計（A=11、K/Q/J=10、数札は額面）が最高の席が各相手から2点。エース4枚のマーニヴァルはどんなラフにも勝ちます。(3) グリーク／マーニヴァル: A/K/Q/J の3枚・4枚を各相手から A 4/8、K 3/6、Q 2/4、J 1/2。(4) 12トリック: 3点＋切り札の名札。精算の基準点は**そのディールに実際にあった点**を3で割った値です（表向きの札と捨て札は卓に出ないので、上限81点より小さくなることがあります）。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

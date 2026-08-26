@@ -177,3 +177,36 @@ func (_m *MockHorseGame) GetSeatLiveChips(seat int) int {
 	ret := _m.Called(seat)
 	return ret.Get(0).(int)
 }
+
+// PlayerExchange モック
+func (_m *MockHorseGame) PlayerExchange(indices []int) error {
+	ret := _m.Called(indices)
+	return ret.Error(0)
+}
+
+// GetVariant モック
+func (_m *MockHorseGame) GetVariant() domain.HorseVariant {
+	ret := _m.Called()
+	return ret.Get(0).(domain.HorseVariant)
+}
+
+// GetRotation モック
+func (_m *MockHorseGame) GetRotation() []domain.HorseDiscipline {
+	ret := _m.Called()
+	if v, ok := ret.Get(0).([]domain.HorseDiscipline); ok {
+		return v
+	}
+	return nil
+}
+
+// IsDrawPhase モック
+func (_m *MockHorseGame) IsDrawPhase() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
+// GetDrawIndex モック
+func (_m *MockHorseGame) GetDrawIndex() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}

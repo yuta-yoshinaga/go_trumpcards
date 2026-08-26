@@ -1,0 +1,34 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Shamrocks",
+  "foundation": "Foundation",
+  "fan": "Fan",
+  "stuckDeadlock": "Stuck — no legal move remains",
+  "moveCount": "Moves: {{count}}",
+  "giveup": "Give up",
+  "hint": "Hint",
+  "autoComplete": "Auto-complete",
+  "undo": "Undo",
+  "empty": "empty",
+  "selectSource": "Pick the top card of a fan to move",
+  "selectDestination": "Pick a destination (a fan or a foundation)",
+  "gameClear": "Game clear! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "A hint is available",
+  "tutorial": {
+    "foundation": "The 4 foundations. Build each suit up from the Ace to the King; clear all 52 cards to win.",
+    "fan": "Only the top card of each fan can move. Stack it onto a fan whose top is the next-higher card of the same suit.",
+    "actionButtons": "Hint, auto-complete and undo controls.",
+    "resetButton": "Start a new game."
+  },
+  "frontendHint": {
+    "shamrocksToFoundation": "This fan's card can go to a foundation",
+    "shamrocksToFan": "This fan's card can move to another fan"
+  }
+}

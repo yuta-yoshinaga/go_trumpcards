@@ -1,0 +1,25 @@
+name = "go-trumpcards-extra4"
+main = "./build/worker.mjs"
+compatibility_date = "2024-09-23"
+
+# Dedicated namespaces, matching `extra`/`extra2`/`extra3` (ADR-0032, ADR-0036).
+# Sharing one namespace across workers would be safe -- KV keys are
+# "<game>:<sessionId>" (worker_helper.go passes name+":" as the prefix) and a game
+# lives in exactly one bucket -- but separate stores let one worker's sessions be
+# listed or purged without touching another's.
+#
+# Production, preview and staging are three DIFFERENT namespaces. ADR-0036 Phase 1
+# used one placeholder token for both production and staging, so a find-replace
+# would have quietly pointed staging at the production store. These three ids were
+# created separately via the Cloudflare API and verified distinct.
+[[kv_namespaces]]
+binding = "GAME_SESSIONS"
+id = "2196acffeec24d1aab3e37427fb56c16"
+preview_id = "b05b05334817467b879a6dc45ba3dd87"
+
+[env.staging]
+name = "go-trumpcards-extra4-staging"
+
+[[env.staging.kv_namespaces]]
+binding = "GAME_SESSIONS"
+id = "d69dad6dfa8d489a88072f2ebac10735"

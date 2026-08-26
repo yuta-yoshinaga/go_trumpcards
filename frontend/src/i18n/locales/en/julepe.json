@@ -1,0 +1,53 @@
+{
+  "phase": {
+    "decide": "Look at your hand and the trump, then choose to enter or drop. **Dropping costs only the ante**; entering and falling short of the required tricks costs an extra payment and doubles your next ante.",
+    "play": "Playing",
+    "roundEnd": "Round over",
+    "gameEnd": "Game over"
+  },
+  "header": {
+    "round": "Round",
+    "trick": "Trick",
+    "players": "{{count}} players",
+    "pot": "Pot: {{pot}} chips (shared out by tricks taken)",
+    "trump": "Trump",
+    "risk": "Enter and take fewer than {{required}} trick(s) and you pay an extra {{penalty}} into the pot — and your ante doubles next hand.",
+    "you": "You",
+    "cpu": "CPU{{idx}}",
+    "seat": "{{chips}} chips / {{tricks}} taken"
+  },
+  "status": {
+    "in": "in",
+    "out": "out",
+    "undecided": "—"
+  },
+  "currentTrick": "Current trick",
+  "actions": {
+    "playIn": "Play this round",
+    "passOut": "Drop out",
+    "nextRound": "Next round",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "watching": "You dropped out of this round. Watching it play out.",
+  "result": {
+    "youWin": "You win! {{chips}} chips",
+    "cpuWin": "CPU{{idx}} wins with {{chips}} chips.",
+    "tie": "It's a tie."
+  },
+  "hint": {
+    "julepePlayIn": "You hold trumps or high cards — this is worth playing.",
+    "julepePassOut": "Little chance of a trick. Drop out and lose only the ante.",
+    "julepeTakeTrick": "No trick yet. Take one to avoid the extra payment.",
+    "julepeAlreadySafe": "You have made the required tricks — now take what you can."
+  },
+  "tutorial": {
+    "pot": "Chips staked on this round, shared out among whoever takes tricks. It grows every time a player owes the extra payment.",
+    "decide": "Look at your hand and the trump, then choose to enter or drop. **Dropping costs only the ante**; entering and falling short of the required tricks costs an extra payment and doubles your next ante.",
+    "trick": "Cards played this trick appear here. Trump beats everything, then the led suit.",
+    "hand": "Your hand. Playable cards get a green border. Aim first at making the required trick count."
+  },
+  "dealerBadge": "dealer",
+  "dealerAria": "the dealer this round (deciding and leading start to their left)"
+}

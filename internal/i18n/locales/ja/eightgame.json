@@ -1,0 +1,10 @@
+{
+  "helpTitle": "エイトゲーム・ミックス（8 種目ローテーション）",
+  "helpExampleFold": "  f                                       この手を降りる",
+  "helpAction": "  f / x / c / b <n> / raise <n> / allin   ベッティング",
+  "helpDraw": "  d <idx...> / sp             引き直し（2-7 トリプルドローのみ）",
+  "helpNext": "  n                         次のハンドへ",
+  "helpHint": "  h                         助言を表示",
+  "helpSetSeats": "  ss <4>                    席数設定（4 人卓のみ）",
+  "helpSetHands": "  sh <1-10>                 1 種目あたりのハンド数"
+}

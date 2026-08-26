@@ -559,3 +559,51 @@ func TestScartoNextRoundGuardAndRotation(t *testing.T) {
 	g.NextRound()
 	assert.Equal(t, before, g.GetRoundNumber())
 }
+
+// **ピップが 3 枚に満たないときはブーでない切り札も捨てられる。** ドメインの
+// 検証は前からそれを許していたのに、提示側 (CUI の一覧・Web の選択可能
+// インデックス) は切り札を常に除外していたので、その手を引いた親は**画面から
+// 枚数を揃えられなかった** (#6236)。
+func TestScarto_DiscardableIndicesAllowTrumpWhenPipsRunShort(t *testing.T) {
+	g := scartoNewReset()
+	g.SetPhase(domain.ScartoPhaseScarto)
+	g.SetDealerIdx(0)
+	scartoSetHand(g, 0,
+		scartoSuitCard(domain.CardDesignSpade, 5), // ピップ (1 枚だけ = 3 に満たない)
+		scartoTrumpCard(10),                       // 切り札 (非ブー)
+		scartoTrumpCard(21),                       // ブー
+		scartoExcuseCard(),                        // エクスキューズ
+		scartoSuitCard(domain.CardDesignSpade, domain.ScartoCourtMin), // コート
+	)
+
+	idxs := g.GetDiscardableIndices()
+	assert.Contains(t, idxs, 0, "ピップは常に捨てられる")
+	assert.Contains(t, idxs, 1, "ピップが足りないので非ブー切り札も捨てられる")
+	assert.NotContains(t, idxs, 2, "ブーは捨てられない")
+	assert.NotContains(t, idxs, 3, "エクスキューズは捨てられない")
+	assert.NotContains(t, idxs, 4, "コートは捨てられない")
+
+	// 提示とドメインの検証が一致していること。
+	for _, i := range idxs {
+		assert.NoError(t, g.PlayerScartoValidateForTest([]int{i}),
+			"捨てられると提示した札 %d を検証が拒否している", i)
+	}
+
+	// **負のコントロール: ピップが 3 枚あれば切り札は捨てられない。**
+	scartoSetHand(g, 0,
+		scartoSuitCard(domain.CardDesignSpade, 5),
+		scartoSuitCard(domain.CardDesignSpade, 6),
+		scartoSuitCard(domain.CardDesignSpade, 7),
+		scartoTrumpCard(10),
+	)
+	idxs = g.GetDiscardableIndices()
+	assert.Equal(t, []int{0, 1, 2}, idxs, "ピップが足りるなら切り札は出さない")
+	assert.Error(t, g.PlayerScartoValidateForTest([]int{3}), "検証も切り札を拒否する")
+}
+
+// スカルトフェーズでなければ何も捨てられない。
+func TestScarto_DiscardableIndicesEmptyOutsideScarto(t *testing.T) {
+	g := scartoNewReset()
+	g.SetPhase(domain.ScartoPhasePlay)
+	assert.Empty(t, g.GetDiscardableIndices())
+}

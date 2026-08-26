@@ -1,0 +1,42 @@
+{
+  "currentTrick": "Current trick",
+  "you": "You",
+  "round": "Round",
+  "dealer": "Dealer",
+  "player": "Player",
+  "tricks": "Tricks",
+  "cardPoints": "Card pts",
+  "total": "Total",
+  "play": "Play card",
+  "nextTrick": "Next trick",
+  "nextRound": "Next round",
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetScore": "Target Score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "phase": {
+    "play": "Play",
+    "trickEnd": "Trick end",
+    "roundEnd": "Round end",
+    "gameEnd": "Game over"
+  },
+  "tutorial": {
+    "trickDisplay": "The trick area shows the cards each of the three players plays.",
+    "playerHand": "Your hand. Select a card to play.",
+    "resetButton": "Resets the game."
+  },
+  "trumpFixed": "Trump is the four jacks (♣J > ♠J > ♥J > ♦J). There is no bidding.",
+  "scoringNote": "Whoever takes the most card points loses that many — the goal is to take nothing.",
+  "skatLabel": "Skat (goes to whoever wins the last trick)",
+  "loserBadge": "most points — loses",
+  "durchmarschBadge": "Durchmarsch",
+  "hint": {
+    "avoid_points": "duck with a card worth nothing and take no points",
+    "lead_low": "lead something cheap so you do not put points on the table",
+    "forced_discard": "only point cards are legal here, so give up the cheapest"
+  }
+}

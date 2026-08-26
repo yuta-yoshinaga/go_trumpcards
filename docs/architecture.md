@@ -50,7 +50,7 @@ public/                        # Built frontend assets served by Go web server
 
 - **Presenter pattern**: `internal/usecase/presenter/` defines output interfaces (e.g., `BlackJackPresenter`). `internal/adapter/presenter/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
 - **Mock presenters**: `*_mock.go` files in `internal/usecase/presenter/` are used in tests to avoid I/O.
-- **Web API**: 318 endpoints, one per game. Each accepts JSON with a `command` field and the game state; the full list is in [Web API endpoints](#web-api-endpoints) below.
+- **Web API**: 367 endpoints, one per game. Each accepts JSON with a `command` field and the game state; the full list is in [Web API endpoints](#web-api-endpoints) below.
 - **Swagger UI**: Available at `/swagger/` -- serves the OpenAPI spec (`api/openapi.yaml`) via Swagger UI for interactive API documentation and testing. The spec is embedded into the binary with `go:embed`; the Swagger UI frontend is loaded from a CDN. Both routes accept `GET` and `HEAD` (HEAD returns headers only).
 - **SPA fallback**: All other GET/HEAD requests are served from `public/` via `http.FileServer`; unknown paths fall back to `public/index.html` so externally shared deep-links (e.g., `/blackjack`, `/poker`) reach the React HashRouter SPA instead of returning a bare 404. See `internal/infrastructure/web/spa.go`.
 
@@ -70,13 +70,13 @@ Go source (//go:build js && wasm)
   → wrangler deploy (Cloudflare Workers)
 ```
 
-Build commands: `make build-worker-{casino,classic,solo,extra,extra2,extra3}` or `make build-workers`.
+Build commands: `make build-worker-{casino,classic,solo,extra,extra2,extra3,extra4}` or `make build-workers`.
 
 ### Size buckets
 
-Games are distributed across **six** Workers to stay under the 1 MB gzip size limit per Worker
-(`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`; see [ADR-0032](adr/0032-fourth-worker-capacity.md)
-and [ADR-0036](adr/0036-fifth-sixth-worker-capacity.md)). A `Category` is purely a binary-size
+Games are distributed across **seven** Workers to stay under the 1 MB gzip size limit per Worker
+(`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`, `extra4`; see [ADR-0032](adr/0032-fourth-worker-capacity.md)
+[ADR-0036](adr/0036-fifth-sixth-worker-capacity.md) and [ADR-0037](adr/0037-seventh-worker-capacity.md)). A `Category` is purely a binary-size
 bucket, **not** a user-facing taxonomy, and games move between buckets whenever one nears the
 limit.
 
@@ -122,7 +122,7 @@ constant in `frontend/src/api/gameApi.ts`. For the full set of registration poin
 
 ## Web API endpoints
 
-One `POST /<game>/exec` per registered game -- **318** in total. Every endpoint takes JSON with a
+One `POST /<game>/exec` per registered game -- **367** in total. Every endpoint takes JSON with a
 `command` field plus the game state, and returns that game's Web presenter output.
 
 One row per game, so adding a game is a one-line diff. This used to be a single inline paragraph
@@ -145,6 +145,10 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /doubt/exec` | Doubt |
 | `POST /holdem/exec` | Texas Hold'em |
 | `POST /omaha/exec` | Omaha Hold'em |
+| `POST /dramaha/exec` | Dramaha |
+| `POST /put/exec` | Put |
+| `POST /ristikontra/exec` | Ristikontra |
+| `POST /brusquembille/exec` | Brusquembille |
 | `POST /omahahilo/exec` | Omaha Hi-Lo / 8 or Better |
 | `POST /bigo/exec` | 5 Card Omaha (Big O) |
 | `POST /bigohilo/exec` | 5 Card Omaha Hi-Lo (Big O) |
@@ -175,6 +179,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /tripeaks/exec` | TriPeaks |
 | `POST /cribbage/exec` | Cribbage |
 | `POST /threecard/exec` | Three Card Poker |
+| `POST /threecardrummy/exec` | Three Card Rummy |
 | `POST /ohhell/exec` | Oh Hell |
 | `POST /ninetynine/exec` | Ninety-Nine |
 | `POST /bridge/exec` | Contract Bridge |
@@ -190,11 +195,29 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /paigow/exec` | Pai Gow Poker |
 | `POST /twotenjack/exec` | Two Ten Jack |
 | `POST /caribbeanstud/exec` | Caribbean Stud Poker |
+| `POST /caribbeandraw/exec` | Caribbean Draw Poker |
 | `POST /texasholdembonus/exec` | Texas Hold'em Bonus Poker |
 | `POST /war/exec` | War |
 | `POST /canfield/exec` | Canfield Solitaire |
 | `POST /fiftyone/exec` | Fifty-one |
 | `POST /yukon/exec` | Yukon Solitaire |
+| `POST /shamrocks/exec` | Shamrocks |
+| `POST /perseverance/exec` | Perseverance |
+| `POST /fourteenout/exec` | Fourteen Out |
+| `POST /narcotic/exec` | Narcotic |
+| `POST /mrsmop/exec` | Mrs. Mop |
+| `POST /rankandfile/exec` | Rank and File |
+| `POST /saliclaw/exec` | Salic Law |
+| `POST /sthelena/exec` | St. Helena |
+| `POST /slyfox/exec` | Sly Fox |
+| `POST /bigben/exec` | Big Ben |
+| `POST /followthequeen/exec` | Follow the Queen |
+| `POST /curdsandwhey/exec` | Curds and Whey |
+| `POST /whitehead/exec` | Whitehead |
+| `POST /stalactites/exec` | Stalactites |
+| `POST /somerset/exec` | Somerset |
+| `POST /fortress/exec` | Fortress |
+| `POST /alaska/exec` | Alaska |
 | `POST /russiansolitaire/exec` | Russian Solitaire |
 | `POST /whist/exec` | Whist |
 | `POST /letitride/exec` | Let It Ride |
@@ -218,6 +241,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /auldlangsyne/exec` | Auld Lang Syne |
 | `POST /spiteandmalice/exec` | Spite and Malice |
 | `POST /skat/exec` | Skat |
+| `POST /ramsch/exec` | Ramsch |
 | `POST /shithead/exec` | Shithead / Karma |
 | `POST /nertz/exec` | Nertz / Pounce |
 | `POST /slapjack/exec` | Slapjack |
@@ -237,6 +261,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /freebet/exec` | Free Bet Blackjack |
 | `POST /banluck/exec` | Ban Luck |
 | `POST /montebank/exec` | Monte Bank |
+| `POST /speculation/exec` | Speculation |
 | `POST /cincinnati/exec` | Cincinnati |
 | `POST /ironcross/exec` | Iron Cross |
 | `POST /baseballpoker/exec` | Baseball Poker |
@@ -282,6 +307,8 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /bristol/exec` | Bristol |
 | `POST /bidwhist/exec` | Bid Whist |
 | `POST /tressette/exec` | Tressette |
+| `POST /madrasso/exec` | Madrasso |
+| `POST /trappola/exec` | Trappola |
 | `POST /easthaven/exec` | Easthaven |
 | `POST /tichu/exec` | Tichu |
 | `POST /bakersgame/exec` | Baker's Game |
@@ -335,6 +362,13 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /polignac/exec` | Polignac |
 | `POST /reversis/exec` | Reversis |
 | `POST /rams/exec` | Rams |
+| `POST /julepe/exec` | Julepe |
+| `POST /schafkopf/exec` | Schafkopf |
+| `POST /coinche/exec` | Coinche |
+| `POST /germansolo/exec` | German Solo |
+| `POST /gleek/exec` | Gleek |
+| `POST /chicago/exec` | Chicago |
+| `POST /eightgame/exec` | Eight-Game Mix |
 | `POST /tarabish/exec` | Tarabish |
 | `POST /baloot/exec` | Baloot |
 | `POST /estimation/exec` | Estimation |
@@ -375,9 +409,11 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /sultan/exec` | Sultan of Turkey |
 | `POST /jass/exec` | Jass / Schieber |
 | `POST /gaigel/exec` | Gaigel |
+| `POST /bauernschnapsen/exec` | Bauernschnapsen |
 | `POST /tysiac/exec` | Thousand / Tysiąc |
 | `POST /calabresella/exec` | Calabresella / Terziglio |
 | `POST /ombre/exec` | Ombre / Hombre |
+| `POST /quadrille/exec` | Quadrille |
 | `POST /king/exec` | King |
 | `POST /cinch/exec` | Cinch |
 | `POST /loo/exec` | Loo / Lanterloo |
@@ -385,6 +421,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /tablanet/exec` | Tablanet / Tablić |
 | `POST /trenteetquarante/exec` | Trente et Quarante / Rouge et Noir |
 | `POST /guts/exec` | Guts |
+| `POST /seventwentyseven/exec` | Seven Twenty-Seven |
 | `POST /bouillotte/exec` | Bouillotte |
 | `POST /primero/exec` | Primero |
 | `POST /michigan/exec` | Michigan / Newmarket |
@@ -414,6 +451,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /minchiate/exec` | Minchiate |
 | `POST /tarocchini/exec` | Tarocchini |
 | `POST /scarto/exec` | Scarto |
+| `POST /piedmontesetarot/exec` | Tarocco Piemontese |
 | `POST /cego/exec` | Cego |
 | `POST /zheng/exec` | Zheng Shangyou |
 | `POST /bisley/exec` | Bisley |
@@ -448,6 +486,17 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /bideuchre/exec` | Bid Euchre |
 | `POST /sixbidsolo/exec` | Six-Bid Solo |
 | `POST /karnoffel/exec` | Karnöffel |
+| `POST /unsunkaruta/exec` | Unsun Karuta |
+| `POST /quodlibet/exec` | Quodlibet |
+| `POST /dehlapakad/exec` | Dehla Pakad |
+| `POST /sutda/exec` | Sutda |
+| `POST /cirulla/exec` | Cirulla |
+| `POST /diloti/exec` | Diloti |
+| `POST /comet/exec` | Comet |
+| `POST /costlycolours/exec` | Costly Colours |
+| `POST /baccaratbanque/exec` | Baccarat Banque |
+| `POST /continentalrummy/exec` | Continental Rummy |
+| `POST /bolivia/exec` | Bolivia |
 | `POST /literature/exec` | Literature |
 | `POST /guandan/exec` | Guandan |
 | `POST /shengji/exec` | Sheng Ji |

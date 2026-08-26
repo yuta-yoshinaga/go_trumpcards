@@ -105,22 +105,6 @@ func chinchonSuitSymbol(design int) string {
 	}
 }
 
-// cuiRankName は表示用のランク名を返す (A/J/Q/K は文字、それ以外は数字)。
-func cuiRankName(value int) string {
-	switch value {
-	case 1:
-		return "A"
-	case 11:
-		return "J"
-	case 12:
-		return "Q"
-	case 13:
-		return "K"
-	default:
-		return strconv.Itoa(value)
-	}
-}
-
 // ChinchonCuiPresenter renders the Chinchón CUI view.
 type ChinchonCuiPresenter struct{}
 

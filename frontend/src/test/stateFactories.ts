@@ -1,20 +1,32 @@
 import type {
   AluetteResponse,
   AnacondaResponse,
+  BaccaratBanqueResponse,
   BasraResponse,
   BeziqueResponse,
+  BoliviaPlayerData,
+  BoliviaResponse,
   BouillotteResponse,
   CalabresellaResponse,
   CallBreakResponse,
   CegoResponse,
   CinchResponse,
+  CirullaResponse,
+  CoincheResponse,
+  CometResponse,
+  ContinentalRummyResponse,
+  CostlyColoursResponse,
   CourtPieceResponse,
+  DehlaPakadResponse,
+  DilotiResponse,
   DoppelkopfResponse,
   EcarteResponse,
   EscobaResponse,
   FortyFivesResponse,
   FrenchTarotResponse,
   GanjifaResponse,
+  GermanSoloResponse,
+  GleekResponse,
   GongZhuResponse,
   GoStopBreakdown,
   GoStopResponse,
@@ -28,6 +40,7 @@ import type {
   KoenigrufenResponse,
   KoiKoiResponse,
   LooResponse,
+  MadrassoResponse,
   ManilleResponse,
   MariasResponse,
   MichiganResponse,
@@ -35,12 +48,16 @@ import type {
   MusResponse,
   NapResponse,
   OmbreResponse,
+  PiedmonteseTarotResponse,
   PreferenceResponse,
   PrimeroResponse,
+  QuadrilleResponse,
+  QuodlibetResponse,
   SakuraResponse,
   SambaPlayerData,
   SambaResponse,
   ScartoResponse,
+  SchafkopfResponse,
   ScoponeResponse,
   SedmaResponse,
   SheepsheadResponse,
@@ -48,10 +65,12 @@ import type {
   SpadesResponse,
   SpoilFiveResponse,
   SuecaResponse,
+  SutdaResponse,
   TablanetResponse,
   TarocchiniResponse,
   TeenPattiResponse,
   ThreeCardBragResponse,
+  TrappolaResponse,
   TrenteEtQuaranteResponse,
   TressetteResponse,
   TrogguResponse,
@@ -60,6 +79,7 @@ import type {
   TwoTenJackResponse,
   TysiacResponse,
   UltiResponse,
+  UnsunKarutaResponse,
   ViraResponse,
   WattenResponse,
   ZwanzigerrufenResponse,
@@ -497,6 +517,207 @@ const baseTressetteState: TressetteResponse = {
  */
 export function makeTressetteState(overrides?: Partial<TressetteResponse>): TressetteResponse {
   return { ...baseTressetteState, ...overrides };
+}
+
+/** Base Trappola state: a human Play turn. **9 cards each — the deck is 36, not 40.** */
+const baseTrappolaState: TrappolaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 9,
+      cards: [
+        { design: 'SPADE' as const, value: 1 },
+        { design: 'DIAMOND' as const, value: 13 },
+      ],
+      trickCount: 0,
+      teamId: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 9, cards: [], trickCount: 0, teamId: 1 },
+    { id: 2, isHuman: false, cardCount: 9, cards: [], trickCount: 0, teamId: 0 },
+    { id: 3, isHuman: false, cardCount: 9, cards: [], trickCount: 0, teamId: 1 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
+  leadPlayerIdx: 0,
+  teamScores: [0, 0],
+  teamRoundThirds: [0, 0],
+  playableIndices: [0, 1],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 21 },
+};
+
+/**
+ * Creates a {@link TrappolaResponse} with sensible defaults (a human Play turn).
+ *
+ * @param overrides - Partial TrappolaResponse fields to override.
+ * @returns A complete TrappolaResponse suitable for use in tests.
+ */
+export function makeTrappolaState(overrides?: Partial<TrappolaResponse>): TrappolaResponse {
+  return { ...baseTrappolaState, ...overrides };
+}
+
+/** Base Madrasso state: a human Play turn with spades as the dealt trump. */
+const baseMadrassoState: MadrassoResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 10,
+      cards: [
+        { design: 'SPADE' as const, value: 1 },
+        { design: 'DIAMOND' as const, value: 13 },
+      ],
+      trickCount: 0,
+      teamId: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamId: 1 },
+    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamId: 0 },
+    { id: 3, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamId: 1 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
+  leadPlayerIdx: 0,
+  teamScores: [0, 0],
+  // **整数点。** クローン元 (トレセッテ) の 1/3 点ではない。
+  teamRoundPoints: [0, 0],
+  // 配りで決まる切り札。トレセッテには無い概念。
+  trumpSuit: 1,
+  playableIndices: [0, 1],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 21 },
+};
+
+/**
+ * Creates a {@link MadrassoResponse} with sensible defaults (a human Play turn).
+ *
+ * @param overrides - Partial MadrassoResponse fields to override.
+ * @returns A complete MadrassoResponse suitable for use in tests.
+ */
+export function makeMadrassoState(overrides?: Partial<MadrassoResponse>): MadrassoResponse {
+  return { ...baseMadrassoState, ...overrides };
+}
+
+/** Base Coinche state used as the default for {@link makeCoincheState}. Defaults to the auction. */
+const baseCoincheState: CoincheResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 8,
+      cards: [
+        { design: 'SPADE' as const, value: 11 },
+        { design: 'HEART' as const, value: 10 },
+      ],
+      team: 0,
+      trickCount: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 8, cards: [], team: 1, trickCount: 0 },
+    { id: 2, isHuman: false, cardCount: 8, cards: [], team: 0, trickCount: 0 },
+    { id: 3, isHuman: false, cardCount: 8, cards: [], team: 1, trickCount: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 0,
+  currentPlayerIdx: 0,
+  bidPlayerIdx: 0,
+  dealerIdx: 3,
+  trumpSuit: 0,
+  contractPoints: 0,
+  multiplier: 1,
+  double: 0,
+  biddablePoints: [80, 90, 100, 110, 120, 130, 140, 150, 160, 250],
+  makerTeam: 0,
+  makerPlayerIdx: -1,
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundPoints: [0, 0],
+  roundBeloteBonus: [0, 0],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  leadPlayerIdx: 0,
+  message: '',
+  config: { cpuDifficulty: 1, targetScore: 1000, dixDeDer: 10, enableBeloteRebelote: true },
+};
+
+/**
+ * Creates a {@link CoincheResponse} with sensible defaults (the human on the
+ * opening bid turn). Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial CoincheResponse fields to override.
+ * @returns A complete CoincheResponse suitable for use in tests.
+ */
+export function makeCoincheState(overrides?: Partial<CoincheResponse>): CoincheResponse {
+  return { ...baseCoincheState, ...overrides };
+}
+
+/** Base Schafkopf state used as the default for {@link makeSchafkopfState}. Defaults to a human Play turn. */
+const baseSchafkopfState: SchafkopfResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 8,
+      cards: [
+        { design: 'SPADE' as const, value: 1 },
+        { design: 'DIAMOND' as const, value: 13 },
+      ],
+      trickCount: 0,
+      chips: 100,
+    },
+    { id: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, chips: 100 },
+    { id: 2, isHuman: false, cardCount: 8, cards: [], trickCount: 0, chips: 100 },
+    { id: 3, isHuman: false, cardCount: 8, cards: [], trickCount: 0, chips: 100 },
+  ],
+  phase: 2,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  currentTrick: [],
+  pickerIdx: 0,
+  contract: 0,
+  soloSuit: 0,
+  beatableContracts: [],
+  partnerIdx: -1,
+  calledSuit: 1,
+  partnerRevealed: false,
+  passCount: 0,
+  callableSuits: [],
+  playableIndices: [0, 1],
+  roundPickerPoints: 0,
+  roundMultiplier: 1,
+  roundPickerWon: false,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  message: '',
+  config: { cpuDifficulty: 1, baseChips: 1, startChips: 100, targetChips: 200 },
+};
+
+/**
+ * Creates a {@link SchafkopfResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial SchafkopfResponse fields to override.
+ * @returns A complete SchafkopfResponse suitable for use in tests.
+ */
+export function makeSchafkopfState(overrides?: Partial<SchafkopfResponse>): SchafkopfResponse {
+  return { ...baseSchafkopfState, ...overrides };
 }
 
 /** Base Sheepshead state used as the default for {@link makeSheepsheadState}. Defaults to a human Play turn. */
@@ -1186,6 +1407,233 @@ export function makeOmbreState(overrides?: Partial<OmbreResponse>): OmbreRespons
   return { ...baseOmbreState, ...overrides };
 }
 
+/** Base Quadrille state: a human Play turn on a settled king call (trump = ♠, human is the Quadrille). */
+const baseQuadrilleState: QuadrilleResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 10,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isQuadrille: true,
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isQuadrille: false },
+    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isQuadrille: false },
+    { id: 3, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isQuadrille: false },
+  ],
+  phase: 2, // QuadrillePhase.PLAY — one higher than Ombre's, because of KING_CALL
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  currentBidderIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  forehandIdx: 0,
+  quadrilleIdx: 0,
+  winningBid: 1,
+  trumpSuit: 1,
+  currentTrick: [],
+  playerScores: [0, 0, 0, 0],
+  lastTrickWinner: -1,
+  outcome: 0,
+  result: 0,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  isHumanBidTurn: false,
+  isHumanKingCallTurn: false,
+  calledKingSuit: 3,
+  callableKingSuits: [],
+  // **相方は伏せたまま。** 呼ばれた王が場に出るまで -1。
+  partnerIdx: -1,
+  roiSeul: false,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 5 },
+};
+
+/**
+ * Creates a {@link QuadrilleResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial QuadrilleResponse fields to override.
+ * @returns A complete QuadrilleResponse suitable for use in tests.
+ */
+export function makeQuadrilleState(overrides?: Partial<QuadrilleResponse>): QuadrilleResponse {
+  return { ...baseQuadrilleState, ...overrides };
+}
+
+/** Base German Solo state used as the default for {@link makeGermanSoloState}. Defaults to a human Play turn (declarer, Solo contract, trump = ♠). */
+const baseGermanSoloState: GermanSoloResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 8,
+      cards: [
+        { design: 'CLOVER' as const, value: 12 },
+        { design: 'SPADE' as const, value: 7 },
+        { design: 'HEART' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isDeclarer: true,
+    },
+    { id: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 8, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 3, isHuman: false, cardCount: 8, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 2, // GermanSoloPhase.PLAY — one higher than Ombre's, because of ACE_CALL
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  currentBidderIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  forehandIdx: 0,
+  declarerIdx: 0,
+  winningBid: 3,
+  highestBid: 3,
+  biddableBids: [],
+  requiredTricks: 5,
+  declarerTricks: 0,
+  defenderTricks: 0,
+  trumpSuit: 1,
+  currentTrick: [],
+  playerScores: [0, 0, 0, 0],
+  lastTrickWinner: -1,
+  outcome: 0,
+  result: 0,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  isHumanBidTurn: false,
+  isHumanAceCallTurn: false,
+  calledAceSuit: -1,
+  callableAceSuits: [],
+  // **相方は伏せたまま。** 呼ばれたエースが場に出るまで -1。
+  partnerIdx: -1,
+  playsAlone: true,
+  hint: null,
+  hintAceSuit: 0,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 5 },
+};
+
+/**
+ * Creates a {@link GermanSoloResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial GermanSoloResponse fields to override.
+ * @returns A complete GermanSoloResponse suitable for use in tests.
+ */
+export function makeGermanSoloState(overrides?: Partial<GermanSoloResponse>): GermanSoloResponse {
+  return { ...baseGermanSoloState, ...overrides };
+}
+
+/** Base Gleek state used as the default for {@link makeGleekState}. Defaults to a human Play turn as the buyer, trump = ♥. */
+const baseGleekState: GleekResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 12,
+      cards: [
+        { design: 'HEART' as const, value: 1 },
+        { design: 'HEART' as const, value: 11 },
+        { design: 'SPADE' as const, value: 13 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isBuyer: true,
+      bid: 14,
+      passed: false,
+      trickPoints: 0,
+      ruff: 31,
+      ruffSuit: 3,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 12,
+      cards: [],
+      trickCount: 0,
+      score: 0,
+      isBuyer: false,
+      bid: 12,
+      passed: true,
+      trickPoints: 0,
+      ruff: 24,
+      ruffSuit: 1,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      cardCount: 12,
+      cards: [],
+      trickCount: 0,
+      score: 0,
+      isBuyer: false,
+      bid: 0,
+      passed: true,
+      trickPoints: 0,
+      ruff: 20,
+      ruffSuit: 2,
+    },
+  ],
+  phase: 2, // GleekPhase.PLAY
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  currentBidderIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 2,
+  elderIdx: 0,
+  buyerIdx: 0,
+  winningBid: 14,
+  highestBid: 14,
+  nextBidAmount: 16,
+  trumpSuit: 3,
+  turnUp: { design: 'HEART' as const, value: 4 },
+  currentTrick: [],
+  playerScores: [0, 0, 0],
+  discardCount: 7,
+  ruffWinnerIdx: 0,
+  melds: [],
+  dealPoints: 0,
+  par: 0,
+  lastTrickWinner: -1,
+  result: 0,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  isHumanBidTurn: false,
+  isHumanDiscardTurn: false,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 5 },
+};
+
+/**
+ * Creates a {@link GleekResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial GleekResponse fields to override.
+ * @returns A complete GleekResponse suitable for use in tests.
+ */
+export function makeGleekState(overrides?: Partial<GleekResponse>): GleekResponse {
+  return { ...baseGleekState, ...overrides };
+}
+
 /** Base Ulti state used as the default for {@link makeUltiState}. Defaults to a human Play turn (declarer, Party contract, trump = ♠). */
 const baseUltiState: UltiResponse = {
   players: [
@@ -1346,6 +1794,7 @@ const baseScartoState: ScartoResponse = {
   outcome: 0,
   result: 0,
   playableIndices: [0, 1, 2, 3, 4],
+  discardableIndices: [],
   gameEndFlag: false,
   winnerPlayer: -1,
   isHumanTurn: true,
@@ -1364,6 +1813,97 @@ const baseScartoState: ScartoResponse = {
  */
 export function makeScartoState(overrides?: Partial<ScartoResponse>): ScartoResponse {
   return { ...baseScartoState, ...overrides };
+}
+
+/** Base Tarocco Piemontese state used as the default for {@link makePiedmonteseTarotState}. Defaults to a human Play turn at a four-handed table. */
+const basePiedmonteseTarotState: PiedmonteseTarotResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 19,
+      cards: [
+        { design: 'HEART' as const, value: 13, glyph: '♥', label: 'D', color: 'red', deck: 'tarot' },
+        { design: 'SPADE' as const, value: 14, glyph: '♠', label: 'R', color: 'black', deck: 'tarot' },
+        { design: 'CLOVER' as const, value: 4, glyph: '♣', label: '4', color: 'black', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 21, glyph: '✦', label: '21', color: 'purple', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 0, glyph: '★', label: 'Matto', color: 'gold', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      cardThirds: 0,
+      cardPoints: '0',
+      score: 0,
+      isDealer: false,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 19,
+      cards: [],
+      trickCount: 0,
+      cardThirds: 0,
+      cardPoints: '0',
+      score: 0,
+      isDealer: false,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      cardCount: 19,
+      cards: [],
+      trickCount: 0,
+      cardThirds: 0,
+      cardPoints: '0',
+      score: 0,
+      isDealer: false,
+    },
+    {
+      id: 3,
+      isHuman: false,
+      cardCount: 19,
+      cards: [],
+      trickCount: 0,
+      cardThirds: 0,
+      cardPoints: '0',
+      score: 0,
+      isDealer: true,
+    },
+  ],
+  phase: 1,
+  roundNumber: 1,
+  trickNumber: 1,
+  trickCount: 19,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  scartoCount: 2,
+  talonSize: 2,
+  currentTrick: [],
+  playerScores: [0, 0, 0, 0],
+  dealScores: [0, 0, 0, 0],
+  lastTrickWinner: -1,
+  outcome: 0,
+  result: 0,
+  playableIndices: [0, 1, 2, 3, 4],
+  discardableIndices: [],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  isHumanScarto: false,
+  hint: null,
+  message: '',
+  config: { seats: 4, cpuDifficulty: 1, targetDeals: 4 },
+};
+
+/**
+ * Creates a {@link PiedmonteseTarotResponse} with sensible defaults (a human
+ * Play turn at a four-handed table). Any field can be overridden.
+ *
+ * @param overrides - Partial PiedmonteseTarotResponse fields to override.
+ * @returns A complete PiedmonteseTarotResponse suitable for use in tests.
+ */
+export function makePiedmonteseTarotState(overrides?: Partial<PiedmonteseTarotResponse>): PiedmonteseTarotResponse {
+  return { ...basePiedmonteseTarotState, ...overrides };
 }
 
 /** Base Königrufen state used as the default for {@link makeKoenigrufenState}. Defaults to a human Play turn (declarer, Rufer contract). */
@@ -3486,6 +4026,109 @@ export function makePrimeroState(overrides?: Partial<PrimeroResponse>): PrimeroR
   return { ...basePrimeroState, ...overrides };
 }
 
+/** Base Bolivia players (seat 0 human on team 0; seats 1-3 hidden CPUs). */
+const baseBoliviaPlayers: BoliviaPlayerData[] = [
+  {
+    id: 0,
+    team: 0,
+    isHuman: true,
+    cardCount: 13,
+    cards: [
+      { design: 'SPADE', value: 7 },
+      { design: 'CLOVER', value: 7 },
+      { design: 'HEART', value: 7 },
+      { design: 'SPADE', value: 10 },
+      { design: 'CLOVER', value: 10 },
+    ],
+    melds: [],
+    red3Count: 0,
+    red3s: [],
+    roundScore: 0,
+    cumulativeScore: 0,
+    hasCanasta: false,
+    hasEscalera: false,
+    hasBolivia: false,
+    hasInitMeld: false,
+  },
+  {
+    id: 1,
+    team: 1,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    melds: [],
+    red3Count: 0,
+    red3s: [],
+    roundScore: 0,
+    cumulativeScore: 0,
+    hasCanasta: false,
+    hasEscalera: false,
+    hasBolivia: false,
+    hasInitMeld: false,
+  },
+  {
+    id: 2,
+    team: 0,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    melds: [],
+    red3Count: 0,
+    red3s: [],
+    roundScore: 0,
+    cumulativeScore: 0,
+    hasCanasta: false,
+    hasEscalera: false,
+    hasBolivia: false,
+    hasInitMeld: false,
+  },
+  {
+    id: 3,
+    team: 1,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    melds: [],
+    red3Count: 0,
+    red3s: [],
+    roundScore: 0,
+    cumulativeScore: 0,
+    hasCanasta: false,
+    hasEscalera: false,
+    hasBolivia: false,
+    hasInitMeld: false,
+  },
+];
+
+/** Base Bolivia state used as the default for {@link makeBoliviaState}. A 4-player 2-team Canasta variant with three decks; defaults to the human Draw phase (phase 0). */
+const baseBoliviaState: BoliviaResponse = {
+  players: baseBoliviaPlayers,
+  teamScores: [0, 0],
+  phase: 0,
+  roundNumber: 1,
+  currentPlayerIdx: 0,
+  discardTop: { design: 'SPADE', value: 5 },
+  drawPileCount: 90,
+  discardPileCount: 1,
+  isFrozen: false,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  message: '',
+  messageCode: 'bolivia.drawPhase',
+  config: { cpuDifficulty: 1, pointLimit: 10000 },
+};
+
+/**
+ * Creates a {@link BoliviaResponse} with sensible defaults (the human Draw
+ * phase, phase 0). Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial BoliviaResponse fields to override.
+ * @returns A complete BoliviaResponse suitable for use in tests.
+ */
+export function makeBoliviaState(overrides?: Partial<BoliviaResponse>): BoliviaResponse {
+  return { ...baseBoliviaState, ...overrides };
+}
+
 /** Base Samba players (seat 0 human on team 0; seats 1-3 hidden CPUs). */
 const baseSambaPlayers: SambaPlayerData[] = [
   {
@@ -3853,6 +4496,10 @@ const baseHorseState: HorseResponse = {
   tablePhase: 0,
   gameEndFlag: false,
   winnerSeat: -1,
+  variant: 0,
+  rotation: [0, 1, 2, 3, 4],
+  isDrawPhase: false,
+  drawIndex: 0,
   message: '',
   config: { seats: 4, initialChips: 1000, handsPerDiscipline: 2 },
 };
@@ -3866,4 +4513,766 @@ const baseHorseState: HorseResponse = {
  */
 export function makeHorseState(overrides?: Partial<HorseResponse>): HorseResponse {
   return { ...baseHorseState, ...overrides };
+}
+
+/** One Unsun Karuta card face, procedurally rendered (ADR-0033). */
+const unsunCard = (
+  design: 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND' | 'JOKER',
+  value: number,
+  glyph: string,
+  label: string,
+) => ({
+  design,
+  value,
+  glyph,
+  label,
+  // 丸物 (コツ・オウル・クル) は赤、長物 (パオ・イス) は黒。
+  color: design === 'SPADE' || design === 'CLOVER' ? 'black' : 'red',
+  deck: 'unsun',
+});
+
+/** A CPU seat at the eight-handed table; cards are hidden. */
+const unsunCpuSeat = (id: number, isDealer = false) => ({
+  id,
+  isHuman: false,
+  team: id % 2,
+  cardCount: 9,
+  cards: [],
+  trickCount: 0,
+  isDealer,
+});
+
+/**
+ * Base Unsun Karuta state used as the default for {@link makeUnsunKarutaState}.
+ * Defaults to the human on lead, first trick of the first deal, kotsu trump.
+ */
+const baseUnsunKarutaState: UnsunKarutaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      team: 0,
+      cardCount: 4,
+      cards: [
+        unsunCard('SPADE', 9, '棒', '9'),
+        unsunCard('HEART', 1, '杯', '1'),
+        unsunCard('HEART', 13, '杯', 'ウン'),
+        unsunCard('JOKER', 5, '巴', '5'),
+      ],
+      trickCount: 0,
+      isDealer: false,
+    },
+    unsunCpuSeat(1),
+    unsunCpuSeat(2),
+    unsunCpuSeat(3),
+    unsunCpuSeat(4),
+    unsunCpuSeat(5),
+    unsunCpuSeat(6),
+    unsunCpuSeat(7, true),
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  trickCount: 9,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 7,
+  humanTeam: 0,
+  trumpSuit: 3,
+  trumpSuitName: 'kotsu',
+  trumpCard: unsunCard('HEART', 12, '杯', 'キリ'),
+  mustFollow: false,
+  declared: false,
+  canDeclare: true,
+  currentTrick: [],
+  teamTricks: [0, 0],
+  teamScores: [0, 0],
+  lastTrickWinner: -1,
+  result: 0,
+  playableIndices: [0, 1, 2, 3],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  hint: null,
+  config: { cpuDifficulty: 1, targetDeals: 4 },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link UnsunKarutaResponse} with sensible defaults (the human on
+ * lead in the first trick of a four-deal match).
+ *
+ * @param overrides - Partial UnsunKarutaResponse fields to override.
+ * @returns A complete UnsunKarutaResponse suitable for use in tests.
+ */
+export function makeUnsunKarutaState(overrides?: Partial<UnsunKarutaResponse>): UnsunKarutaResponse {
+  return { ...baseUnsunKarutaState, ...overrides };
+}
+
+/** One 32-card Quodlibet card. */
+const quodCard = (design: 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND', value: number) => ({
+  design,
+  value,
+  color: design === 'HEART' || design === 'DIAMOND' ? 'red' : 'black',
+});
+
+/** A CPU seat; cards are hidden except in the third wheel. */
+const quodCpuSeat = (id: number, isDealer = false) => ({
+  id,
+  isHuman: false,
+  cardCount: 8,
+  cards: [],
+  trickCount: 0,
+  penalty: 0,
+  dealPoints: 0,
+  outRank: 0,
+  isDealer,
+});
+
+/**
+ * Base Quodlibet state used as the default for {@link makeQuodlibetState}.
+ * Defaults to the human dealing the first deal, so the contract choice is open.
+ */
+const baseQuodlibetState: QuodlibetResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 4,
+      cards: [quodCard('SPADE', 1), quodCard('SPADE', 9), quodCard('HEART', 13), quodCard('DIAMOND', 12)],
+      trickCount: 0,
+      penalty: 0,
+      dealPoints: 0,
+      outRank: 0,
+      isDealer: true,
+    },
+    quodCpuSeat(1),
+    quodCpuSeat(2),
+    quodCpuSeat(3),
+  ],
+  phase: 'selectContract',
+  dealNumber: 0,
+  totalDeals: 12,
+  roundNumber: 1,
+  dealerIdx: 0,
+  currentContract: -1,
+  currentContractName: 'unknown',
+  availableContracts: [0, 1, 2, 3],
+  availableContractNames: ['plus', 'minus', 'badNeighbour', 'alarich'],
+  isShedding: false,
+  trickNumber: 1,
+  trickCount: 8,
+  currentPlayerIdx: 1,
+  leadPlayerIdx: 1,
+  currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
+  playableIndices: [],
+  canPass: false,
+  tablePlaced: [[], [], [], []],
+  stack: [],
+  lastDeal: null,
+  dealHistory: [],
+  winners: [0, 1, 2, 3],
+  gameEndFlag: false,
+  isHumanTurn: true,
+  isContractPhase: true,
+  hint: null,
+  hintContract: -1,
+  config: { cpuDifficulty: 1, autoSelectContract: false },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link QuodlibetResponse} with sensible defaults (the human dealing
+ * the first deal, so the contract choice is open).
+ *
+ * @param overrides - Partial QuodlibetResponse fields to override.
+ * @returns A complete QuodlibetResponse suitable for use in tests.
+ */
+export function makeQuodlibetState(overrides?: Partial<QuodlibetResponse>): QuodlibetResponse {
+  return { ...baseQuodlibetState, ...overrides };
+}
+
+/** One 52-card Dehla Pakad card. */
+const dpCard = (design: 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND', value: number) => ({
+  design,
+  value,
+  color: design === 'HEART' || design === 'DIAMOND' ? 'red' : 'black',
+});
+
+/** A CPU seat; cards are hidden. */
+const dpCpuSeat = (id: number, isDealer = false, isTrumpChooser = false) => ({
+  id,
+  isHuman: false,
+  team: id % 2,
+  cardCount: 5,
+  cards: [],
+  gatheredCount: 0,
+  isDealer,
+  isTrumpChooser,
+});
+
+/**
+ * Base Dehla Pakad state used as the default for {@link makeDehlaPakadState}.
+ * Defaults to the human calling the trump from the first five cards, which is
+ * where a fresh game opens (seat 3 deals, so seat 0 calls).
+ */
+const baseDehlaPakadState: DehlaPakadResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      team: 0,
+      cardCount: 5,
+      cards: [dpCard('SPADE', 1), dpCard('SPADE', 10), dpCard('HEART', 13), dpCard('CLOVER', 4), dpCard('DIAMOND', 7)],
+      gatheredCount: 0,
+      isDealer: false,
+      isTrumpChooser: true,
+    },
+    dpCpuSeat(1),
+    dpCpuSeat(2),
+    dpCpuSeat(3, true),
+  ],
+  phase: 'selectTrump',
+  handNumber: 1,
+  dealerIdx: 3,
+  trumpChooserIdx: 0,
+  trumpSuit: -1,
+  trumpSuitName: 'unknown',
+  trickNumber: 1,
+  trickCount: 13,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
+  prevTrickWinner: -1,
+  centrePileCount: 0,
+  centrePileTens: 0,
+  playableIndices: [],
+  teamTens: [0, 0],
+  teamKots: [0, 0],
+  humanTeam: 0,
+  streakTeam: -1,
+  streakCount: 0,
+  lastHand: null,
+  handHistory: [],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  isTrumpPhase: true,
+  hint: null,
+  hintTrumpSuit: -1,
+  config: { cpuDifficulty: 1, targetKots: 2 },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link DehlaPakadResponse} with sensible defaults (the human
+ * calling the trump on the first hand).
+ *
+ * @param overrides - Partial DehlaPakadResponse fields to override.
+ * @returns A complete DehlaPakadResponse suitable for use in tests.
+ */
+export function makeDehlaPakadState(overrides?: Partial<DehlaPakadResponse>): DehlaPakadResponse {
+  return { ...baseDehlaPakadState, ...overrides };
+}
+
+/**
+ * One Sutda card.
+ *
+ * **The month does not survive in `design`.** The Go presenter runs every card
+ * through the shared 52-card design mapping, so months 1-4 come back as
+ * SPADE/CLOVER/HEART/DIAMOND and 5-10 all collapse to JOKER — the month lives
+ * in the procedural face's `label`, which is what the page reads. This factory
+ * reproduces that mapping rather than inventing a cleaner one.
+ */
+const sutdaCard = (month: number, copyIdx: number) => {
+  const designs = ['JOKER', 'SPADE', 'CLOVER', 'HEART', 'DIAMOND'] as const;
+  const gwang = copyIdx === 1 && [1, 3, 8].includes(month);
+  return {
+    design: (month <= 4 ? designs[month] : 'JOKER') as (typeof designs)[number],
+    value: copyIdx,
+    glyph: '🎴',
+    label: gwang ? `${month}光` : String(month),
+    color: gwang ? 'gold' : 'black',
+    deck: 'hanafuda',
+  };
+};
+
+/** A CPU seat; cards are hidden until the showdown. */
+const sutdaCpuSeat = (id: number, isDealer = false) => ({
+  id,
+  isHuman: false,
+  cardCount: 2,
+  cards: [],
+  chips: 990,
+  bet: 10,
+  folded: false,
+  revealed: false,
+  handName: '',
+  handRank: 0,
+  isDealer,
+});
+
+/**
+ * Base Sutda state used as the default for {@link makeSutdaState}. Defaults to
+ * the human on turn in the betting round with nothing yet to call.
+ */
+const baseSutdaState: SutdaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 2,
+      cards: [sutdaCard(3, 1), sutdaCard(8, 1)],
+      chips: 990,
+      bet: 10,
+      folded: false,
+      revealed: false,
+      handName: 'gwang38',
+      handRank: 903,
+      isDealer: false,
+    },
+    sutdaCpuSeat(1),
+    sutdaCpuSeat(2, true),
+  ],
+  phase: 'bet',
+  handNumber: 1,
+  dealerIdx: 2,
+  currentPlayerIdx: 0,
+  pot: 30,
+  currentBet: 10,
+  callAmount: 0,
+  canRaise: true,
+  raiseCount: 0,
+  maxRaises: 3,
+  betUnit: 20,
+  humanHandName: 'gwang38',
+  lastResult: null,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  isHumanTurn: true,
+  isShowdown: false,
+  hintAction: '',
+  hintReason: '',
+  config: { cpuDifficulty: 1, seats: 3, startChips: 1000 },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link SutdaResponse} with sensible defaults (the human on turn in
+ * the betting round holding the top hand).
+ *
+ * @param overrides - Partial SutdaResponse fields to override.
+ * @returns A complete SutdaResponse suitable for use in tests.
+ */
+export function makeSutdaState(overrides?: Partial<SutdaResponse>): SutdaResponse {
+  return { ...baseSutdaState, ...overrides };
+}
+
+/** One 40-card Italian card for Cirulla. */
+const cirCard = (design: 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND', value: number) => ({
+  design,
+  value,
+  color: design === 'HEART' || design === 'DIAMOND' ? 'red' : 'black',
+});
+
+/**
+ * Base Cirulla state used as the default for {@link makeCirullaState}.
+ * Defaults to the human on turn with four cards on the table.
+ */
+const baseCirullaState: CirullaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cards: [cirCard('SPADE', 3), cirCard('HEART', 5), cirCard('DIAMOND', 1)],
+      cardCount: 3,
+      capturedCount: 0,
+      denariCount: 0,
+      hasSetteBello: false,
+      scope: 0,
+      bonusPoints: 0,
+      score: 0,
+      isDealer: false,
+      lastBonus: '',
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cards: [],
+      cardCount: 3,
+      capturedCount: 0,
+      denariCount: 0,
+      hasSetteBello: false,
+      scope: 0,
+      bonusPoints: 0,
+      score: 0,
+      isDealer: true,
+      lastBonus: '',
+    },
+  ],
+  phase: 'play',
+  roundNumber: 1,
+  dealerIdx: 1,
+  currentPlayerIdx: 0,
+  table: [cirCard('CLOVER', 7), cirCard('DIAMOND', 12), cirCard('SPADE', 2), cirCard('HEART', 6)],
+  deckRemaining: 30,
+  lastCapturer: -1,
+  // 手札 0 (♠3) は場の [2] を取れる。手札 2 (♦A) は場を総取りできる。
+  captureOptions: [[[2]], [], [[0, 1, 2, 3]]],
+  lastResult: null,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  isHumanTurn: true,
+  hintHandIdx: -1,
+  hintCaptureIdxs: [],
+  hintReason: '',
+  config: { cpuDifficulty: 1, targetScore: 51 },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link CirullaResponse} with sensible defaults (the human on turn
+ * with four cards on the table).
+ *
+ * @param overrides - Partial CirullaResponse fields to override.
+ * @returns A complete CirullaResponse suitable for use in tests.
+ */
+export function makeCirullaState(overrides?: Partial<CirullaResponse>): CirullaResponse {
+  return { ...baseCirullaState, ...overrides };
+}
+
+/**
+ * Base Diloti state used as the default for {@link makeDilotiState}.
+ * Defaults to the human on turn with four cards and one declaration on the table.
+ */
+const baseDilotiState: DilotiResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cards: [cirCard('SPADE', 3), cirCard('HEART', 5), cirCard('CLOVER', 11)],
+      cardCount: 3,
+      capturedCount: 0,
+      xeri: 0,
+      score: 0,
+      isDealer: false,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cards: [],
+      cardCount: 3,
+      capturedCount: 0,
+      xeri: 0,
+      score: 0,
+      isDealer: true,
+    },
+  ],
+  phase: 'play',
+  roundNumber: 1,
+  dealerIdx: 1,
+  currentPlayerIdx: 0,
+  table: [cirCard('CLOVER', 3), cirCard('DIAMOND', 11), cirCard('SPADE', 2), cirCard('HEART', 1)],
+  declarations: [{ ownerIdx: 1, value: 5, groups: [[cirCard('SPADE', 5)]], isGroup: false }],
+  deckRemaining: 36,
+  lastCapturer: -1,
+  // 手札 0 (♠3) は場の [0] を取るか、[2]+[3] (2+1=3) を取れる。
+  // 手札 1 (♥5) は宣言 5 を取れる。手札 2 (♣J) は場の [1] (♦J) を取れる。
+  takeOptions: [
+    [
+      { tableIdxs: [0], declIdxs: [] },
+      { tableIdxs: [2, 3], declIdxs: [] },
+    ],
+    [{ tableIdxs: [], declIdxs: [0] }],
+    [{ tableIdxs: [1], declIdxs: [] }],
+  ],
+  declareOptions: [[], [{ value: 8, tableIdxs: [0] }], []],
+  canTrail: [true, true, false],
+  lastResult: null,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  isHumanTurn: true,
+  hintHandIdx: -1,
+  hintAction: '',
+  hintTableIdxs: [],
+  hintDeclIdxs: [],
+  hintDeclValue: 0,
+  hintReason: '',
+  config: { cpuDifficulty: 1, targetScore: 61 },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link DilotiResponse} with sensible defaults (the human on turn
+ * with four cards and one declaration on the table).
+ *
+ * @param overrides - Partial DilotiResponse fields to override.
+ * @returns A complete DilotiResponse suitable for use in tests.
+ */
+export function makeDilotiState(overrides?: Partial<DilotiResponse>): DilotiResponse {
+  return { ...baseDilotiState, ...overrides };
+}
+
+/**
+ * Base Comet state used as the default for {@link makeCometState}.
+ * Defaults to the human leading a fresh sequence at a four-seat table.
+ */
+const baseCometState: CometResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      // 手札 2 は 9♦ = コメット。どのランクの代わりにもなる。
+      cards: [cirCard('SPADE', 5), cirCard('HEART', 12), cirCard('DIAMOND', 9)],
+      cardCount: 3,
+      score: 0,
+      isDealer: false,
+    },
+    { id: 1, isHuman: false, cards: [], cardCount: 3, score: 0, isDealer: false },
+    { id: 2, isHuman: false, cards: [], cardCount: 3, score: 0, isDealer: false },
+    { id: 3, isHuman: false, cards: [], cardCount: 3, score: 0, isDealer: true },
+  ],
+  phase: 'play',
+  roundNumber: 1,
+  dealerIdx: 3,
+  currentPlayerIdx: 0,
+  pile: [],
+  need: 0,
+  deadCount: 3,
+  lastPlayerIdx: -1,
+  // 先頭なので 3 枚とも出せる。
+  playableIdxs: [0, 1, 2],
+  lastResult: null,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  isHumanTurn: true,
+  hintHandIdx: -1,
+  hintReason: '',
+  config: { cpuDifficulty: 1, players: 4, targetScore: 100 },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link CometResponse} with sensible defaults (the human leading a
+ * fresh sequence at a four-seat table).
+ *
+ * @param overrides - Partial CometResponse fields to override.
+ * @returns A complete CometResponse suitable for use in tests.
+ */
+export function makeCometState(overrides?: Partial<CometResponse>): CometResponse {
+  return { ...baseCometState, ...overrides };
+}
+
+/** Face-up card helper for the Baccarat Banque factories. **Baccarat deals nothing hidden.** */
+const bbqCard = (design: 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND', value: number) => ({
+  design,
+  value,
+});
+
+/**
+ * Base Baccarat Banque state used as the default for {@link makeBaccaratBanqueState}.
+ *
+ * Defaults to the banker's decision on coup 2 — deliberately not coup 1, so a
+ * test that asserts on `bankHeld` cannot pass by reading a hardcoded 1.
+ * The right tableau has already been forced to draw at 3; the left stands at 7.
+ */
+const baseBaccaratBanqueState: BaccaratBanqueResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      role: 'banker',
+      cards: [bbqCard('SPADE', 3), bbqCard('HEART', 3)],
+      total: 6,
+      chips: 1000,
+      bet: 0,
+      drawn: false,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      role: 'right',
+      cards: [bbqCard('CLOVER', 1), bbqCard('DIAMOND', 2), bbqCard('SPADE', 10)],
+      total: 3,
+      chips: 1000,
+      bet: 50,
+      drawn: true,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      role: 'left',
+      cards: [bbqCard('HEART', 3), bbqCard('CLOVER', 4)],
+      total: 7,
+      chips: 1000,
+      bet: 50,
+      drawn: false,
+    },
+  ],
+  phase: 'banker',
+  coupNumber: 2,
+  bankHeld: 2,
+  shoeRemaining: 141,
+  retired: false,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  isHumanTurn: true,
+  hintDraw: true,
+  hintReason: 'behind_both',
+  config: { cpuDifficulty: 1, startChips: 1000, betAmount: 50 },
+  message: '',
+  messageCode: 'baccaratbanque.bankerPhase',
+};
+
+/**
+ * Creates a {@link BaccaratBanqueResponse} with sensible defaults (the banker's
+ * decision on the second coup of a bank that has already survived one).
+ *
+ * @param overrides - Partial BaccaratBanqueResponse fields to override.
+ * @returns A complete BaccaratBanqueResponse suitable for use in tests.
+ */
+export function makeBaccaratBanqueState(overrides?: Partial<BaccaratBanqueResponse>): BaccaratBanqueResponse {
+  return { ...baseBaccaratBanqueState, ...overrides };
+}
+
+/** Card helper for the Continental Rummy factories. */
+const contCard = (design: 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND' | 'JOKER', value: number) => ({
+  design,
+  value,
+});
+
+/** Three consecutive cards of one suit — one legal sequence. */
+const contRun = (design: 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND', from: number) => [
+  contCard(design, from),
+  contCard(design, from + 1),
+  contCard(design, from + 2),
+];
+
+/**
+ * Base Continental Rummy state used as the default for {@link makeContinentalRummyState}.
+ *
+ * Defaults to the human on the **discard** step of round 2 with sixteen cards
+ * — deliberately not round 1, so a test that asserts on the round cannot pass
+ * by reading a hardcoded 1. The hand is five clean sequences plus one loose
+ * card, so `goOutIdx` points at index 15.
+ */
+const baseContinentalRummyState: ContinentalRummyResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cards: [
+        ...contRun('SPADE', 2),
+        ...contRun('SPADE', 7),
+        ...contRun('HEART', 4),
+        ...contRun('CLOVER', 9),
+        ...contRun('DIAMOND', 5),
+        contCard('DIAMOND', 13),
+      ],
+      cardCount: 16,
+      melds: [],
+      score: 0,
+      isDealer: true,
+    },
+    { id: 1, isHuman: false, cards: [], cardCount: 15, melds: [], score: 0, isDealer: false },
+    { id: 2, isHuman: false, cards: [], cardCount: 15, melds: [], score: 0, isDealer: false },
+    { id: 3, isHuman: false, cards: [], cardCount: 15, melds: [], score: 0, isDealer: false },
+  ],
+  phase: 'discard',
+  roundNumber: 2,
+  totalRounds: 3,
+  currentPlayerIdx: 0,
+  dealerIdx: 0,
+  stockCount: 30,
+  discardTop: contCard('CLOVER', 4),
+  // **5+5+5 は入らない。** 合計 15 でも上がりにならないので、ここに足さないこと。
+  layouts: [
+    [3, 3, 3, 3, 3],
+    [4, 4, 4, 3],
+    [5, 4, 3, 3],
+  ],
+  gameEndFlag: false,
+  winnerIdx: -1,
+  isHumanTurn: true,
+  goOutIdx: 15,
+  canGoOutOnDeal: false,
+  hintDiscardIdx: 15,
+  hintReason: 'go_out',
+  config: { cpuDifficulty: 1, totalRounds: 3 },
+  message: '',
+  messageCode: 'continentalrummy.discardPhase.canGoOut',
+};
+
+/**
+ * Creates a {@link ContinentalRummyResponse} with sensible defaults (the human
+ * holding a completed hand on the discard step of round 2).
+ *
+ * @param overrides - Partial ContinentalRummyResponse fields to override.
+ * @returns A complete ContinentalRummyResponse suitable for use in tests.
+ */
+export function makeContinentalRummyState(overrides?: Partial<ContinentalRummyResponse>): ContinentalRummyResponse {
+  return { ...baseContinentalRummyState, ...overrides };
+}
+
+/**
+ * Base Costly Colours state used as the default for {@link makeCostlyColoursState}.
+ * Defaults to the exchange offer at the head of the first deal.
+ */
+const baseCostlyColoursState: CostlyColoursResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      // 手札 2 は ♥2 ── 持っているだけで点になる札。
+      cards: [cirCard('CLOVER', 9), cirCard('SPADE', 6), cirCard('HEART', 2)],
+      cardCount: 3,
+      played: [],
+      score: 0,
+      isDealer: false,
+      moggedIn: false,
+    },
+    { id: 1, isHuman: false, cards: [], cardCount: 3, played: [], score: 0, isDealer: true, moggedIn: false },
+  ],
+  phase: 'mog',
+  dealNumber: 1,
+  dealerIdx: 1,
+  currentPlayerIdx: 0,
+  turnUp: cirCard('CLOVER', 10),
+  pile: [],
+  total: 0,
+  wentOut: -1,
+  // 交換フェーズでは出せる札を渡さない。
+  playableIdxs: [],
+  lastResult: null,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  isHumanTurn: true,
+  hintHandIdx: -1,
+  hintAcceptMog: true,
+  hintReason: '',
+  config: { cpuDifficulty: 1, targetScore: 61 },
+  message: '',
+  messageCode: '',
+};
+
+/**
+ * Creates a {@link CostlyColoursResponse} with sensible defaults (the exchange
+ * offer at the head of the first deal).
+ *
+ * @param overrides - Partial CostlyColoursResponse fields to override.
+ * @returns A complete CostlyColoursResponse suitable for use in tests.
+ */
+export function makeCostlyColoursState(overrides?: Partial<CostlyColoursResponse>): CostlyColoursResponse {
+  return { ...baseCostlyColoursState, ...overrides };
 }

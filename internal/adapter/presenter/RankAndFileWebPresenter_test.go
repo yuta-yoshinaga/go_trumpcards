@@ -1,0 +1,237 @@
+//go:build test
+
+package presenter
+
+import (
+	"encoding/json"
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+func setupRankAndFileWebMockDefaults(fg *interfaces.MockRankAndFileGame) {
+	fg.On("GetPhase").Return(domain.RankAndFilePhasePlaying).Maybe()
+	fg.On("GetMoveCount").Return(0).Maybe()
+	fg.On("GetStockCount").Return(64).Maybe()
+	fg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
+	fg.On("CanUndo").Return(false).Maybe()
+	fg.On("IsStalemate").Return(false).Maybe()
+	fg.On("UndoToEscape").Return(0).Maybe()
+
+	var tableau [domain.RankAndFileTableauCnt][]*domain.RankAndFileTableauCard
+	for i := range domain.RankAndFileTableauCnt {
+		tableau[i] = make([]*domain.RankAndFileTableauCard, 4)
+		for j := range 4 {
+			tableau[i][j] = &domain.RankAndFileTableauCard{
+				Card: domain.NewCard(domain.CardDesignSpade, j+1, false),
+				// 配りどおり下 3 枚は伏せ。全部 true にすると、
+				// 伏せ札を出さない分岐が既定盤で一度も通らない。
+				FaceUp: j == 3,
+			}
+		}
+	}
+	fg.On("GetTableau").Return(tableau).Maybe()
+
+	var foundation [domain.RankAndFileFoundationCnt][]*domain.Card
+	fg.On("GetFoundation").Return(foundation).Maybe()
+}
+
+func parseRankAndFileOutput(t *testing.T, jsonStr string) *controller.RankAndFileWebOutput {
+	t.Helper()
+	var out controller.RankAndFileWebOutput
+	err := json.Unmarshal([]byte(jsonStr), &out)
+	assert.NoError(t, err)
+	return &out
+}
+
+// setupRankAndFileOutputMock は Output 用の既定。**Output() も受動ヒントを埋める**ように
+// なった (#4483) ので GetHint を呼べるようにする。共有ヘルパーに置くと、先に
+// 登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
+func setupRankAndFileOutputMock(g *interfaces.MockRankAndFileGame) {
+	setupRankAndFileWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+}
+
+func TestRankAndFileWebPresenter_Output(t *testing.T) {
+	t.Run("initial state", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		setupRankAndFileOutputMock(fg)
+		p := new(RankAndFileWebPresenter)
+
+		result := parseRankAndFileOutput(t, p.Output(fg, nil))
+		assert.Equal(t, 0, result.Phase)
+		assert.Equal(t, 0, result.MoveCount)
+		assert.Equal(t, 64, result.StockCount)
+		assert.Empty(t, result.Waste)
+		assert.Len(t, result.Tableau, domain.RankAndFileTableauCnt)
+		assert.Len(t, result.Foundation, domain.RankAndFileFoundationCnt)
+		assert.Equal(t, "rankandfile.playing", result.MessageCode)
+	})
+
+	t.Run("waste with cards", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		setupRankAndFileOutputMock(fg)
+		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "GetWaste")
+		fg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)})
+
+		p := new(RankAndFileWebPresenter)
+		result := parseRankAndFileOutput(t, p.Output(fg, nil))
+		assert.Len(t, result.Waste, 1)
+		assert.Equal(t, "HEART", result.Waste[0].Design)
+		assert.Equal(t, 5, result.Waste[0].Value)
+	})
+
+	// **伏せ札の中身を API に載せない。**クローン元の Forty Thieves は全部表向きなので
+	// 元のサブテストは「全部 FaceUp」を主張していたが、Rank and File でその盤は出ない。
+	// 載せてしまうと devtools から隠し札が読めるので、両側を見る。
+	t.Run("face-down cards carry no card", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		setupRankAndFileOutputMock(fg)
+		p := new(RankAndFileWebPresenter)
+
+		result := parseRankAndFileOutput(t, p.Output(fg, nil))
+		hidden, shown := 0, 0
+		for _, col := range result.Tableau {
+			for _, tc := range col {
+				if tc.FaceUp {
+					shown++
+					assert.NotNil(t, tc.Card, "表向きの札は中身が要る")
+					continue
+				}
+				hidden++
+				assert.Nil(t, tc.Card, "伏せ札に中身を載せない")
+			}
+		}
+		// 0 件を成功と読まないための下限。既定盤は 10 列 x (3 伏せ + 1 表)。
+		assert.Equal(t, 30, hidden)
+		assert.Equal(t, 10, shown)
+	})
+
+	t.Run("error message", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		setupRankAndFileOutputMock(fg)
+		p := new(RankAndFileWebPresenter)
+
+		result := parseRankAndFileOutput(t, p.Output(fg, errors.New("test error")))
+		assert.Equal(t, "test error", result.Message)
+	})
+
+	t.Run("game clear", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		setupRankAndFileOutputMock(fg)
+		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "GetPhase")
+		fg.On("GetPhase").Return(domain.RankAndFilePhaseGameClear)
+
+		p := new(RankAndFileWebPresenter)
+		result := parseRankAndFileOutput(t, p.Output(fg, nil))
+		assert.Equal(t, "rankandfile.gameClear", result.MessageCode)
+	})
+
+	t.Run("game over", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		setupRankAndFileOutputMock(fg)
+		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "GetPhase")
+		fg.On("GetPhase").Return(domain.RankAndFilePhaseGameOver)
+
+		p := new(RankAndFileWebPresenter)
+		result := parseRankAndFileOutput(t, p.Output(fg, nil))
+		assert.Equal(t, "rankandfile.gameOver", result.MessageCode)
+	})
+
+	t.Run("stalemate", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		setupRankAndFileOutputMock(fg)
+		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "IsStalemate")
+		fg.On("IsStalemate").Return(true)
+
+		p := new(RankAndFileWebPresenter)
+		result := parseRankAndFileOutput(t, p.Output(fg, nil))
+		assert.Equal(t, "rankandfile.stalemate", result.MessageCode)
+	})
+}
+
+// **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
+// レスポンスで、ページの state にはマージされない (#4483)。
+func TestRankAndFileWebPresenter_OutputCarriesTheHint(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		ftg := new(interfaces.MockRankAndFileGame)
+		setupRankAndFileWebMockDefaults(ftg)
+		ftg.On("GetHint").Return(&domain.RankAndFileHint{FromZone: "tableau", FromCol: 2, CardIndex: 0, ToZone: "foundation", ToCol: 1}).Maybe()
+
+		result := new(RankAndFileWebPresenter).Output(ftg, nil)
+		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	})
+
+	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
+	t.Run("not while stalemate", func(t *testing.T) {
+		ftg := new(interfaces.MockRankAndFileGame)
+		setupRankAndFileWebMockDefaults(ftg)
+		ftg.ExpectedCalls = filterCalls(ftg.ExpectedCalls, "IsStalemate")
+		ftg.On("IsStalemate").Return(true)
+		ftg.On("GetHint").Return(&domain.RankAndFileHint{FromZone: "tableau", FromCol: 2, CardIndex: 0, ToZone: "foundation", ToCol: 1}).Maybe()
+
+		result := new(RankAndFileWebPresenter).Output(ftg, nil)
+		assert.NotContains(t, result, `"hint"`)
+	})
+}
+
+func TestRankAndFileWebPresenter_HintOutput(t *testing.T) {
+	t.Run("with hint", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		setupRankAndFileWebMockDefaults(fg)
+		fg.On("GetHint").Return(&domain.RankAndFileHint{
+			FromZone:  "tableau",
+			FromCol:   0,
+			CardIndex: 3,
+			ToZone:    "foundation",
+			ToCol:     0,
+		})
+
+		p := new(RankAndFileWebPresenter)
+		result := parseRankAndFileOutput(t, p.HintOutput(fg))
+		assert.NotNil(t, result.Hint)
+		assert.Equal(t, "tableau", result.Hint.FromZone)
+		assert.Equal(t, "rankandfile.hintAvailable", result.MessageCode)
+	})
+
+	t.Run("no hint", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		setupRankAndFileWebMockDefaults(fg)
+		fg.On("GetHint").Return((*domain.RankAndFileHint)(nil))
+
+		p := new(RankAndFileWebPresenter)
+		result := parseRankAndFileOutput(t, p.HintOutput(fg))
+		assert.Nil(t, result.Hint)
+		assert.Equal(t, "rankandfile.noHint", result.MessageCode)
+	})
+}
+
+func TestRankAndFileWebPresenter_ActionLogOutput(t *testing.T) {
+	t.Run("playing phase returns empty", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		fg.On("GetPhase").Return(domain.RankAndFilePhasePlaying)
+
+		fg.On("GetGameEndFlag").Return(false)
+		p := new(RankAndFileWebPresenter)
+		result := p.ActionLogOutput(fg)
+		assert.Contains(t, result, "[]")
+	})
+
+	t.Run("game over returns log", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		fg.On("GetPhase").Return(domain.RankAndFilePhaseGameOver)
+		fg.On("GetGameEndFlag").Return(true)
+		fg.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "draw", Detail: "test"},
+		})
+
+		p := new(RankAndFileWebPresenter)
+		result := p.ActionLogOutput(fg)
+		assert.Contains(t, result, "draw")
+	})
+}

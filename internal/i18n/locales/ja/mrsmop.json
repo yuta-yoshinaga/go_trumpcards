@@ -1,0 +1,16 @@
+{
+  "helpTitle": "Mrs. Mop (ミセス・モップ)",
+  "helpMove": "  m t <col> <idx> t <col>  move tableau to tableau",
+  "helpMoveShorthand": "  m <col> <col>        最上段移動 (省略形)",
+  "helpGiveUp": "  g                    give up",
+  "helpHint": "  h                    hint",
+  "helpAutoComplete": "  ac                   auto-complete",
+  "header": "完成スーツ: {{completed}}/{{total}} | スコア: {{score}}",
+  "columnLabel": "列{{col}}:",
+  "gameClearLine": "ゲームクリア！ 手数: {{moves}} スコア: {{score}}",
+  "hintLine": "ヒント: タブロー列{{fromCol}}[{{idx}}] → タブロー列{{toCol}}",
+  "difficultyLine": "難易度: {{suits}}スート（本来の Mrs. Mop は4スート）",
+  "helpExampleHint": "  h                        次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る",
+  "helpUndo": "  u                    1手戻す"
+}

@@ -15,6 +15,7 @@ vi.mock('../api/gameApi', () => {
     'beloteApi',
     'callBreakApi',
     'catchtenApi',
+    'bauernschnapsenApi',
     'gaigelApi',
     'gongzhuApi',
     'heartsApi',
@@ -46,6 +47,7 @@ vi.mock('../api/gameApi', () => {
 });
 
 import { useBakersGameGame } from './useBakersGameGame';
+import { useBauernschnapsenGame } from './useBauernschnapsenGame';
 import { useBeloteGame } from './useBeloteGame';
 import { useCallBreakGame } from './useCallBreakGame';
 import { useCatchTenGame } from './useCatchTenGame';
@@ -116,6 +118,7 @@ describe('trick-game hooks expose the full useTrickGameBase surface', () => {
     ['useBeloteGame', useBeloteGame, 'beloteConfig'],
     ['useCallBreakGame', useCallBreakGame, 'callBreakConfig'],
     ['useCatchTenGame', useCatchTenGame, 'catchtenConfig'],
+    ['useBauernschnapsenGame', useBauernschnapsenGame, 'bauernschnapsenConfig'],
     ['useGaigelGame', useGaigelGame, 'gaigelConfig'],
     ['useGongZhuGame', useGongZhuGame, 'gongzhuConfig'],
     ['useHeartsGame', useHeartsGame, 'heartsConfig'],

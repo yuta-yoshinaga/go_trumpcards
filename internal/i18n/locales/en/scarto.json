@@ -34,6 +34,7 @@
   "discardableList": "Discardable: {{cards}}",
   "discardableNone": "none",
   "discardableLegend": "Note: trumps, the Excuse, and court cards cannot be discarded",
+  "discardableLegendTrumpOk": "Note: bouts (trump 1/21), the Excuse, and court cards cannot be discarded. Too few pips remain, so **other trumps may be discarded**",
   "helpExamplePlay": "  play 0                    play hand card 0",
   "helpExampleNext": "  n                         read the trick result, then continue",
   "helpHint": "  h                         show a hint"

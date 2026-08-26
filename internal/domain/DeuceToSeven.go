@@ -95,6 +95,10 @@ type DeuceToSeven struct {
 	dealerIdx    int
 	humanProfile *BettingHumanProfile
 	round        deuceToSevenRoundState
+	// muck はこのハンドで捨てられた札。**山が尽きたらここを切り直して引く。**
+	// 52 枚 4 席だと配った時点の山は 32 枚しかなく、3 回のドローで全員が
+	// 5 枚引くと最大 60 枚要るので、山切れは規則の範囲内で起きる。
+	muck []*Card
 }
 
 // NewDeuceToSeven constructs a DeuceToSeven game. Callers typically use
@@ -158,6 +162,8 @@ func (d *DeuceToSeven) Reset() error {
 	// 2-7 Triple Draw always uses a 52-card deck (no jokers).
 	d.trumpCards = NewTrumpCards(0)
 	d.trumpCards.Shuffle()
+	// **マックはハンドごと。** 持ち越すと前のハンドの札が新しい山に混ざる。
+	d.muck = nil
 
 	activeSeatCount := d.config.CpuCount + 1
 	if activeSeatCount > len(d.players) {
@@ -296,21 +302,48 @@ func (d *DeuceToSeven) PlayerStand() error {
 func (d *DeuceToSeven) applyExchange(playerIdx int, indices []int) {
 	pl := d.players[playerIdx]
 	drawn := 0
+	// **今この席が捨てた札は、この交換のあいだマックに入れない。** 先に混ぜると
+	// 自分が捨てたばかりの札を引き直せてしまう (カジノでも現に引いている席の
+	// 捨て札は脇に置く)。引き終えてからまとめて積む。
+	var pending []*Card
 	for _, idx := range indices {
 		if idx < 0 || idx >= DeuceToSevenHandSize {
 			continue
 		}
-		newCard := d.trumpCards.DrawCard()
+		newCard := d.drawOrRecycleMuck()
 		if newCard == nil {
 			break
+		}
+		if old := pl.GetCard(idx); old != nil {
+			pending = append(pending, old)
 		}
 		pl.ExchangeCard(idx, newCard)
 		drawn++
 	}
+	d.muck = append(d.muck, pending...)
 	pl.SetDrawCount(drawn)
 	pl.AddToTotalDrawCount(drawn)
 	d.appendLog(playerIdx, "exchange",
 		fmt.Sprintf("draw %d: exchange %d card(s)", d.round.drawIndex, drawn), nil)
+}
+
+// drawOrRecycleMuck は山から 1 枚引く。山が尽きていたら捨て札を切り直して
+// そこから引く。**どちらも空のときだけ nil を返す** —— 呼び出し側が黙って
+// 打ち切ると、捨てたはずの札がそのまま手元に残る。
+func (d *DeuceToSeven) drawOrRecycleMuck() *Card {
+	if c := d.trumpCards.DrawCard(); c != nil {
+		return c
+	}
+	if len(d.muck) == 0 {
+		return nil
+	}
+	// 切り直しは 1 枚ごとではなく、山が尽きた最初の 1 回だけ意味がある。
+	// ここでは残りを毎回シャッフルせず、無作為な位置から 1 枚抜く —— 結果は
+	// 同じで、混ぜ直しのコストがドロー 1 回ぶんに収まる。
+	i := rand.Intn(len(d.muck))
+	c := d.muck[i]
+	d.muck = append(d.muck[:i], d.muck[i+1:]...)
+	return c
 }
 
 // bettingPlayers adapts the concrete player slice to the BettingPlayer
@@ -882,6 +915,9 @@ func (d *DeuceToSeven) GetDrawIndex() int { return d.round.drawIndex }
 // GetPlayers returns the player slice.
 func (d *DeuceToSeven) GetPlayers() []*DeuceToSevenPlayer { return d.players }
 
+// GetPlayerCnt returns the number of seats at the table.
+func (d *DeuceToSeven) GetPlayerCnt() int { return len(d.players) }
+
 // GetPot returns the current pot value.
 func (d *DeuceToSeven) GetPot() int { return d.round.pot }
 
@@ -1013,6 +1049,7 @@ type deuceToSevenJSON struct {
 	DealerIdx  int                        `json:"di"`
 	Profile    *BettingHumanProfileData   `json:"pf,omitempty"`
 	Round      deuceToSevenRoundStateJSON `json:"rd"`
+	Muck       []*Card                    `json:"mk,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1022,6 +1059,7 @@ func (d *DeuceToSeven) MarshalJSON() ([]byte, error) {
 		Players:    d.players,
 		Config:     d.config,
 		DealerIdx:  d.dealerIdx,
+		Muck:       d.muck,
 		Round: deuceToSevenRoundStateJSON{
 			Phase:           d.round.phase,
 			DrawIndex:       d.round.drawIndex,
@@ -1057,7 +1095,8 @@ func (d *DeuceToSeven) UnmarshalJSON(data []byte) error {
 	if len(j.Players) > deuceToSevenMaxSliceLen || len(j.Round.ActedFlags) > deuceToSevenMaxSliceLen ||
 		len(j.Round.SidePots) > deuceToSevenMaxSliceLen || len(j.Round.StartingChips) > deuceToSevenMaxSliceLen ||
 		len(j.Round.RoundResults) > deuceToSevenMaxSliceLen || len(j.Round.CpuActions) > deuceToSevenMaxSliceLen ||
-		len(j.Round.CpuExchanges) > deuceToSevenMaxSliceLen || len(j.Round.ActionLog) > deuceToSevenMaxSliceLen {
+		len(j.Round.CpuExchanges) > deuceToSevenMaxSliceLen || len(j.Round.ActionLog) > deuceToSevenMaxSliceLen ||
+		len(j.Muck) > deuceToSevenMaxSliceLen {
 		return fmt.Errorf("deucetoseven: input array exceeds maximum allowed size")
 	}
 	// Consistency check: per-player slices must match the Players length,
@@ -1081,6 +1120,7 @@ func (d *DeuceToSeven) UnmarshalJSON(data []byte) error {
 	}
 	d.config = j.Config
 	d.dealerIdx = j.DealerIdx
+	d.muck = j.Muck
 	if j.Profile != nil {
 		d.humanProfile = &BettingHumanProfile{}
 		d.humanProfile.Import(*j.Profile)

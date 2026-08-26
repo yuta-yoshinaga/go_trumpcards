@@ -68,6 +68,34 @@ func (t *TrumpCards) deckDrawFlagInit() {
 	}
 }
 
+// RemoveCardsByValue は指定した額面の札を最大 count 枚デッキから取り除き、
+// 実際に取り除いた枚数を返す。
+//
+// **配る前に呼ぶこと。** 既に引かれた札は動かさず、未使用の札だけを外す。
+// 席数でデッキが割り切れない卓 (32 枚を 3 人・5 人で分けるなど) で、
+// 低い札を抜いて枚数を揃えるために使う。どの札が抜けたかが決まっているので、
+// プレイヤーは残りを推測できる —— 無作為に捨てるとそれができない。
+func (t *TrumpCards) RemoveCardsByValue(value, count int) int {
+	if count <= 0 {
+		return 0
+	}
+	kept := make([]*Card, 0, len(t.deck))
+	removed := 0
+	for _, c := range t.deck {
+		if removed < count && c != nil && !c.GetDraw() && c.GetValue() == value {
+			removed++
+			continue
+		}
+		kept = append(kept, c)
+	}
+	if removed == 0 {
+		return 0
+	}
+	t.deck = kept
+	t.deckCnt = len(kept)
+	return removed
+}
+
 // Shuffle 山札シャッフル
 func (t *TrumpCards) Shuffle() {
 	n := len(t.deck)
@@ -365,6 +393,34 @@ func NewTrumpCardsShortDeck() *TrumpCards {
 	t.deck = make([]*Card, 0, totalCards)
 	for _, suit := range suits {
 		for _, val := range ShortDeckValues {
+			t.deck = append(t.deck, NewCard(suit, val, false))
+		}
+	}
+	t.deckInit()
+	return t
+}
+
+// TrappolaValues トラッポラの札位 (A,3,4,5,6,7,J,Q,K)。
+//
+// **36 枚だが ShortDeckValues とは別集合。** ショートデック / ナインティナインは
+// A,6..K で 2..5 を抜くのに対し、トラッポラは 2 と 8,9,10 を抜く。
+var TrappolaValues = []int{1, 3, 4, 5, 6, 7, 11, 12, 13}
+
+// NewTrumpCardsTrappola トラッポラ用36枚デッキコンストラクタ
+// A,3,4,5,6,7,J,Q,K (値: 1,3,4,5,6,7,11,12,13) × 4スート = 36枚
+//
+// **枚数を指定する NewTrumpCardsWithSuits では作れない。** あちらはスートごとに
+// 値 1..13 を回して指定枚数で打ち切るので、36 を渡すと 13+13+10+0 になり
+// ダイヤが 1 枚も入らない (実測)。NewTrumpCards32 と同じく値を並べて作る。
+func NewTrumpCardsTrappola() *TrumpCards {
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	totalCards := len(TrappolaValues) * len(suits) // 36
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for _, suit := range suits {
+		for _, val := range TrappolaValues {
 			t.deck = append(t.deck, NewCard(suit, val, false))
 		}
 	}

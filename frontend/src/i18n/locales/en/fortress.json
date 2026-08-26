@@ -1,0 +1,41 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "moveCount": "Moves",
+  "giveup": "Give Up",
+  "empty": "Empty",
+  "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
+  "emptyColumnAriaLabel": "Empty tableau column {{col}}",
+  "landscapeBanner": "Landscape mode recommended",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available once a foundation builds past its ace",
+  "undo": "Undo",
+  "stalemate": "Stalemate",
+  "playing": "Move cards to build foundations",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
+  "hintAvailable": "Hint available",
+  "noHint": "No hint available",
+  "tutorial": {
+    "foundation": "The four foundations start EMPTY. Build each up by suit from Ace to King.",
+    "tableau": "All 52 cards are dealt face-up across 10 columns (two hold 6, eight hold 5). Only the rightmost card of a column can move.",
+    "moves": "One card at a time, onto the SAME suit one rank up or down. An empty column accepts any card.",
+    "controls": "Use hint, undo, and auto-complete buttons."
+  },
+  "frontendHint": {
+    "tableau": "Tableau column {{col}}",
+    "foundation": "Foundation"
+  },
+  "hintReason": {
+    "toFoundation": "Send this card to the foundation to free up the column.",
+    "toTableau": "Apply the suggested tableau move to unlock buried cards."
+  }
+}

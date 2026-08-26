@@ -1,4 +1,5 @@
 {
   "helpTitle": "セブンカードスタッド ハイロー (Seven Card Stud Hi-Lo)",
-  "helpExampleF": "  f                    この手を降りる"
+  "helpExampleF": "  f                    この手を降りる",
+  "outputTitle": "Seven Card Stud Hi-Lo"
 }

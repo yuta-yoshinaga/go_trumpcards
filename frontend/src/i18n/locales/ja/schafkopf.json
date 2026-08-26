@@ -1,0 +1,83 @@
+{
+  "phase": {
+    "pick": "宣言",
+    "call": "パートナー指名",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetChips": "目標チップ",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "chips": "{{count}}チップ",
+  "currentTrick": "現在のトリック",
+  "picker": "ピッカー",
+  "partner": "パートナー",
+  "partnerHidden": "（未公開）",
+  "calledSuit": "呼びスート",
+  "none": "なし",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "players": "プレイヤー",
+  "pickPrompt": "契約を宣言しますか、それともパスしますか？",
+  "callPrompt": "パートナーを呼ぶスートを選んでください。",
+  "pickButton": "Rufspiel（A呼び）",
+  "passButton": "パスする",
+  "callButton": "{{suit}}を呼ぶ",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "suit": {
+    "spade": "♠ スペード",
+    "club": "♣ クラブ",
+    "heart": "♥ ハート",
+    "diamond": "♦ ダイヤ"
+  },
+  "roundResult": {
+    "title": "ラウンド結果",
+    "pickerPoints": "ピッカー側の得点: {{points}}",
+    "multiplier": "倍率: x{{multiplier}}",
+    "pickerWon": "ピッカー側の勝ち",
+    "pickerLost": "ピッカー側の負け"
+  },
+  "passCount": "パス: {{count}}人",
+  "hintAvailable": "ヒント",
+  "hint": {
+    "pick_take": "強い手なので宣言することを推奨",
+    "pick_pass": "手が弱いのでパスを推奨",
+    "call_suit": "このスートを呼ぶことを推奨",
+    "lead_low": "低い札でリードして温存することを推奨",
+    "discard_low": "フォローできないので低い札を捨てる",
+    "follow_win": "得点があるので勝てる札で取りに行く",
+    "follow_duck": "取れない／取る価値がないのでダック推奨"
+  },
+  "tutorial": {
+    "pick": "まずは宣言フェーズ。Rufspiel（A呼びで相棒を作る）／Wenz（Unterだけが切り札）／Solo（選んだスートとOber・Unterが切り札）から選ぶか、パスします。",
+    "call": "Rufspiel を宣言したら呼びスートを選び、そのエースを持つプレイヤーが隠れたパートナーになります。",
+    "trickDisplay": "現在のトリックです。リードされたスートにフォローし、切り札が強さを決めます。切り札の構成は契約によって変わります。",
+    "playerHand": "あなたの手札です。出せるカードをクリックして選びます。",
+    "playButton": "カードを選んだら、このボタンで出します。",
+    "info": "得点はA=11, 10=10, K=4, Q=3, J=2。合計120点のうち、宣言側が61点以上取れば勝ちです。チップは勝敗で移動します。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "callButtonAriaLabel": "{{suit}}を呼ぶ（パートナー指定）",
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "wenzButton": "Wenz（Unterのみ切り札）",
+  "soloButton": "{{suit}} Solo",
+  "soloButtonAriaLabel": "{{suit}}を切り札にした Solo を宣言する",
+  "contractLabel": "契約: {{contract}}",
+  "contractRufspiel": "Rufspiel（A呼び）",
+  "contractWenz": "Wenz（Unterのみ切り札）",
+  "contractSolo": "Solo（{{suit}}）"
+}

@@ -12,6 +12,7 @@ export * from './gameExec';
 export * from './games/accordion';
 export * from './games/acesup';
 export * from './games/agnes';
+export * from './games/alaska';
 export * from './games/allfours';
 export * from './games/aluette';
 export * from './games/americantoad';
@@ -19,6 +20,7 @@ export * from './games/anaconda';
 export * from './games/andarbahar';
 export * from './games/auldlangsyne';
 export * from './games/baccarat';
+export * from './games/baccaratbanque';
 export * from './games/badugi';
 export * from './games/bakersdozen';
 export * from './games/bakersgame';
@@ -27,6 +29,7 @@ export * from './games/banluck';
 export * from './games/barbu';
 export * from './games/baseballpoker';
 export * from './games/basra';
+export * from './games/bauernschnapsen';
 export * from './games/beggarmyneighbour';
 export * from './games/beleagueredcastle';
 export * from './games/belote';
@@ -34,6 +37,7 @@ export * from './games/bezique';
 export * from './games/bhabhi';
 export * from './games/bideuchre';
 export * from './games/bidwhist';
+export * from './games/bigben';
 export * from './games/bigo';
 export * from './games/bigohilo';
 export * from './games/bigtwo';
@@ -41,6 +45,7 @@ export * from './games/bisley';
 export * from './games/blackhole';
 export * from './games/blackjack';
 export * from './games/blackjackswitch';
+export * from './games/bolivia';
 export * from './games/boston';
 export * from './games/botifarra';
 export * from './games/bouillotte';
@@ -49,6 +54,7 @@ export * from './games/braid';
 export * from './games/bridge';
 export * from './games/briscola';
 export * from './games/bristol';
+export * from './games/brusquembille';
 export * from './games/bura';
 export * from './games/burraco';
 export * from './games/calabresella';
@@ -56,6 +62,7 @@ export * from './games/calculation';
 export * from './games/callbreak';
 export * from './games/canasta';
 export * from './games/canfield';
+export * from './games/caribbeandraw';
 export * from './games/caribbeanstud';
 export * from './games/carioca';
 export * from './games/casinoholdem';
@@ -64,17 +71,23 @@ export * from './games/cassino';
 export * from './games/catchten';
 export * from './games/cego';
 export * from './games/chemindefer';
+export * from './games/chicago';
 export * from './games/chinchon';
 export * from './games/chinesepoker';
 export * from './games/chineseten';
 export * from './games/cinch';
 export * from './games/cincinnati';
+export * from './games/cirulla';
 export * from './games/clocksolitaire';
+export * from './games/coinche';
 export * from './games/colorado';
 export * from './games/colourwhist';
+export * from './games/comet';
 export * from './games/congress';
 export * from './games/conquian';
+export * from './games/continentalrummy';
 export * from './games/contractrummy';
+export * from './games/costlycolours';
 export * from './games/courchevel';
 export * from './games/courtpiece';
 export * from './games/crazyeights';
@@ -88,10 +101,13 @@ export * from './games/cruel';
 export * from './games/cuarenta';
 export * from './games/cuckoo';
 export * from './games/cucumber';
+export * from './games/curdsandwhey';
 export * from './games/daifugo';
+export * from './games/dehlapakad';
 export * from './games/desmoche';
 export * from './games/deuceswild';
 export * from './games/deucetoseven';
+export * from './games/diloti';
 export * from './games/diplomat';
 export * from './games/doppelkopf';
 export * from './games/doubleattack';
@@ -99,11 +115,13 @@ export * from './games/doubleklondike';
 export * from './games/doubt';
 export * from './games/doudizhu';
 export * from './games/dragontiger';
+export * from './games/dramaha';
 export * from './games/duchess';
 export * from './games/durak';
 export * from './games/easthaven';
 export * from './games/ecarte';
 export * from './games/egyptianratscrew';
+export * from './games/eightgame';
 export * from './games/eightoff';
 export * from './games/escoba';
 export * from './games/estimation';
@@ -113,19 +131,24 @@ export * from './games/fiftyone';
 export * from './games/fivecardstud';
 export * from './games/fivehundred';
 export * from './games/flowergarden';
+export * from './games/followthequeen';
+export * from './games/fortress';
 export * from './games/fortyandeight';
 export * from './games/fortyfives';
 export * from './games/fortythieves';
 export * from './games/fourcardpoker';
 export * from './games/fourseasons';
+export * from './games/fourteenout';
 export * from './games/freebet';
 export * from './games/freecell';
 export * from './games/frenchtarot';
 export * from './games/gaigel';
 export * from './games/ganjifa';
 export * from './games/gaps';
+export * from './games/germansolo';
 export * from './games/germanwhist';
 export * from './games/ginrummy';
+export * from './games/gleek';
 export * from './games/gofish';
 export * from './games/golf';
 export * from './games/gongzhu';
@@ -150,6 +173,7 @@ export * from './games/ironcross';
 export * from './games/israeliwhist';
 export * from './games/jass';
 export * from './games/jokerpoker';
+export * from './games/julepe';
 export * from './games/kaiser';
 export * from './games/kalooki';
 export * from './games/karnoffel';
@@ -173,6 +197,7 @@ export * from './games/loba';
 export * from './games/loo';
 export * from './games/macau';
 export * from './games/machiavelli';
+export * from './games/madrasso';
 export * from './games/manille';
 export * from './games/mao';
 export * from './games/marias';
@@ -186,12 +211,14 @@ export * from './games/mississippistud';
 export * from './games/missmilligan';
 export * from './games/montebank';
 export * from './games/montecarlo';
+export * from './games/mrsMop';
 export * from './games/mus';
 export * from './games/mushi';
 export * from './games/nainjaune';
 export * from './games/nap';
 export * from './games/napoleon';
 export * from './games/napoleonssquare';
+export * from './games/narcotic';
 export * from './games/nertz';
 export * from './games/ninetynine';
 export * from './games/niuniu';
@@ -209,6 +236,8 @@ export * from './games/paigow';
 export * from './games/pan';
 export * from './games/pasur';
 export * from './games/penguin';
+export * from './games/perseverance';
+export * from './games/piedmontesetarot';
 export * from './games/pig';
 export * from './games/pigtail';
 export * from './games/pineapple';
@@ -226,12 +255,18 @@ export * from './games/preference';
 export * from './games/president';
 export * from './games/primero';
 export * from './games/prsi';
+export * from './games/put';
 export * from './games/pyramid';
+export * from './games/quadrille';
+export * from './games/quodlibet';
 export * from './games/rams';
+export * from './games/ramsch';
+export * from './games/rankandfile';
 export * from './games/razz';
 export * from './games/reddog';
 export * from './games/reversis';
 export * from './games/rikken';
+export * from './games/ristikontra';
 export * from './games/rollingstone';
 export * from './games/rook';
 export * from './games/royalcotillion';
@@ -240,8 +275,10 @@ export * from './games/russianbank';
 export * from './games/russianpoker';
 export * from './games/russiansolitaire';
 export * from './games/sakura';
+export * from './games/saliclaw';
 export * from './games/samba';
 export * from './games/scarto';
+export * from './games/schafkopf';
 export * from './games/schnapsen';
 export * from './games/scopa';
 export * from './games/scopone';
@@ -254,6 +291,8 @@ export * from './games/sevenbridge';
 export * from './games/sevencardstud';
 export * from './games/sevencardstudhilo';
 export * from './games/sevens';
+export * from './games/seventwentyseven';
+export * from './games/shamrocks';
 export * from './games/sheepshead';
 export * from './games/shelem';
 export * from './games/shengji';
@@ -268,21 +307,27 @@ export * from './games/skat';
 export * from './games/skitgubbe';
 export * from './games/slapjack';
 export * from './games/slobberhannes';
+export * from './games/slyfox';
 export * from './games/snap';
 export * from './games/soko';
 export * from './games/solowhist';
+export * from './games/somerset';
 export * from './games/spades';
 export * from './games/spanish21';
+export * from './games/speculation';
 export * from './games/speed';
 export * from './games/spider';
 export * from './games/spiderette';
 export * from './games/spiteandmalice';
 export * from './games/spoilfive';
 export * from './games/spoons';
+export * from './games/stalactites';
 export * from './games/stealingbundles';
+export * from './games/sthelena';
 export * from './games/streetsandalleys';
 export * from './games/sueca';
 export * from './games/sultan';
+export * from './games/sutda';
 export * from './games/tablanet';
 export * from './games/tarabish';
 export * from './games/tarneeb';
@@ -294,11 +339,13 @@ export * from './games/texasholdembonus';
 export * from './games/thirtyone';
 export * from './games/threecard';
 export * from './games/threecardbrag';
+export * from './games/threecardrummy';
 export * from './games/threethirteen';
 export * from './games/tichu';
 export * from './games/tienlen';
 export * from './games/toepen';
 export * from './games/tonk';
+export * from './games/trappola';
 export * from './games/trash';
 export * from './games/trenteetquarante';
 export * from './games/tressette';
@@ -313,6 +360,7 @@ export * from './games/twotenjack';
 export * from './games/tysiac';
 export * from './games/ulti';
 export * from './games/ultimatetexasholdem';
+export * from './games/unsunkaruta';
 export * from './games/videopoker';
 export * from './games/vint';
 export * from './games/vira';
@@ -320,6 +368,7 @@ export * from './games/war';
 export * from './games/wasp';
 export * from './games/watten';
 export * from './games/whist';
+export * from './games/whitehead';
 export * from './games/windmill';
 export * from './games/wizard';
 export * from './games/yaniv';
@@ -342,6 +391,7 @@ export const games = [
   'holdem',
   'omaha',
   'omahahilo',
+  'dramaha',
   'bigo',
   'bigohilo',
   'courchevel',
@@ -349,11 +399,13 @@ export const games = [
   'pineapple',
   'crazypineapple',
   'irishpoker',
+  'followthequeen',
   'sevencardstud',
   'fivecardstud',
   'soko',
   'fourseasons',
   'colorado',
+  'slyfox',
   'cribbagesquares',
   'diplomat',
   'royalcotillion',
@@ -399,6 +451,7 @@ export const games = [
   'baseballpoker',
   'razz',
   'sevencardstudhilo',
+  'chicago',
   'badugi',
   'deucetoseven',
   'hearts',
@@ -409,6 +462,7 @@ export const games = [
   'wizard',
   'ninetynine',
   'memory',
+  'whitehead',
   'klondike',
   'freecell',
   'bakersgame',
@@ -425,6 +479,7 @@ export const games = [
   'threethirteen',
   'canasta',
   'samba',
+  'bolivia',
   'handandfoot',
   'burraco',
   'spider',
@@ -438,7 +493,9 @@ export const games = [
   'tripeaks',
   'cribbage',
   'threecard',
+  'threecardrummy',
   'caribbeanstud',
+  'caribbeandraw',
   'texasholdembonus',
   'paigow',
   'speed',
@@ -456,10 +513,12 @@ export const games = [
   'bisley',
   'napoleonssquare',
   'grandfathersclock',
+  'bigben',
   'duchess',
   'windmill',
   'americantoad',
   'congress',
+  'saliclaw',
   'terrace',
   'braid',
   'pontoon',
@@ -487,6 +546,16 @@ export const games = [
   'bideuchre',
   'sixbidsolo',
   'karnoffel',
+  'unsunkaruta',
+  'quodlibet',
+  'dehlapakad',
+  'sutda',
+  'cirulla',
+  'diloti',
+  'comet',
+  'costlycolours',
+  'baccaratbanque',
+  'continentalrummy',
   'literature',
   'guandan',
   'shengji',
@@ -495,6 +564,7 @@ export const games = [
   'osmosis',
   'fivehundred',
   'yukon',
+  'alaska',
   'russiansolitaire',
   'scorpion',
   'wasp',
@@ -519,6 +589,7 @@ export const games = [
   'bidwhist',
   'spanish21',
   'spiteandmalice',
+  'ramsch',
   'skat',
   'shithead',
   'nertz',
@@ -539,6 +610,7 @@ export const games = [
   'kalooki',
   'ultimatetexasholdem',
   'crescent',
+  'sthelena',
   'mississippistud',
   'belote',
   'jass',
@@ -546,6 +618,9 @@ export const games = [
   'spiderette',
   'mighty',
   'oasispoker',
+  'stalactites',
+  'somerset',
+  'fortress',
   'beleagueredcastle',
   'streetsandalleys',
   'kingalbert',
@@ -559,6 +634,7 @@ export const games = [
   'tarneeb',
   'highcardflush',
   'briscola',
+  'brusquembille',
   'gaps',
   'fourcardpoker',
   'rummy500',
@@ -568,9 +644,17 @@ export const games = [
   'chinesepoker',
   'sixcardgolf',
   'doudizhu',
+  'put',
   'truco',
   'acesup',
   'schnapsen',
+  'trappola',
+  'julepe',
+  'schafkopf',
+  'coinche',
+  'germansolo',
+  'gleek',
+  'madrasso',
   'tressette',
   'easthaven',
   'tichu',
@@ -602,11 +686,19 @@ export const games = [
   'kemps',
   'cuckoo',
   'pishti',
+  'ristikontra',
   'cuarenta',
   'faro',
   'openfacechinese',
   'russianbank',
+  'shamrocks',
+  'perseverance',
+  'fourteenout',
+  'narcotic',
+  'mrsmop',
+  'rankandfile',
   'labellelucie',
+  'curdsandwhey',
   'simplesimon',
   'doubleklondike',
   'blackhole',
@@ -617,6 +709,7 @@ export const games = [
   'tysiac',
   'calabresella',
   'ombre',
+  'quadrille',
   'ulti',
   'rook',
   'cinch',
@@ -628,6 +721,7 @@ export const games = [
   'tablanet',
   'trenteetquarante',
   'guts',
+  'seventwentyseven',
   'anaconda',
   'bouillotte',
   'primero',
@@ -639,15 +733,19 @@ export const games = [
   'sakura',
   'zwanzigerrufen',
   'troggu',
+  'eightgame',
   'horse',
   'aluette',
   'minchiate',
   'tarocchini',
+  'piedmontesetarot',
   'scarto',
   'cego',
   'frenchtarot',
   'koenigrufen',
+  'speculation',
   'zheng',
+  'bauernschnapsen',
 ] as const;
 
 /** Union of every registered game name — the keys of the `games` list. */

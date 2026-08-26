@@ -1,0 +1,45 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear!",
+    "gameOver": "Game Over"
+  },
+  "stalactites": "Free Cell",
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available once every card can go straight to the foundations",
+  "undo": "Undo",
+  "moveCount": "Moves",
+  "empty": "Empty",
+  "hintAvailable": "Hint",
+  "foundationAriaLabel": "{{suit}} Foundation ({{cardCount}} cards)",
+  "emptyFoundationAriaLabel": "{{suit}} Foundation (empty)",
+  "emptyCellAriaLabel": "Free Cell {{idx}} (empty)",
+  "supermoveLimitTooltip": "Only {{limit}} card(s) can be moved at once",
+  "supermoveLimitLabel": "Max bulk move: {{limit}} cards",
+  "supermoveToEmpty": "(to an empty column: {{limit}})",
+  "emptyColLimitTooltip": "Only {{limit}} card(s) can move into an empty column (selected: {{size}})",
+  "tutorial": {
+    "cells": "Free cells. Four temporary storage slots. More empty cells allow moving more cards at once.",
+    "foundation": "Foundation piles. Build each suit from Ace to King.",
+    "tableau": "Tableau columns. Stack in alternating colors, descending order. All cards are face up.",
+    "controls": "Control buttons: Undo, Hint, Auto-complete.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "landscapeBanner": "Rotate to landscape for easier play",
+  "stalactitesShort": "FC",
+  "frontendHint": {
+    "moveToFoundation": "A card can be moved to the foundation",
+    "cellsFilling": "Free cells are almost full — try to clear some",
+    "useEmptyColumn": "An empty column is available — use it for reorganization",
+    "useCells": "Consider moving a card to a free cell to open up moves",
+    "zone": {
+      "tableau": "Tableau",
+      "stalactites": "Free Cell",
+      "foundation": "Foundation"
+    }
+  }
+}

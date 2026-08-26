@@ -835,3 +835,83 @@ func TestSevenCardStudCuiPresenter_Output_BringIn(t *testing.T) {
 	// 未確定 (-1) のときも出さない。
 	assert.NotContains(t, outputWith(domain.SevenCardStudPhaseThirdStreet, -1), header)
 }
+
+// **#5435: シカゴの内訳と「その 1 枚」を CUI に出す。** 合計額しか出ていないと、
+// 役で勝ったのか伏せ札のスペードで勝ったのかが読めず、ポットが割れた理由が
+// 画面のどこにも現れない。カードは他の行と同じ絵札表記で出す — ここが生の
+// `SPADE 1` になっていても Go のテストは通ってしまう。
+func TestSevenCardStudCuiPresenter_Output_ChicagoSplit(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.SevenCardStudCuiPresenter)
+
+	outputWith := func(chicago bool, r domain.SevenCardStudResult) string {
+		var s *domain.SevenCardStud
+		if chicago {
+			cfg := domain.DefaultSevenCardStudConfig()
+			s = domain.NewSevenCardStudChicago(domain.NewTrumpCards(0),
+				domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
+		} else {
+			s, _ = makeSevenCardStudForPresenter()
+		}
+		s.SetPhase(domain.SevenCardStudPhaseEnd)
+		s.SetRoundResults([]domain.SevenCardStudResult{r})
+		return p.Output(s, nil)
+	}
+
+	base := domain.SevenCardStudResult{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush"}
+
+	t.Run("splits the pot into the hand and spade shares", func(t *testing.T) {
+		r := base
+		r.WonAmount, r.WonSpade = 100, 50
+		assert.Contains(t, outputWith(true, r), i18n.Tf("chicago.wonSplit",
+			"high", strconv.Itoa(50), "spade", strconv.Itoa(50)))
+	})
+
+	t.Run("says scoop when the same player took both halves", func(t *testing.T) {
+		r := base
+		r.WonAmount, r.WonSpade = 100, 50
+		assert.Contains(t, outputWith(true, r), i18n.T("sevencardstud.wonScoop"))
+	})
+
+	// スペードだけ取った席はスクープではない。
+	t.Run("is not a scoop when only the spade was won", func(t *testing.T) {
+		r := base
+		r.WonAmount, r.WonSpade = 50, 50
+		out := outputWith(true, r)
+		assert.NotContains(t, out, i18n.T("sevencardstud.wonScoop"))
+		assert.Contains(t, out, i18n.Tf("chicago.wonSplit",
+			"high", strconv.Itoa(0), "spade", strconv.Itoa(50)))
+	})
+
+	// **その 1 枚は他のカードと同じ表記で出す。** `cuiCardStr` を使うと
+	// `SPADE 1` という生の綴りが、♠A を並べた盤面の中に 1 行だけ混ざる。
+	t.Run("prints the deciding spade in the same notation as the board", func(t *testing.T) {
+		r := base
+		r.WonAmount, r.WonSpade = 100, 50
+		r.SpadeCard = domain.NewCard(domain.CardDesignSpade, 1, false)
+		out := outputWith(true, r)
+		assert.Contains(t, out, i18n.Tf("chicago.spadeCard", "card", "♠1"))
+		assert.NotContains(t, out, "SPADE")
+	})
+
+	// 伏せ札にスペードが 1 枚も無ければその行は出ない。
+	t.Run("omits the spade line when nobody held one", func(t *testing.T) {
+		r := base
+		r.WonAmount = 100
+		out := outputWith(true, r)
+		assert.NotContains(t, out, strings.SplitN(i18n.T("chicago.spadeCard"), "{{", 2)[0])
+	})
+
+	// **シカゴでないゲームでは何も変わらない。**
+	t.Run("leaves plain seven card stud alone", func(t *testing.T) {
+		r := base
+		r.WonAmount, r.WonSpade = 100, 50
+		r.SpadeCard = domain.NewCard(domain.CardDesignSpade, 1, false)
+		out := outputWith(false, r)
+		assert.Contains(t, out, i18n.Tf("sevencardstud.wonAmount", "total", "100"))
+		assert.NotContains(t, out, strings.SplitN(i18n.T("chicago.wonSplit"), "（", 2)[0]+"（")
+		assert.NotContains(t, out, strings.SplitN(i18n.T("chicago.spadeCard"), "{{", 2)[0])
+	})
+}

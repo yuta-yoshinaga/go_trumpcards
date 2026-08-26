@@ -1,0 +1,35 @@
+{
+  "title": "Fourteen Out",
+  "pairRemoved": "Pair removed!",
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "label": {
+    "removedCount": "Removed",
+    "column": "Column {{n}}",
+    "selectFirst": "Pick a column (only the front card of each is in play)",
+    "selectSecond": "Pick a column whose front card makes 14",
+    "removablePairs": "Removable pairs: {{n}}",
+    "stalemate": "Stuck",
+    "win": "All 52 cards removed!",
+    "loss": "Game Over"
+  },
+  "button": {
+    "reset": "Reset",
+    "undo": "Undo",
+    "giveup": "Give up",
+    "hint": "Hint"
+  },
+  "tutorial": {
+    "board": "The whole deck is dealt into 12 columns. Only the front card of each is in play; remove any two that add up to 14 (K+A / Q+2 / J+3 / 10+4 / 9+5 / 8+6 / 7+7).",
+    "remove": "Click one column, then a column whose front card makes 14 — both cards go. Suit does not matter, and the columns need not be adjacent.",
+    "controls": "The buttons below cover Undo, Give up and Reset.",
+    "win": "Clear all 52 cards to win. When no pair adds to 14 the game is lost — there is no redeal."
+  },
+  "hint": {
+    "removePair": "Remove the two highlighted cards — they make 14",
+    "none": "No move to recommend right now"
+  }
+}
