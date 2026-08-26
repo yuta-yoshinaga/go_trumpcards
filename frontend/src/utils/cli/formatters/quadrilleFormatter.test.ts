@@ -83,4 +83,16 @@ describe('formatQuadrilleState', () => {
     );
     expect(formatQuadrilleState(makeQuadrilleState({ hint, messageCode: 'quadrille.playing' }))).not.toContain('HINT');
   });
+
+  // **フェーズ名は phase 値でそのまま引く。** KingCall (=1) を並びから落とすと
+  // 以降が 1 つずつ手前にずれ、王呼びが "Play"、プレイが "TrickEnd" と
+  // 表示される (#6230)。
+  it('names every phase by its own value', () => {
+    expect(formatQuadrilleState(makeQuadrilleState({ phase: 0 }))).toContain('phase: Bid');
+    expect(formatQuadrilleState(makeQuadrilleState({ phase: 1 }))).toContain('phase: KingCall');
+    expect(formatQuadrilleState(makeQuadrilleState({ phase: 2 }))).toContain('phase: Play');
+    expect(formatQuadrilleState(makeQuadrilleState({ phase: 3 }))).toContain('phase: TrickEnd');
+    expect(formatQuadrilleState(makeQuadrilleState({ phase: 4 }))).toContain('phase: RoundEnd');
+    expect(formatQuadrilleState(makeQuadrilleState({ phase: 5 }))).toContain('phase: GameEnd');
+  });
 });

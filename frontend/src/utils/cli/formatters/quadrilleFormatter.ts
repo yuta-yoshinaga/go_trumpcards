@@ -8,7 +8,10 @@ import {
   isRequestedHint,
 } from '../formatterBase';
 
-const PHASE_NAMES = ['Bid', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
+// **phase の値でそのまま引くので、抜けがあると以降が全部ずれる。**
+// KingCall (=1) が落ちていたため、王呼びが "Play"、プレイが "TrickEnd" と
+// 1 つ手前の名前で表示されていた (#6230)。
+const PHASE_NAMES = ['Bid', 'KingCall', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
 const BID_NAMES = ['pass', 'entrar', 'solo'];
 const SUIT_NAMES = ['-', 'spade', 'club', 'heart', 'diamond'];
 const OUTCOME_NAMES = ['-', 'Sacar', 'Puesta', 'Codille'];

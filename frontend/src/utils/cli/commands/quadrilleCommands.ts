@@ -7,6 +7,8 @@ type QuadrilleArgs = Parameters<typeof quadrilleApi.exec>;
 const VALID_COMMANDS = [
   'b',
   'bid',
+  'k',
+  'king',
   'p',
   'play',
   'n',
@@ -41,6 +43,14 @@ export function parseQuadrilleCommand(input: string): CliParseResult<QuadrilleAr
       }
       return { error: 'Usage: bid pass | bid entrar <s|c|h|d> | bid solo <s|c|h|d>' };
     }
+    // **落札した直後は王呼びフェーズ。** ここを解釈できないと、王を呼ぶまで
+    // play はフェーズ違いで弾かれ続け、CLI モードから先へ進めなくなる。
+    case 'k':
+    case 'king': {
+      const suit = SUIT_CODES[args[0]?.toLowerCase() ?? ''];
+      if (!suit) return { error: 'Usage: king <s|c|h|d>' };
+      return { args: ['king', { kingSuit: suit }] };
+    }
     case 'p':
     case 'play': {
       const parsed = parseIntArg(args, 0);
@@ -72,6 +82,7 @@ export const QUADRILLE_HELP: string[] = [
   'bid pass                     - Pass in the auction (Bid phase)',
   'bid entrar <s|c|h|d>         - Declare entrar with the chosen trump suit',
   'bid solo <s|c|h|d>           - Declare solo with the chosen trump suit',
+  'king <s|c|h|d>               - Call a king you do not hold (KingCall phase)',
   'p <idx>                      - Play a card (Play phase, must follow the led suit)',
   'n/next                       - Next trick',
   'nr/nextround                 - Next round',
