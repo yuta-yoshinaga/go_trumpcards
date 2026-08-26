@@ -1,5 +1,5 @@
 import type { beleagueredCastleApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, suggestCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type BeleagueredCastleArgs = Parameters<typeof beleagueredCastleApi.exec>;
@@ -67,32 +67,30 @@ function parseMoveCommand(args: string[]): CliParseResult<BeleagueredCastleArgs>
   const fromCol = Number(fromTok.slice(1));
   if (Number.isNaN(fromCol)) return { error: 'Usage: m t<col> ...' };
 
-  // Optional cardIndex on source: m t<col> <i> t<col>|f
-  let cardIndex: number | undefined;
-  let toIdx = 1;
+  // No card index. This game moves the top card of a column and nothing else --
+  // the domain answers "only the top card can be moved" to any other index, and
+  // dispatchTopCardMove passes -1 in place of whatever the client sends. Parsing
+  // an index here would make `m t0 1 t5` move the top card without saying so.
   if (args.length >= 3 && /^\d+$/.test(args[1])) {
-    const ci = parseIntArg(args, 1);
-    if ('error' in ci) return { error: 'Invalid card index' };
-    cardIndex = ci.value;
-    toIdx = 2;
+    return { error: 'Only the top card of a column can be moved: use m t<col> t<col>' };
   }
 
-  const target = args[toIdx]?.toLowerCase() ?? '';
+  const target = args[1]?.toLowerCase() ?? '';
   if (target.startsWith('t')) {
     const toCol = Number(target.slice(1));
     if (Number.isNaN(toCol)) return { error: 'Usage: m t<col> t<col>' };
     return {
-      args: ['move', { zone: 'tableau', col: fromCol, cardIndex }, { zone: 'tableau', col: toCol }],
+      args: ['move', { zone: 'tableau', col: fromCol }, { zone: 'tableau', col: toCol }],
     };
   }
   if (target === 'f') {
-    return { args: ['move', { zone: 'tableau', col: fromCol, cardIndex }, { zone: 'foundation' }] };
+    return { args: ['move', { zone: 'tableau', col: fromCol }, { zone: 'foundation' }] };
   }
   if (target.startsWith('f')) {
     const fCol = Number(target.slice(1));
     if (Number.isNaN(fCol)) return { error: 'Usage: m t<col> f<idx>' };
     return {
-      args: ['move', { zone: 'tableau', col: fromCol, cardIndex }, { zone: 'foundation', col: fCol }],
+      args: ['move', { zone: 'tableau', col: fromCol }, { zone: 'foundation', col: fCol }],
     };
   }
   return { error: 'Invalid target: use t<col> (tableau) or f / f<idx> (foundation)' };
@@ -101,7 +99,6 @@ function parseMoveCommand(args: string[]): CliParseResult<BeleagueredCastleArgs>
 /** Help text for Beleaguered Castle CLI mode. */
 export const BELEAGUEREDCASTLE_HELP: string[] = [
   'm t<c> t<c>     - Move tableau top to column',
-  'm t<c> <i> t<c> - Move card at index to column',
   'm t<c> f        - Move to any foundation',
   'm t<c> f<i>     - Move to specific foundation',
   'ac/autocomplete - Auto-complete to foundation',

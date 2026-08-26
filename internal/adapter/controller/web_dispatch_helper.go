@@ -341,8 +341,11 @@ type topCardMoveFns struct {
 // dispatchTopCardMove validates and performs a move for the solitaires that
 // only ever move the top card of a column.
 //
-// Consolidates 3 byte-identical dispatchers: bakersDozenMoveDispatch,
-// beleagueredCastleMoveDispatch, streetsAndAlleysMoveDispatch. See #5368.
+// Consolidates the byte-identical dispatchers of the five games that share
+// this rule: BakersDozen, BeleagueredCastle, Fortress, Somerset and
+// StreetsAndAlleys. See #5368. (Perseverance looks like one of them and is
+// not -- it moves same-suit descending runs, so it forwards the index and
+// lets the domain check it.)
 //
 // Passes -1 as the card index rather than the client's value: these games move
 // only the top card, so the domain resolves the index from its own state and

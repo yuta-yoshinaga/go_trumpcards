@@ -90,7 +90,8 @@ func perseveranceDispatch(bc *baseController, w http.ResponseWriter, bi usecase.
 // perseveranceMoveDispatch は `move` を捌く。
 //
 // **共有の dispatchTopCardMove は使えない。**あれは「上札しか動かさないソリティア」
-// (BakersDozen / BeleagueredCastle / StreetsAndAlleys) 専用で、クライアントの
+// (BakersDozen / BeleagueredCastle / Fortress / Somerset / StreetsAndAlleys)
+// 専用で、クライアントの
 // cardIndex を捨てて -1 を渡す契約になっている。Perseverance は同スート降順の並びを
 // 一括で動かせるので、その契約のままだと**この game の看板ルールがサーバに届かない**。
 //
