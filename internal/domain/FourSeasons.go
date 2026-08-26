@@ -451,7 +451,7 @@ func (f *FourSeasons) takeSnapshot() {
 	copy(snap.stock, f.stock)
 	snap.waste = make([]*Card, len(f.waste))
 	copy(snap.waste, f.waste)
-	f.history = append(f.history, snap)
+	f.history = appendSnapshot(f.history, snap)
 }
 
 func (f *FourSeasons) appendLog(actionType, detail string, cards []*Card) {

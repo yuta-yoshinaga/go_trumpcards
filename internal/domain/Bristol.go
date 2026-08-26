@@ -562,7 +562,7 @@ func (b *Bristol) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(b.foundation[i]))
 		copy(snap.foundation[i], b.foundation[i])
 	}
-	b.history = append(b.history, snap)
+	b.history = appendSnapshot(b.history, snap)
 }
 
 func (b *Bristol) restoreSnapshot(snap *bristolSnapshot) {

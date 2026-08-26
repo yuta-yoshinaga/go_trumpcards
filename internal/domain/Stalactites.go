@@ -744,7 +744,7 @@ func (f *Stalactites) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(f.foundation[i]))
 		copy(snap.foundation[i], f.foundation[i])
 	}
-	f.history = append(f.history, snap)
+	f.history = appendSnapshot(f.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

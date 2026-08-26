@@ -444,7 +444,7 @@ func (c *Calculation) takeSnapshot() {
 	}
 	snap.stock = make([]*Card, len(c.stock))
 	copy(snap.stock, c.stock)
-	c.history = append(c.history, snap)
+	c.history = appendSnapshot(c.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

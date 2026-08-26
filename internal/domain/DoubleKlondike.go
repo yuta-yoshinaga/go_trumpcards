@@ -464,7 +464,7 @@ func (g *DoubleKlondike) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(g.foundation[i]))
 		copy(snap.foundation[i], g.foundation[i])
 	}
-	g.history = append(g.history, snap)
+	g.history = appendSnapshot(g.history, snap)
 }
 
 func (g *DoubleKlondike) restoreSnapshot(snap *doubleKlondikeSnapshot) {

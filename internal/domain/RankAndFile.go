@@ -692,7 +692,7 @@ func (ft *RankAndFile) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(ft.foundation[i]))
 		copy(snap.foundation[i], ft.foundation[i])
 	}
-	ft.history = append(ft.history, snap)
+	ft.history = appendSnapshot(ft.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

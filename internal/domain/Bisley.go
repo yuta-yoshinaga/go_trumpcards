@@ -457,7 +457,7 @@ func (b *Bisley) takeSnapshot() {
 	for i := range BisleyTableauCnt {
 		snap.tableau[i] = append([]*BisleyTableauCard(nil), b.tableau[i]...)
 	}
-	b.history = append(b.history, snap)
+	b.history = appendSnapshot(b.history, snap)
 }
 
 // appendLog 棋譜エントリを追加

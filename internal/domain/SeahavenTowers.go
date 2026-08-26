@@ -593,7 +593,7 @@ func (s *SeahavenTowers) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(s.foundation[i]))
 		copy(snap.foundation[i], s.foundation[i])
 	}
-	s.history = append(s.history, snap)
+	s.history = appendSnapshot(s.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

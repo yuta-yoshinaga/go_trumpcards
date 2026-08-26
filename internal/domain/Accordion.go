@@ -290,7 +290,7 @@ func (a *Accordion) takeSnapshot() {
 		snap.piles[i] = make([]*Card, len(pile))
 		copy(snap.piles[i], pile)
 	}
-	a.history = append(a.history, snap)
+	a.history = appendSnapshot(a.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

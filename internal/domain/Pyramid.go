@@ -523,7 +523,7 @@ func (p *Pyramid) takeSnapshot() {
 	// deep copy waste
 	snap.waste = make([]*Card, len(p.waste))
 	copy(snap.waste, p.waste)
-	p.history = append(p.history, snap)
+	p.history = appendSnapshot(p.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

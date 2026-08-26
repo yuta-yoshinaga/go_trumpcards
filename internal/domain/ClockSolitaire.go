@@ -197,7 +197,7 @@ func (cs *ClockSolitaire) takeSnapshot() {
 			snap.piles[i][j] = &ClockSolitaireCard{Card: pc.Card, FaceUp: pc.FaceUp}
 		}
 	}
-	cs.history = append(cs.history, snap)
+	cs.history = appendSnapshot(cs.history, snap)
 	if len(cs.history) > ClockSolitaireMaxUndoDepth {
 		cs.history = cs.history[len(cs.history)-ClockSolitaireMaxUndoDepth:]
 	}

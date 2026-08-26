@@ -471,7 +471,7 @@ func (y *Yukon) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(y.foundation[i]))
 		copy(snap.foundation[i], y.foundation[i])
 	}
-	y.history = append(y.history, snap)
+	y.history = appendSnapshot(y.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

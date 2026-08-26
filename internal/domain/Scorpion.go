@@ -498,7 +498,7 @@ func (s *Scorpion) takeSnapshot() {
 	}
 	snap.stock = make([]*Card, len(s.stock))
 	copy(snap.stock, s.stock)
-	s.history = append(s.history, snap)
+	s.history = appendSnapshot(s.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

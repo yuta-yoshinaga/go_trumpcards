@@ -776,7 +776,7 @@ func (at *AmericanToad) takeSnapshot() {
 	for i := range AmericanToadTableauCnt {
 		snap.tableau[i] = append([]*AmericanToadTableauCard(nil), at.tableau[i]...)
 	}
-	at.history = append(at.history, snap)
+	at.history = appendSnapshot(at.history, snap)
 }
 
 // appendLog 棋譜エントリを追加

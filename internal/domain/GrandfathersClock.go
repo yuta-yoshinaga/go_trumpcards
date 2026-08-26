@@ -501,7 +501,7 @@ func (gc *GrandfathersClock) takeSnapshot() {
 	for i := range GrandfathersClockTableauCnt {
 		snap.tableau[i] = append([]*GrandfathersClockTableauCard(nil), gc.tableau[i]...)
 	}
-	gc.history = append(gc.history, snap)
+	gc.history = appendSnapshot(gc.history, snap)
 }
 
 // appendLog 棋譜エントリを追加

@@ -314,7 +314,7 @@ func (m *FourteenOut) takeSnapshot() {
 		cols[i] = make([]*Card, len(col))
 		copy(cols[i], col)
 	}
-	m.history = append(m.history, &fourteenOutSnapshot{
+	m.history = appendSnapshot(m.history, &fourteenOutSnapshot{
 		columns:      cols,
 		removedCount: m.removedCount,
 		phase:        m.phase,

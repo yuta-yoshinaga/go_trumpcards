@@ -543,7 +543,7 @@ func (cr *Crescent) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(cr.foundation[i]))
 		copy(snap.foundation[i], cr.foundation[i])
 	}
-	cr.history = append(cr.history, snap)
+	cr.history = appendSnapshot(cr.history, snap)
 }
 
 // restoreSnapshot 状態を復元する。

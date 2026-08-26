@@ -575,7 +575,7 @@ func (ns *NapoleonsSquare) takeSnapshot() {
 	for i := range NapoleonsSquareTableauCnt {
 		snap.tableau[i] = append([]*NapoleonsSquareTableauCard(nil), ns.tableau[i]...)
 	}
-	ns.history = append(ns.history, snap)
+	ns.history = appendSnapshot(ns.history, snap)
 }
 
 // appendLog 棋譜エントリを追加

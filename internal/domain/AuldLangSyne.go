@@ -359,7 +359,7 @@ func (a *AuldLangSyne) takeSnapshot() {
 	}
 	snap.stock = make([]*Card, len(a.stock))
 	copy(snap.stock, a.stock)
-	a.history = append(a.history, snap)
+	a.history = appendSnapshot(a.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元
