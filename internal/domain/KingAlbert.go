@@ -600,7 +600,7 @@ func (ka *KingAlbert) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(ka.foundation[i]))
 		copy(snap.foundation[i], ka.foundation[i])
 	}
-	ka.history = append(ka.history, snap)
+	ka.history = appendSnapshot(ka.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

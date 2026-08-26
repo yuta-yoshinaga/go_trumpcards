@@ -590,7 +590,7 @@ func (fg *FlowerGarden) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(fg.foundation[i]))
 		copy(snap.foundation[i], fg.foundation[i])
 	}
-	fg.history = append(fg.history, snap)
+	fg.history = appendSnapshot(fg.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

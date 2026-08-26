@@ -436,7 +436,7 @@ func (bc *BeleagueredCastle) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(bc.foundation[i]))
 		copy(snap.foundation[i], bc.foundation[i])
 	}
-	bc.history = append(bc.history, snap)
+	bc.history = appendSnapshot(bc.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

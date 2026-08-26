@@ -565,7 +565,7 @@ func (c *Colorado) takeSnapshot() {
 	for i := range ColoradoFoundationCnt {
 		snap.foundation[i] = append([]*Card(nil), c.foundation[i]...)
 	}
-	c.history = append(c.history, snap)
+	c.history = appendSnapshot(c.history, snap)
 }
 
 // appendLog 棋譜エントリを追加

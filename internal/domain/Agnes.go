@@ -409,7 +409,7 @@ func (a *Agnes) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(a.foundation[i]))
 		copy(snap.foundation[i], a.foundation[i])
 	}
-	a.history = append(a.history, snap)
+	a.history = appendSnapshot(a.history, snap)
 }
 
 func (a *Agnes) restoreSnapshot(snap *agnesSnapshot) {

@@ -451,7 +451,7 @@ func (g *Gaps) takeSnapshot() {
 			snap.grid[r][c] = g.grid[r][c]
 		}
 	}
-	g.history = append(g.history, snap)
+	g.history = appendSnapshot(g.history, snap)
 }
 
 func (g *Gaps) restoreSnapshot(snap *gapsSnapshot) {

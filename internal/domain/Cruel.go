@@ -496,7 +496,7 @@ func (c *Cruel) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(c.foundation[i]))
 		copy(snap.foundation[i], c.foundation[i])
 	}
-	c.history = append(c.history, snap)
+	c.history = appendSnapshot(c.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

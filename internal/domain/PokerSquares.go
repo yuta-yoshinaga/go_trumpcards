@@ -329,7 +329,7 @@ func pokerSquaresRankToScore(rank int) int {
 
 // takeSnapshot は現在の状態をスナップショットとして保存する。
 func (p *PokerSquares) takeSnapshot() {
-	p.history = append(p.history, &pokerSquaresSnapshot{
+	p.history = appendSnapshot(p.history, &pokerSquaresSnapshot{
 		board:       p.board,
 		currentCard: p.currentCard,
 		placedCount: p.placedCount,

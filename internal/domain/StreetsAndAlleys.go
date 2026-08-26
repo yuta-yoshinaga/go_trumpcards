@@ -431,7 +431,7 @@ func (sa *StreetsAndAlleys) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(sa.foundation[i]))
 		copy(snap.foundation[i], sa.foundation[i])
 	}
-	sa.history = append(sa.history, snap)
+	sa.history = appendSnapshot(sa.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

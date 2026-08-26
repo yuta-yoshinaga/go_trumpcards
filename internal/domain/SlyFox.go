@@ -551,7 +551,7 @@ func (c *SlyFox) takeSnapshot() {
 	for i := range SlyFoxFoundationCnt {
 		snap.foundation[i] = append([]*Card(nil), c.foundation[i]...)
 	}
-	c.history = append(c.history, snap)
+	c.history = appendSnapshot(c.history, snap)
 }
 
 // appendLog 棋譜エントリを追加

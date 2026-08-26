@@ -526,7 +526,7 @@ func (t *TriPeaks) takeSnapshot() {
 	// deep copy waste
 	snap.waste = make([]*Card, len(t.waste))
 	copy(snap.waste, t.waste)
-	t.history = append(t.history, snap)
+	t.history = appendSnapshot(t.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

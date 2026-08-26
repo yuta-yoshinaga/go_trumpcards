@@ -478,7 +478,7 @@ func (o *Osmosis) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(o.foundation[i]))
 		copy(snap.foundation[i], o.foundation[i])
 	}
-	o.history = append(o.history, snap)
+	o.history = appendSnapshot(o.history, snap)
 }
 
 func (o *Osmosis) restoreSnapshot(snap *osmosisSnapshot) {

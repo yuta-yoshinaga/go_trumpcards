@@ -267,7 +267,7 @@ func (g *SimpleSimon) takeSnapshot() {
 		snap.columns[i] = make([]*Card, len(g.columns[i]))
 		copy(snap.columns[i], g.columns[i])
 	}
-	g.history = append(g.history, snap)
+	g.history = appendSnapshot(g.history, snap)
 }
 
 func (g *SimpleSimon) restoreSnapshot(snap *simpleSimonSnapshot) {

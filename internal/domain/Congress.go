@@ -579,7 +579,7 @@ func (c *Congress) takeSnapshot() {
 	for i := range CongressFoundationCnt {
 		snap.foundation[i] = append([]*Card(nil), c.foundation[i]...)
 	}
-	c.history = append(c.history, snap)
+	c.history = appendSnapshot(c.history, snap)
 }
 
 // appendLog 棋譜エントリを追加

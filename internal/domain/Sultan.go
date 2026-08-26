@@ -490,7 +490,7 @@ func (su *Sultan) takeSnapshot() {
 	copy(snap.stock, su.stock)
 	snap.waste = make([]*Card, len(su.waste))
 	copy(snap.waste, su.waste)
-	su.history = append(su.history, snap)
+	su.history = appendSnapshot(su.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元
