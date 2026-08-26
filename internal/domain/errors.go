@@ -83,10 +83,22 @@ func (de *DomainError) MessageParams() map[string]string { return de.Params }
 // ErrorMessageCode reports the i18n key and params an error names, if any.
 // Plain errors and phrase-carrying DomainErrors answer "", nil -- which is how
 // a presenter decides between translating and printing what it was handed.
+// errors.As is deliberately avoided here: it reaches reflectlite's dynamic
+// AssignableTo, which TinyGo cannot fold away. Linking that into a Worker
+// binary makes every reflect-based Implements check take the unimplemented
+// path, so encoding/json panics with a WASM trap that recover() cannot catch
+// and Cloudflare answers 1101 for every request. Unwrapping by hand keeps the
+// type check static. See internal/domain/errors_tinygo_test.go.
 func ErrorMessageCode(err error) (string, map[string]string) {
-	var de *DomainError
-	if errors.As(err, &de) && de.Code != "" {
-		return de.Code, de.Params
+	for e := err; e != nil; e = errors.Unwrap(e) {
+		de, ok := e.(*DomainError)
+		if !ok {
+			continue
+		}
+		if de.Code != "" {
+			return de.Code, de.Params
+		}
+		return "", nil
 	}
 	return "", nil
 }
