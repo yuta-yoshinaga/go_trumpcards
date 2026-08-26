@@ -604,7 +604,7 @@ func (w *Windmill) takeSnapshot() {
 	for i := range WindmillCornerCnt {
 		snap.corners[i] = append([]*Card(nil), w.corners[i]...)
 	}
-	w.history = append(w.history, snap)
+	w.history = appendSnapshot(w.history, snap)
 }
 
 // appendLog 棋譜エントリを追加

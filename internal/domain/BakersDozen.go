@@ -437,7 +437,7 @@ func (bd *BakersDozen) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(bd.foundation[i]))
 		copy(snap.foundation[i], bd.foundation[i])
 	}
-	bd.history = append(bd.history, snap)
+	bd.history = appendSnapshot(bd.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

@@ -682,7 +682,7 @@ func (t *Terrace) takeSnapshot() {
 	for i := range TerraceFoundationCnt {
 		snap.foundation[i] = append([]*Card(nil), t.foundation[i]...)
 	}
-	t.history = append(t.history, snap)
+	t.history = appendSnapshot(t.history, snap)
 }
 
 // appendLog 棋譜エントリを追加

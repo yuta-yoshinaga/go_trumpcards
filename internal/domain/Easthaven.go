@@ -562,7 +562,7 @@ func (e *Easthaven) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(e.foundation[i]))
 		copy(snap.foundation[i], e.foundation[i])
 	}
-	e.history = append(e.history, snap)
+	e.history = appendSnapshot(e.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

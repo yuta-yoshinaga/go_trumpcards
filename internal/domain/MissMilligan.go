@@ -654,7 +654,7 @@ func (mm *MissMilligan) takeSnapshot() {
 	for i := range MissMilliganTableauCnt {
 		snap.tableau[i] = append([]*MissMilliganTableauCard(nil), mm.tableau[i]...)
 	}
-	mm.history = append(mm.history, snap)
+	mm.history = appendSnapshot(mm.history, snap)
 }
 
 // appendLog 棋譜エントリを追加

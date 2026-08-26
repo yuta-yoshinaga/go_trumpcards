@@ -501,7 +501,7 @@ func (a *AcesUp) takeSnapshot() {
 	for c := range AcesUpColCnt {
 		snap.columns[c] = cloneCards(a.columns[c])
 	}
-	a.history = append(a.history, snap)
+	a.history = appendSnapshot(a.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

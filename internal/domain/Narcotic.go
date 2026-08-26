@@ -492,7 +492,7 @@ func (a *Narcotic) takeSnapshot() {
 	for c := range NarcoticColCnt {
 		snap.columns[c] = narcoticCloneCards(a.columns[c])
 	}
-	a.history = append(a.history, snap)
+	a.history = appendSnapshot(a.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

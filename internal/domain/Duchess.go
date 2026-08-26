@@ -800,7 +800,7 @@ func (d *Duchess) takeSnapshot() {
 	for i := range DuchessTableauCnt {
 		snap.tableau[i] = append([]*DuchessTableauCard(nil), d.tableau[i]...)
 	}
-	d.history = append(d.history, snap)
+	d.history = appendSnapshot(d.history, snap)
 }
 
 // appendLog 棋譜エントリを追加

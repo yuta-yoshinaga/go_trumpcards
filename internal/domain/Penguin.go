@@ -657,7 +657,7 @@ func (p *Penguin) takeSnapshot() {
 		snap.foundation[i] = make([]*Card, len(p.foundation[i]))
 		copy(snap.foundation[i], p.foundation[i])
 	}
-	p.history = append(p.history, snap)
+	p.history = appendSnapshot(p.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

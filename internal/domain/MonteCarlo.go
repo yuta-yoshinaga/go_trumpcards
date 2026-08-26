@@ -391,7 +391,7 @@ func (m *MonteCarlo) checkMonteCarloStalemate() {
 
 // takeSnapshot は現在の状態をスナップショットとして保存する。
 func (m *MonteCarlo) takeSnapshot() {
-	m.history = append(m.history, &monteCarloSnapshot{
+	m.history = appendSnapshot(m.history, &monteCarloSnapshot{
 		board:        m.board,
 		removedCount: m.removedCount,
 		dealCount:    m.dealCount,

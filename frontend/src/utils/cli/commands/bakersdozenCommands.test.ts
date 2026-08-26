@@ -4,25 +4,27 @@ import { parseBakersDozenCommand } from './bakersdozenCommands';
 describe('parseBakersDozenCommand', () => {
   it('parses tableau-to-tableau move', () => {
     expect(parseBakersDozenCommand('m t0 t1')).toEqual({
-      args: ['move', { zone: 'tableau', col: 0, cardIndex: undefined }, { zone: 'tableau', col: 1 }],
+      args: ['move', { zone: 'tableau', col: 0 }, { zone: 'tableau', col: 1 }],
     });
   });
 
-  it('parses tableau move with card index', () => {
-    expect(parseBakersDozenCommand('m t0 2 t3')).toEqual({
-      args: ['move', { zone: 'tableau', col: 0, cardIndex: 2 }, { zone: 'tableau', col: 3 }],
-    });
+  // The server never asked for this index: dispatchTopCardMove passes -1 in
+  // place of it, so `m t0 2 t3` used to move the top card and say nothing.
+  it('rejects a card index instead of silently moving the top card', () => {
+    const result = parseBakersDozenCommand('m t0 2 t3');
+    expect('args' in result).toBe(false);
+    expect(result).toHaveProperty('error');
   });
 
   it('parses tableau-to-foundation (any)', () => {
     expect(parseBakersDozenCommand('m t0 f')).toEqual({
-      args: ['move', { zone: 'tableau', col: 0, cardIndex: undefined }, { zone: 'foundation' }],
+      args: ['move', { zone: 'tableau', col: 0 }, { zone: 'foundation' }],
     });
   });
 
   it('parses tableau-to-foundation specific', () => {
     expect(parseBakersDozenCommand('m t0 f2')).toEqual({
-      args: ['move', { zone: 'tableau', col: 0, cardIndex: undefined }, { zone: 'foundation', col: 2 }],
+      args: ['move', { zone: 'tableau', col: 0 }, { zone: 'foundation', col: 2 }],
     });
   });
 

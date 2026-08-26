@@ -27,7 +27,7 @@ func (g *RussianBank) takeSnapshot() {
 	if err != nil {
 		return
 	}
-	g.history = append(g.history, &russianBankSnapshot{stateJSON: b})
+	g.history = appendSnapshot(g.history, &russianBankSnapshot{stateJSON: b})
 }
 
 // Undo 直近の人間の 1 手を取り消す。

@@ -413,7 +413,7 @@ func validCribbageSquaresCell(row, col int) bool {
 
 // takeSnapshot は現在の状態をスナップショットとして保存する。
 func (c *CribbageSquares) takeSnapshot() {
-	c.history = append(c.history, &cribbageSquaresSnapshot{
+	c.history = appendSnapshot(c.history, &cribbageSquaresSnapshot{
 		board:       c.board,
 		currentCard: c.currentCard,
 		starter:     c.starter,

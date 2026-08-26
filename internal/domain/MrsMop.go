@@ -526,7 +526,7 @@ func (s *MrsMop) takeSnapshot() {
 			snap.tableau[i][j] = &MrsMopTableauCard{Card: tc.Card, FaceUp: tc.FaceUp}
 		}
 	}
-	s.history = append(s.history, snap)
+	s.history = appendSnapshot(s.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元

@@ -704,7 +704,7 @@ func (b *Braid) takeSnapshot() {
 	for i := range BraidFoundationCnt {
 		snap.foundation[i] = append([]*Card(nil), b.foundation[i]...)
 	}
-	b.history = append(b.history, snap)
+	b.history = appendSnapshot(b.history, snap)
 }
 
 // appendLog 棋譜エントリを追加

@@ -261,7 +261,7 @@ func (g *BlackHole) takeSnapshot() {
 	}
 	snap.blackHole = make([]*Card, len(g.blackHole))
 	copy(snap.blackHole, g.blackHole)
-	g.history = append(g.history, snap)
+	g.history = appendSnapshot(g.history, snap)
 }
 
 // restoreSnapshot スナップショットを復元する。

@@ -391,7 +391,7 @@ func (g *Golf) takeSnapshot() {
 	// deep copy waste
 	snap.waste = make([]*Card, len(g.waste))
 	copy(snap.waste, g.waste)
-	g.history = append(g.history, snap)
+	g.history = appendSnapshot(g.history, snap)
 }
 
 // restoreSnapshot スナップショットから状態を復元
