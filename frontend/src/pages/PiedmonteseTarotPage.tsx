@@ -30,7 +30,7 @@ import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, PiedmonteseTarotResponse } from '../types/card';
+import type { PiedmonteseTarotResponse } from '../types/card';
 import { PiedmonteseTarotPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { PIEDMONTESE_TAROT_HELP, parsePiedmonteseTarotCommand } from '../utils/cli/commands/piedmonteseTarotCommands';
@@ -87,14 +87,6 @@ const PIEDMONTESE_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Outcome i18n keys indexed by outcome value (0=none, 1=above average, 2=below). */
 const OUTCOME_KEYS = ['outcomeNone', 'outcomeWin', 'outcomeLoss'] as const;
-
-/**
- * True for cards that may NOT be buried: trumps (purple), the Matto (gold) and
- * counting cards (value ≥ 11). Mirrors the backend's discard rule.
- */
-function isUndiscardable(card: Card): boolean {
-  return card?.color === 'purple' || card?.color === 'gold' || (card?.value ?? 0) >= 11;
-}
 
 /** Formats a signed settlement, prefixing a leading `+` for positive values. */
 function formatSigned(n: number): string {
@@ -184,17 +176,19 @@ function PiedmonteseTarotPageContent() {
   // 変動の出どころを見せる。
   const totalThirds = state.players.reduce((sum, p) => sum + p.cardThirds, 0);
 
-  // During the scarto, restrict selection to buryable pips.
-  const discardableIndices =
-    canScarto && humanPlayer
-      ? humanPlayer.cards.map((c, i) => (isUndiscardable(c) ? -1 : i)).filter((i) => i >= 0)
-      : undefined;
+  // **捨てられる札はサーバが決める。** 色と値からここで組み立てると、
+  // 捨てられるピップが足りないときに解禁される非オヌール切り札が落ちる。
+  // その手を引いた親は、画面から枚数を揃えられなかった (#6236)。
+  const discardableIndices = canScarto ? state.discardableIndices : undefined;
 
   const handValidIndices = canPlay ? state.playableIndices : canScarto ? discardableIndices : undefined;
 
   const scartoTitleFor = (idx: number): string | undefined => {
     const card = humanPlayer?.cards[idx];
     if (!card) return undefined;
+    // いま実際に捨てられる札には理由を出さない。ピップが足りないときの
+    // 切り札は「捨てられない」ではなく捨てられるので、一覧と食い違う (#6236)。
+    if (discardableIndices?.includes(idx)) return undefined;
     const reason = scartoUndiscardableReason(card);
     return reason ? t(`scartoUndiscardable.${reason}`) : undefined;
   };

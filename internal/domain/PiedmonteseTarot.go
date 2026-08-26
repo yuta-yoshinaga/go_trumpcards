@@ -301,13 +301,7 @@ func (g *PiedmonteseTarot) doScarto(cardIndices []int) error {
 // 捨てると、親は自分の獲得点をそのまま増やせてしまう。捨てられるのはピップ札で、
 // それが足りないときに限りオヌールでない切り札を許す。
 func (g *PiedmonteseTarot) validateScarto(player *PiedmonteseTarotPlayer, cardIndices []int) error {
-	discardable := 0
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if piedmonteseTarotDiscardable(player.GetCard(i)) {
-			discardable++
-		}
-	}
-	allowTrump := discardable < g.TalonSize()
+	allowTrump := g.scartoAllowsTrump(player)
 	for _, idx := range cardIndices {
 		c := player.GetCard(idx)
 		if c == nil {
@@ -327,6 +321,50 @@ func (g *PiedmonteseTarot) validateScarto(player *PiedmonteseTarotPlayer, cardIn
 		}
 	}
 	return nil
+}
+
+// scartoAllowsTrump は、いま親がオヌールでない切り札を捨てても良いかを返す。
+//
+// **捨てられるピップがタロンの枚数に満たないときだけ許す。** 規則をここ 1 か所に
+// 置き、検証も提示 (CUI の「捨てられる札」一覧・Web の選択可能インデックス) も
+// これを問い合わせる。以前は提示側が切り札を常に除外していたため、ピップが
+// 足りない手を親が引くと**画面からは枚数を揃えられなかった** (#6236)。
+func (g *PiedmonteseTarot) scartoAllowsTrump(player *PiedmonteseTarotPlayer) bool {
+	discardable := 0
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if piedmonteseTarotDiscardable(player.GetCard(i)) {
+			discardable++
+		}
+	}
+	return discardable < g.TalonSize()
+}
+
+// GetDiscardableIndices は親がいまスカルトに出せる手札のインデックスを返す。
+// 親の手番でなければ空を返す。
+func (g *PiedmonteseTarot) GetDiscardableIndices() []int {
+	if g.phase != PiedmonteseTarotPhaseScarto || g.dealerIdx < 0 || g.dealerIdx >= len(g.players) {
+		return []int{}
+	}
+	player := g.players[g.dealerIdx]
+	if player == nil {
+		return []int{}
+	}
+	allowTrump := g.scartoAllowsTrump(player)
+	idxs := make([]int, 0, player.GetCardsSize())
+	for i := 0; i < player.GetCardsSize(); i++ {
+		c := player.GetCard(i)
+		switch {
+		case c == nil, tarot78IsBout(c):
+			continue
+		case tarot78IsTrump(c):
+			if allowTrump {
+				idxs = append(idxs, i)
+			}
+		case c.GetValue() < Tarot78CourtMin:
+			idxs = append(idxs, i)
+		}
+	}
+	return idxs
 }
 
 // piedmonteseTarotDiscardable は通常のスカルトに出せる札か (切り札でもコートでもない

@@ -652,3 +652,47 @@ func TestPiedmonteseTarot_FormatThirds(t *testing.T) {
 		assert.Equal(t, want, PiedmonteseTarotFormatThirds(thirds), "%d thirds", thirds)
 	}
 }
+
+// **ピップが足りないときは切り札も捨てられる。** ドメインの検証は前からそれを
+// 許していたのに、提示側 (CUI の一覧・Web の選択可能インデックス) は切り札を
+// 常に除外していたので、その手を引いた親は**画面から枚数を揃えられなかった**。
+// 規則をドメイン 1 か所に置き、両方の面がこれを問い合わせる (#6236)。
+func TestPiedmonteseTarot_DiscardableIndicesAllowTrumpWhenPipsRunShort(t *testing.T) {
+	g := newPiedmonteseTarotForTest(t, 4)
+	g.phase = PiedmonteseTarotPhaseScarto
+	dealer := g.GetPlayer(g.GetDealerIdx())
+	dealer.Reset()
+	// ピップ 1 枚だけ (タロン 2 枚に足りない) + オヌールでない切り札 + オヌール + コート。
+	dealer.AddCard(NewCard(CardDesignSpade, 5, false))               // ピップ
+	dealer.AddCard(NewCard(Tarot78TrumpDesign, 10, false))           // 切り札 (非オヌール)
+	dealer.AddCard(NewCard(Tarot78TrumpDesign, 21, false))           // Mondo (オヌール)
+	dealer.AddCard(NewCard(CardDesignSpade, Tarot78CourtMin, false)) // コート
+
+	idxs := g.GetDiscardableIndices()
+	assert.Contains(t, idxs, 0, "ピップは常に捨てられる")
+	assert.Contains(t, idxs, 1, "ピップが足りないので非オヌール切り札も捨てられる")
+	assert.NotContains(t, idxs, 2, "オヌールは捨てられない")
+	assert.NotContains(t, idxs, 3, "コートは捨てられない")
+
+	// 提示とドメインの検証が一致していること (これがずれていたのが #6236)。
+	for _, i := range idxs {
+		assert.NoError(t, g.validateScarto(dealer, []int{i}),
+			"捨てられると提示した札 %d を検証が拒否している", i)
+	}
+
+	// **負のコントロール: ピップが足りていれば切り札は捨てられない。**
+	dealer.Reset()
+	dealer.AddCard(NewCard(CardDesignSpade, 5, false))
+	dealer.AddCard(NewCard(CardDesignSpade, 6, false))
+	dealer.AddCard(NewCard(Tarot78TrumpDesign, 10, false))
+	idxs = g.GetDiscardableIndices()
+	assert.Equal(t, []int{0, 1}, idxs, "ピップが足りるなら切り札は出さない")
+	assert.Error(t, g.validateScarto(dealer, []int{2}), "検証も切り札を拒否する")
+}
+
+// スカルトフェーズでなければ何も捨てられない。
+func TestPiedmonteseTarot_DiscardableIndicesEmptyOutsideScarto(t *testing.T) {
+	g := newPiedmonteseTarotForTest(t, 4)
+	g.phase = PiedmonteseTarotPhasePlay
+	assert.Empty(t, g.GetDiscardableIndices())
+}

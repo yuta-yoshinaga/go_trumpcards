@@ -34,6 +34,7 @@
   "discardableList": "捨て可能: {{cards}}",
   "discardableNone": "なし",
   "discardableLegend": "※ 切り札・エクスキューズ・絵札は捨てられません",
+  "discardableLegendTrumpOk": "※ ブー (切り札1/21)・エクスキューズ・絵札は捨てられません。捨てられるピップが 3 枚に足りないので、**それ以外の切り札は捨てられます**",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
   "helpExampleNext": "  n                         トリックの決着を見てから次へ",
   "helpHint": "  h                         助言を表示"

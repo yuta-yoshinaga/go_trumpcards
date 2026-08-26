@@ -71,6 +71,8 @@ type ScartoGame interface {
 	GetPlayer(i int) *domain.ScartoPlayer
 	// GetPlayableIndices プレイ可能なカードのインデックスを取得する
 	GetPlayableIndices(playerIdx int) []int
+	// GetDiscardableIndices 親がいまスカルトに出せる手札のインデックスを取得する
+	GetDiscardableIndices() []int
 	// GetHint ヒントを取得する
 	GetHint() *domain.ScartoHint
 }

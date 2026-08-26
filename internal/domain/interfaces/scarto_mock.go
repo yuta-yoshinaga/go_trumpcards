@@ -136,6 +136,15 @@ func (_m *MockScartoGame) GetPlayableIndices(playerIdx int) []int {
 	return nil
 }
 
+// GetDiscardableIndices モック
+func (_m *MockScartoGame) GetDiscardableIndices() []int {
+	ret := _m.Called()
+	if v := ret.Get(0); v != nil {
+		return v.([]int)
+	}
+	return nil
+}
+
 // GetHint モック
 func (_m *MockScartoGame) GetHint() *domain.ScartoHint {
 	ret := _m.Called()

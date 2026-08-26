@@ -331,13 +331,7 @@ func (g *Scarto) doScarto(cardIndices []int) error {
 // validateScarto スカルトの合法性を検証する。得点札 (King/ブー/コート札) は捨てられない。
 // 捨てられるのは 0.5 点札 (非切り札のピップ)。それが 3 枚に満たない場合のみ非ブー切り札を許可。
 func (g *Scarto) validateScarto(player *ScartoPlayer, cardIndices []int) error {
-	discardable := 0
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if scartoDiscardable(player.GetCard(i)) {
-			discardable++
-		}
-	}
-	allowTrump := discardable < ScartoSurplus
+	allowTrump := g.scartoAllowsTrump(player)
 	for _, idx := range cardIndices {
 		c := player.GetCard(idx)
 		if c == nil {
@@ -363,6 +357,50 @@ func (g *Scarto) validateScarto(player *ScartoPlayer, cardIndices []int) error {
 }
 
 // scartoDiscardable 通常スカルトに出せる札か (非切り札・非エクスキューズ・非コートのピップ)。
+// scartoAllowsTrump は、いま親がブーでない切り札を捨てても良いかを返す。
+//
+// **捨てられるピップが 3 枚に満たないときだけ許す。** 規則をここ 1 か所に置き、
+// 検証も提示 (CUI の一覧・Web の選択可能インデックス) もこれを問い合わせる。
+// 以前は提示側が切り札を常に除外していたため、ピップが足りない手を親が引くと
+// **画面からは枚数を揃えられなかった** (#6236)。
+func (g *Scarto) scartoAllowsTrump(player *ScartoPlayer) bool {
+	discardable := 0
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if scartoDiscardable(player.GetCard(i)) {
+			discardable++
+		}
+	}
+	return discardable < ScartoSurplus
+}
+
+// GetDiscardableIndices は親がいまスカルトに出せる手札のインデックスを返す。
+// スカルトフェーズでなければ空を返す。
+func (g *Scarto) GetDiscardableIndices() []int {
+	if g.phase != ScartoPhaseScarto || g.dealerIdx < 0 || g.dealerIdx >= len(g.players) {
+		return []int{}
+	}
+	player := g.players[g.dealerIdx]
+	if player == nil {
+		return []int{}
+	}
+	allowTrump := g.scartoAllowsTrump(player)
+	idxs := make([]int, 0, player.GetCardsSize())
+	for i := 0; i < player.GetCardsSize(); i++ {
+		c := player.GetCard(i)
+		switch {
+		case c == nil, scartoIsExcuse(c), scartoIsBout(c):
+			continue
+		case scartoIsTrump(c):
+			if allowTrump {
+				idxs = append(idxs, i)
+			}
+		case c.GetValue() < ScartoCourtMin:
+			idxs = append(idxs, i)
+		}
+	}
+	return idxs
+}
+
 func scartoDiscardable(c *Card) bool {
 	if c == nil || scartoIsTrump(c) || scartoIsExcuse(c) {
 		return false
@@ -1022,6 +1060,11 @@ func (g *Scarto) GetDealerIdx() int { return g.dealerIdx }
 
 // SetDealerIdx 親インデックス設定 (テスト用)
 func (g *Scarto) SetDealerIdx(idx int) { g.dealerIdx = idx }
+
+// PlayerScartoValidateForTest はテスト用にスカルトの検証だけを実行する。
+func (g *Scarto) PlayerScartoValidateForTest(cardIndices []int) error {
+	return g.validateScarto(g.players[g.dealerIdx], cardIndices)
+}
 
 // GetScartoCount 親が捨てたスカルト札の枚数取得
 func (g *Scarto) GetScartoCount() int { return len(g.scarto) }

@@ -82,6 +82,7 @@ func (p *PiedmonteseTarotWebPresenter) buildBase(g interfaces.PiedmonteseTarotGa
 	resObj.IsHumanTurn = g.IsHumanTurn()
 	resObj.IsHumanScarto = g.IsHumanScartoTurn()
 	resObj.PlayableIndices = p.playableIndices(g)
+	resObj.DiscardableIndices = p.discardableIndices(g)
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.PiedmonteseTarotWebOutputConfig{
@@ -104,6 +105,24 @@ func intsOrEmpty(v []int) []int {
 }
 
 // playableIndices は人間が出せる札のインデックスを返す。
+// discardableIndices は人間の親がいまスカルトに出せる札のインデックスを返す。
+//
+// 規則はドメインに 1 つだけ置き、画面側で色や値から作り直さない。作り直すと
+// ピップが足りないときに解禁される切り札が落ちる (#6236)。
+//
+// **親が CPU のときは空。** playableIndices が人間の手番以外で空を返すのと
+// 同じ約束で、伏せられた手の中身をレスポンスに載せない。
+func (p *PiedmonteseTarotWebPresenter) discardableIndices(g interfaces.PiedmonteseTarotGame) []int {
+	if !g.IsHumanScartoTurn() {
+		return make([]int, 0)
+	}
+	idx := g.GetDiscardableIndices()
+	if idx == nil {
+		return make([]int, 0)
+	}
+	return idx
+}
+
 func (p *PiedmonteseTarotWebPresenter) playableIndices(g interfaces.PiedmonteseTarotGame) []int {
 	if g.GetPhase() != domain.PiedmonteseTarotPhasePlay || !g.IsHumanTurn() {
 		return make([]int, 0)
