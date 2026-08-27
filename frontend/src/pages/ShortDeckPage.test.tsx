@@ -615,7 +615,9 @@ describe('ShortDeckPage', () => {
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false, tournamentMode: false }),
+    );
   });
 
   it('uses outline style for reset button', async () => {
@@ -903,7 +905,9 @@ describe('ShortDeckPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false, tournamentMode: false }),
+    );
   });
 
   it('sends cpuMetaAI true when checkbox is checked before reset', async () => {
@@ -917,7 +921,9 @@ describe('ShortDeckPage', () => {
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: true }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: true, tournamentMode: false }),
+    );
   });
 
   // ---- Keyboard navigation ----
@@ -1216,5 +1222,24 @@ describe('ShortDeckPage', () => {
     await waitFor(() => expect(document.querySelectorAll('[data-best5-hole]').length).toBe(2));
     // Both hole cards belong to the wheel; the K and Q on the board do not.
     expect(document.querySelectorAll('[data-best5-board]').length).toBe(3);
+  });
+
+  // The page already rendered hand/level progress behind state.tournamentMode,
+  // but nothing could switch it on: the display existed for a state the player
+  // could not reach.
+  it('sends tournamentMode when the setting is switched on before a reset', async () => {
+    mockExec.mockResolvedValue(initState);
+    renderWithProviders(<ShortDeckPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(screen.getByTestId('sd-tournament-toggle'));
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    // The toggle is only worth having if the value reaches the reset call.
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.objectContaining({ tournamentMode: true })),
+    );
   });
 });
