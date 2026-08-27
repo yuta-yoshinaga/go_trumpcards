@@ -16,6 +16,27 @@ import (
 type PyramidCuiPresenter struct{}
 
 // Output renders the current game state for the active locale (#1699).
+// pyramidSessionStatsLine renders this run's play/clear counts and best move
+// count, or "" before the first game finishes.
+//
+// **The web keeps a persistent record in localStorage; this does not.** The CUI
+// has no store of its own, so the figures cover the current process only -- the
+// wording says so rather than implying an all-time best.
+func pyramidSessionStatsLine(p interfaces.PyramidGame) string {
+	plays := p.GetSessionPlays()
+	if plays == 0 {
+		return ""
+	}
+	best := i18n.T("pyramid.sessionNoBest")
+	if fm := p.GetSessionFewestMoves(); fm > 0 {
+		best = strconv.Itoa(fm)
+	}
+	return i18n.Tf("pyramid.sessionStats",
+		"plays", strconv.Itoa(plays),
+		"wins", strconv.Itoa(p.GetSessionWins()),
+		"best", best) + "\n"
+}
+
 func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) string {
 	const pyramidIndent = "  "
 	const pyramidRemovedPlaceholder = "    "
@@ -98,6 +119,7 @@ func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) s
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(p.GetMoveCount())) +
 				cuiSolitaireUndoHint(p.CanUndo()) + "\n")
+			b.WriteString(pyramidSessionStatsLine(p))
 		case domain.PyramidPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(p.GetMoveCount())) + "\n")
