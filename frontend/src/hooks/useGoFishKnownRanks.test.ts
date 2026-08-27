@@ -129,4 +129,44 @@ describe('useGoFishKnownRanks', () => {
     rerender({ st: s({ turnNumber: 1 }) });
     expect(result.current[1]).toEqual([]);
   });
+
+  // The server keeps this itself; the CUI has always read it from there. The
+  // client-side accumulation lives in component state, so a reload wiped it.
+  it('uses the ranks the server sent instead of rebuilding them', () => {
+    const state = s({
+      players: [
+        { id: 0, isHuman: true, cardCount: 5, cards: [], bookCount: 0, books: [], knownRanks: [3, 7] },
+        { id: 1, isHuman: false, cardCount: 5, cards: [], bookCount: 0, books: [], knownRanks: [11] },
+      ],
+    });
+    const { result } = renderHook(() => useGoFishKnownRanks(state));
+    // No lastAsk history at all: rebuilding from scratch would give {}.
+    expect(result.current).toEqual({ 0: [3, 7], 1: [11] });
+  });
+
+  it('survives a remount, which is what a page reload is', () => {
+    const state = s({
+      players: [
+        { id: 0, isHuman: true, cardCount: 5, cards: [], bookCount: 0, books: [], knownRanks: [3] },
+        { id: 1, isHuman: false, cardCount: 5, cards: [], bookCount: 0, books: [], knownRanks: [] },
+      ],
+    });
+    const first = renderHook(() => useGoFishKnownRanks(state));
+    expect(first.result.current[0]).toEqual([3]);
+    first.unmount();
+
+    // A fresh mount with the same server state must still know rank 3.
+    const second = renderHook(() => useGoFishKnownRanks(state));
+    expect(second.result.current[0]).toEqual([3]);
+  });
+
+  it('still rebuilds when the server did not send the field', () => {
+    // Older responses have no knownRanks; the accumulation must remain the
+    // fallback rather than silently reporting an empty table.
+    const { result, rerender } = renderHook(({ st }) => useGoFishKnownRanks(st), {
+      initialProps: { st: s({ lastAsk: { playerIdx: 0, targetIdx: 1, rank: 5, success: true } }) },
+    });
+    rerender({ st: s({ lastAsk: { playerIdx: 0, targetIdx: 1, rank: 5, success: true } }) });
+    expect(result.current[0]).toEqual([5]);
+  });
 });
