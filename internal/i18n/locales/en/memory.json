@@ -4,7 +4,7 @@
   "helpNext": "  n                    next turn",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy forgets often, 1=Normal, 2=Hard rarely forgets)",
   "playerLine": "{{name}}: {{pairs}} pair(s)",
-  "visitedLegend": "Legend: *? = seen before (flipped once) / ?? = unseen",
+  "visitedLegend": "Legend: !? = seen card matching the face-up one / *? = seen before / ?? = unseen",
   "promptFlip1": "{{name}} — pick the first card",
   "promptFlip2": "{{name}} — pick the second card",
   "promptFlipHelp": "f <pos>: flip a card",
