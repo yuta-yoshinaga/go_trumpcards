@@ -230,3 +230,52 @@ func TestSeahavenTowersCuiPresenterActionLogGameOver(t *testing.T) {
 	result := p.ActionLogOutput(s)
 	assert.Contains(t, result, "棋譜")
 }
+
+// The web has badged this state since #4776. These build the tableau by hand
+// rather than dealing, so the assertion does not depend on the shuffle.
+func TestSeahavenTowersCuiPresenterAutoCompleteReady(t *testing.T) {
+	p := new(SeahavenTowersCuiPresenter)
+
+	descending := func() [domain.SeahavenTowersTableauCnt][]*domain.Card {
+		var tb [domain.SeahavenTowersTableauCnt][]*domain.Card
+		for col := 0; col < domain.SeahavenTowersTableauCnt; col++ {
+			tb[col] = []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 9, false),
+				domain.NewCard(domain.CardDesignHeart, 5, false),
+			}
+		}
+		return tb
+	}
+
+	t.Run("announces readiness once every column descends", func(t *testing.T) {
+		s := domain.NewSeahavenTowers(domain.NewTrumpCards(0))
+		s.Reset()
+		s.SetTableau(descending())
+		s.SetPhase(domain.SeahavenTowersPhasePlaying)
+		assert.True(t, s.CanAutoComplete())
+		assert.Contains(t, p.Output(s, nil), "オートコンプリート可能")
+	})
+
+	t.Run("stays quiet while one column is out of order", func(t *testing.T) {
+		s := domain.NewSeahavenTowers(domain.NewTrumpCards(0))
+		s.Reset()
+		tb := descending()
+		// A single ascending pair anywhere means auto-complete would stall.
+		tb[3] = []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignHeart, 9, false),
+		}
+		s.SetTableau(tb)
+		s.SetPhase(domain.SeahavenTowersPhasePlaying)
+		assert.False(t, s.CanAutoComplete())
+		assert.NotContains(t, p.Output(s, nil), "オートコンプリート可能")
+	})
+
+	t.Run("stays quiet outside the playing phase", func(t *testing.T) {
+		s := domain.NewSeahavenTowers(domain.NewTrumpCards(0))
+		s.Reset()
+		s.SetTableau(descending())
+		s.SetPhase(domain.SeahavenTowersPhaseGameClear)
+		assert.False(t, s.CanAutoComplete())
+	})
+}

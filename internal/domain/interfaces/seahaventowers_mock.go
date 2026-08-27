@@ -124,3 +124,9 @@ func (_m *MockSeahavenTowersGame) GetGameEndFlag() bool {
 	ret := _m.Called()
 	return ret.Bool(0)
 }
+
+// CanAutoComplete mocks the CanAutoComplete call.
+func (_m *MockSeahavenTowersGame) CanAutoComplete() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
