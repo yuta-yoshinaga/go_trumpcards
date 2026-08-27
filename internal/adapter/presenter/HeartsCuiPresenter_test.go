@@ -133,6 +133,26 @@ func TestHeartsCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "CPU 1: 累積15点 ラウンド7点 0枚 1トリック")
 	})
 
+	t.Run("warns when one seat is taking every penalty point", func(t *testing.T) {
+		// Driven through Output rather than the rule directly: a rule with no
+		// caller passes its own tests forever.
+		m, players := setupHeartsCuiMockWithPlayers()
+		players[1].SetRoundScore(15)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "シュート・ザ・ムーン警戒")
+		assert.Contains(t, result, "CPU 1")
+	})
+
+	t.Run("does not warn while the penalty points are split", func(t *testing.T) {
+		m, players := setupHeartsCuiMockWithPlayers()
+		players[1].SetRoundScore(15)
+		players[2].SetRoundScore(4)
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "シュート・ザ・ムーン警戒")
+	})
+
 	t.Run("human with no cards does not print extra newline", func(t *testing.T) {
 		m, _ := setupHeartsCuiMockWithPlayers()
 
