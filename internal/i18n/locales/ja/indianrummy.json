@@ -25,5 +25,6 @@
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "helpExampleDraw": "  ds                   手番の最初に山札から 1 枚引く",
-  "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる"
+  "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる",
+  "pointsLegend": "点数: A・10・J・Q・K = 10点 / 2〜9 = 数字どおり / ワイルド = 0点"
 }

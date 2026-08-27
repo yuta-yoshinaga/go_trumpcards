@@ -78,6 +78,11 @@ func (p *IndianRummyCuiPresenter) Output(g interfaces.IndianRummyGame, lastErr e
 			if g.GetPlayer(currentIdx).GetIsHuman() {
 				b.WriteString(i18n.Tf("indianrummy.deadwoodLine",
 					"value", strconv.Itoa(g.PlayerDeadwoodValue(currentIdx))) + "\n")
+				// The number above is meaningless without the scale, and this
+				// scale is the one a Gin Rummy player gets wrong: the ace is 10
+				// here, not 1, and a wild costs nothing. The web prints the same
+				// legend beside its deadwood figure (#5501).
+				b.WriteString(i18n.T("indianrummy.pointsLegend") + "\n")
 				if g.PlayerHasPureSequence(currentIdx) {
 					b.WriteString(color.Green(i18n.T("indianrummy.pureSequenceMet")) + "\n")
 				} else {
