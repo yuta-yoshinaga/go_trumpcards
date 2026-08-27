@@ -970,4 +970,22 @@ describe('IndianPokerPage equity source', () => {
     expect(meter.textContent).toContain('12%');
     expect(meter.textContent).not.toContain('37%');
   });
+
+  it('keeps the CPU play style visible on a phone-width screen', async () => {
+    const orig = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { value: 375, configurable: true, writable: true });
+    try {
+      mockExec.mockResolvedValue(bettingState);
+      renderWithProviders(<IndianPokerPage />);
+      // Indian Poker is played by reading the opponent, since you cannot see
+      // your own card -- hiding the style leaves a phone user guessing blind.
+      // Both CPU seats keep their style; on desktop it renders parenthesised on
+      // the same line, on mobile as its own block under the name.
+      const styles = await screen.findAllByText(/タイト/);
+      expect(styles.length).toBeGreaterThan(0);
+      expect(styles[0]).toHaveClass('block');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { value: orig, configurable: true, writable: true });
+    }
+  });
 });

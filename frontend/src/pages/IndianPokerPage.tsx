@@ -276,7 +276,13 @@ function IndianPokerPageContent() {
                   <div key={p.id} className={isMobile ? 'text-center' : 'mb-3'}>
                     <div className={`text-ds-text-primary text-sm mb-1 ${isMobile ? 'truncate' : ''}`}>
                       {tc('player.cpu', { id: p.id })}
-                      {!isMobile && <span className="text-ds-text-muted text-xs"> ({p.playStyleName})</span>}
+                      {/* The whole game is reading the opponent, since your own
+                          card is the one you cannot see. Hiding the style on a
+                          phone removes the only read available, so it wraps to
+                          its own line there instead of disappearing. */}
+                      <span className={`text-ds-text-muted text-xs${isMobile ? ' block' : ''}`}>
+                        {isMobile ? p.playStyleName : ` (${p.playStyleName})`}
+                      </span>
                       <span className={`text-xs ${isMobile ? 'block' : 'ml-2'}`}>
                         {tc('betting.chips')} {p.chips}
                       </span>
