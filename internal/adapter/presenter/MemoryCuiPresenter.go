@@ -17,7 +17,7 @@ import (
 // A face-up cell is highlighted so the two flipped cards stand out — green when
 // the current result is a match, yellow otherwise. Colour codes are added around
 // the already-padded label, so the visible column width is unchanged.
-func memoryCellStr(bc *domain.MemoryBoardCard, pos int, resultMatch bool) string {
+func memoryCellStr(bc *domain.MemoryBoardCard, pos int, resultMatch bool, knownMatch bool) string {
 	if bc.Taken {
 		return fmt.Sprintf("[%2d]%-10s", pos, "")
 	}
@@ -30,7 +30,12 @@ func memoryCellStr(bc *domain.MemoryBoardCard, pos int, resultMatch bool) string
 		}
 		return fmt.Sprintf("[%2d]%s", pos, label)
 	}
-	// Face-down: distinguish previously-seen cells (*?) from unseen ones (??).
+	// Face-down: a seen cell that matches the one card face up is the play the
+	// board is offering right now, so it is marked apart from the other seen
+	// cells (*?) rather than left for the player to re-derive from memory.
+	if knownMatch {
+		return fmt.Sprintf("[%2d]%s", pos, color.Green(fmt.Sprintf("%-10s", "!?")))
+	}
 	if bc.Visited {
 		return fmt.Sprintf("[%2d]%-10s", pos, "*?")
 	}
@@ -73,6 +78,7 @@ func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 		// 無いので現状は到達しないが、同じ地雷を残す理由はない。
 		const memoryCuiCols = 13
 		resultMatch := m.GetPhase() == domain.MemoryPhaseResult && m.GetLastMatchResult()
+		knownMatchIdx, hasKnownMatch := domain.MemoryKnownMatchIdx(board)
 		for start := 0; start < len(board); start += memoryCuiCols {
 			end := start + memoryCuiCols
 			if end > len(board) {
@@ -80,7 +86,7 @@ func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 			}
 			rowParts := make([]string, 0, end-start)
 			for pos := start; pos < end; pos++ {
-				rowParts = append(rowParts, memoryCellStr(board[pos], pos, resultMatch))
+				rowParts = append(rowParts, memoryCellStr(board[pos], pos, resultMatch, hasKnownMatch && pos == knownMatchIdx))
 			}
 			b.WriteString(strings.Join(rowParts, " "))
 			b.WriteString("\n")

@@ -4,7 +4,7 @@
   "helpNext": "  n                    next turn",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy よく忘れる, 1=Normal, 2=Hard ほとんど忘れない)",
   "playerLine": "{{name}}: {{pairs}}ペア",
-  "visitedLegend": "凡例: *? = 既出（一度めくられた札） / ?? = 未確認",
+  "visitedLegend": "凡例: !? = 表の札と一致する既出札 / *? = 既出（一度めくられた札） / ?? = 未確認",
   "promptFlip1": "手番: {{name}} — 1枚目を選んでください",
   "promptFlip2": "手番: {{name}} — 2枚目を選んでください",
   "promptFlipHelp": "f <pos>・・・カードをめくる",
