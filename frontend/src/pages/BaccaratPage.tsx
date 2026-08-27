@@ -87,6 +87,7 @@ function baccaratHandValue(cards: readonly Card[]): number {
 }
 
 function BigRoadGrid({ history }: { history: number[] }) {
+  const { t } = useGamePageSetup('baccarat');
   // Auto-scroll the road to the latest (right-most) column whenever the
   // history grows, so the most recent results are always in view without
   // manual scrolling. Hooks must run unconditionally, before any early return.
@@ -152,8 +153,23 @@ function BigRoadGrid({ history }: { history: number[] }) {
     while (row.length < maxCols) row.push(null);
   }
 
+  // Every cell is a coloured circle, so the run is unreadable without colour.
+  // The CUI already prints the same sequence as P/B/T (baccaratHistorySymbols);
+  // this is that line, spelled out for a screen reader.
+  const spoken = history
+    .map((r, i) =>
+      t('road.spokenEntry', {
+        n: i + 1,
+        side: r === ROAD_PLAYER ? t('road.sidePlayer') : r === ROAD_BANKER ? t('road.sideBanker') : t('road.sideTie'),
+      }),
+    )
+    .join('、');
+
   return (
     <div className="mb-4 w-full max-w-md" data-testid="big-road">
+      <div className="sr-only" data-testid="big-road-summary">
+        {spoken}
+      </div>
       <div
         ref={scrollRef}
         data-testid="big-road-scroll"

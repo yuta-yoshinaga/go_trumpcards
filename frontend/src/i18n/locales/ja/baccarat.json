@@ -31,7 +31,11 @@
   },
   "road": {
     "title": "罫線",
-    "clear": "履歴クリア"
+    "clear": "履歴クリア",
+    "spokenEntry": "{{n}}手目 {{side}}",
+    "sidePlayer": "プレイヤー",
+    "sideBanker": "バンカー",
+    "sideTie": "タイ"
   },
   "stats": {
     "player": "P {{n}}回 ({{pct}}%)",
