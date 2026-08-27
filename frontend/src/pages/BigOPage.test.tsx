@@ -849,7 +849,9 @@ describe('BigOPage', () => {
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false, bettingLimit: 0 }),
+    );
   });
 
   it('uses outline style for reset button', async () => {
@@ -1291,7 +1293,9 @@ describe('BigOPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false, bettingLimit: 0 }),
+    );
   });
 
   it('sends cpuMetaAI true when checkbox is checked before reset', async () => {
@@ -1305,7 +1309,9 @@ describe('BigOPage', () => {
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: true }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: true, bettingLimit: 0 }),
+    );
   });
 
   // ---- Keyboard navigation ----
@@ -1598,5 +1604,21 @@ describe('BigOPage', () => {
     renderWithProviders(<BigOPage />);
     await waitFor(() => expect(screen.queryByTestId('bigo-live-besthand')).not.toBeInTheDocument());
     expect(screen.getByTestId('bigo-rule-badge')).toBeInTheDocument();
+  });
+
+  it('sends the chosen betting limit when the game is reset', async () => {
+    renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const select = document.getElementById('bigoBettingLimit');
+    if (!(select instanceof HTMLSelectElement)) throw new Error('betting limit select not rendered');
+    expect(select.value).toBe('0');
+    fireEvent.change(select, { target: { value: '2' } });
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    // The selector is only worth having if the value reaches the reset call.
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.objectContaining({ bettingLimit: 2 })),
+    );
   });
 });
