@@ -46,5 +46,10 @@
   "promptExchange": "操作: exchange <カード番号...>（交換なしは exchange のみ）",
   "helpExampleFold": "  f                    この手を降りる",
   "helpLog": "  l                    行動ログを表示",
-  "exchangeRead": "⚠ 交換枚数が少ないため、CPU に「強い手」と読まれています (3枚未満で警戒。CPU は降りやすくなります)"
+  "exchangeRead": "⚠ 交換枚数が少ないため、CPU に「強い手」と読まれています (3枚未満で警戒。CPU は降りやすくなります)",
+  "lowballRankTitle": "2-7 ローボール 役早見表",
+  "lowballRankBest": "最強: 7-5-4-3-2（スート違い）",
+  "lowballRankAceHigh": "A は常に最高位（＝ロー狙いでは最も弱い）",
+  "lowballRankStraightFlush": "ストレート・フラッシュは成立扱い（ローでは不利）",
+  "lowballRankGoal": "ペア・ストレート・フラッシュを避けた最も低い5枚を目指す"
 }

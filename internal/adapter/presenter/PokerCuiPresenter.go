@@ -23,6 +23,16 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 		titleKey = "poker.outputTitleLowball"
 	}
 	return buildCuiOutput(i18n.T(titleKey), func(b *strings.Builder) {
+		// Lowball inverts what a poker player already knows -- the ace is the
+		// highest card, and a straight or flush still counts, which makes both
+		// bad. The web puts this reference on screen; without it the CUI player
+		// is choosing discards against the wrong ranking.
+		if p.GetConfig().IsLowball {
+			b.WriteString(color.Bold(i18n.T("poker.lowballRankTitle")) + "\n")
+			for _, k := range []string{"lowballRankBest", "lowballRankAceHigh", "lowballRankStraightFlush", "lowballRankGoal"} {
+				b.WriteString("  " + i18n.T("poker."+k) + "\n")
+			}
+		}
 		players := p.GetPlayers()
 
 		b.WriteString(i18n.Tf("poker.dealerLine", "idx", strconv.Itoa(p.GetDealerIdx())) + "\n")
