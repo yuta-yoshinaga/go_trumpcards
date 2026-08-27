@@ -228,6 +228,15 @@ function CourchevelPageContent() {
               const communityCardsContent = (
                 <>
                   <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
+                  {phase === OmahaPhase.PRE_FLOP && !!state?.communityCards?.length && (
+                    <div
+                      data-testid="cv-preflop-exposed-note"
+                      className="mb-1.5 text-xs text-ds-text-muted"
+                      role="note"
+                    >
+                      {t('exposedNotice')}
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => {
