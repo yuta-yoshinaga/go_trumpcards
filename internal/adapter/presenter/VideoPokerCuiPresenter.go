@@ -191,12 +191,6 @@ func videoPokerIsWild(variant string, c *domain.Card) bool {
 	}
 }
 
-// videoPokerHold computes the recommended hold mask and a reason i18n key
-// (without the "videopoker." prefix) for a draw-phase hand. It is a faithful
-// port of the frontend getVideoPokerBaseHint heuristic
-// (frontend/src/utils/hints/videoPokerBaseHint.ts): hold wilds plus any made
-// pair, otherwise keep the best made group, a four-card flush/straight draw, or
-// the high cards. An empty mask (reason "") means redraw all five.
 // videoPokerPayingPairRank reports the lowest rank whose pair actually pays in
 // this variant, reading the variant's own paytable rather than assuming the
 // Jacks or Better threshold. ok is false when no pair pays at all -- Deuces
@@ -213,6 +207,12 @@ func videoPokerPayingPairRank(variant string) (int, bool) {
 	return 0, false
 }
 
+// videoPokerHold computes the recommended hold mask and a reason i18n key
+// (without the "videopoker." prefix) for a draw-phase hand. It is a faithful
+// port of the frontend getVideoPokerBaseHint heuristic
+// (frontend/src/utils/hints/videoPokerBaseHint.ts): hold wilds plus any made
+// pair, otherwise keep the best made group, a four-card flush/straight draw, or
+// the high cards. An empty mask (reason "") means redraw all five.
 func videoPokerHold(hand []*domain.Card, variant string) ([]bool, string) {
 	hold := make([]bool, len(hand))
 
