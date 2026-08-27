@@ -46,5 +46,10 @@
   "promptExchange": "Commands: exchange <card indices> (exchange alone to keep all)",
   "helpExampleFold": "  f                    fold this hand",
   "helpLog": "  l                    show the action log",
-  "exchangeRead": "⚠ Your small exchange reads as a strong hand -- the CPUs grow wary below 3 cards and fold more readily"
+  "exchangeRead": "⚠ Your small exchange reads as a strong hand -- the CPUs grow wary below 3 cards and fold more readily",
+  "lowballRankTitle": "2-7 lowball hand ranking",
+  "lowballRankBest": "Best: 7-5-4-3-2 (not all one suit)",
+  "lowballRankAceHigh": "The ace is always high, so it is the worst card for a low",
+  "lowballRankStraightFlush": "Straights and flushes still count, and count against you",
+  "lowballRankGoal": "Aim for the lowest five avoiding a pair, a straight and a flush"
 }
