@@ -361,6 +361,12 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     };
   }, [variant, isDiscardPhase, selectedDiscards, discardCount, candidatePreviews, recommendedDiscards]);
 
+  // Which keep-2 feature set the currently selected discard would leave behind.
+  const selectedKeepFeatures = useMemo<PineappleKeepFeature[] | null>(() => {
+    if (!keepFeaturePreviews || selectedDiscards.length !== discardCount) return null;
+    return keepFeaturePreviews[selectedDiscards[0]] ?? null;
+  }, [keepFeaturePreviews, selectedDiscards, discardCount]);
+
   const actionBindings = useMemo(
     () => [
       {
@@ -738,6 +744,17 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             {/* Discard controls */}
             {canDiscard && (
               <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
+                {/* The per-card pn-discard-keep-feature notes are visual only, so a
+                    screen-reader user could not compare keeps. Announce the chosen
+                    one. The irishpoker preview region below is variant-exclusive
+                    with this one, so the two never speak over each other. */}
+                {selectedKeepFeatures && (
+                  <div className="sr-only" role="status" aria-live="polite" data-testid="pn-keep-feature-announce">
+                    {`${t('discard.keepLabel')}: ${selectedKeepFeatures
+                      .map((f) => t(`discard.feature${f.charAt(0).toUpperCase()}${f.slice(1)}`))
+                      .join('・')}`}
+                  </div>
+                )}
                 {/* The cp-discard-candidate / cp-discard-recommended badges are
                     visual only. This region is variant-exclusive with
                     irishpoker-discard-preview-announce and pn-keep-feature-announce,

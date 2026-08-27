@@ -1155,4 +1155,32 @@ describe('PineapplePage', () => {
     // which would still satisfy every assertion above except this one.
     expect(live2.textContent).not.toContain('cpPreviewAria');
   });
+
+  it('announces the keep-2 feature of the card the player selects to discard', async () => {
+    const pineappleDiscardState: PineappleResponse = {
+      ...discardState,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 9 },
+            { design: 'HEART', value: 5 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+    };
+    mockExec.mockResolvedValue(pineappleDiscardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    // The per-card notes are visual only; selecting one must also say what the
+    // choice leaves behind, or the whole comparison is unavailable by ear.
+    const cardButtons = screen.getAllByRole('button').filter((btn) => btn.getAttribute('aria-pressed') !== null);
+    fireEvent.click(cardButtons[1]); // discard S9 -> keep S5,H5 = a pair
+    const live = await screen.findByTestId('pn-keep-feature-announce');
+    expect(live).toHaveTextContent('ペア');
+    expect(live).toHaveClass('sr-only');
+  });
 });
