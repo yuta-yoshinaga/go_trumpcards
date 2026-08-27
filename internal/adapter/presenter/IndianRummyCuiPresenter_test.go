@@ -64,6 +64,25 @@ func TestIndianRummyCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "純シーケンス未成立")
 	})
 
+	t.Run("discard phase explains the scale the deadwood number uses", func(t *testing.T) {
+		m, _ := setupIndianRummyCuiMock(domain.IndianRummyPhaseDiscard, false)
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "点数:")
+
+		// The legend is only worth printing if it matches what actually scores.
+		// A Gin Rummy player expects the ace to be 1 and a joker to cost its
+		// face value; both are wrong here, which is why the line exists.
+		wildRank := 5
+		ace := domain.NewCard(domain.CardDesignSpade, 1, false)
+		king := domain.NewCard(domain.CardDesignHeart, 13, false)
+		seven := domain.NewCard(domain.CardDesignClover, 7, false)
+		wild := domain.NewCard(domain.CardDesignDiamond, wildRank, false)
+		assert.Equal(t, 10, domain.IndianRummyCardPoints(ace, wildRank), "legend says A = 10")
+		assert.Equal(t, 10, domain.IndianRummyCardPoints(king, wildRank), "legend says K = 10")
+		assert.Equal(t, 7, domain.IndianRummyCardPoints(seven, wildRank), "legend says 2-9 = face value")
+		assert.Equal(t, 0, domain.IndianRummyCardPoints(wild, wildRank), "legend says wild = 0")
+	})
+
 	t.Run("discard phase shows pure sequence met", func(t *testing.T) {
 		m, _ := setupIndianRummyCuiMock(domain.IndianRummyPhaseDiscard, false)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "PlayerHasPureSequence")
