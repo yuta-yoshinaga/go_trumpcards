@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -1033,6 +1034,24 @@ func TestBlackJackCuiPresenter_PayoutTable(t *testing.T) {
 		assert.Contains(t, out, "サレンダー (ベットの半額返金)")
 		// 標準ルールにボーナスは無い。
 		assert.NotContains(t, out, "5枚で21")
+	})
+
+	t.Run("side bet payouts are listed for both variants", func(t *testing.T) {
+		// `bet <amount> [pp] [t3]` is always accepted, so the odds a player is
+		// asked to stake against must be on the table -- in both variants, since
+		// the two use different i18n namespaces and it is easy to fix only one.
+		for name, bj := range map[string]*domain.BlackJack{
+			"standard":  domain.NewDefaultBlackJack(),
+			"spanish21": domain.NewSpanish21BlackJack(),
+		} {
+			bj.Reset()
+			out := bjp.Output(bj, nil)
+			assert.Contains(t, out, "パーフェクトペア", name)
+			assert.Contains(t, out, "ポーカー役ベット", name)
+			// The printed odds must be the constants that actually pay, not prose.
+			assert.Contains(t, out, strconv.Itoa(domain.BJPPPerfectPairPayout), name)
+			assert.Contains(t, out, strconv.Itoa(domain.BJT3SuitedTripsPayout), name)
+		}
 	})
 
 	t.Run("spanish 21 adds the bonus payouts", func(t *testing.T) {
