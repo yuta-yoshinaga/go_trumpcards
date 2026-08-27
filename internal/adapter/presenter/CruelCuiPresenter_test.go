@@ -16,6 +16,7 @@ func setupCruelCuiMockDefaults(cg *interfaces.MockCruelGame) {
 	cg.On("GetMoveCount").Return(0).Maybe()
 	cg.On("IsStalemate").Return(false).Maybe()
 	cg.On("UndoToEscape").Return(0).Maybe()
+	cg.On("CanAutoComplete").Return(false).Maybe()
 
 	var tableau [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
 	for i := range domain.CruelTableauCnt {
@@ -44,6 +45,25 @@ func TestCruelCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "操作:")
 	})
 
+	t.Run("announces auto-complete while a card can still be sent", func(t *testing.T) {
+		cg := new(interfaces.MockCruelGame)
+		// Registered before the defaults so this value is the one returned.
+		cg.On("CanAutoComplete").Return(true)
+		setupCruelCuiMockDefaults(cg)
+		p := new(CruelCuiPresenter)
+
+		assert.Contains(t, p.Output(cg, nil), "オートコンプリート可能")
+	})
+
+	t.Run("stays quiet when no card can be sent", func(t *testing.T) {
+		cg := new(interfaces.MockCruelGame)
+		cg.On("CanAutoComplete").Return(false)
+		setupCruelCuiMockDefaults(cg)
+		p := new(CruelCuiPresenter)
+
+		assert.NotContains(t, p.Output(cg, nil), "オートコンプリート可能")
+	})
+
 	t.Run("with error", func(t *testing.T) {
 		cg := new(interfaces.MockCruelGame)
 		setupCruelCuiMockDefaults(cg)
@@ -59,6 +79,7 @@ func TestCruelCuiPresenter_Output(t *testing.T) {
 		cg.On("GetMoveCount").Return(5).Maybe()
 		cg.On("IsStalemate").Return(true).Maybe()
 		cg.On("UndoToEscape").Return(0).Maybe()
+		cg.On("CanAutoComplete").Return(false).Maybe()
 		var tableau [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
 		cg.On("GetTableau").Return(tableau).Maybe()
 		var foundation [domain.CruelFoundationCnt][]*domain.Card
@@ -77,6 +98,7 @@ func TestCruelCuiPresenter_Output(t *testing.T) {
 		cg.On("GetPhase").Return(domain.CruelPhaseGameClear).Maybe()
 		cg.On("GetMoveCount").Return(42).Maybe()
 		cg.On("IsStalemate").Return(false).Maybe()
+		cg.On("CanAutoComplete").Return(false).Maybe()
 		var tableau [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
 		cg.On("GetTableau").Return(tableau).Maybe()
 		var foundation [domain.CruelFoundationCnt][]*domain.Card
@@ -92,6 +114,7 @@ func TestCruelCuiPresenter_Output(t *testing.T) {
 		cg.On("GetPhase").Return(domain.CruelPhaseGameOver).Maybe()
 		cg.On("GetMoveCount").Return(10).Maybe()
 		cg.On("IsStalemate").Return(false).Maybe()
+		cg.On("CanAutoComplete").Return(false).Maybe()
 		var tableau [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
 		cg.On("GetTableau").Return(tableau).Maybe()
 		var foundation [domain.CruelFoundationCnt][]*domain.Card
@@ -107,6 +130,7 @@ func TestCruelCuiPresenter_Output(t *testing.T) {
 		cg.On("GetPhase").Return(domain.CruelPhasePlaying).Maybe()
 		cg.On("GetMoveCount").Return(0).Maybe()
 		cg.On("IsStalemate").Return(false).Maybe()
+		cg.On("CanAutoComplete").Return(false).Maybe()
 		var tableau [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
 		cg.On("GetTableau").Return(tableau).Maybe()
 		var foundation [domain.CruelFoundationCnt][]*domain.Card

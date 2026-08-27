@@ -29,5 +29,6 @@
   "hintLine": "ヒント: {{from}} → {{to}}",
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
-  "helpUndo": "  u 1手戻す"
+  "helpUndo": "  u 1手戻す",
+  "autoCompleteReady": "オートコンプリート可能: ac で送れる札があります"
 }
