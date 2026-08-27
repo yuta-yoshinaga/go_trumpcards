@@ -958,8 +958,10 @@ describe('SpiderPage', () => {
   it('announces why the deal was refused, not just a shake', async () => {
     renderWithProviders(<SpiderPage />);
     await waitFor(() => expect(screen.getByTestId('spd-empty-col-2')).toBeInTheDocument());
-    // Nothing to announce before the player tries.
-    expect(screen.queryByTestId('spd-deal-refusal')).not.toBeInTheDocument();
+    // The region is permanently mounted and empty; that emptiness is what makes
+    // the later text a change the reader announces (#5955).
+    const region = screen.getByTestId('spd-deal-refusal');
+    expect(region).toHaveTextContent('');
 
     const dealButtons = screen.getAllByRole('button', { name: '配る' });
     fireEvent.click(dealButtons[dealButtons.length - 1]);
@@ -967,9 +969,8 @@ describe('SpiderPage', () => {
     // The shake and the title attribute reach neither a screen reader nor a
     // keyboard user; the button is not even disabled, so without this the
     // refusal is silent.
-    const live = await screen.findByTestId('spd-deal-refusal');
-    expect(live).toHaveTextContent('空の列');
-    expect(live).toHaveAttribute('aria-live', 'polite');
-    expect(live).toHaveClass('sr-only');
+    await waitFor(() => expect(region).toHaveTextContent('空の列'));
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveClass('sr-only');
   });
 });
