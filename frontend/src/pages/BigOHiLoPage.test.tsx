@@ -1688,19 +1688,60 @@ describe('BigOHiLoPage', () => {
   });
 
   it('states Hi/Lo usage as text, not ring colour alone', async () => {
-    mockExec.mockResolvedValue(showdownState);
+    // Reuses the dual fixture: A♠ is used by BOTH, 2♠ is Hi-only, 3♦ is Lo-only,
+    // so all three words are actually produced. showdownState carries no
+    // lowBestHand, which would make the lo/both assertions below run zero times.
+    const dualState: OmahaResponse = {
+      ...showdownState,
+      players: [
+        humanPlayer({
+          handName: 'フラッシュ',
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'SPADE', value: 2 },
+            { design: 'DIAMOND', value: 3 },
+            { design: 'HEART', value: 4 },
+            { design: 'CLOVER', value: 13 },
+          ],
+        }),
+        cpuPlayer(1, { folded: true }),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 5 },
+        { design: 'SPADE', value: 6 },
+        { design: 'SPADE', value: 7 },
+        { design: 'DIAMOND', value: 12 },
+        { design: 'CLOVER', value: 11 },
+      ],
+      roundResults: [
+        {
+          ...showdownState.roundResults[0],
+          hiWonAmount: 100,
+          lowWonAmount: 100,
+          lowBestHand: [
+            { design: 'SPADE', value: 1 },
+            { design: 'DIAMOND', value: 3 },
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 6 },
+            { design: 'SPADE', value: 7 },
+          ],
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(dualState);
     const { container } = renderWithProviders(<BigOHiLoPage />);
-    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
-    // hiLoRingStyle encodes four states in ring colour; a screen reader gets none
-    // of them, so each card that participates must also say so in text.
+    await waitFor(() => expect(screen.getByTestId('bigohilo-split')).toBeInTheDocument());
     const labels = Array.from(container.querySelectorAll('[data-hilo-usage]')).map((el) => el.textContent);
     expect(labels.length).toBeGreaterThan(0);
-    // Every marked card carries one of the three participation words.
     for (const label of labels) {
       expect(['ハイ', 'ロー', 'ハイ・ロー']).toContain(label);
     }
-    // The dual state must be its own word, not the two rings stacked.
+    // All three states must actually occur, or the loop above proves nothing.
+    expect(labels).toContain('ハイ');
+    expect(labels).toContain('ロー');
+    expect(labels).toContain('ハイ・ロー');
     const both = container.querySelectorAll('[data-hilo-usage="both"]');
+    expect(both.length).toBeGreaterThan(0);
     for (const el of both) {
       expect(el).toHaveTextContent('ハイ・ロー');
     }
