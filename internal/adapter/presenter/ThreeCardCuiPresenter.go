@@ -84,6 +84,16 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 			sb.WriteString(color.Yellow(i18n.T("threecard.push")) + "\n")
 		default:
 		}
+		// **合計だけでは、どちらの賭けが返ってきたのか読めない。** ディーラーが
+		// クオリファイしなければアンテだけ配当が付き、プレイは押し戻される ──
+		// Web はこの内訳を行ごとに出しているのに、CUI は合計とボーナスしか
+		// 出していなかった。0 の行は既存のボーナス行と同じく省く。
+		if ante := tc.GetAntePayout(); ante != 0 {
+			sb.WriteString(i18n.Tf("threecard.antePayoutLine", "payout", strconv.Itoa(ante)) + "\n")
+		}
+		if play := tc.GetPlayPayout(); play != 0 {
+			sb.WriteString(i18n.Tf("threecard.playPayoutLine", "payout", strconv.Itoa(play)) + "\n")
+		}
 		// Side-bet / bonus payout breakdown (omitted when zero to stay concise).
 		if bonus := tc.GetAnteBonusPayout(); bonus != 0 {
 			sb.WriteString(i18n.Tf("threecard.anteBonusPayoutLine", "payout", strconv.Itoa(bonus)) + "\n")

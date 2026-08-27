@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupThreeCardCuiMockDefaults(m *interfaces.MockThreeCardGame) {
@@ -19,6 +20,8 @@ func setupThreeCardCuiMockDefaults(m *interfaces.MockThreeCardGame) {
 	m.On("GetPairPlusBet").Return(0).Maybe()
 	m.On("GetPlayBet").Return(0).Maybe()
 	m.On("GetResult").Return(domain.GameResult(0)).Maybe()
+	m.On("GetAntePayout").Return(0).Maybe()
+	m.On("GetPlayPayout").Return(0).Maybe()
 	m.On("GetAntePayout").Return(0).Maybe()
 	m.On("GetPlayPayout").Return(0).Maybe()
 	m.On("GetAnteBonusPayout").Return(0).Maybe()
@@ -109,6 +112,8 @@ func TestThreeCardCuiPresenter_Output_ActionPhase(t *testing.T) {
 	m.On("GetResult").Return(domain.GameResult(0)).Maybe()
 	m.On("GetAntePayout").Return(0).Maybe()
 	m.On("GetPlayPayout").Return(0).Maybe()
+	m.On("GetAntePayout").Return(0).Maybe()
+	m.On("GetPlayPayout").Return(0).Maybe()
 	m.On("GetAnteBonusPayout").Return(0).Maybe()
 	m.On("GetPairPlusPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
@@ -148,6 +153,8 @@ func TestThreeCardCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetResult").Return(domain.GameResultWin).Maybe()
 	m.On("GetAntePayout").Return(200).Maybe()
 	m.On("GetPlayPayout").Return(200).Maybe()
+	m.On("GetAntePayout").Return(0).Maybe()
+	m.On("GetPlayPayout").Return(0).Maybe()
 	m.On("GetAnteBonusPayout").Return(0).Maybe()
 	m.On("GetPairPlusPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(400).Maybe()
@@ -231,6 +238,8 @@ func TestThreeCardCuiPresenter_Output_EndPhase_Fold(t *testing.T) {
 	m.On("GetResult").Return(domain.GameResultLose).Maybe()
 	m.On("GetAntePayout").Return(0).Maybe()
 	m.On("GetPlayPayout").Return(0).Maybe()
+	m.On("GetAntePayout").Return(0).Maybe()
+	m.On("GetPlayPayout").Return(0).Maybe()
 	m.On("GetAnteBonusPayout").Return(0).Maybe()
 	m.On("GetPairPlusPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
@@ -260,4 +269,42 @@ func TestThreeCardCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "棋譜はありません")
+}
+
+// The total alone does not say which wager came back. When the dealer fails to
+// qualify the ante pays and the play bet is pushed -- the case the issue names.
+func TestThreeCardCuiPresenter_PayoutBreakdown(t *testing.T) {
+	p := new(ThreeCardCuiPresenter)
+
+	build := func(ante, play int) *interfaces.MockThreeCardGame {
+		m := new(interfaces.MockThreeCardGame)
+		// Registered before the defaults so these values are the ones used.
+		m.On("GetAntePayout").Return(ante).Maybe()
+		m.On("GetPlayPayout").Return(play).Maybe()
+		// Registered before the defaults so these win. The breakdown only prints
+		// once the hand is over, which is what GetGameEndFlag gates.
+		m.On("GetPhase").Return(domain.ThreeCardPhaseEnd).Maybe()
+		m.On("GetGameEndFlag").Return(true).Maybe()
+		setupThreeCardCuiMockDefaults(m)
+		return m
+	}
+
+	t.Run("shows both lines when both wagers paid", func(t *testing.T) {
+		out := p.Output(build(20, 20), nil)
+		assert.Contains(t, out, i18n.Tf("threecard.antePayoutLine", "payout", "20"))
+		assert.Contains(t, out, i18n.Tf("threecard.playPayoutLine", "payout", "20"))
+	})
+
+	t.Run("shows the ante alone when the dealer did not qualify", func(t *testing.T) {
+		out := p.Output(build(20, 0), nil)
+		assert.Contains(t, out, i18n.Tf("threecard.antePayoutLine", "payout", "20"))
+		// The play bet was pushed, so printing a zero line would read as a loss.
+		assert.NotContains(t, out, i18n.T("threecard.playPayoutLine"))
+	})
+
+	t.Run("shows neither when nothing paid", func(t *testing.T) {
+		out := p.Output(build(0, 0), nil)
+		assert.NotContains(t, out, i18n.T("threecard.antePayoutLine"))
+		assert.NotContains(t, out, i18n.T("threecard.playPayoutLine"))
+	})
 }
