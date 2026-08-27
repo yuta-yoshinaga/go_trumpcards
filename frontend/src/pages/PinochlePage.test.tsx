@@ -617,4 +617,15 @@ describe('PinochlePage meld reference', () => {
     await waitFor(() => expect(screen.getByText(/ラウンド/)).toBeInTheDocument());
     expect(screen.queryByTestId('pn-meld-table')).not.toBeInTheDocument();
   });
+
+  it('labels the per-player trick count instead of a bare "T:"', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByText(/ラウンド/)).toBeInTheDocument());
+    // The row already translates its other three labels; the trick count must not
+    // stay an untranslated "T:". It also must not reuse t('trick'), which labels
+    // the *current trick number* elsewhere on this page.
+    expect(screen.getAllByText(/獲得トリック: 0/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/\| T: /)).not.toBeInTheDocument();
+  });
 });

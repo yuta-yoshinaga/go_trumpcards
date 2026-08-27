@@ -321,7 +321,8 @@ function PinochlePageContent() {
                   >
                     <div className="font-bold">{playerName(p.id, p.isHuman)}</div>
                     <div>
-                      {t('team')} {p.team} | {t('bid')}: {p.bid} | {t('meldScore')}: {p.meldScore} | T: {p.trickCount}
+                      {t('team')} {p.team} | {t('bid')}: {p.bid} | {t('meldScore')}: {p.meldScore} | {t('trickCount')}:{' '}
+                      {p.trickCount}
                     </div>
                   </div>
                 );
