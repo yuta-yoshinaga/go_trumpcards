@@ -9,6 +9,8 @@ type SeahavenTowersGame interface {
 	SolitaireGame
 	// GetGameEndFlag reports whether the game has left the playing phase.
 	GetGameEndFlag() bool
+	// CanAutoComplete はいまオートコンプリートを押せば最後まで通るかを返す。
+	CanAutoComplete() bool
 	// Reset ゲームを初期化する
 	Reset()
 	// MoveTableauToTableau タブロー間でカードを移動する

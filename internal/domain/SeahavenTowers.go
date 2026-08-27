@@ -402,6 +402,32 @@ func (s *SeahavenTowers) GetHint() *SeahavenTowersHint {
 	return nil
 }
 
+// CanAutoComplete はいまオートコンプリートを押せば最後まで通るかを返す。
+//
+// Web は #4776 以来この状態をバッジと pulse で光らせているが、CUI は ac が
+// あることも使えることも出していなかった。**表示と実行が別条件だと、光って
+// いるのに動かない盤が出る**ので、判定は Web の
+// frontend/src/utils/freeCellAutoComplete.ts と同じ「各列が降順に並んで
+// いること」に揃えてある ── 表向きかどうかではない (Seahaven に伏せ札は無い)。
+func (s *SeahavenTowers) CanAutoComplete() bool {
+	if s.phase != SeahavenTowersPhasePlaying {
+		return false
+	}
+	for col := 0; col < SeahavenTowersTableauCnt; col++ {
+		cards := s.tableau[col]
+		for i := 0; i+1 < len(cards); i++ {
+			if cards[i] == nil || cards[i+1] == nil {
+				continue
+			}
+			// cards[i] is below cards[i+1]; the lower card must rank higher.
+			if cards[i].GetValue() <= cards[i+1].GetValue() {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 // AutoComplete オートコンプリート
 func (s *SeahavenTowers) AutoComplete() error {
 	if s.phase != SeahavenTowersPhasePlaying {
