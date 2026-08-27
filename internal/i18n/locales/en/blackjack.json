@@ -68,6 +68,8 @@
   "payoutRef.push": "Push (tie: bet returned)",
   "payoutRef.surrender": "Surrender (half the bet returned)",
   "payoutRef.bust": "Bust (over 21: lose)",
+  "payoutRef.perfectPairs": "Perfect Pairs (mixed {{mixed}}:1 / coloured {{colored}}:1 / perfect {{perfect}}:1)",
+  "payoutRef.twentyOnePlus3": "21+3 (flush {{flush}}:1 / straight {{straight}}:1 / three of a kind {{trips}}:1 / straight flush {{straightFlush}}:1 / suited trips {{suitedTrips}}:1)",
   "helpExampleBet": "  b 100                bet 100 chips and deal",
   "helpExampleHit": "  h                    draw one more card",
   "helpExampleStand": "  s                    stand and pass to the dealer",
