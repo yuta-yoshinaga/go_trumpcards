@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pigtailApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -334,5 +335,24 @@ describe('PigsTailPage', () => {
       (b) => (footer.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING) !== 0,
     );
     expect(precedesFooter).toBe(true);
+  });
+
+  it('renders CPU labels through the shared playerName helper, not a literal', async () => {
+    // playerName() resolves common:player.cpu, whose ja value happens to be
+    // "CPU {{id}}" -- the same text the page used to hardcode. Overriding the
+    // wording is the only way to tell the two apart: a hardcoded label ignores it.
+    i18n.addResourceBundle('ja', 'common', { player: { cpu: 'コンピュータ{{id}}' } }, true, true);
+    try {
+      mockExec.mockResolvedValue({
+        ...baseState,
+        cpuActions: [{ drawPlayerIdx: 2, drawnCard: null, penaltyFlag: false, penaltyCount: 0 }],
+      } as PigsTailResponse);
+      renderWithProviders(<PigsTailPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      await waitFor(() => expect(screen.getAllByText(/コンピュータ2/).length).toBeGreaterThan(0));
+      expect(screen.getAllByText(/コンピュータ1/).length).toBeGreaterThan(0);
+    } finally {
+      i18n.addResourceBundle('ja', 'common', { player: { cpu: 'CPU {{id}}' } }, true, true);
+    }
   });
 });
