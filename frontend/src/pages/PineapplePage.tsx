@@ -752,7 +752,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                   <div className="sr-only" role="status" aria-live="polite" data-testid="pn-keep-feature-announce">
                     {`${t('discard.keepLabel')}: ${selectedKeepFeatures
                       .map((f) => t(`discard.feature${f.charAt(0).toUpperCase()}${f.slice(1)}`))
-                      .join('\u30fb')}`}
+                      .join('・')}`}
                   </div>
                 )}
                 {/* The cp-discard-candidate / cp-discard-recommended badges are
