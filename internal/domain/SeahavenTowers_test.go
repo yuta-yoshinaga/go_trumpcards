@@ -789,3 +789,74 @@ func TestSeahavenTowersSetters(t *testing.T) {
 	s.SetFoundation(found)
 	assert.Equal(t, 1, len(s.GetFoundation()[0]))
 }
+
+// CanAutoComplete lives in domain, so its own coverage has to come from a
+// domain test -- exercising it only through the CUI presenter leaves the rule
+// counted as untested. Fixtures are built by hand rather than dealt.
+func TestSeahavenTowersCanAutoComplete(t *testing.T) {
+	descending := func() [SeahavenTowersTableauCnt][]*Card {
+		var tb [SeahavenTowersTableauCnt][]*Card
+		for col := range tb {
+			tb[col] = []*Card{
+				NewCard(CardDesignSpade, 9, false),
+				NewCard(CardDesignHeart, 5, false),
+			}
+		}
+		return tb
+	}
+
+	t.Run("true once every column descends", func(t *testing.T) {
+		s := newTestSeahavenTowers()
+		s.Reset()
+		s.SetTableau(descending())
+		s.SetPhase(SeahavenTowersPhasePlaying)
+		assert.True(t, s.CanAutoComplete())
+	})
+
+	t.Run("false while a single column ascends", func(t *testing.T) {
+		s := newTestSeahavenTowers()
+		s.Reset()
+		tb := descending()
+		tb[3] = []*Card{
+			NewCard(CardDesignSpade, 5, false),
+			NewCard(CardDesignHeart, 9, false),
+		}
+		s.SetTableau(tb)
+		s.SetPhase(SeahavenTowersPhasePlaying)
+		assert.False(t, s.CanAutoComplete())
+	})
+
+	t.Run("false outside the playing phase even with a finished board", func(t *testing.T) {
+		s := newTestSeahavenTowers()
+		s.Reset()
+		s.SetTableau(descending())
+		s.SetPhase(SeahavenTowersPhaseGameClear)
+		assert.False(t, s.CanAutoComplete())
+	})
+
+	t.Run("a single-card column cannot be out of order", func(t *testing.T) {
+		s := newTestSeahavenTowers()
+		s.Reset()
+		var tb [SeahavenTowersTableauCnt][]*Card
+		for col := range tb {
+			tb[col] = []*Card{NewCard(CardDesignSpade, 7, false)}
+		}
+		s.SetTableau(tb)
+		s.SetPhase(SeahavenTowersPhasePlaying)
+		assert.True(t, s.CanAutoComplete())
+	})
+
+	t.Run("a nil slot is skipped rather than treated as out of order", func(t *testing.T) {
+		s := newTestSeahavenTowers()
+		s.Reset()
+		var tb [SeahavenTowersTableauCnt][]*Card
+		for col := range tb {
+			tb[col] = []*Card{NewCard(CardDesignSpade, 9, false)}
+		}
+		// A hole in the middle must not read as an ascending pair.
+		tb[0] = []*Card{NewCard(CardDesignSpade, 9, false), nil, NewCard(CardDesignHeart, 5, false)}
+		s.SetTableau(tb)
+		s.SetPhase(SeahavenTowersPhasePlaying)
+		assert.True(t, s.CanAutoComplete())
+	})
+}
