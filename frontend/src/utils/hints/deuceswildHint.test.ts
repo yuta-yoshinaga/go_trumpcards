@@ -84,4 +84,22 @@ describe('getDeucesWildHint', () => {
     const result = getDeucesWildHint(makeState({ hand }));
     expect(result?.reason).toBe('hint.drawAll');
   });
+
+  // Deuces Wild's paytable stops at three of a kind: it has no pair row at all.
+  // Recommending a high pair there is a hold worth nothing, and it displaces a
+  // four-card royal, which is the strongest draw in the game.
+  it('does not recommend a high pair, since no pair pays in this variant', () => {
+    const hint = getDeucesWildHint(
+      makeState({
+        hand: [
+          makeCard('SPADE', 13),
+          makeCard('HEART', 13),
+          makeCard('SPADE', 12),
+          makeCard('SPADE', 11),
+          makeCard('SPADE', 10),
+        ],
+      }),
+    );
+    expect(hint?.reason).not.toBe('hint.holdPair');
+  });
 });
