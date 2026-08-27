@@ -1686,4 +1686,23 @@ describe('BigOHiLoPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('bigohilo-board-low-badge')).not.toBeInTheDocument();
   });
+
+  it('states Hi/Lo usage as text, not ring colour alone', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    const { container } = renderWithProviders(<BigOHiLoPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    // hiLoRingStyle encodes four states in ring colour; a screen reader gets none
+    // of them, so each card that participates must also say so in text.
+    const labels = Array.from(container.querySelectorAll('[data-hilo-usage]')).map((el) => el.textContent);
+    expect(labels.length).toBeGreaterThan(0);
+    // Every marked card carries one of the three participation words.
+    for (const label of labels) {
+      expect(['ハイ', 'ロー', 'ハイ・ロー']).toContain(label);
+    }
+    // The dual state must be its own word, not the two rings stacked.
+    const both = container.querySelectorAll('[data-hilo-usage="both"]');
+    for (const el of both) {
+      expect(el).toHaveTextContent('ハイ・ロー');
+    }
+  });
 });
