@@ -364,7 +364,7 @@ function OmahaPageContent() {
                         return (
                           <div
                             key={`${card.design}-${card.value}`}
-                            className={`transition-all ${
+                            className={`flex flex-col items-center transition-all ${
                               inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
                             } ${dim ? 'opacity-50' : ''}`}
                             data-best5-hole={inBest || undefined}
