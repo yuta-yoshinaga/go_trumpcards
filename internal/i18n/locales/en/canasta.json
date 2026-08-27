@@ -37,5 +37,6 @@
   "drawBlockerPileEmpty": "* The discard pile is empty, so it cannot be taken",
   "drawBlockerBlackThreeTop": "* A black three is on top, so the discard pile cannot be taken",
   "drawBlockerWildTop": "* A wild card is on top, so the discard pile cannot be taken",
-  "drawBlockerNoPairInHand": "* Your hand has no natural pair matching the top rank, so the pile cannot be taken yet"
+  "drawBlockerNoPairInHand": "* Your hand has no natural pair matching the top rank, so the pile cannot be taken yet",
+  "concealedBonusHint": "Concealed go-out available: going out with no initial meld pays {{bonus}} instead of {{normal}}"
 }
