@@ -928,4 +928,24 @@ describe('CrazyEightsPage winner highlight', () => {
     const row = await screen.findByTestId('ce-score-row-1');
     expect(row).not.toHaveAttribute('data-winner', 'true');
   });
+
+  it('shows how close the leading score is to ending the game', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<CrazyEightsPage />);
+    // Reaching pointLimit ends the game, but the limit lived only in the
+    // settings panel -- the score table showed bare numbers.
+    const line = await screen.findByTestId('ce-limit-progress');
+    expect(line.textContent).toContain('200');
+    expect(line.textContent).toContain('20'); // the highest cumulative score
+  });
+
+  it('omits the limit line when no point limit is set', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      config: { cpuDifficulty: 1, pointLimit: 0 },
+    });
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('ce-limit-progress')).not.toBeInTheDocument();
+  });
 });

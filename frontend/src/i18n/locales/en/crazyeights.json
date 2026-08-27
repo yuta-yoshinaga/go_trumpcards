@@ -77,5 +77,6 @@
     "play_valid": "a legal play",
     "choose_longest_suit": "your longest suit"
   },
-  "winnerBadge": "(winner)"
+  "winnerBadge": "(winner)",
+  "limitProgress": "Limit: {{limit}} / highest: {{name}} {{score}}"
 }
