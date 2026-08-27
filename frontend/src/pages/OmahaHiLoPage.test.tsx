@@ -1692,4 +1692,22 @@ describe('OmahaHiLoPage', () => {
     await waitFor(() => expect(screen.getByTestId('omahahilo-split')).toBeInTheDocument());
     expect(screen.queryByTestId('omahahilo-scoop-badge')).not.toBeInTheDocument();
   });
+
+  it('names the CPU when a CPU scoops, without the human-only emphasis', async () => {
+    const cpuScoopState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [
+        { ...showdownState.roundResults[0], hiWonAmount: 0, lowWonAmount: 0 },
+        { ...showdownState.roundResults[1], wonAmount: 300, hiWonAmount: 200, lowWonAmount: 100 },
+      ],
+    };
+    mockExec.mockResolvedValue(cpuScoopState);
+    renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('omahahilo-split')).toBeInTheDocument());
+    const badge = screen.getByTestId('omahahilo-scoop-badge');
+    // The scoop.badge branch interpolates {{name}}; only scoop.youBadge omits it.
+    expect(badge).toHaveTextContent('CPU 1');
+    expect(badge).toHaveTextContent('300');
+    expect(badge).not.toHaveAttribute('data-scoop-human');
+  });
 });
