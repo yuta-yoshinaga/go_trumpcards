@@ -444,6 +444,42 @@ func TestEuchreWebPresenter_HintOutput(t *testing.T) {
 		assert.Equal(t, "euchre.hintRequested", resObj.MessageCode)
 	})
 
+	t.Run("sends the thresholds alongside the score", func(t *testing.T) {
+		score := 4
+		orderUp := true
+		m, _ := setupEuchreWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
+		m.On("GetHint").Return(&domain.EuchreHint{
+			OrderUp: &orderUp,
+			Score:   &score,
+			Reason:  "strong_hand",
+		})
+
+		result := p.HintOutput(m)
+		var resObj controller.EuchreWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, &score, resObj.Hint.Score)
+		// The client must not carry its own copy of these: the CUI already
+		// prints all three together, and a duplicated constant drifts.
+		assert.NotNil(t, resObj.Hint.OrderUpScore)
+		assert.Equal(t, domain.EuchreOrderUpScore, *resObj.Hint.OrderUpScore)
+		assert.NotNil(t, resObj.Hint.GoAloneScore)
+		assert.Equal(t, domain.EuchreGoAloneScore, *resObj.Hint.GoAloneScore)
+	})
+
+	t.Run("omits the thresholds when there is no score to read them against", func(t *testing.T) {
+		idx := 2
+		m, _ := setupEuchreWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
+		m.On("GetHint").Return(&domain.EuchreHint{CardIndex: &idx, Reason: "follow_suit"})
+
+		result := p.HintOutput(m)
+		var resObj controller.EuchreWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Nil(t, resObj.Hint.OrderUpScore)
+		assert.Nil(t, resObj.Hint.GoAloneScore)
+	})
+
 	t.Run("hint available with orderUp", func(t *testing.T) {
 		orderUp := true
 		m, _ := setupEuchreWebMockWithPlayers()

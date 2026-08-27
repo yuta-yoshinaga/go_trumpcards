@@ -973,4 +973,39 @@ describe('EuchrePage', () => {
       expect(screen.queryByTestId('eu-bower-badge-1')).not.toBeInTheDocument();
     });
   });
+
+  // #5509 gave the CUI the number the bid decision rests on. Without it the web
+  // shows a reason key and no sense of how close the hand was to the line.
+  it('shows the hand strength and the thresholds it is read against', async () => {
+    mockExec.mockResolvedValue(pickUpPhaseState);
+    renderWithProviders(<EuchrePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    mockExec.mockResolvedValue({
+      ...pickUpPhaseState,
+      hint: { reason: 'strongHand', orderUp: true, score: 4, orderUpScore: 3, goAloneScore: 5 },
+    } as unknown as EuchreResponse);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const line = await screen.findByTestId('eu-hint-score');
+    // The thresholds come from the server; a client-side copy would drift the
+    // first time EuchreOrderUpScore changes.
+    expect(line.textContent).toContain('4');
+    expect(line.textContent).toContain('3');
+    expect(line.textContent).toContain('5');
+  });
+
+  it('omits the strength line when the server sent no score', async () => {
+    mockExec.mockResolvedValue(pickUpPhaseState);
+    renderWithProviders(<EuchrePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    mockExec.mockResolvedValue({
+      ...pickUpPhaseState,
+      hint: { reason: 'strongHand', orderUp: true },
+    } as unknown as EuchreResponse);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    expect(screen.queryByTestId('eu-hint-score')).not.toBeInTheDocument();
+  });
 });

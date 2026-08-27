@@ -89,5 +89,6 @@
     "leadOffSuit": "Lead with a non-trump card"
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "hintScore": "Hand strength: {{score}} (order up at {{orderUp}}+, go alone at {{goAlone}}+)"
 }
