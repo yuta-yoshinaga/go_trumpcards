@@ -45,5 +45,6 @@
   "holdRoyalDraw": "Hold four to a royal flush",
   "helpExampleBet": "  b 5                  bet five coins and deal",
   "madeHandLine": "Current hand: {{handName}}",
-  "madeHandNone": "Current hand: no paying hand"
+  "madeHandNone": "Current hand: no paying hand",
+  "chipsRefilled": "Your balance fell below the minimum bet, so it was topped up to {{chips}}"
 }

@@ -45,5 +45,6 @@
   "holdRoyalDraw": "ロイヤルフラッシュへの4枚を残す",
   "helpExampleBet": "  b 5                  5 コイン賭けて配る",
   "madeHandLine": "現在の役: {{handName}}",
-  "madeHandNone": "現在の役: 役なし（配当対象外）"
+  "madeHandNone": "現在の役: 役なし（配当対象外）",
+  "chipsRefilled": "残高が最低ベットを下回ったため、{{chips}}コインを補充しました"
 }

@@ -45,6 +45,13 @@ func (vpp *VideoPokerWebPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 			resObj.Message = "No winning hand."
 			resObj.MessageCode = "videopoker.result.lose"
 		}
+	} else if vp.GetChipsRefilled() {
+		// Reset tops the balance back up when it falls under the minimum bet.
+		// Without a word for it, chips simply appear and the player is left to
+		// guess whether they misread the previous round.
+		resObj.Message = "Your balance ran out, so it was topped up."
+		resObj.MessageCode = "videopoker.chipsRefilled"
+		resObj.MessageParams = map[string]string{"chips": strconv.Itoa(domain.VideoPokerDefaultChips)}
 	}
 
 	return marshalOrError(resObj)

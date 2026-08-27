@@ -24,18 +24,19 @@ const (
 
 // VideoPoker ビデオポーカークラス
 type VideoPoker struct {
-	trumpCards  *TrumpCards
-	hand        []*Card
-	chips       ChipHolder
-	betAmount   int
-	heldIndices [VideoPokerHandSize]bool
-	phase       int
-	gameEndFlag bool
-	result      GameResult
-	payout      int
-	handRank    int
-	handName    string
-	handKey     string
+	trumpCards    *TrumpCards
+	hand          []*Card
+	chips         ChipHolder
+	betAmount     int
+	heldIndices   [VideoPokerHandSize]bool
+	phase         int
+	gameEndFlag   bool
+	chipsRefilled bool // Reset がこのターンに残高を補充したか (永続化しない)
+	result        GameResult
+	payout        int
+	handRank      int
+	handName      string
+	handKey       string
 	actionLogBase
 	config *VideoPokerVariantConfig
 }
@@ -84,8 +85,15 @@ func (vp *VideoPoker) Reset() {
 	vp.handName = ""
 	vp.handKey = ""
 	vp.actionLog = nil
+	// A refill is a gift of chips out of nowhere; saying nothing makes the
+	// balance look like it healed itself. The flag is deliberately NOT part of
+	// videoPokerJSON: it means "this just happened", and the presenter reads it
+	// in the same request. Persisting it would re-announce the refill on every
+	// reload of a session that has long since moved on.
+	vp.chipsRefilled = false
 	if vp.chips.GetChips() < VideoPokerMinBet {
 		vp.chips.SetChips(VideoPokerDefaultChips)
+		vp.chipsRefilled = true
 	}
 	vp.trumpCards = NewTrumpCards(vp.config.JokerCount)
 	vp.trumpCards.Shuffle()
@@ -335,6 +343,10 @@ type videoPokerJSON struct {
 	ConfigName  string                   `json:"cn"`
 	JokerCount  int                      `json:"jc"`
 }
+
+// GetChipsRefilled は直前の Reset が最低ベット割れで残高を補充したかを返す。
+// 保存対象ではないので、リロード後は false に戻る。
+func (vp *VideoPoker) GetChipsRefilled() bool { return vp.chipsRefilled }
 
 // MarshalJSON implements json.Marshaler.
 func (vp *VideoPoker) MarshalJSON() ([]byte, error) {

@@ -1,6 +1,7 @@
 package presenter
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
@@ -15,6 +16,7 @@ import (
 func setupVideoPokerCuiMockDefaults(m *interfaces.MockVideoPokerGame) {
 	m.On("GetChips").Return(1000).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseBet).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
@@ -52,6 +54,7 @@ func TestVideoPokerCuiPresenter_Output_BetPhase_JokerPokerPaytable(t *testing.T)
 	// バリアント固有の役（Kings or Better / Five of a Kind / Wild Royal Flush）が出ること。
 	m.ExpectedCalls = nil
 	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseBet).Maybe()
 	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetHand").Return(([]*domain.Card)(nil)).Maybe()
@@ -74,6 +77,7 @@ func TestVideoPokerCuiPresenter_Output_BetPhase_Paytable_EnLocale(t *testing.T) 
 	setupVideoPokerCuiMockDefaults(m)
 	m.ExpectedCalls = nil
 	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseBet).Maybe()
 	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetHand").Return(([]*domain.Card)(nil)).Maybe()
@@ -90,6 +94,7 @@ func TestVideoPokerCuiPresenter_Output_DrawPhase_WithHand(t *testing.T) {
 	m := new(interfaces.MockVideoPokerGame)
 	m.On("GetChips").Return(997).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseDraw).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetHand").Return([]*domain.Card{
 		domain.NewCard(domain.CardDesignSpade, 1, false),
@@ -118,6 +123,7 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Win(t *testing.T) {
 	m := new(interfaces.MockVideoPokerGame)
 	m.On("GetChips").Return(1025).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseResult).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetHand").Return([]*domain.Card{
 		domain.NewCard(domain.CardDesignSpade, 7, false),
@@ -152,6 +158,7 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Win_DeucesWildTranslated(t *t
 		m := new(interfaces.MockVideoPokerGame)
 		m.On("GetChips").Return(1025).Maybe()
 		m.On("GetPhase").Return(domain.VideoPokerPhaseResult).Maybe()
+		m.On("GetChipsRefilled").Return(false).Maybe()
 		m.On("GetCurrentHandKey").Return("").Maybe()
 		m.On("GetHand").Return([]*domain.Card{
 			domain.NewCard(domain.CardDesignSpade, 2, false),
@@ -214,6 +221,7 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Lose(t *testing.T) {
 	m := new(interfaces.MockVideoPokerGame)
 	m.On("GetChips").Return(999).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseResult).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetHand").Return([]*domain.Card{
 		domain.NewCard(domain.CardDesignSpade, 2, false),
@@ -271,6 +279,7 @@ func TestVideoPokerCuiPresenter_Output_JokerHighlighted(t *testing.T) {
 	m := new(interfaces.MockVideoPokerGame)
 	m.On("GetChips").Return(1000).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseDraw).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
@@ -294,6 +303,7 @@ func TestVideoPokerCuiPresenter_Output_DeucesWildTwosHighlighted(t *testing.T) {
 	m := new(interfaces.MockVideoPokerGame)
 	m.On("GetChips").Return(1000).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseDraw).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
@@ -319,6 +329,7 @@ func TestVideoPokerCuiPresenter_Output_PlainVariantTwoNotHighlighted(t *testing.
 	m := new(interfaces.MockVideoPokerGame)
 	m.On("GetChips").Return(1000).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseDraw).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
@@ -347,6 +358,7 @@ func TestVideoPokerCuiPresenter_HintOutput(t *testing.T) {
 	drawGame := func(variant string, hand []*domain.Card) *interfaces.MockVideoPokerGame {
 		m := new(interfaces.MockVideoPokerGame)
 		m.On("GetPhase").Return(domain.VideoPokerPhaseDraw)
+		m.On("GetChipsRefilled").Return(false).Maybe()
 		m.On("GetCurrentHandKey").Return("").Maybe()
 		m.On("GetVariantName").Return(variant)
 		m.On("GetHand").Return(hand)
@@ -531,6 +543,7 @@ func TestVideoPokerCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("no hint outside the draw phase", func(t *testing.T) {
 		m := new(interfaces.MockVideoPokerGame)
 		m.On("GetPhase").Return(domain.VideoPokerPhaseBet)
+		m.On("GetChipsRefilled").Return(false).Maybe()
 		m.On("GetCurrentHandKey").Return("").Maybe()
 		assert.Contains(t, p.HintOutput(m), i18n.T("videopoker.hintNone"))
 	})
@@ -545,6 +558,7 @@ func TestVideoPokerCuiPresenter_MadeHandLine(t *testing.T) {
 	withKey := func(phase int, key string) *interfaces.MockVideoPokerGame {
 		m := new(interfaces.MockVideoPokerGame)
 		m.On("GetChips").Return(997).Maybe()
+		m.On("GetChipsRefilled").Return(false).Maybe()
 		m.On("GetPhase").Return(phase).Maybe()
 		m.On("GetHand").Return([]*domain.Card{
 			domain.NewCard(domain.CardDesignSpade, 5, false),
@@ -588,5 +602,28 @@ func TestVideoPokerCuiPresenter_MadeHandLine(t *testing.T) {
 			assert.NotContains(t, out,
 				i18n.Tf("videopoker.madeHandLine", "handName", i18n.T("pokerhand.threeOfAKind")), "phase %d", phase)
 		}
+	})
+}
+
+// Reset hands out chips when the balance is spent. Both surfaces have to say so,
+// or the number simply changes with no cause on screen.
+func TestVideoPokerCuiPresenter_ChipsRefilledNotice(t *testing.T) {
+	p := new(VideoPokerCuiPresenter)
+
+	build := func(refilled bool) *interfaces.MockVideoPokerGame {
+		m := new(interfaces.MockVideoPokerGame)
+		// Registered before the shared defaults so this value is the one used.
+		m.On("GetChipsRefilled").Return(refilled).Maybe()
+		setupVideoPokerCuiMockDefaults(m)
+		return m
+	}
+
+	t.Run("announces a refill during the bet phase", func(t *testing.T) {
+		assert.Contains(t, p.Output(build(true), nil), i18n.Tf("videopoker.chipsRefilled",
+			"chips", strconv.Itoa(domain.VideoPokerDefaultChips)))
+	})
+
+	t.Run("says nothing when no refill happened", func(t *testing.T) {
+		assert.NotContains(t, p.Output(build(false), nil), i18n.T("videopoker.chipsRefilled"))
 	})
 }
