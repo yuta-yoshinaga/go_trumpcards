@@ -32,6 +32,12 @@ export interface EuchreHint {
   suit?: number;
   goAlone?: boolean;
   reason: string;
+  /** Hand strength the bid decision was made on. Bidding phase only. */
+  score?: number;
+  /** Thresholds `score` is read against. Sent by the server rather than
+   * duplicated here, so the displayed basis cannot drift from the rule. */
+  orderUpScore?: number;
+  goAloneScore?: number;
 }
 
 /** Full Euchre game state returned from the API. */

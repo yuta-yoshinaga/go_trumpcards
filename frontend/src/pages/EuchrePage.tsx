@@ -510,6 +510,18 @@ function EuchrePageContent() {
                 {hint.cardIndex != null
                   ? `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`
                   : `(${t(`hintReason.${hint.reason}`)})`}
+                {/* The CUI has shown the number the bid decision rests on since
+                    #5509; a bare reason key does not say how close your hand
+                    actually was to the CPU's line. */}
+                {hint.score != null && hint.orderUpScore != null && hint.goAloneScore != null && (
+                  <div className="text-ds-text-muted text-xs" data-testid="eu-hint-score">
+                    {t('hintScore', {
+                      score: hint.score,
+                      orderUp: hint.orderUpScore,
+                      goAlone: hint.goAloneScore,
+                    })}
+                  </div>
+                )}
               </div>
             )}
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

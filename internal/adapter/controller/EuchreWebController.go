@@ -45,6 +45,11 @@ type EuchreWebOutputHint struct {
 	Reason    string `json:"reason"`
 	// Score は判断の元になったハンド強度 (ビッド局面のみ)。CUI と同じ値。
 	Score *int `json:"score,omitempty"`
+	// OrderUpScore / GoAloneScore は Score を読むための基準。**定数をフロントに
+	// 書き写さずここで送る**のは、片方だけ変えると画面が嘘の基準を示すため。
+	// CUI は euchre.hintScore で同じ 3 つを並べている。
+	OrderUpScore *int `json:"orderUpScore,omitempty"`
+	GoAloneScore *int `json:"goAloneScore,omitempty"`
 }
 
 // EuchreWebOutput ユーカーWebアウトプット
