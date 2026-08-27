@@ -359,7 +359,8 @@ function OmahaPageContent() {
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
                         const inBest = showdownBest5.holeSet.has(idx);
-                        const dim = showdownBest5.holeSet.size > 0 && !inBest;
+                        const showUsage = showdownBest5.holeSet.size > 0;
+                        const dim = showUsage && !inBest;
                         return (
                           <div
                             key={`${card.design}-${card.value}`}
@@ -369,6 +370,14 @@ function OmahaPageContent() {
                             data-best5-hole={inBest || undefined}
                           >
                             <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            {showUsage && (
+                              <span
+                                className={`mt-0.5 text-[10px] font-semibold ${inBest ? 'text-ds-success' : 'text-ds-text-muted'}`}
+                                data-testid={inBest ? 'omaha-hole-used' : 'omaha-hole-unused'}
+                              >
+                                {inBest ? t('cardUsed') : t('cardUnused')}
+                              </span>
+                            )}
                           </div>
                         );
                       })

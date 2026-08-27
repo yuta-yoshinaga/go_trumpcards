@@ -1565,4 +1565,17 @@ describe('OmahaPage', () => {
     const settingsSummary = Array.from(allSummaries).find((s) => s.textContent?.includes('設定'));
     expect(settingsSummary).toBeTruthy();
   });
+
+  it('labels which hole cards the best hand uses, not colour alone', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<OmahaPage />);
+    // The ring/dim styling is invisible to a screen reader, so the used/unused
+    // split must also exist as text -- the same contract BigOPage already meets.
+    const used = await screen.findAllByTestId('omaha-hole-used');
+    expect(used.length).toBeGreaterThan(0);
+    expect(used[0]).toHaveTextContent('使用');
+    const unused = screen.queryAllByTestId('omaha-hole-unused');
+    expect(unused.length).toBeGreaterThan(0);
+    expect(unused[0]).toHaveTextContent('未使用');
+  });
 });
