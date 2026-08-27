@@ -1,3 +1,5 @@
+//go:build !js || !wasm || solo
+
 package domain
 
 // MemoryKnownMatchIdx は、表向き 1 枚に一致する「once めくって見た」伏せ札の

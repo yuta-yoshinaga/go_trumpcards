@@ -1,4 +1,4 @@
-//go:build test
+//go:build test && (!js || !wasm || solo)
 
 package domain_test
 
