@@ -930,13 +930,20 @@ describe('CrazyEightsPage winner highlight', () => {
   });
 
   it('shows how close the leading score is to ending the game', async () => {
-    mockExec.mockResolvedValue(playPhaseState);
+    // 77 rather than the fixture's 20: "20" is a substring of the limit "200",
+    // so asserting it would pass even if the leader were never selected.
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: playPhaseState.players.map((p) => (p.id === 2 ? { ...p, cumulativeScore: 77 } : p)),
+    });
     renderWithProviders(<CrazyEightsPage />);
     // Reaching pointLimit ends the game, but the limit lived only in the
     // settings panel -- the score table showed bare numbers.
     const line = await screen.findByTestId('ce-limit-progress');
     expect(line.textContent).toContain('200');
-    expect(line.textContent).toContain('20'); // the highest cumulative score
+    expect(line.textContent).toContain('77');
+    // Pin which seat was chosen, not just that a number appeared.
+    expect(line.textContent).toContain('CPU 2');
   });
 
   it('omits the limit line when no point limit is set', async () => {
