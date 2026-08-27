@@ -44,6 +44,12 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 
 	// ベットフェーズではベット額決定の判断材料として配当表を表示する。
 	if vp.GetPhase() == domain.VideoPokerPhaseBet {
+		// Reset silently tops the balance back up below the minimum bet, so the
+		// chips appear from nowhere unless this says otherwise.
+		if vp.GetChipsRefilled() {
+			sb.WriteString(color.Yellow(i18n.Tf("videopoker.chipsRefilled",
+				"chips", strconv.Itoa(domain.VideoPokerDefaultChips))) + "\n")
+		}
 		sb.WriteString(vpp.paytableStr(vp.GetVariantName()))
 	}
 

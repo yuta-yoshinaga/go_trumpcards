@@ -2690,7 +2690,8 @@
     "continentalrummy.errDiscardEmpty": "The discard pile is empty.",
     "continentalrummy.errNotAGoOut": "Those fifteen cards do not form a legal go-out. They must split as 3+3+3+3+3, 4+4+4+3 or 5+4+3+3 (sets are never melds).",
     "continentalrummy.invalidRounds": "Invalid number of rounds: {{val}}. Please enter 1-10.",
-    "continentalrummy.invalidDifficulty": "Invalid difficulty: {{val}}. Please enter 0-2."
+    "continentalrummy.invalidDifficulty": "Invalid difficulty: {{val}}. Please enter 0-2.",
+    "videopoker.chipsRefilled": "Your balance fell below the minimum bet, so it was topped up to {{chips}}"
   },
   "manual": {
     "ariaLabel": "Game Manual",

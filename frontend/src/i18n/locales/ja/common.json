@@ -2690,7 +2690,8 @@
     "continentalrummy.errDiscardEmpty": "捨て札がありません。",
     "continentalrummy.errNotAGoOut": "その 15 枚は認められた形になりません。3+3+3+3+3 / 4+4+4+3 / 5+4+3+3 のいずれかに揃える必要があります（セットは組になりません）。",
     "continentalrummy.invalidRounds": "無効なラウンド数です: {{val}}。1〜10 を指定してください。",
-    "continentalrummy.invalidDifficulty": "無効な難易度です: {{val}}。0〜2 を指定してください。"
+    "continentalrummy.invalidDifficulty": "無効な難易度です: {{val}}。0〜2 を指定してください。",
+    "videopoker.chipsRefilled": "残高が最低ベットを下回ったため、{{chips}}コインを補充しました"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

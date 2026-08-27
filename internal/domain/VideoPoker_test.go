@@ -698,3 +698,35 @@ func TestVideoPoker_NoPayingHandYieldsNoKey(t *testing.T) {
 		assert.Empty(t, vp.GetCurrentHandKey(), name)
 	}
 }
+
+// Reset tops the balance up when it falls under the minimum bet. That is a gift
+// of chips, so the flag exists to let both surfaces say it happened.
+func TestVideoPokerChipsRefilled(t *testing.T) {
+	t.Run("flags the refill when the balance is spent", func(t *testing.T) {
+		vp := NewDefaultVideoPoker()
+		vp.Reset()
+		vp.SetChips(0)
+		vp.Reset()
+		assert.True(t, vp.GetChipsRefilled())
+		assert.Equal(t, VideoPokerDefaultChips, vp.GetChips())
+	})
+
+	t.Run("does not flag a reset that changed nothing", func(t *testing.T) {
+		vp := NewDefaultVideoPoker()
+		vp.Reset()
+		vp.SetChips(500)
+		vp.Reset()
+		assert.False(t, vp.GetChipsRefilled(), "500 is above the minimum bet")
+		assert.Equal(t, 500, vp.GetChips())
+	})
+
+	t.Run("clears the flag on the next reset", func(t *testing.T) {
+		vp := NewDefaultVideoPoker()
+		vp.SetChips(0)
+		vp.Reset()
+		assert.True(t, vp.GetChipsRefilled())
+		// Without the clear the notice would stick for the rest of the session.
+		vp.Reset()
+		assert.False(t, vp.GetChipsRefilled())
+	})
+}
