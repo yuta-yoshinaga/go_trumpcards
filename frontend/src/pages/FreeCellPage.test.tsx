@@ -1061,4 +1061,39 @@ describe('FreeCellPage empty-column move limit', () => {
     fireEvent.click((await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement);
     expect(await screen.findByTestId('fc-empty-col-1')).not.toHaveAttribute('data-empty-col-blocked');
   });
+
+  it('says in the accessible name why an empty column is refusing the stack', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 13), card('HEART', 12), card('CLOVER', 11)], [], [], [], [], [], [], []],
+      maxMovableCards: 8,
+      maxMovableCardsToEmptyColumn: 2,
+    });
+    renderWithProviders(<FreeCellPage />);
+
+    fireEvent.click((await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement);
+    const emptyCol = await screen.findByTestId('fc-empty-col-1');
+    await waitFor(() => expect(emptyCol).toHaveAttribute('data-empty-col-blocked', 'true'));
+    // title + opacity reach a mouse; #5820 already fixed the same gap on the
+    // tableau cards by putting the reason in the accessible name.
+    const label = emptyCol.getAttribute('aria-label') ?? '';
+    expect(label).toContain('2');
+    expect(label).toContain('3');
+  });
+
+  it('keeps the empty column label free of a refusal when the stack fits', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 13), card('HEART', 12)], [], [], [], [], [], [], []],
+      maxMovableCards: 8,
+      maxMovableCardsToEmptyColumn: 2,
+    });
+    renderWithProviders(<FreeCellPage />);
+
+    fireEvent.click((await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement);
+    const emptyCol = await screen.findByTestId('fc-empty-col-1');
+    const label = emptyCol.getAttribute('aria-label') ?? '';
+    expect(label).not.toBe('');
+    expect(label).not.toContain('まで');
+  });
 });
