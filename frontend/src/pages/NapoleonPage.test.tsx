@@ -1176,4 +1176,17 @@ describe('NapoleonPage point limit', () => {
     expect(line.textContent).toContain('30');
     expect(line.textContent).not.toContain('75');
   });
+
+  // 変わることが読み上げの条件なので、hint がある間だけ現れる内側の div ではなく、
+  // 常設のラッパーがライブ領域でなければならない。
+  it('exposes the hint through a region that was already mounted', async () => {
+    renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const region = await screen.findByTestId('np-hint-live');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    // Empty before a hint exists -- that emptiness is what makes the later
+    // text a change the reader announces.
+    expect(region).toHaveTextContent('');
+  });
 });
