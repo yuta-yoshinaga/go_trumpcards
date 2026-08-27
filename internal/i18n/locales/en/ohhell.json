@@ -6,6 +6,7 @@
   "helpNextRound": "  nr                   next round",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetMaxHand": "  sm <n>               max hand size (1-13)",
+  "helpSetScoring": "  ss <0-1>             scoring (0 = a miss scores 0, 1 = a miss scores minus)",
   "header": "Round: {{round}}/{{total}}  Hand size: {{hand}}  Trick: {{trick}}",
   "trumpCard": "Trump: {{card}}",
   "trumpNone": "Trump: none",
@@ -30,5 +31,7 @@
   "hintBid": "[HINT: bid {{bid}} ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "scoringVariantRequired01": "ss needs 0 (miss scores 0) or 1 (miss scores minus)",
+  "invalidScoringVariant01": "the scoring variant must be 0 or 1"
 }

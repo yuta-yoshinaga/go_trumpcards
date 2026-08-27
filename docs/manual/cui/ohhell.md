@@ -76,6 +76,7 @@ flowchart TD
 | `nextround` | `nr` | ラウンドをスコアリングして次のラウンドへ |
 | `setdifficulty <0-2>` | `sd <0-2>` | CPU難易度設定（0=Easy, 1=Normal, 2=Hard） |
 | `setmaxhand <n>` | `sm <n>` | 最大手札枚数設定（1-13） |
+| `setscoring <n>` | `ss <n>` | 得点方式設定（0=外れは0点 / 1=外れはビッドとの差分だけマイナス） |
 | `hint` | `h` | 推奨カード/ビッドのヒントを表示 |
 | `log` | `l` | 棋譜表示 |
 | `quit` | `q` | ゲーム終了 |

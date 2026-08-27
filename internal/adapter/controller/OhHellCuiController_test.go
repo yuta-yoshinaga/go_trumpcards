@@ -85,6 +85,40 @@ func TestOhHellCuiController_Exec_SetMaxHand(t *testing.T) {
 	assert.Equal(t, "maxhand5", c.Exec("sm 5"))
 }
 
+// ScoringVariant decides whether a missed bid scores 0 or a negative number --
+// a different game to play. The web has a selector; the CUI had no command.
+func TestOhHellCuiController_Exec_SetScoring(t *testing.T) {
+	t.Run("switches to the penalty variant", func(t *testing.T) {
+		m := new(mockUsecases.MockOhHellInteractor)
+		m.On("GetConfig").Return(domain.DefaultOhHellConfig())
+		cfg := domain.DefaultOhHellConfig()
+		cfg.ScoringVariant = domain.OhHellScoringPenalty
+		m.On("ResetWithConfig", cfg).Return("penalty")
+
+		c := controller.NewOhHellCuiController(m)
+		assert.Equal(t, "penalty", c.Exec("ss 1"))
+	})
+
+	t.Run("switches back through the long form", func(t *testing.T) {
+		m := new(mockUsecases.MockOhHellInteractor)
+		m.On("GetConfig").Return(domain.DefaultOhHellConfig())
+		cfg := domain.DefaultOhHellConfig()
+		cfg.ScoringVariant = domain.OhHellScoringStandard
+		m.On("ResetWithConfig", cfg).Return("standard")
+
+		c := controller.NewOhHellCuiController(m)
+		assert.Equal(t, "standard", c.Exec("setscoring 0"))
+	})
+
+	t.Run("refuses a missing or out-of-range value", func(t *testing.T) {
+		m := newOhHellCuiMock()
+		c := controller.NewOhHellCuiController(m)
+		assert.Contains(t, c.Exec("ss"), msgStem("scoringVariantRequired01"))
+		assert.Contains(t, c.Exec("ss 2"), msgKey("invalidScoringVariant01", "val", "2"))
+		assert.Contains(t, c.Exec("ss abc"), msgKey("invalidScoringVariant01", "val", "abc"))
+	})
+}
+
 func TestOhHellCuiController_Exec_Errors(t *testing.T) {
 	m := newOhHellCuiMock()
 	c := controller.NewOhHellCuiController(m)
