@@ -44,12 +44,6 @@ const BIGTWO_SORT_MODES: { mode: BigTwoSortMode; labelKey: string }[] = [
   { mode: 'number', labelKey: 'sort.number' },
 ];
 
-const DIFFICULTY_OPTIONS = [
-  { value: '0', label: 'Easy' },
-  { value: '1', label: 'Normal' },
-  { value: '2', label: 'Hard' },
-];
-
 /** Tutorial steps for Big Two. */
 const BT_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="bt-cpu-area"]', messageKey: 'tutorial.cpuArea', placement: 'bottom', advanceOn: 'next' },
@@ -121,6 +115,15 @@ function BigTwoPageContent() {
   const { handleCommand } = useCliGame(callApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const onReset = useCallback(() => handleResetWithConfig(), [handleResetWithConfig]);
+
+  const difficultyOptions = useMemo(
+    () => [
+      { value: '0', label: t('settings.difficultyEasy') },
+      { value: '1', label: t('settings.difficultyNormal') },
+      { value: '2', label: t('settings.difficultyHard') },
+    ],
+    [t],
+  );
 
   if (!state || state.players.length < 4) {
     return (
@@ -314,7 +317,7 @@ function BigTwoPageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: String(configInput.cpuDifficulty ?? 1),
-                    options: DIFFICULTY_OPTIONS,
+                    options: difficultyOptions,
                     onSelect: (v: string) => handleConfigChange('cpuDifficulty', Number.parseInt(v, 10)),
                   },
                   hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),

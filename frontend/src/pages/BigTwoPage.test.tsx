@@ -225,4 +225,15 @@ describe('BigTwoPage', () => {
     expect(finished.className).toContain('opacity-50');
     expect(finished.className).not.toContain('border-game-status-waiting');
   });
+
+  it('translates the CPU difficulty options instead of showing raw English', async () => {
+    renderWithProviders(<BigTwoPage />);
+    await screen.findByTestId('bt-cpu-2');
+    const select = document.getElementById('cpuDifficulty');
+    if (!(select instanceof HTMLSelectElement)) throw new Error('cpuDifficulty select not rendered');
+    const labels = Array.from(select.options).map((o) => o.textContent);
+    expect(labels).toEqual(['イージー', 'ノーマル', 'ハード']);
+    // The value each label maps to must not shift: 0=Easy, 1=Normal, 2=Hard.
+    expect(Array.from(select.options).map((o) => o.value)).toEqual(['0', '1', '2']);
+  });
 });
