@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { HoldemLikeExec } from '../api/gameApi';
+import type { HoldemConfigInput } from '../api/games/holdem';
 import type { OmahaResponse } from '../types/card';
 import { OmahaPhase, OmahaRebuyPhaseType } from '../types/phases';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -37,7 +38,7 @@ export interface CommunityPokerGameConfig {
    * pass nothing keep sending exactly what they sent before, so a page adding a
    * setting cannot change what the other five games reset with.
    */
-  resetConfig?: Record<string, number | boolean>;
+  resetConfig?: Omit<HoldemConfigInput, 'cpuMetaAI'>;
 }
 
 /**
