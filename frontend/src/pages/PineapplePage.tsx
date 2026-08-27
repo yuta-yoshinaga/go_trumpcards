@@ -349,6 +349,18 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     });
   }, [variant, isDiscardPhase, humanPlayer]);
 
+  const cpSelectedPreview = useMemo(() => {
+    if (variant !== 'crazypineapple' || !isDiscardPhase) return null;
+    if (selectedDiscards.length !== discardCount) return null;
+    const discardIdx = selectedDiscards[0];
+    const cand = candidatePreviews?.[discardIdx];
+    if (!cand) return null;
+    return {
+      handKey: cand.handKey,
+      isRecommended: recommendedDiscards.has(discardIdx),
+    };
+  }, [variant, isDiscardPhase, selectedDiscards, discardCount, candidatePreviews, recommendedDiscards]);
+
   const actionBindings = useMemo(
     () => [
       {
@@ -726,6 +738,17 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             {/* Discard controls */}
             {canDiscard && (
               <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
+                {/* The cp-discard-candidate / cp-discard-recommended badges are
+                    visual only. This region is variant-exclusive with
+                    irishpoker-discard-preview-announce and pn-keep-feature-announce,
+                    so only one of the three can ever speak. */}
+                {cpSelectedPreview && (
+                  <div className="sr-only" role="status" aria-live="polite" data-testid="cp-discard-preview-announce">
+                    {cpSelectedPreview.isRecommended
+                      ? t('discard.cpPreviewAriaRecommended', { hand: t(`hand.${cpSelectedPreview.handKey}`) })
+                      : t('discard.cpPreviewAria', { hand: t(`hand.${cpSelectedPreview.handKey}`) })}
+                  </div>
+                )}
                 {discardPreview && (
                   <div className="mb-2 text-sm" data-testid="irishpoker-discard-preview">
                     {/* **見えている行は読み上げ向きではない。** ラベル・札・役が
