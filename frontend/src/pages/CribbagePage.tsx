@@ -568,7 +568,11 @@ function CribbagePageContent() {
                     empty, so the hand below does not jump up and down as the pointer moves
                     in/out of cards — the pointerleave / pointerenter ping-pong would otherwise
                     flicker the hand position. */}
-                <div className="h-5">
+                {/* The wrapper is already permanently mounted (it reserves the row
+                    so the hand does not jump), which makes it the right place for
+                    the live region: a region entering the DOM together with its
+                    text is not a change and may go unread (#5955). */}
+                <div className="h-5" role="status" aria-live="polite" data-testid="cb-peg-preview-live">
                   {isPeggingPhase && hoveredPegValue !== null && (
                     <div className="text-ds-info text-xs" data-testid="cb-peg-hover-preview">
                       {t('pegPreview', { from: state.pegCount, to: state.pegCount + hoveredPegValue })}
