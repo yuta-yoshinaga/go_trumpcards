@@ -954,4 +954,22 @@ describe('SpiderPage', () => {
       expect(panel).not.toHaveTextContent('ベスト 900');
     });
   });
+
+  it('announces why the deal was refused, not just a shake', async () => {
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(screen.getByTestId('spd-empty-col-2')).toBeInTheDocument());
+    // Nothing to announce before the player tries.
+    expect(screen.queryByTestId('spd-deal-refusal')).not.toBeInTheDocument();
+
+    const dealButtons = screen.getAllByRole('button', { name: '配る' });
+    fireEvent.click(dealButtons[dealButtons.length - 1]);
+
+    // The shake and the title attribute reach neither a screen reader nor a
+    // keyboard user; the button is not even disabled, so without this the
+    // refusal is silent.
+    const live = await screen.findByTestId('spd-deal-refusal');
+    expect(live).toHaveTextContent('空の列');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveClass('sr-only');
+  });
 });

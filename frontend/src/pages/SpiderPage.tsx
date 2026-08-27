@@ -326,6 +326,21 @@ function SpiderPageContent() {
                 <div className="text-game-text-muted text-xs mb-1">
                   {t('stock')} ({state.stockCount})
                 </div>
+                {/* The refusal is otherwise a shake plus a title attribute, and
+                    the button is not even disabled -- so for a screen-reader or
+                    keyboard user the click simply does nothing. Keyed on the
+                    attempt count so a second try is announced again. */}
+                {emptyDealAttemptKey > 0 && (
+                  <div
+                    key={`deal-refusal-${emptyDealAttemptKey.toString()}`}
+                    className="sr-only"
+                    role="status"
+                    aria-live="polite"
+                    data-testid="spd-deal-refusal"
+                  >
+                    {t('cannotDealEmptyColExists')}
+                  </div>
+                )}
                 {state.stockCount > 0 ? (
                   <AnimatedCardBack
                     width={tableau.cw}
