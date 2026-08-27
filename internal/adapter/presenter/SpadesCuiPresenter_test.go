@@ -57,6 +57,34 @@ func TestSpadesCuiPresenter_Output(t *testing.T) {
 	defer color.SetNoColor(origNoColor)
 	p := new(presenter.SpadesCuiPresenter)
 
+	t.Run("says a nil is still alive before any trick", func(t *testing.T) {
+		m, players := setupSpadesCuiMockWithPlayers()
+		players[1].SetBid(0)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ニル継続中")
+		assert.NotContains(t, result, "ニル失敗")
+	})
+
+	t.Run("says a nil is broken the moment it takes a trick", func(t *testing.T) {
+		m, players := setupSpadesCuiMockWithPlayers()
+		players[1].SetBid(0)
+		players[1].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 2, false)})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ニル失敗")
+		assert.NotContains(t, result, "ニル継続中")
+	})
+
+	t.Run("says nothing about nil for an ordinary bid", func(t *testing.T) {
+		m, players := setupSpadesCuiMockWithPlayers()
+		players[1].SetBid(3)
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "ニル継続中")
+		assert.NotContains(t, result, "ニル失敗")
+	})
+
 	t.Run("initial state with header and player info", func(t *testing.T) {
 		m, players := setupSpadesCuiMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
