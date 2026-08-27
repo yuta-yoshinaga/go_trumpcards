@@ -6,6 +6,7 @@
   "helpSetMode": "  sm [0-1]             set mode (0=Normal, 1=JijiNuki)",
   "helpSetPlacement": "  sps [0-1]            set CPU placement strategy (0=OFF, 1=ON)",
   "helpSetMemoryAI": "  sma [0-1]            set CPU memory AI (0=OFF, 1=ON)",
+  "helpSetHesitation": "  sh [0-1]             set CPU hesitation delay (0=OFF, 1=ON)",
   "outputTitleNormal": "Old Maid",
   "outputTitleJijiNuki": "Old Maid (Jiji-Nuki)",
   "playerLineFinished": "{{name}}: finished",
@@ -26,5 +27,7 @@
   "promptCurrentTurnWithTarget": "{{name}} to act → drawing from {{target}}",
   "promptCurrentTurn": "{{name}} to act",
   "helpExampleD": "  d                    draw one card at random",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "hesitationFlagRequired0Off1On": "sh needs 0 (off) or 1 (on)",
+  "invalidHesitationFlag01": "the hesitation flag must be 0 or 1"
 }
