@@ -262,7 +262,7 @@ func (bjp *BlackJackCuiPresenter) payoutTable(bj interfaces.BlackJackGame) strin
 	for _, k := range keys {
 		b.WriteString("  " + i18n.T(ns+"."+k) + "\n")
 	}
-	// `bet <amount> [pp] [21+3]` is accepted in every variant, so the side-bet
+	// `bet <amount> [pp] [t3]` is accepted in every variant, so the side-bet
 	// odds belong on the table the player reads before staking. The multipliers
 	// are read from the constants that actually pay rather than written into the
 	// locale, so a change to one cannot leave the other advertising stale odds.

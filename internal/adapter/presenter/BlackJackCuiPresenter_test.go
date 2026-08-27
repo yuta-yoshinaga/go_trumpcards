@@ -1037,7 +1037,7 @@ func TestBlackJackCuiPresenter_PayoutTable(t *testing.T) {
 	})
 
 	t.Run("side bet payouts are listed for both variants", func(t *testing.T) {
-		// `bet <amount> [pp] [21+3]` is always accepted, so the odds a player is
+		// `bet <amount> [pp] [t3]` is always accepted, so the odds a player is
 		// asked to stake against must be on the table -- in both variants, since
 		// the two use different i18n namespaces and it is easy to fix only one.
 		for name, bj := range map[string]*domain.BlackJack{
@@ -1047,7 +1047,7 @@ func TestBlackJackCuiPresenter_PayoutTable(t *testing.T) {
 			bj.Reset()
 			out := bjp.Output(bj, nil)
 			assert.Contains(t, out, "パーフェクトペア", name)
-			assert.Contains(t, out, "21+3", name)
+			assert.Contains(t, out, "ポーカー役ベット", name)
 			// The printed odds must be the constants that actually pay, not prose.
 			assert.Contains(t, out, strconv.Itoa(domain.BJPPPerfectPairPayout), name)
 			assert.Contains(t, out, strconv.Itoa(domain.BJT3SuitedTripsPayout), name)
