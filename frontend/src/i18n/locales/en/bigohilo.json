@@ -101,5 +101,10 @@
     "ariaLive": "The board shows 3 distinct low ranks (8 or lower); a low is live",
     "ariaPossible": "{{needed}} more distinct low rank(s) of 8 or lower are needed for a low",
     "ariaImpossible": "Fewer than 3 distinct low ranks on the board; no low is possible"
+  },
+  "hiLoUsage": {
+    "hi": "Hi",
+    "lo": "Lo",
+    "both": "Hi+Lo"
   }
 }
