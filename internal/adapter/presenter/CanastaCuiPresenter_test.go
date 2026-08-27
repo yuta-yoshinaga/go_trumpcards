@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -278,6 +279,30 @@ func TestCanastaCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ディスカードフェーズ")
 		assert.Contains(t, result, "d <idx>")
 		assert.Contains(t, result, "go")
+	})
+
+	t.Run("flags the concealed go-out while it is still available", func(t *testing.T) {
+		m, players := setupCanastaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.CanastaPhaseDiscard)
+		players[0].SetHasInitMeld(false)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "コンシールド上がり圏内")
+		// Both figures come from the constants, so changing a payout without the
+		// wording fails here rather than shipping a false number on screen.
+		assert.Contains(t, result, strconv.Itoa(domain.CanastaConcealedGoingOutBonus))
+		assert.Contains(t, result, strconv.Itoa(domain.CanastaGoingOutBonus))
+	})
+
+	t.Run("says nothing about it once an initial meld exists", func(t *testing.T) {
+		m, players := setupCanastaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.CanastaPhaseDiscard)
+		players[0].SetHasInitMeld(true)
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "コンシールド上がり圏内")
 	})
 
 	t.Run("round end phase shows next command", func(t *testing.T) {

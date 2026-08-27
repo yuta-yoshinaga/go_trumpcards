@@ -37,5 +37,6 @@
   "drawBlockerPileEmpty": "※ 捨て札の山が空なので取れません",
   "drawBlockerBlackThreeTop": "※ 黒3がトップなので捨て札の山は取れません",
   "drawBlockerWildTop": "※ ワイルドカードがトップなので捨て札の山は取れません",
-  "drawBlockerNoPairInHand": "※ トップと同ランクの自然札が手札に2枚無いので、いまは捨て札の山を取れません"
+  "drawBlockerNoPairInHand": "※ トップと同ランクの自然札が手札に2枚無いので、いまは捨て札の山を取れません",
+  "concealedBonusHint": "コンシールド上がり圏内: 初回メルドをせずに上がると {{bonus}}点 (通常の上がりは {{normal}}点)"
 }
