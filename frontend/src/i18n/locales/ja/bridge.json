@@ -88,5 +88,6 @@
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
   "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "finalContractCell": "{{bid}} — 最終コントラクト"
 }

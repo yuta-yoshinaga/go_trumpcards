@@ -365,6 +365,13 @@ function BridgePageContent() {
                                       isWinning ? 'rounded bg-ds-accent/30 font-bold text-ds-accent' : ''
                                     }`}
                                     data-winning-contract={isWinning ? 'true' : undefined}
+                                    // The highlight is background colour and bold
+                                    // weight only, so which cell became the
+                                    // contract is invisible to a screen reader
+                                    // reading the table cell by cell.
+                                    aria-label={
+                                      isWinning ? t('finalContractCell', { bid: bidCellLabel(cell) }) : undefined
+                                    }
                                   >
                                     {bidCellLabel(cell)}
                                   </td>

@@ -614,4 +614,26 @@ describe('BridgePage', () => {
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
     localStorage.removeItem('hint_enabled_bridge');
   });
+
+  it('names the final contract cell for a screen reader', async () => {
+    mockExec.mockResolvedValue(auctionTableState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('bridge-auction-table')).toBeInTheDocument());
+    const table = within(screen.getByTestId('bridge-auction-table'));
+
+    // The highlight is background colour and bold weight only, so reading the
+    // table cell by cell gave no way to tell which bid became the contract.
+    const winning = table.getAllByRole('cell').filter((c) => c.hasAttribute('data-winning-contract'));
+    expect(winning).toHaveLength(1);
+    expect(winning[0].getAttribute('aria-label') ?? '').toContain('最終コントラクト');
+    // The bid itself must survive into the label, not be replaced by it.
+    expect(winning[0].getAttribute('aria-label') ?? '').toContain('1NT');
+
+    // Losing bids keep their plain reading; a label on every cell would be noise.
+    const others = table.getAllByRole('cell').filter((c) => !c.hasAttribute('data-winning-contract'));
+    expect(others.length).toBeGreaterThan(0);
+    for (const cell of others) {
+      expect(cell).not.toHaveAttribute('aria-label');
+    }
+  });
 });
