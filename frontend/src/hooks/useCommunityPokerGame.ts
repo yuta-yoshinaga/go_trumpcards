@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { HoldemLikeExec } from '../api/gameApi';
+import type { HoldemConfigInput } from '../api/games/holdem';
 import type { OmahaResponse } from '../types/card';
 import { OmahaPhase, OmahaRebuyPhaseType } from '../types/phases';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -32,6 +33,12 @@ export interface CommunityPokerGameConfig {
     CliGameConfig<OmahaResponse, Parameters<CommunityPokerExec>>,
     'parseCommand' | 'formatResponse' | 'helpText'
   >;
+  /**
+   * Extra reset config this page owns, merged into the reset call. Pages that
+   * pass nothing keep sending exactly what they sent before, so a page adding a
+   * setting cannot change what the other five games reset with.
+   */
+  resetConfig?: Omit<HoldemConfigInput, 'cpuMetaAI'>;
 }
 
 /**
@@ -44,7 +51,7 @@ export interface CommunityPokerGameConfig {
  * display, best-five evaluator differ by variant).
  */
 export function useCommunityPokerGame(config: CommunityPokerGameConfig) {
-  const { game, exec, phaseKeys, cli } = config;
+  const { game, exec, phaseKeys, cli, resetConfig } = config;
 
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup(game);
@@ -77,8 +84,8 @@ export function useCommunityPokerGame(config: CommunityPokerGameConfig) {
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
-    void execApi('reset', undefined, { cpuMetaAI });
-  }, [execApi, hideActionLog, cpuMetaAI]);
+    void execApi('reset', undefined, { cpuMetaAI, ...resetConfig });
+  }, [execApi, hideActionLog, cpuMetaAI, resetConfig]);
 
   useEffect(() => {
     if (state?.minRaise && state.minRaise > 0) {
