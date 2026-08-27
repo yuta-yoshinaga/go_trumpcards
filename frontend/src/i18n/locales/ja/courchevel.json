@@ -96,6 +96,5 @@
     "royalFlush": "ロイヤルフラッシュ"
   },
   "exposedNotice": "1枚目は最初のベットの前から見えています",
-  "livePreviewAria": "現在の役: {{hand}}",
-  "preflopExposed": "この1枚はベット前に公開されるフロップの1枚目です (クールシュヴェル固有)"
+  "livePreviewAria": "現在の役: {{hand}}"
 }

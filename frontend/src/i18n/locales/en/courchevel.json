@@ -96,6 +96,5 @@
     "royalFlush": "Royal Flush"
   },
   "exposedNotice": "The first board card is already face up before the opening bet",
-  "livePreviewAria": "Current best hand: {{hand}}",
-  "preflopExposed": "This card is the first flop card, exposed before the opening bet (Courchevel only)"
+  "livePreviewAria": "Current best hand: {{hand}}"
 }

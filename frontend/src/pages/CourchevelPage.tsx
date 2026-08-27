@@ -234,7 +234,7 @@ function CourchevelPageContent() {
                       className="mb-1.5 text-xs text-ds-text-muted"
                       role="note"
                     >
-                      {t('preflopExposed')}
+                      {t('exposedNotice')}
                     </div>
                   )}
                   <div className="flex flex-wrap gap-2">
