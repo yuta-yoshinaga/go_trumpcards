@@ -111,10 +111,46 @@ func (p *GinRummyCuiPresenter) Output(g interfaces.GinRummyGame, lastErr error) 
 			b.WriteString(i18n.T("ginrummy.promptLayoffSkip") + "\n")
 		case domain.GinRummyPhaseRoundEnd:
 			writeGinRummyKnockerMelds(b, g.GetKnockerMelds())
+			// The scores alone do not say what kind of round this was, and an
+			// undercut hands the points to the DEFENDER -- so a bare pair of
+			// numbers reads as the wrong player having gained. The web spells
+			// this out; the CUI did not.
+			b.WriteString(ginRummyOutcomeLine(g) + "\n")
 			b.WriteString(i18n.T("ginrummy.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("ginrummy.promptRoundEndHelp") + "\n")
 		}
 	})
+}
+
+// ginRummyOutcomeLine renders the round result as Gin / knock / undercut with
+// its breakdown. The opponent's deadwood is recomputed the way scoreRound does
+// rather than stored, so the line cannot drift from the points that moved.
+func ginRummyOutcomeLine(g interfaces.GinRummyGame) string {
+	knockerIdx := g.GetKnockerIdx()
+	opponent := g.GetPlayer(1 - knockerIdx)
+	cards := make([]*domain.Card, opponent.GetCardsSize())
+	for i := range cards {
+		cards[i] = opponent.GetCard(i)
+	}
+	_, deadwood := domain.FindBestMelds(cards)
+	o := domain.GinRummyRoundOutcomeOf(
+		knockerIdx,
+		domain.CalcDeadwoodValue(g.GetKnockerDeadwood()),
+		domain.CalcDeadwoodValue(deadwood),
+		g.GetIsGin(),
+	)
+	key := "ginrummy.outcomeKnock"
+	switch o.Kind {
+	case domain.GinRummyOutcomeGin:
+		key = "ginrummy.outcomeGin"
+	case domain.GinRummyOutcomeUndercut:
+		key = "ginrummy.outcomeUndercut"
+	}
+	return color.Bold(i18n.Tf(key,
+		"name", cuiPlayerName(g.GetPlayer(o.WinnerIdx), o.WinnerIdx),
+		"base", strconv.Itoa(o.Base),
+		"bonus", strconv.Itoa(o.Bonus),
+		"total", strconv.Itoa(o.Total)))
 }
 
 // ginRummyMeldIsSet reports whether a meld is a set (same rank) rather than a
