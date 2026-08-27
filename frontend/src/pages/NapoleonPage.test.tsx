@@ -1189,4 +1189,27 @@ describe('NapoleonPage point limit', () => {
     // text a change the reader announces.
     expect(region).toHaveTextContent('');
   });
+
+  it('announces each kind of hint the page can render', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const region = screen.getByTestId('np-hint-live');
+
+    // A play hint: the branch the region exists to announce.
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      hint: { cardIndex: 1, reason: 'followSuit' },
+    } as unknown as NapoleonResponse);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(region).toHaveTextContent('推奨カード'));
+
+    // A bid hint takes a different branch of the same nested ternary.
+    mockExec.mockResolvedValue({
+      ...bidPhaseState,
+      hint: { bid: 14, reason: 'strongHand' },
+    } as unknown as NapoleonResponse);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(region).toHaveTextContent('推奨ビッド'));
+  });
 });
