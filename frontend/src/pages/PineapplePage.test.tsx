@@ -1105,4 +1105,54 @@ describe('PineapplePage', () => {
     await screen.findAllByTestId('irishpoker-discard-candidate');
     expect(screen.queryAllByTestId('irishpoker-discard-recommended')).toHaveLength(0);
   });
+  it('announces the chosen Crazy Pineapple discard candidate and recommendation status to a screen reader', async () => {
+    const crazyDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 3,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 10 },
+            { design: 'HEART', value: 10 },
+            { design: 'DIAMOND', value: 2 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'CLOVER', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockCrazyExec.mockResolvedValue(crazyDiscardState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    // Select the recommended discard (index 2: 2♦)
+    fireEvent.click(screen.getByAltText('♦ 2').closest('button') as HTMLButtonElement);
+
+    const live = await screen.findByTestId('cp-discard-preview-announce');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveClass('sr-only');
+    expect(live.textContent).toContain('スリーカード');
+    expect(live.textContent).toContain('おすすめ');
+
+    // Re-selecting toggles it off
+    fireEvent.click(screen.getByAltText('♦ 2').closest('button') as HTMLButtonElement);
+    expect(screen.queryByTestId('cp-discard-preview-announce')).not.toBeInTheDocument();
+
+    // Select a non-recommended discard (index 1: 10♥)
+    fireEvent.click(screen.getByAltText('♥ 10').closest('button') as HTMLButtonElement);
+    const live2 = await screen.findByTestId('cp-discard-preview-announce');
+    expect(live2.textContent).toContain('ワンペア');
+    expect(live2.textContent).not.toContain('おすすめ');
+    // A key looked up in the wrong namespace comes back as the identifier itself,
+    // which would still satisfy every assertion above except this one.
+    expect(live2.textContent).not.toContain('cpPreviewAria');
+  });
 });
