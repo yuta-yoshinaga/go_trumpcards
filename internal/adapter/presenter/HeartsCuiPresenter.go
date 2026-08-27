@@ -63,6 +63,18 @@ func (p *HeartsCuiPresenter) Output(h interfaces.HeartsGame, lastErr error) stri
 			"name", cuiPlayerName(h.GetPlayer(leaderIdx), leaderIdx),
 			"score", strconv.Itoa(maxScore)) + "\n")
 
+		// The Web badges a suspected moon attempt (#4483); without it the CUI
+		// player only sees one seat's round score creeping up and has no reason
+		// to start taking a point on purpose.
+		roundScores := make([]int, h.GetPlayerCnt())
+		for i := range roundScores {
+			roundScores[i] = h.GetPlayer(i).GetRoundScore()
+		}
+		if moonIdx, ok := domain.HeartsShootTheMoonAlertIdx(roundScores); ok {
+			b.WriteString(i18n.Tf("hearts.shootTheMoonAlert",
+				"name", cuiPlayerName(h.GetPlayer(moonIdx), moonIdx)) + "\n")
+		}
+
 		for i := 0; i < h.GetPlayerCnt(); i++ {
 			b.WriteString(heartsPlayerStr(h.GetPlayer(i), i, pointLimit))
 		}
