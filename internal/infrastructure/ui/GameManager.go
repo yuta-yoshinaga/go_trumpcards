@@ -168,7 +168,7 @@ var gameRegistry = []GameRegistryEntry{
 			TitleKey:    "oldmaid.helpTitle",
 			ExampleKeys: []string{"oldmaid.helpExampleD"},
 			CommandKeys: []string{"oldmaid.helpDraw", "oldmaid.helpShuffle", "oldmaid.helpReorder", "oldmaid.helpLog"},
-			SettingKeys: []string{"oldmaid.helpSetMode", "oldmaid.helpSetPlacement", "oldmaid.helpSetMemoryAI"},
+			SettingKeys: []string{"oldmaid.helpSetMode", "oldmaid.helpSetPlacement", "oldmaid.helpSetMemoryAI", "oldmaid.helpSetHesitation"},
 		}),
 	BindCuiFor("daifugo",
 		func() usecase.DaifugoInteractorIF {

@@ -270,3 +270,35 @@ func TestOldMaidCuiController_ResetProfile_LongCommand(t *testing.T) {
 	mi.On("ResetProfile").Return("profile reset ok")
 	assert.Equal(t, "profile reset ok", c.Exec("resetprofile"))
 }
+
+// CpuHesitationEnabled was settable from the web dialog but from nowhere in the
+// CUI, so a CUI session was pinned to the default forever.
+func TestOldMaidCuiController_SetHesitation(t *testing.T) {
+	t.Run("turns the delay on", func(t *testing.T) {
+		mi := new(usecase.MockOldMaidInteractor)
+		c := controller.NewOldMaidCuiController(mi)
+		mi.On("GetConfig").Return(domain.DefaultOldMaidConfig())
+		cfg := domain.DefaultOldMaidConfig()
+		cfg.CpuHesitationEnabled = true
+		mi.On("Reset", cfg, mock.Anything).Return("sh on")
+		assert.Equal(t, "sh on", c.Exec("sh 1"))
+	})
+
+	t.Run("turns the delay off through the long form", func(t *testing.T) {
+		mi := new(usecase.MockOldMaidInteractor)
+		c := controller.NewOldMaidCuiController(mi)
+		mi.On("GetConfig").Return(domain.DefaultOldMaidConfig())
+		cfg := domain.DefaultOldMaidConfig()
+		cfg.CpuHesitationEnabled = false
+		mi.On("Reset", cfg, mock.Anything).Return("sh off")
+		assert.Equal(t, "sh off", c.Exec("sethesitation 0"))
+	})
+
+	t.Run("refuses a missing or out-of-range flag", func(t *testing.T) {
+		mi := new(usecase.MockOldMaidInteractor)
+		c := controller.NewOldMaidCuiController(mi)
+		assert.Contains(t, c.Exec("sh"), msgStem("hesitationFlagRequired0Off1On"))
+		assert.Contains(t, c.Exec("sh 2"), msgKey("invalidHesitationFlag01", "val", "2"))
+		assert.Contains(t, c.Exec("sh abc"), msgKey("invalidHesitationFlag01", "val", "abc"))
+	})
+}
