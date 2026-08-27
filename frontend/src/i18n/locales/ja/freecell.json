@@ -41,5 +41,6 @@
       "freecell": "フリーセル",
       "foundation": "ファンデーション"
     }
-  }
+  },
+  "emptyColumnAriaLabel": "空き列 {{idx}}"
 }

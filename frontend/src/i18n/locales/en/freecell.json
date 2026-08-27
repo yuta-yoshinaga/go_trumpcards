@@ -41,5 +41,6 @@
       "freecell": "Free Cell",
       "foundation": "Foundation"
     }
-  }
+  },
+  "emptyColumnAriaLabel": "Empty column {{idx}}"
 }
