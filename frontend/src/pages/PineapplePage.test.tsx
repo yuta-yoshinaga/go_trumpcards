@@ -1034,4 +1034,75 @@ describe('PineapplePage', () => {
       expect((screen.getByLabelText(label) as HTMLInputElement).checked).toBe(!before);
     });
   });
+
+  it('recommends the Irish discard only when one candidate is strictly better', async () => {
+    const st: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        {
+          ...discardState.players[0],
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        },
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(st);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    // Throw ♠A first. Then throwing ♥A keeps 5♦8♣, which pairs BOTH board cards
+    // (two pair) -- strictly better than the one pair either other choice leaves.
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    const badges = await screen.findAllByTestId('irishpoker-discard-recommended');
+    expect(badges).toHaveLength(1);
+  });
+
+  it('stays silent when rank cannot separate the Irish candidates', async () => {
+    const st: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        {
+          ...discardState.players[0],
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        },
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(st);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    // Throwing ♦5 leaves three candidates that all evaluate to one pair. The
+    // evaluator carries no kicker, so it cannot tell keeping AA from keeping 88 --
+    // badging all three would assert a preference the data does not support.
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+    await screen.findAllByTestId('irishpoker-discard-candidate');
+    expect(screen.queryAllByTestId('irishpoker-discard-recommended')).toHaveLength(0);
+  });
 });
