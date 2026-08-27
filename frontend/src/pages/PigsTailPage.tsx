@@ -30,6 +30,7 @@ import { parsePigtailCommand, pigtailHelp } from '../utils/cli/commands/pigtailC
 import { formatPigtailState } from '../utils/cli/formatters/pigtailFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { playerName } from '../utils/playerUtils';
 
 const SUIT_SYMBOLS: Record<string, string> = {
   SPADE: '♠',
@@ -283,7 +284,7 @@ function PigsTailPageContent() {
                     key={i}
                     className={`text-xs px-2 py-1 rounded ${action.penaltyFlag ? badgeErrorColors : 'bg-black/30 text-ds-text-muted'}`}
                   >
-                    CPU {action.drawPlayerIdx}:{' '}
+                    {playerName(action.drawPlayerIdx, false)}:{' '}
                     {action.drawnCard ? (SUIT_SYMBOLS[action.drawnCard.design] ?? '?') + action.drawnCard.value : '?'}
                     {action.penaltyFlag
                       ? ` — ${t('label.penalty')} (+${action.penaltyCount})`
@@ -305,7 +306,7 @@ function PigsTailPageContent() {
                   } ${isGameEnd && state.loserIdx === idx ? 'bg-ds-error/40 border border-ds-error/50' : ''}`}
                 >
                   <span className="text-ds-text-primary text-sm font-medium">
-                    {player.isHuman ? tc('player.you') : `CPU ${player.id}`}
+                    {playerName(player.id, player.isHuman)}
                   </span>
                   <span className="text-ds-text-primary text-sm">
                     {player.cardCount} {t('label.cards')}
