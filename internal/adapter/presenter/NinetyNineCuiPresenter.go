@@ -87,6 +87,13 @@ func (p *NinetyNineCuiPresenter) Output(o interfaces.NinetyNineGame, lastErr err
 			b.WriteString(i18n.T("ninetynine.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("ninetynine.promptTrickEndHelp") + "\n")
 		case domain.NinetyNinePhaseRoundEnd:
+			// **round の数字は 10+bid+bonus の合算で、内訳が潰れている。**
+			// 単独的中の +30 はこのゲームの得点設計の核なのに、いくら乗ったのかは
+			// アクションログの文字列にしか出ていなかった。
+			if bonus := o.GetRoundSuccessBonus(); bonus > 0 {
+				b.WriteString(color.Yellow(i18n.Tf("ninetynine.successBonusLine",
+					"bonus", strconv.Itoa(bonus))) + "\n")
+			}
 			b.WriteString(i18n.T("ninetynine.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("ninetynine.promptRoundEndHelp") + "\n")
 		}

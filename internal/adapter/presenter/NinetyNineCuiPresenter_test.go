@@ -11,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupNinetyNineCuiMock() *interfaces.MockNinetyNineGame {
@@ -22,6 +23,7 @@ func setupNinetyNineCuiMock() *interfaces.MockNinetyNineGame {
 	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.NinetyNinePhasePlay)
+	m.On("GetRoundSuccessBonus").Return(0).Maybe()
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetBidPlayerIdx").Return(0)
 	m.On("GetDealerIdx").Return(0)
@@ -162,4 +164,28 @@ func TestNinetyNineCuiPresenter_ActionLogOutput(t *testing.T) {
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", Detail: "You buries 3 and declares 3"},
 	})
 	assert.NotEmpty(t, p.ActionLogOutput(m))
+}
+
+// round is 10+bid+bonus, so the bonus vanishes into it. The sole-success +30 is
+// the point of this game's scoring; it was only ever in the action log string.
+func TestNinetyNineCuiPresenter_SuccessBonusLine(t *testing.T) {
+	p := new(presenter.NinetyNineCuiPresenter)
+
+	build := func(bonus int) *interfaces.MockNinetyNineGame {
+		m, _ := setupNinetyNineCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.NinetyNinePhaseRoundEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundSuccessBonus")
+		m.On("GetRoundSuccessBonus").Return(bonus).Maybe()
+		return m
+	}
+
+	t.Run("names the bonus that was applied", func(t *testing.T) {
+		assert.Contains(t, p.Output(build(30), nil), i18n.Tf("ninetynine.successBonusLine", "bonus", "30"))
+	})
+
+	t.Run("says nothing when nobody made their bid", func(t *testing.T) {
+		// A bonus of 0 means no one succeeded; printing "+0" would imply someone did.
+		assert.NotContains(t, p.Output(build(0), nil), i18n.T("ninetynine.successBonusLine"))
+	})
 }

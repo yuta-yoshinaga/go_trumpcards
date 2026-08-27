@@ -72,20 +72,24 @@ func ninetyNineSuitBidValue(design int) int {
 
 // NinetyNine ナインティナインゲームクラス
 type NinetyNine struct {
-	trumpCards       *TrumpCards
-	players          []*NinetyNinePlayer
-	config           NinetyNineConfig
-	phase            NinetyNinePhase
-	dealNumber       int
-	trickNumber      int
-	currentPlayerIdx int
-	currentTrick     []*TrickCard
-	leadPlayerIdx    int
-	bidPlayerIdx     int
-	dealerIdx        int
-	trumpSuit        int // 切り札スート (CardDesignSpade..Diamond)
-	gameEndFlag      bool
-	winnerIdx        int
+	trumpCards *TrumpCards
+	players    []*NinetyNinePlayer
+	config     NinetyNineConfig
+	phase      NinetyNinePhase
+	// roundSuccessBonus は直前のラウンドで的中者に加算されたボーナス点。
+	// **合算後の round からは復元できない** ── 10+bid+bonus の内訳が
+	// 潰れるため、単独的中で +30 を得たことが画面から読めなかった。
+	roundSuccessBonus int
+	dealNumber        int
+	trickNumber       int
+	currentPlayerIdx  int
+	currentTrick      []*TrickCard
+	leadPlayerIdx     int
+	bidPlayerIdx      int
+	dealerIdx         int
+	trumpSuit         int // 切り札スート (CardDesignSpade..Diamond)
+	gameEndFlag       bool
+	winnerIdx         int
 	actionLogBase
 }
 
@@ -308,6 +312,7 @@ func (o *NinetyNine) ScoreRound() {
 	}
 
 	bonus := o.successBonus(successCount)
+	o.roundSuccessBonus = bonus
 
 	for i := range NinetyNinePlayerCnt {
 		p := o.players[i]
@@ -361,6 +366,10 @@ func (o *NinetyNine) successBonus(successCount int) int {
 		return 0
 	}
 }
+
+// GetRoundSuccessBonus は直前のラウンドで的中者に付いたボーナス点を返す。
+// 的中者が居なければ 0。
+func (o *NinetyNine) GetRoundSuccessBonus() int { return o.roundSuccessBonus }
 
 // --- State getters ---
 
