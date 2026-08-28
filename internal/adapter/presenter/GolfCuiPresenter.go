@@ -40,6 +40,10 @@ type GolfCuiPresenter struct {
 	// dealRecorded は今のディールを既に記録したか。1回のディール終了で
 	// Output が何度呼ばれても二重計上しない。
 	dealRecorded bool
+	// nineHoleAnnounced は9ホール集計の開始案内を既に出したか。Web では
+	// チェックボックスで明示的に有効にする任意機能なのに、CUI は最初の
+	// ディールが終わった瞬間から無言で数え始めていた (#6314)。
+	nineHoleAnnounced bool
 }
 
 // golfRemainingCount counts the cards still on the tableau — the deal's score.
@@ -74,6 +78,10 @@ func (pr *GolfCuiPresenter) golfHoleLines(b *strings.Builder) {
 	total := 0
 	for _, s := range pr.holes {
 		total += s
+	}
+	if !pr.nineHoleAnnounced {
+		b.WriteString(i18n.T("golf.nineHoleStart") + "\n")
+		pr.nineHoleAnnounced = true
 	}
 	b.WriteString(i18n.Tf("golf.holeScore",
 		"hole", strconv.Itoa(len(pr.holes)),
@@ -198,4 +206,12 @@ func (pr *GolfCuiPresenter) ActionLogOutput(g interfaces.GolfGame) string {
 		return actionLogToText(nil)
 	}
 	return actionLogToText(g.GetActionLog())
+}
+
+// ResetNineHole 9ホールスコアをリセット
+func (pr *GolfCuiPresenter) ResetNineHole(g interfaces.GolfGame) string {
+	pr.holes = nil
+	pr.dealRecorded = false
+	pr.nineHoleAnnounced = false
+	return pr.Output(g, nil)
 }

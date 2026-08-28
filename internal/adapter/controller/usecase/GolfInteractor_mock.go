@@ -54,3 +54,8 @@ func (_m *MockGolfInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()
 	return ret.Get(0).([]byte), ret.Error(1)
 }
+
+func (_m *MockGolfInteractor) ResetNineHole() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}

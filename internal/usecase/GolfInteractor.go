@@ -28,6 +28,8 @@ type GolfInteractorIF interface {
 	Undo() string
 	// UndoN n回連続アンドゥ
 	UndoN(n int) string
+	// ResetNineHole 9ホールスコアをリセット
+	ResetNineHole() string
 }
 
 // GolfInteractor ゴルフソリティアインタラクタークラス
@@ -75,6 +77,11 @@ func (gi *GolfInteractor) ActionLog() string {
 // Undo アンドゥ
 func (gi *GolfInteractor) Undo() string {
 	return execAndPresent(gi.Game, gi.gp, gi.Game.Undo)
+}
+
+// ResetNineHole 9ホールスコアをリセット
+func (gi *GolfInteractor) ResetNineHole() string {
+	return gi.gp.ResetNineHole(gi.Game)
 }
 
 // UndoN n回連続アンドゥ

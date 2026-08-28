@@ -9,4 +9,6 @@ type GolfPresenter interface {
 	GamePresenter[interfaces.GolfGame]
 	// HintOutput ヒント情報を出力する
 	HintOutput(g interfaces.GolfGame) string
+	// ResetNineHole 9ホールスコアをリセット
+	ResetNineHole(g interfaces.GolfGame) string
 }

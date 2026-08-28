@@ -273,6 +273,16 @@ func TestGolfCuiPresenter_NineHoleScorecard(t *testing.T) {
 		return g
 	}
 
+	t.Run("announces 9-hole start only on the first scorecard", func(t *testing.T) {
+		p := &GolfCuiPresenter{}
+		firstOutput := p.Output(endedGame(4, domain.GolfPhaseGameOver), nil)
+		assert.Contains(t, firstOutput, "9ホールスコアリングを開始しました")
+
+		p.Output(endedGame(9, domain.GolfPhasePlaying), nil)
+		secondOutput := p.Output(endedGame(3, domain.GolfPhaseGameClear), nil)
+		assert.NotContains(t, secondOutput, "9ホールスコアリングを開始しました")
+	})
+
 	t.Run("no scorecard before any deal has ended", func(t *testing.T) {
 		p := &GolfCuiPresenter{}
 		assert.NotContains(t, p.Output(endedGame(5, domain.GolfPhasePlaying), nil), "ホール")
