@@ -43,11 +43,12 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 	resObj.CpuActions = make([]*controller.SevensWebOutputAction, 0)
 	for _, action := range s.GetCpuActions() {
 		a := &controller.SevensWebOutputAction{
-			PlayerIdx:   action.PlayerIdx,
-			PlayedCard:  cardToOutput(action.PlayedCard),
-			TargetSuit:  action.TargetSuit,
-			TargetValue: action.TargetValue,
-			ForcedPass:  action.ForcedPass,
+			PlayerIdx:      action.PlayerIdx,
+			PlayedCard:     cardToOutput(action.PlayedCard),
+			TargetSuit:     action.TargetSuit,
+			TargetValue:    action.TargetValue,
+			ForcedPass:     action.ForcedPass,
+			JokerReclaimed: action.JokerReclaimed,
 		}
 		resObj.CpuActions = append(resObj.CpuActions, a)
 	}
@@ -56,11 +57,12 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 	humanAction := s.GetHumanAction()
 	if humanAction != nil {
 		resObj.HumanAction = &controller.SevensWebOutputAction{
-			PlayerIdx:   humanAction.PlayerIdx,
-			PlayedCard:  cardToOutput(humanAction.PlayedCard),
-			TargetSuit:  humanAction.TargetSuit,
-			TargetValue: humanAction.TargetValue,
-			ForcedPass:  humanAction.ForcedPass,
+			PlayerIdx:      humanAction.PlayerIdx,
+			PlayedCard:     cardToOutput(humanAction.PlayedCard),
+			TargetSuit:     humanAction.TargetSuit,
+			TargetValue:    humanAction.TargetValue,
+			ForcedPass:     humanAction.ForcedPass,
+			JokerReclaimed: humanAction.JokerReclaimed,
 		}
 	}
 

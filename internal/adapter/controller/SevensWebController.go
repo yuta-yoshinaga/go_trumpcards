@@ -44,6 +44,9 @@ type SevensWebOutputAction struct {
 	TargetSuit  int            `json:"targetSuit"`
 	TargetValue int            `json:"targetValue"`
 	ForcedPass  bool           `json:"forcedPass"`
+	// JokerReclaimed はこの手でジョーカーを回収したか。手札が黙って1枚増える
+	// 唯一の経路なので、行動描写で説明できるように送る。
+	JokerReclaimed bool `json:"jokerReclaimed"`
 }
 
 // SevensWebOutputConfig 7並べゲーム設定出力

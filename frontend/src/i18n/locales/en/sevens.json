@@ -73,5 +73,6 @@
     "playPass": "Pass if you have no playable cards. Pass count may be limited.",
     "settings": "Change rules and settings. Variations include tunnel and joker rules.",
     "resetButton": "Press the reset button to start a new game."
-  }
+  },
+  "actionReclaimedJoker": "(joker reclaimed)"
 }

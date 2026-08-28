@@ -23,6 +23,9 @@ export interface SevensAction {
   targetSuit: number;
   targetValue: number;
   forcedPass: boolean;
+  /** Whether this play reclaimed the joker back into the player's hand. The
+   * hand silently gains a card otherwise, with nothing to explain it. */
+  jokerReclaimed?: boolean;
 }
 
 /** Sevens game rule configuration. */
