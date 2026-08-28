@@ -688,4 +688,29 @@ func TestNinetyNineRoundSuccessBonus(t *testing.T) {
 		// round = 10 + bid + bonus, so the bonus has to be consistent with it.
 		assert.Equal(t, 10+0+30, g.GetPlayer(0).GetRoundScore())
 	})
+
+	// The Workers build persists the game by json.Marshal between every request
+	// (GameBase.Snapshot), so a field absent from the wire struct is silently
+	// reset to 0 in production while working fine in an in-memory CUI session.
+	t.Run("survives the JSON round-trip the KV session does", func(t *testing.T) {
+		g := domain.NewDefaultNinetyNine()
+		g.Reset()
+		trick := []*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)}
+		for i := range domain.NinetyNinePlayerCnt {
+			p := g.GetPlayer(i)
+			p.SetBid(0)
+			if i != 0 {
+				p.AddTrick(trick)
+			}
+		}
+		g.SetPhase(domain.NinetyNinePhaseRoundEnd)
+		g.ScoreRound()
+		require.NotZero(t, g.GetRoundSuccessBonus(), "a zero bonus would pass even if the field were dropped")
+
+		data, err := json.Marshal(g)
+		require.NoError(t, err)
+		restored := &domain.NinetyNine{}
+		require.NoError(t, json.Unmarshal(data, restored))
+		assert.Equal(t, g.GetRoundSuccessBonus(), restored.GetRoundSuccessBonus())
+	})
 }

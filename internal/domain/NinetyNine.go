@@ -965,41 +965,43 @@ func (o *NinetyNine) tryLoseTrick(player *NinetyNinePlayer, validIndices []int, 
 
 // ninetyNineJSON is the JSON wire format for NinetyNine.
 type ninetyNineJSON struct {
-	TrumpCards       *TrumpCards         `json:"tc"`
-	Players          []*NinetyNinePlayer `json:"ps"`
-	Config           NinetyNineConfig    `json:"cf"`
-	Phase            NinetyNinePhase     `json:"ph"`
-	DealNumber       int                 `json:"dn"`
-	TrickNumber      int                 `json:"tn"`
-	CurrentPlayerIdx int                 `json:"ci"`
-	CurrentTrick     []*TrickCard        `json:"ct"`
-	LeadPlayerIdx    int                 `json:"li"`
-	BidPlayerIdx     int                 `json:"bi"`
-	DealerIdx        int                 `json:"di"`
-	TrumpSuit        int                 `json:"ts"`
-	GameEndFlag      bool                `json:"ge"`
-	WinnerIdx        int                 `json:"wi"`
-	ActionLog        []*ActionLogEntry   `json:"al"`
+	TrumpCards        *TrumpCards         `json:"tc"`
+	Players           []*NinetyNinePlayer `json:"ps"`
+	Config            NinetyNineConfig    `json:"cf"`
+	Phase             NinetyNinePhase     `json:"ph"`
+	RoundSuccessBonus int                 `json:"rsb"`
+	DealNumber        int                 `json:"dn"`
+	TrickNumber       int                 `json:"tn"`
+	CurrentPlayerIdx  int                 `json:"ci"`
+	CurrentTrick      []*TrickCard        `json:"ct"`
+	LeadPlayerIdx     int                 `json:"li"`
+	BidPlayerIdx      int                 `json:"bi"`
+	DealerIdx         int                 `json:"di"`
+	TrumpSuit         int                 `json:"ts"`
+	GameEndFlag       bool                `json:"ge"`
+	WinnerIdx         int                 `json:"wi"`
+	ActionLog         []*ActionLogEntry   `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (o *NinetyNine) MarshalJSON() ([]byte, error) {
 	return json.Marshal(ninetyNineJSON{
-		TrumpCards:       o.trumpCards,
-		Players:          o.players,
-		Config:           o.config,
-		Phase:            o.phase,
-		DealNumber:       o.dealNumber,
-		TrickNumber:      o.trickNumber,
-		CurrentPlayerIdx: o.currentPlayerIdx,
-		CurrentTrick:     o.currentTrick,
-		LeadPlayerIdx:    o.leadPlayerIdx,
-		BidPlayerIdx:     o.bidPlayerIdx,
-		DealerIdx:        o.dealerIdx,
-		TrumpSuit:        o.trumpSuit,
-		GameEndFlag:      o.gameEndFlag,
-		WinnerIdx:        o.winnerIdx,
-		ActionLog:        o.actionLog,
+		TrumpCards:        o.trumpCards,
+		Players:           o.players,
+		Config:            o.config,
+		Phase:             o.phase,
+		RoundSuccessBonus: o.roundSuccessBonus,
+		DealNumber:        o.dealNumber,
+		TrickNumber:       o.trickNumber,
+		CurrentPlayerIdx:  o.currentPlayerIdx,
+		CurrentTrick:      o.currentTrick,
+		LeadPlayerIdx:     o.leadPlayerIdx,
+		BidPlayerIdx:      o.bidPlayerIdx,
+		DealerIdx:         o.dealerIdx,
+		TrumpSuit:         o.trumpSuit,
+		GameEndFlag:       o.gameEndFlag,
+		WinnerIdx:         o.winnerIdx,
+		ActionLog:         o.actionLog,
 	})
 }
 
@@ -1078,6 +1080,7 @@ func (o *NinetyNine) UnmarshalJSON(data []byte) error {
 	o.players = j.Players
 	o.config = j.Config
 	o.phase = j.Phase
+	o.roundSuccessBonus = j.RoundSuccessBonus
 	o.dealNumber = j.DealNumber
 	o.trickNumber = j.TrickNumber
 	o.currentPlayerIdx = j.CurrentPlayerIdx
