@@ -408,17 +408,22 @@ function TwoTenJackPageContent() {
 
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
-            {hint && (
-              <div className="text-ds-warning text-sm mb-2" data-testid="tt-hint">
-                {hint.trumpSuit !== undefined
-                  ? `${t('hintDeclare')}: ${trumpSymbol(hint.trumpSuit)} (${t(`hint.${hint.reason}`)})`
-                  : (() => {
-                      const card = hint.cardIndex !== undefined ? humanPlayer?.cards[hint.cardIndex] : undefined;
-                      const name = card ? cardAlt(card) : '-';
-                      return `${t('hintPlay')}: ${name} [${hint.cardIndex ?? '-'}] (${t(`hint.${hint.reason}`)})`;
-                    })()}
-              </div>
-            )}
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+                読み上げられないことがある (#5955, #6663)。 */}
+            <div data-testid="twotenjack-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2" data-testid="tt-hint">
+                  {hint.trumpSuit !== undefined
+                    ? `${t('hintDeclare')}: ${trumpSymbol(hint.trumpSuit)} (${t(`hint.${hint.reason}`)})`
+                    : (() => {
+                        const card = hint.cardIndex !== undefined ? humanPlayer?.cards[hint.cardIndex] : undefined;
+                        const name = card ? cardAlt(card) : '-';
+                        return `${t('hintPlay')}: ${name} [${hint.cardIndex ?? '-'}] (${t(`hint.${hint.reason}`)})`;
+                      })()}
+                </div>
+              )}
+            </div>
 
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="tt-play-button">
               {(isHumanDeclarer || isHumanTurn) && (

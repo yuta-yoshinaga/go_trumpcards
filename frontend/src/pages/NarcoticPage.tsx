@@ -358,12 +358,19 @@ function NarcoticPageContent() {
 
             {/* Hint display */}
             <div className="mb-2 flex justify-center" data-tutorial="narcotic-hint-display">
-              {hint && (
-                <HintTooltip
-                  reason={hint.type === 'draw' ? t('hintReason.draw') : t(`hintReason.${hint.type}`, { col: hint.col })}
-                  confidence="strong"
-                />
-              )}
+              {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+                  付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+                  読み上げられないことがある (#5955, #6663)。 */}
+              <div data-testid="narcotic-hint-live" role="status" aria-live="polite">
+                {hint && (
+                  <HintTooltip
+                    reason={
+                      hint.type === 'draw' ? t('hintReason.draw') : t(`hintReason.${hint.type}`, { col: hint.col })
+                    }
+                    confidence="strong"
+                  />
+                )}
+              </div>
             </div>
 
             <GameMessageBox

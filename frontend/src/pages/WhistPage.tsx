@@ -442,20 +442,25 @@ function WhistPageContent() {
 
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
-            {hint && (
-              <div className="text-ds-warning text-sm mb-2">
-                {/* hint.reason is a raw backend identifier; when a new reason is
-                    added, add its key under hintReason in whist.json (ja/en).
-                    Unknown reasons fall back to hintReason.fallback instead of
-                    showing the raw key. */}
-                {(() => {
-                  const reason = t(`hintReason.${hint.reason}`, { defaultValue: t('hintReason.fallback') });
-                  const card = hint.cardIndex !== undefined ? humanPlayer?.cards[hint.cardIndex] : undefined;
-                  const name = card ? cardAlt(card) : '-';
-                  return `${t('hintPlay')}: ${name} [${hint.cardIndex ?? '-'}] (${reason})`;
-                })()}
-              </div>
-            )}
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+                読み上げられないことがある (#5955, #6663)。 */}
+            <div data-testid="whist-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {/* hint.reason is a raw backend identifier; when a new reason is
+                      added, add its key under hintReason in whist.json (ja/en).
+                      Unknown reasons fall back to hintReason.fallback instead of
+                      showing the raw key. */}
+                  {(() => {
+                    const reason = t(`hintReason.${hint.reason}`, { defaultValue: t('hintReason.fallback') });
+                    const card = hint.cardIndex !== undefined ? humanPlayer?.cards[hint.cardIndex] : undefined;
+                    const name = card ? cardAlt(card) : '-';
+                    return `${t('hintPlay')}: ${name} [${hint.cardIndex ?? '-'}] (${reason})`;
+                  })()}
+                </div>
+              )}
+            </div>
 
             <div className="flex gap-2 items-center" data-tutorial="wh-play-button">
               {isHumanTurn && (

@@ -405,23 +405,28 @@ function BelotePageContent() {
 
         <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
-        {hint && (
-          <div className="text-ds-warning text-sm mb-2">
-            {/* hint.reason is a raw backend identifier; translate via hintReason.*,
-                falling back to a generic label. The hint shape depends on the phase:
-                orderUp (take/pass) and suit (call trump) during bidding, cardIndex in play. */}
-            {(() => {
-              const reason = t(`hintReason.${hint.reason}`, { defaultValue: t('hintReason.fallback') });
-              if (hint.orderUp !== undefined) {
-                return `${hint.orderUp ? t('hintOrderUpTake') : t('hintOrderUpPass')} (${reason})`;
-              }
-              if (hint.suit !== undefined) {
-                return `${t('hintCallSuit', { suit: t(SUIT_LABEL_KEYS[hint.suit]) })} (${reason})`;
-              }
-              return `${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${reason})`;
-            })()}
-          </div>
-        )}
+        {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+            付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+            読み上げられないことがある (#5955, #6663)。 */}
+        <div data-testid="belote-hint-live" role="status" aria-live="polite">
+          {hint && (
+            <div className="text-ds-warning text-sm mb-2">
+              {/* hint.reason is a raw backend identifier; translate via hintReason.*,
+                  falling back to a generic label. The hint shape depends on the phase:
+                  orderUp (take/pass) and suit (call trump) during bidding, cardIndex in play. */}
+              {(() => {
+                const reason = t(`hintReason.${hint.reason}`, { defaultValue: t('hintReason.fallback') });
+                if (hint.orderUp !== undefined) {
+                  return `${hint.orderUp ? t('hintOrderUpTake') : t('hintOrderUpPass')} (${reason})`;
+                }
+                if (hint.suit !== undefined) {
+                  return `${t('hintCallSuit', { suit: t(SUIT_LABEL_KEYS[hint.suit]) })} (${reason})`;
+                }
+                return `${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${reason})`;
+              })()}
+            </div>
+          )}
+        </div>
 
         <div className="flex gap-2 items-center flex-wrap" data-tutorial="be-play-button">
           {isHumanBidTurn && isBidPickUp && (
