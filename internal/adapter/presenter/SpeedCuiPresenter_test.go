@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -185,4 +186,73 @@ func TestSpeedCuiPresenter_ActionLogOutput(t *testing.T) {
 	s := setupSpeedWebTest()
 	result := p.ActionLogOutput(s)
 	assert.NotEmpty(t, result)
+}
+
+func TestSpeedCuiPresenter_Timer(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	p := new(presenter.SpeedCuiPresenter)
+	mockTime := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+	presenter.SetSpeedCuiPresenterClock(p, func() time.Time {
+		return mockTime
+	})
+
+	t.Run("tracks elapsed time and session best", func(t *testing.T) {
+		s := setupSpeedWebTest()
+		// Initial output: game starts
+		out1 := p.Output(s, nil)
+		assert.Contains(t, out1, "経過時間: 00:00")
+		assert.NotContains(t, out1, "セッション自己ベスト")
+		assert.NotContains(t, out1, "{{")
+
+		// Advance time by 45 seconds
+		mockTime = mockTime.Add(45 * time.Second)
+		out2 := p.Output(s, nil)
+		assert.Contains(t, out2, "経過時間: 00:45")
+		assert.NotContains(t, out2, "{{")
+
+		// Game ends at 45 seconds
+		data, _ := json.Marshal(s)
+		var raw map[string]json.RawMessage
+		_ = json.Unmarshal(data, &raw)
+		raw["ge"], _ = json.Marshal(true)
+		raw["wi"], _ = json.Marshal(0)
+		raw["ph"], _ = json.Marshal(domain.SpeedPhaseGameEnd)
+		newData, _ := json.Marshal(raw)
+		_ = json.Unmarshal(newData, s)
+
+		out3 := p.Output(s, nil)
+		assert.Contains(t, out3, "経過時間: 00:45")
+		assert.Contains(t, out3, "セッション自己ベスト: 00:45")
+		assert.NotContains(t, out3, "{{")
+
+		// Restart game
+		mockTime = mockTime.Add(10 * time.Second)
+		s.Reset()
+
+		out4 := p.Output(s, nil)
+		// Elapsed should reset to 00:00, best should be 00:45
+		assert.Contains(t, out4, "経過時間: 00:00")
+		assert.Contains(t, out4, "セッション自己ベスト: 00:45")
+
+		// Advance by 30 seconds
+		mockTime = mockTime.Add(30 * time.Second)
+		out5 := p.Output(s, nil)
+		assert.Contains(t, out5, "経過時間: 00:30")
+
+		// End game again, beating previous best
+		data, _ = json.Marshal(s)
+		_ = json.Unmarshal(data, &raw)
+		raw["ge"], _ = json.Marshal(true)
+		raw["wi"], _ = json.Marshal(0)
+		raw["ph"], _ = json.Marshal(domain.SpeedPhaseGameEnd)
+		newData, _ = json.Marshal(raw)
+		_ = json.Unmarshal(newData, s)
+
+		out6 := p.Output(s, nil)
+		assert.Contains(t, out6, "経過時間: 00:30")
+		assert.Contains(t, out6, "セッション自己ベスト: 00:30")
+	})
 }

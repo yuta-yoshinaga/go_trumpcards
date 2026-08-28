@@ -15,5 +15,7 @@
   "winHuman": "You win!",
   "winCpu": "CPU wins...",
   "helpExampleHint": "  h                    ask for a move",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "elapsedTime": "Elapsed time: {{time}}",
+  "sessionBestTime": "Session best time: {{time}}"
 }
