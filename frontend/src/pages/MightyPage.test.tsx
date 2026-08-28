@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, mightyApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
-import type { MightyResponse } from '../types/card';
+import type { MightyHint, MightyResponse } from '../types/card';
 import { MightyPage } from './MightyPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -871,5 +871,63 @@ describe('MightyPage', () => {
     mockCall.mockResolvedValue({ ...playPhaseState, hint: { cardIndex: 1, reason: 'followSuit' } });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     await waitFor(() => expect(document.querySelectorAll('[data-hinted]').length).toBeGreaterThan(0));
+  });
+});
+
+// ヒント行は4本の分岐 (ビッド / 切り札 / 捨て札 / プレイ) と、内側の
+// ノートランプ2箇所を持つ。プレイ以外は一度も通っていなかった
+// (#6663 のカバレッジ)。分岐ごとに、その分岐だけが出す語を見る。
+describe('MightyPage hint line branches', () => {
+  const showHint = async (hint: Partial<MightyHint> & { reason: string }) => {
+    mockCall.mockReset();
+    mockCall.mockResolvedValue(playPhaseState);
+    renderWithProviders(<MightyPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockCall.mockResolvedValue({ ...playPhaseState, hint });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    return screen.findByTestId('mighty-hint-live');
+  };
+
+  it('names a bid recommendation', async () => {
+    const region = await showHint({ bid: 14, reason: 'strategic_bid' });
+    await waitFor(() => expect(region).toHaveTextContent('推奨ビッド'));
+    expect(region).toHaveTextContent('14');
+    expect(region).not.toHaveTextContent('ノートランプ');
+    expect(region).not.toHaveTextContent('{{');
+  });
+
+  it('says so when the recommended bid is no-trump', async () => {
+    const region = await showHint({ bid: 14, bidNoTrump: true, reason: 'strategic_bid' });
+    await waitFor(() => expect(region).toHaveTextContent('推奨ビッド'));
+    expect(region).toHaveTextContent('ノートランプ');
+  });
+
+  it('names a trump recommendation', async () => {
+    const region = await showHint({ trumpSuit: 0, reason: 'strategic_declare' });
+    await waitFor(() => expect(region).toHaveTextContent('推奨切り札'));
+    expect(region).not.toHaveTextContent('推奨ビッド');
+    expect(region).not.toHaveTextContent('{{');
+  });
+
+  // -1 はスートではなくノートランプ。SUIT_KEYS を引くと undefined になる。
+  it('reads -1 as no-trump rather than an unknown suit', async () => {
+    const region = await showHint({ trumpSuit: -1, reason: 'strategic_declare' });
+    await waitFor(() => expect(region).toHaveTextContent('推奨切り札'));
+    expect(region).toHaveTextContent('ノートランプ');
+    expect(region).not.toHaveTextContent('undefined');
+  });
+
+  it('names the cards to discard', async () => {
+    const region = await showHint({ discardIndices: [0, 2], reason: 'strategic_discard' });
+    await waitFor(() => expect(region).toHaveTextContent('推奨捨て札'));
+    expect(region).toHaveTextContent('0, 2');
+    expect(region).not.toHaveTextContent('{{');
+  });
+
+  it('names the card to play', async () => {
+    const region = await showHint({ cardIndex: 1, reason: 'joker_lead' });
+    await waitFor(() => expect(region).toHaveTextContent('推奨カード'));
+    expect(region).toHaveTextContent('[1]');
+    expect(region).not.toHaveTextContent('推奨捨て札');
   });
 });

@@ -259,4 +259,17 @@ describe('CatchTenPage round announcement', () => {
     expect(announce()).toContain('+0');
     expect(announce()).toContain('+11');
   });
+
+  // 札を名指ししないヒントでは名前も番号もプレースホルダになる。その側を
+  // 一度も通していなかった (#6663 のカバレッジ)。
+  it('falls back to a placeholder when the server names no card', async () => {
+    renderWithProviders(<CatchTenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValueOnce(makeState({ hint: { reason: 'lead_strong' } }));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const region = await screen.findByTestId('catchten-hint-live');
+    await waitFor(() => expect(region).toHaveTextContent('[-]'));
+    expect(region).not.toHaveTextContent('{{');
+  });
 });

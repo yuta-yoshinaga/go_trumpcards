@@ -512,4 +512,32 @@ describe('TwoTenJackPage round announcement', () => {
     expect(screen.getAllByText('20').length).toBeGreaterThan(0);
     expect(screen.getAllByText('50').length).toBeGreaterThan(0);
   });
+
+  // 宣言ヒント (trumpSuit) と、札を名指ししないヒントのプレースホルダ側は
+  // どちらも一度も通っていなかった (#6663 のカバレッジ)。
+  it('announces a trump declaration hint', async () => {
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByTestId('tt-hint-button')).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(makeTwoTenJackState({ hint: { reason: 'strategic_trump', trumpSuit: 0 } }));
+    fireEvent.click(screen.getByTestId('tt-hint-button'));
+
+    const region = await screen.findByTestId('twotenjack-hint-live');
+    await waitFor(() => expect(region).toHaveTextContent('推奨トランプ'));
+    expect(region).not.toHaveTextContent('推奨プレイ');
+    expect(region).not.toHaveTextContent('{{');
+  });
+
+  it('falls back to a placeholder when the play hint names no card', async () => {
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByTestId('tt-hint-button')).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(makeTwoTenJackState({ hint: { reason: 'lead' } }));
+    fireEvent.click(screen.getByTestId('tt-hint-button'));
+
+    const region = await screen.findByTestId('twotenjack-hint-live');
+    await waitFor(() => expect(region).toHaveTextContent('推奨プレイ'));
+    expect(region).toHaveTextContent('[-]');
+    expect(region).not.toHaveTextContent('{{');
+  });
 });

@@ -215,4 +215,75 @@ describe('TarneebPage', () => {
       expect(c).not.toHaveAttribute('aria-disabled', 'true');
     }
   });
+
+  // このページのヒントは `hintAvailable` を使わないので、読み上げガードが
+  // 一度も見ておらず aria-live が無いまま出荷されていた (#6663)。領域は
+  // **常設**で、分岐ごとにその分岐だけが出す語を見る。
+  describe('TarneebPage hint live region', () => {
+    it('is mounted and empty before any hint arrives', async () => {
+      mockExec.mockResolvedValue(makeState());
+      renderWithProviders(<TarneebPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      const region = screen.getByTestId('tarneeb-hint-live');
+      expect(region).toHaveAttribute('role', 'status');
+      expect(region).toHaveAttribute('aria-live', 'polite');
+      expect(region).toBeEmptyDOMElement();
+    });
+
+    it('names a bid recommendation', async () => {
+      const bidTurn = makeState({ phase: TarneebPhase.BID, bidPlayerIdx: 0 });
+      mockExec.mockResolvedValue(bidTurn);
+      renderWithProviders(<TarneebPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+      mockExec.mockResolvedValue({
+        ...bidTurn,
+        hint: { bid: 8, reason: 'bid_estimate' },
+      } as unknown as TarneebResponse);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      const region = await screen.findByTestId('tarneeb-hint-live');
+      await waitFor(() => expect(region).toHaveTextContent('推奨ビッド'));
+      expect(region).toHaveTextContent('8');
+      expect(region).not.toHaveTextContent('{{');
+    });
+
+    it('names a trump recommendation', async () => {
+      const trumpTurn = makeState({ phase: TarneebPhase.TRUMP_DECLARATION, bidWinnerIdx: 0 });
+      mockExec.mockResolvedValue(trumpTurn);
+      renderWithProviders(<TarneebPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+      mockExec.mockResolvedValue({
+        ...trumpTurn,
+        hint: { trumpSuit: 0, reason: 'trump_longest' },
+      } as unknown as TarneebResponse);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      const region = await screen.findByTestId('tarneeb-hint-live');
+      await waitFor(() => expect(region).toHaveTextContent('推奨トランプ'));
+      expect(region).not.toHaveTextContent('推奨ビッド');
+      expect(region).not.toHaveTextContent('{{');
+    });
+
+    it('names the card to play', async () => {
+      const playTurn = makeState({ phase: TarneebPhase.PLAY, currentPlayerIdx: 0 });
+      mockExec.mockResolvedValue(playTurn);
+      renderWithProviders(<TarneebPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+      mockExec.mockResolvedValue({
+        ...playTurn,
+        hint: { cardIndex: 2, reason: 'lead_strong' },
+      } as unknown as TarneebResponse);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      const region = await screen.findByTestId('tarneeb-hint-live');
+      await waitFor(() => expect(region).toHaveTextContent('推奨カード'));
+      expect(region).toHaveTextContent('[2]');
+      expect(region).not.toHaveTextContent('推奨トランプ');
+      expect(region).not.toHaveTextContent('{{');
+    });
+  });
 });
