@@ -460,4 +460,15 @@ describe('ClockSolitairePage face-up cards inside a pile', () => {
     renderWithProviders(<ClockSolitairePage />);
     expect(await screen.findByTestId('clock-pile-suits-12')).toHaveTextContent('♠');
   });
+
+  // 中央の山も、1枚も表になっていなければ黙っていなければならない。
+  it('says nothing about an untouched centre pile', async () => {
+    const piles = makeTestPiles();
+    piles[12][3].faceUp = false;
+    const fuc = Array(13).fill(0);
+    mockExec.mockResolvedValue({ ...playingState, piles, faceUpCount: fuc });
+    renderWithProviders(<ClockSolitairePage />);
+    await screen.findByTestId('clock-completed');
+    expect(screen.queryByTestId('clock-pile-suits-12')).not.toBeInTheDocument();
+  });
 });

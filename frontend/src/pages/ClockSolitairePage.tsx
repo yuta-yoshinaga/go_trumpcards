@@ -69,23 +69,23 @@ const TUTORIAL_STEPS: TutorialStep[] = [
  * おらず、どの札がもう揃ったのかが見えなかった (#6317)。時計盤は半径が 180px
  * 固定で隣り合う山の間隔が 93px しかないため、札を 4 枚並べる余地は無い。
  * だから枚数バッジと同じ行に記号で並べる。 */
-function ClockPileFaceUpSuits({ pile, testId }: { pile: ClockSolitaireCard[] | undefined; testId: string }) {
-  const faceUp = (pile ?? []).filter((pc) => pc.faceUp && pc.card);
+function ClockPileFaceUpSuits({ pile, testId }: { pile: ClockSolitaireCard[]; testId: string }) {
+  // flatMap で絞るのは `card` を非 null に狭めるため。ここで三項を挟むと、
+  // filter を通った時点で到達しない側の分岐がカバレッジに残る。
+  const faceUp = pile.flatMap((pc) => (pc.faceUp && pc.card ? [pc.card] : []));
   if (faceUp.length === 0) return null;
   return (
     <span data-testid={testId}>
-      {faceUp.map(({ card }) =>
-        card ? (
-          <span
-            key={`${card.design}-${card.value.toString()}`}
-            role="img"
-            aria-label={cardAlt(card)}
-            className={isRedSuitDesign(card.design) ? 'text-ds-error' : 'text-ds-text-primary'}
-          >
-            {suitSymbol(card.design)}
-          </span>
-        ) : null,
-      )}{' '}
+      {faceUp.map((card) => (
+        <span
+          key={`${card.design}-${card.value.toString()}`}
+          role="img"
+          aria-label={cardAlt(card)}
+          className={isRedSuitDesign(card.design) ? 'text-ds-error' : 'text-ds-text-primary'}
+        >
+          {suitSymbol(card.design)}
+        </span>
+      ))}{' '}
     </span>
   );
 }
