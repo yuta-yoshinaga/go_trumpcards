@@ -1211,5 +1211,21 @@ describe('NapoleonPage point limit', () => {
     } as unknown as NapoleonResponse);
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     await waitFor(() => expect(region).toHaveTextContent('推奨ビッド'));
+
+    // A trump declaration hint.
+    mockExec.mockResolvedValue({
+      ...trumpDeclarationState,
+      hint: { trumpSuit: 1, reason: 'declareTrump' },
+    } as unknown as NapoleonResponse);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(region).toHaveTextContent('推奨切り札'));
+
+    // A kitty exchange discard hint.
+    mockExec.mockResolvedValue({
+      ...kittyExchangeState,
+      hint: { discardIndex: 0, reason: 'discardWeakest' },
+    } as unknown as NapoleonResponse);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(region).toHaveTextContent('推奨捨て札'));
   });
 });
