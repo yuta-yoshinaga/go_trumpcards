@@ -449,3 +449,57 @@ func TestCostlyColours_ShowCountsElderFirst(t *testing.T) {
 	assert.Equal(t, cfg.TargetScore-1, c.GetPlayer(0).GetScore(),
 		"終局後も親の手が数えられている")
 }
+
+// **J と 2 を残すのは優先順位であって拒否権ではない。** 交換は必ず1枚出す
+// 約束なので、3枚とも J か 2 の席でも1枚は手放す。しきい値が J/2 のスコアと
+// 同じ -1 だったため (`-1 > -1` は偽) そういう席は -1 を返し、呼び出し側が
+// 交換もフラグ設定もせずに戻っていた ── その席だけ「交換に参加していない」
+// ままフェーズが進む (#6666)。
+//
+// 実測 1% の配りでしか出ないので、**配らずに卓を手で組んで**測る。
+func TestCostlyColours_MogSwapsEvenWhenEveryCardIsWorthKeeping(t *testing.T) {
+	c := newCostlyGame(t)
+	// 全席 J と 2 だけ。札は席をまたいで重複させない。
+	hands := [CostlyColoursPlayerCnt][CostlyColoursHandSize]*Card{
+		{ccCard(CardDesignSpade, 11), ccCard(CardDesignHeart, 2), ccCard(CardDesignClover, 11)},
+		{ccCard(CardDesignDiamond, 11), ccCard(CardDesignSpade, 2), ccCard(CardDesignHeart, 11)},
+	}
+	for i := 0; i < CostlyColoursPlayerCnt; i++ {
+		p := c.GetPlayer(i)
+		p.Reset()
+		for _, card := range hands[i] {
+			p.AddCard(card)
+		}
+	}
+
+	require.NoError(t, c.PlayerMog(true))
+
+	for i := 0; i < CostlyColoursPlayerCnt; i++ {
+		assert.Equal(t, CostlyColoursHandSize, c.GetPlayer(i).GetCardsSize(),
+			"交換後に席 %d の手札が %d 枚でない", i, CostlyColoursHandSize)
+		assert.True(t, c.GetPlayer(i).IsMoggedIn(),
+			"席 %d が交換に参加しないまま残った", i)
+	}
+	assert.Equal(t, CostlyColoursPhasePlay, c.GetPhase())
+}
+
+// 札が1枚も無いときだけ -1。「全部残したい」は -1 ではない。
+func TestCostlyWorstCardIdx_OnlyEmptyHandsHaveNoAnswer(t *testing.T) {
+	t.Run("a hand of nothing but keepers still names one", func(t *testing.T) {
+		hand := []*Card{ccCard(CardDesignSpade, 11), ccCard(CardDesignHeart, 2), ccCard(CardDesignClover, 11)}
+		idx := costlyWorstCardIdx(hand)
+		require.GreaterOrEqual(t, idx, 0, "手放す札が選べていない")
+		assert.Less(t, idx, len(hand))
+	})
+
+	t.Run("a real card still beats a keeper", func(t *testing.T) {
+		// 10 は J/2 より先に手放す ── 優先順位が逆転していないこと。
+		hand := []*Card{ccCard(CardDesignSpade, 11), ccCard(CardDesignHeart, 10), ccCard(CardDesignClover, 2)}
+		assert.Equal(t, 1, costlyWorstCardIdx(hand))
+	})
+
+	t.Run("an empty hand has no answer", func(t *testing.T) {
+		assert.Equal(t, -1, costlyWorstCardIdx(nil))
+		assert.Equal(t, -1, costlyWorstCardIdx([]*Card{nil, nil}))
+	})
+}
