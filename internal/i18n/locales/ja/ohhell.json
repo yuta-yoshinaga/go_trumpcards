@@ -6,6 +6,7 @@
   "helpNextRound": "  nr                   次のラウンドへ",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetMaxHand": "  sm <n>               最大手札枚数 (1-13)",
+  "helpSetScoring": "  ss <0-1>             得点方式 (0=外れは0点, 1=外れはマイナス点)",
   "header": "ラウンド: {{round}}/{{total}}  手札枚数: {{hand}}  トリック: {{trick}}",
   "trumpCard": "切り札: {{card}}",
   "trumpNone": "切り札: なし",
@@ -30,5 +31,7 @@
   "hintBid": "[HINT: ビッド {{bid}} を推奨 ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "scoringVariantRequired01": "ss の後に 0 (外れは0点) か 1 (外れはマイナス点) を指定してください",
+  "invalidScoringVariant01": "得点方式は 0 か 1 で指定してください"
 }

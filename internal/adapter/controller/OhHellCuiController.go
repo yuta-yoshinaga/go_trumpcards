@@ -38,7 +38,7 @@ func (c *OhHellCuiController) Exec(command string) string {
 		},
 		[]string{
 			"b", "bid", "p", "play", "n", "next", "nr", "nextround",
-			"sd", "setdifficulty", "sm", "setmaxhand", "h", "hint", "log", "l",
+			"sd", "setdifficulty", "sm", "setmaxhand", "ss", "setscoring", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -54,6 +54,12 @@ func (c *OhHellCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.oi.GetConfig()
 					cfg.CpuDifficulty = domain.OhHellCpuDifficulty(v)
+					return c.oi.ResetWithConfig(cfg)
+				})
+			case "ss", "setscoring":
+				return cuiutil.WithParsedIntKeys(args, "scoringVariantRequired01", "invalidScoringVariant01", 0, 1, func(v int) string {
+					cfg := c.oi.GetConfig()
+					cfg.ScoringVariant = domain.OhHellScoringVariant(v)
 					return c.oi.ResetWithConfig(cfg)
 				})
 			case "sm", "setmaxhand":

@@ -882,7 +882,7 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			CommandKeys:       []string{"ohhell.helpBid", "ohhell.helpPlay", "ohhell.helpNext", "ohhell.helpNextRound", "ohhell.helpHint"},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"ohhell.helpSetDifficulty", "ohhell.helpSetMaxHand"},
+			SettingKeys:       []string{"ohhell.helpSetDifficulty", "ohhell.helpSetMaxHand", "ohhell.helpSetScoring"},
 		}),
 	BindCuiFor("ninetynine",
 		func() usecase.NinetyNineInteractorIF {
