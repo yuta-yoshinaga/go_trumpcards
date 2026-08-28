@@ -22,6 +22,7 @@ func setupNinetyNineCuiMock() *interfaces.MockNinetyNineGame {
 	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.NinetyNinePhasePlay)
+	m.On("GetRoundSuccessBonus").Return(0).Maybe()
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetBidPlayerIdx").Return(0)
 	m.On("GetDealerIdx").Return(0)
@@ -162,4 +163,51 @@ func TestNinetyNineCuiPresenter_ActionLogOutput(t *testing.T) {
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", Detail: "You buries 3 and declares 3"},
 	})
 	assert.NotEmpty(t, p.ActionLogOutput(m))
+}
+
+// round is 10+bid+bonus, so the bonus vanishes into it. The sole-success +30 is
+// the point of this game's scoring; it was only ever in the action log string.
+func TestNinetyNineCuiPresenter_SuccessBonusLine(t *testing.T) {
+	p := new(presenter.NinetyNineCuiPresenter)
+
+	build := func(bonus int) *interfaces.MockNinetyNineGame {
+		m, _ := setupNinetyNineCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.NinetyNinePhaseRoundEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundSuccessBonus")
+		m.On("GetRoundSuccessBonus").Return(bonus).Maybe()
+		return m
+	}
+
+	t.Run("names the bonus that was applied", func(t *testing.T) {
+		out := p.Output(build(30), nil)
+		assert.Contains(t, out, "的中ボーナス: 的中者ひとりにつき +30点")
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("says nothing when nobody made their bid", func(t *testing.T) {
+		// A bonus of 0 means no one succeeded; printing "+0" would imply someone did.
+		// **`i18n.T` を期待値にすると素通りする**: 未展開の "{{bonus}}" を含む
+		// 文字列は出力に絶対現れないので、行が出ていても NotContains が通る。
+		assert.NotContains(t, p.Output(build(0), nil), "的中ボーナス")
+	})
+
+	// ScoreRound はボーナスを載せるのと同じ呼び出しで勝敗も決めうる。Output は
+	// ゲーム終了で早期 return するので、そこより後ろに置くと **+30 が目標点を
+	// 越えて勝った局面だけ内訳が消える** ── 一番見せたい場面で。
+	t.Run("is still there on the round that ends the game", func(t *testing.T) {
+		m, _ := setupNinetyNineCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.NinetyNinePhaseGameEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundSuccessBonus")
+		m.On("GetRoundSuccessBonus").Return(30).Maybe()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.On("GetGameEndFlag").Return(true)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
+		m.On("GetWinnerIdx").Return(0)
+
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "的中ボーナス: 的中者ひとりにつき +30点")
+		assert.NotContains(t, out, "{{")
+	})
 }

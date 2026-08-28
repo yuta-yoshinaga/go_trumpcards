@@ -656,3 +656,61 @@ func TestNinetyNine_UnmarshalRejectsBadBid(t *testing.T) {
 	o := &domain.NinetyNine{}
 	assert.Error(t, json.Unmarshal(data, o))
 }
+
+// The bonus is what makes this game's scoring interesting -- the fewer players
+// who make their bid, the more each of them gains. Once it is folded into
+// round score as 10+bid+bonus it cannot be recovered, so it is kept separately.
+func TestNinetyNineRoundSuccessBonus(t *testing.T) {
+	t.Run("is zero before a round is scored", func(t *testing.T) {
+		g := domain.NewDefaultNinetyNine()
+		g.Reset()
+		assert.Equal(t, 0, g.GetRoundSuccessBonus())
+	})
+
+	t.Run("matches the payout the scorer actually applied", func(t *testing.T) {
+		// Build the table by hand: one player on their bid, the rest off it, so
+		// the sole-success branch is the one taken.
+		g := domain.NewDefaultNinetyNine()
+		g.Reset()
+		trick := []*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)}
+		for i := range domain.NinetyNinePlayerCnt {
+			p := g.GetPlayer(i)
+			p.SetBid(0)
+			if i != 0 {
+				p.AddTrick(trick) // off their bid of 0
+			}
+		}
+
+		// ScoreRound only runs in the round-end phase.
+		g.SetPhase(domain.NinetyNinePhaseRoundEnd)
+		g.ScoreRound()
+		assert.Equal(t, 30, g.GetRoundSuccessBonus(), "a sole success pays 30")
+		// round = 10 + bid + bonus, so the bonus has to be consistent with it.
+		assert.Equal(t, 10+0+30, g.GetPlayer(0).GetRoundScore())
+	})
+
+	// The Workers build persists the game by json.Marshal between every request
+	// (GameBase.Snapshot), so a field absent from the wire struct is silently
+	// reset to 0 in production while working fine in an in-memory CUI session.
+	t.Run("survives the JSON round-trip the KV session does", func(t *testing.T) {
+		g := domain.NewDefaultNinetyNine()
+		g.Reset()
+		trick := []*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)}
+		for i := range domain.NinetyNinePlayerCnt {
+			p := g.GetPlayer(i)
+			p.SetBid(0)
+			if i != 0 {
+				p.AddTrick(trick)
+			}
+		}
+		g.SetPhase(domain.NinetyNinePhaseRoundEnd)
+		g.ScoreRound()
+		require.NotZero(t, g.GetRoundSuccessBonus(), "a zero bonus would pass even if the field were dropped")
+
+		data, err := json.Marshal(g)
+		require.NoError(t, err)
+		restored := &domain.NinetyNine{}
+		require.NoError(t, json.Unmarshal(data, restored))
+		assert.Equal(t, g.GetRoundSuccessBonus(), restored.GetRoundSuccessBonus())
+	})
+}
