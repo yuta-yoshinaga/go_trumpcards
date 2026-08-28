@@ -119,13 +119,15 @@ func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) s
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(p.GetMoveCount())) +
 				cuiSolitaireUndoHint(p.CanUndo()) + "\n")
-			b.WriteString(pyramidSessionStatsLine(p))
 		case domain.PyramidPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(p.GetMoveCount())) + "\n")
 		case domain.PyramidPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}
+		// **局が終わった画面こそ通算を見たい場面。** 記録は checkGameClear /
+		// GiveUp の中で同期的に更新済みなので、フェーズを問わず最後に出す。
+		b.WriteString(pyramidSessionStatsLine(p))
 	})
 }
 

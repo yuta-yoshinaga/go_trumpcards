@@ -348,4 +348,22 @@ func TestPyramidCuiPresenter_SessionStats(t *testing.T) {
 		assert.Contains(t, out, "このセッション")
 		assert.Contains(t, out, i18n.T("pyramid.sessionNoBest"))
 	})
+
+	// 局が終わった画面こそ通算を見たい場面。記録は checkGameClear / GiveUp の
+	// 中で同期的に更新されるので、この画面が描かれる時点でもう入っている。
+	t.Run("is still there once the game is over", func(t *testing.T) {
+		for _, phase := range []domain.PyramidPhase{
+			domain.PyramidPhaseGameClear,
+			domain.PyramidPhaseGameOver,
+		} {
+			pg := new(interfaces.MockPyramidGame)
+			pg.On("GetPhase").Return(phase).Maybe()
+			pg.On("GetSessionPlays").Return(4).Maybe()
+			pg.On("GetSessionWins").Return(2).Maybe()
+			pg.On("GetSessionFewestMoves").Return(31).Maybe()
+			out := p.Output(setupPyramidCuiMockOn(pg), nil)
+			assert.Contains(t, out, "このセッション")
+			assert.Contains(t, out, "31")
+		}
+	})
 }
