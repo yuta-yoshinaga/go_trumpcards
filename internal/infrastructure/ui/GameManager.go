@@ -228,6 +228,7 @@ var gameRegistry = []GameRegistryEntry{
 			}, tournamentRebuyAddOnKeys...),
 			SettingKeys: append([]string{
 				"holdem.helpBettingLimit", "holdem.helpTournament",
+				"holdem.helpRebuyEnabled", "holdem.helpAddonEnabled",
 			}, holdemBlindKeys...),
 		}),
 	BindCuiFor("omaha",

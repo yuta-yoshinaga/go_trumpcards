@@ -115,7 +115,10 @@ flowchart TD
 | `raise <額>` | `ra <額>` | レイズする |
 | `allin` | `a` | オールイン |
 | `bl [0-2]` | | ベッティングリミット変更（0=Fixed, 1=PotLimit, 2=NoLimit） |
+| `tm [0-1]` | `tournament` | トーナメントモードの切り替え（0=OFF, 1=ON） |
 | `ts [4\|6\|9]` | `tablesize` | テーブルサイズ変更（4-max, 6-max, 9-max） |
+| `rbe [0-1]` | `setrebuyenabled` | リバイの有効化（0=OFF, 1=ON） |
+| `ade [0-1]` | `setaddonenabled` | アドオンの有効化（0=OFF, 1=ON） |
 | `rebuy` | `rb` | リバイ（チップを再購入） |
 | `skiprebuy` | `sr` | リバイをスキップ |
 | `addon` | `ad` | アドオン（チップを追加購入） |
