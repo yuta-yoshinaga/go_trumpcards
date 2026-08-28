@@ -627,3 +627,41 @@ func TestVideoPokerCuiPresenter_ChipsRefilledNotice(t *testing.T) {
 		assert.NotContains(t, p.Output(build(false), nil), i18n.T("videopoker.chipsRefilled"))
 	})
 }
+
+// Which pairs pay is a property of the variant's paytable, not a constant.
+// Deuces Wild pays nothing below three of a kind, so recommending a high pair
+// there hands the player a hold worth zero over a four-card royal.
+func TestVideoPokerHold_PayingPairIsVariantSpecific(t *testing.T) {
+	// K-K plus three cards that also form four to a royal but no deuce, so the
+	// two candidate holds are directly in conflict.
+	hand := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 13, false),
+		domain.NewCard(domain.CardDesignHeart, 13, false),
+		domain.NewCard(domain.CardDesignSpade, 12, false),
+		domain.NewCard(domain.CardDesignSpade, 11, false),
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+	}
+
+	t.Run("jacks or better keeps the paying pair", func(t *testing.T) {
+		_, key := videoPokerHold(hand, "jacksorbetter")
+		assert.Equal(t, "holdPair", key)
+	})
+
+	t.Run("deuces wild does not, because no pair pays there", func(t *testing.T) {
+		_, key := videoPokerHold(hand, "deuceswild")
+		assert.NotEqual(t, "holdPair", key, "Deuces Wild pays nothing below trips")
+	})
+
+	t.Run("the threshold itself comes from the paytable", func(t *testing.T) {
+		jb, ok := videoPokerPayingPairRank("jacksorbetter")
+		assert.True(t, ok)
+		assert.Equal(t, videoPokerHighCardThreshold, jb)
+
+		kb, ok := videoPokerPayingPairRank("jokerpoker")
+		assert.True(t, ok)
+		assert.Equal(t, videoPokerKingRank, kb, "joker poker pays from kings")
+
+		_, ok = videoPokerPayingPairRank("deuceswild")
+		assert.False(t, ok, "no pair row exists in the Deuces Wild paytable")
+	})
+}

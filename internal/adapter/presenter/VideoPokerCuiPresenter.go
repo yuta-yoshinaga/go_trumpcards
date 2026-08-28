@@ -167,6 +167,9 @@ func (vpp *VideoPokerCuiPresenter) phaseStr(phase int) string {
 // videoPokerHighCardThreshold is the lowest rank (Jack) treated as a high card.
 const videoPokerHighCardThreshold = 11
 
+// videoPokerKingRank is the King, the floor for a paying pair in Kings or Better.
+const videoPokerKingRank = 13
+
 // videoPokerDrawCount is the minimum matching count that makes a flush or
 // straight draw worth holding (4 of the 5 cards).
 const videoPokerDrawCount = 4
@@ -186,6 +189,22 @@ func videoPokerIsWild(variant string, c *domain.Card) bool {
 	default:
 		return false
 	}
+}
+
+// videoPokerPayingPairRank reports the lowest rank whose pair actually pays in
+// this variant, reading the variant's own paytable rather than assuming the
+// Jacks or Better threshold. ok is false when no pair pays at all -- Deuces
+// Wild stops at three of a kind, so every pair there is worth nothing.
+func videoPokerPayingPairRank(variant string) (int, bool) {
+	for _, row := range domain.VideoPokerPaytable(variant) {
+		switch row.HandKey {
+		case "ptJacksOrBetter":
+			return videoPokerHighCardThreshold, true
+		case "ptKingsOrBetter":
+			return videoPokerKingRank, true
+		}
+	}
+	return 0, false
 }
 
 // videoPokerHold computes the recommended hold mask and a reason i18n key
@@ -236,12 +255,18 @@ func videoPokerHold(hand []*domain.Card, variant string) ([]bool, string) {
 	// **配当のつくペアかどうかで扱いが変わる。**Jacks or Better では J 未満の
 	// ペア単体には配当が無い。以前はこの分岐が無条件に最初へ来ていたため、
 	// 4枚ロイヤルや4枚フラッシュが同居していても常に弱いペアを勧めていた (#4691)。
+	//
+	// **どのランクから配当するかは変種の配当表が決める。**Deuces Wild の最下位は
+	// スリーカードで、ペアの行そのものが無い ── そこで J 以上を配当扱いすると、
+	// 1コインも払わない役を4枚ロイヤルより先に勧めることになる (#6301)。
 	paying := maxCount >= 3
 	if maxCount == 2 {
-		for v, idxs := range groups {
-			if len(idxs) >= 2 && (v == 1 || v >= videoPokerHighCardThreshold) {
-				paying = true
-				break
+		if minRank, ok := videoPokerPayingPairRank(variant); ok {
+			for v, idxs := range groups {
+				if len(idxs) >= 2 && (v == 1 || v >= minRank) {
+					paying = true
+					break
+				}
 			}
 		}
 	}

@@ -74,4 +74,22 @@ describe('getVideoPokerHint', () => {
     const result = getVideoPokerHint(makeState({ hand }));
     expect(result?.reason).toBe('hint.drawAll');
   });
+
+  // The negative control for #6301: the same hand that Deuces Wild must not
+  // call a paying pair is one Jacks or Better should, so the fix cannot have
+  // been a blanket removal.
+  it('still recommends a paying pair in Jacks or Better', () => {
+    const hint = getVideoPokerHint(
+      makeState({
+        hand: [
+          { design: 'SPADE', value: 13 },
+          { design: 'HEART', value: 13 },
+          { design: 'SPADE', value: 12 },
+          { design: 'SPADE', value: 11 },
+          { design: 'SPADE', value: 10 },
+        ],
+      }),
+    );
+    expect(hint?.reason).toBe('hint.holdPair');
+  });
 });
