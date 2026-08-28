@@ -15,6 +15,7 @@
   "scoringVegas": "Vegas",
   "wasteFan": " | Waste: {{cards}} (末尾*のみ操作可)",
   "clearScore": "スコア: {{score}}",
+  "clearTimeBonus": "タイムボーナス: {{bonus}} 合計: {{total}}",
   "foundationHeader": "Foundation: ",
   "stockLine": "Stock: {{count}}枚",
   "wasteCard": " | Waste: {{card}}",
