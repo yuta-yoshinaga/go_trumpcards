@@ -15,6 +15,27 @@ import (
 // PyramidCuiPresenter renders the Pyramid Solitaire CUI view.
 type PyramidCuiPresenter struct{}
 
+// pyramidSessionStatsLine renders this run's play/clear counts and best move
+// count, or "" before the first game finishes.
+//
+// **The web keeps a persistent record in localStorage; this does not.** The CUI
+// has no store of its own, so the figures cover the current process only -- the
+// wording says so rather than implying an all-time best.
+func pyramidSessionStatsLine(p interfaces.PyramidGame) string {
+	plays := p.GetSessionPlays()
+	if plays == 0 {
+		return ""
+	}
+	best := i18n.T("pyramid.sessionNoBest")
+	if fm := p.GetSessionFewestMoves(); fm > 0 {
+		best = strconv.Itoa(fm)
+	}
+	return i18n.Tf("pyramid.sessionStats",
+		"plays", strconv.Itoa(plays),
+		"wins", strconv.Itoa(p.GetSessionWins()),
+		"best", best) + "\n"
+}
+
 // Output renders the current game state for the active locale (#1699).
 func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) string {
 	const pyramidIndent = "  "
@@ -104,6 +125,9 @@ func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) s
 		case domain.PyramidPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}
+		// **局が終わった画面こそ通算を見たい場面。** 記録は checkGameClear /
+		// GiveUp の中で同期的に更新済みなので、フェーズを問わず最後に出す。
+		b.WriteString(pyramidSessionStatsLine(p))
 	})
 }
 

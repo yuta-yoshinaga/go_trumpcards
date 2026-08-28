@@ -53,6 +53,12 @@ type Pyramid struct {
 	waste      []*Card
 	phase      PyramidPhase
 	moveCount  int
+	// セッション統計。**Reset では消さない**ので、同じプロセスで遊んだ分だけ積まれる。
+	// Web は localStorage に自前の永続記録を持っているのでこちらは使わない。
+	// 保存対象ではない (プロセスを閉じると消える)。
+	sessionPlays       int
+	sessionWins        int
+	sessionFewestMoves int // 0 = 記録なし
 	actionLogBase
 	history     []*pyramidSnapshot
 	isStalemate bool
@@ -279,10 +285,35 @@ func (p *Pyramid) RemoveWasteKing() error {
 	return nil
 }
 
+// recordSessionResult は 1 ゲームの決着をセッション統計に足す。
+//
+// **Reset ではなく決着で数える。** Reset は起動時にも走るので、そこで数えると
+// 1 度も遊んでいないのに 1 プレイ扱いになる。
+func (p *Pyramid) recordSessionResult(won bool) {
+	p.sessionPlays++
+	if !won {
+		return
+	}
+	p.sessionWins++
+	if p.sessionFewestMoves == 0 || p.moveCount < p.sessionFewestMoves {
+		p.sessionFewestMoves = p.moveCount
+	}
+}
+
+// GetSessionPlays はこのプロセスで決着したゲーム数を返す。
+func (p *Pyramid) GetSessionPlays() int { return p.sessionPlays }
+
+// GetSessionWins はこのプロセスでクリアした回数を返す。
+func (p *Pyramid) GetSessionWins() int { return p.sessionWins }
+
+// GetSessionFewestMoves はクリア時の最少手数を返す。0 は記録なし。
+func (p *Pyramid) GetSessionFewestMoves() int { return p.sessionFewestMoves }
+
 // GiveUp ギブアップ
 func (p *Pyramid) GiveUp() {
 	if p.phase == PyramidPhasePlaying {
 		p.phase = PyramidPhaseGameOver
+		p.recordSessionResult(false)
 		p.appendLog("giveup", "ギブアップしました", nil)
 	}
 }
@@ -481,6 +512,7 @@ func (p *Pyramid) getExposedCards() [][2]int {
 func (p *Pyramid) checkGameClear() {
 	if p.AllRemoved() {
 		p.phase = PyramidPhaseGameClear
+		p.recordSessionResult(true)
 	}
 }
 
