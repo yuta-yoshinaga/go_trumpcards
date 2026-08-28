@@ -15,7 +15,6 @@ import (
 // PyramidCuiPresenter renders the Pyramid Solitaire CUI view.
 type PyramidCuiPresenter struct{}
 
-// Output renders the current game state for the active locale (#1699).
 // pyramidSessionStatsLine renders this run's play/clear counts and best move
 // count, or "" before the first game finishes.
 //
@@ -37,6 +36,7 @@ func pyramidSessionStatsLine(p interfaces.PyramidGame) string {
 		"best", best) + "\n"
 }
 
+// Output renders the current game state for the active locale (#1699).
 func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) string {
 	const pyramidIndent = "  "
 	const pyramidRemovedPlaceholder = "    "
