@@ -63,9 +63,15 @@ func sevensActionStr(playerName string, action *domain.SevensCpuAction) string {
 			"suit", cuiSuitName(action.TargetSuit),
 			"value", strconv.Itoa(action.TargetValue)) + "\n"
 	}
-	return i18n.Tf("sevens.actionPlayed",
+	line := i18n.Tf("sevens.actionPlayed",
 		"name", playerName,
 		"card", cuiCardStr(action.PlayedCard)) + "\n"
+	// **回収は手札が1枚増えるだけで、理由がどこにも出ていなかった。**
+	// 増えた原因を説明できるのはこの行だけ。
+	if action.JokerReclaimed {
+		line += i18n.Tf("sevens.actionReclaimedJoker", "name", playerName) + "\n"
+	}
+	return line
 }
 
 // sevensRuleLabels appends the active rule badges to b. The conditional

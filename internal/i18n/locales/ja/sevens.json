@@ -31,5 +31,6 @@
   "boardSuitLine": "  {{suit}}: {{cells}}",
   "helpExamplePass": "  p                    出せる札が無いときはパスする",
   "helpLog": "  l                    行動ログを表示",
-  "noPlayable": "出せる札がありません。p でパスしてください"
+  "noPlayable": "出せる札がありません。p でパスしてください",
+  "actionReclaimedJoker": "  ↳ {{name}} がジョーカーを回収しました (手札に戻ります)"
 }
