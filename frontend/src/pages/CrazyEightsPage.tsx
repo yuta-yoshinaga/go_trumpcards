@@ -351,6 +351,23 @@ function CrazyEightsPageContent() {
                 {/* Score table */}
                 <div className="my-3 p-2 rounded bg-black/30">
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                  {/* Reaching the limit ends the game, but the number lived only
+                      in the settings panel, so the table's bare scores gave no
+                      sense of how near that was. Hearts/Spades print the same
+                      line in their CUI. */}
+                  {state.config.pointLimit > 0 &&
+                    (() => {
+                      const leader = state.players.reduce((a, b) => (b.cumulativeScore > a.cumulativeScore ? b : a));
+                      return (
+                        <div className="text-ds-text-muted text-xs mb-1" data-testid="ce-limit-progress">
+                          {t('limitProgress', {
+                            limit: state.config.pointLimit,
+                            name: playerName(leader.id, leader.isHuman),
+                            score: leader.cumulativeScore,
+                          })}
+                        </div>
+                      );
+                    })()}
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>
