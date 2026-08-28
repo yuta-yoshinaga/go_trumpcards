@@ -233,19 +233,28 @@ func (c *CostlyColours) swapOneCard(a, b int) {
 	}
 }
 
-// costlyWorstCardIdx は手放してよい札の位置を返す。
+// costlyWorstCardIdx は手放してよい札の位置を返す。札が1枚も無いときだけ -1。
 //
 // **J と 2 は残す。** どちらも手札にあるだけで点になるので、渡すと相手に
 // その点を献上することになる。
+//
+// ただしこれは**優先順位であって拒否権ではない**。交換は必ず1枚出す約束なので、
+// 手札が J と 2 だけの席でも誰かを出さねばならない。しきい値を J/2 のスコアと
+// 同じ -1 に置いていたため (`-1 > -1` は偽)、そういう席は -1 を返し、
+// 呼び出し側が交換もフラグ設定もせずに戻っていた ── その席だけ
+// 「交換に参加していない」ままフェーズが進む (#6666、実測 1%)。
 func costlyWorstCardIdx(hand []*Card) int {
-	best, bestScore := -1, -1
+	// costlyKeepScore は「本当は残したい」札の点。どの実札の点よりも低く、
+	// かつ「札が無い」を表す初期値よりは高い。
+	const costlyKeepScore = -1
+	best, bestScore := -1, costlyKeepScore-1
 	for i, card := range hand {
 		if card == nil {
 			continue
 		}
 		score := CostlyCardValue(card)
 		if CostlyIsJackOrDeuce(card) {
-			score = -1 // 最後まで残す。
+			score = costlyKeepScore
 		}
 		if score > bestScore {
 			best, bestScore = i, score
