@@ -24,9 +24,10 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { ClockSolitaireResponse } from '../types/card';
+import type { ClockSolitaireCard, ClockSolitaireResponse } from '../types/card';
 import { ClockSolitairePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt, isRedSuitDesign, suitSymbol } from '../utils/cardAlt';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { CLOCK_PILE_COUNT, completedClockPiles } from '../utils/clockSolitaireProgress';
@@ -61,6 +62,34 @@ const TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Clock position angles: index 0 = 1 o'clock, index 11 = 12 o'clock */
+/** The suits of the cards already turned face up in one pile.
+ *
+ * すべて同じ数字（山のラベル）の札なので、1枚ずつ見分ける手がかりはスートだけ。
+ * CUI は 4 枚を1枚ずつ出しているのに、Web は山が完成するまで裏面1枚しか出して
+ * おらず、どの札がもう揃ったのかが見えなかった (#6317)。時計盤は半径が 180px
+ * 固定で隣り合う山の間隔が 93px しかないため、札を 4 枚並べる余地は無い。
+ * だから枚数バッジと同じ行に記号で並べる。 */
+function ClockPileFaceUpSuits({ pile, testId }: { pile: ClockSolitaireCard[]; testId: string }) {
+  // flatMap で絞るのは `card` を非 null に狭めるため。ここで三項を挟むと、
+  // filter を通った時点で到達しない側の分岐がカバレッジに残る。
+  const faceUp = pile.flatMap((pc) => (pc.faceUp && pc.card ? [pc.card] : []));
+  if (faceUp.length === 0) return null;
+  return (
+    <span data-testid={testId}>
+      {faceUp.map((card) => (
+        <span
+          key={`${card.design}-${card.value.toString()}`}
+          role="img"
+          aria-label={cardAlt(card)}
+          className={isRedSuitDesign(card.design) ? 'text-ds-error' : 'text-ds-text-primary'}
+        >
+          {suitSymbol(card.design)}
+        </span>
+      ))}{' '}
+    </span>
+  );
+}
+
 const CLOCK_POSITIONS = Array.from({ length: 12 }, (_, i) => {
   const angle = ((i * 30 + 30 - 90) * Math.PI) / 180;
   return { x: Math.cos(angle), y: Math.sin(angle) };
@@ -330,10 +359,15 @@ function ClockSolitairePageContent() {
                               width={cardWidth}
                               className="rounded border-2 border-ds-success"
                             />
+                          ) : faceUpCount > 0 && topCard ? (
+                            /* 表向きの札は末尾に積まれるので、末尾が最後にめくれた札。
+                               完成の緑枠とは別の枠にして「まだ裏の札が残っている」を保つ。 */
+                            <AnimatedCard card={topCard} width={cardWidth} className="rounded border border-ds-info" />
                           ) : (
                             <AnimatedCardBack width={cardWidth} />
                           )}
-                          <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-ds-text-muted">
+                          <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-ds-text-muted">
+                            <ClockPileFaceUpSuits pile={pile} testId={`clock-pile-suits-${i.toString()}`} />
                             {faceUpCount}/4
                           </span>
                         </div>
@@ -375,10 +409,17 @@ function ClockSolitairePageContent() {
                           width={cardWidth}
                           className="rounded border-2 border-ds-warning"
                         />
+                      ) : state.faceUpCount[12] > 0 && centerTopCard ? (
+                        <AnimatedCard
+                          card={centerTopCard}
+                          width={cardWidth}
+                          className="rounded border border-ds-info"
+                        />
                       ) : (
                         <AnimatedCardBack width={cardWidth} />
                       )}
-                      <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-ds-text-muted">
+                      <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-ds-text-muted">
+                        <ClockPileFaceUpSuits pile={centerPile} testId="clock-pile-suits-12" />
                         {state.faceUpCount[12]}/4
                       </span>
                     </div>
