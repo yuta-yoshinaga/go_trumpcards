@@ -15,5 +15,7 @@
   "winHuman": "あなたの勝ちです！",
   "winCpu": "CPUの勝ちです...",
   "helpExampleHint": "  h                    次の一手を教えてもらう",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "elapsedTime": "経過時間: {{time}}",
+  "sessionBestTime": "セッション自己ベスト: {{time}}"
 }
