@@ -164,9 +164,35 @@ describe('useGoFishKnownRanks', () => {
     // Older responses have no knownRanks; the accumulation must remain the
     // fallback rather than silently reporting an empty table.
     const { result, rerender } = renderHook(({ st }) => useGoFishKnownRanks(st), {
-      initialProps: { st: s({ lastAsk: { playerIdx: 0, targetIdx: 1, rank: 5, success: true } }) },
+      initialProps: {
+        st: s({
+          lastAsk: {
+            playerIdx: 0,
+            targetIdx: 1,
+            rank: 5,
+            success: true,
+            cardsReceived: [],
+            drawnCard: null,
+            bookFormed: false,
+            bookRank: 0,
+          },
+        }),
+      },
     });
-    rerender({ st: s({ lastAsk: { playerIdx: 0, targetIdx: 1, rank: 5, success: true } }) });
+    rerender({
+      st: s({
+        lastAsk: {
+          playerIdx: 0,
+          targetIdx: 1,
+          rank: 5,
+          success: true,
+          cardsReceived: [],
+          drawnCard: null,
+          bookFormed: false,
+          bookRank: 0,
+        },
+      }),
+    });
     expect(result.current[0]).toEqual([5]);
   });
 });
