@@ -981,7 +981,7 @@ var gameRegistry = []GameRegistryEntry{
 			ExampleKeys: []string{
 				"golf.helpExampleHint",
 			},
-			CommandKeys:       []string{"golf.helpDraw", "golf.helpRemove", "golf.helpGiveUp", "golf.helpHint", "golf.helpUndo"},
+			CommandKeys:       []string{"golf.helpDraw", "golf.helpRemove", "golf.helpGiveUp", "golf.helpHint", "golf.helpUndo", "golf.helpResetNine"},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
 	BindCuiFor("pigtail",

@@ -15,5 +15,7 @@
   "hintDraw": "Hint: draw from stock",
   "hintUnknown": "Hint: unknown",
   "helpExampleHint": "  h                        ask for a move",
-  "helpUndo": "  u                        undo one move"
+  "helpUndo": "  u                        undo one move",
+  "helpResetNine": "  r9                       reset 9-hole score",
+  "nineHoleStart": "9-hole scoring started"
 }
