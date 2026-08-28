@@ -324,7 +324,7 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 		assert.NotContains(t, result, "ゲームから除外されました")
 	})
 
-	t.Run("metaAI status line shown when profile exists", func(t *testing.T) {
+	t.Run("metaAI status line shows hesitation mean when > 0", func(t *testing.T) {
 		game, players := makeDoubtGameForPresenter()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		game.SetHumanProfile(&domain.DoubtHumanProfile{
@@ -332,6 +332,7 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 			BluffsByBracket: [3]struct{ Bluffs, Total int }{{1, 2}, {3, 6}, {0, 1}},
 			DoubtCorrect:    1,
 			DoubtTotal:      2,
+			HesitationMean:  1234.56,
 		})
 		result := p.Output(game, nil)
 		assert.Contains(t, result, "[メタAI]")
@@ -339,6 +340,25 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ゲーム数: 2")
 		assert.Contains(t, result, "ブラフ率: 50%")   // 3/6 = 50%
 		assert.Contains(t, result, "ダウト正解率: 50%") // 1/2 = 50%
+		assert.Contains(t, result, ", 平均迷い時間: 1235ms")
+		assert.NotContains(t, result, "{{")
+	})
+
+	t.Run("metaAI status line omits hesitation mean when 0", func(t *testing.T) {
+		game, players := makeDoubtGameForPresenter()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		game.SetHumanProfile(&domain.DoubtHumanProfile{
+			GamesPlayed:     2,
+			BluffsByBracket: [3]struct{ Bluffs, Total int }{{1, 2}, {3, 6}, {0, 1}},
+			DoubtCorrect:    1,
+			DoubtTotal:      2,
+			HesitationMean:  0,
+		})
+		result := p.Output(game, nil)
+		assert.Contains(t, result, "[メタAI]")
+		assert.Contains(t, result, "ダウト正解率: 50%)")
+		assert.NotContains(t, result, "平均迷い時間")
+		assert.NotContains(t, result, "{{")
 	})
 
 	t.Run("no metaAI line when profile is nil", func(t *testing.T) {
