@@ -4,6 +4,7 @@ import { callBreakApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeCallBreakState } from '../test/stateFactories';
+import type { CallBreakResponse } from '../types/card';
 import { CallBreakPage, fmtScore } from './CallBreakPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -307,5 +308,56 @@ describe('CallBreakPage', () => {
         maxRounds: 10,
       }),
     );
+  });
+
+  // このページのヒントは `hintAvailable` を使わないので、読み上げガードが
+  // 一度も見ておらず aria-live が無いまま出荷されていた (#6663)。領域は
+  // **常設**で、分岐ごとにその分岐だけが出す語を見る。
+  describe('CallBreakPage hint live region', () => {
+    it('is mounted and empty before any hint arrives', async () => {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<CallBreakPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      const region = screen.getByTestId('callbreak-hint-live');
+      expect(region).toHaveAttribute('role', 'status');
+      expect(region).toHaveAttribute('aria-live', 'polite');
+      expect(region).toBeEmptyDOMElement();
+    });
+
+    it('names a bid recommendation', async () => {
+      mockExec.mockResolvedValue(bidPhaseState);
+      renderWithProviders(<CallBreakPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+      mockExec.mockResolvedValue({
+        ...bidPhaseState,
+        hint: { bid: 4, reason: 'strategic_bid' },
+      } as unknown as CallBreakResponse);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      const region = await screen.findByTestId('callbreak-hint-live');
+      await waitFor(() => expect(region).toHaveTextContent('推奨ビッド'));
+      expect(region).toHaveTextContent('4');
+      expect(region).not.toHaveTextContent('{{');
+    });
+
+    it('names the card to play', async () => {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<CallBreakPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        hint: { cardIndex: 2, reason: 'lead_strong' },
+      } as unknown as CallBreakResponse);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      const region = await screen.findByTestId('callbreak-hint-live');
+      await waitFor(() => expect(region).toHaveTextContent('推奨'));
+      expect(region).toHaveTextContent('[2]');
+      expect(region).not.toHaveTextContent('推奨ビッド');
+      expect(region).not.toHaveTextContent('{{');
+    });
   });
 });

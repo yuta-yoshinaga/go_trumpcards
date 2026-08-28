@@ -1008,4 +1008,30 @@ describe('EuchrePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
     expect(screen.queryByTestId('eu-hint-score')).not.toBeInTheDocument();
   });
+
+  // ヒントの読み上げガードが `t('hintAvailable')` を含むページしか見ておらず、
+  // 別のキーで描く Euchre は aria-live が1つも無いまま出荷されていた (#6663)。
+  // **領域は常設**でなければならない ── 領域と中身が同じコミットで DOM に入ると
+  // 変化として扱われず読み上げられないことがある (#5955)。
+  it('announces the hint through a region that was already mounted', async () => {
+    mockExec.mockResolvedValue(pickUpPhaseState);
+    renderWithProviders(<EuchrePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const region = screen.getByTestId('euchre-hint-live');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    // ヒントが来る前は空。その空白があるから、後から入る文字が「変化」になる。
+    expect(region).toHaveTextContent('');
+
+    mockExec.mockResolvedValue({
+      ...pickUpPhaseState,
+      hint: { reason: 'strongHand', orderUp: true },
+    } as unknown as EuchreResponse);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    // 同じ要素が中身だけ変わる。別要素が現れたのではない。
+    await waitFor(() => expect(region).not.toHaveTextContent(''));
+    expect(screen.getByTestId('euchre-hint-live')).toBe(region);
+  });
 });

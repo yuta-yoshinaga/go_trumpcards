@@ -366,15 +366,20 @@ function JassPageContent() {
 
         <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
-        {hint && (
-          <div className="text-ds-warning text-sm mb-2">
-            {/* hint.reason is a raw backend identifier; translate via hintReason.*,
-                falling back to a generic label for any unknown reason. */}
-            {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, {
-              defaultValue: t('hintReason.fallback'),
-            })})`}
-          </div>
-        )}
+        {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+            付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+            読み上げられないことがある (#5955, #6663)。 */}
+        <div data-testid="jass-hint-live" role="status" aria-live="polite">
+          {hint && (
+            <div className="text-ds-warning text-sm mb-2">
+              {/* hint.reason is a raw backend identifier; translate via hintReason.*,
+                  falling back to a generic label for any unknown reason. */}
+              {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, {
+                defaultValue: t('hintReason.fallback'),
+              })})`}
+            </div>
+          )}
+        </div>
 
         <div className="flex gap-2 items-center flex-wrap" data-tutorial="ja-play-button">
           {isHumanBidTurn && (

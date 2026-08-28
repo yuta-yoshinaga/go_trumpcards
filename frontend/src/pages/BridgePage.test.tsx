@@ -636,4 +636,51 @@ describe('BridgePage', () => {
       expect(cell).not.toHaveAttribute('aria-label');
     }
   });
+
+  // このページのヒントは `hintAvailable` を使わないので、読み上げガードが
+  // 一度も見ておらず aria-live が無いまま出荷されていた (#6663)。領域は
+  // **常設**で、分岐ごとにその分岐だけが出す語を見る。
+  describe('BridgePage hint live region', () => {
+    it('is mounted and empty before any hint arrives', async () => {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<BridgePage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      const region = screen.getByTestId('bridge-hint-live');
+      expect(region).toHaveAttribute('role', 'status');
+      expect(region).toHaveAttribute('aria-live', 'polite');
+      expect(region).toBeEmptyDOMElement();
+    });
+
+    it('names the card to play', async () => {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<BridgePage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        hint: { cardIndex: 1, reason: 'follow_suit' },
+      } as unknown as BridgeResponse);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      const region = await screen.findByTestId('bridge-hint-live');
+      await waitFor(() => expect(region).toHaveTextContent('推奨カード'));
+      expect(region).toHaveTextContent('[1]');
+      expect(region).not.toHaveTextContent('{{');
+    });
+
+    it('gives the reason alone when no card is named', async () => {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<BridgePage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+      mockExec.mockResolvedValue({ ...playPhaseState, hint: { reason: 'follow_suit' } } as unknown as BridgeResponse);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      const region = await screen.findByTestId('bridge-hint-live');
+      await waitFor(() => expect(region).toHaveTextContent('('));
+      expect(region).not.toHaveTextContent('推奨カード');
+      expect(region).not.toHaveTextContent('{{');
+    });
+  });
 });

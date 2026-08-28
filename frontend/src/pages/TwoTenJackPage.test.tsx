@@ -445,7 +445,14 @@ describe('TwoTenJackPage', () => {
 // ラウンドでは実際の加点が 0 でも点札は取っているので、読み上げた数字と
 // 実際に累計へ足された数字が食い違う。
 describe('TwoTenJackPage round announcement', () => {
-  const announce = () => screen.getByRole('status').textContent ?? '';
+  // ヒント用の常設ライブ領域が入って role=status が2つになった (#6663)。
+  // 読みたいのはメッセージ箱の方なので、ヒント領域を除いて拾う。
+  const announce = () =>
+    screen
+      .getAllByRole('status')
+      .filter((el) => el.getAttribute('data-testid') !== 'twotenjack-hint-live')
+      .map((el) => el.textContent ?? '')
+      .join(' ');
 
   const stateWith = (fields: { captured: number[]; round: number[]; cumulative: number[] }) =>
     makeTwoTenJackState({
@@ -482,8 +489,8 @@ describe('TwoTenJackPage round announcement', () => {
     const short = makeTwoTenJackState({ phase: 3 });
     mockExec.mockResolvedValue({ ...short, players: short.players.slice(0, 2) });
     renderWithProviders(<TwoTenJackPage />);
-    await waitFor(() => expect(screen.getByRole('status').textContent).toContain('ラウンド終了'));
-    expect(screen.getByRole('status').textContent).toContain('+0');
+    await waitFor(() => expect(announce()).toContain('ラウンド終了'));
+    expect(announce()).toContain('+0');
   });
 
   // 席が1つも無いレスポンス: 4本の `?.` がすべて短絡する側を通す。
@@ -491,8 +498,8 @@ describe('TwoTenJackPage round announcement', () => {
     const short = makeTwoTenJackState({ phase: 3 });
     mockExec.mockResolvedValue({ ...short, players: [] });
     renderWithProviders(<TwoTenJackPage />);
-    await waitFor(() => expect(screen.getByRole('status').textContent).toContain('ラウンド終了'));
-    expect(screen.getByRole('status').textContent).toContain('+0');
+    await waitFor(() => expect(announce()).toContain('ラウンド終了'));
+    expect(announce()).toContain('+0');
   });
 
   it('still shows the captured points in the score table', async () => {
@@ -500,9 +507,37 @@ describe('TwoTenJackPage round announcement', () => {
       stateWith({ captured: [12, 30, 8, 20], round: [0, 6, 0, 6], cumulative: [10, 16, 10, 16] }),
     );
     renderWithProviders(<TwoTenJackPage />);
-    await waitFor(() => expect(screen.getByRole('status').textContent).toContain('ラウンド終了'));
+    await waitFor(() => expect(announce()).toContain('ラウンド終了'));
     // 点札の合計 (12+8=20 / 30+20=50) は表に残す。
     expect(screen.getAllByText('20').length).toBeGreaterThan(0);
     expect(screen.getAllByText('50').length).toBeGreaterThan(0);
+  });
+
+  // 宣言ヒント (trumpSuit) と、札を名指ししないヒントのプレースホルダ側は
+  // どちらも一度も通っていなかった (#6663 のカバレッジ)。
+  it('announces a trump declaration hint', async () => {
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByTestId('tt-hint-button')).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(makeTwoTenJackState({ hint: { reason: 'strategic_trump', trumpSuit: 0 } }));
+    fireEvent.click(screen.getByTestId('tt-hint-button'));
+
+    const region = await screen.findByTestId('twotenjack-hint-live');
+    await waitFor(() => expect(region).toHaveTextContent('推奨トランプ'));
+    expect(region).not.toHaveTextContent('推奨プレイ');
+    expect(region).not.toHaveTextContent('{{');
+  });
+
+  it('falls back to a placeholder when the play hint names no card', async () => {
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByTestId('tt-hint-button')).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(makeTwoTenJackState({ hint: { reason: 'lead' } }));
+    fireEvent.click(screen.getByTestId('tt-hint-button'));
+
+    const region = await screen.findByTestId('twotenjack-hint-live');
+    await waitFor(() => expect(region).toHaveTextContent('推奨プレイ'));
+    expect(region).toHaveTextContent('[-]');
+    expect(region).not.toHaveTextContent('{{');
   });
 });

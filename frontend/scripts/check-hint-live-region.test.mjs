@@ -30,18 +30,35 @@ const compliant = (name) => `export function ${name}() {
 }
 `;
 
+/** A page whose hint is rendered under a key other than `hintAvailable`. */
+const compliantOtherKey = (name) => `export function ${name}() {
+  return (
+    <div data-testid="${name.toLowerCase()}-hint-live" role="status" aria-live="polite">
+      {hint && (
+        <div className="text-ds-warning">
+          {t('hintPlay')}: [{hint.cardIndex}] ({t(\`hintReason.\${hint.reason}\`)})
+        </div>
+      )}
+    </div>
+  );
+}
+`;
+
 /**
  * Build a pages fixture.
  *
- * The guard floors its walk at 50 pages rendering `hintAvailable`, so every
- * fixture ships that many compliant ones — otherwise a case would fail on the
- * floor rather than on the rule under test.
+ * The guard floors its walk at 50 pages rendering `hintAvailable` and 15 pages
+ * rendering a hint under another key, so every fixture ships enough of both —
+ * otherwise a case would fail on a floor rather than on the rule under test.
  */
 function fixture(extra = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'hint-live-'));
   dirs.push(dir);
   for (let i = 0; i < 55; i += 1) {
     writeFileSync(join(dir, `Fine${i}Page.tsx`), compliant(`Fine${i}`));
+  }
+  for (let i = 0; i < 20; i += 1) {
+    writeFileSync(join(dir, `Other${i}Page.tsx`), compliantOtherKey(`Other${i}`));
   }
   for (const [name, body] of Object.entries(extra)) writeFileSync(join(dir, name), body);
   return dir;
@@ -114,6 +131,70 @@ describe('check-hint-live-region', () => {
     expect(r.status).toBe(1);
     expect(r.stderr).toContain('RolelessPage.tsx');
     expect(r.stderr).toContain('role="status"');
+  });
+
+  // The bug in #6663: the walk only entered on `t('hintAvailable')`, so a page
+  // rendering its hint under any other key was never looked at — 20 of them had
+  // no aria-live at all while the guard printed OK.
+  it('rejects a hint rendered under another key with no live region', () => {
+    const r = run(
+      fixture({
+        'OtherKeyRoguePage.tsx': `export function OtherKeyRogue() {
+  return (
+    <div className="text-ds-warning">
+      {hint && (
+        <div>{t('hintPlay')}: [{hint.cardIndex}]</div>
+      )}
+    </div>
+  );
+}
+`,
+      }),
+    );
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain('OtherKeyRoguePage.tsx');
+    expect(r.stderr).toContain('no live region');
+  });
+
+  it('rejects an other-key hint whose live region is inside the gate', () => {
+    const r = run(
+      fixture({
+        'OtherKeyLatePage.tsx': `export function OtherKeyLate() {
+  return (
+    <div>
+      {hint && (
+        <div role="status" aria-live="polite">
+          {t('hintPlay')}: [{hint.cardIndex}]
+        </div>
+      )}
+    </div>
+  );
+}
+`,
+      }),
+    );
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain('OtherKeyLatePage.tsx');
+    expect(r.stderr).toContain('already filled');
+  });
+
+  // Negative control for the case above: the same page with the region hoisted
+  // out of the gate must pass, or the rule would just be "no aria-live here".
+  it('accepts an other-key hint once the region is hoisted out of the gate', () => {
+    const r = run(fixture({ 'OtherKeyFixedPage.tsx': compliantOtherKey('OtherKeyFixed') }));
+    expect(r.stdout).toContain('hint-live-region: OK');
+    expect(r.status).toBe(0);
+  });
+
+  // The floor that would have caught #6663: a walk entering on `hintAvailable`
+  // alone finds zero other-key pages.
+  it('fails when no page rendering a hint under another key is found', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'hint-live-onekey-'));
+    dirs.push(dir);
+    for (let i = 0; i < 55; i += 1) writeFileSync(join(dir, `Fine${i}Page.tsx`), compliant(`Fine${i}`));
+    const r = run(dir);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain('hint-live-region-other-keys');
   });
 
   // A walk that finds almost nothing reports no violations for the wrong reason.

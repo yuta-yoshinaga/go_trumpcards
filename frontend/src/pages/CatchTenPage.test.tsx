@@ -221,7 +221,14 @@ describe('CatchTenPage', () => {
 // 「+41 (合計 41)」のように増分と合計が同じ数字になっていた。CPU 一覧は
 // 正しい player.roundScore を出しているので、同じ画面で矛盾していた。
 describe('CatchTenPage round announcement', () => {
-  const announce = () => screen.getByRole('status').textContent ?? '';
+  // ヒント用の常設ライブ領域が入って role=status が2つになった (#6663)。
+  // 読みたいのはメッセージ箱の方なので、ヒント領域を除いて拾う。
+  const announce = () =>
+    screen
+      .getAllByRole('status')
+      .filter((el) => el.getAttribute('data-testid') !== 'catchten-hint-live')
+      .map((el) => el.textContent ?? '')
+      .join(' ');
 
   const roundEnd = (round: number[], teamTotals: [number, number]) =>
     makeState({
@@ -251,5 +258,18 @@ describe('CatchTenPage round announcement', () => {
     await waitFor(() => expect(announce()).toContain('ラウンド終了'));
     expect(announce()).toContain('+0');
     expect(announce()).toContain('+11');
+  });
+
+  // 札を名指ししないヒントでは名前も番号もプレースホルダになる。その側を
+  // 一度も通していなかった (#6663 のカバレッジ)。
+  it('falls back to a placeholder when the server names no card', async () => {
+    renderWithProviders(<CatchTenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValueOnce(makeState({ hint: { reason: 'lead_strong' } }));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const region = await screen.findByTestId('catchten-hint-live');
+    await waitFor(() => expect(region).toHaveTextContent('[-]'));
+    expect(region).not.toHaveTextContent('{{');
   });
 });

@@ -483,41 +483,46 @@ function PinochlePageContent() {
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
             {/* Server hint result (bid amount / pass / trump suit / play card) */}
-            {hint?.reason && (
-              <div
-                className="text-ds-warning text-sm mb-2 flex items-center gap-2 flex-wrap"
-                data-testid="pn-server-hint"
-              >
-                <span>
-                  {hint.pass
-                    ? t('serverHintPass')
-                    : hint.bidAmount !== undefined
-                      ? t('serverHintBid', { n: hint.bidAmount })
-                      : hint.suit !== undefined
-                        ? t('serverHintTrump', { suit: SUIT_LABELS[hint.suit] ?? '-' })
-                        : hint.cardIndex !== undefined
-                          ? t('serverHintPlay', {
-                              card: humanPlayer?.cards[hint.cardIndex]
-                                ? cardAlt(humanPlayer.cards[hint.cardIndex])
-                                : '-',
-                              idx: hint.cardIndex,
-                            })
-                          : ''}{' '}
-                  ({t(`hintReason.${hint.reason}`)})
-                </span>
-                {isBidTurn && hint.bidAmount !== undefined && (
-                  <button
-                    type="button"
-                    className={btnOutline}
-                    data-testid="pn-hint-apply-bid"
-                    onClick={() => hint.bidAmount !== undefined && setBidAmount(hint.bidAmount)}
-                    disabled={loading}
-                  >
-                    {t('applyBid')}
-                  </button>
-                )}
-              </div>
-            )}
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+                読み上げられないことがある (#5955, #6663)。 */}
+            <div data-testid="pinochle-hint-live" role="status" aria-live="polite">
+              {hint?.reason && (
+                <div
+                  className="text-ds-warning text-sm mb-2 flex items-center gap-2 flex-wrap"
+                  data-testid="pn-server-hint"
+                >
+                  <span>
+                    {hint.pass
+                      ? t('serverHintPass')
+                      : hint.bidAmount !== undefined
+                        ? t('serverHintBid', { n: hint.bidAmount })
+                        : hint.suit !== undefined
+                          ? t('serverHintTrump', { suit: SUIT_LABELS[hint.suit] ?? '-' })
+                          : hint.cardIndex !== undefined
+                            ? t('serverHintPlay', {
+                                card: humanPlayer?.cards[hint.cardIndex]
+                                  ? cardAlt(humanPlayer.cards[hint.cardIndex])
+                                  : '-',
+                                idx: hint.cardIndex,
+                              })
+                            : ''}{' '}
+                    ({t(`hintReason.${hint.reason}`)})
+                  </span>
+                  {isBidTurn && hint.bidAmount !== undefined && (
+                    <button
+                      type="button"
+                      className={btnOutline}
+                      data-testid="pn-hint-apply-bid"
+                      onClick={() => hint.bidAmount !== undefined && setBidAmount(hint.bidAmount)}
+                      disabled={loading}
+                    >
+                      {t('applyBid')}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="pn-action-buttons">
               {/* Server hint */}
