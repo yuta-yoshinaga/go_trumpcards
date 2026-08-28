@@ -65,6 +65,20 @@ func (p *NinetyNineCuiPresenter) Output(o interfaces.NinetyNineGame, lastErr err
 
 		cuiErrorBlock(b, lastErr)
 
+		// **round の数字は 10+bid+bonus の合算で、内訳が潰れている。**
+		// 単独的中の +30 はこのゲームの得点設計の核なのに、いくら乗ったのかは
+		// アクションログの文字列にしか出ていなかった。
+		//
+		// ゲーム終了の早期 return より **前** に出す: ScoreRound は同じ呼び出しで
+		// ボーナスを載せて勝敗も決めうるので、後ろに置くと「+30 が目標点を越えて
+		// 勝った」という一番見せたい局面だけ内訳が消える。
+		if o.GetPhase() == domain.NinetyNinePhaseRoundEnd || o.GetGameEndFlag() {
+			if bonus := o.GetRoundSuccessBonus(); bonus > 0 {
+				b.WriteString(color.Yellow(i18n.Tf("ninetynine.successBonusLine",
+					"bonus", strconv.Itoa(bonus))) + "\n")
+			}
+		}
+
 		if o.GetGameEndFlag() {
 			winnerIdx := o.GetWinnerIdx()
 			player := o.GetPlayer(winnerIdx)
@@ -87,13 +101,6 @@ func (p *NinetyNineCuiPresenter) Output(o interfaces.NinetyNineGame, lastErr err
 			b.WriteString(i18n.T("ninetynine.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("ninetynine.promptTrickEndHelp") + "\n")
 		case domain.NinetyNinePhaseRoundEnd:
-			// **round の数字は 10+bid+bonus の合算で、内訳が潰れている。**
-			// 単独的中の +30 はこのゲームの得点設計の核なのに、いくら乗ったのかは
-			// アクションログの文字列にしか出ていなかった。
-			if bonus := o.GetRoundSuccessBonus(); bonus > 0 {
-				b.WriteString(color.Yellow(i18n.Tf("ninetynine.successBonusLine",
-					"bonus", strconv.Itoa(bonus))) + "\n")
-			}
 			b.WriteString(i18n.T("ninetynine.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("ninetynine.promptRoundEndHelp") + "\n")
 		}

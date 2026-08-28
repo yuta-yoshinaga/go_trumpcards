@@ -11,7 +11,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupNinetyNineCuiMock() *interfaces.MockNinetyNineGame {
@@ -181,11 +180,34 @@ func TestNinetyNineCuiPresenter_SuccessBonusLine(t *testing.T) {
 	}
 
 	t.Run("names the bonus that was applied", func(t *testing.T) {
-		assert.Contains(t, p.Output(build(30), nil), i18n.Tf("ninetynine.successBonusLine", "bonus", "30"))
+		out := p.Output(build(30), nil)
+		assert.Contains(t, out, "的中ボーナス: 的中者ひとりにつき +30点")
+		assert.NotContains(t, out, "{{")
 	})
 
 	t.Run("says nothing when nobody made their bid", func(t *testing.T) {
 		// A bonus of 0 means no one succeeded; printing "+0" would imply someone did.
-		assert.NotContains(t, p.Output(build(0), nil), i18n.T("ninetynine.successBonusLine"))
+		// **`i18n.T` を期待値にすると素通りする**: 未展開の "{{bonus}}" を含む
+		// 文字列は出力に絶対現れないので、行が出ていても NotContains が通る。
+		assert.NotContains(t, p.Output(build(0), nil), "的中ボーナス")
+	})
+
+	// ScoreRound はボーナスを載せるのと同じ呼び出しで勝敗も決めうる。Output は
+	// ゲーム終了で早期 return するので、そこより後ろに置くと **+30 が目標点を
+	// 越えて勝った局面だけ内訳が消える** ── 一番見せたい場面で。
+	t.Run("is still there on the round that ends the game", func(t *testing.T) {
+		m, _ := setupNinetyNineCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.NinetyNinePhaseGameEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundSuccessBonus")
+		m.On("GetRoundSuccessBonus").Return(30).Maybe()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.On("GetGameEndFlag").Return(true)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
+		m.On("GetWinnerIdx").Return(0)
+
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "的中ボーナス: 的中者ひとりにつき +30点")
+		assert.NotContains(t, out, "{{")
 	})
 }
