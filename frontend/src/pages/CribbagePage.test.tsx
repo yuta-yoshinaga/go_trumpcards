@@ -851,4 +851,23 @@ describe('CribbagePage', () => {
     expect(preview.textContent).toContain('4');
     expect(preview.textContent).toContain('14');
   });
+
+  // The preview text already updated on hover before this change, so asserting
+  // that it changes proves nothing. What was missing is the region that makes
+  // the update reach a screen reader at all.
+  it('announces the peg preview through a permanently mounted live region', async () => {
+    mockExec.mockResolvedValue({ ...peggingPhaseState, pegCount: 4 });
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByLabelText('♥ J')).toBeInTheDocument());
+
+    const region = screen.getByTestId('cb-peg-preview-live');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveAttribute('role', 'status');
+    // Mounted and empty before the hover: a region appearing together with its
+    // text is not a change and may go unread (#5955).
+    expect(region).toHaveTextContent('');
+
+    fireEvent.pointerEnter(screen.getByLabelText('♥ J'));
+    await waitFor(() => expect(region).toHaveTextContent('14'));
+  });
 });
