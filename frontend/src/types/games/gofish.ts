@@ -10,6 +10,10 @@ export interface GoFishPlayerData {
   cardCount: number;
   cards: Card[];
   bookCount: number;
+  /** Ranks this seat is publicly known to hold. Authoritative, from the server:
+   * the client used to rebuild this from lastAsk history, which meant a reload
+   * wiped the table's memory mid-game. */
+  knownRanks?: number[];
   books: GoFishBook[];
 }
 
