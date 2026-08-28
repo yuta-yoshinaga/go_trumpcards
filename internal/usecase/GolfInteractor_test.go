@@ -178,3 +178,16 @@ func TestRestoreGolfInteractorInvalidJSON(t *testing.T) {
 	_, err := RestoreGolfInteractor([]byte("invalid"), gp)
 	assert.Error(t, err)
 }
+
+// r9 は CUI 側の集計をプレゼンタが持っているので、インタラクタはドメインを
+// 触らずプレゼンタへ委譲する。
+func TestGolfInteractorResetNineHole(t *testing.T) {
+	gg := newMockGolfGame()
+	gp := newMockGolfPresenter()
+	gi := NewGolfInteractor(gg, gp)
+
+	gp.On("ResetNineHole", gg).Return("reset9_output")
+
+	assert.Equal(t, "reset9_output", gi.ResetNineHole())
+	gp.AssertExpectations(t)
+}
