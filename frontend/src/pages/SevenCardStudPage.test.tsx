@@ -1,15 +1,21 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { sevenCardStudApi } from '../api/gameApi';
+import { chicagoApi, sevenCardStudApi, sevenCardStudHiLoApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SevenCardStudResponse } from '../types/card';
+import { ChicagoPage } from './ChicagoPage';
+import { SevenCardStudHiLoPage } from './SevenCardStudHiLoPage';
 import { SevenCardStudPage } from './SevenCardStudPage';
 
 vi.mock('../api/gameApi', () => ({
   sevenCardStudApi: { exec: vi.fn() },
-  actionLogApi: { sevencardstud: vi.fn() },
+  // このページは 3 モードで共有されている。片方のモードでしか使わない API でも
+  // モックに置いておかないと、そのモードを描いた瞬間に undefined を呼んで落ちる。
+  sevenCardStudHiLoApi: { exec: vi.fn() },
+  chicagoApi: { exec: vi.fn() },
+  actionLogApi: { sevencardstud: vi.fn(), sevencardstudhilo: vi.fn(), chicago: vi.fn() },
 }));
 
 const mockExec = vi.mocked(sevenCardStudApi.exec);
@@ -773,6 +779,59 @@ describe('SevenCardStudPage', () => {
     expect(container.querySelector('#cpuMetaAI')).toBeInTheDocument();
     expect(screen.getByLabelText('ヒント表示')).toBeInTheDocument();
     expect(screen.getByLabelText('メタAI（CPUがプレイスタイルを学習）')).toBeInTheDocument();
+  });
+});
+
+// ---- bring-in badge (issue #6316) ----
+describe('bring-in badge', () => {
+  it('renders bring-in badge on 3rd street and hides it on 4th street', async () => {
+    // Negative control setup: 4th street shouldn't show the badge.
+    const fourthStreetState: SevenCardStudResponse = {
+      ...thirdStreetState,
+      phase: 2, // FOURTH_STREET
+      bringInPlayerIdx: 1, // CPU 1
+    };
+    mockExec.mockResolvedValueOnce(fourthStreetState);
+    const { unmount } = renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByText('フォースストリート')).toBeInTheDocument());
+    expect(screen.queryByTestId('sevencardstud-bringin-badge-1')).not.toBeInTheDocument();
+
+    // Now verify the positive case on 3rd street.
+    const thirdStreetWithBringInState: SevenCardStudResponse = {
+      ...thirdStreetState,
+      bringInPlayerIdx: 1, // CPU 1
+    };
+    unmount();
+    mockExec.mockClear();
+    mockExec.mockResolvedValueOnce(thirdStreetWithBringInState);
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('sevencardstud-bringin-badge-1')).toBeInTheDocument());
+    expect(screen.getByTestId('sevencardstud-bringin-badge-1')).toHaveTextContent('ブリングイン');
+  });
+
+  it('renders bring-in badge on human player when human is the bring-in', async () => {
+    const thirdStreetWithHumanBringInState: SevenCardStudResponse = {
+      ...thirdStreetState,
+      bringInPlayerIdx: 0, // Human
+    };
+    mockExec.mockResolvedValueOnce(thirdStreetWithHumanBringInState);
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('sevencardstud-bringin-badge-0')).toBeInTheDocument());
+    expect(screen.getByTestId('sevencardstud-bringin-badge-0')).toHaveTextContent('ブリングイン');
+  });
+
+  // **`t` はモードごとに別の名前空間を引く。** バッジの文言を sevencardstud
+  // にだけ足すと、chicago と hi-lo は生の識別子 "bringIn" を出す ── i18next は
+  // 未知のキーをエラーにせずキー文字列をそのまま描くので、誰も気付かない。
+  it.each([
+    ['chicago', chicagoApi, ChicagoPage],
+    ['sevencardstudhilo', sevenCardStudHiLoApi, SevenCardStudHiLoPage],
+  ] as const)('resolves the badge label in %s too, not the raw key', async (_gameKey, api, Page) => {
+    vi.mocked(api.exec).mockResolvedValueOnce({ ...thirdStreetState, bringInPlayerIdx: 1 });
+    renderWithProviders(<Page />);
+    const badge = await screen.findByTestId('sevencardstud-bringin-badge-1');
+    expect(badge).toHaveTextContent('ブリングイン');
+    expect(badge).not.toHaveTextContent('bringIn');
   });
 });
 

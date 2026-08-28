@@ -15,6 +15,7 @@
   "yourHand": "あなたの手札",
   "currentHand": "現在の役",
   "anteBringIn": "アンティ/ブリングイン",
+  "bringIn": "ブリングイン",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",

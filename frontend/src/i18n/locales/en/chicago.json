@@ -15,6 +15,7 @@
   "yourHand": "Your Hand",
   "currentHand": "Current Hand",
   "anteBringIn": "Ante/Bring-in",
+  "bringIn": "Bring-in",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
