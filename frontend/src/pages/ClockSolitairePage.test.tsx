@@ -414,3 +414,50 @@ describe('ClockSolitairePage progress', () => {
     await waitFor(() => expect(screen.getByTestId('clock-completed')).toHaveTextContent('完成: 13/13'));
   });
 });
+
+// 山の札はすべて同じ数字（山のラベル）なので、1枚ずつ見分ける手がかりはスート
+// だけ。CUI は4枚を1枚ずつ出しているのに、Web は完成するまで裏面1枚しか出して
+// いなかった (#6317)。
+describe('ClockSolitairePage face-up cards inside a pile', () => {
+  /** Pile 0 with `n` of its four cards turned up, each a different suit. */
+  const pileWithFaceUp = (n: number): ClockSolitaireResponse => {
+    const piles = makeTestPiles();
+    const suits: CardDesign[] = ['SPADE', 'HEART', 'DIAMOND', 'CLOVER'];
+    piles[0] = suits.map((design, j) => ({ card: card(design, 1), faceUp: j < n }));
+    const fuc = makeFaceUpCount();
+    fuc[0] = n;
+    return { ...playingState, piles, faceUpCount: fuc };
+  };
+
+  it('names every suit already turned up, not just the count', async () => {
+    mockExec.mockResolvedValue(pileWithFaceUp(2));
+    renderWithProviders(<ClockSolitairePage />);
+    const suits = await screen.findByTestId('clock-pile-suits-0');
+    expect(suits).toHaveTextContent('♠');
+    expect(suits).toHaveTextContent('♥');
+    // Still face down, so they must not be announced as turned up.
+    expect(suits).not.toHaveTextContent('♦');
+    expect(suits).not.toHaveTextContent('♣');
+  });
+
+  // 否定コントロール: 1枚も表になっていない山は何も主張してはいけない。
+  it('says nothing about a pile with no face-up card', async () => {
+    mockExec.mockResolvedValue(pileWithFaceUp(0));
+    renderWithProviders(<ClockSolitairePage />);
+    await screen.findByTestId('clock-completed');
+    expect(screen.queryByTestId('clock-pile-suits-0')).not.toBeInTheDocument();
+  });
+
+  it('keeps the n/4 badge next to the suits', async () => {
+    mockExec.mockResolvedValue(pileWithFaceUp(3));
+    renderWithProviders(<ClockSolitairePage />);
+    const suits = await screen.findByTestId('clock-pile-suits-0');
+    expect(suits.parentElement).toHaveTextContent('3/4');
+  });
+
+  it('covers the centre pile too', async () => {
+    mockExec.mockResolvedValue(playingState); // fixture turns up one centre card
+    renderWithProviders(<ClockSolitairePage />);
+    expect(await screen.findByTestId('clock-pile-suits-12')).toHaveTextContent('♠');
+  });
+});
