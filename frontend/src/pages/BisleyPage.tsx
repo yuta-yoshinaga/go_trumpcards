@@ -229,7 +229,17 @@ function BisleyPageContent() {
                 // the pressed state has to stay on that one card, or every card
                 // in a selected column would announce itself as selected.
                 const isSelected = isTop && isSourceSelected('tableau', colIdx);
-                const targets = isTop && tc2.card ? getBisleyStackTargets(tc2.card) : [];
+                // 局が終わったあとは動かせないので出さない（ボタンも disabled になる）。
+                const targets = isTop && isPlaying && tc2.card ? getBisleyStackTargets(tc2.card) : [];
+                const stackHintId = `bisley-stack-hint-${colIdx.toString()}`;
+                const stackHint =
+                  targets.length > 0
+                    ? t('stackTarget', {
+                        // **同スート限定**。ランクだけ並べると「どの 5 でも置ける」と
+                        // 読めてしまう (規則は同スートで1つ違い)。
+                        cards: targets.map((v) => `${suitSymbol(tc2.card?.design ?? '')} ${valueName(v)}`).join(' / '),
+                      })
+                    : '';
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -249,6 +259,7 @@ function BisleyPageContent() {
                         disabled={!isPlaying || loading || (!isTop && !selectedSource)}
                         aria-label={t('cardPosAria', { card: cardAlt(tc2.card), col: colIdx + 1, pos: cardIdx + 1 })}
                         aria-pressed={isSelected}
+                        aria-describedby={stackHint ? stackHintId : undefined}
                         draggable={isPlaying && !loading && isTop}
                         onDragStart={dnd.handleDragStart(tableauColZone)}
                         onDragEnd={dnd.handleDragEnd}
@@ -261,16 +272,20 @@ function BisleyPageContent() {
                           style={{ width: '100%' }}
                           wrapperClassName="block w-full"
                         />
-                        {targets.length > 0 && (
-                          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full mb-1 hidden group-hover:block group-focus-visible:block bg-black/90 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-50 pointer-events-none">
-                            {t('stackTarget', {
-                              // **同スート限定**。ランクだけ並べると「どの 5 でも
-                              // 置ける」と読めてしまう (規則は同スートで1つ違い)。
-                              cards: targets
-                                .map((v) => `${suitSymbol(tc2.card?.design ?? '')} ${valueName(v)}`)
-                                .join(' / '),
-                            })}
-                          </div>
+                        {stackHint && (
+                          <>
+                            {/* 視覚のツールチップは display:none なので a11y ツリーに載らない。
+                                aria-describedby が届くのは常設の sr-only の方 (#6349)。 */}
+                            <span id={stackHintId} className="sr-only">
+                              {stackHint}
+                            </span>
+                            <div
+                              aria-hidden="true"
+                              className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full mb-1 hidden group-hover:block group-focus-visible:block bg-black/90 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-50 pointer-events-none"
+                            >
+                              {stackHint}
+                            </div>
+                          </>
                         )}
                       </button>
                     ) : null}

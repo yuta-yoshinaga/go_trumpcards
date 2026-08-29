@@ -308,14 +308,19 @@ describe('BisleyPage hover targets', () => {
 
     // **同スート限定なのでスートまで出す。** ランクだけだと「どの 5 でも置ける」
     // と読めてしまう (規則は同スートで1つ違い)。
-    // ♠5 -> ♠4 / ♠6
-    expect(await screen.findByText('♠ 4 / ♠ 6 が置けます')).toBeInTheDocument();
+    //
+    // 文言は2箇所に出る: 目で見るツールチップ (aria-hidden) と、読み上げ用の
+    // 常設 sr-only。視覚のツールチップは display:none なので a11y ツリーに
+    // 載らず、aria-describedby が届くのは sr-only の方 (#6349)。
+    expect(await screen.findAllByText('♠ 4 / ♠ 6 が置けます')).toHaveLength(2);
+    expect(await screen.findAllByText('♥ 2 が置けます')).toHaveLength(2);
+    expect(await screen.findAllByText('♣ Q が置けます')).toHaveLength(2);
 
-    // ♥A -> ♥2 のみ
-    expect(await screen.findByText('♥ 2 が置けます')).toBeInTheDocument();
-
-    // ♣K -> ♣Q のみ
-    expect(await screen.findByText('♣ Q が置けます')).toBeInTheDocument();
+    // 読み上げに届く形で紐づいていること。説明が在っても紐づいていなければ読まれない。
+    const spadeFive = screen.getByRole('button', { name: /♠ 5/ });
+    const describedBy = spadeFive.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')?.textContent).toBe('♠ 4 / ♠ 6 が置けます');
 
     // 否定コントロール: Ace や King の逆方向がないこと
     expect(screen.queryByText(/0.*が置けます/)).not.toBeInTheDocument();
@@ -323,9 +328,8 @@ describe('BisleyPage hover targets', () => {
     expect(screen.queryByText(/A が置けます/)).not.toBeInTheDocument();
     expect(screen.queryByText(/K が置けます/)).not.toBeInTheDocument();
 
-    // 空列には出ないこと (nothing else should match)
-    // There should be exactly 3 stack targets rendered
-    const tooltips = screen.getAllByText(/が置けます/);
-    expect(tooltips).toHaveLength(3);
+    // 空列には出ないこと。3列 x（sr-only + 目で見るツールチップ）= 6 で、
+    // 4列目（空）は何も出さない。
+    expect(screen.getAllByText(/が置けます/)).toHaveLength(6);
   });
 });
