@@ -140,6 +140,12 @@ func (pg *PaiGow) SetHands(lowIdx0, lowIdx1 int) error {
 		return NewDomainError(ErrInvalidCard, "Card index out of range.")
 	}
 
+	if pg.IsFoulSplit(lowIdx0, lowIdx1) {
+		// **キーで返す。**完成した英文を返すと、日本語でプレイしていても
+		// 英語の一文だけが出て、なぜ弾かれたのか読めない (#5526)。
+		return NewDomainErrorCode(ErrInvalidPlay, "paigow.foulHighMustBeat", nil)
+	}
+
 	// ローハンドとハイハンドに分割
 	pg.playerLowHand = []*Card{pg.playerCards[lowIdx0], pg.playerCards[lowIdx1]}
 	pg.playerHighHand = make([]*Card, 0, PaiGowHighHandSize)
@@ -149,18 +155,6 @@ func (pg *PaiGow) SetHands(lowIdx0, lowIdx1 int) error {
 		}
 	}
 
-	// ハイハンドがローハンドより強いか検証
-	highRank := evalPaiGowHighHand(pg.playerHighHand)
-	lowRank := evalPaiGowLowHand(pg.playerLowHand)
-	if !paiGowHighBeatsLow(highRank, pg.playerHighHand, lowRank, pg.playerLowHand) {
-		// 分割を元に戻す
-		pg.playerHighHand = nil
-		pg.playerLowHand = nil
-		// **キーで返す。**完成した英文を返すと、日本語でプレイしていても
-		// 英語の一文だけが出て、なぜ弾かれたのか読めない (#5526)。
-		return NewDomainErrorCode(ErrInvalidPlay, "paigow.foulHighMustBeat", nil)
-	}
-
 	pg.appendLog(0, "set", fmt.Sprintf("low=[%d,%d]", lowIdx0, lowIdx1), pg.playerLowHand)
 
 	// ディーラーのハンドをハウスウェイで設定
@@ -168,6 +162,36 @@ func (pg *PaiGow) SetHands(lowIdx0, lowIdx1 int) error {
 
 	pg.resolve()
 	return nil
+}
+
+// IsFoulSplit は指定された2枚をローハンドにした場合に反則（ハイハンドがローハンドより弱い）になるか判定する。
+// 状態を変更しない。範囲外・同一インデックスは置けないため true（反則扱い）とする。
+//
+// インデックスの範囲だけでなく手札が配られているかも見る。これは interface 越しに
+// 公開されるので、配る前のフェーズで呼ばれうる。範囲を PaiGowHandSize と突き合わせても
+// playerCards がまだ空なら添字で panic する。
+func (pg *PaiGow) IsFoulSplit(lowIdx0, lowIdx1 int) bool {
+	if len(pg.playerCards) != PaiGowHandSize {
+		return true
+	}
+	if lowIdx0 == lowIdx1 {
+		return true
+	}
+	if lowIdx0 < 0 || lowIdx0 >= PaiGowHandSize || lowIdx1 < 0 || lowIdx1 >= PaiGowHandSize {
+		return true
+	}
+
+	lowHand := []*Card{pg.playerCards[lowIdx0], pg.playerCards[lowIdx1]}
+	highHand := make([]*Card, 0, PaiGowHighHandSize)
+	for i, c := range pg.playerCards {
+		if i != lowIdx0 && i != lowIdx1 {
+			highHand = append(highHand, c)
+		}
+	}
+
+	highRank := evalPaiGowHighHand(highHand)
+	lowRank := evalPaiGowLowHand(lowHand)
+	return !paiGowHighBeatsLow(highRank, highHand, lowRank, lowHand)
 }
 
 // PaiGowHint はセットハンドフェーズでの推奨分割。

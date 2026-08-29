@@ -578,3 +578,110 @@ func TestPaiGow_TestHelpers(t *testing.T) {
 	pg.SetDealerLowHand(cards)
 	assert.Equal(t, cards, pg.GetDealerLowHand())
 }
+
+func TestPaiGow_IsFoulSplit(t *testing.T) {
+	t.Run("agreement with SetHands across all 21 pairs", func(t *testing.T) {
+		// 手札は配らずに組む。Bet() から取ると、その配りに反則が 1 つも無い
+		// (または全部が反則の) 局が出たとき、下の 2 分岐のどちらかが一度も
+		// 走らないまま緑になる。この 7 枚は両方を必ず含む:
+		//   低に A A を回すと low=ワンペア / high=7ハイ で反則、
+		//   低に 2 3 を回すと low=3ハイ / high=Aのペア で反則にならない。
+		cards := []*domain.Card{
+			card(domain.CardDesignSpade, 1),
+			card(domain.CardDesignHeart, 1),
+			card(domain.CardDesignSpade, 2),
+			card(domain.CardDesignHeart, 3),
+			card(domain.CardDesignClover, 4),
+			card(domain.CardDesignDiamond, 5),
+			card(domain.CardDesignSpade, 7),
+		}
+		require.Len(t, cards, 7)
+
+		// **符号の基準点。** SetHands は IsFoulSplit を呼ぶようになったので、
+		// 下の一致ループだけでは判定を自分自身と比べているにすぎず、
+		// 戻り値を反転させても一致したまま通る (実測済み)。この 2 行が
+		// 「どちらが反則か」を外から固定する。
+		//   (0,1): low = A のペア / high = 7 ハイ    -> low が勝つので反則
+		//   (2,3): low = 3 ハイ    / high = A のペア -> high が勝つので反則でない
+		anchor := domain.NewDefaultPaiGow()
+		anchor.SetPhase(domain.PaiGowPhaseSetHands)
+		anchor.SetPlayerCards(cards)
+		assert.True(t, anchor.IsFoulSplit(0, 1), "ローに A A を回したら反則")
+		assert.False(t, anchor.IsFoulSplit(2, 3), "ローに 2 3 を回したら反則ではない")
+
+		agreementPairs := 0
+		foulSeen, cleanSeen := 0, 0
+		for i := range 7 {
+			for j := i + 1; j < 7; j++ {
+				// We need a fresh game for each SetHands call to avoid advancing phase if successful.
+				pgClone := domain.NewDefaultPaiGow()
+				pgClone.SetPhase(domain.PaiGowPhaseSetHands)
+				pgClone.SetPlayerCards(cards)
+				// We don't care about dealer cards since SetHands sets them by house way, but let's give some dummies.
+				dummyDealer := make([]*domain.Card, 7)
+				for k := range dummyDealer {
+					dummyDealer[k] = card(domain.CardDesignSpade, 2)
+				}
+				pgClone.SetDealerCards(dummyDealer)
+
+				isFoul := pgClone.IsFoulSplit(i, j)
+
+				// Ensure IsFoulSplit did not mutate state
+				assert.Nil(t, pgClone.GetPlayerHighHand())
+				assert.Nil(t, pgClone.GetPlayerLowHand())
+
+				err := pgClone.SetHands(i, j)
+				if isFoul {
+					require.Error(t, err)
+					var de *domain.DomainError
+					require.True(t, errors.As(err, &de))
+					assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+					assert.Equal(t, "paigow.foulHighMustBeat", de.Code)
+				} else {
+					require.NoError(t, err)
+					assert.Equal(t, domain.PaiGowPhaseEnd, pgClone.GetPhase()) // because SetHands resolves the game
+				}
+				if isFoul {
+					foulSeen++
+				} else {
+					cleanSeen++
+				}
+				agreementPairs++
+			}
+		}
+		assert.Equal(t, 21, agreementPairs)
+		// 両分岐を実際に通ったことを見る。片方が 0 なら、上のループは
+		// 一致を主張しているようで片側しか試していない。
+		assert.Positive(t, foulSeen, "反則になる分割が 1 つも無い手札では一致を主張できない")
+		assert.Positive(t, cleanSeen, "反則にならない分割が 1 つも無い手札では一致を主張できない")
+	})
+
+	t.Run("out of bounds and same index", func(t *testing.T) {
+		pg := domain.NewDefaultPaiGow()
+		pg.SetPhase(domain.PaiGowPhaseSetHands)
+		dummyCards := make([]*domain.Card, 7)
+		for i := range dummyCards {
+			dummyCards[i] = card(domain.CardDesignSpade, i+2)
+		}
+		pg.SetPlayerCards(dummyCards)
+
+		assert.True(t, pg.IsFoulSplit(0, 0)) // same index
+		assert.True(t, pg.IsFoulSplit(-1, 2))
+		assert.True(t, pg.IsFoulSplit(0, 7))
+	})
+}
+
+// TestPaiGow_IsFoulSplitBeforeDeal は配る前に呼んでも panic しないことを見る。
+//
+// IsFoulSplit は interface 越しに公開されるので、SET HANDS 以外のフェーズからも
+// 呼べてしまう。インデックスは PaiGowHandSize と突き合わせて通るのに playerCards
+// はまだ空、という状態で添字を引くと panic する。
+func TestPaiGow_IsFoulSplitBeforeDeal(t *testing.T) {
+	pg := domain.NewDefaultPaiGow()
+	pg.Reset()
+
+	assert.Empty(t, pg.GetPlayerCards(), "前提: この時点で手札は配られていない")
+	assert.NotPanics(t, func() {
+		assert.True(t, pg.IsFoulSplit(0, 1))
+	})
+}

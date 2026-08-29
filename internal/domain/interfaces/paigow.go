@@ -13,6 +13,8 @@ type PaiGowGame interface {
 	Bet(amount int) error
 	// SetHands ローハンドの2枚を指定してハンドを分割する
 	SetHands(lowIdx0, lowIdx1 int) error
+	// IsFoulSplit は指定された2枚をローハンドにした場合に反則になるか判定する
+	IsFoulSplit(lowIdx0, lowIdx1 int) bool
 	// AutoSetHands ハウスウェイの分割をそのまま適用する
 	AutoSetHands() error
 	// GetHint セットハンドフェーズでの推奨分割を取得する
