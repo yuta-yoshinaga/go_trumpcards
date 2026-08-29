@@ -200,3 +200,41 @@ describe('NiuNiuPage', () => {
     expect(refused[0]?.title).toMatch(/チップ/);
   });
 });
+
+// 牛を作る3枚はリング (ring-2 ring-ds-warning) でしか示されておらず、
+// このページのコメント自身が「5枚と役名だけでは何も説明にならない」と
+// 述べているのに、その情報が読み上げには一切乗っていなかった (#6363)。
+describe('NiuNiuPage combo announcement', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('names the three cards that make the niu', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<NiuNiuPage />);
+
+    const human = await screen.findByLabelText(/^あなた の手 /);
+    const label = human.getAttribute('aria-label') ?? '';
+    // fixture の comboIdx は [0,1,2] = ♠10 ♥10 ♣10。
+    expect(label).toContain('牛の3枚: ♠ 10 ♥ 10 ♣ 10');
+    // 役名は今までどおり残る。
+    expect(label).toContain('牛牛');
+    expect(label).not.toContain('{{');
+    // 牛に入っていない札を数え上げていないこと。
+    expect(label).not.toContain('♦ 5');
+  });
+
+  // 否定コントロール: 組が無い手では牛の断りを付けない。
+  it('says nothing about a combo when there is none', async () => {
+    const base = makeState();
+    mockExec.mockResolvedValue({
+      ...base,
+      seats: base.seats.map((s, i) => (i === 0 ? { ...s, hand: hand({ comboIdx: [] }) } : s)),
+    });
+    renderWithProviders(<NiuNiuPage />);
+
+    const human = await screen.findByLabelText(/^あなた の手 /);
+    expect(human.getAttribute('aria-label') ?? '').not.toContain('牛の3枚');
+  });
+});

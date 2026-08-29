@@ -33,5 +33,6 @@
   "rankNone": "No Niu",
   "rankNiuNiu": "Niu Niu",
   "rankN": "Niu {{n}}",
-  "bankerResult": "Banker: {{rank}}"
+  "bankerResult": "Banker: {{rank}}",
+  "comboAriaLabel": "The three cards making the niu: {{cards}}"
 }
