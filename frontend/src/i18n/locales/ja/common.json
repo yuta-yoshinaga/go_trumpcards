@@ -815,6 +815,8 @@
     "canfield.hintAvailable": "ヒントがあります",
     "canfield.noHint": "ヒントはありません",
     "canfield.playing": "プレイ中",
+    "canfield.errEmptyColumnAutoFillOnly": "リザーブがある場合、空列には自動補充のみ行われます。自分で置くことはできません。",
+    "canfield.errNotAlternateDescending": "カードの色を交互にし、数字が1つ小さくなるように置いてください。",
     "caribbeandraw.result.dealerNotQualified": "ディーラー未クオリファイ！",
     "caribbeandraw.result.dealerWins": "ディーラー勝利！",
     "caribbeandraw.result.fold": "フォールド",

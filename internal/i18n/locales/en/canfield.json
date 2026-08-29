@@ -35,5 +35,8 @@
   "hintToTableau": "tableau column {{col}}",
   "hintLine": "Hint: {{from}} → {{to}}",
   "helpExampleDraw": "  d                    turn one card from the stock",
-  "helpUndo": "  u                    undo one move"
+  "helpUndo": "  u                    undo one move",
+  "errEmptyColumnAutoFillOnly": "While the reserve has cards, empty columns are filled automatically. You cannot place cards there manually.",
+  "errNotAlternateDescending": "Cards must be placed in alternate colors and descending rank.",
+  "reserveEmptyColumnRule": "* Cannot move to an empty column while the reserve has cards (it will be filled automatically)"
 }

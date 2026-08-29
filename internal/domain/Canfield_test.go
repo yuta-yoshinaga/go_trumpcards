@@ -656,3 +656,44 @@ func TestCanfield_JSON(t *testing.T) {
 	assert.Equal(t, c.GetBaseRank(), c2.GetBaseRank())
 	assert.Equal(t, c.GetStockCount(), c2.GetStockCount())
 }
+
+func TestCanfield_MoveToTableau_Errors(t *testing.T) {
+	c := newTestCanfield()
+	c.SetPhase(domain.CanfieldPhasePlaying)
+	c.SetBaseRank(13)
+
+	var emptyTableau [domain.CanfieldTableauCnt][]*domain.CanfieldTableauCard
+	// Column 0 is empty. Column 1 has Heart 5.
+	emptyTableau[1] = []*domain.CanfieldTableauCard{makeCanfieldTC(domain.CardDesignHeart, 5)}
+	c.SetTableau(emptyTableau)
+
+	// Set reserve with 1 card
+	c.SetReserve([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 10, false)})
+	// Set waste with 1 card (Club 5)
+	wasteCard1 := domain.NewCard(domain.CardDesignClover, 5, false)
+	c.SetWaste([]*domain.Card{wasteCard1})
+
+	t.Run("empty column with reserve", func(t *testing.T) {
+		err := c.MoveWasteToTableau(0) // Empty column
+		assert.Error(t, err)
+		code, _ := domain.ErrorMessageCode(err)
+		assert.Equal(t, "canfield.errEmptyColumnAutoFillOnly", code)
+	})
+
+	t.Run("empty column without reserve (negative control)", func(t *testing.T) {
+		c.SetReserve([]*domain.Card{}) // Empty reserve
+		err := c.MoveWasteToTableau(0) // Empty column
+		assert.NoError(t, err, "Should be able to move to empty column if reserve is empty")
+	})
+
+	t.Run("not alternate descending", func(t *testing.T) {
+		// ランクは合っていて色だけ違う札を選ぶ。ランクも色も外すと、
+		// どちらの規則で弾かれたのか分からないまま緑になる。
+		wasteCard2 := domain.NewCard(domain.CardDesignHeart, 4, false)
+		c.SetWaste([]*domain.Card{wasteCard2})
+		err := c.MoveWasteToTableau(1) // Column 1 has Heart 5
+		assert.Error(t, err)
+		code, _ := domain.ErrorMessageCode(err)
+		assert.Equal(t, "canfield.errNotAlternateDescending", code)
+	})
+}

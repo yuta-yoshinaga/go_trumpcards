@@ -74,7 +74,12 @@ func (p *CanfieldWebPresenter) Output(c interfaces.CanfieldGame, lastErr error) 
 	}
 
 	if lastErr != nil {
-		resObj.Message = lastErr.Error()
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			resObj.MessageCode = code
+			resObj.MessageParams = params
+		} else {
+			resObj.Message = lastErr.Error()
+		}
 	} else {
 		switch c.GetPhase() {
 		case domain.CanfieldPhasePlaying:
