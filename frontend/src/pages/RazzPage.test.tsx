@@ -976,4 +976,38 @@ describe('RazzPage', () => {
     renderWithProviders(<RazzPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  describe('CPU Stats', () => {
+    beforeEach(() => {
+      localStorage.clear();
+      mockExec.mockResolvedValue(initState);
+    });
+
+    it('renders CPU stats when totalHands > 0', async () => {
+      const statsState = {
+        ...baseState,
+        players: [humanPlayer(), cpuPlayer(1, { totalHands: 10, vpip: 15, pfr: 10, threeBet: 2, af: '1.5' })],
+        phase: 1,
+        message: '',
+      };
+      mockExec.mockResolvedValue(statsState);
+      renderWithProviders(<RazzPage />);
+      const statsText = await screen.findByText(/VPIP:15% PFR:10% 3Bet:2% AF:1\.5/);
+      expect(statsText).toBeInTheDocument();
+      expect(statsText.textContent).not.toMatch(/{{/);
+    });
+
+    it('does not render CPU stats when totalHands is 0', async () => {
+      const noStatsState = {
+        ...baseState,
+        players: [humanPlayer(), cpuPlayer(1, { totalHands: 0, vpip: 15, pfr: 10, threeBet: 2, af: '1.5' })],
+        phase: 1,
+        message: '',
+      };
+      mockExec.mockResolvedValue(noStatsState);
+      renderWithProviders(<RazzPage />);
+      await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+      expect(screen.queryByText(/VPIP:/)).not.toBeInTheDocument();
+    });
+  });
 });
