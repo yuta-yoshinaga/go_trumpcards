@@ -92,8 +92,15 @@ describe('SetteEMezzoPage', () => {
       }),
     );
     renderWithProviders(<SetteEMezzoPage />);
-    await waitFor(() => expect(screen.getByLabelText('親の手は伏せられています')).toBeInTheDocument());
-    expect(screen.getByLabelText('CPU2 の手は伏せられています')).toBeInTheDocument();
+    // 「伏せられている」だけでなく**何枚あるか**まで言う。晴眼者は CardBack を
+    // 数えているので、そこが落ちると同じ情報が得られない (#6362)。
+    await waitFor(() => expect(screen.getByLabelText(/^親の手は伏せられています \d+枚$/)).toBeInTheDocument());
+    expect(screen.getByLabelText('CPU2 の手は伏せられています 1枚')).toBeInTheDocument();
+    // 未解決のプレースホルダが出ていないこと。
+    expect(document.body.textContent).not.toContain('{{count}}');
+    expect(
+      Array.from(document.querySelectorAll('[aria-label]'), (el) => el.getAttribute('aria-label') ?? '').join(' | '),
+    ).not.toContain('{{');
   });
 
   it('reveals a hand the server did not mark hidden', async () => {

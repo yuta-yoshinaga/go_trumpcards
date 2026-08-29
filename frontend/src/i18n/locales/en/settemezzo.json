@@ -33,9 +33,9 @@
   "bankPasses": "An exact 7.5 takes the bank",
   "landscapeBanner": "Landscape orientation is recommended",
   "seatAriaLabel": "{{name}}'s hand, total {{total}}",
-  "hiddenHandAriaLabel": "{{name}}'s hand is face down",
+  "hiddenHandAriaLabel": "{{name}}'s hand is face down, {{count}} cards",
   "bankerHandAriaLabel": "Banker's hand, total {{total}}",
-  "hiddenBankerHandAriaLabel": "The banker's hand is face down",
+  "hiddenBankerHandAriaLabel": "The banker's hand is face down, {{count}} cards",
   "tutorial": {
     "halfPoints": "**Face cards are worth half a point.** Drawing one on seven does not bust you — it lands you exactly on 7.5. Nothing here has to move the total by a whole number.",
     "matta": "**The king of coins (the matta) is wild** for 0.5 or any whole number from 1 to 7. **Its value is not fixed when you draw it — you can change it until you stand.**",
