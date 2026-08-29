@@ -30,5 +30,8 @@
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
   "helpUndo": "  u undo one move",
+  "helpUndoN": "  un [<n>]             undo n moves at once (to escape a dead end)",
+  "invalidUndoCount": "Invalid undo count: {{val}} (give a whole number of 1 or more)",
+  "noUndoToEscape": "Not in a dead end or cannot escape via undo",
   "hintExposes": " (this uncovers a face-down card)"
 }

@@ -1428,7 +1428,7 @@ var gameRegistry = []GameRegistryEntry{
 				"scorpion.helpGiveUp",
 				"scorpion.helpHint",
 				"scorpion.helpLegal",
-				"scorpion.helpAutoComplete", "scorpion.helpUndo",
+				"scorpion.helpAutoComplete", "scorpion.helpUndo", "scorpion.helpUndoN",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
