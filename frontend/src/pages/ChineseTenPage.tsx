@@ -169,6 +169,18 @@ function ChineseTenPageContent() {
               ))}
             </div>
 
+            {/* 出した札そのものを見せる。場札は複数あるので、これが無いと
+                「何に対して」10 や同ランクを選んでいるのか記憶に頼ることになる
+                (CUI は chineseten.pendingLine で最初から出していた) (#6367)。
+                札が無いときは枠ごと出さない。読み上げは AnimatedCard -> CardImage の
+                alt={cardAlt(card)} が担うので、aria-label を重ねない。 */}
+            {choosing && state.pendingCard && (
+              <div className="text-center mb-4">
+                <div className="text-game-text-muted text-xs mb-1">{t('pendingLine')}</div>
+                <div className="flex justify-center">{renderCard(state.pendingCard, 'pending-card')}</div>
+              </div>
+            )}
+
             <div className="text-center mb-4" data-tutorial="ct-layout">
               <div className="text-game-text-muted text-xs mb-1">
                 {choosing && state.pendingCard ? t('choosePrompt') : t('layout')}

@@ -8,6 +8,7 @@
   "choosePrompt": "取る札を選んでください",
   "opponentHand": "CPU の手札 {{n}} 枚",
   "opponentHandAriaLabel": "CPU の手札 {{n}} 枚（裏向き）",
+  "pendingLine": "出した札:",
   "yourHand": "あなたの手札",
   "yourCaptured": "あなたの取り札",
   "opponentCaptured": "CPU の取り札",

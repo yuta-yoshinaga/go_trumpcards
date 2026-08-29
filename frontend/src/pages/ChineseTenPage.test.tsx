@@ -214,3 +214,41 @@ describe('ChineseTenPage blocked reasons', () => {
     expect(labelled[0]?.getAttribute('aria-label')).toMatch(/[♠♥♦♣]/);
   });
 });
+
+// #6367: どの札を出したから選択待ちなのかが画面に出ない問題を修正
+describe('ChineseTenPage pendingCard display', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('renders pendingCard as an AnimatedCard and labels it during SELECT phase', async () => {
+    const pc = card('CLOVER', 2);
+    mockExec.mockResolvedValue(makeState({ phase: 1, pendingCard: pc, selectableIndices: [1] }));
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(screen.getAllByTestId('animated-card').length).toBeGreaterThan(0));
+
+    // The heading text
+    expect(screen.getByText('出した札:')).toBeInTheDocument();
+
+    // The card itself - find by alt text of the image, which is the accessible name from cardAlt
+    const pcAlt = '♣ 2';
+    const pcImg = screen.getByAltText(pcAlt);
+    expect(pcImg).toBeInTheDocument();
+
+    // choosePrompt should still be shown
+    expect(screen.getByText('取る札を選んでください')).toBeInTheDocument();
+  });
+
+  it('does not render pendingCard area when not in SELECT phase (negative control)', async () => {
+    // phase 0 (PLAY) - shouldn't render pending line even if state has pendingCard
+    mockExec.mockResolvedValue(makeState({ phase: 0, pendingCard: card('SPADE', 1) }));
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(screen.getAllByTestId('animated-card').length).toBeGreaterThan(0));
+
+    expect(screen.queryByText('出した札:')).not.toBeInTheDocument();
+
+    // layout heading should be shown
+    expect(screen.getByText('場')).toBeInTheDocument();
+  });
+});
