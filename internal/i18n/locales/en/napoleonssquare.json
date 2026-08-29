@@ -29,5 +29,22 @@
   "undoToEscape": "Undo {{count}} move(s) to escape the dead end (undo {{count}}, or repeat u)",
   "helpExampleHint": "  h                        ask for a move",
   "helpExampleAuto": "  ac                       send everything that can go to a foundation",
-  "foundationProgress": "On foundations: {{count}}/{{total}} ({{percent}}%)"
+  "foundationProgress": "On foundations: {{count}}/{{total}} ({{percent}}%)",
+  "errNotPlaying": "The game is not in play.",
+  "errNoCardsInStock": "There are no cards in the stock.",
+  "errBadColumn": "That column does not exist.",
+  "errWasteEmpty": "The waste is empty.",
+  "errCannotPlaceTableau": "That card cannot be placed on the tableau.",
+  "errCannotPlaceFoundation": "That card cannot be placed on the foundation.",
+  "errBadFromColumn": "That source column does not exist.",
+  "errBadToColumn": "That destination column does not exist.",
+  "errSameColumn": "The source and destination columns are the same.",
+  "errInvalidCardIndex": "That column has no card at that index.",
+  "errNotSameSuitDescending": "The cards do not form a same-suit descending run.",
+  "errColumnEmpty": "That column is empty.",
+  "errNoAutoCompleted": "No cards can be automatically moved.",
+  "errNothingToUndo": "There is no move to undo.",
+  "errSnapshotArrayTooLarge": "The snapshot array exceeds the maximum allowed size.",
+  "errSnapshotPileTooLarge": "A snapshot pile exceeds the maximum allowed size.",
+  "errInputArrayTooLarge": "The input array exceeds the maximum allowed size."
 }
