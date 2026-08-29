@@ -1038,6 +1038,7 @@
     "dramahahilo.result.lowWin": "You won half the pot with your draw hand.",
     "dramahahilo.result.scoop": "Scoop! You took the pot with both the Omaha hand and the draw hand.",
     "duchess.chooseBase": "Choose the base rank",
+    "duchess.errEmptyColumnReserveOnly": "An empty column must be filled from the reserve first",
     "duchess.gameClear": "Game Clear! Moves: {{moveCount}}",
     "duchess.gameOver": "Game Over",
     "duchess.hintAvailable": "Hint available",

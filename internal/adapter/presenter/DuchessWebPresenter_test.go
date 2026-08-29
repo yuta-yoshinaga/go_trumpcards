@@ -119,12 +119,23 @@ func TestDuchessWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "duchess.stalemate", result.MessageCode)
 	})
 
-	t.Run("error message", func(t *testing.T) {
+	t.Run("coded error code goes to MessageCode", func(t *testing.T) {
+		g := new(interfaces.MockDuchessGame)
+		setupDuchessOutputMock(g)
+
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "duchess.errEmptyColumnReserveOnly", nil)
+		result := parseDuchessOutput(t, new(DuchessWebPresenter).Output(g, err))
+		assert.Equal(t, "duchess.errEmptyColumnReserveOnly", result.MessageCode)
+		assert.Empty(t, result.Message, "生のキーを message に入れない")
+	})
+
+	t.Run("error message with standard errors.New (negative control)", func(t *testing.T) {
 		g := new(interfaces.MockDuchessGame)
 		setupDuchessOutputMock(g)
 
 		result := parseDuchessOutput(t, new(DuchessWebPresenter).Output(g, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
+		assert.Empty(t, result.MessageCode, "素の error は MessageCode をセットしない")
 	})
 
 	for _, tc := range []struct {
