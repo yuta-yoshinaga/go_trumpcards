@@ -30,6 +30,12 @@ const (
 	PageOnePhaseGameEnd PageOnePhase = 3
 )
 
+// PageOnePenalty ページワンのペナルティ情報
+type PageOnePenalty struct {
+	PlayerIdx int `json:"playerIdx"`
+	CardCount int `json:"cardCount"`
+}
+
 // PageOne ページワンゲームクラス
 type PageOne struct {
 	trumpCards       *TrumpCards
@@ -42,6 +48,7 @@ type PageOne struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
+	recentPenalties  []PageOnePenalty
 	actionLogBase
 }
 
@@ -78,6 +85,7 @@ func (g *PageOne) Reset() {
 	g.drawPile = nil
 	g.currentPlayerIdx = 0
 	g.actionLog = nil
+	g.recentPenalties = nil
 
 	for _, p := range g.players {
 		p.roundScore = 0
@@ -104,6 +112,7 @@ func (g *PageOne) NextRound() {
 	g.discardPile = nil
 	g.drawPile = nil
 	g.currentPlayerIdx = 0
+	g.recentPenalties = nil
 
 	for _, p := range g.players {
 		p.ResetRound()
@@ -146,6 +155,7 @@ func (g *PageOne) dealInitialCards() {
 
 // PlayerPlay 人間プレイヤーがカードをプレイする
 func (g *PageOne) PlayerPlay(cardIndex int) error {
+	g.recentPenalties = nil
 	if g.gameEndFlag {
 		return ErrGameEnded
 	}
@@ -173,6 +183,7 @@ func (g *PageOne) PlayerPlay(cardIndex int) error {
 
 // PlayerDraw 人間プレイヤーがカードを引く
 func (g *PageOne) PlayerDraw() error {
+	g.recentPenalties = nil
 	if g.gameEndFlag {
 		return ErrGameEnded
 	}
@@ -191,6 +202,7 @@ func (g *PageOne) PlayerDraw() error {
 
 // PlayerDeclare 人間プレイヤーが「ページワン！」と宣言する
 func (g *PageOne) PlayerDeclare() error {
+	g.recentPenalties = nil
 	if g.gameEndFlag {
 		return ErrGameEnded
 	}
@@ -206,6 +218,7 @@ func (g *PageOne) PlayerDeclare() error {
 
 // PlayerSkipDeclare 人間プレイヤーが宣言をスキップする（ペナルティを受ける）
 func (g *PageOne) PlayerSkipDeclare() error {
+	g.recentPenalties = nil
 	if g.gameEndFlag {
 		return ErrGameEnded
 	}
@@ -269,6 +282,10 @@ func (g *PageOne) doDeclare(playerIdx int) {
 
 // applyDeclarePenalty 宣言忘れペナルティとして2枚引かせる
 func (g *PageOne) applyDeclarePenalty(playerIdx int) {
+	g.recentPenalties = append(g.recentPenalties, PageOnePenalty{
+		PlayerIdx: playerIdx,
+		CardCount: PageOnePenaltyDraw,
+	})
 	g.appendLog(playerIdx, "penalty", fmt.Sprintf("%s forgot to declare Page One! (+%d cards)", playerName(g.players, playerIdx), PageOnePenaltyDraw), nil)
 	for i := 0; i < PageOnePenaltyDraw; i++ {
 		if len(g.drawPile) == 0 {
@@ -389,6 +406,14 @@ func (g *PageOne) SetConfig(cfg PageOneConfig) { g.config = cfg }
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *PageOne) GetValidPlayIndices(playerIdx int) []int {
 	return g.getValidPlayIndices(playerIdx)
+}
+
+// GetRecentPenalties 直前ターンで発生したペナルティ一覧を取得する
+func (g *PageOne) GetRecentPenalties() []PageOnePenalty { return g.recentPenalties }
+
+// ApplyDeclarePenaltyForTest は宣言ペナルティを適用する (テスト用)。
+func (g *PageOne) ApplyDeclarePenaltyForTest(playerIdx int) {
+	g.applyDeclarePenalty(playerIdx)
 }
 
 // --- Private methods ---
@@ -603,6 +628,9 @@ func pageOneCardScore(card *Card) int {
 }
 
 // pageOneJSON is the JSON wire format for PageOne.
+// recentPenalties は直前の応答でのみ表示される一過性の UI 通知情報であり、
+// 次の人間の操作（PlayerPlay, PlayerDraw 等）で常に初期化されるため、
+// 永続化 JSON には含めない。
 type pageOneJSON struct {
 	TrumpCards       *TrumpCards       `json:"tc"`
 	Players          []*PageOnePlayer  `json:"pl"`
