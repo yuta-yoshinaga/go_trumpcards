@@ -12,6 +12,8 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+const sirTommyMaxLookAhead = 6
+
 // SirTommyCuiPresenter renders the SirTommy Solitaire CUI view.
 type SirTommyCuiPresenter struct{}
 
@@ -35,18 +37,30 @@ func (p *SirTommyCuiPresenter) Output(g interfaces.SirTommyGame, lastErr error) 
 					"count", strconv.Itoa(len(pile)),
 					"max", maxStr))
 			}
-			// **次に必要なランクを出す。**Web は各基礎札にバッジで出しているのに、
-			// CUI は一番上の札しか出さず、4 本分の「+1」を暗算させていた (#4868)。
-			// 段差もスートも無い (canPlaceOnFoundation) ので、次は必ず top+1、
-			// 空なら A、13 枚で打ち止め。
-			switch {
-			case len(pile) >= domain.CardValueMax:
+			// **次に必要なランクと先読みを出す。**Web は各基礎札にバッジで最大6手先まで
+			// 出している (#6348)。段差もスートも無い (canPlaceOnFoundation) ので、
+			// 次は必ず top+1、空なら A、13 枚で打ち止め。
+			if len(pile) >= domain.CardValueMax {
 				b.WriteString(i18n.T("sirtommy.foundationComplete"))
-			case len(pile) == 0:
-				b.WriteString(i18n.Tf("sirtommy.foundationNext", "rank", cuiRankLabel(1)))
-			default:
-				b.WriteString(i18n.Tf("sirtommy.foundationNext",
-					"rank", cuiRankLabel(pile[len(pile)-1].GetValue()+1)))
+			} else {
+				nextRank := 1
+				if len(pile) > 0 {
+					nextRank = pile[len(pile)-1].GetValue() + 1
+				}
+				b.WriteString(i18n.Tf("sirtommy.foundationNext", "rank", cuiRankLabel(nextRank)))
+
+				var upcoming []string
+				for k := 1; k < sirTommyMaxLookAhead; k++ {
+					r := nextRank + k
+					if r > domain.CardValueMax {
+						break
+					}
+					upcoming = append(upcoming, cuiRankLabel(r))
+				}
+				if len(upcoming) > 0 {
+					b.WriteString(i18n.Tf("sirtommy.foundationUpcoming",
+						"ranks", strings.Join(upcoming, " → ")))
+				}
 			}
 			b.WriteString("\n")
 		}

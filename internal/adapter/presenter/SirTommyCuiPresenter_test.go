@@ -3,9 +3,11 @@
 package presenter
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -44,31 +46,93 @@ func TestSirTommyCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ストック")
 	})
 
-	// **次に必要なランクを常時出す。**Web はバッジで見せているのに CUI は
-	// 一番上の札しか出しておらず、4 本分の暗算を強いていた (#4868)。
+	// **次に必要なランクと先読みを常時出す。**Web はバッジで最大6手先まで見せている (#6348)。
 	t.Run("next required rank per foundation", func(t *testing.T) {
 		g := new(interfaces.MockSirTommyGame)
 
 		var foundations [domain.SirTommyFoundationCnt][]*domain.Card
-		// F0: 空 -> A、F1: 5 の上 -> 6、F2: 13 枚 -> 完成、F3: A の上 -> 2
-		foundations[1] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)}
-		for v := 1; v <= domain.CardValueMax; v++ {
-			foundations[2] = append(foundations[2], domain.NewCard(domain.CardDesignClover, v, false))
+		// F0: 空 (0枚) -> 次: A -> 2 -> 3 -> 4 -> 5 -> 6
+		// F1: 5枚 (一番上が 5) -> 次: 6 -> 7 -> 8 -> 9 -> 10 -> J
+		for v := 1; v <= 5; v++ {
+			foundations[1] = append(foundations[1], domain.NewCard(domain.CardDesignHeart, v, false))
 		}
-		foundations[3] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+		// F2: 12枚 (一番上が Q) -> 次: K（13枚打ち止めで先が無いこと）
+		for v := 1; v <= 12; v++ {
+			foundations[2] = append(foundations[2], domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		// F3: 13枚 (完成) -> 完成（先読みが出ないこと）
+		for v := 1; v <= domain.CardValueMax; v++ {
+			foundations[3] = append(foundations[3], domain.NewCard(domain.CardDesignClover, v, false))
+		}
 		// **defaults より先に登録する。**testify は最初に一致した期待値を使うので、
 		// 先に setup を呼ぶと `.Maybe()` 側の山が勝ってしまう。
 		g.On("GetFoundations").Return(foundations)
 		setupSirTommyCuiMockDefaults(g)
 
 		result := new(SirTommyCuiPresenter).Output(g, nil)
-		assert.Contains(t, result, "(空) → 次: A")
-		assert.Contains(t, result, "→ 次: 6")
-		assert.Contains(t, result, "→ 完成")
-		assert.Contains(t, result, "→ 次: 2")
-		// 完成した山に「次」は出さない。完成判定を外すと `→ 次: 14` が出るので、
-		// ランクを指定せず「13/13 の行に次が付かないこと」を見る。
-		assert.NotContains(t, result, "(13/13) → 次")
+
+		var fLines []string
+		for _, l := range strings.Split(result, "\n") {
+			if strings.HasPrefix(l, "[F") {
+				fLines = append(fLines, l)
+			}
+		}
+		require.Len(t, fLines, domain.SirTommyFoundationCnt)
+
+		// F0 (0枚): 次が A で、その後 2,3,4,5,6 と続く
+		assert.Contains(t, fLines[0], "(空) → 次: A")
+		assert.Contains(t, fLines[0], "A → 2 → 3 → 4 → 5 → 6")
+
+		// F1 (5枚): 次が 6 で、6->7->8->9->10->J と続く（J が cuiRankLabel を通ること）
+		assert.Contains(t, fLines[1], "→ 次: 6")
+		assert.Contains(t, fLines[1], "6 → 7 → 8 → 9 → 10 → J")
+
+		// F2 (12枚): 次は K だけで、その先が無いこと（空の追記や → が末尾に残らない）
+		assert.Contains(t, fLines[2], "→ 次: K")
+		assert.NotContains(t, fLines[2], "K →")
+		assert.NotContains(t, fLines[2], "14")
+		assert.True(t, strings.HasSuffix(strings.TrimSpace(fLines[2]), "→ 次: K"))
+
+		// F3 (13枚): 完成済みは完成だけで先読みが出ない
+		assert.Contains(t, fLines[3], "→ 完成")
+		assert.NotContains(t, fLines[3], "(13/13) → 次")
+	})
+
+	t.Run("upcoming ranks look ahead in en locale", func(t *testing.T) {
+		i18n.SetLang("en")
+		t.Cleanup(func() { i18n.SetLang("ja") })
+
+		g := new(interfaces.MockSirTommyGame)
+		var foundations [domain.SirTommyFoundationCnt][]*domain.Card
+		for v := 1; v <= 5; v++ {
+			foundations[1] = append(foundations[1], domain.NewCard(domain.CardDesignHeart, v, false))
+		}
+		for v := 1; v <= 12; v++ {
+			foundations[2] = append(foundations[2], domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		for v := 1; v <= domain.CardValueMax; v++ {
+			foundations[3] = append(foundations[3], domain.NewCard(domain.CardDesignClover, v, false))
+		}
+		g.On("GetFoundations").Return(foundations)
+		setupSirTommyCuiMockDefaults(g)
+
+		result := new(SirTommyCuiPresenter).Output(g, nil)
+
+		var fLines []string
+		for _, l := range strings.Split(result, "\n") {
+			if strings.HasPrefix(l, "[F") {
+				fLines = append(fLines, l)
+			}
+		}
+		require.Len(t, fLines, domain.SirTommyFoundationCnt)
+
+		assert.Contains(t, fLines[0], "(empty) → next: A → 2 → 3 → 4 → 5 → 6")
+		assert.Contains(t, fLines[1], "→ next: 6 → 7 → 8 → 9 → 10 → J")
+		assert.Contains(t, fLines[2], "→ next: K")
+		assert.NotContains(t, fLines[2], "K →")
+		assert.True(t, strings.HasSuffix(strings.TrimSpace(fLines[2]), "→ next: K"))
+		assert.Contains(t, fLines[3], "→ complete")
+		assert.NotContains(t, fLines[3], "→ next")
 	})
 
 	t.Run("with error", func(t *testing.T) {
