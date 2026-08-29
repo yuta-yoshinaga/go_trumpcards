@@ -52,5 +52,8 @@
   },
   "label": {
     "actionLog": "行動履歴"
-  }
+  },
+  "settings.difficulty.easy": "やさしい",
+  "settings.difficulty.normal": "ふつう",
+  "settings.difficulty.hard": "むずかしい"
 }
