@@ -323,3 +323,25 @@ describe('SpiteAndMalicePage wild king', () => {
     expect(screen.queryByRole('button', { name: /♠ 5.*ワイルド/ })).not.toBeInTheDocument();
   });
 });
+
+// ゴール山・サイド山の aria-label は `top:` `left)` `empty` を英語で直書きして
+// いたので、日本語ロケールでも読み上げが英語混じりになっていた (#6356)。
+//
+// **キー名ではなく解決後の文言を見る。** i18next は未知のキーに対してキー文字列を
+// そのまま返すので、キーと比べると翻訳が無くても通ってしまう。
+describe('SpiteAndMalicePage pile aria-labels', () => {
+  it('reads the goal and side piles entirely in Japanese', async () => {
+    mockExec.mockResolvedValue(baseState);
+    renderWithProviders(<SpiteAndMalicePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    // 札が乗っているゴール山。
+    expect(screen.getByLabelText('ゴール 一番上: ♥ 9 (残り20枚)')).toBeInTheDocument();
+    // 空のサイド山（fixture は 4 つとも空）。
+    expect(screen.getByLabelText('サイド 1: 空')).toBeInTheDocument();
+
+    // 英語の直書きも、未解決のキーも読み上げに混ざってはいけない。
+    const labels = Array.from(document.querySelectorAll('[aria-label]'), (el) => el.getAttribute('aria-label') ?? '');
+    expect(labels.join(' | ')).not.toMatch(/ top:| left\)|: empty|aria\.(goal|side)/);
+  });
+});
