@@ -306,3 +306,36 @@ func TestRedDogCuiPresenter_Output_Paytable(t *testing.T) {
 	assert.NotContains(t, outputInPhase(domain.RedDogPhaseSpreadDecision), header)
 	assert.NotContains(t, outputInPhase(domain.RedDogPhaseEnd), header)
 }
+
+// TestRedDogThirdCardHits は述語そのものを直接見る。
+//
+// Output 経由のテストだけだと、初期2枚が昇順で渡る配りしか通らず、
+// 逆順の入れ替えと、そもそも 2 枚そろっていない場合のガードが未検査のまま残る。
+func TestRedDogThirdCardHits(t *testing.T) {
+	c := func(v int) *domain.Card { return domain.NewCard(domain.CardDesignSpade, v, false) }
+
+	t.Run("hits inside the span", func(t *testing.T) {
+		assert.True(t, redDogThirdCardHits([]*domain.Card{c(5), c(10)}, c(7)))
+	})
+
+	t.Run("the two initial cards may arrive in either order", func(t *testing.T) {
+		// 同じ 5-10 のスプレッドを高い札から渡す。入れ替えを落とすと
+		// lo > hi になり、どの札も範囲に入らず常に外れになる。
+		assert.True(t, redDogThirdCardHits([]*domain.Card{c(10), c(5)}, c(7)))
+	})
+
+	t.Run("the two initial cards themselves are not inside", func(t *testing.T) {
+		assert.False(t, redDogThirdCardHits([]*domain.Card{c(5), c(10)}, c(5)))
+		assert.False(t, redDogThirdCardHits([]*domain.Card{c(5), c(10)}, c(10)))
+	})
+
+	t.Run("outside the span", func(t *testing.T) {
+		assert.False(t, redDogThirdCardHits([]*domain.Card{c(5), c(10)}, c(12)))
+	})
+
+	t.Run("no answer without two initial cards or a third", func(t *testing.T) {
+		assert.False(t, redDogThirdCardHits([]*domain.Card{c(5)}, c(7)))
+		assert.False(t, redDogThirdCardHits(nil, c(7)))
+		assert.False(t, redDogThirdCardHits([]*domain.Card{c(5), c(10)}, nil))
+	})
+}
