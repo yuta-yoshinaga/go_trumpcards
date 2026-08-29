@@ -411,3 +411,54 @@ describe('PresidentPage action history', () => {
     expect(screen.queryByTestId('pr-action-log')).not.toBeInTheDocument();
   });
 });
+
+describe('PresidentPage SettingsPanel tooltips', () => {
+  beforeEach(() => {
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(makeState());
+    localStorage.clear();
+  });
+
+  it('renders and toggles tooltips for custom rules with correct Japanese translation', async () => {
+    renderWithProviders(<PresidentPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    const toggles = [
+      {
+        id: 'revolutionEnabled',
+        text: '4枚以上のカードを同時に出すと発動し、カードの強さが逆転します。',
+      },
+      {
+        id: 'cardExchangeEnabled',
+        text: 'ラウンド開始時に、大富豪(1位)と大貧民(4位)の間で2枚、富豪(2位)と貧民(3位)の間で1枚のカードを交換します（下位からは最強のカード、上位からは最弱のカードを渡します）。',
+      },
+      {
+        id: 'passFieldFlushEnabled',
+        text: '誰かがパスをすると即座に場が流れ、次のプレイヤーが好きなカードを出せるようになります。',
+      },
+    ];
+
+    for (const toggle of toggles) {
+      // Find the specific help button for this setting via aria-controls
+      const helpBtn = document.querySelector(`[aria-controls="${toggle.id}-tooltip"]`) as HTMLButtonElement;
+      expect(helpBtn).toBeInTheDocument();
+      expect(helpBtn.getAttribute('aria-expanded')).toBe('false');
+
+      // Click to open the tooltip
+      fireEvent.click(helpBtn);
+
+      // Verify the tooltip appears and contains the expected text without un-interpolated markers
+      const tooltip = document.getElementById(`${toggle.id}-tooltip`);
+      expect(tooltip).toBeInTheDocument();
+      expect(tooltip).toHaveTextContent(toggle.text);
+      expect(tooltip?.textContent).not.toMatch(/{{/);
+      expect(helpBtn.getAttribute('aria-expanded')).toBe('true');
+
+      // Click again to close the tooltip
+      fireEvent.click(helpBtn);
+      await waitFor(() => {
+        expect(document.getElementById(`${toggle.id}-tooltip`)).not.toBeInTheDocument();
+      });
+    }
+  });
+});

@@ -42,5 +42,8 @@
   "actionPassed": "{{name}} passed",
   "label": {
     "actionLog": "Action history"
-  }
+  },
+  "settings.revolutionHelp": "Triggered when 4 or more cards are played at once. Inverts the strength of all cards.",
+  "settings.cardExchangeHelp": "At the start of a round, President (1st) and Scum (4th) exchange 2 cards, and Vice President (2nd) and Vice Scum (3rd) exchange 1 card. The lower rank gives their strongest cards, and the higher rank gives their weakest cards.",
+  "settings.passFieldFlushHelp": "When any player passes, the table is immediately cleared, allowing the next player to play any cards."
 }
