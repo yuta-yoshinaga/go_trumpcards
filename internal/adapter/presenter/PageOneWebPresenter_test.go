@@ -23,6 +23,7 @@ func setupPageOneWebMock() *interfaces.MockPageOneGame {
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetConfig").Return(domain.DefaultPageOneConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetRecentPenalties").Return(([]domain.PageOnePenalty)(nil))
 	players := makePageOnePlayers()
 	m.On("GetPlayerCnt").Return(4)
 	m.On("GetPlayer", 0).Return(players[0])
@@ -35,7 +36,7 @@ func setupPageOneWebMock() *interfaces.MockPageOneGame {
 func TestPageOneWebPresenter_Output(t *testing.T) {
 	p := new(presenter.PageOneWebPresenter)
 
-	t.Run("play phase", func(t *testing.T) {
+	t.Run("play phase (negative control: no penalties)", func(t *testing.T) {
 		m := setupPageOneWebMock()
 		result := p.Output(m, nil)
 		var out map[string]interface{}
@@ -43,6 +44,56 @@ func TestPageOneWebPresenter_Output(t *testing.T) {
 		require(t, json.Unmarshal([]byte(result), &out))
 		assert.Equal(t, float64(0), out["phase"])
 		assert.Equal(t, "pageone.playPhase", out["messageCode"])
+	})
+
+	t.Run("penalty prioritized over phase name", func(t *testing.T) {
+		m := setupPageOneWebMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRecentPenalties")
+		m.On("GetRecentPenalties").Return([]domain.PageOnePenalty{
+			{PlayerIdx: 1, CardCount: 2},
+		})
+		result := p.Output(m, nil)
+		var out map[string]interface{}
+		assert.NoError(t, json.Unmarshal([]byte(result), &out))
+		assert.Equal(t, "pageone.penaltyApplied", out["messageCode"])
+		assert.NotEqual(t, "pageone.playPhase", out["messageCode"])
+		// コードを出したのなら message は空。文面を Go 側で組むと、
+		// 英語でプレイしていても日本語の一文が出る。
+		assert.Empty(t, out["message"])
+		params := out["messageParams"].(map[string]interface{})
+		assert.Equal(t, "CPU 1", params["name"])
+		assert.Equal(t, "2", params["count"])
+	})
+
+	t.Run("multiple penalties include all players", func(t *testing.T) {
+		m := setupPageOneWebMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRecentPenalties")
+		m.On("GetRecentPenalties").Return([]domain.PageOnePenalty{
+			{PlayerIdx: 1, CardCount: 2},
+			{PlayerIdx: 2, CardCount: 2},
+		})
+		result := p.Output(m, nil)
+		var out map[string]interface{}
+		assert.NoError(t, json.Unmarshal([]byte(result), &out))
+		assert.Equal(t, "pageone.penaltyApplied", out["messageCode"])
+		params := out["messageParams"].(map[string]interface{})
+		assert.Contains(t, params["name"], "CPU 1")
+		assert.Contains(t, params["name"], "CPU 2")
+		assert.Equal(t, "2", params["count"])
+	})
+
+	t.Run("human penalty uses display name", func(t *testing.T) {
+		m := setupPageOneWebMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRecentPenalties")
+		m.On("GetRecentPenalties").Return([]domain.PageOnePenalty{
+			{PlayerIdx: 0, CardCount: 2},
+		})
+		result := p.Output(m, nil)
+		var out map[string]interface{}
+		assert.NoError(t, json.Unmarshal([]byte(result), &out))
+		assert.Equal(t, "pageone.penaltyApplied", out["messageCode"])
+		params := out["messageParams"].(map[string]interface{})
+		assert.Equal(t, "あなた", params["name"])
 	})
 
 	t.Run("must declare phase", func(t *testing.T) {

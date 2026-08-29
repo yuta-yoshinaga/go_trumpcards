@@ -548,3 +548,115 @@ func TestPageOne_IsValidPlay(t *testing.T) {
 	assert.True(t, g.IsValidPlay(domain.NewCard(domain.CardDesignHeart, 5, false)), "same rank is playable")
 	assert.False(t, g.IsValidPlay(domain.NewCard(domain.CardDesignHeart, 7, false)), "different suit and rank is not playable")
 }
+
+func TestPageOne_RecentPenalties_SinglePenalty(t *testing.T) {
+	g := newTestPageOne()
+	g.Reset()
+	g.SetDrawPile([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 2, false),
+		domain.NewCard(domain.CardDesignSpade, 3, false),
+	})
+	g.SetPhase(domain.PageOnePhaseMustDeclare)
+	g.SetCurrentPlayerIdx(0)
+
+	err := g.PlayerSkipDeclare()
+	require.NoError(t, err)
+
+	penalties := g.GetRecentPenalties()
+	require.Len(t, penalties, 1)
+	assert.Equal(t, 0, penalties[0].PlayerIdx)
+	assert.Equal(t, domain.PageOnePenaltyDraw, penalties[0].CardCount)
+}
+
+func TestPageOne_RecentPenalties_AccumulatesMultiple(t *testing.T) {
+	g := newTestPageOne()
+	g.Reset()
+	g.SetDrawPile([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 2, false),
+		domain.NewCard(domain.CardDesignSpade, 3, false),
+		domain.NewCard(domain.CardDesignSpade, 4, false),
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+	})
+
+	g.ApplyDeclarePenaltyForTest(1)
+	g.ApplyDeclarePenaltyForTest(2)
+
+	penalties := g.GetRecentPenalties()
+	require.Len(t, penalties, 2)
+	assert.Equal(t, 1, penalties[0].PlayerIdx)
+	assert.Equal(t, domain.PageOnePenaltyDraw, penalties[0].CardCount)
+	assert.Equal(t, 2, penalties[1].PlayerIdx)
+	assert.Equal(t, domain.PageOnePenaltyDraw, penalties[1].CardCount)
+}
+
+func TestPageOne_RecentPenalties_ClearedOnHumanActions(t *testing.T) {
+	t.Run("PlayerPlay clears penalties", func(t *testing.T) {
+		g := newTestPageOne()
+		g.Reset()
+		g.ApplyDeclarePenaltyForTest(1)
+		require.NotEmpty(t, g.GetRecentPenalties())
+
+		top := domain.NewCard(domain.CardDesignSpade, 5, false)
+		setupPageOnePlayPhase(g, 0, top)
+		p := g.GetPlayer(0)
+		p.Reset()
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+
+		err := g.PlayerPlay(0)
+		require.NoError(t, err)
+		assert.Empty(t, g.GetRecentPenalties())
+	})
+
+	t.Run("PlayerDraw clears penalties", func(t *testing.T) {
+		g := newTestPageOne()
+		g.Reset()
+		g.ApplyDeclarePenaltyForTest(1)
+		require.NotEmpty(t, g.GetRecentPenalties())
+
+		top := domain.NewCard(domain.CardDesignSpade, 5, false)
+		setupPageOnePlayPhase(g, 0, top)
+		p := g.GetPlayer(0)
+		p.Reset()
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		g.SetDrawPile([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)})
+
+		err := g.PlayerDraw()
+		require.NoError(t, err)
+		assert.Empty(t, g.GetRecentPenalties())
+	})
+
+	t.Run("PlayerDeclare clears penalties", func(t *testing.T) {
+		g := newTestPageOne()
+		g.Reset()
+		g.ApplyDeclarePenaltyForTest(1)
+		require.NotEmpty(t, g.GetRecentPenalties())
+
+		g.SetPhase(domain.PageOnePhaseMustDeclare)
+		g.SetCurrentPlayerIdx(0)
+
+		err := g.PlayerDeclare()
+		require.NoError(t, err)
+		assert.Empty(t, g.GetRecentPenalties())
+	})
+
+	t.Run("Reset clears penalties", func(t *testing.T) {
+		g := newTestPageOne()
+		g.Reset()
+		g.ApplyDeclarePenaltyForTest(1)
+		require.NotEmpty(t, g.GetRecentPenalties())
+
+		g.Reset()
+		assert.Empty(t, g.GetRecentPenalties())
+	})
+
+	t.Run("NextRound clears penalties", func(t *testing.T) {
+		g := newTestPageOne()
+		g.Reset()
+		g.ApplyDeclarePenaltyForTest(1)
+		require.NotEmpty(t, g.GetRecentPenalties())
+
+		g.SetPhase(domain.PageOnePhaseRoundEnd)
+		g.NextRound()
+		assert.Empty(t, g.GetRecentPenalties())
+	})
+}

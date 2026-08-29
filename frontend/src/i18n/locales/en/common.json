@@ -1743,6 +1743,7 @@
     "osmosis.playing": "Playing",
     "osmosis.stalemate": "Dead end — no card can reach a foundation any more.",
     "pageone.mustDeclarePhase": "Only 1 card left! Declare Page One!",
+    "pageone.penaltyApplied": "{{name}} forgot to declare Page One! (+{{count}} cards)",
     "pageone.playPhase": "Play a card or draw from the pile",
     "pageone.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
     "pageone.result.humanWin": "Game over! You win!",

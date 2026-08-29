@@ -46,3 +46,9 @@ func (m *MockPageOneGame) IsValidPlay(card *domain.Card) bool {
 func (m *MockPageOneGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }
+func (m *MockPageOneGame) GetRecentPenalties() []domain.PageOnePenalty {
+	if v := m.Called().Get(0); v != nil {
+		return v.([]domain.PageOnePenalty)
+	}
+	return nil
+}

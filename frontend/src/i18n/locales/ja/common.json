@@ -1743,6 +1743,7 @@
     "osmosis.playing": "プレイ中",
     "osmosis.stalemate": "手詰まりです。置けるカードがもうありません。",
     "pageone.mustDeclarePhase": "手札が残り1枚です！「ページワン！」と宣言してください",
+    "pageone.penaltyApplied": "{{name}}がページワン宣言を忘れたためペナルティ！ (+{{count}}枚)",
     "pageone.playPhase": "カードを出すか、山札から引いてください",
     "pageone.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
     "pageone.result.humanWin": "ゲーム終了！ あなたの勝ち！",

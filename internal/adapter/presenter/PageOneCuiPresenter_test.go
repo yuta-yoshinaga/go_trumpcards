@@ -25,6 +25,7 @@ func setupPageOneCuiMock() *interfaces.MockPageOneGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetRecentPenalties").Return(([]domain.PageOnePenalty)(nil))
 	return m
 }
 
@@ -147,6 +148,43 @@ func TestPageOneCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.NotContains(t, result, "残り1枚！")
 		assert.Contains(t, result, "[PAGE ONE!]")
+	})
+
+	t.Run("penalty line shown for CPU", func(t *testing.T) {
+		m, _ := setupPageOneCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRecentPenalties")
+		m.On("GetRecentPenalties").Return([]domain.PageOnePenalty{
+			{PlayerIdx: 1, CardCount: 2},
+		})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "CPU 1がページワン宣言を忘れたためペナルティ！ (+2枚)")
+	})
+
+	t.Run("no penalty line when no penalties (negative control)", func(t *testing.T) {
+		m, _ := setupPageOneCuiMockWithPlayers()
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "ペナルティ！")
+	})
+
+	t.Run("multiple penalties shown for all players", func(t *testing.T) {
+		m, _ := setupPageOneCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRecentPenalties")
+		m.On("GetRecentPenalties").Return([]domain.PageOnePenalty{
+			{PlayerIdx: 1, CardCount: 2},
+			{PlayerIdx: 2, CardCount: 2},
+		})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "CPU 1, CPU 2がページワン宣言を忘れたためペナルティ！ (+2枚)")
+	})
+
+	t.Run("penalty line shown for human", func(t *testing.T) {
+		m, _ := setupPageOneCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRecentPenalties")
+		m.On("GetRecentPenalties").Return([]domain.PageOnePenalty{
+			{PlayerIdx: 0, CardCount: 2},
+		})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "あなたがページワン宣言を忘れたためペナルティ！ (+2枚)")
 	})
 }
 

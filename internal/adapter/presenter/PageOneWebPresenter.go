@@ -1,9 +1,13 @@
 package presenter
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // PageOneWebPresenter ページワンWebプレゼンタークラス
@@ -66,6 +70,18 @@ func (p *PageOneWebPresenter) buildMessage(g interfaces.PageOneGame, lastErr err
 		isHuman := player != nil && player.GetIsHuman()
 		return buildWinnerWebMessage("pageone", winnerIdx, isHuman)
 	}
+	// **ペナルティはフェーズ名より先に出す。**棋譜は既定で畳まれているので、
+	// ここで譲ると手札が 2 枚増えたことに次のターンまで気づけない (#6333)。
+	if penalties := g.GetRecentPenalties(); len(penalties) > 0 {
+		names := make([]string, 0, len(penalties))
+		for _, pen := range penalties {
+			names = append(names, pageOnePenaltyPlayerName(g.GetPlayer(pen.PlayerIdx), pen.PlayerIdx))
+		}
+		return "", "pageone.penaltyApplied", map[string]string{
+			"name":  strings.Join(names, ", "),
+			"count": strconv.Itoa(domain.PageOnePenaltyDraw),
+		}
+	}
 	switch g.GetPhase() {
 	case domain.PageOnePhasePlay:
 		return "", "pageone.playPhase", nil
@@ -86,4 +102,17 @@ func (p *PageOneWebPresenter) ActionLogOutput(g interfaces.PageOneGame) string {
 // 状態出力にフォールバックする (CUI プレゼンターのみが専用ヒントを返す)。
 func (p *PageOneWebPresenter) HintOutput(g interfaces.PageOneGame) string {
 	return p.Output(g, nil)
+}
+
+// pageOnePenaltyPlayerName は messageParams に載せる表示名を返す。
+//
+// 名前は {{name}} としてそのまま画面に出るので、ここで訳しておかないと
+// 英語でプレイしていても日本語の名前が出る。共通の cuiPlayerYou /
+// cuiPlayerCpu を使うのは、同じ相手が画面ごとに別の名前で出ないため。
+// CUI 側の cuiPlayerName は ANSI の装飾を混ぜるので JSON には渡せない。
+func pageOnePenaltyPlayerName(player *domain.PageOnePlayer, idx int) string {
+	if player != nil && player.GetIsHuman() {
+		return i18n.T("cuiPlayerYou")
+	}
+	return i18n.Tf("cuiPlayerCpu", "idx", strconv.Itoa(idx))
 }

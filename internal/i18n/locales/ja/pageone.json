@@ -21,6 +21,7 @@
   "cmdDeclare": "declare・・・「ページワン！」と宣言する",
   "cmdSkip": "skip・・・宣言をスキップ（ペナルティ: 2枚引く）",
   "roundEnd": "ラウンド終了",
+  "penaltyApplied": "{{name}}がページワン宣言を忘れたためペナルティ！ (+{{count}}枚)",
   "cmdNextRound": "nr / nextround・・・次のラウンドへ",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "hintNone": "現在ヒントはありません。",

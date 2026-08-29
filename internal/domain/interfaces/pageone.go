@@ -51,4 +51,6 @@ type PageOneGame interface {
 	GetPlayer(i int) *domain.PageOnePlayer
 	// IsValidPlay カードが現在の場状態でプレイ可能かを返す
 	IsValidPlay(card *domain.Card) bool
+	// GetRecentPenalties 直前ターンで発生したペナルティ一覧を取得する
+	GetRecentPenalties() []domain.PageOnePenalty
 }
