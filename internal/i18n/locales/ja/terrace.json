@@ -40,5 +40,21 @@
   "helpExampleHint": "  h                        次の一手を教えてもらう",
   "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る",
   "invalidUndoCount": "無効なアンドゥ回数です: {{val}}（1以上の整数を指定してください）",
-  "helpUndoN": "  undo <n>                 n手まとめて戻す（手詰まりからの脱出用）"
+  "helpUndoN": "  undo <n>                 n手まとめて戻す（手詰まりからの脱出用）",
+  "errNotPlaying": "プレイ中ではありません",
+  "errStockEmpty": "山札が空で、再配布もありません",
+  "errReserveEmpty": "リザーブが空です",
+  "errWasteEmpty": "捨て札が空です",
+  "errCannotPlaceFoundation": "基礎札に置くことはできません",
+  "errCannotPlaceTableau": "その列には置けません",
+  "errSamePile": "移動元と移動先が同じ列です",
+  "errEmptyPileFill": "空の列は捨て札か山札からしか埋められません",
+  "errNoAuto": "自動で送れる札がありません",
+  "errNothingToUndo": "取り消せる手がありません",
+  "errSnapshotArrayTooLarge": "スナップショットの配列が最大サイズを超えています",
+  "errSnapshotPileTooLarge": "スナップショットの列が最大サイズを超えています",
+  "errInputArrayTooLarge": "入力の配列が最大サイズを超えています",
+  "errReserveStockWasteTooLarge": "リザーブ/山札/捨て札の枚数が多すぎます",
+  "errBadColumn": "列番号が不正です",
+  "errEmptyPile": "その列は空です"
 }
