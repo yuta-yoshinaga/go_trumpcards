@@ -120,6 +120,68 @@ func TestTwoTenJackCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "CLOVER 3")
 	})
+
+	t.Run("team total correctness", func(t *testing.T) {
+		m, players := setupTTJCuiMock()
+		// Different points for each seat.
+		// Seat 0 (Team 0): cum 1, pt 10
+		// Seat 1 (Team 1): cum 2, pt 20
+		// Seat 2 (Team 0): cum 3, pt 30
+		// Seat 3 (Team 1): cum 4, pt 40
+
+		players[0].SetCumulativeScore(1)
+		players[0].AddTrick(ttjPointCards(1))
+		players[1].SetCumulativeScore(2)
+		players[1].AddTrick(ttjPointCards(2))
+		players[2].SetCumulativeScore(3)
+		players[2].AddTrick(ttjPointCards(3))
+		players[3].SetCumulativeScore(4)
+		players[3].AddTrick(ttjPointCards(4))
+
+		// Expected:
+		// Team 0: cum 4 (1+3), pt 40 (10+30)
+		// Team 1: cum 6 (2+4), pt 60 (20+40)
+
+		result := p.Output(m, nil)
+
+		// Assert player lines didn't disappear
+		assert.Contains(t, result, "あなた (チーム0): 獲得1トリック 点札10点 累積1点 ラウンド0点 0枚")
+		assert.Contains(t, result, "CPU 1 (チーム1): 獲得1トリック 点札20点 累積2点 ラウンド0点 0枚")
+		assert.Contains(t, result, "CPU 2 (チーム0): 獲得1トリック 点札30点 累積3点 ラウンド0点 0枚")
+		assert.Contains(t, result, "CPU 3 (チーム1): 獲得1トリック 点札40点 累積4点 ラウンド0点 0枚")
+
+		// Assert team totals
+		assert.Contains(t, result, "チーム0 合計: 点札40点 累積4点")
+		assert.Contains(t, result, "チーム1 合計: 点札60点 累積6点")
+	})
+
+	t.Run("team total is shown at round end", func(t *testing.T) {
+		m, players := setupTTJCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TwoTenJackPhaseRoundEnd)
+
+		players[0].SetCumulativeScore(10)
+		players[0].AddTrick(ttjPointCards(10))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "チーム0 合計: 点札100点 累積10点")
+		assert.Contains(t, result, "ラウンド終了")
+	})
+
+	t.Run("team total is shown at game end", func(t *testing.T) {
+		m, players := setupTTJCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerTeam")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerTeam").Return(0)
+
+		players[0].SetCumulativeScore(10)
+		players[0].AddTrick(ttjPointCards(10))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "チーム0 合計: 点札100点 累積10点")
+		assert.Contains(t, result, "ゲーム終了")
+	})
 }
 
 func TestTwoTenJackCuiPresenter_HintOutput(t *testing.T) {
@@ -170,4 +232,14 @@ func TestTwoTenJackCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetGameEndFlag").Return(false)
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "棋譜はありません")
+}
+
+// ttjPointCards returns n ten-point cards, the shorthand these tests use to give
+// a seat a chosen GetCapturedPointCards() value (each ten is worth 10).
+func ttjPointCards(n int) []*domain.Card {
+	cards := make([]*domain.Card, n)
+	for i := range cards {
+		cards[i] = domain.NewCard(domain.CardDesignSpade, 10, false)
+	}
+	return cards
 }

@@ -15,6 +15,7 @@
   "trumpLine": "Trump: {{suit}}  Declarer: {{declarer}}",
   "trumpUnset": "Undeclared",
   "playerLine": "{{name}} (Team {{team}}): tricks={{tricks}} points={{points}} cumulative={{cum}} round={{round}} cards={{cards}}",
+  "teamLine": "Team {{team}} Total: points={{points}} cumulative={{cum}}",
   "gameEnd": "Game over! Team {{team}} wins!",
   "promptDeclare": "Declare trump: {{name}} to act",
   "promptDeclareHelp": "d <s>: declare trump (1=S, 2=C, 3=H, 4=D)",
