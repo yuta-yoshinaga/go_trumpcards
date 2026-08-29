@@ -41,6 +41,8 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
 const TABLEAU_COLS = 8;
 const TOTAL_CARDS = 104;
+/** 山札を通せる最大回数。domain の `AmericanToadMaxPasses`。 */
+const MAX_PASSES = 2;
 
 const AT_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="at-reserve"]', messageKey: 'tutorial.reserve', placement: 'bottom', advanceOn: 'next' },
@@ -313,6 +315,9 @@ function AmericanToadPageContent() {
           </span>
           <span className="text-sm text-ds-text-muted">
             {t('moveCount')}: {state.moveCount}
+          </span>
+          <span className="text-sm text-ds-text-muted">
+            {t('passCount', { current: state.passesUsed + 1, max: MAX_PASSES })}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>

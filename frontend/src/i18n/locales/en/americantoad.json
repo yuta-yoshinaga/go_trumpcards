@@ -35,6 +35,7 @@
   "landscapeBanner": "Landscape orientation is recommended",
   "moveCount": "Moves",
   "noHint": "No hint available",
+  "passCount": "Pass: {{current}}/{{max}}",
   "phase": {
     "playing": "Playing",
     "gameClear": "Game Clear",
