@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fiftyoneApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -13,6 +14,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -166,15 +168,40 @@ function FiftyOnePageContent() {
   const suitTotals = useMemo(() => fiftyOneSuitScores(humanCards ?? []), [humanCards]);
   const bestSuit = useMemo(() => fiftyOneBestSuit(suitTotals), [suitTotals]);
 
+  const isGameEnd = state ? state.gameEndFlag || state.phase === FiftyOnePhase.GAME_END : false;
+  const isHumanTurn = state ? state.currentTurn === 0 && !isGameEnd : false;
+  const canExchange = isHumanTurn && selectedHandIdx !== null && selectedTableIdx !== null;
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'p', action: handleExchange, enabled: canExchange, label: 'exchange' },
+      { key: 'a', action: handleExchangeAll, enabled: isHumanTurn, label: 'exchangeAll' },
+      { key: 's', action: handleStop, enabled: isHumanTurn && (state?.stopCallerIdx ?? -1) < 0, label: 'stop' },
+      { key: 'r', action: handleReset, enabled: isGameEnd, label: 'reset' },
+    ],
+    [
+      handleExchange,
+      canExchange,
+      handleExchangeAll,
+      isHumanTurn,
+      handleStop,
+      state?.stopCallerIdx,
+      handleReset,
+      isGameEnd,
+    ],
+  );
+
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: !!state && !loading,
+  });
+
   if (!state || state.players.length < 4)
     return <GameSkeleton gameKey="fiftyone" layout={{ kind: 'centered', rows: [5, 5] }} />;
 
-  const isGameEnd = state.gameEndFlag || state.phase === FiftyOnePhase.GAME_END;
   const humanWon = isGameEnd && state.winnerIdx === 0;
-  const isHumanTurn = state.currentTurn === 0 && !isGameEnd;
   const human = state.players[0];
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');
-  const canExchange = isHumanTurn && selectedHandIdx !== null && selectedTableIdx !== null;
   const exchangeGuide = !isHumanTurn
     ? ''
     : selectedHandIdx === null
@@ -390,6 +417,7 @@ function FiftyOnePageContent() {
                 hideActionLog={hideActionLog}
               />
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="fifty-one-kbd-shortcuts" />
             {/* Always rendered so the footer height stays stable while selections toggle. */}
             <p className="text-xs text-ds-text-muted text-center mt-1 mb-0 min-h-4" role="note">
               {exchangeGuide}
