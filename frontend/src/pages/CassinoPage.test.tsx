@@ -508,4 +508,20 @@ describe('CassinoPage action history', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('cs-action-log')).not.toBeInTheDocument();
   });
+  // 難易度の選択肢はモジュールトップレベルの定数で英語直書きだったので、
+  // 日本語UIでも Easy/Normal/Hard のままだった (#6345)。
+  //
+  // **キー名ではなく解決後の文言を見る。** i18next は未知のキーに対して
+  // キー文字列をそのまま返すので、キーと比べると翻訳が無くても通ってしまう。
+  it('translates the CPU difficulty choices instead of hardcoding English', async () => {
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    for (const label of ['やさしい', 'ふつう', 'むずかしい']) {
+      expect(screen.getByRole('option', { name: label })).toBeInTheDocument();
+    }
+    // 英語直書きの残骸も、未解決のキーも画面に出てはいけない。
+    expect(screen.queryByRole('option', { name: 'Easy' })).not.toBeInTheDocument();
+    expect(document.body.textContent).not.toContain('settings.difficulty');
+  });
 });
