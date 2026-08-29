@@ -70,5 +70,6 @@
     "schwarz": "シュヴァルツ"
   },
   "scoreBreakdownDoubled": "内訳: 基礎点 {{base}} × 乗数 {{multiplier}} × 2（敗北のため2倍・マタドール {{matadors}}）= {{value}}",
-  "scoreBreakdownOverbid": "内訳: オーバービッド — 入札 {{bid}} × 2 = {{value}}（基礎点 {{base}} × 乗数 {{multiplier}} では入札に届かなかった）"
+  "scoreBreakdownOverbid": "内訳: オーバービッド — 入札 {{bid}} × 2 = {{value}}（基礎点 {{base}} × 乗数 {{multiplier}} では入札に届かなかった）",
+  "scoreBreakdownNull": "内訳: 基礎点 {{base}}（乗数なし）= {{value}}"
 }
