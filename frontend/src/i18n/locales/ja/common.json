@@ -2691,7 +2691,21 @@
     "continentalrummy.errNotAGoOut": "その 15 枚は認められた形になりません。3+3+3+3+3 / 4+4+4+3 / 5+4+3+3 のいずれかに揃える必要があります（セットは組になりません）。",
     "continentalrummy.invalidRounds": "無効なラウンド数です: {{val}}。1〜10 を指定してください。",
     "continentalrummy.invalidDifficulty": "無効な難易度です: {{val}}。0〜2 を指定してください。",
-    "videopoker.chipsRefilled": "残高が最低ベットを下回ったため、{{chips}}コインを補充しました"
+    "videopoker.chipsRefilled": "残高が最低ベットを下回ったため、{{chips}}コインを補充しました",
+    "yukon.errNotPlaying": "プレイ中ではありません",
+    "yukon.errBadFromColumn": "移動元の列番号が不正です",
+    "yukon.errBadToColumn": "移動先の列番号が不正です",
+    "yukon.errSameColumn": "移動元と移動先が同じ列です",
+    "yukon.errBadCardIndex": "その列にその番号の札はありません",
+    "yukon.errCardFaceDown": "裏向きの札は動かせません",
+    "yukon.errCannotPlaceTableau": "タブローは色違いで1つ下の札にしか重ねられません",
+    "yukon.errBadColumn": "列番号が不正です",
+    "yukon.errColumnEmpty": "その列は空です",
+    "yukon.errBadFoundationCard": "基礎札に送れる札ではありません",
+    "yukon.errCannotPlaceFoundation": "基礎札は同じスートで1つ上の札にしか置けません",
+    "yukon.errNotAllFaceUp": "裏向きの札が残っているため自動で完成させられません",
+    "yukon.errUndoNotPlaying": "プレイ中ではないため取り消せません",
+    "yukon.errNothingToUndo": "取り消せる手がありません"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

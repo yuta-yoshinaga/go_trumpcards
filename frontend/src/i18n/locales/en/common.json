@@ -2691,7 +2691,21 @@
     "continentalrummy.errNotAGoOut": "Those fifteen cards do not form a legal go-out. They must split as 3+3+3+3+3, 4+4+4+3 or 5+4+3+3 (sets are never melds).",
     "continentalrummy.invalidRounds": "Invalid number of rounds: {{val}}. Please enter 1-10.",
     "continentalrummy.invalidDifficulty": "Invalid difficulty: {{val}}. Please enter 0-2.",
-    "videopoker.chipsRefilled": "Your balance fell below the minimum bet, so it was topped up to {{chips}}"
+    "videopoker.chipsRefilled": "Your balance fell below the minimum bet, so it was topped up to {{chips}}",
+    "yukon.errNotPlaying": "The game is not in play.",
+    "yukon.errBadFromColumn": "That source column does not exist.",
+    "yukon.errBadToColumn": "That destination column does not exist.",
+    "yukon.errSameColumn": "The source and destination columns are the same.",
+    "yukon.errBadCardIndex": "That column has no card at that index.",
+    "yukon.errCardFaceDown": "A face-down card cannot be moved.",
+    "yukon.errCannotPlaceTableau": "A tableau card only goes on a card of the opposite colour, one rank higher.",
+    "yukon.errBadColumn": "That column does not exist.",
+    "yukon.errColumnEmpty": "That column is empty.",
+    "yukon.errBadFoundationCard": "That card cannot go to a foundation.",
+    "yukon.errCannotPlaceFoundation": "A foundation only takes the same suit, one rank higher.",
+    "yukon.errNotAllFaceUp": "Cards are still face down, so the game cannot be finished automatically.",
+    "yukon.errUndoNotPlaying": "The game is not in play, so there is nothing to undo.",
+    "yukon.errNothingToUndo": "There is no move to undo."
   },
   "manual": {
     "ariaLabel": "Game Manual",
