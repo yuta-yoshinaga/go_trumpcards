@@ -46,7 +46,7 @@ func (p *BuraCuiPresenter) Output(b interfaces.BuraGame, lastErr error) string {
 		}
 		sb.WriteString(i18n.Tf("bura.targetLine",
 			"target", strconv.Itoa(domain.BuraWinThreshold)) + "\n")
-		if line := buraWinningCombosLine(); line != "" {
+		if line := buraWinningCombosLine(domain.BuraWinningCombinations()); line != "" {
 			sb.WriteString(line + "\n")
 		}
 
@@ -138,11 +138,13 @@ func (p *BuraCuiPresenter) ActionLogOutput(b interfaces.BuraGame) string {
 	return actionLogOutputTextForSeats[*domain.BuraPlayer](b)
 }
 
-// buraWinningCombosLine はドメイン定義の役一覧から表示行を生成する。
-// 役の定義順・一覧は domain.BuraWinningCombinations() を唯一の出所とし、
+// buraWinningCombosLine は渡された役一覧から表示行を生成する。
 // 未翻訳キー（i18n.T がキー名をそのまま返した場合）や空キーは黙って落とす。
-func buraWinningCombosLine() string {
-	combos := domain.BuraWinningCombinations()
+//
+// 一覧を引数で受けるのは、落とす側の 2 分岐 (空キー・訳なし) を直接試せるようにするため。
+// 呼び出し側は必ず domain.BuraWinningCombinations() を渡す —— 役の一覧をここに
+// 書き写すと、役を足したときに案内だけが黙って古くなる (Bura.go:192-195)。
+func buraWinningCombosLine(combos []domain.BuraCombination) string {
 	parts := make([]string, 0, len(combos))
 	for _, c := range combos {
 		key := c.Key()

@@ -71,7 +71,7 @@ func TestBuraCuiPresenter_ShowsWinningCombinationsFromDomainSource_English(t *te
 }
 
 func TestBuraCuiPresenter_WinningCombosLine_DropsUntranslatedSilently(t *testing.T) {
-	line := buraWinningCombosLine()
+	line := buraWinningCombosLine(domain.BuraWinningCombinations())
 	assert.NotEmpty(t, line)
 	assert.NotContains(t, line, "bura.combo.")
 }
@@ -142,4 +142,27 @@ func TestBuraCuiPresenter_ActionLogRenders(t *testing.T) {
 	b.Reset()
 	require.NoError(t, b.Claim(0))
 	assert.NotEmpty(t, new(BuraCuiPresenter).ActionLogOutput(b))
+}
+
+// TestBuraWinningCombosLine_DropsWhatItCannotName は落とす側の 2 分岐を直接見る。
+//
+// Output 経由では、実在する 4 役はどれもキーを持ち訳もあるので、
+// 「キーが空」も「訳が 1 つも無い」も一度も通らない。
+func TestBuraWinningCombosLine_DropsWhatItCannotName(t *testing.T) {
+	i18n.SetLang("ja")
+
+	t.Run("a combination with no key is dropped", func(t *testing.T) {
+		line := buraWinningCombosLine([]domain.BuraCombination{
+			domain.BuraCombinationNone,
+			domain.BuraCombinationBura,
+		})
+		assert.Contains(t, line, i18n.T("bura.combo.bura"))
+		assert.NotContains(t, line, "bura.combo.")
+	})
+
+	t.Run("nothing nameable means no line at all", func(t *testing.T) {
+		// 役なししか無ければ出す中身が無い。空行を出しても読めない。
+		assert.Empty(t, buraWinningCombosLine([]domain.BuraCombination{domain.BuraCombinationNone}))
+		assert.Empty(t, buraWinningCombosLine(nil))
+	})
 }
