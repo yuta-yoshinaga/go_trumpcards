@@ -4,7 +4,6 @@ package domain
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 )
 
@@ -111,32 +110,32 @@ func (y *Yukon) Reset() {
 // MoveTableauToTableau タブローからタブローにカードを移動
 func (y *Yukon) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	if y.phase != YukonPhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "yukon.errNotPlaying", nil)
 	}
 	if fromCol < 0 || fromCol >= YukonTableauCnt {
-		return errors.New("invalid from column")
+		return NewDomainErrorCode(ErrInvalidPlay, "yukon.errBadFromColumn", nil)
 	}
 	if toCol < 0 || toCol >= YukonTableauCnt {
-		return errors.New("invalid to column")
+		return NewDomainErrorCode(ErrInvalidPlay, "yukon.errBadToColumn", nil)
 	}
 	if fromCol == toCol {
-		return errors.New("from and to columns are the same")
+		return NewDomainErrorCode(ErrInvalidPlay, "yukon.errSameColumn", nil)
 	}
 	fromCards := y.tableau[fromCol]
 	if cardIndex == -1 {
 		cardIndex = len(fromCards) - 1
 	}
 	if cardIndex < 0 || cardIndex >= len(fromCards) {
-		return errors.New("invalid card index")
+		return NewDomainErrorCode(ErrInvalidPlay, "yukon.errBadCardIndex", nil)
 	}
 	tc := fromCards[cardIndex]
 	if !tc.FaceUp {
-		return errors.New("card is face down")
+		return NewDomainErrorCode(ErrInvalidPlay, "yukon.errCardFaceDown", nil)
 	}
 	// Yukon: 移動先のルールのみチェック（移動するカード群の整列は不要）
 	bottomCard := tc.Card
 	if !y.canPlaceOnTableau(bottomCard, toCol) {
-		return errors.New("cannot place card on tableau")
+		return NewDomainErrorCode(ErrInvalidPlay, "yukon.errCannotPlaceTableau", nil)
 	}
 	// 移動実行
 	y.takeSnapshot()
@@ -158,23 +157,23 @@ func (y *Yukon) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 // MoveTableauToFoundation タブローからファンデーションにカードを移動
 func (y *Yukon) MoveTableauToFoundation(col int) error {
 	if y.phase != YukonPhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "yukon.errNotPlaying", nil)
 	}
 	if col < 0 || col >= YukonTableauCnt {
-		return errors.New("invalid column")
+		return NewDomainErrorCode(ErrInvalidPlay, "yukon.errBadColumn", nil)
 	}
 	fromCards := y.tableau[col]
 	if len(fromCards) == 0 {
-		return errors.New("tableau column is empty")
+		return NewDomainErrorCode(ErrInvalidPlay, "yukon.errColumnEmpty", nil)
 	}
 	tc := fromCards[len(fromCards)-1]
 	card := tc.Card
 	fIdx := card.GetDesign() - 1
 	if fIdx < 0 || fIdx >= YukonFoundationCnt {
-		return errors.New("invalid card for foundation")
+		return NewDomainErrorCode(ErrInvalidPlay, "yukon.errBadFoundationCard", nil)
 	}
 	if !y.canPlaceOnFoundation(card, fIdx) {
-		return errors.New("cannot place card on foundation")
+		return NewDomainErrorCode(ErrInvalidPlay, "yukon.errCannotPlaceFoundation", nil)
 	}
 	y.takeSnapshot()
 	y.tableau[col] = fromCards[:len(fromCards)-1]
@@ -285,10 +284,10 @@ func (y *Yukon) GetHint() *YukonHint {
 // AutoComplete オートコンプリート（全カード表向きの場合に自動でファンデーションへ移動）
 func (y *Yukon) AutoComplete() error {
 	if y.phase != YukonPhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "yukon.errNotPlaying", nil)
 	}
 	if !y.AllFaceUp() {
-		return errors.New("not all cards are face up")
+		return NewDomainErrorCode(ErrInvalidPlay, "yukon.errNotAllFaceUp", nil)
 	}
 	y.takeSnapshot()
 	for {
@@ -368,10 +367,10 @@ func (y *Yukon) SetFoundation(foundation [YukonFoundationCnt][]*Card) {
 // Undo 直前の操作を取り消す
 func (y *Yukon) Undo() error {
 	if y.phase != YukonPhasePlaying {
-		return errors.New("cannot undo: game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "yukon.errUndoNotPlaying", nil)
 	}
 	if len(y.history) == 0 {
-		return errors.New("cannot undo: no history")
+		return NewDomainErrorCode(ErrInvalidPlay, "yukon.errNothingToUndo", nil)
 	}
 	snap := y.history[len(y.history)-1]
 	y.history = y.history[:len(y.history)-1]
