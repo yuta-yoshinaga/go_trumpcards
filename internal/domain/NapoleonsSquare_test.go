@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -534,4 +535,63 @@ func TestNapoleonsSquare_IsRunHandlesNilCards(t *testing.T) {
 	assert.False(t, napoleonsSquareIsRun([]*NapoleonsSquareTableauCard{
 		{Card: NewCard(CardDesignSpade, 5, true)}, {Card: nil},
 	}), "a nil card is never part of a run")
+}
+
+func TestNapoleonsSquare_ErrorsCarryAnI18nCode(t *testing.T) {
+	codeOf := func(t *testing.T, err error) string {
+		t.Helper()
+		if err == nil {
+			return ""
+		}
+		code, _ := ErrorMessageCode(err)
+		return code
+	}
+
+	t.Run("every refusal names a key instead of an English sentence", func(t *testing.T) {
+		cases := []struct {
+			name string
+			run  func(ns *NapoleonsSquare) error
+		}{
+			{"draw empty stock", func(ns *NapoleonsSquare) error {
+				for ns.GetStockCount() > 0 {
+					_ = ns.Draw()
+				}
+				return ns.Draw()
+			}},
+			{"move from a column that does not exist", func(ns *NapoleonsSquare) error {
+				return ns.MoveTableauToTableau(-1, 0, 0)
+			}},
+			{"move to a column that does not exist", func(ns *NapoleonsSquare) error {
+				return ns.MoveTableauToTableau(0, NapoleonsSquareTableauCnt, 0)
+			}},
+			{"move a column onto itself", func(ns *NapoleonsSquare) error {
+				return ns.MoveTableauToTableau(0, 0, 0)
+			}},
+			{"send a card up from a column that does not exist", func(ns *NapoleonsSquare) error {
+				return ns.MoveTableauToFoundation(-1)
+			}},
+			{"undo with nothing to undo", func(ns *NapoleonsSquare) error {
+				return ns.Undo()
+			}},
+			// 公開の入口を1つでも外すと、そこだけ素の英語が残っても誰も気付かない。
+			// 実際、この2件を足す前は MoveWasteTo* の拒否を一度も踏んでいなかった。
+			{"put the waste on a column that does not exist", func(ns *NapoleonsSquare) error {
+				return ns.MoveWasteToTableau(-1)
+			}},
+			{"send the waste up with an empty waste", func(ns *NapoleonsSquare) error {
+				return ns.MoveWasteToFoundation()
+			}},
+		}
+		for _, tc := range cases {
+			t.Run(tc.name, func(t *testing.T) {
+				ns := newTestNapoleonsSquare()
+				err := tc.run(ns)
+				require.Error(t, err, "この操作は拒否されるはずで、拒否されないと何も測れない")
+				code := codeOf(t, err)
+				assert.NotEmpty(t, code, "コードが無いと CUI は英語をそのまま出す")
+				assert.Truef(t, strings.HasPrefix(code, "napoleonssquare."),
+					"キーは napoleonssquare 名前空間に置く (got %q)", code)
+			})
+		}
+	})
 }
