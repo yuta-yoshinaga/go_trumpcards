@@ -15,6 +15,7 @@
   "trumpLine": "トランプ: {{suit}}  宣言者: {{declarer}}",
   "trumpUnset": "未宣言",
   "playerLine": "{{name}} (チーム{{team}}): 獲得{{tricks}}トリック 点札{{points}}点 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚",
+  "teamLine": "チーム{{team}} 合計: 点札{{points}}点 累積{{cum}}点",
   "gameEnd": "ゲーム終了！ チーム{{team}}の勝利です！",
   "promptDeclare": "宣言フェーズ: {{name}}の番",
   "promptDeclareHelp": "d <s>・・・トランプ宣言 (1=S, 2=C, 3=H, 4=D)",
