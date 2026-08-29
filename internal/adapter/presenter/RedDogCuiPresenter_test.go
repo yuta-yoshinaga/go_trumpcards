@@ -119,25 +119,32 @@ func TestRedDogCuiPresenter_Output_EndWin(t *testing.T) {
 	assert.Contains(t, result, "THIRD")
 	assert.Contains(t, result, "レイズ: 100")
 	assert.Contains(t, result, "合計払戻し: 400")
+	assert.Contains(t, result, "当たりランク: 6, 7, 8, 9 (引いたカード: 7 で的中)")
 }
 
 func TestRedDogCuiPresenter_Output_EndLose(t *testing.T) {
 	p := new(RedDogCuiPresenter)
 	m := new(interfaces.MockRedDogGame)
-	setupRedDogCuiMockDefaults(m)
-	m2 := new(interfaces.MockRedDogGame)
-	m2.On("GetChips").Return(900)
-	m2.On("GetPhase").Return(domain.RedDogPhaseEnd)
-	m2.On("GetInitialCards").Return(([]*domain.Card)(nil))
-	m2.On("GetThirdCard").Return((*domain.Card)(nil))
-	m2.On("GetGameEndFlag").Return(true)
-	m2.On("GetAnte").Return(100)
-	m2.On("GetRaise").Return(0)
-	m2.On("GetSpread").Return(3)
-	m2.On("GetResult").Return(domain.GameResultLose)
-	m2.On("GetTotalPayout").Return(0)
-	result := p.Output(m2, nil)
+	cards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignHeart, 10, false),
+	}
+	third := domain.NewCard(domain.CardDesignClover, 12, false)
+	m.On("GetChips").Return(900)
+	m.On("GetPhase").Return(domain.RedDogPhaseEnd)
+	m.On("GetInitialCards").Return(cards)
+	m.On("GetThirdCard").Return(third)
+	m.On("GetGameEndFlag").Return(true)
+	m.On("GetAnte").Return(100)
+	m.On("GetRaise").Return(0)
+	m.On("GetSpread").Return(4)
+	m.On("GetResult").Return(domain.GameResultLose)
+	m.On("GetTotalPayout").Return(0)
+
+	result := p.Output(m, nil)
 	assert.Contains(t, result, "プレイヤーの負け")
+	assert.Contains(t, result, "当たりランク: 6, 7, 8, 9 (外れ)")
+	assert.NotContains(t, result, "で的中)")
 }
 
 func TestRedDogCuiPresenter_Output_EndPush(t *testing.T) {
@@ -155,6 +162,29 @@ func TestRedDogCuiPresenter_Output_EndPush(t *testing.T) {
 	m.On("GetTotalPayout").Return(100)
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "プッシュ")
+}
+
+func TestRedDogCuiPresenter_Output_End_SpreadZero(t *testing.T) {
+	p := new(RedDogCuiPresenter)
+	m := new(interfaces.MockRedDogGame)
+	cards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignHeart, 6, false),
+	}
+	third := domain.NewCard(domain.CardDesignClover, 12, false)
+	m.On("GetChips").Return(900)
+	m.On("GetPhase").Return(domain.RedDogPhaseEnd)
+	m.On("GetInitialCards").Return(cards)
+	m.On("GetThirdCard").Return(third)
+	m.On("GetGameEndFlag").Return(true)
+	m.On("GetAnte").Return(100)
+	m.On("GetRaise").Return(0)
+	m.On("GetSpread").Return(0)
+	m.On("GetResult").Return(domain.GameResultDraw)
+	m.On("GetTotalPayout").Return(100)
+
+	result := p.Output(m, nil)
+	assert.NotContains(t, result, "当たりランク:")
 }
 
 func TestRedDogCuiPresenter_PhaseStr_AllBranches(t *testing.T) {
@@ -275,4 +305,37 @@ func TestRedDogCuiPresenter_Output_Paytable(t *testing.T) {
 	header := i18n.T("reddog.paytableHeader")
 	assert.NotContains(t, outputInPhase(domain.RedDogPhaseSpreadDecision), header)
 	assert.NotContains(t, outputInPhase(domain.RedDogPhaseEnd), header)
+}
+
+// TestRedDogCuiPresenter_Output_EndPairDealShowsNoGuide はペア初手の局で
+// 案内が出ないことを見る。
+//
+// ペアの局は「間に入ったか」ではなく「ペアと同じランクを引いたか」で決まる
+// (RedDog.go:206)。当たりランクの一覧はその規則を説明していないので、勝った局でも
+// 出してはいけない。案内側は GetResult() を「間に入ったか」として読んでいるので、
+// この除外が外れると、ペアを引いて勝った局に的外れなランク一覧が出る。
+func TestRedDogCuiPresenter_Output_EndPairDealShowsNoGuide(t *testing.T) {
+	i18n.SetLang("ja")
+	rd := new(interfaces.MockRedDogGame)
+	rd.On("GetChips").Return(1100).Maybe()
+	rd.On("GetPhase").Return(domain.RedDogPhaseEnd).Maybe()
+	rd.On("GetAnte").Return(100).Maybe()
+	rd.On("GetRaise").Return(0).Maybe()
+	rd.On("GetSpread").Return(0).Maybe()
+	// 初期2枚が同ランク＝ペア初手。3枚目も同ランクで勝ち。
+	rd.On("GetInitialCards").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignHeart, 5, false),
+	}).Maybe()
+	rd.On("GetThirdCard").Return(domain.NewCard(domain.CardDesignClover, 5, false)).Maybe()
+	rd.On("GetResult").Return(domain.GameResultWin).Maybe()
+	rd.On("GetTotalPayout").Return(1200).Maybe()
+	rd.On("GetGameEndFlag").Return(true).Maybe()
+	rd.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+
+	p := new(RedDogCuiPresenter)
+	out := p.Output(rd, nil)
+
+	assert.Contains(t, out, "プレイヤーの勝ち", "前提: ペアを引き当てて勝っている")
+	assert.NotContains(t, out, "当たりランク:", "ペアの局に間のランクの案内を出さない")
 }

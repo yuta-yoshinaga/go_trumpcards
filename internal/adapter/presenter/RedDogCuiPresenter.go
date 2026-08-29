@@ -77,6 +77,28 @@ func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 		sb.WriteString(i18n.Tf("reddog.cuiSpreadGuide",
 			"ranks", redDogWinningRanksStr(rd.GetInitialCards())) + "\n")
 	}
+	if rd.GetPhase() == domain.RedDogPhaseEnd {
+		initial, third := rd.GetInitialCards(), rd.GetThirdCard()
+		// 一覧が空になるのは、初期2枚が隣接しているか同ランクのとき。
+		// 「当たりランク:  (外れ)」は読めないので出さない。
+		//
+		// この空判定は**ペア初手の局を丸ごと除外する**役目も負っている。ペアの局は
+		// 「間に入ったか」ではなく「ペアと同じランクを引いたか」で決まり (RedDog.go:206)、
+		// 外すと勝ちでなく引き分けになる。そこに当たりランクの案内を出すと嘘になる。
+		// 除外されているからこそ、下で GetResult() を「間に入ったか」として読める。
+		if ranksStr := redDogWinningRanksStr(initial); third != nil && ranksStr != "" {
+			// 判定はドメインの結果をそのまま使う。ここで範囲を数え直すと規則の写しが
+			// 2 つになり、片方だけ動いたときに「一覧に載っているランクを外れと呼ぶ」
+			// 案内になる。
+			if rd.GetResult() == domain.GameResultWin {
+				sb.WriteString(i18n.Tf("reddog.cuiEndGuideHit",
+					"ranks", ranksStr,
+					"hitRank", redDogRankLabel(redDogRankOf(third))) + "\n")
+			} else {
+				sb.WriteString(i18n.Tf("reddog.cuiEndGuideMiss", "ranks", ranksStr) + "\n")
+			}
+		}
+	}
 
 	// 配当表。Web はベット前に常設しているのに、CUI はベット額を決める材料が
 	// スプレッドの広さだけだった (#5539)。賭け終わった後は出さない。
