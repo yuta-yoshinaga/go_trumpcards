@@ -33,6 +33,7 @@
   "kingsOnly": "K only",
   "landscapeBanner": "Landscape orientation is recommended",
   "moveCount": "Moves",
+  "foundationProgress": "Foundations: {{count}}/{{total}} ({{percent}}%)",
   "noHint": "No hint available",
   "phase": {
     "playing": "Playing",
