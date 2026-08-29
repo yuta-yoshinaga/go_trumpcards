@@ -25,7 +25,7 @@
   "redealsLeft": "めくり直し残り{{count}}回",
   "foundationAriaLabel": "組札{{idx}} {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札{{idx}}",
-  "braidAriaLabel": "ブレイド 残り{{count}}枚（末尾のみ・組札にのみ出せます）",
+  "braidAriaLabel": "ブレイド {{card}} 残り{{count}}枚（末尾のみ・組札にのみ出せます）",
   "emptyBraidAriaLabel": "ブレイドは空です",
   "fieldAriaLabel": "ブレイド札{{idx}}",
   "emptyFieldAriaLabel": "空のブレイド札{{idx}}（ブレイドから自動で補充されます）",
