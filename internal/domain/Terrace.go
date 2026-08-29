@@ -4,7 +4,6 @@ package domain
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 )
 
@@ -171,7 +170,7 @@ func (t *Terrace) Draw() error {
 		return err
 	}
 	if len(t.stock) == 0 {
-		return errors.New("stock is empty and there is no redeal")
+		return NewDomainErrorCode(ErrDeckExhausted, "terrace.errStockEmpty", nil)
 	}
 	t.takeSnapshot()
 	card := t.stock[0]
@@ -190,11 +189,11 @@ func (t *Terrace) MoveReserveToFoundation() error {
 	}
 	card := t.reserveTop()
 	if card == nil {
-		return errors.New("reserve is empty")
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errReserveEmpty", nil)
 	}
 	fIdx := t.findFoundation(card)
 	if fIdx < 0 {
-		return errors.New("card cannot be placed on a foundation")
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errCannotPlaceFoundation", nil)
 	}
 	t.takeSnapshot()
 	t.popReserve()
@@ -211,11 +210,11 @@ func (t *Terrace) MoveWasteToFoundation() error {
 	}
 	card := t.wasteTop()
 	if card == nil {
-		return errors.New("waste is empty")
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errWasteEmpty", nil)
 	}
 	fIdx := t.findFoundation(card)
 	if fIdx < 0 {
-		return errors.New("card cannot be placed on a foundation")
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errCannotPlaceFoundation", nil)
 	}
 	t.takeSnapshot()
 	t.popWaste()
@@ -235,10 +234,10 @@ func (t *Terrace) MoveWasteToTableau(pile int) error {
 	}
 	card := t.wasteTop()
 	if card == nil {
-		return errors.New("waste is empty")
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errWasteEmpty", nil)
 	}
 	if !t.canPlaceOnTableau(card, pile) {
-		return errors.New("card cannot be placed on that pile")
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errCannotPlaceTableau", nil)
 	}
 	t.takeSnapshot()
 	t.popWaste()
@@ -258,11 +257,11 @@ func (t *Terrace) MoveTableauToFoundation(pile int) error {
 	}
 	card := t.tableauTop(pile)
 	if card == nil {
-		return fmt.Errorf("pile %d is empty", pile)
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errEmptyPile", nil)
 	}
 	fIdx := t.findFoundation(card)
 	if fIdx < 0 {
-		return errors.New("card cannot be placed on a foundation")
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errCannotPlaceFoundation", nil)
 	}
 	t.takeSnapshot()
 	t.tableau[pile] = t.tableau[pile][:len(t.tableau[pile])-1]
@@ -284,18 +283,18 @@ func (t *Terrace) MoveTableauToTableau(fromPile, toPile int) error {
 		return err
 	}
 	if fromPile == toPile {
-		return errors.New("source and destination are the same pile")
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errSamePile", nil)
 	}
 	card := t.tableauTop(fromPile)
 	if card == nil {
-		return fmt.Errorf("pile %d is empty", fromPile)
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errEmptyPile", nil)
 	}
 	// 空き山は捨て札か山札から自動で埋まるので、手で埋める対象ではない。
 	if len(t.tableau[toPile]) == 0 {
-		return errors.New("an empty pile fills itself from the waste or the stock")
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errEmptyPileFill", nil)
 	}
 	if !t.canPlaceOnTableau(card, toPile) {
-		return errors.New("card cannot be placed on that pile")
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errCannotPlaceTableau", nil)
 	}
 	t.takeSnapshot()
 	t.tableau[fromPile] = t.tableau[fromPile][:len(t.tableau[fromPile])-1]
@@ -394,7 +393,7 @@ func (t *Terrace) tableauHint() *TerraceHint {
 // AutoComplete 基礎札へ送れる札がなくなるまで自動で送る
 func (t *Terrace) AutoComplete() error {
 	if t.phase != TerracePhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "terrace.errNotPlaying", nil)
 	}
 	moved := false
 	for {
@@ -417,7 +416,7 @@ func (t *Terrace) AutoComplete() error {
 		moved = true
 	}
 	if !moved {
-		return errors.New("no card can be auto-completed")
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errNoAuto", nil)
 	}
 	return nil
 }
@@ -425,7 +424,7 @@ func (t *Terrace) AutoComplete() error {
 // Undo 直前の 1 手を取り消す
 func (t *Terrace) Undo() error {
 	if len(t.history) == 0 {
-		return errors.New("nothing to undo")
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errNothingToUndo", nil)
 	}
 	snap := t.history[len(t.history)-1]
 	t.history = t.history[:len(t.history)-1]
@@ -489,7 +488,7 @@ func (t *Terrace) IsStalemate() bool { return t.isStalemate }
 // requirePlaying プレイ中でなければエラーを返す
 func (t *Terrace) requirePlaying() error {
 	if t.phase != TerracePhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "terrace.errNotPlaying", nil)
 	}
 	return nil
 }
@@ -497,7 +496,7 @@ func (t *Terrace) requirePlaying() error {
 // validTerracePile タブロー山のインデックスを検証する
 func validTerracePile(pile int) error {
 	if pile < 0 || pile >= TerraceTableauCnt {
-		return fmt.Errorf("invalid pile: %d", pile)
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errBadColumn", nil)
 	}
 	return nil
 }
@@ -729,16 +728,16 @@ func (s *terraceSnapshot) UnmarshalJSON(data []byte) error {
 	}
 	if len(j.Reserve) > terraceMaxSliceLen || len(j.Stock) > terraceMaxSliceLen ||
 		len(j.Waste) > terraceMaxSliceLen {
-		return errors.New("terrace: snapshot array exceeds maximum allowed size")
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errSnapshotArrayTooLarge", nil)
 	}
 	for _, pile := range j.Tableau {
 		if len(pile) > terraceMaxSliceLen {
-			return errors.New("terrace: snapshot pile exceeds maximum allowed size")
+			return NewDomainErrorCode(ErrInvalidPlay, "terrace.errSnapshotPileTooLarge", nil)
 		}
 	}
 	for _, pile := range j.Foundation {
 		if len(pile) > terraceMaxSliceLen {
-			return errors.New("terrace: snapshot pile exceeds maximum allowed size")
+			return NewDomainErrorCode(ErrInvalidPlay, "terrace.errSnapshotPileTooLarge", nil)
 		}
 	}
 	s.reserve = j.Reserve
@@ -809,10 +808,10 @@ func (t *Terrace) UnmarshalJSON(data []byte) error {
 	}
 	if len(j.Reserve) > TerraceTotalCards || len(j.Stock) > TerraceTotalCards ||
 		len(j.Waste) > TerraceTotalCards {
-		return errors.New("terrace: reserve/stock/waste too large")
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errReserveStockWasteTooLarge", nil)
 	}
 	if len(j.ActionLog) > terraceMaxSliceLen || len(j.History) > terraceMaxSliceLen {
-		return errors.New("terrace: input array exceeds maximum allowed size")
+		return NewDomainErrorCode(ErrInvalidPlay, "terrace.errInputArrayTooLarge", nil)
 	}
 	for i := range TerraceFoundationCnt {
 		if len(j.Foundation[i]) > TerraceFoundationTarget {

@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -826,4 +827,64 @@ func TestTerrace_FullGameDrive(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestTerrace_ErrorsCarryAnI18nCode(t *testing.T) {
+	codeOf := func(t *testing.T, err error) string {
+		t.Helper()
+		if err == nil {
+			return ""
+		}
+		code, _ := ErrorMessageCode(err)
+		return code
+	}
+
+	t.Run("every refusal names a key instead of an English sentence", func(t *testing.T) {
+		cases := []struct {
+			name string
+			run  func(y *Terrace) error
+		}{
+			{"draw from empty stock", func(y *Terrace) error {
+				y.stock = nil
+				return y.Draw()
+			}},
+			{"reserve to foundation when empty", func(y *Terrace) error {
+				y.reserve = nil
+				return y.MoveReserveToFoundation()
+			}},
+			{"waste to foundation when empty", func(y *Terrace) error {
+				y.waste = nil
+				return y.MoveWasteToFoundation()
+			}},
+			{"waste to tableau when empty", func(y *Terrace) error {
+				y.waste = nil
+				return y.MoveWasteToTableau(0)
+			}},
+			{"tableau to foundation from empty", func(y *Terrace) error {
+				y.tableau[0] = nil
+				return y.MoveTableauToFoundation(0)
+			}},
+			{"tableau to tableau onto same", func(y *Terrace) error {
+				return y.MoveTableauToTableau(0, 0)
+			}},
+			{"auto complete when none", func(y *Terrace) error {
+				return y.AutoComplete()
+			}},
+			{"undo when empty", func(y *Terrace) error {
+				y.history = nil
+				return y.Undo()
+			}},
+		}
+		for _, tc := range cases {
+			t.Run(tc.name, func(t *testing.T) {
+				y := NewDefaultTerrace()
+				err := tc.run(y)
+				require.Error(t, err, "この操作は拒否されるはずで、拒否されないと何も測れない")
+				code := codeOf(t, err)
+				assert.NotEmpty(t, code, "コードが無いと CUI は英語をそのまま出す")
+				assert.Truef(t, strings.HasPrefix(code, "terrace."),
+					"キーは terrace 名前空間に置く (got %q)", code)
+			})
+		}
+	})
 }
