@@ -155,22 +155,32 @@ func TestTrashCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, out, "推奨: 10")
 	})
 
-	t.Run("player turn recommends taking a placeable discard", func(t *testing.T) {
+	t.Run("player turn advises drawing even when discard is a matching rank", func(t *testing.T) {
 		tg := buildTrashMock(trashMockOpts{
 			phase:      domain.TrashPhasePlayerTurn,
 			discardTop: domain.NewCard(domain.CardDesignHeart, 5, false),
 		})
 		out := p.HintOutput(tg)
-		assert.Contains(t, out, "スロット5")
+		assert.Contains(t, out, "この番にできるのは山札から1枚引くことだけです")
+		// 消した助言そのものを否定コントロールに使う。戻ってきたら落ちる。
+		assert.NotContains(t, out, "取ると良いでしょう")
+		assert.NotContains(t, out, "スロット5")
 	})
 
-	t.Run("player turn flags a wild discard", func(t *testing.T) {
-		tg := buildTrashMock(trashMockOpts{
-			phase:      domain.TrashPhasePlayerTurn,
-			discardTop: domain.NewCard(domain.CardDesignSpade, 13, false),
-		})
-		out := p.HintOutput(tg)
-		assert.Contains(t, out, "ワイルド")
+	t.Run("player turn advises drawing even when discard is wild", func(t *testing.T) {
+		for _, card := range []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 13, false),
+			domain.NewCard(domain.CardDesignJoker, 0, false),
+		} {
+			tg := buildTrashMock(trashMockOpts{
+				phase:      domain.TrashPhasePlayerTurn,
+				discardTop: card,
+			})
+			out := p.HintOutput(tg)
+			assert.Contains(t, out, "この番にできるのは山札から1枚引くことだけです")
+			assert.NotContains(t, out, "取って好きなスロットに置けます")
+			assert.NotContains(t, out, "ワイルドです")
+		}
 	})
 
 	t.Run("player turn advises drawing when the discard is useless", func(t *testing.T) {
@@ -179,7 +189,7 @@ func TestTrashCuiPresenter_HintOutput(t *testing.T) {
 			discardTop: domain.NewCard(domain.CardDesignSpade, 11, false), // Jack = end-turn card
 		})
 		out := p.HintOutput(tg)
-		assert.Contains(t, out, "山札から引き")
+		assert.Contains(t, out, "この番にできるのは山札から1枚引くことだけです")
 	})
 
 	t.Run("await wild with no open slots falls back to game over", func(t *testing.T) {
@@ -192,7 +202,7 @@ func TestTrashCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, out, "ゲームは終了")
 	})
 
-	t.Run("player turn draws when the discard's slot is already filled", func(t *testing.T) {
+	t.Run("player turn advises drawing when the discard's slot is already filled", func(t *testing.T) {
 		slots := make([]domain.TrashSlot, domain.TrashSlotCnt)
 		for i := range slots {
 			// Slot 5 (index 4) is already filled, so a drawn 5 has nowhere to go.
@@ -204,7 +214,7 @@ func TestTrashCuiPresenter_HintOutput(t *testing.T) {
 			p0Slots:    slots,
 		})
 		out := p.HintOutput(tg)
-		assert.Contains(t, out, "山札から引き")
+		assert.Contains(t, out, "この番にできるのは山札から1枚引くことだけです")
 	})
 
 	t.Run("declines advice when it is not the human's turn", func(t *testing.T) {

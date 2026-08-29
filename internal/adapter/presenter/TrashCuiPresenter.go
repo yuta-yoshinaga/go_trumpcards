@@ -131,8 +131,9 @@ func trashSlotFor(c *domain.Card) int {
 	return 0
 }
 
-// HintOutput suggests where the drawn/wild card should go, or whether the
-// face-up discard is worth taking on the player's turn.
+// HintOutput suggests where a drawn or wild card should go. On the player's
+// turn there is nothing to suggest: drawing from the stock is the only move,
+// and the discard cannot be taken (#6342).
 func (p *TrashCuiPresenter) HintOutput(t interfaces.TrashGame) string {
 	// Advice is always for the human's board, so it only makes sense on the
 	// human's turn — the same phases apply to the CPU mid-resolution.
@@ -150,13 +151,6 @@ func (p *TrashCuiPresenter) HintOutput(t interfaces.TrashGame) string {
 		rec := slots[len(slots)-1]
 		return i18n.Tf("trash.hintWild", "slots", strings.Join(slots, ", "), "rec", rec) + "\n"
 	case domain.TrashPhasePlayerTurn:
-		top := t.GetDiscardTop()
-		if trashIsWild(top) && len(trashHumanFaceDownSlots(t)) > 0 {
-			return i18n.T("trash.hintTakeDiscardWild") + "\n"
-		}
-		if slot := trashSlotFor(top); slot > 0 && !t.GetPlayerSlots(domain.TrashHumanIdx)[slot-1].FaceUp {
-			return i18n.Tf("trash.hintTakeDiscard", "slot", strconv.Itoa(slot)) + "\n"
-		}
 		return i18n.T("trash.hintDrawStock") + "\n"
 	default:
 		return i18n.T("trash.hintGameOver") + "\n"
