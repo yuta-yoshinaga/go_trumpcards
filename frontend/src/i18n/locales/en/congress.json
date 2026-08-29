@@ -49,5 +49,7 @@
     "toTableau": "Take the suggested tableau move to dig out the pile",
     "fillGap": "Fill the empty pile straight from the stock and save a waste card",
     "draw": "Nothing can move, so turn a card from the stock"
-  }
+  },
+  "pileCardAriaLabel": "{{card}} in pile {{pile}}",
+  "pileTopCardAriaLabel": "{{card}} on top of pile {{pile}}"
 }

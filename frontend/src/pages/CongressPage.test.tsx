@@ -108,8 +108,8 @@ describe('CongressPage', () => {
     // まだ何も選んでいなければ、当然押せない。
     expect(empty).toBeDisabled();
 
-    fireEvent.click(screen.getByRole('button', { name: '♠ 9' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 9' })).toHaveAttribute('aria-pressed', 'true'));
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 9 / }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /^♠ 9 / })).toHaveAttribute('aria-pressed', 'true'));
     // タブローの札を選んでも押せないまま。
     expect(empty).toBeDisabled();
   });
@@ -131,11 +131,11 @@ describe('CongressPage', () => {
 
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<CongressPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 9' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^♠ 9 / })).toBeInTheDocument());
     mockExec.mockClear();
 
     const dataTransfer = buildDataTransfer();
-    fireEvent.dragStart(screen.getByRole('button', { name: '♠ 9' }), { dataTransfer });
+    fireEvent.dragStart(screen.getByRole('button', { name: /^♠ 9 / }), { dataTransfer });
     const empty = screen.getByRole('button', { name: /空の山 3/ });
     fireEvent.dragOver(empty, { dataTransfer });
     fireEvent.drop(empty, { dataTransfer });
@@ -180,8 +180,8 @@ describe('CongressPage', () => {
     renderWithProviders(<CongressPage />);
     const stock = await screen.findByRole('button', { name: /山札 残り96枚/ });
     // First click draws, so select something else to enter selection mode.
-    fireEvent.click(screen.getByRole('button', { name: '♠ 9' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 9' })).toHaveAttribute('aria-pressed', 'true'));
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 9 / }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /^♠ 9 / })).toHaveAttribute('aria-pressed', 'true'));
     fireEvent.click(stock);
     await waitFor(() => expect(stock).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
@@ -193,7 +193,7 @@ describe('CongressPage', () => {
   it('sends a pile top to a foundation', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<CongressPage />);
-    const ace = await screen.findByRole('button', { name: '♣ A' });
+    const ace = await screen.findByRole('button', { name: /^♣ A / });
     fireEvent.click(ace);
     await waitFor(() => expect(ace).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
@@ -349,5 +349,38 @@ describe('CongressPage keyboard shortcuts', () => {
     }
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
+  });
+});
+
+// 空の山は `emptyPileAriaLabel` で番号を言うのに、札が乗っている山のカードは
+// 札名だけで**どの山か分からなかった** (#6358)。掴めるのは一番上だけなので、
+// そこも言い分ける。
+describe('CongressPage tableau card labels', () => {
+  // この beforeEach は最初の describe の内側にあるので、ここにも要る。
+  // 無いと useGameHint がモックされず、盤が別物になる。
+  // localStorage も消す: CLI モードはそこに残るので、前のテストが切り替えたまま
+  // だと盤が描かれず CLI 画面になる（実際にそれで落ちた）。
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('names the pile a card sits in, and marks only the one you can grab', async () => {
+    // 既定のフィクスチャは全山1枚＝全部が一番上なので、埋もれた札のある盤を作る。
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[card('SPADE', 9), card('HEART', 3)], [card('CLOVER', 1)]]),
+    });
+    renderWithProviders(<CongressPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    // 山0 の一番上は ♥ 3、その下が ♠ 9。
+    expect(screen.getByRole('button', { name: '♥ 3 山0 一番上' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 9 山0' })).toBeInTheDocument();
+    // 埋もれた札に「一番上」が付いてはいけない（掴めないので）。
+    expect(screen.queryByRole('button', { name: '♠ 9 山0 一番上' })).not.toBeInTheDocument();
+    // 別の山は別の番号を名乗る。
+    expect(screen.getByRole('button', { name: '♣ A 山1 一番上' })).toBeInTheDocument();
   });
 });
