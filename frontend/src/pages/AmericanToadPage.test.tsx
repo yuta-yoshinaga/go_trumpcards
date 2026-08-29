@@ -74,12 +74,13 @@ describe('AmericanToadPage', () => {
     expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
   });
 
-  it('renders heading, base rank and move count', async () => {
+  it('renders heading, base rank, move count, and pass count', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<AmericanToadPage />);
     await waitFor(() => expect(screen.getByText(/アメリカン・トード/)).toBeInTheDocument());
     expect(screen.getByText(/開始ランク: 5/)).toBeInTheDocument();
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
+    expect(screen.getByText(/山札の通し: 1\/2/)).toBeInTheDocument();
   });
 
   it('renders eight foundations and eight columns', async () => {
@@ -463,5 +464,51 @@ describe('AmericanToadPage destination highlight', () => {
     const waste = await screen.findByRole('button', { name: /♦ 9/ });
     fireEvent.click(waste);
     await waitFor(() => expect(targets().length).toBeGreaterThan(0));
+  });
+});
+
+describe('AmericanToadPage stock passes and redeal warning', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('displays the stock pass count for passesUsed = 0', async () => {
+    mockExec.mockResolvedValue({ ...playingState, passesUsed: 0 });
+    renderWithProviders(<AmericanToadPage />);
+    await waitFor(() => expect(screen.getByText('山札の通し: 1/2')).toBeInTheDocument());
+  });
+
+  it('updates the stock pass count for passesUsed = 1', async () => {
+    mockExec.mockResolvedValue({ ...playingState, passesUsed: 1 });
+    renderWithProviders(<AmericanToadPage />);
+    await waitFor(() => expect(screen.getByText('山札の通し: 2/2')).toBeInTheDocument());
+    expect(screen.queryByText('山札の通し: 1/2')).not.toBeInTheDocument();
+  });
+
+  it('displays the warning when canRedeal is true', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      stockCount: 0,
+      canRedeal: true,
+      passesUsed: 0,
+      waste: [card('HEART', 9)],
+    });
+    renderWithProviders(<AmericanToadPage />);
+    await waitFor(() => expect(screen.getByText('山札が尽きました。めくり直しはあと1回使えます')).toBeInTheDocument());
+  });
+
+  it('does not display the warning when canRedeal is false (negative control)', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      stockCount: 0,
+      canRedeal: false,
+      passesUsed: 1,
+      waste: [card('HEART', 9)],
+    });
+    renderWithProviders(<AmericanToadPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByText('山札が尽きました。めくり直しはあと1回使えます')).not.toBeInTheDocument();
   });
 });
