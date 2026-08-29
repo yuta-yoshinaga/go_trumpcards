@@ -56,6 +56,22 @@ func redDogWinningRanksStr(initial []*domain.Card) string {
 	return strings.Join(labels, ", ")
 }
 
+// redDogThirdCardHits reports whether the third card landed strictly between
+// the two initial cards — the same span redDogWinningRanksStr lists. The two
+// read the span from one place on purpose: a guide that lists one set of ranks
+// and then calls a card in that set a miss is worse than no guide at all.
+func redDogThirdCardHits(initial []*domain.Card, third *domain.Card) bool {
+	if len(initial) != 2 || third == nil {
+		return false
+	}
+	lo, hi := redDogRankOf(initial[0]), redDogRankOf(initial[1])
+	if lo > hi {
+		lo, hi = hi, lo
+	}
+	r := redDogRankOf(third)
+	return r > lo && r < hi
+}
+
 // Output ゲーム状態を出力
 func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) string {
 	var sb strings.Builder
@@ -76,6 +92,20 @@ func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 	if rd.GetPhase() == domain.RedDogPhaseSpreadDecision {
 		sb.WriteString(i18n.Tf("reddog.cuiSpreadGuide",
 			"ranks", redDogWinningRanksStr(rd.GetInitialCards())) + "\n")
+	}
+	if rd.GetPhase() == domain.RedDogPhaseEnd {
+		initial, third := rd.GetInitialCards(), rd.GetThirdCard()
+		// スプレッドが 0 (隣接か同ランク) だと当たりランクが 1 つも無く、
+		// 一覧が空文字になる。「当たりランク:  (外れ)」を出しても読めない。
+		if ranksStr := redDogWinningRanksStr(initial); third != nil && ranksStr != "" {
+			if redDogThirdCardHits(initial, third) {
+				sb.WriteString(i18n.Tf("reddog.cuiEndGuideHit",
+					"ranks", ranksStr,
+					"hitRank", redDogRankLabel(redDogRankOf(third))) + "\n")
+			} else {
+				sb.WriteString(i18n.Tf("reddog.cuiEndGuideMiss", "ranks", ranksStr) + "\n")
+			}
+		}
 	}
 
 	// 配当表。Web はベット前に常設しているのに、CUI はベット額を決める材料が

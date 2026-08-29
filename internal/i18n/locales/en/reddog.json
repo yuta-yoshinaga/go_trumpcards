@@ -10,6 +10,8 @@
   "raiseInline": "  raise: {{raise}}",
   "spreadLine": "spread: {{spread}}",
   "cuiSpreadGuide": "Winning ranks: {{ranks}} | raise <amt> / stay: s",
+  "cuiEndGuideHit": "Winning ranks: {{ranks}} (Hit with {{hitRank}})",
+  "cuiEndGuideMiss": "Winning ranks: {{ranks}} (Miss)",
   "initialHeader": "INITIAL",
   "thirdHeader": "THIRD",
   "phaseBet": "BET",

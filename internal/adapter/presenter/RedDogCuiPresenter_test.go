@@ -119,25 +119,32 @@ func TestRedDogCuiPresenter_Output_EndWin(t *testing.T) {
 	assert.Contains(t, result, "THIRD")
 	assert.Contains(t, result, "レイズ: 100")
 	assert.Contains(t, result, "合計払戻し: 400")
+	assert.Contains(t, result, "当たりランク: 6, 7, 8, 9 (引いたカード: 7 で的中)")
 }
 
 func TestRedDogCuiPresenter_Output_EndLose(t *testing.T) {
 	p := new(RedDogCuiPresenter)
 	m := new(interfaces.MockRedDogGame)
-	setupRedDogCuiMockDefaults(m)
-	m2 := new(interfaces.MockRedDogGame)
-	m2.On("GetChips").Return(900)
-	m2.On("GetPhase").Return(domain.RedDogPhaseEnd)
-	m2.On("GetInitialCards").Return(([]*domain.Card)(nil))
-	m2.On("GetThirdCard").Return((*domain.Card)(nil))
-	m2.On("GetGameEndFlag").Return(true)
-	m2.On("GetAnte").Return(100)
-	m2.On("GetRaise").Return(0)
-	m2.On("GetSpread").Return(3)
-	m2.On("GetResult").Return(domain.GameResultLose)
-	m2.On("GetTotalPayout").Return(0)
-	result := p.Output(m2, nil)
+	cards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignHeart, 10, false),
+	}
+	third := domain.NewCard(domain.CardDesignClover, 12, false)
+	m.On("GetChips").Return(900)
+	m.On("GetPhase").Return(domain.RedDogPhaseEnd)
+	m.On("GetInitialCards").Return(cards)
+	m.On("GetThirdCard").Return(third)
+	m.On("GetGameEndFlag").Return(true)
+	m.On("GetAnte").Return(100)
+	m.On("GetRaise").Return(0)
+	m.On("GetSpread").Return(4)
+	m.On("GetResult").Return(domain.GameResultLose)
+	m.On("GetTotalPayout").Return(0)
+
+	result := p.Output(m, nil)
 	assert.Contains(t, result, "プレイヤーの負け")
+	assert.Contains(t, result, "当たりランク: 6, 7, 8, 9 (外れ)")
+	assert.NotContains(t, result, "で的中)")
 }
 
 func TestRedDogCuiPresenter_Output_EndPush(t *testing.T) {
@@ -155,6 +162,29 @@ func TestRedDogCuiPresenter_Output_EndPush(t *testing.T) {
 	m.On("GetTotalPayout").Return(100)
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "プッシュ")
+}
+
+func TestRedDogCuiPresenter_Output_End_SpreadZero(t *testing.T) {
+	p := new(RedDogCuiPresenter)
+	m := new(interfaces.MockRedDogGame)
+	cards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignHeart, 6, false),
+	}
+	third := domain.NewCard(domain.CardDesignClover, 12, false)
+	m.On("GetChips").Return(900)
+	m.On("GetPhase").Return(domain.RedDogPhaseEnd)
+	m.On("GetInitialCards").Return(cards)
+	m.On("GetThirdCard").Return(third)
+	m.On("GetGameEndFlag").Return(true)
+	m.On("GetAnte").Return(100)
+	m.On("GetRaise").Return(0)
+	m.On("GetSpread").Return(0)
+	m.On("GetResult").Return(domain.GameResultDraw)
+	m.On("GetTotalPayout").Return(100)
+
+	result := p.Output(m, nil)
+	assert.NotContains(t, result, "当たりランク:")
 }
 
 func TestRedDogCuiPresenter_PhaseStr_AllBranches(t *testing.T) {
