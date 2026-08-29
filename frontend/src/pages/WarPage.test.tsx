@@ -144,6 +144,36 @@ describe('WarPage', () => {
     expect(screen.getAllByText(/2/).length).toBeGreaterThan(0);
   });
 
+  it('shows buried count when a war resolves', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      phase: WarPhase.RESOLVED,
+      lastBurialCount: 6,
+    });
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByText('（6枚伏せました）')).toBeInTheDocument());
+  });
+
+  it('does not show buried count when lastBurialCount is 0 or phase is not resolved', async () => {
+    // 0 cards buried (normal resolution without a war)
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      phase: WarPhase.RESOLVED,
+      lastBurialCount: 0,
+    });
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.queryByText(/枚伏せました/)).not.toBeInTheDocument());
+
+    // Phase is WAR_BURY (not resolved yet), even if lastBurialCount > 0 in state
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      phase: WarPhase.WAR_BURY,
+      lastBurialCount: 3,
+    });
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.queryByText(/枚伏せました/)).not.toBeInTheDocument());
+  });
+
   it('highlights the winner card and dims the loser when the player wins a round', async () => {
     mockExec.mockResolvedValueOnce({
       ...baseState,
