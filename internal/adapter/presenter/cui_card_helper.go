@@ -153,6 +153,9 @@ func cuiRankLabel(rank int) string {
 	}
 }
 
+// cuiRankSep はランク一覧の区切り文字 (中黒)。
+const cuiRankSep = "・"
+
 // cuiPokerHandName returns the localized display name for a poker hand rank
 // (0=High Card .. 10=Five of a Kind), resolved via the shared pokerHandRank*
 // keys in cui_common. Out-of-range ranks fall back to the raw English

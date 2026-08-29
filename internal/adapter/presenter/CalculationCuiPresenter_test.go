@@ -3,11 +3,13 @@
 package presenter
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -216,4 +218,82 @@ func TestCalculationCuiPresenter_Output_UpcomingRanks(t *testing.T) {
 	assert.Contains(t, out, i18n.Tf("calculation.upcomingRanks", "ranks", "6 → 9 → 12 → 2 → 5 → 8"))
 	// **先読みが空の組札には行を出さない。**完成した山に「次: 」だけ出しても意味がない。
 	assert.Equal(t, 1, strings.Count(out, i18n.T("calculation.upcomingRanksLabel")))
+}
+
+func TestCalculationCuiPresenter_Output_WasteRanks(t *testing.T) {
+	p := new(CalculationCuiPresenter)
+	card := func(design, value int) *domain.Card {
+		return domain.NewCard(design, value, false)
+	}
+
+	g := new(interfaces.MockCalculationGame)
+	g.On("GetPhase").Return(domain.CalculationPhasePlaying).Maybe()
+	g.On("GetMoveCount").Return(0).Maybe()
+	g.On("IsStalemate").Return(false).Maybe()
+	g.On("UndoToEscape").Return(0).Maybe()
+	g.On("GetStockCount").Return(0).Maybe()
+	g.On("GetStockTop").Return((*domain.Card)(nil)).Maybe()
+
+	var foundations [domain.CalculationFoundationCnt][]*domain.Card
+	for i := range domain.CalculationFoundationCnt {
+		foundations[i] = []*domain.Card{card(domain.CardDesignSpade, i+2)}
+	}
+	g.On("GetFoundations").Return(foundations).Maybe()
+	g.On("GetNextFoundationRank", mock.Anything).Return(0).Maybe()
+	g.On("GetUpcomingFoundationRanks", mock.Anything, mock.Anything).Return([]int(nil)).Maybe()
+
+	var wastes [domain.CalculationWasteCnt][]*domain.Card
+	// Depth 5: bottom to top has 9, 8, 4, K(13), A(1). Only the last 3 (4, K, A) must appear.
+	wastes[0] = []*domain.Card{
+		card(domain.CardDesignSpade, 9),
+		card(domain.CardDesignHeart, 8),
+		card(domain.CardDesignDiamond, 4),
+		card(domain.CardDesignClover, 13),
+		card(domain.CardDesignSpade, 1),
+	}
+	// Depth 2: bottom to top has J(11), Q(12). Both must appear without breaking on <3 cards.
+	wastes[1] = []*domain.Card{
+		card(domain.CardDesignHeart, 11),
+		card(domain.CardDesignDiamond, 12),
+	}
+	// Depth 0: empty wastes (negative control).
+	wastes[2] = []*domain.Card{}
+	wastes[3] = []*domain.Card{}
+	g.On("GetWastes").Return(wastes).Maybe()
+
+	out := p.Output(g, nil)
+
+	// ウェイストは 1 行ずつ出るので、行を切り出してから比べる。
+	// 出力全体に対する NotContains では、組札のランクやストックの枚数に
+	// 同じ数字が出ているだけで落ちたり通ったりする。
+	wasteLine := func(idx int) string {
+		want := i18n.Tf("calculation.wasteLabel", "idx", strconv.Itoa(idx))
+		for _, l := range strings.Split(out, "\n") {
+			if strings.HasPrefix(l, want) {
+				return l
+			}
+		}
+		return ""
+	}
+	for i := range 4 {
+		require.NotEmpty(t, wasteLine(i), "ウェイスト%d の行が見つからない", i)
+	}
+
+	// 5 枚の山: 末尾 3 枚が**この並びで連続して**出る。ランクを 1 つずつ
+	// Contains で見ると逆順でも通る。
+	assert.Contains(t, wasteLine(0), "4・K・A")
+	// 4 枚目より下 (9, 8) はこの行に出ない。
+	assert.NotContains(t, wasteLine(0), "9")
+	assert.NotContains(t, wasteLine(0), "8")
+	// 既存の wasteFilled 表示は残っている。
+	assert.Contains(t, wasteLine(0), "(5枚)")
+	assert.Contains(t, wasteLine(0), "SPADE 1")
+
+	// 2 枚の山: 3 枚未満でも壊れず、2 枚とも並び順どおり出る。
+	assert.Contains(t, wasteLine(1), "J・Q")
+	assert.Contains(t, wasteLine(1), "(2枚)")
+
+	// 空の山: wasteEmpty **だけ**。ランク欄が続いていないことまで見る。
+	assert.Equal(t, "[W2] (空)", wasteLine(2))
+	assert.Equal(t, "[W3] (空)", wasteLine(3))
 }
