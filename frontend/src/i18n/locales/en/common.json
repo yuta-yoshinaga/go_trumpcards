@@ -815,6 +815,8 @@
     "canfield.hintAvailable": "Hint available",
     "canfield.noHint": "No hint available",
     "canfield.playing": "Playing",
+    "canfield.errEmptyColumnAutoFillOnly": "While the reserve has cards, empty columns are filled automatically. You cannot place cards there manually.",
+    "canfield.errNotAlternateDescending": "Cards must be placed in alternate colors and descending rank.",
     "caribbeandraw.result.dealerNotQualified": "Dealer does not qualify!",
     "caribbeandraw.result.dealerWins": "Dealer wins!",
     "caribbeandraw.result.fold": "Folded",

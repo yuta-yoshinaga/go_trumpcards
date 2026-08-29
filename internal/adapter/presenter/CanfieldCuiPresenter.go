@@ -82,6 +82,9 @@ func (p *CanfieldCuiPresenter) Output(c interfaces.CanfieldGame, lastErr error) 
 			b.WriteString("\n")
 		}
 		b.WriteString("----------\n")
+		if len(c.GetReserve()) > 0 {
+			b.WriteString(i18n.T("canfield.reserveEmptyColumnRule") + "\n")
+		}
 
 		cuiErrorBlock(b, lastErr)
 
