@@ -4,7 +4,6 @@ package presenter
 
 import (
 	"encoding/json"
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -189,8 +188,13 @@ func TestPontoonWebPresenter_Output(t *testing.T) {
 		g := new(interfaces.MockPontoonGame)
 		setupPontoonWebMockDefaults(g)
 
-		result := parsePontoonOutput(t, new(PontoonWebPresenter).Output(g, errors.New("test error")))
-		assert.Equal(t, "test error", result.Message)
+		err := domain.NewDomainErrorCode(domain.ErrInvalidAmount, "pontoon.errInvalidChips", map[string]string{"Chips": "-10"})
+		result := parsePontoonOutput(t, new(PontoonWebPresenter).Output(g, err))
+		assert.Equal(t, "pontoon.errInvalidChips", result.MessageCode)
+		assert.Equal(t, "-10", result.MessageParams["Chips"])
+
+		result2 := parsePontoonOutput(t, new(PontoonWebPresenter).Output(g, assertError{}))
+		assert.Equal(t, "boom", result2.Message)
 	})
 
 	for _, tc := range []struct {

@@ -163,7 +163,20 @@ func TestPontoonCuiPresenter_Output(t *testing.T) {
 	t.Run("error block", func(t *testing.T) {
 		g := new(interfaces.MockPontoonGame)
 		setupPontoonCuiMockDefaults(g)
-		assert.Contains(t, new(PontoonCuiPresenter).Output(g, assertError{}), "boom")
+		err := domain.NewDomainErrorCode(domain.ErrWrongPhase, "pontoon.errNotBettingPhase", nil)
+
+		t.Run("ja", func(t *testing.T) {
+			i18n.SetLang("ja")
+			out := new(PontoonCuiPresenter).Output(g, err)
+			assert.Contains(t, out, "ベットフェーズではありません")
+			assert.NotContains(t, out, "betting phase")
+		})
+		t.Run("en", func(t *testing.T) {
+			i18n.SetLang("en")
+			out := new(PontoonCuiPresenter).Output(g, err)
+			assert.Contains(t, out, "It is not the betting phase.")
+			assert.NotContains(t, out, "ベットフェーズではありません")
+		})
 	})
 }
 
