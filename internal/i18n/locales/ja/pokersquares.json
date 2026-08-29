@@ -14,5 +14,5 @@
   "gameComplete": "ゲーム終了 合計得点: {{score}}",
   "undoUnavailable": "（戻せる手はありません）",
   "rowPartialHand": " (部分役: {{hand}})",
-  "colPartialHand": " ({{hand}})"
+  "colPartialHand": " (部分役: {{hand}})"
 }

@@ -14,5 +14,5 @@
   "gameComplete": "Game complete! Total score: {{score}}",
   "undoUnavailable": "(nothing to undo)",
   "rowPartialHand": " (partial: {{hand}})",
-  "colPartialHand": " ({{hand}})"
+  "colPartialHand": " (partial: {{hand}})"
 }
