@@ -36,7 +36,7 @@ func (pr *PokerSquaresCuiPresenter) Output(p interfaces.PokerSquaresGame, lastEr
 			b.WriteString(i18n.Tf("pokersquares.rowScore",
 				"score", strconv.Itoa(p.RowScore(r))))
 			if rank := p.PartialRowRank(r); rank >= 0 {
-				b.WriteString(i18n.Tf("pokersquares.rowPartialHand", "hand", pokerHandName(rank)))
+				b.WriteString(i18n.Tf("pokersquares.rowPartialHand", "hand", pokerSquaresHandName(rank)))
 			}
 			b.WriteString("\n")
 		}
@@ -48,7 +48,7 @@ func (pr *PokerSquaresCuiPresenter) Output(p interfaces.PokerSquaresGame, lastEr
 				"idx", strconv.Itoa(i),
 				"score", strconv.Itoa(p.ColScore(i)))
 			if rank := p.PartialColRank(i); rank >= 0 {
-				colScoreStr += i18n.Tf("pokersquares.colPartialHand", "hand", pokerHandName(rank))
+				colScoreStr += i18n.Tf("pokersquares.colPartialHand", "hand", pokerSquaresHandName(rank))
 			}
 			colParts[i] = colScoreStr
 		}
@@ -113,4 +113,18 @@ func (pr *PokerSquaresCuiPresenter) ActionLogOutput(p interfaces.PokerSquaresGam
 		return actionLogToText(nil)
 	}
 	return actionLogToText(p.GetActionLog())
+}
+
+// pokerSquaresHandName は役名を返す。
+//
+// presenter パッケージには同じことをする pokerHandName があるが、それは
+// poker_presenter_common.go にあり `!js || !wasm || casino` が付いている。
+// Poker Squares は solo バケットなので、Worker ビルドではその関数が存在しない
+// ——ホストのビルドとテストは全ファイルを見るので、この取り違えは
+// `GOOS=js GOARCH=wasm go build -tags solo` でしか出ない (CI で実測)。
+func pokerSquaresHandName(rank int) string {
+	if rank >= 0 && rank < len(domain.PokerHandNames) {
+		return domain.PokerHandNames[rank]
+	}
+	return "Unknown"
 }
