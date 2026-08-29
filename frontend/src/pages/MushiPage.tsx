@@ -88,7 +88,13 @@ function MushiPageContent() {
       <AnimatedCard card={card} width={cardWidth} draggable={false} />
       <div className="text-game-text-muted text-[10px] mt-0.5">
         {t(`category.${card.category}`)}
-        {card.isWild && <span className="text-ds-warning ml-0.5">★</span>}
+        {/* ★ は記号なので、読み上げても「星」としか言われずワイルドだと伝わらない。
+            role="img" + aria-label で語にする (#6365)。 */}
+        {card.isWild && (
+          <span className="text-ds-warning ml-0.5" role="img" aria-label={t('wildAriaLabel')}>
+            ★
+          </span>
+        )}
       </div>
     </div>
   );

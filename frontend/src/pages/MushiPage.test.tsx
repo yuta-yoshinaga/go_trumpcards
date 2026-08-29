@@ -158,3 +158,43 @@ describe('MushiPage', () => {
     expect(rule.textContent).toMatch(/柳/);
   });
 });
+
+// ワイルド（柳の雷札）は ★ という記号だけで示されていた。記号は読み上げても
+// 「星」としか言われず、ワイルドだとは伝わらない (#6365)。
+describe('MushiPage wild marker', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('says "wild" instead of leaving a bare star', async () => {
+    // 既定のフィクスチャは人間の手札に雷札を1枚持っている。
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<MushiPage />);
+
+    // ★ は語として読み上げられる。
+    expect(await screen.findByLabelText('ワイルド')).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain('{{');
+  });
+
+  // 否定コントロール: 盤面に雷札が1枚も無ければ ★ も読み上げも出ない。
+  // 既定のフィクスチャは手札に持っているので、盤ごと組み直す必要がある。
+  it('does not mark an ordinary card as wild', async () => {
+    const base = makeState();
+    mockExec.mockResolvedValue({
+      ...base,
+      field: [card(5, 3), card(9, 2, 1)],
+      players: base.players.map((p) => ({
+        ...p,
+        cards: (p.cards ?? []).map((c) => ({ ...c, isWild: false })),
+        captured: (p.captured ?? []).map((c) => ({ ...c, isWild: false })),
+      })),
+    });
+    renderWithProviders(<MushiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByLabelText('ワイルド')).not.toBeInTheDocument();
+    // body 全体の ★ は見ない。ルール説明 (wildRule) が本文に ★ を含んでいるので、
+    // それまで落とすと「説明文があるだけ」で赤くなる。
+  });
+});
