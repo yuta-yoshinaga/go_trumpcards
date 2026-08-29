@@ -11,6 +11,7 @@
   "boardHuman": "あなた: {{card}}",
   "boardHumanEmpty": "あなた: --",
   "boardPot": "  (場に{{count}}枚)",
+  "lastBurialCount": "（{{count}}枚伏せました）",
   "promptReveal": "step コマンドで次の1枚をめくります。",
   "promptResolvedHuman": "あなたがラウンドに勝利！ step で回収します。",
   "promptResolvedCpu": "CPUがラウンドに勝利... step で回収します。",
