@@ -24,6 +24,7 @@
   "wasteLabel": "[W{{idx}}] ",
   "wasteEmpty": "(empty)",
   "wasteFilled": "{{card}} ({{count}})",
+  "wasteRanks": " top 3: {{ranks}}",
   "stockLine": "Stock: {{count}}",
   "stockNext": " next: {{card}}",
   "hintStock": "Hint: stock → foundation {{foundation}}",
