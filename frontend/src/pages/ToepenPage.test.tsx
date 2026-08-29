@@ -225,4 +225,26 @@ describe('ToepenPage redeal', () => {
     fireEvent.click(screen.getByRole('button', { name: '配り直し（貧民）' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('redeal'));
   });
+
+  describe('last trick winner display', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      localStorage.clear();
+    });
+
+    it('displays the last trick winner when hand ends with a valid winner', async () => {
+      mockExec.mockResolvedValue(makeState({ phase: 2 /* HAND_END */, lastTrickWinner: 2 }));
+      renderWithProviders(<ToepenPage />);
+      await waitFor(() => expect(screen.getByTestId('toepen-last-trick-winner')).toBeInTheDocument());
+      expect(screen.getByTestId('toepen-last-trick-winner')).toHaveTextContent('最終トリック勝者: CPU2');
+      expect(screen.getByTestId('toepen-last-trick-winner')).not.toHaveTextContent('{{');
+    });
+
+    it('does not display the last trick winner when the value is the sentinel (-1)', async () => {
+      mockExec.mockResolvedValue(makeState({ phase: 2 /* HAND_END */, lastTrickWinner: -1 }));
+      renderWithProviders(<ToepenPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(screen.queryByTestId('toepen-last-trick-winner')).not.toBeInTheDocument();
+    });
+  });
 });

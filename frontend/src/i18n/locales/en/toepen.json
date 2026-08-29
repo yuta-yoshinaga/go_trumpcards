@@ -31,5 +31,6 @@
   "tutorial.toep": "A toep raises the stake by one. Opponents stay in or fold, and folding costs the stake BEFORE the raise.",
   "you": "You",
   "yourHand": "Your hand",
-  "toepedBy": "{{name}} toeps -- the stake is {{stake}}"
+  "toepedBy": "{{name}} toeps -- the stake is {{stake}}",
+  "lastTrickWinner": "Last trick winner: {{name}}"
 }

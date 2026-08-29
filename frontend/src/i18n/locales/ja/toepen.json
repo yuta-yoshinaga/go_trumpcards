@@ -31,5 +31,6 @@
   "tutorial.toep": "toep を宣言すると賭け点が 1 増えます。相手は追随か降参を選び、降参なら吊り上げ*前*の点で済みます",
   "you": "あなた",
   "yourHand": "あなたの手札",
-  "toepedBy": "{{name}} が toep を宣言（賭け点{{stake}}）"
+  "toepedBy": "{{name}} が toep を宣言（賭け点{{stake}}）",
+  "lastTrickWinner": "最終トリック勝者: {{name}}"
 }
