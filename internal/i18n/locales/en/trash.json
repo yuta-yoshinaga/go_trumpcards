@@ -31,9 +31,7 @@
   "winHuman": "You win!",
   "winCpu": "CPU wins",
   "hintWild": "Wild placement options: {{slots}} (recommended: {{rec}})",
-  "hintTakeDiscard": "The top discard fills slot {{slot}} -- worth taking.",
-  "hintTakeDiscardWild": "The top discard is a wild -- take it and place it in any slot.",
-  "hintDrawStock": "The discard is not useful. Draw from the stock.",
+  "hintDrawStock": "Drawing from the stock is the only move on your turn; the discard cannot be taken.",
   "hintGameOver": "The game is over.",
   "hintNotYourTurn": "It is not your turn right now.",
   "helpExampleHint": "  h                   ask for a move"
