@@ -10,7 +10,71 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
+
+func TestBuraCuiPresenter_ShowsWinningCombinationsFromDomainSource(t *testing.T) {
+	b := domain.NewDefaultBura()
+	b.Reset()
+
+	out := new(BuraCuiPresenter).Output(b, nil)
+
+	// Verify all winning combinations from domain.BuraWinningCombinations() appear in the output.
+	combos := domain.BuraWinningCombinations()
+	require.NotEmpty(t, combos)
+	for _, c := range combos {
+		key := c.Key()
+		require.NotEmpty(t, key)
+		translated := i18n.T("bura.combo." + key)
+		require.NotEqual(t, "bura.combo."+key, translated, "translation must exist for domain combo")
+		assert.Contains(t, out, translated)
+	}
+
+	// Negative control: Ensure untranslated raw combo keys never leak to output.
+	assert.NotContains(t, out, "bura.combo.")
+
+	// Ensure existing output elements are preserved.
+	assert.Contains(t, out, "トリック")
+	assert.Contains(t, out, "切札:")
+	assert.Contains(t, out, "あなた")
+	assert.Contains(t, out, "CPU")
+	assert.Contains(t, out, "----------")
+}
+
+func TestBuraCuiPresenter_ShowsWinningCombinationsFromDomainSource_English(t *testing.T) {
+	origLang := i18n.Lang()
+	i18n.SetLang("en")
+	defer i18n.SetLang(origLang)
+
+	b := domain.NewDefaultBura()
+	b.Reset()
+
+	out := new(BuraCuiPresenter).Output(b, nil)
+
+	combos := domain.BuraWinningCombinations()
+	require.NotEmpty(t, combos)
+	for _, c := range combos {
+		key := c.Key()
+		require.NotEmpty(t, key)
+		translated := i18n.T("bura.combo." + key)
+		require.NotEqual(t, "bura.combo."+key, translated, "translation must exist for domain combo")
+		assert.Contains(t, out, translated)
+	}
+
+	assert.NotContains(t, out, "bura.combo.")
+
+	assert.Contains(t, out, "trick")
+	assert.Contains(t, out, "trump:")
+	assert.Contains(t, out, "You")
+	assert.Contains(t, out, "CPU")
+	assert.Contains(t, out, "----------")
+}
+
+func TestBuraCuiPresenter_WinningCombosLine_DropsUntranslatedSilently(t *testing.T) {
+	line := buraWinningCombosLine()
+	assert.NotEmpty(t, line)
+	assert.NotContains(t, line, "bura.combo.")
+}
 
 func TestBuraCuiPresenter_ShowsTheHumanHandAndOnlyCountsForTheCpu(t *testing.T) {
 	b := domain.NewDefaultBura()

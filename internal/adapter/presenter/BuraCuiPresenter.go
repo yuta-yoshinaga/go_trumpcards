@@ -46,6 +46,9 @@ func (p *BuraCuiPresenter) Output(b interfaces.BuraGame, lastErr error) string {
 		}
 		sb.WriteString(i18n.Tf("bura.targetLine",
 			"target", strconv.Itoa(domain.BuraWinThreshold)) + "\n")
+		if line := buraWinningCombosLine(); line != "" {
+			sb.WriteString(line + "\n")
+		}
 
 		for i, player := range b.GetPlayers() {
 			sb.WriteString(buraPlayerStr(player, i, b.GetPlayerPoints(i)))
@@ -133,4 +136,28 @@ var buraHintReasonKeys = map[string]string{
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BuraCuiPresenter) ActionLogOutput(b interfaces.BuraGame) string {
 	return actionLogOutputTextForSeats[*domain.BuraPlayer](b)
+}
+
+// buraWinningCombosLine はドメイン定義の役一覧から表示行を生成する。
+// 役の定義順・一覧は domain.BuraWinningCombinations() を唯一の出所とし、
+// 未翻訳キー（i18n.T がキー名をそのまま返した場合）や空キーは黙って落とす。
+func buraWinningCombosLine() string {
+	combos := domain.BuraWinningCombinations()
+	parts := make([]string, 0, len(combos))
+	for _, c := range combos {
+		key := c.Key()
+		if key == "" {
+			continue
+		}
+		fullKey := "bura.combo." + key
+		val := i18n.T(fullKey)
+		if val == fullKey {
+			continue
+		}
+		parts = append(parts, val)
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return i18n.Tf("bura.combosLine", "combos", strings.Join(parts, " / "))
 }
