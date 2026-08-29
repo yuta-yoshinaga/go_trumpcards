@@ -187,3 +187,44 @@ describe('SevenBridgePage claim badge', () => {
     expect(screen.queryByTestId('sb-claimed-badge')).not.toBeInTheDocument();
   });
 });
+
+// ポン/チーとメルドは押せない理由を読み上げるのに、レイオフだけ無言だった
+// (#6343)。拒否の条件は「1枚だけ選ぶ」と「出せるメルドがある」の2つあるので、
+// **どちらで止まっているか**を言い分けられていることを見る。
+describe('SevenBridgePage layoff hint', () => {
+  const hint = () => screen.getByTestId('sb-layoff-hint').textContent ?? '';
+
+  it('names the missing meld when nobody has melded yet', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<SevenBridgePage />);
+    await waitFor(() => expect(screen.getByTestId('sb-layoff-hint')).toBeInTheDocument());
+
+    // fixture は全員 melds: [] なので、まず「出せるメルドが無い」で止まる。
+    expect(hint()).toBe('出せるメルドがまだありません');
+    // 選択枚数の話にすり替わっていないこと。
+    expect(hint()).not.toContain('1枚');
+  });
+
+  it('asks for exactly one card once a meld exists', async () => {
+    const withMeld: SevenBridgeResponse = {
+      ...playState,
+      // layoffTarget の初期値は 0。その席にメルドが無いと「メルドが無い」で
+      // 止まってしまうので、0 番の席に持たせる。
+      players: playState.players.map((p, i) =>
+        i === 0 ? { ...p, melds: [{ cards: [], kind: 0 }] } : p,
+      ) as SevenBridgeResponse['players'],
+    };
+    mockExec.mockResolvedValue(withMeld);
+    renderWithProviders(<SevenBridgePage />);
+    await waitFor(() => expect(screen.getByTestId('sb-layoff-hint')).toBeInTheDocument());
+
+    expect(hint()).toBe('カードを1枚だけ選択してください');
+  });
+
+  it('describes the layoff button, so the reason is announced with it', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<SevenBridgePage />);
+    const button = await screen.findByRole('button', { name: 'レイオフ' });
+    expect(button).toHaveAttribute('aria-describedby', 'sb-layoff-hint');
+  });
+});
