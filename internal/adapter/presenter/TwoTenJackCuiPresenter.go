@@ -64,8 +64,6 @@ func (p *TwoTenJackCuiPresenter) Output(s interfaces.TwoTenJackGame, lastErr err
 			"suit", twoTenJackSuitLabel(s.GetTrumpSuit()),
 			"declarer", strconv.Itoa(s.GetDeclarerIdx())) + "\n")
 
-		// 2 チームは席の偶奇そのもの。twoTenJackPlayerStr が席ごとに出す
-		// team ラベルと同じ i%2 で畳むので、行とここが食い違うことはない。
 		var teamCum, teamPoints [twoTenJackTeamCnt]int
 		for i := 0; i < s.GetPlayerCnt(); i++ {
 			pl := s.GetPlayer(i)
