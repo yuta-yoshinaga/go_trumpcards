@@ -521,6 +521,8 @@
     "errorBoundaryDetails": "Show error details"
   },
   "messageCode": {
+    "catchten.errCardIndexOutOfRange": "That card index is out of range.",
+    "catchten.errFollowLeadSuit": "You must follow the lead suit.",
     "accordion.gameClear": "Game Clear! Moves: {{moveCount}}",
     "accordion.gameOver": "Game Over",
     "accordion.hintAvailable": "Hint available",

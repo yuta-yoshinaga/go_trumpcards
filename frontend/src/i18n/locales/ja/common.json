@@ -521,6 +521,8 @@
     "errorBoundaryDetails": "エラーの詳細を表示"
   },
   "messageCode": {
+    "catchten.errCardIndexOutOfRange": "カードインデックスが範囲外です",
+    "catchten.errFollowLeadSuit": "リードスートに従ってください",
     "accordion.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "accordion.gameOver": "ゲームオーバー",
     "accordion.hintAvailable": "ヒントがあります",

@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestCatchTenCuiPresenter_Output(t *testing.T) {
@@ -33,6 +34,24 @@ func TestCatchTenCuiPresenter_Output(t *testing.T) {
 		m, _ := setupCatchTenWebMockWithPlayers()
 		result := p.Output(m, errors.New("boom"))
 		assert.Contains(t, result, "boom")
+	})
+
+	t.Run("i18n error message", func(t *testing.T) {
+		origLang := i18n.Lang()
+		t.Cleanup(func() { i18n.SetLang(origLang) })
+
+		m, _ := setupCatchTenWebMockWithPlayers()
+		errCode := domain.NewDomainErrorCode(domain.ErrInvalidCard, "catchten.errCardIndexOutOfRange", nil)
+
+		i18n.SetLang("ja")
+		jaResult := p.Output(m, errCode)
+		assert.Contains(t, jaResult, "カードインデックスが範囲外です")
+		assert.NotContains(t, jaResult, "out of range")
+
+		i18n.SetLang("en")
+		enResult := p.Output(m, errCode)
+		assert.Contains(t, enResult, "out of range")
+		assert.NotContains(t, enResult, "カードインデックスが範囲外です")
 	})
 
 	t.Run("trick end", func(t *testing.T) {
