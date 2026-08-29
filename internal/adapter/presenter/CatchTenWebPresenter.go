@@ -96,6 +96,9 @@ func (p *CatchTenWebPresenter) buildPlayersOutput(g interfaces.CatchTenGame) []*
 // 終了時は humanWin(チーム0=人間側) / cpuWin(チーム1) / draw のいずれかを返す。
 func (p *CatchTenWebPresenter) buildMessage(g interfaces.CatchTenGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

@@ -93,12 +93,23 @@ func TestCatchTenWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 1, resObj.Players[1].Team)
 	})
 
-	t.Run("error message", func(t *testing.T) {
+	t.Run("error without code falls back to message", func(t *testing.T) {
 		m, _ := setupCatchTenWebMockWithPlayers()
 		result := p.Output(m, errors.New("test error"))
 		var resObj controller.CatchTenWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.Equal(t, "test error", resObj.Message)
+		assert.Empty(t, resObj.MessageCode)
+	})
+
+	t.Run("error with code populates messageCode", func(t *testing.T) {
+		m, _ := setupCatchTenWebMockWithPlayers()
+		errCode := domain.NewDomainErrorCode(domain.ErrInvalidCard, "catchten.errCardIndexOutOfRange", nil)
+		result := p.Output(m, errCode)
+		var resObj controller.CatchTenWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "catchten.errCardIndexOutOfRange", resObj.MessageCode)
 	})
 
 	t.Run("game end humanWin (team 0)", func(t *testing.T) {
