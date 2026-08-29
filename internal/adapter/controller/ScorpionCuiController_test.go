@@ -1,12 +1,15 @@
 package controller
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newMockScorpionInteractor() *mockusecase.MockScorpionInteractor {
@@ -88,12 +91,89 @@ func TestScorpionCuiControllerActionLog(t *testing.T) {
 	assert.Equal(t, "log_output", c.Exec("l"))
 }
 
-func TestScorpionCuiControllerUndo(t *testing.T) {
+// #6339: u / undo / un / undo_n に数値を渡すと UndoN(n) が呼ばれる。
+func TestScorpionCuiControllerUndoTakesACount(t *testing.T) {
+	for _, alias := range []string{"u", "undo", "un", "undo_n"} {
+		t.Run(alias, func(t *testing.T) {
+			si := newMockScorpionInteractor()
+			c := NewScorpionCuiController(si)
+			si.On("UndoN", 3).Return("undone 3")
+			assert.Equal(t, "undone 3", c.Exec(alias+" 3"))
+			si.AssertCalled(t, "UndoN", 3)
+			si.AssertNotCalled(t, "Undo")
+		})
+	}
+}
+
+// 引数なしの u / undo は従来どおり Undo() を呼び、UndoN は呼ばない。
+func TestScorpionCuiControllerBareUndoStillUndoesOnce(t *testing.T) {
+	for _, alias := range []string{"u", "undo"} {
+		t.Run(alias, func(t *testing.T) {
+			si := newMockScorpionInteractor()
+			c := NewScorpionCuiController(si)
+			si.On("Undo").Return("undone")
+			assert.Equal(t, "undone", c.Exec(alias))
+			si.AssertCalled(t, "Undo")
+			si.AssertNotCalled(t, "UndoN", mock.Anything)
+			si.AssertNotCalled(t, "UndoToEscape")
+		})
+	}
+}
+
+// 引数なしの un / undo_n は UndoToEscape() が返した件数（0でも1でもない値）を UndoN に渡す。
+func TestScorpionCuiControllerBareUnUsesUndoToEscape(t *testing.T) {
+	for _, alias := range []string{"un", "undo_n"} {
+		t.Run(alias, func(t *testing.T) {
+			si := newMockScorpionInteractor()
+			c := NewScorpionCuiController(si)
+			si.On("UndoToEscape").Return(4)
+			si.On("UndoN", 4).Return("undone 4")
+			assert.Equal(t, "undone 4", c.Exec(alias))
+			si.AssertCalled(t, "UndoToEscape")
+			si.AssertCalled(t, "UndoN", 4)
+			si.AssertNotCalled(t, "Undo")
+		})
+	}
+}
+
+// UndoToEscape() が 0 以下のとき、UndoN は呼ばれず、メッセージが返る。
+func TestScorpionCuiControllerBareUnWhenNoEscape(t *testing.T) {
+	for _, val := range []int{0, -1} {
+		t.Run(strconv.Itoa(val), func(t *testing.T) {
+			si := newMockScorpionInteractor()
+			c := NewScorpionCuiController(si)
+			si.On("UndoToEscape").Return(val)
+			out := c.Exec("un")
+			assert.Contains(t, out, i18n.T("scorpion.noUndoToEscape"))
+			si.AssertCalled(t, "UndoToEscape")
+			si.AssertNotCalled(t, "UndoN", mock.Anything)
+			si.AssertNotCalled(t, "Undo")
+		})
+	}
+}
+
+// 不正な引数（0, -1, 数値以外）はエラーメッセージを返し、Undo / UndoN は呼ばない。
+func TestScorpionCuiControllerUndoRejectsABadCount(t *testing.T) {
+	for _, arg := range []string{"0", "-1", "zz", "1.5"} {
+		t.Run(arg, func(t *testing.T) {
+			si := newMockScorpionInteractor()
+			c := NewScorpionCuiController(si)
+			out := c.Exec("un " + arg)
+			assert.Contains(t, out, i18n.Tf("scorpion.invalidUndoCount", "val", arg))
+			si.AssertNotCalled(t, "UndoN", mock.Anything)
+			si.AssertNotCalled(t, "Undo")
+			si.AssertNotCalled(t, "UndoToEscape")
+		})
+	}
+}
+
+// 回数の上限は決めずに素通しする。
+func TestScorpionCuiControllerUndoPassesLargeCountsThrough(t *testing.T) {
 	si := newMockScorpionInteractor()
 	c := NewScorpionCuiController(si)
-	si.On("Undo").Return("undo_output")
-	assert.Equal(t, "undo_output", c.Exec("u"))
-	assert.Equal(t, "undo_output", c.Exec("undo"))
+	si.On("UndoN", 9999).Return("not enough history")
+	assert.Equal(t, "not enough history", c.Exec("un 9999"))
+	si.AssertCalled(t, "UndoN", 9999)
 }
 
 func TestScorpionCuiControllerMoveShorthandTopCard(t *testing.T) {

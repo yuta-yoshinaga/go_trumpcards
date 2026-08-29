@@ -16,13 +16,12 @@ var scorpionNoArgCommands = cuiutil.NewCommandMap[usecase.ScorpionInteractorIF](
 	Add(usecase.ScorpionInteractorIF.Deal, "d", "deal").
 	Add(usecase.ScorpionInteractorIF.GiveUp, "g", "giveup").
 	Add(usecase.ScorpionInteractorIF.AutoComplete, "ac", "autocomplete").
-	Add(usecase.ScorpionInteractorIF.Undo, "u", "undo").
 	Add(usecase.ScorpionInteractorIF.Hint, "h", "hint").
 	Add(usecase.ScorpionInteractorIF.ActionLog, "log", "l")
 
 // scorpionArgfulCommands lists alias names for argful commands handled in the
 // Exec switch.
-var scorpionArgfulCommands = []string{"m", "move", "legal"}
+var scorpionArgfulCommands = []string{"m", "move", "legal", "u", "undo", "un", "undo_n"}
 
 // ScorpionCuiController スコーピオンCUIコントローラークラス
 type ScorpionCuiController struct {
@@ -49,11 +48,32 @@ func (c *ScorpionCuiController) Exec(command string) string {
 				return c.handleMove(args), true
 			case "legal":
 				return c.handleLegal(args), true
+			case "u", "undo", "un", "undo_n":
+				return c.handleUndo(cmd, args), true
 			default:
 				return "", false
 			}
 		},
 	)
+}
+
+// handleUndo アンドゥコマンドを処理する。
+// 引数なしの u / undo は 1 手戻す。
+// 引数なしの un / undo_n は UndoToEscape() の手数を既定値として戻す。
+// 引数ありは指定された手数を戻す。
+func (c *ScorpionCuiController) handleUndo(cmd string, args []string) string {
+	if len(args) == 0 {
+		if cmd == "un" || cmd == "undo_n" {
+			n := c.si.UndoToEscape()
+			if n <= 0 {
+				return i18n.MarkError(i18n.T("scorpion.noUndoToEscape"))
+			}
+			return c.si.UndoN(n)
+		}
+		return c.si.Undo()
+	}
+	out, _ := cuiutil.WithParsedIntKeys(args, "", "scorpion.invalidUndoCount", 1, cuiutil.NoMax, c.si.UndoN)
+	return out
 }
 
 // handleMove 移動コマンドを処理
