@@ -8,6 +8,7 @@
   "header": "Round: {{round}}  Trick: {{trick}}",
   "trumpLine": "Trump: {{suit}}",
   "teamScoreLine": "Team scores: Team 0={{t0}}  Team 1={{t1}}",
+  "pointLimitLine": "Point limit: {{limit}}",
   "playerLine": "{{name}} (Team {{team}}): tricks={{tricks}} cumulative={{cum}} round={{round}} cards={{cards}}",
   "gameEnd": "Game over! Team {{team}} wins!",
   "promptCurrentPlayer": "{{name}} to play",
