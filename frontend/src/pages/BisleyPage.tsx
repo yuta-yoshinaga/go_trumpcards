@@ -30,7 +30,9 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BisleyMoveZone, BisleyResponse } from '../types/card';
 import { BisleyPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { getBisleyStackTargets } from '../utils/bisleyStackTargets';
+import { cardAlt, suitSymbol } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 import { BISLEY_HELP, parseBisleyCommand } from '../utils/cli/commands/bisleyCommands';
 import { formatBisleyState } from '../utils/cli/formatters/bisleyFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -227,6 +229,7 @@ function BisleyPageContent() {
                 // the pressed state has to stay on that one card, or every card
                 // in a selected column would announce itself as selected.
                 const isSelected = isTop && isSourceSelected('tableau', colIdx);
+                const targets = isTop && tc2.card ? getBisleyStackTargets(tc2.card) : [];
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -249,7 +252,7 @@ function BisleyPageContent() {
                         draggable={isPlaying && !loading && isTop}
                         onDragStart={dnd.handleDragStart(tableauColZone)}
                         onDragEnd={dnd.handleDragEnd}
-                        className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(tableauColZone) ? 'opacity-50' : ''}`}
+                        className={`group relative p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(tableauColZone) ? 'opacity-50' : ''}`}
                       >
                         <AnimatedCard
                           card={tc2.card}
@@ -258,6 +261,17 @@ function BisleyPageContent() {
                           style={{ width: '100%' }}
                           wrapperClassName="block w-full"
                         />
+                        {targets.length > 0 && (
+                          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full mb-1 hidden group-hover:block group-focus-visible:block bg-black/90 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-50 pointer-events-none">
+                            {t('stackTarget', {
+                              // **同スート限定**。ランクだけ並べると「どの 5 でも
+                              // 置ける」と読めてしまう (規則は同スートで1つ違い)。
+                              cards: targets
+                                .map((v) => `${suitSymbol(tc2.card?.design ?? '')} ${valueName(v)}`)
+                                .join(' / '),
+                            })}
+                          </div>
+                        )}
                       </button>
                     ) : null}
                   </div>

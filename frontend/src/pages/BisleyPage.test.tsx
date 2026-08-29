@@ -283,3 +283,49 @@ describe('BisleyPage keyboard shortcuts', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 });
+describe('BisleyPage hover targets', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('renders hover targets on the top card of a tableau column', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        // Normal card (5) -> [4, 6] -> 4, 6
+        [{ card: card('SPADE', 5), faceUp: true }],
+        // Ace (1) -> [2] -> 2
+        [{ card: card('HEART', 1), faceUp: true }],
+        // King (13) -> [12] -> Q
+        [{ card: card('CLOVER', 13), faceUp: true }],
+        // Empty column
+        [],
+      ]),
+    });
+    renderWithProviders(<BisleyPage />);
+
+    // **同スート限定なのでスートまで出す。** ランクだけだと「どの 5 でも置ける」
+    // と読めてしまう (規則は同スートで1つ違い)。
+    // ♠5 -> ♠4 / ♠6
+    expect(await screen.findByText('♠ 4 / ♠ 6 が置けます')).toBeInTheDocument();
+
+    // ♥A -> ♥2 のみ
+    expect(await screen.findByText('♥ 2 が置けます')).toBeInTheDocument();
+
+    // ♣K -> ♣Q のみ
+    expect(await screen.findByText('♣ Q が置けます')).toBeInTheDocument();
+
+    // 否定コントロール: Ace や King の逆方向がないこと
+    expect(screen.queryByText(/0.*が置けます/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/14.*が置けます/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/A が置けます/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/K が置けます/)).not.toBeInTheDocument();
+
+    // 空列には出ないこと (nothing else should match)
+    // There should be exactly 3 stack targets rendered
+    const tooltips = screen.getAllByText(/が置けます/);
+    expect(tooltips).toHaveLength(3);
+  });
+});
