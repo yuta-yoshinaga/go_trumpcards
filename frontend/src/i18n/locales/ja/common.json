@@ -1038,6 +1038,7 @@
     "dramahahilo.result.lowWin": "ドロー役でポットの半分を獲得しました。",
     "dramahahilo.result.scoop": "両取り（スクープ）！ オマハ役とドロー役の両方でポットを獲得しました。",
     "duchess.chooseBase": "基準となるランクを選んでください",
+    "duchess.errEmptyColumnReserveOnly": "空の列にはリザーブからしか置けません",
     "duchess.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "duchess.gameOver": "ゲームオーバー",
     "duchess.hintAvailable": "ヒントがあります",
