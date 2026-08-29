@@ -70,5 +70,6 @@
     "schwarz": "schwarz"
   },
   "scoreBreakdownDoubled": "Breakdown: base {{base}} x multiplier {{multiplier}} x 2 (doubled on a loss, matadors {{matadors}}) = {{value}}",
-  "scoreBreakdownOverbid": "Breakdown: overbid - bid {{bid}} x 2 = {{value}} (base {{base}} x multiplier {{multiplier}} did not reach the bid)"
+  "scoreBreakdownOverbid": "Breakdown: overbid - bid {{bid}} x 2 = {{value}} (base {{base}} x multiplier {{multiplier}} did not reach the bid)",
+  "scoreBreakdownNull": "Breakdown: base {{base}} (no multiplier) = {{value}}"
 }

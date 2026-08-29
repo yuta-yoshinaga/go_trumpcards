@@ -307,20 +307,29 @@ function SkatPageContent() {
             {/* 得点の内訳。マタドール (切り札の連続所持/不所持) はスカートで最も
                 分かりにくい規則なのに、どちらの UI も最終値しか出していなかった
                 (#5561)。計算はサーバが済ませているので数字をそのまま並べる。 */}
-            {(isRoundEnd || isGameEnd) && state.scoreBreakdown && !state.scoreBreakdown.null && (
+            {(isRoundEnd || isGameEnd) && state.scoreBreakdown && (
               <div className="text-ds-text-muted text-xs mt-2" data-testid="skat-score-breakdown">
-                {t(skatScoreFormulaKey(state.scoreBreakdown), {
-                  base: state.scoreBreakdown.base,
-                  matadors: state.scoreBreakdown.matadors,
-                  multiplier: state.scoreBreakdown.multiplier,
-                  bid: state.scoreBreakdown.bid,
-                  value: state.scoreBreakdown.value,
-                })}
-                {/* 付いていないボーナスは書かない。丸括弧ごと消える。 */}
-                {skatScoreBonusKeys(state.scoreBreakdown).length > 0 &&
-                  ` (${skatScoreBonusKeys(state.scoreBreakdown)
-                    .map((key) => t(key))
-                    .join(', ')})`}
+                {state.scoreBreakdown.null ? (
+                  t('scoreBreakdownNull', {
+                    base: state.scoreBreakdown.base,
+                    value: state.scoreBreakdown.value,
+                  })
+                ) : (
+                  <>
+                    {t(skatScoreFormulaKey(state.scoreBreakdown), {
+                      base: state.scoreBreakdown.base,
+                      matadors: state.scoreBreakdown.matadors,
+                      multiplier: state.scoreBreakdown.multiplier,
+                      bid: state.scoreBreakdown.bid,
+                      value: state.scoreBreakdown.value,
+                    })}
+                    {/* 付いていないボーナスは書かない。丸括弧ごと消える。 */}
+                    {skatScoreBonusKeys(state.scoreBreakdown).length > 0 &&
+                      ` (${skatScoreBonusKeys(state.scoreBreakdown)
+                        .map((key) => t(key))
+                        .join(', ')})`}
+                  </>
+                )}
               </div>
             )}
 
