@@ -144,9 +144,9 @@ func badugiDispatch(bc *baseController, w http.ResponseWriter, bi usecase.Badugi
 		if indices == nil {
 			indices = []int{}
 		}
-		bc.writePresenterResponse(w, bi.Exchange(indices))
+		bc.writePresenterResponse(w, bi.Exchange(indices, param.HumanPlayMs))
 	case "s", "stand":
-		bc.writePresenterResponse(w, bi.Stand())
+		bc.writePresenterResponse(w, bi.Stand(param.HumanPlayMs))
 	case "f", "fold":
 		bc.writePresenterResponse(w, bi.Action(domain.BadugiActionFold, 0, param.HumanPlayMs))
 	case "ck", "check":

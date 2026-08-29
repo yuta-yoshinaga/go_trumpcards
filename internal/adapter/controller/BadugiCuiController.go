@@ -57,9 +57,9 @@ func (bcc *BadugiCuiController) Exec(command string) string {
 				if len(skipped) > 0 {
 					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
 				}
-				return bcc.bi.Exchange(indices), true
+				return bcc.bi.Exchange(indices, 0), true
 			case "s", "stand":
-				return bcc.bi.Stand(), true
+				return bcc.bi.Stand(0), true
 			case "b", "bet":
 				amount := parseCuiAmount(args)
 				return bcc.bi.Action(domain.BadugiActionBet, amount, 0), true

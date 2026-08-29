@@ -182,8 +182,8 @@ function BadugiPageContent() {
     cardCount,
     onToggle: toggleCard,
     onConfirm: useCallback(() => {
-      if (canExchange && !loading) execAction('exchange', selected);
-    }, [canExchange, loading, execAction, selected]),
+      if (canExchange && !loading) execAction('exchange', selected, undefined, undefined, getElapsed());
+    }, [canExchange, loading, execAction, selected, getElapsed]),
     onClear: clearSelection,
     enabled: canExchange,
   });
@@ -415,7 +415,7 @@ function BadugiPageContent() {
                   type="button"
                   className={`${btnWarning} min-w-[90px]`}
                   disabled={loading}
-                  onClick={() => execAction('exchange', selected)}
+                  onClick={() => execAction('exchange', selected, undefined, undefined, getElapsed())}
                   data-testid="bg-exchange-btn"
                 >
                   {t('exchangeLabel')}
@@ -426,7 +426,7 @@ function BadugiPageContent() {
                     humanHasCompleteBadugi ? ' ring-2 ring-ds-accent animate-pulse' : ''
                   }`}
                   disabled={loading}
-                  onClick={() => execAction('stand')}
+                  onClick={() => execAction('stand', undefined, undefined, undefined, getElapsed())}
                   data-testid="bg-stand-btn"
                 >
                   {t('standLabel')}
