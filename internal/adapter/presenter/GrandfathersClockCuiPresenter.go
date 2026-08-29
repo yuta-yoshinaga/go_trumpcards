@@ -22,6 +22,17 @@ func grandfathersClockColumnStr(colCards []*domain.GrandfathersClockTableauCard)
 	return strings.Join(parts, " ")
 }
 
+// grandfathersClockCompletedFaces returns the number of completed clock faces.
+func grandfathersClockCompletedFaces(gc interfaces.GrandfathersClockGame) int {
+	faces := 0
+	for i := range gc.GetFoundation() {
+		if gc.IsFoundationComplete(i) {
+			faces++
+		}
+	}
+	return faces
+}
+
 // GrandfathersClockCuiPresenter renders the Grandfather's Clock CUI view.
 type GrandfathersClockCuiPresenter struct{}
 
@@ -80,6 +91,9 @@ func (p *GrandfathersClockCuiPresenter) Output(gc interfaces.GrandfathersClockGa
 						"count", strconv.Itoa(n))) + "\n")
 				}
 			}
+			b.WriteString(i18n.Tf("grandfathersclock.facesComplete",
+				"count", strconv.Itoa(grandfathersClockCompletedFaces(gc)),
+				"total", strconv.Itoa(domain.GrandfathersClockFoundationCnt)) + "\n")
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(gc.GetMoveCount())) + "\n")
 		case domain.GrandfathersClockPhaseGameClear:
@@ -87,14 +101,8 @@ func (p *GrandfathersClockCuiPresenter) Output(gc interfaces.GrandfathersClockGa
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(gc.GetMoveCount())) + "\n")
 		case domain.GrandfathersClockPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
-			faces := 0
-			for i := range gc.GetFoundation() {
-				if gc.IsFoundationComplete(i) {
-					faces++
-				}
-			}
 			b.WriteString(color.Yellow(cuiSolitaireGameOverFaces(
-				faces, domain.GrandfathersClockFoundationCnt)) + "\n")
+				grandfathersClockCompletedFaces(gc), domain.GrandfathersClockFoundationCnt)) + "\n")
 		}
 	})
 }
