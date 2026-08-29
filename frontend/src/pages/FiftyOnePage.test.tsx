@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { FiftyOneResponse } from '../types/card';
 
@@ -270,5 +271,103 @@ describe('FiftyOnePage stop indicator', () => {
     renderWithProviders(<FiftyOnePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('fo-stop-called')).not.toBeInTheDocument();
+  });
+});
+
+describe('FiftyOnePage keyboard shortcuts', () => {
+  it('pressing p dispatches exchange when a hand and table card are selected', async () => {
+    mockExec.mockResolvedValue(baseState);
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    // Select hand card index 0 and table card index 0
+    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'p' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { handIdx: 0, tableIdx: 0 }));
+  });
+
+  it('pressing a dispatches exchangeall', async () => {
+    mockExec.mockResolvedValue(baseState);
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'a' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchangeall'));
+  });
+
+  it('pressing s dispatches stop', async () => {
+    mockExec.mockResolvedValue(baseState);
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 's' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stop'));
+  });
+
+  it('pressing r dispatches reset when game is ended', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'r' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 1 } }));
+  });
+
+  it('ignores p key when cards are not selected', async () => {
+    mockExec.mockResolvedValue(baseState);
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'p' });
+    // Need to flush pending dispatches, wait a tick.
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('ignores s key when stop has already been called', async () => {
+    mockExec.mockResolvedValue({ ...baseState, stopCallerIdx: 2 });
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 's' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('renders ActionShortcutsPanel with translated labels', async () => {
+    mockExec.mockResolvedValue(baseState);
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(screen.getByTestId('fifty-one-kbd-shortcuts')).toBeInTheDocument());
+    const panel = screen.getByTestId('fifty-one-kbd-shortcuts');
+    // Open the panel so its contents are mounted
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+
+    // Ensure the translated keys from common.json appear.
+    // 'a' -> exchangeAll
+    expect(panel).toHaveTextContent('全交換する');
+    // 's' -> stop
+    expect(panel).toHaveTextContent('ストップをかける');
+
+    // Select hand card index 0 and table card index 0 to enable exchange
+    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+
+    // 'p' -> exchange
+    expect(panel).toHaveTextContent('カードを交換する');
   });
 });
