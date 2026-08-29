@@ -66,6 +66,10 @@ func (p *RussianSolitaireCuiPresenter) Output(r interfaces.RussianSolitaireGame,
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(r.GetMoveCount())) + "\n")
+			// Yukon と盤面も操作も同じで、違うのは置ける条件だけ
+			// (同スートで 1 つ下、空列は K のみ)。Yukon 側の blockMoveRule は
+			// 「まとめて動く」話なので、同じキー名にすると読む側が取り違える。
+			b.WriteString(i18n.T("russiansolitaire.tableauPlacementRule") + "\n")
 		case domain.RussianSolitairePhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(r.GetMoveCount())) + "\n")
