@@ -72,8 +72,7 @@ func (p *PageOneCuiPresenter) Output(g interfaces.PageOneGame, lastErr error) st
 		if len(penalties) > 0 {
 			var names []string
 			for _, pen := range penalties {
-				p := g.GetPlayer(pen.PlayerIdx)
-				names = append(names, cuiPlayerName(p, pen.PlayerIdx))
+				names = append(names, cuiPlayerName(g.GetPlayer(pen.PlayerIdx), pen.PlayerIdx))
 			}
 			nameStr := strings.Join(names, ", ")
 			fmt.Fprintf(b, "%s\n", color.Yellow(i18n.Tf("pageone.penaltyApplied", "name", nameStr, "count", strconv.Itoa(domain.PageOnePenaltyDraw))))

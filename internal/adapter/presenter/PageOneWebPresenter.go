@@ -111,7 +111,10 @@ func (p *PageOneWebPresenter) HintOutput(g interfaces.PageOneGame) string {
 // cuiPlayerCpu を使うのは、同じ相手が画面ごとに別の名前で出ないため。
 // CUI 側の cuiPlayerName は ANSI の装飾を混ぜるので JSON には渡せない。
 func pageOnePenaltyPlayerName(player *domain.PageOnePlayer, idx int) string {
-	if player != nil && player.GetIsHuman() {
+	if player == nil {
+		return i18n.T("cuiPlayerUnknown")
+	}
+	if player.GetIsHuman() {
 		return i18n.T("cuiPlayerYou")
 	}
 	return i18n.Tf("cuiPlayerCpu", "idx", strconv.Itoa(idx))
