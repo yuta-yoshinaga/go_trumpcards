@@ -171,7 +171,7 @@ func (ns *NapoleonsSquare) Draw() error {
 		return NewDomainErrorCode(ErrWrongPhase, "napoleonssquare.errNotPlaying", nil)
 	}
 	if len(ns.stock) == 0 {
-		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errNoCardsInStock", nil)
+		return NewDomainErrorCode(ErrDeckExhausted, "napoleonssquare.errNoCardsInStock", nil)
 	}
 	ns.takeSnapshot()
 	card := ns.stock[0]
