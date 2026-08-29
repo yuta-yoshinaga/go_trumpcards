@@ -25,7 +25,7 @@
   "redealsLeft": "{{count}} redeal(s) left",
   "foundationAriaLabel": "Foundation {{idx}}, {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation {{idx}}",
-  "braidAriaLabel": "Braid, {{count}} left (tail only, foundations only)",
+  "braidAriaLabel": "Braid {{card}}, {{count}} left (tail only, foundations only)",
   "emptyBraidAriaLabel": "The braid is empty",
   "fieldAriaLabel": "Braid field {{idx}}",
   "emptyFieldAriaLabel": "Empty braid field {{idx}} (refills from the braid)",

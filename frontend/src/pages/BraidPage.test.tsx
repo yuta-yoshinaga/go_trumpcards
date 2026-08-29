@@ -140,7 +140,7 @@ describe('BraidPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BraidPage />);
     const braid = await screen.findByRole('button', {
-      name: 'ブレイド 残り2枚（末尾のみ・組札にのみ出せます）',
+      name: 'ブレイド ♠ 9 残り2枚（末尾のみ・組札にのみ出せます）',
     });
     fireEvent.click(braid);
     await waitFor(() => expect(braid).toHaveAttribute('aria-pressed', 'true'));
@@ -445,5 +445,36 @@ describe('BraidPage direction announcement', () => {
     renderWithProviders(<BraidPage />);
     const banner = await screen.findByTestId('direction-up');
     expect(banner.closest('[data-tutorial="br-direction"]')).not.toBeNull();
+  });
+});
+
+// ボタンの aria-label は中の <AnimatedCard> の alt を上書きするので、枚数しか
+// 言っていないと**末尾の札が何か**が読み上げから完全に消える (#6360)。
+// 同じページの捨て札は cardAlt を使っていて、ブレイドだけ不揃いだった。
+describe('BraidPage braid tail label', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('names the tail card, not just how many are left', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BraidPage />);
+
+    // 末尾は braid の最後の札 (♠ 9)。手前の ♣ 3 ではない。
+    const braid = await screen.findByRole('button', { name: /^ブレイド ♠ 9 / });
+    expect(braid).toBeInTheDocument();
+    expect(braid.getAttribute('aria-label')).toContain('残り2枚');
+    expect(braid.getAttribute('aria-label')).not.toContain('{{');
+  });
+
+  // 否定コントロール: 空のときは別のラベルで、札名を騙らない。
+  it('says the braid is empty without naming a card', async () => {
+    mockExec.mockResolvedValue({ ...playingState, braid: [] });
+    renderWithProviders(<BraidPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByRole('button', { name: /^ブレイド ♠/ })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('ブレイドは空です')).toBeInTheDocument();
   });
 });
