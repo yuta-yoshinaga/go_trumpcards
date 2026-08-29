@@ -23,9 +23,10 @@ func (p *WaspWebPresenter) Output(s interfaces.WaspGame, lastErr error) string {
 	if s.GetPhase() == domain.WaspPhasePlaying && !s.IsStalemate() {
 		if hint := s.GetHint(); hint != nil {
 			resObj.Hint = &controller.WaspWebOutputHint{
-				FromCol:   hint.FromCol,
-				CardIndex: hint.CardIndex,
-				ToCol:     hint.ToCol,
+				FromCol:         hint.FromCol,
+				CardIndex:       hint.CardIndex,
+				ToCol:           hint.ToCol,
+				ExposesFaceDown: hint.ExposesFaceDown,
 			}
 		}
 	}
@@ -59,9 +60,10 @@ func (p *WaspWebPresenter) HintOutput(s interfaces.WaspGame) string {
 	hint := s.GetHint()
 	if hint != nil {
 		resObj.Hint = &controller.WaspWebOutputHint{
-			FromCol:   hint.FromCol,
-			CardIndex: hint.CardIndex,
-			ToCol:     hint.ToCol,
+			FromCol:         hint.FromCol,
+			CardIndex:       hint.CardIndex,
+			ToCol:           hint.ToCol,
+			ExposesFaceDown: hint.ExposesFaceDown,
 		}
 		resObj.MessageCode = "wasp.hintAvailable"
 	} else {
