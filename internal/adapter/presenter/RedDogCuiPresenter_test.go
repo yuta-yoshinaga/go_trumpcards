@@ -307,35 +307,35 @@ func TestRedDogCuiPresenter_Output_Paytable(t *testing.T) {
 	assert.NotContains(t, outputInPhase(domain.RedDogPhaseEnd), header)
 }
 
-// TestRedDogThirdCardHits は述語そのものを直接見る。
+// TestRedDogCuiPresenter_Output_EndPairDealShowsNoGuide はペア初手の局で
+// 案内が出ないことを見る。
 //
-// Output 経由のテストだけだと、初期2枚が昇順で渡る配りしか通らず、
-// 逆順の入れ替えと、そもそも 2 枚そろっていない場合のガードが未検査のまま残る。
-func TestRedDogThirdCardHits(t *testing.T) {
-	c := func(v int) *domain.Card { return domain.NewCard(domain.CardDesignSpade, v, false) }
+// ペアの局は「間に入ったか」ではなく「ペアと同じランクを引いたか」で決まる
+// (RedDog.go:206)。当たりランクの一覧はその規則を説明していないので、勝った局でも
+// 出してはいけない。案内側は GetResult() を「間に入ったか」として読んでいるので、
+// この除外が外れると、ペアを引いて勝った局に的外れなランク一覧が出る。
+func TestRedDogCuiPresenter_Output_EndPairDealShowsNoGuide(t *testing.T) {
+	i18n.SetLang("ja")
+	rd := new(interfaces.MockRedDogGame)
+	rd.On("GetChips").Return(1100).Maybe()
+	rd.On("GetPhase").Return(domain.RedDogPhaseEnd).Maybe()
+	rd.On("GetAnte").Return(100).Maybe()
+	rd.On("GetRaise").Return(0).Maybe()
+	rd.On("GetSpread").Return(0).Maybe()
+	// 初期2枚が同ランク＝ペア初手。3枚目も同ランクで勝ち。
+	rd.On("GetInitialCards").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignHeart, 5, false),
+	}).Maybe()
+	rd.On("GetThirdCard").Return(domain.NewCard(domain.CardDesignClover, 5, false)).Maybe()
+	rd.On("GetResult").Return(domain.GameResultWin).Maybe()
+	rd.On("GetTotalPayout").Return(1200).Maybe()
+	rd.On("GetGameEndFlag").Return(true).Maybe()
+	rd.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
-	t.Run("hits inside the span", func(t *testing.T) {
-		assert.True(t, redDogThirdCardHits([]*domain.Card{c(5), c(10)}, c(7)))
-	})
+	p := new(RedDogCuiPresenter)
+	out := p.Output(rd, nil)
 
-	t.Run("the two initial cards may arrive in either order", func(t *testing.T) {
-		// 同じ 5-10 のスプレッドを高い札から渡す。入れ替えを落とすと
-		// lo > hi になり、どの札も範囲に入らず常に外れになる。
-		assert.True(t, redDogThirdCardHits([]*domain.Card{c(10), c(5)}, c(7)))
-	})
-
-	t.Run("the two initial cards themselves are not inside", func(t *testing.T) {
-		assert.False(t, redDogThirdCardHits([]*domain.Card{c(5), c(10)}, c(5)))
-		assert.False(t, redDogThirdCardHits([]*domain.Card{c(5), c(10)}, c(10)))
-	})
-
-	t.Run("outside the span", func(t *testing.T) {
-		assert.False(t, redDogThirdCardHits([]*domain.Card{c(5), c(10)}, c(12)))
-	})
-
-	t.Run("no answer without two initial cards or a third", func(t *testing.T) {
-		assert.False(t, redDogThirdCardHits([]*domain.Card{c(5)}, c(7)))
-		assert.False(t, redDogThirdCardHits(nil, c(7)))
-		assert.False(t, redDogThirdCardHits([]*domain.Card{c(5), c(10)}, nil))
-	})
+	assert.Contains(t, out, "プレイヤーの勝ち", "前提: ペアを引き当てて勝っている")
+	assert.NotContains(t, out, "当たりランク:", "ペアの局に間のランクの案内を出さない")
 }

@@ -56,22 +56,6 @@ func redDogWinningRanksStr(initial []*domain.Card) string {
 	return strings.Join(labels, ", ")
 }
 
-// redDogThirdCardHits reports whether the third card landed strictly between
-// the two initial cards — the same span redDogWinningRanksStr lists. The two
-// read the span from one place on purpose: a guide that lists one set of ranks
-// and then calls a card in that set a miss is worse than no guide at all.
-func redDogThirdCardHits(initial []*domain.Card, third *domain.Card) bool {
-	if len(initial) != 2 || third == nil {
-		return false
-	}
-	lo, hi := redDogRankOf(initial[0]), redDogRankOf(initial[1])
-	if lo > hi {
-		lo, hi = hi, lo
-	}
-	r := redDogRankOf(third)
-	return r > lo && r < hi
-}
-
 // Output ゲーム状態を出力
 func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) string {
 	var sb strings.Builder
@@ -95,10 +79,18 @@ func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 	}
 	if rd.GetPhase() == domain.RedDogPhaseEnd {
 		initial, third := rd.GetInitialCards(), rd.GetThirdCard()
-		// スプレッドが 0 (隣接か同ランク) だと当たりランクが 1 つも無く、
-		// 一覧が空文字になる。「当たりランク:  (外れ)」を出しても読めない。
+		// 一覧が空になるのは、初期2枚が隣接しているか同ランクのとき。
+		// 「当たりランク:  (外れ)」は読めないので出さない。
+		//
+		// この空判定は**ペア初手の局を丸ごと除外する**役目も負っている。ペアの局は
+		// 「間に入ったか」ではなく「ペアと同じランクを引いたか」で決まり (RedDog.go:206)、
+		// 外すと勝ちでなく引き分けになる。そこに当たりランクの案内を出すと嘘になる。
+		// 除外されているからこそ、下で GetResult() を「間に入ったか」として読める。
 		if ranksStr := redDogWinningRanksStr(initial); third != nil && ranksStr != "" {
-			if redDogThirdCardHits(initial, third) {
+			// 判定はドメインの結果をそのまま使う。ここで範囲を数え直すと規則の写しが
+			// 2 つになり、片方だけ動いたときに「一覧に載っているランクを外れと呼ぶ」
+			// 案内になる。
+			if rd.GetResult() == domain.GameResultWin {
 				sb.WriteString(i18n.Tf("reddog.cuiEndGuideHit",
 					"ranks", ranksStr,
 					"hitRank", redDogRankLabel(redDogRankOf(third))) + "\n")
