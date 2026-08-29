@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -56,6 +57,9 @@ func TestFortyThievesCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 		assert.Contains(t, result, "操作: m で移動")
+
+		foundationLine := fortyThievesFoundationLine(result)
+		assert.Contains(t, foundationLine, "[空: どのAでも可]")
 	})
 
 	t.Run("with waste card", func(t *testing.T) {
@@ -132,12 +136,16 @@ func TestFortyThievesCuiPresenter_Output(t *testing.T) {
 		setupFortyThievesCuiMockDefaults(fg)
 		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "GetFoundation")
 		var foundation [domain.FortyThievesFoundationCnt][]*domain.Card
-		foundation[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+		for i := range domain.FortyThievesFoundationCnt {
+			foundation[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+		}
 		fg.On("GetFoundation").Return(foundation)
 
 		p := new(FortyThievesCuiPresenter)
 		result := p.Output(fg, nil)
-		assert.Contains(t, result, "SPADE 1")
+		foundationLine := fortyThievesFoundationLine(result)
+		assert.Contains(t, foundationLine, "SPADE 1")
+		assert.NotContains(t, foundationLine, "[空: どのAでも可]")
 	})
 }
 
@@ -225,4 +233,17 @@ func TestFortyThievesCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(fg)
 		assert.Contains(t, result, "draw")
 	})
+}
+
+// fortyThievesFoundationLine returns the Foundation row of the CUI output.
+// The row has to be isolated before asserting on it: "[空]" also appears on the
+// waste and tableau rows, so a whole-output Contains would pass no matter what
+// the foundation actually rendered.
+func fortyThievesFoundationLine(out string) string {
+	for _, l := range strings.Split(out, "\n") {
+		if strings.HasPrefix(l, i18n.T("fortythieves.foundationHeader")) {
+			return l
+		}
+	}
+	return ""
 }
