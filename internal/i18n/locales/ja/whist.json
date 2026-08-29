@@ -8,6 +8,7 @@
   "header": "ラウンド: {{round}}  トリック: {{trick}}",
   "trumpLine": "トランプ: {{suit}}",
   "teamScoreLine": "チームスコア: チーム0={{t0}}  チーム1={{t1}}",
+  "pointLimitLine": "目標点: {{limit}}",
   "playerLine": "{{name}} (チーム{{team}}): 獲得{{tricks}}トリック 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚",
   "gameEnd": "ゲーム終了！ チーム{{team}}の勝利です！",
   "promptCurrentPlayer": "手番: {{name}}",
