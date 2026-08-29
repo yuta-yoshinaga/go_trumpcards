@@ -41,7 +41,8 @@
     "threeBet": "3Bet",
     "threeBetTooltip": "3Bet（スリーベット）: 相手のレイズに対して再レイズした割合",
     "af": "AF",
-    "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率"
+    "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率",
+    "playerStats": "VPIP:{{vpip}}% PFR:{{pfr}}% 3Bet:{{tb}}% AF:{{af}}"
   },
   "settings": {
     "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）",
