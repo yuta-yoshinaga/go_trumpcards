@@ -54,5 +54,7 @@
     "discardButton": "手札から1枚選んで捨てます。7は常に捨てられます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "claimedThisTurn": "ポン/チーで取得済み"
+  "claimedThisTurn": "ポン/チーで取得済み",
+  "layoffRequireOne": "カードを1枚だけ選択してください",
+  "layoffNoMelds": "出せるメルドがまだありません"
 }
