@@ -19,6 +19,7 @@
   "hintToTableau": "tableau column {{col}}",
   "hintLine": "Hint: {{from}} → {{to}}",
   "undoToEscape": "Undo {{count}} move(s) to escape the dead end (undo {{count}}, or repeat u)",
+  "facesComplete": "Clock faces complete: {{count}}/{{total}}",
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation"
 }
