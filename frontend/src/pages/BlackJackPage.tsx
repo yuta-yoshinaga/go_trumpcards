@@ -529,6 +529,18 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
               </div>
             )}
 
+            {/* Side bet info */}
+            {phase !== BjPhase.BET && state.perfectPairsBet > 0 && (
+              <div className="text-ds-warning text-sm mb-1" data-testid="side-bet-info-pp">
+                {t('sideBetLabel.pp')} {state.perfectPairsBet}
+              </div>
+            )}
+            {phase !== BjPhase.BET && state.twentyOnePlus3Bet > 0 && (
+              <div className="text-ds-warning text-sm mb-1" data-testid="side-bet-info-t3">
+                {t('sideBetLabel.t3')} {state.twentyOnePlus3Bet}
+              </div>
+            )}
+
             {/* Side bet results */}
             {sideBetResults.length > 0 && (
               <div className="mb-2">
