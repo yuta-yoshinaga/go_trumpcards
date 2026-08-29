@@ -9,6 +9,7 @@
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete",
+  "cuiEmptyFoundation": "[empty: any Ace]",
   "foundationHeader": "Foundation: ",
   "stockLine": "Stock: {{count}}",
   "wasteCard": " | Waste: {{card}}",
