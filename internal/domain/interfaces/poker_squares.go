@@ -33,6 +33,10 @@ type PokerSquaresGame interface {
 	EvaluateRow(r int) int
 	// EvaluateCol 列のハンドランクを返す (未完成時 -1)
 	EvaluateCol(c int) int
+	// PartialRowRank 行の部分的なハンドランクを返す (0枚・完成時 -1)
+	PartialRowRank(r int) int
+	// PartialColRank 列の部分的なハンドランクを返す (0枚・完成時 -1)
+	PartialColRank(c int) int
 	// RowScore 行の得点を返す
 	RowScore(r int) int
 	// ColScore 列の得点を返す

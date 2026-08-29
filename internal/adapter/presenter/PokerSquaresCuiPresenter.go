@@ -34,15 +34,23 @@ func (pr *PokerSquaresCuiPresenter) Output(p interfaces.PokerSquaresGame, lastEr
 				}
 			}
 			b.WriteString(i18n.Tf("pokersquares.rowScore",
-				"score", strconv.Itoa(p.RowScore(r))) + "\n")
+				"score", strconv.Itoa(p.RowScore(r))))
+			if rank := p.PartialRowRank(r); rank >= 0 {
+				b.WriteString(i18n.Tf("pokersquares.rowPartialHand", "hand", pokerHandName(rank)))
+			}
+			b.WriteString("\n")
 		}
 		b.WriteString("----------\n")
 
 		colParts := make([]string, domain.PokerSquaresGridSize)
 		for i := range domain.PokerSquaresGridSize {
-			colParts[i] = i18n.Tf("pokersquares.colScore",
+			colScoreStr := i18n.Tf("pokersquares.colScore",
 				"idx", strconv.Itoa(i),
 				"score", strconv.Itoa(p.ColScore(i)))
+			if rank := p.PartialColRank(i); rank >= 0 {
+				colScoreStr += i18n.Tf("pokersquares.colPartialHand", "hand", pokerHandName(rank))
+			}
+			colParts[i] = colScoreStr
 		}
 		b.WriteString(strings.Join(colParts, " ") + "\n")
 		b.WriteString("----------\n")
