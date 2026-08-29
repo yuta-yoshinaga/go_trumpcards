@@ -12,5 +12,7 @@
   "hintSynergy": "同じ行・列の既存カードとペア/フラッシュ/ストレートを狙えます",
   "hintAny": "まだ相乗効果はありません。空きセルならどこでも大丈夫です",
   "gameComplete": "ゲーム終了 合計得点: {{score}}",
-  "undoUnavailable": "（戻せる手はありません）"
+  "undoUnavailable": "（戻せる手はありません）",
+  "rowPartialHand": " (部分役: {{hand}})",
+  "colPartialHand": " (部分役: {{hand}})"
 }
