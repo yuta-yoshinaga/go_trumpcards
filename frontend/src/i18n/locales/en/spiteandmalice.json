@@ -61,5 +61,13 @@
   "nav": {
     "spiteandmalice": "Spite and Malice"
   },
-  "landscapeBanner": "Landscape orientation recommended"
+  "landscapeBanner": "Landscape orientation recommended",
+  "aria": {
+    "goalTop": "{{label}} top: {{card}} ({{count}} left)",
+    "goalEmpty": "{{label}}: empty",
+    "sideTop": "{{label}} {{n}} top: {{card}} ({{count}})",
+    "sideEmpty": "{{label}} {{n}}: empty",
+    "foundationTop": "{{label}} {{n}}: {{card}} (top={{top}})",
+    "foundationEmpty": "{{label}} {{n}}: empty"
+  }
 }

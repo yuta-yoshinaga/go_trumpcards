@@ -61,5 +61,13 @@
   "nav": {
     "spiteandmalice": "スパイト・アンド・マリス"
   },
-  "landscapeBanner": "横向き画面推奨"
+  "landscapeBanner": "横向き画面推奨",
+  "aria": {
+    "goalTop": "{{label}} 一番上: {{card}} (残り{{count}}枚)",
+    "goalEmpty": "{{label}}: 空",
+    "sideTop": "{{label}} {{n}} 一番上: {{card}} ({{count}}枚)",
+    "sideEmpty": "{{label}} {{n}}: 空",
+    "foundationTop": "{{label}} {{n}}: {{card}} (一番上={{top}})",
+    "foundationEmpty": "{{label}} {{n}}: 空"
+  }
 }

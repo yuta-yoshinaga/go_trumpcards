@@ -323,3 +323,48 @@ describe('SpiteAndMalicePage wild king', () => {
     expect(screen.queryByRole('button', { name: /♠ 5.*ワイルド/ })).not.toBeInTheDocument();
   });
 });
+
+// ゴール山・サイド山の aria-label は `top:` `left)` `empty` を英語で直書きして
+// いたので、日本語ロケールでも読み上げが英語混じりになっていた (#6356)。
+//
+// **キー名ではなく解決後の文言を見る。** i18next は未知のキーに対してキー文字列を
+// そのまま返すので、キーと比べると翻訳が無くても通ってしまう。
+describe('SpiteAndMalicePage pile aria-labels', () => {
+  it('reads the goal and side piles entirely in Japanese', async () => {
+    mockExec.mockResolvedValue(baseState);
+    renderWithProviders(<SpiteAndMalicePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    // 札が乗っているゴール山。
+    expect(screen.getByLabelText('ゴール 一番上: ♥ 9 (残り20枚)')).toBeInTheDocument();
+    // 空のサイド山（fixture は 4 つとも空）。
+    expect(screen.getByLabelText('サイド 1: 空')).toBeInTheDocument();
+
+    // 英語の直書きも、未解決のキーも読み上げに混ざってはいけない。
+    const labels = Array.from(document.querySelectorAll('[aria-label]'), (el) => el.getAttribute('aria-label') ?? '');
+    expect(labels.join(' | ')).not.toMatch(/ top:| left\)|: empty|aria\.(goal|side|foundation)/);
+  });
+
+  // 三項の**反対側**。空/非空が入れ替わった盤を通さないと、片方の文言は
+  // 一度も組み立てられないまま緑になる。
+  it('reads the opposite state of every pile in Japanese too', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      players: [
+        { ...baseState.players[0], goalTop: undefined, goalSize: 0, sides: [[card('SPADE', 3)], [], [], []] },
+        baseState.players[1],
+      ],
+      foundations: [[card('HEART', 1)], [], [], []],
+      foundationTops: [1, 0, 0, 0],
+    } as unknown as SpiteAndMaliceResponse);
+    renderWithProviders(<SpiteAndMalicePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.getByLabelText('ゴール: 空')).toBeInTheDocument();
+    expect(screen.getByLabelText('サイド 1 一番上: ♠ 3 (1枚)')).toBeInTheDocument();
+    expect(screen.getByLabelText('ファウンデーション 1: ♥ A (一番上=1)')).toBeInTheDocument();
+
+    const labels = Array.from(document.querySelectorAll('[aria-label]'), (el) => el.getAttribute('aria-label') ?? '');
+    expect(labels.join(' | ')).not.toMatch(/ top:| left\)|: empty|aria\.(goal|side|foundation)/);
+  });
+});
