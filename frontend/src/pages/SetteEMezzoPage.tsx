@@ -197,7 +197,7 @@ function SetteEMezzoPageContent() {
                 renderHand(
                   state.bankerHand,
                   state.bankerHand.hidden
-                    ? t('hiddenBankerHandAriaLabel')
+                    ? t('hiddenBankerHandAriaLabel', { count: state.bankerHand.cards.length })
                     : t('bankerHandAriaLabel', { total: state.bankerHand.totalLabel }),
                   'banker',
                 )
@@ -216,7 +216,11 @@ function SetteEMezzoPageContent() {
                     <div className={onTurn ? 'ring-2 ring-ds-warning rounded p-1' : 'p-1'}>
                       {renderHand(
                         seat.hand,
-                        seat.hand.hidden ? t('hiddenHandAriaLabel', { name: seat.name }) : seat.name,
+                        // 伏せた手は「伏せられています」としか言わず、晴眼者が
+                        // CardBack で数えている枚数が読み上げから落ちていた (#6362)。
+                        seat.hand.hidden
+                          ? t('hiddenHandAriaLabel', { name: seat.name, count: seat.hand.cards.length })
+                          : seat.name,
                         `s${seatIdx.toString()}`,
                       )}
                       <div className="text-game-text-muted text-xs mt-1">
