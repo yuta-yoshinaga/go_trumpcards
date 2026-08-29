@@ -38,5 +38,6 @@
   "nav": {
     "wasp": "ワスプ"
   },
-  "autoCompleteNotReady": "すべてのカードが表向きになるとクリックできます"
+  "autoCompleteNotReady": "すべてのカードが表向きになるとクリックできます",
+  "hintExposes": "（裏カードが1枚開きます）"
 }

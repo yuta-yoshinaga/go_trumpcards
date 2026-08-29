@@ -126,10 +126,11 @@ func TestWaspWebPresenter_OutputCarriesTheHint(t *testing.T) {
 	t.Run("playing", func(t *testing.T) {
 		wg := new(interfaces.MockWaspGame)
 		setupWaspWebMockDefaults(wg)
-		wg.On("GetHint").Return(&domain.WaspHint{FromCol: 1, CardIndex: 0, ToCol: 4}).Maybe()
+		wg.On("GetHint").Return(&domain.WaspHint{FromCol: 1, CardIndex: 0, ToCol: 4, ExposesFaceDown: true}).Maybe()
 
-		result := new(WaspWebPresenter).Output(wg, nil)
-		assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+		result := parseWaspOutput(t, new(WaspWebPresenter).Output(wg, nil))
+		assert.NotNil(t, result.Hint, "Output must carry the hint -- the frontend reads state.hint")
+		assert.True(t, result.Hint.ExposesFaceDown, "Output must forward ExposesFaceDown")
 	})
 
 	// 手詰まりのヒントは出さない。逃げ道の提示は stalemate 用のメッセージが持つ。
@@ -138,7 +139,7 @@ func TestWaspWebPresenter_OutputCarriesTheHint(t *testing.T) {
 		setupWaspWebMockDefaults(wg)
 		wg.ExpectedCalls = filterCalls(wg.ExpectedCalls, "IsStalemate")
 		wg.On("IsStalemate").Return(true)
-		wg.On("GetHint").Return(&domain.WaspHint{FromCol: 1, CardIndex: 0, ToCol: 4}).Maybe()
+		wg.On("GetHint").Return(&domain.WaspHint{FromCol: 1, CardIndex: 0, ToCol: 4, ExposesFaceDown: true}).Maybe()
 
 		result := new(WaspWebPresenter).Output(wg, nil)
 		assert.NotContains(t, result, `"hint"`)
@@ -149,12 +150,13 @@ func TestWaspWebPresenter_HintOutput(t *testing.T) {
 	t.Run("with hint", func(t *testing.T) {
 		sg := new(interfaces.MockWaspGame)
 		setupWaspWebMockDefaults(sg)
-		sg.On("GetHint").Return(&domain.WaspHint{FromCol: 0, CardIndex: 1, ToCol: 3})
+		sg.On("GetHint").Return(&domain.WaspHint{FromCol: 0, CardIndex: 1, ToCol: 3, ExposesFaceDown: true})
 
 		p := new(WaspWebPresenter)
 		result := parseWaspOutput(t, p.HintOutput(sg))
 		assert.NotNil(t, result.Hint)
 		assert.Equal(t, 3, result.Hint.ToCol)
+		assert.True(t, result.Hint.ExposesFaceDown, "HintOutput must forward ExposesFaceDown")
 		assert.Equal(t, "wasp.hintAvailable", result.MessageCode)
 	})
 

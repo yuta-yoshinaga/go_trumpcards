@@ -9,6 +9,14 @@ export interface WaspHint {
   fromCol: number;
   cardIndex: number;
   toCol: number;
+  /**
+   * Whether the move turns a face-down card up.
+   *
+   * This is the reason the hint picked this move: GetHint looks for an
+   * uncovering move first, and showing only the destination taught the player
+   * nothing about that priority (#6340).
+   */
+  exposesFaceDown?: boolean;
 }
 
 /** API response shape for a Wasp game. */

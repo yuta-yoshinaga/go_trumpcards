@@ -562,6 +562,13 @@ function WaspPageContent() {
                 aria-live="polite"
               >
                 {state.hint.fromCol < 0 ? t('deal') : `${t('tableau')} ${state.hint.toCol}`}
+                {/* なぜその手なのか。裏カードを開ける手を優先するのがこのゲームの
+                    肝で、移動先だけでは学べない (#6340)。 */}
+                {state.hint.exposesFaceDown && (
+                  <span className="ml-2" data-testid="wasp-hint-exposes">
+                    {t('hintExposes')}
+                  </span>
+                )}
               </div>
             )}
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

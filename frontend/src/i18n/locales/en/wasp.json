@@ -38,5 +38,6 @@
   "nav": {
     "wasp": "Wasp"
   },
-  "autoCompleteNotReady": "Available once every card is face up"
+  "autoCompleteNotReady": "Available once every card is face up",
+  "hintExposes": "(uncovers a face-down card)"
 }
