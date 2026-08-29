@@ -170,6 +170,15 @@ function MissMilliganPageContent() {
     selectedSource.col === col &&
     selectedSource.cardIndex === cardIndex;
 
+  // Waive はドメイン側では cardIndex から列末尾までの塊を退避できるのに、
+  // ボタンが cardIndex を渡していなかったので常に最上段 1 枚だけだった (#6352)。
+  // 選択が別の列や別のゾーンにあるときは渡さない — 渡すと関係のない列の
+  // 途中から退避しようとする。
+  const waiveCardIndex = (colIdx: number): number | undefined =>
+    selectedSource !== null && selectedSource.zone === 'tableau' && selectedSource.col === colIdx
+      ? selectedSource.cardIndex
+      : undefined;
+
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx] ?? [];
     const tableauColZone: MissMilliganMoveZone = { zone: 'tableau', col: colIdx };
@@ -247,7 +256,7 @@ function MissMilliganPageContent() {
         {state.canWaive && col.length > 0 && (
           <button
             type="button"
-            onClick={() => game.handleWaive(colIdx)}
+            onClick={() => game.handleWaive(colIdx, waiveCardIndex(colIdx))}
             disabled={!isPlaying || loading}
             aria-label={t('waiveColumnAriaLabel', { col: colIdx })}
             className={`${btnPrimary} w-full mt-1 text-xs`}
