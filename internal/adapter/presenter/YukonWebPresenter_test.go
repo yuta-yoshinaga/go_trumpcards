@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -233,5 +234,34 @@ func TestYukonWebPresenter_ActionLogOutput(t *testing.T) {
 		p := new(YukonWebPresenter)
 		result := p.ActionLogOutput(yg)
 		assert.Contains(t, result, "entries")
+	})
+}
+
+// **コードを持つエラーで Error() を message に入れるとキーが画面に出る** (#5553)。
+// #6327 で Yukon の拒否理由がコードを名乗るようになったので、この経路を通さないと
+// Web だけ "yukon.errNotAllFaceUp" という文字列がそのまま表示される。
+func TestYukonWebPresenter_ErrorCodeGoesToMessageCode(t *testing.T) {
+	render := func(t *testing.T, lastErr error) controller.YukonWebOutput {
+		t.Helper()
+		yg := new(interfaces.MockYukonGame)
+		setupYukonOutputMock(yg)
+		var out controller.YukonWebOutput
+		require.NoError(t, json.Unmarshal([]byte(new(YukonWebPresenter).Output(yg, lastErr)), &out))
+		return out
+	}
+
+	t.Run("a coded refusal travels as a code, not as text", func(t *testing.T) {
+		out := render(t, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "yukon.errNotAllFaceUp", nil))
+		assert.Equal(t, "yukon.errNotAllFaceUp", out.MessageCode)
+		// クライアントが組み立てるので、message にキーを混ぜてはいけない。
+		assert.NotContains(t, out.Message, "yukon.err")
+	})
+
+	// 負のコントロール: コードを持たないエラーは今までどおり本文で渡す。
+	// ここを潰すと、コード無しのエラーが画面から消える。
+	t.Run("an uncoded error still travels as text", func(t *testing.T) {
+		out := render(t, errors.New("something went wrong"))
+		assert.Equal(t, "something went wrong", out.Message)
+		assert.Empty(t, out.MessageCode)
 	})
 }
