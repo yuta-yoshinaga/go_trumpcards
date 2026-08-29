@@ -17,11 +17,11 @@ type BadugiGame interface {
 	// deliberation time in milliseconds (0 = not measured).
 	PlayerAction(action, amount, humanPlayMs int) error
 	// PlayerExchange replaces the cards at the given hand indices during the
-	// draw phase.
-	PlayerExchange(indices []int) error
+	// draw phase. humanPlayMs is the deliberation time in milliseconds (0 = not measured).
+	PlayerExchange(indices []int, humanPlayMs int) error
 	// PlayerStand stands pat during a draw phase (shorthand for
-	// PlayerExchange(nil)).
-	PlayerStand() error
+	// PlayerExchange(nil, humanPlayMs)).
+	PlayerStand(humanPlayMs int) error
 
 	// GetPlayers returns the seated players.
 	GetPlayers() []*domain.BadugiPlayer

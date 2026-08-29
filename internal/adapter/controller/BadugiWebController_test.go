@@ -106,11 +106,12 @@ func TestBadugiWebController_Exchange(t *testing.T) {
 	bwc := newBadugiTestController(mi)
 	defer bwc.Stop()
 
-	mi.On("Exchange", []int{0, 2}).Return(`{}`)
+	mi.On("Exchange", []int{0, 2}, 4200).Return(`{}`)
 	rec := execRequest(t, bwc.Exec, map[string]any{
-		"command":   "exchange",
-		"sessionId": "s1",
-		"indices":   []int{0, 2},
+		"command":     "exchange",
+		"sessionId":   "s1",
+		"indices":     []int{0, 2},
+		"humanPlayMs": 4200,
 	})
 	rec.CodeIs(200)
 }
@@ -120,7 +121,7 @@ func TestBadugiWebController_Exchange_NoIndices(t *testing.T) {
 	bwc := newBadugiTestController(mi)
 	defer bwc.Stop()
 
-	mi.On("Exchange", []int{}).Return(`{}`)
+	mi.On("Exchange", []int{}, 0).Return(`{}`)
 	rec := execRequest(t, bwc.Exec, map[string]any{
 		"command":   "exchange",
 		"sessionId": "s1",
@@ -133,10 +134,11 @@ func TestBadugiWebController_Stand(t *testing.T) {
 	bwc := newBadugiTestController(mi)
 	defer bwc.Stop()
 
-	mi.On("Stand").Return(`{}`)
+	mi.On("Stand", 4200).Return(`{}`)
 	rec := execRequest(t, bwc.Exec, map[string]any{
-		"command":   "stand",
-		"sessionId": "s1",
+		"command":     "stand",
+		"sessionId":   "s1",
+		"humanPlayMs": 4200,
 	})
 	rec.CodeIs(200)
 }

@@ -38,7 +38,7 @@ func TestBadugiCuiController_Reset(t *testing.T) {
 func TestBadugiCuiController_Exchange_ValidIndices(t *testing.T) {
 	mi := newBadugiMockInteractor()
 	c := NewBadugiCuiController(mi)
-	mi.On("Exchange", []int{0, 2, 3}).Return("exchange ok")
+	mi.On("Exchange", []int{0, 2, 3}, 0).Return("exchange ok")
 	assert.Equal(t, "exchange ok", c.Exec("e 0 2 3"))
 }
 
@@ -48,20 +48,20 @@ func TestBadugiCuiController_Exchange_OutOfRangeSkipped(t *testing.T) {
 	// Badugi uses 4 cards, valid range 0..3. 4 is skipped, 1 is valid.
 	result := c.Exec("e 4 1")
 	assert.Contains(t, result, "4")
-	mi.AssertNotCalled(t, "Exchange", mock.Anything)
+	mi.AssertNotCalled(t, "Exchange", mock.Anything, mock.Anything)
 }
 
 func TestBadugiCuiController_Exchange_NoIndices(t *testing.T) {
 	mi := newBadugiMockInteractor()
 	c := NewBadugiCuiController(mi)
-	mi.On("Exchange", []int{}).Return("exchange empty")
+	mi.On("Exchange", []int{}, 0).Return("exchange empty")
 	assert.Equal(t, "exchange empty", c.Exec("e"))
 }
 
 func TestBadugiCuiController_Stand(t *testing.T) {
 	mi := newBadugiMockInteractor()
 	c := NewBadugiCuiController(mi)
-	mi.On("Stand").Return("stand ok")
+	mi.On("Stand", 0).Return("stand ok")
 	assert.Equal(t, "stand ok", c.Exec("s"))
 	assert.Equal(t, "stand ok", c.Exec("stand"))
 }

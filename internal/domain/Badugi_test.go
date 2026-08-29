@@ -169,7 +169,7 @@ func TestBadugi_PlayerAction_CheckAdvancesToDraw(t *testing.T) {
 func TestBadugi_PlayerExchange_RejectsOutsideDraw(t *testing.T) {
 	bd, _ := newTestBadugi()
 	bd.SetPhase(BadugiPhaseBet)
-	err := bd.PlayerExchange([]int{0})
+	err := bd.PlayerExchange([]int{0}, 0)
 	assert.Error(t, err)
 }
 
@@ -198,7 +198,7 @@ func TestBadugi_PlayerExchange_ReplacesSelectedIndicesOnly(t *testing.T) {
 		players[0].GetCard(2).GetValue(),
 		players[0].GetCard(3).GetValue(),
 	}
-	require.NoError(t, bd.PlayerExchange([]int{1, 3}))
+	require.NoError(t, bd.PlayerExchange([]int{1, 3}, 0))
 	// Indices 0 and 2 are untouched.
 	assert.Equal(t, before[0], players[0].GetCard(0).GetValue())
 	assert.Equal(t, before[2], players[0].GetCard(2).GetValue())
@@ -215,8 +215,72 @@ func TestBadugi_PlayerStand_ExchangesZeroCards(t *testing.T) {
 	bd.SetDrawIndex(1)
 	bd.SetCurrentTurn(0)
 	bd.setActedFlags([]bool{false, true, true, true})
-	require.NoError(t, bd.PlayerStand())
+	require.NoError(t, bd.PlayerStand(0))
 	assert.Equal(t, 0, players[0].GetDrawCount())
+}
+
+func setupBadugiForHumanExchange(t *testing.T, metaAI bool) (*Badugi, []*BadugiPlayer) {
+	t.Helper()
+	bd, players := newTestBadugi()
+	bd.SetConfig(BadugiConfig{
+		InitChips:    1000,
+		Ante:         10,
+		MinBet:       10,
+		CpuCount:     3,
+		BettingLimit: BettingLimitFixed,
+		CpuMetaAI:    metaAI,
+	})
+	require.NoError(t, bd.Reset())
+	for i := 1; i < len(players); i++ {
+		players[i].SetFolded(true)
+	}
+	bd.SetPhase(BadugiPhaseDraw)
+	bd.SetDrawIndex(1)
+	bd.SetCurrentTurn(0)
+	bd.setActedFlags([]bool{false, true, true, true})
+	return bd, players
+}
+
+func TestBadugi_PlayerExchange_RecordsHesitationWhenCpuMetaAIEnabled(t *testing.T) {
+	bd, _ := setupBadugiForHumanExchange(t, true)
+	err := bd.PlayerExchange([]int{0}, 4200)
+	require.NoError(t, err)
+
+	assert.Equal(t, 4200, bd.GetLastHumanPlayMs())
+	profile := bd.GetHumanProfile()
+	require.NotNil(t, profile)
+	assert.Equal(t, 1, profile.HesitationCount)
+	assert.InDelta(t, 4200.0, profile.HesitationMean, 0.001)
+}
+
+func TestBadugi_PlayerExchange_NoHesitationWhenCpuMetaAIDisabled(t *testing.T) {
+	bd, _ := setupBadugiForHumanExchange(t, false)
+	err := bd.PlayerExchange([]int{0}, 4200)
+	require.NoError(t, err)
+
+	assert.Equal(t, 4200, bd.GetLastHumanPlayMs())
+	assert.Nil(t, bd.GetHumanProfile())
+}
+
+func TestBadugi_PlayerStand_RecordsHesitationWhenCpuMetaAIEnabled(t *testing.T) {
+	bd, _ := setupBadugiForHumanExchange(t, true)
+	err := bd.PlayerStand(4200)
+	require.NoError(t, err)
+
+	assert.Equal(t, 4200, bd.GetLastHumanPlayMs())
+	profile := bd.GetHumanProfile()
+	require.NotNil(t, profile)
+	assert.Equal(t, 1, profile.HesitationCount)
+	assert.InDelta(t, 4200.0, profile.HesitationMean, 0.001)
+}
+
+func TestBadugi_PlayerStand_NoHesitationWhenCpuMetaAIDisabled(t *testing.T) {
+	bd, _ := setupBadugiForHumanExchange(t, false)
+	err := bd.PlayerStand(4200)
+	require.NoError(t, err)
+
+	assert.Equal(t, 4200, bd.GetLastHumanPlayMs())
+	assert.Nil(t, bd.GetHumanProfile())
 }
 
 // ---------------------------------------------------------------------------
@@ -497,7 +561,7 @@ func TestBadugi_FullHandProgressesToShowdownOrFold(t *testing.T) {
 				require.NoError(t, bd.PlayerAction(BadugiActionCall, 0, 0))
 			}
 		case BadugiPhaseDraw:
-			require.NoError(t, bd.PlayerStand())
+			require.NoError(t, bd.PlayerStand(0))
 		default:
 			// Unexpected phase; bail out and let the assertion below flag it.
 			bd.SetGameEndFlag(true)
