@@ -52,6 +52,26 @@ const withFoundationState: EightOffResponse = {
   foundation: [[card('SPADE', 1)], [], [card('HEART', 1), card('HEART', 2)], []],
 };
 
+// 掃き出しが実際に1枚動かせる盤: 組札の ♥2 の上に、タブロー末尾の ♥3 が乗る。
+const sweepableState: EightOffResponse = {
+  ...playingState,
+  tableau: [[card('SPADE', 13)], [card('HEART', 3)], [], [], [], [], [], []],
+  foundation: [[], [], [card('HEART', 1), card('HEART', 2)], []],
+};
+
+// 組札は全部空だが、フリーセルに A がある。姉妹ゲームのしきい値 (`length > 0` / `> 1`) は
+// どちらもここで「準備できていない」と読むが、掃き出しはその A を動かせる。
+const aceInFreeCellState: EightOffResponse = {
+  ...playingState,
+  freeCells: [card('CLOVER', 1), null, null, null, null, null, null, null],
+  foundation: [[], [], [], []],
+};
+
+const foundationWithAcesOnlyState: EightOffResponse = {
+  ...playingState,
+  foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+};
+
 const withHintState: EightOffResponse = {
   ...playingState,
   hint: { fromZone: 'freecell', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 3 },
@@ -224,10 +244,12 @@ describe('EightOffPage', () => {
     mockExec.mockResolvedValue(withHintFromColState);
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
-    const region = await screen.findByTestId('eo-hint-announce');
-    expect(region).toHaveAttribute('role', 'status');
-    expect(region).toHaveAttribute('aria-live', 'polite');
-    await waitFor(() => expect(region).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動'));
+    await waitFor(() => {
+      const region = screen.getByTestId('eo-hint-announce');
+      expect(region).toHaveAttribute('role', 'status');
+      expect(region).toHaveAttribute('aria-live', 'polite');
+      expect(region).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動');
+    });
   });
 
   it('announces a free-cell source hint by resolving the free-cell card', async () => {
@@ -243,8 +265,10 @@ describe('EightOffPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
-    const region = await screen.findByTestId('eo-hint-announce');
-    await waitFor(() => expect(region).toHaveTextContent('ヒント: ♦ 7 を フリーセル 1 から タブロー 4 へ移動'));
+    await waitFor(() => {
+      const region = screen.getByTestId('eo-hint-announce');
+      expect(region).toHaveTextContent('ヒント: ♦ 7 を フリーセル 1 から タブロー 4 へ移動');
+    });
   });
 
   it('announces that no moves are available when the hint request yields none', async () => {
@@ -254,8 +278,10 @@ describe('EightOffPage', () => {
     mockExec.mockResolvedValue({ ...playingState, hint: undefined });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
-    const region = await screen.findByTestId('eo-hint-announce');
-    await waitFor(() => expect(region).toHaveTextContent('移動可能な手がありません'));
+    await waitFor(() => {
+      const region = screen.getByTestId('eo-hint-announce');
+      expect(region).toHaveTextContent('移動可能な手がありません');
+    });
   });
 
   it('keeps the hint live region empty before any hint is requested', async () => {
@@ -288,8 +314,10 @@ describe('EightOffPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
-    const region = await screen.findByTestId('eo-hint-announce');
-    await waitFor(() => expect(region).toHaveTextContent('ヒント: を フリーセル 1 から タブロー 4 へ移動'));
+    await waitFor(() => {
+      const region = screen.getByTestId('eo-hint-announce');
+      expect(region).toHaveTextContent('ヒント: を フリーセル 1 から タブロー 4 へ移動');
+    });
   });
 
   it('announces an empty card name when a tableau hint points at a missing card', async () => {
@@ -302,19 +330,90 @@ describe('EightOffPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
-    const region = await screen.findByTestId('eo-hint-announce');
-    await waitFor(() => expect(region).toHaveTextContent('ヒント: を タブロー 3 から ファンデーション へ移動'));
+    await waitFor(() => {
+      const region = screen.getByTestId('eo-hint-announce');
+      expect(region).toHaveTextContent('ヒント: を タブロー 3 から ファンデーション へ移動');
+    });
   });
 
-  it('handleAutoComplete called on autocomplete button click', async () => {
+  it('remounts the live region on repeated hint requests so identical hints re-announce', async () => {
     renderWithProviders(<EightOffPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'オートコンプリート' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(withHintFromColState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    let firstRegion: HTMLElement | null = null;
+    await waitFor(() => {
+      firstRegion = screen.getByTestId('eo-hint-announce');
+      expect(firstRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => {
+      const secondRegion = screen.getByTestId('eo-hint-announce');
+      expect(secondRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動');
+      expect(secondRegion).not.toBe(firstRegion);
+    });
+  });
+
+  // --- Auto-complete ---
+
+  it('disables the auto-complete button and shows a reason when no foundation has progressed', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<EightOffPage />);
+    const btn = await screen.findByTestId('autocomplete-button');
+    expect(btn).toBeDisabled();
+    expect(btn.className).not.toContain('animate-pulse');
+    expect(btn.className).not.toContain('ring-ds-success');
+    expect(btn).toHaveAttribute('title', '掃き出せるカードができると有効になります');
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(playingState);
-    fireEvent.click(screen.getByRole('button', { name: 'オートコンプリート' }));
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
+  });
 
+  it('disables the auto-complete button when the foundations hold aces nothing can follow', async () => {
+    mockExec.mockResolvedValue(foundationWithAcesOnlyState);
+    renderWithProviders(<EightOffPage />);
+    const btn = await screen.findByTestId('autocomplete-button');
+    expect(btn).toBeDisabled();
+    expect(btn.className).not.toContain('animate-pulse');
+    expect(btn.className).not.toContain('ring-ds-success');
+    expect(btn).toHaveAttribute('title', '掃き出せるカードができると有効になります');
+
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
+  });
+
+  it('enables and pulses the auto-complete button once a card can actually be swept, and dispatches autocomplete on click', async () => {
+    mockExec.mockResolvedValue(sweepableState);
+    renderWithProviders(<EightOffPage />);
+    const btn = await screen.findByTestId('autocomplete-button');
+    expect(btn).toBeEnabled();
+    expect(btn.className).toContain('animate-pulse');
+    expect(btn.className).toContain('ring-ds-success');
+    expect(btn).not.toHaveAttribute('title');
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(sweepableState);
+    fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  // 姉妹ゲームのしきい値を写した実装を落とす。組札は全部空なので `length > 0` も `> 1` も
+  // 偽になるが、フリーセルの A は掃き出しで動く。
+  it('enables the auto-complete button for an ace in a free cell with every foundation empty', async () => {
+    mockExec.mockResolvedValue(aceInFreeCellState);
+    renderWithProviders(<EightOffPage />);
+    const btn = await screen.findByTestId('autocomplete-button');
+    expect(btn).toBeEnabled();
+    expect(btn.className).toContain('animate-pulse');
+    expect(btn).not.toHaveAttribute('title');
   });
 
   it('giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {
@@ -539,12 +638,34 @@ describe('EightOffPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
-  it('pressing a triggers autocomplete in PLAYING phase', async () => {
+  it('pressing a does not trigger autocomplete when auto-complete is not ready', async () => {
     renderWithProviders(<EightOffPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'オートコンプリート' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(playingState);
+    fireEvent.keyDown(document, { key: 'a' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
+  });
+
+  it('pressing a does not trigger autocomplete when the foundations hold aces nothing can follow', async () => {
+    mockExec.mockResolvedValue(foundationWithAcesOnlyState);
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'a' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
+  });
+
+  it('pressing a triggers autocomplete in PLAYING phase when auto-complete is ready', async () => {
+    mockExec.mockResolvedValue(sweepableState);
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(sweepableState);
     fireEvent.keyDown(document, { key: 'a' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
