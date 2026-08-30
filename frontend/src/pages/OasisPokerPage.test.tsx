@@ -344,3 +344,44 @@ describe('OasisPokerPage keyboard shortcuts', () => {
     });
   });
 });
+
+describe('OasisPokerPage hand card accessible names', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  // "Card 1" では、どの札を交換に選んでいるのか支援技術の利用者に伝わらない (#6391)。
+  it('names each hand card by its rank and suit, not by its position', async () => {
+    mockApi.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('player-card-0')).toBeInTheDocument());
+
+    // exchangePhaseState の手札は SPADE 10 / HEART J / DIAMOND K / CLOVER 5 / SPADE 7。
+    // 隣り合う札を**別の名前**で呼べていることまで見る。
+    expect(screen.getByTestId('player-card-0')).toHaveAttribute('aria-label', '♠ 10');
+    expect(screen.getByTestId('player-card-1')).toHaveAttribute('aria-label', '♥ J');
+    expect(screen.getByTestId('player-card-2')).toHaveAttribute('aria-label', '♦ K');
+
+    for (let i = 0; i < 5; i += 1) {
+      expect(screen.getByTestId(`player-card-${i.toString()}`)).not.toHaveAttribute(
+        'aria-label',
+        `Card ${(i + 1).toString()}`,
+      );
+    }
+  });
+
+  // 選択状態は aria-pressed が担う。ラベルにも書くと同じことを二度言うことになる。
+  it('carries the selected state on aria-pressed rather than in the label', async () => {
+    mockApi.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('player-card-0')).toBeInTheDocument());
+
+    const card0 = screen.getByTestId('player-card-0');
+    expect(card0).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(card0);
+    expect(card0).toHaveAttribute('aria-pressed', 'true');
+    expect(card0).toHaveAttribute('aria-label', '♠ 10');
+    expect(card0.getAttribute('aria-label')).not.toContain('selected');
+  });
+});

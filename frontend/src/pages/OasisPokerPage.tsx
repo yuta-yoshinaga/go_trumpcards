@@ -31,6 +31,7 @@ import type { OasisPokerResponse } from '../types/card';
 import { isMaskedCard } from '../types/card';
 import { OasisPokerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { OASISPOKER_HELP, parseOasispokerCommand } from '../utils/cli/commands/oasispokerCommands';
 import { formatOasispokerState } from '../utils/cli/formatters/oasispokerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -303,7 +304,12 @@ function OasisPokerPageContent() {
                       <button
                         key={`p-${i}`}
                         type="button"
-                        aria-label={`Card ${i + 1}${selected ? ' (selected)' : ''}`}
+                        // 実際の札を読み上げる。"Card 1" では、どれを交換に
+                        // 選んでいるのか支援技術の利用者には分からない (#6391)。
+                        // 選択状態は下の aria-pressed が担う —— ラベルに書くと
+                        // 同じことを二度言うことになる。選択は交換フェーズでしか
+                        // 作れず、Exchange でも Bet でも空に戻る。
+                        aria-label={cardAlt(card)}
                         aria-pressed={selectable ? selected : undefined}
                         data-testid={`player-card-${i}`}
                         data-selected={selected ? 'true' : 'false'}
