@@ -9,7 +9,7 @@
   "columnEmpty": "[空]",
   "topCard": "[{{card}}]",
   "stockLine": "Stock: {{count}}枚",
-  "discardLine": " | Discard: {{count}}枚",
+  "discardLine": " | Discard: {{count}}/{{goal}}枚",
   "hintRemove": "ヒント: カード除去: 列{{col}}",
   "hintMove": "ヒント: 列{{col}}を空き列へ移動",
   "hintDraw": "ヒント: 各列にカードを配ってください",
