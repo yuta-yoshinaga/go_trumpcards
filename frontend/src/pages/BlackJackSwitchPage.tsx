@@ -176,6 +176,18 @@ function BlackJackSwitchPageContent() {
             {isBetPhase && <p className="text-ds-text-muted text-center text-sm py-3">{t('guide.bet')}</p>}
             {isSwitchPhase && <p className="text-ds-text-muted text-center text-sm py-2">{t('guide.switch')}</p>}
 
+            {/* SR-only live region announcing switch preview score changes (#6382). */}
+            <div className="sr-only" role="status" aria-live="polite" data-testid="switch-preview-status">
+              {previewScores && state.hands.length >= 2
+                ? t('label.switchPreviewAnnounce', {
+                    hand1Before: state.hands[0].score,
+                    hand1After: previewScores.a,
+                    hand2Before: state.hands[1].score,
+                    hand2After: previewScores.b,
+                  })
+                : ''}
+            </div>
+
             {state.dealerCards.length > 0 && (
               <div className="mb-3" data-testid="dealer-area">
                 <div className="text-ds-text-primary text-center text-sm font-bold mb-1">
