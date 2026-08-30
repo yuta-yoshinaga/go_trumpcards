@@ -2253,7 +2253,7 @@ var gameRegistry = []GameRegistryEntry{
 			ExampleKeys: []string{
 				"casinowar.helpExampleBet",
 			},
-			CommandKeys:       []string{"casinowar.helpBet", "casinowar.helpSurrender", "casinowar.helpWar"},
+			CommandKeys:       []string{"casinowar.helpBet", "casinowar.helpRebet", "casinowar.helpSurrender", "casinowar.helpWar"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
 	BindCuiFor("pitch",
