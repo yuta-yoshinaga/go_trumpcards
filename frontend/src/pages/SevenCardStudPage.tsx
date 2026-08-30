@@ -40,6 +40,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SevenCardStudResponse } from '../types/card';
 import { SevenCardStudPhase, SevenCardStudRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { valueName } from '../utils/cardUtils';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
@@ -484,6 +485,27 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                       {t('currentHand')}: {t(`hand.${currentHandKey}`)}
                     </span>
                   )}
+                  {/* In Hi-Lo, render the human's current best qualifying low badge.
+                      Evaluation is performed on the server (domain.SevenCardStudHiLoBestLow);
+                      the frontend reads the server value directly to avoid duplicating
+                      8-or-better evaluation rules in TypeScript. */}
+                  {state.isHiLo &&
+                    isActive &&
+                    !humanPlayer.folded &&
+                    humanPlayer.currentLowHand &&
+                    humanPlayer.currentLowHand.length > 0 && (
+                      <span
+                        data-testid="scs-current-low"
+                        className="inline-block ml-2 text-xs rounded px-2 py-0.5 bg-black/25 text-ds-text-muted"
+                      >
+                        {t('currentLow', {
+                          low: [...humanPlayer.currentLowHand]
+                            .sort((a, b) => b.value - a.value)
+                            .map((c) => valueName(c.value))
+                            .join('-'),
+                        })}
+                      </span>
+                    )}
                 </div>
                 {/* Door cards */}
                 <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>

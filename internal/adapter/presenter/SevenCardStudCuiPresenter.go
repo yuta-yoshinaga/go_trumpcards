@@ -139,6 +139,19 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 					b.WriteString(i18n.Tf("sevencardstud.currentBestHand",
 						"hand", cuiPokerHandName(rank),
 						"cards", cuiCardSliceStrEmoji(best)) + "\n")
+
+					// Hi-Lo はハイとローの両取りを狙うゲームなので、**ハイの行に足す**。
+					// ローに差し替えると、これまで出ていたハイが消える。
+					//
+					// 成立していないときは何も出さない。Razz は未完成のローも見せるが、
+					// あれは全員がローだけを争うゲームだから成立する案内で、Hi-Lo で
+					// 同じことをすると「まだ乗っていない」を「乗りかけている」と読ませる。
+					// SevenCardStudHiLoBestLow は状態を変えないので描画から呼んで安全。
+					if s.GetIsHiLo() {
+						if low, qualifies := domain.SevenCardStudHiLoBestLow(player.GetAllCards()); qualifies {
+							b.WriteString(i18n.Tf("sevencardstud.hiLoBestLow", "cards", cuiCardSliceStrEmoji(low)) + "\n")
+						}
+					}
 				}
 			}
 		}

@@ -134,6 +134,13 @@ func (p *SevenCardStudWebPresenter) buildPlayersOutput(s interfaces.SevenCardStu
 			pObj.BestHand = make([]*controller.WebOutputCard, 0)
 		}
 
+		// Hi-Lo プレイ中のロー情報 (人間のプレイ中のみ)
+		if s.GetIsHiLo() && player.GetIsHuman() && !player.GetFolded() {
+			if low, qualifies := domain.SevenCardStudHiLoBestLow(player.GetAllCards()); qualifies {
+				pObj.CurrentLowHand = cardsToOutput(low)
+			}
+		}
+
 		out = append(out, pObj)
 	}
 	return out

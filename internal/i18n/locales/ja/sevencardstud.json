@@ -59,6 +59,7 @@
   "gameEnd": "ゲーム終了",
   "razzLowComplete": "現在のベストロー: {{cards}}",
   "razzLowIncomplete": "ベストロー(未完成): {{cards}}",
+  "hiLoBestLow": "現在のベストロー: {{cards}}",
   "hintNone": "現在ヒントはありません。",
   "hint": "推奨: {{action}}（{{reason}}）",
   "hintContinue": "続行（コール／ベット）",

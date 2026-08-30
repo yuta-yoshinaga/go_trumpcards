@@ -133,6 +133,52 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "未完成")
 	})
 
+	t.Run("hilo mode shows the human's qualifying best low", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewSevenCardStudHiLo(tc, players, domain.DefaultSevenCardStudConfig())
+		s.SetPhase(domain.SevenCardStudPhaseFifthStreet)
+		// A qualifying low: A-2-4-5-6 (all <= 8, no pairs)
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 4, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := p.Output(s, nil)
+		assert.Contains(t, result, "現在のベストロー: ♠1  ♥2  ♣4  ♦5  ♠6")
+		// ローはハイに**足す**もので、置き換えるものではない。
+		assert.Contains(t, result, "現在の最善役")
+	})
+
+	t.Run("hilo mode shows nothing when low does not qualify", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewSevenCardStudHiLo(tc, players, domain.DefaultSevenCardStudConfig())
+		s.SetPhase(domain.SevenCardStudPhaseFifthStreet)
+		// No cards <= 8 (all 9+)
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 11, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignDiamond, 12, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+
+		result := p.Output(s, nil)
+		assert.NotContains(t, result, "現在のベストロー")
+		// Razz の「未完成」案内は Hi-Lo では出さない。全員がローだけを争う
+		// ゲームでの案内をそのまま持ち込むと、乗っていない手を乗りかけと読ませる。
+		assert.NotContains(t, result, "未完成")
+		// **ハイの行は出たままでなければならない。** Hi-Lo は両取りのゲームで、
+		// ロー不成立はハイを隠す理由にならない。
+		assert.Contains(t, result, "現在の最善役")
+	})
+
 	t.Run("action prompt shows call amount on human betting turn", func(t *testing.T) {
 		s, players := makeSevenCardStudForPresenter()
 		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)

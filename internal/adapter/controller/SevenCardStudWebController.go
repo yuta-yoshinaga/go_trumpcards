@@ -28,23 +28,24 @@ type SevenCardStudWebInput struct {
 
 // SevenCardStudWebOutputPlayer セブンカードスタッドWebアウトプットプレイヤー
 type SevenCardStudWebOutputPlayer struct {
-	ID            int              `json:"id"`
-	IsHuman       bool             `json:"isHuman"`
-	HoleCards     []*WebOutputCard `json:"holeCards"`
-	DoorCards     []*WebOutputCard `json:"doorCards"`
-	Chips         int              `json:"chips"`
-	CurrentBet    int              `json:"currentBet"`
-	Folded        bool             `json:"folded"`
-	AllIn         bool             `json:"allIn"`
-	HandRank      int              `json:"handRank"`
-	HandName      string           `json:"handName"`
-	BestHand      []*WebOutputCard `json:"bestHand"`
-	PlayStyleName string           `json:"playStyleName"`
-	TotalHands    int              `json:"totalHands"`
-	VPIP          int              `json:"vpip"`
-	PFR           int              `json:"pfr"`
-	ThreeBet      int              `json:"threeBet"`
-	AF            string           `json:"af"`
+	ID             int              `json:"id"`
+	IsHuman        bool             `json:"isHuman"`
+	HoleCards      []*WebOutputCard `json:"holeCards"`
+	DoorCards      []*WebOutputCard `json:"doorCards"`
+	Chips          int              `json:"chips"`
+	CurrentBet     int              `json:"currentBet"`
+	Folded         bool             `json:"folded"`
+	AllIn          bool             `json:"allIn"`
+	HandRank       int              `json:"handRank"`
+	HandName       string           `json:"handName"`
+	BestHand       []*WebOutputCard `json:"bestHand"`
+	CurrentLowHand []*WebOutputCard `json:"currentLowHand,omitempty"`
+	PlayStyleName  string           `json:"playStyleName"`
+	TotalHands     int              `json:"totalHands"`
+	VPIP           int              `json:"vpip"`
+	PFR            int              `json:"pfr"`
+	ThreeBet       int              `json:"threeBet"`
+	AF             string           `json:"af"`
 }
 
 // SevenCardStudWebOutputCpuAction セブンカードスタッドCPU行動記録

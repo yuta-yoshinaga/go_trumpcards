@@ -555,3 +555,80 @@ func TestSevenCardStudWebPresenter_Output_Chicago(t *testing.T) {
 		assert.Nil(t, r.SpadeCard)
 	})
 }
+
+func TestSevenCardStudWebPresenter_HiLo_CurrentLowHand(t *testing.T) {
+	p := new(presenter.SevenCardStudWebPresenter)
+
+	newHiLo := func() (*domain.SevenCardStud, []*domain.SevenCardStudPlayer) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewSevenCardStudHiLo(tc, players, domain.DefaultSevenCardStudConfig())
+		return s, players
+	}
+
+	t.Run("populates CurrentLowHand for human player during play when low qualifies", func(t *testing.T) {
+		s, players := newHiLo()
+		s.SetPhase(domain.SevenCardStudPhaseFifthStreet)
+		// Human has A-2-3-4-5 (qualifying low)
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+		// CPU also has low cards
+		players[1].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[1].AddHoleCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[1].AddDoorCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		players[1].AddDoorCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		players[1].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+		result := p.Output(s, nil)
+		var out controller.SevenCardStudWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+
+		// Human player has CurrentLowHand populated with 5 cards
+		assert.Len(t, out.Players[0].CurrentLowHand, 5)
+		// CPU player does not expose CurrentLowHand during play
+		assert.Nil(t, out.Players[1].CurrentLowHand)
+	})
+
+	t.Run("leaves CurrentLowHand empty when low does not qualify", func(t *testing.T) {
+		s, players := newHiLo()
+		s.SetPhase(domain.SevenCardStudPhaseFifthStreet)
+		// Human has 9+ only
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 11, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignDiamond, 12, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+
+		result := p.Output(s, nil)
+		var out controller.SevenCardStudWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+
+		assert.Nil(t, out.Players[0].CurrentLowHand)
+	})
+
+	t.Run("plain stud does not populate CurrentLowHand", func(t *testing.T) {
+		s, players := makeSevenCardStudForPresenter()
+		s.SetPhase(domain.SevenCardStudPhaseFifthStreet)
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+		result := p.Output(s, nil)
+		var out controller.SevenCardStudWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+
+		assert.Nil(t, out.Players[0].CurrentLowHand)
+	})
+}
