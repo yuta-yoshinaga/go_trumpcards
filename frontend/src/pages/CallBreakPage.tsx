@@ -472,9 +472,6 @@ function CallBreakPageContent() {
                   {hint.bid != null
                     ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
                     : (() => {
-                        // 番号だけでは「どの札か」が伝わらない。CUI は同じヒントで札名まで
-                        // 出している (CallBreakCuiPresenter.go の callbreak.hintCard)。
-                        // 並びは同じ機能を持つ CatchTen / Whist / TwoTenJack に合わせる。
                         const card = hint.cardIndex !== undefined ? humanPlayer?.cards[hint.cardIndex] : undefined;
                         const name = card ? cardAlt(card) : '-';
                         return `${t('hintPlay')}: ${name} [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`)})`;
