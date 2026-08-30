@@ -10,6 +10,7 @@
   "giveup": "Give Up",
   "empty": "Empty",
   "lastCardWarning": "This column will be lost for good",
+  "emptyColNote": "Note: empty columns cannot be refilled",
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "landscapeBanner": "Landscape mode recommended",

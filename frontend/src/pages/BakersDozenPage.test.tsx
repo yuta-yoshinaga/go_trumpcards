@@ -448,3 +448,48 @@ describe('BakersDozenPage destination preview', () => {
     expect(targets()[0]?.className).not.toContain('ring-ds-success/70');
   });
 });
+
+describe('BakersDozenPage empty column rule banner', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockPlaySound.mockReset();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+    localStorage.clear();
+  });
+
+  it('displays the empty column rule banner during play with tutorial not completed', async () => {
+    mockExec.mockResolvedValue(playingState);
+    const { container } = renderWithProviders(<BakersDozenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    // プレイ中に文が出ること。実際の文字列で assert（注意: 空列は再利用できません）
+    const banner = screen.getByText('注意: 空列は再利用できません');
+    expect(banner).toBeInTheDocument();
+
+    // 位置とスタイルが先例と同じであること
+    expect(banner.className).toContain('text-ds-warning');
+    expect(banner).toHaveClass('text-center', 'text-xs', 'text-ds-warning', 'mb-3', 'font-medium');
+    expect(banner).toHaveAttribute('data-tutorial', 'bd-rule');
+
+    // ファンデーション行の上にあること
+    const foundation = container.querySelector('[data-tutorial="bd-foundation"]');
+    expect(foundation).toBeInTheDocument();
+    if (foundation) {
+      expect(banner.compareDocumentPosition(foundation) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+  });
+
+  it('displays the empty column rule banner in game clear state', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<BakersDozenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.getByText('注意: 空列は再利用できません')).toBeInTheDocument();
+  });
+
+  it('displays the empty column rule banner in game over state', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<BakersDozenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.getByText('注意: 空列は再利用できません')).toBeInTheDocument();
+  });
+});
