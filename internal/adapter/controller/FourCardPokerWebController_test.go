@@ -42,6 +42,7 @@ func TestFourCardPokerWebController_Method(t *testing.T) {
 	tiMock.On("Play", 3).Return(mockOutput)
 	tiMock.On("Fold").Return(mockOutput)
 	tiMock.On("ActionLog").Return(mockOutput)
+	tiMock.On("Hint").Return(mockOutput)
 
 	factory := func() uc.FourCardPokerInteractorIF { return tiMock }
 	ctrl := controller.NewFourCardPokerWebController(factory)
@@ -154,9 +155,17 @@ func TestFourCardPokerWebController_Method(t *testing.T) {
 		recorded.CodeIs(http.StatusOK)
 	})
 
+	t.Run("hint", func(t *testing.T) {
+		var input controller.FourCardPokerWebInput
+		_ = json.Unmarshal([]byte(`{"command":"hint","sessionId":"s14"}`), &input)
+		recorded := execRequest(t, ctrl.Exec, &input)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(expectedBody)
+	})
+
 	t.Run("unknown command", func(t *testing.T) {
 		var input controller.FourCardPokerWebInput
-		_ = json.Unmarshal([]byte(`{"command":"xyz","sessionId":"s14"}`), &input)
+		_ = json.Unmarshal([]byte(`{"command":"xyz","sessionId":"s15"}`), &input)
 		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		body := strings.TrimSpace(recorded.Body.String())

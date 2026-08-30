@@ -34,6 +34,11 @@ func (m *MockFourCardPokerInteractor) ActionLog() string {
 	return args.String(0)
 }
 
+func (m *MockFourCardPokerInteractor) Hint() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 func (m *MockFourCardPokerInteractor) Snapshot() ([]byte, error) {
 	ret := m.Called()
 	return ret.Get(0).([]byte), ret.Error(1)

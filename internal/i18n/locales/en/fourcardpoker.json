@@ -26,5 +26,10 @@
   "anteBonusPayoutLine": "Ante bonus: {{payout}}",
   "acesUpPayoutLine": "Aces Up: {{payout}}",
   "helpExampleBet": "  b 10                 ante 10 and get a hand",
-  "helpExamplePlay": "  p                    play, matching the ante"
+  "helpExamplePlay": "  p                    play, matching the ante",
+  "helpHint": "  h                    show a hint",
+  "hintNone": "No hint available.",
+  "hintPlayMax": "Recommended: Play 3x (Three of a Kind or better)",
+  "hintPlayMin": "Recommended: Play 1x (Two Pair, Straight, or Flush)",
+  "hintFold": "Recommended: Fold (Pair or High Card)"
 }

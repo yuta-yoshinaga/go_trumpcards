@@ -106,3 +106,13 @@ func TestFourCardPokerInteractor_ActionLog(t *testing.T) {
 
 	assert.Equal(t, "log out", fi.ActionLog())
 }
+
+func TestFourCardPokerInteractor_Hint(t *testing.T) {
+	mg := new(interfaces.MockFourCardPokerGame)
+	mp := new(presenter.MockFourCardPokerPresenter)
+	fi := NewFourCardPokerInteractor(mg, mp)
+
+	mp.On("HintOutput", mg).Return("hint out")
+
+	assert.Equal(t, "hint out", fi.Hint())
+}
