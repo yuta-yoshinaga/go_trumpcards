@@ -20,6 +20,14 @@ const mockExec = vi.mocked(sultanApi.exec);
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
+const makeFoundationPile = (design: CardDesign, count: number): Card[] => {
+  const pile: Card[] = [card(design, 13)];
+  for (let v = 1; v < count; v++) {
+    pile.push(card(design, v));
+  }
+  return pile;
+};
+
 const playingState: SultanResponse = {
   foundation: [
     [card('SPADE', 13)],
@@ -175,6 +183,60 @@ describe('SultanPage', () => {
     expect(screen.getAllByText('K').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole('img', { name: '組札1 空（Kから積む）' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: '組札8 空（Kから積む）' })).toBeInTheDocument();
+  });
+
+  it('shows complete badge and completed aria-label on 13-card foundation, but not on incomplete foundation', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [
+        makeFoundationPile('SPADE', 13), // 13 cards: complete
+        makeFoundationPile('SPADE', 12), // 12 cards: incomplete negative control
+        [card('CLOVER', 13)], // 1 card: incomplete
+        [], // 0 cards: empty
+        [card('HEART', 13)],
+        [card('HEART', 13)],
+        [card('DIAMOND', 13)],
+        [card('DIAMOND', 13)],
+      ],
+    });
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    // Completed foundation 0 (13 cards): badge is present, aria-label has completion note
+    expect(screen.getByTestId('sultan-foundation-complete-0')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '組札1 一番上 ♠ Q（完成）' })).toBeInTheDocument();
+
+    // Incomplete foundation 1 (12 cards): badge is NOT present, aria-label does NOT have completion note
+    expect(screen.queryByTestId('sultan-foundation-complete-1')).not.toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '組札2 一番上 ♠ J' })).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: '組札2 一番上 ♠ J（完成）' })).not.toBeInTheDocument();
+
+    // Incomplete foundation 2 (1 card): badge is NOT present
+    expect(screen.queryByTestId('sultan-foundation-complete-2')).not.toBeInTheDocument();
+  });
+
+  it('shows exactly 8 complete badges when all 8 foundations are completed', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [
+        makeFoundationPile('SPADE', 13),
+        makeFoundationPile('SPADE', 13),
+        makeFoundationPile('CLOVER', 13),
+        makeFoundationPile('CLOVER', 13),
+        makeFoundationPile('HEART', 13),
+        makeFoundationPile('HEART', 13),
+        makeFoundationPile('DIAMOND', 13),
+        makeFoundationPile('DIAMOND', 13),
+      ],
+    });
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    for (let i = 0; i < 8; i++) {
+      expect(screen.getByTestId(`sultan-foundation-complete-${i}`)).toBeInTheDocument();
+    }
+    const badges = screen.getAllByTestId(/^sultan-foundation-complete-/);
+    expect(badges).toHaveLength(8);
   });
 
   it('renders divan slots, empty ones show placeholder', async () => {

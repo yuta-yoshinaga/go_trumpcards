@@ -271,10 +271,11 @@ function SultanPageContent() {
                       {pile.length > 0 ? (
                         <div
                           role="img"
-                          aria-label={t('foundationSlot', {
+                          aria-label={t(info.complete ? 'foundationSlotComplete' : 'foundationSlot', {
                             idx: idx + 1,
                             top: cardAlt(pile[pile.length - 1]),
                           })}
+                          className={`relative inline-block rounded ${info.complete ? 'ring-2 ring-ds-success' : ''}`}
                         >
                           <AnimatedCard
                             card={pile[pile.length - 1]}
@@ -282,6 +283,15 @@ function SultanPageContent() {
                             draggable={false}
                             dealDelay={isAutoCompleting ? idx * 0.15 : 0}
                           />
+                          {info.complete && (
+                            <span
+                              aria-hidden="true"
+                              data-testid={`sultan-foundation-complete-${idx.toString()}`}
+                              className="absolute -top-1 -right-1 rounded-full bg-ds-success text-white text-[10px] leading-none px-1 py-0.5"
+                            >
+                              ✓
+                            </span>
+                          )}
                         </div>
                       ) : (
                         <div
