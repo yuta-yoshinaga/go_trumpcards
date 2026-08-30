@@ -100,14 +100,16 @@ describe('TarneebPage', () => {
     const { container } = renderWithProviders(<TarneebPage />);
     await waitFor(() => expect(container.querySelector('[data-tutorial="tn-score-table"] table')).not.toBeNull());
     const table = container.querySelector('[data-tutorial="tn-score-table"] table') as HTMLTableElement;
-    // Your team (team 0): round score 4, total 10.
-    const yourRow = within(table).getByText('あなたのチーム').closest('tr') as HTMLTableRowElement;
-    expect(within(yourRow).getByText('4')).toBeInTheDocument();
-    expect(within(yourRow).getByText('10')).toBeInTheDocument();
-    // Opponents (team 1): round score 2, total 5.
-    const oppRow = within(table).getByText('相手チーム').closest('tr') as HTMLTableRowElement;
-    expect(within(oppRow).getByText('2')).toBeInTheDocument();
-    expect(within(oppRow).getByText('5')).toBeInTheDocument();
+    // 列は チーム / トリック / 今ラウンド / 累計。数字が列をまたいで重複しうるので、
+    // テキスト一致ではなく列位置で読む。
+    const cellsOf = (label: string) => {
+      const row = within(table).getByText(label).closest('tr') as HTMLTableRowElement;
+      return Array.from(row.cells).map((c) => c.textContent);
+    };
+    // Your team (team 0): 4 tricks, round score 4, total 10.
+    expect(cellsOf('あなたのチーム')).toEqual(['あなたのチーム', '4', '4', '10']);
+    // Opponents (team 1): 2 tricks, round score 2, total 5.
+    expect(cellsOf('相手チーム')).toEqual(['相手チーム', '2', '2', '5']);
   });
 
   it('displays round score (including negative scores for failed bids) instead of trick count in the score table', async () => {
@@ -128,16 +130,16 @@ describe('TarneebPage', () => {
     await waitFor(() => expect(container.querySelector('[data-tutorial="tn-score-table"] table')).not.toBeNull());
     const table = container.querySelector('[data-tutorial="tn-score-table"] table') as HTMLTableElement;
 
-    // Your team (team 0): round score is -8 (negative, different from total trick count 4), total is 2.
-    const yourRow = within(table).getByText('あなたのチーム').closest('tr') as HTMLTableRowElement;
-    expect(within(yourRow).getByText('-8')).toBeInTheDocument();
-    expect(within(yourRow).getByText('2')).toBeInTheDocument();
-    expect(within(yourRow).queryByText('4')).not.toBeInTheDocument();
-
-    // Opponents (team 1): round score is 9 (different from individual trick counts 6 and 3), total is 15.
-    const oppRow = within(table).getByText('相手チーム').closest('tr') as HTMLTableRowElement;
-    expect(within(oppRow).getByText('9')).toBeInTheDocument();
-    expect(within(oppRow).getByText('15')).toBeInTheDocument();
+    const cellsOf = (label: string) => {
+      const row = within(table).getByText(label).closest('tr') as HTMLTableRowElement;
+      return Array.from(row.cells).map((c) => c.textContent);
+    };
+    // チーム / トリック / 今ラウンド / 累計。
+    // Team 0: 4 tricks but a *negative* round score — the two columns must not agree here,
+    // which is the whole point of #6402.
+    expect(cellsOf('あなたのチーム')).toEqual(['あなたのチーム', '4', '-8', '2']);
+    // Team 1: 9 tricks, round score 9, total 15.
+    expect(cellsOf('相手チーム')).toEqual(['相手チーム', '9', '9', '15']);
 
     // Player breakdown preserves individual trick counts (acceptance condition 3).
     const breakdown = (await screen.findByTestId('tn-player-breakdown')) as HTMLDetailsElement;
