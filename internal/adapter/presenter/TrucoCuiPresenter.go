@@ -95,6 +95,11 @@ func (p *TrucoCuiPresenter) Output(g interfaces.TrucoGame, lastErr error) string
 			sb.WriteString(i18n.Tf("truco.promptRespond",
 				"name", cuiPlayerName(g.GetPlayer(caller), caller),
 				"level", trucoLevelLabel(g.GetPendingLevel())) + "\n")
+			// 応答側もその場で引き上げられる。ここだけ CanDeclareTruco を
+			// 見ておらず、accept/decline の 2 択しか案内していなかった。
+			if g.CanDeclareTruco() {
+				sb.WriteString(i18n.T("truco.promptCanTruco") + "\n")
+			}
 		case domain.TrucoPhaseTrickEnd:
 			sb.WriteString(i18n.T("truco.promptTrickEnd") + "\n")
 			sb.WriteString(i18n.T("truco.promptNextHelp") + "\n")
