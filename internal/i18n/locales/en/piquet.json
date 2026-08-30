@@ -9,7 +9,6 @@
   "dealHeader": "Deal {{deal}} / {{total}}",
   "roleElder": "Elder",
   "roleYounger": "Younger",
-  "you": "you",
   "playerLine": "{{role}}  hand:{{hand}}  tricks:{{tricks}}  round:{{round}}  match:{{match}}",
   "carteBlanche": "★ carte blanche +10",
   "exchangeHeader": "[Exchange phase]",
