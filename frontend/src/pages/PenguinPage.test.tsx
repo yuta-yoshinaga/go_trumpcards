@@ -635,3 +635,132 @@ describe('PenguinPage empty-column move limit', () => {
     expect(await screen.findByTestId('pg-empty-col-1')).not.toHaveAttribute('data-empty-col-blocked');
   });
 });
+
+describe('PenguinPage hint announcement', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('announces the hinted move (tableau source) in a polite live region', async () => {
+    renderWithProviders(<PenguinPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    // playingState.tableau[0][0] is ♠ K; hint moves it to a foundation.
+    mockExec.mockResolvedValue(withHintFromColState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => {
+      const region = screen.getByTestId('pg-hint-announce');
+      expect(region).toHaveAttribute('role', 'status');
+      expect(region).toHaveAttribute('aria-live', 'polite');
+      expect(region).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動');
+    });
+  });
+
+  it('announces a free-cell source hint by resolving the free-cell card', async () => {
+    renderWithProviders(<PenguinPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    // playingState.freeCells[0] is ♦ 3; hint moves it to tableau column 4 (col 3).
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'freecell', fromCol: 0, cardIndex: -1, toZone: 'tableau', toCol: 3 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => {
+      const region = screen.getByTestId('pg-hint-announce');
+      expect(region).toHaveTextContent('ヒント: ♦ 3 を フリーセル 1 から タブロー 4 へ移動');
+    });
+  });
+
+  it('announces that no moves are available when the hint request yields none', async () => {
+    renderWithProviders(<PenguinPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({ ...playingState, hint: undefined });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => {
+      const region = screen.getByTestId('pg-hint-announce');
+      expect(region).toHaveTextContent('移動可能な手がありません');
+    });
+  });
+
+  it('remounts the live region on repeated hint requests so identical hints re-announce', async () => {
+    renderWithProviders(<PenguinPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(withHintFromColState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    let firstRegion: HTMLElement | null = null;
+    await waitFor(() => {
+      firstRegion = screen.getByTestId('pg-hint-announce');
+      expect(firstRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => {
+      const secondRegion = screen.getByTestId('pg-hint-announce');
+      expect(secondRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動');
+      expect(secondRegion).not.toBe(firstRegion);
+    });
+  });
+
+  it('keeps the hint live region empty before any hint is requested', async () => {
+    renderWithProviders(<PenguinPage />);
+    const region = await screen.findByTestId('pg-hint-announce');
+    expect(region.textContent).toBe('');
+  });
+
+  it('does not announce "no moves" when the hint request fails', async () => {
+    renderWithProviders(<PenguinPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    // hint fetch rejects → hintError is set, hint stays null; the region must stay
+    // empty rather than falsely announcing "移動可能な手がありません".
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+    const region = screen.getByTestId('pg-hint-announce');
+    expect(region.textContent).toBe('');
+  });
+
+  it('announces an empty card name when a free-cell hint points at an empty cell', async () => {
+    renderWithProviders(<PenguinPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'freecell', fromCol: 3, cardIndex: -1, toZone: 'tableau', toCol: 3 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => {
+      const region = screen.getByTestId('pg-hint-announce');
+      expect(region).toHaveTextContent('ヒント: を フリーセル 4 から タブロー 4 へ移動');
+    });
+  });
+
+  it('announces an empty card name when a tableau hint points at a missing card', async () => {
+    renderWithProviders(<PenguinPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'tableau', fromCol: 2, cardIndex: 0, toZone: 'foundation', toCol: -1 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => {
+      const region = screen.getByTestId('pg-hint-announce');
+      expect(region).toHaveTextContent('ヒント: を タブロー 3 から ファンデーション へ移動');
+    });
+  });
+});
