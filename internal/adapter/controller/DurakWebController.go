@@ -50,7 +50,7 @@ type DurakWebOutputTablePair struct {
 // DurakWebOutputAction ドゥラークのプレイヤー行動記録
 type DurakWebOutputAction struct {
 	PlayerIdx  int            `json:"playerIdx"`
-	ActionType int            `json:"actionType"` // 0=attack, 1=defend, 2=pass, 3=take
+	ActionType int            `json:"actionType"` // 0=attack, 1=defend, 2=pass, 3=take, 4=transfer
 	Card       *WebOutputCard `json:"card"`       // 出したカード (nil = パス/テイク)
 	AttackIdx  int            `json:"attackIdx"`  // 防御時: 対象攻撃カード (-1 = 該当なし)
 }
@@ -123,6 +123,12 @@ func durakDispatch(bc *baseController, w http.ResponseWriter, di usecase.DurakIn
 		bc.writePresenterResponse(w, di.Pass())
 	case "t", "take":
 		bc.writePresenterResponse(w, di.TakeCards())
+	case "tr", "transfer":
+		handIdx := 0
+		if param.CardIdx != nil {
+			handIdx = *param.CardIdx
+		}
+		bc.writePresenterResponse(w, di.Transfer(handIdx))
 	case "sort":
 		mode := domain.DurakSortBySuit
 		if param.SortMode != nil {

@@ -432,3 +432,62 @@ describe('DurakPage finished players', () => {
     expect(screen.queryByTestId('cpu-finished-2')).not.toBeInTheDocument();
   });
 });
+
+describe('DurakPage transfer (perevod)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    mockExec.mockResolvedValue(baseState);
+    mockPlaySound.mockClear();
+  });
+
+  const transferableState: DurakResponse = {
+    ...defendPhaseState,
+    config: { ...defaultConfig, transferEnabled: true },
+  };
+
+  const transferBtn = () => screen.queryByRole('button', { name: '転送' });
+
+  it('offers the transfer button to the defender before anything is defended', async () => {
+    mockExec.mockResolvedValue(transferableState);
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(transferBtn()).toBeInTheDocument());
+  });
+
+  it('hides the transfer button when the setting is off', async () => {
+    // 既定は無効。設定を切ったままボタンが出ると、押しても必ず断られる。
+    mockExec.mockResolvedValue({ ...defendPhaseState, config: { ...defaultConfig, transferEnabled: false } });
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(transferBtn()).not.toBeInTheDocument();
+  });
+
+  it('hides the transfer button once an attack has been defended', async () => {
+    // 1 枚でも防御済みなら転送はできない (ドメインが拒否する)。
+    mockExec.mockResolvedValue({
+      ...transferableState,
+      tablePairs: [{ attack: { design: 'CLOVER', value: 7 }, defense: { design: 'HEART', value: 8 } }],
+    });
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(transferBtn()).not.toBeInTheDocument();
+  });
+
+  it('sends the selected card index with the transfer command', async () => {
+    mockExec.mockResolvedValue(transferableState);
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(transferBtn()).toBeInTheDocument());
+
+    // 選択前は押せない。押しても無反応、では理由が伝わらない。
+    expect(transferBtn()).toBeDisabled();
+
+    // 手札は cardAlt が名前になる (♠ A が index 0、♥ J が index 1)。
+    fireEvent.click(screen.getByRole('button', { name: '♥ J' }));
+    await waitFor(() => expect(transferBtn()).toBeEnabled());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(transferableState);
+    fireEvent.click(transferBtn() as HTMLElement);
+    // 0 でない番号で確かめる。0 だと渡していない実装でも一致する。
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('transfer', 1));
+  });
+});

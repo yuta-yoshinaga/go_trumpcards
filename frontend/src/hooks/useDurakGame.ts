@@ -69,6 +69,11 @@ export function useDurakGame() {
     gameExec('take');
   }, [gameExec]);
 
+  const handleTransfer = useCallback(() => {
+    if (selectedCardIdx === null) return;
+    gameExec('transfer', selectedCardIdx);
+  }, [gameExec, selectedCardIdx]);
+
   const handleSort = useCallback(
     (mode: number) => {
       gameExec('sort', undefined, undefined, undefined, mode);
@@ -93,6 +98,7 @@ export function useDurakGame() {
     handleDefend,
     handlePass,
     handleTake,
+    handleTransfer,
     handleSort,
     hint,
     hintError,

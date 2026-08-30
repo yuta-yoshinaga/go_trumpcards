@@ -21,6 +21,7 @@ func TestDurakCuiController_Exec(t *testing.T) {
 	diMock.On("Defend", mock.Anything, mock.Anything).Return(mockOutput)
 	diMock.On("Pass").Return(mockOutput)
 	diMock.On("TakeCards").Return(mockOutput)
+	diMock.On("Transfer", mock.Anything).Return(mockOutput)
 	diMock.On("Sort", mock.Anything).Return(mockOutput)
 	diMock.On("GetConfig").Return(domain.DefaultDurakConfig())
 	diMock.On("ResetWithConfig", mock.Anything).Return(mockOutput)
@@ -74,6 +75,13 @@ func TestDurakCuiController_Exec(t *testing.T) {
 
 	t.Run("take", func(t *testing.T) {
 		result := c.Exec("t")
+		assert.Equal(t, mockOutput, result)
+	})
+
+	t.Run("transfer", func(t *testing.T) {
+		result := c.Exec("tr 1")
+		// **番号まで見る。**mock.Anything だけだと、常に 0 を渡す実装でも通る。
+		diMock.AssertCalled(t, "Transfer", 1)
 		assert.Equal(t, mockOutput, result)
 	})
 

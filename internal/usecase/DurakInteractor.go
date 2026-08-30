@@ -20,6 +20,8 @@ type DurakInteractorIF interface {
 	Pass() string
 	// TakeCards 人間プレイヤーがカードを引き取る (防御放棄)
 	TakeCards() string
+	// Transfer 人間プレイヤーがカードを転送する
+	Transfer(handIdx int) string
 	// ResetWithConfig 設定を変更してゲームを初期化
 	ResetWithConfig(config domain.DurakConfig) string
 	// GetConfig 現在の設定を返す
@@ -96,6 +98,18 @@ func (di *DurakInteractor) TakeCards() string {
 		return out
 	}
 	err := di.Game.PlayerTakeCards()
+	if err == nil && !di.Game.GetGameEndFlag() {
+		di.runCpuTurns()
+	}
+	return di.dp.Output(di.Game, err)
+}
+
+// Transfer 人間プレイヤーがカードを転送する
+func (di *DurakInteractor) Transfer(handIdx int) string {
+	if out, blocked := guardNotPlayable(di.Game, di.dp); blocked {
+		return out
+	}
+	err := di.Game.PlayerTransfer(handIdx)
 	if err == nil && !di.Game.GetGameEndFlag() {
 		di.runCpuTurns()
 	}

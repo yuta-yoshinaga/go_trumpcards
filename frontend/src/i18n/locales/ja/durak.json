@@ -9,7 +9,8 @@
     "attack": "攻撃",
     "defend": "防御",
     "pass": "パス",
-    "take": "引き取り"
+    "take": "引き取り",
+    "transfer": "転送"
   },
   "trump": "切り札",
   "stock": "山札",
@@ -23,6 +24,7 @@
   "defendButton": "防御",
   "passButton": "パス",
   "takeButton": "引き取り",
+  "transferButton": "転送",
   "selectCard": "カードを選択してください",
   "selectAttackCard": "防御する攻撃カードを選択",
   "attacker": "攻撃者",
