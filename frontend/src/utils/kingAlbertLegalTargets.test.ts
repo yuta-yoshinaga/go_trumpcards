@@ -32,11 +32,20 @@ describe('kingAlbertLegalTargets', () => {
     expect(targets.tableau.has(1)).toBe(true);
   });
 
-  it('takes an ace onto an empty foundation and nothing else', () => {
+  // 空の組札が4つあってもエースは**先頭にしか着地しない**。サーバは移動元の列しか
+  // 受け取らず、findFoundation が最初の受け入れ先を選ぶ (#6763)。
+  it('reports only the first empty foundation for an ace', () => {
     const empty = kingAlbertLegalTargets([], [[], [], [], []], card('SPADE', 1));
-    expect(empty.foundation.size).toBe(4);
+    expect([...empty.foundation]).toEqual([0]);
     const two = kingAlbertLegalTargets([], [[], [], [], []], card('SPADE', 2));
     expect(two.foundation.size).toBe(0);
+  });
+
+  // 先頭が埋まっていて受け付けない場合は、その次の受け入れ先が1つだけ。
+  it('skips a foundation that cannot take the card and stops at the next one', () => {
+    const foundation: Card[][] = [[card('HEART', 1)], [], [], []];
+    const targets = kingAlbertLegalTargets([], foundation, card('SPADE', 1));
+    expect([...targets.foundation]).toEqual([1]);
   });
 
   it('builds a foundation up in the same suit only', () => {
