@@ -39,7 +39,13 @@ func (pp *ChinesePokerWebPresenter) Output(cp interfaces.ChinesePokerGame, lastE
 	resObj.DealerMiddleRank = cp.GetDealerMiddleRank()
 	resObj.DealerBackRank = cp.GetDealerBackRank()
 	resObj.PlayerRoyalty = cp.GetPlayerRoyalty()
+	resObj.PlayerFrontRoyalty = cp.GetPlayerFrontRoyalty()
+	resObj.PlayerMiddleRoyalty = cp.GetPlayerMiddleRoyalty()
+	resObj.PlayerBackRoyalty = cp.GetPlayerBackRoyalty()
 	resObj.DealerRoyalty = cp.GetDealerRoyalty()
+	resObj.DealerFrontRoyalty = cp.GetDealerFrontRoyalty()
+	resObj.DealerMiddleRoyalty = cp.GetDealerMiddleRoyalty()
+	resObj.DealerBackRoyalty = cp.GetDealerBackRoyalty()
 	resObj.Scoop = cp.GetScoop()
 	// 推奨分割はセットハンドで13枚そろっているときだけ入る (ドメイン側の判定)。
 	resObj.SuggestedArrangement = chinesePokerArrangementOutput(cp.GetSuggestedArrangement())

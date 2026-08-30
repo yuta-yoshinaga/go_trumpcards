@@ -27,6 +27,32 @@ func TestChinesePokerWebPresenter_Output(t *testing.T) {
 	assert.Len(t, output.PlayerCards, 13)
 }
 
+func TestChinesePokerWebPresenter_Output_SegmentRoyalties(t *testing.T) {
+	pp := &ChinesePokerWebPresenter{}
+	cp := domain.NewDefaultChinesePoker()
+	cp.SetPlayerFrontRoyalty(7)
+	cp.SetPlayerMiddleRoyalty(12)
+	cp.SetPlayerBackRoyalty(25)
+	cp.SetPlayerRoyalty(44)
+	cp.SetDealerFrontRoyalty(1)
+	cp.SetDealerMiddleRoyalty(30)
+	cp.SetDealerBackRoyalty(10)
+	cp.SetDealerRoyalty(41)
+
+	result := pp.Output(cp, nil)
+	var output controller.ChinesePokerWebOutput
+	err := json.Unmarshal([]byte(result), &output)
+	require.NoError(t, err)
+	assert.Equal(t, 7, output.PlayerFrontRoyalty)
+	assert.Equal(t, 12, output.PlayerMiddleRoyalty)
+	assert.Equal(t, 25, output.PlayerBackRoyalty)
+	assert.Equal(t, 44, output.PlayerRoyalty)
+	assert.Equal(t, 1, output.DealerFrontRoyalty)
+	assert.Equal(t, 30, output.DealerMiddleRoyalty)
+	assert.Equal(t, 10, output.DealerBackRoyalty)
+	assert.Equal(t, 41, output.DealerRoyalty)
+}
+
 func TestChinesePokerWebPresenter_Output_WithError(t *testing.T) {
 	pp := &ChinesePokerWebPresenter{}
 	cp := domain.NewDefaultChinesePoker()

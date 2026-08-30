@@ -29,7 +29,13 @@ const baseState: ChinesePokerResponse = {
   dealerMiddleRank: 0,
   dealerBackRank: 0,
   playerRoyalty: 0,
+  playerFrontRoyalty: 0,
+  playerMiddleRoyalty: 0,
+  playerBackRoyalty: 0,
   dealerRoyalty: 0,
+  dealerFrontRoyalty: 0,
+  dealerMiddleRoyalty: 0,
+  dealerBackRoyalty: 0,
   scoop: false,
 };
 

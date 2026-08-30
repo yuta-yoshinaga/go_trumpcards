@@ -8,6 +8,8 @@
     "back": "バック (5枚)",
     "playerRoyalty": "プレイヤーロイヤリティ",
     "dealerRoyalty": "ディーラーロイヤリティ",
+    "playerRoyaltyBreakdown": "プレイヤー内訳: フロント={{front}} / ミドル={{middle}} / バック={{back}}",
+    "dealerRoyaltyBreakdown": "ディーラー内訳: フロント={{front}} / ミドル={{middle}} / バック={{back}}",
     "scoop": "スクープ",
     "payout": "払戻し"
   },

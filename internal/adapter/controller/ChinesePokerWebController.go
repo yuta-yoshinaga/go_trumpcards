@@ -30,31 +30,37 @@ type ChinesePokerWebOutputArrangement struct {
 
 // ChinesePokerWebOutput チャイニーズポーカーWebアウトプット
 type ChinesePokerWebOutput struct {
-	PlayerCards      []*WebOutputCard `json:"playerCards"`
-	DealerCards      []*WebOutputCard `json:"dealerCards"`
-	PlayerFront      []*WebOutputCard `json:"playerFront"`
-	PlayerMiddle     []*WebOutputCard `json:"playerMiddle"`
-	PlayerBack       []*WebOutputCard `json:"playerBack"`
-	DealerFront      []*WebOutputCard `json:"dealerFront"`
-	DealerMiddle     []*WebOutputCard `json:"dealerMiddle"`
-	DealerBack       []*WebOutputCard `json:"dealerBack"`
-	Phase            int              `json:"phase"`
-	Chips            int              `json:"chips"`
-	Bet              int              `json:"bet"`
-	Result           int              `json:"result"`
-	FrontResult      int              `json:"frontResult"`
-	MiddleResult     int              `json:"middleResult"`
-	BackResult       int              `json:"backResult"`
-	Payout           int              `json:"payout"`
-	PlayerFrontRank  int              `json:"playerFrontRank"`
-	PlayerMiddleRank int              `json:"playerMiddleRank"`
-	PlayerBackRank   int              `json:"playerBackRank"`
-	DealerFrontRank  int              `json:"dealerFrontRank"`
-	DealerMiddleRank int              `json:"dealerMiddleRank"`
-	DealerBackRank   int              `json:"dealerBackRank"`
-	PlayerRoyalty    int              `json:"playerRoyalty"`
-	DealerRoyalty    int              `json:"dealerRoyalty"`
-	Scoop            bool             `json:"scoop"`
+	PlayerCards         []*WebOutputCard `json:"playerCards"`
+	DealerCards         []*WebOutputCard `json:"dealerCards"`
+	PlayerFront         []*WebOutputCard `json:"playerFront"`
+	PlayerMiddle        []*WebOutputCard `json:"playerMiddle"`
+	PlayerBack          []*WebOutputCard `json:"playerBack"`
+	DealerFront         []*WebOutputCard `json:"dealerFront"`
+	DealerMiddle        []*WebOutputCard `json:"dealerMiddle"`
+	DealerBack          []*WebOutputCard `json:"dealerBack"`
+	Phase               int              `json:"phase"`
+	Chips               int              `json:"chips"`
+	Bet                 int              `json:"bet"`
+	Result              int              `json:"result"`
+	FrontResult         int              `json:"frontResult"`
+	MiddleResult        int              `json:"middleResult"`
+	BackResult          int              `json:"backResult"`
+	Payout              int              `json:"payout"`
+	PlayerFrontRank     int              `json:"playerFrontRank"`
+	PlayerMiddleRank    int              `json:"playerMiddleRank"`
+	PlayerBackRank      int              `json:"playerBackRank"`
+	DealerFrontRank     int              `json:"dealerFrontRank"`
+	DealerMiddleRank    int              `json:"dealerMiddleRank"`
+	DealerBackRank      int              `json:"dealerBackRank"`
+	PlayerRoyalty       int              `json:"playerRoyalty"`
+	PlayerFrontRoyalty  int              `json:"playerFrontRoyalty"`
+	PlayerMiddleRoyalty int              `json:"playerMiddleRoyalty"`
+	PlayerBackRoyalty   int              `json:"playerBackRoyalty"`
+	DealerRoyalty       int              `json:"dealerRoyalty"`
+	DealerFrontRoyalty  int              `json:"dealerFrontRoyalty"`
+	DealerMiddleRoyalty int              `json:"dealerMiddleRoyalty"`
+	DealerBackRoyalty   int              `json:"dealerBackRoyalty"`
+	Scoop               bool             `json:"scoop"`
 	// SuggestedArrangement はセットハンドで13枚そろっているときだけ入る。
 	// 空配列ではなく省略するのは、「前列に置く札が無い」と読めてしまうため。
 	SuggestedArrangement *ChinesePokerWebOutputArrangement `json:"suggestedArrangement,omitempty"`

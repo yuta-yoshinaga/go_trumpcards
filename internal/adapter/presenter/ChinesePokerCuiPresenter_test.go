@@ -109,6 +109,45 @@ func TestChinesePokerCuiPresenter_Output_ScoopWin(t *testing.T) {
 	assert.Contains(t, result, "----------")
 }
 
+func TestChinesePokerCuiPresenter_Output_RoyaltiesBreakdown(t *testing.T) {
+	pp := &ChinesePokerCuiPresenter{}
+	cp := domain.NewDefaultChinesePoker()
+	cp.SetGameEndFlag(true)
+	cp.SetPhase(domain.ChinesePokerPhaseEnd)
+	cp.SetResult(domain.GameResultWin)
+	cp.SetBet(100)
+	cp.SetPayout(200)
+	cp.SetPlayerFrontRoyalty(7)
+	cp.SetPlayerMiddleRoyalty(12)
+	cp.SetPlayerBackRoyalty(25)
+	cp.SetPlayerRoyalty(44)
+	cp.SetDealerFrontRoyalty(1)
+	cp.SetDealerMiddleRoyalty(30)
+	cp.SetDealerBackRoyalty(10)
+	cp.SetDealerRoyalty(41)
+
+	result := pp.Output(cp, nil)
+	assert.Contains(t, result, "ロイヤリティ: プレイヤー=44 / ディーラー=41")
+	assert.Contains(t, result, "プレイヤー内訳: フロント=7 / ミドル=12 / バック=25")
+	assert.Contains(t, result, "ディーラー内訳: フロント=1 / ミドル=30 / バック=10")
+}
+
+func TestChinesePokerCuiPresenter_Output_ZeroRoyaltiesNoBreakdown(t *testing.T) {
+	pp := &ChinesePokerCuiPresenter{}
+	cp := domain.NewDefaultChinesePoker()
+	cp.SetGameEndFlag(true)
+	cp.SetPhase(domain.ChinesePokerPhaseEnd)
+	cp.SetResult(domain.GameResultWin)
+	cp.SetBet(100)
+	cp.SetPlayerRoyalty(0)
+	cp.SetDealerRoyalty(0)
+
+	result := pp.Output(cp, nil)
+	assert.NotContains(t, result, "ロイヤリティ:")
+	assert.NotContains(t, result, "プレイヤー内訳:")
+	assert.NotContains(t, result, "ディーラー内訳:")
+}
+
 func TestChinesePokerCuiPresenter_ActionLogOutput(t *testing.T) {
 	pp := &ChinesePokerCuiPresenter{}
 	cp := domain.NewDefaultChinesePoker()

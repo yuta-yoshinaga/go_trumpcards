@@ -22,6 +22,8 @@
   "dealerScoop": "Dealer scoop!",
   "payoutLine": "Payout: {{payout}}",
   "royaltyLine": "Royalties: Player={{player}} / Dealer={{dealer}}",
+  "playerRoyaltyBreakdown": "  Player breakdown: Front={{front}} / Middle={{middle}} / Back={{back}}",
+  "dealerRoyaltyBreakdown": "  Dealer breakdown: Front={{front}} / Middle={{middle}} / Back={{back}}",
   "hintNone": "No hint is available now.",
   "hintRowFront": "Front (3): {{cards}}",
   "hintRowMiddle": "Middle (5): {{cards}}",
