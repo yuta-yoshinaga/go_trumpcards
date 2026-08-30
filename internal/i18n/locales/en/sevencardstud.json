@@ -59,6 +59,7 @@
   "gameEnd": "Game over",
   "razzLowComplete": "Best low: {{cards}}",
   "razzLowIncomplete": "Best low (incomplete): {{cards}}",
+  "hiLoBestLow": "Best low: {{cards}}",
   "hintNone": "No hint available.",
   "hint": "Recommended: {{action}} ({{reason}})",
   "hintContinue": "Continue (call/bet)",

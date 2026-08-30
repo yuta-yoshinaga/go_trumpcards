@@ -16,6 +16,11 @@ export interface SevenCardStudPlayerData {
   handRank: number;
   handName: string;
   bestHand: Card[];
+  /**
+   * Hi-Lo only. Current best 8-or-better low (5 cards) during play for human player.
+   * Evaluated by the backend server; not evaluated in TS to avoid duplicating rules.
+   */
+  currentLowHand?: Card[];
   playStyleName: string;
   totalHands: number;
   vpip: number;

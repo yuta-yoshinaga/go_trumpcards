@@ -14,6 +14,7 @@
   "holeCards": "ホールカード",
   "yourHand": "あなたの手札",
   "currentHand": "現在の役",
+  "currentLow": "現在のロー: {{low}}",
   "anteBringIn": "アンティ/ブリングイン",
   "bringIn": "ブリングイン",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",

@@ -28,23 +28,27 @@ type SevenCardStudWebInput struct {
 
 // SevenCardStudWebOutputPlayer セブンカードスタッドWebアウトプットプレイヤー
 type SevenCardStudWebOutputPlayer struct {
-	ID            int              `json:"id"`
-	IsHuman       bool             `json:"isHuman"`
-	HoleCards     []*WebOutputCard `json:"holeCards"`
-	DoorCards     []*WebOutputCard `json:"doorCards"`
-	Chips         int              `json:"chips"`
-	CurrentBet    int              `json:"currentBet"`
-	Folded        bool             `json:"folded"`
-	AllIn         bool             `json:"allIn"`
-	HandRank      int              `json:"handRank"`
-	HandName      string           `json:"handName"`
-	BestHand      []*WebOutputCard `json:"bestHand"`
-	PlayStyleName string           `json:"playStyleName"`
-	TotalHands    int              `json:"totalHands"`
-	VPIP          int              `json:"vpip"`
-	PFR           int              `json:"pfr"`
-	ThreeBet      int              `json:"threeBet"`
-	AF            string           `json:"af"`
+	ID         int              `json:"id"`
+	IsHuman    bool             `json:"isHuman"`
+	HoleCards  []*WebOutputCard `json:"holeCards"`
+	DoorCards  []*WebOutputCard `json:"doorCards"`
+	Chips      int              `json:"chips"`
+	CurrentBet int              `json:"currentBet"`
+	Folded     bool             `json:"folded"`
+	AllIn      bool             `json:"allIn"`
+	HandRank   int              `json:"handRank"`
+	HandName   string           `json:"handName"`
+	BestHand   []*WebOutputCard `json:"bestHand"`
+	// CurrentLowHand はストリート中の**途中経過**のロー (Hi-Lo・人間のみ、成立時だけ)。
+	// 結果は LowBestHand のほうで、そちらはショーダウンで確定したロー。
+	// 途中経過を結果として読むと、まだ動く手を確定した手と取り違える。
+	CurrentLowHand []*WebOutputCard `json:"currentLowHand,omitempty"`
+	PlayStyleName  string           `json:"playStyleName"`
+	TotalHands     int              `json:"totalHands"`
+	VPIP           int              `json:"vpip"`
+	PFR            int              `json:"pfr"`
+	ThreeBet       int              `json:"threeBet"`
+	AF             string           `json:"af"`
 }
 
 // SevenCardStudWebOutputCpuAction セブンカードスタッドCPU行動記録
@@ -65,7 +69,8 @@ type SevenCardStudWebOutputResult struct {
 	Mucked    bool             `json:"mucked"`
 	// LowQualifies は 8-or-better のローが成立したか (Hi-Lo のみ)。
 	LowQualifies bool `json:"lowQualifies,omitempty"`
-	// LowBestHand はローのベスト5枚 (Hi-Lo のみ)。
+	// LowBestHand はショーダウンで**確定した**ローのベスト5枚 (Hi-Lo のみ)。
+	// 途中経過は per-player の CurrentLowHand。
 	LowBestHand []*WebOutputCard `json:"lowBestHand,omitempty"`
 	// WonLow はローとして獲得したチップ (Hi-Lo のみ)。WonAmount はハイとローの合計。
 	WonLow int `json:"wonLow,omitempty"`

@@ -392,9 +392,10 @@ func SuitRank(design int) int {
 	}
 }
 
-// EvalBestLowHandEightOrBetter は Hi-Lo (8 or Better) 用のローベスト5枚を
-// 評価する。7 枚から C(7,5)=21 通りを見て、**5 枚すべて 8 以下・ランク重複なし**
-// (Ace=1) を満たす中で最も低いものを採る。
+// SevenCardStudHiLoBestLow は Hi-Lo (8 or Better) 用のローベスト5枚と成立有無を返す。
+// 7 枚から C(7,5)=21 通りを見て、**5 枚すべて 8 以下・ランク重複なし** (Ace=1) を
+// 満たす中で最も低いものを採る。5 枚未満、または満たす組み合わせが無ければ
+// (nil, false)。
 //
 // スタッドにコミュニティカードは無いので、オマハのような「手札から2枚・場から
 // 3枚」の制約は付かない。素直に 7 枚から 5 枚を選ぶ。
@@ -403,18 +404,16 @@ func SuitRank(design int) int {
 // 「8 以下・ペア無し」という汎用の 8-or-better 判定で、ここで別実装を書くと
 // 同じ規則が 2 箇所に散る。
 //
-// 戻り値: qualifying なローが見つかったかどうか。
-func (p *SevenCardStudPlayer) EvalBestLowHandEightOrBetter() bool {
-	p.lowQualifies = false
-	p.lowBestHand = nil
-
-	all := p.GetAllCards()
-	if len(all) < 5 {
-		return false
+// **引数だけを見る純粋関数で、状態を変えない。** 描画側 (CUI / Web presenter) が
+// 呼ぶのはこちら —— EvalBestLowHandEightOrBetter はプレイヤーを書き換えるので、
+// 描画から呼ぶと画面を出しただけで盤面が動く。
+func SevenCardStudHiLoBestLow(cards []*Card) (best []*Card, qualifies bool) {
+	if len(cards) < 5 {
+		return nil, false
 	}
 
 	var bestCards []*Card
-	for _, combo := range combinations(all, 5) {
+	for _, combo := range combinations(cards, 5) {
 		if !isQualifyingOmahaLow(combo) {
 			continue
 		}
@@ -424,11 +423,20 @@ func (p *SevenCardStudPlayer) EvalBestLowHandEightOrBetter() bool {
 		}
 	}
 	if bestCards == nil {
-		return false
+		return nil, false
 	}
-	p.lowQualifies = true
-	p.lowBestHand = bestCards
-	return true
+	return bestCards, true
+}
+
+// EvalBestLowHandEightOrBetter は Hi-Lo (8 or Better) 用のローベスト5枚を
+// 評価する。SevenCardStudHiLoBestLow に委譲して結果をプレイヤー状態に保存する。
+//
+// 戻り値: qualifying なローが見つかったかどうか。
+func (p *SevenCardStudPlayer) EvalBestLowHandEightOrBetter() bool {
+	best, qualifies := SevenCardStudHiLoBestLow(p.GetAllCards())
+	p.lowQualifies = qualifies
+	p.lowBestHand = best
+	return qualifies
 }
 
 // EvalChicagoSpade は**伏せ札の中**で最も高いスペードを選び、その有無を返す。

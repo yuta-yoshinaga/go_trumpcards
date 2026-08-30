@@ -469,3 +469,114 @@ func TestCompareVisibleHandsLow_EqualCards(t *testing.T) {
 	result := CompareVisibleHandsLow(a, b)
 	assert.Equal(t, 0, result)
 }
+
+func TestSevenCardStudHiLoBestLow_Qualifying(t *testing.T) {
+	// Hand-crafted 7 cards containing 6-5-4-2-A alongside 8 and K
+	cards := []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 6, false),
+		NewCard(CardDesignHeart, 8, false),
+		NewCard(CardDesignClover, 13, false),
+	}
+	best, qualifies := SevenCardStudHiLoBestLow(cards)
+	assert.True(t, qualifies)
+	require.Len(t, best, 5)
+
+	vals := make([]int, len(best))
+	for i, c := range best {
+		vals[i] = c.GetValue()
+	}
+	sort.Ints(vals)
+	assert.Equal(t, []int{1, 2, 4, 5, 6}, vals, "best 8-or-better low must be 6-5-4-2-A, excluding 8 and 13")
+}
+
+func TestSevenCardStudHiLoBestLow_NonQualifying_AllHigh(t *testing.T) {
+	// Hand-crafted 7 cards with only 9 and above
+	cards := []*Card{
+		NewCard(CardDesignSpade, 9, false),
+		NewCard(CardDesignHeart, 10, false),
+		NewCard(CardDesignClover, 11, false),
+		NewCard(CardDesignDiamond, 12, false),
+		NewCard(CardDesignSpade, 13, false),
+		NewCard(CardDesignHeart, 9, false),
+		NewCard(CardDesignClover, 10, false),
+	}
+	best, qualifies := SevenCardStudHiLoBestLow(cards)
+	assert.False(t, qualifies)
+	assert.Nil(t, best)
+}
+
+func TestSevenCardStudHiLoBestLow_NonQualifying_PairsRuined(t *testing.T) {
+	// Hand-crafted 7 cards with pairs reducing distinct low ranks under 8 to fewer than 5
+	cards := []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 3, false),
+		NewCard(CardDesignSpade, 4, false),
+		NewCard(CardDesignHeart, 12, false),
+		NewCard(CardDesignClover, 13, false),
+	}
+	best, qualifies := SevenCardStudHiLoBestLow(cards)
+	assert.False(t, qualifies)
+	assert.Nil(t, best)
+}
+
+func TestSevenCardStudHiLoBestLow_FewerThanFiveCards(t *testing.T) {
+	cards := []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+	}
+	best, qualifies := SevenCardStudHiLoBestLow(cards)
+	assert.False(t, qualifies)
+	assert.Nil(t, best)
+}
+
+func TestSevenCardStudHiLoBestLow_NoMutation(t *testing.T) {
+	cards := []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 5, false),
+		NewCard(CardDesignDiamond, 7, false),
+		NewCard(CardDesignSpade, 8, false),
+		NewCard(CardDesignHeart, 10, false),
+		NewCard(CardDesignClover, 12, false),
+	}
+	origCopy := make([]*Card, len(cards))
+	copy(origCopy, cards)
+
+	best, qualifies := SevenCardStudHiLoBestLow(cards)
+	assert.True(t, qualifies)
+	assert.Len(t, best, 5)
+
+	// Verify input slice was not mutated in order or content
+	assert.Equal(t, origCopy, cards)
+}
+
+func TestSevenCardStudPlayer_EvalBestLowHandEightOrBetter_Delegates(t *testing.T) {
+	p := NewSevenCardStudPlayer(true, HoldemStyleTAG)
+	for _, c := range []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignHeart, 10, false),
+		NewCard(CardDesignClover, 11, false),
+	} {
+		p.AddHoleCard(c)
+	}
+
+	assert.False(t, p.GetLowQualifies())
+	assert.Nil(t, p.GetLowBestHand())
+
+	qualifies := p.EvalBestLowHandEightOrBetter()
+	assert.True(t, qualifies)
+	assert.True(t, p.GetLowQualifies())
+	assert.Len(t, p.GetLowBestHand(), 5)
+}
