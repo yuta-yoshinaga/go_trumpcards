@@ -389,3 +389,66 @@ describe('BeleagueredCastlePage destination preview', () => {
     expect(targets()[0]?.className).not.toContain('ring-ds-success/70');
   });
 });
+
+describe('BeleagueredCastlePage selection status announcement', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+    localStorage.clear();
+  });
+
+  const mixedBoardState: BeleagueredCastleResponse = {
+    ...playingState,
+    tableau: makeTableau([
+      [{ card: card('SPADE', 2), faceUp: true }],
+      [{ card: card('HEART', 3), faceUp: true }],
+      [{ card: card('DIAMOND', 3), faceUp: true }],
+      [{ card: card('CLOVER', 9), faceUp: true }],
+      [{ card: card('SPADE', 13), faceUp: true }],
+      [{ card: card('HEART', 13), faceUp: true }],
+      [{ card: card('DIAMOND', 13), faceUp: true }],
+      [{ card: card('CLOVER', 13), faceUp: true }],
+    ]),
+    foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+  };
+
+  it('keeps the selection status live region mounted and empty before selection', async () => {
+    mockExec.mockResolvedValue(mixedBoardState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByText(/包囲された城/)).toBeInTheDocument());
+
+    const status = screen.getByTestId('bc-selection-status');
+    expect(status).toBeInTheDocument();
+    expect(status).toBeEmptyDOMElement();
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('announces the number of legal destinations when selecting a card with multiple targets', async () => {
+    mockExec.mockResolvedValue(mixedBoardState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByText(/包囲された城/)).toBeInTheDocument());
+
+    const status = screen.getByTestId('bc-selection-status');
+    expect(status).toBeInTheDocument();
+    expect(status).toBeEmptyDOMElement();
+
+    // ♠2 can go to ♠ foundation (top ♠1) and tableau cols 1 (♥3) and 2 (♦3) -> 3 legal destinations
+    fireEvent.click(screen.getByRole('button', { name: '♠ 2' }));
+    await waitFor(() => expect(status).toHaveTextContent('選択中のカードを置ける場所が3箇所あります'));
+  });
+
+  it('announces no legal moves when selecting a card with zero destinations', async () => {
+    mockExec.mockResolvedValue(mixedBoardState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByText(/包囲された城/)).toBeInTheDocument());
+
+    const status = screen.getByTestId('bc-selection-status');
+    expect(status).toBeInTheDocument();
+    expect(status).toBeEmptyDOMElement();
+
+    // ♣9 has no legal destinations on foundations or non-empty tableau columns
+    fireEvent.click(screen.getByRole('button', { name: '♣ 9' }));
+    await waitFor(() => expect(status).toHaveTextContent('選択中のカードを置ける場所はありません'));
+  });
+});

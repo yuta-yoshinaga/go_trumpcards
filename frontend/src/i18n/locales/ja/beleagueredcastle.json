@@ -24,6 +24,8 @@
   "gameOverSummary": "ファウンデーション {{count}}/52 枚（{{percent}}%）まで到達",
   "hintAvailable": "ヒントがあります",
   "noHint": "ヒントはありません",
+  "selectionMoves": "選択中のカードを置ける場所が{{count}}箇所あります",
+  "selectionNoMoves": "選択中のカードを置ける場所はありません",
   "tutorial": {
     "foundation": "中央の4つの組札には開始時に4枚のAが置かれます。同じスートでA→Kの順に積み上げます。",
     "tableau": "左右4列ずつ、計8列の場札に6枚ずつ表向きでカードが配られます。各列の右端のカードが移動可能です。",
