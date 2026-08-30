@@ -30,5 +30,15 @@
   "cTrumps": "トランプ",
   "cDominoes": "ドミノ",
   "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
-  "helpLog": "  l                        行動ログを表示"
+  "helpLog": "  l                        行動ログを表示",
+  "contractListHeader": "契約:",
+  "contractListRow": "  {{idx}}. {{name}} — {{desc}}",
+  "contractListRowUsed": "  {{idx}}. {{name}} — 選択済み",
+  "contractDescNoTricks": "取ったトリック 1 つにつき −2",
+  "contractDescNoHearts": "取ったハート 1 枚につき −2",
+  "contractDescNoQueens": "取った Q 1 枚につき −6",
+  "contractDescBarbu": "K♥ を取ると −20",
+  "contractDescNoLastTrick": "最後のトリックを取ると −20",
+  "contractDescTrumps": "1 トリックにつき +5 (切札を選ぶ)",
+  "contractDescDominoes": "手札を早く出し切る (7 並べ)"
 }

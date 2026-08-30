@@ -57,6 +57,9 @@ func (p *BarbuCuiPresenter) Output(bg interfaces.BarbuGame, lastErr error) strin
 		if bg.GetPhase() == domain.BarbuPhaseSelectContract {
 			b.WriteString(i18n.Tf("barbu.selectPrompt",
 				"name", cuiPlayerName(bg.GetPlayer(bg.GetDealerIdx()), bg.GetDealerIdx())) + "\n")
+			// 名前だけでは 7 契約の中身が分からず、番号を勘で選ぶことになる。
+			// Web はホバーした契約の説明をパネルに出している。
+			barbuWriteContractMenu(b, bg.GetUsedContracts(bg.GetDealerIdx()))
 		} else {
 			b.WriteString(i18n.Tf("barbu.promptCurrentTurn",
 				"name", cuiPlayerName(bg.GetPlayer(bg.GetCurrentTurn()), bg.GetCurrentTurn())) + "\n")
@@ -151,6 +154,35 @@ func barbuWriteDealBreakdown(b *strings.Builder, bg interfaces.BarbuGame) {
 			"trump", trump,
 			"scores", strings.Join(scores, " / ")) + "\n")
 	}
+}
+
+// barbuWriteContractMenu は選べる契約を、番号・名前・短い説明の 1 行ずつで並べる。
+// 使用済みの契約は説明の代わりにその旨を出す —— 選べない札を説明しても仕方がない。
+func barbuWriteContractMenu(b *strings.Builder, used [domain.BarbuContractCnt]bool) {
+	b.WriteString(i18n.T("barbu.contractListHeader") + "\n")
+	for c := 0; c < domain.BarbuContractCnt; c++ {
+		key := "barbu.contractListRow"
+		if used[c] {
+			key = "barbu.contractListRowUsed"
+		}
+		b.WriteString(i18n.Tf(key,
+			"idx", strconv.Itoa(c),
+			"name", barbuContractLabel(c),
+			"desc", barbuContractDesc(c)) + "\n")
+	}
+}
+
+// barbuContractDesc は契約の短い説明を i18n で返す。Web の contractDesc と同じ内容。
+func barbuContractDesc(contract int) string {
+	keys := []string{
+		"barbu.contractDescNoTricks", "barbu.contractDescNoHearts", "barbu.contractDescNoQueens",
+		"barbu.contractDescBarbu", "barbu.contractDescNoLastTrick", "barbu.contractDescTrumps",
+		"barbu.contractDescDominoes",
+	}
+	if contract < 0 || contract >= len(keys) {
+		return "-"
+	}
+	return i18n.T(keys[contract])
 }
 
 // barbuContractLabel はコントラクトの表示名を i18n で返す。

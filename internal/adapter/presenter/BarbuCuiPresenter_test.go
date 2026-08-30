@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -89,6 +90,39 @@ func TestBarbuCuiPresenter_HintOutput(t *testing.T) {
 		b.BarbuTestSetPhase(domain.BarbuPhaseSelectContract)
 		assert.Contains(t, p.HintOutput(b), "ヒントはありません")
 	})
+}
+
+// 契約名だけでは 7 つの中身が分からず、番号を勘で選ぶことになる。
+// 全契約の説明が並ぶこと・使用済みが区別できることの両方を見る。
+func TestBarbuCuiPresenter_ListsEveryContractWithItsRule(t *testing.T) {
+	i18n.SetLang("ja")
+	b := domain.BarbuTestNew(domain.DefaultBarbuConfig())
+	b.BarbuTestSetPhase(domain.BarbuPhaseSelectContract)
+	dealer := b.GetDealerIdx()
+	b.BarbuTestSetUsedContract(dealer, domain.BarbuContractNoHearts, true)
+
+	out := new(presenter.BarbuCuiPresenter).Output(b, nil)
+	assert.Contains(t, out, i18n.T("barbu.contractListHeader"))
+
+	for c := 0; c < domain.BarbuContractCnt; c++ {
+		if c == domain.BarbuContractNoHearts {
+			// 使用済みは「選択済み」と出て、説明は出さない。
+			assert.Contains(t, out, i18n.Tf("barbu.contractListRowUsed",
+				"idx", strconv.Itoa(c), "name", i18n.T("barbu.cNoHearts"), "desc", ""))
+			continue
+		}
+		// 残りは 7 契約すべての説明が並ぶ。
+		desc := i18n.T([]string{
+			"barbu.contractDescNoTricks", "barbu.contractDescNoHearts", "barbu.contractDescNoQueens",
+			"barbu.contractDescBarbu", "barbu.contractDescNoLastTrick", "barbu.contractDescTrumps",
+			"barbu.contractDescDominoes",
+		}[c])
+		assert.NotEqual(t, "-", desc, "contract %d must have a real description", c)
+		assert.Contains(t, out, desc, "contract %d description must be listed", c)
+	}
+
+	// 使用済みの契約の説明は出さない —— 選べない札を説明しても仕方がない。
+	assert.NotContains(t, out, i18n.T("barbu.contractDescNoHearts"))
 }
 
 func TestBarbuCuiPresenter_ContractAndTrick(t *testing.T) {

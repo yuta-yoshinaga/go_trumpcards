@@ -30,5 +30,15 @@
   "cTrumps": "Trumps",
   "cDominoes": "Dominoes",
   "helpExamplePlay": "  p 0                      play hand card 0",
-  "helpLog": "  l                        show the action log"
+  "helpLog": "  l                        show the action log",
+  "contractListHeader": "Contracts:",
+  "contractListRow": "  {{idx}}. {{name}} — {{desc}}",
+  "contractListRowUsed": "  {{idx}}. {{name}} — already used",
+  "contractDescNoTricks": "-2 for each trick taken",
+  "contractDescNoHearts": "-2 for each heart taken",
+  "contractDescNoQueens": "-6 for each queen taken",
+  "contractDescBarbu": "-20 for taking the K of hearts",
+  "contractDescNoLastTrick": "-20 for taking the last trick",
+  "contractDescTrumps": "+5 per trick (you pick trumps)",
+  "contractDescDominoes": "shed your hand first (fan-out)"
 }
