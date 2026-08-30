@@ -17,10 +17,20 @@ function nextRank(r: number): number {
 }
 
 /** Face-up end (bottom) card of a tableau column, or null when empty/face-down. */
-function endFaceUpCard(col: readonly AgnesTableauCard[]): Card | null {
+export function endFaceUpCard(col: readonly AgnesTableauCard[]): Card | null {
   if (col.length === 0) return null;
   const tc = col[col.length - 1];
   return tc.faceUp ? tc.card : null;
+}
+
+const BLACK_SUITS = new Set(['SPADE', 'CLOVER']);
+
+function isBlack(card: Card): boolean {
+  return BLACK_SUITS.has(card.design);
+}
+
+function isSameColor(a: Card, b: Card): boolean {
+  return isBlack(a) === isBlack(b);
 }
 
 /**
@@ -35,6 +45,27 @@ export function agnesCanPlaceOnFoundation(card: Card, foundation: readonly Card[
   if (pile.length === 0) return card.value === baseRank;
   const top = pile[pile.length - 1];
   return card.design === top.design && card.value === nextRank(top.value);
+}
+
+/**
+ * Whether a card can be placed onto a target tableau column.
+ *
+ * Sync: `Agnes.canPlaceOnTableau` (`internal/domain/Agnes.go:346-354`).
+ * - Empty columns return `false`: in Agnes, empty columns are never filled manually;
+ *   they are only filled by stock deals. (Do not confuse with other solitaire games).
+ * - Target column requires the **same color** (`isSameColor`: Spade/Clover or Heart/Diamond)
+ *   and descending rank (`card.value === top.value - 1`, no wrap). This is NOT alternating colors.
+ * - A face-down end card yields `false`, which is *stricter* than the domain: `canPlaceOnTableau`
+ *   reads `colCards[len-1].Card` without consulting `FaceUp`. The client cannot do the same,
+ *   because `AgnesWebPresenter` sends `card: null` for a face-down card — the rank simply is not
+ *   on the wire, so there is nothing to compare. Refusing is the only honest answer.
+ *   (The state is reachable: `Agnes.autoFlipTableau` is defined but never called, so once a
+ *   column's face-up end card is moved away, the card beneath stays face down.)
+ */
+export function agnesCanPlaceOnTableau(card: Card, toCol: readonly AgnesTableauCard[]): boolean {
+  const top = endFaceUpCard(toCol);
+  if (!top) return false;
+  return isSameColor(card, top) && card.value === top.value - 1;
 }
 
 /**
