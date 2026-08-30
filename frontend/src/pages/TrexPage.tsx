@@ -211,11 +211,14 @@ function TrexPageContent() {
               <div className="flex gap-1 justify-center flex-wrap">
                 {(human?.cards ?? []).map((card, i) => {
                   const canPlay = isHumanTurn && !choosing && playable.has(i);
+                  const penalty = trexIsPenaltyCard(card, state.contract);
                   return (
                     <button
                       key={`hand-${i.toString()}`}
                       type="button"
                       data-hint-action="play"
+                      data-testid={penalty ? 'trex-hand-penalty-card' : undefined}
+                      title={penalty ? t('penaltyCard') : undefined}
                       // Kept focusable while it cannot act so the reason is
                       // announced rather than the control leaving the tab order.
                       aria-disabled={!canPlay}
@@ -223,7 +226,11 @@ function TrexPageContent() {
                       className={[
                         'rounded transition-transform',
                         canPlay ? 'hover:-translate-y-2' : 'opacity-60',
-                        frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
+                        frontendHintEnabled && state.hint?.cardIndex === i
+                          ? 'ring-2 ring-ds-warning'
+                          : penalty
+                            ? 'ring-2 ring-ds-error'
+                            : '',
                       ].join(' ')}
                     >
                       <AnimatedCard card={card} width={cardWidth} draggable={false} />
