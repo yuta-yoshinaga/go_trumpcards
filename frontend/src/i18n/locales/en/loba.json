@@ -8,7 +8,6 @@
   "noMelds": "nothing on the table yet",
   "pierna": "pierna",
   "escalera": "escalera",
-  "meldOwner": "seat {{n}}",
   "drawStock": "Draw from stock",
   "drawDiscard": "Take discard",
   "meld": "Meld",

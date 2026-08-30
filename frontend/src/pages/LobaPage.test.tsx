@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { lobaApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -155,6 +156,37 @@ describe('LobaPage', () => {
     await waitFor(() => expect(screen.getAllByTestId('loba-meld')[0]).toHaveTextContent('エスカレラ'));
   });
 
+  it('names the owner of a meld via playerName for human player', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ melds: [{ owner: 0, kind: 0, cards: [card('SPADE', 5), card('HEART', 5), card('CLOVER', 5)] }] }),
+    );
+    renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(screen.getAllByTestId('loba-meld')[0]).toHaveTextContent('ピエルナ · あなた'));
+    expect(screen.getAllByTestId('loba-meld')[0]).not.toHaveTextContent('席0');
+  });
+
+  it('names the owner of a meld via playerName for CPU player', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ melds: [{ owner: 1, kind: 0, cards: [card('SPADE', 5), card('HEART', 5), card('CLOVER', 5)] }] }),
+    );
+    renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(screen.getAllByTestId('loba-meld')[0]).toHaveTextContent('ピエルナ · CPU 1'));
+    expect(screen.getAllByTestId('loba-meld')[0]).not.toHaveTextContent('席1');
+  });
+
+  it('renders meld owner labels through the shared playerName helper, not a literal', async () => {
+    i18n.addResourceBundle('ja', 'common', { player: { cpu: 'コンピュータ{{id}}' } }, true, true);
+    try {
+      mockExec.mockResolvedValue(
+        makeState({ melds: [{ owner: 2, kind: 0, cards: [card('SPADE', 5), card('HEART', 5), card('CLOVER', 5)] }] }),
+      );
+      renderWithProviders(<LobaPage />);
+      await waitFor(() => expect(screen.getAllByTestId('loba-meld')[0]).toHaveTextContent('ピエルナ · コンピュータ2'));
+    } finally {
+      i18n.addResourceBundle('ja', 'common', { player: { cpu: 'CPU {{id}}' } }, true, true);
+    }
+  });
+
   it('tells a clean go-out apart at the end of a round', async () => {
     mockExec.mockResolvedValue(makeState({ phase: LobaPhase.ROUND_END, roundWinner: 2, roundClean: true }));
     renderWithProviders(<LobaPage />);
@@ -292,5 +324,27 @@ describe('LobaPage', () => {
       await waitFor(() => expect(hint()).toBeInTheDocument());
       expect(screen.getByText(/手札をクリックして選び/)).toBeInTheDocument();
     });
+  });
+});
+
+describe('LobaPage names the same opponent one way', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  // メルド欄と相手の手札欄が別々に名前を組んでいると、同じ相手が
+  // 「CPU 1」と「CPU1」の二通りで同じ画面に出る (#6370)。
+  it('uses the shared helper everywhere, so no CPU label is spelled two ways', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ melds: [{ owner: 1, kind: 0, cards: [card('SPADE', 5), card('HEART', 5), card('CLOVER', 5)] }] }),
+    );
+    renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(screen.getAllByTestId('loba-meld')[0]).toBeInTheDocument());
+
+    const body = document.body.textContent ?? '';
+    // 共有ヘルパの綴りは "CPU 1" (player.cpu = "CPU {{id}}")。
+    expect(body).toContain('CPU 1');
+    // 空白なしの綴りはどこにも残っていない。
+    expect(body).not.toMatch(/CPU\d/);
   });
 });
