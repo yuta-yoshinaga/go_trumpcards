@@ -318,4 +318,21 @@ describe('MacauPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(document.querySelectorAll('[data-playable="true"]').length).toBeGreaterThan(1);
   });
+  // 上限に届いた席が出た時点で決着し、最高点が勝つ。累計だけでは自分がどれだけ
+  // 近いのか分からなかった。既定 (200) と違う上限でも反映されることまで見る。
+  it('shows each cumulative score against the point limit', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<MacauPage />);
+    await waitFor(() => expect(screen.getByTestId('macau-total-0')).toBeInTheDocument());
+    expect(screen.getByTestId('macau-total-0')).toHaveTextContent('/200');
+  });
+
+  it('reflects a non-default point limit', async () => {
+    // 既定と同じ 200 のままだと、設定を読む実装と定数を書いた実装を見分けられない。
+    mockExec.mockResolvedValue({ ...playPhaseState, config: { cpuDifficulty: 1, pointLimit: 350 } });
+    renderWithProviders(<MacauPage />);
+    await waitFor(() => expect(screen.getByTestId('macau-total-0')).toBeInTheDocument());
+    expect(screen.getByTestId('macau-total-0')).toHaveTextContent('/350');
+    expect(screen.getByTestId('macau-total-0')).not.toHaveTextContent('/200');
+  });
 });

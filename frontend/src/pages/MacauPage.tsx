@@ -354,7 +354,9 @@ function MacauPageContent() {
                           {t('scoresPlayer')}
                         </th>
                         <th scope="col">{t('scoresRound')}</th>
-                        <th scope="col">{t('scoresTotal')}</th>
+                        {/* 上限に届いた席が出た時点で決着し、最高点が勝つ (Macau.go:630-648)。
+                            上限を並記しないと、自分がどれだけ近いのか画面から分からない。 */}
+                        <th scope="col">{t('scoresTotalOfLimit')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -362,7 +364,9 @@ function MacauPageContent() {
                         <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                           <td>{playerName(p.id, p.isHuman)}</td>
                           <td className="text-center">{p.roundScore}</td>
-                          <td className="text-center">{p.cumulativeScore}</td>
+                          <td className="text-center" data-testid={`macau-total-${p.id.toString()}`}>
+                            {t('scoreProgress', { score: p.cumulativeScore, limit: state.config.pointLimit })}
+                          </td>
                         </tr>
                       ))}
                     </tbody>

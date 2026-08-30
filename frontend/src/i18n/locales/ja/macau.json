@@ -26,6 +26,8 @@
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",
   "scoresTotal": "累計",
+  "scoresTotalOfLimit": "累計/勝利ライン",
+  "scoreProgress": "{{score}}/{{limit}}",
   "playButton": "出す",
   "drawButton": "引く",
   "takePenaltyButton": "{{count}}枚引き受ける",
