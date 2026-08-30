@@ -695,7 +695,7 @@ function MightyPageContent() {
                       type="checkbox"
                       checked={bidNoTrumpToggle}
                       onChange={(e) => setBidNoTrumpToggle(e.target.checked)}
-                      aria-label="bid-no-trump"
+                      aria-label={t('noTrumpToggle')}
                     />
                     {t('noTrumpToggle')}
                   </label>
@@ -777,7 +777,7 @@ function MightyPageContent() {
                       value={partnerValueValue}
                       onChange={(e) => setPartnerValueValue(Number(e.target.value))}
                       className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
-                      aria-label="partner-value"
+                      aria-label={t('partnerValue')}
                     >
                       {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (
                         <option key={v} value={v}>
@@ -835,7 +835,7 @@ function MightyPageContent() {
                       className={btnPrimary}
                       onClick={() => setJokerSuitPickerOpen(true)}
                       disabled={loading}
-                      aria-label="joker-lead-button"
+                      aria-label={t('jokerLeadButton')}
                     >
                       {t('jokerLeadButton')}
                     </button>

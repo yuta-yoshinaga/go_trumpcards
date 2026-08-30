@@ -34,6 +34,7 @@
   "currentTrick": "Current Trick",
   "trumpSuit": "Trump",
   "partnerSuit": "Partner card suit",
+  "partnerValue": "Partner card value",
   "noTrump": "No-Trump",
   "partnerCard": "Partner card",
   "partnerNone": "(none)",
