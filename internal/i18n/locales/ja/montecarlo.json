@@ -19,5 +19,7 @@
   "hintLineRemoveCard": "ヒント: ({{r1}},{{c1}}){{card1}} と ({{r2}},{{c2}}){{card2}} を取り除く",
   "hintLineDeal": "ヒント: 山札から補充 (deal)",
   "helpExampleHint": "  h                   次の一手を教えてもらう",
-  "removablePairs": "除去可能: {{count}} 組"
+  "removablePairs": "除去可能: {{count}} 組",
+  "undoAvailable": "アンドゥ: 可能 (u で1手戻す)",
+  "undoUnavailable": "アンドゥ: 不可 (これ以上戻せません)"
 }

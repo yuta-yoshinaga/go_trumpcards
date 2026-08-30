@@ -56,6 +56,13 @@ func (pr *MonteCarloCuiPresenter) Output(g interfaces.MonteCarloGame, lastErr er
 				line = color.Yellow(line)
 			}
 			b.WriteString(line + "\n")
+			// Web は「戻す」ボタンの活性で示している。CUI は打って弾かれるまで
+			// 分からなかった。戻せない側だけ色を付ける。
+			if g.CanUndo() {
+				b.WriteString(i18n.T("montecarlo.undoAvailable") + "\n")
+			} else {
+				b.WriteString(color.Yellow(i18n.T("montecarlo.undoUnavailable")) + "\n")
+			}
 			if g.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("montecarlo.stalemate")) + "\n")
 			}
