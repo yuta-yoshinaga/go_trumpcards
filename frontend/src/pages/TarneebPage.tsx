@@ -351,8 +351,9 @@ function TarneebPageContent() {
                       <tbody>
                         {state.teamScores.map((score, i) => {
                           const isYourTeam = humanPlayer != null && humanPlayer.team === i;
-                          const roundScore = teamBreakdown[i]?.roundScore ?? 0;
-                          const roundTricks = teamBreakdown[i]?.roundTricks ?? 0;
+                          // groupTarneebPlayersByTeam は teamScores.length ちょうどの要素を返すので、
+                          // ここでの添字は必ず当たる。?? のフォールバックは到達しない枝になる。
+                          const { roundScore, roundTricks } = teamBreakdown[i];
                           return (
                             <tr key={i} className={isYourTeam ? 'text-ds-accent' : ''}>
                               <td>{isYourTeam ? t('yourTeam') : t('opponentTeam')}</td>
