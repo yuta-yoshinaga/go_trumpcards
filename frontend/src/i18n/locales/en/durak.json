@@ -9,7 +9,8 @@
     "attack": "Attack",
     "defend": "Defend",
     "pass": "Pass",
-    "take": "Take Cards"
+    "take": "Take Cards",
+    "transfer": "Transfer"
   },
   "trump": "Trump",
   "stock": "Stock",
@@ -23,6 +24,7 @@
   "defendButton": "Defend",
   "passButton": "Pass",
   "takeButton": "Take Cards",
+  "transferButton": "Transfer",
   "selectCard": "Select a card",
   "selectAttackCard": "Select attack card to defend",
   "attacker": "Attacker",

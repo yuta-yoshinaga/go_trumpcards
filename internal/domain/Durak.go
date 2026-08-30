@@ -39,10 +39,11 @@ type DurakTablePair struct {
 
 // DurakActionType 行動種別定数
 const (
-	DurakActionAttack = 0 // 攻撃
-	DurakActionDefend = 1 // 防御
-	DurakActionPass   = 2 // パス
-	DurakActionTake   = 3 // 引き取り
+	DurakActionAttack   = 0 // 攻撃
+	DurakActionDefend   = 1 // 防御
+	DurakActionPass     = 2 // パス
+	DurakActionTake     = 3 // 引き取り
+	DurakActionTransfer = 4 // 転送
 )
 
 // DurakMaxBouts は 1 局のバウト数の上限。
@@ -348,6 +349,83 @@ func (d *Durak) PlayerTakeCards() error {
 	d.appendLog(d.round.defenderIdx, "take", "picks up all table cards", nil)
 
 	d.endBout(false)
+	return nil
+}
+
+// PlayerTransfer 人間プレイヤーが防御札として同じランクのカードを出し、攻撃を次のプレイヤーに転送する
+func (d *Durak) PlayerTransfer(handIdx int) error {
+	if d.round.gameEndFlag {
+		return ErrGameEnded
+	}
+	if !d.config.TransferEnabled {
+		return NewDomainError(ErrInvalidPlay, "transfer is disabled")
+	}
+	if !d.players[d.round.currentTurn].GetIsHuman() {
+		return ErrNotHumanTurn
+	}
+	if d.round.phase != DurakPhaseDefend {
+		return ErrWrongPhase
+	}
+	if d.round.currentTurn != d.round.defenderIdx {
+		return ErrNotHumanTurn
+	}
+
+	player := d.players[d.round.defenderIdx]
+	if handIdx < 0 || handIdx >= player.GetCardsSize() {
+		return ErrInvalidCard
+	}
+
+	if len(d.round.tablePairs) == 0 {
+		return NewDomainError(ErrInvalidPlay, "no cards to transfer")
+	}
+
+	// 場のどの攻撃札もまだ防御されていない
+	for _, pair := range d.round.tablePairs {
+		if pair.Defense != nil {
+			return NewDomainError(ErrInvalidPlay, "cannot transfer after defending")
+		}
+	}
+
+	card := player.GetCard(handIdx)
+
+	// 出す札のランクが場の攻撃札のランクと同じ
+	for _, pair := range d.round.tablePairs {
+		if durakCardRank(card) != durakCardRank(pair.Attack) {
+			return NewDomainError(ErrInvalidPlay, "card rank does not match table cards")
+		}
+	}
+
+	// 次の防御者が受けきれること
+	nextDefenderIdx := d.nextActivePlayer(d.round.defenderIdx)
+	nextDefender := d.players[nextDefenderIdx]
+	if len(d.round.tablePairs)+1 > nextDefender.GetCardsSize() {
+		return NewDomainError(ErrInvalidPlay, "next defender has no cards left to defend")
+	}
+
+	// 場の上限
+	if len(d.round.tablePairs) >= DurakHandSize {
+		return NewDomainError(ErrInvalidPlay, "table is full")
+	}
+
+	played := player.RemoveCard(handIdx)
+	d.round.tablePairs = append(d.round.tablePairs, &DurakTablePair{Attack: played})
+
+	oldDefenderIdx := d.round.defenderIdx
+	d.round.attackerIdx = oldDefenderIdx
+	d.round.defenderIdx = nextDefenderIdx
+	d.round.currentTurn = nextDefenderIdx
+
+	d.round.humanAction = &DurakCpuAction{
+		PlayerIdx:  oldDefenderIdx,
+		ActionType: DurakActionTransfer,
+		CardIdx:    handIdx,
+		AttackIdx:  -1,
+		Card:       played,
+	}
+	d.round.cpuActions = nil
+
+	d.appendLog(oldDefenderIdx, "transfer", fmt.Sprintf("plays %s to transfer", cardStr(played)), []*Card{played})
+
 	return nil
 }
 

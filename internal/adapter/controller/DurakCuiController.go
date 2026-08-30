@@ -29,6 +29,7 @@ func (c *DurakCuiController) Exec(command string) string {
 		},
 		[]string{
 			"a", "attack", "d", "defend", "p", "pass", "t", "take",
+			"tr", "transfer",
 			"sort", "sd", "setdifficulty", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
@@ -70,6 +71,16 @@ func (c *DurakCuiController) Exec(command string) string {
 				return c.di.Pass(), true
 			case "t", "take":
 				return c.di.TakeCards(), true
+			case "tr", "transfer":
+				handIdx := 0
+				if len(args) > 0 {
+					v, err := strconv.Atoi(args[0])
+					if err != nil {
+						return invalidArg("invalidCardIndex", "val", args[0]), true
+					}
+					handIdx = v
+				}
+				return c.di.Transfer(handIdx), true
 			case "sort":
 				mode := domain.DurakSortBySuit
 				if len(args) > 0 {

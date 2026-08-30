@@ -11275,6 +11275,8 @@ paths:
         | `pickup` | `p`     | Defender picks up all table cards |
         | `done`   | `dn`    | Attacker ends the attack |
         | `pass`   | `ps`    | Pass the attack to the next player |
+        | `take`     | `t`  | Take cards from the table |
+        | `transfer` | `tr` | Transfer the attack to the next player |
         | `log`    | `l`     | View action log |
       operationId: durakExec
       requestBody:
@@ -11289,7 +11291,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, attack, a, defend, d, pickup, p, done, dn, pass, ps, log, l]
+                  enum: [reset, r, attack, a, defend, d, pickup, p, done, dn, pass, ps, log, l, transfer, tr, take, t]
                 cardIndex:
                   type: integer
                   description: Index of the card to play (for attack/defend commands)

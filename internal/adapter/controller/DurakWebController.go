@@ -123,6 +123,12 @@ func durakDispatch(bc *baseController, w http.ResponseWriter, di usecase.DurakIn
 		bc.writePresenterResponse(w, di.Pass())
 	case "t", "take":
 		bc.writePresenterResponse(w, di.TakeCards())
+	case "tr", "transfer":
+		handIdx := 0
+		if param.CardIdx != nil {
+			handIdx = *param.CardIdx
+		}
+		bc.writePresenterResponse(w, di.Transfer(handIdx))
 	case "sort":
 		mode := domain.DurakSortBySuit
 		if param.SortMode != nil {

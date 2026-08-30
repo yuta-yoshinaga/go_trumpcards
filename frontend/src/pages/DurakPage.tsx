@@ -92,6 +92,7 @@ function DurakPageContent() {
     handleDefend,
     handlePass,
     handleTake,
+    handleTransfer,
     handleSort,
     hint: serverHint,
     hintError,
@@ -175,6 +176,13 @@ function DurakPageContent() {
   const showDefendBtn = !isGameEnd && isDefender && state.phase === PHASE_DEFEND;
   const showPassBtn = !isGameEnd && isAttacker && state.phase === PHASE_ATTACK && state.tablePairs.length > 0;
   const showTakeBtn = !isGameEnd && isDefender && state.phase === PHASE_DEFEND;
+  const showTransferBtn =
+    !isGameEnd &&
+    isDefender &&
+    state.phase === PHASE_DEFEND &&
+    state.config.transferEnabled &&
+    state.tablePairs.length > 0 &&
+    state.tablePairs.every((p) => p.defense === null);
 
   const suitSymbol = (suit: string) => {
     switch (suit) {
@@ -332,7 +340,7 @@ function DurakPageContent() {
                       tc('label.cpuActions'),
                       ...state.cpuActions.map(
                         (a) =>
-                          `${playerName(state.players[a.playerIdx]?.id ?? a.playerIdx, false)}: ${t(`action.${['attack', 'defend', 'pass', 'take'][a.actionType] ?? 'pass'}`)}`,
+                          `${playerName(state.players[a.playerIdx]?.id ?? a.playerIdx, false)}: ${t(`action.${['attack', 'defend', 'pass', 'take', 'transfer'][a.actionType] ?? 'pass'}`)}`,
                       ),
                     ].join('\n')}
                   </div>
@@ -482,6 +490,18 @@ function DurakPageContent() {
                   onClick={handleTakeWithSound}
                 >
                   {t('takeButton')}
+                </button>
+              )}
+              {showTransferBtn && (
+                <button
+                  type="button"
+                  className={`${btnPrimary} min-w-[90px]`}
+                  // 転送は出す札を選んでからでないと成立しない。攻撃・防御と同じく
+                  // 選択が無いあいだは押せなくする (押しても無反応、では理由が伝わらない)。
+                  disabled={loading || selectedCardIdx === null}
+                  onClick={handleTransfer}
+                >
+                  {t('transferButton')}
                 </button>
               )}
               {/* **他のトリック系はサーバー計算の理由付きヒントを持つのに、

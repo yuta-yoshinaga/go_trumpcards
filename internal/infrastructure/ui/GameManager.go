@@ -1044,6 +1044,7 @@ var gameRegistry = []GameRegistryEntry{
 			"  d <atkIdx> <handIdx>     defend attack card",
 			"  p                        pass (stop attacking)",
 			"  t                        take cards (give up defense)",
+			"  tr <idx>                 transfer the attack (perevod; needs the setting on)",
 			"  sort <0|1>               sort hand (0=suit, 1=value)",
 			"  sd <0-2>                 set CPU difficulty",
 			"  l                        action log",
