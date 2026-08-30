@@ -61,10 +61,16 @@ func (p *SkitgubbeCuiPresenter) Output(c interfaces.SkitgubbeGame, lastErr error
 		}
 
 		for i, player := range c.GetPlayers() {
-			sb.WriteString(i18n.Tf("skitgubbe.playerLine",
+			line := i18n.Tf("skitgubbe.playerLine",
 				"name", cuiPlayerName(player, i),
 				"cards", strconv.Itoa(player.GetCardsSize()),
-				"collected", strconv.Itoa(c.GetCollectedCount(i))) + "\n")
+				"collected", strconv.Itoa(c.GetCollectedCount(i)))
+			// 出し切った席は Skitgubbe になる危険から外れる。残る席にとっては
+			// 誰がもう安全かが読みの前提になるのに、どちらの画面にも出ていなかった。
+			if c.IsFinished(i) {
+				line += i18n.T("skitgubbe.playerFinished")
+			}
+			sb.WriteString(line + "\n")
 			if player.GetIsHuman() && player.GetCardsSize() > 0 {
 				hand := make([]*domain.Card, 0, player.GetCardsSize())
 				for j := range player.GetCardsSize() {

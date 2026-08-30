@@ -21,6 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSkitgubbeGame } from '../hooks/useSkitgubbeGame';
+import { badgeSuccessColors } from '../styles/badgeStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SkitgubbeResponse } from '../types/card';
 import { SkitgubbePhase } from '../types/phases';
@@ -128,6 +129,15 @@ function SkitgubbePageContent() {
                     {t('opponentHand', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
                     {' · '}
                     {t('collected', { n: o.collectedCount })}
+                    {/* 出し切った席は Skitgubbe になる危険から外れる。 */}
+                    {o.finished && (
+                      <span
+                        className={`ml-1 rounded px-1 ${badgeSuccessColors}`}
+                        data-testid={`sg-finished-${o.id.toString()}`}
+                      >
+                        {t('finishedBadge')}
+                      </span>
+                    )}
                   </div>
                   <div
                     className="flex gap-1 justify-center flex-wrap"
