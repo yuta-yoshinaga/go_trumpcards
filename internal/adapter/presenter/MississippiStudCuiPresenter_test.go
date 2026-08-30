@@ -30,6 +30,7 @@ func setupMississippiStudCuiMockDefaults(m *interfaces.MockMississippiStudGame) 
 	m.On("GetStreetPayouts").Return([domain.MississippiStudStreetCnt]int{}).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetCurrentMadeHand").Return((*domain.MississippiStudMadeHand)(nil)).Maybe()
 }
 
 func TestMississippiStudCuiPresenter_Output_AntePhase(t *testing.T) {
@@ -53,6 +54,62 @@ func TestMississippiStudCuiPresenter_Output_Error(t *testing.T) {
 	assert.Contains(t, result, "nope")
 }
 
+// 1x/2x/3x/フォールドの判断材料そのものなのに、hint を打たないと役が分からなかった。
+// 3 つのストリートすべてで出ること、および ante フェーズでは出ないことを見る。
+func TestMississippiStudCuiPresenter_ShowsTheMadeHandOnEveryStreet(t *testing.T) {
+	i18n.SetLang("ja")
+	made := &domain.MississippiStudMadeHand{Rank: domain.PokerHandOnePair, PaytableEligible: true}
+	want := i18n.Tf("mississippistud.madeHandLine",
+		"hand", cuiPokerHandName(domain.PokerHandOnePair),
+		"eligible", i18n.T("mississippistud.madeHandEligible"))
+
+	for _, phase := range []int{
+		domain.MississippiStudPhaseThirdSt,
+		domain.MississippiStudPhaseFourthSt,
+		domain.MississippiStudPhaseFifthSt,
+	} {
+		m := new(interfaces.MockMississippiStudGame)
+		m.On("GetPhase").Return(phase)
+		m.On("GetCurrentMadeHand").Return(made)
+		setupMississippiStudCuiMockDefaults(m)
+		assert.Contains(t, new(MississippiStudCuiPresenter).Output(m, nil), want)
+	}
+
+	// 配る前のフェーズでは出さない。役はまだ存在しない。
+	ante := new(interfaces.MockMississippiStudGame)
+	ante.On("GetPhase").Return(domain.MississippiStudPhaseAnte)
+	ante.On("GetCurrentMadeHand").Return(made)
+	setupMississippiStudCuiMockDefaults(ante)
+	assert.NotContains(t, new(MississippiStudCuiPresenter).Output(ante, nil), want)
+}
+
+// 役の名前だけでは足りない。2 のペアは「ワンペア」でも配当が付かない。
+func TestMississippiStudCuiPresenter_SaysWhetherTheHandIsPaytableEligible(t *testing.T) {
+	i18n.SetLang("ja")
+	for _, tc := range []struct {
+		name     string
+		eligible bool
+		want     string
+		notWant  string
+	}{
+		{"eligible", true, i18n.T("mississippistud.madeHandEligible"), i18n.T("mississippistud.madeHandNotEligible")},
+		{"not eligible", false, i18n.T("mississippistud.madeHandNotEligible"), i18n.T("mississippistud.madeHandEligible")},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m := new(interfaces.MockMississippiStudGame)
+			m.On("GetPhase").Return(domain.MississippiStudPhaseThirdSt)
+			m.On("GetCurrentMadeHand").Return(&domain.MississippiStudMadeHand{
+				Rank: domain.PokerHandOnePair, PaytableEligible: tc.eligible,
+			})
+			setupMississippiStudCuiMockDefaults(m)
+
+			out := new(MississippiStudCuiPresenter).Output(m, nil)
+			assert.Contains(t, out, tc.want)
+			assert.NotContains(t, out, tc.notWant)
+		})
+	}
+}
+
 func TestMississippiStudCuiPresenter_Output_ThirdSt(t *testing.T) {
 	p := new(MississippiStudCuiPresenter)
 	m := new(interfaces.MockMississippiStudGame)
@@ -68,6 +125,10 @@ func TestMississippiStudCuiPresenter_Output_ThirdSt(t *testing.T) {
 	}
 	m.On("GetChips").Return(900)
 	m.On("GetPhase").Return(domain.MississippiStudPhaseThirdSt)
+	// J のペア。配当表に載る側。
+	m.On("GetCurrentMadeHand").Return(&domain.MississippiStudMadeHand{
+		Rank: domain.PokerHandOnePair, PaytableEligible: true,
+	})
 	m.On("GetPlayerHand").Return(hole)
 	m.On("GetCommunityCards").Return(community)
 	m.On("GetCommunityRevealed").Return([domain.MississippiStudCommunityCnt]bool{})
