@@ -11291,7 +11291,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, attack, a, defend, d, pickup, p, done, dn, pass, ps, log, l, transfer, tr, take, t]
+                  enum: [reset, r, attack, a, defend, d, pickup, p, done, dn, pass, ps, log, l, take, t, transfer, tr]
                 cardIndex:
                   type: integer
                   description: Index of the card to play (for attack/defend commands)

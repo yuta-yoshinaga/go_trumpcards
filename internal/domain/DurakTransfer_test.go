@@ -89,9 +89,14 @@ func TestDurak_PlayerTransfer_NextDefenderCardsShort(t *testing.T) {
 	assert.ErrorIs(t, err, ErrInvalidPlay)
 }
 
-func TestDurak_PlayerTransfer_NotDefenderTurn(t *testing.T) {
+// 手番が CPU の席なら断る。
+//
+// 「防御フェーズだが手番が防御者でない」状態は作れない —— phase を
+// DurakPhaseDefend にする箇所はすべて currentTurn も defenderIdx にする ——
+// ので、ここで実際に効くのは人間かどうかの確認だけ。名前をそれに合わせている。
+func TestDurak_PlayerTransfer_NotHumanTurn(t *testing.T) {
 	d := setupDurakForTransfer(true)
-	d.round.currentTurn = 2 // Not defender
+	d.round.currentTurn = 2 // CPU の席
 	err := d.PlayerTransfer(0)
 	assert.ErrorIs(t, err, ErrNotHumanTurn)
 }

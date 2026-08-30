@@ -59,7 +59,7 @@ const DurakMaxBouts = 200
 // DurakCpuAction CPUまたは人間の1ターン分の行動記録
 type DurakCpuAction struct {
 	PlayerIdx  int   // 行動したプレイヤーインデックス
-	ActionType int   // DurakActionAttack/Defend/Pass/Take
+	ActionType int   // DurakActionAttack/Defend/Pass/Take/Transfer
 	CardIdx    int   // 使用した手札インデックス (-1 = パス/テイク)
 	AttackIdx  int   // 防御時: 対象の攻撃カードインデックス (-1 = 該当なし)
 	Card       *Card // 出したカード (nil = パス/テイク)
@@ -366,9 +366,10 @@ func (d *Durak) PlayerTransfer(handIdx int) error {
 	if d.round.phase != DurakPhaseDefend {
 		return ErrWrongPhase
 	}
-	if d.round.currentTurn != d.round.defenderIdx {
-		return ErrNotHumanTurn
-	}
+	// 防御フェーズかどうか以上のことは見ない。phase を DurakPhaseDefend にする
+	// 箇所はすべて同じ文で currentTurn も defenderIdx にしているので、
+	// 「防御フェーズだが手番が防御者でない」状態は作れない。PlayerDefend が
+	// 同じ理由でこの確認を持っていないので、こちらも合わせる。
 
 	player := d.players[d.round.defenderIdx]
 	if handIdx < 0 || handIdx >= player.GetCardsSize() {

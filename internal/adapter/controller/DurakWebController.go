@@ -50,7 +50,7 @@ type DurakWebOutputTablePair struct {
 // DurakWebOutputAction ドゥラークのプレイヤー行動記録
 type DurakWebOutputAction struct {
 	PlayerIdx  int            `json:"playerIdx"`
-	ActionType int            `json:"actionType"` // 0=attack, 1=defend, 2=pass, 3=take
+	ActionType int            `json:"actionType"` // 0=attack, 1=defend, 2=pass, 3=take, 4=transfer
 	Card       *WebOutputCard `json:"card"`       // 出したカード (nil = パス/テイク)
 	AttackIdx  int            `json:"attackIdx"`  // 防御時: 対象攻撃カード (-1 = 該当なし)
 }
