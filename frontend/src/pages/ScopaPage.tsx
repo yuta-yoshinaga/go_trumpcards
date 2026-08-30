@@ -265,6 +265,12 @@ function ScopaPageContent() {
                     type="button"
                     onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
                     disabled={!isHumanTurn}
+                    // 場札と同じ形。中身は AnimatedCard だけで、それ自体は
+                    // alt も aria-label も持たないので、これが無いと自分が
+                    // 何を持っているかすら読み上げられない (#6415)。
+                    // 選択状態は aria-pressed が担う (場札と同じ)。
+                    aria-label={cardAlt(c)}
+                    aria-pressed={handIndex === i}
                     className={`rounded transition-all ${
                       handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
                     } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
