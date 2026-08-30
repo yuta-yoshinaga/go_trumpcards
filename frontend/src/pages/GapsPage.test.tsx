@@ -4,7 +4,7 @@ import { gapsApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
-import type { Card, CardDesign, GapsResponse } from '../types/card';
+import type { Card, CardDesign, GapsGhostHint, GapsResponse } from '../types/card';
 import { GapsPage } from './GapsPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -82,19 +82,40 @@ describe('GapsPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
   });
 
-  it('reflects the gap ghost hint (needed / anySuit / blocked) in each cell aria-label', async () => {
+  it('reflects the server-provided gap needs (needed / anySuit / blocked) in each cell aria-label and ghost preview', async () => {
     const grid: (Card | null)[][] = [
-      Array(13).fill(null), // row 0: col 0 gap → any suit 2
-      [card('SPADE', 3), ...Array(12).fill(null)], // row 1: col 1 gap → needs ♠4
-      [card('HEART', 13), ...Array(12).fill(null)], // row 2: col 1 gap → blocked (follows K)
+      Array(13).fill(null),
+      [card('SPADE', 3), ...Array(12).fill(null)],
+      // Note: row 2 cell 0 is NOT a King (it is 5 of Heart), but server says cell 1 is blocked.
+      // This verifies that the page renders the server-provided value directly rather than re-computing.
+      [card('HEART', 5), ...Array(12).fill(null)],
       Array(13).fill(null),
     ];
-    mockedRun.mockResolvedValue({ ...playingState, grid });
+    const gapNeeds: (GapsGhostHint | null)[][] = [
+      [{ kind: 'anySuit', value: 2 }, ...Array(12).fill(null)],
+      [null, { kind: 'needed', design: 'SPADE', value: 4 }, ...Array(11).fill(null)],
+      [null, { kind: 'blocked' }, ...Array(11).fill(null)],
+      Array(13).fill(null),
+    ];
+    mockedRun.mockResolvedValue({ ...playingState, grid, gapNeeds });
     renderWithProviders(<GapsPage />);
     await waitFor(() => expect(screen.getByTestId('gaps-cell-0-0')).toBeInTheDocument());
+
+    // 1. anySuit
     expect(screen.getByTestId('gaps-cell-0-0')).toHaveAttribute('aria-label', '空き（任意のスートの 2 を置けます）');
+    expect(screen.getByTestId('gaps-ghost-0-0')).toHaveTextContent('2');
+
+    // 2. needed card
     expect(screen.getByTestId('gaps-cell-1-1')).toHaveAttribute('aria-label', '空き（♠ 4 を置けます）');
+    expect(screen.getByTestId('gaps-ghost-1-1')).toHaveTextContent('♠4');
+
+    // 3. blocked (even though left cell is 5, server gapNeeds is blocked)
     expect(screen.getByTestId('gaps-cell-2-1')).toHaveAttribute('aria-label', '空き（K の後ろのため使用不可）');
+    expect(screen.getByTestId('gaps-ghost-2-1-blocked')).toHaveTextContent('🚫');
+
+    // 4. undecided / null gapNeed renders basic gap label and no ghost span
+    expect(screen.getByTestId('gaps-cell-3-0')).toHaveAttribute('aria-label', '空き');
+    expect(screen.queryByTestId('gaps-ghost-3-0')).not.toBeInTheDocument();
   });
 
   it('renders redeals remaining', async () => {
