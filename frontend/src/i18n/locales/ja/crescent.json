@@ -33,6 +33,7 @@
   "redeal": "再配り",
   "redealUnavailable": "残り再配り回数がありません",
   "redealsLeft": "残り再配り回数: {{count}}",
+  "rulesNote": "同スートで値差±1（A↔Kはラップ）で重ねられます（空列には置けません）。",
   "selectionMoves": "選択中のカードを置ける場所が{{count}}箇所あります",
   "selectionNoMoves": "選択中のカードを置ける場所はありません",
   "stalemate": "手詰まり",
