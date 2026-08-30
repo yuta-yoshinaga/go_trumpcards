@@ -58,6 +58,15 @@ func (mp *MississippiStudCuiPresenter) Output(g interfaces.MississippiStudGame, 
 			))
 		}
 
+		// 1x/2x/3x/フォールドの判断材料そのもの。ヒントを打たないと役が
+		// 分からないのでは、毎回打つしかない。Web は ms-made-hand として常時出している。
+		switch g.GetPhase() {
+		case domain.MississippiStudPhaseThirdSt, domain.MississippiStudPhaseFourthSt, domain.MississippiStudPhaseFifthSt:
+			if line := msMadeHandLine(g); line != "" {
+				fmt.Fprintf(b, "%s\n", line)
+			}
+		}
+
 		// During the streets, show the accumulated bet and what a fold forfeits;
 		// the game-end block prints totalBet separately, so guard against dupes.
 		if !g.GetGameEndFlag() && g.GetTotalBet() > 0 {
@@ -111,17 +120,30 @@ func (mp *MississippiStudCuiPresenter) HintOutput(g interfaces.MississippiStudGa
 		return i18n.T("mississippistud.hintNone") + "\n"
 	}
 	var b strings.Builder
-	// **役の名前だけでは足りない。**2 のペアは「ワンペア」でも配当が付かない。
-	if made := g.GetCurrentMadeHand(); made != nil {
-		eligible := i18n.T("mississippistud.madeHandNotEligible")
-		if made.PaytableEligible {
-			eligible = i18n.T("mississippistud.madeHandEligible")
-		}
-		b.WriteString(i18n.Tf("mississippistud.madeHandLine",
-			"hand", cuiPokerHandName(made.Rank), "eligible", eligible) + "\n")
+	if line := msMadeHandLine(g); line != "" {
+		b.WriteString(line + "\n")
 	}
 	b.WriteString(color.Yellow(i18n.T(key)) + "\n")
 	return b.String()
+}
+
+// msMadeHandLine は現在の役と、それが配当表に載るかどうかの 1 行を返す。
+// 役がまだ無ければ空文字。
+//
+// **役の名前だけでは足りない。**2 のペアは「ワンペア」でも配当が付かない。
+// ストリート中の常設表示とヒントの両方がこれを呼ぶので、2 つの画面が
+// 違う役を言うことはない。
+func msMadeHandLine(g interfaces.MississippiStudGame) string {
+	made := g.GetCurrentMadeHand()
+	if made == nil {
+		return ""
+	}
+	eligible := i18n.T("mississippistud.madeHandNotEligible")
+	if made.PaytableEligible {
+		eligible = i18n.T("mississippistud.madeHandEligible")
+	}
+	return i18n.Tf("mississippistud.madeHandLine",
+		"hand", cuiPokerHandName(made.Rank), "eligible", eligible)
 }
 
 // ActionLogOutput 棋譜をテキスト出力する。
