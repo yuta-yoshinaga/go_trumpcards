@@ -350,11 +350,11 @@ function TarneebPageContent() {
                       <tbody>
                         {state.teamScores.map((score, i) => {
                           const isYourTeam = humanPlayer != null && humanPlayer.team === i;
-                          const roundTricks = teamBreakdown[i]?.roundTricks ?? 0;
+                          const roundScore = teamBreakdown[i]?.roundScore ?? 0;
                           return (
                             <tr key={i} className={isYourTeam ? 'text-ds-accent' : ''}>
                               <td>{isYourTeam ? t('yourTeam') : t('opponentTeam')}</td>
-                              <td className="text-center">{roundTricks}</td>
+                              <td className="text-center">{roundScore}</td>
                               <td className="text-center">{score}</td>
                             </tr>
                           );

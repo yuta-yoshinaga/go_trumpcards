@@ -15,7 +15,7 @@ const mockExec = vi.mocked(tarneebApi.exec);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
-function player(id: number, isHuman: boolean, team: number, trickCount: number) {
+function player(id: number, isHuman: boolean, team: number, trickCount: number, roundScore = 0) {
   return {
     id,
     isHuman,
@@ -23,7 +23,7 @@ function player(id: number, isHuman: boolean, team: number, trickCount: number) 
     cardCount: 5,
     cards: isHuman ? [card('SPADE', 1)] : [],
     bid: -1,
-    roundScore: 0,
+    roundScore,
     cumulativeScore: 0,
     trickCount,
   };
@@ -31,7 +31,12 @@ function player(id: number, isHuman: boolean, team: number, trickCount: number) 
 
 function makeState(overrides: Partial<TarneebResponse> = {}): TarneebResponse {
   return {
-    players: [player(0, true, 0, 3), player(1, false, 1, 2), player(2, false, 0, 1), player(3, false, 1, 0)],
+    players: [
+      player(0, true, 0, 3, 4),
+      player(1, false, 1, 2, 2),
+      player(2, false, 0, 1, 4),
+      player(3, false, 1, 0, 2),
+    ],
     teamScores: [10, 5],
     phase: 0,
     roundNumber: 1,
@@ -91,18 +96,55 @@ describe('TarneebPage', () => {
     expect(screen.queryByTestId('tarneeb-redeal-count')).not.toBeInTheDocument();
   });
 
-  it('labels the human team and opponents and shows round tricks + total per team', async () => {
+  it('labels the human team and opponents and shows round score + total per team', async () => {
     const { container } = renderWithProviders(<TarneebPage />);
     await waitFor(() => expect(container.querySelector('[data-tutorial="tn-score-table"] table')).not.toBeNull());
     const table = container.querySelector('[data-tutorial="tn-score-table"] table') as HTMLTableElement;
-    // Your team (team 0): round tricks 3 + 1 = 4, total 10.
+    // Your team (team 0): round score 4, total 10.
     const yourRow = within(table).getByText('あなたのチーム').closest('tr') as HTMLTableRowElement;
     expect(within(yourRow).getByText('4')).toBeInTheDocument();
     expect(within(yourRow).getByText('10')).toBeInTheDocument();
-    // Opponents (team 1): round tricks 2 + 0 = 2, total 5.
+    // Opponents (team 1): round score 2, total 5.
     const oppRow = within(table).getByText('相手チーム').closest('tr') as HTMLTableRowElement;
     expect(within(oppRow).getByText('2')).toBeInTheDocument();
     expect(within(oppRow).getByText('5')).toBeInTheDocument();
+  });
+
+  it('displays round score (including negative scores for failed bids) instead of trick count in the score table', async () => {
+    // Team 0 failed bid: bid 8, took 3+1=4 tricks -> roundScore is -8.
+    // Team 1 defenders: took 6+3=9 tricks -> roundScore is +9.
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, 0, 3, -8),
+          player(1, false, 1, 6, 9),
+          player(2, false, 0, 1, -8),
+          player(3, false, 1, 3, 9),
+        ],
+        teamScores: [2, 15],
+      }),
+    );
+    const { container } = renderWithProviders(<TarneebPage />);
+    await waitFor(() => expect(container.querySelector('[data-tutorial="tn-score-table"] table')).not.toBeNull());
+    const table = container.querySelector('[data-tutorial="tn-score-table"] table') as HTMLTableElement;
+
+    // Your team (team 0): round score is -8 (negative, different from total trick count 4), total is 2.
+    const yourRow = within(table).getByText('あなたのチーム').closest('tr') as HTMLTableRowElement;
+    expect(within(yourRow).getByText('-8')).toBeInTheDocument();
+    expect(within(yourRow).getByText('2')).toBeInTheDocument();
+    expect(within(yourRow).queryByText('4')).not.toBeInTheDocument();
+
+    // Opponents (team 1): round score is 9 (different from individual trick counts 6 and 3), total is 15.
+    const oppRow = within(table).getByText('相手チーム').closest('tr') as HTMLTableRowElement;
+    expect(within(oppRow).getByText('9')).toBeInTheDocument();
+    expect(within(oppRow).getByText('15')).toBeInTheDocument();
+
+    // Player breakdown preserves individual trick counts (acceptance condition 3).
+    const breakdown = (await screen.findByTestId('tn-player-breakdown')) as HTMLDetailsElement;
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-0"]')?.textContent).toBe('3トリック');
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-2"]')?.textContent).toBe('1トリック');
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-1"]')?.textContent).toBe('6トリック');
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-3"]')?.textContent).toBe('3トリック');
   });
 
   it('shows a per-player trick breakdown grouped by team (#3306)', async () => {
