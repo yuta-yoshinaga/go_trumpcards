@@ -6,7 +6,8 @@
     "bet": "Bet",
     "dragon": "Dragon",
     "tiger": "Tiger",
-    "bigRoad": "History (Big Road)"
+    "bigRoad": "History (Big Road)",
+    "historyOverflow": "+{{count}} more"
   },
   "button": {
     "betDragon": "Dragon",
