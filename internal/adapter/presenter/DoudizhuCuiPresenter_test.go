@@ -2,10 +2,12 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -47,6 +49,41 @@ func TestDoudizhuCuiPresenter_Output_PlayPhase(t *testing.T) {
 	p := new(presenter.DoudizhuCuiPresenter)
 	out := p.Output(dg, nil)
 	assert.NotEmpty(t, out)
+}
+
+// 最終得点の倍率はビッド額とボム回数で決まるのに、CUI はどちらも終局まで
+// 出していなかった。**ボムを実際に打って**回数が追従することまで見る ——
+// フィールドを立てるだけでは、表示が本当に今の値を読んでいるか分からない。
+func TestDoudizhuCuiPresenter_ShowsTheBidAndBombCountDuringPlay(t *testing.T) {
+	i18n.SetLang("ja")
+	dg := newDoudizhuForPresenter()
+	dg.SetPhase(domain.DoudizhuPhasePlay)
+	dg.SetLandlordIdx(0)
+	dg.SetCurrentTurn(0)
+	dg.SetKittyCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+
+	p := new(presenter.DoudizhuCuiPresenter)
+	before := p.Output(dg, nil)
+	assert.Contains(t, before, i18n.Tf("doudizhu.bidAndBombs",
+		"bid", strconv.Itoa(dg.GetBaseBid()), "bombs", "0"))
+
+	// 手番の席に 7 のフォーカード（ボム）だけを持たせて実際に打つ。
+	human := dg.GetPlayer(0)
+	human.Reset()
+	for _, d := range []int{domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond} {
+		human.AddCard(domain.NewCard(d, 7, false))
+	}
+	dg.SetTableCombo(nil)
+	dg.SetCurrentTurn(0)
+	require.True(t, dg.IsHumanTurn(), "the seat on turn must be the human for PlayerPlay")
+	require.NoError(t, dg.PlayerPlay([]int{0, 1, 2, 3}))
+	require.Equal(t, 1, dg.GetBombCount(), "playing four of a kind must count as a bomb")
+
+	after := p.Output(dg, nil)
+	assert.Contains(t, after, i18n.Tf("doudizhu.bidAndBombs",
+		"bid", strconv.Itoa(dg.GetBaseBid()), "bombs", "1"))
+	assert.NotContains(t, after, i18n.Tf("doudizhu.bidAndBombs",
+		"bid", strconv.Itoa(dg.GetBaseBid()), "bombs", "0"))
 }
 
 func TestDoudizhuCuiPresenter_Output_EndPhase(t *testing.T) {

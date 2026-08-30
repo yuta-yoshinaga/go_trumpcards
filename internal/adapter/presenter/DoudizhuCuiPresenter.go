@@ -48,6 +48,11 @@ func (p *DoudizhuCuiPresenter) Output(dg interfaces.DoudizhuGame, lastErr error)
 				// 日本語ロケールでも "Player 2" と出て他の行と食い違う (#5617)。
 				fmt.Fprintf(b, "%s: %s\n", i18n.T("doudizhu.landlord"), cuiPlayerName(dg.GetPlayer(landlordIdx), landlordIdx))
 				fmt.Fprintf(b, "%s: %s\n", i18n.T("doudizhu.kittyCards"), cuiCardListStr(doudizhuCardSlice(dg.GetKittyCards())))
+				// 最終得点の倍率はこの 2 つで決まるのに、CUI は終局まで
+				// どちらも出していなかった。Web はヘッダに常時出している。
+				b.WriteString(i18n.Tf("doudizhu.bidAndBombs",
+					"bid", strconv.Itoa(dg.GetBaseBid()),
+					"bombs", strconv.Itoa(dg.GetBombCount())) + "\n")
 			}
 
 			if combo := dg.GetTableCombo(); combo != nil {
