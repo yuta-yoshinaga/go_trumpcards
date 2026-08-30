@@ -194,25 +194,55 @@ describe('AgnesPage', () => {
   it('per-column action button moves tableau end card to foundation', async () => {
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    fireEvent.click(screen.getAllByRole('button', { name: '→組' })[0]);
+    // Column 5 has ♥ 5, which legally moves to foundation (baseRank 5).
+    fireEvent.click(screen.getAllByRole('button', { name: '→組' })[5]);
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation' }),
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 5 }, { zone: 'foundation' }),
     );
   });
 
   it('tableau-to-tableau button fires move command with end-card index', async () => {
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    // Column 0 (one card, end index 0) → column 1.
-    const btn = screen.getAllByRole('button', { name: '→1' })[0];
-    btn.click();
+    // Column 6 (♣ 6) -> column 0 (♠ 7).
+    const toCol0Buttons = screen.getAllByRole('button', { name: '→0' });
+    const col6ToCol0 = toCol0Buttons[5];
+    col6ToCol0.click();
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith(
         'move',
-        { zone: 'tableau', col: 0, cardIndex: 0 },
-        { zone: 'tableau', col: 1 },
+        { zone: 'tableau', col: 6, cardIndex: 0 },
+        { zone: 'tableau', col: 0 },
       ),
     );
+  });
+
+  it('disables moveToFoundation when the end card cannot be placed on foundation', async () => {
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const foundationButtons = screen.getAllByRole('button', { name: '→組' });
+    // Column 0 (♠ 7) cannot go to foundation (pile has ♠ 5, expects ♠ 6).
+    expect(foundationButtons[0]).toBeDisabled();
+    // Column 5 (♥ 5) CAN go to foundation (♥ pile is empty, baseRank is 5).
+    expect(foundationButtons[5]).toBeEnabled();
+  });
+
+  it('enables moveToCol for legal tableau targets and disables it for illegal targets', async () => {
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Column 6 has ♣ 6:
+    // - Moving to Column 0 (♠ 7): same color (black), value 6 = 7 - 1 -> ENABLED
+    // - Moving to Column 1 (♥ 8): different color (black vs red) -> DISABLED
+    // - Moving to Column 2 (♣ 9): same color (black), but value 6 != 9 - 1 -> DISABLED
+    const toCol0Buttons = screen.getAllByRole('button', { name: '→0' });
+    const toCol1Buttons = screen.getAllByRole('button', { name: '→1' });
+    const toCol2Buttons = screen.getAllByRole('button', { name: '→2' });
+    const col6ToCol0 = toCol0Buttons[5];
+    const col6ToCol1 = toCol1Buttons[5];
+    const col6ToCol2 = toCol2Buttons[5];
+    expect(col6ToCol0).toBeEnabled();
+    expect(col6ToCol1).toBeDisabled();
+    expect(col6ToCol2).toBeDisabled();
   });
 
   it('only the face-up end card of a column is draggable', async () => {
