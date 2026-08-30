@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupRussianPokerCuiMockDefaults(m *interfaces.MockRussianPokerGame) {
@@ -31,6 +32,41 @@ func setupRussianPokerCuiMockDefaults(m *interfaces.MockRussianPokerGame) {
 	m.On("GetPlayerHandRank").Return(0).Maybe()
 	m.On("GetDealerHandRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+}
+
+// 3 つの手数料のうち force 交換だけが終局ブロックの中にあり、force を打った直後から
+// 決着まで払った額が画面から消えていた。対局中も出ること・していない対局では出ないこと。
+func TestRussianPokerCuiPresenter_ShowsTheForceExchangeFeeWhileTheHandIsStillOpen(t *testing.T) {
+	i18n.SetLang("ja")
+	want := i18n.Tf("russianpoker.forceExchangeLine", "fee", "50")
+
+	// 対局中 (終局フラグ false) の各フェーズで出る。
+	for _, phase := range []int{
+		domain.RussianPokerPhaseForceQualify,
+		domain.RussianPokerPhaseSelect,
+	} {
+		m := new(interfaces.MockRussianPokerGame)
+		m.On("GetPhase").Return(phase)
+		m.On("GetGameEndFlag").Return(false)
+		m.On("GetForceExchanged").Return(true)
+		m.On("GetForceExchangeFee").Return(50)
+		setupRussianPokerCuiMockDefaults(m)
+		assert.Contains(t, new(RussianPokerCuiPresenter).Output(m, nil), want)
+	}
+
+	// 終局後の精算にも従来どおり出る。
+	end := new(interfaces.MockRussianPokerGame)
+	end.On("GetGameEndFlag").Return(true)
+	end.On("GetForceExchanged").Return(true)
+	end.On("GetForceExchangeFee").Return(50)
+	setupRussianPokerCuiMockDefaults(end)
+	assert.Contains(t, new(RussianPokerCuiPresenter).Output(end, nil), want)
+
+	// force 交換していない対局では出ない。
+	plain := new(interfaces.MockRussianPokerGame)
+	setupRussianPokerCuiMockDefaults(plain)
+	out := new(RussianPokerCuiPresenter).Output(plain, nil)
+	assert.NotContains(t, out, i18n.Tf("russianpoker.forceExchangeLine", "fee", "0"))
 }
 
 func TestRussianPokerCuiPresenter_Output_BetPhase(t *testing.T) {
