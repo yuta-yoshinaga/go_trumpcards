@@ -26,34 +26,40 @@ const (
 
 // ChinesePoker チャイニーズポーカークラス
 type ChinesePoker struct {
-	trumpCards       *TrumpCards
-	playerCards      []*Card
-	dealerCards      []*Card
-	playerFront      []*Card
-	playerMiddle     []*Card
-	playerBack       []*Card
-	dealerFront      []*Card
-	dealerMiddle     []*Card
-	dealerBack       []*Card
-	chips            ChipHolder
-	bet              int
-	phase            int
-	gameEndFlag      bool
-	result           GameResult
-	frontResult      GameResult
-	middleResult     GameResult
-	backResult       GameResult
-	payout           int
-	playerFrontRank  int
-	playerMiddleRank int
-	playerBackRank   int
-	dealerFrontRank  int
-	dealerMiddleRank int
-	dealerBackRank   int
-	playerRoyalty    int
-	dealerRoyalty    int
-	scoop            bool
-	actionLog        []*ActionLogEntry
+	trumpCards          *TrumpCards
+	playerCards         []*Card
+	dealerCards         []*Card
+	playerFront         []*Card
+	playerMiddle        []*Card
+	playerBack          []*Card
+	dealerFront         []*Card
+	dealerMiddle        []*Card
+	dealerBack          []*Card
+	chips               ChipHolder
+	bet                 int
+	phase               int
+	gameEndFlag         bool
+	result              GameResult
+	frontResult         GameResult
+	middleResult        GameResult
+	backResult          GameResult
+	payout              int
+	playerFrontRank     int
+	playerMiddleRank    int
+	playerBackRank      int
+	dealerFrontRank     int
+	dealerMiddleRank    int
+	dealerBackRank      int
+	playerRoyalty       int
+	playerFrontRoyalty  int
+	playerMiddleRoyalty int
+	playerBackRoyalty   int
+	dealerRoyalty       int
+	dealerFrontRoyalty  int
+	dealerMiddleRoyalty int
+	dealerBackRoyalty   int
+	scoop               bool
+	actionLog           []*ActionLogEntry
 }
 
 // NewChinesePoker コンストラクタ
@@ -97,7 +103,13 @@ func (cp *ChinesePoker) Reset() {
 	cp.dealerMiddleRank = 0
 	cp.dealerBackRank = 0
 	cp.playerRoyalty = 0
+	cp.playerFrontRoyalty = 0
+	cp.playerMiddleRoyalty = 0
+	cp.playerBackRoyalty = 0
 	cp.dealerRoyalty = 0
+	cp.dealerFrontRoyalty = 0
+	cp.dealerMiddleRoyalty = 0
+	cp.dealerBackRoyalty = 0
 	cp.scoop = false
 	cp.actionLog = nil
 	if cp.chips.GetChips() < ChinesePokerMinBet {
@@ -244,8 +256,17 @@ func (cp *ChinesePoker) cpResolve() {
 		wins++
 	}
 
-	cp.playerRoyalty = cpCalcRoyalty(cp.playerFrontRank, cp.playerMiddleRank, cp.playerBackRank, cp.playerFront)
-	cp.dealerRoyalty = cpCalcRoyalty(cp.dealerFrontRank, cp.dealerMiddleRank, cp.dealerBackRank, cp.dealerFront)
+	// 合計は段別の和そのもの。cpCalcRoyalty を別に呼ぶと同じ 3 関数をもう一度
+	// 通ることになり、「合計 = 段の和」が偶然の一致になる。ここで足す。
+	cp.playerFrontRoyalty = cpFrontRoyalty(cp.playerFrontRank, cp.playerFront)
+	cp.playerMiddleRoyalty = cpMiddleRoyalty(cp.playerMiddleRank)
+	cp.playerBackRoyalty = cpBackRoyalty(cp.playerBackRank)
+	cp.playerRoyalty = cp.playerFrontRoyalty + cp.playerMiddleRoyalty + cp.playerBackRoyalty
+
+	cp.dealerFrontRoyalty = cpFrontRoyalty(cp.dealerFrontRank, cp.dealerFront)
+	cp.dealerMiddleRoyalty = cpMiddleRoyalty(cp.dealerMiddleRank)
+	cp.dealerBackRoyalty = cpBackRoyalty(cp.dealerBackRank)
+	cp.dealerRoyalty = cp.dealerFrontRoyalty + cp.dealerMiddleRoyalty + cp.dealerBackRoyalty
 	royaltyDiff := cp.playerRoyalty - cp.dealerRoyalty
 
 	switch wins {
@@ -729,8 +750,26 @@ func (cp *ChinesePoker) GetDealerBackRank() int { return cp.dealerBackRank }
 // GetPlayerRoyalty プレイヤーロイヤリティ
 func (cp *ChinesePoker) GetPlayerRoyalty() int { return cp.playerRoyalty }
 
+// GetPlayerFrontRoyalty プレイヤーフロントロイヤリティ
+func (cp *ChinesePoker) GetPlayerFrontRoyalty() int { return cp.playerFrontRoyalty }
+
+// GetPlayerMiddleRoyalty プレイヤーミドルロイヤリティ
+func (cp *ChinesePoker) GetPlayerMiddleRoyalty() int { return cp.playerMiddleRoyalty }
+
+// GetPlayerBackRoyalty プレイヤーバックロイヤリティ
+func (cp *ChinesePoker) GetPlayerBackRoyalty() int { return cp.playerBackRoyalty }
+
 // GetDealerRoyalty ディーラーロイヤリティ
 func (cp *ChinesePoker) GetDealerRoyalty() int { return cp.dealerRoyalty }
+
+// GetDealerFrontRoyalty ディーラーフロントロイヤリティ
+func (cp *ChinesePoker) GetDealerFrontRoyalty() int { return cp.dealerFrontRoyalty }
+
+// GetDealerMiddleRoyalty ディーラーミドルロイヤリティ
+func (cp *ChinesePoker) GetDealerMiddleRoyalty() int { return cp.dealerMiddleRoyalty }
+
+// GetDealerBackRoyalty ディーラーバックロイヤリティ
+func (cp *ChinesePoker) GetDealerBackRoyalty() int { return cp.dealerBackRoyalty }
 
 // GetScoop スクープフラグ
 func (cp *ChinesePoker) GetScoop() bool { return cp.scoop }
@@ -815,75 +854,105 @@ func (cp *ChinesePoker) SetDealerBackRank(rank int) { cp.dealerBackRank = rank }
 // SetPlayerRoyalty プレイヤーロイヤリティ設定（テスト用）
 func (cp *ChinesePoker) SetPlayerRoyalty(royalty int) { cp.playerRoyalty = royalty }
 
+// SetPlayerFrontRoyalty プレイヤーフロントロイヤリティ設定（テスト用）
+func (cp *ChinesePoker) SetPlayerFrontRoyalty(royalty int) { cp.playerFrontRoyalty = royalty }
+
+// SetPlayerMiddleRoyalty プレイヤーミドルロイヤリティ設定（テスト用）
+func (cp *ChinesePoker) SetPlayerMiddleRoyalty(royalty int) { cp.playerMiddleRoyalty = royalty }
+
+// SetPlayerBackRoyalty プレイヤーバックロイヤリティ設定（テスト用）
+func (cp *ChinesePoker) SetPlayerBackRoyalty(royalty int) { cp.playerBackRoyalty = royalty }
+
 // SetDealerRoyalty ディーラーロイヤリティ設定（テスト用）
 func (cp *ChinesePoker) SetDealerRoyalty(royalty int) { cp.dealerRoyalty = royalty }
+
+// SetDealerFrontRoyalty ディーラーフロントロイヤリティ設定（テスト用）
+func (cp *ChinesePoker) SetDealerFrontRoyalty(royalty int) { cp.dealerFrontRoyalty = royalty }
+
+// SetDealerMiddleRoyalty ディーラーミドルロイヤリティ設定（テスト用）
+func (cp *ChinesePoker) SetDealerMiddleRoyalty(royalty int) { cp.dealerMiddleRoyalty = royalty }
+
+// SetDealerBackRoyalty ディーラーバックロイヤリティ設定（テスト用）
+func (cp *ChinesePoker) SetDealerBackRoyalty(royalty int) { cp.dealerBackRoyalty = royalty }
 
 // SetScoop スクープフラグ設定（テスト用）
 func (cp *ChinesePoker) SetScoop(scoop bool) { cp.scoop = scoop }
 
 // chinesePokerJSON is the JSON wire format for ChinesePoker.
 type chinesePokerJSON struct {
-	TrumpCards       *TrumpCards       `json:"tc"`
-	PlayerCards      []*Card           `json:"pc"`
-	DealerCards      []*Card           `json:"dc"`
-	PlayerFront      []*Card           `json:"pf"`
-	PlayerMiddle     []*Card           `json:"pm"`
-	PlayerBack       []*Card           `json:"pb"`
-	DealerFront      []*Card           `json:"df"`
-	DealerMiddle     []*Card           `json:"dm"`
-	DealerBack       []*Card           `json:"db"`
-	Chips            *ChipHolder       `json:"ch"`
-	Bet              int               `json:"bt"`
-	Phase            int               `json:"ps"`
-	GameEndFlag      bool              `json:"ge"`
-	Result           GameResult        `json:"rs"`
-	FrontResult      GameResult        `json:"fr"`
-	MiddleResult     GameResult        `json:"mr"`
-	BackResult       GameResult        `json:"br"`
-	Payout           int               `json:"po"`
-	PlayerFrontRank  int               `json:"pfr"`
-	PlayerMiddleRank int               `json:"pmr"`
-	PlayerBackRank   int               `json:"pbr"`
-	DealerFrontRank  int               `json:"dfr"`
-	DealerMiddleRank int               `json:"dmr"`
-	DealerBackRank   int               `json:"dbr"`
-	PlayerRoyalty    int               `json:"pry"`
-	DealerRoyalty    int               `json:"dry"`
-	Scoop            bool              `json:"sc"`
-	ActionLog        []*ActionLogEntry `json:"al"`
+	TrumpCards          *TrumpCards       `json:"tc"`
+	PlayerCards         []*Card           `json:"pc"`
+	DealerCards         []*Card           `json:"dc"`
+	PlayerFront         []*Card           `json:"pf"`
+	PlayerMiddle        []*Card           `json:"pm"`
+	PlayerBack          []*Card           `json:"pb"`
+	DealerFront         []*Card           `json:"df"`
+	DealerMiddle        []*Card           `json:"dm"`
+	DealerBack          []*Card           `json:"db"`
+	Chips               *ChipHolder       `json:"ch"`
+	Bet                 int               `json:"bt"`
+	Phase               int               `json:"ps"`
+	GameEndFlag         bool              `json:"ge"`
+	Result              GameResult        `json:"rs"`
+	FrontResult         GameResult        `json:"fr"`
+	MiddleResult        GameResult        `json:"mr"`
+	BackResult          GameResult        `json:"br"`
+	Payout              int               `json:"po"`
+	PlayerFrontRank     int               `json:"pfr"`
+	PlayerMiddleRank    int               `json:"pmr"`
+	PlayerBackRank      int               `json:"pbr"`
+	DealerFrontRank     int               `json:"dfr"`
+	DealerMiddleRank    int               `json:"dmr"`
+	DealerBackRank      int               `json:"dbr"`
+	PlayerRoyalty       int               `json:"pry"`
+	PlayerFrontRoyalty  int               `json:"pfr_r"`
+	PlayerMiddleRoyalty int               `json:"pmr_r"`
+	PlayerBackRoyalty   int               `json:"pbr_r"`
+	DealerRoyalty       int               `json:"dry"`
+	DealerFrontRoyalty  int               `json:"dfr_r"`
+	DealerMiddleRoyalty int               `json:"dmr_r"`
+	DealerBackRoyalty   int               `json:"dbr_r"`
+	Scoop               bool              `json:"sc"`
+	ActionLog           []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (cp *ChinesePoker) MarshalJSON() ([]byte, error) {
 	return json.Marshal(chinesePokerJSON{
-		TrumpCards:       cp.trumpCards,
-		PlayerCards:      cp.playerCards,
-		DealerCards:      cp.dealerCards,
-		PlayerFront:      cp.playerFront,
-		PlayerMiddle:     cp.playerMiddle,
-		PlayerBack:       cp.playerBack,
-		DealerFront:      cp.dealerFront,
-		DealerMiddle:     cp.dealerMiddle,
-		DealerBack:       cp.dealerBack,
-		Chips:            &cp.chips,
-		Bet:              cp.bet,
-		Phase:            cp.phase,
-		GameEndFlag:      cp.gameEndFlag,
-		Result:           cp.result,
-		FrontResult:      cp.frontResult,
-		MiddleResult:     cp.middleResult,
-		BackResult:       cp.backResult,
-		Payout:           cp.payout,
-		PlayerFrontRank:  cp.playerFrontRank,
-		PlayerMiddleRank: cp.playerMiddleRank,
-		PlayerBackRank:   cp.playerBackRank,
-		DealerFrontRank:  cp.dealerFrontRank,
-		DealerMiddleRank: cp.dealerMiddleRank,
-		DealerBackRank:   cp.dealerBackRank,
-		PlayerRoyalty:    cp.playerRoyalty,
-		DealerRoyalty:    cp.dealerRoyalty,
-		Scoop:            cp.scoop,
-		ActionLog:        cp.actionLog,
+		TrumpCards:          cp.trumpCards,
+		PlayerCards:         cp.playerCards,
+		DealerCards:         cp.dealerCards,
+		PlayerFront:         cp.playerFront,
+		PlayerMiddle:        cp.playerMiddle,
+		PlayerBack:          cp.playerBack,
+		DealerFront:         cp.dealerFront,
+		DealerMiddle:        cp.dealerMiddle,
+		DealerBack:          cp.dealerBack,
+		Chips:               &cp.chips,
+		Bet:                 cp.bet,
+		Phase:               cp.phase,
+		GameEndFlag:         cp.gameEndFlag,
+		Result:              cp.result,
+		FrontResult:         cp.frontResult,
+		MiddleResult:        cp.middleResult,
+		BackResult:          cp.backResult,
+		Payout:              cp.payout,
+		PlayerFrontRank:     cp.playerFrontRank,
+		PlayerMiddleRank:    cp.playerMiddleRank,
+		PlayerBackRank:      cp.playerBackRank,
+		DealerFrontRank:     cp.dealerFrontRank,
+		DealerMiddleRank:    cp.dealerMiddleRank,
+		DealerBackRank:      cp.dealerBackRank,
+		PlayerRoyalty:       cp.playerRoyalty,
+		PlayerFrontRoyalty:  cp.playerFrontRoyalty,
+		PlayerMiddleRoyalty: cp.playerMiddleRoyalty,
+		PlayerBackRoyalty:   cp.playerBackRoyalty,
+		DealerRoyalty:       cp.dealerRoyalty,
+		DealerFrontRoyalty:  cp.dealerFrontRoyalty,
+		DealerMiddleRoyalty: cp.dealerMiddleRoyalty,
+		DealerBackRoyalty:   cp.dealerBackRoyalty,
+		Scoop:               cp.scoop,
+		ActionLog:           cp.actionLog,
 	})
 }
 
@@ -957,7 +1026,13 @@ func (cp *ChinesePoker) UnmarshalJSON(data []byte) error {
 	cp.dealerMiddleRank = j.DealerMiddleRank
 	cp.dealerBackRank = j.DealerBackRank
 	cp.playerRoyalty = j.PlayerRoyalty
+	cp.playerFrontRoyalty = j.PlayerFrontRoyalty
+	cp.playerMiddleRoyalty = j.PlayerMiddleRoyalty
+	cp.playerBackRoyalty = j.PlayerBackRoyalty
 	cp.dealerRoyalty = j.DealerRoyalty
+	cp.dealerFrontRoyalty = j.DealerFrontRoyalty
+	cp.dealerMiddleRoyalty = j.DealerMiddleRoyalty
+	cp.dealerBackRoyalty = j.DealerBackRoyalty
 	cp.scoop = j.Scoop
 	cp.actionLog = j.ActionLog
 	if cp.actionLog == nil {

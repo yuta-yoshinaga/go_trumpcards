@@ -408,8 +408,23 @@ function ChinesePokerPageContent() {
                   )}
                   {(state.playerRoyalty > 0 || state.dealerRoyalty > 0) && (
                     <div>
-                      {t('label.playerRoyalty')}: {state.playerRoyalty} | {t('label.dealerRoyalty')}:{' '}
-                      {state.dealerRoyalty}
+                      <div>
+                        {t('label.playerRoyalty')}: {state.playerRoyalty} | {t('label.dealerRoyalty')}:{' '}
+                        {state.dealerRoyalty}
+                      </div>
+                      <div className="text-xs text-ds-text-secondary" data-testid="royalty-breakdown">
+                        {t('label.playerRoyaltyBreakdown', {
+                          front: state.playerFrontRoyalty,
+                          middle: state.playerMiddleRoyalty,
+                          back: state.playerBackRoyalty,
+                        })}{' '}
+                        |{' '}
+                        {t('label.dealerRoyaltyBreakdown', {
+                          front: state.dealerFrontRoyalty,
+                          middle: state.dealerMiddleRoyalty,
+                          back: state.dealerBackRoyalty,
+                        })}
+                      </div>
                     </div>
                   )}
                   {state.scoop && <div className="font-bold text-ds-warning">{t('label.scoop')}!</div>}

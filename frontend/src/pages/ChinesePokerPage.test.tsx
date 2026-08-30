@@ -45,7 +45,13 @@ const betPhaseState: ChinesePokerResponse = {
   dealerMiddleRank: 0,
   dealerBackRank: 0,
   playerRoyalty: 0,
+  playerFrontRoyalty: 0,
+  playerMiddleRoyalty: 0,
+  playerBackRoyalty: 0,
   dealerRoyalty: 0,
+  dealerFrontRoyalty: 0,
+  dealerMiddleRoyalty: 0,
+  dealerBackRoyalty: 0,
   scoop: false,
   message: '',
 };
@@ -152,6 +158,47 @@ describe('ChinesePokerPage', () => {
     renderWithProviders(<ChinesePokerPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
+  });
+
+  it('renders royalty totals and segment breakdown when royalties > 0', async () => {
+    const royaltyState: ChinesePokerResponse = {
+      ...endPhaseState,
+      playerRoyalty: 44,
+      playerFrontRoyalty: 7,
+      playerMiddleRoyalty: 12,
+      playerBackRoyalty: 25,
+      dealerRoyalty: 41,
+      dealerFrontRoyalty: 1,
+      dealerMiddleRoyalty: 30,
+      dealerBackRoyalty: 10,
+    };
+    mockExec.mockResolvedValue(royaltyState);
+    renderWithProviders(<ChinesePokerPage />);
+    await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
+    expect(screen.getByText(/プレイヤーロイヤリティ:\s*44/)).toBeInTheDocument();
+    expect(screen.getByText(/ディーラーロイヤリティ:\s*41/)).toBeInTheDocument();
+    const breakdown = screen.getByTestId('royalty-breakdown');
+    expect(breakdown).toHaveTextContent('プレイヤー内訳: フロント=7 / ミドル=12 / バック=25');
+    expect(breakdown).toHaveTextContent('ディーラー内訳: フロント=1 / ミドル=30 / バック=10');
+  });
+
+  it('does not render royalty totals or breakdown when royalties are 0', async () => {
+    const zeroRoyaltyState: ChinesePokerResponse = {
+      ...endPhaseState,
+      playerRoyalty: 0,
+      playerFrontRoyalty: 0,
+      playerMiddleRoyalty: 0,
+      playerBackRoyalty: 0,
+      dealerRoyalty: 0,
+      dealerFrontRoyalty: 0,
+      dealerMiddleRoyalty: 0,
+      dealerBackRoyalty: 0,
+    };
+    mockExec.mockResolvedValue(zeroRoyaltyState);
+    renderWithProviders(<ChinesePokerPage />);
+    await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
+    expect(screen.queryByTestId('royalty-breakdown')).not.toBeInTheDocument();
+    expect(screen.queryByText(/プレイヤーロイヤリティ/)).not.toBeInTheDocument();
   });
 
   it('calls reset on next game click', async () => {

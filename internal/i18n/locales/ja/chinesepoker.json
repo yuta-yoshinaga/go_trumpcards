@@ -22,6 +22,8 @@
   "dealerScoop": "ディーラーのスクープ勝ち！",
   "payoutLine": "払戻し: {{payout}}",
   "royaltyLine": "ロイヤリティ: プレイヤー={{player}} / ディーラー={{dealer}}",
+  "playerRoyaltyBreakdown": "  プレイヤー内訳: フロント={{front}} / ミドル={{middle}} / バック={{back}}",
+  "dealerRoyaltyBreakdown": "  ディーラー内訳: フロント={{front}} / ミドル={{middle}} / バック={{back}}",
   "hintNone": "いまはヒントを出せません。",
   "hintRowFront": "前列(3枚): {{cards}}",
   "hintRowMiddle": "中列(5枚): {{cards}}",
