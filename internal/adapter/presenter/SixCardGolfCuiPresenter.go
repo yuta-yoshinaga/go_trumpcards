@@ -102,6 +102,19 @@ func sixCardGolfPlayerStr(player *domain.SixCardGolfPlayer, idx int, isCurrent, 
 		b.WriteString("\n")
 	}
 
+	colScores := domain.SixCardGolfColumnScores(player.Grid)
+	colParts := make([]string, domain.SixCardGolfColumnCount)
+	for col, cs := range colScores {
+		if cs.IsPair {
+			colParts[col] = i18n.T("sixcardgolf.columnScorePair")
+		} else if cs.HasHidden {
+			colParts[col] = i18n.Tf("sixcardgolf.columnScoreUncertain", "score", strconv.Itoa(cs.Score))
+		} else {
+			colParts[col] = i18n.Tf("sixcardgolf.columnScore", "score", strconv.Itoa(cs.Score))
+		}
+	}
+	b.WriteString("  " + strings.Join(colParts, " ") + "\n")
+
 	if revealAll {
 		score := g.ScorePlayer(idx)
 		b.WriteString(i18n.Tf("sixcardgolf.scoreLine", "score", strconv.Itoa(score)) + "\n")
