@@ -196,10 +196,40 @@ describe('BriscolaPage', () => {
     await waitFor(() => expect(screen.getByText(/引き分け/)).toBeInTheDocument());
   });
 
-  it('hides trump card label when stock is exhausted', async () => {
-    mockExec.mockResolvedValue(makeState({ trumpCard: undefined, stockRemaining: 0 }));
+  it('shows trump suit symbol in header when stock is exhausted and trumpCard is absent', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpCard: undefined, stockRemaining: 0, trumpSuit: 1 }));
     renderWithProviders(<BriscolaPage />);
-    await waitFor(() => expect(screen.getByText(/トランプ: 使い切り/)).toBeInTheDocument());
+    const label = await screen.findByTestId('briscola-trump-label');
+    expect(label).toHaveTextContent('♠');
+    // The physical card is no longer on the table, only the 3 hand cards remain
+    expect(screen.getAllByTestId('animated-card')).toHaveLength(3);
+  });
+
+  it('shows "切り札なし" when trumpSuit is 0 (before game start)', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 0, trumpCard: undefined }));
+    renderWithProviders(<BriscolaPage />);
+    const label = await screen.findByTestId('briscola-trump-label');
+    expect(label).toHaveTextContent('切り札なし');
+  });
+
+  it('renders trump card and trump suit label in normal state with trumpCard present', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 1, trumpCard: card('SPADE', 13) }));
+    renderWithProviders(<BriscolaPage />);
+    const label = await screen.findByTestId('briscola-trump-label');
+    expect(label).toHaveTextContent('♠');
+    expect(screen.getAllByTestId('animated-card')).toHaveLength(4);
+  });
+
+  it.each([
+    { suitNum: 1, symbol: '♠', name: 'Spade' },
+    { suitNum: 2, symbol: '♣', name: 'Clover' },
+    { suitNum: 3, symbol: '♥', name: 'Heart' },
+    { suitNum: 4, symbol: '♦', name: 'Diamond' },
+  ])('displays the correct suit symbol $symbol for suit $name ($suitNum)', async ({ suitNum, symbol }) => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: suitNum, trumpCard: undefined, stockRemaining: 0 }));
+    renderWithProviders(<BriscolaPage />);
+    const label = await screen.findByTestId('briscola-trump-label');
+    expect(label).toHaveTextContent(symbol);
   });
 
   it('disables play buttons when it is not the human turn', async () => {

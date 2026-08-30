@@ -39,7 +39,9 @@ func (p *BriscolaCuiPresenter) Output(b interfaces.BriscolaGame, lastErr error) 
 		if tc := b.GetTrumpCard(); tc != nil {
 			sb.WriteString(i18n.Tf("briscola.trumpLine", "card", cuiCardStr(tc)) + "\n")
 		} else {
-			sb.WriteString(i18n.T("briscola.trumpLineNone") + "\n")
+			// 現物は引かれ尽くしても切り札スートは最後まで勝敗を決める。
+			// スート名を出さないと、終盤ずっと「切り札は無い」と読める (#6404)。
+			sb.WriteString(i18n.Tf("briscola.trumpLineNone", "suit", briscolaSuitName(b.GetTrumpSuit())) + "\n")
 		}
 		sb.WriteString(i18n.Tf("briscola.pointsLine",
 			"p0", strconv.Itoa(b.GetPlayerPoints(0)),
@@ -117,4 +119,20 @@ var briscolaHintReasonKeys = map[string]string{
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BriscolaCuiPresenter) ActionLogOutput(b interfaces.BriscolaGame) string {
 	return actionLogOutputTextForSeats[*domain.BriscolaPlayer](b)
+}
+
+// briscolaSuitName 切り札スートの表示名を返す。0 (未設定) と未知の値は "?"。
+func briscolaSuitName(suit int) string {
+	switch suit {
+	case domain.CardDesignSpade:
+		return i18n.T("briscola.suitSpade")
+	case domain.CardDesignClover:
+		return i18n.T("briscola.suitClover")
+	case domain.CardDesignHeart:
+		return i18n.T("briscola.suitHeart")
+	case domain.CardDesignDiamond:
+		return i18n.T("briscola.suitDiamond")
+	default:
+		return "?"
+	}
 }

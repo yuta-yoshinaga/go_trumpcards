@@ -8,8 +8,8 @@
     "you": "あなた",
     "cpu": "CPU",
     "points": "得点",
-    "trump": "トランプ (ブリスコラ)",
-    "trumpNone": "トランプ: 使い切り",
+    "trump": "切り札 (ブリスコラ): {{suit}}",
+    "trumpNone": "切り札なし",
     "tricks": "獲得"
   },
   "phase": {
