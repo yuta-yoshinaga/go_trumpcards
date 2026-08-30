@@ -28,6 +28,9 @@ func setupTonkCuiMock() *interfaces.MockTonkGame {
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetIsTonk").Return(false)
 	m.On("GetKnockerMelds").Return(([][]*domain.Card)(nil)).Maybe()
+	m.On("GetKnockerDeadwood").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetOpponentMelds").Return(([][]*domain.Card)(nil)).Maybe()
+	m.On("GetOpponentDeadwood").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	// #4750: ディスカード表示が最小デッドウッドを引くようになった。
 	m.On("GetBestDeadwood", 0).Return(3, 0).Maybe()
@@ -213,6 +216,47 @@ func TestTonkCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "メルド1(セット):")
 		assert.Contains(t, result, "メルド2(ラン):")
 		assert.Contains(t, result, "CPU 1の手札: DIAMOND 12")
+	})
+
+	// ラウンドの点差はアンダーカット判定（両者のデッドウッド比較）から来るのに、
+	// 出ていたのはノッカーのメルドだけで、比較の相手側が見えなかった。
+	t.Run("round end reveals the opponent side of the undercut comparison", func(t *testing.T) {
+		m, _ := setupTonkCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnockerDeadwood")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetOpponentMelds")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetOpponentDeadwood")
+		m.On("GetPhase").Return(domain.TonkPhaseRoundEnd)
+		m.On("GetKnockerDeadwood").Return([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, 3, false)})
+		m.On("GetOpponentMelds").Return([][]*domain.Card{
+			{
+				domain.NewCard(domain.CardDesignHeart, 5, false),
+				domain.NewCard(domain.CardDesignHeart, 6, false),
+				domain.NewCard(domain.CardDesignHeart, 7, false),
+			},
+		})
+		m.On("GetOpponentDeadwood").Return([]*domain.Card{domain.NewCard(domain.CardDesignClover, 2, false)})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, i18n.T("tonk.opponentMeldsHeader"))
+		assert.Contains(t, result, "HEART 5")
+		// 点数はカードから導く。3 と 2 をそのまま書き写さない。
+		assert.Contains(t, result, i18n.Tf("tonk.knockerDeadwoodLine",
+			"cards", "DIAMOND 3",
+			"points", strconv.Itoa(domain.CalcDeadwoodValue([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, 3, false)}))))
+		assert.Contains(t, result, i18n.Tf("tonk.opponentDeadwoodLine",
+			"cards", "CLOVER 2",
+			"points", strconv.Itoa(domain.CalcDeadwoodValue([]*domain.Card{domain.NewCard(domain.CardDesignClover, 2, false)}))))
+	})
+
+	// アンダーカットが成立しない（相手側が空の）ラウンドでは何も出さない。
+	t.Run("nothing is revealed when the opponent side is empty", func(t *testing.T) {
+		m, _ := setupTonkCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TonkPhaseRoundEnd)
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, i18n.T("tonk.opponentMeldsHeader"))
 	})
 
 	t.Run("CPU hands are not revealed during play", func(t *testing.T) {

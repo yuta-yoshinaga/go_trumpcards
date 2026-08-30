@@ -289,4 +289,32 @@ describe('TonkPage', () => {
       expect(screen.getByRole('button', { name: /ノック/ })).not.toHaveAttribute('data-undercut-risk');
     });
   });
+  // ラウンドの点差はアンダーカット判定（両者のデッドウッド比較）から来るのに、
+  // 比較の相手側が画面に出ていなかった。成立した局と、しない局の両方を見る。
+  it('reveals the opponent melds and both deadwoods at round end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: TonkPhase.ROUND_END,
+        knockerIdx: 0,
+        knockerMelds: [{ cards: [card('SPADE', 3), card('HEART', 3), card('CLOVER', 3)] }],
+        knockerDeadwood: [card('DIAMOND', 7)],
+        opponentMelds: [{ cards: [card('HEART', 5), card('HEART', 6), card('HEART', 7)] }],
+        opponentDeadwood: [card('CLOVER', 2)],
+        isUndercut: true,
+      }),
+    );
+    renderWithProviders(<TonkPage />);
+    await waitFor(() => expect(screen.getByTestId('tonk-opponent-melds')).toBeInTheDocument());
+    expect(screen.getByTestId('tonk-opponent-deadwood')).toBeInTheDocument();
+    expect(screen.getByTestId('tonk-knocker-deadwood')).toBeInTheDocument();
+  });
+
+  it('shows no opponent panels while nothing has been revealed', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: TonkPhase.ROUND_END, knockerIdx: -1 }));
+    renderWithProviders(<TonkPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('tonk-opponent-melds')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tonk-opponent-deadwood')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tonk-knocker-deadwood')).not.toBeInTheDocument();
+  });
 });
