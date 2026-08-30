@@ -37,7 +37,7 @@ func TestNertzCuiPresenter_ShowsTheTargetAndEachSeatsDistanceToIt(t *testing.T) 
 	g := new(interfaces.MockNertzGame)
 	cfg := domain.DefaultNertzConfig()
 	// 既定 (NertzTargetScoreDefault = 100) と**違う**値にする。既定と同じにすると、
-	// 定数を直に読む実装と設定を読む実装が見分けられない（受け入れ条件3）。
+	// 定数を直に読む実装と設定を読む実装が見分けられない。
 	cfg.TargetScore = 250
 	g.On("GetConfig").Return(cfg).Maybe()
 	g.On("GetRoundNo").Return(1).Maybe()
