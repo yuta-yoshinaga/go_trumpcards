@@ -300,6 +300,9 @@ func (u *UltimateTexasHoldem) dealTurn() {
 // dealRiver リバー（5枚目）を配る。
 func (u *UltimateTexasHoldem) dealRiver() {
 	u.community = append(u.community, u.trumpCards.DrawCard())
+	// フロップ・ターンと同じく更新する。ここだけ抜けていたため、リバー後の
+	// playerHandRank は 6 枚時点の役のままだった（200 配りのうち 58 回ずれる）。
+	u.updatePlayerCurrentRank()
 	u.appendLog(-1, "river", "river dealt", nil)
 }
 
