@@ -385,7 +385,7 @@ function AgnesPageContent() {
                               type="button"
                               className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
                               onClick={() => handleMoveTableauToFoundation(i)}
-                              disabled={col.length === 0 || loading || !canMoveToFoundation}
+                              disabled={loading || !canMoveToFoundation}
                             >
                               {t('moveToFoundation')}
                             </button>
@@ -398,7 +398,7 @@ function AgnesPageContent() {
                                   type="button"
                                   className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
                                   onClick={() => handleMoveTableauToTableau(i, endIndex, j)}
-                                  disabled={col.length === 0 || loading || !canMoveToCol}
+                                  disabled={loading || !canMoveToCol}
                                 >
                                   {t('moveToCol', { col: j })}
                                 </button>

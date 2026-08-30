@@ -55,12 +55,12 @@ export function agnesCanPlaceOnFoundation(card: Card, foundation: readonly Card[
  *   they are only filled by stock deals. (Do not confuse with other solitaire games).
  * - Target column requires the **same color** (`isSameColor`: Spade/Clover or Heart/Diamond)
  *   and descending rank (`card.value === top.value - 1`, no wrap). This is NOT alternating colors.
- * - A face-down end card yields `false`, which is *stricter* than the domain: `canPlaceOnTableau`
- *   reads `colCards[len-1].Card` without consulting `FaceUp`. The client cannot do the same,
- *   because `AgnesWebPresenter` sends `card: null` for a face-down card — the rank simply is not
- *   on the wire, so there is nothing to compare. Refusing is the only honest answer.
- *   (The state is reachable: `Agnes.autoFlipTableau` is defined but never called, so once a
- *   column's face-up end card is moved away, the card beneath stays face down.)
+ * - A face-down end card yields `false`. This is a defensive guard, not a reachable divergence:
+ *   `Agnes.autoFlipTableau` runs after every pop (`Agnes.go:176`, `:209`), `Reset` deals each
+ *   column's end card face up, and `DealStock` appends face up, so a column's end card is always
+ *   face up. The guard is still the only answer the client could give if that ever changed —
+ *   `AgnesWebPresenter` sends `card: null` for a face-down card, so the rank is not on the wire
+ *   to compare against.
  */
 export function agnesCanPlaceOnTableau(card: Card, toCol: readonly AgnesTableauCard[]): boolean {
   const top = endFaceUpCard(toCol);
