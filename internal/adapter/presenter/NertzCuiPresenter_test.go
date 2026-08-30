@@ -10,6 +10,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupNertzCuiMockDefaults(g *interfaces.MockNertzGame) {
@@ -28,6 +29,40 @@ func setupNertzCuiMockDefaults(g *interfaces.MockNertzGame) {
 		newNertzFoundationWithAce(),
 		domain.NewNertzFoundation(),
 	}).Maybe()
+}
+
+// 生スコアだけでは何点で決着するのか分からない。Web は同じ値をスコアバーの
+// aria-valuemax にしている。目標そのものと、各席の残りの両方を見る。
+func TestNertzCuiPresenter_ShowsTheTargetAndEachSeatsDistanceToIt(t *testing.T) {
+	g := new(interfaces.MockNertzGame)
+	cfg := domain.DefaultNertzConfig()
+	// 既定 (NertzTargetScoreDefault = 100) と**違う**値にする。既定と同じにすると、
+	// 定数を直に読む実装と設定を読む実装が見分けられない（受け入れ条件3）。
+	cfg.TargetScore = 250
+	g.On("GetConfig").Return(cfg).Maybe()
+	g.On("GetRoundNo").Return(1).Maybe()
+	g.On("GetMoveCount").Return(2).Maybe()
+	g.On("GetWinnerIdx").Return(-1).Maybe()
+	g.On("GetMatchWinner").Return(-1).Maybe()
+	g.On("CanUndo").Return(false).Maybe()
+	g.On("GetPhase").Return(domain.NertzPhasePlaying).Maybe()
+	human := newNertzPlayerWithCards("You", false, 0)
+	human.SetScore(70)
+	cpu := newNertzPlayerWithCards("CPU1", true, 1)
+	cpu.SetScore(300) // 目標を越えている席。残りは負でなく 0 と出す。
+	g.On("GetPlayers").Return([]*domain.NertzPlayer{human, cpu}).Maybe()
+	g.On("GetFoundations").Return([]*domain.NertzFoundation{
+		newNertzFoundationWithAce(),
+		domain.NewNertzFoundation(),
+	}).Maybe()
+
+	out := new(NertzCuiPresenter).Output(g, nil)
+	assert.Contains(t, out, i18n.Tf("nertz.targetLine", "target", "250"))
+	assert.Contains(t, out, i18n.Tf("nertz.playerLine",
+		"idx", "0", "label", i18n.T("nertz.labelHuman"), "name", "You", "score", "70", "remaining", "180"))
+	assert.Contains(t, out, i18n.Tf("nertz.playerLine",
+		"idx", "1", "label", i18n.T("nertz.labelCpu"), "name", "CPU1", "score", "300", "remaining", "0"))
+	assert.NotContains(t, out, "-50")
 }
 
 func TestNertzCuiPresenter_Output(t *testing.T) {

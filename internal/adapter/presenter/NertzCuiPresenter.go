@@ -20,6 +20,10 @@ func (p *NertzCuiPresenter) Output(g interfaces.NertzGame, lastErr error) string
 		b.WriteString(i18n.Tf("nertz.header",
 			"round", strconv.Itoa(g.GetRoundNo()),
 			"moves", strconv.Itoa(g.GetMoveCount())) + "\n")
+		// 生スコアだけ出しても、何点で決着するのかが CUI からは分からない。
+		// Web はこの同じ値をスコアバーの aria-valuemax にしている (#6374)。
+		target := g.GetConfig().TargetScore
+		b.WriteString(i18n.Tf("nertz.targetLine", "target", strconv.Itoa(target)) + "\n")
 		b.WriteString(i18n.T("nertz.foundationsHeader") + "\n")
 		founds := g.GetFoundations()
 		maxStr := strconv.Itoa(domain.NertzFoundationMax)
@@ -46,11 +50,14 @@ func (p *NertzCuiPresenter) Output(g interfaces.NertzGame, lastErr error) string
 			if pl.GetIsCpu() {
 				label = i18n.T("nertz.labelCpu")
 			}
+			// 残りは 0 で止める。到達済みの席に負の数を出しても読めない。
+			remaining := max(target-pl.GetScore(), 0)
 			b.WriteString(i18n.Tf("nertz.playerLine",
 				"idx", strconv.Itoa(i),
 				"label", label,
 				"name", pl.GetName(),
-				"score", strconv.Itoa(pl.GetScore())) + "\n")
+				"score", strconv.Itoa(pl.GetScore()),
+				"remaining", strconv.Itoa(remaining)) + "\n")
 
 			// Nertz pile
 			if top := pl.NertzTop(); top != nil {
