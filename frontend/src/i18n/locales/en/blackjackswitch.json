@@ -6,7 +6,8 @@
     "hand": "Hand",
     "switched": "switched",
     "currentHand": "current hand",
-    "alwaysPreview": "Always show post-switch scores"
+    "alwaysPreview": "Always show post-switch scores",
+    "switchPreviewAnnounce": "Hand 1: {{hand1Before}} → {{hand1After}}, Hand 2: {{hand2Before}} → {{hand2After}}"
   },
   "phase": {
     "bet": "bet",

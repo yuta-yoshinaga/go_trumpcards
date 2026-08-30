@@ -459,3 +459,94 @@ describe('BlackJackSwitchPage hint', () => {
     expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument();
   });
 });
+
+describe('BlackJackSwitchPage switch preview live region (#6382)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: false,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+  });
+
+  it('negative control: live region is empty when preview is not active', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    const liveRegion = await screen.findByTestId('switch-preview-status');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+  });
+
+  it('focusing Switch announces post-swap scores for both hands with distinct values', async () => {
+    // switchState has Hand 0: score 15 (swaps to 20), Hand 1: score 16 (swaps to 11).
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    const btn = await screen.findByTestId('switch-button');
+    const liveRegion = screen.getByTestId('switch-preview-status');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.focus(btn);
+    expect(liveRegion).toHaveTextContent('ハンド1: 15 → 20、ハンド2: 16 → 11');
+
+    fireEvent.blur(btn);
+    expect(liveRegion).toBeEmptyDOMElement();
+  });
+
+  it('works when alwaysPreview is disabled by default (acceptance condition 2)', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    const btn = await screen.findByTestId('switch-button');
+    const liveRegion = screen.getByTestId('switch-preview-status');
+
+    const checkbox = screen.getByLabelText(/常に表示|Always show/) as HTMLInputElement;
+    expect(checkbox.checked).toBe(false);
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.focus(btn);
+    expect(liveRegion).toHaveTextContent('ハンド1: 15 → 20、ハンド2: 16 → 11');
+
+    fireEvent.blur(btn);
+    expect(liveRegion).toBeEmptyDOMElement();
+  });
+
+  it('keeps live region sr-only and leaves visible headings without aria-live (acceptance condition 3)', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    const btn = await screen.findByTestId('switch-button');
+    fireEvent.focus(btn);
+
+    const liveRegion = screen.getByTestId('switch-preview-status');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion.className).toContain('sr-only');
+
+    expect(screen.getByTestId('hand-0')).not.toHaveAttribute('aria-live');
+    expect(screen.getByTestId('hand-1')).not.toHaveAttribute('aria-live');
+    expect(screen.getByTestId('hand-0-preview')).not.toHaveAttribute('aria-live');
+    expect(screen.getByTestId('hand-1-preview')).not.toHaveAttribute('aria-live');
+  });
+
+  it('announces scores when alwaysPreview toggle is enabled without focus', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    await screen.findByTestId('switch-button');
+    const liveRegion = screen.getByTestId('switch-preview-status');
+
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByText('設定'));
+    fireEvent.click(screen.getByLabelText(/常に表示|Always show/));
+
+    expect(liveRegion).toHaveTextContent('ハンド1: 15 → 20、ハンド2: 16 → 11');
+  });
+});

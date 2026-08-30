@@ -6,7 +6,8 @@
     "hand": "ハンド",
     "switched": "スイッチ実行済み",
     "currentHand": "現在のハンド",
-    "alwaysPreview": "スイッチ後のスコアを常に表示"
+    "alwaysPreview": "スイッチ後のスコアを常に表示",
+    "switchPreviewAnnounce": "ハンド1: {{hand1Before}} → {{hand1After}}、ハンド2: {{hand2Before}} → {{hand2After}}"
   },
   "phase": {
     "bet": "ベット",
