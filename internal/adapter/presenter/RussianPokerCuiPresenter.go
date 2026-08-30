@@ -86,6 +86,12 @@ func (rp *RussianPokerCuiPresenter) Output(g interfaces.RussianPokerGame, lastEr
 		sb.WriteString(i18n.Tf("russianpoker.buy6thLine",
 			"fee", strconv.Itoa(g.GetBuy6thFee())) + "\n")
 	}
+	// 3 つの手数料は同じ扱いにする。これだけ終局ブロックの中にあったので、
+	// force を打った直後から決着まで、払った額が画面から消えていた。
+	if g.GetForceExchanged() {
+		sb.WriteString(i18n.Tf("russianpoker.forceExchangeLine",
+			"fee", strconv.Itoa(g.GetForceExchangeFee())) + "\n")
+	}
 
 	if g.GetPhase() == domain.RussianPokerPhaseForceQualify {
 		sb.WriteString(color.Yellow(i18n.T("russianpoker.forceQualifyGuide")) + "\n")
@@ -99,10 +105,6 @@ func (rp *RussianPokerCuiPresenter) Output(g interfaces.RussianPokerGame, lastEr
 		sb.WriteString(i18n.Tf("russianpoker.anteLine", "ante", strconv.Itoa(g.GetAnteBet())) + "\n")
 		if g.GetPlayBet() > 0 {
 			sb.WriteString(i18n.Tf("russianpoker.playLine", "play", strconv.Itoa(g.GetPlayBet())) + "\n")
-		}
-		if g.GetForceExchanged() {
-			sb.WriteString(i18n.Tf("russianpoker.forceExchangeLine",
-				"fee", strconv.Itoa(g.GetForceExchangeFee())) + "\n")
 		}
 		switch g.GetResult() {
 		case domain.GameResultWin:
