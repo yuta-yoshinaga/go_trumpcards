@@ -309,7 +309,10 @@ function KingAlbertPageContent() {
         <div key={`r-${cellIdx.toString()}`} className="flex flex-col items-center">
           <div
             role="img"
-            aria-label={t('emptyReserveSlot', { idx: cellIdx + 1 })}
+            // 番号は 0 始まりで通す。可視バッジは r{cellIdx}、CUI は [r0]〜[r6]、
+            // ヒントの reserve col も 0 始まり。ここだけ +1 すると、
+            // 「reserve 0 へ」と言われた枠が「空のリザーブ枠 1」と読まれる (#6394)。
+            aria-label={t('emptyReserveSlot', { idx: cellIdx })}
             className="rounded border border-dashed border-white/10"
             style={{ width: dims.cw, height: dims.ch }}
           />
