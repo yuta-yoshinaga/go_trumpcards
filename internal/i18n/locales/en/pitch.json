@@ -12,6 +12,8 @@
   "promptBidHelp": "b <n> — declare a bid (0=pass, 2-4)",
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> — play a card",
+  "previousTrick": "Previous trick",
+  "previousTrickWinner": "  → taken by {{name}}",
   "promptTrickEnd": "Trick ended",
   "promptTrickEndHelp": "next — advance to the next trick",
   "promptRoundEnd": "Round ended",

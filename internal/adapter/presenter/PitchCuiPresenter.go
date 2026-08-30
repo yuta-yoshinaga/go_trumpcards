@@ -133,6 +133,17 @@ func (p *PitchCuiPresenter) Output(s interfaces.PitchGame, lastErr error) string
 				"name", cuiPlayerName(s.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("pitch.promptPlayHelp") + "\n")
 		case domain.PitchPhaseTrickEnd:
+			if plays, winner := pitchLastTrick(s); len(plays) > 0 {
+				b.WriteString(i18n.T("pitch.previousTrick") + "\n")
+				for _, pl := range plays {
+					b.WriteString("  " + cuiPlayerName(s.GetPlayer(pl.PlayerIdx), pl.PlayerIdx) +
+						": " + cuiCardStr(pl.Cards[0]) + "\n")
+				}
+				if winner >= 0 {
+					b.WriteString(i18n.Tf("pitch.previousTrickWinner",
+						"name", cuiPlayerName(s.GetPlayer(winner), winner)) + "\n")
+				}
+			}
 			b.WriteString(i18n.T("pitch.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("pitch.promptTrickEndHelp") + "\n")
 		case domain.PitchPhaseRoundEnd:
