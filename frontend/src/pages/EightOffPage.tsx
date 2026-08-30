@@ -203,14 +203,31 @@ function EightOffPageContent() {
   // the confirm dialog — matching reset's guard (issue #2099).
   const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
+  // Auto-complete becomes useful once a foundation has built past its ace, so
+  // pulse the button only then (mirrors BeleagueredCastle / StreetsAndAlleys).
+  const autoCompleteReady = Boolean(state?.foundation.some((pile) => pile.length > 1));
+
   const actionBindings = useMemo(
     () => [
       { key: 'h', action: handleHint, label: 'hint' },
-      { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
+      {
+        key: 'a',
+        action: handleAutoComplete,
+        enabled: isPlayingForKbd && autoCompleteReady && !isAutoCompleting,
+        label: 'autoComplete',
+      },
       { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
       { key: 'z', action: handleUndo, label: 'undo' },
     ],
-    [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
+    [
+      handleHint,
+      handleAutoComplete,
+      isPlayingForKbd,
+      autoCompleteReady,
+      isAutoCompleting,
+      confirmGiveUpAction,
+      handleUndo,
+    ],
   );
 
   useActionKeyboardNav({
@@ -566,7 +583,7 @@ function EightOffPageContent() {
             {/* Hint is shown visually via ring highlights on the suggested source card
                 and target zone; this sr-only live region conveys the same move (or the
                 no-move result) to screen readers. */}
-            <div className="sr-only" role="status" aria-live="polite" data-testid="eo-hint-announce">
+            <div key={hintNonce} className="sr-only" role="status" aria-live="polite" data-testid="eo-hint-announce">
               {hintAnnounce}
             </div>
             <div className="flex justify-center">
@@ -627,9 +644,11 @@ function EightOffPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnSuccess}
+                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
                     onClick={handleAutoComplete}
-                    disabled={loading || isAutoCompleting}
+                    disabled={loading || isAutoCompleting || !autoCompleteReady}
+                    data-testid="autocomplete-button"
+                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
                   >
                     {t('autoComplete')}
                   </button>
