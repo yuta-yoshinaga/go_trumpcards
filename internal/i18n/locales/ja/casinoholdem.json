@@ -28,5 +28,22 @@
   "hintCall": "推奨: コール（2×アンテ）— ワンペア以上または A/K を保持",
   "hintFold": "推奨: フォールド — 続行条件を満たしません",
   "helpExampleBet": "  b 100                100 チップを賭ける",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "antePayHeader": "アンテ配当",
+  "antePayRoyalFlush": "ロイヤルフラッシュ: {{mult}}:1",
+  "antePayStraightFlush": "ストレートフラッシュ: {{mult}}:1",
+  "antePayFourOfAKind": "フォーカード: {{mult}}:1",
+  "antePayFullHouse": "フルハウス: {{mult}}:1",
+  "antePayFlush": "フラッシュ: {{mult}}:1",
+  "antePayOther": "その他の役: {{mult}}:1",
+  "bonusPayHeader": "AAボーナス（ホール+フロップ 5 枚）",
+  "bonusPayRoyalFlush": "ロイヤルフラッシュ: {{mult}}:1",
+  "bonusPayStraightFlush": "ストレートフラッシュ: {{mult}}:1",
+  "bonusPayFourOfAKind": "フォーカード: {{mult}}:1",
+  "bonusPayFullHouse": "フルハウス: {{mult}}:1",
+  "bonusPayFlush": "フラッシュ: {{mult}}:1",
+  "bonusPayStraight": "ストレート: {{mult}}:1",
+  "bonusPayThreeOfAKind": "スリーカード: {{mult}}:1",
+  "bonusPayTwoPair": "ツーペア: {{mult}}:1",
+  "bonusPayPairOfAces": "エースペア: {{mult}}:1"
 }

@@ -28,5 +28,22 @@
   "hintCall": "Recommended: Call (2x ante) — a pair or better, or an Ace/King",
   "hintFold": "Recommended: Fold — no qualifying hand",
   "helpExampleBet": "  b 100                bet 100 chips",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "antePayHeader": "Ante Payout",
+  "antePayRoyalFlush": "Royal Flush: {{mult}}:1",
+  "antePayStraightFlush": "Straight Flush: {{mult}}:1",
+  "antePayFourOfAKind": "Four of a Kind: {{mult}}:1",
+  "antePayFullHouse": "Full House: {{mult}}:1",
+  "antePayFlush": "Flush: {{mult}}:1",
+  "antePayOther": "Other wins: {{mult}}:1",
+  "bonusPayHeader": "AA Bonus (Hole + Flop 5 cards)",
+  "bonusPayRoyalFlush": "Royal Flush: {{mult}}:1",
+  "bonusPayStraightFlush": "Straight Flush: {{mult}}:1",
+  "bonusPayFourOfAKind": "Four of a Kind: {{mult}}:1",
+  "bonusPayFullHouse": "Full House: {{mult}}:1",
+  "bonusPayFlush": "Flush: {{mult}}:1",
+  "bonusPayStraight": "Straight: {{mult}}:1",
+  "bonusPayThreeOfAKind": "Three of a Kind: {{mult}}:1",
+  "bonusPayTwoPair": "Two Pair: {{mult}}:1",
+  "bonusPayPairOfAces": "Pair of Aces: {{mult}}:1"
 }
