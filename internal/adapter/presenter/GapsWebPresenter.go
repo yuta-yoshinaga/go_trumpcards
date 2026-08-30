@@ -85,14 +85,35 @@ func (pr *GapsWebPresenter) populate(resObj *controller.GapsWebOutput, g interfa
 	resObj.RedealsRemaining = g.GetRedealsRemaining()
 	grid := g.GetGrid()
 	out := make([][]*controller.WebOutputCard, domain.GapsRowCnt)
+	gapNeeds := make([][]*controller.GapsWebOutputGapNeed, domain.GapsRowCnt)
 	for r := 0; r < domain.GapsRowCnt; r++ {
 		row := make([]*controller.WebOutputCard, domain.GapsColCnt)
+		needRow := make([]*controller.GapsWebOutputGapNeed, domain.GapsColCnt)
 		for c := 0; c < domain.GapsColCnt; c++ {
 			if grid[r][c] != nil {
 				row[c] = cardToOutput(grid[r][c])
 			}
+			if need := g.GetGapNeed(r, c); need != nil {
+				needRow[c] = gapNeedToOutput(need)
+			}
 		}
 		out[r] = row
+		gapNeeds[r] = needRow
 	}
 	resObj.Grid = out
+	resObj.GapNeeds = gapNeeds
+}
+
+func gapNeedToOutput(need *domain.GapsGapNeed) *controller.GapsWebOutputGapNeed {
+	if need == nil {
+		return nil
+	}
+	out := &controller.GapsWebOutputGapNeed{
+		Kind:  need.Kind,
+		Value: need.Value,
+	}
+	if need.Kind == domain.GapsNeedCard {
+		out.Design = cardDesignToString(need.Design)
+	}
+	return out
 }

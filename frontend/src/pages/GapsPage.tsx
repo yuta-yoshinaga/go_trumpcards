@@ -27,7 +27,6 @@ import { GapsPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
-import { computeGapsGhostHint } from '../utils/gapsGhostHint';
 import { gapsLockedPrefixLengths } from '../utils/gapsUtils';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -219,7 +218,7 @@ function GapsPageContent() {
                   const isHintFrom = requestedHint && requestedHint.fromRow === rIdx && requestedHint.fromCol === cIdx;
                   const isHintTo = requestedHint && requestedHint.toRow === rIdx && requestedHint.toCol === cIdx;
                   if (cell === null) {
-                    const ghost = computeGapsGhostHint(row, cIdx);
+                    const ghost = state.gapNeeds?.[rIdx]?.[cIdx];
                     // Mirror the (aria-hidden) ghost hint into the cell's label so
                     // SR users learn which card each gap accepts, or that it's blocked.
                     const gapAria =

@@ -30,12 +30,20 @@ type GapsWebOutputHint struct {
 	ToCol   int `json:"toCol"`
 }
 
+// GapsWebOutputGapNeed はGapsの各マスが受け入れる札の情報。
+type GapsWebOutputGapNeed struct {
+	Kind   string `json:"kind"`
+	Design string `json:"design,omitempty"`
+	Value  int    `json:"value,omitempty"`
+}
+
 // GapsWebOutput はGapsゲームのWebレスポンス出力。
 type GapsWebOutput struct {
-	Grid             [][]*WebOutputCard `json:"grid"`
-	RedealsUsed      int                `json:"redealsUsed"`
-	RedealsRemaining int                `json:"redealsRemaining"`
-	Hint             *GapsWebOutputHint `json:"hint,omitempty"`
+	Grid             [][]*WebOutputCard        `json:"grid"`
+	GapNeeds         [][]*GapsWebOutputGapNeed `json:"gapNeeds"`
+	RedealsUsed      int                       `json:"redealsUsed"`
+	RedealsRemaining int                       `json:"redealsRemaining"`
+	Hint             *GapsWebOutputHint        `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
