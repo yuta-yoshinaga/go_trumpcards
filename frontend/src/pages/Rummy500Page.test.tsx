@@ -408,3 +408,92 @@ describe('Rummy500Page', () => {
     expect(screen.getByRole('button', { name: 'レイオフ' })).toBeDisabled();
   });
 });
+
+describe('Rummy500Page RoundScoreAnnouncement', () => {
+  const scoredPlayers = [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 0,
+      cards: [],
+      roundScore: 45,
+      cumulativeScore: 120,
+      laidMelds: [],
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 5,
+      cards: [],
+      roundScore: -10,
+      cumulativeScore: 75,
+      laidMelds: [],
+    },
+  ];
+
+  beforeEach(() => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(drawPhaseState);
+  });
+
+  it('announces scores with exact formatted string in ROUND_END phase', async () => {
+    const customRoundEndState: Rummy500Response = {
+      ...roundEndState,
+      players: scoredPlayers,
+    };
+    mockExec.mockResolvedValue(customRoundEndState);
+    renderWithProviders(<Rummy500Page />);
+
+    await waitFor(() => {
+      const status = screen.getByRole('status');
+      expect(status).toBeInTheDocument();
+      expect(status).toHaveTextContent('ラウンド終了。あなた: +45 (合計 120), CPU 1: +-10 (合計 75)');
+    });
+  });
+
+  it('announces scores with exact formatted string in GAME_END phase', async () => {
+    const customGameEndState: Rummy500Response = {
+      ...gameEndState,
+      players: scoredPlayers,
+    };
+    mockExec.mockResolvedValue(customGameEndState);
+    renderWithProviders(<Rummy500Page />);
+
+    await waitFor(() => {
+      const status = screen.getByRole('status');
+      expect(status).toBeInTheDocument();
+      expect(status).toHaveTextContent('ラウンド終了。あなた: +45 (合計 120), CPU 1: +-10 (合計 75)');
+    });
+  });
+
+  it('renders empty live region in DRAW phase (negative control)', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      players: scoredPlayers,
+    });
+    renderWithProviders(<Rummy500Page />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /山札から引く/ })).toBeInTheDocument();
+    });
+    const status = screen.getByRole('status');
+    expect(status).toBeInTheDocument();
+    expect(status).toBeEmptyDOMElement();
+  });
+
+  it('renders empty live region in PLAY phase (negative control)', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: scoredPlayers,
+    });
+    renderWithProviders(<Rummy500Page />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /メルドする/ })).toBeInTheDocument();
+    });
+    const status = screen.getByRole('status');
+    expect(status).toBeInTheDocument();
+    expect(status).toBeEmptyDOMElement();
+  });
+});
