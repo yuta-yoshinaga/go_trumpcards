@@ -241,10 +241,10 @@ describe('SpiderettePage keyboard shortcuts', () => {
     expect(mockSend).not.toHaveBeenCalled();
   });
 
-  // #5593: スコアが動く理由（手数の減点・スート完成の加点）はどこにも書かれて
-  // いなかった。
-  describe('score rule tooltip', () => {
-    it('explains the arithmetic with the figures the server sent', async () => {
+  // #5593, #6389: スコアが動く理由（手数の減点・スート完成の加点）はどこにも書かれて
+  // いなかった。title ツールチップに加え、タッチ端末でも到達可能なポップオーバーを提供する。
+  describe('score rule tooltip and popover', () => {
+    it('explains the arithmetic with the figures the server sent in tooltip', async () => {
       mockSend.mockResolvedValue({ ...playingState, scoring: { start: 500, movePenalty: 1, suitBonus: 100 } });
       renderWithProviders(<SpiderettePage />);
       const score = await screen.findByTestId('spiderette-score');
@@ -261,6 +261,77 @@ describe('SpiderettePage keyboard shortcuts', () => {
       expect(tip).toContain('900');
       expect(tip).toContain('250');
       expect(tip).not.toContain('500');
+    });
+
+    it('toggles score popover on click and shows breakdown with server figures', async () => {
+      // 減点は 7。1 は ja の文言に「1 手ごとに」として必ず出るうえ 100 の部分文字列
+      // でもあるので、部分一致では何も証明しない。符号ごと重ならない数字で見る。
+      mockSend.mockResolvedValue({ ...playingState, scoring: { start: 500, movePenalty: 7, suitBonus: 100 } });
+      renderWithProviders(<SpiderettePage />);
+      const scoreBtn = await screen.findByTestId('spiderette-score');
+
+      // 初期状態: ポップオーバーは非表示、aria-expanded は false
+      expect(screen.queryByTestId('spiderette-score-popover')).not.toBeInTheDocument();
+      expect(scoreBtn.getAttribute('aria-expanded')).toBe('false');
+
+      // クリックで開く
+      fireEvent.click(scoreBtn);
+      const popover = screen.getByTestId('spiderette-score-popover');
+      expect(popover).toBeInTheDocument();
+      expect(scoreBtn.getAttribute('aria-expanded')).toBe('true');
+      // 領域名は本文の繰り返しであってはならない。
+      expect(popover.getAttribute('aria-label')).not.toBe(popover.textContent);
+      expect(popover.textContent).toContain('500');
+      expect(popover.textContent).toContain('-7');
+      expect(popover.textContent).toContain('+100');
+
+      // もう一度クリックで閉じる
+      fireEvent.click(scoreBtn);
+      expect(screen.queryByTestId('spiderette-score-popover')).not.toBeInTheDocument();
+      expect(scoreBtn.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('renders whatever rule the server sends in popover', async () => {
+      mockSend.mockResolvedValue({ ...playingState, scoring: { start: 900, movePenalty: 13, suitBonus: 250 } });
+      renderWithProviders(<SpiderettePage />);
+      const scoreBtn = await screen.findByTestId('spiderette-score');
+
+      fireEvent.click(scoreBtn);
+      const popover = screen.getByTestId('spiderette-score-popover');
+      expect(popover.textContent).toContain('900');
+      expect(popover.textContent).toContain('-13');
+      expect(popover.textContent).toContain('+250');
+      expect(popover.textContent).not.toContain('500');
+    });
+
+    it('closes the score popover on Escape and on an outside click', async () => {
+      mockSend.mockResolvedValue({ ...playingState, scoring: { start: 500, movePenalty: 1, suitBonus: 100 } });
+      renderWithProviders(<SpiderettePage />);
+      const scoreBtn = await screen.findByTestId('spiderette-score');
+
+      // Escape で閉じる
+      fireEvent.click(scoreBtn);
+      expect(screen.getByTestId('spiderette-score-popover')).toBeInTheDocument();
+      expect(scoreBtn.getAttribute('aria-expanded')).toBe('true');
+      fireEvent.keyDown(document, { key: 'Escape' });
+      expect(screen.queryByTestId('spiderette-score-popover')).not.toBeInTheDocument();
+      expect(scoreBtn.getAttribute('aria-expanded')).toBe('false');
+
+      // 外側クリックで閉じる
+      fireEvent.click(scoreBtn);
+      expect(screen.getByTestId('spiderette-score-popover')).toBeInTheDocument();
+      expect(scoreBtn.getAttribute('aria-expanded')).toBe('true');
+      fireEvent.mouseDown(document.body);
+      expect(screen.queryByTestId('spiderette-score-popover')).not.toBeInTheDocument();
+      expect(scoreBtn.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('score button meets the 44px tap-target minimum', async () => {
+      mockSend.mockResolvedValue(playingState);
+      renderWithProviders(<SpiderettePage />);
+      const scoreBtn = await screen.findByTestId('spiderette-score');
+      expect(scoreBtn.className).toContain('min-h-[44px]');
+      expect(scoreBtn.className).toContain('min-w-[44px]');
     });
   });
 });
