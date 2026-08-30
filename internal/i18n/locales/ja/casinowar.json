@@ -1,6 +1,7 @@
 {
   "helpTitle": "Casino War (カジノウォー) コマンド",
   "helpBet": "  b <金額>             ベット (アンテを賭けて1枚ずつ配る)",
+  "helpRebet": "  rb                   直前と同じ賭けをもう一度",
   "helpSurrender": "  surrender            タイ時に降参 (アンテの半額返却)",
   "helpWar": "  war                  タイ時にウォー宣言 (同額追加ベット)",
   "chipsLine": "チップ: {{chips}}",
@@ -23,5 +24,6 @@
   "push": "プッシュ。",
   "totalPayoutLine": "合計払戻し: {{payout}}",
   "helpExampleBet": "  b 100              100 チップを賭ける",
+  "noPreviousBet": "直前のベットがありません。まず b <額> で賭けてください",
   "warInsufficientChips": "チップが足りません。ウォーには {{ante}} チップが必要です"
 }
