@@ -52,6 +52,21 @@ const withFoundationState: EightOffResponse = {
   foundation: [[card('SPADE', 1)], [], [card('HEART', 1), card('HEART', 2)], []],
 };
 
+// 掃き出しが実際に1枚動かせる盤: 組札の ♥2 の上に、タブロー末尾の ♥3 が乗る。
+const sweepableState: EightOffResponse = {
+  ...playingState,
+  tableau: [[card('SPADE', 13)], [card('HEART', 3)], [], [], [], [], [], []],
+  foundation: [[], [], [card('HEART', 1), card('HEART', 2)], []],
+};
+
+// 組札は全部空だが、フリーセルに A がある。姉妹ゲームのしきい値 (`length > 0` / `> 1`) は
+// どちらもここで「準備できていない」と読むが、掃き出しはその A を動かせる。
+const aceInFreeCellState: EightOffResponse = {
+  ...playingState,
+  freeCells: [card('CLOVER', 1), null, null, null, null, null, null, null],
+  foundation: [[], [], [], []],
+};
+
 const foundationWithAcesOnlyState: EightOffResponse = {
   ...playingState,
   foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
@@ -352,7 +367,7 @@ describe('EightOffPage', () => {
     expect(btn).toBeDisabled();
     expect(btn.className).not.toContain('animate-pulse');
     expect(btn.className).not.toContain('ring-ds-success');
-    expect(btn).toHaveAttribute('title', 'ファンデーションを2枚目以降まで進めると有効になります');
+    expect(btn).toHaveAttribute('title', '掃き出せるカードができると有効になります');
 
     mockExec.mockClear();
     fireEvent.click(btn);
@@ -360,14 +375,14 @@ describe('EightOffPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
   });
 
-  it('disables the auto-complete button on the boundary when foundations hold only 1 card each', async () => {
+  it('disables the auto-complete button when the foundations hold aces nothing can follow', async () => {
     mockExec.mockResolvedValue(foundationWithAcesOnlyState);
     renderWithProviders(<EightOffPage />);
     const btn = await screen.findByTestId('autocomplete-button');
     expect(btn).toBeDisabled();
     expect(btn.className).not.toContain('animate-pulse');
     expect(btn.className).not.toContain('ring-ds-success');
-    expect(btn).toHaveAttribute('title', 'ファンデーションを2枚目以降まで進めると有効になります');
+    expect(btn).toHaveAttribute('title', '掃き出せるカードができると有効になります');
 
     mockExec.mockClear();
     fireEvent.click(btn);
@@ -375,8 +390,8 @@ describe('EightOffPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
   });
 
-  it('enables and pulses the auto-complete button once a foundation builds past 1 card, and dispatches autocomplete on click', async () => {
-    mockExec.mockResolvedValue(withFoundationState);
+  it('enables and pulses the auto-complete button once a card can actually be swept, and dispatches autocomplete on click', async () => {
+    mockExec.mockResolvedValue(sweepableState);
     renderWithProviders(<EightOffPage />);
     const btn = await screen.findByTestId('autocomplete-button');
     expect(btn).toBeEnabled();
@@ -385,9 +400,20 @@ describe('EightOffPage', () => {
     expect(btn).not.toHaveAttribute('title');
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(withFoundationState);
+    mockExec.mockResolvedValue(sweepableState);
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  // 姉妹ゲームのしきい値を写した実装を落とす。組札は全部空なので `length > 0` も `> 1` も
+  // 偽になるが、フリーセルの A は掃き出しで動く。
+  it('enables the auto-complete button for an ace in a free cell with every foundation empty', async () => {
+    mockExec.mockResolvedValue(aceInFreeCellState);
+    renderWithProviders(<EightOffPage />);
+    const btn = await screen.findByTestId('autocomplete-button');
+    expect(btn).toBeEnabled();
+    expect(btn.className).toContain('animate-pulse');
+    expect(btn).not.toHaveAttribute('title');
   });
 
   it('giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {
@@ -622,7 +648,7 @@ describe('EightOffPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
   });
 
-  it('pressing a does not trigger autocomplete on boundary when foundations hold only 1 card each', async () => {
+  it('pressing a does not trigger autocomplete when the foundations hold aces nothing can follow', async () => {
     mockExec.mockResolvedValue(foundationWithAcesOnlyState);
     renderWithProviders(<EightOffPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());
@@ -634,12 +660,12 @@ describe('EightOffPage', () => {
   });
 
   it('pressing a triggers autocomplete in PLAYING phase when auto-complete is ready', async () => {
-    mockExec.mockResolvedValue(withFoundationState);
+    mockExec.mockResolvedValue(sweepableState);
     renderWithProviders(<EightOffPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(withFoundationState);
+    mockExec.mockResolvedValue(sweepableState);
     fireEvent.keyDown(document, { key: 'a' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });

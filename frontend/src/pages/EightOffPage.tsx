@@ -35,6 +35,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { EIGHTOFF_HELP, parseEightOffCommand } from '../utils/cli/commands/eightoffCommands';
 import { formatEightoffState } from '../utils/cli/formatters/eightoffFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { eightOffAutoCompleteReady } from '../utils/eightOffAutoComplete';
 import { eightOffFoundationTarget } from '../utils/eightOffFoundationTarget';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -203,9 +204,10 @@ function EightOffPageContent() {
   // the confirm dialog — matching reset's guard (issue #2099).
   const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
-  // Auto-complete becomes useful once a foundation has built past its ace, so
-  // pulse the button only then (mirrors BeleagueredCastle / StreetsAndAlleys).
-  const autoCompleteReady = Boolean(state?.foundation.some((pile) => pile.length > 1));
+  // Ready exactly when the sweep would move something. The BeleagueredCastle /
+  // StreetsAndAlleys shortcut (`some(p => p.length > 1)`) does not transfer: their Reset
+  // seeds the four aces onto the foundations, Eight Off's starts them empty.
+  const autoCompleteReady = state ? eightOffAutoCompleteReady(state.freeCells, state.tableau, state.foundation) : false;
 
   const actionBindings = useMemo(
     () => [
