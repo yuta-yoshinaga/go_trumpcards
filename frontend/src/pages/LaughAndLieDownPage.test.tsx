@@ -250,3 +250,62 @@ describe('LaughAndLieDownPage tutorial amount', () => {
     expect(tooltip).not.toHaveTextContent('5を受け取ります');
   });
 });
+
+// #6372: 手札の aria-label と title で「手番でない」と「場のランクと一致しない」の
+// 2 つの理由を区別し、出せる札には理由文言を付けない。
+describe('LaughAndLieDownPage hand card aria and tooltip reasons', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+    mockExec.mockResolvedValue(makeState());
+  });
+
+  it('explains why a card cannot be played when it is not human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1, validIndices: [0] }));
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const handButtons = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'play');
+    expect(handButtons).toHaveLength(3);
+    for (const btn of handButtons) {
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
+      expect(btn).toHaveAttribute('title', 'いまは自分の手番ではありません');
+      expect(btn.getAttribute('aria-label')).toContain('手番ではありません');
+      expect(btn.getAttribute('aria-label')).not.toContain('場に同じランク');
+    }
+  });
+
+  it('distinguishes between playable and unmatchable cards on human turn', async () => {
+    // human().cards are [SPADE 7, HEART 9, CLOVER 13]
+    // validIndices: [0] -> ♠ 7 is playable, ♥ 9 and ♣ K are blocked because rank doesn't match table
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 0, validIndices: [0] }));
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const handButtons = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'play');
+    expect(handButtons).toHaveLength(3);
+
+    // 出せる札: cardAlt だけ（理由文言なし）
+    const playableBtn = handButtons[0];
+    expect(playableBtn).toHaveAttribute('aria-disabled', 'false');
+    expect(playableBtn).not.toHaveAttribute('title');
+    expect(playableBtn.getAttribute('aria-label')).toBe('♠ 7');
+    expect(playableBtn.getAttribute('aria-label')).not.toContain('手番ではありません');
+    expect(playableBtn.getAttribute('aria-label')).not.toContain('場に同じランク');
+
+    // 出せない札: ランク不一致の理由が付き、「手番でない」理由は含まれない
+    const unmatchableBtn1 = handButtons[1];
+    expect(unmatchableBtn1).toHaveAttribute('aria-disabled', 'true');
+    expect(unmatchableBtn1).toHaveAttribute('title', '場に同じランクの札が1枚もありません（1枚でもあれば出せます）');
+    expect(unmatchableBtn1.getAttribute('aria-label')).toBe('♥ 9 (場に同じランクの札がありません)');
+    expect(unmatchableBtn1.getAttribute('aria-label')).toContain('場に同じランクの札がありません');
+    expect(unmatchableBtn1.getAttribute('aria-label')).not.toContain('手番ではありません');
+
+    const unmatchableBtn2 = handButtons[2];
+    expect(unmatchableBtn2).toHaveAttribute('aria-disabled', 'true');
+    expect(unmatchableBtn2).toHaveAttribute('title', '場に同じランクの札が1枚もありません（1枚でもあれば出せます）');
+    expect(unmatchableBtn2.getAttribute('aria-label')).toBe('♣ K (場に同じランクの札がありません)');
+    expect(unmatchableBtn2.getAttribute('aria-label')).toContain('場に同じランクの札がありません');
+    expect(unmatchableBtn2.getAttribute('aria-label')).not.toContain('手番ではありません');
+  });
+});
