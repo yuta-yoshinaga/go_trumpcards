@@ -264,3 +264,35 @@ func TestBeloteCuiPresenter_AnnouncesTheDixDeDerOnTheLastTrick(t *testing.T) {
 	assert.NotContains(t, build(domain.BeloteHandSize, 0),
 		strings.SplitN(i18n.T("belote.dixDeDerNotice"), "{{", 2)[0])
 }
+
+// TestBeloteCuiPresenter_JapanesePromptsAreTranslated は ja ロケールで
+// 操作案内が英語のまま出ないことを見る。
+//
+// **キーの有無でなく、描かれた行を見る。** ja のロケールに値があっても
+// 英語のままなら、日本語でプレイしている人には英語が出る (#6388)。
+// 札の表記 (SPADE 1 など) は cuiSuitName の全ゲーム共通の規約なので対象外。
+func TestBeloteCuiPresenter_JapanesePromptsAreTranslated(t *testing.T) {
+	old := i18n.Lang()
+	i18n.SetLang("ja")
+	defer i18n.SetLang(old)
+
+	p := new(presenter.BeloteCuiPresenter)
+	for _, tt := range []struct {
+		phase domain.BelotePhase
+		want  string
+	}{
+		{domain.BelotePhaseBidPickUp, "表向きの札のスートを切り札にする"},
+		{domain.BelotePhaseBidCallTrump, "切り札を宣言"},
+		{domain.BelotePhasePlay, "カードを出す"},
+		{domain.BelotePhaseTrickEnd, "次のトリックへ"},
+		{domain.BelotePhaseRoundEnd, "次のラウンドへ"},
+	} {
+		g := domain.NewDefaultBelote()
+		g.Reset()
+		g.SetPhase(tt.phase)
+		out := p.Output(g, nil)
+		assert.Contains(t, out, tt.want, "phase %d の案内が日本語になっていない", tt.phase)
+		// コマンド構文は残す。訳しただけで打ち方が消えては案内にならない。
+		assert.Contains(t, out, "・・・", "phase %d でコマンド構文と説明の区切りが無い", tt.phase)
+	}
+}
