@@ -76,6 +76,39 @@ func TestBriscolaCuiPresenter_Output(t *testing.T) {
 		assert.NotContains(t, out, "?")
 	})
 
+	// briscolaSuitName の4分岐を全部通す。1つだけ通すと、残り3つが取り違えていても緑になる。
+	t.Run("every trump suit is named once the card is gone", func(t *testing.T) {
+		for _, tc := range []struct {
+			suit int
+			want string
+		}{
+			{domain.CardDesignSpade, "スペード"},
+			{domain.CardDesignClover, "クラブ"},
+			{domain.CardDesignHeart, "ハート"},
+			{domain.CardDesignDiamond, "ダイヤ"},
+		} {
+			m := new(interfaces.MockBriscolaGame)
+			m.On("GetTrickNumber").Return(1)
+			m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
+			m.On("GetGameEndFlag").Return(false)
+			m.On("GetPhase").Return(domain.BriscolaPhasePlay)
+			m.On("GetCurrentPlayerIdx").Return(0)
+			m.On("GetTrumpSuit").Return(tc.suit)
+			m.On("GetTrumpCard").Return((*domain.Card)(nil))
+			m.On("GetStockRemaining").Return(0)
+			m.On("GetWinnerIdx").Return(-1)
+			m.On("GetPlayerCnt").Return(2)
+			players := []*domain.BriscolaPlayer{domain.NewBriscolaPlayer(true), domain.NewBriscolaPlayer(false)}
+			m.On("GetPlayer", 0).Return(players[0])
+			m.On("GetPlayer", 1).Return(players[1])
+			m.On("GetPlayerPoints", 0).Return(0)
+			m.On("GetPlayerPoints", 1).Return(0)
+
+			out := p.Output(m, nil)
+			assert.Contains(t, out, tc.want)
+		}
+	})
+
 	t.Run("trump suit unset renders a placeholder rather than a wrong suit", func(t *testing.T) {
 		m := new(interfaces.MockBriscolaGame)
 		m.On("GetTrickNumber").Return(1)
