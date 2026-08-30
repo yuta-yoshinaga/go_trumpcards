@@ -337,26 +337,46 @@ describe('CallBreakPage', () => {
       fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
       const region = await screen.findByTestId('callbreak-hint-live');
-      await waitFor(() => expect(region).toHaveTextContent('推奨ビッド'));
-      expect(region).toHaveTextContent('4');
+      await waitFor(() => expect(region).toHaveTextContent('推奨ビッド: 4 (戦略的なビッド)'));
       expect(region).not.toHaveTextContent('{{');
     });
 
-    it('names the card to play', async () => {
+    it('names the card to play with suit and rank', async () => {
       mockExec.mockResolvedValue(playPhaseState);
       renderWithProviders(<CallBreakPage />);
       await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
 
       mockExec.mockResolvedValue({
         ...playPhaseState,
-        hint: { cardIndex: 2, reason: 'lead_strong' },
+        hint: { cardIndex: 0, reason: 'lead_strong' },
       } as unknown as CallBreakResponse);
       fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
       const region = await screen.findByTestId('callbreak-hint-live');
-      await waitFor(() => expect(region).toHaveTextContent('推奨'));
-      expect(region).toHaveTextContent('[2]');
+      await waitFor(() => expect(region).toHaveTextContent('推奨カード: ♠ A [0] (強いカードでリード)'));
+      expect(region).toHaveTextContent('♠ A');
+      expect(region).toHaveTextContent('[0]');
       expect(region).not.toHaveTextContent('推奨ビッド');
+      expect(region).not.toHaveTextContent('{{');
+      expect(region).not.toHaveTextContent('{{card}}');
+      expect(region).not.toHaveTextContent('{{idx}}');
+    });
+
+    it('falls back to dash when hint.cardIndex exceeds hand length', async () => {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<CallBreakPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        hint: { cardIndex: 99, reason: 'lead_strong' },
+      } as unknown as CallBreakResponse);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      const region = await screen.findByTestId('callbreak-hint-live');
+      await waitFor(() => expect(region).toHaveTextContent('推奨カード: - [99] (強いカードでリード)'));
+      expect(region).toHaveTextContent('[99]');
+      expect(region).toHaveTextContent('-');
       expect(region).not.toHaveTextContent('{{');
     });
   });

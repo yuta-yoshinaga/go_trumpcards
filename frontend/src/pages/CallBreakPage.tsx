@@ -37,6 +37,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CallBreakResponse } from '../types/card';
 import { CallBreakPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { CALLBREAK_HELP, parseCallBreakCommand } from '../utils/cli/commands/callbreakCommands';
 import { formatCallBreakState } from '../utils/cli/formatters/callbreakFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -470,7 +471,11 @@ function CallBreakPageContent() {
                 <div className="text-ds-warning text-sm mb-2">
                   {hint.bid != null
                     ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
-                    : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+                    : (() => {
+                        const card = hint.cardIndex !== undefined ? humanPlayer?.cards[hint.cardIndex] : undefined;
+                        const name = card ? cardAlt(card) : '-';
+                        return `${t('hintPlay')}: ${name} [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`)})`;
+                      })()}
                 </div>
               )}
             </div>
