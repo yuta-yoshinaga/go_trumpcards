@@ -315,6 +315,35 @@ func (fcp *FourCardPoker) pairIsAces(cards []*Card) bool {
 	return counts[1] == 2
 }
 
+// RecommendPlayMultiplier advises a play bet multiplier, or 0 for fold: three of
+// a kind or better pushes the maximum, a pair or worse folds, and everything
+// between bets the minimum. Outside the action phase, or with no hand dealt, it
+// returns 0.
+//
+// **It must not read playerHandRank.** updateBestHands only runs from Fold and
+// resolve, so through the whole action phase the field is still 0 — which reads
+// as "worse than a pair" and would advise folding every hand ever dealt
+// (measured: 0 non-fold recommendations over 100 deals). A unit test that sets
+// the field with SetPlayerHandRank passes regardless, which is how the same
+// mistake reached review on #4622. The five cards the player can see are the
+// only honest input.
+//
+// The order this leans on is the four-card one: a flush outranks a straight
+// (see the FourCardHand* constants), the opposite of the five-card convention.
+func (fcp *FourCardPoker) RecommendPlayMultiplier() int {
+	if fcp.phase != FourCardPokerPhaseAction || len(fcp.playerHand) == 0 {
+		return 0
+	}
+	rank := evalFourCardHand(pickBestFour(fcp.playerHand))
+	if rank >= FourCardHandThreeOfAKind {
+		return FourCardPokerMaxPlayMul
+	}
+	if rank <= FourCardHandPair {
+		return 0
+	}
+	return FourCardPokerMinPlayMul
+}
+
 // --- Getters ---
 
 // GetPlayerHand returns the 5-card player hand.

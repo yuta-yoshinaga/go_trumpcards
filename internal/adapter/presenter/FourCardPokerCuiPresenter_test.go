@@ -33,6 +33,7 @@ func setupFourCardPokerCuiMockDefaults(m *interfaces.MockFourCardPokerGame) {
 	m.On("GetPlayerHandRank").Return(0).Maybe()
 	m.On("GetDealerHandRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("RecommendPlayMultiplier").Return(0).Maybe()
 }
 
 func TestFourCardPokerCuiPresenter_Output_BetPhase(t *testing.T) {
@@ -305,4 +306,51 @@ func TestFourCardPokerCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "棋譜はありません")
+}
+
+func TestFourCardPokerCuiPresenter_HintOutput(t *testing.T) {
+	p := new(FourCardPokerCuiPresenter)
+
+	t.Run("ActionPhase_PlayMax", func(t *testing.T) {
+		m := new(interfaces.MockFourCardPokerGame)
+		m.On("GetPhase").Return(domain.FourCardPokerPhaseAction)
+		m.On("RecommendPlayMultiplier").Return(domain.FourCardPokerMaxPlayMul)
+
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "3倍プレイ")
+	})
+
+	t.Run("ActionPhase_PlayMin", func(t *testing.T) {
+		m := new(interfaces.MockFourCardPokerGame)
+		m.On("GetPhase").Return(domain.FourCardPokerPhaseAction)
+		m.On("RecommendPlayMultiplier").Return(domain.FourCardPokerMinPlayMul)
+
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "1倍プレイ")
+	})
+
+	t.Run("ActionPhase_Fold", func(t *testing.T) {
+		m := new(interfaces.MockFourCardPokerGame)
+		m.On("GetPhase").Return(domain.FourCardPokerPhaseAction)
+		m.On("RecommendPlayMultiplier").Return(0)
+
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "フォールド")
+	})
+
+	t.Run("BetPhase_HintNone", func(t *testing.T) {
+		m := new(interfaces.MockFourCardPokerGame)
+		m.On("GetPhase").Return(domain.FourCardPokerPhaseBet)
+
+		result := p.HintOutput(m)
+		assert.Equal(t, i18n.T("fourcardpoker.hintNone")+"\n", result)
+	})
+
+	t.Run("EndPhase_HintNone", func(t *testing.T) {
+		m := new(interfaces.MockFourCardPokerGame)
+		m.On("GetPhase").Return(domain.FourCardPokerPhaseEnd)
+
+		result := p.HintOutput(m)
+		assert.Equal(t, i18n.T("fourcardpoker.hintNone")+"\n", result)
+	})
 }

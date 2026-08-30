@@ -21,6 +21,7 @@ func newMockFourCardPokerInteractor() *usecase.MockFourCardPokerInteractor {
 	m.On("Play", 3).Return("play3 result")
 	m.On("Fold").Return("fold result")
 	m.On("ActionLog").Return("action log result")
+	m.On("Hint").Return("hint result")
 	return m
 }
 
@@ -118,6 +119,21 @@ func TestFourCardPokerCuiController_ActionLog(t *testing.T) {
 
 	assert.Equal(t, "action log result", c.Exec("log"))
 	assert.Equal(t, "action log result", c.Exec("l"))
+}
+
+func TestFourCardPokerCuiController_Hint(t *testing.T) {
+	m := newMockFourCardPokerInteractor()
+	c := controller.NewFourCardPokerCuiController(m)
+
+	assert.Equal(t, "hint result", c.Exec("hint"))
+	assert.Equal(t, "hint result", c.Exec("h"))
+}
+
+func TestFourCardPokerCuiController_Hint_TypoSuggest(t *testing.T) {
+	m := newMockFourCardPokerInteractor()
+	c := controller.NewFourCardPokerCuiController(m)
+
+	assert.Contains(t, c.Exec("hin"), "hint")
 }
 
 func TestFourCardPokerCuiController_Unknown(t *testing.T) {

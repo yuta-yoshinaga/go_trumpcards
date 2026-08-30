@@ -72,7 +72,7 @@ func fourCardPokerDispatch(bc *baseController, w http.ResponseWriter, ti usecase
 	case "f", "fold":
 		bc.writePresenterResponse(w, ti.Fold())
 	default:
-		return dispatchResetAndLog(param.Command, bc, w, ti.Reset, ti.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, ti.Reset, ti.Hint, ti.ActionLog)
 	}
 	return true
 }

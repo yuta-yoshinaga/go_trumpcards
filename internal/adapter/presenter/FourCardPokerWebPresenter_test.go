@@ -34,6 +34,7 @@ func setupFourCardPokerWebMockDefaults(m *interfaces.MockFourCardPokerGame) {
 	m.On("GetPlayerHandRank").Return(0).Maybe()
 	m.On("GetDealerHandRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("RecommendPlayMultiplier").Return(0).Maybe()
 }
 
 func parseFourCardPokerOutput(t *testing.T, jsonStr string) *controller.FourCardPokerWebOutput {
@@ -183,4 +184,13 @@ func TestFourCardPokerWebPresenter_ActionLogOutput(t *testing.T) {
 
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "[")
+}
+
+func TestFourCardPokerWebPresenter_HintOutput(t *testing.T) {
+	p := new(FourCardPokerWebPresenter)
+	m := new(interfaces.MockFourCardPokerGame)
+	setupFourCardPokerWebMockDefaults(m)
+
+	r := parseFourCardPokerOutput(t, p.HintOutput(m))
+	assert.Equal(t, domain.FourCardPokerPhaseBet, r.Phase)
 }

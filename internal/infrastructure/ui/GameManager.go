@@ -2762,7 +2762,7 @@ var gameRegistry = []GameRegistryEntry{
 				"fourcardpoker.helpExampleBet",
 				"fourcardpoker.helpExamplePlay",
 			},
-			CommandKeys:       []string{"fourcardpoker.helpBet", "fourcardpoker.helpPlay", "fourcardpoker.helpFold"},
+			CommandKeys:       []string{"fourcardpoker.helpBet", "fourcardpoker.helpPlay", "fourcardpoker.helpFold", "fourcardpoker.helpHint"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
 	BindCuiFor("rummy500",

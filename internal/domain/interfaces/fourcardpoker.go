@@ -57,4 +57,6 @@ type FourCardPokerGame interface {
 	GetDealerHandRank() int
 	// GetChips returns the current chip stack.
 	GetChips() int
+	// RecommendPlayMultiplier advises a play bet multiplier (1 to 3) or fold (0).
+	RecommendPlayMultiplier() int
 }

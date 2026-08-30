@@ -26,7 +26,7 @@ func (c *FourCardPokerCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.ti.Reset() },
-		[]string{"b", "bet", "p", "play", "f", "fold", "log", "l"},
+		[]string{"b", "bet", "p", "play", "f", "fold", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
@@ -56,7 +56,7 @@ func (c *FourCardPokerCuiController) Exec(command string) string {
 			case "f", "fold":
 				return c.ti.Fold(), true
 			default:
-				return handleCuiLog(cmd, c.ti.ActionLog)
+				return handleCuiHintAndLog(cmd, c.ti.Hint, c.ti.ActionLog)
 			}
 		},
 	)
