@@ -24,6 +24,13 @@ const (
 // AcesUpColCnt 場札の列数
 const AcesUpColCnt = 4
 
+// AcesUpDiscardGoal は勝ちに必要な捨て札の枚数。
+//
+// 勝利条件 ([AcesUp.isWon]) は「山札が空で、4 列がそれぞれエース 1 枚だけ」なので、
+// 場に残るのはエース 4 枚、残りはすべて捨て札に行く。数字を書くのではなく
+// デッキと列数から導くことで、片方だけ変えても表示がずれない。
+const AcesUpDiscardGoal = CardDesignMax*CardValueMax - AcesUpColCnt
+
 // acesUpAceRank エースを最強として扱う際のランク値（A=14）
 const acesUpAceRank = 14
 

@@ -50,7 +50,9 @@ func (pr *AcesUpCuiPresenter) Output(g interfaces.AcesUpGame, lastErr error) str
 
 		b.WriteString("----------\n")
 		b.WriteString(i18n.Tf("acesup.stockLine", "count", strconv.Itoa(g.GetStockCount())))
-		b.WriteString(i18n.Tf("acesup.discardLine", "count", strconv.Itoa(g.GetDiscardCount())))
+		b.WriteString(i18n.Tf("acesup.discardLine",
+			"count", strconv.Itoa(g.GetDiscardCount()),
+			"goal", strconv.Itoa(domain.AcesUpDiscardGoal)))
 		b.WriteString("\n")
 		b.WriteString(i18n.T("acesup.markerLegend") + "\n")
 		b.WriteString("----------\n")

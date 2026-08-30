@@ -9,7 +9,7 @@
   "columnEmpty": "[empty]",
   "topCard": "[{{card}}]",
   "stockLine": "Stock: {{count}}",
-  "discardLine": " | Discard: {{count}}",
+  "discardLine": " | Discard: {{count}}/{{goal}}",
   "hintRemove": "Hint: remove column {{col}}",
   "hintMove": "Hint: move column {{col}} to an empty column",
   "hintDraw": "Hint: deal a card to each column",
