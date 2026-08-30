@@ -10,6 +10,7 @@
   "peasant": "Peasant",
   "you": "You",
   "highestBid": "Highest Bid",
+  "bidAndBombs": "Bid: {{bid}} | Bombs: {{bombs}}",
   "kittyCards": "Kitty Cards",
   "tableCards": "Table",
   "playerFinished": " (finished)",
