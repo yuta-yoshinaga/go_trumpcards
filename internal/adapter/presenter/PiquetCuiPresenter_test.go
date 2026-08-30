@@ -8,7 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // newPiquetForPresenter builds a fresh game in a known state for presenter tests.
@@ -195,5 +197,81 @@ func TestPiquetCuiPresenter_GameEndDraw(t *testing.T) {
 	out := p.Output(g2, nil)
 	if out == "" {
 		t.Error("expected non-empty draw output")
+	}
+}
+
+func TestPiquetCuiPresenter_PlayerNames_ElderAndYounger(t *testing.T) {
+	origLang := i18n.Lang()
+	defer i18n.SetLang(origLang)
+	origColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origColor)
+
+	tests := []struct {
+		name        string
+		lang        string
+		humanElder  bool
+		wantElder   string
+		wantYounger string
+	}{
+		{
+			name:        "ja: human Elder, CPU Younger",
+			lang:        "ja",
+			humanElder:  true,
+			wantElder:   "Elder (あなた)",
+			wantYounger: "Younger (CPU 1)",
+		},
+		{
+			name:        "ja: CPU Elder, human Younger",
+			lang:        "ja",
+			humanElder:  false,
+			wantElder:   "Elder (CPU 0)",
+			wantYounger: "Younger (あなた)",
+		},
+		{
+			name:        "en: human Elder, CPU Younger",
+			lang:        "en",
+			humanElder:  true,
+			wantElder:   "Elder (You)",
+			wantYounger: "Younger (CPU 1)",
+		},
+		{
+			name:        "en: CPU Elder, human Younger",
+			lang:        "en",
+			humanElder:  false,
+			wantElder:   "Elder (CPU 0)",
+			wantYounger: "Younger (You)",
+		},
+	}
+
+	p := &PiquetCuiPresenter{}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			i18n.SetLang(tc.lang)
+			players := []*domain.PiquetPlayer{
+				domain.NewPiquetPlayer(tc.humanElder),
+				domain.NewPiquetPlayer(!tc.humanElder),
+			}
+			g := domain.NewPiquet(domain.NewTrumpCardsBelote(), players, domain.DefaultPiquetConfig())
+			g.Reset()
+
+			out := p.Output(g, nil)
+
+			// Assert actual output strings for Elder and Younger
+			if !strings.Contains(out, tc.wantElder) {
+				t.Errorf("expected %q in output, got:\n%s", tc.wantElder, out)
+			}
+			if !strings.Contains(out, tc.wantYounger) {
+				t.Errorf("expected %q in output, got:\n%s", tc.wantYounger, out)
+			}
+
+			// Negative control: raw "(CPU)" or " (CPU)" must not appear
+			if strings.Contains(out, "(CPU)") {
+				t.Errorf("output must not contain raw (CPU), got:\n%s", out)
+			}
+			if strings.Contains(out, " (CPU)") {
+				t.Errorf("output must not contain raw \" (CPU)\", got:\n%s", out)
+			}
+		})
 	}
 }
