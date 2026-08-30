@@ -28,5 +28,6 @@
   "tutorial.phases": "This game is made of two phases that are different games: first you collect cards, then you shed the cards you collected.",
   "tutorial.stunsa": "Equal ranks are a stunsa: the cards stay on the table, the same player leads again, and whoever settles it takes everything that piled up.",
   "you": "You",
-  "yourHand": "Your hand"
+  "yourHand": "Your hand",
+  "finishedBadge": "safe"
 }

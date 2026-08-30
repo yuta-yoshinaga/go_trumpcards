@@ -160,6 +160,52 @@ func TestSkitgubbeWebPresenter_HintOutputAndActionLog(t *testing.T) {
 	assert.NotEmpty(t, new(SkitgubbeWebPresenter).ActionLogOutput(s))
 }
 
+// sgStubFinished は sgStub と同じ配線に、席ごとの IsFinished を先に登録した
+// モックを返す。testify は先に登録した期待が勝つので、catch-all より前に置く。
+func sgStubFinished(finished map[int]bool) *interfaces.MockSkitgubbeGame {
+	g := new(interfaces.MockSkitgubbeGame)
+	for i := 0; i < 3; i++ {
+		g.On("IsFinished", i).Return(finished[i])
+	}
+	g.On("GetPhase").Return(domain.SkitgubbePhaseShed)
+	g.On("GetGameEndFlag").Return(false)
+	g.On("GetLoserIdx").Return(-1)
+	g.On("GetCurrentPlayerIdx").Return(0)
+	g.On("GetStockCount").Return(0)
+	g.On("GetTrumpSuit").Return(domain.CardDesignHeart)
+	g.On("GetDuel").Return([]*domain.Card{})
+	g.On("GetDuelLeader").Return(0)
+	g.On("GetPile").Return([]*domain.Card{})
+	g.On("GetValidPlayIndices", mock.Anything).Return([]int{0})
+	g.On("GetCollectedCount", mock.Anything).Return(0)
+	g.On("GetConfig").Return(domain.DefaultSkitgubbeConfig())
+	g.On("GetPlayers").Return([]*domain.SkitgubbePlayer{
+		domain.NewSkitgubbePlayer(true), domain.NewSkitgubbePlayer(false), domain.NewSkitgubbePlayer(false),
+	})
+	g.On("GetPlayer", mock.Anything).Return(domain.NewSkitgubbePlayer(false))
+	g.On("GetActionLog").Return([]*domain.ActionLogEntry{})
+	g.On("SkitgubbeCpuDecide", mock.Anything).Return(domain.SkitgubbeCpuAction{HandIdx: 0})
+	return g
+}
+
+// 出し切った席は Skitgubbe になる危険から外れる。残る席にとって「誰がもう安全か」は
+// 読みの前提なのに、どちらの画面にも出ていなかった。両方向で見る。
+func TestSkitgubbeCuiPresenter_MarksTheSeatsThatAreAlreadySafe(t *testing.T) {
+	i18n.SetLang("ja")
+
+	// 席 1 だけが出し切っている。IsFinished は席ごとに答えを変えたいので、
+	// sgStub の catch-all より先に登録する必要がある（testify は先勝ち）。
+	g := sgStubFinished(map[int]bool{1: true})
+
+	out := new(SkitgubbeCuiPresenter).Output(g, nil)
+	assert.Equal(t, 1, strings.Count(out, i18n.T("skitgubbe.playerFinished")),
+		"exactly the one finished seat is marked")
+
+	// 誰も出し切っていない局では一切出ない。
+	none := sgStubFinished(map[int]bool{})
+	assert.NotContains(t, new(SkitgubbeCuiPresenter).Output(none, nil), i18n.T("skitgubbe.playerFinished"))
+}
+
 func TestSkitgubbeCuiPresenter_ShowsYourHandAndNotTheOpponents(t *testing.T) {
 	s := sgTestGame(t)
 	out := new(SkitgubbeCuiPresenter).Output(s, nil)

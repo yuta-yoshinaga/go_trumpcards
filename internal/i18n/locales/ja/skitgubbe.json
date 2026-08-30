@@ -10,6 +10,7 @@
   "duelLine": "場（一騎打ち）: {{cards}}",
   "pileLine": "場: {{cards}}",
   "playerLine": "{{name}}: 手札{{cards}}枚 (集めた札{{collected}}枚)",
+  "playerFinished": " [セーフ]",
   "promptPlay": "p <i> で札を出す",
   "promptPickUp": "上回れる札がありません。u で場の札を引き取ってください",
   "gameEndWin": "手札を出し切りました！",

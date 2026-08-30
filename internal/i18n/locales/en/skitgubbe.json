@@ -10,6 +10,7 @@
   "duelLine": "Duel: {{cards}}",
   "pileLine": "Pile: {{cards}}",
   "playerLine": "{{name}}: {{cards}} card(s) in hand ({{collected}} collected)",
+  "playerFinished": " [safe]",
   "promptPlay": "p <i> to play a card",
   "promptPickUp": "You cannot beat the pile. Use u to pick it up",
   "gameEndWin": "You got rid of all your cards!",
