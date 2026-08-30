@@ -65,5 +65,12 @@
     "magicEight": "Magic 8 (skip)",
     "magicTen": "Magic 10 (burn)",
     "fourOfAKindBurn": "Four of a kind burns the pile"
+  },
+  "feed": {
+    "header": "Last actions",
+    "pickup": "{{name}} picked up the pile",
+    "play": "{{name}} played {{cards}}",
+    "burned": "pile burned!",
+    "skipped": "next player skipped"
   }
 }
