@@ -27,13 +27,14 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { FlowerGardenResponse } from '../types/card';
+import type { Card, FlowerGardenResponse } from '../types/card';
 import { FlowerGardenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { FLOWERGARDEN_HELP, parseFlowerGardenCommand } from '../utils/cli/commands/flowergardenCommands';
 import { formatFlowerGardenState } from '../utils/cli/formatters/flowergardenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { flowerGardenLegalTargets } from '../utils/flowerGardenLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -196,6 +197,18 @@ function FlowerGardenPageContent() {
     selectedSource.col === col &&
     selectedSource.cardIndex === cardIndex;
 
+  // 選択中の札そのもの。タブローは最上段しか動かせないので、列の一番上または指定indexを読む。
+  const selectedCard = ((): Card | null => {
+    if (!selectedSource || selectedSource.col === undefined) return null;
+    if (selectedSource.zone === 'reserve') return state.reserve[selectedSource.col] ?? null;
+    const col = state.tableau[selectedSource.col];
+    if (!col) return null;
+    if (selectedSource.cardIndex !== undefined) return col[selectedSource.cardIndex]?.card ?? null;
+    return col[col.length - 1]?.card ?? null;
+  })();
+  // リングは**置ける先だけ**に付ける。
+  const legalTargets = flowerGardenLegalTargets(state.tableau, state.foundation, selectedCard);
+
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx];
     const tableauColZone: FlowerGardenMoveZone = { zone: 'tableau', col: colIdx };
@@ -215,7 +228,10 @@ function FlowerGardenPageContent() {
                 onClick={() => game.handleSelectTarget(tableauColZone)}
                 disabled={!isPlaying || loading || !selectedSource}
                 style={{ height: dims.ch }}
-                className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}
+                data-target-candidate={legalTargets.tableau.has(colIdx) || undefined}
+                className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite} ${
+                  legalTargets.tableau.has(colIdx) ? 'ring-2 ring-ds-success' : ''
+                }`}
               >
                 {t('empty')}
               </button>
@@ -227,6 +243,8 @@ function FlowerGardenPageContent() {
                   cardIndex: cardIdx,
                 };
                 const isTop = cardIdx === col.length - 1;
+                const isTargetCandidate =
+                  isTop && legalTargets.tableau.has(colIdx) && !isSourceSelected('tableau', colIdx, cardIdx);
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -249,7 +267,8 @@ function FlowerGardenPageContent() {
                         draggable={isPlaying && !loading && isTop}
                         onDragStart={dnd.handleDragStart(cardZone)}
                         onDragEnd={dnd.handleDragEnd}
-                        className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                        data-target-candidate={isTargetCandidate || undefined}
+                        className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${isTargetCandidate ? 'ring-2 ring-ds-success' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                       >
                         <AnimatedCard
                           card={tc.card}
@@ -369,7 +388,10 @@ function FlowerGardenPageContent() {
                               suit: FOUNDATION_SUITS[idx],
                               count: pile.length,
                             })}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                            data-target-candidate={legalTargets.foundation.has(idx) || undefined}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
+                              legalTargets.foundation.has(idx) ? 'ring-2 ring-ds-success' : ''
+                            }`}
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}
@@ -385,7 +407,10 @@ function FlowerGardenPageContent() {
                             disabled={!isPlaying || loading || !selectedSource}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                             style={{ width: dims.cw, height: dims.ch }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            data-target-candidate={legalTargets.foundation.has(idx) || undefined}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
+                              legalTargets.foundation.has(idx) ? 'ring-2 ring-ds-success' : ''
+                            }`}
                           >
                             A
                           </button>

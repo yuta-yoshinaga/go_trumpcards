@@ -209,6 +209,65 @@ describe('FlowerGardenPage', () => {
     // 空のベッドの扱いも書く ── 規則の半分だけ出すと、空きに置けないと誤解する。
     expect(note).toHaveTextContent('任意のカード');
   });
+
+  // #6395: 選択中カードに対する合法な移動先のみを ring-2 ring-ds-success で強調する。
+  it('rings only the zones that can actually accept the selected card (both directions)', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<FlowerGardenPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(0);
+
+    // ♥5 (列0の最上段) を選ぶ。置けるのは ♣6 (1つ上のランク) と空き列 (列2〜5)。
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '♣ 6' })).toHaveAttribute('data-target-candidate'));
+    expect(screen.getByRole('button', { name: '♣ 6' })).toHaveClass('ring-2', 'ring-ds-success');
+
+    // ♥5 は組札 (♥1 の上) には置けない ── 2 ではないので。
+    for (const f of screen.getAllByLabelText(/組札/)) {
+      expect(f).not.toHaveAttribute('data-target-candidate');
+      expect(f).not.toHaveClass('ring-ds-success');
+    }
+    // 自分の下の札 (♠13) も自分自身の列も候補ではない。
+    expect(screen.getByRole('button', { name: '♠ K' })).not.toHaveAttribute('data-target-candidate');
+    // 空き列 4 本 + ♣6 = 5 箇所ちょうど。
+    expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(5);
+  });
+
+  it('rings legal destinations when a card is selected from the reserve', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // reserve に ♦2 と ♠7 を置き、tableau に ♠8 (列0) と ♠7 (列1) を配置
+    const customState: FlowerGardenResponse = {
+      ...playingState,
+      tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }], [{ card: card('SPADE', 7), faceUp: true }]]),
+      reserve: [card('DIAMOND', 2), card('SPADE', 7), ...Array.from({ length: 14 }, () => null)],
+    };
+    mockExec.mockResolvedValue(customState);
+    renderWithProviders(<FlowerGardenPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    // reserve #0 (♦2) を選択 → 組札 ♦1 (1箇所) と 空き列 4本 (列2〜5) が候補
+    fireEvent.click(screen.getByRole('button', { name: /^♦ 2（リザーブ枠/ }));
+    await waitFor(() => {
+      const rungFoundation = screen.getAllByLabelText(/組札/).filter((f) => f.hasAttribute('data-target-candidate'));
+      expect(rungFoundation).toHaveLength(1);
+      expect(rungFoundation[0]).toHaveClass('ring-2', 'ring-ds-success');
+    });
+    // 列0 (♠8) と列1 (♠7) には ♦2 は置けないので候補にならない
+    expect(screen.getByRole('button', { name: '♠ 8' })).not.toHaveAttribute('data-target-candidate');
+    expect(screen.getByRole('button', { name: '♠ 7' })).not.toHaveAttribute('data-target-candidate');
+
+    // reserve #1 (♠7) を選択 → 列0 (♠8: 同スート・同色) と 空き列 4本 (列2〜5) が候補
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 7（リザーブ枠/ }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '♠ 8' })).toHaveAttribute('data-target-candidate');
+      expect(screen.getByRole('button', { name: '♠ 8' })).toHaveClass('ring-2', 'ring-ds-success');
+    });
+    // 列1 (♠7) は同ランクなので置けない
+    expect(screen.getByRole('button', { name: '♠ 7' })).not.toHaveAttribute('data-target-candidate');
+  });
 });
 
 // Keyboard shortcuts are bound by useActionKeyboardNav and advertised by
