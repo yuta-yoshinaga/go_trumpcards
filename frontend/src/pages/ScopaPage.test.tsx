@@ -291,3 +291,38 @@ describe('ScopaPage', () => {
     localStorage.removeItem('cli-mode-scopa');
   });
 });
+
+describe('ScopaPage hand card accessibility', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  // 場札は最初から aria-label / aria-pressed を持っていたのに手札には無く、
+  // 中身の AnimatedCard も名前を出さないので、自分が何を持っているかすら
+  // 読み上げられなかった (#6415)。
+  it('names each hand card and marks the selected one with aria-pressed', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    // 手札は ♠3 / ♥5 / ♦7。隣り合う札を**別の名前**で呼べていることまで見る。
+    expect(screen.getByTestId('hand-card-0')).toHaveAttribute('aria-label', '♠ 3');
+    expect(screen.getByTestId('hand-card-1')).toHaveAttribute('aria-label', '♥ 5');
+    expect(screen.getByTestId('hand-card-2')).toHaveAttribute('aria-label', '♦ 7');
+
+    // 未選択のうちは全部 false。
+    for (let i = 0; i < 3; i += 1) {
+      expect(screen.getByTestId(`hand-card-${i.toString()}`)).toHaveAttribute('aria-pressed', 'false');
+    }
+
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    // 押した札だけが true になる —— 隣が道連れになっていないことも見る。
+    expect(screen.getByTestId('hand-card-1')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('hand-card-0')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('hand-card-2')).toHaveAttribute('aria-pressed', 'false');
+
+    // もう一度押すと選択が外れる。
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    expect(screen.getByTestId('hand-card-1')).toHaveAttribute('aria-pressed', 'false');
+  });
+});
