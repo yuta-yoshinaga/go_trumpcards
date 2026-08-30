@@ -224,6 +224,28 @@ func TestSjavsCuiPresenter_ShowsTheHandSettlementAndTheTie(t *testing.T) {
 	assert.Contains(t, new(SjavsCuiPresenter).promptBlock(tie), i18n.T("sjavs.handTie"))
 }
 
+// vol は加点の出どころが他の行と違う (12/16 で、♣でも倍にならない)。印が無いと
+// CUI 側だけ点の理由が読めない。両方向で見る —— 出ることと、出ないこと。
+func TestSjavsCuiPresenter_MarksVolOnTheSettlementLine(t *testing.T) {
+	handEnd := func(res *domain.SjavsHandResult) *interfaces.MockSjavsGame {
+		g := new(interfaces.MockSjavsGame)
+		g.On("GetGameEndFlag").Return(false)
+		g.On("GetPhase").Return(domain.SjavsPhaseHandEnd)
+		g.On("GetHandResult").Return(res)
+		g.On("GetCurrentPlayerIdx").Return(0)
+		g.On("LongestTrumpLength", mock.Anything).Return(6)
+		return g
+	}
+
+	vol := new(SjavsCuiPresenter).promptBlock(handEnd(&domain.SjavsHandResult{ScoringTeam: 0, Amount: 16, Vol: true}))
+	assert.Contains(t, vol, i18n.T("sjavs.vol"))
+	assert.Contains(t, vol, i18n.Tf("sjavs.handScore", "team", "0", "amount", "16"))
+
+	plain := new(SjavsCuiPresenter).promptBlock(handEnd(&domain.SjavsHandResult{ScoringTeam: 0, Amount: 4, Vol: false}))
+	assert.NotContains(t, plain, i18n.T("sjavs.vol"))
+	assert.Contains(t, plain, i18n.Tf("sjavs.handScore", "team", "0", "amount", "4"))
+}
+
 func TestSjavsCuiPresenter_BannersAndErrors(t *testing.T) {
 	p := new(SjavsCuiPresenter)
 	win := sjStub(domain.SjavsPhaseGameEnd, domain.CardDesignHeart, true, 0)

@@ -15,6 +15,7 @@
   "promptNext": "n で次のハンドへ",
   "handTie": "60-60。加点はありませんが、次ゲームの価値が2点上がります",
   "handScore": "チーム{{team}} が {{amount}} 点を消化しました",
+  "vol": "（全トリック）",
   "trumpUndecided": "未定",
   "gameEndWin": "ラバーを取りました！",
   "gameEndLose": "ラバーを取られました",

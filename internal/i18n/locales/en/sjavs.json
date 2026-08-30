@@ -15,6 +15,7 @@
   "promptNext": "n for the next hand",
   "handTie": "60-60: nobody scores, but the next game is worth two more",
   "handScore": "team {{team}} takes {{amount}} off",
+  "vol": " (all tricks)",
   "trumpUndecided": "undecided",
   "gameEndWin": "You won the rubber!",
   "gameEndLose": "You lost the rubber",
