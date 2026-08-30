@@ -35,6 +35,9 @@ const BRISCOLA_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="briscola-score"]', messageKey: 'tutorial.score', placement: 'bottom', advanceOn: 'next' },
 ];
 
+/** Suit labels for display. */
+const SUIT_LABELS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
+
 /**
  * Inner content for the Briscola page (wrapped by `withTutorial` below).
  *
@@ -182,8 +185,8 @@ function BriscolaPageContent() {
             data-testid="briscola-stock"
             data-tutorial="briscola-trump"
           >
-            <span className="text-ds-text-muted text-sm">
-              {state.trumpCard ? t('header.trump') : t('header.trumpNone')}
+            <span className="text-ds-text-muted text-sm" data-testid="briscola-trump-label">
+              {state.trumpSuit > 0 ? t('header.trump', { suit: SUIT_LABELS[state.trumpSuit] }) : t('header.trumpNone')}
             </span>
             {state.trumpCard ? (
               <div

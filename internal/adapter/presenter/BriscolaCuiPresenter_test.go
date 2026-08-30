@@ -66,10 +66,37 @@ func TestBriscolaCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "play <idx>")
 	})
 
-	t.Run("trump card exhausted", func(t *testing.T) {
+	// 現物が引かれ尽くしても切り札スートは最後まで勝敗を決める。以前はここで
+	// 「使い切り」とだけ出しており、終盤ずっと「切り札は無い」と読めていた (#6404)。
+	t.Run("trump card exhausted still names the suit", func(t *testing.T) {
 		m, _ := setupBriscolaCuiMockWithPlayers(nil)
 		out := p.Output(m, nil)
-		assert.Contains(t, out, "使い切り")
+		assert.Contains(t, out, "スペード")
+		assert.Contains(t, out, "山札なし")
+		assert.NotContains(t, out, "?")
+	})
+
+	t.Run("trump suit unset renders a placeholder rather than a wrong suit", func(t *testing.T) {
+		m := new(interfaces.MockBriscolaGame)
+		m.On("GetTrickNumber").Return(1)
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
+		m.On("GetGameEndFlag").Return(false)
+		m.On("GetPhase").Return(domain.BriscolaPhasePlay)
+		m.On("GetCurrentPlayerIdx").Return(0)
+		m.On("GetTrumpSuit").Return(0)
+		m.On("GetTrumpCard").Return((*domain.Card)(nil))
+		m.On("GetStockRemaining").Return(33)
+		m.On("GetWinnerIdx").Return(-1)
+		m.On("GetPlayerCnt").Return(2)
+		players := []*domain.BriscolaPlayer{domain.NewBriscolaPlayer(true), domain.NewBriscolaPlayer(false)}
+		m.On("GetPlayer", 0).Return(players[0])
+		m.On("GetPlayer", 1).Return(players[1])
+		m.On("GetPlayerPoints", 0).Return(0)
+		m.On("GetPlayerPoints", 1).Return(0)
+
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "?")
+		assert.NotContains(t, out, "スペード")
 	})
 
 	t.Run("error is rendered", func(t *testing.T) {
