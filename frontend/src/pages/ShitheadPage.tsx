@@ -25,6 +25,7 @@ import { focusRingCard } from '../styles/cardStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, ShitheadConfig, ShitheadResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseShitheadCommand, SHITHEAD_HELP } from '../utils/cli/commands/shitheadCommands';
 import { formatShitheadState } from '../utils/cli/formatters/shitheadFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -126,6 +127,9 @@ function ShitheadPageContent() {
 
   const isGameEnd = state.gameEndFlag;
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const seatName = (idx: number) => (state.players[idx]?.isHuman === true ? t('labels.you') : `CPU${idx.toString()}`);
+  // humanAction を先に置く。プレイヤーの手が引き金で CPU が続くので、その順が実際の並び。
+  const recentActions = [...(state.humanAction ? [state.humanAction] : []), ...state.cpuActions];
   const isHumanTurn = state.players[state.currentTurn]?.isHuman === true && !isGameEnd;
   const phaseName = isGameEnd ? t('phase.gameEnd') : t('phase.play');
 
@@ -225,6 +229,27 @@ function ShitheadPageContent() {
                 {state.skipNext && <span className="text-ds-warning">{t('rules.magicEight')}</span>}
               </div>
             </div>
+
+            {/* 直前の行動フィード。捨て札の一番上が変わるのを見るだけでは、CPU の手が
+                場札を焼却したのかスキップが出たのかが分からなかった。CUI の
+                formatShitheadAction と同じ burned/skipped/source を読む。 */}
+            {recentActions.length > 0 && (
+              <div className="bg-black/30 text-ds-text-primary p-2 rounded text-sm" data-testid="sh-action-feed">
+                <div className="text-ds-text-muted text-xs mb-1">{t('feed.header')}</div>
+                {recentActions.map((a, i) => (
+                  <div key={`feed-${i.toString()}-${a.playerIdx.toString()}`} data-testid={`sh-action-${i.toString()}`}>
+                    {a.pickup
+                      ? t('feed.pickup', { name: seatName(a.playerIdx) })
+                      : t('feed.play', {
+                          name: seatName(a.playerIdx),
+                          cards: a.playedCards.map((c) => cardAlt(c)).join(', '),
+                        })}
+                    {a.burned && <span className="ml-1 text-ds-warning">{t('feed.burned')}</span>}
+                    {a.skipped && <span className="ml-1 text-ds-warning">{t('feed.skipped')}</span>}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Human player area */}
             {humanPlayer && (

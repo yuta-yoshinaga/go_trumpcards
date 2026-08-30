@@ -65,5 +65,12 @@
     "magicEight": "8 のマジック（スキップ）",
     "magicTen": "10 のマジック（場を焼く）",
     "fourOfAKindBurn": "同じ数字4枚で場を焼く"
+  },
+  "feed": {
+    "header": "直前の行動",
+    "pickup": "{{name}} が場札を引き取りました",
+    "play": "{{name}} が {{cards}} を出しました",
+    "burned": "場札焼却!",
+    "skipped": "次をスキップ"
   }
 }
