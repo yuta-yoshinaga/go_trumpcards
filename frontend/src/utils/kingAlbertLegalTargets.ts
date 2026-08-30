@@ -44,16 +44,25 @@ export function kingAlbertLegalTargets(
     }
   });
 
-  foundation.forEach((pile, idx) => {
+  // 最初に受け入れる山だけ。`MoveTableauToFoundation` は移動元の列しか取らず、
+  // ドメインの `findFoundation` (`KingAlbert.go:553-560`) が先頭から走査して
+  // 最初の1つを選ぶ。空の組札が2つ以上あるとき A はどちらにも「合法」だが、
+  // 必ず先頭に着地する —— 全部光らせるとサーバに無い選択肢を提示することになる。
+  for (let idx = 0; idx < foundation.length; idx++) {
+    const pile = foundation[idx];
     if (pile.length === 0) {
-      if (card.value === 1) result.foundation.add(idx);
-      return;
+      if (card.value === 1) {
+        result.foundation.add(idx);
+        break;
+      }
+    } else {
+      const top = pile[pile.length - 1];
+      if (top && card.design === top.design && card.value === top.value + 1) {
+        result.foundation.add(idx);
+        break;
+      }
     }
-    const top = pile[pile.length - 1];
-    if (top && card.design === top.design && card.value === top.value + 1) {
-      result.foundation.add(idx);
-    }
-  });
+  }
 
   return result;
 }
