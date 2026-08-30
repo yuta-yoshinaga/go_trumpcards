@@ -8,9 +8,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestTrucoCuiPresenter_Output_Phases(t *testing.T) {
@@ -85,6 +87,33 @@ func TestTrucoCuiPresenter_HintOutput(t *testing.T) {
 		out := p.HintOutput(g)
 		assert.True(t, strings.TrimSpace(out) != "")
 	})
+}
+
+// 応答側もその場で引き上げられるのに、respond の分岐だけ CanDeclareTruco を
+// 見ておらず accept/decline の 2 択しか案内していなかった。両方向で見る。
+func TestTrucoCuiPresenter_TellsTheResponderTheyCanRaise(t *testing.T) {
+	i18n.SetLang("ja")
+	p := new(presenter.TrucoCuiPresenter)
+
+	respondAt := func(level int) *domain.Truco {
+		g := domain.NewDefaultTruco()
+		g.Reset()
+		g.SetPhase(domain.TrucoPhaseRespond)
+		g.SetTrucoCallerIdx(1)
+		g.SetResponderIdx(0)
+		g.SetPendingLevel(level)
+		return g
+	}
+
+	// まだ上がある水準なら引き上げを案内する。
+	canRaise := respondAt(domain.TrucoLevelTruco)
+	require.True(t, canRaise.CanDeclareTruco(), "fixture must actually allow a raise")
+	assert.Contains(t, p.Output(canRaise, nil), i18n.T("truco.promptCanTruco"))
+
+	// 上限に達していれば案内しない。
+	maxed := respondAt(domain.TrucoMaxLevel)
+	require.False(t, maxed.CanDeclareTruco(), "fixture must actually forbid a raise")
+	assert.NotContains(t, p.Output(maxed, nil), i18n.T("truco.promptCanTruco"))
 }
 
 func TestTrucoCuiPresenter_ActionLogOutput(t *testing.T) {
