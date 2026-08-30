@@ -1,6 +1,7 @@
 package presenter_test
 
 import (
+	"encoding/json"
 	"errors"
 	"strings"
 	"testing"
@@ -8,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -256,4 +258,101 @@ func TestPitchCuiPresenter_HidesTheBreakdownMidRound(t *testing.T) {
 
 	out := new(presenter.PitchCuiPresenter).Output(m, nil)
 	assert.NotContains(t, out, strings.SplitN(i18n.T("pitch.scoringLine"), "{{", 2)[0])
+}
+
+func setupPitchCuiMockCustom(phase domain.PitchPhase, trickNumber int, log []*domain.ActionLogEntry) (*interfaces.MockPitchGame, []*domain.PitchPlayer) {
+	m := setupPitchCuiMock()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrickNumber")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
+	m.On("GetPhase").Return(phase)
+	m.On("GetTrickNumber").Return(trickNumber)
+	m.On("GetActionLog").Return(log)
+	m.On("GetValidPlayIndices", mock.Anything).Return([]int{0}).Maybe()
+	m.On("GetHint").Return((*domain.PitchHint)(nil)).Maybe()
+	players := makePitchPlayers()
+	m.On("GetPlayerCnt").Return(4)
+	for i := 0; i < 4; i++ {
+		m.On("GetPlayer", i).Return(players[i])
+	}
+	return m, players
+}
+
+func TestPitchCuiPresenter_LastTrick(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	i18n.SetLang("ja")
+	p := new(presenter.PitchCuiPresenter)
+
+	trickLog := []*domain.ActionLogEntry{
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)}},
+		{TurnNumber: 1, PlayerIdx: 1, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 10, false)}},
+		{TurnNumber: 1, PlayerIdx: 2, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}},
+		{TurnNumber: 1, PlayerIdx: 3, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignHeart, 2, false)}},
+		{TurnNumber: 1, PlayerIdx: 2, ActionType: "trick_win"},
+	}
+
+	t.Run("displays four played cards and the winner in TrickEnd phase", func(t *testing.T) {
+		m, _ := setupPitchCuiMockCustom(domain.PitchPhaseTrickEnd, 1, trickLog)
+		out := p.Output(m, nil)
+
+		assert.Contains(t, out, i18n.T("pitch.previousTrick"))
+		assert.Contains(t, out, "あなた: SPADE 5")
+		assert.Contains(t, out, "CPU 1: SPADE 10")
+		assert.Contains(t, out, "CPU 2: SPADE 1")
+		assert.Contains(t, out, "CPU 3: HEART 2")
+		assert.Contains(t, out, i18n.Tf("pitch.previousTrickWinner", "name", "CPU 2"))
+	})
+
+	t.Run("takes the most recent trick when multiple tricks exist in log", func(t *testing.T) {
+		twoTricks := append(append([]*domain.ActionLogEntry(nil), trickLog...),
+			&domain.ActionLogEntry{TurnNumber: 2, PlayerIdx: 0, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignClover, 13, false)}},
+			&domain.ActionLogEntry{TurnNumber: 2, PlayerIdx: 1, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignClover, 12, false)}},
+			&domain.ActionLogEntry{TurnNumber: 2, PlayerIdx: 2, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignClover, 11, false)}},
+			&domain.ActionLogEntry{TurnNumber: 2, PlayerIdx: 3, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignClover, 10, false)}},
+			&domain.ActionLogEntry{TurnNumber: 2, PlayerIdx: 1, ActionType: "trick_win"},
+		)
+
+		m, _ := setupPitchCuiMockCustom(domain.PitchPhaseTrickEnd, 2, twoTricks)
+		out := p.Output(m, nil)
+
+		assert.Contains(t, out, "あなた: CLOVER 13")
+		assert.NotContains(t, out, "SPADE 5")
+		assert.Contains(t, out, i18n.Tf("pitch.previousTrickWinner", "name", "CPU 1"))
+	})
+
+	t.Run("hidden on the round first trick during play phase", func(t *testing.T) {
+		m, _ := setupPitchCuiMockCustom(domain.PitchPhasePlay, 1, trickLog)
+		out := p.Output(m, nil)
+
+		assert.NotContains(t, out, i18n.T("pitch.previousTrick"))
+
+		// Web 出力でも第1トリック中は直前トリックが空であることを検証
+		res := new(presenter.PitchWebPresenter).Output(m, nil)
+		var resObj controller.PitchWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(res), &resObj))
+		assert.Empty(t, resObj.LastTrick)
+		assert.Equal(t, -1, resObj.LastTrickWinner)
+	})
+
+	t.Run("hidden when log has trick_win but fewer than 4 plays", func(t *testing.T) {
+		partialPlays := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)}},
+			{TurnNumber: 1, PlayerIdx: 1, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 10, false)}},
+			{TurnNumber: 1, PlayerIdx: 2, ActionType: "play", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}},
+			{TurnNumber: 1, PlayerIdx: 2, ActionType: "trick_win"},
+		}
+		m, _ := setupPitchCuiMockCustom(domain.PitchPhaseTrickEnd, 1, partialPlays)
+		out := p.Output(m, nil)
+
+		assert.NotContains(t, out, i18n.T("pitch.previousTrick"))
+	})
+
+	t.Run("hidden when log has no trick_win", func(t *testing.T) {
+		m, _ := setupPitchCuiMockCustom(domain.PitchPhaseTrickEnd, 1, nil)
+		out := p.Output(m, nil)
+
+		assert.NotContains(t, out, i18n.T("pitch.previousTrick"))
+	})
 }
