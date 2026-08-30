@@ -330,9 +330,9 @@ describe('MightyPage', () => {
     // minBid 13 + noTrumpExtra 2 = 15 effective minimum under no-trump.
     mockCall.mockResolvedValue(bidPhaseState);
     renderWithProviders(<MightyPage />);
-    await waitFor(() => expect(screen.getByLabelText('bid-no-trump')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText('ノートランプ')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByLabelText('bid-no-trump'));
+    fireEvent.click(screen.getByLabelText('ノートランプ'));
     expect(screen.getByTestId('bid-option-14')).toBeDisabled();
     expect(screen.getByTestId('bid-option-15')).toBeEnabled();
   });
@@ -392,9 +392,9 @@ describe('MightyPage', () => {
   it('calls bid with noTrump=true when toggle is on', async () => {
     mockCall.mockResolvedValue(bidPhaseState);
     renderWithProviders(<MightyPage />);
-    await waitFor(() => expect(screen.getByLabelText('bid-no-trump')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText('ノートランプ')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByLabelText('bid-no-trump'));
+    fireEvent.click(screen.getByLabelText('ノートランプ'));
     fireEvent.click(screen.getByTestId('bid-option-15'));
 
     mockCall.mockClear();
@@ -470,7 +470,7 @@ describe('MightyPage', () => {
     await waitFor(() => expect(screen.getByTestId('partner-suit-0')).toBeInTheDocument());
 
     fireEvent.click(screen.getByTestId('partner-suit-0'));
-    expect(screen.queryByLabelText('partner-value')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('パートナーカードの数字')).not.toBeInTheDocument();
   });
 
   it('sends partner-value 0 when joker partner is chosen', async () => {
@@ -561,7 +561,7 @@ describe('MightyPage', () => {
     await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('ジョーカー').closest('button') as HTMLButtonElement);
-    expect(screen.getByLabelText('joker-lead-button')).toBeInTheDocument();
+    expect(screen.getByLabelText('ジョーカーをリード')).toBeInTheDocument();
   });
 
   it('opens joker suit picker on click and dispatches jokerlead', async () => {
@@ -570,7 +570,7 @@ describe('MightyPage', () => {
     await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('ジョーカー').closest('button') as HTMLButtonElement);
-    fireEvent.click(screen.getByLabelText('joker-lead-button'));
+    fireEvent.click(screen.getByLabelText('ジョーカーをリード'));
     // The picker is now the shared Modal (portaled, labelled by the translated
     // demand-suit string); a single dialog is present.
     expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -929,5 +929,23 @@ describe('MightyPage hint line branches', () => {
     await waitFor(() => expect(region).toHaveTextContent('推奨カード'));
     expect(region).toHaveTextContent('[1]');
     expect(region).not.toHaveTextContent('推奨捨て札');
+  });
+});
+
+describe('MightyPage aria-labels are translated', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  // aria-label は可視テキストを**上書きする**。生の識別子を置くと、ボタンに
+  // 日本語が書いてあってもスクリーンリーダーは "joker-lead-button" と読む (#6390)。
+  it('never exposes a raw English identifier as an accessible name', async () => {
+    mockCall.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<MightyPage />);
+    await waitFor(() => expect(screen.getByLabelText('ノートランプ')).toBeInTheDocument());
+
+    for (const raw of ['bid-no-trump', 'joker-lead-button', 'partner-value']) {
+      expect(screen.queryByLabelText(raw)).not.toBeInTheDocument();
+    }
   });
 });
