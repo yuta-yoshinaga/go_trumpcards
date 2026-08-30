@@ -39,5 +39,7 @@
     "freeCellsNearlyFull": "Free cells are almost full — try to clear some",
     "useEmptyColumn": "An empty column is available — move the pre-base-rank card to use it",
     "useFreeCells": "Consider moving a card to a free cell to open up moves"
-  }
+  },
+  "hintAnnouncement": "Hint: move {{card}} from {{from}} to {{to}}",
+  "hintNoMoves": "No moves available"
 }
