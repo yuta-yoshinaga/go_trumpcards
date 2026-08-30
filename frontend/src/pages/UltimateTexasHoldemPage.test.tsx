@@ -491,4 +491,26 @@ describe('UltimateTexasHoldemPage keyboard shortcuts', () => {
     await flushPendingDispatch();
     expect(mockApi).not.toHaveBeenCalled();
   });
+  // 各ストリートで 4x/3x/2x/1x/チェック/フォールドを選ぶのに、今の役がどこにも
+  // 出ていなかった。フロップとリバーの両方で出ること、プリフロップでは出ないことを見る。
+  it('names the current made hand on the flop and the river', async () => {
+    mockApi.mockResolvedValue({ ...flopState, playerHandRank: 4 });
+    const { unmount } = renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByTestId('uth-made-hand')).toBeInTheDocument());
+    expect(screen.getByTestId('uth-made-hand')).toHaveTextContent('ストレート');
+    unmount();
+
+    mockApi.mockResolvedValue({ ...riverState, playerHandRank: 8 });
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByTestId('uth-made-hand')).toBeInTheDocument());
+    expect(screen.getByTestId('uth-made-hand')).toHaveTextContent('ストレートフラッシュ');
+  });
+
+  it('does not name a hand before five cards are visible', async () => {
+    // プリフロップは 2 枚だけ。役はまだ存在しない。
+    mockApi.mockResolvedValue({ ...preFlopState, playerHandRank: 8 });
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByTestId('uth-preflop-eval')).toBeInTheDocument());
+    expect(screen.queryByTestId('uth-made-hand')).not.toBeInTheDocument();
+  });
 });

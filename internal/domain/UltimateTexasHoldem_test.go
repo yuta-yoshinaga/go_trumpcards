@@ -30,6 +30,30 @@ func uthSetup(t *testing.T, ante int, community, playerHand, dealerHand []*domai
 	return u
 }
 
+// playerHandRank はフロントの役表示のために各ストリートで更新される。dealRiver だけ
+// その更新が抜けており、リバー後は 6 枚時点の役が残っていた。
+//
+// 決着 (Play/Fold) でも同じ 7 枚から評価し直されるので、**リバー時点の値と決着後の値が
+// 一致するか**で確かめられる。更新が抜けていると 200 配りのうち 58 回ずれた。
+func TestUltimateTexasHoldem_RiverRefreshesTheCurrentRank(t *testing.T) {
+	mismatches := 0
+	for i := 0; i < 200; i++ {
+		u := domain.NewUltimateTexasHoldem(domain.NewTrumpCards(0))
+		u.Reset()
+		require.NoError(t, u.Bet(100, 0))
+		require.NoError(t, u.Check()) // preflop -> flop
+		require.NoError(t, u.Check()) // flop -> river (turn and river together)
+		require.Equal(t, domain.UltimateTexasHoldemPhaseRiver, u.GetPhase())
+
+		onRiver := u.GetPlayerHandRank()
+		require.NoError(t, u.Play(1)) // 決着。同じ 7 枚から評価し直される。
+		if onRiver != u.GetPlayerHandRank() {
+			mismatches++
+		}
+	}
+	assert.Zero(t, mismatches, "the rank shown on the river must already be the 7-card evaluation")
+}
+
 func TestNewDefaultUltimateTexasHoldem(t *testing.T) {
 	u := domain.NewDefaultUltimateTexasHoldem()
 	assert.Equal(t, domain.UltimateTexasHoldemPhaseBet, u.GetPhase())
