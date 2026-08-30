@@ -145,6 +145,22 @@ function HighCardFlushPageContent() {
   const handleFold = () => execApi('fold');
   const handleReset = () => execApi('reset');
 
+  // Bet validation: ante is mandatory (>= 10, <= 10000, in steps of 10), bonus bets are
+  // optional (0 or 10..10000 in steps of 10), and their sum within the chip balance.
+  const anteInvalid = Number.isNaN(anteAmount) || anteAmount < 10 || anteAmount > 10000 || anteAmount % 10 !== 0;
+  const flushBonusInvalid =
+    Number.isNaN(flushBonusAmount) || flushBonusAmount < 0 || flushBonusAmount > 10000 || flushBonusAmount % 10 !== 0;
+  const straightFlushInvalid =
+    Number.isNaN(straightFlushAmount) ||
+    straightFlushAmount < 0 ||
+    straightFlushAmount > 10000 ||
+    straightFlushAmount % 10 !== 0;
+  const betInvalid =
+    anteInvalid ||
+    flushBonusInvalid ||
+    straightFlushInvalid ||
+    anteAmount + flushBonusAmount + straightFlushAmount > state.chips;
+
   const phaseName = isBetPhase ? t('phase.bet') : isActionPhase ? t('phase.action') : t('phase.end');
 
   return (
@@ -374,6 +390,8 @@ function HighCardFlushPageContent() {
                   step={10}
                   disabled={loading}
                   showSteppers
+                  invalid={anteInvalid}
+                  describedBy={betInvalid ? 'highcardflush-bet-error' : undefined}
                 />
                 <ChipBetInput
                   id="hcf-flush-bonus"
@@ -385,6 +403,8 @@ function HighCardFlushPageContent() {
                   step={10}
                   disabled={loading}
                   showSteppers
+                  invalid={flushBonusInvalid}
+                  describedBy={betInvalid ? 'highcardflush-bet-error' : undefined}
                 />
                 <ChipBetInput
                   id="hcf-straight-flush"
@@ -396,8 +416,15 @@ function HighCardFlushPageContent() {
                   step={10}
                   disabled={loading}
                   showSteppers
+                  invalid={straightFlushInvalid}
+                  describedBy={betInvalid ? 'highcardflush-bet-error' : undefined}
                 />
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                {betInvalid && (
+                  <p id="highcardflush-bet-error" role="alert" className="text-ds-error text-xs">
+                    {t('betError')}
+                  </p>
+                )}
+                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || betInvalid}>
                   {t('button.bet')}
                 </button>
               </div>
