@@ -417,41 +417,75 @@ describe('CrescentPage keyboard shortcuts', () => {
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
+});
 
-  // #5590: 8 組札 (昇順4 + 降順4) は Congress より複雑なのに、どこまで進んで
-  // いたかを自分で数えるしかなかった。
-  describe('game-over summary', () => {
-    it('reports the foundation count and the percentage', async () => {
-      mockExec.mockResolvedValue(gameOverState);
-      renderWithProviders(<CrescentPage />);
-      const summary = await screen.findByTestId('cr-gameover-summary');
-      // 種札 8 枚のみの盤面 → 8/104 = 8%。**部分一致で見ない** ── 分母の 104 に
-      // "10" も "4" も含まれるので、数字だけを探すと何とでも一致してしまう。
-      expect(summary.textContent).toBe('組札 8/104 枚（8%）まで到達');
+// #5590: 8 組札 (昇順4 + 降順4) は Congress より複雑なのに、どこまで進んで
+// いたかを自分で数えるしかなかった。
+describe('game-over summary', () => {
+  it('reports the foundation count and the percentage', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<CrescentPage />);
+    const summary = await screen.findByTestId('cr-gameover-summary');
+    // 種札 8 枚のみの盤面 → 8/104 = 8%。**部分一致で見ない** ── 分母の 104 に
+    // "10" も "4" も含まれるので、数字だけを探すと何とでも一致してしまう。
+    expect(summary.textContent).toBe('組札 8/104 枚（8%）まで到達');
+  });
+
+  // **数えているのは実際の枚数。**固定値を出す実装では通らない。
+  it('counts what the foundations actually hold', async () => {
+    mockExec.mockResolvedValue({
+      ...gameOverState,
+      foundation: [[card('SPADE', 1), card('SPADE', 2), card('SPADE', 3)], ...gameOverState.foundation.slice(1)],
     });
+    renderWithProviders(<CrescentPage />);
+    const summary = await screen.findByTestId('cr-gameover-summary');
+    expect(summary.textContent).toBe('組札 10/104 枚（10%）まで到達');
+  });
 
-    // **数えているのは実際の枚数。**固定値を出す実装では通らない。
-    it('counts what the foundations actually hold', async () => {
-      mockExec.mockResolvedValue({
-        ...gameOverState,
-        foundation: [[card('SPADE', 1), card('SPADE', 2), card('SPADE', 3)], ...gameOverState.foundation.slice(1)],
-      });
-      renderWithProviders(<CrescentPage />);
-      const summary = await screen.findByTestId('cr-gameover-summary');
-      expect(summary.textContent).toBe('組札 10/104 枚（10%）まで到達');
-    });
+  it('stays away on a clear and during play', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    const { unmount } = renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('cr-gameover-summary')).not.toBeInTheDocument();
+    unmount();
 
-    it('stays away on a clear and during play', async () => {
-      mockExec.mockResolvedValue(gameClearState);
-      const { unmount } = renderWithProviders(<CrescentPage />);
-      await waitFor(() => expect(mockExec).toHaveBeenCalled());
-      expect(screen.queryByTestId('cr-gameover-summary')).not.toBeInTheDocument();
-      unmount();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('cr-gameover-summary')).not.toBeInTheDocument();
+  });
+});
 
-      mockExec.mockResolvedValue(playingState);
-      renderWithProviders(<CrescentPage />);
-      await waitFor(() => expect(mockExec).toHaveBeenCalled());
-      expect(screen.queryByTestId('cr-gameover-summary')).not.toBeInTheDocument();
-    });
+// #6386: 他のソリティアと違う規則（同スート・値差±1・A↔Kラップ・空列不可）
+// なので常設で出す。初回だけのチュートリアルを読んだ後も盤面に残る。
+describe('tableau rules note', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    mockExec.mockResolvedValue(playingState);
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('displays the packing rule note during play with exact text and mentions A-K wrap', async () => {
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    const note = screen.getByTestId('cr-rules-note');
+    expect(note).toBeInTheDocument();
+    expect(note.textContent).toBe('同スートで値差±1（A↔Kはラップ）で重ねられます（空列には置けません）。');
+    expect(note.textContent).toContain('A');
+    expect(note.textContent).toContain('K');
+    expect(note.textContent).toMatch(/A.*K/);
+    expect(note).toHaveClass('text-ds-text-muted');
+    expect(note).toHaveClass('mb-1', 'text-center', 'text-xs');
+  });
+
+  it('persists and displays the note after the tutorial is completed', async () => {
+    localStorage.setItem('tutorial_completed_crescent', 'true');
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    const note = screen.getByTestId('cr-rules-note');
+    expect(note).toBeInTheDocument();
+    expect(note.textContent).toBe('同スートで値差±1（A↔Kはラップ）で重ねられます（空列には置けません）。');
   });
 });
