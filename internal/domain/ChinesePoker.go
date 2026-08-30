@@ -256,15 +256,17 @@ func (cp *ChinesePoker) cpResolve() {
 		wins++
 	}
 
+	// 合計は段別の和そのもの。cpCalcRoyalty を別に呼ぶと同じ 3 関数をもう一度
+	// 通ることになり、「合計 = 段の和」が偶然の一致になる。ここで足す。
 	cp.playerFrontRoyalty = cpFrontRoyalty(cp.playerFrontRank, cp.playerFront)
 	cp.playerMiddleRoyalty = cpMiddleRoyalty(cp.playerMiddleRank)
 	cp.playerBackRoyalty = cpBackRoyalty(cp.playerBackRank)
-	cp.playerRoyalty = cpCalcRoyalty(cp.playerFrontRank, cp.playerMiddleRank, cp.playerBackRank, cp.playerFront)
+	cp.playerRoyalty = cp.playerFrontRoyalty + cp.playerMiddleRoyalty + cp.playerBackRoyalty
 
 	cp.dealerFrontRoyalty = cpFrontRoyalty(cp.dealerFrontRank, cp.dealerFront)
 	cp.dealerMiddleRoyalty = cpMiddleRoyalty(cp.dealerMiddleRank)
 	cp.dealerBackRoyalty = cpBackRoyalty(cp.dealerBackRank)
-	cp.dealerRoyalty = cpCalcRoyalty(cp.dealerFrontRank, cp.dealerMiddleRank, cp.dealerBackRank, cp.dealerFront)
+	cp.dealerRoyalty = cp.dealerFrontRoyalty + cp.dealerMiddleRoyalty + cp.dealerBackRoyalty
 	royaltyDiff := cp.playerRoyalty - cp.dealerRoyalty
 
 	switch wins {
