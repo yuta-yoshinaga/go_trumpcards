@@ -508,8 +508,81 @@ func TestSixCardGolf_CardScore(t *testing.T) {
 	for _, tc := range tests {
 		c := NewCard(CardDesignSpade, tc.value, false)
 		assert.Equal(t, tc.want, g.sixCardGolfCardScore(c))
+		assert.Equal(t, tc.want, SixCardGolfCardScore(c))
 	}
 	assert.Equal(t, 0, g.sixCardGolfCardScore(nil))
+	assert.Equal(t, 0, SixCardGolfCardScore(nil))
+}
+
+func TestSixCardGolfColumnScores(t *testing.T) {
+	t.Run("pair columns cancel to 0", func(t *testing.T) {
+		var grid [SixCardGolfGridSize]SixCardGolfSlot
+		// Col 0: pair of 7s
+		grid[0] = makeSlot(7, CardDesignSpade, true)
+		grid[3] = makeSlot(7, CardDesignHeart, true)
+		// Col 1: pair of Kings (K=0 boundary)
+		grid[1] = makeSlot(13, CardDesignSpade, true)
+		grid[4] = makeSlot(13, CardDesignClover, true)
+		// Col 2: pair of Aces (A=1 boundary)
+		grid[2] = makeSlot(1, CardDesignDiamond, true)
+		grid[5] = makeSlot(1, CardDesignSpade, true)
+
+		scores := SixCardGolfColumnScores(grid)
+		require.Len(t, scores, 3)
+
+		assert.Equal(t, SixCardGolfColumnScore{Score: 0, IsPair: true, HasHidden: false}, scores[0])
+		assert.Equal(t, SixCardGolfColumnScore{Score: 0, IsPair: true, HasHidden: false}, scores[1])
+		assert.Equal(t, SixCardGolfColumnScore{Score: 0, IsPair: true, HasHidden: false}, scores[2])
+	})
+
+	t.Run("hidden cards mark column uncertain and score face-up cards only", func(t *testing.T) {
+		var grid [SixCardGolfGridSize]SixCardGolfSlot
+		// Col 0: top face-up 5, bot face-down 5 (not a pair yet)
+		grid[0] = makeSlot(5, CardDesignSpade, true)
+		grid[3] = makeSlot(5, CardDesignHeart, false)
+		// Col 1: top face-down 8, bot face-up 3
+		grid[1] = makeSlot(8, CardDesignDiamond, false)
+		grid[4] = makeSlot(3, CardDesignClover, true)
+		// Col 2: both face-down
+		grid[2] = makeSlot(10, CardDesignSpade, false)
+		grid[5] = makeSlot(10, CardDesignHeart, false)
+
+		scores := SixCardGolfColumnScores(grid)
+		require.Len(t, scores, 3)
+
+		assert.Equal(t, SixCardGolfColumnScore{Score: 5, IsPair: false, HasHidden: true}, scores[0])
+		assert.Equal(t, SixCardGolfColumnScore{Score: 3, IsPair: false, HasHidden: true}, scores[1])
+		assert.Equal(t, SixCardGolfColumnScore{Score: 0, IsPair: false, HasHidden: true}, scores[2])
+	})
+
+	t.Run("two face-up non-pair cards sum scores with boundaries", func(t *testing.T) {
+		var grid [SixCardGolfGridSize]SixCardGolfSlot
+		// Col 0: top 3 + bot 9 = 12
+		grid[0] = makeSlot(3, CardDesignSpade, true)
+		grid[3] = makeSlot(9, CardDesignHeart, true)
+		// Col 1: King (0 boundary) + 4 = 4
+		grid[1] = makeSlot(13, CardDesignDiamond, true)
+		grid[4] = makeSlot(4, CardDesignClover, true)
+		// Col 2: Ace (1 boundary) + Queen (10) = 11
+		grid[2] = makeSlot(1, CardDesignSpade, true)
+		grid[5] = makeSlot(12, CardDesignHeart, true)
+
+		scores := SixCardGolfColumnScores(grid)
+		require.Len(t, scores, 3)
+
+		assert.Equal(t, SixCardGolfColumnScore{Score: 12, IsPair: false, HasHidden: false}, scores[0])
+		assert.Equal(t, SixCardGolfColumnScore{Score: 4, IsPair: false, HasHidden: false}, scores[1])
+		assert.Equal(t, SixCardGolfColumnScore{Score: 11, IsPair: false, HasHidden: false}, scores[2])
+	})
+
+	t.Run("nil card handling marks hidden", func(t *testing.T) {
+		var grid [SixCardGolfGridSize]SixCardGolfSlot
+		grid[0] = SixCardGolfSlot{Card: nil, FaceUp: true}
+		grid[3] = makeSlot(5, CardDesignSpade, true)
+
+		scores := SixCardGolfColumnScores(grid)
+		assert.Equal(t, SixCardGolfColumnScore{Score: 5, IsPair: false, HasHidden: true}, scores[0])
+	})
 }
 
 // --- End Trigger & Final Turns ---
