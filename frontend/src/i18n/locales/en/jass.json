@@ -34,6 +34,7 @@
   "trickCount": "Tricks: {{count}}",
   "roundPoints": "Round: {{points}} pts",
   "weisPoints": "Weis: {{points}} pts",
+  "lastTrickBonus": "Last trick +{{points}}",
   "stockPoints": "Stöck: {{points}} pts",
   "weisPanel": {
     "title": "Weis (meld) declarations",

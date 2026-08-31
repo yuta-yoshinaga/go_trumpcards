@@ -257,4 +257,39 @@ describe('JassPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
+
+  // **ラストトリックボーナスは roundPoints に無言で足されていた。**Weis と Stock は
+  // それぞれ行を持つのに、これだけ内訳が無く、設定値も画面に出ていなかった (#6481)。
+  it('breaks out the last-trick bonus for the team that took it', async () => {
+    // 席 2 はチーム 0。ラウンドが終わって加点が確定している。
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.ROUND_END, lastTrickWinner: 2 }));
+    renderWithProviders(<JassPage />);
+
+    const row = await screen.findByTestId('ja-last-trick-bonus');
+    const cells = row.querySelectorAll('td');
+    // 設定値がそのまま出る (fixture は 5)。
+    expect(cells[0]).toHaveTextContent('5');
+    // **取っていないチームの側は空。**両方に出すと、相手も貰ったように読める。
+    expect(cells[1]).toBeEmptyDOMElement();
+    expect(row.textContent).not.toContain('{{');
+  });
+
+  it('puts the bonus on the other team when they took the last trick', async () => {
+    // 席 3 はチーム 1。
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.ROUND_END, lastTrickWinner: 3 }));
+    renderWithProviders(<JassPage />);
+
+    const cells = (await screen.findByTestId('ja-last-trick-bonus')).querySelectorAll('td');
+    expect(cells[0]).toBeEmptyDOMElement();
+    expect(cells[1]).toHaveTextContent('5');
+  });
+
+  // **まだ加点されていないうちは出さない。**`lastTrickWinner` は毎トリック
+  // 更新されるので、プレイ中に出すと誰も取っていないボーナスを名指しする。
+  it('does not claim a last-trick bonus mid-round', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.PLAY, lastTrickWinner: 2 }));
+    renderWithProviders(<JassPage />);
+    await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
+    expect(screen.queryByTestId('ja-last-trick-bonus')).not.toBeInTheDocument();
+  });
 });
