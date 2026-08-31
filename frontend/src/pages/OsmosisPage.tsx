@@ -40,6 +40,9 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 /** Card rank value (1–13) → short display label. */
 const RANK_LABELS = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
+/** Ring applied to the card and foundation row the frontend hint points at (#6421). */
+const HINT_RING = 'ring-2 ring-ds-warning';
+
 /** Tutorial steps for the Osmosis solitaire game. */
 const OS_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -192,6 +195,11 @@ function OsmosisPageContent() {
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
   if (!state) return null;
 
+  // 盤面のリングはフロントエンドヒントが有効なときだけ光らせる。`state.hint` は
+  // OsmosisWebPresenter.Output が毎レスポンス受動的に埋めるので、ゲートを外すと
+  // 常時点灯してしまう。useGameHint はヒント設定 OFF のとき null を返すので、
+  // `frontendHint` の有無がそのままゲートになる。
+  const hintedMove = frontendHint ? (state.hint ?? null) : null;
   const topWaste = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const isSelected = (zone: OsmosisMoveZone) => !!selected && selected.zone === zone.zone && selected.col === zone.col;
 
@@ -288,13 +296,9 @@ function OsmosisPageContent() {
                       // どれを触っているのか分からなくなる。
                       aria-describedby={blocked ? `os-foundation-blocked-${i.toString()}` : undefined}
                       title={blocked ? t('cannotPlaceHere') : undefined}
-                      className={
-                        blocked
-                          ? `flex w-full items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-ds-error`
-                          : selected || dnd.isDragging
-                            ? `flex w-full items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-ds-info`
-                            : `flex w-full items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-white/30`
-                      }
+                      className={`flex w-full items-center gap-2 rounded border p-1 text-left ${focusRingWhite} ${
+                        blocked ? 'border-ds-error' : selected || dnd.isDragging ? 'border-ds-info' : 'border-white/30'
+                      } ${hintedMove?.toCol === i ? HINT_RING : ''}`}
                     >
                       <span className="w-5 text-xs text-ds-text-muted">#{i}</span>
                       <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
@@ -344,11 +348,11 @@ function OsmosisPageContent() {
                         disabled={!isPlaying || loading}
                         aria-label={`${t('reserve')} ${i}`}
                         aria-pressed={isSelected(zone)}
-                        className={
-                          isSelected(zone)
-                            ? `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-ds-info ${dnd.isDragSource(zone) ? 'opacity-50' : ''}`
-                            : `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-transparent ${dnd.isDragSource(zone) ? 'opacity-50' : ''}`
-                        }
+                        className={`p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
+                          isSelected(zone) ? 'border-ds-info' : 'border-transparent'
+                        } ${dnd.isDragSource(zone) ? 'opacity-50' : ''} ${
+                          hintedMove?.fromZone === 'reserve' && hintedMove.fromCol === i ? HINT_RING : ''
+                        }`}
                       >
                         <AnimatedCard card={top} width={cardWidth} draggable={false} />
                       </button>
@@ -398,11 +402,11 @@ function OsmosisPageContent() {
                       disabled={!isPlaying || loading}
                       aria-label={t('waste')}
                       aria-pressed={isSelected({ zone: 'waste' })}
-                      className={
-                        isSelected({ zone: 'waste' })
-                          ? `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-ds-info ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`
-                          : `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-transparent ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`
-                      }
+                      className={`p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
+                        isSelected({ zone: 'waste' }) ? 'border-ds-info' : 'border-transparent'
+                      } ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''} ${
+                        hintedMove?.fromZone === 'waste' ? HINT_RING : ''
+                      }`}
                     >
                       <AnimatedCard card={topWaste} width={cardWidth} draggable={false} />
                     </button>

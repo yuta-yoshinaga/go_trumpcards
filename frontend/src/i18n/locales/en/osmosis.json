@@ -29,7 +29,9 @@
   "moveReserveToFoundation": "Reserve → Foundation",
   "moveWasteToFoundation": "Waste → Foundation",
   "frontendHint": {
-    "moveToFoundation": "A card can seep into a foundation"
+    "moveToFoundation": "A card can seep into a foundation",
+    "osmosisFromReserve": "The card on reserve {{col}} can seep into foundation {{foundation}}",
+    "osmosisFromWaste": "The waste card can seep into foundation {{foundation}}"
   },
   "kbd": {
     "draw": "D",

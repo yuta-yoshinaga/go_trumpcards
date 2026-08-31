@@ -72,6 +72,15 @@ const ALLOWED = new Map([
       ' hint コマンドを叩くボタンも無いので、門番を通すと恒久的に false になる。',
   ],
   [
+    'Osmosis',
+    'ヒントのリングは **フロントエンドヒントの設定チェックボックス** でのみ点く' +
+      ' (useGameHint が OFF のとき null を返すので frontendHint の有無がゲート)。' +
+      ' isRequestedHint に切り替えることは構造的にできない: OsmosisWebPresenter.HintOutput は' +
+      ' Waste / Reserve / Foundation を空配列で返し、useGameApi は setState(res) で状態を' +
+      ' 丸ごと差し替えるので、osmosis.hintAvailable が立っている瞬間だけは光らせる盤面が' +
+      ' 存在しない。#6421。',
+  ],
+  [
     'Speed',
     'Speed の hint は #1055 (ゲーム追加時) から Output に乗っていて、リアルタイム進行の' +
       ' UI の一部。#4483 が持ち込んだ常時表示ではないので、門番を通すと元からある機能が消える。',
