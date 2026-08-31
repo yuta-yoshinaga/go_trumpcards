@@ -14,6 +14,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeSuecaPlayers() []*domain.SuecaPlayer {
@@ -36,6 +37,8 @@ func setupSuecaCuiMock() *interfaces.MockSuecaGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetRoundCardPoints").Return([domain.SuecaTeamCnt]int{0, 0})
+	m.On("GetRoundWinnerTeam").Return(-1)
+	m.On("GetRoundGamePoints").Return(0)
 	m.On("GetTeamGamePoints").Return([domain.SuecaTeamCnt]int{0, 0})
 	m.On("GetLeadPlayerIdx").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
@@ -195,4 +198,67 @@ func TestSuecaCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetPlayer", mock.Anything).Return(domain.NewSuecaPlayer(true)).Maybe()
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// **マッチ通算が 1・2・4 のどれ増えたのか理由が出ていなかった。**カード点だけでは
+// 61-90 / 91-119 / 120 のどの段だったのかが読めない (#6438)。
+func TestSuecaCuiPresenter_ShowsTheRoundAward(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.SuecaCuiPresenter)
+
+	roundEnd := func(team, gamePts int) *interfaces.MockSuecaGame {
+		m, _ := setupSuecaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundWinnerTeam")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundGamePoints")
+		m.On("GetPhase").Return(domain.SuecaPhaseRoundEnd)
+		m.On("GetRoundWinnerTeam").Return(team)
+		m.On("GetRoundGamePoints").Return(gamePts)
+		return m
+	}
+
+	for _, tc := range []struct {
+		name    string
+		team    int
+		gamePts int
+		kindKey string
+	}{
+		{"61-90 scores one", 0, 1, "sueca.gamePointsNormal"},
+		{"91-119 scores double", 1, 2, "sueca.gamePointsDouble"},
+		{"a shutout scores quadruple", 0, 4, "sueca.gamePointsShutout"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			out := p.Output(roundEnd(tc.team, tc.gamePts), nil)
+			label := "A"
+			if tc.team == 1 {
+				label = "B"
+			}
+			assert.Contains(t, out, i18n.Tf("sueca.roundGamePoints",
+				"team", label,
+				"points", strconv.Itoa(tc.gamePts),
+				"kind", i18n.T(tc.kindKey)))
+			assert.NotContains(t, out, "{{")
+			// 段の名前は取り違えない ── 4 点なのに「通常」と言わないこと。
+			for _, other := range []string{"sueca.gamePointsNormal", "sueca.gamePointsDouble", "sueca.gamePointsShutout"} {
+				if other != tc.kindKey {
+					assert.NotContains(t, out, i18n.T(other))
+				}
+			}
+		})
+	}
+
+	t.Run("a draw awards nothing", func(t *testing.T) {
+		out := p.Output(roundEnd(-1, 0), nil)
+		assert.Contains(t, out, i18n.T("sueca.roundGamePointsDraw"))
+		assert.NotContains(t, out, i18n.T("sueca.gamePointsNormal"))
+	})
+
+	t.Run("nothing is said outside the round end", func(t *testing.T) {
+		m, _ := setupSuecaCuiMockWithPlayers()
+		out := p.Output(m, nil) // 既定は Play フェーズ
+		assert.NotContains(t, out, i18n.T("sueca.roundGamePointsDraw"))
+		assert.NotContains(t, out, i18n.T("sueca.gamePointsNormal"))
+	})
 }

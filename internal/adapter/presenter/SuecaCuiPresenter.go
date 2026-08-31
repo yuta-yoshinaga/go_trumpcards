@@ -70,7 +70,7 @@ func (p *SuecaCuiPresenter) Output(g interfaces.SuecaGame, lastErr error) string
 			winnerTeam := g.GetWinnerTeam()
 			var winnerStr string
 			if winnerTeam >= 0 {
-				winnerStr = strconv.Itoa(winnerTeam)
+				winnerStr = suecaCuiTeamLabel(winnerTeam)
 			}
 			banner := i18n.Tf("sueca.gameEnd", "team", winnerStr)
 			b.WriteString(color.Green(banner) + "\n")
@@ -111,9 +111,47 @@ func (p *SuecaCuiPresenter) Output(g interfaces.SuecaGame, lastErr error) string
 			b.WriteString(i18n.Tf("sueca.promptRoundEnd",
 				"ptsA", strconv.Itoa(pts[0]),
 				"ptsB", strconv.Itoa(pts[1])) + "\n")
+			// **マッチ通算が 1・2・4 のどれ増えたのか理由が出ていなかった。**
+			// カード点だけでは、61-90 / 91-119 / 120 のどの段だったのかが読めない (#6438)。
+			b.WriteString(suecaGamePointsLine(g) + "\n")
 			b.WriteString(i18n.T("sueca.promptRoundEndHelp") + "\n")
 		}
 	})
+}
+
+// suecaCuiTeamLabel は席のチーム番号を表示用の A / B に直す。
+//
+// **同じ画面で呼び名を混ぜない。**`promptRoundEnd` は「チームA / チームB」と
+// 出しているのに、勝利バナーだけが `strconv.Itoa` の「チーム0」を出していた。
+func suecaCuiTeamLabel(team int) string {
+	if team == 0 {
+		return "A"
+	}
+	return "B"
+}
+
+// suecaGamePointsLine renders which side scored this round and at which multiplier.
+//
+// 段は勝者のカード点で決まる (`suecaGamePoints`): 61-90=1、91-119=2、120=4。
+// 段の名前はゲームポイントの値から引く ── カード点をここでもう一度しきい値に
+// かけると、ドメインと 2 箇所で同じ規則を持つことになる。
+func suecaGamePointsLine(g interfaces.SuecaGame) string {
+	team := g.GetRoundWinnerTeam()
+	if team < 0 {
+		return i18n.T("sueca.roundGamePointsDraw")
+	}
+	gamePts := g.GetRoundGamePoints()
+	kindKey := "sueca.gamePointsNormal"
+	switch gamePts {
+	case 4:
+		kindKey = "sueca.gamePointsShutout"
+	case 2:
+		kindKey = "sueca.gamePointsDouble"
+	}
+	return i18n.Tf("sueca.roundGamePoints",
+		"team", suecaCuiTeamLabel(team),
+		"points", strconv.Itoa(gamePts),
+		"kind", i18n.T(kindKey))
 }
 
 // HintOutput emits the current Sueca hint.

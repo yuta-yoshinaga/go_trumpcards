@@ -23,5 +23,10 @@
   "roundPoints": "Card points -- Team A: {{ptsA}} / Team B: {{ptsB}} (win at {{win}})",
   "helpExamplePlay": "  play 0                   play hand card 0",
   "helpExampleNext": "  n                        read the trick result, then start the next trick",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "roundGamePoints": "Round award: {{team}} +{{points}} ({{kind}})",
+  "roundGamePointsDraw": "Round award: none (draw)",
+  "gamePointsNormal": "normal",
+  "gamePointsDouble": "double (91+ card points)",
+  "gamePointsShutout": "quadruple (shutout, all 120)"
 }

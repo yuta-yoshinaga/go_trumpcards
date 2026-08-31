@@ -45,7 +45,12 @@
   "roundResult": {
     "title": "Round Result",
     "teamA": "Team A card points: {{points}}",
-    "teamB": "Team B card points: {{points}}"
+    "teamB": "Team B card points: {{points}}",
+    "gamePoints": "Round award: {{team}} +{{points}} ({{kind}})",
+    "gamePointsDraw": "Round award: none (draw)",
+    "gamePointsNormal": "normal",
+    "gamePointsDouble": "double (91+ card points)",
+    "gamePointsShutout": "quadruple (shutout, all 120)"
   },
   "hintAvailable": "Hint",
   "hint": {
