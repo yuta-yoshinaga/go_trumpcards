@@ -66903,6 +66903,13 @@ components:
           description: Seat indices that lost a life in the most recent round
           items:
             type: integer
+        swapTargetIdx:
+          type: integer
+          description: >-
+            Seat the current player would trade with if they swap, or -1 when
+            nobody else is still in. Eliminated seats are skipped, so this is
+            not always the seat beside them. The dealer trades with the stock
+            instead, so clients handle that case before reading this.
         players:
           type: array
           items:

@@ -47,6 +47,11 @@ type CuckooWebOutput struct {
 	PendingSwapTo    int                      `json:"pendingSwapTo"`
 	RoundLowest      int                      `json:"roundLowest"`
 	RoundLosers      []int                    `json:"roundLosers"`
+	// SwapTargetIdx は現在の手番が交換を選んだときの相手の席 (-1 = 相手なし)。
+	// **脱落者は手番から飛ばされるので席順の隣とは限らない。**以前はクライアントが
+	// 同じ規則を再計算していた (#6852)。ディーラーは山札と交換するので、その分岐は
+	// 表示側が先に処理する。
+	SwapTargetIdx int `json:"swapTargetIdx"`
 	WebOutputBase
 	Config CuckooWebOutputConfig `json:"config"`
 }
@@ -87,6 +92,7 @@ func newCuckooDefaultOutput(msg string) *CuckooWebOutput {
 		PendingSwapTo:   -1,
 		RoundLowest:     -1,
 		RoundLosers:     make([]int, 0),
+		SwapTargetIdx:   -1,
 		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }

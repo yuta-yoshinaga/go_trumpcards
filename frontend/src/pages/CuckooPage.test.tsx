@@ -55,6 +55,7 @@ function makeState(overrides: Partial<CuckooResponse> = {}): CuckooResponse {
     pendingSwapTo: -1,
     roundLowest: -1,
     roundLosers: [],
+    swapTargetIdx: 1,
     config: { cpuDifficulty: 1, initialLives: 3 },
     message: '',
     ...overrides,
@@ -288,9 +289,14 @@ describe('CuckooPage', () => {
     expect(preview).toHaveTextContent('CPU 1');
   });
 
-  it('skips eliminated seats when naming the target', async () => {
+  // **相手を決める規則はサーバが持つ** (#6852)。以前はここで席順を辿り直して
+  // いたが、同じ規則の実装が 2 つあると片方だけ直る。脱落者を飛ばすこと自体は
+  // `TestCuckoo_GetSwapTargetIdxSkipsEliminatedSeats` が見る。ここで見るのは
+  // 「サーバが指した席を名指しする」こと ── 席順の隣を出す実装なら落ちる。
+  it('names the seat the server points at, not the one beside you', async () => {
     mockExec.mockResolvedValue(
       makeState({
+        swapTargetIdx: 2,
         players: [
           makePlayer({ id: 0, isHuman: true, card: { design: 'SPADE', value: 5 }, isCurrentTurn: true }),
           makePlayer({ id: 1, isEliminated: true }),
@@ -301,7 +307,9 @@ describe('CuckooPage', () => {
     );
     renderWithProviders(<CuckooPage />);
 
-    expect(await screen.findByTestId('cuckoo-swap-target')).toHaveTextContent('CPU 2');
+    const line = await screen.findByTestId('cuckoo-swap-target');
+    expect(line).toHaveTextContent('CPU 2');
+    expect(line).not.toHaveTextContent('CPU 1');
   });
 
   // ディーラーは山札と交換するので、相手の名前ではなく専用の文言。
@@ -316,9 +324,11 @@ describe('CuckooPage', () => {
 
   // **他に生き残りがいなければスワップは保持と同義** (domain の attemptSwap)。
   // 相手がいないので名前も出さない。
+  // -1 = 相手なし。存在しない席を名指ししない。
   it('says nothing when no one is left to swap with', async () => {
     mockExec.mockResolvedValue(
       makeState({
+        swapTargetIdx: -1,
         players: [
           makePlayer({ id: 0, isHuman: true, card: { design: 'SPADE', value: 5 }, isCurrentTurn: true }),
           makePlayer({ id: 1, isEliminated: true }),
