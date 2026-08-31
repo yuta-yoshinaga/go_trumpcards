@@ -334,6 +334,44 @@ describe('FiveHundredPage joker lead suit', () => {
     expect(label).toHaveTextContent('♥');
   });
 
+  // **記号ではなく語で読み上げる。**指名スートは `♥` のグリフだけで出ていて、
+  // 支援技術には何も届かないかコードポイント名になっていた。sr-only 側には
+  // スート名の語を出し、生の id (1〜4) は出さない (#6422)。
+  it('speaks the named suit as a word, not as a glyph or a numeric id', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2, // PLAY
+        jokerLeadSuit: 3,
+        currentTrick: [{ playerIdx: 0, card: { design: 'JOKER', value: 0 } }],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+
+    const label = await screen.findByTestId('fh-joker-lead-suit');
+    const spoken = label.querySelector('.sr-only');
+    expect(spoken?.textContent).toBe('ジョーカー指名スート: ハート');
+    // 目で読む記号側は読み上げから外す ── 同じ行が二重に読まれないように。
+    expect(label.querySelector('[aria-hidden="true"]')?.textContent).toBe('ジョーカー指名スート: ♥');
+    expect(spoken?.textContent).not.toMatch(/[♠♣♥♦]|\d/);
+  });
+
+  // 指名が入った瞬間に読み上げさせるため、囲いは**常設**のライブ領域。
+  it('keeps the live region mounted while no suit is named', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2, // PLAY
+        jokerLeadSuit: -1,
+        currentTrick: [{ playerIdx: 0, card: { design: 'HEART', value: 5 } }],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const live = screen.getByTestId('fh-joker-lead-live');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live.textContent).toBe('');
+  });
+
   it('shows nothing when the lead named no suit', async () => {
     mockExec.mockResolvedValue(
       makeState({

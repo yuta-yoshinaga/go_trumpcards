@@ -67,6 +67,19 @@ function suitGlyph(suit: number): string {
   return SUITS.find((s) => s.id === suit)?.glyph ?? 'NT';
 }
 
+/** Suit id → i18n key under `suitName`. */
+const SUIT_NAME_KEYS: Record<number, string> = { 1: 'spade', 2: 'club', 3: 'heart', 4: 'diamond' };
+
+/**
+ * Returns the `suitName.*` key for a suit id, or null when the suit has no name.
+ *
+ * The glyph is what a sighted player reads, but `♠` reaches a screen reader as
+ * either nothing or a codepoint name, so the spoken form needs a word (#6422).
+ */
+function suitNameKey(suit: number): string | null {
+  return SUIT_NAME_KEYS[suit] ?? null;
+}
+
 /** Tutorial steps for 500. */
 const FH_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="fh-info"]', messageKey: 'tutorial.info', placement: 'bottom', advanceOn: 'next' },
@@ -110,7 +123,6 @@ function FiveHundredPageContent() {
   } = useGameHint('fivehundred', state);
 
   const [bidTricks, setBidTricks] = useState(6);
-  const [jokerSuit, setJokerSuit] = useState<number | null>(null);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fivehundred');
@@ -179,7 +191,6 @@ function FiveHundredPageContent() {
   const handlePlay = (nominate?: number) => {
     if (selectedIdx === undefined) return;
     play(selectedIdx, nominate ?? undefined);
-    setJokerSuit(null);
   };
 
   const handleExchange = () => {
@@ -259,11 +270,25 @@ function FiveHundredPageContent() {
               {/* ジョーカーがリードされた間、他の3人が従うスートはこの指名で
                   決まる。ドメインもレスポンスも持っていたのに、どちらの画面にも
                   出ていなかった (#5626)。指名が無いとき (-1) は出さない。 */}
-              {state.jokerLeadSuit > 0 && (
-                <div className="text-center text-sm text-ds-warning mb-2" data-testid="fh-joker-lead-suit">
-                  {t('jokerLeadSuit', { suit: suitGlyph(state.jokerLeadSuit) })}
-                </div>
-              )}
+              {/* **ライブ領域は常設。**指名が入ったときだけ現れる要素に role を付けると、
+                  要素ごと現れる形になり読み上げられないことがある。中身だけを差し替える。
+                  記号は目で読む人のもので、`♠` は支援技術には何も届かないか
+                  コードポイント名になるので、読み上げ用にはスート名の語を別に出す (#6422)。 */}
+              <div role="status" aria-live="polite" data-testid="fh-joker-lead-live">
+                {state.jokerLeadSuit > 0 && (
+                  <div className="text-center text-sm text-ds-warning mb-2" data-testid="fh-joker-lead-suit">
+                    <span aria-hidden="true">{t('jokerLeadSuit', { suit: suitGlyph(state.jokerLeadSuit) })}</span>
+                    <span className="sr-only">
+                      {t('jokerLeadSuit', {
+                        suit:
+                          suitNameKey(state.jokerLeadSuit) === null
+                            ? suitGlyph(state.jokerLeadSuit)
+                            : t(`suitName.${suitNameKey(state.jokerLeadSuit)}`),
+                      })}
+                    </span>
+                  </div>
+                )}
+              </div>
               <div className="flex justify-center gap-2 min-h-[60px]">
                 {state.currentTrick.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('trickEmpty')}</span>
@@ -479,10 +504,7 @@ function FiveHundredPageContent() {
                       <button
                         key={s.id}
                         type="button"
-                        onClick={() => {
-                          setJokerSuit(s.id);
-                          handlePlay(s.id);
-                        }}
+                        onClick={() => handlePlay(s.id)}
                         disabled={loading}
                         className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
                       >
@@ -555,8 +577,6 @@ function FiveHundredPageContent() {
                   {t('nextRoundButton')}
                 </button>
               )}
-
-              {jokerSuit !== null && <span className="sr-only">{jokerSuit}</span>}
 
               <GameResetButton
                 isGameEnd={isGameEnd}

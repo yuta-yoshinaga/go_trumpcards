@@ -17,6 +17,12 @@
   "passed": "pass",
   "currentTrick": "Current trick",
   "jokerLeadSuit": "Joker named suit: {{suit}}",
+  "suitName": {
+    "spade": "Spades",
+    "club": "Clubs",
+    "heart": "Hearts",
+    "diamond": "Diamonds"
+  },
   "trickEmpty": "(no cards yet)",
   "lead": "Lead",
   "tricksLabel": "Tricks",
