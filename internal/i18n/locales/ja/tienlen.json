@@ -9,6 +9,7 @@
   "playerFinished": ": 上がり ({{rank}}位)",
   "playerCardCount": ": {{count}}枚",
   "tableCards": "場",
+  "tablePlayedBy": " [{{name}}]",
   "tableEmpty": "場: なし (自由に出せます)",
   "gameEnd": "ゲーム終了！",
   "rankN": "{{rank}}位",
