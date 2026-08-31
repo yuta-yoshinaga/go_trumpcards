@@ -5,6 +5,9 @@ package domain
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // rbCard 表向きカードを生成するテストヘルパ。
@@ -357,5 +360,40 @@ func TestRussianBank_StalemateEndsGame(t *testing.T) {
 	}
 	if g.GetWinner() != 0 {
 		t.Errorf("winner = %d, want 0 (fewer reserve cards)", g.GetWinner())
+	}
+}
+
+// **送り先はスートで決まる。**画面が「どこへ行くのか」を示せるよう、各台が
+// 次に受ける札そのものを渡す ── 規則をクライアントに書き写すと必ずずれる (#6473)。
+func TestRussianBank_GetFoundationNextDescribesEachPile(t *testing.T) {
+	g := NewDefaultRussianBank()
+	g.Reset()
+
+	next := g.GetFoundationNext()
+	require.Len(t, next, RussianBankFoundationCnt)
+
+	// 配り直後はすべて空 → どのスートのエースでも受ける。
+	for i, n := range next {
+		assert.Equal(t, 0, n.Design, "pile %d should accept any suit while empty", i)
+		assert.Equal(t, 1, n.Value, "pile %d should be waiting for an Ace", i)
+	}
+
+	// 台に札が乗ったら、その続きだけを受ける。
+	g.foundations[2] = []*Card{NewCard(CardDesignHeart, 1, false), NewCard(CardDesignHeart, 2, false)}
+	next = g.GetFoundationNext()
+	assert.Equal(t, CardDesignHeart, next[2].Design)
+	assert.Equal(t, 3, next[2].Value)
+	// 他の台は変わらない。
+	assert.Equal(t, 0, next[0].Design)
+	assert.Equal(t, 1, next[0].Value)
+
+	// **ドメインの判定と食い違わないこと。**受けると言った札は本当に置ける。
+	for i, n := range next {
+		design := n.Design
+		if design == 0 {
+			design = CardDesignSpade // 「任意」の代表として黒スートで試す
+		}
+		assert.True(t, g.rbCanPlaceFoundation(NewCard(design, n.Value, false), i),
+			"pile %d says it accepts %d of design %d but rbCanPlaceFoundation disagrees", i, n.Value, design)
 	}
 }

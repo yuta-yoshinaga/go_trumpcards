@@ -251,6 +251,36 @@ func (g *RussianBank) rbCanPlaceFoundation(card *Card, fIdx int) bool {
 	return card.GetDesign() == top.GetDesign() && card.GetValue() == top.GetValue()+1
 }
 
+// RussianBankFoundationNext はファウンデーションが次に受け取れる札の条件。
+//
+// Design が 0 のときは「どのスートでもよい」── 空の台はどのスートのエースも
+// 受ける。Value は必要なランク。
+type RussianBankFoundationNext struct {
+	Design int
+	Value  int
+}
+
+// GetFoundationNext は各ファウンデーションが次に受け取れる札の条件を返す。
+//
+// **置ける台はスートから自動で決まる。**画面には 8 本の枠が並ぶが、どれを
+// 押しても `MoveToFoundation` は `rbFoundationFor` で送り先を選び直すので、
+// 実行される処理は完全に同一だった (#6473)。「どこへ行くのか」を画面が
+// 示すには判定の材料が要るが、規則をクライアントに書き写すと必ずずれる ──
+// 各台が次に受ける札そのものを渡し、突き合わせはカードの一致だけにする。
+func (g *RussianBank) GetFoundationNext() [RussianBankFoundationCnt]RussianBankFoundationNext {
+	var out [RussianBankFoundationCnt]RussianBankFoundationNext
+	for i := 0; i < RussianBankFoundationCnt; i++ {
+		pile := g.foundations[i]
+		if len(pile) == 0 {
+			out[i] = RussianBankFoundationNext{Design: 0, Value: 1}
+			continue
+		}
+		top := pile[len(pile)-1]
+		out[i] = RussianBankFoundationNext{Design: top.GetDesign(), Value: top.GetValue() + 1}
+	}
+	return out
+}
+
 // rbFoundationFor card を置ける最初のファウンデーション番号を返す (なければ -1)。
 func (g *RussianBank) rbFoundationFor(card *Card) int {
 	for i := 0; i < RussianBankFoundationCnt; i++ {

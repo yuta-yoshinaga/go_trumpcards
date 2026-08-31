@@ -64,6 +64,17 @@ export interface RussianBankResponse extends BaseGameResponse {
   tableau: Card[][];
   /** The 8 shared foundations (A-up by suit; top card is last). */
   foundations: Card[][];
+  /**
+   * What each foundation will accept next, in the same order as
+   * {@link RussianBankResponse.foundations}.
+   *
+   * **The destination pile is chosen by the rules, not by the player** — every
+   * foundation slot used to be clickable and all of them ran the same command
+   * (#6473). Match the selected card against these instead of re-deriving the
+   * rule client-side. An empty `design` means any suit (an empty pile takes any
+   * Ace).
+   */
+  foundationNext: { design: string; value: number }[];
   /** Optional move hint (present only on a hint request). */
   hint?: RussianBankHint;
   /** One entry per player (index 0 = human). */
