@@ -20,5 +20,8 @@
   "promptNext": "n to start the next round",
   "promptCurrentTurn": "Current turn: {{name}} (Team {{team}})",
   "promptHelp": "p <hand> [table...] to capture or lay / n for the next round",
-  "helpExampleNext": "  n                        read the round result, then continue"
+  "helpExampleNext": "  n                        read the round result, then continue",
+  "errHandIndexOutOfRange": "Hand index {{idx}} is out of range.",
+  "errInvalidCapture": "Those table cards are not a legal capture for that card.",
+  "errCaptureRequired": "A capture is available, so it must be taken."
 }
