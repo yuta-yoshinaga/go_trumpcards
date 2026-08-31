@@ -32,6 +32,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { MichiganResponse } from '../types/card';
 import { MichiganPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { MICHIGAN_HELP, parseMichiganCommand } from '../utils/cli/commands/michiganCommands';
 import { formatMichiganState } from '../utils/cli/formatters/michiganFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -379,7 +380,7 @@ function MichiganPageContent() {
                       }`}
                       data-testid={`hand-card-${i}`}
                       data-playable={canPlay(i) ? 'true' : 'false'}
-                      aria-label={t('playCardAria', { index: i })}
+                      aria-label={t('playCardAria', { card: cardAlt(c) })}
                     >
                       <CardImage card={c} width={cardWidth} />
                       {canPlay(i) && (
