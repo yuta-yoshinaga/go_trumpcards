@@ -13,6 +13,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // ScopaPlayerCnt スコパのプレイヤー数 (ヘッズアップ固定)
@@ -235,16 +236,17 @@ func (s *Scopa) applyPlay(playerIdx, handIdx int, tableIdxs []int, record func(*
 	player := s.players[playerIdx]
 	handCard := player.GetCard(handIdx)
 	if handCard == nil {
-		return NewDomainError(ErrInvalidCard, fmt.Sprintf("hand index %d out of range", handIdx))
+		return NewDomainErrorCode(ErrInvalidCard, "scopa.errHandIndexOutOfRange",
+			map[string]string{"idx": strconv.Itoa(handIdx)})
 	}
 
 	if len(tableIdxs) > 0 {
 		if !isValidScopaCapture(handCard, s.round.tableCards, tableIdxs) {
-			return NewDomainError(ErrInvalidPlay, "selected table cards do not form a valid capture")
+			return NewDomainErrorCode(ErrInvalidPlay, "scopa.errInvalidCapture", nil)
 		}
 	} else if len(EnumerateScopaCaptures(handCard, s.round.tableCards)) > 0 {
 		// 捕獲可能なときは捕獲が必須 (場に置けない)。
-		return NewDomainError(ErrInvalidPlay, "a capture is available and must be taken")
+		return NewDomainErrorCode(ErrInvalidPlay, "scopa.errCaptureRequired", nil)
 	}
 
 	_ = player.RemoveCard(handIdx)
