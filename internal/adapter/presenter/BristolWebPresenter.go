@@ -109,6 +109,15 @@ func (p *BristolWebPresenter) HintOutput(b interfaces.BristolGame) string {
 	return marshalOrError(resObj)
 }
 
+// TargetsOutput は Web では通常の盤面をそのまま返す。
+//
+// 置ける先の強調は `buildLegalTargets` がこの盤面から作っている ──
+// Web には `targets` に当たる操作が無く、選択した瞬間に見えている (#6427)。
+// ここで別の形を返すと、CUI 専用の応答が Web の経路に紛れ込む。
+func (p *BristolWebPresenter) TargetsOutput(b interfaces.BristolGame, _ string, _ int) string {
+	return p.Output(b, nil)
+}
+
 // ActionLogOutput 棋譜をJSON出力
 func (p *BristolWebPresenter) ActionLogOutput(b interfaces.BristolGame) string {
 	return actionLogOutputJSON(b)

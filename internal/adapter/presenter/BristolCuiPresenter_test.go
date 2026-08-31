@@ -3,9 +3,12 @@
 package presenter
 
 import (
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -178,4 +181,106 @@ func TestBristolCuiPresenterSaysNothingWhenPlayable(t *testing.T) {
 
 	out := new(BristolCuiPresenter).Output(bg, nil)
 	assert.NotContains(t, out, i18n.T("cuiSolitaireStalemate"))
+}
+
+// #6427: 置ける先が無いときに黙ると、コマンドが効いていないのか置けないのかが
+// 区別できない。
+func TestBristolCuiPresenter_TargetsOutput(t *testing.T) {
+	i18n.SetLang("ja")
+
+	t.Run("tableau source with legal targets", func(t *testing.T) {
+		g := new(interfaces.MockBristolGame)
+		g.On("LegalTargets", "tableau", 3).Return([]int{1, 7}, []int{2})
+
+		out := new(BristolCuiPresenter).TargetsOutput(g, "tableau", 3)
+		assert.Contains(t, out, i18n.Tf("bristol.fromTableau", "col", "3"))
+		assert.Contains(t, out, i18n.Tf("bristol.targetTableau", "col", "1"))
+		assert.Contains(t, out, i18n.Tf("bristol.targetTableau", "col", "7"))
+		assert.Contains(t, out, i18n.Tf("bristol.targetFoundation", "idx", "2"))
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("fan source with legal targets", func(t *testing.T) {
+		g := new(interfaces.MockBristolGame)
+		g.On("LegalTargets", "fan", 1).Return([]int{0, 4}, []int{3})
+
+		out := new(BristolCuiPresenter).TargetsOutput(g, "fan", 1)
+		assert.Contains(t, out, i18n.Tf("bristol.fromFan", "idx", "1"))
+		assert.Contains(t, out, i18n.Tf("bristol.targetTableau", "col", "0"))
+		assert.Contains(t, out, i18n.Tf("bristol.targetTableau", "col", "4"))
+		assert.Contains(t, out, i18n.Tf("bristol.targetFoundation", "idx", "3"))
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("tableau source with no legal targets", func(t *testing.T) {
+		g := new(interfaces.MockBristolGame)
+		g.On("LegalTargets", "tableau", 3).Return([]int(nil), []int(nil))
+
+		out := new(BristolCuiPresenter).TargetsOutput(g, "tableau", 3)
+		from := i18n.Tf("bristol.fromTableau", "col", "3")
+		assert.Contains(t, out, i18n.Tf("bristol.targetsNone", "from", from))
+		assert.NotEmpty(t, strings.TrimSpace(out))
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("fan source with no legal targets", func(t *testing.T) {
+		g := new(interfaces.MockBristolGame)
+		g.On("LegalTargets", "fan", 2).Return([]int(nil), []int(nil))
+
+		out := new(BristolCuiPresenter).TargetsOutput(g, "fan", 2)
+		from := i18n.Tf("bristol.fromFan", "idx", "2")
+		assert.Contains(t, out, i18n.Tf("bristol.targetsNone", "from", from))
+		assert.NotEmpty(t, strings.TrimSpace(out))
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("rejects an invalid zone", func(t *testing.T) {
+		g := new(interfaces.MockBristolGame)
+		out := new(BristolCuiPresenter).TargetsOutput(g, "invalid", 0)
+		assert.Contains(t, out, i18n.Tf("bristol.invalidFromZone", "val", "invalid"))
+		assert.NotContains(t, out, "{{")
+		g.AssertNotCalled(t, "LegalTargets", mock.Anything, mock.Anything)
+	})
+
+	t.Run("rejects negative column", func(t *testing.T) {
+		g := new(interfaces.MockBristolGame)
+		out := new(BristolCuiPresenter).TargetsOutput(g, "tableau", -1)
+		assert.Contains(t, out, i18n.Tf("invalidColumn", "val", "-1"))
+		assert.NotContains(t, out, "{{")
+		g.AssertNotCalled(t, "LegalTargets", mock.Anything, mock.Anything)
+	})
+
+	t.Run("rejects out of range tableau column", func(t *testing.T) {
+		g := new(interfaces.MockBristolGame)
+		out := new(BristolCuiPresenter).TargetsOutput(g, "tableau", domain.BristolTableauCnt)
+		assert.Contains(t, out, i18n.Tf("invalidColumn", "val", strconv.Itoa(domain.BristolTableauCnt)))
+		assert.NotContains(t, out, "{{")
+		g.AssertNotCalled(t, "LegalTargets", mock.Anything, mock.Anything)
+	})
+
+	t.Run("rejects out of range fan column", func(t *testing.T) {
+		g := new(interfaces.MockBristolGame)
+		out := new(BristolCuiPresenter).TargetsOutput(g, "fan", domain.BristolFanCnt)
+		assert.Contains(t, out, i18n.Tf("invalidColumn", "val", strconv.Itoa(domain.BristolFanCnt)))
+		assert.NotContains(t, out, "{{")
+		g.AssertNotCalled(t, "LegalTargets", mock.Anything, mock.Anything)
+	})
+
+	t.Run("english output without placeholders left", func(t *testing.T) {
+		origLang := i18n.Lang()
+		i18n.SetLang("en")
+		defer i18n.SetLang(origLang)
+
+		g := new(interfaces.MockBristolGame)
+		g.On("LegalTargets", "tableau", 0).Return([]int{1}, []int{0})
+		out := new(BristolCuiPresenter).TargetsOutput(g, "tableau", 0)
+		assert.Contains(t, out, "Destinations for tableau 0:")
+		assert.NotContains(t, out, "{{")
+
+		gNone := new(interfaces.MockBristolGame)
+		gNone.On("LegalTargets", "fan", 0).Return([]int(nil), []int(nil))
+		outNone := new(BristolCuiPresenter).TargetsOutput(gNone, "fan", 0)
+		assert.Contains(t, outNone, "No destination for fan 0")
+		assert.NotContains(t, outNone, "{{")
+	})
 }

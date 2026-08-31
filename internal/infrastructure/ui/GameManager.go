@@ -3158,6 +3158,7 @@ var gameRegistry = []GameRegistryEntry{
 				"bristol.helpMoveTF",
 				"bristol.helpMoveNT",
 				"bristol.helpMoveNF",
+				"bristol.helpTargets",
 				"bristol.helpGiveUp",
 				"bristol.helpHint",
 				"bristol.helpAutoComplete", "bristol.helpUndo",
