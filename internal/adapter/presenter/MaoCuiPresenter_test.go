@@ -195,3 +195,43 @@ func TestMaoRuleHintKeys_DifferPerLanguage(t *testing.T) {
 		assert.NotEqual(t, ja, en, "mao.%s is the same string in both languages", key)
 	}
 }
+
+// **選択スートの行だけ色分けから外れていた。**Web は `RED_SUITS` でハート/ダイヤを
+// `text-ds-error` にしているのに、CUI は `suitDisplayName` の裸のグリフを出すだけ
+// だった (#6464)。cuiCardStr と同じ判定に揃ったことを、ゲームの出力の側から見る。
+func TestMaoCuiPresenter_ColorsTheChosenSuit(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(false) // 色そのものを見るので無効化しない
+	defer color.SetNoColor(orig)
+	assert.NotEqual(t, "x", color.Red("x"), "colour must be enabled for this test to measure anything")
+
+	p := new(presenter.MaoCuiPresenter)
+	outWithSuit := func(suit int) string {
+		m, players := setupMaoCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetChosenSuit")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
+		m.On("GetChosenSuit").Return(suit)
+		// 8 を出した後の状態。捨て札の色は別の関数が付けるので、
+		// **指定スートの行だけ**を測れるよう黒スートの札を置く。
+		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignSpade, 8, false))
+		return p.Output(m, nil)
+	}
+
+	t.Run("hearts are red", func(t *testing.T) {
+		out := outWithSuit(domain.CardDesignHeart)
+		assert.Contains(t, out, i18n.Tf("mao.chosenSuit", "suit", color.Red("♥")))
+	})
+
+	t.Run("diamonds are red", func(t *testing.T) {
+		out := outWithSuit(domain.CardDesignDiamond)
+		assert.Contains(t, out, i18n.Tf("mao.chosenSuit", "suit", color.Red("♦")))
+	})
+
+	// 黒スートまで赤くする実装はここで落ちる。
+	t.Run("spades stay plain", func(t *testing.T) {
+		out := outWithSuit(domain.CardDesignSpade)
+		assert.Contains(t, out, i18n.Tf("mao.chosenSuit", "suit", "♠"))
+		assert.NotContains(t, out, color.Red("♠"))
+	})
+}
