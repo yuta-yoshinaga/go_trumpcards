@@ -24,6 +24,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { YanivResponse } from '../types/card';
 import { YanivPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -337,6 +338,10 @@ function YanivPageContent() {
                     data-testid={`hand-card-${i}`}
                     onClick={() => isDiscard && isHumanTurn && toggleCard(i)}
                     disabled={!isDiscard || !isHumanTurn}
+                    // 捨てる対象そのものである自分の手札だけが読み上げから漏れていた。
+                    // 隣の `pickup-card-*` は最初から名前を持っている (#6425)。
+                    aria-label={cardAlt(c)}
+                    aria-pressed={selected.includes(i)}
                     className={
                       selected.includes(i)
                         ? 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-pointer hover:opacity-90'
