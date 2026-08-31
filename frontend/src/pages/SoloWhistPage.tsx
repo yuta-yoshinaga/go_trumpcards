@@ -297,6 +297,17 @@ function SoloWhistPageContent() {
               <span>{t('target', { points: state.config.targetPoints })}</span>
             </div>
 
+            {/* 切り札は選ぶものではなく、契約成立と同時に宣言者の最長スートへ
+                自動設定される (SoloWhist.go の resolveBidding)。切り札選択ボタンの
+                あるゲームと並ぶと、いつ選んだのか分からない。姉妹の Préférence は
+                #5652 で同じ注記を入れてある (#6445)。
+                ミゼールは `trumpSuit = 0` で切り札そのものが無いので出さない。 */}
+            {state.contract !== SoloWhistContract.PASS && state.contract !== SoloWhistContract.MISERE && (
+              <div className="text-ds-text-muted text-center mb-2 text-xs" data-testid="solowhist-trump-note">
+                {t('trumpAutoNote')}
+              </div>
+            )}
+
             <div
               className={`text-ds-text-muted text-center mb-2 text-sm${
                 contractPulse ? ' motion-safe:animate-pulse text-ds-accent font-semibold' : ''

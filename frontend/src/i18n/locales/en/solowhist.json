@@ -72,6 +72,7 @@
   "trickEmpty": "(no cards yet)",
   "tricks": "{{count}} tricks",
   "trump": "Trump: {{suit}}",
+  "trumpAutoNote": "The trump suit is set automatically from the declarer’s longest suit — there is nothing to choose.",
   "tutorial": {
     "info": "Round, contract (declarer and type), trump, and each player's score are shown here. The first player to reach the target points (default 21) wins. The ★ marks the declarer.",
     "trick": "Cards played to the current trick appear here. You must follow the led suit, ace high. The highest card wins the trick.",
