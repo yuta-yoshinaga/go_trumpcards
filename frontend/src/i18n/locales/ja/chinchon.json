@@ -31,6 +31,7 @@
   "drawDiscardButton": "捨て札から引く",
   "discardButton": "捨てる",
   "knockButton": "ノック",
+  "knockReadyAnnouncement": "ノックできます（デッドウッドが上限 {{threshold}} 点以下になりました）",
   "deadwoodLabel": "デッドウッド: {{score}}点（ノック上限 {{threshold}}）",
   "deadwoodBreakdown": "内訳: {{breakdown}}",
   "meldLegend": "メルド",

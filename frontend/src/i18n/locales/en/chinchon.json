@@ -31,6 +31,7 @@
   "drawDiscardButton": "Draw Discard",
   "discardButton": "Discard",
   "knockButton": "Knock",
+  "knockReadyAnnouncement": "You can knock now (deadwood is at or below {{threshold}})",
   "deadwoodLabel": "Deadwood: {{score}} pts (knock ≤ {{threshold}})",
   "deadwoodBreakdown": "Breakdown: {{breakdown}}",
   "meldLegend": "Meld",
