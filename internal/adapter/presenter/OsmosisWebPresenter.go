@@ -20,34 +20,7 @@ func (p *OsmosisWebPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 	// 判定同士が食い違いうる。
 	stalemate := resObj.IsStalemate
 
-	// ウェイスト
-	waste := o.GetWaste()
-	resObj.Waste = make([]*controller.WebOutputCard, len(waste))
-	for i, wc := range waste {
-		resObj.Waste[i] = cardToOutput(wc)
-	}
-
-	// リザーブ（4列）
-	reserve := o.GetReserve()
-	resObj.Reserve = make([][]*controller.WebOutputCard, domain.OsmosisReserveCnt)
-	for i := 0; i < domain.OsmosisReserveCnt; i++ {
-		pile := reserve[i]
-		resObj.Reserve[i] = make([]*controller.WebOutputCard, len(pile))
-		for j, rc := range pile {
-			resObj.Reserve[i][j] = cardToOutput(rc)
-		}
-	}
-
-	// ファンデーション（4段）
-	foundation := o.GetFoundation()
-	resObj.Foundation = make([][]*controller.WebOutputCard, domain.OsmosisFoundationCnt)
-	for i := 0; i < domain.OsmosisFoundationCnt; i++ {
-		pile := foundation[i]
-		resObj.Foundation[i] = make([]*controller.WebOutputCard, len(pile))
-		for j, fc := range pile {
-			resObj.Foundation[i][j] = cardToOutput(fc)
-		}
-	}
+	p.fillBoard(resObj, o)
 
 	// メッセージ
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
@@ -90,9 +63,7 @@ func (p *OsmosisWebPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 // HintOutput ヒントをJSON出力
 func (p *OsmosisWebPresenter) HintOutput(o interfaces.OsmosisGame) string {
 	resObj := p.buildBaseOutput(o)
-	resObj.Waste = make([]*controller.WebOutputCard, 0)
-	resObj.Reserve = make([][]*controller.WebOutputCard, 0)
-	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	p.fillBoard(resObj, o)
 
 	hint := o.GetHint()
 	if hint != nil {
@@ -111,6 +82,46 @@ func (p *OsmosisWebPresenter) HintOutput(o interfaces.OsmosisGame) string {
 // ActionLogOutput 棋譜をJSON出力
 func (p *OsmosisWebPresenter) ActionLogOutput(o interfaces.OsmosisGame) string {
 	return actionLogOutputJSON(o)
+}
+
+// fillBoard はウェイスト / リザーブ / ファウンデーションを埋める。
+//
+// **Output と HintOutput が同じ盤面を返すためにある。**HintOutput は以前
+// 3 つを空配列で潰していた ── `buildBaseOutput` は盤面を埋めないので、
+// 潰さないと JSON に `null` が出てフロントの `.map` が壊れる、という理由だった。
+// だがこのページのヒントボタン (と CLI の hint) は `useGameApi` の `exec` を
+// 呼び、`useGameApi` は `setState(res)` で状態を**丸ごと差し替える**ので、
+// その空配列がそのまま画面に流れ込んで盤面が消えていた (#6800)。
+// 軽量化をやめて、両方が同じ盤面を返す形にした。
+func (p *OsmosisWebPresenter) fillBoard(resObj *controller.OsmosisWebOutput, o interfaces.OsmosisGame) {
+	// ウェイスト
+	waste := o.GetWaste()
+	resObj.Waste = make([]*controller.WebOutputCard, len(waste))
+	for i, wc := range waste {
+		resObj.Waste[i] = cardToOutput(wc)
+	}
+
+	// リザーブ（4列）
+	reserve := o.GetReserve()
+	resObj.Reserve = make([][]*controller.WebOutputCard, domain.OsmosisReserveCnt)
+	for i := 0; i < domain.OsmosisReserveCnt; i++ {
+		pile := reserve[i]
+		resObj.Reserve[i] = make([]*controller.WebOutputCard, len(pile))
+		for j, rc := range pile {
+			resObj.Reserve[i][j] = cardToOutput(rc)
+		}
+	}
+
+	// ファンデーション（4段）
+	foundation := o.GetFoundation()
+	resObj.Foundation = make([][]*controller.WebOutputCard, domain.OsmosisFoundationCnt)
+	for i := 0; i < domain.OsmosisFoundationCnt; i++ {
+		pile := foundation[i]
+		resObj.Foundation[i] = make([]*controller.WebOutputCard, len(pile))
+		for j, fc := range pile {
+			resObj.Foundation[i][j] = cardToOutput(fc)
+		}
+	}
 }
 
 func (p *OsmosisWebPresenter) buildBaseOutput(o interfaces.OsmosisGame) *controller.OsmosisWebOutput {

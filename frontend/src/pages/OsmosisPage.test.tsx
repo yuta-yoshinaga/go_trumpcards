@@ -147,6 +147,34 @@ describe('OsmosisPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
+  // **このページはヒント応答を盤面ごと飲み込む。**専用の hint state を持たず、
+  // `useGameApi` の `exec('hint')` をそのまま呼ぶので `setState(res)` が状態を
+  // 丸ごと差し替える ── サーバが盤面を空で返していた頃は、それが画面に流れ込んで
+  // リザーブもウェイストもファウンデーションも消えていた (#6800)。
+  //
+  // 修正は「`HintOutput` が盤面を返す」側 (`TestHintOutputKeepsTheBoardForPagesThatMergeIt`)。
+  // ここで固定するのは**その修正が必要である理由**、つまりこの結合そのもの。
+  // 将来ページに専用の hint state を入れたらこのテストが落ちるので、そのとき
+  // サーバ側の判断を見直せる。
+  it('renders whatever board the hint response carries, so the server must send one', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByRole('button', { name: 'リザーブ 1' })).toBeInTheDocument();
+
+    mockExec.mockResolvedValueOnce({
+      ...playingState,
+      reserve: [],
+      waste: [],
+      foundation: [],
+      messageCode: 'osmosis.hintAvailable',
+    });
+    screen.getByRole('button', { name: 'ヒント' }).click();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'リザーブ 1' })).not.toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'ウェイスト' })).not.toBeInTheDocument();
+  });
+
   it('autocomplete button triggers autocomplete command', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
