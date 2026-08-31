@@ -28,6 +28,7 @@
   "declareTrumpPrompt": "Choose a trump suit:",
   "exchangeButton": "Exchange ({{count}}/6)",
   "kittyProgress": "Selected: {{count}} / 6",
+  "kittyProgressLabel": "Kitty exchange progress",
   "kittyBadge": "K",
   "kittyCardLabel": "Card from the kitty",
   "kittyLegend": "Ringed = the 6 cards from the kitty",

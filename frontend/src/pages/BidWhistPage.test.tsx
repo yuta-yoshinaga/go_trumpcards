@@ -166,6 +166,41 @@ describe('BidWhistPage', () => {
     expect(progress.querySelector('.bg-ds-success')).not.toBeNull();
   });
 
+  // **棒の長さだけでは支援技術に何も届かない。**バーの存在すら伝わっていなかった (#6428)。
+  it('exposes the kitty progress as a progressbar that tracks the selection', async () => {
+    const sixCards = Array.from({ length: 6 }, (_, i) => card('SPADE', i + 2));
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        declarerIdx: 0,
+        players: [
+          player(0, true, sixCards, { isDeclarer: true }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<BidWhistPage />);
+
+    const progress = await screen.findByRole('progressbar', { name: 'キティ交換の進捗' });
+    expect(progress).toHaveAttribute('data-testid', 'kitty-progress');
+    expect(progress).toHaveAttribute('aria-valuemin', '0');
+    expect(progress).toHaveAttribute('aria-valuemax', '6');
+    expect(progress).toHaveAttribute('aria-valuenow', '0');
+    // progressbar の中身は読み上げから外れるので、見えている数字を valuetext で運ぶ。
+    expect(progress).toHaveAttribute('aria-valuetext', '選択済み: 0 / 6');
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    expect(progress).toHaveAttribute('aria-valuenow', '2');
+    expect(progress).toHaveAttribute('aria-valuetext', '選択済み: 2 / 6');
+
+    // 選択を外すと戻る ── 増える一方ではない。
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    expect(progress).toHaveAttribute('aria-valuenow', '1');
+  });
+
   it('highlights kitty-origin cards during the human exchange', async () => {
     mockExec.mockResolvedValue(
       makeState({
