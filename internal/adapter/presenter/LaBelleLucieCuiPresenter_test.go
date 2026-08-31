@@ -115,3 +115,39 @@ func TestLaBelleLucieCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, p.ActionLogOutput(g))
 	})
 }
+
+// **どの扇が動かせるかは押すまで分からなかった。**Web は #5678 で事前に印を
+// 出したが CUI には何も無く、CUI 利用者は #5678 以前の Web と同じ状態に
+// 置かれていた (#6474)。
+func TestLaBelleLucieCuiPresenter_MarksTheMovableFans(t *testing.T) {
+	p := new(presenter.LaBelleLucieCuiPresenter)
+
+	// 扇 0 = ♠9 (行き先なし)、扇 1 = ♠8 (♠9 に載る)、扇 2 = ♦A (台へ行ける)。
+	// 残りは空。ファウンデーションはすべて空なのでエースだけが上がれる。
+	mk := func(d, v int) string {
+		b, err := json.Marshal(domain.NewCard(d, v, true))
+		if err != nil {
+			t.Fatalf("marshal: %v", err)
+		}
+		return string(b)
+	}
+	fans := fmt.Sprintf(`[[%s],[%s],[%s]`, mk(domain.CardDesignSpade, 9), mk(domain.CardDesignSpade, 8), mk(domain.CardDesignDiamond, 1))
+	for i := 3; i < 18; i++ {
+		fans += ",[]"
+	}
+	fans += "]"
+	g := llState(t, fmt.Sprintf(`{"ph":0,"rd":2,"fd":[[],[],[],[]],"fn":%s}`, fans))
+
+	// **ドメインの答えと画面の印は同じものであること。**ここで前提を確かめて
+	// おかないと、以下の行照合が「たまたま一致した」だけになる。
+	movable := g.GetMovableFans()
+	assert.Equal(t, []bool{false, true, true}, movable[:3])
+
+	out := p.Output(g, nil)
+	line := func(idx int) string { return i18n.Tf("labellelucie.fanLabel", "idx", fmt.Sprint(idx)) }
+	assert.Contains(t, out, line(1)+presenter.CuiLegalMark)
+	assert.Contains(t, out, line(2)+presenter.CuiLegalMark)
+	// 動かせない扇には印を付けない ── 全部に付ける実装はここで落ちる。
+	assert.NotContains(t, out, line(0)+presenter.CuiLegalMark)
+	assert.NotContains(t, out, line(3)+presenter.CuiLegalMark)
+}

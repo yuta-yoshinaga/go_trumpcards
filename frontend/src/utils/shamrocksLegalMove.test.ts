@@ -5,8 +5,10 @@ import { shamrocksHasLegalMove, shamrocksMovableFans } from './shamrocksLegalMov
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 const noFoundation = (): Card[][] => [[], [], [], []];
 
-// The page borrowed labelleLucieMovableFans, which encodes the SOURCE game's
-// rule. Each case below is one Shamrocks rule that borrowing got wrong.
+// The page borrowed La Belle Lucie's client-side helper, which encodes the
+// SOURCE game's rule. Each case below is one Shamrocks rule that borrowing got
+// wrong. (That helper no longer exists -- see #6474 -- but these cases still
+// pin the differences that made borrowing wrong.)
 describe('shamrocksMovableFans', () => {
   it('accepts a different suit one rank away (La Belle Lucie needs the same suit)', () => {
     const fans = [[card('HEART', 6)], [card('SPADE', 7)]];

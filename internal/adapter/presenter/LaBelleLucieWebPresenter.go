@@ -87,6 +87,9 @@ func (p *LaBelleLucieWebPresenter) ActionLogOutput(g interfaces.LaBelleLucieGame
 // その空配列がそのまま画面に流れ込んで盤面が消えていた (#6855、#6800 と同型)。
 func (p *LaBelleLucieWebPresenter) fillBoard(resObj *controller.LaBelleLucieWebOutput, g interfaces.LaBelleLucieGame) {
 	resObj.Fans = pilesToOutput(g.GetFans())
+	// 動かせる扇はドメインが数える ── 画面に規則を書き写すと、手詰まりの判定と
+	// 印が食い違う (#6474)。
+	resObj.MovableFans = g.GetMovableFans()
 	foundation := g.GetFoundation()
 	resObj.Foundation = pilesToOutput(foundation[:])
 }

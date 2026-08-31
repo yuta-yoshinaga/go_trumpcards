@@ -21,7 +21,6 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
 import { LaBelleLuciePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { labelleLucieMovableFans } from '../utils/labelleLucieLegalMove';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** La Belle Lucie tutorial step definitions. */
@@ -102,9 +101,12 @@ function LaBelleLuciePageContent() {
   // **どの扇が動かせるかは、ヒント (4秒で消える) を押さないと分からなかった** (#5678)。
   // 同バッチの他ゲームと同じく「押す前に分かる」形にする。ヒントの強調とは別の
   // 控えめなリングにして、推奨手と混ざらないようにする。
-  const movableFans = labelleLucieMovableFans(state.fans, state.foundation);
+  // **判定はサーバが返す (#6474)。**以前はここで同じ規則を組み直していたが、
+  // ドメインは手詰まり検出に同じ走査を使っており、2 箇所に置くと片方だけが
+  // 直ったときに印と「詰み」の判断が食い違う。
+  const movableFans = state.movableFans;
   // **同じ走査を 2 度しない。** 動かせる扇が 1 つも無いことが「詰み」。
-  const hasLegalMove = movableFans.size > 0;
+  const hasLegalMove = movableFans.some(Boolean);
   // No legal move left but redeals remain: recommend a redeal before the
   // player wastes time hunting for a move that does not exist.
   const stuck = canAct && state.redealsLeft > 0 && !hasLegalMove;
@@ -172,7 +174,7 @@ function LaBelleLuciePageContent() {
         ? ' ring-2 ring-ds-success motion-safe:animate-pulse'
         : selected === idx
           ? ' ring-2 ring-ds-warning'
-          : movableFans.has(idx)
+          : movableFans[idx] === true
             ? ' ring-1 ring-ds-success'
             : '';
     return (
@@ -184,7 +186,7 @@ function LaBelleLuciePageContent() {
         onClick={canAct ? () => pickFan(idx) : undefined}
         disabled={!canAct}
         data-testid={`fan-${idx}`}
-        data-movable={movableFans.has(idx) ? 'true' : undefined}
+        data-movable={movableFans[idx] === true ? 'true' : undefined}
         data-hint-source={isHintSource ? 'true' : undefined}
         data-hint-dest={isHintDest ? 'true' : undefined}
       >

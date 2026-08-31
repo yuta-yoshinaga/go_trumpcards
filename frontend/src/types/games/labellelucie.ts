@@ -14,6 +14,15 @@ export interface LaBelleLucieHint {
 export interface LaBelleLucieResponse extends BaseGameResponse {
   /** Fans of cards (top card is last); the count varies after a redeal. */
   fans: Card[][];
+  /**
+   * Whether each fan's top card can move right now, in the same order as
+   * {@link LaBelleLucieResponse.fans}.
+   *
+   * **Decided by the domain**, which uses the same walk for stalemate
+   * detection. The page used to re-derive it client-side (#5678), which meant
+   * the rule lived in two places and the CUI had no marker at all (#6474).
+   */
+  movableFans: boolean[];
   /** The 4 foundations (A→K by suit). */
   foundation: Card[][];
   /** Remaining gather-and-reshuffle redeals (0–3). */
