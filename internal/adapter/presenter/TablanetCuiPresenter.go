@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -70,6 +71,24 @@ func (p *TablanetCuiPresenter) Output(g interfaces.TablanetGame, lastErr error) 
 			b.WriteString(i18n.Tf("tablanet.promptPlay",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 		case domain.TablanetPhaseGameEnd:
+			// 勝者も最終得点も CUI のどこにも出ていなかった (#6491)。姉妹の Basra は
+			// 同じタイミングで両方出しており、Web の tablanet-result も同じ情報源
+			// (GetWinners と各プレイヤーの GetScore) を使っている。
+			winners := make([]string, 0, len(g.GetWinners()))
+			for _, w := range g.GetWinners() {
+				winners = append(winners, cuiPlayerName(g.GetPlayer(w), w))
+			}
+			if len(winners) > 0 {
+				b.WriteString(i18n.Tf("tablanet.resultWinner",
+					"names", strings.Join(winners, ", ")) + "\n")
+			}
+			scores := make([]string, 0, g.GetPlayerCnt())
+			for i := 0; i < g.GetPlayerCnt(); i++ {
+				scores = append(scores, fmt.Sprintf("%s %d",
+					cuiPlayerName(g.GetPlayer(i), i), g.GetPlayer(i).GetScore()))
+			}
+			b.WriteString(i18n.Tf("tablanet.resultScores",
+				"scores", strings.Join(scores, " / ")) + "\n")
 			b.WriteString(i18n.T("tablanet.promptGameEnd") + "\n")
 		}
 		b.WriteString(i18n.T("tablanet.promptHelp") + "\n")

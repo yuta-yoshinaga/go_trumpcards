@@ -7,6 +7,8 @@
   "tableLine": "場: {{table}}",
   "playerLine": "{{name}}: 手札{{hand}}枚  捕獲: {{captured}}  タブラ: {{tabla}}",
   "promptPlay": "手番: {{name}}",
+  "resultWinner": "勝者: {{names}}",
+  "resultScores": "最終得点: {{scores}}",
   "promptGameEnd": "ゲーム終了。nr で新しいゲームを始めます。",
   "promptHelp": "p <h> [t...] でプレイ（t 省略でトレイル。ジャックは場を一掃）",
   "hintNone": "ヒントはありません。",
