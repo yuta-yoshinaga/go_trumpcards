@@ -29,6 +29,12 @@ func beziquePlayerStr(player *domain.BeziquePlayer, idx, dealPoints, matchScore 
 	return b.String()
 }
 
+// beziqueStockLowThreshold は「まもなくエンドゲーム」を出す山札の残り枚数。
+//
+// Web の `STOCK_LOW_THRESHOLD` (BeziquePage.tsx) と同じ値。両画面で猶予の
+// タイミングがずれると、CUI と Web で別のゲームを説明することになる。
+const beziqueStockLowThreshold = 4
+
 // BeziqueCuiPresenter renders the Bezique CUI view.
 type BeziqueCuiPresenter struct{}
 
@@ -44,6 +50,14 @@ func (p *BeziqueCuiPresenter) Output(b interfaces.BeziqueGame, lastErr error) st
 			"trick", strconv.Itoa(b.GetTrickNumber()),
 			"stock", strconv.Itoa(b.GetStockRemaining()),
 			"phase", i18n.T(phaseKey)) + "\n")
+
+		// **山札が尽きた瞬間に第2フェーズ (厳格マストフォロー・メルド禁止) へ切り替わる。**
+		// Web は残り 4 枚以下で警告を出して宣言の猶予を作っているのに、CUI は残数の
+		// 数字を出すだけで、毎ターン自分で見比べない限り切り替わりに気づけなかった。
+		// 0 になった後は第2フェーズの表示が引き継ぐので、そこでは出さない。
+		if stock := b.GetStockRemaining(); !b.IsEndgame() && stock > 0 && stock <= beziqueStockLowThreshold {
+			sb.WriteString(color.Yellow(i18n.Tf("bezique.stockLowWarning", "count", strconv.Itoa(stock))) + "\n")
+		}
 
 		if tc := b.GetTrumpCard(); tc != nil {
 			sb.WriteString(i18n.Tf("bezique.trumpLine", "card", cuiCardStr(tc)) + "\n")

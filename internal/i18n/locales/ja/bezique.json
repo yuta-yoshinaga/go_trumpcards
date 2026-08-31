@@ -46,5 +46,6 @@
   "helpNext": "  n                    次のトリック／ディールへ",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "stockLowWarning": "まもなくエンドゲーム（山札残り{{count}}枚）— メルドはお早めに宣言を。"
 }
