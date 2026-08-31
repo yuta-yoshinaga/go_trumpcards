@@ -45,9 +45,17 @@ func (p *LaBelleLucieCuiPresenter) Output(g interfaces.LaBelleLucieGame, lastErr
 			sb.WriteString(i18n.Tf("labellelucie.foundationLabel", "idx", strconv.Itoa(i)))
 			sb.WriteString(" " + llFoundationStr(foundation[i]) + "\n")
 		}
+		// **どの扇が動かせるかは、押してみるまで分からなかった。**Web は #5678 で
+		// 事前に印を出したが CUI には何も無く、CUI 利用者は #5678 以前の Web と
+		// 同じ状態に置かれていた (#6474)。印は既存の CuiLegalMark に揃える。
+		movable := g.GetMovableFans()
 		for i, fan := range g.GetFans() {
 			sb.WriteString(i18n.Tf("labellelucie.fanLabel", "idx", strconv.Itoa(i)))
-			sb.WriteString(" " + llPileStr(fan) + "\n")
+			mark := ""
+			if i < len(movable) && movable[i] {
+				mark = CuiLegalMark
+			}
+			sb.WriteString(mark + " " + llPileStr(fan) + "\n")
 		}
 		sb.WriteString(i18n.Tf("labellelucie.redealsLine", "count", strconv.Itoa(g.GetRedealsLeft())) + "\n")
 

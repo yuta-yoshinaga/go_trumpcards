@@ -67815,6 +67815,14 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        movableFans:
+          type: array
+          description: >-
+            Whether each fan's top card can move right now, in the same order
+            as fans. Decided by the rules the domain already uses for
+            stalemate detection, so a client never re-derives it.
+          items:
+            type: boolean
         foundation:
           type: array
           description: The 4 foundations (A-up by suit)

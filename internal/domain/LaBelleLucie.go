@@ -228,22 +228,46 @@ func (g *LaBelleLucie) GiveUp() {
 
 // hasAnyLegalMove ファウンデーション手・扇間移動のいずれかが存在するか。
 func (g *LaBelleLucie) hasAnyLegalMove() bool {
+	for _, ok := range g.movableFans() {
+		if ok {
+			return true
+		}
+	}
+	return false
+}
+
+// movableFans は扇ごとに「今そのトップを動かせるか」を返す。
+//
+// **「1 手でもあるか」はここから導く。**同じ規則を 2 通りに書くと、片方だけが
+// 直ったときに手詰まりの判定と画面の印が食い違う ── フロントはこれを既に
+// 1 つの関数に寄せていた (#5678)。CUI には印そのものが無かった (#6474)。
+func (g *LaBelleLucie) movableFans() []bool {
+	out := make([]bool, len(g.fans))
 	for i := range g.fans {
 		card := g.fanTop(i)
 		if card == nil {
 			continue
 		}
 		if g.findFoundation(card) >= 0 {
-			return true
+			out[i] = true
+			continue
 		}
 		for j := range g.fans {
 			if i != j && laBelleLucieCanStack(card, g.fanTop(j)) {
-				return true
+				out[i] = true
+				break
 			}
 		}
 	}
-	return false
+	return out
 }
+
+// GetMovableFans は今トップを動かせる扇を扇番号の順に返す。
+//
+// **どの扇が動かせるかは、押すまで分からなかった。**Web は #5678 でこれを
+// 事前に示すようにしたが、判定はクライアント側だけの実装だった ── 規則を
+// 2 箇所に置くと必ずずれるので、ドメインの答えを両方が読む (#6474)。
+func (g *LaBelleLucie) GetMovableFans() []bool { return g.movableFans() }
 
 // checkGameClear 52 枚すべてファウンデーションに揃ったらクリア。
 func (g *LaBelleLucie) checkGameClear() {

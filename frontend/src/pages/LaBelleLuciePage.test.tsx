@@ -17,6 +17,8 @@ const card = (design: Card['design'], value: number): Card => ({ design, value }
 function makeState(overrides: Partial<LaBelleLucieResponse> = {}): LaBelleLucieResponse {
   return {
     fans: [[card('SPADE', 9)], [card('SPADE', 8)], [card('DIAMOND', 1)]],
+    // ♠8 は ♠9 に載り、♦A はファウンデーションへ行ける。♠9 の行き先は無い。
+    movableFans: [false, true, true],
     foundation: [[], [], [], []],
     redealsLeft: 3,
     phase: 0,
@@ -66,6 +68,8 @@ describe('LaBelleLuciePage', () => {
       makeState({
         fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]],
         foundation: [[], [], [], []],
+        // 動かせる扇はサーバが数える (#6474)。この配りではどれも行き場が無い。
+        movableFans: [false, false, false],
         redealsLeft: 3,
       }),
     );
@@ -85,6 +89,7 @@ describe('LaBelleLuciePage', () => {
       makeState({
         fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]],
         foundation: [[], [], [], []],
+        movableFans: [false, false, false],
         redealsLeft: 0,
       }),
     );
@@ -114,6 +119,7 @@ describe('LaBelleLuciePage', () => {
     mockExec.mockResolvedValue(
       makeState({
         fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]],
+        movableFans: [false, false, false],
         redealsLeft: 2,
       }),
     );
@@ -190,7 +196,11 @@ describe('LaBelleLuciePage', () => {
 
   it('marks nothing when the board is stuck', async () => {
     mockExec.mockResolvedValue(
-      makeState({ fans: [[card('SPADE', 5)], [card('HEART', 9)]], foundation: [[card('CLOVER', 1)], [], [], []] }),
+      makeState({
+        fans: [[card('SPADE', 5)], [card('HEART', 9)]],
+        foundation: [[card('CLOVER', 1)], [], [], []],
+        movableFans: [false, false],
+      }),
     );
     renderWithProviders(<LaBelleLuciePage />);
 

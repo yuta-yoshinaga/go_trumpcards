@@ -38,6 +38,9 @@ type LaBelleLucieGame interface {
 	GetRedealsLeft() int
 	// HasAnyLegalMove 合法手が存在するかを返す (なければリディールが必要)。
 	HasAnyLegalMove() bool
+
+	// GetMovableFans は今トップを動かせる扇を扇番号の順に返す。
+	GetMovableFans() []bool
 	// GetFans 扇の一覧を取得する。
 	GetFans() [][]*domain.Card
 	// GetFoundation ファウンデーションを取得する。
