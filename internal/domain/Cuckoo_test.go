@@ -5,6 +5,9 @@ package domain
 import (
 	"math/rand"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // ckCard creates a Card with the given design and value.
@@ -309,4 +312,63 @@ func TestCuckoo_FullCpuGameTerminatesAllConfigs(t *testing.T) {
 			}
 		}
 	}
+}
+
+// **席順の隣は答えにならない。**脱落者は手番から飛ばされるので、交換の相手は
+// 卓を回って次に**まだ残っている**席になる (#6467)。
+func TestCuckoo_GetSwapTargetIdxSkipsEliminatedSeats(t *testing.T) {
+	tests := []struct {
+		name  string
+		lives [CuckooPlayerCnt]int
+		from  int
+		want  int
+	}{
+		{"nobody is out yet", [CuckooPlayerCnt]int{3, 3, 3, 3}, 0, 1},
+		{"the seat beside you is out", [CuckooPlayerCnt]int{3, 0, 3, 3}, 0, 2},
+		{"two in a row are out", [CuckooPlayerCnt]int{3, 0, 0, 3}, 0, 3},
+		{"it wraps around the table", [CuckooPlayerCnt]int{3, 3, 3, 3}, 3, 0},
+		{"it wraps past an eliminated seat", [CuckooPlayerCnt]int{0, 3, 3, 3}, 3, 1},
+		// 他に誰も残っていない = attemptSwap が「保持」として扱う場合。
+		{"nobody else is left", [CuckooPlayerCnt]int{3, 0, 0, 0}, 0, -1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := ckNewGame(DefaultCuckooConfig())
+			for i, p := range g.players {
+				p.SetLives(tt.lives[i])
+			}
+			assert.Equal(t, tt.want, g.GetSwapTargetIdx(tt.from))
+		})
+	}
+
+	// 範囲外は -1。描画側が存在しない席を引きに行かないため。
+	g := ckNewGame(DefaultCuckooConfig())
+	assert.Equal(t, -1, g.GetSwapTargetIdx(-1))
+	assert.Equal(t, -1, g.GetSwapTargetIdx(CuckooPlayerCnt))
+}
+
+// **アクセサと実際の交換先が食い違ってはいけない。**プロンプトが名前を出す以上、
+// その席が本当に交換されることを、規則の再実装ではなく**札の移動**から確かめる。
+// `GetPendingSwapTo` は King で拒否されない限り即座に解決して -1 に戻るので、
+// そちらを見ても何も分からない。
+func TestCuckoo_SwapTargetMatchesWhereTheSwapActuallyGoes(t *testing.T) {
+	g := ckNewGame(DefaultCuckooConfig())
+	ckSetHand(g, [CuckooPlayerCnt]int{5, 6, 7, 8}, 3)
+	g.players[1].SetLives(0) // 席順の隣は脱落済み → 相手は 2 のはず
+
+	target := g.GetSwapTargetIdx(0)
+	require.Equal(t, 2, target)
+
+	before := [CuckooPlayerCnt]int{}
+	for i, p := range g.players {
+		before[i] = p.CardValue()
+	}
+	g.attemptSwap(0)
+
+	assert.Equal(t, before[target], g.players[0].CardValue(), "seat 0 did not receive the named seat's card")
+	assert.Equal(t, before[0], g.players[target].CardValue(), "the named seat did not receive seat 0's card")
+	// 飛ばされた席と無関係な席は動かない ── ここを見ないと「全員が回った」形と
+	// 区別が付かない。
+	assert.Equal(t, before[1], g.players[1].CardValue(), "an eliminated seat was traded with")
+	assert.Equal(t, before[3], g.players[3].CardValue())
 }

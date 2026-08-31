@@ -79,6 +79,15 @@ func (p *CuckooCuiPresenter) Output(g interfaces.CuckooGame, lastErr error) stri
 			if idx == g.GetDealerIdx() {
 				b.WriteString(i18n.T("cuckoo.promptTurnHelpDealer") + "\n")
 			} else {
+				// **交換の相手が誰か、CUI では分からなかった** (#6467)。Web は
+				// #5671 でこれを直しているが、CUI は「交換する」としか言わない。
+				// 脱落者は手番から飛ばされるので、席順の隣は答えにならない。
+				if target := g.GetSwapTargetIdx(idx); target >= 0 {
+					b.WriteString(i18n.Tf("cuckoo.promptTurnSwapTarget",
+						"name", cuiPlayerName(g.GetPlayer(target), target)) + "\n")
+				} else {
+					b.WriteString(i18n.T("cuckoo.promptTurnSwapNobody") + "\n")
+				}
 				b.WriteString(i18n.T("cuckoo.promptTurnHelp") + "\n")
 			}
 		case domain.CuckooPhaseRefuse:
