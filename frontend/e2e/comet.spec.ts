@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import {
+  isVisibleWithin,
+  navigateTo,
+  TIMEOUT_ACTION,
+  TIMEOUT_GAME_LOOP,
+  TIMEOUT_TRANSITION,
+  waitForLoaded,
+} from './helpers';
 
 /**
  * The human's playable hand cards.
@@ -10,6 +17,23 @@ import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION, waitFo
  */
 function handCards(page: Parameters<typeof navigateTo>[0]) {
   return page.locator('[data-tutorial="comet-player-hand"] button[data-legal]');
+}
+
+/**
+ * Anything that means the human may act again.
+ *
+ * **`data-legal` disappears while the CPUs play** — the page only marks legal
+ * cards on the human's turn (`canPlay = isPlayPhase && state.isHumanTurn`), and
+ * a hand with no legal card shows the pass button instead. Waiting on the cards
+ * alone therefore fails for any deal where the human cannot follow, which is
+ * what made this spec fail 3 runs in 8 (#6836).
+ */
+function humanCanAct(page: Parameters<typeof navigateTo>[0]) {
+  return handCards(page)
+    .or(page.getByTestId('comet-pass'))
+    .or(page.getByTestId('comet-next-round'))
+    .or(page.getByTestId('comet-winner'))
+    .first();
 }
 
 test.describe('Comet E2E', () => {
@@ -37,10 +61,12 @@ test.describe('Comet E2E', () => {
     await hand.first().click();
     await waitForLoaded(page);
 
-    // 打てば手札が 1 枚減る (局が切れたら区切りの案内が出る)。
-    await expect(
-      hand.or(page.getByTestId('comet-next-round')).or(page.getByTestId('comet-winner')).first(),
-    ).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    // **手番は 3 人の CPU を回って戻ってくる。**その間 `data-legal` は 1 つも
+    // 付かないので、札だけを待つと出せない配りで必ず落ちる。パスも区切りも
+    // 「人間が次に動ける」印なので同じ待ちに入れ、CPU が打ち切る時間を見る。
+    await expect(humanCanAct(page), 'the human never got another turn after playing').toBeVisible({
+      timeout: TIMEOUT_GAME_LOOP,
+    });
     if ((await page.getByTestId('comet-next-round').count()) === 0) {
       await expect(page.getByTestId('comet-need')).toBeVisible({ timeout: TIMEOUT_ACTION });
       await expect(handCards(page).or(page.getByTestId('comet-pass')).first()).toBeVisible({
