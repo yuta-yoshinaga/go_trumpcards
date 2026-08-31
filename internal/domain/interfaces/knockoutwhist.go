@@ -53,6 +53,10 @@ type KnockoutWhistGame interface {
 	GetTrumpSuit() int
 	// GetRoundWinnerIdx 直近ラウンドの勝者を取得する (-1=未確定)
 	GetRoundWinnerIdx() int
+	// GetRoundSurvivedIdx 直近ラウンドで Dogbone を使って生き残った席を取得する
+	GetRoundSurvivedIdx() []int
+	// GetRoundEliminatedIdx 直近ラウンドで脱落した席を取得する
+	GetRoundEliminatedIdx() []int
 	// GetWinnerPlayer 勝利プレイヤーを取得する (-1=未確定)
 	GetWinnerPlayer() int
 	// GetActiveCount 残存 (未脱落) プレイヤー数を取得する

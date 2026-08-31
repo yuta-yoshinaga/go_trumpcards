@@ -63,6 +63,16 @@ export interface KnockoutWhistResponse extends BaseGameResponse {
   /** Seat index of the round's winner, or -1. */
   roundWinnerIdx: number;
   currentTrick: KnockoutWhistTrickCard[];
+  /**
+   * Seats that spent a Dogbone to survive **this** round.
+   *
+   * クライアント側では導出できない ── 前のラウンドで脱落した席も毎ラウンド
+   * `roundTricks === 0` かつ `eliminated === true` なので、「今ラウンド何が
+   * 起きたか」はサーバに聞くしかない (#6446)。
+   */
+  roundSurvived: number[];
+  /** Seats knocked out **this** round. 空 = そのラウンドの脱落者なし。 */
+  roundEliminated: number[];
   /** Number of players still in the match (not eliminated). */
   activeCount: number;
   /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */

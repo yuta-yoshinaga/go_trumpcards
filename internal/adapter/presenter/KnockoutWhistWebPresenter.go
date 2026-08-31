@@ -42,6 +42,8 @@ func (p *KnockoutWhistWebPresenter) buildBase(g interfaces.KnockoutWhistGame) *c
 	resObj.DealerIdx = g.GetDealerIdx()
 	resObj.TrumpSuit = g.GetTrumpSuit()
 	resObj.RoundWinnerIdx = g.GetRoundWinnerIdx()
+	resObj.RoundSurvived = intSliceOrEmpty(g.GetRoundSurvivedIdx())
+	resObj.RoundEliminated = intSliceOrEmpty(g.GetRoundEliminatedIdx())
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.ActiveCount = g.GetActiveCount()

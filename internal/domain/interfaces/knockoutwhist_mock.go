@@ -141,6 +141,24 @@ func (_m *MockKnockoutWhistGame) GetRoundWinnerIdx() int {
 	return ret.Get(0).(int)
 }
 
+// GetRoundSurvivedIdx モック
+func (_m *MockKnockoutWhistGame) GetRoundSurvivedIdx() []int {
+	ret := _m.Called()
+	if v := ret.Get(0); v != nil {
+		return v.([]int)
+	}
+	return nil
+}
+
+// GetRoundEliminatedIdx モック
+func (_m *MockKnockoutWhistGame) GetRoundEliminatedIdx() []int {
+	ret := _m.Called()
+	if v := ret.Get(0); v != nil {
+		return v.([]int)
+	}
+	return nil
+}
+
 // GetWinnerPlayer モック
 func (_m *MockKnockoutWhistGame) GetWinnerPlayer() int {
 	ret := _m.Called()
