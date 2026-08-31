@@ -108,7 +108,12 @@ func (p *TeenPattiCuiPresenter) Output(g interfaces.TeenPattiGame, lastErr error
 		cuiErrorBlock(b, lastErr)
 
 		if g.GetGameEndFlag() {
-			banner := i18n.Tf("teenpatti.gameEnd", "player", strconv.Itoa(g.GetMatchWinnerIdx()))
+			// **勝者だけ席番号のままだった。**他の行は全部 cuiPlayerName で
+			// 「あなた」「CPU 1」と出しているので、ここだけ「Player 0 の勝ち」に
+			// 見えていた。姉妹の Three Card Brag は #5659 で同じ形を直してある。
+			winnerIdx := g.GetMatchWinnerIdx()
+			banner := i18n.Tf("teenpatti.gameEnd",
+				"player", cuiPlayerName(g.GetPlayer(winnerIdx), winnerIdx))
 			b.WriteString(color.Green(banner) + "\n")
 			return
 		}
@@ -132,7 +137,8 @@ func (p *TeenPattiCuiPresenter) Output(g interfaces.TeenPattiGame, lastErr error
 			b.WriteString(i18n.T("teenpatti.promptShowdown") + "\n")
 		case domain.TeenPattiPhaseRoundEnd:
 			winner := g.GetRoundWinnerIdx()
-			b.WriteString(i18n.Tf("teenpatti.promptRoundEnd", "player", strconv.Itoa(winner)) + "\n")
+			b.WriteString(i18n.Tf("teenpatti.promptRoundEnd",
+				"player", cuiPlayerName(g.GetPlayer(winner), winner)) + "\n")
 			b.WriteString(i18n.T("teenpatti.promptRoundEndHelp") + "\n")
 		}
 	})
