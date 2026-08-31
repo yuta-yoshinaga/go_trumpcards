@@ -170,6 +170,20 @@ function KlaverjasPageContent() {
     }
   }, [state?.roundRoem]);
 
+  const roemBreakdown = useMemo(() => {
+    if (!state?.roundPlayerRoem) return null;
+    const entries = state.roundPlayerRoem
+      .map((pts, idx) => {
+        if (pts <= 0) return null;
+        const p = state.players[idx];
+        const name = p ? playerName(p.id, p.isHuman) : '';
+        return t('roem.entry', { name, points: pts });
+      })
+      .filter((e): e is string => Boolean(e));
+    if (entries.length === 0) return null;
+    return t('roem.breakdown', { entries: entries.join(', ') });
+  }, [state?.roundPlayerRoem, state?.players, t]);
+
   if (!state)
     return <GameSkeleton gameKey="klaverjas" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 8 }} />;
 
@@ -296,6 +310,7 @@ function KlaverjasPageContent() {
                     <div>
                       {t('roundResult.roem', { roemA: state.roundRoem[0] ?? 0, roemB: state.roundRoem[1] ?? 0 })}
                     </div>
+                    {roemBreakdown && <div data-testid="klaverjas-roem-breakdown">{roemBreakdown}</div>}
                   </div>
                 )}
 
@@ -376,6 +391,10 @@ function KlaverjasPageContent() {
                     <div className="mt-1">
                       {t('roundResult.roem', { roemA: state.roundRoem[0] ?? 0, roemB: state.roundRoem[1] ?? 0 })}
                     </div>
+                    {/* **内訳は結果でこそ要る。**進行中のパネルにだけ出すと、点を突き合わせ
+                        たい瞬間に消える。`roundPlayerRoem` は `startRound` でしか
+                        リセットされないので、ここでもまだ有効 (#6441 レビュー指摘)。 */}
+                    {roemBreakdown && <div data-testid="klaverjas-roem-breakdown-result">{roemBreakdown}</div>}
                   </div>
                 )}
               </div>

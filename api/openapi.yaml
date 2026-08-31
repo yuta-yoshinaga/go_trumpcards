@@ -63914,6 +63914,11 @@ components:
           items:
             type: integer
           description: Roem (meld) points awarded to each team at the start of the current round
+        roundPlayerRoem:
+          type: array
+          items:
+            type: integer
+          description: Roem points each seat earned this round, in seat order. 0 means that seat melded nothing; the two seats of a team sum to that team's roundRoem
         playableIndices:
           type: array
           items:

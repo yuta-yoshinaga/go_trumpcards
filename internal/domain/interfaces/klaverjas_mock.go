@@ -141,6 +141,12 @@ func (_m *MockKlaverjasGame) GetRoundRoem() [domain.KlaverjasTeamCnt]int {
 	return ret.Get(0).([domain.KlaverjasTeamCnt]int)
 }
 
+// GetRoundPlayerRoem モック
+func (_m *MockKlaverjasGame) GetRoundPlayerRoem() [domain.KlaverjasPlayerCnt]int {
+	ret := _m.Called()
+	return ret.Get(0).([domain.KlaverjasPlayerCnt]int)
+}
+
 // GetWinnerTeam モック
 func (_m *MockKlaverjasGame) GetWinnerTeam() int {
 	ret := _m.Called()

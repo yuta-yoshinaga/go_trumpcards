@@ -1025,6 +1025,7 @@ const baseKlaverjasState: KlaverjasResponse = {
   teamScores: [0, 0],
   roundCardPoints: [0, 0],
   roundRoem: [0, 0],
+  roundPlayerRoem: [0, 0, 0, 0],
   playableIndices: [0, 1, 2],
   gameEndFlag: false,
   winnerTeam: -1,

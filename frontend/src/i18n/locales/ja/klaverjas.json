@@ -24,7 +24,9 @@
   "cpu": "CPU {{id}}",
   "yourTeam": "あなたのチーム",
   "roem": {
-    "title": "Roem(ボーナス)"
+    "title": "Roem(ボーナス)",
+    "breakdown": "内訳: {{entries}}",
+    "entry": "{{name}} {{points}}点"
   },
   "team": {
     "a": "チームA",

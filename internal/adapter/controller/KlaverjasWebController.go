@@ -37,23 +37,24 @@ type KlaverjasWebOutputPlayer struct {
 
 // KlaverjasWebOutput クラヴァヤスのWebアウトプット
 type KlaverjasWebOutput struct {
-	Players          []*KlaverjasWebOutputPlayer  `json:"players"`
-	Phase            int                          `json:"phase"`
-	RoundNumber      int                          `json:"roundNumber"`
-	TrickNumber      int                          `json:"trickNumber"`
-	CurrentPlayerIdx int                          `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                          `json:"leadPlayerIdx"`
-	DealerIdx        int                          `json:"dealerIdx"`
-	TrumpSuit        int                          `json:"trumpSuit"`
-	CurrentTrick     []*WebOutputTrickCard        `json:"currentTrick"`
-	TeamScores       [domain.KlaverjasTeamCnt]int `json:"teamScores"`
-	RoundCardPoints  [domain.KlaverjasTeamCnt]int `json:"roundCardPoints"`
-	RoundRoem        [domain.KlaverjasTeamCnt]int `json:"roundRoem"`
-	PlayableIndices  []int                        `json:"playableIndices"`
-	GameEndFlag      bool                         `json:"gameEndFlag"`
-	WinnerTeam       int                          `json:"winnerTeam"`
-	IsHumanTurn      bool                         `json:"isHumanTurn"`
-	Hint             *WebOutputCardHint           `json:"hint,omitempty"`
+	Players          []*KlaverjasWebOutputPlayer    `json:"players"`
+	Phase            int                            `json:"phase"`
+	RoundNumber      int                            `json:"roundNumber"`
+	TrickNumber      int                            `json:"trickNumber"`
+	CurrentPlayerIdx int                            `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                            `json:"leadPlayerIdx"`
+	DealerIdx        int                            `json:"dealerIdx"`
+	TrumpSuit        int                            `json:"trumpSuit"`
+	CurrentTrick     []*WebOutputTrickCard          `json:"currentTrick"`
+	TeamScores       [domain.KlaverjasTeamCnt]int   `json:"teamScores"`
+	RoundCardPoints  [domain.KlaverjasTeamCnt]int   `json:"roundCardPoints"`
+	RoundRoem        [domain.KlaverjasTeamCnt]int   `json:"roundRoem"`
+	RoundPlayerRoem  [domain.KlaverjasPlayerCnt]int `json:"roundPlayerRoem"`
+	PlayableIndices  []int                          `json:"playableIndices"`
+	GameEndFlag      bool                           `json:"gameEndFlag"`
+	WinnerTeam       int                            `json:"winnerTeam"`
+	IsHumanTurn      bool                           `json:"isHumanTurn"`
+	Hint             *WebOutputCardHint             `json:"hint,omitempty"`
 	WebOutputBase
 	Config KlaverjasWebOutputConfig `json:"config"`
 }
