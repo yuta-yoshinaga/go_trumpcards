@@ -95,6 +95,15 @@ func (p *TwentyNineCuiPresenter) Output(g interfaces.TwentyNineGame, lastErr err
 			"trick", strconv.Itoa(g.GetTrickNumber()),
 			"trump", twentyNineTrumpStr(g.GetTrumpSuit(), g.GetTrumpRevealed())) + "\n")
 
+		// **公開は出来事で、状態ではない。**trump 行は書き換わるが、前回の出力と
+		// 見比べない限り「いつ公開されたのか」は分からなかった (#6440)。Web は
+		// `tn-trump-reveal-banner` で 3 秒強調している。出すのは公開が起きた
+		// 応答 1 回だけ ── 公開済みの間ずっと出すと、出来事としての意味が消える。
+		if g.GetTrumpJustRevealed() {
+			b.WriteString(color.Yellow(i18n.Tf("twentynine.trumpRevealed",
+				"trump", cuiSuitName(g.GetTrumpSuit()))) + "\n")
+		}
+
 		scores := g.GetTeamScores()
 		b.WriteString(i18n.Tf("twentynine.teamScores",
 			"teamA", strconv.Itoa(scores[0]),

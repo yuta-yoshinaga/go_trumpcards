@@ -31,6 +31,7 @@ func setupTwentyNineCuiMock() *interfaces.MockTwentyNineGame {
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
 	m.On("GetTrumpRevealed").Return(true)
+	m.On("GetTrumpJustRevealed").Return(false)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.TwentyNinePhasePlay)
@@ -284,5 +285,35 @@ func TestTwentyNineCuiPresenter_ShowsTheContractProgress(t *testing.T) {
 		assert.NotContains(t, out, i18n.T("twentynine.contractMade"))
 		assert.NotContains(t, out, i18n.T("twentynine.contractFailed"))
 		assert.NotContains(t, out, i18n.Tf("twentynine.contractNeedMore", "remaining", "10"))
+	})
+}
+
+// **公開は出来事で、状態ではない。**trump 行は書き換わるが、前回の出力と見比べない
+// 限り「いつ公開されたのか」は分からなかった (#6440)。
+func TestTwentyNineCuiPresenter_AnnouncesTheTrumpReveal(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.TwentyNineCuiPresenter)
+
+	withJustRevealed := func(v bool) *interfaces.MockTwentyNineGame {
+		m, _ := setupTwentyNineCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpJustRevealed")
+		m.On("GetTrumpJustRevealed").Return(v)
+		return m
+	}
+
+	want := i18n.Tf("twentynine.trumpRevealed", "trump", "SPADE")
+
+	t.Run("announces once on the response that revealed it", func(t *testing.T) {
+		out := p.Output(withJustRevealed(true), nil)
+		assert.Contains(t, out, want)
+		assert.NotContains(t, out, "{{")
+	})
+
+	// 公開済みの状態が続く間は繰り返さない ── 出来事としての意味が消える。
+	t.Run("stays quiet while the trump merely remains revealed", func(t *testing.T) {
+		out := p.Output(withJustRevealed(false), nil)
+		assert.NotContains(t, out, want)
 	})
 }

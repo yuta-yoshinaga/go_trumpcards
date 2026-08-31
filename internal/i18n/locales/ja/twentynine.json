@@ -48,5 +48,6 @@
   "result.humanWin": "ゲーム終了！ あなたのチームの勝ち！",
   "result.cpuWin": "ゲーム終了！ チーム{{team}}の勝ち！",
   "helpExampleBid": "  pass                      入札を降りる",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "trumpRevealed": "切り札が公開されました: {{trump}}"
 }
