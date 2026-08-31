@@ -122,6 +122,64 @@ describe('ThreeThirteenPage', () => {
     expect(screen.getByTestId('threethirteen-deadwood-indicator')).toHaveTextContent('予測デッドウッド: 23点');
   });
 
+  // **ノックはデッドウッドが 0 でなければ拒否される**のに、ボタンは選択枚数しか
+  // 見ておらず、見込みが無くても同じ見た目で押せた (#6463)。
+  it('highlights the knock button only when the selected discard leaves no deadwood', async () => {
+    // ♠5♠6♠7 のランに ♥K が余る手札 (ワイルドは 4)。♥K を捨てれば 0、
+    // ラン札を捨てれば 23 ── 同じ手札で両方の枝を踏める。
+    const meldHandState: ThreeThirteenResponse = {
+      ...discardPhaseState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 4,
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 6 },
+            { design: 'SPADE', value: 7 },
+            { design: 'HEART', value: 13 },
+          ],
+          deadwood: 10,
+          roundScore: 0,
+          cumulativeScore: 0,
+        },
+        discardPhaseState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(meldHandState);
+    renderWithProviders(<ThreeThirteenPage />);
+
+    const knockButton = await screen.findByTestId('threethirteen-knock-button');
+    const live = screen.getByTestId('threethirteen-knock-live');
+    const indicator = screen.getByTestId('threethirteen-deadwood-indicator');
+
+    // **未選択のうちは強調しない。**この時点の予測値は「どれか 1 枚捨てたときに
+    // 届く最良値」で 0 だが、ノックボタン自体が 1 枚選択を要求している ──
+    // 選択枚数を条件から外すと、押せないボタンが光る。
+    expect(indicator).toHaveTextContent('予測デッドウッド: 0点');
+    expect(knockButton.className).not.toContain('animate-pulse');
+    expect(live).toBeEmptyDOMElement();
+
+    // ラン札を捨てると 23 点残る → 強調しない。
+    fireEvent.click(screen.getByAltText('♠ 5').closest('button') as HTMLButtonElement);
+    expect(indicator).toHaveTextContent('予測デッドウッド: 23点');
+    expect(knockButton.className).not.toContain('animate-pulse');
+    expect(indicator.className).toContain('text-ds-text-muted');
+    expect(live).toBeEmptyDOMElement();
+
+    // ♥K に持ち替えると 0 点 → 強調し、読み上げも出る。
+    fireEvent.click(screen.getByAltText('♠ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♥ K').closest('button') as HTMLButtonElement);
+    expect(indicator).toHaveTextContent('予測デッドウッド: 0点');
+    expect(knockButton.className).toContain('animate-pulse');
+    expect(knockButton.className).toContain('ring-ds-success');
+    expect(indicator.className).toContain('text-ds-success');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveTextContent('ノックできます');
+    expect(live.textContent).not.toContain('{{');
+  });
+
   it('badges wild-rank cards in the hand and on the discard top', async () => {
     // Aces wild: the ♠A in hand and the ♣A discard top both match wildRank 1.
     mockExec.mockResolvedValue({
