@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { manilleApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeManilleState } from '../test/stateFactories';
+import { ManillePhase } from '../types/phases';
 import { ManillePage } from './ManillePage';
 
 vi.mock('../api/gameApi', () => ({
@@ -200,5 +201,33 @@ describe('ManillePage target points', () => {
     renderWithProviders(<ManillePage />);
     await waitFor(() => expect(screen.getByText('目標: 41点')).toBeInTheDocument());
     expect(screen.queryByText('目標: 21点')).not.toBeInTheDocument();
+  });
+});
+
+// **途中経過が追えなかった。**姉妹ゲームはどれも進行中の取得点を常時出しているのに、
+// マニーユは結果まで累計点しか見えなかった (#6442)。
+describe('ManillePage round progress', () => {
+  it.each([
+    ['play', ManillePhase.PLAY],
+    ['trick end', ManillePhase.TRICK_END],
+  ] as const)('shows the running card points during %s', async (_label, phase) => {
+    mockExec.mockResolvedValue(makeManilleState({ phase, roundCardPoints: [18, 12] }));
+    renderWithProviders(<ManillePage />);
+
+    const panel = await screen.findByTestId('manille-round-points');
+    expect(panel).toHaveAttribute('aria-live', 'polite');
+    expect(panel).toHaveTextContent('18');
+    expect(panel).toHaveTextContent('12');
+    expect(panel.textContent).not.toContain('{{');
+  });
+
+  // ラウンドが終われば既存の結果表示が引き継ぐ。二重に出さない。
+  it('hides the running panel once the round has ended', async () => {
+    mockExec.mockResolvedValue(makeManilleState({ phase: 2, roundCardPoints: [35, 25] }));
+    renderWithProviders(<ManillePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('manille-round-points')).not.toBeInTheDocument();
+    expect(screen.getByText(/ラウンド結果/)).toBeInTheDocument();
   });
 });

@@ -4,10 +4,12 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -175,14 +177,63 @@ func TestManilleCuiPresenter_TrickEndNamesTheWinner(t *testing.T) {
 		assert.Contains(t, out, i18n.Tf("manille.trickWinner",
 			"name", color.Bold(i18n.Tf("cuiPlayerCpu", "idx", "1")),
 			"team", i18n.T("manille.teamB")))
-		assert.NotContains(t, out, i18n.T("manille.teamA"))
+		// **チーム名そのものを探さない。**同じ画面の途中経過パネルが
+		// 「チームA: 0点, チームB: 0点」を出しているので、素の語では当たってしまう
+		// (#6442)。見るのは獲得の一文そのもの。
+		assert.NotContains(t, out, i18n.Tf("manille.trickWinner",
+			"name", color.Bold(i18n.T("cuiPlayerYou")), "team", i18n.T("manille.teamA")))
 	})
 
 	// まだ誰も取っていない (リード未確定) 局面では出さない。
 	t.Run("says nothing when no one has led yet", func(t *testing.T) {
 		out := p.Output(trickEndMock(-1), nil)
 
-		assert.NotContains(t, out, i18n.T("manille.teamA"))
-		assert.NotContains(t, out, i18n.T("manille.teamB"))
+		for _, team := range []string{"manille.teamA", "manille.teamB"} {
+			assert.NotContains(t, out, i18n.Tf("manille.trickWinner",
+				"name", color.Bold(i18n.T("cuiPlayerYou")), "team", i18n.T(team)))
+			assert.NotContains(t, out, i18n.Tf("manille.trickWinner",
+				"name", color.Bold(i18n.Tf("cuiPlayerCpu", "idx", "1")), "team", i18n.T(team)))
+		}
+		// 獲得の一文の**末尾**そのものが無いことも見る (名前にもチームにも依らない)。
+		_, rest, ok := strings.Cut(i18n.Tf("manille.trickWinner", "name", "\x00", "team", "\x00"), "\x00")
+		require.True(t, ok)
+		tail := rest[strings.LastIndex(rest, "\x00")+1:]
+		require.NotEmpty(t, tail)
+		assert.NotContains(t, out, tail)
+	})
+}
+
+// **途中経過が追えなかった。**`GetRoundCardPoints()` を読むのは RoundEnd の分岐だけで、
+// 進行中は累計点しか出ていなかった (#6442)。姉妹ゲームはどれも進行中に出している。
+func TestManilleCuiPresenter_ShowsTheRoundProgress(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.ManilleCuiPresenter)
+
+	inPhase := func(phase domain.ManillePhase) *interfaces.MockManilleGame {
+		m, _ := setupManilleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundCardPoints")
+		m.On("GetPhase").Return(phase)
+		m.On("GetRoundCardPoints").Return([domain.ManilleTeamCnt]int{18, 12})
+		return m
+	}
+
+	want := i18n.Tf("manille.roundProgress", "ptsA", "18", "ptsB", "12")
+
+	for _, phase := range []domain.ManillePhase{domain.ManillePhasePlay, domain.ManillePhaseTrickEnd} {
+		t.Run("shows the running points mid-round", func(t *testing.T) {
+			out := p.Output(inPhase(phase), nil)
+			assert.Contains(t, out, want)
+			assert.NotContains(t, out, "{{")
+		})
+	}
+
+	// ラウンドが終われば `promptRoundEnd` が結果として引き継ぐ。二重に出さない。
+	t.Run("stays quiet once the round has ended", func(t *testing.T) {
+		out := p.Output(inPhase(domain.ManillePhaseRoundEnd), nil)
+		assert.NotContains(t, out, want)
+		assert.Contains(t, out, i18n.Tf("manille.promptRoundEnd", "ptsA", "18", "ptsB", "12"))
 	})
 }

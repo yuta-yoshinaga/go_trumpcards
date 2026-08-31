@@ -37,6 +37,9 @@
     "teamA": "Team A card points: {{points}}",
     "teamB": "Team B card points: {{points}}"
   },
+  "roundProgress": {
+    "title": "Card points this round"
+  },
   "strengthLegend": {
     "title": "Card Strength & Points",
     "rankCol": "Rank",
