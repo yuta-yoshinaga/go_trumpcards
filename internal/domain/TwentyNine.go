@@ -216,8 +216,11 @@ func (g *TwentyNine) PlayerBid(bid TwentyNineBid) error {
 	// CPU 側で消すと、CPU の手で公開されたときの告知が描画前に消えて
 	// 一度も画面に出ない。検証前に消すのも同じ穴で、弾かれた要求
 	// (二度押し・再送) がまだ読んでいない告知を消してしまう。
+	if err := g.applyBid(g.currentPlayerIdx, bid); err != nil {
+		return err
+	}
 	g.trumpJustRevealed = false
-	return g.applyBid(g.currentPlayerIdx, bid)
+	return nil
 }
 
 // CpuBid 入札フェーズで CPU が 1 件入札する。
@@ -727,9 +730,6 @@ func (g *TwentyNine) GetTrumpRevealed() bool { return g.trumpRevealed }
 // 告知は 1 回だけ出す。`GetTrumpRevealed` は公開済みかどうかで、こちらは
 // 「この応答で起きたか」。人間が次の手を打つと false に戻る。
 func (g *TwentyNine) GetTrumpJustRevealed() bool { return g.trumpJustRevealed }
-
-// SetTrumpJustRevealedForTest はテスト用に告知フラグを設定する。
-func (g *TwentyNine) SetTrumpJustRevealedForTest(v bool) { g.trumpJustRevealed = v }
 
 // SetTrumpRevealed 切り札公開フラグ設定 (テスト用)
 func (g *TwentyNine) SetTrumpRevealed(v bool) { g.trumpRevealed = v }
