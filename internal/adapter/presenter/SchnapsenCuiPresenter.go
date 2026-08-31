@@ -54,7 +54,8 @@ func (p *SchnapsenCuiPresenter) Output(s interfaces.SchnapsenGame, lastErr error
 		}
 		sb.WriteString(i18n.Tf("schnapsen.pointsLine",
 			"p0", strconv.Itoa(s.GetPlayerPoints(0)),
-			"p1", strconv.Itoa(s.GetPlayerPoints(1))) + "\n")
+			"p1", strconv.Itoa(s.GetPlayerPoints(1)),
+			"target", strconv.Itoa(domain.SchnapsenWinThreshold)) + "\n")
 
 		for i := 0; i < s.GetPlayerCnt(); i++ {
 			// 目印は第2フェーズ (マストフォローが効く) で本人の手番のときだけ。

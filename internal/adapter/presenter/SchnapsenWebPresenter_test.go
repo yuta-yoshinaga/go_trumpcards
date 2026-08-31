@@ -5,6 +5,8 @@ package presenter_test
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -174,4 +176,17 @@ func TestSchnapsenWebPresenterOutputCarriesTheHint(t *testing.T) {
 
 	result := new(presenter.SchnapsenWebPresenter).Output(sng, nil)
 	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+}
+
+func TestSchnapsenWebPresenter_Output_WinThreshold(t *testing.T) {
+	p := new(presenter.SchnapsenWebPresenter)
+	m, _ := setupSchnapsenWebMockWithPlayers(nil)
+	got := p.Output(m, nil)
+
+	expectedField := fmt.Sprintf(`"winThreshold":%s`, strconv.Itoa(domain.SchnapsenWinThreshold))
+	assert.Contains(t, got, expectedField, "Output must carry winThreshold matching domain constant")
+
+	var out controller.SchnapsenWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(got), &out))
+	assert.Equal(t, domain.SchnapsenWinThreshold, out.WinThreshold)
 }

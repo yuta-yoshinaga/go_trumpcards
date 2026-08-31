@@ -31,6 +31,7 @@ const baseState: SchnapsenResponse = {
   marriagePlays: [0],
   gameEndFlag: false,
   winnerIdx: -1,
+  winThreshold: 66,
   config: { cpuDifficulty: 1 },
 };
 
@@ -46,6 +47,14 @@ describe('formatSchnapsenState', () => {
     expect(out).toContain('phase: PLAY');
     expect(out).toContain('trump: ♥J');
     expect(out).toContain('stock: 9');
+  });
+
+  // **勝利条件はここにも出す。**CUI (`schnapsen.pointsLine`) は「66点で勝利」を出して
+  // いるのに、ブラウザの CLI モードは `pts` の並びだけで目標が分からなかった (#6423)。
+  // 値はレスポンス由来なので、書き写した定数ではない。
+  it('names the score that ends the round', () => {
+    expect(formatSchnapsenState(baseState)).toContain('first to 66');
+    expect(formatSchnapsenState({ ...baseState, winThreshold: 71 })).toContain('first to 71');
   });
 
   it('falls back to the trump suit symbol once the upcard is gone', () => {

@@ -54,6 +54,8 @@ export interface SchnapsenResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   /** -1 = tie or unfinished. */
   winnerIdx: number;
+  /** Points that end the round, sent from `domain.SchnapsenWinThreshold` so the UI never writes the number itself. */
+  winThreshold: number;
   config: SchnapsenConfig;
   hint?: SchnapsenHint;
 }

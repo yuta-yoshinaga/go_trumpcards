@@ -46,6 +46,7 @@ function makeState(overrides: Partial<SchnapsenResponse> = {}): SchnapsenRespons
     marriagePlays: [],
     gameEndFlag: false,
     winnerIdx: -1,
+    winThreshold: 66,
     message: '',
     config: { cpuDifficulty: 0 },
     ...overrides,
@@ -67,6 +68,8 @@ describe('SchnapsenPage', () => {
     renderWithProviders(<SchnapsenPage />);
     await waitFor(() => expect(screen.getByText(/トリック: 1/)).toBeInTheDocument());
     expect(screen.getByText(/山札: 9/)).toBeInTheDocument();
+    expect(screen.getByText(/得点 \(66点で勝利\) — あなた: 0 \/ CPU: 0/)).toBeInTheDocument();
+    expect(screen.queryByText(/\{\{target\}\}/)).not.toBeInTheDocument();
     expect(screen.getByTestId('schnapsen-phase')).toHaveTextContent(/第1フェーズ/);
   });
 

@@ -52,6 +52,7 @@ func (p *SchnapsenWebPresenter) buildBase(s interfaces.SchnapsenGame) *controlle
 	resObj.MarriagePlays = intSliceOrEmpty(s.GetMarriageIndices(0))
 	resObj.GameEndFlag = s.GetGameEndFlag()
 	resObj.WinnerIdx = s.GetWinnerIdx()
+	resObj.WinThreshold = domain.SchnapsenWinThreshold
 
 	cfg := s.GetConfig()
 	resObj.Config = controller.SchnapsenWebOutputConfig{

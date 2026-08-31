@@ -176,7 +176,8 @@ function SchnapsenPageContent() {
                 {t('header.stock')}: {state.stockRemaining}
               </span>
               <span className="mr-4">
-                {t('header.points')} — {t('header.you')}: {human?.points ?? 0} / {t('header.cpu')}: {cpu?.points ?? 0}
+                {t('header.points')} {t('header.winAt', { target: state.winThreshold })} — {t('header.you')}:{' '}
+                {human?.points ?? 0} / {t('header.cpu')}: {cpu?.points ?? 0}
               </span>
               <span className="text-ds-accent" data-testid="schnapsen-phase">
                 {state.isEndgame ? t('header.phase2') : t('header.phase1')}

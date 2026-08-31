@@ -56,6 +56,7 @@ type SchnapsenWebOutput struct {
 	MarriagePlays    []int                       `json:"marriagePlays"`
 	GameEndFlag      bool                        `json:"gameEndFlag"`
 	WinnerIdx        int                         `json:"winnerIdx"`
+	WinThreshold     int                         `json:"winThreshold"`
 	Hint             *SchnapsenWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config SchnapsenWebOutputConfig `json:"config"`
@@ -96,6 +97,7 @@ func newSchnapsenDefaultOutput(msg string) *SchnapsenWebOutput {
 		ValidPlays:    make([]int, 0),
 		MarriagePlays: make([]int, 0),
 		WinnerIdx:     -1,
+		WinThreshold:  domain.SchnapsenWinThreshold,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
