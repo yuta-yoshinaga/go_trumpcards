@@ -61,6 +61,16 @@ export interface CuckooResponse extends BaseGameResponse {
   roundLowest: number;
   /** Seat indices that held the lowest card and lost a life this round. */
   roundLosers: number[];
+  /**
+   * Seat the current player would trade with if they swap, or -1 when nobody
+   * else is still in.
+   *
+   * Eliminated seats are skipped, so this is **not always the seat beside
+   * them** — the rule lives in `Cuckoo.GetSwapTargetIdx` and used to be
+   * recomputed client-side (#6852). The dealer trades with the stock instead,
+   * so handle that case before reading this.
+   */
+  swapTargetIdx: number;
   config: CuckooConfig;
 }
 

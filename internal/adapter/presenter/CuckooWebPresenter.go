@@ -25,6 +25,9 @@ func (p *CuckooWebPresenter) Output(g interfaces.CuckooGame, lastErr error) stri
 	resObj.PendingSwapTo = g.GetPendingSwapTo()
 	resObj.RoundLowest = g.GetRoundLowest()
 	resObj.RoundLosers = append([]int{}, g.GetRoundLosers()...)
+	// 交換の相手は席順の隣とは限らない (脱落者を飛ばす)。規則はドメインが持つので、
+	// クライアントに再計算させない (#6852)。
+	resObj.SwapTargetIdx = g.GetSwapTargetIdx(g.GetCurrentPlayerIdx())
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.CuckooWebOutputConfig{
