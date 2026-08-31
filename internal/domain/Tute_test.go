@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func tuteCard(design, value int) *Card { return NewCard(design, value, false) }
@@ -312,35 +313,66 @@ func TestTute_CpuFullRoundProgresses(t *testing.T) {
 	}
 }
 
-func TestTute_GetLastTrickBonusTeam(t *testing.T) {
+// フェーズの出し分けは**配らない盤**で測る。配ると、下の end-to-end 版と同じ
+// 配り依存を持ち込むことになる。
+func TestTute_GetLastTrickBonusTeamByPhase(t *testing.T) {
 	g := newTuteGame(false)
 	g.Reset()
 
-	// プレイ中は -1 であること (否定コントロール)
-	assert.Equal(t, -1, g.GetLastTrickBonusTeam(), "GetLastTrickBonusTeam must be -1 during Play phase")
+	for _, phase := range []TutePhase{TutePhasePlay, TutePhaseTrickEnd} {
+		g.SetPhase(phase)
+		assert.Equal(t, -1, g.GetLastTrickBonusTeam(), "phase %v must report no bonus yet", phase)
+	}
 
-	var lastTrickWinner int
-	for steps := 0; steps < 200; steps++ {
-		switch g.GetPhase() {
-		case TutePhasePlay:
-			assert.Equal(t, -1, g.GetLastTrickBonusTeam(), "GetLastTrickBonusTeam must be -1 during Play phase")
-			g.CpuPlay()
-		case TutePhaseTrickEnd:
-			assert.Equal(t, -1, g.GetLastTrickBonusTeam(), "GetLastTrickBonusTeam must be -1 during TrickEnd phase")
-			lastTrickWinner = g.trickWinner()
-			g.ResolveTrick()
-			if g.GetPhase() == TutePhaseTrickEnd {
-				g.NextTrick()
+	// ラウンド終了時は最終トリックの勝者 (= leadPlayerIdx) のチーム。
+	// 両チームを踏む ── 片方だけだと「常にチーム0を返す」実装を見逃す。
+	g.SetPhase(TutePhaseRoundEnd)
+	for seat := 0; seat < TutePlayerCnt; seat++ {
+		g.SetLeadPlayerIdx(seat)
+		assert.Equal(t, TuteTeamOf(seat), g.GetLastTrickBonusTeam(), "seat %d", seat)
+	}
+}
+
+// 実際に 1 ラウンド回して、ボーナスのチームが最終トリックの勝者と一致することを見る。
+//
+// **Tute 即勝利で終わる配りがある。**4 枚の K か Q を持つ CPU がいると
+// `applyTute` が `TutePhaseGameEnd` へ飛ばし、そのラウンドは RoundEnd に
+// 到達しない (実測で 400 配りに 1 回)。最初の版はそれを「200 手で終わらなかった」
+// として落としていた ── 配り直して測り直すのが正しい。
+func TestTute_LastTrickBonusGoesToTheLastTrickWinner(t *testing.T) {
+	measured := false
+	for attempt := 0; attempt < 50 && !measured; attempt++ {
+		g := newTuteGame(false)
+		g.Reset()
+
+		lastTrickWinner := -1
+		for steps := 0; steps < 200; steps++ {
+			switch g.GetPhase() {
+			case TutePhasePlay:
+				require.Equal(t, -1, g.GetLastTrickBonusTeam())
+				g.CpuPlay()
+			case TutePhaseTrickEnd:
+				require.Equal(t, -1, g.GetLastTrickBonusTeam())
+				lastTrickWinner = g.trickWinner()
+				g.ResolveTrick()
+				if g.GetPhase() == TutePhaseTrickEnd {
+					g.NextTrick()
+				}
+			case TutePhaseRoundEnd:
+				wantTeam := TuteTeamOf(lastTrickWinner)
+				assert.Equal(t, wantTeam, g.GetLastTrickBonusTeam(),
+					"the bonus goes to the team that took the last trick")
+				assert.Equal(t, wantTeam, TuteTeamOf(g.GetLeadPlayerIdx()))
+				measured = true
 			}
-		case TutePhaseRoundEnd:
-			// ラウンド終了時点で最終トリックの勝者チームと一致すること
-			wantTeam := TuteTeamOf(lastTrickWinner)
-			assert.Equal(t, wantTeam, g.GetLastTrickBonusTeam(), "GetLastTrickBonusTeam must match the last trick winner's team")
-			assert.Equal(t, wantTeam, TuteTeamOf(g.GetLeadPlayerIdx()))
-			return
+			if measured || g.GetPhase() == TutePhaseGameEnd {
+				break // Tute 即勝利の配り。この配りでは測れないので次へ。
+			}
 		}
 	}
-	t.Fatal("did not reach RoundEnd within 200 steps")
+	// **測れなかったまま緑にしない。**50 配り全部が即勝利で終わることは
+	// 実質あり得ないので、ここに来たら前提が壊れている。
+	require.True(t, measured, "no deal reached RoundEnd in 50 attempts")
 }
 
 func TestTute_HintAndPlayable(t *testing.T) {
