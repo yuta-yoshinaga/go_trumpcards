@@ -23,6 +23,18 @@ func tysiacSuitSymbol(suit int) string {
 	return tysiacSuitSymbols[suit]
 }
 
+// tysiacNearWinRatio は「目標に迫っている」とみなす到達率。
+const tysiacNearWinRatio = 0.8
+
+// tysiacNearWin は score が target の tysiacNearWinRatio を超えたかを返す。
+// target が 0 以下なら常に false (割り算が意味を持たない)。
+func tysiacNearWin(score, target int) bool {
+	if target <= 0 {
+		return false
+	}
+	return float64(score)/float64(target) > tysiacNearWinRatio
+}
+
 func tysiacPlayerStr(g interfaces.TysiacGame, idx int) string {
 	player := g.GetPlayer(idx)
 	if player == nil {
@@ -34,13 +46,20 @@ func tysiacPlayerStr(g interfaces.TysiacGame, idx int) string {
 		role = i18n.T("tysiac.roleDeclarer")
 	}
 	var b strings.Builder
-	b.WriteString(i18n.Tf("tysiac.playerLine",
+	line := i18n.Tf("tysiac.playerLine",
 		"name", cuiPlayerName(player, idx),
 		"role", role,
 		"cards", strconv.Itoa(player.GetCardsSize()),
 		"score", strconv.Itoa(scores[idx]),
 		"tricks", strconv.Itoa(player.GetTrickCount()),
-	))
+	)
+	// Web は同じ閾値で得点バーを警告色にしている (#6483)。閾値は
+	// frontend/src/pages/TysiacPage.tsx の NEAR_WIN_RATIO と対で、
+	// check-near-win-threshold.mjs が食い違いを落とす。
+	if tysiacNearWin(scores[idx], g.GetConfig().TargetPoints) {
+		line = color.Yellow(line)
+	}
+	b.WriteString(line)
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
