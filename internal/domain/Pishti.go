@@ -359,8 +359,11 @@ func (g *Pishti) scoresFromCurrentState() []int {
 		}
 		scores[i] = s + p.GetPistiBonus()
 	}
-	// 最多枚数は単独リーダーのときだけ (同数なら誰ももらえない)。
-	if mostIdx := g.mostCapturedSeat(); mostIdx >= 0 && g.players[mostIdx].CapturedCount() > 0 {
+	// 最多枚数は単独リーダーのときだけ。**枚数の再検査はしない** ──
+	// `mostCapturedSeat` は同数のときも 0 枚のときも -1 を返すので、
+	// `>= 0` の時点で「単独で 1 枚以上」は保証されている。ここで重ねると
+	// どのテストからも到達しない分岐になる (レビュー指摘)。
+	if mostIdx := g.mostCapturedSeat(); mostIdx >= 0 {
 		scores[mostIdx] += PishtiScoreMostCards
 	}
 	return scores
