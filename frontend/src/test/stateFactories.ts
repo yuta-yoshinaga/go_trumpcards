@@ -869,6 +869,8 @@ const baseDoppelkopfState: DoppelkopfResponse = {
   youAreRe: true,
   playableIndices: [0, 1],
   roundRePoints: 0,
+  liveRePoints: 0,
+  liveKontraPoints: 0,
   roundReWon: false,
   roundGamePoints: 0,
   gameEndFlag: false,

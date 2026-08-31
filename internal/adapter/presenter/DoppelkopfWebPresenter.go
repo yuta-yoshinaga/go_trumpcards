@@ -47,6 +47,8 @@ func (p *DoppelkopfWebPresenter) buildBase(g interfaces.DoppelkopfGame) *control
 	resObj.KontraAnnounced = g.IsKontraAnnounced()
 	resObj.CanAnnounce = g.CanHumanAnnounce()
 	resObj.RoundRePoints = g.GetRoundRePoints()
+	resObj.LiveRePoints = g.GetLiveRePoints()
+	resObj.LiveKontraPoints = g.GetLiveKontraPoints()
 	resObj.RoundReWon = g.GetRoundReWon()
 	resObj.RoundGamePoints = g.GetRoundGamePoints()
 

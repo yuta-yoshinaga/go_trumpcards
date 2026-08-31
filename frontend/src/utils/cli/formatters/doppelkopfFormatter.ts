@@ -46,6 +46,12 @@ export function formatDoppelkopfState(state: DoppelkopfResponse): string {
     lines.push(`announced: ${calls.join(', ')}`);
   }
 
+  // 進行中の獲得点。GUI のパネルと CUI の 1 行が出しているのに、CLI モードだけが
+  // 何も出していなかった (#6435)。ラウンド結果は下の行が引き継ぐので、ここは進行中だけ。
+  if (state.phase === 0 || state.phase === 1) {
+    lines.push(`card points: Re=${state.liveRePoints} Kontra=${state.liveKontraPoints}`);
+  }
+
   if (state.phase === 2 || state.phase === 3) {
     lines.push(
       `round result: Re points=${state.roundRePoints} ` +

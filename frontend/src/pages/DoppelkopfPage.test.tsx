@@ -29,6 +29,8 @@ const roundEndState = makeDoppelkopfState({
   teamsRevealed: true,
   reTeam: [true, false, true, false],
   roundRePoints: 130,
+  liveRePoints: 130,
+  liveKontraPoints: 110,
   roundReWon: true,
   roundGamePoints: 2,
 });
@@ -216,23 +218,26 @@ describe('DoppelkopfPage', () => {
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
 
-  // **同じ値が毎レスポンスに乗っているのに、ラウンド終了まで出していなかった。**
-  // 最初のトリックで Re/Kontra をアナウンスできるので、いま何点取れているかは
-  // 実戦上の判断材料になる (#4720)。
-  it('shows the running card points during play', async () => {
-    mockExec.mockResolvedValue(makeDoppelkopfState({ phase: 0, roundRePoints: 85 }));
+  // **途中経過は liveRePoints / liveKontraPoints をそのまま出す。**
+  // 以前は roundRePoints (プレイ中常に 0) を使って Kontra を 240 - roundRePoints
+  // で計算していたため、ラウンド中ずっと「Re: 0点 / Kontra: 240点」となっていた (#6435)。
+  it('shows the running card points during play from liveRePoints and liveKontraPoints', async () => {
+    mockExec.mockResolvedValue(makeDoppelkopfState({ phase: 0, liveRePoints: 30, liveKontraPoints: 20 }));
     renderWithProviders(<DoppelkopfPage />);
 
     const panel = await screen.findByTestId('dk-live-points');
-    expect(panel).toHaveTextContent('85');
-    // Kontra 側は 240 - 85 = 155。合計から引いて出していることを踏む。
-    expect(panel).toHaveTextContent('155');
+    expect(panel).toHaveTextContent('30');
+    // Kontra 側は 240 - 30 = 210 ではなく、実際に獲得した 20。
+    expect(panel).toHaveTextContent('20');
+    expect(panel).not.toHaveTextContent('210');
     expect(panel).toHaveTextContent('121');
   });
 
   // 逆側。ラウンド終了後は下の内訳が引き継ぐので、二重に出さない。
   it('hides the running panel once the round has ended', async () => {
-    mockExec.mockResolvedValue(makeDoppelkopfState({ phase: 2, roundRePoints: 85 }));
+    mockExec.mockResolvedValue(
+      makeDoppelkopfState({ phase: 2, liveRePoints: 30, liveKontraPoints: 20, roundRePoints: 85 }),
+    );
     renderWithProviders(<DoppelkopfPage />);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalled());

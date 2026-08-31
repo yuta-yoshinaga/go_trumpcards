@@ -36,6 +36,8 @@ func setupDoppelkopfCuiMock() *interfaces.MockDoppelkopfGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("CanHumanAnnounce").Return(false)
+	m.On("GetLiveRePoints").Return(0)
+	m.On("GetLiveKontraPoints").Return(0)
 	m.On("GetRoundRePoints").Return(0)
 	m.On("GetRoundReWon").Return(false)
 	m.On("GetRoundGamePoints").Return(0)
@@ -61,11 +63,19 @@ func TestDoppelkopfCuiPresenter_Output(t *testing.T) {
 	defer color.SetNoColor(orig)
 	p := new(presenter.DoppelkopfCuiPresenter)
 
-	t.Run("play phase shows current player", func(t *testing.T) {
+	t.Run("play phase shows current player and live points without unreplaced placeholders", func(t *testing.T) {
 		m, players := setupDoppelkopfCuiMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLiveRePoints")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLiveKontraPoints")
+		m.On("GetLiveRePoints").Return(30)
+		m.On("GetLiveKontraPoints").Return(20)
+
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "Doppelkopf")
+		assert.Contains(t, result, "Re 30")
+		assert.Contains(t, result, "Kontra 20")
+		assert.NotContains(t, result, "{{")
 		assert.NotEmpty(t, result)
 	})
 
@@ -77,24 +87,38 @@ func TestDoppelkopfCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
-	t.Run("trick end prompt", func(t *testing.T) {
+	t.Run("trick end prompt shows live points without unreplaced placeholders", func(t *testing.T) {
 		m, _ := setupDoppelkopfCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLiveRePoints")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLiveKontraPoints")
 		m.On("GetPhase").Return(domain.DoppelkopfPhaseTrickEnd)
+		m.On("GetLiveRePoints").Return(45)
+		m.On("GetLiveKontraPoints").Return(25)
+
 		result := p.Output(m, nil)
+		assert.Contains(t, result, "Re 45")
+		assert.Contains(t, result, "Kontra 25")
+		assert.NotContains(t, result, "{{")
 		assert.NotEmpty(t, result)
 	})
 
-	t.Run("round end prompt shows localized Kontra-wins outcome", func(t *testing.T) {
+	t.Run("round end prompt shows localized Kontra-wins outcome and hides live points", func(t *testing.T) {
 		m, _ := setupDoppelkopfCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.DoppelkopfPhaseRoundEnd)
 		// GetRoundReWon defaults to false -> Kontra wins. Default locale is ja.
-		assert.Contains(t, p.Output(m, nil), "Kontra の勝ち")
+		outJa := p.Output(m, nil)
+		assert.Contains(t, outJa, "Kontra の勝ち")
+		assert.NotContains(t, outJa, "現在の獲得点")
+		assert.NotContains(t, outJa, "{{")
 
 		i18n.SetLang("en")
 		defer i18n.SetLang("ja")
-		assert.Contains(t, p.Output(m, nil), "Kontra wins")
+		outEn := p.Output(m, nil)
+		assert.Contains(t, outEn, "Kontra wins")
+		assert.NotContains(t, outEn, "Card points so far")
+		assert.NotContains(t, outEn, "{{")
 	})
 
 	t.Run("round end prompt shows localized Re-wins outcome", func(t *testing.T) {
@@ -103,7 +127,10 @@ func TestDoppelkopfCuiPresenter_Output(t *testing.T) {
 		m.On("GetPhase").Return(domain.DoppelkopfPhaseRoundEnd)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundReWon")
 		m.On("GetRoundReWon").Return(true)
-		assert.Contains(t, p.Output(m, nil), "Re の勝ち")
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "Re の勝ち")
+		assert.NotContains(t, out, "現在の獲得点")
+		assert.NotContains(t, out, "{{")
 	})
 
 	t.Run("game end banner", func(t *testing.T) {
