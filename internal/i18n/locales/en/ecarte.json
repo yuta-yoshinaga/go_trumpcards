@@ -43,5 +43,9 @@
   "helpNext": "  n                    go to the next trick or deal",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "consequencePropose": "Ask the dealer for an exchange. If accepted, both players redraw; if refused, the dealer becomes vulnerable (an extra point for you if the dealer loses the deal).",
+  "consequenceStand": "Play the hand as dealt without exchanging (no redraw, no penalty).",
+  "consequenceAccept": "Accept the exchange; both players discard any number of cards and redraw from the stock.",
+  "consequenceRefuse": "Refuse and play your current hand. If you then fail to take 3 tricks, your opponent scores an extra point (2 instead of 1, or 3 with the Vole)."
 }
