@@ -348,6 +348,7 @@ function BotifarraPageContent() {
                   type="button"
                   className={btnSecondary}
                   onClick={confirmGiveUpAction}
+                  data-testid="giveup-button"
                   disabled={loading}
                   aria-keyshortcuts="g"
                 >

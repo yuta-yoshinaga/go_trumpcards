@@ -373,7 +373,13 @@ function ChemindeFerPageContent() {
                 <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
                   {tc('button.actionLog')}
                 </button>
-                <button type="button" className={btnWarning} onClick={confirmGiveUpAction} disabled={gameOver}>
+                <button
+                  type="button"
+                  className={btnWarning}
+                  onClick={confirmGiveUpAction}
+                  data-testid="giveup-button"
+                  disabled={gameOver}
+                >
                   {t('button.giveUp')}
                 </button>
                 <GameResetButton
