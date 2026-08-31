@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupBeziqueCuiMock(trumpCard *domain.Card) *interfaces.MockBeziqueGame {
@@ -201,4 +203,47 @@ func TestBeziqueCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	out := p.ActionLogOutput(m)
 	assert.NotNil(t, out)
+}
+
+// **山札が尽きた瞬間に第2フェーズへ切り替わる。**Web は残り 4 枚以下で警告を出して
+// 宣言の猶予を作っているのに、CUI は残数の数字を出すだけだった (#6453)。
+func TestBeziqueCuiPresenter_WarnsBeforeTheEndgame(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.BeziqueCuiPresenter)
+
+	withStock := func(stock int, endgame bool) *interfaces.MockBeziqueGame {
+		m, _ := setupBeziqueCuiMockWithPlayers(domain.NewCard(domain.CardDesignSpade, 1, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetStockRemaining")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsEndgame")
+		m.On("GetStockRemaining").Return(stock)
+		m.On("IsEndgame").Return(endgame)
+		return m
+	}
+	warning := func(stock int) string {
+		return i18n.Tf("bezique.stockLowWarning", "count", strconv.Itoa(stock))
+	}
+
+	// **閾値の境界を両側から踏む。**4 で出て 5 で出ないことを見ないと、
+	// 「常に出る」実装と見分けが付かない。
+	t.Run("warns at the threshold", func(t *testing.T) {
+		out := p.Output(withStock(4, false), nil)
+		assert.Contains(t, out, warning(4))
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("stays quiet one card above the threshold", func(t *testing.T) {
+		assert.NotContains(t, p.Output(withStock(5, false), nil), warning(5))
+	})
+
+	// 0 になった後は第2フェーズの表示が引き継ぐ。まだ来ていない出来事を
+	// 予告し続けることになるので出さない。
+	t.Run("stays quiet once the stock is gone", func(t *testing.T) {
+		assert.NotContains(t, p.Output(withStock(0, false), nil), warning(0))
+	})
+
+	t.Run("stays quiet in the endgame", func(t *testing.T) {
+		assert.NotContains(t, p.Output(withStock(3, true), nil), warning(3))
+	})
 }
