@@ -72,7 +72,13 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 		}
 
 		b.WriteString(i18n.Tf("omaha.tableMax", "n", strconv.Itoa(o.GetPlayerCnt())) + "\n")
-		b.WriteString(i18n.Tf("omaha.dealerLine", "idx", strconv.Itoa(o.GetDealerIdx())) + "\n")
+		dealerIdx := o.GetDealerIdx()
+		// **座席番号ではなく名前で呼ぶ。**同じ関数の他の行はすべて
+		// `cuiPlayerName` を通しているのに、ディーラー行だけ生の添字を
+		// 英語のまま埋めた文字列 ("ディーラー: Player 0") を出していた
+		// (#6470)。Web は `findPlayerName` で実名を出している。
+		b.WriteString(i18n.Tf("omaha.dealerLine",
+			"name", cuiPlayerName(o.GetPlayer(dealerIdx), dealerIdx)) + "\n")
 
 		cc := o.GetCommunityCards()
 		if len(cc) == 0 {

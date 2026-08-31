@@ -17,7 +17,7 @@
   "rebuyLine": "リバイ: {{chips}}チップ (最大{{max}}回, {{period}}ハンド目まで)",
   "addonLine": "アドオン: {{chips}}チップ ({{after}}ハンド目に提供)",
   "tableMax": "テーブル: {{n}}-max",
-  "dealerLine": "ディーラー: Player {{idx}}",
+  "dealerLine": "ディーラー: {{name}}",
   "communityNone": "コミュニティ: (なし)",
   "communityCards": "コミュニティ: {{cards}}",
   "potLine": "ポット: {{pot}}",

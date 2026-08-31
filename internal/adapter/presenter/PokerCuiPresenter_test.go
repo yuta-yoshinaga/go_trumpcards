@@ -40,7 +40,11 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 
 		result := pres.Output(p, nil)
 		assert.Contains(t, result, "5-Card Draw Poker")
-		assert.Contains(t, result, "ディーラー: Player 0")
+		// **座席番号ではなく名前で呼ぶ** (#6470)。生の添字と英語の "Player" が
+		// 日本語ロケールに埋まっていた。
+		assert.Contains(t, result, i18n.Tf("poker.dealerLine",
+			"name", i18n.T("cuiPlayerYou")))
+		assert.NotContains(t, result, "Player 0")
 		assert.Contains(t, result, "ポット:")
 		assert.Contains(t, result, "あなた")
 		assert.Contains(t, result, "♠10")

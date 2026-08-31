@@ -64,7 +64,13 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 		}
 
 		b.WriteString(i18n.Tf("sevencardstud.tableMax", "n", strconv.Itoa(s.GetPlayerCnt())) + "\n")
-		b.WriteString(i18n.Tf("sevencardstud.dealerLine", "idx", strconv.Itoa(s.GetDealerIdx())) + "\n")
+		dealerIdx := s.GetDealerIdx()
+		// **座席番号ではなく名前で呼ぶ。**同じ関数の他の行はすべて
+		// `cuiPlayerName` を通しているのに、ディーラー行だけ生の添字を
+		// 英語のまま埋めた文字列 ("ディーラー: Player 0") を出していた
+		// (#6470)。Web は `findPlayerName` で実名を出している。
+		b.WriteString(i18n.Tf("sevencardstud.dealerLine",
+			"name", cuiPlayerName(s.GetPlayer(dealerIdx), dealerIdx)) + "\n")
 
 		// ブリングイン (強制ベットを払い、3rd street で最初に動く席)。Web は
 		// バッジで示しているのに CUI には手掛かりが無かった (#5542)。Razz は

@@ -72,7 +72,11 @@ func TestPineappleCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "Pineapple Poker")
 		assert.Contains(t, result, "テーブル: 4-max")
-		assert.Contains(t, result, "ディーラー: Player 0")
+		// **座席番号ではなく名前で呼ぶ** (#6470)。生の添字と英語の "Player" が
+		// 日本語ロケールに埋まっていた。
+		assert.Contains(t, result, i18n.Tf("pineapple.dealerLine",
+			"name", i18n.T("cuiPlayerYou")))
+		assert.NotContains(t, result, "Player 0")
 		assert.Contains(t, result, "コミュニティ: (なし)")
 		assert.Contains(t, result, "ポット: 0")
 	})
@@ -384,7 +388,9 @@ func TestPineappleCuiPresenter_English(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "Pineapple Poker")
 		assert.Contains(t, result, "Table: 4-max")
-		assert.Contains(t, result, "Dealer: Player 0")
+		// **座席番号ではなく名前** (#6470)。英語ロケールでも "Player 0" は出さない。
+		assert.Contains(t, result, "Dealer: You")
+		assert.NotContains(t, result, "Player 0")
 		assert.Contains(t, result, "Community: (none)")
 		assert.NotContains(t, result, "テーブル")
 	})

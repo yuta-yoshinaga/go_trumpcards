@@ -16,7 +16,7 @@
   "bettingLimitRequired": "ベッティングリミットの種類が必要です (0=Fixed, 1=PotLimit, 2=NoLimit)。",
   "invalidBettingLimit": "無効なベッティングリミットです: {{val}}。0〜2を入力してください。",
   "outputTitle": "Indian Poker",
-  "dealerLine": "ディーラー: Player {{idx}}",
+  "dealerLine": "ディーラー: {{name}}",
   "potLine": "ポット: {{pot}}",
   "limitLine": "リミット: {{name}}",
   "anteLine": "アンティ: {{ante}}",
