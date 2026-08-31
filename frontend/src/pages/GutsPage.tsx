@@ -348,7 +348,12 @@ function GutsPageContent() {
             <ErrorAlert message={error} onRetry={retry} />
 
             {declareGuide && (
-              <div className="mb-2 p-2 rounded bg-black/30 text-sm" data-testid="guts-declare-guide">
+              <div
+                className="mb-2 p-2 rounded bg-black/30 text-sm"
+                data-testid="guts-declare-guide"
+                role="status"
+                aria-live="polite"
+              >
                 <div className="text-ds-text-primary font-semibold">
                   {t('guide.handLabel')}: <span className="text-base">{handName(declareGuide.handKey)}</span>
                 </div>
