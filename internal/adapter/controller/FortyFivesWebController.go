@@ -51,6 +51,7 @@ type FortyFivesWebOutput struct {
 	Contract         int                             `json:"contract"`
 	TrumpSuit        int                             `json:"trumpSuit"`
 	Bids             [domain.FortyFivesPlayerCnt]int `json:"bids"`
+	BidDone          []bool                          `json:"bidDone"`
 	CurrentTrick     []*WebOutputTrickCard           `json:"currentTrick"`
 	TeamScores       [domain.FortyFivesTeamCnt]int   `json:"teamScores"`
 	RoundTeamPoints  [domain.FortyFivesTeamCnt]int   `json:"roundTeamPoints"`
@@ -97,6 +98,7 @@ func newFortyFivesDefaultOutput(msg string) *FortyFivesWebOutput {
 		Players:         make([]*FortyFivesWebOutputPlayer, 0),
 		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
+		BidDone:         make([]bool, 0),
 		DeclarerIdx:     -1,
 		WinnerTeam:      -1,
 		WebOutputBase:   WebOutputBase{Message: msg},

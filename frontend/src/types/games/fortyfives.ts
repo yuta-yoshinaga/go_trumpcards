@@ -53,8 +53,10 @@ export interface FortyFivesResponse extends BaseGameResponse {
   contract: number;
   /** Trump suit (0=none during bid, else 1=♠ 2=♣ 3=♥ 4=♦). */
   trumpSuit: number;
-  /** Each player's bid this round — [p0, p1, p2, p3]. */
+  /** Each player's bid this round — [p0, p1, p2, p3]. パスは 0。まだ入札していないかどうかは bidDone を見る。 */
   bids: number[];
+  /** 各プレイヤーが入札を済ませたか (true=入札済みまたはパス、false=未入札) — [p0, p1, p2, p3]。 */
+  bidDone: boolean[];
   currentTrick: FortyFivesTrickCard[];
   /** Cumulative match scores per team — [teamA, teamB]. */
   teamScores: number[];

@@ -30,6 +30,7 @@ func setupFortyFivesWebMock() *interfaces.MockFortyFivesGame {
 	m.On("GetContract").Return(domain.FortyFivesBidTwenty)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
 	m.On("GetBids").Return([domain.FortyFivesPlayerCnt]domain.FortyFivesBid{domain.FortyFivesBidTwenty, domain.FortyFivesBidPass, domain.FortyFivesBidPass, domain.FortyFivesBidPass})
+	m.On("GetBidDone").Return([domain.FortyFivesPlayerCnt]bool{true, true, false, false})
 	m.On("GetTeamScores").Return([domain.FortyFivesTeamCnt]int{0, 0})
 	m.On("GetRoundTeamPoints").Return([domain.FortyFivesTeamCnt]int{0, 0})
 	m.On("GetWinnerTeam").Return(-1)
@@ -78,6 +79,20 @@ func TestFortyFivesWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, domain.CardDesignSpade, resObj.TrumpSuit)
 		assert.Equal(t, int(domain.FortyFivesBidTwenty), resObj.Contract)
 		assert.Equal(t, int(domain.FortyFivesBidTwenty), resObj.Bids[0])
+		assert.Equal(t, []bool{true, true, false, false}, resObj.BidDone)
+		assert.Contains(t, result, `"bidDone":[true,true,false,false]`)
+	})
+
+	t.Run("bidDone is not null when empty", func(t *testing.T) {
+		m, _ := setupFortyFivesWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBidDone")
+		m.On("GetBidDone").Return([domain.FortyFivesPlayerCnt]bool{})
+		result := p.Output(m, nil)
+		var resObj controller.FortyFivesWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.NotNil(t, resObj.BidDone)
+		assert.Len(t, resObj.BidDone, 4)
+		assert.Contains(t, result, `"bidDone":[false,false,false,false]`)
 	})
 
 	t.Run("config values", func(t *testing.T) {

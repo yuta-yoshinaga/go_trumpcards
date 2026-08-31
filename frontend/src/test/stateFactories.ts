@@ -2794,6 +2794,7 @@ const baseFortyFivesState: FortyFivesResponse = {
   contract: 0,
   trumpSuit: 0,
   bids: [0, 0, 0, 0],
+  bidDone: [false, false, false, false],
   currentTrick: [],
   teamScores: [0, 0],
   roundTeamPoints: [0, 0],

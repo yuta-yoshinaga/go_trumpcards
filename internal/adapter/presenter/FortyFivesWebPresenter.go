@@ -43,6 +43,7 @@ func (p *FortyFivesWebPresenter) buildBase(g interfaces.FortyFivesGame) *control
 	resObj.Contract = int(g.GetContract())
 	resObj.TrumpSuit = g.GetTrumpSuit()
 	resObj.Bids = p.bidsOutput(g)
+	resObj.BidDone = p.bidDoneOutput(g)
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerTeam = g.GetWinnerTeam()
 	resObj.TeamScores = g.GetTeamScores()
@@ -70,6 +71,18 @@ func (p *FortyFivesWebPresenter) bidsOutput(g interfaces.FortyFivesGame) [domain
 	for i := range bids {
 		out[i] = int(bids[i])
 	}
+	return out
+}
+
+// bidDoneOutput は各席が入札を済ませたかを配列で返す。
+//
+// **`bids` だけでは足りない。**パスも「まだ入札していない」も 0 なので、
+// この配列が無いと画面はその 2 つを区別できない (#6439)。長さは固定なので
+// nil にはならず、JSON でも常に配列になる。
+func (p *FortyFivesWebPresenter) bidDoneOutput(g interfaces.FortyFivesGame) []bool {
+	bidDone := g.GetBidDone()
+	out := make([]bool, len(bidDone))
+	copy(out, bidDone[:])
 	return out
 }
 

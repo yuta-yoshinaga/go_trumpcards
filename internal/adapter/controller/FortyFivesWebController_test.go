@@ -19,6 +19,7 @@ func mustFortyFivesOutputJSON(msg string) string {
 		Players:         []*controller.FortyFivesWebOutputPlayer{},
 		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
+		BidDone:         []bool{},
 		DeclarerIdx:     -1,
 		WinnerTeam:      -1,
 		WebOutputBase:   controller.WebOutputBase{Message: msg},
