@@ -3870,6 +3870,8 @@ const baseBouillotteState: BouillotteResponse = {
   hint: null,
   config: { playerCount: 4, ante: 10, startingChips: 200, targetRounds: 10 },
   message: '',
+  // ルトゥルヌ K♣ に対して手札 [K♠, J♥, 4♣] の一致 ―― インデックス 0 のみ、役なし。
+  retourneMatch: { matchingIndices: [0], noteKey: '' },
 };
 
 /**

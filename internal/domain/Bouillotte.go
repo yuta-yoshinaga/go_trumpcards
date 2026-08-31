@@ -596,6 +596,40 @@ func (g *Bouillotte) bestHand(seats []int) int {
 	return best
 }
 
+// --- Retourne ---
+
+// BouillotteRetourneMatch は手札のどれがルトゥルヌと同ランクか、またそれにより役が完成したかの判定結果。
+type BouillotteRetourneMatch struct {
+	MatchingIndices []int  // ルトゥルヌと同ランクの手札インデックス
+	NoteKey         string // 完成した役のキー ("favori", "carre", "")
+}
+
+// AnalyzeRetourneMatch は指定プレイヤーの手札と共有のルトゥルヌを比較し、一致状況を判定する。
+// ルトゥルヌ未配布時は空のインデックスを返す。
+func (g *Bouillotte) AnalyzeRetourneMatch(playerIdx int) *BouillotteRetourneMatch {
+	if g.state.retourne == nil {
+		return &BouillotteRetourneMatch{MatchingIndices: make([]int, 0)}
+	}
+	p := g.players[playerIdx]
+	indices := make([]int, 0, BouillotteHandSize)
+	for i := 0; i < p.GetCardsSize(); i++ {
+		c := p.GetCard(i)
+		if c.GetValue() == g.state.retourne.GetValue() {
+			indices = append(indices, i)
+		}
+	}
+	noteKey := ""
+	if len(indices) == 2 {
+		noteKey = "favori"
+	} else if len(indices) >= 3 {
+		noteKey = "carre"
+	}
+	return &BouillotteRetourneMatch{
+		MatchingIndices: indices,
+		NoteKey:         noteKey,
+	}
+}
+
 // --- ヘルパー ---
 
 // activeSeats は未フォールド・非脱落プレイヤーのインデックス列 (昇順) を返す。

@@ -148,3 +148,77 @@ func TestBouillotteCuiPresenter_ShowsCallAndRaiseAmounts(t *testing.T) {
 			"raiseTo", strconv.Itoa(4+g.GetAnte())))
 	})
 }
+
+// bouillotteCuiMatchGame は人間の手番のベットフェーズで、指定の手札を持つ卓を組む。
+// ルトゥルヌは 9♦ 固定 ── 配りに依存させないため手札は直接置く。
+func bouillotteCuiMatchGame(hand ...*domain.Card) *domain.Bouillotte {
+	g := domain.NewDefaultBouillotte()
+	g.SetPhase(domain.BouillottePhaseBetting)
+	g.SetCurrentPlayerIdx(0)
+	g.SetRetourne(domain.NewCard(domain.CardDesignDiamond, 9, false))
+	p := g.GetPlayer(0)
+	p.SetFolded(false)
+	p.SetOut(false)
+	p.ClearHand()
+	for _, c := range hand {
+		p.AddCard(c)
+	}
+	return g
+}
+
+// **ルトゥルヌは共有札なので、手札のどれと同ランクかで役が変わる。**Web は
+// 一致した札にリングを付けて役の完成度まで案内するのに、CUI は札面を出すだけで
+// 突き合わせを人間の目に任せていた (#6494)。
+func TestBouillotteCuiPresenter_ShowsTheRetourneMatch(t *testing.T) {
+	p := new(presenter.BouillotteCuiPresenter)
+
+	t.Run("names the matching hand slots and the completed combo", func(t *testing.T) {
+		g := bouillotteCuiMatchGame(
+			domain.NewCard(domain.CardDesignHeart, 9, false),
+			domain.NewCard(domain.CardDesignSpade, 9, false),
+			domain.NewCard(domain.CardDesignClover, 12, false),
+		)
+		out := p.Output(g, nil)
+		// 索引は手札表示と同じ 0 始まり。位置が言えないと突き合わせは終わらない。
+		assert.Contains(t, out, i18n.Tf("bouillotte.retourneMatchLine", "indices", "[0] [1]"))
+		assert.Contains(t, out, i18n.T("bouillotte.retourneNote.favori"))
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("calls three of a kind a carre", func(t *testing.T) {
+		g := bouillotteCuiMatchGame(
+			domain.NewCard(domain.CardDesignHeart, 9, false),
+			domain.NewCard(domain.CardDesignSpade, 9, false),
+			domain.NewCard(domain.CardDesignClover, 9, false),
+		)
+		out := p.Output(g, nil)
+		assert.Contains(t, out, i18n.Tf("bouillotte.retourneMatchLine", "indices", "[0] [1] [2]"))
+		assert.Contains(t, out, i18n.T("bouillotte.retourneNote.carre"))
+		assert.NotContains(t, out, i18n.T("bouillotte.retourneNote.favori"))
+	})
+
+	// 一致が 1 枚なら役は完成しない。案内だけ出して役名は出さない。
+	t.Run("reports a lone match without naming a combo", func(t *testing.T) {
+		g := bouillotteCuiMatchGame(
+			domain.NewCard(domain.CardDesignHeart, 9, false),
+			domain.NewCard(domain.CardDesignSpade, 13, false),
+			domain.NewCard(domain.CardDesignClover, 12, false),
+		)
+		out := p.Output(g, nil)
+		assert.Contains(t, out, i18n.Tf("bouillotte.retourneMatchLine", "indices", "[0]"))
+		assert.NotContains(t, out, i18n.T("bouillotte.retourneNote.favori"))
+		assert.NotContains(t, out, i18n.T("bouillotte.retourneNote.carre"))
+	})
+
+	// 負のコントロール: 一致が無ければ行ごと出さない。
+	t.Run("stays quiet when nothing matches", func(t *testing.T) {
+		g := bouillotteCuiMatchGame(
+			domain.NewCard(domain.CardDesignHeart, 1, false),
+			domain.NewCard(domain.CardDesignSpade, 13, false),
+			domain.NewCard(domain.CardDesignClover, 12, false),
+		)
+		out := p.Output(g, nil)
+		lit := i18n.Tf("bouillotte.retourneMatchLine", "indices", "")
+		assert.NotContains(t, out, strings.TrimSpace(lit))
+	})
+}

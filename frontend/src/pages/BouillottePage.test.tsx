@@ -178,51 +178,94 @@ describe('BouillottePage', () => {
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝利です！')).toBeInTheDocument());
   });
 
-  it('highlights only the hand cards that share the retourne rank', async () => {
-    // Human hand K, J, 4 with a K retourne — only the first card matches.
-    renderWithProviders(<BouillottePage />);
-    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
-    expect(screen.getByTestId('hand-card-0').className).toContain('ring-ds-accent');
-    expect(screen.getByTestId('hand-card-1').className).not.toContain('ring-ds-accent');
-    expect(screen.getByTestId('hand-card-2').className).not.toContain('ring-ds-accent');
-    // The retourne itself is ringed when the human holds a matching card.
-    expect(screen.getByTestId('retourne-card').className).toContain('ring-ds-accent');
-    // A single match forms no retourne-completed combo, so no note.
-    expect(screen.queryByTestId('retourne-note')).not.toBeInTheDocument();
-  });
-
-  it('shows the brelan favori note when the retourne completes a matching pair', async () => {
-    const favoriState = makeBouillotteState({
-      phase: 0,
-      isHumanTurn: true,
-      retourne: { design: 'DIAMOND', value: 12 },
-      players: [
-        {
-          id: 0,
-          isHuman: true,
-          chips: 190,
-          roundBet: 10,
-          folded: false,
-          out: false,
-          cardCount: 3,
-          cards: [
-            { design: 'SPADE', value: 12 },
-            { design: 'HEART', value: 12 },
-            { design: 'CLOVER', value: 8 },
-          ],
-          handName: 'brelan',
-          isWinner: false,
-        },
-        ...bettingState.players.slice(1),
-      ],
+  // **サーバー由来の retourneMatch でリングが付く (#6494)。**
+  // クライアント側の analyzeRetourneMatch を消したので、state.retourneMatch を
+  // 直接読むことでリングが付くことを確認する。
+  describe('retourneMatch ring and note (server-driven)', () => {
+    it('highlights hand cards listed in state.retourneMatch.matchingIndices', async () => {
+      // デフォルト: retourneMatch.matchingIndices = [0] → 手札 0 のみリング
+      renderWithProviders(<BouillottePage />);
+      await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+      expect(screen.getByTestId('hand-card-0').className).toContain('ring-ds-accent');
+      expect(screen.getByTestId('hand-card-1').className).not.toContain('ring-ds-accent');
+      expect(screen.getByTestId('hand-card-2').className).not.toContain('ring-ds-accent');
+      // ルトゥルヌ自体も一致あるときリング。
+      expect(screen.getByTestId('retourne-card').className).toContain('ring-ds-accent');
+      // 1 枚だけ一致: noteKey = "" → ノートなし。
+      expect(screen.queryByTestId('retourne-note')).not.toBeInTheDocument();
     });
-    mockExec.mockResolvedValue(favoriState);
-    renderWithProviders(<BouillottePage />);
-    await waitFor(() => expect(screen.getByTestId('retourne-note')).toBeInTheDocument());
-    expect(screen.getByTestId('retourne-note').textContent).toContain('ブルラン・ファヴォリ');
-    expect(screen.getByTestId('hand-card-0').className).toContain('ring-ds-accent');
-    expect(screen.getByTestId('hand-card-1').className).toContain('ring-ds-accent');
-    expect(screen.getByTestId('hand-card-2').className).not.toContain('ring-ds-accent');
+
+    it('shows the brelan favori note when server sends noteKey "favori"', async () => {
+      // サーバーが matchingIndices=[0,1], noteKey="favori" を返す場合。
+      const favoriState = makeBouillotteState({
+        phase: 0,
+        isHumanTurn: true,
+        retourne: { design: 'DIAMOND', value: 12 },
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            chips: 190,
+            roundBet: 10,
+            folded: false,
+            out: false,
+            cardCount: 3,
+            cards: [
+              { design: 'SPADE', value: 12 },
+              { design: 'HEART', value: 12 },
+              { design: 'CLOVER', value: 8 },
+            ],
+            handName: 'brelan',
+            isWinner: false,
+          },
+          ...bettingState.players.slice(1),
+        ],
+        retourneMatch: { matchingIndices: [0, 1], noteKey: 'favori' },
+      });
+      mockExec.mockResolvedValue(favoriState);
+      renderWithProviders(<BouillottePage />);
+      await waitFor(() => expect(screen.getByTestId('retourne-note')).toBeInTheDocument());
+      expect(screen.getByTestId('retourne-note').textContent).toContain('ブルラン・ファヴォリ');
+      expect(screen.getByTestId('hand-card-0').className).toContain('ring-ds-accent');
+      expect(screen.getByTestId('hand-card-1').className).toContain('ring-ds-accent');
+      expect(screen.getByTestId('hand-card-2').className).not.toContain('ring-ds-accent');
+    });
+
+    it('shows the carre note when server sends noteKey "carre"', async () => {
+      const carreState = makeBouillotteState({
+        retourneMatch: { matchingIndices: [0, 1, 2], noteKey: 'carre' },
+      });
+      mockExec.mockResolvedValue(carreState);
+      renderWithProviders(<BouillottePage />);
+      await waitFor(() => expect(screen.getByTestId('retourne-note')).toBeInTheDocument());
+      expect(screen.getByTestId('retourne-note').textContent).toContain('カレ');
+      expect(screen.getByTestId('hand-card-0').className).toContain('ring-ds-accent');
+      expect(screen.getByTestId('hand-card-1').className).toContain('ring-ds-accent');
+      expect(screen.getByTestId('hand-card-2').className).toContain('ring-ds-accent');
+    });
+
+    it('does not highlight any card when server sends empty matchingIndices', async () => {
+      const noMatchState = makeBouillotteState({
+        retourneMatch: { matchingIndices: [], noteKey: '' },
+      });
+      mockExec.mockResolvedValue(noMatchState);
+      renderWithProviders(<BouillottePage />);
+      await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+      expect(screen.getByTestId('hand-card-0').className).not.toContain('ring-ds-accent');
+      expect(screen.getByTestId('retourne-card').className).not.toContain('ring-ds-accent');
+      expect(screen.queryByTestId('retourne-note')).not.toBeInTheDocument();
+    });
+
+    it('shows no note when server sends noteKey ""', async () => {
+      // noteKey が空文字の場合ノートは出ない。
+      const oneMatchState = makeBouillotteState({
+        retourneMatch: { matchingIndices: [0], noteKey: '' },
+      });
+      mockExec.mockResolvedValue(oneMatchState);
+      renderWithProviders(<BouillottePage />);
+      await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+      expect(screen.queryByTestId('retourne-note')).not.toBeInTheDocument();
+    });
   });
 
   it('shows the pot odds and call amount when chips are owed to call', async () => {
@@ -251,20 +294,6 @@ describe('BouillottePage', () => {
     expect(odds.textContent).toContain('コール不要');
     // With nothing owed the Call button shows the plain label (no amount).
     expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument();
-  });
-
-  it('does not highlight any card when no hand card matches the retourne', async () => {
-    const noMatchState = makeBouillotteState({
-      phase: 0,
-      isHumanTurn: true,
-      retourne: { design: 'DIAMOND', value: 8 },
-    });
-    mockExec.mockResolvedValue(noMatchState);
-    renderWithProviders(<BouillottePage />);
-    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
-    expect(screen.getByTestId('hand-card-0').className).not.toContain('ring-ds-accent');
-    expect(screen.getByTestId('retourne-card').className).not.toContain('ring-ds-accent');
-    expect(screen.queryByTestId('retourne-note')).not.toBeInTheDocument();
   });
 
   // **レイズが消えた理由を書く。**回数上限とチップ不足を区別できないと、
