@@ -54,6 +54,9 @@ const SIGNAL_LABEL_BY_TYPE: Readonly<Record<number, string>> = {
 };
 
 /** Kemps tutorial step definitions. */
+/** Id of the note explaining what a missed Counter-Kemps costs. */
+const COUNTER_RISK_ID = 'kemps-counter-risk-note';
+
 const KEMPS_TUTORIAL_STEPS: TutorialStep[] = [
   {
     target: '[data-tutorial="kemps-info"]',
@@ -432,6 +435,20 @@ function KempsPageContent() {
                   >
                     {t('kempsButton')}
                   </button>
+                  {/* **外したときの代償がその場に書かれていなかった。**
+                      `PlayerDeclareCounterKemps` は外すと `penalizeRound` を呼んで
+                      自チームから 1 点引く (0 点未満にはならない) のに、ボタンには
+                      相手の名前しか出ておらず、相手を推測するこのゲームの核心的な
+                      リスクが宣言の瞬間に見えなかった (#6466)。
+                      `aria-describedby` で各ボタンに結ぶ ── title 属性はキーボードでは
+                      出ないし、支援技術での扱いも当てにできない。 */}
+                  <p
+                    id={COUNTER_RISK_ID}
+                    className="w-full text-xs text-ds-text-muted"
+                    data-testid="kemps-counter-risk"
+                  >
+                    {t('counterRisk')}
+                  </p>
                   {opponentSeats.map(({ p, idx }) => (
                     <button
                       type="button"
@@ -439,6 +456,8 @@ function KempsPageContent() {
                       className={btnPrimary}
                       onClick={() => exec('counter', { targetSeat: idx })}
                       disabled={loading}
+                      aria-describedby={COUNTER_RISK_ID}
+                      data-testid={`kemps-counter-${idx}`}
                     >
                       {t('counterButton', { name: playerLabel(idx, p.isHuman) })}
                     </button>

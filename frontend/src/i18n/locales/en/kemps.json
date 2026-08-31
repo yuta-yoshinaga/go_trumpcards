@@ -26,6 +26,7 @@
   "opponentSignaling": "Someone on the opposing team may be signaling…",
   "fourOfAKindReady": "You have four of a kind! You can declare Kemps!",
   "kempsButton": "Kemps!",
+  "counterRisk": "A wrong call costs your team 1 point (never below 0).",
   "counterButton": "Counter-Kemps! ({{name}})",
   "declineButton": "Decline",
   "nextRound": "Next round",
