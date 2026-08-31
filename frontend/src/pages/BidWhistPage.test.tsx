@@ -185,18 +185,16 @@ describe('BidWhistPage', () => {
     renderWithProviders(<BidWhistPage />);
     await screen.findByTestId('kitty-progress');
 
-    // 5 枚では飛ばない (否定コントロール)。
+    // 5 枚ではボタンが押せない (否定コントロール)。
     for (let i = 0; i < 5; i++) {
       fireEvent.click(screen.getByTestId(`hand-card-${i}`));
     }
-    mockExec.mockClear();
-    fireEvent.click(screen.getByTestId('exchange-button'));
-    // **押した直後に見ても意味がない。**飛ぶなら飛んでいるはずのところまで待ってから
-    // 見ないと、この否定は何があっても通る。
     await waitFor(() => expect(screen.getByTestId('kitty-progress')).toHaveAttribute('aria-valuenow', '5'));
-    expect(mockExec).not.toHaveBeenCalled();
+    expect(screen.getByTestId('exchange-button')).toBeDisabled();
 
+    mockExec.mockClear();
     fireEvent.click(screen.getByTestId('hand-card-5'));
+    expect(screen.getByTestId('exchange-button')).toBeEnabled();
     fireEvent.click(screen.getByTestId('exchange-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', { discardIndices: [0, 1, 2, 3, 4, 5] }));
   });

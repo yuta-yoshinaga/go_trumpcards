@@ -179,9 +179,11 @@ function BidWhistPageContent() {
     play(selectedIdx);
   };
 
-  const handleExchange = () => {
-    if (selectedCardIndices.length === KITTY_SIZE) exchange([...selectedCardIndices]);
-  };
+  // **枚数の判定は 1 箇所だけ。**交換ボタンの `disabled` もこれを見る ── 同じ規則を
+  // ハンドラとボタンの両方に書くと、片方だけ動かせてしまう (実際、ボタン側だけ
+  // リテラルの 6 が残っていた)。
+  const canExchange = selectedCardIndices.length === KITTY_SIZE;
+  const handleExchange = () => exchange([...selectedCardIndices]);
 
   return (
     <GamePageShell
@@ -494,7 +496,7 @@ function BidWhistPageContent() {
                 <button
                   type="button"
                   onClick={handleExchange}
-                  disabled={loading || selectedCardIndices.length !== 6}
+                  disabled={loading || !canExchange}
                   className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
                   data-testid="exchange-button"
                 >
