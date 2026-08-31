@@ -30,6 +30,7 @@
   },
   "comboPreview": "Selected combo",
   "invalidCombo": "Invalid combination (cannot be played as is)",
+  "dogLeadNote": "passes lead to partner when played",
   "combo": {
     "single": "Single",
     "pair": "Pair",

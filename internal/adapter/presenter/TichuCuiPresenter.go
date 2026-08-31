@@ -50,6 +50,14 @@ func (p *TichuCuiPresenter) Output(tg interfaces.TichuGame, lastErr error) strin
 			}
 		}
 
+		if tg.GetDogLeadPassed() {
+			fromIdx := tg.GetDogLeadFrom()
+			toIdx := (fromIdx + 2) % tg.GetPlayerCnt()
+			fromName := cuiPlayerName(tg.GetPlayer(fromIdx), fromIdx)
+			toName := cuiPlayerName(tg.GetPlayer(toIdx), toIdx)
+			b.WriteString(i18n.Tf("tichu.dogLeadPassed", "from", fromName, "to", toName) + "\n")
+		}
+
 		// **得点差もボムの使用状況も終局まで分からなかった。**Web は常時
 		// スコアバーに出している (#4888)。終局時は下でもう一度出すので、
 		// ここは進行中だけ。

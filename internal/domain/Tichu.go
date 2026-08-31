@@ -41,22 +41,24 @@ type TichuCpuAction struct {
 
 // tichuRoundState ディールごとにリセットされる状態
 type tichuRoundState struct {
-	phase       TichuPhase
-	currentTurn int
-	tableCombo  *TichuCombo
-	lastPlayIdx int
-	trickCards  []*Card
-	passCount   int
-	declCount   int
-	dragonOnTop bool
-	gameEndFlag bool
-	oneTwo      bool
-	startLeader int
-	finishOrder []int
-	scores      [2]int
-	bombCount   int
-	cpuActions  []*TichuCpuAction
-	humanAction *TichuCpuAction
+	phase         TichuPhase
+	currentTurn   int
+	tableCombo    *TichuCombo
+	lastPlayIdx   int
+	trickCards    []*Card
+	passCount     int
+	declCount     int
+	dragonOnTop   bool
+	gameEndFlag   bool
+	oneTwo        bool
+	startLeader   int
+	finishOrder   []int
+	scores        [2]int
+	bombCount     int
+	cpuActions    []*TichuCpuAction
+	humanAction   *TichuCpuAction
+	dogLeadPassed bool
+	dogLeadFrom   int
 	actionLogBase
 }
 
@@ -135,6 +137,11 @@ func (t *Tichu) findMahjongHolder() int {
 
 // PlayerDeclare 人間プレイヤーが宣言する (0=なし, 1=ティチュー, 2=グランド)
 func (t *Tichu) PlayerDeclare(declType int) error {
+	// **人間が次の操作をしたときだけ消す。**犬の告知は「この応答で何が起きたか」を
+	// 伝えるもので、人間が 1 手打つと `Play` はその場で CPU の手番も回しきる
+	// (TichuInteractor.Play)。CPU 側で消すと、人間が自分で犬を出した瞬間の告知が
+	// 描画前に消えて **一度も画面に出ない** (#6431)。
+	t.round.dogLeadPassed = false
 	if t.round.phase != TichuPhaseDeclare {
 		return NewDomainError(ErrInvalidPlay, "not in declaration phase")
 	}
@@ -181,6 +188,8 @@ func (t *Tichu) executeDeclare(declType int) {
 
 // PlayerPlay 人間プレイヤーがカードを出す (空=パス)
 func (t *Tichu) PlayerPlay(indices []int) error {
+	// 消すのは人間の次の操作のときだけ。理由は PlayerDeclare のコメントを参照。
+	t.round.dogLeadPassed = false
 	if t.round.phase != TichuPhasePlay {
 		return NewDomainError(ErrInvalidPlay, "not in play phase")
 	}
@@ -259,6 +268,8 @@ func (t *Tichu) playCombo(idx int, combo *TichuCombo) {
 	player := t.players[idx]
 
 	if combo.Type == TichuComboDog {
+		t.round.dogLeadPassed = true
+		t.round.dogLeadFrom = idx
 		t.appendLog(idx, "dog", "lead passed to partner", nil)
 		if player.GetCardsSize() == 0 {
 			t.markFinished(idx)
@@ -592,11 +603,29 @@ func (t *Tichu) GetConfig() TichuConfig { return t.config }
 // SetConfig 設定変更
 func (t *Tichu) SetConfig(config TichuConfig) { t.config = config }
 
+// GetDogLeadPassed 直前の手が犬だったかを返す
+func (t *Tichu) GetDogLeadPassed() bool { return t.round.dogLeadPassed }
+
+// GetDogLeadFrom 犬を出したプレイヤーインデックスを取得する (GetDogLeadPassed が true のときのみ有効)
+func (t *Tichu) GetDogLeadFrom() int { return t.round.dogLeadFrom }
+
 // SetBombCountForTest はテスト用にボム使用回数を設定する。
 func (t *Tichu) SetBombCountForTest(n int) { t.round.bombCount = n }
 
 // SetIsOneTwoForTest はテスト用にワンツー成立を設定する。
 func (t *Tichu) SetIsOneTwoForTest(v bool) { t.round.oneTwo = v }
+
+// SetPhaseForTest はテスト用にフェーズを設定する。
+func (t *Tichu) SetPhaseForTest(phase TichuPhase) { t.round.phase = phase }
+
+// SetCurrentTurnForTest はテスト用に手番を設定する。
+func (t *Tichu) SetCurrentTurnForTest(idx int) { t.round.currentTurn = idx }
+
+// SetDogLeadPassedForTest はテスト用に犬リードフラグを設定する。
+func (t *Tichu) SetDogLeadPassedForTest(passed bool, from int) {
+	t.round.dogLeadPassed = passed
+	t.round.dogLeadFrom = from
+}
 
 // HasPendingAction ペンディングアクションがあるか (常にfalse)
 func (t *Tichu) HasPendingAction() bool { return false }
@@ -678,26 +707,28 @@ func (c *TichuCombo) UnmarshalJSON(data []byte) error {
 
 // tichuJSON is the JSON wire format for Tichu (flattens tichuRoundState).
 type tichuJSON struct {
-	TrumpCards  *TrumpCards       `json:"tc"`
-	Players     []*TichuPlayer    `json:"pl"`
-	Config      TichuConfig       `json:"cf"`
-	Phase       TichuPhase        `json:"ph"`
-	CurrentTurn int               `json:"ct"`
-	TableCombo  *TichuCombo       `json:"tb"`
-	LastPlayIdx int               `json:"lp"`
-	TrickCards  []*Card           `json:"tk"`
-	PassCount   int               `json:"pc"`
-	DeclCount   int               `json:"dc"`
-	DragonOnTop bool              `json:"do"`
-	GameEndFlag bool              `json:"ge"`
-	OneTwo      bool              `json:"ot"`
-	StartLeader int               `json:"sl"`
-	FinishOrder []int             `json:"fo"`
-	Scores      [2]int            `json:"sc"`
-	BombCount   int               `json:"bo"`
-	CpuActions  []*TichuCpuAction `json:"ca"`
-	HumanAction *TichuCpuAction   `json:"ha"`
-	ActionLog   []*ActionLogEntry `json:"al"`
+	TrumpCards    *TrumpCards       `json:"tc"`
+	Players       []*TichuPlayer    `json:"pl"`
+	Config        TichuConfig       `json:"cf"`
+	Phase         TichuPhase        `json:"ph"`
+	CurrentTurn   int               `json:"ct"`
+	TableCombo    *TichuCombo       `json:"tb"`
+	LastPlayIdx   int               `json:"lp"`
+	TrickCards    []*Card           `json:"tk"`
+	PassCount     int               `json:"pc"`
+	DeclCount     int               `json:"dc"`
+	DragonOnTop   bool              `json:"do"`
+	GameEndFlag   bool              `json:"ge"`
+	OneTwo        bool              `json:"ot"`
+	StartLeader   int               `json:"sl"`
+	FinishOrder   []int             `json:"fo"`
+	Scores        [2]int            `json:"sc"`
+	BombCount     int               `json:"bo"`
+	CpuActions    []*TichuCpuAction `json:"ca"`
+	HumanAction   *TichuCpuAction   `json:"ha"`
+	DogLeadPassed bool              `json:"dlp"`
+	DogLeadFrom   int               `json:"dlf"`
+	ActionLog     []*ActionLogEntry `json:"al"`
 }
 
 const tichuMaxSliceLen = 1000
@@ -705,26 +736,28 @@ const tichuMaxSliceLen = 1000
 // MarshalJSON implements json.Marshaler.
 func (t *Tichu) MarshalJSON() ([]byte, error) {
 	return json.Marshal(tichuJSON{
-		TrumpCards:  t.trumpCards,
-		Players:     t.players,
-		Config:      t.config,
-		Phase:       t.round.phase,
-		CurrentTurn: t.round.currentTurn,
-		TableCombo:  t.round.tableCombo,
-		LastPlayIdx: t.round.lastPlayIdx,
-		TrickCards:  t.round.trickCards,
-		PassCount:   t.round.passCount,
-		DeclCount:   t.round.declCount,
-		DragonOnTop: t.round.dragonOnTop,
-		GameEndFlag: t.round.gameEndFlag,
-		OneTwo:      t.round.oneTwo,
-		StartLeader: t.round.startLeader,
-		FinishOrder: t.round.finishOrder,
-		Scores:      t.round.scores,
-		BombCount:   t.round.bombCount,
-		CpuActions:  t.round.cpuActions,
-		HumanAction: t.round.humanAction,
-		ActionLog:   t.round.actionLog,
+		TrumpCards:    t.trumpCards,
+		Players:       t.players,
+		Config:        t.config,
+		Phase:         t.round.phase,
+		CurrentTurn:   t.round.currentTurn,
+		TableCombo:    t.round.tableCombo,
+		LastPlayIdx:   t.round.lastPlayIdx,
+		TrickCards:    t.round.trickCards,
+		PassCount:     t.round.passCount,
+		DeclCount:     t.round.declCount,
+		DragonOnTop:   t.round.dragonOnTop,
+		GameEndFlag:   t.round.gameEndFlag,
+		OneTwo:        t.round.oneTwo,
+		StartLeader:   t.round.startLeader,
+		FinishOrder:   t.round.finishOrder,
+		Scores:        t.round.scores,
+		BombCount:     t.round.bombCount,
+		CpuActions:    t.round.cpuActions,
+		HumanAction:   t.round.humanAction,
+		DogLeadPassed: t.round.dogLeadPassed,
+		DogLeadFrom:   t.round.dogLeadFrom,
+		ActionLog:     t.round.actionLog,
 	})
 }
 
@@ -774,6 +807,8 @@ func (t *Tichu) UnmarshalJSON(data []byte) error {
 		bombCount:     j.BombCount,
 		cpuActions:    j.CpuActions,
 		humanAction:   j.HumanAction,
+		dogLeadPassed: j.DogLeadPassed,
+		dogLeadFrom:   j.DogLeadFrom,
 		actionLogBase: actionLogBase{actionLog: j.ActionLog},
 	}
 	if t.round.actionLog == nil {

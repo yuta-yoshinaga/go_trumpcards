@@ -52,4 +52,8 @@ type TichuGame interface {
 	GetHumanAction() *domain.TichuCpuAction
 	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.TichuConfig
+	// GetDogLeadPassed 直前の手が犬だったかを返す
+	GetDogLeadPassed() bool
+	// GetDogLeadFrom 犬を出したプレイヤーインデックスを取得する
+	GetDogLeadFrom() int
 }

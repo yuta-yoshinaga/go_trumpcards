@@ -372,6 +372,11 @@ function TichuPageContent() {
                         {t(`combo.${selectedCombo.type}`)}
                         {selectedCombo.length > 0 ? ` (${selectedCombo.length})` : ''}
                       </span>
+                      {selectedCombo.type === 'dog' && (
+                        <span className="ml-1 text-ds-text-secondary" data-testid="tichu-dog-note">
+                          ({t('dogLeadNote')})
+                        </span>
+                      )}
                     </span>
                   )}
                 </div>

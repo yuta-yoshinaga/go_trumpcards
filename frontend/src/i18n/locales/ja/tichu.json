@@ -30,6 +30,7 @@
   },
   "comboPreview": "選択中の役",
   "invalidCombo": "無効な組み合わせ（このままでは出せません）",
+  "dogLeadNote": "出すとリード権がパートナーに移ります",
   "combo": {
     "single": "シングル",
     "pair": "ペア",

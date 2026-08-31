@@ -131,3 +131,34 @@ func TestTichuCuiPresenterMarksTheBombCards(t *testing.T) {
 		assert.NotEqual(t, presenter.CuiKittyMark, presenter.CuiBombMark)
 	})
 }
+
+func TestTichuCuiPresenter_DogLeadExplanation(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	p := new(presenter.TichuCuiPresenter)
+
+	t.Run("shows explanation line when dog lead passed", func(t *testing.T) {
+		tg := domain.NewDefaultTichu()
+		tg.Reset()
+		tg.SetDogLeadPassedForTest(true, 0)
+
+		out := p.Output(tg, nil)
+		assert.Contains(t, out, "犬:")
+		assert.Contains(t, out, "パートナー(CPU 2)")
+		assert.NotContains(t, out, "{{")
+		assert.NotContains(t, out, "}}")
+	})
+
+	t.Run("does not show explanation line when dog lead not passed", func(t *testing.T) {
+		tg := domain.NewDefaultTichu()
+		tg.Reset()
+		tg.SetDogLeadPassedForTest(false, 0)
+
+		out := p.Output(tg, nil)
+		assert.NotContains(t, out, "犬:")
+		assert.NotContains(t, out, "{{")
+		assert.NotContains(t, out, "}}")
+	})
+}
