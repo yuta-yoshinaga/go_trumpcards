@@ -45,7 +45,12 @@
   "roundResult": {
     "title": "ラウンド結果",
     "teamA": "チームAのカード点: {{points}}",
-    "teamB": "チームBのカード点: {{points}}"
+    "teamB": "チームBのカード点: {{points}}",
+    "gamePoints": "ラウンド獲得: {{team}} +{{points}}点（{{kind}}）",
+    "gamePointsDraw": "ラウンド獲得: なし（引き分け）",
+    "gamePointsNormal": "通常",
+    "gamePointsDouble": "2倍（91点以上）",
+    "gamePointsShutout": "4倍（完封・120点）"
   },
   "hintAvailable": "ヒント",
   "hint": {

@@ -20,7 +20,7 @@ const trickEndState = makeSuecaState({
     { playerIdx: 1, card: { design: 'CLOVER', value: 13 } },
   ],
 });
-const roundEndState = makeSuecaState({ phase: 2, roundCardPoints: [70, 50] });
+const roundEndState = makeSuecaState({ phase: 2, roundCardPoints: [70, 50], roundWinnerTeam: 0, roundGamePoints: 1 });
 const gameEndState = makeSuecaState({
   phase: 3,
   gameEndFlag: true,
@@ -192,5 +192,45 @@ describe('SuecaPage', () => {
     });
     renderWithProviders(<SuecaPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
+  });
+});
+
+// **通算が 1・2・4 のどれ増えたのか理由が出ていなかった。**カード点だけでは
+// 61-90 / 91-119 / 120 のどの段だったのか読めない (#6438)。
+describe('SuecaPage round award', () => {
+  it.each([
+    [1, '通常'],
+    [2, '2倍'],
+    [4, '完封'],
+  ])('names the tier for %i game point(s)', async (gamePoints, kind) => {
+    mockExec.mockResolvedValue(
+      makeSuecaState({ phase: 2, roundCardPoints: [70, 50], roundWinnerTeam: 0, roundGamePoints: gamePoints }),
+    );
+    renderWithProviders(<SuecaPage />);
+
+    const award = await screen.findByTestId('sueca-round-award');
+    expect(award).toHaveTextContent(`+${gamePoints}点`);
+    expect(award).toHaveTextContent(kind);
+    expect(award).toHaveTextContent('チームA');
+    expect(award.textContent).not.toContain('{{');
+  });
+
+  it('says nobody scored on a draw', async () => {
+    mockExec.mockResolvedValue(
+      makeSuecaState({ phase: 2, roundCardPoints: [60, 60], roundWinnerTeam: -1, roundGamePoints: 0 }),
+    );
+    renderWithProviders(<SuecaPage />);
+
+    const award = await screen.findByTestId('sueca-round-award');
+    expect(award).toHaveTextContent('引き分け');
+    expect(award.textContent).not.toContain('チームA');
+  });
+
+  it('says nothing about the award while the round is still running', async () => {
+    mockExec.mockResolvedValue(makeSuecaState({ phase: 1, roundWinnerTeam: 0, roundGamePoints: 4 }));
+    renderWithProviders(<SuecaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('sueca-round-award')).not.toBeInTheDocument();
   });
 });

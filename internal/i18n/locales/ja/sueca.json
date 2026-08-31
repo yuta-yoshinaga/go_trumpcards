@@ -23,5 +23,10 @@
   "roundPoints": "カード獲得点 — チームA: {{ptsA}}点 / チームB: {{ptsB}}点（勝利ライン {{win}}点）",
   "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
   "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "roundGamePoints": "ラウンド獲得: {{team}} +{{points}}点（{{kind}}）",
+  "roundGamePointsDraw": "ラウンド獲得: なし（引き分け）",
+  "gamePointsNormal": "通常",
+  "gamePointsDouble": "2倍（91点以上）",
+  "gamePointsShutout": "4倍（完封・120点）"
 }
