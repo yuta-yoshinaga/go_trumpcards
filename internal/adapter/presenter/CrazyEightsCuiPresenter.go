@@ -122,22 +122,6 @@ func (p *CrazyEightsCuiPresenter) ActionLogOutput(g interfaces.CrazyEightsGame) 
 	return actionLogOutputTextForSeats[*domain.CrazyEightsPlayer](g)
 }
 
-// suitDisplayName returns the suit display string.
-func suitDisplayName(suit int) string {
-	switch suit {
-	case domain.CardDesignSpade:
-		return "♠"
-	case domain.CardDesignClover:
-		return "♣"
-	case domain.CardDesignHeart:
-		return "♥"
-	case domain.CardDesignDiamond:
-		return "♦"
-	default:
-		return "?"
-	}
-}
-
 // HintOutput emits the current Crazy Eights hint.
 //
 // **Hearts / Spades はサーバー計算の理由付きヒントを返すのに、CrazyEights には

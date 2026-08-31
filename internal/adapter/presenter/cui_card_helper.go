@@ -15,6 +15,32 @@ func isRedSuit(design int) bool {
 	return design == domain.CardDesignHeart || design == domain.CardDesignDiamond
 }
 
+// suitDisplayName returns the glyph for a suit constant (1-4), coloured the same
+// way a card of that suit is: red for hearts and diamonds, plain for spades and
+// clubs. The glyph is the only thing that carries the suit here — Mao's "chosen
+// suit" line, Macau's and Crazy Eights' equivalents, and the trump line in
+// CatchTen / Whist all substitute it into a sentence — so dropping the colour
+// made those the only suits in the CUI that were not colour-coded (#6464).
+func suitDisplayName(suit int) string {
+	var glyph string
+	switch suit {
+	case domain.CardDesignSpade:
+		glyph = "♠"
+	case domain.CardDesignClover:
+		glyph = "♣"
+	case domain.CardDesignHeart:
+		glyph = "♥"
+	case domain.CardDesignDiamond:
+		glyph = "♦"
+	default:
+		return "?"
+	}
+	if isRedSuit(suit) {
+		return color.Red(glyph)
+	}
+	return glyph
+}
+
 // cuiCardList is the minimal type constraint required by formatCardList.
 type cuiCardList interface {
 	GetCardsSize() int

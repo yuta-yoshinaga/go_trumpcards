@@ -587,3 +587,45 @@ func TestCuiDiscardPileLines(t *testing.T) {
 	// 折り返しの境目: 8 枚目の次は新しい行の先頭。
 	assert.Contains(t, out, "[7]SPADE 8\n")
 }
+
+// **場のトップカードやスート宣言の行だけ赤/黒が消えていた** ── suitDisplayName は
+// グリフを裸で返すので、Mao の「選択スート」行、Macau / CrazyEights の同等の行、
+// CatchTen / Whist の切り札の行が、CUI で唯一色分けされないスートになっていた
+// (#6464)。cuiCardStr と同じ isRedSuit の判定を通す。
+func TestSuitDisplayName_ColorsRedSuitsLikeACard(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(false) // 色そのものを見るので無効化しない
+	defer color.SetNoColor(orig)
+
+	// 色が本当に有効になっていることを先に確かめる。無効のままだと以下の
+	// 「赤い」「赤くない」がどちらも素のグリフになり、両方通ってしまう。
+	assert.NotEqual(t, "x", color.Red("x"), "colour must be enabled for this test to measure anything")
+
+	tests := []struct {
+		name  string
+		suit  int
+		glyph string
+		wantR bool
+	}{
+		{"spade stays plain", domain.CardDesignSpade, "♠", false},
+		{"clover stays plain", domain.CardDesignClover, "♣", false},
+		{"heart turns red", domain.CardDesignHeart, "♥", true},
+		{"diamond turns red", domain.CardDesignDiamond, "♦", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := suitDisplayName(tt.suit)
+			assert.Contains(t, got, tt.glyph)
+			if tt.wantR {
+				assert.Equal(t, color.Red(tt.glyph), got)
+			} else {
+				// 黒スートは装飾なし。ここを緩めると「全部赤」の実装が通る。
+				assert.Equal(t, tt.glyph, got)
+			}
+		})
+	}
+
+	// 不明なスートは色を付ける対象が無い。
+	assert.Equal(t, "?", suitDisplayName(0))
+	assert.Equal(t, "?", suitDisplayName(99))
+}
