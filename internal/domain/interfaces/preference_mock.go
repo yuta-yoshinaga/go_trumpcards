@@ -134,6 +134,15 @@ func (_m *MockPreferenceGame) GetDealerIdx() int {
 	return ret.Get(0).(int)
 }
 
+// GetDeclarerProgress モック
+func (_m *MockPreferenceGame) GetDeclarerProgress() *domain.PreferenceDeclarerProgress {
+	ret := _m.Called()
+	if v := ret.Get(0); v != nil {
+		return v.(*domain.PreferenceDeclarerProgress)
+	}
+	return nil
+}
+
 // GetDeclarerIdx モック
 func (_m *MockPreferenceGame) GetDeclarerIdx() int {
 	ret := _m.Called()
