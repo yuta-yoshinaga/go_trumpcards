@@ -29,7 +29,13 @@ func (bcp *BadugiCuiPresenter) Output(g interfaces.BadugiGame, lastErr error) st
 	return buildCuiOutput(i18n.T("badugi.outputTitle"), func(b *strings.Builder) {
 		players := g.GetPlayers()
 
-		b.WriteString(i18n.Tf("badugi.dealerLine", "idx", strconv.Itoa(g.GetDealerIdx())) + "\n")
+		dealerIdx := g.GetDealerIdx()
+		// **座席番号ではなく名前で呼ぶ。**同じ関数の他の行はすべて
+		// `cuiPlayerName` を通しているのに、ディーラー行だけ生の添字を
+		// 英語のまま埋めた文字列 ("ディーラー: Player 0") を出していた
+		// (#6470)。Web は `findPlayerName` で実名を出している。
+		b.WriteString(i18n.Tf("badugi.dealerLine",
+			"name", cuiPlayerNameAt(g.GetPlayers(), dealerIdx)) + "\n")
 		b.WriteString(i18n.Tf("badugi.potLine", "pot", strconv.Itoa(g.GetPot())) + "\n")
 
 		if drawIdx := g.GetDrawIndex(); drawIdx > 0 {

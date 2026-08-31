@@ -23,7 +23,13 @@ func (p *IndianPokerCuiPresenter) ActionLogOutput(ip interfaces.IndianPokerGame)
 // Output renders the current game state for the active locale (#1699).
 func (p *IndianPokerCuiPresenter) Output(ip interfaces.IndianPokerGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("indianpoker.outputTitle"), func(b *strings.Builder) {
-		b.WriteString(i18n.Tf("indianpoker.dealerLine", "idx", strconv.Itoa(ip.GetDealerIdx())) + "\n")
+		dealerIdx := ip.GetDealerIdx()
+		// **座席番号ではなく名前で呼ぶ。**同じ関数の他の行はすべて
+		// `cuiPlayerName` を通しているのに、ディーラー行だけ生の添字を
+		// 英語のまま埋めた文字列 ("ディーラー: Player 0") を出していた
+		// (#6470)。Web は `findPlayerName` で実名を出している。
+		b.WriteString(i18n.Tf("indianpoker.dealerLine",
+			"name", cuiPlayerName(ip.GetPlayer(dealerIdx), dealerIdx)) + "\n")
 		b.WriteString(i18n.Tf("indianpoker.potLine", "pot", strconv.Itoa(ip.GetPot())) + "\n")
 
 		cfg := ip.GetConfig()

@@ -12,7 +12,7 @@
   "helpLowball": "  lw                   toggle 2-7 Lowball mode",
   "outputTitle": "5-Card Draw Poker",
   "outputTitleLowball": "5-Card Draw Poker [2-7 Lowball]",
-  "dealerLine": "Dealer: Player {{idx}}",
+  "dealerLine": "Dealer: {{name}}",
   "potLine": "Pot: {{pot}}",
   "jokerLine": "Jokers: {{count}}",
   "limitLine": "Limit: {{name}}",

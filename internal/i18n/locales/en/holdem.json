@@ -33,7 +33,7 @@
   "rebuyLine": "Rebuy: {{chips}} chips (max {{max}}, through hand {{period}})",
   "addonLine": "Add-on: {{chips}} chips (offered after hand {{after}})",
   "tableMax": "Table: {{n}}-max",
-  "dealerLine": "Dealer: Player {{idx}}",
+  "dealerLine": "Dealer: {{name}}",
   "communityNone": "Community: (none)",
   "communityCards": "Community: {{cards}}",
   "potLine": "Pot: {{pot}}",

@@ -868,7 +868,9 @@ func TestOmahaCuiPresenter_English(t *testing.T) {
 		out := p.Output(o, nil)
 		assert.Contains(t, out, "Omaha Hold'em")
 		assert.Contains(t, out, "Table: 4-max")
-		assert.Contains(t, out, "Dealer: Player")
+		// **座席番号ではなく名前** (#6470)。英語ロケールでも "Player 0" は出さない。
+		assert.Contains(t, out, "Dealer: ")
+		assert.NotContains(t, out, "Dealer: Player")
 		assert.Contains(t, out, "Pot:")
 		assert.NotContains(t, out, "テーブル") // no Japanese leakage
 	})

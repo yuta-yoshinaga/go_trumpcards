@@ -12,7 +12,7 @@
   "helpLowball": "  lw                   2-7ローボールモード切替",
   "outputTitle": "5-Card Draw Poker",
   "outputTitleLowball": "5-Card Draw Poker [2-7 Lowball]",
-  "dealerLine": "ディーラー: Player {{idx}}",
+  "dealerLine": "ディーラー: {{name}}",
   "potLine": "ポット: {{pot}}",
   "jokerLine": "ジョーカー: {{count}}枚",
   "limitLine": "リミット: {{name}}",

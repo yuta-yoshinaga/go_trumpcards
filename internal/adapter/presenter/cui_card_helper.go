@@ -210,6 +210,19 @@ func cuiPlayerName[P cuiPlayer](player P, idx int) string {
 	return color.Bold(i18n.Tf("cuiPlayerCpu", "idx", strconv.Itoa(idx)))
 }
 
+// cuiPlayerNameAt はスライスの idx 番目のプレイヤー名を返す。範囲外なら
+// "UNKNOWN" 相当 (cuiPlayerName のゼロ値経路) に落ちる。
+//
+// GetPlayer(idx) を持たず GetPlayers() だけを公開しているゲーム用。呼び出し側で
+// 毎回範囲検査を書くと、書き忘れた 1 本だけが盤面によっては panic する。
+func cuiPlayerNameAt[P cuiPlayer](players []P, idx int) string {
+	var zero P
+	if idx < 0 || idx >= len(players) {
+		return cuiPlayerName(zero, idx)
+	}
+	return cuiPlayerName(players[idx], idx)
+}
+
 // cuiPlayerWithStyle is the type constraint for players that have a play style.
 type cuiPlayerWithStyle interface {
 	cuiPlayer

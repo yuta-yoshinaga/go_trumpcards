@@ -21,7 +21,7 @@
   "rebuyLine": "リバイ: {{chips}}チップ (最大{{max}}回, {{period}}ハンド目まで)",
   "addonLine": "アドオン: {{chips}}チップ ({{after}}ハンド目に提供)",
   "tableMax": "テーブル: {{n}}-max",
-  "dealerLine": "ディーラー: Player {{idx}}",
+  "dealerLine": "ディーラー: {{name}}",
   "anteLine": "Ante:{{ante}} BringIn:{{bringIn}} SmallBet:{{small}} BigBet:{{big}}",
   "potLine": "ポット: {{pot}}",
   "wildLine": "ワイルド: {{rank}}",
