@@ -13,6 +13,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -164,6 +165,35 @@ function SpoonsPageContent() {
     }
     prevGrabOpenRef.current = open;
   }, [state?.grabWindowOpen, playSound]);
+
+  // **速さが勝敗を決めるのに、取るにはマウスが要った。**このページには
+  // `useActionKeyboardNav` も `aria-keyshortcuts` も無く、grabWindow の一瞬で
+  // ボタンに手を運ぶしかなかった (#6465)。キーボードだけの人が最も不利になるのが
+  // まさにこの反射勝負なので、ここに導線が無いのは他のゲームより重い。
+  //
+  // 早期 return より前に置く: フック順は状態の有無で変わってはいけない。
+  const kbdGameOver = state?.phase === SpoonsPhase.GAME_END || !!state?.gameEndFlag;
+  const kbdGrabOpen = !!state?.grabWindowOpen && !kbdGameOver;
+  const kbdCanPass =
+    state?.phase === SpoonsPhase.PASS && !!state?.isHumanTurn && !state?.grabWindowOpen && !kbdGameOver;
+  const humanHandSize = state?.players.find((p) => p.isHuman)?.hand.length ?? 0;
+  const actionBindings = useMemo(() => {
+    // g で取る。Space は**フォーカスされているボタンを既定で発火させる**うえ
+    // ページをスクロールするので、取得ボタンにフォーカスが乗っているだけで
+    // 二重に走る。
+    const bindings = [{ key: 'g', action: () => exec('grab'), enabled: kbdGrabOpen && !loading }];
+    // 数字キーは手札の枚数ぶんだけ。パスも同じ卓の操作なので、片方だけ
+    // キーボードから届くと「取れるが渡せない」半端な導線になる。
+    for (let i = 0; i < humanHandSize; i++) {
+      bindings.push({
+        key: String(i + 1),
+        action: () => exec('pass', { cardIndex: i }),
+        enabled: kbdCanPass && !loading,
+      });
+    }
+    return bindings;
+  }, [exec, kbdGrabOpen, kbdCanPass, humanHandSize, loading]);
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !loading });
 
   if (!state)
     return <GameSkeleton gameKey="spoons" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 4 }} />;
@@ -367,6 +397,7 @@ function SpoonsPageContent() {
                           disabled={loading}
                           className="p-0 bg-transparent border-0 cursor-pointer disabled:cursor-not-allowed"
                           aria-label={t('passCardAria', { card: cardAlt(c) })}
+                          aria-keyshortcuts={String(i + 1)}
                           data-testid={`spoons-pass-${i}`}
                           {...groupProps}
                         >
@@ -410,6 +441,7 @@ function SpoonsPageContent() {
                     className={`${btnWarning} motion-safe:animate-pulse`}
                     onClick={() => exec('grab')}
                     disabled={loading}
+                    aria-keyshortcuts="g"
                     data-testid="spoons-grab-button"
                   >
                     {t('grabButton')}
