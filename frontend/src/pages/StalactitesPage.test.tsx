@@ -1053,6 +1053,14 @@ describe('StalactitesPage empty-column move limit', () => {
     const emptyCol = await screen.findByTestId('fc-empty-col-1');
     await waitFor(() => expect(emptyCol).toHaveAttribute('data-empty-col-blocked', 'true'));
     expect(emptyCol.getAttribute('title') ?? '').toContain('2');
+
+    // **このボタンには名前が無く、中身は文字の `K` だけだった** ── 支援技術には
+    // 「K」としか読まれず、列も特定できず、超過の手掛かりも届かなかった (#6814)。
+    const label = emptyCol.getAttribute('aria-label') ?? '';
+    expect(label).toContain('空き列 1');
+    expect(label).toContain('空き列へ動かせるのは2枚まで');
+    expect(label).toContain('選択中: 3枚');
+    expect(label).not.toContain('{{');
   });
 
   it('leaves the empty column usable when the stack fits the lower limit', async () => {
@@ -1065,6 +1073,11 @@ describe('StalactitesPage empty-column move limit', () => {
     renderWithProviders(<StalactitesPage />);
 
     fireEvent.click((await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement);
-    expect(await screen.findByTestId('fc-empty-col-1')).not.toHaveAttribute('data-empty-col-blocked');
+    const emptyCol = await screen.findByTestId('fc-empty-col-1');
+    expect(emptyCol).not.toHaveAttribute('data-empty-col-blocked');
+    // 名前は付くが理由は足さない。列番号だけは常に読み上げられること。
+    const label = emptyCol.getAttribute('aria-label') ?? '';
+    expect(label).toContain('空き列 1');
+    expect(label).not.toContain('空き列へ動かせるのは');
   });
 });
