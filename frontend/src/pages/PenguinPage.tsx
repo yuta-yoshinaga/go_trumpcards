@@ -250,6 +250,13 @@ function PenguinPageContent() {
       : 0;
 
   const emptyColPlaceholder = prevRankLabel(state.baseRank);
+  // **超過の理由が title にしか無かった。**ボタンは disabled ではないので支援技術には
+  // 押せそうに見えたまま、超過していることを示す唯一の手掛かりが届かない (#6814)。
+  // BakersGame / FreeCell と同じ形にそろえる。
+  const emptyColBlocked = selectedStackSize > emptyColLimit;
+  const emptyColLabel = emptyColBlocked
+    ? `${t('emptyColumnAriaLabel', { rank: emptyColPlaceholder })} — ${t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })}`
+    : t('emptyColumnAriaLabel', { rank: emptyColPlaceholder });
 
   const isSourceSelected = (zone: string, col?: number, cell?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -451,19 +458,19 @@ function PenguinPageContent() {
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
                               disabled={!isPlaying || loading || !selectedSource}
-                              aria-label={t('emptyColumnAriaLabel', { rank: emptyColPlaceholder })}
+                              aria-label={emptyColLabel}
                               style={{ height: cardHeight }}
                               data-testid={`pg-empty-col-${colIdx.toString()}`}
                               // 空き列だけ上限が低い。選んだ束が超えているなら、
                               // クリックする前に分かるようにする (#5614)。
-                              data-empty-col-blocked={selectedStackSize > emptyColLimit ? 'true' : undefined}
+                              data-empty-col-blocked={emptyColBlocked ? 'true' : undefined}
                               title={
-                                selectedStackSize > emptyColLimit
+                                emptyColBlocked
                                   ? t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })
                                   : undefined
                               }
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
-                                selectedStackSize > emptyColLimit ? 'opacity-50' : ''
+                                emptyColBlocked ? 'opacity-50' : ''
                               }`}
                             >
                               {emptyColPlaceholder}

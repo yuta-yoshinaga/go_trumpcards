@@ -620,6 +620,14 @@ describe('PenguinPage empty-column move limit', () => {
     const emptyCol = await screen.findByTestId('pg-empty-col-1');
     expect(emptyCol).toHaveAttribute('data-empty-col-blocked', 'true');
     expect(emptyCol.getAttribute('title') ?? '').toContain('2');
+
+    // **理由は名前にも載せる。**ボタンは disabled ではないので、`title` だけだと
+    // 押せそうに見えたまま、超過している手掛かりが支援技術に届かない (#6814)。
+    const label = emptyCol.getAttribute('aria-label') ?? '';
+    expect(label).toContain('空き列');
+    expect(label).toContain('空き列へ動かせるのは2枚まで');
+    expect(label).toContain('選択中: 3枚');
+    expect(label).not.toContain('{{');
   });
 
   it('leaves the empty column usable when the stack fits the lower limit', async () => {
@@ -632,7 +640,10 @@ describe('PenguinPage empty-column move limit', () => {
     renderWithProviders(<PenguinPage />);
 
     fireEvent.click(await screen.findByTestId('pg-tableau-0-0'));
-    expect(await screen.findByTestId('pg-empty-col-1')).not.toHaveAttribute('data-empty-col-blocked');
+    const emptyCol = await screen.findByTestId('pg-empty-col-1');
+    expect(emptyCol).not.toHaveAttribute('data-empty-col-blocked');
+    // 超過していない列に理由を足さない。ここを見ないと「常に付ける」実装が通る。
+    expect(emptyCol.getAttribute('aria-label') ?? '').not.toContain('空き列へ動かせるのは');
   });
 });
 
