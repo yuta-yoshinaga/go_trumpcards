@@ -26,5 +26,6 @@
   "promptRoundEndDefenders": "ディフェンダー合計: {{pts}}点／マリアージュ込み",
   "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
   "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "trumpRule": "（切り札はソリストの最長スートから自動で決まります）"
 }

@@ -218,3 +218,21 @@ func TestMariasCuiPresenter_PlayShowsTheMarriageEarned(t *testing.T) {
 		assert.NotContains(t, out, prefix)
 	})
 }
+
+// **切り札の決まり方が見えない。**入札でも固定でもなく、ソリストの手札という
+// 非公開情報から機械的に決まるので、ソリスト以外にはブラックボックスだった (#6443)。
+func TestMariasCuiPresenter_ExplainsHowTrumpIsChosen(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	m, _ := setupMariasCuiMockWithPlayers()
+	out := new(presenter.MariasCuiPresenter).Output(m, nil)
+
+	assert.Contains(t, out, i18n.T("marias.trumpRule"))
+	// 記号の行はそのまま残っている (位置を変えていない)。
+	assert.Contains(t, out, i18n.Tf("marias.round", "round", "1", "trick", "1", "trump", "♠"))
+	assert.NotContains(t, out, "{{")
+	// 規則は切り札の行の**後**に来る ── 記号を探しに行った目がそのまま拾える。
+	assert.Less(t, strings.Index(out, "切り札"), strings.Index(out, i18n.T("marias.trumpRule")))
+}

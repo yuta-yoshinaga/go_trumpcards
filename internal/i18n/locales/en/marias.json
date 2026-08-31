@@ -26,5 +26,6 @@
   "promptRoundEndDefenders": "Defenders total: {{pts}} pts incl. marriage",
   "helpExamplePlay": "  play 0                   play hand card 0",
   "helpExampleNext": "  n                        read the trick result, then start the next trick",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "trumpRule": "(Trump is the Soloist’s longest suit, chosen automatically)"
 }

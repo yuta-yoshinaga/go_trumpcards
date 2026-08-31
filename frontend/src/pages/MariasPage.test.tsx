@@ -219,3 +219,19 @@ describe('MariasPage', () => {
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
 });
+
+// **切り札の決まり方が見えない。**入札でも固定でもなく、ソリストの手札という
+// 非公開情報から機械的に決まるので、ソリスト以外にはブラックボックスだった (#6443)。
+describe('MariasPage trump rule', () => {
+  it('explains how trump was chosen, in the tooltip and to screen readers', async () => {
+    renderWithProviders(<MariasPage />);
+
+    const trump = await screen.findByTestId('marias-trump');
+    // 記号の表示はそのまま。
+    expect(trump).toHaveTextContent('切り札:');
+    // ツールチップと読み上げの両方に規則が載る ── title だけだと
+    // キーボードや支援技術には届かない。
+    expect(trump).toHaveAttribute('title', '切り札はソリストの最長スートから自動で決まります');
+    expect(trump.querySelector('.sr-only')?.textContent).toContain('切り札はソリストの最長スートから自動で決まります');
+  });
+});
