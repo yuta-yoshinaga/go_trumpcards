@@ -213,12 +213,53 @@ func (g *BlackHole) GiveUp() {
 
 // GetHint 次に積める扇のインデックスを返す (なければ nil)。
 func (g *BlackHole) GetHint() *BlackHoleHint {
+	best, bestScore := -1, -1
 	for i := range g.fans {
-		if g.canPlay(i) {
-			return &BlackHoleHint{Fan: i}
+		if !g.canPlay(i) {
+			continue
+		}
+		score := g.legalMovesAfter(i)
+		// 同点なら番号の小さい扇。**決定性が要る** ── 同じ盤面で毎回違う手を
+		// 勧めると、画面の★が理由もなく飛び回る。
+		if score > bestScore {
+			best, bestScore = i, score
 		}
 	}
-	return nil
+	if best < 0 {
+		return nil
+	}
+	return &BlackHoleHint{Fan: best}
+}
+
+// legalMovesAfter は扇 i を打った直後に残る合法手の数を返す。
+//
+// **「勝ち手」の特例は要らない。**盤面に 1 枚しか残っていない局面では合法手も
+// 高々 1 つなので、その手は比較するまでもなく選ばれる ── 特例を書いても
+// どの手が選ばれるかは変わらない (実際に足してから、外しても落ちるテストが
+// 1 本も無いことを確認して消した)。
+func (g *BlackHole) legalMovesAfter(i int) int {
+	newTop := g.fanTop(i)
+	n := 0
+	for j := range g.fans {
+		if blackHoleAdjacent(g.fanTopAfterPlaying(i, j), newTop) {
+			n++
+		}
+	}
+	return n
+}
+
+// fanTopAfterPlaying は「扇 i のトップを打った後」の扇 j のトップを返す。
+// **盤面は動かさない** ── ヒントの評価が本物の手数やアクションログを進めると、
+// 押していないのに局面が変わる。
+func (g *BlackHole) fanTopAfterPlaying(i, j int) *Card {
+	if j != i {
+		return g.fanTop(j)
+	}
+	f := g.fans[i]
+	if len(f) < 2 {
+		return nil
+	}
+	return f[len(f)-2]
 }
 
 // hasAnyLegalMove 合法手が 1 つでもあるか。
