@@ -223,7 +223,13 @@ function TressettePageContent() {
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span>{t('trick', { n: state.trickNumber })}</span>
+              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+              {/* **目標点を確認するのに設定パネルを開き直す必要があった (#6429)。**
+                  現在のチーム得点と突き合わせられないと、あと何点で終わるのか
+                  分からない。姉妹ゲームの Manille / Mariáš は同じ位置に出している。
+                  読むのは `state.config` ── 設定パネルの値はリセットするまで
+                  卓に効かないので、進行中の局とずれる。 */}
+              <span data-testid="tr-target">{t('target', { points: state.config.targetPoints })}</span>
             </div>
 
             <div className={lgTwoColGrid}>

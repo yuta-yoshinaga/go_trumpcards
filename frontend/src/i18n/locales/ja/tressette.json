@@ -15,6 +15,7 @@
   },
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
+  "target": "目標: {{points}}点",
   "teamLabel": "チーム{{team}}",
   "teamScore": "チーム{{team}}: {{points}}点 (今R {{thirds}}/3)",
   "yourTeam": "あなたのチーム",

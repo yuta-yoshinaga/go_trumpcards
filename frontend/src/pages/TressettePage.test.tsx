@@ -50,6 +50,21 @@ describe('TressettePage', () => {
     );
   });
 
+  // **目標点を確認するのに設定パネルを開き直す必要があった (#6429)。**
+  // 読むのは `state.config` ── 設定パネルの値はリセットするまで卓に効かない。
+  it('shows the target score on the board and follows the served config', async () => {
+    renderWithProviders(<TressettePage />);
+    const target = await screen.findByTestId('tr-target');
+    expect(target).toHaveTextContent('目標: 21点');
+
+    // 卓が別の目標点で返ってきたら追従すること (定数の書き写しではない)。
+    mockExec.mockResolvedValue(makeTressetteState({ config: { cpuDifficulty: 1, targetPoints: 31 } }));
+    fireEvent.click(screen.getByAltText('♠ 3'));
+    fireEvent.click(await screen.findByRole('button', { name: '出す' }));
+    await waitFor(() => expect(screen.getByTestId('tr-target')).toHaveTextContent('目標: 31点'));
+    expect(screen.getByTestId('tr-target').textContent).not.toContain('{{');
+  });
+
   it('renders play phase with human cards', async () => {
     renderWithProviders(<TressettePage />);
     await waitFor(() => {
