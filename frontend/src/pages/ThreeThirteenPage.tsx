@@ -206,6 +206,16 @@ function ThreeThirteenPageContent() {
   // discard phase; fall back to the server's current-hand value otherwise.
   const humanDeadwood = predictedDeadwood ?? humanPlayer?.deadwood ?? null;
 
+  // Three Thirteen のノックは **デッドウッドが 0 でなければ拒否される**
+  // (`TestThreeThirteen_KnockRejectedWithDeadwood`) のに、ボタンは選択枚数しか
+  // 見ておらず、成立の見込みが無くても同じ見た目で押せた (#6463)。
+  //
+  // **選択枚数まで条件に含める。**`predictedDeadwood` は札を選んでいないとき
+  // 「どれか 1 枚捨てたときに届く最良値」を返すので、0 でも *今の* 選択で
+  // ノックが通るとは限らない。ボタン自体が 1 枚選択を要求しているので、
+  // 「この捨て札で上がれる」と読める条件に揃える。
+  const canKnockNow = isDiscardPhase && isHumanTurn && selectedCardIndices.length === 1 && predictedDeadwood === 0;
+
   return (
     <GamePageShell
       title={tc('nav.threethirteen')}
@@ -353,8 +363,17 @@ function ThreeThirteenPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.threethirteen.footer} px-4 py-2.5`}>
+            {/* 強調はパルスと数字の色だけなので、支援技術には何も届かない。領域は
+                **常設**にして中身だけ差し替える ── 中身が変わったときにだけ
+                読み上げられるので、成立したまま選択を変えなければ繰り返さない。 */}
+            <div className="sr-only" role="status" aria-live="polite" data-testid="threethirteen-knock-live">
+              {canKnockNow && t('knockReadyAnnouncement')}
+            </div>
             {isDiscardPhase && humanDeadwood != null && (
-              <div data-testid="threethirteen-deadwood-indicator" className="text-xs font-bold mb-1 text-ds-text-muted">
+              <div
+                data-testid="threethirteen-deadwood-indicator"
+                className={`text-xs font-bold mb-1 ${canKnockNow ? 'text-ds-success' : 'text-ds-text-muted'}`}
+              >
                 {t('deadwoodLabel', { score: humanDeadwood })}
               </div>
             )}
@@ -418,7 +437,7 @@ function ThreeThirteenPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnPrimary}
+                    className={`${btnPrimary} ${canKnockNow ? 'motion-safe:animate-pulse ring-2 ring-ds-success' : ''}`}
                     onClick={handleKnock}
                     disabled={loading || selectedCardIndices.length !== 1}
                     data-tutorial="tt-knock-button"
