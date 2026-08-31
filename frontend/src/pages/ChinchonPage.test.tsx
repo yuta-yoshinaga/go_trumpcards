@@ -137,7 +137,7 @@ describe('ChinchonPage', () => {
   // 手番が続いても読み上げが繰り返されない (中身が変わったときだけ読まれる)。
   it('keeps the knock live region mounted and silent until knocking is possible', async () => {
     // 上限 5 に対しデッドウッド 8 (♠5 + ♣3、♥K を捨てた後) ── まだノックできない。
-    mockExec.mockResolvedValue({
+    const highDeadwoodHand: ChinchonResponse = {
       ...discardPhaseState,
       players: [
         {
@@ -150,7 +150,8 @@ describe('ChinchonPage', () => {
         },
         ...discardPhaseState.players.slice(1),
       ],
-    } as ChinchonResponse);
+    };
+    mockExec.mockResolvedValue(highDeadwoodHand);
     renderWithProviders(<ChinchonPage />);
 
     const live = await screen.findByTestId('chinchon-knock-live');
