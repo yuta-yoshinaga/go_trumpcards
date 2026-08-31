@@ -207,7 +207,14 @@ function MariasPageContent() {
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
+              {/* **切り札の決まり方が見えない。**入札でも固定でもなく、ソリストの手札という
+                  非公開情報から機械的に決まる。記号の位置は変えず、規則を名前と
+                  ツールチップの両方で添える ── `title` はキーボードや支援技術に
+                  届かないので、`sr-only` にも同じ文言を置く (#6443)。 */}
+              <span className="mr-4" title={t('trumpRule')} data-testid="marias-trump">
+                {t('trump', { suit: trumpSymbol })}
+                <span className="sr-only"> ({t('trumpRule')})</span>
+              </span>
               <span>{t('target', { points: state.config.targetPoints })}</span>
             </div>
 
