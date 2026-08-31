@@ -23,6 +23,7 @@
   "hintReasonFollowWin": "勝てる札を出してトリックを取る",
   "hintReasonDiscardLow": "取れないので低い札を捨てる",
   "result.chips": "ディール終了！ チップ: {{chips}}",
+  "potCarryLine": "次ディールへ繰り越し: {{chips}}チップ",
   "looedList": "ルー（罰）: {{names}}",
   "chipDeltaLine": "  {{name}}: {{delta}}",
   "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す",
