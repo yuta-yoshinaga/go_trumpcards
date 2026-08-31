@@ -85,7 +85,13 @@ func (swp *ScoponeWebPresenter) Output(sg interfaces.ScoponeGame, lastErr error)
 	}
 
 	if lastErr != nil {
+		// **コードを渡さないと生の識別子が画面に出る。**`NewDomainErrorCode` で
+		// 作ったエラーは `Message` が空なので、`Error()` はキーそのものを返す
+		// (errors.go の意図的なフォールバック)。`MessageCode` を埋めないと
+		// `GameMessageBox` は翻訳を通さず、`scopone.errCaptureRequired` が
+		// そのまま両言語で表示される ── CUI から Web へ同じバグを移すだけになる。
 		resObj.Message = lastErr.Error()
+		resObj.MessageCode, resObj.MessageParams = domain.ErrorMessageCode(lastErr)
 	} else if sg.GetGameEndFlag() {
 		resObj.Message = swp.buildResultMessage(sg)
 		resObj.MessageCode = "scopone.result.scores"

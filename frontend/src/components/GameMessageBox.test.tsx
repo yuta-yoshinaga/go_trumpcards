@@ -45,6 +45,26 @@ describe('GameMessageBox', () => {
     expect(screen.getByText('勝ちました')).toBeInTheDocument();
   });
 
+  // **平坦なドット付きキーが本当に解決するか。**`messageCode` の下は
+  // `"scopone.errHandIndexOutOfRange"` という**1 本の平坦なキー**で、i18next の
+  // 既定の keySeparator は `.` ── 入れ子として引きに行って外す形なら、生の
+  // 識別子がそのまま両言語で画面に出る。ここは推論ではなく実際に描画して見る
+  // (#6457、レビュー指摘で Web に同じバグが残っていた)。
+  it('resolves a flat dotted messageCode into real text, params included', () => {
+    render(
+      <GameMessageBox
+        message="scopone.errHandIndexOutOfRange"
+        messageCode="scopone.errHandIndexOutOfRange"
+        messageParams={{ idx: '7' }}
+      />,
+    );
+    const box = screen.getByRole('status');
+    expect(box).toHaveTextContent('手札の番号 7 は範囲外です。');
+    // 生の識別子も未置換のプレースホルダも残らない。
+    expect(box.textContent).not.toContain('scopone.');
+    expect(box.textContent).not.toContain('{{');
+  });
+
   it('translates messageCode when translation exists', () => {
     render(<GameMessageBox message="fallback" messageCode="blackjack.result.draw" />);
     expect(screen.getByText('引き分けです。')).toBeInTheDocument();
