@@ -41,7 +41,7 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 		// 英語のまま埋めた文字列 ("ディーラー: Player 0") を出していた
 		// (#6470)。Web は `findPlayerName` で実名を出している。
 		b.WriteString(i18n.Tf("poker.dealerLine",
-			"name", cuiPlayerNameAt(p.GetPlayers(), dealerIdx)) + "\n")
+			"name", cuiPlayerNameAt(players, dealerIdx)) + "\n")
 		b.WriteString(i18n.Tf("poker.potLine", "pot", strconv.Itoa(p.GetPot())) + "\n")
 
 		if p.GetConfig().JokerCount > 0 {

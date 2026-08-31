@@ -11,6 +11,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // **ディーラー行が席番号を英語で名乗っていた。**日本語ロケールの中に
@@ -66,4 +71,30 @@ func TestDealerLineNamesThePlayerNotTheSeat(t *testing.T) {
 				"only %d dealerLine strings name the dealer; one was reverted to a seat index", named)
 		})
 	}
+}
+
+// `cuiPlayerNameAt` の範囲外の枝は、3 つの呼び出し元では踏まれない
+// (`dealerIdx` は常に範囲内)。**踏まれない枝を残すなら、直接踏んで確かめる** ──
+// 保存された盤や配り直しの途中で席数が食い違ったときに、ここが panic の
+// 代わりに名前を返す (レビュー指摘)。
+func TestCuiPlayerNameAtHandlesAnIndexOutsideTheTable(t *testing.T) {
+	// `cuiPlayerName` は名前を太字で包む。色を無効化して素の文字列で比べる。
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	players := []*domain.PokerPlayer{
+		domain.NewPokerPlayer(true, domain.PokerStyleConservative),
+		domain.NewPokerPlayer(false, domain.PokerStyleConservative),
+	}
+
+	// 範囲内は普通に名前で返る。
+	assert.Equal(t, i18n.T("cuiPlayerYou"), presenter.CuiPlayerNameAtForTest(players, 0))
+	assert.Equal(t, i18n.Tf("cuiPlayerCpu", "idx", "1"), presenter.CuiPlayerNameAtForTest(players, 1))
+
+	// 範囲外は panic せず "不明" 相当に落ちる。
+	unknown := i18n.T("cuiPlayerUnknown")
+	assert.Equal(t, unknown, presenter.CuiPlayerNameAtForTest(players, -1))
+	assert.Equal(t, unknown, presenter.CuiPlayerNameAtForTest(players, len(players)))
+	assert.Equal(t, unknown, presenter.CuiPlayerNameAtForTest([]*domain.PokerPlayer(nil), 0))
 }

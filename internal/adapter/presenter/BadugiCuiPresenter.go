@@ -35,7 +35,7 @@ func (bcp *BadugiCuiPresenter) Output(g interfaces.BadugiGame, lastErr error) st
 		// 英語のまま埋めた文字列 ("ディーラー: Player 0") を出していた
 		// (#6470)。Web は `findPlayerName` で実名を出している。
 		b.WriteString(i18n.Tf("badugi.dealerLine",
-			"name", cuiPlayerNameAt(g.GetPlayers(), dealerIdx)) + "\n")
+			"name", cuiPlayerNameAt(players, dealerIdx)) + "\n")
 		b.WriteString(i18n.Tf("badugi.potLine", "pot", strconv.Itoa(g.GetPot())) + "\n")
 
 		if drawIdx := g.GetDrawIndex(); drawIdx > 0 {
