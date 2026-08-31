@@ -29,6 +29,8 @@
   "selectTricks": "トリック数を選択 (6-10):",
   "misereButton": "ミゼール",
   "openMisereButton": "オープンミゼール",
+  "nominateSuitAria": "{{suit}} を指名する",
+  "bidSuitAria": "{{suit}} で {{tricks}} トリックを入札（{{value}}点）",
   "bidValueLabel": "{{value}}点",
   "passButton": "パス",
   "exchangeButton": "交換 ({{count}}/3)",

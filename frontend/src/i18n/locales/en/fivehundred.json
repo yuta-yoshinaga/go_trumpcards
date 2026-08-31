@@ -29,6 +29,8 @@
   "selectTricks": "Select tricks (6-10):",
   "misereButton": "Misere",
   "openMisereButton": "Open Misere",
+  "nominateSuitAria": "Call {{suit}}",
+  "bidSuitAria": "Bid {{tricks}} tricks in {{suit}} ({{value}} pts)",
   "bidValueLabel": "{{value}} pts",
   "passButton": "Pass",
   "exchangeButton": "Exchange ({{count}}/3)",

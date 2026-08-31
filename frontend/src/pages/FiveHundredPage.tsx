@@ -50,11 +50,15 @@ const TARGET_SCORE_SELECT = [
 ];
 
 /** Suit ids matching the Go domain (1=Spade, 2=Club, 3=Heart, 4=Diamond). */
-const SUITS: { id: number; glyph: string }[] = [
-  { id: 1, glyph: '♠' },
-  { id: 2, glyph: '♣' },
-  { id: 4, glyph: '♦' },
-  { id: 3, glyph: '♥' },
+// **記号だけでは支援技術に届かない。**`♠` は何も読まれないかコードポイント名に
+// なるので、ボタンには読める語が要る (#6806)。名前のキーを並びに持たせておけば、
+// 呼び出し側は「見つからなかったとき」を扱わずに済む ── SUITS に無い id は
+// そもそもこのボタンを生まないので、その分岐は書いても到達しない。
+const SUITS: { id: number; glyph: string; nameKey: string }[] = [
+  { id: 1, glyph: '♠', nameKey: 'spade' },
+  { id: 2, glyph: '♣', nameKey: 'club' },
+  { id: 4, glyph: '♦', nameKey: 'diamond' },
+  { id: 3, glyph: '♥', nameKey: 'heart' },
 ];
 
 /** Returns the glyph for a suit id, or "NT" for no-trump (-1). */
@@ -94,6 +98,7 @@ export const FiveHundredPage = withTutorial(FiveHundredPageContent, 'fivehundred
 function FiveHundredPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('fivehundred');
+
   const {
     state,
     loading,
@@ -428,10 +433,15 @@ function FiveHundredPageContent() {
                       onClick={() => bidSuit(bidTricks, s.id)}
                       disabled={loading}
                       data-testid={`fh-bid-suit-${s.id}`}
+                      aria-label={t('bidSuitAria', {
+                        suit: t(`suitName.${s.nameKey}`),
+                        tricks: bidTricks,
+                        value: fivehundredBidValue(bidTricks, s.id),
+                      })}
                       className="flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-white disabled:opacity-40"
                     >
-                      <span>{s.glyph}</span>
-                      <span className="text-[10px] text-white">
+                      <span aria-hidden="true">{s.glyph}</span>
+                      <span aria-hidden="true" className="text-[10px] text-white">
                         {t('bidValueLabel', { value: fivehundredBidValue(bidTricks, s.id) })}
                       </span>
                     </button>
@@ -506,9 +516,11 @@ function FiveHundredPageContent() {
                         type="button"
                         onClick={() => handlePlay(s.id)}
                         disabled={loading}
+                        aria-label={t('nominateSuitAria', { suit: t(`suitName.${s.nameKey}`) })}
+                        data-testid={`fh-nominate-suit-${s.id}`}
                         className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
                       >
-                        {s.glyph}
+                        <span aria-hidden="true">{s.glyph}</span>
                       </button>
                     ))}
                   </>
