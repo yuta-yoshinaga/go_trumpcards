@@ -386,9 +386,6 @@ describe('ViraPage', () => {
   });
 });
 
-// **ポットの動きが Vira 最大の見せ場。**達成なら宣言者が総取り、失敗なら積み上がって
-// 次局へ持ち越される。これまでは次の画面でポットの数字が変わっているのを見て
-// 推測するしかなかった (#6450)。
 describe('ViraPage pot settlement', () => {
   it('says the declarer swept the pot when the contract was made', async () => {
     mockExec.mockResolvedValue(makeViraState({ phase: 3, lastRoundMade: true, lastRoundPotWon: 7, pot: 0 }));

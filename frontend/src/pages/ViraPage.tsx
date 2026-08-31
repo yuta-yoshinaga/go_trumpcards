@@ -378,10 +378,8 @@ function ViraPageContent() {
                         })}
                       </div>
                     ))}
-                    {/* **ポットの動きが Vira 最大の見せ場。**達成なら宣言者が総取り、
-                        失敗なら積み上がって次局へ持ち越される。これまでは次の画面で
-                        ポットの数字が変わっているのを見て推測するしかなかった (#6450)。
-                        取った額は精算で 0 に潰れるので、サーバが控えた値を読む。 */}
+                    {/* 達成側は `pot` ではなく `lastRoundPotWon` を読む ── 精算が
+                        `pot` を 0 に潰すので、取った額はそこには残っていない。 */}
                     <div className="mt-1 text-ds-text-primary" data-testid="vira-pot-settlement">
                       {state.lastRoundMade
                         ? t('roundResult.potWon', { chips: state.lastRoundPotWon })
