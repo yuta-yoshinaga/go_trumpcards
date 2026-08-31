@@ -50,11 +50,15 @@ const TARGET_SCORE_SELECT = [
 ];
 
 /** Suit ids matching the Go domain (1=Spade, 2=Club, 3=Heart, 4=Diamond). */
-const SUITS: { id: number; glyph: string }[] = [
-  { id: 1, glyph: '♠' },
-  { id: 2, glyph: '♣' },
-  { id: 4, glyph: '♦' },
-  { id: 3, glyph: '♥' },
+// **記号だけでは支援技術に届かない。**`♠` は何も読まれないかコードポイント名に
+// なるので、ボタンには読める語が要る (#6806)。名前のキーを並びに持たせておけば、
+// 呼び出し側は「見つからなかったとき」を扱わずに済む ── SUITS に無い id は
+// そもそもこのボタンを生まないので、その分岐は書いても到達しない。
+const SUITS: { id: number; glyph: string; nameKey: string }[] = [
+  { id: 1, glyph: '♠', nameKey: 'spade' },
+  { id: 2, glyph: '♣', nameKey: 'club' },
+  { id: 4, glyph: '♦', nameKey: 'diamond' },
+  { id: 3, glyph: '♥', nameKey: 'heart' },
 ];
 
 /** Returns the glyph for a suit id, or "NT" for no-trump (-1). */
@@ -95,15 +99,6 @@ function FiveHundredPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('fivehundred');
 
-  // **スート選択のボタンは記号しか持っていなかった。**`♠` はスクリーンリーダーに
-  // 何も届かないか、コードポイント名として読まれる ── どのボタンがどのスートなのか
-  // 支援技術からは区別できなかった (#6806)。#6422 で指名**結果**の読み上げは語に
-  // 直したが、**選ぶ側**が記号のまま残っていた。名前の無いスート (NT) は記号に
-  // 落とす ── 読める語が無いのに空文字を返すと、名前の無いボタンができる。
-  const suitLabel = (suit: number): string => {
-    const key = suitNameKey(suit);
-    return key === null ? suitGlyph(suit) : t(`suitName.${key}`);
-  };
   const {
     state,
     loading,
@@ -439,7 +434,7 @@ function FiveHundredPageContent() {
                       disabled={loading}
                       data-testid={`fh-bid-suit-${s.id}`}
                       aria-label={t('bidSuitAria', {
-                        suit: suitLabel(s.id),
+                        suit: t(`suitName.${s.nameKey}`),
                         tricks: bidTricks,
                         value: fivehundredBidValue(bidTricks, s.id),
                       })}
@@ -521,7 +516,7 @@ function FiveHundredPageContent() {
                         type="button"
                         onClick={() => handlePlay(s.id)}
                         disabled={loading}
-                        aria-label={t('nominateSuitAria', { suit: suitLabel(s.id) })}
+                        aria-label={t('nominateSuitAria', { suit: t(`suitName.${s.nameKey}`) })}
                         data-testid={`fh-nominate-suit-${s.id}`}
                         className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
                       >
