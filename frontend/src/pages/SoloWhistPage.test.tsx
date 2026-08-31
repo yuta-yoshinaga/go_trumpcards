@@ -296,3 +296,38 @@ describe('SoloWhistPage', () => {
     expect(screen.getByTestId(`bid-${SoloWhistContract.PASS}`)).not.toHaveAttribute('aria-describedby');
   });
 });
+
+// #6445: 切り札はプレイヤーが選ぶのではなく、契約が決まった瞬間に宣言者の最長
+// スートへ自動設定される (SoloWhist.go の resolveBidding)。切り札選択ボタンを持つ
+// ゲームと並べると、初見では「いつ選んだのか」が分からない。姉妹の Préférence は
+// #5652 で同じ注記を入れてある。
+describe('SoloWhistPage trump auto note', () => {
+  it('explains that the trump suit was chosen automatically', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<SoloWhistPage />);
+
+    expect(await screen.findByTestId('solowhist-trump-note')).toHaveTextContent('最長スート');
+  });
+
+  // **ミゼールには切り札が無い** (domain は trumpSuit=0 にする)。自動決定の説明を
+  // 出すと、ありもしない切り札があるように読める。
+  it('says nothing about trump selection for a misere contract', async () => {
+    mockExec.mockResolvedValue(
+      makeSoloWhistState({ ...playPhaseState, contract: SoloWhistContract.MISERE, trumpSuit: 0 }),
+    );
+    renderWithProviders(<SoloWhistPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('solowhist-trump-note')).not.toBeInTheDocument();
+  });
+
+  it('says nothing before a contract is settled', async () => {
+    mockExec.mockResolvedValue(
+      makeSoloWhistState({ ...playPhaseState, declarerIdx: -1, contract: SoloWhistContract.PASS }),
+    );
+    renderWithProviders(<SoloWhistPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('solowhist-trump-note')).not.toBeInTheDocument();
+  });
+});
