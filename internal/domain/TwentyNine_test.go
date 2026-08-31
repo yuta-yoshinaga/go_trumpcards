@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func tnCard(design, value int) *Card { return NewCard(design, value, false) }
@@ -409,4 +412,48 @@ func TestTwentyNineGetContractProgressNilBeforeAContractExists(t *testing.T) {
 	if p := g.GetContractProgress(); p != nil {
 		t.Fatalf("no contract: got %+v, want nil", p)
 	}
+}
+
+// #6440: 隠し切り札の公開は「出来事」なので、告知は 1 回だけ出す。
+func TestTwentyNine_TrumpJustRevealedIsAOneShotEvent(t *testing.T) {
+	g := newTnGame(true)
+	g.Reset()
+
+	// 配った直後は何も起きていない。
+	assert.False(t, g.GetTrumpJustRevealed())
+
+	// リードスートに従えず別スートを出した瞬間に公開される。
+	g.SetPhase(TwentyNinePhasePlay)
+	g.SetCurrentPlayerIdx(0)
+	g.SetTrumpRevealed(false)
+	lead := NewCard(CardDesignSpade, 9, false)
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 3, Card: lead}})
+	human := g.GetPlayer(0)
+	tnSetHand(human, NewCard(CardDesignHeart, 9, false))
+
+	require.NoError(t, g.PlayerPlay(0))
+	assert.True(t, g.GetTrumpRevealed())
+	assert.True(t, g.GetTrumpJustRevealed(), "the response that revealed it announces")
+
+	// **CPU の手番が回っても消えない。**Interactor は人間の 1 手のあと CPU を
+	// 回しきってから描画するので、CPU 側で消すと告知が一度も画面に出ない。
+	for i := 0; i < TwentyNinePlayerCnt; i++ {
+		g.CpuPlay()
+	}
+	assert.True(t, g.GetTrumpJustRevealed(), "the human must still be told after the CPU turns ran")
+
+	// JSON 往復で保たれる。false は false のまま (bool なのでゼロ値が嘘にならない)。
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var restored TwentyNine
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.True(t, restored.GetTrumpJustRevealed())
+
+	// 人間が次の手を打つと消える (否定コントロール)。
+	g.SetPhase(TwentyNinePhasePlay)
+	g.SetCurrentPlayerIdx(0)
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 3, Card: NewCard(CardDesignSpade, 10, false)}})
+	tnSetHand(g.GetPlayer(0), NewCard(CardDesignSpade, 11, false))
+	require.NoError(t, g.PlayerPlay(0))
+	assert.False(t, g.GetTrumpJustRevealed(), "the human's next play clears it")
 }
