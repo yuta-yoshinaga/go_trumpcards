@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -46,6 +47,27 @@ func rbWithoutForcedMove(t *testing.T) *domain.RussianBank {
 	return g
 }
 
+// rbWithFoundation は fIdx 番のファウンデーションに札を積んだ盤を返す。
+// ドメインは非公開フィールドなので、既存の rbSetCpuReserve と同じく
+// JSON を経由して差し込む。
+func rbWithFoundation(t *testing.T, fIdx int, cards []*domain.Card) *domain.RussianBank {
+	t.Helper()
+	g := rbWithoutForcedMove(t)
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var raw map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &raw))
+	var fd [domain.RussianBankFoundationCnt][]*domain.Card
+	require.NoError(t, json.Unmarshal(raw["fd"], &fd))
+	fd[fIdx] = cards
+	raw["fd"], err = json.Marshal(fd)
+	require.NoError(t, err)
+	patched, err := json.Marshal(raw)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(patched, g))
+	return g
+}
+
 func TestRussianBankWebPresenter_Output(t *testing.T) {
 	p := new(presenter.RussianBankWebPresenter)
 
@@ -62,6 +84,34 @@ func TestRussianBankWebPresenter_Output(t *testing.T) {
 		for _, frag := range []string{`"phase"`, `"players"`, `"tableau"`, `"foundations"`, `"reserveCount"`, `"canCallStop"`, `"messageCode":"russianbank.playing"`} {
 			assert.Contains(t, out, frag)
 		}
+	})
+
+	// **送り先はスートで決まる。**画面が突き合わせられるよう、各台が次に受ける札
+	// そのものを渡す (#6473)。`design` が空文字なら「どのスートでもよい」──
+	// `cardDesignToString(0)` は "JOKER" に落ちるので、そこを通してはいけない。
+	t.Run("serialises what each foundation accepts next", func(t *testing.T) {
+		g := rbWithFoundation(t, 2, []*domain.Card{
+			domain.NewCard(domain.CardDesignHeart, 1, true),
+			domain.NewCard(domain.CardDesignHeart, 2, true),
+		})
+
+		var out struct {
+			FoundationNext []struct {
+				Design string `json:"design"`
+				Value  int    `json:"value"`
+			} `json:"foundationNext"`
+		}
+		require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &out))
+		require.Len(t, out.FoundationNext, domain.RussianBankFoundationCnt)
+
+		// 札の乗った台はスートとランクを名乗る。
+		assert.Equal(t, "HEART", out.FoundationNext[2].Design)
+		assert.Equal(t, 3, out.FoundationNext[2].Value)
+
+		// 空の台は「どのスートでもよい」── 空文字であって "JOKER" ではない。
+		assert.Empty(t, out.FoundationNext[0].Design)
+		assert.Equal(t, 1, out.FoundationNext[0].Value)
+		assert.NotEqual(t, "JOKER", out.FoundationNext[0].Design)
 	})
 
 	t.Run("error is surfaced in the message", func(t *testing.T) {
