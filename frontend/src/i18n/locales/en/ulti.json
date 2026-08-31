@@ -46,6 +46,7 @@
   "bidBetli": "Betli",
   "bidDurchmarsch": "Durchmarsch",
   "bidUlti": "Ulti",
+  "talonPending": "Talon: {{count}} face-down card(s) join your hand as soon as you bid",
   "bidPhase": "Declare a contract — pick a trump suit for Party or Ulti, or declare Betli / Durchmarsch.",
   "discardPhase": "Talon exchange — pick 2 unwanted cards to discard face down.",
   "discardProgress": "Selecting {{selected}}/{{required}} cards to discard",

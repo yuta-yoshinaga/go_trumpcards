@@ -374,6 +374,14 @@ function UltiPageContent() {
                 {t('bidPhase')}
               </div>
             )}
+            {/* **宣言と同時に手札が 10 → 12 枚に増える。**`applyBid` が伏せられた
+                タロンを自動で加えるのに、その存在がどこにも出ておらず、宣言直後に
+                手札が突然増えて見えた (#6486)。 */}
+            {isBidPhase && !state.talonTaken && state.talonCount > 0 && (
+              <div className="mb-1 text-center text-xs text-ds-text-muted" data-testid="ulti-talon-pending">
+                {t('talonPending', { count: state.talonCount })}
+              </div>
+            )}
             {canDiscard && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="ulti-discard-prompt">
                 <div>{t('discardPhase')}</div>

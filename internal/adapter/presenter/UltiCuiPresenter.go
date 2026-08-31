@@ -114,6 +114,13 @@ func (p *UltiCuiPresenter) Output(g interfaces.UltiGame, lastErr error) string {
 		case domain.UltiPhaseBid:
 			b.WriteString(i18n.Tf("ulti.promptBid",
 				"name", cuiPlayerName(g.GetPlayer(g.GetDeclarerIdx()), g.GetDeclarerIdx())) + "\n")
+			// **宣言と同時に手札が 10 → 12 枚に増える。**`applyBid` が伏せられた
+			// タロンを自動で加えるのに、その存在がどこにも出ておらず、宣言直後に
+			// 手札が突然増えて見えた (#6486)。
+			if !g.GetTalonTaken() && g.GetTalonCount() > 0 {
+				b.WriteString(i18n.Tf("ulti.talonPending",
+					"count", strconv.Itoa(g.GetTalonCount())) + "\n")
+			}
 			b.WriteString(i18n.T("ulti.promptBidHelp") + "\n")
 		case domain.UltiPhaseDiscard:
 			b.WriteString(i18n.Tf("ulti.promptDiscard",
