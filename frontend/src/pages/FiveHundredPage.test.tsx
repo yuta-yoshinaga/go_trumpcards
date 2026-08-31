@@ -355,6 +355,24 @@ describe('FiveHundredPage joker lead suit', () => {
     expect(spoken?.textContent).not.toMatch(/[♠♣♥♦]|\d/);
   });
 
+  // **知らない id でも i18n キーを読み上げさせない。**`suitName.*` が引けない値が来ても
+  // `suitName.5` のような生のキーが読み上げられてはいけないので、記号側に落とす。
+  it('falls back to the glyph instead of reading out a raw i18n key for an unknown suit id', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2, // PLAY
+        jokerLeadSuit: 9,
+        currentTrick: [{ playerIdx: 0, card: { design: 'JOKER', value: 0 } }],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+
+    const label = await screen.findByTestId('fh-joker-lead-suit');
+    const spoken = label.querySelector('.sr-only');
+    expect(spoken?.textContent).not.toContain('suitName');
+    expect(spoken?.textContent).toBe('ジョーカー指名スート: NT');
+  });
+
   // 指名が入った瞬間に読み上げさせるため、囲いは**常設**のライブ領域。
   it('keeps the live region mounted while no suit is named', async () => {
     mockExec.mockResolvedValue(
