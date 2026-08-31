@@ -191,6 +191,9 @@ describe('BidWhistPage', () => {
     }
     mockExec.mockClear();
     fireEvent.click(screen.getByTestId('exchange-button'));
+    // **押した直後に見ても意味がない。**飛ぶなら飛んでいるはずのところまで待ってから
+    // 見ないと、この否定は何があっても通る。
+    await waitFor(() => expect(screen.getByTestId('kitty-progress')).toHaveAttribute('aria-valuenow', '5'));
     expect(mockExec).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByTestId('hand-card-5'));
