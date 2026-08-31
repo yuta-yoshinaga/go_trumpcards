@@ -9,6 +9,7 @@
   "helpSetPlayers": "  sp [2-4]                  プレイヤー数",
   "round": "ラウンド: {{round}} / {{target}}",
   "playerLine": "{{name}}: 累計 {{total}}（今ラウンド {{round}}）{{status}}",
+  "royalty": "  ロイヤリティ: +{{points}}",
   "rowFront": "  上段: {{cards}}",
   "rowMiddle": "  中段: {{cards}}",
   "rowBack": "  下段: {{cards}}",

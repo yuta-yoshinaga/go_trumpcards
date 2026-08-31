@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -184,5 +185,52 @@ func TestOpenFaceChineseCuiPresenter_WarnsAboutFoulingPlacements(t *testing.T) {
 		out := p.Output(build(card(domain.CardDesignHeart, 8)), nil)
 
 		assert.Contains(t, out, i18n.T("openfacechinese.promptPlaceHelp"))
+	})
+}
+
+// **なぜその点になったのかが CUI からは追えなかった。**ロイヤリティは強い役に
+// 付く追加点で、Web は ROUND_END に `royalty > 0` の席だけ出しているのに、
+// CUI は `GetRoyalty()` を一度も呼んでいなかった (#6472)。
+func TestOpenFaceChineseCuiPresenter_ShowsRoyaltyAtRoundEnd(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.OpenFaceChineseCuiPresenter)
+
+	withRoyalty := func(phase domain.OpenFaceChinesePhase, humanRoyalty, cpuRoyalty int) string {
+		m := setupOpenFaceChineseCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(phase)
+		// モックは同じ *OpenFaceChinesePlayer を返すので、そこへ直接立てる。
+		m.GetPlayer(0).SetRoyalty(humanRoyalty)
+		m.GetPlayer(1).SetRoyalty(cpuRoyalty)
+		return p.Output(m, nil)
+	}
+	line := func(points int) string {
+		return i18n.Tf("openfacechinese.royalty", "points", strconv.Itoa(points))
+	}
+
+	t.Run("names the points at round end", func(t *testing.T) {
+		out := withRoyalty(domain.OpenFaceChinesePhaseRoundEnd, 9, 2)
+		assert.Contains(t, out, line(9))
+		assert.Contains(t, out, line(2))
+		assert.NotContains(t, out, "{{")
+	})
+
+	// 0 点の席は行ごと出さない (Web と同じ条件)。
+	t.Run("stays quiet for a seat with no royalty", func(t *testing.T) {
+		out := withRoyalty(domain.OpenFaceChinesePhaseRoundEnd, 9, 0)
+		assert.Contains(t, out, line(9))
+		assert.NotContains(t, out, line(0))
+	})
+
+	// **手役が確定する前は出さない。**出すと毎ターン意味のない行が並ぶ。
+	t.Run("stays quiet before the round ends", func(t *testing.T) {
+		out := withRoyalty(domain.OpenFaceChinesePhasePlacing, 9, 2)
+		// 文言の接尾で見る。生テンプレートは決して現れないので、キーそのものを
+		// NotContains に渡しても何も測らない。
+		_, tail, ok := strings.Cut(i18n.T("openfacechinese.royalty"), "+")
+		assert.True(t, ok)
+		assert.NotContains(t, out, tail)
 	})
 }

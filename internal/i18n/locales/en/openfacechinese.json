@@ -9,6 +9,7 @@
   "helpSetPlayers": "  sp [2-4]                  player count",
   "round": "Round: {{round}} / {{target}}",
   "playerLine": "{{name}}: total {{total}} (this round {{round}}){{status}}",
+  "royalty": "  Royalty: +{{points}}",
   "rowFront": "  Front: {{cards}}",
   "rowMiddle": "  Middle: {{cards}}",
   "rowBack": "  Back: {{cards}}",

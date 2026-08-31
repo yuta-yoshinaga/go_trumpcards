@@ -46,6 +46,16 @@ func ofcPlayerStr(g interfaces.OpenFaceChineseGame, idx int) string {
 	b.WriteString(i18n.Tf("openfacechinese.rowFront", "cards", ofcRowCards(player.GetFront())) + "\n")
 	b.WriteString(i18n.Tf("openfacechinese.rowMiddle", "cards", ofcRowCards(player.GetMiddle())) + "\n")
 	b.WriteString(i18n.Tf("openfacechinese.rowBack", "cards", ofcRowCards(player.GetBack())) + "\n")
+	// **なぜその点になったのかが CUI からは追えなかった。**ロイヤリティは強い役に
+	// 付く追加点で、`ofcPlayerRoyalty` が毎ラウンド算出しているのに、CUI は合計と
+	// ラウンド得点しか出しておらず `GetRoyalty()` を一度も呼んでいなかった (#6472)。
+	//
+	// 条件は Web と揃える: ラウンド終了時に、0 点でない席だけ。手役が確定する前に
+	// 出しても常に 0 で、意味のない行が毎ターン並ぶ。
+	if g.GetPhase() == domain.OpenFaceChinesePhaseRoundEnd && player.GetRoyalty() > 0 {
+		b.WriteString(i18n.Tf("openfacechinese.royalty",
+			"points", strconv.Itoa(player.GetRoyalty())) + "\n")
+	}
 	return b.String()
 }
 
