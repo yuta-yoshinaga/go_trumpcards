@@ -94,6 +94,16 @@ export const FiveHundredPage = withTutorial(FiveHundredPageContent, 'fivehundred
 function FiveHundredPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('fivehundred');
+
+  // **スート選択のボタンは記号しか持っていなかった。**`♠` はスクリーンリーダーに
+  // 何も届かないか、コードポイント名として読まれる ── どのボタンがどのスートなのか
+  // 支援技術からは区別できなかった (#6806)。#6422 で指名**結果**の読み上げは語に
+  // 直したが、**選ぶ側**が記号のまま残っていた。名前の無いスート (NT) は記号に
+  // 落とす ── 読める語が無いのに空文字を返すと、名前の無いボタンができる。
+  const suitLabel = (suit: number): string => {
+    const key = suitNameKey(suit);
+    return key === null ? suitGlyph(suit) : t(`suitName.${key}`);
+  };
   const {
     state,
     loading,
@@ -428,10 +438,15 @@ function FiveHundredPageContent() {
                       onClick={() => bidSuit(bidTricks, s.id)}
                       disabled={loading}
                       data-testid={`fh-bid-suit-${s.id}`}
+                      aria-label={t('bidSuitAria', {
+                        suit: suitLabel(s.id),
+                        tricks: bidTricks,
+                        value: fivehundredBidValue(bidTricks, s.id),
+                      })}
                       className="flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-white disabled:opacity-40"
                     >
-                      <span>{s.glyph}</span>
-                      <span className="text-[10px] text-white">
+                      <span aria-hidden="true">{s.glyph}</span>
+                      <span aria-hidden="true" className="text-[10px] text-white">
                         {t('bidValueLabel', { value: fivehundredBidValue(bidTricks, s.id) })}
                       </span>
                     </button>
@@ -506,9 +521,11 @@ function FiveHundredPageContent() {
                         type="button"
                         onClick={() => handlePlay(s.id)}
                         disabled={loading}
+                        aria-label={t('nominateSuitAria', { suit: suitLabel(s.id) })}
+                        data-testid={`fh-nominate-suit-${s.id}`}
                         className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
                       >
-                        {s.glyph}
+                        <span aria-hidden="true">{s.glyph}</span>
                       </button>
                     ))}
                   </>

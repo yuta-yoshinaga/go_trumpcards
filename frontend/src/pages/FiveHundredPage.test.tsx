@@ -180,8 +180,65 @@ describe('FiveHundredPage', () => {
     renderWithProviders(<FiveHundredPage />);
     fireEvent.click(await screen.findByTestId('hand-card-0'));
     expect(screen.queryByTestId('play-button')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: '♠' }));
+    // 記号ではなくスート名で引く ── ボタンが名前を持つようになった (#6806)。
+    fireEvent.click(screen.getByRole('button', { name: 'スペード を指名する' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, jokerSuit: 1 }));
+  });
+
+  // **記号はスクリーンリーダーに届かない。**`♠` は何も読まれないかコードポイント名に
+  // なるので、4 つのボタンが支援技術からは区別できなかった (#6806)。
+  it('names each joker-nomination button with its suit, not its glyph', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        currentPlayerIdx: 0,
+        contractKind: 2,
+        trumpSuit: -1,
+        currentTrick: [],
+        players: [
+          player(0, true, [card('JOKER', 0)]),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ] as FiveHundredResponse['players'],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+
+    for (const [id, name] of [
+      [1, 'スペード'],
+      [2, 'クラブ'],
+      [3, 'ハート'],
+      [4, 'ダイヤ'],
+    ] as const) {
+      const btn = screen.getByTestId(`fh-nominate-suit-${id}`);
+      const label = btn.getAttribute('aria-label') ?? '';
+      expect(label).toContain(name);
+      // 記号も数値 id も名前に出さない。記号が残ると二重に読まれる。
+      expect(label).not.toMatch(/[♠♣♥♦]/);
+      expect(label).not.toContain(String(id));
+      expect(label).not.toContain('{{');
+    }
+
+    // 4 つが**互いに違う**名前を持つこと。全部同じ語を返す実装はここで落ちる。
+    const labels = [1, 2, 3, 4].map((id) => screen.getByTestId(`fh-nominate-suit-${id}`).getAttribute('aria-label'));
+    expect(new Set(labels).size).toBe(4);
+  });
+
+  it('names each bid-suit button with its suit and what it is worth', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0 }));
+    renderWithProviders(<FiveHundredPage />);
+
+    const spade = await screen.findByTestId('fh-bid-suit-1');
+    const label = spade.getAttribute('aria-label') ?? '';
+    expect(label).toContain('スペード');
+    expect(label).toContain('40'); // 6♠
+    expect(label).not.toMatch(/[♠♣♥♦]/);
+    expect(label).not.toContain('{{');
+
+    const labels = [1, 2, 3, 4].map((id) => screen.getByTestId(`fh-bid-suit-${id}`).getAttribute('aria-label'));
+    expect(new Set(labels).size).toBe(4);
   });
 
   it('exchanges three selected cards in the kitty exchange phase', async () => {
