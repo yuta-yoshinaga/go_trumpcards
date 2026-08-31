@@ -98,10 +98,16 @@ func TestBeggarMyNeighbourCuiPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal(data, &raw)
 		raw["ph"], _ = json.Marshal(domain.BeggarMyNeighbourPhasePayPenalty)
 		raw["pr"], _ = json.Marshal(3)
+		raw["po"], _ = json.Marshal(1)
 		newData, _ := json.Marshal(raw)
 		_ = json.Unmarshal(newData, g)
 
-		assert.Contains(t, p.Output(g, nil), "ペナルティ支払い中")
+		out := p.Output(g, nil)
+		assert.Contains(t, out, "ペナルティ支払い中")
+		// **誰が払っているかも言う** ── 残り枚数だけでは、自分が払う側か相手が
+		// 払う側か分からない (#6478)。Web / CLI と同じ情報にそろえた。
+		assert.Contains(t, out, i18n.Tf("cuiPlayerCpu", "idx", "1"))
+		assert.NotContains(t, out, "{{")
 	})
 
 	t.Run("collect phase", func(t *testing.T) {

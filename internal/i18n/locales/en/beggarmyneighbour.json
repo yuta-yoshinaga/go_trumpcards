@@ -11,7 +11,7 @@
   "boardLastCard": "Last card: {{card}}",
   "boardLastCardEmpty": "Last card: --",
   "promptPlay": "Use step to play the next card.",
-  "promptPayPenalty": "Paying penalty! {{remaining}} more card(s) to pay.",
+  "promptPayPenalty": "Paying penalty! {{name}} owes {{remaining}} more card(s).",
   "promptCollect": "Penalty paid off! step to collect the pile.",
   "gameWinHuman": "You win!",
   "gameWinCpu": "CPU wins...",

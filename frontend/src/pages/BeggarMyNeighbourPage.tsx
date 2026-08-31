@@ -224,15 +224,21 @@ function BeggarMyNeighbourPageContent() {
   // **誰が払っているのかが画面のどこにも出ていなかった。**サーバは毎レスポンス
   // `penaltyOwnerIdx` を返しているのに一度も読まれておらず、残り枚数と中央の
   // 警告リングだけでは「自分が払う側か相手が払う側か」が分からなかった (#6478)。
-  const penaltyOwnerName =
-    state.penaltyOwnerIdx === 0 ? tc('player.you') : tc('player.cpu', { id: state.penaltyOwnerIdx });
+  //
+  // **支払い中のときだけ引く。**フェーズ外では `penaltyOwnerIdx` が -1 なので、
+  // 無条件に組むと `CPU -1` という誰でもない名前を作ることになる (レビュー指摘)。
+  const isPayingPenalty = state.phase === BeggarMyNeighbourPhase.PAY_PENALTY;
+  const penaltyOwnerName = !isPayingPenalty
+    ? ''
+    : state.penaltyOwnerIdx === 0
+      ? tc('player.you')
+      : tc('player.cpu', { id: state.penaltyOwnerIdx });
 
   // Phase transitions (and the penalty countdown) are conveyed only by the
   // central-pile ring color, so mirror them into an sr-only live region.
-  const phaseAnnouncement =
-    state.phase === BeggarMyNeighbourPhase.PAY_PENALTY
-      ? t('phaseAnnouncePenalty', { phase: phaseName, count: state.penaltyRemaining, name: penaltyOwnerName })
-      : t('phaseAnnounce', { phase: phaseName });
+  const phaseAnnouncement = isPayingPenalty
+    ? t('phaseAnnouncePenalty', { phase: phaseName, count: state.penaltyRemaining, name: penaltyOwnerName })
+    : t('phaseAnnounce', { phase: phaseName });
 
   return (
     <GamePageShell
@@ -326,7 +332,7 @@ function BeggarMyNeighbourPageContent() {
                 <div className="text-sm text-ds-text-primary font-semibold">
                   {t('label.centralPile')}: {state.centralPileSize}
                 </div>
-                {state.phase === BeggarMyNeighbourPhase.PAY_PENALTY && (
+                {isPayingPenalty && (
                   <>
                     <div className="text-xs text-ds-warning mt-1" data-testid="bmn-penalty-owner">
                       {t('label.penaltyOwner', { name: penaltyOwnerName })}
