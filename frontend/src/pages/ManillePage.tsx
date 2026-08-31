@@ -342,8 +342,8 @@ function ManillePageContent() {
                     data-testid="manille-round-points"
                   >
                     <div className="mb-1 text-ds-text-primary">{t('roundProgress.title')}</div>
-                    <div>{t('roundResult.teamA', { points: state.roundCardPoints[0] ?? 0 })}</div>
-                    <div>{t('roundResult.teamB', { points: state.roundCardPoints[1] ?? 0 })}</div>
+                    <div>{t('roundResult.teamA', { points: state.roundCardPoints[0] })}</div>
+                    <div>{t('roundResult.teamB', { points: state.roundCardPoints[1] })}</div>
                   </div>
                 )}
 
