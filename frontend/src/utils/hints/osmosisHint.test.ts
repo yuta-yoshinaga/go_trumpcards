@@ -38,7 +38,30 @@ describe('getOsmosisHint', () => {
     const hint = getOsmosisHint(makeState({ hint: { fromZone: 'waste', fromCol: -1, toCol: 1 } }));
     expect(hint).toEqual({
       targetAction: 'moveToFoundation',
+      reason: 'frontendHint.osmosisFromWaste',
+      reasonParams: { foundation: 1 },
+      targetPos: 1,
+      confidence: 'strong',
+    });
+  });
+
+  it('returns reserve-to-foundation hint with strong confidence and position parameters', () => {
+    const hint = getOsmosisHint(makeState({ hint: { fromZone: 'reserve', fromCol: 2, toCol: 3 } }));
+    expect(hint).toEqual({
+      targetAction: 'moveToFoundation',
+      reason: 'frontendHint.osmosisFromReserve',
+      reasonParams: { col: 2, foundation: 3 },
+      targetPos: 3,
+      confidence: 'strong',
+    });
+  });
+
+  it('returns fallback hint for unknown fromZone', () => {
+    const hint = getOsmosisHint(makeState({ hint: { fromZone: 'unknown', fromCol: 0, toCol: 2 } }));
+    expect(hint).toEqual({
+      targetAction: 'moveToFoundation',
       reason: 'frontendHint.moveToFoundation',
+      targetPos: 2,
       confidence: 'strong',
     });
   });
