@@ -102,7 +102,7 @@ func TestCuarentaCuiPresenter_ShowsTheTeamCaptureTotals(t *testing.T) {
 	give(0, 7)
 	give(2, 5)
 	out := p.Output(g, nil)
-	if !strings.Contains(out, "チーム0 捕獲: 12枚") {
+	if !strings.Contains(out, "チームA 捕獲: 12枚") {
 		t.Fatalf("team total should be the sum of both seats: %q", out)
 	}
 	// **必要枚数は「閾値を超える」枚数。**20 ちょうどでは付かない。
@@ -111,9 +111,10 @@ func TestCuarentaCuiPresenter_ShowsTheTeamCaptureTotals(t *testing.T) {
 	}
 	// まだ遠いので強調しない。
 	// 色は行全体を包むので、行ごと組み立てて照合する。
+	// **チームは A/B の文字で出る** (#6469)。Web の `teamLabel` と揃えた。
 	line := func(team, count int) string {
 		return i18n.Tf("cuarenta.teamCaptured",
-			"team", strconv.Itoa(team), "count", strconv.Itoa(count),
+			"team", [...]string{"A", "B"}[team], "count", strconv.Itoa(count),
 			"need", strconv.Itoa(domain.CuarentaMostCardsThreshold+1),
 			"bonus", strconv.Itoa(domain.CuarentaScoreMostCards))
 	}
@@ -219,4 +220,28 @@ func TestCuarentaCuiPresenter_PreviewsTheCapture(t *testing.T) {
 
 		assert.Contains(t, p.Output(g, nil), i18n.Tf("cuarenta.tableLine", "cards", color.Red("HEART 7")))
 	})
+}
+
+// **同じ卓の同じチームを、フロントと CLI で違う名前で呼んでいた** ── Web の
+// `teamLabel` は「チームA / チームB」なのに、CUI は生の 0 / 1 をロケールに
+// 渡して「チーム0 / チーム1」と出していた (#6469)。表記が出る面は 4 つある。
+func TestCuarentaCuiPresenter_NamesTeamsWithLettersEverywhere(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	p := &presenter.CuarentaCuiPresenter{}
+	g := buildPlayedCuarenta(t)
+	out := p.Output(g, nil)
+
+	// 期待値は production の関数を呼ばずに書く ── 呼ぶと「実装がそう言うから
+	// そうだ」になり、A/B を 0/1 に戻す変異が通ってしまう。
+	for _, want := range []string{"チームA", "チームB"} {
+		assert.Contains(t, out, want)
+	}
+	// 数字表記が 1 つも残っていないこと。teamScoreLine / teamCaptured /
+	// playerLine のどれか 1 面を直し忘れると、ここで見つかる。
+	for _, bad := range []string{"チーム0", "チーム1"} {
+		assert.NotContains(t, out, bad, "a team is still named by its raw index")
+	}
 }

@@ -41,6 +41,18 @@ func suitDisplayName(suit int) string {
 	return glyph
 }
 
+// cuiTeamLabel は 2 チーム制のチーム番号を "A" / "B" の文字ラベルにする。
+//
+// **生の 0 / 1 をロケールに渡すと「チーム0」と出る。**Web が「チームA」と
+// 呼んでいるゲームでは、同じ卓の同じチームをフロントと CLI で違う名前で
+// 呼ぶことになる (#6469)。0 以外はすべて B ── 2 チーム制でしか使わない。
+func cuiTeamLabel(team int) string {
+	if team == 0 {
+		return "A"
+	}
+	return "B"
+}
+
 // cuiCardList is the minimal type constraint required by formatCardList.
 type cuiCardList interface {
 	GetCardsSize() int
