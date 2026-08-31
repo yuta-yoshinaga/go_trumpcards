@@ -458,4 +458,16 @@ describe('DoudizhuPage', () => {
     await waitFor(() => expect(screen.getByTestId('ddz-invalid-combo')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
   });
+
+  it('renders CPU hand card count in Japanese without raw "cards"', async () => {
+    renderWithProviders(<DoudizhuPage />);
+    await waitFor(() => {
+      expect(screen.getAllByText('17枚')).toHaveLength(2);
+    });
+    const counts = screen.getAllByText('17枚');
+    for (const el of counts) {
+      expect(el).not.toHaveTextContent('cards');
+    }
+    expect(screen.queryByText(/17 cards/)).not.toBeInTheDocument();
+  });
 });

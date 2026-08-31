@@ -400,4 +400,13 @@ describe('HandAndFootPage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+
+  it('renders CPU hand card count in Japanese at round end without raw "cards"', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<HandAndFootPage />);
+    const cpuHandInfo = await screen.findByText('CPU 1: 15枚');
+    expect(cpuHandInfo).toBeInTheDocument();
+    expect(cpuHandInfo).not.toHaveTextContent('cards');
+    expect(screen.queryByText(/15 cards/)).not.toBeInTheDocument();
+  });
 });

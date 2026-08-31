@@ -463,4 +463,13 @@ describe('CanastaPage', () => {
     fireEvent.click(handCards[1]);
     expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent('ワイルドカード');
   });
+
+  it('renders CPU hand card count in Japanese at round end without raw "cards"', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<CanastaPage />);
+    const cpuHandInfo = await screen.findByText('CPU 1: 15枚');
+    expect(cpuHandInfo).toBeInTheDocument();
+    expect(cpuHandInfo).not.toHaveTextContent('cards');
+    expect(screen.queryByText(/15 cards/)).not.toBeInTheDocument();
+  });
 });
