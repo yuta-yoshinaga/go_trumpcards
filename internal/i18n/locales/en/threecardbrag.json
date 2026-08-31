@@ -29,5 +29,7 @@
   "helpNext": "  n                    go to the next deal",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpExampleSee": "  s                    look at your hand and become seen",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "costNoticeBlind": "Blind: your bet costs the stake ({{cost}} chips). Seeing your hand doubles future bets.",
+  "costNoticeSeen": "Seen: your bets cost double the stake — a call now costs {{cost}} chips."
 }
