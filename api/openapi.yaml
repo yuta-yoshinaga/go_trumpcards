@@ -67688,6 +67688,24 @@ components:
         canUndo:
           type: boolean
           description: True when the human's last move can be undone
+        foundationNext:
+          type: array
+          description: >-
+            What each foundation will accept next, in the same order as
+            foundations. The destination pile is chosen by the rules, not by
+            the player, so a client matches the selected card against these
+            instead of re-deriving the rule.
+          items:
+            type: object
+            properties:
+              design:
+                type: string
+                description: >-
+                  Required suit, or an empty string when any suit is accepted
+                  (an empty pile takes any Ace).
+              value:
+                type: integer
+                description: Required rank
         moveCount:
           type: integer
           description: Total moves played so far

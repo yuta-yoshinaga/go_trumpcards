@@ -58,6 +58,18 @@ func (p *RussianBankWebPresenter) buildBase(g interfaces.RussianBankGame) *contr
 	for i, f := range foundations {
 		resObj.Foundations[i] = cardsToOutputOrEmpty(f)
 	}
+	// **どの台に行くのかは規則で決まる。**画面が突き合わせられるよう、各台が
+	// 次に受ける札そのものを渡す ── 規則をクライアントに書き写すと必ずずれる
+	// (#6473)。design が空文字なら「どのスートでもよい」(空の台)。
+	next := g.GetFoundationNext()
+	resObj.FoundationNext = make([]*controller.RussianBankWebFoundationNext, len(next))
+	for i, n := range next {
+		design := ""
+		if n.Design != 0 {
+			design = cardDesignToString(n.Design)
+		}
+		resObj.FoundationNext[i] = &controller.RussianBankWebFoundationNext{Design: design, Value: n.Value}
+	}
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
