@@ -16,6 +16,7 @@ function makeState(overrides: Partial<FaroResponse> = {}): FaroResponse {
     turnsPlayed: 0,
     turnsTotal: 25,
     remaining: 52,
+    remainingByRank: Array.from({ length: 14 }, (_, i) => (i === 0 ? 0 : 4)),
     callCards: [],
     callOrder: [],
     callWon: false,
