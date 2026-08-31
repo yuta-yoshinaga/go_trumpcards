@@ -13,6 +13,17 @@ vi.mock('../api/gameApi', () => ({
 const mockExec = vi.mocked(basraApi.exec);
 
 const playPhaseState = makeBasraState();
+// 内訳は各テストで一部だけ差し替えるので、素の値をここに置いて使い回す
+// (`endDealDetail` と書かずに済む)。
+const endDealDetail = {
+  cards: { 0: 30, 1: 10, 2: 8, 3: 4 },
+  aces: { 0: 2, 1: 1, 2: 1, 3: 0 },
+  basras: { 0: 2, 1: 0, 2: 0, 3: 0 },
+  hasSevenDiamonds: 0,
+  hasTenDiamonds: 0,
+  mostCards: 0,
+  gained: { 0: 27, 1: 5, 2: 4, 3: 1 },
+};
 const cpuTurnState = makeBasraState({ currentTurn: 1, isHumanTurn: false });
 const gameEndState = makeBasraState({
   phase: 1,
@@ -24,15 +35,7 @@ const gameEndState = makeBasraState({
     { id: 2, isHuman: false, cardCount: 0, cards: [], capturedCount: 8, basraCount: 0, score: 4 },
     { id: 3, isHuman: false, cardCount: 0, cards: [], capturedCount: 4, basraCount: 0, score: 1 },
   ],
-  lastDealDetail: {
-    cards: { 0: 30, 1: 10, 2: 8, 3: 4 },
-    aces: { 0: 2, 1: 1, 2: 1, 3: 0 },
-    basras: { 0: 2, 1: 0, 2: 0, 3: 0 },
-    hasSevenDiamonds: 0,
-    hasTenDiamonds: 0,
-    mostCards: 0,
-    gained: { 0: 27, 1: 5, 2: 4, 3: 1 },
-  },
+  lastDealDetail: endDealDetail,
 });
 
 beforeEach(() => {
@@ -188,5 +191,60 @@ describe('BasraPage', () => {
     expect(badge).toHaveTextContent('場を一掃');
     expect(screen.getByTestId('basra-count-1')).toHaveAttribute('data-emphasised', 'true');
     expect(screen.getByTestId('basra-count-0')).not.toHaveAttribute('data-emphasised');
+  });
+
+  // **合計だけでは、なぜその点なのかが分からない。**サーバは A / バスラ /
+  // 7♦ / 10♦ / 最多枚数の内訳を全部返しているのに、一度も読まれていなかった
+  // (#6490)。
+  it('breaks the final score down into where the points came from', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<BasraPage />);
+
+    const row = await screen.findByTestId('basra-breakdown-0');
+    // A 2 枚 / バスラ 2 回 / 捕獲 30 枚 ── 合計 (27) からは出せない数字。
+    expect(row).toHaveTextContent('2');
+    expect(row).toHaveTextContent('30');
+    expect(row.textContent).not.toContain('{{');
+
+    // 各賞は取った席の名前で出る。
+    expect(screen.getByTestId('basra-seven-diamonds')).toHaveTextContent('あなた');
+    expect(screen.getByTestId('basra-ten-diamonds')).toHaveTextContent('あなた');
+    expect(screen.getByTestId('basra-most-cards')).toHaveTextContent('あなた');
+  });
+
+  it('names the seat that actually took each bonus', async () => {
+    mockExec.mockResolvedValue({
+      ...gameEndState,
+      lastDealDetail: { ...endDealDetail, hasSevenDiamonds: 2, mostCards: 1 },
+    });
+    renderWithProviders(<BasraPage />);
+
+    expect(await screen.findByTestId('basra-seven-diamonds')).toHaveTextContent('CPU 2');
+    expect(screen.getByTestId('basra-most-cards')).toHaveTextContent('CPU 1');
+    // 席を取り違える実装はここで落ちる。
+    expect(screen.getByTestId('basra-seven-diamonds')).not.toHaveTextContent('あなた');
+  });
+
+  // **誰も取っていない賞は行ごと出さない。**-1 を名前に直すと、存在しない席を
+  // 名指しすることになる。
+  it('omits a bonus nobody took', async () => {
+    mockExec.mockResolvedValue({
+      ...gameEndState,
+      lastDealDetail: { ...endDealDetail, hasSevenDiamonds: -1, hasTenDiamonds: -1, mostCards: -1 },
+    });
+    renderWithProviders(<BasraPage />);
+
+    await waitFor(() => expect(screen.getByTestId('basra-breakdown')).toBeInTheDocument());
+    expect(screen.queryByTestId('basra-seven-diamonds')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('basra-ten-diamonds')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('basra-most-cards')).not.toBeInTheDocument();
+  });
+  // 内訳を持たない終局 (旧セッションの復元など) では、表そのものを出さない。
+  it('shows no breakdown when the server sent none', async () => {
+    mockExec.mockResolvedValue({ ...gameEndState, lastDealDetail: null });
+    renderWithProviders(<BasraPage />);
+
+    await waitFor(() => expect(screen.getByTestId('basra-count-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('basra-breakdown')).not.toBeInTheDocument();
   });
 });
