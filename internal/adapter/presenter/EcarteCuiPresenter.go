@@ -112,6 +112,13 @@ func ecarteWritePrompt(sb *strings.Builder, b interfaces.EcarteGame) {
 			"name", cuiPlayerName(b.GetPlayer(currentIdx), currentIdx)) + "\n")
 		step := b.GetNegStep()
 		sb.WriteString(i18n.T(ecarteNegPromptKey(step)) + "\n")
+		// **選択肢の名前だけでは駆け引きにならない。**エカルテ最大の勝負所は
+		// 「拒否した側は 3 トリック取れずに敗れると相手に追加 1 点」という
+		// 非対称なペナルティで、Web はボタンの title と aria-describedby で
+		// 常に説明している。CUI は手順名しか出していなかった。
+		for _, key := range ecarteConsequenceKeys(step) {
+			sb.WriteString("  " + i18n.T(key) + "\n")
+		}
 		// On a discard step, spell out the upper bound (you cannot discard more
 		// cards than the stock can replace) so the player need not compute it.
 		if step == domain.EcarteNegElderDiscard || step == domain.EcarteNegDealerDiscard {
@@ -131,6 +138,21 @@ func ecarteWritePrompt(sb *strings.Builder, b interfaces.EcarteGame) {
 	case domain.EcartePhaseRoundEnd:
 		sb.WriteString(i18n.T("ecarte.promptRoundEnd") + "\n")
 		sb.WriteString(i18n.T("ecarte.promptRoundEndHelp") + "\n")
+	}
+}
+
+// ecarteConsequenceKeys は交換ステップで選べる各手の結果を説明する i18n キーを返す。
+//
+// キーは Web の `consequence.*` (EcartePage.tsx) と同じ名前にしてある。
+// 同じ駆け引きを 2 つの画面で別の言葉で説明すると、どちらが正しいのか読めなくなる。
+func ecarteConsequenceKeys(step domain.EcarteNegStep) []string {
+	switch step {
+	case domain.EcarteNegElderDecide:
+		return []string{"ecarte.consequencePropose", "ecarte.consequenceStand"}
+	case domain.EcarteNegDealerRespond:
+		return []string{"ecarte.consequenceAccept", "ecarte.consequenceRefuse"}
+	default:
+		return nil
 	}
 }
 

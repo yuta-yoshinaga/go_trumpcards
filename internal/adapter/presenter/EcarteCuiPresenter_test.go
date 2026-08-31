@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupEcarteCuiMock(trumpCard *domain.Card) *interfaces.MockEcarteGame {
@@ -221,4 +222,66 @@ func TestEcarteCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	out := p.ActionLogOutput(m)
 	assert.NotNil(t, out)
+}
+
+// **選択肢の名前だけでは駆け引きにならない。**エカルテ最大の勝負所は「拒否した側は
+// 3 トリック取れずに敗れると相手に追加 1 点」という非対称なペナルティで、Web は
+// ボタンの title と aria-describedby で常に説明しているのに、CUI は手順名しか
+// 出していなかった (#6454)。
+func TestEcarteCuiPresenter_ExplainsWhatEachChoiceCosts(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.EcarteCuiPresenter)
+
+	// **交換フェーズに置くこと。**既定のモックは Play フェーズなので、そのままだと
+	// どの subtest も「何も出ない」を確かめるだけの空振りになる (実際に一度なった)。
+	atStep := func(step domain.EcarteNegStep) *interfaces.MockEcarteGame {
+		m, _ := setupEcarteCuiMockWithPlayers(domain.NewCard(domain.CardDesignSpade, 13, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetNegStep")
+		m.On("GetPhase").Return(domain.EcartePhaseExchange)
+		m.On("GetNegStep").Return(step)
+		m.On("GetStockRemaining").Return(11).Maybe()
+		return m
+	}
+
+	t.Run("the elder sees what proposing and standing cost", func(t *testing.T) {
+		out := p.Output(atStep(domain.EcarteNegElderDecide), nil)
+		assert.Contains(t, out, i18n.T("ecarte.consequencePropose"))
+		assert.Contains(t, out, i18n.T("ecarte.consequenceStand"))
+		// 相手の手の説明は混ぜない ── まだ自分の番。
+		assert.NotContains(t, out, i18n.T("ecarte.consequenceAccept"))
+		assert.NotContains(t, out, i18n.T("ecarte.consequenceRefuse"))
+	})
+
+	t.Run("the dealer sees what accepting and refusing cost", func(t *testing.T) {
+		out := p.Output(atStep(domain.EcarteNegDealerRespond), nil)
+		assert.Contains(t, out, i18n.T("ecarte.consequenceAccept"))
+		assert.Contains(t, out, i18n.T("ecarte.consequenceRefuse"))
+		assert.NotContains(t, out, i18n.T("ecarte.consequencePropose"))
+	})
+
+	// 捨て札ステップには選ぶ手が無いので出さない。
+	t.Run("the discard steps say nothing about consequences", func(t *testing.T) {
+		for _, step := range []domain.EcarteNegStep{domain.EcarteNegElderDiscard, domain.EcarteNegDealerDiscard} {
+			out := p.Output(atStep(step), nil)
+			for _, key := range []string{
+				"ecarte.consequencePropose", "ecarte.consequenceStand",
+				"ecarte.consequenceAccept", "ecarte.consequenceRefuse",
+			} {
+				assert.NotContains(t, out, i18n.T(key))
+			}
+		}
+	})
+
+	// **Web と同じ言葉で説明する。**同じ駆け引きを 2 画面で別の言葉にすると、
+	// どちらが正しいのか読めなくなる。Go 側のキーはフロントの consequence.* を
+	// そのまま写したものなので、拒否のペナルティの数字が一致していること。
+	t.Run("the refusal penalty matches what the web explains", func(t *testing.T) {
+		refuse := i18n.T("ecarte.consequenceRefuse")
+		assert.Contains(t, refuse, "追加1点")
+		assert.Contains(t, refuse, "3トリック")
+		assert.NotContains(t, refuse, "{{")
+	})
 }
