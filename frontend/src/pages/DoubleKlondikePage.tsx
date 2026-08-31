@@ -211,6 +211,11 @@ function DoubleKlondikePageContent() {
             style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
             onClick={canAct && tc2.faceUp ? () => clickTableauCard(col, i) : undefined}
             disabled={!canAct || !tc2.faceUp}
+            // **選択中であることが枠線の色でしか分からなかった** ── 音声には
+            // 何も届かない (#6476)。盤面が通常のクロンダイクの 2 倍あるぶん
+            // 選択元を見失いやすい。掴んだ束の**全部**が押された状態になる:
+            // リングと同じ条件 (`i >= selected.idx`) で揃える。
+            aria-pressed={selected?.zone === 'tableau' && selected.col === col && i >= selected.idx}
             data-testid={`card-${col}-${i}`}
           >
             {tc2.faceUp && tc2.card ? <CardImage card={tc2.card} width={w} /> : <CardBack width={w} />}
@@ -273,6 +278,7 @@ function DoubleKlondikePageContent() {
                       onClick={canAct ? clickWaste : undefined}
                       disabled={!canAct}
                       title={t('waste')}
+                      aria-pressed={selected?.zone === 'waste'}
                       data-testid="waste"
                     >
                       <CardImage card={c} width={w} />

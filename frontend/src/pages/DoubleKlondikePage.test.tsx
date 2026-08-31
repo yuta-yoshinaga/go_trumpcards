@@ -85,6 +85,48 @@ describe('DoubleKlondikePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('mwt', { col: 0 }));
   });
 
+  // **選択中であることが枠線の色でしか分からなかった** ── 音声には何も届かない
+  // (#6476)。盤面が通常のクロンダイクの 2 倍あるぶん選択元を見失いやすい。
+  it('announces the selected waste card as pressed', async () => {
+    renderWithProviders(<DoubleKlondikePage />);
+    const waste = await screen.findByTestId('waste');
+    expect(waste).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(waste);
+    await waitFor(() => expect(screen.getByTestId('waste')).toHaveAttribute('aria-pressed', 'true'));
+    // 別の場所を選ぶと解除される ── 押されっぱなしにする実装はここで落ちる。
+    fireEvent.click(screen.getByTestId('card-1-1'));
+    await waitFor(() => expect(screen.getByTestId('waste')).toHaveAttribute('aria-pressed', 'false'));
+  });
+
+  it('announces the grabbed tableau run as pressed, from the grabbed card down', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        tableau: (() => {
+          const t = Array.from({ length: 9 }, () => []) as ReturnType<typeof makeState>['tableau'];
+          // 掴めるのは表向きの札。0 は裏、1..2 が同色降順の束。
+          t[0] = [
+            { card: null, faceUp: false },
+            { card: card('SPADE', 9), faceUp: true },
+            { card: card('HEART', 8), faceUp: true },
+          ];
+          return t;
+        })(),
+      }),
+    );
+    renderWithProviders(<DoubleKlondikePage />);
+
+    const grabbed = await screen.findByTestId('card-0-1');
+    expect(grabbed).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(grabbed);
+
+    // 掴んだ札**とその下**が押された状態。リングと同じ範囲。
+    await waitFor(() => expect(screen.getByTestId('card-0-1')).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('card-0-2')).toHaveAttribute('aria-pressed', 'true');
+    // 掴んだ札より上 (裏向き) は押されていない。
+    expect(screen.getByTestId('card-0-0')).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('fans out the top 3 waste cards, keeping only the top selectable', async () => {
     mockExec.mockResolvedValue(
       makeState({ waste: [card('CLOVER', 2), card('SPADE', 3), card('HEART', 4), card('DIAMOND', 5)] }),
