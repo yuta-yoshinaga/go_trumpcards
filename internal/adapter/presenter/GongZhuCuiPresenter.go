@@ -92,6 +92,10 @@ func (p *GongZhuCuiPresenter) Output(g interfaces.GongZhuGame, lastErr error) st
 		cuiErrorBlock(b, lastErr)
 
 		if g.GetGameEndFlag() {
+			// **勝敗を決めた最終ラウンドの内訳もここで出す。**この分岐は return するので、
+			// 下の switch は終局後には一度も走らない ── 内訳が RoundEnd の case にしか
+			// 無かったせいで、勝負を決めた局の猪/羊/倍率だけが読めなくなっていた (#6426)。
+			gongZhuWriteBreakdown(b, g)
 			winnerIdx := g.GetWinnerIdx()
 			player := g.GetPlayer(winnerIdx)
 			banner := i18n.Tf("gongzhu.gameEnd", "name", cuiPlayerName(player, winnerIdx))

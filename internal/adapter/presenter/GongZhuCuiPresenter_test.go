@@ -202,6 +202,47 @@ func TestGongZhuCuiPresenterOmitsTheItemsThatDidNotHappen(t *testing.T) {
 	assert.NotContains(t, out, i18n.Tf("gongzhu.breakdownDoubler", "mult", "2"))
 }
 
+// #6426: 勝敗を決めた最終ラウンドの内訳はゲーム終了時にも出す。
+// ただし RoundEnd 用のプロンプト (次のラウンドへの案内) は出さない。
+func TestGongZhuCuiPresenterShowsTheBreakdownAtGameEnd(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	m, _ := setupGongZhuCuiMockWithPlayers()
+	m.ExpectedCalls = filterGongZhuCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.GongZhuPhaseGameEnd)
+	m.ExpectedCalls = filterGongZhuCall(m.ExpectedCalls, "GetGameEndFlag")
+	m.On("GetGameEndFlag").Return(true)
+	m.ExpectedCalls = filterGongZhuCall(m.ExpectedCalls, "GetWinnerIdx")
+	m.On("GetWinnerIdx").Return(0)
+	m.ExpectedCalls = filterGongZhuCall(m.ExpectedCalls, "ScoreBreakdownFor")
+	m.On("ScoreBreakdownFor", mock.Anything).Return(domain.GongZhuScoreBreakdown{
+		HeartCount: 3, HeartsSum: -120, AceExposed: true,
+		HasPig: true, PigExposed: true,
+		HasSheep:   true,
+		HasDoubler: true, DoublerMultiplier: 2,
+		Subtotal: -220, Total: -440,
+	})
+
+	out := new(presenter.GongZhuCuiPresenter).Output(m, nil)
+
+	// 内訳の見出し・各段が含まれること
+	assert.Contains(t, out, i18n.T("gongzhu.breakdownTitle"))
+	assert.Contains(t, out, i18n.Tf("gongzhu.breakdownHearts", "count", "3", "sum", "-120"))
+	assert.Contains(t, out, i18n.T("gongzhu.breakdownPigExposed"))
+	assert.Contains(t, out, i18n.T("gongzhu.breakdownSheep"))
+	assert.Contains(t, out, i18n.Tf("gongzhu.breakdownDoubler", "mult", "2"))
+	assert.Contains(t, out, i18n.Tf("gongzhu.breakdownTotal", "total", "-440"))
+
+	// ゲーム終了バナーが含まれること
+	assert.Contains(t, out, i18n.Tf("gongzhu.gameEnd", "name", i18n.T("cuiPlayerYou")))
+
+	// RoundEnd 用のプロンプトが含まれないこと (罠2の否定コントロール)
+	assert.NotContains(t, out, i18n.T("gongzhu.promptRoundEnd"))
+	assert.NotContains(t, out, i18n.T("gongzhu.promptRoundEndHelp"))
+}
+
 // ラウンド終了以外では内訳を出さない (途中経過の点は確定していない)。
 func TestGongZhuCuiPresenterOmitsTheBreakdownDuringPlay(t *testing.T) {
 	m, _ := setupGongZhuCuiMockWithPlayers()
