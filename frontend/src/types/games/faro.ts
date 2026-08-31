@@ -35,6 +35,14 @@ export interface FaroResponse extends BaseGameResponse {
   turnsTotal: number;
   /** Number of cards still left in the dealing box. */
   remaining: number;
+  /**
+   * Cards still undealt, per rank. Index 1..13 are A..K; index 0 is unused.
+   *
+   * **Counted straight from the undealt deck by the server.** The page used to
+   * accumulate revealed cards into a local Set and derive this itself, which
+   * reset to "every rank full" on a page reload mid-round (#6471).
+   */
+  remainingByRank: number[];
   /** The final three cards available to call (populated during the Call phase). */
   callCards: Card[];
   /** The player's predicted order for the called cards (rank values), empty when none. */

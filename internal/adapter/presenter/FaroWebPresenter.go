@@ -23,6 +23,14 @@ func (fp *FaroWebPresenter) Output(f interfaces.FaroGame, lastErr error) string 
 	resObj.TotalPayout = f.GetTotalPayout()
 	resObj.GameEndFlag = f.GetGameEndFlag()
 	resObj.CallWon = f.GetCallWon()
+	// **ケースキーパーはサーバが数える。**CUI が読むのと同じドメインの値を
+	// そのまま渡す ── クライアント側で公開札を蓄えると、リロードで消えるうえ
+	// 二重計上や取りこぼしの余地が残る (#6471)。
+	// `GetRemainingByRank` は配列を**値で**返すので、これは既にこの関数の
+	// ローカルなコピー ── ここで append で写し直しても何も守らない
+	// (実際に copy を外す変異を入れてもテストが落ちなかった)。
+	remaining := f.GetRemainingByRank()
+	resObj.RemainingByRank = remaining[:]
 
 	bets := f.GetBets()
 	resObj.Bets = make([]*controller.FaroWebBet, 0, len(bets))

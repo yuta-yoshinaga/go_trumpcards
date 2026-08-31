@@ -67442,6 +67442,14 @@ components:
         remaining:
           type: integer
           description: Number of cards still left in the dealing box
+        remainingByRank:
+          type: array
+          description: >-
+            Cards still undealt, per rank. Index 1..13 are A..K; index 0 is
+            unused. Counted straight from the undealt deck, so a client never
+            has to accumulate revealed cards itself.
+          items:
+            type: integer
         callCards:
           type: array
           description: The final three cards available to call (populated during the Call phase)
