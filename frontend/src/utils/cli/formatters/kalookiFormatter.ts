@@ -34,9 +34,12 @@ export function formatKalookiState(state: KalookiResponse): string {
     }
     if (p.melds.length > 0) {
       lines.push('  melds:');
-      for (const m of p.melds) {
-        lines.push(`    ${formatCardList(m.cards)}`);
-      }
+      // `layoff <playerIdx> <meldIdx> <cardIdx>` は狙うメルドの番号を要求するのに、
+      // 場は札を並べるだけで番号がどこにも出ていなかった (#6462)。コマンドが取る
+      // 0 始まりの添字をそのまま出す ── 手札の `[0]` 表記と同じ形。
+      p.melds.forEach((m, mi) => {
+        lines.push(`    [${mi}] ${formatCardList(m.cards)}`);
+      });
     }
   }
   lines.push('----------');

@@ -4,11 +4,13 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -96,4 +98,62 @@ func TestKalookiCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)
+}
+
+// **`lo <pIdx> <mIdx> <cIdx>` が要求する番号が場のどこにも出ていなかった** ──
+// 札が並ぶだけなので、狙うメルドの添字は数えて当てるしかない (#6462)。
+func TestKalookiCuiPresenter_NumbersEachMeldForLayoff(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	p := new(presenter.KalookiCuiPresenter)
+
+	// 黒スートだけで組む ── 赤スートは色コードで包まれ、期待値が装飾に依存する。
+	// 中身で見分けが付く 2 つのメルドを使い、番号だけでなく **その番号のすぐ後ろに
+	// そのメルドの札が並ぶこと**を見る。`mi + 1` にしたり順序を入れ替えたりする
+	// 変異はこれで落ちる。
+	melds := [][]*domain.Card{
+		{
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+			domain.NewCard(domain.CardDesignSpade, 4, false),
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+		},
+		{
+			domain.NewCard(domain.CardDesignClover, 9, false),
+			domain.NewCard(domain.CardDesignClover, 10, false),
+			domain.NewCard(domain.CardDesignClover, 11, false),
+		},
+	}
+	want := []string{
+		"[0] SPADE 3 SPADE 4 SPADE 5",
+		"[1] CLOVER 9 CLOVER 10 CLOVER 11",
+	}
+
+	withMelds := func(seat int) string {
+		m, players := setupKalookiCuiMock(domain.KalookiPhaseMeld, false)
+		players[seat].SetHasOpened(true)
+		for _, meld := range melds {
+			players[seat].AppendMeld(meld)
+		}
+		return p.Output(m, nil)
+	}
+
+	t.Run("numbers the human melds from zero", func(t *testing.T) {
+		out := withMelds(0)
+		for mi, line := range want {
+			assert.Contains(t, out, line,
+				"meld %d must be labelled with the index `layoff` takes", mi)
+		}
+		// 0 始まりであること。`mi + 1` にすると最後の番号がここに現れる。
+		assert.NotContains(t, out, "["+strconv.Itoa(len(melds))+"] ")
+	})
+
+	// layoff の相手は他家なので、番号付けが人間の場だけだと使えない。
+	t.Run("numbers another player's melds the same way", func(t *testing.T) {
+		out := withMelds(2)
+		for _, line := range want {
+			assert.Contains(t, out, line)
+		}
+	})
 }
