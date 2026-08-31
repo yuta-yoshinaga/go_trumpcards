@@ -24,7 +24,7 @@ import { CPU_DIFFICULTY_OPTIONS, TARGET_POINTS_OPTIONS, useSedmaGame } from '../
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { SedmaResponse } from '../types/card';
+import type { Card, SedmaResponse } from '../types/card';
 import { SedmaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseSedmaCommand, SEDMA_HELP } from '../utils/cli/commands/sedmaCommands';
@@ -36,6 +36,17 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Rank that captures any trick regardless of suit (`domain.SedmaWildValue`). */
 const SEDMA_WILD_VALUE = 7;
+
+/**
+ * Indices of the wild sevens in a hand.
+ *
+ * **7 はどのスートでもトリックを奪える。**フォロー義務が無い捕獲ゲームなので、
+ * 手札のどれが特別なのかが盤面から読み取れないと規則そのものが見えない (#6444)。
+ * 印は `trumpIndices` の追加リングで、選択や合法手の枠を上書きしない。
+ */
+function wildSevenIndices(cards: Card[]): number[] {
+  return cards.flatMap((c, i) => (c.value === SEDMA_WILD_VALUE ? [i] : []));
+}
 
 /** Sedma tutorial step definitions. */
 const SEDMA_TUTORIAL_STEPS: TutorialStep[] = [
@@ -137,11 +148,6 @@ function SedmaPageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   const humanTeam = humanIdx % 2;
-
-  // **7 はどのスートでもトリックを奪える。**フォロー義務が無い捕獲ゲームなので、
-  // 手札のどれが特別なのかが盤面から読み取れないと規則そのものが見えない (#6444)。
-  // 印は `trumpIndices` の追加リング ── 選択や合法手の枠を上書きしない。
-  const wildIndices = (humanPlayer?.cards ?? []).flatMap((c, i) => (c.value === SEDMA_WILD_VALUE ? [i] : []));
 
   // One info-sidebar row per player, colour-coded by team (A = even ids = blue,
   // B = odd ids = red), matching the trick display's ally/opponent relationship.
@@ -335,7 +341,7 @@ function SedmaPageContent() {
                 dataTutorialPrefix="sedma"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
-                trumpIndices={wildIndices}
+                trumpIndices={wildSevenIndices(humanPlayer.cards)}
                 trumpTitle={t('wildRule')}
               />
             )}
