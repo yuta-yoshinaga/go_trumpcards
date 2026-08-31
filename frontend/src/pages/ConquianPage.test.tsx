@@ -567,3 +567,42 @@ describe('ConquianPage', () => {
     expect(document.querySelectorAll('[data-layoff-target]')).toHaveLength(0);
   });
 });
+
+// `roundWinnerIdx` は毎レスポンスに乗っているのに一度も読まれておらず、誰が制したかは
+// 累計勝利数の表を前後で見比べるしかなかった (#6460)。
+describe('ConquianPage round winner', () => {
+  it('names the winner at round end', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, phase: 2, roundWinnerIdx: 1 });
+    renderWithProviders(<ConquianPage />);
+
+    const line = await screen.findByTestId('conquian-round-winner');
+    expect(line).toHaveTextContent('CPU 1');
+    expect(line).toHaveTextContent('制しました');
+    expect(line.textContent).not.toContain('{{');
+  });
+
+  it('names the human when they win', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, phase: 2, roundWinnerIdx: 0 });
+    renderWithProviders(<ConquianPage />);
+
+    expect(await screen.findByTestId('conquian-round-winner')).toHaveTextContent('あなた');
+  });
+
+  // -1 は山札切れの引き分け。勝者名を出すと嘘になる。
+  it('says it was a draw when nobody went out', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, phase: 2, roundWinnerIdx: -1 });
+    renderWithProviders(<ConquianPage />);
+
+    const line = await screen.findByTestId('conquian-round-winner');
+    expect(line).toHaveTextContent('引き分け');
+    expect(line).not.toHaveTextContent('制しました');
+  });
+
+  it('says nothing mid-round', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, roundWinnerIdx: 1 });
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('conquian-round-winner')).not.toBeInTheDocument();
+  });
+});

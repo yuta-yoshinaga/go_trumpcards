@@ -56,5 +56,7 @@
     "conquianDrawStock": "The discard connects with nothing — draw from the stock",
     "conquianDiscardHeavy": "Your heaviest unconnected card"
   },
-  "layoffToMeld": "Lay off onto meld {{n}}"
+  "layoffToMeld": "Lay off onto meld {{n}}",
+  "roundWinner": "{{name}} won this round",
+  "roundWinnerDraw": "Draw — the stock ran out"
 }

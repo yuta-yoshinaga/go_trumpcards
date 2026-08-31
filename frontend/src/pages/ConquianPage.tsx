@@ -381,6 +381,19 @@ function ConquianPageContent() {
               </div>
             </div>
 
+            {/* `roundWinnerIdx` は毎レスポンスに乗っているのに一度も読まれておらず、
+                誰が制したかは累計勝利数の表を前後で見比べるしかなかった。
+                -1 は山札切れの引き分け。 */}
+            {(isRoundEnd || isGameEnd) && (
+              <div className="text-center text-ds-text-primary text-sm mb-1" data-testid="conquian-round-winner">
+                {state.roundWinnerIdx < 0
+                  ? t('roundWinnerDraw')
+                  : t('roundWinner', {
+                      name: playerName(state.roundWinnerIdx, state.players[state.roundWinnerIdx]?.isHuman ?? false),
+                    })}
+              </div>
+            )}
+
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}

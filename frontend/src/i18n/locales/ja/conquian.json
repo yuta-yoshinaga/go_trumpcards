@@ -56,5 +56,7 @@
     "conquianDrawStock": "捨て札は手札と繋がりません。山から引きましょう",
     "conquianDiscardHeavy": "繋がっていない札のうち一番重い札です"
   },
-  "layoffToMeld": "{{n}} 番目のメルドに足す"
+  "layoffToMeld": "{{n}} 番目のメルドに足す",
+  "roundWinner": "{{name}} がこのラウンドを制しました",
+  "roundWinnerDraw": "山札切れによる引き分けです"
 }
