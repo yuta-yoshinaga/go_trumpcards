@@ -101,7 +101,15 @@ func bourrePlayerStr(bg interfaces.BourreGame, player *domain.BourrePlayer, idx 
 	}
 	b.WriteString("\n")
 	if player.GetIsHuman() && !player.GetIsFinished() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **フォロー義務で何が出せるかを示す。**Web は `validPlays` でリング表示して
+		// いるのに、CUI は番号を打ってサーバに弾かれるまで分からなかった (#6433)。
+		// 印を付けるのはプレイフェーズの本人の手番だけ ── Decide/Draw には合法手の
+		// 概念が無く、印を出すと「これ以外は出せない」と読める。
+		var playable []int
+		if bg.GetPhase() == domain.BourrePhasePlay && bg.GetCurrentPlayerIdx() == idx {
+			playable = bg.GetValidPlayIndices(idx)
+		}
+		b.WriteString(cuiPlayableMarkedCardListStr(player, playable) + "\n")
 	}
 	return b.String()
 }
