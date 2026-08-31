@@ -9,7 +9,7 @@
   "pistiCelebrationJack": "PİŞTİ +20! (J)",
   "finalScore": "{{score}}点",
   "provisional": "暫定 {{score}}点",
-  "provisionalNote": "暫定スコアは確定済みの Pişti ボーナスと最多獲得の +3 のみを含みます。A・J・♣2・♦10 のカード点は集計前のため、最終得点はこれより高くなります。",
+  "provisionalNote": "暫定スコアにはカード点（A・J・♣2・♦10）と Pişti ボーナスが含まれています。残りの札で入れ替わりうるのは最多獲得の +3 だけです。",
   "pile": "場",
   "pileTop": "場の一番上",
   "pileCount": "{{count}}枚",

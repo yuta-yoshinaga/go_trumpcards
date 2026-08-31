@@ -22,6 +22,15 @@ export interface PishtiPlayer {
   capturedCount: number;
   /** Accumulated Pişti bonus points. */
   pistiBonus: number;
+  /**
+   * Score from this player's current capture pile.
+   *
+   * **Card points are already final.** A, J, 2♣ and 10♦ score the moment they
+   * are captured, so the server can count them mid-hand; only the most-cards
+   * +3 can still change hands. The page used to approximate this from
+   * `capturedCount` + `pistiBonus` alone (#6468).
+   */
+  provisionalScore: number;
   /** Final score (populated once the game ends). */
   finalScore: number;
 }

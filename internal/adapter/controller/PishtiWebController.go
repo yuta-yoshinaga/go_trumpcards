@@ -38,7 +38,11 @@ type PishtiWebOutputPlayer struct {
 	Cards         []*WebOutputCard `json:"cards"`
 	CapturedCount int              `json:"capturedCount"`
 	PistiBonus    int              `json:"pistiBonus"`
-	FinalScore    int              `json:"finalScore"`
+	// ProvisionalScore は今の捕獲状況から数えた点。**カード点も含む** ──
+	// A / J / ♣2 / ♦10 の配点は捕獲した瞬間に確定するので、途中でも正確に
+	// 数えられる。暫定なのは最多捕獲の +3 だけ (#6468)。
+	ProvisionalScore int `json:"provisionalScore"`
+	FinalScore       int `json:"finalScore"`
 }
 
 // PishtiWebOutput は Pişti Web アウトプット。

@@ -3,6 +3,9 @@ package domain
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // pishtiCard は design / value からカードを作るテストヘルパー (draw=false)。
@@ -410,4 +413,49 @@ func TestPishti_ProvisionalScores(t *testing.T) {
 			t.Fatalf("seat %d got %d on a tie, want 0", i, v)
 		}
 	}
+}
+
+// **カード点は捕獲した瞬間に確定する。**A / J / ♣2 / ♦10 の配点は後から
+// 変わらないので、暫定スコアに含めないと実際の得点源がラウンドの終わりまで
+// 一切見えない (#6468)。暫定なのは最多捕獲の +3 だけ。
+func TestPishti_ProvisionalScoresCountCapturedCardPoints(t *testing.T) {
+	g := NewDefaultPishti()
+	g.Reset()
+
+	// 席 0 に得点札だけを 4 枚。席 1 には 0 点の札を 5 枚 (枚数では上回る)。
+	g.GetPlayer(0).AddCaptured([]*Card{
+		NewCard(CardDesignSpade, 1, false),    // A = PishtiScoreAce
+		NewCard(CardDesignHeart, 11, false),   // J = PishtiScoreJack
+		NewCard(CardDesignClover, 2, false),   // ♣2
+		NewCard(CardDesignDiamond, 10, false), // ♦10
+	})
+	filler := make([]*Card, 5)
+	for i := range filler {
+		filler[i] = NewCard(CardDesignSpade, 7, false) // 0 点
+	}
+	g.GetPlayer(1).AddCaptured(filler)
+
+	wantCardPoints := PishtiScoreAce + PishtiScoreJack + PishtiScoreTwoClubs + PishtiScoreTenDiamonds
+	require.Positive(t, wantCardPoints, "the point table must be non-zero for this test to measure anything")
+
+	prov := g.GetProvisionalScores()
+	// 席 0 はカード点のみ、席 1 は枚数の単独リーダーなので +3 のみ。
+	assert.Equal(t, wantCardPoints, prov[0], "captured card points must be counted while the hand runs")
+	assert.Equal(t, PishtiScoreMostCards, prov[1])
+
+	// **暫定と最終は同じ計算。**別々に書くと、片方だけ直る。
+	assert.Equal(t, g.GetFinalScores(), prov,
+		"the provisional score must be the final score of the current state")
+}
+
+// ピシュティ賞も足し込まれる。カード点だけを見て bonus を落とす実装を落とす。
+func TestPishti_ProvisionalScoresIncludeThePistiBonus(t *testing.T) {
+	g := NewDefaultPishti()
+	g.Reset()
+	g.GetPlayer(0).AddCaptured([]*Card{NewCard(CardDesignSpade, 1, false)}) // A
+	const bonus = 10                                                        // ピシュティ 1 回ぶん。額そのものはここの主題ではない。
+	g.GetPlayer(0).AddPistiBonus(bonus)
+
+	prov := g.GetProvisionalScores()
+	assert.Equal(t, PishtiScoreAce+bonus+PishtiScoreMostCards, prov[0])
 }

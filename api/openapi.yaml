@@ -67045,6 +67045,12 @@ components:
               pistiBonus:
                 type: integer
                 description: Accumulated Pişti bonus points
+              provisionalScore:
+                type: integer
+                description: >-
+                  Score from the current capture pile. Card points (A, J, 2 of
+                  clubs, 10 of diamonds) and Pisti bonuses are already final;
+                  only the most-cards +3 can still change hands.
               finalScore:
                 type: integer
                 description: Final score (populated once the game ends)

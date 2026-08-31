@@ -42,6 +42,10 @@ func (pwp *PishtiWebPresenter) Output(pg interfaces.PishtiGame, lastErr error) s
 
 	scores := pg.GetFinalScores()
 	resObj.FinalScores = append(resObj.FinalScores, scores...)
+	// **対局中の点はサーバが数える。**以前は画面が capturedCount と pistiBonus
+	// から近似していて、実際の得点源 (A / J / ♣2 / ♦10) が終局まで見えなかった
+	// (#6468)。CUI が読むのと同じ値をそのまま渡す。
+	provisional := pg.GetProvisionalScores()
 
 	for i := 0; i < pg.GetPlayerCnt(); i++ {
 		player := pg.GetPlayer(i)
@@ -53,13 +57,14 @@ func (pwp *PishtiWebPresenter) Output(pg interfaces.PishtiGame, lastErr error) s
 			score = scores[i]
 		}
 		resObj.Players = append(resObj.Players, &controller.PishtiWebOutputPlayer{
-			ID:            i,
-			IsHuman:       player.GetIsHuman(),
-			CardCount:     player.GetCardsSize(),
-			Cards:         playerCardsToOutput(player, player.GetIsHuman()),
-			CapturedCount: player.CapturedCount(),
-			PistiBonus:    player.GetPistiBonus(),
-			FinalScore:    score,
+			ID:               i,
+			IsHuman:          player.GetIsHuman(),
+			CardCount:        player.GetCardsSize(),
+			Cards:            playerCardsToOutput(player, player.GetIsHuman()),
+			CapturedCount:    player.CapturedCount(),
+			PistiBonus:       player.GetPistiBonus(),
+			ProvisionalScore: provisionalAt(provisional, i),
+			FinalScore:       score,
 		})
 	}
 
@@ -118,4 +123,13 @@ func (pwp *PishtiWebPresenter) buildResultMessage(pg interfaces.PishtiGame) stri
 // ActionLogOutput は棋譜を JSON 出力する。
 func (pwp *PishtiWebPresenter) ActionLogOutput(pg interfaces.PishtiGame) string {
 	return actionLogOutputJSON(pg)
+}
+
+// provisionalAt は暫定スコアの i 番目を安全に取り出す。プレイヤー数と
+// スコアの長さがずれた盤面でも描画を落とさない。
+func provisionalAt(scores []int, i int) int {
+	if i < 0 || i >= len(scores) {
+		return 0
+	}
+	return scores[i]
 }
