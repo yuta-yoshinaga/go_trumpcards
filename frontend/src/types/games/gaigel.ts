@@ -43,6 +43,15 @@ export interface GaigelResponse extends BaseGameResponse {
   trumpSuit: number;
   trumpCard?: Card;
   stockRemaining: number;
+  /**
+   * Whether the stock is exhausted and must-follow has taken over.
+   *
+   * **This is a rule change, not a counter.** From this point `validatePlay`
+   * enforces following the led suit and trumping; the sister games (Bezique,
+   * Schnapsen) both surface it, and Gaigel was the only one that did not
+   * (#6482).
+   */
+  isEndgame: boolean;
   currentTrick: GaigelTrickCard[];
   teamScores: number[];
   roundPoints: number[];

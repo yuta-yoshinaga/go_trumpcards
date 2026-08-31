@@ -21,6 +21,7 @@
   "teamYou": "Team {{n}} (You)",
   "trumpSuit": "Trump: {{suit}}",
   "noTrump": "Trump not set",
+  "endgameNotice": "Phase 2: the stock is empty — you must now follow the led suit and trump when you can",
   "stock": "Stock: {{count}}",
   "turnUpCard": "Turn-up card",
   "currentTrick": "Current Trick",

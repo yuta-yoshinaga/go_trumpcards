@@ -51,15 +51,19 @@ type GaigelWebOutput struct {
 	TrumpSuit        int                      `json:"trumpSuit"`
 	TrumpCard        *WebOutputCard           `json:"trumpCard,omitempty"`
 	StockRemaining   int                      `json:"stockRemaining"`
-	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
-	TeamScores       [2]int                   `json:"teamScores"`
-	RoundPoints      [2]int                   `json:"roundPoints"`
-	RoundMarriage    [2]int                   `json:"roundMarriage"`
-	MarriageIndices  []int                    `json:"marriageIndices"`
-	GameEndFlag      bool                     `json:"gameEndFlag"`
-	WinnerTeam       int                      `json:"winnerTeam"`
-	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
-	Hint             *GaigelWebOutputHint     `json:"hint,omitempty"`
+	// IsEndgame は山札が尽きてマストフォローに切り替わったか。**フェーズ転換を
+	// 画面に出すために要る** ── 姉妹の Bezique / Schnapsen は両方とも出している
+	// のに Gaigel だけ抜けていた (#6482)。
+	IsEndgame       bool                  `json:"isEndgame"`
+	CurrentTrick    []*WebOutputTrickCard `json:"currentTrick"`
+	TeamScores      [2]int                `json:"teamScores"`
+	RoundPoints     [2]int                `json:"roundPoints"`
+	RoundMarriage   [2]int                `json:"roundMarriage"`
+	MarriageIndices []int                 `json:"marriageIndices"`
+	GameEndFlag     bool                  `json:"gameEndFlag"`
+	WinnerTeam      int                   `json:"winnerTeam"`
+	LeadPlayerIdx   int                   `json:"leadPlayerIdx"`
+	Hint            *GaigelWebOutputHint  `json:"hint,omitempty"`
 	WebOutputBase
 	Config GaigelWebOutputConfig `json:"config"`
 }

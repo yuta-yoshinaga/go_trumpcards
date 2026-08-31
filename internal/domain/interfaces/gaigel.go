@@ -53,6 +53,9 @@ type GaigelGame interface {
 	GetTrumpCard() *domain.Card
 	// GetStockRemaining 山札の残り枚数を取得する
 	GetStockRemaining() int
+
+	// IsEndgame 山札が尽きてマストフォローに切り替わったかを取得する
+	IsEndgame() bool
 	// GetTeamScore チームスコアを取得する
 	GetTeamScore(team int) int
 	// GetRoundPoints 当ラウンドのチーム別カード点数を取得する
