@@ -1727,6 +1727,7 @@
     "ombre.hintRequested": "A hint is available",
     "ombre.noHint": "No hint available",
     "ombre.playPhase.follow": "Your turn — follow the led suit.",
+    "ombre.forcedEntrar": "Everyone passed, so the dealer was forced to take Entrar — lead a card.",
     "ombre.playPhase.lead": "Your turn — pick a card to lead.",
     "ombre.result.cpuWin": "Game over! Player {{player}} wins!",
     "ombre.result.humanWin": "Game over! You win!",

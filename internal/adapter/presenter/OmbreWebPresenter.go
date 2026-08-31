@@ -113,6 +113,11 @@ func (p *OmbreWebPresenter) buildMessage(g interfaces.OmbreGame, lastErr error) 
 	case domain.OmbrePhaseBid:
 		return "", "ombre.bidPhase", nil
 	case domain.OmbrePhasePlay:
+		// 全員パスの局は最初のリードでその旨を言う。一度打てば普段の文面に戻る
+		// ── 毎トリック言い続けると、その局のあいだずっと「いま決まった」と読める。
+		if g.IsForcedEntrar() && len(g.GetCurrentTrick()) == 0 && g.GetTrickNumber() <= 1 {
+			return "", "ombre.forcedEntrar", nil
+		}
 		if len(g.GetCurrentTrick()) == 0 {
 			return "", "ombre.playPhase.lead", nil
 		}

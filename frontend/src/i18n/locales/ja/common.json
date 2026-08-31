@@ -1727,6 +1727,7 @@
     "ombre.hintRequested": "ヒントがあります",
     "ombre.noHint": "ヒントはありません",
     "ombre.playPhase.follow": "あなたの番です — リードスートに従ってカードを選んでください。",
+    "ombre.forcedEntrar": "ビッドが全員パスだったため、ディーラーが強制的にオンブル（Entrar）を引き受けました — リードするカードを選んでください。",
     "ombre.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
     "ombre.result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
     "ombre.result.humanWin": "ゲーム終了！ あなたの勝ち！",

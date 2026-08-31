@@ -51,6 +51,8 @@ type OmbreGame interface {
 	GetLeadPlayerIdx() int
 	// GetDealerIdx ディーラーインデックスを取得する
 	GetDealerIdx() int
+	// IsForcedEntrar 全員パスでディーラーが強制的に Entrar を引き受けた局かを取得する
+	IsForcedEntrar() bool
 	// GetForehandIdx forehand インデックスを取得する
 	GetForehandIdx() int
 	// GetOmbreIdx オンブルインデックスを取得する (-1=未確定)

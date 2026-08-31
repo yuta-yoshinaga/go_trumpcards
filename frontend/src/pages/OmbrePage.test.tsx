@@ -246,4 +246,18 @@ describe('OmbrePage', () => {
     renderWithProviders(<OmbrePage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  // **全員パスによる強制 Entrar は通常の宣言と区別が付かなかった** ── 差は
+  // ombreIdx がディーラーと一致することだけで、それは偶然そうなる局とも
+  // 見分けが付かない (#6485)。訳文に解決することを画面で見る。
+  it('spells out the forced Entrar after an all-pass auction', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, messageCode: 'ombre.forcedEntrar' });
+    renderWithProviders(<OmbrePage />);
+
+    const line = await screen.findByText(/全員パス/);
+    expect(line).toBeInTheDocument();
+    // 生の識別子も未置換のプレースホルダも残らない。
+    expect(line.textContent).not.toContain('ombre.');
+    expect(line.textContent).not.toContain('{{');
+  });
 });
