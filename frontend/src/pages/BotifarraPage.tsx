@@ -21,6 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -58,11 +59,31 @@ const TRUMP_CHOICES = [
 export const BotifarraPage = withTutorial(BotifarraPageContent, 'botifarra', BF_TUTORIAL_STEPS);
 
 function BotifarraPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('botifarra');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('botifarra');
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(botifarraApi.exec);
+  // **ギブアップは取り消せない。**リセットには確認が挟まるのに、同じフッターの
+  // ギブアップは即座に対局を打ち切っていた ── 誤タップへの保護がリセットより
+  // 薄かった (#6475)。47 ページが既に使っている `useGiveUpConfirm` に揃える。
+  const handleGiveUp = useCallback(() => {
+    execApi('giveup');
+  }, [execApi]);
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('botifarra');
   const cliConfig: CliGameConfig<BotifarraResponse, Parameters<typeof botifarraApi.exec>> = useMemo(
@@ -149,6 +170,9 @@ function BotifarraPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span data-tutorial="bf-score" data-testid="botifarra-score">
@@ -323,7 +347,8 @@ function BotifarraPageContent() {
                 <button
                   type="button"
                   className={btnSecondary}
-                  onClick={() => execApi('giveup')}
+                  onClick={confirmGiveUpAction}
+                  data-testid="giveup-button"
                   disabled={loading}
                   aria-keyshortcuts="g"
                 >

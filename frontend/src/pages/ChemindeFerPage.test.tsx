@@ -307,4 +307,33 @@ describe('ChemindeFerPage', () => {
     renderWithProviders(<ChemindeFerPage />);
     await waitFor(() => expect(screen.queryByTestId('card-area')).not.toBeInTheDocument());
   });
+
+  // **ギブアップは取り消せない** (#6475)。リセットには確認が挟まるのに、
+  // ここは即座に対局を打ち切っていた。
+  it('asks before giving up, and only then dispatches', async () => {
+    renderWithProviders(<ChemindeFerPage />);
+    const giveUp = await screen.findByTestId('giveup-button');
+
+    mockApi.mockClear();
+    fireEvent.click(giveUp);
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    expect(mockApi).not.toHaveBeenCalledWith('giveup');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('giveup'));
+  });
+
+  // キャンセルしたら何も起きない ── ダイアログを出すだけで通す実装を落とす。
+  it('leaves the game untouched when the give-up dialog is cancelled', async () => {
+    renderWithProviders(<ChemindeFerPage />);
+    const giveUp = await screen.findByTestId('giveup-button');
+
+    mockApi.mockClear();
+    fireEvent.click(giveUp);
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
+    expect(mockApi).not.toHaveBeenCalled();
+  });
 });

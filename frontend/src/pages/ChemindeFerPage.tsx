@@ -21,6 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -44,13 +45,33 @@ const CDF_TUTORIAL_STEPS: TutorialStep[] = [
 export const ChemindeFerPage = withTutorial(ChemindeFerPageContent, 'chemindefer', CDF_TUTORIAL_STEPS);
 
 function ChemindeFerPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('chemindefer');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('chemindefer');
 
   const [stakeAmount, setStakeAmount] = useState(100);
   const [betAmount, setBetAmount] = useState(50);
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(chemindeferApi.exec);
+  // **ギブアップは取り消せない。**リセットには確認が挟まるのに、同じフッターの
+  // ギブアップは即座に対局を打ち切っていた ── 誤タップへの保護がリセットより
+  // 薄かった (#6475)。47 ページが既に使っている `useGiveUpConfirm` に揃える。
+  const handleGiveUp = useCallback(() => {
+    execApi('giveup');
+  }, [execApi]);
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('chemindefer');
   const cliConfig: CliGameConfig<ChemindeFerResponse, Parameters<typeof chemindeferApi.exec>> = useMemo(
@@ -160,6 +181,9 @@ function ChemindeFerPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span data-testid="cdf-my-chips">
@@ -349,7 +373,13 @@ function ChemindeFerPageContent() {
                 <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
                   {tc('button.actionLog')}
                 </button>
-                <button type="button" className={btnWarning} onClick={() => execApi('giveup')} disabled={gameOver}>
+                <button
+                  type="button"
+                  className={btnWarning}
+                  onClick={confirmGiveUpAction}
+                  data-testid="giveup-button"
+                  disabled={gameOver}
+                >
                   {t('button.giveUp')}
                 </button>
                 <GameResetButton

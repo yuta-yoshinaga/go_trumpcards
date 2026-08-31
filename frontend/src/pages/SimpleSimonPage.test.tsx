@@ -92,12 +92,42 @@ describe('SimpleSimonPage', () => {
     for (const [testid, cmd] of [
       ['undo-button', 'u'],
       ['hint-button', 'hint'],
-      ['giveup-button', 'g'],
     ] as const) {
       mockExec.mockClear();
       fireEvent.click(screen.getByTestId(testid));
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith(cmd));
     }
+  });
+
+  // **ギブアップは取り消せない。**リセットには確認が挟まるのに、ここは即座に
+  // 対局を打ち切っていた (#6475)。
+  it('asks before giving up, and only then dispatches', async () => {
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalledWith('g');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('g'));
+  });
+
+  // キャンセルしたら何も起きない ── ダイアログを出すだけで通してしまう実装を落とす。
+  it('leaves the game untouched when the give-up dialog is cancelled', async () => {
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalled();
+    // 盤面はそのまま操作できる。
+    expect(screen.getByTestId('giveup-button')).toBeInTheDocument();
   });
 
   it('marks only the movable-run cards as grabbable and blocks invalid source selection', async () => {

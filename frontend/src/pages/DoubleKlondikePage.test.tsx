@@ -190,7 +190,7 @@ describe('DoubleKlondikePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('mtt', { fromCol: 0, cardIndex: 0, toCol: 5 }));
   });
 
-  it('auto-completes, undoes, hints and gives up', async () => {
+  it('auto-completes, undoes, hints', async () => {
     mockExec.mockResolvedValue(makeState({ canUndo: true }));
     renderWithProviders(<DoubleKlondikePage />);
     await screen.findByTestId('hint-button');
@@ -198,7 +198,6 @@ describe('DoubleKlondikePage', () => {
       ['auto-button', 'ac'],
       ['undo-button', 'u'],
       ['hint-button', 'hint'],
-      ['giveup-button', 'g'],
     ] as const) {
       mockExec.mockClear();
       fireEvent.click(screen.getByTestId(testid));
@@ -300,5 +299,33 @@ describe('DoubleKlondikePage', () => {
     // ♠2 would fit foundation 0 (which holds ♠A) but ♠2 is not what gets sent.
     await waitFor(() => expect(screen.getByTestId('foundation-1')).toHaveAttribute('data-move-target'));
     expect(screen.getByTestId('foundation-0')).not.toHaveAttribute('data-move-target');
+  });
+
+  // **ギブアップは取り消せない** (#6475)。リセットには確認が挟まるのに、
+  // ここは即座に対局を打ち切っていた。
+  it('asks before giving up, and only then dispatches', async () => {
+    renderWithProviders(<DoubleKlondikePage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalledWith('g');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('g'));
+  });
+
+  it('leaves the game untouched when the give-up dialog is cancelled', async () => {
+    renderWithProviders(<DoubleKlondikePage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalled();
   });
 });
