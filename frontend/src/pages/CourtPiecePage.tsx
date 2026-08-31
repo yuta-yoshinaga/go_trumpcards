@@ -250,7 +250,14 @@ function CourtPiecePageContent() {
                   </div>
                   {/* Live running trick tally toward the 7-trick round target (during play). */}
                   {(isPlayPhase || isTrickEnd) && (
-                    <div className="mt-1 pt-1 border-t border-white/10" data-testid="cp-live-tricks">
+                    <div
+                      className="mt-1 pt-1 border-t border-white/10"
+                      data-testid="cp-live-tricks"
+                      // トリックが決着するたびに数字が変わるが、読み上げには乗って
+                      // いなかった。領域はプレイ中ずっと残り、中身だけが差し替わる。
+                      role="status"
+                      aria-live="polite"
+                    >
                       <span className="text-ds-text-primary">{t('liveTricks.title')}: </span>
                       {([0, 1] as const).map((team, i) => {
                         const tricks = teamTricks(team);
@@ -267,6 +274,9 @@ function CourtPiecePageContent() {
                                 tricks,
                                 target: COURT_PIECE_TRICKS_TO_WIN,
                               })}
+                              {/* 到達の強調は色と太さだけで、支援技術には届かない。
+                                  同じことを語でも言う。 */}
+                              {reached && <span className="sr-only"> {t('liveTricks.reached')}</span>}
                             </span>
                           </span>
                         );
