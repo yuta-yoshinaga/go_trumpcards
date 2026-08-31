@@ -22,6 +22,7 @@
   "round": "ラウンド {{n}}",
   "drawPile": "山札: {{count}}枚",
   "discardPile": "捨て札: {{count}}枚",
+  "handCards": "{{count}}枚",
   "frozen": "フリーズ中",
   "melds": "メルド",
   "red3s": "赤3",

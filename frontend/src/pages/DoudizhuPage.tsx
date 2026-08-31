@@ -255,7 +255,7 @@ function DoudizhuPageContent() {
                   <div className="font-bold">
                     CPU {p.id} {p.isLandlord ? `[${t('label.landlord')}]` : `[${t('label.peasant')}]`}
                   </div>
-                  <div>{p.cardCount} cards</div>
+                  <div>{t('handCards', { count: p.cardCount })}</div>
                 </div>
               ))}
           </div>

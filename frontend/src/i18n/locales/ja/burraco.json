@@ -25,6 +25,7 @@
   "round": "ラウンド {{n}}",
   "drawPile": "山札: {{count}}枚",
   "discardPile": "捨て札: {{count}}枚",
+  "handCards": "{{count}}枚",
   "pozzetto": "ポゼット: 残り{{count}}山",
   "tookPozzetto": "ポゼット獲得済",
   "pozzettoTakenBanner": "{{player}} がポゼットを獲得！",

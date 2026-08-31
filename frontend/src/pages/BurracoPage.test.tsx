@@ -447,4 +447,13 @@ describe('BurracoPage', () => {
     // Pin the reason too, so this cannot pass merely because nothing got selected.
     expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent('同じランク');
   });
+
+  it('renders CPU hand card count in Japanese at round end without raw "cards"', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<BurracoPage />);
+    const cpuHandInfo = await screen.findByText('CPU 1: 15枚');
+    expect(cpuHandInfo).toBeInTheDocument();
+    expect(cpuHandInfo).not.toHaveTextContent('cards');
+    expect(screen.queryByText(/15 cards/)).not.toBeInTheDocument();
+  });
 });
