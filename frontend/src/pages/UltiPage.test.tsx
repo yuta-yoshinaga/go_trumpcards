@@ -294,4 +294,32 @@ describe('UltiPage', () => {
     // The contract the game is named after had no explanation on the web at all.
     expect(document.getElementById('ulti-bid-desc-ulti')?.textContent).toMatch(/切り札の7/);
   });
+
+  // **宣言と同時に手札が 10 → 12 枚に増える。**`applyBid` が伏せられたタロンを
+  // 自動で加えるのに、その存在がどこにも出ておらず、宣言直後に手札が突然
+  // 増えて見えた (#6486)。
+  it('warns that the talon joins the hand on a bid', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, talonCount: 2, talonTaken: false });
+    renderWithProviders(<UltiPage />);
+
+    const line = await screen.findByTestId('ulti-talon-pending');
+    expect(line).toHaveTextContent('2');
+    expect(line.textContent).not.toContain('{{');
+  });
+
+  // 拾ったあとは出さない ── 既に手札にある札を「これから加わる」と言わない。
+  it('stops mentioning the talon once it has been taken', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, talonCount: 0, talonTaken: true });
+    renderWithProviders(<UltiPage />);
+    await waitFor(() => expect(screen.getByTestId('ulti-bid-prompt')).toBeInTheDocument());
+    expect(screen.queryByTestId('ulti-talon-pending')).not.toBeInTheDocument();
+  });
+
+  // ビッドフェーズの外では出さない。
+  it('does not mention the talon outside the bid phase', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, talonCount: 2, talonTaken: false });
+    renderWithProviders(<UltiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('ulti-talon-pending')).not.toBeInTheDocument();
+  });
 });
