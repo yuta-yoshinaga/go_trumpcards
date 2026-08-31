@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -26,6 +27,7 @@ func setupOmbreWebMock() *interfaces.MockOmbreGame {
 	m.On("GetCurrentBidderIdx").Return(1)
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetDealerIdx").Return(0)
+	m.On("IsForcedEntrar").Return(false).Maybe()
 	m.On("GetForehandIdx").Return(1)
 	m.On("GetOmbreIdx").Return(0)
 	m.On("GetWinningBid").Return(domain.OmbreBidEntrar)
@@ -262,4 +264,32 @@ func TestOmbreWebPresenterHintOutputMarksTheRequest(t *testing.T) {
 	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
 	none.On("GetHint").Return((*domain.OmbreHint)(nil))
 	assert.Contains(t, new(presenter.OmbreWebPresenter).HintOutput(none), "ombre.noHint")
+}
+
+// 全員パスの局は最初のリードでその旨を言う。以降は普段の文面に戻る (#6485)。
+func TestOmbreWebPresenter_NamesTheForcedEntrar(t *testing.T) {
+	p := new(presenter.OmbreWebPresenter)
+
+	codeFor := func(forced bool, trickNo int) string {
+		m, _ := setupOmbreWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsForcedEntrar")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrickNumber")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("IsForcedEntrar").Return(forced)
+		m.On("GetTrickNumber").Return(trickNo)
+		m.On("GetPhase").Return(domain.OmbrePhasePlay)
+
+		var out struct {
+			MessageCode string `json:"messageCode"`
+		}
+		require.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
+		return out.MessageCode
+	}
+
+	assert.Equal(t, "ombre.forcedEntrar", codeFor(true, 1))
+	// 普通に宣言された局は今までどおり。
+	assert.Equal(t, "ombre.playPhase.lead", codeFor(false, 1))
+	// **一度打てば普段の文面に戻る** ── 毎トリック言い続けると、その局のあいだ
+	// ずっと「いま決まった」と読める。
+	assert.Equal(t, "ombre.playPhase.lead", codeFor(true, 3))
 }

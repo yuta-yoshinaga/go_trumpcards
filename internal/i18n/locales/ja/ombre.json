@@ -24,6 +24,7 @@
   "gameEnd": "ゲーム終了！{{name}}がマッチ勝利！",
   "promptBid": "ビッド中 — 最高ビッド: {{bid}}  手番: {{name}}",
   "promptBidHelp": "bid pass・・・降りる ｜ bid entrar <s/c/h/d>・・・エントラール ｜ bid solo <s/c/h/d>・・・ソロ",
+  "forcedEntrar": "全員パス: {{name}} が強制的にオンブル（Entrar）を引き受けました",
   "promptPlay": "手番: {{name}}  切り札: {{trump}}",
   "promptPlayHelp": "play <idx>・・・カードを出す（切り札 スパディーユ>マニーユ>バスト>プント>K>Q>J>6..2／マストフォロー）",
   "promptTrickEnd": "トリック終了",

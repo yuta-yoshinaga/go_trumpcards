@@ -134,6 +134,12 @@ func (p *OmbreCuiPresenter) Output(g interfaces.OmbreGame, lastErr error) string
 			b.WriteString(i18n.T("ombre.promptBidHelp") + "\n")
 		case domain.OmbrePhasePlay:
 			currentIdx := g.GetCurrentPlayerIdx()
+			// 全員パスの局は最初のトリックでその旨を言う (#6485)。以降は普段どおり。
+			if g.IsForcedEntrar() && g.GetTrickNumber() <= 1 {
+				dealer := g.GetDealerIdx()
+				b.WriteString(color.Yellow(i18n.Tf("ombre.forcedEntrar",
+					"name", cuiPlayerName(g.GetPlayer(dealer), dealer))) + "\n")
+			}
 			b.WriteString(i18n.Tf("ombre.promptPlay",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx),
 				"trump", ombreTrumpLabel(g.GetTrumpSuit())) + "\n")

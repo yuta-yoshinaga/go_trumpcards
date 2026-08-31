@@ -150,9 +150,13 @@ type Ombre struct {
 	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
-	forehandIdx      int                      // ディーラーの左隣 (ビッド開始)
-	ombreIdx         int                      // オンブル (-1=未確定)
-	winningBid       OmbreBid                 // 確定したビッド (オンブルの宣言)
+	forehandIdx      int      // ディーラーの左隣 (ビッド開始)
+	ombreIdx         int      // オンブル (-1=未確定)
+	winningBid       OmbreBid // 確定したビッド (オンブルの宣言)
+	// forcedEntrar は全員パスでディーラーが強制的に Entrar を引き受けた局か。
+	// **通常の宣言と区別が付かなかった** ── ombreIdx がディーラーと一致している
+	// ことに気づかない限り、この特殊ルールの発動が画面から読めない (#6485)。
+	forcedEntrar     bool
 	trumpSuit        int                      // 切り札スート (-1=未確定, 1..4)
 	currentBidderIdx int                      // 現在ビッド中のプレイヤー (bid フェーズ)
 	bids             [OmbrePlayerCnt]OmbreBid // 各プレイヤーの宣言
@@ -239,6 +243,7 @@ func (g *Ombre) startRound() {
 	g.lastTrickWinner = -1
 	g.ombreIdx = -1
 	g.winningBid = OmbreBidNone
+	g.forcedEntrar = false
 	g.trumpSuit = -1
 	g.outcome = OmbreOutcomeNone
 	g.scored = false
@@ -392,6 +397,7 @@ func (g *Ombre) finalizeAuction() {
 			}
 		}
 	}
+	g.forcedEntrar = ombre < 0
 	if ombre < 0 {
 		// 全員パス: ディーラーが強制的に Entrar を引き受け、切り札を自動選択する。
 		ombre = g.dealerIdx
@@ -408,6 +414,13 @@ func (g *Ombre) finalizeAuction() {
 		fmt.Sprintf("%s is Ombre with %s (trump %s)", playerName(g.players, ombre), ombreBidName(best), ombreSuitName(g.trumpSuit)), nil)
 	g.startPlay()
 }
+
+// IsForcedEntrar は全員パスでディーラーが強制的に Entrar を引き受けた局かを返す。
+//
+// **通常の宣言との差は ombreIdx がディーラーと一致することだけ**で、それは
+// 偶然そうなる局とも見分けが付かない ── 特殊ルールが発動したことを画面に
+// 出すには、起きたことそのものを持つ必要がある (#6485)。
+func (g *Ombre) IsForcedEntrar() bool { return g.forcedEntrar }
 
 // cpuChooseBid CPU が手札強度からビッドを選ぶ。
 func (g *Ombre) cpuChooseBid(playerIdx int) OmbreBid {
