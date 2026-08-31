@@ -306,13 +306,13 @@ function DoppelkopfPageContent() {
                     <div className="mb-1 text-ds-text-primary">{t('livePoints.title')}</div>
                     <div>
                       {t('livePoints.re', {
-                        points: state.roundRePoints,
+                        points: state.liveRePoints,
                         target: DOPPELKOPF_RE_WIN_POINTS,
                       })}
                     </div>
                     <div>
                       {t('livePoints.kontra', {
-                        points: DOPPELKOPF_TOTAL_POINTS - state.roundRePoints,
+                        points: state.liveKontraPoints,
                         target: DOPPELKOPF_TOTAL_POINTS - DOPPELKOPF_RE_WIN_POINTS + 1,
                       })}
                     </div>

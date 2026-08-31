@@ -50,20 +50,22 @@ type DoppelkopfWebOutput struct {
 	DealerIdx        int                          `json:"dealerIdx"`
 	CurrentTrick     []*WebOutputTrickCard        `json:"currentTrick"`
 	// ReTeam 各プレイヤーの Re チーム所属 (チーム公開後のみ true になりうる; 4要素)
-	ReTeam          []bool             `json:"reTeam"`
-	SoloRe          bool               `json:"soloRe"`
-	TeamsRevealed   bool               `json:"teamsRevealed"`
-	ReAnnounced     bool               `json:"reAnnounced"`
-	KontraAnnounced bool               `json:"kontraAnnounced"`
-	CanAnnounce     bool               `json:"canAnnounce"`
-	YouAreRe        bool               `json:"youAreRe"`
-	PlayableIndices []int              `json:"playableIndices"`
-	RoundRePoints   int                `json:"roundRePoints"`
-	RoundReWon      bool               `json:"roundReWon"`
-	RoundGamePoints int                `json:"roundGamePoints"`
-	GameEndFlag     bool               `json:"gameEndFlag"`
-	WinnerIdx       int                `json:"winnerIdx"`
-	Hint            *WebOutputCardHint `json:"hint,omitempty"`
+	ReTeam           []bool             `json:"reTeam"`
+	SoloRe           bool               `json:"soloRe"`
+	TeamsRevealed    bool               `json:"teamsRevealed"`
+	ReAnnounced      bool               `json:"reAnnounced"`
+	KontraAnnounced  bool               `json:"kontraAnnounced"`
+	CanAnnounce      bool               `json:"canAnnounce"`
+	YouAreRe         bool               `json:"youAreRe"`
+	PlayableIndices  []int              `json:"playableIndices"`
+	RoundRePoints    int                `json:"roundRePoints"`
+	LiveRePoints     int                `json:"liveRePoints"`
+	LiveKontraPoints int                `json:"liveKontraPoints"`
+	RoundReWon       bool               `json:"roundReWon"`
+	RoundGamePoints  int                `json:"roundGamePoints"`
+	GameEndFlag      bool               `json:"gameEndFlag"`
+	WinnerIdx        int                `json:"winnerIdx"`
+	Hint             *WebOutputCardHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config DoppelkopfWebOutputConfig `json:"config"`
 }

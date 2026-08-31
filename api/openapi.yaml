@@ -63304,7 +63304,13 @@ components:
           description: Hand indices the human may legally play (must-follow filtered)
         roundRePoints:
           type: integer
-          description: Card points accumulated by the Re team this round
+          description: Card points captured by the Re team, settled at round end (0 while the round is in progress)
+        liveRePoints:
+          type: integer
+          description: Card points the Re team has captured so far in the active round
+        liveKontraPoints:
+          type: integer
+          description: Card points the Kontra team has captured so far. liveRePoints + liveKontraPoints is below 240 until every trick is taken
         roundReWon:
           type: boolean
           description: True if the Re team won the round (available at RoundEnd/GameEnd)

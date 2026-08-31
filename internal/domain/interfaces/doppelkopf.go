@@ -59,6 +59,12 @@ type DoppelkopfGame interface {
 	IsKontraAnnounced() bool
 	// CanHumanAnnounce 人間プレイヤーが今宣言できるかを返す
 	CanHumanAnnounce() bool
+	// GetLiveRePoints は Re チームがこれまでに取った札の点を返す。
+	// 合計は 240 になるとは限らない ── まだ取られていないトリックの点はどちらにも入っていない。
+	GetLiveRePoints() int
+	// GetLiveKontraPoints は Kontra チームがこれまでに取った札の点を返す。
+	// 合計は 240 になるとは限らない ── まだ取られていないトリックの点はどちらにも入っていない。
+	GetLiveKontraPoints() int
 	// GetRoundRePoints 直近ラウンドの Re チーム得点を取得する
 	GetRoundRePoints() int
 	// GetRoundReWon 直近ラウンドで Re が勝ったかを取得する

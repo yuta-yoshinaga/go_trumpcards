@@ -716,6 +716,14 @@ func (g *Doppelkopf) CanHumanAnnounce() bool {
 	return human >= 0 && g.canAnnounce(human)
 }
 
+// GetLiveRePoints は Re チームがこれまでに取った札の点を返す。
+// 合計は 240 になるとは限らない ── まだ取られていないトリックの点はどちらにも入っていない。
+func (g *Doppelkopf) GetLiveRePoints() int { return g.teamPoints(true) }
+
+// GetLiveKontraPoints は Kontra チームがこれまでに取った札の点を返す。
+// 合計は 240 になるとは限らない ── まだ取られていないトリックの点はどちらにも入っていない。
+func (g *Doppelkopf) GetLiveKontraPoints() int { return g.teamPoints(false) }
+
 // GetRoundRePoints 直近ラウンドの Re チーム得点取得
 func (g *Doppelkopf) GetRoundRePoints() int { return g.roundRePts }
 

@@ -30,6 +30,8 @@ func setupDoppelkopfWebMock() *interfaces.MockDoppelkopfGame {
 	m.On("IsReAnnounced").Return(false)
 	m.On("IsKontraAnnounced").Return(false)
 	m.On("CanHumanAnnounce").Return(false)
+	m.On("GetLiveRePoints").Return(0)
+	m.On("GetLiveKontraPoints").Return(0)
 	m.On("GetRoundRePoints").Return(0)
 	m.On("GetRoundReWon").Return(false)
 	m.On("GetRoundGamePoints").Return(0)
@@ -82,6 +84,23 @@ func TestDoppelkopfWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, []bool{false, false, false, false}, resObj.ReTeam)
 		assert.False(t, resObj.Players[0].IsRe)
 		assert.Equal(t, []int{0}, resObj.PlayableIndices)
+		// live points initially both 0
+		assert.Equal(t, 0, resObj.LiveRePoints)
+		assert.Equal(t, 0, resObj.LiveKontraPoints)
+	})
+
+	t.Run("live points included in JSON output", func(t *testing.T) {
+		m, _ := setupDoppelkopfWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLiveRePoints")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLiveKontraPoints")
+		m.On("GetLiveRePoints").Return(30)
+		m.On("GetLiveKontraPoints").Return(20)
+
+		result := p.Output(m, nil)
+		var resObj controller.DoppelkopfWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, 30, resObj.LiveRePoints)
+		assert.Equal(t, 20, resObj.LiveKontraPoints)
 	})
 
 	t.Run("config values", func(t *testing.T) {
