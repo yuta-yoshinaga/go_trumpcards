@@ -231,3 +231,33 @@ describe('SpoilFivePage', () => {
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
 });
+
+// **Reneging は Spoil Five の三本柱の一つ。**説明は caption に元からあったが、
+// `<details>` は既定で閉じているので、開かない限り規則の存在に気づけなかった。
+// そして**どちらの文言もテストが押さえていなかった** (#6451)。
+describe('SpoilFivePage reneging rule', () => {
+  it('names the exemption in the collapsed summary, before anything is expanded', async () => {
+    renderWithProviders(<SpoilFivePage />);
+
+    const legend = await screen.findByTestId('spoilfive-trump-legend');
+    // 畳んだままである (開いてから読める、では遅い)。
+    expect(legend).not.toHaveAttribute('open');
+    expect(legend.querySelector('summary')?.textContent).toContain('Reneging');
+  });
+
+  // **文言とドメインの規則がずれないように固定する。**`isTopTrump` は
+  // 切り札の 5 / 切り札の J / ♥A の 3 枚 (SpoilFive.go:293-299)。
+  // caption はその 3 枚を名指ししていなければならない。
+  it('spells out exactly the three cards the domain exempts', async () => {
+    renderWithProviders(<SpoilFivePage />);
+
+    const legend = await screen.findByTestId('spoilfive-trump-legend');
+    const caption = legend.textContent ?? '';
+    expect(caption).toContain('上位3枚');
+    expect(caption).toContain('5');
+    expect(caption).toContain('J');
+    expect(caption).toContain('♥A');
+    expect(caption).toContain('Reneging');
+    expect(caption).not.toContain('{{');
+  });
+});

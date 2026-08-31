@@ -296,6 +296,10 @@ function SpoilFivePageContent() {
               {/* Right: info sidebar — 5 player panels */}
               <div data-tutorial="spoilfive-info">
                 {/* Top-trump ordering legend (collapsible, follows the current trump suit) */}
+                {/* **免除ルールの存在は畳んだままでも見えるようにする。**説明は
+                    caption に元からあったが、`<details>` は既定で閉じているので、
+                    開かない限り Reneging という規則があること自体に気づけない。
+                    見出しに名前を出し、詳細は 1 クリック先に置く (#6451)。 */}
                 <details className="mb-2 p-2 rounded bg-black/30" data-testid="spoilfive-trump-legend">
                   <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
                     {t('trumpLegend.title')}
