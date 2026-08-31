@@ -35,7 +35,7 @@ import { CONQUIAN_HELP, parseConquianCommand } from '../utils/cli/commands/conqu
 import { formatConquianState } from '../utils/cli/formatters/conquianFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Total cards a player must lay in table melds to win a Conquian round. */
@@ -380,6 +380,22 @@ function ConquianPageContent() {
                 </div>
               </div>
             </div>
+
+            {/* `roundWinnerIdx` は毎レスポンスに乗っているのに一度も読まれておらず、
+                誰が制したかは累計勝利数の表を前後で見比べるしかなかった。
+                -1 は山札切れの引き分け。
+                **文言は必ず「このラウンド」に限定する。**`endMatchOnDraw` は山札切れで
+                引き分けた局でも累積勝利数から `matchWinnerIdx` を決めるので、
+                `targetWins > 1` なら `roundWinnerIdx === -1` かつ `winnerIdx >= 0` に
+                なりうる。ここが「引き分けです」とだけ言うと、真下の GameMessageBox が
+                告げるマッチ勝者と真っ向から食い違う (レビュー指摘)。 */}
+            {(isRoundEnd || isGameEnd) && (
+              <div className="text-center text-ds-text-primary text-sm mb-1" data-testid="conquian-round-winner">
+                {state.roundWinnerIdx < 0
+                  ? t('roundWinnerDraw')
+                  : t('roundWinner', { name: findPlayerName(state.players, state.roundWinnerIdx) })}
+              </div>
+            )}
 
             <GameMessageBox
               message={state.message}
