@@ -43688,6 +43688,9 @@ components:
         winnerIdx:
           type: integer
           description: -1 = unfinished, 0 = human, 1 = CPU
+        winThreshold:
+          type: integer
+          description: Points that end the round; the first side to reach it wins. Sent from the domain constant (66) so the client never hardcodes it.
         config:
           $ref: '#/components/schemas/SchnapsenConfig'
         message:

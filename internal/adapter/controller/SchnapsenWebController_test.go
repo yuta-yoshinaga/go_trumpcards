@@ -24,6 +24,7 @@ func mustSchnapsenOutputJSON(msg string) string {
 		ValidPlays:    []int{},
 		MarriagePlays: []int{},
 		WinnerIdx:     -1,
+		WinThreshold:  domain.SchnapsenWinThreshold,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

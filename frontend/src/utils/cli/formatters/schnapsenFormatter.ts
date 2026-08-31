@@ -21,7 +21,7 @@ export function formatSchnapsenState(state: SchnapsenResponse | null): string {
     `trick ${state.trickNumber} | phase: ${PHASE_NAMES[state.phase] ?? state.phase}${state.isEndgame ? ' (endgame)' : ''}`,
   );
   const trump = state.trumpCard ? formatCard(state.trumpCard) : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
-  lines.push(`trump: ${trump} | stock: ${state.stockRemaining}`);
+  lines.push(`trump: ${trump} | stock: ${state.stockRemaining} | first to ${state.winThreshold}`);
   lines.push('----------');
 
   // Current trick (cards played so far this trick).

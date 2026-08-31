@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -66,7 +67,9 @@ func TestSchnapsenCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "Schnapsen")
 		assert.Contains(t, out, "トリック: 1")
 		assert.Contains(t, out, "山札: 9枚")
-		assert.Contains(t, out, "得点: あなた=18  CPU=5")
+		assert.Contains(t, out, "得点: あなた=18  CPU=5  (66点で勝利)")
+		assert.Contains(t, out, strconv.Itoa(domain.SchnapsenWinThreshold))
+		assert.NotContains(t, out, "{{")
 		assert.Contains(t, out, "play <idx>")
 	})
 
