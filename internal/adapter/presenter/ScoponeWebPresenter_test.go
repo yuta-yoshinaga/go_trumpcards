@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -54,6 +56,51 @@ func TestScoponeWebPresenter_OutputError(t *testing.T) {
 	if !strings.Contains(out, "kaboom") {
 		t.Errorf("expected error message in JSON, got: %s", out)
 	}
+}
+
+// **Web は messageCode を受け取らないと生の識別子を出す。**`NewDomainErrorCode` で
+// 作ったエラーは `Message` が空なので `Error()` がキーを返し、`GameMessageBox` は
+// `messageCode` が空だと翻訳を通さない ── CUI を直しただけでは、同じ生文字列が
+// 今度は Web に出る (#6457、レビュー指摘)。
+func TestScoponeWebPresenter_ForwardsTheErrorMessageCode(t *testing.T) {
+	p := &presenter.ScoponeWebPresenter{}
+	s := spBuildScoredScopone(t)
+
+	err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "scopone.errHandIndexOutOfRange",
+		map[string]string{"idx": "7"})
+	var got struct {
+		Message       string            `json:"message"`
+		MessageCode   string            `json:"messageCode"`
+		MessageParams map[string]string `json:"messageParams"`
+	}
+	if uerr := json.Unmarshal([]byte(p.Output(s, err)), &got); uerr != nil {
+		t.Fatalf("output not valid JSON: %v", uerr)
+	}
+
+	assert.Equal(t, "scopone.errHandIndexOutOfRange", got.MessageCode)
+	assert.Equal(t, map[string]string{"idx": "7"}, got.MessageParams)
+
+	// パラメータの無いコードでも同じ経路を通る。
+	var plain struct {
+		MessageCode string `json:"messageCode"`
+	}
+	plainOut := p.Output(s, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "scopone.errCaptureRequired", nil))
+	if uerr := json.Unmarshal([]byte(plainOut), &plain); uerr != nil {
+		t.Fatalf("output not valid JSON: %v", uerr)
+	}
+	assert.Equal(t, "scopone.errCaptureRequired", plain.MessageCode)
+
+	// **コードを持たないエラーは空のまま。**ここを緩めると「常に何か入れる」
+	// 実装が通り、翻訳の無い文字列をキーとして送ってしまう。
+	var generic struct {
+		Message     string `json:"message"`
+		MessageCode string `json:"messageCode"`
+	}
+	if uerr := json.Unmarshal([]byte(p.Output(s, scoponeAssertErrWeb{})), &generic); uerr != nil {
+		t.Fatalf("output not valid JSON: %v", uerr)
+	}
+	assert.Equal(t, "kaboom", generic.Message)
+	assert.Empty(t, generic.MessageCode)
 }
 
 type scoponeAssertErrWeb struct{}

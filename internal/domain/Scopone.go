@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // ScoponePlayerCnt Scopone プレイヤー数
@@ -171,17 +172,21 @@ func (s *Scopone) CpuPlay() {
 // applyPlay は 1 手 (place / capture) を実行する共通処理。
 func (s *Scopone) applyPlay(playerIdx, handIdx int, tableIdxs []int) error {
 	player := s.players[playerIdx]
+	// **コードで返す。**素の英語をそのまま返すと、日本語 UI の真ん中に英語の
+	// エラー文が出る (`cuiErrorBlock` も `GameMessageBox` もこの文字列をそのまま
+	// 見せる)。メッセージコードなら両方の画面がそれぞれのロケールで組み直せる。
 	if handIdx < 0 || handIdx >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, fmt.Sprintf("hand index %d out of range", handIdx))
+		return NewDomainErrorCode(ErrInvalidCard, "scopone.errHandIndexOutOfRange",
+			map[string]string{"idx": strconv.Itoa(handIdx)})
 	}
 	handCard := player.GetCard(handIdx)
 
 	if len(tableIdxs) > 0 {
 		if !isValidScopaCapture(handCard, s.tableCards, tableIdxs) {
-			return NewDomainError(ErrInvalidPlay, "selected table cards do not form a valid capture")
+			return NewDomainErrorCode(ErrInvalidPlay, "scopone.errInvalidCapture", nil)
 		}
 	} else if len(EnumerateScopaCaptures(handCard, s.tableCards)) > 0 {
-		return NewDomainError(ErrInvalidPlay, "a capture is available and must be taken")
+		return NewDomainErrorCode(ErrInvalidPlay, "scopone.errCaptureRequired", nil)
 	}
 
 	_ = player.RemoveCard(handIdx)
