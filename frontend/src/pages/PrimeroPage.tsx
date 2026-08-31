@@ -390,7 +390,12 @@ function PrimeroPageContent() {
                   </button>
                   {/* **レイズが消えた理由を書く。**回数上限とチップ不足を
                       区別できないと、突然選択肢を奪われたように見える (#4925)。 */}
-                  <span className="text-ds-text-muted text-xs" data-testid="primero-raise-count">
+                  <span
+                    className="text-ds-text-muted text-xs"
+                    data-testid="primero-raise-count"
+                    role="status"
+                    aria-live="polite"
+                  >
                     {raiseBlock === 'cap'
                       ? t('raiseCapReached', { max: state.maxRaises })
                       : raiseBlock === 'chips'
