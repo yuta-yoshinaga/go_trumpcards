@@ -293,3 +293,133 @@ func TestPreference_UnmarshalErrors(t *testing.T) {
 		t.Error("expected nil-player error")
 	}
 }
+
+func TestPreference_GetDeclarerProgress(t *testing.T) {
+	newGame := func() *Preference {
+		g := newPrefGame(true)
+		g.Reset()
+		return g
+	}
+
+	t.Run("nil outside Play and TrickEnd phases", func(t *testing.T) {
+		for _, ph := range []PreferencePhase{
+			PreferencePhaseBid,
+			PreferencePhaseRoundEnd,
+			PreferencePhaseGameEnd,
+		} {
+			g := newGame()
+			g.SetPhase(ph)
+			g.SetDeclarerIdx(0)
+			g.SetContract(PreferenceBidSix)
+			if p := g.GetDeclarerProgress(); p != nil {
+				t.Errorf("phase %v: got %+v, want nil", ph, p)
+			}
+		}
+	})
+
+	t.Run("nil when declarer is undeclared or invalid", func(t *testing.T) {
+		for _, ph := range []PreferencePhase{PreferencePhasePlay, PreferencePhaseTrickEnd} {
+			g := newGame()
+			g.SetPhase(ph)
+			g.SetDeclarerIdx(-1)
+			g.SetContract(PreferenceBidSix)
+			if p := g.GetDeclarerProgress(); p != nil {
+				t.Errorf("declarer -1, phase %v: got %+v, want nil", ph, p)
+			}
+
+			g.SetDeclarerIdx(PreferencePlayerCnt)
+			if p := g.GetDeclarerProgress(); p != nil {
+				t.Errorf("declarer %d, phase %v: got %+v, want nil", PreferencePlayerCnt, ph, p)
+			}
+		}
+	})
+
+	t.Run("nil when contract is Pass", func(t *testing.T) {
+		g := newGame()
+		g.SetPhase(PreferencePhasePlay)
+		g.SetDeclarerIdx(0)
+		g.SetContract(PreferenceBidPass)
+		if p := g.GetDeclarerProgress(); p != nil {
+			t.Errorf("contract pass: got %+v, want nil", p)
+		}
+	})
+
+	cases := []struct {
+		name       string
+		contract   PreferenceBid
+		won        int
+		played     int
+		wantNeeded int
+		wantRem    int
+		wantMisere bool
+		wantMade   bool
+		wantFailed bool
+	}{
+		// Six contract (needed: 6)
+		{"six in progress", PreferenceBidSix, 3, 5, 6, 5, false, false, false},
+		{"six just enough remaining", PreferenceBidSix, 5, 9, 6, 1, false, false, false},
+		{"six made when target reached", PreferenceBidSix, 6, 8, 6, 2, false, true, false},
+		{"six made with surplus", PreferenceBidSix, 7, 8, 6, 2, false, true, false},
+		{"six failed when remaining cannot reach", PreferenceBidSix, 3, 8, 6, 2, false, false, true},
+		{"six failed on 0 won with 5 played", PreferenceBidSix, 0, 5, 6, 5, false, false, true},
+
+		// Seven contract (needed: 7)
+		{"seven in progress", PreferenceBidSeven, 4, 6, 7, 4, false, false, false},
+		{"seven made", PreferenceBidSeven, 7, 9, 7, 1, false, true, false},
+		{"seven failed", PreferenceBidSeven, 5, 9, 7, 1, false, false, true},
+
+		// Eight contract (needed: 8)
+		{"eight in progress", PreferenceBidEight, 5, 6, 8, 4, false, false, false},
+		{"eight made", PreferenceBidEight, 8, 8, 8, 2, false, true, false},
+		{"eight failed", PreferenceBidEight, 6, 9, 8, 1, false, false, true},
+
+		// Misère contract (needed: 0)
+		{"misere in progress clean sheet", PreferenceBidMisere, 0, 5, 0, 5, true, false, false},
+		{"misere failed the moment a trick is taken", PreferenceBidMisere, 1, 3, 0, 7, true, false, true},
+		{"misere failed with multiple tricks taken", PreferenceBidMisere, 3, 5, 0, 5, true, false, true},
+		{"misere made when 0 tricks and 0 remaining", PreferenceBidMisere, 0, 10, 0, 0, true, true, false},
+		{"misere failed at end with 1 trick", PreferenceBidMisere, 1, 10, 0, 0, true, false, true},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, ph := range []PreferencePhase{PreferencePhasePlay, PreferencePhaseTrickEnd} {
+				g := newGame()
+				g.SetPhase(ph)
+				g.SetDeclarerIdx(0)
+				g.SetContract(tc.contract)
+
+				var tr [PreferencePlayerCnt]int
+				tr[0] = tc.won
+				tr[1] = tc.played - tc.won
+				g.SetRoundTricks(tr)
+
+				pr := g.GetDeclarerProgress()
+				if pr == nil {
+					t.Fatalf("phase %v: GetDeclarerProgress = nil", ph)
+				}
+				if pr.Won != tc.won {
+					t.Errorf("phase %v: Won = %d, want %d", ph, pr.Won, tc.won)
+				}
+				if pr.Needed != tc.wantNeeded {
+					t.Errorf("phase %v: Needed = %d, want %d", ph, pr.Needed, tc.wantNeeded)
+				}
+				if pr.Remaining != tc.wantRem {
+					t.Errorf("phase %v: Remaining = %d, want %d", ph, pr.Remaining, tc.wantRem)
+				}
+				if pr.IsMisere != tc.wantMisere {
+					t.Errorf("phase %v: IsMisere = %v, want %v", ph, pr.IsMisere, tc.wantMisere)
+				}
+				if pr.Made != tc.wantMade {
+					t.Errorf("phase %v: Made = %v, want %v", ph, pr.Made, tc.wantMade)
+				}
+				if pr.Failed != tc.wantFailed {
+					t.Errorf("phase %v: Failed = %v, want %v", ph, pr.Failed, tc.wantFailed)
+				}
+				if pr.Made && pr.Failed {
+					t.Errorf("phase %v: Made and Failed both true", ph)
+				}
+			}
+		})
+	}
+}

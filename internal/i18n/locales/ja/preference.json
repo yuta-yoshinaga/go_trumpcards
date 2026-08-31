@@ -29,6 +29,8 @@
   "promptRoundEndResult": "{{name}} の {{contract}}: {{tricks}} トリック獲得 — {{outcome}}",
   "contractAchieved": "達成",
   "contractFailed": "失敗",
+  "declarerProgress": "宣言者: {{won}}/{{needed}} トリック (残り{{remaining}})",
+  "declarerProgressMisere": "宣言者(ミゼール): {{won}} トリック取得 (残り{{remaining}})",
   "roundEndTricks": "各プレイヤーのトリック数: {{list}}",
   "roundEndTrickEntry": "{{name}} {{tricks}}",
   "hintNone": "ヒントはありません。",
@@ -46,5 +48,7 @@
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
   "helpExampleBid": "  pass                      入札を降りる",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "progressMade": " — 達成",
+  "progressFailed": " — 失敗確定"
 }

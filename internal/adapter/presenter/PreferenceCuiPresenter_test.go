@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,6 +38,7 @@ func setupPreferenceCuiMock() *interfaces.MockPreferenceGame {
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayerScores").Return([domain.PreferencePlayerCnt]int{0, 0, 0})
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetDeclarerProgress").Return((*domain.PreferenceDeclarerProgress)(nil)).Maybe()
 	return m
 }
 
@@ -250,4 +252,97 @@ func TestPreferenceCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetPlayer", mock.Anything).Return(domain.NewPreferencePlayer(true)).Maybe()
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+func TestPreferenceCuiPresenter_DeclarerProgress(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.PreferenceCuiPresenter)
+
+	withProgress := func(phase domain.PreferencePhase, pr *domain.PreferenceDeclarerProgress) *interfaces.MockPreferenceGame {
+		m, _ := setupPreferenceCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeclarerProgress")
+		m.On("GetPhase").Return(phase)
+		m.On("GetDeclarerProgress").Return(pr)
+		return m
+	}
+
+	inProgress := &domain.PreferenceDeclarerProgress{
+		Won:       3,
+		Needed:    6,
+		Remaining: 5,
+		IsMisere:  false,
+		Made:      false,
+		Failed:    false,
+	}
+
+	for _, phase := range []domain.PreferencePhase{domain.PreferencePhasePlay, domain.PreferencePhaseTrickEnd} {
+		t.Run("shows progress in phase "+strconv.Itoa(int(phase)), func(t *testing.T) {
+			out := p.Output(withProgress(phase, inProgress), nil)
+			assert.Contains(t, out, "宣言者: 3/6 トリック (残り5)")
+			assert.NotContains(t, out, "{{")
+		})
+	}
+
+	t.Run("misere shows misere specific progress text", func(t *testing.T) {
+		misereProgress := &domain.PreferenceDeclarerProgress{
+			Won:       0,
+			Needed:    0,
+			Remaining: 8,
+			IsMisere:  true,
+			Made:      false,
+			Failed:    false,
+		}
+		out := p.Output(withProgress(domain.PreferencePhasePlay, misereProgress), nil)
+		assert.Contains(t, out, "宣言者(ミゼール): 0 トリック取得 (残り8)")
+		assert.NotContains(t, out, "0/0")
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("shows contract made when made is true", func(t *testing.T) {
+		madeProgress := &domain.PreferenceDeclarerProgress{
+			Won:       6,
+			Needed:    6,
+			Remaining: 2,
+			IsMisere:  false,
+			Made:      true,
+			Failed:    false,
+		}
+		out := p.Output(withProgress(domain.PreferencePhasePlay, madeProgress), nil)
+		assert.Contains(t, out, "宣言者: 6/6 トリック (残り2) — 達成")
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("shows contract failed when failed is true", func(t *testing.T) {
+		failedProgress := &domain.PreferenceDeclarerProgress{
+			Won:       1,
+			Needed:    0,
+			Remaining: 7,
+			IsMisere:  true,
+			Made:      false,
+			Failed:    true,
+		}
+		out := p.Output(withProgress(domain.PreferencePhasePlay, failedProgress), nil)
+		assert.Contains(t, out, "宣言者(ミゼール): 1 トリック取得 (残り7) — 失敗確定")
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("no progress output when declarer progress is nil during bid phase or pass", func(t *testing.T) {
+		// During Bid phase
+		outBid := p.Output(withProgress(domain.PreferencePhaseBid, nil), nil)
+		assert.NotContains(t, outBid, "トリック (残り")
+		assert.NotContains(t, outBid, "トリック取得 (残り")
+
+		// During Play phase with nil progress (e.g. Pass / undeclared)
+		outPlayNil := p.Output(withProgress(domain.PreferencePhasePlay, nil), nil)
+		assert.NotContains(t, outPlayNil, "トリック (残り")
+		assert.NotContains(t, outPlayNil, "トリック取得 (残り")
+
+		// During RoundEnd phase
+		outRoundEnd := p.Output(withProgress(domain.PreferencePhaseRoundEnd, nil), nil)
+		assert.NotContains(t, outRoundEnd, "トリック (残り")
+		assert.NotContains(t, outRoundEnd, "トリック取得 (残り")
+	})
 }
