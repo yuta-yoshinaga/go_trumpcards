@@ -721,6 +721,19 @@ func (g *Tute) GetGameEndFlag() bool { return g.gameEndFlag }
 // GetWinnerTeam 勝利チーム取得 (-1=未確定)
 func (g *Tute) GetWinnerTeam() int { return g.winnerTeam }
 
+// GetLastTrickBonusTeam は最終トリックの +10 点を受け取ったチームを返す。
+// ラウンドが終わっていない間は -1。
+//
+// **状態は持たない。**RoundEnd に入る経路は最終トリックの解決だけで、そのとき
+// `leadPlayerIdx` は最終トリックの勝者になっている。フィールドを足すと、
+// JSON 復元でゼロ値が「チーム 0 が取った」に化ける。
+func (g *Tute) GetLastTrickBonusTeam() int {
+	if g.phase != TutePhaseRoundEnd {
+		return -1
+	}
+	return TuteTeamOf(g.leadPlayerIdx)
+}
+
 // GetPlayerCnt プレイヤー数取得
 func (g *Tute) GetPlayerCnt() int { return len(g.players) }
 

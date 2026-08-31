@@ -299,6 +299,14 @@ function TutePageContent() {
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                     <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
                     {teamPointLines}
+                    {state.lastTrickBonusTeam >= 0 && (
+                      <div data-testid="tute-last-trick-bonus">
+                        {t('roundResult.lastTrickBonus', {
+                          team: state.lastTrickBonusTeam === 0 ? t('team.a') : t('team.b'),
+                          points: state.lastTrickBonusPoints,
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

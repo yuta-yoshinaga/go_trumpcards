@@ -46,6 +46,7 @@
     "title": "Round Result",
     "teamA": "Team A points: {{points}}",
     "teamB": "Team B points: {{points}}",
+    "lastTrickBonus": "Last-trick bonus: {{team}} +{{points}}",
     "runningTitle": "Points this round"
   },
   "declaredMarriages": {

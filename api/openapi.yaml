@@ -63616,7 +63616,13 @@ components:
           type: array
           items:
             type: integer
-          description: Card points accumulated by each team in the current round (before last-trick bonus)
+          description: Card points accumulated by each team in the current round, including the last-trick bonus once it has been awarded
+        lastTrickBonusTeam:
+          type: integer
+          description: Team that took the last trick and its bonus (0 = Team A, 1 = Team B); -1 until the round ends
+        lastTrickBonusPoints:
+          type: integer
+          description: Size of the last-trick bonus (10 de ultimas), sent so the client never hardcodes it
         canDeclareMarriage:
           type: boolean
           description: True if the human player is on lead and holds a Rey+Caballo pair not yet declared

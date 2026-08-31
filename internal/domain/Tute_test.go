@@ -312,6 +312,37 @@ func TestTute_CpuFullRoundProgresses(t *testing.T) {
 	}
 }
 
+func TestTute_GetLastTrickBonusTeam(t *testing.T) {
+	g := newTuteGame(false)
+	g.Reset()
+
+	// プレイ中は -1 であること (否定コントロール)
+	assert.Equal(t, -1, g.GetLastTrickBonusTeam(), "GetLastTrickBonusTeam must be -1 during Play phase")
+
+	var lastTrickWinner int
+	for steps := 0; steps < 200; steps++ {
+		switch g.GetPhase() {
+		case TutePhasePlay:
+			assert.Equal(t, -1, g.GetLastTrickBonusTeam(), "GetLastTrickBonusTeam must be -1 during Play phase")
+			g.CpuPlay()
+		case TutePhaseTrickEnd:
+			assert.Equal(t, -1, g.GetLastTrickBonusTeam(), "GetLastTrickBonusTeam must be -1 during TrickEnd phase")
+			lastTrickWinner = g.trickWinner()
+			g.ResolveTrick()
+			if g.GetPhase() == TutePhaseTrickEnd {
+				g.NextTrick()
+			}
+		case TutePhaseRoundEnd:
+			// ラウンド終了時点で最終トリックの勝者チームと一致すること
+			wantTeam := TuteTeamOf(lastTrickWinner)
+			assert.Equal(t, wantTeam, g.GetLastTrickBonusTeam(), "GetLastTrickBonusTeam must match the last trick winner's team")
+			assert.Equal(t, wantTeam, TuteTeamOf(g.GetLeadPlayerIdx()))
+			return
+		}
+	}
+	t.Fatal("did not reach RoundEnd within 200 steps")
+}
+
 func TestTute_HintAndPlayable(t *testing.T) {
 	g := newTuteGame(true)
 	g.SetPhase(TutePhasePlay)

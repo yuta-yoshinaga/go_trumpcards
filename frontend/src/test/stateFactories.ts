@@ -918,6 +918,8 @@ const baseTuteState: TuteResponse = {
   declaredSuits: [false, false, false, false, false],
   teamScores: [0, 0],
   roundTeamPoints: [0, 0],
+  lastTrickBonusTeam: -1,
+  lastTrickBonusPoints: 10,
   canDeclareMarriage: false,
   canDeclareTute: false,
   playableIndices: [0, 1, 2],
