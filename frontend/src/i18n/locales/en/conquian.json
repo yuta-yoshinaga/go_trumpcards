@@ -58,5 +58,5 @@
   },
   "layoffToMeld": "Lay off onto meld {{n}}",
   "roundWinner": "{{name}} won this round",
-  "roundWinnerDraw": "Draw — the stock ran out"
+  "roundWinnerDraw": "This round was a draw — the stock ran out"
 }

@@ -607,6 +607,26 @@ describe('ConquianPage round winner', () => {
     expect(await screen.findByTestId('conquian-round-winner')).toHaveTextContent('CPU 1');
   });
 
+  // **山札切れで引き分けた局でも、マッチには勝者が立つことがある。**
+  // `endMatchOnDraw` は累積勝利数から `matchWinnerIdx` を決めるので、
+  // `targetWins > 1` なら roundWinnerIdx === -1 かつ winnerIdx >= 0 になりうる。
+  // ここが「引き分けです」とだけ言うと、GameMessageBox が告げるマッチ勝者と
+  // 食い違う (レビュー指摘)。文言をラウンドに限定して両立させる。
+  it('keeps the draw line about the round when the match still has a winner', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      phase: 3,
+      gameEndFlag: true,
+      roundWinnerIdx: -1,
+      winnerIdx: 0,
+    });
+    renderWithProviders(<ConquianPage />);
+
+    const line = await screen.findByTestId('conquian-round-winner');
+    expect(line).toHaveTextContent('このラウンド');
+    expect(line).toHaveTextContent('引き分け');
+  });
+
   it('says nothing mid-round', async () => {
     mockExec.mockResolvedValue({ ...drawPhaseState, roundWinnerIdx: 1 });
     renderWithProviders(<ConquianPage />);

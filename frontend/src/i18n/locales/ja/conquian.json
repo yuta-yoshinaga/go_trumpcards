@@ -58,5 +58,5 @@
   },
   "layoffToMeld": "{{n}} 番目のメルドに足す",
   "roundWinner": "{{name}} がこのラウンドを制しました",
-  "roundWinnerDraw": "山札切れによる引き分けです"
+  "roundWinnerDraw": "このラウンドは山札切れによる引き分けです"
 }
