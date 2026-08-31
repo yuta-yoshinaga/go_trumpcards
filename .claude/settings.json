@@ -27,7 +27,7 @@
           },
           {
             "type": "command",
-            "command": "jq -r '.tool_input.command' | { read -r cmd; case \"$cmd\" in git\\ commit*) if git diff --cached --name-only | grep -q '\\.go$'; then output=$(golangci-lint run ./... 2>&1 | head -30); if [ -n \"$output\" ]; then jq -nc --arg msg \"$output\" '{hookSpecificOutput: {hookEventName: \"PreToolUse\", permissionDecision: \"deny\", permissionDecisionReason: (\"golangci-lint failed:\\n\" + $msg)}}'; else echo '{}'; fi; else echo '{}'; fi ;; *) echo '{}' ;; esac; }",
+            "command": "jq -r '.tool_input.command' | { read -r cmd; case \"$cmd\" in git\\ commit*) if git diff --cached --name-only | grep -q '\\.go$'; then output=$(golangci-lint run ./... 2>&1 | grep -v '^0 issues\\.$' | head -30); if [ -n \"$output\" ]; then jq -nc --arg msg \"$output\" '{hookSpecificOutput: {hookEventName: \"PreToolUse\", permissionDecision: \"deny\", permissionDecisionReason: (\"golangci-lint failed:\\n\" + $msg)}}'; else echo '{}'; fi; else echo '{}'; fi ;; *) echo '{}' ;; esac; }",
             "timeout": 120,
             "statusMessage": "Running golangci-lint..."
           },

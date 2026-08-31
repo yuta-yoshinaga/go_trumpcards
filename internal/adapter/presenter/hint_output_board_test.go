@@ -42,6 +42,88 @@ func TestHintOutputKeepsTheBoardForPagesThatMergeIt(t *testing.T) {
 				return p.Output(g, nil), p.HintOutput(g)
 			},
 		},
+		{
+			name:   "agnes",
+			fields: []string{"tableau", "foundation"},
+			output: func(t *testing.T) (string, string) {
+				p := &presenter.AgnesWebPresenter{}
+				g := domain.NewDefaultAgnes()
+				g.Reset()
+				return p.Output(g, nil), p.HintOutput(g)
+			},
+		},
+		{
+			name:   "bristol",
+			fields: []string{"tableau", "fan", "foundation"},
+			output: func(t *testing.T) (string, string) {
+				p := &presenter.BristolWebPresenter{}
+				g := domain.NewDefaultBristol()
+				g.Reset()
+				return p.Output(g, nil), p.HintOutput(g)
+			},
+		},
+		{
+			name:   "canfield",
+			fields: []string{"waste", "reserve", "tableau", "foundation"},
+			output: func(t *testing.T) (string, string) {
+				p := &presenter.CanfieldWebPresenter{}
+				g := domain.NewDefaultCanfield()
+				g.Reset()
+				require.NoError(t, g.Draw())
+				return p.Output(g, nil), p.HintOutput(g)
+			},
+		},
+		{
+			name:   "curdsandwhey",
+			fields: []string{"columns"},
+			output: func(t *testing.T) (string, string) {
+				p := &presenter.CurdsAndWheyWebPresenter{}
+				g := domain.NewDefaultCurdsAndWhey()
+				g.Reset()
+				return p.Output(g, nil), p.HintOutput(g)
+			},
+		},
+		{
+			name:   "doubleklondike",
+			fields: []string{"tableau", "waste", "foundation"},
+			output: func(t *testing.T) (string, string) {
+				p := &presenter.DoubleKlondikeWebPresenter{}
+				g := domain.NewDefaultDoubleKlondike()
+				g.Reset()
+				require.NoError(t, g.Draw())
+				return p.Output(g, nil), p.HintOutput(g)
+			},
+		},
+		{
+			name:   "labellelucie",
+			fields: []string{"fans", "foundation"},
+			output: func(t *testing.T) (string, string) {
+				p := &presenter.LaBelleLucieWebPresenter{}
+				g := domain.NewDefaultLaBelleLucie()
+				g.Reset()
+				return p.Output(g, nil), p.HintOutput(g)
+			},
+		},
+		{
+			name:   "shamrocks",
+			fields: []string{"fans", "foundation"},
+			output: func(t *testing.T) (string, string) {
+				p := &presenter.ShamrocksWebPresenter{}
+				g := domain.NewDefaultShamrocks()
+				g.Reset()
+				return p.Output(g, nil), p.HintOutput(g)
+			},
+		},
+		{
+			name:   "simplesimon",
+			fields: []string{"columns"},
+			output: func(t *testing.T) (string, string) {
+				p := &presenter.SimpleSimonWebPresenter{}
+				g := domain.NewDefaultSimpleSimon()
+				g.Reset()
+				return p.Output(g, nil), p.HintOutput(g)
+			},
+		},
 	}
 
 	decode := func(t *testing.T, raw string) map[string]json.RawMessage {
