@@ -63,6 +63,36 @@ describe('formatKalookiState', () => {
     expect(out).toContain('turn:');
   });
 
+  // `layoff <playerIdx> <meldIdx> <cardIdx>` が要求する番号が場に出ていなかった (#6462)。
+  it('numbers each meld with the index layoff takes', () => {
+    const twoMelds: KalookiResponse = {
+      ...baseState,
+      players: [
+        {
+          ...baseState.players[0],
+          melds: [
+            baseState.players[0].melds[0],
+            {
+              cards: [
+                { design: 'CLOVER', value: 9 },
+                { design: 'CLOVER', value: 10 },
+                { design: 'CLOVER', value: 11 },
+              ],
+            },
+          ],
+        },
+        baseState.players[1],
+      ],
+    };
+
+    const out = formatKalookiState(twoMelds);
+    // 番号だけでなく、その番号の後ろに**そのメルドの札**が並ぶことを見る。
+    // 1 始まりにしたり順序を入れ替えたりする変異はこれで落ちる。
+    expect(out).toContain('[0] ♠5, ♥5, ♣5');
+    expect(out).toContain('[1] ♣9, ♣10, ♣J');
+    expect(out).not.toContain('[2] ');
+  });
+
   it('shows present discard top', () => {
     const out = formatKalookiState(baseState);
     expect(out).toContain('discard: ♠5');
