@@ -58,6 +58,8 @@
   "raiseButton": "レイズ（Watten）",
   "respondPhase": "ステーク {{stake}}点にレイズされました — hold か fold を選びます。",
   "respondLoss": "fold すると相手チームに {{stake}}点を献上します。",
+  "raiserOwn": "自チームがレイズしました。",
+  "raiserOpponent": "相手チームにレイズされました。",
   "stakeHistory": {
     "title": "ステーク推移",
     "start": "開始 {{stake}}",
