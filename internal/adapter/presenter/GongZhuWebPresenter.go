@@ -23,8 +23,10 @@ func (p *GongZhuWebPresenter) Output(g interfaces.GongZhuGame, lastErr error) st
 		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 	}
 
-	// 得点内訳はラウンド終了でだけ確定する。途中で出すと未確定の数字が並ぶ (#5630)。
-	if g.GetPhase() == domain.GongZhuPhaseRoundEnd {
+	// **確定するのはラウンド終了以降。**プレイ中やトリック終了で出すと未確定の数字が
+	// 並ぶ (#5630)。ただし勝敗を決めた最終ラウンドの内訳は、終局画面に進んだ後も
+	// 読めなければならない ── RoundEnd だけを見ていたので消えていた (#6426)。
+	if phase := g.GetPhase(); phase == domain.GongZhuPhaseRoundEnd || phase == domain.GongZhuPhaseGameEnd {
 		resObj.ScoreBreakdowns = make([]*controller.GongZhuWebOutputBreakdown, 0, g.GetPlayerCnt())
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			d := g.ScoreBreakdownFor(i)

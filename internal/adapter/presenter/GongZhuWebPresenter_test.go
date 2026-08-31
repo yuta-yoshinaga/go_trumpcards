@@ -311,11 +311,39 @@ func TestGongZhuWebPresenterCarriesTheBreakdownAtRoundEnd(t *testing.T) {
 	assert.Equal(t, -320, out.ScoreBreakdowns[0].Total)
 }
 
-// プレイ中は出さない。まだ確定していない数字を並べても読めない。
-func TestGongZhuWebPresenterOmitsTheBreakdownDuringPlay(t *testing.T) {
+// #6426: 勝敗を決めた最終ラウンドの内訳はゲーム終了時にも運ぶ。
+func TestGongZhuWebPresenterCarriesTheBreakdownAtGameEnd(t *testing.T) {
 	m, _ := setupGongZhuWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.GongZhuPhaseGameEnd)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+	m.On("GetGameEndFlag").Return(true)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
+	m.On("GetWinnerIdx").Return(0)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "ScoreBreakdownFor")
+	m.On("ScoreBreakdownFor", mock.Anything).Return(domain.GongZhuScoreBreakdown{
+		HeartCount: 3, HeartsSum: -120, HasPig: true, PigExposed: true, Subtotal: -320, Total: -320,
+	})
 
 	var out controller.GongZhuWebOutput
 	require.NoError(t, json.Unmarshal([]byte(new(presenter.GongZhuWebPresenter).Output(m, nil)), &out))
-	assert.Empty(t, out.ScoreBreakdowns)
+
+	require.Len(t, out.ScoreBreakdowns, 4, "プレイヤー全員分")
+	assert.Equal(t, 3, out.ScoreBreakdowns[0].HeartCount)
+	assert.True(t, out.ScoreBreakdowns[0].PigExposed)
+	assert.Equal(t, -320, out.ScoreBreakdowns[0].Total)
+	assert.True(t, out.GameEndFlag)
+}
+
+// プレイ中やトリック終了では出さない。まだ確定していない数字を並べても読めない (#5630, #6426)。
+func TestGongZhuWebPresenterOmitsTheBreakdownDuringPlay(t *testing.T) {
+	for _, phase := range []domain.GongZhuPhase{domain.GongZhuPhasePlay, domain.GongZhuPhaseTrickEnd} {
+		m, _ := setupGongZhuWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(phase)
+
+		var out controller.GongZhuWebOutput
+		require.NoError(t, json.Unmarshal([]byte(new(presenter.GongZhuWebPresenter).Output(m, nil)), &out))
+		assert.Empty(t, out.ScoreBreakdowns, "phase %v では内訳を出さない", phase)
+	}
 }
