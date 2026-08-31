@@ -51,8 +51,11 @@ func (p *LaBelleLucieCuiPresenter) Output(g interfaces.LaBelleLucieGame, lastErr
 		movable := g.GetMovableFans()
 		for i, fan := range g.GetFans() {
 			sb.WriteString(i18n.Tf("labellelucie.fanLabel", "idx", strconv.Itoa(i)))
+			// 添字の範囲検査はしない ── `movable` も `GetFans()` も同じ
+			// `g.fans` から導かれるので長さは必ず一致し、検査は**どのテストからも
+			// 到達しない分岐**になる (レビュー指摘)。
 			mark := ""
-			if i < len(movable) && movable[i] {
+			if movable[i] {
 				mark = CuiLegalMark
 			}
 			sb.WriteString(mark + " " + llPileStr(fan) + "\n")
