@@ -65,8 +65,15 @@ func (p *TienLenCuiPresenter) Output(tg interfaces.TienLenGame, lastErr error) s
 		if tg.GetTableCards() != nil {
 			// Name the combo on the table (pair/straight/…) so the player knows
 			// what shape they must beat, matching the web tableCombo display.
-			b.WriteString(i18n.T("tienlen.tableCards") + ": " + cuiCardSliceStr(tg.GetTableCards()) +
-				" " + i18n.Tf("tienlen.tableComboType", "type", tienLenPlayTypeLabel(tg.GetTablePlayType())) + "\n")
+			line := i18n.T("tienlen.tableCards") + ": " + cuiCardSliceStr(tg.GetTableCards()) +
+				" " + i18n.Tf("tienlen.tableComboType", "type", tienLenPlayTypeLabel(tg.GetTablePlayType()))
+			// 誰の札かは、パスで一巡すれば場が流れる規則を読むのに要る。CUI では
+			// 出た直後の CPU ログでしか分からず、数手経つと辿れなくなっていた。
+			// Web は tablePlayedBy として常時出している。
+			if idx := tg.GetLastPlayPlayerIdx(); idx >= 0 {
+				line += i18n.Tf("tienlen.tablePlayedBy", "name", cuiPlayerName(tg.GetPlayer(idx), idx))
+			}
+			b.WriteString(line + "\n")
 		} else {
 			b.WriteString(i18n.T("tienlen.tableEmpty") + "\n")
 		}

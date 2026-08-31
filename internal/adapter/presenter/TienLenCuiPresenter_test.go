@@ -23,6 +23,7 @@ func setupTienLenCuiMock() (*interfaces.MockTienLenGame, []*domain.TienLenPlayer
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetTableCards").Return(([]*domain.Card)(nil))
 	m.On("GetTablePlayType").Return(domain.TienLenPlayInvalid)
+	m.On("GetLastPlayPlayerIdx").Return(-1)
 	m.On("GetCpuActions").Return(([]*domain.TienLenAction)(nil))
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
@@ -31,6 +32,29 @@ func setupTienLenCuiMock() (*interfaces.MockTienLenGame, []*domain.TienLenPlayer
 		m.On("GetPlayer", i).Return(players[i])
 	}
 	return m, players
+}
+
+// 場の札が誰のものかは、パスで一巡すれば場が流れる規則を読むのに要る。CUI では
+// 出た直後の CPU ログでしか分からず、数手経つと辿れなくなっていた。
+func TestTienLenCuiPresenter_NamesWhoOwnsTheTable(t *testing.T) {
+	i18n.SetLang("ja")
+
+	m, players := setupTienLenCuiMock()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTableCards")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastPlayPlayerIdx")
+	m.On("GetTableCards").Return([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)})
+	m.On("GetLastPlayPlayerIdx").Return(2)
+
+	out := new(presenter.TienLenCuiPresenter).Output(m, nil)
+	// 席 2 の名前が場の行に添えられる。名前の作り方は presenter の内部なので、
+	// 出力から「席 2 を指す印がある / 席 1 のそれは無い」ことで見る。
+	_ = players
+	assert.Regexp(t, `場: .*\[.*2.*\]`, out)
+
+	// 場が流れた（nil）ときは出さない。
+	empty, _ := setupTienLenCuiMock()
+	emptyOut := new(presenter.TienLenCuiPresenter).Output(empty, nil)
+	assert.NotRegexp(t, `場: .*\[`, emptyOut)
 }
 
 func TestTienLenCuiPresenter_Output(t *testing.T) {
