@@ -49,7 +49,8 @@
   },
   "liveTricks": {
     "title": "今ラウンド",
-    "team": "{{team}} {{tricks}}/{{target}}"
+    "team": "{{team}} {{tricks}}/{{target}}",
+    "reached": "目標到達"
   },
   "roundResult": {
     "title": "ラウンド結果（獲得トリック）",

@@ -231,6 +231,21 @@ describe('CourtPiecePage', () => {
     expect(teamA).toHaveTextContent('チームA 7/7');
     expect(teamA.className).toContain('text-ds-accent');
     expect(screen.getByTestId('cp-live-tricks-team-1').className).not.toContain('text-ds-accent');
+
+    // **色と太さは支援技術に届かない。**到達したチームだけが語でもそう言う。
+    expect(teamA.querySelector('.sr-only')?.textContent).toContain('目標到達');
+    expect(screen.getByTestId('cp-live-tricks-team-1').querySelector('.sr-only')).toBeNull();
+  });
+
+  // トリックが決着するたびに数字が変わるのに、読み上げには乗っていなかった。
+  it('announces the running trick tally through a live region', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<CourtPiecePage />);
+
+    const tally = await screen.findByTestId('cp-live-tricks');
+    expect(tally).toHaveAttribute('role', 'status');
+    expect(tally).toHaveAttribute('aria-live', 'polite');
+    expect(tally.textContent).not.toContain('{{');
   });
 
   it('hides the live team-trick tally once the round ends', async () => {
