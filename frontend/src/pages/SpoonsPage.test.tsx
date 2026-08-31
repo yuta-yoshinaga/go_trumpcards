@@ -343,4 +343,70 @@ describe('SpoonsPage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+
+  // **速さが勝敗を決めるのに、取るにはマウスが要った** (#6465)。grabWindow の
+  // 一瞬でボタンに手を運ぶしかなく、キーボードだけの人が最も不利になる。
+  describe('keyboard shortcuts', () => {
+    it('grabs a spoon with g while the window is open', async () => {
+      mockExec.mockResolvedValue(grabState);
+      renderWithProviders(<SpoonsPage />);
+
+      const button = await screen.findByTestId('spoons-grab-button');
+      expect(button).toHaveAttribute('aria-keyshortcuts', 'g');
+
+      mockExec.mockClear();
+      fireEvent.keyDown(document, { key: 'g' });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('grab'));
+    });
+
+    // 窓が閉じている間に効いてしまうと、開く前に押しっぱなしにするのが最適手に
+    // なってしまう ── 反射勝負そのものが壊れる。
+    it('ignores g while the grab window is shut', async () => {
+      mockExec.mockResolvedValue(passState);
+      renderWithProviders(<SpoonsPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      mockExec.mockClear();
+      fireEvent.keyDown(document, { key: 'g' });
+      await waitFor(() => expect(screen.getByTestId('spoons-pass-0')).toBeInTheDocument());
+      expect(mockExec).not.toHaveBeenCalled();
+    });
+
+    it('passes the nth card with its number key', async () => {
+      mockExec.mockResolvedValue(passState);
+      renderWithProviders(<SpoonsPage />);
+
+      const second = await screen.findByTestId('spoons-pass-1');
+      expect(second).toHaveAttribute('aria-keyshortcuts', '2');
+
+      mockExec.mockClear();
+      fireEvent.keyDown(document, { key: '2' });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass', { cardIndex: 1 }));
+    });
+
+    // 手札は 4 枚。5 を割り当てると存在しない札を渡そうとする。
+    it('binds only as many number keys as there are cards', async () => {
+      mockExec.mockResolvedValue(passState);
+      renderWithProviders(<SpoonsPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      mockExec.mockClear();
+      fireEvent.keyDown(document, { key: '5' });
+      await waitFor(() => expect(screen.getByTestId('spoons-pass-0')).toBeInTheDocument());
+      expect(mockExec).not.toHaveBeenCalled();
+    });
+
+    // 窓が開いている間はパスできない (canPass が false)。キーだけがその規則を
+    // 迂回すると、マウスでは不可能な手がキーボードでだけ通る。
+    it('ignores the number keys while the grab window is open', async () => {
+      mockExec.mockResolvedValue(grabState);
+      renderWithProviders(<SpoonsPage />);
+      await screen.findByTestId('spoons-grab-button');
+
+      mockExec.mockClear();
+      fireEvent.keyDown(document, { key: '1' });
+      await waitFor(() => expect(screen.getByTestId('spoons-grab-button')).toBeInTheDocument());
+      expect(mockExec).not.toHaveBeenCalled();
+    });
+  });
 });
