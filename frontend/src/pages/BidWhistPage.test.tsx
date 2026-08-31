@@ -166,6 +166,38 @@ describe('BidWhistPage', () => {
     expect(progress.querySelector('.bg-ds-success')).not.toBeNull();
   });
 
+  // 6 枚そろったときだけ交換が飛ぶ。ここが通っていないと、進捗バーが満了を
+  // 示していても実際には何も起きない。
+  it('sends the exchange only once all six cards are selected', async () => {
+    const sixCards = Array.from({ length: 6 }, (_, i) => card('SPADE', i + 2));
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        declarerIdx: 0,
+        players: [
+          player(0, true, sixCards, { isDeclarer: true }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<BidWhistPage />);
+    await screen.findByTestId('kitty-progress');
+
+    // 5 枚では飛ばない (否定コントロール)。
+    for (let i = 0; i < 5; i++) {
+      fireEvent.click(screen.getByTestId(`hand-card-${i}`));
+    }
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('exchange-button'));
+    expect(mockExec).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByTestId('hand-card-5'));
+    fireEvent.click(screen.getByTestId('exchange-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', { discardIndices: [0, 1, 2, 3, 4, 5] }));
+  });
+
   // **棒の長さだけでは支援技術に何も届かない。**バーの存在すら伝わっていなかった (#6428)。
   it('exposes the kitty progress as a progressbar that tracks the selection', async () => {
     const sixCards = Array.from({ length: 6 }, (_, i) => card('SPADE', i + 2));
