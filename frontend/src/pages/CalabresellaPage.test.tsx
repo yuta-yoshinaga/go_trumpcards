@@ -264,4 +264,39 @@ describe('CalabresellaPage', () => {
     renderWithProviders(<CalabresellaPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  // **催促は常設のライブ領域から出す** ── 出現と同時に付けた領域は変化として
+  // 扱われず読み上げられない (#5955)。同じファイルの hint-live は既にこの形
+  // だったのに、ビッド/捨て札の催促だけ素の div のままだった (#6484)。
+  it('keeps the prompt live region mounted and announces the bid prompt', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<CalabresellaPage />);
+
+    const live = await screen.findByTestId('calabresella-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 催促は**その領域の中**にある ── 隣に置いただけでは読み上げられない。
+    expect(live).toContainElement(screen.getByTestId('calabresella-bid-prompt'));
+  });
+
+  it('announces the discard prompt from the same region', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<CalabresellaPage />);
+
+    const live = await screen.findByTestId('calabresella-prompt-live');
+    expect(live).toContainElement(screen.getByTestId('calabresella-discard-prompt'));
+    expect(live).toHaveAttribute('aria-live', 'polite');
+  });
+
+  // **領域は催促が無くても残る。**これが #5955 の教訓そのもの ── 領域ごと
+  // 出し入れすると、中身が入った瞬間が「変化」にならない。
+  it('keeps the region mounted and empty while no prompt applies', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<CalabresellaPage />);
+
+    const live = await screen.findByTestId('calabresella-prompt-live');
+    expect(live).toBeEmptyDOMElement();
+    expect(screen.queryByTestId('calabresella-bid-prompt')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('calabresella-discard-prompt')).not.toBeInTheDocument();
+  });
 });

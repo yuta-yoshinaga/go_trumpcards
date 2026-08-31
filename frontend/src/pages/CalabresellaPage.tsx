@@ -323,22 +323,26 @@ function CalabresellaPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.calabresella.footer} px-4 py-2.5`}>
-            {isBidPhase && (
-              <div
-                className="mb-1 text-center text-sm text-ds-accent font-semibold"
-                data-testid="calabresella-bid-prompt"
-              >
-                {t('bidPhase')}
-              </div>
-            )}
-            {canDiscard && discardRemaining > 0 && (
-              <div
-                className="mb-1 text-center text-sm text-ds-accent font-semibold"
-                data-testid="calabresella-discard-prompt"
-              >
-                {t('discardPhaseRemaining', { count: discardRemaining })}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955、hint-live と同じ形)。 */}
+            <div data-testid="calabresella-prompt-live" role="status" aria-live="polite">
+              {isBidPhase && (
+                <div
+                  className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                  data-testid="calabresella-bid-prompt"
+                >
+                  {t('bidPhase')}
+                </div>
+              )}
+              {canDiscard && discardRemaining > 0 && (
+                <div
+                  className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                  data-testid="calabresella-discard-prompt"
+                >
+                  {t('discardPhaseRemaining', { count: discardRemaining })}
+                </div>
+              )}
+            </div>
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
