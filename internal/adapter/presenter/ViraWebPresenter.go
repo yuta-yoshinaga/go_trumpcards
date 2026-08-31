@@ -45,6 +45,7 @@ func (p *ViraWebPresenter) buildBase(g interfaces.ViraGame) *controller.ViraWebO
 	resObj.Pot = g.GetPot()
 	resObj.LastRoundDelta = g.GetLastRoundDelta()
 	resObj.LastRoundMade = g.GetLastRoundMade()
+	resObj.LastRoundPotWon = g.GetLastRoundPotWon()
 	resObj.Bids = p.bidsOutput(g)
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerPlayer = g.GetWinnerPlayer()

@@ -20,6 +20,8 @@
   "noTrump": "none",
   "playerLine": "{{name}} ({{role}}): {{cards}} cards  Score: {{score}}  Tricks: {{tricks}}",
   "potLine": "Pot: {{pot}}",
+  "potWon": "Declarer won {{chips}} chips from the pot",
+  "potCarried": "Pot carried over: {{chips}} chips",
   "promptBid": "Place a bid (0=Pass, 1=Gask, 2=Solo, 3=Misère, 4=Vira)",
   "promptBidHelp": "bid <0-4> ... 0=Pass, 1=Gask (7 tricks), 2=Solo (8 tricks), 3=Misere (0 tricks, no trump), 4=Vira (10 tricks); any non-pass bid must beat the current one",
   "promptPlay": "Turn: {{name}}",

@@ -3438,6 +3438,7 @@ const baseViraState: ViraResponse = {
   pot: 3,
   lastRoundDelta: [0, 0, 0],
   lastRoundMade: false,
+  lastRoundPotWon: 0,
   currentTrick: [],
   playerScores: [0, 0, 0],
   roundTricks: [0, 0, 0],

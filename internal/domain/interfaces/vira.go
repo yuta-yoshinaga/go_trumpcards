@@ -71,6 +71,8 @@ type ViraGame interface {
 	GetLastRoundDelta() [domain.ViraPlayerCnt]int
 	// GetLastRoundMade 直前ラウンドで契約が達成されたかを取得する
 	GetLastRoundMade() bool
+	// GetLastRoundPotWon 直前ラウンドで契約達成時に総取りしたポット額を取得する (失敗時は0)
+	GetLastRoundPotWon() int
 	// GetWinnerPlayer 勝利プレイヤーを取得する (-1=未確定/同点)
 	GetWinnerPlayer() int
 	// GetPlayerCnt プレイヤー数を取得する
