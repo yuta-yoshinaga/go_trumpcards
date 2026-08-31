@@ -200,6 +200,11 @@ function GanjifaPageContent() {
             <div
               className={`text-center mb-2 text-sm font-semibold ${trumpIsStrong ? 'text-ds-info' : 'text-ds-warning'}`}
               data-testid="ganjifa-trump-group"
+              // **向きはラウンドごとに反転する。**色と文字でしか伝わっていないと、
+              // 支援技術の利用者は反転に気づかないまま前の並び順で打ってしまう。
+              // 領域は常設で中身だけが差し替わるので、変化がそのまま告知になる (#6449)。
+              role="status"
+              aria-live="polite"
             >
               {trumpIsStrong ? t('trumpGroupStrong') : t('trumpGroupWeak')}
             </div>
