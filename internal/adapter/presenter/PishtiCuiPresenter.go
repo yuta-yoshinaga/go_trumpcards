@@ -39,7 +39,8 @@ func (p *PishtiCuiPresenter) Output(pg interfaces.PishtiGame, lastErr error) str
 				}
 				b.WriteString(line + "\n")
 			}
-			// **カード点は含まないと断る。**確実な分だけの近似値なので。
+			// **暫定なのは最多捕獲の +3 だけ。**カード点は捕獲した瞬間に確定するので
+			// 含まれている (#6468)。断り書きもその範囲に絞る。
 			b.WriteString(i18n.T("pishti.provisionalNote") + "\n")
 		}
 		b.WriteString("----------\n")
