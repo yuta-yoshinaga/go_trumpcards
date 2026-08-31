@@ -547,6 +547,8 @@
     "alaska.playing": "Playing",
     "alaska.stalemate": "No moves can lead to a win. Please undo or give up.",
     "alaska.stalemateWithEscape": "Stalemate. Undo {{count}} moves to find another play.",
+    "allfours.begAfterRun": "After running the cards {{count}} time(s) the deck ran out, so the hand was re-dealt. Beg again or stand.",
+    "allfours.playAfterRun": "Running the cards {{count}} time(s) added cards and changed the trump — lead a card.",
     "allfours.begPhase": "Beg for a new deal, or stand pat.",
     "allfours.giftPhase": "Answer the beg: give a point, or deal again.",
     "allfours.playPhase.follow": "Your turn — follow the led suit.",

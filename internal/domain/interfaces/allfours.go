@@ -57,6 +57,8 @@ type AllFoursGame interface {
 	GetTurnUp() *domain.Card
 	// GetRunCount このディールの run 回数を取得する
 	GetRunCount() int
+	// GetLastRunCount 直近の「Run the cards」が何回連続したかを取得する (0 = 起きていない)
+	GetLastRunCount() int
 	// GetWinnerIdx 勝者インデックスを取得する
 	GetWinnerIdx() int
 	// GetPlayerCnt プレイヤー数を取得する
