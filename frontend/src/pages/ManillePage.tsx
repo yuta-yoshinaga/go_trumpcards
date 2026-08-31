@@ -329,6 +329,24 @@ function ManillePageContent() {
                   </div>
                 </details>
 
+                {/* **途中経過が追えなかった。**姉妹ゲーム (Sueca / Forty-Fives /
+                    Twenty-Nine / Klaverjas / Doppelkopf) はどれも進行中の取得点を
+                    常時出しているのに、マニーユは結果まで累計点しか見えなかった
+                    (#6442)。ラウンドが終われば下の結果表示が引き継ぐので、
+                    ここは進行中だけ。 */}
+                {!(isRoundEnd || isGameEnd) && (
+                  <div
+                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    role="status"
+                    aria-live="polite"
+                    data-testid="manille-round-points"
+                  >
+                    <div className="mb-1 text-ds-text-primary">{t('roundProgress.title')}</div>
+                    <div>{t('roundResult.teamA', { points: state.roundCardPoints[0] })}</div>
+                    <div>{t('roundResult.teamB', { points: state.roundCardPoints[1] })}</div>
+                  </div>
+                )}
+
                 {/* Round result */}
                 {(isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
