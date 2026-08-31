@@ -148,6 +148,51 @@ describe('FortyFivesPage', () => {
     await waitFor(() => expect(screen.getByText(/現在の最高ビッド: 25 \(Jink\)/)).toBeInTheDocument());
   });
 
+  it('renders bid history for all 4 players in bid phase, distinguishing pass from not yet bid', async () => {
+    mockExec.mockResolvedValue(
+      makeFortyFivesState({
+        bids: [0, 0, 20, 0],
+        bidDone: [true, false, true, false],
+      }),
+    );
+    renderWithProviders(<FortyFivesPage />);
+    const history = await screen.findByTestId('ff-bid-history');
+    expect(history).toHaveTextContent('入札状況:');
+    // Human (id 0) passed: bids=0, bidDone=true -> "あなた=パス"
+    expect(history).toHaveTextContent('あなた=パス');
+    // CPU 1 (id 1) not bid yet: bidDone=false -> "CPU 1=未入札"
+    expect(history).toHaveTextContent('CPU 1=未入札');
+    // CPU 2 (id 2) bid 20: bids=20, bidDone=true -> "CPU 2=20"
+    expect(history).toHaveTextContent('CPU 2=20');
+    // CPU 3 (id 3) not bid yet: bidDone=false -> "CPU 3=未入札"
+    expect(history).toHaveTextContent('CPU 3=未入札');
+  });
+
+  it('renders bid history even on a CPU bid turn (isHumanBidTurn=false)', async () => {
+    mockExec.mockResolvedValue(
+      makeFortyFivesState({
+        phase: 0,
+        isHumanBidTurn: false,
+        currentPlayerIdx: 1,
+        bids: [15, 0, 0, 0],
+        bidDone: [true, false, false, false],
+      }),
+    );
+    renderWithProviders(<FortyFivesPage />);
+    const history = await screen.findByTestId('ff-bid-history');
+    expect(history).toBeInTheDocument();
+    expect(history).toHaveTextContent('あなた=15');
+    // Bid buttons are not shown on CPU turn
+    expect(screen.queryByTestId('bid-0')).not.toBeInTheDocument();
+  });
+
+  it('does not render bid history outside the bid phase', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<FortyFivesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('ff-bid-history')).not.toBeInTheDocument();
+  });
+
   it('does not show the play button on a CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<FortyFivesPage />);

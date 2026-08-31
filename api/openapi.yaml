@@ -65236,7 +65236,12 @@ components:
           type: array
           items:
             type: integer
-          description: Bid placed by each player in seat order (0=Pass, 15, 20, 25; -1=not yet bid)
+          description: Bid placed by each player in seat order (0=Pass, 15, 20, 25). A seat that has not bid yet also reads 0 - use bidDone to tell the two apart
+        bidDone:
+          type: array
+          items:
+            type: boolean
+          description: Whether each seat has declared a bid yet, in seat order
         currentTrick:
           type: array
           items:

@@ -386,6 +386,20 @@ function FortyFivesPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
+            {isBidPhase && (
+              <div className="text-xs text-ds-text-muted mb-2" data-testid="ff-bid-history">
+                <span className="font-semibold mr-1">{t('bidHistoryTitle')}:</span>
+                <span>
+                  {state.players
+                    .map(
+                      (p, i) =>
+                        `${playerName(p.id, p.isHuman)}=${state.bidDone[i] ? bidName(state.bids[i]) : t('bidNotYet')}`,
+                    )
+                    .join(', ')}
+                </span>
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="fortyfives-action-buttons">
               {isBidPhase && isHumanBidTurn && (
                 <>
