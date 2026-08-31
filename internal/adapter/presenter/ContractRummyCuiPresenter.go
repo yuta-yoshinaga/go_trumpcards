@@ -35,6 +35,11 @@ func contractRummyPlayerStr(player *domain.ContractRummyPlayer, i int) string {
 			if mi > 0 {
 				b.WriteString(" | ")
 			}
+			// `lo <cardIdx> <playerIdx> <meldIdx>` は狙うメルドの番号を要求するのに、
+			// 場は札を並べるだけで番号がどこにも出ていなかった ── 数えて当てるしかない
+			// (#6849)。Web の CLI モードは既に `M0:` と番号を出しているので、
+			// 番号が無いのは CUI だけ。手札の `[0]` 表記に合わせる。
+			b.WriteString("[" + strconv.Itoa(mi) + "] ")
 			cardStrs := make([]string, len(meld))
 			for ci, c := range meld {
 				cardStrs[ci] = cuiCardStr(c)
