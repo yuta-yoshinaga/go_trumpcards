@@ -177,6 +177,16 @@ func TestBristolWebPresenterCarriesTheStalemate(t *testing.T) {
 	assert.Equal(t, 2, out.UndoToEscape)
 }
 
+// `buildLegalTargets` が作る。TargetsOutput は通常の盤面をそのまま返すこと ──
+// Web には `targets` 専用の応答形式が無い (#6427)。
+func TestBristolWebPresenter_TargetsOutputIsTheOrdinaryBoard(t *testing.T) {
+	bg := new(interfaces.MockBristolGame)
+	setupBristolOutputMock(bg)
+	p := new(BristolWebPresenter)
+	assert.JSONEq(t, p.Output(bg, nil), p.TargetsOutput(bg, "tableau", 0))
+	assert.JSONEq(t, p.TargetsOutput(bg, "tableau", 0), p.TargetsOutput(bg, "fan", 2))
+}
+
 // bristolMockWithout drops the listed expectations so a test can override them.
 func bristolMockWithout(calls []*mock.Call, methods ...string) []*mock.Call {
 	drop := make(map[string]bool, len(methods))

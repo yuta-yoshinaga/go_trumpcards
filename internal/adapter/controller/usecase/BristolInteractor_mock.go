@@ -51,6 +51,11 @@ func (_m *MockBristolInteractor) Hint() string {
 	return ret.Get(0).(string)
 }
 
+func (_m *MockBristolInteractor) Targets(zone string, col int) string {
+	ret := _m.Called(zone, col)
+	return ret.Get(0).(string)
+}
+
 func (_m *MockBristolInteractor) AutoComplete() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)

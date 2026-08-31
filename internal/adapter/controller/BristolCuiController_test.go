@@ -4,9 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newMockBristolInteractor() *mockusecase.MockBristolInteractor {
@@ -148,4 +150,83 @@ func TestBristolCuiControllerUnknown(t *testing.T) {
 func TestBristolCuiControllerEmpty(t *testing.T) {
 	c := NewBristolCuiController(newMockBristolInteractor())
 	assert.Contains(t, c.Exec(""), "'help' でコマンド一覧を表示します。")
+}
+
+// #6427: 8 列 + 3 ファン + 4 組札を「押して弾かれる」で探るしかなかった。
+func TestBristolCuiControllerTargets(t *testing.T) {
+	t.Run("tableau source with t alias", func(t *testing.T) {
+		bi := newMockBristolInteractor()
+		c := NewBristolCuiController(bi)
+		bi.On("Targets", "tableau", 0).Return("targets_tt0")
+		assert.Equal(t, "targets_tt0", c.Exec("t t 0"))
+		bi.AssertExpectations(t)
+	})
+
+	t.Run("fan source with targets alias", func(t *testing.T) {
+		bi := newMockBristolInteractor()
+		c := NewBristolCuiController(bi)
+		bi.On("Targets", "fan", 1).Return("targets_fn1")
+		assert.Equal(t, "targets_fn1", c.Exec("targets n 1"))
+		bi.AssertExpectations(t)
+	})
+}
+
+func TestBristolCuiControllerTargetsErrors(t *testing.T) {
+	t.Run("no args prompts for source zone", func(t *testing.T) {
+		bi := newMockBristolInteractor()
+		c := NewBristolCuiController(bi)
+		out := c.Exec("t")
+		assert.True(t, cuiutil.IsPromptRequest(out))
+		assert.Contains(t, out, i18n.T("bristol.promptSourceZone"))
+		bi.AssertNotCalled(t, "Targets", mock.Anything, mock.Anything)
+	})
+
+	t.Run("invalid source zone", func(t *testing.T) {
+		bi := newMockBristolInteractor()
+		c := NewBristolCuiController(bi)
+		out := c.Exec("t x 0")
+		assert.Contains(t, out, "x")
+		bi.AssertNotCalled(t, "Targets", mock.Anything, mock.Anything)
+	})
+
+	t.Run("tableau prompts for column", func(t *testing.T) {
+		bi := newMockBristolInteractor()
+		c := NewBristolCuiController(bi)
+		out := c.Exec("t t")
+		assert.True(t, cuiutil.IsPromptRequest(out))
+		assert.Contains(t, out, i18n.T("bristol.promptFromColumn"))
+		bi.AssertNotCalled(t, "Targets", mock.Anything, mock.Anything)
+	})
+
+	t.Run("tableau rejects invalid column", func(t *testing.T) {
+		bi := newMockBristolInteractor()
+		c := NewBristolCuiController(bi)
+		out := c.Exec("t t abc")
+		assert.Contains(t, out, "abc")
+		bi.AssertNotCalled(t, "Targets", mock.Anything, mock.Anything)
+	})
+
+	t.Run("fan prompts for index", func(t *testing.T) {
+		bi := newMockBristolInteractor()
+		c := NewBristolCuiController(bi)
+		out := c.Exec("t n")
+		assert.True(t, cuiutil.IsPromptRequest(out))
+		assert.Contains(t, out, i18n.T("bristol.promptFan"))
+		bi.AssertNotCalled(t, "Targets", mock.Anything, mock.Anything)
+	})
+
+	t.Run("fan rejects invalid index", func(t *testing.T) {
+		bi := newMockBristolInteractor()
+		c := NewBristolCuiController(bi)
+		out := c.Exec("t n xyz")
+		assert.Contains(t, out, "xyz")
+		bi.AssertNotCalled(t, "Targets", mock.Anything, mock.Anything)
+	})
+}
+
+// **追加コマンドが候補一覧に入っていること。**
+func TestBristolCuiControllerSuggestsTargets(t *testing.T) {
+	bi := newMockBristolInteractor()
+	c := NewBristolCuiController(bi)
+	assert.Contains(t, c.Exec("target t 0"), "targets")
 }

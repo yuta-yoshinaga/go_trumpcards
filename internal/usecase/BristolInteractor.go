@@ -28,6 +28,8 @@ type BristolInteractorIF interface {
 	GiveUp() string
 	// Hint ヒント取得
 	Hint() string
+	// Targets 移動元ゾーン zone の列 col の札を置ける先を一覧する
+	Targets(zone string, col int) string
 	// AutoComplete オートコンプリート
 	AutoComplete() string
 	// ActionLog 棋譜出力
@@ -88,6 +90,11 @@ func (bi *BristolInteractor) GiveUp() string {
 // Hint ヒント取得
 func (bi *BristolInteractor) Hint() string {
 	return bi.op.HintOutput(bi.Game)
+}
+
+// Targets 移動元ゾーン zone の列 col の札を置ける先を一覧する
+func (bi *BristolInteractor) Targets(zone string, col int) string {
+	return bi.op.TargetsOutput(bi.Game, zone, col)
 }
 
 // AutoComplete オートコンプリート

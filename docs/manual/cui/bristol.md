@@ -55,6 +55,7 @@ flowchart TD
 | `m t <col> f` | — | タブロー列からファウンデーションへ |
 | `m n <fan> t <col>` | — | ファンからタブロー列へ（降順） |
 | `m n <fan> f` | — | ファンからファウンデーションへ |
+| `targets <zone> <col>` | `t` | その札を置ける先を一覧する（zone: `t`=タブロー / `n`=ファン） |
 | `g` / `giveup` | `g` | ギブアップ |
 | `hint` | `h` | ヒント |
 | `ac` / `autocomplete` | `ac` | 自動完成 |

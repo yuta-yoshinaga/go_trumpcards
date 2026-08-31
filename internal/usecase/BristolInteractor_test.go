@@ -114,6 +114,14 @@ func TestBristolInteractorHint(t *testing.T) {
 	assert.Equal(t, "hint", bi.Hint())
 }
 
+func TestBristolInteractorTargets(t *testing.T) {
+	bg := newMockBristolGame()
+	op := newMockBristolPresenter()
+	bi := NewBristolInteractor(bg, op)
+	op.On("TargetsOutput", bg, "tableau", 2).Return("targets_output")
+	assert.Equal(t, "targets_output", bi.Targets("tableau", 2))
+}
+
 func TestBristolInteractorAutoComplete(t *testing.T) {
 	bg := newMockBristolGame()
 	op := newMockBristolPresenter()
