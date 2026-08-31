@@ -84,6 +84,31 @@ func threeCardBragRaiseRangeStr(g interfaces.ThreeCardBragGame) string {
 	) + "\n"
 }
 
+// threeCardBragCostNoticeStr says what a call actually costs the human right now.
+//
+// **Seen になった瞬間に支払額が倍になる。**この倍率は `threeCardBragRaiseRangeStr`
+// の上限計算には入っているが、数字の出所は説明されていなかった ── CUI プレイヤーは
+// 実際にコマンドを打つまで倍額になったことを知り得ない。Web は `tcb-cost-notice` で
+// 常に出している。人間の手番でないときは何も出さない (相手の支払額は関係ない)。
+func threeCardBragCostNoticeStr(g interfaces.ThreeCardBragGame) string {
+	player := g.GetPlayer(g.GetCurrentPlayerIdx())
+	if player == nil || !player.GetIsHuman() {
+		return ""
+	}
+	stake := g.GetStake()
+	if player.GetSeen() {
+		// 倍率は Web の threeCardBragActualCost と同じ ── 片方だけ変えると、
+		// 2 つの画面が別々の支払額を約束することになる。
+		return i18n.Tf("threecardbrag.costNoticeSeen",
+			"cost", strconv.Itoa(stake*threeCardBragSeenMultiplier)) + "\n"
+	}
+	return i18n.Tf("threecardbrag.costNoticeBlind", "cost", strconv.Itoa(stake)) + "\n"
+}
+
+// threeCardBragSeenMultiplier は手札を見た側が支払う倍率。
+// Web の `threeCardBragActualCost` (frontend/src/utils/threeCardBragRaise.ts) と同じ値。
+const threeCardBragSeenMultiplier = 2
+
 // ThreeCardBragCuiPresenter renders the Three Card Brag CUI view.
 type ThreeCardBragCuiPresenter struct{}
 
@@ -119,6 +144,7 @@ func (p *ThreeCardBragCuiPresenter) Output(g interfaces.ThreeCardBragGame, lastE
 		case domain.ThreeCardBragPhaseBetting:
 			b.WriteString(i18n.T("threecardbrag.promptBetting") + "\n")
 			b.WriteString(i18n.T("threecardbrag.promptBettingHelp") + "\n")
+			b.WriteString(threeCardBragCostNoticeStr(g))
 			b.WriteString(threeCardBragRaiseRangeStr(g))
 		case domain.ThreeCardBragPhaseShowdown:
 			b.WriteString(i18n.T("threecardbrag.promptShowdown") + "\n")

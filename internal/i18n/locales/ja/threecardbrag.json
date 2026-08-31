@@ -29,5 +29,7 @@
   "helpNext": "  n                    次のディールへ",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpExampleSee": "  s                    手札を見てシーンになる",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "costNoticeBlind": "ブラインド: ベットはステーク（{{cost}} チップ）です。手札を見ると以降のベットは2倍になります。",
+  "costNoticeSeen": "シーン: ベットはステークの2倍です — いまコールすると {{cost}} チップかかります。"
 }
