@@ -225,6 +225,40 @@ function KingPageContent() {
                   label={t('currentTrick')}
                   dataTutorial="king-trick-display"
                 />
+
+                {/* **King にはトリック終了で一旦止まるフェーズが無い。**
+                    SelectContract → Play → DealEnd としか進まないので、CPU が
+                    続けて打つと直前のトリックは currentTrick が置き換わった瞬間に
+                    消える ── 見返す先が要る (#6487、Jass の previousTrick と同じ形)。 */}
+                <details className="mt-2 p-2 rounded bg-black/30" data-testid="king-previous-trick">
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {t('previousTrick')}
+                  </summary>
+                  <div className="mt-1">
+                    {state.lastTrick.length > 0 ? (
+                      <TrickDisplay
+                        currentTrick={state.lastTrick}
+                        players={state.players}
+                        cardWidth={Math.round(cardWidth * 0.7)}
+                        label={
+                          state.lastTrickWinner >= 0
+                            ? t('previousTrickWinner', {
+                                name: playerName(
+                                  state.lastTrickWinner,
+                                  state.players[state.lastTrickWinner]?.isHuman === true,
+                                ),
+                              })
+                            : t('previousTrick')
+                        }
+                        winnerIdx={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+                      />
+                    ) : (
+                      <div className="text-ds-text-muted text-sm" data-testid="king-previous-trick-empty">
+                        {t('previousTrickEmpty')}
+                      </div>
+                    )}
+                  </div>
+                </details>
               </div>
 
               {/* Right: info sidebar */}
