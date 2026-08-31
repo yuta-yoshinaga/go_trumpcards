@@ -168,6 +168,8 @@ function BasraPageContent() {
   const canPlay = isHumanTurn && handIndex !== null;
 
   const winnerNames = state.winners.map((i) => (state.players[i]?.isHuman ? t('you') : t('cpu', { id: i }))).join(', ');
+  // 内訳の各賞は席番号で返る。名前に直す口はここ 1 つに寄せる。
+  const seatName = (idx: number): string => (state.players[idx]?.isHuman ? t('you') : t('cpu', { id: idx }));
 
   // A player's Basra counter is emphasised while their most recent sweep is celebrated.
   const basraEmphasisClass =
@@ -352,6 +354,40 @@ function BasraPageContent() {
                     })}
                   </div>
                 ))}
+                {/* **合計だけでは、なぜその点なのかが分からない。**サーバは
+                    A / バスラ / 7♦ / 10♦ / 最多枚数の内訳を全部返しているのに
+                    一度も読まれていなかった (#6490)。取った席がいない項目
+                    (-1) は行ごと出さない ── 誰も取っていない賞を並べない。 */}
+                {state.lastDealDetail && (
+                  <div className="mt-2 pt-2 border-t border-white/10" data-testid="basra-breakdown">
+                    <div className="mb-1 text-ds-text-primary">{t('result.breakdownTitle')}</div>
+                    {state.players.map((p) => (
+                      <div key={p.id} data-testid={`basra-breakdown-${p.id}`}>
+                        {t('result.breakdownRow', {
+                          name: p.isHuman ? t('you') : t('cpu', { id: p.id }),
+                          aces: state.lastDealDetail?.aces[p.id] ?? 0,
+                          basras: state.lastDealDetail?.basras[p.id] ?? 0,
+                          cards: state.lastDealDetail?.cards[p.id] ?? 0,
+                        })}
+                      </div>
+                    ))}
+                    {state.lastDealDetail.hasSevenDiamonds >= 0 && (
+                      <div data-testid="basra-seven-diamonds">
+                        {t('result.sevenDiamonds', { name: seatName(state.lastDealDetail.hasSevenDiamonds) })}
+                      </div>
+                    )}
+                    {state.lastDealDetail.hasTenDiamonds >= 0 && (
+                      <div data-testid="basra-ten-diamonds">
+                        {t('result.tenDiamonds', { name: seatName(state.lastDealDetail.hasTenDiamonds) })}
+                      </div>
+                    )}
+                    {state.lastDealDetail.mostCards >= 0 && (
+                      <div data-testid="basra-most-cards">
+                        {t('result.mostCards', { name: seatName(state.lastDealDetail.mostCards) })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
