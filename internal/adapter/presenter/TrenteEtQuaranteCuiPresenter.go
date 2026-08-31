@@ -108,14 +108,38 @@ func (p *TrenteEtQuaranteCuiPresenter) resultLine(g interfaces.TrenteEtQuaranteG
 		return color.Yellow(i18n.T("trenteetquarante.result.refait")) + "\n" +
 			i18n.T("trenteetquarante.result.refaitWhy") + "\n"
 	}
+	// **なぜその配当なのかは出目差で決まる。**Web は `result.margin` で
+	// 勝ち列・差・両列の出目を出しているのに、CUI はラベルだけだった (#6492)。
+	// refait のときは勝ち列が無いので出さない (Web も出さない)。
+	margin := trenteEtQuaranteMarginLine(g)
 	switch g.GetResult() {
 	case domain.TrenteEtQuaranteResultWin:
-		return color.Green(i18n.T("trenteetquarante.result.win")) + "\n"
+		return color.Green(i18n.T("trenteetquarante.result.win")) + "\n" + margin
 	case domain.TrenteEtQuaranteResultDraw:
-		return color.Yellow(i18n.T("trenteetquarante.result.push")) + "\n"
+		return color.Yellow(i18n.T("trenteetquarante.result.push")) + "\n" + margin
 	default:
-		return color.Red(i18n.T("trenteetquarante.result.lose")) + "\n"
+		return color.Red(i18n.T("trenteetquarante.result.lose")) + "\n" + margin
 	}
+}
+
+// trenteEtQuaranteMarginLine は勝ち列と出目差の 1 行を返す (勝ち列が無ければ空)。
+//
+// 差は Web と同じ `loserTotal - winnerTotal`。**低いほうが勝つ**ゲームなので、
+// 引く順を逆にすると符号が反転する。
+func trenteEtQuaranteMarginLine(g interfaces.TrenteEtQuaranteGame) string {
+	row := g.GetWinningRow()
+	if row != domain.TrenteEtQuaranteRowNoir && row != domain.TrenteEtQuaranteRowRouge {
+		return ""
+	}
+	winnerTotal, loserTotal := g.GetNoirTotal(), g.GetRougeTotal()
+	if row == domain.TrenteEtQuaranteRowRouge {
+		winnerTotal, loserTotal = loserTotal, winnerTotal
+	}
+	return i18n.Tf("trenteetquarante.result.margin",
+		"winner", trenteEtQuaranteWinningName(row),
+		"diff", strconv.Itoa(loserTotal-winnerTotal),
+		"winnerTotal", strconv.Itoa(winnerTotal),
+		"loserTotal", strconv.Itoa(loserTotal)) + "\n"
 }
 
 // HintOutput emits the current Trente et Quarante hint.

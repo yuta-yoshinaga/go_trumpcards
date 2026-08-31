@@ -22,6 +22,7 @@
   "promptBet": "Place a bet: b <type> <stake> (type 0=Noir, 1=Rouge, 2=Couleur, 3=Inverse)",
   "promptResult": "Round over. Use nr for the next round.",
   "promptHelp": "b <t> <stake> to bet, nr for the next round",
+  "result.margin": "{{winner}} wins by {{diff}} ({{winnerTotal}} vs {{loserTotal}})",
   "result.win": "You win!",
   "result.lose": "You lose.",
   "result.push": "Push — your stake is returned.",
