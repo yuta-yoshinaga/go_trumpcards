@@ -15,6 +15,7 @@
     "discardPile": "Discard",
     "total": "Total",
     "centralPile": "Central Pile",
+    "penaltyOwner": "{{name}} is paying",
     "penaltyRemaining": "Penalty Left",
     "lastCard": "Last Card",
     "rounds": "Rounds",
@@ -48,5 +49,5 @@
     "resetButton": "Start a new game."
   },
   "phaseAnnounce": "Phase: {{phase}}",
-  "phaseAnnouncePenalty": "Phase: {{phase}}. Penalty remaining {{count}} cards"
+  "phaseAnnouncePenalty": "Phase: {{phase}}. {{name}} is paying {{count}} more cards"
 }

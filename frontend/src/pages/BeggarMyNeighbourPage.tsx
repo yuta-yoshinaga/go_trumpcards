@@ -221,11 +221,17 @@ function BeggarMyNeighbourPageContent() {
         ? t('phase.collect')
         : t('phase.play');
 
+  // **誰が払っているのかが画面のどこにも出ていなかった。**サーバは毎レスポンス
+  // `penaltyOwnerIdx` を返しているのに一度も読まれておらず、残り枚数と中央の
+  // 警告リングだけでは「自分が払う側か相手が払う側か」が分からなかった (#6478)。
+  const penaltyOwnerName =
+    state.penaltyOwnerIdx === 0 ? tc('player.you') : tc('player.cpu', { id: state.penaltyOwnerIdx });
+
   // Phase transitions (and the penalty countdown) are conveyed only by the
   // central-pile ring color, so mirror them into an sr-only live region.
   const phaseAnnouncement =
     state.phase === BeggarMyNeighbourPhase.PAY_PENALTY
-      ? t('phaseAnnouncePenalty', { phase: phaseName, count: state.penaltyRemaining })
+      ? t('phaseAnnouncePenalty', { phase: phaseName, count: state.penaltyRemaining, name: penaltyOwnerName })
       : t('phaseAnnounce', { phase: phaseName });
 
   return (
@@ -321,9 +327,14 @@ function BeggarMyNeighbourPageContent() {
                   {t('label.centralPile')}: {state.centralPileSize}
                 </div>
                 {state.phase === BeggarMyNeighbourPhase.PAY_PENALTY && (
-                  <div className="text-xs text-ds-warning mt-1">
-                    {t('label.penaltyRemaining')}: {state.penaltyRemaining}
-                  </div>
+                  <>
+                    <div className="text-xs text-ds-warning mt-1" data-testid="bmn-penalty-owner">
+                      {t('label.penaltyOwner', { name: penaltyOwnerName })}
+                    </div>
+                    <div className="text-xs text-ds-warning mt-1">
+                      {t('label.penaltyRemaining')}: {state.penaltyRemaining}
+                    </div>
+                  </>
                 )}
                 {state.centralPileSize > 0 ? (
                   <div
