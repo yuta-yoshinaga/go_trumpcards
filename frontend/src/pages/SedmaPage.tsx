@@ -24,7 +24,7 @@ import { CPU_DIFFICULTY_OPTIONS, TARGET_POINTS_OPTIONS, useSedmaGame } from '../
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { SedmaResponse } from '../types/card';
+import type { Card, SedmaResponse } from '../types/card';
 import { SedmaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseSedmaCommand, SEDMA_HELP } from '../utils/cli/commands/sedmaCommands';
@@ -33,6 +33,20 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
+
+/** Rank that captures any trick regardless of suit (`domain.SedmaWildValue`). */
+const SEDMA_WILD_VALUE = 7;
+
+/**
+ * Indices of the wild sevens in a hand.
+ *
+ * **7 はどのスートでもトリックを奪える。**フォロー義務が無い捕獲ゲームなので、
+ * 手札のどれが特別なのかが盤面から読み取れないと規則そのものが見えない (#6444)。
+ * 印は `trumpIndices` の追加リングで、選択や合法手の枠を上書きしない。
+ */
+function wildSevenIndices(cards: Card[]): number[] {
+  return cards.flatMap((c, i) => (c.value === SEDMA_WILD_VALUE ? [i] : []));
+}
 
 /** Sedma tutorial step definitions. */
 const SEDMA_TUTORIAL_STEPS: TutorialStep[] = [
@@ -310,6 +324,13 @@ function SedmaPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.sedma.footer} px-4 py-2.5`}>
+            {/* **印だけでは規則にならない。**リングが何を意味するのかを言葉でも
+                置く ── 印の意味が分からなければ、どれが 7 か分かっても
+                「なぜ強いのか」は分からないまま。CUI は `promptPlayHelp` で
+                最初から説明していた (#6444)。 */}
+            <div className="mb-1 text-center text-ds-text-muted text-xs" data-testid="sedma-wild-rule">
+              {t('wildRule')}
+            </div>
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
@@ -320,6 +341,8 @@ function SedmaPageContent() {
                 dataTutorialPrefix="sedma"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
+                trumpIndices={wildSevenIndices(humanPlayer.cards)}
+                trumpTitle={t('wildRule')}
               />
             )}
 
