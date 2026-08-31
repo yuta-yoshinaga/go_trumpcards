@@ -128,6 +128,12 @@ func (p *LooCuiPresenter) Output(g interfaces.LooGame, lastErr error) string {
 						"name", cuiPlayerName(g.GetPlayer(i), i),
 						"delta", looSignedInt(delta)) + "\n")
 				}
+				// 誰も Loo されなければポットは次ディールへ繰り越される。次の pot が
+				// ante 分より大きくなる理由がこれ (#6489)。0 のときは出さない。
+				if det.PotCarry > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("loo.potCarryLine",
+						"chips", strconv.Itoa(det.PotCarry))) + "\n")
+				}
 			}
 		}
 		b.WriteString(i18n.T("loo.promptHelp") + "\n")

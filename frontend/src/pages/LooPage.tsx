@@ -302,6 +302,14 @@ function LooPageContent() {
                         })}
                       </div>
                     ))}
+                    {/* 誰も Loo されなければポットは次ディールへ繰り越される。
+                        次の pot が ante 分より大きくなる理由がこれ (#6489)。
+                        0 のときは出さない ── looed と同じ扱い。 */}
+                    {state.lastDealDetail.potCarry > 0 && (
+                      <div className="mt-1 text-ds-warning" data-testid="loo-pot-carry">
+                        {t('dealResult.potCarry', { chips: state.lastDealDetail.potCarry })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

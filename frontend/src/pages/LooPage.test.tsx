@@ -211,4 +211,31 @@ describe('LooPage', () => {
     renderWithProviders(<LooPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  // **誰も Loo されなければポットは次ディールへ繰り越される。**次の pot が
+  // ante 分より大きくなる理由がこれなのに、looed と gained は出るのに
+  // potCarry だけ読まれていなかった (#6489)。
+  it('shows how much of the pot carries to the next deal', async () => {
+    mockExec.mockResolvedValue(roundEndState); // potCarry: 12
+    renderWithProviders(<LooPage />);
+
+    const line = await screen.findByTestId('loo-pot-carry');
+    expect(line).toHaveTextContent('12');
+    expect(line.textContent).not.toContain('{{');
+  });
+
+  // 0 のときは出さない ── looed と同じ扱い。繰り越しが無い局で「0 チップ
+  // 繰り越し」と書くと、起きていないことを報告することになる。
+  it('says nothing when nothing carries over', async () => {
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      // 非 null なのは fixture の定義から明らか。`?.` を挟むと部分型になり、
+      // 必須フィールドを落とした形が通ってしまう。
+      lastDealDetail: { ...roundEndState.lastDealDetail!, potCarry: 0 },
+    });
+    renderWithProviders(<LooPage />);
+
+    await waitFor(() => expect(screen.getByTestId('loo-deal-result')).toBeInTheDocument());
+    expect(screen.queryByTestId('loo-pot-carry')).not.toBeInTheDocument();
+  });
 });

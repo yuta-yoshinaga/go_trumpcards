@@ -42,6 +42,7 @@
   "dealResult": {
     "title": "ディール結果",
     "looed": "looed（0トリック）: {{names}}",
+    "potCarry": "次ディールへ繰り越し: {{chips}}チップ",
     "gained": "{{name}} 獲得: {{chips}}チップ"
   },
   "hintAvailable": "ヒント",

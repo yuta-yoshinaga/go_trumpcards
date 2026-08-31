@@ -180,3 +180,32 @@ func TestLooCuiPresenter_WarnsAboutNegativeChips(t *testing.T) {
 		}
 	})
 }
+
+// **誰も Loo されなければポットは次ディールへ繰り越される。**次の pot が ante 分
+// より大きくなる理由がこれなのに、Web にも CUI にも出ていなかった (#6489)。
+func TestLooCuiPresenter_ShowsThePotCarry(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.LooCuiPresenter)
+
+	withCarry := func(carry int) string {
+		g := domain.NewDefaultLoo()
+		g.Reset()
+		g.SetPhase(domain.LooPhaseRoundEnd)
+		g.SetLastDealDetail(&domain.LooDealDetail{
+			PotStart:  6,
+			TrumpSuit: domain.CardDesignSpade,
+			Gained:    map[int]int{0: 0, 1: 0, 2: 0, 3: 0},
+			PotCarry:  carry,
+		})
+		return p.Output(g, nil)
+	}
+
+	assert.Contains(t, withCarry(6), i18n.Tf("loo.potCarryLine", "chips", "6"))
+
+	// 0 のときは出さない ── looed と同じ扱い。繰り越しが無い局で「0 チップ
+	// 繰り越し」と書くと、起きていないことを報告することになる。
+	prefix := strings.SplitN(i18n.T("loo.potCarryLine"), "{{", 2)[0]
+	assert.NotContains(t, withCarry(0), prefix)
+}

@@ -23,6 +23,7 @@
   "hintReasonFollowWin": "Play a winning card to take the trick",
   "hintReasonDiscardLow": "Can't win — discard a low card",
   "result.chips": "Deal over! Chips: {{chips}}",
+  "potCarryLine": "Carried to the next deal: {{chips}} chips",
   "looedList": "Looed (penalised): {{names}}",
   "chipDeltaLine": "  {{name}}: {{delta}}",
   "helpExamplePlay": "  p 0                       play hand card 0",
