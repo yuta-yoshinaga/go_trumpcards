@@ -107,6 +107,9 @@ func (p *TichuWebPresenter) setDogLeadMessage(resObj *controller.TichuWebOutput,
 		args = []string{"from", from, "to", to}
 	}
 
+	// **キーは動的に組み立てる。**`tichu.dogLeadPassedByYou` などを grep しても
+	// この呼び出しは当たらない ── `internal/i18n/locales/*/tichu.json` の 3 つの
+	// キーは、ここから `resObj.MessageCode` 経由で引かれている。消さないこと。
 	resObj.MessageParams = make(map[string]string, len(args)/2)
 	for i := 0; i < len(args); i += 2 {
 		resObj.MessageParams[args[i]] = args[i+1]

@@ -137,11 +137,6 @@ func (t *Tichu) findMahjongHolder() int {
 
 // PlayerDeclare 人間プレイヤーが宣言する (0=なし, 1=ティチュー, 2=グランド)
 func (t *Tichu) PlayerDeclare(declType int) error {
-	// **人間が次の操作をしたときだけ消す。**犬の告知は「この応答で何が起きたか」を
-	// 伝えるもので、人間が 1 手打つと `Play` はその場で CPU の手番も回しきる
-	// (TichuInteractor.Play)。CPU 側で消すと、人間が自分で犬を出した瞬間の告知が
-	// 描画前に消えて **一度も画面に出ない** (#6431)。
-	t.round.dogLeadPassed = false
 	if t.round.phase != TichuPhaseDeclare {
 		return NewDomainError(ErrInvalidPlay, "not in declaration phase")
 	}
@@ -151,6 +146,12 @@ func (t *Tichu) PlayerDeclare(declType int) error {
 	if declType < TichuDeclNone || declType > TichuDeclGrand {
 		return NewDomainError(ErrInvalidPlay, "invalid declaration type")
 	}
+	// **人間の手が実際に通ったときだけ消す。**犬の告知は「この応答で何が起きたか」を
+	// 伝えるもので、人間が 1 手打つと `Play` はその場で CPU の手番も回しきる
+	// (TichuInteractor.Play)。CPU 側で消すと、人間が自分で犬を出した瞬間の告知が
+	// 描画前に消えて **一度も画面に出ない** (#6431)。検証を通す前に消すのも同じ穴で、
+	// 弾かれた要求 (二度押し・再送) が、まだ読んでいない告知を消してしまう。
+	t.round.dogLeadPassed = false
 	t.executeDeclare(declType)
 	return nil
 }
@@ -188,8 +189,6 @@ func (t *Tichu) executeDeclare(declType int) {
 
 // PlayerPlay 人間プレイヤーがカードを出す (空=パス)
 func (t *Tichu) PlayerPlay(indices []int) error {
-	// 消すのは人間の次の操作のときだけ。理由は PlayerDeclare のコメントを参照。
-	t.round.dogLeadPassed = false
 	if t.round.phase != TichuPhasePlay {
 		return NewDomainError(ErrInvalidPlay, "not in play phase")
 	}
@@ -205,6 +204,8 @@ func (t *Tichu) PlayerPlay(indices []int) error {
 		if t.round.tableCombo == nil {
 			return NewDomainError(ErrInvalidPlay, "must play when leading")
 		}
+		// 消すのは人間の手が実際に通ったときだけ。理由は PlayerDeclare のコメントを参照。
+		t.round.dogLeadPassed = false
 		t.round.humanAction = &TichuCpuAction{PlayerIdx: t.round.currentTurn, IsPass: true}
 		t.appendLog(t.round.currentTurn, "pass", "pass", nil)
 		t.handlePass()
@@ -234,6 +235,8 @@ func (t *Tichu) PlayerPlay(indices []int) error {
 		return err
 	}
 
+	// ここまで来れば手は通る。消すのは人間の手が実際に通ったときだけ (上記参照)。
+	t.round.dogLeadPassed = false
 	cards := player.RemoveCards(indices)
 	combo.Cards = cards
 	t.round.humanAction = &TichuCpuAction{PlayerIdx: t.round.currentTurn, PlayedCards: cards}

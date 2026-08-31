@@ -309,6 +309,17 @@ func TestTichuDogLeadExplanationStateAndJSON(t *testing.T) {
 	require.NoError(t, g.PlayerPlay(nil)) // パス
 	assert.False(t, g.GetDogLeadPassed(), "the human's next command clears it")
 
+	// **弾かれた要求は告知を消さない。**二度押しや再送で `PlayerPlay` が
+	// エラーを返しただけなのに告知が消えると、プレイヤーは読む前に失う (#6431 レビュー)。
+	g.SetDogLeadPassedForTest(true, 0)
+	g.SetPhaseForTest(TichuPhaseDeclare) // Play ではないので PlayerPlay は弾かれる
+	require.Error(t, g.PlayerPlay([]int{0}))
+	assert.True(t, g.GetDogLeadPassed(), "a rejected play must not clear the notice")
+	require.Error(t, g.PlayerDeclare(99)) // 不正な宣言種別
+	assert.True(t, g.GetDogLeadPassed(), "a rejected declare must not clear the notice")
+	g.SetPhaseForTest(TichuPhasePlay)
+	g.SetDogLeadPassedForTest(false, 0)
+
 	// false は復元しても false のまま ── ここが int だけだとゼロ値の 0 が
 	// 「席 0 が犬を出した」と読まれる。
 	data2, err := json.Marshal(g)
