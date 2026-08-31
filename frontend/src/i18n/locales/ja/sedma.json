@@ -51,5 +51,6 @@
   },
   "hintRequested": "ヒントがあります",
   "noHint": "ヒントはありません",
-  "target": "目標: {{points}}点"
+  "target": "目標: {{points}}点",
+  "wildRule": "7 はどのスートでもトリックを奪えます（フォロー義務はありません）"
 }

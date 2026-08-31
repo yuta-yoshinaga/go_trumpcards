@@ -51,5 +51,6 @@
   },
   "hintRequested": "Hint available",
   "noHint": "No hint available",
-  "target": "Target: {{points}} pts"
+  "target": "Target: {{points}} pts",
+  "wildRule": "A 7 captures the trick in any suit (there is no obligation to follow)"
 }
