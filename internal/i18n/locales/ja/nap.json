@@ -43,5 +43,7 @@
   "declarerProgress": "宣言者: {{won}}/{{needed}} トリック (残り{{remaining}})",
   "contractUnreachable": " — 達成不可能が確定",
   "helpExampleBid": "  pass                      入札を降りる",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "payoutMade": "{{name}} が {{chips}} チップ獲得（契約達成）",
+  "payoutFailed": "他の各プレイヤーが {{chips}} チップ獲得（契約失敗）"
 }
