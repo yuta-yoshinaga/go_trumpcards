@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -218,5 +219,47 @@ func TestTysiacCuiPresenter_MarriageOptions(t *testing.T) {
 		result := p.Output(withOptions(1, spadeAndClub...), nil)
 
 		assert.NotContains(t, result, strings.Split(i18n.T("tysiac.promptMarriageReady"), "{{")[0])
+	})
+}
+
+// Web は目標到達率が 0.8 を超えた席の得点バーを警告色にしているのに、CUI は
+// 同じデータを持ちながら素の数値行を出すだけだった (#6483)。
+func TestTysiacCuiPresenter_HighlightsThePlayerNearTheTarget(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(false) // 強調そのものを見るので無効化しない
+	defer color.SetNoColor(orig)
+	assert.NotEqual(t, "x", color.Yellow("x"), "colour must be enabled for this test to measure anything")
+
+	p := new(presenter.TysiacCuiPresenter)
+	target := domain.DefaultTysiacConfig().TargetPoints
+
+	withScores := func(scores [domain.TysiacPlayerCnt]int) string {
+		m, _ := setupTysiacCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayerScores")
+		m.On("GetPlayerScores").Return(scores)
+		return p.Output(m, nil)
+	}
+	// 行全体が色で包まれるので、行ごと組み立てて照合する。
+	// 名前は `cuiPlayerName` が太字で包む。席 0 はモックのデクレアラー。
+	humanLine := func(score int) string {
+		return i18n.Tf("tysiac.playerLine",
+			"name", color.Bold(i18n.T("cuiPlayerYou")), "role", i18n.T("tysiac.roleDeclarer"),
+			"cards", "0", "score", strconv.Itoa(score), "tricks", "0")
+	}
+
+	// **閾値の両側を踏む。**0.8 ちょうどでは付かない (Web も `> 0.8`)。
+	justOver := int(float64(target)*0.8) + 1
+	justUnder := int(float64(target) * 0.8)
+
+	t.Run("marks the seat past the threshold", func(t *testing.T) {
+		out := withScores([domain.TysiacPlayerCnt]int{justOver, 0, 0})
+		assert.Contains(t, out, color.Yellow(humanLine(justOver)))
+	})
+
+	t.Run("leaves a seat at the threshold alone", func(t *testing.T) {
+		out := withScores([domain.TysiacPlayerCnt]int{justUnder, 0, 0})
+		assert.NotContains(t, out, color.Yellow(humanLine(justUnder)))
+		// 素の行としては出ている ── 「行ごと消えた」で通ってしまわないように。
+		assert.Contains(t, out, humanLine(justUnder))
 	})
 }
