@@ -30,7 +30,7 @@ import { KING_HELP, parseKingCommand } from '../utils/cli/commands/kingCommands'
 import { formatKingState } from '../utils/cli/formatters/kingFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; 0/-1 = unset). */
@@ -225,6 +225,37 @@ function KingPageContent() {
                   label={t('currentTrick')}
                   dataTutorial="king-trick-display"
                 />
+
+                {/* **King にはトリック終了で一旦止まるフェーズが無い。**
+                    SelectContract → Play → DealEnd としか進まないので、CPU が
+                    続けて打つと直前のトリックは currentTrick が置き換わった瞬間に
+                    消える ── 見返す先が要る (#6487、Jass の previousTrick と同じ形)。 */}
+                <details className="mt-2 p-2 rounded bg-black/30" data-testid="king-previous-trick">
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {t('previousTrick')}
+                  </summary>
+                  <div className="mt-1">
+                    {state.lastTrick.length > 0 ? (
+                      <TrickDisplay
+                        currentTrick={state.lastTrick}
+                        players={state.players}
+                        cardWidth={Math.round(cardWidth * 0.7)}
+                        // **中身があるなら獲得者もいる。**`lastTrick` が空でない
+                        // 時点で `lastTrickWinner` は席番号なので、`>= 0` の分岐も
+                        // `?.isHuman` の右辺もどのテストからも踏めない。名前は
+                        // 範囲検査を内蔵した共有ヘルパに任せる。
+                        label={t('previousTrickWinner', {
+                          name: findPlayerName(state.players, state.lastTrickWinner),
+                        })}
+                        winnerIdx={state.lastTrickWinner}
+                      />
+                    ) : (
+                      <div className="text-ds-text-muted text-sm" data-testid="king-previous-trick-empty">
+                        {t('previousTrickEmpty')}
+                      </div>
+                    )}
+                  </div>
+                </details>
               </div>
 
               {/* Right: info sidebar */}

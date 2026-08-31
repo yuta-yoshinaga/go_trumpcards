@@ -217,4 +217,35 @@ describe('KingPage', () => {
     expect(avoid).toHaveAccessibleName(new RegExp(i18n.t('king:contractType.avoid')));
     expect(achieve).toHaveAccessibleName(new RegExp(i18n.t('king:contractType.achieve')));
   });
+
+  // **King にはトリック終了で一旦止まるフェーズが無い。**CPU が続けて打つと
+  // 直前のトリックは `currentTrick` が置き換わった瞬間に消える (#6487)。
+  it('lets the player review the previous trick and who took it', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      lastTrick: [
+        { playerIdx: 0, card: { design: 'SPADE', value: 5 } },
+        { playerIdx: 1, card: { design: 'SPADE', value: 13 } },
+      ],
+      lastTrickWinner: 1,
+    });
+    renderWithProviders(<KingPage />);
+
+    const section = await screen.findByTestId('king-previous-trick');
+    // **獲得者の見出しそのものを見る。**`TrickDisplay` は札ごとに席名を描くので、
+    // 「CPU 1 が出てくる」だけでは見出しを別のキーに差し替えても通ってしまう。
+    expect(section).toHaveTextContent('CPU 1 が獲得');
+    // 空の案内は出さない ── 中身があるのに「まだありません」と言わない。
+    expect(screen.queryByTestId('king-previous-trick-empty')).not.toBeInTheDocument();
+  });
+
+  // ディールの最初はまだ何も無い。**節そのものは残す** ── 出したり消したり
+  // すると、見返す先がどこにあるのか分からなくなる。
+  it('says so before the first trick is complete', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, lastTrick: [], lastTrickWinner: -1 });
+    renderWithProviders(<KingPage />);
+
+    expect(await screen.findByTestId('king-previous-trick')).toBeInTheDocument();
+    expect(screen.getByTestId('king-previous-trick-empty')).toBeInTheDocument();
+  });
 });
