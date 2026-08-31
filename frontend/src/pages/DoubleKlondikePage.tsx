@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { doubleklondikeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
@@ -15,6 +15,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -57,9 +58,29 @@ export const DoubleKlondikePage = withTutorial(DoubleKlondikePageContent, 'doubl
 
 /** Inner content of the Double Klondike page, wrapped by TutorialProvider. */
 function DoubleKlondikePageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('doubleklondike');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('doubleklondike');
   const { state, loading, error, exec, retry } = useGameApi(doubleklondikeApi.exec);
+  // **ギブアップは取り消せない。**リセットには確認が挟まるのに、同じフッターの
+  // ギブアップは即座に対局を打ち切っていた ── 誤タップへの保護がリセットより
+  // 薄かった (#6475)。47 ページが既に使っている `useGiveUpConfirm` に揃える。
+  const handleGiveUp = useCallback(() => {
+    exec('g');
+  }, [exec]);
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
   const [selected, setSelected] = useState<Selection | null>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
@@ -235,6 +256,9 @@ function DoubleKlondikePageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
     >
       <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
         <div className="text-ds-text-muted text-xs mb-1">
@@ -408,7 +432,7 @@ function DoubleKlondikePageContent() {
             <button
               type="button"
               className={btnSecondary}
-              onClick={() => exec('g')}
+              onClick={confirmGiveUpAction}
               disabled={loading}
               data-testid="giveup-button"
             >

@@ -89,19 +89,45 @@ describe('BlackHolePage', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 
-  it('undoes, hints and gives up', async () => {
+  it('undoes and hints', async () => {
     mockExec.mockResolvedValue(makeState({ canUndo: true }));
     renderWithProviders(<BlackHolePage />);
     await screen.findByTestId('hint-button');
     for (const [testid, cmd] of [
       ['undo-button', 'u'],
       ['hint-button', 'hint'],
-      ['giveup-button', 'g'],
     ] as const) {
       mockExec.mockClear();
       fireEvent.click(screen.getByTestId(testid));
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith(cmd));
     }
+  });
+
+  // **ギブアップは取り消せない** (#6475)。
+  it('asks before giving up, and only then dispatches', async () => {
+    renderWithProviders(<BlackHolePage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalledWith('g');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('g'));
+  });
+
+  it('leaves the game untouched when the give-up dialog is cancelled', async () => {
+    renderWithProviders(<BlackHolePage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('hides controls at game over', async () => {

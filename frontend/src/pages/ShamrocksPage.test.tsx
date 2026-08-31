@@ -121,7 +121,7 @@ describe('ShamrocksPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('ff', 2));
   });
 
-  it('auto-completes, undoes, hints and gives up', async () => {
+  it('auto-completes, undoes, hints', async () => {
     mockExec.mockResolvedValue(makeState({ canUndo: true }));
     renderWithProviders(<ShamrocksPage />);
     await screen.findByTestId('autocomplete-button');
@@ -129,7 +129,6 @@ describe('ShamrocksPage', () => {
       ['autocomplete-button', 'ac'],
       ['undo-button', 'u'],
       ['hint-button', 'hint'],
-      ['giveup-button', 'giveup'],
     ] as const) {
       mockExec.mockClear();
       fireEvent.click(screen.getByTestId(testid));
@@ -251,5 +250,33 @@ describe('ShamrocksPage', () => {
     fireEvent.click(screen.getByTestId('fan-0'));
     await waitFor(() => expect(screen.getByTestId('fan-1')).not.toHaveAttribute('data-hint-source'));
     expect(screen.getByTestId('fan-0')).not.toHaveAttribute('data-hint-dest');
+  });
+
+  // **ギブアップは取り消せない** (#6475)。リセットには確認が挟まるのに、
+  // ここは即座に対局を打ち切っていた。
+  it('asks before giving up, and only then dispatches', async () => {
+    renderWithProviders(<ShamrocksPage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('leaves the game untouched when the give-up dialog is cancelled', async () => {
+    renderWithProviders(<ShamrocksPage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalled();
   });
 });

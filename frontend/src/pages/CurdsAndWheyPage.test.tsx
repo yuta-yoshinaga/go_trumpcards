@@ -87,14 +87,13 @@ describe('CurdsAndWheyPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 0, cardIndex: 0, toCol: 5 }));
   });
 
-  it('undoes, hints and gives up', async () => {
+  it('undoes, hints', async () => {
     mockExec.mockResolvedValue(makeState({ canUndo: true }));
     renderWithProviders(<CurdsAndWheyPage />);
     await screen.findByTestId('hint-button');
     for (const [testid, cmd] of [
       ['undo-button', 'u'],
       ['hint-button', 'hint'],
-      ['giveup-button', 'g'],
     ] as const) {
       mockExec.mockClear();
       fireEvent.click(screen.getByTestId(testid));
@@ -168,5 +167,33 @@ describe('CurdsAndWheyPage', () => {
     renderWithProviders(<CurdsAndWheyPage />);
     await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
     expect(screen.queryByTestId('hint-button')).not.toBeInTheDocument();
+  });
+
+  // **ギブアップは取り消せない** (#6475)。リセットには確認が挟まるのに、
+  // ここは即座に対局を打ち切っていた。
+  it('asks before giving up, and only then dispatches', async () => {
+    renderWithProviders(<CurdsAndWheyPage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalledWith('g');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('g'));
+  });
+
+  it('leaves the game untouched when the give-up dialog is cancelled', async () => {
+    renderWithProviders(<CurdsAndWheyPage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalled();
   });
 });
