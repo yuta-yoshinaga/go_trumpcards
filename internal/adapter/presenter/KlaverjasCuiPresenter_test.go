@@ -37,6 +37,7 @@ func setupKlaverjasCuiMock() *interfaces.MockKlaverjasGame {
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetRoundCardPoints").Return([domain.KlaverjasTeamCnt]int{0, 0})
 	m.On("GetRoundRoem").Return([domain.KlaverjasTeamCnt]int{0, 0})
+	m.On("GetRoundPlayerRoem").Return([domain.KlaverjasPlayerCnt]int{0, 0, 0, 0})
 	m.On("GetTeamScores").Return([domain.KlaverjasTeamCnt]int{0, 0})
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
@@ -103,6 +104,47 @@ func TestKlaverjasCuiPresenter_Output(t *testing.T) {
 		m, _ := setupKlaverjasCuiMockWithPlayers()
 		result := p.Output(m, errors.New("boom"))
 		assert.Contains(t, result, "boom")
+	})
+
+	t.Run("roem breakdown shows only positive seats and hides zero seats", func(t *testing.T) {
+		m, _ := setupKlaverjasCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundRoem")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundPlayerRoem")
+		m.On("GetRoundRoem").Return([domain.KlaverjasTeamCnt]int{50, 100})
+		m.On("GetRoundPlayerRoem").Return([domain.KlaverjasPlayerCnt]int{50, 0, 0, 100})
+		result := p.Output(m, nil)
+		// 正の席だけが出る
+		assert.Contains(t, result, "Roem 内訳: あなた 50点, CPU 3 100点")
+		// 0 の席が出ないこと
+		assert.NotContains(t, result, "CPU 1 0点")
+		assert.NotContains(t, result, "CPU 2 0点")
+		// 未解決の {{ が残らないこと
+		assert.NotContains(t, result, "{{")
+		assert.NotContains(t, result, "}}")
+	})
+
+	t.Run("roem breakdown omitted when all seats are zero", func(t *testing.T) {
+		m, _ := setupKlaverjasCuiMockWithPlayers()
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "Roem 内訳:")
+		assert.NotContains(t, result, "Roem breakdown:")
+		assert.NotContains(t, result, "{{")
+		assert.NotContains(t, result, "}}")
+	})
+
+	t.Run("roem breakdown in english locale", func(t *testing.T) {
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
+		m, _ := setupKlaverjasCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundRoem")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundPlayerRoem")
+		m.On("GetRoundRoem").Return([domain.KlaverjasTeamCnt]int{20, 0})
+		m.On("GetRoundPlayerRoem").Return([domain.KlaverjasPlayerCnt]int{20, 0, 0, 0})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "Roem breakdown: You 20")
+		assert.NotContains(t, result, "Roem 内訳:")
+		assert.NotContains(t, result, "{{")
+		assert.NotContains(t, result, "}}")
 	})
 }
 

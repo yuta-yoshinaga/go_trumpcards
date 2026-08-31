@@ -145,6 +145,36 @@ describe('KlaverjasPage', () => {
     expect(roem).toHaveTextContent('B=0');
   });
 
+  it('renders Roem breakdown showing only positive seats without zero seats', async () => {
+    mockExec.mockResolvedValue(
+      makeKlaverjasState({
+        phase: 0,
+        roundRoem: [50, 100],
+        roundPlayerRoem: [50, 0, 0, 100],
+      }),
+    );
+    renderWithProviders(<KlaverjasPage />);
+    const breakdown = await screen.findByTestId('klaverjas-roem-breakdown');
+    expect(breakdown).toHaveTextContent('内訳: あなた 50点, CPU 3 100点');
+    expect(breakdown.textContent).not.toContain('CPU 1');
+    expect(breakdown.textContent).not.toContain('CPU 2');
+    expect(breakdown.textContent).not.toContain('{{');
+    expect(breakdown.textContent).not.toContain('}}');
+  });
+
+  it('omits the Roem breakdown element entirely when all seats are 0', async () => {
+    mockExec.mockResolvedValue(
+      makeKlaverjasState({
+        phase: 0,
+        roundRoem: [0, 0],
+        roundPlayerRoem: [0, 0, 0, 0],
+      }),
+    );
+    renderWithProviders(<KlaverjasPage />);
+    await screen.findByTestId('klaverjas-roem');
+    expect(screen.queryByTestId('klaverjas-roem-breakdown')).not.toBeInTheDocument();
+  });
+
   it('hides the live Roem block at round end (the round result repeats it)', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<KlaverjasPage />);

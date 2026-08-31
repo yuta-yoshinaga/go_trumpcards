@@ -45,6 +45,7 @@ func (p *KlaverjasWebPresenter) buildBase(g interfaces.KlaverjasGame) *controlle
 	resObj.TeamScores = g.GetTeamScores()
 	resObj.RoundCardPoints = g.GetRoundCardPoints()
 	resObj.RoundRoem = g.GetRoundRoem()
+	resObj.RoundPlayerRoem = g.GetRoundPlayerRoem()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 
 	resObj.PlayableIndices = p.playableIndices(g)

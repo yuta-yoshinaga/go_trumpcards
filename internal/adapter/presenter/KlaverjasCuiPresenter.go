@@ -58,6 +58,20 @@ func (p *KlaverjasCuiPresenter) Output(g interfaces.KlaverjasGame, lastErr error
 			"roemA", strconv.Itoa(roem[0]),
 			"roemB", strconv.Itoa(roem[1])) + "\n")
 
+		rpr := g.GetRoundPlayerRoem()
+		var entries []string
+		for i := 0; i < g.GetPlayerCnt(); i++ {
+			if rpr[i] > 0 {
+				entries = append(entries, i18n.Tf("klaverjas.roemEntry",
+					"name", cuiPlayerName(g.GetPlayer(i), i),
+					"points", strconv.Itoa(rpr[i]),
+				))
+			}
+		}
+		if len(entries) > 0 {
+			b.WriteString(i18n.Tf("klaverjas.roemBreakdown", "entries", strings.Join(entries, ", ")) + "\n")
+		}
+
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			b.WriteString(klaverjasPlayerStr(g, i))
 		}

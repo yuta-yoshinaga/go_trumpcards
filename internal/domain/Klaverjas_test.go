@@ -199,6 +199,61 @@ func TestKlaverjas_RoemMultipleRunsSameSuit(t *testing.T) {
 	}
 }
 
+func TestKlaverjas_DetectRoemSeatBreakdown(t *testing.T) {
+	g := newKlavGame(true)
+	// Seat 0 (Team 0): A-K-Q-J of spades = 50 roem
+	klavSetHand(g.GetPlayer(0), klavCard(CardDesignSpade, 1), klavCard(CardDesignSpade, 13), klavCard(CardDesignSpade, 12), klavCard(CardDesignSpade, 11))
+	// Seat 1 (Team 1): K-Q-J of hearts = 20 roem
+	klavSetHand(g.GetPlayer(1), klavCard(CardDesignHeart, 13), klavCard(CardDesignHeart, 12), klavCard(CardDesignHeart, 11), klavCard(CardDesignClover, 1))
+	// Seat 2 (Team 0): no roem = 0
+	klavSetHand(g.GetPlayer(2), klavCard(CardDesignSpade, 7), klavCard(CardDesignClover, 10), klavCard(CardDesignHeart, 13))
+	// Seat 3 (Team 1): 4 aces = 100 roem
+	klavSetHand(g.GetPlayer(3), klavCard(CardDesignSpade, 1), klavCard(CardDesignClover, 1), klavCard(CardDesignHeart, 1), klavCard(CardDesignDiamond, 1))
+
+	g.detectRoem()
+
+	rpr := g.GetRoundPlayerRoem()
+	wantPlayerRoem := [KlaverjasPlayerCnt]int{50, 20, 0, 100}
+	if rpr != wantPlayerRoem {
+		t.Errorf("GetRoundPlayerRoem() = %v, want %v", rpr, wantPlayerRoem)
+	}
+
+	rr := g.GetRoundRoem()
+	wantRoundRoem := [KlaverjasTeamCnt]int{50, 120}
+	if rr != wantRoundRoem {
+		t.Errorf("GetRoundRoem() = %v, want %v", rr, wantRoundRoem)
+	}
+
+	// チーム合計がそのチームの2席の和と一致すること
+	if rr[0] != rpr[0]+rpr[2] {
+		t.Errorf("team 0 roem (%d) != seat 0 (%d) + seat 2 (%d)", rr[0], rpr[0], rpr[2])
+	}
+	if rr[1] != rpr[1]+rpr[3] {
+		t.Errorf("team 1 roem (%d) != seat 1 (%d) + seat 3 (%d)", rr[1], rpr[1], rpr[3])
+	}
+
+	// Roem の無い席は 0 であること
+	if rpr[2] != 0 {
+		t.Errorf("seat 2 roem = %d, want 0", rpr[2])
+	}
+
+	// JSON 往復で保たれること
+	data, err := json.Marshal(g)
+	if err != nil {
+		t.Fatalf("marshal error: %v", err)
+	}
+	var g2 Klaverjas
+	if err := json.Unmarshal(data, &g2); err != nil {
+		t.Fatalf("unmarshal error: %v", err)
+	}
+	if g2.GetRoundPlayerRoem() != wantPlayerRoem {
+		t.Errorf("unmarshaled RoundPlayerRoem = %v, want %v", g2.GetRoundPlayerRoem(), wantPlayerRoem)
+	}
+	if g2.GetRoundRoem() != wantRoundRoem {
+		t.Errorf("unmarshaled RoundRoem = %v, want %v", g2.GetRoundRoem(), wantRoundRoem)
+	}
+}
+
 func TestKlaverjas_ResolveTrickPointsAndLastBonus(t *testing.T) {
 	g := newKlavGame(false)
 	g.SetTrumpSuit(CardDesignDiamond)

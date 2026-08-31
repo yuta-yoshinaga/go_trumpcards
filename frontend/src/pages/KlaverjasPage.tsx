@@ -170,6 +170,20 @@ function KlaverjasPageContent() {
     }
   }, [state?.roundRoem]);
 
+  const roemBreakdown = useMemo(() => {
+    if (!state?.roundPlayerRoem) return null;
+    const entries = state.roundPlayerRoem
+      .map((pts, idx) => {
+        if (pts <= 0) return null;
+        const p = state.players[idx];
+        const name = p ? playerName(p.id, p.isHuman) : '';
+        return t('roem.entry', { name, points: pts });
+      })
+      .filter((e): e is string => Boolean(e));
+    if (entries.length === 0) return null;
+    return t('roem.breakdown', { entries: entries.join(', ') });
+  }, [state?.roundPlayerRoem, state?.players, t]);
+
   if (!state)
     return <GameSkeleton gameKey="klaverjas" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 8 }} />;
 
@@ -296,6 +310,7 @@ function KlaverjasPageContent() {
                     <div>
                       {t('roundResult.roem', { roemA: state.roundRoem[0] ?? 0, roemB: state.roundRoem[1] ?? 0 })}
                     </div>
+                    {roemBreakdown && <div data-testid="klaverjas-roem-breakdown">{roemBreakdown}</div>}
                   </div>
                 )}
 
