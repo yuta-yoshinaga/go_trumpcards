@@ -32,7 +32,7 @@ import { KNOCKOUT_WHIST_HELP, parseKnockoutWhistCommand } from '../utils/cli/com
 import { formatKnockoutWhistState } from '../utils/cli/formatters/knockoutWhistFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
@@ -287,22 +287,14 @@ function KnockoutWhistPageContent() {
                     {state.roundSurvived.length > 0 && (
                       <div className="mt-1" data-testid="kw-round-survivors">
                         {state.roundSurvived
-                          .map((idx) =>
-                            t('roundResult.survived', {
-                              name: playerName(idx, state.players[idx]?.isHuman ?? false),
-                            }),
-                          )
+                          .map((idx) => t('roundResult.survived', { name: findPlayerName(state.players, idx) }))
                           .join(' / ')}
                       </div>
                     )}
                     {state.roundEliminated.length > 0 && (
                       <div className="mt-1" data-testid="kw-round-eliminated">
                         {state.roundEliminated
-                          .map((idx) =>
-                            t('roundResult.eliminated', {
-                              name: playerName(idx, state.players[idx]?.isHuman ?? false),
-                            }),
-                          )
+                          .map((idx) => t('roundResult.eliminated', { name: findPlayerName(state.players, idx) }))
                           .join(' / ')}
                       </div>
                     )}

@@ -94,6 +94,43 @@ func TestKnockoutWhistCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
+	// **誰が Dogbone を使って残り、誰が落ちたのか。**Web は行を出しているのに
+	// CUI は生存者数しか出していなかった (#6446)。
+	t.Run("round end names the survivors and the eliminated", func(t *testing.T) {
+		m, _ := setupKnockoutWhistCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundSurvivedIdx")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundEliminatedIdx")
+		m.On("GetPhase").Return(domain.KnockoutWhistPhaseRoundEnd)
+		m.On("GetRoundSurvivedIdx").Return([]int{0})
+		m.On("GetRoundEliminatedIdx").Return([]int{2})
+
+		result := p.Output(m, nil)
+		// 席は名前で出る。添字がそのまま出たら cuiPlayerName を通していない。
+		assert.Contains(t, result, i18n.Tf("knockoutwhist.roundSurvived",
+			"name", i18n.T("cuiPlayerYou")))
+		assert.Contains(t, result, i18n.Tf("knockoutwhist.roundEliminated",
+			"name", i18n.Tf("cuiPlayerCpu", "idx", "2")))
+		assert.NotContains(t, result, "{{")
+	})
+
+	// 0 人の側は行ごと出さない ── 「誰も落ちなかった」を空欄で語らせない。
+	t.Run("round end stays quiet when nobody survived or fell", func(t *testing.T) {
+		m, _ := setupKnockoutWhistCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.KnockoutWhistPhaseRoundEnd)
+
+		result := p.Output(m, nil)
+		// 文言の**接尾**で見る。{{name}} を含む生テンプレートは決して現れないので、
+		// キーそのものを NotContains に渡すと何も測らない。
+		_, survivedTail, ok := strings.Cut(i18n.T("knockoutwhist.roundSurvived"), "}} ")
+		assert.True(t, ok)
+		assert.NotContains(t, result, survivedTail)
+		_, eliminatedTail, ok := strings.Cut(i18n.T("knockoutwhist.roundEliminated"), "}} ")
+		assert.True(t, ok)
+		assert.NotContains(t, result, eliminatedTail)
+	})
+
 	t.Run("game end banner", func(t *testing.T) {
 		m, _ := setupKnockoutWhistCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
