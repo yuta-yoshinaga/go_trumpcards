@@ -50,6 +50,8 @@ type KnockoutWhistWebOutput struct {
 	DealerIdx        int                             `json:"dealerIdx"`
 	TrumpSuit        int                             `json:"trumpSuit"`
 	RoundWinnerIdx   int                             `json:"roundWinnerIdx"`
+	RoundSurvived    []int                           `json:"roundSurvived"`
+	RoundEliminated  []int                           `json:"roundEliminated"`
 	CurrentTrick     []*WebOutputTrickCard           `json:"currentTrick"`
 	ActiveCount      int                             `json:"activeCount"`
 	PlayableIndices  []int                           `json:"playableIndices"`
@@ -93,6 +95,8 @@ func newKnockoutWhistDefaultOutput(msg string) *KnockoutWhistWebOutput {
 		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		PlayableIndices: make([]int, 0),
 		RoundWinnerIdx:  -1,
+		RoundSurvived:   make([]int, 0),
+		RoundEliminated: make([]int, 0),
 		WinnerPlayer:    -1,
 		WebOutputBase:   WebOutputBase{Message: msg},
 	}

@@ -278,6 +278,34 @@ function KnockoutWhistPageContent() {
                         name: playerName(state.roundWinnerIdx, state.players[state.roundWinnerIdx]?.isHuman ?? false),
                       })}
                     </div>
+                    {/* **そのラウンドで何が起きたかを一目で。**Dogbone 消費と脱落は
+                        `ScoreRound` が毎ラウンド判定する本質的な出来事なのに、結果は
+                        プレイヤー一覧のグレー表示と [Dogbone 数] の増減からしか
+                        読み取れなかった (#6446)。サーバに聞くしかない ── 前ラウンドで
+                        脱落した席も毎ラウンド `roundTricks === 0` になるので、
+                        クライアントでは「今ラウンド脱落した人」を導出できない。 */}
+                    {state.roundSurvived.length > 0 && (
+                      <div className="mt-1" data-testid="kw-round-survivors">
+                        {state.roundSurvived
+                          .map((idx) =>
+                            t('roundResult.survived', {
+                              name: playerName(idx, state.players[idx]?.isHuman ?? false),
+                            }),
+                          )
+                          .join(' / ')}
+                      </div>
+                    )}
+                    {state.roundEliminated.length > 0 && (
+                      <div className="mt-1" data-testid="kw-round-eliminated">
+                        {state.roundEliminated
+                          .map((idx) =>
+                            t('roundResult.eliminated', {
+                              name: playerName(idx, state.players[idx]?.isHuman ?? false),
+                            }),
+                          )
+                          .join(' / ')}
+                      </div>
+                    )}
                     {/* Preview the upcoming round: hand size drops by 1 (min 1) and the round winner chooses trump. */}
                     {isRoundEnd && !isGameEnd && (
                       <div data-testid="kw-next-round-preview" className="mt-1 text-ds-text-primary">

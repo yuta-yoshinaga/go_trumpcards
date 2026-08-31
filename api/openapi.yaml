@@ -64690,6 +64690,16 @@ components:
         roundWinnerIdx:
           type: integer
           description: Index of the player who won the most tricks last round (-1 if round 1)
+        roundSurvived:
+          type: array
+          items:
+            type: integer
+          description: Seats that spent a Dogbone to survive this round. Cannot be derived client-side - a seat knocked out in an earlier round also reads roundTricks 0
+        roundEliminated:
+          type: array
+          items:
+            type: integer
+          description: Seats knocked out this round. Empty when nobody was knocked out
         currentTrick:
           type: array
           items:

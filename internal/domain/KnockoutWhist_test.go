@@ -331,3 +331,85 @@ func TestKnockoutWhist_JSONRoundTripTrumpSelect(t *testing.T) {
 		t.Errorf("phase not preserved: got %v", g2.GetPhase())
 	}
 }
+
+func TestKnockoutWhist_RoundSurvivedAndEliminatedTracking(t *testing.T) {
+	g := newKoGame(false)
+	g.Reset()
+	g.SetPhase(KnockoutWhistPhaseRoundEnd)
+
+	// p0: 2 tricks -> survives without dogbone
+	// p1: 0 tricks, 1 dogbone -> spends dogbone to survive -> roundSurvivedIdx
+	// p2: 0 tricks, 0 dogbones -> eliminated -> roundEliminatedIdx
+	// p3: 1 trick -> survives without dogbone
+	g.GetPlayer(0).IncRoundTricks()
+	g.GetPlayer(0).IncRoundTricks()
+	g.GetPlayer(3).IncRoundTricks()
+	g.GetPlayer(2).SetDogbones(0)
+
+	g.ScoreRound()
+
+	survived := g.GetRoundSurvivedIdx()
+	if len(survived) != 1 || survived[0] != 1 {
+		t.Errorf("roundSurvivedIdx = %v, want [1]", survived)
+	}
+
+	eliminated := g.GetRoundEliminatedIdx()
+	if len(eliminated) != 1 || eliminated[0] != 2 {
+		t.Errorf("roundEliminatedIdx = %v, want [2]", eliminated)
+	}
+
+	// Accessor copy safety test
+	survived[0] = 99
+	if g.GetRoundSurvivedIdx()[0] != 1 {
+		t.Error("GetRoundSurvivedIdx did not return a slice copy")
+	}
+	eliminated[0] = 99
+	if g.GetRoundEliminatedIdx()[0] != 2 {
+		t.Error("GetRoundEliminatedIdx did not return a slice copy")
+	}
+
+	// JSON round-trip retains roundSurvivedIdx and roundEliminatedIdx
+	data, err := json.Marshal(g)
+	if err != nil {
+		t.Fatalf("marshal error: %v", err)
+	}
+	var g2 KnockoutWhist
+	if err := json.Unmarshal(data, &g2); err != nil {
+		t.Fatalf("unmarshal error: %v", err)
+	}
+	if len(g2.GetRoundSurvivedIdx()) != 1 || g2.GetRoundSurvivedIdx()[0] != 1 {
+		t.Errorf("unmarshaled roundSurvivedIdx = %v, want [1]", g2.GetRoundSurvivedIdx())
+	}
+	if len(g2.GetRoundEliminatedIdx()) != 1 || g2.GetRoundEliminatedIdx()[0] != 2 {
+		t.Errorf("unmarshaled roundEliminatedIdx = %v, want [2]", g2.GetRoundEliminatedIdx())
+	}
+
+	// Starting the next round clears both slices
+	g.NextRound()
+	if len(g.GetRoundSurvivedIdx()) != 0 {
+		t.Errorf("roundSurvivedIdx after NextRound = %v, want empty", g.GetRoundSurvivedIdx())
+	}
+	if len(g.GetRoundEliminatedIdx()) != 0 {
+		t.Errorf("roundEliminatedIdx after NextRound = %v, want empty", g.GetRoundEliminatedIdx())
+	}
+
+	// In the next round (round 2):
+	// p2 is already eliminated from previous round.
+	// p0: 1 trick
+	// p1: 0 tricks, 0 dogbones (used in round 1) -> eliminated in round 2!
+	// p2: eliminated (0 tricks) -> MUST NOT be in roundSurvivedIdx or roundEliminatedIdx
+	// p3: 0 tricks, 1 dogbone -> spends dogbone -> roundSurvivedIdx
+	g.SetPhase(KnockoutWhistPhaseRoundEnd)
+	g.GetPlayer(0).IncRoundTricks()
+	g.ScoreRound()
+
+	r2Survived := g.GetRoundSurvivedIdx()
+	if len(r2Survived) != 1 || r2Survived[0] != 3 {
+		t.Errorf("round 2 roundSurvivedIdx = %v, want [3]", r2Survived)
+	}
+
+	r2Eliminated := g.GetRoundEliminatedIdx()
+	if len(r2Eliminated) != 1 || r2Eliminated[0] != 1 {
+		t.Errorf("round 2 roundEliminatedIdx = %v, want [1] (p2 was already eliminated in round 1, must not appear)", r2Eliminated)
+	}
+}

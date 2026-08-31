@@ -52,21 +52,23 @@ type KnockoutWhistHint struct {
 
 // KnockoutWhist ノックアウト・ホイストのゲームクラス
 type KnockoutWhist struct {
-	trumpCards       *TrumpCards
-	players          []*KnockoutWhistPlayer
-	config           KnockoutWhistConfig
-	phase            KnockoutWhistPhase
-	roundNumber      int
-	handSize         int // 現ラウンドの配り枚数 (8 - roundNumber)
-	trickNumber      int
-	currentPlayerIdx int
-	currentTrick     []*TrickCard
-	leadPlayerIdx    int
-	dealerIdx        int
-	trumpSuit        int
-	roundWinnerIdx   int // 直近ラウンドの勝者 (次ラウンドのリード/切り札決定者)
-	gameEndFlag      bool
-	winnerPlayer     int // -1=未確定
+	trumpCards         *TrumpCards
+	players            []*KnockoutWhistPlayer
+	config             KnockoutWhistConfig
+	phase              KnockoutWhistPhase
+	roundNumber        int
+	handSize           int // 現ラウンドの配り枚数 (8 - roundNumber)
+	trickNumber        int
+	currentPlayerIdx   int
+	currentTrick       []*TrickCard
+	leadPlayerIdx      int
+	dealerIdx          int
+	trumpSuit          int
+	roundWinnerIdx     int   // 直近ラウンドの勝者 (次ラウンドのリード/切り札決定者)
+	roundSurvivedIdx   []int // 直近ラウンドで Dogbone を使って生き残った席
+	roundEliminatedIdx []int // 直近ラウンドで脱落した席
+	gameEndFlag        bool
+	winnerPlayer       int // -1=未確定
 	actionLogBase
 }
 
@@ -158,6 +160,8 @@ func (g *KnockoutWhist) startRound() {
 	}
 	g.trickNumber = 1
 	g.currentTrick = nil
+	g.roundSurvivedIdx = nil
+	g.roundEliminatedIdx = nil
 	for _, p := range g.players {
 		p.ResetRound()
 	}
@@ -326,6 +330,9 @@ func (g *KnockoutWhist) ScoreRound() {
 	// ラウンド勝者 = 最多トリック獲得者 (次ラウンドのリード/切り札決定者)。
 	g.roundWinnerIdx = g.mostTricksPlayer()
 
+	// **ここでは空に戻さない。**`startRound` が毎ラウンド nil にしていて、
+	// `ScoreRound` は RoundEnd でしか進まない (先頭のガード) ので、2 回目の呼び出しは
+	// 何もしない。ここにも戻す行を置くと、どのテストからも到達できない分岐になる。
 	// 0 トリックの未脱落プレイヤーを処理。
 	for i, p := range g.players {
 		if p.GetEliminated() {
@@ -334,9 +341,11 @@ func (g *KnockoutWhist) ScoreRound() {
 		if p.GetRoundTricks() == 0 {
 			if p.GetDogbones() > 0 {
 				p.SetDogbones(p.GetDogbones() - 1)
+				g.roundSurvivedIdx = append(g.roundSurvivedIdx, i)
 				g.appendLog(i, "dogbone", fmt.Sprintf("%s spends a dogbone to survive", playerName(g.players, i)), nil)
 			} else {
 				p.SetEliminated(true)
+				g.roundEliminatedIdx = append(g.roundEliminatedIdx, i)
 				g.appendLog(i, "eliminated", fmt.Sprintf("%s is knocked out", playerName(g.players, i)), nil)
 			}
 		}
@@ -589,6 +598,28 @@ func (g *KnockoutWhist) SetTrumpSuit(suit int) { g.trumpSuit = suit }
 // GetRoundWinnerIdx 直近ラウンド勝者取得 (-1=未確定)
 func (g *KnockoutWhist) GetRoundWinnerIdx() int { return g.roundWinnerIdx }
 
+// GetRoundSurvivedIdx 直近ラウンドで Dogbone を使って生き残った席のリストを返す (コピー)。
+// ゼロ値 (空スライスまたは nil) は「そのラウンドで Dogbone 生存者がいない」ことを意味する。
+func (g *KnockoutWhist) GetRoundSurvivedIdx() []int {
+	if g.roundSurvivedIdx == nil {
+		return nil
+	}
+	res := make([]int, len(g.roundSurvivedIdx))
+	copy(res, g.roundSurvivedIdx)
+	return res
+}
+
+// GetRoundEliminatedIdx 直近ラウンドで脱落した席のリストを返す (コピー)。
+// ゼロ値 (空スライスまたは nil) は「そのラウンドで脱落者がいない」ことを意味する。
+func (g *KnockoutWhist) GetRoundEliminatedIdx() []int {
+	if g.roundEliminatedIdx == nil {
+		return nil
+	}
+	res := make([]int, len(g.roundEliminatedIdx))
+	copy(res, g.roundEliminatedIdx)
+	return res
+}
+
 // GetGameEndFlag ゲーム終了フラグ取得
 func (g *KnockoutWhist) GetGameEndFlag() bool { return g.gameEndFlag }
 
@@ -629,43 +660,47 @@ func (g *KnockoutWhist) GetPlayableIndices(playerIdx int) []int {
 
 // knockoutWhistJSON is the JSON wire format for KnockoutWhist.
 type knockoutWhistJSON struct {
-	TrumpCards       *TrumpCards            `json:"tc"`
-	Players          []*KnockoutWhistPlayer `json:"ps"`
-	Config           KnockoutWhistConfig    `json:"cf"`
-	Phase            KnockoutWhistPhase     `json:"ph"`
-	RoundNumber      int                    `json:"rn"`
-	HandSize         int                    `json:"hs"`
-	TrickNumber      int                    `json:"tn"`
-	CurrentPlayerIdx int                    `json:"ci"`
-	CurrentTrick     []*TrickCard           `json:"ct"`
-	LeadPlayerIdx    int                    `json:"li"`
-	DealerIdx        int                    `json:"di"`
-	TrumpSuit        int                    `json:"ts"`
-	RoundWinnerIdx   int                    `json:"rw"`
-	GameEndFlag      bool                   `json:"ge"`
-	WinnerPlayer     int                    `json:"wp"`
-	ActionLog        []*ActionLogEntry      `json:"al"`
+	TrumpCards         *TrumpCards            `json:"tc"`
+	Players            []*KnockoutWhistPlayer `json:"ps"`
+	Config             KnockoutWhistConfig    `json:"cf"`
+	Phase              KnockoutWhistPhase     `json:"ph"`
+	RoundNumber        int                    `json:"rn"`
+	HandSize           int                    `json:"hs"`
+	TrickNumber        int                    `json:"tn"`
+	CurrentPlayerIdx   int                    `json:"ci"`
+	CurrentTrick       []*TrickCard           `json:"ct"`
+	LeadPlayerIdx      int                    `json:"li"`
+	DealerIdx          int                    `json:"di"`
+	TrumpSuit          int                    `json:"ts"`
+	RoundWinnerIdx     int                    `json:"rw"`
+	RoundSurvivedIdx   []int                  `json:"rs"`
+	RoundEliminatedIdx []int                  `json:"re"`
+	GameEndFlag        bool                   `json:"ge"`
+	WinnerPlayer       int                    `json:"wp"`
+	ActionLog          []*ActionLogEntry      `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (g *KnockoutWhist) MarshalJSON() ([]byte, error) {
 	return json.Marshal(knockoutWhistJSON{
-		TrumpCards:       g.trumpCards,
-		Players:          g.players,
-		Config:           g.config,
-		Phase:            g.phase,
-		RoundNumber:      g.roundNumber,
-		HandSize:         g.handSize,
-		TrickNumber:      g.trickNumber,
-		CurrentPlayerIdx: g.currentPlayerIdx,
-		CurrentTrick:     g.currentTrick,
-		LeadPlayerIdx:    g.leadPlayerIdx,
-		DealerIdx:        g.dealerIdx,
-		TrumpSuit:        g.trumpSuit,
-		RoundWinnerIdx:   g.roundWinnerIdx,
-		GameEndFlag:      g.gameEndFlag,
-		WinnerPlayer:     g.winnerPlayer,
-		ActionLog:        g.actionLog,
+		TrumpCards:         g.trumpCards,
+		Players:            g.players,
+		Config:             g.config,
+		Phase:              g.phase,
+		RoundNumber:        g.roundNumber,
+		HandSize:           g.handSize,
+		TrickNumber:        g.trickNumber,
+		CurrentPlayerIdx:   g.currentPlayerIdx,
+		CurrentTrick:       g.currentTrick,
+		LeadPlayerIdx:      g.leadPlayerIdx,
+		DealerIdx:          g.dealerIdx,
+		TrumpSuit:          g.trumpSuit,
+		RoundWinnerIdx:     g.roundWinnerIdx,
+		RoundSurvivedIdx:   g.roundSurvivedIdx,
+		RoundEliminatedIdx: g.roundEliminatedIdx,
+		GameEndFlag:        g.gameEndFlag,
+		WinnerPlayer:       g.winnerPlayer,
+		ActionLog:          g.actionLog,
 	})
 }
 
@@ -691,7 +726,8 @@ func (g *KnockoutWhist) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Players) > knockoutWhistMaxSliceLen || len(j.CurrentTrick) > knockoutWhistMaxSliceLen ||
-		len(j.ActionLog) > knockoutWhistMaxSliceLen {
+		len(j.ActionLog) > knockoutWhistMaxSliceLen || len(j.RoundSurvivedIdx) > knockoutWhistMaxSliceLen ||
+		len(j.RoundEliminatedIdx) > knockoutWhistMaxSliceLen {
 		return errKnockoutWhistOversized
 	}
 	if len(j.Players) != KnockoutWhistPlayerCnt {
@@ -715,6 +751,16 @@ func (g *KnockoutWhist) UnmarshalJSON(data []byte) error {
 		j.TrickNumber < 1 || j.TrickNumber > KnockoutWhistMaxRounds ||
 		j.Phase < KnockoutWhistPhasePlay || j.Phase > KnockoutWhistPhaseTrumpSelect {
 		return errKnockoutWhistInvalidState
+	}
+	for _, idx := range j.RoundSurvivedIdx {
+		if idx < 0 || idx >= KnockoutWhistPlayerCnt {
+			return errKnockoutWhistInvalidState
+		}
+	}
+	for _, idx := range j.RoundEliminatedIdx {
+		if idx < 0 || idx >= KnockoutWhistPlayerCnt {
+			return errKnockoutWhistInvalidState
+		}
 	}
 	for _, tc := range j.CurrentTrick {
 		if tc == nil || tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= KnockoutWhistPlayerCnt {
@@ -743,6 +789,8 @@ func (g *KnockoutWhist) UnmarshalJSON(data []byte) error {
 	g.dealerIdx = j.DealerIdx
 	g.trumpSuit = j.TrumpSuit
 	g.roundWinnerIdx = j.RoundWinnerIdx
+	g.roundSurvivedIdx = j.RoundSurvivedIdx
+	g.roundEliminatedIdx = j.RoundEliminatedIdx
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerPlayer = j.WinnerPlayer
 	g.actionLog = j.ActionLog

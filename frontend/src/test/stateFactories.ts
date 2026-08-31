@@ -2636,6 +2636,8 @@ const baseKnockoutWhistState: KnockoutWhistResponse = {
   dealerIdx: 3,
   trumpSuit: 3,
   roundWinnerIdx: -1,
+  roundSurvived: [],
+  roundEliminated: [],
   currentTrick: [],
   activeCount: 4,
   playableIndices: [0, 1, 2],

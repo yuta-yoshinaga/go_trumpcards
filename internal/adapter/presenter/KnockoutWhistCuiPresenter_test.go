@@ -35,6 +35,8 @@ func setupKnockoutWhistCuiMock() *interfaces.MockKnockoutWhistGame {
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
 	m.On("GetLeadPlayerIdx").Return(-1).Maybe()
 	m.On("GetRoundWinnerIdx").Return(-1).Maybe()
+	m.On("GetRoundSurvivedIdx").Return(([]int)(nil)).Maybe()
+	m.On("GetRoundEliminatedIdx").Return(([]int)(nil)).Maybe()
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.KnockoutWhistPhasePlay)
