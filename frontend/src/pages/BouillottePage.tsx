@@ -33,7 +33,6 @@ import type { BouillotteResponse } from '../types/card';
 import { BouillottePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { computeBouillottePotOdds } from '../utils/bouillottePotOdds';
-import { analyzeRetourneMatch } from '../utils/bouillotteRetourne';
 import { BOUILLOTTE_HELP, parseBouillotteCommand } from '../utils/cli/commands/bouillotteCommands';
 import { formatBouillotteState } from '../utils/cli/formatters/bouillotteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -144,7 +143,9 @@ function BouillottePageContent() {
   const potOdds = computeBouillottePotOdds(state.pot, state.currentBet, humanRoundBet);
 
   // Which of the human's cards share the retourne's rank, and any combo it completes.
-  const retourneMatch = analyzeRetourneMatch(humanPlayer?.cards ?? [], state.retourne);
+  // Computed server-side (#6494): reading state.retourneMatch avoids re-implementing the
+  // matching logic on the client.
+  const retourneMatch = state.retourneMatch ?? { matchingIndices: [], noteKey: '' };
   const matchingSet = new Set(retourneMatch.matchingIndices);
 
   const isBettingPhase = state.phase === BouillottePhase.BETTING;

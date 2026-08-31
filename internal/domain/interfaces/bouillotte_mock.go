@@ -183,3 +183,12 @@ func (_m *MockBouillotteGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return nil
 }
+
+// AnalyzeRetourneMatch モック
+func (_m *MockBouillotteGame) AnalyzeRetourneMatch(playerIdx int) *domain.BouillotteRetourneMatch {
+	ret := _m.Called(playerIdx)
+	if v := ret.Get(0); v != nil {
+		return v.(*domain.BouillotteRetourneMatch)
+	}
+	return nil
+}

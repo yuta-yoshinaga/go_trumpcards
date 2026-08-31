@@ -177,3 +177,35 @@ func TestBouillotteWebPresenterWithoutAHint(t *testing.T) {
 
 	assert.Contains(t, p.HintOutput(g), "bouillotte.noHint")
 }
+
+// 一致判定はドメインが持ち、画面はそれを読むだけにする (#6494)。載せていなければ
+// クライアントが手札とルトゥルヌを突き合わせ直すことになり、規則が二重になる。
+func TestBouillotteWebPresenter_SendsTheRetourneMatch(t *testing.T) {
+	g := domain.NewDefaultBouillotte()
+	g.SetPhase(domain.BouillottePhaseBetting)
+	g.SetRetourne(domain.NewCard(domain.CardDesignDiamond, 9, false))
+	bouillotteWebSetHand(g.GetPlayer(0),
+		domain.NewCard(domain.CardDesignHeart, 9, false),
+		domain.NewCard(domain.CardDesignSpade, 9, false),
+		domain.NewCard(domain.CardDesignClover, 12, false),
+	)
+	p := new(presenter.BouillotteWebPresenter)
+
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	match, ok := decoded["retourneMatch"].(map[string]any)
+	require.True(t, ok, "retourneMatch must be present")
+	assert.Equal(t, []any{float64(0), float64(1)}, match["matchingIndices"])
+	assert.Equal(t, "favori", match["noteKey"])
+
+	// 負のコントロール: 一致しない手札では索引も役も空。
+	bouillotteWebSetHand(g.GetPlayer(0),
+		domain.NewCard(domain.CardDesignHeart, 1, false),
+		domain.NewCard(domain.CardDesignSpade, 13, false),
+		domain.NewCard(domain.CardDesignClover, 12, false),
+	)
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	match = decoded["retourneMatch"].(map[string]any)
+	assert.Empty(t, match["matchingIndices"])
+	assert.Equal(t, "", match["noteKey"])
+}

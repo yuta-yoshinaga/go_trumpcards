@@ -70,28 +70,36 @@ type BouillotteWebOutputConfig struct {
 	TargetRounds  int `json:"targetRounds"`
 }
 
+// BouillotteWebOutputRetourneMatch はルトゥルヌと人間の手札の一致判定。
+// NoteKey は完成した役 ("favori" / "carre")、無ければ空文字。
+type BouillotteWebOutputRetourneMatch struct {
+	MatchingIndices []int  `json:"matchingIndices"`
+	NoteKey         string `json:"noteKey"`
+}
+
 // BouillotteWebOutput はブイヨット Web アウトプット。
 type BouillotteWebOutput struct {
-	Players          []*BouillotteWebOutputPlayer `json:"players"`
-	Phase            int                          `json:"phase"`
-	RoundNumber      int                          `json:"roundNumber"`
-	Pot              int                          `json:"pot"`
-	Ante             int                          `json:"ante"`
-	Chips            int                          `json:"chips"`
-	CurrentBet       int                          `json:"currentBet"`
-	RaiseCount       int                          `json:"raiseCount"`
-	MaxRaises        int                          `json:"maxRaises"`
-	CurrentPlayerIdx int                          `json:"currentPlayerIdx"`
-	DealerIdx        int                          `json:"dealerIdx"`
-	Retourne         *WebOutputCard               `json:"retourne"`
-	IsHumanTurn      bool                         `json:"isHumanTurn"`
-	CanRaise         bool                         `json:"canRaise"`
-	WinnerIdx        int                          `json:"winnerIdx"`
-	MatchWinnerIdx   int                          `json:"matchWinnerIdx"`
-	Result           int                          `json:"result"`
-	GameEndFlag      bool                         `json:"gameEndFlag"`
-	Hint             *BouillotteWebOutputHint     `json:"hint,omitempty"`
-	Config           BouillotteWebOutputConfig    `json:"config"`
+	Players          []*BouillotteWebOutputPlayer      `json:"players"`
+	Phase            int                               `json:"phase"`
+	RoundNumber      int                               `json:"roundNumber"`
+	Pot              int                               `json:"pot"`
+	Ante             int                               `json:"ante"`
+	Chips            int                               `json:"chips"`
+	CurrentBet       int                               `json:"currentBet"`
+	RaiseCount       int                               `json:"raiseCount"`
+	MaxRaises        int                               `json:"maxRaises"`
+	CurrentPlayerIdx int                               `json:"currentPlayerIdx"`
+	DealerIdx        int                               `json:"dealerIdx"`
+	Retourne         *WebOutputCard                    `json:"retourne"`
+	IsHumanTurn      bool                              `json:"isHumanTurn"`
+	CanRaise         bool                              `json:"canRaise"`
+	WinnerIdx        int                               `json:"winnerIdx"`
+	MatchWinnerIdx   int                               `json:"matchWinnerIdx"`
+	Result           int                               `json:"result"`
+	GameEndFlag      bool                              `json:"gameEndFlag"`
+	Hint             *BouillotteWebOutputHint          `json:"hint,omitempty"`
+	RetourneMatch    *BouillotteWebOutputRetourneMatch `json:"retourneMatch"`
+	Config           BouillotteWebOutputConfig         `json:"config"`
 	WebOutputBase
 }
 

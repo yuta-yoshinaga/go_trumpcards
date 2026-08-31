@@ -88,6 +88,45 @@ func TestBouillotteEval_Categories(t *testing.T) {
 	assert.Nil(t, badTb)
 }
 
+func TestBouillotte_AnalyzeRetourneMatch(t *testing.T) {
+	g := domain.NewDefaultBouillotte()
+	g.SetPhase(domain.BouillottePhaseBetting)
+	p := g.GetPlayer(0)
+
+	// No retourne
+	g.SetRetourne(nil)
+	match := g.AnalyzeRetourneMatch(0)
+	assert.Empty(t, match.MatchingIndices)
+	assert.Empty(t, match.NoteKey)
+
+	// Retourne is 9 Diamond
+	g.SetRetourne(bouillotteCard(domain.CardDesignDiamond, 9))
+
+	// No match (A, K, Q)
+	bouillotteSetHand(p, bouillotteCard(domain.CardDesignHeart, 1), bouillotteCard(domain.CardDesignSpade, 13), bouillotteCard(domain.CardDesignClover, 12))
+	match = g.AnalyzeRetourneMatch(0)
+	assert.Empty(t, match.MatchingIndices)
+	assert.Empty(t, match.NoteKey)
+
+	// 1 match (9, K, Q) - indices 0
+	bouillotteSetHand(p, bouillotteCard(domain.CardDesignHeart, 9), bouillotteCard(domain.CardDesignSpade, 13), bouillotteCard(domain.CardDesignClover, 12))
+	match = g.AnalyzeRetourneMatch(0)
+	assert.Equal(t, []int{0}, match.MatchingIndices)
+	assert.Empty(t, match.NoteKey)
+
+	// 2 matches (9, 9, Q) - favori
+	bouillotteSetHand(p, bouillotteCard(domain.CardDesignHeart, 9), bouillotteCard(domain.CardDesignSpade, 9), bouillotteCard(domain.CardDesignClover, 12))
+	match = g.AnalyzeRetourneMatch(0)
+	assert.Equal(t, []int{0, 1}, match.MatchingIndices)
+	assert.Equal(t, "favori", match.NoteKey)
+
+	// 3 matches (9, 9, 9) - carre
+	bouillotteSetHand(p, bouillotteCard(domain.CardDesignHeart, 9), bouillotteCard(domain.CardDesignSpade, 9), bouillotteCard(domain.CardDesignClover, 9))
+	match = g.AnalyzeRetourneMatch(0)
+	assert.Equal(t, []int{0, 1, 2}, match.MatchingIndices)
+	assert.Equal(t, "carre", match.NoteKey)
+}
+
 // bouillotteShowdownGame は 4 人ゲームを組み立て、指定座席のみをアクティブにして
 // 決定的なショーダウンを準備する (retourne = 8 ダイヤ)。
 func bouillotteShowdownGame(t *testing.T) *domain.Bouillotte {
