@@ -347,4 +347,23 @@ describe('ThirtyOnePage difficulty help', () => {
     expect(tip).toHaveTextContent('31');
     expect(tip).not.toHaveTextContent('29');
   });
+  // 手札ボタンにアクセシブルネームが無く、どの札が手札にあるかすら読み上げられなかった。
+  // 選択状態は aria-pressed が担う（ラベルに書くと二度言うことになる）。
+  it('names each hand card and marks the selected one as pressed', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ThirtyOnePhase.DISCARD }));
+    renderWithProviders(<ThirtyOnePage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    const first = screen.getByTestId('hand-card-0');
+    expect(first).toHaveAttribute('aria-label');
+    expect(first.getAttribute('aria-label')).not.toBe('');
+    expect(first).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(first);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toHaveAttribute('aria-pressed', 'true'));
+    // 選ばれていない札は押されていないまま。
+    expect(screen.getByTestId('hand-card-1')).toHaveAttribute('aria-pressed', 'false');
+    // ラベルは札ごとに違う（全部同じ名前では選べない）。
+    expect(screen.getByTestId('hand-card-1').getAttribute('aria-label')).not.toBe(first.getAttribute('aria-label'));
+  });
 });
