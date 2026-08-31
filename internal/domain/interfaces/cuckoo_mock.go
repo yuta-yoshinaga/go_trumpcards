@@ -41,10 +41,12 @@ func (m *MockCuckooGame) GetPlayer(i int) *domain.CuckooPlayer {
 func (m *MockCuckooGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }
-func (m *MockCuckooGame) GetPendingSwapFrom() int   { return m.Called().Int(0) }
-func (m *MockCuckooGame) GetPendingSwapTo() int     { return m.Called().Int(0) }
-func (m *MockCuckooGame) IsKingRevealed(i int) bool { return m.Called(i).Bool(0) }
-func (m *MockCuckooGame) GetRoundLowest() int       { return m.Called().Int(0) }
+func (m *MockCuckooGame) GetPendingSwapFrom() int { return m.Called().Int(0) }
+func (m *MockCuckooGame) GetPendingSwapTo() int   { return m.Called().Int(0) }
+
+func (m *MockCuckooGame) GetSwapTargetIdx(fromIdx int) int { return m.Called(fromIdx).Int(0) }
+func (m *MockCuckooGame) IsKingRevealed(i int) bool        { return m.Called(i).Bool(0) }
+func (m *MockCuckooGame) GetRoundLowest() int              { return m.Called().Int(0) }
 func (m *MockCuckooGame) GetRoundLosers() []int {
 	return m.Called().Get(0).([]int)
 }

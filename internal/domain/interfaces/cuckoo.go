@@ -51,6 +51,10 @@ type CuckooGame interface {
 	GetPendingSwapFrom() int
 	// GetPendingSwapTo スワップ要求先 (King 保持の隣人) を取得する
 	GetPendingSwapTo() int
+
+	// GetSwapTargetIdx は fromIdx が交換を選んだときの相手の席を返す (-1 = 相手なし)。
+	// 脱落者を飛ばすので席順の隣とは限らない。
+	GetSwapTargetIdx(fromIdx int) int
 	// IsKingRevealed 指定プレイヤーの King が公開されているかを取得する
 	IsKingRevealed(i int) bool
 	// GetRoundLowest 直近ラウンドの最低カード値を取得する
