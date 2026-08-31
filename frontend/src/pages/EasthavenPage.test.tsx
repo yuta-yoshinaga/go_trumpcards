@@ -355,6 +355,35 @@ describe('EasthavenPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('deal');
   });
 
+  // **弾かれたことが目にしか出ていなかった。**ブロックされた配りは API を叩かないので
+  // `state.message` も動かず、揺れとツールチップだけが理由を伝えていた (#6430)。
+  it('announces why the deal was blocked, and stays silent on a normal deal', async () => {
+    mockExec.mockResolvedValue({ ...playingState, tableau: [[], ...playingState.tableau.slice(1)] });
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const live = screen.getByTestId('eh-deal-blocked-live');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live.textContent).toBe('');
+
+    screen.getByRole('button', { name: '配る' }).click();
+    await flushPendingDispatch();
+    // ツールチップと同じ文言であること。
+    expect(live).toHaveTextContent('空の列をすべて埋めないと配れません');
+  });
+
+  it('leaves the deal-blocked live region empty when the deal goes through', async () => {
+    mockExec.mockResolvedValue(playingState); // どの列も空でない
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+
+    screen.getByRole('button', { name: '配る' }).click();
+    await flushPendingDispatch();
+    expect(mockExec).toHaveBeenCalledWith('deal');
+    expect(screen.getByTestId('eh-deal-blocked-live').textContent).toBe('');
+  });
+
   it('renders stalemate escape controls when stalemate', async () => {
     mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: 2, canUndo: true });
     renderWithProviders(<EasthavenPage />);
