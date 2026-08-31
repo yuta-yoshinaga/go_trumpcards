@@ -48,6 +48,8 @@ func (p *TuteWebPresenter) buildBase(g interfaces.TuteGame) *controller.TuteWebO
 	resObj.WinnerTeam = g.GetWinnerTeam()
 	resObj.TeamScores = g.GetTeamScores()
 	resObj.RoundTeamPoints = g.GetRoundTeamPoints()
+	resObj.LastTrickBonusTeam = g.GetLastTrickBonusTeam()
+	resObj.LastTrickBonusPoints = domain.TuteLastTrickBonus
 	resObj.CanDeclareMarriage = g.CanHumanDeclareMarriage()
 	resObj.CanDeclareTute = g.CanHumanDeclareTute()
 	resObj.IsHumanTurn = g.IsHumanTurn()

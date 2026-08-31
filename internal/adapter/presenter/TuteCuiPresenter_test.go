@@ -42,6 +42,7 @@ func setupTuteCuiMock() *interfaces.MockTuteGame {
 	m.On("CanHumanDeclareTute").Return(false)
 	m.On("GetRoundTeamPoints").Return([domain.TuteTeamCnt]int{0, 0})
 	m.On("GetTeamScores").Return([domain.TuteTeamCnt]int{0, 0})
+	m.On("GetLastTrickBonusTeam").Return(-1).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
 }
@@ -108,12 +109,46 @@ func TestTuteCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
-	t.Run("round end prompt", func(t *testing.T) {
+	t.Run("round end prompt without last trick bonus", func(t *testing.T) {
 		m, _ := setupTuteCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.TutePhaseRoundEnd)
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
+	})
+
+	t.Run("round end prompt with last trick bonus shows team and points without placeholders", func(t *testing.T) {
+		m, _ := setupTuteCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickBonusTeam")
+		m.On("GetPhase").Return(domain.TutePhaseRoundEnd)
+		m.On("GetLastTrickBonusTeam").Return(0)
+		result := p.Output(m, nil)
+		// **同じ画面で呼び名を混ぜない。**すぐ上の `promptRoundEnd` が「チームA / チームB」
+		// と出しているので、ここも A/B で言う (生の席番号ではない)。
+		assert.Contains(t, result, i18n.Tf("tute.lastTrickBonus", "team", "A", "points", strconv.Itoa(domain.TuteLastTrickBonus)))
+		assert.NotContains(t, result, i18n.Tf("tute.lastTrickBonus", "team", "0", "points", strconv.Itoa(domain.TuteLastTrickBonus)))
+		assert.NotContains(t, result, "{{")
+	})
+
+	t.Run("team B gets its own letter", func(t *testing.T) {
+		m, _ := setupTuteCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickBonusTeam")
+		m.On("GetPhase").Return(domain.TutePhaseRoundEnd)
+		m.On("GetLastTrickBonusTeam").Return(1)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, i18n.Tf("tute.lastTrickBonus", "team", "B", "points", strconv.Itoa(domain.TuteLastTrickBonus)))
+	})
+
+	t.Run("play and trick end phases do not show last trick bonus", func(t *testing.T) {
+		for _, phase := range []domain.TutePhase{domain.TutePhasePlay, domain.TutePhaseTrickEnd} {
+			m, _ := setupTuteCuiMockWithPlayers()
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+			m.On("GetPhase").Return(phase)
+			result := p.Output(m, nil)
+			assert.NotContains(t, result, i18n.Tf("tute.lastTrickBonus", "team", "A", "points", strconv.Itoa(domain.TuteLastTrickBonus)))
+		}
 	})
 
 	t.Run("game end banner", func(t *testing.T) {

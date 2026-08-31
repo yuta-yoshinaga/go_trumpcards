@@ -32,6 +32,7 @@ func setupTuteWebMock() *interfaces.MockTuteGame {
 	m.On("IsSuitDeclared", 4).Return(false)
 	m.On("GetTeamScores").Return([domain.TuteTeamCnt]int{0, 0})
 	m.On("GetRoundTeamPoints").Return([domain.TuteTeamCnt]int{0, 0})
+	m.On("GetLastTrickBonusTeam").Return(-1).Maybe()
 	m.On("CanHumanDeclareMarriage").Return(false)
 	m.On("CanHumanDeclareTute").Return(false)
 	m.On("GetWinnerTeam").Return(-1)
@@ -113,14 +114,27 @@ func TestTuteWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "tute.trickEnd", resObj.MessageCode)
 	})
 
-	t.Run("round end message code", func(t *testing.T) {
+	t.Run("round end message code and last trick bonus", func(t *testing.T) {
 		m, _ := setupTuteWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickBonusTeam")
 		m.On("GetPhase").Return(domain.TutePhaseRoundEnd)
+		m.On("GetLastTrickBonusTeam").Return(0)
 		result := p.Output(m, nil)
 		var resObj controller.TuteWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, "tute.roundEnd", resObj.MessageCode)
+		assert.Equal(t, 0, resObj.LastTrickBonusTeam)
+		assert.Equal(t, domain.TuteLastTrickBonus, resObj.LastTrickBonusPoints)
+	})
+
+	t.Run("play phase has lastTrickBonusTeam as -1", func(t *testing.T) {
+		m, _ := setupTuteWebMockWithPlayers()
+		result := p.Output(m, nil)
+		var resObj controller.TuteWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, -1, resObj.LastTrickBonusTeam)
+		assert.Equal(t, domain.TuteLastTrickBonus, resObj.LastTrickBonusPoints)
 	})
 
 	t.Run("declared suit reflected", func(t *testing.T) {

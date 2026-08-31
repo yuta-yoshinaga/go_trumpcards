@@ -22,7 +22,12 @@ const trickEndState = makeTuteState({
     { playerIdx: 1, card: { design: 'CLOVER', value: 13 } },
   ],
 });
-const roundEndState = makeTuteState({ phase: 2, roundTeamPoints: [70, 60] });
+const roundEndState = makeTuteState({
+  phase: 2,
+  roundTeamPoints: [70, 60],
+  lastTrickBonusTeam: 0,
+  lastTrickBonusPoints: 10,
+});
 const gameEndState = makeTuteState({
   phase: 3,
   gameEndFlag: true,
@@ -122,11 +127,14 @@ describe('TutePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
   });
 
-  it('renders round end with the next round button and the round result', async () => {
+  it('renders round end with the next round button and the round result including last trick bonus', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<TutePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
+    const bonus = screen.getByTestId('tute-last-trick-bonus');
+    expect(bonus).toHaveTextContent('最終トリックボーナス: チームA +10点');
+    expect(bonus.textContent).not.toContain('{{');
   });
 
   it('renders the game end message', async () => {
@@ -182,5 +190,7 @@ describe('TutePage', () => {
     renderWithProviders(<TutePage />);
     // A marriage scores immediately, so the total has to be visible while playing.
     await waitFor(() => expect(screen.getByTestId('tute-running-points')).toBeInTheDocument());
+    // Negative control: last trick bonus must not appear during play phase
+    expect(screen.queryByTestId('tute-last-trick-bonus')).not.toBeInTheDocument();
   });
 });

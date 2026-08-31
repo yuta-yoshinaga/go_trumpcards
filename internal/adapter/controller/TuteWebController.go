@@ -56,16 +56,18 @@ type TuteWebOutput struct {
 	TrumpSuit        int                    `json:"trumpSuit"`
 	CurrentTrick     []*WebOutputTrickCard  `json:"currentTrick"`
 	// DeclaredSuits 結婚宣言済みスート (インデックス1-4が有効; 0は未使用)
-	DeclaredSuits      []bool                  `json:"declaredSuits"`
-	TeamScores         [domain.TuteTeamCnt]int `json:"teamScores"`
-	RoundTeamPoints    [domain.TuteTeamCnt]int `json:"roundTeamPoints"`
-	CanDeclareMarriage bool                    `json:"canDeclareMarriage"`
-	CanDeclareTute     bool                    `json:"canDeclareTute"`
-	PlayableIndices    []int                   `json:"playableIndices"`
-	GameEndFlag        bool                    `json:"gameEndFlag"`
-	WinnerTeam         int                     `json:"winnerTeam"`
-	IsHumanTurn        bool                    `json:"isHumanTurn"`
-	Hint               *TuteWebOutputHint      `json:"hint,omitempty"`
+	DeclaredSuits        []bool                  `json:"declaredSuits"`
+	TeamScores           [domain.TuteTeamCnt]int `json:"teamScores"`
+	RoundTeamPoints      [domain.TuteTeamCnt]int `json:"roundTeamPoints"`
+	LastTrickBonusTeam   int                     `json:"lastTrickBonusTeam"`
+	LastTrickBonusPoints int                     `json:"lastTrickBonusPoints"`
+	CanDeclareMarriage   bool                    `json:"canDeclareMarriage"`
+	CanDeclareTute       bool                    `json:"canDeclareTute"`
+	PlayableIndices      []int                   `json:"playableIndices"`
+	GameEndFlag          bool                    `json:"gameEndFlag"`
+	WinnerTeam           int                     `json:"winnerTeam"`
+	IsHumanTurn          bool                    `json:"isHumanTurn"`
+	Hint                 *TuteWebOutputHint      `json:"hint,omitempty"`
 	WebOutputBase
 	Config TuteWebOutputConfig `json:"config"`
 }
@@ -100,12 +102,14 @@ var NewTuteWebController, NewTuteWebControllerWithProvider = webControllerPair[u
 
 func newTuteDefaultOutput(msg string) *TuteWebOutput {
 	return &TuteWebOutput{
-		Players:         make([]*TuteWebOutputPlayer, 0),
-		CurrentTrick:    make([]*WebOutputTrickCard, 0),
-		DeclaredSuits:   make([]bool, domain.CardDesignMax+1),
-		PlayableIndices: make([]int, 0),
-		WinnerTeam:      -1,
-		WebOutputBase:   WebOutputBase{Message: msg},
+		Players:              make([]*TuteWebOutputPlayer, 0),
+		CurrentTrick:         make([]*WebOutputTrickCard, 0),
+		DeclaredSuits:        make([]bool, domain.CardDesignMax+1),
+		PlayableIndices:      make([]int, 0),
+		WinnerTeam:           -1,
+		LastTrickBonusTeam:   -1,
+		LastTrickBonusPoints: domain.TuteLastTrickBonus,
+		WebOutputBase:        WebOutputBase{Message: msg},
 	}
 }
 
