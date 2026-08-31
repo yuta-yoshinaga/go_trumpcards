@@ -65,6 +65,15 @@ describe('GameMessageBox', () => {
     expect(box.textContent).not.toContain('{{');
   });
 
+  // Scopa も同じ平坦なドット付きキー。#6846 で Scopone と同型の 3 件を移したので、
+  // どちらのゲームでも実際に訳文に解決することを見る。
+  it('resolves the scopa messageCode the same way', () => {
+    render(<GameMessageBox message="scopa.errCaptureRequired" messageCode="scopa.errCaptureRequired" />);
+    const box = screen.getByRole('status');
+    expect(box).toHaveTextContent('取れる札があるときは取らなければなりません。');
+    expect(box.textContent).not.toContain('scopa.');
+  });
+
   it('translates messageCode when translation exists', () => {
     render(<GameMessageBox message="fallback" messageCode="blackjack.result.draw" />);
     expect(screen.getByText('引き分けです。')).toBeInTheDocument();

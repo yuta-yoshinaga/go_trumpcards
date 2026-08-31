@@ -1,4 +1,7 @@
 {
+  "errHandIndexOutOfRange": "手札の番号 {{idx}} は範囲外です。",
+  "errCaptureRequired": "取れる札があるときは取らなければなりません。",
+  "errInvalidCapture": "選んだ場札ではその札で取れません。",
   "helpTitle": "Scopa (スコパ)",
   "hintNone": "ヒントはありません",
   "hintNoCapture": "捕獲できる手はありません。最小札を場に置きましょう",
