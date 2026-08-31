@@ -36,7 +36,7 @@
     "spoil": "Spoil (流局)! Nobody reached 3 tricks — the pot carries to the next round"
   },
   "trumpLegend": {
-    "title": "Top-trump order",
+    "title": "Top-trump order and Reneging",
     "caption": "Trump strength is fixed (current trump: {{suit}}). The three top trumps (trump 5, J, and ♥A) carry no follow obligation and may be held back (Reneging). Other trumps use a simplified 10-high order (no red/black reversal).",
     "otherTrumps": "other trumps (10-high)",
     "nonTrump": "non-trump"
