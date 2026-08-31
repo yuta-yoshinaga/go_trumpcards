@@ -598,6 +598,15 @@ describe('ConquianPage round winner', () => {
     expect(line).not.toHaveTextContent('制しました');
   });
 
+  // 決着した局でも同じ行が要る。ここを試さないと `isRoundEnd || isGameEnd` の
+  // 片方の枝が一度も踏まれない。
+  it('names the winner at game end too', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, phase: 3, gameEndFlag: true, roundWinnerIdx: 1 });
+    renderWithProviders(<ConquianPage />);
+
+    expect(await screen.findByTestId('conquian-round-winner')).toHaveTextContent('CPU 1');
+  });
+
   it('says nothing mid-round', async () => {
     mockExec.mockResolvedValue({ ...drawPhaseState, roundWinnerIdx: 1 });
     renderWithProviders(<ConquianPage />);

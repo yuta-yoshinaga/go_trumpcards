@@ -35,7 +35,7 @@ import { CONQUIAN_HELP, parseConquianCommand } from '../utils/cli/commands/conqu
 import { formatConquianState } from '../utils/cli/formatters/conquianFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Total cards a player must lay in table melds to win a Conquian round. */
@@ -388,9 +388,7 @@ function ConquianPageContent() {
               <div className="text-center text-ds-text-primary text-sm mb-1" data-testid="conquian-round-winner">
                 {state.roundWinnerIdx < 0
                   ? t('roundWinnerDraw')
-                  : t('roundWinner', {
-                      name: playerName(state.roundWinnerIdx, state.players[state.roundWinnerIdx]?.isHuman ?? false),
-                    })}
+                  : t('roundWinner', { name: findPlayerName(state.players, state.roundWinnerIdx) })}
               </div>
             )}
 
