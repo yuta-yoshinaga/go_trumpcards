@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -31,6 +32,7 @@ func setupAllFoursWebMock() *interfaces.MockAllFoursGame {
 	m.On("GetTrumpSuit").Return(0)
 	m.On("GetTurnUp").Return((*domain.Card)(nil))
 	m.On("GetRunCount").Return(0)
+	m.On("GetLastRunCount").Return(0).Maybe()
 	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.AllFoursPhasePlay)
@@ -269,4 +271,63 @@ func TestAllFoursWebPresenterOutputCarriesTheHint(t *testing.T) {
 
 	result := new(presenter.AllFoursWebPresenter).Output(afg, nil)
 	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+}
+
+// **手札が急に増えて切り札も変わったのに、最初の Beg と同じ文面だった。**
+// run は非親へ 3 枚ずつ追加配布して新しいめくり札を出す All Fours 固有の規則で、
+// 起きたことを知る手掛かりが画面に何も無かった (#6479)。
+func TestAllFoursWebPresenter_TellsThePlayerTheCardsWereRun(t *testing.T) {
+	p := new(presenter.AllFoursWebPresenter)
+
+	withRun := func(phase domain.AllFoursPhase, runs, trickNo int) (string, map[string]string) {
+		m, _ := setupAllFoursWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastRunCount")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrickNumber")
+		m.On("GetLastRunCount").Return(runs)
+		m.On("GetPhase").Return(phase)
+		m.On("GetTrickNumber").Return(trickNo)
+
+		var out struct {
+			MessageCode   string            `json:"messageCode"`
+			MessageParams map[string]string `json:"messageParams"`
+		}
+		require.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
+		return out.MessageCode, out.MessageParams
+	}
+
+	// 配り直して Beg に戻った道。**ここが issue の本体** ── `runCount` は 0 に
+	// 戻っているので、区別できるのは `GetLastRunCount` だけ。
+	t.Run("beg after a run says so", func(t *testing.T) {
+		code, params := withRun(domain.AllFoursPhaseBeg, 1, 1)
+		assert.Equal(t, "allfours.begAfterRun", code)
+		assert.Equal(t, map[string]string{"count": "1"}, params)
+	})
+
+	// 連続した run も回数がそのまま出る (受け入れ条件 3)。
+	t.Run("consecutive runs report their count", func(t *testing.T) {
+		_, params := withRun(domain.AllFoursPhaseBeg, 4, 1)
+		assert.Equal(t, map[string]string{"count": "4"}, params)
+	})
+
+	// run が起きていない Beg は今までどおり。
+	t.Run("a first beg keeps the plain message", func(t *testing.T) {
+		code, params := withRun(domain.AllFoursPhaseBeg, 0, 1)
+		assert.Equal(t, "allfours.begPhase", code)
+		assert.Nil(t, params)
+	})
+
+	// 切り札が変わってプレイに入った道。
+	t.Run("the first lead after a run says so", func(t *testing.T) {
+		code, params := withRun(domain.AllFoursPhasePlay, 2, 1)
+		assert.Equal(t, "allfours.playAfterRun", code)
+		assert.Equal(t, map[string]string{"count": "2"}, params)
+	})
+
+	// **一度打てば普段の文面に戻る。**毎トリック言い続けると、その局のあいだ
+	// ずっと「いま run が起きた」と読める。
+	t.Run("later tricks go back to the plain lead message", func(t *testing.T) {
+		code, _ := withRun(domain.AllFoursPhasePlay, 2, 3)
+		assert.Equal(t, "allfours.playPhase.lead", code)
+	})
 }

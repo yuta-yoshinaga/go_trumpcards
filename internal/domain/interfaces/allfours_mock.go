@@ -136,6 +136,12 @@ func (m *MockAllFoursGame) GetRunCount() int {
 	return args.Int(0)
 }
 
+// GetLastRunCount モック
+func (m *MockAllFoursGame) GetLastRunCount() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
 func (m *MockAllFoursGame) GetWinnerIdx() int {
 	args := m.Called()
 	return args.Int(0)

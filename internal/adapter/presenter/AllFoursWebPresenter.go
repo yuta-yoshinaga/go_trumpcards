@@ -1,6 +1,8 @@
 package presenter
 
 import (
+	"strconv"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -147,10 +149,23 @@ func (p *AllFoursWebPresenter) buildMessage(s interfaces.AllFoursGame, trick []*
 	}
 	switch s.GetPhase() {
 	case domain.AllFoursPhaseBeg:
+		// **手札が急に増えて切り札も変わったのに、最初の Beg と同じ文面だった。**
+		// run は非親へ 3 枚ずつ追加配布して新しいめくり札を出す All Fours 固有の
+		// 規則で、上限やデッキ切れに当たると配り直して Beg に戻る ── そのとき
+		// `runCount` は 0 に戻っているので、`GetLastRunCount` でしか区別できない
+		// (#6479)。
+		if n := s.GetLastRunCount(); n > 0 {
+			return "", "allfours.begAfterRun", map[string]string{"count": strconv.Itoa(n)}
+		}
 		return "", "allfours.begPhase", nil
 	case domain.AllFoursPhaseGift:
 		return "", "allfours.giftPhase", nil
 	case domain.AllFoursPhasePlay:
+		// run で切り札が変わって始まった局は、最初のリードの時点でそれを言う。
+		// 一度でも打てば普段の文面に戻る (トリックが始まっている)。
+		if n := s.GetLastRunCount(); n > 0 && len(trick) == 0 && s.GetTrickNumber() <= 1 {
+			return "", "allfours.playAfterRun", map[string]string{"count": strconv.Itoa(n)}
+		}
 		if len(trick) == 0 {
 			return "", "allfours.playPhase.lead", nil
 		}

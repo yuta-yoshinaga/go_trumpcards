@@ -243,6 +243,38 @@ describe('AllFoursPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('af-breakdown')).not.toBeInTheDocument();
   });
+
+  // **手札が急に増えて切り札も変わったのに、最初の Beg と同じ文面だった** (#6479)。
+  // サーバは `allfours.begAfterRun` を返すようになったので、画面が**訳文に解決する**
+  // ことを見る ── 生の識別子が出たら翻訳を通していない。
+  it('spells out that the cards were run', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      messageCode: 'allfours.begAfterRun',
+      messageParams: { count: '3' },
+    });
+    renderWithProviders(<AllFoursPage />);
+
+    // 連続回数がそのまま出る。
+    const line = await screen.findByText(/ランザカード 3 回/);
+    expect(line).toBeInTheDocument();
+    // 生の識別子も未置換のプレースホルダも残らない。
+    expect(line.textContent).not.toContain('allfours.');
+    expect(line.textContent).not.toContain('{{');
+  });
+
+  it('spells out the run on the first lead too', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      messageCode: 'allfours.playAfterRun',
+      messageParams: { count: '1' },
+    });
+    renderWithProviders(<AllFoursPage />);
+
+    const line = await screen.findByText(/切り札が変わりました/);
+    expect(line).toBeInTheDocument();
+    expect(line.textContent).not.toContain('{{');
+  });
 });
 
 // **High/Low/Jack/Game はトリックが進むたびに途中経過が確定していくのに、

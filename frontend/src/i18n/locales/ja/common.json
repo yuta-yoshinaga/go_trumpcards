@@ -547,6 +547,8 @@
     "alaska.playing": "プレイ中",
     "alaska.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
     "alaska.stalemateWithEscape": "手詰まりです。{{count}}手戻ると別の手が打てます。",
+    "allfours.begAfterRun": "ランザカード {{count}} 回のあと山札が尽き、配り直しました。改めてベグするか、このまま進めてください。",
+    "allfours.playAfterRun": "ランザカード {{count}} 回で手札が増え、切り札が変わりました — リードするカードを選んでください。",
     "allfours.begPhase": "ベグ（配り直しの要求）するか、このまま進めてください。",
     "allfours.giftPhase": "相手のベグに対し、1点を与えるか配り直してください。",
     "allfours.playPhase.follow": "あなたの番です — リードスートに従ってカードを選んでください。",
