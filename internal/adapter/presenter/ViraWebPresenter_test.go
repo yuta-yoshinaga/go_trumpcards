@@ -39,6 +39,7 @@ func setupViraWebMock() *interfaces.MockViraGame {
 	m.On("GetPot").Return(30)
 	m.On("GetLastRoundDelta").Return([domain.ViraPlayerCnt]int{0, 0, 0})
 	m.On("GetLastRoundMade").Return(false)
+	m.On("GetLastRoundPotWon").Return(0)
 	m.On("GetBids").Return([domain.ViraPlayerCnt]domain.ViraBid{
 		domain.ViraBidGask, domain.ViraBidPass, domain.ViraBidPass,
 	})
@@ -153,15 +154,19 @@ func TestViraWebPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastRoundDelta")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastRoundMade")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastRoundPotWon")
 		m.On("GetPhase").Return(domain.ViraPhaseRoundEnd)
 		m.On("GetLastRoundDelta").Return([domain.ViraPlayerCnt]int{60, -30, -30})
 		m.On("GetLastRoundMade").Return(true)
+		m.On("GetLastRoundPotWon").Return(45)
 		result := p.Output(m, nil)
 		var resObj controller.ViraWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, "vira.roundEnd", resObj.MessageCode)
 		assert.Equal(t, [domain.ViraPlayerCnt]int{60, -30, -30}, resObj.LastRoundDelta)
 		assert.True(t, resObj.LastRoundMade)
+		assert.Equal(t, 45, resObj.LastRoundPotWon)
+		assert.Contains(t, result, `"lastRoundPotWon":45`)
 	})
 
 	t.Run("error message takes priority", func(t *testing.T) {

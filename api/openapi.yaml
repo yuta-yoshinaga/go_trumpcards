@@ -66239,6 +66239,20 @@ components:
           items:
             type: integer
           description: Hand indices the human may legally play (must-follow filtered)
+        pot:
+          type: integer
+          description: Chips currently in the pot. A failed contract adds its value here and carries it to the next round; a made contract sweeps it to zero
+        lastRoundDelta:
+          type: array
+          items:
+            type: integer
+          description: Score change each player took from the last settlement (index = player seat)
+        lastRoundMade:
+          type: boolean
+          description: Whether the declarer made the contract in the round just settled
+        lastRoundPotWon:
+          type: integer
+          description: Chips the declarer swept from the pot when the contract was made; 0 on a failure, where the pot instead carries over in pot
         gameEndFlag:
           type: boolean
         winnerPlayer:

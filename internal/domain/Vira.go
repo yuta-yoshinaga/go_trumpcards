@@ -137,6 +137,7 @@ type Vira struct {
 	roundTricks      [ViraPlayerCnt]int
 	lastRoundDelta   [ViraPlayerCnt]int
 	lastRoundMade    bool
+	lastRoundPotWon  int
 	gameEndFlag      bool
 	winnerPlayer     int // -1 = 未確定 (同点)
 	actionLogBase
@@ -235,6 +236,7 @@ func (g *Vira) startRound() {
 	g.roundTricks = [ViraPlayerCnt]int{}
 	g.lastRoundDelta = [ViraPlayerCnt]int{}
 	g.lastRoundMade = false
+	g.lastRoundPotWon = 0
 	for _, p := range g.players {
 		p.ResetRound()
 	}
@@ -725,6 +727,7 @@ func (g *Vira) settleRound() {
 	before := g.playerScores
 	if made {
 		// **ポットは総取り。**アンティが積み上がっているほど見返りが大きい。
+		g.lastRoundPotWon = g.pot
 		g.playerScores[g.declarerIdx] += g.pot
 		g.pot = 0
 		for i := range g.players {
@@ -736,6 +739,7 @@ func (g *Vira) settleRound() {
 		}
 	} else {
 		// 失敗すると契約価値をポットへ積み、守備側にも同額を払う。
+		g.lastRoundPotWon = 0
 		g.playerScores[g.declarerIdx] -= value
 		g.pot += value
 		for i := range g.players {
@@ -818,6 +822,9 @@ func (g *Vira) GetLastRoundDelta() [ViraPlayerCnt]int { return g.lastRoundDelta 
 // GetLastRoundMade 直前のラウンドで契約が達成されたか。
 func (g *Vira) GetLastRoundMade() bool { return g.lastRoundMade }
 
+// GetLastRoundPotWon 達成時に総取りした額。失敗時は 0 で、そのときポットは GetPot() に積み上がっている。
+func (g *Vira) GetLastRoundPotWon() int { return g.lastRoundPotWon }
+
 // GetGameEndFlag マッチが終了したか。
 func (g *Vira) GetGameEndFlag() bool { return g.gameEndFlag }
 
@@ -888,6 +895,7 @@ type viraJSON struct {
 	RoundTricks      [ViraPlayerCnt]int     `json:"rt"`
 	LastRoundDelta   [ViraPlayerCnt]int     `json:"lrd"`
 	LastRoundMade    bool                   `json:"lrm"`
+	LastRoundPotWon  int                    `json:"lrpw"`
 	GameEndFlag      bool                   `json:"gef"`
 	WinnerPlayer     int                    `json:"wp"`
 	ActionLog        []*ActionLogEntry      `json:"al"`
@@ -916,6 +924,7 @@ func (g *Vira) MarshalJSON() ([]byte, error) {
 		RoundTricks:      g.roundTricks,
 		LastRoundDelta:   g.lastRoundDelta,
 		LastRoundMade:    g.lastRoundMade,
+		LastRoundPotWon:  g.lastRoundPotWon,
 		GameEndFlag:      g.gameEndFlag,
 		WinnerPlayer:     g.winnerPlayer,
 		ActionLog:        g.actionLog,
@@ -1012,6 +1021,7 @@ func (g *Vira) UnmarshalJSON(data []byte) error {
 	g.roundTricks = j.RoundTricks
 	g.lastRoundDelta = j.LastRoundDelta
 	g.lastRoundMade = j.LastRoundMade
+	g.lastRoundPotWon = j.LastRoundPotWon
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerPlayer = j.WinnerPlayer
 	g.actionLog = j.ActionLog

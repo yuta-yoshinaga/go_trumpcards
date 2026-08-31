@@ -53,7 +53,9 @@
   },
   "roundResult": {
     "title": "Round Result",
-    "tricks": "{{name}} tricks: {{count}}"
+    "tricks": "{{name}} tricks: {{count}}",
+    "potWon": "The declarer sweeps the pot ({{chips}})",
+    "potCarried": "The pot carries over and now holds {{chips}}"
   },
   "progress": {
     "line": "Declarer progress: {{won}} / {{needed}} tricks",

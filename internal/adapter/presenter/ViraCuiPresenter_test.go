@@ -13,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupViraCuiMock() *interfaces.MockViraGame {
@@ -27,6 +28,8 @@ func setupViraCuiMock() *interfaces.MockViraGame {
 	m.On("GetDeclarerIdx").Return(0)
 	m.On("GetContract").Return(domain.ViraBidGask)
 	m.On("GetPot").Return(30)
+	m.On("GetLastRoundMade").Return(false)
+	m.On("GetLastRoundPotWon").Return(0)
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayerScores").Return([domain.ViraPlayerCnt]int{0, 0, 0})
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
@@ -101,10 +104,14 @@ func TestViraCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, p.Output(m, nil), "トリック終了")
 	})
 
-	t.Run("round end shows the contract as achieved", func(t *testing.T) {
+	t.Run("round end shows the contract as achieved with pot won", func(t *testing.T) {
 		m, players := setupViraCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastRoundMade")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastRoundPotWon")
 		m.On("GetPhase").Return(domain.ViraPhaseRoundEnd)
+		m.On("GetLastRoundMade").Return(true)
+		m.On("GetLastRoundPotWon").Return(45)
 		// Declarer (seat 0) took 7 tricks on a Gask contract → achieved.
 		for range 7 {
 			players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)})
@@ -113,16 +120,68 @@ func TestViraCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "達成")
 		assert.NotContains(t, result, "失敗")
 		assert.Contains(t, result, "各プレイヤーのトリック数")
+		assert.Contains(t, result, "宣言者がポット 45 枚を獲得")
+		assert.NotContains(t, result, "積み上がった")
+		assert.NotContains(t, result, "{{")
 	})
 
-	t.Run("round end shows the contract as failed", func(t *testing.T) {
+	t.Run("round end shows the contract as failed with pot carried over", func(t *testing.T) {
 		m, players := setupViraCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPot")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastRoundMade")
 		m.On("GetPhase").Return(domain.ViraPhaseRoundEnd)
+		m.On("GetPot").Return(60)
+		m.On("GetLastRoundMade").Return(false)
 		for range 2 {
 			players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)})
 		}
-		assert.Contains(t, p.Output(m, nil), "失敗")
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "失敗")
+		assert.Contains(t, result, "ポットが 60 枚に積み上がりました")
+		assert.NotContains(t, result, "宣言者がポット")
+		assert.NotContains(t, result, "枚を獲得")
+		assert.NotContains(t, result, "積み上がった")
+		assert.NotContains(t, result, "{{")
+	})
+
+	t.Run("round end in English locale renders pot settlement without unresolved template tags", func(t *testing.T) {
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
+
+		t.Run("achieved in en", func(t *testing.T) {
+			m, players := setupViraCuiMockWithPlayers()
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastRoundMade")
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastRoundPotWon")
+			m.On("GetPhase").Return(domain.ViraPhaseRoundEnd)
+			m.On("GetLastRoundMade").Return(true)
+			m.On("GetLastRoundPotWon").Return(50)
+			for range 7 {
+				players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)})
+			}
+			result := p.Output(m, nil)
+			assert.Contains(t, result, "Declarer won 50 chips from the pot")
+			assert.NotContains(t, result, "carried over")
+			assert.NotContains(t, result, "{{")
+		})
+
+		t.Run("failed in en", func(t *testing.T) {
+			m, players := setupViraCuiMockWithPlayers()
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPot")
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastRoundMade")
+			m.On("GetPhase").Return(domain.ViraPhaseRoundEnd)
+			m.On("GetPot").Return(75)
+			m.On("GetLastRoundMade").Return(false)
+			for range 2 {
+				players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)})
+			}
+			result := p.Output(m, nil)
+			assert.Contains(t, result, "Pot carried over: 75 chips")
+			assert.NotContains(t, result, "from the pot")
+			assert.NotContains(t, result, "{{")
+		})
 	})
 
 	// Misère inverts the test: any trick at all fails it.

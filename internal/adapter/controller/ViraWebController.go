@@ -55,6 +55,7 @@ type ViraWebOutput struct {
 	Pot             int                       `json:"pot"`
 	LastRoundDelta  [domain.ViraPlayerCnt]int `json:"lastRoundDelta"`
 	LastRoundMade   bool                      `json:"lastRoundMade"`
+	LastRoundPotWon int                       `json:"lastRoundPotWon"`
 	Bids            [domain.ViraPlayerCnt]int `json:"bids"`
 	CurrentTrick    []*WebOutputTrickCard     `json:"currentTrick"`
 	PlayerScores    [domain.ViraPlayerCnt]int `json:"playerScores"`
