@@ -27,6 +27,7 @@ function makeState(overrides: Partial<GaigelResponse> = {}): GaigelResponse {
     dealerIdx: 3,
     trumpSuit: 1,
     stockRemaining: 20,
+    isEndgame: false,
     currentTrick: [],
     teamScores: [0, 0],
     roundPoints: [0, 0],

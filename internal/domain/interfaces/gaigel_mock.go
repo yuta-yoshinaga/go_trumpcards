@@ -104,6 +104,12 @@ func (m *MockGaigelGame) GetStockRemaining() int {
 	return args.Int(0)
 }
 
+// IsEndgame モック
+func (m *MockGaigelGame) IsEndgame() bool {
+	args := m.Called()
+	return args.Bool(0)
+}
+
 func (m *MockGaigelGame) GetTeamScore(team int) int {
 	args := m.Called(team)
 	return args.Int(0)

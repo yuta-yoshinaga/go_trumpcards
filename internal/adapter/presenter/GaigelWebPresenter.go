@@ -44,6 +44,9 @@ func (p *GaigelWebPresenter) buildBase(g interfaces.GaigelGame) *controller.Gaig
 	resObj.TrumpSuit = g.GetTrumpSuit()
 	resObj.TrumpCard = cardToOutput(g.GetTrumpCard())
 	resObj.StockRemaining = g.GetStockRemaining()
+	// 山が尽きた瞬間から `validateEndgameFollow` が発動する。判定はドメインが持つ
+	// ので、残り枚数から画面が組み直さない (#6482)。
+	resObj.IsEndgame = g.IsEndgame()
 	resObj.TeamScores = [2]int{g.GetTeamScore(0), g.GetTeamScore(1)}
 	resObj.RoundPoints = [2]int{g.GetRoundPoints(0), g.GetRoundPoints(1)}
 	resObj.RoundMarriage = [2]int{g.GetRoundMarriagePoints(0), g.GetRoundMarriagePoints(1)}

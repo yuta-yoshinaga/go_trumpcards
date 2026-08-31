@@ -191,6 +191,20 @@ function GaigelPageContent() {
           <span>{t('stock', { count: state.stockRemaining })}</span>
         </div>
 
+        {/* **山が尽きた瞬間にマストフォローへ切り替わる。**残り 0 枚という数字は
+            出ていたが、そこで規則が変わることはどこにも書かれていなかった ──
+            姉妹の Bezique / Schnapsen は両方ともフェーズとして明示している
+            (#6482)。切り替わりは読み上げにも届ける。 */}
+        {state.isEndgame && (
+          <div
+            className="text-center text-sm text-ds-warning font-semibold mb-2"
+            role="status"
+            data-testid="ga-endgame-notice"
+          >
+            {t('endgameNotice')}
+          </div>
+        )}
+
         {/* Face-up turn-up card that fixes the trump suit. It sits under the
             stock and is drawn last, so it disappears once the stock is empty. */}
         {state.trumpCard && (
