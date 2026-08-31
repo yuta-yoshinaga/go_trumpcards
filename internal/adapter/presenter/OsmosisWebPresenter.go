@@ -23,9 +23,14 @@ func (p *OsmosisWebPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 	p.fillBoard(resObj, o)
 
 	// メッセージ
-	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
-	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
-	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	// **受動ヒントは Output() でも埋める。**盤面のリングなど `state.hint` を読む
+	// 分岐は、ヒントボタンを押していないときにも動く。ここで埋めないとそれらは
+	// 全部死ぬ (#4483)。
+	//
+	// **「HintOutput の応答はページの state にマージされない」と書いてあったが、
+	// このページでは誤り。**ヒントボタンは `useGameApi` の `exec('hint')` を呼び、
+	// `setState(res)` が状態を丸ごと差し替える。だから HintOutput も
+	// `fillBoard` で盤面を返す (#6800 / #6855)。
 	// 手詰まりならもう置ける札は無いので、ヒントを探しに行くだけ無駄になる。
 	if o.GetPhase() == domain.OsmosisPhasePlaying && !stalemate {
 		if hint := o.GetHint(); hint != nil {
