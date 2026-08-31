@@ -5,6 +5,9 @@ package domain
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func bhCard(design, value int) *Card { return NewCard(design, value, true) }
@@ -219,4 +222,74 @@ func TestBlackHole_AcceptableRanksAndPlayableFans(t *testing.T) {
 	if got := g.PlayableFans(); got != nil {
 		t.Errorf("積める扇は無いはず: got %v", got)
 	}
+}
+
+// **★は「戦略的な推奨」と説明されていたが、中身は先頭一致だった。**扇の番号順に
+// 最初に見つかった合法手を返すだけで、その手の後に詰みへ近づくかどうかを一切
+// 見ていなかった (#6477)。
+func TestBlackHole_HintPrefersTheMoveThatKeepsMostOptions(t *testing.T) {
+	g := newBhGame()
+	bhClear(g)
+	// 穴のトップは 5。扇 0 (4) と扇 2 (6) がどちらも合法。
+	g.blackHole = []*Card{bhCard(CardDesignSpade, 5)}
+	g.fans = [][]*Card{
+		// 扇 0: 4 を打つと穴は 4。続けられるのは扇 3 の 3 だけ → 1 手。
+		{bhCard(CardDesignHeart, 4)},
+		{bhCard(CardDesignSpade, 7)},
+		// 扇 2: 6 を打つと穴は 6。扇 1 の 7 と、**この扇自身の次の札** 7 が
+		// 続けられる → 2 手。打った扇のトップが 1 枚下へ動くことまで数えないと
+		// 1 手に見え、扇 0 と並んで番号の小さい方が選ばれてしまう。
+		{bhCard(CardDesignClover, 7), bhCard(CardDesignDiamond, 6)},
+		{bhCard(CardDesignSpade, 3)},
+	}
+
+	// 前提: どちらも合法。先頭一致なら 0 が選ばれる盤面である。
+	require.True(t, g.canPlay(0))
+	require.True(t, g.canPlay(2))
+
+	h := g.GetHint()
+	require.NotNil(t, h)
+	assert.Equal(t, 2, h.Fan, "the hint should pick the move that leaves a follow-up, not the lowest index")
+}
+
+// 同点なら番号の小さい扇。**決定性が要る** ── 同じ盤面で毎回違う手を勧めると、
+// 画面の★が理由もなく飛び回る。
+func TestBlackHole_HintIsDeterministicOnATie(t *testing.T) {
+	g := newBhGame()
+	bhClear(g)
+	g.blackHole = []*Card{bhCard(CardDesignSpade, 5)}
+	// 扇 1 と扇 3 はどちらも 6 で、続く手も同じだけ残す。
+	g.fans = [][]*Card{
+		{bhCard(CardDesignClover, 12)},
+		{bhCard(CardDesignHeart, 6)},
+		{bhCard(CardDesignClover, 11)},
+		{bhCard(CardDesignDiamond, 6)},
+	}
+	for range 5 {
+		h := g.GetHint()
+		require.NotNil(t, h)
+		assert.Equal(t, 1, h.Fan)
+	}
+}
+
+// 合法手が 1 つしか無い局面では、その手が選ばれる (盤面を空にする勝ち手も同じ)。
+func TestBlackHole_HintTakesTheOnlyLegalMove(t *testing.T) {
+	g := newBhGame()
+	bhClear(g)
+	g.blackHole = []*Card{bhCard(CardDesignSpade, 5)}
+	// 扇 0 だけが残っており、その 1 枚を積めば盤面が空になる。
+	g.fans = [][]*Card{{bhCard(CardDesignHeart, 4)}}
+
+	h := g.GetHint()
+	require.NotNil(t, h)
+	assert.Equal(t, 0, h.Fan)
+}
+
+// 合法手が無ければヒントも無い (既存の振る舞いを保つ)。
+func TestBlackHole_HintIsNilWithoutALegalMove(t *testing.T) {
+	g := newBhGame()
+	bhClear(g)
+	g.blackHole = []*Card{bhCard(CardDesignSpade, 5)}
+	g.fans = [][]*Card{{bhCard(CardDesignHeart, 10)}}
+	assert.Nil(t, g.GetHint())
 }
