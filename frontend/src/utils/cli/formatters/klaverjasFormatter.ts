@@ -43,6 +43,14 @@ export function formatKlaverjasState(state: KlaverjasResponse): string {
   if (state.phase === 2 || state.phase === 3) {
     lines.push(`round result: A card pts=${state.roundCardPoints[0] ?? 0} B card pts=${state.roundCardPoints[1] ?? 0}`);
     lines.push(`roem: A=${state.roundRoem[0] ?? 0} B=${state.roundRoem[1] ?? 0}`);
+    // 席ごとの内訳。実端末の CUI は毎回出しているのに、ブラウザの CLI モードだけが
+    // チーム合計しか出していなかった (#6441)。0 の席は出さない。
+    const seats = (state.roundPlayerRoem ?? [])
+      .map((pts, idx) => (pts > 0 ? `${formatPlayerName(idx, state.players[idx]?.isHuman ?? false)}=${pts}` : null))
+      .filter((e): e is string => e !== null);
+    if (seats.length > 0) {
+      lines.push(`roem by seat: ${seats.join(', ')}`);
+    }
   }
 
   if (state.hint && isRequestedHint(state)) {
