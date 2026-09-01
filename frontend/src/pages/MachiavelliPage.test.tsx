@@ -601,4 +601,25 @@ describe('MachiavelliPage', () => {
     await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
     expect(document.querySelectorAll('[data-meld-hint]')).toHaveLength(0);
   });
+  // **デッドウッドはそのまま失点になる。**サーバは人間の分も毎回送っているのに、
+  // 画面は revealCpu の下で CPU の分しか出しておらず、自分の持ち点はラウンドが
+  // 終わるまで見えなかった (#6501)。ドローかメルドかはこの数字で決める。
+  it('shows the human their own deadwood during the turn', async () => {
+    mockExec.mockResolvedValue({
+      ...turnState,
+      players: [{ ...turnState.players[0], deadwood: 24 }, ...turnState.players.slice(1)],
+    });
+    renderWithProviders(<MachiavelliPage />);
+    expect(await screen.findByTestId('mv-own-deadwood')).toHaveTextContent('デッドウッド 24');
+  });
+
+  // メルド/レイオフで減った値がそのまま出る ── 定数を書いている実装はここで落ちる。
+  it('follows the human deadwood as it changes', async () => {
+    mockExec.mockResolvedValue({
+      ...turnState,
+      players: [{ ...turnState.players[0], deadwood: 5 }, ...turnState.players.slice(1)],
+    });
+    renderWithProviders(<MachiavelliPage />);
+    expect(await screen.findByTestId('mv-own-deadwood')).toHaveTextContent('デッドウッド 5');
+  });
 });

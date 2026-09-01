@@ -536,6 +536,15 @@ function MachiavelliPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.machiavelli.footer} px-4 py-2.5`}>
+            {/* **デッドウッドはそのまま失点になる。**サーバは人間の分も毎回
+                送っているのに、画面は revealCpu の下で CPU の分しか出しておらず、
+                自分の持ち点はラウンドが終わるまで見えなかった (#6501)。
+                ドローかメルドかは、この数字を見て決めるもの。 */}
+            {humanPlayer && (
+              <div className="text-ds-text-muted text-xs mb-1" data-testid="mv-own-deadwood">
+                {t('deadwoodShort', { score: humanPlayer.deadwood })}
+              </div>
+            )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="mv-player-hand">
                 {humanPlayer.cards.map((card, idx) => (
