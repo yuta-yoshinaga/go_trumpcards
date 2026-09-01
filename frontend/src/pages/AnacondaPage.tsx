@@ -38,6 +38,7 @@ import { anacondaPassRecipient } from '../utils/anacondaPass';
 import { ANACONDA_HELP, parseAnacondaCommand } from '../utils/cli/commands/anacondaCommands';
 import { formatAnacondaState } from '../utils/cli/formatters/anacondaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { raiseAvailability, raiseCost } from '../utils/raiseAvailability';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Anaconda tutorial step definitions. */
@@ -165,6 +166,19 @@ function AnacondaPageContent() {
     return <GameSkeleton gameKey="anaconda" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  // **レイズが押せない理由は 2 つある。**上限到達とチップ不足を区別しないと、
+  // ボタンが黙って死んだようにしか見えない (#6500)。判定は Bouillotte / Primero と
+  // 同じ raiseAvailability を使う ── 同じ規則を 3 つ目の実装で持たない。
+  const raiseInput = {
+    raiseCount: state.raiseCount,
+    maxRaises: state.maxRaises,
+    chips: humanPlayer ? humanPlayer.chips : 0,
+    currentBet: state.currentBet,
+    roundBet: humanPlayer ? humanPlayer.roundBet : 0,
+    ante: state.ante,
+  };
+  const raiseBlock = raiseAvailability(raiseInput);
+  const raiseNeeded = raiseCost(raiseInput);
   const humanIdx = state.players.findIndex((p) => p.isHuman);
 
   const isPassPhase = state.phase === AnacondaPhase.PASS;
@@ -511,6 +525,18 @@ function AnacondaPageContent() {
                   <button type="button" className={btnSecondary} onClick={handleCall} disabled={loading}>
                     {t('callButton')}
                   </button>
+                  <span
+                    className="text-ds-text-muted text-xs"
+                    data-testid="anaconda-raise-count"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    {raiseBlock === 'cap'
+                      ? t('raiseCapReached', { max: state.maxRaises })
+                      : raiseBlock === 'chips'
+                        ? t('raiseNoChips', { cost: raiseNeeded })
+                        : t('raiseCount', { count: state.raiseCount, max: state.maxRaises })}
+                  </span>
                   <button
                     type="button"
                     className={btnPrimary}

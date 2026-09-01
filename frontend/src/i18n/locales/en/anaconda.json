@@ -53,6 +53,9 @@
   "keepButton": "Keep",
   "callButton": "Call / Check",
   "raiseButton": "Raise",
+  "raiseCount": "Raise {{count}}/{{max}}",
+  "raiseCapReached": "Raise limit ({{max}}) reached",
+  "raiseNoChips": "Not enough chips (a raise costs {{cost}})",
   "foldButton": "Fold",
   "nextRound": "Next Round",
   "roundResult": {
