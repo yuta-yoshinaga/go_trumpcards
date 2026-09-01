@@ -223,6 +223,16 @@ describe('AluettePage', () => {
     expect(live).toContainElement(screen.getByTestId('aluette-meine-winner'));
   });
 
+  // 席の数だけトリック数が返ってこない応答でも、行が消えたり NaN になったりしない。
+  it('falls back to zero for a seat with no trick count', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, roundTricks: [3] });
+    renderWithProviders(<AluettePage />);
+    const live = await screen.findByTestId('aluette-result-live');
+    await waitFor(() => expect(live).toHaveTextContent('メーヌ結果'));
+    expect(live.textContent).not.toContain('NaN');
+    expect(live.textContent).not.toContain('undefined');
+  });
+
   // 決着はメーヌの終わりだけでなく試合の終わりでも起きる ── どちらでも読み上げる。
   it('announces the settlement at the end of the match too', async () => {
     mockExec.mockResolvedValue({ ...roundEndState, phase: 3, gameEndFlag: true });
