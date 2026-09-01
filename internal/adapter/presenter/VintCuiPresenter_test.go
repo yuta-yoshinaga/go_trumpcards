@@ -206,3 +206,16 @@ func TestVintCuiPresenter_ShowsTheHonourAceAndPenalty(t *testing.T) {
 		assert.Contains(t, out, i18n.Tf("vint.penaltyLine", "t0", "0", "t1", "1500"))
 	})
 }
+
+// **ブリッジとの最大の違いはダミーが無いこと。**Web は常設で説明しているのに
+// CUI にはキーすら無く、味方の手札も最後まで伏せられるという前提を伝える手段が
+// 無かった (#6526)。
+func TestVintCuiPresenter_AlwaysExplainsThereIsNoDummy(t *testing.T) {
+	g := domain.NewDefaultVint()
+	g.Reset()
+	out := new(presenter.VintCuiPresenter).Output(g, nil)
+
+	// **キーではなく解決後の文言を見る** ── i18n.T は未知のキーをそのまま返す。
+	assert.Contains(t, out, i18n.T("vint.noDummyNote"))
+	assert.NotContains(t, out, "vint.noDummyNote")
+}
