@@ -304,4 +304,37 @@ describe('KaiserPage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+  // **相方が何点で入札し、誰がどこで降りたかは公開情報で、続けるか降りるかの
+  // 判断そのもの。**サーバは全履歴を毎回送っているのに、画面は最高値しか
+  // 読んでいなかった (#6524)。
+  it('lists who bid what, and who passed', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        bids: [
+          { player: 0, value: 8, contract: 0 },
+          { player: 1, value: 0, contract: 0 },
+          { player: 2, value: 10, contract: 1 },
+        ],
+      }),
+    );
+    renderWithProviders(<KaiserPage />);
+
+    const history = await screen.findByTestId('kaiser-bid-history');
+    expect(history).toHaveTextContent('あなた');
+    expect(history).toHaveTextContent('8');
+    // **パスは他の入札と区別できる形で出る** ── 0 点の入札として並べない。
+    expect(screen.getByTestId('kaiser-bid-1')).toHaveTextContent('パス');
+    expect(screen.getByTestId('kaiser-bid-1')).not.toHaveTextContent('0');
+    // 契約種別も出る (2 件目はノートランプ)。
+    expect(screen.getByTestId('kaiser-bid-2')).toHaveTextContent('10');
+    expect(history.textContent).not.toContain('{{');
+  });
+
+  // 負のコントロール: まだ誰も入札していない局面では表ごと出さない。
+  it('shows no history before the first bid', async () => {
+    mockExec.mockResolvedValue(makeState({ bids: [] }));
+    renderWithProviders(<KaiserPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('kaiser-bid-history')).not.toBeInTheDocument();
+  });
 });

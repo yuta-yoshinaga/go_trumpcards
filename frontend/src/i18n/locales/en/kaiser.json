@@ -67,5 +67,8 @@
     "kaiserForced": "This is the only legal card — following suit is compulsory",
     "kaiserChoose": "Several cards are legal — pick from the highlighted ones",
     "kaiserDumpSpadeThree": "The ♠3 costs 3 points — shed it while you still have a choice"
-  }
+  },
+  "bidHistoryTitle": "Bidding so far",
+  "bidHistoryEntry": "{{name}}: {{value}} {{contract}}",
+  "bidHistoryPass": "{{name}}: pass"
 }
