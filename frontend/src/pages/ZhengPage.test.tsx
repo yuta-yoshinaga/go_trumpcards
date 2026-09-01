@@ -293,4 +293,26 @@ describe('ZhengPage', () => {
     renderWithProviders(<ZhengPage />);
     expect(await screen.findByText(/ゲーム終了/)).toBeInTheDocument();
   });
+  // **理由の無い無効化は、故障と区別が付かない。**読み上げ側には
+  // announce.yourTurnLead があるのに、画面には手がかりが無かった (#6516)。
+  it('says why pass is unavailable on the lead', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<ZhengPage />);
+
+    const reason = await screen.findByTestId('zheng-pass-disabled-reason');
+    // **キーではなく解決後の文言を見る** ── i18next は未知のキーをそのまま返す。
+    expect(reason).toHaveTextContent('リード番なのでパスできません');
+    expect(screen.getByTestId('pass-button')).toBeDisabled();
+    // ボタン自体にも同じ理由を載せる (ホバーで読める)。
+    expect(screen.getByTestId('pass-button')).toHaveAttribute('title', reason.textContent as string);
+  });
+
+  // 負のコントロール: フォロー番ではパスできるので理由を出さない。
+  it('shows no reason once the human is following', async () => {
+    mockExec.mockResolvedValue(followState());
+    renderWithProviders(<ZhengPage />);
+    await waitFor(() => expect(screen.getByTestId('pass-button')).not.toBeDisabled());
+    expect(screen.queryByTestId('zheng-pass-disabled-reason')).not.toBeInTheDocument();
+    expect(screen.getByTestId('pass-button')).not.toHaveAttribute('title');
+  });
 });
