@@ -12,6 +12,8 @@
   "playerLine": "{{name}} ({{role}}): {{cards}} 枚  得点: {{score}}  トリック: {{tricks}}",
   "roleDeclarer": "デクレアラー",
   "rolePartner": "パートナー",
+  "calledKing": "呼ばれた王: {{suit}}",
+  "partnerClueUnknown": "{{suit}}の王を持つプレイヤーが宣言者の秘密のパートナー（まだ不明）",
   "youArePartner": "あなたが呼ばれたパートナーです（呼びスートのキングを持っています）",
   "roleOpponent": "対戦側",
   "bidNone": "-",

@@ -94,6 +94,23 @@ func koenigrufenHumanIsCalledPartner(g interfaces.KoenigrufenGame) bool {
 	return false
 }
 
+// koenigrufenCalledKingStr は呼ばれた王のスートと、パートナー未公開のあいだの
+// 手がかりを返す (まだ呼ばれていなければ空)。
+//
+// Web の calledKing / partnerClue と同じ内容 ── 呼びスートは公開情報で、
+// 「そのスートの王を持つ者が秘密のパートナー」という推理の出発点になる。
+func koenigrufenCalledKingStr(g interfaces.KoenigrufenGame) string {
+	suit := g.GetCalledKing()
+	if suit < 1 {
+		return ""
+	}
+	out := i18n.Tf("koenigrufen.calledKing", "suit", cuiSuitName(suit)) + "\n"
+	if g.GetPartnerRevealed() {
+		return out
+	}
+	return out + i18n.Tf("koenigrufen.partnerClueUnknown", "suit", cuiSuitName(suit)) + "\n"
+}
+
 // koenigrufenPlayerStr プレイヤー 1 行分の状態文字列を返す。
 func koenigrufenPlayerStr(g interfaces.KoenigrufenGame, idx int) string {
 	player := g.GetPlayer(idx)
@@ -126,6 +143,9 @@ func (p *KoenigrufenCuiPresenter) Output(g interfaces.KoenigrufenGame, lastErr e
 			"round", strconv.Itoa(g.GetRoundNumber()),
 			"trick", strconv.Itoa(g.GetTrickNumber()),
 			"contract", koenigrufenBidLabel(g.GetContract())) + "\n")
+		// **呼びスートは公開情報。**Web は常時出しているのに CUI は一度も出さず、
+		// パートナーでない側は誰が味方になり得るのかを知る手段が無かった (#6510)。
+		b.WriteString(koenigrufenCalledKingStr(g))
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			b.WriteString(koenigrufenPlayerStr(g, i))
