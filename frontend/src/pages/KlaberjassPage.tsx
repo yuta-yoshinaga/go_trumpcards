@@ -348,6 +348,9 @@ function KlaberjassPageContent() {
                       key={`hand-${c.design}-${c.value}-${i}`}
                       type="button"
                       data-hint-action="play"
+                      // **リングは目にしか届かない。**どの札を選んでいるかを
+                      // 音声でも確かめられないと、出す前に検証できない (#6523)。
+                      aria-pressed={selected === i}
                       onClick={() => setSelected(i)}
                       disabled={loading || (isPlay && !canPlay(i))}
                       className={`rounded ${selected === i ? 'ring-2 ring-ds-accent' : ''} ${
