@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cariocaApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -132,6 +132,30 @@ describe('CariocaPage', () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<CariocaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /Next round|次のラウンドへ/ })).toBeInTheDocument());
+  });
+
+  // **誰が上がってラウンドが終わったかは点数表からは読めない。**サーバは
+  // roundWinnerIdx を毎回送っているのに、画面が一度も読んでいなかった (#6498)。
+  it('names the player who ended the round', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, roundWinnerIdx: 2 });
+    renderWithProviders(<CariocaPage />);
+    const line = await screen.findByTestId('ca-round-winner');
+    expect(line).toHaveTextContent('CPU 2 がラウンドを終了させました。');
+    expect(line.textContent).not.toContain('{{');
+
+    // 席を取り違える実装はここで落ちる。
+    cleanup();
+    mockExec.mockResolvedValue({ ...roundEndState, roundWinnerIdx: 0 });
+    renderWithProviders(<CariocaPage />);
+    expect(await screen.findByTestId('ca-round-winner')).toHaveTextContent('あなた がラウンドを終了させました。');
+  });
+
+  // 負のコントロール: 誰も上がっていない (-1) なら行ごと出さない。
+  it('shows no round-winner line when nobody went out', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, roundWinnerIdx: -1 });
+    renderWithProviders(<CariocaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Next round|次のラウンドへ/ })).toBeInTheDocument());
+    expect(screen.queryByTestId('ca-round-winner')).not.toBeInTheDocument();
   });
 
   it('invokes drawdiscard when the discard button is clicked', async () => {
