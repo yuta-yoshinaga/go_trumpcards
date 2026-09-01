@@ -194,3 +194,38 @@ func TestOichoKabuCuiPresenter_ExplainsTheBankerPolicy(t *testing.T) {
 		assert.NotContains(t, out, strings.Split(i18n.T("oichokabu.dealerPolicyDrew"), "{{")[0])
 	})
 }
+
+// **「カブ」「ブタ」はこのゲーム最大の特徴語なのに、テキストの画面に一度も
+// 出ていなかった** ── Web が aria-label 専用で持っているだけだった (#6504)。
+func TestOichoKabuCuiPresenter_NamesKabuAndButa(t *testing.T) {
+	p := new(OichoKabuCuiPresenter)
+
+	withRank := func(rank int) string {
+		m := new(interfaces.MockOichoKabuGame)
+		m.On("GetPlayerHand").Return([]*domain.Card{domain.NewCard(1, 7, true), domain.NewCard(2, 2, true)})
+		m.On("GetPlayerRank").Return(rank)
+		setupOichoKabuCuiMockDefaults(m)
+		return p.Output(m, nil)
+	}
+
+	t.Run("names the strongest rank kabu", func(t *testing.T) {
+		out := withRank(9)
+		assert.Contains(t, out, i18n.Tf("oichokabu.rankNameSuffix", "name", i18n.T("oichokabu.rankName.9")))
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("names the weakest rank buta", func(t *testing.T) {
+		out := withRank(0)
+		assert.Contains(t, out, i18n.Tf("oichokabu.rankNameSuffix", "name", i18n.T("oichokabu.rankName.0")))
+	})
+
+	// 負のコントロール: 名前を持つのは 0 と 9 だけ。他は数字のまま。
+	t.Run("leaves every other rank as a bare number", func(t *testing.T) {
+		for rank := 1; rank <= 8; rank++ {
+			out := withRank(rank)
+			assert.NotContains(t, out, i18n.T("oichokabu.rankName.9"))
+			assert.NotContains(t, out, i18n.T("oichokabu.rankName.0"))
+			assert.Contains(t, out, i18n.Tf("oichokabu.rankLine", "rank", strconv.Itoa(rank)))
+		}
+	})
+}
