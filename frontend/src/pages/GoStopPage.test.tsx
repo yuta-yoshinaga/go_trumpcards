@@ -268,5 +268,17 @@ describe('GoStopPage', () => {
     expect(row).toHaveTextContent('띠5');
     expect(row).toHaveTextContent('피9');
     expect(row.textContent).not.toContain('{{');
+
+    // 卓の全員分が出る ── CPU の列も同じ枚数行を持つ。
+    expect(screen.getByTestId('gostop-counts-cpu-1')).toBeInTheDocument();
+  });
+
+  // 決断フェーズの保留内訳にも同じ枚数行が付く (所有者を持たない共有の表示)。
+  it('shows the raw counts on the pending breakdown too', async () => {
+    mockExec.mockResolvedValue(decisionState);
+    renderWithProviders(<GoStopPage />);
+    const shared = await screen.findByTestId('gostop-counts-shared');
+    expect(shared).toHaveTextContent('피10');
+    expect(shared.textContent).not.toContain('{{');
   });
 });
