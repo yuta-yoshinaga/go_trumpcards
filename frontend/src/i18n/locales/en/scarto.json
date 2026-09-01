@@ -66,5 +66,6 @@
     "resetButton": "Use the reset button to start a new game."
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "excuseReturnsNote": "The Excuse is special — it never wins or loses a trick and always returns to the pile of whoever played it"
 }

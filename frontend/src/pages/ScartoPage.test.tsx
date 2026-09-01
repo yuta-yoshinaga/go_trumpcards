@@ -382,4 +382,14 @@ describe('ScartoPage', () => {
     const button = screen.getByRole('button', { name: /捨てる/ });
     expect(button).toBeDisabled();
   });
+  // **エクスキューズだけが勝敗の外にいる。**出した札が誰の手にも渡らず自分の得点山に
+  // 戻るという規則は実装されているのに説明が無く、cardPoints の内訳が読み解けなかった
+  // (#6514)。Minchiate/Tarocchini と同じ常設の注釈。
+  it('always explains that the excuse comes back to its owner', async () => {
+    renderWithProviders(<ScartoPage />);
+    const note = await screen.findByTestId('scarto-excuse-note');
+    // **キーではなく解決後の文言を見る** ── i18next は未知のキーをそのまま返す。
+    expect(note).toHaveTextContent('エクスキューズは特別');
+    expect(note.textContent).not.toContain('excuseReturnsNote');
+  });
 });

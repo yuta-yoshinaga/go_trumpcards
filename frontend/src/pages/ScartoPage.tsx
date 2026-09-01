@@ -245,6 +245,14 @@ function ScartoPageContent() {
               <span>{t('trick', { n: state.trickNumber })}</span>
             </div>
 
+            {/* **エクスキューズだけが勝敗の外にいる。**出した札が誰の手にも渡らず
+                自分の得点山に戻るという規則は実装されているのに説明が無く、
+                cardPoints の内訳が読み解けなかった (#6514)。Minchiate の mattoNote /
+                Tarocchini の papiNote と同じ常設の 1 行。 */}
+            <div className="text-center mb-2 text-sm font-semibold text-ds-warning" data-testid="scarto-excuse-note">
+              {t('excuseReturnsNote')}
+            </div>
+
             <div className={lgTwoColGrid}>
               {/* Left: play area */}
               <div>

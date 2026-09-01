@@ -6,6 +6,7 @@
   "helpNextRound": "  nr                        次のディールへ",
   "helpSetDifficulty": "  sd [0-2]                  CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "round": "ディール: {{round}}  トリック: {{trick}}",
+  "excuseReturnsNote": "エクスキューズは特別 —— トリックの勝敗に関与せず、誰が勝っても出した本人の得点山に戻ります",
   "playerLine": "{{name}} ({{role}}): {{cards}} 枚  得点: {{score}}  トリック: {{tricks}}",
   "roleDealer": "親",
   "rolePlayer": "子",
