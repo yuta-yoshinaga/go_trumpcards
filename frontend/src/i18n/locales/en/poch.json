@@ -42,5 +42,8 @@
   "tutorial.paySuit": "The turn-up's suit is the pay suit. A pool goes only to whoever holds that card IN that suit -- matching the rank alone pays nothing.",
   "tutorial.carryOver": "Chips on a pool nobody claims stay put and carry into the next deal. Everyone antes again, so Marriage and Sequence build up.",
   "tutorial.pochen": "Pochen is neither a declaration nor a bluff. It compares the same-rank sets in hand: four beats three beats a pair, and rank decides ties.",
-  "tutorial.stops": "In the play, each card must be the next higher of the same suit. When nobody holds it the run stops, and whoever played the last, highest card leads again with anything."
+  "tutorial.stops": "In the play, each card must be the next higher of the same suit. When nobody holds it the run stops, and whoever played the last, highest card leads again with anything.",
+  "awardLineYou": "You take {{pool}} ({{chips}})",
+  "pochenResultYou": "You win the pochen ({{pot}})",
+  "dealResultYou": "You go out"
 }
