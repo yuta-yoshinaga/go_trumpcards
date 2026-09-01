@@ -214,8 +214,30 @@ function KarnoffelPageContent() {
                   <span>({t('team', { n: p.team })})</span>
                   {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
                   {/* **表向きの札は全員ぶん見える。**切札の根拠がここにある。 */}
+                  {/* 上札自身が称号札のこともある。**手札にはバッジを出しているのに
+                      上札には出していない**と、同じ札が場所によって別の重みに見える (#6529)。 */}
                   <span className="flex items-center gap-1">
-                    {t('upCard')}:{p.upCard ? <CardImage card={p.upCard} width={cardWidth} /> : <span>-</span>}
+                    {t('upCard')}:
+                    {p.upCard ? (
+                      (() => {
+                        const upKey = karnoffelRankKey(p.upCard, state.chosenSuit);
+                        return (
+                          <span className="relative inline-block">
+                            <CardImage card={p.upCard} width={cardWidth} />
+                            {upKey && (
+                              <span
+                                data-testid={`karnoffel-up-rank-${p.id}`}
+                                className={`absolute left-0 right-0 bottom-0 rounded-b px-0.5 text-[9px] font-bold text-center truncate ${badgeWarningColors}`}
+                              >
+                                {t(`rankBadge.${upKey}`)}
+                              </span>
+                            )}
+                          </span>
+                        );
+                      })()
+                    ) : (
+                      <span>-</span>
+                    )}
                   </span>
                   <span>{t('tricksWon', { n: p.tricksWon })}</span>
                   {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}

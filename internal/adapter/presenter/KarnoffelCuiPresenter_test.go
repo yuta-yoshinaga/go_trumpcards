@@ -193,14 +193,14 @@ func TestKarnoffelCuiPresenter_NamesTheTitledCards(t *testing.T) {
 		assert.Contains(t, karnoffelPlain(out), plain)
 	}
 	plainOut := karnoffelPlain(out)
-	assert.Equal(t, 7, strings.Count(plainOut, "[法王]")+
+	assert.Equal(t, 7+4, strings.Count(plainOut, "[法王]")+
 		strings.Count(plainOut, "[カルニッフェル]")+
 		strings.Count(plainOut, "[悪魔]")+
 		strings.Count(plainOut, "[皇帝]")+
 		strings.Count(plainOut, "[オーバー]")+
 		strings.Count(plainOut, "[ウンター]")+
 		strings.Count(plainOut, "[ファルベン]"),
-		"称号は 7 枚ぶんだけ。他家の手札は伏せたままなので増えない")
+		"称号は人間の手札 7 枚 + 表向きの上札 4 枚ぶんだけ。**他家の手札は伏せたままなので増えない**")
 }
 
 // **他スートでは称号にならない** (#5732)。
@@ -215,4 +215,22 @@ func TestKarnoffelCuiPresenter_LeavesTheOtherSuitsPlain(t *testing.T) {
 
 	assert.Contains(t, out, "[0]HEART 6 ")
 	assert.Contains(t, out, "[1]SPADE 6[法王]")
+}
+
+// **上札自身が称号札のこともある。**手札には称号を出しているのに上札には
+// 出していないと、同じ札が場所によって別の重みに見える (#6529)。
+func TestKarnoffelCuiPresenter_NamesTheTitledUpCard(t *testing.T) {
+	o := defaultKarnoffelOpts() // chosen = ♥、上札は席 0..3 が ♥3,4,5,6
+	out := karnoffelPlain(new(presenter.KarnoffelCuiPresenter).Output(setupKarnoffelCuiMock(o), nil))
+
+	// 席 0 の上札 ♥3 はオーバーシュテッヒャー、席 3 の ♥6 は法王。
+	assert.Contains(t, out, "HEART 3[オーバー]")
+	assert.Contains(t, out, "HEART 6[法王]")
+
+	// 負のコントロール: 選ばれたスートでなければ称号は付かない。
+	o2 := defaultKarnoffelOpts()
+	o2.chosen = domain.CardDesignSpade
+	plain := karnoffelPlain(new(presenter.KarnoffelCuiPresenter).Output(setupKarnoffelCuiMock(o2), nil))
+	assert.NotContains(t, plain, "HEART 3[オーバー]")
+	assert.NotContains(t, plain, "HEART 6[法王]")
 }
