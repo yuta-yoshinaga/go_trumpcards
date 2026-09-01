@@ -4,6 +4,8 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -207,5 +209,61 @@ func TestFrenchTarotCuiPresenter_ChienBuriableGuidance(t *testing.T) {
 
 		assert.Contains(t, out, i18n.Tf("frenchtarot.promptChienBuriable",
 			"cards", "[0] [1] [2] [3] [4] [5]"))
+	})
+}
+
+// **プティ・オ・ブーが乗ると、獲得点から逆算した数字と精算が合わなくなる。**
+// ルールは実装済みで精算にも乗っているのに、どちらの画面にも出ていなかった (#6509)。
+func TestFrenchTarotCuiPresenter_ReportsPetitAuBout(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.FrenchTarotCuiPresenter)
+
+	// 最終トリックは手で置く ── プティが最後の一巡に出るかは配り次第なので。
+	petit := domain.NewCard(domain.FrenchTarotTrumpDesign, domain.FrenchTarotPetitValue, false)
+	withContract := func(bid domain.FrenchTarotBid, winner int, cards []*domain.Card) string {
+		g := frenchTarotCuiGame()
+		g.SetPhase(domain.FrenchTarotPhaseRoundEnd)
+		g.SetDeclarerIdx(0)
+		g.SetContract(bid)
+		g.SetLastTrick(winner, cards)
+		return p.Output(g, nil)
+	}
+	withLastTrick := func(winner int, cards []*domain.Card) string {
+		return withContract(domain.FrenchTarotBidPetite, winner, cards)
+	}
+
+	// 行そのもので比べる ── 「デクレアラー」は席の行にも出るので、語だけを
+	// 探すと獲得側を取り違えた実装でも通ってしまう。
+	line := func(sideKey string, points int) string {
+		return i18n.Tf("frenchtarot.petitAuBout",
+			"side", i18n.T(sideKey), "points", strconv.Itoa(points))
+	}
+
+	t.Run("credits the declarer", func(t *testing.T) {
+		out := withLastTrick(0, []*domain.Card{petit})
+		assert.Contains(t, out, line("frenchtarot.petitAuBoutDeclarer", domain.FrenchTarotPetitAuBoutBonus))
+		assert.NotContains(t, out, "{{")
+	})
+
+	// 符号が獲得側を決める ── 取り違える実装はここで落ちる。
+	t.Run("credits the defenders", func(t *testing.T) {
+		out := withLastTrick(1, []*domain.Card{petit})
+		assert.Contains(t, out, line("frenchtarot.petitAuBoutDefenders", -domain.FrenchTarotPetitAuBoutBonus))
+		assert.NotContains(t, out, line("frenchtarot.petitAuBoutDeclarer", domain.FrenchTarotPetitAuBoutBonus))
+	})
+
+	// **額は入札倍率が乗る。**倍率を落とすと精算とまた食い違う (それが元の症状)。
+	t.Run("scales the bonus by the bid multiplier", func(t *testing.T) {
+		out := withContract(domain.FrenchTarotBidGarde, 0, []*domain.Card{petit})
+		assert.Contains(t, out, line("frenchtarot.petitAuBoutDeclarer", 2*domain.FrenchTarotPetitAuBoutBonus))
+	})
+
+	// 負のコントロール: 最終トリックにプティが無ければ行ごと出さない。
+	t.Run("says nothing without a petit in the last trick", func(t *testing.T) {
+		lit := strings.SplitN(i18n.T("frenchtarot.petitAuBout"), "{{", 2)[0]
+		out := withLastTrick(0, []*domain.Card{domain.NewCard(domain.FrenchTarotTrumpDesign, 5, false)})
+		assert.NotContains(t, out, strings.TrimSpace(lit))
 	})
 }

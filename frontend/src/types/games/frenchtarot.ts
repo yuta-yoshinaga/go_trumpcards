@@ -86,6 +86,12 @@ export interface FrenchTarotResponse extends BaseGameResponse {
   lastTrickWinner: number;
   /** Deal outcome (0=None, 1=Win/contract made, 2=Loss/contract failed). */
   outcome: number;
+  /**
+   * Petit au bout adjustment, per defender. Positive when the declarer took the
+   * petit in the last trick, negative when the defenders did, `0` when it did
+   * not happen at all.
+   */
+  petitAuBoutDelta: number;
   /** Match result from the human's perspective (-1 lose, 0 none, 1 win). */
   result: number;
   /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */

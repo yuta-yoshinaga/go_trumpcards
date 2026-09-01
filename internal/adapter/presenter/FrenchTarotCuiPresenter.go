@@ -187,8 +187,28 @@ func (p *FrenchTarotCuiPresenter) writePrompt(b *strings.Builder, g interfaces.F
 		b.WriteString(i18n.Tf("frenchtarot.promptRoundEnd",
 			"declarer", cuiPlayerName(g.GetPlayer(g.GetDeclarerIdx()), g.GetDeclarerIdx()),
 			"outcome", frenchTarotOutcomeLabel(g.GetOutcome())) + "\n")
+		// **プティ・オ・ブーが乗ると、獲得点から逆算した数字と精算が合わなくなる。**
+		// ルールは実装済みで精算にも乗っているのに、どちらの画面にも出ていなかった
+		// (#6509)。発生しなかった (0) 局は行ごと出さない。
+		b.WriteString(frenchTarotPetitAuBoutLine(g))
 		b.WriteString(i18n.T("frenchtarot.promptRoundEndHelp") + "\n")
 	}
+}
+
+// frenchTarotPetitAuBoutLine はプティ・オ・ブーの獲得側と加点額の 1 行を返す
+// (発生していなければ空)。額は防御側 1 人あたりで、精算に乗っている値と同じ。
+func frenchTarotPetitAuBoutLine(g interfaces.FrenchTarotGame) string {
+	delta := g.GetPetitAuBoutDelta()
+	if delta == 0 {
+		return ""
+	}
+	sideKey := "frenchtarot.petitAuBoutDefenders"
+	if delta > 0 {
+		sideKey = "frenchtarot.petitAuBoutDeclarer"
+	}
+	return i18n.Tf("frenchtarot.petitAuBout",
+		"side", i18n.T(sideKey),
+		"points", strconv.Itoa(delta)) + "\n"
 }
 
 // HintOutput emits the current French Tarot hint.

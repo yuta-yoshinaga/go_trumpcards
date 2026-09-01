@@ -74,7 +74,10 @@
     "outcome": "Result: {{outcome}}",
     "declarer": "Declarer: {{name}}",
     "contract": "Contract: {{contract}}",
-    "captured": "Captured: {{points}} pts"
+    "captured": "Captured: {{points}} pts",
+    "petitAuBout": "Petit au bout: {{side}} took it ({{points}} per defender)",
+    "petitAuBoutDeclarer": "the declarer",
+    "petitAuBoutDefenders": "the defenders"
   },
   "hintAvailable": "Hint",
   "hint": {

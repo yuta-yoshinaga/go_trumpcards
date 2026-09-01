@@ -93,6 +93,8 @@ type FrenchTarotGame interface {
 	GetPlayer(i int) *domain.FrenchTarotPlayer
 	// GetPlayableIndices プレイ可能なカードのインデックスを取得する
 	GetPlayableIndices(playerIdx int) []int
+	// GetPetitAuBoutDelta プティ・オ・ブーの調整額 (防御側 1 人あたり、0 なら未発生)
+	GetPetitAuBoutDelta() int
 	// GetHint ヒントを取得する
 	GetHint() *domain.FrenchTarotHint
 }
