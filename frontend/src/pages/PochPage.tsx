@@ -155,12 +155,16 @@ function PochPageContent() {
               </div>
             </div>
 
-            {/* 第 1 段階は自動で解決するので、結果を出さないと何が起きたのか読めない。 */}
+            {/* 第 1 段階は自動で解決するので、結果を出さないと何が起きたのか読めない。
+                席 0 は「あなた」と呼ぶ ── 手札セクションが既にそうしているのに、
+                結果通知 3 種だけが「席0が」と出ていた (#6519)。 */}
             {state.stakingAwards.length > 0 && (
               <div className="text-center text-xs mb-3" data-testid="poch-staking">
                 {state.stakingAwards.map((a) => (
                   <div key={`award-${a.pool}`}>
-                    {t('awardLine', { player: a.player, pool: t(`pool.${a.pool}`), chips: a.chips })}
+                    {a.player === 0
+                      ? t('awardLineYou', { pool: t(`pool.${a.pool}`), chips: a.chips })
+                      : t('awardLine', { player: a.player, pool: t(`pool.${a.pool}`), chips: a.chips })}
                   </div>
                 ))}
               </div>
@@ -208,12 +212,14 @@ function PochPageContent() {
 
             {dealOver && state.dealWinner >= 0 && (
               <div className="text-center text-sm mb-3" data-testid="poch-deal-result">
-                {t('dealResult', { n: state.dealWinner })}
+                {state.dealWinner === 0 ? t('dealResultYou') : t('dealResult', { n: state.dealWinner })}
               </div>
             )}
             {playing && state.pochenWinner >= 0 && (
               <div className="text-center text-sm mb-3" data-testid="poch-pochen-result">
-                {t('pochenResult', { n: state.pochenWinner, pot: state.pochenPot })}
+                {state.pochenWinner === 0
+                  ? t('pochenResultYou', { pot: state.pochenPot })
+                  : t('pochenResult', { n: state.pochenWinner, pot: state.pochenPot })}
               </div>
             )}
 
