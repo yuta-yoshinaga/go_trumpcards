@@ -29,10 +29,11 @@ import { playerName } from '../utils/playerUtils';
 import { rookBidStatus } from '../utils/rookBidStatus';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+/** CPU difficulty values with the i18n key suffix each one's label comes from. */
 const CPU_DIFFICULTY_SELECT = [
-  { value: '0', label: 'Easy' },
-  { value: '1', label: 'Normal' },
-  { value: '2', label: 'Hard' },
+  { value: '0', key: 'easy' },
+  { value: '1', key: 'normal' },
+  { value: '2', key: 'hard' },
 ];
 
 const TARGET_SCORE_SELECT = [
@@ -382,7 +383,9 @@ function RookPageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: String(config.cpuDifficulty ?? 1),
-                    options: CPU_DIFFICULTY_SELECT,
+                    // **英語リテラルは翻訳の網に一度も掛からない。**ロケールを切り替えても
+                    //  "Easy" のまま出ていた (#6505)。他ゲームと同じく settings.* を通す。
+                    options: CPU_DIFFICULTY_SELECT.map((o) => ({ value: o.value, label: t(`settings.${o.key}`) })),
                     onSelect: (v: string) => handleConfigChange('cpuDifficulty', v),
                   },
                   {
