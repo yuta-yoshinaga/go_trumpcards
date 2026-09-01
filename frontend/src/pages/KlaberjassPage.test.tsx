@@ -267,4 +267,22 @@ describe('KlaberjassPage', () => {
       expect(screen.queryByTestId('klaberjass-last-trick-bonus')).not.toBeInTheDocument();
     });
   });
+  // **リングは目にしか届かない。**どの札を選んでいるかを音声でも確かめられないと、
+  // 出す前に選択内容を検証できない (#6523)。姉妹ページ (Poch / PopeJoan /
+  // NainJaune / Zwicker) は既に aria-pressed を出している。
+  it('exposes which hand card is selected', async () => {
+    mockExec.mockResolvedValue(makeState({ validPlays: [0, 1, 2] }));
+    renderWithProviders(<KlaberjassPage />);
+    await waitFor(() => expect(screen.getByTestId('klaberjass-play-notice')).toBeInTheDocument());
+
+    const hand = () => screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'play');
+    // 未選択のうちは全部 false ── 属性が無いのとは違う。
+    for (const b of hand()) expect(b).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(hand()[1]);
+    await waitFor(() => expect(hand()[1]).toHaveAttribute('aria-pressed', 'true'));
+    // 押されているのは 1 枚だけ。
+    expect(hand()[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(hand()[2]).toHaveAttribute('aria-pressed', 'false');
+  });
 });
