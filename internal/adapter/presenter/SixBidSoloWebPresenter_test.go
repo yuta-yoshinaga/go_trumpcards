@@ -308,3 +308,11 @@ func TestSixBidSoloWebPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	assert.NotEmpty(t, new(presenter.SixBidSoloWebPresenter).ActionLogOutput(m))
 }
+
+// Web のヒントはフロント側が組み立てるので、サーバは通常の状態をそのまま返す。
+// **盤面を作り直さない** ── ヒントで盤が消える事故はこの形で起きた (#6800)。
+func TestSixBidSoloWebPresenter_HintOutputKeepsTheBoard(t *testing.T) {
+	m := setupSixBidSoloWebMock(defaultSixBidSoloOpts())
+	p := new(presenter.SixBidSoloWebPresenter)
+	assert.JSONEq(t, p.Output(m, nil), p.HintOutput(m))
+}
