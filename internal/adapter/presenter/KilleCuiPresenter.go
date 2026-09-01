@@ -93,6 +93,32 @@ func killeWriteEvents(b *strings.Builder, g interfaces.KilleGame) {
 // KilleCuiPresenter renders the Kille CUI view.
 type KilleCuiPresenter struct{}
 
+// killeLadderTop / killeLadderBottom は数札の帯を挟んだ上下の絵札 (強い順)。
+// **順序はドメインの種の値そのもの**で、killeLadderStr のテストが降順を検査する。
+var (
+	killeLadderTop = []domain.KilleRank{
+		domain.KilleHarlequin, domain.KilleCuckoo, domain.KilleHussar,
+		domain.KillePig, domain.KilleCavalier, domain.KilleInn,
+	}
+	killeLadderBottom = []domain.KilleRank{
+		domain.KilleWreath, domain.KilleFlowerpot, domain.KilleMask,
+	}
+)
+
+// killeLadderStr は 42 枚デッキの強さ序列を 1 行で返す。
+// 数札 12〜1 は連続しているので 1 つの帯にまとめる (Web と同じ)。
+func killeLadderStr() string {
+	names := make([]string, 0, len(killeLadderTop)+1+len(killeLadderBottom))
+	for _, r := range killeLadderTop {
+		names = append(names, domain.KilleRankName(r))
+	}
+	names = append(names, domain.KilleRankName(domain.KilleNum12)+" … "+domain.KilleRankName(domain.KilleNum1))
+	for _, r := range killeLadderBottom {
+		names = append(names, domain.KilleRankName(r))
+	}
+	return i18n.Tf("kille.ladder", "ladder", strings.Join(names, " > "))
+}
+
 // Output renders the current game state for the active locale.
 func (p *KilleCuiPresenter) Output(g interfaces.KilleGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("kille.helpTitle"), func(b *strings.Builder) {
@@ -100,6 +126,10 @@ func (p *KilleCuiPresenter) Output(g interfaces.KilleGame, lastErr error) string
 			"round", strconv.Itoa(g.GetRoundNumber()),
 			"pot", strconv.Itoa(g.GetPot()),
 			"stock", strconv.Itoa(g.GetStockCount())) + "\n")
+		// **42 枚は独自の序列を持つ。**Harlequin が最強で Mask が最弱という
+		// 並びを覚えていないと交換も満足も判断できないのに、CUI には手掛かりが
+		// 一切なかった (#6522)。Web の常設表 (KILLE_LADDER) と同じ内容。
+		b.WriteString(killeLadderStr() + "\n")
 
 		for i := range g.GetPlayers() {
 			b.WriteString(killePlayerStr(g, g.GetPlayer(i), i))
