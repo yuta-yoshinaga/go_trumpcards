@@ -36,6 +36,9 @@
   "drawDiscardButton": "Draw Discard",
   "meldButton": "Meld",
   "layoffButton": "Lay off",
+  "a11y": {
+    "layoffTo": "Lay off onto {{name}}'s meld {{meld}}"
+  },
   "discardButton": "Discard",
   "nextRound": "Next Round",
   "drawPhase": "Draw a card from the stock or discard pile",

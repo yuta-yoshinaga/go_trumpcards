@@ -36,6 +36,9 @@
   "drawDiscardButton": "捨て札から引く",
   "meldButton": "メルド",
   "layoffButton": "レイオフ",
+  "a11y": {
+    "layoffTo": "{{name}} のメルド {{meld}} にレイオフ"
+  },
   "discardButton": "捨てる",
   "nextRound": "次のラウンド",
   "drawPhase": "山札または捨て札から1枚引いてください",

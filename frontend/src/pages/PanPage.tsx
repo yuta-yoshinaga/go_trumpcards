@@ -343,6 +343,13 @@ function PanPageContent() {
                                   className={btnPrimary}
                                   onClick={() => handleLayoff(p.id, meldIdx)}
                                   data-testid={`pan-layoff-${p.id}-${meldIdx}`}
+                                  // **同じ「レイオフ」が卓の上に何個も並ぶ。**読み上げでは
+                                  // どのプレイヤーのどのメルド宛かが区別できなかった (#6502)。
+                                  // 所有者と札そのものを言えば、並んでいても取り違えない。
+                                  aria-label={t('a11y.layoffTo', {
+                                    name: playerName(p.id, p.isHuman),
+                                    meld: meld.cards.map(cardAlt).join(' '),
+                                  })}
                                 >
                                   {t('layoffButton')}
                                 </button>
