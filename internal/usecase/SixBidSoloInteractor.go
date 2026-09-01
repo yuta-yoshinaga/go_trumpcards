@@ -30,6 +30,8 @@ type SixBidSoloInteractorIF interface {
 	GetConfig() domain.SixBidSoloConfig
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒント取得
+	Hint() string
 }
 
 // SixBidSoloInteractor シックスビッド・ソロ (Six-Bid Solo) のインタラクタークラス
@@ -146,3 +148,6 @@ func RestoreSixBidSoloInteractor(data []byte, gp presenter.SixBidSoloPresenter) 
 		return &SixBidSoloInteractor{GameBase: GameBase[interfaces.SixBidSoloGame]{Game: g}, gp: gp}
 	})
 }
+
+// Hint ヒント取得
+func (si *SixBidSoloInteractor) Hint() string { return si.gp.HintOutput(si.Game) }

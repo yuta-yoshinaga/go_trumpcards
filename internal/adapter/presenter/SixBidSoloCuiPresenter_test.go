@@ -13,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupSixBidSoloCuiMock(o sixBidSoloMockOpts) *interfaces.MockSixBidSoloGame {
@@ -268,4 +269,77 @@ func TestSixBidSoloCuiPresenter_ShowsTheLadderTargets(t *testing.T) {
 	taken.highBid = &domain.SixBidSoloBid{Kind: domain.SixBidSoloBidMisere}
 	tout := new(presenter.SixBidSoloCuiPresenter).Output(setupSixBidSoloCuiMock(taken), nil)
 	assert.Contains(t, tout, "ビッドの序列: [1:ソロ]（目標"+strconv.Itoa(domain.SixBidSoloBaseTarget+1)+"点） < ")
+}
+
+// **CUI には hint コマンド自体が無かった。**6 段階のビッド・切札選択・プレイの
+// どの局面でも助言を得る手段が無く、Web だけがヒントを持っていた (#6528)。
+//
+// 助言はドメインの CPU 判断をそのまま読む ── ここに別の目安を書くと、
+// 助言と実際の打ち筋が食い違う 2 つ目の規則になる。
+func TestSixBidSoloCuiPresenter_HintOutput(t *testing.T) {
+	p := new(presenter.SixBidSoloCuiPresenter)
+
+	hintFor := func(o sixBidSoloMockOpts, set func(*interfaces.MockSixBidSoloGame)) string {
+		m := new(interfaces.MockSixBidSoloGame)
+		set(m)
+		base := setupSixBidSoloCuiMock(o)
+		m.ExpectedCalls = append(m.ExpectedCalls, base.ExpectedCalls...)
+		return p.HintOutput(m)
+	}
+
+	t.Run("names the bid the hand can support", func(t *testing.T) {
+		out := hintFor(sixBidSoloMockOpts{phase: domain.SixBidSoloPhaseBid, declarer: -1, winner: -1},
+			func(m *interfaces.MockSixBidSoloGame) {
+				m.On("SixBidSoloCpuBid", 0).Return(domain.SixBidSoloBidHeartSolo)
+			})
+		assert.Contains(t, out, i18n.Tf("sixbidsolo.hintBid", "bid", i18n.T("sixbidsolo.bid.heartSolo")))
+		assert.NotContains(t, out, "{{")
+	})
+
+	// **パスも助言。**「出せる最低のビッドを出せ」ではないことを言う。
+	t.Run("advises passing when the hand cannot support a bid", func(t *testing.T) {
+		out := hintFor(sixBidSoloMockOpts{phase: domain.SixBidSoloPhaseBid, declarer: -1, winner: -1},
+			func(m *interfaces.MockSixBidSoloGame) {
+				m.On("SixBidSoloCpuBid", 0).Return(domain.SixBidSoloBidPass)
+			})
+		assert.Contains(t, out, i18n.T("sixbidsolo.hintPass"))
+	})
+
+	t.Run("names the trump to declare", func(t *testing.T) {
+		out := hintFor(sixBidSoloMockOpts{phase: domain.SixBidSoloPhaseDeclare, declarer: 0, winner: -1},
+			func(m *interfaces.MockSixBidSoloGame) {
+				m.On("SixBidSoloCpuTrump", 0).Return(domain.CardDesignHeart)
+			})
+		assert.Contains(t, out, i18n.Tf("sixbidsolo.hintTrump", "suit", "HEART"))
+	})
+
+	t.Run("names the card to play", func(t *testing.T) {
+		out := hintFor(sixBidSoloMockOpts{phase: domain.SixBidSoloPhasePlay, declarer: 1, winner: -1},
+			func(m *interfaces.MockSixBidSoloGame) {
+				m.On("SixBidSoloCpuPlay", 0).Return(2)
+			})
+		assert.Contains(t, out, i18n.Tf("sixbidsolo.hintPlay", "card", "[2]"))
+	})
+
+	// **ミゼールは取らないほうが勝ち。**同じ札でも宣言者と防御側で理由が逆になる。
+	t.Run("inverts the goal under a misere", func(t *testing.T) {
+		misere := &domain.SixBidSoloBid{Kind: domain.SixBidSoloBidMisere}
+		declarer := hintFor(
+			sixBidSoloMockOpts{phase: domain.SixBidSoloPhasePlay, declarer: 0, winner: -1, highBid: misere},
+			func(m *interfaces.MockSixBidSoloGame) { m.On("SixBidSoloCpuPlay", 0).Return(1) })
+		assert.Contains(t, declarer, i18n.Tf("sixbidsolo.hintMisereDuck", "card", "[1]"))
+
+		defender := hintFor(
+			sixBidSoloMockOpts{phase: domain.SixBidSoloPhasePlay, declarer: 2, winner: -1, highBid: misere},
+			func(m *interfaces.MockSixBidSoloGame) { m.On("SixBidSoloCpuPlay", 0).Return(1) })
+		assert.Contains(t, defender, i18n.Tf("sixbidsolo.hintMisereForce", "card", "[1]"))
+	})
+
+	// 負のコントロール: 終局や相手の手番では助言しない。
+	t.Run("says nothing when it is not the human's turn", func(t *testing.T) {
+		m := new(interfaces.MockSixBidSoloGame)
+		m.On("GetGameEndFlag").Return(false)
+		m.On("IsHumanTurn").Return(false)
+		assert.Contains(t, p.HintOutput(m), i18n.T("sixbidsolo.hintNone"))
+	})
 }

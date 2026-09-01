@@ -5068,6 +5068,7 @@ var gameRegistry = []GameRegistryEntry{
 				"sixbidsolo.helpDeclare",
 				"sixbidsolo.helpPlay",
 				"sixbidsolo.helpNext",
+				"sixbidsolo.helpHint",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),

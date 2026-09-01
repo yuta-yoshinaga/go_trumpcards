@@ -181,7 +181,7 @@ func sixBidSoloDispatch(bc *baseController, w http.ResponseWriter, si usecase.Si
 	case "n", "next":
 		bc.writePresenterResponse(w, si.NextHand())
 	default:
-		return dispatchLog(param.Command, bc, w, si.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, si.Hint, si.ActionLog)
 	}
 	return true
 }
