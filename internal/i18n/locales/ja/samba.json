@@ -20,6 +20,7 @@
   "meldTypeMixed": "ミックス",
   "meldTypeNatural": "ナチュラル",
   "meldTypeSequence": "シーケンス",
+  "meldRemaining": "（あと{{count}}枚）",
   "meldTypeCanastaSuffix": "カナスタ",
   "meldTypeSambaSuffix": "サンバ",
   "meldLine": "  メルド[{{type}}]: {{cards}}",

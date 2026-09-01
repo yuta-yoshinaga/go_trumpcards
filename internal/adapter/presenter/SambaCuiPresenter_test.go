@@ -230,3 +230,41 @@ func TestSambaCuiPresenter_ShowsTheInitialMeldRequirement(t *testing.T) {
 		assert.NotContains(t, out, strings.Split(i18n.T("samba.promptMeldMinimum"), "{{")[0])
 	})
 }
+
+// **完成まであと何枚かは、札を数え直さないと分からなかった。**Web は全メルドに
+// 残り枚数を出しているのに、CUI は完成済みのサフィックスしか出していなかった (#6499)。
+func TestSambaCuiPresenter_ShowsHowManyCardsAMeldStillNeeds(t *testing.T) {
+	p := new(presenter.SambaCuiPresenter)
+
+	meldOf := func(n int, kind domain.SambaMeldKind) string {
+		m, players := setupSambaCuiMockWithPlayers()
+		cards := make([]*domain.Card, n)
+		for i := range cards {
+			cards[i] = domain.NewCard(domain.CardDesignSpade, 5+i, false)
+		}
+		players[0].AddMeld(&domain.SambaMeld{Cards: cards, Kind: kind, IsNatural: true})
+		return p.Output(m, nil)
+	}
+
+	// 残りは Web と同じ SambaCanastaSize からの引き算。4 枚なら 3 枚残り。
+	t.Run("counts down to the canasta size", func(t *testing.T) {
+		out := meldOf(4, domain.SambaMeldSet)
+		assert.Contains(t, out, i18n.Tf("samba.meldRemaining", "count", strconv.Itoa(domain.SambaCanastaSize-4)))
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("counts down for a sequence too", func(t *testing.T) {
+		out := meldOf(5, domain.SambaMeldSequence)
+		assert.Contains(t, out, i18n.Tf("samba.meldRemaining", "count", strconv.Itoa(domain.SambaCanastaSize-5)))
+	})
+
+	// 負のコントロール: 完成済みは残り 0 なので出さない。既存のサフィックスのまま。
+	t.Run("says nothing once the meld is complete", func(t *testing.T) {
+		lit := strings.TrimSpace(strings.SplitN(i18n.T("samba.meldRemaining"), "{{count}}", 2)[1])
+		for _, kind := range []domain.SambaMeldKind{domain.SambaMeldSet, domain.SambaMeldSequence} {
+			out := meldOf(domain.SambaCanastaSize, kind)
+			assert.NotContains(t, out, lit)
+		}
+		assert.Contains(t, meldOf(domain.SambaCanastaSize, domain.SambaMeldSet), i18n.T("samba.meldTypeCanastaSuffix"))
+	})
+}
