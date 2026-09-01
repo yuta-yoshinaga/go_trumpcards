@@ -77,5 +77,6 @@
     "hand": "This is your hand. Playing a card captures a same-month field card, then draws one card from the stock.",
     "info": "Go-Stop is a two-player Korean capture game played with the 48-card hanafuda deck. Captured cards are scored in five categories (Gwang / Godori / Tti / Yeol / Pi). When you reach the target score you choose go (continue, raising the stakes) or stop (bank the points). Calling go risks the gwang-bak, pi-bak, and go-bak penalties if your opponent turns the tables.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "categoryCounts": "Captured: Gwang {{gwang}} / Yeol {{yeol}} / Tti {{tti}} / Pi {{pi}}"
 }

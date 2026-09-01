@@ -251,4 +251,45 @@ describe('GoStopPage', () => {
     expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
     localStorage.removeItem('hint_enabled_gostop');
   });
+  // **点になる前の枚数こそが進捗。**サーバは素の枚数も毎回送っていて CUI は
+  // 全員分を出しているのに、Web は点数化された分しか読んでいなかった (#6507)。
+  it('shows the raw category counts alongside the scored breakdown', async () => {
+    const counted = makeGoStopState();
+    const base = counted.players[0].breakdown;
+    if (!base) throw new Error('fixture must carry a breakdown');
+    counted.players[0].breakdown = { ...base, brightCount: 3, ribbonCount: 5, animalCount: 4, piCount: 9 };
+    mockExec.mockResolvedValue(counted);
+    renderWithProviders(<GoStopPage />);
+
+    const row = await screen.findByTestId('gostop-counts-human');
+    // 4 つとも別の値にしてあるので、取り違えるとどれかが落ちる。
+    expect(row).toHaveTextContent('光3');
+    expect(row).toHaveTextContent('열끗4');
+    expect(row).toHaveTextContent('띠5');
+    expect(row).toHaveTextContent('피9');
+    expect(row.textContent).not.toContain('{{');
+
+    // 卓の全員分が出る ── CPU の列も同じ枚数行を持つ。
+    expect(screen.getByTestId('gostop-counts-cpu-1')).toBeInTheDocument();
+  });
+
+  // 内訳を持たない席では枚数行も出さない ── 内訳が来る前の局面でも落ちない。
+  it('renders no counts row when the seat has no breakdown yet', async () => {
+    const noBreakdown = makeGoStopState();
+    noBreakdown.players = noBreakdown.players.map((p) => ({ ...p, breakdown: null }));
+    mockExec.mockResolvedValue(noBreakdown);
+    renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('gostop-counts-human')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('gostop-counts-cpu-1')).not.toBeInTheDocument();
+  });
+
+  // 決断フェーズの保留内訳にも同じ枚数行が付く (所有者を持たない共有の表示)。
+  it('shows the raw counts on the pending breakdown too', async () => {
+    mockExec.mockResolvedValue(decisionState);
+    renderWithProviders(<GoStopPage />);
+    const shared = await screen.findByTestId('gostop-counts-shared');
+    expect(shared).toHaveTextContent('피10');
+    expect(shared.textContent).not.toContain('{{');
+  });
 });
