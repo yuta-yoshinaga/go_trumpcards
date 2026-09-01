@@ -298,4 +298,35 @@ describe('BostonPage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+  // **サーバは公開しているのに、画面はそれを描いていなかった。**「on the Table」契約では
+  // 最初のトリック後に落札者の手札が `cards` に載って届くのに、Web はどこにも
+  // 並べていなかった (#6525)。CUI は以前から出している。
+  it('shows an exposed hand as cards', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0, true),
+          seat(1, false, { cards: [card('DIAMOND', 5), card('SPADE', 9)], isDeclarer: true }),
+          seat(2, false),
+          seat(3, false),
+        ],
+      }),
+    );
+    renderWithProviders(<BostonPage />);
+
+    const exposed = await screen.findByTestId('boston-exposed-1');
+    expect(exposed.querySelectorAll('img')).toHaveLength(2);
+    // 伏せたままの席は従来どおり枚数だけ。
+    expect(screen.queryByTestId('boston-exposed-2')).not.toBeInTheDocument();
+  });
+
+  // 負のコントロール: 誰も公開していない局面では 1 枚も並べない。
+  it('keeps every hand face down while nothing is exposed', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getAllByTestId('boston-player').length).toBeGreaterThan(0));
+    for (const id of [1, 2, 3]) {
+      expect(screen.queryByTestId(`boston-exposed-${id}`)).not.toBeInTheDocument();
+    }
+  });
 });
