@@ -38,6 +38,7 @@
   "layoffNotAcceptable": "この札は付けられません",
   "discard": "カードを捨てる",
   "nextRound": "次のラウンドへ",
+  "roundEndedBy": "{{name}} がラウンドを終了させました。",
   "viewLog": "棋譜を表示",
   "tutorial": {
     "contract": "ラウンドごとに「達成すべきメルドの組み合わせ（コントラクト）」が決まっています。画面上部のコントラクト表示を確認しましょう。",

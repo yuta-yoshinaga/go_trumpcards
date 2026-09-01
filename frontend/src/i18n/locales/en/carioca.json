@@ -38,6 +38,7 @@
   "layoffNotAcceptable": "This card doesn't fit",
   "discard": "Discard card",
   "nextRound": "Next round",
+  "roundEndedBy": "{{name}} went out and ended the round.",
   "viewLog": "View log",
   "tutorial": {
     "contract": "Each round has a fixed contract of melds you must lay down before you can go out. Watch the contract banner at the top.",

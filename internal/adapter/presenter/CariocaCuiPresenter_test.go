@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -106,4 +107,40 @@ func TestCariocaCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)
+}
+
+// **誰が上がってラウンドが終わったかは点数表からは読めない。**サーバは
+// roundWinnerIdx を持っているのに、Web も CUI も一度も読んでいなかった (#6498)。
+func TestCariocaCuiPresenter_NamesWhoEndedTheRound(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.CariocaCuiPresenter)
+
+	withWinner := func(idx int) string {
+		m, _ := setupCariocaCuiMock(domain.CariocaPhaseRoundEnd, false)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundWinnerIdx")
+		m.On("GetRoundWinnerIdx").Return(idx)
+		return p.Output(m, nil)
+	}
+
+	t.Run("names the seat that went out", func(t *testing.T) {
+		out := withWinner(2)
+		assert.Contains(t, out, i18n.Tf("carioca.roundEndedBy", "name", i18n.Tf("cuiPlayerCpu", "idx", "2")))
+		assert.NotContains(t, out, "{{")
+	})
+
+	// 席を取り違える実装はここで落ちる。
+	t.Run("names the human when the human went out", func(t *testing.T) {
+		out := withWinner(0)
+		assert.Contains(t, out, i18n.Tf("carioca.roundEndedBy", "name", i18n.T("cuiPlayerYou")))
+		assert.NotContains(t, out, i18n.Tf("carioca.roundEndedBy", "name", i18n.Tf("cuiPlayerCpu", "idx", "2")))
+	})
+
+	// 負のコントロール: 誰も上がっていない (-1) なら行ごと出さない。
+	t.Run("stays quiet when nobody went out", func(t *testing.T) {
+		lit := strings.TrimSpace(strings.SplitN(i18n.T("carioca.roundEndedBy"), "{{name}}", 2)[1])
+		out := withWinner(-1)
+		assert.NotContains(t, out, lit)
+	})
 }

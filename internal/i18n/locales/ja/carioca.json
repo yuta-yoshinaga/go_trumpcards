@@ -31,6 +31,7 @@
   "promptPlayHelpLayoff": "lo <pIdx> <mIdx> <cIdx>・・・既存メルドにカード追加",
   "promptPlayHelpDiscard": "d <idx>・・・カードを捨てる",
   "promptRoundEnd": "ラウンド終了",
+  "roundEndedBy": "{{name}} がラウンドを終了させました。",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "slotDetailSet": "同ランク{{n}}枚",
   "slotDetailRun": "同スート{{n}}枚の連番",
