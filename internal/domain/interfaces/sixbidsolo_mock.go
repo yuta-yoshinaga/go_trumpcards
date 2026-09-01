@@ -84,3 +84,18 @@ func (m *MockSixBidSoloGame) GetPlayer(idx int) *domain.SixBidSoloPlayer {
 func (m *MockSixBidSoloGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }
+
+// SixBidSoloCpuBid モック
+func (_m *MockSixBidSoloGame) SixBidSoloCpuBid(idx int) domain.SixBidSoloBidKind {
+	return _m.Called(idx).Get(0).(domain.SixBidSoloBidKind)
+}
+
+// SixBidSoloCpuTrump モック
+func (_m *MockSixBidSoloGame) SixBidSoloCpuTrump(idx int) int {
+	return _m.Called(idx).Int(0)
+}
+
+// SixBidSoloCpuPlay モック
+func (_m *MockSixBidSoloGame) SixBidSoloCpuPlay(idx int) int {
+	return _m.Called(idx).Int(0)
+}
