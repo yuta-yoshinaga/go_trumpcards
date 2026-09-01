@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -171,4 +172,40 @@ func TestGoStopCuiPresenter_NearYakuPreview(t *testing.T) {
 
 		assert.NotContains(t, out, strings.Split(i18n.T("gostop.previewTitle"), "{{")[0])
 	})
+}
+
+// CUI は捕獲札から自前で数え、Web はドメインの内訳の枚数を読む。**同じ数を 2 通りに
+// 数えている**ので、片方だけ規則が変わると 2 つの画面が別の枚数を答える (#6507)。
+// 同じ捕獲札から両方を出して突き合わせる。
+func TestGoStopCategoryCounts_AgreeWithTheDomainBreakdown(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	// 光 2 / 열끗 1 / 띠 1 / 피 3 ── 4 つとも別の数にして取り違えを見えるようにする。
+	captured := []*domain.Card{
+		domain.NewCard(1, 1, false), domain.NewCard(3, 1, false), // 光
+		domain.NewCard(2, 1, false),                                                           // 열끗
+		domain.NewCard(2, 2, false),                                                           // 띠
+		domain.NewCard(1, 3, false), domain.NewCard(1, 4, false), domain.NewCard(3, 3, false), // 피
+	}
+
+	g := domain.NewDefaultGoStop()
+	g.Reset()
+	human := g.GetPlayer(0)
+	human.ResetCaptured()
+	human.AddCaptured(captured)
+	bd, _ := g.GetScore(0)
+	require.NotNil(t, bd)
+
+	// ドメインの数え方を唯一の期待値にする ── CUI の出力がそれと一致すること。
+	want := i18n.Tf("gostop.categoryCounts",
+		"gwang", strconv.Itoa(bd.BrightCount),
+		"yeol", strconv.Itoa(bd.AnimalCount),
+		"tti", strconv.Itoa(bd.RibbonCount),
+		"pi", strconv.Itoa(bd.PiCount))
+	assert.Contains(t, new(presenter.GoStopCuiPresenter).Output(g, nil), want)
+
+	// 期待値そのものが空でないこと (全部 0 なら何とでも一致してしまう)。
+	require.NotZero(t, bd.BrightCount+bd.AnimalCount+bd.RibbonCount+bd.PiCount)
 }

@@ -122,7 +122,7 @@ function GoStopPageContent() {
   const candidateSet = new Set(candidates);
 
   /** Renders the compact category chip row (光/五鳥/띠/열/피) for a scoring breakdown. */
-  const breakdownChips = (bd: GoStopBreakdown | null) => {
+  const breakdownChips = (bd: GoStopBreakdown | null, owner = 'shared') => {
     if (!bd) return null;
     const chips: { key: string; value: number }[] = [
       { key: 'gwang', value: bd.gwang },
@@ -132,13 +132,26 @@ function GoStopPageContent() {
       { key: 'pi', value: bd.pi },
     ];
     return (
-      <div className="flex gap-1 justify-center flex-wrap text-[10px]" data-testid="gostop-breakdown">
-        {chips.map((c) => (
-          <span key={c.key} className="px-1.5 py-0.5 rounded bg-black/30 text-ds-text-muted">
-            {t(c.key)} {c.value}
-          </span>
-        ))}
-      </div>
+      <>
+        <div className="flex gap-1 justify-center flex-wrap text-[10px]" data-testid="gostop-breakdown">
+          {chips.map((c) => (
+            <span key={c.key} className="px-1.5 py-0.5 rounded bg-black/30 text-ds-text-muted">
+              {t(c.key)} {c.value}
+            </span>
+          ))}
+        </div>
+        {/* **点になる前の枚数こそが進捗。**サーバは素の枚数も毎回送っていて CUI は
+            全員分を出しているのに、Web は点数化された分しか読んでいなかった (#6507)。
+            ピが何枚溜まったかが見えないと、バクへの接近が分からない。 */}
+        <div className="flex gap-1 justify-center flex-wrap text-[10px]" data-testid={`gostop-counts-${owner}`}>
+          {t('categoryCounts', {
+            gwang: bd.brightCount,
+            yeol: bd.animalCount,
+            tti: bd.ribbonCount,
+            pi: bd.piCount,
+          })}
+        </div>
+      </>
     );
   };
 
@@ -202,7 +215,7 @@ function GoStopPageContent() {
             {cpu && (
               <div className="text-center" data-testid="gostop-cpu">
                 <div className="text-xs text-ds-text-muted mb-1">{playerLine(t('cpu'), cpu)}</div>
-                {breakdownChips(cpu.breakdown)}
+                {breakdownChips(cpu.breakdown, `cpu-${cpu.id}`)}
                 <div className="flex gap-0.5 justify-center flex-wrap min-h-[24px] mt-1">
                   {cpu.captured.map((c, i) => (
                     <CardImage key={i} card={c} width={cardWidth * 0.42} />
@@ -248,7 +261,7 @@ function GoStopPageContent() {
             {/* Human hand */}
             <div className="text-center" data-tutorial="gostop-hand">
               <div className="text-xs text-ds-text-muted mb-1">{human ? playerLine(t('you'), human) : ''}</div>
-              {breakdownChips(human?.breakdown ?? null)}
+              {breakdownChips(human?.breakdown ?? null, 'human')}
               <div className="flex flex-wrap justify-center gap-2 mt-1">
                 {human?.cards.map((c, i) => {
                   const playable = state.playableIndices.includes(i);

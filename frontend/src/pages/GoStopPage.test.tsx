@@ -251,4 +251,22 @@ describe('GoStopPage', () => {
     expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
     localStorage.removeItem('hint_enabled_gostop');
   });
+  // **点になる前の枚数こそが進捗。**サーバは素の枚数も毎回送っていて CUI は
+  // 全員分を出しているのに、Web は点数化された分しか読んでいなかった (#6507)。
+  it('shows the raw category counts alongside the scored breakdown', async () => {
+    const counted = makeGoStopState();
+    const base = counted.players[0].breakdown;
+    if (!base) throw new Error('fixture must carry a breakdown');
+    counted.players[0].breakdown = { ...base, brightCount: 3, ribbonCount: 5, animalCount: 4, piCount: 9 };
+    mockExec.mockResolvedValue(counted);
+    renderWithProviders(<GoStopPage />);
+
+    const row = await screen.findByTestId('gostop-counts-human');
+    // 4 つとも別の値にしてあるので、取り違えるとどれかが落ちる。
+    expect(row).toHaveTextContent('光3');
+    expect(row).toHaveTextContent('열끗4');
+    expect(row).toHaveTextContent('띠5');
+    expect(row).toHaveTextContent('피9');
+    expect(row.textContent).not.toContain('{{');
+  });
 });
