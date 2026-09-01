@@ -735,4 +735,20 @@ describe('WizardPage', () => {
       expect(region).not.toHaveTextContent('{{');
     });
   });
+  // **このページは既にこの教訓を持っていた。**出せない札は sr-only の理由を
+  // aria-describedby で紐付けているのに、禁じられたビッドだけ title 頼みで、
+  // 読み上げには何も届いていなかった (#6503)。
+  it('explains the forbidden bid to a screen reader, not just to a tooltip', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, restrictedBid: 2 });
+    renderWithProviders(<WizardPage />);
+    const blocked = await screen.findByRole('button', { name: 'ビッド 2' });
+
+    // 紐付け先が実在し、そこに実際の理由が書かれていること (id だけでは何も読まれない)。
+    const describedBy = blocked.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy as string)).toHaveTextContent('制約のため選択できません');
+
+    // 制約の掛かっていないボタンには余計な属性を付けない。
+    expect(screen.getByRole('button', { name: 'ビッド 3' })).not.toHaveAttribute('aria-describedby');
+  });
 });
