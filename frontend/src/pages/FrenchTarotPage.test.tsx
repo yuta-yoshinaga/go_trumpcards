@@ -408,4 +408,31 @@ describe('FrenchTarotPage', () => {
     await waitFor(() => expect(screen.getByTestId('frenchtarot-bouts-note')).toBeInTheDocument());
     expect(screen.queryByTestId('frenchtarot-bouts-target')).not.toBeInTheDocument();
   });
+  // **プティ・オ・ブーが乗ると、獲得点から逆算した数字と精算が合わなくなる。**
+  // ルールは実装済みで精算にも乗っているのに、どちらの画面にも出ていなかった (#6509)。
+  it('reports who took the petit in the last trick', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, declarerIdx: 0, petitAuBoutDelta: 20 });
+    renderWithProviders(<FrenchTarotPage />);
+    const row = await screen.findByTestId('ft-petit-au-bout');
+    expect(row).toHaveTextContent('デクレアラー');
+    expect(row).toHaveTextContent('20');
+    expect(row.textContent).not.toContain('{{');
+  });
+
+  // 符号が獲得側を決める ── 取り違える実装はここで落ちる。
+  it('credits the defenders when the delta is negative', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, declarerIdx: 0, petitAuBoutDelta: -20 });
+    renderWithProviders(<FrenchTarotPage />);
+    const row = await screen.findByTestId('ft-petit-au-bout');
+    expect(row).toHaveTextContent('防御側');
+    expect(row).not.toHaveTextContent('デクレアラー');
+  });
+
+  // 負のコントロール: 発生しなかった局には行ごと出さない。
+  it('says nothing when no petit au bout happened', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, declarerIdx: 0, petitAuBoutDelta: 0 });
+    renderWithProviders(<FrenchTarotPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('ft-petit-au-bout')).not.toBeInTheDocument();
+  });
 });

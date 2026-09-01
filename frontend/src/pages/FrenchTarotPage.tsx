@@ -394,6 +394,21 @@ function FrenchTarotPageContent() {
                             points: state.players[state.declarerIdx]?.cardPoints ?? 0,
                           })}
                         </div>
+                        {/* **プティ・オ・ブーが乗ると、獲得点から逆算した数字と精算が
+                            合わなくなる。**ルールは実装済みで精算にも乗っているのに、
+                            どちらの画面にも出ていなかった (#6509)。0 は未発生。 */}
+                        {state.petitAuBoutDelta !== 0 && (
+                          <div data-testid="ft-petit-au-bout">
+                            {t('roundResult.petitAuBout', {
+                              side: t(
+                                state.petitAuBoutDelta > 0
+                                  ? 'roundResult.petitAuBoutDeclarer'
+                                  : 'roundResult.petitAuBoutDefenders',
+                              ),
+                              points: state.petitAuBoutDelta,
+                            })}
+                          </div>
+                        )}
                       </>
                     )}
                   </div>

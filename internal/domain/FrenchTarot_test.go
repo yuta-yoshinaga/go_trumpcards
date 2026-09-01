@@ -790,3 +790,29 @@ func TestFrenchTarotBuriableIndices(t *testing.T) {
 		assert.Empty(t, domain.FrenchTarotBuriableIndices(nil))
 	})
 }
+
+// プティ・オ・ブーは**最後のトリックの中身**でしか決まらない。表示側 (#6509) が
+// 読む値なので、符号・倍率・未発生の 3 点をドメイン側で押さえる。
+func TestFrenchTarot_GetPetitAuBoutDelta(t *testing.T) {
+	petit := domain.NewCard(domain.FrenchTarotTrumpDesign, domain.FrenchTarotPetitValue, false)
+	other := domain.NewCard(domain.FrenchTarotTrumpDesign, 5, false)
+
+	delta := func(bid domain.FrenchTarotBid, winner int, cards []*domain.Card) int {
+		g := domain.NewDefaultFrenchTarot()
+		g.Reset()
+		g.SetDeclarerIdx(0)
+		g.SetContract(bid)
+		g.SetLastTrick(winner, cards)
+		return g.GetPetitAuBoutDelta()
+	}
+
+	// デクレアラーが取れば正、防御側なら負。
+	assert.Positive(t, delta(domain.FrenchTarotBidPetite, 0, []*domain.Card{petit}))
+	assert.Negative(t, delta(domain.FrenchTarotBidPetite, 1, []*domain.Card{petit}))
+	// 額は入札倍率が乗る (Garde は 2 倍)。
+	assert.Equal(t, 2*domain.FrenchTarotPetitAuBoutBonus, delta(domain.FrenchTarotBidGarde, 0, []*domain.Card{petit}))
+	// 最終トリックにプティが無ければ発生しない。
+	assert.Zero(t, delta(domain.FrenchTarotBidPetite, 0, []*domain.Card{other}))
+	// 勝者が未確定でも発生しない。
+	assert.Zero(t, delta(domain.FrenchTarotBidPetite, -1, []*domain.Card{petit}))
+}
