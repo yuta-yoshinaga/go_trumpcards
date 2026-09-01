@@ -220,3 +220,17 @@ func scartoTestSigned(v float64) string {
 	}
 	return scartoTestPoints(v)
 }
+
+// **エクスキューズだけが勝敗の外にいる。**出した札が誰の手にも渡らず自分の得点山に
+// 戻るという規則は実装されているのに、どちらの画面にも説明が無く、cardPoints の
+// 内訳が読み解けなかった (#6514)。Minchiate/Tarocchini と同じく常設で出す。
+func TestScartoCuiPresenter_AlwaysExplainsTheExcuse(t *testing.T) {
+	p := new(presenter.ScartoCuiPresenter)
+	g := domain.NewDefaultScarto()
+	g.Reset()
+
+	out := p.Output(g, nil)
+	assert.Contains(t, out, i18n.T("scarto.excuseReturnsNote"))
+	// 「捨てられない」という別の意味の文言と混同しない別キーであること。
+	assert.NotEqual(t, i18n.T("scarto.excuseReturnsNote"), i18n.T("scarto.scartoUndiscardable.excuse"))
+}
