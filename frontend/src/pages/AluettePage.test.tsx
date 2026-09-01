@@ -222,4 +222,12 @@ describe('AluettePage', () => {
     expect(live).toHaveTextContent('チーム1 2');
     expect(live).toContainElement(screen.getByTestId('aluette-meine-winner'));
   });
+
+  // 決着はメーヌの終わりだけでなく試合の終わりでも起きる ── どちらでも読み上げる。
+  it('announces the settlement at the end of the match too', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, phase: 3, gameEndFlag: true });
+    renderWithProviders(<AluettePage />);
+    const live = await screen.findByTestId('aluette-result-live');
+    await waitFor(() => expect(live).toHaveTextContent('チーム0 3'));
+  });
 });
