@@ -43,7 +43,10 @@
   },
   "settings": {
     "cpuDifficulty": "CPU difficulty",
-    "targetScore": "Target score"
+    "targetScore": "Target score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
   },
   "tutorial": {
     "info": "Round, contract, trump color, and team scores show here. The first team to reach 500 points wins.",
