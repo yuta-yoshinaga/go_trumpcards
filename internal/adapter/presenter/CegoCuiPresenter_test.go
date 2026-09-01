@@ -209,3 +209,29 @@ func TestCegoCuiPresenter_ExplainsTheExchangeSteps(t *testing.T) {
 		"blind", strconv.Itoa(g.GetBlindCount())))
 	assert.NotContains(t, out, "{{")
 }
+
+// **得点山の枚数はどちらが何点持つかの見積もりになる。**Web はプレイ中も出し続けて
+// いるのに、CUI では契約・交換のプロンプトを抜けた途端に消えていた (#6515)。
+func TestCegoCuiPresenter_KeepsTheBlindCountVisible(t *testing.T) {
+	p := new(presenter.CegoCuiPresenter)
+
+	withBlind := func(n int) string {
+		g := cegoCuiGame()
+		g.SetPhase(domain.CegoPhasePlay)
+		g.SetBlind(make([]*domain.Card, n))
+		return p.Output(g, nil)
+	}
+
+	// プレイ中も出続ける ── 契約・交換のプロンプトではなく常設情報として。
+	t.Run("still shows the count during play", func(t *testing.T) {
+		out := withBlind(10)
+		assert.Contains(t, out, i18n.Tf("cego.blindCountLine", "count", "10"))
+		assert.NotContains(t, out, "{{")
+	})
+
+	// 負のコントロール: 0 枚 (該当なし) では出さない ── Web と同じ条件。
+	t.Run("says nothing when there is no stash", func(t *testing.T) {
+		lit := strings.SplitN(i18n.T("cego.blindCountLine"), "{{", 2)[0]
+		assert.NotContains(t, withBlind(0), strings.TrimSpace(lit))
+	})
+}
