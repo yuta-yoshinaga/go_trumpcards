@@ -273,6 +273,17 @@ describe('GoStopPage', () => {
     expect(screen.getByTestId('gostop-counts-cpu-1')).toBeInTheDocument();
   });
 
+  // 内訳を持たない席では枚数行も出さない ── 内訳が来る前の局面でも落ちない。
+  it('renders no counts row when the seat has no breakdown yet', async () => {
+    const noBreakdown = makeGoStopState();
+    noBreakdown.players = noBreakdown.players.map((p) => ({ ...p, breakdown: null }));
+    mockExec.mockResolvedValue(noBreakdown);
+    renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('gostop-counts-human')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('gostop-counts-cpu-1')).not.toBeInTheDocument();
+  });
+
   // 決断フェーズの保留内訳にも同じ枚数行が付く (所有者を持たない共有の表示)。
   it('shows the raw counts on the pending breakdown too', async () => {
     mockExec.mockResolvedValue(decisionState);
