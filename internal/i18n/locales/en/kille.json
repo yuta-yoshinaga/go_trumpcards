@@ -6,6 +6,7 @@
   "helpNextRound": "  nr / nextround            Go to next round",
   "helpSetStake": "  st [1-100]                Stake per round",
   "header": "Round: {{round}}  Pot: {{pot}}  Stock: {{stock}}",
+  "ladder": "The pack, strongest first: {{ladder}}",
   "hiddenCard": "hidden",
   "out": "[OUT]",
   "outHussar": "[cut down by the Hussar]",

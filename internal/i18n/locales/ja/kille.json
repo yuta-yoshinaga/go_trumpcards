@@ -6,6 +6,7 @@
   "helpNextRound": "  nr / nextround            次のラウンドへ",
   "helpSetStake": "  st [1-100]                1ラウンドの掛け金",
   "header": "ラウンド: {{round}}  ポット: {{pot}}  山札: {{stock}}",
+  "ladder": "デッキ早見（強い順）: {{ladder}}",
   "hiddenCard": "非公開",
   "out": "[脱落]",
   "outHussar": "[軽騎兵に返り討ち]",

@@ -5,6 +5,7 @@ package presenter_test
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -35,14 +36,29 @@ func setupKilleCuiMock(phase domain.KillePhase, players []*domain.KillePlayer) *
 	return m
 }
 
+// killeSeatLines は出力から席の行だけを取り出す (凡例やヘッダを除く)。
+func killeSeatLines(out string) string {
+	var seats []string
+	for _, line := range strings.Split(out, "\n") {
+		if strings.Contains(line, i18n.T("cuiPlayerYou")) ||
+			strings.Contains(line, strings.SplitN(i18n.T("cuiPlayerCpu"), "{{", 2)[0]) {
+			seats = append(seats, line)
+		}
+	}
+	return strings.Join(seats, "\n")
+}
+
 func TestKilleCuiPresenter_HidesOtherHands(t *testing.T) {
 	players := makeKillePlayers(domain.KilleNum5, domain.KillePig, domain.KilleCuckoo, domain.KilleNum9)
 	m := setupKilleCuiMock(domain.KillePhaseExchange, players)
 	out := new(presenter.KilleCuiPresenter).Output(m, nil)
 
 	assert.Contains(t, out, "5", "the human's own card is shown")
-	assert.NotContains(t, out, "Pig", "seat 1 must stay face down")
-	assert.NotContains(t, out, "Cuckoo", "seat 2 must stay face down")
+	// **席の行だけを見る。**強さ序列の凡例 (#6522) は全種の名前を含むので、
+	// 出力全体から名前を探すと「伏せているか」ではなく凡例を見てしまう。
+	seats := killeSeatLines(out)
+	assert.NotContains(t, seats, "Pig", "seat 1 must stay face down")
+	assert.NotContains(t, seats, "Cuckoo", "seat 2 must stay face down")
 	assert.Contains(t, out, "非公開")
 	assert.Contains(t, out, "[親]")
 	assert.Contains(t, out, "ポット: 4")
@@ -168,4 +184,36 @@ func TestKilleCuiPresenter_NoEventBlockWhenNothingHappened(t *testing.T) {
 	out := new(presenter.KilleCuiPresenter).Output(m, nil)
 
 	assert.NotContains(t, out, i18n.T("kille.eventsTitle"))
+}
+
+// **42 枚は独自の序列を持つ。**Harlequin が最強で Mask が最弱という並びを
+// 覚えていないと交換も満足も判断できないのに、CUI には手掛かりが無かった (#6522)。
+func TestKilleCuiPresenter_ShowsTheStrengthLadder(t *testing.T) {
+	g := domain.NewDefaultKille()
+	g.Reset()
+	out := new(presenter.KilleCuiPresenter).Output(g, nil)
+
+	// 並びは Web の KILLE_LADDER と同じ。数札は 1 つの帯にまとめる。
+	want := strings.Join([]string{
+		"Harlequin", "Cuckoo", "Hussar", "Pig", "Cavalier", "Inn",
+		"12 … 1", "Wreath", "Flowerpot", "Mask",
+	}, " > ")
+	assert.Contains(t, out, i18n.Tf("kille.ladder", "ladder", want))
+	assert.NotContains(t, out, "{{")
+}
+
+// **並びはドメインの種の値そのもの。**表を手で並べ替えても、値の降順から
+// 外れたらここで落ちる ── 覚え書きが実際の強さと食い違うのが最悪の形。
+func TestKilleLadder_IsStrictlyDescendingByRank(t *testing.T) {
+	ordered := []domain.KilleRank{
+		domain.KilleHarlequin, domain.KilleCuckoo, domain.KilleHussar,
+		domain.KillePig, domain.KilleCavalier, domain.KilleInn,
+		domain.KilleNum12, domain.KilleNum1,
+		domain.KilleWreath, domain.KilleFlowerpot, domain.KilleMask,
+	}
+	for i := 1; i < len(ordered); i++ {
+		assert.Greater(t, int(ordered[i-1]), int(ordered[i]),
+			"%s は %s より強くなければならない",
+			domain.KilleRankName(ordered[i-1]), domain.KilleRankName(ordered[i]))
+	}
 }
