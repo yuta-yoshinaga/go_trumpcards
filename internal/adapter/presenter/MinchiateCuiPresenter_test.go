@@ -5,6 +5,8 @@ package presenter_test
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -30,6 +32,9 @@ func setupMinchiateCuiMock() *interfaces.MockMinchiateGame {
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetHint").Return(nil).Maybe()
+	// 精算の内訳 (#6512) は既定で「起きていない」── 個別のテストが上書きする。
+	m.On("GetLastTrickWinner").Return(-1).Maybe()
+	m.On("GetScartoSize").Return(0).Maybe()
 	return m
 }
 
@@ -210,4 +215,42 @@ func TestMinchiateCuiPresenter_AlwaysExplainsTheMatto(t *testing.T) {
 	assert.Contains(t, out, i18n.T("minchiate.mattoNote"))
 	// 切札の注記と並んで、常に出ること。
 	assert.Contains(t, out, i18n.T("minchiate.trumpCountNote"))
+}
+
+// **トリック数を足しても teamScores の増分と合わない。**精算には最終トリック
+// ボーナスとスカルト枚数分が乗っているのに、どちらの画面にも出ていなかった (#6512)。
+func TestMinchiateCuiPresenter_ShowsTheSettlementBonuses(t *testing.T) {
+	p := new(presenter.MinchiateCuiPresenter)
+
+	// 最終トリックとスカルトはその局の進み方でしか決まらないので、卓は手で組む。
+	board := func(lastTrickWinner, dealerIdx, scarto int) string {
+		g := domain.NewDefaultMinchiate()
+		g.Reset()
+		g.SetPhase(domain.MinchiatePhaseRoundEnd)
+		g.SetRoundEndForTest(lastTrickWinner, dealerIdx, scarto)
+		return p.Output(g, nil)
+	}
+
+	t.Run("credits the last trick to the winner's team", func(t *testing.T) {
+		// 席 1 はチーム 1 (対面同士 0-2 / 1-3)。
+		out := board(1, 0, 0)
+		assert.Contains(t, out, i18n.Tf("minchiate.roundEndLastTrick",
+			"team", "1", "points", strconv.Itoa(domain.MinchiateLastTrickBonus)))
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("credits the scarto to the dealer's team", func(t *testing.T) {
+		// ディーラーが席 3 ならチーム 1。枚数がそのまま点になる。
+		out := board(-1, 3, 4)
+		assert.Contains(t, out, i18n.Tf("minchiate.roundEndScarto", "team", "1", "points", "4"))
+	})
+
+	// 負のコントロール: 起きていない加点は出さない。
+	t.Run("says nothing about bonuses that did not happen", func(t *testing.T) {
+		out := board(-1, 0, 0)
+		lastTrick := strings.SplitN(i18n.T("minchiate.roundEndLastTrick"), "{{", 2)[0]
+		scarto := strings.SplitN(i18n.T("minchiate.roundEndScarto"), "{{", 2)[0]
+		assert.NotContains(t, out, strings.TrimSpace(lastTrick))
+		assert.NotContains(t, out, strings.TrimSpace(scarto))
+	})
 }

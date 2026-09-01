@@ -226,4 +226,28 @@ describe('MinchiatePage', () => {
     await waitFor(() => expect(screen.getByTestId('minchiate-hint-button')).toBeInTheDocument());
     expect(screen.queryByText(/\[2\]/)).not.toBeInTheDocument();
   });
+  // **トリック数を足しても teamScores の増分と合わない。**精算には最終トリック
+  // ボーナスとスカルト枚数分が乗っているのに、どちらの画面にも出ていなかった (#6512)。
+  it('breaks the settlement bonuses out of the trick tally', async () => {
+    // 席 1 はチーム 1、ディーラー席 0 はチーム 0 (対面同士 0-2 / 1-3)。
+    mockExec.mockResolvedValue({ ...roundEndState, lastTrickWinner: 1, dealerIdx: 0, scartoCount: 4 });
+    renderWithProviders(<MinchiatePage />);
+
+    const lastTrick = await screen.findByTestId('mc-last-trick-bonus');
+    expect(lastTrick).toHaveTextContent('チーム1');
+    expect(lastTrick).toHaveTextContent('3');
+    const scarto = screen.getByTestId('mc-scarto-bonus');
+    expect(scarto).toHaveTextContent('チーム0');
+    expect(scarto).toHaveTextContent('4');
+    expect(lastTrick.textContent).not.toContain('{{');
+  });
+
+  // 負のコントロール: 起きていない加点は行ごと出さない。
+  it('shows no bonus rows when neither bonus applies', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, lastTrickWinner: -1, scartoCount: 0 });
+    renderWithProviders(<MinchiatePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('mc-last-trick-bonus')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('mc-scarto-bonus')).not.toBeInTheDocument();
+  });
 });

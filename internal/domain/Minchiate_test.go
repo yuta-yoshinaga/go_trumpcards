@@ -733,3 +733,21 @@ func TestMinchiate_HumanScartoUsesTheSameAllowedSet(t *testing.T) {
 	}
 	assert.NoError(t, g.PlayerScarto(plain))
 }
+
+// 精算内訳の表示 (#6512) は、この 3 つの値を席→チームの規則で読み替えて出す。
+// **表示側が前提にしている読み替えをドメイン側で固定する** ── 対面同士が組むので
+// 0-2 がチーム 0、1-3 がチーム 1。
+func TestMinchiate_RoundEndInputsForTheBreakdown(t *testing.T) {
+	g := NewDefaultMinchiate()
+	g.Reset()
+	g.SetRoundEndForTest(1, 3, 4)
+
+	assert.Equal(t, 1, g.GetLastTrickWinner())
+	assert.Equal(t, 3, g.GetDealerIdx())
+	assert.Equal(t, 4, g.GetScartoSize())
+
+	// 席 1 と席 3 は同じチーム、席 0 と席 2 も同じチーム。
+	assert.Equal(t, MinchiateTeamOf(3), MinchiateTeamOf(1))
+	assert.Equal(t, MinchiateTeamOf(2), MinchiateTeamOf(0))
+	assert.NotEqual(t, MinchiateTeamOf(0), MinchiateTeamOf(1))
+}

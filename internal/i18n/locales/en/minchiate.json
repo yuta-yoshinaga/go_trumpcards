@@ -29,6 +29,8 @@
   "round": "Round: {{round}}  Trick: {{trick}}",
   "roundEndTrickEntry": "{{name}} {{tricks}}",
   "roundEndTricks": "Tricks per player: {{list}}",
+  "roundEndLastTrick": "Last trick: +{{points}} to team {{team}}",
+  "roundEndScarto": "Scarto: +{{points}} to team {{team}}",
   "teamLine": "Score  team 0: {{team0}}  team 1: {{team1}}",
   "trumpCountNote": "40 trumps -- including the 12 zodiac signs, the four elements and the virtues; tracking what is still above you is the skill",
   "mattoNote": "The Matto (Fool) is special: it never wins a trick, is exempt from following suit, and never sets the led suit",
