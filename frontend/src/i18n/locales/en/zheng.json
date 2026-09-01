@@ -61,5 +61,6 @@
     "yourTurn": "It's your turn",
     "yourTurnLead": "It's your turn. You're leading, so you can't pass.",
     "finished": "You finished ({{rank}})"
-  }
+  },
+  "passDisabledLead": "You lead this trick, so you cannot pass (you must play something)"
 }
