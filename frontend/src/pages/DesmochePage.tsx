@@ -237,9 +237,13 @@ function DesmochePageContent() {
 
             {roundOver && (
               <div className="text-center text-sm mb-3" data-testid="desmoche-round-result">
-                {state.roundWinner >= 0
-                  ? t('roundWinner', { n: state.roundWinner })
-                  : t('roundNoWinner', { n: state.pot })}
+                {/* **同じ画面で呼び方を変えない。**数行上のメルドは席 0 を「あなたの」と
+                    呼ぶのに、勝者だけ「席0が」と出ていた (#6517)。 */}
+                {state.roundWinner === 0
+                  ? t('roundWinnerYou')
+                  : state.roundWinner > 0
+                    ? t('roundWinner', { n: state.roundWinner })
+                    : t('roundNoWinner', { n: state.pot })}
               </div>
             )}
 

@@ -273,4 +273,15 @@ describe('DesmochePage', () => {
       expect(screen.queryByTestId('desmoche-foreign-meld-warning')).not.toBeInTheDocument();
     });
   });
+  // **同じ画面で呼び方を変えない。**数行上のメルドは席 0 を「あなたの」と呼ぶのに、
+  // 勝者だけ「席0が」と出ていた (#6517)。
+  it('calls the human "you" when they take the pot', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: DesmochePhase.ROUND_END, roundWinner: 0 }));
+    renderWithProviders(<DesmochePage />);
+    const result = await screen.findByTestId('desmoche-round-result');
+    expect(result).toHaveTextContent('あなたが10枚を組んで');
+    // 席番号で呼ばない ── これが元の症状。
+    expect(result).not.toHaveTextContent('席0');
+    expect(result.textContent).not.toContain('{{');
+  });
 });
