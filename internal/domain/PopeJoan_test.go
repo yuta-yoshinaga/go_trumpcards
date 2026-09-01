@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func pjCard(design, value int) *Card { return NewCard(design, value, true) }
@@ -864,4 +865,24 @@ func TestPopeJoanHoldsPope(t *testing.T) {
 
 	assert.False(t, PopeJoanHoldsPope(NewPopeJoanPlayer(true)), "an empty hand holds nothing")
 	assert.False(t, PopeJoanHoldsPope(nil))
+}
+
+// ディーラーは区画の種銭を負担し、めくり札が Pope/A/K/Q/J ならその区画を総取りする。
+// **毎ディール回る**ので、表示 (#6520) はこの席を読む。回っていることを固定する。
+func TestPopeJoan_DealerRotatesEachDeal(t *testing.T) {
+	g := NewDefaultPopeJoan()
+	g.Reset()
+
+	first := g.GetDealerIdx()
+	assert.GreaterOrEqual(t, first, 0)
+
+	seen := map[int]bool{first: true}
+	for range len(g.GetPlayers()) - 1 {
+		// NextDeal はディール終了フェーズでしか進まない。
+		g.SetPhaseForTest(PopeJoanPhaseDealEnd)
+		require.NoError(t, g.NextDeal())
+		seen[g.GetDealerIdx()] = true
+	}
+	// 一巡すれば全席がディーラーを務める ── 固定席なら 1 つしか見えない。
+	assert.Len(t, seen, len(g.GetPlayers()))
 }
