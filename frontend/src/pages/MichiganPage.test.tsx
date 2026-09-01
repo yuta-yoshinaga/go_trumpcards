@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { michiganApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeMichiganState } from '../test/stateFactories';
+import { cardAlt } from '../utils/cardAlt';
 import { MichiganPage } from './MichiganPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -273,5 +274,18 @@ describe('MichiganPage', () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<MichiganPage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝利です！')).toBeInTheDocument());
+  });
+
+  // **どの札を出そうとしているかは、見えている人には自明でも読み上げには無い。**
+  // 索引だけのラベルでは、スクリーンリーダー利用者はスートもランクも分からない (#6496)。
+  it('names the suit and the rank of each hand card', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<MichiganPage />);
+    const card0 = await screen.findByTestId('hand-card-0');
+
+    // 実際の文言に解決していることを見る ── プレースホルダ名がずれると
+    // `{{card}}` がそのまま読み上げられ、どの表明も気づかない。
+    expect(card0).toHaveAttribute('aria-label', `${cardAlt(playState.players[0].cards[0])} を出す`);
+    expect(card0.getAttribute('aria-label')).not.toContain('{{');
   });
 });

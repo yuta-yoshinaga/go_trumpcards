@@ -42,7 +42,7 @@
   "betCollectible": "Collectible",
   "betClaimedWarning": "Already won",
   "playPrompt": "Play a card in an ascending same-suit run.",
-  "playCardAria": "Play hand card {{index}}",
+  "playCardAria": "Play {{card}}",
   "nextRound": "Next Round",
   "roundResult": {
     "title": "Round Result",
