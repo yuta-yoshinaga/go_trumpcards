@@ -412,6 +412,13 @@ func cuiCardSliceStrEmojiNewest(cards []*domain.Card) string {
 // the note starts disagreeing with what the server will accept** (#4922).
 // Cards that capture nothing get no note; an empty result means no line at all.
 func cuiCaptureHintLine(hand cuiCardList, opts map[int][]int, key string) string {
+	return cuiCaptureHintLineWith(hand, opts, key, cuiCardStr)
+}
+
+// cuiCaptureHintLineWith is cuiCaptureHintLine with the card formatter chosen by
+// the caller. **Hanafuda does not render through cuiCardStr**, so Koi-Koi needs
+// its own formatter while sharing the pairing logic (#6506).
+func cuiCaptureHintLineWith(hand cuiCardList, opts map[int][]int, key string, fmtCard cardFormatter) string {
 	if len(opts) == 0 {
 		return ""
 	}
@@ -426,7 +433,7 @@ func cuiCaptureHintLine(hand cuiCardList, opts map[int][]int, key string) string
 			marks[j] = "[" + strconv.Itoa(ti) + "]"
 		}
 		notes = append(notes, i18n.Tf(key,
-			"hand", "["+strconv.Itoa(h)+"]"+cuiCardStr(hand.GetCard(h)),
+			"hand", "["+strconv.Itoa(h)+"]"+fmtCard(hand.GetCard(h)),
 			"table", strings.Join(marks, "")))
 	}
 	if len(notes) == 0 {
