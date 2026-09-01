@@ -17,6 +17,7 @@
   "helpNext": "  n / next                  Deal the next hand",
   "helpHint": "  h / hint                  Show a hint",
   "header": "Hand: {{hand}}  Game: {{target}} points",
+  "noKittyNote": "THERE IS NO KITTY. All 24 cards are dealt out, six each, so the only hidden cards are the other players' hands.",
   "scoreLine": "Team 0: {{s0}} / Team 1: {{s1}}",
   "contractLine": "Contract: {{value}} tricks  Trump: {{trump}}",
   "trumpUndecided": "not yet named",
