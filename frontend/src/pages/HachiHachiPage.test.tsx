@@ -243,4 +243,22 @@ describe('HachiHachiPage', () => {
     fireEvent.keyDown(document, { key: '2' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, fieldIndex: 1 }));
   });
+  // **二択が始まったことは、画面が変わっただけでは伝わらない。**同じ手札で取れる
+  // 場札が複数あると盤面が新しい入力待ちに切り替わるのに、読み上げには何も届いて
+  // いなかった (#6508)。
+  it('announces the second choice when it appears', async () => {
+    mockExec.mockResolvedValue(makeHachiHachiState({ captureOptions: { 0: [0, 1] } }));
+    renderWithProviders(<HachiHachiPage />);
+
+    // **領域は最初から DOM にあり、中身だけが変わる。**領域ごと現れる live region は
+    // 読み上げられない (#5955) ので、空であることを先に確かめる。
+    const live = await screen.findByTestId('hachihachi-live');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveTextContent('');
+
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    // 読み上げられるのは、その領域の**中**に入った文言。
+    await waitFor(() => expect(live).toHaveTextContent('場札を選んでください'));
+  });
 });
