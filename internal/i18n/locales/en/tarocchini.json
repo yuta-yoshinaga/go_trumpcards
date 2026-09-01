@@ -35,6 +35,7 @@
   "teamName": "Team {{n}}",
   "roundEndLastTrick": "Last-trick bonus: +{{bonus}} to {{team}}",
   "roundEndScarto": "Scarto: +{{count}} to {{team}} (the dealer side)",
+  "scartoDone": "Buried: {{count}} cards",
   "teamLine": "Score  team 0: {{team0}}  team 1: {{team1}}",
   "helpExamplePlay": "  play 0               play hand card 0",
   "helpExampleNext": "  n                    read the trick result, then continue",
