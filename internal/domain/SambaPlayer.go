@@ -23,20 +23,25 @@ type SambaMeld struct {
 	IsNatural bool          `json:"in"` // セットでワイルドを含まない場合 true (シーケンスは常に true)
 }
 
+// SambaCanastaSize はメルドがカナスタ／サンバとして完成する枚数。
+// Web の `SAMBA_CANASTA_SIZE` と同じ値で、両者の食い違いは
+// frontend/scripts/check-samba-canasta-size.mjs が落とす。
+const SambaCanastaSize = 7
+
 // IsCompleted は7枚以上の完成メルド（カナスタまたはサンバ）かどうかを返す。
 // 上がり条件・チーム集計に使用する。
 func (m *SambaMeld) IsCompleted() bool {
-	return len(m.Cards) >= 7
+	return len(m.Cards) >= SambaCanastaSize
 }
 
 // IsCanasta は7枚以上のセットメルド（カナスタ）かどうかを返す。
 func (m *SambaMeld) IsCanasta() bool {
-	return m.Kind == SambaMeldSet && len(m.Cards) >= 7
+	return m.Kind == SambaMeldSet && len(m.Cards) >= SambaCanastaSize
 }
 
 // IsSamba は7枚のシーケンスメルド（サンバ）かどうかを返す。
 func (m *SambaMeld) IsSamba() bool {
-	return m.Kind == SambaMeldSequence && len(m.Cards) >= 7
+	return m.Kind == SambaMeldSequence && len(m.Cards) >= SambaCanastaSize
 }
 
 // GetRank はセットメルドのランク（ナチュラルカードのランク）を返す。

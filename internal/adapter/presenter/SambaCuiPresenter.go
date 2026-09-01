@@ -13,22 +13,33 @@ import (
 )
 
 // sambaMeldTypeLabel はメルドの表示ラベルを返す。
+//
+// **完成まであと何枚かは、札を数え直さないと分からなかった。**Web は全メルドに
+// 残り枚数を出しているのに、CUI は完成済みのサフィックスしか出していなかった
+// (#6499)。完成済みの表示は変えない ── 残りは 0 なので出す意味がない。
 func sambaMeldTypeLabel(m *domain.SambaMeld) string {
 	if m.Kind == domain.SambaMeldSequence {
 		label := i18n.T("samba.meldTypeSequence")
 		if m.IsSamba() {
-			label += i18n.T("samba.meldTypeSambaSuffix")
+			return label + i18n.T("samba.meldTypeSambaSuffix")
 		}
-		return label
+		return label + sambaMeldRemainingStr(m)
 	}
 	label := i18n.T("samba.meldTypeMixed")
 	if m.IsNatural {
 		label = i18n.T("samba.meldTypeNatural")
 	}
 	if m.IsCanasta() {
-		label += i18n.T("samba.meldTypeCanastaSuffix")
+		return label + i18n.T("samba.meldTypeCanastaSuffix")
 	}
-	return label
+	return label + sambaMeldRemainingStr(m)
+}
+
+// sambaMeldRemainingStr は完成までの残り枚数を返す。呼び出し元が完成済みを
+// 先に返しているので、ここに来る時点で残りは必ず 1 枚以上ある。
+// 枚数は Web と同じ domain.SambaCanastaSize から引く。
+func sambaMeldRemainingStr(m *domain.SambaMeld) string {
+	return i18n.Tf("samba.meldRemaining", "count", strconv.Itoa(domain.SambaCanastaSize-len(m.Cards)))
 }
 
 // sambaPlayerStr returns the display string for a single Samba player.
