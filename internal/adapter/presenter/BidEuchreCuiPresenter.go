@@ -78,6 +78,10 @@ func (p *BidEuchreCuiPresenter) Output(g interfaces.BidEuchreGame, lastErr error
 		b.WriteString(i18n.Tf("bideuchre.header",
 			"hand", strconv.Itoa(g.GetHandNumber()),
 			"target", strconv.Itoa(domain.BidEuchreGameTarget)) + "\n")
+		// キティが存在しないことはビッド・ユーカーの基本ルールであり、毎局変わらない。
+		// Web では noKittyNote を常設表示しているが、CUI にはこれまで出力手段が無かった。
+		// フェーズや状態によらず毎回出して、プレイヤーが混乱しないようにする。
+		b.WriteString(i18n.T("bideuchre.noKittyNote") + "\n")
 		b.WriteString(i18n.Tf("bideuchre.scoreLine",
 			"s0", strconv.Itoa(g.GetScore(0)),
 			"s1", strconv.Itoa(g.GetScore(1))) + "\n")
