@@ -243,4 +243,20 @@ describe('KarnoffelPage', () => {
     expect(screen.queryByTestId('karnoffel-rank-pope')).not.toBeInTheDocument();
     expect(document.querySelectorAll('[data-testid^="karnoffel-rank-"]')).toHaveLength(1);
   });
+  // **上札自身が称号札のこともある。**手札にはバッジを出しているのに上札には
+  // 出していないと、同じ札が場所によって別の重みに見える (#6529)。
+  it('badges an up-card that carries a title', async () => {
+    // chosenSuit = 3 (♥)。席 0 の上札は ♥3 = オーバーシュテッヒャー。
+    mockExec.mockResolvedValue(makeState({ chosenSuit: 3 }));
+    renderWithProviders(<KarnoffelPage />);
+    expect(await screen.findByTestId('karnoffel-up-rank-0')).toBeInTheDocument();
+  });
+
+  // 負のコントロール: 選ばれたスートでなければ称号は付かない。
+  it('leaves an up-card of another suit unbadged', async () => {
+    mockExec.mockResolvedValue(makeState({ chosenSuit: 1 }));
+    renderWithProviders(<KarnoffelPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('karnoffel-up-rank-0')).not.toBeInTheDocument();
+  });
 });

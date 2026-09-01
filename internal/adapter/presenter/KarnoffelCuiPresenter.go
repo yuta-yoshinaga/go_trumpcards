@@ -33,6 +33,17 @@ func karnoffelSuitLabel(suit int) string {
 	return "-"
 }
 
+// karnoffelTitleSuffix は称号札の名前を括弧書きで返す (称号が無ければ空)。
+// 手札と上札の両方が同じ表記を使う ── 同じ札が場所によって別の重みに
+// 見えないように (#6529)。
+func karnoffelTitleSuffix(c *domain.Card, chosenSuit int) string {
+	key := domain.KarnoffelTitleKey(c, chosenSuit)
+	if key == "" {
+		return ""
+	}
+	return i18n.Tf("karnoffel.handTitle", "title", i18n.T("karnoffel.title."+key))
+}
+
 // karnoffelPlayerStr returns the display string for a single seat.
 func karnoffelPlayerStr(g interfaces.KarnoffelGame, i int) string {
 	player := g.GetPlayer(i)
@@ -47,11 +58,8 @@ func karnoffelPlayerStr(g interfaces.KarnoffelGame, i int) string {
 			// 付ける。Web はカード下のバッジで出しているのに、CUI だけ
 			// スートと数字から自力で照合させていた (#5732)。
 			c := player.GetCard(j)
-			title := ""
-			if key := domain.KarnoffelTitleKey(c, g.GetChosenSuit()); key != "" {
-				title = i18n.Tf("karnoffel.handTitle", "title", i18n.T("karnoffel.title."+key))
-			}
-			b.WriteString("[" + strconv.Itoa(j) + "]" + cuiCardStr(c) + title + " ")
+			b.WriteString("[" + strconv.Itoa(j) + "]" + cuiCardStr(c) +
+				karnoffelTitleSuffix(c, g.GetChosenSuit()) + " ")
 		}
 		hand = strings.TrimSpace(b.String())
 	}
@@ -60,9 +68,12 @@ func karnoffelPlayerStr(g interfaces.KarnoffelGame, i int) string {
 		role += " " + i18n.T("karnoffel.dealerTag")
 	}
 	// **表向きの札は全員ぶん見える。**切札の根拠がここにある。
+	//
+	// 上札自身が称号札のこともある。**手札には称号を出しているのに上札には
+	// 出していない**と、同じ札が場所によって別の重みに見える (#6529)。
 	up := "-"
 	if c := g.GetUpCard(i); c != nil {
-		up = cuiCardStr(c)
+		up = cuiCardStr(c) + karnoffelTitleSuffix(c, g.GetChosenSuit())
 	}
 	return i18n.Tf("karnoffel.playerLine",
 		"name", cuiPlayerName(player, i),
