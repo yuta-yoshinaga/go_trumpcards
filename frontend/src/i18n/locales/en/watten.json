@@ -58,6 +58,8 @@
   "raiseButton": "Raise (Watten)",
   "respondPhase": "Stake raised to {{stake}} — hold or fold.",
   "respondLoss": "Folding concedes {{stake}} points to the opponent team.",
+  "raiserOwn": "Your team raised the stake.",
+  "raiserOpponent": "The opponent team raised the stake.",
   "stakeHistory": {
     "title": "Stake history",
     "start": "Start {{stake}}",

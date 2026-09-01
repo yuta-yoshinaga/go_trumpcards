@@ -525,6 +525,15 @@ function WattenPageContent() {
               {canRespond && (
                 <>
                   <span className="text-ds-text-muted text-sm">{t('respondPhase', { stake: state.pendingStake })}</span>
+                  {/* **吊り上げたのが誰かで hold/fold の判断は変わる。**サーバは
+                      raiserTeam を毎回送っているのに画面が読まず、人間は
+                      pendingStake だけを見て決めるしかなかった (#6497)。
+                      まだ誰も吊り上げていない (-1) 局面では出さない。 */}
+                  {state.raiserTeam >= 0 && (
+                    <span className="text-ds-text-muted text-sm" data-testid="watten-raiser-info">
+                      {state.raiserTeam === humanPlayer?.team ? t('raiserOwn') : t('raiserOpponent')}
+                    </span>
+                  )}
                   <span className="text-ds-warning text-sm" data-testid="watten-respond-loss">
                     {t('respondLoss', { stake: state.stake })}
                   </span>
