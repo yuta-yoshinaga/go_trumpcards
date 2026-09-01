@@ -29,6 +29,8 @@ type PopeJoanGame interface {
 	PopeJoanValidPlays(player int) []int
 	// GetCurrentPlayerIdx 手番のプレイヤー添字を取得する
 	GetCurrentPlayerIdx() int
+	// GetDealerIdx 現在のディーラーの席を取得する (種銭を負担し、めくり札特典を得る側)
+	GetDealerIdx() int
 	// GetBoard 8区画の残高を取得する
 	GetBoard() domain.PopeJoanBoard
 	// GetTrumpSuit トランプを取得する

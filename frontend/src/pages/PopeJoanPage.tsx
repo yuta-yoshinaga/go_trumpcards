@@ -173,6 +173,11 @@ function PopeJoanPageContent() {
                 <div key={`opp-${o.id.toString()}`} className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">
                     {t('seat', { name: `CPU${o.id.toString()}`, chips: o.chips, n: o.cardCount })}
+                    {/* **ディーラーは区画の種銭を負担し、めくり札が Pope/A/K/Q/J なら
+                        その区画を総取りする。**毎ディール回るので印を付けないと追えない (#6520)。 */}
+                    {o.id === state.dealerIdx && (
+                      <span data-testid={`pj-dealer-${o.id.toString()}`}> · {t('dealerBadge')}</span>
+                    )}
                     {/* Pope 保持者は支払いを免除されるので、伏せ手でも出す。 */}
                     {o.holdsPope && ` · ${t('holdsPope')}`}
                   </div>
@@ -219,6 +224,9 @@ function PopeJoanPageContent() {
                 {t('yourHand')}
                 {' · '}
                 {t('yourChips', { n: human?.chips ?? 0 })}
+                {human !== undefined && human.id === state.dealerIdx && (
+                  <span data-testid="pj-dealer-human"> · {t('dealerBadge')}</span>
+                )}
                 {human?.holdsPope && ` · ${t('holdsPope')}`}
               </div>
               <div className="flex gap-1 justify-center flex-wrap">

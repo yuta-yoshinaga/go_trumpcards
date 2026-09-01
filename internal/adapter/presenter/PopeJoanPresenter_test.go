@@ -5,6 +5,7 @@ package presenter
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -44,11 +45,19 @@ func pjDressedBoard() domain.PopeJoanBoard {
 // pjStub wires a MockPopeJoanGame with every accessor the presenters touch.
 func pjStub(phase domain.PopeJoanPhase, gameEnd bool, winner int, awards []*domain.PopeJoanAward) *interfaces.MockPopeJoanGame {
 	g := new(interfaces.MockPopeJoanGame)
+	pjStubInto(g, phase, gameEnd, winner, awards)
+	return g
+}
+
+// pjStubInto は既定の期待値を後から積む。**先に置いた期待値が優先される**ので、
+// 1 つだけ差し替えたいテストは自分の分を先に On してからこれを呼ぶ。
+func pjStubInto(g *interfaces.MockPopeJoanGame, phase domain.PopeJoanPhase, gameEnd bool, winner int, awards []*domain.PopeJoanAward) {
 	g.On("GetPhase").Return(phase)
 	g.On("PopeJoanValidPlays", mock.Anything).Return([]int{}).Maybe()
 	g.On("GetGameEndFlag").Return(gameEnd)
 	g.On("GetWinnerIdx").Return(winner)
 	g.On("GetCurrentPlayerIdx").Return(0)
+	g.On("GetDealerIdx").Return(0).Maybe()
 	g.On("GetBoard").Return(pjDressedBoard())
 	g.On("GetTrumpSuit").Return(domain.CardDesignSpade)
 	g.On("GetTurnUp").Return(pjpCard(domain.CardDesignSpade, 5))
@@ -68,7 +77,6 @@ func pjStub(phase domain.PopeJoanPhase, gameEnd bool, winner int, awards []*doma
 	g.On("GetPlayer", mock.Anything).Return(domain.NewPopeJoanPlayer(false))
 	g.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	g.On("PopeJoanCpuDecide", mock.Anything).Return(-1)
-	return g
 }
 
 func TestPopeJoanWebPresenter_HidesTheCpuHandButNeverTheCount(t *testing.T) {
@@ -178,6 +186,7 @@ func TestPopeJoanWebPresenter_HintReasonsCoverEveryBranch(t *testing.T) {
 			g.On("GetGameEndFlag").Return(tc.gameEnd)
 			g.On("GetPhase").Return(tc.phase)
 			g.On("GetCurrentPlayerIdx").Return(tc.current)
+			g.On("GetDealerIdx").Return(0).Maybe()
 			g.On("GetRunSuit").Return(tc.runSuit)
 			g.On("PopeJoanCpuDecide", 0).Return(tc.decide)
 
@@ -271,6 +280,7 @@ func TestPopeJoanCuiPresenter_HintRendersEveryShape(t *testing.T) {
 	play.On("GetGameEndFlag").Return(false)
 	play.On("GetPhase").Return(domain.PopeJoanPhasePlay)
 	play.On("GetCurrentPlayerIdx").Return(0)
+	play.On("GetDealerIdx").Return(0).Maybe()
 	play.On("GetRunSuit").Return(-1)
 	play.On("PopeJoanCpuDecide", 0).Return(3)
 	assert.Contains(t, p.HintOutput(play), "3")
@@ -376,4 +386,44 @@ func pjWithPlayers(calls []*mock.Call, players []*domain.PopeJoanPlayer) []*mock
 		m.On("GetPlayer", i).Return(p)
 	}
 	return append(kept, m.ExpectedCalls...)
+}
+
+// **ディーラーは区画の種銭を負担し、めくり札が Pope/A/K/Q/J ならその区画を総取りする。**
+// 毎ディール回るのに、CUI にも Web にも「ディーラー」という語自体が無かった (#6520)。
+func TestPopeJoanPresenter_MarksTheDealer(t *testing.T) {
+	seatLine := func(dealer, seat int) string {
+		g := new(interfaces.MockPopeJoanGame)
+		g.On("GetDealerIdx").Return(dealer)
+		pjStubInto(g, domain.PopeJoanPhasePlay, false, -1, nil)
+		out := new(PopeJoanCuiPresenter).Output(g, nil)
+		for _, line := range strings.Split(out, "\n") {
+			if strings.Contains(line, i18n.Tf("cuiPlayerCpu", "idx", strconv.Itoa(seat))) {
+				return line
+			}
+		}
+		return ""
+	}
+
+	// Web も同じ席を送る ── 送っていなければ画面が印を出せない。
+	t.Run("ships the dealing seat to the web", func(t *testing.T) {
+		g := new(interfaces.MockPopeJoanGame)
+		g.On("GetDealerIdx").Return(2)
+		pjStubInto(g, domain.PopeJoanPhasePlay, false, -1, nil)
+		out := pjDecode(t, new(PopeJoanWebPresenter).Output(g, nil))
+		assert.InDelta(t, 2, out["dealerIdx"], 0)
+	})
+
+	// 印は**ディーラーの席にだけ**付く。
+	t.Run("marks the dealing seat only", func(t *testing.T) {
+		marked := seatLine(2, 2)
+		require.NotEmpty(t, marked, "席 2 の行が出力に無い")
+		assert.Contains(t, marked, i18n.T("popejoan.dealerBadge"))
+		assert.NotContains(t, seatLine(2, 1), i18n.T("popejoan.dealerBadge"))
+	})
+
+	// ディールごとに回るので、席が変われば印も移る。
+	t.Run("follows the dealer as it rotates", func(t *testing.T) {
+		assert.NotContains(t, seatLine(1, 2), i18n.T("popejoan.dealerBadge"))
+		assert.Contains(t, seatLine(1, 1), i18n.T("popejoan.dealerBadge"))
+	})
 }

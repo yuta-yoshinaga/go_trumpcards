@@ -26,6 +26,7 @@ function makeState(overrides?: Partial<PopeJoanResponse>): PopeJoanResponse {
     phase: 0,
     validPlays: [],
     currentPlayerIdx: 0,
+    dealerIdx: 0,
     compartments: COMPS.map((name, i) => ({ name, chips: DRESS[i] })),
     trumpSuit: 1,
     turnUp: card('SPADE', 5),

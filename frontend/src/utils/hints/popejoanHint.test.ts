@@ -7,6 +7,7 @@ const base = {
   phase: 0,
   validPlays: [],
   currentPlayerIdx: 0,
+  dealerIdx: 0,
   compartments: [],
   trumpSuit: 1,
   awards: [],
