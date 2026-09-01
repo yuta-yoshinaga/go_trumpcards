@@ -172,9 +172,9 @@ function AnacondaPageContent() {
   const raiseInput = {
     raiseCount: state.raiseCount,
     maxRaises: state.maxRaises,
-    chips: humanPlayer?.chips ?? 0,
+    chips: humanPlayer ? humanPlayer.chips : 0,
     currentBet: state.currentBet,
-    roundBet: humanPlayer?.roundBet ?? 0,
+    roundBet: humanPlayer ? humanPlayer.roundBet : 0,
     ante: state.ante,
   };
   const raiseBlock = raiseAvailability(raiseInput);

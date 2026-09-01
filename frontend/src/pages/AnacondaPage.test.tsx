@@ -325,6 +325,16 @@ describe('AnacondaPage', () => {
       ],
     ];
 
+    // 席に人間がいない盤（観戦状態）でも落ちない ── その場合は 0 として扱う。
+    mockExec.mockResolvedValue({
+      ...base,
+      canRaise: false,
+      players: base.players.map((p) => ({ ...p, isHuman: false })),
+    });
+    const spectator = renderWithProviders(<AnacondaPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    spectator.unmount();
+
     for (const [text, state] of cases) {
       mockExec.mockResolvedValue(state);
       const { container, unmount } = renderWithProviders(<AnacondaPage />);
