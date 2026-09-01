@@ -83,6 +83,13 @@ func koikoiPlayerStr(g interfaces.KoiKoiGame, idx int) string {
 		"points", strconv.Itoa(pts)) + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(koikoiCuiHandStr(player) + "\n")
+		// **同ランクの札が場に 2 枚あると、どちらを取るかは選択になる。**Web は
+		// 一致する場札をリングで示して pickField を案内するのに、CUI は場札と
+		// 手札を目で突き合わせるしかなかった (#6506)。組み合わせはドメインの
+		// GetCaptureOptions をそのまま使う ── Basra / Tablanet と同じ扱い。
+		if line := cuiCaptureHintLineWith(player, g.GetCaptureOptions(idx), "koikoi.captureHint", koikoiCuiCardStr); line != "" {
+			b.WriteString(line + "\n")
+		}
 	}
 	return b.String()
 }
