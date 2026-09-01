@@ -82,6 +82,13 @@ func (p *TarocchiniCuiPresenter) Output(g interfaces.TarocchiniGame, lastErr err
 			"team0", strconv.Itoa(scores[0]),
 			"team1", strconv.Itoa(scores[1])) + "\n")
 
+		// **スカルトの枚数はそのまま精算の加点になる。**Web はプレイ中も出し続けて
+		// いるのに、CUI ではスカルトフェーズを抜けた途端に消え、何枚捨てられたかを
+		// 見返す手段が無かった (#6513)。0 枚 (発生前) では出さない ── Web と同じ条件。
+		if scarto := g.GetScartoSize(); scarto > 0 {
+			b.WriteString(i18n.Tf("tarocchini.scartoDone", "count", strconv.Itoa(scarto)) + "\n")
+		}
+
 		// **同格のパパは毎回説明する。**「後から出した方が勝つ」を知らないと、
 		// 手札の Papa 4 枚をどう使うか判断できない。
 		b.WriteString(i18n.T("tarocchini.papiNote") + "\n")

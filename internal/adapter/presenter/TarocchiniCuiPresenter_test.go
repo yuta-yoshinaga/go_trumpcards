@@ -244,3 +244,31 @@ func TestTarocchiniCuiPresenter_ShowsTheRoundBreakdown(t *testing.T) {
 		assert.NotContains(t, out, strings.Split(i18n.T("tarocchini.roundEndScarto"), "{{")[0])
 	})
 }
+
+// **スカルトの枚数はそのまま精算の加点になる。**Web はプレイ中も出し続けているのに、
+// CUI ではスカルトフェーズを抜けた途端に消え、見返す手段が無かった (#6513)。
+func TestTarocchiniCuiPresenter_KeepsTheScartoCountVisible(t *testing.T) {
+	p := new(presenter.TarocchiniCuiPresenter)
+
+	withScarto := func(n int) string {
+		m, _ := setupTarocchiniCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetScartoSize")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetScartoSize").Return(n)
+		m.On("GetPhase").Return(domain.TarocchiniPhasePlay)
+		return p.Output(m, nil)
+	}
+
+	// プレイ中も出続ける ── スカルトフェーズのプロンプトではなく常設情報として。
+	t.Run("still shows the count during play", func(t *testing.T) {
+		out := withScarto(2)
+		assert.Contains(t, out, i18n.Tf("tarocchini.scartoDone", "count", "2"))
+		assert.NotContains(t, out, "{{")
+	})
+
+	// 負のコントロール: まだ捨てていない (0 枚) 局面では出さない ── Web と同じ条件。
+	t.Run("says nothing before anything is buried", func(t *testing.T) {
+		lit := strings.SplitN(i18n.T("tarocchini.scartoDone"), "{{", 2)[0]
+		assert.NotContains(t, withScarto(0), strings.TrimSpace(lit))
+	})
+}
