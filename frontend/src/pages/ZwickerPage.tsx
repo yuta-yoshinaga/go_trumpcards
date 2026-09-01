@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { zwickerApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
@@ -55,6 +55,21 @@ function ZwickerPageContent() {
   const [tableSel, setTableSel] = useState<number[]>([]);
   const [buildSel, setBuildSel] = useState<number[]>([]);
   const [buildValue, setBuildValue] = useState('');
+
+  // CPU の手番は無言で進むので、**手番が自分に回ってきたこと自体**がスクリーンリーダー
+  // 利用者に伝わらない (Zheng / NainJaune で確立した liveMsg と同じ形、#6518)。
+  const [liveMsg, setLiveMsg] = useState('');
+  const prevTurnRef = useRef<boolean | null>(null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: react to each state update; reads the t snapshot deliberately.
+  useEffect(() => {
+    if (!state) return;
+    const turn = state.phase === ZwickerPhase.PLAY && state.currentPlayerIdx === 0 && !state.gameEndFlag;
+    const prev = prevTurnRef.current;
+    prevTurnRef.current = turn;
+    // 偽 → 真の**変わり目**だけを読み上げる。毎レンダー同じ文言を入れ直すと、
+    // 変化として扱われず読まれないことがある。
+    if (prev === false && turn) setLiveMsg(t('announceYourTurn'));
+  }, [state]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('zwicker');
   const cliConfig: CliGameConfig<ZwickerResponse, Parameters<typeof zwickerApi.exec>> = useMemo(
@@ -331,6 +346,10 @@ function ZwickerPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.zwicker.footer} px-4 py-2.5`}>
+            {/* 常設のライブ領域。中身だけが変わる ── 領域ごと現れると読み上げられない。 */}
+            <span className="sr-only" role="status" aria-live="polite" data-testid="zwicker-turn-announce">
+              {liveMsg}
+            </span>
             <ErrorAlert message={error} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               {isHumanTurn && (
