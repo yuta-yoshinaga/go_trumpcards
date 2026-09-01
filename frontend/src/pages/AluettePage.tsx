@@ -280,27 +280,35 @@ function AluettePageContent() {
                   </div>
                 )}
 
-                {(isRoundEnd || isGameEnd) && (
-                  <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                    <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-                    {state.players.map((p) => (
-                      <div key={p.id}>
-                        {t('roundResult.tricks', {
-                          name: playerName(p.id, p.isHuman),
-                          count: state.roundTricks[p.id] ?? 0,
-                        })}
-                      </div>
-                    ))}
-                    {/* 勝敗を決めるのは個人ではなく**チーム合計**なので、足し算を
+                {/* **メーヌが決着した瞬間こそ読み上げが要る。**同じファイルの
+                    aluette-hint-live は #5955 の教訓どおり常設のライブ領域なのに、
+                    同格の精算結果には同じ扱いが無かった (#6511)。領域は常設のまま
+                    中身だけを変える ── 領域ごと現れる live region は読み上げられない。 */}
+                <div data-testid="aluette-result-live" role="status" aria-live="polite">
+                  {(isRoundEnd || isGameEnd) && (
+                    <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                      <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+                      {state.players.map((p) => (
+                        <div key={p.id}>
+                          {t('roundResult.tricks', {
+                            name: playerName(p.id, p.isHuman),
+                            count: state.roundTricks[p.id] ?? 0,
+                          })}
+                        </div>
+                      ))}
+                      {/* 勝敗を決めるのは個人ではなく**チーム合計**なので、足し算を
                         読者にさせない (バックエンドの settleRound と同じ条件)。 */}
-                    <div className="mt-1 text-ds-text-primary" data-testid="aluette-team-tally">
-                      {t('roundResult.teamTally', { team0: meneTeamTricks[0], team1: meneTeamTricks[1] })}
+                      <div className="mt-1 text-ds-text-primary" data-testid="aluette-team-tally">
+                        {t('roundResult.teamTally', { team0: meneTeamTricks[0], team1: meneTeamTricks[1] })}
+                      </div>
+                      {meneWinner !== null && (
+                        <div data-testid="aluette-meine-winner">
+                          {t('roundResult.meineWinner', { team: meneWinner })}
+                        </div>
+                      )}
                     </div>
-                    {meneWinner !== null && (
-                      <div data-testid="aluette-meine-winner">{t('roundResult.meineWinner', { team: meneWinner })}</div>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
 

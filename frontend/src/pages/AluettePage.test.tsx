@@ -200,4 +200,26 @@ describe('AluettePage', () => {
     renderWithProviders(<AluettePage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+  // **メーヌが決着した瞬間こそ読み上げが要る。**同じファイルの aluette-hint-live は
+  // #5955 の教訓どおり常設のライブ領域なのに、同格の精算結果には同じ扱いが
+  // 無かった (#6511)。
+  it('announces the mene settlement when it lands', async () => {
+    // 決着前から領域は DOM にあり、空のまま待っている ── 領域ごと現れる
+    // live region は読み上げられない。
+    mockExec.mockResolvedValue(playState);
+    const playing = renderWithProviders(<AluettePage />);
+    const idle = await screen.findByTestId('aluette-result-live');
+    expect(idle).toHaveAttribute('aria-live', 'polite');
+    expect(idle).toHaveAttribute('role', 'status');
+    expect(idle).toHaveTextContent('');
+    playing.unmount();
+
+    // 決着すると、読み上げられるのはその領域の**中**に入った集計と勝者。
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<AluettePage />);
+    const live = await screen.findByTestId('aluette-result-live');
+    await waitFor(() => expect(live).toHaveTextContent('チーム0 3'));
+    expect(live).toHaveTextContent('チーム1 2');
+    expect(live).toContainElement(screen.getByTestId('aluette-meine-winner'));
+  });
 });
