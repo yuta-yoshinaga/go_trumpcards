@@ -74,6 +74,10 @@ func (p *VintCuiPresenter) Output(g interfaces.VintGame, lastErr error) string {
 		b.WriteString(i18n.Tf("vint.header",
 			"hand", strconv.Itoa(g.GetHandNumber()),
 			"target", strconv.Itoa(domain.VintGameTarget)) + "\n")
+		// **ブリッジとの最大の違いはダミーが無いこと。**Web は常設で説明しているのに
+		// CUI にはキーすら無く、味方の手札も最後まで伏せられるという前提を
+		// プレイヤーに伝える手段が無かった (#6526)。
+		b.WriteString(i18n.T("vint.noDummyNote") + "\n")
 		b.WriteString(i18n.Tf("vint.scoreLine",
 			"b0", strconv.Itoa(g.GetBelow(0)), "a0", strconv.Itoa(g.GetAbove(0)), "g0", strconv.Itoa(g.GetGamesWon(0)),
 			"b1", strconv.Itoa(g.GetBelow(1)), "a1", strconv.Itoa(g.GetAbove(1)), "g1", strconv.Itoa(g.GetGamesWon(1))) + "\n")
