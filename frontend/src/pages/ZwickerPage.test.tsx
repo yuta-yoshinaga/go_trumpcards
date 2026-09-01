@@ -278,4 +278,32 @@ describe('ZwickerPage', () => {
 
     expect(rule).toHaveTextContent('誰でも取れます');
   });
+  // **CPU の手番は無言で進む。**手番が自分に回ってきたこと自体がスクリーンリーダー
+  // 利用者に伝わらなかった (#6518)。Zheng / NainJaune と同じ liveMsg の形。
+  it('announces the turn arriving, and only on the change', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+    renderWithProviders(<ZwickerPage />);
+
+    // 領域は最初から DOM にあり、空のまま待っている。
+    const live = await screen.findByTestId('zwicker-turn-announce');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveTextContent('');
+
+    // CPU の手番から自分の手番へ切り替わったところで読み上げる (リセット経由で再取得)。
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 0 }));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(screen.getByTestId('zwicker-turn-announce')).toHaveTextContent('あなたの手番です'));
+  });
+
+  // **変わり目だけを読む。**自分の手番で開いただけの盤で読み上げると、
+  // フェーズ表示が既に言っていることを毎回繰り返すことになる。
+  it('stays silent when the page opens already on the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 0 }));
+    renderWithProviders(<ZwickerPage />);
+    const live = await screen.findByTestId('zwicker-turn-announce');
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(live).toHaveTextContent('');
+  });
 });
