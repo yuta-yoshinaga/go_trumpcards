@@ -241,6 +241,26 @@ function BostonPageContent() {
                   {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
                 </div>
               ))}
+              {/* **サーバは公開しているのに、画面はそれを描いていなかった。**
+                  「on the Table」契約では最初のトリック後に落札者の手札が、精算では
+                  全員の手札が `cards` に載って届くが、Web はどこにも並べていなかった
+                  (#6525)。CUI は以前から出している。 */}
+              {state.players
+                .filter((p) => !p.isHuman && p.cards.length > 0)
+                .map((p) => (
+                  <div key={`exposed-${p.id}`} className="flex items-center gap-2 py-0.5 flex-wrap">
+                    <span className="text-ds-text-muted text-sm">{playerLabel(p.id, p.isHuman)}</span>
+                    <div className="flex gap-1 flex-wrap" data-testid={`boston-exposed-${p.id}`}>
+                      {p.cards.map((c, i) => (
+                        <CardImage
+                          key={`exposed-${p.id}-${c.design}-${c.value}-${i}`}
+                          card={c}
+                          width={cardWidth * 0.7}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
             </div>
 
             {/* Trick */}
