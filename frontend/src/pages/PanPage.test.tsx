@@ -581,4 +581,25 @@ describe('PanPage meld candidates', () => {
     await waitFor(() => expect(screen.getByTestId('pan-valle-1-0')).toBeInTheDocument());
     expect(screen.queryByTestId('pan-valle-1-1')).not.toBeInTheDocument();
   });
+  // **同じ「レイオフ」が卓の上に何個も並ぶ。**読み上げではどのプレイヤーの
+  // どのメルド宛かが区別できなかった (#6502)。姉妹ゲーム Machiavelli は
+  // 既に対象を読ませている。
+  it('names the owner and the meld on every layoff button', async () => {
+    mockExec.mockResolvedValue(valleMeldState);
+    renderWithProviders(<PanPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+
+    const first = await screen.findByTestId('pan-layoff-1-0');
+    const second = screen.getByTestId('pan-layoff-1-1');
+    const labelOf = (el: HTMLElement) => el.getAttribute('aria-label') ?? '';
+
+    // 所有者と札そのものが読める。
+    expect(labelOf(first)).toContain('CPU 1');
+    expect(labelOf(first)).toContain('♦ 5');
+    expect(labelOf(first)).not.toContain('{{');
+    // 並んだ 2 つが**別物として**読める ── ここが本題。
+    expect(labelOf(second)).toContain('♦ 4');
+    expect(labelOf(first)).not.toBe(labelOf(second));
+  });
 });
