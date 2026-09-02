@@ -56212,8 +56212,16 @@ components:
         winnerIdx:
           type: integer
           description: >-
-            -1 until decided. A winner still holding cards means the 500-trick
-            stalemate was reached rather than anyone running out.
+            -1 until decided. Read winReason for how the game ended: a winner
+            still holding cards may have won on the stalemate rule or because
+            the human resigned.
+        winReason:
+          type: string
+          enum: ['', emptied, stalemate, giveUp]
+          description: >-
+            How the game ended, or empty before it does. emptied = someone ran
+            out of cards; stalemate = the 500-trick cap was hit; giveUp = the
+            human resigned.
         hint:
           $ref: '#/components/schemas/RollingStoneHint'
         config:
