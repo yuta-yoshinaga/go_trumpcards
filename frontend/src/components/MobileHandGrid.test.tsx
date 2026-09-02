@@ -263,4 +263,25 @@ describe('MobileHandGrid', () => {
     }
     vi.mocked(useReducedMotion).mockReturnValue(false);
   });
+
+  // **バッジは読み上げ名にも載せる (#6612)。** バッジは aria-hidden なので、
+  // 読み上げ名に入れないとスクリーンリーダには何も届かない。バッジのある札と
+  // 無い札の**両方**を1つの盤で見る。
+  it("puts the badge title into the button's accessible name", () => {
+    const cards = makeCards(4);
+    render(
+      <MobileHandGrid
+        cards={cards}
+        selectedIndices={[]}
+        onToggle={() => {}}
+        cardWidth={40}
+        cardBadgeFor={(idx) => (idx === 1 ? { text: '★', title: '切り札' } : undefined)}
+      />,
+    );
+    const buttons = screen.getAllByRole('button');
+    expect(buttons[1]).toHaveAccessibleName(/\(切り札\)$/);
+    // バッジの無い札に括弧書きが付かないこと。
+    expect(buttons[0]).not.toHaveAccessibleName(/\(/);
+    expect(buttons[2]).not.toHaveAccessibleName(/\(/);
+  });
 });
