@@ -31,6 +31,7 @@
   "claimWonLine": "{{name}} went to team {{team}}",
   "claimCancelledLine": "{{name}} was CANCELLED (the placement was wrong; it does NOT go to the opponents)",
   "claimLostLine": "{{name}} went to the opponents (team {{team}})",
+  "lastClaimTitle": "Last claim",
   "settings": {
     "title": "Settings"
   },
