@@ -23,6 +23,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_CHIPS_OPTIONS, useSchafkopfGame } from '../hooks/useSchafkopfGame';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -192,6 +193,21 @@ function SchafkopfPageContent() {
         ? t('contractSolo', { suit: t(`suit.${SUIT_KEYS[state.soloSuit] ?? 'spade'}`) })
         : t('contractRufspiel');
   const pickerLabel = state.pickerIdx >= 0 ? playerName(state.pickerIdx, state.pickerIdx === humanIdx) : '-';
+
+  // **ピックの順番は親の左隣から回る。** 誰が親かが出ていないと、自分が
+  // 何番目に「やる／降りる」を決めるのか盤から読めない。サーバは最初から
+  // `dealerIdx` を送っているのに、どちらの一覧も読んでいなかった (#6617)。
+  // モバイルとデスクトップで同じものを出すので、閉包はここに1つだけ置く。
+  const dealerBadge = (id: number) =>
+    id === state.dealerIdx ? (
+      <span
+        className={`ml-1 rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
+        data-testid={`schafkopf-dealer-${id.toString()}`}
+      >
+        <span aria-hidden="true">{t('dealerBadge')}</span>
+        <span className="sr-only">{t('dealerAria')}</span>
+      </span>
+    ) : null;
   const partnerLabel =
     showPartner && state.partnerIdx >= 0
       ? playerName(state.partnerIdx, state.partnerIdx === humanIdx)
@@ -298,6 +314,7 @@ function SchafkopfPageContent() {
                         <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                           {playerName(p.id, p.isHuman)}: {t('chips', { count: p.chips })} |{' '}
                           {t('tricks', { count: p.trickCount })}
+                          {dealerBadge(p.id)}
                         </div>
                       ))}
                     </div>
@@ -308,6 +325,7 @@ function SchafkopfPageContent() {
                       <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                         {playerName(p.id, p.isHuman)}: {t('chips', { count: p.chips })} |{' '}
                         {t('tricks', { count: p.trickCount })}
+                        {dealerBadge(p.id)}
                       </div>
                     ))}
                   </div>
