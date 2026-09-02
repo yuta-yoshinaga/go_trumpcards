@@ -256,3 +256,26 @@ func TestRankAndFileWebPresenter_ServesSequenceStarts(t *testing.T) {
 	}
 	fg.AssertCalled(t, "SequenceStarts", 0)
 }
+
+// **nil でも空配列で返す。** ドメインが nil を返した列を JSON の null にすると、
+// フロントの `state.sequenceStarts[colIdx]` が undefined になり、掴める札の
+// 判定がページ側で例外になる。
+func TestRankAndFileWebPresenter_SequenceStartsNeverNull(t *testing.T) {
+	fg := new(interfaces.MockRankAndFileGame)
+	setupRankAndFileWebMockDefaults(fg)
+	fg.On("GetHint").Return((*domain.RankAndFileHint)(nil)).Maybe()
+	fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "SequenceStarts")
+	for i := range domain.RankAndFileTableauCnt {
+		fg.On("SequenceStarts", i).Return([]int(nil))
+	}
+
+	out := new(RankAndFileWebPresenter).Output(fg, nil)
+	assert.NotContains(t, out, `"sequenceStarts":[null`, "null ではなく [] で返す")
+
+	var parsed controller.RankAndFileWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(out), &parsed))
+	for i, starts := range parsed.SequenceStarts {
+		assert.NotNil(t, starts, "列 %d は空配列", i)
+		assert.Empty(t, starts)
+	}
+}

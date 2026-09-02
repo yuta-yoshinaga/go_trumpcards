@@ -806,3 +806,26 @@ describe('RankAndFilePage grabbable cards', () => {
     expect(screen.getByTestId('rf-tableau-top-0').getAttribute('aria-label')).not.toContain('掴めません');
   });
 });
+
+// codecov が指摘した未実行の枝を踏む。どれも「掴めるか」の表示に効く。
+describe('RankAndFilePage grabbable edge cases', () => {
+  it('stops dimming once a source is picked up', async () => {
+    // 掴む先を選んだあとは、移動先として押せる札を淡くしない
+    // (`canGrab || selectedSource` の後半)。
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RankAndFilePage />);
+    const source = await screen.findByTestId('rf-tableau-top-0');
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('rf-tableau-top-1').className).not.toContain('opacity-60');
+  });
+
+  it('treats a column with no served entry as ungrabbable', async () => {
+    // `state.sequenceStarts[colIdx] ?? []` の右辺。列の数より短い配列が
+    // 来ても落ちず、掴めない扱いになること。
+    mockExec.mockResolvedValue({ ...playingState, sequenceStarts: [] });
+    renderWithProviders(<RankAndFilePage />);
+    const card = await screen.findByTestId('rf-tableau-top-0');
+    expect(card.getAttribute('aria-label')).toContain('掴めません');
+  });
+});
