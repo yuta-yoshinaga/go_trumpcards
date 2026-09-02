@@ -271,11 +271,15 @@ function KingoPageContent() {
                     >
                       {t('button.bet')}
                     </button>
+                    {/* **案内文と入力欄は同じ minBet から作る。** 下限を渡さないと
+                        既定の 10 でクランプされ、卓の最低額を変えても入力欄だけ
+                        追従しない。 */}
                     <ChipBetInput
                       id="kingo-amount"
                       label={t('label.bet')}
                       value={amount}
                       onChange={setAmount}
+                      min={minBet}
                       max={human?.chips ?? 0}
                     />
                   </>
