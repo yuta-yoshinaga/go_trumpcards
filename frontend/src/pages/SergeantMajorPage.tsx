@@ -336,6 +336,17 @@ function SergeantMajorPageContent() {
                   {t('actions.discard', { n: String(picked.length), total: String(state.discardCount) })}
                 </button>
               )}
+              {isRoundEnd && !isGameEnd && human && human.surplus !== 0 && (
+                <div
+                  className="w-full text-center mb-2 text-sm text-ds-accent"
+                  role="status"
+                  data-testid="sm-forfeit-notice"
+                >
+                  {human.surplus < 0
+                    ? t('roundEnd.forfeitWarn', { n: String(-human.surplus) })
+                    : t('roundEnd.forfeitGain', { n: String(human.surplus) })}
+                </div>
+              )}
               {isRoundEnd && !isGameEnd && (
                 <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
                   {t('actions.nextRound')}

@@ -35,6 +35,10 @@
     "cpu": "{{name}} wins.",
     "tie": "It's a tie."
   },
+  "roundEnd": {
+    "forfeitWarn": "You fell {{n}} trick(s) short. Next round your {{n}} best card(s) are taken, and you get their worst in return.",
+    "forfeitGain": "You are {{n}} trick(s) over. Next round you take {{n}} of the best card(s) from a seat that fell short."
+  },
   "hint": {
     "sergeantmajorSelectTrump": "Make your strongest suit trump.",
     "sergeantmajorDiscard": "Throw the weak cards that are not trumps.",

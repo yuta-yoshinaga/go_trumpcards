@@ -74,6 +74,18 @@ func TestSergeantMajorWebPresenterCarriesProgress(t *testing.T) {
 	assert.Equal(t, float64(2), human["score"])
 }
 
+// **過不足 (Surplus) が各プレイヤー出力に含まれる。**
+func TestSergeantMajorWebPresenterCarriesSurplus(t *testing.T) {
+	p := new(SergeantMajorWebPresenter)
+	s := newSergeantMajorForWeb(t)
+	s.SetSurplusForTest([]int{2, -1, -1})
+
+	players := decodeSergeantMajor(t, p.Output(s, nil))["players"].([]any)
+	assert.Equal(t, float64(2), players[0].(map[string]any)["surplus"])
+	assert.Equal(t, float64(-1), players[1].(map[string]any)["surplus"])
+	assert.Equal(t, float64(-1), players[2].(map[string]any)["surplus"])
+}
+
 // 切り札は未宣言と確定の両側を踏む。
 func TestSergeantMajorWebPresenterMessageTracksTheTrumpCall(t *testing.T) {
 	p := new(SergeantMajorWebPresenter)

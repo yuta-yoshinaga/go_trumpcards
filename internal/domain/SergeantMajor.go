@@ -745,6 +745,15 @@ func (s *SergeantMajor) GetCurrentTrick() []*TrickCard { return s.currentTrick }
 // GetLastExchange は直前のラウンド間で動いた札の枚数を返す。
 func (s *SergeantMajor) GetLastExchange() int { return s.lastExchange }
 
+// GetSurplus は指定インデックスのプレイヤーの前ラウンド過不足を返す（+ が超過、- が不足。次の配りで消費されるので ROUND_END の間だけ意味がある）。
+// 範囲外は 0 を返す。
+func (s *SergeantMajor) GetSurplus(i int) int {
+	if i < 0 || i >= len(s.surplus) {
+		return 0
+	}
+	return s.surplus[i]
+}
+
 // GetPlayerCnt はプレイヤー数を返す。
 func (s *SergeantMajor) GetPlayerCnt() int { return SergeantMajorPlayerCnt }
 
