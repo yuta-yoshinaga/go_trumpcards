@@ -33,7 +33,11 @@ func (p *BigBenCuiPresenter) Output(gc interfaces.BigBenGame, lastErr error) str
 		b.WriteString(i18n.T("bigben.foundationHeader") + "\n")
 		foundation := gc.GetFoundation()
 		for i := range domain.BigBenFoundationCnt {
-			b.WriteString(i18n.Tf("bigben.faceLabel", "idx", strconv.Itoa(i)))
+			// **添字ではなく時刻で呼ぶ。** 盤は 9 時始まりで添字 0 が 9 時なので、
+			// 生の添字だけでは「Big Ben」の文字盤のどこを指しているのか読めない。
+			// 対応はドメインの `BigBenTargetRank` が既に持っている (Web も同じ並び)。
+			b.WriteString(i18n.Tf("bigben.faceLabel",
+				"hour", strconv.Itoa(domain.BigBenTargetRank(i))))
 			pile := foundation[i]
 			if len(pile) == 0 {
 				b.WriteString(" " + i18n.T("cuiEmptyCol"))
