@@ -115,7 +115,7 @@ func (cp *CaribbeanDrawCuiPresenter) Output(cs interfaces.CaribbeanDrawGame, las
 		}
 		// **当たった側注も名前で言う。** 合計だけだと、任意で賭けた
 		// ジャックポットが当たった事実も金額も CUI から消える。
-		if jackpot := cs.GetJackpotPayout(); jackpot != 0 {
+		if jackpot := cs.GetJackpotPayout(); jackpot > 0 {
 			sb.WriteString(i18n.Tf("caribbeandraw.jackpotPayoutLine", "payout", strconv.Itoa(jackpot)) + "\n")
 		}
 		sb.WriteString(i18n.Tf("caribbeandraw.totalPayoutLine", "payout", strconv.Itoa(cs.GetTotalPayout())) + "\n")
