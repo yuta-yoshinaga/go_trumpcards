@@ -47,4 +47,15 @@ describe('formatMadrassoState', () => {
     expect(formatMadrassoState(makeMadrassoState({ hint, messageCode: 'madrasso.hintRequested' }))).toContain('HINT');
     expect(formatMadrassoState(makeMadrassoState({ hint, messageCode: 'madrasso.playing' }))).not.toContain('HINT');
   });
+
+  // **切り札は配りで決まる。**CUI は出しているのに CLI モードだけが落として
+  // いた (#6615)。決まっている場合と未確定の場合の両方を踏む。
+  it('shows the dealt trump suit, and a dash while it is undecided', () => {
+    expect(formatMadrassoState(makeMadrassoState({ trumpSuit: 3 }))).toContain('trump: ♥');
+    expect(formatMadrassoState(makeMadrassoState({ trumpSuit: 1 }))).toContain('trump: ♠');
+    // 未確定 (0) をハートと言い張らないこと。
+    const undecided = formatMadrassoState(makeMadrassoState({ trumpSuit: 0 }));
+    expect(undecided).toContain('trump: -');
+    expect(undecided).not.toContain('♥');
+  });
 });

@@ -179,4 +179,33 @@ describe('MadrassoPage', () => {
       expect(card).not.toHaveAttribute('aria-disabled', 'true');
     }
   });
+
+  // **配りで決まる切り札スートが画面に出ていなかった (#6615)。**
+  // 1=♠ 2=♣ 3=♥ 4=♦ をヘッダに出し、サーバの値に応じて表示が切り替わること。
+  it('renders the trump suit in the header and updates when server state changes', async () => {
+    mockExec.mockResolvedValue(makeMadrassoState({ trumpSuit: 3 }));
+    renderWithProviders(<MadrassoPage />);
+
+    const trumpHeart = await screen.findByTestId('madrasso-trump');
+    expect(trumpHeart).toHaveTextContent('切り札: ♥');
+    expect(trumpHeart.textContent).not.toContain('{{');
+  });
+
+  it('changes the trump suit display when the server sends a different suit', async () => {
+    mockExec.mockResolvedValue(makeMadrassoState({ trumpSuit: 1 }));
+    renderWithProviders(<MadrassoPage />);
+
+    const trumpSpade = await screen.findByTestId('madrasso-trump');
+    expect(trumpSpade).toHaveTextContent('切り札: ♠');
+    expect(trumpSpade.textContent).not.toContain('{{');
+  });
+
+  it('renders undeclared trump label when trumpSuit is 0 or unset', async () => {
+    mockExec.mockResolvedValue(makeMadrassoState({ trumpSuit: 0 }));
+    renderWithProviders(<MadrassoPage />);
+
+    const trumpUnset = await screen.findByTestId('madrasso-trump');
+    expect(trumpUnset).toHaveTextContent('切り札: 切り札未確定');
+    expect(trumpUnset.textContent).not.toContain('{{');
+  });
 });
