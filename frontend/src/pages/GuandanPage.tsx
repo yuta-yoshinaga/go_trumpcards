@@ -218,6 +218,8 @@ function GuandanPageContent() {
                 {t('scoreLine', {
                   hand: state.handNumber,
                   level: levelLabel(state.level),
+                  // **このレベルを担っているのは提供チーム。**CUI のヘッダーと同じ情報を Web にも出す。
+                  declarer: state.declarerTeam,
                   t0: levelLabel(state.teamLevels[0]),
                   t1: levelLabel(state.teamLevels[1]),
                 })}
