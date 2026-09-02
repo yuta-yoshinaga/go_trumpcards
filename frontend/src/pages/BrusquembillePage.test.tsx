@@ -347,3 +347,44 @@ describe('BrusquembillePage table size', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { playerCnt: 5 }));
   });
 });
+
+// **卓は 2〜5 人 (#6611)。** バナーは `winnerIdx === 1` だけを CPU の勝ちとして
+// いたので、3〜5 人卓で席 2 以降が勝ったラウンドが全部「引き分け」に落ちていた。
+// CUI は最初から任意の席を名指しできている (gameEndCpu)。
+describe('BrusquembillePage tables of three to five', () => {
+  const fourSeat = (winnerIdx: number) =>
+    makeState({
+      phase: 2,
+      gameEndFlag: true,
+      winnerIdx,
+      players: [
+        { id: 0, isHuman: true, cardCount: 0, cards: [], points: 20, trickCount: 2 },
+        { id: 1, isHuman: false, cardCount: 0, cards: [], points: 30, trickCount: 3 },
+        { id: 2, isHuman: false, cardCount: 0, cards: [], points: 60, trickCount: 5 },
+        { id: 3, isHuman: false, cardCount: 0, cards: [], points: 10, trickCount: 1 },
+      ],
+    });
+
+  it('names the winning seat instead of calling it a tie', async () => {
+    mockExec.mockResolvedValue(fourSeat(2));
+    renderWithProviders(<BrusquembillePage />);
+    await waitFor(() => expect(screen.getByText(/CPU 2 の勝ち/)).toBeInTheDocument());
+    // **これが元のバグ。** 席 2 の勝ちが「引き分け」と出ていた。
+    expect(screen.queryByText(/引き分け/)).not.toBeInTheDocument();
+  });
+
+  it('still calls a real tie a tie', async () => {
+    mockExec.mockResolvedValue(fourSeat(-1));
+    renderWithProviders(<BrusquembillePage />);
+    await waitFor(() => expect(screen.getByText(/引き分け/)).toBeInTheDocument());
+  });
+
+  it('shows every CPU seat, not just the first', async () => {
+    mockExec.mockResolvedValue(fourSeat(2));
+    renderWithProviders(<BrusquembillePage />);
+    // 3 席ぶんのパネルが出ること。最初の 1 人だけを描くのが元の状態。
+    await waitFor(() => expect(screen.getByTestId('brusquembille-cpu-1')).toBeInTheDocument());
+    expect(screen.getByTestId('brusquembille-cpu-2')).toBeInTheDocument();
+    expect(screen.getByTestId('brusquembille-cpu-3')).toBeInTheDocument();
+  });
+});
