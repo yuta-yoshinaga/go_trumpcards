@@ -39,6 +39,9 @@ const StHelenaTopColumnCnt = 4
 // StHelenaFoundationCnt ファンデーション数 (4 = 昇順 A→K、4 = 降順 K→A)。
 const StHelenaFoundationCnt = 8
 
+// StHelenaTotalCards 使用する総枚数 (52 枚 2 組)。
+const StHelenaTotalCards = CardCnt * 2
+
 // StHelenaAscendingFoundationCnt 昇順ファンデーションの数 (前半 0..3)。
 const StHelenaAscendingFoundationCnt = 4
 
