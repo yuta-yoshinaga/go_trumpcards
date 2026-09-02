@@ -118,18 +118,22 @@ function FortressPageContent() {
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
 
+  // 盤が来る前は 0。その場合 dims は骨組みにしか使われないので、下の clamp で吸収される。
+  const tableauColCnt = state?.tableau.length ?? 0;
+
   const dims = useMemo(() => {
     if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
     const padX = 16;
     const gapPx = 4;
-    // Layout has 9 visual columns: 4 left tableau + 1 foundation strip + 4 right tableau.
-    const totalCols = 9;
+    // **桁割りも盤から数える。** タブロー全列 + 中央の組札帯。ここだけ定数のままだと、
+    // 列を増やしても幅は 8 列ぶんのまま計算され、携帯で溢れる。
+    const totalCols = tableauColCnt + 1;
     const colW = Math.floor((windowWidth - padX - (totalCols - 1) * gapPx) / totalCols);
     const cw = Math.min(Math.max(colW, 30), cardWidth);
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
-  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap, tableauColCnt]);
 
   const isPlayingForKbd = state?.phase === FortressPhase.PLAYING;
 
@@ -188,6 +192,12 @@ function FortressPageContent() {
   // Auto-complete becomes useful once a foundation has built past its ace, so
   // pulse the button only then (mirrors Crescent / Spiderette).
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
+
+  // **列数はサーバが返す盤から数える。** 添字を書き並べると、ドメインが列を増やした
+  // ときに画面からだけ列が消える (この issue がまさにそれ)。
+  const tableauCols = state.tableau.map((_, i) => i);
+  const leftCols = tableauCols.slice(0, Math.ceil(tableauCols.length / 2));
+  const rightCols = tableauCols.slice(Math.ceil(tableauCols.length / 2));
 
   // 選択時に合法な移動先をリング表示している。
   //
@@ -330,7 +340,7 @@ function FortressPageContent() {
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div className="flex gap-2 sm:gap-3 items-start">
               <div className="flex-1 flex gap-1 sm:gap-2" data-tutorial="fortress-tableau">
-                {[0, 1, 2, 3].map(renderTableauColumn)}
+                {leftCols.map(renderTableauColumn)}
               </div>
 
               <div className="flex flex-col items-center gap-1 sm:gap-2 mb-3" data-tutorial="fortress-foundation">
@@ -386,7 +396,7 @@ function FortressPageContent() {
                 })}
               </div>
 
-              <div className="flex-1 flex gap-1 sm:gap-2">{[4, 5, 6, 7].map(renderTableauColumn)}</div>
+              <div className="flex-1 flex gap-1 sm:gap-2">{rightCols.map(renderTableauColumn)}</div>
             </div>
 
             {/*
