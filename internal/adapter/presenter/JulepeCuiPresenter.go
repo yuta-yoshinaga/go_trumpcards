@@ -13,7 +13,7 @@ import (
 )
 
 // julepePlayerStr returns the display string for a single player.
-func julepePlayerStr(player *domain.JulepePlayer, idx int, isDealer bool) string {
+func julepePlayerStr(player *domain.JulepePlayer, idx int, isDealer bool, playable []int) string {
 	var b strings.Builder
 	// **参加判断もリードも親の左隣から始まる** (#5748)。誰が親かが出ていないと、
 	// 自分が何番目に決断するのかが読めない。3〜5 人卓で毎ラウンド 1 つ回る。
@@ -30,7 +30,10 @@ func julepePlayerStr(player *domain.JulepePlayer, idx int, isDealer bool) string
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **マストフォローで何が出せるかを示す。**Web はリング表示しているのに、
+		// CUI は番号を打ってエラーを踏むまで分からなかった (#6616)。playable が
+		// 空なら無印 (制限が決まっていない状態と区別する)。
+		b.WriteString(cuiPlayableMarkedCardListStr(player, playable) + "\n")
 	}
 	return b.String()
 }
@@ -71,7 +74,12 @@ func (p *JulepeCuiPresenter) Output(r interfaces.JulepeGame, lastErr error) stri
 			"required", strconv.Itoa(r.GetRequiredTricks())) + "\n")
 
 		for i := 0; i < r.GetPlayerCnt(); i++ {
-			sb.WriteString(julepePlayerStr(r.GetPlayer(i), i, i == r.GetDealerIdx()))
+			// 目印はプレイフェーズで本人の手番のときだけ。
+			var playable []int
+			if r.GetPhase() == domain.JulepePhasePlay && r.GetCurrentPlayerIdx() == i {
+				playable = r.GetValidPlayIndices(i)
+			}
+			sb.WriteString(julepePlayerStr(r.GetPlayer(i), i, i == r.GetDealerIdx(), playable))
 		}
 
 		sb.WriteString("----------\n")
