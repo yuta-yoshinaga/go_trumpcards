@@ -210,6 +210,27 @@ describe('HasenpfefferPage', () => {
     unmount();
   });
 
+  // **達成した側に入るのは契約数ではなく取ったトリック数。**2 つの数字を
+  // 並べるだけでは、どちらが加点されるのかが分からない。
+  it('names the points actually scored, which are the tricks taken and not the contract', async () => {
+    mockExec.mockResolvedValue(
+      playing({ phase: 3, lastHandEuchred: false, contract: 4, lastHandTricks: 6 } as Partial<HasenpfefferResponse>),
+    );
+    renderWithProviders(<HasenpfefferPage />);
+
+    // 契約 4 に対して 6 トリック。入るのは 6 点であって 4 点ではない。
+    expect(await screen.findByTestId('hpf-hand-result')).toHaveTextContent('達成しました（+6 点）');
+  });
+
+  it('states the asymmetric scoring rule in the standing box', async () => {
+    renderWithProviders(<HasenpfefferPage />);
+    const rule = await screen.findByTestId('hpf-rule');
+    expect(rule).toHaveTextContent('契約数ではなく実際に取ったトリック数');
+    expect(rule).toHaveTextContent('落とすと相手に契約数ぶん');
+    // ジョーカーの序列の説明は落ちていない。
+    expect(rule).toHaveTextContent('Best Bower');
+  });
+
   it('advances to the next hand when the button is pressed', async () => {
     mockExec.mockResolvedValue(playing({ phase: 3 } as Partial<HasenpfefferResponse>));
     renderWithProviders(<HasenpfefferPage />);
