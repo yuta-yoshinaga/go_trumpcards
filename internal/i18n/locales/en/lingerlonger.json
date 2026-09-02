@@ -2,7 +2,7 @@
   "helpTitle": "Linger Longer",
   "helpPlay": "  p <idx>              Play the card at idx",
   "helpGiveUp": "  g                    Give up",
-  "header": "Trick {{trick}}  stock: {{stock}} left  out of play: {{discarded}}",
+  "header": "Trick: {{trick}}  Stock: {{stock}} left  Out of play: {{discarded}}",
   "rule": "Winning a trick scores nothing. All it earns is the right to draw one card from the stock -- so while you keep winning, your hand never shrinks. Run out of cards and you are out; the last player still holding cards wins. You are dealt as many cards as there are players (four each at a four-player table), and the rest is the stock.",
   "noStockLine": "The stock is empty. Nobody can refill now -- eliminations come quickly from here.",
   "playerLine": "{{name}}{{role}}: {{cards}} cards, won {{tricks}}",
