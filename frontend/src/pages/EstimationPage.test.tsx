@@ -143,6 +143,19 @@ describe('EstimationPage', () => {
     expect(screen.getByTestId('est-bid-5-btn')).not.toHaveAccessibleName(/選べません/);
   });
 
+  // **0 が禁止値になる局面は実在する**（他の3人の宣言が既に13に達した場合）。
+  // そのときも「0トリック」ではなく Dash Call として名乗る。
+  it('names the Dash Call by name even when it is the barred one', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, trumpSuit: 3, restrictedBid: 0 }));
+    renderWithProviders(<EstimationPage />);
+
+    expect(await screen.findByTestId('est-bid-0-btn')).toHaveAccessibleName(
+      'Dash Call（0トリック宣言）は選べません（全員の宣言の合計が13になるため）',
+    );
+    expect(screen.getByTestId('est-bid-0-btn')).toBeDisabled();
+    expect(screen.getByTestId('est-bid-1-btn')).toBeEnabled();
+  });
+
   it('enables every call when nothing is barred', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, trumpSuit: 3, restrictedBid: -1 }));
     renderWithProviders(<EstimationPage />);
