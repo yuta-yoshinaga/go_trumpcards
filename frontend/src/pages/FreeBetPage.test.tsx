@@ -139,6 +139,27 @@ describe('FreeBetPage', () => {
     expect(screen.getByTestId('fb-freesplit')).toBeInTheDocument();
   });
 
+  // **同じ仕組みのショートカットは同じ手掛かりを出す。** h / s だけキー表示が
+  // 無く、画面からも読み上げからも存在が分からなかった。
+  it('ヒットとスタンドにもキー表示を出し、無料ダブル / 無料スプリットと揃える', async () => {
+    mockApi.mockResolvedValue(playing({ canFreeDouble: true, canFreeSplit: true }));
+    renderWithProviders(<FreeBetPage />);
+
+    await waitFor(() => expect(screen.getByTestId('fb-hit')).toBeInTheDocument());
+    expect(screen.getByTestId('fb-hit')).toHaveAttribute('aria-keyshortcuts', 'h');
+    expect(screen.getByTestId('fb-hit')).toHaveTextContent('H');
+    expect(screen.getByTestId('fb-stand')).toHaveAttribute('aria-keyshortcuts', 's');
+    expect(screen.getByTestId('fb-stand')).toHaveTextContent('S');
+
+    // 4 つのボタンが揃って同じ手掛かりを持つ（受け入れ条件の3つ目）。
+    for (const [id, key] of [
+      ['fb-freedouble', 'd'],
+      ['fb-freesplit', 'p'],
+    ] as const) {
+      expect(screen.getByTestId(id)).toHaveAttribute('aria-keyshortcuts', key);
+    }
+  });
+
   it('無料ダブルと無料スプリットは引数なしで送る', async () => {
     mockApi.mockResolvedValue(playing({ canFreeDouble: true, canFreeSplit: true }));
     renderWithProviders(<FreeBetPage />);
