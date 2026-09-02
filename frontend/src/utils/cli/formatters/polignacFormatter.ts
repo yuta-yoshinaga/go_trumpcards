@@ -9,6 +9,12 @@ const PHASE_NAMES: Record<number, string> = {
   [PolignacPhase.GAME_END]: 'GAME END',
 };
 
+/**
+ * Points that swing on a capot declaration (sync: `PolignacCapotStake` in
+ * internal/domain/Polignac.go).
+ */
+const CAPOT_STAKE = 5;
+
 /** Tricks per round — capot means taking all of them. */
 const TRICKS_PER_ROUND = 8;
 
@@ -28,7 +34,10 @@ export function formatPolignacState(state: PolignacResponse | null): string {
 
   if (state.capotIdx >= 0) {
     const who = formatPlayerName(state.capotIdx, state.players[state.capotIdx]?.isHuman ?? false);
-    lines.push(`! ${who} declared capot (${state.capotTricks}/${TRICKS_PER_ROUND}) — one trick breaks it`);
+    lines.push(
+      `! ${who} declared capot (${state.capotTricks}/${TRICKS_PER_ROUND}) — one trick breaks it; ` +
+        `success costs everyone else ${CAPOT_STAKE.toString()}, failure costs the declarer ${CAPOT_STAKE.toString()}`,
+    );
   }
 
   lines.push('----------');
