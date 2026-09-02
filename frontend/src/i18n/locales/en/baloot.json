@@ -17,7 +17,9 @@
     "score": "Score: your team {{t0}} - theirs {{t1}}",
     "you": "You",
     "cpu": "CPU{{idx}}",
-    "team": "T{{team}}"
+    "team": "T{{team}}",
+    "declaredYes": "done",
+    "declaredNo": "pending"
   },
   "baloot": {
     "none": "no bonus",

@@ -178,6 +178,39 @@ describe('BalootPage', () => {
     expect(screen.getByTestId('bl-seat-2')).toHaveTextContent('T0');
   });
 
+  // **誰がもう降りたかが見えないと、選択肢の絞られ具合が読めない。**
+  it('marks which seats have already declared or passed, during the declaration phase', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 0,
+        players: [seat(0), seat(1, { declared: true }), seat(2), seat(3, { declared: true })],
+      } as Partial<BalootResponse>),
+    );
+    renderWithProviders(<BalootPage />);
+
+    expect(await screen.findByTestId('bl-declared-1')).toHaveTextContent('宣言済');
+    expect(screen.getByTestId('bl-declared-3')).toHaveTextContent('宣言済');
+    // まだ決めていない席は別の文言になる（全席同じ表示では落ちる）。
+    expect(screen.getByTestId('bl-declared-0')).toHaveTextContent('未定');
+    expect(screen.getByTestId('bl-declared-2')).toHaveTextContent('未定');
+  });
+
+  // 宣言が終われば消える。プレイ中に残っていると盤面の情報が増えすぎる。
+  it('drops the declaration badges once play starts', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        mode: 1,
+        declarerIdx: 0,
+        players: [seat(0, { declared: true }), seat(1), seat(2), seat(3)],
+      } as Partial<BalootResponse>),
+    );
+    renderWithProviders(<BalootPage />);
+
+    await waitFor(() => expect(screen.getByTestId('bl-seat-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('bl-declared-0')).not.toBeInTheDocument();
+  });
+
   it('shows the running team scores', async () => {
     mockExec.mockResolvedValue(makeState({ scores: [120, 90] } as Partial<BalootResponse>));
     renderWithProviders(<BalootPage />);
