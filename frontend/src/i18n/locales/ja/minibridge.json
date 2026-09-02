@@ -16,6 +16,8 @@
     "took": "獲得{{n}}",
     "declarer": "[デクレアラー]",
     "dummy": "[ダミー]",
+    "dealer": "[親]",
+    "declarerByTie": "HCP が同点だったため、親（席{{seat}}）の側が宣言側になりました。",
     "you": "あなた",
     "cpu": "CPU{{idx}}",
     "dummyHand": "ダミーの手札",

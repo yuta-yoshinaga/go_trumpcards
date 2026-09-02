@@ -17,11 +17,14 @@ func minibridgePlayerStr(s interfaces.MinibridgeGame, idx int, current bool) str
 	player := s.GetPlayer(idx)
 	var b strings.Builder
 	role := ""
+	if idx == s.GetDealerIdx() {
+		role += i18n.T("minibridge.roleDealer")
+	}
 	switch idx {
 	case s.GetDeclarerIdx():
-		role = i18n.T("minibridge.roleDeclarer")
+		role += i18n.T("minibridge.roleDeclarer")
 	case s.GetDummyIdx():
-		role = i18n.T("minibridge.roleDummy")
+		role += i18n.T("minibridge.roleDummy")
 	}
 	marker := " "
 	if current {
@@ -65,6 +68,10 @@ func (p *MinibridgeCuiPresenter) Output(s interfaces.MinibridgeGame, lastErr err
 				"need", strconv.Itoa(s.RequiredTricks())) + "\n")
 		} else {
 			sb.WriteString(i18n.T("minibridge.contractUndecided") + "\n")
+		}
+		if s.IsDeclarerByDealerTie() {
+			sb.WriteString(i18n.Tf("minibridge.declarerByTie",
+				"seat", strconv.Itoa(s.GetDealerIdx())) + "\n")
 		}
 
 		sb.WriteString(i18n.Tf("minibridge.scoreLine",
