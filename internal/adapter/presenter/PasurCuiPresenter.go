@@ -99,8 +99,55 @@ func (p *PasurCuiPresenter) Output(s interfaces.PasurGame, lastErr error) string
 				"n", strconv.Itoa(n),
 				"mult", strconv.Itoa(domain.PasurSoorMultiplier)) + "\n")
 		}
+		if currentIdx == 0 {
+			writePasurCaptureOptions(sb, s)
+		}
 		sb.WriteString(i18n.T("pasur.promptPlay") + "\n")
 	})
+}
+
+// writePasurCaptureOptions は人間の手番において取れる場札の組み合わせを出力する。
+func writePasurCaptureOptions(sb *strings.Builder, s interfaces.PasurGame) {
+	human := s.GetPlayer(0)
+	if human == nil || human.GetCardsSize() == 0 {
+		return
+	}
+	type handCapture struct {
+		idx     int
+		card    *domain.Card
+		targets string
+	}
+	var captures []handCapture
+	for i := 0; i < human.GetCardsSize(); i++ {
+		opts := s.GetCaptureOptions(0, i)
+		if len(opts) == 0 {
+			continue
+		}
+		combos := make([]string, 0, len(opts))
+		for _, opt := range opts {
+			indices := make([]string, 0, len(opt))
+			for _, idx := range opt {
+				indices = append(indices, strconv.Itoa(idx))
+			}
+			combos = append(combos, strings.Join(indices, ","))
+		}
+		captures = append(captures, handCapture{
+			idx:     i,
+			card:    human.GetCard(i),
+			targets: strings.Join(combos, " / "),
+		})
+	}
+	if len(captures) == 0 {
+		sb.WriteString(i18n.T("pasur.captureNone") + "\n")
+		return
+	}
+	sb.WriteString(i18n.T("pasur.captureTitle") + "\n")
+	for _, c := range captures {
+		sb.WriteString(i18n.Tf("pasur.captureLine",
+			"idx", strconv.Itoa(c.idx),
+			"card", cuiCardStr(c.card),
+			"targets", c.targets) + "\n")
+	}
 }
 
 // HintOutput emits the current hint.
