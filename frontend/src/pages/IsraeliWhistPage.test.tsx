@@ -260,6 +260,28 @@ describe('IsraeliWhistPage', () => {
     expect(screen.getByTestId('iw-bid-5-btn')).toBeEnabled();
   });
 
+  // **下限と禁止値はボタンの有効・無効にしか出ていなかった。**押せるボタンを
+  // 探して逆算するしかなく、読み上げでは 1 つずつ確かめることになる。
+  it('spells out the quota and the barred call in text', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: 1, trumpSuit: 3, declarerIdx: 0, highBid: 9, minimumBid: 9, restrictedBid: 4 }),
+    );
+    renderWithProviders(<IsraeliWhistPage />);
+
+    const limits = await screen.findByTestId('iw-bid-limits');
+    expect(limits).toHaveTextContent('9 以上を宣言する義務');
+    expect(limits).toHaveTextContent('4 は宣言できません');
+  });
+
+  // 制約が無い局面では行ごと出さない。
+  it('shows no limit line when neither limit applies', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, trumpSuit: 3, declarerIdx: 1, highBid: 5 }));
+    renderWithProviders(<IsraeliWhistPage />);
+
+    await waitFor(() => expect(screen.getByTestId('iw-bid-0-btn')).toBeInTheDocument());
+    expect(screen.queryByTestId('iw-bid-limits')).not.toBeInTheDocument();
+  });
+
   it('enables every call when nothing is barred', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, trumpSuit: 3, declarerIdx: 1, highBid: 5 }));
     renderWithProviders(<IsraeliWhistPage />);
