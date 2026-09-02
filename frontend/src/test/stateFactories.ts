@@ -4398,6 +4398,7 @@ const baseZwanzigerrufenState: ZwanzigerrufenResponse = {
   outcome: 0,
   breakdown: null,
   playableIndices: [0, 1, 2],
+  discardableIndices: [],
   gameEndFlag: false,
   winnerPlayer: -1,
   isHumanTurn: true,

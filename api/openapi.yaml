@@ -56808,6 +56808,14 @@ components:
           description: Hand indices the human may legally play right now.
           items:
             type: integer
+        discardableIndices:
+          type: array
+          description: >-
+            Hand indices the human declarer may bury into the talon. Kings and
+            trull cards are excluded because the domain rejects burying them.
+            Empty outside the talon phase and when the declarer is not the human.
+          items:
+            type: integer
         gameEndFlag:
           type: boolean
         winnerPlayer:

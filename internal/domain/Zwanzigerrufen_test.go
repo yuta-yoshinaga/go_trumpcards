@@ -466,6 +466,50 @@ func TestZwanzigerrufenDiscard_BuriesSixCards(t *testing.T) {
 	assertZwanzigerrufenDeckIntact(t, g)
 }
 
+// GetDiscardableIndices はキングとトゥルルを除外した手札インデックスを返す。
+func TestZwanzigerrufen_GetDiscardableIndices(t *testing.T) {
+	g := zwanzigerrufenAtTalon(t)
+	p := g.GetPlayer(g.GetDeclarerIdx())
+	p.Reset()
+	// 0: 通常スート札 (伏せられる)
+	p.AddCard(NewCard(CardDesignSpade, 1, false))
+	// 1: キング (伏せられない)
+	p.AddCard(NewCard(CardDesignSpade, KoenigrufenKingValue, false))
+	// 2: パガット / 切り札 1 (トゥルル、伏せられない)
+	p.AddCard(NewCard(KoenigrufenTrumpDesign, KoenigrufenPagatValue, false))
+	// 3: 切り札 21 (トゥルル、伏せられない)
+	p.AddCard(NewCard(KoenigrufenTrumpDesign, KoenigrufenMaxTrump, false))
+	// 4: スキス (トゥルル、伏せられない)
+	p.AddCard(NewCard(KoenigrufenSkusDesign, KoenigrufenSkusValue, false))
+	// 5: 非トゥルル切り札 (伏せられる)
+	p.AddCard(NewCard(KoenigrufenTrumpDesign, 10, false))
+	// 6: 別のスート札 (伏せられる)
+	p.AddCard(NewCard(CardDesignHeart, 2, false))
+
+	idxs := g.GetDiscardableIndices()
+	assert.Contains(t, idxs, 0, "通常スート札は伏せられる")
+	assert.NotContains(t, idxs, 1, "キングは伏せられない")
+	assert.NotContains(t, idxs, 2, "パガット(トゥルル)は伏せられない")
+	assert.NotContains(t, idxs, 3, "21(トゥルル)は伏せられない")
+	assert.NotContains(t, idxs, 4, "スキス(トゥルル)は伏せられない")
+	assert.Contains(t, idxs, 5, "非トゥルル切り札は伏せられる")
+	assert.Contains(t, idxs, 6, "別のスート札は伏せられる")
+	assert.Equal(t, []int{0, 5, 6}, idxs)
+}
+
+// Talon フェーズ以外では空スライスを返す。
+func TestZwanzigerrufen_GetDiscardableIndices_EmptyOutsideTalon(t *testing.T) {
+	g := newZwanzigerrufenForTest(t)
+	// 入札フェーズでは空
+	assert.Equal(t, ZwanzigerrufenPhaseBid, g.GetPhase())
+	assert.Empty(t, g.GetDiscardableIndices())
+
+	// プレイフェーズでも空
+	gPlay := zwanzigerrufenAtPlay(t)
+	assert.Equal(t, ZwanzigerrufenPhasePlay, gPlay.GetPhase())
+	assert.Empty(t, gPlay.GetDiscardableIndices())
+}
+
 // zwanzigerrufenAtTalon は人間がデクレアラーの場札交換フェーズを作る。
 func zwanzigerrufenAtTalon(t *testing.T) *Zwanzigerrufen {
 	t.Helper()

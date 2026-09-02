@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -197,6 +198,7 @@ func newZwanzigerrufenPresenterMock() *interfaces.MockZwanzigerrufenGame {
 	gm.On("IsHumanTurn").Return(false)
 	gm.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	gm.On("GetValidPlayIndices", mock.Anything).Return([]int(nil))
+	gm.On("GetDiscardableIndices").Return([]int(nil))
 	gm.On("GetPlayerCnt").Return(domain.ZwanzigerrufenPlayerCnt)
 	gm.On("GetPlayerScore", mock.Anything).Return(0)
 	gm.On("GetCardPoints", mock.Anything).Return(0)
@@ -205,6 +207,73 @@ func newZwanzigerrufenPresenterMock() *interfaces.MockZwanzigerrufenGame {
 		gm.On("GetPlayer", i).Return(domain.NewZwanzigerrufenPlayer(i == 0))
 	}
 	return gm
+}
+
+func TestZwanzigerrufenWebPresenter_DiscardableIndices(t *testing.T) {
+	decode := func(g interfaces.ZwanzigerrufenGame) controller.ZwanzigerrufenWebOutput {
+		p := new(presenter.ZwanzigerrufenWebPresenter)
+		var parsed controller.ZwanzigerrufenWebOutput
+		require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &parsed))
+		return parsed
+	}
+
+	t.Run("人間がデクレアラーのタロンフェーズではインデックスを載せる", func(t *testing.T) {
+		gm := newZwanzigerrufenPresenterMock()
+		gm.ExpectedCalls = nil
+		gm.On("GetConfig").Return(domain.DefaultZwanzigerrufenConfig())
+		gm.On("GetPhase").Return(domain.ZwanzigerrufenPhaseTalon)
+		gm.On("GetRoundNumber").Return(1)
+		gm.On("GetTrickNumber").Return(0)
+		gm.On("GetCurrentPlayerIdx").Return(0)
+		gm.On("GetDealerIdx").Return(0)
+		gm.On("GetBidPlayerIdx").Return(0)
+		gm.On("GetHighestBid").Return(domain.ZwanzigerrufenBidRufer)
+		gm.On("GetDeclarerIdx").Return(0)
+		gm.On("GetContract").Return(domain.ZwanzigerrufenBidRufer)
+		gm.On("GetCalledTrump").Return(domain.ZwanzigerrufenCallTrump)
+		gm.On("GetPartnerRevealed").Return(false)
+		gm.On("GetTalonSize").Return(6)
+		gm.On("GetLastTrickWinner").Return(-1)
+		gm.On("GetLastTrickCards").Return([]*domain.Card(nil))
+		gm.On("GetOutcome").Return(domain.ZwanzigerrufenOutcomeNone)
+		gm.On("GetBreakdown").Return((*domain.ZwanzigerrufenBreakdown)(nil))
+		gm.On("GetGameEndFlag").Return(false)
+		gm.On("GetWinnerPlayer").Return(-1)
+		gm.On("IsHumanTurn").Return(true)
+		gm.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
+		gm.On("GetValidPlayIndices", mock.Anything).Return([]int(nil))
+		gm.On("GetDiscardableIndices").Return([]int{0, 1, 2})
+		gm.On("GetPlayerCnt").Return(domain.ZwanzigerrufenPlayerCnt)
+		gm.On("GetPlayerScore", mock.Anything).Return(0)
+		gm.On("GetCardPoints", mock.Anything).Return(0)
+		gm.On("GetHint").Return((*domain.ZwanzigerrufenHint)(nil))
+		for i := range domain.ZwanzigerrufenPlayerCnt {
+			gm.On("GetPlayer", i).Return(domain.NewZwanzigerrufenPlayer(i == 0))
+		}
+
+		got := decode(gm)
+		assert.Equal(t, []int{0, 1, 2}, got.DiscardableIndices)
+	})
+
+	t.Run("プレイフェーズでは空", func(t *testing.T) {
+		gm := newZwanzigerrufenPresenterMock()
+		gm.On("GetPartnerRevealed").Return(false)
+		gm.On("GetPhase").Return(domain.ZwanzigerrufenPhasePlay)
+		gm.On("GetDeclarerIdx").Return(0)
+
+		got := decode(gm)
+		assert.Empty(t, got.DiscardableIndices)
+	})
+
+	t.Run("デクレアラーが人間でないときは空", func(t *testing.T) {
+		gm := newZwanzigerrufenPresenterMock()
+		gm.On("GetPartnerRevealed").Return(false)
+		gm.On("GetPhase").Return(domain.ZwanzigerrufenPhaseTalon)
+		gm.On("GetDeclarerIdx").Return(1)
+
+		got := decode(gm)
+		assert.Empty(t, got.DiscardableIndices)
+	})
 }
 
 func TestZwanzigerrufenWebPresenter_Error(t *testing.T) {

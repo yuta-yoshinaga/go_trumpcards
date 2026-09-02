@@ -237,7 +237,13 @@ function ZwanzigerrufenPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="zw"
-                validIndices={isPlay && isHumanTurn ? state.playableIndices : undefined}
+                validIndices={
+                  isPlay && isHumanTurn
+                    ? state.playableIndices
+                    : isTalon && isHumanTurn
+                      ? state.discardableIndices
+                      : undefined
+                }
                 restrictedTooltip={t('restricted')}
               />
             )}
