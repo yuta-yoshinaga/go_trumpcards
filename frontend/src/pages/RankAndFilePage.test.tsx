@@ -29,6 +29,8 @@ function makeTableau(cols: RankAndFileTableauCard[][]): RankAndFileTableauCard[]
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const playingState: RankAndFileResponse = {
+  // 列 0 / 1 の先頭札は掴める。列 1 の 2 枚目は並びが切れていて掴めない。
+  sequenceStarts: [[0], [0], [], [], [], [], [], [], [], []],
   tableau: makeTableau([
     [{ card: card('SPADE', 13), faceUp: true }],
     [
@@ -779,5 +781,28 @@ describe('RankAndFilePage face-down cards', () => {
     for (const b of buttons) {
       expect(b.getAttribute('aria-label') ?? '').not.toMatch(/♦ 9/);
     }
+  });
+});
+
+// **掴めない札は読み上げでもそう言う (#6597)。**
+// ドメインの `SequenceStarts` は「UI が掘り下げた札を掴めるか判断するため」に
+// 置かれていたのに grep で 0 件 ── 異色降順に並んでいない札も無条件に押せて、
+// サーバに拒否されるまで気付けなかった。
+describe('RankAndFilePage grabbable cards', () => {
+  it('marks a card that cannot start a run', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RankAndFilePage />);
+    // 列 1 は ♥5 の上に ♣7 が乗っていて異色降順ではないので、
+    // sequenceStarts に 1 が入っていない = 2 枚目は掴めない。
+    await waitFor(() => expect(screen.getByTestId('rf-tableau-top-1')).toBeInTheDocument());
+    expect(screen.getByTestId('rf-tableau-top-1')).toHaveAttribute('aria-label', expect.stringContaining('掴めません'));
+  });
+
+  it('leaves a grabbable card unmarked', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RankAndFilePage />);
+    // 列 0 の 1 枚だけの札は sequenceStarts に 0 が入っている = 掴める。
+    await waitFor(() => expect(screen.getByTestId('rf-tableau-top-0')).toBeInTheDocument());
+    expect(screen.getByTestId('rf-tableau-top-0').getAttribute('aria-label')).not.toContain('掴めません');
   });
 });

@@ -109,6 +109,13 @@ func (_m *MockRankAndFileGame) GetTableau() [domain.RankAndFileTableauCnt][]*dom
 	return ret.Get(0).([domain.RankAndFileTableauCnt][]*domain.RankAndFileTableauCard)
 }
 
+// SequenceStarts モック
+func (_m *MockRankAndFileGame) SequenceStarts(col int) []int {
+	ret := _m.Called(col)
+	v, _ := ret.Get(0).([]int)
+	return v
+}
+
 func (_m *MockRankAndFileGame) GetFoundation() [domain.RankAndFileFoundationCnt][]*domain.Card {
 	ret := _m.Called()
 	return ret.Get(0).([domain.RankAndFileFoundationCnt][]*domain.Card)

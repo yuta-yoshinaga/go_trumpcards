@@ -419,6 +419,11 @@ function RankAndFilePageContent() {
                             // Only a column's exposed top card can be sent
                             // straight to a foundation (single-card move rule).
                             const isLast = cardIdx === col.length - 1;
+                            // **掴めるかはサーバが決める。** ドメインの
+                            // `SequenceStarts` は UI のために置かれていたのに
+                            // 誰も読んでおらず、異色降順に並んでいない札を選ぶと
+                            // サーバに拒否されるまで気付けなかった (#6597)。
+                            const canGrab = (state.sequenceStarts[colIdx] ?? []).includes(cardIdx);
                             return (
                               <div
                                 key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -447,13 +452,13 @@ function RankAndFilePageContent() {
                                         : undefined
                                     }
                                     disabled={!isPlaying || loading}
-                                    aria-label={cardAlt(tc.card)}
+                                    aria-label={canGrab ? cardAlt(tc.card) : `${cardAlt(tc.card)} (${t('cannotGrab')})`}
                                     aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                                     draggable={isPlaying && !loading}
                                     onDragStart={dnd.handleDragStart(cardZone)}
                                     onDragEnd={dnd.handleDragEnd}
                                     data-testid={isLast ? `rf-tableau-top-${colIdx.toString()}` : undefined}
-                                    className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : isHintFromTableau(colIdx, cardIdx) ? HINT_RING : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                    className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : isHintFromTableau(colIdx, cardIdx) ? HINT_RING : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''} ${canGrab || selectedSource ? '' : 'opacity-60'}`}
                                   >
                                     <AnimatedCard
                                       card={tc.card}

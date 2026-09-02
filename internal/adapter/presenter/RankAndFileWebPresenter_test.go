@@ -36,6 +36,9 @@ func setupRankAndFileWebMockDefaults(fg *interfaces.MockRankAndFileGame) {
 		}
 	}
 	fg.On("GetTableau").Return(tableau).Maybe()
+	for i := range domain.RankAndFileTableauCnt {
+		fg.On("SequenceStarts", i).Return([]int{3}).Maybe()
+	}
 
 	var foundation [domain.RankAndFileFoundationCnt][]*domain.Card
 	fg.On("GetFoundation").Return(foundation).Maybe()
@@ -234,4 +237,22 @@ func TestRankAndFileWebPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(fg)
 		assert.Contains(t, result, "draw")
 	})
+}
+
+// **`SequenceStarts` は UI のために置かれていたのに誰も呼んでいなかった (#6597)。**
+// 盤に載っていなければ、画面は「掴めるか」を知りようがない。
+func TestRankAndFileWebPresenter_ServesSequenceStarts(t *testing.T) {
+	fg := new(interfaces.MockRankAndFileGame)
+	setupRankAndFileWebMockDefaults(fg)
+	fg.On("GetHint").Return((*domain.RankAndFileHint)(nil)).Maybe()
+
+	var out controller.RankAndFileWebOutput
+	err := json.Unmarshal([]byte(new(RankAndFileWebPresenter).Output(fg, nil)), &out)
+	assert.NoError(t, err)
+
+	assert.Len(t, out.SequenceStarts, domain.RankAndFileTableauCnt, "列の数だけ返す")
+	for i, starts := range out.SequenceStarts {
+		assert.Equal(t, []int{3}, starts, "列 %d はドメインの答えをそのまま載せる", i)
+	}
+	fg.AssertCalled(t, "SequenceStarts", 0)
 }
