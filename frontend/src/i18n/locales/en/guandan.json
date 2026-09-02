@@ -8,7 +8,7 @@
   "outAt": "out #{{n}}",
   "yourHand": "Your hand",
   "turnTag": "turn",
-  "scoreLine": "Hand {{hand}} / level: {{level}} / team 0: {{t0}} / team 1: {{t1}}",
+  "scoreLine": "Hand {{hand}} / level: {{level}} / declaring team: team {{declarer}} / team 0: {{t0}} / team 1: {{t1}}",
   "levelNote": "The {{level}}s are level cards: they BEAT ACES and lose only to the jokers. The two hearts among them are wild and stand in for any card except a joker.",
   "advanceNote": "Going out first and second climbs {{first}} levels, first and third {{third}}, first and fourth {{fourth}}. There is no climb of three.",
   "tableCombo": "Table: {{combo}} ({{size}} cards) played by seat {{seat}}",

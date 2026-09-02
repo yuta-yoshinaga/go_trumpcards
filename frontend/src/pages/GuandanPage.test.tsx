@@ -87,6 +87,24 @@ describe('GuandanPage', () => {
     expect(note).toHaveTextContent('3段階上がることはありません');
   });
 
+  // **このレベルを担っているのは提供チーム。**どちらが守り、どちらが昇級を狙うかが読めない。
+  it('names the declaring team that owns the current level', async () => {
+    mockExec.mockResolvedValue(makeState({ declarerTeam: 1 }));
+    renderWithProviders(<GuandanPage />);
+    await waitFor(() => expect(screen.getByTestId('guandan-info')).toBeInTheDocument());
+    expect(screen.getByTestId('guandan-info')).toHaveTextContent('提供チーム: チーム1');
+  });
+
+  // 提供チームが交代したら表示も入れ替わる。
+  it('follows the declaring team when it changes hands', async () => {
+    mockExec.mockResolvedValue(makeState({ declarerTeam: 0 }));
+    renderWithProviders(<GuandanPage />);
+    await waitFor(() => expect(screen.getByTestId('guandan-info')).toBeInTheDocument());
+    const info = screen.getByTestId('guandan-info');
+    expect(info).toHaveTextContent('提供チーム: チーム0');
+    expect(info).not.toHaveTextContent('提供チーム: チーム1');
+  });
+
   // **レベルは 2〜A。**数字のままでは読めない。
   it('labels the face levels with letters', async () => {
     mockExec.mockResolvedValue(makeState({ level: 14, teamLevels: [14, 11] }));
