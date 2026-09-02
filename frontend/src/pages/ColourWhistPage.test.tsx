@@ -50,6 +50,7 @@ const bidState: ColourWhistResponse = {
   contract: ColourWhistContract.NONE,
   declarerIdx: -1,
   partnerIdx: -1,
+  calledCard: null,
   trumpSuit: COLOUR_WHIST_NO_TRUMP,
   troelForced: false,
   currentTurn: 0,
@@ -290,5 +291,31 @@ describe('ColourWhistPage', () => {
 
     await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
     expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  it('shows the called card when present', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      calledCard: { design: 'SPADE', value: 1 },
+    });
+    renderWithProviders(<ColourWhistPage />);
+
+    const shown = await screen.findByTestId('colourwhist-called-card');
+    expect(shown).toHaveTextContent('指名札:');
+    // **どの札が指名されたかが要**。ラベルだけでは、札を描き忘れても通る。
+    const img = shown.querySelector('img');
+    expect(img).not.toBeNull();
+    expect(img).toHaveAttribute('alt', expect.stringContaining('A'));
+  });
+
+  it('shows no called card when null', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      calledCard: null,
+    });
+    renderWithProviders(<ColourWhistPage />);
+
+    await waitFor(() => expect(screen.getByTestId('colourwhist-contract')).toBeInTheDocument());
+    expect(screen.queryByTestId('colourwhist-called-card')).not.toBeInTheDocument();
   });
 });

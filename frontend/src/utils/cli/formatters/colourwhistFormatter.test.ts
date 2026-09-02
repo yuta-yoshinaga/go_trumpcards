@@ -30,6 +30,7 @@ const base: ColourWhistResponse = {
   contract: ColourWhistContract.ALLEEN,
   declarerIdx: 0,
   partnerIdx: -1,
+  calledCard: null,
   trumpSuit: 3,
   troelForced: false,
   currentTurn: 0,

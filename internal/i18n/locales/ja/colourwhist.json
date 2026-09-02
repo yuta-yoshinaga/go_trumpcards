@@ -13,6 +13,7 @@
   "contractLine": "契約: {{contract}}（切り札: {{trump}}）",
   "troelLine": "席 {{seat}} がエース3枚のため troel が強制成立しました（競りはありません）",
   "declarerLine": "契約者: 席 {{seat}}（獲得 {{tricks}} トリック）",
+  "calledCardLine": "指名札: {{card}}（この札を出した人が相方として公開されます）",
   "scoreLine": "得点: {{scores}}",
   "trickCardLine": "  席 {{seat}}: {{card}}",
   "handLine": "手札: {{cards}}",

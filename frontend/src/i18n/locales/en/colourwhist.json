@@ -12,6 +12,7 @@
     "trump": "Trump",
     "declarer": "Declarer",
     "partner": "Partner",
+    "calledCard": "Called card",
     "declarerTricks": "Declaring side",
     "hand": "Hand",
     "trick": "Trick",
