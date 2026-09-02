@@ -169,7 +169,9 @@ function BrusquembillePageContent() {
   const isPlayable = (idx: number): boolean => validSet.size === 0 || validSet.has(idx);
 
   const human = state.players.find((p) => p.isHuman);
-  const cpu = state.players.find((p) => !p.isHuman);
+  // **卓は 2〜5 人。** 最初の 1 人だけを見ると、3 人以上の卓で 2 席目以降が
+  // 画面から消える (#6611)。
+  const cpus = state.players.filter((p) => !p.isHuman);
   const isPlayPhase = state.phase === BrusquembillePhase.PLAY;
   const isTrickEnd = state.phase === BrusquembillePhase.TRICK_END;
   const isGameEnd = state.phase === BrusquembillePhase.GAME_END || state.gameEndFlag;
@@ -189,7 +191,15 @@ function BrusquembillePageContent() {
     const p1 = state.players[1]?.points ?? 0;
     const params = { p0: String(p0), p1: String(p1) };
     if (state.winnerIdx === 0) return t('result.youWin', params);
-    if (state.winnerIdx === 1) return t('result.cpuWin', params);
+    // **勝った席を名指しする。** `=== 1` だけを CPU の勝ちとすると、3〜5 人卓で
+    // 席 2 以降が勝ったラウンドが全部「引き分け」に落ちる。引き分けは
+    // `winnerIdx < 0` のときだけ ── CUI は最初からこの形 (gameEndCpu)。
+    if (state.winnerIdx > 0) {
+      // 2 人卓は CPU が 1 人しかいないので席番号を出さない (従来の文言のまま)。
+      if (cpus.length <= 1) return t('result.cpuWin', params);
+      const scores = state.players.map((p) => p.points).join(' - ');
+      return t('result.cpuWinSeat', { seat: String(state.winnerIdx), scores });
+    }
     return t('result.tie', params);
   })();
 
@@ -216,15 +226,29 @@ function BrusquembillePageContent() {
             {t('header.stock')}: {state.stockRemaining}
           </span>
           <span>
-            {t('header.points')} — {t('header.you')}: {human?.points ?? 0} / {t('header.cpu')}: {cpu?.points ?? 0}
+            {t('header.points')} — {t('header.you')}: {human?.points ?? 0}
+            {cpus.map((p) => (
+              <span key={p.id}>
+                {' / '}
+                {t('header.cpu')}
+                {cpus.length > 1 ? ` ${p.id.toString()}` : ''}: {p.points}
+              </span>
+            ))}
           </span>
         </div>
 
         {/* CPU info + trump card */}
         <div className="flex flex-wrap items-start gap-4 mb-4">
-          <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-            {t('header.cpu')}: {cpu?.cardCount ?? 0} / {t('header.tricks')}: {cpu?.trickCount ?? 0}
-          </div>
+          {cpus.map((p) => (
+            <div
+              key={p.id}
+              className="p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+              data-testid={`brusquembille-cpu-${p.id}`}
+            >
+              {t('header.cpu')}
+              {cpus.length > 1 ? ` ${p.id.toString()}` : ''}: {p.cardCount} / {t('header.tricks')}: {p.trickCount}
+            </div>
+          ))}
           <div
             className="flex items-center gap-2 rounded bg-black/30 p-2"
             data-testid="brusquembille-stock"
