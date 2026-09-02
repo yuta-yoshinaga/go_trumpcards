@@ -57,5 +57,6 @@
     "exactly_twentyseven": "exactly 27 — drawing can only break it",
     "stand_pat": "standing is safer here; one card could put you over",
     "bust_both": "you are over on both sides; drawing gains nothing"
-  }
+  },
+  "drawRound": "Draw {{n}}"
 }

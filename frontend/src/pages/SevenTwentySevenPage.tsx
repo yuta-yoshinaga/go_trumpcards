@@ -236,6 +236,14 @@ function SevenTwentySevenPageContent() {
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             <div className="text-ds-text-primary text-center mb-2" data-tutorial="s27-info">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+              {/* **1 ラウンドで「引く/止まる」を何度も選ぶ。** 何巡目かが出ないと、
+                  もう 1 枚引くかの判断材料が画面に無い。CLI モードの
+                  formatSevenTwentySevenState は最初からこれを出している。 */}
+              {isDrawPhase && (
+                <span className="mr-4" data-testid="stx-draw-round">
+                  {t('drawRound', { n: state.drawRound })}
+                </span>
+              )}
               <span className="mr-4">{t('pot', { amount: state.pot })}</span>
               <span>{t('ante', { amount: state.ante })}</span>
             </div>
