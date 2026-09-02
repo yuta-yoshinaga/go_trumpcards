@@ -412,4 +412,22 @@ describe('FortressPage destination preview', () => {
     expect(targets().length).toBe(hovered);
     expect(targets()[0]?.className).not.toContain('ring-ds-success/70');
   });
+
+  // **携帯の桁割りは列数から作る。** 10 列を 8 列ぶんの幅で割ると 1 枚が広すぎて
+  // 画面から溢れ、この PR が届くようにした 8・9 列目がまさに見えなくなる。
+  it('sizes mobile cards for every tableau column, not eight of them', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    try {
+      // 空の組札枠だけが幅と高さの両方を style で持つので、そこを測る。
+      mockExec.mockResolvedValue({ ...playingState, foundation: [[], [], [], []] });
+      renderWithProviders(<FortressPage />);
+      const slot = (await screen.findAllByRole('button', { name: /空の組札/ }))[0];
+      // 375 - 16 - 10*4 = 319 を 11 列で割ると 29 で、下限 30 に丸まる。
+      // 9 列のままだと 36 になるので、この 1 つの数字が桁割りの誤りを捕まえる。
+      expect(slot).toHaveStyle({ width: '30px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    }
+  });
 });

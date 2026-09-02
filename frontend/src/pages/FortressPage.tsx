@@ -118,18 +118,22 @@ function FortressPageContent() {
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
 
+  // 盤が来る前は 0。その場合 dims は骨組みにしか使われないので、下の clamp で吸収される。
+  const tableauColCnt = state?.tableau.length ?? 0;
+
   const dims = useMemo(() => {
     if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
     const padX = 16;
     const gapPx = 4;
-    // Layout has 9 visual columns: 4 left tableau + 1 foundation strip + 4 right tableau.
-    const totalCols = 9;
+    // **桁割りも盤から数える。** タブロー全列 + 中央の組札帯。ここだけ定数のままだと、
+    // 列を増やしても幅は 8 列ぶんのまま計算され、携帯で溢れる。
+    const totalCols = tableauColCnt + 1;
     const colW = Math.floor((windowWidth - padX - (totalCols - 1) * gapPx) / totalCols);
     const cw = Math.min(Math.max(colW, 30), cardWidth);
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
-  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap, tableauColCnt]);
 
   const isPlayingForKbd = state?.phase === FortressPhase.PLAYING;
 
