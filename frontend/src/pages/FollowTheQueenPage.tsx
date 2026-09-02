@@ -233,6 +233,15 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
   const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
   const cpuPlayers = useMemo(() => state?.players?.filter((p) => !p.isHuman) ?? [], [state?.players]);
 
+  // **強制ベットを払う席は 3rd street の間だけ意味を持つ。** サーバは
+  // `bringInPlayerIdx` を毎回返し CUI も #5542 で出しているのに、Web はどこにも
+  // 出していなかった。Razz が同じフィールドで同じバッジを出している。
+  const bringInIdx = state?.bringInPlayerIdx ?? -1;
+  const bringInPlayerId =
+    phase === FollowTheQueenPhase.THIRD_STREET && bringInIdx >= 0 ? state?.players?.[bringInIdx]?.id : undefined;
+  const bringInBadgeClass =
+    'inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 bg-game-status-active text-game-text-strong';
+
   // Live best-hand strength for the human, **taken from the server**.
   //
   // It used to be computed here with the generic `evaluateBestHand`, which has
@@ -337,6 +346,11 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
                 <div key={p.id} className="mb-3 p-2 rounded bg-black/30">
                   <div className="text-ds-text-primary text-sm mb-1">
                     CPU {p.id}
+                    {p.id === bringInPlayerId && (
+                      <span data-testid={`ftq-bringin-badge-${p.id}`} className={bringInBadgeClass}>
+                        {t('bringIn')}
+                      </span>
+                    )}
                     <span className="ml-2 text-xs text-ds-text-muted">{p.playStyleName}</span>
                     {/* サーバは VPIP/PFR/3Bet/AF を毎回返し CUI も毎ターン出しているのに、
                         Web だけ出していなかった (#5522)。0 ハンドのうちは全部 0% で
@@ -437,6 +451,11 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
               <div className="mb-2" data-tutorial="scs-player-hand">
                 <div className="text-ds-text-primary text-lg mb-1">
                   {t('yourHand')}
+                  {humanPlayer.id === bringInPlayerId && (
+                    <span data-testid={`ftq-bringin-badge-${humanPlayer.id}`} className={bringInBadgeClass}>
+                      {t('bringIn')}
+                    </span>
+                  )}
                   <span className="ml-3 text-xs">
                     {tc('betting.chips')} {humanPlayer.chips}
                   </span>

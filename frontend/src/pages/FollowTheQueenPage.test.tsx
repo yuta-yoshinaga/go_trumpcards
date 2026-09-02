@@ -930,3 +930,36 @@ describe('FollowTheQueenPage wild rank', () => {
     await waitFor(() => expect(screen.getByTestId('ftq-wild-rank')).toHaveTextContent('まだ無し'));
   });
 });
+
+// **強制ベットを払う席を画面に出す (#6602)。** サーバは `bringInPlayerIdx` を
+// 毎回返し CUI も #5542 で出しているのに、Web はどこにも出していなかった。
+// 姉妹ページの Razz は同じフィールドで同じバッジを出している。
+describe('FollowTheQueenPage bring-in badge', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('marks the bring-in seat during third street', async () => {
+    mockExec.mockResolvedValue({ ...thirdStreetState, bringInPlayerIdx: 0 });
+    renderWithProviders(<FollowTheQueenPage />);
+    const badge = await screen.findByTestId('ftq-bringin-badge-0');
+    expect(badge).toHaveTextContent('ブリングイン');
+    // **他の席には付かない。** 全員に付ける実装でも上だけなら通る。
+    expect(screen.queryByTestId('ftq-bringin-badge-1')).not.toBeInTheDocument();
+  });
+
+  it('moves the badge with the served index', async () => {
+    mockExec.mockResolvedValue({ ...thirdStreetState, bringInPlayerIdx: 1 });
+    renderWithProviders(<FollowTheQueenPage />);
+    expect(await screen.findByTestId('ftq-bringin-badge-1')).toHaveTextContent('ブリングイン');
+    expect(screen.queryByTestId('ftq-bringin-badge-0')).not.toBeInTheDocument();
+  });
+
+  it('drops the badge once third street is over', async () => {
+    // **3rd street 限定。** 以降も出し続けると、もう関係の無い席を指し続ける。
+    mockExec.mockResolvedValue({ ...thirdStreetState, phase: 2, bringInPlayerIdx: 0 });
+    renderWithProviders(<FollowTheQueenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('ftq-bringin-badge-0')).not.toBeInTheDocument();
+  });
+});
