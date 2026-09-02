@@ -39,11 +39,15 @@ type RankAndFileWebOutputHint struct {
 
 // RankAndFileWebOutput ランク・アンド・ファイルWebアウトプット
 type RankAndFileWebOutput struct {
-	Tableau    [][]*RankAndFileWebOutputTableauCard `json:"tableau"`
-	StockCount int                                  `json:"stockCount"`
-	Waste      []*WebOutputCard                     `json:"waste"`
-	Foundation [][]*WebOutputCard                   `json:"foundation"`
-	Hint       *RankAndFileWebOutputHint            `json:"hint,omitempty"`
+	Tableau [][]*RankAndFileWebOutputTableauCard `json:"tableau"`
+	// SequenceStarts は列ごとの「掴める札の位置」。ドメインの `SequenceStarts`
+	// がそのまま答える ── 画面が並びの規則を持ち直すと、掴めると描いた札が
+	// サーバに拒まれる形になる。
+	SequenceStarts [][]int                   `json:"sequenceStarts"`
+	StockCount     int                       `json:"stockCount"`
+	Waste          []*WebOutputCard          `json:"waste"`
+	Foundation     [][]*WebOutputCard        `json:"foundation"`
+	Hint           *RankAndFileWebOutputHint `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
