@@ -28,6 +28,24 @@ func TestLingerLongerCuiPresenterOutput(t *testing.T) {
 
 	assert.Contains(t, out, i18n.T("lingerlonger.helpTitle"))
 	assert.Contains(t, out, fixedPart("lingerlonger.header"))
+	// **山札の残りと「場から消えた札」は別の数字。**トリックが解決するたびに
+	// 増える、二度と戻らない枚数のほうが終盤の脱落ペースを決める。
+	assert.Contains(t, out, "場から消えた札: 0枚")
+
+	// 1 トリック解決させると、山札は増えも減りもする一方で消えた札は増える。
+	// 初期値 0 のままを見るだけでは、定数を出す実装も通ってしまう。
+	played := newLingerLongerForCui(t)
+	for i := 0; i < played.GetPlayerCnt(); i++ {
+		// **添字 0 が合法とは限らない。** フォロー義務があるので、配りによっては
+		// 拒否されて 3 回に 1 回落ちる。その席で出せる札を選ぶ。
+		idx := played.GetCurrentPlayerIdx()
+		legal := played.GetValidPlayIndices(idx)
+		require.NotEmpty(t, legal, "席 %d に出せる札がある", idx)
+		require.NoError(t, played.PlayForTest(idx, legal[0]))
+	}
+	require.Positive(t, played.GetDiscarded(), "1 トリック解決すれば消えた札が増える")
+	assert.Contains(t, p.Output(played, nil),
+		"場から消えた札: "+strconv.Itoa(played.GetDiscarded())+"枚")
 	// **トリックを取っても得点にならない。** 規則が直感と逆なので毎回書く。
 	assert.Contains(t, out, i18n.T("lingerlonger.rule"))
 	// 「手札」はルール行にも出るので、席行の並び（手札N枚 獲得N回）で数える。
