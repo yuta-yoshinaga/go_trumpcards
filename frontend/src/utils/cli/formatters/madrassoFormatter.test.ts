@@ -57,5 +57,9 @@ describe('formatMadrassoState', () => {
     const undecided = formatMadrassoState(makeMadrassoState({ trumpSuit: 0 }));
     expect(undecided).toContain('trump: -');
     expect(undecided).not.toContain('♥');
+
+    // 表に無い値が来ても字形を捏造せず「未確定」と同じ扱いにする
+    // (`SUIT_NAMES[...] ?? '-'` の右辺。0 は表に載っているので踏まない)。
+    expect(formatMadrassoState(makeMadrassoState({ trumpSuit: 9 }))).toContain('trump: -');
   });
 });
