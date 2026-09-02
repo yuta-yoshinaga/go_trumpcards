@@ -115,7 +115,10 @@ describe('SlobberhannesPage', () => {
     expect(await screen.findByTestId('sh-seat-0')).toHaveTextContent('初');
     expect(screen.getByTestId('sh-seat-0')).toHaveTextContent('♣Q');
     expect(screen.getByTestId('sh-seat-0')).toHaveTextContent('-2点');
-    expect(screen.getByTestId('sh-seat-1')).toHaveTextContent('無傷');
+    // **「無傷」は失点なしではなく +1 の加点。**点数まで出さないと区別できない。
+    expect(screen.getByTestId('sh-seat-1')).toHaveTextContent('無傷(+1点)');
+    // 罰を受けた席にはボーナス表示が出ない。
+    expect(screen.getByTestId('sh-seat-0')).not.toHaveTextContent('無傷');
   });
 
   // 次のラウンドへは、ラウンド終了時にだけ現れる。

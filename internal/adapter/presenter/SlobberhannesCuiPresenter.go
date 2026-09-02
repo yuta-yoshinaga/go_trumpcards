@@ -41,7 +41,8 @@ func slobberhannesPenaltyStr(player *domain.SlobberhannesPlayer) string {
 		marks = append(marks, i18n.T("slobberhannes.markQueen"))
 	}
 	if len(marks) == 0 {
-		return i18n.T("slobberhannes.markClean")
+		// **「無傷」は失点なしではなく加点。**点数まで言わないと区別が付かない。
+		return i18n.Tf("slobberhannes.markClean", "bonus", strconv.Itoa(domain.SlobberhannesCleanBonus))
 	}
 	return strings.Join(marks, ",")
 }
