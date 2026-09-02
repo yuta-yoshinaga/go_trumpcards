@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -111,15 +112,23 @@ func TestRistikontraCuiPresenter_ShowsProvisionalScores(t *testing.T) {
 }
 
 // ristikontraSetField は JSON 経由で Ristikontra の内部状態を差し替える (テスト用)。
-func ristikontraSetField(g *domain.Ristikontra, fields map[string]any) {
-	data, _ := json.Marshal(g)
+func ristikontraSetField(t *testing.T, g *domain.Ristikontra, fields map[string]any) {
+	t.Helper()
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
 	var raw map[string]json.RawMessage
-	_ = json.Unmarshal(data, &raw)
+	require.NoError(t, json.Unmarshal(data, &raw))
 	for k, v := range fields {
-		raw[k], _ = json.Marshal(v)
+		raw[k], err = json.Marshal(v)
+		require.NoError(t, err)
 	}
-	newData, _ := json.Marshal(raw)
-	_ = json.Unmarshal(newData, g)
+	newData, err := json.Marshal(raw)
+	require.NoError(t, err)
+	// **組み立てに失敗したら、その場で落とす。** 黙って捨てると盤は配った
+	// ままの状態で残り、「印が出ない」という**測っていないだけ**の結果を
+	// 「印が出ていない」と読んでしまう。UnmarshalJSON は矛盾した盤を弾くので、
+	// ここが通ることは組んだ盤が実在しうることの確認でもある。
+	require.NoError(t, json.Unmarshal(newData, g), "組んだ盤が UnmarshalJSON に弾かれた")
 }
 
 // #5672: 場を取れるのは「場のトップと同ランクの札」と「ジャック(場を総取り)」の
@@ -140,7 +149,7 @@ func TestRistikontraCuiPresenter_MarksCapturingCards(t *testing.T) {
 		if pileTop != nil {
 			fields["pi"] = []map[string]any{{"d": pileTop.GetDesign(), "v": pileTop.GetValue(), "o": false}}
 		}
-		ristikontraSetField(g, fields)
+		ristikontraSetField(t, g, fields)
 		return g
 	}
 
@@ -248,11 +257,17 @@ func TestRistikontraCuiPresenter_MarksCounterCards(t *testing.T) {
 		for _, c := range hand {
 			human.AddCard(c)
 		}
+		// **cr と cc は必ず揃える。** 打っていて片方だけが立つことは無く、
+		// `UnmarshalJSON` はその盤を壊れた KV として弾く。印を出すのは cr だが、
+		// 実際に奪えるかを決めるのは cc なので、印の試験でも実在する盤で測る。
 		fields := map[string]any{"ct": 0, "cr": counter}
+		if counter > 0 {
+			fields["cc"] = []map[string]any{{"d": domain.CardDesignSpade, "v": counter, "o": false}}
+		}
 		if pileTop != nil {
 			fields["pi"] = []map[string]any{{"d": pileTop.GetDesign(), "v": pileTop.GetValue(), "o": false}}
 		}
-		ristikontraSetField(g, fields)
+		ristikontraSetField(t, g, fields)
 		return g
 	}
 
