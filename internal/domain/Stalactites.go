@@ -33,6 +33,9 @@ const StalactitesCellCnt = 4
 // StalactitesColumnLen は1列あたりの枚数。48 / 8 = 6。
 const StalactitesColumnLen = 6
 
+// StalactitesTotalCards 使用する総枚数
+const StalactitesTotalCards = CardCnt
+
 // StalactitesHint ヒント
 type StalactitesHint struct {
 	FromZone  string // "tableau" or "stalactites"
