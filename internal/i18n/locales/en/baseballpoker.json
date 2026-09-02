@@ -24,6 +24,7 @@
   "canCheckLine": "You may check",
   "buyInLine": "A face-up 3. Pay {{amount}} to stay in (pay), or drop out (buyfold)",
   "wonLine": "{{name}} wins {{amount}}{{wild}}",
+  "showdownHandLine": "  {{name}}: {{hand}}",
   "gameEndLine": "Winner: {{name}}",
   "phaseBetting": "BETTING",
   "phaseBuyIn": "BUY THE POT",

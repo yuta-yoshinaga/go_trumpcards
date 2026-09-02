@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -183,6 +184,60 @@ func TestBaseballPokerCuiPresenter_ShowsBetGuidanceAndResult(t *testing.T) {
 	settled := cp.Output(baseballSettled(t), nil)
 	assert.Contains(t, settled, "獲得", "決着の獲得額が出ていない")
 	assert.NotContains(t, settled, "baseballpoker.")
+}
+
+// **ショーダウンでは全席の役名を出す** (#6579)。勝者の獲得額だけでは
+// 何の役で勝ったのかが最後まで分からない。
+func TestBaseballPokerCuiPresenter_ShowsHandNamesAtShowdown(t *testing.T) {
+	cp := new(BaseballPokerCuiPresenter)
+
+	// ショーダウン前（配り始め/ベット中）は役名を出さない（否定コントロール）。
+	before := cp.Output(newBaseballForPresenter(t), nil)
+	for _, name := range domain.PokerHandNames {
+		assert.NotContains(t, before, "  YOU: "+name, "ショーダウン前に役名が出ている: %s", name)
+	}
+
+	// ショーダウンでは各席の役名が出る。
+	g := baseballSettled(t)
+	out := cp.Output(g, nil)
+
+	shown := 0
+	for _, p := range g.GetPlayers() {
+		if p.GetFolded() {
+			continue
+		}
+		shown++
+		rank := p.GetHandRank()
+		require.GreaterOrEqual(t, rank, 0)
+		require.Less(t, rank, len(domain.PokerHandNames))
+		assert.Contains(t, out, "  "+p.GetName()+": "+domain.PokerHandNames[rank])
+	}
+	require.Positive(t, shown, "役名を出した席が 1 つも無い")
+	assert.NotContains(t, out, "baseballpoker.")
+}
+
+// **範囲外の役ランクは番号のまま出す** (#6579)。黙って消えないようにする。
+func TestBaseballPokerCuiPresenter_ShowsUnknownHandRankAsNumber(t *testing.T) {
+	cp := new(BaseballPokerCuiPresenter)
+	var p domain.BaseballPokerPlayer
+	require.NoError(t, json.Unmarshal([]byte(`{"n":"YOU","hr":99,"cd":[],"fu":[]}`), &p))
+
+	mockGame := new(interfaces.MockBaseballPokerGame)
+	mockGame.On("GetPhase").Return(domain.BaseballPhaseShowdown)
+	mockGame.On("GetGameEndFlag").Return(false)
+	mockGame.On("GetHandNumber").Return(1)
+	mockGame.On("GetPot").Return(0)
+	mockGame.On("GetStreet").Return(4)
+	mockGame.On("GetBuyerSeat").Return(-1)
+	mockGame.On("GetTurnSeat").Return(0)
+	mockGame.On("IsHumanBuying").Return(false)
+	mockGame.On("GetToCall").Return(0)
+	mockGame.On("GetPlayers").Return([]*domain.BaseballPokerPlayer{&p})
+	mockGame.On("GetResults").Return([]domain.BaseballResult{{PlayerIdx: 0, WonAmount: 100}})
+	mockGame.On("WinnerSeat").Return(0)
+
+	out := cp.Output(mockGame, nil)
+	assert.Contains(t, out, "  YOU: 99")
 }
 
 func TestBaseballPokerCuiPresenter_ErrorsAndHint(t *testing.T) {

@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { BASEBALLPOKER_CLI_HELP, parseBaseballPokerCommand } from '../utils/cli/commands/baseballpokerCommands';
 import { formatBaseballPokerState } from '../utils/cli/formatters/baseballpokerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { type PokerHandRank, pokerHandKey } from '../utils/pokerSquaresUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const BB_TUTORIAL_STEPS: TutorialStep[] = [
@@ -41,6 +42,9 @@ const BB_TUTORIAL_STEPS: TutorialStep[] = [
 
 /** Renders the Baseball Poker game page (#5268). */
 export const BaseballPokerPage = withTutorial(BaseballPokerPageContent, 'baseballpoker', BB_TUTORIAL_STEPS);
+
+/** `domain.PokerHandNames` の 10 番目。ワイルド (3 と 9) があるゲームだけが返す。 */
+const FIVE_OF_A_KIND_RANK = 10;
 
 function BaseballPokerPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -67,6 +71,17 @@ function BaseballPokerPageContent() {
   const phase = state?.phase;
   const isBetting = phase === BaseballPhase.BETTING;
   const isShowdown = phase === BaseballPhase.SHOWDOWN;
+  // 役名はランクから引く。**サーバは英語名を送っていない**ので、共通の
+  // ポーカー役キーで訳す (未知のランクは番号のまま出して黙って消えないように)。
+  //
+  // **3 と 9 がワイルドなので 5 カードが出る。** `pokerHandKey` は Poker Squares
+  // 用でワイルドの無い 0〜9 しか知らないので、その 1 つだけここで持つ。共有側に
+  // 足すと、ワイルドを使わないゲームで到達しない役が増える。
+  const handLabel = (rank: number): string => {
+    if (rank === FIVE_OF_A_KIND_RANK) return t('hand.fiveOfAKind');
+    const key = rank >= 0 && rank <= 9 ? pokerHandKey(rank as PokerHandRank) : undefined;
+    return key ? t(`hand.${key}`) : String(rank);
+  };
   const gameOver = !!state?.gameEndFlag;
   const canAct = !!state?.isHumanTurn && isBetting;
   const facingBet = (state?.toCall ?? 0) > 0;
@@ -234,6 +249,22 @@ function BaseballPokerPageContent() {
                   {/* **他人の表札も出す。** スタッドの読み合いはここが材料。 */}
                   {!seat.isHuman && (
                     <div className="mt-1">{seatCards(seat, `bb-seat-cards-${i}`, Math.round(cardWidth * 0.7))}</div>
+                  )}
+                  {/* **なぜその配当になったのかが最後まで分からなかった** (#6579)。
+                      ショーダウンでは役名と、ベスト 5 枚を出す。 */}
+                  {isShowdown && seat.bestHand.length > 0 && (
+                    <div className="mt-1" data-testid={`bp-showdown-${i}`}>
+                      <span className="text-ds-accent text-xs">{handLabel(seat.handRank)}</span>
+                      <div className="flex justify-center gap-1 flex-wrap mt-1">
+                        {seat.bestHand.map((card, k) => (
+                          <AnimatedCard
+                            key={`b${i}-${card.design}-${card.value}-${k}`}
+                            card={card}
+                            width={Math.round(cardWidth * 0.5)}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
               ))}
