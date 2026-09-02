@@ -259,6 +259,15 @@ func (_m *MockGleekGame) GetPlayerScores() [domain.GleekPlayerCnt]int {
 	return ret.Get(0).([domain.GleekPlayerCnt]int)
 }
 
+// GetRoundDelta モック
+func (_m *MockGleekGame) GetRoundDelta() []int {
+	ret := _m.Called()
+	if v, ok := ret.Get(0).([]int); ok {
+		return v
+	}
+	return nil
+}
+
 // GetResult モック
 func (_m *MockGleekGame) GetResult() domain.GleekResult {
 	ret := _m.Called()

@@ -42,6 +42,7 @@ func setupGleekCuiMock() *interfaces.MockGleekGame {
 	m.On("GetMelds").Return([]*domain.GleekMeld{})
 	m.On("GetTrickPoints").Return([domain.GleekPlayerCnt]int{})
 	m.On("GetPlayerScores").Return([domain.GleekPlayerCnt]int{})
+	m.On("GetRoundDelta").Return([]int{0, 0, 0}).Maybe()
 	m.On("DealPoints").Return(78)
 	m.On("Par").Return(26)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
@@ -160,6 +161,32 @@ func TestGleekCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "78")
 		assert.Contains(t, result, "26")
+	})
+
+	t.Run("round end reports signed round delta for each seat", func(t *testing.T) {
+		m, _ := setupGleekCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundDelta")
+		m.On("GetPhase").Return(domain.GleekPhaseRoundEnd)
+		m.On("GetRoundDelta").Return([]int{15, -10, -5})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "+15")
+		assert.Contains(t, result, "-10")
+		assert.Contains(t, result, "-5")
+		assert.Contains(t, result, "あなた: +15")
+		assert.Contains(t, result, "CPU 1: -10")
+		assert.Contains(t, result, "CPU 2: -5")
+	})
+
+	t.Run("round end reports ±0 for unchanged score", func(t *testing.T) {
+		m, _ := setupGleekCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundDelta")
+		m.On("GetPhase").Return(domain.GleekPhaseRoundEnd)
+		m.On("GetRoundDelta").Return([]int{0, 5, -5})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "±0")
+		assert.Contains(t, result, "あなた: ±0")
 	})
 
 	t.Run("game end banner names the winner and drops the phase prompt", func(t *testing.T) {

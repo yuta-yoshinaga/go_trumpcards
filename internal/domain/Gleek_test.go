@@ -642,6 +642,73 @@ func TestGleek_JSONRejectsOutOfRangeValues(t *testing.T) {
 	}
 }
 
+// **ラウンド開始時のスナップショットから純増減を計算する。**
+// 累積点だけでは前後の引き算を自力で行わないと成果が分からない (#6620)。
+// 2ラウンド続けて回し、2ラウンド目の差分が1ラウンド目の値を引きずらないことを見る。
+func TestGleek_RoundDeltaTracksNetScoreChangePerRound(t *testing.T) {
+	g := newTestGleek()
+
+	// --- ラウンド1 ---
+	// 卓を手で組んで点を入れる (配りによる点数変動でフレークしないよう確定値をセット)
+	g.SetPlayerScores([domain.GleekPlayerCnt]int{10, -5, -5})
+	g.SetPhase(domain.GleekPhaseRoundEnd)
+
+	delta1 := g.GetRoundDelta()
+	require.Len(t, delta1, domain.GleekPlayerCnt)
+	assert.Equal(t, []int{10, -5, -5}, delta1, "ラウンド1の純増減 (開始時 0 からの差分)")
+
+	// --- ラウンド2 ---
+	// NextRound() でラウンド2へ進む (startRound で累積点がスナップショットされる)
+	g.NextRound()
+	assert.Equal(t, 2, g.GetRoundNumber())
+
+	// ラウンド2で P0: +6, P1: -2, P2: -4 動いたとする (累積: P0=16, P1=-7, P2=-9)
+	g.SetPlayerScores([domain.GleekPlayerCnt]int{16, -7, -9})
+	g.SetPhase(domain.GleekPhaseRoundEnd)
+
+	delta2 := g.GetRoundDelta()
+	require.Len(t, delta2, domain.GleekPlayerCnt)
+	// 16 - 10 = +6, -7 - (-5) = -2, -9 - (-5) = -4
+	assert.Equal(t, []int{6, -2, -4}, delta2, "ラウンド2の純増減はラウンド1の値を引きずらないこと")
+
+	// 累積値をそのまま返していないことを確認 (P0 は累積 16 だが純増減は 6)
+	scores2 := g.GetPlayerScores()
+	assert.NotEqual(t, scores2[:], delta2)
+	// 常に 0 を返していないことを確認
+	assert.NotEqual(t, make([]int, domain.GleekPlayerCnt), delta2)
+}
+
+// ラウンド中に点数が動かなかった席は差分 0 を返す。
+func TestGleek_RoundDeltaZeroChange(t *testing.T) {
+	g := newTestGleek()
+	g.SetPlayerScores([domain.GleekPlayerCnt]int{5, 0, -5})
+	g.SetPhase(domain.GleekPhaseRoundEnd)
+
+	delta := g.GetRoundDelta()
+	assert.Equal(t, []int{5, 0, -5}, delta)
+}
+
+func TestGleek_JSONRoundTripKeepsRoundStartScores(t *testing.T) {
+	g := newTestGleek()
+	g.SetPlayerScores([domain.GleekPlayerCnt]int{10, -5, -5})
+	g.SetPhase(domain.GleekPhaseRoundEnd)
+	g.NextRound()
+	// ラウンド2で累積点が 16, -7, -9 に更新された状態
+	g.SetBuyerIdx(0)
+	g.SetLeadPlayerIdx(0)
+	g.SetPlayerScores([domain.GleekPlayerCnt]int{16, -7, -9})
+	g.SetPhase(domain.GleekPhaseRoundEnd)
+	expectedDelta := []int{6, -2, -4}
+	assert.Equal(t, expectedDelta, g.GetRoundDelta())
+
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	restored := new(domain.Gleek)
+	require.NoError(t, json.Unmarshal(data, restored))
+
+	assert.Equal(t, expectedDelta, restored.GetRoundDelta(), "JSON復元後もラウンド開始時のスナップショットが保持され差分が維持されること")
+}
+
 // --- helpers -------------------------------------------------------------
 
 func gleekSum(s [domain.GleekPlayerCnt]int) int {

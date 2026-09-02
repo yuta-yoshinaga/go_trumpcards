@@ -78,6 +78,10 @@ type GleekWebOutput struct {
 	TurnUp        *WebOutputCard             `json:"turnUp,omitempty"`
 	CurrentTrick  []*WebOutputTrickCard      `json:"currentTrick"`
 	PlayerScores  [domain.GleekPlayerCnt]int `json:"playerScores"`
+	// RoundDelta は各席のディール開始時点からの純増減。累積の PlayerScores と
+	// 同じく席順の配列で返す ── 同じ値をプレイヤー側にも持たせると、いつか
+	// 片方だけ直して食い違う。
+	RoundDelta []int `json:"roundDelta"`
 	// DiscardCount は捨て札フェーズで捨てる枚数。
 	DiscardCount int `json:"discardCount"`
 	// RuffWinnerIdx はラフを取った席 (-1=未確定)、Melds は申告されたメルド。

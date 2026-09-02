@@ -39,6 +39,7 @@
   "promptTrickEnd": "Trick complete",
   "promptTrickEndHelp": "n / next ... next trick",
   "promptRoundEnd": "Deal over (points in this deal: {{total}}  par: {{par}})",
+  "promptRoundDelta": "{{name}}: {{delta}}",
   "promptRoundEndHelp": "nr / nextround ... next deal",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
