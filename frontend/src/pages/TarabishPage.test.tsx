@@ -158,6 +158,22 @@ describe('TarabishPage', () => {
     expect(screen.getByTestId('tb-seat-2')).toHaveTextContent('T0');
   });
 
+  // **トリック配分がそのまま点数の趨勢。**CUI の playerLine は毎回出している。
+  it('shows how many tricks each seat has taken', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [seat(0, { trickCount: 3 }), seat(1, { trickCount: 1 }), seat(2), seat(3, { trickCount: 4 })],
+      } as Partial<TarabishResponse>),
+    );
+    renderWithProviders(<TarabishPage />);
+
+    // 席ごとに別の値が、その席の要素に出る（全席同じ値を出す実装では落ちる）。
+    expect(await screen.findByTestId('tb-seat-tricks-0')).toHaveTextContent('獲得3');
+    expect(screen.getByTestId('tb-seat-tricks-1')).toHaveTextContent('獲得1');
+    expect(screen.getByTestId('tb-seat-tricks-2')).toHaveTextContent('獲得0');
+    expect(screen.getByTestId('tb-seat-tricks-3')).toHaveTextContent('獲得4');
+  });
+
   it('shows the running team scores', async () => {
     mockExec.mockResolvedValue(makeState({ scores: [220, 140] } as Partial<TarabishResponse>));
     renderWithProviders(<TarabishPage />);
