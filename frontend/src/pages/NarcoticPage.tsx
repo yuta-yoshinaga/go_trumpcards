@@ -69,8 +69,14 @@ const NARCOTIC_TUTORIAL_STEPS: TutorialStep[] = [
 
 const COL_COUNT = 4;
 
-/** Number of non-ace cards that must be discarded to win (52 - 4 aces). */
-const DISCARD_GOAL = 48;
+/**
+ * Cards that must be discarded to win.
+ *
+ * **エースも普通に取り除く。** ドメインの `checkGameClear` は
+ * `len(discard) >= NarcoticDiscardGoal` (= 52) を見ており、ここが 48 だと
+ * 4 枚残したまま「48/48」と出て、勝った局では分母を超えてしまう。
+ */
+const DISCARD_GOAL = 52;
 
 /** Renders the Narcotic game page: four piles with deal/discard/stack/redeal controls. */
 export const NarcoticPage = withTutorial(NarcoticPageContent, 'narcotic', NARCOTIC_TUTORIAL_STEPS);

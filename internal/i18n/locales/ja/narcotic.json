@@ -10,7 +10,7 @@
   "columnEmpty": "[空]",
   "topCard": "[{{card}}]",
   "stockLine": "Stock: {{count}}枚",
-  "discardLine": " | Discard: {{count}}枚",
+  "discardLine": " | Discard: {{count}}/{{goal}}枚",
   "redealLine": " | 配り直し: {{count}}回",
   "hintRemove": "ヒント: 露出4枚が揃っています。rm で捨てましょう",
   "hintMove": "ヒント: 列{{col}}を、同じランクの左の山へ重ねましょう",
