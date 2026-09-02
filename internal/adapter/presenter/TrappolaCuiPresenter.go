@@ -77,6 +77,18 @@ func (p *TrappolaCuiPresenter) Output(g interfaces.TrappolaGame, lastErr error) 
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 
+		if plays, winner := trappolaLastTrick(g); len(plays) > 0 {
+			winnerName := ""
+			if winner >= 0 {
+				winnerName = cuiPlayerName(g.GetPlayer(winner), winner)
+			}
+			b.WriteString(i18n.Tf("trappola.previousTrick", "name", winnerName) + "\n")
+			for _, pl := range plays {
+				b.WriteString("  " + cuiPlayerName(g.GetPlayer(pl.PlayerIdx), pl.PlayerIdx) +
+					": " + cuiCardStr(pl.Card) + "\n")
+			}
+		}
+
 		cuiErrorBlock(b, lastErr)
 
 		if g.GetGameEndFlag() {
