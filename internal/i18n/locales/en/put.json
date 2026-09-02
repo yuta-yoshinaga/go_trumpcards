@@ -30,5 +30,8 @@
   "hintReasonFollowDump": "dump a weak card",
   "helpExamplePlay": "  p 0                  play the first card in hand",
   "helpHint": "  h                    show a hint",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "rankRefTitle": "Card strength (strongest first)",
+  "rankRefOrder": "3 > 2 > A > K > Q > J > 10 > 9 > 8 > 7 > 6 > 5 > 4",
+  "rankRefNote": "Suits do not matter. Equal cards tie the trick."
 }
