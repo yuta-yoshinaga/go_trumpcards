@@ -307,7 +307,13 @@ function SalicLawPageContent() {
                   const foundationZone: SalicLawMoveZone = { zone: 'foundation', col: idx };
                   return (
                     <div key={`f-${idx.toString()}`} className="text-center">
-                      <div className="text-game-text-muted text-xs mb-1">F{idx}</div>
+                      {/* **番号は飾り。** 組札ボタン自身が foundationAriaLabel /
+                          emptyFoundationAriaLabel で番号を含む説明を持っているので、
+                          ここを読み上げると「F0」が二重に流れる。列番号 (#{pileIdx})
+                          は既にこの扱いになっていた。 */}
+                      <div className="text-game-text-muted text-xs mb-1" aria-hidden="true">
+                        F{idx}
+                      </div>
                       <DropZone
                         isDropTarget={dnd.isDropTarget(foundationZone)}
                         onDragOver={dnd.handleDragOver(foundationZone)}
