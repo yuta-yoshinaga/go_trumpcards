@@ -412,7 +412,11 @@ function DramahaPageContent() {
                   ];
                   return (
                     <div key={r.playerIdx} data-testid={`dramaha-split-result-${r.playerIdx}`}>
-                      {state.players[r.playerIdx]?.isHuman ? tc('player.you') : `CPU ${r.playerIdx}`}
+                      {/* **名前は 1 か所で組む。** ここだけ生のテンプレートリテラルで
+                          "CPU n" を作っていたので、`player.cpu` の書式を変えても
+                          この行だけ追随しない。同じページの dealer 表示と同じ
+                          `findPlayerName` を通す (#6608)。 */}
+                      {findPlayerName(state.players, r.playerIdx)}
                       {': '}
                       {halves.length > 0 ? t('result.wonHalves', { halves: halves.join(' + ') }) : t('result.wonNone')}
                       {r.omahaWon && r.drawWon && (
