@@ -283,6 +283,42 @@ describe('BotifarraPage', () => {
     expect(seats).toHaveTextContent('相手');
   });
 
+  // **契約の当事者が誰かは倍率と同じくらい基本の情報。**画面から追えなかった。
+  it('marks the declarer on the seat that declared', async () => {
+    mockApi.mockResolvedValue(playState);
+    renderWithProviders(<BotifarraPage />);
+
+    await waitFor(() => expect(screen.getByTestId('botifarra-declarer-0')).toBeInTheDocument());
+    expect(screen.getByTestId('botifarra-declarer-0')).toHaveTextContent('宣言者');
+    // 親と同じ席なので委任の断りは出ない。
+    expect(screen.getByTestId('botifarra-declarer-0')).not.toHaveTextContent('委任');
+    for (const id of [1, 2, 3]) {
+      expect(screen.queryByTestId(`botifarra-declarer-${id.toString()}`)).not.toBeInTheDocument();
+    }
+  });
+
+  // **親が相方に委ねると宣言者は別の席になる。** それが分かる形にする。
+  it('says so when the dealer delegated the declaration to the partner', async () => {
+    mockApi.mockResolvedValue({ ...playState, dealerIdx: 0, declarerIdx: 2 });
+    renderWithProviders(<BotifarraPage />);
+
+    await waitFor(() => expect(screen.getByTestId('botifarra-declarer-2')).toBeInTheDocument());
+    expect(screen.getByTestId('botifarra-declarer-2')).toHaveTextContent('委任');
+    // 親の席には親のバッジが残る。
+    expect(screen.getByTestId('botifarra-dealer-0')).toHaveTextContent('親');
+  });
+
+  // まだ誰も宣言していない局面ではバッジを出さない。
+  it('shows no declarer badge before anyone has declared', async () => {
+    mockApi.mockResolvedValue({ ...declareState, declarerIdx: -1 });
+    renderWithProviders(<BotifarraPage />);
+
+    await waitFor(() => expect(screen.getByTestId('botifarra-seats')).toBeInTheDocument());
+    for (const id of [0, 1, 2, 3]) {
+      expect(screen.queryByTestId(`botifarra-declarer-${id.toString()}`)).not.toBeInTheDocument();
+    }
+  });
+
   it('renders the CLI terminal when CLI mode is on', async () => {
     mockUseCliMode.mockReturnValue({
       cliEnabled: true,

@@ -135,3 +135,38 @@ func TestBotifarraCuiPresenter_UnknownValues(t *testing.T) {
 	assert.Equal(t, "DOUBLE", p.phaseStr(domain.BotifarraPhaseDouble))
 	assert.Equal(t, "ROUND END", p.phaseStr(domain.BotifarraPhaseRoundEnd))
 }
+
+// **契約の当事者が誰かは倍率と同じくらい基本の情報。**画面から追えなかった。
+func TestBotifarraCuiPresenter_NamesTheDeclarer(t *testing.T) {
+	t.Run("dealer declared it", func(t *testing.T) {
+		m := new(interfaces.MockBotifarraGame)
+		m.On("GetDeclarerIdx").Return(0)
+		m.On("GetDealerIdx").Return(0)
+		fillBotifarraDefaults(m)
+
+		out := new(BotifarraCuiPresenter).Output(m, nil)
+		assert.Contains(t, out, "宣言者: 席0（親は席0）")
+		assert.NotContains(t, out, "委ねました")
+	})
+
+	// **親が相方に委ねると宣言者は別の席になる。** そのことも言う。
+	t.Run("the dealer delegated it to the partner", func(t *testing.T) {
+		m := new(interfaces.MockBotifarraGame)
+		m.On("GetDeclarerIdx").Return(2)
+		m.On("GetDealerIdx").Return(0)
+		fillBotifarraDefaults(m)
+
+		out := new(BotifarraCuiPresenter).Output(m, nil)
+		assert.Contains(t, out, "宣言者: 席2（親の席0が相方に委ねました）")
+	})
+
+	// まだ誰も宣言していなければ行ごと出さない。
+	t.Run("nothing before anyone has declared", func(t *testing.T) {
+		m := new(interfaces.MockBotifarraGame)
+		m.On("GetDeclarerIdx").Return(-1)
+		fillBotifarraDefaults(m)
+
+		out := new(BotifarraCuiPresenter).Output(m, nil)
+		assert.NotContains(t, out, "宣言者:")
+	})
+}

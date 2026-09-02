@@ -26,6 +26,18 @@ func (bp *BotifarraCuiPresenter) Output(b interfaces.BotifarraGame, lastErr erro
 		sb.WriteString(i18n.Tf("botifarra.trumpLine",
 			"trump", bp.trumpStr(b.GetTrumpSuit()),
 			"multiplier", strconv.Itoa(b.GetMultiplier())) + "\n")
+		// **契約の当事者が誰かは倍率と同じくらい基本の情報。** 親が相方に
+		// 委ねると宣言者は親と別の席になるので、そのときは委ねられたことも言う。
+		if decl := b.GetDeclarerIdx(); decl >= 0 {
+			dealer := b.GetDealerIdx()
+			key := "botifarra.declarerLine"
+			if decl != dealer {
+				key = "botifarra.declarerDelegatedLine"
+			}
+			sb.WriteString(i18n.Tf(key,
+				"declarer", strconv.Itoa(decl),
+				"dealer", strconv.Itoa(dealer)) + "\n")
+		}
 		sb.WriteString(i18n.Tf("botifarra.roundPointsLine",
 			"team0", strconv.Itoa(b.GetRoundPoints(0)),
 			"team1", strconv.Itoa(b.GetRoundPoints(1)),
