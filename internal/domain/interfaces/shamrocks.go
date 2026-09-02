@@ -38,4 +38,6 @@ type ShamrocksGame interface {
 	GetFans() [][]*domain.Card
 	// GetFoundation ファウンデーションを取得する。
 	GetFoundation() [domain.ShamrocksFoundationCnt][]*domain.Card
+	// GetMovableFans いま動かせる扇のインデックスを取得する。
+	GetMovableFans() []int
 }
