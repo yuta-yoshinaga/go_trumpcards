@@ -85,7 +85,8 @@ describe('PolignacPage', () => {
     mockExec.mockResolvedValue(makeState({ phase: 0 }));
     renderWithProviders(<PolignacPage />);
 
-    expect(await screen.findByTestId('pg-capot-btn')).toBeInTheDocument();
+    // 押す前に賭け点が分かる。不可逆な宣言なので、押してから知るのでは遅い。
+    expect(await screen.findByTestId('pg-capot-btn')).toHaveTextContent('5点を賭ける');
     expect(screen.getByTestId('pg-pass-btn')).toBeInTheDocument();
   });
 
@@ -123,6 +124,9 @@ describe('PolignacPage', () => {
 
     expect(await screen.findByTestId('pg-capot-banner')).toHaveTextContent('3/8');
     expect(screen.getByTestId('pg-seat-2')).toHaveTextContent('[capot]');
+    // **何点が動くのかが読めないと、潰しにいく価値が判断できない。**
+    expect(screen.getByTestId('pg-capot-banner')).toHaveTextContent('成功なら他の全員が5失点');
+    expect(screen.getByTestId('pg-capot-banner')).toHaveTextContent('失敗なら宣言者が5失点');
   });
 
   it('says nothing about capot when nobody declared', async () => {

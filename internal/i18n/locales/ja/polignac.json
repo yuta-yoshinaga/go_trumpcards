@@ -7,7 +7,7 @@
   "helpGiveUp": "  g                    投了する",
   "header": "ラウンド: {{round}}/{{rounds}}  トリック: {{trick}}/{{tricks}}",
   "penaltyLine": "切り札なし。ジャックを取ると1失点、ただし♠J（Polignac）は2失点。",
-  "capotActive": "！ {{name}} が capot 宣言中（獲得 {{tricks}}/8）。1トリック取れば潰せます。",
+  "capotActive": "！ {{name}} が capot 宣言中（獲得 {{tricks}}/8）。1トリック取れば潰せます。【成功なら他の全員が{{stake}}失点、失敗なら宣言者が{{stake}}失点】",
   "capotMark": "[capot]",
   "playerLine": "{{name}}: 累計{{score}}失点 (今ラウンド{{round}}) 手札{{cards}}枚",
   "jackMarks": " 取ったJ: {{jacks}}",
