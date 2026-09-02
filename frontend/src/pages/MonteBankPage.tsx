@@ -71,6 +71,16 @@ function MonteBankPageContent() {
 
   const phase = state?.phase;
   const isBetPhase = phase === MonteBankPhase.BET;
+  /**
+   * Whether a layout card should read as pressed.
+   *
+   * **One predicate for the ring and for `aria-pressed`.** They were written
+   * out separately and drifted: after the round settled the ring stayed on the
+   * card that was backed while `aria-pressed` fell back to false, so the bet
+   * survived in colour only.
+   */
+  const isPickedOrSelected = (entry: { isPicked: boolean }, i: number): boolean =>
+    entry.isPicked || (isBetPhase && selected === i);
   const isResultPhase = phase === MonteBankPhase.RESULT;
   const gameOver = !!state?.gameEndFlag;
 
@@ -149,11 +159,13 @@ function MonteBankPageContent() {
                   key={`layout-${entry.card.design}-${entry.card.value}-${i}`}
                   type="button"
                   data-testid={`mb-layout-${i}`}
-                  aria-pressed={isBetPhase && selected === i}
+                  // **リングと同じ式で押下状態を出す。** 決着後は isBetPhase が
+                  // 偽になるので、張った札が色でだけ示されて読み上げから消えていた。
+                  aria-pressed={isPickedOrSelected(entry, i)}
                   disabled={!isBetPhase || loading}
                   onClick={() => setSelected(i)}
                   className={`flex flex-col items-center rounded px-1 py-1 ${
-                    entry.isPicked || (isBetPhase && selected === i) ? 'ring-2 ring-ds-success' : ''
+                    isPickedOrSelected(entry, i) ? 'ring-2 ring-ds-success' : ''
                   }`}
                 >
                   <AnimatedCard card={entry.card} width={cardWidth} />
