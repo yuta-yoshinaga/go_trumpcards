@@ -13,6 +13,7 @@
     "row": "行",
     "col": "列",
     "empty": "空",
+    "emptyCell": "空 {{rowNo}}-{{colNo}}、行{{rowNo}}(現在{{rowScore}}点)・列{{colNo}}(現在{{colScore}}点)",
     "win": "クリア！",
     "lose": "未達成"
   },

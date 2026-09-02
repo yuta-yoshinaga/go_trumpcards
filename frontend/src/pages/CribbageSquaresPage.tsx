@@ -257,7 +257,21 @@ function CribbageSquaresPageContent() {
                                 data-hint-action={cellAction}
                                 data-cross-hover={inCross ? 'true' : undefined}
                                 aria-label={
-                                  cell.card ? cardAlt(cell.card) : `${t('label.empty')} ${rowIdx + 1}-${colIdx + 1}`
+                                  cell.card
+                                    ? cardAlt(cell.card)
+                                    : // **どの行・列に効くかは色でしか出ていなかった。**空きマスは
+                                      // 影響する 2 つの役の現在点を読み上げにも載せる。
+                                      //
+                                      // 読むのは `rowScores` ではなく **partial** の方。
+                                      // スターターはマスが全部埋まってから初めてめくられる
+                                      // (internal/domain/CribbageSquares.go) ので、空きマスが
+                                      // 1 つでもある間 `rowScores` は必ず 0 になる。
+                                      t('label.emptyCell', {
+                                        rowNo: rowIdx + 1,
+                                        rowScore: state.rowPartialDetails[rowIdx]?.total ?? 0,
+                                        colNo: colIdx + 1,
+                                        colScore: state.colPartialDetails[colIdx]?.total ?? 0,
+                                      })
                                 }
                                 onClick={() => handlePlace(rowIdx, colIdx)}
                                 onPointerEnter={() => !filled && setCrossHover({ row: rowIdx, col: colIdx })}
