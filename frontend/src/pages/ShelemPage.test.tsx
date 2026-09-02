@@ -215,6 +215,15 @@ describe('ShelemPage', () => {
     mockExec.mockResolvedValue(playing({ shelemBid: true } as Partial<ShelemResponse>));
     renderWithProviders(<ShelemPage />);
     expect(await screen.findByTestId('sh-contract')).toHaveTextContent(/Shelem/);
+    // **通常の契約は数字が出るのに Shelem だけ出ていなかった。**上限 100 の
+    // 契約の 2 倍が動く、最も重い一度きりの選択。
+    expect(screen.getByTestId('sh-contract')).toHaveTextContent('200点が動きます');
+  });
+
+  it('states the Shelem stake on the declare button too', async () => {
+    renderWithProviders(<ShelemPage />);
+    // 押す前に賭け点が読める。押してから知るのでは遅い。
+    expect(await screen.findByTestId('sh-shelem-btn')).toHaveTextContent('Shelem宣言（200点）');
   });
 
   // 競りでの立場が席ごとに出る。
