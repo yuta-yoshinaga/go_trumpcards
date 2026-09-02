@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
@@ -65,6 +66,43 @@ func TestStHelenaCuiPresenter_Output(t *testing.T) {
 		p := new(StHelenaCuiPresenter)
 		out := p.Output(cg, nil)
 		assert.NotEmpty(t, out)
+	})
+
+	// **8 組札 (昇順 4 + 降順 4) を自分で数えさせない (#6599)。**
+	// Web は #5590 でこの理由から到達率を出しており、CUI にだけ手間が残っていた。
+	t.Run("game over shows how far the foundations got", func(t *testing.T) {
+		cg := new(interfaces.MockStHelenaGame)
+		setupStHelenaCuiMockDefaults(cg)
+		cg.ExpectedCalls = filterCalls(filterCalls(cg.ExpectedCalls, "GetPhase"), "GetFoundation")
+		cg.On("GetPhase").Return(domain.StHelenaPhaseGameOver)
+
+		// 組札 8 本のうち 2 本に 1 枚ずつ = 2/104 ≒ 2%。**盤は手で組む。**
+		var fnd [domain.StHelenaFoundationCnt][]*domain.Card
+		fnd[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, true)}
+		fnd[4] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 13, true)}
+		cg.On("GetFoundation").Return(fnd)
+
+		out := new(StHelenaCuiPresenter).Output(cg, nil)
+
+		// **合成された行を見る。** 盤には数字が散らばっているので、
+		// "2" を探すだけでは何も証明しない。分母はドメインの定数から組む。
+		assert.Contains(t, out, "2/"+strconv.Itoa(domain.StHelenaTotalCards))
+		assert.Contains(t, out, "2%")
+		assert.NotContains(t, out, "{{")
+	})
+
+	// **負のコントロール。** プレイ中とクリアには出さない。
+	t.Run("no summary outside game over", func(t *testing.T) {
+		for _, phase := range []domain.StHelenaPhase{
+			domain.StHelenaPhasePlaying, domain.StHelenaPhaseGameClear,
+		} {
+			cg := new(interfaces.MockStHelenaGame)
+			setupStHelenaCuiMockDefaults(cg)
+			cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "GetPhase")
+			cg.On("GetPhase").Return(phase)
+			out := new(StHelenaCuiPresenter).Output(cg, nil)
+			assert.NotContains(t, out, "/"+strconv.Itoa(domain.StHelenaTotalCards))
+		}
 	})
 
 	t.Run("stalemate", func(t *testing.T) {
