@@ -717,3 +717,23 @@ func TestSergeantMajorRemembersTheAbsorbedKitty(t *testing.T) {
 		}
 	}
 }
+
+// GetSurplus はラウンド精算後に「トリック数 − ノルマ」を返し、範囲外は 0 を返す。
+func TestSergeantMajor_GetSurplus(t *testing.T) {
+	s := newTestSergeantMajor(t)
+	s.SetDealerIdxForTest(0)
+	playOutSergeantMajorSetup(t, s)
+	// targets: seat 0 (dealer) -> 8, seat 1 -> 5, seat 2 -> 3
+	s.GiveTricksForTest(0, 10) // 10 - 8 = +2
+	s.GiveTricksForTest(1, 4)  // 4 - 5 = -1
+	s.GiveTricksForTest(2, 2)  // 2 - 3 = -1
+	s.FinishRoundForTest()
+
+	assert.Equal(t, 2, s.GetSurplus(0), "親は +2 トリック超過")
+	assert.Equal(t, -1, s.GetSurplus(1), "席1は -1 トリック不足")
+	assert.Equal(t, -1, s.GetSurplus(2), "席2は -1 トリック不足")
+
+	assert.Equal(t, 0, s.GetSurplus(-1), "範囲外（負）は 0")
+	assert.Equal(t, 0, s.GetSurplus(3), "範囲外（超過）は 0")
+	assert.Equal(t, 0, s.GetSurplus(99), "範囲外（超過）は 0")
+}

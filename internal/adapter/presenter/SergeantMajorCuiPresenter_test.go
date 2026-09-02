@@ -123,6 +123,38 @@ func TestSergeantMajorCuiPresenterRoundEndPrompt(t *testing.T) {
 	assert.Contains(t, p.Output(s, nil), i18n.T("sergeantmajor.promptNext"))
 }
 
+func TestSergeantMajorCuiPresenterRoundEndForfeitNotice(t *testing.T) {
+	p := new(SergeantMajorCuiPresenter)
+
+	t.Run("shortfall warning for negative surplus", func(t *testing.T) {
+		s := newSergeantMajorForCui(t)
+		s.SetPhaseForTest(domain.SergeantMajorPhaseRoundEnd)
+		s.SetSurplusForTest([]int{-2, 1, 1})
+		out := p.Output(s, nil)
+		assert.Contains(t, out, "ノルマに2トリック届きませんでした。次のラウンドで最強札2枚を没収され、代わりに相手の最弱札を受け取ります。")
+		assert.NotContains(t, out, "超過しました")
+	})
+
+	t.Run("surplus notice for positive surplus", func(t *testing.T) {
+		s := newSergeantMajorForCui(t)
+		s.SetPhaseForTest(domain.SergeantMajorPhaseRoundEnd)
+		s.SetSurplusForTest([]int{3, -2, -1})
+		out := p.Output(s, nil)
+		assert.Contains(t, out, "ノルマを3トリック超過しました。次のラウンドで未達の席から最強札を3枚もらえます。")
+		assert.NotContains(t, out, "届きませんでした")
+	})
+
+	t.Run("no notice when surplus is exactly zero", func(t *testing.T) {
+		s := newSergeantMajorForCui(t)
+		s.SetPhaseForTest(domain.SergeantMajorPhaseRoundEnd)
+		s.SetSurplusForTest([]int{0, 0, 0})
+		out := p.Output(s, nil)
+		assert.NotContains(t, out, "届きませんでした")
+		assert.NotContains(t, out, "超過しました")
+		assert.Contains(t, out, "next・・・次のラウンドへ")
+	})
+}
+
 func TestSergeantMajorCuiPresenterGameEndBanners(t *testing.T) {
 	p := new(SergeantMajorCuiPresenter)
 	for _, tc := range []struct {

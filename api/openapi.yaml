@@ -55562,6 +55562,12 @@ components:
         score:
           type: integer
           description: Running total of (tricks - target). The game is decided on this.
+        surplus:
+          type: integer
+          description: >-
+            Last round's trick surplus (+) or shortfall (-). A shortfall is taken
+            out of this seat's best cards on the next deal. Only meaningful during
+            RoundEnd; cleared when the next hand is dealt.
     SergeantMajorResponse:
       type: object
       description: Response payload for /sergeantmajor/exec

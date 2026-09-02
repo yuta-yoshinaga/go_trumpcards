@@ -35,6 +35,8 @@ type SergeantMajorWebOutputPlayer struct {
 	TrickCount int `json:"trickCount"`
 	// Score は「ノルマとの差」の累計。**勝敗はこれで決まる。**
 	Score int `json:"score"`
+	// Surplus は前ラウンドの過不足（+ が超過、- が不足。ROUND_END フェーズのみ）。
+	Surplus int `json:"surplus"`
 }
 
 // SergeantMajorWebOutputHint ヒント出力

@@ -25,6 +25,12 @@ export interface SergeantMajorPlayer {
   trickCount: number;
   /** Running total of (tricks − target). **The game is decided on this.** */
   score: number;
+  /**
+   * Previous round's trick surplus/deficit (`tricks − target`).
+   * Positive means surplus, negative means shortfall.
+   * Only populated during `RoundEnd` phase (cleared on the next deal).
+   */
+  surplus: number;
 }
 
 /**

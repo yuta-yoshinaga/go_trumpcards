@@ -137,6 +137,12 @@ func (p *SergeantMajorCuiPresenter) Output(s interfaces.SergeantMajorGame, lastE
 				sb.WriteString(i18n.T("sergeantmajor.promptDiscardWait") + "\n")
 			}
 		case domain.SergeantMajorPhaseRoundEnd:
+			surplus := s.GetSurplus(0)
+			if surplus < 0 {
+				sb.WriteString(i18n.Tf("sergeantmajor.forfeitWarn", "n", strconv.Itoa(-surplus)) + "\n")
+			} else if surplus > 0 {
+				sb.WriteString(i18n.Tf("sergeantmajor.forfeitGain", "n", strconv.Itoa(surplus)) + "\n")
+			}
 			sb.WriteString(i18n.T("sergeantmajor.promptNext") + "\n")
 		default:
 			currentIdx := s.GetCurrentPlayerIdx()
