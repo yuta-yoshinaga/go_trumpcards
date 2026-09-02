@@ -15,6 +15,8 @@
   "eventSnapWrong": "{{name}} called wrongly and paid a card.",
   "eventEliminated": "{{name}} has run out of stock.",
   "promptCurrentPlayer": "To turn: {{name}}",
+  "pendingSnap": "! {{name}} has a snap call queued. Type n first to beat them to it (t lets the reaction play out).",
+  "pendingStep": "{{name}} is about to turn the next card (t lets the reaction play out).",
   "promptPlay": "s ... turn a card / n ... call snap / t ... let the CPUs react",
   "gameEndYou": "Game over! You win.",
   "gameEndCpu": "Game over! {{name}} wins.",

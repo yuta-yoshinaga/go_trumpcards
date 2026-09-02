@@ -71,6 +71,17 @@ func (p *SnapCuiPresenter) Output(s interfaces.SnapGame, lastErr error) string {
 		currentIdx := s.GetCurrentTurnIdx()
 		sb.WriteString(i18n.Tf("snap.promptCurrentPlayer",
 			"name", cuiPlayerName(s.GetPlayer(currentIdx), currentIdx)) + "\n")
+		// **反射ゲームの核は「先に気づいて宣言する」こと。**CUI は 1 コマンドごと
+		// にしか進まないので、CPU の予約が見えないと割り込む機会そのものが無い。
+		switch pending := s.GetPending(); pending.Kind {
+		case domain.SnapPendingSnap:
+			sb.WriteString(color.Yellow(i18n.Tf("snap.pendingSnap",
+				"name", cuiPlayerName(s.GetPlayer(pending.PlayerIdx), pending.PlayerIdx))) + "\n")
+		case domain.SnapPendingStep:
+			sb.WriteString(i18n.Tf("snap.pendingStep",
+				"name", cuiPlayerName(s.GetPlayer(pending.PlayerIdx), pending.PlayerIdx)) + "\n")
+		case domain.SnapPendingNone:
+		}
 		sb.WriteString(i18n.T("snap.promptPlay") + "\n")
 	})
 }
