@@ -18,6 +18,8 @@ type MrsMopInteractorIF interface {
 	ResetWithConfig(cfg domain.MrsMopConfig) string
 	// MoveTableauToTableau タブロー間でカードを移動
 	MoveTableauToTableau(fromCol, cardIndex, toCol int) string
+	// Targets 置ける先を一覧する
+	Targets(fromCol, cardIndex int) string
 	// GiveUp ギブアップ
 	GiveUp() string
 	// Hint ヒント取得
@@ -62,6 +64,11 @@ func (si *MrsMopInteractor) ResetWithConfig(cfg domain.MrsMopConfig) string {
 // MoveTableauToTableau タブロー間でカードを移動
 func (si *MrsMopInteractor) MoveTableauToTableau(fromCol, cardIndex, toCol int) string {
 	return execAndPresent(si.Game, si.sp, func() error { return si.Game.MoveTableauToTableau(fromCol, cardIndex, toCol) })
+}
+
+// Targets は置ける先を一覧する。
+func (si *MrsMopInteractor) Targets(fromCol, cardIndex int) string {
+	return si.sp.TargetsOutput(si.Game, fromCol, cardIndex)
 }
 
 // Hint ヒント取得

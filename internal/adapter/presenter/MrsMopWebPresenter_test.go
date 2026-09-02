@@ -343,3 +343,16 @@ func TestMrsMopWebPresenter_ActionLogOutput(t *testing.T) {
 		assert.Empty(t, out.Entries)
 	})
 }
+
+// **Web に `targets` に当たる操作は無い。** 選んだ瞬間に置ける先が見えているので、
+// TargetsOutput は通常の盤面をそのまま返す ── ここで CUI 専用の応答を返すと、
+// その形が Web の経路に紛れ込む (Perseverance と同じ扱い)。
+func TestMrsMopWebPresenter_TargetsOutputReturnsTheBoard(t *testing.T) {
+	sg := new(interfaces.MockMrsMopGame)
+	setupMrsMopOutputMock(sg)
+	p := new(MrsMopWebPresenter)
+
+	// 添字が何であっても盤面と同じ。ドメインの LegalTargets は呼ばない。
+	assert.JSONEq(t, p.Output(sg, nil), p.TargetsOutput(sg, 3, -1))
+	sg.AssertNotCalled(t, "LegalTargets", 3, -1)
+}

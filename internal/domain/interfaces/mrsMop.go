@@ -15,6 +15,8 @@ type MrsMopGame interface {
 	ResetWithConfig(cfg domain.MrsMopConfig)
 	// MoveTableauToTableau タブロー間でカードを移動する
 	MoveTableauToTableau(fromCol, cardIndex, toCol int) error
+	// LegalTargets 列 fromCol の札 cardIndex から始まる並びを置ける列を取得する
+	LegalTargets(fromCol, cardIndex int) (int, []int)
 	// GetHint ヒントを取得する
 	GetHint() *domain.MrsMopHint
 	// GetPhase 現在のフェーズを取得する

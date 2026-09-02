@@ -399,6 +399,72 @@ func (s *MrsMop) SetScore(score int) { s.score = score }
 
 // --- Private helpers ---
 
+// movableRunStart は列 col でまとめて動かせる一番深い索引を返す。
+// 動かせる札が無ければ -1。
+func (s *MrsMop) movableRunStart(col int) int {
+	cards := s.tableau[col]
+	start := -1
+	for i := len(cards) - 1; i >= 0; i-- {
+		if !cards[i].FaceUp || !s.isValidMrsMopSequence(cards[i:]) {
+			break
+		}
+		start = i
+	}
+	return start
+}
+
+// LegalTargets は列 fromCol の札 cardIndex から始まる並びを置ける列を、
+// 実際に見た索引と一緒に返す。
+//
+// **索引も返すのは、既定を解決したあとの本当の値を画面に出すため。**
+// 呼び出し側が -1 のまま表示すると、盤と食い違うことを言う。
+//
+// **13 列を押して試すのは現実的でない。** Web は選択の瞬間に置ける先を
+// リングで示しているのに、CUI は打ってサーバに弾かれるまで分からなかった
+// (Perseverance が #5581 で同じ問題を解いている)。
+//
+// 判定は `MoveTableauToTableau` と同じ 2 つ (`isValidMrsMopSequence` と
+// `canPlaceOnTableau`) をそのまま呼ぶ ── 規則を書き直すと、一覧に出た先が
+// 拒否される日が来る。動かせない並びなら空を返す。
+func (s *MrsMop) LegalTargets(fromCol, cardIndex int) (int, []int) {
+	if fromCol < 0 || fromCol >= MrsMopTableauCnt {
+		return cardIndex, []int{}
+	}
+	fromCards := s.tableau[fromCol]
+	// **索引を省いたときは「一番長く動かせる並び」を見る。** 列の一番奥は
+	// 伏せ札なので、0 を既定にすると常に「動かせない」と答えることになる。
+	//
+	// **フェーズを見るより先に解決する。** これは盤だけで決まる値で、後ろに
+	// 置くと終局後に -1 がそのまま返り、CUI が「札-1 は動かせない」と盤に
+	// 存在しない札を名指しする (レビュー指摘)。
+	if cardIndex < 0 {
+		cardIndex = s.movableRunStart(fromCol)
+	}
+	if s.phase != MrsMopPhasePlaying {
+		return cardIndex, []int{}
+	}
+	if cardIndex < 0 || cardIndex >= len(fromCards) {
+		return cardIndex, []int{}
+	}
+	if !fromCards[cardIndex].FaceUp {
+		return cardIndex, []int{}
+	}
+	if !s.isValidMrsMopSequence(fromCards[cardIndex:]) {
+		return cardIndex, []int{}
+	}
+	bottom := fromCards[cardIndex].Card
+	targets := make([]int, 0, MrsMopTableauCnt)
+	for col := 0; col < MrsMopTableauCnt; col++ {
+		if col == fromCol {
+			continue
+		}
+		if s.canPlaceOnTableau(bottom, col) {
+			targets = append(targets, col)
+		}
+	}
+	return cardIndex, targets
+}
+
 // canPlaceOnTableau タブローにカードを置けるか判定
 func (s *MrsMop) canPlaceOnTableau(card *Card, col int) bool {
 	colCards := s.tableau[col]

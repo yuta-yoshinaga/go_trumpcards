@@ -4,10 +4,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newMockMrsMopInteractor() *mockusecase.MockMrsMopInteractor {
@@ -242,4 +244,47 @@ func TestMrsMopCuiControllerEmpty(t *testing.T) {
 	c := NewMrsMopCuiController(si)
 	result := c.Exec("")
 	assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
+}
+
+// **`t` は列だけでも打てる (#6596)。** 索引を省いたら -1 を渡し、
+// 「一番長く動かせる並び」の解決はドメインに任せる — 既定を 2 箇所で決めない。
+func TestMrsMopCuiController_Targets(t *testing.T) {
+	t.Run("列だけなら索引は -1 で渡す", func(t *testing.T) {
+		si := new(mockusecase.MockMrsMopInteractor)
+		si.On("Targets", 3, -1).Return("targets")
+		assert.Equal(t, "targets", NewMrsMopCuiController(si).Exec("t 3"))
+		si.AssertExpectations(t)
+	})
+
+	t.Run("索引を明示すればそのまま渡す", func(t *testing.T) {
+		si := new(mockusecase.MockMrsMopInteractor)
+		si.On("Targets", 3, 2).Return("targets")
+		assert.Equal(t, "targets", NewMrsMopCuiController(si).Exec("targets 3 2"))
+		si.AssertExpectations(t)
+	})
+
+	t.Run("列が数字でなければドメインに訊かない", func(t *testing.T) {
+		si := new(mockusecase.MockMrsMopInteractor)
+		out := NewMrsMopCuiController(si).Exec("t x")
+		assert.NotEmpty(t, out)
+		si.AssertNotCalled(t, "Targets", mock.Anything, mock.Anything)
+	})
+
+	// **索引が数字でない場合も列と同じく弾く。** 列だけを試していると、
+	// 2 つ目の引数の分岐は一度も踏まれない (レビュー指摘)。
+	t.Run("索引が数字でなければドメインに訊かない", func(t *testing.T) {
+		si := new(mockusecase.MockMrsMopInteractor)
+		out := NewMrsMopCuiController(si).Exec("t 3 x")
+		assert.NotEmpty(t, out)
+		assert.Contains(t, out, i18n.Tf("invalidCardIndex", "val", "x"))
+		si.AssertNotCalled(t, "Targets", mock.Anything, mock.Anything)
+	})
+
+	// 引数が無ければ列を訊き返す。ここでもドメインは叩かない。
+	t.Run("引数が無ければ列を訊き返す", func(t *testing.T) {
+		si := new(mockusecase.MockMrsMopInteractor)
+		out := NewMrsMopCuiController(si).Exec("t")
+		assert.Contains(t, out, i18n.T("promptFromColumn"))
+		si.AssertNotCalled(t, "Targets", mock.Anything, mock.Anything)
+	})
 }
