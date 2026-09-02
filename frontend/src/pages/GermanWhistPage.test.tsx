@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { germanwhistApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, GermanWhistResponse } from '../types/card';
 import { GermanWhistPage } from './GermanWhistPage';
@@ -212,5 +213,68 @@ describe('GermanWhistPage', () => {
     expect(human).toHaveTextContent('得点トリック: 4');
     // 同じ数字が両方に使われていたら見分けられない。
     expect(human).not.toHaveTextContent('獲得トリック: 4');
+  });
+
+  // **通常表示ではクリック以外の入力手段が無かった。**
+  describe('keyboard shortcuts', () => {
+    it('gives up on g during the human turn', async () => {
+      mockExec.mockResolvedValue(makeState());
+      renderWithProviders(<GermanWhistPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: '投了' })).toBeInTheDocument());
+      mockExec.mockClear();
+
+      fireEvent.keyDown(document, { key: 'g' });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+    });
+
+    it('asks for confirmation on r rather than resetting outright', async () => {
+      mockExec.mockResolvedValue(makeState());
+      renderWithProviders(<GermanWhistPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: '投了' })).toBeInTheDocument());
+      mockExec.mockClear();
+
+      fireEvent.keyDown(document, { key: 'r' });
+      expect(await screen.findByRole('button', { name: 'キャンセル' })).toBeInTheDocument();
+      await flushPendingDispatch();
+      expect(mockExec).not.toHaveBeenCalled();
+    });
+
+    // **CPU の手番で撃たない。**これがゲートの目的。
+    it('ignores the keys while it is the opponent turn', async () => {
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+      renderWithProviders(<GermanWhistPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: '投了' })).toBeInTheDocument());
+      mockExec.mockClear();
+
+      fireEvent.keyDown(document, { key: 'g' });
+      fireEvent.keyDown(document, { key: 'r' });
+      await flushPendingDispatch();
+      expect(mockExec).not.toHaveBeenCalled();
+      expect(screen.queryByRole('button', { name: 'キャンセル' })).not.toBeInTheDocument();
+    });
+
+    // 終局後は投了が消え、リセットだけが残る。
+    it('still offers reset after the game ends, but not give-up', async () => {
+      mockExec.mockResolvedValue(makeState({ gameEndFlag: true, phase: 2, winnerIdx: 0 }));
+      renderWithProviders(<GermanWhistPage />);
+      await waitFor(() => expect(screen.queryByRole('button', { name: '投了' })).not.toBeInTheDocument());
+      mockExec.mockClear();
+
+      fireEvent.keyDown(document, { key: 'g' });
+      await flushPendingDispatch();
+      expect(mockExec).not.toHaveBeenCalled();
+
+      fireEvent.keyDown(document, { key: 'r' });
+      expect(await screen.findByRole('button', { name: 'キャンセル' })).toBeInTheDocument();
+    });
+
+    it('advertises both shortcuts in the panel', async () => {
+      mockExec.mockResolvedValue(makeState());
+      renderWithProviders(<GermanWhistPage />);
+      const panel = await screen.findByTestId('germanwhist-kbd-shortcuts');
+      fireEvent.click(screen.getByText('キーボードショートカット'));
+      expect(panel).toHaveTextContent('ゲームをやり直す');
+      expect(panel).toHaveTextContent('投了する');
+    });
   });
 });
