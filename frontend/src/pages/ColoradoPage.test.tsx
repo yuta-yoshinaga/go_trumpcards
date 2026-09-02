@@ -45,6 +45,7 @@ function makeState(overrides: Partial<ColoradoResponse> = {}): ColoradoResponse 
     phase: 0,
     moveCount: 0,
     canUndo: false,
+    isStalemate: false,
     message: '',
     messageCode: 'colorado.playing',
     ...overrides,
@@ -311,5 +312,35 @@ describe('ColoradoPage', () => {
     mockExec.mockRejectedValue(new Error('boom'));
     renderWithProviders(<ColoradoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /再試行|retry/i })).toBeInTheDocument());
+  });
+
+  it('renders stalemate escape button when stuck and dispatches undo_n with the escape count', async () => {
+    mockExec.mockResolvedValue(makeState({ isStalemate: true, undoToEscape: 3, canUndo: true }));
+    renderWithProviders(<ColoradoPage />);
+    const escapeBtn = await screen.findByTestId('stalemate-escape-button');
+    expect(escapeBtn).toBeInTheDocument();
+
+    mockExec.mockClear();
+    fireEvent.click(escapeBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, 3));
+  });
+
+  it('does not render stalemate escape button when isStalemate is false', async () => {
+    // undoToEscape is set to a positive value to verify gating on isStalemate
+    mockExec.mockResolvedValue(makeState({ isStalemate: false, undoToEscape: 3 }));
+    renderWithProviders(<ColoradoPage />);
+    // **描画が終わるまで待つ。**reset の呼び出しを待つだけだと、まだ骨組みしか
+    // 出ていない時点で「無い」と読めてしまい、条件を外しても通る。
+    expect(await screen.findByRole('button', { name: 'ギブアップ' })).toBeInTheDocument();
+    expect(screen.queryByTestId('stalemate-escape-button')).not.toBeInTheDocument();
+  });
+
+  it('does not render stalemate escape button when undoToEscape is 0 even if isStalemate is true', async () => {
+    mockExec.mockResolvedValue(makeState({ isStalemate: true, undoToEscape: 0 }));
+    renderWithProviders(<ColoradoPage />);
+    // **描画が終わるまで待つ。**reset の呼び出しを待つだけだと、まだ骨組みしか
+    // 出ていない時点で「無い」と読めてしまい、条件を外しても通る。
+    expect(await screen.findByRole('button', { name: 'ギブアップ' })).toBeInTheDocument();
+    expect(screen.queryByTestId('stalemate-escape-button')).not.toBeInTheDocument();
   });
 });
