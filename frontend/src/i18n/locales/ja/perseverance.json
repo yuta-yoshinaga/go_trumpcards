@@ -38,6 +38,7 @@
   },
   "kbd": {
     "undo": "Z",
+    "redeal": "R",
     "hint": "H",
     "autoComplete": "A",
     "giveUp": "G"
