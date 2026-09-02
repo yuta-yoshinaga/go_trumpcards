@@ -57964,6 +57964,21 @@ components:
                 type: string
               multiplier:
                 type: integer
+        superBonusPayouts:
+          type: array
+          description: >-
+            Super Bonus payouts, highest first. Staked automatically with the
+            ante, so it is served before the bet is placed. Odds is a string
+            because the table has fractional entries such as 1.5:1.
+          items:
+            type: object
+            properties:
+              hand:
+                type: integer
+              name:
+                type: string
+              odds:
+                type: string
         config:
           type: object
           properties:
