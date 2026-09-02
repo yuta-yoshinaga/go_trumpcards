@@ -350,9 +350,41 @@ func TestRollingStone_GiveUp(t *testing.T) {
 	r.GiveUp()
 	assert.True(t, r.GetGameEndFlag())
 	assert.Positive(t, r.GetWinnerIdx(), "投了した席は勝者にならない")
+	// **投了と膠着は勝者の手札枚数では区別できない。** 理由そのものを持つ。
+	assert.Equal(t, RollingStoneWinGiveUp, r.GetWinReason())
 	before := r.GetWinnerIdx()
 	r.GiveUp()
 	assert.Equal(t, before, r.GetWinnerIdx())
+	assert.Equal(t, RollingStoneWinGiveUp, r.GetWinReason())
+}
+
+// 膠着で切った局と、手札を出し切った局は、それぞれ別の理由を残す。
+func TestRollingStone_WinReasonTellsTheThreeEndingsApart(t *testing.T) {
+	fresh := newTestRollingStone(t)
+	assert.Empty(t, fresh.GetWinReason(), "決着前は空")
+
+	stale := newTestRollingStone(t)
+	stale.ForceStalemateForTest()
+	require.True(t, stale.GetGameEndFlag())
+	assert.Equal(t, RollingStoneWinStalemate, stale.GetWinReason())
+
+	// 投了とは違う値になる（同じ「勝者に札が残る」形なので、ここが要）。
+	assert.NotEqual(t, RollingStoneWinGiveUp, stale.GetWinReason())
+}
+
+// **KV に保存して次のリクエストで復元した時点で理由が消えると、投了した局が
+// また膠着として説明される。**
+func TestRollingStone_WinReasonSurvivesTheSnapshot(t *testing.T) {
+	r := newTestRollingStone(t)
+	r.GiveUp()
+	require.Equal(t, RollingStoneWinGiveUp, r.GetWinReason())
+
+	data, err := json.Marshal(r)
+	require.NoError(t, err)
+
+	var restored RollingStone
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, RollingStoneWinGiveUp, restored.GetWinReason())
 }
 
 func TestRollingStone_Hint(t *testing.T) {

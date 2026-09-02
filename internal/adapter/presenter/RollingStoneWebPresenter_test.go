@@ -117,12 +117,20 @@ func TestRollingStoneWebPresenterMessages(t *testing.T) {
 		assert.Equal(t, "8", m["messageParams"].(map[string]any)["n"])
 	})
 
+	// **投了は膠着ではない。** どちらも勝者に札が残るので枚数では区別できず、
+	// この経路はかつて投了した局にも「決着せず」を返していた。
 	t.Run("投了すると相手の勝ち", func(t *testing.T) {
 		r := newRollingStoneForWeb(t)
 		r.GiveUp()
 		m := decodeRollingStone(t, p.Output(r, nil))
-		// 手札が残ったままなので「決着せず」扱い。
-		assert.Contains(t, []any{"rollingstone.result.cpu", "rollingstone.result.stalemate"}, m["messageCode"])
+		assert.Equal(t, "rollingstone.result.giveUp", m["messageCode"])
+	})
+
+	t.Run("上限で切った局は膠着として説明する", func(t *testing.T) {
+		r := newRollingStoneForWeb(t)
+		r.ForceStalemateForTest()
+		m := decodeRollingStone(t, p.Output(r, nil))
+		assert.Equal(t, "rollingstone.result.stalemate", m["messageCode"])
 	})
 
 	// **上限で切った局は「上がった」わけではない。** 言い分ける。

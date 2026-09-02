@@ -47,6 +47,7 @@ function makeState(overrides: Partial<RollingStoneResponse> = {}): RollingStoneR
     discarded: 8,
     gameEndFlag: false,
     winnerIdx: -1,
+    winReason: '',
     config: { playerCnt: 4 },
     message: '',
     ...overrides,
@@ -194,6 +195,7 @@ describe('RollingStonePage', () => {
         gameEndFlag: true,
         phase: 1,
         winnerIdx: 2,
+        winReason: 'stalemate',
         players: [seat(0), seat(1), seat(2, { cardCount: 3 }), seat(3)],
       }),
     );
@@ -201,6 +203,24 @@ describe('RollingStonePage', () => {
     const banner = await screen.findByTestId('rs-result');
     expect(banner).toHaveTextContent(/決着が付かなかった/);
     expect(banner).toHaveTextContent('3');
+  });
+
+  // **投了も膠着も勝者に札が残る。** 枚数で分岐していたので、投了した局にも
+  // 「決着が付かなかった」と出ていた。
+  it('says the human resigned rather than calling it a stalemate', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        gameEndFlag: true,
+        phase: 1,
+        winnerIdx: 2,
+        winReason: 'giveUp',
+        players: [seat(0), seat(1), seat(2, { cardCount: 3 }), seat(3)],
+      }),
+    );
+    renderWithProviders(<RollingStonePage />);
+    const banner = await screen.findByTestId('rs-result');
+    expect(banner).toHaveTextContent('あなたが投了しました');
+    expect(banner).not.toHaveTextContent(/決着が付かなかった/);
   });
 
   it('reports a CPU running out first', async () => {

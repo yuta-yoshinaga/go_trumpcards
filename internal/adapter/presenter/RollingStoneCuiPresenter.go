@@ -71,11 +71,15 @@ func (p *RollingStoneCuiPresenter) Output(s interfaces.RollingStoneGame, lastErr
 		if s.GetGameEndFlag() {
 			var banner string
 			switch {
-			case s.GetWinnerIdx() >= 0 && s.GetPlayer(s.GetWinnerIdx()).GetCardsSize() > 0:
-				// **上限で切った局は「上がった」わけではない。**
+			// **勝者に札が残っていることは理由を語らない。** 上限で切った局も
+			// 投了した局も勝者は札を持っている。理由そのもので言い分ける。
+			case s.GetWinReason() == domain.RollingStoneWinStalemate:
 				banner = i18n.Tf("rollingstone.gameEndStalemate",
 					"name", cuiPlayerName(s.GetPlayer(s.GetWinnerIdx()), s.GetWinnerIdx()),
 					"n", strconv.Itoa(s.GetPlayer(s.GetWinnerIdx()).GetCardsSize()))
+			case s.GetWinReason() == domain.RollingStoneWinGiveUp:
+				banner = i18n.Tf("rollingstone.gameEndGiveUp",
+					"name", cuiPlayerName(s.GetPlayer(s.GetWinnerIdx()), s.GetWinnerIdx()))
 			case s.GetWinnerIdx() == 0:
 				banner = i18n.T("rollingstone.gameEndYou")
 			default:

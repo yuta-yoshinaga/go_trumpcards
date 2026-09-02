@@ -47,6 +47,7 @@ func (m *MockRollingStoneGame) GetDiscarded() int             { return m.Called(
 func (m *MockRollingStoneGame) GetDeckSize() int              { return m.Called().Int(0) }
 func (m *MockRollingStoneGame) GetPlayerCnt() int             { return m.Called().Int(0) }
 func (m *MockRollingStoneGame) GetWinnerIdx() int             { return m.Called().Int(0) }
+func (m *MockRollingStoneGame) GetWinReason() string          { return m.Called().String(0) }
 
 func (m *MockRollingStoneGame) GetValidPlayIndices(playerIdx int) []int {
 	args := m.Called(playerIdx)
