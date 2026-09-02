@@ -5,7 +5,6 @@ package presenter
 import (
 	"errors"
 	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -55,16 +54,11 @@ func TestBigBenCuiPresenter_Output(t *testing.T) {
 		result := new(BigBenCuiPresenter).Output(g, nil)
 		assert.Contains(t, result, "Big Ben")
 		assert.Contains(t, result, i18n.T("bigben.foundationHeader"))
-		// **文字盤は時刻で呼ぶ (#6601)。** 9 時始まりなので添字 0 は 9 時。
-		// 生の添字だと、Web が丁寧に直したズレを CUI プレイヤーが知りようがない。
-		assert.Contains(t, result, "[9時]")
-		assert.Contains(t, result, "[8時]", "all twelve faces are rendered")
-		// **タブローの札位置も [0] と書く。** 文字盤の行だけを見る。
-		for _, line := range strings.Split(result, "\n") {
-			if strings.HasPrefix(line, "[") {
-				assert.NotContains(t, line, "[0]", "文字盤に生の添字は出さない")
-			}
-		}
+		// **時刻と添字の両方を出す (#6601)。** 9 時始まりなので添字 0 は 9 時。
+		// 時刻が無いと Web が直したズレを CUI プレイヤーが知りようがなく、
+		// 添字が無いと `m <col> f <idx>` に打ち込む値が盤から消える。
+		assert.Contains(t, result, "[0] 9時")
+		assert.Contains(t, result, "[11] 8時", "all twelve faces are rendered")
 		assert.NotContains(t, result, "{{")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "列7:", "all eight columns are rendered")
@@ -236,7 +230,8 @@ func TestBigBenCuiPresenter_LabelsFacesByClockHour(t *testing.T) {
 	seen := make([]int, 0, domain.BigBenFoundationCnt)
 	for i := range domain.BigBenFoundationCnt {
 		hour := domain.BigBenTargetRank(i)
-		assert.Contains(t, out, "["+strconv.Itoa(hour)+"時]", "面 %d は %d 時", i, hour)
+		assert.Contains(t, out, "["+strconv.Itoa(i)+"] "+strconv.Itoa(hour)+"時",
+			"面 %d は %d 時。添字は入力に要るので残す", i, hour)
 		seen = append(seen, hour)
 	}
 	// 9 時始まりであること自体を固定する。全部 0 を返す実装でも上は通る。

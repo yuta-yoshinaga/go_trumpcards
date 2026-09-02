@@ -36,7 +36,11 @@ func (p *BigBenCuiPresenter) Output(gc interfaces.BigBenGame, lastErr error) str
 			// **添字ではなく時刻で呼ぶ。** 盤は 9 時始まりで添字 0 が 9 時なので、
 			// 生の添字だけでは「Big Ben」の文字盤のどこを指しているのか読めない。
 			// 対応はドメインの `BigBenTargetRank` が既に持っている (Web も同じ並び)。
+			// **添字も残す。** `m <col> f <idx>` に打ち込むのはこの番号なので、
+			// 時刻だけにすると読みやすさと引き換えに、入力に要る値が盤から
+			// 消える (レビュー指摘)。
 			b.WriteString(i18n.Tf("bigben.faceLabel",
+				"idx", strconv.Itoa(i),
 				"hour", strconv.Itoa(domain.BigBenTargetRank(i))))
 			pile := foundation[i]
 			if len(pile) == 0 {

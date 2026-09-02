@@ -10,7 +10,7 @@
   "promptFaceIdx": "文字盤の番号 (0..11) を入力してください:",
   "invalidFaceIdx": "無効な文字盤番号です: {{val}}",
   "foundationHeader": "文字盤 (9時から時計回り):",
-  "faceLabel": "[{{hour}}時]",
+  "faceLabel": "[{{idx}}] {{hour}}時",
   "faceTarget": "→{{rank}}",
   "faceComplete": "✔完成",
   "columnLabel": "列{{col}}:",

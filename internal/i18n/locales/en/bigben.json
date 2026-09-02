@@ -10,7 +10,7 @@
   "promptFaceIdx": "Enter the clock face index (0..11):",
   "invalidFaceIdx": "Invalid clock face index: {{val}}",
   "foundationHeader": "Clock faces (clockwise from 9 o'clock):",
-  "faceLabel": "[{{hour}} o’clock]",
+  "faceLabel": "[{{idx}}] {{hour}} o'clock",
   "faceTarget": "-> {{rank}}",
   "faceComplete": "done",
   "columnLabel": "Column {{col}}:",
