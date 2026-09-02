@@ -24,6 +24,7 @@
   "hintAvailable": "ヒントがあります",
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
+  "emptyColumnAriaLabel": "空の列 {{col}}（キングのみ置けます）",
   "drawMode": "ドローモード",
   "drawMode1": "1枚引き",
   "drawMode3": "3枚引き",

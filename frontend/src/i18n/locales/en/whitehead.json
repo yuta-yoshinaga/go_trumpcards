@@ -24,6 +24,7 @@
   "hintAvailable": "Hint available",
   "foundationAriaLabel": "Foundation {{suit}} {{count}} cards",
   "emptyFoundationAriaLabel": "Empty Foundation ({{suit}})",
+  "emptyColumnAriaLabel": "Empty column {{col}} (kings only)",
   "drawMode": "Draw Mode",
   "drawMode1": "Draw 1",
   "drawMode3": "Draw 3",

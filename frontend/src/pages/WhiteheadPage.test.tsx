@@ -208,6 +208,33 @@ describe('WhiteheadPage', () => {
     expect(kElements.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('empty tableau column buttons have aria-label announcing 1-based column number and king rule without unresolved placeholders', async () => {
+    renderWithProviders(<WhiteheadPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    // In playingState, columns 3, 4, 5, 6, 7 (1-based) are empty.
+    // Each empty column must have a distinct aria-label containing its column number.
+    const col3Button = screen.getByRole('button', { name: '空の列 3（キングのみ置けます）' });
+    const col7Button = screen.getByRole('button', { name: '空の列 7（キングのみ置けます）' });
+
+    expect(col3Button).toBeInTheDocument();
+    expect(col7Button).toBeInTheDocument();
+    expect(col3Button).not.toBe(col7Button);
+
+    for (const colNum of [3, 4, 5, 6, 7]) {
+      const btn = screen.getByRole('button', { name: `空の列 ${colNum}（キングのみ置けます）` });
+      expect(btn).toBeInTheDocument();
+      const ariaLabel = btn.getAttribute('aria-label');
+      expect(ariaLabel).toBe(`空の列 ${colNum}（キングのみ置けます）`);
+      expect(ariaLabel).not.toContain('{{');
+      expect(ariaLabel).not.toContain('}}');
+    }
+
+    // Filled columns (1, 2) must not have empty-column buttons.
+    expect(screen.queryByRole('button', { name: '空の列 1（キングのみ置けます）' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '空の列 2（キングのみ置けます）' })).not.toBeInTheDocument();
+  });
+
   it('clicking draw button dispatches draw', async () => {
     renderWithProviders(<WhiteheadPage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
