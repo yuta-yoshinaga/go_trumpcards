@@ -300,3 +300,38 @@ func TestCaribbeanDrawCuiPresenter_Output_JackpotIsExplainedBeforeBetting(t *tes
 	assert.NotContains(t, outputInPhase(domain.CaribbeanDrawPhaseEnd),
 		i18n.T("caribbeandraw.jackpotHelp"))
 }
+
+// **当たった側注も名前で言う (#6606)。** Web はラウンド終了時に payout.jackpot を
+// 出しているのに、CUI は合計しか出さないので、任意で賭けたジャックポットが
+// 当たった事実も金額も画面から消えていた。
+func TestCaribbeanDrawCuiPresenter_ShowsTheJackpotPayout(t *testing.T) {
+	p := new(CaribbeanDrawCuiPresenter)
+
+	t.Run("names the jackpot when it pays", func(t *testing.T) {
+		m := new(interfaces.MockCaribbeanDrawGame)
+		setupCaribbeanDrawCuiMockDefaults(m)
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetGameEndFlag")
+		m.On("GetGameEndFlag").Return(true)
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetJackpotPayout")
+		m.On("GetJackpotPayout").Return(500)
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetTotalPayout")
+		m.On("GetTotalPayout").Return(520)
+
+		out := p.Output(m, nil)
+
+		// **合計と取り違えていないこと。** 同じ値だと入れ替えでも通るので別の数にする。
+		assert.Contains(t, out, "ジャックポット: 500")
+		assert.Contains(t, out, "520")
+		assert.NotContains(t, out, "{{")
+	})
+
+	// **負のコントロール**: 賭けていない / 外れたラウンドで 0 の行を出さない。
+	t.Run("stays quiet when the jackpot paid nothing", func(t *testing.T) {
+		m := new(interfaces.MockCaribbeanDrawGame)
+		setupCaribbeanDrawCuiMockDefaults(m)
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetGameEndFlag")
+		m.On("GetGameEndFlag").Return(true)
+
+		assert.NotContains(t, p.Output(m, nil), "ジャックポット:")
+	})
+}
