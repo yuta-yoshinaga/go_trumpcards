@@ -209,7 +209,11 @@ function ReversisPageContent() {
             </div>
 
             {resultBanner && (
-              <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
+              <div
+                className="text-center text-xl my-4 text-ds-accent font-semibold"
+                role="status"
+                data-testid="rv-result"
+              >
                 {resultBanner}
               </div>
             )}
