@@ -36,7 +36,12 @@ func TestLingerLongerCuiPresenterOutput(t *testing.T) {
 	// 初期値 0 のままを見るだけでは、定数を出す実装も通ってしまう。
 	played := newLingerLongerForCui(t)
 	for i := 0; i < played.GetPlayerCnt(); i++ {
-		require.NoError(t, played.PlayForTest(played.GetCurrentPlayerIdx(), 0))
+		// **添字 0 が合法とは限らない。** フォロー義務があるので、配りによっては
+		// 拒否されて 3 回に 1 回落ちる。その席で出せる札を選ぶ。
+		idx := played.GetCurrentPlayerIdx()
+		legal := played.GetValidPlayIndices(idx)
+		require.NotEmpty(t, legal, "席 %d に出せる札がある", idx)
+		require.NoError(t, played.PlayForTest(idx, legal[0]))
 	}
 	require.Positive(t, played.GetDiscarded(), "1 トリック解決すれば消えた札が増える")
 	assert.Contains(t, p.Output(played, nil),
