@@ -145,7 +145,8 @@ describe('BauernschnapsenPage', () => {
   it('shows the marriage button when the selected card can declare and dispatches marriage', async () => {
     mockExec.mockResolvedValue(makeState({ marriageIndices: [0] }));
     renderWithProviders(<BauernschnapsenPage />);
-    const cardBtn = await screen.findByRole('button', { name: '♠ K' });
+    // 結婚できる札は名前にバッジの説明が付くので、完全一致では引けない (#6612)。
+    const cardBtn = await screen.findByRole('button', { name: /^♠ K/ });
     fireEvent.click(cardBtn);
     const marriageBtn = await screen.findByRole('button', { name: 'マリッジ' });
     mockExec.mockClear();
@@ -229,5 +230,31 @@ describe('BauernschnapsenPage', () => {
     mockExec.mockResolvedValue(makeState({ hint: { cardIndex: 0, reason: 'no_such_reason', isMarriage: false } }));
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     await waitFor(() => expect(screen.getByText(/no_such_reason/)).toBeInTheDocument());
+  });
+});
+
+// **バッジは読み上げに届かないと存在しないのと同じ (#6612)。**
+// バッジは title だけを持つ span で、button の aria-label がアクセシブル名を
+// 完全に上書きするため、結婚できる札も「♠ K」としか読まれなかった。
+describe('BauernschnapsenPage marriage badge accessibility', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('announces the marriage chance in the card name', async () => {
+    mockExec.mockResolvedValue(makeState({ marriageIndices: [0] }));
+    renderWithProviders(<BauernschnapsenPage />);
+    const cardBtn = await screen.findByRole('button', { name: /^♠ K/ });
+    // 札の名前と、バッジが意味することの両方が読めること。
+    expect(cardBtn.getAttribute('aria-label')).toContain('♠ K');
+    expect(cardBtn.getAttribute('aria-label')).toContain('マリッジ可能');
+  });
+
+  // **負のコントロール**: バッジの付かない札は名前を変えない。
+  it('leaves an ordinary card name alone', async () => {
+    mockExec.mockResolvedValue(makeState({ marriageIndices: [] }));
+    renderWithProviders(<BauernschnapsenPage />);
+    const cardBtn = await screen.findByRole('button', { name: '♠ K' });
+    expect(cardBtn.getAttribute('aria-label')).not.toContain('マリッジ可能');
   });
 });
