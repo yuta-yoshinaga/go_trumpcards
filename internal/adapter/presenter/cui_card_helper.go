@@ -340,6 +340,29 @@ const CuiRunMark = "|"
 // 意味の違う印が同じ形だと、どちらの話をしているのか読めない (#5674)。
 const CuiNewestMark = "<"
 
+// CuiCounterMark は「その札で直前の捕獲を丸ごと奪い返せる」ことを示す印
+// (Ristikontra)。
+//
+// 場を取る "*" とは別の記号にする ── 同じ画面に「取れる」と「奪い返せる」が
+// 並ぶので、同じ形だとどちらの話か読めない。Ristikontra の captureLegend は
+// 最初からこの記号を説明していたのに、印を出す側が無かった (#6610)。
+const CuiCounterMark = "†"
+
+// cuiIndexMarksCardListStr は札ごとに違う印を付けた一覧を返す。
+//
+// **1 つの手札に意味の違う印が同時に立つ。** 1 種類しか渡せない
+// cuiIndexMarkedCardListStr では、どちらか一方しか出せない。
+func cuiIndexMarksCardListStr(hand cuiCardList, marks map[int]string) string {
+	if len(marks) == 0 {
+		return cuiIndexedCardListStr(hand)
+	}
+	parts := make([]string, hand.GetCardsSize())
+	for i := range parts {
+		parts[i] = fmt.Sprintf("[%d]%s%s", i, cuiCardStr(hand.GetCard(i)), marks[i])
+	}
+	return strings.Join(parts, "  ")
+}
+
 // cuiIndexMarkedCardListStr returns an indexed card list where the cards at the
 // given indices carry mark.
 //

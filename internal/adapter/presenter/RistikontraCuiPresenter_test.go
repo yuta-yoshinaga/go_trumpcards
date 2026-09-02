@@ -233,3 +233,51 @@ func TestRistikontraCuiPresenter_HighlightsTheLeadingTeam(t *testing.T) {
 		"単独最多でも負けているチームの席は光らない:\n%s", out)
 	assert.False(t, yellow("CPU 3"), "その相方も光らない:\n%s", out)
 }
+
+// **打ち返せる札にも印を付ける (#6610)。** 直前の捕獲を丸ごと奪える最大の
+// 見せ場で、Web はアクセント色とパルスで別扱いにしているのに、CUI は
+// #5672 で通常の捕獲だけ印を付け、こちらが漏れていた。
+func TestRistikontraCuiPresenter_MarksCounterCards(t *testing.T) {
+	p := new(presenter.RistikontraCuiPresenter)
+	card := func(d, v int) *domain.Card { return domain.NewCard(d, v, false) }
+
+	seed := func(hand []*domain.Card, pileTop *domain.Card, counter int) *domain.Ristikontra {
+		g := newRistikontraForPresenter()
+		human := g.GetPlayer(0)
+		human.Reset()
+		for _, c := range hand {
+			human.AddCard(c)
+		}
+		fields := map[string]any{"ct": 0, "cr": counter}
+		if pileTop != nil {
+			fields["pi"] = []map[string]any{{"d": pileTop.GetDesign(), "v": pileTop.GetValue(), "o": false}}
+		}
+		ristikontraSetField(g, fields)
+		return g
+	}
+
+	t.Run("counter and capture carry different marks", func(t *testing.T) {
+		// 場のトップは 7、打ち返しの対象は 9。
+		g := seed([]*domain.Card{
+			card(domain.CardDesignSpade, 9),  // 0: 打ち返せる
+			card(domain.CardDesignClover, 7), // 1: 普通に取れる
+			card(domain.CardDesignClover, 4), // 2: 何もできない
+		}, card(domain.CardDesignDiamond, 7), 9)
+
+		out := p.Output(g, nil)
+
+		// **記号が違うこと自体が要件。** 同じ印だと「取れる」と「奪える」を
+		// 画面上で区別できない。
+		assert.Contains(t, out, "[0]SPADE 9"+presenter.CuiCounterMark)
+		assert.Contains(t, out, "[1]CLOVER 7"+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[2]CLOVER 4"+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[2]CLOVER 4"+presenter.CuiCounterMark)
+	})
+
+	// **負のコントロール**: 打ち返しの対象が無いラウンドでは † を出さない。
+	t.Run("no counter mark when nothing can be stolen", func(t *testing.T) {
+		g := seed([]*domain.Card{card(domain.CardDesignSpade, 9)}, card(domain.CardDesignDiamond, 7), 0)
+
+		assert.NotContains(t, p.Output(g, nil), presenter.CuiCounterMark)
+	})
+}

@@ -632,3 +632,34 @@ func TestRistikontra_HardCpuPrefersTheCounter(t *testing.T) {
 		t.Fatalf("with no counter available it should capture with the 4, played %d", got)
 	}
 }
+
+// **打ち返しの対象ランクは往復しなければ意味が無い (#6610)。**
+// Worker はリクエストごとに KV から盤を組み直すので、永続化から漏れていると
+// 復元のたびに 0 に戻り、Web のリングも CUI の印も本番では一度も出ない。
+func TestRistikontraCounterRankSurvivesRoundTrip(t *testing.T) {
+	g := ristikontraNewGame(4)
+	g.state.counterRank = 7
+
+	data, err := json.Marshal(g)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	var restored Ristikontra
+	if err := json.Unmarshal(data, &restored); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if got := restored.GetCounterRank(); got != 7 {
+		t.Fatalf("復元後も打ち返しの対象ランクが残ること: want 7, got %d", got)
+	}
+
+	// **0 のときも 0 で戻る。** 常に 7 を返す実装でも上は通る。
+	g.state.counterRank = 0
+	data, _ = json.Marshal(g)
+	var cleared Ristikontra
+	if err := json.Unmarshal(data, &cleared); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if got := cleared.GetCounterRank(); got != 0 {
+		t.Fatalf("対象なしは 0 のまま: got %d", got)
+	}
+}

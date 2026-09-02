@@ -584,9 +584,13 @@ type ristikontraJSON struct {
 	CurrentTurn    int                  `json:"ct"`
 	Pile           []*Card              `json:"pi"`
 	LastCaptureIdx int                  `json:"lc"`
-	GameEndFlag    bool                 `json:"ge"`
-	Winners        []int                `json:"wn"`
-	ActionLog      []*ActionLogEntry    `json:"al"`
+	// **打ち返しの対象ランクも往復させる。** Worker はリクエストごとに KV から
+	// 盤を組み直すので、ここに無いと復元のたびに 0 に戻り、Web のリングも
+	// CUI の印も本番では一度も出ない (#6610)。
+	CounterRank int               `json:"cr"`
+	GameEndFlag bool              `json:"ge"`
+	Winners     []int             `json:"wn"`
+	ActionLog   []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -599,6 +603,7 @@ func (g *Ristikontra) MarshalJSON() ([]byte, error) {
 		CurrentTurn:    g.state.currentTurn,
 		Pile:           g.state.pile,
 		LastCaptureIdx: g.state.lastCaptureIdx,
+		CounterRank:    g.state.counterRank,
 		GameEndFlag:    g.state.gameEndFlag,
 		Winners:        g.state.winners,
 		ActionLog:      g.state.actionLog,
@@ -663,6 +668,7 @@ func (g *Ristikontra) UnmarshalJSON(data []byte) error {
 		currentTurn:    j.CurrentTurn,
 		pile:           j.Pile,
 		lastCaptureIdx: j.LastCaptureIdx,
+		counterRank:    j.CounterRank,
 		gameEndFlag:    j.GameEndFlag,
 		winners:        j.Winners,
 		actionLogBase:  actionLogBase{actionLog: j.ActionLog},
