@@ -24,6 +24,7 @@ func (cp *BanLuckWebPresenter) Output(c interfaces.BanLuckGame, lastErr error) s
 	resObj.HumanSeat = c.GetHumanSeat()
 	resObj.IsHumanTurn = c.IsHumanTurn()
 	resObj.MustHit = c.MustHit()
+	resObj.MustHitThreshold = domain.BanLuckBankerMustHitUnder
 	resObj.RoundNumber = c.GetRoundNumber()
 	resObj.RemainingCards = c.GetRemainingCards()
 	resObj.WinnerSeat = c.WinnerSeat()
