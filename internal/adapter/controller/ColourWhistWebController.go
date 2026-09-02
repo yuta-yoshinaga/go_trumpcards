@@ -41,8 +41,9 @@ type ColourWhistWebOutput struct {
 	Contract    int                           `json:"contract"`
 	DeclarerIdx int                           `json:"declarerIdx"`
 	PartnerIdx  int                           `json:"partnerIdx"`
-	CalledCard  *WebOutputCard                `json:"calledCard,omitempty"`
-	TrumpSuit   int                           `json:"trumpSuit"`
+	// CalledCard は Samen で指名された札。指名前・他の契約では null。
+	CalledCard *WebOutputCard `json:"calledCard"`
+	TrumpSuit  int            `json:"trumpSuit"`
 	// TroelForced は配りで Troel が強制成立したか。
 	TroelForced     bool                  `json:"troelForced"`
 	CurrentTurn     int                   `json:"currentTurn"`

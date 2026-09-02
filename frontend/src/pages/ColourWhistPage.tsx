@@ -213,6 +213,12 @@ function ColourWhistPageContent() {
                   {t('label.declarer')}: #{state.declarerIdx} ({t('label.declarerTricks')} {state.declarerTricks})
                 </div>
               )}
+              {state.calledCard && (
+                <div className="flex items-center justify-center gap-1" data-testid="colourwhist-called-card">
+                  <span>{t('label.calledCard')}:</span>
+                  <AnimatedCard card={state.calledCard} width={cardWidth * 0.6} />
+                </div>
+              )}
               {/* Alleen と Miserie には相方がいない。partnerIdx は「相方なし」も
                   「相方はいるが未公開」も -1 なので、契約で判定しないと単独契約に
                   「相方: 非公開」と出て、隠れた味方がいると誤解させる (#5773)。 */}

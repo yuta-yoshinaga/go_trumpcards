@@ -13,6 +13,7 @@
   "contractLine": "Contract: {{contract}} (trump: {{trump}})",
   "troelLine": "Seat {{seat}} holds three aces, so troel is forced (no auction)",
   "declarerLine": "Declarer: seat {{seat}} ({{tricks}} tricks)",
+  "calledCardLine": "Called card: {{card}} (whoever plays it is revealed as the partner)",
   "scoreLine": "Scores: {{scores}}",
   "trickCardLine": "  seat {{seat}}: {{card}}",
   "handLine": "Hand: {{cards}}",

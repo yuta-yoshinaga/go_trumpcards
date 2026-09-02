@@ -58120,9 +58120,13 @@ components:
           type: integer
           description: -1 until known. Troel names it at deal time; Samen hides it until the called card is played.
         calledCard:
+          nullable: true
           allOf:
             - $ref: '#/components/schemas/Card'
-          description: The card called to find a partner. Samen only - troel is dealt, not called.
+          description: >-
+            The card called to find a partner. Samen only - troel is dealt, not
+            called. Always present; null before a call and under every other
+            contract.
         trumpSuit:
           type: integer
           description: "1..4, or -1 for no trump (Miserie)"
