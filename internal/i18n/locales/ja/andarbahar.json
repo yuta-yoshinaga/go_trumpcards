@@ -24,6 +24,8 @@
   "columnAndar": "アンダー",
   "columnBahar": "バハール",
   "columnUnknown": "UNKNOWN",
+  "bandListTitle": "サイドベットの帯（決着枚数に賭けます）:",
+  "bandListLine": "  {{band}}: {{range}}  払戻 {{payout}} 倍",
   "bandExact": "{{n}} 枚ちょうど",
   "bandRange": "{{lo}}〜{{hi}} 枚",
   "bandUnknown": "UNKNOWN",

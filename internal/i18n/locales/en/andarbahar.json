@@ -24,6 +24,8 @@
   "columnAndar": "Andar",
   "columnBahar": "Bahar",
   "columnUnknown": "UNKNOWN",
+  "bandListTitle": "Side bet bands (bet on how many cards it takes):",
+  "bandListLine": "  {{band}}: {{range}}  pays {{payout}}x",
   "bandExact": "exactly {{n}}",
   "bandRange": "{{lo}}-{{hi}} cards",
   "bandUnknown": "UNKNOWN",
