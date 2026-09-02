@@ -96,6 +96,7 @@ type TrogguWebOutput struct {
 	DeclarerIdx      int                       `json:"declarerIdx"`
 	Contract         int                       `json:"contract"`
 	ContractName     string                    `json:"contractName"`
+	SoloTarget       int                       `json:"soloTarget"`
 	TalonCount       int                       `json:"talonCount"`
 	CurrentTrick     []*WebOutputTrickCard     `json:"currentTrick"`
 	LastTrickWinner  int                       `json:"lastTrickWinner"`
@@ -145,6 +146,7 @@ func newTrogguDefaultOutput(msg string) *TrogguWebOutput {
 		DeclarerIdx:     -1,
 		LastTrickWinner: -1,
 		WinnerPlayer:    -1,
+		SoloTarget:      domain.TrogguSoloTarget(),
 		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }

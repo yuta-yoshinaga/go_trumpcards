@@ -653,6 +653,9 @@ func (g *Troggu) finishRound() {
 	}
 }
 
+// TrogguSoloTarget ソロ契約の成立に必要なハーフポイントを返す。
+func TrogguSoloTarget() int { return trogguTotalHalfPoints()/2 + 1 }
+
 // trogguTotalHalfPoints デッキ全体のハーフポイント合計を返す。
 //
 // **表を書き写さず数える。** 閾値を定数で持つと、点数表を変えたときに片方だけが
@@ -694,7 +697,7 @@ func (g *Troggu) scoreDeal() *TrogguBreakdown {
 	}
 	switch g.contract {
 	case TrogguBidSolo:
-		bd.Target = total/2 + 1
+		bd.Target = TrogguSoloTarget()
 		bd.TargetIsTricks = false
 		bd.Won = 2*declPoints > total
 	case TrogguBidTrois:

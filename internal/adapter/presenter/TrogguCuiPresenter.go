@@ -45,6 +45,9 @@ func trogguAvailableBids(highest domain.TrogguBid) string {
 }
 
 func trogguContractLabel(bid domain.TrogguBid) string {
+	if bid == domain.TrogguBidSolo {
+		return i18n.Tf("troggu.contract.solo", "target", strconv.Itoa(domain.TrogguSoloTarget()))
+	}
 	return i18n.T("troggu.contract." + domain.TrogguBidName(bid))
 }
 

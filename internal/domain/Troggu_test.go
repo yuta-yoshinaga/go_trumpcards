@@ -361,6 +361,18 @@ func TestTrogguTotalHalfPoints(t *testing.T) {
 	assert.GreaterOrEqual(t, total, 7*9)
 }
 
+// ソロ目標点はデッキから数えた総ハーフポイントの過半 (total/2+1) と一致すること。
+func TestTrogguSoloTarget(t *testing.T) {
+	deck := buildFrenchTarotDeck()
+	totalFromDeck := 0
+	for _, c := range deck {
+		totalFromDeck += frenchTarotCardHalfPoints(c)
+	}
+	expected := totalFromDeck/2 + 1
+	assert.Equal(t, expected, TrogguSoloTarget(), "デッキから数えた過半値と一致すること")
+	assert.Equal(t, trogguTotalHalfPoints()/2+1, TrogguSoloTarget())
+}
+
 // **契約ごとに見るものが違う。** ソロだけが点数、他はトリック数。
 func TestTrogguScoreDeal_ByContract(t *testing.T) {
 	tests := []struct {

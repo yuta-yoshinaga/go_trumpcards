@@ -56908,6 +56908,12 @@ components:
         contractName:
           type: string
           description: "pass | trois | solo | piccolo | misere"
+        soloTarget:
+          type: integer
+          description: >-
+            Card points the Solo contract must reach, counted from the deck as
+            total/2 + 1. Constant for every deal; the other contracts are scored
+            in tricks and ignore it.
         talonCount:
           type: integer
         currentTrick:
