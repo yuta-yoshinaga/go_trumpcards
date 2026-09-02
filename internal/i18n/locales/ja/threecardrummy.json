@@ -34,5 +34,6 @@
   "push": "引き分け（プッシュ）",
   "anteBonusPayoutLine": "アンテボーナス: {{payout}}",
   "lowBonusPayoutLine": "ローボーナス: {{payout}}",
-  "totalPayoutLine": "配当合計: {{payout}}"
+  "totalPayoutLine": "配当合計: {{payout}}",
+  "playRequiredLine": "プレイに必要: {{play}}"
 }
