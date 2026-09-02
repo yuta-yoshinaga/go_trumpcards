@@ -14,6 +14,7 @@
     "multiplier": "Stake",
     "dealer": "Dealer",
     "declarer": "Declarer",
+    "delegated": "delegated",
     "roundPoints": "This round",
     "score": "Score",
     "target": "Game to",

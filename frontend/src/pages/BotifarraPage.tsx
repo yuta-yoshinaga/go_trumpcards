@@ -231,6 +231,19 @@ function BotifarraPageContent() {
                 <div key={`seat-${p.id}`} className="text-center text-xs text-ds-text-muted">
                   <div>
                     #{p.id} {p.isHuman ? t('label.you') : p.id === 2 ? t('label.partner') : t('label.opponent')}
+                    {/* **契約の当事者が誰かは倍率と同じくらい基本の情報。**
+                        親と宣言者が別なら、親が相方に委ねたということ。 */}
+                    {p.id === state.declarerIdx && (
+                      <span className="ml-1 text-ds-accent" data-testid={`botifarra-declarer-${p.id.toString()}`}>
+                        [{t('label.declarer')}
+                        {state.declarerIdx !== state.dealerIdx ? `・${t('label.delegated')}` : ''}]
+                      </span>
+                    )}
+                    {p.id === state.dealerIdx && p.id !== state.declarerIdx && (
+                      <span className="ml-1 text-ds-warning" data-testid={`botifarra-dealer-${p.id.toString()}`}>
+                        [{t('label.dealer')}]
+                      </span>
+                    )}
                   </div>
                   <div>
                     {p.cardCount} {t('label.cards')} / {p.trickCount} {t('label.tricks')}

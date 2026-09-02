@@ -11,6 +11,8 @@
   "phaseLine": "フェーズ: {{phase}}",
   "scoreLine": "得点: あなたの組 {{team0}} / 相手 {{team1}}（{{target}} 点で上がり）",
   "trumpLine": "切り札: {{trump}}（倍率 {{multiplier}}）",
+  "declarerLine": "宣言者: 席{{declarer}}（親は席{{dealer}}）",
+  "declarerDelegatedLine": "宣言者: 席{{declarer}}（親の席{{dealer}}が相方に委ねました）",
   "roundPointsLine": "このラウンド: あなたの組 {{team0}} / 相手 {{team1}}（合計 {{total}}）",
   "trickCardLine": "  席 {{seat}}: {{card}}",
   "handLine": "手札: {{cards}}",
