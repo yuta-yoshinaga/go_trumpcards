@@ -7,6 +7,7 @@
   "forcedNotice": "This total leaves no choice (0-4 must draw, 6-7 must stand)",
   "waitNotice": "Waiting for another seat",
   "label.you": "You",
+  "label.cpu": "CPU{{idx}}",
   "label.round": "Coup",
   "label.banker": "Banker",
   "label.stake": "Bank",
