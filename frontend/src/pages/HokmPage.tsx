@@ -181,7 +181,7 @@ function HokmPageContent() {
             {isTrump && !isGameEnd && state.hakemIdx !== 0 && (
               <div
                 className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-muted text-center text-sm"
-                data-testid="hk-trump-wait"
+                data-testid="hk-waiting-trump"
                 role="status"
               >
                 {t('header.trumpWait', { idx: state.hakemIdx })}

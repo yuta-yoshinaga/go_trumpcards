@@ -101,7 +101,7 @@ describe('HokmPage', () => {
     mockExec.mockResolvedValue(makeState({ hakemIdx: 2 }));
     renderWithProviders(<HokmPage />);
 
-    const wait = await screen.findByTestId('hk-trump-wait');
+    const wait = await screen.findByTestId('hk-waiting-trump');
     expect(wait).toHaveTextContent('CPU2 が親です');
     expect(wait).toHaveTextContent('最初の5枚を見て切り札を決めています');
   });
@@ -110,7 +110,7 @@ describe('HokmPage', () => {
   it('shows no waiting notice when the human is the hakem', async () => {
     renderWithProviders(<HokmPage />);
     await waitFor(() => expect(screen.getByTestId('hk-trump-1-btn')).toBeInTheDocument());
-    expect(screen.queryByTestId('hk-trump-wait')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('hk-waiting-trump')).not.toBeInTheDocument();
   });
 
   // 切り札が決まればもう待っていない。
@@ -118,7 +118,7 @@ describe('HokmPage', () => {
     mockExec.mockResolvedValue(playing({ hakemIdx: 2 }));
     renderWithProviders(<HokmPage />);
     await waitFor(() => expect(screen.getByTestId('hk-trump')).toBeInTheDocument());
-    expect(screen.queryByTestId('hk-trump-wait')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('hk-waiting-trump')).not.toBeInTheDocument();
   });
 
   // **切り札は4番目の引数で送る。** 位置がずれると別の値として届く。
