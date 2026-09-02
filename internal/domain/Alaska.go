@@ -27,6 +27,9 @@ const AlaskaTableauCnt = 7
 // AlaskaFoundationCnt ファンデーションの数
 const AlaskaFoundationCnt = 4
 
+// AlaskaTotalCards 使用する総枚数
+const AlaskaTotalCards = CardCnt
+
 // AlaskaTableauCard タブロー上のカード。Alaska は Klondike とは別バケット
 // (extra4 worker) に属するため、AlaskaTableauCard を共有せず独自に定義する。
 // DoubleKlondike が同じ理由で DoubleAlaskaTableauCard を持つのと同じ扱い。

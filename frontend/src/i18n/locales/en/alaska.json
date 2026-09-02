@@ -16,6 +16,7 @@
   "empty": "Empty",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
+  "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
   "playing": "Playing",
   "noHint": "No hint available",
   "hintAvailable": "Hint available",

@@ -89,11 +89,45 @@ func TestAlaskaCuiPresenter_Output(t *testing.T) {
 		var tableau [domain.AlaskaTableauCnt][]*domain.AlaskaTableauCard
 		rg.On("GetTableau").Return(tableau).Maybe()
 		var foundation [domain.AlaskaFoundationCnt][]*domain.Card
+		foundation[0] = []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 1, false),
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+		}
+		foundation[1] = []*domain.Card{
+			domain.NewCard(domain.CardDesignClover, 1, false),
+		}
 		rg.On("GetFoundation").Return(foundation).Maybe()
 
 		p := new(AlaskaCuiPresenter)
 		result := p.Output(rg, nil)
 		assert.Contains(t, result, "ゲームオーバー")
+		assert.Contains(t, result, "3/52")
+		assert.Contains(t, result, "6%")
+		assert.NotContains(t, result, "{{")
+	})
+
+	t.Run("negative control - non-game-over phase does not show summary", func(t *testing.T) {
+		for _, phase := range []domain.AlaskaPhase{domain.AlaskaPhasePlaying, domain.AlaskaPhaseGameClear} {
+			rg := new(interfaces.MockAlaskaGame)
+			rg.On("GetPhase").Return(phase).Maybe()
+			rg.On("GetMoveCount").Return(5).Maybe()
+			rg.On("IsStalemate").Return(false).Maybe()
+			rg.On("UndoToEscape").Return(0).Maybe()
+			var tableau [domain.AlaskaTableauCnt][]*domain.AlaskaTableauCard
+			rg.On("GetTableau").Return(tableau).Maybe()
+			var foundation [domain.AlaskaFoundationCnt][]*domain.Card
+			foundation[0] = []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 1, false),
+				domain.NewCard(domain.CardDesignSpade, 2, false),
+			}
+			rg.On("GetFoundation").Return(foundation).Maybe()
+
+			p := new(AlaskaCuiPresenter)
+			result := p.Output(rg, nil)
+			assert.NotContains(t, result, "/52")
+			assert.NotContains(t, result, "%）まで到達")
+			assert.NotContains(t, result, "cards on the foundations")
+		}
 	})
 
 	t.Run("foundation with cards", func(t *testing.T) {
