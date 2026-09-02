@@ -69,11 +69,12 @@ func (p *HorseCuiPresenter) Output(g interfaces.HorseGame, lastErr error) string
 			b.WriteString(i18n.Tf("horse.promptDraw", "draw", strconv.Itoa(g.GetDrawIndex())) + "\n")
 			b.WriteString(i18n.T("horse.promptDrawHelp") + "\n")
 		default:
-			// **コールに要る額まで出す。** ポットだけでは、チェックできる場面
-			// なのか賭けられているのかが読み取れない。
+			// **コールに要る額と最小レイズ幅まで出す。** ポットだけでは、チェックできる場面
+			// なのか賭けられているのかが読み取れず、レイズ幅も分からない。
 			b.WriteString(i18n.Tf("horse.promptPlay",
 				"pot", strconv.Itoa(g.GetPot()),
-				"toCall", strconv.Itoa(g.GetToCall())) + "\n")
+				"toCall", strconv.Itoa(g.GetToCall()),
+				"minRaise", strconv.Itoa(g.GetMinRaise())) + "\n")
 			b.WriteString(i18n.T("horse.promptPlayHelp") + "\n")
 		}
 	})
