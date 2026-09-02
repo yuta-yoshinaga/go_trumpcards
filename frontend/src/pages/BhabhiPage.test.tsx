@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bhabhiApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BhabhiResponse, Card } from '../types/card';
 import { BhabhiPage } from './BhabhiPage';
@@ -191,6 +192,53 @@ describe('BhabhiPage', () => {
     fireEvent.change(select, { target: { value: '6' } });
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { playerCnt: 6 }));
+  });
+
+  // **人数変更はリセットと同じ結果。**対局中に誤って触ると、確認なしで
+  // 進行中のゲームが消えていた（リセットボタンは必ず確認を経由する）。
+  it('asks for confirmation before changing the table size mid-game', async () => {
+    mockExec.mockResolvedValue(makeState({ trickNumber: 3 }));
+    renderWithProviders(<BhabhiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const select = await screen.findByTestId('bh-player-cnt');
+    mockExec.mockClear();
+    fireEvent.change(select, { target: { value: '6' } });
+
+    // ダイアログが出るだけで、まだ配り直していない。
+    expect(await screen.findByRole('button', { name: '確認' })).toBeInTheDocument();
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { playerCnt: 6 }));
+  });
+
+  it('keeps the game when the size-change confirmation is cancelled', async () => {
+    mockExec.mockResolvedValue(makeState({ trickNumber: 3 }));
+    renderWithProviders(<BhabhiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const select = await screen.findByTestId('bh-player-cnt');
+    mockExec.mockClear();
+    fireEvent.change(select, { target: { value: '6' } });
+    fireEvent.click(await screen.findByRole('button', { name: 'キャンセル' }));
+
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  // 終局後はもう壊すものが無いので訊かない。
+  it('changes the table size without asking once the game has ended', async () => {
+    mockExec.mockResolvedValue(makeState({ gameEndFlag: true, phase: 1, bhabhiIdx: 1, trickNumber: 9 }));
+    renderWithProviders(<BhabhiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const select = await screen.findByTestId('bh-player-cnt');
+    mockExec.mockClear();
+    fireEvent.change(select, { target: { value: '5' } });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { playerCnt: 5 }));
   });
 
   it('renders every seat the server sent', async () => {
