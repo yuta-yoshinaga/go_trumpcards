@@ -9,6 +9,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newMockMrsMopInteractor() *mockusecase.MockMrsMopInteractor {
@@ -266,6 +267,24 @@ func TestMrsMopCuiController_Targets(t *testing.T) {
 		si := new(mockusecase.MockMrsMopInteractor)
 		out := NewMrsMopCuiController(si).Exec("t x")
 		assert.NotEmpty(t, out)
+		si.AssertNotCalled(t, "Targets", mock.Anything, mock.Anything)
+	})
+
+	// **索引が数字でない場合も列と同じく弾く。** 列だけを試していると、
+	// 2 つ目の引数の分岐は一度も踏まれない (レビュー指摘)。
+	t.Run("索引が数字でなければドメインに訊かない", func(t *testing.T) {
+		si := new(mockusecase.MockMrsMopInteractor)
+		out := NewMrsMopCuiController(si).Exec("t 3 x")
+		assert.NotEmpty(t, out)
+		assert.Contains(t, out, i18n.Tf("invalidCardIndex", "val", "x"))
+		si.AssertNotCalled(t, "Targets", mock.Anything, mock.Anything)
+	})
+
+	// 引数が無ければ列を訊き返す。ここでもドメインは叩かない。
+	t.Run("引数が無ければ列を訊き返す", func(t *testing.T) {
+		si := new(mockusecase.MockMrsMopInteractor)
+		out := NewMrsMopCuiController(si).Exec("t")
+		assert.Contains(t, out, i18n.T("promptFromColumn"))
 		si.AssertNotCalled(t, "Targets", mock.Anything, mock.Anything)
 	})
 }

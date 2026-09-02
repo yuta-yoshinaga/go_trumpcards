@@ -890,6 +890,10 @@ func TestMrsMopLegalTargets(t *testing.T) {
 	_, targets = s.LegalTargets(MrsMopTableauCnt, 0)
 	assert.Empty(t, targets)
 	s.SetPhase(MrsMopPhaseGameClear)
-	_, targets = s.LegalTargets(0, -1)
+	idx, targets = s.LegalTargets(0, -1)
 	assert.Empty(t, targets, "決着後は置ける先を出さない")
+	// **決着後でも索引は解決済みの値を返す。** ここで -1 のまま返すと、CUI が
+	// 「札-1 は動かせない」と盤に存在しない札を名指しする (レビュー指摘)。
+	// 索引の解決は盤だけで決まるので、フェーズより先に済ませてある。
+	assert.Equal(t, 1, idx, "決着後も既定の索引は解決して返す")
 }

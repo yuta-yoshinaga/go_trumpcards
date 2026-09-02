@@ -427,17 +427,21 @@ func (s *MrsMop) movableRunStart(col int) int {
 // `canPlaceOnTableau`) をそのまま呼ぶ ── 規則を書き直すと、一覧に出た先が
 // 拒否される日が来る。動かせない並びなら空を返す。
 func (s *MrsMop) LegalTargets(fromCol, cardIndex int) (int, []int) {
-	if s.phase != MrsMopPhasePlaying {
-		return cardIndex, []int{}
-	}
 	if fromCol < 0 || fromCol >= MrsMopTableauCnt {
 		return cardIndex, []int{}
 	}
 	fromCards := s.tableau[fromCol]
 	// **索引を省いたときは「一番長く動かせる並び」を見る。** 列の一番奥は
 	// 伏せ札なので、0 を既定にすると常に「動かせない」と答えることになる。
+	//
+	// **フェーズを見るより先に解決する。** これは盤だけで決まる値で、後ろに
+	// 置くと終局後に -1 がそのまま返り、CUI が「札-1 は動かせない」と盤に
+	// 存在しない札を名指しする (レビュー指摘)。
 	if cardIndex < 0 {
 		cardIndex = s.movableRunStart(fromCol)
+	}
+	if s.phase != MrsMopPhasePlaying {
+		return cardIndex, []int{}
 	}
 	if cardIndex < 0 || cardIndex >= len(fromCards) {
 		return cardIndex, []int{}
