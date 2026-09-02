@@ -205,6 +205,23 @@ describe('RollingStonePage', () => {
     expect(banner).toHaveTextContent('3');
   });
 
+  // サーバが席の情報を欠いたレスポンスを返しても、膠着の説明が壊れず 0 枚として出る。
+  it('reads zero cards when the winning seat is missing from the response', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        gameEndFlag: true,
+        phase: 1,
+        winnerIdx: 2,
+        winReason: 'stalemate',
+        players: [seat(0), seat(1)],
+      }),
+    );
+    renderWithProviders(<RollingStonePage />);
+    const banner = await screen.findByTestId('rs-result');
+    expect(banner).toHaveTextContent(/決着が付かなかった/);
+    expect(banner).toHaveTextContent('0');
+  });
+
   // **投了も膠着も勝者に札が残る。** 枚数で分岐していたので、投了した局にも
   // 「決着が付かなかった」と出ていた。
   it('says the human resigned rather than calling it a stalemate', async () => {

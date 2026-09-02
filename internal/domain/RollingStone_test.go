@@ -539,6 +539,24 @@ func TestRollingStone_UnmarshalRejectsBrokenSnapshots(t *testing.T) {
 		{"current player out of range", func(m map[string]any) { m["ci"] = 9 }},
 		{"lead player out of range", func(m map[string]any) { m["li"] = -1 }},
 		{"winner without the game ending", func(m map[string]any) { m["wi"] = 1 }},
+		// **決着しているのに勝因が無いスナップショットは弾く。** 載せ忘れが
+		// 黙って「通常勝ち」として復元されると、投了した局がまた膠着と
+		// 説明される（LingerLonger の #5765 と同じ形）。
+		{"a finished game with no win reason", func(m map[string]any) {
+			m["ph"] = int(RollingStonePhaseGameEnd)
+			m["ge"] = true
+			m["wi"] = 1
+			m["wr"] = ""
+		}},
+		{"a win reason on a game still in play", func(m map[string]any) {
+			m["wr"] = RollingStoneWinGiveUp
+		}},
+		{"an unknown win reason", func(m map[string]any) {
+			m["ph"] = int(RollingStonePhaseGameEnd)
+			m["ge"] = true
+			m["wi"] = 1
+			m["wr"] = "surrendered"
+		}},
 		{"last pickup out of range", func(m map[string]any) { m["lp"] = 9 }},
 		{"negative trick number", func(m map[string]any) { m["tn"] = -1 }},
 		{"finished count above the table", func(m map[string]any) { m["fc"] = 9 }},
