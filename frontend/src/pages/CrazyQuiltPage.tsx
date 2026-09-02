@@ -327,7 +327,11 @@ function CrazyQuiltPageContent() {
                     }
                     aria-label={
                       state.stockCount === 0
-                        ? t('emptyStockAriaLabel')
+                        ? // **空になった山札は「終わり」とは限らない。**組み直しが
+                          // 残っていればこのボタンがそれを行う。
+                          state.redealsLeft > 0
+                          ? t('emptyStockAriaLabel', { count: state.redealsLeft })
+                          : t('emptyStockNoRedealAriaLabel')
                         : t('stockAriaLabel', { count: state.stockCount })
                     }
                     aria-pressed={isSourceSelected('stock', undefined)}
@@ -336,6 +340,11 @@ function CrazyQuiltPageContent() {
                   >
                     {state.stockCount}
                   </button>
+                  {/* CUI の redealLine と同じ情報。残り回数が見えないと、山札が
+                      空になった瞬間に打ち切りなのか組み直せるのか判断できない。 */}
+                  <div className="text-game-text-muted text-xs mt-1" data-testid="crazyquilt-redeals">
+                    {t('redealLine', { count: state.redealsLeft })}
+                  </div>
                 </div>
                 <div className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
