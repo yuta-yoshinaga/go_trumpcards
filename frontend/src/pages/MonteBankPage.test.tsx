@@ -161,6 +161,36 @@ describe('MonteBankPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', { idx: 2, bet: 50 }));
   });
 
+  // **決着後も「どの札に張ったか」は読み上げから分かる必要がある。**
+  // リングは isPicked を見ていたのに aria-pressed は BET フェーズしか見ておらず、
+  // 決着すると色でだけ残っていた。
+  it('決着後も張った札のaria-pressedがtrueのまま', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: MonteBankPhase.RESULT,
+        gate: card('HEART', 5),
+        pick: 2,
+        bet: 50,
+        result: MONTE_BANK_RESULT.win,
+        payout: 200,
+        layout: [
+          entry({ card: card('SPADE', 1) }),
+          entry({ card: card('SPADE', 7) }),
+          entry({ card: card('HEART', 3), isPicked: true }),
+          entry({ card: card('CLOVER', 13) }),
+        ],
+      }),
+    );
+    renderWithProviders(<MonteBankPage />);
+
+    await waitFor(() => expect(screen.getByTestId('mb-gate')).toBeInTheDocument());
+    expect(screen.getByTestId('mb-layout-2')).toHaveAttribute('aria-pressed', 'true');
+    // 張っていない札は押下状態にならない。
+    for (const i of [0, 1, 3]) {
+      expect(screen.getByTestId(`mb-layout-${i.toString()}`)).toHaveAttribute('aria-pressed', 'false');
+    }
+  });
+
   it('賭ける前はゲートを出さない', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<MonteBankPage />);
