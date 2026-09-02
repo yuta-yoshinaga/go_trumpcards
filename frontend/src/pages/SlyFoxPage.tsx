@@ -341,7 +341,12 @@ function SlyFoxPageContent() {
                 </button>
                 {/* **周の進みはここにしか出ない。**閉じている理由が盤から読めないと
                     「なぜリザーブが押せないのか」が分からない。 */}
-                <div className="text-[11px] mt-1 text-ds-text-muted text-center" data-testid="co-cycle-status">
+                <div
+                  className="text-[11px] mt-1 text-ds-text-muted text-center"
+                  data-testid="co-cycle-status"
+                  role="status"
+                  aria-live="polite"
+                >
                   {reserveLocked
                     ? t('cycleLocked', { dealt: state.dealtThisCycle, cycle: state.dealCycle, left: dealsLeft })
                     : t('cycleOpen')}

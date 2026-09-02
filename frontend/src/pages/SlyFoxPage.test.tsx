@@ -14,8 +14,10 @@ import { SlyFoxPage, slyfoxNextRank } from './SlyFoxPage';
  * role alone therefore matches two elements; the message box is the one built
  * from `glass-panel`, so the hint region is the other one.
  */
-const hintLiveRegion = () =>
-  screen.queryAllByRole('status').find((el) => !el.classList.contains('glass-panel')) ?? null;
+// **ヒントの領域は名前で引く。** 「glass-panel でない最初の status」という
+// 引き方は、ページに status がもう 1 つ増えた日に別の要素を掴む
+// (#6600 で周の状態を読み上げに載せたときに実際に起きた)。
+const hintLiveRegion = () => screen.queryByTestId('slyfox-hint-live');
 
 vi.mock('../api/gameApi', () => ({
   slyFoxApi: { exec: vi.fn() },
@@ -155,6 +157,20 @@ describe('SlyFoxPage', () => {
     await waitFor(() => expect(screen.getByTestId('co-tableau-0')).toBeDisabled());
     // なぜ押せないのかを画面に出すこと。
     expect(screen.getByTestId('co-cycle-status')).toHaveTextContent('13');
+  });
+
+  // **開放は読み上げでも伝わること (#6600)。** 周が進んでリザーブが解放された瞬間、
+  // 晴眼者は文言の変化と disabled 解除で気付くが、読み上げには何も届かなかった。
+  it('announces the cycle state through a live region', async () => {
+    mockExec.mockResolvedValue(makeState({ reserveLocked: true, dealtThisCycle: 13 }));
+    renderWithProviders(<SlyFoxPage />);
+    const status = await screen.findByTestId('co-cycle-status');
+
+    // 「文言がある」だけでは足りない。**変化が読み上げに乗る**ことを見る。
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    // 同じ要素が開放後も生き続けること — 差し替わると読み上げが起きない。
+    expect(status).toHaveTextContent('13');
   });
 
   // 負のコントロール: 開いていれば選べる。閉じっぱなしの実装でも上は通る。
