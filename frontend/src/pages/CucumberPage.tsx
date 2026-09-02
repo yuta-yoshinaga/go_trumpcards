@@ -181,8 +181,13 @@ function CucumberPageContent() {
               {state.players.map((p) => (
                 <div
                   key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                  // **CPU 同士の手番中、誰が考えているのかが画面に無かった。**
+                  // 罰点バッジは行の中にあるので、手番はリングで囲って共存させる。
+                  className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
+                    p.id === state.currentPlayerIdx && !isGameEnd ? 'ring-1 ring-ds-warning' : ''
+                  }`}
                   data-testid={`cu-seat-${p.id.toString()}`}
+                  data-current-turn={p.id === state.currentPlayerIdx && !isGameEnd ? 'true' : undefined}
                 >
                   <span className="text-ds-text-primary">{seatName(p.id)}</span>
                   {p.id === state.lastTrickWinnerIdx && state.lastPenalty > 0 && (
