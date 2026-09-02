@@ -87,6 +87,15 @@ function SpeculationPageContent() {
   const isFlipPhase = phase === SpeculationPhase.FLIP;
   const isAuctionPhase = phase === SpeculationPhase.AUCTION;
   const isResultPhase = phase === SpeculationPhase.RESULT;
+  // **決着後は「今終わった回」を出す。** `roundNo` は決着で 1 進むので、
+  // そのまま +1 すると round 1 の結果画面に「ラウンド 2/5」と出て、まだ
+  // 始めていない回の結果を見ているように読める。GAME_END では rounds を
+  // 超えた番号 (6/5) にもなる。CUI は speculationDisplayRound で同じ分岐を
+  // している (#6607)。
+  const displayRound =
+    phase === SpeculationPhase.RESULT || phase === SpeculationPhase.GAME_END
+      ? (state?.roundNo ?? 0)
+      : (state?.roundNo ?? 0) + 1;
   const gameOver = !!state?.gameEndFlag;
   const offerAmount = state?.offerAmount ?? 0;
 
@@ -166,7 +175,7 @@ function SpeculationPageContent() {
             />
 
             <div className="text-ds-text-primary text-center text-sm mb-1" data-testid="sp-round-line">
-              {t('label.round')}: {state.roundNo + 1}
+              {t('label.round')}: {displayRound}
               {state.config ? ` / ${state.config.rounds}` : ''}
               {' · '}
               {t('label.pot')}: {state.pot}
