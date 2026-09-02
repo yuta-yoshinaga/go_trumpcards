@@ -201,3 +201,78 @@ func trappolaMockWithout(calls []*mock.Call, methods ...string) []*mock.Call {
 	}
 	return out
 }
+
+// #6614: Web は tr-previous-trick で直前トリックの4枚と勝者を常に振り返れるのに、
+// CUI は現在のトリックしか出さず、直前トリックを確認する手段が無かった。
+func TestTrappolaCuiPresenter_ShowsThePreviousTrick(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.TrappolaCuiPresenter)
+	card := func(d, v int) *domain.Card { return domain.NewCard(d, v, false) }
+
+	// 直前トリック: 席1 ♠3 → 席2 ♠1 → 席3 ♠5 → 席0 ♠7、勝者は席2 (CPU 2)。
+	trickLog := []*domain.ActionLogEntry{
+		{PlayerIdx: 1, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignSpade, 3)}},
+		{PlayerIdx: 2, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignSpade, 1)}},
+		{PlayerIdx: 3, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignSpade, 5)}},
+		{PlayerIdx: 0, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignSpade, 7)}},
+		{PlayerIdx: 2, ActionType: "trick_win"},
+	}
+
+	build := func(trickNo int, log []*domain.ActionLogEntry) *interfaces.MockTrappolaGame {
+		m, _ := setupTrappolaCuiMockWithPlayers()
+		m.ExpectedCalls = trappolaMockWithout(m.ExpectedCalls, "GetTrickNumber", "GetActionLog")
+		m.On("GetTrickNumber").Return(trickNo)
+		m.On("GetActionLog").Return(log)
+		return m
+	}
+
+	t.Run("lists the four cards and the winner name", func(t *testing.T) {
+		out := p.Output(build(2, trickLog), nil)
+
+		assert.Contains(t, out, "直前のトリック")
+		assert.Contains(t, out, "勝者: CPU 2")
+		assert.Contains(t, out, "CPU 1: SPADE 3")
+		assert.Contains(t, out, "CPU 2: SPADE 1")
+		assert.Contains(t, out, "CPU 3: SPADE 5")
+		assert.Contains(t, out, "あなた: SPADE 7")
+		assert.NotContains(t, out, "{{", "未展開のテンプレート変数が残っていないこと")
+	})
+
+	t.Run("takes the most recent trick, not the first", func(t *testing.T) {
+		twoTricks := append(append([]*domain.ActionLogEntry(nil), trickLog...),
+			&domain.ActionLogEntry{PlayerIdx: 2, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignHeart, 10)}},
+			&domain.ActionLogEntry{PlayerIdx: 3, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignHeart, 9)}},
+			&domain.ActionLogEntry{PlayerIdx: 0, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignHeart, 8)}},
+			&domain.ActionLogEntry{PlayerIdx: 1, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignHeart, 7)}},
+			&domain.ActionLogEntry{PlayerIdx: 0, ActionType: "trick_win"},
+		)
+
+		out := p.Output(build(3, twoTricks), nil)
+
+		assert.Contains(t, out, "勝者: あなた")
+		assert.Contains(t, out, "CPU 2: HEART 10")
+		assert.Contains(t, out, "CPU 3: HEART 9")
+		assert.Contains(t, out, "あなた: HEART 8")
+		assert.Contains(t, out, "CPU 1: HEART 7")
+		assert.NotContains(t, out, "SPADE 3", "古いトリックの札は出ない")
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("negative control: says nothing on the first trick of a round", func(t *testing.T) {
+		out := p.Output(build(1, trickLog), nil)
+
+		assert.NotContains(t, out, "直前のトリック")
+		assert.NotContains(t, out, "Previous trick")
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("says nothing when the log has no resolved trick", func(t *testing.T) {
+		out := p.Output(build(2, nil), nil)
+
+		assert.NotContains(t, out, "直前のトリック")
+		assert.NotContains(t, out, "Previous trick")
+		assert.NotContains(t, out, "{{")
+	})
+}
