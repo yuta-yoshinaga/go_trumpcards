@@ -268,7 +268,7 @@ describe('IsraeliWhistPage', () => {
     );
     renderWithProviders(<IsraeliWhistPage />);
 
-    const limits = await screen.findByTestId('iw-bid-limits');
+    const limits = await screen.findByTestId('iw-limits');
     expect(limits).toHaveTextContent('9 以上を宣言する義務');
     expect(limits).toHaveTextContent('4 は宣言できません');
   });
@@ -279,7 +279,7 @@ describe('IsraeliWhistPage', () => {
     renderWithProviders(<IsraeliWhistPage />);
 
     await waitFor(() => expect(screen.getByTestId('iw-bid-0-btn')).toBeInTheDocument());
-    expect(screen.queryByTestId('iw-bid-limits')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('iw-limits')).not.toBeInTheDocument();
   });
 
   it('enables every call when nothing is barred', async () => {
