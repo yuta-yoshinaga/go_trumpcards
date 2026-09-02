@@ -240,6 +240,16 @@ function BalootPageContent() {
                         公開扱いにするより、伏せたままにするほうが安全側 (レビュー #6094)。 */}
                     {!p.balootRevealed ? t('baloot.hidden') : p.hasBaloot ? t('baloot.held') : t('baloot.none')}
                   </span>
+                  {/* **宣言フェーズ中だけ。**誰がもう降りたかが見えないと、親が
+                      最後にパスできない規則を読んでも選択肢の絞られ具合が分からない。 */}
+                  {isDeclare && (
+                    <span
+                      className={`ml-2 ${p.declared ? 'text-ds-text-muted' : 'text-ds-accent'}`}
+                      data-testid={`bl-declared-${p.id.toString()}`}
+                    >
+                      {p.declared ? t('header.declaredYes') : t('header.declaredNo')}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

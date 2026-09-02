@@ -17,7 +17,9 @@
     "score": "得点: あなたのチーム {{t0}} － 相手 {{t1}}",
     "you": "あなた",
     "cpu": "CPU{{idx}}",
-    "team": "T{{team}}"
+    "team": "T{{team}}",
+    "declaredYes": "宣言済",
+    "declaredNo": "未定"
   },
   "baloot": {
     "none": "役なし",
