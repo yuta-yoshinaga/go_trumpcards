@@ -14,10 +14,15 @@ import (
 )
 
 // diplomatPileStr returns the display string for one tableau pile.
+// **A で止まった列はもう受け皿にならない。**Web が赤いバッジで出している
+// のと同じ判定 (domain.DiplomatIsDeadEndTop) を最上段にだけ適用する。
 func diplomatPileStr(pile []*domain.Card) string {
 	parts := make([]string, len(pile))
 	for j, card := range pile {
 		parts[j] = fmt.Sprintf(" [%d]%s", j, cuiCardStr(card))
+	}
+	if len(pile) > 0 && domain.DiplomatIsDeadEndTop(pile[len(pile)-1]) {
+		parts[len(parts)-1] += i18n.T("diplomat.deadEndMark")
 	}
 	return strings.Join(parts, " ")
 }

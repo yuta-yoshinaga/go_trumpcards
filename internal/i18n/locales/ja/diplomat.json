@@ -16,6 +16,7 @@
   "invalidFromZone": "無効な移動元です: {{val}} (t または w を指定してください)",
   "invalidToZone": "無効な移動先です: {{val}} (f または t を指定してください)",
   "invalidPile": "無効なタブロー列の番号です: {{val}}",
+  "deadEndMark": "[行き止まり]",
   "foundationHeader": "基礎札: ",
   "stockLine": "山札: {{count}}枚",
   "wasteEmpty": "捨て札: なし",
