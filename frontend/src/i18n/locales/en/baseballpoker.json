@@ -59,6 +59,7 @@
     "fullHouse": "Full House",
     "fourOfAKind": "Four of a Kind",
     "straightFlush": "Straight Flush",
-    "royalFlush": "Royal Flush"
+    "royalFlush": "Royal Flush",
+    "fiveOfAKind": "Five of a Kind"
   }
 }

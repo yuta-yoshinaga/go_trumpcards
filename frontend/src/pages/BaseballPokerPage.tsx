@@ -43,6 +43,9 @@ const BB_TUTORIAL_STEPS: TutorialStep[] = [
 /** Renders the Baseball Poker game page (#5268). */
 export const BaseballPokerPage = withTutorial(BaseballPokerPageContent, 'baseballpoker', BB_TUTORIAL_STEPS);
 
+/** `domain.PokerHandNames` の 10 番目。ワイルド (3 と 9) があるゲームだけが返す。 */
+const FIVE_OF_A_KIND_RANK = 10;
+
 function BaseballPokerPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('baseballpoker');
@@ -70,7 +73,12 @@ function BaseballPokerPageContent() {
   const isShowdown = phase === BaseballPhase.SHOWDOWN;
   // 役名はランクから引く。**サーバは英語名を送っていない**ので、共通の
   // ポーカー役キーで訳す (未知のランクは番号のまま出して黙って消えないように)。
+  //
+  // **3 と 9 がワイルドなので 5 カードが出る。** `pokerHandKey` は Poker Squares
+  // 用でワイルドの無い 0〜9 しか知らないので、その 1 つだけここで持つ。共有側に
+  // 足すと、ワイルドを使わないゲームで到達しない役が増える。
   const handLabel = (rank: number): string => {
+    if (rank === FIVE_OF_A_KIND_RANK) return t('hand.fiveOfAKind');
     const key = rank >= 0 && rank <= 9 ? pokerHandKey(rank as PokerHandRank) : undefined;
     return key ? t(`hand.${key}`) : String(rank);
   };

@@ -328,6 +328,22 @@ describe('BaseballPokerPage', () => {
   // **負のコントロール: ショーダウン前は出さない。**
   // **ベスト札を持たせた盤で見る。** 既定のフィクスチャは bestHand が空なので、
   // フェーズの判定を外しても素通りしてしまう。
+  // **3 と 9 がワイルドなので 5 カードは通常の出目。** ここを番号のまま出すと、
+  // 同じハンドを CUI は「Five of a Kind」、Web は「10」と呼ぶことになる。
+  it('ワイルドで揃った5カードを役名で出す', async () => {
+    const best = [card(10), card(10), card(10), card(3), card(9)];
+    mockApi.mockResolvedValue(
+      withState({
+        phase: BaseballPhase.SHOWDOWN,
+        seats: [seat({ handRank: 10, bestHand: best }), cpuSeat({ handRank: 2, bestHand: best })],
+      }),
+    );
+    renderWithProviders(<BaseballPokerPage />);
+    const box = await screen.findByTestId('bp-showdown-0');
+    expect(box).toHaveTextContent('ファイブカード');
+    expect(box).not.toHaveTextContent('10');
+  });
+
   it('ショーダウン前は役を出さない', async () => {
     const best = [card(10), card(11), card(12), card(13), card(1)];
     mockApi.mockResolvedValue(

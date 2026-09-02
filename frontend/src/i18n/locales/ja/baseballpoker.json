@@ -59,6 +59,7 @@
     "fullHouse": "フルハウス",
     "fourOfAKind": "フォーカード",
     "straightFlush": "ストレートフラッシュ",
-    "royalFlush": "ロイヤルフラッシュ"
+    "royalFlush": "ロイヤルフラッシュ",
+    "fiveOfAKind": "ファイブカード"
   }
 }
