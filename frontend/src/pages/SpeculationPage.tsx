@@ -87,15 +87,6 @@ function SpeculationPageContent() {
   const isFlipPhase = phase === SpeculationPhase.FLIP;
   const isAuctionPhase = phase === SpeculationPhase.AUCTION;
   const isResultPhase = phase === SpeculationPhase.RESULT;
-  // **決着後は「今終わった回」を出す。** `roundNo` は決着で 1 進むので、
-  // そのまま +1 すると round 1 の結果画面に「ラウンド 2/5」と出て、まだ
-  // 始めていない回の結果を見ているように読める。GAME_END では rounds を
-  // 超えた番号 (6/5) にもなる。CUI は speculationDisplayRound で同じ分岐を
-  // している (#6607)。
-  const displayRound =
-    phase === SpeculationPhase.RESULT || phase === SpeculationPhase.GAME_END
-      ? (state?.roundNo ?? 0)
-      : (state?.roundNo ?? 0) + 1;
   const gameOver = !!state?.gameEndFlag;
   const offerAmount = state?.offerAmount ?? 0;
 
@@ -126,6 +117,17 @@ function SpeculationPageContent() {
   } = useGameHint('speculation', state);
 
   if (!state) return <GameSkeleton gameKey="speculation" layout={{ kind: 'casino-table', sections: [1, 1] }} />;
+
+  // **決着後は「今終わった回」を出す。** `roundNo` は決着で 1 進むので、
+  // そのまま +1 すると round 1 の結果画面に「ラウンド 2/5」と出て、まだ
+  // 始めていない回の結果を見ているように読める。GAME_END では rounds を
+  // 超えた番号 (6/5) にもなる。CUI は speculationDisplayRound で同じ分岐を
+  // している (#6607)。
+  //
+  // **早期 return より下で組む。** 上に置くと state が null の描画でも
+  // 評価され、値は捨てられるのに `?? 0` の枝だけが残る。
+  const displayRound =
+    phase === SpeculationPhase.RESULT || phase === SpeculationPhase.GAME_END ? state.roundNo : state.roundNo + 1;
 
   const phaseName =
     {
