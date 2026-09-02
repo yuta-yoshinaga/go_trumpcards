@@ -10,6 +10,8 @@
   "helpExampleBid": "  bid solo s           スペードを切り札に Solo を宣言する (単独で 5 トリック)",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
   "round": "ディール: {{round}}  トリック: {{trick}}  切り札: {{trump}}",
+  "dealer": "ディーラー: {{name}}",
+  "forehand": "先手: {{name}}",
   "contractLine": "契約: {{bid}}（必要 {{need}} トリック）  宣言側 {{tricks}} - 守備側 {{opp}}",
   "playerLine": "{{name}} ({{role}}): {{cards}}枚  得点: {{score}}  トリック: {{tricks}}",
   "roleDeclarer": "宣言者",
