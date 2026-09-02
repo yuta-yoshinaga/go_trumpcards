@@ -73,6 +73,8 @@ type MinibridgeGame interface {
 	GetPlayer(i int) *domain.MinibridgePlayer
 	// GetWinnerTeam 勝ったチームを取得する (-1: 未確定/同点)
 	GetWinnerTeam() int
+	// IsDeclarerByDealerTie HCPが20-20の同点で親の側が宣言側になったかを返す
+	IsDeclarerByDealerTie() bool
 	// GetHint ヒントを取得する
 	GetHint() *domain.MinibridgeHint
 }

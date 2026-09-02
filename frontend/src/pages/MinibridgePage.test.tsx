@@ -54,6 +54,7 @@ function makeState(overrides: Partial<MinibridgeResponse> = {}): MinibridgeRespo
     validPlays: [0, 1, 2],
     gameEndFlag: false,
     winnerTeam: -1,
+    declarerByDealerTie: false,
     config: { rounds: 4 },
     message: '',
     ...overrides,
@@ -115,6 +116,30 @@ describe('MinibridgePage', () => {
     expect(await screen.findByTestId('mb-seat-1')).toHaveTextContent(/デクレアラー/);
     expect(screen.getByTestId('mb-seat-3')).toHaveTextContent(/ダミー/);
     expect(screen.getByTestId('mb-seat-0')).not.toHaveTextContent(/デクレアラー/);
+  });
+
+  it('marks the dealer on the correct seat', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 2 }));
+    renderWithProviders(<MinibridgePage />);
+    expect(await screen.findByTestId('mb-dealer-2')).toHaveTextContent(/親/);
+    expect(screen.queryByTestId('mb-dealer-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('mb-dealer-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('mb-dealer-3')).not.toBeInTheDocument();
+  });
+
+  it('shows the tie note when declarer is decided by dealer tie', async () => {
+    mockExec.mockResolvedValue(makeState({ declarerByDealerTie: true, dealerIdx: 1 }));
+    renderWithProviders(<MinibridgePage />);
+    const tieNote = await screen.findByTestId('mb-tie-note');
+    expect(tieNote).toHaveAttribute('role', 'status');
+    expect(tieNote).toHaveTextContent(/親（席1）の側が宣言側になりました/);
+  });
+
+  it('hides the tie note when declarer is not decided by dealer tie', async () => {
+    mockExec.mockResolvedValue(makeState({ declarerByDealerTie: false, dealerIdx: 1 }));
+    renderWithProviders(<MinibridgePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('mb-tie-note')).not.toBeInTheDocument();
   });
 
   it('offers all five denominations to the declarer', async () => {

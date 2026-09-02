@@ -233,3 +233,25 @@ func TestMinibridgeWebPresenterActionLogOutput(t *testing.T) {
 	g.GiveUp()
 	assert.NotEmpty(t, decodeMinibridge(t, p.ActionLogOutput(g))["entries"])
 }
+
+func TestMinibridgeWebPresenterDeclarerByDealerTie(t *testing.T) {
+	p := new(MinibridgeWebPresenter)
+
+	g := newMinibridgeForWeb(t)
+	g.SetDealerIdxForTest(0)
+	g.SetHcpForTest([domain.MinibridgePlayerCnt]int{10, 10, 10, 10})
+	g.DecideDeclarerForTest()
+	require.True(t, g.IsDeclarerByDealerTie())
+
+	m := decodeMinibridge(t, p.Output(g, nil))
+	assert.Equal(t, true, m["declarerByDealerTie"])
+
+	nonTie := newMinibridgeForWeb(t)
+	nonTie.SetDealerIdxForTest(0)
+	nonTie.SetHcpForTest([domain.MinibridgePlayerCnt]int{15, 5, 10, 10})
+	nonTie.DecideDeclarerForTest()
+	require.False(t, nonTie.IsDeclarerByDealerTie())
+
+	mNonTie := decodeMinibridge(t, p.Output(nonTie, nil))
+	assert.Equal(t, false, mNonTie["declarerByDealerTie"])
+}

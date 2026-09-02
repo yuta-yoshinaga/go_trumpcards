@@ -226,6 +226,12 @@ function MinibridgePageContent() {
                 : t('header.contractUndecided')}
             </div>
 
+            {state.declarerByDealerTie && (
+              <div className="text-center mb-3 text-ds-text-muted text-sm" role="status" data-testid="mb-tie-note">
+                {t('header.declarerByTie', { seat: String(state.dealerIdx) })}
+              </div>
+            )}
+
             {isContract && (
               <div className="text-center mb-3 text-ds-accent text-sm" role="status" data-testid="mb-pair-hcp">
                 {t('header.pairHcp', { n: String(pairHcp) })}
@@ -255,6 +261,11 @@ function MinibridgePageContent() {
                       {p.team === humanTeam ? t('header.teamAllyAria') : t('header.teamFoeAria')}
                     </span>
                   </span>
+                  {p.id === state.dealerIdx && (
+                    <span className="ml-1 text-ds-info" data-testid={`mb-dealer-${p.id.toString()}`}>
+                      {t('header.dealer')}
+                    </span>
+                  )}
                   {p.id === state.declarerIdx && <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>}
                   {p.id === state.dummyIdx && <span className="ml-1 text-ds-accent">{t('header.dummy')}</span>}
                   {': '}
