@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { lingerlongerApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -74,6 +74,27 @@ describe('LingerLongerPage', () => {
   it('shows the trick number and the stock', async () => {
     renderWithProviders(<LingerLongerPage />);
     expect(await screen.findByTestId('ll-stock')).toHaveTextContent('30');
+  });
+
+  // **山札の残りと「場から消えた札」は別の数字。** 前者は補充できる回数、
+  // 後者はトリックが解決するたびに増える、二度と戻らない枚数。
+  it('shows the cards gone from play, separately from the stock', async () => {
+    mockExec.mockResolvedValue(makeState({ stockSize: 30, discarded: 6 }));
+    renderWithProviders(<LingerLongerPage />);
+
+    const line = await screen.findByTestId('ll-stock');
+    expect(line).toHaveTextContent('山札 残り30枚');
+    expect(within(line).getByTestId('ll-discarded')).toHaveTextContent('場から消えた札 6枚');
+  });
+
+  // 2 つの数字は独立に動く。片方をもう片方から描いている実装では落ちる。
+  it('tracks the two counts independently', async () => {
+    mockExec.mockResolvedValue(makeState({ stockSize: 4, discarded: 21 }));
+    renderWithProviders(<LingerLongerPage />);
+
+    const line = await screen.findByTestId('ll-stock');
+    expect(line).toHaveTextContent('山札 残り4枚');
+    expect(within(line).getByTestId('ll-discarded')).toHaveTextContent('場から消えた札 21枚');
   });
 
   // **山札が尽きた瞬間から局は終わりに向かう。** 盤面からは読み取れない。
