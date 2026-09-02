@@ -270,6 +270,20 @@ describe('ChemindeFerPage', () => {
     expect(screen.getByTestId('cdf-seat-1')).toHaveTextContent('50');
   });
 
+  // **CPU 名だけサーバ製の英語が混ざっていた。**ラベルとボタンは全部翻訳される
+  // のに、席の見出しだけ "Player2" が日本語 UI に出ていた。
+  it('CPUの席名を翻訳済みラベルで出し、サーバ製のPlayerを出さない', async () => {
+    mockApi.mockResolvedValue(withState({}));
+    renderWithProviders(<ChemindeFerPage />);
+
+    await waitFor(() => expect(screen.getByTestId('cdf-seat-1')).toBeInTheDocument());
+    expect(screen.getByTestId('cdf-seat-1')).toHaveTextContent('CPU1');
+    // フィクスチャは name に "Player2" を持っているが、画面には出ない。
+    expect(screen.getByTestId('cdf-seat-1')).not.toHaveTextContent('Player');
+    // 自分の席は従来どおり。
+    expect(screen.getByTestId('cdf-seat-0')).toHaveTextContent('あなた');
+  });
+
   it('自分の手番でないときは待機を表示する', async () => {
     mockApi.mockResolvedValue(withState({ phase: ChemindeFerPhase.BET, stake: 200, betTurn: 3, isHumanTurn: false }));
     renderWithProviders(<ChemindeFerPage />);

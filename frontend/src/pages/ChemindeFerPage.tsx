@@ -262,7 +262,9 @@ function ChemindeFerPageContent() {
                   } ${p.id === state.betTurn ? 'ring-2 ring-ds-success' : ''}`}
                 >
                   <div className="font-bold text-ds-text-primary">
-                    {p.isHuman ? t('label.you') : p.name}
+                    {/* **サーバ製の "PlayerN" をそのまま出さない。** ラベルは全部
+                        翻訳されるのに CPU 名だけ英語が混ざっていた。 */}
+                    {p.isHuman ? t('label.you') : t('label.cpu', { idx: p.id })}
                     {p.isBanker && ' ★'}
                     {p.isRepresentative && ' ◆'}
                   </div>
