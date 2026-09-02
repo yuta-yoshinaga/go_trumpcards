@@ -20,7 +20,7 @@ const mockExec = vi.mocked(fortressApi.exec);
 
 function makeTableau(cols: FortressTableauCard[][]): FortressTableauCard[][] {
   const result: FortressTableauCard[][] = [];
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 10; i++) {
     result.push(cols[i] ?? []);
   }
   return result;
@@ -35,6 +35,8 @@ const playingState: FortressResponse = {
       { card: card('SPADE', 5), faceUp: true },
     ],
     [{ card: card('SPADE', 6), faceUp: true }],
+    [],
+    [],
     [],
     [],
     [],
@@ -91,23 +93,45 @@ describe('FortressPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
   });
 
-  it('labels all eight tableau columns with their 0-based index (matching hint text)', async () => {
+  it('labels all ten tableau columns with their 0-based index (matching hint text)', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FortressPage />);
     await waitFor(() => expect(screen.getByText('#0')).toBeInTheDocument());
-    // Columns are numbered #0..#7 to match formatHintZone's raw fromCol/toCol.
-    for (let i = 0; i < 8; i++) {
+    // Columns are numbered #0..#9 to match formatHintZone's raw fromCol/toCol.
+    for (let i = 0; i < 10; i++) {
       expect(screen.getByText(`#${i}`)).toBeInTheDocument();
     }
+  });
+
+  it('renders cards placed in the 8th and 9th tableau columns (indices 8 and 9)', async () => {
+    const stateWithCardsInCol8And9: FortressResponse = {
+      ...playingState,
+      tableau: makeTableau([
+        [{ card: card('SPADE', 13), faceUp: true }],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [{ card: card('HEART', 8), faceUp: true }],
+        [{ card: card('DIAMOND', 9), faceUp: true }],
+      ]),
+    };
+    mockExec.mockResolvedValue(stateWithCardsInCol8And9);
+    renderWithProviders(<FortressPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♥ 8' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♦ 9' })).toBeInTheDocument();
   });
 
   it('gives each empty tableau column a distinct column-numbered aria-label', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FortressPage />);
-    // Columns 3 and 8 (1-based) are empty and each reads distinctly, unlike the
+    // Columns 3 and 10 (1-based) are empty and each reads distinctly, unlike the
     // previous shared "empty" text.
     await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 3' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '空のタブロー列 8' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空のタブロー列 10' })).toBeInTheDocument();
     // The two filled columns (1, 2) are not rendered as empty-column buttons.
     expect(screen.queryByRole('button', { name: '空のタブロー列 1' })).not.toBeInTheDocument();
   });
@@ -224,7 +248,7 @@ describe('FortressPage', () => {
       renderWithProviders(<FortressPage />);
       fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
       await waitFor(() => expect(markedColumns()).toContain('#1'));
-      expect(markedColumns().sort()).toEqual(['#1', '#2', '#3', '#4', '#5', '#6', '#7']);
+      expect(markedColumns().sort()).toEqual(['#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9']);
     });
 
     // **空の組札の唯一の受け手は A。**そこが光らないと、A にとって置き先が
@@ -243,8 +267,8 @@ describe('FortressPage', () => {
           screen.getByRole('button', { name: '空の組札 (♠)' }).closest('[data-legal-target="true"]'),
         ).not.toBeNull(),
       );
-      // 組札 4 つ + 空き列 7 つ。組札側が 0 なら 7 で止まる。
-      expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(11);
+      // 組札 4 つ + 空き列 9 つ。組札側が 0 なら 9 で止まる。
+      expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(13);
     });
 
     // ファンデーションは A の上に同スートの 2 だけ。♠5 では光らない。
@@ -253,7 +277,7 @@ describe('FortressPage', () => {
       const { unmount } = renderWithProviders(<FortressPage />);
       fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
       await waitFor(() => expect(markedColumns()).toContain('#1'));
-      expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(7);
+      expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(9);
       unmount();
 
       mockExec.mockResolvedValue({
@@ -262,7 +286,7 @@ describe('FortressPage', () => {
       });
       renderWithProviders(<FortressPage />);
       fireEvent.click(await screen.findByRole('button', { name: '♠ 2' }));
-      await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBeGreaterThan(7));
+      await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBeGreaterThan(9));
     });
   });
 });

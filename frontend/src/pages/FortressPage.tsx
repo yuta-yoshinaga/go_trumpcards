@@ -189,6 +189,12 @@ function FortressPageContent() {
   // pulse the button only then (mirrors Crescent / Spiderette).
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
 
+  // **列数はサーバが返す盤から数える。** 添字を書き並べると、ドメインが列を増やした
+  // ときに画面からだけ列が消える (この issue がまさにそれ)。
+  const tableauCols = state.tableau.map((_, i) => i);
+  const leftCols = tableauCols.slice(0, Math.ceil(tableauCols.length / 2));
+  const rightCols = tableauCols.slice(Math.ceil(tableauCols.length / 2));
+
   // 選択時に合法な移動先をリング表示している。
   //
   // **枠を出すだけで、押せなくはしない。**押せなくすると E2E の
@@ -330,7 +336,7 @@ function FortressPageContent() {
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div className="flex gap-2 sm:gap-3 items-start">
               <div className="flex-1 flex gap-1 sm:gap-2" data-tutorial="fortress-tableau">
-                {[0, 1, 2, 3].map(renderTableauColumn)}
+                {leftCols.map(renderTableauColumn)}
               </div>
 
               <div className="flex flex-col items-center gap-1 sm:gap-2 mb-3" data-tutorial="fortress-foundation">
@@ -386,7 +392,7 @@ function FortressPageContent() {
                 })}
               </div>
 
-              <div className="flex-1 flex gap-1 sm:gap-2">{[4, 5, 6, 7].map(renderTableauColumn)}</div>
+              <div className="flex-1 flex gap-1 sm:gap-2">{rightCols.map(renderTableauColumn)}</div>
             </div>
 
             {/*
