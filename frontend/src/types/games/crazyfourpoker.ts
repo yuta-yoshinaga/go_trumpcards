@@ -85,7 +85,26 @@ export interface CrazyFourPokerResponse extends BaseGameResponse {
    * Served rather than hardcoded: the multipliers live in the Go domain.
    */
   queensUpPayouts: CrazyFourPokerPayoutRow[];
+  /**
+   * The Super Bonus payout table, best first. **Staked automatically with the
+   * ante**, so it belongs on screen before the bet is placed.
+   */
+  superBonusPayouts: CrazyFourPokerSuperBonusRow[];
   config?: CrazyFourPokerConfig;
+}
+
+/**
+ * One row of the Super Bonus payout table.
+ *
+ * `odds` is a string because the table has fractional entries such as 1.5:1.
+ */
+export interface CrazyFourPokerSuperBonusRow {
+  /** 4-card hand rank. */
+  hand: number;
+  /** Display name of the hand. */
+  name: string;
+  /** The X in X:1, already formatted. */
+  odds: string;
 }
 
 /** One row of the Queens Up payout table. */

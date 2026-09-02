@@ -35,5 +35,7 @@
   "marginal": "king high or better is worth the minimum raise",
   "fold": "not even king high, so the odds are against you",
   "helpExampleBet": "  bet 100              bet 100 chips",
-  "queensUpPayoutLine": "Queens Up pays: {{table}}"
+  "queensUpPayoutLine": "Queens Up pays: {{table}}",
+  "superBonusPayoutLine": "Super Bonus pays (staked automatically alongside the ante; a pair of aces or better pays the table below, and anything less is returned if you beat or tie the dealer): {{table}}",
+  "fourAces": "Four Aces"
 }

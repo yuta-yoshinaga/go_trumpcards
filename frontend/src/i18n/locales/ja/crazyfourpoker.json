@@ -47,5 +47,6 @@
   "frontendHint.crazyFourPokerMinimum": "ディーラーもキング以上でしか成立しないので、降りるより乗るほうが分がよいです",
   "frontendHint.crazyFourPokerFold": "キングにも届かないので、降りたほうが分がよいです",
   "label.queensUpPayouts": "Queens Up の配当",
+  "label.superBonusPayouts": "Super Bonus の配当",
   "label.payoutOdds": "{{n}}倍"
 }

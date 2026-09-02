@@ -6,6 +6,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // crazyFourPokerQueensUpRows はドメインの配当表を出力形に変換する。
@@ -21,6 +22,29 @@ func crazyFourPokerQueensUpRows() []*controller.CrazyFourPokerPayoutRow {
 			name = domain.FourCardHandNames[r.Hand]
 		}
 		out = append(out, &controller.CrazyFourPokerPayoutRow{Hand: r.Hand, Name: name, Multiplier: r.Multiplier})
+	}
+	return out
+}
+
+// crazyFourPokerSuperBonusRows は Super Bonus の配当表を Web 用に整形する。
+//
+// **表を写さない。** ドメインが唯一の出所で、4 枚のエースの別枠もそこから来る。
+func crazyFourPokerSuperBonusRows() []*controller.CrazyFourPokerSuperBonusRow {
+	src := domain.CrazyFourPokerSuperBonusPayout()
+	out := make([]*controller.CrazyFourPokerSuperBonusRow, 0, len(src)+1)
+	out = append(out, &controller.CrazyFourPokerSuperBonusRow{
+		Hand: domain.FourCardHandFourOfAKind,
+		Name: i18n.T("crazyfourpoker.fourAces"),
+		Odds: crazyFourPokerMultStr(domain.CrazyFourPokerFourAcesPayout),
+	})
+	for _, r := range src {
+		name := ""
+		if r.Hand >= 0 && r.Hand < len(domain.FourCardHandNames) {
+			name = domain.FourCardHandNames[r.Hand]
+		}
+		out = append(out, &controller.CrazyFourPokerSuperBonusRow{
+			Hand: r.Hand, Name: name, Odds: crazyFourPokerMultStr(r.Multiplier),
+		})
 	}
 	return out
 }
@@ -64,6 +88,7 @@ func (cp *CrazyFourPokerWebPresenter) Output(c interfaces.CrazyFourPokerGame, la
 	resObj.MinTotalWager = c.GetMinTotalWager()
 	resObj.RoundNumber = c.GetRoundNumber()
 	resObj.QueensUpPayouts = crazyFourPokerQueensUpRows()
+	resObj.SuperBonusPayouts = crazyFourPokerSuperBonusRows()
 	resObj.RemainingCards = c.GetRemainingCards()
 	resObj.GameEndFlag = c.GetGameEndFlag()
 	resObj.Config = &controller.CrazyFourPokerWebOutCfg{
