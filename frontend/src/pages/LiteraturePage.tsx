@@ -277,7 +277,7 @@ function LiteraturePageContent() {
 
             {/* 直近の宣言の結末。**ライブリージョンは常設**にしておく — 宣言と同時に
                 領域ごと現れると、その中身は読み上げられない。 */}
-            <div aria-live="polite">
+            <div role="status" aria-live="polite">
               {state.lastClaim && (
                 <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="literature-last-claim">
                   <div className="mb-1 text-ds-text-primary">{t('lastClaimTitle')}</div>
