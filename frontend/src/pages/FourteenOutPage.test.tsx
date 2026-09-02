@@ -94,6 +94,31 @@ describe('FourteenOutPage', () => {
     await waitFor(() => expect(col0).toHaveAttribute('aria-pressed', 'false'));
   });
 
+  // **暗くするのと同じ条件を読み上げにも載せる (#6594)。**
+  // 晴眼者は opacity で「組めない列」が一目で分かるのに、読み上げでは列番号と
+  // 札名しか伝わらず、押してサーバに拒否されるまで気付けなかった。
+  //
+  // 既定の盤は ♠9 / ♥5 / ♣4。♠9 を選ぶと 9+5=14 で列 1 が相方、列 2 は 9+4=13 で組めない。
+  it('says whether a column makes 14 with the selected card', async () => {
+    renderWithProviders(<FourteenOutPage />);
+    const col0 = await screen.findByTestId('mc-col-0');
+
+    // **選ぶ前はどちらの文言も出ない** (負のコントロール)。
+    expect(screen.getByTestId('mc-col-1').getAttribute('aria-label')).not.toContain('14');
+    expect(screen.getByTestId('mc-col-2').getAttribute('aria-label')).not.toContain('14');
+
+    fireEvent.click(col0);
+    await waitFor(() => expect(col0).toHaveAttribute('aria-pressed', 'true'));
+
+    const partner = screen.getByTestId('mc-col-1').getAttribute('aria-label') ?? '';
+    const other = screen.getByTestId('mc-col-2').getAttribute('aria-label') ?? '';
+    expect(partner).toContain('合計14になります');
+    expect(other).toContain('合計14になりません');
+    // プレースホルダが未解決のまま出ていないこと。
+    expect(partner).not.toContain('{{');
+    expect(other).not.toContain('{{');
+  });
+
   // **サーバに渡すのは列番号 2 つ。**クローン元は (行,列) x2 を渡す。
   it('sends the two column numbers on the second click', async () => {
     renderWithProviders(<FourteenOutPage />);
