@@ -6,6 +6,7 @@
   "helpHint": "  h, hint             ヒントを表示",
   "helpAutoComplete": "  ac, autocomplete    オートコンプリート",
   "helpUndo": "  u, undo             1手戻す",
+  "helpUndoN": "  un [<n>]            n手まとめて戻す（手詰まりからの脱出用）",
   "promptWasteIdx": "ウェイストのインデックス (0..3) を入力してください:",
   "promptFoundationIdx": "ファンデーションのインデックス (0..3) を入力してください:",
   "playing": "プレイ中",
@@ -24,5 +25,7 @@
   "wasteFilled": "{{card}} ({{count}}枚)",
   "stockLine": "ストック: {{count}}枚 (残り{{deals}}回配れます)",
   "hintWaste": "ヒント: ウェイスト{{waste}} → ファンデーション{{foundation}}",
-  "helpExampleHint": "  h                   次の一手を教えてもらう"
+  "helpExampleHint": "  h                   次の一手を教えてもらう",
+  "invalidUndoCount": "無効なアンドゥ回数です: {{val}}（1以上の整数を指定してください）",
+  "noUndoToEscape": "手詰まり状態ではないか、脱出可能なアンドゥがありません"
 }

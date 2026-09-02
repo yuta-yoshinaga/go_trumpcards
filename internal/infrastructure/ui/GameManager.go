@@ -5157,6 +5157,7 @@ var gameRegistry = []GameRegistryEntry{
 				"auldlangsyne.helpHint",
 				"auldlangsyne.helpAutoComplete",
 				"auldlangsyne.helpUndo",
+				"auldlangsyne.helpUndoN",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),

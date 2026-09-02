@@ -26,7 +26,7 @@ func (c *AuldLangSyneCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.ci.Reset() },
-		[]string{"d", "deal", "w", "g", "giveup", "h", "hint", "ac", "autocomplete", "u", "undo", "log", "l"},
+		[]string{"d", "deal", "w", "g", "giveup", "h", "hint", "ac", "autocomplete", "u", "undo", "un", "undo_n", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "d", "deal":
@@ -37,13 +37,32 @@ func (c *AuldLangSyneCuiController) Exec(command string) string {
 				return c.ci.GiveUp(), true
 			case "ac", "autocomplete":
 				return c.ci.AutoComplete(), true
-			case "u", "undo":
-				return c.ci.Undo(), true
+			case "u", "undo", "un", "undo_n":
+				return c.handleUndo(cmd, args), true
 			default:
 				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
 			}
 		},
 	)
+}
+
+// handleUndo アンドゥコマンドを処理する。
+// 引数なしの u / undo は 1 手戻す。
+// 引数なしの un / undo_n は UndoToEscape() の手数を既定値として戻す。
+// 引数ありは指定された手数を戻す。
+func (c *AuldLangSyneCuiController) handleUndo(cmd string, args []string) string {
+	if len(args) == 0 {
+		if cmd == "un" || cmd == "undo_n" {
+			n := c.ci.UndoToEscape()
+			if n <= 0 {
+				return i18n.MarkError(i18n.T("auldlangsyne.noUndoToEscape"))
+			}
+			return c.ci.UndoN(n)
+		}
+		return c.ci.Undo()
+	}
+	out, _ := cuiutil.WithParsedIntKeys(args, "", "auldlangsyne.invalidUndoCount", 1, cuiutil.NoMax, c.ci.UndoN)
+	return out
 }
 
 // handleWasteMove w <wasteIdx> f <fIdx>

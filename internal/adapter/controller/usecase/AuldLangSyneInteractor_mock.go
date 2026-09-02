@@ -39,6 +39,10 @@ func (_m *MockAuldLangSyneInteractor) UndoN(n int) string {
 	return _m.Called(n).String(0)
 }
 
+func (_m *MockAuldLangSyneInteractor) UndoToEscape() int {
+	return _m.Called().Int(0)
+}
+
 func (_m *MockAuldLangSyneInteractor) Hint() string {
 	return _m.Called().String(0)
 }
