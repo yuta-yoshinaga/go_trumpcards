@@ -55898,6 +55898,11 @@ components:
           type: integer
         dealerIdx:
           type: integer
+        declarerByDealerTie:
+          type: boolean
+          description: >-
+            True when the two sides tied on high-card points and the deal went to
+            the dealer's side on that rule alone.
         currentTrick:
           type: array
           items:
