@@ -129,6 +129,16 @@ func TestAuldLangSyneInteractor_UndoN(t *testing.T) {
 	assert.Equal(t, "undon", ci.UndoN(2))
 }
 
+func TestAuldLangSyneInteractor_UndoToEscape(t *testing.T) {
+	g := newMockAuldLangSyneGame()
+	p := newMockAuldLangSynePresenter()
+	ci := NewAuldLangSyneInteractor(g, p)
+
+	g.On("UndoToEscape").Return(3)
+
+	assert.Equal(t, 3, ci.UndoToEscape())
+}
+
 func TestAuldLangSyneInteractor_AutoComplete(t *testing.T) {
 	g := newMockAuldLangSyneGame()
 	p := newMockAuldLangSynePresenter()

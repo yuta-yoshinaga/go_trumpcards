@@ -6,6 +6,7 @@
   "helpHint": "  h, hint             show a hint",
   "helpAutoComplete": "  ac, autocomplete    auto-complete all playable moves",
   "helpUndo": "  u, undo             undo last move",
+  "helpUndoN": "  un [<n>]            undo n moves at once (to escape a dead end)",
   "promptWasteIdx": "Waste index (0..3):",
   "promptFoundationIdx": "Foundation index (0..3):",
   "playing": "Playing",
@@ -24,5 +25,7 @@
   "wasteFilled": "{{card}} ({{count}})",
   "stockLine": "Stock: {{count}} ({{deals}} deals left)",
   "hintWaste": "Hint: waste {{waste}} → foundation {{foundation}}",
-  "helpExampleHint": "  h                   ask for a move"
+  "helpExampleHint": "  h                   ask for a move",
+  "invalidUndoCount": "Invalid undo count: {{val}} (give a whole number of 1 or more)",
+  "noUndoToEscape": "Not in a dead end or cannot escape via undo"
 }
