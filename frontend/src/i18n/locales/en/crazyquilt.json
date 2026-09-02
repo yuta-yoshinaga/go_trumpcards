@@ -42,7 +42,7 @@
     "tableau": "pile {{pile}}",
     "foundation": "foundation {{idx}}",
     "waste": "the waste",
-    "stock": "Stock"
+    "stock": "stock"
   },
   "hintReason": {
     "toFoundation": "Sending this card to a foundation frees up the board",
