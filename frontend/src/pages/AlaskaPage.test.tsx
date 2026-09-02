@@ -141,6 +141,25 @@ describe('AlaskaPage', () => {
     await waitFor(() => expect(screen.getAllByText('ゲームオーバー').length).toBeGreaterThan(0));
   });
 
+  it('shows the foundation progress summary on game over', async () => {
+    const gameOverWithFoundation: AlaskaResponse = {
+      ...gameOverState,
+      foundation: [[card('SPADE', 1), card('SPADE', 2)], [card('CLOVER', 1)], [card('HEART', 1)], []],
+    };
+    mockExec.mockResolvedValue(gameOverWithFoundation); // 4 cards on foundations → 4/52 (8%)
+    renderWithProviders(<AlaskaPage />);
+    const summary = await screen.findByTestId('alaska-gameover-summary');
+    expect(summary).toHaveTextContent('4/52');
+    expect(summary).toHaveTextContent('8%');
+  });
+
+  it('does not show the progress summary when not game over', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<AlaskaPage />);
+    await waitFor(() => expect(screen.getAllByText('ゲームクリア').length).toBeGreaterThan(0));
+    expect(screen.queryByTestId('alaska-gameover-summary')).not.toBeInTheDocument();
+  });
+
   it('hint button triggers hint command', async () => {
     renderWithProviders(<AlaskaPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

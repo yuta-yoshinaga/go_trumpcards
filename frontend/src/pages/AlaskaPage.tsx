@@ -274,6 +274,7 @@ function AlaskaPageContent() {
   const isGameClear = state.phase === AlaskaPhase.GAME_CLEAR;
   const isGameOver = state.phase === AlaskaPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
   const autoCompleteReady = isTableauAllFaceUp(state.tableau);
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
   // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
@@ -532,6 +533,15 @@ function AlaskaPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {isGameOver && (
+              <p data-testid="alaska-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+                {t('gameOverSummary', {
+                  count: foundationCount,
+                  percent: Math.round((foundationCount / 52) * 100),
+                })}
+              </p>
+            )}
 
             {error && <ErrorAlert message={error} onRetry={retry} />}
 
