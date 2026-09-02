@@ -239,7 +239,15 @@ describe('CribbageSquaresPage', () => {
 
   // **クロス表示は色だけで、読み上げには何も出ていなかった。**
   it('names the affected row and column, with their current scores, on an empty cell', async () => {
-    mockExec.mockResolvedValue(makeState({ rowScores: [0, 3, 0, 0], colScores: [0, 0, 7, 0] }));
+    // **本物のサーバは、空きマスが残っている間 rowScores を 0 のまま返す**
+    // （スターターは全マスが埋まってからめくられる）。読み上げに載せるべき値は
+    // 「スターター抜きで確定している点」＝ partial の方。
+    mockExec.mockResolvedValue(
+      makeState({
+        rowPartialDetails: [zero(), { ...zero(), total: 3 }, zero(), zero()],
+        colPartialDetails: [zero(), zero(), { ...zero(), total: 7 }, zero()],
+      }),
+    );
     renderWithProviders(<CribbageSquaresPage />);
     await waitFor(() => expect(screen.getByTestId('cell-1-2')).toBeEnabled());
 

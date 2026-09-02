@@ -261,11 +261,16 @@ function CribbageSquaresPageContent() {
                                     ? cardAlt(cell.card)
                                     : // **どの行・列に効くかは色でしか出ていなかった。**空きマスは
                                       // 影響する 2 つの役の現在点を読み上げにも載せる。
+                                      //
+                                      // 読むのは `rowScores` ではなく **partial** の方。
+                                      // スターターはマスが全部埋まってから初めてめくられる
+                                      // (internal/domain/CribbageSquares.go) ので、空きマスが
+                                      // 1 つでもある間 `rowScores` は必ず 0 になる。
                                       t('label.emptyCell', {
                                         rowNo: rowIdx + 1,
-                                        rowScore: state.rowScores[rowIdx] ?? 0,
+                                        rowScore: state.rowPartialDetails?.[rowIdx]?.total ?? 0,
                                         colNo: colIdx + 1,
-                                        colScore: state.colScores[colIdx] ?? 0,
+                                        colScore: state.colPartialDetails?.[colIdx]?.total ?? 0,
                                       })
                                 }
                                 onClick={() => handlePlace(rowIdx, colIdx)}
