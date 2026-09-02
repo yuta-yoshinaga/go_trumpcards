@@ -209,3 +209,39 @@ func TestMrsMopCuiPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, "棋譜はありません")
 	})
 }
+
+// **置ける先を一覧する (#6596)。** 判定はドメインが答え、presenter は並べるだけ。
+// 期待値を i18n.T から組み立てない — 未訳ならキーが返り、常に通ってしまう。
+func TestMrsMopCuiPresenter_TargetsOutput(t *testing.T) {
+	p := new(MrsMopCuiPresenter)
+
+	t.Run("置ける先を列挙する", func(t *testing.T) {
+		sg := new(interfaces.MockMrsMopGame)
+		sg.On("LegalTargets", 0, -1).Return(2, []int{4, 7})
+		out := p.TargetsOutput(sg, 0, -1)
+		// **解決後の索引を出す。** -1 のまま出すと盤と食い違うことを言う。
+		assert.Contains(t, out, "札2")
+		assert.Contains(t, out, "列4")
+		assert.Contains(t, out, "列7")
+		assert.NotContains(t, out, "{{")
+		sg.AssertExpectations(t)
+	})
+
+	t.Run("無いときは黙らずに無いと言う", func(t *testing.T) {
+		sg := new(interfaces.MockMrsMopGame)
+		sg.On("LegalTargets", 3, -1).Return(1, []int{})
+		out := p.TargetsOutput(sg, 3, -1)
+		// 空行だと、コマンドが効いていないのか置けないのか区別が付かない。
+		assert.NotEmpty(t, strings.TrimSpace(out))
+		assert.Contains(t, out, "ありません")
+		assert.NotContains(t, out, "{{")
+		sg.AssertExpectations(t)
+	})
+
+	t.Run("範囲外の列はエラーを返し、ドメインに訊かない", func(t *testing.T) {
+		sg := new(interfaces.MockMrsMopGame)
+		out := p.TargetsOutput(sg, domain.MrsMopTableauCnt, 0)
+		assert.NotEmpty(t, strings.TrimSpace(out))
+		sg.AssertNotCalled(t, "LegalTargets", domain.MrsMopTableauCnt, 0)
+	})
+}

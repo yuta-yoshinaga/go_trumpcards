@@ -14,3 +14,8 @@ func (_m *MockMrsMopPresenter) HintOutput(s interfaces.MrsMopGame) string {
 	ret := _m.Called(s)
 	return ret.Get(0).(string)
 }
+
+// TargetsOutput モック
+func (_m *MockMrsMopPresenter) TargetsOutput(s interfaces.MrsMopGame, fromCol, cardIndex int) string {
+	return _m.Called(s, fromCol, cardIndex).String(0)
+}

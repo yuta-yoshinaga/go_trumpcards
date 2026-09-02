@@ -6386,6 +6386,7 @@ var gameRegistry = []GameRegistryEntry{
 				"mrsmop.helpHint",
 				"mrsmop.helpAutoComplete",
 				"mrsmop.helpMoveShorthand", "mrsmop.helpUndo",
+				"mrsmop.helpTargets",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),

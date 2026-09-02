@@ -843,3 +843,53 @@ func TestMrsMopUndoN_Excessive(t *testing.T) {
 	assert.Error(t, err, "only one move exists to rewind")
 	assert.Contains(t, err.Error(), "undo step")
 }
+
+// **13 列を押して試すのは現実的でない (#6596)。** 置ける先はドメインが答える。
+// 盤は手で組む — Reset() から配ると、どの列に置けるかが配り任せになる。
+func TestMrsMopLegalTargets(t *testing.T) {
+	s := NewDefaultMrsMop()
+	s.Reset()
+	var tableau [MrsMopTableauCnt][]*MrsMopTableauCard
+	// 列 0: 伏せ札 + ♠6♠5 の並び (index 1 から動かせる)
+	tableau[0] = []*MrsMopTableauCard{
+		{Card: NewCard(CardDesignSpade, 10, false), FaceUp: false},
+		{Card: NewCard(CardDesignSpade, 6, false), FaceUp: true},
+		{Card: NewCard(CardDesignSpade, 5, false), FaceUp: true},
+	}
+	// 列 1: ♥7 → ♠6 を受けられる
+	tableau[1] = []*MrsMopTableauCard{{Card: NewCard(CardDesignHeart, 7, false), FaceUp: true}}
+	// 列 2: ♣9 → 6 も 5 も受けない
+	tableau[2] = []*MrsMopTableauCard{{Card: NewCard(CardDesignClover, 9, false), FaceUp: true}}
+	// 列 3: 空 → どの札でも受ける
+	for i := 4; i < MrsMopTableauCnt; i++ {
+		tableau[i] = []*MrsMopTableauCard{{Card: NewCard(CardDesignClover, 9, false), FaceUp: true}}
+	}
+	s.SetTableau(tableau)
+	s.SetPhase(MrsMopPhasePlaying)
+
+	// **索引を省くと一番長く動かせる並びを見る。** 列 0 の伏せ札は index 0 なので、
+	// 0 を既定にすると常に「動かせない」と答えることになる。
+	idx, targets := s.LegalTargets(0, -1)
+	assert.Equal(t, 1, idx, "♠6 から始まる並びが一番深い")
+	assert.Contains(t, targets, 1, "♥7 は ♠6 を受ける (スート不問)")
+	assert.Contains(t, targets, 3, "空の列はどの札でも受ける")
+	assert.NotContains(t, targets, 2, "♣9 は ♠6 を受けない")
+	assert.NotContains(t, targets, 0, "自分自身は移動先にならない")
+
+	// 索引を明示すれば、そこから始まる並びで測る。♠5 を受けるのは 6 か空列。
+	idx, targets = s.LegalTargets(0, 2)
+	assert.Equal(t, 2, idx)
+	assert.Contains(t, targets, 3, "空の列は ♠5 も受ける")
+	assert.NotContains(t, targets, 1, "♥7 は ♠5 を受けない")
+
+	// 伏せ札からは動かせない。
+	_, targets = s.LegalTargets(0, 0)
+	assert.Empty(t, targets)
+
+	// 範囲外とプレイ中以外は空。
+	_, targets = s.LegalTargets(MrsMopTableauCnt, 0)
+	assert.Empty(t, targets)
+	s.SetPhase(MrsMopPhaseGameClear)
+	_, targets = s.LegalTargets(0, -1)
+	assert.Empty(t, targets, "決着後は置ける先を出さない")
+}

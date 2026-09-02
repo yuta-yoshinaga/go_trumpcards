@@ -4,8 +4,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -242,4 +244,29 @@ func TestMrsMopCuiControllerEmpty(t *testing.T) {
 	c := NewMrsMopCuiController(si)
 	result := c.Exec("")
 	assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
+}
+
+// **`t` は列だけでも打てる (#6596)。** 索引を省いたら -1 を渡し、
+// 「一番長く動かせる並び」の解決はドメインに任せる — 既定を 2 箇所で決めない。
+func TestMrsMopCuiController_Targets(t *testing.T) {
+	t.Run("列だけなら索引は -1 で渡す", func(t *testing.T) {
+		si := new(usecase.MockMrsMopInteractor)
+		si.On("Targets", 3, -1).Return("targets")
+		assert.Equal(t, "targets", NewMrsMopCuiController(si).Exec("t 3"))
+		si.AssertExpectations(t)
+	})
+
+	t.Run("索引を明示すればそのまま渡す", func(t *testing.T) {
+		si := new(usecase.MockMrsMopInteractor)
+		si.On("Targets", 3, 2).Return("targets")
+		assert.Equal(t, "targets", NewMrsMopCuiController(si).Exec("targets 3 2"))
+		si.AssertExpectations(t)
+	})
+
+	t.Run("列が数字でなければドメインに訊かない", func(t *testing.T) {
+		si := new(usecase.MockMrsMopInteractor)
+		out := NewMrsMopCuiController(si).Exec("t x")
+		assert.NotEmpty(t, out)
+		si.AssertNotCalled(t, "Targets", mock.Anything, mock.Anything)
+	})
 }
