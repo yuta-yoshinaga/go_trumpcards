@@ -23,7 +23,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { LiteratureResponse } from '../types/card';
+import type { LiteratureClaim, LiteratureResponse } from '../types/card';
 import { LiteraturePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { LITERATURE_HELP, parseLiteratureCommand } from '../utils/cli/commands/literatureCommands';
@@ -34,6 +34,10 @@ import type { CliGameConfig } from '../utils/cli/types';
 /** Half-suit ownership codes (sync: `LiteratureHalfSuitState`). */
 const STATE_OPEN = 0;
 const STATE_CANCELLED = 3;
+// `LiteratureClaim.outcome` の 3 通り。**cancelled と lost は別物**で、無効は
+// どちらのものにもならず、lost は相手チームの獲得になる。
+const CLAIM_WON = 0;
+const CLAIM_CANCELLED = 1;
 
 /**
  * The wire carries suits by name, but `ask` takes the numeric suit the domain
@@ -152,6 +156,13 @@ function LiteraturePageContent() {
     if (st === STATE_CANCELLED) return t('stateCancelled');
     return t('stateTeam', { n: st - 1 });
   };
+  const claimLine = (c: LiteratureClaim): string => {
+    const p = state.players.find((pl) => pl.id === c.player);
+    const name = p ? playerLabel(p.id, p.isHuman) : '';
+    const lineKey =
+      c.outcome === CLAIM_WON ? 'claimWonLine' : c.outcome === CLAIM_CANCELLED ? 'claimCancelledLine' : 'claimLostLine';
+    return `${name}: ${t(lineKey, { name: halfSuitLabel(c.halfSuit), team: c.awardedTeam })}`;
+  };
 
   // **要求できるのは相手チームのみ。**人間は席 0 = チーム 0。
   const opponents = state.players.filter((p) => p.team !== 0 && p.cardCount > 0).map((p) => p.id);
@@ -262,6 +273,17 @@ function LiteraturePageContent() {
               <div className="mt-1 text-xs text-ds-text-muted" data-testid="literature-hidden-note">
                 {t('hiddenNote')}
               </div>
+            </div>
+
+            {/* 直近の宣言の結末。**ライブリージョンは常設**にしておく — 宣言と同時に
+                領域ごと現れると、その中身は読み上げられない。 */}
+            <div aria-live="polite">
+              {state.lastClaim && (
+                <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="literature-last-claim">
+                  <div className="mb-1 text-ds-text-primary">{t('lastClaimTitle')}</div>
+                  <div>{claimLine(state.lastClaim)}</div>
+                </div>
+              )}
             </div>
 
             {/* Ask history — public information, and the raw material for deduction. */}
