@@ -4,6 +4,7 @@ import { fourseasonsApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, FourSeasonsResponse } from '../types/card';
+import { FourSeasonsPhase } from '../types/phases';
 import { FourSeasonsPage, fourseasonsNextRank, fourseasonsTableauNextRank } from './FourSeasonsPage';
 
 /**
@@ -277,5 +278,58 @@ describe('FourSeasonsPage', () => {
     mockExec.mockRejectedValue(new Error('boom'));
     renderWithProviders(<FourSeasonsPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /再試行|retry/i })).toBeInTheDocument());
+  });
+});
+
+describe('FourSeasonsPage keyboard shortcuts', () => {
+  it.each([
+    ['d', 'draw'],
+    ['h', 'hint'],
+    ['u', 'undo'],
+    ['a', 'autocomplete'],
+  ])('pressing %s dispatches %s', async (key, command) => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<FourSeasonsPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(makeState());
+    fireEvent.keyDown(document, { key });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith(command));
+  });
+
+  it('pressing g asks for give-up confirmation rather than firing it', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<FourSeasonsPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'g' });
+    expect(await screen.findByText('投了確認')).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  // **PLAYING 以外では一つも効かない。**投了だけは exec を経由しないので、
+  // 「呼ばれていない」だけでは足りず、確認ダイアログが出ないことまで見る。
+  it('ignores shortcuts once the game has ended', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: FourSeasonsPhase.GAME_OVER }));
+    renderWithProviders(<FourSeasonsPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    for (const key of ['d', 'h', 'u', 'a', 'g']) {
+      fireEvent.keyDown(document, { key });
+    }
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(screen.queryByText('投了確認')).not.toBeInTheDocument();
+  });
+
+  it('advertises the shortcuts in the footer', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<FourSeasonsPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    const panel = screen.getByTestId('fourseasons-kbd-shortcuts');
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    for (const label of ['山札をめくる', 'ヒントを見る', '一手戻す', '自動で完成させる', '投了する']) {
+      expect(panel).toHaveTextContent(label);
+    }
   });
 });

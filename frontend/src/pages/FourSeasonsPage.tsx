@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { fourseasonsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -15,6 +16,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -201,6 +203,21 @@ function FourSeasonsPageContent() {
     },
     [placeOn, source],
   );
+
+  // **キーボードだけで遊べるようにする** (#6535)。
+  // 早期 return より前に置く: biome の useHookAtTopLevel。
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: handleDraw, label: 'draw' },
+      { key: 'h', action: handleHint, label: 'hint' },
+      { key: 'u', action: handleUndo, label: 'undo' },
+      { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+    ],
+    [handleDraw, handleHint, handleUndo, handleAutoComplete, confirmGiveUpAction],
+  );
+  const isPlayingForKbd = state?.phase === FourSeasonsPhase.PLAYING;
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
 
@@ -489,6 +506,7 @@ function FourSeasonsPageContent() {
                 </>
               )}
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="fourseasons-kbd-shortcuts" />
           </GameFooter>
         </>
       )}
