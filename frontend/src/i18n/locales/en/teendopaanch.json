@@ -9,7 +9,7 @@
     "round": "Round {{round}}/{{total}}",
     "trump": "Trump: {{suit}}",
     "trumpUndecided": "Trump: undeclared (the 5-target seat chooses from its first five cards)",
-    "targets": "Targets are assigned, not bid. The three seats owe 3, 2 and 5 tricks; making your number or more counts. Taking extra scores nothing -- the surplus becomes the right to take that many of an opponent's best cards next round.",
+    "targets": "Targets are assigned, not bid. The three seats owe 3, 2 and 5 tricks; making your number or more counts. Taking extra scores nothing — the surplus becomes the right to take that many of an opponent's best cards next round. The game goes to whoever met their target the most times.",
     "exchange": "{{n}} cards changed hands for last round's shortfall.",
     "target": "target {{target}} / took {{took}}",
     "met": "met {{n}}",
