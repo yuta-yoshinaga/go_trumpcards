@@ -11,10 +11,16 @@ const PHASE_NAMES: Record<number, string> = {
 /** Tricks per round — the last one carries a penalty, so the count is load-bearing. */
 const TRICKS_PER_ROUND = 8;
 
+/**
+ * Points for dodging all three penalties (sync: `SlobberhannesCleanBonus` in
+ * internal/domain/Slobberhannes.go). "Clean" is not merely "no penalty".
+ */
+const CLEAN_BONUS = 1;
+
 /** Compact marks for the three penalties a player may already have taken. */
 function penaltyMarks(p: SlobberhannesPlayer): string {
   const marks = [p.tookFirstTrick && '1st', p.tookLastTrick && 'last', p.tookQueen && 'Q♣'].filter(Boolean);
-  return marks.length > 0 ? marks.join(',') : 'clean';
+  return marks.length > 0 ? marks.join(',') : `clean (+${CLEAN_BONUS.toString()})`;
 }
 
 /** Format a Slobberhannes game state as terminal text. */

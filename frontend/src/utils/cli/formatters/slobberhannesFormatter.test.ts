@@ -72,10 +72,11 @@ describe('formatSlobberhannesState', () => {
     expect(out).not.toContain('LAST trick');
   });
 
-  it('renders the penalty marks a seat has taken, and "clean" for one that has none', () => {
+  it('renders the penalty marks a seat has taken, and the clean bonus for one that has none', () => {
     const out = formatSlobberhannesState(makeState());
     expect(out).toContain('[1st]');
-    expect(out).toContain('[clean]');
+    // **「無傷」は失点なしではなく +1 の加点。**CLI モードでも点数まで言う。
+    expect(out).toContain('[clean (+1)]');
   });
 
   it('marks legal cards and leaves illegal ones unmarked', () => {
