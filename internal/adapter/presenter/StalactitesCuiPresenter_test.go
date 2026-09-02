@@ -5,6 +5,7 @@ package presenter
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -46,6 +47,82 @@ func TestStalactitesCuiPresenterOutputGameOver(t *testing.T) {
 	result := p.Output(f, nil)
 
 	assert.Contains(t, result, "ゲームオーバー")
+}
+
+// stalactitesGameOverBoard は手で組んだ盤面を返す。配り依存を避けるため
+// Reset() は呼ばず、SetFoundation / SetTableau / SetCells で直接組む。
+func stalactitesGameOverBoard(foundationCards int) *domain.Stalactites {
+	f := domain.NewStalactites(domain.NewTrumpCards(0))
+	// ファンデーションに foundationCards 枚だけ置く（スートは問わない）。
+	var fnd [domain.StalactitesFoundationCnt][]*domain.Card
+	placed := 0
+	for i := 0; i < domain.StalactitesFoundationCnt && placed < foundationCards; i++ {
+		fnd[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+		placed++
+	}
+	f.SetFoundation(fnd)
+	// タブローとセルは空にしておく。
+	var tableau [domain.StalactitesTableauCnt][]*domain.Card
+	f.SetTableau(tableau)
+	var cells [domain.StalactitesCellCnt]*domain.Card
+	f.SetCells(cells)
+	f.SetPhase(domain.StalactitesPhaseGameOver)
+	return f
+}
+
+// TestStalactitesCuiPresenterOutputGameOverSummary_ContainsNumberAndPercent は
+// GameOver 時の出力に到達枚数と % が含まれることを確認する。
+// i18n.T/i18n.Tf から組み立てた文字列ではなく、数字そのものをアサートする。
+func TestStalactitesCuiPresenterOutputGameOverSummary_ContainsNumberAndPercent(t *testing.T) {
+	p := new(StalactitesCuiPresenter)
+	// ファンデーション 2 枚: 2 / 52 ≒ 4%
+	f := stalactitesGameOverBoard(2)
+
+	result := p.Output(f, nil)
+
+	// **盤には数字が散らばっているので "2" を探すだけでは何も証明しない。**
+	// 分子・分母・百分率が 1 本の行として揃っていることを見る。分母は
+	// ドメインの定数から組み、書き写さない。
+	total := strconv.Itoa(domain.StalactitesTotalCards)
+	assert.Contains(t, result, "2/"+total)
+	assert.Contains(t, result, "（4%）")
+}
+
+// TestStalactitesCuiPresenterOutputGameOverSummary_NoTemplateArtifact は
+// 出力に未展開テンプレート {{...}} が残っていないことを確認する。
+func TestStalactitesCuiPresenterOutputGameOverSummary_NoTemplateArtifact(t *testing.T) {
+	p := new(StalactitesCuiPresenter)
+	f := stalactitesGameOverBoard(3)
+
+	result := p.Output(f, nil)
+
+	assert.NotContains(t, result, "{{")
+}
+
+// TestStalactitesCuiPresenterOutputPlaying_NoGameOverSummary は
+// プレイ中の出力にゲームオーバーサマリー行が含まれないことを確認する（負のコントロール）。
+func TestStalactitesCuiPresenterOutputPlaying_NoGameOverSummary(t *testing.T) {
+	p := new(StalactitesCuiPresenter)
+	f := stalactitesGameOverBoard(3)
+	f.SetPhase(domain.StalactitesPhasePlaying)
+
+	result := p.Output(f, nil)
+
+	// **サマリー行そのものが無いことを見る。** "%" だけを見ると、他の行が
+	// 百分率を出し始めた日に理由の分からない失敗になる。
+	assert.NotContains(t, result, "3/"+strconv.Itoa(domain.StalactitesTotalCards))
+}
+
+// TestStalactitesCuiPresenterOutputGameClear_NoGameOverSummary は
+// クリア時の出力にゲームオーバーサマリー行が含まれないことを確認する（負のコントロール）。
+func TestStalactitesCuiPresenterOutputGameClear_NoGameOverSummary(t *testing.T) {
+	p := new(StalactitesCuiPresenter)
+	f := stalactitesGameOverBoard(3)
+	f.SetPhase(domain.StalactitesPhaseGameClear)
+
+	result := p.Output(f, nil)
+
+	assert.NotContains(t, result, "3/"+strconv.Itoa(domain.StalactitesTotalCards))
 }
 
 func TestStalactitesCuiPresenterOutputStalemate(t *testing.T) {

@@ -126,6 +126,9 @@ func (p *StalactitesCuiPresenter) Output(f interfaces.StalactitesGame, lastErr e
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(f.GetMoveCount())) + "\n")
 		case domain.StalactitesPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := f.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.StalactitesTotalCards)) + "\n")
 		}
 	})
 }
