@@ -10,7 +10,7 @@
     "trump": "Trump: {{suit}}",
     "trumpUndecided": "Trump: undecided (set by the first player who cannot follow)",
     "tens": "Tens: your team {{t0}} - theirs {{t1}} (of {{total}}; three takes the hand)",
-    "bonusRule": "Two each and the trick count decides (+1). All four tens is a Mendikot (+2); every one of the thirteen tricks is a Whitewash (+3).",
+    "bonusRule": "Two each and the trick count decides (+1). Taking all four tens is a Mendikot (+2); every one of the thirteen tricks is a Whitewash (+3).",
     "tricks": "Tricks: your team {{t0}} - theirs {{t1}} (only decides a two-apiece split)",
     "score": "Hand points: your team {{t0}} - theirs {{t1}}",
     "seatTens": "{{n}} tens",
