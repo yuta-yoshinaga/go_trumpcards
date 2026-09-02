@@ -57780,8 +57780,13 @@ components:
         mustHit:
           type: boolean
           description: >-
-            The human seat is the banker and is below 15, so it cannot stand.
-            Server-computed; do not re-derive.
+            The human seat is the banker and is below mustHitThreshold, so it
+            cannot stand. Server-computed; do not re-derive.
+        mustHitThreshold:
+          type: integer
+          description: >-
+            The score the banker may not stand below. Served so the client copy
+            does not carry its own copy of the number.
         roundNumber:
           type: integer
         remainingCards:

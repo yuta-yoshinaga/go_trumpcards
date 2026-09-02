@@ -57,6 +57,7 @@ const base: BanLuckResponse = {
   humanSeat: 0,
   isHumanTurn: false,
   mustHit: false,
+  mustHitThreshold: 15,
   roundNumber: 1,
   remainingCards: 52,
   winnerSeat: 0,
@@ -158,6 +159,17 @@ describe('BanLuckPage', () => {
     await waitFor(() => expect(screen.getByTestId('bl-must-hit')).toBeInTheDocument());
     expect(screen.queryByTestId('bl-stand')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '引く' })).toBeInTheDocument();
+  });
+
+  // **下限はサーバから来た数値を出す。** 文言に書き写すと、ドメインの定数を
+  // 変えたときに画面だけ古い数字で残る。
+  it('義務ヒットの下限はサーバの値をそのまま出す', async () => {
+    mockApi.mockResolvedValue(playing({ mustHit: true, mustHitThreshold: 17 }));
+    renderWithProviders(<BanLuckPage />);
+
+    // 既定の 15 ではなくレスポンスの 17 が出る。文言に直書きしていれば落ちる。
+    await waitFor(() => expect(screen.getByTestId('bl-must-hit')).toHaveTextContent('17未満'));
+    expect(screen.getByTestId('bl-must-hit')).not.toHaveTextContent('15未満');
   });
 
   // **点数が同じでもフラグが false なら止められる。** 一方向だけの検査は

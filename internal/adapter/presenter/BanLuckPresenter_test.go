@@ -167,6 +167,18 @@ func TestBanLuckWebPresenter_ArraysAreNeverNull(t *testing.T) {
 }
 
 // **席の役割と手番はサーバが載せる。** ページに計算し直させない。
+// **下限は数値でワイヤに乗せる。** Web の文言に書き写させないため。
+func TestBanLuckWebPresenter_SendsTheMustHitThreshold(t *testing.T) {
+	cp := new(BanLuckWebPresenter)
+	var out struct {
+		MustHitThreshold int `json:"mustHitThreshold"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(cp.Output(newBanLuckForPresenter(t), nil)), &out))
+
+	// ドメインの定数と一致すること。定数を変えれば Web の文言も追従する。
+	assert.Equal(t, domain.BanLuckBankerMustHitUnder, out.MustHitThreshold)
+}
+
 func TestBanLuckWebPresenter_RolesAreOnTheWire(t *testing.T) {
 	cp := new(BanLuckWebPresenter)
 	g := banLuckDealt(t)

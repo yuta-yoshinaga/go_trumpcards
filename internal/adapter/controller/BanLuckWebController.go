@@ -61,11 +61,16 @@ type BanLuckWebOutput struct {
 	// MustHit は人間が親で、いま引く義務を負っているか。
 	//
 	// **ページに 15 未満かを計算し直させない。** 規則が 2 か所に増えると必ずずれる。
-	MustHit        bool `json:"mustHit"`
-	RoundNumber    int  `json:"roundNumber"`
-	RemainingCards int  `json:"remainingCards"`
-	WinnerSeat     int  `json:"winnerSeat"`
-	GameEndFlag    bool `json:"gameEndFlag"`
+	MustHit bool `json:"mustHit"`
+	// MustHitThreshold は親が止まれない下限 (domain.BanLuckBankerMustHitUnder)。
+	//
+	// **数値を送るのは、Web の文言に書き写させないため。** ドメインの定数を
+	// 変えたときに画面だけ古い数字が残る形を避ける。
+	MustHitThreshold int  `json:"mustHitThreshold"`
+	RoundNumber      int  `json:"roundNumber"`
+	RemainingCards   int  `json:"remainingCards"`
+	WinnerSeat       int  `json:"winnerSeat"`
+	GameEndFlag      bool `json:"gameEndFlag"`
 
 	Config *BanLuckWebOutCfg `json:"config,omitempty"`
 	WebOutputBase

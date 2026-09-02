@@ -3,7 +3,7 @@
   "betGuide": "Choose your stake",
   "bankerBetNotice": "You are the banker this round. The banker does not stake — deal with 0",
   "playGuide": "Draw or stand",
-  "mustHitNotice": "The banker cannot stand below 15 — you must draw",
+  "mustHitNotice": "The banker cannot stand below {{min}} — you must hit",
   "label.chips": "Chips",
   "label.bet": "Bet",
   "label.roundBet": "Staked",

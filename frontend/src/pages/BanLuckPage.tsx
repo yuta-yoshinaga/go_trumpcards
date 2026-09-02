@@ -160,7 +160,7 @@ function BanLuckPageContent() {
             {/* **義務は名指しで出す。** 押せない理由が読めないと規則が伝わらない。 */}
             {state.mustHit && (
               <p className="text-ds-text-muted text-center text-xs mb-2" data-testid="bl-must-hit">
-                {t('mustHitNotice')}
+                {t('mustHitNotice', { min: state.mustHitThreshold })}
               </p>
             )}
 
