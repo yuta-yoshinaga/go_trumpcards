@@ -128,6 +128,21 @@ describe('EstimationPage', () => {
     expect(screen.getByTestId('est-bid-5-btn')).toBeEnabled();
   });
 
+  // **裸の数字は読み上げでは意味を持たない。**押せない値は理由まで名乗る。
+  it('names each call, and says why the barred one cannot be taken', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, trumpSuit: 3, restrictedBid: 4 }));
+    renderWithProviders(<EstimationPage />);
+
+    expect(await screen.findByTestId('est-bid-3-btn')).toHaveAccessibleName('3トリック宣言');
+    // 0 は「Dash Call」であって「0 トリック」ではない。
+    expect(screen.getByTestId('est-bid-0-btn')).toHaveAccessibleName('Dash Call（0トリック宣言）');
+    // 禁止値だけが理由を名乗る。
+    expect(screen.getByTestId('est-bid-4-btn')).toHaveAccessibleName(
+      '4トリック宣言は選べません（全員の宣言の合計が13になるため）',
+    );
+    expect(screen.getByTestId('est-bid-5-btn')).not.toHaveAccessibleName(/選べません/);
+  });
+
   it('enables every call when nothing is barred', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, trumpSuit: 3, restrictedBid: -1 }));
     renderWithProviders(<EstimationPage />);
