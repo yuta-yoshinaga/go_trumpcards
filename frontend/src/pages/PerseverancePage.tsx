@@ -190,14 +190,17 @@ function PerseverancePageContent() {
   // the confirm dialog — matching reset's guard (issue #2099).
   const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
+  const canRedeal = !isAutoCompleting && (state?.redealsLeft ?? 0) > 0;
+
   const actionBindings = useMemo(
     () => [
       { key: 'h', action: handleHint },
       { key: 'a', action: handleAutoComplete },
       { key: 'g', action: confirmGiveUpAction },
       { key: 'z', action: handleUndo },
+      { key: 'r', action: handleRedeal, enabled: canRedeal },
     ],
-    [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
+    [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo, handleRedeal, canRedeal],
   );
 
   useActionKeyboardNav({
@@ -525,8 +528,10 @@ function PerseverancePageContent() {
                     onClick={handleRedeal}
                     disabled={loading || isAutoCompleting || state.redealsLeft <= 0}
                     data-testid="redeal-button"
+                    aria-keyshortcuts="r"
                   >
                     {t('redeal')}
+                    <KbdBadge label={t('kbd.redeal')} />
                   </button>
                   <button
                     type="button"

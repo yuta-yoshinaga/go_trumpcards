@@ -493,6 +493,36 @@ describe('PerseverancePage redeal', () => {
     await waitFor(() => expect(screen.getByTestId('redeal-button')).toBeDisabled());
     expect(screen.getByTestId('redeal-button').className).not.toContain('animate-pulse');
   });
+
+  it('pressing r triggers redeal when redeals remain', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<PerseverancePage />);
+    await screen.findByTestId('redeal-button');
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.keyDown(document, { key: 'r' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('redeal'));
+  });
+
+  it('pressing r does nothing when redealsLeft is 0', async () => {
+    mockExec.mockResolvedValue({ ...playingState, redealsLeft: 0 });
+    renderWithProviders(<PerseverancePage />);
+    await waitFor(() => expect(screen.getByTestId('redeal-button')).toBeDisabled());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'r' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('redeal');
+  });
+
+  it('redeal-button has aria-keyshortcuts="r" and shows the R badge', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<PerseverancePage />);
+    const button = await screen.findByTestId('redeal-button');
+    expect(button).toHaveAttribute('aria-keyshortcuts', 'r');
+    expect(button.querySelector('kbd')?.textContent).toBe('R');
+  });
 });
 
 // **並びの一括移動は、盤から掴めなければ存在しないのと同じ。**ドメインは
