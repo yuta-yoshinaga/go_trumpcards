@@ -72,6 +72,18 @@ func (tp *ThreeCardRummyCuiPresenter) Output(tc interfaces.ThreeCardRummyGame, l
 		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
 	}
 
+	// **賭けた額を覚えておかせない。** Web はアクション中ずっと内訳を出して
+	// いるのに、CUI は決着まで一度も出さないので、プレイに要る額をその場で
+	// 確かめられなかった。プレイ額はアンテと同額。
+	if tc.GetPhase() == domain.ThreeCardRummyPhaseAction {
+		ante := tc.GetAnteBet()
+		sb.WriteString(i18n.Tf("threecardrummy.anteLine", "ante", strconv.Itoa(ante)) + "\n")
+		if tc.GetLowBonusBet() > 0 {
+			sb.WriteString(i18n.Tf("threecardrummy.lowBonusLine", "bonus", strconv.Itoa(tc.GetLowBonusBet())) + "\n")
+		}
+		sb.WriteString(i18n.Tf("threecardrummy.playRequiredLine", "play", strconv.Itoa(ante)) + "\n")
+	}
+
 	if tc.GetGameEndFlag() {
 		sb.WriteString(i18n.Tf("threecardrummy.anteLine", "ante", strconv.Itoa(tc.GetAnteBet())) + "\n")
 		if tc.GetPlayBet() > 0 {

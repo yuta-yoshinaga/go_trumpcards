@@ -524,3 +524,44 @@ func TestThreeCardRummyCuiPresenter_QualifyConsequenceOnlyAfterAContest(t *testi
 	assert.NotContains(t, folded, consequence,
 		"降りてアンテを没収された手に『アンテのみ配当』とは書けない")
 }
+
+// **賭けた額を覚えておかせない (#6605)。** Web はアクション中ずっと内訳を出して
+// いるのに、CUI は決着まで一度も出さないので、プレイに要る額をその場で確かめ
+// られなかった。期待値は i18n から組み立てず、設定した金額そのもので見る。
+func TestThreeCardRummyCuiPresenter_ActionPhaseShowsTheBetSlip(t *testing.T) {
+	p := new(ThreeCardRummyCuiPresenter)
+
+	t.Run("ante and required play amount", func(t *testing.T) {
+		g := tcrGame(t, domain.ThreeCardRummyPhaseAction)
+		g.SetAnteBet(30)
+
+		out := p.Output(g, nil)
+
+		// プレイ額はアンテと同額。**両方の行が出ること**を見る。
+		assert.Contains(t, out, "アンテ: 30")
+		assert.Contains(t, out, "プレイに必要: 30")
+		assert.NotContains(t, out, "{{")
+		// 置いていない側注の行は出さない。
+		assert.NotContains(t, out, "ローボーナス:")
+	})
+
+	t.Run("low bonus is listed when placed", func(t *testing.T) {
+		g := tcrGame(t, domain.ThreeCardRummyPhaseAction)
+		g.SetAnteBet(20)
+		g.SetLowBonusBet(7)
+
+		out := p.Output(g, nil)
+
+		assert.Contains(t, out, "ローボーナス: 7")
+		// **アンテと取り違えていないこと。** 同じ数字だと入れ替えでも通る。
+		assert.Contains(t, out, "アンテ: 20")
+	})
+
+	// **負のコントロール**: ベットフェーズにはまだ賭けが確定していない。
+	t.Run("not shown during the bet phase", func(t *testing.T) {
+		g := tcrGame(t, domain.ThreeCardRummyPhaseBet)
+		g.SetAnteBet(30)
+
+		assert.NotContains(t, p.Output(g, nil), "プレイに必要")
+	})
+}
