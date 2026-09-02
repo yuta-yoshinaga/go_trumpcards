@@ -257,7 +257,16 @@ function CribbageSquaresPageContent() {
                                 data-hint-action={cellAction}
                                 data-cross-hover={inCross ? 'true' : undefined}
                                 aria-label={
-                                  cell.card ? cardAlt(cell.card) : `${t('label.empty')} ${rowIdx + 1}-${colIdx + 1}`
+                                  cell.card
+                                    ? cardAlt(cell.card)
+                                    : // **どの行・列に効くかは色でしか出ていなかった。**空きマスは
+                                      // 影響する 2 つの役の現在点を読み上げにも載せる。
+                                      t('label.emptyCell', {
+                                        rowNo: rowIdx + 1,
+                                        rowScore: state.rowScores[rowIdx] ?? 0,
+                                        colNo: colIdx + 1,
+                                        colScore: state.colScores[colIdx] ?? 0,
+                                      })
                                 }
                                 onClick={() => handlePlace(rowIdx, colIdx)}
                                 onPointerEnter={() => !filled && setCrossHover({ row: rowIdx, col: colIdx })}
