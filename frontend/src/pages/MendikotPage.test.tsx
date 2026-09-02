@@ -78,6 +78,19 @@ describe('MendikotPage', () => {
     expect(tens).toHaveTextContent('4');
   });
 
+  // **4枚独占と全トリック独占は追加点。**ハンドが終わるまで出てこないと、
+  // 10 を4枚とも追う価値を知らないままプレイすることになる。
+  it('states the Mendikot and Whitewash bonuses during play, not only at hand end', async () => {
+    mockExec.mockResolvedValue(makeState({ teamTens: [2, 1] } as Partial<MendikotResponse>));
+    renderWithProviders(<MendikotPage />);
+
+    const rule = await screen.findByTestId('md-bonus-rule');
+    expect(rule).toHaveTextContent('Mendikot で +2');
+    expect(rule).toHaveTextContent('Whitewash で +3');
+    // 通常勝利の +1 と取り違えないよう、そちらも同じ行で名指しされている。
+    expect(rule).toHaveTextContent('トリックの多いほうが勝ち（+1）');
+  });
+
   // **トリック数は 2-2 のときしか効かない。** 出すが主役ではない。
   it('shows the trick count as the tie-break', async () => {
     mockExec.mockResolvedValue(makeState({ teamTricks: [7, 3] } as Partial<MendikotResponse>));

@@ -179,6 +179,12 @@ function MendikotPageContent() {
                 t1: String(state.teamTens[1] ?? 0),
                 total: String(state.tensInDeck),
               })}
+              {/* **4枚独占と全トリック独占は追加点。**ハンドが終わってから
+                  handEnd で初めて出るので、対局中は 10 を4枚とも追う価値が
+                  分からないままだった。CUI の rule と同じ内容を常時出す。 */}
+              <div className="mt-1 text-ds-text-muted text-sm" data-testid="md-bonus-rule">
+                {t('header.bonusRule')}
+              </div>
             </div>
 
             <div className="text-ds-text-muted text-sm text-center mb-1" data-testid="md-tricks">
