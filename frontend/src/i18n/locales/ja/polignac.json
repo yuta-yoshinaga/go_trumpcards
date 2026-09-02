@@ -14,12 +14,12 @@
     "score": "累計{{score}}失点（今ラウンド{{round}}）"
   },
   "capot": {
-    "active": "{{name}} が capot 宣言中（獲得 {{tricks}}/8）。1トリック取れば潰せます。",
+    "active": "{{name}} が capot 宣言中（獲得 {{tricks}}/8）。1トリック取れば潰せます。【成功なら他の全員が{{stake}}失点、失敗なら宣言者が{{stake}}失点】",
     "mark": "[capot]"
   },
   "currentTrick": "現在のトリック",
   "actions": {
-    "declareCapot": "capot を宣言",
+    "declareCapot": "capot を宣言（{{stake}}点を賭ける）",
     "pass": "宣言せず進む",
     "nextRound": "次のラウンドへ",
     "reset": "リセット",

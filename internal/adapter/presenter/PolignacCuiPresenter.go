@@ -60,9 +60,12 @@ func (p *PolignacCuiPresenter) Output(g interfaces.PolignacGame, lastErr error) 
 		sb.WriteString(i18n.T("polignac.penaltyLine") + "\n")
 
 		if idx := g.GetCapotIdx(); idx >= 0 {
+			// **capot は 1 ラウンド 1 度きりで不可逆。**何点が動くかを言わないと、
+			// 潰しにいく側も宣言者も賭けの大きさが読めない。
 			sb.WriteString(color.Yellow(i18n.Tf("polignac.capotActive",
 				"name", cuiPlayerName(g.GetPlayer(idx), idx),
-				"tricks", strconv.Itoa(g.GetCapotTricks()))) + "\n")
+				"tricks", strconv.Itoa(g.GetCapotTricks()),
+				"stake", strconv.Itoa(domain.PolignacCapotStake))) + "\n")
 		}
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {

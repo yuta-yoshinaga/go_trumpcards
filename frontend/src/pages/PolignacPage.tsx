@@ -39,6 +39,13 @@ const SUIT_ARIA_KEYS = ['', 'spade', 'clover', 'heart', 'diamond'] as const;
 /** Tricks per round. Capot means taking all of them. */
 const TRICKS_PER_ROUND = 8;
 
+/**
+ * Points that swing on a capot declaration (sync: `PolignacCapotStake` in
+ * internal/domain/Polignac.go). Success costs everyone else this much;
+ * failure costs the declarer the same.
+ */
+const CAPOT_STAKE = 5;
+
 /** Guided tutorial steps (penalty rule, capot, trick, hand). */
 const POLIGNAC_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -204,6 +211,7 @@ function PolignacPageContent() {
                 {t('capot.active', {
                   name: state.capotIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(state.capotIdx) }),
                   tricks: String(state.capotTricks),
+                  stake: CAPOT_STAKE,
                 })}
               </div>
             )}
@@ -312,7 +320,7 @@ function PolignacPageContent() {
                     disabled={loading}
                     data-testid="pg-capot-btn"
                   >
-                    {t('actions.declareCapot')}
+                    {t('actions.declareCapot', { stake: CAPOT_STAKE })}
                   </button>
                   <button
                     type="button"
