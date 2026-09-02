@@ -154,6 +154,24 @@ describe('CrazyQuiltPage', () => {
     await waitFor(() => expect(stock).toBeDisabled());
   });
 
+  // **残り組み直し回数は CUI にしか出ていなかった。**山札が 0 になった瞬間に
+  // 打ち切りなのか、まだ一度組み直せるのかが Web では読めなかった。
+  it('shows how many redeals are left while one remains', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0, redealsLeft: 1 });
+    renderWithProviders(<CrazyQuiltPage />);
+    await waitFor(() => expect(screen.getByTestId('crazyquilt-redeals')).toHaveTextContent('組み直し: 残り1回'));
+    // 空の山札でも「もう終わり」ではないことが読み上げでも分かる。
+    expect(screen.getByRole('button', { name: '山札は空です（組み直し 残り1回）' })).toBeEnabled();
+  });
+
+  // 使い切った状態でも可視表示と読み上げが矛盾しない（受け入れ条件の3つ目）。
+  it('still reads consistently once the redeal is spent', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0, redealsLeft: 0 });
+    renderWithProviders(<CrazyQuiltPage />);
+    await waitFor(() => expect(screen.getByTestId('crazyquilt-redeals')).toHaveTextContent('組み直し: 残り0回'));
+    expect(screen.getByRole('button', { name: '山札は空です（もう組み直せません）' })).toBeDisabled();
+  });
+
   it('shows an emptied cell without a button', async () => {
     renderWithProviders(<CrazyQuiltPage />);
     await waitFor(() => expect(screen.getByTestId('cq-cell-5')).toBeInTheDocument());
