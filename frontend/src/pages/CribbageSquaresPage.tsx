@@ -268,9 +268,9 @@ function CribbageSquaresPageContent() {
                                       // 1 つでもある間 `rowScores` は必ず 0 になる。
                                       t('label.emptyCell', {
                                         rowNo: rowIdx + 1,
-                                        rowScore: state.rowPartialDetails?.[rowIdx]?.total ?? 0,
+                                        rowScore: state.rowPartialDetails[rowIdx]?.total ?? 0,
                                         colNo: colIdx + 1,
-                                        colScore: state.colPartialDetails?.[colIdx]?.total ?? 0,
+                                        colScore: state.colPartialDetails[colIdx]?.total ?? 0,
                                       })
                                 }
                                 onClick={() => handlePlace(rowIdx, colIdx)}

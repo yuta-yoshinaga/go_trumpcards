@@ -256,6 +256,15 @@ describe('CribbageSquaresPage', () => {
     expect(screen.getByTestId('cell-0-0')).toHaveAttribute('aria-label', cardAlt(card('SPADE', 5)));
   });
 
+  // サーバが内訳を省いたレスポンスでも、読み上げが壊れず 0 として出る。
+  it('reads out zero when the server sent no breakdown for a line', async () => {
+    mockExec.mockResolvedValue(makeState({ rowPartialDetails: [], colPartialDetails: [] }));
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-1-2')).toBeEnabled());
+
+    expect(screen.getByTestId('cell-1-2')).toHaveAttribute('aria-label', '空 2-3、行2(現在0点)・列3(現在0点)');
+  });
+
   it('shows an error with a retry', async () => {
     mockExec.mockRejectedValue(new Error('boom'));
     renderWithProviders(<CribbageSquaresPage />);
