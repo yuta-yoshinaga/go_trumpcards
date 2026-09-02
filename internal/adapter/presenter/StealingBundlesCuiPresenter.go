@@ -80,7 +80,10 @@ type StealingBundlesCuiPresenter struct{}
 // Output renders the current game state for the active locale.
 func (p *StealingBundlesCuiPresenter) Output(s interfaces.StealingBundlesGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("stealingbundles.helpTitle"), func(sb *strings.Builder) {
+		// **山札を配り切ってもゲームは続く。**何回目の配りかが出ていないと、
+		// 山札が尽きて配り直された直後なのかが盤面から分からない。
 		sb.WriteString(i18n.Tf("stealingbundles.header",
+			"pack", strconv.Itoa(s.GetPacksDealt()),
 			"turn", strconv.Itoa(s.GetTurnNumber()+1),
 			"deck", strconv.Itoa(s.GetDeckRemaining())) + "\n")
 		// **束の一番上が弱点、というのが規則そのもの。** 毎回書く。

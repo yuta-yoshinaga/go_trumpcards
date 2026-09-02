@@ -40,11 +40,20 @@ describe('formatStealingBundlesState', () => {
     expect(formatStealingBundlesState(null)).toBe('Loading...');
   });
 
-  it('shows the turn, deck and the rule', () => {
-    const out = formatStealingBundlesState(state());
+  it('shows the pack, turn, deck and the rule', () => {
+    const out = formatStealingBundlesState(state({ packsDealt: 3, turnNumber: 2, deckRemaining: 32 }));
+    // **3 つの数字は別物。**取り違えるとどれもそれらしく見えるので個別に見る。
+    expect(out).toContain('pack 3');
     expect(out).toContain('turn 3');
     expect(out).toContain('deck 32');
     expect(out).toMatch(/rival bundle goes whole/);
+  });
+
+  // **名前の付いたフェーズと、付いていないフェーズは別の枝。**同じ行の両方を見ないと
+  // どちらか一方しか実行されない。
+  it('names a known phase and falls back to the raw number for an unknown one', () => {
+    expect(formatStealingBundlesState(state({ phase: 0 }))).toContain('| PLAY');
+    expect(formatStealingBundlesState(state({ phase: 9 }))).toContain('| 9');
   });
 
   // **空の場も情報。** 行が消えると見落としと区別が付きません。

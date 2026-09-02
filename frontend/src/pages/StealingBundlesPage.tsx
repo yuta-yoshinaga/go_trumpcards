@@ -157,6 +157,11 @@ function StealingBundlesPageContent() {
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             <div className="text-ds-text-primary text-center mb-2" data-testid="sb-header">
+              {/* **山札を配り切ってもゲームは続く。**Pasur と同じ「○パック目」で
+                  何回目の配りかを出す。 */}
+              <span className="mr-4" data-testid="sb-pack">
+                {t('header.pack', { pack: String(state.packsDealt) })}
+              </span>
               <span className="mr-4">{t('header.turn', { n: String(state.turnNumber + 1) })}</span>
               <span>{t('header.deck', { n: String(state.deckRemaining) })}</span>
             </div>

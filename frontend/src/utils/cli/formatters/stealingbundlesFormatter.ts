@@ -13,7 +13,12 @@ export function formatStealingBundlesState(state: StealingBundlesResponse | null
   const lines: string[] = [];
 
   lines.push(formatHeader('Stealing Bundles'));
-  lines.push(`turn ${state.turnNumber + 1} | deck ${state.deckRemaining} | ${PHASE_NAMES[state.phase] ?? state.phase}`);
+  // **山札を配り切ってもゲームは続く。**何回目の配りかは Pasur の CLI と同じ位置に出す。
+  lines.push(
+    `pack ${state.packsDealt} | turn ${state.turnNumber + 1} | deck ${state.deckRemaining} | ${
+      PHASE_NAMES[state.phase] ?? state.phase
+    }`,
+  );
   // **束の一番上が弱点、というのが規則そのもの。**
   lines.push('matching a rank captures it — and a rival bundle goes whole if its top card matches');
 
