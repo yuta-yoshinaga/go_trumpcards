@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -27,6 +28,8 @@ func TestStealingBundlesCuiPresenterOutput(t *testing.T) {
 
 	assert.Contains(t, out, i18n.T("stealingbundles.helpTitle"))
 	assert.Contains(t, out, fixedPart("stealingbundles.header"))
+	// **山札を配り切ってもゲームは続く。**何回目の配りかがヘッダーに出る。
+	assert.Contains(t, out, "配布: "+strconv.Itoa(s.GetPacksDealt())+" パック目")
 	// **束の一番上が弱点、というのが規則そのもの。**
 	assert.Contains(t, out, i18n.T("stealingbundles.rule"))
 	assert.Contains(t, out, fixedPart("stealingbundles.table"))
