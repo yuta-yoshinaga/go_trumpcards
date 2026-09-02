@@ -59,5 +59,6 @@
   "helpKing": "  king <s|c|h|d>       call a king to find a partner (king-call phase)",
   "helpExampleBid": "  bid solo s           bid Solo with spades as trump (the top bid)",
   "helpExampleKing": "  king h               call the King of hearts as your partner",
-  "rolePartner": "partner"
+  "rolePartner": "partner",
+  "promptKingChoices": "Callable kings: {{suits}}"
 }
