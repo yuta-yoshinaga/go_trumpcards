@@ -354,20 +354,21 @@ func TestShamrocksGetMovableFans(t *testing.T) {
 	assert.ElementsMatch(t, []int{0, 1, 2}, g.GetMovableFans())
 	assert.True(t, g.hasAnyLegalMove())
 
-	// 動かせる扇が 1 つだけの盤。♠K は ♥2 とも ♣5 とも差が 1 でなく、
-	// 組札は A しか受けないので動かせない。♥2 と ♣5 も互いに積めない。
-	// ♠A だけが組札へ行ける。
+	// 動かせる扇が 1 つだけの盤。**どの 2 枚も差が 1 にならない値を選ぶ**:
+	// 13 / 9 / 5 / 1 は互いの差が 4・8・12 なので誰も積めず、組札は A しか
+	// 受けない。よって動かせるのは ♠A の扇だけ。
+	//
+	// 最初は 2 を置いていたが、**2 と A は差が 1 で積めてしまう** ── 「A だけが
+	// 動かせる」という説明と実際が食い違っていた (レビュー指摘)。
+	// 件数まで固定しないと、この食い違いはテストを通過してしまう。
 	llClearSH(g)
 	g.fans = [][]*Card{
 		{llCardSH(CardDesignSpade, 13)},
-		{llCardSH(CardDesignHeart, 2)},
+		{llCardSH(CardDesignHeart, 9)},
 		{llCardSH(CardDesignClover, 5)},
 		{llCardSH(CardDesignSpade, 1)},
 	}
-	idxs := g.GetMovableFans()
-	assert.Contains(t, idxs, 3, "A は空の組札へ行ける")
-	assert.NotContains(t, idxs, 0, "K は置き先が無い")
-	assert.NotContains(t, idxs, 2, "5 は置き先が無い")
+	assert.Equal(t, []int{3}, g.GetMovableFans(), "動かせるのは組札へ行ける A だけ")
 	assert.True(t, g.hasAnyLegalMove())
 
 	// 手が 1 つも無い盤。**集合が空かどうかと「手があるか」は同じ問い。**
