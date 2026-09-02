@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { BASEBALLPOKER_CLI_HELP, parseBaseballPokerCommand } from '../utils/cli/commands/baseballpokerCommands';
 import { formatBaseballPokerState } from '../utils/cli/formatters/baseballpokerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { type PokerHandRank, pokerHandKey } from '../utils/pokerSquaresUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const BB_TUTORIAL_STEPS: TutorialStep[] = [
@@ -67,6 +68,12 @@ function BaseballPokerPageContent() {
   const phase = state?.phase;
   const isBetting = phase === BaseballPhase.BETTING;
   const isShowdown = phase === BaseballPhase.SHOWDOWN;
+  // 役名はランクから引く。**サーバは英語名を送っていない**ので、共通の
+  // ポーカー役キーで訳す (未知のランクは番号のまま出して黙って消えないように)。
+  const handLabel = (rank: number): string => {
+    const key = rank >= 0 && rank <= 9 ? pokerHandKey(rank as PokerHandRank) : undefined;
+    return key ? t(`hand.${key}`) : String(rank);
+  };
   const gameOver = !!state?.gameEndFlag;
   const canAct = !!state?.isHumanTurn && isBetting;
   const facingBet = (state?.toCall ?? 0) > 0;
@@ -234,6 +241,22 @@ function BaseballPokerPageContent() {
                   {/* **他人の表札も出す。** スタッドの読み合いはここが材料。 */}
                   {!seat.isHuman && (
                     <div className="mt-1">{seatCards(seat, `bb-seat-cards-${i}`, Math.round(cardWidth * 0.7))}</div>
+                  )}
+                  {/* **なぜその配当になったのかが最後まで分からなかった** (#6579)。
+                      ショーダウンでは役名と、ベスト 5 枚を出す。 */}
+                  {isShowdown && seat.bestHand.length > 0 && (
+                    <div className="mt-1" data-testid={`bp-showdown-${i}`}>
+                      <span className="text-ds-accent text-xs">{handLabel(seat.handRank)}</span>
+                      <div className="flex justify-center gap-1 flex-wrap mt-1">
+                        {seat.bestHand.map((card, k) => (
+                          <AnimatedCard
+                            key={`b${i}-${card.design}-${card.value}-${k}`}
+                            card={card}
+                            width={Math.round(cardWidth * 0.5)}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
               ))}

@@ -48,5 +48,17 @@
   "frontendHint.baseballWorthACall": "two pair or better is worth this price",
   "frontendHint.baseballCheapToStay": "it is cheap enough to see one more card",
   "frontendHint.baseballSeeAnotherCard": "the next card is free",
-  "frontendHint.baseballWildsRaiseTheBar": "with eight wilds in the deck this hand does not meet the going rate"
+  "frontendHint.baseballWildsRaiseTheBar": "with eight wilds in the deck this hand does not meet the going rate",
+  "hand": {
+    "highCard": "High Card",
+    "onePair": "One Pair",
+    "twoPair": "Two Pair",
+    "threeOfAKind": "Three of a Kind",
+    "straight": "Straight",
+    "flush": "Flush",
+    "fullHouse": "Full House",
+    "fourOfAKind": "Four of a Kind",
+    "straightFlush": "Straight Flush",
+    "royalFlush": "Royal Flush"
+  }
 }

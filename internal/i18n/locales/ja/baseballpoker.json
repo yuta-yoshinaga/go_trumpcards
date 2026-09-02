@@ -24,6 +24,7 @@
   "canCheckLine": "チェックできます",
   "buyInLine": "表の3が出ました。{{amount}} を払って続ける（pay）か、降りる（buyfold）か選んでください",
   "wonLine": "{{name}} が {{amount}} を獲得{{wild}}",
+  "showdownHandLine": "  {{name}}: {{hand}}",
   "gameEndLine": "勝者: {{name}}",
   "phaseBetting": "BETTING",
   "phaseBuyIn": "BUY THE POT",
