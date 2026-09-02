@@ -13,6 +13,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -159,6 +160,14 @@ function ColoradoPageContent() {
     void runApi('undo');
     setSource(null);
   }, [runApi]);
+
+  const handleUndoEscape = useCallback(
+    (n: number) => {
+      void runApi('undo_n', undefined, undefined, n);
+      setSource(null);
+    },
+    [runApi],
+  );
 
   const handleAutoComplete = useCallback(() => {
     void runApi('autocomplete');
@@ -522,6 +531,13 @@ function ColoradoPageContent() {
                   <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                     {t('giveup')}
                   </button>
+                  {state.isStalemate && (
+                    <StalemateEscapeButton
+                      undoToEscape={state.undoToEscape ?? -1}
+                      onEscape={handleUndoEscape}
+                      disabled={loading}
+                    />
+                  )}
                 </>
               )}
             </div>
