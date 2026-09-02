@@ -12,6 +12,7 @@
   "contractUndecided": "Contract: not yet decided",
   "playerLine": "{{name}}{{role}}: tricks {{took}}  total {{score}}  hand {{cards}}",
   "roleDeclarer": "[declarer]",
+  "roleDealer": "[dealer]",
   "promptBid": "Your bid. The lowest contract that outbids the table is {{level}}{{suit}} (b <n> <s> / pass).",
   "promptBidCapped": "The contract is already at the ceiling (7NT). You can only pass.",
   "promptBidWait": "Your opponent is bidding.",
