@@ -176,3 +176,16 @@ func TestMrsMopInteractorUndo(t *testing.T) {
 		assert.Equal(t, "error_output", result)
 	})
 }
+
+// **Targets は presenter へ素通しするだけ。** 添字をどこかで作り替えていないこと、
+// 既定の -1 がそのまま届くことを見る (解決するのはドメインの仕事)。
+func TestMrsMopInteractorTargets(t *testing.T) {
+	sg := newMockMrsMopGame()
+	sp := newMockMrsMopPresenter()
+	si := NewMrsMopInteractor(sg, sp)
+
+	sp.On("TargetsOutput", mock.Anything, 3, -1).Return("targets_output")
+
+	assert.Equal(t, "targets_output", si.Targets(3, -1))
+	sp.AssertExpectations(t)
+}
