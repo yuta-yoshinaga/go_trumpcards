@@ -820,6 +820,23 @@ describe('RankAndFilePage grabbable edge cases', () => {
     expect(screen.getByTestId('rf-tableau-top-1').className).not.toContain('opacity-60');
   });
 
+  // **淡色を外したなら読み上げも外す。** 送り先を選んでいる最中は同じクリックが
+  // 「ここへ置く」の意味になるので、「掴めません」は的外れ (レビュー指摘)。
+  it('stops saying "cannot grab" once a source is picked up', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RankAndFilePage />);
+    const target = await screen.findByTestId('rf-tableau-top-1');
+    // 掴む前は「掴めません」と言う。
+    expect(target.getAttribute('aria-label')).toContain('掴めません');
+
+    const source = await screen.findByTestId('rf-tableau-top-0');
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+
+    // 掴んだあとは言わない。
+    expect(screen.getByTestId('rf-tableau-top-1').getAttribute('aria-label')).not.toContain('掴めません');
+  });
+
   it('treats a column with no served entry as ungrabbable', async () => {
     // `state.sequenceStarts[colIdx] ?? []` の右辺。列の数より短い配列が
     // 来ても落ちず、掴めない扱いになること。

@@ -452,7 +452,15 @@ function RankAndFilePageContent() {
                                         : undefined
                                     }
                                     disabled={!isPlaying || loading}
-                                    aria-label={canGrab ? cardAlt(tc.card) : `${cardAlt(tc.card)} (${t('cannotGrab')})`}
+                                    // **「掴めない」は掴む場面でだけ言う。** 送り先を選んでいる
+                                    // 最中は同じクリックが「ここへ置く」の意味になるので、
+                                    // 掴めるかどうかは的外れになる (レビュー指摘)。見た目の
+                                    // 淡色も同じ条件で外している (className の canGrab || selectedSource)。
+                                    aria-label={
+                                      canGrab || selectedSource
+                                        ? cardAlt(tc.card)
+                                        : `${cardAlt(tc.card)} (${t('cannotGrab')})`
+                                    }
                                     aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                                     draggable={isPlaying && !loading}
                                     onDragStart={dnd.handleDragStart(cardZone)}
