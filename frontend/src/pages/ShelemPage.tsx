@@ -48,6 +48,13 @@ const SUITS: readonly number[] = [1, 2, 3, 4];
  */
 const BID_MAX = 100;
 
+/**
+ * Points that swing on a Shelem declaration (sync: `ShelemValue` in
+ * `internal/domain/Shelem.go`). **Twice the largest ordinary contract**, which
+ * is the whole reason the declaration is a different kind of decision.
+ */
+const SHELEM_VALUE = 200;
+
 /** Guided tutorial steps (the point cards, bidding, the widow, hand). */
 const SHELEM_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="sh-points"]', messageKey: 'tutorial.points', placement: 'bottom', advanceOn: 'next' },
@@ -243,7 +250,7 @@ function ShelemPageContent() {
               {state.declarerIdx < 0
                 ? t('header.contractUndecided', { min: String(state.minBid) })
                 : state.shelemBid
-                  ? t('header.contractShelem')
+                  ? t('header.contractShelem', { value: SHELEM_VALUE })
                   : t('header.contract', {
                       n: String(state.contract),
                       got: String(state.roundPoints[state.declarerIdx % 2] ?? 0),
@@ -372,7 +379,7 @@ function ShelemPageContent() {
                     disabled={loading}
                     data-testid="sh-shelem-btn"
                   >
-                    {t('actions.shelem')}
+                    {t('actions.shelem', { value: SHELEM_VALUE })}
                   </button>
                   {/* **最後の1人は降りられない。** 押せないボタンを出さない。 */}
                   {mustBid ? (

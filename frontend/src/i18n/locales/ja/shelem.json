@@ -13,7 +13,7 @@
     "pointTable": "点になる札: A と 10 が10点、5 が5点。1ラウンドの合計はちょうど100点です。",
     "contractUndecided": "契約: 未定（{{min}}点以上、上限100点）",
     "contract": "契約: {{n}}点（現在 {{got}} 点）",
-    "contractShelem": "契約: Shelem＝全トリック独占",
+    "contractShelem": "契約: Shelem＝全トリック独占（成否で{{value}}点が動きます）",
     "trump": "切り札 {{suit}}",
     "score": "累計: あなたのチーム {{t0}} － 相手 {{t1}}",
     "took": "獲得{{n}}",
@@ -36,7 +36,7 @@
   "currentTrick": "現在のトリック",
   "mustBid": "あなた以外は全員降りました。契約が決まらないため、降りずに入札してください。",
   "actions": {
-    "shelem": "Shelem宣言",
+    "shelem": "Shelem宣言（{{value}}点）",
     "pass": "降りる",
     "discard": "切り札 {{suit}} で確定",
     "nextRound": "次のラウンドへ",
