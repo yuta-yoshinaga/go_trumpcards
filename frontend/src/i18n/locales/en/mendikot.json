@@ -10,7 +10,7 @@
     "trump": "Trump: {{suit}}",
     "trumpUndecided": "Trump: undecided (set by the first player who cannot follow)",
     "tens": "Tens: your team {{t0}} - theirs {{t1}} (of {{total}}; three takes the hand)",
-    "bonusRule": "Two each and the trick count decides (+1). All four tens is a Mendikot (+2); every one of the thirteen tricks is a Whitewash (+3).",
+    "bonusRule": "Two each and the trick count decides (+1). Taking all four tens is a Mendikot (+2); every one of the thirteen tricks is a Whitewash (+3).",
     "tricks": "Tricks: your team {{t0}} - theirs {{t1}} (only decides a two-apiece split)",
     "score": "Hand points: your team {{t0}} - theirs {{t1}}",
     "seatTens": "{{n}} tens",
@@ -46,7 +46,7 @@
   "tutorial": {
     "tens": "Mendikot is decided by neither points nor tricks but by **how many of the four tens you take**. **Three of them wins the hand outright.** The figure above is that race.",
     "trump": "**There is no step where anyone chooses trump.** The suit is fixed by whatever card the first player who cannot follow chooses to play -- so you cannot pretend to be void in the suit you want.",
-    "mendikot": "Only a two-apiece split falls back to the trick count. **All four tens is a Mendikot, worth 2**; **all thirteen tricks is a Whitewash, worth 3.**",
+    "mendikot": "Only a two-apiece split falls back to the trick count. **Taking all four tens is a Mendikot, worth 2**; **taking all thirteen tricks is a Whitewash, worth 3.**",
     "hand": "Your hand. Playable cards get a green ring. When your partner (T0) already has the trick, put a ten on it."
   },
   "warn": {
