@@ -49,6 +49,13 @@ describe('formatStealingBundlesState', () => {
     expect(out).toMatch(/rival bundle goes whole/);
   });
 
+  // **名前の付いたフェーズと、付いていないフェーズは別の枝。**同じ行の両方を見ないと
+  // どちらか一方しか実行されない。
+  it('names a known phase and falls back to the raw number for an unknown one', () => {
+    expect(formatStealingBundlesState(state({ phase: 0 }))).toContain('| PLAY');
+    expect(formatStealingBundlesState(state({ phase: 9 }))).toContain('| 9');
+  });
+
   // **空の場も情報。** 行が消えると見落としと区別が付きません。
   it('shows the table, empty or not', () => {
     expect(formatStealingBundlesState(state())).toMatch(/table: /);
