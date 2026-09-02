@@ -253,7 +253,11 @@ function RamschPageContent() {
                             ({t('durchmarschBadge')})
                           </span>
                         )}
-                        {isRoundEnd && !state.durchmarsch && state.loserIdx === p.id && (
+                        {/* **同点なら loserIdx は -1 になる。** ドメインは「同点は全員が
+                            負う」として該当者全員に罰点を課すので、`loserIdx === p.id`
+                            だけを見ると、実際には複数人が失点したラウンドが画面上
+                            「誰も負けていない」ように見える。**失点した本人の点で判定する。** */}
+                        {isRoundEnd && !state.durchmarsch && p.roundScore < 0 && (
                           <span className="ml-1 text-ds-error" data-testid={`ramsch-loser-${p.id}`}>
                             ({t('loserBadge')})
                           </span>
@@ -266,6 +270,14 @@ function RamschPageContent() {
                   ))}
                 </tbody>
               </table>
+              {/* **同点だと理由が盤から読めない。** バッジが 2 つ以上付いた訳を
+                  言わないと「なぜ 2 人とも負けなのか」が分からない。CUI は
+                  roundTied で同じことを言っている。 */}
+              {isRoundEnd && !state.durchmarsch && state.loserIdx < 0 && (
+                <p className="text-ds-text-muted text-xs mt-1" data-testid="ramsch-round-tied">
+                  {t('roundTied')}
+                </p>
+              )}
             </div>
 
             <ActionLogSection

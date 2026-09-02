@@ -38,5 +38,6 @@
     "avoid_points": "duck with a card worth nothing and take no points",
     "lead_low": "lead something cheap so you do not put points on the table",
     "forced_discard": "only point cards are legal here, so give up the cheapest"
-  }
+  },
+  "roundTied": "The highest count is tied, so everyone on it loses"
 }

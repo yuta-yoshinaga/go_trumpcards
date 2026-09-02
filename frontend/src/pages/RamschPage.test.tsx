@@ -89,7 +89,13 @@ describe('RamschPage', () => {
       ...baseState,
       phase: RamschPhase.ROUND_END,
       loserIdx: 1,
-      players: [player(0, { cardPoints: 30 }), player(1, { cardPoints: 78 }), player(2, { cardPoints: 12 })],
+      // 罰点を受けた席は roundScore が負になる (ドメインの `SetRoundScore(-cardPoints)`)。
+      // ここを 0 のままにすると、サーバが返さない盤を検査することになる。
+      players: [
+        player(0, { cardPoints: 30 }),
+        player(1, { cardPoints: 78, roundScore: -78 }),
+        player(2, { cardPoints: 12 }),
+      ],
     });
     renderWithProviders(<RamschPage />);
     await waitFor(() => expect(screen.getByTestId('ramsch-loser-1')).toBeInTheDocument());
@@ -141,5 +147,48 @@ describe('RamschPage', () => {
     renderWithProviders(<RamschPage />);
     fireEvent.click(await screen.findByRole('button', { name: '次のラウンド' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+});
+
+// **同点のラウンドが「誰も負けていない」ように見えていた (#6603)。**
+// ドメインは同点なら loserIdx を -1 にしたうえで該当者全員に罰点を課すので、
+// `loserIdx === p.id` だけを見ると印がどこにも付かない。CUI は roundTied で
+// 同じ状況を明示している。
+describe('RamschPage tied round', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('marks every tied player, not none of them', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      phase: RamschPhase.ROUND_END,
+      // 同点なので loserIdx は -1。罰点は両者が負う。
+      loserIdx: -1,
+      players: [
+        player(0, { cardPoints: 55, roundScore: -55 }),
+        player(1, { cardPoints: 55, roundScore: -55 }),
+        player(2, { cardPoints: 10 }),
+      ],
+    });
+    renderWithProviders(<RamschPage />);
+    await waitFor(() => expect(screen.getByTestId('ramsch-loser-0')).toBeInTheDocument());
+    expect(screen.getByTestId('ramsch-loser-1')).toBeInTheDocument();
+    // **負のコントロール**: 失点していない席には付かない。
+    expect(screen.queryByTestId('ramsch-loser-2')).not.toBeInTheDocument();
+    // 2 人に印が付いた理由を言う。
+    expect(screen.getByTestId('ramsch-round-tied')).toBeInTheDocument();
+  });
+
+  it('does not claim a tie when one player lost alone', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      phase: RamschPhase.ROUND_END,
+      loserIdx: 1,
+      players: [player(0), player(1, { cardPoints: 78, roundScore: -78 }), player(2)],
+    });
+    renderWithProviders(<RamschPage />);
+    await waitFor(() => expect(screen.getByTestId('ramsch-loser-1')).toBeInTheDocument());
+    expect(screen.queryByTestId('ramsch-round-tied')).not.toBeInTheDocument();
   });
 });
