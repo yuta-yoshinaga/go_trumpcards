@@ -182,3 +182,102 @@ func TestPasurCuiPresenterSpellsOutTheSoorOpportunity(t *testing.T) {
 	g.SetHumanHandForTest(domain.NewCard(domain.CardDesignDiamond, 4, false))
 	assert.NotContains(t, p.HintOutput(g), mark)
 }
+
+func TestPasurCuiPresenterCaptureOptions(t *testing.T) {
+	i18n.SetLang("ja")
+	p := new(PasurCuiPresenter)
+	g := newPasurForCui(t)
+	g.SetCurrentPlayerIdxForTest(0)
+	g.SetTableForTest([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 7, false),
+		domain.NewCard(domain.CardDesignHeart, 4, false),
+		domain.NewCard(domain.CardDesignDiamond, 3, false),
+	})
+	// 4 を出すと 11-4=7 なので、場[0] (7) または 場[1]+[2] (4+3=7) を取れる。
+	// 2 を出すと 11-2=9 なので、場の札で 9 になる組み合わせはなく取れない。
+	g.SetHumanHandForTest(
+		domain.NewCard(domain.CardDesignClover, 4, false),
+		domain.NewCard(domain.CardDesignSpade, 2, false),
+	)
+
+	out := p.Output(g, nil)
+	assert.Contains(t, out, "取れる組み合わせ:")
+	// **行を丸ごと見る。**添字だけを個別に探すと、盤面の他の数字に当たって
+	// 組み合わせが壊れていても通ってしまう。
+	assert.Contains(t, out, "  手札0 "+cuiCardStr(domain.NewCard(domain.CardDesignClover, 4, false))+" → 場札 0 / 1,2")
+	assert.NotContains(t, out, "  手札1", "手札1には捕獲候補が無いので出ない")
+	assert.NotContains(t, out, "取れる組み合わせはありません", "候補があるので「ありません」は出ない")
+}
+
+func TestPasurCuiPresenterNoCaptureOptions(t *testing.T) {
+	i18n.SetLang("ja")
+	p := new(PasurCuiPresenter)
+	g := newPasurForCui(t)
+	g.SetCurrentPlayerIdxForTest(0)
+	g.SetTableForTest([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 13, false),
+	})
+	g.SetHumanHandForTest(domain.NewCard(domain.CardDesignDiamond, 4, false))
+
+	out := p.Output(g, nil)
+	assert.Contains(t, out, "取れる組み合わせはありません。場に置くしかありません。")
+	assert.NotContains(t, out, "取れる組み合わせ:")
+	assert.NotContains(t, out, "  手札0", "候補行は出ない")
+}
+
+func TestPasurCuiPresenterCpuTurnNoCaptureOptions(t *testing.T) {
+	i18n.SetLang("ja")
+	p := new(PasurCuiPresenter)
+	g := newPasurForCui(t)
+	g.SetTableForTest([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 7, false),
+	})
+	g.SetHumanHandForTest(domain.NewCard(domain.CardDesignDiamond, 4, false))
+	g.SetCurrentPlayerIdxForTest(1)
+
+	out := p.Output(g, nil)
+	assert.NotContains(t, out, "取れる組み合わせ:", "CPU手番では出ない")
+	assert.NotContains(t, out, "取れる組み合わせはありません", "CPU手番では出ない")
+	assert.NotContains(t, out, "  手札0", "CPU手番では出ない")
+}
+
+func TestPasurCuiPresenterEmptyHandNoCaptureOptions(t *testing.T) {
+	i18n.SetLang("ja")
+	p := new(PasurCuiPresenter)
+	g := newPasurForCui(t)
+	g.SetCurrentPlayerIdxForTest(0)
+	g.SetTableForTest([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 7, false),
+	})
+	g.EmptyHandsForTest()
+
+	out := p.Output(g, nil)
+	assert.NotContains(t, out, "取れる組み合わせ:", "手札が空のときは出ない")
+	assert.NotContains(t, out, "取れる組み合わせはありません", "手札が空のときは出ない")
+}
+
+func TestPasurCuiPresenterCaptureOptions_En(t *testing.T) {
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+	p := new(PasurCuiPresenter)
+	g := newPasurForCui(t)
+	g.SetCurrentPlayerIdxForTest(0)
+	g.SetTableForTest([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 7, false),
+	})
+	g.SetHumanHandForTest(
+		domain.NewCard(domain.CardDesignClover, 4, false),
+	)
+
+	out := p.Output(g, nil)
+	assert.Contains(t, out, "Captures available:")
+	assert.Contains(t, out, "  hand 0 CLOVER 4 -> table 0")
+
+	// No capture case in English
+	g.SetTableForTest([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 13, false),
+	})
+	outNoCap := p.Output(g, nil)
+	assert.Contains(t, outNoCap, "No capture is available; you can only lay a card on the table.")
+	assert.NotContains(t, outNoCap, "Captures available:")
+}
