@@ -64,7 +64,11 @@ func (p *RamsCuiPresenter) Output(r interfaces.RamsGame, lastErr error) string {
 			sb.WriteString(i18n.Tf("rams.trumpLine", "card", cuiCardStr(up)) + "\n")
 		}
 		// 参加して 0 トリックだと余分に払う、というリスクの明示。
-		sb.WriteString(i18n.Tf("rams.riskLine", "penalty", strconv.Itoa(domain.RamsMissPenalty)) + "\n")
+		// **降りてもアンティは取られる。**その額を出さないと、参加を見送る
+		// 判断の元手がいくらなのか分からない。
+		sb.WriteString(i18n.Tf("rams.riskLine",
+			"ante", strconv.Itoa(domain.RamsAnte),
+			"penalty", strconv.Itoa(domain.RamsMissPenalty)) + "\n")
 
 		for i := 0; i < r.GetPlayerCnt(); i++ {
 			sb.WriteString(ramsPlayerStr(r.GetPlayer(i), i, i == r.GetDealerIdx()))

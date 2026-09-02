@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -31,6 +32,10 @@ func TestRamsCuiPresenterOutput(t *testing.T) {
 	assert.Contains(t, out, fixedPart("rams.potLine"))
 	assert.Contains(t, out, fixedPart("rams.trumpLine"))
 	assert.Contains(t, out, fixedPart("rams.riskLine"))
+	// **金額はドメイン定数と一致していなければならない。**アンティと追加支払いは
+	// 別の額なので、両方が出ていることを別々に見る。
+	assert.Contains(t, out, "アンティ "+strconv.Itoa(domain.RamsAnte))
+	assert.Contains(t, out, "追加で "+strconv.Itoa(domain.RamsMissPenalty))
 	// 配り直後は参加可否を促す。
 	assert.Contains(t, out, i18n.T("rams.promptDecide"))
 	assert.NotContains(t, out, i18n.T("rams.promptPlay"))

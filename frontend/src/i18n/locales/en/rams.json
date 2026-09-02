@@ -11,7 +11,7 @@
     "players": "{{count}} players",
     "pot": "Pot: {{pot}} chips (shared out by tricks taken)",
     "trump": "Trump",
-    "risk": "Play and take no trick at all and you pay {{penalty}} more into the pot.",
+    "risk": "Everyone antes {{ante}} each round. On top of that, play and take no trick at all and you pay {{penalty}} more into the pot.",
     "you": "You",
     "cpu": "CPU{{idx}}",
     "seat": "{{chips}} chips / {{tricks}} taken"
