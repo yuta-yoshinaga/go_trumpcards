@@ -10,6 +10,7 @@
     "target": "first to {{target}} hands",
     "trump": "Trump: {{suit}}",
     "trumpUndecided": "Trump: undeclared",
+    "trumpWait": "CPU{{idx}} is the hakem, choosing trump from their first five cards.",
     "race": "Tricks: your team {{t0}} - theirs {{t1}} (the first to {{need}} takes the hand)",
     "score": "Hand points: your team {{t0}} - theirs {{t1}}",
     "took": "{{n}} taken",

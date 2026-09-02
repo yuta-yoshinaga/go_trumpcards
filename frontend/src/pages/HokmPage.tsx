@@ -175,6 +175,19 @@ function HokmPageContent() {
               </span>
             </div>
 
+            {/* **一度きりの重要なイベントが待つ側からは無言だった。**CPU が親の
+                あいだ、画面には「切り札: 未定」としか出ておらず、誰が何を見て
+                決めているのかが分からない。CUI の promptTrumpWait と同じ内容。 */}
+            {isTrump && !isGameEnd && state.hakemIdx !== 0 && (
+              <div
+                className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-muted text-center text-sm"
+                data-testid="hk-trump-wait"
+                role="status"
+              >
+                {t('header.trumpWait', { idx: state.hakemIdx })}
+              </div>
+            )}
+
             {/* **13 まで打たない。** 進捗はトリック数の競り合いのほうに出る。 */}
             <div
               className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
