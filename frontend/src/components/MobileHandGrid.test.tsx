@@ -275,7 +275,7 @@ describe('MobileHandGrid', () => {
         selectedIndices={[]}
         onToggle={() => {}}
         cardWidth={40}
-        cardBadgeFor={(idx) => (idx === 1 ? { text: '★', title: '切り札' } : undefined)}
+        cardBadgeFor={(idx) => (idx === 1 ? { glyph: '★', title: '切り札' } : null)}
       />,
     );
     const buttons = screen.getAllByRole('button');
