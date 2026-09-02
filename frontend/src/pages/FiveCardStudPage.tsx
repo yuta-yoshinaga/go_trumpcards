@@ -296,6 +296,8 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
                   {(t('ranking.hands', { returnObjects: true }) as string[]).map((name, i) => (
                     <li key={name} className={SOKO_INSERTED_RANKS.includes(i) ? 'font-bold text-ds-accent' : ''}>
                       {i + 1}. {name}
+                      {/* **太字と色だけでは非視覚の利用者に届かない。**Soko 固有の 2 役はテキストでも名乗る。 */}
+                      {SOKO_INSERTED_RANKS.includes(i) && <span className="sr-only">{t('ranking.sokoOnly')}</span>}
                     </li>
                   ))}
                 </ol>
