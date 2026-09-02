@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"encoding/json"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -12,6 +13,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -323,4 +325,51 @@ func TestHorseWebPresenter_ReportsTheDrawTurn(t *testing.T) {
 	assert.True(t, out.IsDrawPhase)
 	assert.Contains(t, []int{1, 2, 3}, out.DrawIndex)
 	assert.True(t, out.IsHumanTurn, "手番でなければ画面は札を選ばせない")
+}
+
+// **最小レイズ幅を画面に出す (#6585)。** 種目ごとに変わるレイズ幅が分からないと、
+// CUI プレイヤーは raise コマンドにいくら積めばよいか分からない。
+func TestHorseCuiPresenter_OutputShowsMinRaise(t *testing.T) {
+	for _, lang := range []string{"ja", "en"} {
+		t.Run(lang, func(t *testing.T) {
+			i18n.SetLang(lang)
+			defer i18n.SetLang("ja")
+
+			m := new(interfaces.MockHorseGame)
+			m.On("GetVariant").Return(domain.HorseVariantHorse)
+			m.On("GetConfig").Return(domain.HorseConfig{Seats: 2, HandsPerDiscipline: 5, InitialChips: 1000})
+			m.On("GetDisciplineLetter").Return("H")
+			m.On("GetDiscipline").Return(domain.HorseHoldem)
+			m.On("GetHandInDiscipline").Return(1)
+			m.On("GetHandNumber").Return(1)
+			m.On("GetCommunityCards").Return([]*domain.Card(nil))
+			m.On("GetSeatCount").Return(2)
+			m.On("GetSeatName", 0).Return("Player 0")
+			m.On("GetSeatLiveChips", 0).Return(1000)
+			m.On("GetSeatCards", 0).Return([]*domain.Card(nil))
+			m.On("GetSeatName", 1).Return("Player 1")
+			m.On("GetSeatLiveChips", 1).Return(1000)
+			m.On("GetSeatCards", 1).Return([]*domain.Card(nil))
+			m.On("GetCurrentTurn").Return(0)
+			m.On("GetPhase").Return(domain.HorsePhaseHand)
+			m.On("GetGameEndFlag").Return(false)
+			m.On("IsDrawPhase").Return(false)
+			m.On("GetPot").Return(150)
+			m.On("GetToCall").Return(30)
+
+			minRaise := 60
+			m.On("GetMinRaise").Return(minRaise)
+
+			p := &presenter.HorseCuiPresenter{}
+			out := p.Output(m, nil)
+
+			// **期待値を i18n から組み立てず、モックの数値そのものを見る。**
+			assert.Contains(t, out, strconv.Itoa(minRaise), "最小レイズ額が出力に含まれていない")
+			// **プレースホルダが展開されず残っていないことを見る。**
+			assert.NotContains(t, out, "{{", "未展開のプレースホルダが残っている")
+			assert.NotContains(t, out, "}}", "未展開のプレースホルダが残っている")
+			assert.NotContains(t, out, "horse.", "生キーが出ている")
+			m.AssertExpectations(t)
+		})
+	}
 }
