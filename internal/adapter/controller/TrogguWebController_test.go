@@ -27,6 +27,7 @@ func mustTrogguOutputJSON(msg string) string {
 		DeclarerIdx:     -1,
 		LastTrickWinner: -1,
 		WinnerPlayer:    -1,
+		SoloTarget:      domain.TrogguSoloTarget(),
 		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

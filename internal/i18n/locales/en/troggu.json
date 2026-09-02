@@ -13,7 +13,7 @@
   "roleDefender": "defender",
   "contract.pass": "-",
   "contract.trois": "Trois (3 tricks)",
-  "contract.solo": "Solo (most points)",
+  "contract.solo": "Solo ({{target}}+ points)",
   "contract.piccolo": "Piccolo (exactly 1 trick)",
   "contract.misere": "Misere (no tricks)",
   "gameEnd": "Game over! {{name}} wins!",

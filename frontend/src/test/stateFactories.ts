@@ -4449,6 +4449,7 @@ const baseTrogguState: TrogguResponse = {
   declarerIdx: -1,
   contract: 0,
   contractName: 'pass',
+  soloTarget: 92,
   talonCount: 6,
   currentTrick: [],
   lastTrickWinner: -1,

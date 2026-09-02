@@ -241,4 +241,22 @@ describe('TrogguPage', () => {
     fireEvent.click(handButtons()[0]);
     expect(await screen.findByRole('alert')).toBeInTheDocument();
   });
+
+  it('displays the solo target during play without unresolved placeholders', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<TrogguPage />);
+    const info = await screen.findByTestId('tg-info');
+    expect(info).toHaveTextContent('92');
+    expect(info.textContent).not.toContain('{{');
+    expect(info.textContent).not.toContain('}}');
+  });
+
+  it('displays the solo target in the bid buttons without unresolved placeholders', async () => {
+    mockExec.mockResolvedValue(bidState);
+    renderWithProviders(<TrogguPage />);
+    const soloBtn = await screen.findByTestId('tg-bid-solo');
+    expect(soloBtn).toHaveTextContent('92');
+    expect(soloBtn.textContent).not.toContain('{{');
+    expect(soloBtn.textContent).not.toContain('}}');
+  });
 });
