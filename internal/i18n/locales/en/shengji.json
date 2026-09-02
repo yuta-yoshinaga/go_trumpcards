@@ -31,6 +31,7 @@
   "handHeldLine": "The declarers held ({{points}} of {{target}} to the defenders). Team {{team}} climbs {{advance}} level(s)",
   "handTakenLine": "The defenders collected {{points}} ({{target}} or more). The deal changes hands and team {{team}} climbs {{advance}} level(s)",
   "kittyLine": "kitty: {{points}} points (x{{mult}}) went to the defenders",
+  "kittyCards": "The kitty held: {{cards}}",
   "gameEnd": "Game over! Team {{team}} wins!",
   "declarePhase": "declaring trump",
   "kittyPhase": "burying the kitty",
