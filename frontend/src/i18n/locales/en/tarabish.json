@@ -15,7 +15,8 @@
     "score": "Score: your team {{t0}} — theirs {{t1}}",
     "you": "You",
     "cpu": "CPU{{idx}}",
-    "team": "T{{team}}"
+    "team": "T{{team}}",
+    "tricksTaken": "{{count}} tricks"
   },
   "meld": {
     "none": "no meld",
