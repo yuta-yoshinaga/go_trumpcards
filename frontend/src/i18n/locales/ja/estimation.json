@@ -34,7 +34,8 @@
     "playAria": "{{card}} を出す",
     "bidAria": "{{n}}トリック宣言",
     "bidDashAria": "Dash Call（0トリック宣言）",
-    "bidBarredAria": "{{n}}トリック宣言は選べません（全員の宣言の合計が{{total}}になるため）"
+    "bidBarredAria": "{{n}}トリック宣言は選べません（全員の宣言の合計が{{total}}になるため）",
+    "bidDashBarredAria": "Dash Call（0トリック宣言）は選べません（全員の宣言の合計が{{total}}になるため）"
   },
   "result": {
     "win": "あなたの勝ち！ {{score}}点",
