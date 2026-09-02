@@ -102,6 +102,8 @@ export interface ZwanzigerrufenResponse extends BaseGameResponse {
   breakdown?: ZwanzigerrufenBreakdown | null;
   /** Hand indices the human may legally play right now. */
   playableIndices: number[];
+  /** Hand indices the human declarer may legally bury during the Talon phase. */
+  discardableIndices: number[];
   gameEndFlag: boolean;
   winnerPlayer: number;
   isHumanTurn: boolean;

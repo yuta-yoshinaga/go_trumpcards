@@ -20,16 +20,17 @@ import (
 
 func mustZwanzigerrufenOutputJSON(msg string) string {
 	out := &controller.ZwanzigerrufenWebOutput{
-		Players:         []*controller.ZwanzigerrufenWebOutputPlayer{},
-		CurrentTrick:    []*controller.WebOutputTrickCard{},
-		LastTrickCards:  []*controller.WebOutputCard{},
-		PlayableIndices: []int{},
-		DeclarerIdx:     -1,
-		CalledTrump:     -1,
-		PartnerIdx:      -1,
-		LastTrickWinner: -1,
-		WinnerPlayer:    -1,
-		WebOutputBase:   controller.WebOutputBase{Message: msg},
+		Players:            []*controller.ZwanzigerrufenWebOutputPlayer{},
+		CurrentTrick:       []*controller.WebOutputTrickCard{},
+		LastTrickCards:     []*controller.WebOutputCard{},
+		PlayableIndices:    []int{},
+		DiscardableIndices: []int{},
+		DeclarerIdx:        -1,
+		CalledTrump:        -1,
+		PartnerIdx:         -1,
+		LastTrickWinner:    -1,
+		WinnerPlayer:       -1,
+		WebOutputBase:      controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
