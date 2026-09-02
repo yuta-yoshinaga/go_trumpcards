@@ -203,7 +203,7 @@ describe('KingoPage', () => {
   // **案内文と入力欄は同じ minBet から作る。**下限を渡していなかったので、
   // 卓の最低額を変えても入力欄だけ既定の 10 のままだった。
   it('入力欄の下限が卓の最低ベットに追従する', async () => {
-    mockApi.mockResolvedValue(withState({ config: { ...base.config, minBet: 25 } }));
+    mockApi.mockResolvedValue(withState({ config: { seats: 4, initialChips: 1000, minBet: 25, rounds: 10 } }));
     renderWithProviders(<KingoPage />);
 
     await waitFor(() => expect(screen.getByTestId('kingo-bet-guide')).toHaveTextContent('25'));
