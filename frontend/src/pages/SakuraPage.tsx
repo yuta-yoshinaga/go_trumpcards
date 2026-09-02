@@ -181,6 +181,9 @@ function SakuraPageContent() {
                 <div>{t('taken', { count: p.takenCount })}</div>
                 <div data-testid={`sakura-seat-${p.id}-points`}>{t('points', { points: p.totalPoints })}</div>
                 <div>{t('score', { score: p.score })}</div>
+                <div className="text-ds-accent" data-testid={`sakura-seat-${p.id}-bonus`}>
+                  {bonusList(p.bonuses)}
+                </div>
               </div>
             ))}
         </div>

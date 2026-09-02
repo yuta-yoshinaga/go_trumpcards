@@ -199,6 +199,28 @@ describe('SakuraPage', () => {
     expect(await screen.findByTestId('sakura-human-bonus')).toHaveTextContent('追加役なし');
   });
 
+  it('shows opponent bonuses from the server during play phase', async () => {
+    mockExec.mockResolvedValue(
+      makeSakuraState({
+        players: [
+          playState.players[0],
+          {
+            ...playState.players[1],
+            bonuses: [{ key: 'sakuraSake', points: 30 }],
+          },
+          playState.players[2],
+        ],
+      }),
+    );
+    renderWithProviders(<SakuraPage />);
+    expect(await screen.findByTestId('sakura-seat-1-bonus')).toHaveTextContent('桜酒 (30)');
+  });
+
+  it('shows "no bonus" for an opponent when none are held', async () => {
+    renderWithProviders(<SakuraPage />);
+    expect(await screen.findByTestId('sakura-seat-1-bonus')).toHaveTextContent('追加役なし');
+  });
+
   it('shows the round result with each seat breakdown and advances', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<SakuraPage />);
