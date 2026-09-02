@@ -118,7 +118,11 @@ describe('RamsPage', () => {
     renderWithProviders(<RamsPage />);
     expect(await screen.findByTestId('rm-pot')).toHaveTextContent('12');
     expect(screen.getByTestId('rm-trump')).toBeInTheDocument();
-    expect(screen.getByTestId('rm-risk')).toHaveTextContent('5');
+    // **降りてもアンティは取られる。**その額が出ていないと、参加を見送る
+    // 判断の元手が分からない。追加支払いの 5 と取り違えないよう別々に見る。
+    const risk = screen.getByTestId('rm-risk');
+    expect(risk).toHaveTextContent('アンティ 3');
+    expect(risk).toHaveTextContent('追加で 5');
   });
 
   // **人数は可変。** 何人卓かを必ず出す。

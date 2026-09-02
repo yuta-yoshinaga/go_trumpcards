@@ -36,6 +36,12 @@ const TRICKS_PER_ROUND = 5;
 /** The extra payment a player owes for entering and taking no trick. */
 const MISS_PENALTY = 5;
 
+/**
+ * Chips every seat pays into the pot at the start of a round, whether or not
+ * it plays (sync: `RamsAnte` in internal/domain/Rams.go).
+ */
+const ANTE = 3;
+
 /** Guided tutorial steps (pot, decision, trick, hand). */
 const RAMS_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="rams-pot"]', messageKey: 'tutorial.pot', placement: 'bottom', advanceOn: 'next' },
@@ -201,7 +207,7 @@ function RamsPageContent() {
                 </div>
               )}
               <div className="rounded bg-black/30 px-3 py-2 text-ds-text-muted text-sm" data-testid="rm-risk">
-                {t('header.risk', { penalty: String(MISS_PENALTY) })}
+                {t('header.risk', { ante: String(ANTE), penalty: String(MISS_PENALTY) })}
               </div>
             </div>
 
