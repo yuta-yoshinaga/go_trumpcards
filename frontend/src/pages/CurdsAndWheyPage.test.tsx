@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { curdsandwheyApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CurdsAndWheyResponse } from '../types/card';
 import { CurdsAndWheyPage } from './CurdsAndWheyPage';
@@ -195,5 +196,80 @@ describe('CurdsAndWheyPage', () => {
 
     await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
     expect(mockExec).not.toHaveBeenCalled();
+  });
+});
+
+// Keyboard shortcuts are bound by useActionKeyboardNav and advertised by
+// ActionShortcutsPanel; assert the keys actually run their action (#4429, #6591).
+describe('CurdsAndWheyPage keyboard shortcuts', () => {
+  it('pressing h dispatches hint', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<CurdsAndWheyPage />);
+    await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(makeState());
+    fireEvent.keyDown(document, { key: 'h' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('pressing z dispatches u', async () => {
+    mockExec.mockResolvedValue(makeState({ canUndo: true }));
+    renderWithProviders(<CurdsAndWheyPage />);
+    await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(makeState());
+    fireEvent.keyDown(document, { key: 'z' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('u'));
+  });
+
+  it('pressing g asks for give-up confirmation rather than firing it', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<CurdsAndWheyPage />);
+    await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'g' });
+    expect(await screen.findByText('投了確認')).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('ignores shortcuts when loading', async () => {
+    let resolveAction!: (val: CurdsAndWheyResponse) => void;
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<CurdsAndWheyPage />);
+    await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
+
+    mockExec.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveAction = resolve;
+        }),
+    );
+    fireEvent.click(screen.getByTestId('hint-button'));
+    await waitFor(() => expect(screen.getByTestId('hint-button')).toBeDisabled());
+
+    const callCount = mockExec.mock.calls.length;
+    fireEvent.keyDown(document, { key: 'h' });
+    await flushPendingDispatch();
+    expect(mockExec).toHaveBeenCalledTimes(callCount);
+
+    resolveAction(makeState());
+  });
+
+  it('ignores shortcuts once the game has ended', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2 }));
+    renderWithProviders(<CurdsAndWheyPage />);
+    await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
+    mockExec.mockClear();
+    for (const key of ['h', 'z', 'g']) {
+      fireEvent.keyDown(document, { key });
+    }
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(screen.queryByText('投了確認')).not.toBeInTheDocument();
+  });
+
+  it('renders ActionShortcutsPanel', async () => {
+    renderWithProviders(<CurdsAndWheyPage />);
+    await waitFor(() => expect(screen.getByTestId('cw-kbd-shortcuts')).toBeInTheDocument());
   });
 });
