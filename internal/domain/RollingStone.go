@@ -55,6 +55,16 @@ const rollingStoneMaxSliceLen = 4000
 // 勝ちにします（同数なら席順で、決定的に）。
 const RollingStoneStalemateTricks = 500
 
+const (
+	// RollingStoneWinEmptied は手札を出し切っての勝ち。
+	RollingStoneWinEmptied = "emptied"
+	// RollingStoneWinStalemate は上限トリックまで決着せず、手札のいちばん
+	// 少ない席を勝ちとした決着。
+	RollingStoneWinStalemate = "stalemate"
+	// RollingStoneWinGiveUp は人間の投了によって決まった勝ち。
+	RollingStoneWinGiveUp = "giveUp"
+)
+
 // RollingStoneDeckSize は人数に対するデッキ枚数を返す。
 //
 // **人数 × 8。** 4 人 32 枚 / 5 人 40 枚 / 6 人 48 枚で、いずれも 4 スートに
@@ -106,6 +116,10 @@ type RollingStone struct {
 	gameEndFlag bool
 	// winnerIdx は最初に上がった席（-1 = 未確定）。
 	winnerIdx int
+
+	// winReason は決着の理由。決着前は空。**投了と膠着は勝者の手札枚数からは
+	// 区別できない**（どちらも勝者に札が残る）ので、理由そのものを持つ。
+	winReason string
 	// lastPickupIdx は直前に引き取った席（-1 = 無し）。表示用。
 	lastPickupIdx int
 	// discarded は場から抜けた札の枚数。
@@ -154,6 +168,7 @@ func (r *RollingStone) Reset() {
 	r.discarded = 0
 	r.gameEndFlag = false
 	r.winnerIdx = -1
+	r.winReason = ""
 	r.lastPickupIdx = -1
 	r.actionLog = nil
 
@@ -394,6 +409,7 @@ func (r *RollingStone) checkStalemate() bool {
 	r.phase = RollingStonePhaseGameEnd
 	r.gameEndFlag = true
 	r.winnerIdx = best
+	r.winReason = RollingStoneWinStalemate
 	r.addLog(best, "stalemate",
 		fmt.Sprintf("%d トリックで決着せず。手札のいちばん少ない席の勝ちとします（%d 枚）",
 			r.trickNumber, r.players[best].GetCardsSize()), nil)
@@ -501,6 +517,7 @@ func (r *RollingStone) checkGameEnd() bool {
 	}
 	r.phase = RollingStonePhaseGameEnd
 	r.gameEndFlag = true
+	r.winReason = RollingStoneWinEmptied
 	r.addLog(r.winnerIdx, "result", "手札を出し切りました", nil)
 	return true
 }
@@ -523,6 +540,7 @@ func (r *RollingStone) GiveUp() {
 		}
 	}
 	r.winnerIdx = best
+	r.winReason = RollingStoneWinGiveUp
 	r.addLog(0, "giveup", "投了しました", nil)
 }
 
@@ -641,6 +659,9 @@ func (r *RollingStone) GetPlayer(i int) *RollingStonePlayer {
 // GetWinnerIdx は勝った席を返す（-1: 未確定）。
 func (r *RollingStone) GetWinnerIdx() int { return r.winnerIdx }
 
+// GetWinReason は決着の理由をロケール非依存のキーで返す。決着前は空。
+func (r *RollingStone) GetWinReason() string { return r.winReason }
+
 // rollingStoneJSON は KV スナップショットの表現。
 type rollingStoneJSON struct {
 	TrumpCards       *TrumpCards           `json:"tc"`
@@ -655,8 +676,11 @@ type rollingStoneJSON struct {
 	Discarded        int                   `json:"dc"`
 	GameEndFlag      bool                  `json:"ge"`
 	WinnerIdx        int                   `json:"wi"`
-	LastPickupIdx    int                   `json:"lp"`
-	ActionLog        []*ActionLogEntry     `json:"al"`
+	// WinReason を載せないと、KV に保存して次のリクエストで復元した時点で
+	// 理由が消え、投了で終わった局がまた膠着として説明される。
+	WinReason     string            `json:"wr"`
+	LastPickupIdx int               `json:"lp"`
+	ActionLog     []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -666,7 +690,8 @@ func (r *RollingStone) MarshalJSON() ([]byte, error) {
 		CurrentTrick: r.currentTrick, CurrentPlayerIdx: r.currentPlayerIdx,
 		LeadPlayerIdx: r.leadPlayerIdx, TrickNumber: r.trickNumber,
 		FinishedCnt: r.finishedCnt, Discarded: r.discarded, GameEndFlag: r.gameEndFlag,
-		WinnerIdx: r.winnerIdx, LastPickupIdx: r.lastPickupIdx, ActionLog: r.actionLog,
+		WinnerIdx: r.winnerIdx, WinReason: r.winReason,
+		LastPickupIdx: r.lastPickupIdx, ActionLog: r.actionLog,
 	})
 }
 
@@ -715,6 +740,21 @@ func (r *RollingStone) UnmarshalJSON(data []byte) error {
 	// **勝者と終了フラグは対。** 勝者が決まるのは上がった瞬間で、そこで終局します。
 	if j.GameEndFlag != (j.WinnerIdx >= 0) {
 		return fmt.Errorf("winner %d disagrees with game end flag %v", j.WinnerIdx, j.GameEndFlag)
+	}
+	// **決着しているなら勝因も揃っている。** ここを見ないと、勝因を載せ忘れた
+	// スナップショットが黙って復元され、投了で終わった局がまた膠着として
+	// 説明される（LingerLonger の #5765 と同じ形）。
+	switch j.WinReason {
+	case "":
+		if j.GameEndFlag {
+			return errors.New("game ended but no win reason was recorded")
+		}
+	case RollingStoneWinEmptied, RollingStoneWinStalemate, RollingStoneWinGiveUp:
+		if !j.GameEndFlag {
+			return fmt.Errorf("win reason %q on a game that has not ended", j.WinReason)
+		}
+	default:
+		return fmt.Errorf("unknown win reason: %q", j.WinReason)
 	}
 	if j.LastPickupIdx < -1 || j.LastPickupIdx >= j.Config.PlayerCnt {
 		return fmt.Errorf("invalid last pickup: %d", j.LastPickupIdx)
@@ -794,5 +834,6 @@ func (r *RollingStone) UnmarshalJSON(data []byte) error {
 	r.leadPlayerIdx, r.trickNumber = j.LeadPlayerIdx, j.TrickNumber
 	r.finishedCnt, r.discarded, r.gameEndFlag = j.FinishedCnt, j.Discarded, j.GameEndFlag
 	r.winnerIdx, r.lastPickupIdx, r.actionLog = j.WinnerIdx, j.LastPickupIdx, j.ActionLog
+	r.winReason = j.WinReason
 	return nil
 }

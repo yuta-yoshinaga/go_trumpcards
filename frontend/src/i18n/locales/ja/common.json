@@ -1917,6 +1917,7 @@
     "rollingstone.pickup": "フォローできる札がありません。場札 {{n}} 枚を引き取ってください。",
     "rollingstone.play": "手札は {{n}} 枚です。先に出し切れば勝ちなので、取ることに価値はありません。",
     "rollingstone.result.cpu": "CPU{{idx}} が先に出し切りました。",
+    "rollingstone.result.giveUp": "あなたが投了しました。CPU{{idx}} の勝ちです。",
     "rollingstone.result.stalemate": "決着が付かなかったので、手札のいちばん少ない CPU{{idx}} の勝ちとします。",
     "rollingstone.result.you": "あなたの勝ちです。先に手札を出し切りました。",
     "rook.bidPhase": "ビッドするか、パスしてください。",

@@ -71,6 +71,12 @@ export interface RollingStoneResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   /** `-1` until decided. */
   winnerIdx: number;
+  /**
+   * Why the game ended: `"emptied"`, `"stalemate"`, `"giveUp"`, or `""` before
+   * it does. **The winner's card count cannot tell these apart** — a resigned
+   * game and a stalemated one both leave the winner holding cards.
+   */
+  winReason: string;
   hint?: RollingStoneHint;
   config: RollingStoneConfig;
 }

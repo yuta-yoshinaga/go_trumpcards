@@ -350,9 +350,41 @@ func TestRollingStone_GiveUp(t *testing.T) {
 	r.GiveUp()
 	assert.True(t, r.GetGameEndFlag())
 	assert.Positive(t, r.GetWinnerIdx(), "投了した席は勝者にならない")
+	// **投了と膠着は勝者の手札枚数では区別できない。** 理由そのものを持つ。
+	assert.Equal(t, RollingStoneWinGiveUp, r.GetWinReason())
 	before := r.GetWinnerIdx()
 	r.GiveUp()
 	assert.Equal(t, before, r.GetWinnerIdx())
+	assert.Equal(t, RollingStoneWinGiveUp, r.GetWinReason())
+}
+
+// 膠着で切った局と、手札を出し切った局は、それぞれ別の理由を残す。
+func TestRollingStone_WinReasonTellsTheThreeEndingsApart(t *testing.T) {
+	fresh := newTestRollingStone(t)
+	assert.Empty(t, fresh.GetWinReason(), "決着前は空")
+
+	stale := newTestRollingStone(t)
+	stale.ForceStalemateForTest()
+	require.True(t, stale.GetGameEndFlag())
+	assert.Equal(t, RollingStoneWinStalemate, stale.GetWinReason())
+
+	// 投了とは違う値になる（同じ「勝者に札が残る」形なので、ここが要）。
+	assert.NotEqual(t, RollingStoneWinGiveUp, stale.GetWinReason())
+}
+
+// **KV に保存して次のリクエストで復元した時点で理由が消えると、投了した局が
+// また膠着として説明される。**
+func TestRollingStone_WinReasonSurvivesTheSnapshot(t *testing.T) {
+	r := newTestRollingStone(t)
+	r.GiveUp()
+	require.Equal(t, RollingStoneWinGiveUp, r.GetWinReason())
+
+	data, err := json.Marshal(r)
+	require.NoError(t, err)
+
+	var restored RollingStone
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, RollingStoneWinGiveUp, restored.GetWinReason())
 }
 
 func TestRollingStone_Hint(t *testing.T) {
@@ -507,6 +539,24 @@ func TestRollingStone_UnmarshalRejectsBrokenSnapshots(t *testing.T) {
 		{"current player out of range", func(m map[string]any) { m["ci"] = 9 }},
 		{"lead player out of range", func(m map[string]any) { m["li"] = -1 }},
 		{"winner without the game ending", func(m map[string]any) { m["wi"] = 1 }},
+		// **決着しているのに勝因が無いスナップショットは弾く。** 載せ忘れが
+		// 黙って「通常勝ち」として復元されると、投了した局がまた膠着と
+		// 説明される（LingerLonger の #5765 と同じ形）。
+		{"a finished game with no win reason", func(m map[string]any) {
+			m["ph"] = int(RollingStonePhaseGameEnd)
+			m["ge"] = true
+			m["wi"] = 1
+			m["wr"] = ""
+		}},
+		{"a win reason on a game still in play", func(m map[string]any) {
+			m["wr"] = RollingStoneWinGiveUp
+		}},
+		{"an unknown win reason", func(m map[string]any) {
+			m["ph"] = int(RollingStonePhaseGameEnd)
+			m["ge"] = true
+			m["wi"] = 1
+			m["wr"] = "surrendered"
+		}},
 		{"last pickup out of range", func(m map[string]any) { m["lp"] = 9 }},
 		{"negative trick number", func(m map[string]any) { m["tn"] = -1 }},
 		{"finished count above the table", func(m map[string]any) { m["fc"] = 9 }},

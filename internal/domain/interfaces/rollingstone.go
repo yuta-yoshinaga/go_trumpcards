@@ -57,6 +57,8 @@ type RollingStoneGame interface {
 	GetPlayer(i int) *domain.RollingStonePlayer
 	// GetWinnerIdx 勝った席を取得する (-1: 未確定)
 	GetWinnerIdx() int
+	// GetWinReason 決着の理由をロケール非依存のキーで取得する (決着前は空)
+	GetWinReason() string
 	// GetHint ヒントを取得する
 	GetHint() *domain.RollingStoneHint
 }

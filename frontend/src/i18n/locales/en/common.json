@@ -1917,6 +1917,7 @@
     "rollingstone.pickup": "Nothing in your hand follows. Take the {{n}} cards on the table.",
     "rollingstone.play": "{{n}} cards in hand. Running out first is how you win, so taking tricks gains you nothing.",
     "rollingstone.result.cpu": "CPU{{idx}} ran out first.",
+    "rollingstone.result.giveUp": "You resigned, so CPU{{idx}} wins.",
     "rollingstone.result.stalemate": "Nobody ran out, so it goes to CPU{{idx}}, holding the fewest.",
     "rollingstone.result.you": "You win. You ran out of cards first.",
     "rook.bidPhase": "Make a bid or pass.",
