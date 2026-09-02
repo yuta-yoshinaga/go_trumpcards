@@ -59,6 +59,7 @@ const base: IronCrossResponse = {
   currentBet: 0,
   toCall: 0,
   raiseCount: 0,
+  maxRaises: 3,
   canRaise: true,
   turnSeat: 0,
   humanSeat: 0,
@@ -434,5 +435,15 @@ describe('IronCrossPage', () => {
     renderWithProviders(<IronCrossPage />);
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
     expect(screen.queryByTestId('ic-check')).not.toBeInTheDocument();
+  });
+
+  // **上限に達すると Raise ボタンが黙って消える。** 何回目なのかが出ていないと
+  // 消えた理由が分からない。上限もサーバの値をそのまま出す。
+  it('レイズ回数と上限をサーバの値で出す', async () => {
+    mockApi.mockResolvedValue(withState({ raiseCount: 2, maxRaises: 4 }));
+    renderWithProviders(<IronCrossPage />);
+
+    // 既定の 3 ではなくレスポンスの 4。文言に直書きしていれば落ちる。
+    await waitFor(() => expect(screen.getByTestId('ic-raise-count')).toHaveTextContent('レイズ 2/4 回'));
   });
 });

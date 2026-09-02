@@ -306,7 +306,7 @@ func TestIronCross_RaiseIsCapped(t *testing.T) {
 	t.Parallel()
 	g := newIronCrossForTest(t)
 	g.currentBet = 10
-	g.raiseCount = ironCrossMaxRaisesPerRound
+	g.raiseCount = IronCrossMaxRaisesPerRound
 	g.players[g.HumanSeat()].SetCurrentBet(0)
 	assert.ErrorIs(t, g.PlayerAction(IronCrossActionRaise, 10), errIronCrossRaiseCapped)
 	assert.False(t, g.CanRaise())

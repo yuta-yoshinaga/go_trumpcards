@@ -62,10 +62,14 @@ type IronCrossWebOutput struct {
 	CurrentBet        int   `json:"currentBet"`
 	ToCall            int   `json:"toCall"`
 	RaiseCount        int   `json:"raiseCount"`
-	CanRaise          bool  `json:"canRaise"`
-	TurnSeat          int   `json:"turnSeat"`
-	HumanSeat         int   `json:"humanSeat"`
-	IsHumanTurn       bool  `json:"isHumanTurn"`
+	// MaxRaises は 1 ラウンドのレイズ上限 (domain.IronCrossMaxRaisesPerRound)。
+	//
+	// **数値を送るのは、画面に回数を書き写させないため。**
+	MaxRaises   int  `json:"maxRaises"`
+	CanRaise    bool `json:"canRaise"`
+	TurnSeat    int  `json:"turnSeat"`
+	HumanSeat   int  `json:"humanSeat"`
+	IsHumanTurn bool `json:"isHumanTurn"`
 	// IsChoosing は縦横を選ぶ場面かどうか。
 	IsChoosing     bool `json:"isChoosing"`
 	HandNumber     int  `json:"handNumber"`

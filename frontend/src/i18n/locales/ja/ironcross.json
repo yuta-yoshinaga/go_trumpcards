@@ -9,6 +9,7 @@
   "label.cross": "十字",
   "label.revealed": "{{revealed}} / {{total}} 枚公開",
   "label.toCall": "コールに {{amount}}",
+  "label.raiseCount": "レイズ {{n}}/{{max}} 回",
   "label.canCheck": "チェックできます",
   "label.chooseLine": "縦か横かを選んでください",
   "label.yourHand": "あなたの手札",
