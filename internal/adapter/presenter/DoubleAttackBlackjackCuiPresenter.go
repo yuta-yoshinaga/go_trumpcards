@@ -62,8 +62,9 @@ func (cp *DoubleAttackBlackjackCuiPresenter) writeHands(sb *strings.Builder, c i
 		return
 	}
 	for i, h := range hands {
+		active := i == c.GetActiveHandIdx() && c.GetPhase() == domain.DoubleAttackPhasePlay
 		mark := " "
-		if i == c.GetActiveHandIdx() && c.GetPhase() == domain.DoubleAttackPhasePlay {
+		if active {
 			mark = "*"
 		}
 		sb.WriteString(i18n.Tf("doubleattack.handLine",
@@ -72,6 +73,18 @@ func (cp *DoubleAttackBlackjackCuiPresenter) writeHands(sb *strings.Builder, c i
 			"cards", doubleAttackCardsStr(h.GetCards()),
 			"score", strconv.Itoa(h.GetScore()),
 			"bet", strconv.Itoa(h.GetBet())) + "\n")
+		// **打てるかどうかはドメインが知っている。** Web はそれを見てボタンを
+		// 出し分けるのに、CUI は打ってサーバに拒否されるまで分からなかった。
+		// 条件式を写さず CanDouble/CanSplit をそのまま呼ぶ。
+		if !active {
+			continue
+		}
+		if c.CanDouble() {
+			sb.WriteString(i18n.T("doubleattack.canDoubleLine") + "\n")
+		}
+		if c.CanSplit() {
+			sb.WriteString(i18n.T("doubleattack.canSplitLine") + "\n")
+		}
 	}
 	if c.GetPhase() == domain.DoubleAttackPhaseAttack {
 		sb.WriteString(i18n.Tf("doubleattack.maxAttackLine",
