@@ -51,7 +51,7 @@
   },
   "emptySlotAriaLabel": "empty slot {{slot}} (fill it from the stock or the waste)",
   "emptyReserveAriaLabel": "empty reserve {{pile}} (never refilled)",
-  "emptyReserve": "empty",
+  "emptyReserve": "empty · no refill",
   "reserve": "Reserve",
   "slotCardAriaLabel": "slot {{slot}}, {{card}}",
   "reserveCardAriaLabel": "reserve {{pile}}, {{card}} (top)",

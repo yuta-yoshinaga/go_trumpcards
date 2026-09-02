@@ -250,9 +250,12 @@ function RoyalCotillionPageContent() {
           {cards.length === 0 ? (
             <div
               style={{ width: dims.cw, height: dims.ch }}
-              className="rounded border-2 border-dashed border-white/10 text-game-text-muted text-[10px] flex items-center justify-center"
+              className="rounded border-2 border-dashed border-white/10 text-game-text-muted text-[10px] flex items-center justify-center text-center leading-tight px-0.5"
+              title={t('emptyReserveAriaLabel', { pile: pileIdx })}
             >
               <span className="sr-only">{t('emptyReserveAriaLabel', { pile: pileIdx })}</span>
+              {/* **リザーブは二度と補充されない。**「空」の 2 文字だと、補充される
+                  空き枠と見分けが付かない。晴眼の利用者にも同じことを言う。 */}
               <span aria-hidden="true">{t('emptyReserve')}</span>
             </div>
           ) : (
