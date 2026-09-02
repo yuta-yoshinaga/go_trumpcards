@@ -66,8 +66,10 @@ describe('formatBanLuckState', () => {
 
   // **義務は名指しする。** 出す / 出さないの両側を踏む。
   it('親の義務を出す', () => {
-    expect(formatBanLuckState(at({ mustHit: true }))).toContain('cannot stand below 15');
-    expect(formatBanLuckState(base)).not.toContain('cannot stand below 15');
+    // **既定値以外で見る。** 15 のまま測ると、ベタ書きに戻しても通ってしまう。
+    expect(formatBanLuckState(at({ mustHit: true, mustHitThreshold: 17 }))).toContain('cannot stand below 17');
+    expect(formatBanLuckState(at({ mustHit: true, mustHitThreshold: 17 }))).not.toContain('below 15');
+    expect(formatBanLuckState(base)).not.toContain('cannot stand below');
   });
 
   it('決着で役と収支を出す', () => {
