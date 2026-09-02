@@ -163,9 +163,23 @@ function GoofspielPageContent() {
                   {t('header.prizeValue', { n: String(state.prizeValue) })}
                 </div>
                 {(state.carriedPrizes?.length ?? 0) > 0 && (
-                  <div className="text-ds-warning text-sm" data-testid="gs-carried">
-                    {t('header.carried', { n: String(state.carriedPrizes?.length ?? 0) })}
-                  </div>
+                  <>
+                    <div className="text-ds-warning text-sm" data-testid="gs-carried">
+                      {t('header.carried', { n: String(state.carriedPrizes?.length ?? 0) })}
+                    </div>
+                    {/* **積まれている札の強さが枚数からは読めない。** 現在の賞は
+                        画像で出しているのに持ち越しだけ中身が見えないのは非対称。
+                        枚数が増えても折り返す。 */}
+                    <div className="flex flex-wrap justify-center gap-1" data-testid="gs-carried-cards">
+                      {state.carriedPrizes?.map((c, i) => (
+                        <CardImage
+                          key={`carried-${c.design}-${c.value}-${i.toString()}`}
+                          card={c}
+                          width={Math.round(cardWidth * 0.6)}
+                        />
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
             )}
