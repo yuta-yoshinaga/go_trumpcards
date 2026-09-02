@@ -129,4 +129,21 @@ describe('formatSpeculationState', () => {
     expect(out).toContain('Phase: FINISHED');
     expect(out).toContain('Final chips: 190');
   });
+
+  // **CLI モードも同じページの表示面。** ページ側だけ直して素の +1 を残すと、
+  // 同じ画面でトグルを切り替えただけで #6607 の症状が戻る (レビュー指摘)。
+  it('shows the round that just finished, not the next one', () => {
+    const result = formatSpeculationState(withState({ phase: SpeculationPhase.RESULT, roundNo: 1 }));
+    expect(result).toContain('Round: 1');
+    expect(result).not.toContain('Round: 2');
+
+    // 決着時に設定ラウンド数を超えた番号を出さない (6 / 5 になっていた)。
+    const end = formatSpeculationState(withState({ phase: SpeculationPhase.GAME_END, roundNo: 5 }));
+    expect(end).toContain('Round: 5');
+    expect(end).not.toContain('Round: 6');
+
+    // 進行中は次に打つ回を出す (常に roundNo を返す実装で上は通る)。
+    const flip = formatSpeculationState(withState({ phase: SpeculationPhase.FLIP, roundNo: 1 }));
+    expect(flip).toContain('Round: 2');
+  });
 });

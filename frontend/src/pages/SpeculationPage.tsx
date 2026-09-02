@@ -34,6 +34,7 @@ import { parseSpeculationCommand, SPECULATION_CLI_HELP } from '../utils/cli/comm
 import { formatSpeculationState } from '../utils/cli/formatters/speculationFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { speculationDisplayRound } from '../utils/speculationRound';
 
 const SP_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="sp-seats"]', messageKey: 'tutorial.hidden', placement: 'bottom', advanceOn: 'next' },
@@ -126,8 +127,7 @@ function SpeculationPageContent() {
   //
   // **早期 return より下で組む。** 上に置くと state が null の描画でも
   // 評価され、値は捨てられるのに `?? 0` の枝だけが残る。
-  const displayRound =
-    phase === SpeculationPhase.RESULT || phase === SpeculationPhase.GAME_END ? state.roundNo : state.roundNo + 1;
+  const displayRound = speculationDisplayRound(phase, state.roundNo);
 
   const phaseName =
     {
