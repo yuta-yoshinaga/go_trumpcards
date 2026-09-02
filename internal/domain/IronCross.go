@@ -40,8 +40,11 @@ const ironCrossMaxSliceLen = 512
 // ironCrossMaxCpuSteps は CPU を進める 1 回あたりの上限。
 const ironCrossMaxCpuSteps = 128
 
-// ironCrossMaxRaisesPerRound は 1 ラウンドのレイズ上限。
-const ironCrossMaxRaisesPerRound = 3
+// IronCrossMaxRaisesPerRound は 1 ラウンドのレイズ上限。
+//
+// **公開しているのは画面に数字を書き写させないため。** 上限を変えたときに
+// 案内文だけ古い回数で残る形を避ける。
+const IronCrossMaxRaisesPerRound = 3
 
 // エラー値。
 var (
@@ -219,7 +222,7 @@ func (g *IronCross) applyAction(i, action, amount int) error {
 		if g.currentBet == 0 {
 			return errIronCrossCannotRaise
 		}
-		if g.raiseCount >= ironCrossMaxRaisesPerRound {
+		if g.raiseCount >= IronCrossMaxRaisesPerRound {
 			return errIronCrossRaiseCapped
 		}
 		if amount < g.config.Ante || amount > p.GetChips()-toCall {
@@ -453,12 +456,12 @@ func (g *IronCross) cpuDecide(i int) (int, int) {
 	toCall := g.currentBet - p.GetCurrentBet()
 
 	if toCall <= 0 {
-		if rank >= PokerHandTwoPair && g.raiseCount < ironCrossMaxRaisesPerRound {
+		if rank >= PokerHandTwoPair && g.raiseCount < IronCrossMaxRaisesPerRound {
 			return IronCrossActionBet, g.config.Ante
 		}
 		return IronCrossActionCheck, 0
 	}
-	if rank >= PokerHandThreeOfAKind && g.raiseCount < ironCrossMaxRaisesPerRound {
+	if rank >= PokerHandThreeOfAKind && g.raiseCount < IronCrossMaxRaisesPerRound {
 		return IronCrossActionRaise, g.config.Ante
 	}
 	if rank >= PokerHandOnePair || toCall <= g.config.Ante {
@@ -578,7 +581,7 @@ func (g *IronCross) GetRaiseCount() int { return g.raiseCount }
 
 // CanRaise はいまレイズできるかを返す。
 func (g *IronCross) CanRaise() bool {
-	return g.currentBet > 0 && g.raiseCount < ironCrossMaxRaisesPerRound
+	return g.currentBet > 0 && g.raiseCount < IronCrossMaxRaisesPerRound
 }
 
 // GetTurnSeat はいまの手番を返す。
@@ -651,7 +654,7 @@ func (g *IronCross) GetHint() *IronCrossHint {
 	toCall := g.GetToCall()
 
 	if toCall <= 0 {
-		if rank >= PokerHandTwoPair && g.raiseCount < ironCrossMaxRaisesPerRound {
+		if rank >= PokerHandTwoPair && g.raiseCount < IronCrossMaxRaisesPerRound {
 			return &IronCrossHint{Action: "bet", Reason: "strongEnoughToBet"}
 		}
 		return &IronCrossHint{Action: "check", Reason: "seeAnotherCard"}
@@ -768,7 +771,7 @@ func ironCrossValidate(j *ironCrossJSON) error {
 			return fmt.Errorf("ironcross: %s must not be negative: %d", v.name, v.n)
 		}
 	}
-	if j.RaiseCount > ironCrossMaxRaisesPerRound {
+	if j.RaiseCount > IronCrossMaxRaisesPerRound {
 		return fmt.Errorf("ironcross: raise count exceeds the cap: %d", j.RaiseCount)
 	}
 	if j.Revealed < 0 || j.Revealed > IronCrossCommunityCards {

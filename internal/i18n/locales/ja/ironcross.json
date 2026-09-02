@@ -19,6 +19,7 @@
   "foldedMark": "（降り）",
   "allInMark": "（全ツッパ）",
   "toCallLine": "コールに {{amount}} 必要です",
+  "raiseCountLine": "レイズ {{n}}/{{max}} 回",
   "canCheckLine": "チェックできます",
   "chooseLine": "縦(vertical)か横(horizontal)を選んでください",
   "wonLine": "{{name}} が{{line}}で {{amount}} を獲得",

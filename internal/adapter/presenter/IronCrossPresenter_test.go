@@ -5,6 +5,7 @@ package presenter
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -338,4 +339,30 @@ func TestIronCrossWebPresenter_ErrorAndHint(t *testing.T) {
 	assert.NotEqual(t, int(domain.IronCrossLineNone), hint.Line, "助言が列を名指ししていない")
 
 	assert.JSONEq(t, `{"hint":null}`, cp.HintOutput(ironCrossSettled(t)))
+}
+
+// **上限に達すると Raise ボタンが黙って消える。**何回目なのかを出しておけば
+// 消えた理由が読める。回数も上限もドメインから来る。
+func TestIronCrossCuiPresenter_ShowsTheRaiseCountAgainstTheCap(t *testing.T) {
+	cp := new(IronCrossCuiPresenter)
+	g := newIronCrossForPresenter(t)
+
+	out := cp.Output(g, nil)
+	assert.Contains(t, out, "レイズ 0/"+strconv.Itoa(domain.IronCrossMaxRaisesPerRound)+" 回")
+
+	// レイズすると数字が動く。定数を出しているだけの実装では落ちる。
+	if err := g.PlayerAction(domain.IronCrossActionRaise, 10); err == nil {
+		assert.Contains(t, cp.Output(g, nil),
+			"レイズ "+strconv.Itoa(g.GetRaiseCount())+"/"+strconv.Itoa(domain.IronCrossMaxRaisesPerRound)+" 回")
+		assert.Positive(t, g.GetRaiseCount(), "レイズが通れば回数が増える")
+	}
+}
+
+// Web も同じ上限を送る。**ページが自前で 3 を持たないことの担保。**
+func TestIronCrossWebPresenter_SendsTheRaiseCap(t *testing.T) {
+	var out struct {
+		MaxRaises int `json:"maxRaises"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(new(IronCrossWebPresenter).Output(newIronCrossForPresenter(t), nil)), &out))
+	assert.Equal(t, domain.IronCrossMaxRaisesPerRound, out.MaxRaises)
 }

@@ -161,7 +161,7 @@ func TestIronCross_RejectsTamperedSaves(t *testing.T) {
 		},
 		{
 			name:    "レイズ回数が上限超え",
-			mutate:  func(m map[string]any) { m["rc"] = ironCrossMaxRaisesPerRound + 1 },
+			mutate:  func(m map[string]any) { m["rc"] = IronCrossMaxRaisesPerRound + 1 },
 			wantMsg: "raise count exceeds the cap",
 		},
 		{

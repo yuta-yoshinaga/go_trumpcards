@@ -345,6 +345,11 @@ function IronCrossPageContent() {
                   <p className="text-ds-text-muted text-sm" data-testid="ic-bet-guide">
                     {facingBet ? t('label.toCall', { amount: state.toCall }) : t('label.canCheck')}
                   </p>
+                  {/* **上限に達すると Raise ボタンが黙って消える。** 何回目なのかを
+                      出しておけば、消えた理由が読める。上限もサーバから来る。 */}
+                  <p className="text-ds-text-muted text-xs" data-testid="ic-raise-count">
+                    {t('label.raiseCount', { n: state.raiseCount, max: state.maxRaises })}
+                  </p>
                   <div className="flex gap-2 flex-wrap justify-center">
                     {/* **チェックとコールは場況で入れ替わる。** サーバの toCall に従う。 */}
                     {facingBet ? (
