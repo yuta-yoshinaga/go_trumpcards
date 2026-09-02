@@ -35,6 +35,44 @@ func TestSnapCuiPresenterOutput(t *testing.T) {
 	assert.Contains(t, out, i18n.T("snap.promptPlay"))
 }
 
+// **CUI は 1 コマンドごとにしか進まない。**CPU の予約が見えないと、割り込んで
+// 先に宣言する機会そのものが無く、反射ゲームとして成立しない。
+func TestSnapCuiPresenterShowsThePendingCpuAction(t *testing.T) {
+	p := new(SnapCuiPresenter)
+
+	t.Run("a queued snap names the seat and how to race it", func(t *testing.T) {
+		g := newSnapForCui(t)
+		g.SetPendingForTest(domain.SnapPending{
+			Kind: domain.SnapPendingSnap, PlayerIdx: 2, DeadlineMs: 500,
+		})
+		out := p.Output(g, nil)
+		assert.Contains(t, out, cuiPlayerName(g.GetPlayer(2), 2)+" がスナップ宣言を予約しています")
+		assert.Contains(t, out, "先に n を打てば割り込めます")
+		// めくりの予約とは別の文言。
+		assert.NotContains(t, out, "次の1枚をめくろうとしています")
+	})
+
+	t.Run("a queued draw is described differently", func(t *testing.T) {
+		g := newSnapForCui(t)
+		g.SetPendingForTest(domain.SnapPending{
+			Kind: domain.SnapPendingStep, PlayerIdx: 1, DeadlineMs: 500,
+		})
+		out := p.Output(g, nil)
+		assert.Contains(t, out, cuiPlayerName(g.GetPlayer(1), 1)+" が次の1枚をめくろうとしています")
+		assert.NotContains(t, out, "スナップ宣言を予約しています")
+	})
+
+	// 予約が無いときは何も出さない（否定コントロール）。
+	t.Run("nothing is said when no action is queued", func(t *testing.T) {
+		g := newSnapForCui(t)
+		g.SetPendingForTest(domain.SnapPending{Kind: domain.SnapPendingNone})
+		out := p.Output(g, nil)
+		assert.NotContains(t, out, "予約しています")
+		assert.NotContains(t, out, "めくろうとしています")
+		assert.Contains(t, out, i18n.T("snap.promptPlay"))
+	})
+}
+
 // **成立しているかどうかは一目で分かる必要がある。** 反射ゲームなので。
 func TestSnapCuiPresenterShoutsWhenSnapIsOn(t *testing.T) {
 	p := new(SnapCuiPresenter)
