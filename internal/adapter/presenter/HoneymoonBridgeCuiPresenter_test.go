@@ -5,6 +5,7 @@ package presenter
 import (
 	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -35,6 +36,26 @@ func TestHoneymoonBridgeCuiPresenterOutput(t *testing.T) {
 }
 
 // **引き合いのあいだは山札の残りを出す。** 何枚引けるかが読めないと打てない。
+// **親はラウンドごとに交代し、引き合いの最初のリードを決める起点。**
+// どの局面にも出ていなかった。落札者とは別の役として並べる。
+func TestHoneymoonBridgeCuiPresenterMarksTheDealer(t *testing.T) {
+	p := new(HoneymoonBridgeCuiPresenter)
+
+	h := newHoneymoonBridgeForCui(t)
+	h.SetDealerIdxForTest(1)
+	out := p.Output(h, nil)
+
+	dealer := i18n.T("honeymoonbridge.roleDealer")
+	assert.Equal(t, 1, strings.Count(out, dealer), "the dealer mark belongs to one seat only")
+	assert.Contains(t, out, cuiPlayerName(h.GetPlayer(1), 1)+dealer)
+
+	// 親を移すと印も移る（席 0 に固定で書いている実装では落ちる）。
+	moved := newHoneymoonBridgeForCui(t)
+	moved.SetDealerIdxForTest(0)
+	movedOut := p.Output(moved, nil)
+	assert.Contains(t, movedOut, cuiPlayerName(moved.GetPlayer(0), 0)+dealer)
+}
+
 func TestHoneymoonBridgeCuiPresenterStockLine(t *testing.T) {
 	p := new(HoneymoonBridgeCuiPresenter)
 

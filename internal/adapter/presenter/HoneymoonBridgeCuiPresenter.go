@@ -13,11 +13,16 @@ import (
 )
 
 // honeymoonBridgePlayerStr returns the display string for a single player.
-func honeymoonBridgePlayerStr(player *domain.HoneymoonBridgePlayer, idx int, isDeclarer, current bool) string {
+func honeymoonBridgePlayerStr(player *domain.HoneymoonBridgePlayer, idx int, isDealer, isDeclarer, current bool) string {
 	var b strings.Builder
+	// **親は NextRound ごとに交代し、引き合いの最初のリードを決める起点。**
+	// 落札者とは別の役なので、両方に当たる席では両方を並べる。
 	role := ""
+	if isDealer {
+		role += i18n.T("honeymoonbridge.roleDealer")
+	}
 	if isDeclarer {
-		role = i18n.T("honeymoonbridge.roleDeclarer")
+		role += i18n.T("honeymoonbridge.roleDeclarer")
 	}
 	marker := " "
 	if current {
@@ -68,6 +73,7 @@ func (p *HoneymoonBridgeCuiPresenter) Output(s interfaces.HoneymoonBridgeGame, l
 
 		for i := 0; i < s.GetPlayerCnt(); i++ {
 			sb.WriteString(honeymoonBridgePlayerStr(s.GetPlayer(i), i,
+				i == s.GetDealerIdx(),
 				i == s.GetDeclarerIdx(),
 				i == s.GetCurrentPlayerIdx() && !s.GetGameEndFlag()))
 		}

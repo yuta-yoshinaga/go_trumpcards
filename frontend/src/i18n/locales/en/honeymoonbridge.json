@@ -20,6 +20,7 @@
     "took": "tricks {{n}}",
     "score": "total {{n}}",
     "declarer": "[declarer]",
+    "dealer": "[dealer]",
     "you": "You",
     "cpu": "CPU{{idx}}"
   },

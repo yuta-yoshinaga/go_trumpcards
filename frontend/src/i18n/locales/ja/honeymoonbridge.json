@@ -20,6 +20,7 @@
     "took": "獲得{{n}}",
     "score": "累計{{n}}",
     "declarer": "[落札者]",
+    "dealer": "[親]",
     "you": "あなた",
     "cpu": "CPU{{idx}}"
   },
