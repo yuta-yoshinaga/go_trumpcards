@@ -103,10 +103,11 @@ func (p *SchafkopfCuiPresenter) Output(g interfaces.SchafkopfGame, lastErr error
 		// **ピック順もプレイ順も親の左隣から始まる。** 誰が親かが出ていないと、
 		// 自分が何番目に宣言するのかが盤から読めない (#6617)。Coinche と
 		// Bauernschnapsen は最初から dealer 行を持っている。
-		if d := g.GetDealerIdx(); d >= 0 {
-			b.WriteString(i18n.Tf("schafkopf.dealer",
-				"name", cuiPlayerName(g.GetPlayer(d), d)) + "\n")
-		}
+		// `dealerIdx` は Reset で PlayerCnt-1 が入り、以降は剰余で回るので
+		// 負にならない。Coinche/Bauernschnapsen と同じくガードは置かない。
+		d := g.GetDealerIdx()
+		b.WriteString(i18n.Tf("schafkopf.dealer",
+			"name", cuiPlayerName(g.GetPlayer(d), d)) + "\n")
 
 		if g.GetPickerIdx() >= 0 {
 			b.WriteString(i18n.Tf("schafkopf.pickerLine",
