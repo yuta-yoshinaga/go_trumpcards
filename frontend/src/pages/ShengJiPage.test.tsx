@@ -279,6 +279,60 @@ describe('ShengJiPage', () => {
       expect(screen.getByTestId('shengji-kitty-line')).toHaveTextContent('倍率 x4');
     });
 
+    it('reveals kitty cards when available at hand end', async () => {
+      mockExec.mockResolvedValue(
+        makeState({
+          phase: ShengJiPhase.HAND_END,
+          lastResult: {
+            declarerTeam: 0,
+            defenderPoints: 35,
+            kittyPoints: 0,
+            kittyMultiplier: 0,
+            declarerHeld: true,
+            advance: 2,
+            advancingTeam: 0,
+          },
+          kitty: [
+            card('SPADE', 2),
+            card('HEART', 5),
+            card('CLOVER', 13),
+            card('DIAMOND', 9),
+            card('SPADE', 7),
+            card('HEART', 3),
+            card('CLOVER', 4),
+            card('DIAMOND', 6),
+          ],
+        }),
+      );
+      renderWithProviders(<ShengJiPage />);
+      await waitFor(() => expect(screen.getByTestId('shengji-kitty-cards')).toBeInTheDocument());
+      const panel = screen.getByTestId('shengji-kitty-cards');
+      expect(panel).toHaveTextContent('底牌の中身');
+      // **集計値ではなく実物の8枚が出ること。**
+      expect(panel.querySelectorAll('img')).toHaveLength(8);
+    });
+
+    it('does not reveal kitty cards when kitty is empty', async () => {
+      mockExec.mockResolvedValue(
+        makeState({
+          phase: ShengJiPhase.HAND_END,
+          lastResult: {
+            declarerTeam: 0,
+            defenderPoints: 35,
+            kittyPoints: 0,
+            kittyMultiplier: 0,
+            declarerHeld: true,
+            advance: 2,
+            advancingTeam: 0,
+          },
+          kitty: [],
+        }),
+      );
+      renderWithProviders(<ShengJiPage />);
+      await waitFor(() => expect(screen.getByTestId('shengji-hand-result')).toBeInTheDocument());
+      expect(screen.queryByTestId('shengji-kitty-cards')).not.toBeInTheDocument();
+    });
+
     it('deals the next hand', async () => {
       mockExec.mockResolvedValue(makeState({ phase: ShengJiPhase.HAND_END }));
       renderWithProviders(<ShengJiPage />);

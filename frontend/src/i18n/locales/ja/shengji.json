@@ -28,6 +28,7 @@
   "handHeldLine": "宣言側が守りきりました（守備側 {{points}} 点 / {{target}} 点）。チーム{{team}}が{{advance}}段階昇級です",
   "handTakenLine": "守備側が {{points}} 点を集めました（{{target}} 点以上）。宣言側が交代し、チーム{{team}}が{{advance}}段階昇級です",
   "kittyLine": "底牌: {{points}} 点（倍率 x{{mult}}）が守備側に入りました",
+  "kittyCardsTitle": "底牌の中身",
   "settings": {
     "title": "設定"
   },

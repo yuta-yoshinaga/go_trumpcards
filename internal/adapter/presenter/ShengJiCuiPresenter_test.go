@@ -187,6 +187,42 @@ func TestShengJiCuiPresenter_HandEnd(t *testing.T) {
 		assert.NotContains(t, out, "底牌:")
 	})
 
+	t.Run("reveals kitty cards when available at hand end", func(t *testing.T) {
+		o := defaultShengJiOpts()
+		o.phase = domain.ShengJiPhaseHandEnd
+		o.lastResult = &domain.ShengJiHandResult{
+			DeclarerTeam: 0, DefenderPoints: 35, DeclarerHeld: true, Advance: 2, AdvancingTeam: 0,
+		}
+		o.kitty = []*domain.Card{
+			sjiTestCard(domain.CardDesignSpade, 2),
+			sjiTestCard(domain.CardDesignHeart, 5),
+			sjiTestCard(domain.CardDesignClover, 13),
+			sjiTestCard(domain.CardDesignDiamond, 9),
+			sjiTestCard(domain.CardDesignSpade, 7),
+			sjiTestCard(domain.CardDesignHeart, 3),
+			sjiTestCard(domain.CardDesignClover, 4),
+			sjiTestCard(domain.CardDesignDiamond, 6),
+		}
+		out := new(presenter.ShengJiCuiPresenter).Output(setupShengJiMock(o), nil)
+		assert.Contains(t, out, "底牌の中身:")
+		assert.Contains(t, out, "SPADE 2")
+		assert.Contains(t, out, "CLOVER 13")
+	})
+
+	// **否定コントロールは精算行が出ている状態で取る。**プレイ中は精算ブロック
+	// そのものが出ないので、ガードが効いていることの証拠にならない。
+	t.Run("does not reveal kitty cards when the kitty is still hidden", func(t *testing.T) {
+		o := defaultShengJiOpts()
+		o.phase = domain.ShengJiPhaseHandEnd
+		o.lastResult = &domain.ShengJiHandResult{
+			DeclarerTeam: 0, DefenderPoints: 35, DeclarerHeld: true, Advance: 2, AdvancingTeam: 0,
+		}
+		o.kitty = nil
+		out := new(presenter.ShengJiCuiPresenter).Output(setupShengJiMock(o), nil)
+		assert.Contains(t, out, "宣言側が守りきりました")
+		assert.NotContains(t, out, "底牌の中身")
+	})
+
 	t.Run("no result yet still prompts for the next hand", func(t *testing.T) {
 		o := defaultShengJiOpts()
 		o.phase = domain.ShengJiPhaseHandEnd
