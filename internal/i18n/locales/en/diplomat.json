@@ -16,6 +16,7 @@
   "invalidFromZone": "Invalid source: {{val}} (use t or w)",
   "invalidToZone": "Invalid destination: {{val}} (use f or t)",
   "invalidPile": "Invalid column: {{val}}",
+  "deadEndMark": "[dead end]",
   "foundationHeader": "Foundations: ",
   "stockLine": "Stock: {{count}}",
   "wasteEmpty": "Waste: empty",

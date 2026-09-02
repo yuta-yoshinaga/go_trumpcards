@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -116,6 +117,49 @@ func TestDiplomatCuiPresenter_Output(t *testing.T) {
 			assert.Contains(t, new(DiplomatCuiPresenter).Output(g, nil), tc.want)
 		})
 	}
+}
+
+// **A で止まった列は Web だけがバッジで示していた。**CUI にも同じ判定を出す。
+func TestDiplomatCuiPresenter_MarksDeadEndPiles(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	g := new(interfaces.MockDiplomatGame)
+	g.On("GetPhase").Return(domain.DiplomatPhasePlaying).Maybe()
+	g.On("GetMoveCount").Return(0).Maybe()
+	g.On("IsStalemate").Return(false).Maybe()
+	g.On("GetStockCount").Return(72).Maybe()
+	g.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 9, true)}).Maybe()
+	var foundation [domain.DiplomatFoundationCnt][]*domain.Card
+	g.On("GetFoundation").Return(foundation).Maybe()
+
+	var tableau [domain.DiplomatTableauCnt][]*domain.Card
+	for i := range domain.DiplomatTableauCnt {
+		tableau[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, i+2, true)}
+	}
+	// 0 列目だけ A が最上段。1 列目は **A が一番下** — 判定するのは最上段だけ
+	// なので印は付かない。この 2 列を並べておかないと、最上段でなく先頭を読む
+	// 実装でもテストが通ってしまう。
+	tableau[0] = []*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 7, true),
+		domain.NewCard(domain.CardDesignClover, 5, true),
+		domain.NewCard(domain.CardDesignSpade, 1, true),
+	}
+	tableau[1] = []*domain.Card{
+		domain.NewCard(domain.CardDesignClover, 1, true),
+		domain.NewCard(domain.CardDesignDiamond, 7, true),
+	}
+	g.On("GetTableau").Return(tableau).Maybe()
+
+	out := new(DiplomatCuiPresenter).Output(g, nil)
+	mark := i18n.T("diplomat.deadEndMark")
+
+	assert.Equal(t, 1, strings.Count(out, mark), "the mark belongs to the one dead-end pile only")
+	assert.Contains(t, out, cuiCardStr(domain.NewCard(domain.CardDesignSpade, 1, true))+mark)
+	// 埋もれた A には付かず、その列の最上段にも付かない。
+	assert.NotContains(t, out, cuiCardStr(domain.NewCard(domain.CardDesignClover, 1, true))+mark)
+	assert.NotContains(t, out, cuiCardStr(domain.NewCard(domain.CardDesignDiamond, 7, true))+mark)
 }
 
 func TestDiplomatCuiPresenter_HintOutput(t *testing.T) {
