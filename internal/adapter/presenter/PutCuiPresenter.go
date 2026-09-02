@@ -54,6 +54,13 @@ func (p *PutCuiPresenter) Output(g interfaces.PutGame, lastErr error) string {
 			"stake", strconv.Itoa(g.GetHandStake()),
 			"level", putLevelLabel(g.GetAcceptedLevel())) + "\n")
 
+		// **3 が最強・4 が最弱。** このゲーム最大の意外性で、Web は折りたたみの
+		// 参照表を常設している。CUI には出す場所が無く、知る手段が画面に
+		// 一切なかった (#6609)。
+		sb.WriteString(i18n.T("put.rankRefTitle") + "\n")
+		sb.WriteString("  " + i18n.T("put.rankRefOrder") + "\n")
+		sb.WriteString("  " + i18n.T("put.rankRefNote") + "\n")
+
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			sb.WriteString(putPlayerStr(g.GetPlayer(i), i))
 		}

@@ -93,3 +93,35 @@ func TestPutCuiPresenter_ActionLogOutput(t *testing.T) {
 	g.Reset()
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// **3 が最強・4 が最弱という独自の並びを画面に出す (#6609)。**
+// Web は折りたたみの参照表を常設しているのに、CUI にはこのゲーム最大の
+// 意外性を知る手段が一切なかった。
+func TestPutCuiPresenter_ShowsTheRankReference(t *testing.T) {
+	g := domain.NewDefaultPut()
+	g.Reset()
+	out := new(presenter.PutCuiPresenter).Output(g, nil)
+
+	assert.Contains(t, out, "カードの強さ")
+	assert.NotContains(t, out, "{{")
+
+	// **並びが本当にドメインと一致していること。** 文字列があるだけでは、
+	// 誰かが順番を書き間違えても気付けない。表に出した順で強さが単調に
+	// 下がることを `PutCardStrength` に照らして確かめる。
+	order := []int{3, 2, 1, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4}
+	prev := 99
+	for _, v := range order {
+		s := domain.PutCardStrength(domain.NewCard(domain.CardDesignSpade, v, true))
+		assert.Less(t, s, prev, "値 %d は 1 つ前より弱いはず", v)
+		prev = s
+	}
+	// 3 が最強で 4 が最弱であることを名指しで固定する。
+	assert.Greater(t,
+		domain.PutCardStrength(domain.NewCard(domain.CardDesignSpade, 3, true)),
+		domain.PutCardStrength(domain.NewCard(domain.CardDesignSpade, 2, true)),
+		"3 は 2 より強い")
+	assert.Less(t,
+		domain.PutCardStrength(domain.NewCard(domain.CardDesignSpade, 4, true)),
+		domain.PutCardStrength(domain.NewCard(domain.CardDesignSpade, 5, true)),
+		"4 は 5 より弱い")
+}
