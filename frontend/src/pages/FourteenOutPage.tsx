@@ -97,6 +97,13 @@ function FourteenOutPageContent() {
   // How many pairs summing to 14 the exposed tails currently offer.
   const removablePairs = useMemo(() => (state ? countRemovablePairs(state.columns) : 0), [state]);
   // 1 枚目を選んだあと、合計 14 になる相手の列。
+  // **暗くしているのと同じ条件から読み上げも作る。** 別の式を書くと、
+  // 見えている人と読み上げで違うことを言う日が来る。
+  const pairSuffix = (isPartner: boolean, dimmed: boolean): string => {
+    if (isPartner) return ` (${t('label.pairs')})`;
+    return dimmed ? ` (${t('label.noPair')})` : '';
+  };
+
   const partners = useMemo(
     () => (state && selected !== null ? fourteenOutPartners(state.columns, selected) : new Set<number>()),
     [selected, state],
@@ -222,7 +229,7 @@ function FourteenOutPageContent() {
                       data-hint-action={`mc-col-${colIdx}`}
                       aria-label={
                         tail
-                          ? `${t('label.column', { n: colIdx })}: ${cardAlt(tail)}`
+                          ? `${t('label.column', { n: colIdx })}: ${cardAlt(tail)}${pairSuffix(isPartner, dimmed)}`
                           : `${t('label.column', { n: colIdx })}: ${t('label.empty', { ns: 'common' })}`
                       }
                       onClick={() => handleColumnClick(colIdx)}
