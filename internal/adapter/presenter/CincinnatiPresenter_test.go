@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -21,6 +22,95 @@ func newCincinnatiForPresenter(t *testing.T) *domain.Cincinnati {
 	g := domain.NewDefaultCincinnati()
 	g.Reset()
 	return g
+}
+
+// **レイズできるかはドメインが知っている。**Web はそれでボタンを出し分けるのに、
+// CUI は raise を打ってサーバに拒否されるまで分からなかった。
+//
+// 配りに依存しない形で見る: 「どちらの行が出るか」が `CanRaise()` と一致すること。
+// 上限に達する局を狙って作ると、配りや CPU の打ち方に縛られる。
+// **上限に達した側の枝は配りでは踏めない。** 実測で 1% 前後しか出ないので、
+// 上のループは「出たら見る」形にしてある。それだと codecov が else を未実行と
+// 数えるだけでなく、**その行が本当に出るのかを一度も確かめていない**ことになる。
+// 卓は作らず、ドメインの答えだけをモックで固定して両方の枝を踏む。
+func TestCincinnatiCuiPresenter_NamesTheRaiseCap(t *testing.T) {
+	build := func(canRaise bool) string {
+		m := new(interfaces.MockCincinnatiGame)
+		m.On("GetPhase").Return(domain.CincinnatiPhaseBetting)
+		m.On("GetToCall").Return(20)
+		m.On("CanRaise").Return(canRaise)
+		m.On("GetGameEndFlag").Return(false)
+		m.On("GetPot").Return(100)
+		m.On("GetHandNumber").Return(1)
+		m.On("GetRevealedCount").Return(0)
+		m.On("GetCommunityCards").Return([]*domain.Card(nil))
+		m.On("GetPlayers").Return([]*domain.CincinnatiPlayer(nil))
+		m.On("GetResults").Return([]domain.CincinnatiResult(nil))
+		m.On("IsHumanTurn").Return(true)
+		m.On("HumanSeat").Return(0)
+		m.On("GetTurnSeat").Return(0)
+		m.On("GetCurrentBet").Return(20)
+		m.On("GetRaiseCount").Return(3)
+		m.On("GetRemainingCards").Return(30)
+		m.On("WinnerSeat").Return(-1)
+		m.On("GetHint").Return((*domain.CincinnatiHint)(nil))
+		m.On("GetActionLog").Return([]*domain.ActionLogEntry(nil))
+		return new(CincinnatiCuiPresenter).Output(m, nil)
+	}
+
+	// **期待値は i18n から組み立てない** — 未訳ならキーが返って常に通る。
+	// 実際の文言に解決していること、反対側の文言が出ていないことを見る。
+	capped := build(false)
+	assert.Contains(t, capped, "レイズの上限に達しています")
+	assert.NotContains(t, capped, "raise で上乗せできます")
+	assert.NotContains(t, capped, "{{")
+
+	open := build(true)
+	assert.Contains(t, open, "raise で上乗せできます")
+	assert.NotContains(t, open, "レイズの上限に達しています")
+}
+
+func TestCincinnatiCuiPresenter_SaysWhetherRaiseIsOpen(t *testing.T) {
+	cp := new(CincinnatiCuiPresenter)
+
+	// 上限に達する局は実測 1% 前後なので、両方の枝を踏むために多めに回す。
+	// ただし「両方見た」は require しない — 0.2% で落ちるテストを作らないため。
+	seen := map[bool]bool{}
+	for i := 0; i < 200; i++ {
+		g := newCincinnatiForPresenter(t)
+		for steps := 0; g.GetPhase() == domain.CincinnatiPhaseBetting && g.GetToCall() == 0; steps++ {
+			require.Less(t, steps, 200)
+			if err := g.PlayerAction(domain.CincinnatiActionCheck, 0); err != nil {
+				break
+			}
+		}
+		if g.GetPhase() != domain.CincinnatiPhaseBetting || g.GetToCall() == 0 {
+			continue
+		}
+		out := cp.Output(g, nil)
+		seen[g.CanRaise()] = true
+		if g.CanRaise() {
+			assert.Contains(t, out, "raise で上乗せできます")
+			assert.NotContains(t, out, "レイズの上限に達しています")
+		} else {
+			assert.Contains(t, out, "レイズの上限に達しています")
+			assert.NotContains(t, out, "raise で上乗せできます")
+		}
+	}
+	require.True(t, seen[true], "レイズできる局面に一度も到達していない")
+}
+
+// **チェックできる局面ではレイズの案内を出さない。** 直面していないので無関係。
+func TestCincinnatiCuiPresenter_SaysNothingAboutRaiseWhenCheckIsOpen(t *testing.T) {
+	cp := new(CincinnatiCuiPresenter)
+	g := newCincinnatiForPresenter(t)
+	if g.GetToCall() != 0 {
+		t.Skip("この配りは開幕からコールに直面している")
+	}
+	out := cp.Output(g, nil)
+	assert.Contains(t, out, "チェックできます")
+	assert.NotContains(t, out, "raise で上乗せできます")
+	assert.NotContains(t, out, "レイズの上限に達しています")
 }
 
 // cincinnatiSettled はショーダウンまで進めた卓を返す。

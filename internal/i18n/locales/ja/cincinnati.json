@@ -16,6 +16,8 @@
   "foldedMark": "（降り）",
   "allInMark": "（全ツッパ）",
   "toCallLine": "コールに {{amount}} 必要です",
+  "canRaiseLine": "raise で上乗せできます",
+  "noRaiseLine": "レイズの上限に達しています。call か fold のみです",
   "canCheckLine": "チェックできます",
   "wonLine": "{{name}} が {{amount}} を獲得（{{hand}}）",
   "gameEndLine": "勝者: {{name}}",

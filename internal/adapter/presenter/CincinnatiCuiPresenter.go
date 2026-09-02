@@ -84,6 +84,13 @@ func (cp *CincinnatiCuiPresenter) writeBetLine(sb *strings.Builder, c interfaces
 	}
 	if toCall := c.GetToCall(); toCall > 0 {
 		sb.WriteString(i18n.Tf("cincinnati.toCallLine", "amount", strconv.Itoa(toCall)) + "\n")
+		// **上限に達しているかはドメインが知っている。** Web はそれでボタンを
+		// 出し分けるのに、CUI は raise を打ってサーバに拒否されるまで分からなかった。
+		if c.CanRaise() {
+			sb.WriteString(i18n.T("cincinnati.canRaiseLine") + "\n")
+		} else {
+			sb.WriteString(i18n.T("cincinnati.noRaiseLine") + "\n")
+		}
 		return
 	}
 	sb.WriteString(i18n.T("cincinnati.canCheckLine") + "\n")
