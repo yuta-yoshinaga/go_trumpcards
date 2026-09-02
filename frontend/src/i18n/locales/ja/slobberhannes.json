@@ -22,7 +22,7 @@
     "first": "初",
     "last": "終",
     "queen": "♣Q",
-    "clean": "無傷"
+    "clean": "無傷(+{{bonus}}点)"
   },
   "currentTrick": "現在のトリック",
   "actions": {

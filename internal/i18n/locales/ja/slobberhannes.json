@@ -12,7 +12,7 @@
   "markFirst": "初",
   "markLast": "終",
   "markQueen": "♣Q",
-  "markClean": "無傷",
+  "markClean": "無傷(+{{bonus}}点)",
   "promptCurrentPlayer": "手番: {{name}}",
   "promptPlay": "play <idx>・・・カードを出す",
   "promptRoundEnd": "ラウンド終了。",

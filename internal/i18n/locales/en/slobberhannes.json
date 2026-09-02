@@ -12,7 +12,7 @@
   "markFirst": "1st",
   "markLast": "last",
   "markQueen": "Q♣",
-  "markClean": "clean",
+  "markClean": "clean (+{{bonus}})",
   "promptCurrentPlayer": "Turn: {{name}}",
   "promptPlay": "play <idx> ... Play a card",
   "promptRoundEnd": "Round over.",
