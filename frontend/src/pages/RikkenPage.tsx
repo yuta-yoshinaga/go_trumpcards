@@ -127,6 +127,13 @@ function RikkenPageContent() {
 
   const human = state.players.find((p) => p.isHuman);
   const legal = new Set(state.validPlays);
+  // **オープンミゼールは宣言者の手札を全員に公開する契約。** サーバは CPU 宣言者の
+  // cards も送る。宣言者が人間なら自分の手札欄がその役目を果たすので出さない。
+  const openMisereDeclarer =
+    state.contract === RikkenContract.OPEN_MISERE && state.declarerIdx > 0
+      ? state.players.find((p) => p.id === state.declarerIdx)
+      : undefined;
+  const openMisereHand = openMisereDeclarer?.cards?.length ? openMisereDeclarer.cards : undefined;
   const phaseName = t(
     isBidPhase
       ? 'phase.bid'
@@ -228,6 +235,26 @@ function RikkenPageContent() {
                 </div>
               ))}
             </div>
+
+            {/* **オープンミゼールは宣言者の手札を全員に公開する契約。** サーバは
+                CPU 宣言者の cards も送っているのに、Web だけ描画していなかった。
+                宣言者が人間なら下の自分の手札欄がその役目を果たす。 */}
+            {openMisereHand && (
+              <div className="mb-4">
+                <div className="text-ds-text-primary text-center text-sm font-bold mb-1">
+                  {t('label.openHand', { seat: String(state.declarerIdx) })}
+                </div>
+                <div className="flex justify-center gap-1 flex-wrap" data-testid="rikken-open-misere-hand">
+                  {openMisereHand.map((card, i) => (
+                    <AnimatedCard
+                      key={`open-${card.design}-${card.value}-${i.toString()}`}
+                      card={card}
+                      width={cardWidth}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {human && human.cards.length > 0 && (
               <div data-tutorial="rk-hand">

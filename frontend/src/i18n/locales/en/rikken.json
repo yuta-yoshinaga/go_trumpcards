@@ -11,6 +11,7 @@
     "contract": "Contract",
     "trump": "Trump",
     "declarer": "Declarer",
+    "openHand": "Open Misere hand on show (seat {{seat}})",
     "partner": "Partner",
     "tricks": "Tricks",
     "declarerTricks": "Declaring side",

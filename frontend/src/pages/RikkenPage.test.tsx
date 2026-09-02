@@ -248,6 +248,54 @@ describe('RikkenPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('next'));
   });
 
+  // **オープンミゼールは宣言者の手札を全員に公開する契約。**サーバは CPU 宣言者の
+  // cards も送っているのに、Web だけ描画していなかった。
+  it('shows the open-misere hand of a CPU declarer', async () => {
+    const openHand: Card[] = [
+      { design: 'HEART', value: 2 },
+      { design: 'CLOVER', value: 7 },
+      { design: 'DIAMOND', value: 11 },
+    ];
+    mockApi.mockResolvedValue({
+      ...playState,
+      contract: RikkenContract.OPEN_MISERE,
+      declarerIdx: 1,
+      players: playState.players.map((p) => (p.id === 1 ? { ...p, cards: openHand } : p)),
+    });
+    renderWithProviders(<RikkenPage />);
+
+    const shown = await screen.findByTestId('rikken-open-misere-hand');
+    // CUI の writeOpenMisereHand と同じ情報量＝全カード。
+    expect(shown.querySelectorAll('img')).toHaveLength(openHand.length);
+    expect(screen.getByText(/公開手札（席1）/)).toBeInTheDocument();
+  });
+
+  // 契約が違えば公開しない。**CPU 側に札を持たせた盤で見る** — 既定の
+  // フィクスチャは CPU の cards が空なので、契約の判定を外しても通ってしまう。
+  it('shows no open hand under an ordinary contract, even with the cards present', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      contract: RikkenContract.RIK,
+      declarerIdx: 1,
+      players: playState.players.map((p) =>
+        p.id === 1 ? { ...p, cards: [{ design: 'HEART', value: 2 } as Card] } : p,
+      ),
+    });
+    renderWithProviders(<RikkenPage />);
+
+    await waitFor(() => expect(screen.getByTestId('rikken-hand')).toBeInTheDocument());
+    expect(screen.queryByTestId('rikken-open-misere-hand')).not.toBeInTheDocument();
+  });
+
+  // 宣言者が人間なら自分の手札欄がその役目を果たす。二重に出さない。
+  it('shows no separate open hand when the human declared it', async () => {
+    mockApi.mockResolvedValue({ ...playState, contract: RikkenContract.OPEN_MISERE, declarerIdx: 0 });
+    renderWithProviders(<RikkenPage />);
+
+    await waitFor(() => expect(screen.getByTestId('rikken-hand')).toBeInTheDocument());
+    expect(screen.queryByTestId('rikken-open-misere-hand')).not.toBeInTheDocument();
+  });
+
   it('renders the CLI terminal when CLI mode is on', async () => {
     mockUseCliMode.mockReturnValue({
       cliEnabled: true,
