@@ -12,7 +12,7 @@
     "trump": "Trump: {{suit}}",
     "trumpUndecided": "Trump: not named yet",
     "blind": "Blind: {{n}} card (the declarer takes it and discards one)",
-    "rule": "The joker is the highest trump of all -- the Best Bower. The jack of trumps (Right Bower) and the jack of the same colour (Left Bower) come next. Bidding is compulsory: once three players pass, the dealer cannot.",
+    "rule": "The joker is the highest trump of all — the Best Bower. The jack of trumps (Right Bower) and the jack of the same colour (Left Bower) come next. Bidding is compulsory: once three players pass, the dealer cannot. Making the contract scores the tricks actually taken, not the number bid, so every overtrick counts; going set gives the opponents the contract instead.",
     "score": "Score: your team {{t0}} - theirs {{t1}}",
     "mustBid": "Everyone else passed. As dealer you cannot -- you must bid.",
     "bidNone": "no bid",
@@ -27,7 +27,7 @@
   },
   "currentTrick": "Current trick",
   "handEnd": {
-    "made": "Contract {{contract}}, took {{took}}: made.",
+    "made": "Contract {{contract}}, took {{took}}: made (+{{took}}).",
     "euchred": "Contract {{contract}}, took {{took}}: euchred ({{contract}} to the other team)."
   },
   "actions": {
