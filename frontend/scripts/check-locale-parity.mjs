@@ -15,7 +15,10 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { assertFloor } from './lib/floor.mjs';
 
-const LOCALES = new URL('../src/i18n/locales/', import.meta.url).pathname;
+// argv[2] lets the guard's own test point it at a fixture tree, so the test can
+// spawn the real script rather than re-implement its logic.
+const FIXTURE_DIR = process.argv[2];
+const LOCALES = FIXTURE_DIR ?? new URL('../src/i18n/locales/', import.meta.url).pathname;
 const PLURAL_SUFFIX = /_(zero|one|two|few|many|other)$/;
 
 /** Flatten a translation tree to its leaf key paths, folding plural suffixes. */
@@ -61,5 +64,10 @@ if (problems.length > 0) {
   process.exit(1);
 }
 
-assertFloor('locale-parity', ja.length, 250, 'ja locale files compared');
+if (FIXTURE_DIR) {
+  // A fixture tree holds a handful of files; the real floor would reject it.
+  assertFloor('locale-parity', ja.length, 1, 'ja locale files compared');
+} else {
+  assertFloor('locale-parity', ja.length, 250, 'ja locale files compared');
+}
 console.log(`locale-parity: OK (${ja.length} locale file pairs, keys match).`);
