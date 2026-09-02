@@ -23,6 +23,54 @@ func newCincinnatiForPresenter(t *testing.T) *domain.Cincinnati {
 	return g
 }
 
+// **レイズできるかはドメインが知っている。**Web はそれでボタンを出し分けるのに、
+// CUI は raise を打ってサーバに拒否されるまで分からなかった。
+//
+// 配りに依存しない形で見る: 「どちらの行が出るか」が `CanRaise()` と一致すること。
+// 上限に達する局を狙って作ると、配りや CPU の打ち方に縛られる。
+func TestCincinnatiCuiPresenter_SaysWhetherRaiseIsOpen(t *testing.T) {
+	cp := new(CincinnatiCuiPresenter)
+
+	// 上限に達する局は実測 1% 前後なので、両方の枝を踏むために多めに回す。
+	// ただし「両方見た」は require しない — 0.2% で落ちるテストを作らないため。
+	seen := map[bool]bool{}
+	for i := 0; i < 200; i++ {
+		g := newCincinnatiForPresenter(t)
+		for steps := 0; g.GetPhase() == domain.CincinnatiPhaseBetting && g.GetToCall() == 0; steps++ {
+			require.Less(t, steps, 200)
+			if err := g.PlayerAction(domain.CincinnatiActionCheck, 0); err != nil {
+				break
+			}
+		}
+		if g.GetPhase() != domain.CincinnatiPhaseBetting || g.GetToCall() == 0 {
+			continue
+		}
+		out := cp.Output(g, nil)
+		seen[g.CanRaise()] = true
+		if g.CanRaise() {
+			assert.Contains(t, out, "raise で上乗せできます")
+			assert.NotContains(t, out, "レイズの上限に達しています")
+		} else {
+			assert.Contains(t, out, "レイズの上限に達しています")
+			assert.NotContains(t, out, "raise で上乗せできます")
+		}
+	}
+	require.True(t, seen[true], "レイズできる局面に一度も到達していない")
+}
+
+// **チェックできる局面ではレイズの案内を出さない。** 直面していないので無関係。
+func TestCincinnatiCuiPresenter_SaysNothingAboutRaiseWhenCheckIsOpen(t *testing.T) {
+	cp := new(CincinnatiCuiPresenter)
+	g := newCincinnatiForPresenter(t)
+	if g.GetToCall() != 0 {
+		t.Skip("この配りは開幕からコールに直面している")
+	}
+	out := cp.Output(g, nil)
+	assert.Contains(t, out, "チェックできます")
+	assert.NotContains(t, out, "raise で上乗せできます")
+	assert.NotContains(t, out, "レイズの上限に達しています")
+}
+
 // cincinnatiSettled はショーダウンまで進めた卓を返す。
 func cincinnatiSettled(t *testing.T) *domain.Cincinnati {
 	t.Helper()
