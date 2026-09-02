@@ -211,6 +211,18 @@ describe('KingoPage', () => {
     expect(screen.getByLabelText('張り')).toHaveAttribute('min', '25');
   });
 
+  // **一度も触らずに押した人が肝心。** 下限を入力欄に渡しても、初期値が 10 のままだと
+  // そのまま送信され、サーバ (Kingo.go の `amount < MinBet`) に弾かれる。
+  it('入力欄に触れずに賭けても卓の最低ベットを送る', async () => {
+    mockApi.mockResolvedValue(withState({ config: { seats: 4, initialChips: 1000, minBet: 25, rounds: 10 } }));
+    renderWithProviders(<KingoPage />);
+
+    await waitFor(() => expect(screen.getByTestId('kingo-bet-guide')).toHaveTextContent('25'));
+    expect(screen.getByLabelText('張り')).toHaveValue('25');
+    fireEvent.click(screen.getByRole('button', { name: '張る' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', { amount: 25 }));
+  });
+
   it('親のときは配るを送る', async () => {
     mockApi.mockResolvedValue(withState({ isHumanBanker: true, bankerSeat: 0 }));
     renderWithProviders(<KingoPage />);
