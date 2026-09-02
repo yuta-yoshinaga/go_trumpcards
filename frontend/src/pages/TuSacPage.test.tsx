@@ -197,6 +197,27 @@ describe('TuSacPage', () => {
   });
 
   // **選ぶのは手札の位置。** 押した番号がそのままワイヤに乗る。
+  // **選択枚数はクライアント側だけの状態。**GameMessageBox の読み上げには乗らない
+  // ので、メルド 3〜5 枚 / 捨て札ちょうど 1 枚という制約を音声で追えなかった。
+  it('選択枚数の変化を読み上げる', async () => {
+    mockApi.mockResolvedValue(withState({ phase: TuSacPhase.DISCARD }));
+    renderWithProviders(<TuSacPage />);
+    await waitFor(() => expect(screen.getByTestId('tusac-card-0')).toBeInTheDocument());
+
+    // **領域は選択前から在る。** 選択と同時に現れる領域は読み上げられない。
+    const live = screen.getByRole('status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByTestId('tusac-card-1'));
+    expect(live).toHaveTextContent('1');
+    fireEvent.click(screen.getByTestId('tusac-card-3'));
+    expect(live).toHaveTextContent('2');
+    // 解除でも更新される。
+    fireEvent.click(screen.getByTestId('tusac-card-3'));
+    expect(live).toHaveTextContent('1');
+  });
+
   it('選んだ位置をそのまま送る', async () => {
     mockApi.mockResolvedValue(withState({ phase: TuSacPhase.DISCARD }));
     renderWithProviders(<TuSacPage />);
