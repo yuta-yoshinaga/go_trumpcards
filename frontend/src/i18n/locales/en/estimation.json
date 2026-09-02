@@ -31,7 +31,10 @@
     "nextRound": "Next round",
     "reset": "Reset",
     "giveUp": "Give up",
-    "playAria": "Play {{card}}"
+    "playAria": "Play {{card}}",
+    "bidAria": "call {{n}} tricks",
+    "bidDashAria": "Dash Call (zero tricks)",
+    "bidBarredAria": "cannot call {{n}} tricks: the calls would total exactly {{total}}"
   },
   "result": {
     "win": "You win with {{score}}!",

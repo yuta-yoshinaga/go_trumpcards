@@ -321,6 +321,15 @@ function EstimationPageContent() {
                       onClick={() => handleBid(bid)}
                       disabled={loading || barred}
                       aria-disabled={barred}
+                      // **裸の数字は読み上げでは意味を持たない。**何の宣言なのか、
+                      // 押せない値はなぜ押せないのかまで名前に載せる。
+                      aria-label={
+                        barred
+                          ? t('actions.bidBarredAria', { n: bid, total: TRICKS_PER_ROUND })
+                          : bid === 0
+                            ? t('actions.bidDashAria')
+                            : t('actions.bidAria', { n: bid })
+                      }
                       data-testid={`est-bid-${bid.toString()}-btn`}
                     >
                       {bid === 0 ? t('actions.dash') : String(bid)}
