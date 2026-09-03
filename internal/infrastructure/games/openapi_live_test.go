@@ -357,7 +357,20 @@ func (s *liveSpec) deref(n *liveSchema) *liveSchema {
 // 載っていれば記載済み。allOf しか見ないと Gaps の `grid`
 // (`oneOf: [Card, null]`) を未記載と誤って報告する。
 func (s *liveSpec) props(sch *liveSchema) map[string]*liveSchema {
+	return s.propsAt(sch, 0)
+}
+
+// propsAt は合成を**再帰的に**たどる。
+//
+// **枝が自分も合成のことがある。** `FollowTheQueenResponse` は
+// `allOf: [SevenCardStudResponse, ...]` なので、枝の `properties` だけを見ると
+// 何も拾えず、そのゲームの項目が全部「未記載」に見える (実際に 3 ゲームで
+// 40 件近い偽の欠落が出た)。
+func (s *liveSpec) propsAt(sch *liveSchema, depth int) map[string]*liveSchema {
 	out := map[string]*liveSchema{}
+	if sch == nil || depth > liveMaxDepth {
+		return out
+	}
 	for k, v := range sch.Properties {
 		out[k] = v
 	}
@@ -367,7 +380,7 @@ func (s *liveSpec) props(sch *liveSchema) map[string]*liveSchema {
 			if d == nil {
 				continue
 			}
-			for k, v := range d.Properties {
+			for k, v := range s.propsAt(d, depth+1) {
 				if _, ok := out[k]; !ok {
 					out[k] = v
 				}
