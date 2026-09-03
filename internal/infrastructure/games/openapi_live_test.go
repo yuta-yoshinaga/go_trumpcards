@@ -88,14 +88,24 @@ func TestOpenAPIMatchesLiveResponses(t *testing.T) {
 			t.Fatalf("%s の経路が openapi.yaml に無い", g.Name)
 		}
 		sch := path.Post.Responses.OK.Content.JSON.Schema
+		bad := path.Post.Responses.Bad.Content.JSON.Schema
 		ctrl := g.NewWebController()
 		gaps := map[string]bool{}
 		for _, cmd := range liveProbeCommands {
-			body := probe(t, ctrl, g.Name, cmd)
+			body, code := probe(t, ctrl, g.Name, cmd)
 			if body == nil {
 				continue
 			}
 			checked++
+			// **エラーの応答もスキーマを持っている。** 400 の本体はゲームの
+			// 状態一式 (ただしゼロ値) + メッセージなので、`{message}` だけの
+			// スキーマでは足りない。enum は見ない ── 盤面がゼロ値なので
+			// `phase: 0` を違反として報告してしまう (#7055)。
+			if code != http.StatusOK {
+				spec.skipEnum = true
+				spec.walk(bad, body, "", gaps, 0)
+				continue
+			}
 			// **ヒントの応答は盤面が入っていないことがある。** 54 の presenter は
 			// `HintOutput` で空の出力を作ってヒントだけ詰めるので、`phase` や
 			// `chips` がゼロ値のまま返る (#7053)。項目の有無と型は正しいので
@@ -132,11 +142,17 @@ func TestOpenAPIMatchesLiveResponses(t *testing.T) {
 // Dramaha は共有スキーマに無いフェーズ 8 を返していた (#7052)。名前も型も
 // 合っているので、ここを見ないと出ない。
 //
-// **200 の応答でだけ見る。** そのゲームが受け付けないコマンドは 400 を返し、
-// 本体には 0 値の盤面が乗る。状態コードを見ずに突き合わせると、初期化されて
-// いない `phase: 0` や `tableSize: 0` が違反として山ほど出て本物が埋もれる ──
-// サーバは正しく、検査の方が間違っていた。`probe` が 200 だけを通すように
-// なったので、enum も全コマンドの応答で見てよい。
+// **盤面の入らない応答では見ない** (`skipEnum`)。ゼロ値の `phase: 0` や
+// `tableSize: 0` を enum と比べると違反が山ほど出て本物が埋もれる。外すのは 2 つ:
+//
+//   - **400 の応答。** そのゲームが受け付けないコマンドは 400 を返し、本体には
+//     0 値の盤面が乗る。項目の有無と型は 400 のスキーマと突き合わせるが、
+//     enum は見ない (#7055)
+//   - **ヒントの応答。** 54 の presenter は `HintOutput` で空の出力を作って
+//     ヒントだけ詰める (#7053)
+//
+// かつて `probe` が状態コードを見ずに 400 の本体を 200 のスキーマと比べており、
+// 偽の違反が 30 件出た。サーバは正しく、検査の方が間違っていた (#7052)。
 func (s *liveSpec) checkEnum(sch *liveSchema, v any, path string, gaps map[string]bool) {
 	if s.skipEnum {
 		return
@@ -194,28 +210,24 @@ func joinKeys(m map[string]bool) string {
 	return strings.Join(out, "|")
 }
 
-// probe は 1 コマンドを叩いて**200 の応答だけ**を返す。
+// probe は 1 コマンドを叩いて応答と状態コードを返す。
 //
-// **状態コードを見ないと 400 の本体を 200 のスキーマと突き合わせてしまう。**
-// そのゲームが受け付けないコマンド (PaiGow の `n` など) は 400 を返し、本体には
-// 0 値の盤面が乗る。それを 200 のスキーマと比べると `phase: 0` や
-// `tableSize: 0` が enum 違反として山ほど出る ── サーバは正しく、検査の方が
-// 間違っていた。
-func probe(t *testing.T, ctrl games.WebController, name, cmd string) map[string]any {
+// **状態コードを返すこと。** 呼び出し側はこれで 200 と 400 を振り分け、
+// それぞれのスキーマと突き合わせる。見ないまま 400 の本体を 200 のスキーマと
+// 比べると、0 値の盤面が enum 違反として山ほど出る ── サーバは正しく、
+// 検査の方が間違っていた。
+func probe(t *testing.T, ctrl games.WebController, name, cmd string) (map[string]any, int) {
 	t.Helper()
 	payload := fmt.Sprintf(`{"command":%q,"sessionId":"live-%s"}`, cmd, name)
 	req := httptest.NewRequest(http.MethodPost, "/"+name+"/exec", strings.NewReader(payload))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 	ctrl.Exec(rec, req)
-	if rec.Code != http.StatusOK {
-		return nil
-	}
 	var body map[string]any
 	if json.Unmarshal(rec.Body.Bytes(), &body) != nil {
-		return nil
+		return nil, rec.Code
 	}
-	return body
+	return body, rec.Code
 }
 
 // --- openapi.yaml の必要な部分だけを読む型 ---
@@ -234,7 +246,8 @@ type livePath struct {
 		// RequestBody は #7050 の逆向き検査 (宣言だけあって作れない項目) でも歩く。
 		RequestBody liveBody `yaml:"requestBody"`
 		Responses   struct {
-			OK liveBody `yaml:"200"`
+			OK  liveBody `yaml:"200"`
+			Bad liveBody `yaml:"400"`
 		} `yaml:"responses"`
 	} `yaml:"post"`
 }
