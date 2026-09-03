@@ -27,11 +27,18 @@ import { assertFloor } from './lib/floor.mjs';
 
 const PAGES = process.argv[2] ?? fileURLToPath(new URL('../src/pages', import.meta.url));
 
-/** Prompts this guard governs. Other prompt kinds ride along when adjacent. */
-const PROMPT_RE = /data-testid="([a-z0-9]+-(?:bid|discard)-prompt)"/g;
+// **Match on the shape, never on a list of kinds.** Tysiac's talon prompt was
+// left outside its region by the very commit that added the region, and went
+// unnoticed because a draft of this guard only looked at `-bid-`/`-discard-`
+// names. A kind list has to be extended by the same person who forgets; every
+// `*prompt` testid is in scope instead (#7042 review).
+const PROMPT_RE = /data-testid="([a-z0-9]+-[a-z0-9-]*prompt)"/g;
 
-/** The permanent wrapper each page must provide. */
-const REGION_RE = /<div\s+data-testid="([a-z0-9]+-prompt-live)"([^>]*)>/;
+/** Attributes of the element carrying a given `data-testid`. */
+const OWN_TAG_RE = (tid) => new RegExp(`<(?:div|span)\\b([^>]*?\\bdata-testid="${tid}"[^>]*?)>`);
+
+/** The permanent wrapper each page must provide. `span` for prompts that sit in a flex row. */
+const REGION_RE = /<(div|span)\s+data-testid="([a-z0-9]+-prompt-live)"([^>]*)>/;
 
 /**
  * Whether the element opened at `at` is gated by a conditional.
@@ -45,14 +52,24 @@ function isConditionallyMounted(src, at) {
 }
 
 /**
- * Offset just past the element opened at `open`, matching nested `<div>`s.
+ * Offset just past the element opened at `open`, matching nested tags.
+ *
+ * **A self-closing region ends at itself.** Written as
+ * `<div data-testid="x-prompt-live" role="status" aria-live="polite" />` the
+ * open tag contributes no depth, so the general loop below would walk on and
+ * return the close of the *next* sibling -- reporting a prompt that merely
+ * follows the region as being inside it.
  *
  * @param {string} src - Page source.
  * @param {number} open - Offset of the region's opening tag.
+ * @param {string} tag - Element name of the region (`div` or `span`).
  * @returns {number} Offset of the matching close, or -1.
  */
-function closeOf(src, open) {
-  const tags = [...src.slice(open).matchAll(/<\/?div\b[^>]*>/g)];
+function closeOf(src, open, tag) {
+  const tags = [...src.slice(open).matchAll(new RegExp(`<\\/?${tag}\\b[^>]*>`, 'g'))];
+  if (tags.length > 0 && tags[0].index === 0 && tags[0][0].endsWith('/>')) {
+    return open + tags[0][0].length;
+  }
   let depth = 0;
   for (const t of tags) {
     if (t[0].startsWith('</')) {
@@ -75,32 +92,47 @@ for (const name of (await readdir(PAGES)).sort()) {
   pages += 1;
   prompts += found.length;
 
+  // **A prompt can be its own region.** MonteCarlo/FourteenOut render the
+  // prompt unconditionally with `role="status"` on the prompt element itself
+  // and merely swap its text, which is exactly the behaviour this guard wants.
+  // Demanding a second wrapper around it would be cargo cult.
+  const selfLive = new Set();
+  for (const m of found) {
+    const own = OWN_TAG_RE(m[1]).exec(src);
+    if (own === null) continue;
+    if (!/role="status"/.test(own[1]) || !/aria-live=/.test(own[1])) continue;
+    if (isConditionallyMounted(src, own.index)) continue;
+    selfLive.add(m[1]);
+  }
+  const outstanding = found.filter((m) => !selfLive.has(m[1]));
+  if (outstanding.length === 0) continue;
+
   const region = REGION_RE.exec(src);
   if (region === null) {
-    problems.push(`${name}: ${found.map((m) => m[1]).join(', ')} has no *-prompt-live region`);
+    problems.push(`${name}: ${outstanding.map((m) => m[1]).join(', ')} has no *-prompt-live region`);
     continue;
   }
-  const attrs = region[2];
+  const attrs = region[3];
   if (!/role="status"/.test(attrs) || !/aria-live=/.test(attrs)) {
-    problems.push(`${name}: ${region[1]} needs both role="status" and aria-live`);
+    problems.push(`${name}: ${region[2]} needs both role="status" and aria-live`);
     continue;
   }
   if (isConditionallyMounted(src, region.index)) {
     problems.push(
-      `${name}: ${region[1]} is mounted conditionally. A region that appears together with its text is not announced; mount it always and swap the contents.`,
+      `${name}: ${region[2]} is mounted conditionally. A region that appears together with its text is not announced; mount it always and swap the contents.`,
     );
     continue;
   }
-  const end = closeOf(src, region.index);
-  for (const m of found) {
+  const end = closeOf(src, region.index, region[1]);
+  for (const m of outstanding) {
     if (m.index < region.index || m.index > end) {
-      problems.push(`${name}: ${m[1]} is outside ${region[1]}, not inside it`);
+      problems.push(`${name}: ${m[1]} is outside ${region[2]}, not inside it`);
     }
   }
 }
 
-assertFloor('prompt-live-region', pages, 8, 'pages with a bid/discard prompt');
-assertFloor('prompt-live-region', prompts, 12, 'bid/discard prompts scanned');
+assertFloor('prompt-live-region', pages, 24, 'pages with a phase-change prompt');
+assertFloor('prompt-live-region', prompts, 34, 'phase-change prompts scanned');
 
 if (problems.length > 0) {
   console.error('prompt-live-region: NG');

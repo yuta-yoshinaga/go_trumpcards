@@ -540,4 +540,17 @@ describe('TwoTenJackPage round announcement', () => {
     expect(region).toHaveTextContent('[-]');
     expect(region).not.toHaveTextContent('{{');
   });
+
+  // 宣言の催促もフェーズが変わったときに現れるテキスト。**名前が
+  // `-bid-prompt` でないだけ**で領域の外に取り残されていた (#6880 レビュー指摘)。
+  it('announces the tt-declare-prompt from the always-mounted live region', async () => {
+    mockExec.mockResolvedValue(declarePhaseState);
+    renderWithProviders(<TwoTenJackPage />);
+
+    const live = await screen.findByTestId('tt-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
+    expect(live).toContainElement(await screen.findByTestId('tt-declare-prompt'));
+  });
 });

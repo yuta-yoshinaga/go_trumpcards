@@ -388,12 +388,15 @@ function TysiacPageContent() {
                   </div>
                 </div>
               )}
+              {canDiscard && (
+                <div
+                  className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                  data-testid="tysiac-talon-prompt"
+                >
+                  {t('talonPhase')}
+                </div>
+              )}
             </div>
-            {canDiscard && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="tysiac-talon-prompt">
-                {t('talonPhase')}
-              </div>
-            )}
             {marriages.length > 0 && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="tysiac-marriage">
                 {t('marriageAvailable', {

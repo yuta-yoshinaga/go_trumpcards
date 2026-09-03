@@ -276,11 +276,15 @@ function HachiHachiPageContent() {
             </div>
 
             {/* Turn prompt */}
-            {isPlayPhase && (
-              <div className="text-center text-sm text-ds-accent" data-testid="hachihachi-prompt">
-                {isHumanTurn ? t('turnYours') : t('turnCpu')}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="hachihachi-prompt-live" role="status" aria-live="polite">
+              {isPlayPhase && (
+                <div className="text-center text-sm text-ds-accent" data-testid="hachihachi-prompt">
+                  {isHumanTurn ? t('turnYours') : t('turnCpu')}
+                </div>
+              )}
+            </div>
 
             {/* Round-end settlement table */}
             {isRoundEnd && state.lastRoundResult && (

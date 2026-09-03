@@ -337,11 +337,15 @@ function LooPageContent() {
                 {t('decideCpu', { id: state.decidePlayerIdx })}
               </div>
             )}
-            {canDecide && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="loo-decide-prompt">
-                {t('decidePrompt')}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="loo-prompt-live" role="status" aria-live="polite">
+              {canDecide && (
+                <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="loo-decide-prompt">
+                  {t('decidePrompt')}
+                </div>
+              )}
+            </div>
             {canDecide &&
               (() => {
                 const { looPenalty, perTrick, maxWin } = computeLooPotRisk(state.pot, state.potStart);

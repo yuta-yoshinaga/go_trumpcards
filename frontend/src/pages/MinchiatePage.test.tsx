@@ -250,4 +250,17 @@ describe('MinchiatePage', () => {
     expect(screen.queryByTestId('mc-last-trick-bonus')).not.toBeInTheDocument();
     expect(screen.queryByTestId('mc-scarto-bonus')).not.toBeInTheDocument();
   });
+
+  // 催促はフェーズや手番が変わったときに現れるテキスト。領域が無いと、あるいは
+  // 領域が催促と**同時に**生えると、スクリーンリーダには何も届かない (#6880)。
+  it('announces the minchiate-scarto-prompt from the always-mounted live region', async () => {
+    mockExec.mockResolvedValue(scartoState);
+    renderWithProviders(<MinchiatePage />);
+
+    const live = await screen.findByTestId('minchiate-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
+    expect(live).toContainElement(await screen.findByTestId('minchiate-scarto-prompt'));
+  });
 });

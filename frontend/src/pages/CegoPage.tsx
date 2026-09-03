@@ -344,6 +344,14 @@ function CegoPageContent() {
                   {t('contractPhase')}
                 </div>
               )}
+              {canExchange && (
+                <div
+                  className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                  data-testid="cego-exchange-prompt"
+                >
+                  {t('exchangePhase', { count: selectedCardIndices.length })}
+                </div>
+              )}
             </div>
             {canContract && (
               <div
@@ -353,11 +361,6 @@ function CegoPageContent() {
                 <div className="mb-1 text-ds-text-primary font-semibold">{t('contractExplainTitle')}</div>
                 <div className="py-0.5">{t('contractCegoDesc', { count: state.blindCount })}</div>
                 <div className="py-0.5">{t('contractHandspielDesc')}</div>
-              </div>
-            )}
-            {canExchange && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="cego-exchange-prompt">
-                {t('exchangePhase', { count: selectedCardIndices.length })}
               </div>
             )}
             {canExchange && (

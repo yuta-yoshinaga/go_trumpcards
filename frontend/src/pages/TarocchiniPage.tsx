@@ -315,11 +315,15 @@ function TarocchiniPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.tarocchini.footer} px-4 py-2.5`}>
-            {canScarto && (
-              <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="tarocchini-scarto-prompt">
-                {t('scartoPrompt', { count: TAROCCHINI_SURPLUS })}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="tarocchini-prompt-live" role="status" aria-live="polite">
+              {canScarto && (
+                <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="tarocchini-scarto-prompt">
+                  {t('scartoPrompt', { count: TAROCCHINI_SURPLUS })}
+                </div>
+              )}
+            </div>
 
             {humanPlayer && (
               <PlayerHandSection

@@ -372,6 +372,11 @@ function CinchPageContent() {
                   {t('bidPrompt')}
                 </div>
               )}
+              {canNameTrump && (
+                <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="cinch-trump-prompt">
+                  {t('trumpPrompt')}
+                </div>
+              )}
             </div>
             {canBid && bidStrength && (
               <div
@@ -393,11 +398,6 @@ function CinchPageContent() {
                   {t('bidStrength.legend')}
                 </div>
                 <div className="mt-1 italic">{t('bidStrength.note')}</div>
-              </div>
-            )}
-            {canNameTrump && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="cinch-trump-prompt">
-                {t('trumpPrompt')}
               </div>
             )}
             {humanPlayer && (

@@ -437,11 +437,18 @@ function TwoTenJackPageContent() {
                   {tc('button.hint')}
                 </button>
               )}
-              {isHumanDeclarer && (
-                <span data-testid="tt-declare-prompt" className="text-ds-warning text-sm font-medium w-full sm:w-auto">
-                  {t('declarePrompt')}
-                </span>
-              )}
+              {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                  変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+              <span data-testid="tt-prompt-live" role="status" aria-live="polite">
+                {isHumanDeclarer && (
+                  <span
+                    data-testid="tt-declare-prompt"
+                    className="text-ds-warning text-sm font-medium w-full sm:w-auto"
+                  >
+                    {t('declarePrompt')}
+                  </span>
+                )}
+              </span>
               {isDeclarePhase && !isHumanDeclarer && (
                 <span
                   data-testid="tt-cpu-declaring"

@@ -375,4 +375,17 @@ describe('CegoPage', () => {
     // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
     expect(live).toContainElement(await screen.findByTestId('cego-bid-prompt'));
   });
+
+  // 催促はフェーズや手番が変わったときに現れるテキスト。領域が無いと、あるいは
+  // 領域が催促と**同時に**生えると、スクリーンリーダには何も届かない (#6880)。
+  it('announces the cego-exchange-prompt from the always-mounted live region', async () => {
+    mockExec.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<CegoPage />);
+
+    const live = await screen.findByTestId('cego-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
+    expect(live).toContainElement(await screen.findByTestId('cego-exchange-prompt'));
+  });
 });

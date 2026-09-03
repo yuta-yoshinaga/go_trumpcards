@@ -279,4 +279,17 @@ describe('TysiacPage', () => {
     // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
     expect(live).toContainElement(await screen.findByTestId('tysiac-bid-prompt'));
   });
+
+  // タロン交換の催促もフェーズが変わったときに現れるテキスト。**名前が
+  // `-bid-prompt` でないだけ**で領域の外に取り残されていた (#6880 レビュー指摘)。
+  it('announces the tysiac-talon-prompt from the always-mounted live region', async () => {
+    mockExec.mockResolvedValue(talonPhaseState);
+    renderWithProviders(<TysiacPage />);
+
+    const live = await screen.findByTestId('tysiac-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
+    expect(live).toContainElement(await screen.findByTestId('tysiac-talon-prompt'));
+  });
 });

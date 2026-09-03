@@ -269,11 +269,15 @@ function SakuraPageContent() {
         </div>
 
         {/* Turn prompt */}
-        {isPlayPhase && (
-          <div className="text-center text-sm text-ds-accent" data-testid="sakura-prompt">
-            {isHumanTurn ? t('turnYours') : t('turnCpu', { name: turnName })}
-          </div>
-        )}
+        {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+            変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+        <div data-testid="sakura-prompt-live" role="status" aria-live="polite">
+          {isPlayPhase && (
+            <div className="text-center text-sm text-ds-accent" data-testid="sakura-prompt">
+              {isHumanTurn ? t('turnYours') : t('turnCpu', { name: turnName })}
+            </div>
+          )}
+        </div>
 
         {/* Round-end result */}
         {isRoundEnd && state.lastResult && (
