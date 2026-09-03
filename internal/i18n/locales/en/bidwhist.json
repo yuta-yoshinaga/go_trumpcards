@@ -15,7 +15,7 @@
   "highestBid": "Highest bid: {{bid}}",
   "contractUndecided": "Contract: undecided",
   "noTrumpLabel": "none",
-  "teamScoreLine": "Team 0: {{t0}}  Team 1: {{t1}}",
+  "teamScoreLine": "Team 0: {{t0}}  Team 1: {{t1}}  (first to {{target}} wins)",
   "playerLine": "{{name}} (Team {{team}}) tricks:{{tricks}} cards:{{cards}}{{status}}",
   "declarerMark": "*Declarer",
   "passMark": "(pass)",

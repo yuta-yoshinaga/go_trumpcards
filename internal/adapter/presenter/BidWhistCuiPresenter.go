@@ -102,9 +102,12 @@ func (p *BidWhistCuiPresenter) Output(g interfaces.BidWhistGame, lastErr error) 
 			b.WriteString(i18n.T("bidwhist.contractUndecided") + "\n")
 		}
 
+		// 目標点は Web の Config にだけ出ていた。何点先取か判らないと点差の
+		// 意味が読めないので CUI の点数行にも出す (#7059)。
 		b.WriteString(i18n.Tf("bidwhist.teamScoreLine",
 			"t0", strconv.Itoa(g.GetTeamScore(0)),
-			"t1", strconv.Itoa(g.GetTeamScore(1))) + "\n")
+			"t1", strconv.Itoa(g.GetTeamScore(1)),
+			"target", strconv.Itoa(g.GetConfig().TargetScore)) + "\n")
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			// 印はキティ交換フェーズの落札者にだけ付く (GetKittyIndices が

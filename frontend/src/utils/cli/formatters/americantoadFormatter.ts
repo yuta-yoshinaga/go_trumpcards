@@ -1,4 +1,5 @@
 import type { AmericanToadResponse } from '../../../types/card';
+import { AMERICANTOAD_MAX_PASSES } from '../../../types/games/americantoad';
 import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Format an American Toad game state as terminal text. */
@@ -17,7 +18,9 @@ export function formatAmericanToadState(state: AmericanToadResponse): string {
   lines.push(`reserve: ${reserveTop} (${state.reserve.length})`);
 
   const wasteTop = state.waste.length > 0 ? formatCard(state.waste[state.waste.length - 1]) : '[  ]';
-  lines.push(`stock: ${state.stockCount}  waste: ${wasteTop}`);
+  lines.push(
+    `stock: ${state.stockCount.toString()}  waste: ${wasteTop}  pass: ${(state.passesUsed + 1).toString()}/${AMERICANTOAD_MAX_PASSES.toString()}`,
+  );
   lines.push('----------');
 
   for (let col = 0; col < state.tableau.length; col++) {

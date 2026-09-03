@@ -29,6 +29,7 @@ import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { AmericanToadMoveZone, AmericanToadResponse } from '../types/card';
+import { AMERICANTOAD_MAX_PASSES } from '../types/games/americantoad';
 import { AmericanToadPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { americanToadLegalTargets, americanToadSourceCard } from '../utils/americanToadLegalTargets';
@@ -42,7 +43,6 @@ const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'
 const TABLEAU_COLS = 8;
 const TOTAL_CARDS = 104;
 /** 山札を通せる最大回数。domain の `AmericanToadMaxPasses`。 */
-const MAX_PASSES = 2;
 
 const AT_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="at-reserve"]', messageKey: 'tutorial.reserve', placement: 'bottom', advanceOn: 'next' },
@@ -317,7 +317,7 @@ function AmericanToadPageContent() {
             {t('moveCount')}: {state.moveCount}
           </span>
           <span className="text-sm text-ds-text-muted">
-            {t('passCount', { current: state.passesUsed + 1, max: MAX_PASSES })}
+            {t('passCount', { current: state.passesUsed + 1, max: AMERICANTOAD_MAX_PASSES })}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>

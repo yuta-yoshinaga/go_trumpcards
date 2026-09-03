@@ -34,7 +34,7 @@ export interface AmericanToadResponse extends BaseGameResponse {
   waste: Card[];
   /** The rank all eight foundations start from, fixed by the deal. */
   baseRank: number;
-  /** How many times the stock has been turned over. Two passes are allowed. */
+  /** How many times the stock has been turned over. {@link AMERICANTOAD_MAX_PASSES} are allowed. */
   passesUsed: number;
   /** Whether the waste can still be recycled into the stock. */
   canRedeal: boolean;
@@ -53,3 +53,6 @@ export interface AmericanToadMoveZone {
   /** Head of the run to carry; omit to move only the top card. */
   cardIndex?: number;
 }
+
+/** Passes through the stock the deal allows; the last one cannot be recycled. */
+export const AMERICANTOAD_MAX_PASSES = 2;
