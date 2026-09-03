@@ -54,7 +54,17 @@ func TestManualSampleRowsExist(t *testing.T) {
 	locales := readAllJaLocales(t, root)
 	rendered := renderEveryGame()
 
+	exemptions := map[string]string{
+		"courchevel": "#7067 盤面が別ゲーム名を名乗るのは実物側の欠陥で、見本を合わせると誤りを固定化するため",
+	}
+	if len(exemptions) != 1 {
+		t.Fatalf("免除を増やすな。増やすならまず issue を立てて実物を直せ")
+	}
+
 	labels := 0
+	titles := 0
+	titleRe := regexp.MustCompile(`(?m)^==========\r?\n([^\r\n]+)`)
+
 	for _, entry := range gameRegistry {
 		md := filepath.Join(root, "docs/manual/cui", entry.Name+".md")
 		raw, err := os.ReadFile(md)
@@ -66,6 +76,21 @@ func TestManualSampleRowsExist(t *testing.T) {
 			continue
 		}
 		board := rendered[entry.Name]
+
+		// タイトル行の検査
+		sampleTitleMatch := titleRe.FindSubmatch(block[1])
+		actualTitleMatch := titleRe.FindSubmatch([]byte(board))
+		if sampleTitleMatch != nil && actualTitleMatch != nil {
+			titles++
+			sampleTitle := strings.TrimSpace(string(sampleTitleMatch[1]))
+			actualTitle := strings.TrimSpace(string(actualTitleMatch[1]))
+			if sampleTitle != actualTitle {
+				if _, exempted := exemptions[entry.Name]; !exempted {
+					t.Errorf("%s.md: タイトル行が一致しない。\n見本: %q\n実物: %q", entry.Name, sampleTitle, actualTitle)
+				}
+			}
+		}
+
 		for _, m := range manualRowLabelRe.FindAllSubmatch(block[1], -1) {
 			label := string(m[1])
 			labels++
@@ -85,6 +110,9 @@ func TestManualSampleRowsExist(t *testing.T) {
 	// ここで落ちる。
 	if labels < 500 {
 		t.Fatalf("行ラベルを %d 件しか見ていない -- 走査が壊れている", labels)
+	}
+	if titles < 150 {
+		t.Fatalf("タイトルを %d 件しか比較していない -- 走査が壊れている", titles)
 	}
 }
 
