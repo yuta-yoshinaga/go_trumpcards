@@ -12256,6 +12256,112 @@ paths:
             application/json:
               schema:
                 type: object
+                properties:
+                  playerFront:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                    description: "Player's front row once the hands are set."
+                  playerMiddle:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                    description: "Player's middle row once the hands are set."
+                  playerBack:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                    description: "Player's back row once the hands are set."
+                  dealerFront:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                    description: "Dealer's front row once the hands are set."
+                  dealerMiddle:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                    description: "Dealer's middle row once the hands are set."
+                  dealerBack:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                    description: "Dealer's back row once the hands are set."
+                  playerFrontRank:
+                    type: integer
+                    description: "Hand rank of the player's front row; the higher rank takes that row."
+                  playerMiddleRank:
+                    type: integer
+                    description: "Hand rank of the player's middle row; the higher rank takes that row."
+                  playerBackRank:
+                    type: integer
+                    description: "Hand rank of the player's back row; the higher rank takes that row."
+                  dealerFrontRank:
+                    type: integer
+                    description: "Hand rank of the dealer's front row; the higher rank takes that row."
+                  dealerMiddleRank:
+                    type: integer
+                    description: "Hand rank of the dealer's middle row; the higher rank takes that row."
+                  dealerBackRank:
+                    type: integer
+                    description: "Hand rank of the dealer's back row; the higher rank takes that row."
+                  playerRoyalty:
+                    type: integer
+                    description: "Total royalty bonus the player earned this hand."
+                  playerFrontRoyalty:
+                    type: integer
+                    description: "Royalty bonus from the player's front row."
+                  playerMiddleRoyalty:
+                    type: integer
+                    description: "Royalty bonus from the player's middle row."
+                  playerBackRoyalty:
+                    type: integer
+                    description: "Royalty bonus from the player's back row."
+                  dealerRoyalty:
+                    type: integer
+                    description: "Total royalty bonus the dealer earned this hand."
+                  dealerFrontRoyalty:
+                    type: integer
+                    description: "Royalty bonus from the dealer's front row."
+                  dealerMiddleRoyalty:
+                    type: integer
+                    description: "Royalty bonus from the dealer's middle row."
+                  dealerBackRoyalty:
+                    type: integer
+                    description: "Royalty bonus from the dealer's back row."
+                  frontResult:
+                    type: integer
+                    description: "Outcome of the front row. 1 = player took it, -1 = dealer took it, 0 = tie."
+                  middleResult:
+                    type: integer
+                    description: "Outcome of the middle row. 1 = player took it, -1 = dealer took it, 0 = tie."
+                  backResult:
+                    type: integer
+                    description: "Outcome of the back row. 1 = player took it, -1 = dealer took it, 0 = tie."
+                  foul:
+                    type: boolean
+                    description: "Whether the arrangement is a foul, meaning the rows are not in non-decreasing strength."
+                  scoop:
+                    type: boolean
+                    description: "Whether one side took all three rows."
+                  suggestedArrangement:
+                    type: object
+                    description: "The split the server recommends, given as indices into playerCards. Sent only while a full thirteen-card hand is being set; omitted rather than sent empty, so an absent row is not read as an empty row."
+                    properties:
+                      front:
+                        type: array
+                        items:
+                          type: integer
+                      middle:
+                        type: array
+                        items:
+                          type: integer
+                      back:
+                        type: array
+                        items:
+                          type: integer
+                      foul:
+                        type: boolean
         '400':
           description: Bad request
           content:
