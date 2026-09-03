@@ -58,5 +58,6 @@
     "playerHand": "Your hand. You must follow the led suit, and only the legal cards are highlighted. Your partner is CPU 2 opposite; your neighbours are always opponents.",
     "playButton": "Select a card and press Play. The question is never \"can I take it\" but **can I take this one and the next**.",
     "resetButton": "The reset button starts a new game."
-  }
+  },
+  "trumpWaiting": "{{name}} is choosing the trump suit..."
 }

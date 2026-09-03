@@ -171,4 +171,44 @@ describe('DehlaPakadPage', () => {
     renderWithProviders(<DehlaPakadPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  // **相手が選んでいる間の空白 (#6626)。** 切り札を決めるのは親の右隣で、
+  // そこが CPU 席だと canPlay/canCallTrump/isHandEnd のどれも立たず、
+  // フッターがまるごと空白になっていた。
+  describe('trump selection by a CPU', () => {
+    it('says who is choosing while a CPU picks the trump', async () => {
+      mockExec.mockResolvedValue(makeDehlaPakadState({ isHumanTurn: false, currentPlayerIdx: 2 }));
+      renderWithProviders(<DehlaPakadPage />);
+      const waiting = await screen.findByTestId('dehlapakad-trump-waiting');
+      // 席まで名指しする。「選んでいます」だけだと誰の番か分からない。
+      expect(waiting.textContent).toContain('CPU 2');
+      expect(waiting.textContent).not.toContain('{{');
+      // 選ぶ側のボタンは出さない。
+      expect(screen.queryByTestId('dehlapakad-trump-choices')).not.toBeInTheDocument();
+    });
+
+    it('moves the name with the seat', async () => {
+      mockExec.mockResolvedValue(makeDehlaPakadState({ isHumanTurn: false, currentPlayerIdx: 3 }));
+      renderWithProviders(<DehlaPakadPage />);
+      const waiting = await screen.findByTestId('dehlapakad-trump-waiting');
+      expect(waiting.textContent).toContain('CPU 3');
+      expect(waiting.textContent).not.toContain('CPU 2');
+    });
+
+    // **人間が選ぶ番の表示は変えない** (受け入れ条件)。
+    it('keeps the human choices untouched and shows no waiting text', async () => {
+      mockExec.mockResolvedValue(trumpState);
+      renderWithProviders(<DehlaPakadPage />);
+      expect(await screen.findByTestId('dehlapakad-trump-choices')).toBeInTheDocument();
+      expect(screen.queryByTestId('dehlapakad-trump-waiting')).not.toBeInTheDocument();
+    });
+
+    // プレイフェーズでは待機テキストを出さない (フェーズガードの負のコントロール)。
+    it('shows no waiting text outside the trump phase', async () => {
+      mockExec.mockResolvedValue(makeDehlaPakadState({ ...playState, isHumanTurn: false, currentPlayerIdx: 2 }));
+      renderWithProviders(<DehlaPakadPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(screen.queryByTestId('dehlapakad-trump-waiting')).not.toBeInTheDocument();
+    });
+  });
 });
