@@ -58,6 +58,9 @@ type UnsunKarutaWebOutput struct {
 	TrumpCard *WebOutputCard `json:"trumpCard,omitempty"`
 	// MustFollow はこのトリックにフォロー義務があるか。
 	MustFollow bool `json:"mustFollow"`
+	// DeclarationKind は宣言の種別 (0=無し 1=メリ 2=モンチ)。この区別が
+	// このゲームの通称「八人メリ」の由来で、これまで画面に一度も出ていなかった。
+	DeclarationKind int `json:"declarationKind"`
 	// Declared はこのトリックで宣言が行われたか。
 	Declared bool `json:"declared"`
 	// CanDeclare は人間がいま宣言できるか (リードの手番か)。

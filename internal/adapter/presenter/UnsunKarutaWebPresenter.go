@@ -81,6 +81,7 @@ func (p *UnsunKarutaWebPresenter) buildBase(g interfaces.UnsunKarutaGame) *contr
 		resObj.TrumpCard = cardToOutputWithFace(card, unsunKarutaFace)
 	}
 	resObj.MustFollow = g.IsMustFollow()
+	resObj.DeclarationKind = g.GetDeclarationKind()
 	resObj.Declared = g.IsDeclaredThisTrick()
 	resObj.CanDeclare = g.CanDeclare()
 	resObj.TeamTricks = intsOrEmptySlice(g.GetTeamTricks())
