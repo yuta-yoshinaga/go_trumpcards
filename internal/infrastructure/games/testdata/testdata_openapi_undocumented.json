@@ -209,28 +209,6 @@
   "GoFish": [
     "knownRanks"
   ],
-  "GoStop": [
-    "animalCount",
-    "bakMult",
-    "basePoints",
-    "brightCount",
-    "goBak",
-    "goCount",
-    "goMult",
-    "goScore",
-    "godori",
-    "gwang",
-    "gwangBak",
-    "lastRoundResult",
-    "pendingBreakdown",
-    "pendingPoints",
-    "pi",
-    "piBak",
-    "piCount",
-    "ribbonCount",
-    "tti",
-    "yeol"
-  ],
   "GongZhu": [
     "aceExposed",
     "allHearts",
@@ -255,7 +233,6 @@
   ],
   "HachiHachi": [
     "bonus",
-    "lastRoundResult",
     "rawScore",
     "yaku"
   ],
@@ -298,12 +275,9 @@
     "talon"
   ],
   "KoiKoi": [
-    "basePoints",
     "calledKoiKoi",
     "koikoi",
     "koikoiCount",
-    "lastRoundResult",
-    "pendingPoints",
     "pendingYaku",
     "yaku",
     "yakuPoints"

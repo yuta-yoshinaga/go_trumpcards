@@ -31072,6 +31072,66 @@ paths:
                 properties:
                   message:
                     type: string
+                  gwang:
+                    type: integer
+                    description: "Points from bright (gwang) cards in the score breakdown."
+                  godori:
+                    type: integer
+                    description: "Points from the godori set of three animal cards."
+                  tti:
+                    type: integer
+                    description: "Points from ribbon (tti) cards."
+                  yeol:
+                    type: integer
+                    description: "Points from animal (yeol) cards."
+                  pi:
+                    type: integer
+                    description: "Points from junk (pi) cards."
+                  brightCount:
+                    type: integer
+                    description: "Number of bright cards captured."
+                  ribbonCount:
+                    type: integer
+                    description: "Number of ribbon cards captured."
+                  animalCount:
+                    type: integer
+                    description: "Number of animal cards captured."
+                  piCount:
+                    type: integer
+                    description: "Number of junk cards captured, counting doubles twice."
+                  goCount:
+                    type: integer
+                    description: "How many times go has been declared this round."
+                  goMult:
+                    type: integer
+                    description: "Multiplier earned from declaring go."
+                  goScore:
+                    type: integer
+                    description: "Points added by the go declarations."
+                  basePoints:
+                    type: integer
+                    description: "Points before go multipliers and bak penalties."
+                  bakMult:
+                    type: integer
+                    description: "Multiplier applied by the bak penalties."
+                  gwangBak:
+                    type: boolean
+                    description: "Whether the loser is caught by gwang-bak, doubling the loss."
+                  piBak:
+                    type: boolean
+                    description: "Whether the loser is caught by pi-bak, doubling the loss."
+                  goBak:
+                    type: boolean
+                    description: "Whether the loser is caught by go-bak, doubling the loss."
+                  pendingBreakdown:
+                    type: object
+                    description: "Score breakdown for the hand in progress, shown before the round is settled."
+                  pendingPoints:
+                    type: integer
+                    description: "Points the current hand would score if the round settled now."
+                  lastRoundResult:
+                    type: object
+                    description: "Result of the round that just finished, including winner, breakdown and total."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
