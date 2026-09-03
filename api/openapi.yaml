@@ -21495,6 +21495,33 @@ paths:
                 properties:
                   message:
                     type: string
+                  role:
+                    type: string
+                    description: "Seat role for this side: banker, right or left."
+                  seatIdx:
+                    type: integer
+                    description: "Index of the seat this side belongs to."
+                  coupNumber:
+                    type: integer
+                    description: "Which coup of the shoe is being played."
+                  shoeRemaining:
+                    type: integer
+                    description: "Cards left in the shoe."
+                  bankHeld:
+                    type: integer
+                    description: "How many coups the current banker has held the bank for."
+                  bankerDelta:
+                    type: integer
+                    description: "Chips the banker won or lost on the settled coup."
+                  bankerNatural:
+                    type: boolean
+                    description: "Whether the banker held a natural, ending the coup at once."
+                  retired:
+                    type: boolean
+                    description: "Whether the banker has retired and the bank passes on."
+                  hintDraw:
+                    type: boolean
+                    description: "Whether the hint recommends drawing a third card."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
@@ -22196,6 +22223,39 @@ paths:
                 properties:
                   message:
                     type: string
+                  isContractPhase:
+                    type: boolean
+                    description: "Whether the deal is waiting for a contract to be chosen."
+                  currentContractName:
+                    type: string
+                    description: "Identifier for the contract in play. Used as an i18n key."
+                  availableContractNames:
+                    type: array
+                    items:
+                      type: string
+                    description: "Identifiers for the contracts still on offer."
+                  hintContract:
+                    type: integer
+                    description: "Contract the hint recommends choosing."
+                  isShedding:
+                    type: boolean
+                    description: "Whether the contract in play is one of the shedding games."
+                  stack:
+                    type: array
+                    items:
+                      type: object
+                    description: "Cards on the shedding stack."
+                  outRank:
+                    type: integer
+                    description: "Rank a seat went out on in the finished deal."
+                  lastDeal:
+                    type: object
+                    description: "The deal that just finished, with its per-seat points."
+                  dealHistory:
+                    type: array
+                    items:
+                      type: object
+                    description: "Every deal played so far, oldest first."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
@@ -32695,6 +32755,9 @@ paths:
                 amount:
                   type: integer
                   description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                kingSuit:
+                  type: integer
+                  description: "Suit of the king to call. Required during the king-calling phase."
                 sessionId:
                   type: string
                   description: Client-supplied session identifier.
@@ -32716,6 +32779,26 @@ paths:
                 properties:
                   message:
                     type: string
+                  quadrilleIdx:
+                    type: integer
+                    description: "Seat that declared quadrille, or -1 when nobody has."
+                  isQuadrille:
+                    type: boolean
+                    description: "Whether this seat is the one that declared quadrille."
+                  isHumanKingCallTurn:
+                    type: boolean
+                    description: "Whether the human is the one to call a king."
+                  calledKingSuit:
+                    type: integer
+                    description: "Suit of the king that was called, or -1 before the call."
+                  callableKingSuits:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Suits whose king may still be called this deal."
+                  roiSeul:
+                    type: boolean
+                    description: "Whether the bidder plays roi seul, calling their own king and going alone."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:

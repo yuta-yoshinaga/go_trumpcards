@@ -10,17 +10,6 @@
     "rollIndex",
     "streetBet"
   ],
-  "BaccaratBanque": [
-    "bankHeld",
-    "bankerDelta",
-    "bankerNatural",
-    "coupNumber",
-    "hintDraw",
-    "retired",
-    "role",
-    "seatIdx",
-    "shoeRemaining"
-  ],
   "Badugi": [
     "bestCards",
     "foldRate",
@@ -28,7 +17,6 @@
     "totalDraws"
   ],
   "Barbu": [
-    "dealHistory",
     "dominoRank"
   ],
   "Bauernschnapsen": [
@@ -315,26 +303,6 @@
   "Pontoon": [
     "stuck",
     "twisted"
-  ],
-  "Quadrille": [
-    "callableKingSuits",
-    "calledKingSuit",
-    "isHumanKingCallTurn",
-    "isQuadrille",
-    "kingSuit",
-    "quadrilleIdx",
-    "roiSeul"
-  ],
-  "Quodlibet": [
-    "availableContractNames",
-    "currentContractName",
-    "dealHistory",
-    "hintContract",
-    "isContractPhase",
-    "isShedding",
-    "lastDeal",
-    "outRank",
-    "stack"
   ],
   "RankAndFile": [
     "sequenceStarts"
