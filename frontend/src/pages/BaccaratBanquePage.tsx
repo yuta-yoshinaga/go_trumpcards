@@ -131,7 +131,15 @@ function BaccaratBanquePageContent() {
         {t(`role.${p.role}`)}
         {/* **ナチュラルはその席が打ち止めという意味。** 印が無いと、なぜ 3 枚目が
             無いのか盤面から読めない。 */}
-        {p.cards.length === 2 && p.total >= 8 && <span data-testid={`banque-natural-${p.role}`}> ★</span>}
+        {/* **★ だけでは何のことか分からない (#6632)。** CUI は同じ条件を
+            「　★ナチュラル」と語で出しているのに、Web は星 1 文字で、読み上げ名も
+            「★」だけだった。見た目の星は残したまま、語を読み上げに載せる。 */}
+        {p.cards.length === 2 && p.total >= 8 && (
+          <span data-testid={`banque-natural-${p.role}`} title={t('naturalTitle')}>
+            <span aria-hidden="true"> ★</span>
+            <span className="sr-only">{t('naturalTitle')}</span>
+          </span>
+        )}
       </div>
       <div className="flex justify-center gap-1 flex-wrap" data-testid={`banque-hand-${p.role}`}>
         {p.cards.length === 0 ? (
