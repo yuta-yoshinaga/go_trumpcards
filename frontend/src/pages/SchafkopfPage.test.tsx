@@ -212,4 +212,24 @@ describe('SchafkopfPage', () => {
     renderWithProviders(<SchafkopfPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  // **ピックの順番は親の左隣から回る。** サーバは最初から `dealerIdx` を
+  // 送っているのに、モバイル／デスクトップどちらの一覧も読んでいなかった
+  // (#6617)。親の席にだけバッジが立つことを、真と偽の両方で見る。
+  it('marks the dealer in the player list', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, dealerIdx: 3 });
+    renderWithProviders(<SchafkopfPage />);
+    expect(await screen.findByTestId('schafkopf-dealer-3')).toBeInTheDocument();
+    // 親でない席にはバッジが付かない。
+    expect(screen.queryByTestId('schafkopf-dealer-0')).not.toBeInTheDocument();
+    // 読み上げ用の説明もバッジの中にある (見えている「親」は aria-hidden)。
+    expect(screen.getByText('このラウンドの親（宣言もプレイも親の左隣から）')).toBeInTheDocument();
+  });
+
+  it('moves the dealer badge with dealerIdx', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, dealerIdx: 0 });
+    renderWithProviders(<SchafkopfPage />);
+    expect(await screen.findByTestId('schafkopf-dealer-0')).toBeInTheDocument();
+    expect(screen.queryByTestId('schafkopf-dealer-3')).not.toBeInTheDocument();
+  });
 });

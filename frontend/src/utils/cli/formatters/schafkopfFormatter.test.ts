@@ -77,4 +77,18 @@ describe('formatSchafkopfState — the rest of the board', () => {
     // 勝者が未確定 (-1) のうちは名乗らせない。
     expect(formatSchafkopfState(makeSchafkopfState({ gameEndFlag: true, winnerIdx: -1 }))).not.toContain('Game Over!');
   });
+
+  // **親は席によって動く。**印が付いた行が1つだけで、しかも `dealerIdx` の
+  // 席であることを見る。行の存在だけを見ると、全席に付けても通ってしまう。
+  it('marks only the dealer seat', () => {
+    const out = formatSchafkopfState(makeSchafkopfState({ dealerIdx: 3 }));
+    const marked = out.split('\n').filter((l) => l.includes('(dealer)'));
+    expect(marked).toHaveLength(1);
+    expect(marked[0]).toContain('CPU 3');
+
+    const moved = formatSchafkopfState(makeSchafkopfState({ dealerIdx: 0 }));
+    expect(moved.split('\n').filter((l) => l.includes('(dealer)'))).toHaveLength(1);
+    expect(moved).toMatch(/^.*\(dealer\).*$/m);
+    expect(moved.split('\n').find((l) => l.includes('(dealer)'))).not.toContain('CPU 3');
+  });
 });

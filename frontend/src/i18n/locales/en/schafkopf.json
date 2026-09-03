@@ -79,5 +79,7 @@
   "contractLabel": "Contract: {{contract}}",
   "contractRufspiel": "Rufspiel (called ace)",
   "contractWenz": "Wenz (Unters only)",
-  "contractSolo": "Solo ({{suit}})"
+  "contractSolo": "Solo ({{suit}})",
+  "dealerBadge": "D",
+  "dealerAria": "This round's dealer (bidding and play start to the dealer's left)"
 }

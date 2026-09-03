@@ -50,7 +50,10 @@ export function formatSchafkopfState(state: SchafkopfResponse): string {
 
   for (const p of state.players) {
     const name = formatPlayerName(p.id, p.isHuman);
-    lines.push(`${name}: cards=${p.cardCount} tricks=${p.trickCount} chips=${p.chips}`);
+    // ピックもプレイも親の左隣から回るので、誰が親かが要る (#6617)。既存の
+    // ループに印を足すだけにして、席ごとに分岐を増やさない。
+    const dealerMark = p.id === state.dealerIdx ? ' (dealer)' : '';
+    lines.push(`${name}${dealerMark}: cards=${p.cardCount} tricks=${p.trickCount} chips=${p.chips}`);
     if (p.isHuman && p.cards.length > 0) {
       lines.push(`  ${formatIndexedCards(p.cards)}`);
     }
