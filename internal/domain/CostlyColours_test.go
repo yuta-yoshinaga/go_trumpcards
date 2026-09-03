@@ -551,4 +551,20 @@ func TestCostlyColours_MogDiscardPreviewMatchesWhatIsGivenAway(t *testing.T) {
 	// **交換フェーズ以外では出さない。** 関係ない場面で「手放します」と言わない。
 	c.SetPhaseForTest(CostlyColoursPhasePlay)
 	assert.Nil(t, c.GetMogDiscardCard())
+
+	// **手札が空なら何も予告しない。** `costlyWorstCardIdx` が -1 を返す経路。
+	// 添字にそのまま使うと panic するので、公開アクセサとして塞いである。
+	c.SetPhaseForTest(CostlyColoursPhaseMog)
+	c.players[seat].cards = nil
+	assert.Nil(t, c.GetMogDiscardCard())
+
+	// **人間が居ない卓でも落ちない。** 全席 CPU の卓は `findHumanIdx` が -1 を
+	// 返す。ここを通さないと seat=-1 で players を引いて panic する。
+	allCpu := NewCostlyColours(
+		[]*CostlyColoursPlayer{NewCostlyColoursPlayer(false), NewCostlyColoursPlayer(false)},
+		DefaultCostlyColoursConfig(),
+	)
+	allCpu.Reset()
+	allCpu.SetPhaseForTest(CostlyColoursPhaseMog)
+	assert.Nil(t, allCpu.GetMogDiscardCard())
 }
