@@ -46,13 +46,34 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 19. **`docs/games.md`**: Add game entity description
 20. **`docs/architecture.md`**: Update endpoint count and list
 21. **`api/openapi.yaml`**: Add endpoint path, tag definition, and request/response schemas in components.
-    Guarded by three tests in `internal/infrastructure/games`: `TestOpenAPIMatchesRegistry` (one
-    `POST /<game>/exec` per registered game, no orphans), `TestOpenAPIHasNoDanglingSchemaRefs` (every `$ref`
-    resolves), and `TestOpenAPIErrorResponseMatchesTheSuccessSchema` (a path's `400` documents the same schema
-    as its `200` -- every endpoint returns the game's own payload on both branches, an error being a normal
-    response carrying a `message`). The three check different things: that the path exists, that its refs point
-    at something, and that they point at the RIGHT something.
-    **The file is CRLF** -- anything that rewrites it must preserve the line endings or the diff becomes every line.
+    **Give the `200` and the `400` the same `$ref`** -- every endpoint returns the game's own payload on both
+    branches, an error being a normal response carrying a `message`. All 367 paths do this; write the payload
+    as a named schema in `components/schemas`, not inline.
+
+    Guarded by these tests in `internal/infrastructure/games`. They look like overlap but each catches a class
+    the others structurally cannot:
+
+    | Test | What it catches |
+    |---|---|
+    | `TestOpenAPIMatchesRegistry` | the path exists, one per registered game, no orphans |
+    | `TestOpenAPITagsMatchRegistry` | the root `tags:` block matches the registry |
+    | `TestOpenAPISpecParses` | the file is still valid YAML -- **the only thing that catches a broken folded scalar or a duplicate key**, both of which a regex reads as fine |
+    | `TestOpenAPIHasNoDanglingSchemaRefs` | every `$ref` resolves |
+    | `TestOpenAPIErrorResponseMatchesTheSuccessSchema` | the `400` points at the same schema as the `200` |
+    | `TestOpenAPIDocumentsEveryResponseField` | a response field name appears somewhere in the spec (#6984) |
+    | `TestOpenAPISchemaReachesEveryField` | the name is reachable from **that game's own** schema -- the test above passes on a name written under the wrong game (#7046) |
+    | `TestOpenAPIDeclaresNothingTheCodeCannotProduce` | the spec does not declare a field no `json:` tag or presenter map literal can produce (#7050) |
+    | `TestOpenAPIMatchesLiveResponses` | drives all 367 controllers over `httptest` and compares the **real** `200` and `400` bodies -- names, types and enums. Catches what a struct scan cannot see: embedded structs (`WebOutputBase.messageCode`) and shared schemas (`Card.glyph`) (#7048, #7052, #7055) |
+
+    Two traps worth knowing before you edit this file:
+
+    - **It is CRLF** -- the only such file in the repo. Anything that rewrites it must preserve the line
+      endings, keep the trailing newline, and leave zero LF-only lines, or the diff becomes every line.
+      Check `git diff --numstat` **and** that the change in CR count matches it.
+    - **`reset` alone does not exercise every field.** A hint block, a round summary and the action log only
+      appear after play, so `TestOpenAPIMatchesLiveResponses` drives several commands. If it fails, the finding
+      is real even when a re-run goes green: it only inspects fields that actually came back, so it can
+      under-report but never invent a gap.
 22. **`docs/manual/cui/<game>.md`** and **`docs/manual/web/<game>.md`**: Create from the templates below and **include every required section**:
     - CUI (`docs/manual/cui_template.md`): `## ゲーム概要` / `## 起動方法` / `## ルール` / `## ゲームの流れ` (Mermaid flowchart — **mandatory**) / `## コマンド一覧` / `## 画面の見方`, plus the optional `## 遊び方のコツ`
     - Web (`docs/manual/web_template.md`): `## ゲーム概要` / `## 起動方法` / `## ルール` / `## ゲームの流れ` (Mermaid flowchart — **mandatory**) / `## 画面の操作方法` / `## 画面構成`, plus the optional `## 遊び方のコツ`
