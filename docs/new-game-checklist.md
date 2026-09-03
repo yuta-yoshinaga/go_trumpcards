@@ -63,7 +63,7 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
     | `TestOpenAPIDocumentsEveryResponseField` | a response field name appears somewhere in the spec (#6984) |
     | `TestOpenAPISchemaReachesEveryField` | the name is reachable from **that game's own** schema -- the test above passes on a name written under the wrong game (#7046) |
     | `TestOpenAPIDeclaresNothingTheCodeCannotProduce` | the spec does not declare a field no `json:` tag or presenter map literal can produce (#7050) |
-    | `TestOpenAPIPropertyRegexShapes` | the negative control for the regex the row above uses -- it pins which key shapes count as documented (plain, quoted `"null":`, flow-style `k: { ... }`) and which must not (`description:`, `type:`). Loosening the regex to `.*$` fails it |
+    | `TestOpenAPIPropertyRegexShapes` | the negative control for the regex `TestOpenAPIDocumentsEveryResponseField` uses -- it pins which key shapes count as documented (plain, quoted `"null":`, flow-style `k: { ... }`) and which must not (`description:`, `type:`). Loosening the regex to `.*$` fails it |
     | `TestOpenAPIMatchesLiveResponses` | drives all 367 controllers over `httptest` and compares the **real** `200` and `400` bodies -- names, types and enums. Catches what a struct scan cannot see: embedded structs (`WebOutputBase.messageCode`) and shared schemas (`Card.glyph`) (#7048, #7052, #7055) |
 
     Two traps worth knowing before you edit this file:
