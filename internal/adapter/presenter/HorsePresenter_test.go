@@ -131,6 +131,8 @@ func TestHorseWebPresenter_Output(t *testing.T) {
 		HumanSeat        int    `json:"humanSeat"`
 		IsHumanTurn      bool   `json:"isHumanTurn"`
 		Pot              int    `json:"pot"`
+		MinRaise         int    `json:"minRaise"`
+		MaxBetAmount     int    `json:"maxBetAmount"`
 		TablePhase       int    `json:"tablePhase"`
 		GameEndFlag      bool   `json:"gameEndFlag"`
 		WinnerSeat       int    `json:"winnerSeat"`
@@ -157,6 +159,8 @@ func TestHorseWebPresenter_Output(t *testing.T) {
 	assert.Equal(t, 1, out.HandNumber)
 	assert.Equal(t, g.GetHumanSeat(), out.HumanSeat)
 	assert.Equal(t, g.GetPot(), out.Pot)
+	assert.Equal(t, g.GetMinRaise(), out.MinRaise)
+	assert.Equal(t, g.GetMaxBetAmount(), out.MaxBetAmount)
 	assert.False(t, out.GameEndFlag)
 	// **決着していないうちは勝者を書かない。** 0 を出すと席 0 の勝ちに見える。
 	assert.Equal(t, -1, out.WinnerSeat)
@@ -359,6 +363,7 @@ func TestHorseCuiPresenter_OutputShowsMinRaise(t *testing.T) {
 
 			minRaise := 60
 			m.On("GetMinRaise").Return(minRaise)
+			m.On("GetMaxBetAmount").Return(0)
 
 			p := &presenter.HorseCuiPresenter{}
 			out := p.Output(m, nil)
@@ -372,4 +377,134 @@ func TestHorseCuiPresenter_OutputShowsMinRaise(t *testing.T) {
 			m.AssertExpectations(t)
 		})
 	}
+}
+
+// **ポットリミット上限を画面に出す (#6622)。** PLO ラウンドなどでポット超過額が
+// 分からないと、CUI プレイヤーは超過額を打ってサーバに弾かれるまで分からない。
+// 一方で固定リミット (HORSE) では上限を出さず、従来の表示を保つ。
+func TestHorseCuiPresenter_OutputShowsMaxBetAmount(t *testing.T) {
+	for _, lang := range []string{"ja", "en"} {
+		t.Run(lang, func(t *testing.T) {
+			i18n.SetLang(lang)
+			defer i18n.SetLang("ja")
+
+			setupMock := func(maxBet int) *interfaces.MockHorseGame {
+				m := new(interfaces.MockHorseGame)
+				m.On("GetVariant").Return(domain.HorseVariantEightGame)
+				m.On("GetConfig").Return(domain.HorseConfig{Seats: 2, HandsPerDiscipline: 5, InitialChips: 1000, Variant: domain.HorseVariantEightGame})
+				m.On("GetDisciplineLetter").Return("PLO")
+				m.On("GetDiscipline").Return(domain.HorsePLOmaha)
+				m.On("GetHandInDiscipline").Return(1)
+				m.On("GetHandNumber").Return(6)
+				m.On("GetCommunityCards").Return([]*domain.Card(nil))
+				m.On("GetSeatCount").Return(2)
+				m.On("GetSeatName", 0).Return("Player 0")
+				m.On("GetSeatLiveChips", 0).Return(1000)
+				m.On("GetSeatCards", 0).Return([]*domain.Card(nil))
+				m.On("GetSeatName", 1).Return("Player 1")
+				m.On("GetSeatLiveChips", 1).Return(1000)
+				m.On("GetSeatCards", 1).Return([]*domain.Card(nil))
+				m.On("GetCurrentTurn").Return(0)
+				m.On("GetPhase").Return(domain.HorsePhaseHand)
+				m.On("GetGameEndFlag").Return(false)
+				m.On("IsDrawPhase").Return(false)
+				m.On("GetPot").Return(100)
+				m.On("GetToCall").Return(20)
+				m.On("GetMinRaise").Return(20)
+				m.On("GetMaxBetAmount").Return(maxBet)
+				return m
+			}
+
+			p := &presenter.HorseCuiPresenter{}
+
+			// 1. maxBet > 0 のとき (PLOラウンド): 上限が表示される
+			m1 := setupMock(120)
+			out1 := p.Output(m1, nil)
+			assert.Contains(t, out1, "120", "上限額が出力に含まれていない")
+			if lang == "ja" {
+				assert.Contains(t, out1, "上限: 120")
+			} else {
+				assert.Contains(t, out1, "max: 120")
+			}
+			assert.NotContains(t, out1, "{{", "未展開のプレースホルダが残っている")
+			assert.NotContains(t, out1, "}}", "未展開のプレースホルダが残っている")
+			assert.NotContains(t, out1, "horse.", "生キーが出ている")
+			m1.AssertExpectations(t)
+
+			// 2. 負のコントロール: 値を変えると表示も変わる
+			m2 := setupMock(250)
+			out2 := p.Output(m2, nil)
+			assert.Contains(t, out2, "250", "変更後の上限額が出力に含まれていない")
+			if lang == "ja" {
+				assert.Contains(t, out2, "上限: 250")
+			} else {
+				assert.Contains(t, out2, "max: 250")
+			}
+			m2.AssertExpectations(t)
+
+			// 3. 負のコントロール: maxBet == 0 (固定リミット/HORSE) では上限が出ない
+			m3 := setupMock(0)
+			out3 := p.Output(m3, nil)
+			if lang == "ja" {
+				assert.NotContains(t, out3, "上限", "固定リミットで上限が表示されている")
+			} else {
+				assert.NotContains(t, out3, "max:", "固定リミットで上限が表示されている")
+			}
+			m3.AssertExpectations(t)
+		})
+	}
+}
+
+func TestHorseWebPresenter_OutputMaxBetAmount(t *testing.T) {
+	setupMock := func(maxBet int) *interfaces.MockHorseGame {
+		m := new(interfaces.MockHorseGame)
+		m.On("GetConfig").Return(domain.HorseConfig{Seats: 2, HandsPerDiscipline: 5, InitialChips: 1000})
+		m.On("GetSeatCount").Return(2)
+		m.On("GetSeatName", 0).Return("Player 0")
+		m.On("GetSeatLiveChips", 0).Return(1000)
+		m.On("GetSeatCards", 0).Return([]*domain.Card(nil))
+		m.On("GetSeatIsHuman", 0).Return(true)
+		m.On("GetSeatName", 1).Return("Player 1")
+		m.On("GetSeatLiveChips", 1).Return(1000)
+		m.On("GetSeatCards", 1).Return([]*domain.Card(nil))
+		m.On("GetSeatIsHuman", 1).Return(false)
+		m.On("GetPhase").Return(domain.HorsePhaseHand)
+		m.On("GetDiscipline").Return(domain.HorsePLOmaha)
+		m.On("GetDisciplineLetter").Return("PLO")
+		m.On("GetHandInDiscipline").Return(1)
+		m.On("GetHandNumber").Return(6)
+		m.On("GetCurrentTurn").Return(0)
+		m.On("GetHumanSeat").Return(0)
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetCommunityCards").Return([]*domain.Card(nil))
+		m.On("GetPot").Return(100)
+		m.On("GetToCall").Return(20)
+		m.On("GetMinRaise").Return(20)
+		m.On("GetMaxBetAmount").Return(maxBet)
+		m.On("GetTablePhase").Return(0)
+		m.On("GetVariant").Return(domain.HorseVariantEightGame)
+		m.On("GetRotation").Return([]domain.HorseDiscipline{domain.HorsePLOmaha})
+		m.On("IsDrawPhase").Return(false)
+		m.On("GetDrawIndex").Return(0)
+		m.On("GetGameEndFlag").Return(false)
+		return m
+	}
+
+	p := &presenter.HorseWebPresenter{}
+
+	// maxBet == 150
+	m1 := setupMock(150)
+	var out1 struct {
+		MaxBetAmount int `json:"maxBetAmount"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(p.Output(m1, nil)), &out1))
+	assert.Equal(t, 150, out1.MaxBetAmount)
+
+	// 負のコントロール: maxBet == 0
+	m2 := setupMock(0)
+	var out2 struct {
+		MaxBetAmount int `json:"maxBetAmount"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(p.Output(m2, nil)), &out2))
+	assert.Equal(t, 0, out2.MaxBetAmount)
 }

@@ -56,6 +56,8 @@ export interface HorseResponse extends BaseGameResponse {
   toCall: number;
   /** Smallest raise the running discipline accepts. */
   minRaise: number;
+  /** Largest bet/raise the running discipline accepts (0 when uncapped or fixed limit). */
+  maxBetAmount: number;
   /** Phase number reported by the running discipline. */
   tablePhase: number;
   gameEndFlag: boolean;
