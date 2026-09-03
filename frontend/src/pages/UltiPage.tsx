@@ -369,27 +369,35 @@ function UltiPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.ulti.footer} px-4 py-2.5`}>
-            {canBid && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="ulti-bid-prompt">
-                {t('bidPhase')}
-              </div>
-            )}
-            {/* **宣言と同時に手札が 10 → 12 枚に増える。**`applyBid` が伏せられた
-                タロンを自動で加えるのに、その存在がどこにも出ておらず、宣言直後に
-                手札が突然増えて見えた (#6486)。 */}
-            {isBidPhase && !state.talonTaken && state.talonCount > 0 && (
-              <div className="mb-1 text-center text-xs text-ds-text-muted" data-testid="ulti-talon-pending">
-                {t('talonPending', { count: state.talonCount })}
-              </div>
-            )}
-            {canDiscard && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="ulti-discard-prompt">
-                <div>{t('discardPhase')}</div>
-                <div className="text-ds-text-muted" data-testid="ulti-discard-progress">
-                  {t('discardProgress', { selected: selectedCardIndices.length, required: DISCARD_COUNT })}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。
+                宣言中と捨て札中は排他なので領域は 1 つでよい。タロンの案内も同じ群。 */}
+            <div data-testid="ulti-prompt-live" role="status" aria-live="polite">
+              {canBid && (
+                <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="ulti-bid-prompt">
+                  {t('bidPhase')}
                 </div>
-              </div>
-            )}
+              )}
+              {/* **宣言と同時に手札が 10 → 12 枚に増える。**`applyBid` が伏せられた
+                  タロンを自動で加えるのに、その存在がどこにも出ておらず、宣言直後に
+                  手札が突然増えて見えた (#6486)。 */}
+              {isBidPhase && !state.talonTaken && state.talonCount > 0 && (
+                <div className="mb-1 text-center text-xs text-ds-text-muted" data-testid="ulti-talon-pending">
+                  {t('talonPending', { count: state.talonCount })}
+                </div>
+              )}
+              {canDiscard && (
+                <div
+                  className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                  data-testid="ulti-discard-prompt"
+                >
+                  <div>{t('discardPhase')}</div>
+                  <div className="text-ds-text-muted" data-testid="ulti-discard-progress">
+                    {t('discardProgress', { selected: selectedCardIndices.length, required: DISCARD_COUNT })}
+                  </div>
+                </div>
+              )}
+            </div>
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

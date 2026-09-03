@@ -377,14 +377,18 @@ function TysiacPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.tysiac.footer} px-4 py-2.5`}>
-            {isBidPhase && (
-              <div className="mb-1 text-center" data-testid="tysiac-bid-prompt">
-                <div className="text-sm text-ds-accent font-semibold">{t('bidPhase')}</div>
-                <div className="text-sm text-ds-text-primary font-semibold" data-testid="tysiac-current-bid">
-                  {t('currentBid', { points: state.currentBid })}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="tysiac-prompt-live" role="status" aria-live="polite">
+              {isBidPhase && (
+                <div className="mb-1 text-center" data-testid="tysiac-bid-prompt">
+                  <div className="text-sm text-ds-accent font-semibold">{t('bidPhase')}</div>
+                  <div className="text-sm text-ds-text-primary font-semibold" data-testid="tysiac-current-bid">
+                    {t('currentBid', { points: state.currentBid })}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
             {canDiscard && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="tysiac-talon-prompt">
                 {t('talonPhase')}
