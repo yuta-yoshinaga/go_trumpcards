@@ -115,10 +115,15 @@ func (p *ContinentalRummyCuiPresenter) writeHand(b *strings.Builder, g interface
 	b.WriteString(strings.Join(parts, " ") + "\n")
 }
 
-// writeDrawPrompt は引く番を促す。
+// writeDrawPrompt は引く番を促す。配られたまま上がれるならそれも言う。
 func (p *ContinentalRummyCuiPresenter) writeDrawPrompt(b *strings.Builder, g interfaces.ContinentalRummyGame) {
 	if g.GetCurrentPlayerIdx() != domain.ContinentalRummyHumanIdx {
 		return
+	}
+	// **配られたままで上がれるなら見落とさせない。** 引かずに上がると 10 点で、
+	// 通常の 7 点より重い。15 枚の分割は目で追いきれないので、専用の案内を出す。
+	if g.CanGoOutOnTheDeal() {
+		b.WriteString(color.Green(i18n.T("continentalrummy.canGoOutOnDeal")) + "\n")
 	}
 	b.WriteString(i18n.T("continentalrummy.drawPrompt") + "\n")
 }
