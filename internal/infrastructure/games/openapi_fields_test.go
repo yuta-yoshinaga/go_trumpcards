@@ -16,7 +16,18 @@ import (
 // 「載っている」の判定は緩い。緩い側に倒しているのは意図的で、このガードの
 // 役目は**未記載を増やさないこと**であって、記載の質を測ることではない。
 // 厳しくすると既存 389 件の許可リストが膨らみ、誰も削らなくなる。
-var openapiPropertyRe = regexp.MustCompile(`(?m)^\s*([A-Za-z][A-Za-z0-9_]*):\s*$`)
+//
+// **引用符付きのキーも拾う。** YAML で `null:` は真偽値でも何でもない裸の
+// null キーになるので、そういう名前は `"null":` と書くしかない。引用符を
+// 見ない正規表現だと、**書いてあるのに永久に未記載**として許可リストに
+// 居座る (Skat.null が実際にそうだった)。
+//
+// **フロースタイルの `key: { type: integer }` も拾う。** 行末で切る正規表現
+// だと、この書き方の項目が全部「未記載」に見える (Scopone.scopaCount が
+// そうだった)。値のある行を無条件に拾うと `description:` や `type:` まで
+// 記載済み扱いになって本物の欠落を隠すので、**`{` で始まる値のときだけ**
+// 拾う。
+var openapiPropertyRe = regexp.MustCompile(`(?m)^\s*"?([A-Za-z][A-Za-z0-9_]*)"?:(?:\s*$|\s+\{)`)
 
 // jsonTagRe は Go の出力構造体の `json:"name"` からフィールド名を取る。
 var jsonTagRe = regexp.MustCompile("`json:\"([A-Za-z][A-Za-z0-9_]*)[\",]")
@@ -140,5 +151,32 @@ func TestOpenAPIDocumentsEveryResponseField(t *testing.T) {
 		t.Errorf("許可リストの項目が %d 件、もう未記載ではない: %v\n"+
 			"書けたぶんは %s から消すこと (件数は減る方向にしか動かせない)。",
 			len(stale), stale, undocumentedAllowFile)
+	}
+}
+
+// TestOpenAPIPropertyRegexShapes は「載っている」の判定が拾う形と拾わない形を固定する。
+//
+// **緩めた側にこそ負のコントロールが要る。** 値のある行を無条件に拾うように
+// すると `description:` や `type:` まで記載済み扱いになり、本物の欠落を
+// 隠したまま緑になる。フロースタイルを拾うのは値が `{` で始まるときだけ。
+func TestOpenAPIPropertyRegexShapes(t *testing.T) {
+	match := func(line string) string {
+		m := openapiPropertyRe.FindStringSubmatch(line)
+		if m == nil {
+			return ""
+		}
+		return m[1]
+	}
+	for _, c := range []struct{ line, want string }{
+		{"                  scartoCount:", "scartoCount"},             // 素のキー
+		{`                      "null":`, "null"},                     // 引用符付き (裸の null は YAML の null になる)
+		{"              scopaCount: { type: integer }", "scopaCount"}, // フロースタイル
+		{"          description: Number of cards remaining", ""},      // 値のある行は拾わない
+		{"                type: object", ""},                          // 同上
+		{"          example: 0", ""},                                  // 同上
+	} {
+		if got := match(c.line); got != c.want {
+			t.Errorf("%q: got %q, want %q", c.line, got, c.want)
+		}
 	}
 }
