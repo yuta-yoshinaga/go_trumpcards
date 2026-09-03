@@ -40,6 +40,16 @@ func setupBoliviaCuiMockWithPlayers() (*interfaces.MockBoliviaGame, []*domain.Bo
 	m := setupBoliviaCuiMock()
 	players := makeBoliviaPlayers()
 	m.On("GetPlayerCnt").Return(4)
+	// **席ごとのフラグから導く。** テストは `SetHasInitMeld` で席を動かすので、
+	// 固定値を返すとその設定が効かなくなる (ドメインの TeamHasInitMeld と同じ規則)。
+	m.On("TeamHasInitMeld", mock.Anything).Return(func(team int) bool {
+		for _, pl := range players {
+			if pl != nil && pl.GetTeam() == team && pl.GetHasInitMeld() {
+				return true
+			}
+		}
+		return false
+	}).Maybe()
 	for i, p := range players {
 		m.On("GetPlayer", i).Return(p)
 	}
@@ -125,6 +135,14 @@ func TestBoliviaCuiPresenter_Output(t *testing.T) {
 		players[0].AddRed3(domain.NewCard(domain.CardDesignHeart, 3, false))
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "赤3: 1枚")
+	})
+
+	t.Run("red 3 warning line when team not melded", func(t *testing.T) {
+		m, players := setupBoliviaCuiMockWithPlayers()
+		players[0].AddRed3(domain.NewCard(domain.CardDesignHeart, 3, false))
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "赤3: 1枚")
+		assert.Contains(t, result, "※赤3: 初回メルド未達なら罰点")
 	})
 
 	t.Run("error message shown", func(t *testing.T) {
@@ -252,5 +270,71 @@ func TestBoliviaCuiPresenter_ShowsTheInitialMeldRequirement(t *testing.T) {
 		// 負のコントロール: エスカレラの印は付かない。
 		assert.NotContains(t, result, "★エスカレラ")
 	})
+}
 
+// **赤3は初回メルド未達なら罰点化する。**
+// 初回メルド前の席の赤3表示に警告行を出し、メルド済みチームでは出さない (#6634)。
+func TestBoliviaCuiPresenter_Red3PenaltyWarning(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	defer i18n.SetLang("ja")
+	p := new(presenter.BoliviaCuiPresenter)
+
+	t.Run("warns when team has not completed initial meld", func(t *testing.T) {
+		i18n.SetLang("ja")
+		m, players := setupBoliviaCuiMockWithPlayers()
+		players[0].AddRed3(domain.NewCard(domain.CardDesignHeart, 3, false))
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "赤3: 1枚")
+		assert.Contains(t, out, "※赤3: 初回メルド未達なら罰点")
+		assert.NotContains(t, out, "bolivia.red3WarningLine")
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("warns in English when team has not completed initial meld", func(t *testing.T) {
+		i18n.SetLang("en")
+		m, players := setupBoliviaCuiMockWithPlayers()
+		players[0].AddRed3(domain.NewCard(domain.CardDesignHeart, 3, false))
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "red 3s: 1")
+		assert.Contains(t, out, "*red 3s: penalty if no initial meld")
+		assert.NotContains(t, out, "bolivia.red3WarningLine")
+		assert.NotContains(t, out, "{{")
+	})
+
+	// 負のコントロール 1: 自身が初回メルド済みなら警告行は出ない (受け入れ条件2)
+	t.Run("stays silent when player has completed initial meld", func(t *testing.T) {
+		i18n.SetLang("ja")
+		m, players := setupBoliviaCuiMockWithPlayers()
+		players[0].AddRed3(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[0].SetHasInitMeld(true)
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "赤3: 1枚")
+		assert.NotContains(t, out, "※赤3: 初回メルド未達なら罰点")
+		assert.NotContains(t, out, "罰点")
+	})
+
+	// 負のコントロール 2: パートナー (席2, チーム0) が初回メルド済みなら警告行は出ない (受け入れ条件2)
+	t.Run("stays silent when partner has completed initial meld", func(t *testing.T) {
+		i18n.SetLang("ja")
+		m, players := setupBoliviaCuiMockWithPlayers()
+		players[0].AddRed3(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[0].SetHasInitMeld(false)
+		players[2].SetHasInitMeld(true)
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "赤3: 1枚")
+		assert.NotContains(t, out, "※赤3: 初回メルド未達なら罰点")
+		assert.NotContains(t, out, "罰点")
+	})
+
+	// 負のコントロール 3: 赤3を持っていなければ警告行は出ない
+	t.Run("stays silent when player has no red 3s", func(t *testing.T) {
+		i18n.SetLang("ja")
+		m, _ := setupBoliviaCuiMockWithPlayers()
+		out := p.Output(m, nil)
+		assert.NotContains(t, out, "赤3")
+		assert.NotContains(t, out, "※赤3: 初回メルド未達なら罰点")
+		assert.NotContains(t, out, "罰点")
+	})
 }

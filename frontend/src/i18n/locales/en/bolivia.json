@@ -54,6 +54,7 @@
     "gameEnd": "Game End"
   },
   "red3s": "Red 3s",
+  "red3PenaltyWarning": "penalty if no initial meld",
   "result": {
     "humanWin": "Your team wins!",
     "cpuWin": "The CPU team wins!"

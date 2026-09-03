@@ -348,4 +348,88 @@ describe('BoliviaPage', () => {
     expect(await screen.findByTestId('bo-tag-escalera-0')).toBeInTheDocument();
     expect(screen.queryByTestId('bo-tag-bolivia-0')).not.toBeInTheDocument();
   });
+
+  // **赤3は初回メルド未達なら罰点化する (#6634)**
+  it('warns about red 3 penalty when team has not completed initial meld', async () => {
+    const base = makeBoliviaState();
+    mockExec.mockResolvedValue(
+      makeBoliviaState({
+        players: base.players.map((p, i) =>
+          i === 0
+            ? {
+                ...p,
+                hasInitMeld: false,
+                red3s: [{ design: 'HEART' as const, value: 3 }],
+                red3Count: 1,
+              }
+            : p,
+        ),
+      }),
+    );
+    renderWithProviders(<BoliviaPage />);
+    const warning = await screen.findByTestId('bo-red3-warning-0');
+    expect(warning).toHaveTextContent('初回メルド未達なら罰点');
+    expect(warning).toHaveClass('text-ds-warning');
+  });
+
+  // 負のコントロール 1: 自身が初回メルド済みなら警告は出ない (受け入れ条件2)
+  it('does not warn about red 3 penalty once the player has melded', async () => {
+    const base = makeBoliviaState();
+    mockExec.mockResolvedValue(
+      makeBoliviaState({
+        players: base.players.map((p, i) =>
+          i === 0
+            ? {
+                ...p,
+                hasInitMeld: true,
+                red3s: [{ design: 'HEART' as const, value: 3 }],
+                red3Count: 1,
+              }
+            : p,
+        ),
+      }),
+    );
+    renderWithProviders(<BoliviaPage />);
+    await waitFor(() => expect(screen.getByText('赤3')).toBeInTheDocument());
+    expect(screen.queryByTestId('bo-red3-warning-0')).not.toBeInTheDocument();
+    expect(screen.queryByText(/初回メルド未達なら罰点/)).not.toBeInTheDocument();
+  });
+
+  // 負のコントロール 2: パートナー (席2, チーム0) が初回メルド済みなら警告は出ない (受け入れ条件2)
+  it('does not warn about red 3 penalty when teammate has melded', async () => {
+    const base = makeBoliviaState();
+    mockExec.mockResolvedValue(
+      makeBoliviaState({
+        players: base.players.map((p, i) => {
+          if (i === 0) {
+            return {
+              ...p,
+              hasInitMeld: false,
+              red3s: [{ design: 'HEART' as const, value: 3 }],
+              red3Count: 1,
+            };
+          }
+          if (i === 2) {
+            return {
+              ...p,
+              hasInitMeld: true,
+            };
+          }
+          return p;
+        }),
+      }),
+    );
+    renderWithProviders(<BoliviaPage />);
+    await waitFor(() => expect(screen.getByText('赤3')).toBeInTheDocument());
+    expect(screen.queryByTestId('bo-red3-warning-0')).not.toBeInTheDocument();
+  });
+
+  // 負のコントロール 3: 赤3がなければ警告は出ない
+  it('stays silent when player has no red 3s', async () => {
+    const base = makeBoliviaState();
+    mockExec.mockResolvedValue(base);
+    renderWithProviders(<BoliviaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('bo-red3-warning-0')).not.toBeInTheDocument();
+  });
 });

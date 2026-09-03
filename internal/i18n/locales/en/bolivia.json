@@ -19,6 +19,7 @@
   "discardLine": "Discard: {{card}}",
   "playerLine": "{{name}} (team {{team}}): {{cum}} total, {{round}} this round, {{cards}} card(s)",
   "playerRed3s": " red 3s: {{count}}",
+  "red3WarningLine": "  *red 3s: penalty if no initial meld",
   "playerCanastaTag": " *canasta",
   "playerEscaleraTag": " *escalera",
   "playerBoliviaTag": " *bolivia",
