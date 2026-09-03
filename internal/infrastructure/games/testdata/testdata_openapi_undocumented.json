@@ -12,7 +12,6 @@
   ],
   "Badugi": [
     "bestCards",
-    "foldRate",
     "roundLabel",
     "totalDraws"
   ],
@@ -77,7 +76,6 @@
     "ronda"
   ],
   "DeuceToSeven": [
-    "foldRate",
     "roundLabel",
     "totalDraws"
   ],
@@ -93,12 +91,10 @@
     "lastTableIdx"
   ],
   "FiveCardStud": [
-    "addonUsed",
-    "foldRate"
+    "addonUsed"
   ],
   "FollowTheQueen": [
-    "addonUsed",
-    "foldRate"
+    "addonUsed"
   ],
   "FortyAndEight": [
     "redealUsed"
@@ -125,11 +121,7 @@
     "rawScore"
   ],
   "Holdem": [
-    "addonUsed",
-    "foldRate"
-  ],
-  "IndianPoker": [
-    "foldRate"
+    "addonUsed"
   ],
   "Julepe": [
     "beast"
@@ -199,9 +191,6 @@
     "yourBestComboRank",
     "yourBestComboSize"
   ],
-  "Poker": [
-    "foldRate"
-  ],
   "Pontoon": [
     "stuck",
     "twisted"
@@ -246,8 +235,7 @@
   ],
   "SevenCardStud": [
     "addonUsed",
-    "currentLowHand",
-    "foldRate"
+    "currentLowHand"
   ],
   "Sevens": [
     "jokerReclaimed"
