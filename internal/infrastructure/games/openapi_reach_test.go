@@ -18,6 +18,25 @@ const unreachableAllowFile = "testdata_openapi_unreachable.json"
 // gameExecPathRe は `/<game>/exec` のパスからゲーム名を取る。
 var gameExecPathRe = regexp.MustCompile(`^/([a-z0-9]+)/exec$`)
 
+// routeOverride はコントローラ名を小文字にしても経路にならないゲーム。
+//
+// **登録名は構造体名の小文字とは限らない。** この 4 本は経路を持っているのに
+// `strings.ToLower` では引けず、黙って検査の外に出ていた (レビュー指摘)。
+var routeOverride = map[string]string{
+	"SetteEMezzo":           "settemezzo",
+	"DoubleAttackBlackjack": "doubleattack",
+	"FreeBetBlackjack":      "freebet",
+	"PigsTail":              "pigtail",
+}
+
+// routeOf はコントローラ名から `/<route>/exec` の route を返す。
+func routeOf(game string) string {
+	if r, ok := routeOverride[game]; ok {
+		return r
+	}
+	return strings.ToLower(game)
+}
+
 // TestOpenAPISchemaReachesEveryField は各ゲームの項目が**そのゲームの**
 // スキーマから辿れることを守る。
 //
@@ -81,9 +100,13 @@ func TestOpenAPISchemaReachesEveryField(t *testing.T) {
 			t.Fatalf("%s が読めない: %v", path, readErr)
 		}
 		game := strings.TrimSuffix(filepath.Base(path), "WebController.go")
-		got, ok := reachable[strings.ToLower(game)]
+		got, ok := reachable[routeOf(game)]
+		// **経路が引けないなら落とす。** 黙って飛ばすと、そのゲームは
+		// この ratchet の外に出たまま二度と検査されない。実測で 352 本すべてに
+		// 経路があるので、引けないのは対応表の漏れであって「CUI 専用」ではない
+		// (レビュー指摘: 4 本が黙って飛ばされていた)。
 		if !ok {
-			continue // パスの無いゲーム (CUI のみ等)
+			t.Fatalf("%s の経路 (%q) が openapi.yaml に無い。routeOverride に足すこと", game, routeOf(game))
 		}
 		seen := map[string]bool{}
 		var missing []string
