@@ -53,13 +53,14 @@ describe('formatMadrassoState', () => {
   it('shows the dealt trump suit, and a dash while it is undecided', () => {
     expect(formatMadrassoState(makeMadrassoState({ trumpSuit: 3 }))).toContain('trump: ♥');
     expect(formatMadrassoState(makeMadrassoState({ trumpSuit: 1 }))).toContain('trump: ♠');
-    // 未確定 (0) をハートと言い張らないこと。
-    const undecided = formatMadrassoState(makeMadrassoState({ trumpSuit: 0 }));
+    // **未確定の実値は -1** (`GetTrumpSuit` の doc、`madrassoLastDealtSuit` の
+    // 唯一の失敗経路)。0 は表に載っているので `?? '-'` の右辺を踏まない ──
+    // サーバが実際に送りうる値で測る。
+    const undecided = formatMadrassoState(makeMadrassoState({ trumpSuit: -1 }));
     expect(undecided).toContain('trump: -');
     expect(undecided).not.toContain('♥');
 
-    // 表に無い値が来ても字形を捏造せず「未確定」と同じ扱いにする
-    // (`SUIT_NAMES[...] ?? '-'` の右辺。0 は表に載っているので踏まない)。
-    expect(formatMadrassoState(makeMadrassoState({ trumpSuit: 9 }))).toContain('trump: -');
+    // 表の 0 番 (「-」) も同じ見え方になること。
+    expect(formatMadrassoState(makeMadrassoState({ trumpSuit: 0 }))).toContain('trump: -');
   });
 });

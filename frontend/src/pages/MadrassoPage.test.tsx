@@ -200,8 +200,9 @@ describe('MadrassoPage', () => {
     expect(trumpSpade.textContent).not.toContain('{{');
   });
 
-  it('renders undeclared trump label when trumpSuit is 0 or unset', async () => {
-    mockExec.mockResolvedValue(makeMadrassoState({ trumpSuit: 0 }));
+  // 未確定の実値は -1 (`GetTrumpSuit` の doc)。サーバが実際に送りうる値で測る。
+  it('renders the undeclared trump label for the real unset sentinel', async () => {
+    mockExec.mockResolvedValue(makeMadrassoState({ trumpSuit: -1 }));
     renderWithProviders(<MadrassoPage />);
 
     const trumpUnset = await screen.findByTestId('madrasso-trump');
