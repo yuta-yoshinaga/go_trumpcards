@@ -95,6 +95,16 @@ func TestOpenAPIMatchesLiveResponses(t *testing.T) {
 	}
 }
 
+// joinKeys は型の集合を読める形にする。
+func joinKeys(m map[string]bool) string {
+	out := make([]string, 0, len(m))
+	for k := range m {
+		out = append(out, k)
+	}
+	sort.Strings(out)
+	return strings.Join(out, "|")
+}
+
 // probe は 1 コマンドを叩いて応答を返す。JSON でなければ nil。
 func probe(t *testing.T, ctrl games.WebController, name, cmd string) map[string]any {
 	t.Helper()
@@ -134,6 +144,7 @@ type livePath struct {
 }
 
 type liveSchema struct {
+	Type                 string                 `yaml:"type"`
 	Ref                  string                 `yaml:"$ref"`
 	Properties           map[string]*liveSchema `yaml:"properties"`
 	Items                *liveSchema            `yaml:"items"`
@@ -164,6 +175,54 @@ func (a *liveAdditional) UnmarshalYAML(node *yaml.Node) error {
 
 // liveMaxDepth は降りる深さの上限。相互参照で止まらなくなるのを防ぐ。
 const liveMaxDepth = 6
+
+// jsonTypeOf は実際の値の JSON 型を返す。
+func jsonTypeOf(v any) string {
+	switch t := v.(type) {
+	case bool:
+		return "boolean"
+	case float64:
+		// **JSON に整数型は無い。** 整数値は `integer` として報告し、
+		// `number` と宣言された側で受け入れる (下の typeAllows)。
+		if t == float64(int64(t)) {
+			return "integer"
+		}
+		return "number"
+	case string:
+		return "string"
+	case []any:
+		return "array"
+	case map[string]any:
+		return "object"
+	}
+	return "null"
+}
+
+// typeAllows は宣言した型が実際の値を許すか。
+//
+// **`number` は整数値も許す。** JSON の数値型は 1 つしか無いので、float の
+// フィールドがたまたま整数で返るのは食い違いではない。
+func typeAllows(want, got string) bool {
+	return want == got || (want == "number" && got == "integer")
+}
+
+// types は sch とその選択肢が許す型を集める。
+func (s *liveSpec) types(sch *liveSchema) map[string]bool {
+	out := map[string]bool{}
+	if sch.Type != "" {
+		out[sch.Type] = true
+	}
+	for _, group := range [][]*liveSchema{sch.AllOf, sch.OneOf, sch.AnyOf} {
+		for _, sub := range group {
+			if d := s.deref(sub); d != nil {
+				for k := range s.types(d) {
+					out[k] = true
+				}
+			}
+		}
+	}
+	return out
+}
 
 // deref は `$ref` を解決する。
 func (s *liveSpec) deref(n *liveSchema) *liveSchema {
@@ -214,6 +273,25 @@ func (s *liveSpec) walk(sch *liveSchema, body any, path string, gaps map[string]
 		for k, sub := range v {
 			switch {
 			case props[k] != nil:
+				// **名前があっても形が合っているとは限らない。** 出荷済みの
+				// 誤りは 3 件とも「載ってはいるが型が違う」形だった
+				// (Bristol の legalTargets、Rummy500 の layoffTargets、
+				// ソリティア 12 本の tableau)。名前だけ見る検査では出ない。
+				if d := s.deref(props[k]); d != nil {
+					if want := s.types(d); len(want) > 0 {
+						got := jsonTypeOf(sub)
+						allowed := got == "null"
+						for w := range want {
+							if typeAllows(w, got) {
+								allowed = true
+							}
+						}
+						if !allowed {
+							gaps[fmt.Sprintf("%s: 宣言=%s 実際=%s",
+								strings.TrimPrefix(path+"."+k, "."), joinKeys(want), got)] = true
+						}
+					}
+				}
 				s.walk(props[k], sub, path+"."+k, gaps, depth+1)
 			case sch.AdditionalProperties.Schema != nil:
 				s.walk(sch.AdditionalProperties.Schema, sub, path+".*", gaps, depth+1)

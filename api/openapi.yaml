@@ -11245,8 +11245,10 @@ paths:
                           faceUp:
                             type: boolean
                   faceUpCount:
-                    type: integer
-                    description: Total number of face-up cards across all piles
+                    type: array
+                    items:
+                      type: integer
+                    description: Face-up cards in each pile, by pile index.
                   phase:
                     type: integer
                     description: "0=Playing, 1=GameClear, 2=GameOver"
@@ -11276,7 +11278,9 @@ paths:
                     items:
                       type: array
                   faceUpCount:
-                    type: integer
+                    type: array
+                    items:
+                      type: integer
                   phase:
                     type: integer
                   stepCount:
@@ -11473,8 +11477,8 @@ paths:
                       - $ref: '#/components/schemas/Card'
                     description: The trump card (bottom of the deck)
                   trumpSuit:
-                    type: integer
-                    description: Trump suit (0=spade, 1=heart, 2=diamond, 3=club)
+                    type: string
+                    description: Trump suit name (for example "SPADE").
                   deckCount:
                     type: integer
                     description: Remaining cards in the deck
@@ -11615,6 +11619,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -11669,10 +11678,10 @@ paths:
                       allOf:
                         - $ref: '#/components/schemas/Card'
                   waste:
-                    nullable: true
-                    allOf:
-                      - $ref: '#/components/schemas/Card'
-                    description: Top card of the waste pile
+                    type: array
+                    description: "The whole waste pile, as cards; the last one is the top."
+                    items:
+                      $ref: '#/components/schemas/Card'
                   stockCount:
                     type: integer
                     description: Number of remaining cards in the stock
@@ -11787,6 +11796,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -11846,10 +11860,10 @@ paths:
                       allOf:
                         - $ref: '#/components/schemas/Card'
                   waste:
-                    nullable: true
-                    allOf:
-                      - $ref: '#/components/schemas/Card'
-                    description: Top card of the waste pile
+                    type: array
+                    description: "The whole waste pile, as cards; the last one is the top."
+                    items:
+                      $ref: '#/components/schemas/Card'
                   stockCount:
                     type: integer
                     description: Number of remaining cards in the stock
@@ -12122,6 +12136,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -12508,6 +12527,14 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageCode:
+                    type: string
+                    description: "i18n key for `message`. Clients translate this rather than the prose."
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -13910,6 +13937,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -14021,6 +14053,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -14115,6 +14152,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -14234,6 +14276,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -14409,6 +14456,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -14632,6 +14684,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -14761,6 +14818,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -14869,6 +14931,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -14978,6 +15045,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -15103,6 +15175,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -15203,6 +15280,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -15372,6 +15454,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -15489,6 +15576,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -15606,6 +15698,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -15717,6 +15814,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -15909,6 +16011,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  messageParams:
+                    type: object
+                    description: "Substitution values for `messageCode`. Absent when the message takes none."
+                    additionalProperties:
+                      type: string
                   entries:
                     type: array
                     description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -40407,6 +40514,11 @@ components:
       type: object
       description: Response payload for /braid/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -40517,6 +40629,11 @@ components:
       type: object
       description: Response payload for /pontoon/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -40633,6 +40750,11 @@ components:
       type: object
       description: Response payload for /settemezzo/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -40750,6 +40872,11 @@ components:
       type: object
       description: Response payload for /niuniu/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -48220,7 +48347,9 @@ components:
         profile:
           type: object
         addonUsed:
-          type: boolean
+          type: array
+          items:
+            type: boolean
           description: "True once the add-on has been taken."
         metaAI:
           $ref: '#/components/schemas/MetaAIProfile'
@@ -57372,7 +57501,9 @@ components:
           description: Whether the game is currently in the discard phase (phase=8)
           example: false
         discardDone:
-          type: boolean
+          type: array
+          items:
+            type: boolean
           description: Whether the human player has completed discarding
           example: false
         message:
@@ -57810,6 +57941,11 @@ components:
         - gameEndFlag
         - message
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -57976,6 +58112,11 @@ components:
         - gameEndFlag
         - message
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -58535,7 +58676,9 @@ components:
         addonAfterHand:
           type: integer
         addonUsed:
-          type: boolean
+          type: array
+          items:
+            type: boolean
           description: "True once the add-on has been taken."
         metaAI:
           $ref: '#/components/schemas/MetaAIProfile'
@@ -58883,19 +59026,19 @@ components:
           description: Commission amount (5% of bet on player win)
           example: 0
         playerHighRank:
-          type: string
+          type: integer
           description: Player's high hand rank name (e.g. "Flush", "Two Pair")
           example: ""
         playerLowRank:
-          type: string
+          type: integer
           description: Player's low hand rank name (e.g. "Pair", "High Card")
           example: ""
         dealerHighRank:
-          type: string
+          type: integer
           description: Dealer's high hand rank name
           example: ""
         dealerLowRank:
-          type: string
+          type: integer
           description: Dealer's low hand rank name
           example: ""
         message:
@@ -64399,6 +64542,11 @@ components:
       type: object
       description: Response payload for /doubleattack/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         hint:
           type: string
         entries:
@@ -64489,6 +64637,11 @@ components:
       type: object
       description: Response payload for /baseballpoker/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         action:
           type: string
         reason:
@@ -65246,6 +65399,11 @@ components:
       type: object
       description: Response payload for /tusac/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         action:
           type: string
         indexes:
@@ -65359,6 +65517,11 @@ components:
       type: object
       description: Response payload for /kingo/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         action:
           type: string
         amount:
@@ -65455,6 +65618,11 @@ components:
       type: object
       description: Response payload for /ironcross/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         action:
           type: string
         line:
@@ -65585,6 +65753,11 @@ components:
       type: object
       description: Response payload for /cincinnati/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         action:
           type: string
         reason:
@@ -65857,6 +66030,11 @@ components:
       type: object
       description: Response payload for /montebank/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         pickIdx:
           type: integer
         reason:
@@ -65932,6 +66110,11 @@ components:
       type: object
       description: Response payload for /banluck/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         hint:
           type: string
         entries:
@@ -66030,6 +66213,11 @@ components:
       type: object
       description: Response payload for /freebet/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         hint:
           type: string
         entries:
@@ -66123,6 +66311,11 @@ components:
       type: object
       description: Response payload for /crazyfourpoker/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         hint:
           type: string
         entries:
@@ -66240,6 +66433,11 @@ components:
       type: object
       description: Response payload for /chemindefer/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         hint:
           type: string
         entries:
@@ -66344,6 +66542,11 @@ components:
       type: object
       description: Response payload for /colourwhist/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         cardIndex:
           type: integer
           description: "Hand index the hint recommends playing. Present in the reply to the `hint` command."
@@ -66463,6 +66666,11 @@ components:
       type: object
       description: Response payload for /rikken/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         cardIndex:
           type: string
         reason:
@@ -66560,6 +66768,11 @@ components:
       type: object
       description: Response payload for /botifarra/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         cardIndex:
           type: string
         reason:
@@ -66656,6 +66869,11 @@ components:
       type: object
       description: Response payload for /andarbahar/exec
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         hint:
           type: string
         entries:
@@ -67327,8 +67545,10 @@ components:
         requiredTricks:
           type: integer
         beast:
-          type: integer
-          description: "Seat whose ante doubles next round (the beast). -1 when none."
+          type: array
+          items:
+            type: boolean
+          description: Whether each seat is the beast -- its ante doubles next round -- in seating order.
         players:
           type: array
           description: Length is 3, 4 or 5 depending on the configured table size.
@@ -71783,6 +72003,11 @@ components:
       type: object
       description: Current state of the Doppelkopf game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -71972,6 +72197,11 @@ components:
       type: object
       description: Current state of the Mus game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -72086,8 +72316,9 @@ components:
               items:
                 type: integer
             action:
-              type: string
-              description: "Suggested action (e.g. paso, envido, ordago, quiero, noquiero)"
+              type: integer
+              description: "Suggested action: 0 = paso, 1 = envido, 2 = ordago, 3 = quiero, 4 = noquiero."
+              enum: [0, 1, 2, 3, 4]
             reason:
               type: string
         message:
@@ -72155,6 +72386,11 @@ components:
       type: object
       description: Current state of the Tute game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -72315,6 +72551,11 @@ components:
       type: object
       description: Current state of the Sueca game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -72460,6 +72701,11 @@ components:
       type: object
       description: Current state of the Klaverjas game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -72611,6 +72857,11 @@ components:
       type: object
       description: Current state of the Manille game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -72752,6 +73003,11 @@ components:
       type: object
       description: Current state of the Mariáš game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -72907,6 +73163,11 @@ components:
       type: object
       description: Current state of the Sedma game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -73050,6 +73311,11 @@ components:
       type: object
       description: Current state of the Solo Whist game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -73171,6 +73437,11 @@ components:
       type: object
       description: Current state of the Catch the Ten (Scotch Whist) game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -73304,6 +73575,11 @@ components:
       type: object
       description: Current state of the Knockout Whist game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -73463,6 +73739,11 @@ components:
       type: object
       description: Current state of the Nap game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -73748,6 +74029,11 @@ components:
       type: object
       description: Current state of the Spoil Five game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -73899,6 +74185,11 @@ components:
       type: object
       description: Current state of the Auction Forty-Fives game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -74074,6 +74365,11 @@ components:
       type: object
       description: Current state of the Twenty-Nine game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -74250,6 +74546,11 @@ components:
       type: object
       description: Current state of the Court Piece game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -74430,6 +74731,11 @@ components:
       type: object
       description: Current state of the Bezique game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -74635,6 +74941,11 @@ components:
       type: object
       description: Current state of the Écarté game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -74761,6 +75072,11 @@ components:
       type: object
       description: Current state of the Preference game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -74882,6 +75198,11 @@ components:
       type: object
       description: Current state of the Ganjifa game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -74988,6 +75309,11 @@ components:
       type: object
       description: Current state of the Vira game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -75174,6 +75500,11 @@ components:
       type: object
       description: Current state of the Three Card Brag game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -75332,6 +75663,11 @@ components:
       type: object
       description: Current state of the Teen Patti game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -75509,6 +75845,11 @@ components:
       type: object
       description: Current state of the Spoons game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -75635,6 +75976,11 @@ components:
       type: object
       description: Current state of the Kemps game
       properties:
+        messageParams:
+          type: object
+          description: "Substitution values for `messageCode`. Absent when the message takes none."
+          additionalProperties:
+            type: string
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
