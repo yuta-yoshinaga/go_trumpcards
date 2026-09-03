@@ -96,6 +96,12 @@ func TestOpenAPIMatchesLiveResponses(t *testing.T) {
 				continue
 			}
 			checked++
+			// **ヒントの応答は盤面が入っていないことがある。** 54 の presenter は
+			// `HintOutput` で空の出力を作ってヒントだけ詰めるので、`phase` や
+			// `chips` がゼロ値のまま返る (#7053)。項目の有無と型は正しいので
+			// そちらは見るが、enum を比べると「盤面が無い」だけの応答を違反として
+			// 報告してしまう。`h` はゲームによってヒントの別名なので一緒に外す。
+			spec.skipEnum = cmd == "hint" || cmd == "h"
 			spec.walk(sch, body, "", gaps, 0)
 		}
 		ctrl.Stop()
@@ -119,6 +125,65 @@ func TestOpenAPIMatchesLiveResponses(t *testing.T) {
 	}
 }
 
+// checkEnum は宣言した enum が実際の値を許すか見る。
+//
+// **enum は「載っている」だけでは足りない検査。** `rebuyPhaseType` は
+// `HoldemRebuyPhaseNone = 0` を返すのに `enum: [1, 2]` と書いてあり、
+// Dramaha は共有スキーマに無いフェーズ 8 を返していた (#7052)。名前も型も
+// 合っているので、ここを見ないと出ない。
+//
+// **200 の応答でだけ見る。** そのゲームが受け付けないコマンドは 400 を返し、
+// 本体には 0 値の盤面が乗る。状態コードを見ずに突き合わせると、初期化されて
+// いない `phase: 0` や `tableSize: 0` が違反として山ほど出て本物が埋もれる ──
+// サーバは正しく、検査の方が間違っていた。`probe` が 200 だけを通すように
+// なったので、enum も全コマンドの応答で見てよい。
+func (s *liveSpec) checkEnum(sch *liveSchema, v any, path string, gaps map[string]bool) {
+	if s.skipEnum {
+		return
+	}
+	d := s.deref(sch)
+	if d == nil || len(d.Enum) == 0 {
+		return
+	}
+	switch v.(type) {
+	case map[string]any, []any, nil:
+		return // enum は目盛りのある値にしか意味が無い
+	}
+	for _, want := range d.Enum {
+		if enumEqual(want, v) {
+			return
+		}
+	}
+	gaps[fmt.Sprintf("%s: enum=%v 実際=%v", strings.TrimPrefix(path, "."), d.Enum, v)] = true
+}
+
+// enumEqual は YAML の enum 値と JSON の値を比べる。
+//
+// **数値の型がそろわない。** YAML は 1 を int で、JSON は float64 で持つので、
+// そのまま比べると常に食い違う。
+func enumEqual(want, got any) bool {
+	if wf, ok := toFloat(want); ok {
+		if gf, ok2 := toFloat(got); ok2 {
+			return wf == gf
+		}
+		return false
+	}
+	return want == got
+}
+
+// toFloat は数値なら float64 にして返す。
+func toFloat(v any) (float64, bool) {
+	switch t := v.(type) {
+	case int:
+		return float64(t), true
+	case int64:
+		return float64(t), true
+	case float64:
+		return t, true
+	}
+	return 0, false
+}
+
 // joinKeys は型の集合を読める形にする。
 func joinKeys(m map[string]bool) string {
 	out := make([]string, 0, len(m))
@@ -129,7 +194,13 @@ func joinKeys(m map[string]bool) string {
 	return strings.Join(out, "|")
 }
 
-// probe は 1 コマンドを叩いて応答を返す。JSON でなければ nil。
+// probe は 1 コマンドを叩いて**200 の応答だけ**を返す。
+//
+// **状態コードを見ないと 400 の本体を 200 のスキーマと突き合わせてしまう。**
+// そのゲームが受け付けないコマンド (PaiGow の `n` など) は 400 を返し、本体には
+// 0 値の盤面が乗る。それを 200 のスキーマと比べると `phase: 0` や
+// `tableSize: 0` が enum 違反として山ほど出る ── サーバは正しく、検査の方が
+// 間違っていた。
 func probe(t *testing.T, ctrl games.WebController, name, cmd string) map[string]any {
 	t.Helper()
 	payload := fmt.Sprintf(`{"command":%q,"sessionId":"live-%s"}`, cmd, name)
@@ -137,6 +208,9 @@ func probe(t *testing.T, ctrl games.WebController, name, cmd string) map[string]
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 	ctrl.Exec(rec, req)
+	if rec.Code != http.StatusOK {
+		return nil
+	}
 	var body map[string]any
 	if json.Unmarshal(rec.Body.Bytes(), &body) != nil {
 		return nil
@@ -147,6 +221,8 @@ func probe(t *testing.T, ctrl games.WebController, name, cmd string) map[string]
 // --- openapi.yaml の必要な部分だけを読む型 ---
 
 type liveSpec struct {
+	// skipEnum は「いまの応答では enum を見ない」。盤面の入らない `hint` の応答用。
+	skipEnum   bool
 	Paths      map[string]livePath `yaml:"paths"`
 	Components struct {
 		Schemas map[string]*liveSchema `yaml:"schemas"`
@@ -174,6 +250,7 @@ type liveBody struct {
 
 type liveSchema struct {
 	Type                 string                 `yaml:"type"`
+	Enum                 []any                  `yaml:"enum"`
 	Ref                  string                 `yaml:"$ref"`
 	Properties           map[string]*liveSchema `yaml:"properties"`
 	Items                *liveSchema            `yaml:"items"`
@@ -321,6 +398,7 @@ func (s *liveSpec) walk(sch *liveSchema, body any, path string, gaps map[string]
 						}
 					}
 				}
+				s.checkEnum(props[k], sub, path+"."+k, gaps)
 				s.walk(props[k], sub, path+"."+k, gaps, depth+1)
 			case sch.AdditionalProperties.Schema != nil:
 				s.walk(sch.AdditionalProperties.Schema, sub, path+".*", gaps, depth+1)
