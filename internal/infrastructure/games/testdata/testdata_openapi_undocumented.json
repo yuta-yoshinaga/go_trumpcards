@@ -123,23 +123,6 @@
     "limpia",
     "ronda"
   ],
-  "DehlaPakad": [
-    "centrePileCount",
-    "centrePileTens",
-    "gatheredCount",
-    "handHistory",
-    "hintTrumpSuit",
-    "isTrumpChooser",
-    "isTrumpPhase",
-    "kot",
-    "kotReason",
-    "lastHand",
-    "prevTrickWinner",
-    "streakCount",
-    "streakTeam",
-    "teamKots",
-    "trumpSuitName"
-  ],
   "DeuceToSeven": [
     "foldRate",
     "roundLabel",
@@ -480,8 +463,7 @@
   "UnsunKaruta": [
     "canDeclare",
     "declarationKind",
-    "mustFollow",
-    "trumpSuitName"
+    "mustFollow"
   ],
   "VideoPoker": [
     "handKey"

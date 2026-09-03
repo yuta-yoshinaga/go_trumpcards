@@ -22033,6 +22033,55 @@ paths:
                 properties:
                   message:
                     type: string
+                  isTrumpPhase:
+                    type: boolean
+                    description: "Whether the hand is waiting for the trump declaration."
+                  isTrumpChooser:
+                    type: boolean
+                    description: "Whether this seat is the one that calls the trump. It is the dealer's right."
+                  trumpSuitName:
+                    type: string
+                    description: "Identifier for the trump suit, such as spade. Used as an i18n key."
+                  hintTrumpSuit:
+                    type: integer
+                    description: "Trump suit the hint recommends calling."
+                  centrePileCount:
+                    type: integer
+                    description: "Cards in the centre pile that no seat has gathered yet."
+                  centrePileTens:
+                    type: integer
+                    description: "How many tens are sitting in that centre pile."
+                  gatheredCount:
+                    type: integer
+                    description: "Cards this seat has gathered from the centre pile."
+                  prevTrickWinner:
+                    type: integer
+                    description: "Seat that took the previous trick."
+                  teamKots:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Kots per team. These decide the match."
+                  kot:
+                    type: boolean
+                    description: "Whether the finished hand was a kot, meaning every ten was taken."
+                  kotReason:
+                    type: string
+                    description: "Identifier for how the kot was achieved."
+                  streakTeam:
+                    type: integer
+                    description: "Team currently on a winning streak, or -1 when there is none."
+                  streakCount:
+                    type: integer
+                    description: "Length of that team's current streak."
+                  lastHand:
+                    type: object
+                    description: "The hand that just finished, with its winning team, tens and kot."
+                  handHistory:
+                    type: array
+                    items:
+                      type: object
+                    description: "Every hand played so far, oldest first."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
