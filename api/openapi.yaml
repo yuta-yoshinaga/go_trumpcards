@@ -48396,7 +48396,9 @@ components:
             - `5` — Showdown
             - `6` — End
             - `7` — Rebuy/Addon
-          enum: [0, 1, 2, 3, 4, 5, 6, 7]
+            - `8` — Draw (**Dramaha only**; this schema is shared, and Dramaha adds
+              a draw round the other Holdem variants do not have)
+          enum: [0, 1, 2, 3, 4, 5, 6, 7, 8]
           example: 1
         gameEndFlag:
           type: boolean
@@ -48496,9 +48498,10 @@ components:
         rebuyPhaseType:
           type: integer
           description: |
-            Type of rebuy phase: 1 = rebuy, 2 = addon.
-            Only present when phase is 7 (Rebuy/Addon).
-          enum: [1, 2]
+            Type of rebuy phase: 0 = none, 1 = rebuy, 2 = addon.
+            The field is always present; it reads 0 outside the rebuy phase
+            (phase 7), so do not treat its presence as a rebuy being offered.
+          enum: [0, 1, 2]
         rebuyChips:
           type: integer
           description: Chips available for current rebuy
@@ -58830,9 +58833,10 @@ components:
         rebuyPhaseType:
           type: integer
           description: |
-            Type of rebuy phase: 1 = rebuy, 2 = addon.
-            Only present when phase is 8 (Rebuy/Addon).
-          enum: [1, 2]
+            Type of rebuy phase: 0 = none, 1 = rebuy, 2 = addon.
+            The field is always present; it reads 0 outside the rebuy phase
+            (phase 8), so do not treat its presence as a rebuy being offered.
+          enum: [0, 1, 2]
         rebuyChips:
           type: integer
           description: Chips available for current rebuy
