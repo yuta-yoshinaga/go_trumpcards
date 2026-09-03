@@ -4597,6 +4597,7 @@ const baseUnsunKarutaState: UnsunKarutaResponse = {
   trumpSuitName: 'kotsu',
   trumpCard: unsunCard('HEART', 12, '杯', 'キリ'),
   mustFollow: false,
+  declarationKind: 0,
   declared: false,
   canDeclare: true,
   currentTrick: [],

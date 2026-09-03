@@ -46,5 +46,7 @@
   "rank.robai": "ロバイ",
   "errNotLeader": "宣言できるのはリードしたプレイヤーだけです。",
   "errCardRange": "カードの番号が範囲外です。",
-  "promptTrickEndWinner": "トリックが決まりました — {{name}}が取りました。"
+  "promptTrickEndWinner": "トリックが決まりました — {{name}}が取りました。",
+  "declarationMeri": "※ メリ（切り札リードの宣言）— 台札のスートに従ってください。",
+  "declarationMonchi": "※ モンチ（平札リードの宣言）— 台札のスートに従ってください。"
 }

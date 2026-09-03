@@ -46,5 +46,7 @@
   "rank.robai": "Robai",
   "errNotLeader": "Only the player who led may declare.",
   "errCardRange": "That card number is out of range.",
-  "promptTrickEndWinner": "The trick goes to {{name}}."
+  "promptTrickEndWinner": "The trick goes to {{name}}.",
+  "declarationMeri": "* Meri (declared on a trump lead) - you must follow the led suit.",
+  "declarationMonchi": "* Monchi (declared on a plain lead) - you must follow the led suit."
 }
