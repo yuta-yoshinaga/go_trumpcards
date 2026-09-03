@@ -27,6 +27,9 @@ type CostlyColoursGame interface {
 	GetGameEndFlag() bool
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() string
+
+	// GetMogDiscardCard 交換に応じたら手放すことになる札を取得する (交換フェーズ以外は nil)
+	GetMogDiscardCard() *domain.Card
 	// IsHumanTurn 人間の手番かを取得する
 	IsHumanTurn() bool
 	// GetTurnUp 表に返した 1 枚を取得する

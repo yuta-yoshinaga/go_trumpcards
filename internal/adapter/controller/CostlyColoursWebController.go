@@ -57,10 +57,12 @@ type CostlyColoursWebOutputResult struct {
 
 // CostlyColoursWebOutput はコストリー・カラーズの Web アウトプット。
 type CostlyColoursWebOutput struct {
-	Players    []*CostlyColoursWebOutputPlayer `json:"players"`
-	Phase      string                          `json:"phase"`
-	DealNumber int                             `json:"dealNumber"`
-	DealerIdx  int                             `json:"dealerIdx"`
+	Players []*CostlyColoursWebOutputPlayer `json:"players"`
+	Phase   string                          `json:"phase"`
+	// MogDiscardCard は交換に応じたら手放すことになる札 (交換フェーズ以外は nil)。
+	MogDiscardCard *WebOutputCard `json:"mogDiscardCard,omitempty"`
+	DealNumber     int            `json:"dealNumber"`
+	DealerIdx      int            `json:"dealerIdx"`
 	// CurrentPlayerIdx は手番の席。
 	CurrentPlayerIdx int `json:"currentPlayerIdx"`
 	// TurnUp は表に返した 1 枚。**ショーでも数える。**

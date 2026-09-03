@@ -59,5 +59,6 @@
   "errNotPlayPhase": "いまは札を出せるフェーズではありません。",
   "errNotYourTurn": "あなたの手番ではありません。",
   "errCardRange": "無効なカード位置です: {{idx}}",
-  "errWouldExceed": "その札では 31 を超えます（累計 {{total}}）。"
+  "errWouldExceed": "その札では 31 を超えます（累計 {{total}}）。",
+  "mogDiscard": "交換すると {{card}} を手放します。"
 }

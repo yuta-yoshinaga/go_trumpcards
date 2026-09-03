@@ -64,6 +64,12 @@ func (_m *MockCostlyColoursGame) GetPhase() string {
 	return ret.Get(0).(string)
 }
 
+// GetMogDiscardCard モック
+func (_m *MockCostlyColoursGame) GetMogDiscardCard() *domain.Card {
+	c, _ := _m.Called().Get(0).(*domain.Card)
+	return c
+}
+
 // IsHumanTurn モック
 func (_m *MockCostlyColoursGame) IsHumanTurn() bool {
 	ret := _m.Called()

@@ -30,7 +30,7 @@ func (p *CostlyColoursCuiPresenter) Output(g interfaces.CostlyColoursGame, lastE
 		}
 		switch g.GetPhase() {
 		case domain.CostlyColoursPhaseMog:
-			p.writeMogPrompt(b)
+			p.writeMogPrompt(b, g)
 		case domain.CostlyColoursPhaseShow:
 			p.writeShow(b, g)
 		default:
@@ -116,8 +116,13 @@ func (p *CostlyColoursCuiPresenter) writeCount(b *strings.Builder, g interfaces.
 }
 
 // writeMogPrompt は交換の案内を書く。
-func (p *CostlyColoursCuiPresenter) writeMogPrompt(b *strings.Builder) {
+func (p *CostlyColoursCuiPresenter) writeMogPrompt(b *strings.Builder, g interfaces.CostlyColoursGame) {
 	b.WriteString(i18n.T("costlycolours.mogPrompt") + "\n")
+	// **押す前に、どの札が出ていくのかを言う。** 渡す 1 枚はドメインが選ぶので、
+	// 打ち手は結果を見るまで自分の 3 枚のどれが失われるか分からなかった (#6631)。
+	if card := g.GetMogDiscardCard(); card != nil {
+		b.WriteString(i18n.Tf("costlycolours.mogDiscard", "card", cuiCardStr(card)) + "\n")
+	}
 	b.WriteString(i18n.T("costlycolours.mogHint") + "\n")
 }
 
