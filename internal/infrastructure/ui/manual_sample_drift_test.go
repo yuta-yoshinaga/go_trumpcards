@@ -38,6 +38,15 @@ var ansiRe = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 //
 // A label is reported only when **both** miss it. That intersection was
 // measured at 53 before this batch and 0 after.
+//
+// **Scope, so nobody reads a green run as more than it is.** 28 of the 367
+// manuals write 画面の見方 as prose bullets with no fenced sample, and this
+// test skips them -- it reports how many labels it inspected precisely so the
+// number can be compared against the manual count. Those 28 were audited by
+// hand for #7061 (3 real defects out of 8 candidates; the other 5 were
+// placeholders like `ディール n/28` or phase-gated rows), but nothing keeps
+// them honest automatically. Checking quoted prose mechanically was tried and
+// abandoned: it flags a placeholder `n` as a missing row.
 func TestManualSampleRowsExist(t *testing.T) {
 	root := repoRootForHelpTest(t)
 	i18n.SetLang("ja")
@@ -68,8 +77,9 @@ func TestManualSampleRowsExist(t *testing.T) {
 		}
 	}
 
-	// **緑であることは「見た」ことを意味しない。** 実測 684。走査が壊れて
-	// 0 件になったら、この試験は何も主張せずに通ってしまう。
+	// **緑であることは「見た」ことを意味しない。** 実測 684 (見本ブロックを
+	// 持つ 339 本ぶん)。走査が壊れて 0 件になったら、この試験は何も主張せずに
+	// 通ってしまう。
 	//
 	// 負のコントロール: 見本ブロックの正規表現を別物に変えると 0 件になり、
 	// ここで落ちる。
