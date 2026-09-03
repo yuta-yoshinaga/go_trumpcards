@@ -87,7 +87,7 @@ flowchart TD
 
 ```
 ==========
-Loo (ルー)
+ルー（Loo / Lanterloo）
 ==========
 Deal 1  Trick 1/5  Pot 12  Trump = ♥
 

@@ -93,7 +93,7 @@ flowchart TD
 
 ```
 ==========
-Panguingue / Pan
+Panguingue / Pan (パングインゲ)
 ==========
 ラウンド: 1/3  山札: 250枚  あがり: メルド11枚
 捨て札: HEART 7

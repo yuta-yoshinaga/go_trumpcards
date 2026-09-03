@@ -84,7 +84,7 @@ flowchart TD
 
 ```
 ==========
-Page One
+Page One (ページワン)
 ==========
 Round 1 / Target 200
 Discard top: ♠ 7

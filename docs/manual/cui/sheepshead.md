@@ -116,7 +116,7 @@ flowchart TD
 
 ```
 ==========
-Sheepshead (シープスヘッド)
+シープスヘッド (Sheepshead)
 ==========
 ラウンド: 1  トリック: 1
 チップ: You=0 CPU1=0 CPU2=0 CPU3=0 CPU4=0

@@ -99,7 +99,7 @@ flowchart TD
 
 ```
 ==========
-Cinch (チンチ)
+チンチ（Cinch / Double Pedro）
 ==========
 Round 1  Trick 1/9  Trump = ♠
 Bid winner = P0  Bid = 6

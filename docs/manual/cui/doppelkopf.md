@@ -123,7 +123,7 @@ flowchart TD
 
 ```
 ==========
-Doppelkopf (ドッペルコップ)
+ドッペルコップ (Doppelkopf)
 ==========
 ラウンド: 1  トリック: 1
 チップ: You=0 CPU1=0 CPU2=0 CPU3=0

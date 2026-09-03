@@ -143,7 +143,7 @@ flowchart TD
 
 ```
 ==========
-Short Deck (6+ Hold'em)
+Short Deck Hold'em
 ==========
 ディーラー: Player 0
 コミュニティ: ♠7  ♣10  ♥9

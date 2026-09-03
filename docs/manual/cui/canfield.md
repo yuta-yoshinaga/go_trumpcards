@@ -63,7 +63,7 @@ flowchart TD
 
 ```
 ==========
-Canfield
+Canfield (キャンフィールド)
 ==========
 Foundations: [♠5] [♥-] [♦-] [♣-]
 Reserve(12): [♣K]

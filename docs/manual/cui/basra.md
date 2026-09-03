@@ -92,7 +92,7 @@ flowchart TD
 
 ```
 ==========
-Basra (バスラ)
+バスラ（Basra / Bastra）
 ==========
 Round 1  Deck 32
 

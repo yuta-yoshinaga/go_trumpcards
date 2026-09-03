@@ -72,7 +72,7 @@ flowchart TD
 
 ```
 ==========
-Two Ten Jack
+Two Ten Jack (ツーテンジャック)
 ==========
 round: 1  trick: 1  trump: ♠
 You      : total=0 round=0 tricks=0 pts=0
