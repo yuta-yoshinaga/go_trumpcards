@@ -1,3 +1,5 @@
+//go:build !js || !wasm
+
 package games_test
 
 import (
@@ -16,6 +18,11 @@ import (
 // **タグだけ見ると誤検知する。** MonteBank のヒントは
 // `map[string]any{"pickIdx": ..., "reason": ...}` で組まれていて、`json:` タグは
 // どこにも無い。それでも本物のフィールドなので、ここも数える。
+//
+// **文字列としての一致なので緩い。** `case "reset":` のような JSON と無関係の
+// `"語":` にも当たるため、たまたま同じ綴りの項目名は見逃しうる。緩い側に
+// 倒しているのは意図的で、この検査の役目は**実在しない項目を増やさないこと**
+// であって、実在の証明ではない。
 var goMapKeyRe = regexp.MustCompile(`"([A-Za-z][A-Za-z0-9_]*)"\s*:`)
 
 // openapiStructuralKeys は payload ではなく OpenAPI 自身の語彙。
@@ -24,8 +31,6 @@ var openapiStructuralKeys = map[string]bool{
 	"type": true, "description": true, "example": true, "enum": true,
 	"required": true, "nullable": true, "additionalProperties": true,
 	"allOf": true, "oneOf": true, "anyOf": true, "format": true,
-	// リクエストの共通項目。どのゲームのコントローラにも構造体としては無い。
-	"command": true, "sessionId": true,
 }
 
 // TestOpenAPIDeclaresNothingTheCodeCannotProduce は**逆向き**の検査。
