@@ -136,7 +136,12 @@ func TestPresenterI18nKeysResolve(t *testing.T) {
 	dirs := []string{
 		"internal/adapter/presenter",
 		"internal/adapter/controller",
+		"internal/adapter/controller/cuiutil",
 		"internal/infrastructure/ui",
+		"internal/infrastructure/update",
+		"internal/infrastructure/web",
+		"internal/usecase",
+		"cmd/trumpcards",
 	}
 
 	defined := loadJaLocaleKeys(t)
@@ -167,7 +172,7 @@ func TestPresenterI18nKeysResolve(t *testing.T) {
 	}
 
 	// **A walk that stops matching would pass this test in silence.** Measured
-	// at 8,383 across the three directories; the floor only has to catch
+	// at 9,016 across the listed directories; the floor only has to catch
 	// collapse, because a shrinking count makes this guard quieter, never louder.
 	if len(refs) < 6000 {
 		t.Fatalf("i18n キーを %d 件しか拾えていない -- 正規表現か走査先が壊れている", len(refs))
@@ -191,8 +196,11 @@ func loadJaLocaleKeys(t *testing.T) map[string]struct{} {
 		t.Fatalf("read %s: %v", dir, err)
 	}
 	out := map[string]struct{}{}
-	// Files whose keys presenters address without a game prefix.
-	bare := map[string]bool{"cui_common.json": true, "common.json": true, "cli_help.json": true}
+	// **Do not restate which files are global.** i18n.go owns that list, and a
+	// copy here drifts silently: this guard first shipped with cli_help.json in
+	// it, which is wrong (its keys really are addressed as `cli_help.usage`),
+	// and the mistake was invisible until the walk was widened to cmd/.
+	bare := globalLocaleNamespaces(t)
 	for _, e := range entries {
 		if e.IsDir() || !strings.HasSuffix(e.Name(), ".json") {
 			continue
@@ -206,7 +214,7 @@ func loadJaLocaleKeys(t *testing.T) map[string]struct{} {
 			continue
 		}
 		prefix := ""
-		if !bare[e.Name()] {
+		if !bare[strings.TrimSuffix(e.Name(), ".json")] {
 			prefix = strings.TrimSuffix(e.Name(), ".json") + "."
 		}
 		flattenLocale(doc, prefix, out)
@@ -222,4 +230,30 @@ func flattenLocale(doc map[string]any, prefix string, out map[string]struct{}) {
 			flattenLocale(nested, full+".", out)
 		}
 	}
+}
+
+// globalLocaleNamespacesRe pulls the entries out of i18n.go's globalNamespaces
+// map literal, so this test cannot disagree with the loader it is checking.
+var globalLocaleNamespacesRe = regexp.MustCompile(`(?s)var globalNamespaces = map\[string\]bool\{(.*?)\}`)
+
+var globalLocaleEntryRe = regexp.MustCompile(`"([a-z_]+)":\s*true`)
+
+func globalLocaleNamespaces(t *testing.T) map[string]bool {
+	t.Helper()
+	src, err := os.ReadFile(filepath.Join(repoRoot, "internal/i18n/i18n.go"))
+	if err != nil {
+		t.Fatalf("read i18n.go: %v", err)
+	}
+	block := globalLocaleNamespacesRe.FindSubmatch(src)
+	if block == nil {
+		t.Fatal("i18n.go の globalNamespaces を読めない -- 宣言の形が変わった")
+	}
+	out := map[string]bool{}
+	for _, m := range globalLocaleEntryRe.FindAllSubmatch(block[1], -1) {
+		out[string(m[1])] = true
+	}
+	if len(out) == 0 {
+		t.Fatal("globalNamespaces が空に見える -- 正規表現が壊れている")
+	}
+	return out
 }
