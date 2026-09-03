@@ -41,12 +41,6 @@ type MushiWebOutputCard struct {
 	IsWild bool `json:"isWild"`
 }
 
-// MushiWebOutputYaku 成立した役 1 件。
-type MushiWebOutputYaku struct {
-	Key    string `json:"key"`
-	Points string `json:"points"`
-}
-
 // MushiWebOutputPlayer 虫Webアウトプットプレイヤー
 type MushiWebOutputPlayer struct {
 	ID      int  `json:"id"`
