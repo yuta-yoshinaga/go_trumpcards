@@ -5,19 +5,6 @@
   "Aluette": [
     "luettes"
   ],
-  "Anaconda": [
-    "currentPlayer",
-    "rollIndex",
-    "streetBet"
-  ],
-  "Badugi": [
-    "bestCards",
-    "roundLabel",
-    "totalDraws"
-  ],
-  "Barbu": [
-    "dominoRank"
-  ],
   "Bauernschnapsen": [
     "marriageIndices"
   ],
@@ -41,26 +28,8 @@
     "extendTargets",
     "layoffTargets"
   ],
-  "CourtPiece": [
-    "consecutiveWins",
-    "lastRoundCourt",
-    "lastWinnerTeam"
-  ],
-  "Cuarenta": [
-    "caida",
-    "limpia",
-    "ronda"
-  ],
-  "DeuceToSeven": [
-    "roundLabel",
-    "totalDraws"
-  ],
   "Doppelkopf": [
     "isRe"
-  ],
-  "Escoba": [
-    "escobaCount",
-    "handCaptures"
   ],
   "FiftyOne": [
     "lastHandIdx",
@@ -87,11 +56,6 @@
   "GoFish": [
     "knownRanks"
   ],
-  "Guts": [
-    "in",
-    "isMatcher",
-    "matchers"
-  ],
   "HachiHachi": [
     "bonus",
     "rawScore"
@@ -105,11 +69,6 @@
   "Kalooki": [
     "hasOpened",
     "openingThreshold"
-  ],
-  "Koenigrufen": [
-    "calledKing",
-    "isHumanCall",
-    "talon"
   ],
   "Machiavelli": [
     "handIndices",
@@ -138,11 +97,6 @@
   "Ombre": [
     "isOmbre",
     "ombreIdx"
-  ],
-  "PaiGow": [
-    "lowIdx0",
-    "lowIdx1",
-    "lowIsPair"
   ],
   "Pan": [
     "panDeclarerIdx",
@@ -173,31 +127,12 @@
     "hasSamba",
     "isSamba"
   ],
-  "Scopa": [
-    "isScopa",
-    "scopaCount"
-  ],
-  "Scopone": [
-    "handCaptures",
-    "scopaCount",
-    "settebello"
-  ],
-  "SetteEMezzo": [
-    "hasMatta",
-    "mattaHalves",
-    "totalLabel"
-  ],
   "SevenCardStud": [
     "addonUsed",
     "currentLowHand"
   ],
   "Sevens": [
     "jokerReclaimed"
-  ],
-  "Skat": [
-    "null",
-    "originalSkat",
-    "pickSkat"
   ],
   "Stalactites": [
     "cells"
@@ -211,11 +146,6 @@
   ],
   "Tonk": [
     "bestDeadwood"
-  ],
-  "UnsunKaruta": [
-    "canDeclare",
-    "declarationKind",
-    "mustFollow"
   ],
   "VideoPoker": [
     "handKey"

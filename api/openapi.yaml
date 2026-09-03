@@ -15955,7 +15955,17 @@ paths:
                     $ref: '#/components/schemas/MetaAIProfile'
                   players:
                     type: array
-                    items: { type: object }
+                    items:
+                      type: object
+                      properties:
+                        totalDraws:
+                          type: integer
+                          description: "Cards this seat has drawn across the whole hand."
+                        bestCards:
+                          type: array
+                          description: "The seat's best badugi; absent until the hand is shown down."
+                          items:
+                            $ref: '#/components/schemas/Card'
                   pot: { type: integer }
                   sidePots:
                     type: array
@@ -15976,7 +15986,12 @@ paths:
                     items: { type: object }
                   cpuActions:
                     type: array
-                    items: { type: object }
+                    items:
+                      type: object
+                      properties:
+                        roundLabel:
+                          type: string
+                          description: "Identifier of the betting round the action belongs to."
                   cpuExchanges:
                     type: array
                     items: { type: object }
@@ -16067,7 +16082,12 @@ paths:
                     $ref: '#/components/schemas/MetaAIProfile'
                   players:
                     type: array
-                    items: { type: object }
+                    items:
+                      type: object
+                      properties:
+                        totalDraws:
+                          type: integer
+                          description: "Cards this seat has drawn across the whole hand."
                   pot: { type: integer }
                   sidePots:
                     type: array
@@ -16088,7 +16108,12 @@ paths:
                     items: { type: object }
                   cpuActions:
                     type: array
-                    items: { type: object }
+                    items:
+                      type: object
+                      properties:
+                        roundLabel:
+                          type: string
+                          description: "Identifier of the betting round the action belongs to."
                   cpuExchanges:
                     type: array
                     items: { type: object }
@@ -19123,6 +19148,18 @@ paths:
               schema:
                 type: object
                 properties:
+                  hint:
+                    type: object
+                    description: Recommended action.
+                    properties:
+                      pickSkat:
+                        type: boolean
+                        description: "Whether the hint advises picking up the skat rather than playing a hand game."
+                  originalSkat:
+                    type: array
+                    description: "The skat as it was before the declarer exchanged; absent until it may be shown."
+                    items:
+                      $ref: '#/components/schemas/Card'
                   phase:
                     type: integer
                   roundNumber:
@@ -21071,6 +21108,16 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  canDeclare:
+                    type: boolean
+                    description: "True while the human seat may declare, i.e. holds the lead."
+                  declarationKind:
+                    type: integer
+                    description: "Declaration in force: 0 = none, 1 = meri, 2 = monchi."
+                    enum: [0, 1, 2]
+                  mustFollow:
+                    type: boolean
+                    description: "True when the current trick obliges following suit."
                   message:
                     type: string
         '400':
@@ -30803,6 +30850,21 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  players:
+                    type: array
+                    description: One entry per seat, in seating order.
+                    items:
+                      type: object
+                      properties:
+                        streetBet:
+                          type: integer
+                          description: "Chips this seat has put in on the current street."
+                  currentPlayer:
+                    type: integer
+                    description: "Seat to act."
+                  rollIndex:
+                    type: integer
+                    description: "Cards each seat has turned face up so far in the roll phase."
                   message:
                     type: string
         '400':
@@ -31576,6 +31638,23 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  players:
+                    type: array
+                    description: One entry per seat, in seating order.
+                    items:
+                      type: object
+                      properties:
+                        in:
+                          type: boolean
+                          description: "True when this seat has declared in for the round."
+                        isMatcher:
+                          type: boolean
+                          description: "True when this seat declared in, lost, and therefore matches the pot."
+                  matchers:
+                    type: array
+                    description: "Seats that must match the pot after losing while declared in."
+                    items:
+                      type: integer
                   message:
                     type: string
         '400':
@@ -31905,6 +31984,17 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  calledKing:
+                    type: integer
+                    description: "Suit of the king the declarer called for a partner."
+                  isHumanCall:
+                    type: boolean
+                    description: "True while the human seat has to call a king."
+                  talon:
+                    type: array
+                    description: The talon, as cards.
+                    items:
+                      $ref: '#/components/schemas/Card'
                   message:
                     type: string
         '400':
@@ -35027,6 +35117,21 @@ components:
       type: object
       description: Response payload for /settemezzo/exec
       properties:
+        hands:
+          type: array
+          description: One entry per hand in play.
+          items:
+            type: object
+            properties:
+              totalLabel:
+                type: string
+                description: 'The hand total in display form, e.g. "7.5".'
+              hasMatta:
+                type: boolean
+                description: "True when the hand holds the matta (the wild card)."
+              mattaHalves:
+                type: integer
+                description: "Value assigned to the matta, in half points. 0 when there is no matta."
         seats:
           type: array
           items:
@@ -51972,6 +52077,19 @@ components:
         - dealerLowRank
         - message
       properties:
+        hint:
+          type: object
+          description: Recommended split for the set-hand phase.
+          properties:
+            lowIdx0:
+              type: integer
+              description: "Index of the first card the hint puts in the low (two-card) hand."
+            lowIdx1:
+              type: integer
+              description: "Index of the second card the hint puts in the low hand."
+            lowIsPair:
+              type: boolean
+              description: "True when the recommended low hand is a pair."
         playerCards:
           type: array
           description: Player's 7 dealt cards
@@ -54375,6 +54493,15 @@ components:
       type: object
       description: Current state of the Scopone game
       properties:
+        handCaptures:
+          type: array
+          description: "For each card in the human hand, the capture sets playing it allows. handCaptures[i] is a list of sets, each set a list of table-card indices."
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
         players:
           type: array
           description: All players in the game (1 human + 3 CPU). Seats 0+2 vs 1+3.
@@ -54448,6 +54575,9 @@ components:
           nullable: true
           description: Per-point scoring breakdown of the last completed round (keyed by team).
           properties:
+            settebello:
+              type: integer
+              description: "Team that took the settebello (the seven of coins), which scores one point."
             cards:
               type: object
               additionalProperties:
@@ -66535,6 +66665,15 @@ components:
       type: object
       description: Current state of the Court Piece game
       properties:
+        consecutiveWins:
+          type: integer
+          description: "Rounds the same team has won in a row."
+        lastWinnerTeam:
+          type: integer
+          description: "Team that won the round just finished."
+        lastRoundCourt:
+          type: boolean
+          description: "True when the round just finished was won as a court (a sweep bonus)."
         players:
           type: array
           items:
@@ -68257,6 +68396,25 @@ components:
       type: object
       description: Current state of the Cuarenta game
       properties:
+        lastRoundDetail:
+          type: object
+          description: Score breakdown of the round just finished.
+          properties:
+            caida:
+              type: object
+              description: "Caida points per seat, keyed by seat index. Caida is scored by capturing the card the previous seat just laid."
+              additionalProperties:
+                type: integer
+            ronda:
+              type: object
+              description: "Ronda points per seat, keyed by seat index."
+              additionalProperties:
+                type: integer
+            limpia:
+              type: object
+              description: "Limpia points per seat, keyed by seat index; limpia is the sweep of the table."
+              additionalProperties:
+                type: integer
         phase:
           type: integer
           description: "Game phase: 0 Play, 1 RoundEnd, 2 GameEnd"
