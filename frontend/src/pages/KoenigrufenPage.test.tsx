@@ -538,4 +538,29 @@ describe('KoenigrufenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByText(/\[0\], \[2\]/)).not.toBeInTheDocument();
   });
+
+  // **催促は常設のライブ領域の中にある (#6880)。** フェーズ切り替えで現れる
+  // テキストなので、領域が無いとスクリーンリーダには何も届かない。領域を
+  // 出現と同時に付けても読み上げられないため、常設にして中身だけ差し替える。
+  it('announces the prompt from an always-mounted live region', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<KoenigrufenPage />);
+
+    const live = await screen.findByTestId('koenigrufen-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
+    expect(live).toContainElement(await screen.findByTestId('koenigrufen-bid-prompt'));
+  });
+
+  it('announces discard from the same region', async () => {
+    mockExec.mockResolvedValue(talonPhaseState);
+    renderWithProviders(<KoenigrufenPage />);
+
+    const live = await screen.findByTestId('koenigrufen-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
+    expect(live).toContainElement(await screen.findByTestId('koenigrufen-discard-prompt'));
+  });
 });

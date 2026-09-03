@@ -364,11 +364,20 @@ function CinchPageContent() {
                 {t('bidCpu', { id: state.bidPlayerIdx })}
               </div>
             )}
-            {canBid && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="cinch-bid-prompt">
-                {t('bidPrompt')}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="cinch-prompt-live" role="status" aria-live="polite">
+              {canBid && (
+                <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="cinch-bid-prompt">
+                  {t('bidPrompt')}
+                </div>
+              )}
+              {canNameTrump && (
+                <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="cinch-trump-prompt">
+                  {t('trumpPrompt')}
+                </div>
+              )}
+            </div>
             {canBid && bidStrength && (
               <div
                 className="mb-2 mx-auto max-w-xl p-2 rounded bg-black/30 text-ds-text-muted text-xs text-center"
@@ -389,11 +398,6 @@ function CinchPageContent() {
                   {t('bidStrength.legend')}
                 </div>
                 <div className="mt-1 italic">{t('bidStrength.note')}</div>
-              </div>
-            )}
-            {canNameTrump && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="cinch-trump-prompt">
-                {t('trumpPrompt')}
               </div>
             )}
             {humanPlayer && (

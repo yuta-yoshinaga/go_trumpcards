@@ -364,14 +364,18 @@ function ScartoPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.scarto.footer} px-4 py-2.5`}>
-            {canScarto && (
-              <div
-                className="mb-1 text-center text-sm text-ds-accent font-semibold"
-                data-testid="scarto-discard-prompt"
-              >
-                {t('scartoPhase', { count: selectedCardIndices.length, total: SCARTO_DISCARD_COUNT })}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="scarto-prompt-live" role="status" aria-live="polite">
+              {canScarto && (
+                <div
+                  className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                  data-testid="scarto-discard-prompt"
+                >
+                  {t('scartoPhase', { count: selectedCardIndices.length, total: SCARTO_DISCARD_COUNT })}
+                </div>
+              )}
+            </div>
             {isScartoPhase && !state.isHumanScarto && (
               <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="scarto-waiting">
                 {t('scartoWaiting')}

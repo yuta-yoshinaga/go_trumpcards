@@ -340,16 +340,23 @@ function GleekPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.gleek.footer} px-4 py-2.5`}>
-            {canBid && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="gleek-bid-prompt">
-                {t('bidPhase', { bid: state.highestBid })}
-              </div>
-            )}
-            {canDiscard && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="gleek-discard-prompt">
-                {t('discardPhase', { count: state.discardCount, selected: selectedCardIndices.length })}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="gleek-prompt-live" role="status" aria-live="polite">
+              {canBid && (
+                <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="gleek-bid-prompt">
+                  {t('bidPhase', { bid: state.highestBid })}
+                </div>
+              )}
+              {canDiscard && (
+                <div
+                  className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                  data-testid="gleek-discard-prompt"
+                >
+                  {t('discardPhase', { count: state.discardCount, selected: selectedCardIndices.length })}
+                </div>
+              )}
+            </div>
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

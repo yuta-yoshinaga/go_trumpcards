@@ -361,4 +361,31 @@ describe('CegoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByText(/\[0\], \[2\]/)).not.toBeInTheDocument();
   });
+
+  // **催促は常設のライブ領域の中にある (#6880)。** フェーズ切り替えで現れる
+  // テキストなので、領域が無いとスクリーンリーダには何も届かない。領域を
+  // 出現と同時に付けても読み上げられないため、常設にして中身だけ差し替える。
+  it('announces the prompt from an always-mounted live region', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<CegoPage />);
+
+    const live = await screen.findByTestId('cego-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
+    expect(live).toContainElement(await screen.findByTestId('cego-bid-prompt'));
+  });
+
+  // 催促はフェーズや手番が変わったときに現れるテキスト。領域が無いと、あるいは
+  // 領域が催促と**同時に**生えると、スクリーンリーダには何も届かない (#6880)。
+  it('announces the cego-exchange-prompt from the always-mounted live region', async () => {
+    mockExec.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<CegoPage />);
+
+    const live = await screen.findByTestId('cego-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
+    expect(live).toContainElement(await screen.findByTestId('cego-exchange-prompt'));
+  });
 });

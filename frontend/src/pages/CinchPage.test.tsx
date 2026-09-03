@@ -241,4 +241,31 @@ describe('CinchPage', () => {
     renderWithProviders(<CinchPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  // **催促は常設のライブ領域の中にある (#6880)。** フェーズ切り替えで現れる
+  // テキストなので、領域が無いとスクリーンリーダには何も届かない。領域を
+  // 出現と同時に付けても読み上げられないため、常設にして中身だけ差し替える。
+  it('announces the prompt from an always-mounted live region', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<CinchPage />);
+
+    const live = await screen.findByTestId('cinch-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
+    expect(live).toContainElement(await screen.findByTestId('cinch-bid-prompt'));
+  });
+
+  // 切り札指名の催促もフェーズが変わったときに現れるテキスト。**名前が
+  // `-bid-prompt` でないだけ**で領域の外に取り残されていた (#6880 レビュー指摘)。
+  it('announces the cinch-trump-prompt from the always-mounted live region', async () => {
+    mockExec.mockResolvedValue(nameTrumpState);
+    renderWithProviders(<CinchPage />);
+
+    const live = await screen.findByTestId('cinch-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
+    expect(live).toContainElement(await screen.findByTestId('cinch-trump-prompt'));
+  });
 });

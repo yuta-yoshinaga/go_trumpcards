@@ -334,11 +334,15 @@ function BasraPageContent() {
             </div>
 
             {/* Turn prompt */}
-            {!isGameEnd && (
-              <div className="text-center text-sm text-ds-accent" data-testid="basra-prompt">
-                {isHumanTurn ? t('turnYours') : t('turnCpu', { id: state.currentTurn })}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="basra-prompt-live" role="status" aria-live="polite">
+              {!isGameEnd && (
+                <div className="text-center text-sm text-ds-accent" data-testid="basra-prompt">
+                  {isHumanTurn ? t('turnYours') : t('turnCpu', { id: state.currentTurn })}
+                </div>
+              )}
+            </div>
 
             {/* Game-end result */}
             {isGameEnd && (

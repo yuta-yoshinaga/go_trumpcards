@@ -273,4 +273,17 @@ describe('SakuraPage', () => {
     // 表示されるのは共通の通信エラー文言なので、投げた文字列ではなく警告帯を見る。
     expect(await screen.findByRole('alert')).toBeInTheDocument();
   });
+
+  // 催促はフェーズや手番が変わったときに現れるテキスト。領域が無いと、あるいは
+  // 領域が催促と**同時に**生えると、スクリーンリーダには何も届かない (#6880)。
+  it('announces the sakura-prompt from the always-mounted live region', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<SakuraPage />);
+
+    const live = await screen.findByTestId('sakura-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
+    expect(live).toContainElement(await screen.findByTestId('sakura-prompt'));
+  });
 });

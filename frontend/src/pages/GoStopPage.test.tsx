@@ -292,4 +292,17 @@ describe('GoStopPage', () => {
     expect(shared).toHaveTextContent('피10');
     expect(shared.textContent).not.toContain('{{');
   });
+
+  // 催促はフェーズや手番が変わったときに現れるテキスト。領域が無いと、あるいは
+  // 領域が催促と**同時に**生えると、スクリーンリーダには何も届かない (#6880)。
+  it('announces the gostop-prompt from the always-mounted live region', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<GoStopPage />);
+
+    const live = await screen.findByTestId('gostop-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
+    expect(live).toContainElement(await screen.findByTestId('gostop-prompt'));
+  });
 });
