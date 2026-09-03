@@ -23,7 +23,24 @@ import (
 // **`reset` だけでは全部の形は出ない。** ヒントの塊も、ラウンドの集計も、
 // 棋譜も、打ってからでないと返らない。実際 `log` の `entries` は 317 ゲームで
 // 一度も書かれていなかったが、`reset` しか投げない検査では永久に見つからない。
-var liveProbeCommands = []string{"reset", "hint", "n", "next", "nr", "log"}
+//
+// **打った後にしか現れる形もある。** `humanAction` は 1 手打つまで null なので、
+// 進行系のコマンドを何巡か回す。知らないコマンドは各ゲームが穏当に断るだけなので、
+// 当たらないものが混ざっていて構わない ── 届く状態を増やす方が大事。
+var liveProbeCommands = buildProbeCommands()
+
+// buildProbeCommands は `reset` のあと、進行系のコマンドを 3 巡ぶん並べる。
+func buildProbeCommands() []string {
+	turns := []string{
+		"n", "next", "nr", "hint", "log",
+		"p", "play", "d", "draw", "s", "stand", "h", "hit", "c", "call", "k", "check",
+	}
+	out := []string{"reset"}
+	for range 3 {
+		out = append(out, turns...)
+	}
+	return out
+}
 
 // TestOpenAPIMatchesLiveResponses は**実際に返る JSON**とスキーマを突き合わせる。
 //
@@ -39,6 +56,13 @@ var liveProbeCommands = []string{"reset", "hint", "n", "next", "nr", "log"}
 // 応答とスキーマを**並べて降りる**ので、名前ではなく位置で見る。
 // `additionalProperties: true` のノードはそこで打ち切る ── 宣言どおり
 // 何を入れてもよい場所なので、欠落ではない。
+//
+// **落ちたらフレークではなく本物。** 配りは毎回違うので、届く盤面も毎回違う。
+// この検査は「返ってきた項目」しか見ないので**見落とすことはあっても、
+// 無い欠落を報告することはない**。実際 CI が 1 回だけ出した
+// `teenpatti: messageParams` も、20 回回して 2 回だけ出た
+// `currentLowHand` と `gofish.books` も、全部本物の食い違いだった。
+// 再実行で緑になっても直すこと。
 func TestOpenAPIMatchesLiveResponses(t *testing.T) {
 	root := filepath.Join("..", "..", "..")
 	raw, err := os.ReadFile(filepath.Join(root, "api", "openapi.yaml")) //nolint:gosec // test-only, fixed path

@@ -24849,6 +24849,21 @@ paths:
                   humanAction:
                     nullable: true
                     type: object
+                    properties:
+                      playerIdx:
+                        type: integer
+                      source:
+                        type: string
+                      playedCards:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Card'
+                      pickup:
+                        type: boolean
+                      burned:
+                        type: boolean
+                      skipped:
+                        type: boolean
                   message:
                     type: string
                   messageCode:
@@ -57802,11 +57817,18 @@ components:
                 description: Number of completed books
               books:
                 type: array
-                description: Completed books (array of 4-card groups)
+                description: "Completed books. Each carries the rank it was made of and the four cards themselves."
                 items:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Card'
+                  type: object
+                  properties:
+                    rank:
+                      type: integer
+                      description: "Rank the book was made of."
+                    cards:
+                      type: array
+                      description: The four cards of the book.
+                      items:
+                        $ref: '#/components/schemas/Card'
               isFinished:
                 type: boolean
                 description: Whether this player has finished (no cards and no more draws)
@@ -58406,8 +58428,10 @@ components:
         - playStyleName
       properties:
         currentLowHand:
-          type: object
-          description: "Running low hand during a street (Hi-Lo, human seat, only once it qualifies). The settled low is `lowBestHand`; reading this one as the result mistakes a hand that can still change for a final one."
+          type: array
+          description: "Running low hand during a street, as cards (Hi-Lo, human seat, only once it qualifies). The settled low is `lowBestHand`; reading this one as the result mistakes a hand that can still change for a final one."
+          items:
+            $ref: '#/components/schemas/Card'
         id:
           type: integer
           description: Player index (0 = human, 1+ = CPU)
