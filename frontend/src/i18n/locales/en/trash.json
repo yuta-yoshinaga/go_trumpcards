@@ -38,5 +38,6 @@
   "frontendHint": {
     "trashDraw": "Draw — a playable card fills its slot on its own",
     "trashPlaceWildLow": "Put the wild in the lowest empty slot — filling from the bottom keeps later draws useful"
-  }
+  },
+  "landscapeBanner": "Landscape orientation recommended"
 }

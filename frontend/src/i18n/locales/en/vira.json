@@ -12,7 +12,8 @@
     "targetPoints": "Target Points",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "targetRounds": "Target rounds"
   },
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",

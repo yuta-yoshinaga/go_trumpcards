@@ -230,7 +230,7 @@ function FourteenOutPageContent() {
                       aria-label={
                         tail
                           ? `${t('label.column', { n: colIdx })}: ${cardAlt(tail)}${pairSuffix(isPartner, dimmed)}`
-                          : `${t('label.column', { n: colIdx })}: ${t('label.empty', { ns: 'common' })}`
+                          : `${t('label.column', { n: colIdx })}: ${t('label.empty')}`
                       }
                       onClick={() => handleColumnClick(colIdx)}
                       disabled={!isPlaying || loading || tail === null}

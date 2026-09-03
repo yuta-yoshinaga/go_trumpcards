@@ -56,5 +56,6 @@
   "emptyFoundationAscendingAriaLabel": "empty foundation {{idx}} ({{suit}}, up from the Ace)",
   "emptyFoundationDescendingAriaLabel": "empty foundation {{idx}} ({{suit}}, down from the King)",
   "directionAscending": "up from the Ace",
-  "directionDescending": "down from the King"
+  "directionDescending": "down from the King",
+  "emptyCellAriaLabel": "Empty cell {{cell}}"
 }

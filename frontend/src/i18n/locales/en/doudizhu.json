@@ -72,5 +72,6 @@
       "bomb": "Bomb",
       "rocket": "Rocket"
     }
-  }
+  },
+  "landscapeBanner": "Landscape orientation recommended"
 }

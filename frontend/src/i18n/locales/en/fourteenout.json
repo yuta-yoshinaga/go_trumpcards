@@ -16,7 +16,8 @@
     "win": "All 52 cards removed!",
     "loss": "Game Over",
     "pairs": "makes 14",
-    "noPair": "does not make 14 with the selected card"
+    "noPair": "does not make 14 with the selected card",
+    "empty": "empty"
   },
   "button": {
     "reset": "Reset",

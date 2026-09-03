@@ -263,9 +263,7 @@ function MonteCarloPageContent() {
                           data-testid={`mc-cell-${rowIdx}-${colIdx}`}
                           data-hint-action={`mc-cell-${rowIdx}-${colIdx}`}
                           aria-label={
-                            cell.card
-                              ? cardAlt(cell.card)
-                              : `${t('label.empty', { ns: 'common' })} ${rowIdx + 1}-${colIdx + 1}`
+                            cell.card ? cardAlt(cell.card) : `${t('label.empty')} ${rowIdx + 1}-${colIdx + 1}`
                           }
                           onClick={() => handleCellClick(rowIdx, colIdx)}
                           disabled={!isPlaying || loading || !filled}
