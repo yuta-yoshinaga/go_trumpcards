@@ -25,7 +25,9 @@ func grandfathersClockColumnStr(colCards []*domain.GrandfathersClockTableauCard)
 // grandfathersClockCompletedFaces returns the number of completed clock faces.
 func grandfathersClockCompletedFaces(gc interfaces.GrandfathersClockGame) int {
 	faces := 0
-	for i := range gc.GetFoundation() {
+	// GetFoundation は固定長配列を**値で**返すので、長さが欲しいだけの
+	// range はスライス 12 本ぶんの配列を毎回コピーする。長さは定数。
+	for i := range domain.GrandfathersClockFoundationCnt {
 		if gc.IsFoundationComplete(i) {
 			faces++
 		}

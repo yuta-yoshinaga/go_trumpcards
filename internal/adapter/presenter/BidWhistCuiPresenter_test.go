@@ -1,6 +1,7 @@
 package presenter_test
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
@@ -75,6 +76,23 @@ func TestBidWhistCuiPresenter_Output_Phases(t *testing.T) {
 			t.Errorf("game end banner missing winner: %q", out)
 		}
 	})
+}
+
+// 目標点は Web の Config には出ているのに CUI には無かった (#7059)。
+// 何点先取なのか判らないと、点差の意味が読めない。
+func TestBidWhistCuiPresenterStatesTheTargetScore(t *testing.T) {
+	p := &presenter.BidWhistCuiPresenter{}
+	g := newBidWhistGame()
+	g.Reset()
+	out := p.Output(g, nil)
+
+	// **i18n.T で期待値を作らない。** 未翻訳ならキーがそのまま返るので
+	// `Contains(out, T(k))` は翻訳が無くても通る。解決後の文言で見る。
+	// **裸の数字で見ない。** 手札に "SPADE 7" が出るので
+	// `Contains(out, "7")` は目標点が無くても通ってしまう (実測済み)。
+	assert.Contains(t, out, "先取 "+strconv.Itoa(domain.BidWhistDefaultTargetScore)+"点",
+		"目標点が出力に出ていない")
+	assert.NotContains(t, out, "bidwhist.teamScoreLine", "i18n キーが未解決のまま出ている")
 }
 
 func TestBidWhistCuiPresenter_HintOutput(t *testing.T) {
