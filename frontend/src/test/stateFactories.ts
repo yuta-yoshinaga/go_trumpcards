@@ -1610,6 +1610,7 @@ const baseGleekState: GleekResponse = {
   turnUp: { design: 'HEART' as const, value: 4 },
   currentTrick: [],
   playerScores: [0, 0, 0],
+  roundDelta: [0, 0, 0],
   discardCount: 7,
   ruffWinnerIdx: 0,
   melds: [],

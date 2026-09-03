@@ -39,6 +39,7 @@
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "promptRoundEnd": "ディール終了（この配りの点: {{total}}  基準点: {{par}}）",
+  "promptRoundDelta": "{{name}}: {{delta}}",
   "promptRoundEndHelp": "nr / nextround・・・次のディールへ",
   "hintNone": "ヒントはありません。",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",

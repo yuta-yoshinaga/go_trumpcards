@@ -61,7 +61,8 @@
   },
   "roundResult": {
     "title": "Deal result",
-    "par": "Points in this deal: {{total}}  par: {{par}} (each seat is settled against the difference)"
+    "par": "Points in this deal: {{total}}  par: {{par}} (each seat is settled against the difference)",
+    "delta": "{{name}}: {{delta}}"
   },
   "hintAvailable": "Hint",
   "hint": {

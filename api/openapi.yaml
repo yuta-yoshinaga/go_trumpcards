@@ -61087,6 +61087,7 @@ components:
         - trumpSuit
         - currentTrick
         - playerScores
+        - roundDelta
         - discardCount
         - ruffWinnerIdx
         - melds
@@ -61149,6 +61150,11 @@ components:
           type: array
           items:
             type: integer
+        roundDelta:
+          type: array
+          items:
+            type: integer
+          description: Score delta for each player in the round.
         discardCount:
           type: integer
           description: How many cards the buyer must throw (seven).

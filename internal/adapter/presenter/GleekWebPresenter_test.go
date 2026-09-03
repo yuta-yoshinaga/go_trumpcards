@@ -49,6 +49,7 @@ func setupGleekWebMock() *interfaces.MockGleekGame {
 	m.On("GetPassed").Return([domain.GleekPlayerCnt]bool{false, true, true})
 	m.On("GetResult").Return(domain.GleekResultNone)
 	m.On("GetPlayerScores").Return([domain.GleekPlayerCnt]int{})
+	m.On("GetRoundDelta").Return([]int{0, 0, 0}).Maybe()
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayableIndices", 0).Return([]int{0})
 	m.On("IsHumanTurn").Return(true)
@@ -116,6 +117,18 @@ func TestGleekWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 31, out.Players[0].Ruff)
 		assert.Equal(t, domain.CardDesignHeart, out.Players[0].RuffSuit)
 		assert.Equal(t, 9, out.Players[0].TrickPoints)
+	})
+
+	// **純増減は席順の配列ひとつだけで返す。** 累積の PlayerScores と同じ形。
+	// 同じ値をプレイヤー側にも持たせると、いつか片方だけ直して食い違う。
+	t.Run("response carries the round delta as one seat-ordered array", func(t *testing.T) {
+		m, _ := setupGleekWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundDelta")
+		m.On("GetRoundDelta").Return([]int{15, -10, -5})
+		out := decodeGleek(t, p.Output(m, nil))
+		assert.Equal(t, []int{15, -10, -5}, out.RoundDelta)
+		// 席の並びが累積点と揃っていること (どちらかだけ並べ替えると画面で食い違う)。
+		assert.Len(t, out.RoundDelta, len(out.Players))
 	})
 
 	t.Run("phase message codes", func(t *testing.T) {

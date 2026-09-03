@@ -158,8 +158,27 @@ func (p *GleekCuiPresenter) writePrompt(b *strings.Builder, g interfaces.GleekGa
 		b.WriteString(i18n.Tf("gleek.promptRoundEnd",
 			"total", strconv.Itoa(g.DealPoints()),
 			"par", strconv.Itoa(g.Par())) + "\n")
+		// **出す数だけ差分の配列から取る。** 席数と突き合わせて長さを守る分岐を
+		// 置くと、本番では絶対に外れない枝がひとつ増えるだけになる。
+		// `GetPlayer` は範囲外で nil を返し、`cuiPlayerName` がそれを扱う。
+		for i, delta := range g.GetRoundDelta() {
+			b.WriteString(i18n.Tf("gleek.promptRoundDelta",
+				"name", cuiPlayerName(g.GetPlayer(i), i),
+				"delta", gleekSignedScore(delta)) + "\n")
+		}
 		b.WriteString(i18n.T("gleek.promptRoundEndHelp") + "\n")
 	}
+}
+
+// gleekSignedScore は増減を符号付きで表す。正には + を付け、0 は ±0 とする。
+func gleekSignedScore(n int) string {
+	if n > 0 {
+		return "+" + strconv.Itoa(n)
+	}
+	if n == 0 {
+		return "±0"
+	}
+	return strconv.Itoa(n)
 }
 
 // gleekStockLine 表向きの札と落札の行を組み立てる。

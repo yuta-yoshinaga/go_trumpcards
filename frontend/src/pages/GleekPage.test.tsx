@@ -203,6 +203,50 @@ describe('GleekPage', () => {
     expect(par).toHaveTextContent('26');
   });
 
+  // **ラウンド終了時に各席の純増減を符号付きで出す** (#6620)。
+  // 累積点だけでは前後の引き算を自力で行わないと成果が分からない。
+  it('renders signed round deltas for all seats in round end panel', async () => {
+    mockExec.mockResolvedValue(
+      makeGleekState({
+        ...roundEndState,
+        roundDelta: [15, -10, -5],
+      }),
+    );
+    renderWithProviders(<GleekPage />);
+    await waitFor(() => expect(screen.getByTestId('gleek-round-delta-0')).toBeInTheDocument());
+
+    const delta0 = screen.getByTestId('gleek-round-delta-0');
+    expect(delta0).toHaveTextContent('+15');
+    expect(delta0.className).toContain('text-ds-success');
+
+    const delta1 = screen.getByTestId('gleek-round-delta-1');
+    expect(delta1).toHaveTextContent('-10');
+    expect(delta1.className).toContain('text-ds-error');
+
+    const delta2 = screen.getByTestId('gleek-round-delta-2');
+    expect(delta2).toHaveTextContent('-5');
+    expect(delta2.className).toContain('text-ds-error');
+  });
+
+  it('renders ±0 for seats with zero round delta', async () => {
+    mockExec.mockResolvedValue(
+      makeGleekState({
+        ...roundEndState,
+        roundDelta: [0, 5, -5],
+      }),
+    );
+    renderWithProviders(<GleekPage />);
+    await waitFor(() => expect(screen.getByTestId('gleek-round-delta-0')).toBeInTheDocument());
+    expect(screen.getByTestId('gleek-round-delta-0')).toHaveTextContent('±0');
+  });
+
+  it('does not show round deltas while round is still being played', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<GleekPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ A')).toBeInTheDocument());
+    expect(screen.queryByTestId('gleek-round-delta-0')).not.toBeInTheDocument();
+  });
+
   it('renders the game end message', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<GleekPage />);
