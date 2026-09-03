@@ -21746,6 +21746,90 @@ paths:
                 properties:
                   message:
                     type: string
+                  declarations:
+                    type: array
+                    items:
+                      type: object
+                    description: "Piles declared on the table. Each carries ownerIdx, value, groups and isGroup."
+                  ownerIdx:
+                    type: integer
+                    description: "Seat that owes the capture for a declaration."
+                  isGroup:
+                    type: boolean
+                    description: "Whether the declaration is a group. A group is taken whole or not at all."
+                  lastCapturer:
+                    type: integer
+                    description: "Seat that captured last. Table cards go to this seat when the stock runs out."
+                  takeOptions:
+                    type: array
+                    items:
+                      type: array
+                    description: "Legal captures for each of the human's hand cards, in hand order."
+                  declareOptions:
+                    type: array
+                    items:
+                      type: array
+                    description: "Declarations the human can make with each hand card, in hand order."
+                  canTrail:
+                    type: array
+                    items:
+                      type: boolean
+                    description: "Whether each of the human's hand cards may be trailed to the table, in hand order."
+                  tableIdxs:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Indices of the loose table cards a capture or declaration uses."
+                  declIdxs:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Indices of the declarations a capture takes."
+                  xeri:
+                    type: integer
+                    description: "Xeri (single-card table sweeps) this seat made this round. Each is worth 10."
+                  xeris:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Xeri count per seat for the finished round."
+                  cardCounts:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Cards captured per seat for the finished round."
+                  totals:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Points per seat for the finished round."
+                  lines:
+                    type: array
+                    items:
+                      type: object
+                    description: "Score breakdown for the finished round. Each line carries a key and per-seat points."
+                  hintHandIdx:
+                    type: integer
+                    description: "Hand card the hint recommends, or -1 when there is none."
+                  hintAction:
+                    type: string
+                    description: "Action the hint recommends."
+                  hintTableIdxs:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Table cards the hint recommends taking."
+                  hintDeclIdxs:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Declarations the hint recommends taking."
+                  hintDeclValue:
+                    type: integer
+                    description: "Value the hint recommends declaring."
+                  hintReason:
+                    type: string
+                    description: "Identifier for the reason behind the hint."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:

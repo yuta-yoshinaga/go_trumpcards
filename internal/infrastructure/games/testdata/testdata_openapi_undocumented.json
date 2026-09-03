@@ -17,7 +17,6 @@
     "bankerNatural",
     "coupNumber",
     "hintDraw",
-    "hintReason",
     "retired",
     "role",
     "seatIdx",
@@ -71,7 +70,6 @@
     "hasLittleCasino",
     "isMulti",
     "isSweep",
-    "ownerIdx",
     "sweepCount"
   ],
   "Cego": [
@@ -85,21 +83,14 @@
     "denariCount",
     "hasSetteBello",
     "hintCaptureIdxs",
-    "hintHandIdx",
-    "hintReason",
     "lastBonus",
-    "lastCapturer",
-    "lines",
     "scope",
-    "sweptDenari",
-    "totals"
+    "sweptDenari"
   ],
   "Comet": [
     "cardsLeft",
     "deadCount",
     "heldWildIdx",
-    "hintHandIdx",
-    "hintReason",
     "need",
     "playableIdxs",
     "unplayedKings"
@@ -112,20 +103,15 @@
     "canGoOutOnDeal",
     "goOutIdx",
     "hintDiscardIdx",
-    "hintReason",
     "layouts",
     "perOpponent"
   ],
   "CostlyColours": [
     "combos",
     "hintAcceptMog",
-    "hintHandIdx",
-    "hintReason",
-    "lines",
     "moggedIn",
     "playableIdxs",
-    "played",
-    "totals"
+    "played"
   ],
   "CourtPiece": [
     "consecutiveWins",
@@ -158,28 +144,6 @@
     "foldRate",
     "roundLabel",
     "totalDraws"
-  ],
-  "Diloti": [
-    "canTrail",
-    "cardCounts",
-    "declIdxs",
-    "declarations",
-    "declareOptions",
-    "hintAction",
-    "hintDeclIdxs",
-    "hintDeclValue",
-    "hintHandIdx",
-    "hintReason",
-    "hintTableIdxs",
-    "isGroup",
-    "lastCapturer",
-    "lines",
-    "ownerIdx",
-    "tableIdxs",
-    "takeOptions",
-    "totals",
-    "xeri",
-    "xeris"
   ],
   "Doppelkopf": [
     "isRe"
@@ -514,8 +478,6 @@
     "betUnit",
     "callAmount",
     "handNames",
-    "hintAction",
-    "hintReason",
     "humanHandName",
     "revealed"
   ],
