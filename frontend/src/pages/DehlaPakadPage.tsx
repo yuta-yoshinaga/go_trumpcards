@@ -302,6 +302,16 @@ function DehlaPakadPageContent() {
                   </div>
                 )}
 
+                {/* 相手が選んでいる間の空白を埋める。PiedmonteseTarot の
+                    scartoWaiting と同じ形 (#6626)。 */}
+                {isTrumpPhase && !canCallTrump && (
+                  <div className="mb-2 text-center text-sm text-ds-text-muted" data-testid="dehlapakad-trump-waiting">
+                    {t('trumpWaiting', {
+                      name: playerName(state.trumpChooserIdx, state.players[state.trumpChooserIdx]?.isHuman === true),
+                    })}
+                  </div>
+                )}
+
                 {state.lastHand && (isHandEnd || isGameEnd) && (
                   <div
                     className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
