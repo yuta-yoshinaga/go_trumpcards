@@ -13940,6 +13940,24 @@ paths:
               schema:
                 type: object
                 properties:
+                  defenderTeam:
+                    type: integer
+                    description: "Team defending against the contract."
+                  needTricks:
+                    type: integer
+                    description: "Tricks the declaring side must take to make the contract."
+                  misere:
+                    type: boolean
+                    description: "Whether the contract is misere, where the declarer must take no trick at all."
+                  slam:
+                    type: boolean
+                    description: "Whether the declaring side took every trick."
+                  declarerDelta:
+                    type: integer
+                    description: "Points the declaring side gained or lost on the settled hand."
+                  defenderDelta:
+                    type: integer
+                    description: "Points each defending side gained or lost on the settled hand."
                   players:
                     type: array
                   phase:
@@ -31044,6 +31062,26 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  chien:
+                    type: array
+                    items:
+                      type: object
+                    description: "The chien, the talon set aside at the deal."
+                  chienCount:
+                    type: integer
+                    description: "Cards in the chien."
+                  chienRevealed:
+                    type: boolean
+                    description: "Whether the chien has been turned face up for everyone to see."
+                  stashOwner:
+                    type: integer
+                    description: "Seat that takes the chien into its tricks, or -1 when it is not decided."
+                  isHumanDiscard:
+                    type: boolean
+                    description: "Whether the human is the one to discard down after taking the chien."
+                  petitAuBoutDelta:
+                    type: integer
+                    description: "Adjustment for petit au bout, per defender. 0 when it did not happen."
                   message:
                     type: string
         '400':
@@ -31768,6 +31806,28 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  yaku:
+                    type: array
+                    items:
+                      type: object
+                    description: "Yaku this seat has completed, each with its name and points."
+                  yakuPoints:
+                    type: integer
+                    description: "Points from those yaku before any multiplier."
+                  pendingYaku:
+                    type: array
+                    items:
+                      type: object
+                    description: "Yaku completed on the current capture, awaiting the koi-koi decision."
+                  calledKoiKoi:
+                    type: boolean
+                    description: "Whether this seat has called koi-koi to keep playing."
+                  koikoiCount:
+                    type: integer
+                    description: "How many times koi-koi has been called this round."
+                  koikoi:
+                    type: integer
+                    description: "Whether the hint recommends calling koi-koi rather than stopping."
                   message:
                     type: string
         '400':

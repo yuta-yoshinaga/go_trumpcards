@@ -54,8 +54,7 @@
     "blind",
     "contractType",
     "isHumanContract",
-    "isHumanExchange",
-    "stashOwner"
+    "isHumanExchange"
   ],
   "Conquian": [
     "extendTargets",
@@ -118,28 +117,12 @@
     "addonUsed",
     "foldRate"
   ],
-  "FiveHundred": [
-    "declarerDelta",
-    "defenderDelta",
-    "defenderTeam",
-    "misere",
-    "needTricks",
-    "slam"
-  ],
   "FollowTheQueen": [
     "addonUsed",
     "foldRate"
   ],
   "FortyAndEight": [
     "redealUsed"
-  ],
-  "FrenchTarot": [
-    "chien",
-    "chienCount",
-    "chienRevealed",
-    "isHumanDiscard",
-    "petitAuBoutDelta",
-    "stashOwner"
   ],
   "Gaigel": [
     "marriageIndices"
@@ -160,8 +143,7 @@
   ],
   "HachiHachi": [
     "bonus",
-    "rawScore",
-    "yaku"
+    "rawScore"
   ],
   "Holdem": [
     "addonUsed",
@@ -197,17 +179,7 @@
   "Koenigrufen": [
     "calledKing",
     "isHumanCall",
-    "isHumanDiscard",
-    "stashOwner",
     "talon"
-  ],
-  "KoiKoi": [
-    "calledKoiKoi",
-    "koikoi",
-    "koikoiCount",
-    "pendingYaku",
-    "yaku",
-    "yakuPoints"
   ],
   "Machiavelli": [
     "handIndices",
