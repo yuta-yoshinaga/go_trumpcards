@@ -112,7 +112,11 @@ func (p *CoincheCuiPresenter) Output(b interfaces.CoincheGame, lastErr error) st
 			if pts := b.GetBiddablePoints(); len(pts) > 0 {
 				labels := make([]string, len(pts))
 				for i, v := range pts {
-					labels[i] = strconv.Itoa(v)
+					if v == domain.CoincheCapotPoints {
+						labels[i] = i18n.Tf("coinche.capotOption", "points", strconv.Itoa(v))
+					} else {
+						labels[i] = strconv.Itoa(v)
+					}
 				}
 				out.WriteString(i18n.Tf("coinche.biddablePoints",
 					"points", strings.Join(labels, " / ")) + "\n")

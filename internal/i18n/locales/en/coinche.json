@@ -16,6 +16,7 @@
   "trumpUndecided": "Trump: undecided",
   "contractLine": "Contract: {{points}} (team {{team}}, x{{mult}})",
   "biddablePoints": "You may bid: {{points}}",
+  "capotOption": "{{points}} (Capot)",
   "teamScoreLine": "Team 0: {{t0}}  Team 1: {{t1}}",
   "beloteBonusLine": "Belote/Rebelote: +{{points}} to team {{team}} (K+Q of trumps)",
   "playerLine": "{{name}}: team {{team}}, {{tricks}} tricks, {{cards}} cards",
