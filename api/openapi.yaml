@@ -21142,6 +21142,26 @@ paths:
                 properties:
                   message:
                     type: string
+                  denariCount:
+                    type: integer
+                    description: "Denari this seat captured. Taking the most scores a point."
+                  sweptDenari:
+                    type: integer
+                    description: "Seat that took every denaro, or -1 when nobody did."
+                  hasSetteBello:
+                    type: boolean
+                    description: "Whether this seat took the sette bello, the seven of denari."
+                  scope:
+                    type: integer
+                    description: "Scope this seat made by clearing the table."
+                  lastBonus:
+                    type: string
+                    description: "Identifier for the most recent deal bonus, empty when there was none."
+                  hintCaptureIdxs:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Table cards the hint recommends capturing."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
@@ -21626,6 +21646,28 @@ paths:
                 properties:
                   message:
                     type: string
+                  need:
+                    type: integer
+                    description: "Rank required next, or 0 when the sequence is open and any card may start it."
+                  deadCount:
+                    type: integer
+                    description: "Cards laid face down as dead. Their faces are not shown."
+                  playableIdxs:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Hand positions the human may play. Empty means the seat must pass."
+                  cardsLeft:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Cards each seat still held when the round ended."
+                  unplayedKings:
+                    type: integer
+                    description: "Kings that never came out. Each is worth two points."
+                  heldWildIdx:
+                    type: integer
+                    description: "Seat left holding the comet at the end, or -1 when nobody was."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
@@ -53600,6 +53642,24 @@ components:
       type: object
       description: Current state of the Cassino game
       properties:
+        sweepCount:
+          type: integer
+          description: "Sweeps a seat made. Each clears the table and scores."
+        buildValue:
+          type: integer
+          description: "Value of the build a played card created or added to."
+        isMulti:
+          type: boolean
+          description: "Whether a build is a multiple build, which cannot be raised."
+        isSweep:
+          type: boolean
+          description: "Whether a play cleared the table."
+        hasBigCasino:
+          type: integer
+          description: "Seat holding the big casino, the ten of diamonds."
+        hasLittleCasino:
+          type: integer
+          description: "Seat holding the little casino, the two of spades."
         players:
           type: array
           items:
