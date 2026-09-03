@@ -375,3 +375,26 @@ func TestCometConfig_Validate(t *testing.T) {
 		assert.NoError(t, cfg.Validate(), "選べる目標点 %d が弾かれる", v)
 	}
 }
+
+// **テスト用の差し替えもドメインの試験から踏む (#6630)。**
+//
+// Go のカバレッジは既定で「試験しているパッケージ」しか数えないので、
+// presenter の試験からしか呼ばれない setter は codecov に 0% で出る。
+// 差し替えた値が getter から読めることまで見て、意味のある試験にする。
+func TestComet_ForTestSettersDriveTheAccessors(t *testing.T) {
+	c := newCometGame(t)
+
+	c.SetPhaseForTest(CometPhaseRoundEnd)
+	assert.Equal(t, CometPhaseRoundEnd, c.GetPhase())
+
+	want := &CometRoundResult{WinnerIdx: 2, CardsLeft: []int{0, 3, 0, 5}, UnplayedKings: 1, HeldWildIdx: -1}
+	c.SetLastResultForTest(want)
+	got := c.GetLastResult()
+	require.NotNil(t, got)
+	assert.Equal(t, 2, got.WinnerIdx)
+	assert.Equal(t, []int{0, 3, 0, 5}, got.CardsLeft)
+
+	// **nil も入る。** 局が始まったら集計を消す経路がある。
+	c.SetLastResultForTest(nil)
+	assert.Nil(t, c.GetLastResult())
+}
