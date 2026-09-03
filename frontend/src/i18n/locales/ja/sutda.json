@@ -56,7 +56,7 @@
   "canCheck": "追加は不要です（チェックできます）。",
   "callButton": "コール（{{n}}）",
   "checkButton": "チェック",
-  "raiseButton": "レイズ（+{{n}}）",
+  "raiseButton": "レイズ（+{{n}} / あと {{left}} 回）",
   "foldButton": "フォールド",
   "nextHand": "次のハンド",
   "showdownResult": "ショーダウン: {{names}} が {{pot}} を獲得しました。",

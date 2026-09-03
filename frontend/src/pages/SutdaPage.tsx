@@ -318,7 +318,7 @@ function SutdaPageContent() {
                   disabled={loading}
                   data-testid="sutda-raise"
                 >
-                  {t('raiseButton', { n: state.betUnit })}
+                  {t('raiseButton', { n: state.betUnit, left: state.maxRaises - state.raiseCount })}
                 </button>
               )}
               {canAct && (
