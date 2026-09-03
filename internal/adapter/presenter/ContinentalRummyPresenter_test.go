@@ -54,6 +54,40 @@ func contWinningHand(t *testing.T) *domain.ContinentalRummy {
 	return c
 }
 
+// contWinningHandOnDeal は配られた 15 枚のまま上がれる手札を人間に持たせた盤を返す。
+func contWinningHandOnDeal(t *testing.T) *domain.ContinentalRummy {
+	t.Helper()
+	c := contAtHumanDrawP(t)
+	c.SetPhaseForTest(domain.ContinentalRummyPhaseDraw)
+	c.SetCurrentIdxForTest(domain.ContinentalRummyHumanIdx)
+	p := c.GetPlayer(domain.ContinentalRummyHumanIdx)
+	p.ResetRound()
+	for _, run := range [][2]int{
+		{domain.CardDesignSpade, 2}, {domain.CardDesignSpade, 7},
+		{domain.CardDesignHeart, 4}, {domain.CardDesignClover, 9},
+		{domain.CardDesignDiamond, 5},
+	} {
+		for k := 0; k < 3; k++ {
+			p.AddCard(contCardFor(run[0], run[1]+k))
+		}
+	}
+	require.Equal(t, domain.ContinentalRummyHandSize, p.GetCardsSize())
+	require.True(t, c.CanGoOutOnTheDeal())
+	return c
+}
+
+// contBrokenHandOnDeal は配られた手札のまま上がれない 15 枚を人間に持たせた盤を返す。
+func contBrokenHandOnDeal(t *testing.T) *domain.ContinentalRummy {
+	t.Helper()
+	c := contWinningHandOnDeal(t)
+	p := c.GetPlayer(domain.ContinentalRummyHumanIdx)
+	p.RemoveCard(14)
+	p.AddCard(contCardFor(domain.CardDesignSpade, 13))
+	require.Equal(t, domain.ContinentalRummyHandSize, p.GetCardsSize())
+	require.False(t, c.CanGoOutOnTheDeal())
+	return c
+}
+
 func TestContinentalRummyCuiPresenter_Output(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)
@@ -101,6 +135,61 @@ func TestContinentalRummyCuiPresenter_Output(t *testing.T) {
 		if _, ok := quiet.CanGoOut(); !ok {
 			assert.NotContains(t, p.Output(quiet, nil), i18n.Tf("continentalrummy.canGoOut", "idx", "0"))
 		}
+	})
+
+	// **配られた 15 枚のまま上がれるときは専用の案内を出し、上がれないときは出さない。**
+	t.Run("says so when the hand can go out on the deal, and stays quiet otherwise", func(t *testing.T) {
+		c := contWinningHandOnDeal(t)
+		require.True(t, c.CanGoOutOnTheDeal())
+		out := p.Output(c, nil)
+		assert.Contains(t, out, "gooutdeal")
+		assert.Contains(t, out, "10")
+		assert.Contains(t, out, i18n.T("continentalrummy.canGoOutOnDeal"))
+		assert.NotContains(t, out, "continentalrummy.canGoOutOnDeal", "未翻訳のキーが生で出ている")
+
+		// 負のコントロール: 上がれない 15 枚では案内が出ない
+		broken := contBrokenHandOnDeal(t)
+		require.False(t, broken.CanGoOutOnTheDeal())
+		outBroken := p.Output(broken, nil)
+		assert.NotContains(t, outBroken, "gooutdeal")
+		assert.NotContains(t, outBroken, i18n.T("continentalrummy.canGoOutOnDeal"))
+	})
+
+	t.Run("english renders canGoOutOnDeal guidance in english", func(t *testing.T) {
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
+		c := contWinningHandOnDeal(t)
+		out := p.Output(c, nil)
+		assert.Contains(t, out, "gooutdeal")
+		assert.Contains(t, out, "10")
+		assert.Contains(t, out, i18n.T("continentalrummy.canGoOutOnDeal"))
+		assert.NotContains(t, out, "continentalrummy.canGoOutOnDeal")
+		assert.NotContains(t, out, "上がれ", "英語表示に日本語が漏れている")
+	})
+
+	// **CUI と Web で CanGoOutOnDeal の判定が食い違わないこと。**
+	t.Run("cui and web agree on canGoOutOnDeal", func(t *testing.T) {
+		webP := new(presenter.ContinentalRummyWebPresenter)
+
+		// 正ケース: 上がれる 15 枚
+		cWin := contWinningHandOnDeal(t)
+		cuiWinOut := p.Output(cWin, nil)
+		var webWinOut controller.ContinentalRummyWebOutput
+		require.NoError(t, json.Unmarshal([]byte(webP.Output(cWin, nil)), &webWinOut))
+		assert.True(t, cWin.CanGoOutOnTheDeal())
+		assert.True(t, webWinOut.CanGoOutOnDeal)
+		assert.Equal(t, "continentalrummy.drawPhase.canGoOutOnDeal", webWinOut.MessageCode)
+		assert.Contains(t, cuiWinOut, i18n.T("continentalrummy.canGoOutOnDeal"))
+
+		// 負のコントロール: 上がれない 15 枚
+		cBroken := contBrokenHandOnDeal(t)
+		cuiBrokenOut := p.Output(cBroken, nil)
+		var webBrokenOut controller.ContinentalRummyWebOutput
+		require.NoError(t, json.Unmarshal([]byte(webP.Output(cBroken, nil)), &webBrokenOut))
+		assert.False(t, cBroken.CanGoOutOnTheDeal())
+		assert.False(t, webBrokenOut.CanGoOutOnDeal)
+		assert.Equal(t, "continentalrummy.drawPhase", webBrokenOut.MessageCode)
+		assert.NotContains(t, cuiBrokenOut, i18n.T("continentalrummy.canGoOutOnDeal"))
 	})
 
 	// **加点は内訳で見せる。** 合計だけだと、どう上がると得なのかが伝わらない。
@@ -219,6 +308,20 @@ func TestContinentalRummyWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, domain.ContinentalRummyPhaseDraw, out.Phase)
 		assert.True(t, out.IsHumanTurn)
 		assert.Equal(t, "continentalrummy.drawPhase", out.MessageCode)
+	})
+
+	// **配られた 15 枚のまま上がれるかはサーバが判定する。**
+	t.Run("carries canGoOutOnDeal and message code when hand can go out on deal", func(t *testing.T) {
+		c := contWinningHandOnDeal(t)
+		out := decode(t, p.Output(c, nil))
+		assert.True(t, out.CanGoOutOnDeal)
+		assert.Equal(t, "continentalrummy.drawPhase.canGoOutOnDeal", out.MessageCode)
+
+		// 負のコントロール: 上がれないときは false
+		broken := contBrokenHandOnDeal(t)
+		outBroken := decode(t, p.Output(broken, nil))
+		assert.False(t, outBroken.CanGoOutOnDeal)
+		assert.Equal(t, "continentalrummy.drawPhase", outBroken.MessageCode)
 	})
 
 	// **上がれるかはサーバが解く。** ページ側で 15 枚の分割を解き直さない。
