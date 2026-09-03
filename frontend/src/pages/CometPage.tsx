@@ -132,6 +132,9 @@ function CometPageContent() {
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isPlayPhase = state.phase === CometPhase.PLAY;
+  // **クロージャの中で narrow が効くように束ねる。** `state.lastResult` のままだと
+  // map のコールバック内で null 可能に戻り、起きない分岐が増える。
+  const lastResult = state.lastResult;
   const isRoundEnd = state.phase === CometPhase.ROUND_END;
   const isGameEnd = state.phase === CometPhase.GAME_END || state.gameEndFlag;
   const canPlay = isPlayPhase && state.isHumanTurn;
@@ -250,22 +253,33 @@ function CometPageContent() {
                   ))}
                 </div>
 
-                {state.lastResult && (isRoundEnd || isGameEnd) && (
+                {lastResult && (isRoundEnd || isGameEnd) && (
                   <div
                     className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
                     data-testid="comet-round-result"
                   >
                     <div className="mb-1 text-ds-text-primary">
                       {t('goOut', {
-                        name: playerName(state.lastResult.winnerIdx, state.lastResult.winnerIdx === 0),
-                        points: state.lastResult.gained[state.lastResult.winnerIdx],
+                        name: playerName(lastResult.winnerIdx, lastResult.winnerIdx === 0),
+                        points: lastResult.gained[lastResult.winnerIdx],
                       })}
                     </div>
-                    <div>{t('unplayedKings', { n: state.lastResult.unplayedKings })}</div>
-                    {state.lastResult.heldWildIdx >= 0 && (
+                    {/* **席の一覧を正本にする。** 残り枚数は席ごとに1つなので、
+                        枚数側を回して席を引き当てると「席が無いとき」という
+                        起きない分岐が要る。 */}
+                    {state.players.map((p, idx) => (
+                      <div key={p.id} data-testid={`comet-cards-left-${idx}`}>
+                        {t('cardsLeft', {
+                          name: playerName(p.id, p.isHuman),
+                          n: lastResult.cardsLeft[idx],
+                        })}
+                      </div>
+                    ))}
+                    <div>{t('unplayedKings', { n: lastResult.unplayedKings })}</div>
+                    {lastResult.heldWildIdx >= 0 && (
                       <div className="text-ds-danger" data-testid="comet-held-wild">
                         {t('heldWild', {
-                          name: playerName(state.lastResult.heldWildIdx, state.lastResult.heldWildIdx === 0),
+                          name: playerName(lastResult.heldWildIdx, lastResult.heldWildIdx === 0),
                         })}
                       </div>
                     )}
