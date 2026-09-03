@@ -207,4 +207,89 @@ describe('getSevenCardStudHint', () => {
     expect(hint?.targetAction).toBe('check');
     expect(hint?.reason).toBe('frontendHint.sevencardstudCheckLow');
   });
+
+  // **シカゴのスペード半分は伏せ札の最高スペードで決まる (#6621)。**
+  // A♠ は誰にも抜かれないので、役が弱くても半分は確定する。それを通常の
+  // スタッドと同じ基準で降ろすと、確実な半分を捨てさせることになる。
+  describe('Chicago spade half', () => {
+    const weakDoor = [card('DIAMOND', 4), card('CLOVER', 6), card('HEART', 9)];
+
+    it('names the locked spade half instead of a generic high card', () => {
+      const hole = [card('SPADE', 1), card('HEART', 3)];
+      const chicago = base({ lastBet: 20, isChicago: true, hole, door: weakDoor });
+      const hint = getSevenCardStudHint(chicago);
+      expect(hint?.reason).toBe('frontendHint.sevencardstudPlaySpadeLock');
+      expect(hint?.targetAction).toBe('call');
+      // 半分が確定している局面なので、様子見の moderate ではない。
+      expect(hint?.confidence).toBe('strong');
+
+      // **同じ手を通常のスタッドに置くと、A はただの高い札になる** ── 打ち手は
+      // 同じ「コール」でも、確定した半分なのか様子見なのかが区別できなかった。
+      // 分岐が isChicago を見ていることの確認でもある。
+      const plain = base({ lastBet: 20, hole, door: weakDoor });
+      const plainHint = getSevenCardStudHint(plain);
+      expect(plainHint?.reason).toBe('frontendHint.sevencardstudCallHigh');
+      expect(plainHint?.confidence).toBe('moderate');
+    });
+
+    it('takes the free card instead of calling when nothing is owed', () => {
+      const s = base({
+        lastBet: 0,
+        isChicago: true,
+        hole: [card('SPADE', 1), card('HEART', 3)],
+        door: weakDoor,
+      });
+      const hint = getSevenCardStudHint(s);
+      expect(hint?.reason).toBe('frontendHint.sevencardstudCheckSpadeLock');
+      expect(hint?.targetAction).toBe('check');
+    });
+
+    // **スートを見ていること。** 半分が付くのはスペードだけで、A♥ では
+    // 何も確定しない。ランクだけ見る実装だとここが通ってしまう。
+    it('does not treat an off-suit ace as the spade half', () => {
+      const s = base({
+        lastBet: 20,
+        isChicago: true,
+        hole: [card('HEART', 1), card('DIAMOND', 3)],
+        door: weakDoor,
+      });
+      expect(getSevenCardStudHint(s)?.reason).toBe('frontendHint.sevencardstudCallHigh');
+    });
+
+    // **抜かれうるスペードでは半分を約束しない。** K♠ は伏せ札の A♠ に負ける
+    // ので、「半分は確定」と言えるのは A♠ だけ。
+    it('does not promise the spade half for a king of spades', () => {
+      const s = base({
+        lastBet: 20,
+        isChicago: true,
+        hole: [card('SPADE', 13), card('HEART', 3)],
+        door: weakDoor,
+      });
+      expect(getSevenCardStudHint(s)?.reason).not.toBe('frontendHint.sevencardstudPlaySpadeLock');
+    });
+
+    // **門札の A♠ は勘定に入らない。** ドメインの EvalChicagoSpade は
+    // holeCards しか走らない。ここを holeCards+doorCards で見ると、
+    // 取れない半分を約束することになる。
+    it('ignores an ace of spades that is face up', () => {
+      const s = base({
+        lastBet: 20,
+        isChicago: true,
+        hole: [card('HEART', 3), card('DIAMOND', 8)],
+        door: [card('SPADE', 1), card('CLOVER', 6), card('HEART', 9)],
+      });
+      expect(getSevenCardStudHint(s)?.reason).not.toBe('frontendHint.sevencardstudPlaySpadeLock');
+    });
+
+    // ペアはスペードより先に返る (レイズの方が強い助言なので順序を固定する)。
+    it('still answers a pair as a pair', () => {
+      const s = base({
+        lastBet: 20,
+        isChicago: true,
+        hole: [card('SPADE', 1), card('HEART', 1)],
+        door: weakDoor,
+      });
+      expect(getSevenCardStudHint(s)?.reason).toBe('frontendHint.sevencardstudRaisePair');
+    });
+  });
 });
