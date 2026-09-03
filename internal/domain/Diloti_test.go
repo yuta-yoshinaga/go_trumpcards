@@ -521,3 +521,46 @@ func TestDiloti_SaveRestoreCarriesDeclarations(t *testing.T) {
 	assert.Len(t, got.AllCards(), 3)
 	assert.Len(t, r.GetTable(), 1)
 }
+
+// **打てば必ず弾かれる手を並べない (#6629)。**
+//
+// 宣言を抱えている席がその値の札を「宣言を取る手」以外に使うと
+// `guardBackingCard` が拒否するのに、列挙側はその規則を見ておらず、押しても
+// 必ず errKeepBackingCard で弾かれる取り手が Web にも CUI にも出ていた。
+//
+// **盤は手で組む。** 場も手札も配りで決まるので、狙った局面は組めない。
+func TestDiloti_TakeOptionsHideMovesTheBackingGuardWillReject(t *testing.T) {
+	d := newDilotiGame(t)
+	d.firstPlayDone = true
+
+	// 席 0 が「7」の宣言を抱えている。
+	decl := NewDilotiDeclaration(0, 7, dcards([2]int{CardDesignSpade, 7}))
+	// 場には 7 を作れる別の組 (3+4) がある。宣言を経由しないこの取り手は、
+	// 裏付けの 7 を手放すことになるので実際には打てない。
+	d.SetTableForTest(dcards([2]int{CardDesignHeart, 3}, [2]int{CardDesignClover, 4}), []*DilotiDeclaration{decl})
+
+	// 手札は 7 が 1 枚だけ ── 手放したら宣言の裏付けが無くなる。
+	d.players[0].cards = dcards([2]int{CardDesignDiamond, 7})
+
+	takes := d.GetTakeOptions(0, 0)
+	for _, tk := range takes {
+		assert.NotEmpty(t, tk.DeclIdxs,
+			"宣言を経由しない取り手は裏付けを手放すので出してはいけない: %+v", tk)
+	}
+	// **宣言を取る手は残る。** 全部消してしまうと、抱えた宣言を回収できなくなる。
+	require.NotEmpty(t, takes, "宣言を取る手まで消えている")
+
+	// **並べた手はすべて実際に通る。** 一覧と受付が一致していることを、
+	// 規則そのもの (guardBackingCard) に問い直して確かめる。
+	for _, tk := range takes {
+		assert.NoError(t, d.guardBackingCard(0, d.players[0].cards[0], DilotiActionCapture, tk.DeclIdxs),
+			"一覧に出した手が拒否される: %+v", tk)
+	}
+
+	// **同じ値をもう 1 枚持っていれば手放してよい。** ここで候補が増えないなら、
+	// フィルタが宣言の有無だけを見て一律に消しているだけ (負のコントロール)。
+	d.players[0].cards = dcards([2]int{CardDesignDiamond, 7}, [2]int{CardDesignSpade, 7})
+	withSpare := d.GetTakeOptions(0, 0)
+	assert.Greater(t, len(withSpare), len(takes),
+		"予備の 7 があるなら、宣言を経由しない取り手も打てるので候補に残る")
+}
