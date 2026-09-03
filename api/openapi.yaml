@@ -11459,18 +11459,6 @@ paths:
                           type: array
                           items:
                             $ref: '#/components/schemas/Card'
-                  tableAttack:
-                    type: array
-                    description: Cards played by the attacker on the table
-                    items:
-                      $ref: '#/components/schemas/Card'
-                  tableDefense:
-                    type: array
-                    description: Cards played by the defender on the table
-                    items:
-                      nullable: true
-                      allOf:
-                        - $ref: '#/components/schemas/Card'
                   trumpCard:
                     nullable: true
                     allOf:
@@ -54474,9 +54462,6 @@ components:
                   $ref: '#/components/schemas/Card'
               bid:
                 type: integer
-              picCards:
-                type: integer
-                description: Number of picture cards captured
               cumulativeScore:
                 type: integer
               isNapoleon:
@@ -54523,12 +54508,6 @@ components:
           description: Kitty cards (visible to Napoleon during exchange phase)
           items:
             $ref: '#/components/schemas/Card'
-        napoleonBid:
-          type: integer
-          description: Napoleon's winning bid
-        napoleonPicCards:
-          type: integer
-          description: Total picture cards captured by Napoleon's team
         gameEndFlag:
           type: boolean
           description: Whether the game has ended
@@ -54986,8 +54965,6 @@ components:
                   $ref: '#/components/schemas/Card'
               isDealer:
                 type: boolean
-              isAlone:
-                type: boolean
               trickCount:
                 type: integer
         teams:
@@ -55019,8 +54996,6 @@ components:
         dealerIdx:
           type: integer
           description: Index of the dealer
-        turnedUpCard:
-          $ref: '#/components/schemas/Card'
         trumpSuit:
           type: integer
           description: "Trump suit (1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND, 0=not yet decided)"
@@ -55037,9 +55012,6 @@ components:
         gameEndFlag:
           type: boolean
           description: Whether the game has ended
-        winnerTeamIdx:
-          type: integer
-          description: Index of the winning team (-1 if not ended)
         config:
           type: object
           properties:
@@ -57133,15 +57105,9 @@ components:
               belowLine:
                 type: integer
                 description: Points below the line (towards game)
-              aboveLine:
-                type: integer
-                description: Points above the line (bonuses/penalties)
               gamesWon:
                 type: integer
                 description: Number of games won in the rubber
-              vulnerable:
-                type: boolean
-                description: Whether the team is vulnerable
         phase:
           type: integer
           description: "Game phase: 0 = Bid, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
@@ -57171,9 +57137,6 @@ components:
         contractSuit:
           type: integer
           description: "Contract suit (1=Clubs, 2=Diamonds, 3=Hearts, 4=Spades, 5=NoTrump, 0=not yet determined)"
-        contractDoubled:
-          type: integer
-          description: "Double state (0=none, 1=doubled, 2=redoubled)"
         trumpSuit:
           type: integer
           description: "Trump suit (1=Spade, 2=Clover, 3=Heart, 4=Diamond, -1=NoTrump, 0=not yet determined)"
@@ -57204,9 +57167,6 @@ components:
         gameEndFlag:
           type: boolean
           description: Whether the game (rubber) has ended
-        winnerTeamIdx:
-          type: integer
-          description: Index of the winning team (-1 if not ended)
         config:
           type: object
           properties:
@@ -61777,7 +61737,6 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/Card'
-              isEscoba: { type: boolean }
         humanAction:
           type: object
           nullable: true
@@ -61790,7 +61749,6 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Card'
-            isEscoba: { type: boolean }
         lastRoundDetail:
           type: object
           nullable: true
@@ -69091,9 +69049,6 @@ components:
             playerCount:
               type: integer
               description: Total number of players (2-4).
-            openingPoints:
-              type: integer
-              description: Minimum point total required to open with the first meld(s) (default 51).
             cpuDifficulty:
               type: integer
               description: 0=Easy, 1=Normal, 2=Hard.
@@ -69110,10 +69065,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Card'
-        hasJoker:
-          type: boolean
-          description: Whether the meld contains a joker (joker melds score 1.5x).
-
     KalookiPlayerOutput:
       type: object
       description: Player state for Kalooki.
@@ -69135,9 +69086,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/KalookiMeld'
-        opened:
-          type: boolean
-          description: Whether the player has met the opening threshold.
         roundScore:
           type: integer
         cumulativeScore:
@@ -69186,17 +69134,12 @@ components:
           type: integer
         roundWinnerIdx:
           type: integer
-        openingPoints:
-          type: integer
-          description: Minimum point total required to open (default 51).
         config:
           type: object
           properties:
             openingThreshold:
               type: integer
             playerCount:
-              type: integer
-            openingPoints:
               type: integer
             cpuDifficulty:
               type: integer
@@ -72296,12 +72239,7 @@ components:
                 type: integer
               team:
                 type: integer
-              roundName:
-                type: string
-                description: "Name of the betting round (grande, chica, pares, juego, punto)"
               winnerTeam:
-                type: integer
-              pointsAwarded:
                 type: integer
         gameEndFlag:
           type: boolean
@@ -74546,10 +74484,6 @@ components:
           description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
           minimum: 0
           maximum: 2
-        limit:
-          type: integer
-          description: Match point limit for `setlimit`.
-          minimum: 1
         config:
           type: object
           description: Optional game configuration (only used with `reset`).
@@ -74606,9 +74540,6 @@ components:
                 type: integer
               isHuman:
                 type: boolean
-              isCaller:
-                type: boolean
-                description: True if this player is the caller (Hakim) for the current round
               teamScore:
                 type: integer
                 description: Cumulative match points for the team this player belongs to
@@ -74657,11 +74588,6 @@ components:
           items:
             type: integer
           description: Cumulative match points — index 0 is teamA (seats 0&2), index 1 is teamB (seats 1&3)
-        roundTrickCounts:
-          type: array
-          items:
-            type: integer
-          description: Tricks won by each team in the current round — index 0 is teamA, index 1 is teamB
         playableIndices:
           type: array
           items:
@@ -74674,9 +74600,6 @@ components:
           description: Index of the winning team (0=teamA, 1=teamB; -1 if undecided)
         isHumanTurn:
           type: boolean
-        isHumanTrumpTurn:
-          type: boolean
-          description: True when it is the human caller's turn to declare trump
         hint:
           type: object
           properties:
@@ -74879,9 +74802,6 @@ components:
           description: Index of the winning player (0=human, 1=CPU; -1 if undecided)
         isHumanTurn:
           type: boolean
-        isHumanMeldTurn:
-          type: boolean
-          description: True when it is the human's turn to declare a meld
         hint:
           type: object
           properties:
@@ -75598,11 +75518,6 @@ components:
         matchWinnerIdx:
           type: integer
           description: Index of the match winner (last player with chips; -1 if undecided)
-        validActions:
-          type: array
-          items:
-            type: string
-          description: Action commands the human may legally issue this turn (e.g. see, bet, raise, fold, show)
         gameEndFlag:
           type: boolean
         isHumanTurn:
@@ -75804,11 +75719,6 @@ components:
         matchWinnerIdx:
           type: integer
           description: Index of the match winner (last player with chips; -1 if undecided)
-        validActions:
-          type: array
-          items:
-            type: string
-          description: Action commands the human may legally issue this turn (e.g. see, bet, raise, fold, sideshow, accept, decline, show)
         gameEndFlag:
           type: boolean
         isHumanTurn:
