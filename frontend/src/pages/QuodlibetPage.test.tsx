@@ -1,6 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { quodlibetApi } from '../api/gameApi';
+import enQuodlibet from '../i18n/locales/en/quodlibet.json';
+import jaQuodlibet from '../i18n/locales/ja/quodlibet.json';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeQuodlibetState } from '../test/stateFactories';
 import { QuodlibetPage } from './QuodlibetPage';
@@ -187,5 +189,78 @@ describe('QuodlibetPage', () => {
     );
     renderWithProviders(<QuodlibetPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
+  });
+
+  // **種目ごとのルール説明とツールチップ。** 種目名だけでは何を避けるゲームか
+  // 分からないため、title 属性およびホバー／フォーカスで説明文を表示する。
+  it('shows rules description in button title and updates description panel on hover and focus', async () => {
+    renderWithProviders(<QuodlibetPage />);
+    const plusBtn = await screen.findByTestId('quodlibet-contract-0');
+    const badNeighbourBtn = screen.getByTestId('quodlibet-contract-2');
+    const alarichBtn = screen.getByTestId('quodlibet-contract-3');
+    const descPanel = screen.getByTestId('quodlibet-contract-desc');
+
+    // title 属性が実際の文言に解決されていること (未翻訳キーでないこと)
+    expect(plusBtn).toHaveAttribute('title', jaQuodlibet.contractDesc.plus);
+    expect(plusBtn.getAttribute('title')).toContain('取れなかったトリック');
+    expect(plusBtn.getAttribute('title')).not.toContain('{{');
+    expect(badNeighbourBtn).toHaveAttribute('title', jaQuodlibet.contractDesc.badNeighbour);
+    expect(badNeighbourBtn.getAttribute('title')).toContain('右隣');
+
+    // 初期状態では第1候補 (プラス) の説明が表示される
+    expect(descPanel).toHaveTextContent(jaQuodlibet.contractDesc.plus);
+
+    // ホバーで表示が変わり、離れると戻る (値を変えると表示も変わる)
+    fireEvent.mouseEnter(badNeighbourBtn);
+    expect(descPanel).toHaveTextContent(jaQuodlibet.contractDesc.badNeighbour);
+    expect(descPanel).not.toHaveTextContent(jaQuodlibet.contractDesc.plus);
+
+    fireEvent.mouseLeave(badNeighbourBtn);
+    expect(descPanel).toHaveTextContent(jaQuodlibet.contractDesc.plus);
+
+    // フォーカスで表示が変わり、外れると戻る
+    fireEvent.focus(alarichBtn);
+    expect(descPanel).toHaveTextContent(jaQuodlibet.contractDesc.alarich);
+    expect(descPanel).not.toHaveTextContent(jaQuodlibet.contractDesc.plus);
+
+    fireEvent.blur(alarichBtn);
+    expect(descPanel).toHaveTextContent(jaQuodlibet.contractDesc.plus);
+  });
+
+  // 負のコントロール: 種目選択フェーズでない局面では説明パネルも出ない
+  it('hides the description panel when not in contract selection phase', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<QuodlibetPage />);
+    await screen.findByTestId('quodlibet-play');
+    expect(screen.queryByTestId('quodlibet-contract-desc')).not.toBeInTheDocument();
+  });
+
+  // 全12種目の説明文が ja / en の両方で未解決プレースホルダなく定義されていること
+  it('defines rules descriptions for all 12 contracts in both ja and en without unresolved placeholders', () => {
+    const contracts = [
+      'plus',
+      'minus',
+      'badNeighbour',
+      'alarich',
+      'firstThreeAndLast',
+      'noReds',
+      'oberUnter',
+      'bribe',
+      'open',
+      'hunt',
+      'quadrature',
+      'snack',
+    ] as const;
+
+    for (const c of contracts) {
+      const jaDesc = jaQuodlibet.contractDesc[c];
+      const enDesc = enQuodlibet.contractDesc[c];
+      expect(jaDesc).toBeTruthy();
+      expect(enDesc).toBeTruthy();
+      expect(jaDesc).not.toContain('{{');
+      expect(jaDesc).not.toContain('}}');
+      expect(enDesc).not.toContain('{{');
+      expect(enDesc).not.toContain('}}');
+    }
   });
 });

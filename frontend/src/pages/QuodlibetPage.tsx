@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { quodlibetApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -105,6 +105,8 @@ function QuodlibetPageContent() {
     handlePass,
     handleNextDeal,
   } = useQuodlibetGame();
+
+  const [hoveredContract, setHoveredContract] = useState<string | null>(null);
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
@@ -268,19 +270,36 @@ function QuodlibetPageContent() {
                   <div className="mb-2 p-2 rounded bg-black/30" data-testid="quodlibet-contract-choices">
                     <div className="text-ds-text-primary text-sm mb-1">{t('chooseContract')}</div>
                     <div className="flex flex-wrap gap-2">
-                      {state.availableContracts.map((c, i) => (
-                        <button
-                          key={c}
-                          type="button"
-                          className={btnPrimary}
-                          onClick={() => handleSelectContract(c)}
-                          disabled={loading}
-                          data-testid={`quodlibet-contract-${c}`}
-                        >
-                          {t(`contractName.${state.availableContractNames[i]}`)}
-                        </button>
-                      ))}
+                      {state.availableContracts.map((c, i) => {
+                        const name = state.availableContractNames[i];
+                        return (
+                          <button
+                            key={c}
+                            type="button"
+                            className={btnPrimary}
+                            onClick={() => handleSelectContract(c)}
+                            onMouseEnter={() => setHoveredContract(name)}
+                            onMouseLeave={() => setHoveredContract(null)}
+                            onFocus={() => setHoveredContract(name)}
+                            onBlur={() => setHoveredContract(null)}
+                            disabled={loading}
+                            data-testid={`quodlibet-contract-${c}`}
+                            title={t(`contractDesc.${name}`)}
+                            aria-describedby="quodlibet-contract-desc"
+                          >
+                            {t(`contractName.${name}`)}
+                          </button>
+                        );
+                      })}
                     </div>
+                    <p
+                      id="quodlibet-contract-desc"
+                      role="status"
+                      data-testid="quodlibet-contract-desc"
+                      className="mt-2 text-ds-text-muted text-xs min-h-[1.5rem]"
+                    >
+                      {t(`contractDesc.${hoveredContract ?? state.availableContractNames[0] ?? ''}`)}
+                    </p>
                   </div>
                 )}
 
