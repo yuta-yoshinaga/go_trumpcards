@@ -138,4 +138,52 @@ describe('BaccaratBanquePage', () => {
     expect(screen.queryByRole('button', { name: '次のクー' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'バンクを降りる' })).not.toBeInTheDocument();
   });
+
+  // **★ だけでは何のことか分からない (#6632)。** CUI は同じ条件を
+  // 「　★ナチュラル」と語で出しているのに、Web は星 1 文字で読み上げ名も「★」
+  // だけだった。
+  describe('natural mark', () => {
+    const naturalState = (total: number, cards: number) =>
+      makeBaccaratBanqueState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            role: 'banker',
+            cards: Array.from({ length: cards }, (_, i) => ({ design: 'SPADE' as const, value: i + 4 })),
+            total,
+            chips: 1000,
+            bet: 0,
+            drawn: false,
+          },
+        ],
+      });
+
+    it('explains the star in words', async () => {
+      mockExec.mockResolvedValue(naturalState(9, 2));
+      renderWithProviders(<BaccaratBanquePage />);
+      const mark = await screen.findByTestId('banque-natural-banker');
+      // 見た目の星は残す。
+      expect(mark.textContent).toContain('★');
+      // 語も読み上げに載る。CUI の naturalMark と同じ「ナチュラル」。
+      expect(mark.textContent).toContain('ナチュラル');
+      expect(mark).toHaveAttribute('title', expect.stringContaining('ナチュラル'));
+    });
+
+    // **2枚で8未満なら付かない。** 常に付ける実装だとここで落ちる。
+    it('does not mark a two-card hand below eight', async () => {
+      mockExec.mockResolvedValue(naturalState(7, 2));
+      renderWithProviders(<BaccaratBanquePage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(screen.queryByTestId('banque-natural-banker')).not.toBeInTheDocument();
+    });
+
+    // **3枚ならナチュラルではない** (BaccaratBanqueIsNatural は len==2 を要求する)。
+    it('does not mark a three-card total of eight', async () => {
+      mockExec.mockResolvedValue(naturalState(8, 3));
+      renderWithProviders(<BaccaratBanquePage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(screen.queryByTestId('banque-natural-banker')).not.toBeInTheDocument();
+    });
+  });
 });

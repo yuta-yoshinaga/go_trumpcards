@@ -33,5 +33,6 @@
   "frontendHint.baccaratbanque_low_total": "合計が低いので、引いたほうが勝ち目があります",
   "frontendHint.baccaratbanque_behind_both": "止まると左右どちらにも負けます。引くしかありません",
   "frontendHint.baccaratbanque_stand": "この合計なら止まるほうが分があります",
-  "frontendHint.baccaratbanque_natural": "ナチュラルなので引けません"
+  "frontendHint.baccaratbanque_natural": "ナチュラルなので引けません",
+  "naturalTitle": "ナチュラル（2枚で8以上）"
 }

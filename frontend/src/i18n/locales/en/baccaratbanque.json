@@ -33,5 +33,6 @@
   "frontendHint.baccaratbanque_low_total": "Your total is low, so drawing gives you the better chance",
   "frontendHint.baccaratbanque_behind_both": "Standing loses to both tableaux - you have to draw",
   "frontendHint.baccaratbanque_stand": "This total is worth standing on",
-  "frontendHint.baccaratbanque_natural": "A natural cannot draw"
+  "frontendHint.baccaratbanque_natural": "A natural cannot draw",
+  "naturalTitle": "Natural (8 or 9 on two cards)"
 }
