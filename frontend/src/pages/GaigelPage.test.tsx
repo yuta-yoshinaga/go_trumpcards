@@ -126,7 +126,8 @@ describe('GaigelPage', () => {
   it('shows the marriage button when the selected card can declare and dispatches marriage', async () => {
     mockExec.mockResolvedValue(makeState({ marriageIndices: [0] }));
     renderWithProviders(<GaigelPage />);
-    const cardBtn = await screen.findByRole('button', { name: '♠ K' });
+    // 結婚できる札は名前にバッジの説明が付くので、完全一致では引けない (#6612)。
+    const cardBtn = await screen.findByRole('button', { name: /^♠ K/ });
     fireEvent.click(cardBtn);
     const marriageBtn = await screen.findByRole('button', { name: 'マリッジ' });
     mockExec.mockClear();

@@ -20,7 +20,11 @@ test.describe('Bauernschnapsen E2E', () => {
     const passButton = page.getByRole('button', { name: 'パス' });
 
     const playButton = page.getByRole('button', { name: '出す' });
-    const marriageButton = page.getByRole('button', { name: 'マリッジ' });
+    // **exact でないと札にも当たる。** Playwright の name は既定で部分一致で、
+    // マリッジを組める札のバッジ説明が読み上げ名に入る (「♠ K (マリッジ可能
+    // (キング+クイーン))」)。宣言ボタンの読み上げ名はちょうど「マリッジ」なので、
+    // exact にすると宣言ボタンだけに当たる (#6612)。
+    const marriageButton = page.getByRole('button', { name: 'マリッジ', exact: true });
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
     // **追従必須なので、出せない札は aria-disabled になる** (gongzhu / cribbage と同じ形)。

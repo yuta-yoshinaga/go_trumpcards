@@ -131,6 +131,7 @@ export function MobileHandGrid({
               const trump = isTrump(globalIdx);
               const legal = isLegal(globalIdx);
               const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
+              const badge = cardBadgeFor?.(globalIdx);
               return (
                 <button
                   type="button"
@@ -138,7 +139,8 @@ export function MobileHandGrid({
                   onClick={() => {
                     if (!restricted) onToggle(globalIdx);
                   }}
-                  aria-label={cardAlt(card)}
+                  // 携帯側も同じ理由でバッジの意味を読み上げに載せる (#6612)。
+                  aria-label={badge ? `${cardAlt(card)} (${badge.title})` : cardAlt(card)}
                   aria-pressed={isSelected}
                   // Use aria-disabled (not the HTML `disabled` attribute) so restricted
                   // cards remain focusable for keyboard / screen-reader users — they
@@ -183,7 +185,6 @@ export function MobileHandGrid({
                     </span>
                   )}
                   {(() => {
-                    const badge = cardBadgeFor?.(globalIdx);
                     return badge ? <CardRoleBadge idx={globalIdx} glyph={badge.glyph} title={badge.title} /> : null;
                   })()}
                 </button>
