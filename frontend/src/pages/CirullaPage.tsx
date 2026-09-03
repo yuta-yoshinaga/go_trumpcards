@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CirullaResponse } from '../types/card';
 import { CirullaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { CIRULLA_HELP, parseCirullaCommand } from '../utils/cli/commands/cirullaCommands';
 import { formatCirullaState } from '../utils/cli/formatters/cirullaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -237,6 +238,11 @@ function CirullaPageContent() {
                           onClick={() => play(group)}
                           disabled={loading}
                           data-testid={`cirulla-take-${group.join('-')}`}
+                          // **取り札ボタンの読み上げには場札の実際の名前が要る。** 索引だけでは
+                          // スクリーンリーダー利用者にどの札の組かが分からない (#6628)。
+                          aria-label={t('takeGroup', {
+                            cards: group.map((i) => cardAlt(state.table[i])).join(', '),
+                          })}
                         >
                           {t('takeGroup', { cards: group.join(', ') })}
                         </button>
