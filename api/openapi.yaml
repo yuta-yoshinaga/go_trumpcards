@@ -45885,6 +45885,48 @@ components:
       type: object
       description: Current state of the Gong Zhu game
       properties:
+        scoreBreakdowns:
+          type: array
+          description: "Per-seat breakdown of the round score."
+          items:
+            type: object
+            properties:
+              heartCount:
+                type: integer
+                description: "How many hearts this seat took."
+              heartsSum:
+                type: integer
+                description: "Points from those hearts."
+              allHearts:
+                type: boolean
+                description: "Whether this seat took every heart, which flips the hearts to a bonus."
+              aceExposed:
+                type: boolean
+                description: "Whether the ace of hearts was exposed, doubling the hearts."
+              hasPig:
+                type: boolean
+                description: "Whether this seat took the pig, the queen of spades."
+              pigExposed:
+                type: boolean
+                description: "Whether the pig was exposed, doubling it."
+              hasSheep:
+                type: boolean
+                description: "Whether this seat took the sheep, the jack of diamonds."
+              sheepExposed:
+                type: boolean
+                description: "Whether the sheep was exposed, doubling it."
+              hasDoubler:
+                type: boolean
+                description: "Whether this seat took the doubler, the ten of clubs."
+              doublerMultiplier:
+                type: integer
+                description: "Multiplier the doubler applies to the rest of the score."
+              doublerStandalone:
+                type: integer
+                description: "Points the doubler is worth on its own when nothing else was taken."
+              subtotal:
+                type: integer
+                description: "This seat's points for the round after every doubling is applied."
         players:
           type: array
           items:
@@ -45900,6 +45942,11 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/Card'
+              capturedPointCards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+                description: "Point cards this seat has taken so far (hearts, the pig, the sheep and the doubler). They are public once a trick is taken, so every seat's list is sent."
               roundScore:
                 type: integer
               cumulativeScore:

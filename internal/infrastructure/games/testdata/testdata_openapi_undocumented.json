@@ -192,22 +192,6 @@
   "GoFish": [
     "knownRanks"
   ],
-  "GongZhu": [
-    "aceExposed",
-    "allHearts",
-    "capturedPointCards",
-    "doublerMultiplier",
-    "doublerStandalone",
-    "hasDoubler",
-    "hasPig",
-    "hasSheep",
-    "heartCount",
-    "heartsSum",
-    "pigExposed",
-    "scoreBreakdowns",
-    "sheepExposed",
-    "subtotal"
-  ],
   "Guts": [
     "in",
     "isMatcher",
