@@ -54,6 +54,8 @@ export interface CostlyColoursResponse extends BaseGameResponse {
   players: CostlyColoursPlayer[];
   /** "mog" | "play" | "show" | "gameEnd". */
   phase: string;
+  /** The card given away if the exchange is accepted; absent outside the mog phase. */
+  mogDiscardCard?: Card | null;
   dealNumber: number;
   dealerIdx: number;
   currentPlayerIdx: number;

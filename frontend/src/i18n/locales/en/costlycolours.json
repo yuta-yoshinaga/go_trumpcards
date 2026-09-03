@@ -55,5 +55,6 @@
     "playerHand": "Your hand. **Cards that would pass 31 cannot be picked.** Jacks and deuces score just for being held, so mind the order you spend them.",
     "playButton": "Each deal opens with the **mog** - the exchange. **Refusing pegs 1 for your opponent**, so it is only worth it when you already hold a colour.",
     "resetButton": "The reset button starts a new game."
-  }
+  },
+  "mogDiscard": "Accepting gives away {{card}}"
 }

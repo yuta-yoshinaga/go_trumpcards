@@ -31,6 +31,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CostlyColoursResponse } from '../types/card';
 import { CostlyColoursPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { COSTLYCOLOURS_HELP, parseCostlyColoursCommand } from '../utils/cli/commands/costlycoloursCommands';
 import { formatCostlyColoursState } from '../utils/cli/formatters/costlycoloursFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -353,6 +354,14 @@ function CostlyColoursPageContent() {
                   >
                     {t('mogAccept')}
                   </button>
+                  {/* **押す前に、どの札が出ていくのかを出す。** 渡す 1 枚は
+                      ドメインが選ぶので、打ち手は結果を見るまで自分の 3 枚の
+                      どれが失われるか分からなかった (#6631)。 */}
+                  {state.mogDiscardCard && (
+                    <span className="text-ds-text-muted text-sm" data-testid="costlycolours-mog-discard">
+                      {t('mogDiscard', { card: cardAlt(state.mogDiscardCard) })}
+                    </span>
+                  )}
                   <button
                     type="button"
                     className={btnSecondary}

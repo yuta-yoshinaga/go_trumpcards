@@ -131,4 +131,49 @@ describe('CostlyColoursPage', () => {
       expect(lives[lives.length - 1]).not.toBeEmptyDOMElement();
     });
   });
+
+  // **押す前にどの札が出ていくのか分かる (#6631)。**
+  describe('mog discard preview', () => {
+    it('names the card that accepting would give away', async () => {
+      mockExec.mockResolvedValue(
+        makeCostlyColoursState({
+          phase: 'mog',
+          mogDiscardCard: { design: 'DIAMOND', value: 10 },
+        }),
+      );
+      renderWithProviders(<CostlyColoursPage />);
+      const note = await screen.findByTestId('costlycolours-mog-discard');
+      expect(note.textContent).toContain('♦');
+      expect(note.textContent).not.toContain('{{');
+    });
+
+    // **札が変われば表示も変わる。** 定数を出しているだけの実装だと通らない。
+    it('follows the served card', async () => {
+      mockExec.mockResolvedValue(
+        makeCostlyColoursState({ phase: 'mog', mogDiscardCard: { design: 'SPADE', value: 1 } }),
+      );
+      renderWithProviders(<CostlyColoursPage />);
+      const note = await screen.findByTestId('costlycolours-mog-discard');
+      expect(note.textContent).toContain('♠');
+      expect(note.textContent).not.toContain('♦');
+    });
+
+    // **断る側の挙動は変えない** (受け入れ条件)。予告が出ていてもボタンは両方残る。
+    it('leaves both buttons in place', async () => {
+      mockExec.mockResolvedValue(
+        makeCostlyColoursState({ phase: 'mog', mogDiscardCard: { design: 'DIAMOND', value: 10 } }),
+      );
+      renderWithProviders(<CostlyColoursPage />);
+      expect(await screen.findByTestId('costlycolours-mog')).toBeInTheDocument();
+      expect(screen.getByTestId('costlycolours-nomog')).toBeInTheDocument();
+    });
+
+    // サーバが送らない局面では何も出さない。
+    it('shows nothing when the server sends no card', async () => {
+      mockExec.mockResolvedValue(makeCostlyColoursState({ phase: 'mog' }));
+      renderWithProviders(<CostlyColoursPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(screen.queryByTestId('costlycolours-mog-discard')).not.toBeInTheDocument();
+    });
+  });
 });

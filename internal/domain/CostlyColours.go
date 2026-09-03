@@ -212,6 +212,30 @@ func (c *CostlyColours) resolveMog(seat int, accept bool) {
 	c.checkGameEnd()
 }
 
+// GetMogDiscardCard は、いま交換に応じたら人間が手放すことになる札を返す。
+//
+// **押す前に分かるようにする。** 手札は 3 枚のまま 1 対 1 で入れ替わるが、
+// 渡す 1 枚を選ぶのは `costlyWorstCardIdx` で、打ち手は「交換する」を押した
+// 結果を見るまでどれが失われるか知る術が無かった (#6631)。
+//
+// **選び方は swapOneCard と同じ関数を呼ぶ。** ここで基準を書き直すと、
+// 予告した札と実際に渡る札が食い違う。交換フェーズ以外では nil。
+func (c *CostlyColours) GetMogDiscardCard() *Card {
+	if c.phase != CostlyColoursPhaseMog {
+		return nil
+	}
+	seat := findHumanIdx(c.players)
+	if seat < 0 {
+		return nil
+	}
+	hand := c.players[seat].GetHand()
+	idx := costlyWorstCardIdx(hand)
+	if idx < 0 || idx >= len(hand) {
+		return nil
+	}
+	return hand[idx]
+}
+
 // swapOneCard は 2 席が 1 枚ずつ取り替える。
 //
 // **手札は 3 枚のまま。** 渡すのは互いにいちばん要らない札 ── ここでは

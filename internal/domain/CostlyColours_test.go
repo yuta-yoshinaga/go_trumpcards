@@ -503,3 +503,68 @@ func TestCostlyWorstCardIdx_OnlyEmptyHandsHaveNoAnswer(t *testing.T) {
 		assert.Equal(t, -1, costlyWorstCardIdx([]*Card{nil, nil}))
 	})
 }
+
+// **押す前に、どの札が出ていくのか分かる (#6631)。**
+//
+// 手札は 3 枚のまま 1 対 1 で入れ替わるが、渡す 1 枚を選ぶのは
+// `costlyWorstCardIdx` なので、打ち手は「交換する」を押した結果を見るまで
+// 自分の 3 枚のどれが失われるか知る術が無かった。
+//
+// **盤は手で組む。** 配りから始めると手札が変わって値が固定できない。
+func TestCostlyColours_MogDiscardPreviewMatchesWhatIsGivenAway(t *testing.T) {
+	c := newCostlyGame(t)
+	seat := findHumanIdx(c.players)
+	require.GreaterOrEqual(t, seat, 0)
+
+	// J と 2 は残したい札なので、渡るのは残った 1 枚 (♦10)。
+	c.players[seat].cards = []*Card{
+		NewCard(CardDesignSpade, 11, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignDiamond, 10, false),
+	}
+	c.SetPhaseForTest(CostlyColoursPhaseMog)
+
+	got := c.GetMogDiscardCard()
+	require.NotNil(t, got, "交換フェーズなら予告が出ること")
+	assert.Equal(t, CardDesignDiamond, got.GetDesign())
+	assert.Equal(t, 10, got.GetValue())
+
+	// **予告と実際に渡る札が同じであること。** ここが本題で、別々の基準で
+	// 選んでいると予告だけが嘘になる。
+	before := c.GetMogDiscardCard()
+	c.swapOneCard(seat, (seat+1)%CostlyColoursPlayerCnt)
+	for _, card := range c.players[seat].GetHand() {
+		assert.NotSame(t, before, card, "予告した札が手元に残っている")
+	}
+
+	// **手札が変われば予告も変わる。** 定数を返しているだけの実装だと通らない。
+	c.players[seat].cards = []*Card{
+		NewCard(CardDesignClover, 9, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignSpade, 11, false),
+	}
+	moved := c.GetMogDiscardCard()
+	require.NotNil(t, moved)
+	assert.Equal(t, CardDesignClover, moved.GetDesign())
+	assert.Equal(t, 9, moved.GetValue())
+
+	// **交換フェーズ以外では出さない。** 関係ない場面で「手放します」と言わない。
+	c.SetPhaseForTest(CostlyColoursPhasePlay)
+	assert.Nil(t, c.GetMogDiscardCard())
+
+	// **手札が空なら何も予告しない。** `costlyWorstCardIdx` が -1 を返す経路。
+	// 添字にそのまま使うと panic するので、公開アクセサとして塞いである。
+	c.SetPhaseForTest(CostlyColoursPhaseMog)
+	c.players[seat].cards = nil
+	assert.Nil(t, c.GetMogDiscardCard())
+
+	// **人間が居ない卓でも落ちない。** 全席 CPU の卓は `findHumanIdx` が -1 を
+	// 返す。ここを通さないと seat=-1 で players を引いて panic する。
+	allCpu := NewCostlyColours(
+		[]*CostlyColoursPlayer{NewCostlyColoursPlayer(false), NewCostlyColoursPlayer(false)},
+		DefaultCostlyColoursConfig(),
+	)
+	allCpu.Reset()
+	allCpu.SetPhaseForTest(CostlyColoursPhaseMog)
+	assert.Nil(t, allCpu.GetMogDiscardCard())
+}

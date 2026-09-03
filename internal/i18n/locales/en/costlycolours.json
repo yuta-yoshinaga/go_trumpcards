@@ -59,5 +59,6 @@
   "errNotPlayPhase": "You cannot play a card in this phase.",
   "errNotYourTurn": "It is not your turn.",
   "errCardRange": "Invalid card index: {{idx}}",
-  "errWouldExceed": "That card would take the count past 31 (total {{total}})."
+  "errWouldExceed": "That card would take the count past 31 (total {{total}}).",
+  "mogDiscard": "Accepting gives away {{card}}."
 }
