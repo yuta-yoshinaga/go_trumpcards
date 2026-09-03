@@ -295,6 +295,7 @@ function BoliviaPageContent() {
                 {/* Player melds */}
                 {state.players.map((p, pi) => {
                   if (p.melds.length === 0 && p.red3s.length === 0) return null;
+                  const teamMelded = state.players.some((tp) => tp.team === p.team && tp.hasInitMeld);
                   return (
                     <div
                       key={pi}
@@ -373,7 +374,20 @@ function BoliviaPageContent() {
                       })}
                       {p.red3s.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
-                          <span className="text-xs text-ds-error self-center mr-1">{t('red3s')}</span>
+                          <span
+                            className={`text-xs self-center mr-1 ${!teamMelded ? 'text-ds-warning font-semibold' : 'text-ds-error'}`}
+                          >
+                            {t('red3s')}
+                          </span>
+                          {!teamMelded && (
+                            <span
+                              data-testid={`bo-red3-warning-${p.id}`}
+                              className="text-xs text-ds-warning self-center mr-1"
+                              title={t('red3PenaltyWarning')}
+                            >
+                              ({t('red3PenaltyWarning')})
+                            </span>
+                          )}
                           {p.red3s.map((card, ri) => (
                             <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
                           ))}

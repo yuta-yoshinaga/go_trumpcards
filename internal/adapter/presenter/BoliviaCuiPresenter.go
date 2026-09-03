@@ -43,7 +43,7 @@ func boliviaMeldTypeLabel(m *domain.BoliviaMeld) string {
 }
 
 // boliviaPlayerStr returns the display string for a single Bolivia player.
-func boliviaPlayerStr(player *domain.BoliviaPlayer, i int, showCards bool) string {
+func boliviaPlayerStr(player *domain.BoliviaPlayer, i int, showCards bool, teamMelded bool) string {
 	var b strings.Builder
 	b.WriteString(i18n.Tf("bolivia.playerLine",
 		"name", cuiPlayerName(player, i),
@@ -67,6 +67,11 @@ func boliviaPlayerStr(player *domain.BoliviaPlayer, i int, showCards bool) strin
 		b.WriteString(i18n.T("bolivia.playerBoliviaTag"))
 	}
 	b.WriteString("\n")
+
+	// 赤3はチームが初回メルド未達ならラウンド終了時に罰点化する (#6634)。
+	if len(player.GetRed3s()) > 0 && !teamMelded {
+		b.WriteString(color.Yellow(i18n.T("bolivia.red3WarningLine")) + "\n")
+	}
 
 	for _, m := range player.GetMelds() {
 		cardStrs := make([]string, len(m.Cards))
@@ -112,7 +117,8 @@ func (p *BoliviaCuiPresenter) Output(g interfaces.BoliviaGame, lastErr error) st
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			player := g.GetPlayer(i)
 			showCards := player.GetIsHuman() || showAllCards
-			b.WriteString(boliviaPlayerStr(player, i, showCards))
+			teamMelded := g.TeamHasInitMeld(player.GetTeam())
+			b.WriteString(boliviaPlayerStr(player, i, showCards, teamMelded))
 		}
 
 		b.WriteString("----------\n")

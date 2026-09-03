@@ -49,6 +49,18 @@ func (m *MockBoliviaGame) GetDiscardPileCount() int { return m.Called().Int(0) }
 func (m *MockBoliviaGame) GetIsFrozen() bool        { return m.Called().Bool(0) }
 func (m *MockBoliviaGame) GetWinnerIdx() int        { return m.Called().Int(0) }
 func (m *MockBoliviaGame) GetPlayerCnt() int        { return m.Called().Int(0) }
+
+// TeamHasInitMeld モック。
+//
+// **関数を返す登録も受ける。** チームの初回メルドは席ごとのフラグから決まるので、
+// 固定値だけだと `SetHasInitMeld` を動かすテストが表現できない。
+func (m *MockBoliviaGame) TeamHasInitMeld(t int) bool {
+	ret := m.Called(t)
+	if fn, ok := ret.Get(0).(func(int) bool); ok {
+		return fn(t)
+	}
+	return ret.Bool(0)
+}
 func (m *MockBoliviaGame) GetPlayer(i int) *domain.BoliviaPlayer {
 	return m.Called(i).Get(0).(*domain.BoliviaPlayer)
 }

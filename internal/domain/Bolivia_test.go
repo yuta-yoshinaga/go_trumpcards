@@ -452,3 +452,29 @@ func TestBolivia_ScoringPaysEachMeldKindItsOwnBonus(t *testing.T) {
 	assert.Greater(t, BoliviaBoliviaBonus, BoliviaEscaleraBonus)
 	assert.Greater(t, BoliviaEscaleraBonus, BoliviaNaturalCanastaBonus)
 }
+
+func TestBolivia_TeamHasInitMeld(t *testing.T) {
+	g := newBoliviaGame(t)
+
+	// 初期状態では誰も初回メルドしていない
+	assert.False(t, g.TeamHasInitMeld(0))
+	assert.False(t, g.TeamHasInitMeld(1))
+	// 負のコントロール: 範囲外のチーム
+	assert.False(t, g.TeamHasInitMeld(-1))
+	assert.False(t, g.TeamHasInitMeld(2))
+
+	// 席0 (チーム0) がメルド完了
+	g.GetPlayer(0).SetHasInitMeld(true)
+	assert.True(t, g.TeamHasInitMeld(0))
+	assert.False(t, g.TeamHasInitMeld(1), "チーム0のメルドでチーム1までtrueになってはならない")
+
+	// 席0を戻し、パートナーである席2 (チーム0) がメルド完了
+	g.GetPlayer(0).SetHasInitMeld(false)
+	g.GetPlayer(2).SetHasInitMeld(true)
+	assert.True(t, g.TeamHasInitMeld(0), "パートナーのメルドでチーム0がtrueにならなければならない")
+	assert.False(t, g.TeamHasInitMeld(1))
+
+	// チーム1 (席1または席3) がメルド完了
+	g.GetPlayer(1).SetHasInitMeld(true)
+	assert.True(t, g.TeamHasInitMeld(1))
+}

@@ -19,6 +19,7 @@
   "discardLine": "捨て札: {{card}}",
   "playerLine": "{{name}} (チーム{{team}}): 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚",
   "playerRed3s": " 赤3: {{count}}枚",
+  "red3WarningLine": "  ※赤3: 初回メルド未達なら罰点",
   "playerCanastaTag": " ★カナスタ",
   "playerEscaleraTag": " ★エスカレラ",
   "playerBoliviaTag": " ★ボリビア",
