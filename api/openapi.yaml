@@ -31762,6 +31762,11 @@ paths:
                 command:
                   type: string
                   description: The game command to execute (e.g. reset, or a game-specific action).
+                boodleBets:
+                  type: array
+                  items:
+                    type: integer
+                  description: "How the ante is split across the four boodle cards. Required for the bet command; the entries must add up to the ante."
                 amount:
                   type: integer
                   description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
@@ -31786,6 +31791,41 @@ paths:
                 properties:
                   message:
                     type: string
+                  boodles:
+                    type: array
+                    items:
+                      type: object
+                    description: "The boodle cards on the table, each with the chips staked on it."
+                  claimedBy:
+                    type: integer
+                    description: "Seat that claimed a boodle, or -1 while it is still unclaimed."
+                  betBudget:
+                    type: integer
+                    description: "Chips the human still has left to stake this deal."
+                  humanBetPlaced:
+                    type: boolean
+                    description: "Whether the human has finished staking for this deal."
+                  isCurrent:
+                    type: boolean
+                    description: "Whether this seat is the one to play."
+                  isWinner:
+                    type: boolean
+                    description: "Whether this seat went out and won the deal."
+                  seqSuit:
+                    type: integer
+                    description: "Suit of the sequence in progress."
+                  seqSuitName:
+                    type: string
+                    description: "Identifier for that suit, such as spade. Used as an i18n key."
+                  seqHighValue:
+                    type: integer
+                    description: "Highest card played so far in the sequence."
+                  needNewSequence:
+                    type: boolean
+                    description: "Whether the sequence is stopped and a fresh one must be started."
+                  deadHandCount:
+                    type: integer
+                    description: "Seats that can no longer add to the sequence."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:

@@ -7,7 +7,6 @@
   ],
   "Anaconda": [
     "currentPlayer",
-    "isWinner",
     "rollIndex",
     "streetBet"
   ],
@@ -45,7 +44,6 @@
     "isEscalera"
   ],
   "Bouillotte": [
-    "isWinner",
     "matchingIndices",
     "noteKey",
     "retourne",
@@ -195,7 +193,6 @@
   "Guts": [
     "in",
     "isMatcher",
-    "isWinner",
     "matchers"
   ],
   "HachiHachi": [
@@ -259,20 +256,6 @@
   "Mao": [
     "ruleHintCode"
   ],
-  "Michigan": [
-    "betBudget",
-    "boodleBets",
-    "boodles",
-    "claimedBy",
-    "deadHandCount",
-    "humanBetPlaced",
-    "isCurrent",
-    "isWinner",
-    "needNewSequence",
-    "seqHighValue",
-    "seqSuit",
-    "seqSuitName"
-  ],
   "Minchiate": [
     "isHumanScarto",
     "scartoCount"
@@ -332,9 +315,6 @@
   "Pontoon": [
     "stuck",
     "twisted"
-  ],
-  "Primero": [
-    "isWinner"
   ],
   "Quadrille": [
     "callableKingSuits",
