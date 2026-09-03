@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { DilotiResponse } from '../types/card';
 import { DilotiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { DILOTI_HELP, parseDilotiCommand } from '../utils/cli/commands/dilotiCommands';
 import { formatDilotiState } from '../utils/cli/formatters/dilotiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -154,6 +155,23 @@ function DilotiPageContent() {
   const takeLabel = (tableIdxs: number[], declIdxs: number[]) =>
     [...tableIdxs.map(String), ...declIdxs.map((d) => t('declShort', { idx: d }))].join(', ');
 
+  // **読み上げ名には札そのものを入れる (#7037)。** 見えている番号は CUI の
+  // コマンドに打ち込む値でもあるので残すが、番号だけではどの札を取る手なのか
+  // スクリーンリーダの利用者に伝わらない。宣言はまとめて取るので値で呼ぶ。
+  const takeAriaLabel = (tableIdxs: number[], declIdxs: number[]) => {
+    const parts = [
+      ...tableIdxs.map((i) => {
+        const card = state.table[i];
+        return card ? cardAlt(card) : String(i);
+      }),
+      ...declIdxs.map((d) => {
+        const decl = state.declarations[d];
+        return decl ? t('declValue', { value: decl.value }) : t('declShort', { idx: d });
+      }),
+    ];
+    return t('takeGroup', { cards: parts.join(', ') });
+  };
+
   const handleManualReset = () => {
     hideActionLog();
     reset();
@@ -272,6 +290,7 @@ function DilotiPageContent() {
                           onClick={() => take(o.tableIdxs, o.declIdxs)}
                           disabled={loading}
                           data-testid={`diloti-take-${[...o.tableIdxs, ...o.declIdxs.map((d) => `d${d}`)].join('-')}`}
+                          aria-label={takeAriaLabel(o.tableIdxs, o.declIdxs)}
                         >
                           {t('takeGroup', { cards: takeLabel(o.tableIdxs, o.declIdxs) })}
                         </button>
