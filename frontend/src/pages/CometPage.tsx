@@ -261,6 +261,18 @@ function CometPageContent() {
                         points: state.lastResult.gained[state.lastResult.winnerIdx],
                       })}
                     </div>
+                    {state.lastResult.cardsLeft.map((count, idx) => {
+                      const player = state.players[idx];
+                      const isHuman = player ? player.isHuman : idx === 0;
+                      return (
+                        <div key={idx} data-testid={`comet-cards-left-${idx}`}>
+                          {t('cardsLeft', {
+                            name: playerName(idx, isHuman),
+                            n: count,
+                          })}
+                        </div>
+                      );
+                    })}
                     <div>{t('unplayedKings', { n: state.lastResult.unplayedKings })}</div>
                     {state.lastResult.heldWildIdx >= 0 && (
                       <div className="text-ds-danger" data-testid="comet-held-wild">

@@ -155,6 +155,12 @@ func (p *CometCuiPresenter) writeRoundResult(b *strings.Builder, g interfaces.Co
 	b.WriteString(i18n.Tf("comet.goOut",
 		"name", cometSeatName(winner != nil && winner.GetIsHuman(), res.WinnerIdx),
 		"points", strconv.Itoa(res.Gained[res.WinnerIdx])) + "\n")
+	for i, count := range res.CardsLeft {
+		player := g.GetPlayer(i)
+		b.WriteString("  " + i18n.Tf("comet.cardsLeft",
+			"name", cometSeatName(player != nil && player.GetIsHuman(), i),
+			"n", strconv.Itoa(count)) + "\n")
+	}
 	b.WriteString("  " + i18n.Tf("comet.unplayedKings",
 		"n", strconv.Itoa(res.UnplayedKings),
 		"points", strconv.Itoa(res.UnplayedKings*domain.CometUnplayedKingPoints)) + "\n")

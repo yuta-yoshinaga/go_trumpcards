@@ -25,6 +25,7 @@
   "dealerBadge": "親",
   "passButton": "パス",
   "goOut": "{{name}} が上がり、{{points}} 点",
+  "cardsLeft": "{{name}}: 残り {{n}} 枚",
   "unplayedKings": "出なかった K: {{n}} 枚（1 枚 2 点）",
   "heldWild": "{{name}} はコメットを抱えたまま: -1 点",
   "winner": "{{name}} の勝ち！",

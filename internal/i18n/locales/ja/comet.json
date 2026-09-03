@@ -27,6 +27,7 @@
   "mustPass": "出せる札がありません。pass してください。",
   "commandHint": "play <idx> ... 札を出す / pass ... パス",
   "goOut": "{{name}} が上がり、{{points}} 点。",
+  "cardsLeft": "{{name}}: 残り {{n}} 枚",
   "unplayedKings": "出なかった K: {{n}} 枚（{{points}} 点）",
   "heldWild": "{{name}} はコメットを抱えたまま: -{{points}} 点",
   "nextRoundHint": "nextround で次の局へ進みます。",

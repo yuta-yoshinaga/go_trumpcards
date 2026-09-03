@@ -25,6 +25,7 @@
   "dealerBadge": "Dealer",
   "passButton": "Pass",
   "goOut": "{{name}} went out for {{points}}",
+  "cardsLeft": "{{name}}: {{n}} card(s) left",
   "unplayedKings": "Kings never played: {{n}} (2 each)",
   "heldWild": "{{name}} was left holding the Comet: -1",
   "winner": "{{name}} wins!",
