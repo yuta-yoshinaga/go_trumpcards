@@ -83,6 +83,25 @@ func TestSixCardGolfCuiPresenter_HintOutput(t *testing.T) {
 	})
 }
 
+// 席名が i18n のキーのまま画面に出ていた (#7061 でマニュアルを直そうとして発見)。
+// `cuiPlayerNameHuman` / `cuiPlayerNameCPU` はどのロケールにも存在せず、
+// i18n.T は未知のキーをそのまま返すので**キー名が利用者に見えていた**。
+func TestSixCardGolfCuiPresenterResolvesSeatNames(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	g := domain.NewDefaultSixCardGolf()
+	g.Reset()
+	out := new(presenter.SixCardGolfCuiPresenter).Output(g, nil)
+
+	// **キーが漏れていないこと**が本体。負のコントロールとして、
+	// 解決後の文言も見る (未翻訳ならキーが返るので両方見ないと意味がない)。
+	assert.NotContains(t, out, "cuiPlayerName", "i18n キーが解決されずに出ている")
+	assert.Contains(t, out, "あなた", "人間の席名が解決されていない")
+	assert.Contains(t, out, "CPU 1", "CPU の席名が解決されていない")
+}
+
 func TestSixCardGolfCuiPresenter_Output(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)

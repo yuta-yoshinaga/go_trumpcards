@@ -127,10 +127,13 @@ func scgPlayerName(player *domain.SixCardGolfPlayer, idx int) string {
 	if player == nil {
 		return fmt.Sprintf("Player%d", idx)
 	}
+	// **キー名は cuiPlayerYou / cuiPlayerCpu。** 以前は存在しない
+	// `cuiPlayerNameHuman` / `cuiPlayerNameCPU` を引いていて、i18n.T は
+	// 未知のキーをそのまま返すので**キー名が画面に出ていた** (#7061)。
 	if !player.IsCpu {
-		return i18n.T("cuiPlayerNameHuman")
+		return i18n.T("cuiPlayerYou")
 	}
-	return i18n.Tf("cuiPlayerNameCPU", "id", strconv.Itoa(idx))
+	return i18n.Tf("cuiPlayerCpu", "idx", strconv.Itoa(idx))
 }
 
 // ActionLogOutput 棋譜

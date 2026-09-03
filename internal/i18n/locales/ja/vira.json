@@ -8,7 +8,7 @@
   "contractFailed": "失敗",
   "contractLine": "宣言者: {{name}} — {{contract}}",
   "gameEnd": "ゲーム終了！{{name}}がマッチ勝利！",
-  "helpTitle": "ヴィーラ コマンド一覧",
+  "helpTitle": "ヴィーラ (Vira)",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintNone": "ヒントはありません。",
   "hintReasonFollowBlock": "ディフェンダーとして宣言者のトリックを阻止する",

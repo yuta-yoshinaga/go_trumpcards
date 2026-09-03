@@ -8,7 +8,7 @@
   "contractFailed": "Failed",
   "contractLine": "Declarer: {{name}} — {{contract}}",
   "gameEnd": "Game over! {{name}} wins the match!",
-  "helpTitle": "Vira commands",
+  "helpTitle": "Vira",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintNone": "No hint available.",
   "hintReasonFollowBlock": "As a defender, block the declarer from taking this trick",

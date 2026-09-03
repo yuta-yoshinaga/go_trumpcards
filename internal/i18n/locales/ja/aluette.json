@@ -7,7 +7,7 @@
   "helpNextRound": "  nr / nextround       次のメーヌへ",
   "helpPlay": "  play <n>             カードを出す",
   "helpSetDifficulty": "  sd <0-2>             CPU難易度（0=Easy 1=Normal 2=Hard）",
-  "helpTitle": "アリュエット コマンド一覧",
+  "helpTitle": "アリュエット (Aluette)",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintNone": "ヒントはありません。",
   "hintReasonFollowLow": "取れないので低い札を捨てる",

@@ -1050,7 +1050,14 @@ var gameRegistry = []GameRegistryEntry{
 			"  l                        action log",
 			"  h                        hint",
 			"",
-			i18n.T("commonCommands"),
+			// **`commonCommands` というキーは存在しない。** i18n.T は未知の
+			// キーをそのまま返すので、durak のヘルプに `commonCommands` と
+			// いう行が出ていた (#7061)。定型ヘルプ (help_text.go) と同じ
+			// 3 行に揃える。
+			i18n.T("session"),
+			i18n.T("resetEntry"),
+			i18n.T("quitEntry"),
+			i18n.T("helpEntry"),
 		}}),
 	BindCuiFor("fortythieves",
 		func() usecase.FortyThievesInteractorIF {
