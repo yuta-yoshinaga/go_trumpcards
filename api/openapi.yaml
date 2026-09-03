@@ -11645,6 +11645,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  sequenceStarts:
+                    type: array
+                    description: "Per column, the position from which cards can be picked up. Comes straight from the domain; a client that recomputes the sequence rule will draw grabbable cards the server then refuses."
+                    items:
+                      type: integer
                   tableau:
                     type: array
                     description: 10 tableau columns, each an array of face-up cards
@@ -13770,6 +13775,13 @@ paths:
               schema:
                 type: object
                 properties:
+                  legalTargets:
+                    type: object
+                    description: 'Legal destinations for each source, keyed by source id ("tableau-0", "fan-2").'
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
                   tableau:
                     type: array
                   fan:
@@ -14067,6 +14079,12 @@ paths:
               schema:
                 type: object
                 properties:
+                  lastHandIdx:
+                    type: integer
+                    description: "Index in the hand of the card played last. -1 when none."
+                  lastTableIdx:
+                    type: integer
+                    description: "Index on the table of the card played last. -1 when none."
                   players:
                     type: array
                     items:
@@ -14588,6 +14606,22 @@ paths:
               schema:
                 type: object
                 properties:
+                  cpuActions:
+                    type: array
+                    description: What each CPU seat did, most recent last.
+                    items:
+                      type: object
+                      properties:
+                        isPass:
+                          type: boolean
+                          description: "True when the action was a pass rather than a play."
+                  humanAction:
+                    type: object
+                    description: What the human seat did last.
+                    properties:
+                      isPass:
+                        type: boolean
+                        description: "True when the action was a pass rather than a play."
                   players:
                     type: array
                     items:
@@ -21362,6 +21396,15 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  lastResult:
+                    type: object
+                    description: Outcome of the hand just finished.
+                    properties:
+                      combos:
+                        type: array
+                        description: "Identifier of each seat's colour and suit combination, in seating order."
+                        items:
+                          type: string
                   hintAcceptMog:
                     type: boolean
                     description: "Whether the hint advises accepting the mog (the card exchange)."
@@ -21379,15 +21422,6 @@ paths:
                           description: Cards this seat has played to the current trick sequence.
                           items:
                             $ref: '#/components/schemas/Card'
-                  result:
-                    type: object
-                    description: Outcome of the hand just finished.
-                    properties:
-                      combos:
-                        type: array
-                        description: "Identifier of each seat's colour and suit combination, in seating order."
-                        items:
-                          type: string
                   mogDiscardCard:
                     type: object
                     nullable: true
@@ -22131,6 +22165,15 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  lastResult:
+                    type: object
+                    description: Outcome of the hand just finished.
+                    properties:
+                      handNames:
+                        type: array
+                        description: "Identifier of each seat's hand ranking, in seating order."
+                        items:
+                          type: string
                   betUnit:
                     type: integer
                     description: "Size of one betting unit at this table."
@@ -22149,15 +22192,6 @@ paths:
                         revealed:
                           type: boolean
                           description: "True once this seat's cards have been turned face up."
-                  result:
-                    type: object
-                    description: Outcome of the hand just finished.
-                    properties:
-                      handNames:
-                        type: array
-                        description: "Identifier of each seat's hand ranking, in seating order."
-                        items:
-                          type: string
                   message:
                     type: string
         '400':
@@ -30926,7 +30960,8 @@ paths:
                 properties:
                   retourne:
                     type: object
-                    description: "The retourne, the card turned up beside the pot."
+                    nullable: true
+                    description: "The retourne, the card turned up beside the pot. Null before it is turned."
                   retourneMatch:
                     type: object
                     description: "How the human hand matches the retourne; absent when it does not."
@@ -31062,7 +31097,7 @@ paths:
                     description: "Contract the declarer chose for this deal."
                   blind:
                     type: array
-                    description: "The blind (the Cego pile the declarer plays with), as cards."
+                    description: "**Always empty.** The blind (the Cego pile) is a face-down pile whose contents the Web API never reveals; only `blindCount` is exposed. The array is present for shape, not content."
                     items:
                       $ref: '#/components/schemas/Card'
                   isHumanContract:
@@ -31189,6 +31224,9 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  redealUsed:
+                    type: boolean
+                    description: "True once the single permitted redeal has been taken."
                   message:
                     type: string
         '400':
@@ -31327,6 +31365,11 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  marriageIndices:
+                    type: array
+                    description: "Indices in the human hand of cards that form a declarable marriage."
+                    items:
+                      type: integer
                   message:
                     type: string
         '400':
@@ -31386,6 +31429,11 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  marriageIndices:
+                    type: array
+                    description: "Indices in the human hand of cards that form a declarable marriage."
+                    items:
+                      type: integer
                   message:
                     type: string
         '400':
@@ -31714,6 +31762,25 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  players:
+                    type: array
+                    description: One entry per seat, in seating order.
+                    items:
+                      type: object
+                      properties:
+                        rawScore:
+                          type: integer
+                          description: "This seat's card points before bonuses are applied."
+                        score:
+                          type: object
+                          description: Score breakdown for this seat.
+                          properties:
+                            rawScore:
+                              type: integer
+                              description: "Card points before bonuses."
+                            bonus:
+                              type: integer
+                              description: "Bonus points added on top of the card points."
                   message:
                     type: string
         '400':
@@ -32110,6 +32177,18 @@ paths:
                 - command
                 - sessionId
               properties:
+                handIndices:
+                  type: array
+                  description: "Hand indices to add to the table with the play command."
+                  items:
+                    type: integer
+                tableMelds:
+                  type: array
+                  description: "The whole new table submitted with the play command, as card references per meld."
+                  items:
+                    type: array
+                    items:
+                      type: integer
                 command:
                   type: string
                   description: The game command to execute (e.g. reset, or a game-specific action).
@@ -32858,6 +32937,12 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  playerRank:
+                    type: integer
+                    description: "The player's hand value (its total modulo 10)."
+                  bankerRank:
+                    type: integer
+                    description: "The banker's hand value (its total modulo 10)."
                   message:
                     type: string
         '400':
@@ -33206,6 +33291,18 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  players:
+                    type: array
+                    description: One entry per seat, in seating order.
+                    items:
+                      type: object
+                      properties:
+                        isOmbre:
+                          type: boolean
+                          description: "True when this seat is playing as Ombre (the soloist)."
+                  ombreIdx:
+                    type: integer
+                    description: "Seat playing as Ombre (the soloist). -1 when not yet decided."
                   message:
                     type: string
         '400':
@@ -33265,6 +33362,12 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  panDeclarerIdx:
+                    type: integer
+                    description: "Seat that declared pan. -1 when nobody has."
+                  winMeldCount:
+                    type: integer
+                    description: "Melds a seat needs to go out."
                   message:
                     type: string
         '400':
@@ -33556,6 +33659,24 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  players:
+                    type: array
+                    description: One entry per seat, in seating order.
+                    items:
+                      type: object
+                      properties:
+                        hasSamba:
+                          type: boolean
+                          description: "True once this seat holds a completed samba (a seven-card sequence)."
+                        melds:
+                          type: array
+                          description: Melds this seat has laid down.
+                          items:
+                            type: object
+                            properties:
+                              isSamba:
+                                type: boolean
+                                description: "True when this meld is a completed samba."
                   message:
                     type: string
         '400':
@@ -33627,6 +33748,11 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  luettes:
+                    type: array
+                    description: "The six named top cards, strongest first. This is the domain's own ranking table; do not rebuild it client-side."
+                    items:
+                      type: object
                   message:
                     type: string
         '400':
@@ -34067,6 +34193,26 @@ paths:
                 - command
                 - sessionId
               properties:
+                from:
+                  type: object
+                  description: Source zone for a move command.
+                  properties:
+                    zone:
+                      type: string
+                      description: "Zone identifier."
+                    divanIdx:
+                      type: integer
+                      description: "Index within the divan, when the zone is the divan."
+                to:
+                  type: object
+                  description: Destination zone for a move command.
+                  properties:
+                    zone:
+                      type: string
+                      description: "Zone identifier."
+                    divanIdx:
+                      type: integer
+                      description: "Index within the divan, when the zone is the divan."
                 command:
                   type: string
                   description: The game command to execute (e.g. reset, or a game-specific action).
@@ -34092,6 +34238,11 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  divan:
+                    type: array
+                    description: The divan, the reserve row, as cards.
+                    items:
+                      $ref: '#/components/schemas/Card'
                   message:
                     type: string
         '400':
@@ -35032,6 +35183,18 @@ components:
       type: object
       description: Response payload for /pontoon/exec
       properties:
+        hands:
+          type: array
+          description: One entry per hand in play.
+          items:
+            type: object
+            properties:
+              twisted:
+                type: boolean
+                description: "True once the hand has twisted (taken a card face up)."
+              stuck:
+                type: boolean
+                description: "True once the hand has stuck and will take no more cards."
         seats:
           type: array
           items:
@@ -35117,21 +35280,19 @@ components:
       type: object
       description: Response payload for /settemezzo/exec
       properties:
-        hands:
-          type: array
-          description: One entry per hand in play.
-          items:
-            type: object
-            properties:
-              totalLabel:
-                type: string
-                description: 'The hand total in display form, e.g. "7.5".'
-              hasMatta:
-                type: boolean
-                description: "True when the hand holds the matta (the wild card)."
-              mattaHalves:
-                type: integer
-                description: "Value assigned to the matta, in half points. 0 when there is no matta."
+        hand:
+          type: object
+          description: The player's hand.
+          properties:
+            totalLabel:
+              type: string
+              description: 'The hand total in display form, e.g. "7.5".'
+            hasMatta:
+              type: boolean
+              description: "True when the hand holds the matta (the wild card)."
+            mattaHalves:
+              type: integer
+              description: "Value assigned to the matta, in half points. 0 when there is no matta."
         seats:
           type: array
           items:
@@ -36162,6 +36323,12 @@ components:
       type: object
       description: Response payload for /poch/exec
       properties:
+        yourBestComboRank:
+          type: integer
+          description: "Rank of the human seat's own best combination. 0 = no combination. Pochen compares combinations, so a seat needs this before betting."
+        yourBestComboSize:
+          type: integer
+          description: "Cards in the human seat's own best combination. 0 = no combination."
         players:
           type: array
           items:
@@ -38143,6 +38310,9 @@ components:
         - $ref: '#/components/schemas/Card'
         - type: object
           properties:
+            month:
+              type: integer
+              description: "Month the card belongs to (1-12; 6 and 7 do not occur). Sent separately because the wire turns `design` into a suit name, and decoding the month from a suit name client-side is the wrong shape."
             category:
               type: integer
               description: "0=chaff, 1=ribbon, 2=animal, 3=bright"
@@ -39860,6 +40030,11 @@ components:
         - drawnCard
         - discardedPairs
       properties:
+        discardedCards:
+          type: array
+          description: The pair this CPU seat discarded.
+          items:
+            $ref: '#/components/schemas/Card'
         drawPlayerIdx:
           type: integer
           description: Index of the CPU player who performed the draw
@@ -39928,6 +40103,11 @@ components:
         - cpuHighlightedCardIdx
         - mode
       properties:
+        lastDiscardedCards:
+          type: array
+          description: The pair discarded most recently.
+          items:
+            $ref: '#/components/schemas/Card'
         players:
           type: array
           description: State of all 4 players
@@ -41338,6 +41518,9 @@ components:
         - targetSuit
         - targetValue
       properties:
+        jokerReclaimed:
+          type: boolean
+          description: "True when this play reclaimed the joker. It is the only way a hand silently gains a card, so the action description needs it."
         playerIdx:
           type: integer
           description: Index of the player who acted
@@ -42233,6 +42416,9 @@ components:
         - cpuActions
         - message
       properties:
+        addonUsed:
+          type: boolean
+          description: "True once the add-on has been taken."
         metaAI:
           $ref: '#/components/schemas/MetaAIProfile'
         players:
@@ -43456,6 +43642,11 @@ components:
         - undoToEscape
         - message
       properties:
+        cells:
+          type: array
+          description: The free cells, as cards.
+          items:
+            $ref: '#/components/schemas/Card'
         tableau:
           type: array
           description: The 8 tableau columns, each containing an array of face-up cards
@@ -44461,6 +44652,9 @@ components:
       type: object
       description: Current state of the Brusquembille game.
       properties:
+        followRequired:
+          type: boolean
+          description: "True when the current trick obliges following suit."
         players:
           type: array
           items:
@@ -44673,6 +44867,23 @@ components:
       type: object
       description: Current state of the Gaps / Montana game.
       properties:
+        gapNeeds:
+          type: array
+          description: "For each gap on the grid, the card it will accept. Rows follow the grid layout."
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                kind:
+                  type: string
+                  description: "What the gap accepts."
+                design:
+                  type: string
+                  description: "Suit the gap needs, when it needs a specific one."
+                value:
+                  type: integer
+                  description: "Rank the gap needs, when it needs a specific one."
         grid:
           type: array
           description: 4x13 grid; `null` cells are gaps.
@@ -45151,6 +45362,9 @@ components:
       type: object
       description: Current state of the Mao game
       properties:
+        ruleHintCode:
+          type: string
+          description: "i18n key of the rule hint, without the `mao.` prefix. Translate this rather than the prose in `ruleHint`."
         players:
           type: array
           description: Array of player objects
@@ -45510,6 +45724,13 @@ components:
       type: object
       description: Current state of the Gin Rummy game
       properties:
+        layoffTargets:
+          type: array
+          description: "For each card in the human hand, the knocker's meld numbers it can be laid off onto."
+          items:
+            type: array
+            items:
+              type: integer
         players:
           type: array
           description: Array of player objects
@@ -45848,6 +46069,11 @@ components:
         - command
         - sessionId
       properties:
+        extendTargets:
+          type: array
+          description: "For each group in `meldGroups`, the meld number it extends. Optional."
+          items:
+            type: integer
         command:
           type: string
           description: |
@@ -45889,6 +46115,13 @@ components:
       type: object
       description: Current state of the Conquian game
       properties:
+        layoffTargets:
+          type: array
+          description: "For each card in the human hand, the seat's own meld numbers it can be added to."
+          items:
+            type: array
+            items:
+              type: integer
         players:
           type: array
           description: Array of player objects
@@ -46009,6 +46242,9 @@ components:
       type: object
       description: Current state of the Tonk game
       properties:
+        bestDeadwood:
+          type: integer
+          description: "Lowest deadwood reachable by discarding one card; compare it with the knock threshold. -1 outside the human discard phase."
         players:
           type: array
           items:
@@ -46384,6 +46620,11 @@ components:
       type: object
       description: Current state of the Tressette game
       properties:
+        teamRoundPoints:
+          type: array
+          description: "Points each team took in the round just finished, indexed by team."
+          items:
+            type: integer
         players:
           type: array
           items:
@@ -48240,6 +48481,9 @@ components:
       type: object
       description: Current state of the Video Poker game
       properties:
+        handKey:
+          type: string
+          description: "i18n key of the hand ranking. Translate this rather than the prose in `handName`."
         hand:
           type: array
           description: The player's 5-card hand
@@ -50370,6 +50614,14 @@ components:
       type: object
       description: Current state of the Contract Bridge game
       properties:
+        vulnerability:
+          type: array
+          description: "Whether each side is vulnerable, indexed by side (0 = NS, 1 = EW)."
+          items:
+            type: boolean
+        openingLeadDone:
+          type: boolean
+          description: "True once the opening lead has been made, which is when the dummy is exposed."
         players:
           type: array
           description: Array of player objects
@@ -50522,6 +50774,11 @@ components:
         - command
         - sessionId
       properties:
+        cardIdxs:
+          type: array
+          description: "Card indices the command applies to."
+          items:
+            type: integer
         command:
           type: string
           description: |
@@ -50642,6 +50899,9 @@ components:
         - cpuActions
         - message
       properties:
+        initialDealCount:
+          type: integer
+          description: "Cards dealt to each seat at the start of the hand."
         players:
           type: array
           description: State of all players (4/6/9 depending on table size)
@@ -50969,6 +51229,11 @@ components:
           items:
             type: object
             properties:
+              knownRanks:
+                type: array
+                description: "Ranks this seat has publicly shown holding. Authoritative server state -- rebuilding it from the ask history is lost on reload."
+                items:
+                  type: integer
               id:
                 type: integer
                 description: Player index
@@ -51564,6 +51829,9 @@ components:
         - bestHand
         - playStyleName
       properties:
+        currentLowHand:
+          type: object
+          description: "Running low hand during a street (Hi-Lo, human seat, only once it qualifies). The settled low is `lowBestHand`; reading this one as the result mistakes a hand that can still change for a final one."
         id:
           type: integer
           description: Player index (0 = human, 1+ = CPU)
@@ -51818,6 +52086,9 @@ components:
         - cpuActions
         - message
       properties:
+        addonUsed:
+          type: boolean
+          description: "True once the add-on has been taken."
         metaAI:
           $ref: '#/components/schemas/MetaAIProfile'
         players:
@@ -52953,6 +53224,13 @@ components:
       type: object
       description: Current state of the All Fours (Seven Up) game
       properties:
+        roundBreakdown:
+          type: object
+          description: How the round score was built up.
+          properties:
+            provisional:
+              type: boolean
+              description: "True while the figures are still provisional. High and Low are decided among the trumps that have appeared, so undealt cards can still overturn them -- never present a provisional figure as settled."
         players:
           type: array
           description: Array of player objects (0=non-dealer/human, 1=dealer/CPU)
@@ -53110,6 +53388,11 @@ components:
       type: object
       description: Current state of the Calabresella (Terziglio) game
       properties:
+        monte:
+          type: array
+          description: "The monte, the three-card widow; absent while it is not visible."
+          items:
+            $ref: '#/components/schemas/Card'
         players:
           type: array
           description: Array of 3 player objects (0=human, 1-2=CPU)
@@ -60102,6 +60385,9 @@ components:
       type: object
       description: Response payload for /rams/exec
       properties:
+        beast:
+          type: integer
+          description: "Seat whose ante doubles next round (the beast). -1 when none."
         players:
           type: array
           description: Length is 3, 4 or 5 depending on the configured table size.
@@ -61571,6 +61857,9 @@ components:
       type: object
       description: Player state for Kalooki.
       properties:
+        hasOpened:
+          type: boolean
+          description: "True once this seat has laid down its opening meld."
         id:
           type: integer
         isHuman:
@@ -61607,6 +61896,9 @@ components:
         - config
         - message
       properties:
+        openingThreshold:
+          type: integer
+          description: "Points a seat needs before it may lay down its opening meld."
         players:
           type: array
           items:
@@ -63600,6 +63892,13 @@ components:
     Rummy500Response:
       type: object
       properties:
+        layoffTargets:
+          type: array
+          description: "For each card in the human hand, the places it can be laid off onto. Used so every enabled button is a move the server accepts."
+          items:
+            type: array
+            items:
+              type: integer
         players:
           type: array
           items:
@@ -64363,6 +64662,9 @@ components:
           items:
             type: object
             properties:
+              isRe:
+                type: boolean
+                description: "True when this seat is on the Re team. Only meaningful once the teams are revealed."
               id:
                 type: integer
               isHuman:
@@ -64482,6 +64784,10 @@ components:
         - command
         - sessionId
       properties:
+        betAction:
+          type: integer
+          description: "Betting phase action: 0 = paso, 1 = envido, 2 = ordago, 3 = quiero, 4 = noquiero."
+          enum: [0, 1, 2, 3, 4]
         command:
           type: string
           description: |
@@ -66826,6 +67132,11 @@ components:
       type: object
       description: Current state of the Bezique game
       properties:
+        dealMeldPoints:
+          type: array
+          description: "Meld points each seat scored in the current deal, in seating order."
+          items:
+            type: integer
         players:
           type: array
           items:
@@ -68277,6 +68588,9 @@ components:
       type: object
       description: Current state of the Ristikontra game
       properties:
+        counterRank:
+          type: integer
+          description: "Rank currently open to a counter. 0 = none. Playing this rank now steals the previous capture, pile and all."
         phase:
           type: string
           description: "Game phase: play, roundEnd, gameEnd"
