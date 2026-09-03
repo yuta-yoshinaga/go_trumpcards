@@ -32,6 +32,13 @@ func (d *Diloti) enumerateDilotiMoves(seat int) []DilotiMove {
 	out := make([]DilotiMove, 0, len(hand)*2)
 	for i, c := range hand {
 		for _, t := range EnumerateDilotiTakes(c, d.table, d.decls) {
+			// **CPU にも打てば弾かれる手を渡さない。** `applyPlay` の戻り値は
+			// `CpuPlay` が捨てるので、拒否される手を選ぶと手札も手番も動かない
+			// まま `runCpuTurns` の 1000 回を空回りして、CPU の手番で止まる。
+			// Easy は合法に見える手から一様に選ぶので実際に引きうる (#6629)。
+			if d.guardBackingCard(seat, c, DilotiActionCapture, t.DeclIdxs) != nil {
+				continue
+			}
 			out = append(out, DilotiMove{
 				HandIdx: i, Action: DilotiActionCapture,
 				TableIdxs: t.TableIdxs, DeclIdxs: t.DeclIdxs, Reason: "capture",

@@ -696,7 +696,22 @@ func (d *Diloti) GetTakeOptions(seat, handIdx int) []DilotiTake {
 	if handIdx < 0 || handIdx >= len(hand) {
 		return nil
 	}
-	return EnumerateDilotiTakes(hand[handIdx], d.table, d.decls)
+	// **打てば必ず弾かれる手を並べない。** 宣言を抱えている席がその値の札を
+	// 「宣言を取る手」以外に使うと `guardBackingCard` が拒否するのに、列挙側は
+	// その規則を見ておらず、押しても必ず errKeepBackingCard で弾かれるボタンが
+	// Web にも CUI にも出ていた (#6629)。
+	//
+	// **判定は guardBackingCard そのものを呼ぶ。** 条件をここで書き直すと、
+	// 一覧に出た手が拒否される日が来る。
+	takes := EnumerateDilotiTakes(hand[handIdx], d.table, d.decls)
+	out := make([]DilotiTake, 0, len(takes))
+	for _, t := range takes {
+		if d.guardBackingCard(seat, hand[handIdx], DilotiActionCapture, t.DeclIdxs) != nil {
+			continue
+		}
+		out = append(out, t)
+	}
+	return out
 }
 
 // GetDeclareOptions は席 seat が手札 handIdx で作れる新しい単一宣言を返す。
