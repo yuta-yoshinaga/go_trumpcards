@@ -172,14 +172,35 @@ func boliviaPlayOut(t *testing.T) *Bolivia {
 	}
 	g := NewBolivia(newBoliviaDeck(), players, DefaultBoliviaConfig())
 	g.Reset()
-	for guard := 0; guard < 4000; guard++ {
+	// **打ち切りは失敗であって「メルドの無い局」ではない。** ここが黙って
+	// 抜けると、進まなかった局が成立率 0 の局として数えられ、成立率を見る
+	// 試験が理由を出さずに落ちる (#6916)。実測では 300 局の最長が 318 手なので
+	// 4000 手に達するのは進行が止まったときだけ。
+	guard := 0
+	for ; guard < boliviaPlayOutMaxSteps; guard++ {
 		if g.phase == BoliviaPhaseRoundEnd || g.phase == BoliviaPhaseGameEnd || g.gameEndFlag {
 			break
 		}
 		g.CpuPlay()
 	}
+	require.Less(t, guard, boliviaPlayOutMaxSteps,
+		"局が %d 手で終わらなかった (フェーズ=%d) -- 進行が止まっている",
+		boliviaPlayOutMaxSteps, g.phase)
 	return g
 }
+
+// boliviaPlayOutMaxSteps は 1 局に許す手数。実測の最長 318 手に対して十分広い。
+const boliviaPlayOutMaxSteps = 4000
+
+// boliviaSignatureRounds は署名メルドの成立を見るのに打つ局数。
+const boliviaSignatureRounds = 300
+
+// 署名メルドの出る局数の下限。実測の帯 (エスカレラ 69〜89 / ボリビア
+// 99〜119、5 回 x 300 局) の十分下に置く。
+const (
+	boliviaMinEscaleraRounds = 20
+	boliviaMinBoliviaRounds  = 30
+)
 
 // **場に 3 枚未満のメルドが残らないこと。**
 //
@@ -207,23 +228,43 @@ func TestBolivia_NoMeldIsEverShorterThanThree(t *testing.T) {
 //
 // 上がるにはエスカレラが要るので、CPU が連番になる札をセットに食わせていると
 // チームは永久に上がれない ── 最初の実装では 60 局すべてがそうなっていた。
+//
+// **30 局では標本が足りなかった。** 実測の 1 局あたりの成立率はエスカレラ
+// 29.3% / ボリビア 37.0% (300 局)。30 局なら 0 本になる確率がエスカレラで
+// 3e-5 あり、実際に CI で 1 度当たった (#6916、2026-09-01)。1 局が 0.4ms
+// なので局数を増やす方が安い ── 300 局なら 0 本の確率は 1e-45 で、0 本は
+// 「運が悪い」ではなく「本当に作れなくなった」を意味するようになる。
 func TestBolivia_SignatureMeldsActuallyGetCompleted(t *testing.T) {
-	escaleras, bolivias := 0, 0
-	for i := 0; i < 30; i++ {
+	escaleraRounds, boliviaRounds := 0, 0
+	for i := 0; i < boliviaSignatureRounds; i++ {
 		g := boliviaPlayOut(t)
+		gotEscalera, gotBolivia := false, false
 		for _, p := range g.players {
 			for _, m := range p.GetMelds() {
 				if m.IsEscalera() {
-					escaleras++
+					gotEscalera = true
 				}
 				if m.IsBoliviaCanasta() {
-					bolivias++
+					gotBolivia = true
 				}
 			}
 		}
+		if gotEscalera {
+			escaleraRounds++
+		}
+		if gotBolivia {
+			boliviaRounds++
+		}
 	}
-	assert.Positive(t, escaleras, "30 局打ってエスカレラが 1 本も完成していない")
-	assert.Positive(t, bolivias, "30 局打ってボリビアが 1 つも完成していない")
+	// **「1 本でもあれば通る」では成立率が落ちても気づかない。** 実測の帯
+	// (5 回 x 300 局) はエスカレラ 69〜89、ボリビア 99〜119。下限はその十分下に
+	// 置いてあるので、当たったときは配りの運ではなく組み方が変わっている。
+	assert.GreaterOrEqual(t, escaleraRounds, boliviaMinEscaleraRounds,
+		"%d 局中エスカレラの出た局が %d 局しかない (実測の帯は 69〜89)",
+		boliviaSignatureRounds, escaleraRounds)
+	assert.GreaterOrEqual(t, boliviaRounds, boliviaMinBoliviaRounds,
+		"%d 局中ボリビアの出た局が %d 局しかない (実測の帯は 99〜119)",
+		boliviaSignatureRounds, boliviaRounds)
 }
 
 // **保存して読み戻してもボリビアがボリビアのままであること (レビュー指摘)。**
