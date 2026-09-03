@@ -11296,6 +11296,9 @@ paths:
                 cardIndex:
                   type: integer
                   description: Index of the card to play (for attack/defend commands)
+                transferEnabled:
+                  type: boolean
+                  description: "Whether transferring an attack to the next seat is allowed. Part of the game config."
                 sessionId:
                   type: string
             examples:
@@ -11334,6 +11337,20 @@ paths:
               schema:
                 type: object
                 properties:
+                  tablePairs:
+                    type: array
+                    items:
+                      type: object
+                    description: "Attack cards on the table with the card that answered each, when one has."
+                  defense:
+                    type: object
+                    description: "Card that answered an attack, or null while it stands unanswered."
+                  attackIdx:
+                    type: integer
+                    description: "Which attack a defence answers, or -1 when it does not apply."
+                  boutNumber:
+                    type: integer
+                    description: "Which bout of the game is being played."
                   players:
                     type: array
                     items:
@@ -12256,6 +12273,112 @@ paths:
             application/json:
               schema:
                 type: object
+                properties:
+                  playerFront:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                    description: "Player's front row once the hands are set."
+                  playerMiddle:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                    description: "Player's middle row once the hands are set."
+                  playerBack:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                    description: "Player's back row once the hands are set."
+                  dealerFront:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                    description: "Dealer's front row once the hands are set."
+                  dealerMiddle:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                    description: "Dealer's middle row once the hands are set."
+                  dealerBack:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                    description: "Dealer's back row once the hands are set."
+                  playerFrontRank:
+                    type: integer
+                    description: "Hand rank of the player's front row; the higher rank takes that row."
+                  playerMiddleRank:
+                    type: integer
+                    description: "Hand rank of the player's middle row; the higher rank takes that row."
+                  playerBackRank:
+                    type: integer
+                    description: "Hand rank of the player's back row; the higher rank takes that row."
+                  dealerFrontRank:
+                    type: integer
+                    description: "Hand rank of the dealer's front row; the higher rank takes that row."
+                  dealerMiddleRank:
+                    type: integer
+                    description: "Hand rank of the dealer's middle row; the higher rank takes that row."
+                  dealerBackRank:
+                    type: integer
+                    description: "Hand rank of the dealer's back row; the higher rank takes that row."
+                  playerRoyalty:
+                    type: integer
+                    description: "Total royalty bonus the player earned this hand."
+                  playerFrontRoyalty:
+                    type: integer
+                    description: "Royalty bonus from the player's front row."
+                  playerMiddleRoyalty:
+                    type: integer
+                    description: "Royalty bonus from the player's middle row."
+                  playerBackRoyalty:
+                    type: integer
+                    description: "Royalty bonus from the player's back row."
+                  dealerRoyalty:
+                    type: integer
+                    description: "Total royalty bonus the dealer earned this hand."
+                  dealerFrontRoyalty:
+                    type: integer
+                    description: "Royalty bonus from the dealer's front row."
+                  dealerMiddleRoyalty:
+                    type: integer
+                    description: "Royalty bonus from the dealer's middle row."
+                  dealerBackRoyalty:
+                    type: integer
+                    description: "Royalty bonus from the dealer's back row."
+                  frontResult:
+                    type: integer
+                    description: "Outcome of the front row. 1 = player took it, -1 = dealer took it, 0 = tie."
+                  middleResult:
+                    type: integer
+                    description: "Outcome of the middle row. 1 = player took it, -1 = dealer took it, 0 = tie."
+                  backResult:
+                    type: integer
+                    description: "Outcome of the back row. 1 = player took it, -1 = dealer took it, 0 = tie."
+                  foul:
+                    type: boolean
+                    description: "Whether the arrangement is a foul, meaning the rows are not in non-decreasing strength."
+                  scoop:
+                    type: boolean
+                    description: "Whether one side took all three rows."
+                  suggestedArrangement:
+                    type: object
+                    description: "The split the server recommends, given as indices into playerCards. Sent only while a full thirteen-card hand is being set; omitted rather than sent empty, so an absent row is not read as an empty row."
+                    properties:
+                      front:
+                        type: array
+                        items:
+                          type: integer
+                      middle:
+                        type: array
+                        items:
+                          type: integer
+                      back:
+                        type: array
+                        items:
+                          type: integer
+                      foul:
+                        type: boolean
         '400':
           description: Bad request
           content:
@@ -13834,6 +13957,24 @@ paths:
               schema:
                 type: object
                 properties:
+                  defenderTeam:
+                    type: integer
+                    description: "Team defending against the contract."
+                  needTricks:
+                    type: integer
+                    description: "Tricks the declaring side must take to make the contract."
+                  misere:
+                    type: boolean
+                    description: "Whether the contract is misere, where the declarer must take no trick at all."
+                  slam:
+                    type: boolean
+                    description: "Whether the declaring side took every trick."
+                  declarerDelta:
+                    type: integer
+                    description: "Points the declaring side gained or lost on the settled hand."
+                  defenderDelta:
+                    type: integer
+                    description: "Points each defending side gained or lost on the settled hand."
                   players:
                     type: array
                   phase:
@@ -21036,6 +21177,26 @@ paths:
                 properties:
                   message:
                     type: string
+                  denariCount:
+                    type: integer
+                    description: "Denari this seat captured. Taking the most scores a point."
+                  sweptDenari:
+                    type: integer
+                    description: "Seat that took every denaro, or -1 when nobody did."
+                  hasSetteBello:
+                    type: boolean
+                    description: "Whether this seat took the sette bello, the seven of denari."
+                  scope:
+                    type: integer
+                    description: "Scope this seat made by clearing the table."
+                  lastBonus:
+                    type: string
+                    description: "Identifier for the most recent deal bonus, empty when there was none."
+                  hintCaptureIdxs:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Table cards the hint recommends capturing."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
@@ -21150,6 +21311,10 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  mogDiscardCard:
+                    type: object
+                    nullable: true
+                    description: "The card the human gives away if the exchange is accepted, chosen by the same rule the swap uses. Absent outside the exchange phase."
                   message:
                     type: string
         '400':
@@ -21280,6 +21445,23 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  layouts:
+                    type: array
+                    items:
+                      type: array
+                    description: "Melds each seat has laid down, as indices into that seat's hand."
+                  goOutIdx:
+                    type: integer
+                    description: "Hand position to discard in order to go out, or -1 when the hand cannot. Solved on the server so the fifteen-card split is not re-derived in the page."
+                  canGoOutOnDeal:
+                    type: boolean
+                    description: "Whether the dealt hand already goes out without drawing. That pays more than going out after a draw, so it is a separate entry point."
+                  hintDiscardIdx:
+                    type: integer
+                    description: "Hand position the hint recommends discarding, or -1 when there is none."
+                  perOpponent:
+                    type: integer
+                    description: "Chips collected from each opponent."
                   message:
                     type: string
         '400':
@@ -21389,6 +21571,33 @@ paths:
                 properties:
                   message:
                     type: string
+                  role:
+                    type: string
+                    description: "Seat role for this side: banker, right or left."
+                  seatIdx:
+                    type: integer
+                    description: "Index of the seat this side belongs to."
+                  coupNumber:
+                    type: integer
+                    description: "Which coup of the shoe is being played."
+                  shoeRemaining:
+                    type: integer
+                    description: "Cards left in the shoe."
+                  bankHeld:
+                    type: integer
+                    description: "How many coups the current banker has held the bank for."
+                  bankerDelta:
+                    type: integer
+                    description: "Chips the banker won or lost on the settled coup."
+                  bankerNatural:
+                    type: boolean
+                    description: "Whether the banker held a natural, ending the coup at once."
+                  retired:
+                    type: boolean
+                    description: "Whether the banker has retired and the bank passes on."
+                  hintDraw:
+                    type: boolean
+                    description: "Whether the hint recommends drawing a third card."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
@@ -21493,6 +21702,28 @@ paths:
                 properties:
                   message:
                     type: string
+                  need:
+                    type: integer
+                    description: "Rank required next, or 0 when the sequence is open and any card may start it."
+                  deadCount:
+                    type: integer
+                    description: "Cards laid face down as dead. Their faces are not shown."
+                  playableIdxs:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Hand positions the human may play. Empty means the seat must pass."
+                  cardsLeft:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Cards each seat still held when the round ended."
+                  unplayedKings:
+                    type: integer
+                    description: "Kings that never came out. Each is worth two points."
+                  heldWildIdx:
+                    type: integer
+                    description: "Seat left holding the comet at the end, or -1 when nobody was."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
@@ -21640,6 +21871,90 @@ paths:
                 properties:
                   message:
                     type: string
+                  declarations:
+                    type: array
+                    items:
+                      type: object
+                    description: "Piles declared on the table. Each carries ownerIdx, value, groups and isGroup."
+                  ownerIdx:
+                    type: integer
+                    description: "Seat that owes the capture for a declaration."
+                  isGroup:
+                    type: boolean
+                    description: "Whether the declaration is a group. A group is taken whole or not at all."
+                  lastCapturer:
+                    type: integer
+                    description: "Seat that captured last. Table cards go to this seat when the stock runs out."
+                  takeOptions:
+                    type: array
+                    items:
+                      type: array
+                    description: "Legal captures for each of the human's hand cards, in hand order."
+                  declareOptions:
+                    type: array
+                    items:
+                      type: array
+                    description: "Declarations the human can make with each hand card, in hand order."
+                  canTrail:
+                    type: array
+                    items:
+                      type: boolean
+                    description: "Whether each of the human's hand cards may be trailed to the table, in hand order."
+                  tableIdxs:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Indices of the loose table cards a capture or declaration uses."
+                  declIdxs:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Indices of the declarations a capture takes."
+                  xeri:
+                    type: integer
+                    description: "Xeri (single-card table sweeps) this seat made this round. Each is worth 10."
+                  xeris:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Xeri count per seat for the finished round."
+                  cardCounts:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Cards captured per seat for the finished round."
+                  totals:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Points per seat for the finished round."
+                  lines:
+                    type: array
+                    items:
+                      type: object
+                    description: "Score breakdown for the finished round. Each line carries a key and per-seat points."
+                  hintHandIdx:
+                    type: integer
+                    description: "Hand card the hint recommends, or -1 when there is none."
+                  hintAction:
+                    type: string
+                    description: "Action the hint recommends."
+                  hintTableIdxs:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Table cards the hint recommends taking."
+                  hintDeclIdxs:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Declarations the hint recommends taking."
+                  hintDeclValue:
+                    type: integer
+                    description: "Value the hint recommends declaring."
+                  hintReason:
+                    type: string
+                    description: "Identifier for the reason behind the hint."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
@@ -21843,6 +22158,55 @@ paths:
                 properties:
                   message:
                     type: string
+                  isTrumpPhase:
+                    type: boolean
+                    description: "Whether the hand is waiting for the trump declaration."
+                  isTrumpChooser:
+                    type: boolean
+                    description: "Whether this seat is the one that calls the trump. It is the dealer's right."
+                  trumpSuitName:
+                    type: string
+                    description: "Identifier for the trump suit, such as spade. Used as an i18n key."
+                  hintTrumpSuit:
+                    type: integer
+                    description: "Trump suit the hint recommends calling."
+                  centrePileCount:
+                    type: integer
+                    description: "Cards in the centre pile that no seat has gathered yet."
+                  centrePileTens:
+                    type: integer
+                    description: "How many tens are sitting in that centre pile."
+                  gatheredCount:
+                    type: integer
+                    description: "Cards this seat has gathered from the centre pile."
+                  prevTrickWinner:
+                    type: integer
+                    description: "Seat that took the previous trick."
+                  teamKots:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Kots per team. These decide the match."
+                  kot:
+                    type: boolean
+                    description: "Whether the finished hand was a kot, meaning every ten was taken."
+                  kotReason:
+                    type: string
+                    description: "Identifier for how the kot was achieved."
+                  streakTeam:
+                    type: integer
+                    description: "Team currently on a winning streak, or -1 when there is none."
+                  streakCount:
+                    type: integer
+                    description: "Length of that team's current streak."
+                  lastHand:
+                    type: object
+                    description: "The hand that just finished, with its winning team, tens and kot."
+                  handHistory:
+                    type: array
+                    items:
+                      type: object
+                    description: "Every hand played so far, oldest first."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
@@ -21957,6 +22321,39 @@ paths:
                 properties:
                   message:
                     type: string
+                  isContractPhase:
+                    type: boolean
+                    description: "Whether the deal is waiting for a contract to be chosen."
+                  currentContractName:
+                    type: string
+                    description: "Identifier for the contract in play. Used as an i18n key."
+                  availableContractNames:
+                    type: array
+                    items:
+                      type: string
+                    description: "Identifiers for the contracts still on offer."
+                  hintContract:
+                    type: integer
+                    description: "Contract the hint recommends choosing."
+                  isShedding:
+                    type: boolean
+                    description: "Whether the contract in play is one of the shedding games."
+                  stack:
+                    type: array
+                    items:
+                      type: object
+                    description: "Cards on the shedding stack."
+                  outRank:
+                    type: integer
+                    description: "Rank a seat went out on in the finished deal."
+                  lastDeal:
+                    type: object
+                    description: "The deal that just finished, with its per-seat points."
+                  dealHistory:
+                    type: array
+                    items:
+                      type: object
+                    description: "Every deal played so far, oldest first."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
@@ -30703,6 +31100,26 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  chien:
+                    type: array
+                    items:
+                      type: object
+                    description: "The chien, the talon set aside at the deal."
+                  chienCount:
+                    type: integer
+                    description: "Cards in the chien."
+                  chienRevealed:
+                    type: boolean
+                    description: "Whether the chien has been turned face up for everyone to see."
+                  stashOwner:
+                    type: integer
+                    description: "Seat that takes the chien into its tricks, or -1 when it is not decided."
+                  isHumanDiscard:
+                    type: boolean
+                    description: "Whether the human is the one to discard down after taking the chien."
+                  petitAuBoutDelta:
+                    type: integer
+                    description: "Adjustment for petit au bout, per defender. 0 when it did not happen."
                   message:
                     type: string
         '400':
@@ -30882,6 +31299,66 @@ paths:
                 properties:
                   message:
                     type: string
+                  gwang:
+                    type: integer
+                    description: "Points from bright (gwang) cards in the score breakdown."
+                  godori:
+                    type: integer
+                    description: "Points from the godori set of three animal cards."
+                  tti:
+                    type: integer
+                    description: "Points from ribbon (tti) cards."
+                  yeol:
+                    type: integer
+                    description: "Points from animal (yeol) cards."
+                  pi:
+                    type: integer
+                    description: "Points from junk (pi) cards."
+                  brightCount:
+                    type: integer
+                    description: "Number of bright cards captured."
+                  ribbonCount:
+                    type: integer
+                    description: "Number of ribbon cards captured."
+                  animalCount:
+                    type: integer
+                    description: "Number of animal cards captured."
+                  piCount:
+                    type: integer
+                    description: "Number of junk cards captured, counting doubles twice."
+                  goCount:
+                    type: integer
+                    description: "How many times go has been declared this round."
+                  goMult:
+                    type: integer
+                    description: "Multiplier earned from declaring go."
+                  goScore:
+                    type: integer
+                    description: "Points added by the go declarations."
+                  basePoints:
+                    type: integer
+                    description: "Points before go multipliers and bak penalties."
+                  bakMult:
+                    type: integer
+                    description: "Multiplier applied by the bak penalties."
+                  gwangBak:
+                    type: boolean
+                    description: "Whether the loser is caught by gwang-bak, doubling the loss."
+                  piBak:
+                    type: boolean
+                    description: "Whether the loser is caught by pi-bak, doubling the loss."
+                  goBak:
+                    type: boolean
+                    description: "Whether the loser is caught by go-bak, doubling the loss."
+                  pendingBreakdown:
+                    type: object
+                    description: "Score breakdown for the hand in progress, shown before the round is settled."
+                  pendingPoints:
+                    type: integer
+                    description: "Points the current hand would score if the round settled now."
+                  lastRoundResult:
+                    type: object
+                    description: "Result of the round that just finished, including winner, breakdown and total."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
@@ -31131,6 +31608,21 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  hasPureSequence:
+                    type: boolean
+                    description: "Whether this seat holds the pure sequence a valid declaration requires."
+                  humanHasPureSequence:
+                    type: boolean
+                    description: "Whether the human holds that pure sequence. Shown every turn, as the CUI does."
+                  humanDeadwood:
+                    type: integer
+                    description: "Deadwood points left in the human's hand."
+                  wildJoker:
+                    type: object
+                    description: "Card turned up as the wild joker for this deal."
+                  declarationValid:
+                    type: boolean
+                    description: "Whether the declaration that ended the deal was valid."
                   message:
                     type: string
         '400':
@@ -31171,6 +31663,12 @@ paths:
                 amount:
                   type: integer
                   description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                lastTrickBonus:
+                  type: integer
+                  description: "Points awarded for the last trick. Part of the game config."
+                enableWeis:
+                  type: boolean
+                  description: "Whether weis declarations are scored. Part of the game config."
                 sessionId:
                   type: string
                   description: Client-supplied session identifier.
@@ -31190,6 +31688,19 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  schieben:
+                    type: boolean
+                    description: "Whether the forehand pushed the trump choice to their partner."
+                  roundWeisPoints:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Weis points per team for the round."
+                  roundStockPoints:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Stock points per team for the round."
                   message:
                     type: string
         '400':
@@ -31367,6 +31878,28 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  yaku:
+                    type: array
+                    items:
+                      type: object
+                    description: "Yaku this seat has completed, each with its name and points."
+                  yakuPoints:
+                    type: integer
+                    description: "Points from those yaku before any multiplier."
+                  pendingYaku:
+                    type: array
+                    items:
+                      type: object
+                    description: "Yaku completed on the current capture, awaiting the koi-koi decision."
+                  calledKoiKoi:
+                    type: boolean
+                    description: "Whether this seat has called koi-koi to keep playing."
+                  koikoiCount:
+                    type: integer
+                    description: "How many times koi-koi has been called this round."
+                  koikoi:
+                    type: integer
+                    description: "Whether the hint recommends calling koi-koi rather than stopping."
                   message:
                     type: string
         '400':
@@ -31463,6 +31996,11 @@ paths:
                 command:
                   type: string
                   description: The game command to execute (e.g. reset, or a game-specific action).
+                boodleBets:
+                  type: array
+                  items:
+                    type: integer
+                  description: "How the ante is split across the four boodle cards. Required for the bet command; the entries must add up to the ante."
                 amount:
                   type: integer
                   description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
@@ -31487,6 +32025,41 @@ paths:
                 properties:
                   message:
                     type: string
+                  boodles:
+                    type: array
+                    items:
+                      type: object
+                    description: "The boodle cards on the table, each with the chips staked on it."
+                  claimedBy:
+                    type: integer
+                    description: "Seat that claimed a boodle, or -1 while it is still unclaimed."
+                  betBudget:
+                    type: integer
+                    description: "Chips the human still has left to stake this deal."
+                  humanBetPlaced:
+                    type: boolean
+                    description: "Whether the human has finished staking for this deal."
+                  isCurrent:
+                    type: boolean
+                    description: "Whether this seat is the one to play."
+                  isWinner:
+                    type: boolean
+                    description: "Whether this seat went out and won the deal."
+                  seqSuit:
+                    type: integer
+                    description: "Suit of the sequence in progress."
+                  seqSuitName:
+                    type: string
+                    description: "Identifier for that suit, such as spade. Used as an i18n key."
+                  seqHighValue:
+                    type: integer
+                    description: "Highest card played so far in the sequence."
+                  needNewSequence:
+                    type: boolean
+                    description: "Whether the sequence is stopped and a fresh one must be started."
+                  deadHandCount:
+                    type: integer
+                    description: "Seats that can no longer add to the sequence."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
@@ -32356,6 +32929,9 @@ paths:
                 amount:
                   type: integer
                   description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                kingSuit:
+                  type: integer
+                  description: "Suit of the king to call. Required during the king-calling phase."
                 sessionId:
                   type: string
                   description: Client-supplied session identifier.
@@ -32377,6 +32953,26 @@ paths:
                 properties:
                   message:
                     type: string
+                  quadrilleIdx:
+                    type: integer
+                    description: "Seat that declared quadrille, or -1 when nobody has."
+                  isQuadrille:
+                    type: boolean
+                    description: "Whether this seat is the one that declared quadrille."
+                  isHumanKingCallTurn:
+                    type: boolean
+                    description: "Whether the human is the one to call a king."
+                  calledKingSuit:
+                    type: integer
+                    description: "Suit of the king that was called, or -1 before the call."
+                  callableKingSuits:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Suits whose king may still be called this deal."
+                  roiSeul:
+                    type: boolean
+                    description: "Whether the bidder plays roi seul, calling their own king and going alone."
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
@@ -45586,6 +46182,48 @@ components:
       type: object
       description: Current state of the Gong Zhu game
       properties:
+        scoreBreakdowns:
+          type: array
+          description: "Per-seat breakdown of the round score."
+          items:
+            type: object
+            properties:
+              heartCount:
+                type: integer
+                description: "How many hearts this seat took."
+              heartsSum:
+                type: integer
+                description: "Points from those hearts."
+              allHearts:
+                type: boolean
+                description: "Whether this seat took every heart, which flips the hearts to a bonus."
+              aceExposed:
+                type: boolean
+                description: "Whether the ace of hearts was exposed, doubling the hearts."
+              hasPig:
+                type: boolean
+                description: "Whether this seat took the pig, the queen of spades."
+              pigExposed:
+                type: boolean
+                description: "Whether the pig was exposed, doubling it."
+              hasSheep:
+                type: boolean
+                description: "Whether this seat took the sheep, the jack of diamonds."
+              sheepExposed:
+                type: boolean
+                description: "Whether the sheep was exposed, doubling it."
+              hasDoubler:
+                type: boolean
+                description: "Whether this seat took the doubler, the ten of clubs."
+              doublerMultiplier:
+                type: integer
+                description: "Multiplier the doubler applies to the rest of the score."
+              doublerStandalone:
+                type: integer
+                description: "Points the doubler is worth on its own when nothing else was taken."
+              subtotal:
+                type: integer
+                description: "This seat's points for the round after every doubling is applied."
         players:
           type: array
           items:
@@ -45601,6 +46239,11 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/Card'
+              capturedPointCards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+                description: "Point cards this seat has taken so far (hearts, the pig, the sheep and the doubler). They are public once a trick is taken, so every seat's list is sent."
               roundScore:
                 type: integer
               cumulativeScore:
@@ -46866,6 +47509,12 @@ components:
         - command
         - sessionId
       properties:
+        adjutantSuit:
+          type: integer
+          description: "Suit of the card that names the adjutant. Required when declaring."
+        adjutantValue:
+          type: integer
+          description: "Rank of that card."
         command:
           type: string
           description: |
@@ -46922,6 +47571,15 @@ components:
       type: object
       description: Current state of the Napoleon game
       properties:
+        adjutantIdx:
+          type: integer
+          description: "Seat holding the adjutant card, or -1 while it is still hidden."
+        adjutantRevealed:
+          type: boolean
+          description: "Whether the adjutant has been revealed by playing the named card."
+        pictureCards:
+          type: integer
+          description: "Picture cards this seat has taken. These decide the hand."
         players:
           type: array
           description: Array of player objects
@@ -47307,6 +47965,9 @@ components:
         - command
         - sessionId
       properties:
+        goAlone:
+          type: boolean
+          description: "Whether to play the hand alone when ordering up or naming trump."
         command:
           type: string
           description: |
@@ -47347,6 +48008,18 @@ components:
       type: object
       description: Current state of the Euchre game
       properties:
+        goingAlone:
+          type: boolean
+          description: "Whether the maker is playing alone, with their partner sitting the hand out."
+        goingAlonePlayerIdx:
+          type: integer
+          description: "Seat playing alone, or -1 when nobody is."
+        orderUpScore:
+          type: integer
+          description: "Hand-strength threshold for ordering up. Sent rather than copied into the page so the two cannot drift apart."
+        goAloneScore:
+          type: integer
+          description: "Hand-strength threshold for going alone, sent for the same reason."
         players:
           type: array
           description: Array of player objects
@@ -53131,6 +53804,24 @@ components:
       type: object
       description: Current state of the Cassino game
       properties:
+        sweepCount:
+          type: integer
+          description: "Sweeps a seat made. Each clears the table and scores."
+        buildValue:
+          type: integer
+          description: "Value of the build a played card created or added to."
+        isMulti:
+          type: boolean
+          description: "Whether a build is a multiple build, which cannot be raised."
+        isSweep:
+          type: boolean
+          description: "Whether a play cleared the table."
+        hasBigCasino:
+          type: integer
+          description: "Seat holding the big casino, the ten of diamonds."
+        hasLittleCasino:
+          type: integer
+          description: "Seat holding the little casino, the two of spades."
         players:
           type: array
           items:
