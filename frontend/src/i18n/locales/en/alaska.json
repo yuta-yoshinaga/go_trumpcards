@@ -43,5 +43,6 @@
   "faceDownRule": "Face-down cards can't be moved — only face-up cards are playable",
   "dismissRule": "Dismiss rule note",
   "faceDownCardLabel": "Column {{col}}, card {{pos}} from top, face down",
-  "blockMoveLabel": "moves as a block of {{n}} cards"
+  "blockMoveLabel": "moves as a block of {{n}} cards",
+  "landscapeBanner": "Landscape orientation recommended"
 }

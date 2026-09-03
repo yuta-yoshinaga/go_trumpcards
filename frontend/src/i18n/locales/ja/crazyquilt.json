@@ -56,5 +56,6 @@
   "emptyFoundationAscendingAriaLabel": "空の組札{{idx}}（{{suit}}、A から昇順）",
   "emptyFoundationDescendingAriaLabel": "空の組札{{idx}}（{{suit}}、K から降順）",
   "directionAscending": "A から昇順",
-  "directionDescending": "K から降順"
+  "directionDescending": "K から降順",
+  "emptyCellAriaLabel": "空のマス {{cell}}"
 }
