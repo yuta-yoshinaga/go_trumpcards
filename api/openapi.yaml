@@ -57094,6 +57094,9 @@ components:
         minRaise:
           type: integer
           description: Smallest raise the running discipline accepts.
+        maxBetAmount:
+          type: integer
+          description: Maximum allowed bet/raise amount for Pot Limit mode. 0 means no limit (Fixed or No Limit mode).
         tablePhase:
           type: integer
           description: Phase number reported by the running discipline.
