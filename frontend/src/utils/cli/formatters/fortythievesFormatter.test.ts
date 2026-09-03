@@ -21,10 +21,19 @@ const baseState = (overrides: Partial<FortyThievesResponse> = {}): FortyThievesR
 });
 
 describe('formatFortythievesState', () => {
+  // #6717 は「空のファンデーションはどのエースでも受ける」を CUI に出したが、
+  // CLI フォーマッタは空の山を捨札と同じ `[  ]` のままにしていた (#7059)。
+  it('says an empty foundation takes any ace', () => {
+    const out = formatFortythievesState(baseState({ waste: [] }));
+    expect(out).toContain('foundation: [any A]');
+    // 捨札の空欄まで置き換えていないこと (空の捨札は「どのAでも可」ではない)
+    expect(out).toContain('waste: [  ]');
+  });
+
   it('renders foundations, stock, waste, and tableau columns', () => {
     const out = formatFortythievesState(baseState());
     expect(out).toContain('Forty Thieves');
-    expect(out).toContain('foundation: [  ] | ♦A');
+    expect(out).toContain('foundation: [any A] | ♦A');
     expect(out).toContain('stock: 30  waste: ♣9');
     expect(out).toContain('t0: [0]♠5 [1]♥4');
     expect(out).toContain('t1: [?]');
