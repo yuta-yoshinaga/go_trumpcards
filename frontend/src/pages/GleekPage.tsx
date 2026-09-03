@@ -305,7 +305,7 @@ function GleekPageContent() {
                       {t('roundResult.par', { total: state.dealPoints, par: state.par })}
                     </div>
                     {state.players.map((p, idx) => {
-                      const delta = state.roundDelta[idx] ?? 0;
+                      const delta = state.roundDelta[idx];
                       return (
                         <div
                           key={p.id}
