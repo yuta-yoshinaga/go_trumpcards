@@ -145,5 +145,13 @@ describe('formatSpeculationState', () => {
     // 進行中は次に打つ回を出す (常に roundNo を返す実装で上は通る)。
     const flip = formatSpeculationState(withState({ phase: SpeculationPhase.FLIP, roundNo: 1 }));
     expect(flip).toContain('Round: 2');
+
+    // config が無い応答では総数を伏せる (`state.config ? ... : ''` の右辺)。
+    // 番号自体は出し続ける。
+    const noConfig = formatSpeculationState(
+      withState({ phase: SpeculationPhase.RESULT, roundNo: 1, config: undefined }),
+    );
+    expect(noConfig).toContain('Round: 1');
+    expect(noConfig).not.toContain('Round: 1 /');
   });
 });
