@@ -194,6 +194,11 @@ func (g *Horse) startHand() {
 	g.phase = HorsePhaseHand
 	g.appendLog("hand", fmt.Sprintf("%s hand %d (%s)",
 		HorseDisciplineLetter(g.discipline), g.handNumber, HorseDisciplineName(g.discipline)))
+	// **配っただけで終わっているハンドがある。** アンティで出し切った席は
+	// オールイン扱いで手番が回らないので、種目側の `Reset` が CPU だけで
+	// ショーダウンまで打ち切ってしまう。ここで見ないと `IsHumanTurn` も
+	// `IsDrawPhase` も立たない**打てる手が 1 つも無い盤面**が残る (#6910)。
+	g.settleIfHandOver()
 }
 
 // buildTable はいまの種目の卓と、その残高を回収する関数を返す。
@@ -472,6 +477,16 @@ func (g *Horse) resolveShowdownDecision() {
 // 回収して増える経路ができる。
 func (g *Horse) settleIfHandOver() {
 	if g.table == nil {
+		return
+	}
+	// **回収するのは打っている最中のハンドだけ。** `startHand` からも呼ぶので
+	// 同じハンドに 2 回入りうる。
+	//
+	// いまの `collectChipsFrom` は種目側の残高を**代入**するので、2 回走っても
+	// チップは増えない ── つまり**チップの総量を見る試験ではこの門を外しても
+	// 落ちない**。効くのは決着の記録の方で、門が無いと同じハンドに `handEnd`
+	// が 2 行積まれる。加算で回収する形に変えた誰かを止めるのもここ。
+	if g.phase != HorsePhaseHand {
 		return
 	}
 	g.resolveShowdownDecision()

@@ -407,3 +407,92 @@ func TestHorse_GetMaxBetAmount(t *testing.T) {
 	gOmahaFixed := &Horse{table: omahaFixed}
 	assert.Equal(t, 0, gOmahaFixed.GetMaxBetAmount())
 }
+
+// **人間が一度も打たないまま終わるハンドがある。**
+//
+// アンティで残りを出し切ると種目側は `SetAllIn(true)` と `actedFlags[i] = true`
+// を立てる。その席には手番が回らないので、`Reset` の中の `runCpuActions` が
+// ショーダウンまで打ち切ってしまう。`startHand` はそこに無条件で
+// `HorsePhaseHand` をかぶせるため、`IsHumanTurn` も `IsDrawPhase` も立たない
+// **打てる手が 1 つも無い盤面**が残る。
+//
+// 回収は `PlayerAction` / `PlayerExchange` の後ろにしか無かったので、人間が
+// 一度も打たないこのハンドでは一度も走らない (#6910)。CI の実測は
+// `種目=studHiLo 卓のフェーズ=7 手番=3` ── フェーズ 7 は
+// `SevenCardStudPhaseEnd`、つまり卓はとっくに終わっていた。
+//
+// **この前提は配りに依る。** 1 チップの席がオールインでも手番が回る配りが
+// あるので、条件を満たす盤が出るまで配り直し、出た盤だけを見る。前提が
+// 一度も立たなかった場合は「測っていない」ので落とす。
+func TestHorse_HandIsSettledWhenNoHumanActionWasNeeded(t *testing.T) {
+	t.Parallel()
+	stuckShaped := 0
+	for range 200 {
+		g := NewEightGame(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+		g.Reset()
+		g.discipline = HorseStudHiLo
+		// アンティ (1) でちょうど出し切る席にする。
+		g.seats[0].chips = 1
+		before := horseTotalChips(g)
+
+		g.startHand()
+
+		if g.IsHumanTurn() || g.IsDrawPhase() {
+			continue // 手番が回った配り。この試験の対象ではない。
+		}
+		stuckShaped++
+		// 決着後の行き先は 2 つある。1 チップの席が飛べば残り 3 席で
+		// `HorseMinSeats` (4) を割るのでマッチ自体が終わる。**どちらでもよく、
+		// 「打てないまま進行中を名乗っていない」ことだけが要件**。
+		assert.NotEqual(t, HorsePhaseHand, g.GetPhase(),
+			"打てる手が 1 つも無いまま HorsePhaseHand が残っている (卓のフェーズ=%d)",
+			g.GetTablePhase())
+		assert.Equal(t, before, horseTotalChips(g), "回収でチップの総量が変わった")
+	}
+	require.Positive(t, stuckShaped, "人間に手番の回らない配りが 200 回で 1 度も出ていない")
+}
+
+// **回収は 1 回だけ。** `startHand` からも呼ぶようにしたので、同じハンドに
+// 対して 2 回走りうる形になった。
+//
+// **チップの総量では測れない。** `collectChipsFrom` は種目側の残高を代入する
+// ので、2 回走っても値は変わらない (門を外して確かめた: 総量の assert だけ
+// では落ちない)。決着の記録の方を見る ── 門が無いと `handEnd` が 2 行積まれる。
+func TestHorse_SettleIsIdempotent(t *testing.T) {
+	t.Parallel()
+	g := NewEightGame(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+	g.Reset()
+	// 普通に 1 ハンド打ち切る。配りに依らずここで決着まで行く。
+	for range 200 {
+		if g.GetPhase() != HorsePhaseHand {
+			break
+		}
+		switch {
+		case g.IsDrawPhase():
+			require.NoError(t, g.PlayerExchange([]int{0, 1, 2}))
+		case g.IsHumanTurn():
+			if err := g.PlayerAction(HoldemActionCall, 0, 0); err != nil {
+				require.NoError(t, g.PlayerAction(HoldemActionCheck, 0, 0))
+			}
+		default:
+			require.FailNow(t, "打てる手が 1 つも無いまま盤面が止まっている")
+		}
+	}
+	require.NotEqual(t, HorsePhaseHand, g.GetPhase(), "1 ハンドが決着していない")
+	settled := horseTotalChips(g)
+	handEnds := func() int {
+		n := 0
+		for _, e := range g.GetActionLog() {
+			if e.ActionType == "handEnd" {
+				n++
+			}
+		}
+		return n
+	}
+	before := handEnds()
+
+	g.settleIfHandOver()
+
+	assert.Equal(t, before, handEnds(), "同じハンドの決着が 2 度記録された")
+	assert.Equal(t, settled, horseTotalChips(g), "2 度目の回収でチップが増えた")
+}
