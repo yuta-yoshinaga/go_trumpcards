@@ -21315,6 +21315,32 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  hintAcceptMog:
+                    type: boolean
+                    description: "Whether the hint advises accepting the mog (the card exchange)."
+                  players:
+                    type: array
+                    description: One entry per seat, in seating order.
+                    items:
+                      type: object
+                      properties:
+                        moggedIn:
+                          type: boolean
+                          description: "True once this seat has taken the mog."
+                        played:
+                          type: array
+                          description: Cards this seat has played to the current trick sequence.
+                          items:
+                            $ref: '#/components/schemas/Card'
+                  result:
+                    type: object
+                    description: Outcome of the hand just finished.
+                    properties:
+                      combos:
+                        type: array
+                        description: "Identifier of each seat's colour and suit combination, in seating order."
+                        items:
+                          type: string
                   mogDiscardCard:
                     type: object
                     nullable: true
@@ -22058,6 +22084,33 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  betUnit:
+                    type: integer
+                    description: "Size of one betting unit at this table."
+                  callAmount:
+                    type: integer
+                    description: "Chips the human seat needs to call. 0 means checking is free."
+                  humanHandName:
+                    type: string
+                    description: "Identifier of the human seat's hand ranking."
+                  players:
+                    type: array
+                    description: One entry per seat, in seating order.
+                    items:
+                      type: object
+                      properties:
+                        revealed:
+                          type: boolean
+                          description: "True once this seat's cards have been turned face up."
+                  result:
+                    type: object
+                    description: Outcome of the hand just finished.
+                    properties:
+                      handNames:
+                        type: array
+                        description: "Identifier of each seat's hand ranking, in seating order."
+                        items:
+                          type: string
                   message:
                     type: string
         '400':
@@ -30809,6 +30862,21 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  retourne:
+                    type: object
+                    description: "The retourne, the card turned up beside the pot."
+                  retourneMatch:
+                    type: object
+                    description: "How the human hand matches the retourne; absent when it does not."
+                    properties:
+                      matchingIndices:
+                        type: array
+                        description: "Indices of the human cards that match the retourne."
+                        items:
+                          type: integer
+                      noteKey:
+                        type: string
+                        description: 'Identifier of the combination formed ("favori" or "carre"); empty when none.'
                   message:
                     type: string
         '400':
@@ -30927,6 +30995,20 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  contractType:
+                    type: integer
+                    description: "Contract the declarer chose for this deal."
+                  blind:
+                    type: array
+                    description: "The blind (the Cego pile the declarer plays with), as cards."
+                    items:
+                      $ref: '#/components/schemas/Card'
+                  isHumanContract:
+                    type: boolean
+                    description: "True while the human seat has to choose the contract."
+                  isHumanExchange:
+                    type: boolean
+                    description: "True while the human seat has to exchange cards."
                   message:
                     type: string
         '400':
@@ -33211,6 +33293,20 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  contractBid:
+                    type: integer
+                    description: "Winning bid for this hand."
+                  nest:
+                    type: array
+                    description: "The nest, the widow the bid winner picks up."
+                    items:
+                      $ref: '#/components/schemas/Card'
+                  nestCount:
+                    type: integer
+                    description: "Cards left in the nest."
+                  trumpColor:
+                    type: integer
+                    description: "Colour named as trump for this hand."
                   message:
                     type: string
         '400':
@@ -33287,6 +33383,30 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  players:
+                    type: array
+                    description: One entry per seat, in seating order.
+                    items:
+                      type: object
+                      properties:
+                        hasEscalera:
+                          type: boolean
+                          description: "True once this seat holds a completed escalera (a seven-card sequence)."
+                        hasBolivia:
+                          type: boolean
+                          description: "True once this seat holds a completed bolivia (a seven-card wild canasta)."
+                        melds:
+                          type: array
+                          description: Melds this seat has laid down.
+                          items:
+                            type: object
+                            properties:
+                              isEscalera:
+                                type: boolean
+                                description: "True when this meld is a completed escalera."
+                              isBolivia:
+                                type: boolean
+                                description: "True when this meld is a completed bolivia."
                   message:
                     type: string
         '400':
@@ -33486,6 +33606,12 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  scartoCount:
+                    type: integer
+                    description: "Cards the dealer has buried so far this deal."
+                  isHumanScarto:
+                    type: boolean
+                    description: "True while the human seat is the dealer and owes the scarto."
                   message:
                     type: string
         '400':
@@ -33552,6 +33678,12 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  scartoCount:
+                    type: integer
+                    description: "Cards the dealer has buried so far this deal."
+                  isHumanScarto:
+                    type: boolean
+                    description: "True while the human seat is the dealer and owes the scarto."
                   message:
                     type: string
         '400':
@@ -33659,6 +33791,29 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  players:
+                    type: array
+                    description: One entry per seat, in seating order.
+                    items:
+                      type: object
+                      properties:
+                        cardThirds:
+                          type: integer
+                          description: "Card points of this seat's captured pile, in thirds. Scoring counts cards in groups of three, so a pile is rarely a whole number of points; cardPoints carries the same figure in readable form."
+                  scartoCount:
+                    type: integer
+                    description: "Cards the dealer has buried so far this deal."
+                  talonSize:
+                    type: integer
+                    description: "Cards the burial takes: 2 at four seats, 3 at three seats. Never hardcode it."
+                  dealScores:
+                    type: array
+                    description: "Score each seat took in the deal just finished, in seating order. Zero-sum: score_i = seats x thirds_i - table total."
+                    items:
+                      type: integer
+                  isHumanScarto:
+                    type: boolean
+                    description: "True while the human seat is the dealer and owes the scarto."
                   message:
                     type: string
         '400':
@@ -33718,6 +33873,17 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  scartoCount:
+                    type: integer
+                    description: "Cards the dealer has buried so far this deal."
+                  dealScores:
+                    type: array
+                    description: "Score each seat took in the deal just finished, in seating order."
+                    items:
+                      type: integer
+                  isHumanScarto:
+                    type: boolean
+                    description: "True while the human seat is the dealer and owes the scarto."
                   message:
                     type: string
         '400':
@@ -33954,6 +34120,28 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  players:
+                    type: array
+                    description: One entry per seat, in seating order.
+                    items:
+                      type: object
+                      properties:
+                        coins:
+                          type: integer
+                          description: "This seat's coin balance."
+                  playerCoins:
+                    type: array
+                    description: "Coin balance of every seat, in seating order."
+                    items:
+                      type: integer
+                  lastDealCoins:
+                    type: array
+                    description: "Coins each seat gained or lost in the deal just finished, in seating order."
+                    items:
+                      type: integer
+                  talonTaken:
+                    type: boolean
+                    description: "True once the declarer has picked up the talon."
                   message:
                     type: string
         '400':
@@ -34013,6 +34201,18 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  criticalSuit:
+                    type: integer
+                    description: "Trump suit declared for the deal (the Farbe). 0 = not yet declared."
+                  schlagRank:
+                    type: integer
+                    description: "Rank declared for the deal (the Schlag): A = 1, or 7 through 13. 0 = not yet declared."
+                  raiserTeam:
+                    type: integer
+                    description: "Team whose raise is awaiting a response. -1 = no raise pending."
+                  dealWinnerTeam:
+                    type: integer
+                    description: "Team that won the deal just finished. -1 = still undecided."
                   message:
                     type: string
         '400':
@@ -67296,6 +67496,19 @@ components:
       type: object
       description: Current state of the Teen Patti game
       properties:
+        maxRaise:
+          type: integer
+          description: "Largest raise the current seat may make."
+        lastSideShow:
+          type: object
+          description: "Result of the most recent side show; absent when none has happened."
+          properties:
+            requesterIdx:
+              type: integer
+              description: "Seat that asked for the side show."
+            requester:
+              type: object
+              description: "The requesting seat's hand as it was compared."
         players:
           type: array
           items:

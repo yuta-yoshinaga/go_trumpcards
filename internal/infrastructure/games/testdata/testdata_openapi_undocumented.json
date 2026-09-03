@@ -24,18 +24,6 @@
   "Bezique": [
     "dealMeldPoints"
   ],
-  "Bolivia": [
-    "hasBolivia",
-    "hasEscalera",
-    "isBolivia",
-    "isEscalera"
-  ],
-  "Bouillotte": [
-    "matchingIndices",
-    "noteKey",
-    "retourne",
-    "retourneMatch"
-  ],
   "Bridge": [
     "openingLeadDone",
     "vulnerability"
@@ -49,21 +37,9 @@
   "Calabresella": [
     "monte"
   ],
-  "Cego": [
-    "blind",
-    "contractType",
-    "isHumanContract",
-    "isHumanExchange"
-  ],
   "Conquian": [
     "extendTargets",
     "layoffTargets"
-  ],
-  "CostlyColours": [
-    "combos",
-    "hintAcceptMog",
-    "moggedIn",
-    "played"
   ],
   "CourtPiece": [
     "consecutiveWins",
@@ -145,10 +121,6 @@
   "Mao": [
     "ruleHintCode"
   ],
-  "Minchiate": [
-    "isHumanScarto",
-    "scartoCount"
-  ],
   "Mus": [
     "betAction"
   ],
@@ -176,13 +148,6 @@
     "panDeclarerIdx",
     "winMeldCount"
   ],
-  "PiedmonteseTarot": [
-    "cardThirds",
-    "dealScores",
-    "isHumanScarto",
-    "scartoCount",
-    "talonSize"
-  ],
   "Pineapple": [
     "cardIdxs",
     "initialDealCount"
@@ -201,23 +166,12 @@
   "Ristikontra": [
     "counterRank"
   ],
-  "Rook": [
-    "contractBid",
-    "nest",
-    "nestCount",
-    "trumpColor"
-  ],
   "Rummy500": [
     "layoffTargets"
   ],
   "Samba": [
     "hasSamba",
     "isSamba"
-  ],
-  "Scarto": [
-    "dealScores",
-    "isHumanScarto",
-    "scartoCount"
   ],
   "Scopa": [
     "isScopa",
@@ -252,34 +206,11 @@
     "divan",
     "divanIdx"
   ],
-  "Sutda": [
-    "betUnit",
-    "callAmount",
-    "handNames",
-    "humanHandName",
-    "revealed"
-  ],
-  "Tarocchini": [
-    "isHumanScarto",
-    "scartoCount"
-  ],
-  "TeenPatti": [
-    "lastSideShow",
-    "maxRaise",
-    "requester",
-    "requesterIdx"
-  ],
   "Tichu": [
     "isPass"
   ],
   "Tonk": [
     "bestDeadwood"
-  ],
-  "Ulti": [
-    "coins",
-    "lastDealCoins",
-    "playerCoins",
-    "talonTaken"
   ],
   "UnsunKaruta": [
     "canDeclare",
@@ -288,11 +219,5 @@
   ],
   "VideoPoker": [
     "handKey"
-  ],
-  "Watten": [
-    "criticalSuit",
-    "dealWinnerTeam",
-    "raiserTeam",
-    "schlagRank"
   ]
 }
