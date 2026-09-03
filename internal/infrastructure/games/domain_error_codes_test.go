@@ -144,7 +144,10 @@ func TestPresenterI18nKeysResolve(t *testing.T) {
 		"cmd/trumpcards",
 	}
 
-	defined := loadJaLocaleKeys(t)
+	defined := map[string]map[string]struct{}{
+		"ja": loadLocaleKeys(t, "ja"),
+		"en": loadLocaleKeys(t, "en"),
+	}
 
 	type ref struct{ file, key string }
 	var refs []ref
@@ -178,19 +181,23 @@ func TestPresenterI18nKeysResolve(t *testing.T) {
 		t.Fatalf("i18n キーを %d 件しか拾えていない -- 正規表現か走査先が壊れている", len(refs))
 	}
 
-	for _, r := range refs {
-		if _, ok := defined[r.key]; !ok {
-			t.Errorf("%s: i18n キー %q がどのロケールにも無い。i18n.T は未知のキーを"+
-				"そのまま返すので、キー名が利用者に見える (#7061)", r.file, r.key)
+	// **両方の言語を見る。** 英語だけ抜けていれば、英語で遊ぶ人にだけキー名が
+	// 見える。隣の TestDomainErrorCodesResolveInGoLocales も ja/en 両方を見る。
+	for _, lang := range []string{"ja", "en"} {
+		for _, r := range refs {
+			if _, ok := defined[lang][r.key]; !ok {
+				t.Errorf("%s: i18n キー %q が %s ロケールに無い。i18n.T は未知のキーを"+
+					"そのまま返すので、キー名が利用者に見える (#7061)", r.file, r.key, lang)
+			}
 		}
 	}
 }
 
-// loadJaLocaleKeys flattens every ja locale file into a key set. Nested objects
-// are joined with "." to match how presenters address them.
-func loadJaLocaleKeys(t *testing.T) map[string]struct{} {
+// loadLocaleKeys flattens one language's locale files into a key set. Nested
+// objects are joined with "." to match how presenters address them.
+func loadLocaleKeys(t *testing.T, lang string) map[string]struct{} {
 	t.Helper()
-	dir := filepath.Join(repoRoot, "internal/i18n/locales/ja")
+	dir := filepath.Join(repoRoot, "internal/i18n/locales", lang)
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		t.Fatalf("read %s: %v", dir, err)
