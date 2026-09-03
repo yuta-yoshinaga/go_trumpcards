@@ -155,16 +155,21 @@ type liveSpec struct {
 
 type livePath struct {
 	Post struct {
-		Responses struct {
-			OK struct {
-				Content struct {
-					JSON struct {
-						Schema *liveSchema `yaml:"schema"`
-					} `yaml:"application/json"`
-				} `yaml:"content"`
-			} `yaml:"200"`
+		// RequestBody は #7050 の逆向き検査 (宣言だけあって作れない項目) でも歩く。
+		RequestBody liveBody `yaml:"requestBody"`
+		Responses   struct {
+			OK liveBody `yaml:"200"`
 		} `yaml:"responses"`
 	} `yaml:"post"`
+}
+
+// liveBody は requestBody と 200 応答に共通の中身。
+type liveBody struct {
+	Content struct {
+		JSON struct {
+			Schema *liveSchema `yaml:"schema"`
+		} `yaml:"application/json"`
+	} `yaml:"content"`
 }
 
 type liveSchema struct {
