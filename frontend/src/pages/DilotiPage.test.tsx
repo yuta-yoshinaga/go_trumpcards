@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { dilotiApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -15,9 +15,17 @@ const mockExec = vi.mocked(dilotiApi.exec);
 const playState = makeDilotiState();
 
 /** Selects the human's card at the given hand index. */
+// **手札の中だけを見る。** スート字形で画面全体を引くと、取り札ボタンの
+// 読み上げ名にも札名が入っている (#7037) ので同じ網に掛かり、添字がずれる。
+async function handCards() {
+  await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ });
+  const hand = document.querySelector<HTMLElement>('[data-tutorial="diloti-player-hand"]');
+  if (hand === null) throw new Error('手札の領域が見つからない');
+  return within(hand).getAllByRole('button', { name: /♠|♥|♦|♣/ });
+}
+
 async function pickHand(idx: number) {
-  const cards = await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ });
-  fireEvent.click(cards[idx]);
+  fireEvent.click((await handCards())[idx]);
 }
 
 beforeEach(() => {
@@ -137,7 +145,7 @@ describe('DilotiPage', () => {
     await pickHand(0);
     expect(await screen.findByTestId('diloti-lay-off')).toBeInTheDocument();
 
-    fireEvent.click((await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ }))[0]); // deselect
+    fireEvent.click((await handCards())[0]); // deselect
     await pickHand(2);
     await screen.findByTestId('diloti-move-options');
     expect(screen.queryByTestId('diloti-lay-off')).not.toBeInTheDocument();
@@ -206,6 +214,27 @@ describe('DilotiPage', () => {
     await waitFor(() => {
       const lives = screen.getAllByTestId('diloti-hint-live');
       expect(lives[lives.length - 1]).not.toBeEmptyDOMElement();
+    });
+  });
+
+  // **取り札ボタンの読み上げが場札の番号だけだった (#7037)。** どの札を取る手なのか
+  // スクリーンリーダの利用者に伝わらない。Cirulla (#6628) と同じ形。
+  describe('capture button accessible name', () => {
+    it('names the cards, while the visible label keeps the indices', async () => {
+      renderWithProviders(<DilotiPage />);
+      await pickHand(0);
+      const options = await screen.findByTestId('diloti-move-options');
+      const takes = within(options)
+        .getAllByRole('button')
+        .filter((b) => b.getAttribute('data-testid')?.startsWith('diloti-take-'));
+      expect(takes.length).toBeGreaterThan(0);
+
+      // 読み上げ名には札名が入る。
+      expect(takes[0]).toHaveAttribute('aria-label', expect.stringMatching(/[♠♥♦♣]/));
+      expect(takes[0].getAttribute('aria-label')).not.toContain('{{');
+      // **見えている文言は番号のまま** ── CUI のコマンドに打ち込む値なので消さない。
+      expect(takes[0].textContent).toMatch(/\d/);
+      expect(takes[0].textContent).not.toMatch(/[♠♥♦♣]/);
     });
   });
 });

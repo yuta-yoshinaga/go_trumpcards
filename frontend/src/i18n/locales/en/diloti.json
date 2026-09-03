@@ -59,5 +59,6 @@
     "playerHand": "Your hand. A card cannot be laid off while a **face card of the same rank** is on the table, or while you **owe a declaration**.",
     "playButton": "Pick a card, then press a Take or Declare option. Lay off appears only when you choose neither.",
     "resetButton": "The reset button starts a new game."
-  }
+  },
+  "declValue": "declaration of {{value}}"
 }
