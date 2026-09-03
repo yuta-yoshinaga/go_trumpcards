@@ -46,9 +46,32 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 19. **`docs/games.md`**: Add game entity description
 20. **`docs/architecture.md`**: Update endpoint count and list
 21. **`api/openapi.yaml`**: Add endpoint path, tag definition, and request/response schemas in components.
-    **Give the `200` and the `400` the same `$ref`** -- every endpoint returns the game's own payload on both
-    branches, an error being a normal response carrying a `message`. All 367 paths do this; write the payload
-    as a named schema in `components/schemas`, not inline.
+    Write the payload as a named schema in `components/schemas`, not inline, and wire the two responses like
+    every other path (all 367 do):
+
+    ```yaml
+    '200':
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/<Game>Response'   # ordinary commands
+              - $ref: '#/components/schemas/ActionLogResponse'  # the `log` command
+    '400':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/<Game>Response'
+    ```
+
+    **The `200` is a union because `/exec` really returns more than one shape** -- the game state, or the
+    action log for `log`, or (in 54 games) a hint response with no board. One schema cannot describe that, and
+    writing one made every path that declares `required` contradict its own `log` response (#7057).
+    **The `400` carries the game's own payload**, an error being a normal response with a `message`.
+
+    **Do not put `additionalProperties: true` on the response.** It reads as harmless but it makes
+    `TestOpenAPIMatchesLiveResponses` stop walking there, and 50 games sat unchecked behind it long enough to
+    ship a double-wrapped tableau and a wrong `score` type (#7057).
 
     Guarded by these tests in `internal/infrastructure/games`. They look like overlap but each catches a class
     the others structurally cannot:

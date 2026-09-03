@@ -57,6 +57,20 @@ func buildProbeCommands() []string {
 // `additionalProperties: true` のノードはそこで打ち切る ── 宣言どおり
 // 何を入れてもよい場所なので、欠落ではない。
 //
+// **その打ち切りが 50 ゲームを検査の外に出していた。** `additionalProperties:
+// true` が応答の直下に書かれていたので、その 50 件は一度も中身を見られず、
+// タブローの二重ラッパー 7 件や `score` の型違いがそのまま出荷された (#7057)。
+// 200 を `oneOf` にしたことで、検査は oneOf のノードを見てから**枝の
+// properties を集めて**降りるようになり、枝の直下にある宣言はもう参照されない。
+// **50 のスキーマはいまも `additionalProperties: true` を宣言したまま**で、
+// 変わったのは「検査がそこを通らなくなった」こと ── 22 ゲームが実際に露出したのが
+// その証拠。入れ子の宣言 (例: `messageParams` = 文字列マップ) は今も正しく
+// 打ち切るので、**それらを不要と見て消さないこと**。
+//
+// **短絡を戻さないこと。** `oneOf` の枝が `additionalProperties: true` を
+// 持っていても、ここでは枝の properties を集めて突き合わせる。仕様より厳しいが、
+// それがこの検査の目的 ── 新しい項目を黙って足させない。
+//
 // **落ちたらフレークではなく本物。** 配りは毎回違うので、届く盤面も毎回違う。
 // この検査は「返ってきた項目」しか見ないので**見落とすことはあっても、
 // 無い欠落を報告することはない**。実際 CI が 1 回だけ出した
@@ -126,6 +140,21 @@ func TestOpenAPIMatchesLiveResponses(t *testing.T) {
 	}
 	if checked < 300 {
 		t.Fatalf("応答が %d 件しか取れていない。叩き方が壊れている", checked)
+	}
+	// **免除の陰の件数を測る。** `additionalProperties: true` で walk を打ち切る
+	// のは正しいが、その宣言が応答の直下にあると**そのゲームは丸ごと未検査**に
+	// なる。実際 50 ゲームがそうなっていて、タブローの二重ラッパーと `score` の
+	// 型違いをその陰で出荷した (#7057)。
+	//
+	// **緑であることは「見た」ことを意味しない。** 見た件数そのものに床を敷く。
+	// 実測は 5 回で 446,448〜447,795 (ぶれ 0.3%)。
+	//
+	// 負のコントロール: 応答スキーマ 150 件に `additionalProperties: true` を
+	// 足すと 361,277 まで落ちてここで止まる。**枝の側に足しても落ちない**
+	// (oneOf の枝の宣言は walk が参照しないため) ので、効くのは「walk が実際に
+	// 見るノード」に付いた宣言だけ ── そこがまさに 50 ゲームを隠していた場所。
+	if spec.walked < 400000 {
+		t.Fatalf("比べた項目が %d 件しかない。免除の陰に入って検査が素通りしている疑い", spec.walked)
 	}
 	if len(problems) > 0 {
 		sort.Strings(problems)
@@ -234,7 +263,9 @@ func probe(t *testing.T, ctrl games.WebController, name, cmd string) (map[string
 
 type liveSpec struct {
 	// skipEnum は「いまの応答では enum を見ない」。盤面の入らない `hint` の応答用。
-	skipEnum   bool
+	skipEnum bool
+	// walked は実際に中身を比べた項目の数。免除の陰に何件入っているかを測るため。
+	walked     int
 	Paths      map[string]livePath `yaml:"paths"`
 	Components struct {
 		Schemas map[string]*liveSchema `yaml:"schemas"`
@@ -357,7 +388,20 @@ func (s *liveSpec) deref(n *liveSchema) *liveSchema {
 // 載っていれば記載済み。allOf しか見ないと Gaps の `grid`
 // (`oneOf: [Card, null]`) を未記載と誤って報告する。
 func (s *liveSpec) props(sch *liveSchema) map[string]*liveSchema {
+	return s.propsAt(sch, 0)
+}
+
+// propsAt は合成を**再帰的に**たどる。
+//
+// **枝が自分も合成のことがある。** `FollowTheQueenResponse` は
+// `allOf: [SevenCardStudResponse, ...]` なので、枝の `properties` だけを見ると
+// 何も拾えず、そのゲームの項目が全部「未記載」に見える (実際に 3 ゲームで
+// 40 件近い偽の欠落が出た)。
+func (s *liveSpec) propsAt(sch *liveSchema, depth int) map[string]*liveSchema {
 	out := map[string]*liveSchema{}
+	if sch == nil || depth > liveMaxDepth {
+		return out
+	}
 	for k, v := range sch.Properties {
 		out[k] = v
 	}
@@ -367,7 +411,7 @@ func (s *liveSpec) props(sch *liveSchema) map[string]*liveSchema {
 			if d == nil {
 				continue
 			}
-			for k, v := range d.Properties {
+			for k, v := range s.propsAt(d, depth+1) {
 				if _, ok := out[k]; !ok {
 					out[k] = v
 				}
@@ -389,6 +433,7 @@ func (s *liveSpec) walk(sch *liveSchema, body any, path string, gaps map[string]
 			return // 宣言どおり何でも入る
 		}
 		props := s.props(sch)
+		s.walked += len(v)
 		for k, sub := range v {
 			switch {
 			case props[k] != nil:
