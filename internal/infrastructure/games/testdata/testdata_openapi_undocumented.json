@@ -131,29 +131,12 @@
   "IndianPoker": [
     "foldRate"
   ],
-  "IndianRummy": [
-    "declarationValid",
-    "hasPureSequence",
-    "humanDeadwood",
-    "humanHasPureSequence",
-    "wildJoker"
-  ],
-  "Jass": [
-    "enableWeis",
-    "lastTrickBonus",
-    "roundStockPoints",
-    "roundWeisPoints",
-    "schieben"
-  ],
   "Julepe": [
     "beast"
   ],
   "Kalooki": [
     "hasOpened",
     "openingThreshold"
-  ],
-  "Klaberjass": [
-    "lastTrickBonus"
   ],
   "Koenigrufen": [
     "calledKing",
@@ -179,13 +162,6 @@
   ],
   "Mushi": [
     "month"
-  ],
-  "Napoleon": [
-    "adjutantIdx",
-    "adjutantRevealed",
-    "adjutantSuit",
-    "adjutantValue",
-    "pictureCards"
   ],
   "OichoKabu": [
     "bankerRank",

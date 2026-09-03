@@ -31604,6 +31604,21 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  hasPureSequence:
+                    type: boolean
+                    description: "Whether this seat holds the pure sequence a valid declaration requires."
+                  humanHasPureSequence:
+                    type: boolean
+                    description: "Whether the human holds that pure sequence. Shown every turn, as the CUI does."
+                  humanDeadwood:
+                    type: integer
+                    description: "Deadwood points left in the human's hand."
+                  wildJoker:
+                    type: object
+                    description: "Card turned up as the wild joker for this deal."
+                  declarationValid:
+                    type: boolean
+                    description: "Whether the declaration that ended the deal was valid."
                   message:
                     type: string
         '400':
@@ -31644,6 +31659,12 @@ paths:
                 amount:
                   type: integer
                   description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                lastTrickBonus:
+                  type: integer
+                  description: "Points awarded for the last trick. Part of the game config."
+                enableWeis:
+                  type: boolean
+                  description: "Whether weis declarations are scored. Part of the game config."
                 sessionId:
                   type: string
                   description: Client-supplied session identifier.
@@ -31663,6 +31684,19 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  schieben:
+                    type: boolean
+                    description: "Whether the forehand pushed the trump choice to their partner."
+                  roundWeisPoints:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Weis points per team for the round."
+                  roundStockPoints:
+                    type: array
+                    items:
+                      type: integer
+                    description: "Stock points per team for the round."
                   message:
                     type: string
         '400':
@@ -47471,6 +47505,12 @@ components:
         - command
         - sessionId
       properties:
+        adjutantSuit:
+          type: integer
+          description: "Suit of the card that names the adjutant. Required when declaring."
+        adjutantValue:
+          type: integer
+          description: "Rank of that card."
         command:
           type: string
           description: |
@@ -47527,6 +47567,15 @@ components:
       type: object
       description: Current state of the Napoleon game
       properties:
+        adjutantIdx:
+          type: integer
+          description: "Seat holding the adjutant card, or -1 while it is still hidden."
+        adjutantRevealed:
+          type: boolean
+          description: "Whether the adjutant has been revealed by playing the named card."
+        pictureCards:
+          type: integer
+          description: "Picture cards this seat has taken. These decide the hand."
         players:
           type: array
           description: Array of player objects
