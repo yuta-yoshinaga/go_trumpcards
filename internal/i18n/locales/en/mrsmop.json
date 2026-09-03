@@ -16,5 +16,6 @@
   "targetsLine": "Column {{col}} from card {{idx}} can go to: {{targets}}",
   "targetsNone": "Column {{col}} from card {{idx}} has nowhere to go",
   "targetTableau": "column {{col}}",
-  "helpTargets": "  t <col> [idx]            list where that column can go"
+  "helpTargets": "  t <col> [idx]            list where that column can go",
+  "moveUsage": "Usage: m <col> <col>  or  m t <col> <cardId> t <col>"
 }

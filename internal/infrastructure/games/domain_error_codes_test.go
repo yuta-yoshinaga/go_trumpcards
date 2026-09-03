@@ -126,37 +126,51 @@ var presenterI18nKeyRe = regexp.MustCompile(`i18n\.Tf?\("([A-Za-z0-9_.]+)"\s*[,)
 // Nothing failed: not a test, not the linter, not the frontend message-code
 // guard. Only looking at the rendered board showed it.
 func TestPresenterI18nKeysResolve(t *testing.T) {
-	dir := filepath.Join(repoRoot, "internal/adapter/presenter")
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		t.Fatalf("read %s: %v", dir, err)
+	// **Controllers are covered too.** Scoping this to presenters is the very
+	// mistake that let the bug through in the first place: its sibling above
+	// guarded only domain error codes, so a seat-name key walked past it.
+	// Extending to presenters alone would have repeated that -- four CUI
+	// controllers (fortress / somerset / perseverance / mrsmop) were printing
+	// `fortress.promptToZone` and `mrsmop.moveUsage` at players for the same
+	// reason, and only turned up because this list was widened.
+	dirs := []string{
+		"internal/adapter/presenter",
+		"internal/adapter/controller",
+		"internal/infrastructure/ui",
 	}
 
 	defined := loadJaLocaleKeys(t)
 
 	type ref struct{ file, key string }
 	var refs []ref
-	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") || strings.HasSuffix(e.Name(), "_test.go") {
-			continue
-		}
-		src, err := os.ReadFile(filepath.Join(dir, e.Name()))
+	for _, rel := range dirs {
+		dir := filepath.Join(repoRoot, rel)
+		entries, err := os.ReadDir(dir)
 		if err != nil {
-			t.Fatalf("read %s: %v", e.Name(), err)
+			t.Fatalf("read %s: %v", dir, err)
 		}
-		for _, m := range presenterI18nKeyRe.FindAllStringSubmatch(string(src), -1) {
-			if strings.HasSuffix(m[1], ".") {
-				continue // a concatenation prefix, not a key
+		for _, e := range entries {
+			if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") || strings.HasSuffix(e.Name(), "_test.go") {
+				continue
 			}
-			refs = append(refs, ref{e.Name(), m[1]})
+			src, err := os.ReadFile(filepath.Join(dir, e.Name()))
+			if err != nil {
+				t.Fatalf("read %s: %v", e.Name(), err)
+			}
+			for _, m := range presenterI18nKeyRe.FindAllStringSubmatch(string(src), -1) {
+				if strings.HasSuffix(m[1], ".") {
+					continue // a concatenation prefix, not a key
+				}
+				refs = append(refs, ref{rel + "/" + e.Name(), m[1]})
+			}
 		}
 	}
 
 	// **A walk that stops matching would pass this test in silence.** Measured
-	// at 7,820; the floor only has to catch collapse, because a shrinking count
-	// makes this guard quieter, never louder.
-	if len(refs) < 5000 {
-		t.Fatalf("presenter の i18n キーを %d 件しか拾えていない -- 正規表現が壊れている", len(refs))
+	// at 8,383 across the three directories; the floor only has to catch
+	// collapse, because a shrinking count makes this guard quieter, never louder.
+	if len(refs) < 6000 {
+		t.Fatalf("i18n キーを %d 件しか拾えていない -- 正規表現か走査先が壊れている", len(refs))
 	}
 
 	for _, r := range refs {
