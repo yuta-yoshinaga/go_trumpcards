@@ -10,6 +10,8 @@
   "helpExampleBid": "  bid solo s           Declare Solo with spades as trumps (five tricks alone)",
   "helpExamplePlay": "  play 0                    Play card 0 from your hand",
   "round": "Deal: {{round}}  Trick: {{trick}}  Trump: {{trump}}",
+  "dealer": "Dealer: {{name}}",
+  "forehand": "Forehand: {{name}}",
   "contractLine": "Contract: {{bid}} (needs {{need}} tricks)  declarers {{tricks}} - defenders {{opp}}",
   "playerLine": "{{name}} ({{role}}): {{cards}} cards  score: {{score}}  tricks: {{tricks}}",
   "roleDeclarer": "declarer",

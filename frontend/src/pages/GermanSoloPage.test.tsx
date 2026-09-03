@@ -76,6 +76,48 @@ describe('GermanSoloPage', () => {
     expect(screen.getByText('宣言者')).toBeInTheDocument();
   });
 
+  it('renders dealer and forehand badges on the correct seats and not on others', async () => {
+    renderWithProviders(<GermanSoloPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('germansolo-dealer-3')).toBeInTheDocument();
+    });
+
+    // Dealer badge is on seat 3, and NOT on seats 0, 1, 2
+    expect(screen.getByTestId('germansolo-dealer-3')).toBeInTheDocument();
+    expect(screen.queryByTestId('germansolo-dealer-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('germansolo-dealer-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('germansolo-dealer-2')).not.toBeInTheDocument();
+
+    // Forehand badge is on seat 0, and NOT on seats 1, 2, 3
+    expect(screen.getByTestId('germansolo-forehand-0')).toBeInTheDocument();
+    expect(screen.queryByTestId('germansolo-forehand-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('germansolo-forehand-2')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('germansolo-forehand-3')).not.toBeInTheDocument();
+
+    // Verify badge text and sr-only aria text
+    const dealerBadge = screen.getByTestId('germansolo-dealer-3');
+    expect(dealerBadge).toHaveTextContent('親');
+    expect(dealerBadge).toHaveTextContent('このディールの親');
+
+    const forehandBadge = screen.getByTestId('germansolo-forehand-0');
+    expect(forehandBadge).toHaveTextContent('先手');
+    expect(forehandBadge).toHaveTextContent('このディールの先手');
+  });
+
+  it('updates dealer and forehand badges when seats rotate', async () => {
+    mockExec.mockResolvedValue(makeGermanSoloState({ dealerIdx: 1, forehandIdx: 2 }));
+    renderWithProviders(<GermanSoloPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('germansolo-dealer-1')).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId('germansolo-dealer-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('germansolo-dealer-3')).not.toBeInTheDocument();
+
+    expect(screen.getByTestId('germansolo-forehand-2')).toBeInTheDocument();
+    expect(screen.queryByTestId('germansolo-forehand-0')).not.toBeInTheDocument();
+  });
+
   // **必要トリック数は契約ごとに違う。** 出さないと、5 取って喜んだ Tout が
   // その場で失敗になる理由が読めない。
   it('shows the contract target and the running trick split', async () => {
