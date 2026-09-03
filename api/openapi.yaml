@@ -21311,6 +21311,10 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  mogDiscardCard:
+                    type: object
+                    nullable: true
+                    description: "The card the human gives away if the exchange is accepted, chosen by the same rule the swap uses. Absent outside the exchange phase."
                   message:
                     type: string
         '400':
