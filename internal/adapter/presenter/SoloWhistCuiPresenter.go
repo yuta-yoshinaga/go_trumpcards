@@ -66,10 +66,13 @@ type SoloWhistCuiPresenter struct{}
 // Output renders the current game state for the active locale.
 func (p *SoloWhistCuiPresenter) Output(g interfaces.SoloWhistGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("solowhist.helpTitle"), func(b *strings.Builder) {
+		// 目標点は Web の Config にだけ出ていた。累積で競るので、何点で
+		// 終わるか判らないと得点の意味が読めない (#7059)。
 		b.WriteString(i18n.Tf("solowhist.round",
 			"round", strconv.Itoa(g.GetRoundNumber()),
 			"trick", strconv.Itoa(g.GetTrickNumber()),
-			"trump", soloWhistTrumpStr(g.GetTrumpSuit())) + "\n")
+			"trump", soloWhistTrumpStr(g.GetTrumpSuit()),
+			"target", strconv.Itoa(g.GetConfig().TargetPoints)) + "\n")
 
 		if g.GetDeclarerIdx() >= 0 {
 			declIdx := g.GetDeclarerIdx()

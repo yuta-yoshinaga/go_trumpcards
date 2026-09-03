@@ -45,6 +45,7 @@ func setupSoloWhistCuiMock() *interfaces.MockSoloWhistGame {
 	m.On("GetPlayerScores").Return([domain.SoloWhistPlayerCnt]int{0, 0, 0, 0})
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetDeclarerProgress").Return((*domain.SoloWhistDeclarerProgress)(nil)).Maybe()
+	m.On("GetConfig").Return(domain.DefaultSoloWhistConfig())
 	return m
 }
 
@@ -124,6 +125,22 @@ func TestSoloWhistCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, errors.New("boom"))
 		assert.Contains(t, result, "boom")
 	})
+}
+
+// 目標点は Web の Config には出ているのに CUI には無かった (#7059)。
+// 累積 21 点で勝ちなので、何点で終わるか判らないと点の意味が読めない。
+func TestSoloWhistCuiPresenterStatesTheTargetPoints(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	m, _ := setupSoloWhistCuiMockWithPlayers()
+	out := new(presenter.SoloWhistCuiPresenter).Output(m, nil)
+
+	// **裸の数字で見ない。** 手札やトリック数に同じ数が出うるので、
+	// 目標点と判る語まで含めて見る。i18n.T で期待値も作らない (自己成就する)。
+	assert.Contains(t, out, "先取 "+strconv.Itoa(domain.DefaultSoloWhistConfig().TargetPoints)+"点",
+		"目標点が出力に出ていない")
 }
 
 func TestSoloWhistCuiPresenter_HintOutput(t *testing.T) {

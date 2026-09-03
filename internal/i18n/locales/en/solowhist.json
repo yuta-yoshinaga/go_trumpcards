@@ -6,7 +6,7 @@
   "helpNext": "  n                         go to next trick",
   "helpNextRound": "  nr                        go to next round",
   "helpSetDifficulty": "  sd [0-2]                  CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
-  "round": "Round: {{round}}  Trick: {{trick}}  Trump: {{trump}}",
+  "round": "Round: {{round}}  Trick: {{trick}}  Trump: {{trump}}  (first to {{target}} wins)",
   "noTrump": "none",
   "contractLine": "Declarer: {{name}} — {{contract}}",
   "playerLine": "{{name}} ({{role}}): {{cards}} cards  Score: {{score}}  Tricks: {{tricks}}",
