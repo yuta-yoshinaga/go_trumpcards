@@ -84,10 +84,8 @@ func TestOpenAPIDocumentsEveryResponseField(t *testing.T) {
 		}
 	}
 
+	// go test の cwd は必ずパッケージのディレクトリなので、testdata/ の 1 経路だけでよい。
 	allowRaw, err := os.ReadFile(filepath.Join("testdata", undocumentedAllowFile))
-	if err != nil {
-		allowRaw, err = os.ReadFile(undocumentedAllowFile)
-	}
 	if err != nil {
 		t.Fatalf("許可リストが読めない: %v", err)
 	}
