@@ -15951,6 +15951,8 @@ paths:
               schema:
                 type: object
                 properties:
+                  metaAI:
+                    $ref: '#/components/schemas/MetaAIProfile'
                   players:
                     type: array
                     items: { type: object }
@@ -16061,6 +16063,8 @@ paths:
               schema:
                 type: object
                 properties:
+                  metaAI:
+                    $ref: '#/components/schemas/MetaAIProfile'
                   players:
                     type: array
                     items: { type: object }
@@ -38625,6 +38629,29 @@ components:
           additionalProperties:
             type: string
 
+    MetaAIProfile:
+      type: object
+      nullable: true
+      description: "Meta-AI profile for the session, or null when Meta-AI is off. Every poker-family game returns the same shape, so it is defined once here instead of being repeated per game."
+      properties:
+        enabled:
+          type: boolean
+          description: "Whether Meta-AI is on for this session."
+        gamesPlayed:
+          type: integer
+          description: "Hands played in the session so far. The rates below are measured over these."
+        bluffRate:
+          type: number
+          format: float
+          description: "How often the human bluffs, from 0.0 to 1.0."
+        foldRate:
+          type: number
+          format: float
+          description: "How often the human folds, from 0.0 to 1.0."
+        hesitationMean:
+          type: number
+          format: float
+          description: "Mean time the human takes to act, in seconds."
     Card:
       type: object
       description: A single playing card
@@ -39330,6 +39357,8 @@ components:
         - cpuExchanges
         - message
       properties:
+        metaAI:
+          $ref: '#/components/schemas/MetaAIProfile'
         players:
           type: array
           items:
@@ -41899,6 +41928,8 @@ components:
         - cpuActions
         - message
       properties:
+        metaAI:
+          $ref: '#/components/schemas/MetaAIProfile'
         players:
           type: array
           description: State of all players (4/6/9 depending on table size)
@@ -47743,6 +47774,8 @@ components:
       type: object
       description: Current state of the Indian Poker game
       properties:
+        metaAI:
+          $ref: '#/components/schemas/MetaAIProfile'
         players:
           type: array
           description: Array of player objects
@@ -51480,6 +51513,8 @@ components:
         - cpuActions
         - message
       properties:
+        metaAI:
+          $ref: '#/components/schemas/MetaAIProfile'
         players:
           type: array
           description: State of all players (2-7 depending on table size)
