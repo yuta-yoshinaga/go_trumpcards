@@ -15,6 +15,7 @@
   "discipline.studHiLo": "Stud Hi-Lo",
   "discipline.unknown": "-",
   "promptPlay": "Pot: {{pot}}  to call: {{toCall}}  min raise: {{minRaise}}",
+  "promptPlayMax": "Pot: {{pot}}  to call: {{toCall}}  min raise: {{minRaise}}  max: {{max}}",
   "promptPlayHelp": "f=fold x=check c=call b <n>=bet raise <n>=raise allin=all in",
   "promptHandEnd": "The hand is settled.",
   "promptHandEndHelp": "n ... go to the next hand (the discipline may change)",

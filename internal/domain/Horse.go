@@ -826,6 +826,20 @@ func (g *Horse) GetMinRaise() int {
 	}
 }
 
+// GetMaxBetAmount はいまの種目が受け付ける最大ベット額を返す (ポットリミット上限、0 は上限なしまたは固定リミット)。
+func (g *Horse) GetMaxBetAmount() int {
+	switch t := g.table.(type) {
+	case *Holdem:
+		_, maxBet := CalculateBettingLimits(t.GetConfig().BettingLimit, t.GetPot(), t.GetLastBet())
+		return maxBet
+	case *Omaha:
+		_, maxBet := CalculateBettingLimits(t.GetConfig().BettingLimit, t.GetPot(), t.GetLastBet())
+		return maxBet
+	default:
+		return 0
+	}
+}
+
 // GetSeatLiveChips は「いま画面に出すべき残高」を返す。
 //
 // **正本はハンドが終わるまで動かない。** 残高は開始時に卓へ配り、終了時に

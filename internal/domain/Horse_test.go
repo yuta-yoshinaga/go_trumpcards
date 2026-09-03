@@ -360,3 +360,50 @@ func TestHorse_ConfigValidate(t *testing.T) {
 	assert.ErrorIs(t, HorseConfig{Seats: 6, InitialChips: 1000, HandsPerDiscipline: 0}.Validate(), errHorseHandsRange)
 	assert.ErrorIs(t, HorseConfig{Seats: 6, InitialChips: 1000, HandsPerDiscipline: 99}.Validate(), errHorseHandsRange)
 }
+
+func TestHorse_GetMaxBetAmount(t *testing.T) {
+	t.Parallel()
+
+	// 1. table == nil のときは 0
+	g := &Horse{}
+	assert.Equal(t, 0, g.GetMaxBetAmount())
+
+	// 2. 固定リミット (*Holdem) のときは 0
+	players := NewPlayersForTable(4)
+	hCfg := DefaultHoldemConfig()
+	hCfg.BettingLimit = BettingLimitFixed
+	holdem := NewHoldem(NewTrumpCards(0), players, hCfg)
+	gHoldem := &Horse{table: holdem}
+	assert.Equal(t, 0, gHoldem.GetMaxBetAmount())
+
+	// 3. ノーリミット (*Holdem) のときは 0
+	hCfgNL := DefaultHoldemConfig()
+	hCfgNL.BettingLimit = BettingLimitNoLimit
+	holdemNL := NewHoldem(NewTrumpCards(0), players, hCfgNL)
+	gHoldemNL := &Horse{table: holdemNL}
+	assert.Equal(t, 0, gHoldemNL.GetMaxBetAmount())
+
+	// 4. ポットリミット (*Omaha) のときは pot + lastBet
+	oPlayers := NewOmahaPlayersForTable(4)
+	oCfg := DefaultOmahaConfig()
+	oCfg.BettingLimit = BettingLimitPotLimit
+	omaha := NewOmaha(NewTrumpCards(0), oPlayers, oCfg)
+	omaha.pot = 100
+	omaha.lastBet = 20
+	gOmaha := &Horse{table: omaha}
+	assert.Equal(t, 120, gOmaha.GetMaxBetAmount())
+
+	// 負のコントロール: pot/lastBet を変えると maxBet も変わる
+	omaha.pot = 200
+	omaha.lastBet = 50
+	assert.Equal(t, 250, gOmaha.GetMaxBetAmount())
+
+	// 5. 固定リミット (*Omaha) のときは 0
+	oCfgFixed := DefaultOmahaConfig()
+	oCfgFixed.BettingLimit = BettingLimitFixed
+	omahaFixed := NewOmaha(NewTrumpCards(0), oPlayers, oCfgFixed)
+	omahaFixed.pot = 100
+	omahaFixed.lastBet = 20
+	gOmahaFixed := &Horse{table: omahaFixed}
+	assert.Equal(t, 0, gOmahaFixed.GetMaxBetAmount())
+}

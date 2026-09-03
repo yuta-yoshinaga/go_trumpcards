@@ -4508,6 +4508,7 @@ const baseHorseState: HorseResponse = {
   pot: 30,
   toCall: 20,
   minRaise: 20,
+  maxBetAmount: 0,
   tablePhase: 0,
   gameEndFlag: false,
   winnerSeat: -1,
