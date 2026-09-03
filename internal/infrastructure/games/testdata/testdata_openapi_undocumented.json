@@ -1,0 +1,587 @@
+{
+  "AllFours": [
+    "provisional"
+  ],
+  "Aluette": [
+    "luettes"
+  ],
+  "Anaconda": [
+    "currentPlayer",
+    "isWinner",
+    "rollIndex",
+    "streetBet"
+  ],
+  "BaccaratBanque": [
+    "bankHeld",
+    "bankerDelta",
+    "bankerNatural",
+    "coupNumber",
+    "hintDraw",
+    "hintReason",
+    "retired",
+    "role",
+    "seatIdx",
+    "shoeRemaining"
+  ],
+  "Badugi": [
+    "bestCards",
+    "foldRate",
+    "roundLabel",
+    "totalDraws"
+  ],
+  "Barbu": [
+    "dealHistory",
+    "dominoRank"
+  ],
+  "Bauernschnapsen": [
+    "marriageIndices"
+  ],
+  "Bezique": [
+    "dealMeldPoints"
+  ],
+  "Bolivia": [
+    "hasBolivia",
+    "hasEscalera",
+    "isBolivia",
+    "isEscalera"
+  ],
+  "Bouillotte": [
+    "isWinner",
+    "matchingIndices",
+    "noteKey",
+    "retourne",
+    "retourneMatch"
+  ],
+  "Bridge": [
+    "openingLeadDone",
+    "vulnerability"
+  ],
+  "Bristol": [
+    "legalTargets"
+  ],
+  "Brusquembille": [
+    "followRequired"
+  ],
+  "Calabresella": [
+    "monte"
+  ],
+  "Cassino": [
+    "buildValue",
+    "hasBigCasino",
+    "hasLittleCasino",
+    "isMulti",
+    "isSweep",
+    "ownerIdx",
+    "sweepCount"
+  ],
+  "Cego": [
+    "blind",
+    "contractType",
+    "isHumanContract",
+    "isHumanExchange",
+    "stashOwner"
+  ],
+  "ChinesePoker": [
+    "backResult",
+    "dealerBack",
+    "dealerBackRank",
+    "dealerBackRoyalty",
+    "dealerFront",
+    "dealerFrontRank",
+    "dealerFrontRoyalty",
+    "dealerMiddle",
+    "dealerMiddleRank",
+    "dealerMiddleRoyalty",
+    "dealerRoyalty",
+    "foul",
+    "frontResult",
+    "middleResult",
+    "playerBack",
+    "playerBackRank",
+    "playerBackRoyalty",
+    "playerFront",
+    "playerFrontRank",
+    "playerFrontRoyalty",
+    "playerMiddle",
+    "playerMiddleRank",
+    "playerMiddleRoyalty",
+    "playerRoyalty",
+    "scoop",
+    "suggestedArrangement"
+  ],
+  "Cirulla": [
+    "denariCount",
+    "hasSetteBello",
+    "hintCaptureIdxs",
+    "hintHandIdx",
+    "hintReason",
+    "lastBonus",
+    "lastCapturer",
+    "lines",
+    "scope",
+    "sweptDenari",
+    "totals"
+  ],
+  "Comet": [
+    "cardsLeft",
+    "deadCount",
+    "heldWildIdx",
+    "hintHandIdx",
+    "hintReason",
+    "need",
+    "playableIdxs",
+    "unplayedKings"
+  ],
+  "Conquian": [
+    "extendTargets",
+    "layoffTargets"
+  ],
+  "ContinentalRummy": [
+    "canGoOutOnDeal",
+    "goOutIdx",
+    "hintDiscardIdx",
+    "hintReason",
+    "layouts",
+    "perOpponent"
+  ],
+  "CostlyColours": [
+    "combos",
+    "hintAcceptMog",
+    "hintHandIdx",
+    "hintReason",
+    "lines",
+    "moggedIn",
+    "playableIdxs",
+    "played",
+    "totals"
+  ],
+  "CourtPiece": [
+    "consecutiveWins",
+    "lastRoundCourt",
+    "lastWinnerTeam"
+  ],
+  "Cuarenta": [
+    "caida",
+    "limpia",
+    "ronda"
+  ],
+  "DehlaPakad": [
+    "centrePileCount",
+    "centrePileTens",
+    "gatheredCount",
+    "handHistory",
+    "hintTrumpSuit",
+    "isTrumpChooser",
+    "isTrumpPhase",
+    "kot",
+    "kotReason",
+    "lastHand",
+    "prevTrickWinner",
+    "streakCount",
+    "streakTeam",
+    "teamKots",
+    "trumpSuitName"
+  ],
+  "DeuceToSeven": [
+    "foldRate",
+    "roundLabel",
+    "totalDraws"
+  ],
+  "Diloti": [
+    "canTrail",
+    "cardCounts",
+    "declIdxs",
+    "declarations",
+    "declareOptions",
+    "hintAction",
+    "hintDeclIdxs",
+    "hintDeclValue",
+    "hintHandIdx",
+    "hintReason",
+    "hintTableIdxs",
+    "isGroup",
+    "lastCapturer",
+    "lines",
+    "ownerIdx",
+    "tableIdxs",
+    "takeOptions",
+    "totals",
+    "xeri",
+    "xeris"
+  ],
+  "Doppelkopf": [
+    "isRe"
+  ],
+  "Durak": [
+    "attackIdx",
+    "boutNumber",
+    "defense",
+    "tablePairs",
+    "transferEnabled"
+  ],
+  "Escoba": [
+    "escobaCount",
+    "handCaptures"
+  ],
+  "Euchre": [
+    "goAlone",
+    "goAloneScore",
+    "goingAlone",
+    "goingAlonePlayerIdx",
+    "orderUpScore"
+  ],
+  "FiftyOne": [
+    "lastHandIdx",
+    "lastTableIdx"
+  ],
+  "FiveCardStud": [
+    "addonUsed",
+    "foldRate"
+  ],
+  "FiveHundred": [
+    "declarerDelta",
+    "defenderDelta",
+    "defenderTeam",
+    "misere",
+    "needTricks",
+    "slam"
+  ],
+  "FollowTheQueen": [
+    "addonUsed",
+    "foldRate"
+  ],
+  "FortyAndEight": [
+    "redealUsed"
+  ],
+  "FrenchTarot": [
+    "chien",
+    "chienCount",
+    "chienRevealed",
+    "isHumanDiscard",
+    "petitAuBoutDelta",
+    "stashOwner"
+  ],
+  "Gaigel": [
+    "marriageIndices"
+  ],
+  "Gaps": [
+    "gapNeeds"
+  ],
+  "GinRummy": [
+    "layoffTargets"
+  ],
+  "GoFish": [
+    "knownRanks"
+  ],
+  "GoStop": [
+    "animalCount",
+    "bakMult",
+    "basePoints",
+    "brightCount",
+    "goBak",
+    "goCount",
+    "goMult",
+    "goScore",
+    "godori",
+    "gwang",
+    "gwangBak",
+    "lastRoundResult",
+    "pendingBreakdown",
+    "pendingPoints",
+    "pi",
+    "piBak",
+    "piCount",
+    "ribbonCount",
+    "tti",
+    "yeol"
+  ],
+  "GongZhu": [
+    "aceExposed",
+    "allHearts",
+    "capturedPointCards",
+    "doublerMultiplier",
+    "doublerStandalone",
+    "hasDoubler",
+    "hasPig",
+    "hasSheep",
+    "heartCount",
+    "heartsSum",
+    "pigExposed",
+    "scoreBreakdowns",
+    "sheepExposed",
+    "subtotal"
+  ],
+  "Guts": [
+    "in",
+    "isMatcher",
+    "isWinner",
+    "matchers"
+  ],
+  "HachiHachi": [
+    "bonus",
+    "lastRoundResult",
+    "rawScore",
+    "yaku"
+  ],
+  "Holdem": [
+    "addonUsed",
+    "foldRate"
+  ],
+  "IndianPoker": [
+    "foldRate"
+  ],
+  "IndianRummy": [
+    "declarationValid",
+    "hasPureSequence",
+    "humanDeadwood",
+    "humanHasPureSequence",
+    "wildJoker"
+  ],
+  "Jass": [
+    "enableWeis",
+    "lastTrickBonus",
+    "roundStockPoints",
+    "roundWeisPoints",
+    "schieben"
+  ],
+  "Julepe": [
+    "beast"
+  ],
+  "Kalooki": [
+    "hasOpened",
+    "openingThreshold"
+  ],
+  "Klaberjass": [
+    "lastTrickBonus"
+  ],
+  "Koenigrufen": [
+    "calledKing",
+    "isHumanCall",
+    "isHumanDiscard",
+    "stashOwner",
+    "talon"
+  ],
+  "KoiKoi": [
+    "basePoints",
+    "calledKoiKoi",
+    "koikoi",
+    "koikoiCount",
+    "lastRoundResult",
+    "pendingPoints",
+    "pendingYaku",
+    "yaku",
+    "yakuPoints"
+  ],
+  "Machiavelli": [
+    "handIndices",
+    "tableMelds"
+  ],
+  "Madrasso": [
+    "teamRoundPoints"
+  ],
+  "Mao": [
+    "ruleHintCode"
+  ],
+  "Michigan": [
+    "betBudget",
+    "boodleBets",
+    "boodles",
+    "claimedBy",
+    "deadHandCount",
+    "humanBetPlaced",
+    "isCurrent",
+    "isWinner",
+    "needNewSequence",
+    "seqHighValue",
+    "seqSuit",
+    "seqSuitName"
+  ],
+  "Minchiate": [
+    "isHumanScarto",
+    "scartoCount"
+  ],
+  "Mus": [
+    "betAction"
+  ],
+  "Mushi": [
+    "month"
+  ],
+  "Napoleon": [
+    "adjutantIdx",
+    "adjutantRevealed",
+    "adjutantSuit",
+    "adjutantValue",
+    "pictureCards"
+  ],
+  "OichoKabu": [
+    "bankerRank",
+    "playerRank"
+  ],
+  "OldMaid": [
+    "discardedCards",
+    "lastDiscardedCards"
+  ],
+  "Ombre": [
+    "isOmbre",
+    "ombreIdx"
+  ],
+  "PaiGow": [
+    "lowIdx0",
+    "lowIdx1",
+    "lowIsPair"
+  ],
+  "Pan": [
+    "panDeclarerIdx",
+    "winMeldCount"
+  ],
+  "PiedmonteseTarot": [
+    "cardThirds",
+    "dealScores",
+    "isHumanScarto",
+    "scartoCount",
+    "talonSize"
+  ],
+  "Pineapple": [
+    "cardIdxs",
+    "initialDealCount"
+  ],
+  "Poch": [
+    "yourBestComboRank",
+    "yourBestComboSize"
+  ],
+  "Poker": [
+    "foldRate"
+  ],
+  "Pontoon": [
+    "stuck",
+    "twisted"
+  ],
+  "Primero": [
+    "isWinner"
+  ],
+  "Quadrille": [
+    "callableKingSuits",
+    "calledKingSuit",
+    "isHumanKingCallTurn",
+    "isQuadrille",
+    "kingSuit",
+    "quadrilleIdx",
+    "roiSeul"
+  ],
+  "Quodlibet": [
+    "availableContractNames",
+    "currentContractName",
+    "dealHistory",
+    "hintContract",
+    "isContractPhase",
+    "isShedding",
+    "lastDeal",
+    "outRank",
+    "stack"
+  ],
+  "RankAndFile": [
+    "sequenceStarts"
+  ],
+  "Ristikontra": [
+    "counterRank"
+  ],
+  "Rook": [
+    "contractBid",
+    "nest",
+    "nestCount",
+    "trumpColor"
+  ],
+  "Rummy500": [
+    "layoffTargets"
+  ],
+  "Samba": [
+    "hasSamba",
+    "isSamba"
+  ],
+  "Scarto": [
+    "dealScores",
+    "isHumanScarto",
+    "scartoCount"
+  ],
+  "Scopa": [
+    "hasSetteBello",
+    "isScopa",
+    "scopaCount"
+  ],
+  "Scopone": [
+    "handCaptures",
+    "scopaCount",
+    "settebello"
+  ],
+  "SetteEMezzo": [
+    "hasMatta",
+    "mattaHalves",
+    "totalLabel"
+  ],
+  "SevenCardStud": [
+    "addonUsed",
+    "currentLowHand",
+    "foldRate"
+  ],
+  "Sevens": [
+    "jokerReclaimed"
+  ],
+  "Skat": [
+    "null",
+    "originalSkat",
+    "pickSkat"
+  ],
+  "Stalactites": [
+    "cells"
+  ],
+  "Sultan": [
+    "divan",
+    "divanIdx"
+  ],
+  "Sutda": [
+    "betUnit",
+    "callAmount",
+    "handNames",
+    "hintAction",
+    "hintReason",
+    "humanHandName",
+    "revealed"
+  ],
+  "Tarocchini": [
+    "isHumanScarto",
+    "scartoCount"
+  ],
+  "TeenPatti": [
+    "lastSideShow",
+    "maxRaise",
+    "requester",
+    "requesterIdx"
+  ],
+  "Tichu": [
+    "isPass"
+  ],
+  "Tonk": [
+    "bestDeadwood"
+  ],
+  "Ulti": [
+    "coins",
+    "lastDealCoins",
+    "playerCoins",
+    "talonTaken"
+  ],
+  "UnsunKaruta": [
+    "canDeclare",
+    "declarationKind",
+    "mustFollow",
+    "trumpSuitName"
+  ],
+  "VideoPoker": [
+    "handKey"
+  ],
+  "Watten": [
+    "criticalSuit",
+    "dealWinnerTeam",
+    "raiserTeam",
+    "schlagRank"
+  ]
+}
