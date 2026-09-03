@@ -8,12 +8,18 @@ import {
   isRequestedHint,
 } from '../formatterBase';
 
+/** Suit glyphs by design value (1=Spade … 4=Diamond); index 0 is "not yet decided". */
+const SUIT_NAMES = ['-', '♠', '♣', '♥', '♦'];
+
 /** Format a Madrasso game state as terminal text. */
 export function formatMadrassoState(state: MadrassoResponse): string {
   const lines: string[] = [];
 
   lines.push(formatHeader('Madrasso'));
-  lines.push(`round: ${state.roundNumber}  trick: ${state.trickNumber}`);
+  // 切り札は配りで決まる。クローン元 (トレセッテ) に無い概念なので、出さないと
+  // 盤面から切り札が読めない — CUI はこれを madrasso.trumpLine として出している
+  // のに、Web の CLI モードだけが落としていた (#6615)。
+  lines.push(`round: ${state.roundNumber}  trick: ${state.trickNumber}  trump: ${SUIT_NAMES[state.trumpSuit] ?? '-'}`);
   lines.push(
     `Team A: ${state.teamScores[0]} pts (this round ${state.teamRoundPoints[0]}/3)  ` +
       `Team B: ${state.teamScores[1]} pts (this round ${state.teamRoundPoints[1]}/3)`,

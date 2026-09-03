@@ -42,8 +42,8 @@
     "trump_in": "Cut with a trump"
   },
   "tutorial": {
-    "trickDisplay": "This is the current trick. Each player plays one card, following the led suit (there is no trump).",
-    "playerHand": "Your hand. Click a card to select it. There is no trump suit.",
+    "trickDisplay": "This is the current trick. Each player plays one card, following the led suit. Trumps beat the led suit; among trumps the higher rank wins.",
+    "playerHand": "Your hand. Click a card to select it. The trump suit is decided by the deal and shown in the header.",
     "playButton": "After selecting a card, play it with this button.",
     "scoreTable": "Team scores. You (player 0) and player 2 are Team A; players 1 and 3 are Team B.",
     "pointInfo": "Scoring: A = 1 point; face cards (K/Q/J) and 2/3 are 1/3 point each, plus 1/3 for the last trick. First team to the target (default 21) wins.",
