@@ -259,3 +259,35 @@ describe('SpeculationPage', () => {
     expect(screen.queryByTestId('sp-next')).not.toBeInTheDocument();
   });
 });
+
+// **決着後は「今終わった回」を出す (#6607)。** `roundNo` は決着で 1 進むので、
+// そのまま +1 すると round 1 の結果画面に「2 / 5」と出て、まだ始めていない回の
+// 結果を見ているように読める。CUI は speculationDisplayRound で分岐済みだった。
+describe('SpeculationPage round display after a decision', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('shows the round that just finished, not the next one', async () => {
+    mockApi.mockResolvedValue({ ...base, phase: SpeculationPhase.RESULT, roundNo: 1 });
+    renderWithProviders(<SpeculationPage />);
+    await waitFor(() => expect(screen.getByTestId('sp-round-line')).toHaveTextContent('1 / 5'));
+    // +1 したままなら「2 / 5」になる。
+    expect(screen.getByTestId('sp-round-line')).not.toHaveTextContent('2 / 5');
+  });
+
+  it('never shows a round past the configured total', async () => {
+    // 全 5 回を終えた局面。+1 のままだと 6 / 5 という存在しない回が出る。
+    mockApi.mockResolvedValue({ ...base, phase: SpeculationPhase.GAME_END, roundNo: 5 });
+    renderWithProviders(<SpeculationPage />);
+    await waitFor(() => expect(screen.getByTestId('sp-round-line')).toHaveTextContent('5 / 5'));
+    expect(screen.getByTestId('sp-round-line')).not.toHaveTextContent('6 / 5');
+  });
+
+  // **負のコントロール**: 進行中の回は今までどおり +1 して「次に打つ回」を出す。
+  it('still counts the round in progress', async () => {
+    mockApi.mockResolvedValue({ ...base, phase: SpeculationPhase.FLIP, roundNo: 2 });
+    renderWithProviders(<SpeculationPage />);
+    await waitFor(() => expect(screen.getByTestId('sp-round-line')).toHaveTextContent('3 / 5'));
+  });
+});
