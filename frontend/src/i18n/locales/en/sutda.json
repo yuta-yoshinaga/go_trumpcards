@@ -56,7 +56,7 @@
   "canCheck": "Nothing to call - you may check.",
   "callButton": "Call ({{n}})",
   "checkButton": "Check",
-  "raiseButton": "Raise (+{{n}})",
+  "raiseButton": "Raise (+{{n}}, {{left}} left)",
   "foldButton": "Fold",
   "nextHand": "Next hand",
   "showdownResult": "Showdown: {{names}} takes {{pot}}.",

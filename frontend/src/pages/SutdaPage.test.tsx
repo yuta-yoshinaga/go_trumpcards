@@ -153,4 +153,36 @@ describe('SutdaPage', () => {
     renderWithProviders(<SutdaPage />);
     expect(await screen.findByText(/強い役なので/)).toBeInTheDocument();
   });
+
+  // **あと何回レイズできるかは Web だけ出ていなかった (#6627)。** サーバは
+  // raiseCount / maxRaises を最初から送っていて、CUI の canRaise 行は
+  // `SutdaMaxRaises - GetRaiseCount()` を出しているのに、Web のボタンは
+  // どちらのフィールドも読んでいなかった。
+  describe('remaining raises', () => {
+    it('shows how many raises are left on the button', async () => {
+      mockExec.mockResolvedValue(makeSutdaState({ canRaise: true, raiseCount: 0, maxRaises: 3 }));
+      renderWithProviders(<SutdaPage />);
+      const btn = await screen.findByTestId('sutda-raise');
+      expect(btn.textContent).toContain('あと 3 回');
+      expect(btn.textContent).not.toContain('{{');
+    });
+
+    // **数はレイズごとに減る。** 定数を出しているだけの実装だとここで落ちる。
+    it('counts down as raises are used', async () => {
+      mockExec.mockResolvedValue(makeSutdaState({ canRaise: true, raiseCount: 2, maxRaises: 3 }));
+      renderWithProviders(<SutdaPage />);
+      const btn = await screen.findByTestId('sutda-raise');
+      expect(btn.textContent).toContain('あと 1 回');
+      expect(btn.textContent).not.toContain('あと 3 回');
+    });
+
+    // **上限に達したらボタンごと消える** (受け入れ条件「消える直前まで一致する」)。
+    // 直前は 1 回、達したら 0 ではなくボタンが無い、という形。
+    it('drops the button entirely once the cap is reached', async () => {
+      mockExec.mockResolvedValue(makeSutdaState({ canRaise: false, raiseCount: 3, maxRaises: 3 }));
+      renderWithProviders(<SutdaPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(screen.queryByTestId('sutda-raise')).not.toBeInTheDocument();
+    });
+  });
 });
