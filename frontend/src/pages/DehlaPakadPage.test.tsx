@@ -177,7 +177,7 @@ describe('DehlaPakadPage', () => {
   // フッターがまるごと空白になっていた。
   describe('trump selection by a CPU', () => {
     it('says who is choosing while a CPU picks the trump', async () => {
-      mockExec.mockResolvedValue(makeDehlaPakadState({ isHumanTurn: false, currentPlayerIdx: 2 }));
+      mockExec.mockResolvedValue(makeDehlaPakadState({ isHumanTurn: false, trumpChooserIdx: 2 }));
       renderWithProviders(<DehlaPakadPage />);
       const waiting = await screen.findByTestId('dehlapakad-trump-waiting');
       // 席まで名指しする。「選んでいます」だけだと誰の番か分からない。
@@ -188,7 +188,7 @@ describe('DehlaPakadPage', () => {
     });
 
     it('moves the name with the seat', async () => {
-      mockExec.mockResolvedValue(makeDehlaPakadState({ isHumanTurn: false, currentPlayerIdx: 3 }));
+      mockExec.mockResolvedValue(makeDehlaPakadState({ isHumanTurn: false, trumpChooserIdx: 3 }));
       renderWithProviders(<DehlaPakadPage />);
       const waiting = await screen.findByTestId('dehlapakad-trump-waiting');
       expect(waiting.textContent).toContain('CPU 3');
@@ -205,7 +205,7 @@ describe('DehlaPakadPage', () => {
 
     // プレイフェーズでは待機テキストを出さない (フェーズガードの負のコントロール)。
     it('shows no waiting text outside the trump phase', async () => {
-      mockExec.mockResolvedValue(makeDehlaPakadState({ ...playState, isHumanTurn: false, currentPlayerIdx: 2 }));
+      mockExec.mockResolvedValue(makeDehlaPakadState({ ...playState, isHumanTurn: false, trumpChooserIdx: 2 }));
       renderWithProviders(<DehlaPakadPage />);
       await waitFor(() => expect(mockExec).toHaveBeenCalled());
       expect(screen.queryByTestId('dehlapakad-trump-waiting')).not.toBeInTheDocument();

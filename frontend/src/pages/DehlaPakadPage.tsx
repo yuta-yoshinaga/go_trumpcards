@@ -302,16 +302,12 @@ function DehlaPakadPageContent() {
                   </div>
                 )}
 
-                {/* **相手が選んでいる間も、何が起きているかを出す。** 切り札を
-                    決めるのは親の右隣で、そこが CPU 席のときは
-                    `canPlay`/`canCallTrump`/`isHandEnd` のどれも立たず、フッターが
-                    まるごと空白になっていた。ヘッダーのフェーズ名以外に手掛かりが
-                    無い時間ができる (#6623 と同じ形を PiedmonteseTarot は
-                    scartoWaiting で埋めている)。誰が選んでいるかまで出す。 */}
+                {/* 相手が選んでいる間の空白を埋める。PiedmonteseTarot の
+                    scartoWaiting と同じ形 (#6626)。 */}
                 {isTrumpPhase && !canCallTrump && (
                   <div className="mb-2 text-center text-sm text-ds-text-muted" data-testid="dehlapakad-trump-waiting">
                     {t('trumpWaiting', {
-                      name: playerName(state.currentPlayerIdx, state.currentPlayerIdx === 0),
+                      name: playerName(state.trumpChooserIdx, state.players[state.trumpChooserIdx]?.isHuman === true),
                     })}
                   </div>
                 )}
