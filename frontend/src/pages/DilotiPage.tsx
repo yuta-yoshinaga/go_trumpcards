@@ -160,14 +160,10 @@ function DilotiPageContent() {
   // スクリーンリーダの利用者に伝わらない。宣言はまとめて取るので値で呼ぶ。
   const takeAriaLabel = (tableIdxs: number[], declIdxs: number[]) => {
     const parts = [
-      ...tableIdxs.map((i) => {
-        const card = state.table[i];
-        return card ? cardAlt(card) : String(i);
-      }),
-      ...declIdxs.map((d) => {
-        const decl = state.declarations[d];
-        return decl ? t('declValue', { value: decl.value }) : t('declShort', { idx: d });
-      }),
+      // **索引はサーバが takeOptions で返したものをそのまま使う。** 場札にも
+      // 宣言にも必ず対応があるので、「無かったとき」の分岐は置かない。
+      ...tableIdxs.map((i) => cardAlt(state.table[i])),
+      ...declIdxs.map((d) => t('declValue', { value: state.declarations[d].value })),
     ];
     return t('takeGroup', { cards: parts.join(', ') });
   };
