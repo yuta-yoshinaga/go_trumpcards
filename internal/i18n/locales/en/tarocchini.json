@@ -10,7 +10,7 @@
   "helpPlay": "  play <n>             Play a card",
   "helpScarto": "  scarto <i0> <i1>     Discard the 2 surplus cards (dealer only)",
   "helpSetDifficulty": "  sd <0-2>             CPU difficulty (0=Easy 1=Normal 2=Hard)",
-  "helpTitle": "Tarocchini commands",
+  "helpTitle": "Tarocchini",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintNone": "No hint available.",
   "hintReasonFollowLow": "You cannot take it, so follow with a low card",

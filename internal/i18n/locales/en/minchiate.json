@@ -9,7 +9,7 @@
   "helpPlay": "  play <n>             Play a card",
   "helpScarto": "  scarto <i0> ...      Discard the surplus (dealer only)",
   "helpSetDifficulty": "  sd <0-2>             CPU difficulty (0=Easy 1=Normal 2=Hard)",
-  "helpTitle": "Minchiate commands",
+  "helpTitle": "Minchiate",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintNone": "No hint available.",
   "hintReasonFollowLow": "You cannot take it, so follow with a low card",

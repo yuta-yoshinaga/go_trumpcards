@@ -1,6 +1,6 @@
 {
   "gameEnd": "ゲーム終了！{{name}}がマッチ勝利！",
-  "helpTitle": "ガンジファ コマンド一覧",
+  "helpTitle": "ガンジファ (Ganjifa)",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintNone": "ヒントはありません。",
   "hintReasonFollowTrump": "切り札を出してこのトリックを取りに行く",

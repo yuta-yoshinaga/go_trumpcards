@@ -773,3 +773,55 @@ func manualControllerHelperLiterals(t *testing.T) map[string]map[string]bool {
 	}
 	return out
 }
+
+// TestHelpTitlesAreNotHelpScreenHeadings guards a value that is used in two
+// places at once. Every CUI presenter passes `<game>.helpTitle` to
+// buildCuiOutput, so it is the **board heading shown during play**, not only
+// the header of the `help` screen. Five games had it written as a help-screen
+// caption -- `ヴィーラ コマンド一覧` / `Vira commands` -- so the board said
+// "command list" for the whole game (#7061).
+//
+// The floor matters more than the assertion here: a walk that finds nothing
+// passes a "no bad titles" test trivially. 700+ helpTitle values exist, so a
+// count below 500 means the walk broke rather than the repo being clean.
+func TestHelpTitlesAreNotHelpScreenHeadings(t *testing.T) {
+	bad := map[string][]string{
+		"ja": {"コマンド一覧", "コマンドリスト"},
+		"en": {" commands", " command list"},
+	}
+	checked := 0
+	for lang, needles := range bad {
+		dir := filepath.Join(repoRoot, "internal/i18n/locales", lang)
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			t.Fatalf("read %s: %v", dir, err)
+		}
+		for _, e := range entries {
+			if e.IsDir() || !strings.HasSuffix(e.Name(), ".json") {
+				continue
+			}
+			raw, err := os.ReadFile(filepath.Join(dir, e.Name()))
+			if err != nil {
+				t.Fatalf("read %s: %v", e.Name(), err)
+			}
+			var m map[string]any
+			if err := json.Unmarshal(raw, &m); err != nil {
+				continue
+			}
+			title, ok := m["helpTitle"].(string)
+			if !ok {
+				continue
+			}
+			checked++
+			for _, n := range needles {
+				if strings.Contains(title, n) {
+					t.Errorf("%s/%s: helpTitle は盤面の見出しにもなるのに、ヘルプ画面の文言 (%q) になっている: %q",
+						lang, e.Name(), n, title)
+				}
+			}
+		}
+	}
+	if checked < 500 {
+		t.Fatalf("helpTitle を %d 件しか見ていない -- 走査が壊れている", checked)
+	}
+}

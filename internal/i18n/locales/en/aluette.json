@@ -7,7 +7,7 @@
   "helpNextRound": "  nr / nextround       Next mene",
   "helpPlay": "  play <n>             Play a card",
   "helpSetDifficulty": "  sd <0-2>             CPU difficulty (0=Easy 1=Normal 2=Hard)",
-  "helpTitle": "Aluette commands",
+  "helpTitle": "Aluette",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintNone": "No hint available.",
   "hintReasonFollowLow": "You cannot win this trick, so throw a low card",

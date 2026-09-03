@@ -9,7 +9,7 @@
   "helpPlay": "  play <n>             カードを出す",
   "helpScarto": "  scarto <i0> ...      余剰札を捨てる（親のみ）",
   "helpSetDifficulty": "  sd <0-2>             CPU難易度（0=Easy 1=Normal 2=Hard）",
-  "helpTitle": "ミンキアーテ コマンド一覧",
+  "helpTitle": "ミンキアーテ (Minchiate)",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintNone": "ヒントはありません。",
   "hintReasonFollowLow": "取れないので低い札でフォローする",
