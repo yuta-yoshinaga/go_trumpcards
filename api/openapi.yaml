@@ -4407,6 +4407,11 @@ paths:
                   - $ref: '#/components/schemas/VideoPokerResponse'
                   - type: object
                     properties:
+                      entries:
+                        type: array
+                        description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                        items:
+                          $ref: '#/components/schemas/ActionLogEntry'
                       variantName:
                         type: string
                         description: Name of the Video Poker variant
@@ -4480,6 +4485,11 @@ paths:
                   - $ref: '#/components/schemas/VideoPokerResponse'
                   - type: object
                     properties:
+                      entries:
+                        type: array
+                        description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                        items:
+                          $ref: '#/components/schemas/ActionLogEntry'
                       variantName:
                         type: string
                         description: Name of the Video Poker variant
@@ -6314,6 +6324,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   layout:
                     type: array
                     items:
@@ -6448,6 +6463,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   players:
                     type: array
                     items:
@@ -7280,6 +7300,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                     description: 20 reserve slots; only the top card of each is available
@@ -11198,6 +11223,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   canUndo:
                     type: boolean
                   piles:
@@ -11360,6 +11390,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   stockCount:
                     type: integer
                   config:
@@ -11461,6 +11496,20 @@ paths:
                     type: array
                     items:
                       type: object
+                      properties:
+                        playerIdx:
+                          type: integer
+                        actionType:
+                          type: integer
+                        card:
+                          type: object
+                          properties:
+                            design:
+                              type: string
+                            value:
+                              type: integer
+                        attackIdx:
+                          type: integer
                   message:
                     type: string
                   messageCode:
@@ -11566,6 +11615,19 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  messageCode:
+                    type: string
                   foundation:
                     type: array
                     items:
@@ -11725,6 +11787,19 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  messageCode:
+                    type: string
                   foundation:
                     type: array
                     items:
@@ -11899,6 +11974,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                     description: 8 tableau columns; a column not yet opened by a king is empty
@@ -12042,6 +12122,19 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  messageCode:
+                    type: string
                   hint:
                     type: object
                     properties:
@@ -12202,6 +12295,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                     description: 12 columns arranged in a circle around the foundations
@@ -12410,6 +12508,13 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
+                  message:
+                    type: string
                   playerCards:
                     type: array
                     items:
@@ -12612,6 +12717,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   phase:
                     type: integer
                   gameEndFlag:
@@ -12736,6 +12846,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   phase:
                     type: integer
                   gameEndFlag:
@@ -12887,6 +13002,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                     description: 13 tableau columns, each an array of cards (with face-up flag)
@@ -13027,6 +13147,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                     description: 12 tableau columns, each an array of cards (with face-up flag)
@@ -13164,6 +13289,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                     description: 8 tableau columns, each an array of cards (with face-up flag)
@@ -13298,6 +13428,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                     description: 8 tableau columns, each an array of cards (with face-up flag)
@@ -13432,6 +13567,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                     description: 8 tableau columns, each an array of cards (with face-up flag)
@@ -13643,6 +13783,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   players:
                     type: array
                     items:
@@ -13765,6 +13910,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   hint:
                     type: object
                     properties:
@@ -13871,6 +14021,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   isStalemate:
                     type: boolean
                   hint:
@@ -13960,6 +14115,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   isStalemate:
                     type: boolean
                   undoToEscape:
@@ -13979,9 +14139,19 @@ paths:
                     type: object
                     description: 'Legal destinations for each source, keyed by source id ("tableau-0", "fan-2").'
                     additionalProperties:
-                      type: array
-                      items:
-                        type: string
+                      type: object
+                      description: "Where that source may move, by destination kind."
+                      properties:
+                        tableau:
+                          type: array
+                          description: "Tableau column indices the card may move to."
+                          items:
+                            type: integer
+                        foundation:
+                          type: array
+                          description: "Foundation pile indices the card may move to."
+                          items:
+                            type: integer
                   tableau:
                     type: array
                   fan:
@@ -14064,6 +14234,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   highestBid:
                     type: object
                     properties:
@@ -14234,6 +14409,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   dealerIdx:
                     type: integer
                   leadPlayerIdx:
@@ -14452,6 +14632,16 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
+                  config:
+                    type: object
+                    properties:
+                      cpuDifficulty:
+                        type: integer
                   lastHandIdx:
                     type: integer
                     description: "Index in the hand of the card played last. -1 when none."
@@ -14571,6 +14761,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                   foundation:
@@ -14674,6 +14869,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                   foundation:
@@ -14778,6 +14978,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                     items:
@@ -14898,6 +15103,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                   foundation:
@@ -14993,6 +15203,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   config:
                     type: object
                     properties:
@@ -15157,6 +15372,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                   foundation:
@@ -15269,6 +15489,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                   stockCount:
@@ -15381,6 +15606,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                   stockCount:
@@ -15487,6 +15717,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   piles:
                     type: array
                     items:
@@ -15577,6 +15812,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   phase:
                     type: integer
                   current:
@@ -15669,6 +15909,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   hint:
                     type: object
                     properties:
@@ -15695,6 +15940,11 @@ paths:
                           type: array
                           items:
                             type: object
+                            properties:
+                              design:
+                                type: string
+                              value:
+                                type: integer
                         roundScore:
                           type: integer
                         cumulativeScore:
@@ -15715,6 +15965,16 @@ paths:
                     type: array
                     items:
                       type: object
+                      properties:
+                        playerIdx:
+                          type: integer
+                        card:
+                          type: object
+                          properties:
+                            design:
+                              type: string
+                            value:
+                              type: integer
                   trumpSuit:
                     type: integer
                   dealerIdx:
@@ -16404,6 +16664,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   profile:
                     type: object
                   metaAI:
@@ -16591,6 +16856,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   profile:
                     type: object
                   metaAI:
@@ -17924,6 +18194,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   tableau:
                     type: array
                     description: 8 columns building down in suit; an empty one is never refilled
@@ -19728,6 +20003,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   hint:
                     type: object
                     description: Recommended action.
@@ -21708,6 +21988,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -21906,6 +22188,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -22134,6 +22418,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   phase:
                     type: string
                   dealNumber:
@@ -22362,6 +22648,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -22558,6 +22846,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -22753,6 +23043,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -22991,6 +23283,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -23285,6 +23579,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   phase:
                     type: string
                   handNumber:
@@ -23485,6 +23781,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -23724,6 +24022,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -24358,6 +24658,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   currentTurn:
                     type: integer
                   currentSource:
@@ -24588,6 +24893,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   phase:
                     type: integer
                   roundNumber:
@@ -27165,6 +27475,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   players:
                     type: array
                     items:
@@ -27501,6 +27816,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   discardTop:
                     $ref: '#/components/schemas/Card'
                   columns:
@@ -27671,6 +27991,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   discardTop:
                     $ref: '#/components/schemas/Card'
                   columns:
@@ -31169,6 +31494,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  entries:
+                    type: array
+                    description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
                   players:
                     type: array
                     items:
@@ -32228,6 +32558,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   tableau:
                     type: array
                     items:
@@ -32353,6 +32685,13 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    properties:
+                      count:
+                        type: string
                   phase:
                     type: integer
                   roundNumber:
@@ -32516,6 +32855,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -32693,6 +33034,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -32842,6 +33185,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     description: One entry per seat, in seating order.
@@ -33071,6 +33416,18 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  messageCode:
+                    type: string
                   tableau:
                     type: array
                     items:
@@ -33189,6 +33546,18 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  messageCode:
+                    type: string
                   tableau:
                     type: array
                     items:
@@ -33311,6 +33680,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -33642,6 +34013,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -34152,6 +34525,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   phase:
                     type: integer
                   roundNumber:
@@ -34488,6 +34863,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -34637,6 +35014,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -34812,6 +35191,18 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  messageCode:
+                    type: string
                   tableau:
                     type: array
                     items:
@@ -34936,6 +35327,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     description: One entry per seat, in seating order.
@@ -35381,6 +35774,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -35504,6 +35899,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -36549,6 +36946,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -36719,6 +37118,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   phase:
                     type: integer
                   roundNumber:
@@ -36878,6 +37279,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -37019,6 +37422,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -37172,6 +37577,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -37372,6 +37779,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   teamScores:
                     type: array
                     items:
@@ -37541,6 +37950,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   teamScores:
                     type: array
                     items:
@@ -37706,6 +38117,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -37866,6 +38279,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -38017,6 +38432,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -38196,6 +38613,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   phase:
                     type: integer
                   roundNumber:
@@ -38362,6 +38781,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -38522,6 +38943,18 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  messageCode:
+                    type: string
                   tableau:
                     type: array
                     items:
@@ -38636,6 +39069,18 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  messageCode:
+                    type: string
                   foundation:
                     type: array
                     items:
@@ -38736,6 +39181,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -38892,6 +39339,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   phase:
                     type: integer
                   roundNumber:
@@ -39059,6 +39508,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -39220,6 +39671,8 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  messageCode:
+                    type: string
                   players:
                     type: array
                     items:
@@ -39605,6 +40058,11 @@ components:
       type: object
       description: Response payload for /bisley/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           description: Thirteen tableau columns; four hold three cards and nine hold four at the deal.
@@ -39705,6 +40163,11 @@ components:
       type: object
       description: Response payload for /napoleonssquare/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           description: Twelve columns of four, arranged as a square around the foundations.
@@ -39826,6 +40289,11 @@ components:
       type: object
       description: Response payload for /grandfathersclock/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           description: Eight columns, dealt five cards each.
@@ -39939,6 +40407,15 @@ components:
       type: object
       description: Response payload for /braid/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
         braid:
           type: array
           description: The 20-card plait. Only the last card is playable, and only to a foundation.
@@ -40040,6 +40517,11 @@ components:
       type: object
       description: Response payload for /pontoon/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         hands:
           type: array
           description: One entry per hand in play.
@@ -40151,6 +40633,11 @@ components:
       type: object
       description: Response payload for /settemezzo/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         hand:
           type: object
           description: The player's hand.
@@ -40263,6 +40750,11 @@ components:
       type: object
       description: Response payload for /niuniu/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         seats:
           type: array
           items:
@@ -40317,6 +40809,16 @@ components:
       type: object
       description: Response payload for /chineseten/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
         players:
           type: array
           items:
@@ -40397,6 +40899,16 @@ components:
       type: object
       description: Response payload for /skitgubbe/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
         players:
           type: array
           items:
@@ -40494,6 +41006,16 @@ components:
       type: object
       description: Response payload for /laughandliedown/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
         players:
           type: array
           items:
@@ -40592,6 +41114,16 @@ components:
       type: object
       description: Response payload for /sjavs/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
         players:
           type: array
           items:
@@ -40744,6 +41276,16 @@ components:
       type: object
       description: Response payload for /trex/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
         players:
           type: array
           items:
@@ -40873,6 +41415,16 @@ components:
       type: object
       description: Response payload for /loba/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
         players:
           type: array
           items:
@@ -40971,6 +41523,16 @@ components:
       type: object
       description: Response payload for /desmoche/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
         players:
           type: array
           items:
@@ -41087,6 +41649,18 @@ components:
       type: object
       description: Response payload for /zwicker/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetScore:
+              type: integer
         players:
           type: array
           items:
@@ -41208,6 +41782,11 @@ components:
       type: object
       description: Response payload for /poch/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         validPlays:
           type: array
           items:
@@ -41347,6 +41926,11 @@ components:
       type: object
       description: Response payload for /popejoan/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         validPlays:
           type: array
           items:
@@ -41472,6 +42056,11 @@ components:
       type: object
       description: Response payload for /nainjaune/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         validPlays:
           type: array
           items:
@@ -41590,6 +42179,18 @@ components:
       type: object
       description: Response payload for /kille/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            stake:
+              type: integer
         players:
           type: array
           items:
@@ -41688,6 +42289,11 @@ components:
       type: object
       description: Response payload for /klaberjass/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         lastTrickWinner:
           type: integer
         lastTrickBonus:
@@ -41823,6 +42429,18 @@ components:
       type: object
       description: Response payload for /kaiser/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            allowNoTrump:
+              type: boolean
         players:
           type: array
           items:
@@ -41960,6 +42578,18 @@ components:
       type: object
       description: Response payload for /boston/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetHands:
+              type: integer
         players:
           type: array
           items:
@@ -42110,6 +42740,16 @@ components:
       type: object
       description: Response payload for /vint/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
         players:
           type: array
           items:
@@ -42285,6 +42925,11 @@ components:
       type: object
       description: Response payload for /bideuchre/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -42437,6 +43082,11 @@ components:
       type: object
       description: Response payload for /sixbidsolo/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -42606,6 +43256,11 @@ components:
       type: object
       description: Response payload for /karnoffel/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -42720,6 +43375,11 @@ components:
       type: object
       description: Response payload for /shengji/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -42883,6 +43543,11 @@ components:
       type: object
       description: Response payload for /guandan/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -43016,6 +43681,11 @@ components:
       type: object
       description: Response payload for /literature/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -43132,6 +43802,18 @@ components:
       type: object
       description: Response payload for /toepen/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            playerCnt:
+              type: integer
         players:
           type: array
           items:
@@ -43264,6 +43946,11 @@ components:
       type: object
       description: Response payload for /mushi/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         config:
           type: object
           properties:
@@ -43360,6 +44047,16 @@ components:
       type: object
       description: Response payload for /bura/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
         players:
           type: array
           description: |
@@ -43454,6 +44151,11 @@ components:
       type: object
       description: Response payload for /terrace/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         reserve:
           type: array
           description: |
@@ -43552,6 +44254,11 @@ components:
       type: object
       description: Response payload for /congress/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           description: |
@@ -43655,6 +44362,11 @@ components:
       type: object
       description: Response payload for /americantoad/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         reserve:
           type: array
           description: |
@@ -43756,6 +44468,11 @@ components:
       type: object
       description: Response payload for /windmill/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         sails:
           type: array
           description: |
@@ -43872,6 +44589,11 @@ components:
       type: object
       description: Response payload for /duchess/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         reserve:
           type: array
           description: Four fans of three cards. Only the last element of each is available.
@@ -43994,6 +44716,11 @@ components:
       type: object
       description: Response payload for /missmilligan/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           description: Eight columns, dealt one card each at the start.
@@ -44077,6 +44804,18 @@ components:
         - design
         - value
       properties:
+        glyph:
+          type: string
+          description: "Symbol drawn in the centre of the card. Set only for cards from non-52-card decks."
+        label:
+          type: string
+          description: 'Rank or name label drawn in the corner (for example "Wizard", "XXI").'
+        color:
+          type: string
+          description: 'Colour token for the card (for example "red", "black", "purple", "green").'
+        deck:
+          type: string
+          description: 'Deck-family id (for example "wizard"). When non-empty the client switches to procedural rendering.'
         design:
           type: string
           description: |
@@ -44311,6 +45050,11 @@ components:
         - twentyOnePlus3Bet
         - doubleAfterSplit
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         bonuses:
           type: array
           items:
@@ -44779,8 +45523,27 @@ components:
         - cpuExchanges
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         equity:
           type: object
+          properties:
+            winProbability:
+              type: number
+            handOdds:
+              type: array
+              items:
+                type: object
+                properties:
+                  handRank:
+                    type: integer
+                  handName:
+                    type: string
+                  probability:
+                    type: integer
         potOdds:
           type: number
         profile:
@@ -45056,6 +45819,11 @@ components:
         - cpuHighlightedCardIdx
         - mode
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         humanAction:
           type: object
           properties:
@@ -45432,6 +46200,11 @@ components:
         - sortMode
         - playableCardIndices
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: State of all 4 players
@@ -45676,6 +46449,11 @@ components:
         - humanAction
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: State of all 3 players
@@ -45865,6 +46643,11 @@ components:
         - config
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: State of both players
@@ -46076,6 +46859,11 @@ components:
         - config
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         manoIdx:
           type: integer
         players:
@@ -46186,6 +46974,11 @@ components:
     BigTwoResponse:
       type: object
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -46274,6 +47067,11 @@ components:
     TienLenResponse:
       type: object
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -46584,6 +47382,11 @@ components:
         - humanAction
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: State of all 4 players
@@ -46863,6 +47666,11 @@ components:
         - doubtWindowSec
         - penaltyDrawLimit
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         profile:
           type: object
         players:
@@ -47392,6 +48200,11 @@ components:
         - cpuActions
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         rebuyAvailable:
           type: boolean
         addonAvailable:
@@ -47819,6 +48632,11 @@ components:
         - winnerIdx
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         leadPlayerIdx:
           type: integer
         players:
@@ -48005,6 +48823,11 @@ components:
         - message
         - config
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: All players in seat order
@@ -48171,6 +48994,11 @@ components:
         - scoringMode
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           description: The 7 tableau columns, each containing an array of cards
@@ -48358,6 +49186,11 @@ components:
         - scoringMode
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           description: The 7 tableau columns, each containing an array of cards
@@ -48519,6 +49352,11 @@ components:
         - undoToEscape
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           description: The 8 tableau columns, each containing an array of face-up cards
@@ -48676,6 +49514,11 @@ components:
         - undoToEscape
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         cells:
           type: array
           description: The free cells, as cards.
@@ -48839,6 +49682,11 @@ components:
         - undoToEscape
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           description: The 8 tableau columns, each containing an array of face-up cards
@@ -48981,6 +49829,11 @@ components:
         - undoToEscape
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           description: The 10 tableau columns, each containing an array of face-up cards
@@ -49118,6 +49971,11 @@ components:
         - payout
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playerHand:
           type: array
           description: Cards in the player's hand
@@ -49269,6 +50127,11 @@ components:
       type: object
       description: Current state of the Spades game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         validPlayIndices:
           type: array
           items:
@@ -49401,6 +50264,11 @@ components:
         `cumulativeScore` are int×10 — the wire integer 41 represents 4.1
         points. The frontend divides by 10 for display.
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -49509,6 +50377,11 @@ components:
       type: object
       description: Current state of the Tarneeb game.
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         validPlayIndices:
           type: array
           items:
@@ -49625,6 +50498,11 @@ components:
       type: object
       description: Current state of the Briscola game.
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -49726,6 +50604,11 @@ components:
       type: object
       description: Current state of the Brusquembille game.
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         validIndices:
           type: array
           items:
@@ -49825,6 +50708,11 @@ components:
       type: object
       description: Current state of the Schnapsen game.
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -49945,6 +50833,11 @@ components:
       type: object
       description: Current state of the Gaps / Montana game.
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         gapNeeds:
           type: array
           description: "For each gap on the grid, the card it will accept. Rows follow the grid layout."
@@ -50059,6 +50952,11 @@ components:
       type: object
       description: Current state of the Two Ten Jack game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of player objects (4 seats; teams are 0,2 vs 1,3)
@@ -50199,6 +51097,11 @@ components:
       type: object
       description: Current state of the Crazy Eights game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of player objects
@@ -50313,6 +51216,11 @@ components:
       type: object
       description: Current state of the Macau game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playableIndices:
           type: array
           items:
@@ -50444,6 +51352,11 @@ components:
       type: object
       description: Current state of the Mao game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         ruleHintCode:
           type: string
           description: "i18n key of the rule hint, without the `mao.` prefix. Translate this rather than the prose in `ruleHint`."
@@ -50579,6 +51492,11 @@ components:
       type: object
       description: Current state of the Page One game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of player objects
@@ -50691,6 +51609,11 @@ components:
       type: object
       description: Current state of the Seven Bridge game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -50806,6 +51729,11 @@ components:
       type: object
       description: Current state of the Gin Rummy game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         layoffTargets:
           type: array
           description: "For each card in the human hand, the knocker's meld numbers it can be laid off onto."
@@ -50950,6 +51878,11 @@ components:
       type: object
       description: Current state of the Chinchon game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of player objects
@@ -51071,6 +52004,11 @@ components:
       type: object
       description: Current state of the Three Thirteen game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of player objects
@@ -51197,6 +52135,11 @@ components:
       type: object
       description: Current state of the Conquian game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         layoffTargets:
           type: array
           description: "For each card in the human hand, the seat's own meld numbers it can be added to."
@@ -51324,6 +52267,11 @@ components:
       type: object
       description: Current state of the Tonk game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         knockThreshold:
           type: integer
         bestDeadwood:
@@ -51462,6 +52410,11 @@ components:
       type: object
       description: Current state of the Thirty-One game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -51595,6 +52548,11 @@ components:
       type: object
       description: Current state of the Yaniv game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -51704,6 +52662,11 @@ components:
       type: object
       description: Current state of the Tressette game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         trumpSuit:
           type: integer
         lastTrick:
@@ -51851,6 +52814,11 @@ components:
       type: object
       description: Current state of the Gong Zhu game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playableIndices:
           type: array
           items:
@@ -52051,6 +53019,11 @@ components:
       type: object
       description: Current state of the Canasta game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of player objects
@@ -52201,6 +53174,11 @@ components:
       type: object
       description: Current state of the Hand and Foot game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of player objects
@@ -52361,6 +53339,11 @@ components:
       type: object
       description: Current state of the Burraco game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         discardPile:
           type: array
           items:
@@ -52528,6 +53511,11 @@ components:
       type: object
       description: Current state of the Pinochle game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         hint:
           type: object
           properties:
@@ -52720,6 +53708,11 @@ components:
       type: object
       description: Current state of the Piquet game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -52984,6 +53977,11 @@ components:
         - difficulty
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           items:
@@ -53042,6 +54040,11 @@ components:
         - difficulty
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           items:
@@ -53152,6 +54155,11 @@ components:
         - isStalemate
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           items:
@@ -53274,6 +54282,11 @@ components:
       type: object
       description: Current state of the Napoleon game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         highestBid:
           type: integer
         highestBidder:
@@ -53472,8 +54485,35 @@ components:
       type: object
       description: Current state of the Indian Poker game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         profile:
           type: object
+          properties:
+            aggressiveByBracket:
+              type: array
+              items:
+                type: object
+                properties:
+                  aggressive:
+                    type: integer
+                  total:
+                    type: integer
+            foldToBetCount:
+              type: integer
+            foldToBetTotal:
+              type: integer
+            gamesPlayed:
+              type: integer
+            hesitationCount:
+              type: integer
+            hesitationMean:
+              type: integer
+            hesitationM2:
+              type: integer
         metaAI:
           $ref: '#/components/schemas/MetaAIProfile'
         players:
@@ -53635,6 +54675,11 @@ components:
       type: object
       description: Current state of the Video Poker game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         variantName:
           type: string
         handKey:
@@ -53746,6 +54791,11 @@ components:
       type: object
       description: Current state of the Euchre game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         bidPlayerIdx:
           type: integer
         faceUpCard:
@@ -53972,6 +55022,11 @@ components:
         - undoToEscape
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         pyramid:
           type: array
           description: The 7 pyramid rows, each containing an array of cards (row i has i+1 cards)
@@ -54103,6 +55158,11 @@ components:
         - undoToEscape
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         layout:
           type: array
           items:
@@ -54315,6 +55375,11 @@ components:
         - winnerIdx
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of 2 players (index 0 = human, index 1 = CPU)
@@ -54454,6 +55519,11 @@ components:
         - dealerHandRank
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playerHand:
           type: array
           description: Cards in the player's hand (3 cards)
@@ -54593,6 +55663,11 @@ components:
         - dealerScore
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playerHand:
           type: array
           description: Cards in the player's hand (3 cards)
@@ -54743,6 +55818,11 @@ components:
         - dealerHandRank
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playerHand:
           type: array
           description: Player's 5 cards.
@@ -54902,6 +55982,11 @@ components:
         - dealerHandRank
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playerHand:
           type: array
           description: Cards in the player's hand (5 cards), after any exchange
@@ -55051,6 +56136,11 @@ components:
         - dealerHandRank
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playerHand:
           type: array
           description: Cards in the player's hand (5 cards)
@@ -55188,6 +56278,11 @@ components:
         - dealerHandRank
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playerHand:
           type: array
           description: Player's two hole cards
@@ -55335,6 +56430,11 @@ components:
         - dealerHandRank
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playerHand:
           type: array
           description: Player's two hole cards
@@ -55472,6 +56572,11 @@ components:
       type: object
       description: Current state of the Oh Hell game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of player objects
@@ -55640,6 +56745,11 @@ components:
       type: object
       description: Current state of the Ninety-Nine game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of player objects
@@ -55813,6 +56923,11 @@ components:
       type: object
       description: Current state of the Contract Bridge game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         bidPlayerIdx:
           type: integer
         doubled:
@@ -56130,6 +57245,43 @@ components:
         - cpuActions
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        blindLevelHands:
+          type: integer
+        blindMultiplier:
+          type: integer
+        rebuyAvailable:
+          type: boolean
+        addonAvailable:
+          type: boolean
+        rebuyCounts:
+          type: array
+          items:
+            type: integer
+        addonUsed:
+          type: array
+          items:
+            type: boolean
+        rebuyEnabled:
+          type: boolean
+        addonEnabled:
+          type: boolean
+        rebuyMaxCount:
+          type: integer
+        rebuyChips:
+          type: integer
+        addonChips:
+          type: integer
+        rebuyPeriodHands:
+          type: integer
+        addonAfterHand:
+          type: integer
+        rebuyPhaseType:
+          type: integer
         initialDealCount:
           type: integer
           description: "Cards dealt to each seat at the start of the hand."
@@ -56321,6 +57473,11 @@ components:
         - config
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Both players (index 0 = human, index 1 = CPU)
@@ -56454,6 +57611,11 @@ components:
         - config
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         turnNumber:
           type: integer
         deckRemaining:
@@ -56648,6 +57810,11 @@ components:
         - gameEndFlag
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -56809,6 +57976,18 @@ components:
         - gameEndFlag
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetScore:
+              type: integer
         players:
           type: array
           description: The three players. `cardPoints` is what they have collected - more is worse.
@@ -57342,6 +58521,19 @@ components:
         - cpuActions
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        rebuyEnabled:
+          type: boolean
+        addonEnabled:
+          type: boolean
+        rebuyPeriodHands:
+          type: integer
+        addonAfterHand:
+          type: integer
         addonUsed:
           type: boolean
           description: "True once the add-on has been taken."
@@ -57604,6 +58796,11 @@ components:
         - dealerLowRank
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         hint:
           type: object
           description: Recommended split for the set-hand phase.
@@ -57763,6 +58960,11 @@ components:
         - totalPayout
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playerHand:
           type: array
           description: Cards in the player's hand (3 cards)
@@ -57890,6 +59092,11 @@ components:
         - totalScore
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         board:
           type: array
           description: 5x5 grid of cells (row-major). Each cell contains the placed card or null.
@@ -58003,6 +59210,11 @@ components:
     RedDogResponse:
       type: object
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         initialCards:
           type: array
           description: The initial 2 dealt cards.
@@ -58078,6 +59290,11 @@ components:
     CasinoWarResponse:
       type: object
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playerCard:
           description: Player's initial card (present after `bet`).
           oneOf:
@@ -58169,6 +59386,11 @@ components:
     DragonTigerResponse:
       type: object
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         dragonCard:
           description: Card dealt to the Dragon slot (present after `bet`).
           oneOf:
@@ -58277,6 +59499,11 @@ components:
     BlackJackSwitchResponse:
       type: object
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         hands:
           type: array
           description: Always two hands; the player may switch their second cards in the Switch phase.
@@ -58369,6 +59596,11 @@ components:
       type: object
       description: Current state of the Pitch game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         lastTrick:
           type: array
           items:
@@ -58488,6 +59720,11 @@ components:
       type: object
       description: Current state of the All Fours (Seven Up) game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         roundBreakdown:
           type: object
           description: How the round score was built up.
@@ -58622,6 +59859,11 @@ components:
       type: object
       description: Current state of the Prší (Czech Crazy Eights) game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of 4 player objects (0=human, 1-3=CPU)
@@ -58680,6 +59922,11 @@ components:
       type: object
       description: Current state of the Calabresella (Terziglio) game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         monte:
           type: array
           description: "The monte, the three-card widow; absent while it is not visible."
@@ -58801,6 +60048,11 @@ components:
       type: object
       description: Current state of the Cinch (Double Pedro / High Five) game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of 4 player objects (0=human, 1-3=CPU)
@@ -58949,6 +60201,11 @@ components:
       type: object
       description: Current state of the Loo (Lanterloo) game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of 4 player objects (0=human, 1-3=CPU)
@@ -59091,6 +60348,11 @@ components:
       type: object
       description: Current state of the Basra (Bastra) game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of 4 player objects (0=human, 1-3=CPU)
@@ -59219,6 +60481,11 @@ components:
       type: object
       description: Current state of the Tablanet (Tablić) game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of 4 player objects (0=human, 1-3=CPU)
@@ -59351,6 +60618,11 @@ components:
       type: object
       description: Current state of the Trente et Quarante (Rouge et Noir) game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "Game phase: 0=Bet, 1=Result"
@@ -59440,6 +60712,11 @@ components:
       type: object
       description: Current state of the King game (mirrors KingWebOutput)
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Array of 4 player objects (0=human, 1-3=CPU)
@@ -59602,6 +60879,11 @@ components:
       type: object
       description: Current state of the President (Scum) game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -59732,6 +61014,11 @@ components:
       type: object
       description: Current state of the Cassino game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         sweepCount:
           type: integer
           description: "Sweeps a seat made. Each clears the table and scores."
@@ -59918,6 +61205,11 @@ components:
       type: object
       description: Current state of the Scopa game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: All players in the game (1 human + 1 CPU).
@@ -60068,6 +61360,11 @@ components:
       type: object
       description: Current state of the Scopone game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         roundNumber:
           type: integer
         dealerIdx:
@@ -60236,6 +61533,11 @@ components:
       type: object
       description: Current state of the Escoba game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         roundNumber:
           type: integer
         dealerIdx:
@@ -60258,6 +61560,10 @@ components:
           items:
             type: object
             properties:
+              capturedCards:
+                type: array
+                items:
+                  type: object
               id: { type: integer }
               isHuman: { type: boolean }
               handCount: { type: integer }
@@ -60409,6 +61715,11 @@ components:
       type: object
       description: Current state of the Barbu game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playableIndices:
           type: array
           items:
@@ -60567,6 +61878,11 @@ components:
       type: object
       description: Response payload for /calculation/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         foundations:
           type: array
           description: Four foundation piles indexed 0..3 with step sizes +1, +2, +3, +4 respectively.
@@ -60617,6 +61933,11 @@ components:
       type: object
       description: Response payload for /sirtommy/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         foundations:
           type: array
           description: Four foundation piles indexed 0..3 with step sizes +1, +2, +3, +4 respectively.
@@ -60779,6 +62100,11 @@ components:
       type: object
       description: Response payload for /crazyquilt/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         quilt:
           type: array
           description: The 64 cells in row-major order. A cell whose card has been taken is null.
@@ -60892,6 +62218,11 @@ components:
       type: object
       description: Response payload for /tarabish/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -61025,6 +62356,11 @@ components:
       type: object
       description: Response payload for /baloot/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -61154,6 +62490,11 @@ components:
       type: object
       description: Response payload for /estimation/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -61284,6 +62625,11 @@ components:
       type: object
       description: Response payload for /israeliwhist/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -61421,6 +62767,11 @@ components:
       type: object
       description: Response payload for /hokm/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -61563,6 +62914,11 @@ components:
       type: object
       description: Response payload for /shelem/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -61700,6 +63056,11 @@ components:
       type: object
       description: Response payload for /mendikot/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -61840,6 +63201,11 @@ components:
       type: object
       description: Response payload for /bhabhi/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -61965,6 +63331,11 @@ components:
       type: object
       description: Response payload for /teendopaanch/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -62096,6 +63467,11 @@ components:
       type: object
       description: Response payload for /hasenpfeffer/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -62251,6 +63627,11 @@ components:
       type: object
       description: Response payload for /sergeantmajor/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -62385,6 +63766,11 @@ components:
       type: object
       description: Response payload for /honeymoonbridge/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -62535,6 +63921,11 @@ components:
       type: object
       description: Response payload for /minibridge/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -62665,6 +64056,11 @@ components:
       type: object
       description: Response payload for /pasur/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -62749,6 +64145,11 @@ components:
       type: object
       description: Response payload for /snap/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "0=Play, 1=GameEnd"
@@ -62851,6 +64252,11 @@ components:
       type: object
       description: Response payload for /rollingstone/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -62993,6 +64399,13 @@ components:
       type: object
       description: Response payload for /doubleattack/exec
       properties:
+        hint:
+          type: string
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "0=Bet, 1=Attack, 2=Play, 3=Result"
@@ -63076,6 +64489,15 @@ components:
       type: object
       description: Response payload for /baseballpoker/exec
       properties:
+        action:
+          type: string
+        reason:
+          type: string
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "0=Betting, 1=BuyIn, 2=Showdown, 3=GameEnd"
@@ -63199,6 +64621,11 @@ components:
       type: object
       description: Response payload for /sakura/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "0=Play, 1=RoundEnd, 2=GameEnd"
@@ -63359,6 +64786,11 @@ components:
       type: object
       description: Response payload for /zwanzigerrufen/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "0=Bid, 1=Talon, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd"
@@ -63537,6 +64969,11 @@ components:
       type: object
       description: Response payload for /troggu/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "0=Bid, 1=Play, 2=TrickEnd, 3=RoundEnd, 4=GameEnd"
@@ -63697,6 +65134,11 @@ components:
       type: object
       description: Response payload for /horse/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "0=Hand, 1=HandEnd, 2=GameEnd"
@@ -63804,6 +65246,19 @@ components:
       type: object
       description: Response payload for /tusac/exec
       properties:
+        action:
+          type: string
+        indexes:
+          type: array
+          items:
+            type: object
+        reason:
+          type: string
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "0=Draw, 1=Discard, 2=RoundEnd, 3=GameEnd"
@@ -63904,6 +65359,17 @@ components:
       type: object
       description: Response payload for /kingo/exec
       properties:
+        action:
+          type: string
+        amount:
+          type: integer
+        reason:
+          type: string
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "0=Bet, 1=Result, 2=GameEnd"
@@ -63989,6 +65455,17 @@ components:
       type: object
       description: Response payload for /ironcross/exec
       properties:
+        action:
+          type: string
+        line:
+          type: integer
+        reason:
+          type: string
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "0=Betting, 1=ChooseLine, 2=Showdown, 3=GameEnd"
@@ -64108,6 +65585,15 @@ components:
       type: object
       description: Response payload for /cincinnati/exec
       properties:
+        action:
+          type: string
+        reason:
+          type: string
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "0=Deal, 1=Betting, 2=Showdown, 3=GameEnd"
@@ -64274,6 +65760,11 @@ components:
         - gameEndFlag
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "Game phase: 0 = Flip, 1 = Auction, 2 = Result, 3 = GameEnd"
@@ -64366,6 +65857,15 @@ components:
       type: object
       description: Response payload for /montebank/exec
       properties:
+        pickIdx:
+          type: integer
+        reason:
+          type: string
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "0=Bet, 1=Result, 2=GameEnd"
@@ -64432,6 +65932,13 @@ components:
       type: object
       description: Response payload for /banluck/exec
       properties:
+        hint:
+          type: string
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "0=Bet, 1=Play, 2=RoundEnd, 3=GameEnd"
@@ -64523,6 +66030,13 @@ components:
       type: object
       description: Response payload for /freebet/exec
       properties:
+        hint:
+          type: string
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "0=Bet, 1=Play, 2=Result"
@@ -64609,6 +66123,13 @@ components:
       type: object
       description: Response payload for /crazyfourpoker/exec
       properties:
+        hint:
+          type: string
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "0=Bet, 1=Decide, 2=Result"
@@ -64719,6 +66240,13 @@ components:
       type: object
       description: Response payload for /chemindefer/exec
       properties:
+        hint:
+          type: string
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Always an array. Six seats; the bank travels between them.
@@ -64816,6 +66344,19 @@ components:
       type: object
       description: Response payload for /colourwhist/exec
       properties:
+        cardIndex:
+          type: integer
+          description: "Hand index the hint recommends playing. Present in the reply to the `hint` command."
+        reason:
+          type: string
+          description: "i18n key explaining the hint."
+        hint:
+          type: string
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Always an array. Only the human seat carries its cards.
@@ -64922,6 +66463,15 @@ components:
       type: object
       description: Response payload for /rikken/exec
       properties:
+        cardIndex:
+          type: string
+        reason:
+          type: string
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Always an array. Only the human seat carries its cards.
@@ -65010,6 +66560,17 @@ components:
       type: object
       description: Response payload for /botifarra/exec
       properties:
+        cardIndex:
+          type: string
+        reason:
+          type: string
+        suit:
+          type: integer
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           description: Always an array. Only the human seat carries its cards.
@@ -65095,6 +66656,13 @@ components:
       type: object
       description: Response payload for /andarbahar/exec
       properties:
+        hint:
+          type: string
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         joker:
           allOf:
             - $ref: '#/components/schemas/Card'
@@ -65161,6 +66729,11 @@ components:
       type: object
       description: Response payload for /goofspiel/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -65262,6 +66835,11 @@ components:
       type: object
       description: Response payload for /cucumber/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -65373,6 +66951,11 @@ components:
       type: object
       description: Response payload for /stealingbundles/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -65494,6 +67077,11 @@ components:
       type: object
       description: Response payload for /pig/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -65605,6 +67193,11 @@ components:
       type: object
       description: Response payload for /lingerlonger/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         winReason:
           type: string
         players:
@@ -65726,6 +67319,11 @@ components:
       type: object
       description: Response payload for /rams/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         requiredTricks:
           type: integer
         beast:
@@ -65853,6 +67451,11 @@ components:
       type: object
       description: Response payload for /reversis/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -65967,6 +67570,11 @@ components:
       type: object
       description: Response payload for /polignac/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -66078,6 +67686,11 @@ components:
       type: object
       description: Response payload for /slobberhannes/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -66177,6 +67790,11 @@ components:
       type: object
       description: Response payload for /germanwhist/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -66243,6 +67861,11 @@ components:
       type: object
       description: Response payload for /royalcotillion/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           description: The sixteen slots, one card each. An empty slot is null.
@@ -66314,6 +67937,11 @@ components:
       type: object
       description: Response payload for /diplomat/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           description: The eight columns. Only the last card of each is playable.
@@ -66382,6 +68010,11 @@ components:
       type: object
       description: Response payload for /cribbagesquares/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         board:
           type: array
           description: The 4x4 grid, row-major. Each cell holds a card or null.
@@ -66472,6 +68105,15 @@ components:
       type: object
       description: Response payload for /colorado/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
         tableau:
           type: array
           description: The twenty tableau piles. Only the last card of each is playable, and only to a foundation.
@@ -66534,6 +68176,11 @@ components:
       type: object
       description: Response payload for /fourseasons/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           description: The five cross piles. Only the last card of each is playable.
@@ -66603,6 +68250,11 @@ components:
       type: object
       description: Response payload for /auldlangsyne/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         foundations:
           type: array
           description: Four foundation piles indexed 0..3, each building A to K ignoring suit.
@@ -66706,6 +68358,11 @@ components:
       type: object
       description: Response payload for /spiteandmalice/exec
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         canAutoComplete:
           type: boolean
         phase:
@@ -66893,6 +68550,11 @@ components:
         - isStalemate
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         board:
           type: array
           description: "5x5 grid of cells (row-major). Empty cells (post-removal, pre-deal) have `card: null`."
@@ -66948,6 +68610,11 @@ components:
         - isStalemate
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         columns:
           type: array
           description: "The 12 columns, left to right. Only the last card of each is in play; a cleared column is an empty array."
@@ -67095,6 +68762,11 @@ components:
         - config
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -67241,6 +68913,11 @@ components:
         - config
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         openingThreshold:
           type: integer
           description: "Points a seat needs before it may lay down its opening meld."
@@ -67271,6 +68948,8 @@ components:
         config:
           type: object
           properties:
+            openingThreshold:
+              type: integer
             playerCount:
               type: integer
             openingPoints:
@@ -67353,6 +69032,11 @@ components:
         - dealerHandRank
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playerHand:
           type: array
           description: Player's two hole cards
@@ -67499,6 +69183,11 @@ components:
         - totalPayout
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playerHand:
           type: array
           description: The player's hole cards (2 cards once dealt)
@@ -67798,6 +69487,11 @@ components:
         - message
         - config
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -68040,6 +69734,11 @@ components:
         - message
         - config
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -68289,6 +69988,11 @@ components:
         - message
         - config
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -68465,6 +70169,11 @@ components:
         - message
         - config
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -68754,6 +70463,11 @@ components:
         - message
         - config
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         roundNumber:
           type: integer
         trickNumber:
@@ -68896,6 +70610,11 @@ components:
         - dealerHandRank
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playerHand:
           type: array
           description: Cards in the player's hand (5 cards)
@@ -69050,6 +70769,11 @@ components:
         - dealerHandRank
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playerHand:
           type: array
           items:
@@ -69111,6 +70835,11 @@ components:
       type: object
       description: Current state of the High Card Flush game returned after every command.
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         playerHand:
           type: array
           description: Player's 7 cards (only populated from the Action phase onwards).
@@ -69243,6 +70972,11 @@ components:
     Rummy500Response:
       type: object
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         layoffTargets:
           type: array
           description: "For each card in the human hand, the places it can be laid off onto. Used so every enabled button is a move the server accepts."
@@ -69405,6 +71139,11 @@ components:
         - isStalemate
         - message
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           description: The 7 tableau columns, each containing an array of face-up cards
@@ -69522,6 +71261,11 @@ components:
     BourreResponse:
       type: object
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -69722,6 +71466,11 @@ components:
       type: object
       description: Current state of the Sheepshead game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -69849,6 +71598,11 @@ components:
       type: object
       description: Current state of the Schafkopf game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -70029,6 +71783,11 @@ components:
       type: object
       description: Current state of the Doppelkopf game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -70213,6 +71972,11 @@ components:
       type: object
       description: Current state of the Mus game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -70391,6 +72155,11 @@ components:
       type: object
       description: Current state of the Tute game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -70546,6 +72315,11 @@ components:
       type: object
       description: Current state of the Sueca game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -70686,6 +72460,11 @@ components:
       type: object
       description: Current state of the Klaverjas game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -70832,6 +72611,11 @@ components:
       type: object
       description: Current state of the Manille game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -70968,6 +72752,11 @@ components:
       type: object
       description: Current state of the Mariáš game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -71118,6 +72907,11 @@ components:
       type: object
       description: Current state of the Sedma game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -71256,6 +73050,11 @@ components:
       type: object
       description: Current state of the Solo Whist game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -71372,6 +73171,11 @@ components:
       type: object
       description: Current state of the Catch the Ten (Scotch Whist) game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         validPlayIndices:
           type: array
           items:
@@ -71500,6 +73304,11 @@ components:
       type: object
       description: Current state of the Knockout Whist game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -71654,6 +73463,11 @@ components:
       type: object
       description: Current state of the Nap game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -71934,6 +73748,11 @@ components:
       type: object
       description: Current state of the Spoil Five game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -72080,6 +73899,11 @@ components:
       type: object
       description: Current state of the Auction Forty-Fives game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -72250,6 +74074,11 @@ components:
       type: object
       description: Current state of the Twenty-Nine game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -72421,6 +74250,11 @@ components:
       type: object
       description: Current state of the Court Piece game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         consecutiveWins:
           type: integer
           description: "Rounds the same team has won in a row."
@@ -72596,6 +74430,11 @@ components:
       type: object
       description: Current state of the Bezique game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         dealPoints:
           type: array
           items:
@@ -72796,6 +74635,11 @@ components:
       type: object
       description: Current state of the Écarté game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         trickNumber:
           type: integer
         elderIdx:
@@ -72917,6 +74761,11 @@ components:
       type: object
       description: Current state of the Preference game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -73033,6 +74882,11 @@ components:
       type: object
       description: Current state of the Ganjifa game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -73134,6 +74988,11 @@ components:
       type: object
       description: Current state of the Vira game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -73315,6 +75174,11 @@ components:
       type: object
       description: Current state of the Three Card Brag game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         players:
           type: array
           items:
@@ -73468,6 +75332,11 @@ components:
       type: object
       description: Current state of the Teen Patti game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         minRaise:
           type: integer
         canRaise:
@@ -73640,6 +75509,11 @@ components:
       type: object
       description: Current state of the Spoons game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "Game phase: 0=Pass, 1=Grab, 2=RoundEnd, 3=GameEnd"
@@ -73761,6 +75635,11 @@ components:
       type: object
       description: Current state of the Kemps game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "Game phase: 0=Exchange, 1=Declare, 2=RoundEnd, 3=GameEnd"
@@ -73875,6 +75754,11 @@ components:
       type: object
       description: Current state of the Cuckoo game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "Game phase: 0=Turn, 1=Refuse, 2=RoundEnd, 3=GameEnd"
@@ -74000,6 +75884,11 @@ components:
       type: object
       description: Current state of the Pişti game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: string
           description: "Game phase: play, roundEnd, gameEnd"
@@ -74135,6 +76024,11 @@ components:
       type: object
       description: Current state of the Ristikontra game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         counterRank:
           type: integer
           description: "Rank currently open to a counter. 0 = none. Playing this rank now steals the previous capture, pile and all."
@@ -74257,6 +76151,11 @@ components:
       type: object
       description: Current state of the Cuarenta game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         lastRoundDetail:
           type: object
           description: Score breakdown of the round just finished.
@@ -74438,6 +76337,11 @@ components:
       type: object
       description: Current state of the Faro game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "Game phase: 1 Betting, 2 Turn, 3 Call, 4 RoundEnd, 5 GameEnd"
@@ -74552,6 +76456,11 @@ components:
       type: object
       description: Current state of the Open Face Chinese Poker (OFC) game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "Game phase: 0 Placing, 1 RoundEnd, 2 GameEnd"
@@ -74706,6 +76615,11 @@ components:
       type: object
       description: Current state of the Russian Bank (Crapette) game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         phase:
           type: integer
           description: "Game phase: 0 Idle, 1 Playing, 2 GameEnd"
@@ -74866,6 +76780,11 @@ components:
       type: object
       description: Current state of the La Belle Lucie game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         fans:
           type: array
           description: The fans (top card is last); the count varies after a redeal
@@ -74957,6 +76876,11 @@ components:
       type: object
       description: Current state of the La Belle Lucie game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         fans:
           type: array
           description: The fans (top card is last); 18 fans of three cards, never re-dealt
@@ -75042,6 +76966,11 @@ components:
       type: object
       description: Current state of the Simple Simon game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         columns:
           type: array
           description: The 10 tableau columns (top card is last)
@@ -75123,6 +77052,11 @@ components:
       type: object
       description: Current state of the Simple Simon game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         columns:
           type: array
           description: The 10 tableau columns (top card is last)
@@ -75209,6 +77143,11 @@ components:
       type: object
       description: Current state of the Double Klondike game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         tableau:
           type: array
           description: The 9 tableau columns (top card is last); face-down cards hide their value
@@ -75304,6 +77243,11 @@ components:
       type: object
       description: Current state of the Black Hole game
       properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
         fans:
           type: array
           description: The 17 fans (top card is last)
