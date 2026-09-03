@@ -31067,6 +31067,30 @@ paths:
                 - command
                 - sessionId
               properties:
+                cardIndex:
+                  type: integer
+                  description: "Index of the card to play."
+                cardIndices:
+                  type: array
+                  description: "Hand indices for commands that take several cards (the exchange)."
+                  items:
+                    type: integer
+                bid:
+                  type: string
+                  description: "Bid to make."
+                contract:
+                  type: string
+                  description: "Contract to declare."
+                config:
+                  type: object
+                  description: Settings for a new session.
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0 = Easy, 1 = Normal, 2 = Hard."
+                    targetDeals:
+                      type: integer
+                      description: "Deals that make up the match."
                 command:
                   type: string
                   description: The game command to execute (e.g. reset, or a game-specific action).
@@ -31092,6 +31116,144 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  players:
+                    type: array
+                    description: One entry per seat, in seating order.
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: "Seat number."
+                        isHuman:
+                          type: boolean
+                          description: "True for the human seat."
+                        cardCount:
+                          type: integer
+                          description: "Cards left in this seat's hand."
+                        cards:
+                          type: array
+                          description: "This seat's hand. Only the human seat's cards are filled in."
+                          items:
+                            $ref: '#/components/schemas/Card'
+                        trickCount:
+                          type: integer
+                          description: "Tricks this seat has taken."
+                        cardPoints:
+                          type: integer
+                          description: "Card points in this seat's captured pile."
+                        score:
+                          type: integer
+                          description: "This seat's match score."
+                        isDeclarer:
+                          type: boolean
+                          description: "True when this seat is the declarer."
+                  phase:
+                    type: integer
+                    description: "Phase of the deal."
+                  roundNumber:
+                    type: integer
+                    description: "Deal number within the match."
+                  trickNumber:
+                    type: integer
+                    description: "Trick number within the deal."
+                  trickCount:
+                    type: integer
+                    description: "Tricks played so far in the deal."
+                  currentPlayerIdx:
+                    type: integer
+                    description: "Seat to act."
+                  leadPlayerIdx:
+                    type: integer
+                    description: "Seat that led the current trick."
+                  dealerIdx:
+                    type: integer
+                    description: "Seat that dealt."
+                  bidPlayerIdx:
+                    type: integer
+                    description: "Seat to bid."
+                  highestBid:
+                    type: integer
+                    description: "Highest bid so far."
+                  highestBidder:
+                    type: integer
+                    description: "Seat holding the highest bid. -1 when none."
+                  declarerIdx:
+                    type: integer
+                    description: "Seat that won the contract. -1 before it is settled."
+                  contract:
+                    type: integer
+                    description: "Contract being played."
+                  blindCount:
+                    type: integer
+                    description: "Cards in the blind. This is the only thing exposed about the blind -- its contents are never revealed."
+                  stashOwner:
+                    type: integer
+                    description: "Seat that took the blind. -1 when nobody has."
+                  currentTrick:
+                    type: array
+                    description: Cards played to the current trick, in play order.
+                    items:
+                      type: object
+                  playerScores:
+                    type: array
+                    description: "Match score of every seat, in seating order."
+                    items:
+                      type: integer
+                  lastTrickWinner:
+                    type: integer
+                    description: "Seat that took the previous trick. -1 at the start of a deal."
+                  outcome:
+                    type: integer
+                    description: "How the deal ended."
+                  result:
+                    type: integer
+                    description: "Whether the human seat won the deal."
+                  playableIndices:
+                    type: array
+                    description: "Indices in the human hand that may legally be played now."
+                    items:
+                      type: integer
+                  gameEndFlag:
+                    type: boolean
+                    description: "True once the match is over."
+                  winnerPlayer:
+                    type: integer
+                    description: "Seat that won the match. -1 until it ends."
+                  isHumanTurn:
+                    type: boolean
+                    description: "True while the human seat must play a card."
+                  isHumanBidTurn:
+                    type: boolean
+                    description: "True while the human seat must bid."
+                  hint:
+                    type: object
+                    description: Recommended action; absent unless asked for.
+                    properties:
+                      bid:
+                        type: integer
+                        description: "Bid the hint recommends."
+                      contract:
+                        type: integer
+                        description: "Contract the hint recommends."
+                      cardIndices:
+                        type: array
+                        description: "Hand indices the hint recommends."
+                        items:
+                          type: integer
+                      reason:
+                        type: string
+                        description: "i18n key explaining the recommendation."
+                  config:
+                    type: object
+                    description: Settings in force for this session.
+                    properties:
+                      cpuDifficulty:
+                        type: integer
+                        description: "0 = Easy, 1 = Normal, 2 = Hard."
+                      targetDeals:
+                        type: integer
+                        description: "Deals that make up the match."
                   contractType:
                     type: integer
                     description: "Contract the declarer chose for this deal."
@@ -32026,6 +32188,30 @@ paths:
                 - command
                 - sessionId
               properties:
+                cardIndex:
+                  type: integer
+                  description: "Index of the card to play."
+                cardIndices:
+                  type: array
+                  description: "Hand indices for commands that take several cards (the discard)."
+                  items:
+                    type: integer
+                bid:
+                  type: string
+                  description: "Bid to make."
+                callSuit:
+                  type: integer
+                  description: "Suit whose king the declarer calls."
+                config:
+                  type: object
+                  description: Settings for a new session.
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: "0 = Easy, 1 = Normal, 2 = Hard."
+                    targetDeals:
+                      type: integer
+                      description: "Deals that make up the match."
                 command:
                   type: string
                   description: The game command to execute (e.g. reset, or a game-specific action).
@@ -32051,6 +32237,156 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  players:
+                    type: array
+                    description: One entry per seat, in seating order.
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: "Seat number."
+                        isHuman:
+                          type: boolean
+                          description: "True for the human seat."
+                        cardCount:
+                          type: integer
+                          description: "Cards left in this seat's hand."
+                        cards:
+                          type: array
+                          description: "This seat's hand. Only the human seat's cards are filled in."
+                          items:
+                            $ref: '#/components/schemas/Card'
+                        trickCount:
+                          type: integer
+                          description: "Tricks this seat has taken."
+                        cardPoints:
+                          type: integer
+                          description: "Card points in this seat's captured pile."
+                        score:
+                          type: integer
+                          description: "This seat's match score."
+                        isDeclarer:
+                          type: boolean
+                          description: "True when this seat is the declarer."
+                        isPartner:
+                          type: boolean
+                          description: "True when this seat is the declarer's called partner (only once revealed)."
+                  phase:
+                    type: integer
+                    description: "Phase of the deal."
+                  roundNumber:
+                    type: integer
+                    description: "Deal number within the match."
+                  trickNumber:
+                    type: integer
+                    description: "Trick number within the deal."
+                  trickCount:
+                    type: integer
+                    description: "Tricks played so far in the deal."
+                  currentPlayerIdx:
+                    type: integer
+                    description: "Seat to act."
+                  leadPlayerIdx:
+                    type: integer
+                    description: "Seat that led the current trick."
+                  dealerIdx:
+                    type: integer
+                    description: "Seat that dealt."
+                  bidPlayerIdx:
+                    type: integer
+                    description: "Seat to bid."
+                  highestBid:
+                    type: integer
+                    description: "Highest bid so far."
+                  highestBidder:
+                    type: integer
+                    description: "Seat holding the highest bid. -1 when none."
+                  declarerIdx:
+                    type: integer
+                    description: "Seat that won the contract. -1 before it is settled."
+                  contract:
+                    type: integer
+                    description: "Contract being played."
+                  partnerIdx:
+                    type: integer
+                    description: "Seat holding the called king. -1 until revealed."
+                  partnerRevealed:
+                    type: boolean
+                    description: "True once the called king has been played and the partner is known."
+                  talonCount:
+                    type: integer
+                    description: "Cards left in the talon."
+                  stashOwner:
+                    type: integer
+                    description: "Seat that took the talon. -1 when nobody has."
+                  currentTrick:
+                    type: array
+                    description: Cards played to the current trick, in play order.
+                    items:
+                      type: object
+                  playerScores:
+                    type: array
+                    description: "Match score of every seat, in seating order."
+                    items:
+                      type: integer
+                  lastTrickWinner:
+                    type: integer
+                    description: "Seat that took the previous trick. -1 at the start of a deal."
+                  outcome:
+                    type: integer
+                    description: "How the deal ended."
+                  result:
+                    type: integer
+                    description: "Whether the human seat's side won the deal."
+                  playableIndices:
+                    type: array
+                    description: "Indices in the human hand that may legally be played now."
+                    items:
+                      type: integer
+                  gameEndFlag:
+                    type: boolean
+                    description: "True once the match is over."
+                  winnerPlayer:
+                    type: integer
+                    description: "Seat that won the match. -1 until it ends."
+                  isHumanTurn:
+                    type: boolean
+                    description: "True while the human seat must play a card."
+                  isHumanBidTurn:
+                    type: boolean
+                    description: "True while the human seat must bid."
+                  isHumanDiscard:
+                    type: boolean
+                    description: "True while the human seat must discard to the talon."
+                  hint:
+                    type: object
+                    description: Recommended action; absent unless asked for.
+                    properties:
+                      bid:
+                        type: integer
+                        description: "Bid the hint recommends."
+                      callSuit:
+                        type: integer
+                        description: "Suit whose king the hint recommends calling."
+                      cardIndices:
+                        type: array
+                        description: "Hand indices the hint recommends."
+                        items:
+                          type: integer
+                      reason:
+                        type: string
+                        description: "i18n key explaining the recommendation."
+                  config:
+                    type: object
+                    description: Settings in force for this session.
+                    properties:
+                      cpuDifficulty:
+                        type: integer
+                        description: "0 = Easy, 1 = Normal, 2 = Hard."
+                      targetDeals:
+                        type: integer
+                        description: "Deals that make up the match."
                   calledKing:
                     type: integer
                     description: "Suit of the king the declarer called for a partner."
