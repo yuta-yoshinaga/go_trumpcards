@@ -42,7 +42,6 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
 const TABLEAU_COLS = 8;
 const TOTAL_CARDS = 104;
-/** 山札を通せる最大回数。domain の `AmericanToadMaxPasses`。 */
 
 const AT_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="at-reserve"]', messageKey: 'tutorial.reserve', placement: 'bottom', advanceOn: 'next' },

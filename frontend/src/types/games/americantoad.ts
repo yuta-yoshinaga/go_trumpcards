@@ -54,5 +54,11 @@ export interface AmericanToadMoveZone {
   cardIndex?: number;
 }
 
-/** Passes through the stock the deal allows; the last one cannot be recycled. */
+/**
+ * Passes through the stock the deal allows; the last one cannot be recycled.
+ *
+ * Mirrors `domain.AmericanToadMaxPasses` (`internal/domain/AmericanToad.go`).
+ * `passesUsed` is bounded to `[0, MAX-1]` there, so `passesUsed + 1` never
+ * overshoots this.
+ */
 export const AMERICANTOAD_MAX_PASSES = 2;
