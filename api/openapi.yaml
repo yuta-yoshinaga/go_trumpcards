@@ -11296,6 +11296,9 @@ paths:
                 cardIndex:
                   type: integer
                   description: Index of the card to play (for attack/defend commands)
+                transferEnabled:
+                  type: boolean
+                  description: "Whether transferring an attack to the next seat is allowed. Part of the game config."
                 sessionId:
                   type: string
             examples:
@@ -11334,6 +11337,20 @@ paths:
               schema:
                 type: object
                 properties:
+                  tablePairs:
+                    type: array
+                    items:
+                      type: object
+                    description: "Attack cards on the table with the card that answered each, when one has."
+                  defense:
+                    type: object
+                    description: "Card that answered an attack, or null while it stands unanswered."
+                  attackIdx:
+                    type: integer
+                    description: "Which attack a defence answers, or -1 when it does not apply."
+                  boutNumber:
+                    type: integer
+                    description: "Which bout of the game is being played."
                   players:
                     type: array
                     items:
@@ -21424,6 +21441,23 @@ paths:
                 additionalProperties: true
                 description: Game state after the command was processed.
                 properties:
+                  layouts:
+                    type: array
+                    items:
+                      type: array
+                    description: "Melds each seat has laid down, as indices into that seat's hand."
+                  goOutIdx:
+                    type: integer
+                    description: "Hand position to discard in order to go out, or -1 when the hand cannot. Solved on the server so the fifteen-card split is not re-derived in the page."
+                  canGoOutOnDeal:
+                    type: boolean
+                    description: "Whether the dealt hand already goes out without drawing. That pays more than going out after a draw, so it is a separate entry point."
+                  hintDiscardIdx:
+                    type: integer
+                    description: "Hand position the hint recommends discarding, or -1 when there is none."
+                  perOpponent:
+                    type: integer
+                    description: "Chips collected from each opponent."
                   message:
                     type: string
         '400':
@@ -47878,6 +47912,9 @@ components:
         - command
         - sessionId
       properties:
+        goAlone:
+          type: boolean
+          description: "Whether to play the hand alone when ordering up or naming trump."
         command:
           type: string
           description: |
@@ -47918,6 +47955,18 @@ components:
       type: object
       description: Current state of the Euchre game
       properties:
+        goingAlone:
+          type: boolean
+          description: "Whether the maker is playing alone, with their partner sitting the hand out."
+        goingAlonePlayerIdx:
+          type: integer
+          description: "Seat playing alone, or -1 when nobody is."
+        orderUpScore:
+          type: integer
+          description: "Hand-strength threshold for ordering up. Sent rather than copied into the page so the two cannot drift apart."
+        goAloneScore:
+          type: integer
+          description: "Hand-strength threshold for going alone, sent for the same reason."
         players:
           type: array
           description: Array of player objects

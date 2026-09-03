@@ -60,13 +60,6 @@
     "extendTargets",
     "layoffTargets"
   ],
-  "ContinentalRummy": [
-    "canGoOutOnDeal",
-    "goOutIdx",
-    "hintDiscardIdx",
-    "layouts",
-    "perOpponent"
-  ],
   "CostlyColours": [
     "combos",
     "hintAcceptMog",
@@ -91,23 +84,9 @@
   "Doppelkopf": [
     "isRe"
   ],
-  "Durak": [
-    "attackIdx",
-    "boutNumber",
-    "defense",
-    "tablePairs",
-    "transferEnabled"
-  ],
   "Escoba": [
     "escobaCount",
     "handCaptures"
-  ],
-  "Euchre": [
-    "goAlone",
-    "goAloneScore",
-    "goingAlone",
-    "goingAlonePlayerIdx",
-    "orderUpScore"
   ],
   "FiftyOne": [
     "lastHandIdx",
