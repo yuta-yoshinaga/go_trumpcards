@@ -5,7 +5,6 @@ All project-specific rules, architecture, testing policies, and workflows are de
 Key references:
 - [`CLAUDE.md`](CLAUDE.md) -- Root project rules and commands
 - [`docs/`](docs/) -- Detailed context (architecture, testing, games, workflow)
-- [`.ai/skills/`](.ai/skills/) -- Reusable skill definitions (TDD flow)
-- [`.ai/hooks/`](.ai/hooks/) -- Pre-commit verification commands
 - [`internal/CLAUDE.md`](internal/CLAUDE.md) -- Go backend-specific rules
 - [`frontend/CLAUDE.md`](frontend/CLAUDE.md) -- Frontend-specific rules
+- [`.agents/rules/`](.agents/rules/) -- Permanent rules for AI agents (contract, Go, frontend, traps)
