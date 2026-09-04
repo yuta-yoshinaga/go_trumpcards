@@ -4,6 +4,7 @@ import { actionLogApi, napoleonApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { NapoleonResponse } from '../types/card';
+import { NapoleonPhase } from '../types/phases';
 import { NapoleonPage } from './NapoleonPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -197,6 +198,32 @@ beforeEach(() => {
 });
 
 describe('NapoleonPage', () => {
+  it('renders np-hand-discard-label when it is human turn for kitty exchange', async () => {
+    // ナポレオンが人間でキティ（余り牌）との交換フェーズなら捨てる指示を出す
+    const state: NapoleonResponse = {
+      ...playPhaseState,
+      phase: NapoleonPhase.KITTY_EXCHANGE,
+      napoleonIdx: 0,
+      players: playPhaseState.players.map((p) => (p.id === 0 ? { ...p, isHuman: true } : p)),
+    };
+    mockExec.mockResolvedValue(state);
+    const { getByTestId } = renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(getByTestId('np-hand-discard-label')).toBeInTheDocument());
+  });
+
+  it('does not render np-hand-discard-label when it is CPU turn for kitty exchange', async () => {
+    // キティ交換フェーズでもナポレオンがCPUなら人間への指示は出さない
+    const state: NapoleonResponse = {
+      ...playPhaseState,
+      phase: NapoleonPhase.KITTY_EXCHANGE,
+      napoleonIdx: 1,
+      players: playPhaseState.players.map((p) => (p.id === 1 ? { ...p, isHuman: false } : p)),
+    };
+    mockExec.mockResolvedValue(state);
+    const { queryByTestId, getByTestId } = renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(queryByTestId('np-hand-discard-label')).not.toBeInTheDocument();
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<NapoleonPage />);

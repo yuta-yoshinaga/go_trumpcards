@@ -83,7 +83,36 @@ beforeEach(() => {
 });
 
 describe('PigsTailPage', () => {
-  it('renders skeleton when no state', () => {
+  it('renders pigtail-penalty-flash when a penalty occurs', async () => {
+    // ペナルティが発生した（場札と同じマークを引いて引き取らされた）ときに画面をフラッシュさせる
+    const state = {
+      ...baseState,
+      lastPenalty: true,
+      centerCount: 1,
+      circleCount: 1,
+      lastDrawCard: { design: 'SPADE', value: 1 } as const,
+    };
+    mockExec.mockResolvedValue(state);
+    const { getByTestId } = renderWithProviders(<PigsTailPage />);
+    await waitFor(() => expect(getByTestId('pigtail-penalty-flash')).toBeInTheDocument());
+  });
+
+  it('does not render pigtail-penalty-flash when there is no penalty', async () => {
+    // ペナルティが発生していないときはフラッシュさせない
+    const state = {
+      ...baseState,
+      lastPenalty: false,
+      centerCount: 1,
+      circleCount: 1,
+      lastDrawCard: { design: 'SPADE', value: 1 } as const,
+    };
+    mockExec.mockResolvedValue(state);
+    const { queryByTestId, getByTestId } = renderWithProviders(<PigsTailPage />);
+    await waitFor(() => expect(getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(queryByTestId('pigtail-penalty-flash')).not.toBeInTheDocument();
+  });
+
+  it('renders skeleton initially', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PigsTailPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
