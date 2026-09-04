@@ -360,4 +360,19 @@ describe('FreeBetPage', () => {
     await waitFor(() => expect(screen.getByTestId('fb-chips')).toBeInTheDocument());
     expect(screen.queryByTestId('fb-free-notice')).not.toBeInTheDocument();
   });
+
+  // ディーラーに札が配られたときだけスコアを出す。この分岐は E2E からしか
+  // 踏まれておらず、単体では一度も描かれていなかった。
+  it('shows fb-dealer-score once the dealer has cards', async () => {
+    mockApi.mockResolvedValue(playing());
+    renderWithProviders(<FreeBetPage />);
+    expect(await screen.findByTestId('fb-dealer-score')).toBeInTheDocument();
+  });
+
+  it('does not show fb-dealer-score before the dealer has cards', async () => {
+    mockApi.mockResolvedValue(withState({ dealerCards: [], dealerScore: 0 }));
+    renderWithProviders(<FreeBetPage />);
+    await waitFor(() => expect(screen.getByTestId('fb-chips')).toBeInTheDocument());
+    expect(screen.queryByTestId('fb-dealer-score')).not.toBeInTheDocument();
+  });
 });

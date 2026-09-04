@@ -241,4 +241,34 @@ describe('HorsePage', () => {
     await screen.findByRole('button', { name: 'レイズ' });
     expect(screen.queryByRole('button', { name: 'Max' })).not.toBeInTheDocument();
   });
+
+  // ドローフェーズの手番では交換カード選択エリアを表示する。
+  it('shows draw area during human draw turn', async () => {
+    mockExec.mockResolvedValue(makeHorseState({ isDrawPhase: true, drawIndex: 1 }));
+    renderWithProviders(<HorsePage />);
+    await waitFor(() => expect(screen.getByTestId('ho-draw')).toBeInTheDocument());
+  });
+
+  // ベットラウンドなどドローフェーズ以外では交換カード選択エリアを表示しない。
+  it('hides draw area outside draw turn', async () => {
+    mockExec.mockResolvedValue(handState);
+    renderWithProviders(<HorsePage />);
+    await screen.findByTestId('ho-discipline');
+    expect(screen.queryByTestId('ho-draw')).not.toBeInTheDocument();
+  });
+
+  // ドローフェーズの手番ではカード交換ボタンを表示する。
+  it('shows draw exchange button during human draw turn', async () => {
+    mockExec.mockResolvedValue(makeHorseState({ isDrawPhase: true, drawIndex: 1 }));
+    renderWithProviders(<HorsePage />);
+    await waitFor(() => expect(screen.getByTestId('ho-draw-exchange')).toBeInTheDocument());
+  });
+
+  // ドローフェーズ以外ではカード交換ボタンを表示しない。
+  it('hides draw exchange button outside draw turn', async () => {
+    mockExec.mockResolvedValue(handState);
+    renderWithProviders(<HorsePage />);
+    await screen.findByTestId('ho-discipline');
+    expect(screen.queryByTestId('ho-draw-exchange')).not.toBeInTheDocument();
+  });
 });

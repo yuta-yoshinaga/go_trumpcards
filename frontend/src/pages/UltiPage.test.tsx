@@ -347,4 +347,18 @@ describe('UltiPage', () => {
     // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
     expect(live).toContainElement(await screen.findByTestId('ulti-discard-prompt'));
   });
+
+  // 人間プレイヤーのビッド手番の場合のみ、スクリーンリーダー向けビッド説明を表示する。
+  it('renders ulti-bid-descriptions when canBid is true', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<UltiPage />);
+    await waitFor(() => expect(screen.getByTestId('ulti-bid-descriptions')).toBeInTheDocument());
+  });
+
+  it('does not render ulti-bid-descriptions when canBid is false', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<UltiPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('ulti-bid-descriptions')).not.toBeInTheDocument();
+  });
 });

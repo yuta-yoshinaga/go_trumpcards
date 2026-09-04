@@ -1,18 +1,21 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fiveCardStudApi } from '../api/gameApi';
+import { fiveCardStudApi, sokoApi } from '../api/gameApi';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { FiveCardStudPlayerData, FiveCardStudResponse } from '../types/card';
-import { FiveCardStudPage } from './FiveCardStudPage';
+import { FiveCardStudPage, FiveCardStudPageContent } from './FiveCardStudPage';
 
 vi.mock('../api/gameApi', () => ({
   fiveCardStudApi: { exec: vi.fn() },
-  actionLogApi: { fivecardstud: vi.fn() },
+  sokoApi: { exec: vi.fn() },
+  actionLogApi: { fivecardstud: vi.fn(), soko: vi.fn() },
 }));
 
 const mockExec = vi.mocked(fiveCardStudApi.exec);
+const mockSokoExec = vi.mocked(sokoApi.exec);
 
 /** Helper: base human player (1 hole card + up to 4 door cards). */
 const humanPlayer = (overrides: Partial<FiveCardStudPlayerData> = {}): FiveCardStudPlayerData => ({
@@ -176,6 +179,7 @@ const endHumanLossState: FiveCardStudResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(initState);
+  mockSokoExec.mockResolvedValue(initState);
 });
 
 describe('FiveCardStudPage', () => {
@@ -472,5 +476,24 @@ describe('FiveCardStudPage keyboard shortcuts', () => {
 
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryAllByTestId('hud-stats')).toHaveLength(0);
+  });
+
+  // ソッコでは独自の役順位リファレンスを表示する。
+  it('shows soko hand ranking when gameKey is soko', async () => {
+    mockSokoExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(
+      <TutorialWrapper gameName="soko" steps={[]}>
+        <FiveCardStudPageContent gameKey="soko" />
+      </TutorialWrapper>,
+    );
+    await waitFor(() => expect(screen.getByTestId('soko-hand-ranking')).toBeInTheDocument());
+  });
+
+  // 通常のファイブカードスタッドではソッコ役順位リファレンスを表示しない。
+  it('hides soko hand ranking when gameKey is fivecardstud', async () => {
+    mockExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(<FiveCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('five-card-stud-kbd-shortcuts')).toBeInTheDocument());
+    expect(screen.queryByTestId('soko-hand-ranking')).not.toBeInTheDocument();
   });
 });

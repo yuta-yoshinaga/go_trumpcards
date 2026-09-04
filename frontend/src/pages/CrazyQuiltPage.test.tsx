@@ -4,6 +4,7 @@ import { crazyquiltApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CrazyQuiltResponse } from '../types/card';
+import { CrazyQuiltPhase } from '../types/phases';
 import { CrazyQuiltPage } from './CrazyQuiltPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -207,6 +208,21 @@ describe('CrazyQuiltPage', () => {
     // The page never reaches a board, so the skeleton stays and no cell renders.
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByTestId('cq-cell-0')).not.toBeInTheDocument();
+  });
+
+  // ゲームオーバー時は組札の達成状況サマリーを表示する。
+  it('shows game over summary when game is over', async () => {
+    mockExec.mockResolvedValue({ ...playingState, phase: CrazyQuiltPhase.GAME_OVER });
+    renderWithProviders(<CrazyQuiltPage />);
+    await waitFor(() => expect(screen.getByTestId('cg-gameover-summary')).toBeInTheDocument());
+  });
+
+  // プレイ中などゲームオーバー以外のときは達成状況サマリーを表示しない。
+  it('hides game over summary while playing', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CrazyQuiltPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('cg-gameover-summary')).not.toBeInTheDocument();
   });
 });
 

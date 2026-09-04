@@ -4,6 +4,7 @@ import { crazyPineappleApi, irishPokerApi, pineappleApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PineappleResponse } from '../types/card';
+import { HoldemRebuyPhaseType, PineapplePhase } from '../types/phases';
 import { PineapplePage } from './PineapplePage';
 
 vi.mock('../api/gameApi', () => ({
@@ -1182,5 +1183,73 @@ describe('PineapplePage', () => {
     const live = await screen.findByTestId('pn-keep-feature-announce');
     expect(live).toHaveTextContent('ペア');
     expect(live).toHaveClass('sr-only');
+  });
+
+  // 複数枚のカードを捨てるゲーム（Irish Poker 等）の場合のみ、選択枚数カウントを表示する。
+  it('renders discard-count when discardCount is greater than one', async () => {
+    mockExec.mockResolvedValue({ ...discardState, initialDealCount: 4 });
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-count')).toBeInTheDocument());
+  });
+
+  it('does not render discard-count when discardCount is one', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    expect(screen.queryByTestId('discard-count')).not.toBeInTheDocument();
+  });
+
+  // ショーダウン時にマックが選択可能な場合のみ、マック／ショー操作ボタンを表示する。
+  it('renders muck-controls when isMuckPhase is true', async () => {
+    mockExec.mockResolvedValue({ ...showdownState, muckAvailable: true });
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('muck-controls')).toBeInTheDocument());
+  });
+
+  it('does not render muck-controls when muckAvailable is false', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('muck-controls')).not.toBeInTheDocument();
+  });
+
+  // リバイフェーズの場合のみ、リバイ購入・スキップの操作ボタンを表示する。
+  it('renders rebuy-controls when isRebuyPhase is true', async () => {
+    mockExec.mockResolvedValue({
+      ...initState,
+      phase: PineapplePhase.REBUY,
+      rebuyPhaseType: HoldemRebuyPhaseType.REBUY,
+      rebuyChips: 1000,
+      rebuyMaxCount: 3,
+      rebuyCounts: [0, 0, 0, 0],
+    });
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('rebuy-controls')).toBeInTheDocument());
+  });
+
+  it('does not render rebuy-controls outside rebuy phase', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('rebuy-controls')).not.toBeInTheDocument();
+  });
+
+  // アドオンフェーズの場合のみ、アドオン購入・スキップの操作ボタンを表示する。
+  it('renders addon-controls when isAddonPhase is true', async () => {
+    mockExec.mockResolvedValue({
+      ...initState,
+      phase: PineapplePhase.REBUY,
+      rebuyPhaseType: HoldemRebuyPhaseType.ADDON,
+      addonChips: 2000,
+    });
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('addon-controls')).toBeInTheDocument());
+  });
+
+  it('does not render addon-controls outside addon phase', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('addon-controls')).not.toBeInTheDocument();
   });
 });
