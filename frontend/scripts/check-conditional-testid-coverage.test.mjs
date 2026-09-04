@@ -288,4 +288,33 @@ describe('check-conditional-testid-coverage', () => {
     expect(r.status).toBe(1);
     expect(r.stderr).toContain('ternary-unreferenced-elem');
   });
+
+  // camelCase の testid が条件付きブロックの中にあり、テストから参照されている場合 -> 検出されない (許容される)
+  it('accepts a conditional camelCase data-testid when referenced in a test', () => {
+    const r = run({
+      'src/pages/SamplePage.tsx': `
+        export function SamplePage({ showHint }) {
+          return (
+            <div>
+              {showHint && (
+                <div data-testid="mrsMop-hint-live">
+                  Hint
+                </div>
+              )}
+            </div>
+          );
+        }
+      `,
+      'src/pages/SamplePage.test.tsx': `
+        it('renders hint when active', () => {
+          render(<SamplePage showHint={true} />);
+          expect(screen.getByTestId('mrsMop-hint-live')).toBeInTheDocument();
+        });
+      `,
+    });
+
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain('conditional-testid-coverage: OK');
+    expect(r.stdout).toContain('1 conditional testids checked; all referenced');
+  });
 });

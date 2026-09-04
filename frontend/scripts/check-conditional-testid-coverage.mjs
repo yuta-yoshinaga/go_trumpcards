@@ -100,7 +100,10 @@ const e2eFiles = await walk(E2E_DIR, (name) => /\.ts$/.test(name));
 const testAndE2eFiles = [...testFiles, ...e2eFiles];
 
 const refs = new Set();
-const REF_PATTERN = /["'`]([a-z0-9][a-z0-9_-]{2,})["'`]/g;
+// リポジトリ内に mrsMop-hint-live や mrsMop-kbd-shortcuts など camelCase を含む testid が存在する。
+// 将来これらが条件付きブロックに入った際、テスト側で参照されていても小文字のみの正規表現だと
+// 参照として拾えず未参照と誤判定される偽陽性を防ぐため、英大文字も含めて抽出する。
+const REF_PATTERN = /["'`]([A-Za-z0-9][A-Za-z0-9_-]{2,})["'`]/g;
 for (const f of testAndE2eFiles) {
   const content = await readFile(f, 'utf8');
   for (const m of content.matchAll(REF_PATTERN)) {
