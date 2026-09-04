@@ -233,6 +233,48 @@ describe('TrenteEtQuarantePage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
   });
+
+  // 前回のベットと同じ額を再ベットするボタンが結果画面で表示される
+  it('shows rebet button in the result phase when a bet was placed', async () => {
+    mockApi.mockResolvedValueOnce(betState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    // Place a bet to enable rebet
+    mockApi.mockResolvedValueOnce(endState);
+    fireEvent.click(screen.getByTestId('teq-deal-button'));
+
+    // Result phase
+    expect(await screen.findByTestId('teq-rebet-button')).toBeInTheDocument();
+  });
+
+  // 賭け金入力画面で、前回の賭け金と現在の入力額が異なる場合に前回の額をワンタップで入力するボタンが表示される
+  it('shows previous bet button in the bet phase when current bet amount differs from previous', async () => {
+    mockApi.mockResolvedValueOnce(betState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    // Place a bet to save lastBet
+    mockApi.mockResolvedValueOnce(endState);
+    fireEvent.click(screen.getByTestId('teq-deal-button'));
+    await screen.findByTestId('teq-next-round-button');
+
+    // Go to next round (bet phase)
+    mockApi.mockResolvedValueOnce(betState);
+    fireEvent.click(screen.getByTestId('teq-next-round-button'));
+    await screen.findByTestId('teq-deal-button');
+
+    // Change current bet amount to differ from lastBet (100)
+    const input = document.getElementById('trenteetquarante-bet-amount') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: '200' } });
+
+    // Previous bet button should appear
+    expect(await screen.findByTestId('teq-previous-bet')).toBeInTheDocument();
+
+    // Reverting to the exact lastBet hides the button
+    fireEvent.change(input, { target: { value: '100' } });
+    await waitFor(() => expect(screen.queryByTestId('teq-previous-bet')).not.toBeInTheDocument());
+  });
 });
 
 // --- keyboard shortcut execution (#4429) ---

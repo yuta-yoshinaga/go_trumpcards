@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { doubleklondikeApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, DoubleKlondikeResponse } from '../types/card';
+import { DoubleKlondikePhase } from '../types/phases';
 import { DoubleKlondikePage } from './DoubleKlondikePage';
 
 vi.mock('../api/gameApi', () => ({
@@ -205,11 +206,29 @@ describe('DoubleKlondikePage', () => {
     }
   });
 
+  // 終局後など手番でない場合は操作ボタン類が隠れる
   it('hides controls at game over', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 2 }));
     renderWithProviders(<DoubleKlondikePage />);
     await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
     expect(screen.queryByTestId('hint-button')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('draw-button')).not.toBeInTheDocument();
+  });
+
+  // 手番中(canAct)は山札からカードを引くためのドローボタンが表示される
+  // 山札ボタンは `canAct = !isEnd` でしか出ない。phase の 1 は GAME_CLEAR で
+  // **決着済み**なので出ない (0 = PLAYING)。局が続いている間だけ押せる。
+  it('shows draw-button while the game is still in play', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: DoubleKlondikePhase.PLAYING }));
+    renderWithProviders(<DoubleKlondikePage />);
+    expect(await screen.findByTestId('draw-button')).toBeInTheDocument();
+  });
+
+  it('hides draw-button once the deal is cleared', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: DoubleKlondikePhase.GAME_CLEAR }));
+    renderWithProviders(<DoubleKlondikePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('draw-button')).not.toBeInTheDocument();
   });
 
   it('scrolls the tableau and foundations with 44px+ tap targets on mobile', async () => {

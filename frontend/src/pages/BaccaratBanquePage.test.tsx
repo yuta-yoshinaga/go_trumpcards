@@ -106,6 +106,14 @@ describe('BaccaratBanquePage', () => {
     expect(screen.queryByTestId('banque-free-notice')).not.toBeInTheDocument();
   });
 
+  // 自分（人間）の手番でなく、まだ決着（結果画面やゲーム終了）もしていないときは相手を待つ案内を出す
+  it('shows a wait notice when it is the CPU’s turn', async () => {
+    mockExec.mockResolvedValue(makeBaccaratBanqueState({ phase: 'decide', isHumanTurn: false }));
+    renderWithProviders(<BaccaratBanquePage />);
+    expect(await screen.findByTestId('banque-wait-notice')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '引く' })).not.toBeInTheDocument();
+  });
+
   // **左右は 1 行ずつ。** 差額だけだと、片方に払いもう片方から取ったクーが読めない。
   it('reports each tableau separately and then the bank net', async () => {
     mockExec.mockResolvedValue(resultState);

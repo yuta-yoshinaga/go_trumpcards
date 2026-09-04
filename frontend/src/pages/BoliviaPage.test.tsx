@@ -432,4 +432,21 @@ describe('BoliviaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('bo-red3-warning-0')).not.toBeInTheDocument();
   });
+
+  // 場に捨て札(discardTop)があるときだけ捨て札の山が表示される
+  it('shows the discard pile only when discardTop is present', async () => {
+    const base = makeBoliviaState();
+
+    // 捨て札なし
+    mockExec.mockResolvedValueOnce(makeBoliviaState({ ...base, discardTop: null }));
+    const { unmount } = renderWithProviders(<BoliviaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('sa-discard-pile')).not.toBeInTheDocument();
+    unmount();
+
+    // 捨て札あり
+    mockExec.mockResolvedValueOnce(makeBoliviaState({ ...base, discardTop: { design: 'SPADE', value: 4 } }));
+    renderWithProviders(<BoliviaPage />);
+    expect(await screen.findByTestId('sa-discard-pile')).toBeInTheDocument();
+  });
 });
