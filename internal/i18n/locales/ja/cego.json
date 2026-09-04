@@ -10,6 +10,7 @@
   "helpNextRound": "  nr                        次のディールへ",
   "helpSetDifficulty": "  sd [0-2]                  CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "round": "ディール: {{round}}  トリック: {{trick}}  コントラクト: {{contract}}",
+  "blindCountLine": "場札（チェゴ）: {{count}}枚（伏せ札）",
   "playerLine": "{{name}} ({{role}}): {{cards}} 枚  得点: {{score}}  トリック: {{tricks}}",
   "roleDeclarer": "デクレアラー",
   "roleOpponent": "対戦側",

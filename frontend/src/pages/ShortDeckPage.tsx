@@ -119,6 +119,9 @@ function ShortDeckPageContent() {
   // Touch/keyboard-accessible toggle for the ★ rank-override note (title alone is hover-only).
   const [showRuleNote, setShowRuleNote] = useState(false);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
+  // The page already renders hand/level progress when tournamentMode is on, but
+  // nothing could turn it on -- the state was displayable and unreachable.
+  const [tournamentMode, setTournamentMode] = useState(false);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('shortdeck', state);
   const turnStartRef = useRef(0);
   // CLI mode
@@ -139,8 +142,8 @@ function ShortDeckPageContent() {
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
-    void execApi('reset', undefined, { cpuMetaAI });
-  }, [execApi, hideActionLog, cpuMetaAI]);
+    void execApi('reset', undefined, { cpuMetaAI, tournamentMode });
+  }, [execApi, hideActionLog, cpuMetaAI, tournamentMode]);
 
   useEffect(() => {
     if (state?.minRaise && state.minRaise > 0) {
@@ -589,6 +592,15 @@ function ShortDeckPageContent() {
                   <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
                     <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
                     {t('settings.cpuMetaAI')}
+                  </label>
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                    <input
+                      type="checkbox"
+                      checked={tournamentMode}
+                      data-testid="sd-tournament-toggle"
+                      onChange={(e) => setTournamentMode(e.target.checked)}
+                    />
+                    {t('settings.tournamentMode')}
                   </label>
                 </div>
               </div>

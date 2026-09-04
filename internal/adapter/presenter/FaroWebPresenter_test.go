@@ -28,6 +28,17 @@ func setupFaroWebMockDefaults(m *interfaces.MockFaroGame) {
 	m.On("GetTotalPayout").Return(0).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetRemainingByRank").Return(faroDeckCounts(4)).Maybe()
+}
+
+// faroDeckCounts はランク 1..13 をすべて n 枚にした残数表を返す。
+// 添字 0 は未使用 (A..K が 1..13)。
+func faroDeckCounts(n int) [domain.FaroMaxRank + 1]int {
+	var out [domain.FaroMaxRank + 1]int
+	for r := 1; r <= domain.FaroMaxRank; r++ {
+		out[r] = n
+	}
+	return out
 }
 
 func parseFaroOutput(t *testing.T, jsonStr string) *controller.FaroWebOutput {
@@ -78,6 +89,7 @@ func TestFaroWebPresenter_Output_TurnWithBets(t *testing.T) {
 	m.On("GetCallWon").Return(false)
 	m.On("GetTotalPayout").Return(100)
 	m.On("GetGameEndFlag").Return(false)
+	m.On("GetRemainingByRank").Return(faroDeckCounts(4))
 
 	r := parseFaroOutput(t, p.Output(m, nil))
 	assert.Len(t, r.Bets, 1)
@@ -108,6 +120,7 @@ func TestFaroWebPresenter_Output_CallWonAndLost(t *testing.T) {
 	won.On("GetCallWon").Return(true)
 	won.On("GetTotalPayout").Return(400)
 	won.On("GetGameEndFlag").Return(false)
+	won.On("GetRemainingByRank").Return(faroDeckCounts(0))
 	r := parseFaroOutput(t, p.Output(won, nil))
 	assert.Equal(t, "faro.result.callWon", r.MessageCode)
 	assert.True(t, r.CallWon)
@@ -127,6 +140,7 @@ func TestFaroWebPresenter_Output_CallWonAndLost(t *testing.T) {
 	lost.On("GetCallWon").Return(false)
 	lost.On("GetTotalPayout").Return(-100)
 	lost.On("GetGameEndFlag").Return(false)
+	lost.On("GetRemainingByRank").Return(faroDeckCounts(0))
 	r2 := parseFaroOutput(t, p.Output(lost, nil))
 	assert.Equal(t, "faro.result.callLost", r2.MessageCode)
 }
@@ -148,6 +162,7 @@ func TestFaroWebPresenter_Output_GameEnd(t *testing.T) {
 	m.On("GetCallWon").Return(false)
 	m.On("GetTotalPayout").Return(0)
 	m.On("GetGameEndFlag").Return(true)
+	m.On("GetRemainingByRank").Return(faroDeckCounts(0))
 	r := parseFaroOutput(t, p.Output(m, nil))
 	assert.Equal(t, "faro.result.gameEnd", r.MessageCode)
 }
@@ -157,4 +172,28 @@ func TestFaroWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockFaroGame)
 	m.On("GetGameEndFlag").Return(false)
 	assert.NotEmpty(t, p.ActionLogOutput(m))
+}
+
+// **ケースキーパーはサーバが数える。**以前は Web の応答にランク別残数が無く、
+// クライアントが公開札をローカルに蓄えて組み立てていた ── ラウンド途中で
+// ページを再読み込みするとその蓄えが空に戻り、実際には配られた札を
+// 「全ランク満数」と嘘をついていた (#6471)。CUI は最初からドメインの
+// `GetRemainingByRank()` を読んでいる。
+func TestFaroWebPresenter_ServesTheRemainingByRank(t *testing.T) {
+	p := &FaroWebPresenter{}
+	m := new(interfaces.MockFaroGame)
+	// **既定より先に登録する。**testify は最初に一致した期待値を使うので、
+	// `setupFaroWebMockDefaults` の満数を後から上書きすることはできない。
+	counts := faroDeckCounts(4)
+	counts[2] = 0 // 2 は出きっている
+	counts[9] = 1
+	m.On("GetRemainingByRank").Return(counts)
+	setupFaroWebMockDefaults(m)
+
+	out := parseFaroOutput(t, p.Output(m, nil))
+	// 添字 0 は未使用。1..13 が A..K なので、長さもそのまま渡す。
+	assert.Len(t, out.RemainingByRank, domain.FaroMaxRank+1)
+	assert.Equal(t, 0, out.RemainingByRank[2])
+	assert.Equal(t, 1, out.RemainingByRank[9])
+	assert.Equal(t, 4, out.RemainingByRank[5])
 }

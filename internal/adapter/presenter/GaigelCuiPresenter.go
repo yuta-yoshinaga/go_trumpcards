@@ -34,9 +34,17 @@ type GaigelCuiPresenter struct{}
 // Output renders the current game state for the active locale.
 func (p *GaigelCuiPresenter) Output(g interfaces.GaigelGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("gaigel.helpTitle"), func(out *strings.Builder) {
+		// **山が尽きた瞬間にマストフォローへ切り替わる。**`validateEndgameFollow`
+		// が発動する重要なフェーズ転換なのに、Gaigel だけどこにも出していなかった
+		// ── 姉妹の Bezique / Schnapsen は両方とも明示している (#6482)。
+		phaseKey := "gaigel.phaseFirst"
+		if g.IsEndgame() {
+			phaseKey = "gaigel.phaseSecond"
+		}
 		out.WriteString(i18n.Tf("gaigel.header",
 			"round", strconv.Itoa(g.GetRoundNumber()),
-			"trick", strconv.Itoa(g.GetTrickNumber())) + "\n")
+			"trick", strconv.Itoa(g.GetTrickNumber()),
+			"phase", i18n.T(phaseKey)) + "\n")
 		dealerIdx := g.GetDealerIdx()
 		out.WriteString(i18n.Tf("gaigel.dealer",
 			"name", cuiPlayerName(g.GetPlayer(dealerIdx), dealerIdx)) + "\n")

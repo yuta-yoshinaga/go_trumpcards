@@ -29,6 +29,8 @@ function makeTableau(cols: RankAndFileTableauCard[][]): RankAndFileTableauCard[]
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const playingState: RankAndFileResponse = {
+  // 列 0 / 1 の先頭札は掴める。列 1 の 2 枚目は並びが切れていて掴めない。
+  sequenceStarts: [[0], [0], [], [], [], [], [], [], [], []],
   tableau: makeTableau([
     [{ card: card('SPADE', 13), faceUp: true }],
     [
@@ -779,5 +781,68 @@ describe('RankAndFilePage face-down cards', () => {
     for (const b of buttons) {
       expect(b.getAttribute('aria-label') ?? '').not.toMatch(/♦ 9/);
     }
+  });
+});
+
+// **掴めない札は読み上げでもそう言う (#6597)。**
+// ドメインの `SequenceStarts` は「UI が掘り下げた札を掴めるか判断するため」に
+// 置かれていたのに grep で 0 件 ── 異色降順に並んでいない札も無条件に押せて、
+// サーバに拒否されるまで気付けなかった。
+describe('RankAndFilePage grabbable cards', () => {
+  it('marks a card that cannot start a run', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RankAndFilePage />);
+    // 列 1 は ♥5 の上に ♣7 が乗っていて異色降順ではないので、
+    // sequenceStarts に 1 が入っていない = 2 枚目は掴めない。
+    await waitFor(() => expect(screen.getByTestId('rf-tableau-top-1')).toBeInTheDocument());
+    expect(screen.getByTestId('rf-tableau-top-1')).toHaveAttribute('aria-label', expect.stringContaining('掴めません'));
+  });
+
+  it('leaves a grabbable card unmarked', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RankAndFilePage />);
+    // 列 0 の 1 枚だけの札は sequenceStarts に 0 が入っている = 掴める。
+    await waitFor(() => expect(screen.getByTestId('rf-tableau-top-0')).toBeInTheDocument());
+    expect(screen.getByTestId('rf-tableau-top-0').getAttribute('aria-label')).not.toContain('掴めません');
+  });
+});
+
+// codecov が指摘した未実行の枝を踏む。どれも「掴めるか」の表示に効く。
+describe('RankAndFilePage grabbable edge cases', () => {
+  it('stops dimming once a source is picked up', async () => {
+    // 掴む先を選んだあとは、移動先として押せる札を淡くしない
+    // (`canGrab || selectedSource` の後半)。
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RankAndFilePage />);
+    const source = await screen.findByTestId('rf-tableau-top-0');
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('rf-tableau-top-1').className).not.toContain('opacity-60');
+  });
+
+  // **淡色を外したなら読み上げも外す。** 送り先を選んでいる最中は同じクリックが
+  // 「ここへ置く」の意味になるので、「掴めません」は的外れ (レビュー指摘)。
+  it('stops saying "cannot grab" once a source is picked up', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RankAndFilePage />);
+    const target = await screen.findByTestId('rf-tableau-top-1');
+    // 掴む前は「掴めません」と言う。
+    expect(target.getAttribute('aria-label')).toContain('掴めません');
+
+    const source = await screen.findByTestId('rf-tableau-top-0');
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+
+    // 掴んだあとは言わない。
+    expect(screen.getByTestId('rf-tableau-top-1').getAttribute('aria-label')).not.toContain('掴めません');
+  });
+
+  it('treats a column with no served entry as ungrabbable', async () => {
+    // `state.sequenceStarts[colIdx] ?? []` の右辺。列の数より短い配列が
+    // 来ても落ちず、掴めない扱いになること。
+    mockExec.mockResolvedValue({ ...playingState, sequenceStarts: [] });
+    renderWithProviders(<RankAndFilePage />);
+    const card = await screen.findByTestId('rf-tableau-top-0');
+    expect(card.getAttribute('aria-label')).toContain('掴めません');
   });
 });

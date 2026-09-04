@@ -50,7 +50,9 @@ func (pr *NarcoticCuiPresenter) Output(g interfaces.NarcoticGame, lastErr error)
 
 		b.WriteString("----------\n")
 		b.WriteString(i18n.Tf("narcotic.stockLine", "count", strconv.Itoa(g.GetStockCount())))
-		b.WriteString(i18n.Tf("narcotic.discardLine", "count", strconv.Itoa(g.GetDiscardCount())))
+		b.WriteString(i18n.Tf("narcotic.discardLine",
+			"count", strconv.Itoa(g.GetDiscardCount()),
+			"goal", strconv.Itoa(domain.NarcoticDiscardGoal)))
 		b.WriteString("\n")
 		b.WriteString(i18n.T("narcotic.markerLegend") + "\n")
 		b.WriteString("----------\n")

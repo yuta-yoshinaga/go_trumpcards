@@ -35,6 +35,7 @@
   "landscapeBanner": "横画面での表示を推奨します",
   "moveCount": "手数",
   "noHint": "ヒントはありません",
+  "passCount": "山札の通し: {{current}}/{{max}}",
   "phase": {
     "playing": "プレイ中",
     "gameClear": "ゲームクリア",

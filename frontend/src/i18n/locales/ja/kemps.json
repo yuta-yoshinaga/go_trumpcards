@@ -26,6 +26,7 @@
   "opponentSignaling": "相手チームの誰かが合図しているかもしれません…。",
   "fourOfAKindReady": "フォーオブアカインドが成立しました！「ケムプス！」を宣言できます。",
   "kempsButton": "ケムプス！",
+  "counterRisk": "外すと自チームが -1 点（0 点未満にはなりません）",
   "counterButton": "カウンター・ケムプス！（{{name}}）",
   "declineButton": "宣言しない",
   "nextRound": "次のラウンドへ",

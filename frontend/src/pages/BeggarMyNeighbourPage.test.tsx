@@ -236,7 +236,40 @@ describe('BeggarMyNeighbourPage', () => {
     mockExec.mockResolvedValueOnce(penaltyState);
     renderWithProviders(<BeggarMyNeighbourPage />);
     const region = await screen.findByTestId('bmn-phase-announce');
-    await waitFor(() => expect(region).toHaveTextContent('フェーズ: ペナルティ支払い中。残りペナルティ 3 枚'));
+    await waitFor(() =>
+      expect(region).toHaveTextContent('フェーズ: ペナルティ支払い中。あなた が残りペナルティ 3 枚を支払い中'),
+    );
+  });
+
+  // **誰が払っているのかが画面のどこにも出ていなかった** ── サーバは毎レスポンス
+  // `penaltyOwnerIdx` を返しているのに一度も読まれていなかった (#6478)。
+  it('names the human as the one paying the penalty', async () => {
+    mockExec.mockResolvedValueOnce(penaltyState);
+    renderWithProviders(<BeggarMyNeighbourPage />);
+
+    const owner = await screen.findByTestId('bmn-penalty-owner');
+    expect(owner).toHaveTextContent('あなた');
+    expect(owner.textContent).not.toContain('{{');
+    // 相手の名前を出してしまう実装はここで落ちる。
+    expect(owner).not.toHaveTextContent('CPU');
+  });
+
+  it('names the CPU when the CPU is the one paying', async () => {
+    mockExec.mockResolvedValueOnce({ ...penaltyState, penaltyOwnerIdx: 1, currentPlayerIdx: 0 });
+    renderWithProviders(<BeggarMyNeighbourPage />);
+
+    const owner = await screen.findByTestId('bmn-penalty-owner');
+    await waitFor(() => expect(owner).toHaveTextContent('CPU 1'));
+    // **手番ではなく penaltyOwnerIdx を読む。**この盤面は手番が 0 なので、
+    // currentPlayerIdx を読む実装なら「あなた」と出て落ちる。
+    expect(owner).not.toHaveTextContent('あなた');
+  });
+
+  // 支払い中でないフェーズには出さない。
+  it('does not name a penalty payer outside the penalty phase', async () => {
+    renderWithProviders(<BeggarMyNeighbourPage />); // baseState: PLAY phase
+    await waitFor(() => expect(screen.getByTestId('bmn-phase-announce')).toBeInTheDocument());
+    expect(screen.queryByTestId('bmn-penalty-owner')).not.toBeInTheDocument();
   });
 
   it('conveys pile counts via accessible text and hides the decorative visuals', async () => {

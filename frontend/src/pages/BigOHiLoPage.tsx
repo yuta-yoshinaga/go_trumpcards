@@ -246,6 +246,14 @@ function BigOHiLoPageContent() {
                               data-testid={inLo ? 'bigohilo-lo-card' : undefined}
                             >
                               <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                              {category !== 'none' && (
+                                <span
+                                  data-hilo-usage={category}
+                                  className="mt-0.5 block text-center text-[10px] font-semibold text-ds-text-muted"
+                                >
+                                  {t(`hiLoUsage.${category}`)}
+                                </span>
+                              )}
                             </div>
                           );
                         })
@@ -453,6 +461,14 @@ function BigOHiLoPageContent() {
                             data-testid={inLo ? 'bigohilo-lo-card' : undefined}
                           >
                             <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            {category !== 'none' && (
+                              <span
+                                data-hilo-usage={category}
+                                className="mt-0.5 block text-center text-[10px] font-semibold text-ds-text-muted"
+                              >
+                                {t(`hiLoUsage.${category}`)}
+                              </span>
+                            )}
                           </div>
                         );
                       })

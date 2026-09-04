@@ -4158,3 +4158,71 @@ func TestSevens_GetPlayableCardIndices(t *testing.T) {
 		assert.Equal(t, []int{0, 1}, s.GetPlayableCardIndices())
 	})
 }
+
+// Reclaiming returns the joker to the hand, so the card count goes up with no
+// play to account for it. The flag is what lets both surfaces say why.
+func TestJokerReclaim_RecordedOnTheAction(t *testing.T) {
+	tc := domain.NewTrumpCards(2)
+	players := makeSevensPlayers()
+	cfg := domain.SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: true,
+		MaxPasses:           domain.SevensMaxPasses,
+	}
+	s := domain.NewSevens(tc, players, cfg)
+	for i := 1; i <= 3; i++ {
+		for d := 0; d < 5; d++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+	}
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+
+	require.NoError(t, s.PlayerPlayJoker(0, domain.CardDesignSpade, 6))
+	// The joker sits on spade 6; playing the real spade 6 takes it back.
+	for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+		s.CpuPlay()
+	}
+	require.True(t, s.IsHumanTurn())
+	idx := -1
+	for i := 0; i < players[0].GetCardsSize(); i++ {
+		c := players[0].GetCard(i)
+		if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == 6 {
+			idx = i
+			break
+		}
+	}
+	require.GreaterOrEqual(t, idx, 0, "the real spade 6 must still be in hand")
+	require.NoError(t, s.PlayerPlay(idx))
+
+	act := s.GetHumanAction()
+	require.NotNil(t, act)
+	assert.True(t, act.JokerReclaimed, "the reclaim has to be on the action, not just in the hand size")
+}
+
+// A play that reclaims nothing must not claim it did.
+func TestJokerReclaim_NotRecordedOnAnOrdinaryPlay(t *testing.T) {
+	tc := domain.NewTrumpCards(2)
+	players := makeSevensPlayers()
+	cfg := domain.SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: true,
+		MaxPasses:           domain.SevensMaxPasses,
+	}
+	s := domain.NewSevens(tc, players, cfg)
+	for i := 1; i <= 3; i++ {
+		for d := 0; d < 5; d++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+	}
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	require.True(t, s.IsHumanTurn())
+	require.NoError(t, s.PlayerPlay(0))
+
+	act := s.GetHumanAction()
+	require.NotNil(t, act)
+	assert.False(t, act.JokerReclaimed)
+}

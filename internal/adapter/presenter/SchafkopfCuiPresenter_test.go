@@ -51,6 +51,7 @@ func setupSchafkopfCuiMock() *interfaces.MockSchafkopfGame {
 	m.On("GetRoundMultiplier").Return(1)
 	m.On("GetRoundPickerWon").Return(false)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetDealerIdx").Return(2)
 	return m
 }
 
@@ -241,4 +242,24 @@ func TestSchafkopfCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetPlayer", mock.Anything).Return(domain.NewSchafkopfPlayer(true, 0)).Maybe()
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "pick")
+}
+
+// **親を出す。**ピックもプレイも親の左隣から回るので、誰が親かが分からないと
+// 自分が何番目に「やる／降りる」を決めるのか読めない。ドメインは最初から
+// `GetDealerIdx` を持っていて、CUI だけが読んでいなかった (#6617)。
+func TestSchafkopfCuiPresenter_ShowsTheDealer(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	m, _ := setupSchafkopfCuiMockWithPlayers()
+	out := new(presenter.SchafkopfCuiPresenter).Output(m, nil)
+
+	// 親は席 2。名前ごと出ていることを見る (「ディーラー:」の行があるだけでは、
+	// 誰なのかを取り違えていても通ってしまう)。
+	assert.Contains(t, out, i18n.Tf("schafkopf.dealer",
+		"name", i18n.Tf("cuiPlayerCpu", "idx", "2")))
+	// 席 0 (あなた) で同じ行が立たないこと。
+	assert.NotContains(t, out, i18n.Tf("schafkopf.dealer",
+		"name", i18n.T("cuiPlayerYou")))
 }

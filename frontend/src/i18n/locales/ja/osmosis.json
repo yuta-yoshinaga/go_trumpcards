@@ -29,7 +29,9 @@
   "moveReserveToFoundation": "リザーブ→組札",
   "moveWasteToFoundation": "ウェイスト→組札",
   "frontendHint": {
-    "moveToFoundation": "組札へ浸透できるカードがあります"
+    "moveToFoundation": "組札へ浸透できるカードがあります",
+    "osmosisFromReserve": "リザーブ{{col}}の札を組札{{foundation}}へ浸透させられます",
+    "osmosisFromWaste": "ウェイストの札を組札{{foundation}}へ浸透させられます"
   },
   "kbd": {
     "draw": "D",

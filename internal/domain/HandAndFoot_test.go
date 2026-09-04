@@ -699,12 +699,52 @@ func TestHandAndFoot_CpuPlay_Draw(t *testing.T) {
 	}
 }
 
+// **配りに依存させない (#6641)。** hafSetupMeld はフェーズと手番を立てるだけで
+// 手札には触らないので、CPU がメルドできるかどうかは `Reset()` が配った手札
+// 次第だった。メルドで手札を出し切った局では `cpuMeld` が `enterFootIfEmpty`
+// で早期 return し、**phase は Meld のまま**残る ── `NotEqual(Meld)` はそこで
+// 落ちる。CI で無関係な PR を赤くしていたのはこれ。手札を組んでから測る。
 func TestHandAndFoot_CpuPlay_Meld(t *testing.T) {
-	g := newTestHandAndFoot()
-	g.Reset()
-	hafSetupMeld(g, 1)
-	g.CpuPlay()
-	assert.NotEqual(t, domain.HandAndFootPhaseMeld, g.GetPhase())
+	t.Run("melds the set it holds and moves on to the discard", func(t *testing.T) {
+		g := newTestHandAndFoot()
+		g.Reset()
+		hafSetupMeld(g, 1)
+		// 7 が3枚でメルド1組。残る2枚は同ランクにならず、ワイルド (2/Joker)
+		// でもないので、手札は空にならない = フット取り込みは起きない。
+		hafSetHand(g.GetPlayer(1),
+			hafCard(domain.CardDesignSpade, 7),
+			hafCard(domain.CardDesignHeart, 7),
+			hafCard(domain.CardDesignClover, 7),
+			hafCard(domain.CardDesignDiamond, 5),
+			hafCard(domain.CardDesignSpade, 9),
+		)
+
+		g.CpuPlay()
+
+		assert.Equal(t, domain.HandAndFootPhaseDiscard, g.GetPhase())
+		assert.Equal(t, 2, g.GetPlayer(1).GetCardsSize(), "メルドした3枚が手札から抜けていない")
+	})
+
+	// 負のコントロール: 出せる組が1つも無くても手番は進む。ここで止まると
+	// CPU ループが回り続ける。
+	t.Run("still moves on when nothing can be melded", func(t *testing.T) {
+		g := newTestHandAndFoot()
+		g.Reset()
+		hafSetupMeld(g, 1)
+		// 同ランク3枚も、2枚+ワイルドも作れない組み合わせ。
+		hafSetHand(g.GetPlayer(1),
+			hafCard(domain.CardDesignSpade, 5),
+			hafCard(domain.CardDesignHeart, 6),
+			hafCard(domain.CardDesignClover, 8),
+			hafCard(domain.CardDesignDiamond, 9),
+			hafCard(domain.CardDesignSpade, 10),
+		)
+
+		g.CpuPlay()
+
+		assert.Equal(t, domain.HandAndFootPhaseDiscard, g.GetPhase())
+		assert.Equal(t, 5, g.GetPlayer(1).GetCardsSize(), "出せないはずの札が出ている")
+	})
 }
 
 func TestHandAndFoot_CpuPlay_Discard(t *testing.T) {

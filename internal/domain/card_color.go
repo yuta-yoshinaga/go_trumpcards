@@ -32,3 +32,28 @@ func suitStr(suit int) string {
 	}
 	return "Unknown"
 }
+
+// cardStr returns the display string for a card (suit glyph + rank). Shared
+// across categories — over a hundred game files render a card this way — so it
+// lives here rather than in any one game's file.
+func cardStr(card *Card) string {
+	suits := map[int]string{
+		CardDesignSpade:   "♠",
+		CardDesignClover:  "♣",
+		CardDesignHeart:   "♥",
+		CardDesignDiamond: "♦",
+	}
+	values := map[int]string{
+		1: "A", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6", 7: "7",
+		8: "8", 9: "9", 10: "10", 11: "J", 12: "Q", 13: "K",
+	}
+	s, ok := suits[card.GetDesign()]
+	if !ok {
+		s = "?"
+	}
+	v, ok := values[card.GetValue()]
+	if !ok {
+		v = "?"
+	}
+	return s + v
+}

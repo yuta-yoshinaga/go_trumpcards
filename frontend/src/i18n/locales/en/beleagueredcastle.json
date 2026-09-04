@@ -24,6 +24,8 @@
   "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
   "hintAvailable": "Hint available",
   "noHint": "No hint available",
+  "selectionMoves": "Selected card has {{count}} legal destination(s)",
+  "selectionNoMoves": "Selected card has no legal destination",
   "tutorial": {
     "foundation": "Four foundations sit between the wings, pre-seeded with the four Aces. Build each pile by suit from Ace to King.",
     "tableau": "Two wings of four columns flank the foundations — eight columns of six face-up cards. Only the rightmost card of each column is playable.",

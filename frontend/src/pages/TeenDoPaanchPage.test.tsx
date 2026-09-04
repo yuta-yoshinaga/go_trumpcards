@@ -72,6 +72,18 @@ describe('TeenDoPaanchPage', () => {
     expect(await screen.findByTestId('td-targets')).toHaveTextContent(/割り当て/);
   });
 
+  // **達成回数が何のために積み上がるのかが、どこにも書かれていなかった。**
+  // 1 ラウンド単位の仕組みは説明されているのに、ゲーム全体の勝敗条件だけが
+  // 終局まで分からない状態だった。
+  it('states that the game goes to whoever met their target the most times', async () => {
+    renderWithProviders(<TeenDoPaanchPage />);
+    const targets = await screen.findByTestId('td-targets');
+    expect(targets).toHaveTextContent('達成回数がいちばん多い席');
+    // 1 ラウンド単位の説明は落ちていない。
+    expect(targets).toHaveTextContent('割り当て');
+    expect(targets).toHaveTextContent('召し上げる権利');
+  });
+
   // **あと何トリック要るかが読めないと打ち方が決まらない。**
   it('shows each seat target against the tricks it has taken', async () => {
     mockExec.mockResolvedValue(

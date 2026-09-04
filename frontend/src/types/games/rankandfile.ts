@@ -21,6 +21,8 @@ export interface RankAndFileHint {
 /** Full Rank and File game state returned from the API. */
 export interface RankAndFileResponse extends BaseGameResponse {
   tableau: RankAndFileTableauCard[][];
+  /** Per column, the card indices a run can be picked up from. */
+  sequenceStarts: number[][];
   stockCount: number;
   waste: Card[];
   foundation: Card[][];

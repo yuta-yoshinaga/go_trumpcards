@@ -463,4 +463,27 @@ describe('CanastaPage', () => {
     fireEvent.click(handCards[1]);
     expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent('ワイルドカード');
   });
+
+  it('renders CPU hand card count in Japanese at round end without raw "cards"', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<CanastaPage />);
+    const cpuHandInfo = await screen.findByText('CPU 1: 15枚');
+    expect(cpuHandInfo).toBeInTheDocument();
+    expect(cpuHandInfo).not.toHaveTextContent('cards');
+    expect(screen.queryByText(/15 cards/)).not.toBeInTheDocument();
+  });
+
+  it('renders the discard pile when discardTop is present', async () => {
+    // 捨て札がある場合に一番上のカードを表示する (discardTop が truthy のときだけ表示)
+    mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: { design: 'SPADE', value: 1 } });
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.getByTestId('ca-discard-pile')).toBeInTheDocument());
+  });
+
+  it('hides the discard pile when discardTop is undefined', async () => {
+    // 捨て札がない場合は表示しない
+    mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: null });
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.queryByTestId('ca-discard-pile')).not.toBeInTheDocument());
+  });
 });

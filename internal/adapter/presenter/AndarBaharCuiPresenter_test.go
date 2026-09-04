@@ -191,3 +191,61 @@ func TestAndarBaharCuiPresenter_UnknownValues(t *testing.T) {
 	assert.Equal(t, "1 枚ちょうど", p.bandStr(domain.AndarBaharSideFirst))
 	assert.Equal(t, "(なし)", p.columnCards(nil))
 }
+
+// **帯 0-6 が何を意味するかは CUI のどこにも出ていなかった。**Web は賭ける前に
+// セレクトで全部見せているのに、CUI プレイヤーはソースを読むしかなかった。
+func TestAndarBaharCuiPresenterListsTheSideBandsBeforeBetting(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	t.Run("every band with its range and payout while betting", func(t *testing.T) {
+		m := new(interfaces.MockAndarBaharGame)
+		fillAndarBaharCuiDefaults(m)
+		out := new(AndarBaharCuiPresenter).Output(m, nil)
+
+		assert.Contains(t, out, i18n.T("andarbahar.bandListTitle"))
+		// **期待値は書き下す。**`andarBaharPayoutStr` から組み立てると、その関数を
+		// 壊しても両辺が同時に変わって通ってしまう。
+		for _, want := range []string{
+			"  0: 1 枚ちょうど  払戻 15.0 倍",
+			"  1: 2〜5 枚  払戻 4.2 倍",
+			"  2: 6〜10 枚  払戻 4.1 倍",
+			"  3: 11〜15 枚  払戻 5.2 倍",
+			"  4: 16〜25 枚  払戻 4.1 倍",
+			"  5: 26〜35 枚  払戻 9.0 倍",
+			"  6: 36〜51 枚  払戻 33.0 倍",
+		} {
+			assert.Contains(t, out, want)
+		}
+		// 書き下した表がドメインの表とずれていないことを別に見る。
+		for band := domain.AndarBaharSideFirst; band <= domain.AndarBaharSide36Plus; band++ {
+			payout, ok := domain.AndarBaharSidePayout(band)
+			assert.True(t, ok, "band %d", band)
+			assert.Contains(t, out, andarBaharPayoutStr(payout)+" 倍", "band %d の倍率", band)
+		}
+	})
+
+	// 帯を張ったあとは確定した帯だけ。一覧は消える。
+	t.Run("the list gives way to the chosen band once a side bet is placed", func(t *testing.T) {
+		m := new(interfaces.MockAndarBaharGame)
+		m.On("GetSideBand").Return(domain.AndarBaharSide36Plus)
+		m.On("GetSideAmount").Return(50)
+		fillAndarBaharCuiDefaults(m)
+		out := new(AndarBaharCuiPresenter).Output(m, nil)
+
+		assert.NotContains(t, out, i18n.T("andarbahar.bandListTitle"))
+		assert.Contains(t, out, "36〜51 枚")
+		assert.NotContains(t, out, "1 枚ちょうど", "他の帯は出ない")
+	})
+
+	// END フェーズでは従来どおり、一覧は出さない。
+	t.Run("no list once the round has ended", func(t *testing.T) {
+		m := new(interfaces.MockAndarBaharGame)
+		m.On("GetPhase").Return(domain.AndarBaharPhaseEnd)
+		fillAndarBaharCuiDefaults(m)
+		out := new(AndarBaharCuiPresenter).Output(m, nil)
+
+		assert.NotContains(t, out, i18n.T("andarbahar.bandListTitle"))
+	})
+}

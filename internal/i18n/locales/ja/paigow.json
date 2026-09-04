@@ -27,5 +27,7 @@
   "hintReasonPair": "ローにペアを置いても反則にならない最強の分割",
   "hintReasonHigh": "反則にならない範囲でローを最大化した分割",
   "helpExampleBet": "  b 100              100 チップを賭ける",
-  "foulHighMustBeat": "ファウルです: ローの2枚はハイの5枚より弱くしてください (ローが強いと反則)"
+  "foulHighMustBeat": "ファウルです: ローの2枚はハイの5枚より弱くしてください (ローが強いと反則)",
+  "foulSplits": "反則になる分割: {{splits}}",
+  "foulSplitsNone": "反則になる分割はありません。"
 }

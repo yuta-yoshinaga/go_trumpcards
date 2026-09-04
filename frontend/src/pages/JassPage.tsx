@@ -140,6 +140,13 @@ function JassPageContent() {
   const isPlayPhase = state.phase === JassPhase.PLAY;
   const isTrickEnd = state.phase === JassPhase.TRICK_END;
   const isRoundEnd = state.phase === JassPhase.ROUND_END;
+  // **ボーナスが確定したチーム** (-1 = まだ加点されていない)。ラウンド最後の
+  // トリックを取ったチームに `config.lastTrickBonus` が入る ── `lastTrickWinner`
+  // は毎トリック更新されるので、確定したかどうかはフェーズで判断する (#6481)。
+  const lastTrickBonusTeam =
+    (state.phase === JassPhase.ROUND_END || state.phase === JassPhase.GAME_END) && state.lastTrickWinner >= 0
+      ? (state.players[state.lastTrickWinner]?.team ?? -1)
+      : -1;
   const isGameEnd = state.phase === JassPhase.GAME_END || state.gameEndFlag;
   const humanIdx = state.players.findIndex((p) => p.isHuman);
   const isHumanBidTurn = (isBidTrump || isBidPartner) && state.bidPlayerIdx === humanIdx;
@@ -287,6 +294,21 @@ function JassPageContent() {
                   <td className="text-center text-xs">{t('stockPoints', { points: state.roundStockPoints[1] })}</td>
                 </tr>
               )}
+              {/* **ラストトリックボーナスは roundPoints に無言で足されていた。**
+                  Weis と Stock はそれぞれ行を持つのに、これだけ内訳が無く、
+                  設定値 (`config.lastTrickBonus`) も画面のどこにも出ていなかった
+                  (#6481)。ラウンドが終わって加点が確定したときだけ出す ──
+                  途中で出すと、まだ誰も取っていないボーナスを名指しすることになる。 */}
+              {lastTrickBonusTeam >= 0 && (
+                <tr data-testid="ja-last-trick-bonus">
+                  <td className="text-xs">
+                    {lastTrickBonusTeam === 0 ? t('lastTrickBonus', { points: state.config.lastTrickBonus }) : ''}
+                  </td>
+                  <td className="text-center text-xs">
+                    {lastTrickBonusTeam === 1 ? t('lastTrickBonus', { points: state.config.lastTrickBonus }) : ''}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -366,15 +388,20 @@ function JassPageContent() {
 
         <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
-        {hint && (
-          <div className="text-ds-warning text-sm mb-2">
-            {/* hint.reason is a raw backend identifier; translate via hintReason.*,
-                falling back to a generic label for any unknown reason. */}
-            {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, {
-              defaultValue: t('hintReason.fallback'),
-            })})`}
-          </div>
-        )}
+        {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+            付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+            読み上げられないことがある (#5955, #6663)。 */}
+        <div data-testid="jass-hint-live" role="status" aria-live="polite">
+          {hint && (
+            <div className="text-ds-warning text-sm mb-2">
+              {/* hint.reason is a raw backend identifier; translate via hintReason.*,
+                  falling back to a generic label for any unknown reason. */}
+              {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, {
+                defaultValue: t('hintReason.fallback'),
+              })})`}
+            </div>
+          )}
+        </div>
 
         <div className="flex gap-2 items-center flex-wrap" data-tutorial="ja-play-button">
           {isHumanBidTurn && (

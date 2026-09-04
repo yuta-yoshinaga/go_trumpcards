@@ -42,7 +42,7 @@
     "f2": "+3",
     "f3": "+4"
   },
-  "landscapeBanner": "横向き画面推奨",
+  "landscapeBanner": "横画面での表示を推奨します",
   "frontendHint": {
     "calculationStock": "ストックのカードをファンデーションに置けます",
     "calculationWaste": "ウェイストのカードをファンデーションに置けます"

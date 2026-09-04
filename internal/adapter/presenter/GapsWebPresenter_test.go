@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -30,6 +31,7 @@ func setupGapsWebMockDefaults(g *interfaces.MockGapsGame) {
 		}
 	}
 	g.On("GetGrid").Return(grid).Maybe()
+	g.On("GetGapNeed", mock.Anything, mock.Anything).Return((*domain.GapsGapNeed)(nil)).Maybe()
 }
 
 func parseGapsOutput(t *testing.T, s string) *controller.GapsWebOutput {
@@ -69,6 +71,8 @@ func TestGapsWebPresenter_Output_Stalemate(t *testing.T) {
 	g.On("UndoToEscape").Return(2).Maybe()
 	var grid [domain.GapsRowCnt][domain.GapsColCnt]domain.GapsCell
 	g.On("GetGrid").Return(grid).Maybe()
+	g.On("GetGapNeed", mock.Anything, mock.Anything).Return((*domain.GapsGapNeed)(nil)).Maybe()
+	g.On("GetHint").Return(nil).Maybe()
 	p := &GapsWebPresenter{}
 	out := parseGapsOutput(t, p.Output(g, nil))
 	assert.Equal(t, "gaps.stalemate", out.MessageCode)
@@ -87,6 +91,8 @@ func TestGapsWebPresenter_Output_GameClear(t *testing.T) {
 	g.On("UndoToEscape").Return(0).Maybe()
 	var grid [domain.GapsRowCnt][domain.GapsColCnt]domain.GapsCell
 	g.On("GetGrid").Return(grid).Maybe()
+	g.On("GetGapNeed", mock.Anything, mock.Anything).Return((*domain.GapsGapNeed)(nil)).Maybe()
+	g.On("GetHint").Return(nil).Maybe()
 	p := &GapsWebPresenter{}
 	out := parseGapsOutput(t, p.Output(g, nil))
 	assert.Equal(t, "gaps.gameClear", out.MessageCode)
@@ -106,6 +112,8 @@ func TestGapsWebPresenter_Output_GameOver(t *testing.T) {
 	g.On("UndoToEscape").Return(-1).Maybe()
 	var grid [domain.GapsRowCnt][domain.GapsColCnt]domain.GapsCell
 	g.On("GetGrid").Return(grid).Maybe()
+	g.On("GetGapNeed", mock.Anything, mock.Anything).Return((*domain.GapsGapNeed)(nil)).Maybe()
+	g.On("GetHint").Return(nil).Maybe()
 	p := &GapsWebPresenter{}
 	out := parseGapsOutput(t, p.Output(g, nil))
 	assert.Equal(t, "gaps.gameOver", out.MessageCode)
@@ -150,4 +158,77 @@ func TestGapsWebPresenter_HintOutput_WithHint(t *testing.T) {
 	out := parseGapsOutput(t, p.HintOutput(g))
 	assert.NotNil(t, out.Hint)
 	assert.Equal(t, "gaps.hintAvailable", out.MessageCode)
+}
+
+func TestGapsWebPresenter_Output_GapNeeds(t *testing.T) {
+	g := new(interfaces.MockGapsGame)
+	g.On("GetPhase").Return(domain.GapsPhasePlaying).Maybe()
+	g.On("GetMoveCount").Return(0).Maybe()
+	g.On("GetRedealsUsed").Return(0).Maybe()
+	g.On("GetRedealsRemaining").Return(3).Maybe()
+	g.On("CanUndo").Return(false).Maybe()
+	g.On("IsStalemate").Return(false).Maybe()
+	g.On("UndoToEscape").Return(0).Maybe()
+	g.On("GetHint").Return(nil).Maybe()
+
+	var grid [domain.GapsRowCnt][domain.GapsColCnt]domain.GapsCell
+	grid[0][3] = domain.NewCard(domain.CardDesignSpade, 10, true)
+	g.On("GetGrid").Return(grid).Maybe()
+
+	// 1. anySuit (col 0, rank 2)
+	g.On("GetGapNeed", 0, 0).Return(&domain.GapsGapNeed{
+		Kind:  domain.GapsNeedAnySuit,
+		Value: domain.GapsAnchorRank,
+	}).Maybe()
+
+	// 2. blocked (left is K)
+	g.On("GetGapNeed", 0, 1).Return(&domain.GapsGapNeed{
+		Kind: domain.GapsNeedBlocked,
+	}).Maybe()
+
+	// 3. card / needed
+	g.On("GetGapNeed", 1, 2).Return(&domain.GapsGapNeed{
+		Kind:   domain.GapsNeedCard,
+		Design: domain.CardDesignSpade,
+		Value:  5,
+	}).Maybe()
+
+	// Catch-all for remaining cells (occupied, undecided, etc.)
+	g.On("GetGapNeed", mock.Anything, mock.Anything).Return((*domain.GapsGapNeed)(nil)).Maybe()
+
+	p := &GapsWebPresenter{}
+	out := parseGapsOutput(t, p.Output(g, nil))
+
+	assert.Len(t, out.GapNeeds, domain.GapsRowCnt)
+	for r := 0; r < domain.GapsRowCnt; r++ {
+		assert.Len(t, out.GapNeeds[r], domain.GapsColCnt)
+	}
+
+	// 1. anySuit
+	assert.NotNil(t, out.GapNeeds[0][0])
+	assert.Equal(t, domain.GapsNeedAnySuit, out.GapNeeds[0][0].Kind)
+	assert.Equal(t, domain.GapsAnchorRank, out.GapNeeds[0][0].Value)
+	assert.Empty(t, out.GapNeeds[0][0].Design)
+
+	// 2. blocked
+	assert.NotNil(t, out.GapNeeds[0][1])
+	assert.Equal(t, domain.GapsNeedBlocked, out.GapNeeds[0][1].Kind)
+	assert.Zero(t, out.GapNeeds[0][1].Value)
+	assert.Empty(t, out.GapNeeds[0][1].Design)
+
+	// 3. needed card
+	assert.NotNil(t, out.GapNeeds[1][2])
+	assert.Equal(t, domain.GapsNeedCard, out.GapNeeds[1][2].Kind)
+	assert.Equal(t, "SPADE", out.GapNeeds[1][2].Design)
+	assert.Equal(t, 5, out.GapNeeds[1][2].Value)
+
+	// 4. occupied cell is null
+	assert.Nil(t, out.GapNeeds[0][3])
+
+	// 5. undecided cell is null
+	assert.Nil(t, out.GapNeeds[0][4])
+}
+
+func TestGapsWebPresenter_gapNeedToOutput_Nil(t *testing.T) {
+	assert.Nil(t, gapNeedToOutput(nil))
 }

@@ -1,6 +1,6 @@
 ---
 name: worker-budget-checker
-description: Read-only reporter of measured gzip headroom for the seven TinyGo Cloudflare Workers (casino, classic, solo, extra, extra2, extra3, extra4), used to pick the bucket for a new or growing game. Reports each worker's gzip size against the 1 MB free-tier limit from a real build or a real CI artifact — never from an estimate. Use BEFORE assigning a Category to a new game, before moving a game between workers, and when the size-check CI step fails with "EXCEEDS free tier limit". MUST BE USED when adding a game to the registry.
+description: Read-only reporter of measured gzip headroom for the eight TinyGo Cloudflare Workers (casino, classic, solo, extra, extra2, extra3, extra4, extra5), used to pick the bucket for a new or growing game. Reports each worker's gzip size against the 1 MB free-tier limit from a real build or a real CI artifact — never from an estimate. Use BEFORE assigning a Category to a new game, before moving a game between workers, and when the size-check CI step fails with "EXCEEDS free tier limit". MUST BE USED when adding a game to the registry.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
@@ -11,7 +11,7 @@ recommendation; the caller acts on it.
 
 ## Why this exists
 
-Games ship to six Cloudflare Workers as TinyGo WASM binaries. The split is a **binary-size
+Games ship to eight Cloudflare Workers as TinyGo WASM binaries. The split is a **binary-size
 bucket, not a taxonomy** — the `Category` in `internal/infrastructure/games/registry.go` says
 which worker a game builds into and nothing about what kind of game it is. There is no
 overflow bucket: a new game goes into whichever worker currently has the most headroom.
@@ -29,13 +29,13 @@ The limit is **1048576 bytes gzipped** (1 MB, Cloudflare free tier). Exceeding i
 ### 1. Local build — the primary path
 
 ```bash
-bash .claude/skills/rebucket-game/scripts/measure.sh              # all six
+bash .claude/skills/rebucket-game/scripts/measure.sh              # all eight
 bash .claude/skills/rebucket-game/scripts/measure.sh classic extra3   # a subset
 ```
 
 The script mirrors the Makefile's build flags exactly, so its figures match CI byte for byte.
 It needs TinyGo 0.40.1 + `wasm-opt` + `bc` and sets `GOTOOLCHAIN=local` itself (TinyGo 0.40.1
-refuses a newer toolchain). A full six-worker run takes several minutes — build only the
+refuses a newer toolchain). A full eight-worker run takes several minutes — build only the
 workers you need when the caller has named candidates.
 
 Output is one line per worker with raw bytes, gzip bytes, percent of limit, and headroom in KB.
@@ -92,11 +92,11 @@ Source: local measure.sh (built <N> workers) | CI artifacts from run <id> (<bran
 | casino  |     xxxxxx |     xx.x% |  xxx.x KB |
 | ...     |            |           |           |
 
-Recommendation: put <game> in <worker> (<headroom> free, the largest of the six).
+Recommendation: put <game> in <worker> (<headroom> free, the largest of the eight).
 Runner-up: <worker> (<headroom>).
 
 Caveats:
-  - <e.g. only 2 of 6 workers were measured; the unmeasured four may have more room>
+  - <e.g. only 2 of 8 workers were measured; the unmeasured six may have more room>
   - <e.g. classic is at 9x% and should not receive new games regardless of what fits>
 ```
 
@@ -106,5 +106,5 @@ Rules:
 - **OK** otherwise.
 - Recommend the worker with the **most measured headroom**, not the one that fits by theme.
 - If you measured only some workers, say so in Caveats and do not describe the winner as "the
-  largest of the six" — it is the largest of what you measured.
+  largest of the eight" — it is the largest of what you measured.
 - Never state a size you did not obtain from path 1 or path 2.

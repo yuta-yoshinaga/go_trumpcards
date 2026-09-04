@@ -339,30 +339,31 @@ func (g *Pishti) finishGame() {
 // calcFinalScore は各プレイヤーの最終得点を計算する。
 // インデックスはプレイヤーシートに対応する。
 func (g *Pishti) calcFinalScore() []int {
-	n := len(g.players)
-	scores := make([]int, n)
-	cardCounts := make([]int, n)
+	return g.scoresFromCurrentState()
+}
 
-	// 最多枚数判定 (同点なら誰ももらえない)。
-	mostIdx := g.mostCapturedSeat()
-	for i, p := range g.players {
-		cardCounts[i] = p.CapturedCount()
-	}
-	tie := mostIdx < 0
-	mostVal := 0
-	if mostIdx >= 0 {
-		mostVal = g.players[mostIdx].CapturedCount()
-	}
-
+// scoresFromCurrentState は今の捕獲状況から各席の点を数える。
+//
+// **カード点は捕獲した瞬間に確定する。**A / J / ♣2 / ♦10 の配点も
+// ピシュティ賞も、後から変わることはない ── 途中で分からないのは
+// 「最多捕獲の +3 を誰が取るか」だけ。だから終局の集計と対局中の暫定点は
+// 同じ計算でよく、違うのは**その +3 が暫定かどうか**という読み方だけになる
+// (#6468)。以前は暫定点がピシュティ賞と +3 しか足しておらず、実際の得点源が
+// ラウンドが終わるまで一切見えなかった。
+func (g *Pishti) scoresFromCurrentState() []int {
+	scores := make([]int, len(g.players))
 	for i, p := range g.players {
 		s := 0
 		for _, c := range p.GetCapturedCards() {
 			s += pishtiCardPoints(c)
 		}
-		s += p.GetPistiBonus()
-		scores[i] = s
+		scores[i] = s + p.GetPistiBonus()
 	}
-	if !tie && mostVal > 0 && mostIdx >= 0 {
+	// 最多枚数は単独リーダーのときだけ。**枚数の再検査はしない** ──
+	// `mostCapturedSeat` は同数のときも 0 枚のときも -1 を返すので、
+	// `>= 0` の時点で「単独で 1 枚以上」は保証されている。ここで重ねると
+	// どのテストからも到達しない分岐になる (レビュー指摘)。
+	if mostIdx := g.mostCapturedSeat(); mostIdx >= 0 {
 		scores[mostIdx] += PishtiScoreMostCards
 	}
 	return scores
@@ -388,19 +389,11 @@ func (g *Pishti) mostCapturedSeat() int {
 
 // GetProvisionalScores は対局中の暫定スコアを返す。
 //
-// **カード点は含まない。**捕獲札の点数配分は最後に数えるので、途中で確実に
-// 分かるのはピシュティ賞と最多捕獲の +3 だけ。近似であることは呼び出し側が
-// 明示する (#4892)。**同数なら誰にも +3 は付かない。**
+// **カード点も含む。**A / J / ♣2 / ♦10 の配点は捕獲した瞬間に確定するので、
+// 途中でも正確に数えられる (#6468)。暫定なのは最多捕獲の +3 だけ ── 残りの
+// 札が配られれば別の席が最多になりうる。**同数なら誰にも +3 は付かない。**
 func (g *Pishti) GetProvisionalScores() []int {
-	out := make([]int, len(g.players))
-	leader := g.mostCapturedSeat()
-	for i, p := range g.players {
-		out[i] = p.GetPistiBonus()
-		if i == leader {
-			out[i] += PishtiScoreMostCards
-		}
-	}
-	return out
+	return g.scoresFromCurrentState()
 }
 
 // GetProvisionalLeader は暫定の最多捕獲リーダーの席を返す (同数なら -1)。

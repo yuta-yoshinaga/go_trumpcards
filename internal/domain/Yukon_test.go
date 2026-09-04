@@ -4,9 +4,11 @@ package domain_test
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -191,7 +193,10 @@ func TestYukon_MoveTableauToTableau(t *testing.T) {
 
 		err := y.MoveTableauToTableau(0, 0, 1)
 		assert.Error(t, err)
-		assert.Equal(t, "card is face down", err.Error())
+		// 英語の文面ではなく i18n キーを見る。文面はロケールファイルの担当で、
+		// ここで固定すると翻訳を変えるたびにドメインのテストが落ちる (#6327)。
+		code, _ := domain.ErrorMessageCode(err)
+		assert.Equal(t, "yukon.errCardFaceDown", code)
 	})
 
 	t.Run("same color fails", func(t *testing.T) {
@@ -743,5 +748,73 @@ func TestYukon_UnmarshalJSON_invalid(t *testing.T) {
 		y := &domain.Yukon{}
 		err := json.Unmarshal(data, y)
 		assert.Error(t, err)
+	})
+}
+
+// **CUI のエラー行は i18n コードが無いと英語のまま出る。** `cuiErrorBlock` は
+// `ErrorMessageCode(lastErr)` が空のとき `lastErr.Error()` をそのまま印字するので、
+// 素の `errors.New` は日本語ロケールのプレイヤーに英語で届く (#6327)。Web は
+// クライアント側でボタンを無効化して翻訳済みツールチップを出すため、これは
+// CUI 固有の漏れだった。
+//
+// 個々の文言ではなく**「コードを持っているか」**を見る ── 文言は翻訳ファイルの
+// 担当で、ここで固定すると二重管理になる。
+func TestYukon_ErrorsCarryAnI18nCode(t *testing.T) {
+	codeOf := func(t *testing.T, err error) string {
+		t.Helper()
+		if err == nil {
+			return ""
+		}
+		code, _ := domain.ErrorMessageCode(err)
+		return code
+	}
+
+	t.Run("auto-complete refused because cards are still face down", func(t *testing.T) {
+		y := setupPlayingYukon()
+		clearYukonTableau(y)
+		var tab [domain.YukonTableauCnt][]*domain.KlondikeTableauCard
+		tab[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 1, false)}
+		y.SetTableau(tab)
+		require.False(t, y.AllFaceUp(), "この盤で AllFaceUp が真だと、測りたい枝に入らない")
+
+		err := y.AutoComplete()
+		require.Error(t, err)
+		assert.Equal(t, "yukon.errNotAllFaceUp", codeOf(t, err))
+	})
+
+	// 同じ漏れは AutoComplete だけではない。Yukon のドメインエラーは全部
+	// この経路で画面に出るので、**1つだけ直すと残りが英語のまま残る**。
+	t.Run("every refusal names a key instead of an English sentence", func(t *testing.T) {
+		cases := []struct {
+			name string
+			run  func(y *domain.Yukon) error
+		}{
+			{"move from a column that does not exist", func(y *domain.Yukon) error {
+				return y.MoveTableauToTableau(-1, 0, 0)
+			}},
+			{"move to a column that does not exist", func(y *domain.Yukon) error {
+				return y.MoveTableauToTableau(0, 0, domain.YukonTableauCnt)
+			}},
+			{"move a column onto itself", func(y *domain.Yukon) error {
+				return y.MoveTableauToTableau(0, 0, 0)
+			}},
+			{"send a card up from a column that does not exist", func(y *domain.Yukon) error {
+				return y.MoveTableauToFoundation(-1)
+			}},
+			{"undo with nothing to undo", func(y *domain.Yukon) error {
+				return y.Undo()
+			}},
+		}
+		for _, tc := range cases {
+			t.Run(tc.name, func(t *testing.T) {
+				y := setupPlayingYukon()
+				err := tc.run(y)
+				require.Error(t, err, "この操作は拒否されるはずで、拒否されないと何も測れない")
+				code := codeOf(t, err)
+				assert.NotEmpty(t, code, "コードが無いと CUI は英語をそのまま出す")
+				assert.Truef(t, strings.HasPrefix(code, "yukon."),
+					"キーは yukon 名前空間に置く (got %q)", code)
+			})
+		}
 	})
 }

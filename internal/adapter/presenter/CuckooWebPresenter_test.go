@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -33,6 +34,7 @@ func setupCuckooWebMock() (*interfaces.MockCuckooGame, []*domain.CuckooPlayer) {
 	m.On("GetPendingSwapTo").Return(-1)
 	m.On("GetRoundLowest").Return(-1)
 	m.On("GetRoundLosers").Return([]int{})
+	m.On("GetSwapTargetIdx", mock.Anything).Return(1).Maybe()
 	m.On("GetConfig").Return(domain.DefaultCuckooConfig())
 	m.On("GetPlayerCnt").Return(4)
 	for i := 0; i < 4; i++ {
@@ -117,4 +119,31 @@ func TestCuckooWebPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return(entries)
 	assert.Contains(t, p.ActionLogOutput(m), "swap")
+}
+
+// **交換の相手はサーバが返す。**以前はクライアントが席順を辿り直していて、
+// 同じ規則の実装が 2 つあった (#6852)。ドメインの答えをそのまま載せる。
+func TestCuckooWebPresenter_ServesTheSwapTarget(t *testing.T) {
+	p := new(presenter.CuckooWebPresenter)
+
+	t.Run("carries the domain's answer for the seat to act", func(t *testing.T) {
+		m, _ := setupCuckooWebMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSwapTargetIdx")
+		// 現在の手番 (0) について訊いていること。他の席の答えを載せると、
+		// 画面が別の人の相手を名指しする。
+		m.On("GetSwapTargetIdx", 0).Return(2)
+
+		out := parseCuckooOutput(t, p.Output(m, nil))
+		assert.Equal(t, 2, out.SwapTargetIdx)
+	})
+
+	// -1 = 相手なし。ゼロ値の 0 と取り違えると、席 0 を名指ししてしまう。
+	t.Run("passes through the no-target answer", func(t *testing.T) {
+		m, _ := setupCuckooWebMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSwapTargetIdx")
+		m.On("GetSwapTargetIdx", 0).Return(-1)
+
+		out := parseCuckooOutput(t, p.Output(m, nil))
+		assert.Equal(t, -1, out.SwapTargetIdx)
+	})
 }

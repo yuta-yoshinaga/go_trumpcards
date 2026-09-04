@@ -168,3 +168,40 @@ describe('SevenCardStudHiLoPage HUD stats', () => {
     expect(style.textContent).not.toContain('style.');
   });
 });
+
+describe('SevenCardStudHiLoPage low hand badge', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(makeState());
+  });
+
+  it('renders the low badge during play when the server returns a qualifying low', async () => {
+    const humanWithLow = {
+      ...seat(0, true),
+      currentLowHand: [card('SPADE', 1), card('HEART', 2), card('DIAMOND', 3), card('CLOVER', 4), card('SPADE', 5)],
+    } as unknown as SevenCardStudPlayerData;
+    mockExec.mockResolvedValue(
+      makeState({ players: [humanWithLow, seat(1, false)], phase: SevenCardStudPhase.FIFTH_STREET }),
+    );
+    renderWithProviders(<SevenCardStudHiLoPage />);
+
+    const badge = await screen.findByTestId('scs-current-low');
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveTextContent('5-4-3-2-A');
+  });
+
+  it('does not render the low badge when the server does not return a low hand', async () => {
+    const humanWithoutLow = {
+      ...seat(0, true),
+      currentLowHand: undefined,
+    } as unknown as SevenCardStudPlayerData;
+    mockExec.mockResolvedValue(
+      makeState({ players: [humanWithoutLow, seat(1, false)], phase: SevenCardStudPhase.FIFTH_STREET }),
+    );
+    renderWithProviders(<SevenCardStudHiLoPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('scs-current-low')).not.toBeInTheDocument();
+  });
+});

@@ -46,6 +46,8 @@ import { isWizardLegalPlay } from '../utils/wizardLegal';
 
 /** DOM id linking each illegal card button to the shared screen-reader reason text. */
 const WIZARD_ILLEGAL_REASON_ID = 'wiz-illegal-reason';
+/** Shared sr-only id for the one bid a hook rule forbids (title alone is skipped by SRs). */
+const WIZARD_RESTRICTED_BID_REASON_ID = 'wiz-restricted-bid-reason';
 
 /** Wizard tutorial step definitions. */
 const WIZARD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -565,13 +567,18 @@ function WizardPageContent() {
 
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
-            {hint && (
-              <div className="text-ds-warning text-sm mb-2">
-                {hint.bid != null
-                  ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
-                  : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
-              </div>
-            )}
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+                読み上げられないことがある (#5955, #6663)。 */}
+            <div data-testid="wizard-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {hint.bid != null
+                    ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
+                    : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             <div className="flex gap-2 items-center" data-tutorial="wiz-play-button">
               {(isHumanBidTurn || isHumanTurn) && (
@@ -581,6 +588,12 @@ function WizardPageContent() {
               )}
               {isHumanBidTurn && (
                 <div className="flex flex-wrap gap-1.5">
+                  {/* **このページは既にこの教訓を持っている。**出せない札は sr-only の
+                      理由を aria-describedby で紐付けているのに、禁じられたビッドだけ
+                      title 頼みで、読み上げには何も届いていなかった (#6503)。 */}
+                  <span id={WIZARD_RESTRICTED_BID_REASON_ID} className="sr-only">
+                    {t('restrictedBidTooltip')}
+                  </span>
                   {Array.from({ length: state.handSize + 1 }, (_, i) => i).map((i) => {
                     const isRestricted = state.restrictedBid === i;
                     return (
@@ -591,6 +604,7 @@ function WizardPageContent() {
                         onClick={() => handleBid(i)}
                         disabled={loading || isRestricted}
                         title={isRestricted ? t('restrictedBidTooltip') : undefined}
+                        aria-describedby={isRestricted ? WIZARD_RESTRICTED_BID_REASON_ID : undefined}
                         aria-label={t('bid', { n: i })}
                       >
                         {i}

@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
@@ -182,6 +183,71 @@ func TestJulepeCuiPresenterMarksTheDealer(t *testing.T) {
 	movedOut := julepePlain(p.Output(moved, nil))
 	assert.Contains(t, movedOut, julepePlain(cuiPlayerName(moved.GetPlayer(0), 0))+i18n.T("julepe.dealerMark"))
 	assert.NotContains(t, movedOut, julepePlain(cuiPlayerName(moved.GetPlayer(2), 2))+i18n.T("julepe.dealerMark"))
+}
+
+// #6616: Web は validPlays で出せる札をリング表示しているのに、CUI は素の一覧
+// だけで、番号を打ってエラーを踏むまで分からなかった。
+func TestJulepeCuiPresenterMarksThePlayableCards(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(JulepeCuiPresenter)
+
+	setup := func(phase domain.JulepePhase, turn int, currentTrick []*domain.TrickCard) *domain.Julepe {
+		players := []*domain.JulepePlayer{
+			domain.NewJulepePlayer(true),
+			domain.NewJulepePlayer(false),
+			domain.NewJulepePlayer(false),
+			domain.NewJulepePlayer(false),
+		}
+		cfg := domain.DefaultJulepeConfig()
+		r := domain.NewJulepe(domain.NewTrumpCards(0), players, cfg)
+		human := r.GetPlayer(0)
+		human.SetDecided(true)
+		human.SetInRound(true)
+		human.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		human.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		human.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		human.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+
+		r.SetTrumpSuitForTest(domain.CardDesignClover)
+		r.SetPhaseForTest(phase)
+		r.SetCurrentPlayerIdxForTest(turn)
+		r.SetCurrentTrickForTest(currentTrick)
+		return r
+	}
+
+	t.Run("marks only cards allowed by the follow rule", func(t *testing.T) {
+		trick := []*domain.TrickCard{
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 10, false)},
+		}
+		r := setup(domain.JulepePhasePlay, 0, trick)
+		out := p.Output(r, nil)
+
+		// 出せる札（SPADE 7, SPADE 1）には印が付く
+		assert.Contains(t, out, "[0]SPADE 7"+CuiLegalMark)
+		assert.Contains(t, out, "[1]SPADE 1"+CuiLegalMark)
+		// 出せない札（HEART 8, DIAMOND 10）には印が付かない
+		assert.NotContains(t, out, "HEART 8"+CuiLegalMark)
+		assert.NotContains(t, out, "DIAMOND 10"+CuiLegalMark)
+		// 印の総数が合法手の数（2枚）と一致する
+		assert.Equal(t, 2, strings.Count(out, CuiLegalMark))
+	})
+
+	t.Run("marks nothing on another player's turn", func(t *testing.T) {
+		trick := []*domain.TrickCard{
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 10, false)},
+		}
+		r := setup(domain.JulepePhasePlay, 1, trick)
+		out := p.Output(r, nil)
+		assert.NotContains(t, out, CuiLegalMark, "他家の手番では目印を出さない")
+	})
+
+	t.Run("marks nothing outside the play phase", func(t *testing.T) {
+		r := setup(domain.JulepePhaseDecide, 0, nil)
+		out := p.Output(r, nil)
+		assert.NotContains(t, out, CuiLegalMark, "選択フェーズでは目印を出さない")
+	})
 }
 
 // julepePlain は色付けのエスケープを落とす。

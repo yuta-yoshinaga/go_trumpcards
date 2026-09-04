@@ -41,7 +41,8 @@
     "threeBet": "3Bet",
     "threeBetTooltip": "3-bet %",
     "af": "AF",
-    "afTooltip": "Aggression factor"
+    "afTooltip": "Aggression factor",
+    "playerStats": "VPIP:{{vpip}}% PFR:{{pfr}}% 3Bet:{{tb}}% AF:{{af}}"
   },
   "settings": {
     "cpuMetaAI": "CPU Adaptive AI",

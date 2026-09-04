@@ -729,6 +729,29 @@ func (g *Zwanzigerrufen) ledSuit() int {
 	return first.GetDesign()
 }
 
+// GetDiscardableIndices はデクレアラーがタロンフェーズで伏せられる手札のインデックスを返す。
+// タロンフェーズでない場合や、デクレアラーが無効な場合は空スライスを返す。
+//
+// キングとトゥルルは伏せられないため除外される。
+func (g *Zwanzigerrufen) GetDiscardableIndices() []int {
+	if g.phase != ZwanzigerrufenPhaseTalon || g.declarerIdx < 0 || g.declarerIdx >= len(g.players) {
+		return []int{}
+	}
+	p := g.players[g.declarerIdx]
+	if p == nil {
+		return []int{}
+	}
+	idxs := make([]int, 0, p.GetCardsSize())
+	for i := 0; i < p.GetCardsSize(); i++ {
+		c := p.GetCard(i)
+		if koenigrufenIsKing(c) || koenigrufenIsTrull(c) {
+			continue
+		}
+		idxs = append(idxs, i)
+	}
+	return idxs
+}
+
 // GetValidPlayIndices 出せる手札のインデックスを返す。
 //
 // リードスートに従う義務、持っていなければ切り札を出す義務、どちらも無ければ自由。

@@ -6,7 +6,8 @@
     "bet": "ベット",
     "dragon": "ドラゴン",
     "tiger": "タイガー",
-    "bigRoad": "履歴 (Big Road)"
+    "bigRoad": "履歴 (Big Road)",
+    "historyOverflow": "+{{count}}件"
   },
   "button": {
     "betDragon": "ドラゴン",

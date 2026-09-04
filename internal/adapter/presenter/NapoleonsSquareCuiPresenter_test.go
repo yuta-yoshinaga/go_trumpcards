@@ -210,3 +210,24 @@ func TestNapoleonsSquareCuiPresenter_Output_FoundationProgress(t *testing.T) {
 		"total", strconv.Itoa(domain.NapoleonsSquareTotalCards),
 		"percent", "9"))
 }
+
+func TestNapoleonsSquareCuiPresenter_Translations(t *testing.T) {
+	// コードを持つエラーは、CUI プレゼンター内でロケールに応じた文言に
+	// 展開されること。
+	orig := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(orig) })
+
+	g := new(interfaces.MockNapoleonsSquareGame)
+	setupNapoleonsSquareCuiMockDefaults(g)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "napoleonssquare.errBadColumn", nil)
+
+	i18n.SetLang("ja")
+	outJa := new(NapoleonsSquareCuiPresenter).Output(g, err)
+	assert.Contains(t, outJa, "列番号が不正です", "JA は日本語のエラーが出ること")
+	assert.NotContains(t, outJa, "column does not exist", "JA に英語が混ざらないこと")
+
+	i18n.SetLang("en")
+	outEn := new(NapoleonsSquareCuiPresenter).Output(g, err)
+	assert.Contains(t, outEn, "column does not exist", "EN は英語のエラーが出ること")
+	assert.NotContains(t, outEn, "列番号が不正です", "EN に日本語が混ざらないこと")
+}

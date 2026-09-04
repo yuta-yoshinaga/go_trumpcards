@@ -21,5 +21,7 @@
   "wasteKing": " | Waste: {{card}}[K]",
   "helpExampleHint": "  h                        次の一手を教えてもらう",
   "helpUndo": "  u                        1手戻す",
-  "noRedeal": "(配り直しはありません)"
+  "noRedeal": "(配り直しはありません)",
+  "sessionStats": "このセッション: {{plays}}戦 {{wins}}クリア / 最少手数 {{best}}",
+  "sessionNoBest": "—"
 }

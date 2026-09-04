@@ -22,7 +22,7 @@
     "first": "1st",
     "last": "last",
     "queen": "Q♣",
-    "clean": "clean"
+    "clean": "clean (+{{bonus}})"
   },
   "currentTrick": "Current trick",
   "actions": {

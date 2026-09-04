@@ -294,4 +294,71 @@ describe('UltiPage', () => {
     // The contract the game is named after had no explanation on the web at all.
     expect(document.getElementById('ulti-bid-desc-ulti')?.textContent).toMatch(/切り札の7/);
   });
+
+  // **宣言と同時に手札が 10 → 12 枚に増える。**`applyBid` が伏せられたタロンを
+  // 自動で加えるのに、その存在がどこにも出ておらず、宣言直後に手札が突然
+  // 増えて見えた (#6486)。
+  it('warns that the talon joins the hand on a bid', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, talonCount: 2, talonTaken: false });
+    renderWithProviders(<UltiPage />);
+
+    const line = await screen.findByTestId('ulti-talon-pending');
+    expect(line).toHaveTextContent('2');
+    expect(line.textContent).not.toContain('{{');
+  });
+
+  // 拾ったあとは出さない ── 既に手札にある札を「これから加わる」と言わない。
+  it('stops mentioning the talon once it has been taken', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, talonCount: 0, talonTaken: true });
+    renderWithProviders(<UltiPage />);
+    await waitFor(() => expect(screen.getByTestId('ulti-bid-prompt')).toBeInTheDocument());
+    expect(screen.queryByTestId('ulti-talon-pending')).not.toBeInTheDocument();
+  });
+
+  // ビッドフェーズの外では出さない。
+  it('does not mention the talon outside the bid phase', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, talonCount: 2, talonTaken: false });
+    renderWithProviders(<UltiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('ulti-talon-pending')).not.toBeInTheDocument();
+  });
+
+  // **催促は常設のライブ領域の中にある (#6880)。** フェーズ切り替えで現れる
+  // テキストなので、領域が無いとスクリーンリーダには何も届かない。領域を
+  // 出現と同時に付けても読み上げられないため、常設にして中身だけ差し替える。
+  it('announces the prompt from an always-mounted live region', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<UltiPage />);
+
+    const live = await screen.findByTestId('ulti-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
+    expect(live).toContainElement(await screen.findByTestId('ulti-bid-prompt'));
+  });
+
+  it('announces discard from the same region', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<UltiPage />);
+
+    const live = await screen.findByTestId('ulti-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
+    expect(live).toContainElement(await screen.findByTestId('ulti-discard-prompt'));
+  });
+
+  // 人間プレイヤーのビッド手番の場合のみ、スクリーンリーダー向けビッド説明を表示する。
+  it('renders ulti-bid-descriptions when canBid is true', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<UltiPage />);
+    await waitFor(() => expect(screen.getByTestId('ulti-bid-descriptions')).toBeInTheDocument());
+  });
+
+  it('does not render ulti-bid-descriptions when canBid is false', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<UltiPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('ulti-bid-descriptions')).not.toBeInTheDocument();
+  });
 });

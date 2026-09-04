@@ -148,6 +148,15 @@ func (p *CanastaCuiPresenter) Output(g interfaces.CanastaGame, lastErr error) st
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("canasta.promptDiscardHelp") + "\n")
 			b.WriteString(i18n.T("canasta.promptGoOutHelp") + "\n")
+			// Going out without ever having laid an initial meld pays double
+			// (CanastaConcealedGoingOutBonus). A player who does not know that is
+			// likely to meld first and give the doubling away for nothing, so it
+			// has to be said while it is still available, not at scoring time.
+			if !g.GetPlayer(currentIdx).GetHasInitMeld() {
+				b.WriteString(color.Yellow(i18n.Tf("canasta.concealedBonusHint",
+					"bonus", strconv.Itoa(domain.CanastaConcealedGoingOutBonus),
+					"normal", strconv.Itoa(domain.CanastaGoingOutBonus))) + "\n")
+			}
 		case domain.CanastaPhaseRoundEnd:
 			b.WriteString(i18n.T("canasta.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("canasta.promptRoundEndHelp") + "\n")

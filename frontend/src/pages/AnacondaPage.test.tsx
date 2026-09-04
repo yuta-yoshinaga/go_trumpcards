@@ -306,4 +306,45 @@ describe('AnacondaPage', () => {
     expect(notice).toHaveTextContent('CPU 2');
     expect(notice).not.toHaveTextContent('CPU 1');
   });
+  // **ボタンが押せない理由は 2 つある。**上限到達とチップ不足を区別しないと、
+  // 選択肢が黙って消えたようにしか見えない (#6500)。Bouillotte / Primero が
+  // 先行していて、Anaconda だけがこの説明を欠いていた。
+  it('says why raising is unavailable', async () => {
+    const base = makeAnacondaState({ phase: 2, rollIndex: 1, isHumanTurn: true, currentBet: 10 });
+    const cases: Array<[string, ReturnType<typeof makeAnacondaState>]> = [
+      ['レイズ 1/3回', { ...base, canRaise: true, raiseCount: 1 }],
+      ['レイズ上限（3回）に達しました', { ...base, canRaise: false, raiseCount: 3 }],
+      [
+        'チップが足りません',
+        {
+          ...base,
+          canRaise: false,
+          raiseCount: 1,
+          players: [{ ...base.players[0], chips: 3, roundBet: 0 }, ...base.players.slice(1)],
+        },
+      ],
+    ];
+
+    // 席に人間がいない盤（観戦状態）でも落ちない ── その場合は 0 として扱う。
+    mockExec.mockResolvedValue({
+      ...base,
+      canRaise: false,
+      players: base.players.map((p) => ({ ...p, isHuman: false })),
+    });
+    const spectator = renderWithProviders(<AnacondaPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    spectator.unmount();
+
+    for (const [text, state] of cases) {
+      mockExec.mockResolvedValue(state);
+      const { container, unmount } = renderWithProviders(<AnacondaPage />);
+      await screen.findByRole('button', { name: 'コール / チェック' });
+      // 読み上げ対象そのものを掴む ── 同じ文字列を持つ別の要素で通らないように。
+      const live = container.querySelector('[data-testid="anaconda-raise-count"][aria-live="polite"]');
+      expect(live).not.toBeNull();
+      expect(live).toHaveTextContent(text);
+      expect(live?.textContent).not.toContain('{{');
+      unmount();
+    }
+  });
 });

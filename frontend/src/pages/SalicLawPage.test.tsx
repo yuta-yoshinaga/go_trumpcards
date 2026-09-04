@@ -102,6 +102,21 @@ describe('SalicLawPage', () => {
     }
   });
 
+  // **番号の見出しは飾りで、読み上げには乗せない (#6598)。**
+  // 組札ボタン自身が番号入りの aria-label を持っているので、`F0` を読ませると
+  // 同じ情報が二重に流れる。列番号 `#0` は最初からこの扱いだった。
+  it('hides both index captions from the accessibility tree', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<SalicLawPage />);
+    await waitFor(() => expect(screen.getByText('F0')).toBeInTheDocument());
+
+    // 組札と列で扱いを揃える。片方だけ読み上げるのが元の状態。
+    expect(screen.getByText('F0').closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(screen.getByText('#0').closest('[aria-hidden="true"]')).not.toBeNull();
+    // 飾りを隠しても、番号は button の aria-label から読める。
+    expect(screen.getAllByLabelText(/空の組札\d+/).length).toBe(8);
+  });
+
   it('draws from the stock', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SalicLawPage />);

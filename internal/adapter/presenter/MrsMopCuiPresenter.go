@@ -89,6 +89,32 @@ func (p *MrsMopCuiPresenter) Output(s interfaces.MrsMopGame, lastErr error) stri
 	})
 }
 
+// TargetsOutput は列 fromCol の札 cardIndex から始まる並びを置ける先を一覧する。
+//
+// **13 列を押して試すのは現実的でない。** Web は選んだ瞬間に置ける先を見せて
+// いるのに、CUI は打ってサーバに弾かれるまで分からなかった (Perseverance が
+// #5581 で同じ問題を解いている)。置ける先が無いときは黙らず、無いと言う ──
+// 空行だと、コマンドが効いていないのか置けないのか区別が付かない。
+func (p *MrsMopCuiPresenter) TargetsOutput(s interfaces.MrsMopGame, fromCol, cardIndex int) string {
+	if fromCol < 0 || fromCol >= domain.MrsMopTableauCnt {
+		return i18n.MarkError(i18n.Tf("invalidColumn", "val", strconv.Itoa(fromCol))) + "\n"
+	}
+	cardIndex, targets := s.LegalTargets(fromCol, cardIndex)
+	if len(targets) == 0 {
+		return i18n.Tf("mrsmop.targetsNone",
+			"col", strconv.Itoa(fromCol),
+			"idx", strconv.Itoa(cardIndex)) + "\n"
+	}
+	parts := make([]string, 0, len(targets))
+	for _, t := range targets {
+		parts = append(parts, i18n.Tf("mrsmop.targetTableau", "col", strconv.Itoa(t)))
+	}
+	return i18n.Tf("mrsmop.targetsLine",
+		"col", strconv.Itoa(fromCol),
+		"idx", strconv.Itoa(cardIndex),
+		"targets", strings.Join(parts, " / ")) + "\n"
+}
+
 // HintOutput emits the current MrsMop hint.
 func (p *MrsMopCuiPresenter) HintOutput(s interfaces.MrsMopGame) string {
 	hint := s.GetHint()

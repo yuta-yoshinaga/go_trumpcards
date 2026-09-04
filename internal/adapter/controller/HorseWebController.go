@@ -89,10 +89,12 @@ type HorseWebOutput struct {
 	// ToCall はコールに要する額 (0 ならチェック可)。
 	ToCall int `json:"toCall"`
 	// MinRaise はいまの種目が受け付ける最小のレイズ幅。
-	MinRaise    int  `json:"minRaise"`
-	TablePhase  int  `json:"tablePhase"`
-	GameEndFlag bool `json:"gameEndFlag"`
-	WinnerSeat  int  `json:"winnerSeat"`
+	MinRaise int `json:"minRaise"`
+	// MaxBetAmount はいまの種目が受け付ける最大ベット額 (0 は上限なしまたは固定リミット)。
+	MaxBetAmount int  `json:"maxBetAmount"`
+	TablePhase   int  `json:"tablePhase"`
+	GameEndFlag  bool `json:"gameEndFlag"`
+	WinnerSeat   int  `json:"winnerSeat"`
 	// Variant は回しているローテーション (0=H.O.R.S.E. / 1=Eight-Game Mix)。
 	//
 	// **画面がルート名から推測してはいけない。** 2 つのゲームが 1 つのページを

@@ -321,6 +321,19 @@ function EstimationPageContent() {
                       onClick={() => handleBid(bid)}
                       disabled={loading || barred}
                       aria-disabled={barred}
+                      // **裸の数字は読み上げでは意味を持たない。**何の宣言なのか、
+                      // 押せない値はなぜ押せないのかまで名前に載せる。
+                      aria-label={
+                        barred
+                          ? // **0 は「Dash Call」であって「0 トリック」ではない。**
+                            // 押せる側でそう名乗っている以上、禁止された側でも同じ名で呼ぶ。
+                            bid === 0
+                            ? t('actions.bidDashBarredAria', { total: TRICKS_PER_ROUND })
+                            : t('actions.bidBarredAria', { n: bid, total: TRICKS_PER_ROUND })
+                          : bid === 0
+                            ? t('actions.bidDashAria')
+                            : t('actions.bidAria', { n: bid })
+                      }
                       data-testid={`est-bid-${bid.toString()}-btn`}
                     >
                       {bid === 0 ? t('actions.dash') : String(bid)}

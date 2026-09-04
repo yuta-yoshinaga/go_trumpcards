@@ -567,6 +567,15 @@ function EasthavenPageContent() {
                 {t('hintSentence', { fromCol: requestedHint.fromCol, card: hintCardName, dest: hintDest })}
               </div>
             )}
+            {/* **配れなかったことが目にしか出ていなかった。**ブロックされた配りは API を
+                叩かないので `state.message` も `GameMessageBox` も動かず、揺れと
+                ツールチップだけが理由を伝えていた。`d` キー経由でも同じ (#6430)。
+                ライブ領域は**常設**にし、中身だけを差し替える。`key` に試行回数を
+                含めるのは、2 回続けて弾かれたときにも読み直させるため ── 文字列が
+                同じままだと再告知されない。 */}
+            <div role="status" aria-live="polite" className="sr-only" data-testid="eh-deal-blocked-live">
+              {emptyDealAttemptKey > 0 && <span key={emptyDealAttemptKey}>{t('cannotDealEmptyColExists')}</span>}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection

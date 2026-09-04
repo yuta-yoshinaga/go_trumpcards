@@ -61,6 +61,11 @@ func (_m *MockScorpionInteractor) UndoN(n int) string {
 	return ret.Get(0).(string)
 }
 
+func (_m *MockScorpionInteractor) UndoToEscape() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 func (_m *MockScorpionInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()
 	return ret.Get(0).([]byte), ret.Error(1)

@@ -55,3 +55,4 @@ ADR番号は連番ではない — 欠番はリトマステスト導入時に非
 | [ADR-0035](0035-memory-mobile-pair-count.md) | 神経衰弱のペア数を可変にし、モバイル縦のデフォルトを下げる | Accepted | 2026-07-28 |
 | [ADR-0036](0036-fifth-sixth-worker-capacity.md) | 5 つ目・6 つ目の Cloudflare Worker（容量バケット）の追加 | Accepted | 2026-07-28 |
 | [ADR-0037](0037-seventh-worker-capacity.md) | 7 つ目の Cloudflare Worker（容量バケット）の追加 | Accepted | 2026-08-21 |
+| [ADR-0038](0038-eighth-worker-capacity.md) | 8 つ目の Cloudflare Worker（容量バケット）の追加 | Accepted | 2026-09-05 |

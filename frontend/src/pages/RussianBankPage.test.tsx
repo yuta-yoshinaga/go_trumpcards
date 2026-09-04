@@ -40,6 +40,8 @@ function makeState(overrides: Partial<RussianBankResponse> = {}): RussianBankRes
     moveCount: 0,
     tableau: [[], [], [], []],
     foundations: [[], [], [], [], [], [], [], []],
+    // 空の台はどのスートのエースも受ける (design 空文字 = 任意)。
+    foundationNext: Array.from({ length: 8 }, () => ({ design: '', value: 1 })),
     players: [makePlayer(), makePlayer({ id: 1, isHuman: false })],
     config: { cpuDifficulty: 1 },
     message: '',
@@ -80,6 +82,58 @@ describe('RussianBankPage', () => {
     mockExec.mockClear();
     fireEvent.click(toFnd);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pf', { zone: 0, fromOpp: false, col: 0 }));
+  });
+
+  // **8 つの枠はどれを押しても同じコマンドを送っていた** ── 選択肢があるように
+  // 見えて、実際には送り先がスートで決まる単一操作だった (#6473)。
+  it('does not make the foundation slots clickable', async () => {
+    renderWithProviders(<RussianBankPage />);
+    fireEvent.click(await screen.findByTestId('reserve-0'));
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('foundation-0'));
+    fireEvent.click(screen.getByTestId('foundation-3'));
+    await waitFor(() => expect(screen.getByTestId('to-foundation')).toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  // **実際に行く台だけを光らせる。**判定の材料はサーバの `foundationNext` で、
+  // 規則をページに書き写さない。先頭一致なのはドメインの `rbFoundationFor` と同じ。
+  it('rings the foundation the selected card will actually reach', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        // 3 番の台だけが ♦7 を受ける。他は別スート / 別ランク。
+        foundationNext: [
+          { design: 'SPADE', value: 7 },
+          { design: 'DIAMOND', value: 3 },
+          { design: '', value: 1 },
+          { design: 'DIAMOND', value: 7 },
+          { design: 'DIAMOND', value: 7 },
+          { design: 'HEART', value: 7 },
+          { design: 'CLOVER', value: 7 },
+          { design: '', value: 1 },
+        ],
+      }),
+    );
+    renderWithProviders(<RussianBankPage />);
+    // 自リザーブのトップは ♦7。
+    fireEvent.click(await screen.findByTestId('reserve-0'));
+
+    await waitFor(() => expect(screen.getByTestId('foundation-3').className).toContain('ring-ds-success'));
+    // 同じ条件の 4 番は光らない ── 送り先は最初に受け取れる台。
+    expect(screen.getByTestId('foundation-4').className).not.toContain('ring-ds-success');
+    // 受け取れない台も光らない。
+    expect(screen.getByTestId('foundation-0').className).not.toContain('ring-ds-success');
+    expect(screen.getByTestId('foundation-2').className).not.toContain('ring-ds-success');
+  });
+
+  // 何も選んでいないうちは、どの台も光らない。
+  it('rings nothing until a source is selected', async () => {
+    renderWithProviders(<RussianBankPage />);
+    await waitFor(() => expect(screen.getByTestId('foundation-0')).toBeInTheDocument());
+    for (const i of [0, 1, 2, 3]) {
+      expect(screen.getByTestId(`foundation-${i}`).className).not.toContain('ring-ds-success');
+    }
   });
 
   it('labels slots by card + zone and marks the selected source aria-pressed', async () => {

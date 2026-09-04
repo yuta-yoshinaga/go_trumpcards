@@ -182,3 +182,9 @@ func (p *SixBidSoloWebPresenter) buildMessage(g interfaces.SixBidSoloGame, lastE
 func (p *SixBidSoloWebPresenter) ActionLogOutput(g interfaces.SixBidSoloGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// HintOutput は Web ではヒント専用の応答を持たないので通常の状態を返す。
+// **盤面を作り直さない** ── ヒントで盤が消える事故はこの形で起きる (#6800)。
+func (p *SixBidSoloWebPresenter) HintOutput(g interfaces.SixBidSoloGame) string {
+	return p.Output(g, nil)
+}

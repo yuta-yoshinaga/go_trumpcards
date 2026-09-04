@@ -89,5 +89,6 @@
     "leadOffSuit": "切り札以外のカードでリード推奨"
   },
   "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "hintScore": "ハンド強度: {{score}} (オーダーアップ {{orderUp}}以上 / ゴーアローン {{goAlone}}以上)"
 }

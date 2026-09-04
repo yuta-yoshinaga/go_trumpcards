@@ -69,7 +69,11 @@ func (p *BeggarMyNeighbourCuiPresenter) Output(g interfaces.BeggarMyNeighbourGam
 		case domain.BeggarMyNeighbourPhasePlay:
 			b.WriteString(i18n.T("beggarmyneighbour.promptPlay") + "\n")
 		case domain.BeggarMyNeighbourPhasePayPenalty:
+			// **誰が払っているかも言う。**残り枚数だけでは、自分が払う側か相手が
+			// 払う側か分からない (#6478)。Web / CLI と同じ情報にそろえる。
+			owner := g.GetPenaltyOwnerIdx()
 			b.WriteString(color.Yellow(i18n.Tf("beggarmyneighbour.promptPayPenalty",
+				"name", cuiPlayerName(g.GetPlayer(owner), owner),
 				"remaining", strconv.Itoa(g.GetPenaltyRemaining()))) + "\n")
 		case domain.BeggarMyNeighbourPhaseCollect:
 			b.WriteString(color.Green(i18n.T("beggarmyneighbour.promptCollect")) + "\n")

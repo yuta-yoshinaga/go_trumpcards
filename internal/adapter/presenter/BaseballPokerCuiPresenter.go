@@ -134,6 +134,19 @@ func (cp *BaseballPokerCuiPresenter) writeResult(sb *strings.Builder, c interfac
 		return
 	}
 	sb.WriteString("----------\n")
+	for _, p := range players {
+		if p == nil || p.GetFolded() {
+			continue
+		}
+		rank := p.GetHandRank()
+		hand := strconv.Itoa(rank)
+		if rank >= 0 && rank < len(domain.PokerHandNames) {
+			hand = domain.PokerHandNames[rank]
+		}
+		sb.WriteString(i18n.Tf("baseballpoker.showdownHandLine",
+			"name", p.GetName(),
+			"hand", hand) + "\n")
+	}
 	for i, r := range results {
 		if i >= len(players) {
 			break

@@ -145,6 +145,36 @@ describe('KlaverjasPage', () => {
     expect(roem).toHaveTextContent('B=0');
   });
 
+  it('renders Roem breakdown showing only positive seats without zero seats', async () => {
+    mockExec.mockResolvedValue(
+      makeKlaverjasState({
+        phase: 0,
+        roundRoem: [50, 100],
+        roundPlayerRoem: [50, 0, 0, 100],
+      }),
+    );
+    renderWithProviders(<KlaverjasPage />);
+    const breakdown = await screen.findByTestId('klaverjas-roem-breakdown');
+    expect(breakdown).toHaveTextContent('内訳: あなた 50点, CPU 3 100点');
+    expect(breakdown.textContent).not.toContain('CPU 1');
+    expect(breakdown.textContent).not.toContain('CPU 2');
+    expect(breakdown.textContent).not.toContain('{{');
+    expect(breakdown.textContent).not.toContain('}}');
+  });
+
+  it('omits the Roem breakdown element entirely when all seats are 0', async () => {
+    mockExec.mockResolvedValue(
+      makeKlaverjasState({
+        phase: 0,
+        roundRoem: [0, 0],
+        roundPlayerRoem: [0, 0, 0, 0],
+      }),
+    );
+    renderWithProviders(<KlaverjasPage />);
+    await screen.findByTestId('klaverjas-roem');
+    expect(screen.queryByTestId('klaverjas-roem-breakdown')).not.toBeInTheDocument();
+  });
+
   it('hides the live Roem block at round end (the round result repeats it)', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<KlaverjasPage />);
@@ -215,5 +245,29 @@ describe('KlaverjasPage strength legend', () => {
     renderWithProviders(<KlaverjasPage />);
     const legend = await screen.findByTestId('klaverjas-strength-legend');
     expect(legend).not.toHaveAttribute('open');
+  });
+});
+
+// **内訳は結果でこそ要る。**進行中のパネルにだけ出していたので、点を突き合わせたい
+// ラウンド終了の瞬間に消えていた (#6441 レビュー指摘)。
+describe('KlaverjasPage roem breakdown at round end', () => {
+  it('keeps the per-seat breakdown in the round-result block', async () => {
+    mockExec.mockResolvedValue(makeKlaverjasState({ phase: 2, roundRoem: [20, 50], roundPlayerRoem: [20, 0, 0, 50] }));
+    renderWithProviders(<KlaverjasPage />);
+
+    const result = await screen.findByTestId('klaverjas-roem-breakdown-result');
+    expect(result).toHaveTextContent('20');
+    expect(result).toHaveTextContent('50');
+    expect(result.textContent).not.toContain('{{');
+    // 進行中のパネルはラウンド終了で消えているので、内訳はこちらにしかない。
+    expect(screen.queryByTestId('klaverjas-roem-breakdown')).not.toBeInTheDocument();
+  });
+
+  it('omits it at round end when no seat melded', async () => {
+    mockExec.mockResolvedValue(makeKlaverjasState({ phase: 2, roundRoem: [0, 0], roundPlayerRoem: [0, 0, 0, 0] }));
+    renderWithProviders(<KlaverjasPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('klaverjas-roem-breakdown-result')).not.toBeInTheDocument();
   });
 });

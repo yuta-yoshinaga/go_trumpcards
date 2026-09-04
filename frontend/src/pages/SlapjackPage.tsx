@@ -326,6 +326,9 @@ function SlapjackPageContent() {
                 className="min-h-[44px] min-w-[44px] px-6 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                 data-testid="step-button"
                 data-tutorial="sj-step-button"
+                // useReflexShortcuts が実際に見ているキー (Enter / s / S)。
+                // KbdBadge は目で見える案内で、支援技術には届かない。
+                aria-keyshortcuts="Enter S"
               >
                 {t('button.step')}
                 <KbdBadge label={t('kbd.step')} />
@@ -341,6 +344,7 @@ function SlapjackPageContent() {
                 }`}
                 data-testid="slap-button"
                 data-tutorial="sj-slap-button"
+                aria-keyshortcuts="Space"
               >
                 {t('slapjack.slap')}
                 <KbdBadge label={t('kbd.slap')} />

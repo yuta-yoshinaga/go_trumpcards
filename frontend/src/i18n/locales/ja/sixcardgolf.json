@@ -73,5 +73,6 @@
   },
   "gridSlotFaceDownAria": "位置{{pos}}（裏向き）",
   "cliUsagePos": "使い方: {{cmd}} <位置>",
-  "cliUnknown": "不明なコマンド: {{cmd}}"
+  "cliUnknown": "不明なコマンド: {{cmd}}",
+  "landscapeBanner": "横画面での表示を推奨します"
 }

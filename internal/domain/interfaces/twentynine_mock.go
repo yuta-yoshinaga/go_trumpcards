@@ -164,6 +164,12 @@ func (_m *MockTwentyNineGame) GetTrumpRevealed() bool {
 	return ret.Get(0).(bool)
 }
 
+// GetTrumpJustRevealed モック
+func (_m *MockTwentyNineGame) GetTrumpJustRevealed() bool {
+	ret := _m.Called()
+	return ret.Get(0).(bool)
+}
+
 // GetTeamScores モック
 func (_m *MockTwentyNineGame) GetTeamScores() [domain.TwentyNineTeamCnt]int {
 	ret := _m.Called()

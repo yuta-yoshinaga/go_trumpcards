@@ -42,6 +42,7 @@
   "dealResult": {
     "title": "Deal Result",
     "looed": "Looed (no tricks): {{names}}",
+    "potCarry": "Carried to the next deal: {{chips}} chips",
     "gained": "{{name}} gained: {{chips}} chips"
   },
   "hintAvailable": "Hint",

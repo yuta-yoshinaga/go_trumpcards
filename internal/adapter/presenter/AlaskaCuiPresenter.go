@@ -87,6 +87,9 @@ func (p *AlaskaCuiPresenter) Output(r interfaces.AlaskaGame, lastErr error) stri
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(r.GetMoveCount())) + "\n")
 		case domain.AlaskaPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := r.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.AlaskaTotalCards)) + "\n")
 		}
 	})
 }

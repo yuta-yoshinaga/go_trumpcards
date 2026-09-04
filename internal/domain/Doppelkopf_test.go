@@ -492,3 +492,47 @@ func TestDoppelkopfGetTrumpIndicesOutOfRange(t *testing.T) {
 		}
 	}
 }
+
+// #6435: 配った直後の獲得点は Re/Kontra 共に 0 であり、ラウンド進行とともに増え、
+// ラウンド終了時に合計 240 点となる。
+func TestDoppelkopf_LivePoints(t *testing.T) {
+	g := newDKGame(false)
+	g.Reset()
+
+	// 1. 配った直後はどちらも 0 点 (未配分の点を Kontra に寄せるバグの防止)
+	if got := g.GetLiveRePoints(); got != 0 {
+		t.Fatalf("initial GetLiveRePoints = %d, want 0", got)
+	}
+	if got := g.GetLiveKontraPoints(); got != 0 {
+		t.Fatalf("initial GetLiveKontraPoints = %d, want 0", got)
+	}
+
+	// 2. トリックを進めると値が増え、途中で合計が 240 点未満の瞬間がある
+	sawMidRoundSum := false
+	for steps := 0; steps < 300; steps++ {
+		switch g.GetPhase() {
+		case DoppelkopfPhasePlay:
+			g.CpuPlay()
+		case DoppelkopfPhaseTrickEnd:
+			g.ResolveTrick()
+			sum := g.GetLiveRePoints() + g.GetLiveKontraPoints()
+			if sum > 0 && sum < DoppelkopfTotalPoints {
+				sawMidRoundSum = true
+			}
+			if g.GetPhase() == DoppelkopfPhaseTrickEnd {
+				g.NextTrick()
+			}
+		case DoppelkopfPhaseRoundEnd:
+			// 3. ラウンド終了時は合計が 240 点
+			sum := g.GetLiveRePoints() + g.GetLiveKontraPoints()
+			if sum != DoppelkopfTotalPoints {
+				t.Fatalf("final sum = %d, want %d", sum, DoppelkopfTotalPoints)
+			}
+			if !sawMidRoundSum {
+				t.Fatal("expected to observe mid-round sum strictly between 0 and 240")
+			}
+			return
+		}
+	}
+	t.Fatal("round did not complete within expected step limit")
+}

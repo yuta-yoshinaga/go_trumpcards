@@ -12,5 +12,10 @@
   "difficultyLine": "難易度: {{suits}}スート（本来の Mrs. Mop は4スート）",
   "helpExampleHint": "  h                        次の一手を教えてもらう",
   "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る",
-  "helpUndo": "  u                    1手戻す"
+  "helpUndo": "  u                    1手戻す",
+  "targetsLine": "列{{col}}の札{{idx}}から置ける先: {{targets}}",
+  "targetsNone": "列{{col}}の札{{idx}}から動かせる先はありません",
+  "targetTableau": "列{{col}}",
+  "helpTargets": "  t <col> [idx]            その列の札を置ける先を一覧する",
+  "moveUsage": "使用法: m <列> <列> または m t <列> <カードID> t <列>"
 }

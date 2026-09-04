@@ -13,7 +13,7 @@
     "pointTable": "Point cards: A and 10 are worth 10, the 5 is worth 5. A round holds exactly 100.",
     "contractUndecided": "Contract: undecided (bid {{min}} to 100)",
     "contract": "Contract: {{n}} ({{got}} so far)",
-    "contractShelem": "Contract: Shelem -- every trick",
+    "contractShelem": "Contract: Shelem — every trick ({{value}} points swing on it)",
     "trump": "trump {{suit}}",
     "score": "Total: your team {{t0}} - theirs {{t1}}",
     "took": "{{n}} taken",
@@ -36,7 +36,7 @@
   "currentTrick": "Current trick",
   "mustBid": "Everyone else has passed. You cannot drop out — a contract has to be settled, so you must bid.",
   "actions": {
-    "shelem": "Declare Shelem",
+    "shelem": "Declare Shelem ({{value}} points)",
     "pass": "Pass",
     "discard": "Confirm with {{suit}} trump",
     "nextRound": "Next round",

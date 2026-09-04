@@ -102,6 +102,9 @@ function GoofspielPageContent() {
   }
 
   const human = state.players.find((p) => p.isHuman);
+  // **サーバが省いたレスポンスでも落ちない。** 一度だけ正規化して、以降は
+  // 分岐を増やさない (#5779 で null が来てページごと止まった)。
+  const carriedPrizes = state.carriedPrizes ?? [];
   const isGameEnd = state.phase === GoofspielPhase.GAME_END || state.gameEndFlag;
   const isReveal = state.phase === GoofspielPhase.REVEAL && !isGameEnd;
   const canBid = state.phase === GoofspielPhase.BID && !isGameEnd && human?.hasBid === false;
@@ -162,10 +165,24 @@ function GoofspielPageContent() {
                 <div className="text-ds-accent font-semibold">
                   {t('header.prizeValue', { n: String(state.prizeValue) })}
                 </div>
-                {(state.carriedPrizes?.length ?? 0) > 0 && (
-                  <div className="text-ds-warning text-sm" data-testid="gs-carried">
-                    {t('header.carried', { n: String(state.carriedPrizes?.length ?? 0) })}
-                  </div>
+                {carriedPrizes.length > 0 && (
+                  <>
+                    <div className="text-ds-warning text-sm" data-testid="gs-carried">
+                      {t('header.carried', { n: String(carriedPrizes.length) })}
+                    </div>
+                    {/* **積まれている札の強さが枚数からは読めない。** 現在の賞は
+                        画像で出しているのに持ち越しだけ中身が見えないのは非対称。
+                        枚数が増えても折り返す。 */}
+                    <div className="flex flex-wrap justify-center gap-1" data-testid="gs-carried-cards">
+                      {carriedPrizes.map((c, i) => (
+                        <CardImage
+                          key={`carried-${c.design}-${c.value}-${i.toString()}`}
+                          card={c}
+                          width={Math.round(cardWidth * 0.6)}
+                        />
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
             )}

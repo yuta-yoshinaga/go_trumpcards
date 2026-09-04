@@ -24,6 +24,7 @@
     "keepLabel": "残す札",
     "previewHand": "暫定役",
     "candidateHand": "この札も捨てると",
+    "recommended": "おすすめ",
     "limitReached": "選択できるのは{{count}}枚までです。先に選択を解除してください",
     "limitDescription": "ディスカードで選択できるのは最大{{count}}枚です",
     "previewAria": "残す2枚: {{cards}}",

@@ -251,4 +251,134 @@ describe('GoStopPage', () => {
     expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
     localStorage.removeItem('hint_enabled_gostop');
   });
+  // **点になる前の枚数こそが進捗。**サーバは素の枚数も毎回送っていて CUI は
+  // 全員分を出しているのに、Web は点数化された分しか読んでいなかった (#6507)。
+  it('shows the raw category counts alongside the scored breakdown', async () => {
+    const counted = makeGoStopState();
+    const base = counted.players[0].breakdown;
+    if (!base) throw new Error('fixture must carry a breakdown');
+    counted.players[0].breakdown = { ...base, brightCount: 3, ribbonCount: 5, animalCount: 4, piCount: 9 };
+    mockExec.mockResolvedValue(counted);
+    renderWithProviders(<GoStopPage />);
+
+    const row = await screen.findByTestId('gostop-counts-human');
+    // 4 つとも別の値にしてあるので、取り違えるとどれかが落ちる。
+    expect(row).toHaveTextContent('光3');
+    expect(row).toHaveTextContent('열끗4');
+    expect(row).toHaveTextContent('띠5');
+    expect(row).toHaveTextContent('피9');
+    expect(row.textContent).not.toContain('{{');
+
+    // 卓の全員分が出る ── CPU の列も同じ枚数行を持つ。
+    expect(screen.getByTestId('gostop-counts-cpu-1')).toBeInTheDocument();
+  });
+
+  // 内訳を持たない席では枚数行も出さない ── 内訳が来る前の局面でも落ちない。
+  it('renders no counts row when the seat has no breakdown yet', async () => {
+    const noBreakdown = makeGoStopState();
+    noBreakdown.players = noBreakdown.players.map((p) => ({ ...p, breakdown: null }));
+    mockExec.mockResolvedValue(noBreakdown);
+    renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('gostop-counts-human')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('gostop-counts-cpu-1')).not.toBeInTheDocument();
+  });
+
+  // 決断フェーズの保留内訳にも同じ枚数行が付く (所有者を持たない共有の表示)。
+  it('shows the raw counts on the pending breakdown too', async () => {
+    mockExec.mockResolvedValue(decisionState);
+    renderWithProviders(<GoStopPage />);
+    const shared = await screen.findByTestId('gostop-counts-shared');
+    expect(shared).toHaveTextContent('피10');
+    expect(shared.textContent).not.toContain('{{');
+  });
+
+  // 催促はフェーズや手番が変わったときに現れるテキスト。領域が無いと、あるいは
+  // 領域が催促と**同時に**生えると、スクリーンリーダには何も届かない (#6880)。
+  it('announces the gostop-prompt from the always-mounted live region', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<GoStopPage />);
+
+    const live = await screen.findByTestId('gostop-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
+    expect(live).toContainElement(await screen.findByTestId('gostop-prompt'));
+  });
+
+  // **CPU対戦相手がいる場合のみCPU領域を描画する。**
+  it('renders the CPU area only when a CPU player exists', async () => {
+    mockExec.mockResolvedValue(playState);
+    const { unmount } = renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.getByTestId('gostop-cpu')).toBeInTheDocument());
+    unmount();
+
+    const noCpuState = makeGoStopState();
+    noCpuState.players = noCpuState.players.filter((p) => p.isHuman);
+    mockExec.mockResolvedValue(noCpuState);
+    renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.queryByTestId('gostop-cpu')).not.toBeInTheDocument());
+  });
+
+  // **ピバクの条件を満たしたラウンド終了時のみバッジを出す。**
+  it('renders the pi-bak badge when piBak is true', async () => {
+    const baseResult = roundEndState.lastRoundResult;
+    if (!baseResult) throw new Error('lastRoundResult must be set');
+
+    const piBakState = makeGoStopState({
+      phase: 2,
+      lastRoundResult: {
+        ...baseResult,
+        gwangBak: false,
+        piBak: true,
+        goBak: false,
+      },
+    });
+    mockExec.mockResolvedValue(piBakState);
+    const { unmount } = renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.getByTestId('gostop-bak-pi')).toBeInTheDocument());
+    unmount();
+
+    const noPiBakState = makeGoStopState({
+      phase: 2,
+      lastRoundResult: {
+        ...baseResult,
+        piBak: false,
+      },
+    });
+    mockExec.mockResolvedValue(noPiBakState);
+    renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.queryByTestId('gostop-bak-pi')).not.toBeInTheDocument());
+  });
+
+  // **ゴーバクの条件を満たしたラウンド終了時のみバッジを出す。**
+  it('renders the go-bak badge when goBak is true', async () => {
+    const baseResult = roundEndState.lastRoundResult;
+    if (!baseResult) throw new Error('lastRoundResult must be set');
+
+    const goBakState = makeGoStopState({
+      phase: 2,
+      lastRoundResult: {
+        ...baseResult,
+        gwangBak: false,
+        piBak: false,
+        goBak: true,
+      },
+    });
+    mockExec.mockResolvedValue(goBakState);
+    const { unmount } = renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.getByTestId('gostop-bak-go')).toBeInTheDocument());
+    unmount();
+
+    const noGoBakState = makeGoStopState({
+      phase: 2,
+      lastRoundResult: {
+        ...baseResult,
+        goBak: false,
+      },
+    });
+    mockExec.mockResolvedValue(noGoBakState);
+    renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.queryByTestId('gostop-bak-go')).not.toBeInTheDocument());
+  });
 });

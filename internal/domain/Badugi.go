@@ -275,13 +275,20 @@ func (b *Badugi) PlayerAction(action, amount, humanPlayMs int) error {
 
 // PlayerExchange replaces the cards at the given hand indices with fresh
 // cards from the deck. Empty indices = stand pat. Indices outside [0,3] are
-// silently ignored.
-func (b *Badugi) PlayerExchange(indices []int) error {
+// silently ignored. humanPlayMs is the deliberation time in milliseconds (0 = not measured).
+func (b *Badugi) PlayerExchange(indices []int, humanPlayMs int) error {
 	if b.round.phase != BadugiPhaseDraw {
 		return NewDomainError(ErrWrongPhase, "Exchange is not allowed now.")
 	}
 	if !b.players[b.round.currentTurn].GetIsHuman() {
 		return NewDomainError(ErrNotHumanTurn, "It is not your turn.")
+	}
+
+	b.round.lastHumanPlayMs = humanPlayMs
+	if b.config.CpuMetaAI && b.humanProfile != nil {
+		// RecordHesitation only: RecordAction and RecordFoldToBet are specific
+		// to betting actions (action type and folding to bet), which do not apply to card exchange.
+		b.humanProfile.RecordHesitation(humanPlayMs)
 	}
 
 	b.applyExchange(b.round.currentTurn, indices)
@@ -293,8 +300,8 @@ func (b *Badugi) PlayerExchange(indices []int) error {
 }
 
 // PlayerStand is sugar for PlayerExchange with no indices (stand pat).
-func (b *Badugi) PlayerStand() error {
-	return b.PlayerExchange(nil)
+func (b *Badugi) PlayerStand(humanPlayMs int) error {
+	return b.PlayerExchange(nil, humanPlayMs)
 }
 
 // applyExchange swaps the cards at the given indices, updates counters, and

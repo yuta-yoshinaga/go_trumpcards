@@ -5,10 +5,16 @@ const PHASE_NAMES = ['Bid', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
 const CONTRACT_NAMES: Record<string, string> = {
   pass: '-',
   trois: 'Trois (3 tricks)',
-  solo: 'Solo (most points)',
   piccolo: 'Piccolo (exactly 1 trick)',
   misere: 'Misere (no tricks)',
 };
+
+function formatContractName(contractName: string, soloTarget: number): string {
+  if (contractName === 'solo') {
+    return `Solo (${soloTarget}+ pts)`;
+  }
+  return CONTRACT_NAMES[contractName] ?? contractName;
+}
 
 /** Format a Troggu (トロッグ) game state as terminal text. */
 export function formatTrogguState(state: TrogguResponse): string {
@@ -18,7 +24,7 @@ export function formatTrogguState(state: TrogguResponse): string {
   lines.push(
     `deal: ${state.roundNumber}/${state.totalRounds}  trick: ${state.trickNumber}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );
-  lines.push(`contract: ${CONTRACT_NAMES[state.contractName] ?? state.contractName}`);
+  lines.push(`contract: ${formatContractName(state.contractName, state.soloTarget)}`);
   lines.push(`scores: ${state.players.map((p) => `P${p.id}=${p.score}`).join('  ')}`);
   lines.push(formatSeparator());
 

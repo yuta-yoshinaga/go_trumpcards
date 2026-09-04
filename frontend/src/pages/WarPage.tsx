@@ -317,6 +317,11 @@ function WarPageContent() {
                 <div className="text-sm text-ds-text-primary font-semibold">
                   {t('label.potCount', { count: state.warPotSize })}
                 </div>
+                {state.phase === WarPhase.RESOLVED && state.lastBurialCount > 0 && (
+                  <div className="text-xs text-ds-text-muted mt-1">
+                    {t('label.lastBurialCount', { count: state.lastBurialCount.toString() })}
+                  </div>
+                )}
                 {state.warPotSize > 2 && (
                   <div
                     // Purely decorative stacked card backs; the count is already

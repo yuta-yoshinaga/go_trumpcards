@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -311,5 +312,82 @@ func TestKlondikeCuiPresenter_AutoCompleteReady(t *testing.T) {
 	t.Run("says nothing once the game is cleared", func(t *testing.T) {
 		out := p.Output(game(false, domain.KlondikePhaseGameClear), nil)
 		assert.NotContains(t, out, "オートコンプリート可能")
+	})
+}
+
+// ベガス方式の「最終得点」にはタイムボーナスが乗る。それは Web だけの
+// クライアントサイド機能で、CUI は k.GetScore() (ボーナス抜き) しか出して
+// いなかった ── 同じ盤で遊んでも両者の最終得点が常に食い違う (#6287)。
+func TestKlondikeCuiPresenter_VegasTimeBonus(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	game := func(phase domain.KlondikePhase, mode domain.KlondikeScoringMode, score int) *interfaces.MockKlondikeGame {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeCuiMockDefaults(kg)
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetPhase")
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetScoringMode")
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetScore")
+		kg.On("GetPhase").Return(phase)
+		kg.On("GetScoringMode").Return(mode)
+		kg.On("GetScore").Return(score)
+		return kg
+	}
+
+	// A presenter whose clock is ours, already through `elapsed` seconds of play.
+	playedFor := func(elapsed time.Duration) (*KlondikeCuiPresenter, func()) {
+		at := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+		p := new(KlondikeCuiPresenter)
+		p.now = func() time.Time { return at }
+		p.Output(game(domain.KlondikePhasePlaying, domain.KlondikeScoringVegas, 0), nil)
+		return p, func() { at = at.Add(elapsed) }
+	}
+
+	t.Run("adds the bonus the web adds, and says the total", func(t *testing.T) {
+		p, advance := playedFor(70 * time.Second)
+		advance()
+		out := p.Output(game(domain.KlondikePhaseGameClear, domain.KlondikeScoringVegas, 320), nil)
+
+		// 700000/70 = 10000 -- the same floor division the web hook does.
+		assert.Contains(t, out, "スコア: 320")
+		assert.Contains(t, out, "タイムボーナス: 10000")
+		assert.Contains(t, out, "合計: 10320")
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("truncates the same way the web does", func(t *testing.T) {
+		p, advance := playedFor(3 * time.Second)
+		advance()
+		out := p.Output(game(domain.KlondikePhaseGameClear, domain.KlondikeScoringVegas, 5), nil)
+
+		// Math.floor(700000/3) = 233333, not 233333.33.
+		assert.Contains(t, out, "タイムボーナス: 233333")
+		assert.Contains(t, out, "合計: 233338")
+	})
+
+	// 否定コントロール: 通常方式には最終得点が無いので、ボーナスを出すと
+	// 存在しない数字を語ることになる。
+	t.Run("says nothing about a bonus outside Vegas scoring", func(t *testing.T) {
+		p, advance := playedFor(70 * time.Second)
+		advance()
+		out := p.Output(game(domain.KlondikePhaseGameClear, domain.KlondikeScoringNone, 0), nil)
+
+		assert.Contains(t, out, "ゲームクリア！")
+		assert.NotContains(t, out, "タイムボーナス")
+		assert.NotContains(t, out, "合計:")
+	})
+
+	// 計測は一度きり。クリア後に Output が何度呼ばれても数字が動いては困る。
+	t.Run("freezes the clock at the clear, not at the last render", func(t *testing.T) {
+		at := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+		p := new(KlondikeCuiPresenter)
+		p.now = func() time.Time { return at }
+		p.Output(game(domain.KlondikePhasePlaying, domain.KlondikeScoringVegas, 0), nil)
+		at = at.Add(70 * time.Second)
+		clear := game(domain.KlondikePhaseGameClear, domain.KlondikeScoringVegas, 320)
+		first := p.Output(clear, nil)
+		at = at.Add(10 * time.Minute)
+		assert.Equal(t, first, p.Output(clear, nil))
 	})
 }

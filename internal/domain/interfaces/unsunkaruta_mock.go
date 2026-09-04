@@ -61,6 +61,9 @@ func (_m *MockUnsunKarutaGame) CanDeclare() bool { return _m.Called().Bool(0) }
 // IsMustFollow モック
 func (_m *MockUnsunKarutaGame) IsMustFollow() bool { return _m.Called().Bool(0) }
 
+// GetDeclarationKind モック
+func (_m *MockUnsunKarutaGame) GetDeclarationKind() int { return _m.Called().Int(0) }
+
 // IsDeclaredThisTrick モック
 func (_m *MockUnsunKarutaGame) IsDeclaredThisTrick() bool { return _m.Called().Bool(0) }
 

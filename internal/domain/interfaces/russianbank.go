@@ -55,4 +55,8 @@ type RussianBankGame interface {
 	GetStopPoints(seat int) int
 	// GetHint ヒントを取得する。
 	GetHint() *domain.RussianBankHint
+
+	// GetFoundationNext は各ファウンデーションが次に受け取れる札の条件を返す
+	// (Design 0 = どのスートでもよい)。
+	GetFoundationNext() [domain.RussianBankFoundationCnt]domain.RussianBankFoundationNext
 }

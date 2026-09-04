@@ -100,5 +100,6 @@
     "broadwayCards": "Broadway — consider Play 3×",
     "madeHandRiver": "Made hand — Play 1× on the river",
     "weakHand": "Weak hand"
-  }
+  },
+  "madeHand": "Current hand: {{hand}}"
 }

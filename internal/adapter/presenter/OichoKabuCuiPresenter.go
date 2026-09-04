@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra5
 
 package presenter
 
@@ -33,6 +33,25 @@ func oichoKabuHandStr(hand []*domain.Card) string {
 }
 
 // Output ゲーム状態を出力
+// oichoKabuRankLine は目の行を返す。0 と 9 だけは固有名を添える。
+//
+// **「カブ」「ブタ」はこのゲーム最大の特徴語なのに、テキストの画面に一度も
+// 出ていなかった** ── Web が aria-label 専用で持っているだけだった (#6504)。
+// 名前があるのはこの 2 つだけなので、他の目は従来どおり数字のまま。
+func oichoKabuRankLine(rank int) string {
+	line := i18n.Tf("oichokabu.rankLine", "rank", strconv.Itoa(rank))
+	if key, named := oichoKabuRankNameKeys[rank]; named {
+		line += i18n.Tf("oichokabu.rankNameSuffix", "name", i18n.T(key))
+	}
+	return line + "\n"
+}
+
+// oichoKabuRankNameKeys は固有名を持つ目だけを引く。Web の rankName と同じ 2 つ。
+var oichoKabuRankNameKeys = map[int]string{
+	0: "oichokabu.rankName.0",
+	9: "oichokabu.rankName.9",
+}
+
 func (p *OichoKabuCuiPresenter) Output(o interfaces.OichoKabuGame, lastErr error) string {
 	var sb strings.Builder
 
@@ -57,14 +76,14 @@ func (p *OichoKabuCuiPresenter) Output(o interfaces.OichoKabuGame, lastErr error
 	if hand := o.GetPlayerHand(); len(hand) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("oichokabu.playerHeader")) + " ---\n")
 		sb.WriteString(i18n.Tf("oichokabu.handLine", "cards", oichoKabuHandStr(hand)) + "\n")
-		sb.WriteString(i18n.Tf("oichokabu.rankLine", "rank", strconv.Itoa(o.GetPlayerRank())) + "\n")
+		sb.WriteString(oichoKabuRankLine(o.GetPlayerRank()))
 	}
 
 	// 親の手は結果まで伏せる。
 	sb.WriteString("--- " + color.Bold(i18n.T("oichokabu.bankerHeader")) + " ---\n")
 	if o.GetGameEndFlag() {
 		sb.WriteString(i18n.Tf("oichokabu.handLine", "cards", oichoKabuHandStr(o.GetBankerHand())) + "\n")
-		sb.WriteString(i18n.Tf("oichokabu.rankLine", "rank", strconv.Itoa(o.GetBankerRank())) + "\n")
+		sb.WriteString(oichoKabuRankLine(o.GetBankerRank()))
 		// 親は「目が閾値以下なら引く」固定ルールで動く。**両者とも常に 2 枚配られる**
 		// ので、3 枚あれば引いた、2 枚なら止まった、と手札枚数から判る
 		// (Web の oichokabuDealerPolicy と同じ導出)。

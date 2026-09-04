@@ -20,6 +20,9 @@ type SevensCpuAction struct {
 	TargetSuit  int   `json:"ts"` // ジョーカー配置先スート (ジョーカー以外は0)
 	TargetValue int   `json:"tv"` // ジョーカー配置先値 (ジョーカー以外は0)
 	ForcedPass  bool  `json:"fp"` // true = 出せるカードがなくパスした
+	// JokerReclaimed は、この手でジョーカーを回収したか。**手札が黙って1枚
+	// 増える**のはこれが唯一の経路なので、行動の一部として持たせている。
+	JokerReclaimed bool `json:"jr"`
 }
 
 // Sevens 7並べゲームクラス
@@ -406,15 +409,15 @@ func (s *Sevens) recordJokerCard(card *Card, suit, value int) {
 }
 
 // reclaimJokerIfNeeded 非ジョーカーカードでジョーカー配置済みポジションに置いた場合、ジョーカーを回収
-func (s *Sevens) reclaimJokerIfNeeded(playerIdx, suit, value int) {
+func (s *Sevens) reclaimJokerIfNeeded(playerIdx, suit, value int) bool {
 	if !s.config.JokerReclaimEnabled {
-		return
+		return false
 	}
 	if suit < CardDesignSpade || suit > CardDesignDiamond || value < 1 || value > 13 {
-		return
+		return false
 	}
 	if s.jokerPlaced[suit]&(1<<uint(value)) == 0 {
-		return
+		return false
 	}
 	// ジョーカーマークをクリア
 	s.jokerPlaced[suit] &^= 1 << uint(value)
@@ -424,7 +427,9 @@ func (s *Sevens) reclaimJokerIfNeeded(playerIdx, suit, value int) {
 		s.jokerCards = s.jokerCards[:len(s.jokerCards)-1]
 		s.players[playerIdx].AddCard(joker)
 		s.players[playerIdx].SortCards()
+		return true
 	}
+	return false
 }
 
 // PlayerPlay 人間プレイヤーがカードを出す (または パスする)
@@ -472,10 +477,10 @@ func (s *Sevens) PlayerPlay(idx int) error {
 
 	s.placeCard(card)
 	playedCard := player.RemoveCard(idx)
-	s.reclaimJokerIfNeeded(s.currentTurn, card.GetDesign(), card.GetValue())
+	reclaimed := s.reclaimJokerIfNeeded(s.currentTurn, card.GetDesign(), card.GetValue())
 	player.SetLastPlayedJoker(false)
 	s.appendLog(s.currentTurn, "play", fmt.Sprintf("played %s", cardLogStr(playedCard)), []*Card{playedCard})
-	s.humanAction = &SevensCpuAction{PlayerIdx: s.currentTurn, PlayedCard: playedCard}
+	s.humanAction = &SevensCpuAction{PlayerIdx: s.currentTurn, PlayedCard: playedCard, JokerReclaimed: reclaimed}
 
 	if player.GetCardsSize() == 0 {
 		s.assignRank(s.currentTurn)
@@ -997,20 +1002,22 @@ func (s *Sevens) CpuPlay() {
 			s.placeCard(card)
 		}
 		playedCard := player.RemoveCard(playIdx)
+		reclaimed := false
 		if card.GetDesign() == CardDesignJoker {
 			s.recordJokerCard(playedCard, targetSuit, targetValue)
 			player.SetLastPlayedJoker(true)
 			s.appendLog(playerIdx, "joker", fmt.Sprintf("played joker as %s %d", suitLogStr(targetSuit), targetValue), []*Card{playedCard})
 		} else {
-			s.reclaimJokerIfNeeded(playerIdx, card.GetDesign(), card.GetValue())
+			reclaimed = s.reclaimJokerIfNeeded(playerIdx, card.GetDesign(), card.GetValue())
 			player.SetLastPlayedJoker(false)
 			s.appendLog(playerIdx, "play", fmt.Sprintf("played %s", cardLogStr(playedCard)), []*Card{playedCard})
 		}
 		action := &SevensCpuAction{
-			PlayerIdx:   playerIdx,
-			PlayedCard:  playedCard,
-			TargetSuit:  targetSuit,
-			TargetValue: targetValue,
+			PlayerIdx:      playerIdx,
+			PlayedCard:     playedCard,
+			TargetSuit:     targetSuit,
+			TargetValue:    targetValue,
+			JokerReclaimed: reclaimed,
 		}
 		s.cpuActions = append(s.cpuActions, action)
 

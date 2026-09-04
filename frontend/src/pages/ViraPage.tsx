@@ -378,6 +378,13 @@ function ViraPageContent() {
                         })}
                       </div>
                     ))}
+                    {/* 達成側は `pot` ではなく `lastRoundPotWon` を読む ── 精算が
+                        `pot` を 0 に潰すので、取った額はそこには残っていない。 */}
+                    <div className="mt-1 text-ds-text-primary" data-testid="vira-pot-settlement">
+                      {state.lastRoundMade
+                        ? t('roundResult.potWon', { chips: state.lastRoundPotWon })
+                        : t('roundResult.potCarried', { chips: state.pot })}
+                    </div>
                   </div>
                 )}
               </div>

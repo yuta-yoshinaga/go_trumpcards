@@ -173,4 +173,102 @@ describe('HorsePage', () => {
       expect(mockExec).toHaveBeenCalledWith('reset', { config: { seats: 4, handsPerDiscipline: 2 } }),
     );
   });
+
+  // **PLO ラウンドでポット超過額がボタン操作前に分かる (#6622)。**
+  // maxBetAmount が設定されている場合、Maxプリセットが表示され、超過入力で警告が出る。
+  it('handles maxBetAmount in pot-limit rounds and keeps negative controls', async () => {
+    // 1. maxBetAmount: 120 (PLO ラウンド)
+    mockExec.mockResolvedValue(
+      makeHorseState({
+        disciplineLetter: 'PLO',
+        disciplineName: 'plOmaha',
+        pot: 100,
+        toCall: 20,
+        minRaise: 20,
+        maxBetAmount: 120,
+      }),
+    );
+    const { unmount } = renderWithProviders(<HorsePage />);
+
+    // Max プリセットボタンが表示される
+    const maxBtn = await screen.findByRole('button', { name: 'Max' });
+    expect(maxBtn).toBeInTheDocument();
+
+    // Max ボタンをクリックするとベット額が 120 に設定される
+    fireEvent.click(maxBtn);
+    const input = screen.getByLabelText('ベット額:') as HTMLInputElement;
+    expect(input.value).toBe('120');
+
+    // 120 超過の額 (例: 150) を入力すると警告が表示され、レイズボタンが無効化される
+    fireEvent.change(input, { target: { value: '150' } });
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'レイズ' })).toBeDisabled();
+    unmount();
+
+    // 2. 負のコントロール: maxBetAmount: 250 に変えると Max が 250 になり、150 では警告が出ない
+    mockExec.mockResolvedValue(
+      makeHorseState({
+        disciplineLetter: 'PLO',
+        disciplineName: 'plOmaha',
+        pot: 200,
+        toCall: 50,
+        minRaise: 50,
+        maxBetAmount: 250,
+      }),
+    );
+    const render250 = renderWithProviders(<HorsePage />);
+    const maxBtn250 = await screen.findByRole('button', { name: 'Max' });
+    fireEvent.click(maxBtn250);
+    const input250 = screen.getByLabelText('ベット額:') as HTMLInputElement;
+    expect(input250.value).toBe('250');
+    fireEvent.change(input250, { target: { value: '150' } });
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'レイズ' })).not.toBeDisabled();
+    render250.unmount();
+
+    // 3. 負のコントロール: maxBetAmount: 0 (HORSE 固定リミット) では Max ボタンが表示されない
+    mockExec.mockResolvedValue(
+      makeHorseState({
+        disciplineLetter: 'H',
+        disciplineName: 'holdem',
+        pot: 30,
+        toCall: 20,
+        minRaise: 20,
+        maxBetAmount: 0,
+      }),
+    );
+    renderWithProviders(<HorsePage />);
+    await screen.findByRole('button', { name: 'レイズ' });
+    expect(screen.queryByRole('button', { name: 'Max' })).not.toBeInTheDocument();
+  });
+
+  // ドローフェーズの手番では交換カード選択エリアを表示する。
+  it('shows draw area during human draw turn', async () => {
+    mockExec.mockResolvedValue(makeHorseState({ isDrawPhase: true, drawIndex: 1 }));
+    renderWithProviders(<HorsePage />);
+    await waitFor(() => expect(screen.getByTestId('ho-draw')).toBeInTheDocument());
+  });
+
+  // ベットラウンドなどドローフェーズ以外では交換カード選択エリアを表示しない。
+  it('hides draw area outside draw turn', async () => {
+    mockExec.mockResolvedValue(handState);
+    renderWithProviders(<HorsePage />);
+    await screen.findByTestId('ho-discipline');
+    expect(screen.queryByTestId('ho-draw')).not.toBeInTheDocument();
+  });
+
+  // ドローフェーズの手番ではカード交換ボタンを表示する。
+  it('shows draw exchange button during human draw turn', async () => {
+    mockExec.mockResolvedValue(makeHorseState({ isDrawPhase: true, drawIndex: 1 }));
+    renderWithProviders(<HorsePage />);
+    await waitFor(() => expect(screen.getByTestId('ho-draw-exchange')).toBeInTheDocument());
+  });
+
+  // ドローフェーズ以外ではカード交換ボタンを表示しない。
+  it('hides draw exchange button outside draw turn', async () => {
+    mockExec.mockResolvedValue(handState);
+    renderWithProviders(<HorsePage />);
+    await screen.findByTestId('ho-discipline');
+    expect(screen.queryByTestId('ho-draw-exchange')).not.toBeInTheDocument();
+  });
 });

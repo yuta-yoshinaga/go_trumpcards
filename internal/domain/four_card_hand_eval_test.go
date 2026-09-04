@@ -371,3 +371,23 @@ func TestPickBestFourFromFive_FromSix(t *testing.T) {
 	best := pickBestFour(cards)
 	assert.Equal(t, FourCardHandFourOfAKind, evalFourCardHand(best))
 }
+
+func TestEvalFourCardHand_FlushRanksHigherThanStraight(t *testing.T) {
+	flushCards := []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+		NewCard(CardDesignSpade, 11, false),
+	}
+	straightCards := []*Card{
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignClover, 6, false),
+		NewCard(CardDesignHeart, 7, false),
+		NewCard(CardDesignDiamond, 8, false),
+	}
+	flushRank := evalFourCardHand(flushCards)
+	straightRank := evalFourCardHand(straightCards)
+	assert.Equal(t, FourCardHandFlush, flushRank)
+	assert.Equal(t, FourCardHandStraight, straightRank)
+	assert.Greater(t, flushRank, straightRank, "4-card poker flush must rank higher than straight")
+}

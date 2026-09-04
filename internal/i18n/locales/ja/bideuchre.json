@@ -17,6 +17,7 @@
   "helpNext": "  n / next                  次の局へ",
   "helpHint": "  h / hint                  ヒントを表示",
   "header": "局: {{hand}}  勝利点: {{target}}点",
+  "noKittyNote": "【キティはありません。】24枚を4人に6枚ずつ配り切るので、伏せられているのは他家の手札だけです。",
   "scoreLine": "チーム0: {{s0}}点 / チーム1: {{s1}}点",
   "contractLine": "契約: {{value}}トリック  切札: {{trump}}",
   "trumpUndecided": "未定",

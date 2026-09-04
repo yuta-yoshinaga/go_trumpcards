@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { LaughAndLieDownResponse } from '../types/card';
 import { LaughAndLieDownPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { LAUGHANDLIEDOWN_HELP, parseLaughAndLieDownCommand } from '../utils/cli/commands/laughandliedownCommands';
 import { formatLaughAndLieDownState } from '../utils/cli/formatters/laughandliedownFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -201,6 +202,17 @@ function LaughAndLieDownPageContent() {
               <div className="flex gap-2 justify-center flex-wrap items-start">
                 {(human?.cards ?? []).map((card, i) => {
                   const canPlay = isHumanTurn && playable.has(i);
+                  const blockedByMatch = isHumanTurn && !playable.has(i);
+                  const disabledReason = !isHumanTurn
+                    ? t('notYourTurnAria')
+                    : blockedByMatch
+                      ? t('noMatchingRankAria')
+                      : '';
+                  const disabledTitle = !isHumanTurn
+                    ? t('notYourTurnTooltip')
+                    : blockedByMatch
+                      ? t('noMatchingRankTooltip')
+                      : undefined;
                   return (
                     <div key={`hand-${i.toString()}`} className="text-center">
                       <button
@@ -209,6 +221,8 @@ function LaughAndLieDownPageContent() {
                         // Kept focusable while it cannot act so the reason is
                         // announced rather than the control leaving the tab order.
                         aria-disabled={!canPlay}
+                        title={disabledTitle}
+                        aria-label={disabledReason ? `${cardAlt(card)} (${disabledReason})` : cardAlt(card)}
                         onClick={() => play(i)}
                         className={[
                           'rounded transition-transform',

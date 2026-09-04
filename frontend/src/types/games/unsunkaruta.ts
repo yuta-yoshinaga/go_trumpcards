@@ -72,6 +72,8 @@ export interface UnsunKarutaResponse extends BaseGameResponse {
   trumpCard?: Card | null;
   /** True while this trick carries the follow obligation (a declaration was made). */
   mustFollow: boolean;
+  /** Declaration kind: 0=none, 1=Meri (trump lead), 2=Monchi (plain lead). */
+  declarationKind: number;
   /** True when the declaration happened on this trick. */
   declared: boolean;
   /** True while the human may declare (they are on lead). */

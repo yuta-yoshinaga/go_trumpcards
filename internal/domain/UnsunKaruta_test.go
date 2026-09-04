@@ -431,3 +431,38 @@ func TestUnsunKarutaGetHintIgnoresCpuDifficulty(t *testing.T) {
 		assert.Equal(t, want, hint.CardIndices[0], "%d 回目でぶれた", i+1)
 	}
 }
+
+// **宣言の種別は台札から導く (#6624)。**
+//
+// 別のフィールドで持つと KV 往復に載せ忘れたとき「宣言は出ているのに種別だけ
+// 消える」形の嘘が作れてしまうので、`mustFollow` と `currentTrick` から毎回導く。
+// **盤は手で組む** ── 配りに任せると台札のスートが固定できない。
+func TestUnsunKaruta_DeclarationKindComesFromTheLead(t *testing.T) {
+	g := newUnsunForTest(t)
+	g.trumpSuit = UnsunKarutaSuitPao
+	lead := func(suit int) []*TrickCard {
+		return []*TrickCard{{PlayerIdx: 0, Card: NewCard(suit, 5, false)}}
+	}
+
+	// 宣言が立っていなければ、台札が何であれ種別は付かない。
+	g.mustFollow = false
+	g.currentTrick = lead(g.trumpSuit)
+	assert.Equal(t, UnsunKarutaDeclarationNone, g.GetDeclarationKind())
+
+	// 切り札リード = メリ。
+	g.mustFollow = true
+	assert.Equal(t, UnsunKarutaDeclarationMeri, g.GetDeclarationKind())
+
+	// 平札リード = モンチ。**スートを見ていることの確認**で、切り札を返し続ける
+	// 実装だとここで落ちる。
+	g.currentTrick = lead(UnsunKarutaSuitIsu)
+	assert.Equal(t, UnsunKarutaDeclarationMonchi, g.GetDeclarationKind())
+
+	// 台札がまだ無い局面では種別を名乗らない。
+	g.currentTrick = nil
+	assert.Equal(t, UnsunKarutaDeclarationNone, g.GetDeclarationKind())
+
+	// 台札の中身が欠けていても落ちない。
+	g.currentTrick = []*TrickCard{{PlayerIdx: 0, Card: nil}}
+	assert.Equal(t, UnsunKarutaDeclarationNone, g.GetDeclarationKind())
+}

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { stealingbundlesApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -76,6 +76,19 @@ describe('StealingBundlesPage', () => {
   });
 
   // **空の場も情報。** 行が消えると見落としと区別が付きません。
+  // **山札を配り切ってもゲームは続く。**何回目の配りかが出ていないと、
+  // 山札が尽きて配り直された直後なのかが盤面から判断できない。
+  it('shows which pack is being played, alongside the turn and the deck', async () => {
+    mockExec.mockResolvedValue(makeState({ packsDealt: 3, turnNumber: 2, deckRemaining: 32 }));
+    renderWithProviders(<StealingBundlesPage />);
+
+    const header = await screen.findByTestId('sb-header');
+    expect(within(header).getByTestId('sb-pack')).toHaveTextContent('配布 3 パック目');
+    // 3 つの数字はそれぞれ別物。取り違えると全部それらしく見えてしまう。
+    expect(header).toHaveTextContent('手数 3');
+    expect(header).toHaveTextContent('山札 残り32枚');
+  });
+
   it('shows the table, empty or not', async () => {
     const { unmount } = renderWithProviders(<StealingBundlesPage />);
     expect(await screen.findByTestId('sb-table')).toBeInTheDocument();

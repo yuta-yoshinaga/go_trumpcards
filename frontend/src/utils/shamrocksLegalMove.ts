@@ -26,9 +26,11 @@ function fitsFoundation(card: Card, foundation: Card[][]): boolean {
  * Whether the card can move onto fan `dst`.
  *
  * **This duplicates the server rule** (`Shamrocks.canMoveFanToFan`) -- change it
- * whenever the domain changes. The page used to borrow
- * `labelleLucieMovableFans`, which encodes La Belle Lucie's rule instead: same
- * suit, exactly one rank lower, no fan cap, and an empty fan never a target.
+ * whenever the domain changes. The page used to borrow La Belle Lucie's
+ * client-side helper, which encodes *that* game's rule instead: same suit,
+ * exactly one rank lower, no fan cap, and an empty fan never a target.
+ * (That helper is gone -- La Belle Lucie now reads the rule from the server,
+ * see #6474 -- but the reason this file exists separately is unchanged.)
  * All three differ here, so the movable ring missed real moves, could ring a
  * move into a full fan, and the stuck banner fired with legal moves available.
  */

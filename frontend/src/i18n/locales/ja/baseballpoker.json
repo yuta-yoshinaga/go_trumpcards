@@ -48,5 +48,18 @@
   "frontendHint.baseballWorthACall": "二段以上あるので、この額なら見る価値があります",
   "frontendHint.baseballCheapToStay": "安いので、次の1枚を見る価値があります",
   "frontendHint.baseballSeeAnotherCard": "ただで次の1枚を見られます",
-  "frontendHint.baseballWildsRaiseTheBar": "ワイルドが8枚あるぶん、この手では相場に届きません"
+  "frontendHint.baseballWildsRaiseTheBar": "ワイルドが8枚あるぶん、この手では相場に届きません",
+  "hand": {
+    "highCard": "ハイカード",
+    "onePair": "ワンペア",
+    "twoPair": "ツーペア",
+    "threeOfAKind": "スリーカード",
+    "straight": "ストレート",
+    "flush": "フラッシュ",
+    "fullHouse": "フルハウス",
+    "fourOfAKind": "フォーカード",
+    "straightFlush": "ストレートフラッシュ",
+    "royalFlush": "ロイヤルフラッシュ",
+    "fiveOfAKind": "ファイブカード"
+  }
 }

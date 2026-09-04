@@ -252,23 +252,32 @@ function FreeBetPageContent() {
                     {t('freeNotice')}
                   </p>
                   <div className="flex gap-2 flex-wrap justify-center">
+                    {/* **同じ仕組みのショートカットは同じ手掛かりを出す。** Free
+                        Double / Free Split だけがキーを表示していて、h / s の
+                        存在は画面からも読み上げからも分からなかった。 */}
                     <button
                       type="button"
                       className={btnSuccess}
+                      data-testid="fb-hit"
                       data-hint-action="hit"
                       onClick={() => execApi('hit')}
                       disabled={loading}
+                      aria-keyshortcuts="h"
                     >
                       {t('button.hit')}
+                      <KbdBadge label={t('kbd.hit')} />
                     </button>
                     <button
                       type="button"
                       className={btnSecondary}
+                      data-testid="fb-stand"
                       data-hint-action="stand"
                       onClick={() => execApi('stand')}
                       disabled={loading}
+                      aria-keyshortcuts="s"
                     >
                       {t('button.stand')}
+                      <KbdBadge label={t('kbd.stand')} />
                     </button>
                     {/* **押せるかどうかはサーバが決める。** 手札から計算し直さない。 */}
                     {state.canFreeDouble && (

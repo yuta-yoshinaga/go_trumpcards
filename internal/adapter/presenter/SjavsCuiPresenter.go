@@ -119,9 +119,15 @@ func (p *SjavsCuiPresenter) promptBlock(c interfaces.SjavsGame) string {
 		if hr.ScoringTeam < 0 {
 			sb.WriteString(i18n.T("sjavs.handTie") + "\n")
 		} else {
-			sb.WriteString(i18n.Tf("sjavs.handScore",
+			line := i18n.Tf("sjavs.handScore",
 				"team", strconv.Itoa(hr.ScoringTeam),
-				"amount", strconv.Itoa(hr.Amount)) + "\n")
+				"amount", strconv.Itoa(hr.Amount))
+			// vol は加点の出どころが他の行と違う (12/16 で、♣でも倍にならない)。
+			// 印を出さないと、CUI 側だけ点の理由が読めない。Web は同じ位置に出す。
+			if hr.Vol {
+				line += i18n.T("sjavs.vol")
+			}
+			sb.WriteString(line + "\n")
 		}
 		sb.WriteString(i18n.T("sjavs.promptNext") + "\n")
 		return sb.String()

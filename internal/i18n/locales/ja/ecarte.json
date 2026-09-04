@@ -43,5 +43,9 @@
   "helpNext": "  n                    次のトリック／ディールへ",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "consequencePropose": "ディーラーに交換を求めます。承諾されれば両者が引き直し、拒否されればディーラーが不利になります（拒否側は敗れると相手に追加1点）。",
+  "consequenceStand": "交換せず、配られた手札のまま勝負します（引き直しなし・罰則なし）。",
+  "consequenceAccept": "交換に応じ、両者が任意の枚数を捨てて山札から引き直します。",
+  "consequenceRefuse": "交換を拒否して現状の手札で勝負します。3トリック取れずに敗れると相手に追加1点（通常2点、Voleなら3点）を与えます。"
 }

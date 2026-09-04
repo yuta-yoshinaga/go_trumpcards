@@ -53,7 +53,13 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 		}
 
 		b.WriteString(i18n.Tf("holdem.tableMax", "n", strconv.Itoa(h.GetPlayerCnt())) + "\n")
-		b.WriteString(i18n.Tf("holdem.dealerLine", "idx", strconv.Itoa(h.GetDealerIdx())) + "\n")
+		dealerIdx := h.GetDealerIdx()
+		// **座席番号ではなく名前で呼ぶ。**同じ関数の他の行はすべて
+		// `cuiPlayerName` を通しているのに、ディーラー行だけ生の添字を
+		// 英語のまま埋めた文字列 ("ディーラー: Player 0") を出していた
+		// (#6470)。Web は `findPlayerName` で実名を出している。
+		b.WriteString(i18n.Tf("holdem.dealerLine",
+			"name", cuiPlayerName(h.GetPlayer(dealerIdx), dealerIdx)) + "\n")
 
 		cc := h.GetCommunityCards()
 		if len(cc) == 0 {

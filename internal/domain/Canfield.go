@@ -170,8 +170,8 @@ func (c *Canfield) MoveWasteToTableau(col int) error {
 		return errors.New("waste is empty")
 	}
 	card := c.waste[len(c.waste)-1]
-	if !c.canPlaceOnTableau(card, col) {
-		return errors.New("cannot place card on tableau")
+	if err := c.tableauPlacementError(card, col); err != nil {
+		return err
 	}
 	c.takeSnapshot()
 	c.waste = c.waste[:len(c.waste)-1]
@@ -227,8 +227,8 @@ func (c *Canfield) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	}
 	moving := fromCards[cardIndex:]
 	bottom := moving[0].Card
-	if !c.canPlaceOnTableau(bottom, toCol) {
-		return errors.New("cannot place card on tableau")
+	if err := c.tableauPlacementError(bottom, toCol); err != nil {
+		return err
 	}
 	c.takeSnapshot()
 	moved := make([]*Card, len(moving))
@@ -285,8 +285,8 @@ func (c *Canfield) MoveReserveToTableau(col int) error {
 		return errors.New("reserve is empty")
 	}
 	card := c.reserve[len(c.reserve)-1]
-	if !c.canPlaceOnTableau(card, col) {
-		return errors.New("cannot place card on tableau")
+	if err := c.tableauPlacementError(card, col); err != nil {
+		return err
 	}
 	c.takeSnapshot()
 	c.reserve = c.reserve[:len(c.reserve)-1]
@@ -495,14 +495,24 @@ func (c *Canfield) UndoN(n int) error {
 
 // --- Private helpers ---
 
-func (c *Canfield) canPlaceOnTableau(card *Card, col int) bool {
+func (c *Canfield) tableauPlacementError(card *Card, col int) error {
 	colCards := c.tableau[col]
 	if len(colCards) == 0 {
 		// リザーブが残っている間は空列に自分で置けない (自動補充)
-		return len(c.reserve) == 0
+		if len(c.reserve) > 0 {
+			return NewDomainErrorCode(ErrInvalidPlay, "canfield.errEmptyColumnAutoFillOnly", nil)
+		}
+		return nil
 	}
 	top := colCards[len(colCards)-1].Card
-	return c.isAlternateColor(card, top) && card.GetValue() == c.prevRank(top.GetValue())
+	if !c.isAlternateColor(card, top) || card.GetValue() != c.prevRank(top.GetValue()) {
+		return NewDomainErrorCode(ErrInvalidPlay, "canfield.errNotAlternateDescending", nil)
+	}
+	return nil
+}
+
+func (c *Canfield) canPlaceOnTableau(card *Card, col int) bool {
+	return c.tableauPlacementError(card, col) == nil
 }
 
 func (c *Canfield) canPlaceOnFoundation(card *Card, fIdx int) bool {

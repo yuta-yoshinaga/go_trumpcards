@@ -213,4 +213,18 @@ describe('SambaPage', () => {
     await waitFor(() => expect(cpuRows(/^CPU \d+: \d+枚$/).length).toBeGreaterThan(0));
     expect(cpuRows(/^CPU \d+: \d+ cards$/)).toHaveLength(0);
   });
+
+  // 捨て札の一番上のカードが存在する場合のみ、捨て札置き場を表示する。
+  it('renders sa-discard-pile when discardTop exists', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<SambaPage />);
+    await waitFor(() => expect(screen.getByTestId('sa-discard-pile')).toBeInTheDocument());
+  });
+
+  it('does not render sa-discard-pile when discardTop is null', async () => {
+    mockExec.mockResolvedValue(makeSambaState({ discardTop: null }));
+    renderWithProviders(<SambaPage />);
+    await waitFor(() => expect(screen.getByTestId('sa-team-scores')).toBeInTheDocument());
+    expect(screen.queryByTestId('sa-discard-pile')).not.toBeInTheDocument();
+  });
 });

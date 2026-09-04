@@ -187,7 +187,7 @@ function PutPageContent() {
             {t('header.hand')}: {state.handNumber}
           </span>
           <span className="mr-4">
-            {t('header.baza')}: {state.trickNumber}
+            {t('header.trick')}: {state.trickNumber}
           </span>
           <span data-testid="put-stake">
             {t('header.stake')}: {state.handStake} ({levelLabel(state.acceptedLevel)})

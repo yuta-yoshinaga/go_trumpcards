@@ -27,6 +27,8 @@ type WaspWebOutputHint struct {
 	FromCol   int `json:"fromCol"`
 	CardIndex int `json:"cardIndex"`
 	ToCol     int `json:"toCol"`
+	// ExposesFaceDown はこの手で裏カードが1枚開くか。ヒントが優先した理由 (#6340)。
+	ExposesFaceDown bool `json:"exposesFaceDown"`
 }
 
 // WaspWebOutput ワスプWebアウトプット

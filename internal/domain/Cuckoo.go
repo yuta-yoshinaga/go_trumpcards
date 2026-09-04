@@ -519,6 +519,26 @@ func (g *Cuckoo) nextActiveIdx(from int) int {
 	return nextIndexWhere(g.players, from, func(p *CuckooPlayer) bool { return !p.IsEliminated() })
 }
 
+// GetSwapTargetIdx は fromIdx が交換を選んだときに相手になる席を返す。卓を回って
+// 次にまだ残っている席で、他に誰も残っていなければ -1。
+//
+// **席順の隣とは限らない。**脱落者は手番から飛ばされるので、「右隣」は正しくない
+// ことがある ── Web はこれをクライアント側で計算し直していた
+// (frontend/src/utils/cuckooSwapTarget.ts、#5671) が、CUI には相当する情報が無く、
+// プロンプトは相手の名前を一切出していなかった (#6467)。規則は `attemptSwap` が
+// 使う `nextActiveIdx` そのもので、-1 は `attemptSwap` が「保持」として扱う場合と
+// 一致する。ディーラーは山札と交換するので、その分岐は呼び出し側が先に処理する。
+func (g *Cuckoo) GetSwapTargetIdx(fromIdx int) int {
+	if fromIdx < 0 || fromIdx >= len(g.players) {
+		return -1
+	}
+	target := g.nextActiveIdx(fromIdx)
+	if target == fromIdx {
+		return -1
+	}
+	return target
+}
+
 // humanIdx 人間プレイヤーのインデックスを返す (-1 = 不在)
 func (g *Cuckoo) humanIdx() int {
 	return findHumanIdx(g.players)

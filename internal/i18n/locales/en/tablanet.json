@@ -7,6 +7,8 @@
   "tableLine": "Table: {{table}}",
   "playerLine": "{{name}}: {{hand}} cards  Captured: {{captured}}  Tabla: {{tabla}}",
   "promptPlay": "Turn: {{name}}",
+  "resultWinner": "Winner: {{names}}",
+  "resultScores": "Final scores: {{scores}}",
   "promptGameEnd": "Game over. Use nr to start a new game.",
   "promptHelp": "p <h> [t...] to play (omit t to trail; a Jack sweeps the table)",
   "hintNone": "No hint available.",

@@ -458,7 +458,10 @@ function BraidPageContent() {
                     type="button"
                     onClick={() => game.handleSelectSource(braidZone)}
                     disabled={!isPlaying || loading}
-                    aria-label={t('braidAriaLabel', { count: state.braid.length })}
+                    // ボタンの aria-label は中の <AnimatedCard> の alt を上書きする。
+                    // 枚数しか言っていなかったので、**末尾の札が何か**が読み上げから
+                    // 完全に消えていた (#6360)。捨て札は cardAlt を使っている。
+                    aria-label={t('braidAriaLabel', { card: cardAlt(braidTail), count: state.braid.length })}
                     aria-pressed={isSourceSelected('braid', undefined)}
                     draggable={isPlaying && !loading}
                     onDragStart={dnd.handleDragStart(braidZone)}

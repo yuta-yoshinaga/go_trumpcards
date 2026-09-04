@@ -4,8 +4,8 @@ package domain
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"strconv"
 )
 
 // ポンツーンのフェーズ定数
@@ -223,17 +223,17 @@ func pontoonSeatName(i int) string {
 // PlaceBet 人間のベットを置き、その局を配る。
 func (p *Pontoon) PlaceBet(bet int) error {
 	if p.phase != PontoonPhaseBet {
-		return errors.New("pontoon: not in the betting phase")
+		return NewDomainErrorCode(ErrWrongPhase, "pontoon.errNotBettingPhase", nil)
 	}
 	if p.IsHumanBanker() {
 		// 親は賭けない。全員の賭けを受ける側なので、ベットを求めるのは誤り。
-		return errors.New("pontoon: the banker does not place a bet")
+		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errBankerDoesNotBet", nil)
 	}
 	if bet < PontoonMinBet || bet > PontoonMaxBet {
-		return fmt.Errorf("pontoon: bet must be between %d and %d", PontoonMinBet, PontoonMaxBet)
+		return NewDomainErrorCode(ErrInvalidAmount, "pontoon.errBetOutOfRange", map[string]string{"Min": strconv.Itoa(PontoonMinBet), "Max": strconv.Itoa(PontoonMaxBet)})
 	}
 	if bet > p.chips.GetChips() {
-		return errors.New("pontoon: not enough chips")
+		return NewDomainErrorCode(ErrInsufficientChips, "pontoon.errNotEnoughChips", nil)
 	}
 	p.chips.SetChips(p.chips.GetChips() - bet)
 	p.deal(bet)
@@ -243,10 +243,10 @@ func (p *Pontoon) PlaceBet(bet int) error {
 // StartAsBanker 人間が親の局を配る。人間は賭けないのでベット額を取らない。
 func (p *Pontoon) StartAsBanker() error {
 	if p.phase != PontoonPhaseBet {
-		return errors.New("pontoon: not in the betting phase")
+		return NewDomainErrorCode(ErrWrongPhase, "pontoon.errNotBettingPhase", nil)
 	}
 	if !p.IsHumanBanker() {
-		return errors.New("pontoon: the human is not the banker")
+		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errNotBanker", nil)
 	}
 	p.deal(0)
 	return nil
@@ -366,7 +366,7 @@ func (p *Pontoon) Stick() error {
 		return err
 	}
 	if pontoonTotal(h.cards) < PontoonStickMin {
-		return fmt.Errorf("pontoon: cannot stick below %d", PontoonStickMin)
+		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errCannotStickBelowMin", map[string]string{"Min": strconv.Itoa(PontoonStickMin)})
 	}
 	h.stuck = true
 	p.appendLog("stick", "スティック", h.cards)
@@ -381,10 +381,10 @@ func (p *Pontoon) Twist() error {
 		return err
 	}
 	if len(h.cards) >= PontoonMaxCards {
-		return errors.New("pontoon: a five card trick takes no more cards")
+		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errFiveCardTrickFull", nil)
 	}
 	if pontoonTotal(h.cards) >= PontoonTarget {
-		return errors.New("pontoon: cannot twist on 21 or more")
+		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errCannotTwistOn21OrMore", nil)
 	}
 	h.twisted = true
 	p.hit(h)
@@ -405,19 +405,19 @@ func (p *Pontoon) Buy(extra int) error {
 		return err
 	}
 	if h.twisted {
-		return errors.New("pontoon: cannot buy after twisting")
+		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errCannotBuyAfterTwisting", nil)
 	}
 	if len(h.cards) >= PontoonMaxCards {
-		return errors.New("pontoon: a five card trick takes no more cards")
+		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errFiveCardTrickFull", nil)
 	}
 	if pontoonTotal(h.cards) >= PontoonTarget {
-		return errors.New("pontoon: cannot buy on 21 or more")
+		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errCannotBuyOn21OrMore", nil)
 	}
 	if extra < PontoonMinBet || extra > h.bet*2 {
-		return fmt.Errorf("pontoon: the extra stake must be between %d and twice the current bet", PontoonMinBet)
+		return NewDomainErrorCode(ErrInvalidAmount, "pontoon.errBuyStakeOutOfRange", map[string]string{"Min": strconv.Itoa(PontoonMinBet)})
 	}
 	if extra > p.chips.GetChips() {
-		return errors.New("pontoon: not enough chips")
+		return NewDomainErrorCode(ErrInsufficientChips, "pontoon.errNotEnoughChips", nil)
 	}
 	p.chips.SetChips(p.chips.GetChips() - extra)
 	h.bet += extra
@@ -439,13 +439,13 @@ func (p *Pontoon) Split() error {
 	}
 	s := p.seats[p.activeSeat]
 	if len(s.hands) >= PontoonMaxHands {
-		return fmt.Errorf("pontoon: cannot hold more than %d hands", PontoonMaxHands)
+		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errTooManyHands", map[string]string{"Max": strconv.Itoa(PontoonMaxHands)})
 	}
 	if len(h.cards) != 2 || h.cards[0].GetValue() != h.cards[1].GetValue() {
-		return errors.New("pontoon: split needs two cards of equal rank")
+		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errSplitRequiresEqualRank", nil)
 	}
 	if h.bet > p.chips.GetChips() {
-		return errors.New("pontoon: not enough chips")
+		return NewDomainErrorCode(ErrInsufficientChips, "pontoon.errNotEnoughChips", nil)
 	}
 	p.chips.SetChips(p.chips.GetChips() - h.bet)
 	moved := h.cards[1]
@@ -464,14 +464,14 @@ func (p *Pontoon) Split() error {
 // currentHand 手番の手を返す
 func (p *Pontoon) currentHand() (*PontoonHand, error) {
 	if p.phase != PontoonPhasePlayerTurn {
-		return nil, errors.New("pontoon: not the player's turn")
+		return nil, NewDomainErrorCode(ErrWrongPhase, "pontoon.errNotPlayerTurn", nil)
 	}
 	if p.activeSeat != 0 || p.activeSeat == p.banker {
-		return nil, errors.New("pontoon: not the human's turn")
+		return nil, NewDomainErrorCode(ErrInvalidPlay, "pontoon.errNotHumanTurn", nil)
 	}
 	s := p.seats[0]
 	if p.activeHand < 0 || p.activeHand >= len(s.hands) {
-		return nil, errors.New("pontoon: no hand in play")
+		return nil, NewDomainErrorCode(ErrInvalidPlay, "pontoon.errNoHandInPlay", nil)
 	}
 	return s.hands[p.activeHand], nil
 }
@@ -505,13 +505,13 @@ func (p *Pontoon) startBankerTurn() {
 // BankerTwist 人間が親のときに 1 枚引く。
 func (p *Pontoon) BankerTwist() error {
 	if p.phase != PontoonPhaseBankerTurn {
-		return errors.New("pontoon: not the banker's turn")
+		return NewDomainErrorCode(ErrWrongPhase, "pontoon.errNotBankerTurn", nil)
 	}
 	if len(p.bankerHand.cards) >= PontoonMaxCards {
-		return errors.New("pontoon: a five card trick takes no more cards")
+		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errFiveCardTrickFull", nil)
 	}
 	if pontoonTotal(p.bankerHand.cards) > PontoonTarget {
-		return errors.New("pontoon: the banker has already bust")
+		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errBankerAlreadyBust", nil)
 	}
 	p.hit(p.bankerHand)
 	p.appendLog("bankerTwist", "親がカードを引いた", p.bankerHand.cards)
@@ -524,7 +524,7 @@ func (p *Pontoon) BankerTwist() error {
 // BankerStay 人間が親のときに引くのをやめて精算する。
 func (p *Pontoon) BankerStay() error {
 	if p.phase != PontoonPhaseBankerTurn {
-		return errors.New("pontoon: not the banker's turn")
+		return NewDomainErrorCode(ErrWrongPhase, "pontoon.errNotBankerTurn", nil)
 	}
 	p.settle()
 	return nil
@@ -755,7 +755,7 @@ func (h *PontoonHand) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Cards) > pontoonMaxSliceLen {
-		return errors.New("pontoon: hand exceeds maximum allowed size")
+		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errHandTooLarge", nil)
 	}
 	h.cards = j.Cards
 	h.bet = j.Bet
@@ -850,10 +850,10 @@ func (p *Pontoon) UnmarshalJSON(data []byte) error {
 		return fmt.Errorf("invalid active hand: %d", j.ActiveHand)
 	}
 	if j.Chips < 0 {
-		return fmt.Errorf("invalid chips: %d", j.Chips)
+		return NewDomainErrorCode(ErrInvalidAmount, "pontoon.errInvalidChips", map[string]string{"Chips": strconv.Itoa(j.Chips)})
 	}
 	if len(j.ActionLog) > pontoonMaxSliceLen {
-		return errors.New("pontoon: action log exceeds maximum allowed size")
+		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errActionLogTooLarge", nil)
 	}
 	if j.TrumpCards != nil {
 		p.trumpCards = j.TrumpCards

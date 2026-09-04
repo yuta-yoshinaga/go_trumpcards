@@ -18,5 +18,9 @@
   "bombCount": "Bombs played: {{count}}",
   "oneTwo": "One-two! (the same team went out first and second)",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "dogLeadPassed": "Dog: {{from}} played the Dog; the lead passed to their partner ({{to}})",
+  "dogLeadPassedByYou": "Dog: you played the Dog; the lead passed to your partner (CPU {{to}})",
+  "dogLeadPassedToYou": "Dog: CPU {{from}} played the Dog; the lead passed to you",
+  "dogLeadPassedBetweenCpus": "Dog: CPU {{from}} played the Dog; the lead passed to CPU {{to}}"
 }

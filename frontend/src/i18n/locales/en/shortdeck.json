@@ -74,7 +74,8 @@
     "handOdds": "Hand Odds"
   },
   "settings": {
-    "cpuMetaAI": "Meta-AI (CPU learns your play style)"
+    "cpuMetaAI": "Meta-AI (CPU learns your play style)",
+    "tournamentMode": "Tournament mode (blinds go up)"
   },
   "tutorial": {
     "communityCards": "Community cards shared by all players. Five cards are revealed progressively.",

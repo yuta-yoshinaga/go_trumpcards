@@ -28,6 +28,7 @@ func (cp *IronCrossWebPresenter) Output(c interfaces.IronCrossGame, lastErr erro
 	resObj.CurrentBet = c.GetCurrentBet()
 	resObj.ToCall = c.GetToCall()
 	resObj.RaiseCount = c.GetRaiseCount()
+	resObj.MaxRaises = domain.IronCrossMaxRaisesPerRound
 	resObj.CanRaise = c.CanRaise()
 	resObj.TurnSeat = c.GetTurnSeat()
 	resObj.HumanSeat = c.HumanSeat()

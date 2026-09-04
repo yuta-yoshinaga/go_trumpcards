@@ -156,6 +156,19 @@ func (p *MinchiateCuiPresenter) writeRoundEndResult(b *strings.Builder, g interf
 			"tricks", strconv.Itoa(player.GetTrickCount())))
 	}
 	b.WriteString(i18n.Tf("minchiate.roundEndTricks", "list", strings.Join(entries, ", ")) + "\n")
+	// **トリック数を足しても teamScores の増分と合わない。**精算には最終トリック
+	// ボーナスとスカルト枚数分が乗っているのに、どちらの画面にも出ていなかった
+	// (#6512)。検算できないのは、内訳が足りないから。
+	if winner := g.GetLastTrickWinner(); winner >= 0 {
+		b.WriteString(i18n.Tf("minchiate.roundEndLastTrick",
+			"team", strconv.Itoa(domain.MinchiateTeamOf(winner)),
+			"points", strconv.Itoa(domain.MinchiateLastTrickBonus)) + "\n")
+	}
+	if n := g.GetScartoSize(); n > 0 {
+		b.WriteString(i18n.Tf("minchiate.roundEndScarto",
+			"team", strconv.Itoa(domain.MinchiateTeamOf(g.GetDealerIdx())),
+			"points", strconv.Itoa(n)) + "\n")
+	}
 }
 
 // HintOutput emits the current Minchiate hint.

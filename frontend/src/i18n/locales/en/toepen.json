@@ -11,7 +11,7 @@
   "hint.fold": "nothing strong left; folding costs less than losing",
   "hint.play": "this is the cheapest card that still takes the trick",
   "hint.stay": "you still hold something strong -- staying in is fine",
-  "landscapeBanner": "Rotate your device for a better view of the cards",
+  "landscapeBanner": "Landscape mode recommended",
   "nextHand": "Next hand",
   "noTrick": "waiting for a lead",
   "phase.end": "Finished",
@@ -31,5 +31,6 @@
   "tutorial.toep": "A toep raises the stake by one. Opponents stay in or fold, and folding costs the stake BEFORE the raise.",
   "you": "You",
   "yourHand": "Your hand",
-  "toepedBy": "{{name}} toeps -- the stake is {{stake}}"
+  "toepedBy": "{{name}} toeps -- the stake is {{stake}}",
+  "lastTrickWinner": "Last trick winner: {{name}}"
 }

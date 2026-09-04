@@ -435,6 +435,13 @@ function ChinchonPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.chinchon.footer} px-4 py-2.5`}>
+            {/* ノック可能になった合図はボタンのパルスと数字の色だけで、支援技術には
+                何も届いていなかった ── 毎回手札を数え直すしかない。領域は**常設**に
+                して中身だけを差し替える: 中身が変わったときにだけ読み上げられるので、
+                ノック可能なまま手番が続いても読み上げが繰り返されない。 */}
+            <div className="sr-only" role="status" aria-live="polite" data-testid="chinchon-knock-live">
+              {canKnockNow && t('knockReadyAnnouncement', { threshold: knockThreshold })}
+            </div>
             {liveDeadwood != null && (
               <div
                 data-testid="chinchon-deadwood-indicator"

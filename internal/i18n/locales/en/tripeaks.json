@@ -17,5 +17,6 @@
   "hintUnknown": "Hint: unknown",
   "helpExampleHint": "  h                        ask for a move",
   "helpUndo": "  u                        undo one move",
-  "cuiScoreLine": "Score: {{score}}"
+  "cuiScoreLine": "Score: {{score}}",
+  "cuiComboLine": "🔥 {{combo}} in a row"
 }

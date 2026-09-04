@@ -53,4 +53,20 @@ describe('formatBeggarMyNeighbourState', () => {
   it('appends the server message when present', () => {
     expect(formatBeggarMyNeighbourState({ ...base, message: 'Game Over!' })).toContain('Game Over!');
   });
+
+  // **誰が払っているかは CLI にも要る** ── Web GUI と同じで、残り枚数だけでは
+  // 自分が払う側か相手が払う側か分からない (#6478、レビュー指摘)。
+  it('names the penalty payer while a penalty is being paid', () => {
+    const out = formatBeggarMyNeighbourState({ ...base, phase: 1, penaltyOwnerIdx: 1, penaltyRemaining: 2 });
+    expect(out).toContain('Paying: CPU 1');
+
+    const mine = formatBeggarMyNeighbourState({ ...base, phase: 1, penaltyOwnerIdx: 0, penaltyRemaining: 2 });
+    expect(mine).toContain('Paying: You');
+  });
+
+  // 支払い中でないときは出さない ── -1 は「誰でもない」。
+  it('names nobody outside the penalty phase', () => {
+    const out = formatBeggarMyNeighbourState(base);
+    expect(out).not.toContain('Paying:');
+  });
 });

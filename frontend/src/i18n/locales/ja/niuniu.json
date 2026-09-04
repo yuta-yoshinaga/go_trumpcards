@@ -33,5 +33,6 @@
   "rankNone": "無牛",
   "rankNiuNiu": "牛牛",
   "rankN": "牛{{n}}",
-  "bankerResult": "親: {{rank}}"
+  "bankerResult": "親: {{rank}}",
+  "comboAriaLabel": "牛の3枚: {{cards}}"
 }

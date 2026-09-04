@@ -177,6 +177,12 @@ func (p *ViraCuiPresenter) writeRoundEndResult(b *strings.Builder, g interfaces.
 			"tricks", strconv.Itoa(player.GetTrickCount())))
 	}
 	b.WriteString(i18n.Tf("vira.roundEndTricks", "list", strings.Join(entries, ", ")) + "\n")
+
+	if g.GetLastRoundMade() {
+		b.WriteString(i18n.Tf("vira.potWon", "chips", strconv.Itoa(g.GetLastRoundPotWon())) + "\n")
+	} else {
+		b.WriteString(i18n.Tf("vira.potCarried", "chips", strconv.Itoa(g.GetPot())) + "\n")
+	}
 }
 
 // viraContractTarget returns the number of tricks the contract requires.

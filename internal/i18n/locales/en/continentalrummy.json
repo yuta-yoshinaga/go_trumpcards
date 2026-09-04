@@ -23,6 +23,7 @@
   "drawPrompt": "stock to draw from the pack / take to lift the top discard",
   "discardPrompt": "discard <idx> to throw one card.",
   "canGoOut": "You can go out! goout {{idx}} lays all fifteen down.",
+  "canGoOutOnDeal": "The dealt fifteen already go out! gooutdeal / gd is worth 10 points.",
   "wentOut": "{{name}} went out.",
   "bonusLine": "{{label}}: {{points}}",
   "bonus.win": "going out",

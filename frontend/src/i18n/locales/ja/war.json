@@ -15,6 +15,7 @@
     "discardPile": "捨札",
     "total": "合計",
     "potCount": "場に{{count}}枚",
+    "lastBurialCount": "（{{count}}枚伏せました）",
     "rounds": "ラウンド",
     "maxRounds": "最大ラウンド"
   },

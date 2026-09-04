@@ -40,6 +40,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SevenCardStudResponse } from '../types/card';
 import { SevenCardStudPhase, SevenCardStudRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { valueName } from '../utils/cardUtils';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
@@ -235,6 +236,15 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
   const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
   const cpuPlayers = useMemo(() => state?.players?.filter((p) => !p.isHuman) ?? [], [state?.players]);
 
+  // Bring-in player (highest door card, posts the forced bet). Shown only during 3rd street,
+  // the single round where the bring-in is relevant. `bringInPlayerIdx` indexes into state.players.
+  const bringInIdx = state?.bringInPlayerIdx ?? -1;
+  const bringInPlayerId =
+    phase === SevenCardStudPhase.THIRD_STREET && bringInIdx >= 0 ? state?.players?.[bringInIdx]?.id : undefined;
+  const bringInCardClass = 'ring-2 ring-game-status-active rounded p-0.5';
+  const bringInBadgeClass =
+    'inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 bg-game-status-active text-game-text-strong';
+
   // Live best-hand strength for the human, computed from their visible door +
   // hole cards (best 5 of up to 7). Shown during the streets to aid betting
   // decisions; the server-supplied `handName` takes over at showdown. Only the
@@ -350,6 +360,11 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                     )}
                     {p.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
                     {p.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                    {p.id === bringInPlayerId && (
+                      <span data-testid={`sevencardstud-bringin-badge-${p.id}`} className={bringInBadgeClass}>
+                        {t('bringIn')}
+                      </span>
+                    )}
                     {isShowdown && !p.folded && p.handName && (
                       <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
                         {p.handName}
@@ -358,7 +373,7 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                   </div>
                   {/* Door cards (always visible) */}
                   <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                  <div className="flex flex-wrap gap-1 mb-1">
+                  <div className={`flex flex-wrap gap-1 mb-1 ${p.id === bringInPlayerId ? bringInCardClass : ''}`}>
                     {p.doorCards?.length
                       ? p.doorCards.map((card) => (
                           <AnimatedCard
@@ -452,6 +467,11 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                   )}
                   {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                  {humanPlayer.id === bringInPlayerId && (
+                    <span data-testid={`sevencardstud-bringin-badge-${humanPlayer.id}`} className={bringInBadgeClass}>
+                      {t('bringIn')}
+                    </span>
+                  )}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
                     <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
                       {humanPlayer.handName}
@@ -465,10 +485,33 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                       {t('currentHand')}: {t(`hand.${currentHandKey}`)}
                     </span>
                   )}
+                  {/* In Hi-Lo, render the human's current best qualifying low badge.
+                      Evaluation is performed on the server (domain.SevenCardStudHiLoBestLow);
+                      the frontend reads the server value directly to avoid duplicating
+                      8-or-better evaluation rules in TypeScript. */}
+                  {state.isHiLo &&
+                    isActive &&
+                    !humanPlayer.folded &&
+                    humanPlayer.currentLowHand &&
+                    humanPlayer.currentLowHand.length > 0 && (
+                      <span
+                        data-testid="scs-current-low"
+                        className="inline-block ml-2 text-xs rounded px-2 py-0.5 bg-black/25 text-ds-text-muted"
+                      >
+                        {t('currentLow', {
+                          low: [...humanPlayer.currentLowHand]
+                            .sort((a, b) => b.value - a.value)
+                            .map((c) => valueName(c.value))
+                            .join('-'),
+                        })}
+                      </span>
+                    )}
                 </div>
                 {/* Door cards */}
                 <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                <div className="flex flex-wrap gap-1.5 mb-1">
+                <div
+                  className={`flex flex-wrap gap-1.5 mb-1 ${humanPlayer.id === bringInPlayerId ? bringInCardClass : ''}`}
+                >
                   {humanPlayer.doorCards?.length
                     ? humanPlayer.doorCards.map((card) => (
                         <AnimatedCard

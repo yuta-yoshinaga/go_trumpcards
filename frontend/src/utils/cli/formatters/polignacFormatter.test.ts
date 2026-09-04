@@ -60,6 +60,8 @@ describe('formatPolignacState', () => {
       }),
     );
     expect(out).toContain('declared capot (3/8)');
+    // **1 ラウンド 1 度きりの不可逆な宣言。**動く点数まで言う。
+    expect(out).toContain('success costs everyone else 5, failure costs the declarer 5');
     expect(out).toContain('[capot]');
   });
 

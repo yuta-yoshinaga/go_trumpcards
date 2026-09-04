@@ -116,6 +116,15 @@ beforeEach(() => {
 });
 
 describe('EgyptianRatscrewPage', () => {
+  it('renders the GameSkeleton while state is null and does not render raw Loading…', () => {
+    // Keep exec pending so `state` stays null and the loading guard renders.
+    mockExec.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<EgyptianRatscrewPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+    expect(screen.queryByText('Loading…')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('step-button')).not.toBeInTheDocument();
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<EgyptianRatscrewPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

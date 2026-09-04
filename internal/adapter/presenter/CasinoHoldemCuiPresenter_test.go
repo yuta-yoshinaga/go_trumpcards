@@ -1,6 +1,7 @@
 package presenter
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -369,4 +370,75 @@ func TestCasinoHoldemCuiPresenterKeepsTheDealerHiddenAtTheFlop(t *testing.T) {
 
 	out := new(CasinoHoldemCuiPresenter).Output(g, nil)
 	assert.Contains(t, out, "??")
+}
+
+// #6400: BET フェーズで配当早見表（アンテ配当と AA ボーナス）を出す。
+// 倍率は文字列にハードコードせず、ドメインの定数から組み立てる。
+func TestCasinoHoldemCuiPresenter_Output_BetPhase_Paytable(t *testing.T) {
+	i18n.SetLang("ja")
+	p := new(CasinoHoldemCuiPresenter)
+	m := new(interfaces.MockCasinoHoldemGame)
+	setupCasinoHoldemCuiMockDefaults(m)
+
+	out := p.Output(m, nil)
+
+	// 見出し
+	assert.Contains(t, out, i18n.T("casinoholdem.antePayHeader"))
+	assert.Contains(t, out, i18n.T("casinoholdem.bonusPayHeader"))
+
+	// アンテ配当 (定数から組み立て)
+	assert.Contains(t, out, i18n.Tf("casinoholdem.antePayRoyalFlush", "mult", strconv.Itoa(domain.CasinoHoldemAntePayRoyalFlush)))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.antePayStraightFlush", "mult", strconv.Itoa(domain.CasinoHoldemAntePayStraightFlush)))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.antePayFourOfAKind", "mult", strconv.Itoa(domain.CasinoHoldemAntePayFourOfAKind)))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.antePayFullHouse", "mult", strconv.Itoa(domain.CasinoHoldemAntePayFullHouse)))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.antePayFlush", "mult", strconv.Itoa(domain.CasinoHoldemAntePayFlush)))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.antePayOther", "mult", strconv.Itoa(domain.CasinoHoldemAntePayOther)))
+
+	// AAボーナス配当の全9段階 (定数から組み立て)
+	assert.Contains(t, out, i18n.Tf("casinoholdem.bonusPayRoyalFlush", "mult", strconv.Itoa(domain.CasinoHoldemBonusPayRoyalFlush)))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.bonusPayStraightFlush", "mult", strconv.Itoa(domain.CasinoHoldemBonusPayStraightFlush)))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.bonusPayFourOfAKind", "mult", strconv.Itoa(domain.CasinoHoldemBonusPayFourOfAKind)))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.bonusPayFullHouse", "mult", strconv.Itoa(domain.CasinoHoldemBonusPayFullHouse)))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.bonusPayFlush", "mult", strconv.Itoa(domain.CasinoHoldemBonusPayFlush)))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.bonusPayStraight", "mult", strconv.Itoa(domain.CasinoHoldemBonusPayStraight)))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.bonusPayThreeOfAKind", "mult", strconv.Itoa(domain.CasinoHoldemBonusPayThreeOfAKind)))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.bonusPayTwoPair", "mult", strconv.Itoa(domain.CasinoHoldemBonusPayTwoPair)))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.bonusPayPairOfAces", "mult", strconv.Itoa(domain.CasinoHoldemBonusPayPairOfAces)))
+
+	// 生のプレースホルダが残っていないこと
+	assert.NotContains(t, out, "{{")
+}
+
+func TestCasinoHoldemCuiPresenter_Output_BetPhase_Paytable_En(t *testing.T) {
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+	p := new(CasinoHoldemCuiPresenter)
+	m := new(interfaces.MockCasinoHoldemGame)
+	setupCasinoHoldemCuiMockDefaults(m)
+
+	out := p.Output(m, nil)
+
+	assert.Contains(t, out, i18n.T("casinoholdem.antePayHeader"))
+	assert.Contains(t, out, i18n.T("casinoholdem.bonusPayHeader"))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.antePayRoyalFlush", "mult", strconv.Itoa(domain.CasinoHoldemAntePayRoyalFlush)))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.bonusPayPairOfAces", "mult", strconv.Itoa(domain.CasinoHoldemBonusPayPairOfAces)))
+	assert.NotContains(t, out, "{{")
+}
+
+// ベットフェーズ以外では出さない (受け入れ条件3)。
+func TestCasinoHoldemCuiPresenter_HidesPaytableOutsideBetPhase(t *testing.T) {
+	i18n.SetLang("ja")
+	for _, phase := range []int{
+		domain.CasinoHoldemPhaseFlop,
+		domain.CasinoHoldemPhaseEnd,
+	} {
+		m := new(interfaces.MockCasinoHoldemGame)
+		setupCasinoHoldemCuiMockDefaults(m)
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(phase)
+
+		out := new(CasinoHoldemCuiPresenter).Output(m, nil)
+		assert.NotContains(t, out, i18n.T("casinoholdem.antePayHeader"), "phase %d", phase)
+		assert.NotContains(t, out, i18n.T("casinoholdem.bonusPayHeader"), "phase %d", phase)
+	}
 }

@@ -88,6 +88,9 @@ func (cp *CaribbeanStudCuiPresenter) Output(cs interfaces.CaribbeanStudGame, las
 		if cs.GetPlayBet() > 0 {
 			sb.WriteString(i18n.Tf("caribbeanstud.playLine", "play", strconv.Itoa(cs.GetPlayBet())) + "\n")
 		}
+		if cs.GetJackpotBet() > 0 {
+			sb.WriteString(i18n.Tf("caribbeanstud.jackpotBetLine", "jackpot", strconv.Itoa(cs.GetJackpotBet())) + "\n")
+		}
 		switch cs.GetResult() {
 		case domain.GameResultWin:
 			sb.WriteString(color.Green(i18n.T("caribbeanstud.playerWins")) + "\n")
@@ -100,6 +103,9 @@ func (cp *CaribbeanStudCuiPresenter) Output(cs interfaces.CaribbeanStudGame, las
 		case domain.GameResultDraw:
 			sb.WriteString(color.Yellow(i18n.T("caribbeanstud.push")) + "\n")
 		default:
+		}
+		if cs.GetJackpotPayout() > 0 {
+			sb.WriteString(i18n.Tf("caribbeanstud.jackpotPayoutLine", "payout", strconv.Itoa(cs.GetJackpotPayout())) + "\n")
 		}
 		sb.WriteString(i18n.Tf("caribbeanstud.totalPayoutLine", "payout", strconv.Itoa(cs.GetTotalPayout())) + "\n")
 		sb.WriteString("----------\n")

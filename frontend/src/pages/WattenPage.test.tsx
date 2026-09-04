@@ -37,6 +37,15 @@ const respondPhaseState = makeWattenState({
   pendingStake: 3,
   canRaise: false,
 });
+// raiserTeam === human team (0) — the human's own team raised
+const respondPhaseStateOwnRaiser = makeWattenState({
+  phase: 2,
+  currentPlayerIdx: 1,
+  responderIdx: 0,
+  raiserTeam: 0,
+  pendingStake: 3,
+  canRaise: false,
+});
 const roundEndState = makeWattenState({ phase: 4, dealWinnerTeam: 0, canRaise: false });
 const gameEndState = makeWattenState({
   phase: 5,
@@ -257,5 +266,46 @@ describe('WattenPage', () => {
     });
     renderWithProviders(<WattenPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
+  });
+
+  // **吊り上げたのが相手か味方かで hold/fold の判断は変わる。**サーバは
+  // raiserTeam を毎回送っているのに、画面は pendingStake しか出していなかった (#6497)。
+  it('shows opponent-raised label when the opponent team raised', async () => {
+    mockExec.mockResolvedValue(respondPhaseState); // raiserTeam=1, human team=0
+    renderWithProviders(<WattenPage />);
+    const info = await screen.findByTestId('watten-raiser-info');
+    expect(info).toHaveTextContent('相手チームにレイズされました。');
+    expect(info).not.toHaveTextContent('{{');
+  });
+
+  it('shows own-raised label when the human team raised', async () => {
+    mockExec.mockResolvedValue(respondPhaseStateOwnRaiser); // raiserTeam=0, human team=0
+    renderWithProviders(<WattenPage />);
+    const info = await screen.findByTestId('watten-raiser-info');
+    expect(info).toHaveTextContent('自チームがレイズしました。');
+    expect(info).not.toHaveTextContent('{{');
+  });
+
+  // 負のコントロール: まだ誰も吊り上げていない (-1) 局面では出さない。
+  it('does not render the raiser-info element when raiserTeam is -1', async () => {
+    mockExec.mockResolvedValue(
+      makeWattenState({ phase: 2, responderIdx: 0, raiserTeam: -1, pendingStake: 3, canRaise: false }),
+    );
+    renderWithProviders(<WattenPage />);
+    await screen.findByRole('button', { name: /hold/ });
+    expect(screen.queryByTestId('watten-raiser-info')).not.toBeInTheDocument();
+  });
+
+  // 宣言の催促もフェーズが変わったときに現れるテキスト。**名前が
+  // `-bid-prompt` でないだけ**で領域の外に取り残されていた (#6880 レビュー指摘)。
+  it('announces the watten-declare-prompt from the always-mounted live region', async () => {
+    mockExec.mockResolvedValue(declarePhaseState);
+    renderWithProviders(<WattenPage />);
+
+    const live = await screen.findByTestId('watten-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
+    expect(live).toContainElement(await screen.findByTestId('watten-declare-prompt'));
   });
 });

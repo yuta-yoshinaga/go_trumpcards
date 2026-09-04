@@ -239,3 +239,60 @@ func TestScopone_UnmarshalRejectsInvalid(t *testing.T) {
 	var bad3 domain.Scopone
 	assert.Error(t, bad3.UnmarshalJSON([]byte(`not json`)))
 }
+
+// **日本語 UI の真ん中に英語のエラー文が出ていた。**`applyPlay` の 3 つのエラーは
+// i18n を通さない生の英語で、`cuiErrorBlock` も `GameMessageBox` もその文字列を
+// そのまま見せる。メッセージコードに置き換えたので、コードと引数を固定する (#6457)。
+func TestScopone_PlayErrorsCarryMessageCodes(t *testing.T) {
+	// 人間の手番のプレイフェーズを、配りに依らず手で組む。
+	atHumanTurn := func(table []*domain.Card, hand ...*domain.Card) *domain.Scopone {
+		s := newTestScopone(true)
+		s.Reset()
+		s.SetPhase(domain.ScoponePhasePlayerTurn)
+		s.SetCurrentTurn(0)
+		s.SetTableCards(table)
+		p := s.GetPlayer(0)
+		for p.GetCardsSize() > 0 {
+			p.RemoveCard(0)
+		}
+		for _, c := range hand {
+			p.AddCard(c)
+		}
+		return s
+	}
+	codeOf := func(err error) (string, map[string]string) {
+		require.Error(t, err)
+		return domain.ErrorMessageCode(err)
+	}
+
+	t.Run("an out-of-range hand index names the index", func(t *testing.T) {
+		s := atHumanTurn(nil, spCard(domain.CardDesignHeart, 5))
+
+		err := s.PlayerPlay(99, nil)
+		code, params := codeOf(err)
+		assert.Equal(t, "scopone.errHandIndexOutOfRange", code)
+		assert.Equal(t, "99", params["idx"], "打った番号がそのまま文言に返る")
+		// **生の英語が残っていないこと。**コード化した意味がなくなる。
+		assert.NotContains(t, err.Error(), "out of range")
+	})
+
+	t.Run("a capture that is available must be taken", func(t *testing.T) {
+		// 場に 5、手に 5 → 取れるので、置くことは許されない。
+		s := atHumanTurn([]*domain.Card{spCard(domain.CardDesignSpade, 5)}, spCard(domain.CardDesignHeart, 5))
+
+		err := s.PlayerPlay(0, nil)
+		code, _ := codeOf(err)
+		assert.Equal(t, "scopone.errCaptureRequired", code)
+		assert.NotContains(t, err.Error(), "must be taken")
+	})
+
+	t.Run("a bogus capture selection is rejected", func(t *testing.T) {
+		// 場の 7 は手の 5 では取れない。
+		s := atHumanTurn([]*domain.Card{spCard(domain.CardDesignSpade, 7)}, spCard(domain.CardDesignHeart, 5))
+
+		err := s.PlayerPlay(0, []int{0})
+		code, _ := codeOf(err)
+		assert.Equal(t, "scopone.errInvalidCapture", code)
+		assert.NotContains(t, err.Error(), "valid capture")
+	})
+}

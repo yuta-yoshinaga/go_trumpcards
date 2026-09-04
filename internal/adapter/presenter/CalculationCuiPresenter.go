@@ -69,6 +69,14 @@ func (p *CalculationCuiPresenter) Output(g interfaces.CalculationGame, lastErr e
 				b.WriteString(i18n.Tf("calculation.wasteFilled",
 					"card", cuiCardStr(top),
 					"count", strconv.Itoa(len(pile))))
+				start := max(0, len(pile)-3)
+				recent := pile[start:]
+				ranks := make([]string, len(recent))
+				for j, c := range recent {
+					ranks[j] = cuiRankLabel(c.GetValue())
+				}
+				b.WriteString(i18n.Tf("calculation.wasteRanks",
+					"ranks", strings.Join(ranks, cuiRankSep)))
 			}
 			b.WriteString("\n")
 		}

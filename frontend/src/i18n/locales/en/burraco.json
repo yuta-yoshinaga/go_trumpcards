@@ -25,6 +25,7 @@
   "round": "Round {{n}}",
   "drawPile": "Stock: {{count}} cards",
   "discardPile": "Discard: {{count}} cards",
+  "handCards": "{{count}} cards",
   "pozzetto": "Pozzetti: {{count}} left",
   "tookPozzetto": "Pozzetto taken",
   "pozzettoTakenBanner": "{{player}} took the pozzetto!",

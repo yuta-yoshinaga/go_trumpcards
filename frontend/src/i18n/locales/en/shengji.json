@@ -28,6 +28,7 @@
   "handHeldLine": "The declarers held ({{points}} of {{target}} to the defenders). Team {{team}} climbs {{advance}} level(s)",
   "handTakenLine": "The defenders collected {{points}} ({{target}} or more). The deal changes hands and team {{team}} climbs {{advance}} level(s)",
   "kittyLine": "Kitty: {{points}} points (x{{mult}}) went to the defenders",
+  "kittyCardsTitle": "The kitty held",
   "settings": {
     "title": "Settings"
   },

@@ -14,6 +14,7 @@ function makeState(overrides: Partial<ColoradoResponse> = {}): ColoradoResponse 
     phase: 0,
     moveCount: 13,
     canUndo: true,
+    isStalemate: false,
     message: '',
     ...overrides,
   };

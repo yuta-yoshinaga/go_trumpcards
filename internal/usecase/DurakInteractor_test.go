@@ -64,6 +64,10 @@ func TestDurakInteractor_Methods(t *testing.T) {
 		assert.Equal(t, mockOutput, di.TakeCards())
 	})
 
+	t.Run("Transfer", func(t *testing.T) {
+		assert.Equal(t, mockOutput, di.Transfer(0))
+	})
+
 	t.Run("ResetWithConfig", func(t *testing.T) {
 		config := domain.DefaultDurakConfig()
 		assert.Equal(t, mockOutput, di.ResetWithConfig(config))
@@ -132,6 +136,15 @@ func TestDurakInteractor_MockGame(t *testing.T) {
 	t.Run("TakeCards with mock", func(t *testing.T) {
 		gameMock.On("PlayerTakeCards").Return(nil)
 		assert.Equal(t, mockOutput, di.TakeCards())
+	})
+
+	t.Run("Transfer with mock", func(t *testing.T) {
+		// この盤は GetGameEndFlag が true なので guardNotPlayable が止める。
+		// **ドメインまで届かないこと**が確かめたいこと —— 終わった局に
+		// 転送が通ると、他の行動と挙動が食い違う。
+		gameMock.On("PlayerTransfer", mock.Anything).Return(nil)
+		assert.Equal(t, mockOutput, di.Transfer(2))
+		gameMock.AssertNotCalled(t, "PlayerTransfer", mock.Anything)
 	})
 
 	t.Run("GetConfig with mock", func(t *testing.T) {

@@ -101,6 +101,11 @@ export interface IronCrossResponse extends BaseGameResponse {
   /** What the human seat must put in to call. */
   toCall: number;
   raiseCount: number;
+  /**
+   * Raises allowed in one round (`IronCrossMaxRaisesPerRound`). Served so the
+   * copy does not carry its own copy of the cap.
+   */
+  maxRaises: number;
   /** False once the per-round raise cap is reached. **Do not re-derive.** */
   canRaise: boolean;
   turnSeat: number;

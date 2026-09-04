@@ -17,6 +17,8 @@ const card = (design: Card['design'], value: number): Card => ({ design, value }
 function makeState(overrides: Partial<LaBelleLucieResponse> = {}): LaBelleLucieResponse {
   return {
     fans: [[card('SPADE', 9)], [card('SPADE', 8)], [card('DIAMOND', 1)]],
+    // ♠8 は ♠9 に載り、♦A はファウンデーションへ行ける。♠9 の行き先は無い。
+    movableFans: [false, true, true],
     foundation: [[], [], [], []],
     redealsLeft: 3,
     phase: 0,
@@ -66,6 +68,8 @@ describe('LaBelleLuciePage', () => {
       makeState({
         fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]],
         foundation: [[], [], [], []],
+        // 動かせる扇はサーバが数える (#6474)。この配りではどれも行き場が無い。
+        movableFans: [false, false, false],
         redealsLeft: 3,
       }),
     );
@@ -85,6 +89,7 @@ describe('LaBelleLuciePage', () => {
       makeState({
         fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]],
         foundation: [[], [], [], []],
+        movableFans: [false, false, false],
         redealsLeft: 0,
       }),
     );
@@ -114,6 +119,7 @@ describe('LaBelleLuciePage', () => {
     mockExec.mockResolvedValue(
       makeState({
         fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]],
+        movableFans: [false, false, false],
         redealsLeft: 2,
       }),
     );
@@ -146,7 +152,7 @@ describe('LaBelleLuciePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('ff', 2));
   });
 
-  it('redeals, auto-completes, hints and gives up', async () => {
+  it('redeals, auto-completes and hints', async () => {
     mockExec.mockResolvedValue(makeState({ canUndo: true }));
     renderWithProviders(<LaBelleLuciePage />);
     await screen.findByTestId('redeal-button');
@@ -155,12 +161,39 @@ describe('LaBelleLuciePage', () => {
       ['autocomplete-button', 'ac'],
       ['undo-button', 'u'],
       ['hint-button', 'hint'],
-      ['giveup-button', 'giveup'],
     ] as const) {
       mockExec.mockClear();
       fireEvent.click(screen.getByTestId(testid));
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith(cmd));
     }
+  });
+
+  // **ギブアップは取り消せない** (#6475)。リセットには確認が挟まるのに、
+  // ここは即座に対局を打ち切っていた。
+  it('asks before giving up, and only then dispatches', async () => {
+    renderWithProviders(<LaBelleLuciePage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('leaves the game untouched when the give-up dialog is cancelled', async () => {
+    renderWithProviders(<LaBelleLuciePage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('disables redeal when none are left', async () => {
@@ -190,7 +223,11 @@ describe('LaBelleLuciePage', () => {
 
   it('marks nothing when the board is stuck', async () => {
     mockExec.mockResolvedValue(
-      makeState({ fans: [[card('SPADE', 5)], [card('HEART', 9)]], foundation: [[card('CLOVER', 1)], [], [], []] }),
+      makeState({
+        fans: [[card('SPADE', 5)], [card('HEART', 9)]],
+        foundation: [[card('CLOVER', 1)], [], [], []],
+        movableFans: [false, false],
+      }),
     );
     renderWithProviders(<LaBelleLuciePage />);
 

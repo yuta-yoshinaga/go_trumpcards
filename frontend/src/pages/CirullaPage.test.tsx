@@ -170,4 +170,46 @@ describe('CirullaPage', () => {
     renderWithProviders(<CirullaPage />);
     expect(await screen.findByText(/\[0\]/)).toBeInTheDocument();
   });
+
+  // **取り札ボタンの読み上げには場札の実際の名前が要る。**
+  // 索引だけの「場の 2 を取る」では、スクリーンリーダー利用者はどの札の組を
+  // 取ろうとしているのか分からない (#6628)。
+  it('names the captured cards in aria-label of capture buttons', async () => {
+    renderWithProviders(<CirullaPage />);
+    await pickHand(0); // ♠3 → [[2]] (場の 2 は ♠ 2)
+    const btn2 = await screen.findByTestId('cirulla-take-2');
+
+    // 表示文言は数字のまま維持される。
+    expect(btn2).toHaveTextContent('場の 2 を取る');
+    // aria-label には実際のカード名が含まれる。
+    expect(btn2).toHaveAttribute('aria-label', '場の ♠ 2 を取る');
+    expect(btn2.getAttribute('aria-label')).not.toContain('{{');
+  });
+
+  it('names all cards for multi-card capture groups and updates when table cards change', async () => {
+    // 負のコントロール: テーブルのカードが変われば aria-label も変わる。
+    const customTable = [
+      { design: 'CLOVER' as const, value: 1 },
+      { design: 'HEART' as const, value: 2 },
+      { design: 'DIAMOND' as const, value: 3 },
+      { design: 'SPADE' as const, value: 4 },
+    ];
+    mockExec.mockResolvedValue(makeCirullaState({ table: customTable }));
+    renderWithProviders(<CirullaPage />);
+    await pickHand(2); // ♦A → [[0, 1, 2, 3]]
+    const btnAll = await screen.findByTestId('cirulla-take-0-1-2-3');
+
+    expect(btnAll).toHaveTextContent('場の 0, 1, 2, 3 を取る');
+    expect(btnAll).toHaveAttribute('aria-label', '場の ♣ A, ♥ 2, ♦ 3, ♠ 4 を取る');
+    expect(btnAll.getAttribute('aria-label')).not.toContain('{{');
+  });
+
+  it('does not add capture aria-label to the lay off button', async () => {
+    // 負のコントロール: レイオフボタンには影響しない。
+    renderWithProviders(<CirullaPage />);
+    await pickHand(1); // ♥5 → []
+    const layOffBtn = await screen.findByTestId('cirulla-lay-off');
+    expect(layOffBtn).toHaveTextContent('場に置く');
+    expect(layOffBtn).not.toHaveAttribute('aria-label');
+  });
 });

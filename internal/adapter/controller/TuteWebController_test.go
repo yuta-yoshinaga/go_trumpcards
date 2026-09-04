@@ -21,7 +21,11 @@ func mustTuteOutputJSON(msg string) string {
 		DeclaredSuits:   make([]bool, domain.CardDesignMax+1),
 		PlayableIndices: []int{},
 		WinnerTeam:      -1,
-		WebOutputBase:   controller.WebOutputBase{Message: msg},
+		// エラー応答も既定の出力を通るので、ここも既定値を写す
+		// (`newTuteDefaultOutput`)。-1 = ラウンド未終了。
+		LastTrickBonusTeam:   -1,
+		LastTrickBonusPoints: domain.TuteLastTrickBonus,
+		WebOutputBase:        controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

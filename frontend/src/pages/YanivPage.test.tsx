@@ -76,6 +76,25 @@ describe('YanivPage', () => {
     expect(screen.getByTestId('discard-button')).toBeDisabled();
   });
 
+  // **捨てる対象そのものが読み上げから漏れていた。**隣の `pickup-card-*` は最初から
+  // 名前を持っていたのに、手札のボタンには名前も押下状態も無かった (#6425)。
+  it('names each hand card and marks the selected ones pressed', async () => {
+    renderWithProviders(<YanivPage />);
+    const card0 = await screen.findByTestId('hand-card-0');
+    const card1 = screen.getByTestId('hand-card-1');
+    expect(card0).toHaveAttribute('aria-label', '♠ A');
+    expect(card1).toHaveAttribute('aria-label', '♥ 2');
+    expect(card0).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(card0);
+    expect(card0).toHaveAttribute('aria-pressed', 'true');
+    // 選んでいない札まで押下状態にしない ── 複数選択なので片方だけが立つ。
+    expect(card1).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(card0);
+    expect(card0).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('does not warn for a valid single-card selection', async () => {
     renderWithProviders(<YanivPage />);
     const card0 = await screen.findByTestId('hand-card-0');

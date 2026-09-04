@@ -33,6 +33,21 @@
     "snack": "Snack",
     "unknown": "-"
   },
+  "contractDesc": {
+    "plus": "10 penalty points for each trick not taken (100 points if none taken).",
+    "minus": "10 penalty points for each trick taken (100 points for all 8).",
+    "badNeighbour": "Tricks taken give penalty points (10 each, 100 for all 8) to your right-hand neighbour.",
+    "alarich": "50 penalty points for taking K♥, 30 points for Q♦ (100 points for both in one trick).",
+    "firstThreeAndLast": "10/20/30 penalty points for 1st/2nd/3rd tricks, 100 for the last trick (tricks 4–7 are safe).",
+    "noReds": "Penalty for taking Hearts: 20 points each for low cards (7–10), 10 points each for high cards (J–A).",
+    "oberUnter": "Taking Q gives 30 penalty points, J gives 20 points (100 points for both in one trick).",
+    "bribe": "Trick winner takes 30 penalty points, lowest card played takes 20 points (100 points if won with lowest).",
+    "open": "Minus played with only your own hand hidden (10 penalty points per trick, 100 for all 8).",
+    "hunt": "Minus played with all hands face up (10 penalty points per trick, 100 for all 8).",
+    "quadrature": "Shedding game: play cards exactly 3 ranks higher in the same suit. Remaining cards incur penalty.",
+    "snack": "Shedding game: build sequences starting from Jacks. Remaining cards incur penalty.",
+    "unknown": "-"
+  },
   "currentTrick": "Current trick",
   "shedArea": "Table",
   "shedEmpty": "Nothing down yet - you may start with anything.",

@@ -19,6 +19,8 @@ type DurakGame interface {
 	PlayerPass() error
 	// PlayerTakeCards 人間プレイヤーがカードを引き取る (防御放棄)
 	PlayerTakeCards() error
+	// PlayerTransfer 人間プレイヤーが防御札として同じランクのカードを出し、攻撃を次のプレイヤーに転送する
+	PlayerTransfer(handIdx int) error
 	// CpuPlay CPUプレイヤーが1ターン実行する
 	CpuPlay()
 	// HasPendingAction ペンディングアクションがあるかを返す

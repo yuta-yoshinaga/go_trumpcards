@@ -98,7 +98,23 @@ func TestMinibridge_PairTieGoesToTheDealersSide(t *testing.T) {
 		assert.Equal(t, m.GetPlayer(dealer).GetTeam(), declTeam, "dealer=%d", dealer)
 		// 席も同点なので、親から見て先の席（＝親自身）が取る。
 		assert.Equal(t, dealer, m.GetDeclarerIdx())
+		assert.True(t, m.IsDeclarerByDealerTie(), "同点で親の側が宣言側になったときは true")
 	}
+
+	// 否定コントロール：同点でない配りでは false
+	nonTie := newTestMinibridge(t)
+	nonTie.SetDealerIdxForTest(0)
+	nonTie.SetHcpForTest([MinibridgePlayerCnt]int{15, 5, 10, 10}) // team0=25, team1=15
+	nonTie.DecideDeclarerForTest()
+	assert.False(t, nonTie.IsDeclarerByDealerTie(), "同点でなければ false")
+
+	// 同点後の次ラウンド（または同点でない再判定）で false にリセットされること
+	nonTie.SetHcpForTest([MinibridgePlayerCnt]int{10, 10, 10, 10})
+	nonTie.DecideDeclarerForTest()
+	require.True(t, nonTie.IsDeclarerByDealerTie(), "同点に設定すると true")
+	nonTie.SetHcpForTest([MinibridgePlayerCnt]int{15, 5, 10, 10})
+	nonTie.DecideDeclarerForTest()
+	assert.False(t, nonTie.IsDeclarerByDealerTie(), "同点でないラウンドで false に戻る")
 }
 
 // **ペアが決まっても席が同点のことがある（実測 4.4%）。**
@@ -603,7 +619,23 @@ func TestMinibridge_JSONRoundTrip(t *testing.T) {
 		assert.Equal(t, m.GetPlayer(i).GetHcp(), restored.GetPlayer(i).GetHcp(), "HCP が消えない")
 		assert.Equal(t, m.GetPlayer(i).GetTeam(), restored.GetPlayer(i).GetTeam())
 	}
+	assert.Equal(t, m.IsDeclarerByDealerTie(), restored.IsDeclarerByDealerTie())
 	assert.NotEmpty(t, restored.GetDummyHand(), "契約後はダミーが公開されたまま")
+}
+
+func TestMinibridge_JSONRoundTrip_DeclarerByDealerTie(t *testing.T) {
+	m := newTestMinibridge(t)
+	m.SetDealerIdxForTest(1)
+	m.SetHcpForTest([MinibridgePlayerCnt]int{10, 10, 10, 10})
+	m.DecideDeclarerForTest()
+	require.True(t, m.IsDeclarerByDealerTie())
+
+	data, err := json.Marshal(m)
+	require.NoError(t, err)
+
+	var restored Minibridge
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.True(t, restored.IsDeclarerByDealerTie(), "Marshal -> Unmarshal 後も true のまま保持される")
 }
 
 // **壊れたスナップショットは弾く。**

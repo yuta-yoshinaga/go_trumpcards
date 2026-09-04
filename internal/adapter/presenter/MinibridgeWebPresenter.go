@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra5
 
 package presenter
 
@@ -56,6 +56,7 @@ func (p *MinibridgeWebPresenter) buildBase(s interfaces.MinibridgeGame) *control
 	resObj.ValidPlays = intSliceOrEmpty(s.GetValidPlayIndices(minibridgeControlledSeat(s)))
 	resObj.GameEndFlag = s.GetGameEndFlag()
 	resObj.WinnerTeam = s.GetWinnerTeam()
+	resObj.DeclarerByDealerTie = s.IsDeclarerByDealerTie()
 	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(s)
 	resObj.Config = controller.MinibridgeWebOutputConfig{Rounds: s.GetConfig().Rounds}

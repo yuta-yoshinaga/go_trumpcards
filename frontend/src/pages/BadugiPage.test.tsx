@@ -220,10 +220,10 @@ describe('BadugiPage', () => {
 
     await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: '交換' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', []));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', [], undefined, undefined, 0));
 
     fireEvent.click(screen.getByRole('button', { name: /スタンド/ }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand', undefined, undefined, undefined, 0));
   });
 
   it('hides betting controls when the human has folded', async () => {
@@ -433,5 +433,88 @@ describe('BadugiPage', () => {
     mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
     renderWithProviders(<BadugiPage />);
     await waitFor(() => expect(document.querySelectorAll('.-translate-y-1, .opacity-50').length).toBeGreaterThan(0));
+  });
+});
+
+describe('BadugiPage deliberation time during draw phase', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    mockExec.mockReset();
+  });
+
+  it('passes elapsed time to exchange and stand when cpuMetaAI is enabled', async () => {
+    const drawState = baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 });
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<BadugiPage />);
+
+    await waitFor(() => expect(screen.getByTestId('bg-exchange-btn')).toBeInTheDocument());
+
+    // Open settings and enable cpuMetaAI
+    const summary = await screen.findByText('設定');
+    fireEvent.click(summary);
+    const metaAICheckbox = await screen.findByLabelText(/メタAI/);
+    fireEvent.click(metaAICheckbox);
+
+    // Click exchange button
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(drawState);
+    fireEvent.click(screen.getByTestId('bg-exchange-btn'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('exchange', [], undefined, undefined, expect.any(Number)),
+    );
+    const exchangeElapsed = mockExec.mock.calls[0][4];
+    expect(exchangeElapsed).toBeGreaterThanOrEqual(0);
+
+    // Click stand button
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(drawState);
+    fireEvent.click(screen.getByTestId('bg-stand-btn'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('stand', undefined, undefined, undefined, expect.any(Number)),
+    );
+    const standElapsed = mockExec.mock.calls[0][4];
+    expect(standElapsed).toBeGreaterThanOrEqual(0);
+  });
+
+  it('passes elapsed time to keyboard exchange when cpuMetaAI is enabled', async () => {
+    const drawState = baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 });
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<BadugiPage />);
+
+    await waitFor(() => expect(screen.getByTestId('bg-exchange-btn')).toBeInTheDocument());
+
+    // Open settings and enable cpuMetaAI
+    const summary = await screen.findByText('設定');
+    fireEvent.click(summary);
+    const metaAICheckbox = await screen.findByLabelText(/メタAI/);
+    fireEvent.click(metaAICheckbox);
+
+    // Trigger keyboard confirm (Enter key)
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(drawState);
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('exchange', [], undefined, undefined, expect.any(Number)),
+    );
+    const exchangeElapsed = mockExec.mock.calls[0][4];
+    expect(exchangeElapsed).toBeGreaterThanOrEqual(0);
+  });
+
+  it('passes 0 for elapsed time when cpuMetaAI is disabled', async () => {
+    const drawState = baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 });
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<BadugiPage />);
+
+    await waitFor(() => expect(screen.getByTestId('bg-exchange-btn')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(drawState);
+    fireEvent.click(screen.getByTestId('bg-exchange-btn'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', [], undefined, undefined, 0));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(drawState);
+    fireEvent.click(screen.getByTestId('bg-stand-btn'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand', undefined, undefined, undefined, 0));
   });
 });

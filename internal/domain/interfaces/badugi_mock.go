@@ -26,14 +26,14 @@ func (m *MockBadugiGame) PlayerAction(action, amount, humanPlayMs int) error {
 }
 
 // PlayerExchange mock.
-func (m *MockBadugiGame) PlayerExchange(indices []int) error {
-	ret := m.Called(indices)
+func (m *MockBadugiGame) PlayerExchange(indices []int, humanPlayMs int) error {
+	ret := m.Called(indices, humanPlayMs)
 	return ret.Error(0)
 }
 
 // PlayerStand mock.
-func (m *MockBadugiGame) PlayerStand() error {
-	ret := m.Called()
+func (m *MockBadugiGame) PlayerStand(humanPlayMs int) error {
+	ret := m.Called(humanPlayMs)
 	return ret.Error(0)
 }
 

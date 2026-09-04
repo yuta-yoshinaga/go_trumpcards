@@ -13,6 +13,8 @@
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了（残り{{active}}人）",
+  "roundSurvived": "{{name}} はDogboneを消費して生き残りました",
+  "roundEliminated": "{{name}} は0トリックで脱落しました",
   "nextRoundPreview": "次ラウンド: 手札{{count}}枚 / 切り札選択: {{name}}",
   "finalRoundPreview": "最終ラウンド: 手札{{count}}枚 / 切り札選択: {{name}}",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ（0トリックのプレイヤーはDogboneを消費／使い切ると脱落。手札は1枚ずつ減る）",

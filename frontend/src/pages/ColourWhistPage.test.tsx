@@ -50,6 +50,7 @@ const bidState: ColourWhistResponse = {
   contract: ColourWhistContract.NONE,
   declarerIdx: -1,
   partnerIdx: -1,
+  calledCard: null,
   trumpSuit: COLOUR_WHIST_NO_TRUMP,
   troelForced: false,
   currentTurn: 0,
@@ -261,5 +262,100 @@ describe('ColourWhistPage', () => {
 
     await waitFor(() => expect(screen.getByRole('log')).toBeInTheDocument());
     expect(screen.queryByTestId('colourwhist-hand')).not.toBeInTheDocument();
+  });
+
+  // **ギブアップは取り消せない** (#6475)。リセットには確認が挟まるのに、
+  // ここは即座に対局を打ち切っていた。
+  it('asks before giving up, and only then dispatches', async () => {
+    renderWithProviders(<ColourWhistPage />);
+    const giveUp = await screen.findByTestId('giveup-button');
+
+    mockApi.mockClear();
+    fireEvent.click(giveUp);
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    expect(mockApi).not.toHaveBeenCalledWith('giveup');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('giveup'));
+  });
+
+  // キャンセルしたら何も起きない ── ダイアログを出すだけで通す実装を落とす。
+  it('leaves the game untouched when the give-up dialog is cancelled', async () => {
+    renderWithProviders(<ColourWhistPage />);
+    const giveUp = await screen.findByTestId('giveup-button');
+
+    mockApi.mockClear();
+    fireEvent.click(giveUp);
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
+    expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  it('shows the called card when present', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      calledCard: { design: 'SPADE', value: 1 },
+    });
+    renderWithProviders(<ColourWhistPage />);
+
+    const shown = await screen.findByTestId('colourwhist-called-card');
+    expect(shown).toHaveTextContent('指名札:');
+    // **どの札が指名されたかが要**。ラベルだけでは、札を描き忘れても通る。
+    const img = shown.querySelector('img');
+    expect(img).not.toBeNull();
+    expect(img).toHaveAttribute('alt', expect.stringContaining('A'));
+  });
+
+  it('shows no called card when null', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      calledCard: null,
+    });
+    renderWithProviders(<ColourWhistPage />);
+
+    await waitFor(() => expect(screen.getByTestId('colourwhist-contract')).toBeInTheDocument());
+    expect(screen.queryByTestId('colourwhist-called-card')).not.toBeInTheDocument();
+  });
+
+  it('shows colourwhist-declarer when declarerIdx is 0 or greater', async () => {
+    // 契約者が決まっている (0〜3) ときに宣言者とその獲得トリック数が表示される
+    mockApi.mockResolvedValue({
+      ...playState,
+      declarerIdx: 0,
+    });
+    renderWithProviders(<ColourWhistPage />);
+    expect(await screen.findByTestId('colourwhist-declarer')).toBeInTheDocument();
+  });
+
+  it('does not show colourwhist-declarer when declarerIdx is less than 0', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      declarerIdx: -1,
+    });
+    renderWithProviders(<ColourWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('colourwhist-contract')).toBeInTheDocument());
+    expect(screen.queryByTestId('colourwhist-declarer')).not.toBeInTheDocument();
+  });
+
+  it('shows colourwhist-trick when currentTrick has cards', async () => {
+    // 現在のトリックに1枚以上カードが出されているときに場札領域が表示される
+    mockApi.mockResolvedValue({
+      ...playState,
+      currentTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 1 } }],
+    });
+    renderWithProviders(<ColourWhistPage />);
+    expect(await screen.findByTestId('colourwhist-trick')).toBeInTheDocument();
+  });
+
+  it('does not show colourwhist-trick when currentTrick is empty', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      currentTrick: [],
+    });
+    renderWithProviders(<ColourWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('colourwhist-contract')).toBeInTheDocument());
+    expect(screen.queryByTestId('colourwhist-trick')).not.toBeInTheDocument();
   });
 });

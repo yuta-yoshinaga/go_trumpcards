@@ -546,6 +546,13 @@ func (p *PopeJoan) PopeJoanCpuDecide(idx int) int {
 // ---- 公開アクセサ ----
 
 // GetPlayers は全プレイヤーを返す。
+// GetDealerIdx は現在のディーラーの席を返す。
+//
+// ディーラーは区画の種銭を負担する一方、めくり札が Pope/A/K/Q/J なら
+// その区画を総取りする。**誰が負担して誰が総取りし得るか**は毎ディール
+// 回るので、盤面に出さないと追えない (#6520)。
+func (p *PopeJoan) GetDealerIdx() int { return p.dealerIdx }
+
 func (p *PopeJoan) GetPlayers() []*PopeJoanPlayer { return p.players }
 
 // GetPlayer は idx のプレイヤーを返す。

@@ -100,6 +100,11 @@ func (p *ScartoCuiPresenter) Output(g interfaces.ScartoGame, lastErr error) stri
 		b.WriteString(i18n.Tf("scarto.round",
 			"round", strconv.Itoa(g.GetRoundNumber()),
 			"trick", strconv.Itoa(g.GetTrickNumber())) + "\n")
+		// **エクスキューズだけが勝敗の外にいる。**出した札が誰の手にも渡らず自分の
+		// 得点山に戻るという規則は実装されているのに、どちらの画面にも説明が無く、
+		// cardPoints の内訳が読み解けなかった (#6514)。Minchiate の mattoNote /
+		// Tarocchini の papiNote と同じく常設で出す。
+		b.WriteString(i18n.T("scarto.excuseReturnsNote") + "\n")
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			b.WriteString(scartoPlayerStr(g, i))

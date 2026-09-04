@@ -106,9 +106,19 @@ func TestCirullaInteractor_RejectsAnImpossibleCapture(t *testing.T) {
 // **ラウンド終了では勝手に進まない。** 集計を読む時間を人間に渡す。
 func TestCirullaInteractor_StopsAtRoundEnd(t *testing.T) {
 	ci, g := newCirullaReal()
-	require.Equal(t, "ok", ci.Reset())
-	cirullaFinishRound(t, ci, g)
-	require.Equal(t, domain.CirullaPhaseRoundEnd, g.GetPhase())
+	// **試合が続く配りを引くまで配り直す。** この試験は 2 ラウンド目に入ることまで
+	// 見るので、1 ラウンドで目標点に届いた配りでは前提が立たない。そういう配りは
+	// 実測で 3000 回中 20 回 (0.67%) 出る。
+	var dealt bool
+	for attempt := 0; attempt < 50; attempt++ {
+		require.Equal(t, "ok", ci.Reset())
+		cirullaFinishRound(t, ci, g)
+		if g.GetPhase() == domain.CirullaPhaseRoundEnd {
+			dealt = true
+			break
+		}
+	}
+	require.True(t, dealt, "50 回配っても試合が続くラウンドが出なかった")
 
 	res := g.GetLastResult()
 	require.NotNil(t, res)

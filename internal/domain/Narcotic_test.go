@@ -429,3 +429,18 @@ func TestNarcotic_JSONRoundTrip(t *testing.T) {
 
 	assert.Error(t, json.Unmarshal([]byte(`{"rd":-1}`), domain.NewDefaultNarcotic()))
 }
+
+// **目標はデッキ全部。** 48 (52 - エース 4 枚) だと 4 枚残したまま「揃った」ことになる。
+// 定数を書き写さず、実際に捨て切ったときだけクリアになることで確かめる。
+func TestNarcoticDiscardGoalIsTheWholeDeck(t *testing.T) {
+	assert.Equal(t, domain.CardCnt, domain.NarcoticDiscardGoal)
+
+	a := newNarcotic()
+	a.Reset()
+	a.SetDiscardCount(domain.NarcoticDiscardGoal - 1)
+	a.CheckNarcoticGameClear()
+	assert.NotEqual(t, domain.NarcoticPhaseGameClear, a.GetPhase(), "1 枚足りなければクリアではない")
+	a.SetDiscardCount(domain.NarcoticDiscardGoal)
+	a.CheckNarcoticGameClear()
+	assert.Equal(t, domain.NarcoticPhaseGameClear, a.GetPhase(), "捨て切ったらクリア")
+}

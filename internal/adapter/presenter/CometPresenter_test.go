@@ -136,6 +136,94 @@ func TestCometCuiPresenter_HintSaysPass(t *testing.T) {
 	assert.NotContains(t, out, i18n.T("comet.noHint"))
 }
 
+func TestCometCuiPresenter_CardsLeftBreakdown(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	i18n.SetLang("ja")
+	p := new(presenter.CometCuiPresenter)
+
+	t.Run("shows cards left breakdown for all players without re-dealing", func(t *testing.T) {
+		c := domain.NewDefaultComet()
+		c.SetPhaseForTest(domain.CometPhaseRoundEnd)
+		c.SetLastResultForTest(&domain.CometRoundResult{
+			WinnerIdx:     0,
+			CardsLeft:     []int{0, 2, 3, 1},
+			UnplayedKings: 2,
+			HeldWildIdx:   2,
+			Gained:        []int{13, 0, 0, 0},
+		})
+
+		out := p.Output(c, nil)
+		assert.NotContains(t, out, "comet.", "生キーが出ている")
+		assert.NotContains(t, out, "{{", "未展開のプレースホルダが残っている")
+		assert.Contains(t, out, "あなた: 残り 0 枚")
+		assert.Contains(t, out, "CPU 1: 残り 2 枚")
+		assert.Contains(t, out, "CPU 2: 残り 3 枚")
+		assert.Contains(t, out, "CPU 3: 残り 1 枚")
+		assert.Contains(t, out, strings.SplitN(i18n.T("comet.unplayedKings"), "{{", 2)[0])
+		assert.Contains(t, out, strings.SplitN(i18n.T("comet.heldWild"), "{{", 2)[0])
+	})
+
+	// **値を変えると表示も変わる (正のコントロール)。**
+	t.Run("displays updated counts when cards left change", func(t *testing.T) {
+		c := domain.NewDefaultComet()
+		c.SetPhaseForTest(domain.CometPhaseRoundEnd)
+		c.SetLastResultForTest(&domain.CometRoundResult{
+			WinnerIdx:     1,
+			CardsLeft:     []int{4, 0, 5, 2},
+			UnplayedKings: 0,
+			HeldWildIdx:   -1,
+			Gained:        []int{0, 12, 0, 0},
+		})
+
+		out := p.Output(c, nil)
+		assert.Contains(t, out, "あなた: 残り 4 枚")
+		assert.Contains(t, out, "CPU 1: 残り 0 枚")
+		assert.Contains(t, out, "CPU 2: 残り 5 枚")
+		assert.Contains(t, out, "CPU 3: 残り 2 枚")
+		assert.NotContains(t, out, "あなた: 残り 0 枚")
+		assert.NotContains(t, out, "CPU 1: 残り 2 枚")
+	})
+
+	// **出すべきでない局面で出ない (負のコントロール)。**
+	t.Run("omits cards left during play phase", func(t *testing.T) {
+		c := domain.NewDefaultComet()
+		c.SetPhaseForTest(domain.CometPhasePlay)
+		// lastResult が残っていても play フェーズなら局末内訳は出ない
+		c.SetLastResultForTest(&domain.CometRoundResult{
+			WinnerIdx: 0,
+			CardsLeft: []int{0, 2, 3, 1},
+		})
+		out := p.Output(c, nil)
+		assert.NotContains(t, out, "残り 0 枚")
+		assert.NotContains(t, out, "残り 2 枚")
+	})
+
+	// **英語でも正しく展開される。**
+	t.Run("renders in english without placeholders", func(t *testing.T) {
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
+		c := domain.NewDefaultComet()
+		c.SetPhaseForTest(domain.CometPhaseRoundEnd)
+		c.SetLastResultForTest(&domain.CometRoundResult{
+			WinnerIdx:     0,
+			CardsLeft:     []int{0, 2, 3, 1},
+			UnplayedKings: 1,
+			HeldWildIdx:   -1,
+			Gained:        []int{9, 0, 0, 0},
+		})
+
+		out := p.Output(c, nil)
+		assert.NotContains(t, out, "comet.")
+		assert.NotContains(t, out, "{{")
+		assert.Contains(t, out, "You: 0 card(s) left")
+		assert.Contains(t, out, "CPU 1: 2 card(s) left")
+		assert.Contains(t, out, "CPU 2: 3 card(s) left")
+		assert.Contains(t, out, "CPU 3: 1 card(s) left")
+	})
+}
+
 func TestCometWebPresenter_Output(t *testing.T) {
 	i18n.SetLang("ja")
 	p := new(presenter.CometWebPresenter)

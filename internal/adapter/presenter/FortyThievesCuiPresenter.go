@@ -37,7 +37,7 @@ func (p *FortyThievesCuiPresenter) Output(ft interfaces.FortyThievesGame, lastEr
 			}
 			pile := foundation[i]
 			if len(pile) == 0 {
-				b.WriteString(i18n.T("cuiEmptyCol"))
+				b.WriteString(i18n.T("fortythieves.cuiEmptyFoundation"))
 			} else {
 				b.WriteString(cuiCardStr(pile[len(pile)-1]))
 			}

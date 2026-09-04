@@ -22,6 +22,7 @@
   "promptBet": "ベットしてください: b <種別> <ステーク>（種別 0=Noir, 1=Rouge, 2=Couleur, 3=Inverse）",
   "promptResult": "ラウンド終了。nr で次のラウンドへ。",
   "promptHelp": "b <t> <stake> でベット、nr で次のラウンド",
+  "result.margin": "{{winner}} が {{diff}} 点差で勝ち（{{winnerTotal}} 対 {{loserTotal}}）",
   "result.win": "あなたの勝ち！",
   "result.lose": "あなたの負け。",
   "result.push": "プッシュ — ステークは返却されます。",

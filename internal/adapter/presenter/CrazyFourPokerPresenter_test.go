@@ -252,3 +252,60 @@ func TestCrazyFourPokerWebPresenterServesTheQueensUpPayouts(t *testing.T) {
 		assert.Equal(t, domain.FourCardHandNames[w.Hand], out.QueensUpPayouts[i].Name)
 	}
 }
+
+// **Super Bonus はアンティに必ず付く。**任意の Queens Up は配当表が見えて、
+// 必須の側だけ見えないのは逆だった。
+func TestCrazyFourPokerCuiPresenterShowsTheSuperBonusPayouts(t *testing.T) {
+	cp := new(CrazyFourPokerCuiPresenter)
+	g := newCrazyFourPokerForPresenter(t)
+
+	out := cp.Output(g, nil)
+	// **期待値は書き下す。**整形関数から組み立てると、その関数を壊しても
+	// 両辺が同時に変わって通ってしまう。
+	for _, want := range []string{
+		"4 枚のエース 200:1",
+		"Four of a Kind 30:1",
+		"Straight Flush 20:1",
+		"Three of a Kind 2:1",
+		"Flush 1.5:1",
+		"Straight 1:1",
+	} {
+		assert.Contains(t, out, want)
+	}
+	// 書き下した表がドメインの表とずれていないことを別に見る。
+	for _, r := range domain.CrazyFourPokerSuperBonusPayout() {
+		assert.Contains(t, out, fmt.Sprintf("%s %s:1",
+			domain.FourCardHandNames[r.Hand], crazyFourPokerMultStr(r.Multiplier)))
+	}
+
+	// **負のコントロール: 配り終えたあとは出さない。**
+	require.NoError(t, g.PlaceBet(50, 0))
+	assert.NotContains(t, cp.Output(g, nil), fixedPart("crazyfourpoker.superBonusPayoutLine"))
+}
+
+// Web も同じ表を返す。**倍率の 1/10 換算はサーバ側でやる** — 生の 300 を
+// 送ると画面に 300:1 と出る。
+func TestCrazyFourPokerWebPresenterServesTheSuperBonusPayouts(t *testing.T) {
+	g := newCrazyFourPokerForPresenter(t)
+	var out struct {
+		SuperBonusPayouts []struct {
+			Hand int    `json:"hand"`
+			Name string `json:"name"`
+			Odds string `json:"odds"`
+		} `json:"superBonusPayouts"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(new(CrazyFourPokerWebPresenter).Output(g, nil)), &out))
+
+	want := domain.CrazyFourPokerSuperBonusPayout()
+	// 先頭は 4 枚のエースの別枠。
+	require.Len(t, out.SuperBonusPayouts, len(want)+1)
+	assert.Equal(t, "200", out.SuperBonusPayouts[0].Odds, "4 枚のエースは 200:1")
+	assert.Equal(t, "30", out.SuperBonusPayouts[1].Odds, "フォーカードは 30:1（300 ではない）")
+
+	for i, w := range want {
+		row := out.SuperBonusPayouts[i+1]
+		assert.Equal(t, w.Hand, row.Hand)
+		assert.Equal(t, domain.FourCardHandNames[w.Hand], row.Name)
+		assert.Equal(t, crazyFourPokerMultStr(w.Multiplier), row.Odds)
+	}
+}

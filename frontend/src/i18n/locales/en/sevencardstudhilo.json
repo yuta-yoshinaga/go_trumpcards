@@ -14,7 +14,9 @@
   "holeCards": "Hole Cards",
   "yourHand": "Your Hand",
   "currentHand": "Current Hand",
+  "currentLow": "Current low: {{low}}",
   "anteBringIn": "Ante/Bring-in",
+  "bringIn": "Bring-in",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",

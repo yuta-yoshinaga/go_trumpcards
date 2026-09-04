@@ -16,6 +16,8 @@
     "took": "tricks {{n}}",
     "declarer": "[declarer]",
     "dummy": "[dummy]",
+    "dealer": "[dealer]",
+    "declarerByTie": "The HCP were level, so the dealer's side (seat {{seat}}) declares.",
     "you": "You",
     "cpu": "CPU{{idx}}",
     "dummyHand": "Dummy's hand",

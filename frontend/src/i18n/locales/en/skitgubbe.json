@@ -7,7 +7,7 @@
   "hint.beat": "the weakest card that still beats the pile",
   "hint.duel": "this card wins the duel",
   "hint.pickup": "nothing in your hand beats the pile",
-  "landscapeBanner": "Turn your device sideways for a better view",
+  "landscapeBanner": "Landscape mode recommended",
   "notYourTurnAria": "not your turn",
   "opponentHand": "{{name}}: {{n}} card(s)",
   "opponentHandAriaLabel": "{{name}} holds {{n}} face-down card(s)",
@@ -28,5 +28,6 @@
   "tutorial.phases": "This game is made of two phases that are different games: first you collect cards, then you shed the cards you collected.",
   "tutorial.stunsa": "Equal ranks are a stunsa: the cards stay on the table, the same player leads again, and whoever settles it takes everything that piled up.",
   "you": "You",
-  "yourHand": "Your hand"
+  "yourHand": "Your hand",
+  "finishedBadge": "safe"
 }

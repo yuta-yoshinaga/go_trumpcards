@@ -4,6 +4,7 @@ import { crazyquiltApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CrazyQuiltResponse } from '../types/card';
+import { CrazyQuiltPhase } from '../types/phases';
 import { CrazyQuiltPage } from './CrazyQuiltPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -154,6 +155,24 @@ describe('CrazyQuiltPage', () => {
     await waitFor(() => expect(stock).toBeDisabled());
   });
 
+  // **残り組み直し回数は CUI にしか出ていなかった。**山札が 0 になった瞬間に
+  // 打ち切りなのか、まだ一度組み直せるのかが Web では読めなかった。
+  it('shows how many redeals are left while one remains', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0, redealsLeft: 1 });
+    renderWithProviders(<CrazyQuiltPage />);
+    await waitFor(() => expect(screen.getByTestId('crazyquilt-redeals')).toHaveTextContent('組み直し: 残り1回'));
+    // 空の山札でも「もう終わり」ではないことが読み上げでも分かる。
+    expect(screen.getByRole('button', { name: '山札は空です（組み直し 残り1回）' })).toBeEnabled();
+  });
+
+  // 使い切った状態でも可視表示と読み上げが矛盾しない（受け入れ条件の3つ目）。
+  it('still reads consistently once the redeal is spent', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0, redealsLeft: 0 });
+    renderWithProviders(<CrazyQuiltPage />);
+    await waitFor(() => expect(screen.getByTestId('crazyquilt-redeals')).toHaveTextContent('組み直し: 残り0回'));
+    expect(screen.getByRole('button', { name: '山札は空です（もう組み直せません）' })).toBeDisabled();
+  });
+
   it('shows an emptied cell without a button', async () => {
     renderWithProviders(<CrazyQuiltPage />);
     await waitFor(() => expect(screen.getByTestId('cq-cell-5')).toBeInTheDocument());
@@ -189,6 +208,21 @@ describe('CrazyQuiltPage', () => {
     // The page never reaches a board, so the skeleton stays and no cell renders.
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByTestId('cq-cell-0')).not.toBeInTheDocument();
+  });
+
+  // ゲームオーバー時は組札の達成状況サマリーを表示する。
+  it('shows game over summary when game is over', async () => {
+    mockExec.mockResolvedValue({ ...playingState, phase: CrazyQuiltPhase.GAME_OVER });
+    renderWithProviders(<CrazyQuiltPage />);
+    await waitFor(() => expect(screen.getByTestId('cg-gameover-summary')).toBeInTheDocument());
+  });
+
+  // プレイ中などゲームオーバー以外のときは達成状況サマリーを表示しない。
+  it('hides game over summary while playing', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CrazyQuiltPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('cg-gameover-summary')).not.toBeInTheDocument();
   });
 });
 

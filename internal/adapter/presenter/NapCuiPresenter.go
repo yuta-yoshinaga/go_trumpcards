@@ -157,8 +157,38 @@ func (p *NapCuiPresenter) writePrompt(b *strings.Builder, g interfaces.NapGame) 
 		b.WriteString(i18n.T("nap.promptTrickEndHelp") + "\n")
 	case domain.NapPhaseRoundEnd:
 		b.WriteString(i18n.T("nap.promptRoundEnd") + "\n")
+		// **チップの授受が CUI に一切出ていなかった。**Web は nap-round-payout で
+		// 出しているのに、CUI はスコアの推移を見比べて何枚動いたのか推測する
+		// しかなかった。Nap 契約だけ非対称 (達成 +10 / 失敗は相手が各 +5) なので、
+		// 数字そのものが宣言するか否かの判断になる (#6447)。
+		if line := napPayoutLine(g); line != "" {
+			b.WriteString(line + "\n")
+		}
 		b.WriteString(i18n.T("nap.promptRoundEndHelp") + "\n")
 	}
+}
+
+// napPayoutLine renders who gains how many chips for the settled round.
+//
+// 数字は `domain.NapBidPayout` から引く ── 精算そのものと同じ関数なので、
+// 表示と実際の増減がずれない。パスの局や宣言者未確定では何も出さない。
+func napPayoutLine(g interfaces.NapGame) string {
+	declarer := g.GetDeclarerIdx()
+	contract := g.GetContract()
+	if declarer < 0 || contract == domain.NapBidPass {
+		return ""
+	}
+	makeValue, failValue := domain.NapBidPayout(contract)
+	// `GetRoundTricks` は固定長配列で、`GetDeclarerIdx` は -1 か有効な席しか返さない
+	// ので、上の -1 判定の先で範囲外にはならない。
+	tricks := g.GetRoundTricks()
+	// 契約値がそのまま目標トリック数 (domain の napBidTarget と同じ関係)。
+	if tricks[declarer] >= int(contract) {
+		return i18n.Tf("nap.payoutMade",
+			"name", cuiPlayerName(g.GetPlayer(declarer), declarer),
+			"chips", strconv.Itoa(makeValue))
+	}
+	return i18n.Tf("nap.payoutFailed", "chips", strconv.Itoa(failValue))
 }
 
 // HintOutput emits the current Nap hint.

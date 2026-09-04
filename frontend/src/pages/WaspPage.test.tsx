@@ -771,3 +771,35 @@ describe('WaspPage autocomplete readiness', () => {
     expect(button()).not.toHaveAttribute('title');
   });
 });
+
+// #6340: 裏カードを開ける手を優先しているのに、その理由を言っていなかった。
+describe('WaspPage hint exposes face-down', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+    mockExec.mockResolvedValue(playingState);
+  });
+
+  it('says when the suggested move uncovers a face-down card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 0, cardIndex: 1, toCol: 3, exposesFaceDown: true },
+      messageCode: 'wasp.hintAvailable',
+    });
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(screen.getByTestId('wasp-hint-exposes')).toBeInTheDocument());
+    expect(hintLiveRegion()?.textContent).toContain('裏カード');
+  });
+
+  // **開かない手では言わない。**常に出ると理由として機能しない。
+  it('stays silent when the move uncovers nothing', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 0, cardIndex: 1, toCol: 3, exposesFaceDown: false },
+      messageCode: 'wasp.hintAvailable',
+    });
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(hintLiveRegion()).not.toBeNull());
+    expect(screen.queryByTestId('wasp-hint-exposes')).not.toBeInTheDocument();
+  });
+});

@@ -22,6 +22,7 @@
   "round": "Round {{n}}",
   "drawPile": "Stock: {{count}} cards",
   "discardPile": "Discard: {{count}} cards",
+  "handCards": "{{count}} cards",
   "frozen": "Frozen",
   "melds": "Melds",
   "red3s": "Red 3s",

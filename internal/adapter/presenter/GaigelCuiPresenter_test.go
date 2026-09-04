@@ -24,6 +24,7 @@ func setupGaigelCuiMock() *interfaces.MockGaigelGame {
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetTrumpSuit").Return(1)
 	m.On("GetStockRemaining").Return(27)
+	m.On("IsEndgame").Return(false).Maybe()
 	m.On("GetTrumpCard").Return((*domain.Card)(nil))
 	m.On("GetTeamScore", 0).Return(0)
 	m.On("GetTeamScore", 1).Return(0)
@@ -205,5 +206,33 @@ func TestGaigelCuiPresenter_ShowsTheTrumpCard(t *testing.T) {
 		// 表示カード入りの行は出ない。
 		assert.NotContains(t, out, i18n.Tf("gaigel.trumpLineWithCard",
 			"suit", "SPADE", "card", "SPADE 13", "stock", "27"))
+	})
+}
+
+// **山が尽きた瞬間にマストフォローへ切り替わる。**`validateEndgameFollow` が
+// 発動する規則の転換なのに、Gaigel だけどこにも出していなかった ── 姉妹の
+// Bezique / Schnapsen は両方とも明示している (#6482)。
+func TestGaigelCuiPresenter_NamesTheEndgamePhase(t *testing.T) {
+	p := new(presenter.GaigelCuiPresenter)
+
+	withEndgame := func(endgame bool) string {
+		m, _ := setupGaigelCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsEndgame")
+		m.On("IsEndgame").Return(endgame)
+		return p.Output(m, nil)
+	}
+
+	t.Run("says must-follow once the stock is gone", func(t *testing.T) {
+		out := withEndgame(true)
+		assert.Contains(t, out, i18n.T("gaigel.phaseSecond"))
+		assert.NotContains(t, out, i18n.T("gaigel.phaseFirst"))
+		assert.NotContains(t, out, "{{")
+	})
+
+	// 山が残っているうちは自由に出せる ── 常に第2フェーズと言う実装が落ちる。
+	t.Run("says follow-optional while the stock lasts", func(t *testing.T) {
+		out := withEndgame(false)
+		assert.Contains(t, out, i18n.T("gaigel.phaseFirst"))
+		assert.NotContains(t, out, i18n.T("gaigel.phaseSecond"))
 	})
 }

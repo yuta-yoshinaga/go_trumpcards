@@ -7,7 +7,7 @@ import { gameExec } from '../gameExec';
 /** API client for the Durak /durak/exec endpoint. */
 export const durakApi = {
   exec: (
-    command: 'reset' | 'attack' | 'defend' | 'pass' | 'take' | 'sort' | 'hint',
+    command: 'reset' | 'attack' | 'defend' | 'pass' | 'take' | 'transfer' | 'sort' | 'hint',
     cardIdx?: number,
     attackIdx?: number,
     config?: DurakConfigInput,

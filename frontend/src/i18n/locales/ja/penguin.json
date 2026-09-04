@@ -32,12 +32,14 @@
     "controls": "元に戻す、ヒント、自動完了などの操作ボタンです。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "freecellShort": "FC",
   "frontendHint": {
     "moveToFoundation": "組札に移動できるカードがあります",
     "freeCellsNearlyFull": "フリーセルがほぼ満杯です — 空けることを検討しましょう",
     "useEmptyColumn": "空の列があります — 基準ランクの前のカードを移動して整理に活用しましょう",
     "useFreeCells": "フリーセルにカードを移動して手を広げましょう"
-  }
+  },
+  "hintAnnouncement": "ヒント: {{card}} を {{from}} から {{to}} へ移動",
+  "hintNoMoves": "移動可能な手がありません"
 }

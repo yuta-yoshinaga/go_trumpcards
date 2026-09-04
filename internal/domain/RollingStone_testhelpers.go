@@ -33,3 +33,9 @@ func (r *RollingStone) GiveHandForTest(playerIdx int, cards ...*Card) {
 		p.AddCard(c)
 	}
 }
+
+// ForceStalemateForTest はトリック上限に達した状態にして膠着の決着を行う。
+func (r *RollingStone) ForceStalemateForTest() {
+	r.trickNumber = RollingStoneStalemateTricks
+	r.checkStalemate()
+}

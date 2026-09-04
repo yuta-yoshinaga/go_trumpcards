@@ -37,6 +37,9 @@
     "teamA": "チームAのカード点: {{points}}",
     "teamB": "チームBのカード点: {{points}}"
   },
+  "roundProgress": {
+    "title": "今ラウンドの取得点"
+  },
   "strengthLegend": {
     "title": "カード強さ順・得点",
     "rankCol": "順位",

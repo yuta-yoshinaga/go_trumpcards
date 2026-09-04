@@ -78,6 +78,12 @@ export interface BanLuckResponse extends BaseGameResponse {
    * **Do not re-derive this from the score.** The rule lives in the domain.
    */
   mustHit: boolean;
+  /**
+   * The score the banker may not stand below (`BanLuckBankerMustHitUnder`).
+   * Served rather than written into the copy, so the rule and the sentence
+   * cannot drift apart.
+   */
+  mustHitThreshold: number;
   roundNumber: number;
   remainingCards: number;
   winnerSeat: number;

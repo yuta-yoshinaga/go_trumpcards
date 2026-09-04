@@ -297,7 +297,7 @@ func (d *Duchess) MoveWasteToTableau(col int) error {
 		return errors.New("cannot place card on tableau")
 	}
 	if d.emptyColumnIsReservedForReserve(col) {
-		return errors.New("an empty column must be filled from the reserve first")
+		return NewDomainErrorCode(ErrInvalidPlay, "duchess.errEmptyColumnReserveOnly", nil)
 	}
 	d.takeSnapshot()
 	d.waste = d.waste[:len(d.waste)-1]
@@ -361,7 +361,7 @@ func (d *Duchess) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 		return errors.New("cannot place card on tableau")
 	}
 	if d.emptyColumnIsReservedForReserve(toCol) {
-		return errors.New("an empty column must be filled from the reserve first")
+		return NewDomainErrorCode(ErrInvalidPlay, "duchess.errEmptyColumnReserveOnly", nil)
 	}
 	d.takeSnapshot()
 	// group は fromCards の内部を指しているので、切り詰める前にコピーを取る。

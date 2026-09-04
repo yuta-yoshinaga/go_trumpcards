@@ -16,6 +16,7 @@
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
   "trump": "切り札: {{suit}}",
+  "trumpRule": "切り札はソリストの最長スートから自動で決まります",
   "marriageAvailable": "マリッジ可能: {{list}}",
   "suitName": {
     "spade": "スペード",

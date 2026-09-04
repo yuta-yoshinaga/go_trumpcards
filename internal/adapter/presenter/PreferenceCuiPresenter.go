@@ -118,17 +118,52 @@ func (p *PreferenceCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Pr
 			"contract", preferenceBidName(int(g.GetContract()))) + "\n")
 		b.WriteString(i18n.T("preference.promptBidHelp") + "\n")
 	case domain.PreferencePhasePlay:
+		writePreferenceDeclarerProgress(b, g)
 		currentIdx := g.GetCurrentPlayerIdx()
 		b.WriteString(i18n.Tf("preference.promptPlay",
 			"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 		b.WriteString(i18n.T("preference.promptPlayHelp") + "\n")
 	case domain.PreferencePhaseTrickEnd:
+		writePreferenceDeclarerProgress(b, g)
 		b.WriteString(i18n.T("preference.promptTrickEnd") + "\n")
 		b.WriteString(i18n.T("preference.promptTrickEndHelp") + "\n")
 	case domain.PreferencePhaseRoundEnd:
 		b.WriteString(i18n.T("preference.promptRoundEnd") + "\n")
 		p.writeRoundEndResult(b, g)
 		b.WriteString(i18n.T("preference.promptRoundEndHelp") + "\n")
+	}
+}
+
+// writePreferenceDeclarerProgress は宣言者の契約達成状況を1行で書く。
+// 宣言者が決まっていない、プレイ中/トリック終了以外のフェーズでは何も書かない。
+//
+// **ミゼールは1トリック取った瞬間に失敗が確定する** (#6448)。Web は
+// preference-contract-progress (PreferencePage.tsx) で常時出しているのに、
+// CUI は宣言者の進捗を一切知らせていなかった。
+func writePreferenceDeclarerProgress(b *strings.Builder, g interfaces.PreferenceGame) {
+	pr := g.GetDeclarerProgress()
+	if pr == nil {
+		return
+	}
+	var line string
+	if pr.IsMisere {
+		// ミゼールに「必要トリック数」は無い (0 と出すと目標があるように読める)。
+		line = i18n.Tf("preference.declarerProgressMisere",
+			"won", strconv.Itoa(pr.Won),
+			"remaining", strconv.Itoa(pr.Remaining))
+	} else {
+		line = i18n.Tf("preference.declarerProgress",
+			"won", strconv.Itoa(pr.Won),
+			"needed", strconv.Itoa(pr.Needed),
+			"remaining", strconv.Itoa(pr.Remaining))
+	}
+	switch {
+	case pr.Failed:
+		b.WriteString(color.BoldYellow(line+i18n.T("preference.progressFailed")) + "\n")
+	case pr.Made:
+		b.WriteString(color.Green(line+i18n.T("preference.progressMade")) + "\n")
+	default:
+		b.WriteString(line + "\n")
 	}
 }
 

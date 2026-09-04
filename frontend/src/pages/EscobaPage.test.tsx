@@ -157,6 +157,19 @@ describe('EscobaPage', () => {
     renderWithProviders(<EscobaPage />);
     await waitFor(() => expect(screen.getByTestId('round-detail')).toBeInTheDocument());
     expect(screen.getByTestId('next-round-button')).toBeInTheDocument();
+
+    // **列見出しだけが `P0` の英字リテラルだった。**同じページの他はすべて
+    // tc('player.*') を通っていて、日本語 UI でここだけ表記がずれていた (#6458)。
+    const headers = screen.getByTestId('round-detail').querySelectorAll('th');
+    expect(headers).toHaveLength(4);
+    expect(headers[0]).toHaveTextContent('あなた');
+    expect(headers[1]).toHaveTextContent('CPU 1');
+    expect(headers[3]).toHaveTextContent('CPU 3');
+    // 各列がどの席かを支援技術にも伝える。
+    for (const th of headers) {
+      expect(th).toHaveAttribute('scope', 'col');
+      expect(th.textContent).not.toMatch(/^P\d/);
+    }
   });
 
   it('next-round button dispatches "n"', async () => {

@@ -12,6 +12,7 @@
   "contractUndecided": "契約: 未決定",
   "playerLine": "{{name}}{{role}}: 獲得{{took}} 累計{{score}} 手札{{cards}}枚",
   "roleDeclarer": "[落札者]",
+  "roleDealer": "[親]",
   "promptBid": "宣言してください。いま通る最小の契約は {{level}}{{suit}} です（b <n> <s> / pass）。",
   "promptBidCapped": "契約は上限（7NT）です。pass しか選べません。",
   "promptBidWait": "相手が宣言しています。",

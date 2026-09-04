@@ -149,6 +149,29 @@ function RussianBankPageContent() {
     setSelected(null);
   };
 
+  // **送り先はスートで決まる。**8 つの枠はどれを押しても同じコマンドを送って
+  // いて、4 通り (実際は 8 通り) の選択肢があるように見えて挙動と食い違って
+  // いた (#6473)。枠は押せなくし、選択中の札が**実際に行く台**だけを光らせる。
+  //
+  // 判定の材料はサーバが渡す `foundationNext` ── 規則をここに書き写すと、
+  // ドメインの `rbFoundationFor` とずれたときに画面だけが嘘をつく。
+  // 先頭一致なのも `rbFoundationFor` と同じ (最初に受け取れる台へ行く)。
+  const selectedCard = ((): Card | undefined => {
+    if (!state || !selected) return undefined;
+    const owner = state.players.find((p) => p.isHuman === !selected.fromOpp);
+    if (selected.zone === ZONE_RESERVE) return owner?.reserveTop;
+    if (selected.zone === ZONE_WASTE) return owner?.wasteTop;
+    const col = state.tableau[selected.col] ?? [];
+    return col.length > 0 ? col[col.length - 1] : undefined;
+  })();
+
+  const foundationTarget = ((): number => {
+    if (!state || !selectedCard) return -1;
+    return state.foundationNext.findIndex(
+      (n) => (n.design === '' || n.design === selectedCard.design) && n.value === selectedCard.value,
+    );
+  })();
+
   const sendToTableau = (toCol: number) => {
     if (!selected) {
       // No source selected: a tableau column click selects that column as a source.
@@ -299,9 +322,14 @@ function RussianBankPageContent() {
               slot(
                 f[f.length - 1],
                 `foundation-${i}`,
-                selected ? sendToFoundation : undefined,
+                // 押せない: 送り先は選ばせるものではない。
+                undefined,
                 false,
                 t('foundationZone', { n: i + 1 }),
+                false,
+                false,
+                // 実際に行く台だけを光らせる。
+                i === foundationTarget,
               ),
             )}
           </div>

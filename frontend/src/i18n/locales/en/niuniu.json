@@ -13,7 +13,7 @@
   "placeBet": "Choose your stake",
   "nextRound": "Next round",
   "comboHint": "The three cards marked ★ sum to a multiple of ten",
-  "landscapeBanner": "Landscape orientation is recommended",
+  "landscapeBanner": "Landscape mode recommended",
   "seatAriaLabel": "{{name}}'s hand, {{rank}}",
   "hiddenHandAriaLabel": "{{name}}'s hand is face down",
   "bankerHandAriaLabel": "Banker's hand, {{rank}}",
@@ -33,5 +33,6 @@
   "rankNone": "No Niu",
   "rankNiuNiu": "Niu Niu",
   "rankN": "Niu {{n}}",
-  "bankerResult": "Banker: {{rank}}"
+  "bankerResult": "Banker: {{rank}}",
+  "comboAriaLabel": "The three cards making the niu: {{cards}}"
 }

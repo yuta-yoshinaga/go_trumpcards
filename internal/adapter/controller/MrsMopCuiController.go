@@ -22,7 +22,7 @@ var mrsMopNoArgCommands = cuiutil.NewCommandMap[usecase.MrsMopInteractorIF]().
 
 // mrsMopArgfulCommands lists alias names for argful commands handled in the
 // Exec switch.
-var mrsMopArgfulCommands = []string{"m", "move"}
+var mrsMopArgfulCommands = []string{"m", "move", "t", "targets"}
 
 // MrsMopCuiController ミセス・モップソリティアCUIコントローラークラス
 type MrsMopCuiController struct {
@@ -55,11 +55,38 @@ func (c *MrsMopCuiController) Exec(command string) string {
 			switch cmd {
 			case "m", "move":
 				return c.handleMove(args), true
+			case "t", "targets":
+				return c.handleTargets(args), true
 			default:
 				return "", false
 			}
 		},
 	)
+}
+
+// handleTargets は `t <col> [idx]` / `targets <col> [idx]` を処理する。
+//
+// 13 列を押して試すのは現実的でない。**索引を省いたら「一番長く動かせる並びの
+// 先頭」** を見る ── 一番長い並びが動かせるかが最初に知りたいことなので、既定を
+// そこに置く。列の一番奥は伏せ札なので、そこを既定にすると常に「動かせない」と
+// 答えることになる。解決するのはドメイン (movableRunStart) の仕事で、ここは
+// -1 を渡すだけ。置ける先の判定もサーバ (LegalTargets) がそのまま答える。
+func (c *MrsMopCuiController) handleTargets(args []string) string {
+	if len(args) == 0 {
+		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "t {0}")
+	}
+	col, err := strconv.Atoi(args[0])
+	if err != nil {
+		return invalidArg("invalidColumn", "val", args[0])
+	}
+	idx := -1
+	if len(args) > 1 {
+		idx, err = strconv.Atoi(args[1])
+		if err != nil {
+			return invalidArg("invalidCardIndex", "val", args[1])
+		}
+	}
+	return c.si.Targets(col, idx)
 }
 
 // handleMove 移動コマンドを処理

@@ -26,21 +26,25 @@ type FaroWebBet struct {
 
 // FaroWebOutput はファロのWebアウトプット。
 type FaroWebOutput struct {
-	Phase       int              `json:"phase"`
-	Chips       int              `json:"chips"`
-	Bets        []*FaroWebBet    `json:"bets"`
-	Soda        *WebOutputCard   `json:"soda,omitempty"`
-	LosingCard  *WebOutputCard   `json:"losingCard,omitempty"`
-	WinningCard *WebOutputCard   `json:"winningCard,omitempty"`
-	Split       bool             `json:"split"`
-	TurnsPlayed int              `json:"turnsPlayed"`
-	TurnsTotal  int              `json:"turnsTotal"`
-	Remaining   int              `json:"remaining"`
-	CallCards   []*WebOutputCard `json:"callCards"`
-	CallOrder   []int            `json:"callOrder"`
-	CallWon     bool             `json:"callWon"`
-	TotalPayout int              `json:"totalPayout"`
-	GameEndFlag bool             `json:"gameEndFlag"`
+	Phase       int            `json:"phase"`
+	Chips       int            `json:"chips"`
+	Bets        []*FaroWebBet  `json:"bets"`
+	Soda        *WebOutputCard `json:"soda,omitempty"`
+	LosingCard  *WebOutputCard `json:"losingCard,omitempty"`
+	WinningCard *WebOutputCard `json:"winningCard,omitempty"`
+	Split       bool           `json:"split"`
+	TurnsPlayed int            `json:"turnsPlayed"`
+	TurnsTotal  int            `json:"turnsTotal"`
+	Remaining   int            `json:"remaining"`
+	// RemainingByRank は各ランクの残り枚数 (index 1..13 が A..K、0 は未使用)。
+	// **未配の山札から直接数えた値**で、クライアントが公開札を蓄えて再構成する
+	// 必要はない ── 蓄える形はリロードで消えて「全ランク満数」と嘘をつく (#6471)。
+	RemainingByRank []int            `json:"remainingByRank"`
+	CallCards       []*WebOutputCard `json:"callCards"`
+	CallOrder       []int            `json:"callOrder"`
+	CallWon         bool             `json:"callWon"`
+	TotalPayout     int              `json:"totalPayout"`
+	GameEndFlag     bool             `json:"gameEndFlag"`
 	WebOutputBase
 }
 
@@ -55,10 +59,13 @@ var NewFaroWebController, NewFaroWebControllerWithProvider = webControllerPair[u
 
 func newFaroDefaultOutput(msg string) *FaroWebOutput {
 	return &FaroWebOutput{
-		Bets:          make([]*FaroWebBet, 0),
-		CallCards:     make([]*WebOutputCard, 0),
-		CallOrder:     make([]int, 0),
-		WebOutputBase: WebOutputBase{Message: msg},
+		Bets:      make([]*FaroWebBet, 0),
+		CallCards: make([]*WebOutputCard, 0),
+		CallOrder: make([]int, 0),
+		// エラー応答でも `null` を返さない ── クライアントは添字で引くので、
+		// `null` だと画面が落ちる。
+		RemainingByRank: make([]int, 0),
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

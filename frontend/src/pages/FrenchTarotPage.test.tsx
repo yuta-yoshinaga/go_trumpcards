@@ -408,4 +408,56 @@ describe('FrenchTarotPage', () => {
     await waitFor(() => expect(screen.getByTestId('frenchtarot-bouts-note')).toBeInTheDocument());
     expect(screen.queryByTestId('frenchtarot-bouts-target')).not.toBeInTheDocument();
   });
+  // **プティ・オ・ブーが乗ると、獲得点から逆算した数字と精算が合わなくなる。**
+  // ルールは実装済みで精算にも乗っているのに、どちらの画面にも出ていなかった (#6509)。
+  it('reports who took the petit in the last trick', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, declarerIdx: 0, petitAuBoutDelta: 20 });
+    renderWithProviders(<FrenchTarotPage />);
+    const row = await screen.findByTestId('ft-petit-au-bout');
+    expect(row).toHaveTextContent('デクレアラー');
+    expect(row).toHaveTextContent('20');
+    expect(row.textContent).not.toContain('{{');
+  });
+
+  // 符号が獲得側を決める ── 取り違える実装はここで落ちる。
+  it('credits the defenders when the delta is negative', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, declarerIdx: 0, petitAuBoutDelta: -20 });
+    renderWithProviders(<FrenchTarotPage />);
+    const row = await screen.findByTestId('ft-petit-au-bout');
+    expect(row).toHaveTextContent('防御側');
+    expect(row).not.toHaveTextContent('デクレアラー');
+  });
+
+  // 負のコントロール: 発生しなかった局には行ごと出さない。
+  it('says nothing when no petit au bout happened', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, declarerIdx: 0, petitAuBoutDelta: 0 });
+    renderWithProviders(<FrenchTarotPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('ft-petit-au-bout')).not.toBeInTheDocument();
+  });
+
+  // **催促は常設のライブ領域の中にある (#6880)。** フェーズ切り替えで現れる
+  // テキストなので、領域が無いとスクリーンリーダには何も届かない。領域を
+  // 出現と同時に付けても読み上げられないため、常設にして中身だけ差し替える。
+  it('announces the prompt from an always-mounted live region', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<FrenchTarotPage />);
+
+    const live = await screen.findByTestId('frenchtarot-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
+    expect(live).toContainElement(await screen.findByTestId('frenchtarot-bid-prompt'));
+  });
+
+  it('announces discard from the same region', async () => {
+    mockExec.mockResolvedValue(chienPhaseState);
+    renderWithProviders(<FrenchTarotPage />);
+
+    const live = await screen.findByTestId('frenchtarot-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
+    expect(live).toContainElement(await screen.findByTestId('frenchtarot-discard-prompt'));
+  });
 });

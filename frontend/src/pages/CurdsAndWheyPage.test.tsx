@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { curdsandwheyApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CurdsAndWheyResponse } from '../types/card';
 import { CurdsAndWheyPage } from './CurdsAndWheyPage';
@@ -87,14 +88,13 @@ describe('CurdsAndWheyPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 0, cardIndex: 0, toCol: 5 }));
   });
 
-  it('undoes, hints and gives up', async () => {
+  it('undoes, hints', async () => {
     mockExec.mockResolvedValue(makeState({ canUndo: true }));
     renderWithProviders(<CurdsAndWheyPage />);
     await screen.findByTestId('hint-button');
     for (const [testid, cmd] of [
       ['undo-button', 'u'],
       ['hint-button', 'hint'],
-      ['giveup-button', 'g'],
     ] as const) {
       mockExec.mockClear();
       fireEvent.click(screen.getByTestId(testid));
@@ -168,5 +168,108 @@ describe('CurdsAndWheyPage', () => {
     renderWithProviders(<CurdsAndWheyPage />);
     await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
     expect(screen.queryByTestId('hint-button')).not.toBeInTheDocument();
+  });
+
+  // **ギブアップは取り消せない** (#6475)。リセットには確認が挟まるのに、
+  // ここは即座に対局を打ち切っていた。
+  it('asks before giving up, and only then dispatches', async () => {
+    renderWithProviders(<CurdsAndWheyPage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalledWith('g');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('g'));
+  });
+
+  it('leaves the game untouched when the give-up dialog is cancelled', async () => {
+    renderWithProviders(<CurdsAndWheyPage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+});
+
+// Keyboard shortcuts are bound by useActionKeyboardNav and advertised by
+// ActionShortcutsPanel; assert the keys actually run their action (#4429, #6591).
+describe('CurdsAndWheyPage keyboard shortcuts', () => {
+  it('pressing h dispatches hint', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<CurdsAndWheyPage />);
+    await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(makeState());
+    fireEvent.keyDown(document, { key: 'h' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('pressing z dispatches u', async () => {
+    mockExec.mockResolvedValue(makeState({ canUndo: true }));
+    renderWithProviders(<CurdsAndWheyPage />);
+    await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(makeState());
+    fireEvent.keyDown(document, { key: 'z' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('u'));
+  });
+
+  it('pressing g asks for give-up confirmation rather than firing it', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<CurdsAndWheyPage />);
+    await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'g' });
+    expect(await screen.findByText('投了確認')).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('ignores shortcuts when loading', async () => {
+    let resolveAction!: (val: CurdsAndWheyResponse) => void;
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<CurdsAndWheyPage />);
+    await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
+
+    mockExec.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveAction = resolve;
+        }),
+    );
+    fireEvent.click(screen.getByTestId('hint-button'));
+    await waitFor(() => expect(screen.getByTestId('hint-button')).toBeDisabled());
+
+    const callCount = mockExec.mock.calls.length;
+    fireEvent.keyDown(document, { key: 'h' });
+    await flushPendingDispatch();
+    expect(mockExec).toHaveBeenCalledTimes(callCount);
+
+    resolveAction(makeState());
+  });
+
+  it('ignores shortcuts once the game has ended', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2 }));
+    renderWithProviders(<CurdsAndWheyPage />);
+    await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
+    mockExec.mockClear();
+    for (const key of ['h', 'z', 'g']) {
+      fireEvent.keyDown(document, { key });
+    }
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(screen.queryByText('投了確認')).not.toBeInTheDocument();
+  });
+
+  it('renders ActionShortcutsPanel', async () => {
+    renderWithProviders(<CurdsAndWheyPage />);
+    await waitFor(() => expect(screen.getByTestId('cw-kbd-shortcuts')).toBeInTheDocument());
   });
 });

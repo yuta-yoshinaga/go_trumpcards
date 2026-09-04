@@ -23,7 +23,7 @@
   "announceYourTurn": "Your turn",
   "announceDealEnd": "The deal is over",
   "announceAward": "A compartment was paid out",
-  "landscapeBanner": "Turn your device sideways for a better view",
+  "landscapeBanner": "Landscape mode recommended",
   "phase.play": "Playing",
   "phase.dealEnd": "Deal over",
   "phase.end": "Finished",
@@ -33,5 +33,7 @@
   "tutorial.noSuit": "The run never looks at suit -- it simply climbs by rank. Coming from Pope Joan you will hunt for the next card of the same suit and miss playable cards.",
   "tutorial.exactCard": "Exactly one card claims each box, suit included. The seven of spades does not claim the yellow dwarf; only the seven of diamonds does.",
   "tutorial.carryOver": "Chips on a box nobody claims carry into the next deal. The dwarf takes five a deal, so left alone it grows fast.",
-  "tutorial.points": "When someone goes out you pay the POINTS left in your hand, not the number of cards: ace 1, pip cards face value, and J/Q/K ten each."
+  "tutorial.points": "When someone goes out you pay the POINTS left in your hand, not the number of cards: ace 1, pip cards face value, and J/Q/K ten each.",
+  "awardLineYou": "You take {{box}} ({{chips}})",
+  "dealResultYou": "You go out"
 }

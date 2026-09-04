@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -202,5 +203,41 @@ func TestKoenigrufenCuiPresenter_TellsYouThatYouAreThePartner(t *testing.T) {
 		out := p.Output(inPlay(0, true, false), nil)
 
 		assert.NotContains(t, out, i18n.T("koenigrufen.youArePartner"))
+	})
+}
+
+// **呼びスートは公開情報。**Web は常時出しているのに CUI は一度も出さず、
+// パートナーでない側は誰が味方になり得るのかを知る手段が無かった (#6510)。
+func TestKoenigrufenCuiPresenter_ShowsTheCalledKing(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.KoenigrufenCuiPresenter)
+
+	withCall := func(suit int, revealed bool) string {
+		g := koenigrufenCuiGame()
+		g.SetPhase(domain.KoenigrufenPhasePlay)
+		g.SetCalledKing(suit)
+		g.SetPartnerRevealed(revealed)
+		return p.Output(g, nil)
+	}
+
+	t.Run("names the called suit", func(t *testing.T) {
+		out := withCall(domain.CardDesignHeart, false)
+		assert.Contains(t, out, i18n.Tf("koenigrufen.calledKing", "suit", "HEART"))
+		assert.NotContains(t, out, "{{")
+	})
+
+	// 手がかりは未公開のあいだだけ ── 公開後はパートナーが誰か分かっているので不要。
+	t.Run("adds the partner clue only while the partner is secret", func(t *testing.T) {
+		clue := i18n.Tf("koenigrufen.partnerClueUnknown", "suit", "HEART")
+		assert.Contains(t, withCall(domain.CardDesignHeart, false), clue)
+		assert.NotContains(t, withCall(domain.CardDesignHeart, true), clue)
+	})
+
+	// 負のコントロール: まだ呼ばれていない局面では行ごと出さない。
+	t.Run("says nothing before a king is called", func(t *testing.T) {
+		lit := strings.SplitN(i18n.T("koenigrufen.calledKing"), "{{", 2)[0]
+		assert.NotContains(t, withCall(-1, false), strings.TrimSpace(lit))
 	})
 }

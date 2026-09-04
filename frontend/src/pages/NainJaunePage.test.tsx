@@ -222,4 +222,28 @@ describe('NainJaunePage', () => {
       );
     });
   });
+  // **同じ画面で呼び方を変えない。**手札セクションは「あなたの手札」と呼ぶのに、
+  // 獲得通知と出し切り通知だけが「席0が」と出ていた (#6521)。
+  it('says "you" for the human in both notices', async () => {
+    mockExec.mockResolvedValue(makeState({ awards: [{ box: 'dwarf', player: 0, chips: 20 }] }));
+    renderWithProviders(<NainJaunePage />);
+    const awards = await screen.findByTestId('nainjaune-awards');
+    expect(awards).toHaveTextContent('あなたが');
+    expect(awards).not.toHaveTextContent('席0');
+
+    mockExec.mockResolvedValue(makeState({ phase: NainJaunePhase.DEAL_END, dealWinner: 0 }));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(screen.getByTestId('nainjaune-deal-result')).toHaveTextContent('あなたが'));
+    expect(screen.getByTestId('nainjaune-deal-result')).not.toHaveTextContent('席0');
+  });
+
+  // 負のコントロール: CPU は既存の「席{{n}}」のまま。
+  it('keeps the seat wording for a CPU', async () => {
+    mockExec.mockResolvedValue(makeState({ awards: [{ box: 'dwarf', player: 2, chips: 20 }] }));
+    renderWithProviders(<NainJaunePage />);
+    const awards = await screen.findByTestId('nainjaune-awards');
+    expect(awards).toHaveTextContent('席2');
+    expect(awards).not.toHaveTextContent('あなたが');
+  });
 });

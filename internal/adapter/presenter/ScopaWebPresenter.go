@@ -73,7 +73,12 @@ func (swp *ScopaWebPresenter) Output(sg interfaces.ScopaGame, lastErr error) str
 	}
 
 	if lastErr != nil {
+		// **コードを渡さないと生の識別子が画面に出る。**`NewDomainErrorCode` で
+		// 作ったエラーは `Message` が空なので `Error()` はキーそのものを返す。
+		// `MessageCode` を埋めないと `GameMessageBox` は翻訳を通さず、
+		// `scopa.errCaptureRequired` がそのまま両言語で表示される (#6846)。
 		resObj.Message = lastErr.Error()
+		resObj.MessageCode, resObj.MessageParams = domain.ErrorMessageCode(lastErr)
 	} else if sg.GetGameEndFlag() {
 		resObj.Message = swp.buildResultMessage(sg)
 		resObj.MessageCode = "scopa.result.scores"

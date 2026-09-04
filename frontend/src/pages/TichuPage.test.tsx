@@ -332,6 +332,69 @@ describe('TichuPage', () => {
     expect(screen.getByTestId('tichu-combo-preview')).toHaveTextContent('フルハウス');
   });
 
+  it('play phase: previews dog note when dog card is selected and not for other combos', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player({
+            id: 0,
+            isHuman: true,
+            team: 0,
+            cardCount: 3,
+            cards: [
+              { design: 'JOKER', value: 2 }, // Dog card
+              { design: 'SPADE', value: 7 },
+              { design: 'HEART', value: 7 },
+            ],
+          }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    const { container } = renderWithProviders(<TichuPage />);
+    await screen.findByRole('button', { name: '出す' });
+    const cards = container.querySelectorAll('[data-tutorial="tichu-hand"] button');
+
+    // 1. Select the Dog card -> combo preview has dog and dog note
+    fireEvent.click(cards[0]);
+    const preview = screen.getByTestId('tichu-combo-preview');
+    expect(preview).toHaveTextContent('犬');
+    expect(screen.getByTestId('tichu-dog-note')).toBeInTheDocument();
+    expect(screen.getByTestId('tichu-dog-note')).toHaveTextContent('出すとリード権がパートナーに移ります');
+
+    // Deselect the Dog card
+    fireEvent.click(cards[0]);
+    expect(screen.queryByTestId('tichu-dog-note')).not.toBeInTheDocument();
+
+    // 2. Select the pair of 7s -> combo preview has pair but NO dog note
+    fireEvent.click(cards[1]);
+    fireEvent.click(cards[2]);
+    expect(screen.getByTestId('tichu-combo-preview')).toHaveTextContent('ペア');
+    expect(screen.queryByTestId('tichu-dog-note')).not.toBeInTheDocument();
+  });
+
+  // **なぜ手番が対面に飛んだのか、画面のどこにも書かれていなかった (#6431)。**
+  // 席の名前を Go 側で埋めていないことを、ここで解決した文言まで見て固定する。
+  it('explains that the dog moved the lead, resolved in the page locale', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ messageCode: 'tichu.dogLeadPassedByYou', messageParams: { to: '2' }, message: 'raw' }),
+    );
+    renderWithProviders(<TichuPage />);
+    const box = await screen.findByText(/リード権/);
+    expect(box).toHaveTextContent('あなたが犬を出したため');
+    expect(box).toHaveTextContent('CPU 2');
+    expect(box.textContent).not.toContain('{{');
+  });
+
+  it('says nothing about the dog on an ordinary message', async () => {
+    mockExec.mockResolvedValue(makeState({ messageCode: undefined, message: '' }));
+    renderWithProviders(<TichuPage />);
+    await screen.findByRole('button', { name: '出す' });
+    expect(screen.queryByText(/リード権/)).not.toBeInTheDocument();
+  });
+
   it('toggles CLI mode', async () => {
     renderWithProviders(<TichuPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());

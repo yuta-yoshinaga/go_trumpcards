@@ -72,6 +72,11 @@ func (p *CruelCuiPresenter) Output(c interfaces.CruelGame, lastErr error) string
 				b.WriteString(i18n.T("cruel.shiftHint") + "\n")
 				b.WriteString(color.Yellow(i18n.T("cruel.stalemateGiveUp")) + "\n")
 			}
+			// CanAutoComplete already shares AutoComplete's own check (#5496), so
+			// this line cannot promise a move the command will refuse.
+			if c.CanAutoComplete() {
+				b.WriteString(color.Green(i18n.T("cruel.autoCompleteReady")) + "\n")
+			}
 			b.WriteString(i18n.T("cruel.opHelp") + "\n")
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(c.GetMoveCount())) + "\n")

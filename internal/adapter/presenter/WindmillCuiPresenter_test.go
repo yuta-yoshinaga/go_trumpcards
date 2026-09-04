@@ -50,6 +50,7 @@ func TestWindmillCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "帆7:", "all eight sails are rendered")
 		assert.Contains(t, result, "95")
 		assert.Contains(t, result, "手数: 0")
+		assert.Contains(t, result, "収納: 1/104 枚 (1%)")
 	})
 
 	t.Run("empty waste, empty corners and an empty sail", func(t *testing.T) {

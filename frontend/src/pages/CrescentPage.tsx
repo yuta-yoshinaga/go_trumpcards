@@ -341,6 +341,12 @@ function CrescentPageContent() {
               })}
             </div>
 
+            {/* 他のソリティアと違う規則なので常設で出す。初回だけのチュートリアルに
+                書いてあっても、読み飛ばした後は盤面に手掛かりが無い (#6386)。 */}
+            <div className="mb-1 text-center text-ds-text-muted text-xs" data-testid="cr-rules-note">
+              {t('rulesNote')}
+            </div>
+
             {/* Tableau (16 piles, 4-col mobile / 8-col desktop).
                 Desktop adds a translateY arch per column to suggest the crescent shape (#1937).
                 Mobile keeps a flat grid because the 4-col layout would turn the arch into a zigzag. */}

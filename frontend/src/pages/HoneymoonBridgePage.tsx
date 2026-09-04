@@ -275,6 +275,13 @@ function HoneymoonBridgePageContent() {
                   <span className="text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
                   </span>
+                  {/* **親は NextRound ごとに交代し、引き合いの最初のリードを決める。**
+                      落札者とは別の役なので、色を変えて並べる。 */}
+                  {p.id === state.dealerIdx && (
+                    <span className="ml-1 text-ds-warning" data-testid={`hb-dealer-${p.id.toString()}`}>
+                      {t('header.dealer')}
+                    </span>
+                  )}
                   {p.id === state.declarerIdx && <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>}
                   {': '}
                   <span className="text-ds-accent">

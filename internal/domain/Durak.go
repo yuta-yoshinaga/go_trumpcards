@@ -39,10 +39,11 @@ type DurakTablePair struct {
 
 // DurakActionType 行動種別定数
 const (
-	DurakActionAttack = 0 // 攻撃
-	DurakActionDefend = 1 // 防御
-	DurakActionPass   = 2 // パス
-	DurakActionTake   = 3 // 引き取り
+	DurakActionAttack   = 0 // 攻撃
+	DurakActionDefend   = 1 // 防御
+	DurakActionPass     = 2 // パス
+	DurakActionTake     = 3 // 引き取り
+	DurakActionTransfer = 4 // 転送
 )
 
 // DurakMaxBouts は 1 局のバウト数の上限。
@@ -58,7 +59,7 @@ const DurakMaxBouts = 200
 // DurakCpuAction CPUまたは人間の1ターン分の行動記録
 type DurakCpuAction struct {
 	PlayerIdx  int   // 行動したプレイヤーインデックス
-	ActionType int   // DurakActionAttack/Defend/Pass/Take
+	ActionType int   // DurakActionAttack/Defend/Pass/Take/Transfer
 	CardIdx    int   // 使用した手札インデックス (-1 = パス/テイク)
 	AttackIdx  int   // 防御時: 対象の攻撃カードインデックス (-1 = 該当なし)
 	Card       *Card // 出したカード (nil = パス/テイク)
@@ -348,6 +349,84 @@ func (d *Durak) PlayerTakeCards() error {
 	d.appendLog(d.round.defenderIdx, "take", "picks up all table cards", nil)
 
 	d.endBout(false)
+	return nil
+}
+
+// PlayerTransfer 人間プレイヤーが防御札として同じランクのカードを出し、攻撃を次のプレイヤーに転送する
+func (d *Durak) PlayerTransfer(handIdx int) error {
+	if d.round.gameEndFlag {
+		return ErrGameEnded
+	}
+	if !d.config.TransferEnabled {
+		return NewDomainError(ErrInvalidPlay, "transfer is disabled")
+	}
+	if !d.players[d.round.currentTurn].GetIsHuman() {
+		return ErrNotHumanTurn
+	}
+	if d.round.phase != DurakPhaseDefend {
+		return ErrWrongPhase
+	}
+	// 防御フェーズかどうか以上のことは見ない。phase を DurakPhaseDefend にする
+	// 箇所はすべて同じ文で currentTurn も defenderIdx にしているので、
+	// 「防御フェーズだが手番が防御者でない」状態は作れない。PlayerDefend が
+	// 同じ理由でこの確認を持っていないので、こちらも合わせる。
+
+	player := d.players[d.round.defenderIdx]
+	if handIdx < 0 || handIdx >= player.GetCardsSize() {
+		return ErrInvalidCard
+	}
+
+	if len(d.round.tablePairs) == 0 {
+		return NewDomainError(ErrInvalidPlay, "no cards to transfer")
+	}
+
+	// 場のどの攻撃札もまだ防御されていない
+	for _, pair := range d.round.tablePairs {
+		if pair.Defense != nil {
+			return NewDomainError(ErrInvalidPlay, "cannot transfer after defending")
+		}
+	}
+
+	card := player.GetCard(handIdx)
+
+	// 出す札のランクが場の攻撃札のランクと同じ
+	for _, pair := range d.round.tablePairs {
+		if durakCardRank(card) != durakCardRank(pair.Attack) {
+			return NewDomainError(ErrInvalidPlay, "card rank does not match table cards")
+		}
+	}
+
+	// 次の防御者が受けきれること
+	nextDefenderIdx := d.nextActivePlayer(d.round.defenderIdx)
+	nextDefender := d.players[nextDefenderIdx]
+	if len(d.round.tablePairs)+1 > nextDefender.GetCardsSize() {
+		return NewDomainError(ErrInvalidPlay, "next defender has no cards left to defend")
+	}
+
+	// 場の上限
+	if len(d.round.tablePairs) >= DurakHandSize {
+		return NewDomainError(ErrInvalidPlay, "table is full")
+	}
+
+	played := player.RemoveCard(handIdx)
+	d.round.tablePairs = append(d.round.tablePairs, &DurakTablePair{Attack: played})
+
+	oldDefenderIdx := d.round.defenderIdx
+	d.round.attackerIdx = oldDefenderIdx
+	d.round.defenderIdx = nextDefenderIdx
+	d.round.currentTurn = nextDefenderIdx
+
+	d.round.humanAction = &DurakCpuAction{
+		PlayerIdx:  oldDefenderIdx,
+		ActionType: DurakActionTransfer,
+		CardIdx:    handIdx,
+		AttackIdx:  -1,
+		Card:       played,
+	}
+	d.round.cpuActions = nil
+
+	d.appendLog(oldDefenderIdx, "transfer", fmt.Sprintf("plays %s to transfer", cardStr(played)), []*Card{played})
+
 	return nil
 }
 

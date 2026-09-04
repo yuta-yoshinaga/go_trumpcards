@@ -56,6 +56,10 @@ export interface TuteResponse extends BaseGameResponse {
   teamScores: number[];
   /** Card points captured per team this round — [team0, team1]. */
   roundTeamPoints: number[];
+  /** Team that won the +10 last trick bonus (10 de últimas), or -1 before round end. */
+  lastTrickBonusTeam: number;
+  /** Points awarded for the last trick bonus (10). */
+  lastTrickBonusPoints: number;
   /** Whether the human may declare a marriage (K+Q) right now. */
   canDeclareMarriage: boolean;
   /** Whether the human may declare Tute (four Kings or four Queens) for an instant win. */

@@ -196,6 +196,9 @@ func TestVira_JSONRoundTripPreservesState(t *testing.T) {
 	src.SetRand(rand.New(rand.NewSource(11)))
 	src.Reset()
 
+	src.lastRoundMade = true
+	src.lastRoundPotWon = 45
+
 	data, err := src.MarshalJSON()
 	assert.NoError(t, err)
 
@@ -204,6 +207,8 @@ func TestVira_JSONRoundTripPreservesState(t *testing.T) {
 	assert.Equal(t, src.GetPhase(), got.GetPhase())
 	assert.Equal(t, src.GetDealerIdx(), got.GetDealerIdx())
 	assert.Equal(t, src.GetPlayerScores(), got.GetPlayerScores())
+	assert.Equal(t, src.GetLastRoundMade(), got.GetLastRoundMade())
+	assert.Equal(t, src.GetLastRoundPotWon(), got.GetLastRoundPotWon())
 	assert.Equal(t, ViraPlayerCnt, got.GetPlayerCnt())
 	for i := 0; i < ViraPlayerCnt; i++ {
 		assert.Equal(t, src.GetPlayer(i).GetCardsSize(), got.GetPlayer(i).GetCardsSize())
@@ -452,6 +457,7 @@ func TestVira_SettlementMovesThePot(t *testing.T) {
 
 		value := viraBidValue(ViraBidGask)
 		assert.True(t, g.GetLastRoundMade())
+		assert.Equal(t, 30, g.GetLastRoundPotWon(), "lastRoundPotWon records the pot won before it was cleared")
 		assert.Zero(t, g.GetPot(), "a made contract empties the pot")
 		assert.Equal(t, 100+30+2*value, g.GetPlayerScores()[0])
 		assert.Equal(t, 100-value, g.GetPlayerScores()[1])
@@ -469,6 +475,7 @@ func TestVira_SettlementMovesThePot(t *testing.T) {
 
 		value := viraBidValue(ViraBidVira)
 		assert.False(t, g.GetLastRoundMade())
+		assert.Zero(t, g.GetLastRoundPotWon(), "a failed contract leaves lastRoundPotWon at 0")
 		assert.Equal(t, 30+value, g.GetPot(), "the failed contract's value is added to the pot")
 		assert.Equal(t, 100-3*value, g.GetPlayerScores()[0])
 		assert.Equal(t, 100+value, g.GetPlayerScores()[1])
@@ -480,8 +487,11 @@ func TestVira_SettlementMovesThePot(t *testing.T) {
 		g.declarerIdx = 1
 		g.contract = ViraBidMisere
 		g.roundTricks = [ViraPlayerCnt]int{7, 0, 6}
+		g.pot = 20
 		g.settleRound()
 		assert.True(t, g.GetLastRoundMade())
+		assert.Equal(t, 20, g.GetLastRoundPotWon())
+		assert.Zero(t, g.GetPot())
 	})
 
 	t.Run("misere fails on a single trick", func(t *testing.T) {
@@ -489,8 +499,11 @@ func TestVira_SettlementMovesThePot(t *testing.T) {
 		g.declarerIdx = 1
 		g.contract = ViraBidMisere
 		g.roundTricks = [ViraPlayerCnt]int{7, 1, 5}
+		g.pot = 20
 		g.settleRound()
 		assert.False(t, g.GetLastRoundMade())
+		assert.Zero(t, g.GetLastRoundPotWon())
+		assert.Equal(t, 20+viraBidValue(ViraBidMisere), g.GetPot())
 	})
 
 	// An all-pass round has no declarer, so nothing changes hands — but the ante
@@ -502,6 +515,7 @@ func TestVira_SettlementMovesThePot(t *testing.T) {
 		g.playerScores = [ViraPlayerCnt]int{100, 100, 100}
 		g.settleRound()
 		assert.Equal(t, 45, g.GetPot(), "the stake carries forward")
+		assert.Zero(t, g.GetLastRoundPotWon())
 		assert.Equal(t, [ViraPlayerCnt]int{100, 100, 100}, g.GetPlayerScores())
 	})
 }
@@ -514,6 +528,7 @@ func TestVira_MadeLabel(t *testing.T) {
 func TestVira_NextRoundRedealsAndRotatesTheDealer(t *testing.T) {
 	g := newTestVira(t)
 	g.SetPhase(ViraPhaseRoundEnd)
+	g.lastRoundPotWon = 50
 	dealer, round := g.GetDealerIdx(), g.GetRoundNumber()
 
 	g.NextRound()
@@ -521,6 +536,7 @@ func TestVira_NextRoundRedealsAndRotatesTheDealer(t *testing.T) {
 	assert.Equal(t, (dealer+1)%ViraPlayerCnt, g.GetDealerIdx())
 	assert.Equal(t, ViraPhaseBid, g.GetPhase())
 	assert.Equal(t, -1, g.GetDeclarerIdx())
+	assert.Zero(t, g.GetLastRoundPotWon(), "next round resets lastRoundPotWon to 0")
 	for i := range ViraPlayerCnt {
 		assert.Equal(t, ViraHandSize, g.GetPlayer(i).GetCardsSize())
 		assert.Zero(t, g.GetRoundTricks()[i])

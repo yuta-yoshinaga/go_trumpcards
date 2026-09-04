@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { ThirtyOneResponse } from '../types/card';
 import { ThirtyOnePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { fiftyOneBestSuit, fiftyOneSuitScores } from '../utils/fiftyOneSuitScores';
@@ -339,6 +340,10 @@ function ThirtyOnePageContent() {
                     key={i}
                     type="button"
                     data-testid={`hand-card-${i}`}
+                    // 選択の可否はリングでしか示されていなかった。選択状態は
+                    // aria-pressed が担うので、ラベルには札名だけを入れる。
+                    aria-label={cardAlt(c)}
+                    aria-pressed={selectedCardIdx === i}
                     onClick={() => isDiscard && isHumanTurn && setSelectedCardIdx(i === selectedCardIdx ? null : i)}
                     disabled={!isDiscard || !isHumanTurn}
                     className={

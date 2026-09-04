@@ -269,6 +269,15 @@ function PiedmonteseTarotPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  // **取った席を光らせる。** サーバは lastTrickWinner を最初から
+                  // 送っているのに読んでいなかったので、4 枚並んだ場札の誰が
+                  // 取ったのか画面から読めず、毎回タロッコの切り札優先を
+                  // 自分で解き直すことになっていた (#6623)。Gleek が同じ
+                  // コンポーネントに同じ形で渡している。
+                  //
+                  // プレイ中は undefined。まだ決まっていない勝者を先に
+                  // 光らせると、最後の 1 枚で覆る答えを見せることになる。
+                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
                   dataTutorial="piedmontesetarot-trick-display"
                 />
               </div>
@@ -369,14 +378,18 @@ function PiedmonteseTarotPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.piedmontesetarot.footer} px-4 py-2.5`}>
-            {canScarto && (
-              <div
-                className="mb-1 text-center text-sm text-ds-accent font-semibold"
-                data-testid="piedmontesetarot-discard-prompt"
-              >
-                {t('scartoPhase', { count: selectedCardIndices.length, total: talonSize })}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="piedmontesetarot-prompt-live" role="status" aria-live="polite">
+              {canScarto && (
+                <div
+                  className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                  data-testid="piedmontesetarot-discard-prompt"
+                >
+                  {t('scartoPhase', { count: selectedCardIndices.length, total: talonSize })}
+                </div>
+              )}
+            </div>
             {isScartoPhase && !state.isHumanScarto && (
               <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="piedmontesetarot-waiting">
                 {t('scartoWaiting')}

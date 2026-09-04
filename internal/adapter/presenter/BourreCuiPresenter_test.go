@@ -199,3 +199,88 @@ func TestBourreCuiPresenter_DecidePenaltyIncludesTheCarriedPot(t *testing.T) {
 		"penalty", strconv.Itoa(min(bg.GetPot(), bg.GetPlayer(bg.GetCurrentPlayerIdx()).GetChips()))))
 	assert.Greater(t, bg.GetPot(), carried, "繰越ぶんが表示額に乗っている")
 }
+
+// **フォロー義務で何が出せるかを示す。**Web は `validPlays` でリング表示している
+// のに、CUI は番号を打ってサーバに弾かれるまで分からなかった (#6433)。
+func TestBourreCuiPresenter_MarksThePlayableCards(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	// 人間が手番の PLAY フェーズを、配りに依らず手で組む。
+	setup := func(phase domain.BourrePhase, turn int) *domain.Bourre {
+		bg := newBourreWithHuman()
+		bg.Reset()
+		bg.SetPhase(phase)
+		bg.SetCurrentPlayerIdx(turn)
+		return bg
+	}
+
+	hand := func(bg *domain.Bourre) []*domain.Card {
+		p := bg.GetPlayer(0)
+		cards := make([]*domain.Card, p.GetCardsSize())
+		for i := range cards {
+			cards[i] = p.GetCard(i)
+		}
+		return cards
+	}
+
+	t.Run("marks only the cards the server would accept", func(t *testing.T) {
+		// **リードが出るまで全部合法。**先頭手番のまま測ると、印の有無を見分けられない
+		// 盤面を「合格」と読んでしまう。CPU に 1 枚リードさせてから人間の手番に戻す。
+		var bg *domain.Bourre
+		var valid []int
+		for attempt := 0; attempt < 200; attempt++ {
+			bg = setup(domain.BourrePhasePlay, 1)
+			for i := 0; i < domain.BourrePlayerCnt && !bg.IsHumanTurn(); i++ {
+				bg.CpuPlay()
+			}
+			if !bg.IsHumanTurn() || len(bg.GetCurrentTrick()) == 0 {
+				continue
+			}
+			valid = bg.GetValidPlayIndices(0)
+			if len(valid) > 0 && len(valid) < len(hand(bg)) {
+				break
+			}
+			valid = nil
+		}
+		require.NotEmpty(t, valid, "フォロー義務で絞られる配りに当たらなかった")
+		require.Less(t, len(valid), len(hand(bg)), "全部合法だと印の有無を見分けられない")
+
+		out := new(presenter.BourreCuiPresenter).Output(bg, nil)
+
+		legal := make(map[int]bool, len(valid))
+		for _, i := range valid {
+			legal[i] = true
+		}
+		for i, c := range hand(bg) {
+			marked := bourreCardText(c) + presenter.CuiLegalMark
+			if legal[i] {
+				assert.Contains(t, out, marked, "合法な札 %d に印が無い", i)
+			} else {
+				assert.NotContains(t, out, marked, "出せない札 %d に印が付いている", i)
+			}
+		}
+	})
+
+	t.Run("marks nothing in the decide phase", func(t *testing.T) {
+		bg := setup(domain.BourrePhaseDecide, 0)
+		out := new(presenter.BourreCuiPresenter).Output(bg, nil)
+		assert.NotContains(t, out, presenter.CuiLegalMark, "合法手の概念が無いフェーズでは印を出さない")
+	})
+
+	t.Run("marks nothing while it is someone else's turn", func(t *testing.T) {
+		bg := setup(domain.BourrePhasePlay, 1)
+		out := new(presenter.BourreCuiPresenter).Output(bg, nil)
+		assert.NotContains(t, out, presenter.CuiLegalMark, "他人の手番では印を出さない")
+	})
+}
+
+// bourreCardText mirrors the presenter's plain-text card rendering ("SPADE 7").
+//
+// 印は札の**後ろ**に付くので、この文字列に印を足したものが手札の行に出るか
+// どうかで「印が付いたか」を判定できる。色は NoColor で落としてある。
+func bourreCardText(c *domain.Card) string {
+	names := []string{"", "SPADE", "CLOVER", "HEART", "DIAMOND"}
+	return names[c.GetDesign()] + " " + strconv.Itoa(c.GetValue())
+}

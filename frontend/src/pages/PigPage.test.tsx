@@ -158,6 +158,20 @@ describe('PigPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('signal'));
   });
 
+  // **合図に気づくのが遅いことがそのまま負け。**polite だと既存の読み上げの
+  // 後ろに回るので、割り込む役割で告知する。
+  it('announces the live signal assertively', async () => {
+    mockExec.mockResolvedValue(liveSignal());
+    renderWithProviders(<PigPage />);
+
+    const alert = await screen.findByTestId('pig-signal-alert');
+    expect(alert).toHaveAttribute('role', 'alert');
+    // role="alert" が aria-live="assertive" を含意するので、二重指定はしない。
+    expect(alert).not.toHaveAttribute('aria-live');
+    // 同じ要素が合図の告知そのものであること（別の要素に付けても通らない）。
+    expect(alert).toHaveTextContent(/鼻に当てました/);
+  });
+
   // **負のコントロール: 合図が出ていなければボタンは出ない。**
   it('hides the signal button while cards are still being passed', async () => {
     renderWithProviders(<PigPage />);

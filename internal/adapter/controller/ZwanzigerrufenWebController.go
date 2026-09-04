@@ -94,32 +94,33 @@ type ZwanzigerrufenWebOutputConfig struct {
 // 出るまで正体を隠すのがこのゲームの骨格なので、**画面が出さない**ではなく
 // **サーバが送らない**ことで守る。
 type ZwanzigerrufenWebOutput struct {
-	Players          []*ZwanzigerrufenWebOutputPlayer  `json:"players"`
-	Phase            int                               `json:"phase"`
-	RoundNumber      int                               `json:"roundNumber"`
-	TotalRounds      int                               `json:"totalRounds"`
-	TrickNumber      int                               `json:"trickNumber"`
-	CurrentPlayerIdx int                               `json:"currentPlayerIdx"`
-	DealerIdx        int                               `json:"dealerIdx"`
-	BidPlayerIdx     int                               `json:"bidPlayerIdx"`
-	HighestBid       int                               `json:"highestBid"`
-	DeclarerIdx      int                               `json:"declarerIdx"`
-	Contract         int                               `json:"contract"`
-	ContractName     string                            `json:"contractName"`
-	CalledTrump      int                               `json:"calledTrump"`
-	PartnerIdx       int                               `json:"partnerIdx"`
-	PartnerRevealed  bool                              `json:"partnerRevealed"`
-	TalonCount       int                               `json:"talonCount"`
-	CurrentTrick     []*WebOutputTrickCard             `json:"currentTrick"`
-	LastTrickWinner  int                               `json:"lastTrickWinner"`
-	LastTrickCards   []*WebOutputCard                  `json:"lastTrickCards"`
-	Outcome          int                               `json:"outcome"`
-	Breakdown        *ZwanzigerrufenWebOutputBreakdown `json:"breakdown"`
-	PlayableIndices  []int                             `json:"playableIndices"`
-	GameEndFlag      bool                              `json:"gameEndFlag"`
-	WinnerPlayer     int                               `json:"winnerPlayer"`
-	IsHumanTurn      bool                              `json:"isHumanTurn"`
-	Hint             *ZwanzigerrufenWebOutputHint      `json:"hint,omitempty"`
+	Players            []*ZwanzigerrufenWebOutputPlayer  `json:"players"`
+	Phase              int                               `json:"phase"`
+	RoundNumber        int                               `json:"roundNumber"`
+	TotalRounds        int                               `json:"totalRounds"`
+	TrickNumber        int                               `json:"trickNumber"`
+	CurrentPlayerIdx   int                               `json:"currentPlayerIdx"`
+	DealerIdx          int                               `json:"dealerIdx"`
+	BidPlayerIdx       int                               `json:"bidPlayerIdx"`
+	HighestBid         int                               `json:"highestBid"`
+	DeclarerIdx        int                               `json:"declarerIdx"`
+	Contract           int                               `json:"contract"`
+	ContractName       string                            `json:"contractName"`
+	CalledTrump        int                               `json:"calledTrump"`
+	PartnerIdx         int                               `json:"partnerIdx"`
+	PartnerRevealed    bool                              `json:"partnerRevealed"`
+	TalonCount         int                               `json:"talonCount"`
+	CurrentTrick       []*WebOutputTrickCard             `json:"currentTrick"`
+	LastTrickWinner    int                               `json:"lastTrickWinner"`
+	LastTrickCards     []*WebOutputCard                  `json:"lastTrickCards"`
+	Outcome            int                               `json:"outcome"`
+	Breakdown          *ZwanzigerrufenWebOutputBreakdown `json:"breakdown"`
+	PlayableIndices    []int                             `json:"playableIndices"`
+	DiscardableIndices []int                             `json:"discardableIndices"`
+	GameEndFlag        bool                              `json:"gameEndFlag"`
+	WinnerPlayer       int                               `json:"winnerPlayer"`
+	IsHumanTurn        bool                              `json:"isHumanTurn"`
+	Hint               *ZwanzigerrufenWebOutputHint      `json:"hint,omitempty"`
 	WebOutputBase
 	Config ZwanzigerrufenWebOutputConfig `json:"config"`
 }
@@ -150,16 +151,17 @@ var NewZwanzigerrufenWebController, NewZwanzigerrufenWebControllerWithProvider =
 
 func newZwanzigerrufenDefaultOutput(msg string) *ZwanzigerrufenWebOutput {
 	return &ZwanzigerrufenWebOutput{
-		Players:         make([]*ZwanzigerrufenWebOutputPlayer, 0),
-		CurrentTrick:    make([]*WebOutputTrickCard, 0),
-		LastTrickCards:  make([]*WebOutputCard, 0),
-		PlayableIndices: make([]int, 0),
-		DeclarerIdx:     -1,
-		CalledTrump:     -1,
-		PartnerIdx:      -1,
-		LastTrickWinner: -1,
-		WinnerPlayer:    -1,
-		WebOutputBase:   WebOutputBase{Message: msg},
+		Players:            make([]*ZwanzigerrufenWebOutputPlayer, 0),
+		CurrentTrick:       make([]*WebOutputTrickCard, 0),
+		LastTrickCards:     make([]*WebOutputCard, 0),
+		PlayableIndices:    make([]int, 0),
+		DiscardableIndices: make([]int, 0),
+		DeclarerIdx:        -1,
+		CalledTrump:        -1,
+		PartnerIdx:         -1,
+		LastTrickWinner:    -1,
+		WinnerPlayer:       -1,
+		WebOutputBase:      WebOutputBase{Message: msg},
 	}
 }
 

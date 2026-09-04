@@ -28,6 +28,10 @@ type GoFishWebOutputPlayer struct {
 	Cards     []*WebOutputCard       `json:"cards"`
 	BookCount int                    `json:"bookCount"`
 	Books     []*GoFishWebOutputBook `json:"books"`
+	// KnownRanks はこの席が保有を公開済みのランク。**サーバが持っている権威値**
+	// で、CUI は以前からこれを出している。クライアントが lastAsk の履歴から
+	// 組み直すと、リロードで記憶が消える。
+	KnownRanks []int `json:"knownRanks"`
 }
 
 // GoFishWebOutputBook Go FishWebアウトプットブック

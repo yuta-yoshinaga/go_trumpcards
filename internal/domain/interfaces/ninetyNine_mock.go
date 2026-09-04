@@ -70,6 +70,12 @@ func (m *MockNinetyNineGame) GetPhase() domain.NinetyNinePhase {
 	return args.Get(0).(domain.NinetyNinePhase)
 }
 
+// GetRoundSuccessBonus モック
+func (m *MockNinetyNineGame) GetRoundSuccessBonus() int {
+	ret := m.Called()
+	return ret.Int(0)
+}
+
 func (m *MockNinetyNineGame) IsHumanTurn() bool {
 	args := m.Called()
 	return args.Bool(0)

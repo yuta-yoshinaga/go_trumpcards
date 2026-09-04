@@ -153,6 +153,18 @@ beforeEach(() => {
 });
 
 describe('CribbagePage', () => {
+  // 人間のカット番では、山札からカットするUIを出す
+  it('shows cut area when it is the human turn to cut', async () => {
+    mockExec.mockResolvedValue(cutPhaseState);
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByTestId('cb-cut-area')).toBeInTheDocument());
+  });
+
+  it('hides cut area when it is CPU turn to cut', async () => {
+    mockExec.mockResolvedValue(cutPhaseCpuState);
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.queryByTestId('cb-cut-area')).not.toBeInTheDocument());
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CribbagePage />);
@@ -850,5 +862,24 @@ describe('CribbagePage', () => {
     const preview = await screen.findByTestId('cb-peg-hover-preview');
     expect(preview.textContent).toContain('4');
     expect(preview.textContent).toContain('14');
+  });
+
+  // The preview text already updated on hover before this change, so asserting
+  // that it changes proves nothing. What was missing is the region that makes
+  // the update reach a screen reader at all.
+  it('announces the peg preview through a permanently mounted live region', async () => {
+    mockExec.mockResolvedValue({ ...peggingPhaseState, pegCount: 4 });
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByLabelText('♥ J')).toBeInTheDocument());
+
+    const region = screen.getByTestId('cb-peg-preview-live');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveAttribute('role', 'status');
+    // Mounted and empty before the hover: a region appearing together with its
+    // text is not a change and may go unread (#5955).
+    expect(region).toHaveTextContent('');
+
+    fireEvent.pointerEnter(screen.getByLabelText('♥ J'));
+    await waitFor(() => expect(region).toHaveTextContent('14'));
   });
 });

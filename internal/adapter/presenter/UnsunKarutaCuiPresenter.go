@@ -129,8 +129,11 @@ func (p *UnsunKarutaCuiPresenter) writePrompt(b *strings.Builder, g interfaces.U
 			"name", cuiPlayerName(g.GetPlayer(idx), idx)) + "\n")
 		// **フォロー義務があるかを出す。** 宣言で生まれる義務なので、
 		// 出さないと「なぜこの札しか出せないのか」が読めない。
+		// **「メリ」か「モンチ」かまで言う。** この区別がこのゲームの通称
+		// 「八人メリ」の由来なのに、これまで一律「宣言あり」としか出しておらず、
+		// その用語がアプリのどの言語にも一度も現れていなかった (#6624)。
 		if g.IsMustFollow() {
-			b.WriteString(i18n.T("unsunkaruta.mustFollow") + "\n")
+			b.WriteString(i18n.T(unsunKarutaDeclarationKey(g.GetDeclarationKind())) + "\n")
 		}
 		if player := g.GetPlayer(idx); player != nil && player.GetIsHuman() {
 			var parts []string
@@ -202,4 +205,19 @@ var unsunKarutaHintReasonKeys = map[string]string{
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *UnsunKarutaCuiPresenter) ActionLogOutput(g interfaces.UnsunKarutaGame) string {
 	return actionLogOutputTextForSeats[*domain.UnsunKarutaPlayer](g)
+}
+
+// unsunKarutaDeclarationKey は宣言種別に対応する文言キーを返す。
+//
+// 種別が付かない (台札を読めない) 場合は従来の一律の文言に落ちる ── 義務が
+// あること自体は出し続ける。
+func unsunKarutaDeclarationKey(kind int) string {
+	switch kind {
+	case domain.UnsunKarutaDeclarationMeri:
+		return "unsunkaruta.declarationMeri"
+	case domain.UnsunKarutaDeclarationMonchi:
+		return "unsunkaruta.declarationMonchi"
+	default:
+		return "unsunkaruta.mustFollow"
+	}
 }

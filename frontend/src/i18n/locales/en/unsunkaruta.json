@@ -63,5 +63,7 @@
     "resetButton": "The reset button starts a new game."
   },
   "hintRequested": "A hint is available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "declarationMeri": "Meri (declared on a trump lead) - follow the led suit (play anything if you are void).",
+  "declarationMonchi": "Monchi (declared on a plain lead) - follow the led suit (play anything if you are void)."
 }

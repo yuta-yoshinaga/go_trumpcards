@@ -98,6 +98,8 @@ export interface GleekResponse extends BaseGameResponse {
   currentTrick: GleekTrickCard[];
   /** Cumulative match scores per player — [p0, p1, p2]. */
   playerScores: number[];
+  /** Net score change per player for the current deal (index = player seat). */
+  roundDelta: number[];
   /** How many cards the buyer must throw (seven). */
   discardCount: number;
   /** Seat that won the ruff; -1 until it is scored. */

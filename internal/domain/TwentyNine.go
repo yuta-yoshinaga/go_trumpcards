@@ -76,26 +76,27 @@ type TwentyNineHint struct {
 
 // TwentyNine トゥエンティナインのゲームクラス
 type TwentyNine struct {
-	trumpCards       *TrumpCards
-	players          []*TwentyNinePlayer
-	config           TwentyNineConfig
-	phase            TwentyNinePhase
-	roundNumber      int
-	trickNumber      int
-	currentPlayerIdx int
-	currentTrick     []*TrickCard
-	leadPlayerIdx    int
-	dealerIdx        int
-	bids             [TwentyNinePlayerCnt]TwentyNineBid
-	bidDone          [TwentyNinePlayerCnt]bool
-	declarerIdx      int // 落札者 (-1=未確定/全パス)
-	contract         TwentyNineBid
-	trumpSuit        int
-	trumpRevealed    bool                   // 隠し切り札が公開済みか
-	teamScores       [TwentyNineTeamCnt]int // 累積ゲーム点
-	roundTeamPts     [TwentyNineTeamCnt]int // 現ラウンドのチーム別カード得点
-	gameEndFlag      bool
-	winnerTeam       int // -1=未確定
+	trumpCards        *TrumpCards
+	players           []*TwentyNinePlayer
+	config            TwentyNineConfig
+	phase             TwentyNinePhase
+	roundNumber       int
+	trickNumber       int
+	currentPlayerIdx  int
+	currentTrick      []*TrickCard
+	leadPlayerIdx     int
+	dealerIdx         int
+	bids              [TwentyNinePlayerCnt]TwentyNineBid
+	bidDone           [TwentyNinePlayerCnt]bool
+	declarerIdx       int // 落札者 (-1=未確定/全パス)
+	contract          TwentyNineBid
+	trumpSuit         int
+	trumpRevealed     bool                   // 隠し切り札が公開済みか
+	trumpJustRevealed bool                   // 直前の応答で公開されたか (告知は 1 回だけ)
+	teamScores        [TwentyNineTeamCnt]int // 累積ゲーム点
+	roundTeamPts      [TwentyNineTeamCnt]int // 現ラウンドのチーム別カード得点
+	gameEndFlag       bool
+	winnerTeam        int // -1=未確定
 	actionLogBase
 }
 
@@ -156,6 +157,7 @@ func (g *TwentyNine) startRound() {
 	g.contract = TwentyNineBidPass
 	g.trumpSuit = 0
 	g.trumpRevealed = false
+	g.trumpJustRevealed = false
 	g.roundTeamPts = [TwentyNineTeamCnt]int{}
 	for _, p := range g.players {
 		p.ResetRound()
@@ -209,7 +211,16 @@ func (g *TwentyNine) PlayerBid(bid TwentyNineBid) error {
 	if !g.players[g.currentPlayerIdx].GetIsHuman() {
 		return ErrNotHumanTurn
 	}
-	return g.applyBid(g.currentPlayerIdx, bid)
+	// **消すのは人間の手が通ったときだけ。**`Play` は人間の 1 手のあと
+	// そのまま CPU を回しきってから描画する (TwentyNineInteractor.Play)。
+	// CPU 側で消すと、CPU の手で公開されたときの告知が描画前に消えて
+	// 一度も画面に出ない。検証前に消すのも同じ穴で、弾かれた要求
+	// (二度押し・再送) がまだ読んでいない告知を消してしまう。
+	if err := g.applyBid(g.currentPlayerIdx, bid); err != nil {
+		return err
+	}
+	g.trumpJustRevealed = false
+	return nil
 }
 
 // CpuBid 入札フェーズで CPU が 1 件入札する。
@@ -270,6 +281,7 @@ func (g *TwentyNine) resolveBidding() {
 	g.contract = bid
 	g.trumpSuit = g.longestSuit(idx)
 	g.trumpRevealed = false
+	g.trumpJustRevealed = false
 	g.appendLog(idx, "contract",
 		fmt.Sprintf("%s (team %s) bids %d with a hidden trump", playerName(g.players, idx), twentyNineTeamName(TwentyNineTeamOf(idx)), int(bid)), nil)
 	g.leadPlayerIdx = idx
@@ -329,6 +341,10 @@ func (g *TwentyNine) PlayerPlay(cardIndex int) error {
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
 		return err
 	}
+	// 消すのは人間の手が通ったときだけ。理由は PlayerBid のコメントを参照。
+	// **`playCard` より前に消す** ── 人間自身の手で公開されたときは、その直後に
+	// `playCard` が立て直す。
+	g.trumpJustRevealed = false
 	played := player.RemoveCard(cardIndex)
 	g.playCard(g.currentPlayerIdx, played)
 	return nil
@@ -361,6 +377,7 @@ func (g *TwentyNine) playCard(playerIdx int, card *Card) {
 		leadSuit := g.currentTrick[0].Card.GetDesign()
 		if card.GetDesign() != leadSuit {
 			g.trumpRevealed = true
+			g.trumpJustRevealed = true
 			g.appendLog(playerIdx, "reveal_trump", fmt.Sprintf("trump (%d) is revealed", g.trumpSuit), nil)
 		}
 	}
@@ -708,6 +725,12 @@ func (g *TwentyNine) SetTrumpSuit(suit int) { g.trumpSuit = suit }
 // GetTrumpRevealed 隠し切り札が公開済みか取得
 func (g *TwentyNine) GetTrumpRevealed() bool { return g.trumpRevealed }
 
+// GetTrumpJustRevealed は直前の応答で隠し切り札が公開されたかを返す。
+//
+// 告知は 1 回だけ出す。`GetTrumpRevealed` は公開済みかどうかで、こちらは
+// 「この応答で起きたか」。人間が次の手を打つと false に戻る。
+func (g *TwentyNine) GetTrumpJustRevealed() bool { return g.trumpJustRevealed }
+
 // SetTrumpRevealed 切り札公開フラグ設定 (テスト用)
 func (g *TwentyNine) SetTrumpRevealed(v bool) { g.trumpRevealed = v }
 
@@ -831,53 +854,55 @@ func (g *TwentyNine) GetPlayableIndices(playerIdx int) []int {
 
 // twentyNineJSON is the JSON wire format for TwentyNine.
 type twentyNineJSON struct {
-	TrumpCards       *TrumpCards                        `json:"tc"`
-	Players          []*TwentyNinePlayer                `json:"ps"`
-	Config           TwentyNineConfig                   `json:"cf"`
-	Phase            TwentyNinePhase                    `json:"ph"`
-	RoundNumber      int                                `json:"rn"`
-	TrickNumber      int                                `json:"tn"`
-	CurrentPlayerIdx int                                `json:"ci"`
-	CurrentTrick     []*TrickCard                       `json:"ct"`
-	LeadPlayerIdx    int                                `json:"li"`
-	DealerIdx        int                                `json:"di"`
-	Bids             [TwentyNinePlayerCnt]TwentyNineBid `json:"bd"`
-	BidDone          [TwentyNinePlayerCnt]bool          `json:"bf"`
-	DeclarerIdx      int                                `json:"dc"`
-	Contract         TwentyNineBid                      `json:"co"`
-	TrumpSuit        int                                `json:"ts"`
-	TrumpRevealed    bool                               `json:"tr"`
-	TeamScores       [TwentyNineTeamCnt]int             `json:"sc"`
-	RoundTeamPts     [TwentyNineTeamCnt]int             `json:"rp"`
-	GameEndFlag      bool                               `json:"ge"`
-	WinnerTeam       int                                `json:"wt"`
-	ActionLog        []*ActionLogEntry                  `json:"al"`
+	TrumpCards        *TrumpCards                        `json:"tc"`
+	Players           []*TwentyNinePlayer                `json:"ps"`
+	Config            TwentyNineConfig                   `json:"cf"`
+	Phase             TwentyNinePhase                    `json:"ph"`
+	RoundNumber       int                                `json:"rn"`
+	TrickNumber       int                                `json:"tn"`
+	CurrentPlayerIdx  int                                `json:"ci"`
+	CurrentTrick      []*TrickCard                       `json:"ct"`
+	LeadPlayerIdx     int                                `json:"li"`
+	DealerIdx         int                                `json:"di"`
+	Bids              [TwentyNinePlayerCnt]TwentyNineBid `json:"bd"`
+	BidDone           [TwentyNinePlayerCnt]bool          `json:"bf"`
+	DeclarerIdx       int                                `json:"dc"`
+	Contract          TwentyNineBid                      `json:"co"`
+	TrumpSuit         int                                `json:"ts"`
+	TrumpRevealed     bool                               `json:"tr"`
+	TrumpJustRevealed bool                               `json:"tj"`
+	TeamScores        [TwentyNineTeamCnt]int             `json:"sc"`
+	RoundTeamPts      [TwentyNineTeamCnt]int             `json:"rp"`
+	GameEndFlag       bool                               `json:"ge"`
+	WinnerTeam        int                                `json:"wt"`
+	ActionLog         []*ActionLogEntry                  `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (g *TwentyNine) MarshalJSON() ([]byte, error) {
 	return json.Marshal(twentyNineJSON{
-		TrumpCards:       g.trumpCards,
-		Players:          g.players,
-		Config:           g.config,
-		Phase:            g.phase,
-		RoundNumber:      g.roundNumber,
-		TrickNumber:      g.trickNumber,
-		CurrentPlayerIdx: g.currentPlayerIdx,
-		CurrentTrick:     g.currentTrick,
-		LeadPlayerIdx:    g.leadPlayerIdx,
-		DealerIdx:        g.dealerIdx,
-		Bids:             g.bids,
-		BidDone:          g.bidDone,
-		DeclarerIdx:      g.declarerIdx,
-		Contract:         g.contract,
-		TrumpSuit:        g.trumpSuit,
-		TrumpRevealed:    g.trumpRevealed,
-		TeamScores:       g.teamScores,
-		RoundTeamPts:     g.roundTeamPts,
-		GameEndFlag:      g.gameEndFlag,
-		WinnerTeam:       g.winnerTeam,
-		ActionLog:        g.actionLog,
+		TrumpCards:        g.trumpCards,
+		Players:           g.players,
+		Config:            g.config,
+		Phase:             g.phase,
+		RoundNumber:       g.roundNumber,
+		TrickNumber:       g.trickNumber,
+		CurrentPlayerIdx:  g.currentPlayerIdx,
+		CurrentTrick:      g.currentTrick,
+		LeadPlayerIdx:     g.leadPlayerIdx,
+		DealerIdx:         g.dealerIdx,
+		Bids:              g.bids,
+		BidDone:           g.bidDone,
+		DeclarerIdx:       g.declarerIdx,
+		Contract:          g.contract,
+		TrumpSuit:         g.trumpSuit,
+		TrumpRevealed:     g.trumpRevealed,
+		TrumpJustRevealed: g.trumpJustRevealed,
+		TeamScores:        g.teamScores,
+		RoundTeamPts:      g.roundTeamPts,
+		GameEndFlag:       g.gameEndFlag,
+		WinnerTeam:        g.winnerTeam,
+		ActionLog:         g.actionLog,
 	})
 }
 
@@ -967,6 +992,7 @@ func (g *TwentyNine) UnmarshalJSON(data []byte) error {
 	g.contract = j.Contract
 	g.trumpSuit = j.TrumpSuit
 	g.trumpRevealed = j.TrumpRevealed
+	g.trumpJustRevealed = j.TrumpJustRevealed
 	g.teamScores = j.TeamScores
 	g.roundTeamPts = j.RoundTeamPts
 	g.gameEndFlag = j.GameEndFlag

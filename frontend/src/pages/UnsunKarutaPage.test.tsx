@@ -151,4 +151,42 @@ describe('UnsunKarutaPage', () => {
     renderWithProviders(<UnsunKarutaPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  // **「メリ」か「モンチ」かまで言う (#6624)。** この区別がこのゲームの通称
+  // 「八人メリ」の由来なのに、一律「宣言あり」としか出しておらず、その用語が
+  // アプリのどの言語にも一度も現れていなかった。
+  describe('declaration kind', () => {
+    it('names a trump lead as Meri', async () => {
+      mockExec.mockResolvedValue(
+        makeUnsunKarutaState({ mustFollow: true, canDeclare: false, declarationKind: 1, playableIndices: [1, 2] }),
+      );
+      renderWithProviders(<UnsunKarutaPage />);
+      const banner = await screen.findByTestId('unsunkaruta-must-follow');
+      expect(banner.textContent).toContain('メリ');
+      // 反対側が出ていないこと。片方だけ見ていると常に同じ名前を返す実装でも通る。
+      expect(banner.textContent).not.toContain('モンチ');
+    });
+
+    it('names a plain lead as Monchi', async () => {
+      mockExec.mockResolvedValue(
+        makeUnsunKarutaState({ mustFollow: true, canDeclare: false, declarationKind: 2, playableIndices: [1, 2] }),
+      );
+      renderWithProviders(<UnsunKarutaPage />);
+      const banner = await screen.findByTestId('unsunkaruta-must-follow');
+      expect(banner.textContent).toContain('モンチ');
+      expect(banner.textContent).not.toContain('メリ');
+    });
+
+    // 種別が付かない応答でも義務があること自体は出し続ける (従来の文言に落ちる)。
+    it('keeps the generic wording when no kind is served', async () => {
+      mockExec.mockResolvedValue(
+        makeUnsunKarutaState({ mustFollow: true, canDeclare: false, declarationKind: 0, playableIndices: [1, 2] }),
+      );
+      renderWithProviders(<UnsunKarutaPage />);
+      const banner = await screen.findByTestId('unsunkaruta-must-follow');
+      expect(banner.textContent).toContain('宣言あり');
+      expect(banner.textContent).not.toContain('メリ');
+      expect(banner.textContent).not.toContain('モンチ');
+    });
+  });
 });

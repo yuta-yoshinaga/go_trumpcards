@@ -11,6 +11,8 @@
   "phaseLine": "Phase: {{phase}}",
   "scoreLine": "Score: your team {{team0}} / theirs {{team1}} (game to {{target}})",
   "trumpLine": "Trump: {{trump}} (x{{multiplier}})",
+  "declarerLine": "Declarer: seat {{declarer}} (dealer is seat {{dealer}})",
+  "declarerDelegatedLine": "Declarer: seat {{declarer}} (dealer seat {{dealer}} delegated it)",
   "roundPointsLine": "This round: your team {{team0}} / theirs {{team1}} (of {{total}})",
   "trickCardLine": "  seat {{seat}}: {{card}}",
   "handLine": "Hand: {{cards}}",

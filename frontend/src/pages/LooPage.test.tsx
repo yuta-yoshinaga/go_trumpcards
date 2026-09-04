@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { looApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeLooState } from '../test/stateFactories';
+import { LooPhase } from '../types/phases';
 import { LooPage } from './LooPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -39,6 +40,23 @@ beforeEach(() => {
 });
 
 describe('LooPage', () => {
+  it('renders loo-decide-buttons when it is human turn to decide', async () => {
+    // 参加するか降りるかの選択フェーズで人間の手番ならボタンを出す
+    const state = makeLooState({ phase: LooPhase.DECIDE, decidePlayerIdx: 0, isHumanTurn: true });
+    mockExec.mockResolvedValue(state);
+    const { getByTestId } = renderWithProviders(<LooPage />);
+    await waitFor(() => expect(getByTestId('loo-decide-buttons')).toBeInTheDocument());
+  });
+
+  it('does not render loo-decide-buttons when it is cpu turn', async () => {
+    // 参加するか降りるかの選択フェーズでもCPUの手番なら出さない
+    const state = makeLooState({ phase: LooPhase.DECIDE, decidePlayerIdx: 1, isHumanTurn: false });
+    mockExec.mockResolvedValue(state);
+    const { queryByTestId, getByTestId } = renderWithProviders(<LooPage />);
+    await waitFor(() => expect(getByTestId('loo-hint-live')).toBeInTheDocument());
+    expect(queryByTestId('loo-decide-buttons')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<LooPage />);
@@ -210,5 +228,45 @@ describe('LooPage', () => {
     });
     renderWithProviders(<LooPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
+  });
+
+  // **誰も Loo されなければポットは次ディールへ繰り越される。**次の pot が
+  // ante 分より大きくなる理由がこれなのに、looed と gained は出るのに
+  // potCarry だけ読まれていなかった (#6489)。
+  it('shows how much of the pot carries to the next deal', async () => {
+    mockExec.mockResolvedValue(roundEndState); // potCarry: 12
+    renderWithProviders(<LooPage />);
+
+    const line = await screen.findByTestId('loo-pot-carry');
+    expect(line).toHaveTextContent('12');
+    expect(line.textContent).not.toContain('{{');
+  });
+
+  // 0 のときは出さない ── looed と同じ扱い。繰り越しが無い局で「0 チップ
+  // 繰り越し」と書くと、起きていないことを報告することになる。
+  it('says nothing when nothing carries over', async () => {
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      // 非 null なのは fixture の定義から明らか。`?.` を挟むと部分型になり、
+      // 必須フィールドを落とした形が通ってしまう。
+      lastDealDetail: { ...roundEndState.lastDealDetail!, potCarry: 0 },
+    });
+    renderWithProviders(<LooPage />);
+
+    await waitFor(() => expect(screen.getByTestId('loo-deal-result')).toBeInTheDocument());
+    expect(screen.queryByTestId('loo-pot-carry')).not.toBeInTheDocument();
+  });
+
+  // 催促はフェーズや手番が変わったときに現れるテキスト。領域が無いと、あるいは
+  // 領域が催促と**同時に**生えると、スクリーンリーダには何も届かない (#6880)。
+  it('announces the loo-decide-prompt from the always-mounted live region', async () => {
+    mockExec.mockResolvedValue(decidePhaseState);
+    renderWithProviders(<LooPage />);
+
+    const live = await screen.findByTestId('loo-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
+    expect(live).toContainElement(await screen.findByTestId('loo-decide-prompt'));
   });
 });

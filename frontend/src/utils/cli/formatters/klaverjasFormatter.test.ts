@@ -66,3 +66,29 @@ describe('formatKlaverjasState', () => {
     expect(formatKlaverjasState(makeKlaverjasState({ hint, messageCode: 'klaverjas.playing' }))).not.toContain('HINT');
   });
 });
+
+// 実端末の CUI は席ごとの Roem を毎回出しているのに、ブラウザの CLI モードだけが
+// チーム合計しか出していなかった (#6441)。
+describe('formatKlaverjasState roem breakdown', () => {
+  it('lists only the seats that melded', () => {
+    const out = formatKlaverjasState(
+      makeKlaverjasState({ phase: 2, roundRoem: [20, 50], roundPlayerRoem: [20, 0, 0, 50] }),
+    );
+    // **その行だけを見る。**盤面の他の行にも `=0` は出るので、素の substring では
+    // 「0 の席が出ていない」ことを測れない。
+    const line = out.split('\n').find((l) => l.startsWith('roem by seat:'));
+    expect(line).toBeDefined();
+    expect(line).toContain('=20');
+    expect(line).toContain('=50');
+    expect(line).not.toContain('=0');
+    // 稼いだ 2 席だけ。
+    expect(line?.split(', ')).toHaveLength(2);
+  });
+
+  it('drops the line when no seat melded', () => {
+    const out = formatKlaverjasState(
+      makeKlaverjasState({ phase: 2, roundRoem: [0, 0], roundPlayerRoem: [0, 0, 0, 0] }),
+    );
+    expect(out).not.toContain('roem by seat:');
+  });
+});

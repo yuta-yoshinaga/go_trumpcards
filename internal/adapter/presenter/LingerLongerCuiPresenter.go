@@ -46,9 +46,12 @@ type LingerLongerCuiPresenter struct{}
 // Output renders the current game state for the active locale.
 func (p *LingerLongerCuiPresenter) Output(s interfaces.LingerLongerGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("lingerlonger.helpTitle"), func(sb *strings.Builder) {
+		// **山札の残りと「場から消えた札」は別の数字。** 前者は補充できる回数、
+		// 後者はトリックが解決するたびに増える、二度と戻らない枚数。
 		sb.WriteString(i18n.Tf("lingerlonger.header",
 			"trick", strconv.Itoa(s.GetTrickNumber()+1),
-			"stock", strconv.Itoa(s.GetStockSize())) + "\n")
+			"stock", strconv.Itoa(s.GetStockSize()),
+			"discarded", strconv.Itoa(s.GetDiscarded())) + "\n")
 		// **補充が勝敗そのもの。** 規則を毎回書く。
 		sb.WriteString(i18n.T("lingerlonger.rule") + "\n")
 

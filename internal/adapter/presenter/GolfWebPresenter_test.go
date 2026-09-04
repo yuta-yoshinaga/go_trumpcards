@@ -251,3 +251,14 @@ func TestGolfWebPresenterActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, "entries")
 	})
 }
+
+// Web の9ホール集計はフロントエンドの状態なので、サーバ側に消すものは無い。
+// インタフェースを満たすために盤面をそのまま返すだけ ── **黙って何も返さない
+// のではなく、Output と同じ盤面を返す**ことを固定しておく。
+func TestGolfWebPresenter_ResetNineHole(t *testing.T) {
+	gg := new(interfaces.MockGolfGame)
+	setupGolfOutputMock(gg)
+
+	p := &GolfWebPresenter{}
+	assert.Equal(t, p.Output(gg, nil), p.ResetNineHole(gg))
+}

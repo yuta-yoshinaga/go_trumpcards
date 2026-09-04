@@ -11,6 +11,7 @@
   "boardHuman": "You: {{card}}",
   "boardHumanEmpty": "You: --",
   "boardPot": "  ({{count}} on table)",
+  "lastBurialCount": "(Buried {{count}})",
   "promptReveal": "Use step to flip the next card.",
   "promptResolvedHuman": "You won the round! step to collect.",
   "promptResolvedCpu": "CPU won the round... step to collect.",

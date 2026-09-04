@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { doubleklondikeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
@@ -15,6 +15,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -57,9 +58,29 @@ export const DoubleKlondikePage = withTutorial(DoubleKlondikePageContent, 'doubl
 
 /** Inner content of the Double Klondike page, wrapped by TutorialProvider. */
 function DoubleKlondikePageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('doubleklondike');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('doubleklondike');
   const { state, loading, error, exec, retry } = useGameApi(doubleklondikeApi.exec);
+  // **ギブアップは取り消せない。**リセットには確認が挟まるのに、同じフッターの
+  // ギブアップは即座に対局を打ち切っていた ── 誤タップへの保護がリセットより
+  // 薄かった (#6475)。47 ページが既に使っている `useGiveUpConfirm` に揃える。
+  const handleGiveUp = useCallback(() => {
+    exec('g');
+  }, [exec]);
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
   const [selected, setSelected] = useState<Selection | null>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
@@ -211,6 +232,11 @@ function DoubleKlondikePageContent() {
             style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
             onClick={canAct && tc2.faceUp ? () => clickTableauCard(col, i) : undefined}
             disabled={!canAct || !tc2.faceUp}
+            // **選択中であることが枠線の色でしか分からなかった** ── 音声には
+            // 何も届かない (#6476)。盤面が通常のクロンダイクの 2 倍あるぶん
+            // 選択元を見失いやすい。掴んだ束の**全部**が押された状態になる:
+            // リングと同じ条件 (`i >= selected.idx`) で揃える。
+            aria-pressed={selected?.zone === 'tableau' && selected.col === col && i >= selected.idx}
             data-testid={`card-${col}-${i}`}
           >
             {tc2.faceUp && tc2.card ? <CardImage card={tc2.card} width={w} /> : <CardBack width={w} />}
@@ -235,6 +261,9 @@ function DoubleKlondikePageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
     >
       <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
         <div className="text-ds-text-muted text-xs mb-1">
@@ -273,6 +302,7 @@ function DoubleKlondikePageContent() {
                       onClick={canAct ? clickWaste : undefined}
                       disabled={!canAct}
                       title={t('waste')}
+                      aria-pressed={selected?.zone === 'waste'}
                       data-testid="waste"
                     >
                       <CardImage card={c} width={w} />
@@ -408,7 +438,7 @@ function DoubleKlondikePageContent() {
             <button
               type="button"
               className={btnSecondary}
-              onClick={() => exec('g')}
+              onClick={confirmGiveUpAction}
               disabled={loading}
               data-testid="giveup-button"
             >

@@ -220,6 +220,15 @@ func (_m *MockZwanzigerrufenGame) GetCardPoints(i int) int {
 	return ret.Int(0)
 }
 
+// GetDiscardableIndices モック
+func (_m *MockZwanzigerrufenGame) GetDiscardableIndices() []int {
+	ret := _m.Called()
+	if v, ok := ret.Get(0).([]int); ok {
+		return v
+	}
+	return nil
+}
+
 // GetValidPlayIndices モック
 func (_m *MockZwanzigerrufenGame) GetValidPlayIndices(playerIdx int) []int {
 	ret := _m.Called(playerIdx)

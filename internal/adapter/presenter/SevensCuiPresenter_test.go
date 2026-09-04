@@ -11,6 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func makeSevensPlayersForPresenter() []*domain.SevensPlayer {
@@ -731,5 +732,71 @@ func TestSevensCuiPresenter_PlayableMarks(t *testing.T) {
 	t.Run("does not claim a dead hand when a card is playable", func(t *testing.T) {
 		s := newGame(card(domain.CardDesignSpade, 6))
 		assert.NotContains(t, tsp.Output(s, nil), i18n.T("sevens.noPlayable"))
+	})
+}
+
+// 回収は手札が1枚増えるだけで、理由が画面のどこにも出ていなかった (#6273)。
+// 増えた原因を説明できるのは行動描写のこの行だけなので、CUI にも出す。
+func TestSevensCuiPresenter_JokerReclaimLine(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	tsp := new(presenter.SevensCuiPresenter)
+
+	newReclaimGame := func() (*domain.Sevens, []*domain.SevensPlayer) {
+		tc := domain.NewTrumpCards(2)
+		players := makeSevensPlayersForPresenter()
+		cfg := domain.SevensConfig{
+			JokerCount:          2,
+			JokerReclaimEnabled: true,
+			MaxPasses:           domain.SevensMaxPasses,
+		}
+		s := domain.NewSevens(tc, players, cfg)
+		for i := 1; i <= 3; i++ {
+			for d := 0; d < 5; d++ {
+				players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+			}
+		}
+		return s, players
+	}
+
+	t.Run("says why the hand grew", func(t *testing.T) {
+		s, players := newReclaimGame()
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+
+		require.NoError(t, s.PlayerPlayJoker(0, domain.CardDesignSpade, 6))
+		for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+			s.CpuPlay()
+		}
+		require.True(t, s.IsHumanTurn())
+		idx := -1
+		for i := 0; i < players[0].GetCardsSize(); i++ {
+			c := players[0].GetCard(i)
+			if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == 6 {
+				idx = i
+				break
+			}
+		}
+		require.GreaterOrEqual(t, idx, 0, "the real spade 6 must still be in hand")
+		require.NoError(t, s.PlayerPlay(idx))
+		require.True(t, s.GetHumanAction().JokerReclaimed)
+
+		assert.Contains(t, tsp.Output(s, nil), "ジョーカーを回収しました")
+	})
+
+	// Negative control: without a reclaim the line must not appear, or it would
+	// be explaining a card that never came back.
+	t.Run("stays quiet on an ordinary play", func(t *testing.T) {
+		s, players := newReclaimGame()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		require.True(t, s.IsHumanTurn())
+		require.NoError(t, s.PlayerPlay(0))
+		require.False(t, s.GetHumanAction().JokerReclaimed)
+
+		assert.NotContains(t, tsp.Output(s, nil), "ジョーカーを回収しました")
 	})
 }

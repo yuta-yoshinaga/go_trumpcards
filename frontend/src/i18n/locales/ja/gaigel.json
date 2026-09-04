@@ -21,6 +21,7 @@
   "teamYou": "チーム{{n}} (あなた)",
   "trumpSuit": "切り札: {{suit}}",
   "noTrump": "切り札未決定",
+  "endgameNotice": "第2フェーズ: 山札が尽きました — リードスートに追随、切り札があれば切る必要があります",
   "stock": "山札: {{count}}",
   "turnUpCard": "めくり札",
   "currentTrick": "現在のトリック",

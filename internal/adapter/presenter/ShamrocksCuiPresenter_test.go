@@ -5,6 +5,7 @@ package presenter_test
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -97,4 +98,34 @@ func TestShamrocksCuiPresenter_Output(t *testing.T) {
 		g.Reset()
 		assert.NotEmpty(t, p.ActionLogOutput(g))
 	})
+}
+
+// **動かせる扇に印が付く (#6592)。** Web は #5678 以降リングで常時示しているのに、
+// CUI は hint を打つか、打って拒否されるまで分からなかった。
+//
+// 盤は JSON で組む。**空の扇を作らない** — Shamrocks は空の扇がどの札でも
+// 受けるので、1 つでもあると全部が「動かせる」になって否定側を測れない。
+func TestShamrocksCuiPresenter_MarksMovableFans(t *testing.T) {
+	// 扇 0: K / 扇 1: 5 / 扇 2: A。**値を隣り合わせない** —
+	// 積める条件は「差が 1」でスートを見ないので、2 を置くと A の隣になってしまう。
+	// K と 5 はどこにも積めず、A だけが空の組札へ行ける。
+	board := `{"ph":0,"mc":0,"fn":[` +
+		`[{"d":0,"v":13,"f":true}],` +
+		`[{"d":0,"v":5,"f":true}],` +
+		`[{"d":0,"v":1,"f":true}]]}`
+	out := new(presenter.ShamrocksCuiPresenter).Output(llStateSH(t, board), nil)
+
+	lines := map[int]string{}
+	for _, line := range strings.Split(out, "\n") {
+		for i := 0; i < 3; i++ {
+			if strings.HasPrefix(line, i18n.Tf("shamrocks.fanLabel", "idx", fmt.Sprint(i))) {
+				lines[i] = line
+			}
+		}
+	}
+
+	// **印の有無だけを見る。** 期待値を i18n から組み立てると、未訳でも通ってしまう。
+	assert.NotContains(t, lines[0], presenter.CuiLegalMark, "置き先の無い扇に印は付かない")
+	assert.NotContains(t, lines[1], presenter.CuiLegalMark, "置き先の無い扇に印は付かない")
+	assert.Contains(t, lines[2], presenter.CuiLegalMark, "組札へ行ける扇に印が付く")
 }

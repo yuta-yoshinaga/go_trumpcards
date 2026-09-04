@@ -24,7 +24,7 @@
   "hintAvailable": "ヒントがあります",
   "stalemate": "手詰まりです",
   "cannotDealEmptyColExists": "空の列をすべて埋めないと配れません",
-  "landscapeBanner": "横向き画面推奨",
+  "landscapeBanner": "横画面での表示を推奨します",
   "frontendHint": {
     "moveToTableau": "場札間で移動可能なカードがあります",
     "dealStock": "ストックから配れます"
@@ -38,5 +38,6 @@
   "nav": {
     "wasp": "ワスプ"
   },
-  "autoCompleteNotReady": "すべてのカードが表向きになるとクリックできます"
+  "autoCompleteNotReady": "すべてのカードが表向きになるとクリックできます",
+  "hintExposes": "（裏カードが1枚開きます）"
 }

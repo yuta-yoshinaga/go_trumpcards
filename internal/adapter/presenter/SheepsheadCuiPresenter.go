@@ -53,7 +53,15 @@ func sheepsheadPlayerStr(g interfaces.SheepsheadGame, i int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **マストフォローで何が出せるかを示す。**Web は `playableIndices` でリング表示
+		// しているのに、CUI は番号を打ってサーバに弾かれるまで分からなかった (#6434)。
+		// 印を付けるのはプレイフェーズの本人の手番だけ ── Pick/Bury/Call には合法手の
+		// 概念が無く、印を出すと「これ以外は出せない」と読める。
+		var playable []int
+		if g.GetPhase() == domain.SheepsheadPhasePlay && g.GetCurrentPlayerIdx() == i {
+			playable = g.GetPlayableIndices(i)
+		}
+		b.WriteString(cuiPlayableMarkedCardListStr(player, playable) + "\n")
 	}
 	return b.String()
 }

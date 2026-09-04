@@ -273,3 +273,60 @@ func TestCoincheCuiPresenter_AnnouncesTheDixDeDerOnTheLastTrick(t *testing.T) {
 	assert.NotContains(t, build(domain.CoincheHandSize, 0),
 		strings.SplitN(i18n.T("coinche.dixDeDerNotice"), "{{", 2)[0])
 }
+
+// #6618: Coinche の契約点は80点刻みだが 250 点だけが別枠(Capot)。
+// CUI の宣言可能点リストで 250 点に Capot 注記が付くことを確認する。
+func TestCoincheCuiPresenter_BiddablePointsAnnotatesCapot(t *testing.T) {
+	origLang := i18n.Lang()
+	defer i18n.SetLang(origLang)
+	p := new(presenter.CoincheCuiPresenter)
+
+	build := func(biddable []int) *interfaces.MockCoincheGame {
+		m, _ := setupCoincheCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBiddablePoints")
+		m.On("GetPhase").Return(domain.CoinchePhaseBid)
+		m.On("GetBiddablePoints").Return(biddable)
+		return m
+	}
+
+	t.Run("japanese locale annotates 250 as Capot with negative controls", func(t *testing.T) {
+		i18n.SetLang("ja")
+		out := p.Output(build(domain.CoincheContractPoints), nil)
+
+		// プレースホルダ {{points}} が解決され、実際の文言になっていること
+		assert.Contains(t, out, "宣言できる点: 80 / 90 / 100 / 110 / 120 / 130 / 140 / 150 / 160 / 250 (Capot)")
+		assert.Contains(t, out, "250 (Capot)")
+		// 生のテンプレートプレースホルダや未解決キーが残っていないこと
+		assert.NotContains(t, out, "{{")
+		assert.NotContains(t, out, "capotOption")
+
+		// 負のコントロール: 250 以外の点数には注記が付かないこと
+		assert.NotContains(t, out, "80 (Capot)")
+		assert.NotContains(t, out, "160 (Capot)")
+		// 注記の出現回数がちょうど1回であること
+		assert.Equal(t, 1, strings.Count(out, "(Capot)"))
+	})
+
+	t.Run("english locale annotates 250 as Capot", func(t *testing.T) {
+		i18n.SetLang("en")
+		out := p.Output(build(domain.CoincheContractPoints), nil)
+
+		assert.Contains(t, out, "You may bid: 80 / 90 / 100 / 110 / 120 / 130 / 140 / 150 / 160 / 250 (Capot)")
+		assert.Contains(t, out, "250 (Capot)")
+		assert.NotContains(t, out, "{{")
+		assert.NotContains(t, out, "capotOption")
+		assert.NotContains(t, out, "80 (Capot)")
+		assert.NotContains(t, out, "160 (Capot)")
+		assert.Equal(t, 1, strings.Count(out, "(Capot)"))
+	})
+
+	t.Run("negative control: no capot annotation when 250 is not in biddable points", func(t *testing.T) {
+		i18n.SetLang("ja")
+		out := p.Output(build([]int{80, 90, 100}), nil)
+
+		assert.Contains(t, out, "宣言できる点: 80 / 90 / 100")
+		assert.NotContains(t, out, "(Capot)")
+		assert.Equal(t, 0, strings.Count(out, "(Capot)"))
+	})
+}

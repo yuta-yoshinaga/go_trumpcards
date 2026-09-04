@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra5
 
 // Package domain ルー (Loo / Lanterloo) のドメインモデル。
 //
@@ -893,6 +893,12 @@ func (g *Loo) GetConfig() LooConfig { return g.config }
 
 // SetConfig はローカルルール設定を変更する。
 func (g *Loo) SetConfig(cfg LooConfig) { g.config = cfg }
+
+// SetLastDealDetail は直前ディールの精算内訳を設定する (テスト用)。
+//
+// 内訳は `ScoreRound` が組み立てるので、表示だけを確かめたい場面では
+// 1 ディール分プレイさせるより直接置くほうが、測りたいものがはっきりする。
+func (g *Loo) SetLastDealDetail(d *LooDealDetail) { g.lastDealDetail = d }
 
 // GetPlayableIndices はプレイフェーズでプレイ可能な手札インデックスを返す。
 func (g *Loo) GetPlayableIndices(playerIdx int) []int {

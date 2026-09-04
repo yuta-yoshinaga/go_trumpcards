@@ -21,7 +21,7 @@ func (p *CuarentaCuiPresenter) Output(cg interfaces.CuarentaGame, lastErr error)
 		// チームスコア表示。
 		for t := 0; t < domain.CuarentaTeamCnt; t++ {
 			b.WriteString(i18n.Tf("cuarenta.teamScoreLine",
-				"team", strconv.Itoa(t),
+				"team", cuiTeamLabel(t),
 				"score", strconv.Itoa(cg.GetTeamScore(t))) + "\n")
 		}
 		// **ボーナスまでの残りをチーム単位で出す。**プレイヤー単位の捕獲数しか
@@ -30,7 +30,7 @@ func (p *CuarentaCuiPresenter) Output(cg interfaces.CuarentaGame, lastErr error)
 		for t := 0; t < domain.CuarentaTeamCnt; t++ {
 			captured := cg.GetTeamCapturedCount(t)
 			line := i18n.Tf("cuarenta.teamCaptured",
-				"team", strconv.Itoa(t),
+				"team", cuiTeamLabel(t),
 				"count", strconv.Itoa(captured),
 				"need", strconv.Itoa(domain.CuarentaMostCardsThreshold+1),
 				"bonus", strconv.Itoa(domain.CuarentaScoreMostCards))
@@ -71,7 +71,7 @@ func (p *CuarentaCuiPresenter) Output(cg interfaces.CuarentaGame, lastErr error)
 			b.WriteString(i18n.T("cuarenta.gameEnd") + "\n")
 			for t := 0; t < domain.CuarentaTeamCnt; t++ {
 				b.WriteString(i18n.Tf("cuarenta.scoreEntry",
-					"team", strconv.Itoa(t),
+					"team", cuiTeamLabel(t),
 					"score", strconv.Itoa(cg.GetTeamScore(t))) + "\n")
 			}
 			return
@@ -91,7 +91,7 @@ func cuarentaPlayerStr(cg interfaces.CuarentaGame, player *domain.CuarentaPlayer
 	var b strings.Builder
 	b.WriteString(i18n.Tf("cuarenta.playerLine",
 		"name", cuiPlayerName(player, i),
-		"team", strconv.Itoa(domain.CuarentaTeamOf(i)),
+		"team", cuiTeamLabel(domain.CuarentaTeamOf(i)),
 		"hand", strconv.Itoa(player.GetCardsSize()),
 		"captured", strconv.Itoa(player.CapturedCount())) + "\n")
 	if player.GetIsHuman() {

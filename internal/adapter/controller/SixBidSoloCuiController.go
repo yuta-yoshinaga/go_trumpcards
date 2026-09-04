@@ -28,7 +28,7 @@ func (c *SixBidSoloCuiController) Exec(command string) string {
 			cfg := c.si.GetConfig()
 			return c.si.ResetWithConfig(cfg)
 		},
-		[]string{"b", "bid", "ps", "pass", "d", "declare", "p", "play", "n", "next", "log", "l"},
+		[]string{"b", "bid", "ps", "pass", "d", "declare", "p", "play", "n", "next", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
@@ -47,6 +47,8 @@ func (c *SixBidSoloCuiController) Exec(command string) string {
 					})
 			case "n", "next":
 				return c.si.NextHand(), true
+			case "h", "hint":
+				return c.si.Hint(), true
 			default:
 				return handleCuiLog(cmd, c.si.ActionLog)
 			}

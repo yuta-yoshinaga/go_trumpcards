@@ -50,6 +50,10 @@ func (p *WarCuiPresenter) Output(w interfaces.WarGame, lastErr error) string {
 		}
 		b.WriteString(i18n.Tf("war.boardPot",
 			"count", strconv.Itoa(w.GetWarPotSize())) + "\n")
+		if w.GetPhase() == domain.WarPhaseResolved && w.GetLastBurialCount() > 0 {
+			b.WriteString(i18n.Tf("war.lastBurialCount",
+				"count", strconv.Itoa(w.GetLastBurialCount())) + "\n")
+		}
 		b.WriteString("----------\n")
 
 		b.WriteString(i18n.Tf("war.humanStats",

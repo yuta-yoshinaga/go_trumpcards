@@ -11,7 +11,7 @@
   "boardLastCard": "最後に出たカード: {{card}}",
   "boardLastCardEmpty": "最後に出たカード: --",
   "promptPlay": "step コマンドで次のカードを出します。",
-  "promptPayPenalty": "ペナルティ支払い中！ あと{{remaining}}枚 step で払います。",
+  "promptPayPenalty": "ペナルティ支払い中！ {{name}} があと{{remaining}}枚 step で払います。",
   "promptCollect": "ペナルティを払いきった！ step で山を回収します。",
   "gameWinHuman": "あなたの勝ちです！",
   "gameWinCpu": "CPUの勝ちです...",

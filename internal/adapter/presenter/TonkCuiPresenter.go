@@ -76,6 +76,36 @@ func writeTonkKnockerMelds(b *strings.Builder, melds [][]*domain.Card) {
 	}
 }
 
+// writeTonkUndercutDetail lists the opponent's melds and both sides' deadwood.
+//
+// ラウンドの点差はアンダーカット判定（ノッカーと相手のデッドウッド比較）から
+// 来るのに、出ているのはノッカーのメルドだけで、比較の相手側が見えなかった。
+func writeTonkUndercutDetail(b *strings.Builder, knockerDeadwood []*domain.Card, opponentMelds [][]*domain.Card, opponentDeadwood []*domain.Card) {
+	if len(knockerDeadwood) > 0 {
+		b.WriteString(i18n.Tf("tonk.knockerDeadwoodLine",
+			"cards", cuiCardSliceStr(knockerDeadwood),
+			"points", strconv.Itoa(domain.CalcDeadwoodValue(knockerDeadwood))) + "\n")
+	}
+	if len(opponentMelds) > 0 {
+		b.WriteString(color.Bold(i18n.T("tonk.opponentMeldsHeader")) + "\n")
+		for i, meld := range opponentMelds {
+			typeLabel := i18n.T("tonk.meldRun")
+			if tonkMeldIsSet(meld) {
+				typeLabel = i18n.T("tonk.meldSet")
+			}
+			b.WriteString(i18n.Tf("tonk.opponentMeldLine",
+				"idx", strconv.Itoa(i+1),
+				"type", typeLabel,
+				"cards", cuiCardSliceStr(meld)) + "\n")
+		}
+	}
+	if len(opponentDeadwood) > 0 {
+		b.WriteString(i18n.Tf("tonk.opponentDeadwoodLine",
+			"cards", cuiCardSliceStr(opponentDeadwood),
+			"points", strconv.Itoa(domain.CalcDeadwoodValue(opponentDeadwood))) + "\n")
+	}
+}
+
 // tonkHandCards returns a player's remaining cards as a slice.
 func tonkHandCards(player *domain.TonkPlayer) []*domain.Card {
 	cards := make([]*domain.Card, player.GetCardsSize())
@@ -153,6 +183,7 @@ func (p *TonkCuiPresenter) Output(g interfaces.TonkGame, lastErr error) string {
 			// Reveal the knocker's melds and each CPU's remaining hand so the
 			// round score has visible justification (parity with the web panel).
 			writeTonkKnockerMelds(b, g.GetKnockerMelds())
+			writeTonkUndercutDetail(b, g.GetKnockerDeadwood(), g.GetOpponentMelds(), g.GetOpponentDeadwood())
 			for i := 0; i < g.GetPlayerCnt(); i++ {
 				cp := g.GetPlayer(i)
 				if !cp.GetIsHuman() && cp.GetCardsSize() > 0 {

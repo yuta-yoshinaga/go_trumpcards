@@ -58,6 +58,10 @@ func (p *MariasCuiPresenter) Output(g interfaces.MariasGame, lastErr error) stri
 			"round", strconv.Itoa(g.GetRoundNumber()),
 			"trick", strconv.Itoa(g.GetTrickNumber()),
 			"trump", mariasSuitSymbol(g.GetTrumpSuit())) + "\n")
+		// **切り札の決まり方が見えない。**入札でも固定でもなく、ソリストの手札という
+		// 非公開情報から機械的に決まる (`startRound` の `longestSuit(soloistIdx)`)。
+		// ソリスト以外にはブラックボックスなので、規則そのものを添える (#6443)。
+		b.WriteString(i18n.T("marias.trumpRule") + "\n")
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			b.WriteString(mariasPlayerStr(g, i))

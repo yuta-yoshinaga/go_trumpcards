@@ -105,10 +105,21 @@ func TestRollingStoneCuiPresenterGameEndBanners(t *testing.T) {
 	assert.Contains(t, out, i18n.T("rollingstone.gameEndYou"))
 	assert.NotContains(t, out, i18n.T("rollingstone.promptPlay"), "終局後は促さない")
 
-	// **上限で切った局は「上がった」わけではない。** 投了も手札が残る形。
+	// **投了は膠着ではない。** どちらも勝者に札が残るので、枚数では区別できず、
+	// この分岐はかつて投了した局にも「決着が付かなかった」と言っていた。
+	resigned := newRollingStoneForCui(t)
+	resigned.GiveUp()
+	resignedOut := p.Output(resigned, nil)
+	assert.Contains(t, resignedOut, fixedPart("rollingstone.gameEndGiveUp"))
+	assert.NotContains(t, resignedOut, fixedPart("rollingstone.gameEndStalemate"),
+		"投了した局に膠着の文言を出さない")
+
+	// 上限で切った局のほうは従来どおり膠着として説明する。
 	stale := newRollingStoneForCui(t)
-	stale.GiveUp()
-	assert.Contains(t, p.Output(stale, nil), fixedPart("rollingstone.gameEndStalemate"))
+	stale.ForceStalemateForTest()
+	staleOut := p.Output(stale, nil)
+	assert.Contains(t, staleOut, fixedPart("rollingstone.gameEndStalemate"))
+	assert.NotContains(t, staleOut, fixedPart("rollingstone.gameEndGiveUp"))
 }
 
 func TestRollingStoneCuiPresenterShowsErrors(t *testing.T) {

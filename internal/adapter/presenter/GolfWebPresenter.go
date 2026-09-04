@@ -114,3 +114,8 @@ func (pr *GolfWebPresenter) HintOutput(g interfaces.GolfGame) string {
 func (pr *GolfWebPresenter) ActionLogOutput(g interfaces.GolfGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// ResetNineHole 9ホールスコアをリセット (Webはフロントで管理するため何もしないかOutputを返す)
+func (pr *GolfWebPresenter) ResetNineHole(g interfaces.GolfGame) string {
+	return pr.Output(g, nil)
+}

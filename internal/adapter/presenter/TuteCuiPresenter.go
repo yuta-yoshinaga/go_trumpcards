@@ -71,7 +71,7 @@ func (p *TuteCuiPresenter) Output(g interfaces.TuteGame, lastErr error) string {
 			winnerTeam := g.GetWinnerTeam()
 			var winnerStr string
 			if winnerTeam >= 0 {
-				winnerStr = strconv.Itoa(winnerTeam)
+				winnerStr = tuteTeamLabel(winnerTeam)
 			}
 			banner := i18n.Tf("tute.gameEnd", "team", winnerStr)
 			b.WriteString(color.Green(banner) + "\n")
@@ -123,9 +123,25 @@ func (p *TuteCuiPresenter) Output(g interfaces.TuteGame, lastErr error) string {
 			b.WriteString(i18n.Tf("tute.promptRoundEnd",
 				"ptsA", strconv.Itoa(pts[0]),
 				"ptsB", strconv.Itoa(pts[1])) + "\n")
+			if team := g.GetLastTrickBonusTeam(); team >= 0 {
+				b.WriteString(i18n.Tf("tute.lastTrickBonus",
+					"team", tuteTeamLabel(team),
+					"points", strconv.Itoa(domain.TuteLastTrickBonus)) + "\n")
+			}
 			b.WriteString(i18n.T("tute.promptRoundEndHelp") + "\n")
 		}
 	})
+}
+
+// tuteTeamLabel は席のチーム番号を表示用の A / B に直す。
+//
+// **同じ画面で呼び名を混ぜない。**`promptRoundEnd` は「チームA / チームB」と
+// 出しているのに、勝利バナーだけが `strconv.Itoa` の「チーム0」を出していた。
+func tuteTeamLabel(team int) string {
+	if team == 0 {
+		return "A"
+	}
+	return "B"
 }
 
 // HintOutput emits the current Tute hint.

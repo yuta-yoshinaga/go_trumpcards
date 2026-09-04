@@ -1,6 +1,7 @@
 import type { SpeculationResponse } from '../../../types/card';
 import { SPECULATION_HUMAN_SEAT, SPECULATION_NO_SEAT } from '../../../types/games/speculation';
 import { SpeculationPhase } from '../../../types/phases';
+import { speculationDisplayRound } from '../../speculationRound';
 import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -24,7 +25,10 @@ export function formatSpeculationState(state: SpeculationResponse): string {
   const lines: string[] = [formatHeader('Speculation')];
 
   lines.push(`Phase: ${PHASE_NAMES[state.phase] ?? 'UNKNOWN'}`);
-  lines.push(`Round: ${state.roundNo + 1}${state.config ? ` / ${state.config.rounds}` : ''}`);
+  // CLI モードもこのページの表示面の1つ。素の +1 だと結果画面で、まだ
+  // 始めていない回の番号が出る (#6607)。
+  const displayRound = speculationDisplayRound(state.phase, state.roundNo);
+  lines.push(`Round: ${displayRound}${state.config ? ` / ${state.config.rounds}` : ''}`);
   lines.push(
     `Trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '-'}${state.trumpCard ? ` (${formatCard(state.trumpCard)})` : ''}`,
   );

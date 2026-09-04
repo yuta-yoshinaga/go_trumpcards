@@ -33,6 +33,8 @@ type RankAndFileGame interface {
 	GetWaste() []*domain.Card
 	// GetTableau タブローを取得する
 	GetTableau() [domain.RankAndFileTableauCnt][]*domain.RankAndFileTableauCard
+	// SequenceStarts 列 col で掴める札の位置を取得する
+	SequenceStarts(col int) []int
 	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.RankAndFileFoundationCnt][]*domain.Card
 	// AllFaceUp 全カードが表向きかを返す

@@ -306,10 +306,31 @@ func TestIronCross_RaiseIsCapped(t *testing.T) {
 	t.Parallel()
 	g := newIronCrossForTest(t)
 	g.currentBet = 10
-	g.raiseCount = ironCrossMaxRaisesPerRound
+	g.raiseCount = IronCrossMaxRaisesPerRound
 	g.players[g.HumanSeat()].SetCurrentBet(0)
 	assert.ErrorIs(t, g.PlayerAction(IronCrossActionRaise, 10), errIronCrossRaiseCapped)
 	assert.False(t, g.CanRaise())
+}
+
+// **`CanRaise` は 2 つの条件の AND。** 上限側だけ踏んだテストがあったので、
+// 賭けが無い側と、両方満たす側も踏む — codecov は `&&` の各項を別々に数える。
+func TestIronCross_CanRaiseNeedsBothConditions(t *testing.T) {
+	t.Parallel()
+	g := newIronCrossForTest(t)
+
+	// 賭けが出ていなければレイズはそもそも無い (第 1 項が false)。
+	g.currentBet = 0
+	g.raiseCount = 0
+	assert.False(t, g.CanRaise(), "賭けが無ければレイズできない")
+
+	// 賭けがあり、上限に届いていなければレイズできる (両方 true)。
+	g.currentBet = 10
+	g.raiseCount = IronCrossMaxRaisesPerRound - 1
+	assert.True(t, g.CanRaise(), "上限手前ならレイズできる")
+
+	// 賭けがあっても上限に達していればできない (第 2 項が false)。
+	g.raiseCount = IronCrossMaxRaisesPerRound
+	assert.False(t, g.CanRaise(), "上限に達したらレイズできない")
 }
 
 func TestIronCross_ConfigValidate(t *testing.T) {

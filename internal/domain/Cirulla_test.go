@@ -262,7 +262,10 @@ func TestCirulla_NoScopaOnTheFinalPlay(t *testing.T) {
 func TestCirulla_LeftoverTableGoesToTheLastCapturer(t *testing.T) {
 	c := newCirullaForTest(t)
 	cirullaPlayRound(t, c)
-	require.Equal(t, CirullaPhaseRoundEnd, c.GetPhase())
+	// **フェーズを RoundEnd に決め打たない。** 1 ラウンドで目標点に届く配りがあり、
+	// そのとき GetPhase は GameEnd になる。実測で 3000 配り中 20 回 (0.67%)。
+	// 場の札が最後に取った側へ行くことは、試合が続こうと終わろうと同じ。
+	require.Contains(t, []string{CirullaPhaseRoundEnd, CirullaPhaseGameEnd}, c.GetPhase())
 	assert.Empty(t, c.GetTable(), "場に札が残っている")
 	total := 0
 	for _, p := range c.GetPlayers() {

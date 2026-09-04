@@ -26,6 +26,9 @@ func setupGinRummyCuiMock() *interfaces.MockGinRummyGame {
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetKnockerMelds").Return(([][]*domain.Card)(nil)).Maybe()
+	m.On("GetKnockerIdx").Return(0).Maybe()
+	m.On("GetKnockerDeadwood").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetIsGin").Return(false).Maybe()
 	return m
 }
 
@@ -229,6 +232,35 @@ func TestGinRummyCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "[ノッカーのメルド]")
 		assert.Contains(t, result, "メルド1(セット):")
 		assert.Contains(t, result, "メルド2(ラン):")
+	})
+
+	t.Run("names an undercut and credits the defender, not the knocker", func(t *testing.T) {
+		m, players := setupGinRummyCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.GinRummyPhaseRoundEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnockerDeadwood")
+		// Knocker (seat 0) is left holding 10; the defender holds 4, so the
+		// defender undercuts and takes the round.
+		m.On("GetKnockerDeadwood").Return([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 10, false)})
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "アンダーカット")
+		// The winner named must be the defender (seat 1), not the knocker.
+		assert.Contains(t, result, "CPU 1")
+	})
+
+	t.Run("names an ordinary knock without a bonus", func(t *testing.T) {
+		m, players := setupGinRummyCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.GinRummyPhaseRoundEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnockerDeadwood")
+		m.On("GetKnockerDeadwood").Return([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)})
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ノック成立")
+		assert.NotContains(t, result, "アンダーカット")
 	})
 
 	t.Run("round end phase shows next command", func(t *testing.T) {

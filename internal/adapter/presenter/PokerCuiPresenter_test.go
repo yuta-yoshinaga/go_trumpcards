@@ -40,7 +40,11 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 
 		result := pres.Output(p, nil)
 		assert.Contains(t, result, "5-Card Draw Poker")
-		assert.Contains(t, result, "ディーラー: Player 0")
+		// **座席番号ではなく名前で呼ぶ** (#6470)。生の添字と英語の "Player" が
+		// 日本語ロケールに埋まっていた。
+		assert.Contains(t, result, i18n.Tf("poker.dealerLine",
+			"name", i18n.T("cuiPlayerYou")))
+		assert.NotContains(t, result, "Player 0")
 		assert.Contains(t, result, "ポット:")
 		assert.Contains(t, result, "あなた")
 		assert.Contains(t, result, "♠10")
@@ -639,6 +643,33 @@ func TestPokerCuiPresenter_Output_LowballMode(t *testing.T) {
 
 		result := pres.Output(p, nil)
 		assert.Contains(t, result, "2-7 Lowball")
+	})
+
+	t.Run("lowball mode explains the inverted ranking", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.PokerPlayer{
+			domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
+			domain.NewPokerPlayer(false, domain.PokerStyleConservative),
+		}
+		cfg := domain.DefaultPokerConfig()
+		cfg.IsLowball = true
+		cfg.CpuCount = 1
+		p := domain.NewPoker(tc, players, cfg)
+		p.SetPhase(domain.PokerPhaseDeal)
+
+		result := pres.Output(p, nil)
+		assert.Contains(t, result, "役早見表")
+		// The two facts a poker player has backwards here.
+		assert.Contains(t, result, "A は常に最高位")
+		assert.Contains(t, result, "ストレート・フラッシュは成立扱い")
+	})
+
+	t.Run("normal poker does not print the lowball reference", func(t *testing.T) {
+		p, _ := makePokerCuiForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+
+		result := pres.Output(p, nil)
+		assert.NotContains(t, result, "役早見表")
 	})
 
 	t.Run("normal mode does not show 2-7 Lowball", func(t *testing.T) {

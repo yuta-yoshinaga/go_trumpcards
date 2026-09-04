@@ -29,5 +29,7 @@
   "helpExampleBet": "  b 10                 ante 10 and get a hand",
   "helpExamplePlay": "  p                    play, matching the ante",
   "helpHint": "  h                    show a hint",
-  "helpRebet": "  rb                   bet the same as last round"
+  "helpRebet": "  rb                   bet the same as last round",
+  "antePayoutLine": "  Ante payout: {{payout}}",
+  "playPayoutLine": "  Play payout: {{payout}}"
 }

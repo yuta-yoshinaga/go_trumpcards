@@ -28,6 +28,8 @@
   },
   "currentTrick": "Current trick",
   "mustBid": "Everyone else has passed. You cannot drop out — a trump has to be settled, so you must bid.",
+  "bidQuota": "You won the auction, so you must call at least {{n}}.",
+  "bidRestricted": "You call last, so {{n}} is barred — it would make the total 13.",
   "actions": {
     "auction": "{{n}} {{suit}}",
     "pass": "Pass",

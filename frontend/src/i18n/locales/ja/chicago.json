@@ -15,6 +15,7 @@
   "yourHand": "あなたの手札",
   "currentHand": "現在の役",
   "anteBringIn": "アンティ/ブリングイン",
+  "bringIn": "ブリングイン",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
@@ -78,7 +79,9 @@
     "sevencardstudCheckFree": "払う額は無い。ただで次の札を見よう",
     "sevencardstudCallHigh": "高い札がある。コールして様子を見よう",
     "sevencardstudFoldWeak": "高い札もペアも無い。降りよう",
-    "sevencardstudCheckLow": "8以下が5枚。払う額は無いので、ただで次の札を見よう"
+    "sevencardstudCheckLow": "8以下が5枚。払う額は無いので、ただで次の札を見よう",
+    "sevencardstudPlaySpadeLock": "伏せ札に A♠。役が弱くてもスペードの半分は確定なので、降りずに続けよう",
+    "sevencardstudCheckSpadeLock": "伏せ札に A♠。払う額は無いので、ただで次の札を見よう（スペードの半分は確定）"
   },
   "style": {
     "tag": "TAG",

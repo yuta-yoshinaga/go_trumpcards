@@ -23,7 +23,7 @@ import { useSound } from '../providers/SoundProvider';
 import { btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, PishtiPlayer, PishtiResponse } from '../types/card';
+import type { Card, PishtiResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { PISHTI_HELP, parsePishtiCommand } from '../utils/cli/commands/pishtiCommands';
@@ -193,18 +193,14 @@ function PishtiPageContent() {
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
 
   // Provisional score shown during play so players can gauge where they stand (#3560).
-  // The API exposes only capturedCount + pistiBonus (not the captured cards' values),
-  // so the true point-card score (A/J/2♣/10♦) is NOT derivable. What IS known:
-  //   - Pişti bonuses are already locked into the final score, and
-  //   - the most-cards +3 (PishtiScoreMostCards) goes to the sole captured-count leader
-  //     (ties award nobody, mirroring the domain's calcFinalScore).
-  // We surface only those; the note discloses that card points are still uncounted.
-  const MOST_CARDS_BONUS = 3;
+  //
+  // **点はサーバが数える。**A・J・♣2・♦10 のカード点は捕獲した瞬間に確定するので、
+  // 途中でも正確に出せる ── 以前はここで capturedCount と pistiBonus から
+  // 近似しており、実際の得点源が終局まで一切見えなかった (#6468)。
+  // 残る「最多捕獲の +3」だけが暫定で、その星印の位置は今も枚数から出す。
   const maxCaptured = Math.max(...state.players.map((p) => p.capturedCount));
   const capturedLeaders = state.players.filter((p) => p.capturedCount === maxCaptured);
   const provisionalLeaderSeat = maxCaptured > 0 && capturedLeaders.length === 1 ? capturedLeaders[0].id : -1;
-  const provisionalScore = (p: PishtiPlayer): number =>
-    p.pistiBonus + (p.id === provisionalLeaderSeat ? MOST_CARDS_BONUS : 0);
 
   const handleManualReset = () => {
     hideActionLog();
@@ -289,7 +285,7 @@ function PishtiPageContent() {
                       data-testid={`pishti-provisional-${p.id}`}
                       title={t('provisionalNote')}
                     >
-                      {t('provisional', { score: provisionalScore(p) })}
+                      {t('provisional', { score: p.provisionalScore })}
                       {p.id === provisionalLeaderSeat && <span className="ml-1 text-ds-accent">★</span>}
                     </span>
                   )}

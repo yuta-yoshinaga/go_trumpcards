@@ -132,6 +132,22 @@ func (p *FourCardPokerCuiPresenter) ActionLogOutput(g interfaces.FourCardPokerGa
 	return actionLogOutputText(g)
 }
 
+// HintOutput advises play (1x-3x) or fold based on basic strategy.
+// Other phases get no hint.
+func (p *FourCardPokerCuiPresenter) HintOutput(g interfaces.FourCardPokerGame) string {
+	if g.GetPhase() != domain.FourCardPokerPhaseAction {
+		return i18n.T("fourcardpoker.hintNone") + "\n"
+	}
+	switch g.RecommendPlayMultiplier() {
+	case domain.FourCardPokerMaxPlayMul:
+		return color.Yellow(i18n.T("fourcardpoker.hintPlayMax")) + "\n"
+	case domain.FourCardPokerMinPlayMul:
+		return color.Yellow(i18n.T("fourcardpoker.hintPlayMin")) + "\n"
+	default:
+		return color.Yellow(i18n.T("fourcardpoker.hintFold")) + "\n"
+	}
+}
+
 func (p *FourCardPokerCuiPresenter) phaseStr(phase int) string {
 	switch phase {
 	case domain.FourCardPokerPhaseBet:

@@ -8,7 +8,7 @@
   "header": "Round: {{round}}/{{rounds}}  Trick: {{trick}}/{{tricks}}  ({{players}} players)",
   "potLine": "Pot: {{pot}} chips (shared out by tricks taken)",
   "trumpLine": "Trump: {{card}}",
-  "riskLine": "Play and take no trick at all and you pay {{penalty}} more into the pot.",
+  "riskLine": "Everyone antes {{ante}} each round. On top of that, play and take no trick at all and you pay {{penalty}} more into the pot.",
   "playerLine": "{{name}}: {{chips}} chips [{{status}}], {{tricks}} taken, {{cards}} in hand",
   "statusIn": "in",
   "statusOut": "out",

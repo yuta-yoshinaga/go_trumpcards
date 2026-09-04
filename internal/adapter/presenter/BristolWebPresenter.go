@@ -17,44 +17,17 @@ type BristolWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *BristolWebPresenter) Output(b interfaces.BristolGame, lastErr error) string {
 	resObj := p.buildBaseOutput(b)
-
-	// タブロー（8列）
-	tableau := b.GetTableau()
-	resObj.Tableau = make([][]*controller.WebOutputCard, domain.BristolTableauCnt)
-	for i := 0; i < domain.BristolTableauCnt; i++ {
-		col := tableau[i]
-		resObj.Tableau[i] = make([]*controller.WebOutputCard, len(col))
-		for j, tc := range col {
-			resObj.Tableau[i][j] = cardToOutput(tc)
-		}
-	}
-
-	// ファン（3つ）
-	fan := b.GetFan()
-	resObj.Fan = make([][]*controller.WebOutputCard, domain.BristolFanCnt)
-	for i := 0; i < domain.BristolFanCnt; i++ {
-		pile := fan[i]
-		resObj.Fan[i] = make([]*controller.WebOutputCard, len(pile))
-		for j, fc := range pile {
-			resObj.Fan[i][j] = cardToOutput(fc)
-		}
-	}
-
-	// ファウンデーション（4つ）
-	foundation := b.GetFoundation()
-	resObj.Foundation = make([][]*controller.WebOutputCard, domain.BristolFoundationCnt)
-	for i := 0; i < domain.BristolFoundationCnt; i++ {
-		pile := foundation[i]
-		resObj.Foundation[i] = make([]*controller.WebOutputCard, len(pile))
-		for j, fc := range pile {
-			resObj.Foundation[i][j] = cardToOutput(fc)
-		}
-	}
+	p.fillBoard(resObj, b)
 
 	// メッセージ
-	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
-	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
-	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	// **受動ヒントは Output() でも埋める。**盤面のリングなど `state.hint` を読む
+	// 分岐は、ヒントボタンを押していないときにも動く。ここで埋めないとそれらは
+	// 全部死ぬ (#4483)。
+	//
+	// **「HintOutput の応答はページの state にマージされない」と書いてあったが、
+	// このページでは誤り。**ヒントボタンは `useGameApi` の `exec('hint')` を呼び、
+	// `setState(res)` が状態を丸ごと差し替える。だから HintOutput も
+	// `fillBoard` で盤面を返す (#6800 / #6855)。
 	if b.GetPhase() == domain.BristolPhasePlaying {
 		if hint := b.GetHint(); hint != nil {
 			resObj.Hint = &controller.BristolWebOutputHint{
@@ -90,9 +63,7 @@ func (p *BristolWebPresenter) Output(b interfaces.BristolGame, lastErr error) st
 // HintOutput ヒントをJSON出力
 func (p *BristolWebPresenter) HintOutput(b interfaces.BristolGame) string {
 	resObj := p.buildBaseOutput(b)
-	resObj.Tableau = make([][]*controller.WebOutputCard, 0)
-	resObj.Fan = make([][]*controller.WebOutputCard, 0)
-	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	p.fillBoard(resObj, b)
 
 	hint := b.GetHint()
 	if hint != nil {
@@ -109,9 +80,61 @@ func (p *BristolWebPresenter) HintOutput(b interfaces.BristolGame) string {
 	return marshalOrError(resObj)
 }
 
+// TargetsOutput は Web では通常の盤面をそのまま返す。
+//
+// 置ける先の強調は `buildLegalTargets` がこの盤面から作っている ──
+// Web には `targets` に当たる操作が無く、選択した瞬間に見えている (#6427)。
+// ここで別の形を返すと、CUI 専用の応答が Web の経路に紛れ込む。
+func (p *BristolWebPresenter) TargetsOutput(b interfaces.BristolGame, _ string, _ int) string {
+	return p.Output(b, nil)
+}
+
 // ActionLogOutput 棋譜をJSON出力
 func (p *BristolWebPresenter) ActionLogOutput(b interfaces.BristolGame) string {
 	return actionLogOutputJSON(b)
+}
+
+// fillBoard は盤面を埋める。
+//
+// **Output と HintOutput が同じ盤面を返すためにある。**HintOutput は以前
+// 盤面を空配列で潰していた ── `buildBaseOutput` は盤面を埋めないので、
+// 潰さないと JSON に `null` が出てフロントの `.map` が壊れる、という理由だった。
+// だがこのページのヒントボタン (と CLI の hint) は `useGameApi` の `exec` を
+// 呼び、`useGameApi` は `setState(res)` で状態を**丸ごと差し替える**ので、
+// その空配列がそのまま画面に流れ込んで盤面が消えていた (#6855、#6800 と同型)。
+func (p *BristolWebPresenter) fillBoard(resObj *controller.BristolWebOutput, b interfaces.BristolGame) {
+	// タブロー（8列）
+	tableau := b.GetTableau()
+	resObj.Tableau = make([][]*controller.WebOutputCard, domain.BristolTableauCnt)
+	for i := 0; i < domain.BristolTableauCnt; i++ {
+		col := tableau[i]
+		resObj.Tableau[i] = make([]*controller.WebOutputCard, len(col))
+		for j, tc := range col {
+			resObj.Tableau[i][j] = cardToOutput(tc)
+		}
+	}
+
+	// ファン（3つ）
+	fan := b.GetFan()
+	resObj.Fan = make([][]*controller.WebOutputCard, domain.BristolFanCnt)
+	for i := 0; i < domain.BristolFanCnt; i++ {
+		pile := fan[i]
+		resObj.Fan[i] = make([]*controller.WebOutputCard, len(pile))
+		for j, fc := range pile {
+			resObj.Fan[i][j] = cardToOutput(fc)
+		}
+	}
+
+	// ファウンデーション（4つ）
+	foundation := b.GetFoundation()
+	resObj.Foundation = make([][]*controller.WebOutputCard, domain.BristolFoundationCnt)
+	for i := 0; i < domain.BristolFoundationCnt; i++ {
+		pile := foundation[i]
+		resObj.Foundation[i] = make([]*controller.WebOutputCard, len(pile))
+		for j, fc := range pile {
+			resObj.Foundation[i][j] = cardToOutput(fc)
+		}
+	}
 }
 
 func (p *BristolWebPresenter) buildBaseOutput(b interfaces.BristolGame) *controller.BristolWebOutput {

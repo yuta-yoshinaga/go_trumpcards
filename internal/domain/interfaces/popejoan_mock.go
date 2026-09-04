@@ -103,3 +103,8 @@ func (_m *MockPopeJoanGame) PopeJoanValidPlays(player int) []int {
 	}
 	return nil
 }
+
+// GetDealerIdx モック
+func (_m *MockPopeJoanGame) GetDealerIdx() int {
+	return _m.Called().Int(0)
+}

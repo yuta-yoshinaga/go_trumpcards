@@ -431,8 +431,8 @@ function GongZhuPageContent() {
               />
             </div>
 
-            {/* Round-end score breakdown (#5630) */}
-            {isRoundEnd && state.scoreBreakdowns && state.scoreBreakdowns.length > 0 && (
+            {/* Round-end / Game-end score breakdown (#5630, #6426) */}
+            {(isRoundEnd || isGameEnd) && state.scoreBreakdowns && state.scoreBreakdowns.length > 0 && (
               <GongZhuScoreBreakdownPanel
                 breakdowns={state.scoreBreakdowns}
                 playerName={(idx) => playerName(idx, state.players[idx]?.isHuman ?? false)}

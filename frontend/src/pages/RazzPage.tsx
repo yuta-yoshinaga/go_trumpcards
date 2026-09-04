@@ -339,6 +339,18 @@ function RazzPageContent() {
                         {p.handName}
                       </span>
                     )}
+                    {/* CUI は GetTotalHands() > 0 のときだけ出している (#6337)。
+                        手が始まっていない席に 0% を並べても読み違いを招くだけ。 */}
+                    {p.totalHands > 0 && (
+                      <span className="ml-2 text-xs text-ds-text-muted">
+                        {t('stats.playerStats', {
+                          vpip: p.vpip,
+                          pfr: p.pfr,
+                          tb: p.threeBet,
+                          af: p.af,
+                        })}
+                      </span>
+                    )}
                   </div>
                   {/* Door cards (always visible) */}
                   <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>

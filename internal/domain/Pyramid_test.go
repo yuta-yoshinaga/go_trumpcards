@@ -708,3 +708,35 @@ func TestPyramid_IsRemovableKing(t *testing.T) {
 		assert.True(t, p.IsWasteKingRemovable(), "見るのは一番上の1枚")
 	})
 }
+
+// The web keeps a persistent record in localStorage; the CUI has no store, so
+// these count the current process only. What matters is that Reset does NOT
+// clear them -- that is the whole point of the panel.
+func TestPyramidSessionStats(t *testing.T) {
+	t.Run("counts nothing before a game finishes", func(t *testing.T) {
+		p := NewDefaultPyramid()
+		p.Reset()
+		// Reset also runs at startup; counting there would report a play that
+		// nobody played.
+		assert.Equal(t, 0, p.GetSessionPlays())
+		assert.Equal(t, 0, p.GetSessionFewestMoves(), "0 means no record yet")
+	})
+
+	t.Run("counts a giveup as a play but not a win", func(t *testing.T) {
+		p := NewDefaultPyramid()
+		p.Reset()
+		p.GiveUp()
+		assert.Equal(t, 1, p.GetSessionPlays())
+		assert.Equal(t, 0, p.GetSessionWins())
+		assert.Equal(t, 0, p.GetSessionFewestMoves(), "a loss sets no best")
+	})
+
+	t.Run("keeps the totals across Reset", func(t *testing.T) {
+		p := NewDefaultPyramid()
+		p.Reset()
+		p.GiveUp()
+		p.Reset()
+		p.GiveUp()
+		assert.Equal(t, 2, p.GetSessionPlays(), "Reset must not wipe the session record")
+	})
+}

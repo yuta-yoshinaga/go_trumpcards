@@ -19,10 +19,18 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 3. **Interactor**: `internal/usecase/<Game>Interactor.go` with presenter interface in `internal/usecase/presenter/`
 4. **Controller**: CUI controller in `internal/adapter/controller/`, Web controller in `internal/adapter/controller/`, reuse `cuiutil` package for input parsing and `ClampIntPtr` for config validation
 5. **Presenter**: CUI and Web presenters in `internal/adapter/presenter/`, reuse `buildCuiOutput`, `cuiCardListStr`, `ActionLogOutput` helpers, `WebOutputBase` for common web output fields
+   - **`<game>.helpTitle` is the board heading, not just the `help` screen header.** Every
+     CUI presenter passes it to `buildCuiOutput`, so a help-screen caption there
+     (`〜 コマンド一覧` / `〜 commands`) shows during the whole game. Five games shipped that
+     way (#7061). Use the game name, as `ソロ・ホイスト (Solo Whist)` does.
+     `TestHelpTitlesAreNotHelpScreenHeadings` enforces it.
+   - **Check the rendered board before shipping.** `i18n.T` returns an unknown key verbatim,
+     so a typo'd key prints its own name to players with no test failure and no lint error —
+     sixcardgolf shipped `cuiPlayerNameHuman` on screen for exactly that reason (#7061).
 6. **Infrastructure**: Add four entries for the new game (`cmd/trumpcards/main.go` needs no per-game edit — it resolves names from the registry via `ui.GameNames()` / `ui.GameAliases`; the CLI-side wiring is (d) below):
-   - **(a)** `{Name: "<name>", Category: Category…}` in the `registry` slice in `internal/infrastructure/games/registry.go`. `Category` pins the game to one Cloudflare Worker binary-size bucket (`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`, or `extra4` — ADR-0032 added the fourth, ADR-0036 the fifth and sixth, ADR-0037 the seventh). The bucket is **not** a genre taxonomy and none of them is *the* overflow bucket: **pick the worker with the most gzip headroom, measured rather than assumed.** `.claude/skills/rebucket-game/scripts/measure.sh` prints every worker's size; a recent CI `tinygo-build` log gives the same figures without a local TinyGo.
+   - **(a)** `{Name: "<name>", Category: Category…}` in the `registry` slice in `internal/infrastructure/games/registry.go`. `Category` pins the game to one Cloudflare Worker binary-size bucket (`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`, `extra4`, or `extra5` — ADR-0032 added the fourth, ADR-0036 the fifth and sixth, ADR-0037 the seventh, ADR-0038 the eighth). The bucket is **not** a genre taxonomy and none of them is *the* overflow bucket: **pick the worker with the most gzip headroom, measured rather than assumed.** `.claude/skills/rebucket-game/scripts/measure.sh` prints every worker's size; a recent CI `tinygo-build` log gives the same figures without a local TinyGo.
    - **(b)** `BindWebControllerFor("<name>", …)` in `internal/infrastructure/games/games_server.go` — wires the HTTP server factory.
-   - **(c)** `games.RegisterKVGame("<name>", games.Category…, …)` in the matching sub-package under `internal/infrastructure/games/{casino,classic,solo,extra,extra2,extra3,extra4}/` — the per-category split is what keeps each Cloudflare Worker WASM binary under the 1 MB gzipped free-tier limit, so the sub-package must match the `Category` in (a). `RegisterKVGame` panics at init if they disagree (via the underlying `games.BindWorker`), and `TestWorkerRegistrationsCoverAllGames` (in `registry_worker_consistency_test.go`) parses each sub-package source with `go/parser` and fails the build if the registry and a category's `RegisterKVGame` calls disagree (per ADR-0031, option 3).
+   - **(c)** `games.RegisterKVGame("<name>", games.Category…, …)` in the matching sub-package under `internal/infrastructure/games/{casino,classic,solo,extra,extra2,extra3,extra4,extra5}/` — the per-category split is what keeps each Cloudflare Worker WASM binary under the 1 MB gzipped free-tier limit, so the sub-package must match the `Category` in (a). `RegisterKVGame` panics at init if they disagree (via the underlying `games.BindWorker`), and `TestWorkerRegistrationsCoverAllGames` (in `registry_worker_consistency_test.go`) parses each sub-package source with `go/parser` and fails the build if the registry and a category's `RegisterKVGame` calls disagree (per ADR-0031, option 3).
    - **(d)** `GameRegistryEntry` entry in the `gameRegistry` slice in `internal/infrastructure/ui/GameManager.go` — the CLI-side wiring. Always use the `cuiEntry` helper with a `CuiHelpSpec`. For the standard help template, fill in `TitleKey`/`CommandKeys`/`SettingKeys`; for hand-authored help that does not fit the scaffold, set `CuiHelpSpec.Body` to the full help lines.
 6b. **Frontend worker URL**: verify `frontend/src/api/gameApi.ts` `workerUrl` maps the new game to the same worker name as its `Category`.
 7. **Run `goimports -w` and `golangci-lint run ./...`** on all new files
@@ -46,13 +54,58 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 19. **`docs/games.md`**: Add game entity description
 20. **`docs/architecture.md`**: Update endpoint count and list
 21. **`api/openapi.yaml`**: Add endpoint path, tag definition, and request/response schemas in components.
-    Guarded by three tests in `internal/infrastructure/games`: `TestOpenAPIMatchesRegistry` (one
-    `POST /<game>/exec` per registered game, no orphans), `TestOpenAPIHasNoDanglingSchemaRefs` (every `$ref`
-    resolves), and `TestOpenAPIErrorResponseMatchesTheSuccessSchema` (a path's `400` documents the same schema
-    as its `200` -- every endpoint returns the game's own payload on both branches, an error being a normal
-    response carrying a `message`). The three check different things: that the path exists, that its refs point
-    at something, and that they point at the RIGHT something.
-    **The file is CRLF** -- anything that rewrites it must preserve the line endings or the diff becomes every line.
+    Write the payload as a named schema in `components/schemas`, not inline, and wire the two responses like
+    every other path (all 367 do):
+
+    ```yaml
+    '200':
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/<Game>Response'   # ordinary commands
+              - $ref: '#/components/schemas/ActionLogResponse'  # the `log` command
+    '400':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/<Game>Response'
+    ```
+
+    **The `200` is a union because `/exec` really returns more than one shape** -- the game state, or the
+    action log for `log`, or (in 54 games) a hint response with no board. One schema cannot describe that, and
+    writing one made every path that declares `required` contradict its own `log` response (#7057).
+    **The `400` carries the game's own payload**, an error being a normal response with a `message`.
+
+    **Do not put `additionalProperties: true` on the response.** It reads as harmless but it makes
+    `TestOpenAPIMatchesLiveResponses` stop walking there, and 50 games sat unchecked behind it long enough to
+    ship a double-wrapped tableau and a wrong `score` type (#7057).
+
+    Guarded by these tests in `internal/infrastructure/games`. They look like overlap but each catches a class
+    the others structurally cannot:
+
+    | Test | What it catches |
+    |---|---|
+    | `TestOpenAPIMatchesRegistry` | the path exists, one per registered game, no orphans |
+    | `TestOpenAPITagsMatchRegistry` | the root `tags:` block matches the registry |
+    | `TestOpenAPISpecParses` | the file is still valid YAML -- **the only thing that catches a broken folded scalar or a duplicate key**, both of which a regex reads as fine |
+    | `TestOpenAPIHasNoDanglingSchemaRefs` | every `$ref` resolves |
+    | `TestOpenAPIErrorResponseMatchesTheSuccessSchema` | the `400` points at the same schema as the `200` |
+    | `TestOpenAPIDocumentsEveryResponseField` | a response field name appears somewhere in the spec (#6984) |
+    | `TestOpenAPISchemaReachesEveryField` | the name is reachable from **that game's own** schema -- the test above passes on a name written under the wrong game (#7046) |
+    | `TestOpenAPIDeclaresNothingTheCodeCannotProduce` | the spec does not declare a field no `json:` tag or presenter map literal can produce (#7050) |
+    | `TestOpenAPIPropertyRegexShapes` | the negative control for the regex `TestOpenAPIDocumentsEveryResponseField` uses -- it pins which key shapes count as documented (plain, quoted `"null":`, flow-style `k: { ... }`) and which must not (`description:`, `type:`). Loosening the regex to `.*$` fails it |
+    | `TestOpenAPIMatchesLiveResponses` | drives all 367 controllers over `httptest` and compares the **real** `200` and `400` bodies -- names, types and enums. Catches what a struct scan cannot see: embedded structs (`WebOutputBase.messageCode`) and shared schemas (`Card.glyph`) (#7048, #7052, #7055) |
+
+    Two traps worth knowing before you edit this file:
+
+    - **It is CRLF** -- the only such file in the repo. Anything that rewrites it must preserve the line
+      endings, keep the trailing newline, and leave zero LF-only lines, or the diff becomes every line.
+      Check `git diff --numstat` **and** that the change in CR count matches it.
+    - **`reset` alone does not exercise every field.** A hint block, a round summary and the action log only
+      appear after play, so `TestOpenAPIMatchesLiveResponses` drives several commands. If it fails, the finding
+      is real even when a re-run goes green: it only inspects fields that actually came back, so it can
+      under-report but never invent a gap.
 22. **`docs/manual/cui/<game>.md`** and **`docs/manual/web/<game>.md`**: Create from the templates below and **include every required section**:
     - CUI (`docs/manual/cui_template.md`): `## ゲーム概要` / `## 起動方法` / `## ルール` / `## ゲームの流れ` (Mermaid flowchart — **mandatory**) / `## コマンド一覧` / `## 画面の見方`, plus the optional `## 遊び方のコツ`
     - Web (`docs/manual/web_template.md`): `## ゲーム概要` / `## 起動方法` / `## ルール` / `## ゲームの流れ` (Mermaid flowchart — **mandatory**) / `## 画面の操作方法` / `## 画面構成`, plus the optional `## 遊び方のコツ`
@@ -64,6 +117,18 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
     - **All of this is enforced** by `TestPerGameManualsFollowTemplate`
       (`internal/infrastructure/games/manual_template_test.go`); run
       `bun scripts/audit-manual-template.mjs` for a worklist grouped by issue class.
+    - **Write `## 画面の見方` by running the game and pasting the real board — never by
+      adapting a similar game's manual.** 57 manuals had drifted by 2026-09 because they
+      were copied: rows no game prints (`捨て札トップ:`, `現在のトリック:`, `フェーズ: BID`),
+      invented vocabulary, and — worst — **1-indexed column numbers where the CUI is
+      0-indexed**, so the documented number moved the neighbouring column (#7061).
+      Card notation is per-game too (`cuiCardStr` prints `SPADE 5`, `cuiCardStrEmoji`
+      prints `♣2`); there is no repo-wide convention to copy.
+      `TestManualSampleRowsExist` (`internal/infrastructure/ui/manual_sample_drift_test.go`)
+      fails on a row label that appears in neither the rendered board nor any ja locale.
+    - Say how to **address** what the board shows. Several manuals drew a pretty grid but
+      never mentioned that `(6,0)` / `列0` / `[3]` are the literal command arguments, so the
+      game could not be played from the docs alone.
 23. **`frontend/src/constants/manualTexts.ts`**: Import the **Web** manual and add route mapping entry
 24. **`frontend/src/constants/cuiManualTexts.ts`**: Import the **CUI** manual and add route mapping entry (this is the manual displayed when CLI mode is active — easy to forget)
 

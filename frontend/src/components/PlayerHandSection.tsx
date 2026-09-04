@@ -138,7 +138,11 @@ export function PlayerHandSection({
             onClick={() => {
               if (!restricted) toggleCard(idx);
             }}
-            aria-label={cardAlt(card)}
+            // **バッジの意味も読み上げに載せる。** バッジは title だけを持つ
+            // pointer-events-none の span で、button の aria-label が
+            // アクセシブル名を完全に上書きするため、付けないと「スペードの
+            // キング」としか読まれず、結婚のチャンスが伝わらない (#6612)。
+            aria-label={badge ? `${cardAlt(card)} (${badge.title})` : cardAlt(card)}
             aria-pressed={isSelected}
             // Use aria-disabled (not the HTML `disabled` attribute) so restricted
             // cards remain focusable for keyboard / screen-reader users — they

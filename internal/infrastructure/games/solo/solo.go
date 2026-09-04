@@ -309,14 +309,6 @@ func init() {
 	// worker is at the 1 MB gzip free-tier limit. See registry.go.
 	// Macau is a Crazy Eights variant bucketed here (solo worker) for binary-size
 	// reasons; the classic worker is at the 1 MB gzip free-tier limit. See registry.go.
-	games.RegisterKVGame("macau", games.CategorySolo,
-		func() usecase.MacauInteractorIF {
-			return usecase.NewMacauInteractor(domain.NewDefaultMacau(), new(presenter.MacauWebPresenter))
-		},
-		func(data []byte) (usecase.MacauInteractorIF, error) {
-			return usecase.RestoreMacauInteractor(data, new(presenter.MacauWebPresenter))
-		},
-		controller.NewMacauWebControllerWithProvider)
 	games.RegisterKVGame("thirtyone", games.CategorySolo,
 		func() usecase.ThirtyOneInteractorIF {
 			return usecase.NewThirtyOneInteractor(domain.NewDefaultThirtyOne(), new(presenter.ThirtyOneWebPresenter))
@@ -442,14 +434,6 @@ func init() {
 			return usecase.RestoreCrazyQuiltInteractor(data, new(presenter.CrazyQuiltWebPresenter))
 		},
 		controller.NewCrazyQuiltWebControllerWithProvider)
-	games.RegisterKVGame("teendopaanch", games.CategorySolo,
-		func() usecase.TeenDoPaanchInteractorIF {
-			return usecase.NewTeenDoPaanchInteractor(domain.NewDefaultTeenDoPaanch(), new(presenter.TeenDoPaanchWebPresenter))
-		},
-		func(data []byte) (usecase.TeenDoPaanchInteractorIF, error) {
-			return usecase.RestoreTeenDoPaanchInteractor(data, new(presenter.TeenDoPaanchWebPresenter))
-		},
-		controller.NewTeenDoPaanchWebControllerWithProvider)
 	games.RegisterKVGame("snap", games.CategorySolo,
 		func() usecase.SnapInteractorIF {
 			return usecase.NewSnapInteractor(domain.NewDefaultSnap(), new(presenter.SnapWebPresenter))
@@ -458,28 +442,4 @@ func init() {
 			return usecase.RestoreSnapInteractor(data, new(presenter.SnapWebPresenter))
 		},
 		controller.NewSnapWebControllerWithProvider)
-	games.RegisterKVGame("tusac", games.CategorySolo,
-		func() usecase.TuSacInteractorIF {
-			return usecase.NewTuSacInteractor(domain.NewDefaultTuSac(), new(presenter.TuSacWebPresenter))
-		},
-		func(data []byte) (usecase.TuSacInteractorIF, error) {
-			return usecase.RestoreTuSacInteractor(data, new(presenter.TuSacWebPresenter))
-		},
-		controller.NewTuSacWebControllerWithProvider)
-	games.RegisterKVGame("quodlibet", games.CategorySolo,
-		func() usecase.QuodlibetInteractorIF {
-			return usecase.NewQuodlibetInteractor(domain.NewDefaultQuodlibet(), new(presenter.QuodlibetWebPresenter))
-		},
-		func(data []byte) (usecase.QuodlibetInteractorIF, error) {
-			return usecase.RestoreQuodlibetInteractor(data, new(presenter.QuodlibetWebPresenter))
-		},
-		controller.NewQuodlibetWebControllerWithProvider)
-	games.RegisterKVGame("comet", games.CategorySolo,
-		func() usecase.CometInteractorIF {
-			return usecase.NewCometInteractor(domain.NewDefaultComet(), new(presenter.CometWebPresenter))
-		},
-		func(data []byte) (usecase.CometInteractorIF, error) {
-			return usecase.RestoreCometInteractor(data, new(presenter.CometWebPresenter))
-		},
-		controller.NewCometWebControllerWithProvider)
 }

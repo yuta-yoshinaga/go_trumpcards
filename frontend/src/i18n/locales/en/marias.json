@@ -16,6 +16,7 @@
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
   "trump": "Trump: {{suit}}",
+  "trumpRule": "Trump is the Soloist’s longest suit, chosen automatically",
   "marriageAvailable": "Marriage available: {{list}}",
   "suitName": {
     "spade": "Spade",

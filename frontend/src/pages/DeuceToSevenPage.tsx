@@ -310,15 +310,21 @@ function DeuceToSevenPageContent() {
                   {(humanPlayer.cards ?? []).map((card, i) => {
                     const isSelected = selected.includes(i);
                     let liftOrDim = '';
+                    let hintLabel = '';
                     if (bestSubset) {
-                      if (bestSubset.has(i)) liftOrDim = '-translate-y-1';
-                      else if (!isSelected) liftOrDim = 'opacity-50';
+                      if (bestSubset.has(i)) {
+                        liftOrDim = '-translate-y-1';
+                        hintLabel = ` ${t('hint.keepCard')}`;
+                      } else if (!isSelected) {
+                        liftOrDim = 'opacity-50';
+                        hintLabel = ` ${t('hint.discardCard')}`;
+                      }
                     }
                     return (
                       <button
                         key={`${card.design}-${card.value}`}
                         type="button"
-                        aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
+                        aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}${hintLabel}`}
                         aria-pressed={isSelected}
                         onClick={() => toggleCard(i)}
                         className={`${focusRingAccent} rounded transition-transform ${liftOrDim}`}

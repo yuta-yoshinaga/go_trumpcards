@@ -1662,4 +1662,52 @@ describe('OmahaHiLoPage', () => {
     await waitFor(() => expect(screen.queryByTestId('omahahilo-live-besthand')).not.toBeInTheDocument());
     expect(screen.getByTestId('omahahilo-rule-badge')).toBeInTheDocument();
   });
+
+  it('calls out a scoop when one player wins both halves', async () => {
+    const scoopState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [
+        { ...showdownState.roundResults[0], hiWonAmount: 200, lowWonAmount: 100 },
+        { ...showdownState.roundResults[1], wonAmount: 0, hiWonAmount: 0, lowWonAmount: 0 },
+      ],
+    };
+    mockExec.mockResolvedValue(scoopState);
+    renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('omahahilo-split')).toBeInTheDocument());
+    const badge = screen.getByTestId('omahahilo-scoop-badge');
+    // The badge must state the combined take, not just that a scoop happened.
+    expect(badge).toHaveTextContent('300');
+  });
+
+  it('shows no scoop badge when the two halves go to different players', async () => {
+    const splitState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [
+        { ...showdownState.roundResults[0], hiWonAmount: 200, lowWonAmount: 0 },
+        { ...showdownState.roundResults[1], wonAmount: 100, hiWonAmount: 0, lowWonAmount: 100 },
+      ],
+    };
+    mockExec.mockResolvedValue(splitState);
+    renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('omahahilo-split')).toBeInTheDocument());
+    expect(screen.queryByTestId('omahahilo-scoop-badge')).not.toBeInTheDocument();
+  });
+
+  it('names the CPU when a CPU scoops, without the human-only emphasis', async () => {
+    const cpuScoopState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [
+        { ...showdownState.roundResults[0], hiWonAmount: 0, lowWonAmount: 0 },
+        { ...showdownState.roundResults[1], wonAmount: 300, hiWonAmount: 200, lowWonAmount: 100 },
+      ],
+    };
+    mockExec.mockResolvedValue(cpuScoopState);
+    renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('omahahilo-split')).toBeInTheDocument());
+    const badge = screen.getByTestId('omahahilo-scoop-badge');
+    // The scoop.badge branch interpolates {{name}}; only scoop.youBadge omits it.
+    expect(badge).toHaveTextContent('CPU 1');
+    expect(badge).toHaveTextContent('300');
+    expect(badge).not.toHaveAttribute('data-scoop-human');
+  });
 });

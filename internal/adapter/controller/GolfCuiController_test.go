@@ -88,3 +88,11 @@ func TestGolfCuiControllerUnknown(t *testing.T) {
 	c := NewGolfCuiController(gi)
 	assert.Contains(t, c.Exec("xyz"), "コマンドが不明です")
 }
+
+func TestGolfCuiControllerResetNineHole(t *testing.T) {
+	gi := newMockGolfInteractor()
+	c := NewGolfCuiController(gi)
+	gi.On("ResetNineHole").Return("reset9_output")
+	assert.Equal(t, "reset9_output", c.Exec("r9"))
+	assert.Equal(t, "reset9_output", c.Exec("reset9"))
+}

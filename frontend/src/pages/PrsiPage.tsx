@@ -254,8 +254,12 @@ function PrsiPageContent() {
                 </div>
 
                 {hasPenalty && (
+                  // **累積ペナルティは +2 / +4 / +6 と育つ。**隣の skip-indicator は
+                  // `role="status"` を持つのにこちらだけ抜けていて、増えたことが
+                  // 音声に届かなかった (#6480)。
                   <div
                     className={`my-2 p-2 rounded text-sm font-semibold ${badgeWarningColors}`}
+                    role="status"
                     data-testid="penalty-indicator"
                   >
                     {t('penalty', { count: state.penaltyDrawCount })}

@@ -51,6 +51,14 @@ const SUITS: { id: number; glyph: string }[] = [
   { id: 3, glyph: '♥' },
 ];
 
+/**
+ * Cards exchanged with the kitty (`domain.BidWhistKittySize`).
+ *
+ * The number was written out at each of the three places that read it — the
+ * exchange gate, the bar colour and its width — so it is named once here.
+ */
+const KITTY_SIZE = 6;
+
 /** Bid direction options shown as buttons. */
 const DIRECTIONS: { id: number; key: string }[] = [
   { id: BidWhistDirection.UPTOWN, key: 'dirUptown' },
@@ -171,9 +179,11 @@ function BidWhistPageContent() {
     play(selectedIdx);
   };
 
-  const handleExchange = () => {
-    if (selectedCardIndices.length === 6) exchange([...selectedCardIndices]);
-  };
+  // **枚数の判定は 1 箇所だけ。**交換ボタンの `disabled` もこれを見る ── 同じ規則を
+  // ハンドラとボタンの両方に書くと、片方だけ動かせてしまう (実際、ボタン側だけ
+  // リテラルの 6 が残っていた)。
+  const canExchange = selectedCardIndices.length === KITTY_SIZE;
+  const handleExchange = () => exchange([...selectedCardIndices]);
 
   return (
     <GamePageShell
@@ -262,18 +272,33 @@ function BidWhistPageContent() {
 
             {/* Kitty exchange progress */}
             {isHumanExchange && (
-              <div className="mx-auto mb-2 max-w-xs" data-testid="kitty-progress">
+              // **棒の長さしか進捗を伝えていなかった。**支援技術にはバーの存在すら
+              // 届かないので、役割と現在値を出す。読み上げ文は見えている文言と
+              // 同じものを `aria-valuetext` に載せる ── progressbar の中身は
+              // 読み上げから外れるため、これが無いと数字が消える (#6428)。
+              <div
+                className="mx-auto mb-2 max-w-xs"
+                data-testid="kitty-progress"
+                role="progressbar"
+                aria-label={t('kittyProgressLabel')}
+                aria-valuemin={0}
+                aria-valuemax={KITTY_SIZE}
+                aria-valuenow={selectedCardIndices.length}
+                aria-valuetext={t('kittyProgress', { count: selectedCardIndices.length })}
+              >
                 <div className="mb-1 text-center text-ds-text-muted text-xs">
                   {t('kittyProgress', { count: selectedCardIndices.length })}
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-ds-surface-elevated">
                   <div
                     className={
-                      selectedCardIndices.length === 6
+                      selectedCardIndices.length === KITTY_SIZE
                         ? 'h-full rounded-full transition-all bg-ds-success'
                         : 'h-full rounded-full transition-all bg-ds-info'
                     }
-                    style={{ width: `${(Math.min(selectedCardIndices.length, 6) * 100) / 6}%` }}
+                    style={{
+                      width: `${(Math.min(selectedCardIndices.length, KITTY_SIZE) * 100) / KITTY_SIZE}%`,
+                    }}
                   />
                 </div>
               </div>
@@ -471,7 +496,7 @@ function BidWhistPageContent() {
                 <button
                   type="button"
                   onClick={handleExchange}
-                  disabled={loading || selectedCardIndices.length !== 6}
+                  disabled={loading || !canExchange}
                   className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
                   data-testid="exchange-button"
                 >

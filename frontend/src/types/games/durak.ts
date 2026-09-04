@@ -21,7 +21,7 @@ export interface DurakTablePair {
 /** Durak CPU/human action record. */
 export interface DurakAction {
   playerIdx: number;
-  actionType: number; // 0=attack, 1=defend, 2=pass, 3=take
+  actionType: number; // 0=attack, 1=defend, 2=pass, 3=take, 4=transfer
   card: Card | null;
   attackIdx: number;
 }

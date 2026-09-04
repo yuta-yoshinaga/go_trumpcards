@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
@@ -49,6 +50,7 @@ func (p *RollingStoneWebPresenter) buildBase(s interfaces.RollingStoneGame) *con
 	resObj.Discarded = s.GetDiscarded()
 	resObj.GameEndFlag = s.GetGameEndFlag()
 	resObj.WinnerIdx = s.GetWinnerIdx()
+	resObj.WinReason = s.GetWinReason()
 	resObj.Players = p.buildPlayersOutput(s)
 	resObj.Config = controller.RollingStoneWebOutputConfig{PlayerCnt: s.GetConfig().PlayerCnt}
 	return resObj
@@ -77,9 +79,15 @@ func (p *RollingStoneWebPresenter) buildMessage(s interfaces.RollingStoneGame, l
 		return lastErr.Error(), "", nil
 	}
 	if s.GetGameEndFlag() {
-		// **上限で切った局は「上がった」わけではない。** 言い分ける。
-		if s.GetWinnerIdx() >= 0 && s.GetPlayer(s.GetWinnerIdx()).GetCardsSize() > 0 {
+		// **勝者に札が残っていることは理由を語らない。** 上限で切った局も投了した
+		// 局も勝者は札を持っている。理由そのもので言い分ける。
+		switch s.GetWinReason() {
+		case domain.RollingStoneWinStalemate:
 			return "", "rollingstone.result.stalemate", map[string]string{
+				"idx": strconv.Itoa(s.GetWinnerIdx()),
+			}
+		case domain.RollingStoneWinGiveUp:
+			return "", "rollingstone.result.giveUp", map[string]string{
 				"idx": strconv.Itoa(s.GetWinnerIdx()),
 			}
 		}

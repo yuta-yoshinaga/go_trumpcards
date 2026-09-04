@@ -59,6 +59,7 @@ const base: IronCrossResponse = {
   currentBet: 0,
   toCall: 0,
   raiseCount: 0,
+  maxRaises: 3,
   canRaise: true,
   turnSeat: 0,
   humanSeat: 0,
@@ -434,5 +435,43 @@ describe('IronCrossPage', () => {
     renderWithProviders(<IronCrossPage />);
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
     expect(screen.queryByTestId('ic-check')).not.toBeInTheDocument();
+  });
+
+  // **上限に達すると Raise ボタンが黙って消える。** 何回目なのかが出ていないと
+  // 消えた理由が分からない。上限もサーバの値をそのまま出す。
+  it('レイズ回数と上限をサーバの値で出す', async () => {
+    mockApi.mockResolvedValue(withState({ raiseCount: 2, maxRaises: 4 }));
+    renderWithProviders(<IronCrossPage />);
+
+    // 既定の 3 ではなくレスポンスの 4。文言に直書きしていれば落ちる。
+    await waitFor(() => expect(screen.getByTestId('ic-raise-count')).toHaveTextContent('レイズ 2/4 回'));
+  });
+
+  it('shows ic-choose-guide when isChoosing is true', async () => {
+    // 縦横の列を選ぶフェーズで、案内テキストが表示される
+    mockApi.mockResolvedValue(withState({ phase: IronCrossPhase.CHOOSE_LINE, isChoosing: true }));
+    renderWithProviders(<IronCrossPage />);
+    expect(await screen.findByTestId('ic-choose-guide')).toBeInTheDocument();
+  });
+
+  it('does not show ic-choose-guide when isChoosing is false', async () => {
+    mockApi.mockResolvedValue(withState({ phase: IronCrossPhase.SHOWDOWN, isChoosing: false }));
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-chips')).toBeInTheDocument());
+    expect(screen.queryByTestId('ic-choose-guide')).not.toBeInTheDocument();
+  });
+
+  it('shows ic-bet-guide when it is the human turn to act in betting phase', async () => {
+    // ベットラウンドの手番で、コール額やチェック可能といった案内が表示される
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<IronCrossPage />);
+    expect(await screen.findByTestId('ic-bet-guide')).toBeInTheDocument();
+  });
+
+  it('does not show ic-bet-guide when it is not the human turn to act', async () => {
+    mockApi.mockResolvedValue(withState({ isHumanTurn: false }));
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-chips')).toBeInTheDocument());
+    expect(screen.queryByTestId('ic-bet-guide')).not.toBeInTheDocument();
   });
 });

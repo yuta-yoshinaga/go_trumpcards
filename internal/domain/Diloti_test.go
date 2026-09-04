@@ -521,3 +521,85 @@ func TestDiloti_SaveRestoreCarriesDeclarations(t *testing.T) {
 	assert.Len(t, got.AllCards(), 3)
 	assert.Len(t, r.GetTable(), 1)
 }
+
+// **打てば必ず弾かれる手を並べない (#6629)。**
+//
+// 宣言を抱えている席がその値の札を「宣言を取る手」以外に使うと
+// `guardBackingCard` が拒否するのに、列挙側はその規則を見ておらず、押しても
+// 必ず errKeepBackingCard で弾かれる取り手が Web にも CUI にも出ていた。
+//
+// **盤は手で組む。** 場も手札も配りで決まるので、狙った局面は組めない。
+func TestDiloti_TakeOptionsHideMovesTheBackingGuardWillReject(t *testing.T) {
+	d := newDilotiGame(t)
+	d.firstPlayDone = true
+
+	// 席 0 が「7」の宣言を抱えている。
+	decl := NewDilotiDeclaration(0, 7, dcards([2]int{CardDesignSpade, 7}))
+	// 場には 7 を作れる別の組 (3+4) がある。宣言を経由しないこの取り手は、
+	// 裏付けの 7 を手放すことになるので実際には打てない。
+	d.SetTableForTest(dcards([2]int{CardDesignHeart, 3}, [2]int{CardDesignClover, 4}), []*DilotiDeclaration{decl})
+
+	// 手札は 7 が 1 枚だけ ── 手放したら宣言の裏付けが無くなる。
+	d.players[0].cards = dcards([2]int{CardDesignDiamond, 7})
+
+	takes := d.GetTakeOptions(0, 0)
+	for _, tk := range takes {
+		assert.NotEmpty(t, tk.DeclIdxs,
+			"宣言を経由しない取り手は裏付けを手放すので出してはいけない: %+v", tk)
+	}
+	// **宣言を取る手は残る。** 全部消してしまうと、抱えた宣言を回収できなくなる。
+	require.NotEmpty(t, takes, "宣言を取る手まで消えている")
+
+	// **並べた手はすべて実際に通る。** 一覧と受付が一致していることを、
+	// 規則そのもの (guardBackingCard) に問い直して確かめる。
+	for _, tk := range takes {
+		assert.NoError(t, d.guardBackingCard(0, d.players[0].cards[0], DilotiActionCapture, tk.DeclIdxs),
+			"一覧に出した手が拒否される: %+v", tk)
+	}
+
+	// **同じ値をもう 1 枚持っていれば手放してよい。** ここで候補が増えないなら、
+	// フィルタが宣言の有無だけを見て一律に消しているだけ (負のコントロール)。
+	d.players[0].cards = dcards([2]int{CardDesignDiamond, 7}, [2]int{CardDesignSpade, 7})
+	withSpare := d.GetTakeOptions(0, 0)
+	assert.Greater(t, len(withSpare), len(takes),
+		"予備の 7 があるなら、宣言を経由しない取り手も打てるので候補に残る")
+}
+
+// **CPU の手の列挙にも同じ規則が要る (#6629、レビュー指摘)。**
+//
+// `CpuPlay` は `applyPlay` の戻り値を捨てる。拒否される手を選ぶと手札も手番も
+// 動かないまま `runCpuTurns` の 1000 回を空回りし、CPU の手番で止まる ──
+// UI にボタンが出るより重い。Easy は合法に見える手から一様に選ぶので実際に引く。
+//
+// 実測: この盤で列挙された 3 手のうち 1 手が `applyPlay` に拒否されていた。
+func TestDiloti_CpuMovesAreAllActuallyPlayable(t *testing.T) {
+	build := func() *Diloti {
+		d := newDilotiGame(t)
+		d.firstPlayDone = true
+		// 席 1 (CPU) が「7」の宣言を抱え、裏付けの 7 は手札に 1 枚だけ。
+		decl := NewDilotiDeclaration(1, 7, dcards([2]int{CardDesignSpade, 7}))
+		// 場には宣言を経由せず 7 を作れる組 (3+4) がある。
+		d.SetTableForTest(dcards([2]int{CardDesignHeart, 3}, [2]int{CardDesignClover, 4}),
+			[]*DilotiDeclaration{decl})
+		d.players[1].cards = dcards([2]int{CardDesignDiamond, 7})
+		d.currentIdx = 1
+		return d
+	}
+
+	moves := build().enumerateDilotiMoves(1)
+	require.NotEmpty(t, moves, "抱えた宣言を取る手まで消えている")
+
+	// **並べた手はすべて実際に通る。** 盤ごとに組み直して 1 手ずつ試す。
+	for _, m := range moves {
+		probe := build()
+		assert.NoError(t, probe.applyPlay(1, m.HandIdx, m.Action, m.TableIdxs, m.DeclIdxs, m.Value),
+			"列挙した手が拒否される: %+v", m)
+	}
+
+	// **CPU の手番が実際に進む。** 列挙が空になると別の形で止まるので、
+	// 手札が減ることまで見る。
+	g := build()
+	before := g.players[1].GetCardsSize()
+	g.CpuPlay()
+	assert.Less(t, g.players[1].GetCardsSize(), before, "CPU の手番で手札が減っていない")
+}

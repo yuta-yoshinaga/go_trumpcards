@@ -23,7 +23,7 @@
   "opponentHand": "{{name}}: {{n}} card(s)",
   "opponentHandAriaLabel": "{{name}} holds {{n}} face-down card(s)",
   "yourHand": "Your hand",
-  "landscapeBanner": "Turn your device sideways for a better view",
+  "landscapeBanner": "Landscape mode recommended",
   "phase.choose": "Choosing",
   "phase.play": "In progress",
   "phase.dealEnd": "Deal over",

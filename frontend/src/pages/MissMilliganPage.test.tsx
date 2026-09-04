@@ -314,3 +314,92 @@ describe('MissMilliganPage keyboard shortcuts', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 });
+
+describe('MissMilliganPage waiving', () => {
+  const waivableState: MissMilliganResponse = {
+    ...playingState,
+    stockCount: 0,
+    canWaive: true,
+    tableau: makeTableau([
+      [
+        { card: card('SPADE', 10), faceUp: true },
+        { card: card('HEART', 9), faceUp: true },
+        { card: card('SPADE', 8), faceUp: true },
+        { card: card('HEART', 7), faceUp: true },
+      ],
+      [
+        { card: card('CLOVER', 6), faceUp: true },
+        { card: card('DIAMOND', 5), faceUp: true },
+        { card: card('CLOVER', 4), faceUp: true },
+      ],
+    ]),
+  };
+
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('waives from selected cardIndex when a middle card in the same column is selected', async () => {
+    mockExec.mockResolvedValue(waivableState);
+    renderWithProviders(<MissMilliganPage />);
+    const middleCard = await screen.findByRole('button', { name: /^♥ 9/ });
+    fireEvent.click(middleCard);
+    await waitFor(() => expect(middleCard).toHaveAttribute('aria-pressed', 'true'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...waivableState, canWaive: false, waived: [card('HEART', 9)] });
+    fireEvent.click(screen.getByRole('button', { name: 'タブロー列 0 の連番を保持する' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('waive', { zone: 'tableau', col: 0, cardIndex: 1 }));
+  });
+
+  it('waives with cardIndex undefined when no card is selected', async () => {
+    mockExec.mockResolvedValue(waivableState);
+    renderWithProviders(<MissMilliganPage />);
+    await screen.findByRole('button', { name: 'タブロー列 0 の連番を保持する' });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...waivableState, canWaive: false, waived: [card('HEART', 7)] });
+    fireEvent.click(screen.getByRole('button', { name: 'タブロー列 0 の連番を保持する' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('waive', { zone: 'tableau', col: 0, cardIndex: undefined }),
+    );
+  });
+
+  it('waives with cardIndex undefined when a card in a different column is selected', async () => {
+    mockExec.mockResolvedValue(waivableState);
+    renderWithProviders(<MissMilliganPage />);
+    const otherColCard = await screen.findByRole('button', { name: /^♦ 5/ });
+    fireEvent.click(otherColCard);
+    await waitFor(() => expect(otherColCard).toHaveAttribute('aria-pressed', 'true'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...waivableState, canWaive: false, waived: [card('HEART', 7)] });
+    fireEvent.click(screen.getByRole('button', { name: 'タブロー列 0 の連番を保持する' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('waive', { zone: 'tableau', col: 0, cardIndex: undefined }),
+    );
+  });
+
+  it('displays error message from server when waiving an invalid sequence', async () => {
+    mockExec.mockResolvedValue(waivableState);
+    renderWithProviders(<MissMilliganPage />);
+    const middleCard = await screen.findByRole('button', { name: /^♥ 9/ });
+    fireEvent.click(middleCard);
+    await waitFor(() => expect(middleCard).toHaveAttribute('aria-pressed', 'true'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValueOnce({
+      ...waivableState,
+      message: '色違い交互の降順に並んでいません',
+      messageCode: 'missmilligan.errNotDescendingRun',
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'タブロー列 0 の連番を保持する' }));
+
+    await waitFor(() => expect(screen.getByText('色違い交互の降順に並んでいません')).toBeInTheDocument());
+  });
+});

@@ -21,7 +21,7 @@ var bristolNoArgCommands = cuiutil.NewCommandMap[usecase.BristolInteractorIF]().
 
 // bristolArgfulCommands lists alias names for argful commands handled in the
 // Exec switch.
-var bristolArgfulCommands = []string{"m", "move"}
+var bristolArgfulCommands = []string{"m", "move", "t", "targets"}
 
 // BristolCuiController ブリストルCUIコントローラークラス
 type BristolCuiController struct {
@@ -46,11 +46,43 @@ func (c *BristolCuiController) Exec(command string) string {
 			switch cmd {
 			case "m", "move":
 				return c.handleMove(args), true
+			case "t", "targets":
+				return c.handleTargets(args), true
 			default:
 				return "", false
 			}
 		},
 	)
+}
+
+// handleTargets は `t <zone> <col>` / `targets <zone> <col>` を処理する。
+func (c *BristolCuiController) handleTargets(args []string) string {
+	if len(args) == 0 {
+		return cuiutil.PromptRequest(i18n.T("bristol.promptSourceZone"), "t {0}")
+	}
+	from := args[0]
+	switch from {
+	case "t":
+		if len(args) < 2 {
+			return cuiutil.PromptRequest(i18n.T("bristol.promptFromColumn"), "t t {0}")
+		}
+		col, err := strconv.Atoi(args[1])
+		if err != nil {
+			return invalidArg("invalidColumn", "val", args[1])
+		}
+		return c.bi.Targets("tableau", col)
+	case "n":
+		if len(args) < 2 {
+			return cuiutil.PromptRequest(i18n.T("bristol.promptFan"), "t n {0}")
+		}
+		col, err := strconv.Atoi(args[1])
+		if err != nil {
+			return invalidArg("invalidColumn", "val", args[1])
+		}
+		return c.bi.Targets("fan", col)
+	default:
+		return invalidArg("bristol.invalidFromZone", "val", from)
+	}
 }
 
 // handleMove 移動コマンドを処理する。

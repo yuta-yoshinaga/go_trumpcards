@@ -30,5 +30,6 @@
   "helpExampleMoveCell": "  m t 0 c 0            park the top of column 0 in free cell 0",
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
-  "helpUndo": "  u undo one move"
+  "helpUndo": "  u undo one move",
+  "autoCompleteReady": "Auto-complete available: ac will finish the game"
 }

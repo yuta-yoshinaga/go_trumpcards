@@ -16,6 +16,7 @@
   "empty": "Empty",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
+  "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
   "playing": "Playing",
   "noHint": "No hint available",
   "hintAvailable": "Hint available",
@@ -42,5 +43,6 @@
   "faceDownRule": "Face-down cards can't be moved — only face-up cards are playable",
   "dismissRule": "Dismiss rule note",
   "faceDownCardLabel": "Column {{col}}, card {{pos}} from top, face down",
-  "blockMoveLabel": "moves as a block of {{n}} cards"
+  "blockMoveLabel": "moves as a block of {{n}} cards",
+  "landscapeBanner": "Landscape mode recommended"
 }

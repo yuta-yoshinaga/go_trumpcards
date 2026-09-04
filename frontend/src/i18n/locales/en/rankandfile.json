@@ -38,5 +38,6 @@
     "foundation": "Foundation",
     "rankandfileMove": "This card can move",
     "rankandfileDraw": "Nothing else can move — draw from the stock"
-  }
+  },
+  "cannotGrab": "cannot be picked up"
 }

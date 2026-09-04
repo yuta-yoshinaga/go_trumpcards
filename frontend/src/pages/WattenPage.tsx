@@ -399,14 +399,18 @@ function WattenPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.watten.footer} px-4 py-2.5`}>
-            {canDeclare && (
-              <div
-                className="mb-1 text-center text-sm text-ds-accent font-semibold"
-                data-testid="watten-declare-prompt"
-              >
-                {t('declarePhase')}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="watten-prompt-live" role="status" aria-live="polite">
+              {canDeclare && (
+                <div
+                  className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                  data-testid="watten-declare-prompt"
+                >
+                  {t('declarePhase')}
+                </div>
+              )}
+            </div>
             {canDeclare && (
               <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="watten-trump-panel">
                 <div className="text-ds-text-primary mb-1">{t('trumpPanel.title')}</div>
@@ -525,6 +529,15 @@ function WattenPageContent() {
               {canRespond && (
                 <>
                   <span className="text-ds-text-muted text-sm">{t('respondPhase', { stake: state.pendingStake })}</span>
+                  {/* **吊り上げたのが誰かで hold/fold の判断は変わる。**サーバは
+                      raiserTeam を毎回送っているのに画面が読まず、人間は
+                      pendingStake だけを見て決めるしかなかった (#6497)。
+                      まだ誰も吊り上げていない (-1) 局面では出さない。 */}
+                  {state.raiserTeam >= 0 && (
+                    <span className="text-ds-text-muted text-sm" data-testid="watten-raiser-info">
+                      {state.raiserTeam === humanPlayer?.team ? t('raiserOwn') : t('raiserOpponent')}
+                    </span>
+                  )}
                   <span className="text-ds-warning text-sm" data-testid="watten-respond-loss">
                     {t('respondLoss', { stake: state.stake })}
                   </span>

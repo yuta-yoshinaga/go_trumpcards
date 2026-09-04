@@ -12,7 +12,8 @@
     "targetPoints": "Target Points",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "targetRounds": "Target rounds"
   },
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
@@ -53,7 +54,9 @@
   },
   "roundResult": {
     "title": "Round Result",
-    "tricks": "{{name}} tricks: {{count}}"
+    "tricks": "{{name}} tricks: {{count}}",
+    "potWon": "The declarer sweeps the pot ({{chips}})",
+    "potCarried": "The pot carries over and now holds {{chips}}"
   },
   "progress": {
     "line": "Declarer progress: {{won}} / {{needed}} tricks",

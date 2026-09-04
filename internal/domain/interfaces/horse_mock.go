@@ -210,3 +210,9 @@ func (_m *MockHorseGame) GetDrawIndex() int {
 	ret := _m.Called()
 	return ret.Int(0)
 }
+
+// GetMaxBetAmount モック
+func (_m *MockHorseGame) GetMaxBetAmount() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}

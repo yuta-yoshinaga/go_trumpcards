@@ -61,6 +61,8 @@ type TwentyNineGame interface {
 	GetTrumpSuit() int
 	// GetTrumpRevealed 隠し切り札が公開済みかを取得する
 	GetTrumpRevealed() bool
+	// GetTrumpJustRevealed 直前の応答で公開されたかを取得する (告知は 1 回だけ)
+	GetTrumpJustRevealed() bool
 	// GetTeamScores チーム別累積点を取得する
 	GetTeamScores() [domain.TwentyNineTeamCnt]int
 	// GetRoundTeamPoints 現ラウンドのチーム別得点を取得する

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, SergeantMajorResponse } from '../../../types/card';
+import { SergeantMajorPhase } from '../../../types/phases';
 import { formatSergeantMajorState } from './sergeantmajorFormatter';
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
@@ -12,6 +13,7 @@ const seat = (id: number, over: Record<string, unknown> = {}) => ({
   target: [8, 5, 3][id] ?? 0,
   trickCount: 0,
   score: 0,
+  surplus: 0,
   ...over,
 });
 
@@ -100,6 +102,25 @@ describe('formatSergeantMajorState', () => {
 
   it('omits the hand block when no seat is human', () => {
     expect(formatSergeantMajorState(state({ players: [seat(1), seat(2)] }))).not.toContain('your hand:');
+  });
+
+  // **没収は「次のラウンドへ」を押した後に起きる。**CLI モードでも押す前に予告する。
+  it('warns about the coming forfeit at a round end, and stays quiet on an exact target', () => {
+    const short = formatSergeantMajorState(
+      state({ phase: SergeantMajorPhase.ROUND_END, players: [seat(0, { surplus: -2 }), seat(1), seat(2)] }),
+    );
+    expect(short).toContain('2 short: your 2 best card(s) are taken next round');
+
+    const over = formatSergeantMajorState(
+      state({ phase: SergeantMajorPhase.ROUND_END, players: [seat(0, { surplus: 3 }), seat(1), seat(2)] }),
+    );
+    expect(over).toContain('3 over: you take 3 best card(s) from a short seat next round');
+
+    const exact = formatSergeantMajorState(
+      state({ phase: SergeantMajorPhase.ROUND_END, players: [seat(0), seat(1), seat(2)] }),
+    );
+    expect(exact).not.toContain('short:');
+    expect(exact).not.toContain('over:');
   });
 
   it('shows the current trick when one is in progress', () => {

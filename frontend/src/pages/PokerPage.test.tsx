@@ -1266,6 +1266,25 @@ describe('PokerPage', () => {
     await waitFor(() => expect(screen.queryByTestId('odds-panel')).not.toBeInTheDocument());
   });
 
+  // カード交換フェーズで役の確率計算APIが失敗した場合にオッズ取得失敗エラーと再試行ボタンを表示する
+  it('shows odds-error alert when odds calculation fails during exchange phase', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    expect(screen.queryByTestId('odds-error')).not.toBeInTheDocument();
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    mockExec.mockRejectedValue(new Error('network error'));
+    fireEvent.click(screen.getByAltText('♠ A'));
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
+    vi.useRealTimers();
+
+    await waitFor(() => expect(screen.getByTestId('odds-error')).toBeInTheDocument());
+  });
+
   it('does not show odds panel when all probabilities are 0', async () => {
     const oddsState: PokerResponse = {
       ...exchangeState,

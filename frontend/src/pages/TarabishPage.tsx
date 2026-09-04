@@ -234,6 +234,11 @@ function TarabishPageContent() {
                   <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
                   {': '}
                   {meldStr(p)}
+                  {/* **トリック配分がそのまま点数の趨勢。**CUI の playerLine は
+                      これを毎回出しているのに、Web だけ読めなかった。 */}
+                  <span className="ml-2" data-testid={`tb-seat-tricks-${p.id.toString()}`}>
+                    {t('header.tricksTaken', { count: p.trickCount })}
+                  </span>
                 </div>
               ))}
             </div>

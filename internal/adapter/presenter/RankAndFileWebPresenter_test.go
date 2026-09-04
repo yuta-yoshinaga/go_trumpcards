@@ -36,6 +36,9 @@ func setupRankAndFileWebMockDefaults(fg *interfaces.MockRankAndFileGame) {
 		}
 	}
 	fg.On("GetTableau").Return(tableau).Maybe()
+	for i := range domain.RankAndFileTableauCnt {
+		fg.On("SequenceStarts", i).Return([]int{3}).Maybe()
+	}
 
 	var foundation [domain.RankAndFileFoundationCnt][]*domain.Card
 	fg.On("GetFoundation").Return(foundation).Maybe()
@@ -234,4 +237,45 @@ func TestRankAndFileWebPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(fg)
 		assert.Contains(t, result, "draw")
 	})
+}
+
+// **`SequenceStarts` は UI のために置かれていたのに誰も呼んでいなかった (#6597)。**
+// 盤に載っていなければ、画面は「掴めるか」を知りようがない。
+func TestRankAndFileWebPresenter_ServesSequenceStarts(t *testing.T) {
+	fg := new(interfaces.MockRankAndFileGame)
+	setupRankAndFileWebMockDefaults(fg)
+	fg.On("GetHint").Return((*domain.RankAndFileHint)(nil)).Maybe()
+
+	var out controller.RankAndFileWebOutput
+	err := json.Unmarshal([]byte(new(RankAndFileWebPresenter).Output(fg, nil)), &out)
+	assert.NoError(t, err)
+
+	assert.Len(t, out.SequenceStarts, domain.RankAndFileTableauCnt, "列の数だけ返す")
+	for i, starts := range out.SequenceStarts {
+		assert.Equal(t, []int{3}, starts, "列 %d はドメインの答えをそのまま載せる", i)
+	}
+	fg.AssertCalled(t, "SequenceStarts", 0)
+}
+
+// **nil でも空配列で返す。** ドメインが nil を返した列を JSON の null にすると、
+// フロントの `state.sequenceStarts[colIdx]` が undefined になり、掴める札の
+// 判定がページ側で例外になる。
+func TestRankAndFileWebPresenter_SequenceStartsNeverNull(t *testing.T) {
+	fg := new(interfaces.MockRankAndFileGame)
+	setupRankAndFileWebMockDefaults(fg)
+	fg.On("GetHint").Return((*domain.RankAndFileHint)(nil)).Maybe()
+	fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "SequenceStarts")
+	for i := range domain.RankAndFileTableauCnt {
+		fg.On("SequenceStarts", i).Return([]int(nil))
+	}
+
+	out := new(RankAndFileWebPresenter).Output(fg, nil)
+	assert.NotContains(t, out, `"sequenceStarts":[null`, "null ではなく [] で返す")
+
+	var parsed controller.RankAndFileWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(out), &parsed))
+	for i, starts := range parsed.SequenceStarts {
+		assert.NotNil(t, starts, "列 %d は空配列", i)
+		assert.Empty(t, starts)
+	}
 }

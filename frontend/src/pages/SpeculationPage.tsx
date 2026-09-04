@@ -34,6 +34,7 @@ import { parseSpeculationCommand, SPECULATION_CLI_HELP } from '../utils/cli/comm
 import { formatSpeculationState } from '../utils/cli/formatters/speculationFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { speculationDisplayRound } from '../utils/speculationRound';
 
 const SP_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="sp-seats"]', messageKey: 'tutorial.hidden', placement: 'bottom', advanceOn: 'next' },
@@ -118,6 +119,16 @@ function SpeculationPageContent() {
 
   if (!state) return <GameSkeleton gameKey="speculation" layout={{ kind: 'casino-table', sections: [1, 1] }} />;
 
+  // **決着後は「今終わった回」を出す。** `roundNo` は決着で 1 進むので、
+  // そのまま +1 すると round 1 の結果画面に「ラウンド 2/5」と出て、まだ
+  // 始めていない回の結果を見ているように読める。GAME_END では rounds を
+  // 超えた番号 (6/5) にもなる。CUI は speculationDisplayRound で同じ分岐を
+  // している (#6607)。
+  //
+  // **早期 return より下で組む。** 上に置くと state が null の描画でも
+  // 評価され、値は捨てられるのに `?? 0` の枝だけが残る。
+  const displayRound = speculationDisplayRound(phase, state.roundNo);
+
   const phaseName =
     {
       [SpeculationPhase.FLIP]: t('phase.flip'),
@@ -166,7 +177,7 @@ function SpeculationPageContent() {
             />
 
             <div className="text-ds-text-primary text-center text-sm mb-1" data-testid="sp-round-line">
-              {t('label.round')}: {state.roundNo + 1}
+              {t('label.round')}: {displayRound}
               {state.config ? ` / ${state.config.rounds}` : ''}
               {' · '}
               {t('label.pot')}: {state.pot}

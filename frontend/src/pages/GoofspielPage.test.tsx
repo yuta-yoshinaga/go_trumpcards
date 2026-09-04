@@ -95,6 +95,30 @@ describe('GoofspielPage', () => {
     expect(screen.getByTestId('gs-prize')).toHaveTextContent('13');
   });
 
+  // **積まれている札の強さが枚数からは読めない。**現在の賞は画像で出しているのに
+  // 持ち越しだけ中身が見えないのは非対称だった。
+  it('shows the carried prizes as cards, not only as a count', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        carriedPrizes: [card('DIAMOND', 4), card('DIAMOND', 11), card('DIAMOND', 2)],
+        prizeValue: 26,
+      }),
+    );
+    renderWithProviders(<GoofspielPage />);
+
+    const carried = await screen.findByTestId('gs-carried-cards');
+    // 枚数ぶんの実物が並ぶ。件数表示だけを残した実装では落ちる。
+    expect(carried.querySelectorAll('img')).toHaveLength(3);
+    expect(screen.getByTestId('gs-carried')).toHaveTextContent('3');
+  });
+
+  // 持ち越しが無いときは何も出さない（既存の挙動）。
+  it('shows no carried cards when nothing carried over', async () => {
+    renderWithProviders(<GoofspielPage />);
+    await waitFor(() => expect(screen.getByTestId('gs-prize')).toBeInTheDocument());
+    expect(screen.queryByTestId('gs-carried-cards')).not.toBeInTheDocument();
+  });
+
   it('bids the clicked card by its hand index', async () => {
     renderWithProviders(<GoofspielPage />);
     const cards = await screen.findAllByRole('button', { name: /で入札する$/ });

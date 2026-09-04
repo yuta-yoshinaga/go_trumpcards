@@ -153,6 +153,12 @@ func (_m *MockTuteGame) GetRoundTeamPoints() [domain.TuteTeamCnt]int {
 	return ret.Get(0).([domain.TuteTeamCnt]int)
 }
 
+// GetLastTrickBonusTeam モック
+func (_m *MockTuteGame) GetLastTrickBonusTeam() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetWinnerTeam モック
 func (_m *MockTuteGame) GetWinnerTeam() int {
 	ret := _m.Called()

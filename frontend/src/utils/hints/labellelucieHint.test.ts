@@ -5,6 +5,7 @@ import { getLaBelleLucieHint } from './labellelucieHint';
 function makeState(overrides?: Partial<LaBelleLucieResponse>): LaBelleLucieResponse {
   return {
     fans: [[], [], []],
+    movableFans: [false, false, false],
     foundation: [[], [], [], []],
     redealsLeft: 2,
     phase: 0,

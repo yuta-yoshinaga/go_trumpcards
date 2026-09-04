@@ -43,5 +43,6 @@
     "moves": "A card can be stacked on another of the same suit exactly one rank away, up or down. An emptied column is not a free parking space.",
     "controls": "Use hint, undo, and auto-complete buttons."
   },
-  "undo": "Undo"
+  "undo": "Undo",
+  "stackTarget": "Accepts {{cards}}"
 }

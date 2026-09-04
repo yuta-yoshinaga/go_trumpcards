@@ -81,6 +81,15 @@ func (p *BouillotteWebPresenter) buildBase(g interfaces.BouillotteGame) *control
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.Players = p.buildPlayersOutput(g)
 
+	// 一致判定はドメインが持つ。画面側で手札とルトゥルヌを突き合わせ直すと
+	// CUI と規則が二重になる (#6494)。
+	if match := g.AnalyzeRetourneMatch(0); match != nil {
+		resObj.RetourneMatch = &controller.BouillotteWebOutputRetourneMatch{
+			MatchingIndices: match.MatchingIndices,
+			NoteKey:         match.NoteKey,
+		}
+	}
+
 	cfg := g.GetConfig()
 	resObj.Config = controller.BouillotteWebOutputConfig{
 		PlayerCount:   cfg.PlayerCount,

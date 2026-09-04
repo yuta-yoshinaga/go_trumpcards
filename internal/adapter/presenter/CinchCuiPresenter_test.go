@@ -7,7 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestCinchCuiPresenter_Output_BidPhase(t *testing.T) {
@@ -150,4 +152,71 @@ func TestCinchCuiPresenter_BidStrengthLine(t *testing.T) {
 		}
 	}
 	assert.NotContains(t, new(presenter.CinchCuiPresenter).Output(g2, nil), "手札の点数:")
+}
+
+// **なぜ点がそう動いたのかが CUI からは読めなかった。**Web は `lastDealDetail` で
+// 内訳を出し、ビッド未達の行を赤字にしているのに、CUI は「ディール終了」の
+// 一行だけだった (#6488)。
+func TestCinchCuiPresenter_ShowsTheDealBreakdown(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(false) // 強調そのものを見るので無効化しない
+	defer color.SetNoColor(orig)
+	assert.NotEqual(t, "x", color.Red("x"), "colour must be enabled for this test to measure anything")
+
+	p := new(presenter.CinchCuiPresenter)
+	withDetail := func(setBack bool) string {
+		g := domain.NewDefaultCinch()
+		g.Reset()
+		g.SetPhase(domain.CinchPhaseRoundEnd)
+		gained := map[int]int{0: 2, 1: 1, 2: 0, 3: 0}
+		if setBack {
+			gained[0] = -9
+		}
+		g.SetLastDealDetail(&domain.CinchDealDetail{
+			TrumpSuit: domain.CardDesignSpade,
+			BidderIdx: 0,
+			Bid:       9,
+			SetBack:   setBack,
+			Points:    map[int]int{0: 4, 1: 3, 2: 2, 3: 0},
+			Gained:    gained,
+		})
+		return p.Output(g, nil)
+	}
+
+	t.Run("names the bidder and the points each seat gained", func(t *testing.T) {
+		out := withDetail(false)
+		assert.Contains(t, out, i18n.T("cinch.dealResultTitle"))
+		assert.Contains(t, out, i18n.Tf("cinch.dealResultGained",
+			"name", color.Bold(i18n.T("cuiPlayerYou")), "points", "2"))
+		assert.NotContains(t, out, "{{")
+	})
+
+	// **強調の条件は Web の `isSetBackRow` と同じ** ── ビッダーの行で、かつ
+	// セットバックした場合だけ。
+	t.Run("marks the bidder red when they were set back", func(t *testing.T) {
+		out := withDetail(true)
+		bidderRow := i18n.Tf("cinch.dealResultGained",
+			"name", color.Bold(i18n.T("cuiPlayerYou")), "points", "-9")
+		assert.Contains(t, out, color.Red(bidderRow))
+		// 他家の行は赤くしない。
+		other := i18n.Tf("cinch.dealResultGained",
+			"name", color.Bold(i18n.Tf("cuiPlayerCpu", "idx", "1")), "points", "1")
+		assert.Contains(t, out, other)
+		assert.NotContains(t, out, color.Red(other))
+	})
+
+	t.Run("leaves the bidder plain when the bid was made", func(t *testing.T) {
+		out := withDetail(false)
+		bidderRow := i18n.Tf("cinch.dealResultGained",
+			"name", color.Bold(i18n.T("cuiPlayerYou")), "points", "2")
+		assert.NotContains(t, out, color.Red(bidderRow))
+	})
+
+	// 内訳が無い局面 (最初のディールの途中など) では何も出さない。
+	t.Run("stays quiet without a recorded deal", func(t *testing.T) {
+		g := domain.NewDefaultCinch()
+		g.Reset()
+		g.SetPhase(domain.CinchPhaseRoundEnd)
+		assert.NotContains(t, p.Output(g, nil), i18n.T("cinch.dealResultTitle"))
+	})
 }

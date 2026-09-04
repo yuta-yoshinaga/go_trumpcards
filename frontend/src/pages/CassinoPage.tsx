@@ -32,12 +32,6 @@ import {
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-const DIFFICULTY_OPTIONS = [
-  { value: '0', label: 'Easy' },
-  { value: '1', label: 'Normal' },
-  { value: '2', label: 'Hard' },
-];
-
 const BUILD_VALUE_OPTIONS = Array.from({ length: 9 }, (_, i) => ({
   value: String(i + 2),
   label: String(i + 2),
@@ -83,6 +77,18 @@ export const CassinoPage = withTutorial(CassinoPageContent, 'cassino', CS_TUTORI
 function CassinoPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('cassino');
+
+  // **モジュールトップレベルの定数だと t() を通せない。** 英語を直書きしていたため
+  // 日本語UIでも Easy/Normal/Hard のままだった (#6345)。キー体系と文言は President
+  // に合わせる ── 同じ設定項目をゲームごとに違う言い方にしない。
+  const difficultyOptions = useMemo(
+    () => [
+      { value: '0', label: t('settings.difficulty.easy') },
+      { value: '1', label: t('settings.difficulty.normal') },
+      { value: '2', label: t('settings.difficulty.hard') },
+    ],
+    [t],
+  );
   const {
     state,
     loading,
@@ -407,7 +413,7 @@ function CassinoPageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: String(configInput.cpuDifficulty ?? 1),
-                    options: DIFFICULTY_OPTIONS,
+                    options: difficultyOptions,
                     onSelect: (v: string) => handleConfigChange('cpuDifficulty', Number.parseInt(v, 10)),
                   },
                   {

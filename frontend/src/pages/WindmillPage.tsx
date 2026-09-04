@@ -38,7 +38,13 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 
 const SAIL_CNT = 8;
 const CORNER_CNT = 4;
-const TOTAL_CARDS = 104;
+/** 中央基礎札の完成枚数。domain の `WindmillCenterTarget = CardValueMax * 4`。 */
+const CENTER_TARGET = 13 * 4;
+/** 四隅それぞれの完成枚数。domain の `WindmillCornerTarget`。 */
+const CORNER_TARGET = 13;
+/** 進捗の分母。**盤上に今ある札の数ではなく、積み切る目標枚数**。
+ *  在庫を分母にすると、札が動いた瞬間に割合が動いてしまう。 */
+const TOTAL_CARDS = CENTER_TARGET + CORNER_CNT * CORNER_TARGET;
 
 const WM_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="wm-center"]', messageKey: 'tutorial.center', placement: 'bottom', advanceOn: 'next' },
@@ -144,9 +150,8 @@ function WindmillPageContent() {
   const isGameClear = state.phase === WindmillPhase.GAME_CLEAR;
   const isGameOver = state.phase === WindmillPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
-  const foundationCount = isGameOver
-    ? state.center.length + state.corners.reduce((sum, pile) => sum + pile.length, 0)
-    : 0;
+  const foundationCount = state.center.length + state.corners.reduce((sum, pile) => sum + pile.length, 0);
+  const foundationPercent = Math.round((foundationCount / TOTAL_CARDS) * 100);
   // Auto-complete only ever moves sail and waste cards, so it is pointless until
   // one of those piles holds something.
   const autoCompleteReady = state.sails.some((c) => c !== null) || state.waste.length > 0;
@@ -272,6 +277,13 @@ function WindmillPageContent() {
         <>
           <span className="text-sm text-ds-text-muted">
             {t('moveCount')}: {state.moveCount}
+          </span>
+          <span className="text-sm text-ds-text-muted" data-testid="wm-foundation-progress">
+            {t('foundationProgress', {
+              count: foundationCount,
+              total: TOTAL_CARDS,
+              percent: foundationPercent,
+            })}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
@@ -403,7 +415,7 @@ function WindmillPageContent() {
               <p data-testid="wm-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
                 {t('gameOverSummary', {
                   count: foundationCount,
-                  percent: Math.round((foundationCount / TOTAL_CARDS) * 100),
+                  percent: foundationPercent,
                 })}
               </p>
             )}

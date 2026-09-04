@@ -202,6 +202,16 @@ function BeleagueredCastlePageContent() {
       ? state.tableau[previewSource.col]?.[previewSource.cardIndex]?.card
       : undefined;
   const legalTargets = beleagueredCastleLegalTargets(state.tableau, state.foundation, previewedCard);
+  // **読み上げは選択中の札について数える。** legalTargets は preview.source
+  // (ホバーまたは**フォーカス**で動く) の札のもので、キーボードで札を辿ると
+  // 選択とずれる。「選択中のカードを置ける場所」と言いながら別の札の数を
+  // 読み上げることになるので、ここだけ選択元から数え直す。
+  const selectedCard =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+      ? state.tableau[selectedSource.col]?.[selectedSource.cardIndex]?.card
+      : undefined;
+  const selectedTargets = beleagueredCastleLegalTargets(state.tableau, state.foundation, selectedCard);
+  const legalTargetCount = selectedTargets.tableau.size + selectedTargets.foundation.size;
   /** Ring for a legal destination: softer while it is only a hover preview. */
   const targetRing = preview.isPreview ? ' rounded ring-2 ring-ds-success/70' : ' rounded ring-2 ring-ds-success';
 
@@ -317,6 +327,13 @@ function BeleagueredCastlePageContent() {
         <>
           <span className="text-sm text-ds-text-muted">
             {t('moveCount')}: {state.moveCount}
+          </span>
+          <span className="sr-only" role="status" aria-live="polite" data-testid="bc-selection-status">
+            {isPlaying && selectedSource !== null
+              ? legalTargetCount > 0
+                ? t('selectionMoves', { count: legalTargetCount })
+                : t('selectionNoMoves')
+              : ''}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>

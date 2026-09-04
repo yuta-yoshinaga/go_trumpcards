@@ -14,6 +14,7 @@
   "gameEndYou": "ゲーム終了！ あなたが先に出し切りました。",
   "gameEndCpu": "ゲーム終了！ {{name}} が先に出し切りました。",
   "gameEndStalemate": "ゲーム終了！ 決着が付かなかったので、手札のいちばん少ない {{name}}（{{n}}枚）の勝ちとします。",
+  "gameEndGiveUp": "ゲーム終了！ あなたが投了しました。{{name}} の勝ちです。",
   "hintNone": "ヒントはありません。",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintPickUp": "[HINT: 引き取るしかありません ({{reason}})]",

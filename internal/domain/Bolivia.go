@@ -1275,13 +1275,7 @@ func (g *Bolivia) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 
 		// 赤3はチームが初回メルドを完了している場合のみプラス。ラウンド終了時に
 		// チームが一度もメルドしていなければ赤3の点は減算される (ボリビア/カナスタの標準ルール)。
-		teamMelded := false
-		for _, tp := range g.players {
-			if tp.team == player.team && tp.hasInitMeld {
-				teamMelded = true
-				break
-			}
-		}
+		teamMelded := g.TeamHasInitMeld(player.team)
 		red3Count := len(player.red3s)
 		red3Score := red3Count * BoliviaRed3Bonus
 		if red3Count >= BoliviaRed3Count {
@@ -1731,6 +1725,19 @@ func (g *Bolivia) SetTeamScore(team, score int) {
 	if team >= 0 && team < len(g.teamScores) {
 		g.teamScores[team] = score
 	}
+}
+
+// TeamHasInitMeld は指定チームのいずれかのプレイヤーが初回メルドを完了しているかを返す。
+func (g *Bolivia) TeamHasInitMeld(team int) bool {
+	if team < 0 || team >= BoliviaTeamCnt {
+		return false
+	}
+	for _, tp := range g.players {
+		if tp.team == team && tp.hasInitMeld {
+			return true
+		}
+	}
+	return false
 }
 
 // IsHumanTurn 現在の手番が人間かどうか

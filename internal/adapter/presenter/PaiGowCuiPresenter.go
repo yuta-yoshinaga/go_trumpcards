@@ -35,6 +35,22 @@ func (pp *PaiGowCuiPresenter) Output(pg interfaces.PaiGowGame, lastErr error) st
 		}
 		sb.WriteString(strings.Join(parts, " "))
 		sb.WriteString("\n")
+
+		if pg.GetPhase() == domain.PaiGowPhaseSetHands && len(playerCards) == domain.PaiGowHandSize {
+			var foulSplits []string
+			for i := range playerCards {
+				for j := i + 1; j < len(playerCards); j++ {
+					if pg.IsFoulSplit(i, j) {
+						foulSplits = append(foulSplits, fmt.Sprintf("[%d,%d]", i, j))
+					}
+				}
+			}
+			if len(foulSplits) > 0 {
+				sb.WriteString(i18n.Tf("paigow.foulSplits", "splits", strings.Join(foulSplits, " ")) + "\n")
+			} else {
+				sb.WriteString(i18n.T("paigow.foulSplitsNone") + "\n")
+			}
+		}
 	}
 
 	if pg.GetPhase() == domain.PaiGowPhaseEnd {

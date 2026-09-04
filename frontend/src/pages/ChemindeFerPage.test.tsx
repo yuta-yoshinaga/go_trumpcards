@@ -270,6 +270,20 @@ describe('ChemindeFerPage', () => {
     expect(screen.getByTestId('cdf-seat-1')).toHaveTextContent('50');
   });
 
+  // **CPU 名だけサーバ製の英語が混ざっていた。**ラベルとボタンは全部翻訳される
+  // のに、席の見出しだけ "Player2" が日本語 UI に出ていた。
+  it('CPUの席名を翻訳済みラベルで出し、サーバ製のPlayerを出さない', async () => {
+    mockApi.mockResolvedValue(withState({}));
+    renderWithProviders(<ChemindeFerPage />);
+
+    await waitFor(() => expect(screen.getByTestId('cdf-seat-1')).toBeInTheDocument());
+    expect(screen.getByTestId('cdf-seat-1')).toHaveTextContent('CPU1');
+    // フィクスチャは name に "Player2" を持っているが、画面には出ない。
+    expect(screen.getByTestId('cdf-seat-1')).not.toHaveTextContent('Player');
+    // 自分の席は従来どおり。
+    expect(screen.getByTestId('cdf-seat-0')).toHaveTextContent('あなた');
+  });
+
   it('自分の手番でないときは待機を表示する', async () => {
     mockApi.mockResolvedValue(withState({ phase: ChemindeFerPhase.BET, stake: 200, betTurn: 3, isHumanTurn: false }));
     renderWithProviders(<ChemindeFerPage />);
@@ -306,5 +320,48 @@ describe('ChemindeFerPage', () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<ChemindeFerPage />);
     await waitFor(() => expect(screen.queryByTestId('card-area')).not.toBeInTheDocument());
+  });
+
+  // **ギブアップは取り消せない** (#6475)。リセットには確認が挟まるのに、
+  // ここは即座に対局を打ち切っていた。
+  it('asks before giving up, and only then dispatches', async () => {
+    renderWithProviders(<ChemindeFerPage />);
+    const giveUp = await screen.findByTestId('giveup-button');
+
+    mockApi.mockClear();
+    fireEvent.click(giveUp);
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    expect(mockApi).not.toHaveBeenCalledWith('giveup');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('giveup'));
+  });
+
+  // キャンセルしたら何も起きない ── ダイアログを出すだけで通す実装を落とす。
+  it('leaves the game untouched when the give-up dialog is cancelled', async () => {
+    renderWithProviders(<ChemindeFerPage />);
+    const giveUp = await screen.findByTestId('giveup-button');
+
+    mockApi.mockClear();
+    fireEvent.click(giveUp);
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
+    expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  it('renders the bet line when stake is > 0', async () => {
+    // 賭け金が積まれている場合に現在のベット状況を表示する (stake > 0 のときだけ表示)
+    mockApi.mockResolvedValue(withState({ stake: 100 }));
+    renderWithProviders(<ChemindeFerPage />);
+    await waitFor(() => expect(screen.getByTestId('cdf-bet-line')).toBeInTheDocument());
+  });
+
+  it('hides the bet line when stake is 0', async () => {
+    // 賭け金がない場合は表示しない
+    mockApi.mockResolvedValue(withState({ stake: 0 }));
+    renderWithProviders(<ChemindeFerPage />);
+    await waitFor(() => expect(screen.queryByTestId('cdf-bet-line')).not.toBeInTheDocument());
   });
 });

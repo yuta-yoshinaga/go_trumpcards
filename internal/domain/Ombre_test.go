@@ -690,3 +690,65 @@ func TestOmbre_MatadorRank(t *testing.T) {
 
 	assert.Equal(t, 0, domain.OmbreMatadorRank(nil, heart))
 }
+
+// **全員パスの局は、通常の宣言と画面上で区別が付かなかった。**差は ombreIdx が
+// ディーラーと一致することだけで、それは偶然そうなる局とも見分けが付かない (#6485)。
+func TestOmbre_ForcedEntrarIsRecorded(t *testing.T) {
+	g := newTestOmbre()
+	require.Equal(t, domain.OmbrePhaseBid, g.GetPhase())
+	require.False(t, g.IsForcedEntrar(), "nothing has been decided yet")
+
+	// 全員パスさせる。人間の番が来たらパス、それ以外は CPU に任せる ──
+	// CPU は手札次第で宣言しうるので、宣言されたら配り直して全員パスを待つ。
+	forced := false
+	for range 300 {
+		g = newTestOmbre()
+		for range 12 {
+			if g.GetPhase() != domain.OmbrePhaseBid {
+				break
+			}
+			if g.GetCurrentBidderIdx() == 0 {
+				require.NoError(t, g.PlayerBid(domain.OmbreBidNone, -1))
+				continue
+			}
+			g.CpuBid()
+		}
+		if g.GetPhase() == domain.OmbrePhasePlay && g.IsForcedEntrar() {
+			forced = true
+			break
+		}
+	}
+	require.True(t, forced, "no deal ended in an all-pass auction across 300 tries; the setup measures nothing")
+
+	// 強制 Entrar ではディーラーがオンブルになる。
+	assert.Equal(t, g.GetDealerIdx(), g.GetOmbreIdx())
+	assert.True(t, g.IsForcedEntrar())
+}
+
+// 新しいディールでは消える。持ち越すと、普通に宣言された局でも「全員パス」と
+// 言い続ける。
+func TestOmbre_ForcedEntrarClearsOnTheNextDeal(t *testing.T) {
+	g := newTestOmbre()
+	forced := false
+	for range 300 {
+		g = newTestOmbre()
+		for range 12 {
+			if g.GetPhase() != domain.OmbrePhaseBid {
+				break
+			}
+			if g.GetCurrentBidderIdx() == 0 {
+				require.NoError(t, g.PlayerBid(domain.OmbreBidNone, -1))
+				continue
+			}
+			g.CpuBid()
+		}
+		if g.IsForcedEntrar() {
+			forced = true
+			break
+		}
+	}
+	require.True(t, forced, "no deal ended in an all-pass auction across 300 tries; the setup measures nothing")
+
+	g.Reset()
+	assert.False(t, g.IsForcedEntrar(), "a fresh deal must not claim the auction was passed out")
+}

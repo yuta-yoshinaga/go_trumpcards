@@ -79,6 +79,17 @@ func (p *ManilleCuiPresenter) Output(g interfaces.ManilleGame, lastErr error) st
 			b.WriteString(color.Green(banner) + "\n")
 			return
 		}
+		// **途中経過が追えなかった。**`GetRoundCardPoints()` を読むのは RoundEnd の
+		// 分岐だけで、進行中は累計点しか出ていなかった (#6442)。姉妹ゲームはどれも
+		// 進行中に出している。RoundEnd 以降は `promptRoundEnd` が結果として
+		// 引き継ぐので、ここでは出さない。
+		if phase := g.GetPhase(); phase == domain.ManillePhasePlay || phase == domain.ManillePhaseTrickEnd {
+			pts := g.GetRoundCardPoints()
+			b.WriteString(i18n.Tf("manille.roundProgress",
+				"ptsA", strconv.Itoa(pts[0]),
+				"ptsB", strconv.Itoa(pts[1])) + "\n")
+		}
+
 		switch g.GetPhase() {
 		case domain.ManillePhasePlay:
 			currentIdx := g.GetCurrentPlayerIdx()

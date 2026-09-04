@@ -5,6 +5,7 @@
   "helpPlay": "  p <i>                     手札 i を出す",
   "helpNext": "  n / next                  次の局へ",
   "header": "局: {{hand}}  1ゲーム: 線下 {{target}}点",
+  "noDummyNote": "【ダミーはありません。】味方の手札も最後まで伏せられます。",
   "scoreLine": "チーム0: 線下 {{b0}} 線上 {{a0}} ゲーム {{g0}} / チーム1: 線下 {{b1}} 線上 {{a1}} ゲーム {{g1}}",
   "contractLine": "契約: {{level}} {{denom}}  トリック単価 {{value}}",
   "noTrump": "NT",

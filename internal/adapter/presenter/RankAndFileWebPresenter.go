@@ -45,6 +45,17 @@ func (p *RankAndFileWebPresenter) Output(ft interfaces.RankAndFileGame, lastErr 
 		}
 	}
 
+	// **掴める札はドメインが決める。** `SequenceStarts` は UI が「掘り下げた札を
+	// 掴めるか」を判断するために置かれていたのに、誰も呼んでいなかった。
+	resObj.SequenceStarts = make([][]int, domain.RankAndFileTableauCnt)
+	for i := range domain.RankAndFileTableauCnt {
+		starts := ft.SequenceStarts(i)
+		if starts == nil {
+			starts = []int{}
+		}
+		resObj.SequenceStarts[i] = starts
+	}
+
 	// ファンデーション
 	foundation := ft.GetFoundation()
 	resObj.Foundation = make([][]*controller.WebOutputCard, domain.RankAndFileFoundationCnt)

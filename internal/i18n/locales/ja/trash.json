@@ -31,9 +31,7 @@
   "winHuman": "あなたの勝ち！",
   "winCpu": "CPUの勝ち",
   "hintWild": "ワイルドの配置候補: {{slots}}（推奨: {{rec}}）",
-  "hintTakeDiscard": "捨て札の一番上はスロット{{slot}}に入ります。取ると良いでしょう。",
-  "hintTakeDiscardWild": "捨て札の一番上はワイルドです。取って好きなスロットに置けます。",
-  "hintDrawStock": "捨て札は使えません。山札から引きましょう。",
+  "hintDrawStock": "この番にできるのは山札から1枚引くことだけです（捨て札は取れません）。",
   "hintGameOver": "ゲームは終了しています。",
   "hintNotYourTurn": "今はあなたの番ではありません。",
   "helpExampleHint": "  h                   次の一手を教えてもらう"

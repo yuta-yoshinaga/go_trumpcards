@@ -53,6 +53,9 @@ type BoliviaGame interface {
 	GetWinnerIdx() int
 	// GetPlayerCnt プレイヤー数を取得する
 	GetPlayerCnt() int
+
+	// TeamHasInitMeld 指定チームのいずれかが初回メルドを完了しているか取得する
+	TeamHasInitMeld(team int) bool
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.BoliviaPlayer
 	// GetTeamCount チーム数を取得する

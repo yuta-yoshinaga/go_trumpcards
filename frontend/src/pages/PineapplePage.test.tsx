@@ -4,6 +4,7 @@ import { crazyPineappleApi, irishPokerApi, pineappleApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PineappleResponse } from '../types/card';
+import { HoldemRebuyPhaseType, PineapplePhase } from '../types/phases';
 import { PineapplePage } from './PineapplePage';
 
 vi.mock('../api/gameApi', () => ({
@@ -1033,5 +1034,222 @@ describe('PineapplePage', () => {
       fireEvent.click(screen.getByText(label));
       expect((screen.getByLabelText(label) as HTMLInputElement).checked).toBe(!before);
     });
+  });
+
+  it('recommends the Irish discard only when one candidate is strictly better', async () => {
+    const st: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        {
+          ...discardState.players[0],
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        },
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(st);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    // Throw ♠A first. Then throwing ♥A keeps 5♦8♣, which pairs BOTH board cards
+    // (two pair) -- strictly better than the one pair either other choice leaves.
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    const badges = await screen.findAllByTestId('irishpoker-discard-recommended');
+    expect(badges).toHaveLength(1);
+  });
+
+  it('stays silent when rank cannot separate the Irish candidates', async () => {
+    const st: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        {
+          ...discardState.players[0],
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        },
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(st);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    // Throwing ♦5 leaves three candidates that all evaluate to one pair. The
+    // evaluator carries no kicker, so it cannot tell keeping AA from keeping 88 --
+    // badging all three would assert a preference the data does not support.
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+    await screen.findAllByTestId('irishpoker-discard-candidate');
+    expect(screen.queryAllByTestId('irishpoker-discard-recommended')).toHaveLength(0);
+  });
+  it('announces the chosen Crazy Pineapple discard candidate and recommendation status to a screen reader', async () => {
+    const crazyDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 3,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 10 },
+            { design: 'HEART', value: 10 },
+            { design: 'DIAMOND', value: 2 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'CLOVER', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockCrazyExec.mockResolvedValue(crazyDiscardState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    // Select the recommended discard (index 2: 2♦)
+    fireEvent.click(screen.getByAltText('♦ 2').closest('button') as HTMLButtonElement);
+
+    const live = await screen.findByTestId('cp-discard-preview-announce');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveClass('sr-only');
+    expect(live.textContent).toContain('スリーカード');
+    expect(live.textContent).toContain('おすすめ');
+
+    // Re-selecting toggles it off
+    fireEvent.click(screen.getByAltText('♦ 2').closest('button') as HTMLButtonElement);
+    expect(screen.queryByTestId('cp-discard-preview-announce')).not.toBeInTheDocument();
+
+    // Select a non-recommended discard (index 1: 10♥)
+    fireEvent.click(screen.getByAltText('♥ 10').closest('button') as HTMLButtonElement);
+    const live2 = await screen.findByTestId('cp-discard-preview-announce');
+    expect(live2.textContent).toContain('ワンペア');
+    expect(live2.textContent).not.toContain('おすすめ');
+    // A key looked up in the wrong namespace comes back as the identifier itself,
+    // which would still satisfy every assertion above except this one.
+    expect(live2.textContent).not.toContain('cpPreviewAria');
+  });
+
+  it('announces the keep-2 feature of the card the player selects to discard', async () => {
+    const pineappleDiscardState: PineappleResponse = {
+      ...discardState,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 9 },
+            { design: 'HEART', value: 5 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+    };
+    mockExec.mockResolvedValue(pineappleDiscardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    // The per-card notes are visual only; selecting one must also say what the
+    // choice leaves behind, or the whole comparison is unavailable by ear.
+    const cardButtons = screen.getAllByRole('button').filter((btn) => btn.getAttribute('aria-pressed') !== null);
+    fireEvent.click(cardButtons[1]); // discard S9 -> keep S5,H5 = a pair
+    const live = await screen.findByTestId('pn-keep-feature-announce');
+    expect(live).toHaveTextContent('ペア');
+    expect(live).toHaveClass('sr-only');
+  });
+
+  // 複数枚のカードを捨てるゲーム（Irish Poker 等）の場合のみ、選択枚数カウントを表示する。
+  it('renders discard-count when discardCount is greater than one', async () => {
+    mockExec.mockResolvedValue({ ...discardState, initialDealCount: 4 });
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-count')).toBeInTheDocument());
+  });
+
+  it('does not render discard-count when discardCount is one', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    expect(screen.queryByTestId('discard-count')).not.toBeInTheDocument();
+  });
+
+  // ショーダウン時にマックが選択可能な場合のみ、マック／ショー操作ボタンを表示する。
+  it('renders muck-controls when isMuckPhase is true', async () => {
+    mockExec.mockResolvedValue({ ...showdownState, muckAvailable: true });
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('muck-controls')).toBeInTheDocument());
+  });
+
+  it('does not render muck-controls when muckAvailable is false', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('muck-controls')).not.toBeInTheDocument();
+  });
+
+  // リバイフェーズの場合のみ、リバイ購入・スキップの操作ボタンを表示する。
+  it('renders rebuy-controls when isRebuyPhase is true', async () => {
+    mockExec.mockResolvedValue({
+      ...initState,
+      phase: PineapplePhase.REBUY,
+      rebuyPhaseType: HoldemRebuyPhaseType.REBUY,
+      rebuyChips: 1000,
+      rebuyMaxCount: 3,
+      rebuyCounts: [0, 0, 0, 0],
+    });
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('rebuy-controls')).toBeInTheDocument());
+  });
+
+  it('does not render rebuy-controls outside rebuy phase', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('rebuy-controls')).not.toBeInTheDocument();
+  });
+
+  // アドオンフェーズの場合のみ、アドオン購入・スキップの操作ボタンを表示する。
+  it('renders addon-controls when isAddonPhase is true', async () => {
+    mockExec.mockResolvedValue({
+      ...initState,
+      phase: PineapplePhase.REBUY,
+      rebuyPhaseType: HoldemRebuyPhaseType.ADDON,
+      addonChips: 2000,
+    });
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('addon-controls')).toBeInTheDocument());
+  });
+
+  it('does not render addon-controls outside addon phase', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('addon-controls')).not.toBeInTheDocument();
   });
 });

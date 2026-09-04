@@ -60,49 +60,20 @@ func (p *TrappolaWebPresenter) buildBase(g interfaces.TrappolaGame) *controller.
 }
 
 // buildLastTrickOutput は直前に解決されたトリック（誰が何を出し誰が取ったか）を
-// アクションログから再構築する。ドメインは専用の lastTrick フィールドを持たないが、
-// 各トリックの "play" ログ（プレイヤーと札）と "trick_win" ログ（勝者）から
-// 現ラウンドの直近トリックを復元できる。ラウンド開始直後（プレイフェーズのトリック 1
-// で、この局のトリックがまだ確定していない）は空スライスと -1 を返す。
+// 共有ヘルパ trappolaLastTrick から Web 出力用形式に変換する。
 func (p *TrappolaWebPresenter) buildLastTrickOutput(g interfaces.TrappolaGame) ([]*controller.WebOutputTrickCard, int) {
-	empty := make([]*controller.WebOutputTrickCard, 0)
-	// ラウンド最初のトリックがプレイ中は、この局に確定済みトリックが無いため空を返す。
-	if g.GetPhase() == domain.TrappolaPhasePlay && g.GetTrickNumber() <= 1 {
-		return empty, -1
+	plays, winner := trappolaLastTrick(g)
+	if len(plays) == 0 {
+		return make([]*controller.WebOutputTrickCard, 0), -1
 	}
-
-	log := g.GetActionLog()
-	winIdx := -1
-	for i := len(log) - 1; i >= 0; i-- {
-		if log[i] != nil && log[i].ActionType == "trick_win" {
-			winIdx = i
-			break
-		}
-	}
-	if winIdx < 0 {
-		return empty, -1
-	}
-
-	// trick_win 直前の "play" ログ（プレイ順）が、そのトリックの各札に対応する。
-	var plays []*domain.ActionLogEntry
-	for i := 0; i < winIdx; i++ {
-		if e := log[i]; e != nil && e.ActionType == "play" && len(e.Cards) > 0 {
-			plays = append(plays, e)
-		}
-	}
-	if len(plays) < domain.TrappolaPlayerCnt {
-		return empty, -1
-	}
-	plays = plays[len(plays)-domain.TrappolaPlayerCnt:]
-
 	out := make([]*controller.WebOutputTrickCard, 0, len(plays))
 	for _, e := range plays {
 		out = append(out, &controller.WebOutputTrickCard{
 			PlayerIdx: e.PlayerIdx,
-			Card:      cardToOutput(e.Cards[0]),
+			Card:      cardToOutput(e.Card),
 		})
 	}
-	return out, log[winIdx].PlayerIdx
+	return out, winner
 }
 
 // playableIndices 人間プレイヤーがプレイできるカードのインデックスを返す

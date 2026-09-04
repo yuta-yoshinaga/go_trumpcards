@@ -81,6 +81,7 @@ func TestGoFishWebPresenter_Output_GameEnd_HumanWin(t *testing.T) {
 	p := new(presenter.GoFishWebPresenter)
 	m := new(interfaces.MockGoFishGame)
 	m.On("GetPlayerCnt").Return(4)
+	m.On("GetKnownRanks").Return(map[int][]int{}).Maybe()
 	m.On("GetCurrentTurn").Return(0)
 	m.On("GetPhase").Return(domain.GoFishPhaseGameEnd)
 	m.On("GetGameEndFlag").Return(true)
@@ -133,4 +134,22 @@ func TestGoFishWebPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, `"entries":[]`)
 	})
+}
+
+// The CUI has always shown these; the web rebuilt them client-side from lastAsk,
+// which meant a reload erased the table's memory mid-game (#6312).
+func TestGoFishWebPresenter_SendsKnownRanks(t *testing.T) {
+	m := setupGoFishMock()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnownRanks")
+	m.On("GetKnownRanks").Return(map[int][]int{0: {3, 7}, 2: {11}}).Maybe()
+
+	p := new(presenter.GoFishWebPresenter)
+	var out controller.GoFishWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
+
+	assert.Equal(t, []int{3, 7}, out.Players[0].KnownRanks)
+	assert.Equal(t, []int{11}, out.Players[2].KnownRanks)
+	// A seat nobody has learned anything about carries none -- not the previous
+	// seat's list, which is what an off-by-one in the loop would produce.
+	assert.Empty(t, out.Players[1].KnownRanks)
 }

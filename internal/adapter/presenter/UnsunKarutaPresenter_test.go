@@ -69,21 +69,93 @@ func TestUnsunKarutaCuiPresenter_Output(t *testing.T) {
 	})
 
 	// **フォロー義務は宣言で生まれる。** 出さないと、なぜ札が絞られるのかが
-	// 端末から読めない。
-	t.Run("announces the follow obligation only after a declaration", func(t *testing.T) {
-		g := unsunKarutaGame()
-		unsunKarutaAdvanceToHuman(g)
-		if !g.IsHumanTurn() || g.GetLeadPlayerIdx() != g.GetCurrentPlayerIdx() {
-			t.Skip("人間のリードでないディール")
+	// 端末から読めない。そして「メリ」か「モンチ」かまで言う ── この区別が
+	// 通称「八人メリ」の由来なのに、これまで一律「宣言あり」としか出して
+	// いなかった (#6624)。
+	//
+	// **配り直して探す。** 人間がリードする配りでないと宣言まで到達できない。
+	// 以前はここを `t.Skip` にしていたが、8 人卓で人間が第 1 トリックの
+	// リードになる配りは稀で、**実測 5 回中 5 回とも skip していた** ──
+	// つまりこの分岐は一度も測られていなかった。見つからなければ失敗させる。
+	t.Run("names the declaration as meri or monchi", func(t *testing.T) {
+		// wantTrumpLead=true なら切り札の台札 (メリ) になる配りを探す。
+		// **第 1 トリックで人間がリードする配りは無い。** 人間が自分でリードに
+		// 立つのはトリックを取ったあとなので、局を実際に進めて探す。
+		findLead := func(wantTrumpLead bool) (*domain.UnsunKaruta, int) {
+			for deal := 0; deal < 200; deal++ {
+				g := unsunKarutaGame()
+				for step := 0; step < 400; step++ {
+					if g.GetPhase() == domain.UnsunKarutaPhaseTrickEnd {
+						// **解決してから次へ。** ResolveTrick を飛ばすと勝者が
+						// 決まらず leadPlayerIdx が初期値のまま動かないので、
+						// 人間がリードに立つ配りが永久に見つからない。
+						g.ResolveTrick()
+						g.NextTrick()
+						continue
+					}
+					if g.GetPhase() != domain.UnsunKarutaPhasePlay {
+						break
+					}
+					if !g.IsHumanTurn() {
+						g.CpuPlay()
+						continue
+					}
+					seat := g.GetCurrentPlayerIdx()
+					valid := g.GetPlayableIndices(seat)
+					if len(valid) == 0 {
+						break
+					}
+					player := g.GetPlayer(seat)
+					if g.GetLeadPlayerIdx() == seat {
+						for _, idx := range valid {
+							card := player.GetCard(idx)
+							if card != nil && (card.GetDesign() == g.GetTrumpSuit()) == wantTrumpLead {
+								return g, idx
+							}
+						}
+					}
+					// 探している形でなければ、宣言せずに 1 枚打って先へ進める。
+					if g.PlayerPlay(valid[0], false) != nil {
+						break
+					}
+				}
+			}
+			return nil, -1
 		}
-		require.False(t, g.IsMustFollow())
-		assert.NotContains(t, p.Output(g, nil), i18n.T("unsunkaruta.mustFollow"))
 
-		valid := g.GetPlayableIndices(g.GetCurrentPlayerIdx())
-		require.NotEmpty(t, valid)
-		require.NoError(t, g.PlayerPlay(valid[0], true))
-		require.True(t, g.IsMustFollow())
-		assert.Contains(t, p.Output(g, nil), i18n.T("unsunkaruta.mustFollow"))
+		for _, tc := range []struct {
+			name       string
+			trumpLead  bool
+			wantKey    string
+			notWantKey string
+			wantKind   int
+		}{
+			{"meri", true, "unsunkaruta.declarationMeri", "unsunkaruta.declarationMonchi", domain.UnsunKarutaDeclarationMeri},
+			{"monchi", false, "unsunkaruta.declarationMonchi", "unsunkaruta.declarationMeri", domain.UnsunKarutaDeclarationMonchi},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				g, idx := findLead(tc.trumpLead)
+				require.NotNil(t, g, "人間がリードする配りが 1000 回で見つからなかった")
+
+				// 宣言する前は、どの宣言名も出ない。
+				require.False(t, g.IsMustFollow())
+				before := p.Output(g, nil)
+				assert.NotContains(t, before, i18n.T("unsunkaruta.declarationMeri"))
+				assert.NotContains(t, before, i18n.T("unsunkaruta.declarationMonchi"))
+
+				require.NoError(t, g.PlayerPlay(idx, true))
+				require.True(t, g.IsMustFollow())
+				assert.Equal(t, tc.wantKind, g.GetDeclarationKind())
+
+				out := p.Output(g, nil)
+				assert.Contains(t, out, i18n.T(tc.wantKey))
+				// **反対側が出ていないこと。** 片方だけ見ていると、常に同じ名前を
+				// 返す実装でも通ってしまう。
+				assert.NotContains(t, out, i18n.T(tc.notWantKey))
+				// 生のプレースホルダが漏れていないこと。
+				assert.NotContains(t, out, "{{")
+			})
+		}
 	})
 
 	// 宣言できるのはリードのときだけ。案内も同じ条件で出る。

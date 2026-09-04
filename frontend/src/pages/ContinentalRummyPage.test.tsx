@@ -173,4 +173,18 @@ describe('ContinentalRummyPage', () => {
     expect(screen.queryByRole('button', { name: '山札から引く' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '次のラウンド' })).not.toBeInTheDocument();
   });
+
+  it('renders the wait notice when it is not the human turn', async () => {
+    // 他のプレイヤーのターン中に待機メッセージを表示する
+    mockExec.mockResolvedValue(makeContinentalRummyState({ isHumanTurn: false, phase: 'draw', gameEndFlag: false }));
+    renderWithProviders(<ContinentalRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('cont-wait-notice')).toBeInTheDocument());
+  });
+
+  it('hides the wait notice when it is the human turn', async () => {
+    // 自分のターン中は待機メッセージを表示しない
+    mockExec.mockResolvedValue(makeContinentalRummyState({ isHumanTurn: true, phase: 'draw', gameEndFlag: false }));
+    renderWithProviders(<ContinentalRummyPage />);
+    await waitFor(() => expect(screen.queryByTestId('cont-wait-notice')).not.toBeInTheDocument());
+  });
 });

@@ -264,4 +264,46 @@ describe('PrimeroPage', () => {
       expect(screen.queryByRole('button', { name: /レイズ/ })).not.toBeInTheDocument();
     });
   });
+
+  // **選択肢が消えた理由は、消えた瞬間に伝わらないと意味がない。**文言自体は
+  // #4925 で入っているので、ここで見るのは「その文言が読み上げ対象の中にある」
+  // ことだけ (#6495)。
+  it('announces the reason the raise button went away', async () => {
+    const cases: Array<[string, ReturnType<typeof makePrimeroState>]> = [
+      ['レイズ 1/3回', makePrimeroState({ phase: 0, isHumanTurn: true, canRaise: true, raiseCount: 1, maxRaises: 3 })],
+      [
+        'レイズ上限（3回）に達しました',
+        makePrimeroState({ phase: 0, isHumanTurn: true, canRaise: false, raiseCount: 3, maxRaises: 3 }),
+      ],
+      [
+        'チップが足りません',
+        makePrimeroState({
+          phase: 0,
+          isHumanTurn: true,
+          canRaise: false,
+          raiseCount: 1,
+          maxRaises: 3,
+          currentBet: 10,
+          ante: 5,
+          players: [
+            { ...makePrimeroState().players[0], isHuman: true, chips: 3, roundBet: 0 },
+            ...makePrimeroState().players.slice(1),
+          ],
+        }),
+      ],
+    ];
+
+    for (const [text, state] of cases) {
+      mockExec.mockResolvedValue(state);
+      const { container, unmount } = renderWithProviders(<PrimeroPage />);
+      await screen.findByRole('button', { name: 'コール' });
+      // 読み上げ対象そのものを掴む ── 別の live region に同じ文字列があっても
+      // 通ってしまう「どれかに入っている」式の表明にはしない。
+      const live = container.querySelector('[data-testid="primero-raise-count"][aria-live="polite"]');
+      expect(live).not.toBeNull();
+      expect(live).toHaveAttribute('role', 'status');
+      expect(live).toHaveTextContent(text);
+      unmount();
+    }
+  });
 });

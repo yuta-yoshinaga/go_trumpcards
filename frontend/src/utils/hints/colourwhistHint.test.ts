@@ -12,6 +12,7 @@ const base: ColourWhistResponse = {
   contract: 0,
   declarerIdx: -1,
   partnerIdx: -1,
+  calledCard: null,
   trumpSuit: COLOUR_WHIST_NO_TRUMP,
   troelForced: false,
   currentTurn: 0,

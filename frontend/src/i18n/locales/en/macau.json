@@ -26,6 +26,8 @@
   "scoresPlayer": "Player",
   "scoresRound": "Round",
   "scoresTotal": "Total",
+  "scoresTotalOfLimit": "Total / target",
+  "scoreProgress": "{{score}}/{{limit}}",
   "playButton": "Play",
   "drawButton": "Draw",
   "takePenaltyButton": "Take {{count}}",

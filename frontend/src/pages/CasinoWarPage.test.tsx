@@ -356,4 +356,19 @@ describe('CasinoWarPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
   });
+
+  // 決着フェーズでは配当内訳を表示する。
+  it('shows payout breakdown at end phase', async () => {
+    mockApi.mockResolvedValue(winState);
+    renderWithProviders(<CasinoWarPage />);
+    await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
+  });
+
+  // ベットフェーズなど決着前は配当内訳を表示しない。
+  it('hides payout breakdown before end phase', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('payout-breakdown')).not.toBeInTheDocument();
+  });
 });

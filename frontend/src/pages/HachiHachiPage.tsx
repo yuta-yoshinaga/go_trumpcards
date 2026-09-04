@@ -237,11 +237,17 @@ function HachiHachiPageContent() {
                   })
                 )}
               </div>
-              {needsFieldPick && (
-                <div className="text-center text-sm text-ds-accent mt-2" data-testid="hachihachi-field-pick">
-                  {t('pickField')}
-                </div>
-              )}
+              {/* **二択が始まったことは、画面が変わっただけでは伝わらない。**同じ手札で
+                  取れる場札が複数あると盤面が新しい入力待ちに切り替わるのに、読み上げには
+                  何も届いていなかった (#6508)。領域は常にマウントしたままにして中身だけを
+                  変える ── 領域ごと現れる live region は読み上げられない (#5955)。 */}
+              <div role="status" aria-live="polite" data-testid="hachihachi-live">
+                {needsFieldPick && (
+                  <div className="text-center text-sm text-ds-accent mt-2" data-testid="hachihachi-field-pick">
+                    {t('pickField')}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Human hand */}
@@ -270,11 +276,15 @@ function HachiHachiPageContent() {
             </div>
 
             {/* Turn prompt */}
-            {isPlayPhase && (
-              <div className="text-center text-sm text-ds-accent" data-testid="hachihachi-prompt">
-                {isHumanTurn ? t('turnYours') : t('turnCpu')}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="hachihachi-prompt-live" role="status" aria-live="polite">
+              {isPlayPhase && (
+                <div className="text-center text-sm text-ds-accent" data-testid="hachihachi-prompt">
+                  {isHumanTurn ? t('turnYours') : t('turnCpu')}
+                </div>
+              )}
+            </div>
 
             {/* Round-end settlement table */}
             {isRoundEnd && state.lastRoundResult && (

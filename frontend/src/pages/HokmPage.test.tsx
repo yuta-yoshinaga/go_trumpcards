@@ -95,6 +95,32 @@ describe('HokmPage', () => {
     expect(screen.queryByTestId('hk-trump-1-btn')).not.toBeInTheDocument();
   });
 
+  // **待つ側には「切り札: 未定」しか出ていなかった。**誰が何を見て決めて
+  // いるのかが分からず、一度きりの重要なイベントが無言で過ぎる。
+  it('says which CPU hakem is choosing trump while the human waits', async () => {
+    mockExec.mockResolvedValue(makeState({ hakemIdx: 2 }));
+    renderWithProviders(<HokmPage />);
+
+    const wait = await screen.findByTestId('hk-waiting-trump');
+    expect(wait).toHaveTextContent('CPU2 が親です');
+    expect(wait).toHaveTextContent('最初の5枚を見て切り札を決めています');
+  });
+
+  // 自分が親のときは待ちではない。ボタンが出ているので案内は不要。
+  it('shows no waiting notice when the human is the hakem', async () => {
+    renderWithProviders(<HokmPage />);
+    await waitFor(() => expect(screen.getByTestId('hk-trump-1-btn')).toBeInTheDocument());
+    expect(screen.queryByTestId('hk-waiting-trump')).not.toBeInTheDocument();
+  });
+
+  // 切り札が決まればもう待っていない。
+  it('drops the waiting notice once play starts', async () => {
+    mockExec.mockResolvedValue(playing({ hakemIdx: 2 }));
+    renderWithProviders(<HokmPage />);
+    await waitFor(() => expect(screen.getByTestId('hk-trump')).toBeInTheDocument());
+    expect(screen.queryByTestId('hk-waiting-trump')).not.toBeInTheDocument();
+  });
+
   // **切り札は4番目の引数で送る。** 位置がずれると別の値として届く。
   it.each([1, 2, 3, 4])('sends trump suit %s', async (suit) => {
     renderWithProviders(<HokmPage />);

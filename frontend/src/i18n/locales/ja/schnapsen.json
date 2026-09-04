@@ -14,7 +14,8 @@
     "tricks": "獲得",
     "phase1": "第1フェーズ (フォロー自由)",
     "phase2": "第2フェーズ (マストフォロー)",
-    "trumpNoneWithSuit": "切り札: {{suit}}（山札なし）"
+    "trumpNoneWithSuit": "切り札: {{suit}}（山札なし）",
+    "winAt": "({{target}}点で勝利)"
   },
   "phase": {
     "play": "プレイ",

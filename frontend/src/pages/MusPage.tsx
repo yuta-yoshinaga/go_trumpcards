@@ -224,11 +224,14 @@ function MusPageContent() {
                   {team === state.humanTeam ? ` (${t('yourTeam')})` : ''}
                 </div>
               ))}
-              {state.pendingStake !== 0 && (
-                <div className="mt-1 text-ds-warning">
-                  {t('pendingStake', { amount: state.pendingStake === -1 ? t('ordagoLabel') : state.pendingStake })}
-                </div>
-              )}
+              {/* **賭け金は CPU の側でも動く。**envido / ordago で吊り上げられた瞬間を
+                  能動的に知る手立てが無かった (#6436)。ライブ領域は**常設**にし、
+                  中身だけを差し替える ── 領域と中身が同じコミットで DOM に入ると、
+                  変化として扱われず読み上げられないことがある。 */}
+              <div className="mt-1 text-ds-warning" role="status" aria-live="polite" data-testid="mus-pending-stake">
+                {state.pendingStake !== 0 &&
+                  t('pendingStake', { amount: state.pendingStake === -1 ? t('ordagoLabel') : state.pendingStake })}
+              </div>
             </div>
 
             {/* Players */}

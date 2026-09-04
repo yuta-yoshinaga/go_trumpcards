@@ -112,5 +112,9 @@
     "fourOfAKind": "フォーカード",
     "straightFlush": "ストレートフラッシュ",
     "royalFlush": "ロイヤルフラッシュ"
+  },
+  "scoop": {
+    "badge": "🏆 スクープ! {{name}} がハイ・ロー総取り (+{{total}})",
+    "youBadge": "🏆 スクープ達成! ハイ・ローを総取り (+{{total}})"
   }
 }

@@ -26,7 +26,7 @@
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "stalemate": "No moves left",
   "cannotDealEmptyColExists": "Fill every empty column before dealing",
-  "landscapeBanner": "Landscape orientation recommended",
+  "landscapeBanner": "Landscape mode recommended",
   "frontendHint": {
     "moveToFoundation": "A card can move to a foundation",
     "moveToTableau": "A card can move between tableau columns"

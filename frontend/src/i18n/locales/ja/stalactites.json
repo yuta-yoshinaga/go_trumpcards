@@ -21,6 +21,7 @@
   "supermoveLimitTooltip": "一度に動かせるのは{{limit}}枚までです",
   "supermoveLimitLabel": "一括移動上限: {{limit}}枚",
   "supermoveToEmpty": "（空き列へは{{limit}}枚）",
+  "emptyColumnAriaLabel": "空き列 {{idx}}（K のみ置けます）",
   "emptyColLimitTooltip": "空き列へ動かせるのは{{limit}}枚まで（選択中: {{size}}枚）",
   "tutorial": {
     "cells": "セルです。一時的にカードを置ける4つのスペースです。空きセルが多いほど多くのカードを一度に移動できます。",
@@ -29,7 +30,7 @@
     "controls": "元に戻す、ヒント、自動完了などの操作ボタンです。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "stalactitesShort": "FC",
   "frontendHint": {
     "moveToFoundation": "組札に移動できるカードがあります",

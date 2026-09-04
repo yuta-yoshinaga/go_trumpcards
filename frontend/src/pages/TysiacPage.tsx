@@ -36,6 +36,15 @@ import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Suit symbols indexed by suit number (0=unset, 1=♠ 2=♣ 3=♥ 4=♦). */
+/**
+ * Share of the target at which a player counts as "close to winning".
+ *
+ * Paired with `tysiacNearWinRatio` in `internal/adapter/presenter/TysiacCuiPresenter.go`
+ * so the CUI highlights the same rows; `scripts/check-near-win-threshold.mjs` fails the
+ * build if the two drift (#6483).
+ */
+const NEAR_WIN_RATIO = 0.8;
+
 const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'] as const;
 
 /** Bid increment applied by a raise (mirrors backend `TysiacBidStep`). */
@@ -253,8 +262,8 @@ function TysiacPageContent() {
                   {state.players.map((p) => {
                     const target = state.config.targetPoints;
                     const pct = Math.max(0, Math.min(100, (p.score / target) * 100));
-                    // Warn once a player is within striking distance of the target (>80%).
-                    const isNearWin = p.score / target > 0.8;
+                    // Warn once a player is within striking distance of the target.
+                    const isNearWin = p.score / target > NEAR_WIN_RATIO;
                     // Declarer forecast: score if this round's contract is met, marked on the bar.
                     const forecastPct =
                       p.isDeclarer && state.contract > 0
@@ -368,19 +377,26 @@ function TysiacPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.tysiac.footer} px-4 py-2.5`}>
-            {isBidPhase && (
-              <div className="mb-1 text-center" data-testid="tysiac-bid-prompt">
-                <div className="text-sm text-ds-accent font-semibold">{t('bidPhase')}</div>
-                <div className="text-sm text-ds-text-primary font-semibold" data-testid="tysiac-current-bid">
-                  {t('currentBid', { points: state.currentBid })}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="tysiac-prompt-live" role="status" aria-live="polite">
+              {isBidPhase && (
+                <div className="mb-1 text-center" data-testid="tysiac-bid-prompt">
+                  <div className="text-sm text-ds-accent font-semibold">{t('bidPhase')}</div>
+                  <div className="text-sm text-ds-text-primary font-semibold" data-testid="tysiac-current-bid">
+                    {t('currentBid', { points: state.currentBid })}
+                  </div>
                 </div>
-              </div>
-            )}
-            {canDiscard && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="tysiac-talon-prompt">
-                {t('talonPhase')}
-              </div>
-            )}
+              )}
+              {canDiscard && (
+                <div
+                  className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                  data-testid="tysiac-talon-prompt"
+                >
+                  {t('talonPhase')}
+                </div>
+              )}
+            </div>
             {marriages.length > 0 && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="tysiac-marriage">
                 {t('marriageAvailable', {

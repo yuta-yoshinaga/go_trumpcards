@@ -102,6 +102,19 @@ func sixCardGolfPlayerStr(player *domain.SixCardGolfPlayer, idx int, isCurrent, 
 		b.WriteString("\n")
 	}
 
+	colScores := domain.SixCardGolfColumnScores(player.Grid)
+	colParts := make([]string, domain.SixCardGolfColumnCount)
+	for col, cs := range colScores {
+		if cs.IsPair {
+			colParts[col] = i18n.T("sixcardgolf.columnScorePair")
+		} else if cs.HasHidden {
+			colParts[col] = i18n.Tf("sixcardgolf.columnScoreUncertain", "score", strconv.Itoa(cs.Score))
+		} else {
+			colParts[col] = i18n.Tf("sixcardgolf.columnScore", "score", strconv.Itoa(cs.Score))
+		}
+	}
+	b.WriteString("  " + strings.Join(colParts, " ") + "\n")
+
 	if revealAll {
 		score := g.ScorePlayer(idx)
 		b.WriteString(i18n.Tf("sixcardgolf.scoreLine", "score", strconv.Itoa(score)) + "\n")
@@ -114,10 +127,13 @@ func scgPlayerName(player *domain.SixCardGolfPlayer, idx int) string {
 	if player == nil {
 		return fmt.Sprintf("Player%d", idx)
 	}
+	// **キー名は cuiPlayerYou / cuiPlayerCpu。** 以前は存在しない
+	// `cuiPlayerNameHuman` / `cuiPlayerNameCPU` を引いていて、i18n.T は
+	// 未知のキーをそのまま返すので**キー名が画面に出ていた** (#7061)。
 	if !player.IsCpu {
-		return i18n.T("cuiPlayerNameHuman")
+		return i18n.T("cuiPlayerYou")
 	}
-	return i18n.Tf("cuiPlayerNameCPU", "id", strconv.Itoa(idx))
+	return i18n.Tf("cuiPlayerCpu", "idx", strconv.Itoa(idx))
 }
 
 // ActionLogOutput 棋譜

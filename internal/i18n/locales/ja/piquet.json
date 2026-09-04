@@ -9,7 +9,6 @@
   "dealHeader": "ディール {{deal}} / {{total}}",
   "roleElder": "Elder",
   "roleYounger": "Younger",
-  "you": "あなた",
   "playerLine": "{{role}}  手札:{{hand}}  獲得トリック:{{tricks}}  ラウンド:{{round}}  通算:{{match}}",
   "carteBlanche": "★ カルトブランシュ +10",
   "exchangeHeader": "[交換フェーズ]",

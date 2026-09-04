@@ -38,14 +38,14 @@ func (m *MockBadugiInteractor) Action(action, amount, humanPlayMs int) string {
 }
 
 // Exchange mock.
-func (m *MockBadugiInteractor) Exchange(indices []int) string {
-	ret := m.Called(indices)
+func (m *MockBadugiInteractor) Exchange(indices []int, humanPlayMs int) string {
+	ret := m.Called(indices, humanPlayMs)
 	return ret.Get(0).(string)
 }
 
 // Stand mock.
-func (m *MockBadugiInteractor) Stand() string {
-	ret := m.Called()
+func (m *MockBadugiInteractor) Stand(humanPlayMs int) string {
+	ret := m.Called(humanPlayMs)
 	return ret.Get(0).(string)
 }
 

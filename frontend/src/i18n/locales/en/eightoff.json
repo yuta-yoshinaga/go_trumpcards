@@ -10,6 +10,7 @@
   "giveup": "Give Up",
   "hint": "Hint",
   "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available once a card can be swept to a foundation",
   "undo": "Undo",
   "moveCount": "Moves",
   "empty": "Empty",
@@ -26,7 +27,7 @@
     "controls": "Control buttons: Undo, Hint, Auto-complete.",
     "resetButton": "Press the reset button to start a new game."
   },
-  "landscapeBanner": "Rotate to landscape for easier play",
+  "landscapeBanner": "Landscape mode recommended",
   "freecellShort": "FC",
   "frontendHint": {
     "moveToFoundation": "A card can be moved to the foundation",

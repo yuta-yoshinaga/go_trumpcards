@@ -18,7 +18,7 @@
   "nextRound": "Next deal",
   "roundResult": "This deal: us {{us}}, them {{them}}",
   "majorityTied": "the card counts were level, so nobody takes the three for the majority",
-  "landscapeBanner": "Turn your device sideways for a better view",
+  "landscapeBanner": "Landscape mode recommended",
   "phase.play": "Take or trail",
   "phase.roundEnd": "Deal over",
   "phase.end": "Finished",
@@ -27,5 +27,6 @@
   "tutorial.values": "Capture goes by matching value, not rank. Aces and court cards each have two and you pick which: A is 1 or 11, J is 2 or 12, Q is 3 or 13, K is 4 or 14.",
   "tutorial.jokers": "Jokers are not wild. The three are fixed at 15, 20 and 25 -- you cannot choose -- but they are the biggest scorers at 7, 6 and 5.",
   "tutorial.zwick": "A \"Zwick\" is the bonus for clearing the table, worth 1. It is not the name for taking several groups at once.",
-  "tutorial.scoring": "A deal is worth exactly 30: jokers 7/6/5, the ten of diamonds 3, the ten of spades, the two of spades and each ace 1, and the majority of cards 3. Level counts leave the three unawarded."
+  "tutorial.scoring": "A deal is worth exactly 30: jokers 7/6/5, the ten of diamonds 3, the ten of spades, the two of spades and each ace 1, and the majority of cards 3. Level counts leave the three unawarded.",
+  "announceYourTurn": "Your turn"
 }

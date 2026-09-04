@@ -248,6 +248,54 @@ describe('RikkenPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('next'));
   });
 
+  // **オープンミゼールは宣言者の手札を全員に公開する契約。**サーバは CPU 宣言者の
+  // cards も送っているのに、Web だけ描画していなかった。
+  it('shows the open-misere hand of a CPU declarer', async () => {
+    const openHand: Card[] = [
+      { design: 'HEART', value: 2 },
+      { design: 'CLOVER', value: 7 },
+      { design: 'DIAMOND', value: 11 },
+    ];
+    mockApi.mockResolvedValue({
+      ...playState,
+      contract: RikkenContract.OPEN_MISERE,
+      declarerIdx: 1,
+      players: playState.players.map((p) => (p.id === 1 ? { ...p, cards: openHand } : p)),
+    });
+    renderWithProviders(<RikkenPage />);
+
+    const shown = await screen.findByTestId('rikken-open-misere-hand');
+    // CUI の writeOpenMisereHand と同じ情報量＝全カード。
+    expect(shown.querySelectorAll('img')).toHaveLength(openHand.length);
+    expect(screen.getByText(/公開手札（席1）/)).toBeInTheDocument();
+  });
+
+  // 契約が違えば公開しない。**CPU 側に札を持たせた盤で見る** — 既定の
+  // フィクスチャは CPU の cards が空なので、契約の判定を外しても通ってしまう。
+  it('shows no open hand under an ordinary contract, even with the cards present', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      contract: RikkenContract.RIK,
+      declarerIdx: 1,
+      players: playState.players.map((p) =>
+        p.id === 1 ? { ...p, cards: [{ design: 'HEART', value: 2 } as Card] } : p,
+      ),
+    });
+    renderWithProviders(<RikkenPage />);
+
+    await waitFor(() => expect(screen.getByTestId('rikken-hand')).toBeInTheDocument());
+    expect(screen.queryByTestId('rikken-open-misere-hand')).not.toBeInTheDocument();
+  });
+
+  // 宣言者が人間なら自分の手札欄がその役目を果たす。二重に出さない。
+  it('shows no separate open hand when the human declared it', async () => {
+    mockApi.mockResolvedValue({ ...playState, contract: RikkenContract.OPEN_MISERE, declarerIdx: 0 });
+    renderWithProviders(<RikkenPage />);
+
+    await waitFor(() => expect(screen.getByTestId('rikken-hand')).toBeInTheDocument());
+    expect(screen.queryByTestId('rikken-open-misere-hand')).not.toBeInTheDocument();
+  });
+
   it('renders the CLI terminal when CLI mode is on', async () => {
     mockUseCliMode.mockReturnValue({
       cliEnabled: true,
@@ -263,5 +311,47 @@ describe('RikkenPage', () => {
 
     await waitFor(() => expect(screen.getByRole('log')).toBeInTheDocument());
     expect(screen.queryByTestId('rikken-hand')).not.toBeInTheDocument();
+  });
+
+  // **ギブアップは取り消せない** (#6475)。リセットには確認が挟まるのに、
+  // ここは即座に対局を打ち切っていた。
+  it('asks before giving up, and only then dispatches', async () => {
+    renderWithProviders(<RikkenPage />);
+    const giveUp = await screen.findByTestId('giveup-button');
+
+    mockApi.mockClear();
+    fireEvent.click(giveUp);
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    expect(mockApi).not.toHaveBeenCalledWith('giveup');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('giveup'));
+  });
+
+  // キャンセルしたら何も起きない ── ダイアログを出すだけで通す実装を落とす。
+  it('leaves the game untouched when the give-up dialog is cancelled', async () => {
+    renderWithProviders(<RikkenPage />);
+    const giveUp = await screen.findByTestId('giveup-button');
+
+    mockApi.mockClear();
+    fireEvent.click(giveUp);
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
+    expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  // トリック進行中に出されたカードがある場合のみ現在のトリック表示エリアを描画する
+  it('renders rikken-trick when cards are played to current trick and hides it when empty', async () => {
+    mockApi.mockResolvedValue(bidState);
+    const { unmount } = renderWithProviders(<RikkenPage />);
+    await waitFor(() => expect(screen.getByTestId('rikken-seats')).toBeInTheDocument());
+    expect(screen.queryByTestId('rikken-trick')).not.toBeInTheDocument();
+    unmount();
+
+    mockApi.mockResolvedValue(playState);
+    renderWithProviders(<RikkenPage />);
+    await waitFor(() => expect(screen.getByTestId('rikken-trick')).toBeInTheDocument());
   });
 });

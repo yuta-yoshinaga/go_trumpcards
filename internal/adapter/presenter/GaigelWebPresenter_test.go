@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -25,6 +26,7 @@ func setupGaigelWebMock() *interfaces.MockGaigelGame {
 	m.On("GetTrumpSuit").Return(1)
 	m.On("GetTrumpCard").Return((*domain.Card)(nil))
 	m.On("GetStockRemaining").Return(27)
+	m.On("IsEndgame").Return(false).Maybe()
 	m.On("GetTeamScore", 0).Return(0)
 	m.On("GetTeamScore", 1).Return(0)
 	m.On("GetRoundPoints", 0).Return(0)
@@ -165,4 +167,25 @@ func TestGaigelWebPresenterOutputCarriesTheHint(t *testing.T) {
 
 	result := new(presenter.GaigelWebPresenter).Output(ggg, nil)
 	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+}
+
+// **判定はドメインが持つ。**残り枚数から画面が組み直すと、`validateEndgameFollow`
+// が使う条件 (山が尽き **かつ** めくり札も引かれた) とずれる (#6482)。
+func TestGaigelWebPresenter_ServesTheEndgameFlag(t *testing.T) {
+	p := new(presenter.GaigelWebPresenter)
+
+	flagFor := func(endgame bool) bool {
+		m, _ := setupGaigelWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsEndgame")
+		m.On("IsEndgame").Return(endgame)
+
+		var out struct {
+			IsEndgame bool `json:"isEndgame"`
+		}
+		require.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
+		return out.IsEndgame
+	}
+
+	assert.True(t, flagFor(true))
+	assert.False(t, flagFor(false))
 }

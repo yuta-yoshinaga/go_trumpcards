@@ -7,7 +7,7 @@
   "helpGiveUp": "  g                    Give up",
   "header": "Round: {{round}}/{{rounds}}  Trick: {{trick}}/{{tricks}}",
   "penaltyLine": "No trump. Each jack you take costs 1 point -- the J of spades (Polignac) costs 2.",
-  "capotActive": "! {{name}} has declared capot ({{tricks}}/8 taken). One trick breaks it.",
+  "capotActive": "! {{name}} has declared capot ({{tricks}}/8 taken). One trick breaks it. Success costs everyone else {{stake}}; failure costs the declarer {{stake}}.",
   "capotMark": "[capot]",
   "playerLine": "{{name}}: {{score}} pts total (this round {{round}}) {{cards}} in hand",
   "jackMarks": " jacks taken: {{jacks}}",

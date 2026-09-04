@@ -180,8 +180,65 @@ describe('FiveHundredPage', () => {
     renderWithProviders(<FiveHundredPage />);
     fireEvent.click(await screen.findByTestId('hand-card-0'));
     expect(screen.queryByTestId('play-button')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: '♠' }));
+    // 記号ではなくスート名で引く ── ボタンが名前を持つようになった (#6806)。
+    fireEvent.click(screen.getByRole('button', { name: 'スペード を指名する' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, jokerSuit: 1 }));
+  });
+
+  // **記号はスクリーンリーダーに届かない。**`♠` は何も読まれないかコードポイント名に
+  // なるので、4 つのボタンが支援技術からは区別できなかった (#6806)。
+  it('names each joker-nomination button with its suit, not its glyph', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        currentPlayerIdx: 0,
+        contractKind: 2,
+        trumpSuit: -1,
+        currentTrick: [],
+        players: [
+          player(0, true, [card('JOKER', 0)]),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ] as FiveHundredResponse['players'],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+
+    for (const [id, name] of [
+      [1, 'スペード'],
+      [2, 'クラブ'],
+      [3, 'ハート'],
+      [4, 'ダイヤ'],
+    ] as const) {
+      const btn = screen.getByTestId(`fh-nominate-suit-${id}`);
+      const label = btn.getAttribute('aria-label') ?? '';
+      expect(label).toContain(name);
+      // 記号も数値 id も名前に出さない。記号が残ると二重に読まれる。
+      expect(label).not.toMatch(/[♠♣♥♦]/);
+      expect(label).not.toContain(String(id));
+      expect(label).not.toContain('{{');
+    }
+
+    // 4 つが**互いに違う**名前を持つこと。全部同じ語を返す実装はここで落ちる。
+    const labels = [1, 2, 3, 4].map((id) => screen.getByTestId(`fh-nominate-suit-${id}`).getAttribute('aria-label'));
+    expect(new Set(labels).size).toBe(4);
+  });
+
+  it('names each bid-suit button with its suit and what it is worth', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0 }));
+    renderWithProviders(<FiveHundredPage />);
+
+    const spade = await screen.findByTestId('fh-bid-suit-1');
+    const label = spade.getAttribute('aria-label') ?? '';
+    expect(label).toContain('スペード');
+    expect(label).toContain('40'); // 6♠
+    expect(label).not.toMatch(/[♠♣♥♦]/);
+    expect(label).not.toContain('{{');
+
+    const labels = [1, 2, 3, 4].map((id) => screen.getByTestId(`fh-bid-suit-${id}`).getAttribute('aria-label'));
+    expect(new Set(labels).size).toBe(4);
   });
 
   it('exchanges three selected cards in the kitty exchange phase', async () => {
@@ -332,6 +389,62 @@ describe('FiveHundredPage joker lead suit', () => {
 
     const label = await screen.findByTestId('fh-joker-lead-suit');
     expect(label).toHaveTextContent('♥');
+  });
+
+  // **記号ではなく語で読み上げる。**指名スートは `♥` のグリフだけで出ていて、
+  // 支援技術には何も届かないかコードポイント名になっていた。sr-only 側には
+  // スート名の語を出し、生の id (1〜4) は出さない (#6422)。
+  it('speaks the named suit as a word, not as a glyph or a numeric id', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2, // PLAY
+        jokerLeadSuit: 3,
+        currentTrick: [{ playerIdx: 0, card: { design: 'JOKER', value: 0 } }],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+
+    const label = await screen.findByTestId('fh-joker-lead-suit');
+    const spoken = label.querySelector('.sr-only');
+    expect(spoken?.textContent).toBe('ジョーカー指名スート: ハート');
+    // 目で読む記号側は読み上げから外す ── 同じ行が二重に読まれないように。
+    expect(label.querySelector('[aria-hidden="true"]')?.textContent).toBe('ジョーカー指名スート: ♥');
+    expect(spoken?.textContent).not.toMatch(/[♠♣♥♦]|\d/);
+  });
+
+  // **知らない id でも i18n キーを読み上げさせない。**`suitName.*` が引けない値が来ても
+  // `suitName.5` のような生のキーが読み上げられてはいけないので、記号側に落とす。
+  it('falls back to the glyph instead of reading out a raw i18n key for an unknown suit id', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2, // PLAY
+        jokerLeadSuit: 9,
+        currentTrick: [{ playerIdx: 0, card: { design: 'JOKER', value: 0 } }],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+
+    const label = await screen.findByTestId('fh-joker-lead-suit');
+    const spoken = label.querySelector('.sr-only');
+    expect(spoken?.textContent).not.toContain('suitName');
+    expect(spoken?.textContent).toBe('ジョーカー指名スート: NT');
+  });
+
+  // 指名が入った瞬間に読み上げさせるため、囲いは**常設**のライブ領域。
+  it('keeps the live region mounted while no suit is named', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2, // PLAY
+        jokerLeadSuit: -1,
+        currentTrick: [{ playerIdx: 0, card: { design: 'HEART', value: 5 } }],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const live = screen.getByTestId('fh-joker-lead-live');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live.textContent).toBe('');
   });
 
   it('shows nothing when the lead named no suit', async () => {

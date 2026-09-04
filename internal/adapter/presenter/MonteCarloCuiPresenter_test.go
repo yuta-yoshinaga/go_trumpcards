@@ -23,6 +23,49 @@ func setupMonteCarloCuiMockDefaults(g *interfaces.MockMonteCarloGame) {
 	board[0][0] = domain.NewCard(domain.CardDesignSpade, 7, false)
 	g.On("GetBoard").Return(board).Maybe()
 	g.On("CountRemovablePairs").Return(0).Maybe()
+	g.On("CanUndo").Return(false).Maybe()
+}
+
+// Web は「戻す」ボタンの活性で示している。CUI は打って弾かれるまで分からなかった。
+// 両方向で見る —— 戻せるときと戻せないとき。
+func TestMonteCarloCuiPresenter_SaysWhetherUndoIsAvailable(t *testing.T) {
+	i18n.SetLang("ja")
+
+	for _, tc := range []struct {
+		name    string
+		canUndo bool
+		want    string
+		notWant string
+	}{
+		{"can undo", true, i18n.T("montecarlo.undoAvailable"), i18n.T("montecarlo.undoUnavailable")},
+		{"cannot undo", false, i18n.T("montecarlo.undoUnavailable"), i18n.T("montecarlo.undoAvailable")},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := new(interfaces.MockMonteCarloGame)
+			g.On("CanUndo").Return(tc.canUndo)
+			setupMonteCarloCuiMockDefaults(g)
+
+			out := new(MonteCarloCuiPresenter).Output(g, nil)
+			assert.Contains(t, out, tc.want)
+			assert.NotContains(t, out, tc.notWant)
+		})
+	}
+}
+
+// 終局の画面で「アンドゥできます」と言わない。行は打てるフェーズのものなので、
+// PLAYING を抜けたら消える。
+func TestMonteCarloCuiPresenter_HidesTheUndoLineOutsidePlaying(t *testing.T) {
+	i18n.SetLang("ja")
+	for _, phase := range []domain.MonteCarloPhase{domain.MonteCarloPhaseGameClear, domain.MonteCarloPhaseGameOver} {
+		g := new(interfaces.MockMonteCarloGame)
+		g.On("GetPhase").Return(phase)
+		g.On("CanUndo").Return(true).Maybe()
+		setupMonteCarloCuiMockDefaults(g)
+
+		out := new(MonteCarloCuiPresenter).Output(g, nil)
+		assert.NotContains(t, out, i18n.T("montecarlo.undoAvailable"))
+		assert.NotContains(t, out, i18n.T("montecarlo.undoUnavailable"))
+	}
 }
 
 func TestMonteCarloCuiPresenter_Output(t *testing.T) {
@@ -46,6 +89,7 @@ func TestMonteCarloCuiPresenter_Output(t *testing.T) {
 	t.Run("stalemate", func(t *testing.T) {
 		g := new(interfaces.MockMonteCarloGame)
 		g.On("GetPhase").Return(domain.MonteCarloPhasePlaying).Maybe()
+		g.On("CanUndo").Return(false).Maybe()
 		g.On("GetStockCount").Return(0).Maybe()
 		g.On("GetRemovedCount").Return(40).Maybe()
 		g.On("GetDealCount").Return(3).Maybe()

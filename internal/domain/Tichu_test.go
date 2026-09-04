@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func newAllCpuTichu() *Tichu {
@@ -257,4 +258,74 @@ func TestTichu_TestSetters(t *testing.T) {
 	assert.Equal(t, 3, g.GetBombCount())
 	g.SetIsOneTwoForTest(true)
 	assert.True(t, g.GetIsOneTwo())
+	g.SetDogLeadPassedForTest(true, 1)
+	assert.True(t, g.GetDogLeadPassed())
+	assert.Equal(t, 1, g.GetDogLeadFrom())
+}
+
+func TestTichuDogLeadExplanationStateAndJSON(t *testing.T) {
+	g := NewDefaultTichu()
+	g.Reset()
+	g.round.phase = TichuPhasePlay
+	g.round.currentTurn = 0
+	for i := 0; i < TichuPlayerCnt; i++ {
+		g.players[i].AddCard(NewCard(CardDesignSpade, 7, false))
+		g.players[i].AddCard(NewCard(CardDesignHeart, 8, false))
+	}
+	// P0 holds the Dog
+	g.players[0].AddCard(NewCard(CardDesignJoker, TichuDog, false))
+	dogIdx := g.players[0].GetCardsSize() - 1
+
+	// Initial state: dogLeadPassed is false
+	assert.False(t, g.GetDogLeadPassed())
+
+	// P0 plays Dog
+	err := g.PlayerPlay([]int{dogIdx})
+	assert.NoError(t, err)
+	assert.True(t, g.GetDogLeadPassed())
+	assert.Equal(t, 0, g.GetDogLeadFrom())
+	assert.Equal(t, 2, g.GetCurrentTurn())
+
+	// JSON round-trip preserves dogLeadPassed == true and dogLeadFrom == 0
+	data, err := json.Marshal(g)
+	assert.NoError(t, err)
+	var gRestored Tichu
+	err = json.Unmarshal(data, &gRestored)
+	assert.NoError(t, err)
+	assert.True(t, gRestored.GetDogLeadPassed())
+	assert.Equal(t, 0, gRestored.GetDogLeadFrom())
+
+	// **CPU の手番が回っても消えない。**`TichuInteractor.Play` は人間の 1 手のあと
+	// そのまま CPU を回しきってから描画するので、CPU 側で消すと人間が自分で犬を
+	// 出した瞬間の告知が一度も画面に出ない (#6431)。
+	for i := 0; i < TichuPlayerCnt && !g.IsHumanTurn() && !g.GetGameEndFlag(); i++ {
+		g.CpuPlay()
+	}
+	assert.True(t, g.GetDogLeadPassed(), "the human must still be told after the CPU turns ran")
+
+	// 人間が次の手を打つと消える (否定コントロール)。
+	g.round.phase = TichuPhasePlay
+	g.round.currentTurn = 0
+	require.NoError(t, g.PlayerPlay(nil)) // パス
+	assert.False(t, g.GetDogLeadPassed(), "the human's next command clears it")
+
+	// **弾かれた要求は告知を消さない。**二度押しや再送で `PlayerPlay` が
+	// エラーを返しただけなのに告知が消えると、プレイヤーは読む前に失う (#6431 レビュー)。
+	g.SetDogLeadPassedForTest(true, 0)
+	g.SetPhaseForTest(TichuPhaseDeclare) // Play ではないので PlayerPlay は弾かれる
+	require.Error(t, g.PlayerPlay([]int{0}))
+	assert.True(t, g.GetDogLeadPassed(), "a rejected play must not clear the notice")
+	require.Error(t, g.PlayerDeclare(99)) // 不正な宣言種別
+	assert.True(t, g.GetDogLeadPassed(), "a rejected declare must not clear the notice")
+	g.SetPhaseForTest(TichuPhasePlay)
+	g.SetDogLeadPassedForTest(false, 0)
+
+	// false は復元しても false のまま ── ここが int だけだとゼロ値の 0 が
+	// 「席 0 が犬を出した」と読まれる。
+	data2, err := json.Marshal(g)
+	assert.NoError(t, err)
+	var gRestored2 Tichu
+	err = json.Unmarshal(data2, &gRestored2)
+	assert.NoError(t, err)
+	assert.False(t, gRestored2.GetDogLeadPassed(), "deserialized false must remain false")
 }

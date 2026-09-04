@@ -47,6 +47,9 @@ const DT_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="dt-bigroad"]', messageKey: 'tutorial.bigRoad', placement: 'top', advanceOn: 'next' },
 ];
 
+/** 罫線バッジの最大表示件数（直近 20 件）。CUI の `dragonTigerHistoryMaxShown`（`internal/adapter/presenter/DragonTigerCuiPresenter.go`）に合わせる。 */
+const HISTORY_MAX_SHOWN = 20;
+
 /** Renders the Dragon Tiger game page (#1684). */
 export const DragonTigerPage = withTutorial(DragonTigerPageContent, 'dragontiger', DT_TUTORIAL_STEPS);
 
@@ -224,8 +227,16 @@ function DragonTigerPageContent() {
                     testId="dragontiger-trend-bar"
                   />
                 </div>
-                <div className="flex justify-center gap-1 flex-wrap max-w-3xl mx-auto">
-                  {state.history.map((r, i) => {
+                <div className="flex justify-center items-center gap-1 flex-wrap max-w-3xl mx-auto">
+                  {state.history.length > HISTORY_MAX_SHOWN && (
+                    <span
+                      data-testid="dragontiger-history-overflow"
+                      className="text-xs text-ds-text-muted font-medium mr-1"
+                    >
+                      {t('label.historyOverflow', { count: state.history.length - HISTORY_MAX_SHOWN })}
+                    </span>
+                  )}
+                  {state.history.slice(-HISTORY_MAX_SHOWN).map((r, i) => {
                     const label =
                       r === DragonTigerHistoryResult.DRAGON ? 'D' : r === DragonTigerHistoryResult.TIGER ? 'T' : '=';
                     const tone =
@@ -237,6 +248,7 @@ function DragonTigerPageContent() {
                     return (
                       <span
                         key={`bigroad-${i}-${r}`}
+                        data-testid="bigroad-badge"
                         className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${tone}`}
                       >
                         {label}

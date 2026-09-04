@@ -192,3 +192,8 @@ func (_m *MockFrenchTarotGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return nil
 }
+
+// GetPetitAuBoutDelta モック
+func (_m *MockFrenchTarotGame) GetPetitAuBoutDelta() int {
+	return _m.Called().Int(0)
+}

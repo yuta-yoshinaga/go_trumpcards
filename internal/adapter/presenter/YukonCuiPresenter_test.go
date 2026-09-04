@@ -9,6 +9,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupYukonCuiMockDefaults(yg *interfaces.MockYukonGame) {
@@ -195,5 +196,41 @@ func TestYukonCuiPresenter_ActionLogOutput(t *testing.T) {
 		p := new(YukonCuiPresenter)
 		result := p.ActionLogOutput(yg)
 		assert.NotEmpty(t, result)
+	})
+}
+
+// 受け入れ条件そのもの: ドメインが返した拒否理由が、**画面に出る時点で**
+// ロケールの言語になっていること (#6327)。ドメイン側のテストは「コードを
+// 持っているか」までしか見ていないので、描画経路はここで押さえる。
+//
+// **`i18n.T(key)` を期待値にしない。** 未翻訳ならキーがそのまま返るので、
+// 翻訳が無くても通ってしまう。実際の文言を書き、**反対の言語が漏れていない
+// ことも**見る。
+func TestYukonCuiPresenter_RefusalIsTranslated(t *testing.T) {
+	refusal := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "yukon.errNotAllFaceUp", nil)
+
+	render := func(t *testing.T, lang string) string {
+		t.Helper()
+		orig := i18n.Lang()
+		i18n.SetLang(lang)
+		t.Cleanup(func() { i18n.SetLang(orig) })
+
+		yg := new(interfaces.MockYukonGame)
+		setupYukonCuiMockDefaults(yg)
+		return new(YukonCuiPresenter).Output(yg, refusal)
+	}
+
+	t.Run("japanese", func(t *testing.T) {
+		out := render(t, "ja")
+		assert.Contains(t, out, "裏向きの札が残っているため自動で完成させられません")
+		assert.NotContains(t, out, "still face down", "英語が漏れている")
+		assert.NotContains(t, out, "yukon.err", "キーが生のまま出ている")
+	})
+
+	t.Run("english", func(t *testing.T) {
+		out := render(t, "en")
+		assert.Contains(t, out, "Cards are still face down")
+		assert.NotContains(t, out, "裏向き", "日本語が漏れている")
+		assert.NotContains(t, out, "yukon.err", "キーが生のまま出ている")
 	})
 }

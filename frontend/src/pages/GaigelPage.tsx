@@ -191,6 +191,20 @@ function GaigelPageContent() {
           <span>{t('stock', { count: state.stockRemaining })}</span>
         </div>
 
+        {/* **山が尽きた瞬間にマストフォローへ切り替わる。**残り 0 枚という数字は
+            出ていたが、そこで規則が変わることはどこにも書かれていなかった ──
+            姉妹の Bezique / Schnapsen は両方ともフェーズとして明示している
+            (#6482)。切り替わりは読み上げにも届ける。 */}
+        {state.isEndgame && (
+          <div
+            className="text-center text-sm text-ds-warning font-semibold mb-2"
+            role="status"
+            data-testid="ga-endgame-notice"
+          >
+            {t('endgameNotice')}
+          </div>
+        )}
+
         {/* Face-up turn-up card that fixes the trump suit. It sits under the
             stock and is drawn last, so it disappears once the stock is empty. */}
         {state.trumpCard && (
@@ -299,11 +313,16 @@ function GaigelPageContent() {
 
         <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
-        {hint && (
-          <div className="text-ds-warning text-sm mb-2">
-            {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, { defaultValue: hint.reason })})`}
-          </div>
-        )}
+        {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+            付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+            読み上げられないことがある (#5955, #6663)。 */}
+        <div data-testid="gaigel-hint-live" role="status" aria-live="polite">
+          {hint && (
+            <div className="text-ds-warning text-sm mb-2">
+              {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, { defaultValue: hint.reason })})`}
+            </div>
+          )}
+        </div>
 
         <div className="flex gap-2 items-center flex-wrap" data-tutorial="gg-play-button">
           {isHumanTurn && (

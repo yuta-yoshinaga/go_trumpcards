@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -148,5 +149,38 @@ func TestCanfieldWebPresenter_ActionLogOutput(t *testing.T) {
 		cg.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "draw"}})
 		p := new(CanfieldWebPresenter)
 		_ = p.ActionLogOutput(cg)
+	})
+}
+
+func TestCanfieldWebPresenter_Errors(t *testing.T) {
+	cg := new(interfaces.MockCanfieldGame)
+	cg.On("GetBaseRank").Return(1)
+	cg.On("GetFoundation").Return([domain.CanfieldFoundationCnt][]*domain.Card{})
+	cg.On("GetReserve").Return([]*domain.Card{})
+	cg.On("GetStockCount").Return(0)
+	cg.On("GetWaste").Return([]*domain.Card{})
+	cg.On("GetTableau").Return([domain.CanfieldTableauCnt][]*domain.CanfieldTableauCard{})
+	cg.On("GetPhase").Return(domain.CanfieldPhasePlaying)
+	cg.On("GetMoveCount").Return(0)
+	cg.On("CanUndo").Return(false)
+	cg.On("GetHint").Return((*domain.CanfieldHint)(nil)) // For playing phase, it queries GetHint
+
+	p := new(CanfieldWebPresenter)
+
+	t.Run("with domain error code", func(t *testing.T) {
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "canfield.errEmptyColumnAutoFillOnly", nil)
+		result := p.Output(cg, err)
+		assert.Contains(t, result, `"messageCode":"canfield.errEmptyColumnAutoFillOnly"`)
+		// キーを message にも入れてしまうと、それを表示する画面には
+		// "canfield.err..." が生のまま出る (#5526)。code を出したのなら
+		// message 側は空でなければならない。
+		assert.NotContains(t, result, `"message":"canfield.`)
+	})
+
+	t.Run("with standard errors.New (negative control)", func(t *testing.T) {
+		err := errors.New("cannot place card on tableau")
+		result := p.Output(cg, err)
+		assert.Contains(t, result, `"message":"cannot place card on tableau"`)
+		assert.NotContains(t, result, `"messageCode":`)
 	})
 }

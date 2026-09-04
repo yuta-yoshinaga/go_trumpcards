@@ -25,6 +25,7 @@ const talonState = makeZwanzigerrufenState({
   contract: 2,
   contractName: 'rufer',
   calledTrump: 20,
+  discardableIndices: [0, 1, 2, 3, 4, 5, 6, 7, 8],
   players: bidState.players.map((p, i) =>
     i === 0 ? { ...p, isDeclarer: true, cardCount: 9, cards: [...p.cards, ...p.cards, ...p.cards] } : p,
   ),
@@ -152,6 +153,21 @@ describe('ZwanzigerrufenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndices: [0, 1, 2, 3, 4, 5] }));
   });
 
+  // **キングやトゥルルなど伏せられない札はタロンフェーズで無効化される。**
+  it('disables cards outside discardableIndices during the talon phase', async () => {
+    mockExec.mockResolvedValue(
+      makeZwanzigerrufenState({
+        ...talonState,
+        discardableIndices: [1, 2, 3, 4, 5, 6],
+      }),
+    );
+    renderWithProviders(<ZwanzigerrufenPage />);
+    await screen.findByTestId('zw-discard');
+    const cards = handButtons();
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
   it('plays a card immediately during the play phase', async () => {
     mockExec.mockResolvedValue(playState);
     renderWithProviders(<ZwanzigerrufenPage />);
@@ -159,6 +175,20 @@ describe('ZwanzigerrufenPage', () => {
     mockExec.mockClear();
     fireEvent.click(handButtons()[0]);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
+  });
+
+  it('disables cards outside playableIndices during the play phase', async () => {
+    mockExec.mockResolvedValue(
+      makeZwanzigerrufenState({
+        ...playState,
+        playableIndices: [1, 2],
+      }),
+    );
+    renderWithProviders(<ZwanzigerrufenPage />);
+    await screen.findByTestId('zw-info');
+    const cards = handButtons();
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
   });
 
   it('advances the trick and the deal', async () => {

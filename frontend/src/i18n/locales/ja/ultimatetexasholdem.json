@@ -100,5 +100,6 @@
     "broadwayCards": "ブロードウェイ — プレイ 3× を検討",
     "madeHandRiver": "出来役 — リバーでプレイ 1×",
     "weakHand": "弱い手札"
-  }
+  },
+  "madeHand": "現在の役: {{hand}}"
 }

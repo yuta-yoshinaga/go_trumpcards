@@ -13,6 +13,7 @@ import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { SlapBurst, type SlapOutcome } from '../components/SlapBurst';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -195,13 +196,7 @@ function EgyptianRatscrewPageContent() {
   });
 
   if (!state || state.players.length < 2) {
-    return (
-      <div
-        className={`flex-1 flex flex-col min-h-0 ${gameTheme.egyptianratscrew.bg} items-center justify-center text-ds-text-muted`}
-      >
-        Loading…
-      </div>
-    );
+    return <GameSkeleton gameKey="egyptianratscrew" layout={{ kind: 'centered', rows: [1, 1, 1] }} />;
   }
 
   const isGameEnd = state.gameEndFlag || state.phase === EgyptianRatscrewPhase.GAME_END;

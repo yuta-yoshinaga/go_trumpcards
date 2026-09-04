@@ -82,10 +82,16 @@ describe('ReversisPage', () => {
     expect(screen.getByTestId('rv-penalty-rule')).toHaveTextContent(/♥J（キノラ）と♦A/);
   });
 
-  it('tracks a growing pool', async () => {
+  // **プールが急に大きくなる理由は持ち越し。**その規則はラウンド終了時の
+  // メッセージ欄に一瞬出るだけで、常設表示のどこにも書かれていなかった。
+  it('tracks a growing pool and says why it can carry over', async () => {
     mockExec.mockResolvedValue(makeState({ pool: 45 }));
     renderWithProviders(<ReversisPage />);
-    expect(await screen.findByTestId('rv-pool')).toHaveTextContent('45');
+    const pool = await screen.findByTestId('rv-pool');
+    expect(pool).toHaveTextContent('45');
+    expect(pool).toHaveTextContent('同点なら分配せず次のラウンドへ持ち越し');
+    // 総取りの規則も落ちていない。
+    expect(pool).toHaveTextContent('失点が最も少ない人が総取り');
   });
 
   // 印付きの札を取ったかどうかが席ごとに出る。両側を踏む。
@@ -141,7 +147,9 @@ describe('ReversisPage', () => {
     ] as const) {
       mockExec.mockResolvedValue(makeState({ gameEndFlag: true, phase: 2, winnerIdx }));
       const { unmount } = renderWithProviders(<ReversisPage />);
-      expect(await screen.findByText(expected)).toBeInTheDocument();
+      // **バナーに限定して見る。**「同点」は常設のプール説明にも出るので、
+      // 素の findByText では引き分けの回だけ 2 件に当たる。
+      expect(await screen.findByTestId('rv-result')).toHaveTextContent(expected);
       unmount();
     }
   });

@@ -700,4 +700,24 @@ describe('BaccaratPage', () => {
     const summary = details?.querySelector('summary');
     expect(summary).toHaveTextContent('配当表');
   });
+
+  it('states the big road as text, not colour alone', async () => {
+    mockExec.mockResolvedValue(endPhaseWithHistory);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByTestId('big-road')).toBeInTheDocument());
+    // Cells are coloured circles; the CUI already prints the same run as P/B/T.
+    const summary = screen.getByTestId('big-road-summary');
+    expect(summary).toHaveClass('sr-only');
+    // history [0,1,0,0,1,2,1] = P B P P B T B, and the tie must not be dropped.
+    expect(summary.textContent).toContain('プレイヤー');
+    expect(summary.textContent).toContain('バンカー');
+    expect(summary.textContent).toContain('タイ');
+  });
+
+  it('renders no big road summary before any hand is decided', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('big-road-summary')).not.toBeInTheDocument();
+  });
 });

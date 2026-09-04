@@ -237,3 +237,44 @@ func sixBidSoloLadderTarget(k domain.SixBidSoloBidKind) string {
 func (p *SixBidSoloCuiPresenter) ActionLogOutput(g interfaces.SixBidSoloGame) string {
 	return actionLogOutputTextForSeats[*domain.SixBidSoloPlayer](g)
 }
+
+// HintOutput は今の局面での助言を返す。
+//
+// **判断はドメインが持っているものをそのまま読む。**ビッド・切札・出し札の 3 つは
+// `SixBidSoloCpuBid` / `SixBidSoloCpuTrump` / `SixBidSoloCpuPlay` が既に実装していて、
+// CPU がその通りに打っている。ここで別の目安を書くと、助言と実際の打ち筋が
+// 食い違う 2 つ目の規則になる (#6528)。
+func (p *SixBidSoloCuiPresenter) HintOutput(g interfaces.SixBidSoloGame) string {
+	if g.GetGameEndFlag() || !g.IsHumanTurn() {
+		return i18n.T("sixbidsolo.hintNone") + "\n"
+	}
+	idx := g.GetCurrentPlayerIdx()
+	switch g.GetPhase() {
+	case domain.SixBidSoloPhaseBid:
+		if bid := g.SixBidSoloCpuBid(idx); bid > domain.SixBidSoloBidPass {
+			return i18n.Tf("sixbidsolo.hintBid", "bid", sixBidSoloBidLabel(bid)) + "\n"
+		}
+		// パスも助言 ── 「出せる最低のビッドを出せ」ではないことを言う。
+		return i18n.T("sixbidsolo.hintPass") + "\n"
+	case domain.SixBidSoloPhaseDeclare:
+		return i18n.Tf("sixbidsolo.hintTrump", "suit", cuiSuitName(g.SixBidSoloCpuTrump(idx))) + "\n"
+	case domain.SixBidSoloPhasePlay:
+		card := g.SixBidSoloCpuPlay(idx)
+		if card < 0 {
+			return i18n.T("sixbidsolo.hintNone") + "\n"
+		}
+		// **ミゼールは取らないほうが勝ち。**目標そのものが逆になるので、
+		// 同じ「この札」でも理由が違う (Web の sixbidsoloMisereDuck と同じ区別)。
+		if hb := g.GetHighBid(); hb != nil &&
+			(hb.Kind == domain.SixBidSoloBidMisere || hb.Kind == domain.SixBidSoloBidSpreadMisere) {
+			key := "sixbidsolo.hintMisereForce"
+			if idx == g.GetDeclarerIdx() {
+				key = "sixbidsolo.hintMisereDuck"
+			}
+			return i18n.Tf(key, "card", "["+strconv.Itoa(card)+"]") + "\n"
+		}
+		return i18n.Tf("sixbidsolo.hintPlay", "card", "["+strconv.Itoa(card)+"]") + "\n"
+	default:
+		return i18n.T("sixbidsolo.hintNone") + "\n"
+	}
+}

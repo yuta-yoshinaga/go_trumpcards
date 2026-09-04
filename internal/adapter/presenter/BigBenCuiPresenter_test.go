@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -53,8 +54,12 @@ func TestBigBenCuiPresenter_Output(t *testing.T) {
 		result := new(BigBenCuiPresenter).Output(g, nil)
 		assert.Contains(t, result, "Big Ben")
 		assert.Contains(t, result, i18n.T("bigben.foundationHeader"))
-		assert.Contains(t, result, "[0]")
-		assert.Contains(t, result, "[11]", "all twelve faces are rendered")
+		// **時刻と添字の両方を出す (#6601)。** 9 時始まりなので添字 0 は 9 時。
+		// 時刻が無いと Web が直したズレを CUI プレイヤーが知りようがなく、
+		// 添字が無いと `m <col> f <idx>` に打ち込む値が盤から消える。
+		assert.Contains(t, result, "[0] 9時")
+		assert.Contains(t, result, "[11] 8時", "all twelve faces are rendered")
+		assert.NotContains(t, result, "{{")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "列7:", "all eight columns are rendered")
 		assert.Contains(t, result, "手数: 0")
@@ -209,4 +214,26 @@ func TestBigBenCuiPresenter_ShowsTheStockCount(t *testing.T) {
 	g.On("GetStockCount").Return(37)
 
 	assert.Contains(t, new(BigBenCuiPresenter).Output(g, nil), i18n.Tf("bigben.stockLine", "count", "37"))
+}
+
+// **12 面すべてが時計の並びで出る (#6601)。** 添字 0..11 が 9,10,11,12,1..8。
+// 期待値は i18n から組み立てず、ドメインの対応表そのものと突き合わせる。
+func TestBigBenCuiPresenter_LabelsFacesByClockHour(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	g := new(interfaces.MockBigBenGame)
+	setupBigBenCuiMockDefaults(g)
+	out := new(BigBenCuiPresenter).Output(g, nil)
+
+	seen := make([]int, 0, domain.BigBenFoundationCnt)
+	for i := range domain.BigBenFoundationCnt {
+		hour := domain.BigBenTargetRank(i)
+		assert.Contains(t, out, "["+strconv.Itoa(i)+"] "+strconv.Itoa(hour)+"時",
+			"面 %d は %d 時。添字は入力に要るので残す", i, hour)
+		seen = append(seen, hour)
+	}
+	// 9 時始まりであること自体を固定する。全部 0 を返す実装でも上は通る。
+	assert.Equal(t, []int{9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8}, seen)
 }

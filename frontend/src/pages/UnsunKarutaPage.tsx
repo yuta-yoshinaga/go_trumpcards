@@ -88,6 +88,20 @@ const UNSUN_PHASE_KEYS: Readonly<Record<number, string>> = {
 export const UnsunKarutaPage = withTutorial(UnsunKarutaPageContent, 'unsunkaruta', UNSUN_TUTORIAL_STEPS);
 
 /** Inner content of the page, wrapped by TutorialProvider. */
+/**
+ * 宣言の種別に対応する文言キー。
+ *
+ * **メリ／モンチの区別がこのゲームの通称「八人メリ」の由来**なのに、これまで
+ * 一律「宣言あり」としか出しておらず、その用語がアプリのどの言語にも一度も
+ * 現れていなかった (#6624)。種別が付かない場合は従来の一律の文言に落ちる ──
+ * 義務があること自体は出し続ける。
+ */
+function declarationMessageKey(kind: number): string {
+  if (kind === 1) return 'declarationMeri';
+  if (kind === 2) return 'declarationMonchi';
+  return 'mustFollow';
+}
+
 function UnsunKarutaPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('unsunkaruta');
@@ -314,7 +328,7 @@ function UnsunKarutaPageContent() {
                 なぜこの札しか押せないのかが読めない。 */}
             {canPlay && state.mustFollow && (
               <div className="mb-1 text-center text-sm text-ds-accent" data-testid="unsunkaruta-must-follow">
-                {t('mustFollow')}
+                {t(declarationMessageKey(state.declarationKind))}
               </div>
             )}
             {canPlay && state.canDeclare && (

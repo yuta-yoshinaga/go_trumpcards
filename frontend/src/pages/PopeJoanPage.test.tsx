@@ -38,6 +38,7 @@ function makeState(overrides?: Partial<PopeJoanResponse>): PopeJoanResponse {
     phase: PopeJoanPhase.PLAY,
     validPlays: [],
     currentPlayerIdx: 0,
+    dealerIdx: 0,
     compartments: COMPS.map((name, i) => ({ name, chips: DRESS[i] })),
     trumpSuit: 1,
     turnUp: card('SPADE', 5),
@@ -181,5 +182,22 @@ describe('PopeJoanPage', () => {
         expect(b).not.toBeDisabled();
       }
     });
+  });
+  // **ディーラーは区画の種銭を負担し、めくり札が Pope/A/K/Q/J ならその区画を総取りする。**
+  // 毎ディール回るのに、盤面に「dealer」という語自体が無かった (#6520)。
+  it('marks who is dealing this hand', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 0 }));
+    renderWithProviders(<PopeJoanPage />);
+    expect(await screen.findByTestId('pj-dealer-human')).toHaveTextContent('ディーラー');
+    // 印は 1 席にしか付かない。
+    expect(screen.queryByTestId('pj-dealer-2')).not.toBeInTheDocument();
+  });
+
+  // ディールごとに回るので、席が変われば印も移る。
+  it('follows the dealer as it rotates', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 2 }));
+    renderWithProviders(<PopeJoanPage />);
+    expect(await screen.findByTestId('pj-dealer-2')).toHaveTextContent('ディーラー');
+    expect(screen.queryByTestId('pj-dealer-human')).not.toBeInTheDocument();
   });
 });

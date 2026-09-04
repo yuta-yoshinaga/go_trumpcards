@@ -46,6 +46,7 @@ func (p *TrogguWebPresenter) buildBase(g interfaces.TrogguGame) *controller.Trog
 	resObj.DeclarerIdx = g.GetDeclarerIdx()
 	resObj.Contract = int(g.GetContract())
 	resObj.ContractName = domain.TrogguBidName(g.GetContract())
+	resObj.SoloTarget = domain.TrogguSoloTarget()
 	resObj.TalonCount = g.GetTalonSize()
 	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.Outcome = int(g.GetOutcome())

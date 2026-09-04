@@ -74,7 +74,10 @@
     "outcome": "結果: {{outcome}}",
     "declarer": "デクレアラー: {{name}}",
     "contract": "契約: {{contract}}",
-    "captured": "獲得点: {{points}} 点"
+    "captured": "獲得点: {{points}} 点",
+    "petitAuBout": "プティ・オ・ブー: {{side}}が獲得（防御側1人あたり {{points}}点）",
+    "petitAuBoutDeclarer": "デクレアラー",
+    "petitAuBoutDefenders": "防御側"
   },
   "hintAvailable": "ヒント",
   "hint": {

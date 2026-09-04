@@ -18,6 +18,11 @@ export function formatBeggarMyNeighbourState(state: BeggarMyNeighbourResponse): 
   lines.push(
     `Phase: ${phaseName} | Pile: ${state.centralPileSize} | Penalty: ${state.penaltyRemaining} | Round: ${state.roundsPlayed}`,
   );
+  // **誰が払っているかは CLI にも要る** ── Web GUI と同じで、残り枚数だけでは
+  // 自分が払う側か相手が払う側か分からない (#6478)。
+  if (state.phase === BeggarMyNeighbourPhase.PAY_PENALTY && state.penaltyOwnerIdx >= 0) {
+    lines.push(`Paying: ${state.penaltyOwnerIdx === 0 ? 'You' : `CPU ${state.penaltyOwnerIdx}`}`);
+  }
   for (const p of state.players) {
     const tag = p.isHuman ? 'You' : 'CPU';
     lines.push(`${tag}: draw=${p.drawPileSize} discard=${p.discardPileSize} total=${p.totalCards}`);

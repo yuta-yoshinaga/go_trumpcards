@@ -348,11 +348,37 @@ describe('ContractRummyPage', () => {
     mockExec.mockResolvedValue(notMetState);
     renderWithProviders(<ContractRummyPage />);
     const meldButton = await screen.findByRole('button', { name: /メルド1/ });
-    // Not actionable yet: no toggle semantics and clicking does nothing.
+    // Not actionable yet: disabled, no toggle semantics, and the name says why.
+    expect(meldButton).toBeDisabled();
     expect(meldButton).not.toHaveAttribute('aria-pressed');
+    expect(meldButton).toHaveClass('cursor-not-allowed');
+    expect(meldButton.getAttribute('aria-label')).toContain('レイオフできません');
     fireEvent.click(meldButton);
     expect(meldButton).not.toHaveClass('bg-ds-warning/20');
     expect(screen.queryByTestId('cr-layoff-target')).not.toBeInTheDocument();
+  });
+
+  // 受け入れ条件3: 相手だけ成立でも押せず、両者成立になった瞬間に活性化する。
+  it('enables the meld button only once both contracts are met', async () => {
+    const bothMet: ContractRummyResponse = {
+      ...playState,
+      players: [
+        { ...playState.players[0], contractMet: true },
+        {
+          ...playState.players[1],
+          contractMet: true,
+          melds: [{ cards: [card('SPADE', 5), card('HEART', 5), card('DIAMOND', 5)] }],
+        },
+        playState.players[2],
+      ],
+    };
+    mockExec.mockResolvedValue(bothMet);
+    renderWithProviders(<ContractRummyPage />);
+    const meldButton = await screen.findByRole('button', { name: /メルド1/ });
+    expect(meldButton).toBeEnabled();
+    expect(meldButton).toHaveClass('cursor-pointer');
+    // 活性のときは理由を名前に足さない。
+    expect(meldButton.getAttribute('aria-label')).not.toContain('レイオフできません');
   });
 
   it('shows per-slot progress and only enables Submit when both slots satisfy their contract', async () => {

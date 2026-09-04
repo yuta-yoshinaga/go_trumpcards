@@ -79,5 +79,7 @@
   "contractLabel": "契約: {{contract}}",
   "contractRufspiel": "Rufspiel（A呼び）",
   "contractWenz": "Wenz（Unterのみ切り札）",
-  "contractSolo": "Solo（{{suit}}）"
+  "contractSolo": "Solo（{{suit}}）",
+  "dealerBadge": "親",
+  "dealerAria": "このラウンドの親（宣言もプレイも親の左隣から）"
 }

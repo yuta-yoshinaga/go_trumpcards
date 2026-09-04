@@ -56,6 +56,22 @@ export interface BouillotteHint {
 }
 
 /**
+ * Which of the human's hand cards share the shared retourne card's rank, and
+ * any retourne-completed combo it forms. Computed server-side so the client
+ * does not need to re-implement the matching logic (#6494).
+ */
+export interface BouillotteRetourneMatch {
+  /** Zero-based hand indices whose rank equals the retourne's rank. */
+  matchingIndices: number[];
+  /**
+   * Retourne-completed combo key, or `""` when none:
+   * - `"favori"`: the hand holds a pair the retourne turns into a brelan.
+   * - `"carre"`: the hand is already a brelan and the retourne matches its rank.
+   */
+  noteKey: string;
+}
+
+/**
  * Full Bouillotte game state returned from the API.
  *
  * Bouillotte is an 18th-century French 3-card poker-vying pot game. Each player
@@ -100,5 +116,7 @@ export interface BouillotteResponse extends BaseGameResponse {
   result: number;
   gameEndFlag: boolean;
   hint?: BouillotteHint | null;
+  /** Retourne-vs-hand match analysis computed server-side (#6494). */
+  retourneMatch?: BouillotteRetourneMatch | null;
   config: BouillotteConfig;
 }

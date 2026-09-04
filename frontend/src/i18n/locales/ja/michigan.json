@@ -42,7 +42,7 @@
   "betCollectible": "回収可能",
   "betClaimedWarning": "獲得済み・賭け注意",
   "playPrompt": "同じスートの昇順でカードを出してください。",
-  "playCardAria": "手札 {{index}} を出す",
+  "playCardAria": "{{card}} を出す",
   "nextRound": "次のラウンド",
   "roundResult": {
     "title": "ラウンド結果",

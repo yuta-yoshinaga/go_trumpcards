@@ -12,7 +12,17 @@ const FLUSH_DRAW_COUNT = 4;
 const STRAIGHT_DRAW_COUNT = 4;
 
 /** Returns a frontend HintResult for Video Poker variants, or null if no suggestion available. */
-export function getVideoPokerBaseHint(state: VideoPokerResponse, isWild: (card: Card) => boolean): HintResult | null {
+export function getVideoPokerBaseHint(
+  state: VideoPokerResponse,
+  isWild: (card: Card) => boolean,
+  /**
+   * Lowest rank whose pair actually pays in this variant, or null when no pair
+   * pays at all. Deuces Wild stops at three of a kind, so recommending a high
+   * pair there is a hold worth nothing -- and it outranks a four-card royal
+   * (#6301). The caller supplies it because only it knows the paytable.
+   */
+  payingPairRank: number | null = HIGH_CARD_THRESHOLD,
+): HintResult | null {
   if (state.phase !== VideoPokerPhase.DRAW) return null;
 
   const hand = state.hand;
@@ -23,7 +33,7 @@ export function getVideoPokerBaseHint(state: VideoPokerResponse, isWild: (card: 
     return getWildAwareHint(hand, wildIndices, isWild);
   }
 
-  return getStandardHint(hand);
+  return getStandardHint(hand, payingPairRank);
 }
 
 /** Hint when wild cards are present: always hold wilds, then analyze remaining. */
@@ -40,7 +50,7 @@ function getWildAwareHint(hand: Card[], wildIndices: number[], isWild: (card: Ca
 }
 
 /** Hint for standard (no wild) video poker hands. */
-function getStandardHint(hand: Card[]): HintResult {
+function getStandardHint(hand: Card[], payingPairRank: number | null): HintResult {
   // Check for existing pairs/trips/quads — hold all groups of 2+
   const groups = groupByValue(hand);
   const allGroupIndices = Array.from(groups.values())
@@ -51,7 +61,7 @@ function getStandardHint(hand: Card[]): HintResult {
   // **配当のつくペアかどうかで扱いが変わる。**Jacks or Better では J 未満の
   // ペア単体には配当が無い。以前はこの分岐が無条件に最初へ来ていたため、
   // 4枚ロイヤルや4枚フラッシュが同居していても常に弱いペアを勧めていた (#4691)。
-  const isPayingGroup = maxCount >= 3 || (maxCount === 2 && hasPayingPair(groups));
+  const isPayingGroup = maxCount >= 3 || (maxCount === 2 && hasPayingPair(groups, payingPairRank));
 
   if (allGroupIndices.length > 0 && isPayingGroup) {
     const reason = maxCount >= 4 ? 'hint.holdQuads' : maxCount >= 3 ? 'hint.holdTrips' : 'hint.holdPair';
@@ -122,9 +132,10 @@ function groupByValue(hand: Card[]): Map<number, number[]> {
  * `groupByValue` はカードの値をキーにするので、キーをそのまま見れば足りる。
  * エースは実装によって 1 と 14 のどちらでも来るため両方を受ける。
  */
-function hasPayingPair(groups: Map<number, number[]>): boolean {
+function hasPayingPair(groups: Map<number, number[]>, payingPairRank: number | null): boolean {
+  if (payingPairRank === null) return false;
   for (const [value, indices] of groups) {
-    if (indices.length >= 2 && (value >= HIGH_CARD_THRESHOLD || value === 1 || value === ACE_HIGH)) {
+    if (indices.length >= 2 && (value >= payingPairRank || value === 1 || value === ACE_HIGH)) {
       return true;
     }
   }

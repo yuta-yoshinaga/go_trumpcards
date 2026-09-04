@@ -4,11 +4,13 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -46,6 +48,7 @@ func setupNapCuiMock() *interfaces.MockNapGame {
 	m.On("GetContract").Return(domain.NapBidThree)
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayerScores").Return([domain.NapPlayerCnt]int{0, 0, 0, 0})
+	m.On("GetRoundTricks").Return([domain.NapPlayerCnt]int{0, 0, 0, 0})
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
 }
@@ -228,5 +231,78 @@ func TestNapCuiPresenter_DeclarerProgress(t *testing.T) {
 	t.Run("shows nothing when there is no declarer yet", func(t *testing.T) {
 		// 既存の「宣言者: あなた — スリー」行とは別物なので、進捗行だけを狙う。
 		assert.NotContains(t, p.Output(withProgress(nil, domain.NapPhasePlay), nil), "トリック (残り")
+	})
+}
+
+// **チップの授受が CUI に一切出ていなかった。**Web は nap-round-payout で出している
+// のに、CUI はスコアの推移を見比べて何枚動いたのか推測するしかなかった (#6447)。
+func TestNapCuiPresenter_ShowsTheChipSettlement(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.NapCuiPresenter)
+
+	roundEnd := func(contract domain.NapBid, declarerTricks int) *interfaces.MockNapGame {
+		m, _ := setupNapCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetContract")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundTricks")
+		m.On("GetPhase").Return(domain.NapPhaseRoundEnd)
+		m.On("GetContract").Return(contract)
+		m.On("GetRoundTricks").Return([domain.NapPlayerCnt]int{declarerTricks, 0, 0, 0})
+		return m
+	}
+
+	// **Nap 契約だけ非対称** (達成 +10 / 失敗は相手が各 +5)。数字は
+	// domain.NapBidPayout から引くので、表と実際の増減がずれない。
+	t.Run("a made Nap pays the declarer ten", func(t *testing.T) {
+		makeValue, _ := domain.NapBidPayout(domain.NapBidNap)
+		out := p.Output(roundEnd(domain.NapBidNap, 5), nil)
+		assert.Contains(t, out, i18n.Tf("nap.payoutMade",
+			"name", color.Bold(i18n.T("cuiPlayerYou")), "chips", strconv.Itoa(makeValue)))
+		assert.Equal(t, 10, makeValue, "Nap は達成 +10 の非対称契約")
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("a failed Nap pays each opponent five", func(t *testing.T) {
+		_, failValue := domain.NapBidPayout(domain.NapBidNap)
+		out := p.Output(roundEnd(domain.NapBidNap, 4), nil)
+		assert.Contains(t, out, i18n.Tf("nap.payoutFailed", "chips", strconv.Itoa(failValue)))
+		assert.Equal(t, 5, failValue, "Nap の失敗は相手が各 +5")
+		assert.NotContains(t, out, "{{")
+	})
+
+	// ほかの契約は達成・失敗とも契約数と同じ数が動く。
+	t.Run("other contracts move their own trick count", func(t *testing.T) {
+		makeValue, failValue := domain.NapBidPayout(domain.NapBidThree)
+		assert.Equal(t, failValue, makeValue, "Nap 以外は対称")
+		assert.Contains(t, p.Output(roundEnd(domain.NapBidThree, 3), nil),
+			i18n.Tf("nap.payoutMade", "name", color.Bold(i18n.T("cuiPlayerYou")), "chips", strconv.Itoa(makeValue)))
+	})
+
+	// パスの局は何も賭けていないので、行ごと出さない。
+	//
+	// **`i18n.T` を否定に使わない。**プレースホルダを持つキーに `T` を当てると
+	// 生のテンプレート (`{{chips}} チップ...`) が返り、置換済みの出力には決して
+	// 含まれないので、その否定は何があっても通る。ガードを外すと実際には
+	// 「0 チップ獲得（契約達成）」が出るので、**その解決済みの文字列**を見る。
+	t.Run("says nothing when everyone passed", func(t *testing.T) {
+		out := p.Output(roundEnd(domain.NapBidPass, 0), nil)
+		assert.NotContains(t, out, i18n.Tf("nap.payoutMade",
+			"name", color.Bold(i18n.T("cuiPlayerYou")), "chips", "0"))
+		assert.NotContains(t, out, i18n.Tf("nap.payoutFailed", "chips", "0"))
+		// 精算行の骨格そのものが無いことも見る (数字に依らない)。
+		_, tail, ok := strings.Cut(i18n.Tf("nap.payoutMade", "name", "\x00", "chips", "\x00"), "\x00")
+		require.True(t, ok)
+		suffix := tail[strings.LastIndex(tail, "\x00")+1:]
+		require.NotEmpty(t, suffix)
+		assert.NotContains(t, out, suffix)
+	})
+
+	// ラウンド終了以外では出さない。
+	t.Run("says nothing mid-round", func(t *testing.T) {
+		m, _ := setupNapCuiMockWithPlayers()
+		out := p.Output(m, nil) // 既定は Play フェーズ
+		assert.NotContains(t, out, i18n.Tf("nap.payoutFailed", "chips", "3"))
 	})
 }

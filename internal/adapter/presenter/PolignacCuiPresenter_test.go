@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -144,6 +145,21 @@ func TestPolignacCuiPresenterHintReasons(t *testing.T) {
 	out := p.HintOutput(own)
 	assert.Contains(t, out, i18n.T("polignac.hintReasonWinCapot"))
 	assert.NotContains(t, out, i18n.T("polignac.hintReasonBlockCapot"))
+}
+
+// **capot は 1 ラウンド 1 度きりで不可逆。**動く点数が出ていないと賭けの
+// 大きさが読めない。ドメイン定数と印字が一致することまで見る。
+func TestPolignacCuiPresenterCapotBannerNamesTheStake(t *testing.T) {
+	p := new(PolignacCuiPresenter)
+
+	declared := newPolignacForCui(t)
+	declared.SetCapotIdxForTest(2)
+	out := p.Output(declared, nil)
+	assert.Contains(t, out, strconv.Itoa(domain.PolignacCapotStake)+"失点")
+
+	// 宣言が無い局では、そもそもこのバナーが出ない。
+	quiet := newPolignacForCui(t)
+	assert.NotContains(t, p.Output(quiet, nil), "失点、失敗なら")
 }
 
 func TestPolignacCuiPresenterHintNoneAfterGameEnd(t *testing.T) {

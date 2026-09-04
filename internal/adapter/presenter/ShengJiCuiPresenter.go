@@ -218,6 +218,14 @@ func (p *ShengJiCuiPresenter) writeHandEnd(b *strings.Builder, g interfaces.Shen
 				"points", strconv.Itoa(r.KittyPoints),
 				"mult", strconv.Itoa(r.KittyMultiplier)) + "\n")
 		}
+		if kitty := g.GetKitty(); len(kitty) > 0 {
+			var cards strings.Builder
+			for _, c := range kitty {
+				cards.WriteString(cuiCardStr(c) + " ")
+			}
+			b.WriteString(i18n.Tf("shengji.kittyCards",
+				"cards", strings.TrimSpace(cards.String())) + "\n")
+		}
 	}
 	b.WriteString(i18n.T("shengji.promptNext") + "\n")
 }

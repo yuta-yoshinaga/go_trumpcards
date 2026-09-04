@@ -7,7 +7,7 @@
   "header": {
     "round": "Round",
     "trick": "Trick",
-    "pool": "Pool: {{pool}} chips (taken whole by the fewest penalty points)",
+    "pool": "Pool: {{pool}} chips (taken whole by the fewest penalty points; a tie carries it into the next round instead of splitting it)",
     "penaltyRule": "No trump. A=4 K=3 Q=2 J=1 in penalties. The J♥ (Quinola) and the A♦ cost 5 more, plus 5 chips.",
     "you": "You",
     "cpu": "CPU{{idx}}",

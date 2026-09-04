@@ -47,5 +47,6 @@
   "frontendHint.crazyFourPokerMinimum": "The dealer also needs king high to qualify, so playing beats folding",
   "frontendHint.crazyFourPokerFold": "not even king high — folding is the better play",
   "label.queensUpPayouts": "Queens Up payouts",
+  "label.superBonusPayouts": "Super Bonus payouts",
   "label.payoutOdds": "{{n}}:1"
 }

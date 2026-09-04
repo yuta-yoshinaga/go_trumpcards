@@ -42,6 +42,8 @@ func (p *WhistCuiPresenter) Output(w interfaces.WhistGame, lastErr error) string
 		b.WriteString(i18n.Tf("whist.teamScoreLine",
 			"t0", strconv.Itoa(w.GetTeamScore(0)),
 			"t1", strconv.Itoa(w.GetTeamScore(1))) + "\n")
+		b.WriteString(i18n.Tf("whist.pointLimitLine",
+			"limit", strconv.Itoa(w.GetConfig().PointLimit)) + "\n")
 
 		for i := 0; i < w.GetPlayerCnt(); i++ {
 			b.WriteString(whistPlayerStr(w.GetPlayer(i), i))

@@ -46,6 +46,7 @@
   "bidBetli": "ベトリ",
   "bidDurchmarsch": "ドゥルマルス",
   "bidUlti": "ウルティ",
+  "talonPending": "タロン: 伏せられた {{count}} 枚が、宣言と同時に手札に加わります",
   "bidPhase": "契約宣言 — 切り札を選んでパルティ／ウルティ、またはベトリ／ドゥルマルスを宣言します。",
   "discardPhase": "タロン交換 — 手札から不要な2枚を選んで伏せて捨てます。",
   "discardProgress": "捨て札を {{selected}}/{{required}} 枚選択中",

@@ -99,12 +99,25 @@ function BhabhiPageContent() {
     void dispatch('giveup');
   }, [dispatch]);
 
-  const handlePlayerCnt = useCallback(
+  const applyPlayerCnt = useCallback(
     (value: string) => {
       hideActionLog();
       void dispatch('reset', undefined, { playerCnt: Number(value) });
     },
     [dispatch, hideActionLog],
+  );
+
+  // **人数変更は配り直し。**リセットボタンと同じ結果になるのに、こちらだけ
+  // 確認を飛ばしていた。まだ 1 手も打っていない局や終局後は訊かない。
+  const handlePlayerCnt = useCallback(
+    (value: string) => {
+      if (state !== null && state.trickNumber > 0 && !state.gameEndFlag) {
+        requestConfirm(() => applyPlayerCnt(value));
+        return;
+      }
+      applyPlayerCnt(value);
+    },
+    [applyPlayerCnt, requestConfirm, state],
   );
 
   if (!state) {

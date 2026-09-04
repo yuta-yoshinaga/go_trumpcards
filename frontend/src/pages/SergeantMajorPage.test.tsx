@@ -27,6 +27,7 @@ const seat = (id: number, over: Record<string, unknown> = {}) => ({
   target: [8, 5, 3][id] ?? 0,
   trickCount: 0,
   score: 0,
+  surplus: 0,
   ...over,
 });
 
@@ -271,5 +272,64 @@ describe('SergeantMajorPage kitty markers', () => {
     for (const idx of [0, 1, 2, 3]) {
       expect(screen.queryByTestId(`sm-kitty-${idx}`)).not.toBeInTheDocument();
     }
+  });
+});
+
+describe('SergeantMajorPage forfeit notice', () => {
+  it('shows shortfall warning when human surplus is negative', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 3,
+        players: [
+          seat(0, { target: 8, trickCount: 6, surplus: -2 }),
+          seat(1, { target: 5, trickCount: 6, surplus: 1 }),
+          seat(2, { target: 3, trickCount: 4, surplus: 1 }),
+        ],
+      } as Partial<SergeantMajorResponse>),
+    );
+    renderWithProviders(<SergeantMajorPage />);
+
+    const notice = await screen.findByTestId('sm-forfeit-notice');
+    expect(notice).toBeInTheDocument();
+    expect(notice).toHaveTextContent(
+      'ノルマに2トリック届きませんでした。次のラウンドで最強札2枚を没収され、代わりに相手の最弱札を受け取ります。',
+    );
+  });
+
+  it('shows surplus notice when human surplus is positive', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 3,
+        players: [
+          seat(0, { target: 8, trickCount: 11, surplus: 3 }),
+          seat(1, { target: 5, trickCount: 3, surplus: -2 }),
+          seat(2, { target: 3, trickCount: 2, surplus: -1 }),
+        ],
+      } as Partial<SergeantMajorResponse>),
+    );
+    renderWithProviders(<SergeantMajorPage />);
+
+    const notice = await screen.findByTestId('sm-forfeit-notice');
+    expect(notice).toBeInTheDocument();
+    expect(notice).toHaveTextContent(
+      'ノルマを3トリック超過しました。次のラウンドで未達の席から最強札を3枚もらえます。',
+    );
+  });
+
+  it('does not render forfeit notice when human surplus is zero', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 3,
+        players: [
+          seat(0, { target: 8, trickCount: 8, surplus: 0 }),
+          seat(1, { target: 5, trickCount: 5, surplus: 0 }),
+          seat(2, { target: 3, trickCount: 3, surplus: 0 }),
+        ],
+      } as Partial<SergeantMajorResponse>),
+    );
+    renderWithProviders(<SergeantMajorPage />);
+
+    await screen.findByRole('button', { name: '次のラウンドへ' });
+    expect(screen.queryByTestId('sm-forfeit-notice')).not.toBeInTheDocument();
   });
 });

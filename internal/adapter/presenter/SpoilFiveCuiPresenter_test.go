@@ -186,3 +186,24 @@ func TestSpoilFiveCuiPresenter_TopTrumpLine(t *testing.T) {
 		assert.NotContains(t, p.Output(withTops(nil), nil), "強さ順")
 	})
 }
+
+// **Reneging は Spoil Five の三本柱の一つ。**CUI は `promptPlayHelp` で最初から
+// 説明していたが、**その文言をテストが押さえていなかった** (#6451)。ドメインの
+// `isTopTrump` (SpoilFive.go:293-299) は切り札の 5 / 切り札の J / ♥A の 3 枚で、
+// 説明文はその 3 枚を名指ししていなければならない。
+func TestSpoilFiveCuiPresenter_ExplainsReneging(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	m, _ := setupSpoilFiveCuiMockWithPlayers()
+	out := new(presenter.SpoilFiveCuiPresenter).Output(m, nil)
+
+	help := i18n.T("spoilfive.promptPlayHelp")
+	assert.Contains(t, out, help)
+	// 免除される 3 枚を名指ししていること。
+	assert.Contains(t, help, "Reneging")
+	assert.Contains(t, help, "上位3枚")
+	assert.Contains(t, help, "♥A")
+	assert.NotContains(t, out, "{{")
+}

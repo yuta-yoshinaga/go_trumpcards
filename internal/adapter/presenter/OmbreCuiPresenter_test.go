@@ -4,15 +4,18 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeOmbrePlayers() []*domain.OmbrePlayer {
@@ -27,6 +30,7 @@ func setupOmbreCuiMock() *interfaces.MockOmbreGame {
 	m := new(interfaces.MockOmbreGame)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
+	m.On("IsForcedEntrar").Return(false).Maybe()
 	m.On("GetWinningBid").Return(domain.OmbreBidEntrar)
 	m.On("GetTrumpSuit").Return(domain.CardDesignHeart)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
@@ -217,4 +221,33 @@ func TestOmbreCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetPlayer", mock.Anything).Return(domain.NewOmbrePlayer(true)).Maybe()
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// CUI にも同じ通知を出す (#6485、受け入れ条件 3)。
+func TestOmbreCuiPresenter_NamesTheForcedEntrar(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.OmbreCuiPresenter)
+
+	outFor := func(forced bool, trickNo int) string {
+		m, _ := setupOmbreCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsForcedEntrar")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrickNumber")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("IsForcedEntrar").Return(forced)
+		m.On("GetDealerIdx").Return(0).Maybe()
+		m.On("GetTrickNumber").Return(trickNo)
+		m.On("GetPhase").Return(domain.OmbrePhasePlay)
+		return p.Output(m, nil)
+	}
+	// 文言の**接尾**で見る。{{name}} 入りのキーは生テンプレートが返るので、
+	// キーそのものを NotContains に渡しても何も測らない。
+	_, tail, ok := strings.Cut(i18n.T("ombre.forcedEntrar"), "}} ")
+	require.True(t, ok)
+
+	assert.Contains(t, outFor(true, 1), tail)
+	assert.NotContains(t, outFor(false, 1), tail)
+	// 一度打てば消える。
+	assert.NotContains(t, outFor(true, 3), tail)
 }

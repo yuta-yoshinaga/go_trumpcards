@@ -14,6 +14,15 @@ import (
 type EuchreWebPresenter struct{}
 
 // Output ゲーム状態をJSON出力
+// euchreThresholdIf returns v only when a score is present, so the thresholds
+// appear exactly where they can be read against something.
+func euchreThresholdIf(score *int, v int) *int {
+	if score == nil {
+		return nil
+	}
+	return &v
+}
+
 func (p *EuchreWebPresenter) Output(e interfaces.EuchreGame, lastErr error) string {
 	resObj := p.buildBase(e)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(e, e.GetCurrentTrick(), lastErr)
@@ -31,6 +40,11 @@ func (p *EuchreWebPresenter) Output(e interfaces.EuchreGame, lastErr error) stri
 			GoAlone:   hint.GoAlone,
 			Reason:    hint.Reason,
 			Score:     hint.Score,
+			// Send the thresholds alongside the score so the client never has to
+			// hardcode them; a copy on the other side drifts the first time one
+			// of these constants changes.
+			OrderUpScore: euchreThresholdIf(hint.Score, domain.EuchreOrderUpScore),
+			GoAloneScore: euchreThresholdIf(hint.Score, domain.EuchreGoAloneScore),
 		}
 	}
 
@@ -130,6 +144,11 @@ func (p *EuchreWebPresenter) HintOutput(e interfaces.EuchreGame) string {
 			GoAlone:   hint.GoAlone,
 			Reason:    hint.Reason,
 			Score:     hint.Score,
+			// Send the thresholds alongside the score so the client never has to
+			// hardcode them; a copy on the other side drifts the first time one
+			// of these constants changes.
+			OrderUpScore: euchreThresholdIf(hint.Score, domain.EuchreOrderUpScore),
+			GoAloneScore: euchreThresholdIf(hint.Score, domain.EuchreGoAloneScore),
 		}
 	}
 	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の

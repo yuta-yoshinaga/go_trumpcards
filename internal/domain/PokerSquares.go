@@ -217,6 +217,73 @@ func (p *PokerSquares) EvaluateCol(c int) int {
 	return evalFiveCardHand(cards)
 }
 
+// PartialRowRank は指定行の部分的なポーカーハンドを評価し、ランク定数を返す。
+// 0枚または5枚揃っている場合、あるいは範囲外の場合は -1 を返す。
+func (p *PokerSquares) PartialRowRank(r int) int {
+	if r < 0 || r >= PokerSquaresGridSize {
+		return -1
+	}
+	cards := make([]*Card, 0, PokerSquaresGridSize)
+	for c := range PokerSquaresGridSize {
+		if p.board[r][c] != nil {
+			cards = append(cards, p.board[r][c])
+		}
+	}
+	return evaluatePartialHand(cards)
+}
+
+// PartialColRank は指定列の部分的なポーカーハンドを評価し、ランク定数を返す。
+// 0枚または5枚揃っている場合、あるいは範囲外の場合は -1 を返す。
+func (p *PokerSquares) PartialColRank(c int) int {
+	if c < 0 || c >= PokerSquaresGridSize {
+		return -1
+	}
+	cards := make([]*Card, 0, PokerSquaresGridSize)
+	for r := range PokerSquaresGridSize {
+		if p.board[r][c] != nil {
+			cards = append(cards, p.board[r][c])
+		}
+	}
+	return evaluatePartialHand(cards)
+}
+
+// evaluatePartialHand は 1〜4 枚から成立している最良の役を返す。0 枚と、
+// 5 枚そろって普通の評価が効く行・列は -1 を返す。
+//
+// フロントの evaluatePartialHand (frontend/src/utils/pokerSquaresUtils.ts) と
+// 同じ規則で、**同じ数字の枚数しか見ない**。フラッシュもストレートも数えない
+// ので、途中経過に「フラッシュに育っている」とは出ない。Web も出していない。
+func evaluatePartialHand(cards []*Card) int {
+	if len(cards) == 0 || len(cards) >= PokerSquaresGridSize {
+		return -1
+	}
+	counts := make(map[int]int, len(cards))
+	for _, card := range cards {
+		counts[card.GetValue()]++
+	}
+	// 上位 2 つの重なりだけ分かればよい。
+	best, second := 0, 0
+	for _, n := range counts {
+		switch {
+		case n > best:
+			best, second = n, best
+		case n > second:
+			second = n
+		}
+	}
+	switch {
+	case best == 4:
+		return PokerHandFourOfAKind
+	case best == 3:
+		return PokerHandThreeOfAKind
+	case best == 2 && second == 2:
+		return PokerHandTwoPair
+	case best == 2:
+		return PokerHandOnePair
+	}
+	return PokerHandHighCard
+}
+
 // RowScore は指定行の得点 (American scoring) を返す。
 func (p *PokerSquares) RowScore(r int) int {
 	rank := p.EvaluateRow(r)

@@ -123,6 +123,42 @@ describe('ChinchonPage', () => {
     renderWithProviders(<ChinchonPage />);
     const knockBtn = await screen.findByTestId('chinchon-knock-button');
     expect(knockBtn.className).toContain('animate-pulse');
+
+    // **パルスと色は支援技術に届かない。**ノック可能になった瞬間を知る手立てが
+    // 無く、毎回手札を数え直すしかなかった (#6461)。
+    const live = screen.getByTestId('chinchon-knock-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveTextContent('ノックできます');
+    expect(live.textContent).not.toContain('{{');
+  });
+
+  // 領域は**常設**で中身だけが差し替わる。ノック可能でない間は空 ── これがあるから
+  // 手番が続いても読み上げが繰り返されない (中身が変わったときだけ読まれる)。
+  it('keeps the knock live region mounted and silent until knocking is possible', async () => {
+    // 上限 5 に対しデッドウッド 8 (♠5 + ♣3、♥K を捨てた後) ── まだノックできない。
+    const highDeadwoodHand: ChinchonResponse = {
+      ...discardPhaseState,
+      players: [
+        {
+          ...discardPhaseState.players[0],
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'HEART', value: 13 },
+            { design: 'CLOVER', value: 3 },
+          ],
+        },
+        ...discardPhaseState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(highDeadwoodHand);
+    renderWithProviders(<ChinchonPage />);
+
+    const live = await screen.findByTestId('chinchon-knock-live');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live.textContent).toBe('');
+    // 視覚側もまだ光っていない。
+    expect(screen.getByTestId('chinchon-knock-button').className).not.toContain('animate-pulse');
   });
 
   it('shows a per-card deadwood breakdown during the discard phase', async () => {

@@ -29,5 +29,6 @@
   "legalNotPlaying": "No legal moves to show (game is not in play)",
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
-  "helpUndo": "  u undo one move"
+  "helpUndo": "  u undo one move",
+  "hintExposes": " (this uncovers a face-down card)"
 }

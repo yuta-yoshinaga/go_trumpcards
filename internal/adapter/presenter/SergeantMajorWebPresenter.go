@@ -83,6 +83,7 @@ func (p *SergeantMajorWebPresenter) buildPlayersOutput(s interfaces.SergeantMajo
 			Target:     player.GetTarget(),
 			TrickCount: player.GetTrickCount(),
 			Score:      player.GetScore(),
+			Surplus:    s.GetSurplus(i),
 		})
 	}
 	return out

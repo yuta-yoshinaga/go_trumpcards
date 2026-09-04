@@ -4,9 +4,11 @@ package presenter
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -141,6 +143,62 @@ func TestDuchessCuiPresenter_Output(t *testing.T) {
 		g.On("GetReserve").Return(emptyReserve)
 
 		assert.Contains(t, new(DuchessCuiPresenter).Output(g, nil), "[空]")
+	})
+
+	t.Run("empty column note when reserve has cards", func(t *testing.T) {
+		g := new(interfaces.MockDuchessGame)
+		setupDuchessCuiMockDefaults(g)
+		// Column 0 is empty, column 1 has a card. Reserve has cards (from defaults).
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetTableau")
+		var tableau [domain.DuchessTableauCnt][]*domain.DuchessTableauCard
+		tableau[1] = []*domain.DuchessTableauCard{
+			{Card: domain.NewCard(domain.CardDesignSpade, 3, false), FaceUp: true},
+		}
+		g.On("GetTableau").Return(tableau)
+
+		output := new(DuchessCuiPresenter).Output(g, nil)
+		lines := strings.Split(output, "\n")
+		var col0Line, col1Line string
+		for _, line := range lines {
+			if strings.HasPrefix(line, "列0:") {
+				col0Line = line
+			} else if strings.HasPrefix(line, "列1:") {
+				col1Line = line
+			}
+		}
+		require.NotEmpty(t, col0Line, "col 0 line exists")
+		require.NotEmpty(t, col1Line, "col 1 line exists")
+
+		// 実際の出力文字列で assert
+		assert.Equal(t, "列0: [空] (リザーブからのみ)", col0Line)
+		assert.Contains(t, col0Line, i18n.T("duchess.emptyColReserveOnly"))
+
+		// 否定コントロール (b): 空でない列には出ない
+		assert.NotContains(t, col1Line, i18n.T("duchess.emptyColReserveOnly"))
+	})
+
+	t.Run("empty column without reserve cards shows plain empty note (negative control a)", func(t *testing.T) {
+		g := new(interfaces.MockDuchessGame)
+		setupDuchessCuiMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetTableau")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetReserve")
+		var emptyTableau [domain.DuchessTableauCnt][]*domain.DuchessTableauCard
+		var emptyReserve [domain.DuchessReserveCnt][]*domain.Card
+		g.On("GetTableau").Return(emptyTableau)
+		g.On("GetReserve").Return(emptyReserve)
+
+		output := new(DuchessCuiPresenter).Output(g, nil)
+		lines := strings.Split(output, "\n")
+		var col0Line string
+		for _, line := range lines {
+			if strings.HasPrefix(line, "列0:") {
+				col0Line = line
+				break
+			}
+		}
+		require.NotEmpty(t, col0Line, "col 0 line exists")
+		assert.Equal(t, "列0: [空]", col0Line)
+		assert.NotContains(t, col0Line, i18n.T("duchess.emptyColReserveOnly"))
 	})
 }
 

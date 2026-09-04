@@ -6,6 +6,7 @@
   "helpSetMode": "  sm [0-1]             set mode (0=Normal, 1=JijiNuki)",
   "helpSetPlacement": "  sps [0-1]            set CPU placement strategy (0=OFF, 1=ON)",
   "helpSetMemoryAI": "  sma [0-1]            set CPU memory AI (0=OFF, 1=ON)",
+  "helpSetHesitation": "  sh [0-1]             CPU の迷い時間ディレイ (0=OFF, 1=ON)",
   "outputTitleNormal": "Old Maid (ババ抜き)",
   "outputTitleJijiNuki": "Old Maid (ジジ抜き)",
   "playerLineFinished": "{{name}}: 上がり",
@@ -26,5 +27,7 @@
   "promptCurrentTurnWithTarget": "手番: {{name}} → {{target}}から引きます",
   "promptCurrentTurn": "手番: {{name}}",
   "helpExampleD": "  d                    相手から 1 枚引く (無作為)",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "hesitationFlagRequired0Off1On": "sh の後に 0 (OFF) か 1 (ON) を指定してください",
+  "invalidHesitationFlag01": "迷い時間ディレイは 0 か 1 で指定してください"
 }

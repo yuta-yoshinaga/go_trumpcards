@@ -26,7 +26,10 @@ type LaBelleLucieWebOutputHint struct {
 
 // LaBelleLucieWebOutput ラ・ベル・ルーシーのWebアウトプット。
 type LaBelleLucieWebOutput struct {
-	Fans        [][]*WebOutputCard         `json:"fans"`
+	Fans [][]*WebOutputCard `json:"fans"`
+	// MovableFans は扇ごとに「今そのトップを動かせるか」。**規則はドメインが持つ**
+	// ので、画面が判定し直さない (#6474)。
+	MovableFans []bool                     `json:"movableFans"`
 	Foundation  [][]*WebOutputCard         `json:"foundation"`
 	RedealsLeft int                        `json:"redealsLeft"`
 	Phase       int                        `json:"phase"`
@@ -48,6 +51,7 @@ var NewLaBelleLucieWebController, NewLaBelleLucieWebControllerWithProvider = web
 func newLaBelleLucieDefaultOutput(msg string) *LaBelleLucieWebOutput {
 	return &LaBelleLucieWebOutput{
 		Fans:          make([][]*WebOutputCard, 0),
+		MovableFans:   make([]bool, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

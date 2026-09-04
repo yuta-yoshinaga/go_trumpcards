@@ -24,9 +24,9 @@ type BadugiInteractorIF interface {
 	// Action executes a human betting action.
 	Action(action, amount, humanPlayMs int) string
 	// Exchange executes a draw with the given hand indices.
-	Exchange(indices []int) string
+	Exchange(indices []int, humanPlayMs int) string
 	// Stand passes on the current draw.
-	Stand() string
+	Stand(humanPlayMs int) string
 	// Hint returns the hint output for the current hand.
 	Hint() string
 	// ActionLog returns the log output for the current hand.
@@ -81,15 +81,17 @@ func (bi *BadugiInteractor) Action(action, amount, humanPlayMs int) string {
 }
 
 // Exchange performs a human draw with the given indices.
-func (bi *BadugiInteractor) Exchange(indices []int) string {
+func (bi *BadugiInteractor) Exchange(indices []int, humanPlayMs int) string {
 	return execAndPresent(bi.Game, bi.pp, func() error {
-		return bi.Game.PlayerExchange(indices)
+		return bi.Game.PlayerExchange(indices, humanPlayMs)
 	})
 }
 
 // Stand stands pat for the current draw.
-func (bi *BadugiInteractor) Stand() string {
-	return execAndPresent(bi.Game, bi.pp, bi.Game.PlayerStand)
+func (bi *BadugiInteractor) Stand(humanPlayMs int) string {
+	return execAndPresent(bi.Game, bi.pp, func() error {
+		return bi.Game.PlayerStand(humanPlayMs)
+	})
 }
 
 // ActionLog returns the log output for the current hand.

@@ -27,5 +27,7 @@
   "hintReasonPair": "the strongest split where a pair in the low hand still does not foul",
   "hintReasonHigh": "maximises the low hand without fouling",
   "helpExampleBet": "  b 100                bet 100 chips",
-  "foulHighMustBeat": "Foul: the two-card low hand must be weaker than the five-card high hand"
+  "foulHighMustBeat": "Foul: the two-card low hand must be weaker than the five-card high hand",
+  "foulSplits": "Foul splits: {{splits}}",
+  "foulSplitsNone": "No foul splits."
 }

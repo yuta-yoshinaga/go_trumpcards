@@ -12,6 +12,50 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// cinchDealResultStr は直前ディールの得点内訳を書き出す。
+//
+// **強調の条件は Web の `isSetBackRow` と同じ** ── ビッダーの行で、かつ
+// セットバックした場合だけ (#6488)。
+func cinchDealResultStr(b *strings.Builder, g interfaces.CinchGame) {
+	d := g.GetLastDealDetail()
+	if d == nil {
+		return
+	}
+	b.WriteString(i18n.T("cinch.dealResultTitle") + "\n")
+	if d.BidderIdx >= 0 {
+		key := "cinch.dealResultBidderMade"
+		if d.SetBack {
+			key = "cinch.dealResultBidderSet"
+		}
+		line := i18n.Tf(key,
+			"name", cuiPlayerName(g.GetPlayer(d.BidderIdx), d.BidderIdx),
+			"bid", strconv.Itoa(d.Bid),
+			"captured", strconv.Itoa(d.Points[d.BidderIdx]),
+			"delta", cinchSignedDelta(d.Gained[d.BidderIdx]))
+		if d.SetBack {
+			line = color.Red(line)
+		}
+		b.WriteString(line + "\n")
+	}
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		line := i18n.Tf("cinch.dealResultGained",
+			"name", cuiPlayerName(g.GetPlayer(i), i),
+			"points", strconv.Itoa(d.Gained[i]))
+		if i == d.BidderIdx && d.SetBack {
+			line = color.Red(line)
+		}
+		b.WriteString(line + "\n")
+	}
+}
+
+// cinchSignedDelta は増減に符号を付ける (Web の signedDelta と同じ書式)。
+func cinchSignedDelta(n int) string {
+	if n > 0 {
+		return "+" + strconv.Itoa(n)
+	}
+	return strconv.Itoa(n)
+}
+
 // CinchCuiPresenter renders the Cinch CUI view.
 type CinchCuiPresenter struct{}
 
@@ -142,6 +186,10 @@ func (p *CinchCuiPresenter) Output(g interfaces.CinchGame, lastErr error) string
 		case domain.CinchPhaseTrickEnd:
 			b.WriteString(i18n.T("cinch.promptTrickEnd") + "\n")
 		case domain.CinchPhaseRoundEnd:
+			// **なぜ点がそう動いたのかが CUI からは読めなかった。**Web は
+			// `lastDealDetail` で内訳を出し、ビッド未達の行を赤字にしているのに、
+			// CUI は「ディール終了」の一行だけだった (#6488)。
+			cinchDealResultStr(b, g)
 			b.WriteString(i18n.T("cinch.promptRoundEnd") + "\n")
 		}
 		b.WriteString(i18n.T("cinch.promptHelp") + "\n")

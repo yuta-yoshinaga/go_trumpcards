@@ -37,6 +37,41 @@ func TestDoubleAttackCuiPresenter_RendersJapaneseNotRawKeys(t *testing.T) {
 	assert.NotContains(t, out, "doubleattack.", "生の i18n キーが出力に混ざっている")
 }
 
+// **打てる手を打つ前に知る。** Web はボタンの出し分けで示すのに、CUI は打って
+// サーバに拒否されるまで分からなかった。
+//
+// 配りに依存しない形で見る: 「行が出ているかどうか」が `CanDouble()` /
+// `CanSplit()` と**一致していること**を assert する。特定の配りを当てにすると
+// スプリットできる手が出ない回で落ちる。
+func TestDoubleAttackCuiPresenter_AnnouncesDoubleAndSplitWhenAvailable(t *testing.T) {
+	cp := new(DoubleAttackBlackjackCuiPresenter)
+
+	for i := 0; i < 30; i++ {
+		g := newDoubleAttackForPresenter(t)
+		require.NoError(t, g.PlaceBet(50, 0))
+		require.NoError(t, g.Attack(0))
+		if g.GetPhase() != domain.DoubleAttackPhasePlay {
+			continue // ブラックジャックで即決着した回は飛ばす
+		}
+		out := cp.Output(g, nil)
+		assert.Equal(t, g.CanDouble(), strings.Contains(out, "ダブルできます"),
+			"ダブルの可否と表示が食い違っている")
+		assert.Equal(t, g.CanSplit(), strings.Contains(out, "スプリットできます"),
+			"スプリットの可否と表示が食い違っている")
+	}
+}
+
+// **プレイ中でなければ出さない。** 追加ベットの段では打てない。
+func TestDoubleAttackCuiPresenter_SaysNothingAboutDoubleBeforePlay(t *testing.T) {
+	cp := new(DoubleAttackBlackjackCuiPresenter)
+	g := newDoubleAttackForPresenter(t)
+	require.NoError(t, g.PlaceBet(50, 0))
+
+	out := cp.Output(g, nil)
+	assert.NotContains(t, out, "ダブルできます")
+	assert.NotContains(t, out, "スプリットできます")
+}
+
 // **追加ベットの前はアップカードだけを見せ、そう明示する。**
 func TestDoubleAttackCuiPresenter_ShowsOnlyTheUpCardBeforeTheAttack(t *testing.T) {
 	cp := new(DoubleAttackBlackjackCuiPresenter)

@@ -45,6 +45,11 @@ func (ap *AndarBaharCuiPresenter) Output(ab interfaces.AndarBaharGame, lastErr e
 				"amount", strconv.Itoa(ab.GetSideAmount()),
 				"band", ap.bandStr(ab.GetSideBand()),
 			) + "\n")
+		} else if ab.GetPhase() == domain.AndarBaharPhaseBet {
+			// **帯 0-6 が何を意味するかは CUI のどこにも出ていなかった。**
+			// Web は賭ける前にセレクトで全部見せている。賭けたあと（帯が
+			// 確定してから）は確定した帯だけを出す従来どおりの形に戻る。
+			ap.writeSideBandList(b)
 		}
 
 		andar, bahar := ab.GetAndarCards(), ab.GetBaharCards()
@@ -161,6 +166,30 @@ func (ap *AndarBaharCuiPresenter) columnStr(col int) string {
 	default:
 		return i18n.T("andarbahar.columnUnknown")
 	}
+}
+
+// writeSideBandList はサイドベットの帯 0-6 の範囲と払戻倍率を並べる。
+//
+// **賭ける前にしか意味がない。** 帯が確定したあとは確定した帯だけを出す。
+func (ap *AndarBaharCuiPresenter) writeSideBandList(b *strings.Builder) {
+	b.WriteString(i18n.T("andarbahar.bandListTitle") + "\n")
+	for band := domain.AndarBaharSideFirst; band <= domain.AndarBaharSide36Plus; band++ {
+		payout, ok := domain.AndarBaharSidePayout(band)
+		if !ok {
+			continue
+		}
+		b.WriteString(i18n.Tf("andarbahar.bandListLine",
+			"band", strconv.Itoa(band),
+			"range", ap.bandStr(band),
+			"payout", andarBaharPayoutStr(payout),
+		) + "\n")
+	}
+}
+
+// andarBaharPayoutStr は 1/10 単位の倍率を "15.0" のような文字列にする。
+func andarBaharPayoutStr(payout int) string {
+	return strconv.Itoa(payout/domain.AndarBaharPayoutScale) + "." +
+		strconv.Itoa(payout%domain.AndarBaharPayoutScale)
 }
 
 // bandStr サイドベットの帯の文字列

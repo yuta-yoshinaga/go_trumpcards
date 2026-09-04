@@ -796,6 +796,15 @@ func (g *FrenchTarot) enterRoundEnd() {
 	g.checkGameEnd()
 }
 
+// GetPetitAuBoutDelta はプティ・オ・ブーによる調整額 (防御側 1 人あたり) を返す。
+//
+// 正ならデクレアラー側が最終トリックでプティを取り、負なら防御側が取った。
+// **0 は「発生しなかった」** ── その場合はどちらの画面にも行を出さない。
+// 額は ±10×入札倍率で、精算にそのまま乗っている値と同じもの (#6509)。
+func (g *FrenchTarot) GetPetitAuBoutDelta() int {
+	return g.petitAuBoutSign() * FrenchTarotPetitAuBoutBonus * frenchTarotBidMult(g.contract)
+}
+
 // computeBreakdown 現在のディールの得点内訳を計算する。
 func (g *FrenchTarot) computeBreakdown() FrenchTarotBreakdown {
 	declHalf, bouts := g.declarerCaptured()
@@ -1641,6 +1650,15 @@ func (g *FrenchTarot) SetDeclarerIdx(idx int) { g.declarerIdx = idx }
 
 // GetContract コントラクト (確定入札) 取得
 func (g *FrenchTarot) GetContract() FrenchTarotBid { return g.contract }
+
+// SetLastTrick 最終トリックの獲得者と札を設定する (テスト用)。
+//
+// プティ・オ・ブーは**最後のトリックの中身**でしか決まらないので、
+// 表示を確かめる場面ではここを直接置くほうが配りに依存しない。
+func (g *FrenchTarot) SetLastTrick(winner int, cards []*Card) {
+	g.lastTrickWinner = winner
+	g.lastTrickCards = cards
+}
 
 // SetContract コントラクト設定 (テスト用)
 func (g *FrenchTarot) SetContract(b FrenchTarotBid) { g.contract = b }

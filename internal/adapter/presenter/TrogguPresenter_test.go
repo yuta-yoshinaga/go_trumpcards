@@ -3,6 +3,7 @@ package presenter_test
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -84,6 +85,7 @@ func TestTrogguWebPresenter_Output(t *testing.T) {
 	assert.Equal(t, float64(domain.TrogguTalonSize), decoded["talonCount"])
 	assert.Equal(t, float64(-1), decoded["declarerIdx"])
 	assert.Equal(t, "pass", decoded["contractName"])
+	assert.Equal(t, float64(domain.TrogguSoloTarget()), decoded["soloTarget"])
 	assert.Contains(t, decoded, "playableIndices")
 }
 
@@ -198,6 +200,26 @@ func TestTrogguCuiPresenter_Output(t *testing.T) {
 func TestTrogguCuiPresenter_Output_Error(t *testing.T) {
 	g := newTrogguGame()
 	assert.Contains(t, new(presenter.TrogguCuiPresenter).Output(g, errors.New("boom")), "boom")
+}
+
+func TestTrogguCuiPresenter_SoloContractDisplaysTargetNumber(t *testing.T) {
+	p := new(presenter.TrogguCuiPresenter)
+	g := newTrogguGame()
+	b, err := json.Marshal(g)
+	require.NoError(t, err)
+	var state map[string]any
+	require.NoError(t, json.Unmarshal(b, &state))
+	state["ph"] = int(domain.TrogguPhasePlay)
+	state["co"] = int(domain.TrogguBidSolo)
+	state["dc"] = 0
+	state["tn"] = 1
+	data, err := json.Marshal(state)
+	require.NoError(t, err)
+	var modified domain.Troggu
+	require.NoError(t, json.Unmarshal(data, &modified))
+
+	out := p.Output(&modified, nil)
+	assert.Contains(t, out, strconv.Itoa(domain.TrogguSoloTarget()), "CUI の solo 契約表示に目標数字が含まれること")
 }
 
 // **契約ごとに結果の文型が違う。** ソロは点数、他はトリック数で語る。

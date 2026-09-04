@@ -228,24 +228,33 @@ func (g *Shamrocks) GiveUp() {
 	}
 }
 
-// hasAnyLegalMove ファウンデーション手・扇間移動のいずれかが存在するか。
-func (g *Shamrocks) hasAnyLegalMove() bool {
+// GetMovableFans はいま動かせる扇のインデックスを返す。
+//
+// **盤全体に手があるかは、この集合が空かどうかと同じ問い。** 規則は 1 つ、
+// 呼ぶ側が 2 つ (Web の `shamrocksMovableFans` も同じ形をしている)。
+func (g *Shamrocks) GetMovableFans() []int {
+	idxs := make([]int, 0, len(g.fans))
 	for i := range g.fans {
 		card := g.fanTop(i)
 		if card == nil {
 			continue
 		}
 		if g.findFoundation(card) >= 0 {
-			return true
+			idxs = append(idxs, i)
+			continue
 		}
 		for j := range g.fans {
 			if g.canMoveFanToFan(i, j) {
-				return true
+				idxs = append(idxs, i)
+				break
 			}
 		}
 	}
-	return false
+	return idxs
 }
+
+// hasAnyLegalMove ファウンデーション手・扇間移動のいずれかが存在するか。
+func (g *Shamrocks) hasAnyLegalMove() bool { return len(g.GetMovableFans()) > 0 }
 
 // checkGameClear 52 枚すべてファウンデーションに揃ったらクリア。
 func (g *Shamrocks) checkGameClear() {

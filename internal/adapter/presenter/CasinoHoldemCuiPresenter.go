@@ -25,6 +25,13 @@ func (cp *CasinoHoldemCuiPresenter) Output(g interfaces.CasinoHoldemGame, lastEr
 	phase := g.GetPhase()
 	fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinoholdem.phaseLine", "phase", cp.phaseStr(phase)))
 
+	// **配当を知らないままベット額を決めさせない。** Web は BET フェーズに
+	// アンテ配当と AA ボーナスの配当表を出しているのに、CUI には出す手段が無かった (#6400)。
+	// 倍率はドメインの定数から作る。BET フェーズ以外では場所を取るため出さない。
+	if phase == domain.CasinoHoldemPhaseBet {
+		cp.writePayoutRef(&sb)
+	}
+
 	if community := g.GetCommunity(); len(community) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("casinoholdem.boardHeader")) + " ---\n")
 		parts := make([]string, len(community))
@@ -152,4 +159,45 @@ func (p *CasinoHoldemCuiPresenter) HintOutput(g interfaces.CasinoHoldemGame) str
 		return color.Yellow(i18n.T("casinoholdem.hintCall")) + "\n"
 	}
 	return color.Yellow(i18n.T("casinoholdem.hintFold")) + "\n"
+}
+
+// writePayoutRef はアンテ配当と AA ボーナスの配当表を出力する。
+//
+// 倍率はすべて domain の定数から組み立てる。文言に直接書くと、
+// 定数を変えたときに表だけが古いまま残る (#6400)。
+func (cp *CasinoHoldemCuiPresenter) writePayoutRef(sb *strings.Builder) {
+	sb.WriteString("--- " + color.Bold(i18n.T("casinoholdem.antePayHeader")) + " ---\n")
+	anteRows := []struct {
+		key  string
+		mult int
+	}{
+		{"casinoholdem.antePayRoyalFlush", domain.CasinoHoldemAntePayRoyalFlush},
+		{"casinoholdem.antePayStraightFlush", domain.CasinoHoldemAntePayStraightFlush},
+		{"casinoholdem.antePayFourOfAKind", domain.CasinoHoldemAntePayFourOfAKind},
+		{"casinoholdem.antePayFullHouse", domain.CasinoHoldemAntePayFullHouse},
+		{"casinoholdem.antePayFlush", domain.CasinoHoldemAntePayFlush},
+		{"casinoholdem.antePayOther", domain.CasinoHoldemAntePayOther},
+	}
+	for _, row := range anteRows {
+		fmt.Fprintf(sb, "%s\n", i18n.Tf(row.key, "mult", strconv.Itoa(row.mult)))
+	}
+
+	sb.WriteString("--- " + color.Bold(i18n.T("casinoholdem.bonusPayHeader")) + " ---\n")
+	bonusRows := []struct {
+		key  string
+		mult int
+	}{
+		{"casinoholdem.bonusPayRoyalFlush", domain.CasinoHoldemBonusPayRoyalFlush},
+		{"casinoholdem.bonusPayStraightFlush", domain.CasinoHoldemBonusPayStraightFlush},
+		{"casinoholdem.bonusPayFourOfAKind", domain.CasinoHoldemBonusPayFourOfAKind},
+		{"casinoholdem.bonusPayFullHouse", domain.CasinoHoldemBonusPayFullHouse},
+		{"casinoholdem.bonusPayFlush", domain.CasinoHoldemBonusPayFlush},
+		{"casinoholdem.bonusPayStraight", domain.CasinoHoldemBonusPayStraight},
+		{"casinoholdem.bonusPayThreeOfAKind", domain.CasinoHoldemBonusPayThreeOfAKind},
+		{"casinoholdem.bonusPayTwoPair", domain.CasinoHoldemBonusPayTwoPair},
+		{"casinoholdem.bonusPayPairOfAces", domain.CasinoHoldemBonusPayPairOfAces},
+	}
+	for _, row := range bonusRows {
+		fmt.Fprintf(sb, "%s\n", i18n.Tf(row.key, "mult", strconv.Itoa(row.mult)))
+	}
 }

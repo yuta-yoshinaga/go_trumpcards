@@ -143,3 +143,40 @@ func TestKoiKoiCuiPresenter_RoundResult_CpuWinner(t *testing.T) {
 	require.NotEmpty(t, winLine, "round-win line missing from output: %q", out)
 	assert.Contains(t, winLine, bold1)
 }
+
+// **同ランクの札が場に 2 枚あると、どちらを取るかは選択になる。**Web は一致する
+// 場札をリングで示して pickField を案内するのに、CUI は場札と手札を目で突き合わせる
+// しかなかった (#6506)。Basra / Tablanet と同じ共有ヘルパーを使う。
+func TestKoiKoiCuiPresenter_ShowsWhichFieldCardsAHandCardCanTake(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	// 卓は手で組む ── 配りに任せると「二択」が出るかどうかが局ごとに変わる。
+	g := domain.NewDefaultKoiKoi()
+	g.Reset()
+	g.SetPhase(domain.KoiKoiPhasePlay)
+	g.SetCurrentTurn(0)
+	human := g.GetPlayer(0)
+	human.Reset()
+	human.AddCard(domain.NewCard(1, 1, false))  // 松: 場に 2 枚ある
+	human.AddCard(domain.NewCard(5, 1, false))  // 菖蒲: 場に 1 枚
+	human.AddCard(domain.NewCard(11, 1, false)) // 桐: 場に無い
+	g.SetFieldCards([]*domain.Card{
+		domain.NewCard(1, 2, false),
+		domain.NewCard(5, 2, false),
+		domain.NewCard(1, 3, false),
+	})
+
+	out := new(presenter.KoiKoiCuiPresenter).Output(g, nil)
+
+	// 二択は両方の場札が言えて初めて選べる。
+	assert.Contains(t, out, i18n.Tf("koikoi.captureHint",
+		"hand", "[0]"+domain.KoiKoiCardLabel(human.GetCard(0)), "table", "[0][2]"))
+	// 一択も出る。
+	assert.Contains(t, out, i18n.Tf("koikoi.captureHint",
+		"hand", "[1]"+domain.KoiKoiCardLabel(human.GetCard(1)), "table", "[1]"))
+	// 負のコントロール: 取れない札には注記を付けない。
+	assert.NotContains(t, out, "[2]"+domain.KoiKoiCardLabel(human.GetCard(2))+" →")
+	assert.NotContains(t, out, "{{")
+}

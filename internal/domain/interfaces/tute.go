@@ -57,6 +57,8 @@ type TuteGame interface {
 	GetTeamScores() [domain.TuteTeamCnt]int
 	// GetRoundTeamPoints 現ラウンドのチーム別得点を取得する
 	GetRoundTeamPoints() [domain.TuteTeamCnt]int
+	// GetLastTrickBonusTeam 最終トリックボーナス (+10) を受け取ったチームを取得する (-1=ラウンド未終了)
+	GetLastTrickBonusTeam() int
 	// GetWinnerTeam 勝利チームを取得する (-1=未確定)
 	GetWinnerTeam() int
 	// GetPlayerCnt プレイヤー数を取得する

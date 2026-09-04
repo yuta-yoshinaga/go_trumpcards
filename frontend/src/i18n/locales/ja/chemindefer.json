@@ -7,6 +7,7 @@
   "forcedNotice": "この合計に選択の余地はありません（0〜4 は引く、6〜7 は立つ）",
   "waitNotice": "他の席の番です",
   "label.you": "あなた",
+  "label.cpu": "CPU{{idx}}",
   "label.round": "ラウンド",
   "label.banker": "親",
   "label.stake": "バンク額",

@@ -221,6 +221,28 @@ describe('HoneymoonBridgePage', () => {
     expect(screen.getByTestId('hb-seat-0')).not.toHaveTextContent(/落札者/);
   });
 
+  // **親はラウンドごとに交代し、引き合いの最初のリードを決める起点。**
+  // どちらの面にも出ていなかった。
+  it('marks the dealer as a separate role from the declarer', async () => {
+    mockExec.mockResolvedValue(playing({ dealerIdx: 1, declarerIdx: 0 } as Partial<HoneymoonBridgeResponse>));
+    renderWithProviders(<HoneymoonBridgePage />);
+
+    expect(await screen.findByTestId('hb-dealer-1')).toHaveTextContent('[親]');
+    // 親と落札者は別の席にも、同じ席にも来る。取り違えないこと。
+    expect(screen.getByTestId('hb-seat-1')).not.toHaveTextContent(/落札者/);
+    expect(screen.getByTestId('hb-seat-0')).toHaveTextContent(/落札者/);
+    expect(screen.queryByTestId('hb-dealer-0')).not.toBeInTheDocument();
+  });
+
+  it('marks both roles on one seat when the dealer is also the declarer', async () => {
+    mockExec.mockResolvedValue(playing({ dealerIdx: 0, declarerIdx: 0 } as Partial<HoneymoonBridgeResponse>));
+    renderWithProviders(<HoneymoonBridgePage />);
+
+    const seat0 = await screen.findByTestId('hb-seat-0');
+    expect(seat0).toHaveTextContent('[親]');
+    expect(seat0).toHaveTextContent(/落札者/);
+  });
+
   it("shows each seat's bid, or that they have none", async () => {
     mockExec.mockResolvedValue(
       playing({

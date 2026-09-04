@@ -82,6 +82,8 @@ export interface TrogguResponse extends BaseGameResponse {
   declarerIdx: number;
   contract: number;
   contractName: string;
+  /** Points required for the Solo contract. */
+  soloTarget: number;
   talonCount: number;
   currentTrick: TrogguTrickCard[];
   lastTrickWinner: number;

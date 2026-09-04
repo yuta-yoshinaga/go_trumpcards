@@ -298,4 +298,71 @@ describe('BostonPage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+  // **サーバは公開しているのに、画面はそれを描いていなかった。**「on the Table」契約では
+  // 最初のトリック後に落札者の手札が `cards` に載って届くのに、Web はどこにも
+  // 並べていなかった (#6525)。CUI は以前から出している。
+  it('shows an exposed hand as cards', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0, true),
+          seat(1, false, { cards: [card('DIAMOND', 5), card('SPADE', 9)], isDeclarer: true }),
+          seat(2, false),
+          seat(3, false),
+        ],
+      }),
+    );
+    renderWithProviders(<BostonPage />);
+
+    const exposed = await screen.findByTestId('boston-exposed-1');
+    expect(exposed.querySelectorAll('img')).toHaveLength(2);
+    // 伏せたままの席は従来どおり枚数だけ。
+    expect(screen.queryByTestId('boston-exposed-2')).not.toBeInTheDocument();
+  });
+
+  // 負のコントロール: 誰も公開していない局面では 1 枚も並べない。
+  it('keeps every hand face down while nothing is exposed', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getAllByTestId('boston-player').length).toBeGreaterThan(0));
+    for (const id of [1, 2, 3]) {
+      expect(screen.queryByTestId(`boston-exposed-${id}`)).not.toBeInTheDocument();
+    }
+  });
+
+  // **契約は最高入札によって決まる。**誰も宣言していなければ出ない。
+  it('renders the contract only when a highBid exists', async () => {
+    mockExec.mockResolvedValue(makeState({ highBid: { player: 0, level: 4, name: 'seven', suit: 3 } }));
+    const { unmount } = renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getByTestId('boston-contract')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ highBid: null }));
+    renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.queryByTestId('boston-contract')).not.toBeInTheDocument());
+  });
+
+  // **場に出たカードがある場合のみトリック領域を描画する。**まだ誰も出していない時は出ない。
+  it('renders the trick area only when there are cards in the trick', async () => {
+    mockExec.mockResolvedValue(makeState({ trick: [card('SPADE', 1)] }));
+    const { unmount } = renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getByTestId('boston-trick')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ trick: [] }));
+    renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.queryByTestId('boston-trick')).not.toBeInTheDocument());
+  });
+
+  // **人間の入札手番でのみ注意事項を出す。**他人の手番やプレイ中には出ない。
+  it('renders the bid notice only on human bid turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BostonPhase.BID, bidPlayerIdx: 0, gameEndFlag: false }));
+    const { unmount } = renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getByTestId('boston-bid-notice')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: BostonPhase.BID, bidPlayerIdx: 1, gameEndFlag: false }));
+    renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.queryByTestId('boston-bid-notice')).not.toBeInTheDocument());
+  });
 });

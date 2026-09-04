@@ -12,7 +12,7 @@
   "helpBettingLimit": "  bl [0-2]             ベッティングリミット (0=Fixed, 1=PotLimit, 2=NoLimit)",
   "helpCpuCount": "  scc [1-3]            CPU人数",
   "outputTitle": "2-7 Triple Draw (Deuce to Seven Lowball)",
-  "dealerLine": "ディーラー: Player {{idx}}",
+  "dealerLine": "ディーラー: {{name}}",
   "potLine": "ポット: {{pot}}",
   "drawLine": "ドロー: {{idx}}/{{max}}",
   "drawPredraw": "ドロー: プリドロー",

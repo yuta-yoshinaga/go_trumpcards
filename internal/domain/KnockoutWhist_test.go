@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func koCard(design, value int) *Card { return NewCard(design, value, false) }
@@ -255,6 +258,75 @@ func TestKnockoutWhist_UnmarshalErrors(t *testing.T) {
 	}
 }
 
+// **復元した席の添字は本文と同じ範囲でなければならない。**保存された盤は外から
+// 来るので、範囲外の添字をそのまま入れると描画側が存在しない席を引きに行く。
+//
+// **土台は本物の盤から作る。**`{"ps":[{},{},{},{}]}` に足すやり方だと、
+// 手番や切り札の検査に先に引っかかって**添字とは無関係な理由で**失敗する ──
+// 実際そう書いて、正のコントロールが落ちて気付いた。
+func TestKnockoutWhist_UnmarshalRejectsBadRoundIndices(t *testing.T) {
+	withRoundIndices := func(t *testing.T, survived, eliminated []int) []byte {
+		t.Helper()
+		g := newKoGame(true)
+		g.Reset()
+		data, err := json.Marshal(g)
+		require.NoError(t, err)
+		var raw map[string]json.RawMessage
+		require.NoError(t, json.Unmarshal(data, &raw))
+		rs, err := json.Marshal(survived)
+		require.NoError(t, err)
+		re, err := json.Marshal(eliminated)
+		require.NoError(t, err)
+		raw["rs"], raw["re"] = rs, re
+		out, err := json.Marshal(raw)
+		require.NoError(t, err)
+		return out
+	}
+
+	tests := []struct {
+		name                 string
+		survived, eliminated []int
+	}{
+		{"survived index below zero", []int{-1}, nil},
+		{"survived index past the last seat", []int{KnockoutWhistPlayerCnt}, nil},
+		{"eliminated index below zero", nil, []int{-1}},
+		{"eliminated index past the last seat", nil, []int{KnockoutWhistPlayerCnt}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var g KnockoutWhist
+			assert.Error(t, g.UnmarshalJSON(withRoundIndices(t, tt.survived, tt.eliminated)))
+		})
+	}
+
+	// **正のコントロール。**同じ土台で範囲内なら通ることを見ないと、上の 4 本は
+	// 添字とは無関係な理由で失敗しているだけかもしれない。
+	t.Run("in-range indices are accepted", func(t *testing.T) {
+		var g KnockoutWhist
+		require.NoError(t, g.UnmarshalJSON(
+			withRoundIndices(t, []int{0}, []int{KnockoutWhistPlayerCnt - 1})))
+		assert.Equal(t, []int{0}, g.GetRoundSurvivedIdx())
+		assert.Equal(t, []int{KnockoutWhistPlayerCnt - 1}, g.GetRoundEliminatedIdx())
+	})
+
+	// 長さの上限。片方ずつ超えさせて、2 つの枝が独立に効くことを見る。
+	t.Run("an over-long list is rejected", func(t *testing.T) {
+		long := make([]int, knockoutWhistMaxSliceLen+1)
+		var g1, g2 KnockoutWhist
+		assert.Error(t, g1.UnmarshalJSON(withRoundIndices(t, long, nil)))
+		assert.Error(t, g2.UnmarshalJSON(withRoundIndices(t, nil, long)))
+	})
+}
+
+// 何も起きていないラウンドでは nil を返す ── 空スライスと nil を取り違えると
+// 「0 人の側は行ごと出さない」という表示側の判断が壊れる。
+func TestKnockoutWhist_RoundIndexAccessorsAreNilBeforeScoring(t *testing.T) {
+	g := newKoGame(true)
+	g.Reset()
+	assert.Nil(t, g.GetRoundSurvivedIdx())
+	assert.Nil(t, g.GetRoundEliminatedIdx())
+}
+
 func TestKnockoutWhist_NextRoundHumanWinnerEntersTrumpSelect(t *testing.T) {
 	g := newKoGame(true) // human at index 0
 	g.SetPhase(KnockoutWhistPhaseRoundEnd)
@@ -329,5 +401,87 @@ func TestKnockoutWhist_JSONRoundTripTrumpSelect(t *testing.T) {
 	}
 	if g2.GetPhase() != KnockoutWhistPhaseTrumpSelect {
 		t.Errorf("phase not preserved: got %v", g2.GetPhase())
+	}
+}
+
+func TestKnockoutWhist_RoundSurvivedAndEliminatedTracking(t *testing.T) {
+	g := newKoGame(false)
+	g.Reset()
+	g.SetPhase(KnockoutWhistPhaseRoundEnd)
+
+	// p0: 2 tricks -> survives without dogbone
+	// p1: 0 tricks, 1 dogbone -> spends dogbone to survive -> roundSurvivedIdx
+	// p2: 0 tricks, 0 dogbones -> eliminated -> roundEliminatedIdx
+	// p3: 1 trick -> survives without dogbone
+	g.GetPlayer(0).IncRoundTricks()
+	g.GetPlayer(0).IncRoundTricks()
+	g.GetPlayer(3).IncRoundTricks()
+	g.GetPlayer(2).SetDogbones(0)
+
+	g.ScoreRound()
+
+	survived := g.GetRoundSurvivedIdx()
+	if len(survived) != 1 || survived[0] != 1 {
+		t.Errorf("roundSurvivedIdx = %v, want [1]", survived)
+	}
+
+	eliminated := g.GetRoundEliminatedIdx()
+	if len(eliminated) != 1 || eliminated[0] != 2 {
+		t.Errorf("roundEliminatedIdx = %v, want [2]", eliminated)
+	}
+
+	// Accessor copy safety test
+	survived[0] = 99
+	if g.GetRoundSurvivedIdx()[0] != 1 {
+		t.Error("GetRoundSurvivedIdx did not return a slice copy")
+	}
+	eliminated[0] = 99
+	if g.GetRoundEliminatedIdx()[0] != 2 {
+		t.Error("GetRoundEliminatedIdx did not return a slice copy")
+	}
+
+	// JSON round-trip retains roundSurvivedIdx and roundEliminatedIdx
+	data, err := json.Marshal(g)
+	if err != nil {
+		t.Fatalf("marshal error: %v", err)
+	}
+	var g2 KnockoutWhist
+	if err := json.Unmarshal(data, &g2); err != nil {
+		t.Fatalf("unmarshal error: %v", err)
+	}
+	if len(g2.GetRoundSurvivedIdx()) != 1 || g2.GetRoundSurvivedIdx()[0] != 1 {
+		t.Errorf("unmarshaled roundSurvivedIdx = %v, want [1]", g2.GetRoundSurvivedIdx())
+	}
+	if len(g2.GetRoundEliminatedIdx()) != 1 || g2.GetRoundEliminatedIdx()[0] != 2 {
+		t.Errorf("unmarshaled roundEliminatedIdx = %v, want [2]", g2.GetRoundEliminatedIdx())
+	}
+
+	// Starting the next round clears both slices
+	g.NextRound()
+	if len(g.GetRoundSurvivedIdx()) != 0 {
+		t.Errorf("roundSurvivedIdx after NextRound = %v, want empty", g.GetRoundSurvivedIdx())
+	}
+	if len(g.GetRoundEliminatedIdx()) != 0 {
+		t.Errorf("roundEliminatedIdx after NextRound = %v, want empty", g.GetRoundEliminatedIdx())
+	}
+
+	// In the next round (round 2):
+	// p2 is already eliminated from previous round.
+	// p0: 1 trick
+	// p1: 0 tricks, 0 dogbones (used in round 1) -> eliminated in round 2!
+	// p2: eliminated (0 tricks) -> MUST NOT be in roundSurvivedIdx or roundEliminatedIdx
+	// p3: 0 tricks, 1 dogbone -> spends dogbone -> roundSurvivedIdx
+	g.SetPhase(KnockoutWhistPhaseRoundEnd)
+	g.GetPlayer(0).IncRoundTricks()
+	g.ScoreRound()
+
+	r2Survived := g.GetRoundSurvivedIdx()
+	if len(r2Survived) != 1 || r2Survived[0] != 3 {
+		t.Errorf("round 2 roundSurvivedIdx = %v, want [3]", r2Survived)
+	}
+
+	r2Eliminated := g.GetRoundEliminatedIdx()
+	if len(r2Eliminated) != 1 || r2Eliminated[0] != 1 {
+		t.Errorf("round 2 roundEliminatedIdx = %v, want [1] (p2 was already eliminated in round 1, must not appear)", r2Eliminated)
 	}
 }

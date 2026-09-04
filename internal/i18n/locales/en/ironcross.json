@@ -19,6 +19,7 @@
   "foldedMark": " (folded)",
   "allInMark": " (all in)",
   "toCallLine": "{{amount}} to call",
+  "raiseCountLine": "Raises {{n}}/{{max}}",
   "canCheckLine": "You may check",
   "chooseLine": "Choose vertical or horizontal",
   "wonLine": "{{name}} wins {{amount}} on the {{line}} line",

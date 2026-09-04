@@ -300,4 +300,73 @@ describe('LiteraturePage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
   });
+
+  // **直近の宣言の結末を画面に出す。**
+  it('renders won outcome for a successful claim', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        lastClaim: { player: 0, halfSuit: 0, outcome: 0, awardedTeam: 0 },
+      }),
+    );
+    renderWithProviders(<LiteraturePage />);
+    await waitFor(() => expect(screen.getByTestId('literature-last-claim')).toBeInTheDocument());
+    const panel = screen.getByTestId('literature-last-claim');
+    expect(panel).toHaveTextContent('直近の宣言');
+    expect(panel).toHaveTextContent('あなた: ♠ 低位 (2-7) をチーム0が獲得しました');
+  });
+
+  it('renders cancelled outcome when a claim misnames a teammate placement', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        lastClaim: { player: 1, halfSuit: 2, outcome: 1, awardedTeam: -1 },
+      }),
+    );
+    renderWithProviders(<LiteraturePage />);
+    await waitFor(() => expect(screen.getByTestId('literature-last-claim')).toBeInTheDocument());
+    const panel = screen.getByTestId('literature-last-claim');
+    expect(panel).toHaveTextContent('直近の宣言');
+    expect(panel).toHaveTextContent(
+      'CPU 1: ♣ 低位 (2-7) は【無効】になりました（所在の申告が誤り。相手には渡りません）',
+    );
+    expect(panel).not.toHaveTextContent('が獲得しました');
+    expect(panel).not.toHaveTextContent('相手（チーム');
+  });
+
+  it('renders lost outcome when a claim is lost to the opponents', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        lastClaim: { player: 0, halfSuit: 0, outcome: 2, awardedTeam: 1 },
+      }),
+    );
+    renderWithProviders(<LiteraturePage />);
+    await waitFor(() => expect(screen.getByTestId('literature-last-claim')).toBeInTheDocument());
+    const panel = screen.getByTestId('literature-last-claim');
+    expect(panel).toHaveTextContent('直近の宣言');
+    expect(panel).toHaveTextContent('あなた: ♠ 低位 (2-7) は相手（チーム1）の獲得になりました');
+  });
+
+  it('does not render the last claim section when lastClaim is null', async () => {
+    mockExec.mockResolvedValue(makeState({ lastClaim: null }));
+    renderWithProviders(<LiteraturePage />);
+    await waitFor(() => expect(screen.getByTestId('literature-threshold-note')).toBeInTheDocument());
+    expect(screen.queryByTestId('literature-last-claim')).not.toBeInTheDocument();
+    expect(screen.queryByText('直近の宣言')).not.toBeInTheDocument();
+  });
+
+  // CLIモードでない時のみスコア領域を出す（CLI時は端末が全画面になるため）。
+  it('shows scores area only in non-CLI mode', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<LiteraturePage />);
+
+    // 初期状態は non-CLI mode (GUI) なので出る
+    expect(await screen.findByTestId('literature-scores')).toBeInTheDocument();
+
+    // CLI モードに切り替え (GUI非表示)
+    const toggle = screen.getByRole('button', { name: /CLI/i });
+    fireEvent.click(toggle);
+
+    // テキストボックス(CLI)が出るまで待つ
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    expect(screen.queryByTestId('literature-scores')).not.toBeInTheDocument();
+  });
 });

@@ -32,7 +32,7 @@ import { KNOCKOUT_WHIST_HELP, parseKnockoutWhistCommand } from '../utils/cli/com
 import { formatKnockoutWhistState } from '../utils/cli/formatters/knockoutWhistFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
@@ -278,6 +278,26 @@ function KnockoutWhistPageContent() {
                         name: playerName(state.roundWinnerIdx, state.players[state.roundWinnerIdx]?.isHuman ?? false),
                       })}
                     </div>
+                    {/* **そのラウンドで何が起きたかを一目で。**Dogbone 消費と脱落は
+                        `ScoreRound` が毎ラウンド判定する本質的な出来事なのに、結果は
+                        プレイヤー一覧のグレー表示と [Dogbone 数] の増減からしか
+                        読み取れなかった (#6446)。サーバに聞くしかない ── 前ラウンドで
+                        脱落した席も毎ラウンド `roundTricks === 0` になるので、
+                        クライアントでは「今ラウンド脱落した人」を導出できない。 */}
+                    {state.roundSurvived.length > 0 && (
+                      <div className="mt-1" data-testid="kw-round-survivors">
+                        {state.roundSurvived
+                          .map((idx) => t('roundResult.survived', { name: findPlayerName(state.players, idx) }))
+                          .join(' / ')}
+                      </div>
+                    )}
+                    {state.roundEliminated.length > 0 && (
+                      <div className="mt-1" data-testid="kw-round-eliminated">
+                        {state.roundEliminated
+                          .map((idx) => t('roundResult.eliminated', { name: findPlayerName(state.players, idx) }))
+                          .join(' / ')}
+                      </div>
+                    )}
                     {/* Preview the upcoming round: hand size drops by 1 (min 1) and the round winner chooses trump. */}
                     {isRoundEnd && !isGameEnd && (
                       <div data-testid="kw-next-round-preview" className="mt-1 text-ds-text-primary">

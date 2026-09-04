@@ -15,6 +15,44 @@ func isRedSuit(design int) bool {
 	return design == domain.CardDesignHeart || design == domain.CardDesignDiamond
 }
 
+// suitDisplayName returns the glyph for a suit constant (1-4), coloured the same
+// way a card of that suit is: red for hearts and diamonds, plain for spades and
+// clubs. The glyph is the only thing that carries the suit here — Mao's "chosen
+// suit" line, Macau's and Crazy Eights' equivalents, and the trump line in
+// CatchTen / Whist all substitute it into a sentence — so dropping the colour
+// made those the only suits in the CUI that were not colour-coded (#6464).
+func suitDisplayName(suit int) string {
+	var glyph string
+	switch suit {
+	case domain.CardDesignSpade:
+		glyph = "♠"
+	case domain.CardDesignClover:
+		glyph = "♣"
+	case domain.CardDesignHeart:
+		glyph = "♥"
+	case domain.CardDesignDiamond:
+		glyph = "♦"
+	default:
+		return "?"
+	}
+	if isRedSuit(suit) {
+		return color.Red(glyph)
+	}
+	return glyph
+}
+
+// cuiTeamLabel は 2 チーム制のチーム番号を "A" / "B" の文字ラベルにする。
+//
+// **生の 0 / 1 をロケールに渡すと「チーム0」と出る。**Web が「チームA」と
+// 呼んでいるゲームでは、同じ卓の同じチームをフロントと CLI で違う名前で
+// 呼ぶことになる (#6469)。0 以外はすべて B ── 2 チーム制でしか使わない。
+func cuiTeamLabel(team int) string {
+	if team == 0 {
+		return "A"
+	}
+	return "B"
+}
+
 // cuiCardList is the minimal type constraint required by formatCardList.
 type cuiCardList interface {
 	GetCardsSize() int
@@ -153,6 +191,9 @@ func cuiRankLabel(rank int) string {
 	}
 }
 
+// cuiRankSep はランク一覧の区切り文字 (中黒)。
+const cuiRankSep = "・"
+
 // cuiPokerHandName returns the localized display name for a poker hand rank
 // (0=High Card .. 10=Five of a Kind), resolved via the shared pokerHandRank*
 // keys in cui_common. Out-of-range ranks fall back to the raw English
@@ -179,6 +220,19 @@ func cuiPlayerName[P cuiPlayer](player P, idx int) string {
 		return color.Bold(i18n.T("cuiPlayerYou"))
 	}
 	return color.Bold(i18n.Tf("cuiPlayerCpu", "idx", strconv.Itoa(idx)))
+}
+
+// cuiPlayerNameAt はスライスの idx 番目のプレイヤー名を返す。範囲外なら
+// "UNKNOWN" 相当 (cuiPlayerName のゼロ値経路) に落ちる。
+//
+// GetPlayer(idx) を持たず GetPlayers() だけを公開しているゲーム用。呼び出し側で
+// 毎回範囲検査を書くと、書き忘れた 1 本だけが盤面によっては panic する。
+func cuiPlayerNameAt[P cuiPlayer](players []P, idx int) string {
+	var zero P
+	if idx < 0 || idx >= len(players) {
+		return cuiPlayerName(zero, idx)
+	}
+	return cuiPlayerName(players[idx], idx)
 }
 
 // cuiPlayerWithStyle is the type constraint for players that have a play style.
@@ -286,6 +340,29 @@ const CuiRunMark = "|"
 // 意味の違う印が同じ形だと、どちらの話をしているのか読めない (#5674)。
 const CuiNewestMark = "<"
 
+// CuiCounterMark は「その札で直前の捕獲を丸ごと奪い返せる」ことを示す印
+// (Ristikontra)。
+//
+// 場を取る "*" とは別の記号にする ── 同じ画面に「取れる」と「奪い返せる」が
+// 並ぶので、同じ形だとどちらの話か読めない。Ristikontra の captureLegend は
+// 最初からこの記号を説明していたのに、印を出す側が無かった (#6610)。
+const CuiCounterMark = "†"
+
+// cuiIndexMarksCardListStr は札ごとに違う印を付けた一覧を返す。
+//
+// **1 つの手札に意味の違う印が同時に立つ。** 1 種類しか渡せない
+// cuiIndexMarkedCardListStr では、どちらか一方しか出せない。
+func cuiIndexMarksCardListStr(hand cuiCardList, marks map[int]string) string {
+	if len(marks) == 0 {
+		return cuiIndexedCardListStr(hand)
+	}
+	parts := make([]string, hand.GetCardsSize())
+	for i := range parts {
+		parts[i] = fmt.Sprintf("[%d]%s%s", i, cuiCardStr(hand.GetCard(i)), marks[i])
+	}
+	return strings.Join(parts, "  ")
+}
+
 // cuiIndexMarkedCardListStr returns an indexed card list where the cards at the
 // given indices carry mark.
 //
@@ -358,6 +435,13 @@ func cuiCardSliceStrEmojiNewest(cards []*domain.Card) string {
 // the note starts disagreeing with what the server will accept** (#4922).
 // Cards that capture nothing get no note; an empty result means no line at all.
 func cuiCaptureHintLine(hand cuiCardList, opts map[int][]int, key string) string {
+	return cuiCaptureHintLineWith(hand, opts, key, cuiCardStr)
+}
+
+// cuiCaptureHintLineWith is cuiCaptureHintLine with the card formatter chosen by
+// the caller. **Hanafuda does not render through cuiCardStr**, so Koi-Koi needs
+// its own formatter while sharing the pairing logic (#6506).
+func cuiCaptureHintLineWith(hand cuiCardList, opts map[int][]int, key string, fmtCard cardFormatter) string {
 	if len(opts) == 0 {
 		return ""
 	}
@@ -372,7 +456,7 @@ func cuiCaptureHintLine(hand cuiCardList, opts map[int][]int, key string) string
 			marks[j] = "[" + strconv.Itoa(ti) + "]"
 		}
 		notes = append(notes, i18n.Tf(key,
-			"hand", "["+strconv.Itoa(h)+"]"+cuiCardStr(hand.GetCard(h)),
+			"hand", "["+strconv.Itoa(h)+"]"+fmtCard(hand.GetCard(h)),
 			"table", strings.Join(marks, "")))
 	}
 	if len(notes) == 0 {

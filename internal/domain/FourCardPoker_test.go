@@ -537,3 +537,128 @@ func TestFourCardPoker_Setters(t *testing.T) {
 	assert.Equal(t, domain.FourCardHandFlush, fcp.GetPlayerHandRank())
 	assert.Equal(t, domain.FourCardHandPair, fcp.GetDealerHandRank())
 }
+
+func TestFourCardPoker_RecommendPlayMultiplier(t *testing.T) {
+	tests := []struct {
+		name        string
+		playerHand  []*domain.Card
+		expectedMul int
+	}{
+		{
+			name: "HighCard_Fold",
+			playerHand: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 2, false),
+				domain.NewCard(domain.CardDesignClover, 4, false),
+				domain.NewCard(domain.CardDesignHeart, 7, false),
+				domain.NewCard(domain.CardDesignDiamond, 9, false),
+				domain.NewCard(domain.CardDesignClover, 11, false),
+			},
+			expectedMul: 0,
+		},
+		{
+			name: "Pair_Fold",
+			playerHand: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 5, false),
+				domain.NewCard(domain.CardDesignClover, 5, false),
+				domain.NewCard(domain.CardDesignHeart, 7, false),
+				domain.NewCard(domain.CardDesignDiamond, 9, false),
+				domain.NewCard(domain.CardDesignClover, 11, false),
+			},
+			expectedMul: 0,
+		},
+		{
+			name: "TwoPair_Play1x",
+			playerHand: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 5, false),
+				domain.NewCard(domain.CardDesignClover, 5, false),
+				domain.NewCard(domain.CardDesignHeart, 9, false),
+				domain.NewCard(domain.CardDesignDiamond, 9, false),
+				domain.NewCard(domain.CardDesignClover, 2, false),
+			},
+			expectedMul: domain.FourCardPokerMinPlayMul,
+		},
+		{
+			name: "Straight_Play1x",
+			playerHand: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 5, false),
+				domain.NewCard(domain.CardDesignClover, 6, false),
+				domain.NewCard(domain.CardDesignHeart, 7, false),
+				domain.NewCard(domain.CardDesignDiamond, 8, false),
+				domain.NewCard(domain.CardDesignClover, 2, false),
+			},
+			expectedMul: domain.FourCardPokerMinPlayMul,
+		},
+		{
+			name: "Flush_Play1x",
+			playerHand: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 2, false),
+				domain.NewCard(domain.CardDesignSpade, 5, false),
+				domain.NewCard(domain.CardDesignSpade, 7, false),
+				domain.NewCard(domain.CardDesignSpade, 11, false),
+				domain.NewCard(domain.CardDesignClover, 3, false),
+			},
+			expectedMul: domain.FourCardPokerMinPlayMul,
+		},
+		{
+			name: "ThreeOfAKind_Play3x",
+			playerHand: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 7, false),
+				domain.NewCard(domain.CardDesignClover, 7, false),
+				domain.NewCard(domain.CardDesignHeart, 7, false),
+				domain.NewCard(domain.CardDesignDiamond, 9, false),
+				domain.NewCard(domain.CardDesignClover, 2, false),
+			},
+			expectedMul: domain.FourCardPokerMaxPlayMul,
+		},
+		{
+			name: "StraightFlush_Play3x",
+			playerHand: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 5, false),
+				domain.NewCard(domain.CardDesignSpade, 6, false),
+				domain.NewCard(domain.CardDesignSpade, 7, false),
+				domain.NewCard(domain.CardDesignSpade, 8, false),
+				domain.NewCard(domain.CardDesignClover, 2, false),
+			},
+			expectedMul: domain.FourCardPokerMaxPlayMul,
+		},
+		{
+			name: "FourOfAKind_Play3x",
+			playerHand: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 9, false),
+				domain.NewCard(domain.CardDesignClover, 9, false),
+				domain.NewCard(domain.CardDesignHeart, 9, false),
+				domain.NewCard(domain.CardDesignDiamond, 9, false),
+				domain.NewCard(domain.CardDesignClover, 2, false),
+			},
+			expectedMul: domain.FourCardPokerMaxPlayMul,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fcp := setupActionPhase(t, tt.playerHand, dealerLowSix(), 100, 0)
+			// playerHandRank is NOT set during the action phase
+			assert.Equal(t, 0, fcp.GetPlayerHandRank())
+			assert.Equal(t, tt.expectedMul, fcp.RecommendPlayMultiplier())
+		})
+	}
+
+	t.Run("NonActionPhase_Bet", func(t *testing.T) {
+		fcp := domain.NewDefaultFourCardPoker()
+		assert.Equal(t, domain.FourCardPokerPhaseBet, fcp.GetPhase())
+		assert.Equal(t, 0, fcp.RecommendPlayMultiplier())
+	})
+
+	t.Run("NonActionPhase_End", func(t *testing.T) {
+		fcp := domain.NewDefaultFourCardPoker()
+		fcp.SetPhase(domain.FourCardPokerPhaseEnd)
+		assert.Equal(t, 0, fcp.RecommendPlayMultiplier())
+	})
+
+	t.Run("EmptyHandInActionPhase", func(t *testing.T) {
+		fcp := domain.NewDefaultFourCardPoker()
+		fcp.SetPhase(domain.FourCardPokerPhaseAction)
+		fcp.SetPlayerHand(nil)
+		assert.Equal(t, 0, fcp.RecommendPlayMultiplier())
+	})
+}

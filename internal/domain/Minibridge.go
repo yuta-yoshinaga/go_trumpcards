@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra5
 
 package domain
 
@@ -130,6 +130,8 @@ type Minibridge struct {
 	contractSuit int
 	declarerIdx  int
 	dummyIdx     int
+
+	declarerByDealerTie bool
 
 	currentTrick     []*TrickCard
 	currentPlayerIdx int
@@ -263,6 +265,7 @@ func (m *Minibridge) announceHcp() {
 //   - ペア同点 → **親の側**が宣言側（再配りは停止性の懸念があるので採らない）
 //   - 席同点 → **親から見て先の席**
 func (m *Minibridge) decideDeclarer() {
+	m.declarerByDealerTie = false
 	teamHcp := [MinibridgeTeamCnt]int{}
 	for _, p := range m.players {
 		teamHcp[p.GetTeam()] += p.GetHcp()
@@ -275,6 +278,7 @@ func (m *Minibridge) decideDeclarer() {
 	case teamHcp[1] > teamHcp[0]:
 		declTeam = 1
 	default:
+		m.declarerByDealerTie = true
 		declTeam = m.players[m.dealerIdx].GetTeam()
 		m.addLog(-1, "declarer",
 			fmt.Sprintf("HCP が %d-%d の同点のため、親の側が宣言側になります", teamHcp[0], teamHcp[1]), nil)
@@ -884,28 +888,32 @@ func (m *Minibridge) GetPlayer(i int) *MinibridgePlayer {
 // GetWinnerTeam は勝ったチームを返す（-1: 未確定/同点）。
 func (m *Minibridge) GetWinnerTeam() int { return m.winnerTeam }
 
+// IsDeclarerByDealerTie は HCP が 20-20 の同点で親の側が宣言側になったかを返す。
+func (m *Minibridge) IsDeclarerByDealerTie() bool { return m.declarerByDealerTie }
+
 // minibridgeJSON は KV スナップショットの表現。
 type minibridgeJSON struct {
-	TrumpCards       *TrumpCards            `json:"tc"`
-	Players          []*MinibridgePlayer    `json:"pl"`
-	Config           MinibridgeConfig       `json:"cf"`
-	Phase            MinibridgePhase        `json:"ph"`
-	RoundNumber      int                    `json:"rn"`
-	TrickNumber      int                    `json:"tn"`
-	ContractLevel    int                    `json:"cl"`
-	ContractSuit     int                    `json:"cs"`
-	DeclarerIdx      int                    `json:"di"`
-	DummyIdx         int                    `json:"dm"`
-	CurrentTrick     []*TrickCard           `json:"ct"`
-	CurrentPlayerIdx int                    `json:"ci"`
-	LeadPlayerIdx    int                    `json:"li"`
-	DealerIdx        int                    `json:"dl"`
-	TeamScores       [MinibridgeTeamCnt]int `json:"ts"`
-	LastMade         bool                   `json:"lm"`
-	LastTricks       int                    `json:"lt"`
-	GameEndFlag      bool                   `json:"ge"`
-	WinnerTeam       int                    `json:"wt"`
-	ActionLog        []*ActionLogEntry      `json:"al"`
+	TrumpCards          *TrumpCards            `json:"tc"`
+	Players             []*MinibridgePlayer    `json:"pl"`
+	Config              MinibridgeConfig       `json:"cf"`
+	Phase               MinibridgePhase        `json:"ph"`
+	RoundNumber         int                    `json:"rn"`
+	TrickNumber         int                    `json:"tn"`
+	ContractLevel       int                    `json:"cl"`
+	ContractSuit        int                    `json:"cs"`
+	DeclarerIdx         int                    `json:"di"`
+	DummyIdx            int                    `json:"dm"`
+	CurrentTrick        []*TrickCard           `json:"ct"`
+	CurrentPlayerIdx    int                    `json:"ci"`
+	LeadPlayerIdx       int                    `json:"li"`
+	DealerIdx           int                    `json:"dl"`
+	TeamScores          [MinibridgeTeamCnt]int `json:"ts"`
+	LastMade            bool                   `json:"lm"`
+	LastTricks          int                    `json:"lt"`
+	GameEndFlag         bool                   `json:"ge"`
+	WinnerTeam          int                    `json:"wt"`
+	DeclarerByDealerTie bool                   `json:"dt"`
+	ActionLog           []*ActionLogEntry      `json:"al"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -918,7 +926,8 @@ func (m *Minibridge) MarshalJSON() ([]byte, error) {
 		CurrentTrick: m.currentTrick, CurrentPlayerIdx: m.currentPlayerIdx,
 		LeadPlayerIdx: m.leadPlayerIdx, DealerIdx: m.dealerIdx,
 		TeamScores: m.teamScores, LastMade: m.lastMade, LastTricks: m.lastTricks,
-		GameEndFlag: m.gameEndFlag, WinnerTeam: m.winnerTeam, ActionLog: m.actionLog,
+		GameEndFlag: m.gameEndFlag, WinnerTeam: m.winnerTeam, DeclarerByDealerTie: m.declarerByDealerTie,
+		ActionLog: m.actionLog,
 	})
 }
 
@@ -1041,5 +1050,6 @@ func (m *Minibridge) UnmarshalJSON(data []byte) error {
 	m.leadPlayerIdx, m.dealerIdx = j.LeadPlayerIdx, j.DealerIdx
 	m.teamScores, m.lastMade, m.lastTricks = j.TeamScores, j.LastMade, j.LastTricks
 	m.gameEndFlag, m.winnerTeam, m.actionLog = j.GameEndFlag, j.WinnerTeam, j.ActionLog
+	m.declarerByDealerTie = j.DeclarerByDealerTie
 	return nil
 }

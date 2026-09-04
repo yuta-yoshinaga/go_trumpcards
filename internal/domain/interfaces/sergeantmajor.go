@@ -55,6 +55,8 @@ type SergeantMajorGame interface {
 	GetDiscardCount() int
 	// GetLastExchange 直前のラウンド間で動いた札の枚数を取得する
 	GetLastExchange() int
+	// GetSurplus 指定インデックスのプレイヤーの前ラウンド過不足を取得する
+	GetSurplus(i int) int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する

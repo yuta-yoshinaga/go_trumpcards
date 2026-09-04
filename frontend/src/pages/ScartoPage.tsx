@@ -245,6 +245,14 @@ function ScartoPageContent() {
               <span>{t('trick', { n: state.trickNumber })}</span>
             </div>
 
+            {/* **エクスキューズだけが勝敗の外にいる。**出した札が誰の手にも渡らず
+                自分の得点山に戻るという規則は実装されているのに説明が無く、
+                cardPoints の内訳が読み解けなかった (#6514)。Minchiate の mattoNote /
+                Tarocchini の papiNote と同じ常設の 1 行。 */}
+            <div className="text-center mb-2 text-sm font-semibold text-ds-warning" data-testid="scarto-excuse-note">
+              {t('excuseReturnsNote')}
+            </div>
+
             <div className={lgTwoColGrid}>
               {/* Left: play area */}
               <div>
@@ -356,14 +364,18 @@ function ScartoPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.scarto.footer} px-4 py-2.5`}>
-            {canScarto && (
-              <div
-                className="mb-1 text-center text-sm text-ds-accent font-semibold"
-                data-testid="scarto-discard-prompt"
-              >
-                {t('scartoPhase', { count: selectedCardIndices.length, total: SCARTO_DISCARD_COUNT })}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="scarto-prompt-live" role="status" aria-live="polite">
+              {canScarto && (
+                <div
+                  className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                  data-testid="scarto-discard-prompt"
+                >
+                  {t('scartoPhase', { count: selectedCardIndices.length, total: SCARTO_DISCARD_COUNT })}
+                </div>
+              )}
+            </div>
             {isScartoPhase && !state.isHumanScarto && (
               <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="scarto-waiting">
                 {t('scartoWaiting')}

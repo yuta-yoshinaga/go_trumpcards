@@ -23,6 +23,12 @@ const (
 	NarcoticPhaseGameOver
 )
 
+// NarcoticDiscardGoal 勝利に必要な除去枚数。
+//
+// **エースも普通に取り除く。** 4 枚同ランクが揃えば札の種類を問わず捨てるので、
+// 目標はデッキ全部。48 (52 - エース 4 枚) ではない。
+const NarcoticDiscardGoal = CardCnt
+
 // NarcoticColCnt 場札の列数
 const NarcoticColCnt = 4
 
@@ -405,7 +411,7 @@ func (a *Narcotic) firstMovableCol() int {
 
 // checkGameClear は全 52 枚を捨て切ったかを判定する。
 func (a *Narcotic) checkGameClear() {
-	if len(a.discard) >= CardCnt {
+	if len(a.discard) >= NarcoticDiscardGoal {
 		a.phase = NarcoticPhaseGameClear
 	}
 }
@@ -439,6 +445,10 @@ func (a *Narcotic) checkStalemate() {
 // CheckNarcoticStalemate は外部から手詰まり判定を再評価する公開ラッパー。
 // SetColumns/SetStock で盤を組み立てたあとに呼ぶ。
 func (a *Narcotic) CheckNarcoticStalemate() { a.checkStalemate() }
+
+// CheckNarcoticGameClear は外部からクリア判定を再評価する公開ラッパー。
+// SetDiscardCount で盤を組み立てたあとに呼ぶ。
+func (a *Narcotic) CheckNarcoticGameClear() { a.checkGameClear() }
 
 // SetDiscardCount は捨て札の枚数を設定する (テスト用)。
 func (a *Narcotic) SetDiscardCount(n int) {

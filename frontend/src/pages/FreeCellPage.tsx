@@ -414,6 +414,14 @@ function FreeCellPageContent() {
                                   ? t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })
                                   : undefined
                               }
+                              // title と opacity はホバーできる人にしか届かない。
+                              // タブローの札は #5820 で理由を読み上げ名に入れたが、
+                              // 空き列ボタンには及んでいなかった。
+                              aria-label={
+                                selectedStackSize > emptyColLimit
+                                  ? `${t('emptyColumnAriaLabel', { idx: String(colIdx) })} — ${t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })}`
+                                  : t('emptyColumnAriaLabel', { idx: String(colIdx) })
+                              }
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
                                 selectedStackSize > emptyColLimit ? 'opacity-50' : ''
                               }`}

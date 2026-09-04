@@ -74,6 +74,21 @@ func (p *DoppelkopfCuiPresenter) Output(g interfaces.DoppelkopfGame, lastErr err
 			b.WriteString(color.Green(banner) + "\n")
 			return
 		}
+		// **途中経過はラウンド終了まで出ていなかった。**Web は `dk-live-points` で
+		// 毎レスポンス出しているのに、CUI は RoundEnd の分岐でしか
+		// `GetRoundRePoints()` を読んでいなかった。1 トリック目で Re/Kontra を
+		// 宣言するかの判断材料なので、進行中こそ要る (#6435)。RoundEnd 以降は
+		// 下の `promptRoundEnd` が結果として引き継ぐので、ここでは出さない。
+		if phase := g.GetPhase(); phase == domain.DoppelkopfPhasePlay || phase == domain.DoppelkopfPhaseTrickEnd {
+			rePts := g.GetLiveRePoints()
+			kontraPts := g.GetLiveKontraPoints()
+			b.WriteString(i18n.Tf("doppelkopf.livePoints",
+				"rePts", strconv.Itoa(rePts),
+				"reTarget", strconv.Itoa(domain.DoppelkopfReWinPoints),
+				"kontraPts", strconv.Itoa(kontraPts),
+				"kontraTarget", strconv.Itoa(domain.DoppelkopfTotalPoints-domain.DoppelkopfReWinPoints+1)) + "\n")
+		}
+
 		switch g.GetPhase() {
 		case domain.DoppelkopfPhasePlay:
 			currentIdx := g.GetCurrentPlayerIdx()

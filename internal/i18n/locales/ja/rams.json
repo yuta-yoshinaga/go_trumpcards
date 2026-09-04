@@ -8,7 +8,7 @@
   "header": "ラウンド: {{round}}/{{rounds}}  トリック: {{trick}}/{{tricks}}  ({{players}}人)",
   "potLine": "ポット: {{pot}} チップ（トリック数に応じて分配）",
   "trumpLine": "切り札: {{card}}",
-  "riskLine": "参加して1トリックも取れないと、ポットへ追加で {{penalty}} 支払います。",
+  "riskLine": "毎ラウンド全員がアンティ {{ante}} を払います。さらに参加して1トリックも取れないと、ポットへ追加で {{penalty}} 支払います。",
   "playerLine": "{{name}}: {{chips}}チップ [{{status}}] 獲得{{tricks}} 手札{{cards}}枚",
   "statusIn": "参加",
   "statusOut": "降り",

@@ -64,7 +64,13 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 		}
 
 		b.WriteString(i18n.Tf("sevencardstud.tableMax", "n", strconv.Itoa(s.GetPlayerCnt())) + "\n")
-		b.WriteString(i18n.Tf("sevencardstud.dealerLine", "idx", strconv.Itoa(s.GetDealerIdx())) + "\n")
+		dealerIdx := s.GetDealerIdx()
+		// **座席番号ではなく名前で呼ぶ。**同じ関数の他の行はすべて
+		// `cuiPlayerName` を通しているのに、ディーラー行だけ生の添字を
+		// 英語のまま埋めた文字列 ("ディーラー: Player 0") を出していた
+		// (#6470)。Web は `findPlayerName` で実名を出している。
+		b.WriteString(i18n.Tf("sevencardstud.dealerLine",
+			"name", cuiPlayerName(s.GetPlayer(dealerIdx), dealerIdx)) + "\n")
 
 		// ブリングイン (強制ベットを払い、3rd street で最初に動く席)。Web は
 		// バッジで示しているのに CUI には手掛かりが無かった (#5542)。Razz は
@@ -139,6 +145,19 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 					b.WriteString(i18n.Tf("sevencardstud.currentBestHand",
 						"hand", cuiPokerHandName(rank),
 						"cards", cuiCardSliceStrEmoji(best)) + "\n")
+
+					// Hi-Lo はハイとローの両取りを狙うゲームなので、**ハイの行に足す**。
+					// ローに差し替えると、これまで出ていたハイが消える。
+					//
+					// 成立していないときは何も出さない。Razz は未完成のローも見せるが、
+					// あれは全員がローだけを争うゲームだから成立する案内で、Hi-Lo で
+					// 同じことをすると「まだ乗っていない」を「乗りかけている」と読ませる。
+					// SevenCardStudHiLoBestLow は状態を変えないので描画から呼んで安全。
+					if s.GetIsHiLo() {
+						if low, qualifies := domain.SevenCardStudHiLoBestLow(player.GetAllCards()); qualifies {
+							b.WriteString(i18n.Tf("sevencardstud.hiLoBestLow", "cards", cuiCardSliceStrEmoji(low)) + "\n")
+						}
+					}
 				}
 			}
 		}

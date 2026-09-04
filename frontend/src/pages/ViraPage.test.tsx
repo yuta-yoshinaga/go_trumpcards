@@ -385,3 +385,35 @@ describe('ViraPage', () => {
     expect(screen.queryByTestId('bid-0')).not.toBeInTheDocument();
   });
 });
+
+describe('ViraPage pot settlement', () => {
+  it('says the declarer swept the pot when the contract was made', async () => {
+    mockExec.mockResolvedValue(makeViraState({ phase: 3, lastRoundMade: true, lastRoundPotWon: 7, pot: 0 }));
+    renderWithProviders(<ViraPage />);
+
+    const line = await screen.findByTestId('vira-pot-settlement');
+    expect(line).toHaveTextContent('7');
+    expect(line.textContent).not.toContain('{{');
+    // 積み上がりの文言と取り違えない。
+    expect(line).not.toHaveTextContent('積み上がり');
+  });
+
+  // 失敗時は「取った額」ではなく、**積み上がった後の現在のポット**を出す。
+  it('says the pot carried over when the contract failed', async () => {
+    mockExec.mockResolvedValue(makeViraState({ phase: 3, lastRoundMade: false, lastRoundPotWon: 0, pot: 12 }));
+    renderWithProviders(<ViraPage />);
+
+    const line = await screen.findByTestId('vira-pot-settlement');
+    expect(line).toHaveTextContent('12');
+    expect(line).toHaveTextContent('積み上がり');
+    expect(line.textContent).not.toContain('{{');
+  });
+
+  it('says nothing about the pot mid-round', async () => {
+    mockExec.mockResolvedValue(makeViraState({ phase: 1, lastRoundMade: true, lastRoundPotWon: 7 }));
+    renderWithProviders(<ViraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('vira-pot-settlement')).not.toBeInTheDocument();
+  });
+});

@@ -217,4 +217,78 @@ describe('KingPage', () => {
     expect(avoid).toHaveAccessibleName(new RegExp(i18n.t('king:contractType.avoid')));
     expect(achieve).toHaveAccessibleName(new RegExp(i18n.t('king:contractType.achieve')));
   });
+
+  // **King にはトリック終了で一旦止まるフェーズが無い。**CPU が続けて打つと
+  // 直前のトリックは `currentTrick` が置き換わった瞬間に消える (#6487)。
+  it('lets the player review the previous trick and who took it', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      lastTrick: [
+        { playerIdx: 0, card: { design: 'SPADE', value: 5 } },
+        { playerIdx: 1, card: { design: 'SPADE', value: 13 } },
+      ],
+      lastTrickWinner: 1,
+    });
+    renderWithProviders(<KingPage />);
+
+    const section = await screen.findByTestId('king-previous-trick');
+    // **獲得者の見出しそのものを見る。**`TrickDisplay` は札ごとに席名を描くので、
+    // 「CPU 1 が出てくる」だけでは見出しを別のキーに差し替えても通ってしまう。
+    expect(section).toHaveTextContent('CPU 1 が獲得');
+    // 空の案内は出さない ── 中身があるのに「まだありません」と言わない。
+    expect(screen.queryByTestId('king-previous-trick-empty')).not.toBeInTheDocument();
+  });
+
+  // ディールの最初はまだ何も無い。**節そのものは残す** ── 出したり消したり
+  // すると、見返す先がどこにあるのか分からなくなる。
+  it('says so before the first trick is complete', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, lastTrick: [], lastTrickWinner: -1 });
+    renderWithProviders(<KingPage />);
+
+    expect(await screen.findByTestId('king-previous-trick')).toBeInTheDocument();
+    expect(screen.getByTestId('king-previous-trick-empty')).toBeInTheDocument();
+  });
+
+  // 契約選択の催促もフェーズが変わったときに現れるテキスト。**名前が
+  // `-bid-prompt` でないだけ**で領域の外に取り残されていた (#6880 レビュー指摘)。
+  it('announces the king-select-prompt from the always-mounted live region', async () => {
+    mockExec.mockResolvedValue(selectPhaseState);
+    renderWithProviders(<KingPage />);
+
+    const live = await screen.findByTestId('king-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
+    expect(live).toContainElement(await screen.findByTestId('king-select-prompt'));
+  });
+
+  it('shows king-contract-buttons when it is the human turn to select a contract', async () => {
+    // 契約を選択するフェーズで、プレイヤー自身がディーラーの場合に表示される
+    mockExec.mockResolvedValue(selectPhaseState);
+    renderWithProviders(<KingPage />);
+    expect(await screen.findByTestId('king-contract-buttons')).toBeInTheDocument();
+  });
+
+  it('does not show king-contract-buttons if it is not human turn to select', async () => {
+    mockExec.mockResolvedValue(cpuSelectState);
+    renderWithProviders(<KingPage />);
+    await waitFor(() => expect(screen.getByTestId('king-select-cpu')).toBeInTheDocument());
+    expect(screen.queryByTestId('king-contract-buttons')).not.toBeInTheDocument();
+  });
+
+  it('shows king-trump-buttons when the user clicks the King/Trump contract', async () => {
+    // キング（切り札）契約を選んだ後、切り札となるスートを選ぶボタン群が表示される
+    mockExec.mockResolvedValue(selectPhaseState);
+    renderWithProviders(<KingPage />);
+    const trumpContractBtn = await screen.findByTestId('king-contract-6');
+    fireEvent.click(trumpContractBtn);
+    expect(await screen.findByTestId('king-trump-buttons')).toBeInTheDocument();
+  });
+
+  it('does not show king-trump-buttons before a contract is selected', async () => {
+    mockExec.mockResolvedValue(selectPhaseState);
+    renderWithProviders(<KingPage />);
+    await waitFor(() => expect(screen.getByTestId('king-contract-buttons')).toBeInTheDocument());
+    expect(screen.queryByTestId('king-trump-buttons')).not.toBeInTheDocument();
+  });
 });

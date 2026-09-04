@@ -23,6 +23,7 @@
   "drawPrompt": "stock ... 山札から引く / take ... 捨て札の頭を取る",
   "discardPrompt": "discard <番号> で 1 枚捨てます。",
   "canGoOut": "上がれます！ goout {{idx}} で 15 枚を並べられます。",
+  "canGoOutOnDeal": "配られた 15 枚のまま上がれます！ gooutdeal / gd で上がると 10 点です。",
   "wentOut": "{{name}} が上がりました。",
   "bonusLine": "{{label}}: {{points}}",
   "bonus.win": "上がり",

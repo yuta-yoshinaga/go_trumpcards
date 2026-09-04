@@ -12,5 +12,7 @@
   "hintSynergy": "it pairs, flushes, or extends a straight with cards already in that row/column",
   "hintAny": "no synergy yet; any empty cell keeps your options open",
   "gameComplete": "Game complete! Total score: {{score}}",
-  "undoUnavailable": "(nothing to undo)"
+  "undoUnavailable": "(nothing to undo)",
+  "rowPartialHand": " (partial: {{hand}})",
+  "colPartialHand": " (partial: {{hand}})"
 }

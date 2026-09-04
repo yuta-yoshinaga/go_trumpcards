@@ -24,6 +24,7 @@
   "wasteLabel": "[W{{idx}}] ",
   "wasteEmpty": "(空)",
   "wasteFilled": "{{card}} ({{count}}枚)",
+  "wasteRanks": " 上3枚: {{ranks}}",
   "stockLine": "ストック: {{count}}枚",
   "stockNext": " 次のカード: {{card}}",
   "hintStock": "ヒント: ストック → ファンデーション{{foundation}}",

@@ -67,6 +67,13 @@ export interface ViraResponse extends BaseGameResponse {
   lastRoundDelta: number[];
   /** Whether the contract just settled was made. */
   lastRoundMade: boolean;
+  /**
+   * Chips the declarer swept from the pot when the contract was made.
+   *
+   * 失敗時は 0。そのときポットは `pot` に積み上がっている。精算で `pot` は
+   * 0 に潰れるので、取った額はサーバが控えたこちらを読む。
+   */
+  lastRoundPotWon: number;
   currentTrick: ViraTrickCard[];
   /** Cumulative match scores per player — [p0, p1, p2]. */
   playerScores: number[];

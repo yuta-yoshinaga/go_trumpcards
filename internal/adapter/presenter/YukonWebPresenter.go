@@ -60,7 +60,15 @@ func (p *YukonWebPresenter) Output(y interfaces.YukonGame, lastErr error) string
 	}
 
 	if lastErr != nil {
-		resObj.Message = lastErr.Error()
+		// コードを持つエラーはクライアントの i18n に組み立てさせる。ここで
+		// Error() をそのまま入れると、キーを名乗るエラーはキー文字列が画面に
+		// 出る (#5553、#6327 で Yukon のエラーがコードを持つようになった)。
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			resObj.MessageCode = code
+			resObj.MessageParams = params
+		} else {
+			resObj.Message = lastErr.Error()
+		}
 	} else {
 		phase := y.GetPhase()
 		switch phase {

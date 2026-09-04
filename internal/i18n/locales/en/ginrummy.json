@@ -30,5 +30,8 @@
   "promptRoundEnd": "Round complete",
   "promptRoundEndHelp": "nr / nextround: advance to next round",
   "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
-  "helpExampleDiscard": "  d 0                  discard hand card 0"
+  "helpExampleDiscard": "  d 0                  discard hand card 0",
+  "outcomeGin": "Result: Gin! {{name}} scores {{total}} (opponent deadwood {{base}} + bonus {{bonus}})",
+  "outcomeKnock": "Result: knock stands. {{name}} scores {{total}} (deadwood difference {{base}})",
+  "outcomeUndercut": "Result: undercut! {{name}} scores {{total}} instead of the knocker (difference {{base}} + bonus {{bonus}})"
 }

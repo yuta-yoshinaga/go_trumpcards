@@ -63,5 +63,7 @@
     "current": "Best deadwood after discarding: {{value}}",
     "knockable": "Can knock",
     "notKnockable": "Cannot knock (needs {{threshold}} or less)"
-  }
+  },
+  "opponentMelds": "Opponent melds",
+  "opponentDeadwood": "Opponent deadwood"
 }

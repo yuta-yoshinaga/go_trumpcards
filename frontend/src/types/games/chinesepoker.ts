@@ -28,7 +28,13 @@ export interface ChinesePokerResponse extends BaseGameResponse {
   dealerMiddleRank: number;
   dealerBackRank: number;
   playerRoyalty: number;
+  playerFrontRoyalty: number;
+  playerMiddleRoyalty: number;
+  playerBackRoyalty: number;
   dealerRoyalty: number;
+  dealerFrontRoyalty: number;
+  dealerMiddleRoyalty: number;
+  dealerBackRoyalty: number;
   scoop: boolean;
   /**
    * The split the server recommends, as indices into `playerCards`.

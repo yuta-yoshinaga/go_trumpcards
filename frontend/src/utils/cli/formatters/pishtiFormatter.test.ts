@@ -12,6 +12,7 @@ function makePlayer(overrides: Partial<PishtiPlayer> = {}): PishtiPlayer {
     cards: [],
     capturedCount: 0,
     pistiBonus: 0,
+    provisionalScore: 0,
     finalScore: 0,
     ...overrides,
   };

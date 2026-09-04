@@ -420,6 +420,93 @@ describe('FortyAndEightPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/ここに置けます/)).toHaveLength(8));
   });
 
+  it('highlights eligible tableau columns when a card is selected and leaves ineligible columns unhighlighted', async () => {
+    const tableauState: FortyAndEightResponse = {
+      ...playingState,
+      tableau: makeTableau([
+        [{ card: card('SPADE', 13), faceUp: true }], // col 0: ♠K (accepts ♠Q)
+        [{ card: card('CLOVER', 7), faceUp: true }], // col 1: ♣7 (does not accept ♠Q)
+        [{ card: card('HEART', 12), faceUp: true }], // col 2: ♥Q (wrong suit -> ineligible)
+        [], // col 3: empty (accepts any card)
+        [{ card: card('SPADE', 11), faceUp: true }], // col 4: ♠J (wrong rank -> ineligible)
+        [{ card: card('DIAMOND', 5), faceUp: true }], // col 5: ineligible
+        [{ card: card('SPADE', 5), faceUp: true }], // col 6: ineligible
+        [{ card: card('HEART', 2), faceUp: true }], // col 7: ineligible
+      ]),
+      waste: [card('SPADE', 12)], // ♠Q
+      foundation: [[], [], [], [], [], [], [], []],
+    };
+    mockExec.mockResolvedValue(tableauState);
+    const { container } = renderWithProviders(<FortyAndEightPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    // 何も選んでいなければ [data-eligible-tableau] が 0 件（負のコントロール）
+    expect(container.querySelectorAll('[data-eligible-tableau="true"]')).toHaveLength(0);
+
+    const wasteButton = screen.getByAltText('♠ Q').closest('button') as HTMLButtonElement;
+    fireEvent.click(wasteButton);
+
+    // カードを選ぶと置ける列 (col 0: ♠K, col 3: 空列) にだけ付き、置けない列には付かない
+    await waitFor(() => expect(container.querySelectorAll('[data-eligible-tableau="true"]')).toHaveLength(2));
+    for (const el of container.querySelectorAll('[data-eligible-tableau="true"]')) {
+      expect(el.className).toContain('ring-ds-info');
+    }
+
+    const spadeKingButton = screen.getByAltText('♠ K').closest('button') as HTMLButtonElement;
+    const cloverSevenButton = screen.getByAltText('♣ 7').closest('button') as HTMLButtonElement;
+    const heartQueenButton = screen.getByAltText('♥ Q').closest('button') as HTMLButtonElement;
+    const spadeJackButton = screen.getByAltText('♠ J').closest('button') as HTMLButtonElement;
+
+    expect(spadeKingButton).toHaveAttribute('data-eligible-tableau', 'true');
+    expect(spadeKingButton.className).toContain('ring-ds-info');
+
+    expect(cloverSevenButton).not.toHaveAttribute('data-eligible-tableau');
+    expect(cloverSevenButton.className).not.toContain('ring-ds-info');
+
+    expect(heartQueenButton).not.toHaveAttribute('data-eligible-tableau');
+    expect(heartQueenButton.className).not.toContain('ring-ds-info');
+
+    expect(spadeJackButton).not.toHaveAttribute('data-eligible-tableau');
+    expect(spadeJackButton.className).not.toContain('ring-ds-info');
+  });
+
+  // 列に札が積まれている状態でしか `isTop` の分岐は効かない。1列1枚の盤面では
+  // どの札も最上段なので、ガードを消しても全テストが通ってしまう（実測）。
+  it('rings only the top card of a stacked column, not the cards buried under it', async () => {
+    const stackedState: FortyAndEightResponse = {
+      ...playingState,
+      tableau: makeTableau([
+        // col 0 は3枚。最上段の ♠K だけが ♠Q を受ける。下の2枚は受け皿ではない。
+        [
+          { card: card('HEART', 4), faceUp: true },
+          { card: card('CLOVER', 9), faceUp: true },
+          { card: card('SPADE', 13), faceUp: true },
+        ],
+        [{ card: card('CLOVER', 7), faceUp: true }],
+        [{ card: card('HEART', 12), faceUp: true }],
+        [{ card: card('SPADE', 11), faceUp: true }],
+        [{ card: card('DIAMOND', 5), faceUp: true }],
+        [{ card: card('SPADE', 5), faceUp: true }],
+        [{ card: card('HEART', 2), faceUp: true }],
+        [{ card: card('DIAMOND', 9), faceUp: true }],
+      ]),
+      waste: [card('SPADE', 12)],
+      foundation: [[], [], [], [], [], [], [], []],
+    };
+    mockExec.mockResolvedValue(stackedState);
+    const { container } = renderWithProviders(<FortyAndEightPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ Q').closest('button') as HTMLButtonElement);
+
+    // 空列は無いので、光るのは col 0 の最上段 ♠K ただ1枚。
+    await waitFor(() => expect(container.querySelectorAll('[data-eligible-tableau="true"]')).toHaveLength(1));
+    expect(screen.getByAltText('♠ K').closest('button')).toHaveAttribute('data-eligible-tableau', 'true');
+    // 同じ列に埋まっている2枚は候補ではない。
+    expect(screen.getByAltText('♣ 9').closest('button')).not.toHaveAttribute('data-eligible-tableau');
+    expect(screen.getByAltText('♥ 4').closest('button')).not.toHaveAttribute('data-eligible-tableau');
+  });
+
   it('clicking tableau card when source selected dispatches move', async () => {
     renderWithProviders(<FortyAndEightPage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());

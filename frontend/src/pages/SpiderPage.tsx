@@ -326,6 +326,20 @@ function SpiderPageContent() {
                 <div className="text-game-text-muted text-xs mb-1">
                   {t('stock')} ({state.stockCount})
                 </div>
+                {/* The refusal is otherwise a shake plus a title attribute, and
+                    the button is not even disabled -- so for a screen-reader or
+                    keyboard user the click simply does nothing.
+
+                    The region itself is permanently mounted; only its contents
+                    change. A region that enters the DOM together with its text
+                    is not a change and may go unread (#5955) -- which would
+                    silence the FIRST refusal, the one that matters most. The
+                    inner key still forces a re-read on a repeat attempt. */}
+                <div className="sr-only" role="status" aria-live="polite" data-testid="spd-deal-refusal">
+                  {emptyDealAttemptKey > 0 ? (
+                    <span key={`deal-refusal-${emptyDealAttemptKey.toString()}`}>{t('cannotDealEmptyColExists')}</span>
+                  ) : null}
+                </div>
                 {state.stockCount > 0 ? (
                   <AnimatedCardBack
                     width={tableau.cw}

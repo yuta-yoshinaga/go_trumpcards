@@ -233,7 +233,11 @@ function TrogguPageContent() {
             >
               <span className="mr-3">{t('deal', { n: state.roundNumber, total: state.totalRounds })}</span>
               <span className="mr-3">{t('trick', { n: state.trickNumber })}</span>
-              <span>{t('contract', { name: t(`contract.${state.contractName}`, { defaultValue: '-' }) })}</span>
+              <span>
+                {t('contract', {
+                  name: t(`contract.${state.contractName}`, { target: state.soloTarget, defaultValue: '-' }),
+                })}
+              </span>
             </div>
 
             <div className="flex flex-wrap justify-center gap-3" data-testid="tg-seats">
@@ -361,12 +365,14 @@ function TrogguPageContent() {
                     disabled={loading || CONTRACT_VALUE[c] <= state.highestBid}
                     title={
                       CONTRACT_VALUE[c] <= state.highestBid
-                        ? t('bidTooLow', { high: t(`contract.${CONTRACT_NAME[state.highestBid]}`) })
+                        ? t('bidTooLow', {
+                            high: t(`contract.${CONTRACT_NAME[state.highestBid]}`, { target: state.soloTarget }),
+                          })
                         : undefined
                     }
                     data-testid={`tg-bid-${c}`}
                   >
-                    {t(`contract.${c}`)}
+                    {t(`contract.${c}`, { target: state.soloTarget })}
                   </button>
                 ))}
               {isBid && isHumanTurn && (

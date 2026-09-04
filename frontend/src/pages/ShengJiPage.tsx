@@ -288,6 +288,16 @@ function ShengJiPageContent() {
                     })}
                   </div>
                 )}
+                {state.kitty.length > 0 && (
+                  <div className="mt-2" data-testid="shengji-kitty-cards">
+                    <div className="text-xs text-ds-text-muted mb-1">{t('kittyCardsTitle')}</div>
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {state.kitty.map((c, i) => (
+                        <CardImage key={`kitty-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

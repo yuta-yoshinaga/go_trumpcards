@@ -16,10 +16,13 @@ import (
 
 func mustFaroOutputJSON(msg string) string {
 	out := &controller.FaroWebOutput{
-		Bets:          make([]*controller.FaroWebBet, 0),
-		CallCards:     make([]*controller.WebOutputCard, 0),
-		CallOrder:     make([]int, 0),
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Bets:      make([]*controller.FaroWebBet, 0),
+		CallCards: make([]*controller.WebOutputCard, 0),
+		CallOrder: make([]int, 0),
+		// 既定値は `newFaroDefaultOutput` と揃える ── `null` を返すと、
+		// クライアントが添字で引くケースキーパーが落ちる (#6471)。
+		RemainingByRank: make([]int, 0),
+		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

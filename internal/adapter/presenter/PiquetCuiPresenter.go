@@ -50,12 +50,7 @@ func piquetWritePlayerSection(b *strings.Builder, g interfaces.PiquetGame, idx i
 	if pl == nil {
 		return
 	}
-	tag := role
-	if pl.GetIsHuman() {
-		tag += " (" + i18n.T("piquet.you") + ")"
-	} else {
-		tag += " (CPU)"
-	}
+	tag := role + " (" + cuiPlayerName(pl, idx) + ")"
 	b.WriteString(i18n.Tf("piquet.playerLine",
 		"role", tag,
 		"hand", strconv.Itoa(pl.GetCardsSize()),

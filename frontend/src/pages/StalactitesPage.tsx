@@ -223,6 +223,17 @@ function StalactitesPageContent() {
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
       ? (state.tableau[selectedSource.col]?.length ?? 0) - selectedSource.cardIndex
       : 0;
+  // **名前が無く、超過の理由も title にしかなかった。**中身は文字の `K` だけなので
+  // 支援技術には「K」としか読まれず、列も特定できない。ボタンは disabled では
+  // ないので押せそうに見えたままだった (#6814)。BakersGame / FreeCell と同じ形。
+  const emptyColBlocked = selectedStackSize > emptyColLimit;
+  const emptyColLabel = (colIdx: number): string => {
+    const base = t('emptyColumnAriaLabel', { idx: String(colIdx) });
+    return emptyColBlocked
+      ? `${base} — ${t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })}`
+      : base;
+  };
+
   // Auto-complete will deterministically win once every column is descending.
   const autoCompleteReady = stalactitesAutoCompleteReady(state.tableau, state.baseRank);
 
@@ -404,21 +415,22 @@ function StalactitesPageContent() {
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
                               disabled={!isPlaying || loading || !selectedSource}
+                              aria-label={emptyColLabel(colIdx)}
                               style={{ height: cardHeight }}
                               data-testid={`fc-empty-col-${colIdx.toString()}`}
                               // 空き列だけ上限が低い。選んだ束が超えているなら、
                               // クリックする前に分かるようにする (#5975)。
-                              data-empty-col-blocked={selectedStackSize > emptyColLimit ? 'true' : undefined}
+                              data-empty-col-blocked={emptyColBlocked ? 'true' : undefined}
                               title={
-                                selectedStackSize > emptyColLimit
+                                emptyColBlocked
                                   ? t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })
                                   : undefined
                               }
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
-                                selectedStackSize > emptyColLimit ? 'opacity-50' : ''
+                                emptyColBlocked ? 'opacity-50' : ''
                               }`}
                             >
-                              K
+                              <span aria-hidden="true">K</span>
                             </button>
                           ) : (
                             col.map((card: Card | null, cardIdx: number) => {

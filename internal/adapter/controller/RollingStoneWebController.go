@@ -51,19 +51,22 @@ type RollingStoneWebOutput struct {
 	// LeadSuit はこのトリックのリードスート (1..4、まだ誰も出していなければ 0)。
 	//
 	// **引き取りの理由。** ページは「♠ に追従できない」と出せるようになります。
-	LeadSuit         int                        `json:"leadSuit"`
-	ValidPlays       []int                      `json:"validPlays"`
-	CurrentTrick     []*WebOutputTrickCard      `json:"currentTrick"`
-	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
-	TrickNumber      int                        `json:"trickNumber"`
-	LastPickupIdx    int                        `json:"lastPickupIdx"`
-	FinishedCnt      int                        `json:"finishedCnt"`
-	DeckSize         int                        `json:"deckSize"`
-	Discarded        int                        `json:"discarded"`
-	GameEndFlag      bool                       `json:"gameEndFlag"`
-	WinnerIdx        int                        `json:"winnerIdx"`
-	Hint             *RollingStoneWebOutputHint `json:"hint,omitempty"`
+	LeadSuit         int                   `json:"leadSuit"`
+	ValidPlays       []int                 `json:"validPlays"`
+	CurrentTrick     []*WebOutputTrickCard `json:"currentTrick"`
+	CurrentPlayerIdx int                   `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                   `json:"leadPlayerIdx"`
+	TrickNumber      int                   `json:"trickNumber"`
+	LastPickupIdx    int                   `json:"lastPickupIdx"`
+	FinishedCnt      int                   `json:"finishedCnt"`
+	DeckSize         int                   `json:"deckSize"`
+	Discarded        int                   `json:"discarded"`
+	GameEndFlag      bool                  `json:"gameEndFlag"`
+	WinnerIdx        int                   `json:"winnerIdx"`
+	// WinReason は決着の理由（"emptied" / "stalemate" / "giveUp"、決着前は空）。
+	// **勝者の手札枚数からは投了と膠着が区別できない**ので、理由そのものを送る。
+	WinReason string                     `json:"winReason"`
+	Hint      *RollingStoneWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config RollingStoneWebOutputConfig `json:"config"`
 }

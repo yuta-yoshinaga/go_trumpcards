@@ -26,6 +26,12 @@ func (_m *MockMrsMopGame) MoveTableauToTableau(fromCol, cardIndex, toCol int) er
 	return ret.Error(0)
 }
 
+func (_m *MockMrsMopGame) LegalTargets(fromCol, cardIndex int) (int, []int) {
+	ret := _m.Called(fromCol, cardIndex)
+	v, _ := ret.Get(1).([]int)
+	return ret.Int(0), v
+}
+
 func (_m *MockMrsMopGame) GiveUp() {
 	_m.Called()
 }

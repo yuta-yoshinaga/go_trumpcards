@@ -32,6 +32,8 @@ type ScorpionInteractorIF interface {
 	Undo() string
 	// UndoN n回連続アンドゥ
 	UndoN(n int) string
+	// UndoToEscape 膠着状態脱出に必要なアンドゥ手数を返す
+	UndoToEscape() int
 }
 
 // ScorpionInteractor スコーピオンインタラクタークラス
@@ -81,6 +83,11 @@ func (si *ScorpionInteractor) LegalMoves(col int) string {
 // ActionLog 棋譜を出力する
 func (si *ScorpionInteractor) ActionLog() string {
 	return si.sp.ActionLogOutput(si.Game)
+}
+
+// UndoToEscape 膠着状態脱出に必要なアンドゥ手数を返す
+func (si *ScorpionInteractor) UndoToEscape() int {
+	return si.Game.UndoToEscape()
 }
 
 // RestoreScorpionInteractor deserialises JSON into a ScorpionInteractor.

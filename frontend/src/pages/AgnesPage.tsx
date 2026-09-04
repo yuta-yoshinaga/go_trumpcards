@@ -31,7 +31,12 @@ import { gameTheme } from '../styles/gameTheme';
 import type { AgnesResponse } from '../types/card';
 import { AgnesPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { agnesNextFoundationMove } from '../utils/agnesMoves';
+import {
+  agnesCanPlaceOnFoundation,
+  agnesCanPlaceOnTableau,
+  agnesNextFoundationMove,
+  endFaceUpCard,
+} from '../utils/agnesMoves';
 import { AGNES_HELP, parseAgnesCommand } from '../utils/cli/commands/agnesCommands';
 import { formatAgnesState } from '../utils/cli/formatters/agnesFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -370,29 +375,35 @@ function AgnesPageContent() {
                     </DropZone>
                     {isPlaying &&
                       (() => {
+                        const sourceCard = endFaceUpCard(col);
+                        const canMoveToFoundation =
+                          sourceCard !== null &&
+                          agnesCanPlaceOnFoundation(sourceCard, state.foundation, state.baseRank);
                         const actionButtons = (
                           <div className="flex flex-col gap-1">
                             <button
                               type="button"
                               className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
                               onClick={() => handleMoveTableauToFoundation(i)}
-                              disabled={col.length === 0 || loading}
+                              disabled={loading || !canMoveToFoundation}
                             >
                               {t('moveToFoundation')}
                             </button>
-                            {state.tableau.map((_, j) =>
-                              j === i ? null : (
+                            {state.tableau.map((targetCol, j) => {
+                              if (j === i) return null;
+                              const canMoveToCol = sourceCard !== null && agnesCanPlaceOnTableau(sourceCard, targetCol);
+                              return (
                                 <button
                                   key={`t-${i}-to-${j}`}
                                   type="button"
                                   className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
                                   onClick={() => handleMoveTableauToTableau(i, endIndex, j)}
-                                  disabled={col.length === 0 || loading}
+                                  disabled={loading || !canMoveToCol}
                                 >
                                   {t('moveToCol', { col: j })}
                                 </button>
-                              ),
-                            )}
+                              );
+                            })}
                           </div>
                         );
                         // On mobile, collapse the dense per-column action buttons behind a

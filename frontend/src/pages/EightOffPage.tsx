@@ -35,6 +35,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { EIGHTOFF_HELP, parseEightOffCommand } from '../utils/cli/commands/eightoffCommands';
 import { formatEightoffState } from '../utils/cli/formatters/eightoffFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { eightOffAutoCompleteReady } from '../utils/eightOffAutoComplete';
 import { eightOffFoundationTarget } from '../utils/eightOffFoundationTarget';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -203,14 +204,32 @@ function EightOffPageContent() {
   // the confirm dialog — matching reset's guard (issue #2099).
   const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
+  // Ready exactly when the sweep would move something. The BeleagueredCastle /
+  // StreetsAndAlleys shortcut (`some(p => p.length > 1)`) does not transfer: their Reset
+  // seeds the four aces onto the foundations, Eight Off's starts them empty.
+  const autoCompleteReady = state ? eightOffAutoCompleteReady(state.freeCells, state.tableau, state.foundation) : false;
+
   const actionBindings = useMemo(
     () => [
       { key: 'h', action: handleHint, label: 'hint' },
-      { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
+      {
+        key: 'a',
+        action: handleAutoComplete,
+        enabled: isPlayingForKbd && autoCompleteReady && !isAutoCompleting,
+        label: 'autoComplete',
+      },
       { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
       { key: 'z', action: handleUndo, label: 'undo' },
     ],
-    [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
+    [
+      handleHint,
+      handleAutoComplete,
+      isPlayingForKbd,
+      autoCompleteReady,
+      isAutoCompleting,
+      confirmGiveUpAction,
+      handleUndo,
+    ],
   );
 
   useActionKeyboardNav({
@@ -566,7 +585,7 @@ function EightOffPageContent() {
             {/* Hint is shown visually via ring highlights on the suggested source card
                 and target zone; this sr-only live region conveys the same move (or the
                 no-move result) to screen readers. */}
-            <div className="sr-only" role="status" aria-live="polite" data-testid="eo-hint-announce">
+            <div key={hintNonce} className="sr-only" role="status" aria-live="polite" data-testid="eo-hint-announce">
               {hintAnnounce}
             </div>
             <div className="flex justify-center">
@@ -627,9 +646,11 @@ function EightOffPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnSuccess}
+                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
                     onClick={handleAutoComplete}
-                    disabled={loading || isAutoCompleting}
+                    disabled={loading || isAutoCompleting || !autoCompleteReady}
+                    data-testid="autocomplete-button"
+                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
                   >
                     {t('autoComplete')}
                   </button>

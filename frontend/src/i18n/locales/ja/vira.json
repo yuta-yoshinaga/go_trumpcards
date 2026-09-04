@@ -12,7 +12,8 @@
     "targetPoints": "目標ポイント",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "targetRounds": "目標ラウンド数"
   },
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
@@ -53,7 +54,9 @@
   },
   "roundResult": {
     "title": "ラウンド結果",
-    "tricks": "{{name}} トリック: {{count}}"
+    "tricks": "{{name}} トリック: {{count}}",
+    "potWon": "宣言者がポット {{chips}} 枚を獲得",
+    "potCarried": "ポットが {{chips}} 枚に積み上がりました"
   },
   "progress": {
     "line": "宣言者の進捗: {{won}} / {{needed}} トリック",

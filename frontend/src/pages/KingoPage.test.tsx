@@ -200,6 +200,29 @@ describe('KingoPage', () => {
     expect(mockApi).not.toHaveBeenCalledWith('deal');
   });
 
+  // **案内文と入力欄は同じ minBet から作る。**下限を渡していなかったので、
+  // 卓の最低額を変えても入力欄だけ既定の 10 のままだった。
+  it('入力欄の下限が卓の最低ベットに追従する', async () => {
+    mockApi.mockResolvedValue(withState({ config: { seats: 4, initialChips: 1000, minBet: 25, rounds: 10 } }));
+    renderWithProviders(<KingoPage />);
+
+    await waitFor(() => expect(screen.getByTestId('kingo-bet-guide')).toHaveTextContent('25'));
+    // 案内文だけでなく入力欄も 25。既定の 10 のままなら落ちる。
+    expect(screen.getByLabelText('張り')).toHaveAttribute('min', '25');
+  });
+
+  // **一度も触らずに押した人が肝心。** 下限を入力欄に渡しても、初期値が 10 のままだと
+  // そのまま送信され、サーバ (Kingo.go の `amount < MinBet`) に弾かれる。
+  it('入力欄に触れずに賭けても卓の最低ベットを送る', async () => {
+    mockApi.mockResolvedValue(withState({ config: { seats: 4, initialChips: 1000, minBet: 25, rounds: 10 } }));
+    renderWithProviders(<KingoPage />);
+
+    await waitFor(() => expect(screen.getByTestId('kingo-bet-guide')).toHaveTextContent('25'));
+    expect(screen.getByLabelText('張り')).toHaveValue('25');
+    fireEvent.click(screen.getByRole('button', { name: '張る' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', { amount: 25 }));
+  });
+
   it('親のときは配るを送る', async () => {
     mockApi.mockResolvedValue(withState({ isHumanBanker: true, bankerSeat: 0 }));
     renderWithProviders(<KingoPage />);
@@ -273,5 +296,39 @@ describe('KingoPage', () => {
     renderWithProviders(<KingoPage />);
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
     expect(screen.queryByTestId('kingo-bet')).not.toBeInTheDocument();
+  });
+
+  // 親は張らずに配るため、親のときだけ配るボタンを出す。
+  it('shows deal guide for human banker in BET phase', async () => {
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: false,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    } as unknown as ReturnType<typeof useCliMode>);
+
+    mockApi.mockResolvedValue({ ...base, phase: KingoPhase.BET, isHumanBanker: true });
+    renderWithProviders(<KingoPage />);
+    expect(await screen.findByTestId('kingo-deal-guide')).toBeInTheDocument();
+  });
+
+  it('hides deal guide for non-banker in BET phase', async () => {
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: false,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    } as unknown as ReturnType<typeof useCliMode>);
+
+    mockApi.mockResolvedValue({ ...base, phase: KingoPhase.BET, isHumanBanker: false });
+    renderWithProviders(<KingoPage />);
+    await waitFor(() => expect(screen.getByTestId('kingo-chips')).toBeInTheDocument());
+    expect(screen.queryByTestId('kingo-deal-guide')).not.toBeInTheDocument();
   });
 });

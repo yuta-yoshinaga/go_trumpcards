@@ -213,6 +213,18 @@ function ToepenPageContent() {
               messageParams={state.messageParams}
             />
 
+            {handOver && state.lastTrickWinner >= 0 && (
+              <div className="mt-3 text-center text-ds-warning font-bold" data-testid="toepen-last-trick-winner">
+                {t('lastTrickWinner', {
+                  // 席名は既存の出し方（137行）に合わせて **id** を使う。
+                  // 配列インデックスを渡すと id とズレたときに別の席を名乗る。
+                  name: state.players[state.lastTrickWinner]?.isHuman
+                    ? t('you')
+                    : t('cpu', { n: state.players[state.lastTrickWinner]?.id }),
+                })}
+              </div>
+            )}
+
             <ActionLogSection
               isEndPhase={ended}
               actionLog={actionLog}

@@ -79,7 +79,7 @@ flowchart TD
 
 ```
 ==========
-Mississippi Stud
+Mississippi Stud (ミシシッピ・スタッド)
 ==========
 chips: 1000
 phase: ANTE

@@ -38,7 +38,10 @@ func TestNarcoticCuiPresenterOutput_Playing(t *testing.T) {
 	result := p.Output(g, nil)
 	assert.Contains(t, result, i18n.T("narcotic.helpTitle"))
 	assert.Contains(t, result, "Stock: 44枚")
-	assert.Contains(t, result, "Discard: 4枚")
+	// **分母まで出す。** 枚数だけでは、あと何枚で勝ちなのかを暗算させることになる。
+	// 期待値は i18n から組み立てず、ドメインの目標値そのものを見る。
+	assert.Contains(t, result, "Discard: 4/"+strconv.Itoa(domain.NarcoticDiscardGoal)+"枚")
+	assert.NotContains(t, result, "{{")
 	assert.Contains(t, result, "手数: 0")
 	assert.Contains(t, result, "[空]") // col2 is empty
 }

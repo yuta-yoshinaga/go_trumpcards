@@ -14,7 +14,7 @@
   "helpBettingLimit": "  bl [0-2]             betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
   "helpCpuCount": "  scc [1-3]            CPU player count",
   "outputTitle": "Badugi (4-Card Draw Lowball)",
-  "dealerLine": "Dealer: Player {{idx}}",
+  "dealerLine": "Dealer: {{name}}",
   "potLine": "Pot: {{pot}}",
   "drawLine": "Draw: {{idx}}/{{max}}",
   "drawPredraw": "Draw: pre-draw",

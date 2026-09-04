@@ -168,6 +168,16 @@ func TestScorpionInteractorUndoN(t *testing.T) {
 	assert.Equal(t, "undo_n_output", si.UndoN(3))
 }
 
+func TestScorpionInteractorUndoToEscape(t *testing.T) {
+	sg := newMockScorpionGame()
+	sp := newMockScorpionPresenter()
+	si := NewScorpionInteractor(sg, sp)
+
+	sg.On("UndoToEscape").Return(3)
+
+	assert.Equal(t, 3, si.UndoToEscape())
+}
+
 func TestRestoreScorpionInteractor(t *testing.T) {
 	t.Run("valid data", func(t *testing.T) {
 		data := []byte(`{"tc":{},"tb":[[],[],[],[],[],[],[]],"st":[],"cs":0,"ps":0,"mc":0,"al":[],"sl":false}`)

@@ -6,7 +6,7 @@
   "helpNext": "  n                         次のトリックへ",
   "helpNextRound": "  nr                        次のラウンドへ",
   "helpSetDifficulty": "  sd [0-2]                  CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
-  "round": "ラウンド: {{round}}  トリック: {{trick}}  切り札: {{trump}}",
+  "round": "ラウンド: {{round}}  トリック: {{trick}}  切り札: {{trump}}  (先取 {{target}}点で勝利)",
   "noTrump": "なし",
   "contractLine": "宣言者: {{name}} — {{contract}}",
   "playerLine": "{{name}} ({{role}}): {{cards}}枚  得点: {{score}}  トリック: {{tricks}}",

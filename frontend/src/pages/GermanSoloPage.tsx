@@ -318,6 +318,24 @@ function GermanSoloPageContent() {
                       <span className={p.isDeclarer ? 'text-ds-warning font-semibold' : ''}>
                         {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
                       </span>
+                      {p.id === state.dealerIdx && (
+                        <span
+                          className={`rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
+                          data-testid={`germansolo-dealer-${p.id.toString()}`}
+                        >
+                          <span aria-hidden="true">{t('dealerBadge')}</span>
+                          <span className="sr-only">{t('dealerAria')}</span>
+                        </span>
+                      )}
+                      {p.id === state.forehandIdx && (
+                        <span
+                          className={`rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
+                          data-testid={`germansolo-forehand-${p.id.toString()}`}
+                        >
+                          <span aria-hidden="true">{t('forehandBadge')}</span>
+                          <span className="sr-only">{t('forehandAria')}</span>
+                        </span>
+                      )}
                       {p.isDeclarer && (
                         <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
                           {t('declarerBadge')}
@@ -386,14 +404,18 @@ function GermanSoloPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.germansolo.footer} px-4 py-2.5`}>
-            {canBid && (
-              <div
-                className="mb-1 text-center text-sm text-ds-accent font-semibold"
-                data-testid="germansolo-bid-prompt"
-              >
-                {t('bidPhase')}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="germansolo-prompt-live" role="status" aria-live="polite">
+              {canBid && (
+                <div
+                  className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                  data-testid="germansolo-bid-prompt"
+                >
+                  {t('bidPhase')}
+                </div>
+              )}
+            </div>
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

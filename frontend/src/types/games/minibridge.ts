@@ -88,6 +88,8 @@ export interface MinibridgeResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   /** `-1` until decided, and `-1` on a tie. */
   winnerTeam: number;
+  /** Whether the declarer side was decided by the dealer's team due to a 20-20 HCP tie. */
+  declarerByDealerTie: boolean;
   hint?: MinibridgeHint;
   config: MinibridgeConfig;
 }

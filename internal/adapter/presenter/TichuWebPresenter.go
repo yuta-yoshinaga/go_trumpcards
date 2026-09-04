@@ -4,10 +4,12 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // TichuWebPresenter ティチューWebプレゼンタークラス
@@ -74,9 +76,51 @@ func (p *TichuWebPresenter) Output(tg interfaces.TichuGame, lastErr error) strin
 		resObj.Message = p.buildResultMessage(tg)
 		resObj.MessageCode = "tichu.result.summary"
 		resObj.MessageParams = map[string]string{"summary": resObj.Message}
+	} else if tg.GetDogLeadPassed() {
+		p.setDogLeadMessage(resObj, tg)
 	}
 
 	return marshalOrError(resObj)
+}
+
+// setDogLeadMessage fills in the "the dog moved the lead" notice.
+//
+// **席の名前は Go 側で組まない。**`MessageCode` + `MessageParams` はフロント側が
+// 自分のロケールで組み直すためのもので、ここで「あなた」を埋めると英語の文の中に
+// 日本語が残る。誰が人間かで文そのものが変わるので、席番号だけを渡して
+// コードを 3 つに分ける (CallBreak の `cpuId` と同じ作り)。
+func (p *TichuWebPresenter) setDogLeadMessage(resObj *controller.TichuWebOutput, tg interfaces.TichuGame) {
+	fromIdx := tg.GetDogLeadFrom()
+	toIdx := (fromIdx + 2) % tg.GetPlayerCnt()
+	from, to := strconv.Itoa(fromIdx), strconv.Itoa(toIdx)
+
+	var args []string
+	switch {
+	case isTichuHuman(tg, fromIdx):
+		resObj.MessageCode = "tichu.dogLeadPassedByYou"
+		args = []string{"to", to}
+	case isTichuHuman(tg, toIdx):
+		resObj.MessageCode = "tichu.dogLeadPassedToYou"
+		args = []string{"from", from}
+	default:
+		resObj.MessageCode = "tichu.dogLeadPassedBetweenCpus"
+		args = []string{"from", from, "to", to}
+	}
+
+	// **キーは動的に組み立てる。**`tichu.dogLeadPassedByYou` などを grep しても
+	// この呼び出しは当たらない ── `internal/i18n/locales/*/tichu.json` の 3 つの
+	// キーは、ここから `resObj.MessageCode` 経由で引かれている。消さないこと。
+	resObj.MessageParams = make(map[string]string, len(args)/2)
+	for i := 0; i < len(args); i += 2 {
+		resObj.MessageParams[args[i]] = args[i+1]
+	}
+	resObj.Message = i18n.Tf(resObj.MessageCode, args...)
+}
+
+// isTichuHuman reports whether the seat at idx is the human player.
+func isTichuHuman(tg interfaces.TichuGame, idx int) bool {
+	player := tg.GetPlayer(idx)
+	return player != nil && player.GetIsHuman()
 }
 
 // buildResultMessage ディール終了メッセージを生成

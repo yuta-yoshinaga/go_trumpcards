@@ -38,6 +38,15 @@ export function formatSergeantMajorState(state: SergeantMajorResponse | null): s
   if (state.lastExchange > 0) {
     lines.push(`${state.lastExchange} cards changed hands for last round's shortfall`);
   }
+  // **没収は「次のラウンドへ」を押した後に起きる。**押す前に予告する。
+  if (state.phase === SergeantMajorPhase.ROUND_END) {
+    const seat0 = state.players.find((p) => p.isHuman);
+    if (seat0 && seat0.surplus < 0) {
+      lines.push(`${-seat0.surplus} short: your ${-seat0.surplus} best card(s) are taken next round`);
+    } else if (seat0 && seat0.surplus > 0) {
+      lines.push(`${seat0.surplus} over: you take ${seat0.surplus} best card(s) from a short seat next round`);
+    }
+  }
 
   lines.push('----------');
 

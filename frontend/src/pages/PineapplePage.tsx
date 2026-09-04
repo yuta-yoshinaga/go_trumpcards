@@ -297,7 +297,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   // with the board if that card became the second discard — turning the C(3,1)=3
   // remaining choices into a side-by-side comparison before the pair is committed.
   // (At 2 selected, the full `discardPreview` above takes over instead.)
-  const irishCandidatePreviews = useMemo<(string | null)[] | null>(() => {
+  const irishCandidatePreviews = useMemo<({ handKey: string; rank: PokerHandRank } | null)[] | null>(() => {
     if (variant !== 'irishpoker' || !isDiscardPhase) return null;
     if (selectedDiscards.length !== discardCount - 1) return null;
     const hole = humanPlayer?.cards ?? [];
@@ -309,9 +309,32 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       const all = [...kept, ...board];
       const picked = holdemBestFive(all);
       const rank = picked ? evaluateFiveCardHand(picked.map((i) => all[i])) : null;
-      return rank == null ? null : pokerHandKey(rank);
+      return rank == null ? null : { handKey: pokerHandKey(rank), rank };
     });
   }, [variant, isDiscardPhase, humanPlayer, state?.communityCards, selectedDiscards, discardCount]);
+
+  // Badge the second Irish discard only when ONE candidate is strictly best.
+  // PokerHandRank is the category alone -- it carries no kicker -- so keeping AA
+  // and keeping 88 both read as onePair. Marking every tied candidate would badge
+  // all three and assert a preference the evaluator cannot actually support, so a
+  // tie means the page says nothing rather than something it cannot back up.
+  const irishRecommendedDiscard = useMemo<number | null>(() => {
+    if (!irishCandidatePreviews) return null;
+    let best = -1;
+    let bestIdx: number | null = null;
+    let tied = false;
+    irishCandidatePreviews.forEach((p, i) => {
+      if (!p) return;
+      if (p.rank > best) {
+        best = p.rank;
+        bestIdx = i;
+        tied = false;
+      } else if (p.rank === best) {
+        tied = true;
+      }
+    });
+    return tied ? null : bestIdx;
+  }, [irishCandidatePreviews]);
   // Plain Pineapple discards 1 of 3 preflop (before any board), so a board-based
   // preview is impossible. Instead annotate each hole card with the qualitative
   // shape (pair / suited / connector / high card) the OTHER two would keep, a
@@ -325,6 +348,24 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       return pineappleKeepFeatures(a, b);
     });
   }, [variant, isDiscardPhase, humanPlayer]);
+
+  const cpSelectedPreview = useMemo(() => {
+    if (variant !== 'crazypineapple' || !isDiscardPhase) return null;
+    if (selectedDiscards.length !== discardCount) return null;
+    const discardIdx = selectedDiscards[0];
+    const cand = candidatePreviews?.[discardIdx];
+    if (!cand) return null;
+    return {
+      handKey: cand.handKey,
+      isRecommended: recommendedDiscards.has(discardIdx),
+    };
+  }, [variant, isDiscardPhase, selectedDiscards, discardCount, candidatePreviews, recommendedDiscards]);
+
+  // Which keep-2 feature set the currently selected discard would leave behind.
+  const selectedKeepFeatures = useMemo<PineappleKeepFeature[] | null>(() => {
+    if (!keepFeaturePreviews || selectedDiscards.length !== discardCount) return null;
+    return keepFeaturePreviews[selectedDiscards[0]] ?? null;
+  }, [keepFeaturePreviews, selectedDiscards, discardCount]);
 
   const actionBindings = useMemo(
     () => [
@@ -607,7 +648,8 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                         const dim = showdownBest5.holeSet.size > 0 && !inBest;
                         const candKey = candidatePreviews?.[idx]?.handKey ?? null;
                         const isRecommendedDiscard = recommendedDiscards.has(idx);
-                        const irishCandKey = irishCandidatePreviews?.[idx] ?? null;
+                        const irishCandKey = irishCandidatePreviews?.[idx]?.handKey ?? null;
+                        const isIrishRecommended = irishRecommendedDiscard === idx;
                         const keepFeatures = keepFeaturePreviews?.[idx] ?? null;
                         return (
                           <div key={`${card.design}-${card.value}`} className="flex flex-col items-center">
@@ -644,6 +686,14 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                                 data-testid="irishpoker-discard-candidate"
                               >
                                 {`${t('discard.candidateHand')}: ${t(`hand.${irishCandKey}`)}`}
+                              </span>
+                            )}
+                            {isIrishRecommended && (
+                              <span
+                                className={`mt-0.5 rounded-full px-1.5 text-[10px] font-semibold ${badgeInfoColors}`}
+                                data-testid="irishpoker-discard-recommended"
+                              >
+                                {t('discard.recommended')}
                               </span>
                             )}
                             {keepFeatures && (
@@ -694,6 +744,28 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             {/* Discard controls */}
             {canDiscard && (
               <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
+                {/* The per-card pn-discard-keep-feature notes are visual only, so a
+                    screen-reader user could not compare keeps. Announce the chosen
+                    one. The irishpoker preview region below is variant-exclusive
+                    with this one, so the two never speak over each other. */}
+                {selectedKeepFeatures && (
+                  <div className="sr-only" role="status" aria-live="polite" data-testid="pn-keep-feature-announce">
+                    {`${t('discard.keepLabel')}: ${selectedKeepFeatures
+                      .map((f) => t(`discard.feature${f.charAt(0).toUpperCase()}${f.slice(1)}`))
+                      .join('・')}`}
+                  </div>
+                )}
+                {/* The cp-discard-candidate / cp-discard-recommended badges are
+                    visual only. This region is variant-exclusive with
+                    irishpoker-discard-preview-announce and pn-keep-feature-announce,
+                    so only one of the three can ever speak. */}
+                {cpSelectedPreview && (
+                  <div className="sr-only" role="status" aria-live="polite" data-testid="cp-discard-preview-announce">
+                    {cpSelectedPreview.isRecommended
+                      ? t('discard.cpPreviewAriaRecommended', { hand: t(`hand.${cpSelectedPreview.handKey}`) })
+                      : t('discard.cpPreviewAria', { hand: t(`hand.${cpSelectedPreview.handKey}`) })}
+                  </div>
+                )}
                 {discardPreview && (
                   <div className="mb-2 text-sm" data-testid="irishpoker-discard-preview">
                     {/* **見えている行は読み上げ向きではない。** ラベル・札・役が

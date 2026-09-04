@@ -54,6 +54,12 @@ func (_m *MockDurakGame) PlayerTakeCards() error {
 	return ret.Error(0)
 }
 
+// PlayerTransfer モック
+func (_m *MockDurakGame) PlayerTransfer(handIdx int) error {
+	ret := _m.Called(handIdx)
+	return ret.Error(0)
+}
+
 // CpuPlay モック
 func (_m *MockDurakGame) CpuPlay() {
 	_m.Called()

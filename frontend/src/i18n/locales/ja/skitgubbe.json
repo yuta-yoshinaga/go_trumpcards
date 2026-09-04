@@ -7,7 +7,7 @@
   "hint.beat": "場の札を上回れる最も弱い札です",
   "hint.duel": "この札で一騎打ちを取れます",
   "hint.pickup": "上回れる札が1枚もないので引き取るしかありません",
-  "landscapeBanner": "横向きにするとカードが見やすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "notYourTurnAria": "いまは自分の番ではありません",
   "opponentHand": "{{name}} の手札 {{n}} 枚",
   "opponentHandAriaLabel": "{{name}} の手札 {{n}} 枚（裏向き）",
@@ -28,5 +28,6 @@
   "tutorial.phases": "このゲームは性質のまるで違う2つのフェーズでできています。まず札を「集め」、次に集めた札を「出し切り」ます",
   "tutorial.stunsa": "同じランクなら stunsa。札は場に残ったまま同じ人がもう一度リードし、決着した時点で全部が勝者のものになります",
   "you": "あなた",
-  "yourHand": "あなたの手札"
+  "yourHand": "あなたの手札",
+  "finishedBadge": "セーフ"
 }

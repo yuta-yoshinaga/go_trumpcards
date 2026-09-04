@@ -1700,3 +1700,45 @@ describe('BlackJackPage', () => {
     expect(summary).toHaveTextContent('配当表');
   });
 });
+
+describe('Side Bets display', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    mockExec.mockResolvedValue(betPhaseState);
+  });
+
+  it('shows server-confirmed side bets during action phase', async () => {
+    mockExec.mockResolvedValue({
+      ...actionPhaseState,
+      perfectPairsBet: 10,
+      twentyOnePlus3Bet: 20,
+    });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => {
+      expect(screen.getByText('PP (ペアベット): 10')).toBeInTheDocument();
+      expect(screen.getByText('ポーカー役ベット: 20')).toBeInTheDocument();
+    });
+  });
+
+  it('does not show side bets when amount is 0 or during bet phase (negative control)', async () => {
+    // Bet phase with local values set (simulated via API response not being action phase)
+    mockExec.mockResolvedValue({
+      ...betPhaseState,
+      perfectPairsBet: 10,
+      twentyOnePlus3Bet: 20,
+    });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => {
+      expect(screen.queryByTestId('side-bet-info-pp')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('side-bet-info-t3')).not.toBeInTheDocument();
+    });
+
+    // Action phase with 0 amounts
+    mockExec.mockResolvedValue(actionPhaseState); // 0 by default
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => {
+      expect(screen.queryByTestId('side-bet-info-pp')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('side-bet-info-t3')).not.toBeInTheDocument();
+    });
+  });
+});

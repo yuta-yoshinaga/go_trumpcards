@@ -38,5 +38,6 @@
     "foundation": "組札",
     "rankandfileMove": "この札を動かせます",
     "rankandfileDraw": "他に動かせる札はありません。山札から引きましょう"
-  }
+  },
+  "cannotGrab": "掴めません"
 }

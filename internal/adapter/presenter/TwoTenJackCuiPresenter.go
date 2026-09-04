@@ -10,10 +10,16 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// twoTenJackTeamCnt is the number of partnerships: seats alternate, so a seat's
+// team is its index parity. twoTenJackPlayerStr labels each row with the same
+// i%2, and the totals below fold on it, so the rows and the totals cannot
+// disagree about who is on which side.
+const twoTenJackTeamCnt = 2
+
 // twoTenJackPlayerStr returns the display string for a single TwoTenJack player.
 func twoTenJackPlayerStr(player *domain.TwoTenJackPlayer, i int) string {
 	var b strings.Builder
-	team := i % 2
+	team := i % twoTenJackTeamCnt
 	b.WriteString(i18n.Tf("twotenjack.playerLine",
 		"name", cuiPlayerName(player, i),
 		"team", strconv.Itoa(team),
@@ -58,8 +64,20 @@ func (p *TwoTenJackCuiPresenter) Output(s interfaces.TwoTenJackGame, lastErr err
 			"suit", twoTenJackSuitLabel(s.GetTrumpSuit()),
 			"declarer", strconv.Itoa(s.GetDeclarerIdx())) + "\n")
 
+		var teamCum, teamPoints [twoTenJackTeamCnt]int
 		for i := 0; i < s.GetPlayerCnt(); i++ {
-			b.WriteString(twoTenJackPlayerStr(s.GetPlayer(i), i))
+			pl := s.GetPlayer(i)
+			b.WriteString(twoTenJackPlayerStr(pl, i))
+			team := i % twoTenJackTeamCnt
+			teamCum[team] += pl.GetCumulativeScore()
+			teamPoints[team] += pl.GetCapturedPointCards()
+		}
+
+		for team := range twoTenJackTeamCnt {
+			b.WriteString(i18n.Tf("twotenjack.teamLine",
+				"team", strconv.Itoa(team),
+				"points", strconv.Itoa(teamPoints[team]),
+				"cum", strconv.Itoa(teamCum[team])) + "\n")
 		}
 
 		b.WriteString("----------\n")

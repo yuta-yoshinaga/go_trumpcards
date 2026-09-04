@@ -168,7 +168,11 @@ function NainJaunePageContent() {
               <div className="text-center text-xs mb-3" data-testid="nainjaune-awards">
                 {state.awards.map((a) => (
                   <div key={`award-${a.box}-${a.player.toString()}`}>
-                    {t('awardLine', { player: a.player, box: t(`box.${a.box}`), chips: a.chips })}
+                    {/* 席 0 は「あなた」と呼ぶ ── 手札セクションが既にそうしているのに、
+                        獲得通知と出し切り通知だけが「席0が」と出ていた (#6521)。 */}
+                    {a.player === 0
+                      ? t('awardLineYou', { box: t(`box.${a.box}`), chips: a.chips })
+                      : t('awardLine', { player: a.player, box: t(`box.${a.box}`), chips: a.chips })}
                   </div>
                 ))}
               </div>
@@ -212,7 +216,7 @@ function NainJaunePageContent() {
 
             {dealOver && state.dealWinner >= 0 && (
               <div className="text-center text-sm mb-3" data-testid="nainjaune-deal-result">
-                {t('dealResult', { n: state.dealWinner })}
+                {state.dealWinner === 0 ? t('dealResultYou') : t('dealResult', { n: state.dealWinner })}
               </div>
             )}
 

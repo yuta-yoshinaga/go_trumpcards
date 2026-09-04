@@ -353,7 +353,10 @@ function SpiteAndMalicePageContent() {
                   highlight={isHintTarget(`hand${selection?.kind === 'hand' ? selection.idx : ''}-to-f${idx}`)}
                   selected={selection !== null}
                   onClick={() => handleFoundationClick(idx)}
-                  label={t('label.foundation')}
+                  ariaTop={(pileNo, card, top) =>
+                    t('aria.foundationTop', { label: t('label.foundation'), n: pileNo, card, top })
+                  }
+                  ariaEmpty={(pileNo) => t('aria.foundationEmpty', { label: t('label.foundation'), n: pileNo })}
                 />
               ))}
             </div>
@@ -370,6 +373,8 @@ function SpiteAndMalicePageContent() {
                 selected={selection?.kind === 'goal'}
                 onClick={handleSelectGoal}
                 label={t('label.goal')}
+                ariaTop={(card, count) => t('aria.goalTop', { label: t('label.goal'), card, count })}
+                ariaEmpty={t('aria.goalEmpty', { label: t('label.goal') })}
                 playable={
                   isHumanTurn && !isGameOver && isGoalTopPlayableToFoundation(human.goalTop, state.foundationTops)
                 }
@@ -399,6 +404,8 @@ function SpiteAndMalicePageContent() {
               selection={selection}
               dataTutorial="sam-sides"
               label={t('label.side')}
+              ariaTop={(pileNo, card, count) => t('aria.sideTop', { label: t('label.side'), n: pileNo, card, count })}
+              ariaEmpty={(pileNo) => t('aria.sideEmpty', { label: t('label.side'), n: pileNo })}
               discardLabel={t('discard')}
               discardEnabled={selectionIsHand}
               discardHint={selectionIsHand ? t('discardReady') : t('discardNeedHand')}
@@ -523,7 +530,8 @@ function FoundationPile({
   highlight,
   selected,
   onClick,
-  label,
+  ariaTop,
+  ariaEmpty,
 }: {
   idx: number;
   pile: Card[];
@@ -532,10 +540,11 @@ function FoundationPile({
   highlight: boolean;
   selected: boolean;
   onClick: () => void;
-  label: string;
+  ariaTop: (n: number, card: string, top: number) => string;
+  ariaEmpty: (n: number) => string;
 }) {
   const top = pile.length > 0 ? pile[pile.length - 1] : undefined;
-  const ariaLabel = top ? `${label} ${idx + 1}: ${cardAlt(top)} (top=${topValue})` : `${label} ${idx + 1}: empty`;
+  const ariaLabel = top ? ariaTop(idx + 1, cardAlt(top), topValue) : ariaEmpty(idx + 1);
   const baseRing = highlight ? 'ring-2 ring-ds-info' : '';
   const interactive = selected ? 'cursor-pointer hover:-translate-y-0.5' : 'cursor-default';
   return (
@@ -575,6 +584,8 @@ function GoalPile({
   onClick,
   label,
   playable,
+  ariaTop,
+  ariaEmpty,
 }: {
   top?: Card;
   size: number;
@@ -583,6 +594,10 @@ function GoalPile({
   onClick: () => void;
   label: string;
   playable: boolean;
+  /** 読み上げ文は親が t() で組んで渡す。このファイルは子に t を持ち込まず、
+   *  解決済みの文字列（や、それを組む関数）を prop で受ける形で揃えている。 */
+  ariaTop: (card: string, count: number) => string;
+  ariaEmpty: string;
 }) {
   // Selection ring wins (the user explicitly chose this pile); otherwise the
   // playable affordance pulses a warning-colored glow so the strategically
@@ -600,7 +615,7 @@ function GoalPile({
       className={`${focusRingWhite} flex flex-col items-center rounded-lg transition-transform ${accentClass}`}
       onClick={onClick}
       disabled={size === 0}
-      aria-label={top ? `${label} top: ${cardAlt(top)} (${size} left)` : `${label}: empty`}
+      aria-label={top ? ariaTop(cardAlt(top), size) : ariaEmpty}
     >
       <span className="text-xs text-ds-secondary mb-1">
         {label} ({size})
@@ -688,6 +703,8 @@ function SideRow({
   selection,
   dataTutorial,
   label,
+  ariaTop,
+  ariaEmpty,
   discardLabel,
   discardEnabled,
   discardHint,
@@ -703,6 +720,8 @@ function SideRow({
   discardLabel: string;
   discardEnabled: boolean;
   discardHint: string;
+  ariaTop: (n: number, card: string, count: number) => string;
+  ariaEmpty: (n: number) => string;
 }) {
   return (
     <div className="flex flex-col items-center gap-2" data-tutorial={dataTutorial}>
@@ -725,9 +744,7 @@ function SideRow({
                 className={`${focusRingWhite} rounded-lg transition-transform ${ring}`}
                 onClick={() => onSelect(idx)}
                 disabled={top === undefined}
-                aria-label={
-                  top ? `${label} ${idx + 1} top: ${cardAlt(top)} (${pile.length})` : `${label} ${idx + 1}: empty`
-                }
+                aria-label={top ? ariaTop(idx + 1, cardAlt(top), pile.length) : ariaEmpty(idx + 1)}
               >
                 {top ? (
                   <AnimatedCard card={top} width={cardWidth} />

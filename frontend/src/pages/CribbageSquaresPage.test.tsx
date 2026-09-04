@@ -4,6 +4,7 @@ import { cribbagesquaresApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CribbageSquaresResponse, CribbageSquaresScore } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
 import { CribbageSquaresPage, cribbageBreakdownParts } from './CribbageSquaresPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -236,9 +237,52 @@ describe('CribbageSquaresPage', () => {
     await waitFor(() => expect(screen.getByTestId('row-score-1')).not.toHaveAttribute('data-cross-hover'));
   });
 
+  // **クロス表示は色だけで、読み上げには何も出ていなかった。**
+  it('names the affected row and column, with their current scores, on an empty cell', async () => {
+    // **本物のサーバは、空きマスが残っている間 rowScores を 0 のまま返す**
+    // （スターターは全マスが埋まってからめくられる）。読み上げに載せるべき値は
+    // 「スターター抜きで確定している点」＝ partial の方。
+    mockExec.mockResolvedValue(
+      makeState({
+        rowPartialDetails: [zero(), { ...zero(), total: 3 }, zero(), zero()],
+        colPartialDetails: [zero(), zero(), { ...zero(), total: 7 }, zero()],
+      }),
+    );
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-1-2')).toBeEnabled());
+
+    expect(screen.getByTestId('cell-1-2')).toHaveAttribute('aria-label', '空 2-3、行2(現在3点)・列3(現在7点)');
+    // **埋まっているマスはカード読み上げのまま。**
+    expect(screen.getByTestId('cell-0-0')).toHaveAttribute('aria-label', cardAlt(card('SPADE', 5)));
+  });
+
+  // サーバが内訳を省いたレスポンスでも、読み上げが壊れず 0 として出る。
+  it('reads out zero when the server sent no breakdown for a line', async () => {
+    mockExec.mockResolvedValue(makeState({ rowPartialDetails: [], colPartialDetails: [] }));
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-1-2')).toBeEnabled());
+
+    expect(screen.getByTestId('cell-1-2')).toHaveAttribute('aria-label', '空 2-3、行2(現在0点)・列3(現在0点)');
+  });
+
   it('shows an error with a retry', async () => {
     mockExec.mockRejectedValue(new Error('boom'));
     renderWithProviders(<CribbageSquaresPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /再試行|retry/i })).toBeInTheDocument());
+  });
+
+  // 現在のカードがない場合は空スロットのプレースホルダーを表示する。
+  it('shows empty slot placeholder when currentCard is null', async () => {
+    mockExec.mockResolvedValue(makeState({ currentCard: null }));
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('current-card-empty')).toBeInTheDocument());
+  });
+
+  // 現在のカードがある場合は空スロットのプレースホルダーを表示しない。
+  it('hides empty slot placeholder when currentCard exists', async () => {
+    mockExec.mockResolvedValue(makeState({ currentCard: card('HEART', 10) }));
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('current-card-empty')).not.toBeInTheDocument();
   });
 });

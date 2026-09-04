@@ -33,6 +33,11 @@
   "result": {
     "title": "最終得点",
     "winner": "勝者: {{names}}",
+    "breakdownTitle": "得点の内訳",
+    "breakdownRow": "{{name}}: A {{aces}}枚 / バスラ {{basras}}回 / 捕獲 {{cards}}枚",
+    "sevenDiamonds": "7♦: {{name}}",
+    "tenDiamonds": "10♦: {{name}}",
+    "mostCards": "最多枚数: {{name}}",
     "score": "{{name}}: {{score}}点"
   },
   "hintAvailable": "ヒント",

@@ -35,6 +35,10 @@ func (cp *ColourWhistCuiPresenter) Output(c interfaces.ColourWhistGame, lastErr 
 				"seat", strconv.Itoa(c.GetDeclarerIdx()),
 				"tricks", strconv.Itoa(c.GetDeclarerTricks())) + "\n")
 		}
+		if card := c.GetCalledCard(); card != nil {
+			sb.WriteString(i18n.Tf("colourwhist.calledCardLine",
+				"card", cuiCardStr(card)) + "\n")
+		}
 		cp.writeScores(sb, c)
 		cp.writeTrick(sb, c)
 		cp.writeHand(sb, c)

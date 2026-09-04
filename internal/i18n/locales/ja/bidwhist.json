@@ -15,7 +15,7 @@
   "highestBid": "最高ビッド: {{bid}}",
   "contractUndecided": "契約: 未決定",
   "noTrumpLabel": "なし",
-  "teamScoreLine": "チーム0: {{t0}}点  チーム1: {{t1}}点",
+  "teamScoreLine": "チーム0: {{t0}}点  チーム1: {{t1}}点  (先取 {{target}}点で勝利)",
   "playerLine": "{{name}} (チーム{{team}}) トリック:{{tricks}} 手札:{{cards}}{{status}}",
   "declarerMark": "★落札者",
   "passMark": "(パス)",

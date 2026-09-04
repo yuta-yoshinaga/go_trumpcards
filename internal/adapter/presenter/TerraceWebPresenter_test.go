@@ -114,6 +114,15 @@ func TestTerraceWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "test error", result.Message)
 	})
 
+	t.Run("domain error code", func(t *testing.T) {
+		g := new(interfaces.MockTerraceGame)
+		setupTerraceOutputMock(g)
+		err := domain.NewDomainErrorCode(domain.ErrWrongPhase, "terrace.errNotPlaying", nil)
+		result := parseTerraceOutput(t, new(TerraceWebPresenter).Output(g, err))
+		assert.Equal(t, "terrace.errNotPlaying", result.MessageCode)
+		assert.Empty(t, result.Message)
+	})
+
 	for _, tc := range []struct {
 		name string
 		val  domain.TerracePhase

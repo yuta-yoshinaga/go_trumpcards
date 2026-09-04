@@ -356,3 +356,22 @@ describe('SlapjackPage', () => {
     }
   });
 });
+
+describe('SlapjackPage keyboard shortcut announcement', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  // KbdBadge は目で見える案内でしかない。aria-keyshortcuts が無いと、
+  // 支援技術はショートカットが存在すること自体を知れない (#6375)。
+  it('announces the same keys useReflexShortcuts listens for', async () => {
+    mockExec.mockResolvedValue(baseState);
+    renderWithProviders(<SlapjackPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+
+    // 値は useReflexShortcuts.ts の実装と一致していること:
+    //   Enter / s / S -> step, Space -> slap
+    expect(screen.getByTestId('step-button')).toHaveAttribute('aria-keyshortcuts', 'Enter S');
+    expect(screen.getByTestId('slap-button')).toHaveAttribute('aria-keyshortcuts', 'Space');
+  });
+});

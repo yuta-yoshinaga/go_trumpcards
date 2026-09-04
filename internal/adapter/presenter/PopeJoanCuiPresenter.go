@@ -84,6 +84,12 @@ func (p *PopeJoanCuiPresenter) Output(c interfaces.PopeJoanGame, lastErr error) 
 				"name", cuiPlayerName(player, i),
 				"chips", strconv.Itoa(player.GetChips()),
 				"cards", strconv.Itoa(player.GetCardsSize()))
+			// **ディーラーは区画の種銭を負担し、めくり札が Pope/A/K/Q/J なら
+			// その区画を総取りする。**毎ディール回るので、席に印を付けないと
+			// 誰が負担して誰が総取りし得るのかを追えなかった (#6520)。
+			if i == c.GetDealerIdx() {
+				line += "  " + i18n.T("popejoan.dealerBadge")
+			}
 			// **Pope を抱えている人はその区画への支払いを免除される**ので、
 			// 伏せ手でも公開してよい情報 (Web も CPU に出している)。
 			if domain.PopeJoanHoldsPope(player) {

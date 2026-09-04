@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -35,10 +36,56 @@ func klondikeScoringModeLabel(mode domain.KlondikeScoringMode) string {
 }
 
 // KlondikeCuiPresenter renders the Klondike Solitaire CUI view.
-type KlondikeCuiPresenter struct{}
+//
+// ベガス方式の最終得点にはタイムボーナスが乗る。それは Web だけの
+// クライアントサイド機能で、ドメインにもプレゼンタにも存在しなかったため、
+// **同じ盤で遊んでも CUI と Web で「最終得点」が常に食い違っていた** (#6287)。
+// 経過時間はここで持つ ── GolfCuiPresenter がセッション状態を持つのと同じ形。
+type KlondikeCuiPresenter struct {
+	// now は差し替え可能な時計。nil のときは time.Now。テストが実時間に
+	// 依存しないようにするためだけの継ぎ目。
+	now       func() time.Time
+	running   bool
+	startedAt time.Time
+	elapsed   time.Duration
+}
+
+// klondikeTimeBonus は Web の frontend/src/hooks/useKlondikeTimer.ts と
+// **同じ式**: floor(700000 / 経過秒)。0 秒以下は 0 を返すのも Web と同じ。
+// 式が割れると、この機能が直そうとしている食い違いをもう一度作ることになる。
+func klondikeTimeBonus(d time.Duration) int {
+	sec := int(d.Seconds())
+	if sec <= 0 {
+		return 0
+	}
+	return 700000 / sec
+}
+
+// clock returns the injected clock, or the wall clock.
+func (p *KlondikeCuiPresenter) clock() time.Time {
+	if p.now == nil {
+		return time.Now()
+	}
+	return p.now()
+}
+
+// tickTimer starts the clock when a game begins and freezes it when one ends.
+// 局面ごとに呼ばれるので、Output が何度呼ばれても計測は一度きり。
+func (p *KlondikeCuiPresenter) tickTimer(phase domain.KlondikePhase) {
+	switch {
+	case phase == domain.KlondikePhasePlaying && !p.running:
+		p.startedAt = p.clock()
+		p.elapsed = 0
+		p.running = true
+	case phase != domain.KlondikePhasePlaying && p.running:
+		p.elapsed = p.clock().Sub(p.startedAt)
+		p.running = false
+	}
+}
 
 // Output renders the current game state for the active locale (#1699).
 func (p *KlondikeCuiPresenter) Output(k interfaces.KlondikeGame, lastErr error) string {
+	p.tickTimer(k.GetPhase())
 	return buildCuiOutput(i18n.T("klondike.helpTitle"), func(b *strings.Builder) {
 		// Header: draw mode, scoring mode, and the running Vegas score, matching
 		// the web header (none of which the CUI surfaced before).
@@ -134,6 +181,12 @@ func (p *KlondikeCuiPresenter) Output(k interfaces.KlondikeGame, lastErr error) 
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(k.GetMoveCount())))
 			if k.GetScoringMode() == domain.KlondikeScoringVegas {
 				b.WriteString(" " + i18n.Tf("klondike.clearScore", "score", strconv.Itoa(k.GetScore())))
+				// ボーナスは**ベガス方式のときだけ**。通常方式には最終得点が
+				// 無いので、出すと存在しない数字を語ることになる。
+				bonus := klondikeTimeBonus(p.elapsed)
+				b.WriteString(" " + i18n.Tf("klondike.clearTimeBonus",
+					"bonus", strconv.Itoa(bonus),
+					"total", strconv.Itoa(k.GetScore()+bonus)))
 			}
 			b.WriteString("\n")
 		case domain.KlondikePhaseGameOver:

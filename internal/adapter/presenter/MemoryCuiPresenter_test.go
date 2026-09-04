@@ -3,6 +3,7 @@ package presenter
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,6 +16,19 @@ import (
 
 func newMockMemoryGame() *interfaces.MockMemoryGame {
 	return new(interfaces.MockMemoryGame)
+}
+
+// memoryBoardRows keeps only the rendered board lines, so an assertion about a
+// cell marker cannot be satisfied by the legend that describes the marker.
+func memoryBoardRows(out string) string {
+	var b strings.Builder
+	for _, line := range strings.Split(out, "\n") {
+		if strings.HasPrefix(line, "[") {
+			b.WriteString(line)
+			b.WriteString("\n")
+		}
+	}
+	return b.String()
 }
 
 func setupMemoryMockDefaults(mg *interfaces.MockMemoryGame) {
@@ -91,6 +105,46 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		result := p.Output(mg, nil)
 		expected := color.Yellow(fmt.Sprintf("%-10s", cuiCardStr(domain.NewCard(domain.CardDesignSpade, 1, false))))
 		assert.Contains(t, result, expected)
+	})
+
+	t.Run("marks the seen face-down card that matches the one face up", func(t *testing.T) {
+		// Driven through Output: the rule has its own tests, but those stay green
+		// even if nothing calls it.
+		mg := new(interfaces.MockMemoryGame)
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
+		for i := 0; i < domain.MemoryBoardSize; i++ {
+			board[i] = &domain.MemoryBoardCard{Card: domain.NewCard(domain.CardDesignSpade, (i%13)+1, false)}
+		}
+		board[0].FaceUp = true
+		board[0].Visited = true
+		// Index 13 holds the other spade ace and has been turned over before.
+		board[13].Visited = true
+		// Registered before the defaults so this board is the one returned.
+		mg.On("GetBoard").Return(board)
+		setupMemoryMockDefaults(mg)
+
+		p := new(MemoryCuiPresenter)
+		// The legend explains "!?" too, so look at the board rows only.
+		result := memoryBoardRows(p.Output(mg, nil))
+		assert.Contains(t, result, "!?")
+	})
+
+	t.Run("does not mark a match the player has never seen", func(t *testing.T) {
+		mg := new(interfaces.MockMemoryGame)
+		board := make([]*domain.MemoryBoardCard, domain.MemoryBoardSize)
+		for i := 0; i < domain.MemoryBoardSize; i++ {
+			board[i] = &domain.MemoryBoardCard{Card: domain.NewCard(domain.CardDesignSpade, (i%13)+1, false)}
+		}
+		board[0].FaceUp = true
+		board[0].Visited = true
+		// The matching card exists but was never turned over.
+		board[13].Visited = false
+		mg.On("GetBoard").Return(board)
+		setupMemoryMockDefaults(mg)
+
+		p := new(MemoryCuiPresenter)
+		result := memoryBoardRows(p.Output(mg, nil))
+		assert.NotContains(t, result, "!?")
 	})
 
 	t.Run("marks visited face-down cells distinctly with a legend", func(t *testing.T) {

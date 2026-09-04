@@ -17,5 +17,6 @@
   "hintUnknown": "ヒント: 不明",
   "helpExampleHint": "  h                        次の一手を教えてもらう",
   "helpUndo": "  u                        1手戻す",
-  "cuiScoreLine": "スコア: {{score}}"
+  "cuiScoreLine": "スコア: {{score}}",
+  "cuiComboLine": "🔥 {{combo}}連鎖中"
 }

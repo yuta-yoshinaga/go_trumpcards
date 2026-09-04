@@ -29,5 +29,7 @@
   "helpExampleBet": "  b 10                 アンテ 10 で参加する",
   "helpExamplePlay": "  p                    勝負する (アンテと同額を追加)",
   "helpHint": "  h                    助言を表示",
-  "helpRebet": "  rb                   直前と同じ額でベット (再ベット)"
+  "helpRebet": "  rb                   直前と同じ額でベット (再ベット)",
+  "antePayoutLine": "  アンテ配当: {{payout}}",
+  "playPayoutLine": "  プレイ配当: {{payout}}"
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupCanfieldCuiMockDefaults(cg *interfaces.MockCanfieldGame) {
@@ -172,5 +173,76 @@ func TestCanfieldCuiPresenter_ActionLogOutput(t *testing.T) {
 		p := new(CanfieldCuiPresenter)
 		result := p.ActionLogOutput(cg)
 		assert.Contains(t, result, "draw")
+	})
+}
+
+func TestCanfieldCuiPresenter_ReserveRuleNote(t *testing.T) {
+	i18n.SetLang("ja")
+
+	t.Run("with reserve", func(t *testing.T) {
+		cg := new(interfaces.MockCanfieldGame)
+		cg.On("GetBaseRank").Return(1)
+		cg.On("GetFoundation").Return([domain.CanfieldFoundationCnt][]*domain.Card{})
+		cg.On("GetReserve").Return([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)})
+		cg.On("GetStockCount").Return(0)
+		cg.On("GetWaste").Return([]*domain.Card{})
+		cg.On("GetTableau").Return([domain.CanfieldTableauCnt][]*domain.CanfieldTableauCard{})
+		cg.On("GetPhase").Return(domain.CanfieldPhasePlaying)
+		cg.On("GetMoveCount").Return(0)
+		cg.On("CanUndo").Return(false)
+
+		p := new(CanfieldCuiPresenter)
+		result := p.Output(cg, nil)
+
+		assert.Contains(t, result, "※ リザーブがある場合、空列への移動はできません（自動で補充されます）")
+	})
+
+	t.Run("without reserve (negative control)", func(t *testing.T) {
+		cg := new(interfaces.MockCanfieldGame)
+		cg.On("GetBaseRank").Return(1)
+		cg.On("GetFoundation").Return([domain.CanfieldFoundationCnt][]*domain.Card{})
+		cg.On("GetReserve").Return([]*domain.Card{}) // empty reserve
+		cg.On("GetStockCount").Return(0)
+		cg.On("GetWaste").Return([]*domain.Card{})
+		cg.On("GetTableau").Return([domain.CanfieldTableauCnt][]*domain.CanfieldTableauCard{})
+		cg.On("GetPhase").Return(domain.CanfieldPhasePlaying)
+		cg.On("GetMoveCount").Return(0)
+		cg.On("CanUndo").Return(false)
+
+		p := new(CanfieldCuiPresenter)
+		result := p.Output(cg, nil)
+
+		assert.NotContains(t, result, "※ リザーブがある場合、空列への移動はできません（自動で補充されます）")
+	})
+}
+
+func TestCanfieldCuiPresenter_Errors(t *testing.T) {
+	i18n.SetLang("ja")
+
+	cg := new(interfaces.MockCanfieldGame)
+	cg.On("GetBaseRank").Return(1)
+	cg.On("GetFoundation").Return([domain.CanfieldFoundationCnt][]*domain.Card{})
+	cg.On("GetReserve").Return([]*domain.Card{})
+	cg.On("GetStockCount").Return(0)
+	cg.On("GetWaste").Return([]*domain.Card{})
+	cg.On("GetTableau").Return([domain.CanfieldTableauCnt][]*domain.CanfieldTableauCard{})
+	cg.On("GetPhase").Return(domain.CanfieldPhasePlaying)
+	cg.On("GetMoveCount").Return(0)
+	cg.On("CanUndo").Return(false)
+
+	p := new(CanfieldCuiPresenter)
+
+	t.Run("errEmptyColumnAutoFillOnly", func(t *testing.T) {
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "canfield.errEmptyColumnAutoFillOnly", nil)
+		result := p.Output(cg, err)
+		assert.Contains(t, result, "リザーブがある場合、空列には自動補充のみ行われます。自分で置くことはできません。")
+		assert.NotContains(t, result, "canfield.err")
+	})
+
+	t.Run("errNotAlternateDescending", func(t *testing.T) {
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "canfield.errNotAlternateDescending", nil)
+		result := p.Output(cg, err)
+		assert.Contains(t, result, "カードの色を交互にし、数字が1つ小さくなるように置いてください。")
+		assert.NotContains(t, result, "canfield.err")
 	})
 }

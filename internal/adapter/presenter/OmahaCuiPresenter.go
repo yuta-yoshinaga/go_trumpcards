@@ -21,9 +21,19 @@ func (p *OmahaCuiPresenter) ActionLogOutput(o interfaces.OmahaGame) string {
 	return actionLogOutputTextForSeats[*domain.OmahaPlayer](o)
 }
 
-// omahaTitleKey は、ホールカード枚数 (4=オマハ, 5=Big O) と Hi-Lo フラグから
-// CUI ヘッダーに使う i18n タイトルキーを選択する。
-func omahaTitleKey(holeCards int, hiLo bool) string {
+// omahaTitleKey は、ホールカード枚数 (4=オマハ, 5=Big O)、Hi-Lo フラグ、
+// プリフロップ公開枚数から CUI ヘッダーに使う i18n タイトルキーを選択する。
+//
+// **preflopCommunity を最優先で見る。** Courchevel は Big O と同じ 5 枚・
+// 非 Hi-Lo なので、枚数と Hi-Lo だけでは区別できず、盤面が別ゲーム名を
+// 名乗っていた (#7067)。0 枚なら従来どおりの分岐。
+func omahaTitleKey(holeCards int, hiLo bool, preflopCommunity int) string {
+	if preflopCommunity > 0 {
+		if hiLo {
+			return "omaha.helpTitleCourchevelHiLo"
+		}
+		return "omaha.helpTitleCourchevel"
+	}
 	if holeCards >= 5 {
 		if hiLo {
 			return "omaha.helpTitleBigOHiLo"
@@ -38,7 +48,7 @@ func omahaTitleKey(holeCards int, hiLo bool) string {
 
 // Output renders the current game state for the active locale (#1699).
 func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string {
-	titleKey := omahaTitleKey(o.GetHoleCardCount(), o.GetIsHiLo())
+	titleKey := omahaTitleKey(o.GetHoleCardCount(), o.GetIsHiLo(), o.GetPreflopCommunityCount())
 	return buildCuiOutput(i18n.T(titleKey), func(b *strings.Builder) {
 		// Omaha's defining pitfall: exactly two hole cards must be used. Surface
 		// it every render (the count adapts for Big O's five hole cards).
@@ -72,7 +82,13 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 		}
 
 		b.WriteString(i18n.Tf("omaha.tableMax", "n", strconv.Itoa(o.GetPlayerCnt())) + "\n")
-		b.WriteString(i18n.Tf("omaha.dealerLine", "idx", strconv.Itoa(o.GetDealerIdx())) + "\n")
+		dealerIdx := o.GetDealerIdx()
+		// **座席番号ではなく名前で呼ぶ。**同じ関数の他の行はすべて
+		// `cuiPlayerName` を通しているのに、ディーラー行だけ生の添字を
+		// 英語のまま埋めた文字列 ("ディーラー: Player 0") を出していた
+		// (#6470)。Web は `findPlayerName` で実名を出している。
+		b.WriteString(i18n.Tf("omaha.dealerLine",
+			"name", cuiPlayerName(o.GetPlayer(dealerIdx), dealerIdx)) + "\n")
 
 		cc := o.GetCommunityCards()
 		if len(cc) == 0 {

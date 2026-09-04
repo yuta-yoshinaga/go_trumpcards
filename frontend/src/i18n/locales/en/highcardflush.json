@@ -2,6 +2,7 @@
   "title": "High Card Flush",
   "player": "Player",
   "dealer": "Dealer",
+  "betError": "Ante must be 10–10000, bonuses 0 or 10–10000, bets in steps of 10, and total within balance",
   "label": {
     "chips": "Chips",
     "ante": "Ante",

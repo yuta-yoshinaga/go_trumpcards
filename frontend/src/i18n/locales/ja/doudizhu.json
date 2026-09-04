@@ -35,6 +35,7 @@
     "peasantsWin": "農民の勝利！",
     "summary": "{{summary}}"
   },
+  "handCards": "{{count}}枚",
   "settings": {
     "difficulty": "CPU難易度",
     "easy": "簡単",
@@ -71,5 +72,6 @@
       "bomb": "爆弾",
       "rocket": "ロケット"
     }
-  }
+  },
+  "landscapeBanner": "横画面での表示を推奨します"
 }

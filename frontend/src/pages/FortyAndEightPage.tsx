@@ -35,6 +35,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { FORTYANDEIGHT_HELP, parseFortyandeightCommand } from '../utils/cli/commands/fortyandeightCommands';
 import { formatFortyandeightState } from '../utils/cli/formatters/fortyandeightFormatter';
 import { fortyAndEightFoundationTargets } from '../utils/fortyAndEightFoundationTargets';
+import { fortyAndEightTableauTargets } from '../utils/fortyAndEightTableauTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
@@ -160,6 +161,10 @@ function FortyAndEightPageContent() {
   const eligibleFoundations = useMemo(
     () => fortyAndEightFoundationTargets(selectedCard, state?.foundation ?? []),
     [selectedCard, state?.foundation],
+  );
+  const eligibleTableaus = useMemo(
+    () => fortyAndEightTableauTargets(selectedCard, state?.tableau ?? []),
+    [selectedCard, state?.tableau],
   );
 
   const isPlayingForKbd = state?.phase === FortyAndEightPhase.PLAYING;
@@ -374,6 +379,7 @@ function FortyAndEightPageContent() {
             <div className="flex gap-1 sm:gap-2 mb-3" data-tutorial="f8-tableau">
               {state.tableau.map((col, colIdx) => {
                 const tableauColZone: FortyAndEightMoveZone = { zone: 'tableau', col: colIdx };
+                const isEligible = eligibleTableaus.has(colIdx);
                 return (
                   <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
                     <DropZone
@@ -389,8 +395,9 @@ function FortyAndEightPageContent() {
                             type="button"
                             onClick={() => handleSelectTarget(tableauColZone)}
                             disabled={!isPlaying || loading || !selectedSource}
+                            data-eligible-tableau={isEligible ? 'true' : undefined}
                             style={{ height: f8.ch }}
-                            className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${isEligible ? 'ring-2 ring-ds-info' : ''}`}
                           >
                             {t('empty')}
                           </button>
@@ -401,6 +408,8 @@ function FortyAndEightPageContent() {
                               col: colIdx,
                               cardIndex: cardIdx,
                             };
+                            const isTop = cardIdx === col.length - 1;
+                            const isEligibleCard = isTop && isEligible;
                             return (
                               <div
                                 key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -420,10 +429,11 @@ function FortyAndEightPageContent() {
                                     disabled={!isPlaying || loading}
                                     aria-label={cardAlt(tcard.card)}
                                     aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
+                                    data-eligible-tableau={isEligibleCard ? 'true' : undefined}
                                     draggable={isPlaying && !loading}
                                     onDragStart={dnd.handleDragStart(cardZone)}
                                     onDragEnd={dnd.handleDragEnd}
-                                    className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                    className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : isEligibleCard ? 'ring-2 ring-ds-info' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                   >
                                     <AnimatedCard
                                       card={tcard.card}

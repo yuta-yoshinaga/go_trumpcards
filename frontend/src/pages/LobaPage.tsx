@@ -29,6 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { LOBA_HELP, parseLobaCommand } from '../utils/cli/commands/lobaCommands';
 import { formatLobaState } from '../utils/cli/formatters/lobaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const LB_TUTORIAL_STEPS: TutorialStep[] = [
@@ -148,7 +149,7 @@ function LobaPageContent() {
               {opponents.map((o) => (
                 <div key={`opp-${o.id.toString()}`} className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">
-                    {t('opponentHand', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                    {t('opponentHand', { name: playerName(o.id, false), n: o.cardCount })}
                     {' · '}
                     {t('score', { n: o.score })}
                     {o.eliminated && ` · ${t('eliminated')}`}
@@ -156,7 +157,7 @@ function LobaPageContent() {
                   <div
                     className="flex gap-1 justify-center flex-wrap"
                     role="img"
-                    aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                    aria-label={t('opponentHandAriaLabel', { name: playerName(o.id, false), n: o.cardCount })}
                   >
                     {Array.from({ length: o.cardCount }, (_, i) => (
                       <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
@@ -196,7 +197,7 @@ function LobaPageContent() {
                       ].join(' ')}
                     >
                       <span className="text-[10px] text-ds-text-muted">
-                        {meldKindName(m.kind)} · {t('meldOwner', { n: m.owner })}
+                        {meldKindName(m.kind)} · {findPlayerName(state.players, m.owner)}
                       </span>
                       {m.cards.map((card, j) => (
                         <AnimatedCard

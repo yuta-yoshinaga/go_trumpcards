@@ -8,7 +8,7 @@
   "phaseSecond": "第2フェーズ: マストフォロー",
   "trumpLine": "切り札表示カード: {{card}}",
   "trumpLineNone": "切り札: {{suit}} (山札なし)",
-  "pointsLine": "得点: あなた={{p0}}  CPU={{p1}}  (66点で勝利)",
+  "pointsLine": "得点: あなた={{p0}}  CPU={{p1}}  ({{target}}点で勝利)",
   "playerLine": "{{name}}: 獲得{{tricks}}トリック {{points}}点 {{cards}}枚",
   "marriageAvailable": "マリアージュ宣言可能: m <idx> (候補: {{indices}})",
   "gameEndP0": "ゲーム終了！ あなたの勝利です ({{p0}}-{{p1}})！",

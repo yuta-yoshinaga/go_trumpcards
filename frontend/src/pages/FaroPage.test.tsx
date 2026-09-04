@@ -26,6 +26,7 @@ function makeState(overrides: Partial<FaroResponse> = {}): FaroResponse {
     turnsPlayed: 0,
     turnsTotal: 25,
     remaining: 52,
+    remainingByRank: Array.from({ length: 14 }, (_, i) => (i === 0 ? 0 : 4)),
     callCards: [],
     callOrder: [],
     callWon: false,
@@ -251,15 +252,22 @@ describe('FaroPage', () => {
       }
     });
 
-    it('decrements ranks by the cards revealed on a turn', async () => {
-      // soda (SPADE A), losing (SPADE 3), winning (HEART 7) -> A, 3, 7 each drop to 3.
+    // **残数はサーバが数える (#6471)。**公開札は 1 枚も渡さないので、
+    // 以前のようにクライアントで積み上げる実装なら全ランク 4 のままになる ──
+    // つまりこのテストは「サーバの値を読んでいる」ことだけを測る。
+    it('renders the per-rank counts the server sent, not ones it derived', async () => {
+      const counts: number[] = Array.from({ length: 14 }, (_, i) => (i === 0 ? 0 : 4));
+      counts[1] = 3;
+      counts[3] = 3;
+      counts[7] = 3;
       mockExec.mockResolvedValue(
         makeState({
           phase: 2,
-          soda: card('SPADE', 1),
-          losingCard: card('SPADE', 3),
-          winningCard: card('HEART', 7),
+          soda: null,
+          losingCard: null,
+          winningCard: null,
           turnsPlayed: 1,
+          remainingByRank: counts,
         }),
       );
       renderWithProviders(<FaroPage />);
@@ -270,9 +278,42 @@ describe('FaroPage', () => {
       expect(screen.getByTestId('case-keeper-rank-5')).toHaveTextContent('4');
     });
 
-    it('resets all ranks to four when the game is reset', async () => {
+    // **これがこの issue の本体。**ラウンド途中でページを再読み込みすると、
+    // ローカルに溜めた Set は空に戻る ── 実際には配られた札を「全ランク満数」と
+    // 嘘をついていた。サーバ由来なら初回レンダーから正しい。
+    it('shows depleted counts on a fresh mount mid-round', async () => {
+      const counts: number[] = Array.from({ length: 14 }, (_, i) => (i === 0 ? 0 : 4));
+      counts[2] = 0; // 2 は 4 枚とも出きっている
+      counts[9] = 1;
       mockExec.mockResolvedValue(
-        makeState({ phase: 2, losingCard: card('SPADE', 3), winningCard: card('HEART', 7), turnsPlayed: 1 }),
+        makeState({
+          phase: 2,
+          turnsPlayed: 12,
+          soda: null,
+          losingCard: null,
+          winningCard: null,
+          remainingByRank: counts,
+        }),
+      );
+      // 何も公開されていない状態からの初回マウント = リロード直後と同じ。
+      renderWithProviders(<FaroPage />);
+
+      await waitFor(() => expect(screen.getByTestId('case-keeper-rank-2')).toHaveTextContent('0'));
+      expect(screen.getByTestId('case-keeper-rank-9')).toHaveTextContent('1');
+      expect(screen.getByTestId('case-keeper-rank-5')).toHaveTextContent('4');
+    });
+
+    it('resets all ranks to four when the game is reset', async () => {
+      const counts: number[] = Array.from({ length: 14 }, (_, i) => (i === 0 ? 0 : 4));
+      counts[3] = 3;
+      mockExec.mockResolvedValue(
+        makeState({
+          phase: 2,
+          losingCard: card('SPADE', 3),
+          winningCard: card('HEART', 7),
+          turnsPlayed: 1,
+          remainingByRank: counts,
+        }),
       );
       renderWithProviders(<FaroPage />);
       await waitFor(() => expect(screen.getByTestId('case-keeper-rank-3')).toHaveTextContent('3'));

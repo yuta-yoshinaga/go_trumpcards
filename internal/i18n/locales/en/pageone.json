@@ -21,6 +21,7 @@
   "cmdDeclare": "declare     ... declare Page One!",
   "cmdSkip": "skip        ... skip declaration (penalty: draw 2)",
   "roundEnd": "Round over",
+  "penaltyApplied": "{{name}} forgot to declare Page One! (+{{count}} cards)",
   "cmdNextRound": "nr / nextround ... advance to next round",
   "gameEnd": "Game over! {{name}} wins!",
   "hintNone": "No hint available.",

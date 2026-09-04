@@ -190,3 +190,47 @@ describe('SedmaPage', () => {
     await waitFor(() => expect(screen.getByTestId('sedma-target')).toBeInTheDocument());
   });
 });
+
+// **7 はどのスートでもトリックを奪える。**フォロー義務が無い捕獲ゲームなのに、
+// その規則が Web のどこにも書かれていなかった (#6444)。CUI は `promptPlayHelp` で
+// 最初から説明していた。
+describe('SedmaPage wild seven', () => {
+  it('states the rule and rings the sevens in hand', async () => {
+    mockExec.mockResolvedValue(
+      makeSedmaState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 3,
+            cards: [
+              { design: 'SPADE', value: 7 },
+              { design: 'HEART', value: 9 },
+              { design: 'CLOVER', value: 7 },
+            ],
+            trickCount: 0,
+            teamScore: 0,
+          },
+          { id: 1, isHuman: false, cardCount: 3, cards: [], trickCount: 0, teamScore: 0 },
+          { id: 2, isHuman: false, cardCount: 3, cards: [], trickCount: 0, teamScore: 0 },
+          { id: 3, isHuman: false, cardCount: 3, cards: [], trickCount: 0, teamScore: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<SedmaPage />);
+
+    expect(await screen.findByTestId('sedma-wild-rule')).toHaveTextContent('7 はどのスートでもトリックを奪えます');
+
+    // **7 の 2 枚だけが印を持つ。**`data-trump` は PlayerHandSection が
+    // `trumpIndices` から付ける属性で、9 には付かない。
+    const marked = document.querySelectorAll('[data-trump]');
+    expect(marked).toHaveLength(2);
+    for (const el of marked) {
+      expect(el.getAttribute('aria-label')).toMatch(/7$/);
+      expect(el.getAttribute('title') ?? '').toContain('7 はどのスートでも');
+    }
+    // 9 の札は印もツールチップも持たない。
+    const nine = screen.getByRole('button', { name: '♥ 9' });
+    expect(nine).not.toHaveAttribute('data-trump');
+  });
+});

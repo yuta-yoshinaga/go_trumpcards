@@ -77,6 +77,7 @@ func (p *ZwanzigerrufenWebPresenter) buildBase(g interfaces.ZwanzigerrufenGame) 
 	}
 
 	resObj.PlayableIndices = p.playableIndices(g)
+	resObj.DiscardableIndices = p.discardableIndices(g)
 	resObj.CurrentTrick = trickCardsToOutputWithFace(g.GetCurrentTrick(), koenigrufenFace)
 	resObj.LastTrickCards = make([]*controller.WebOutputCard, 0, len(g.GetLastTrickCards()))
 	for _, c := range g.GetLastTrickCards() {
@@ -85,6 +86,17 @@ func (p *ZwanzigerrufenWebPresenter) buildBase(g interfaces.ZwanzigerrufenGame) 
 	resObj.Players = p.buildPlayersOutput(g)
 	resObj.Breakdown = p.buildBreakdown(g)
 	return resObj
+}
+
+// discardableIndices 人間のデクレアラーが伏せられる手札のインデックスを返す。
+func (p *ZwanzigerrufenWebPresenter) discardableIndices(g interfaces.ZwanzigerrufenGame) []int {
+	if g.GetDeclarerIdx() != 0 || g.GetPhase() != domain.ZwanzigerrufenPhaseTalon {
+		return make([]int, 0)
+	}
+	if idx := g.GetDiscardableIndices(); idx != nil {
+		return idx
+	}
+	return make([]int, 0)
 }
 
 // playableIndices 人間が出せる手札のインデックスを返す。

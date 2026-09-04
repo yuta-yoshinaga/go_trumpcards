@@ -24,6 +24,7 @@
   "hintAvailable": "ヒントがあります",
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
+  "emptyColumnAriaLabel": "空の列 {{col}}（キングのみ置けます）",
   "drawMode": "ドローモード",
   "drawMode1": "1枚引き",
   "drawMode3": "3枚引き",
@@ -42,7 +43,7 @@
     "hintDisplay": "ヒントボタンを押すと、次に移動できるカードが表示されます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "frontendHint": {
     "moveToFoundation": "組札に移動できるカードがあります",
     "drawFromStock": "すぐにできる手がありません — 山札から引いてみましょう",

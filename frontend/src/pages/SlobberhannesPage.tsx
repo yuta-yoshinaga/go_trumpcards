@@ -33,6 +33,13 @@ import { isPenaltyQueen } from '../utils/slobberhannesQueen';
 /** Tricks per round. The last one carries a penalty, so this count is load-bearing. */
 const TRICKS_PER_ROUND = 8;
 
+/**
+ * Points for dodging all three penalties (sync:
+ * `SlobberhannesCleanBonus` in internal/domain/Slobberhannes.go). "Clean" is
+ * not merely "no penalty" — it scores.
+ */
+const CLEAN_BONUS = 1;
+
 /** Guided tutorial steps (penalty warning, trick, hand, actions). */
 const SLOBBERHANNES_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -147,7 +154,7 @@ function SlobberhannesPageContent() {
       p.tookLastTrick && t('marks.last'),
       p.tookQueen && t('marks.queen'),
     ].filter(Boolean);
-    return marks.length > 0 ? marks.join(', ') : t('marks.clean');
+    return marks.length > 0 ? marks.join(', ') : t('marks.clean', { bonus: CLEAN_BONUS });
   };
 
   const resultBanner = (() => {

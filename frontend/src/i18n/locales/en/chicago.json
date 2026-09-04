@@ -15,6 +15,7 @@
   "yourHand": "Your Hand",
   "currentHand": "Current Hand",
   "anteBringIn": "Ante/Bring-in",
+  "bringIn": "Bring-in",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
@@ -78,7 +79,9 @@
     "sevencardstudCheckFree": "Nothing to call — take the next card for free",
     "sevencardstudCallHigh": "You hold a high card — call and see the next street",
     "sevencardstudFoldWeak": "No pair and no high card — fold",
-    "sevencardstudCheckLow": "Five cards of eight or lower and nothing to call — take the next card for free"
+    "sevencardstudCheckLow": "Five cards of eight or lower and nothing to call — take the next card for free",
+    "sevencardstudPlaySpadeLock": "You hold the A♠ in the hole, so the spade half is locked in — keep playing even with a weak hand",
+    "sevencardstudCheckSpadeLock": "You hold the A♠ in the hole and owe nothing — take the free card (the spade half is locked in)"
   },
   "style": {
     "tag": "TAG",

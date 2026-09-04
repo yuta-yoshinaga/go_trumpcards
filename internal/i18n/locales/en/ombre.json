@@ -24,6 +24,7 @@
   "gameEnd": "Game over! {{name}} wins the match!",
   "promptBid": "Bidding — highest bid: {{bid}}  Turn: {{name}}",
   "promptBidHelp": "bid pass ... drop out  |  bid entrar <s/c/h/d> ... entrar  |  bid solo <s/c/h/d> ... solo",
+  "forcedEntrar": "Everyone passed: {{name}} was forced to take Entrar",
   "promptPlay": "Turn: {{name}}  Trump: {{trump}}",
   "promptPlayHelp": "play <idx> ... play a card (trump: Spadille>Manille>Basto>Punto>K>Q>J>6..2; must follow suit)",
   "promptTrickEnd": "Trick complete",

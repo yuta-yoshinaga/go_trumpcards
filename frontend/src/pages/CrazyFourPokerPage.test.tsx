@@ -61,6 +61,11 @@ const base: CrazyFourPokerResponse = {
     { hand: 8, name: 'Four of a Kind', multiplier: 50 },
     { hand: 2, name: 'Pair', multiplier: 1 },
   ],
+  superBonusPayouts: [
+    { hand: 8, name: '4 枚のエース', odds: '200' },
+    { hand: 8, name: 'Four of a Kind', odds: '30' },
+    { hand: 5, name: 'Flush', odds: '1.5' },
+  ],
   message: '',
 };
 
@@ -159,6 +164,19 @@ describe('CrazyFourPokerPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play', { multiplier: 3 }));
   });
 
+  // 手札が配られたら、プレイヤーに判断させるために役を表示する
+  it('shows player hand rank once dealt', async () => {
+    mockApi.mockResolvedValue(dealt());
+    renderWithProviders(<CrazyFourPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('c4p-player-rank')).toBeInTheDocument());
+  });
+
+  it('hides player hand rank before being dealt', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<CrazyFourPokerPage />);
+    await waitFor(() => expect(screen.queryByTestId('c4p-player-rank')).not.toBeInTheDocument());
+  });
+
   it('降りるを送れる', async () => {
     mockApi.mockResolvedValue(dealt());
     renderWithProviders(<CrazyFourPokerPage />);
@@ -246,5 +264,20 @@ describe('CrazyFourPokerPage', () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<CrazyFourPokerPage />);
     await waitFor(() => expect(screen.queryByTestId('card-area')).not.toBeInTheDocument());
+  });
+
+  // **Super Bonus はアンティに必ず付く賭け。**任意の Queens Up は配当表が見えて、
+  // 必須の側だけ見えないのは逆だった。
+  it('shows the Super Bonus payout table before the bet', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<CrazyFourPokerPage />);
+
+    const table = await screen.findByTestId('c4p-superbonus-payouts');
+    // 端数のある行まで出る（1/10 単位の内部表現をそのまま出すと 15:1 に化ける）。
+    expect(table).toHaveTextContent('4 枚のエース');
+    expect(table).toHaveTextContent('200倍');
+    expect(table).toHaveTextContent('1.5倍');
+    // Queens Up の表も従来どおり残っている。
+    expect(screen.getByTestId('c4p-queensup-payouts')).toBeInTheDocument();
   });
 });

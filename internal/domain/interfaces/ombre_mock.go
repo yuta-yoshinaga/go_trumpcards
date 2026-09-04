@@ -134,6 +134,12 @@ func (_m *MockOmbreGame) GetDealerIdx() int {
 	return ret.Get(0).(int)
 }
 
+// IsForcedEntrar モック
+func (_m *MockOmbreGame) IsForcedEntrar() bool {
+	ret := _m.Called()
+	return ret.Get(0).(bool)
+}
+
 // GetForehandIdx モック
 func (_m *MockOmbreGame) GetForehandIdx() int {
 	ret := _m.Called()

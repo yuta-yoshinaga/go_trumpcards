@@ -185,14 +185,25 @@ func TestDuchess_EmptyColumnIsReservedForTheReserve(t *testing.T) {
 	}, nil, []*Card{NewCard(CardDesignClover, 7, true)})
 
 	// Column 1 is empty and the reserve is not, so only the reserve may fill it.
-	assert.Error(t, d.MoveWasteToTableau(1), "waste cannot fill it yet")
-	assert.Error(t, d.MoveTableauToTableau(0, -1, 1), "nor can another column")
+	errWaste := d.MoveWasteToTableau(1)
+	require.Error(t, errWaste, "waste cannot fill it yet")
+	codeWaste, _ := ErrorMessageCode(errWaste)
+	assert.Equal(t, "duchess.errEmptyColumnReserveOnly", codeWaste)
+
+	errTableau := d.MoveTableauToTableau(0, -1, 1)
+	require.Error(t, errTableau, "nor can another column")
+	codeTableau, _ := ErrorMessageCode(errTableau)
+	assert.Equal(t, "duchess.errEmptyColumnReserveOnly", codeTableau)
+
 	require.NoError(t, d.MoveReserveToTableau(0, 1))
 	assert.Len(t, d.GetTableau()[1], 1)
 
-	// With the reserve now empty, anything may fill an empty column.
+	// With the reserve now empty, anything may fill an empty column (negative control).
 	require.NoError(t, d.MoveWasteToTableau(2))
 	assert.Len(t, d.GetTableau()[2], 1)
+
+	require.NoError(t, d.MoveTableauToTableau(0, -1, 3))
+	assert.Len(t, d.GetTableau()[3], 1)
 }
 
 func TestDuchess_MovesAnAlternatingRunAsOneUnit(t *testing.T) {

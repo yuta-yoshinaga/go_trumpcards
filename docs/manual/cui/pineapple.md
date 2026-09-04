@@ -140,7 +140,7 @@ flowchart TD
 
 ```
 ==========
-Pineapple Poker
+Pineapple Poker (パイナップルポーカー)
 ==========
 ディーラー: Player 0
 コミュニティ: ♠7  ♣10  ♥3

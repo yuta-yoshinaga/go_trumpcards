@@ -48,6 +48,8 @@ func setupGermanSoloCuiMock() *interfaces.MockGermanSoloGame {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetSideTrickCounts").Return(2, 3)
 	m.On("RequiredTricks").Return(domain.GermanSoloMakeTricks)
+	m.On("GetDealerIdx").Return(3)
+	m.On("GetForehandIdx").Return(0)
 	m.On("GetBiddableBids").Return([]int{int(domain.GermanSoloBidFrage), int(domain.GermanSoloBidSolo), int(domain.GermanSoloBidTout)})
 	return m
 }
@@ -125,6 +127,26 @@ func TestGermanSoloCuiPresenter_Output(t *testing.T) {
 		m, _ := setupGermanSoloCuiMockWithPlayers()
 		result := p.Output(m, errors.New("boom"))
 		assert.Contains(t, result, "boom")
+	})
+
+	t.Run("dealer and forehand lines", func(t *testing.T) {
+		m, _ := setupGermanSoloCuiMockWithPlayers()
+		result := p.Output(m, nil)
+		// 席3がディーラー (CPU 3)、席0が先手 (あなた)
+		assert.Contains(t, result, "ディーラー: CPU 3")
+		assert.Contains(t, result, "先手: あなた")
+		assert.NotContains(t, result, "{{")
+
+		// 席をローテーションした場合
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDealerIdx")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetForehandIdx")
+		m.On("GetDealerIdx").Return(0)
+		m.On("GetForehandIdx").Return(1)
+		resultRotated := p.Output(m, nil)
+		assert.Contains(t, resultRotated, "ディーラー: あなた")
+		assert.Contains(t, resultRotated, "先手: CPU 1")
+		assert.NotContains(t, resultRotated, "ディーラー: CPU 3")
+		assert.NotContains(t, resultRotated, "{{")
 	})
 }
 

@@ -399,17 +399,20 @@ function ContractRummyPageContent() {
                           <button
                             type="button"
                             key={`${p.id}-${mi}`}
-                            onClick={() => {
-                              if (canLayoff) {
-                                setLayoffTarget({ playerIdx: p.id, meldIdx: mi });
-                              }
-                            }}
-                            aria-label={t('meldAria', { player: playerLabel, meld: mi + 1 })}
+                            onClick={() => setLayoffTarget({ playerIdx: p.id, meldIdx: mi })}
+                            // レイオフできない間は押しても何も起きないのに、見た目も
+                            // フォーカスも普通のボタンのままだった (#6384)。
+                            disabled={!canLayoff}
+                            aria-label={
+                              canLayoff
+                                ? t('meldAria', { player: playerLabel, meld: mi + 1 })
+                                : `${t('meldAria', { player: playerLabel, meld: mi + 1 })} (${t('layoffLocked')})`
+                            }
                             // Only expose the toggle semantics when the meld is actually actionable.
                             aria-pressed={canLayoff ? isLayoffTarget : undefined}
                             className={`flex flex-wrap gap-1 mb-1 px-1 rounded ${focusRingWhite} ${
                               isLayoffTarget ? 'ring-2 ring-ds-warning bg-ds-warning/20' : ''
-                            }`}
+                            } ${canLayoff ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
                           >
                             {m.cards.map((c, ci) => (
                               <AnimatedCard key={`${p.id}-${mi}-${ci}`} card={c} width={cardWidth * 0.6} />

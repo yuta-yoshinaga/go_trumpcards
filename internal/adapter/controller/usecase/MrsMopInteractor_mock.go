@@ -28,6 +28,12 @@ func (_m *MockMrsMopInteractor) MoveTableauToTableau(fromCol, cardIndex, toCol i
 	return ret.Get(0).(string)
 }
 
+// Targets モック
+func (_m *MockMrsMopInteractor) Targets(fromCol, cardIndex int) string {
+	ret := _m.Called(fromCol, cardIndex)
+	return ret.Get(0).(string)
+}
+
 func (_m *MockMrsMopInteractor) GiveUp() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)

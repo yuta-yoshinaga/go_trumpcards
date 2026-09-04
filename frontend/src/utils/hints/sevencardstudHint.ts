@@ -71,6 +71,20 @@ export function getSevenCardStudHint(state: SevenCardStudResponse): HintResult |
   // `BettingControls` が出すのは Bet と Check だけで、Call は描画されない。
   // 下のハイカード分岐は `owed === 0` を見ているのに、ここだけ抜けていた
   // (#4643 のレビュー指摘)。
+  // **シカゴでは伏せ札の最高スペードにポットの半分が付く** (`findChicagoSpadeWinners`,
+  // SevenCardStud.go:913)。役が弱くてもスペードの半分は取れるので、通常のスタッドと
+  // 同じ基準で降ろすと、確実に取れる半分を捨てさせることになる (#6621)。
+  //
+  // **見るのは A♠ だけ。** 判定はエース最高位 (`cardRankForAceHigh`) なので、伏せ札の
+  // A♠ は誰にも抜かれない ── ショーダウンまで行けば半分は確定する。K♠ 以下は
+  // 「たぶん勝てる」でしかなく、そこまで含めると「半分は取れる」という助言が
+  // 嘘になる局面が出るので、証明できる範囲だけを助言する。
+  if (state.isChicago === true && hasAceOfSpadesInHole(human.holeCards)) {
+    return owed === 0
+      ? { targetAction: 'check', reason: 'frontendHint.sevencardstudCheckSpadeLock', confidence: 'strong' }
+      : { targetAction: 'call', reason: 'frontendHint.sevencardstudPlaySpadeLock', confidence: 'strong' };
+  }
+
   if (state.isHiLo === true && lowCards(cards) >= LOW_CARDS_NEEDED) {
     return owed === 0
       ? { targetAction: 'check', reason: 'frontendHint.sevencardstudCheckLow', confidence: 'moderate' }
@@ -112,4 +126,14 @@ function hasHighCard(cards: Card[]): boolean {
  */
 function lowCards(cards: Card[]): number {
   return cards.filter((c) => c.value <= LOW_QUALIFIER).length;
+}
+
+/**
+ * 伏せ札に A♠ があるか。
+ *
+ * シカゴのスペード半分は**伏せ札の**最高スペードで決まる (`EvalChicagoSpade` は
+ * `holeCards` だけを走る)。門札の A♠ は勘定に入らないので、ここも伏せ札しか見ない。
+ */
+function hasAceOfSpadesInHole(holeCards: Card[]): boolean {
+  return holeCards.some((c) => c.design === 'SPADE' && c.value === 1);
 }

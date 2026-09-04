@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pigtailApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -82,6 +83,35 @@ beforeEach(() => {
 });
 
 describe('PigsTailPage', () => {
+  it('renders pigtail-penalty-flash when a penalty occurs', async () => {
+    // ペナルティが発生した（場札と同じマークを引いて引き取らされた）ときに画面をフラッシュさせる
+    const state = {
+      ...baseState,
+      lastPenalty: true,
+      centerCount: 1,
+      circleCount: 1,
+      lastDrawCard: { design: 'SPADE', value: 1 } as const,
+    };
+    mockExec.mockResolvedValue(state);
+    const { getByTestId } = renderWithProviders(<PigsTailPage />);
+    await waitFor(() => expect(getByTestId('pigtail-penalty-flash')).toBeInTheDocument());
+  });
+
+  it('does not render pigtail-penalty-flash when there is no penalty', async () => {
+    // ペナルティが発生していないときはフラッシュさせない
+    const state = {
+      ...baseState,
+      lastPenalty: false,
+      centerCount: 1,
+      circleCount: 1,
+      lastDrawCard: { design: 'SPADE', value: 1 } as const,
+    };
+    mockExec.mockResolvedValue(state);
+    const { queryByTestId, getByTestId } = renderWithProviders(<PigsTailPage />);
+    await waitFor(() => expect(getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(queryByTestId('pigtail-penalty-flash')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PigsTailPage />);
@@ -334,5 +364,24 @@ describe('PigsTailPage', () => {
       (b) => (footer.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING) !== 0,
     );
     expect(precedesFooter).toBe(true);
+  });
+
+  it('renders CPU labels through the shared playerName helper, not a literal', async () => {
+    // playerName() resolves common:player.cpu, whose ja value happens to be
+    // "CPU {{id}}" -- the same text the page used to hardcode. Overriding the
+    // wording is the only way to tell the two apart: a hardcoded label ignores it.
+    i18n.addResourceBundle('ja', 'common', { player: { cpu: 'コンピュータ{{id}}' } }, true, true);
+    try {
+      mockExec.mockResolvedValue({
+        ...baseState,
+        cpuActions: [{ drawPlayerIdx: 2, drawnCard: null, penaltyFlag: false, penaltyCount: 0 }],
+      } as PigsTailResponse);
+      renderWithProviders(<PigsTailPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      await waitFor(() => expect(screen.getAllByText(/コンピュータ2/).length).toBeGreaterThan(0));
+      expect(screen.getAllByText(/コンピュータ1/).length).toBeGreaterThan(0);
+    } finally {
+      i18n.addResourceBundle('ja', 'common', { player: { cpu: 'CPU {{id}}' } }, true, true);
+    }
   });
 });

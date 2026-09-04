@@ -92,7 +92,10 @@ func TestPishtiCuiPresenter_ShowsProvisionalScores(t *testing.T) {
 	give(1, 3)
 	out := p.Output(g, nil)
 	assert.Contains(t, out, "暫定: "+strconv.Itoa(domain.PishtiScoreMostCards)+"点")
-	assert.Contains(t, out, "カード点は集計時に加算")
+	// **断り書きは実装に合わせて縮んだ。**カード点は捕獲した瞬間に確定するので
+	// 暫定点に含まれており、暫定なのは最多捕獲の +3 だけ (#6468)。
+	assert.Contains(t, out, i18n.T("pishti.provisionalNote"))
+	assert.NotContains(t, out, "カード点は集計時に加算")
 
 	// **同数になったら誰にも +3 は付かない** (受け入れ条件2)。
 	give(1, 2)
@@ -182,4 +185,26 @@ func TestPishtiCuiPresenter_MarksCapturingCards(t *testing.T) {
 
 		assert.Contains(t, p.Output(g, nil), i18n.T("pishti.captureLegend"))
 	})
+}
+
+// **カード点が暫定点に乗ること。**乗らないと、実際の得点源がラウンドの
+// 終わりまで一切見えない (#6468)。
+func TestPishtiCuiPresenter_ProvisionalScoreCountsCardPoints(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	p := new(presenter.PishtiCuiPresenter)
+	g := newPishtiForPresenter()
+	g.Reset()
+	// 席 0 に ♦10 (=3点) だけ。枚数の単独リーダーにもなるので +3 が乗る。
+	g.GetPlayer(0).AddCaptured([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, 10, false)})
+
+	want := domain.PishtiScoreTenDiamonds + domain.PishtiScoreMostCards
+	out := p.Output(g, nil)
+	assert.Contains(t, out, i18n.Tf("pishti.provisional",
+		"name", i18n.T("cuiPlayerYou"), "score", strconv.Itoa(want)))
+	// カード点を落とす実装なら +3 だけになる。その数字が出ていないことを見る。
+	assert.NotContains(t, out, i18n.Tf("pishti.provisional",
+		"name", i18n.T("cuiPlayerYou"), "score", strconv.Itoa(domain.PishtiScoreMostCards)))
 }

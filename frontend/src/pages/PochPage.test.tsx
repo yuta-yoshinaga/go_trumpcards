@@ -219,4 +219,48 @@ describe('PochPage', () => {
 
     expect(combo).toHaveTextContent('なし');
   });
+  // **同じ画面で呼び方を変えない。**手札セクションは「あなたの手札」「あなたのチップ」と
+  // 呼ぶのに、結果通知 3 種だけが「席0が」と出ていた (#6519)。
+  describe('naming the human in the result notices', () => {
+    it('says "you" for the staking award, the pochen and going out', async () => {
+      mockExec.mockResolvedValue(
+        makeState({
+          phase: PochPhase.STOPS,
+          stakingAwards: [{ pool: 'marriage', player: 0, chips: 12 }],
+          pochenWinner: 0,
+          pochenPot: 30,
+        }),
+      );
+      renderWithProviders(<PochPage />);
+
+      const staking = await screen.findByTestId('poch-staking');
+      expect(staking).toHaveTextContent('あなたが');
+      expect(staking).not.toHaveTextContent('席0');
+      const pochen = screen.getByTestId('poch-pochen-result');
+      expect(pochen).toHaveTextContent('あなたが');
+      expect(pochen).not.toHaveTextContent('席0');
+
+      mockExec.mockResolvedValue(makeState({ phase: PochPhase.DEAL_END, dealWinner: 0 }));
+      fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+      fireEvent.click(screen.getByRole('button', { name: '確認' }));
+      await waitFor(() => expect(screen.getByTestId('poch-deal-result')).toHaveTextContent('あなたが'));
+      expect(screen.getByTestId('poch-deal-result')).not.toHaveTextContent('席0');
+    });
+
+    // 負のコントロール: CPU は既存の「席{{n}}」のまま。
+    it('keeps the seat wording for a CPU', async () => {
+      mockExec.mockResolvedValue(
+        makeState({
+          phase: PochPhase.STOPS,
+          stakingAwards: [{ pool: 'marriage', player: 2, chips: 12 }],
+          pochenWinner: 3,
+          pochenPot: 30,
+        }),
+      );
+      renderWithProviders(<PochPage />);
+      expect(await screen.findByTestId('poch-staking')).toHaveTextContent('席2');
+      expect(screen.getByTestId('poch-pochen-result')).toHaveTextContent('席3');
+      expect(screen.getByTestId('poch-staking')).not.toHaveTextContent('あなたが');
+    });
+  });
 });

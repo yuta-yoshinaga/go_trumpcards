@@ -48,6 +48,40 @@ beforeEach(() => {
   mockExec.mockResolvedValue(grandeState);
 });
 
+describe('MusPage pending stake announcement', () => {
+  // **賭け金は CPU の側でも動く。**envido / ordago で吊り上げられた瞬間を
+  // 能動的に知る手立てが無かった (#6436)。
+  it('announces the pending stake in a live region', async () => {
+    mockExec.mockResolvedValue(respondState);
+    renderWithProviders(<MusPage />);
+
+    const live = await screen.findByTestId('mus-pending-stake');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveTextContent('保留中の賭け: 3');
+    expect(live.textContent).not.toContain('{{');
+  });
+
+  it('keeps the live region mounted and empty while no bet is pending', async () => {
+    mockExec.mockResolvedValue(makeMusState({ phase: 2, pendingStake: 0 }));
+    renderWithProviders(<MusPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const live = screen.getByTestId('mus-pending-stake');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live.textContent).toBe('');
+  });
+
+  it('spells out an ordago instead of showing its -1 sentinel', async () => {
+    mockExec.mockResolvedValue(makeMusState({ phase: 2, pendingStake: -1 }));
+    renderWithProviders(<MusPage />);
+
+    const live = await screen.findByTestId('mus-pending-stake');
+    expect(live).toHaveTextContent('オルダゴ');
+    expect(live.textContent).not.toContain('-1');
+  });
+});
+
 describe('MusPage', () => {
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));

@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
@@ -75,7 +76,9 @@ func TestSlobberhannesCuiPresenterPenaltyMarks(t *testing.T) {
 
 	clean := newSlobberhannesForCui(t)
 	clean.SetTrickNumberForTest(3)
-	assert.Contains(t, p.Output(clean, nil), i18n.T("slobberhannes.markClean"))
+	// **「無傷」は失点なしではなく +1 の加点。**点数まで言わないと読めない。
+	// キーで期待値を組むと未翻訳でも通ってしまうので実文言で見る。
+	assert.Contains(t, p.Output(clean, nil), "無傷(+1点)")
 
 	hit := newSlobberhannesForCui(t)
 	hit.SetTrickNumberForTest(3)
@@ -83,6 +86,16 @@ func TestSlobberhannesCuiPresenterPenaltyMarks(t *testing.T) {
 	out := p.Output(hit, nil)
 	assert.Contains(t, out, i18n.T("slobberhannes.markFirst"))
 	assert.Contains(t, out, i18n.T("slobberhannes.markQueen"))
+}
+
+// ボーナス額はドメインの定数と一致していなければならない。文言に直書きした
+// 数字が定数から離れると、画面だけが嘘をつく。
+func TestSlobberhannesCuiPresenterCleanBonusMatchesTheDomain(t *testing.T) {
+	p := new(SlobberhannesCuiPresenter)
+	clean := newSlobberhannesForCui(t)
+	clean.SetTrickNumberForTest(3)
+
+	assert.Contains(t, p.Output(clean, nil), "+"+strconv.Itoa(domain.SlobberhannesCleanBonus))
 }
 
 func TestSlobberhannesCuiPresenterError(t *testing.T) {

@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -28,6 +29,8 @@ func setupUltiCuiMock() *interfaces.MockUltiGame {
 	m.On("GetPhase").Return(domain.UltiPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetDeclarerIdx").Return(0)
+	m.On("GetTalonCount").Return(0).Maybe()
+	m.On("GetTalonTaken").Return(true).Maybe()
 	m.On("GetOutcome").Return(domain.UltiOutcomeWin)
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayerCoins").Return([domain.UltiPlayerCnt]int{0, 0, 0})
@@ -204,5 +207,45 @@ func TestUltiCuiPresenter_CoinSettlement(t *testing.T) {
 		result := p.Output(build(domain.UltiPhasePlay, false, [domain.UltiPlayerCnt]int{}), nil)
 
 		assert.NotContains(t, result, strings.Split(i18n.T("ulti.coinSettlement"), "{{")[0])
+	})
+}
+
+// **宣言と同時に手札が 10 → 12 枚に増える。**`applyBid` が伏せられたタロンを
+// 自動で加えるのに、その存在がどこにも出ておらず、宣言直後に手札が突然
+// 増えて見えた (#6486)。
+func TestUltiCuiPresenter_MentionsThePendingTalon(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.UltiCuiPresenter)
+
+	outFor := func(phase domain.UltiPhase, count int, taken bool) string {
+		m, _ := setupUltiCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTalonCount")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTalonTaken")
+		m.On("GetPhase").Return(phase)
+		m.On("GetTalonCount").Return(count)
+		m.On("GetTalonTaken").Return(taken)
+		return p.Output(m, nil)
+	}
+	// 文言の**接尾**で見る。{{count}} 入りのキーは生テンプレートが返るので、
+	// キーそのものを NotContains に渡しても何も測らない。
+	_, tail, ok := strings.Cut(i18n.T("ulti.talonPending"), "}} ")
+	require.True(t, ok)
+
+	t.Run("names the count while the talon is still down", func(t *testing.T) {
+		out := outFor(domain.UltiPhaseBid, 2, false)
+		assert.Contains(t, out, i18n.Tf("ulti.talonPending", "count", "2"))
+		assert.NotContains(t, out, "{{")
+	})
+
+	// 拾ったあとは出さない ── 既に手札にある札を「これから加わる」と言わない。
+	t.Run("stays quiet once the talon was taken", func(t *testing.T) {
+		assert.NotContains(t, outFor(domain.UltiPhaseBid, 0, true), tail)
+	})
+
+	t.Run("stays quiet outside the bid phase", func(t *testing.T) {
+		assert.NotContains(t, outFor(domain.UltiPhasePlay, 2, false), tail)
 	})
 }

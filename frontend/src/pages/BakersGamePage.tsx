@@ -206,6 +206,10 @@ function BakersGamePageContent() {
       ? (state.tableau[selectedSource.col]?.length ?? 0) - selectedSource.cardIndex
       : 0;
 
+  // 空き列だけ上限が低い。3 箇所 (印・ツールチップ・読み上げ名) が同じ判定を
+  // 見ていないと、片方だけ「置ける」と言うことになる。
+  const emptyColBlocked = selectedStackSize > emptyColLimit;
+
   const isSourceSelected = (zone: string, col?: number, cell?: number, cardIndex?: number) =>
     selectedSource !== null &&
     selectedSource.zone === zone &&
@@ -394,16 +398,24 @@ function BakersGamePageContent() {
                               data-testid={`bg-empty-col-${colIdx.toString()}`}
                               // 空き列だけ上限が低い。選んだ束が超えているなら、
                               // クリックする前に分かるようにする (#5975)。
-                              data-empty-col-blocked={selectedStackSize > emptyColLimit ? 'true' : undefined}
+                              data-empty-col-blocked={emptyColBlocked ? 'true' : undefined}
                               title={
-                                selectedStackSize > emptyColLimit
+                                emptyColBlocked
                                   ? t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })
                                   : undefined
                               }
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
-                                selectedStackSize > emptyColLimit ? 'opacity-50' : ''
+                                emptyColBlocked ? 'opacity-50' : ''
                               }`}
-                              aria-label={t('emptyTableauColumnAriaLabel', { idx: String(colIdx) })}
+                              // **理由は名前に載せる。**ボタンは disabled ではないので、
+                              // `title` だけだと押せそうに見えたまま、超過している唯一の
+                              // 手掛かりが支援技術に届かない。移動元の札は #5820 で
+                              // 同じ形にしてある (#6432)。
+                              aria-label={
+                                emptyColBlocked
+                                  ? `${t('emptyTableauColumnAriaLabel', { idx: String(colIdx) })} — ${t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })}`
+                                  : t('emptyTableauColumnAriaLabel', { idx: String(colIdx) })
+                              }
                             >
                               {t('emptyTableauColumnLabel')}
                             </button>

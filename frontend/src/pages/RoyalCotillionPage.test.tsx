@@ -447,4 +447,17 @@ describe('RoyalCotillionPage slot numbers in the accessible names', () => {
     // 空のリザーブの読み上げは従来のまま。
     expect(screen.getByText(/空のリザーブ 1/)).toBeInTheDocument();
   });
+
+  // **リザーブは二度と補充されない。**この情報が sr-only にしか無いと、
+  // 晴眼のマウス利用者だけが「この山は永久に死んだ」ことを読めない。
+  it('says on screen that an empty reserve is never refilled', async () => {
+    mockExec.mockResolvedValue({ ...playingState, reserve: [[], [], [], []] });
+    renderWithProviders(<RoyalCotillionPage />);
+
+    // 可視テキスト側 (aria-hidden) にも補充されないことが出る。
+    const visible = await screen.findAllByText('空・補充なし');
+    expect(visible).toHaveLength(4);
+    // sr-only のラベルは残っている。
+    expect(screen.getAllByText(/空のリザーブ \d+ \(二度と埋まりません\)/)).toHaveLength(4);
+  });
 });

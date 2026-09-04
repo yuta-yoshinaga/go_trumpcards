@@ -77,5 +77,6 @@
     "play_valid": "出せる札",
     "choose_longest_suit": "手札に一番多いスート"
   },
-  "winnerBadge": "(勝者)"
+  "winnerBadge": "(勝者)",
+  "limitProgress": "上限: {{limit}}点 / 最多得点: {{name}} {{score}}点"
 }

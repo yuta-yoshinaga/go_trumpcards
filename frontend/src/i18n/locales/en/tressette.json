@@ -15,6 +15,7 @@
   },
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
+  "target": "Target: {{points}}",
   "teamLabel": "Team {{team}}",
   "teamScore": "Team {{team}}: {{points}} pts (this round {{thirds}}/3)",
   "yourTeam": "Your team",

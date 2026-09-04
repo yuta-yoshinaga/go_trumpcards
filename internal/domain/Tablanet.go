@@ -866,6 +866,12 @@ func (g *Tablanet) GetConfig() TablanetConfig { return g.config }
 // SetConfig はローカルルール設定を変更する。
 func (g *Tablanet) SetConfig(cfg TablanetConfig) { g.config = cfg }
 
+// SetWinners は勝者リストを設定する (テスト用)。
+//
+// 勝者は `scoreGame` が最終得点から決めるので、表示だけを確かめたい場面では
+// 1 ゲーム分プレイさせるより直接置くほうが、測りたいものがはっきりする。
+func (g *Tablanet) SetWinners(w []int) { g.state.winners = w }
+
 // GetActionLog は棋譜を返す。
 func (g *Tablanet) GetActionLog() []*ActionLogEntry { return g.state.actionLog }
 

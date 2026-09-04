@@ -581,56 +581,32 @@ describe('AccordionPage', () => {
     expect(autoBtn).toHaveAttribute('aria-keyshortcuts', 'a');
   });
 
-  it('autocomplete drives the recommended merges in sequence until none remain', async () => {
-    const stateA: AccordionResponse = {
+  it('autocomplete button calls exec with autocomplete exactly once and sends no move commands', async () => {
+    const readyState: AccordionResponse = {
       ...playingState,
       piles: [
         { cards: [card('SPADE', 7)], size: 1 },
         { cards: [card('HEART', 2)], size: 1 },
         { cards: [card('CLOVER', 3)], size: 1 },
-        { cards: [card('SPADE', 9)], size: 1 }, // idx3→idx0 (suit) offset 3
+        { cards: [card('SPADE', 9)], size: 1 },
       ],
     };
-    // After the offset-3 merge: idx1 (SPADE 3) → idx0 (SPADE 9) offset 1.
-    const stateB: AccordionResponse = {
-      ...playingState,
-      piles: [
-        { cards: [card('SPADE', 9)], size: 2 },
-        { cards: [card('SPADE', 3)], size: 1 },
-        { cards: [card('CLOVER', 3)], size: 1 },
-      ],
-      pileCount: 3,
-    };
-    // No further match (SPADE 3 vs CLOVER 5) → loop stops.
-    const stateC: AccordionResponse = {
-      ...playingState,
-      piles: [
-        { cards: [card('SPADE', 3)], size: 3 },
-        { cards: [card('CLOVER', 5)], size: 1 },
-      ],
-      pileCount: 2,
-    };
-    mockExec.mockResolvedValueOnce(stateA); // reset on mount
-    mockExec.mockResolvedValueOnce(stateB); // first merge
-    mockExec.mockResolvedValue(stateC); // second merge + rest
+    mockExec.mockResolvedValueOnce(readyState); // reset on mount
+    mockExec.mockResolvedValue(gameClearState); // autocomplete response
 
     renderWithProviders(<AccordionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
+
     fireEvent.click(screen.getByTestId('ac-autocomplete'));
 
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'pile', index: 3 }, { zone: 'pile', index: 0 }),
-    );
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'pile', index: 1 }, { zone: 'pile', index: 0 }),
-    );
-    // Exactly two merges, then the loop halts (stateC has no legal move).
-    expect(mockExec.mock.calls.filter((c) => c[0] === 'move')).toHaveLength(2);
-    await waitFor(() => expect(screen.getByTestId('ac-autocomplete')).toBeDisabled());
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+    expect(mockExec).toHaveBeenCalledTimes(1);
+    expect(mockExec.mock.calls.filter((c) => c[0] === 'move')).toHaveLength(0);
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
-  it('pressing "a" triggers autocomplete', async () => {
+  it('pressing "a" triggers autocomplete command exactly once without sending move', async () => {
     mockExec.mockResolvedValueOnce({
       ...playingState,
       piles: [
@@ -640,12 +616,51 @@ describe('AccordionPage', () => {
         { cards: [card('SPADE', 9)], size: 1 },
       ],
     });
-    mockExec.mockResolvedValue({ ...playingState, piles: [{ cards: [card('SPADE', 9)], size: 2 }], pileCount: 1 });
+    mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<AccordionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
+
     fireEvent.keyDown(document, { key: 'a' });
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+    expect(mockExec).toHaveBeenCalledTimes(1);
+    expect(mockExec.mock.calls.filter((c) => c[0] === 'move')).toHaveLength(0);
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  it('autocomplete button disables while request is in flight and re-enables on completion', async () => {
+    let resolveAutocomplete!: (res: AccordionResponse) => void;
+    const pendingAutocomplete = new Promise<AccordionResponse>((resolve) => {
+      resolveAutocomplete = resolve;
+    });
+
+    const readyState: AccordionResponse = {
+      ...playingState,
+      piles: [
+        { cards: [card('SPADE', 7)], size: 1 },
+        { cards: [card('HEART', 2)], size: 1 },
+        { cards: [card('CLOVER', 3)], size: 1 },
+        { cards: [card('SPADE', 9)], size: 1 },
+      ],
+    };
+    mockExec.mockResolvedValueOnce(readyState);
+
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+
+    const autoBtn = screen.getByTestId('ac-autocomplete');
+    expect(autoBtn).toBeEnabled();
+
+    mockExec.mockImplementationOnce(() => pendingAutocomplete);
+    fireEvent.click(autoBtn);
+
+    // Disabled while in flight
+    await waitFor(() => expect(autoBtn).toBeDisabled());
+
+    // Resolves back to playing state with merges remaining
+    resolveAutocomplete(readyState);
+    await waitFor(() => expect(autoBtn).toBeEnabled());
   });
 
   it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {

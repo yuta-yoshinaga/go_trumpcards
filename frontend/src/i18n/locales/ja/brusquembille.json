@@ -36,7 +36,8 @@
   "result": {
     "youWin": "あなたの勝ち！ ({{p0}}-{{p1}})",
     "cpuWin": "CPUの勝ち ({{p0}}-{{p1}})",
-    "tie": "引き分け ({{p0}}-{{p1}})"
+    "tie": "引き分け ({{p0}}-{{p1}})",
+    "cpuWinSeat": "CPU {{seat}} の勝ち ({{scores}})"
   },
   "message": {
     "yourTurn": "あなたの番です — どのカードでも出せます (must-followなし)",

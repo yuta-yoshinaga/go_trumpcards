@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func tuteCard(design, value int) *Card { return NewCard(design, value, false) }
@@ -310,6 +311,68 @@ func TestTute_CpuFullRoundProgresses(t *testing.T) {
 			break
 		}
 	}
+}
+
+// フェーズの出し分けは**配らない盤**で測る。配ると、下の end-to-end 版と同じ
+// 配り依存を持ち込むことになる。
+func TestTute_GetLastTrickBonusTeamByPhase(t *testing.T) {
+	g := newTuteGame(false)
+	g.Reset()
+
+	for _, phase := range []TutePhase{TutePhasePlay, TutePhaseTrickEnd} {
+		g.SetPhase(phase)
+		assert.Equal(t, -1, g.GetLastTrickBonusTeam(), "phase %v must report no bonus yet", phase)
+	}
+
+	// ラウンド終了時は最終トリックの勝者 (= leadPlayerIdx) のチーム。
+	// 両チームを踏む ── 片方だけだと「常にチーム0を返す」実装を見逃す。
+	g.SetPhase(TutePhaseRoundEnd)
+	for seat := 0; seat < TutePlayerCnt; seat++ {
+		g.SetLeadPlayerIdx(seat)
+		assert.Equal(t, TuteTeamOf(seat), g.GetLastTrickBonusTeam(), "seat %d", seat)
+	}
+}
+
+// 実際に 1 ラウンド回して、ボーナスのチームが最終トリックの勝者と一致することを見る。
+//
+// **Tute 即勝利で終わる配りがある。**4 枚の K か Q を持つ CPU がいると
+// `applyTute` が `TutePhaseGameEnd` へ飛ばし、そのラウンドは RoundEnd に
+// 到達しない (実測で 400 配りに 1 回)。最初の版はそれを「200 手で終わらなかった」
+// として落としていた ── 配り直して測り直すのが正しい。
+func TestTute_LastTrickBonusGoesToTheLastTrickWinner(t *testing.T) {
+	measured := false
+	for attempt := 0; attempt < 50 && !measured; attempt++ {
+		g := newTuteGame(false)
+		g.Reset()
+
+		lastTrickWinner := -1
+		for steps := 0; steps < 200; steps++ {
+			switch g.GetPhase() {
+			case TutePhasePlay:
+				require.Equal(t, -1, g.GetLastTrickBonusTeam())
+				g.CpuPlay()
+			case TutePhaseTrickEnd:
+				require.Equal(t, -1, g.GetLastTrickBonusTeam())
+				lastTrickWinner = g.trickWinner()
+				g.ResolveTrick()
+				if g.GetPhase() == TutePhaseTrickEnd {
+					g.NextTrick()
+				}
+			case TutePhaseRoundEnd:
+				wantTeam := TuteTeamOf(lastTrickWinner)
+				assert.Equal(t, wantTeam, g.GetLastTrickBonusTeam(),
+					"the bonus goes to the team that took the last trick")
+				assert.Equal(t, wantTeam, TuteTeamOf(g.GetLeadPlayerIdx()))
+				measured = true
+			}
+			if measured || g.GetPhase() == TutePhaseGameEnd {
+				break // Tute 即勝利の配り。この配りでは測れないので次へ。
+			}
+		}
+	}
+	// **測れなかったまま緑にしない。**50 配り全部が即勝利で終わることは
+	// 実質あり得ないので、ここに来たら前提が壊れている。
+	require.True(t, measured, "no deal reached RoundEnd in 50 attempts")
 }
 
 func TestTute_HintAndPlayable(t *testing.T) {

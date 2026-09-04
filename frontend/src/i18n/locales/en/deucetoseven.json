@@ -35,7 +35,9 @@
     "bigBet": "Strong low — bet or raise.",
     "callWithValue": "A decent low is worth a value call.",
     "foldWeak": "Weak hand — fold.",
-    "checkWeak": "Weak hand, but no outstanding bet — check."
+    "checkWeak": "Weak hand, but no outstanding bet — check.",
+    "keepCard": "Keep",
+    "discardCard": "Discard"
   },
   "result": {
     "win": "You win.",

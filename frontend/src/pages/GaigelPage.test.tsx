@@ -45,6 +45,7 @@ function makeState(overrides: Partial<GaigelResponse> = {}): GaigelResponse {
     dealerIdx: 3,
     trumpSuit: 1,
     stockRemaining: 28,
+    isEndgame: false,
     currentTrick: [],
     teamScores: [0, 0],
     roundPoints: [0, 0],
@@ -125,7 +126,8 @@ describe('GaigelPage', () => {
   it('shows the marriage button when the selected card can declare and dispatches marriage', async () => {
     mockExec.mockResolvedValue(makeState({ marriageIndices: [0] }));
     renderWithProviders(<GaigelPage />);
-    const cardBtn = await screen.findByRole('button', { name: '♠ K' });
+    // 結婚できる札は名前にバッジの説明が付くので、完全一致では引けない (#6612)。
+    const cardBtn = await screen.findByRole('button', { name: /^♠ K/ });
     fireEvent.click(cardBtn);
     const marriageBtn = await screen.findByRole('button', { name: 'マリッジ' });
     mockExec.mockClear();
@@ -209,5 +211,26 @@ describe('GaigelPage', () => {
     mockExec.mockResolvedValue(makeState({ hint: { cardIndex: 0, reason: 'no_such_reason', isMarriage: false } }));
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     await waitFor(() => expect(screen.getByText(/no_such_reason/)).toBeInTheDocument());
+  });
+
+  // **山が尽きた瞬間にマストフォローへ切り替わる** ── `validateEndgameFollow` が
+  // 発動する規則の転換なのに、Gaigel だけどこにも出していなかった (#6482)。
+  it('announces the switch to must-follow when the stock runs out', async () => {
+    mockExec.mockResolvedValue(makeState({ isEndgame: true, stockRemaining: 0 }));
+    renderWithProviders(<GaigelPage />);
+
+    const notice = await screen.findByTestId('ga-endgame-notice');
+    expect(notice).toHaveAttribute('role', 'status');
+    expect(notice).toHaveTextContent('第2フェーズ');
+    expect(notice.textContent).not.toContain('{{');
+  });
+
+  // **残り枚数からは判断しない。**判定はドメインが持つので、0 枚でも
+  // `isEndgame` が false のうちは出さない。
+  it('does not announce must-follow while the domain says otherwise', async () => {
+    mockExec.mockResolvedValue(makeState({ isEndgame: false, stockRemaining: 0 }));
+    renderWithProviders(<GaigelPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('ga-endgame-notice')).not.toBeInTheDocument();
   });
 });

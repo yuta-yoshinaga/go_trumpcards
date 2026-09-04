@@ -10,6 +10,7 @@
   "peasant": "農民",
   "you": "あなた",
   "highestBid": "最高ビッド",
+  "bidAndBombs": "ビッド: {{bid}} | ボム: {{bombs}}回",
   "kittyCards": "底牌",
   "tableCards": "場",
   "playerFinished": " (上がり)",

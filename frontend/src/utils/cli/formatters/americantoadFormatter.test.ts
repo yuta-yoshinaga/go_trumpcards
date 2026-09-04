@@ -33,6 +33,13 @@ describe('formatAmericanToadState', () => {
     expect(result).toContain('t7: [empty]');
   });
 
+  // #6734 が「何周目の山か」を出すようにしたのはページだけで、CLI フォーマッタは
+  // 取り残されていた。3 面のうち CLI だけ落とすのは繰り返している形なので試験で留める。
+  it('renders which pass through the stock this is', () => {
+    expect(formatAmericanToadState(makeState({ passesUsed: 0 }))).toContain('pass: 1/2');
+    expect(formatAmericanToadState(makeState({ passesUsed: 1 }))).toContain('pass: 2/2');
+  });
+
   // The reserve's depth decides how empty columns behave, so it is status.
   it('renders the reserve top with its depth', () => {
     const result = formatAmericanToadState(

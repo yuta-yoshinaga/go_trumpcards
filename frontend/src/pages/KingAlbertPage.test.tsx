@@ -95,12 +95,13 @@ describe('KingAlbertPage', () => {
   it('gives each empty reserve slot a role=img with a numbered aria-label', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<KingAlbertPage />);
-    // Reserve slots 2..7 (1-based) are empty and each is now an announced,
-    // numbered slot instead of an anonymous div.
-    await waitFor(() => expect(screen.getByRole('img', { name: '空のリザーブ枠 2' })).toBeInTheDocument());
-    expect(screen.getByRole('img', { name: '空のリザーブ枠 7' })).toBeInTheDocument();
-    // Slot 1 holds ♦7 (a button), so it is not an empty-slot image.
-    expect(screen.queryByRole('img', { name: '空のリザーブ枠 1' })).not.toBeInTheDocument();
+    // r1..r6 are empty and each is an announced, numbered slot rather than an
+    // anonymous div. The numbers are 0-based, matching the visible r{n} badge,
+    // the CUI's [r0]..[r6] and the hint's reserve col (#6394).
+    await waitFor(() => expect(screen.getByRole('img', { name: '空のリザーブ枠 1' })).toBeInTheDocument());
+    expect(screen.getByRole('img', { name: '空のリザーブ枠 6' })).toBeInTheDocument();
+    // r0 holds ♦7 (a button), so it is not an empty-slot image.
+    expect(screen.queryByRole('img', { name: '空のリザーブ枠 0' })).not.toBeInTheDocument();
   });
 
   it('labels all 7 reserve slots with 0-based numbers matching the hint text', async () => {
@@ -276,5 +277,32 @@ describe('KingAlbertPage keyboard shortcuts', () => {
     }
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
+  });
+});
+
+describe('KingAlbertPage reserve slot numbering', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  // 可視バッジ r{cellIdx}、CUI の [r0]〜[r6]、ヒントの reserve col は
+  // すべて 0 始まり。空枠の読み上げだけ 1 始まりだと、「reserve 0 へ」と
+  // 言われた枠が「空のリザーブ枠 1」と読まれる (#6394)。
+  it('numbers empty reserve slots the same way the visible badge does', async () => {
+    // playingState は r0 だけ札があり、r1〜r6 が空。
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<KingAlbertPage />);
+    await waitFor(() => expect(screen.getByTestId('ka-reserve-label-0')).toBeInTheDocument());
+
+    for (let i = 1; i < 7; i += 1) {
+      const badge = screen.getByTestId(`ka-reserve-label-${i.toString()}`);
+      expect(badge).toHaveTextContent(`r${i.toString()}`);
+      // 同じ枠の読み上げが同じ番号を指していること。
+      expect(screen.getByLabelText(`空のリザーブ枠 ${i.toString()}`)).toBeInTheDocument();
+    }
+
+    // 1 始まりだったころのラベルは、どの枠にも付いていない。
+    // r6 が最後なので「空のリザーブ枠 7」は存在しえない。
+    expect(screen.queryByLabelText('空のリザーブ枠 7')).not.toBeInTheDocument();
   });
 });

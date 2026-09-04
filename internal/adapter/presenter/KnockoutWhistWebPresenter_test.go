@@ -29,6 +29,8 @@ func setupKnockoutWhistWebMock() *interfaces.MockKnockoutWhistGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetRoundWinnerIdx").Return(-1)
+	m.On("GetRoundSurvivedIdx").Return(([]int)(nil)).Maybe()
+	m.On("GetRoundEliminatedIdx").Return(([]int)(nil)).Maybe()
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetActiveCount").Return(4)
 	m.On("GetPlayableIndices", 0).Return([]int{0})
@@ -236,4 +238,34 @@ func TestKnockoutWhistWebPresenterHintOutputMarksTheRequest(t *testing.T) {
 	g.SetCurrentPlayerIdx(0)
 	require.NotNil(t, g.GetHint(), "fixture must actually produce a hint")
 	assert.Contains(t, new(presenter.KnockoutWhistWebPresenter).HintOutput(g), "knockoutwhist.hintRequested")
+}
+
+func TestKnockoutWhistWebPresenter_RoundSurvivedAndEliminatedInJSON(t *testing.T) {
+	p := new(presenter.KnockoutWhistWebPresenter)
+
+	t.Run("empty slices serialized as empty JSON arrays not null", func(t *testing.T) {
+		m, _ := setupKnockoutWhistWebMockWithPlayers()
+		result := p.Output(m, nil)
+		assert.Contains(t, result, `"roundSurvived":[]`)
+		assert.Contains(t, result, `"roundEliminated":[]`)
+
+		var raw map[string]any
+		require.NoError(t, json.Unmarshal([]byte(result), &raw))
+		assert.Equal(t, []any{}, raw["roundSurvived"])
+		assert.Equal(t, []any{}, raw["roundEliminated"])
+	})
+
+	t.Run("non-empty slices propagate to JSON arrays", func(t *testing.T) {
+		m, _ := setupKnockoutWhistWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundSurvivedIdx")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundEliminatedIdx")
+		m.On("GetRoundSurvivedIdx").Return([]int{1, 3})
+		m.On("GetRoundEliminatedIdx").Return([]int{2})
+
+		result := p.Output(m, nil)
+		var resObj controller.KnockoutWhistWebOutput
+		require.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, []int{1, 3}, resObj.RoundSurvived)
+		assert.Equal(t, []int{2}, resObj.RoundEliminated)
+	})
 }

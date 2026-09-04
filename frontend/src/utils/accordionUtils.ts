@@ -32,34 +32,3 @@ export function accordionLegalTargets(piles: readonly AccordionPile[], fromIdx: 
 export function accordionLegalOffsets(piles: readonly AccordionPile[], fromIdx: number): number[] {
   return accordionLegalTargets(piles, fromIdx).map((toIdx) => fromIdx - toIdx);
 }
-
-/** A single Accordion merge move: fold pile `fromIdx` onto pile `toIdx`. */
-export interface AccordionAutoMove {
-  fromIdx: number;
-  toIdx: number;
-}
-
-/**
- * Returns the next merge move the autocomplete driver (#3192) should apply, or
- * `null` when no legal merge remains. This mirrors the backend's `GetHint`
- * heuristic exactly (`internal/domain/Accordion.go`): prefer offset-3 merges
- * over offset-1 (moving three back keeps more future options open), and within
- * each offset pick the left-most legal source pile. Following this same
- * well-defined recommendation repeatedly lets the frontend auto-play the game
- * without inventing its own move policy, and always terminates because every
- * merge removes one pile.
- */
-export function accordionNextAutoMove(piles: readonly AccordionPile[]): AccordionAutoMove | null {
-  // Offset 3 before offset 1 — matches GetHint's priority ordering.
-  for (const offset of [3, 1]) {
-    for (let fromIdx = offset; fromIdx < piles.length; fromIdx++) {
-      const from = piles[fromIdx]?.cards[0];
-      const to = piles[fromIdx - offset]?.cards[0];
-      if (!from || !to) continue;
-      if (to.design === from.design || to.value === from.value) {
-        return { fromIdx, toIdx: fromIdx - offset };
-      }
-    }
-  }
-  return null;
-}

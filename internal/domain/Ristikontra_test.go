@@ -395,6 +395,12 @@ func TestRistikontra_JSON_Rejects(t *testing.T) {
 		`{"tc":{},"pl":[{},{},{},{}],"cf":{"pc":4,"di":1},"ph":"play","ct":9}`,   // current turn out of range
 		`{"tc":{},"pl":[{},{},{},{}],"cf":{"pc":4,"di":1},"ph":"play","lc":9}`,   // last capture out of range
 		`{"tc":{},"pl":[{},{},{},{}],"cf":{"pc":4,"di":1},"ph":"play","wn":[9]}`, // winner out of range
+		// 打ち返しの2つの値。片方だけ立った盤は打っていて起き得ないので、
+		// 壊れた KV として弾く (印は出るのに奪えない、が本番の症状だった)。
+		`{"tc":{},"pl":[{},{},{},{}],"cf":{"pc":4,"di":1},"ph":"play","cr":99}`,                       // counter rank out of range
+		`{"tc":{},"pl":[{},{},{},{}],"cf":{"pc":4,"di":1},"ph":"play","cr":7}`,                        // rank without cards
+		`{"tc":{},"pl":[{},{},{},{}],"cf":{"pc":4,"di":1},"ph":"play","cc":[{"design":1,"value":7}]}`, // cards without rank
+		`{"tc":{},"pl":[{},{},{},{}],"cf":{"pc":4,"di":1},"ph":"play","cr":7,"cc":[null]}`,            // nil card in the bundle
 	}
 	for i, s := range bad {
 		var g Ristikontra
@@ -630,5 +636,90 @@ func TestRistikontra_HardCpuPrefersTheCounter(t *testing.T) {
 	idx = g.chooseCpuCard(1)
 	if got := g.GetPlayer(1).GetCard(idx).GetValue(); got != 4 {
 		t.Fatalf("with no counter available it should capture with the 4, played %d", got)
+	}
+}
+
+// **打ち返しの対象ランクは往復しなければ意味が無い (#6610)。**
+// Worker はリクエストごとに KV から盤を組み直すので、永続化から漏れていると
+// 復元のたびに 0 に戻り、Web のリングも CUI の印も本番では一度も出ない。
+func TestRistikontraCounterRankSurvivesRoundTrip(t *testing.T) {
+	g := ristikontraNewGame(4)
+	// **2つの値は必ず揃って立つ。** `applyPlay` は counterRank と counterCards を
+	// 同時に立て、同時に落とす。片方だけの盤は打っていて起きないので、
+	// `UnmarshalJSON` はそれを壊れた KV として弾く。
+	g.state.counterRank = 7
+	g.state.counterCards = []*Card{ristikontraCard(CardDesignSpade, 7)}
+
+	data, err := json.Marshal(g)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	var restored Ristikontra
+	if err := json.Unmarshal(data, &restored); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if got := restored.GetCounterRank(); got != 7 {
+		t.Fatalf("復元後も打ち返しの対象ランクが残ること: want 7, got %d", got)
+	}
+
+	// **0 のときも 0 で戻る。** 常に 7 を返す実装でも上は通る。
+	g.state.counterRank = 0
+	g.state.counterCards = nil
+	data, _ = json.Marshal(g)
+	var cleared Ristikontra
+	if err := json.Unmarshal(data, &cleared); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if got := cleared.GetCounterRank(); got != 0 {
+		t.Fatalf("対象なしは 0 のまま: got %d", got)
+	}
+}
+
+// **印を出すことと、実際に奪えることは別の値で決まっている (レビュー指摘)。**
+// `counterRank` が戻っても `counterCards` が nil で戻ると、`isCounter` は
+// false のままになる ── 「この札で束を奪える」と印を出しておいて、打つと
+// 何も奪えない、という一番たちの悪い嘘になる。getter ではなく**判定そのもの**が
+// 往復を越えて生き残ることを見る。
+func TestRistikontraCounterStealSurvivesRoundTrip(t *testing.T) {
+	g := ristikontraNewGame(4)
+	g.state.counterRank = 7
+	g.state.counterCards = []*Card{
+		ristikontraCard(CardDesignSpade, 7),
+		ristikontraCard(CardDesignHeart, 7),
+	}
+
+	data, err := json.Marshal(g)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	var restored Ristikontra
+	if err := json.Unmarshal(data, &restored); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+
+	// 復元後も、対象ランクの札は打ち返しとして成立する。
+	if !restored.isCounter(ristikontraCard(CardDesignClover, 7)) {
+		t.Fatal("復元後も対象ランクの札は束を奪えること")
+	}
+	// 別のランクは成立しない (常に true を返す実装で上が通ってしまう)。
+	if restored.isCounter(ristikontraCard(CardDesignClover, 8)) {
+		t.Fatal("対象ランクでない札は奪えないこと")
+	}
+	// 奪える束そのものも枚数ごと戻る。
+	if got := len(restored.state.counterCards); got != 2 {
+		t.Fatalf("奪える束が枚数ごと戻ること: want 2, got %d", got)
+	}
+
+	// **束が無い局面は無いまま戻る。** counterCards を常に埋める実装だと
+	// 「いつでも奪える」ことになり、上の assert は全部通ってしまう。
+	g.state.counterCards = nil
+	g.state.counterRank = 0
+	data, _ = json.Marshal(g)
+	var cleared Ristikontra
+	if err := json.Unmarshal(data, &cleared); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if cleared.isCounter(ristikontraCard(CardDesignClover, 7)) {
+		t.Fatal("打ち返しの対象が無い局面では成立しないこと")
 	}
 }

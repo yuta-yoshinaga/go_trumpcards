@@ -236,6 +236,19 @@ function CrazyFourPokerPageContent() {
                   />
                   {/* **賭ける前に見えなければ意味がない** (#5775)。何が当たれば
                       何倍かを知って額を決めるもの。倍率はサーバの配当表そのまま。 */}
+                  {/* **Super Bonus はアンティに必ず付く。** 任意の Queens Up は
+                      表が見えて、必須の側だけ見えないのは逆。 */}
+                  <table className="text-xs text-ds-text-muted mx-auto" data-testid="c4p-superbonus-payouts">
+                    <caption className="sr-only">{t('label.superBonusPayouts')}</caption>
+                    <tbody>
+                      {state.superBonusPayouts?.map((row) => (
+                        <tr key={`sb-${row.hand}-${row.name}`}>
+                          <td className="pr-3 text-left">{row.name}</td>
+                          <td className="text-right">{t('label.payoutOdds', { n: row.odds })}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                   <table className="text-xs text-ds-text-muted mx-auto" data-testid="c4p-queensup-payouts">
                     <caption className="sr-only">{t('label.queensUpPayouts')}</caption>
                     <tbody>

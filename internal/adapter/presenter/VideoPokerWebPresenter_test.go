@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,7 +14,9 @@ import (
 
 func setupVideoPokerWebMockDefaults(m *interfaces.MockVideoPokerGame) {
 	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseBet).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetBetAmount").Return(0).Maybe()
@@ -52,6 +55,7 @@ func TestVideoPokerWebPresenter_Output_Win(t *testing.T) {
 	m := new(interfaces.MockVideoPokerGame)
 	m.On("GetChips").Return(1025).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseResult).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetHand").Return([]*domain.Card{
 		domain.NewCard(domain.CardDesignSpade, 7, false),
 		domain.NewCard(domain.CardDesignClover, 7, false),
@@ -85,6 +89,7 @@ func TestVideoPokerWebPresenter_Output_Lose(t *testing.T) {
 	m := new(interfaces.MockVideoPokerGame)
 	m.On("GetChips").Return(999).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseResult).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetHand").Return([]*domain.Card{
 		domain.NewCard(domain.CardDesignSpade, 2, false),
 		domain.NewCard(domain.CardDesignClover, 5, false),
@@ -150,4 +155,28 @@ func TestVideoPokerWebPresenter_HintOutput(t *testing.T) {
 	p := new(VideoPokerWebPresenter)
 	// The web presenter computes hints client-side, so HintOutput mirrors Output.
 	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+}
+
+// The web says nothing during an ordinary bet phase, so without this the refill
+// reaches the client as a changed number and no message at all.
+func TestVideoPokerWebPresenter_ChipsRefilledMessage(t *testing.T) {
+	build := func(refilled bool) *interfaces.MockVideoPokerGame {
+		m := new(interfaces.MockVideoPokerGame)
+		m.On("GetChipsRefilled").Return(refilled).Maybe()
+		setupVideoPokerWebMockDefaults(m)
+		return m
+	}
+
+	t.Run("sends a message code when the balance was topped up", func(t *testing.T) {
+		p := new(VideoPokerWebPresenter)
+		out := parseVideoPokerOutput(t, p.Output(build(true), nil))
+		assert.Equal(t, "videopoker.chipsRefilled", out.MessageCode)
+		assert.Equal(t, strconv.Itoa(domain.VideoPokerDefaultChips), out.MessageParams["chips"])
+	})
+
+	t.Run("sends nothing on an ordinary bet phase", func(t *testing.T) {
+		p := new(VideoPokerWebPresenter)
+		out := parseVideoPokerOutput(t, p.Output(build(false), nil))
+		assert.Empty(t, out.MessageCode)
+	})
 }

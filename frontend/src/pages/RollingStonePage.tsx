@@ -119,9 +119,13 @@ function RollingStonePageContent() {
     if (!isGameEnd || state.winnerIdx < 0) return null;
     const winner = state.players[state.winnerIdx];
     const name = state.winnerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(state.winnerIdx) });
-    // **上限で切った局は「上がった」わけではない。** 言い分ける。
-    if (winner && winner.cardCount > 0) {
-      return t('result.stalemate', { name, n: String(winner.cardCount) });
+    // **勝者に札が残っていることは理由を語らない。** 上限で切った局も投了した
+    // 局も勝者は札を持っている。サーバが送る理由そのもので言い分ける。
+    if (state.winReason === 'stalemate') {
+      return t('result.stalemate', { name, n: String(winner?.cardCount ?? 0) });
+    }
+    if (state.winReason === 'giveUp') {
+      return t('result.giveUp', { name });
     }
     return state.winnerIdx === 0 ? t('result.you') : t('result.cpu', { name });
   })();

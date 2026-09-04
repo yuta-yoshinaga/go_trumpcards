@@ -21,6 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -62,11 +63,31 @@ const CONTRACT_KEYS: Record<number, string> = {
 export const ColourWhistPage = withTutorial(ColourWhistPageContent, 'colourwhist', CW_TUTORIAL_STEPS);
 
 function ColourWhistPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('colourwhist');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('colourwhist');
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(colourwhistApi.exec);
+  // **ギブアップは取り消せない。**リセットには確認が挟まるのに、同じフッターの
+  // ギブアップは即座に対局を打ち切っていた ── 誤タップへの保護がリセットより
+  // 薄かった (#6475)。47 ページが既に使っている `useGiveUpConfirm` に揃える。
+  const handleGiveUp = useCallback(() => {
+    execApi('giveup');
+  }, [execApi]);
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('colourwhist');
   const cliConfig: CliGameConfig<ColourWhistResponse, Parameters<typeof colourwhistApi.exec>> = useMemo(
@@ -148,6 +169,9 @@ function ColourWhistPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span data-tutorial="cw-score">
@@ -187,6 +211,12 @@ function ColourWhistPageContent() {
               {state.declarerIdx >= 0 && (
                 <div data-testid="colourwhist-declarer">
                   {t('label.declarer')}: #{state.declarerIdx} ({t('label.declarerTricks')} {state.declarerTricks})
+                </div>
+              )}
+              {state.calledCard && (
+                <div className="flex items-center justify-center gap-1" data-testid="colourwhist-called-card">
+                  <span>{t('label.calledCard')}:</span>
+                  <AnimatedCard card={state.calledCard} width={cardWidth * 0.6} />
                 </div>
               )}
               {/* Alleen と Miserie には相方がいない。partnerIdx は「相方なし」も
@@ -337,7 +367,8 @@ function ColourWhistPageContent() {
                 <button
                   type="button"
                   className={btnSecondary}
-                  onClick={() => execApi('giveup')}
+                  onClick={confirmGiveUpAction}
+                  data-testid="giveup-button"
                   disabled={loading}
                   aria-keyshortcuts="g"
                 >

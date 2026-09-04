@@ -314,4 +314,52 @@ describe('BidEuchrePage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+
+  // **高位入札があるときだけコントラクトが表示される。**
+  it('shows the current contract when there is a standing bid', async () => {
+    mockExec.mockResolvedValue(makeState({ highBid: { player: 1, value: 4 } }));
+    const { unmount } = renderWithProviders(<BidEuchrePage />);
+    await waitFor(() => expect(screen.getByTestId('bideuchre-contract')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ highBid: null }));
+    renderWithProviders(<BidEuchrePage />);
+    await waitFor(() => expect(screen.queryByTestId('bideuchre-contract')).not.toBeInTheDocument());
+  });
+
+  // **トリックに札が出ているときだけトリック領域が表示される。**
+  it('shows the trick area only when cards have been played to the trick', async () => {
+    mockExec.mockResolvedValue(makeState({ trick: [card('SPADE', 1)] }));
+    const { unmount } = renderWithProviders(<BidEuchrePage />);
+    await waitFor(() => expect(screen.getByTestId('bideuchre-trick')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ trick: [] }));
+    renderWithProviders(<BidEuchrePage />);
+    await waitFor(() => expect(screen.queryByTestId('bideuchre-trick')).not.toBeInTheDocument());
+  });
+
+  // **人間の入札手番のときだけビッドの注意書きが表示される。**
+  it('shows the bid notice only on human bid turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BidEuchrePhase.BID, bidPlayerIdx: 0 }));
+    const { unmount } = renderWithProviders(<BidEuchrePage />);
+    await waitFor(() => expect(screen.getByTestId('bideuchre-bid-notice')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: BidEuchrePhase.BID, bidPlayerIdx: 1 }));
+    renderWithProviders(<BidEuchrePage />);
+    await waitFor(() => expect(screen.queryByTestId('bideuchre-bid-notice')).not.toBeInTheDocument());
+  });
+
+  // **人間の宣言手番のときだけ宣言の注意書きが表示される。**
+  it('shows the trump notice only on human declare turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BidEuchrePhase.CHOOSE_TRUMP, declarerIdx: 0 }));
+    const { unmount } = renderWithProviders(<BidEuchrePage />);
+    await waitFor(() => expect(screen.getByTestId('bideuchre-trump-notice')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: BidEuchrePhase.CHOOSE_TRUMP, declarerIdx: 1 }));
+    renderWithProviders(<BidEuchrePage />);
+    await waitFor(() => expect(screen.queryByTestId('bideuchre-trump-notice')).not.toBeInTheDocument());
+  });
 });

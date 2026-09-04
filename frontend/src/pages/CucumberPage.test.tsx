@@ -101,6 +101,38 @@ describe('CucumberPage', () => {
     expect(s0).toHaveTextContent('失点12点');
   });
 
+  // **CPU 同士の手番中、誰が考えているのかが画面のどこにも無かった。**
+  // GamePageShell は「自分の番かどうか」しか示さない。
+  it('marks the seat whose turn it is', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 2 }));
+    renderWithProviders(<CucumberPage />);
+
+    expect(await screen.findByTestId('cu-seat-2')).toHaveAttribute('data-current-turn', 'true');
+    // 1 席だけ。全席に付ける実装では落ちる。
+    for (const id of [0, 1, 3]) {
+      expect(screen.getByTestId(`cu-seat-${id.toString()}`)).not.toHaveAttribute('data-current-turn');
+    }
+  });
+
+  // 終局後は手番が無い。
+  it('drops the turn marker once the game has ended', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 2, gameEndFlag: true, phase: 2 }));
+    renderWithProviders(<CucumberPage />);
+
+    await waitFor(() => expect(screen.getByTestId('cu-seat-2')).toBeInTheDocument());
+    expect(screen.getByTestId('cu-seat-2')).not.toHaveAttribute('data-current-turn');
+  });
+
+  // 罰点バッジと同じ席に出ても互いを消さない。
+  it('keeps the last-trick badge and the turn marker on the same seat', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 2, lastTrickWinnerIdx: 2, lastPenalty: 11 }));
+    renderWithProviders(<CucumberPage />);
+
+    const seat2 = await screen.findByTestId('cu-seat-2');
+    expect(seat2).toHaveAttribute('data-current-turn', 'true');
+    expect(seat2).toHaveTextContent(/最終トリックで11点/);
+  });
+
   it('marks who took the last trick and for how much', async () => {
     const { unmount } = renderWithProviders(<CucumberPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

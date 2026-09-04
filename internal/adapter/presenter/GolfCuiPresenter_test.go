@@ -273,6 +273,44 @@ func TestGolfCuiPresenter_NineHoleScorecard(t *testing.T) {
 		return g
 	}
 
+	t.Run("announces 9-hole start only on the first scorecard", func(t *testing.T) {
+		p := &GolfCuiPresenter{}
+		firstOutput := p.Output(endedGame(4, domain.GolfPhaseGameOver), nil)
+		assert.Contains(t, firstOutput, "9ホールスコアリングを開始しました")
+
+		p.Output(endedGame(9, domain.GolfPhasePlaying), nil)
+		secondOutput := p.Output(endedGame(3, domain.GolfPhaseGameClear), nil)
+		assert.NotContains(t, secondOutput, "9ホールスコアリングを開始しました")
+	})
+
+	// r9 が打たれるのは普通「スコアカードが画面に出ている」時、つまりその局は
+	// まだ終局フェーズのまま。リセットで dealRecorded まで戻すと直後の Output が
+	// 同じ局をもう一度数え、消したはずのカードが即座に戻ってくる。
+	t.Run("reset actually empties the card, and the next deal starts at hole 1", func(t *testing.T) {
+		p := &GolfCuiPresenter{}
+		finished := endedGame(4, domain.GolfPhaseGameOver)
+		assert.Contains(t, p.Output(finished, nil), "ホール 1/9")
+
+		afterReset := p.ResetNineHole(finished)
+		assert.NotContains(t, afterReset, "ホール")
+		assert.NotContains(t, afterReset, "9ホールスコアリングを開始しました")
+
+		// 次のディールから改めて1ホール目として数え直す。
+		p.Output(endedGame(9, domain.GolfPhasePlaying), nil)
+		out := p.Output(endedGame(3, domain.GolfPhaseGameClear), nil)
+		assert.Contains(t, out, "ホール 1/9  今回: 3  合計: 3")
+		assert.Contains(t, out, "9ホールスコアリングを開始しました")
+	})
+
+	// 対局中のリセットは、次に終わる局から数え直せなければならない。
+	t.Run("reset mid-deal still records the deal that follows", func(t *testing.T) {
+		p := &GolfCuiPresenter{}
+		p.Output(endedGame(4, domain.GolfPhaseGameOver), nil)
+		p.Output(endedGame(9, domain.GolfPhasePlaying), nil)
+		assert.NotContains(t, p.ResetNineHole(endedGame(9, domain.GolfPhasePlaying)), "ホール")
+		assert.Contains(t, p.Output(endedGame(5, domain.GolfPhaseGameOver), nil), "ホール 1/9  今回: 5  合計: 5")
+	})
+
 	t.Run("no scorecard before any deal has ended", func(t *testing.T) {
 		p := &GolfCuiPresenter{}
 		assert.NotContains(t, p.Output(endedGame(5, domain.GolfPhasePlaying), nil), "ホール")

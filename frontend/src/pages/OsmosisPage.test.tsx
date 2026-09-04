@@ -45,6 +45,7 @@ const gameOverState: OsmosisResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.clear();
   mockExec.mockResolvedValue(playingState);
 });
 
@@ -144,6 +145,34 @@ describe('OsmosisPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     screen.getByRole('button', { name: 'ヒント' }).click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  // **このページはヒント応答を盤面ごと飲み込む。**専用の hint state を持たず、
+  // `useGameApi` の `exec('hint')` をそのまま呼ぶので `setState(res)` が状態を
+  // 丸ごと差し替える ── サーバが盤面を空で返していた頃は、それが画面に流れ込んで
+  // リザーブもウェイストもファウンデーションも消えていた (#6800)。
+  //
+  // 修正は「`HintOutput` が盤面を返す」側 (`TestHintOutputKeepsTheBoardForPagesThatMergeIt`)。
+  // ここで固定するのは**その修正が必要である理由**、つまりこの結合そのもの。
+  // 将来ページに専用の hint state を入れたらこのテストが落ちるので、そのとき
+  // サーバ側の判断を見直せる。
+  it('renders whatever board the hint response carries, so the server must send one', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByRole('button', { name: 'リザーブ 1' })).toBeInTheDocument();
+
+    mockExec.mockResolvedValueOnce({
+      ...playingState,
+      reserve: [],
+      waste: [],
+      foundation: [],
+      messageCode: 'osmosis.hintAvailable',
+    });
+    screen.getByRole('button', { name: 'ヒント' }).click();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'リザーブ 1' })).not.toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'ウェイスト' })).not.toBeInTheDocument();
   });
 
   it('autocomplete button triggers autocomplete command', async () => {
@@ -381,5 +410,72 @@ describe('OsmosisPage blocked foundation rows', () => {
 
     expect(screen.getByRole('button', { name: '組札 0' })).not.toHaveAttribute('aria-describedby');
     expect(screen.queryByText('この段には置けません')).not.toBeInTheDocument();
+  });
+});
+
+describe('OsmosisPage hint highlight', () => {
+  it('highlights the reserve column and foundation row with ring-ds-warning when hint is enabled', async () => {
+    localStorage.setItem('hint_enabled_osmosis', 'true');
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'reserve', fromCol: 1, toCol: 2 },
+    });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
+
+    const reserve1 = screen.getByRole('button', { name: 'リザーブ 1' });
+    const foundation2 = screen.getByRole('button', { name: '組札 2' });
+    expect(reserve1.className).toContain('ring-ds-warning');
+    expect(foundation2.className).toContain('ring-ds-warning');
+
+    const reserve0 = screen.getByRole('button', { name: 'リザーブ 0' });
+    const foundation0 = screen.getByRole('button', { name: '組札 0' });
+    expect(reserve0.className).not.toContain('ring-ds-warning');
+    expect(foundation0.className).not.toContain('ring-ds-warning');
+  });
+
+  // **文言は解決した結果を見る。**reasonParams のキーとロケールの {{...}} が
+  // 食い違ってもエラーにはならず、`{{col}}` がそのまま画面に出るだけになる。
+  it('resolves the tooltip reason with the hinted column numbers', async () => {
+    localStorage.setItem('hint_enabled_osmosis', 'true');
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'reserve', fromCol: 1, toCol: 2 },
+    });
+    renderWithProviders(<OsmosisPage />);
+
+    const reason = await screen.findByText('リザーブ1の札を組札2へ浸透させられます');
+    expect(reason).toBeInTheDocument();
+    expect(reason.textContent).not.toContain('{{');
+  });
+
+  it('highlights the waste card and foundation row when hint points to waste', async () => {
+    localStorage.setItem('hint_enabled_osmosis', 'true');
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'waste', fromCol: -1, toCol: 0 },
+    });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
+
+    const waste = screen.getByRole('button', { name: 'ウェイスト' });
+    const foundation0 = screen.getByRole('button', { name: '組札 0' });
+    expect(waste.className).toContain('ring-ds-warning');
+    expect(foundation0.className).toContain('ring-ds-warning');
+  });
+
+  it('does not highlight reserve or foundation when hint is disabled (negative control)', async () => {
+    localStorage.setItem('hint_enabled_osmosis', 'false');
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'reserve', fromCol: 1, toCol: 2 },
+    });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
+
+    const reserve1 = screen.getByRole('button', { name: 'リザーブ 1' });
+    const foundation2 = screen.getByRole('button', { name: '組札 2' });
+    expect(reserve1.className).not.toContain('ring-ds-warning');
+    expect(foundation2.className).not.toContain('ring-ds-warning');
   });
 });

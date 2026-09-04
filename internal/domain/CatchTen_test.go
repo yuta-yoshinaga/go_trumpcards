@@ -129,6 +129,8 @@ func TestCatchTen_PlayerPlay(t *testing.T) {
 		setupCatchTenPlayPhase(g, 0, 0, 1)
 		err := g.PlayerPlay(99)
 		assert.Error(t, err)
+		code, _ := domain.ErrorMessageCode(err)
+		assert.Equal(t, "catchten.errCardIndexOutOfRange", code)
 	})
 
 	t.Run("must follow suit", func(t *testing.T) {
@@ -146,6 +148,8 @@ func TestCatchTen_PlayerPlay(t *testing.T) {
 
 		err := g.PlayerPlay(1) // spade, must-follow violation
 		assert.Error(t, err)
+		code, _ := domain.ErrorMessageCode(err)
+		assert.Equal(t, "catchten.errFollowLeadSuit", code)
 		err = g.PlayerPlay(0) // heart, ok
 		assert.NoError(t, err)
 	})

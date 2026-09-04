@@ -87,7 +87,7 @@ flowchart TD
 
 ```
 ==========
-Tarneeb (ターニーブ)
+タルニーブ (Tarneeb)
 ==========
 Round 1  Trick 1
 Trump: ♠

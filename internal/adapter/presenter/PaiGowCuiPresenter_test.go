@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -20,6 +21,7 @@ func setupPaiGowCuiMockDefaults(m *interfaces.MockPaiGowGame) {
 	m.On("GetPlayerLowHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetDealerHighHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetDealerLowHand").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("IsFoulSplit", mock.Anything, mock.Anything).Return(false).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetHint").Return((*domain.PaiGowHint)(nil)).Maybe()
 	m.On("GetBet").Return(0).Maybe()
@@ -76,6 +78,7 @@ func TestPaiGowCuiPresenter_Output_SetHandsPhase(t *testing.T) {
 	m.On("GetDealerHighRank").Return(0).Maybe()
 	m.On("GetDealerLowRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("IsFoulSplit", mock.Anything, mock.Anything).Return(false).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "フェーズ: SET HANDS")
@@ -116,6 +119,7 @@ func TestPaiGowCuiPresenter_Output_PlayerWins(t *testing.T) {
 	m.On("GetDealerHighRank").Return(0).Maybe()
 	m.On("GetDealerLowRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("IsFoulSplit", mock.Anything, mock.Anything).Return(false).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "プレイヤーの勝ち")
@@ -147,6 +151,7 @@ func TestPaiGowCuiPresenter_Output_DealerWins(t *testing.T) {
 	m.On("GetDealerHighRank").Return(0).Maybe()
 	m.On("GetDealerLowRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("IsFoulSplit", mock.Anything, mock.Anything).Return(false).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "ディーラーの勝ち")
@@ -176,6 +181,7 @@ func TestPaiGowCuiPresenter_Output_Push(t *testing.T) {
 	m.On("GetDealerHighRank").Return(0).Maybe()
 	m.On("GetDealerLowRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("IsFoulSplit", mock.Anything, mock.Anything).Return(false).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "プッシュ")
@@ -224,6 +230,7 @@ func TestPaiGowCuiPresenter_Output_EndPhaseWithHands(t *testing.T) {
 	m.On("GetDealerHighRank").Return(domain.PokerHandHighCard).Maybe()
 	m.On("GetDealerLowRank").Return(domain.PaiGowLowHandHighCard).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("IsFoulSplit", mock.Anything, mock.Anything).Return(false).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "ハイ:")
@@ -256,6 +263,7 @@ func TestPaiGowCuiPresenter_PhaseStr_Unknown(t *testing.T) {
 	m.On("GetDealerHighRank").Return(0).Maybe()
 	m.On("GetDealerLowRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("IsFoulSplit", mock.Anything, mock.Anything).Return(false).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "UNKNOWN")
@@ -265,6 +273,7 @@ func TestPaiGowCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(PaiGowCuiPresenter)
 	m := new(interfaces.MockPaiGowGame)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("IsFoulSplit", mock.Anything, mock.Anything).Return(false).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 
 	result := p.ActionLogOutput(m)
@@ -334,4 +343,84 @@ func TestPaiGowCuiPresenter_Output_FoulIsExplainedInTheLocale(t *testing.T) {
 	assert.Contains(t, result, i18n.T("paigow.foulHighMustBeat"))
 	// **キーがそのまま出ていないこと。**翻訳を通していないと "paigow.foul..." が画面に出る。
 	assert.NotContains(t, result, "paigow.foulHighMustBeat")
+}
+
+func TestPaiGowCuiPresenter_FoulSplits(t *testing.T) {
+	i18n.SetLang("ja")
+	p := &PaiGowCuiPresenter{}
+
+	// Create some dummy cards
+	dummyCards := make([]*domain.Card, 7)
+	for i := range dummyCards {
+		dummyCards[i] = domain.NewCard(domain.CardDesignSpade, i+2, false)
+	}
+
+	t.Run("SetHands phase with foul splits", func(t *testing.T) {
+		m := new(interfaces.MockPaiGowGame)
+		m.On("GetChips").Return(1000)
+		m.On("GetPhase").Return(domain.PaiGowPhaseSetHands)
+		m.On("GetPlayerCards").Return(dummyCards)
+		m.On("GetGameEndFlag").Return(false)
+
+		// Return true for IsFoulSplit(0,1) and IsFoulSplit(2,3)
+		m.On("IsFoulSplit", 0, 1).Return(true)
+		m.On("IsFoulSplit", 2, 3).Return(true)
+		// Return false for all others
+		for i := range 7 {
+			for j := i + 1; j < 7; j++ {
+				if (i == 0 && j == 1) || (i == 2 && j == 3) {
+					continue
+				}
+				m.On("IsFoulSplit", i, j).Return(false)
+			}
+		}
+
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "反則になる分割: [0,1] [2,3]")
+	})
+
+	t.Run("SetHands phase with NO foul splits", func(t *testing.T) {
+		m := new(interfaces.MockPaiGowGame)
+		m.On("GetChips").Return(1000)
+		m.On("GetPhase").Return(domain.PaiGowPhaseSetHands)
+		m.On("GetPlayerCards").Return(dummyCards)
+		m.On("GetGameEndFlag").Return(false)
+
+		for i := range 7 {
+			for j := i + 1; j < 7; j++ {
+				m.On("IsFoulSplit", i, j).Return(false)
+			}
+		}
+
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "反則になる分割はありません")
+	})
+
+	t.Run("Negative control: not in SetHands phase", func(t *testing.T) {
+		m := new(interfaces.MockPaiGowGame)
+		m.On("GetChips").Return(1000)
+		m.On("GetPhase").Return(domain.PaiGowPhaseBet)
+		m.On("GetPlayerCards").Return(dummyCards)
+		m.On("GetGameEndFlag").Return(false)
+
+		out := p.Output(m, nil)
+		assert.NotContains(t, out, "反則になる分割")
+	})
+
+	t.Run("Negative control: End phase", func(t *testing.T) {
+		m := new(interfaces.MockPaiGowGame)
+		m.On("GetChips").Return(1000)
+		m.On("GetPhase").Return(domain.PaiGowPhaseEnd)
+		m.On("GetPlayerCards").Return(dummyCards)
+		m.On("GetPlayerHighHand").Return(([]*domain.Card)(nil))
+		m.On("GetPlayerLowHand").Return(([]*domain.Card)(nil))
+		m.On("GetDealerHighHand").Return(([]*domain.Card)(nil))
+		m.On("GetDealerLowHand").Return(([]*domain.Card)(nil))
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetBet").Return(100)
+		m.On("GetResult").Return(domain.GameResultLose)
+
+		out := p.Output(m, nil)
+		assert.NotContains(t, out, "反則になる分割")
+	})
 }

@@ -15,7 +15,8 @@
     "score": "得点: あなたのチーム {{t0}} － 相手 {{t1}}",
     "you": "あなた",
     "cpu": "CPU{{idx}}",
-    "team": "T{{team}}"
+    "team": "T{{team}}",
+    "tricksTaken": "獲得{{count}}"
   },
   "meld": {
     "none": "メルドなし",

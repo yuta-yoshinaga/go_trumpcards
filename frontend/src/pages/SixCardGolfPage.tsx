@@ -186,7 +186,12 @@ function SixCardGolfPageContent() {
           <LandscapeBanner message={t('landscapeBanner', { defaultValue: '' })} />
           {error && <ErrorAlert message={error} onRetry={retry} />}
           <GameMessageBox messageCode={state.messageCode} messageParams={state.messageParams} message={state.message} />
-          {hint && hintEnabled && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+          {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+              付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+              読み上げられないことがある (#5955, #6663)。 */}
+          <div data-testid="sixcardgolf-hint-live" role="status" aria-live="polite">
+            {hint && hintEnabled && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+          </div>
 
           {/* Score Table */}
           <div className="flex gap-2 flex-wrap" data-tutorial="scg-score">

@@ -31,5 +31,6 @@
   "boardSuitLine": "  {{suit}}: {{cells}}",
   "helpExamplePass": "  p                    pass when you cannot play",
   "helpLog": "  l                    show the action log",
-  "noPlayable": "No playable card -- pass with p"
+  "noPlayable": "No playable card -- pass with p",
+  "actionReclaimedJoker": "  -> {{name}} reclaimed the joker (it returns to their hand)"
 }

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra5
 
 // Package domain グリーク (Gleek) のドメインモデル。
 //
@@ -188,12 +188,13 @@ type Gleek struct {
 	stock []*Card
 
 	// 段階ごとの得点
-	ruffs           []*GleekRuff
-	ruffWinnerIdx   int
-	melds           []*GleekMeld
-	trickPoints     [GleekPlayerCnt]int // 3 点 × トリック数 + 取った名札の点
-	playerScores    [GleekPlayerCnt]int // 累積ゲーム点
-	lastTrickWinner int
+	ruffs            []*GleekRuff
+	ruffWinnerIdx    int
+	melds            []*GleekMeld
+	trickPoints      [GleekPlayerCnt]int // 3 点 × トリック数 + 取った名札の点
+	playerScores     [GleekPlayerCnt]int // 累積ゲーム点
+	roundStartScores [GleekPlayerCnt]int // ラウンド開始時の累積点スナップショット
+	lastTrickWinner  int
 
 	result       GleekResult
 	scored       bool
@@ -269,6 +270,7 @@ func (g *Gleek) NextRound() {
 
 // startRound 手札を配り、切り札をめくって競りフェーズを開始する。
 func (g *Gleek) startRound() {
+	g.roundStartScores = g.playerScores
 	g.trickNumber = 1
 	g.currentTrick = nil
 	g.trickResolved = false
@@ -1473,6 +1475,15 @@ func (g *Gleek) GetPlayerScores() [GleekPlayerCnt]int { return g.playerScores }
 // SetPlayerScores プレイヤー別累積点設定 (テスト用)
 func (g *Gleek) SetPlayerScores(s [GleekPlayerCnt]int) { g.playerScores = s }
 
+// GetRoundDelta ラウンド開始時点からの各プレイヤーの累積点の差分を取得する。
+func (g *Gleek) GetRoundDelta() []int {
+	delta := make([]int, GleekPlayerCnt)
+	for i := 0; i < GleekPlayerCnt; i++ {
+		delta[i] = g.playerScores[i] - g.roundStartScores[i]
+	}
+	return delta
+}
+
 // GetResult 人間視点のマッチ結果取得
 func (g *Gleek) GetResult() GleekResult { return g.result }
 
@@ -1550,6 +1561,7 @@ type gleekJSON struct {
 	Melds            []*GleekMeld         `json:"ml"`
 	TrickPoints      [GleekPlayerCnt]int  `json:"tp"`
 	PlayerScores     [GleekPlayerCnt]int  `json:"sc"`
+	RoundStartScores [GleekPlayerCnt]int  `json:"rss"`
 	LastTrickWinner  int                  `json:"lt"`
 	Result           GleekResult          `json:"rs"`
 	Scored           bool                 `json:"sd"`
@@ -1586,6 +1598,7 @@ func (g *Gleek) MarshalJSON() ([]byte, error) {
 		Melds:            g.melds,
 		TrickPoints:      g.trickPoints,
 		PlayerScores:     g.playerScores,
+		RoundStartScores: g.roundStartScores,
 		LastTrickWinner:  g.lastTrickWinner,
 		Result:           g.result,
 		Scored:           g.scored,
@@ -1723,6 +1736,7 @@ func (g *Gleek) UnmarshalJSON(data []byte) error {
 	g.melds = j.Melds
 	g.trickPoints = j.TrickPoints
 	g.playerScores = j.PlayerScores
+	g.roundStartScores = j.RoundStartScores
 	g.lastTrickWinner = j.LastTrickWinner
 	g.result = j.Result
 	g.scored = j.Scored

@@ -24,6 +24,7 @@
   "meldExtra": "追加メルド",
   "layoff": "レイオフ",
   "meldAria": "{{player}}のメルド{{meld}}",
+  "layoffLocked": "両者のコントラクトが成立するまでレイオフできません",
   "cardInSlotRemoveAria": "{{card}}（スロット{{n}}に配置済み・クリックで取り外す）",
   "layoffTargetSummary": "→ レイオフ先: {{player}} メルド{{meld}}",
   "discard": "カードを捨てる",

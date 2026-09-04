@@ -293,17 +293,73 @@ describe('StreetsAndAlleysPage', () => {
     expect(region.textContent).toBe(EXPECTED_HINT_SENTENCE);
   });
 
-  it('rings every zone that can accept the selected card', async () => {
+  // 以前は「選択中なら全列の一番上」を無条件で光らせており、置けない列まで
+  // 点灯していた。合法な先だけが光ること・置けない先が光らないことを両方見る。
+  it('rings only the zones that can actually accept the selected card', async () => {
     localStorage.clear();
     mockExec.mockReset();
-    mockExec.mockResolvedValue(playingState);
+    // ♦9 の列を足す。ここが要 —— 置けない一番上の札を1枚も置かないと、
+    // 「選択中なら全列の一番上を光らせる」旧実装と区別がつかない（実測で素通りした）。
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 5), faceUp: true },
+        ],
+        [{ card: card('HEART', 6), faceUp: true }],
+        [{ card: card('DIAMOND', 9), faceUp: true }],
+        [],
+        [],
+        [],
+        [],
+        [],
+      ]),
+    });
     renderWithProviders(<StreetsAndAlleysPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(0);
 
-    // ♠5 is the top of column 0 — the page's own tests use it as the source.
+    // ♠5 is the top of column 0. Legal: ♥6 (one rank higher) and the five empty columns.
     fireEvent.click(screen.getByRole('button', { name: '♠ 5' }));
-    // Foundations accept the card as readily as the tableau does.
-    await waitFor(() => expect(document.querySelectorAll('[data-target-candidate]').length).toBeGreaterThan(1));
+    await waitFor(() => expect(screen.getByRole('button', { name: '♥ 6' })).toHaveAttribute('data-target-candidate'));
+
+    // ♦9 is a column top but 5 cannot go on a 9 — the old code ringed it anyway.
+    expect(screen.getByRole('button', { name: '♦ 9' })).not.toHaveAttribute('data-target-candidate');
+    // ♠K is buried under the source and is not one rank above a 5 — never a target.
+    expect(screen.getByRole('button', { name: '♠ K' })).not.toHaveAttribute('data-target-candidate');
+    // The aces on the foundations need a 2, not a 5.
+    for (const f of screen.getAllByLabelText(/組札/)) {
+      expect(f).not.toHaveAttribute('data-target-candidate');
+    }
+    // ♥6 plus the five empty columns; nothing else.
+    expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(6);
+  });
+
+  it('rings the foundation that will actually receive the card', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // ♠2 sits on top of column 1, and the spade foundation already holds its ace.
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [{ card: card('SPADE', 13), faceUp: true }],
+        [{ card: card('SPADE', 2), faceUp: true }],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+      ]),
+    });
+    renderWithProviders(<StreetsAndAlleysPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 2' }));
+    await waitFor(() => {
+      const rung = screen.getAllByLabelText(/組札/).filter((f) => f.hasAttribute('data-target-candidate'));
+      expect(rung).toHaveLength(1);
+    });
   });
 });

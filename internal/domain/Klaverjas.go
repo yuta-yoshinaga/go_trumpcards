@@ -70,10 +70,11 @@ type Klaverjas struct {
 	currentTrick     []*TrickCard
 	leadPlayerIdx    int
 	dealerIdx        int
-	trumpSuit        int                   // 切り札スート
-	teamScores       [KlaverjasTeamCnt]int // 累積点
-	roundCardPts     [KlaverjasTeamCnt]int // 現ラウンドのカード得点 (最終ボーナス含む)
-	roundRoem        [KlaverjasTeamCnt]int // 現ラウンドの Roem 点
+	trumpSuit        int                     // 切り札スート
+	teamScores       [KlaverjasTeamCnt]int   // 累積点
+	roundCardPts     [KlaverjasTeamCnt]int   // 現ラウンドのカード得点 (最終ボーナス含む)
+	roundRoem        [KlaverjasTeamCnt]int   // 現ラウンドの Roem 点
+	roundPlayerRoem  [KlaverjasPlayerCnt]int // 現ラウンドのプレイヤー別 Roem 点
 	gameEndFlag      bool
 	winnerTeam       int // -1=未確定
 	actionLogBase
@@ -134,6 +135,7 @@ func (g *Klaverjas) startRound() {
 	g.currentTrick = nil
 	g.roundCardPts = [KlaverjasTeamCnt]int{}
 	g.roundRoem = [KlaverjasTeamCnt]int{}
+	g.roundPlayerRoem = [KlaverjasPlayerCnt]int{}
 	for _, p := range g.players {
 		p.ResetRound()
 	}
@@ -170,6 +172,7 @@ func (g *Klaverjas) detectRoem() {
 	for i := range g.players {
 		roem := klaverjasHandRoem(g.players[i])
 		if roem > 0 {
+			g.roundPlayerRoem[i] = roem
 			g.roundRoem[KlaverjasTeamOf(i)] += roem
 			g.appendLog(i, "roem", fmt.Sprintf("%s scores %d roem", playerName(g.players, i), roem), nil)
 		}
@@ -775,6 +778,10 @@ func (g *Klaverjas) SetRoundCardPoints(s [KlaverjasTeamCnt]int) { g.roundCardPts
 // GetRoundRoem 現ラウンドの Roem 点取得
 func (g *Klaverjas) GetRoundRoem() [KlaverjasTeamCnt]int { return g.roundRoem }
 
+// GetRoundPlayerRoem 現ラウンドのプレイヤー別 Roem 点取得。
+// 0 は「この席は Roem を稼いでいない」。int のゼロ値がそのまま正しい意味になるので、復元で嘘にならない。
+func (g *Klaverjas) GetRoundPlayerRoem() [KlaverjasPlayerCnt]int { return g.roundPlayerRoem }
+
 // GetGameEndFlag ゲーム終了フラグ取得
 func (g *Klaverjas) GetGameEndFlag() bool { return g.gameEndFlag }
 
@@ -812,23 +819,24 @@ func (g *Klaverjas) GetPlayableIndices(playerIdx int) []int {
 
 // klaverjasJSON is the JSON wire format for Klaverjas.
 type klaverjasJSON struct {
-	TrumpCards       *TrumpCards           `json:"tc"`
-	Players          []*KlaverjasPlayer    `json:"ps"`
-	Config           KlaverjasConfig       `json:"cf"`
-	Phase            KlaverjasPhase        `json:"ph"`
-	RoundNumber      int                   `json:"rn"`
-	TrickNumber      int                   `json:"tn"`
-	CurrentPlayerIdx int                   `json:"ci"`
-	CurrentTrick     []*TrickCard          `json:"ct"`
-	LeadPlayerIdx    int                   `json:"li"`
-	DealerIdx        int                   `json:"di"`
-	TrumpSuit        int                   `json:"ts"`
-	TeamScores       [KlaverjasTeamCnt]int `json:"sc"`
-	RoundCardPts     [KlaverjasTeamCnt]int `json:"rp"`
-	RoundRoem        [KlaverjasTeamCnt]int `json:"rr"`
-	GameEndFlag      bool                  `json:"ge"`
-	WinnerTeam       int                   `json:"wt"`
-	ActionLog        []*ActionLogEntry     `json:"al"`
+	TrumpCards       *TrumpCards             `json:"tc"`
+	Players          []*KlaverjasPlayer      `json:"ps"`
+	Config           KlaverjasConfig         `json:"cf"`
+	Phase            KlaverjasPhase          `json:"ph"`
+	RoundNumber      int                     `json:"rn"`
+	TrickNumber      int                     `json:"tn"`
+	CurrentPlayerIdx int                     `json:"ci"`
+	CurrentTrick     []*TrickCard            `json:"ct"`
+	LeadPlayerIdx    int                     `json:"li"`
+	DealerIdx        int                     `json:"di"`
+	TrumpSuit        int                     `json:"ts"`
+	TeamScores       [KlaverjasTeamCnt]int   `json:"sc"`
+	RoundCardPts     [KlaverjasTeamCnt]int   `json:"rp"`
+	RoundRoem        [KlaverjasTeamCnt]int   `json:"rr"`
+	RoundPlayerRoem  [KlaverjasPlayerCnt]int `json:"rpr"`
+	GameEndFlag      bool                    `json:"ge"`
+	WinnerTeam       int                     `json:"wt"`
+	ActionLog        []*ActionLogEntry       `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -848,6 +856,7 @@ func (g *Klaverjas) MarshalJSON() ([]byte, error) {
 		TeamScores:       g.teamScores,
 		RoundCardPts:     g.roundCardPts,
 		RoundRoem:        g.roundRoem,
+		RoundPlayerRoem:  g.roundPlayerRoem,
 		GameEndFlag:      g.gameEndFlag,
 		WinnerTeam:       g.winnerTeam,
 		ActionLog:        g.actionLog,
@@ -899,6 +908,7 @@ func (g *Klaverjas) UnmarshalJSON(data []byte) error {
 	g.teamScores = j.TeamScores
 	g.roundCardPts = j.RoundCardPts
 	g.roundRoem = j.RoundRoem
+	g.roundPlayerRoem = j.RoundPlayerRoem
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerTeam = j.WinnerTeam
 	g.actionLog = j.ActionLog

@@ -612,17 +612,22 @@ function MightyPageContent() {
 
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
-            {hint && (
-              <div className="text-ds-warning text-sm mb-2">
-                {hint.bid != null
-                  ? `${t('hintBid')}: ${hint.bid}${hint.bidNoTrump ? ` (${t('noTrump')})` : ''} (${t(`hintReason.${hint.reason}`)})`
-                  : hint.trumpSuit != null
-                    ? `${t('hintTrump')}: ${hint.trumpSuit === -1 ? t('noTrump') : t(`suitName.${SUIT_KEYS[hint.trumpSuit]}`)} (${t(`hintReason.${hint.reason}`)})`
-                    : hint.discardIndices != null
-                      ? `${t('hintDiscard')}: [${hint.discardIndices.join(', ')}] (${t(`hintReason.${hint.reason}`)})`
-                      : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
-              </div>
-            )}
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+                読み上げられないことがある (#5955, #6663)。 */}
+            <div data-testid="mighty-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {hint.bid != null
+                    ? `${t('hintBid')}: ${hint.bid}${hint.bidNoTrump ? ` (${t('noTrump')})` : ''} (${t(`hintReason.${hint.reason}`)})`
+                    : hint.trumpSuit != null
+                      ? `${t('hintTrump')}: ${hint.trumpSuit === -1 ? t('noTrump') : t(`suitName.${SUIT_KEYS[hint.trumpSuit]}`)} (${t(`hintReason.${hint.reason}`)})`
+                      : hint.discardIndices != null
+                        ? `${t('hintDiscard')}: [${hint.discardIndices.join(', ')}] (${t(`hintReason.${hint.reason}`)})`
+                        : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {/* Joker suit picker dialog */}
@@ -690,7 +695,7 @@ function MightyPageContent() {
                       type="checkbox"
                       checked={bidNoTrumpToggle}
                       onChange={(e) => setBidNoTrumpToggle(e.target.checked)}
-                      aria-label="bid-no-trump"
+                      aria-label={t('noTrumpToggle')}
                     />
                     {t('noTrumpToggle')}
                   </label>
@@ -772,7 +777,7 @@ function MightyPageContent() {
                       value={partnerValueValue}
                       onChange={(e) => setPartnerValueValue(Number(e.target.value))}
                       className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
-                      aria-label="partner-value"
+                      aria-label={t('partnerValue')}
                     >
                       {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (
                         <option key={v} value={v}>
@@ -830,7 +835,7 @@ function MightyPageContent() {
                       className={btnPrimary}
                       onClick={() => setJokerSuitPickerOpen(true)}
                       disabled={loading}
-                      aria-label="joker-lead-button"
+                      aria-label={t('jokerLeadButton')}
                     >
                       {t('jokerLeadButton')}
                     </button>

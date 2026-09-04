@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -114,10 +115,18 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 
 		// Meta AI status
 		if profile := d.GetHumanProfile(); profile != nil {
+			// 迷い時間は Web のメタAIパネルには出ていて CUI には無かった (#6274)。
+			// 未計測の 0 は「0ms で打っている」ではないので、そのときは何も足さない。
+			hesitation := ""
+			if profile.HesitationMean > 0 {
+				hesitation = i18n.Tf("doubt.metaAIHesitation",
+					"ms", strconv.Itoa(int(math.Round(profile.HesitationMean))))
+			}
 			b.WriteString(i18n.Tf("doubt.metaAILine",
 				"games", strconv.Itoa(profile.GamesPlayed),
 				"bluff", fmt.Sprintf("%.0f", profile.BluffRate(1)*100),
-				"accuracy", fmt.Sprintf("%.0f", profile.DoubtAccuracy()*100)) + "\n")
+				"accuracy", fmt.Sprintf("%.0f", profile.DoubtAccuracy()*100),
+				"hesitation", hesitation) + "\n")
 		}
 
 		cuiErrorBlock(b, lastErr)

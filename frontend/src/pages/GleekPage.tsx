@@ -79,6 +79,13 @@ const SUIT_KEYS = ['suitNone', 'suitSpade', 'suitClub', 'suitHeart', 'suitDiamon
 /** Meld-rank i18n keys, keyed by the card value the set is made of. */
 const RANK_KEYS: Readonly<Record<number, string>> = { 1: 'rankAce', 13: 'rankKing', 12: 'rankQueen', 11: 'rankJack' };
 
+/** Signed round delta: the plus sign is ours to add, and 0 reads as "no change" (±0). */
+function formatSignedDelta(n: number): string {
+  if (n > 0) return `+${n.toString()}`;
+  if (n === 0) return '±0';
+  return n.toString();
+}
+
 /**
  * Renders the Gleek game page: a 3-player 44-card trick-taker that settles four
  * scoring stages inside one deal — the auction for the stock, the ruff, the
@@ -297,6 +304,21 @@ function GleekPageContent() {
                     <div data-testid="gleek-par-line">
                       {t('roundResult.par', { total: state.dealPoints, par: state.par })}
                     </div>
+                    {state.players.map((p, idx) => {
+                      const delta = state.roundDelta[idx];
+                      return (
+                        <div
+                          key={p.id}
+                          className={`py-0.5 ${delta > 0 ? 'text-ds-success' : delta < 0 ? 'text-ds-error' : ''}`}
+                          data-testid={`gleek-round-delta-${p.id.toString()}`}
+                        >
+                          {t('roundResult.delta', {
+                            name: playerName(p.id, p.isHuman),
+                            delta: formatSignedDelta(delta),
+                          })}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -318,16 +340,23 @@ function GleekPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.gleek.footer} px-4 py-2.5`}>
-            {canBid && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="gleek-bid-prompt">
-                {t('bidPhase', { bid: state.highestBid })}
-              </div>
-            )}
-            {canDiscard && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="gleek-discard-prompt">
-                {t('discardPhase', { count: state.discardCount, selected: selectedCardIndices.length })}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="gleek-prompt-live" role="status" aria-live="polite">
+              {canBid && (
+                <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="gleek-bid-prompt">
+                  {t('bidPhase', { bid: state.highestBid })}
+                </div>
+              )}
+              {canDiscard && (
+                <div
+                  className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                  data-testid="gleek-discard-prompt"
+                >
+                  {t('discardPhase', { count: state.discardCount, selected: selectedCardIndices.length })}
+                </div>
+              )}
+            </div>
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

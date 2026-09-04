@@ -15,6 +15,7 @@
     "discardPile": "Discard",
     "total": "Total",
     "potCount": "{{count}} in pot",
+    "lastBurialCount": "(Buried {{count}})",
     "rounds": "Rounds",
     "maxRounds": "Max rounds"
   },

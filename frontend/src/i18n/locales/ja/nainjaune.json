@@ -23,7 +23,7 @@
   "announceYourTurn": "あなたの手番です",
   "announceDealEnd": "ディールが終了しました",
   "announceAward": "区画が払い出されました",
-  "landscapeBanner": "横向きにするとカードが見やすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "phase.play": "出す",
   "phase.dealEnd": "ディール終了",
   "phase.end": "終了",
@@ -33,5 +33,7 @@
   "tutorial.noSuit": "並びはスートを一切見ません。ランクが1つずつ上がるだけです。Pope Joan の感覚で「同じスートの次」を探すと出せる札を見落とします",
   "tutorial.exactCard": "区画を取れるのは決まった1枚だけで、スートまで一致している必要があります。♠7 では黄色い小人（♦7）は取れません",
   "tutorial.carryOver": "取られなかった区画のチップは次のディールへ持ち越されます。♦7 は毎ディール5枚ずつ積まれるので、放置されると一気に大きくなります",
-  "tutorial.points": "出し切られたとき、残った手札の【点数】を払います。枚数ではありません。A=1、数札は額面、J・Q・K は各10点です"
+  "tutorial.points": "出し切られたとき、残った手札の【点数】を払います。枚数ではありません。A=1、数札は額面、J・Q・K は各10点です",
+  "awardLineYou": "あなたが {{box}} を獲得（{{chips}}）",
+  "dealResultYou": "あなたが出し切りました"
 }

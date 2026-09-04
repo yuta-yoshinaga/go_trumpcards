@@ -669,8 +669,7 @@ describe('SkatPage score breakdown', () => {
     expect(bd).not.toHaveTextContent('シュヴァルツ');
   });
 
-  // **ヌル契約には乗数の概念が無い。**内訳を出すと嘘になる。
-  it('stays hidden for a Null contract', async () => {
+  it('shows breakdown for a Null contract without multipliers', async () => {
     mockExec.mockResolvedValue(
       withBreakdown({
         base: 23,
@@ -687,8 +686,9 @@ describe('SkatPage score breakdown', () => {
       }),
     );
     renderWithProviders(<SkatPage />);
-    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
-    expect(screen.queryByTestId('skat-score-breakdown')).not.toBeInTheDocument();
+    const bd = await screen.findByTestId('skat-score-breakdown');
+    expect(bd).toHaveTextContent('内訳: 基礎点 23（乗数なし）= 23');
+    expect(bd.textContent).not.toContain('{{');
   });
 
   // **負けたラウンドは 2 倍。**基礎点×乗数だけを書くと嘘の式になる

@@ -61,7 +61,8 @@
   },
   "roundResult": {
     "title": "ディール結果",
-    "par": "この配りの点: {{total}}  基準点: {{par}}（各席は自分の札点との差を受け取ります）"
+    "par": "この配りの点: {{total}}  基準点: {{par}}（各席は自分の札点との差を受け取ります）",
+    "delta": "{{name}}: {{delta}}"
   },
   "hintAvailable": "ヒント",
   "hint": {

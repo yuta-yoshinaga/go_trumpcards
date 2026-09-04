@@ -28,7 +28,7 @@ const playingState: WindmillResponse = {
   sails: makeSails([card('SPADE', 9), card('HEART', 4)]),
   center: [card('CLOVER', 1)],
   corners: [[card('DIAMOND', 13)], [], [], []],
-  stockCount: 95,
+  stockCount: 100,
   waste: [],
   transferBlocked: false,
   phase: 0,
@@ -103,7 +103,7 @@ describe('WindmillPage', () => {
   it('draws from the stock', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<WindmillPage />);
-    const stock = await screen.findByRole('button', { name: /山札 残り95枚/ });
+    const stock = await screen.findByRole('button', { name: /山札 残り100枚/ });
     mockExec.mockClear();
     fireEvent.click(stock);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
@@ -356,5 +356,29 @@ describe('WindmillPage keyboard shortcuts', () => {
     }
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
+  });
+});
+
+describe('WindmillPage progress tracking', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('shows foundation progress during gameplay and tracks identically to game over', async () => {
+    // 2/104 = 1.92% => Math.round = 2%
+    mockExec.mockResolvedValue(playingState);
+    const { unmount } = renderWithProviders(<WindmillPage />);
+    const progress = await screen.findByTestId('wm-foundation-progress');
+    expect(progress).toHaveTextContent('収納: 2/104 (2%)');
+    unmount();
+
+    // 否定コントロール: 0枚の場合
+    const zeroState = { ...playingState, center: [], corners: [[], [], [], []], stockCount: 102 };
+    mockExec.mockResolvedValue(zeroState);
+    renderWithProviders(<WindmillPage />);
+    const progressZero = await screen.findByTestId('wm-foundation-progress');
+    expect(progressZero).toHaveTextContent('収納: 0/104 (0%)');
   });
 });

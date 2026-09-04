@@ -168,6 +168,34 @@ describe('KempsPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('signal', { signalType: 1 }));
   });
 
+  // **外したときの代償が宣言の瞬間に見えなかった** (#6466)。ボタンには相手の
+  // 名前しか出ておらず、`penalizeRound` が課す -1 点はどこにも書かれていない。
+  it('spells out what a missed Counter-Kemps costs, and ties it to each button', async () => {
+    mockExec.mockResolvedValue(declareState);
+    renderWithProviders(<KempsPage />);
+
+    const note = await screen.findByTestId('kemps-counter-risk');
+    expect(note).toHaveTextContent('-1 点');
+    expect(note.textContent).not.toContain('{{');
+
+    // 注記が置いてあるだけでは足りない ── フォーカスした人に届く形で
+    // 各カウンターボタンに結ばれていること。
+    const counters = screen.getAllByRole('button', { name: /カウンター・ケムプス/ });
+    expect(counters.length).toBeGreaterThan(0);
+    for (const btn of counters) {
+      expect(btn).toHaveAttribute('aria-describedby', note.id);
+    }
+  });
+
+  // 宣言ウィンドウの外では出さない ── 押せない操作のリスクを常時読み上げない。
+  it('does not show the counter risk outside the declare window', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<KempsPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('kemps-counter-risk')).not.toBeInTheDocument();
+  });
+
   it('shows the Kemps button in the declare window and dispatches kemps', async () => {
     mockExec.mockResolvedValue(declareState);
     renderWithProviders(<KempsPage />);

@@ -83,6 +83,18 @@ func (_m *MockPokerSquaresGame) EvaluateCol(c int) int {
 	return ret.Int(0)
 }
 
+// PartialRowRank モック
+func (_m *MockPokerSquaresGame) PartialRowRank(r int) int {
+	ret := _m.Called(r)
+	return ret.Int(0)
+}
+
+// PartialColRank モック
+func (_m *MockPokerSquaresGame) PartialColRank(c int) int {
+	ret := _m.Called(c)
+	return ret.Int(0)
+}
+
 // RowScore モック
 func (_m *MockPokerSquaresGame) RowScore(r int) int {
 	ret := _m.Called(r)

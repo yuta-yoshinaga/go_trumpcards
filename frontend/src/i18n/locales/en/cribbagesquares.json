@@ -13,6 +13,7 @@
     "row": "Row",
     "col": "Col",
     "empty": "Empty",
+    "emptyCell": "empty {{rowNo}}-{{colNo}}, row {{rowNo}} (now {{rowScore}}), column {{colNo}} (now {{colScore}})",
     "win": "Cleared!",
     "lose": "Short"
   },

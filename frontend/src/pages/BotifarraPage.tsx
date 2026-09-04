@@ -21,6 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -58,11 +59,31 @@ const TRUMP_CHOICES = [
 export const BotifarraPage = withTutorial(BotifarraPageContent, 'botifarra', BF_TUTORIAL_STEPS);
 
 function BotifarraPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('botifarra');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('botifarra');
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(botifarraApi.exec);
+  // **ギブアップは取り消せない。**リセットには確認が挟まるのに、同じフッターの
+  // ギブアップは即座に対局を打ち切っていた ── 誤タップへの保護がリセットより
+  // 薄かった (#6475)。47 ページが既に使っている `useGiveUpConfirm` に揃える。
+  const handleGiveUp = useCallback(() => {
+    execApi('giveup');
+  }, [execApi]);
+  const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('botifarra');
   const cliConfig: CliGameConfig<BotifarraResponse, Parameters<typeof botifarraApi.exec>> = useMemo(
@@ -149,6 +170,9 @@ function BotifarraPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span data-tutorial="bf-score" data-testid="botifarra-score">
@@ -207,6 +231,19 @@ function BotifarraPageContent() {
                 <div key={`seat-${p.id}`} className="text-center text-xs text-ds-text-muted">
                   <div>
                     #{p.id} {p.isHuman ? t('label.you') : p.id === 2 ? t('label.partner') : t('label.opponent')}
+                    {/* **契約の当事者が誰かは倍率と同じくらい基本の情報。**
+                        親と宣言者が別なら、親が相方に委ねたということ。 */}
+                    {p.id === state.declarerIdx && (
+                      <span className="ml-1 text-ds-accent" data-testid={`botifarra-declarer-${p.id.toString()}`}>
+                        [{t('label.declarer')}
+                        {state.declarerIdx !== state.dealerIdx ? `・${t('label.delegated')}` : ''}]
+                      </span>
+                    )}
+                    {p.id === state.dealerIdx && p.id !== state.declarerIdx && (
+                      <span className="ml-1 text-ds-warning" data-testid={`botifarra-dealer-${p.id.toString()}`}>
+                        [{t('label.dealer')}]
+                      </span>
+                    )}
                   </div>
                   <div>
                     {p.cardCount} {t('label.cards')} / {p.trickCount} {t('label.tricks')}
@@ -323,7 +360,8 @@ function BotifarraPageContent() {
                 <button
                   type="button"
                   className={btnSecondary}
-                  onClick={() => execApi('giveup')}
+                  onClick={confirmGiveUpAction}
+                  data-testid="giveup-button"
                   disabled={loading}
                   aria-keyshortcuts="g"
                 >

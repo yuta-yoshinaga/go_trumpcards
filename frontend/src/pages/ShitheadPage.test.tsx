@@ -412,4 +412,77 @@ describe('ShitheadPage', () => {
       ),
     );
   });
+  // 捨て札の一番上が変わるのを見るだけでは、CPU の手が場札を焼却したのか
+  // スキップが出たのかが分からなかった。burned / skipped の両方を見る。
+  it('reports a burn and a skip from the action feed', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      cpuActions: [
+        {
+          playerIdx: 1,
+          source: 'hand',
+          playedCards: [{ design: 'SPADE', value: 10 }],
+          pickup: false,
+          burned: true,
+          skipped: false,
+        },
+        {
+          playerIdx: 1,
+          source: 'hand',
+          playedCards: [{ design: 'HEART', value: 8 }],
+          pickup: false,
+          burned: false,
+          skipped: true,
+        },
+      ],
+    });
+    renderWithProviders(<ShitheadPage />);
+    await waitFor(() => expect(screen.getByTestId('sh-action-feed')).toBeInTheDocument());
+    expect(screen.getByTestId('sh-action-0')).toHaveTextContent('場札焼却');
+    expect(screen.getByTestId('sh-action-1')).toHaveTextContent('次をスキップ');
+    // 焼却した手にスキップ注記は付かない（逆も同じ）。
+    expect(screen.getByTestId('sh-action-0')).not.toHaveTextContent('次をスキップ');
+    expect(screen.getByTestId('sh-action-1')).not.toHaveTextContent('場札焼却');
+  });
+
+  // humanAction / 引き取り / 自席の呼び名 —— この 3 分岐は CPU の出し手だけを
+  // 並べたテストでは一度も通らない（codecov が partial として拾った）。
+  it('names your own pickup at the head of the feed', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      humanAction: {
+        playerIdx: 0,
+        source: 'hand',
+        playedCards: [],
+        pickup: true,
+        burned: false,
+        skipped: false,
+      },
+      cpuActions: [
+        {
+          playerIdx: 1,
+          source: 'hand',
+          playedCards: [{ design: 'SPADE', value: 10 }],
+          pickup: false,
+          burned: false,
+          skipped: false,
+        },
+      ],
+    });
+    renderWithProviders(<ShitheadPage />);
+    await waitFor(() => expect(screen.getByTestId('sh-action-feed')).toBeInTheDocument());
+
+    // 自分の手が先頭。自席は「あなた」と呼ぶ。
+    expect(screen.getByTestId('sh-action-0')).toHaveTextContent('あなた');
+    expect(screen.getByTestId('sh-action-0')).toHaveTextContent('引き取り');
+    // CPU の手がその後ろに続く。
+    expect(screen.getByTestId('sh-action-1')).toHaveTextContent('CPU1');
+  });
+
+  it('shows no feed before anyone has acted', async () => {
+    mockExec.mockResolvedValue(humanTurnState);
+    renderWithProviders(<ShitheadPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('sh-action-feed')).not.toBeInTheDocument();
+  });
 });

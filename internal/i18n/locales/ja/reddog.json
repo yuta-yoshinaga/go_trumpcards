@@ -10,6 +10,8 @@
   "raiseInline": "  レイズ: {{raise}}",
   "spreadLine": "スプレッド: {{spread}}",
   "cuiSpreadGuide": "勝てるランク: {{ranks}} | レイズ: raise <額> / そのまま: s",
+  "cuiEndGuideHit": "当たりランク: {{ranks}} (引いたカード: {{hitRank}} で的中)",
+  "cuiEndGuideMiss": "当たりランク: {{ranks}} (外れ)",
   "initialHeader": "INITIAL",
   "thirdHeader": "THIRD",
   "phaseBet": "BET",

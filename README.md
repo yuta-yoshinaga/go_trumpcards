@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した367種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した368種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -36,6 +36,7 @@ Go + Clean Architecture で実装した367種類のトランプゲーム。CLI �
 | 5カードオマハ (5 Card Omaha / Big O) | `bigo` | [CUI](docs/manual/cui/bigo.md) / [Web](docs/manual/web/bigo.md) |
 | 5カードオマハ ハイロー (5 Card Omaha Hi-Lo / Big O) | `bigohilo` | [CUI](docs/manual/cui/bigohilo.md) / [Web](docs/manual/web/bigohilo.md) |
 | クールシュヴェル (Courchevel) | `courchevel` | [CUI](docs/manual/cui/courchevel.md) / [Web](docs/manual/web/courchevel.md) |
+| クールシュヴェル ハイロー (Courchevel Hi-Lo) | `courchevelhilo` | [CUI](docs/manual/cui/courchevelhilo.md) / [Web](docs/manual/web/courchevelhilo.md) |
 | ショートデック (Short Deck / 6+ Hold'em) | `shortdeck` | [CUI](docs/manual/cui/shortdeck.md) / [Web](docs/manual/web/shortdeck.md) |
 | パイナップルポーカー (Pineapple Poker) | `pineapple` | [CUI](docs/manual/cui/pineapple.md) / [Web](docs/manual/web/pineapple.md) |
 | クレイジーパイナップル (Crazy Pineapple Poker) | `crazypineapple` | [CUI](docs/manual/cui/crazypineapple.md) / [Web](docs/manual/web/crazypineapple.md) |
@@ -527,7 +528,7 @@ Clean Architecture を採用。依存の方向は外側から内側への一方�
 cmd/
   trumpcards/         # CLIエントリーポイント（全ゲーム + Webサーバー）
   server/             # Webサーバー専用エントリーポイント
-  workers/            # Cloudflare Workers (WASM) エントリーポイント x7
+  workers/            # Cloudflare Workers (WASM) エントリーポイント x8
 internal/
   domain/             # コアビジネスロジック（最内層）
   usecase/            # アプリケーションビジネスルール

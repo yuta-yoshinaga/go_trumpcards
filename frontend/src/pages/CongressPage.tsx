@@ -225,7 +225,13 @@ function CongressPageContent() {
                         }
                       }}
                       disabled={!isPlaying || loading || (!isTop && !selectedSource)}
-                      aria-label={cardAlt(card)}
+                      // 空の山は番号を言うのに、札が乗っている山は札名だけで
+                      // どの山か分からなかった (#6358)。掴めるのは一番上だけ
+                      // なので、そこも言い分ける。
+                      aria-label={t(isTop ? 'pileTopCardAriaLabel' : 'pileCardAriaLabel', {
+                        card: cardAlt(card),
+                        pile: pileIdx,
+                      })}
                       aria-pressed={isTop ? isSourceSelected('tableau', pileIdx) : undefined}
                       draggable={isTop && isPlaying && !loading}
                       onDragStart={dnd.handleDragStart(pileZone)}

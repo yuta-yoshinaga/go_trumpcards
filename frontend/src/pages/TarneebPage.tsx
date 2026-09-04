@@ -337,12 +337,13 @@ function TarneebPageContent() {
                 <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="tn-score-table">
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                   <div className="overflow-x-auto -mx-2 px-2">
-                    <table className="w-full text-sm text-ds-text-muted min-w-[280px]">
+                    <table className="w-full text-sm text-ds-text-muted min-w-[340px]">
                       <thead>
                         <tr>
                           <th scope="col" className="text-left">
                             {t('scoresTeam')}
                           </th>
+                          <th scope="col">{t('scoresTricks')}</th>
                           <th scope="col">{t('scoresRound')}</th>
                           <th scope="col">{t('scoresTotal')}</th>
                         </tr>
@@ -350,11 +351,14 @@ function TarneebPageContent() {
                       <tbody>
                         {state.teamScores.map((score, i) => {
                           const isYourTeam = humanPlayer != null && humanPlayer.team === i;
-                          const roundTricks = teamBreakdown[i]?.roundTricks ?? 0;
+                          // groupTarneebPlayersByTeam は teamScores.length ちょうどの要素を返すので、
+                          // ここでの添字は必ず当たる。?? のフォールバックは到達しない枝になる。
+                          const { roundScore, roundTricks } = teamBreakdown[i];
                           return (
                             <tr key={i} className={isYourTeam ? 'text-ds-accent' : ''}>
                               <td>{isYourTeam ? t('yourTeam') : t('opponentTeam')}</td>
                               <td className="text-center">{roundTricks}</td>
+                              <td className="text-center">{roundScore}</td>
                               <td className="text-center">{score}</td>
                             </tr>
                           );
@@ -438,15 +442,20 @@ function TarneebPageContent() {
 
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
-            {hint && (
-              <div className="text-ds-warning text-sm mb-2">
-                {hint.bid != null
-                  ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
-                  : hint.trumpSuit != null
-                    ? `${t('hintTrump')}: ${TRUMP_LABELS[hint.trumpSuit] ?? '?'} (${t(`hintReason.${hint.reason}`)})`
-                    : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
-              </div>
-            )}
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+                読み上げられないことがある (#5955, #6663)。 */}
+            <div data-testid="tarneeb-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {hint.bid != null
+                    ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
+                    : hint.trumpSuit != null
+                      ? `${t('hintTrump')}: ${TRUMP_LABELS[hint.trumpSuit] ?? '?'} (${t(`hintReason.${hint.reason}`)})`
+                      : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="tn-play-button">

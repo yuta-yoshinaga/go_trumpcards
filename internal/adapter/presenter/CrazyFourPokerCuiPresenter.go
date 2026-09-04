@@ -29,6 +29,36 @@ func crazyFourPokerQueensUpTableStr() string {
 	return strings.Join(parts, " / ")
 }
 
+// crazyFourPokerSuperBonusTableStr は Super Bonus の配当表を返す。
+//
+// **表を写さない。** ドメインの CrazyFourPokerSuperBonusPayout が唯一の出所で、
+// 4 枚のエースの別枠もそこから来る。倍率は 1/10 単位。
+func crazyFourPokerSuperBonusTableStr() string {
+	rows := domain.CrazyFourPokerSuperBonusPayout()
+	parts := make([]string, 0, len(rows)+1)
+	parts = append(parts, fmt.Sprintf("%s %s:1",
+		i18n.T("crazyfourpoker.fourAces"),
+		crazyFourPokerMultStr(domain.CrazyFourPokerFourAcesPayout)))
+	for _, r := range rows {
+		name := ""
+		if r.Hand >= 0 && r.Hand < len(domain.FourCardHandNames) {
+			name = domain.FourCardHandNames[r.Hand]
+		}
+		parts = append(parts, fmt.Sprintf("%s %s:1", name, crazyFourPokerMultStr(r.Multiplier)))
+	}
+	return strings.Join(parts, " / ")
+}
+
+// crazyFourPokerMultStr は 1/10 単位の倍率を "1.5" / "30" の形にする。
+func crazyFourPokerMultStr(mult int) string {
+	whole := mult / domain.CrazyFourPokerPayoutScale
+	frac := mult % domain.CrazyFourPokerPayoutScale
+	if frac == 0 {
+		return strconv.Itoa(whole)
+	}
+	return strconv.Itoa(whole) + "." + strconv.Itoa(frac)
+}
+
 // CrazyFourPokerCuiPresenter クレイジー 4 ポーカーCUIプレゼンタークラス
 type CrazyFourPokerCuiPresenter struct{}
 
@@ -43,6 +73,10 @@ func (cp *CrazyFourPokerCuiPresenter) Output(c interfaces.CrazyFourPokerGame, la
 		// **賭ける前に見えなければ意味がない** (#5775)。何が当たれば何倍かを
 		// 知って額を決めるものなので、置く前の局面で出す。
 		if c.GetPhase() == domain.CrazyFourPokerPhaseBet {
+			// **Super Bonus はアンティに必ず付く。** Queens Up は任意なのに配当表が
+			// 見えて、必須の側だけ見えないのは逆。
+			sb.WriteString(i18n.Tf("crazyfourpoker.superBonusPayoutLine",
+				"table", crazyFourPokerSuperBonusTableStr()) + "\n")
 			sb.WriteString(i18n.Tf("crazyfourpoker.queensUpPayoutLine",
 				"table", crazyFourPokerQueensUpTableStr()) + "\n")
 		}

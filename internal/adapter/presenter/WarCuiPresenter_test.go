@@ -133,6 +133,19 @@ func TestWarCuiPresenter_Output(t *testing.T) {
 
 		assert.Contains(t, p.Output(w, nil), "CPUがラウンドに勝利")
 	})
+
+	t.Run("shows lastBurialCount when phase is resolved and > 0", func(t *testing.T) {
+		w := setupWarTest()
+		data, _ := json.Marshal(w)
+		var raw map[string]json.RawMessage
+		_ = json.Unmarshal(data, &raw)
+		raw["ph"], _ = json.Marshal(domain.WarPhaseResolved)
+		raw["lb"], _ = json.Marshal(6) // 6 cards buried
+		newData, _ := json.Marshal(raw)
+		_ = json.Unmarshal(newData, w)
+
+		assert.Contains(t, p.Output(w, nil), "（6枚伏せました）")
+	})
 }
 
 func TestWarCuiPresenter_ActionLogOutput(t *testing.T) {

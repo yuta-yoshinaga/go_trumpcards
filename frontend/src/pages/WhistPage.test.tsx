@@ -212,4 +212,19 @@ describe('WhistPage', () => {
       expect(c).not.toHaveAttribute('aria-disabled', 'true');
     }
   });
+
+  // サーバが札を名指しせずに理由だけ返すことがある。そのとき名前と番号は
+  // どちらもプレースホルダに落ちる ── ここを一度も通していなかったので、
+  // ヒント行が壊れても誰も気付かない (#6663 のカバレッジ)。
+  it('falls back to a placeholder when the server names no card', async () => {
+    renderWithProviders(<WhistPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValueOnce(makeState({ hint: { reason: 'trump_cut' } }));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const region = await screen.findByTestId('whist-hint-live');
+    await waitFor(() => expect(region).toHaveTextContent('[-]'));
+    expect(region).toHaveTextContent('推奨');
+    expect(region).not.toHaveTextContent('{{');
+  });
 });

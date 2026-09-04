@@ -195,7 +195,7 @@ func TestPerGameManualsMatchRegistry(t *testing.T) {
 }
 
 // bucketEnumRe matches a brace enumeration such as
-// `{casino,classic,solo,extra,extra2,extra3,extra4}` as used in build commands and
+// `{casino,classic,solo,extra,extra2,extra3,extra4,extra5}` as used in build commands and
 // path globs throughout the docs.
 var bucketEnumRe = regexp.MustCompile(`\{([a-z0-9]+(?:,[a-z0-9]+)+)\}`)
 
@@ -459,6 +459,13 @@ func TestOpenAPIErrorResponseMatchesTheSuccessSchema(t *testing.T) {
 		body := text[loc[1]:end]
 		refs := map[string]string{}
 		for _, m := range openapiStatusRefRe.FindAllStringSubmatch(body, -1) {
+			// **共有の棋譜スキーマは「そのゲームの payload」ではない。**
+			// `entries` は `log` コマンドの応答として全ゲームの 200 にあり、
+			// 400 には決して現れない (エラーで棋譜は返らない)。代表として
+			// 拾ってしまうと、200 と 400 が食い違って見える (#7048)。
+			if m[2] == "ActionLogEntry" {
+				continue
+			}
 			if _, seen := refs[m[1]]; !seen {
 				refs[m[1]] = m[2]
 			}

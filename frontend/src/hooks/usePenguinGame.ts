@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { type PenguinMoveZone, penguinApi } from '../api/gameApi';
 import type { PenguinHint } from '../types/card';
+import { useIsMounted } from './useIsMounted';
 import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages Penguin game state, source selection, hints, and moves. */
@@ -8,7 +9,13 @@ export function usePenguinGame() {
   const [selectedSource, setSelectedSource] = useState<PenguinMoveZone | null>(null);
   const onClearSelection = useCallback(() => setSelectedSource(null), []);
 
-  const { apiCall, runAction, setHint, ...rest } = useSolitaireGameBase<
+  const {
+    handleHint: baseHandleHint,
+    apiCall,
+    runAction,
+    setHint,
+    ...rest
+  } = useSolitaireGameBase<
     Awaited<ReturnType<typeof penguinApi.exec>>,
     Parameters<typeof penguinApi.exec>,
     PenguinHint
@@ -18,6 +25,22 @@ export function usePenguinGame() {
   });
 
   const handleUndoEscape = useCallback((n: number) => runAction('undo_n', undefined, undefined, n), [runAction]);
+
+  // Bumped every time a hint is requested so the page can announce the result
+  // (a move, or "no moves available") even when two requests yield the same
+  // hint value — a null hint after a request is indistinguishable from the
+  // initial null without this signal.
+  const [hintNonce, setHintNonce] = useState(0);
+  const isMounted = useIsMounted();
+
+  // Depend on the stable baseHandleHint reference, not the base result object
+  // (which is re-created whenever state/loading change), so this callback stays stable.
+  const handleHint = useCallback(async () => {
+    await baseHandleHint();
+    // The base guards its own writes; this nonce is ours (#4447).
+    if (!isMounted()) return;
+    setHintNonce((n) => n + 1);
+  }, [baseHandleHint, isMounted]);
 
   const handleSelectSource = useCallback((zone: PenguinMoveZone) => {
     setSelectedSource((prev) => {
@@ -50,6 +73,8 @@ export function usePenguinGame() {
     setHint,
     exec: apiCall,
     selectedSource,
+    hintNonce,
+    handleHint,
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,

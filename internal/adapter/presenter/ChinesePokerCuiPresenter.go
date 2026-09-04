@@ -113,6 +113,16 @@ func (pp *ChinesePokerCuiPresenter) Output(cp interfaces.ChinesePokerGame, lastE
 				"player", strconv.Itoa(cp.GetPlayerRoyalty()),
 				"dealer", strconv.Itoa(cp.GetDealerRoyalty()),
 			) + "\n")
+			sb.WriteString(i18n.Tf("chinesepoker.playerRoyaltyBreakdown",
+				"front", strconv.Itoa(cp.GetPlayerFrontRoyalty()),
+				"middle", strconv.Itoa(cp.GetPlayerMiddleRoyalty()),
+				"back", strconv.Itoa(cp.GetPlayerBackRoyalty()),
+			) + "\n")
+			sb.WriteString(i18n.Tf("chinesepoker.dealerRoyaltyBreakdown",
+				"front", strconv.Itoa(cp.GetDealerFrontRoyalty()),
+				"middle", strconv.Itoa(cp.GetDealerMiddleRoyalty()),
+				"back", strconv.Itoa(cp.GetDealerBackRoyalty()),
+			) + "\n")
 		}
 		sb.WriteString("----------\n")
 	}

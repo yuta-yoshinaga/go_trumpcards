@@ -27,6 +27,7 @@
   "mustPass": "Nothing you hold can be played. Type pass.",
   "commandHint": "play <idx> to play a card / pass to pass",
   "goOut": "{{name}} goes out for {{points}} point(s).",
+  "cardsLeft": "{{name}}: {{n}} card(s) left",
   "unplayedKings": "Kings never played: {{n}} ({{points}} point(s))",
   "heldWild": "{{name}} was left holding the Comet: -{{points}}",
   "nextRoundHint": "Type nextround to start the next round.",

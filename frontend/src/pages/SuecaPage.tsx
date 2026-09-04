@@ -82,6 +82,18 @@ const SUECA_PHASE_KEYS: Readonly<Record<number, string>> = {
 export const SuecaPage = withTutorial(SuecaPageContent, 'sueca', SUECA_TUTORIAL_STEPS);
 
 /** Inner content of the Sueca page, wrapped by TutorialProvider. */
+/**
+ * Game points won this round → the i18n key naming that tier.
+ *
+ * 段を決めるのはサーバ (`suecaGamePoints`: 61-90=1 / 91-119=2 / 120=4)。ここは
+ * その結果に名前を付けるだけで、カード点をしきい値にかけ直さない。
+ */
+const SUECA_AWARD_KIND: Record<number, string> = {
+  1: 'gamePointsNormal',
+  2: 'gamePointsDouble',
+  4: 'gamePointsShutout',
+};
+
 function SuecaPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('sueca');
@@ -350,6 +362,19 @@ function SuecaPageContent() {
                     <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
                     <div>{t('roundResult.teamA', { points: state.roundCardPoints[0] ?? 0 })}</div>
                     <div>{t('roundResult.teamB', { points: state.roundCardPoints[1] ?? 0 })}</div>
+                    {/* **通算が 1・2・4 のどれ増えたのか理由が出ていなかった。**カード点だけ
+                        では 61-90 / 91-119 / 120 のどの段だったのか読めない (#6438)。
+                        段はサーバが決めた `roundGamePoints` から引く ── ここでカード点を
+                        もう一度しきい値にかけると、ドメインと 2 箇所で同じ規則を持つ。 */}
+                    <div data-testid="sueca-round-award">
+                      {state.roundWinnerTeam < 0
+                        ? t('roundResult.gamePointsDraw')
+                        : t('roundResult.gamePoints', {
+                            team: state.roundWinnerTeam === 0 ? t('team.a') : t('team.b'),
+                            points: state.roundGamePoints,
+                            kind: t(`roundResult.${SUECA_AWARD_KIND[state.roundGamePoints] ?? 'gamePointsNormal'}`),
+                          })}
+                    </div>
                   </div>
                 )}
               </div>

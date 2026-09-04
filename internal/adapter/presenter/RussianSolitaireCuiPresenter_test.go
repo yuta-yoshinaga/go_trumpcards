@@ -39,6 +39,8 @@ func TestRussianSolitaireCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "Russian Solitaire")
 		assert.Contains(t, result, "Foundation")
 		assert.Contains(t, result, "列0:")
+		assert.Contains(t, result, "手数: 0")
+		assert.Contains(t, result, "ヒント: タブローに置けるのは「移動先と同じスートで1つ下の数字」の札だけです。空の列にはKしか置けません。")
 	})
 
 	t.Run("with error", func(t *testing.T) {
@@ -79,6 +81,7 @@ func TestRussianSolitaireCuiPresenter_Output(t *testing.T) {
 		p := new(RussianSolitaireCuiPresenter)
 		result := p.Output(rg, nil)
 		assert.Contains(t, result, "ゲームクリア")
+		assert.NotContains(t, result, "ヒント: タブローに置けるのは")
 	})
 
 	t.Run("game over", func(t *testing.T) {
@@ -94,6 +97,7 @@ func TestRussianSolitaireCuiPresenter_Output(t *testing.T) {
 		p := new(RussianSolitaireCuiPresenter)
 		result := p.Output(rg, nil)
 		assert.Contains(t, result, "ゲームオーバー")
+		assert.NotContains(t, result, "ヒント: タブローに置けるのは")
 	})
 
 	t.Run("foundation with cards", func(t *testing.T) {

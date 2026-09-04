@@ -436,3 +436,49 @@ func TestPokerSquaresRankToScore_Unknown(t *testing.T) {
 	// FiveOfAKind (not in primary table) should map to four-of-a-kind score.
 	assert.Equal(t, 50, pokerSquaresRankToScore(PokerHandFiveOfAKind))
 }
+
+func TestPokerSquares_PartialRank(t *testing.T) {
+	tests := []struct {
+		name     string
+		cards    []*Card
+		wantRank int
+	}{
+		{"0 cards", []*Card{}, -1},
+		{"1 card", []*Card{NewCard(CardDesignSpade, 2, false)}, PokerHandHighCard},
+		{"2 cards (pair)", []*Card{NewCard(CardDesignSpade, 2, false), NewCard(CardDesignClover, 2, false)}, PokerHandOnePair},
+		{"2 cards (high)", []*Card{NewCard(CardDesignSpade, 2, false), NewCard(CardDesignClover, 3, false)}, PokerHandHighCard},
+		{"3 cards (three of a kind)", []*Card{NewCard(CardDesignSpade, 3, false), NewCard(CardDesignClover, 3, false), NewCard(CardDesignHeart, 3, false)}, PokerHandThreeOfAKind},
+		{"3 cards (pair)", []*Card{NewCard(CardDesignSpade, 3, false), NewCard(CardDesignClover, 3, false), NewCard(CardDesignHeart, 4, false)}, PokerHandOnePair},
+		{"4 cards (four of a kind)", []*Card{NewCard(CardDesignSpade, 4, false), NewCard(CardDesignClover, 4, false), NewCard(CardDesignHeart, 4, false), NewCard(CardDesignDiamond, 4, false)}, PokerHandFourOfAKind},
+		{"4 cards (two pair)", []*Card{NewCard(CardDesignSpade, 2, false), NewCard(CardDesignClover, 2, false), NewCard(CardDesignHeart, 3, false), NewCard(CardDesignDiamond, 3, false)}, PokerHandTwoPair},
+		{"5 cards (complete)", rowStraight(), -1}, // negative control
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := newPokerSquaresForTest()
+			var b [PokerSquaresGridSize][PokerSquaresGridSize]*Card
+
+			// Setup Row 0
+			copy(b[0][:], tt.cards)
+			g.SetBoard(b)
+			assert.Equal(t, tt.wantRank, g.PartialRowRank(0), "Row partial rank mismatch")
+
+			// Clear and setup Col 0
+			var b2 [PokerSquaresGridSize][PokerSquaresGridSize]*Card
+			for i, c := range tt.cards {
+				b2[i][0] = c // Setup col 0
+			}
+			g.SetBoard(b2)
+			assert.Equal(t, tt.wantRank, g.PartialColRank(0), "Col partial rank mismatch")
+		})
+	}
+}
+
+func TestPokerSquares_PartialRank_OutOfBounds(t *testing.T) {
+	g := newPokerSquaresForTest()
+	assert.Equal(t, -1, g.PartialRowRank(-1))
+	assert.Equal(t, -1, g.PartialRowRank(5))
+	assert.Equal(t, -1, g.PartialColRank(-1))
+	assert.Equal(t, -1, g.PartialColRank(5))
+}

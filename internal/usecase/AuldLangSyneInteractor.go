@@ -24,6 +24,8 @@ type AuldLangSyneInteractorIF interface {
 	Undo() string
 	// UndoN n回連続アンドゥ
 	UndoN(n int) string
+	// UndoToEscape 膠着状態脱出に必要なアンドゥ手数を返す
+	UndoToEscape() int
 	// AutoComplete オートコンプリート
 	AutoComplete() string
 	// Hint ヒント取得
@@ -72,6 +74,11 @@ func (ai *AuldLangSyneInteractor) Hint() string {
 // ActionLog 棋譜を出力する
 func (ai *AuldLangSyneInteractor) ActionLog() string {
 	return ai.p.ActionLogOutput(ai.Game)
+}
+
+// UndoToEscape 膠着状態脱出に必要なアンドゥ手数を返す
+func (ai *AuldLangSyneInteractor) UndoToEscape() int {
+	return ai.Game.UndoToEscape()
 }
 
 // RestoreAuldLangSyneInteractor deserialises JSON into an AuldLangSyneInteractor.

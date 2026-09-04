@@ -9,7 +9,9 @@ export function formatFortythievesState(state: FortyThievesResponse): string {
   lines.push(formatHeader('Forty Thieves'));
 
   // Foundations (8 piles)
-  const fnd = state.foundation.map((pile) => (pile.length > 0 ? formatCard(pile[pile.length - 1]) : '[  ]'));
+  // 空のファンデーションは「どのエースでも置ける」山で、空の捨札とは意味が
+  // 違う。CUI は #6717 でそう出すようにしたが、ここは同じ `[  ]` のままだった。
+  const fnd = state.foundation.map((pile) => (pile.length > 0 ? formatCard(pile[pile.length - 1]) : '[any A]'));
   lines.push(`foundation: ${fnd.join(' | ')}`);
 
   // Stock and waste

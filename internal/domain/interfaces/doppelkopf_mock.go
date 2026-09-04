@@ -159,6 +159,18 @@ func (_m *MockDoppelkopfGame) CanHumanAnnounce() bool {
 	return ret.Get(0).(bool)
 }
 
+// GetLiveRePoints モック
+func (_m *MockDoppelkopfGame) GetLiveRePoints() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
+// GetLiveKontraPoints モック
+func (_m *MockDoppelkopfGame) GetLiveKontraPoints() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetRoundRePoints モック
 func (_m *MockDoppelkopfGame) GetRoundRePoints() int {
 	ret := _m.Called()

@@ -293,6 +293,55 @@ function TonkPageContent() {
                     ))}
                   </div>
                 )}
+
+                {/* ラウンドの点差はアンダーカット判定（両者のデッドウッド比較）から
+                    来るのに、比較の相手側が画面に出ていなかった。 */}
+                {state.knockerDeadwood.length > 0 && (
+                  <div className="my-3 p-2 rounded bg-black/30" data-testid="tonk-knocker-deadwood">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('knockerDeadwood')}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {state.knockerDeadwood.map((card, cardIdx) => (
+                        <AnimatedCard
+                          key={`kdw-${card.design}-${card.value}-${cardIdx}`}
+                          card={card}
+                          width={cardWidth * 0.7}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {state.opponentMelds.length > 0 && (
+                  <div className="my-3 p-2 rounded bg-black/30" data-testid="tonk-opponent-melds">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('opponentMelds')}</div>
+                    {state.opponentMelds.map((meld, meldIdx) => (
+                      <div key={`opp-meld-${meldIdx}`} className="flex flex-wrap gap-1 mb-1">
+                        {meld.cards.map((card, cardIdx) => (
+                          <AnimatedCard
+                            key={`opp-meld-${meldIdx}-${card.design}-${card.value}-${cardIdx}`}
+                            card={card}
+                            width={cardWidth * 0.7}
+                          />
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {state.opponentDeadwood.length > 0 && (
+                  <div className="my-3 p-2 rounded bg-black/30" data-testid="tonk-opponent-deadwood">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('opponentDeadwood')}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {state.opponentDeadwood.map((card, cardIdx) => (
+                        <AnimatedCard
+                          key={`odw-${card.design}-${card.value}-${cardIdx}`}
+                          card={card}
+                          width={cardWidth * 0.7}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>

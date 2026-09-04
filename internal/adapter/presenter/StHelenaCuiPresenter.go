@@ -126,6 +126,11 @@ func (p *StHelenaCuiPresenter) Output(cr interfaces.StHelenaGame, lastErr error)
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(cr.GetMoveCount())) + "\n")
 		case domain.StHelenaPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			// **8 組札 (昇順 4 + 降順 4) を自分で数えさせない。** Web は #5590 で
+			// この理由から到達率を出しており、CUI にこそ同じ手間が残っていた。
+			fnd := cr.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.StHelenaTotalCards)) + "\n")
 		}
 	})
 }

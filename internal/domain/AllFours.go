@@ -69,9 +69,13 @@ type AllFours struct {
 	trumpSuit        int   // 切り札スート (AllFoursTrumpUnset=未確定)
 	turnUp           *Card // めくり札 (provisional trump)
 	runCount         int   // このディールで run the cards した回数
-	giftAward        int   // gift で 1 点を得たプレイヤー (-1=gift なし)
-	gameEndFlag      bool
-	winnerIdx        int
+	// lastRunCount は直近に「Run the cards」が何回連続したか。**redeal では 0 に
+	// 戻さない** ── run の末に配り直した局面を、最初の Beg と区別する唯一の手掛かり
+	// だから (#6479)。新しいラウンドの配り (startDeal) で 0 に戻る。
+	lastRunCount int
+	giftAward    int // gift で 1 点を得たプレイヤー (-1=gift なし)
+	gameEndFlag  bool
+	winnerIdx    int
 	actionLogBase
 }
 
@@ -111,6 +115,7 @@ func (a *AllFours) Reset() {
 
 // startDeal 1ディールを開始する (シャッフル → 配布 → めくり札 → begフェーズ)
 func (a *AllFours) startDeal() {
+	a.lastRunCount = 0
 	a.trickNumber = 0
 	a.currentTrick = nil
 	a.leadPlayerIdx = -1
@@ -239,6 +244,9 @@ func (a *AllFours) applyGiftResponse(run bool) {
 func (a *AllFours) runTheCards() {
 	for {
 		a.runCount++
+		// **redeal が runCount を 0 に戻す前に控える。**戻された後では
+		// 「run の末の配り直し」と「最初の Beg」が見分けられない。
+		a.lastRunCount = a.runCount
 		if a.runCount > AllFoursMaxRuns || a.trumpCards.GetRemainingCount() < AllFoursPlayerCnt*AllFoursRunDeal+1 {
 			// デッキが尽きた / 上限到達 → 全カードを再配布する。
 			a.appendLog(-1, "redeal",
@@ -658,6 +666,13 @@ func (a *AllFours) SetTrumpSuit(suit int) { a.trumpSuit = suit }
 
 // GetTurnUp めくり札取得
 func (a *AllFours) GetTurnUp() *Card { return a.turnUp }
+
+// GetLastRunCount は直近の「Run the cards」が何回連続したかを返す (0 = 起きていない)。
+//
+// **`GetRunCount` では足りない。**デッキが尽きた / 上限に達した run は `redeal()` を
+// 呼び、そこで `runCount` は 0 に戻る ── 表示側から見ると「最初の Beg」と
+// 区別が付かなくなる。こちらは新しいラウンドの配りまで残る (#6479)。
+func (a *AllFours) GetLastRunCount() int { return a.lastRunCount }
 
 // GetRunCount このディールの run 回数取得
 func (a *AllFours) GetRunCount() int { return a.runCount }

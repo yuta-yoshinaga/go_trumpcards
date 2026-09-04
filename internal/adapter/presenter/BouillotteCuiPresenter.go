@@ -66,6 +66,26 @@ func bouillottePlayerStr(g interfaces.BouillotteGame, i int) string {
 	return b.String()
 }
 
+// bouillotteHumanIdx は人間の席。ブイヨットでは常に 0 番。
+const bouillotteHumanIdx = 0
+
+// bouillotteRetourneMatchStr はルトゥルヌと同ランクの手札と、それで完成する役の
+// 案内を返す (一致が無ければ空)。索引は手札表示と同じ 0 始まりの [n] 形式。
+func bouillotteRetourneMatchStr(match *domain.BouillotteRetourneMatch) string {
+	if match == nil || len(match.MatchingIndices) == 0 {
+		return ""
+	}
+	marks := make([]string, len(match.MatchingIndices))
+	for i, idx := range match.MatchingIndices {
+		marks[i] = "[" + strconv.Itoa(idx) + "]"
+	}
+	out := i18n.Tf("bouillotte.retourneMatchLine", "indices", strings.Join(marks, " ")) + "\n"
+	if match.NoteKey != "" {
+		out += color.Yellow(i18n.T("bouillotte.retourneNote."+match.NoteKey)) + "\n"
+	}
+	return out
+}
+
 // Output renders the current game state for the active locale.
 func (p *BouillotteCuiPresenter) Output(g interfaces.BouillotteGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("bouillotte.helpTitle"), func(b *strings.Builder) {
@@ -106,6 +126,13 @@ func (p *BouillotteCuiPresenter) Output(g interfaces.BouillotteGame, lastErr err
 				if diff := g.GetCurrentBet() - actor.GetRoundBet(); diff > 0 {
 					need = diff
 				}
+			}
+			// **ルトゥルヌは共有札なので、手札のどれと同ランクかで役が変わる。**
+			// Web は一致した札にリングを付けて `retourneNote` まで案内するのに、
+			// CUI は札面を出すだけで、突き合わせは人間の目に任せていた (#6494)。
+			// 判定はドメインの AnalyzeRetourneMatch 1 箇所だけが持つ。
+			if g.IsHumanTurn() {
+				b.WriteString(bouillotteRetourneMatchStr(g.AnalyzeRetourneMatch(bouillotteHumanIdx)))
 			}
 			b.WriteString(i18n.Tf("bouillotte.promptBetting",
 				"bet", strconv.Itoa(g.GetCurrentBet()),

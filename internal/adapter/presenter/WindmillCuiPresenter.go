@@ -15,6 +15,18 @@ import (
 // WindmillCuiPresenter renders the Windmill CUI view.
 type WindmillCuiPresenter struct{}
 
+// windmillProgressStr は組札に収まっている枚数と割合を返す。
+func windmillProgressStr(w interfaces.WindmillGame) string {
+	corners := w.GetCorners()
+	count := len(w.GetCenter()) + cuiCountPileCards(corners[:]...)
+	return i18n.Tf("windmill.foundationProgress",
+		"count", strconv.Itoa(count),
+		"total", strconv.Itoa(domain.WindmillTotalCards),
+		// Web と同じ丸め。切り捨てにすると 9/104 が 8% と 9% に割れて、
+		// 同じ局面で 2 つの進捗が出る。
+		"percent", strconv.Itoa((count*100+domain.WindmillTotalCards/2)/domain.WindmillTotalCards))
+}
+
 // Output renders the current game state for the active locale.
 func (p *WindmillCuiPresenter) Output(w interfaces.WindmillGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("windmill.helpTitle"), func(b *strings.Builder) {
@@ -98,6 +110,7 @@ func (p *WindmillCuiPresenter) Output(w interfaces.WindmillGame, lastErr error) 
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(w.GetMoveCount())) + "\n")
+			b.WriteString(windmillProgressStr(w) + "\n")
 		case domain.WindmillPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(w.GetMoveCount())) + "\n")

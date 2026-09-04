@@ -85,6 +85,34 @@ func TestColourWhistWebPresenter_BidContractIsNotTroelForced(t *testing.T) {
 	assert.False(t, out.TroelForced)
 }
 
+func TestColourWhistWebPresenter_CalledCard(t *testing.T) {
+	m := new(interfaces.MockColourWhistGame)
+	m.On("GetCalledCard").Return(domain.NewCard(domain.CardDesignSpade, 1, false))
+	fillColourWhistDefaults(m)
+
+	var out struct {
+		CalledCard *struct {
+			Design string `json:"design"`
+			Value  int    `json:"value"`
+		} `json:"calledCard"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(new(ColourWhistWebPresenter).Output(m, nil)), &out))
+	require.NotNil(t, out.CalledCard)
+	assert.Equal(t, "SPADE", out.CalledCard.Design)
+	assert.Equal(t, 1, out.CalledCard.Value)
+
+	mNil := new(interfaces.MockColourWhistGame)
+	fillColourWhistDefaults(mNil)
+	var outNil struct {
+		CalledCard *struct {
+			Design string `json:"design"`
+			Value  int    `json:"value"`
+		} `json:"calledCard"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(new(ColourWhistWebPresenter).Output(mNil, nil)), &outNil))
+	assert.Nil(t, outNil.CalledCard)
+}
+
 func TestColourWhistWebPresenter_Fields(t *testing.T) {
 	m := new(interfaces.MockColourWhistGame)
 	m.On("GetContract").Return(domain.ColourWhistContractMiserie)

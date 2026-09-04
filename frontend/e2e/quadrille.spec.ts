@@ -30,6 +30,9 @@ test.describe('Quadrille E2E', () => {
     let kingCalls = 0;
     let plays = 0;
     let advances = 0;
+    // どの枝を何回通ったかを残す。ループが空回りしたとき、`plays === 0` だけ
+    // では**どこで止まったのか分からない** (#6689 の調査で実際に困った)。
+    const trace: string[] = [];
     for (let turn = 0; turn < 90; turn++) {
       await expect(soloButton.or(kingCall).or(playButton).or(nextTrick).or(nextDeal).or(anyReset).first()).toBeVisible({
         timeout: TIMEOUT_GAME_LOOP,
@@ -42,23 +45,34 @@ test.describe('Quadrille E2E', () => {
         await kings.first().click();
         await waitForLoaded(page);
         kingCalls++;
+        trace.push('king');
         continue;
       }
 
       if (await soloButton.isVisible()) {
-        // ソロは最上位の宣言なので、CPU が先に宣言していても通る。
         await soloButton.click();
         const spade = page.getByRole('button', { name: 'スペード' });
         if (await spade.isVisible()) {
           await spade.click();
         }
-        const confirm = page.getByRole('button', { name: /宣言|確定/ });
+        const confirm = page.getByTestId('quadrille-bid-confirm');
         if (await confirm.isVisible()) {
           await confirm.click();
-        } else if (await passButton.isVisible()) {
-          await passButton.click();
         }
         await waitForLoaded(page);
+
+        // **ソロが常に通るとは限らない。** CPU が先にソロを宣言していると
+        // サーバが弾き、画面は宣言の選択 (stage1) に戻る。同じ宣言を押し続けても
+        // ループは空回りするだけで、90 手を使い切って `plays === 0` で落ちていた
+        // (#6689、実測 1/10)。**パスは常に通る**ので、通らなかったらパスして
+        // 手番を進める。
+        if (await page.getByTestId('quadrille-bid-stage1').isVisible()) {
+          await passButton.click();
+          await waitForLoaded(page);
+          trace.push('bid:pass');
+        } else {
+          trace.push('bid:solo');
+        }
         bids++;
         continue;
       }
@@ -71,6 +85,9 @@ test.describe('Quadrille E2E', () => {
           await playButton.click();
           await waitForLoaded(page);
           plays++;
+          trace.push('play');
+        } else {
+          trace.push('play:blocked');
         }
         continue;
       }
@@ -79,6 +96,7 @@ test.describe('Quadrille E2E', () => {
         await nextTrick.click();
         await waitForLoaded(page);
         advances++;
+        trace.push('trick');
         continue;
       }
 
@@ -86,6 +104,7 @@ test.describe('Quadrille E2E', () => {
         await nextDeal.click();
         await waitForLoaded(page);
         advances++;
+        trace.push('deal');
         continue;
       }
 
@@ -94,9 +113,10 @@ test.describe('Quadrille E2E', () => {
 
     // **どれだけ働いたかを主張する。** `if (visible)` のループは 0 回でも
     // 緑になるので、実際に宣言し札を出したことをここで固定する。
-    expect(bids).toBeGreaterThan(0);
-    expect(plays).toBeGreaterThan(0);
-    expect(advances).toBeGreaterThan(0);
+    const where = () => `bids=${bids} kings=${kingCalls} plays=${plays} advances=${advances} | ${trace.join(' ')}`;
+    expect(bids, where()).toBeGreaterThan(0);
+    expect(plays, where()).toBeGreaterThan(0);
+    expect(advances, where()).toBeGreaterThan(0);
     // 王呼びは人間が落札したディールだけ発生するので 0 回もありうる。
     expect(kingCalls).toBeGreaterThanOrEqual(0);
   });

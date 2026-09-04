@@ -24,5 +24,6 @@
   "hintLine": "Hint: {{from}} → {{to}}",
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
-  "helpUndo": "  u undo one move"
+  "helpUndo": "  u undo one move",
+  "tableauPlacementRule": "Hint: on the tableau a card goes only onto the same suit, one rank lower. An empty column takes a King only."
 }

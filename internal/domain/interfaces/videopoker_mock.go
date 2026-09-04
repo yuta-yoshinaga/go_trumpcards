@@ -55,6 +55,12 @@ func (m *MockVideoPokerGame) GetChips() int {
 	return args.Int(0)
 }
 
+// GetChipsRefilled モック
+func (m *MockVideoPokerGame) GetChipsRefilled() bool {
+	args := m.Called()
+	return args.Bool(0)
+}
+
 func (m *MockVideoPokerGame) GetResult() domain.GameResult {
 	args := m.Called()
 	return args.Get(0).(domain.GameResult)

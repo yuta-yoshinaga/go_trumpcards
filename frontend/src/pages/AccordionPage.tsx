@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { type AccordionMoveZone, accordionApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -31,14 +31,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { AccordionResponse } from '../types/card';
 import { AccordionPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { accordionLegalOffsets, accordionLegalTargets, accordionNextAutoMove } from '../utils/accordionUtils';
+import { accordionLegalOffsets, accordionLegalTargets } from '../utils/accordionUtils';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Upper bound on autocomplete merges (a 52-card deck needs at most 51) — loop guard (#3192). */
-const AC_MAX_AUTO_MERGES = 52;
 
 /** Accordion tutorial step definitions. */
 const AC_TUTORIAL_STEPS: TutorialStep[] = [
@@ -139,7 +136,6 @@ function AccordionPageContent() {
   } = useGamePageSetup('accordion');
   const {
     state,
-    setState,
     loading,
     error,
     exec: apiCall,
@@ -149,14 +145,6 @@ function AccordionPageContent() {
   useMountReset(apiCall);
 
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
-  // Autocomplete drives the single `move` action in a loop (issue #3192), which
-  // bypasses useGameApi's `loading` flag, so `isAutoCompleting` gates the UI
-  // while the batch runs and `stateRef`/`autoCompletingRef` let the loop read
-  // the freshest board and block a second concurrent run (mirrors AcesUp #3347).
-  const [isAutoCompleting, setIsAutoCompleting] = useState(false);
-  const stateRef = useRef<AccordionResponse | null>(state);
-  stateRef.current = state;
-  const autoCompletingRef = useRef(false);
   // Tracks the pile under cursor/focus so we can paint legal -1/-3 targets
   // (same suit OR same rank) without waiting for click. Reset by mouseleave/blur
   // and on every state change (handled implicitly because piles re-key on size).
@@ -221,42 +209,12 @@ function AccordionPageContent() {
   );
 
   /**
-   * Auto-plays every forced/recommended merge in one click (issue #3192). It
-   * drives the existing single `move` action sequentially, re-reading the fresh
-   * board after each merge and applying the next {@link accordionNextAutoMove}
-   * (the same offset-3-first heuristic the backend hint uses) until no legal
-   * merge remains. Terminates because each merge removes a pile; the re-entry
-   * guard blocks a second concurrent run.
+   * Auto-plays every forced/recommended merge in one click via backend AutoComplete (issue #6341).
    */
-  const handleAutoComplete = useCallback(async () => {
-    if (autoCompletingRef.current) return;
-    autoCompletingRef.current = true;
-    setIsAutoCompleting(true);
+  const handleAutoComplete = useCallback(() => {
+    void apiCall('autocomplete');
     setSelectedIdx(null);
-    let move = stateRef.current ? accordionNextAutoMove(stateRef.current.piles) : null;
-    try {
-      // Upper bound: a 52-pile deck can never need more than 51 merges.
-      for (let step = 0; step < AC_MAX_AUTO_MERGES && move; step++) {
-        const res = await accordionApi.exec(
-          'move',
-          { zone: 'pile', index: move.fromIdx },
-          { zone: 'pile', index: move.toIdx },
-        );
-        setState(res);
-        if (res.phase !== AccordionPhase.PLAYING) break;
-        move = accordionNextAutoMove(res.piles);
-      }
-    } catch {
-      // Surface the failure through the shared exec so the standard
-      // error/retry channel handles it.
-      if (move) {
-        await apiCall('move', { zone: 'pile', index: move.fromIdx }, { zone: 'pile', index: move.toIdx });
-      }
-    } finally {
-      autoCompletingRef.current = false;
-      setIsAutoCompleting(false);
-    }
-  }, [apiCall, setState]);
+  }, [apiCall]);
 
   const dispatchMove = useCallback(
     (fromIdx: number, toIdx: number) => {
@@ -318,7 +276,7 @@ function AccordionPageContent() {
       { key: 'ArrowRight', action: () => moveSelection(1) },
       { key: '1', action: () => mergeFromSelection(1) },
       { key: '3', action: () => mergeFromSelection(3) },
-      { key: 'a', action: () => void handleAutoComplete() },
+      { key: 'a', action: handleAutoComplete },
       { key: 'u', action: handleUndo },
       { key: 'h', action: handleHint },
       { key: 'g', action: confirmGiveUpAction },
@@ -326,9 +284,7 @@ function AccordionPageContent() {
     ],
     [moveSelection, mergeFromSelection, handleAutoComplete, handleUndo, handleHint, confirmGiveUpAction],
   );
-  // The autocomplete loop bypasses useGameApi's `loading` flag, so gate every
-  // interactive control on `busy` (loading OR a batch in flight) — issue #3192.
-  const busy = loading || isAutoCompleting;
+  const busy = loading;
   useActionKeyboardNav({
     bindings: accordionBindings,
     enabled: state?.phase === AccordionPhase.PLAYING && !busy,
@@ -343,7 +299,7 @@ function AccordionPageContent() {
   const isEnded = isGameClear || isGameOver;
   // Autocomplete is only useful while a legal merge remains; disable it (and skip
   // the pulse cue) otherwise, mirroring the sibling solitaires' gating.
-  const hasAutoMove = isPlaying && accordionNextAutoMove(state.piles) !== null;
+  const hasAutoMove = isPlaying && state.piles.some((_, idx) => accordionLegalTargets(state.piles, idx).length > 0);
 
   const phaseName = isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing');
 
@@ -527,7 +483,7 @@ function AccordionPageContent() {
                   <button
                     type="button"
                     className={`${btnSuccess}${hasAutoMove && !busy ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={() => void handleAutoComplete()}
+                    onClick={handleAutoComplete}
                     disabled={busy || !hasAutoMove}
                     aria-keyshortcuts="a"
                     data-testid="ac-autocomplete"

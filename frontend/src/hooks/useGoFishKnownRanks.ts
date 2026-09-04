@@ -14,6 +14,16 @@ export type KnownRanksMap = Record<number, number[]>;
  * a player has booked them (they no longer hold any of that rank).
  */
 export function useGoFishKnownRanks(state: GoFishResponse | null): KnownRanksMap {
+  // The server keeps this itself and the CUI has always read it from there. When
+  // it is present, use it: the accumulation below lives in component state, so a
+  // reload or a remount used to erase the memory mid-game (#6312).
+  const fromServer = useMemo<KnownRanksMap | null>(() => {
+    if (!state?.players?.some((p) => p.knownRanks !== undefined)) return null;
+    const out: KnownRanksMap = {};
+    for (const p of state.players) out[p.id] = p.knownRanks ?? [];
+    return out;
+  }, [state?.players]);
+
   const [knownByPlayer, setKnownByPlayer] = useState<Record<number, Set<number>>>({});
   const lastAskKey = useRef<string | null>(null);
   const lastTurn = useRef<number>(0);
@@ -40,7 +50,7 @@ export function useGoFishKnownRanks(state: GoFishResponse | null): KnownRanksMap
     }
   }, [state]);
 
-  return useMemo(() => {
+  const rebuilt = useMemo(() => {
     if (!state) return {};
     const out: KnownRanksMap = {};
     for (const p of state.players) {
@@ -56,4 +66,6 @@ export function useGoFishKnownRanks(state: GoFishResponse | null): KnownRanksMap
     }
     return out;
   }, [knownByPlayer, state]);
+
+  return fromServer ?? rebuilt;
 }

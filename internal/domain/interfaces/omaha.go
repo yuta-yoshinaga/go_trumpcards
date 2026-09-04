@@ -73,4 +73,6 @@ type OmahaGame interface {
 	GetBoardLowOutlook() domain.OmahaBoardLowOutlook
 	// GetHoleCardCount ホールカード配布枚数を取得する (オマハ=4, Big O=5)
 	GetHoleCardCount() int
+	// GetPreflopCommunityCount はプリフロップ前に公開するコミュニティ札の枚数を返す (Courchevel=1、他=0)
+	GetPreflopCommunityCount() int
 }

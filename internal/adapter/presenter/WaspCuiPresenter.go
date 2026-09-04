@@ -72,10 +72,16 @@ func (p *WaspCuiPresenter) HintOutput(s interfaces.WaspGame) string {
 	if hint.IsDeal() {
 		return i18n.T("wasp.hintDeal") + "\n"
 	}
-	return i18n.Tf("wasp.hintLine",
+	line := i18n.Tf("wasp.hintLine",
 		"fromCol", strconv.Itoa(hint.FromCol),
 		"idx", strconv.Itoa(hint.CardIndex),
-		"toCol", strconv.Itoa(hint.ToCol)) + "\n"
+		"toCol", strconv.Itoa(hint.ToCol))
+	// **なぜその手なのかを言う。**GetHint は裏カードを開ける手を先に探しており、
+	// 移動先だけ見せてもプレイヤーはその優先順位を学べない (#6340)。
+	if hint.ExposesFaceDown {
+		line += i18n.T("wasp.hintExposes")
+	}
+	return line + "\n"
 }
 
 // LegalMovesOutput lists the tableau columns onto which the top (last) card of

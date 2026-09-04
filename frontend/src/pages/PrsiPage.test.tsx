@@ -225,6 +225,41 @@ describe('PrsiPage', () => {
     await waitFor(() => expect(screen.getByTestId('penalty-indicator')).toBeInTheDocument());
   });
 
+  // **累積ペナルティは +2 / +4 / +6 と育つ。**隣の skip-indicator は
+  // `role="status"` を持つのにこちらだけ抜けていて、増えたことが音声に
+  // 届かなかった (#6480)。
+  it('announces the penalty as a live region', async () => {
+    mockExec.mockResolvedValue(penaltyState);
+    renderWithProviders(<PrsiPage />);
+
+    const badge = await screen.findByTestId('penalty-indicator');
+    expect(badge).toHaveAttribute('role', 'status');
+    expect(badge).toHaveTextContent('2');
+  });
+
+  // 積み増した局面でも同じ領域が現在の枚数を持つ。**数字だけを見て role を
+  // 見ない**と、読み上げの無い実装が通る。
+  it('announces the grown penalty too', async () => {
+    mockExec.mockResolvedValue({ ...penaltyState, penaltyDrawCount: 6 });
+    renderWithProviders(<PrsiPage />);
+
+    const badge = await screen.findByTestId('penalty-indicator');
+    expect(badge).toHaveAttribute('role', 'status');
+    expect(badge).toHaveTextContent('6');
+  });
+
+  // **隣の skip-indicator と見た目を揃えたまま。**片方だけ装飾が変わると、
+  // 同じ重みの情報が違うものに見える (受け入れ条件 3)。
+  it('keeps the penalty badge styled like the skip badge', async () => {
+    mockExec.mockResolvedValue({ ...penaltyState, pendingSkips: 1 });
+    renderWithProviders(<PrsiPage />);
+
+    const penalty = await screen.findByTestId('penalty-indicator');
+    const skip = screen.getByTestId('skip-indicator');
+    expect(penalty.className).toBe(skip.className);
+    expect(skip).toHaveAttribute('role', 'status');
+  });
+
   it('does not show the penalty indicator when penaltyDrawCount is 0', async () => {
     renderWithProviders(<PrsiPage />);
     await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());

@@ -20,7 +20,7 @@
   "contract": "契約: {{name}}",
   "contract.pass": "-",
   "contract.trois": "トロワ（3トリック）",
-  "contract.solo": "ソロ（過半の点）",
+  "contract.solo": "ソロ（{{target}}点以上）",
   "contract.piccolo": "ピッコロ（ちょうど1トリック）",
   "contract.misere": "ミゼール（0トリック）",
   "bidTooLow": "この契約では今の最高入札（{{high}}）を超えられません",

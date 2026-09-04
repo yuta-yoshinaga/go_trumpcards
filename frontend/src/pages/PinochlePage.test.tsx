@@ -617,4 +617,60 @@ describe('PinochlePage meld reference', () => {
     await waitFor(() => expect(screen.getByText(/ラウンド/)).toBeInTheDocument());
     expect(screen.queryByTestId('pn-meld-table')).not.toBeInTheDocument();
   });
+
+  it('labels the per-player trick count instead of a bare "T:"', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByText(/ラウンド/)).toBeInTheDocument());
+    // The row already translates its other three labels; the trick count must not
+    // stay an untranslated "T:". It also must not reuse t('trick'), which labels
+    // the *current trick number* elsewhere on this page.
+    expect(screen.getAllByText(/獲得トリック: 0/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/\| T: /)).not.toBeInTheDocument();
+  });
+
+  // serverHint の分岐は pass と bidAmount しか通っていなかった。残りの
+  // trump / play / どれでもない の3本を通す (#6663 のカバレッジ)。
+  it('displays a trump recommendation from the server hint', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ hint: { suit: 0, reason: 'hint_trump' } } as unknown as PinochleResponse);
+    fireEvent.click(screen.getByTestId('pn-hint-button'));
+
+    const hintBox = await screen.findByTestId('pn-server-hint');
+    expect(hintBox).toHaveTextContent('推奨トランプ');
+    expect(hintBox).not.toHaveTextContent('{{');
+  });
+
+  it('displays a play recommendation from the server hint', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ hint: { cardIndex: 0, reason: 'hint_play' } } as unknown as PinochleResponse);
+    fireEvent.click(screen.getByTestId('pn-hint-button'));
+
+    const hintBox = await screen.findByTestId('pn-server-hint');
+    expect(hintBox).toHaveTextContent('推奨プレイ');
+    expect(hintBox).toHaveTextContent('[0]');
+    expect(hintBox).not.toHaveTextContent('{{');
+  });
+
+  // 理由だけのヒント。どの推奨にもならないので本文は空だが、**理由は出る**。
+  it('still names the reason when the hint recommends nothing concrete', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ hint: { reason: 'hint_play' } } as unknown as PinochleResponse);
+    fireEvent.click(screen.getByTestId('pn-hint-button'));
+
+    const hintBox = await screen.findByTestId('pn-server-hint');
+    expect(hintBox).toHaveTextContent('(');
+    expect(hintBox).not.toHaveTextContent('推奨プレイ');
+    expect(hintBox).not.toHaveTextContent('推奨ビッド');
+    expect(hintBox).not.toHaveTextContent('{{');
+  });
 });

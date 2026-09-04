@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra5
 
 package controller
 
@@ -62,17 +62,19 @@ type MinibridgeWebOutput struct {
 	// DummyHand は契約決定後に公開されるダミーの手札。
 	DummyHand []*WebOutputCard `json:"dummyHand"`
 	// LastMade / LastTricks は直前のディールの結果。
-	LastMade         bool                     `json:"lastMade"`
-	LastTricks       int                      `json:"lastTricks"`
-	TeamScores       []int                    `json:"teamScores"`
-	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
-	DealerIdx        int                      `json:"dealerIdx"`
-	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
-	ValidPlays       []int                    `json:"validPlays"`
-	GameEndFlag      bool                     `json:"gameEndFlag"`
-	WinnerTeam       int                      `json:"winnerTeam"`
-	Hint             *MinibridgeWebOutputHint `json:"hint,omitempty"`
+	LastMade         bool                  `json:"lastMade"`
+	LastTricks       int                   `json:"lastTricks"`
+	TeamScores       []int                 `json:"teamScores"`
+	CurrentPlayerIdx int                   `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                   `json:"leadPlayerIdx"`
+	DealerIdx        int                   `json:"dealerIdx"`
+	CurrentTrick     []*WebOutputTrickCard `json:"currentTrick"`
+	ValidPlays       []int                 `json:"validPlays"`
+	GameEndFlag      bool                  `json:"gameEndFlag"`
+	WinnerTeam       int                   `json:"winnerTeam"`
+	// DeclarerByDealerTie は HCP が 20-20 の同点で親の側が宣言側になったかを表す。
+	DeclarerByDealerTie bool                     `json:"declarerByDealerTie"`
+	Hint                *MinibridgeWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config MinibridgeWebOutputConfig `json:"config"`
 }

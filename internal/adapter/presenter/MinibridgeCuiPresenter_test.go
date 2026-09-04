@@ -5,6 +5,7 @@ package presenter
 import (
 	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -189,4 +190,38 @@ func TestMinibridgeCuiPresenterActionLogOutput(t *testing.T) {
 	m := newMinibridgeForCui(t)
 	m.GiveUp()
 	assert.NotEmpty(t, p.ActionLogOutput(m))
+}
+
+func TestMinibridgeCuiPresenterDealerMark(t *testing.T) {
+	p := new(MinibridgeCuiPresenter)
+	for dealer := range domain.MinibridgePlayerCnt {
+		m := newMinibridgeForCui(t)
+		m.SetDealerIdxForTest(dealer)
+		out := p.Output(m, nil)
+		assert.Equal(t, 1, strings.Count(out, "[親]"), "親の印がちょうど1席に付く (dealer=%d)", dealer)
+	}
+}
+
+func TestMinibridgeCuiPresenterTieNote(t *testing.T) {
+	p := new(MinibridgeCuiPresenter)
+
+	// 同点フラグが true のときだけ説明行が出る
+	tie := newMinibridgeForCui(t)
+	tie.SetDealerIdxForTest(2)
+	tie.SetHcpForTest([domain.MinibridgePlayerCnt]int{10, 10, 10, 10})
+	tie.DecideDeclarerForTest()
+	require.True(t, tie.IsDeclarerByDealerTie())
+
+	outTie := p.Output(tie, nil)
+	assert.Contains(t, outTie, "HCP が同点だったため、親（席2）の側が宣言側になりました。")
+
+	// 否定コントロール：同点でないときは説明行が出ない
+	nonTie := newMinibridgeForCui(t)
+	nonTie.SetDealerIdxForTest(2)
+	nonTie.SetHcpForTest([domain.MinibridgePlayerCnt]int{15, 5, 10, 10})
+	nonTie.DecideDeclarerForTest()
+	require.False(t, nonTie.IsDeclarerByDealerTie())
+
+	outNonTie := p.Output(nonTie, nil)
+	assert.NotContains(t, outNonTie, "HCP が同点だったため")
 }

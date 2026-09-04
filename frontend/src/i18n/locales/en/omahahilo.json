@@ -112,5 +112,9 @@
     "fourOfAKind": "Four of a Kind",
     "straightFlush": "Straight Flush",
     "royalFlush": "Royal Flush"
+  },
+  "scoop": {
+    "badge": "🏆 Scoop! {{name}} takes both halves (+{{total}})",
+    "youBadge": "🏆 Scoop! You take both halves (+{{total}})"
   }
 }

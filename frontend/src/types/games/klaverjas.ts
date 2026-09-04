@@ -54,6 +54,8 @@ export interface KlaverjasResponse extends BaseGameResponse {
   roundCardPoints: number[];
   /** Roem (run/marriage) bonus points per team this round — [team0, team1]. */
   roundRoem: number[];
+  /** Roem (run/marriage) bonus points per player this round — indexed by player index. */
+  roundPlayerRoem: number[];
   /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
   playableIndices: number[];
   gameEndFlag: boolean;

@@ -122,6 +122,37 @@ func TestCaribbeanStudCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	assert.Contains(t, result, "DEALER")
 	assert.Contains(t, result, "(Qualified)")
 	assert.Contains(t, result, "合計払戻し: 1000")
+	assert.NotContains(t, result, "ジャックポット:")
+	assert.NotContains(t, result, "ジャックポット配当:")
+}
+
+func TestCaribbeanStudCuiPresenter_Output_EndPhase_Jackpot(t *testing.T) {
+	p := new(CaribbeanStudCuiPresenter)
+	m := new(interfaces.MockCaribbeanStudGame)
+	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetPhase").Return(domain.CaribbeanStudPhaseEnd).Maybe()
+	m.On("GetPlayerHand").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetDealerHand").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetGameEndFlag").Return(true).Maybe()
+	m.On("GetAnteBet").Return(100).Maybe()
+	m.On("GetJackpotBet").Return(50).Maybe()
+	m.On("GetPlayBet").Return(200).Maybe()
+	m.On("GetResult").Return(domain.GameResultWin).Maybe()
+	m.On("GetAntePayout").Return(200).Maybe()
+	m.On("GetPlayPayout").Return(800).Maybe()
+	m.On("GetJackpotPayout").Return(2500).Maybe()
+	m.On("GetTotalPayout").Return(3500).Maybe()
+	m.On("GetDealerQualified").Return(true).Maybe()
+	m.On("GetPlayerHandRank").Return(domain.PokerHandRoyalFlush).Maybe()
+	m.On("GetDealerHandRank").Return(domain.PokerHandHighCard).Maybe()
+	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "アンテ: 100")
+	assert.Contains(t, result, "プレイ: 200")
+	assert.Contains(t, result, "ジャックポット: 50")
+	assert.Contains(t, result, "ジャックポット配当: 2500")
+	assert.Contains(t, result, "合計払戻し: 3500")
 }
 
 func TestCaribbeanStudCuiPresenter_Output_EndPhase_Fold(t *testing.T) {

@@ -21,5 +21,7 @@
   "wasteKing": " | Waste: {{card}}[K]",
   "helpExampleHint": "  h                        ask for a move",
   "helpUndo": "  u                        undo one move",
-  "noRedeal": "(no redeal)"
+  "noRedeal": "(no redeal)",
+  "sessionStats": "This session: {{plays}} played, {{wins}} cleared / fewest moves {{best}}",
+  "sessionNoBest": "—"
 }

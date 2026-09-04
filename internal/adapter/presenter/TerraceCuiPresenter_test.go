@@ -120,6 +120,25 @@ func TestTerraceCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, new(TerraceCuiPresenter).Output(g, errors.New("test error")), "test error")
 	})
 
+	t.Run("domain error code prints in correct locale", func(t *testing.T) {
+		g := new(interfaces.MockTerraceGame)
+		setupTerraceCuiMockDefaults(g)
+
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "terrace.errStockEmpty", nil)
+
+		i18n.SetLang("ja")
+		jaOut := new(TerraceCuiPresenter).Output(g, err)
+		assert.Contains(t, jaOut, "山札が空で、再配布もありません")
+		assert.NotContains(t, jaOut, "The stock is empty")
+
+		i18n.SetLang("en")
+		enOut := new(TerraceCuiPresenter).Output(g, err)
+		assert.Contains(t, enOut, "The stock is empty and there is no redeal.")
+		assert.NotContains(t, enOut, "山札が空で、再配布もありません")
+
+		i18n.SetLang("ja") // restore
+	})
+
 	for _, tc := range []struct {
 		name string
 		val  domain.TerracePhase

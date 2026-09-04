@@ -203,6 +203,50 @@ describe('GleekPage', () => {
     expect(par).toHaveTextContent('26');
   });
 
+  // **ラウンド終了時に各席の純増減を符号付きで出す** (#6620)。
+  // 累積点だけでは前後の引き算を自力で行わないと成果が分からない。
+  it('renders signed round deltas for all seats in round end panel', async () => {
+    mockExec.mockResolvedValue(
+      makeGleekState({
+        ...roundEndState,
+        roundDelta: [15, -10, -5],
+      }),
+    );
+    renderWithProviders(<GleekPage />);
+    await waitFor(() => expect(screen.getByTestId('gleek-round-delta-0')).toBeInTheDocument());
+
+    const delta0 = screen.getByTestId('gleek-round-delta-0');
+    expect(delta0).toHaveTextContent('+15');
+    expect(delta0.className).toContain('text-ds-success');
+
+    const delta1 = screen.getByTestId('gleek-round-delta-1');
+    expect(delta1).toHaveTextContent('-10');
+    expect(delta1.className).toContain('text-ds-error');
+
+    const delta2 = screen.getByTestId('gleek-round-delta-2');
+    expect(delta2).toHaveTextContent('-5');
+    expect(delta2.className).toContain('text-ds-error');
+  });
+
+  it('renders ±0 for seats with zero round delta', async () => {
+    mockExec.mockResolvedValue(
+      makeGleekState({
+        ...roundEndState,
+        roundDelta: [0, 5, -5],
+      }),
+    );
+    renderWithProviders(<GleekPage />);
+    await waitFor(() => expect(screen.getByTestId('gleek-round-delta-0')).toBeInTheDocument());
+    expect(screen.getByTestId('gleek-round-delta-0')).toHaveTextContent('±0');
+  });
+
+  it('does not show round deltas while round is still being played', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<GleekPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ A')).toBeInTheDocument());
+    expect(screen.queryByTestId('gleek-round-delta-0')).not.toBeInTheDocument();
+  });
+
   it('renders the game end message', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<GleekPage />);
@@ -233,5 +277,30 @@ describe('GleekPage', () => {
     });
     renderWithProviders(<GleekPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
+  });
+
+  // **催促は常設のライブ領域の中にある (#6880)。** フェーズ切り替えで現れる
+  // テキストなので、領域が無いとスクリーンリーダには何も届かない。領域を
+  // 出現と同時に付けても読み上げられないため、常設にして中身だけ差し替える。
+  it('announces the prompt from an always-mounted live region', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<GleekPage />);
+
+    const live = await screen.findByTestId('gleek-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
+    expect(live).toContainElement(await screen.findByTestId('gleek-bid-prompt'));
+  });
+
+  it('announces discard from the same region', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<GleekPage />);
+
+    const live = await screen.findByTestId('gleek-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
+    expect(live).toContainElement(await screen.findByTestId('gleek-discard-prompt'));
   });
 });

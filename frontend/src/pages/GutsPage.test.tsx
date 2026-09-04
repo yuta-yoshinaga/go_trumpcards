@@ -247,4 +247,41 @@ describe('GutsPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.queryByTestId('guts-carry-result')).not.toBeInTheDocument();
   });
+
+  it('exposes the declare guide as a live region for screen readers', async () => {
+    const pairState = makeGutsState({
+      phase: 0,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          chips: 200,
+          in: false,
+          out: false,
+          roundBet: 10,
+          cardCount: 2,
+          cards: [
+            { design: 'SPADE', value: 9 },
+            { design: 'HEART', value: 9 },
+          ],
+          isWinner: false,
+          isMatcher: false,
+        },
+        ...declareState.players.slice(1),
+      ],
+    });
+    mockExec.mockResolvedValue(pairState);
+    const { container } = renderWithProviders(<GutsPage />);
+
+    await waitFor(() => {
+      // 属性の有無ではなく「読み上げられる中身」を見る ── ガイドの手役・tier・
+      // マッチリスクが live region の**中に**あって初めて変化が伝わる。
+      const liveRegion = container.querySelector('[data-testid="guts-declare-guide"][aria-live="polite"]');
+      expect(liveRegion).not.toBeNull();
+      expect(liveRegion).toHaveAttribute('role', 'status');
+      expect(liveRegion).toHaveTextContent('手役: ペア');
+      expect(liveRegion).toHaveTextContent('高い');
+      expect(liveRegion).toHaveTextContent('ポット 40 相当');
+    });
+  });
 });

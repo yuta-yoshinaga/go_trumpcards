@@ -38,7 +38,7 @@
     "controls": "操作ボタンです。捨てる・重ねる・配る・配り直すを選べます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "frontendHint": {
     "narcoticRemove": "露出4枚が揃っています。まとめて捨てましょう",
     "narcoticMove": "同じランクを出している左の山へ重ねられます",

@@ -71,4 +71,6 @@ type HorseGame interface {
 	IsDrawPhase() bool
 	// GetDrawIndex 何回目の引き直しかを取得する (ドロー中でなければ 0)
 	GetDrawIndex() int
+	// GetMaxBetAmount いまの種目が受け付ける最大ベット額を取得する (ポットリミット上限、0 は上限なしまたは固定リミット)
+	GetMaxBetAmount() int
 }

@@ -391,6 +391,21 @@ function CariocaPageContent() {
               ))}
             </section>
 
+            {/* **誰がラウンドを終わらせたかは点数表からは読めない。**サーバは
+                roundWinnerIdx を毎回送っているのに、Web も CUI も読んでいなかった
+                (#6498)。誰も上がっていない (-1) 局面では出さない。 */}
+            {isRoundEnd && state.roundWinnerIdx >= 0 && (
+              <section className="px-4 py-1" data-testid="ca-round-winner">
+                <span className="text-ds-accent text-sm">
+                  {t('roundEndedBy', {
+                    name: state.players[state.roundWinnerIdx]?.isHuman
+                      ? tc('player.you')
+                      : tc('player.cpu', { id: state.roundWinnerIdx }),
+                  })}
+                </span>
+              </section>
+            )}
+
             {humanPlayer && (
               <section className="px-4 py-2" data-tutorial="ca-hand">
                 <div className="text-white text-sm mb-1">

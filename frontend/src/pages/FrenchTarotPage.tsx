@@ -394,6 +394,21 @@ function FrenchTarotPageContent() {
                             points: state.players[state.declarerIdx]?.cardPoints ?? 0,
                           })}
                         </div>
+                        {/* **プティ・オ・ブーが乗ると、獲得点から逆算した数字と精算が
+                            合わなくなる。**ルールは実装済みで精算にも乗っているのに、
+                            どちらの画面にも出ていなかった (#6509)。0 は未発生。 */}
+                        {state.petitAuBoutDelta !== 0 && (
+                          <div data-testid="ft-petit-au-bout">
+                            {t('roundResult.petitAuBout', {
+                              side: t(
+                                state.petitAuBoutDelta > 0
+                                  ? 'roundResult.petitAuBoutDeclarer'
+                                  : 'roundResult.petitAuBoutDefenders',
+                              ),
+                              points: state.petitAuBoutDelta,
+                            })}
+                          </div>
+                        )}
                       </>
                     )}
                   </div>
@@ -418,22 +433,26 @@ function FrenchTarotPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.frenchtarot.footer} px-4 py-2.5`}>
-            {canBid && (
-              <div
-                className="mb-1 text-center text-sm text-ds-accent font-semibold"
-                data-testid="frenchtarot-bid-prompt"
-              >
-                {t('bidPhase', { bid: highestBidLabel })}
-              </div>
-            )}
-            {canDiscard && (
-              <div
-                className="mb-1 text-center text-sm text-ds-accent font-semibold"
-                data-testid="frenchtarot-discard-prompt"
-              >
-                {t('chienPhase', { count: selectedCardIndices.length })}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="frenchtarot-prompt-live" role="status" aria-live="polite">
+              {canBid && (
+                <div
+                  className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                  data-testid="frenchtarot-bid-prompt"
+                >
+                  {t('bidPhase', { bid: highestBidLabel })}
+                </div>
+              )}
+              {canDiscard && (
+                <div
+                  className="mb-1 text-center text-sm text-ds-accent font-semibold"
+                  data-testid="frenchtarot-discard-prompt"
+                >
+                  {t('chienPhase', { count: selectedCardIndices.length })}
+                </div>
+              )}
+            </div>
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

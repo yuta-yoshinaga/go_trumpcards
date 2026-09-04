@@ -59,7 +59,7 @@ func (p *KempsCuiPresenter) Output(g interfaces.KempsGame, lastErr error) string
 				continue
 			}
 			name := cuiPlayerName(player, i)
-			team := i18n.Tf("kemps.teamLabel", "team", kempsTeamName(domain.KempsTeamOf(i)))
+			team := i18n.Tf("kemps.teamLabel", "team", cuiTeamLabel(domain.KempsTeamOf(i)))
 			if i == 0 {
 				// 人間の手札のみ公開表示する。
 				b.WriteString(name + " " + team + "\n")
@@ -126,12 +126,4 @@ func kempsSignalName(st domain.SignalType) string {
 		return i18n.T("kemps.signalBlink")
 	}
 	return i18n.T("kemps.signalSound")
-}
-
-// kempsTeamName はチーム番号の表示名 (A / B) を返す。
-func kempsTeamName(team int) string {
-	if team == domain.KempsTeamOf(0) {
-		return "A"
-	}
-	return "B"
 }

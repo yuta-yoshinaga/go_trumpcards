@@ -68,7 +68,7 @@ export interface ColourWhistResponse extends BaseGameResponse {
   /** -1 until known. Troel names it at deal time; Samen hides it until the called card is played. */
   partnerIdx: number;
   /** The card called to find a partner. Samen only — troel is dealt, not called. */
-  calledCard?: Card;
+  calledCard: Card | null;
   /** 1..4, or -1 for no trump. */
   trumpSuit: number;
   /** True when three aces in one hand forced the contract without an auction. */

@@ -69,7 +69,12 @@ func (p *NapoleonsSquareWebPresenter) Output(ns interfaces.NapoleonsSquareGame, 
 	}
 
 	if lastErr != nil {
-		resObj.Message = lastErr.Error()
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			resObj.MessageCode = code
+			resObj.MessageParams = params
+		} else {
+			resObj.Message = lastErr.Error()
+		}
 	} else {
 		switch ns.GetPhase() {
 		case domain.NapoleonsSquarePhasePlaying:

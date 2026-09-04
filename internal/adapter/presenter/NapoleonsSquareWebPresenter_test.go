@@ -196,3 +196,15 @@ func TestNapoleonsSquareWebPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, new(NapoleonsSquareWebPresenter).ActionLogOutput(g), "move")
 	})
 }
+
+func TestNapoleonsSquareWebPresenter_ErrorCode(t *testing.T) {
+	t.Run("code is separated from message", func(t *testing.T) {
+		g := new(interfaces.MockNapoleonsSquareGame)
+		setupNapoleonsSquareOutputMock(g)
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "napoleonssquare.errBadColumn", nil)
+
+		result := parseNapoleonsSquareOutput(t, new(NapoleonsSquareWebPresenter).Output(g, err))
+		assert.Equal(t, "napoleonssquare.errBadColumn", result.MessageCode, "コードがあれば MessageCode に載る")
+		assert.Empty(t, result.Message, "コードがあるなら Message を汚さない (#5553)")
+	})
+}

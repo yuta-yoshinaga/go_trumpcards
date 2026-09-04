@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra5
 
 package presenter
 
@@ -143,6 +143,17 @@ func (p *QuadrilleCuiPresenter) Output(g interfaces.QuadrilleGame, lastErr error
 			b.WriteString(i18n.Tf("quadrille.promptKing",
 				"name", cuiPlayerName(g.GetPlayer(g.GetQuadrilleIdx()), g.GetQuadrilleIdx())) + "\n")
 			b.WriteString(i18n.T("quadrille.promptKingHelp") + "\n")
+			// **呼べるスートはサーバが知っている。** Web は `callableKingSuits`
+			// でボタンを出し分けているのに、CUI は構文を試行錯誤するしか
+			// なかった (#6613)。呼べる先が無いときは黙らず、無いと言う。
+			if suits := g.GetCallableKingSuits(); len(suits) > 0 {
+				names := make([]string, 0, len(suits))
+				for _, s := range suits {
+					names = append(names, quadrilleTrumpLabel(s))
+				}
+				b.WriteString(i18n.Tf("quadrille.promptKingChoices",
+					"suits", strings.Join(names, " / ")) + "\n")
+			}
 		case domain.QuadrillePhasePlay:
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("quadrille.promptPlay",

@@ -49,5 +49,7 @@
     "toTableau": "示唆された場札への移動で山を掘り出しましょう",
     "fillGap": "空き山を山札から直接埋められます（捨て札を1枚節約できます）",
     "draw": "動かせる札が無いので、山札をめくって手を増やしましょう"
-  }
+  },
+  "pileCardAriaLabel": "{{card}} 山{{pile}}",
+  "pileTopCardAriaLabel": "{{card}} 山{{pile}} 一番上"
 }

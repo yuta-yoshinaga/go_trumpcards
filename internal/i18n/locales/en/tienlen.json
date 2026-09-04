@@ -9,6 +9,7 @@
   "playerFinished": ": finished (rank {{rank}})",
   "playerCardCount": ": {{count}} cards",
   "tableCards": "Table",
+  "tablePlayedBy": " [{{name}}]",
   "tableEmpty": "Table: empty (free lead)",
   "gameEnd": "Game Over!",
   "rankN": "Rank {{rank}}",

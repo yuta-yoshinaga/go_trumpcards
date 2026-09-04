@@ -281,4 +281,43 @@ describe('KoiKoiPage', () => {
       expect(panel).not.toHaveTextContent('3文');
     });
   });
+
+  // 催促はフェーズや手番が変わったときに現れるテキスト。領域が無いと、あるいは
+  // 領域が催促と**同時に**生えると、スクリーンリーダには何も届かない (#6880)。
+  it('announces the koikoi-prompt from the always-mounted live region', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<KoiKoiPage />);
+
+    const live = await screen.findByTestId('koikoi-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
+    expect(live).toContainElement(await screen.findByTestId('koikoi-prompt'));
+  });
+
+  // 対戦相手がCPUの場合のみCPU領域を出す。
+  it('shows cpu area when there is a non-human player', async () => {
+    mockExec.mockResolvedValue({
+      ...playState,
+      players: [
+        { ...makeKoiKoiState().players[0], isHuman: true },
+        { ...makeKoiKoiState().players[1], isHuman: false },
+      ],
+    });
+    renderWithProviders(<KoiKoiPage />);
+    expect(await screen.findByTestId('koikoi-cpu')).toBeInTheDocument();
+  });
+
+  it('hides cpu area when all players are human', async () => {
+    mockExec.mockResolvedValue({
+      ...playState,
+      players: [
+        { ...makeKoiKoiState().players[0], isHuman: true },
+        { ...makeKoiKoiState().players[1], isHuman: true },
+      ],
+    });
+    renderWithProviders(<KoiKoiPage />);
+    await waitFor(() => expect(screen.getByTestId('koikoi-prompt-live')).toBeInTheDocument());
+    expect(screen.queryByTestId('koikoi-cpu')).not.toBeInTheDocument();
+  });
 });

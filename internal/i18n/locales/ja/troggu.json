@@ -13,7 +13,7 @@
   "roleDefender": "対戦側",
   "contract.pass": "-",
   "contract.trois": "トロワ（3トリック）",
-  "contract.solo": "ソロ（過半の点）",
+  "contract.solo": "ソロ（{{target}}点以上）",
   "contract.piccolo": "ピッコロ（ちょうど1トリック）",
   "contract.misere": "ミゼール（0トリック）",
   "gameEnd": "ゲーム終了！ {{name}} の勝ち！",

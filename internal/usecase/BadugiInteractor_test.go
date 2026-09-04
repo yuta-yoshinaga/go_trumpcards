@@ -151,22 +151,22 @@ func TestBadugiInteractor_Exchange(t *testing.T) {
 	bi := usecase.NewBadugiInteractor(mg, mp)
 
 	indices := []int{0, 2}
-	mg.On("PlayerExchange", indices).Return(nil)
+	mg.On("PlayerExchange", indices, 4200).Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("exchange output")
 
-	assert.Equal(t, "exchange output", bi.Exchange(indices))
-	mg.AssertCalled(t, "PlayerExchange", indices)
+	assert.Equal(t, "exchange output", bi.Exchange(indices, 4200))
+	mg.AssertCalled(t, "PlayerExchange", indices, 4200)
 }
 
 func TestBadugiInteractor_Stand(t *testing.T) {
 	mg, mp := newBadugiMocks()
 	bi := usecase.NewBadugiInteractor(mg, mp)
 
-	mg.On("PlayerStand").Return(nil)
+	mg.On("PlayerStand", 4200).Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("stand output")
 
-	assert.Equal(t, "stand output", bi.Stand())
-	mg.AssertCalled(t, "PlayerStand")
+	assert.Equal(t, "stand output", bi.Stand(4200))
+	mg.AssertCalled(t, "PlayerStand", 4200)
 }
 
 func TestBadugiInteractor_ActionLog(t *testing.T) {

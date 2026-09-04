@@ -451,6 +451,20 @@ describe('BridgePage', () => {
     });
   });
 
+  // オープニングリード完了後に公開されたダミーの手札がある場合のみダミー領域を表示する。
+  it('renders bridge-dummy-area when opening lead is done and dummy hand exists', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('bridge-dummy-area')).toBeInTheDocument());
+  });
+
+  it('does not render bridge-dummy-area when opening lead is not done', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('bridge-dummy-area')).not.toBeInTheDocument();
+  });
+
   it('shows bid history when bids exist', async () => {
     mockExec.mockResolvedValue(bidHistoryState);
     renderWithProviders(<BridgePage />);
@@ -613,5 +627,74 @@ describe('BridgePage', () => {
     renderWithProviders(<BridgePage />);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
     localStorage.removeItem('hint_enabled_bridge');
+  });
+
+  it('names the final contract cell for a screen reader', async () => {
+    mockExec.mockResolvedValue(auctionTableState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('bridge-auction-table')).toBeInTheDocument());
+    const table = within(screen.getByTestId('bridge-auction-table'));
+
+    // The highlight is background colour and bold weight only, so reading the
+    // table cell by cell gave no way to tell which bid became the contract.
+    const winning = table.getAllByRole('cell').filter((c) => c.hasAttribute('data-winning-contract'));
+    expect(winning).toHaveLength(1);
+    expect(winning[0].getAttribute('aria-label') ?? '').toContain('最終コントラクト');
+    // The bid itself must survive into the label, not be replaced by it.
+    expect(winning[0].getAttribute('aria-label') ?? '').toContain('1NT');
+
+    // Losing bids keep their plain reading; a label on every cell would be noise.
+    const others = table.getAllByRole('cell').filter((c) => !c.hasAttribute('data-winning-contract'));
+    expect(others.length).toBeGreaterThan(0);
+    for (const cell of others) {
+      expect(cell).not.toHaveAttribute('aria-label');
+    }
+  });
+
+  // このページのヒントは `hintAvailable` を使わないので、読み上げガードが
+  // 一度も見ておらず aria-live が無いまま出荷されていた (#6663)。領域は
+  // **常設**で、分岐ごとにその分岐だけが出す語を見る。
+  describe('BridgePage hint live region', () => {
+    it('is mounted and empty before any hint arrives', async () => {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<BridgePage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      const region = screen.getByTestId('bridge-hint-live');
+      expect(region).toHaveAttribute('role', 'status');
+      expect(region).toHaveAttribute('aria-live', 'polite');
+      expect(region).toBeEmptyDOMElement();
+    });
+
+    it('names the card to play', async () => {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<BridgePage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        hint: { cardIndex: 1, reason: 'follow_suit' },
+      } as unknown as BridgeResponse);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      const region = await screen.findByTestId('bridge-hint-live');
+      await waitFor(() => expect(region).toHaveTextContent('推奨カード'));
+      expect(region).toHaveTextContent('[1]');
+      expect(region).not.toHaveTextContent('{{');
+    });
+
+    it('gives the reason alone when no card is named', async () => {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<BridgePage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+      mockExec.mockResolvedValue({ ...playPhaseState, hint: { reason: 'follow_suit' } } as unknown as BridgeResponse);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      const region = await screen.findByTestId('bridge-hint-live');
+      await waitFor(() => expect(region).toHaveTextContent('('));
+      expect(region).not.toHaveTextContent('推奨カード');
+      expect(region).not.toHaveTextContent('{{');
+    });
   });
 });

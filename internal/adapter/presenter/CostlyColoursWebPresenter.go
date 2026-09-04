@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra5
 
 package presenter
 
@@ -39,6 +39,9 @@ func (p *CostlyColoursWebPresenter) buildBase(g interfaces.CostlyColoursGame) *c
 	human := p.humanIdx(g)
 	resObj := new(controller.CostlyColoursWebOutput)
 	resObj.Phase = g.GetPhase()
+	if card := g.GetMogDiscardCard(); card != nil {
+		resObj.MogDiscardCard = cardToOutput(card)
+	}
 	resObj.DealNumber = g.GetDealNumber()
 	resObj.DealerIdx = g.GetDealerIdx()
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()

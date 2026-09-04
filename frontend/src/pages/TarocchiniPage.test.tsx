@@ -126,6 +126,20 @@ describe('TarocchiniPage', () => {
     expect(screen.queryByTestId('tarocchini-scarto-bonus')).not.toBeInTheDocument();
   });
 
+  // ディーラーによるスカルト（不要札の捨て札）が完了している場合のみ捨て札枚数を表示する
+  it('renders tarocchini-scarto-done when scartoCount > 0 and hides it when 0', async () => {
+    mockExec.mockResolvedValue(scartoState);
+    const { unmount } = renderWithProviders(<TarocchiniPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('tarocchini-scarto-done')).not.toBeInTheDocument();
+    unmount();
+
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<TarocchiniPage />);
+    await waitFor(() => expect(screen.getByTestId('tarocchini-scarto-done')).toBeInTheDocument());
+    expect(screen.getByTestId('tarocchini-scarto-done')).toHaveTextContent('スカルト済み: 2枚');
+  });
+
   describe('scarto phase', () => {
     it('prompts for exactly two cards and dispatches both', async () => {
       mockExec.mockResolvedValue(scartoState);
@@ -229,5 +243,18 @@ describe('TarocchiniPage', () => {
     renderWithProviders(<TarocchiniPage />);
     await waitFor(() => expect(screen.getByTestId('tarocchini-hint-button')).toBeInTheDocument());
     expect(screen.queryByText(/\[2\]/)).not.toBeInTheDocument();
+  });
+
+  // 催促はフェーズや手番が変わったときに現れるテキスト。領域が無いと、あるいは
+  // 領域が催促と**同時に**生えると、スクリーンリーダには何も届かない (#6880)。
+  it('announces the tarocchini-scarto-prompt from the always-mounted live region', async () => {
+    mockExec.mockResolvedValue(scartoState);
+    renderWithProviders(<TarocchiniPage />);
+
+    const live = await screen.findByTestId('tarocchini-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
+    expect(live).toContainElement(await screen.findByTestId('tarocchini-scarto-prompt'));
   });
 });

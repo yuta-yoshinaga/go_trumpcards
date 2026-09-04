@@ -85,6 +85,24 @@ func (_m *MockPyramidGame) GetMoveCount() int {
 	return ret.Int(0)
 }
 
+// GetSessionPlays モック
+func (_m *MockPyramidGame) GetSessionPlays() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+// GetSessionWins モック
+func (_m *MockPyramidGame) GetSessionWins() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+// GetSessionFewestMoves モック
+func (_m *MockPyramidGame) GetSessionFewestMoves() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 func (_m *MockPyramidGame) GetStockCount() int {
 	ret := _m.Called()
 	return ret.Int(0)

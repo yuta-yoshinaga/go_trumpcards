@@ -100,6 +100,23 @@ afterEach(() => {
 });
 
 describe('OasisPokerPage', () => {
+  it('renders player-hand when playerHand has cards', async () => {
+    // プレイヤーの手札が1枚以上配られていれば手札エリアを出す
+    const state = { ...betPhaseState, playerHand: [card('SPADE', 1)] };
+    mockApi.mockResolvedValue(state);
+    const { getByTestId } = renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(getByTestId('player-hand')).toBeInTheDocument());
+  });
+
+  it('does not render player-hand when playerHand is empty', async () => {
+    // プレイヤーの手札が空なら手札エリアは出さない
+    const state = { ...betPhaseState, playerHand: [] };
+    mockApi.mockResolvedValue(state);
+    const { queryByTestId, getByTestId } = renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(queryByTestId('player-hand')).not.toBeInTheDocument();
+  });
+
   it('renders bet phase on mount', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<OasisPokerPage />);
@@ -330,6 +347,20 @@ describe('OasisPokerPage keyboard shortcuts', () => {
     expect(mockApi).not.toHaveBeenCalled();
   });
 
+  // カード交換フェーズでのみ交換手数料の案内行を表示する。
+  it('renders oasis-exchange-fee-line during exchange phase', async () => {
+    mockApi.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('oasis-exchange-fee-line')).toBeInTheDocument());
+  });
+
+  it('does not render oasis-exchange-fee-line outside exchange phase', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('oasis-exchange-fee-line')).not.toBeInTheDocument();
+  });
+
   // #5595: 配当率も交換手数料も書いてあるのに、**アンティがプッシュになる理由**
   // （ディーラーの成立条件）だけどこにも無かった。
   describe('dealer qualification rule', () => {
@@ -342,5 +373,46 @@ describe('OasisPokerPage keyboard shortcuts', () => {
       expect(rule).toHaveTextContent('A');
       expect(rule).toHaveTextContent('K');
     });
+  });
+});
+
+describe('OasisPokerPage hand card accessible names', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  // "Card 1" では、どの札を交換に選んでいるのか支援技術の利用者に伝わらない (#6391)。
+  it('names each hand card by its rank and suit, not by its position', async () => {
+    mockApi.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('player-card-0')).toBeInTheDocument());
+
+    // exchangePhaseState の手札は SPADE 10 / HEART J / DIAMOND K / CLOVER 5 / SPADE 7。
+    // 隣り合う札を**別の名前**で呼べていることまで見る。
+    expect(screen.getByTestId('player-card-0')).toHaveAttribute('aria-label', '♠ 10');
+    expect(screen.getByTestId('player-card-1')).toHaveAttribute('aria-label', '♥ J');
+    expect(screen.getByTestId('player-card-2')).toHaveAttribute('aria-label', '♦ K');
+
+    for (let i = 0; i < 5; i += 1) {
+      expect(screen.getByTestId(`player-card-${i.toString()}`)).not.toHaveAttribute(
+        'aria-label',
+        `Card ${(i + 1).toString()}`,
+      );
+    }
+  });
+
+  // 選択状態は aria-pressed が担う。ラベルにも書くと同じことを二度言うことになる。
+  it('carries the selected state on aria-pressed rather than in the label', async () => {
+    mockApi.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('player-card-0')).toBeInTheDocument());
+
+    const card0 = screen.getByTestId('player-card-0');
+    expect(card0).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(card0);
+    expect(card0).toHaveAttribute('aria-pressed', 'true');
+    expect(card0).toHaveAttribute('aria-label', '♠ 10');
+    expect(card0.getAttribute('aria-label')).not.toContain('selected');
   });
 });

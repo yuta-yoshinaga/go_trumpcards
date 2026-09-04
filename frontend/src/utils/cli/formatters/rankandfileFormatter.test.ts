@@ -9,6 +9,7 @@ const down = (): RankAndFileTableauCard => ({ card: null, faceUp: false });
 
 const baseState = (overrides: Partial<RankAndFileResponse> = {}): RankAndFileResponse => ({
   tableau: [[up(card('SPADE', 5)), up(card('HEART', 4))], [down()], []],
+  sequenceStarts: [[0, 1], [], []],
   stockCount: 30,
   waste: [card('CLOVER', 9)],
   foundation: [[], [card('DIAMOND', 1)]],

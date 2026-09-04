@@ -396,6 +396,15 @@ function UltimateTexasHoldemPageContent() {
             </button>
           </div>
         )}
+        {/* 各ストリートで 4x/3x/2x/1x/チェック/フォールドを選ぶのに、今の役が
+            どこにも出ていなかった。姉妹の Mississippi Stud は ms-made-hand として
+            常時出している。ランクはサーバが updatePlayerCurrentRank で
+            各ストリート更新するので、判定を2つ持たない。 */}
+        {(isFlopPhase || isRiverPhase) && state.playerHand.length + state.community.length >= 5 && (
+          <p className="text-center text-sm font-medium pb-1 text-ds-text-primary" data-testid="uth-made-hand">
+            {t('madeHand', { hand: t(HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0') })}
+          </p>
+        )}
         {isPreFlopPhase &&
           (() => {
             const strength = utHoldemPreflopStrength(state.playerHand);

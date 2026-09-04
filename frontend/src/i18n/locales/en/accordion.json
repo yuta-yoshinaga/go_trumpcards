@@ -27,7 +27,7 @@
   "noMergeAvailable": "no merge available",
   "selectionMoves": "Pile {{idx}} selected. {{count}} merge(s) available",
   "selectionNoMoves": "Pile {{idx}} selected. No merge available",
-  "landscapeBanner": "Landscape orientation recommended",
+  "landscapeBanner": "Landscape mode recommended",
   "frontendHint": {
     "accordionOffset1": "You can merge with the adjacent pile to the left",
     "accordionOffset3": "You can merge with the pile 3 positions to the left"

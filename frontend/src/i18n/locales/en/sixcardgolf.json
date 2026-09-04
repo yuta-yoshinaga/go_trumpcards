@@ -73,5 +73,6 @@
   },
   "gridSlotFaceDownAria": "Position {{pos}} (face down)",
   "cliUsagePos": "Usage: {{cmd}} <pos>",
-  "cliUnknown": "Unknown: {{cmd}}"
+  "cliUnknown": "Unknown: {{cmd}}",
+  "landscapeBanner": "Landscape mode recommended"
 }

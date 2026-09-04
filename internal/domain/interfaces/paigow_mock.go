@@ -27,6 +27,11 @@ func (m *MockPaiGowGame) SetHands(lowIdx0, lowIdx1 int) error {
 	return args.Error(0)
 }
 
+func (m *MockPaiGowGame) IsFoulSplit(lowIdx0, lowIdx1 int) bool {
+	args := m.Called(lowIdx0, lowIdx1)
+	return args.Bool(0)
+}
+
 func (m *MockPaiGowGame) AutoSetHands() error {
 	args := m.Called()
 	return args.Error(0)

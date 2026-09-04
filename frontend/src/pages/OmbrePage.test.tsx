@@ -246,4 +246,32 @@ describe('OmbrePage', () => {
     renderWithProviders(<OmbrePage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  // **全員パスによる強制 Entrar は通常の宣言と区別が付かなかった** ── 差は
+  // ombreIdx がディーラーと一致することだけで、それは偶然そうなる局とも
+  // 見分けが付かない (#6485)。訳文に解決することを画面で見る。
+  it('spells out the forced Entrar after an all-pass auction', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, messageCode: 'ombre.forcedEntrar' });
+    renderWithProviders(<OmbrePage />);
+
+    const line = await screen.findByText(/全員パス/);
+    expect(line).toBeInTheDocument();
+    // 生の識別子も未置換のプレースホルダも残らない。
+    expect(line.textContent).not.toContain('ombre.');
+    expect(line.textContent).not.toContain('{{');
+  });
+
+  // **催促は常設のライブ領域の中にある (#6880)。** フェーズ切り替えで現れる
+  // テキストなので、領域が無いとスクリーンリーダには何も届かない。領域を
+  // 出現と同時に付けても読み上げられないため、常設にして中身だけ差し替える。
+  it('announces the prompt from an always-mounted live region', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<OmbrePage />);
+
+    const live = await screen.findByTestId('ombre-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
+    expect(live).toContainElement(await screen.findByTestId('ombre-bid-prompt'));
+  });
 });

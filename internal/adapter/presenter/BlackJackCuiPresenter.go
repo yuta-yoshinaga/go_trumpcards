@@ -262,6 +262,20 @@ func (bjp *BlackJackCuiPresenter) payoutTable(bj interfaces.BlackJackGame) strin
 	for _, k := range keys {
 		b.WriteString("  " + i18n.T(ns+"."+k) + "\n")
 	}
+	// `bet <amount> [pp] [t3]` is accepted in every variant, so the side-bet
+	// odds belong on the table the player reads before staking. The multipliers
+	// are read from the constants that actually pay rather than written into the
+	// locale, so a change to one cannot leave the other advertising stale odds.
+	b.WriteString("  " + i18n.Tf("blackjack.payoutRef.perfectPairs",
+		"mixed", strconv.Itoa(domain.BJPPMixedPairPayout),
+		"colored", strconv.Itoa(domain.BJPPColoredPairPayout),
+		"perfect", strconv.Itoa(domain.BJPPPerfectPairPayout)) + "\n")
+	b.WriteString("  " + i18n.Tf("blackjack.payoutRef.twentyOnePlus3",
+		"flush", strconv.Itoa(domain.BJT3FlushPayout),
+		"straight", strconv.Itoa(domain.BJT3StraightPayout),
+		"trips", strconv.Itoa(domain.BJT3ThreeOfAKindPayout),
+		"straightFlush", strconv.Itoa(domain.BJT3StraightFlushPayout),
+		"suitedTrips", strconv.Itoa(domain.BJT3SuitedTripsPayout)) + "\n")
 	return b.String()
 }
 

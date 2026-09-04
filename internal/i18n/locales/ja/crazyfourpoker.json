@@ -35,5 +35,7 @@
   "marginal": "キング以上あるので同額で乗ります",
   "fold": "キングにも届かないので分が悪いです",
   "helpExampleBet": "  bet 100            100 チップを賭ける",
-  "queensUpPayoutLine": "Queens Up 配当: {{table}}"
+  "queensUpPayoutLine": "Queens Up 配当: {{table}}",
+  "superBonusPayoutLine": "Super Bonus 配当（アンティと同額が自動で付きます。エースのペア以上で下表どおり、届かなくてもディーラーに勝ちか引き分けなら返却）: {{table}}",
+  "fourAces": "4 枚のエース"
 }

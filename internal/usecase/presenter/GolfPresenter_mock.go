@@ -27,3 +27,8 @@ func (_m *MockGolfPresenter) ActionLogOutput(g interfaces.GolfGame) string {
 	ret := _m.Called(g)
 	return ret.Get(0).(string)
 }
+
+func (_m *MockGolfPresenter) ResetNineHole(g interfaces.GolfGame) string {
+	ret := _m.Called(g)
+	return ret.Get(0).(string)
+}

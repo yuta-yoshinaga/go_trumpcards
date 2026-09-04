@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { PenguinMoveZone, penguinApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -28,7 +28,7 @@ import { usePenguinGame } from '../hooks/usePenguinGame';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, PenguinResponse } from '../types/card';
+import type { Card, PenguinHint, PenguinResponse } from '../types/card';
 import { PenguinPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -38,6 +38,18 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+
+/** Localized "<zone> <n>" label for a hint move endpoint (n omitted when col < 0, e.g. any-foundation). */
+function penguinZoneLabel(t: (key: string) => string, zone: string, col: number): string {
+  const base = zone === 'freecell' ? t('freecell') : zone === 'foundation' ? t('foundation') : t('tableau');
+  return col >= 0 ? `${base} ${col + 1}` : base;
+}
+
+/** The card a hint suggests moving: the free-cell card, or the tableau card at [fromCol][cardIndex]. */
+function penguinHintCard(state: PenguinResponse, hint: PenguinHint): Card | null {
+  if (hint.fromZone === 'freecell') return state.freeCells[hint.fromCol] ?? null;
+  return state.tableau[hint.fromCol]?.[hint.cardIndex] ?? null;
+}
 
 /** Convert a card value (1-13) to display label. */
 function baseRankLabel(rank: number): string {
@@ -123,6 +135,7 @@ function PenguinPageContent() {
     hintError,
     selectedSource,
     hint,
+    hintNonce,
     handleReset,
     handleGiveUp,
     handleHint,
@@ -133,6 +146,29 @@ function PenguinPageContent() {
     handleSelectTarget,
     isAutoCompleting,
   } = usePenguinGame();
+  // Screen-reader announcement for the hint (visually it is only ring highlights).
+  // Driven off hintNonce so it fires once per hint request, reading the current
+  // hint/state snapshot; a null hint after a request means no legal move exists.
+  const [hintAnnounce, setHintAnnounce] = useState('');
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally react only to a new hint request (hintNonce); adding hint/state/t would re-run on unrelated updates and re-announce.
+  useEffect(() => {
+    // Skip on a failed hint fetch (hintError set, hint left null) so we don't
+    // wrongly announce "no moves" alongside the network-error banner.
+    if (hintNonce === 0 || !state || hintError) return;
+    if (!hint) {
+      setHintAnnounce(t('hintNoMoves'));
+      return;
+    }
+    const card = penguinHintCard(state, hint);
+    setHintAnnounce(
+      t('hintAnnouncement', {
+        card: card ? cardAlt(card) : '',
+        from: penguinZoneLabel(t, hint.fromZone, hint.fromCol),
+        to: penguinZoneLabel(t, hint.toZone, hint.toCol),
+      }),
+    );
+  }, [hintNonce]);
+
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -214,6 +250,13 @@ function PenguinPageContent() {
       : 0;
 
   const emptyColPlaceholder = prevRankLabel(state.baseRank);
+  // **超過の理由が title にしか無かった。**ボタンは disabled ではないので支援技術には
+  // 押せそうに見えたまま、超過していることを示す唯一の手掛かりが届かない (#6814)。
+  // BakersGame / FreeCell と同じ形にそろえる。
+  const emptyColBlocked = selectedStackSize > emptyColLimit;
+  const emptyColLabel = emptyColBlocked
+    ? `${t('emptyColumnAriaLabel', { rank: emptyColPlaceholder })} — ${t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })}`
+    : t('emptyColumnAriaLabel', { rank: emptyColPlaceholder });
 
   const isSourceSelected = (zone: string, col?: number, cell?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -415,19 +458,19 @@ function PenguinPageContent() {
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
                               disabled={!isPlaying || loading || !selectedSource}
-                              aria-label={t('emptyColumnAriaLabel', { rank: emptyColPlaceholder })}
+                              aria-label={emptyColLabel}
                               style={{ height: cardHeight }}
                               data-testid={`pg-empty-col-${colIdx.toString()}`}
                               // 空き列だけ上限が低い。選んだ束が超えているなら、
                               // クリックする前に分かるようにする (#5614)。
-                              data-empty-col-blocked={selectedStackSize > emptyColLimit ? 'true' : undefined}
+                              data-empty-col-blocked={emptyColBlocked ? 'true' : undefined}
                               title={
-                                selectedStackSize > emptyColLimit
+                                emptyColBlocked
                                   ? t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })
                                   : undefined
                               }
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
-                                selectedStackSize > emptyColLimit ? 'opacity-50' : ''
+                                emptyColBlocked ? 'opacity-50' : ''
                               }`}
                             >
                               {emptyColPlaceholder}
@@ -530,6 +573,12 @@ function PenguinPageContent() {
               </div>
             </div>
 
+            {/* Hint is shown visually via ring highlights on the suggested source card
+                and target zone; this sr-only live region conveys the same move (or the
+                no-move result) to screen readers. */}
+            <div key={hintNonce} className="sr-only" role="status" aria-live="polite" data-testid="pg-hint-announce">
+              {hintAnnounce}
+            </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>

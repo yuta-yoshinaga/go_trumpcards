@@ -111,6 +111,41 @@ func (p *BristolCuiPresenter) HintOutput(b interfaces.BristolGame) string {
 	return i18n.Tf("bristol.hintLine", "from", from, "to", to) + "\n"
 }
 
+// TargetsOutput は移動元ゾーン zone の列 col の札を置ける先を一覧する。
+//
+// **8 列 + 3 ファン + 4 組札は押して試すには広すぎる。**Web は選択の瞬間に置ける先を
+// リングで示しているのに、CUI は打ってサーバに弾かれるまで分からなかった
+// (#6427)。置ける先が無いときは黙らず、無いと言う ── 空行だと、コマンドが
+// 効いていないのか置けないのか区別が付かない。
+func (p *BristolCuiPresenter) TargetsOutput(b interfaces.BristolGame, zone string, col int) string {
+	if zone != "tableau" && zone != "fan" {
+		return i18n.MarkError(i18n.Tf("bristol.invalidFromZone", "val", zone)) + "\n"
+	}
+	if col < 0 || (zone == "tableau" && col >= domain.BristolTableauCnt) || (zone == "fan" && col >= domain.BristolFanCnt) {
+		return i18n.MarkError(i18n.Tf("invalidColumn", "val", strconv.Itoa(col))) + "\n"
+	}
+	var from string
+	if zone == "tableau" {
+		from = i18n.Tf("bristol.fromTableau", "col", strconv.Itoa(col))
+	} else {
+		from = i18n.Tf("bristol.fromFan", "idx", strconv.Itoa(col))
+	}
+	tableau, foundation := b.LegalTargets(zone, col)
+	if len(tableau) == 0 && len(foundation) == 0 {
+		return i18n.Tf("bristol.targetsNone", "from", from) + "\n"
+	}
+	parts := make([]string, 0, len(tableau)+len(foundation))
+	for _, t := range tableau {
+		parts = append(parts, i18n.Tf("bristol.targetTableau", "col", strconv.Itoa(t)))
+	}
+	for _, f := range foundation {
+		parts = append(parts, i18n.Tf("bristol.targetFoundation", "idx", strconv.Itoa(f)))
+	}
+	return i18n.Tf("bristol.targetsLine",
+		"from", from,
+		"targets", strings.Join(parts, " / ")) + "\n"
+}
+
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BristolCuiPresenter) ActionLogOutput(b interfaces.BristolGame) string {
 	if b.GetPhase() == domain.BristolPhasePlaying {

@@ -20,5 +20,8 @@
   "promptNext": "n で次のラウンドを開始する",
   "promptCurrentTurn": "手番: {{name}} (チーム{{team}})",
   "promptHelp": "p <hand> [table...] で捕獲または場に置く / n で次のラウンド",
-  "helpExampleNext": "  n                        ラウンドの結果を見てから次へ"
+  "helpExampleNext": "  n                        ラウンドの結果を見てから次へ",
+  "errHandIndexOutOfRange": "手札の番号 {{idx}} は範囲外です。",
+  "errInvalidCapture": "選んだ場札ではその札で取れません。",
+  "errCaptureRequired": "取れる札があるときは取らなければなりません。"
 }

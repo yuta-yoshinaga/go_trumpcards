@@ -8,8 +8,8 @@
     "you": "You",
     "cpu": "CPU",
     "points": "Points",
-    "trump": "Trump (briscola)",
-    "trumpNone": "Trump: exhausted",
+    "trump": "Trump (briscola): {{suit}}",
+    "trumpNone": "No trump",
     "tricks": "Tricks"
   },
   "phase": {

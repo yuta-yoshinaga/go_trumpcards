@@ -219,6 +219,30 @@ function KaiserPageContent() {
               {state.kittySize > 0 && <span data-testid="kaiser-kitty">{t('kitty', { n: state.kittySize })}</span>}
             </div>
 
+            {/* **相方が何点で入札し、誰がどこで降りたかは公開情報で、続けるか降りるかの
+                判断そのもの。**サーバは全履歴 (`bids`) を毎回送っているのに、画面は
+                最高値しか読んでいなかった (#6524)。パス (value=0) も区別して並べる。 */}
+            {state.bids.length > 0 && (
+              <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="kaiser-bid-history">
+                <div className="mb-1 text-ds-text-primary">{t('bidHistoryTitle')}</div>
+                <div className="flex flex-wrap gap-x-3">
+                  {state.bids.map((b, i) => (
+                    <span key={`bid-${b.player}-${i}`} data-testid={`kaiser-bid-${i}`}>
+                      {b.value === 0
+                        ? t('bidHistoryPass', {
+                            name: playerLabel(b.player, state.players[b.player]?.isHuman === true),
+                          })
+                        : t('bidHistoryEntry', {
+                            name: playerLabel(b.player, state.players[b.player]?.isHuman === true),
+                            value: b.value,
+                            contract: contractLabel(b.contract),
+                          })}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* The two cards that carry as much weight as all eight tricks. */}
             <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="kaiser-specials">
               <div className="mb-1 text-ds-text-primary">{t('specialTitle')}</div>

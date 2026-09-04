@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bidWhistApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BidWhistResponse, Card } from '../types/card';
+import { BidWhistPhase } from '../types/phases';
 import { BidWhistPage } from './BidWhistPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -166,6 +167,74 @@ describe('BidWhistPage', () => {
     expect(progress.querySelector('.bg-ds-success')).not.toBeNull();
   });
 
+  // 6 枚そろったときだけ交換が飛ぶ。ここが通っていないと、進捗バーが満了を
+  // 示していても実際には何も起きない。
+  it('sends the exchange only once all six cards are selected', async () => {
+    const sixCards = Array.from({ length: 6 }, (_, i) => card('SPADE', i + 2));
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        declarerIdx: 0,
+        players: [
+          player(0, true, sixCards, { isDeclarer: true }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<BidWhistPage />);
+    await screen.findByTestId('kitty-progress');
+
+    // 5 枚ではボタンが押せない (否定コントロール)。
+    for (let i = 0; i < 5; i++) {
+      fireEvent.click(screen.getByTestId(`hand-card-${i}`));
+    }
+    await waitFor(() => expect(screen.getByTestId('kitty-progress')).toHaveAttribute('aria-valuenow', '5'));
+    expect(screen.getByTestId('exchange-button')).toBeDisabled();
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('hand-card-5'));
+    expect(screen.getByTestId('exchange-button')).toBeEnabled();
+    fireEvent.click(screen.getByTestId('exchange-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', { discardIndices: [0, 1, 2, 3, 4, 5] }));
+  });
+
+  // **棒の長さだけでは支援技術に何も届かない。**バーの存在すら伝わっていなかった (#6428)。
+  it('exposes the kitty progress as a progressbar that tracks the selection', async () => {
+    const sixCards = Array.from({ length: 6 }, (_, i) => card('SPADE', i + 2));
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        declarerIdx: 0,
+        players: [
+          player(0, true, sixCards, { isDeclarer: true }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<BidWhistPage />);
+
+    const progress = await screen.findByRole('progressbar', { name: 'キティ交換の進捗' });
+    expect(progress).toHaveAttribute('data-testid', 'kitty-progress');
+    expect(progress).toHaveAttribute('aria-valuemin', '0');
+    expect(progress).toHaveAttribute('aria-valuemax', '6');
+    expect(progress).toHaveAttribute('aria-valuenow', '0');
+    // progressbar の中身は読み上げから外れるので、見えている数字を valuetext で運ぶ。
+    expect(progress).toHaveAttribute('aria-valuetext', '選択済み: 0 / 6');
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    expect(progress).toHaveAttribute('aria-valuenow', '2');
+    expect(progress).toHaveAttribute('aria-valuetext', '選択済み: 2 / 6');
+
+    // 選択を外すと戻る ── 増える一方ではない。
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    expect(progress).toHaveAttribute('aria-valuenow', '1');
+  });
+
   it('highlights kitty-origin cards during the human exchange', async () => {
     mockExec.mockResolvedValue(
       makeState({
@@ -280,5 +349,35 @@ describe('BidWhistPage', () => {
     renderWithProviders(<BidWhistPage />);
     await waitFor(() => expect(screen.getByTestId('bidwhist-hint-button')).toBeInTheDocument());
     expect(screen.queryByTestId('bidwhist-hint-line')).not.toBeInTheDocument();
+  });
+
+  // トリック終了時は次のトリックへ進むボタンを表示する。
+  it('shows next trick button when trick ends', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BidWhistPhase.TRICK_END }));
+    renderWithProviders(<BidWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('next-button')).toBeInTheDocument());
+  });
+
+  // トリック進行中など終了時以外は次のトリックへ進むボタンを表示しない。
+  it('hides next trick button outside trick end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BidWhistPhase.BID }));
+    renderWithProviders(<BidWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('next-button')).not.toBeInTheDocument();
+  });
+
+  // ラウンド終了時は次のラウンドへ進むボタンを表示する。
+  it('shows next round button when round ends', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BidWhistPhase.ROUND_END }));
+    renderWithProviders(<BidWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('nextround-button')).toBeInTheDocument());
+  });
+
+  // ラウンド終了時以外は次のラウンドへ進むボタンを表示しない。
+  it('hides next round button outside round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BidWhistPhase.BID }));
+    renderWithProviders(<BidWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('nextround-button')).not.toBeInTheDocument();
   });
 });

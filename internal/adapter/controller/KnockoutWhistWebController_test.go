@@ -20,6 +20,8 @@ func mustKnockoutWhistOutputJSON(msg string) string {
 		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		RoundWinnerIdx:  -1,
+		RoundSurvived:   []int{},
+		RoundEliminated: []int{},
 		WinnerPlayer:    -1,
 		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}

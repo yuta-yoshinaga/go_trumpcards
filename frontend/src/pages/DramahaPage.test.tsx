@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, dramahaApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { DramahaResponse } from '../types/card';
@@ -1783,6 +1784,24 @@ describe('DramahaPage showdown split', () => {
     ],
   };
 
+  // **名前は i18n 経由で組む (#6608)。** ここだけ生の `CPU ${idx}` を作っていた。
+  // ja/en とも `player.cpu` が偶然 "CPU {{id}}" なので見た目では差が出ないが、
+  // **配列の添字ではなく席の id を使う**点は実際に違う ── 同じページの dealer 表示
+  // (findPlayerName) と食い違ったままだった。
+  it('names the split seats through the shared helper', async () => {
+    i18n.addResourceBundle('ja', 'common', { player: { cpu: 'コンピュータ{{id}}' } }, true, true);
+    try {
+      mockExec.mockResolvedValue(splitShowdown);
+      renderWithProviders(<DramahaPage />);
+      const table = await screen.findByTestId('dramaha-split-results');
+      // 翻訳キーを変えたらこの行も追随すること。生のリテラルなら "CPU 1" のまま。
+      expect(within(table).getByTestId('dramaha-split-result-1')).toHaveTextContent('コンピュータ1');
+      expect(within(table).getByTestId('dramaha-split-result-1')).not.toHaveTextContent('CPU 1');
+    } finally {
+      i18n.addResourceBundle('ja', 'common', { player: { cpu: 'CPU {{id}}' } }, true, true);
+    }
+  });
+
   it('says which half of the split each seat took', async () => {
     mockExec.mockResolvedValue(splitShowdown);
     renderWithProviders(<DramahaPage />);
@@ -1832,5 +1851,39 @@ describe('DramahaPage showdown split', () => {
     renderWithProviders(<DramahaPage />);
     await screen.findByTestId('dramaha-hands');
     expect(screen.queryByTestId('dramaha-split-results')).not.toBeInTheDocument();
+  });
+
+  // 人間プレイヤーが存在する場合のみフッターの手札欄およびオマハ役判定領域を表示する。
+  it('renders dramaha-omaha-hand when human player exists', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<DramahaPage />);
+    await waitFor(() => expect(screen.getByTestId('dramaha-omaha-hand')).toBeInTheDocument());
+  });
+
+  it('does not render dramaha-omaha-hand when human player does not exist', async () => {
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      players: [cpuPlayer(1), cpuPlayer(2)],
+    });
+    renderWithProviders(<DramahaPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('dramaha-omaha-hand')).not.toBeInTheDocument();
+  });
+
+  // 人間プレイヤーが存在する場合のみ、ドロー役判定領域を表示する。
+  it('renders dramaha-draw-hand when human player exists', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<DramahaPage />);
+    await waitFor(() => expect(screen.getByTestId('dramaha-draw-hand')).toBeInTheDocument());
+  });
+
+  it('does not render dramaha-draw-hand when human player does not exist', async () => {
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      players: [cpuPlayer(1), cpuPlayer(2)],
+    });
+    renderWithProviders(<DramahaPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('dramaha-draw-hand')).not.toBeInTheDocument();
   });
 });

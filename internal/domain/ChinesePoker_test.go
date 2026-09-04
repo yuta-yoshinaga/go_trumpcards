@@ -416,6 +416,48 @@ func TestCpFrontRoyalty(t *testing.T) {
 			1,
 		},
 		{
+			"pair of 7s",
+			ThreeCardHandPair,
+			[]*Card{NewCard(CardDesignSpade, 7, false), NewCard(CardDesignHeart, 7, false), NewCard(CardDesignClover, 9, false)},
+			2,
+		},
+		{
+			"pair of 8s",
+			ThreeCardHandPair,
+			[]*Card{NewCard(CardDesignSpade, 8, false), NewCard(CardDesignHeart, 8, false), NewCard(CardDesignClover, 9, false)},
+			3,
+		},
+		{
+			"pair of 9s",
+			ThreeCardHandPair,
+			[]*Card{NewCard(CardDesignSpade, 9, false), NewCard(CardDesignHeart, 9, false), NewCard(CardDesignClover, 2, false)},
+			4,
+		},
+		{
+			"pair of 10s",
+			ThreeCardHandPair,
+			[]*Card{NewCard(CardDesignSpade, 10, false), NewCard(CardDesignHeart, 10, false), NewCard(CardDesignClover, 2, false)},
+			5,
+		},
+		{
+			"pair of Jacks",
+			ThreeCardHandPair,
+			[]*Card{NewCard(CardDesignSpade, 11, false), NewCard(CardDesignHeart, 11, false), NewCard(CardDesignClover, 2, false)},
+			6,
+		},
+		{
+			"pair of Queens",
+			ThreeCardHandPair,
+			[]*Card{NewCard(CardDesignSpade, 12, false), NewCard(CardDesignHeart, 12, false), NewCard(CardDesignClover, 2, false)},
+			7,
+		},
+		{
+			"pair of Kings",
+			ThreeCardHandPair,
+			[]*Card{NewCard(CardDesignSpade, 13, false), NewCard(CardDesignHeart, 13, false), NewCard(CardDesignClover, 2, false)},
+			8,
+		},
+		{
 			"pair of Aces",
 			ThreeCardHandPair,
 			[]*Card{NewCard(CardDesignSpade, 1, false), NewCard(CardDesignHeart, 1, false), NewCard(CardDesignClover, 9, false)},
@@ -426,6 +468,36 @@ func TestCpFrontRoyalty(t *testing.T) {
 			ThreeCardHandThreeOfAKind,
 			[]*Card{NewCard(CardDesignSpade, 2, false), NewCard(CardDesignHeart, 2, false), NewCard(CardDesignClover, 2, false)},
 			10,
+		},
+		{
+			"three of a kind 9s",
+			ThreeCardHandThreeOfAKind,
+			[]*Card{NewCard(CardDesignSpade, 9, false), NewCard(CardDesignHeart, 9, false), NewCard(CardDesignClover, 9, false)},
+			10,
+		},
+		{
+			"three of a kind 10s",
+			ThreeCardHandThreeOfAKind,
+			[]*Card{NewCard(CardDesignSpade, 10, false), NewCard(CardDesignHeart, 10, false), NewCard(CardDesignClover, 10, false)},
+			12,
+		},
+		{
+			"three of a kind Jacks",
+			ThreeCardHandThreeOfAKind,
+			[]*Card{NewCard(CardDesignSpade, 11, false), NewCard(CardDesignHeart, 11, false), NewCard(CardDesignClover, 11, false)},
+			13,
+		},
+		{
+			"three of a kind Queens",
+			ThreeCardHandThreeOfAKind,
+			[]*Card{NewCard(CardDesignSpade, 12, false), NewCard(CardDesignHeart, 12, false), NewCard(CardDesignClover, 12, false)},
+			14,
+		},
+		{
+			"three of a kind Kings",
+			ThreeCardHandThreeOfAKind,
+			[]*Card{NewCard(CardDesignSpade, 13, false), NewCard(CardDesignHeart, 13, false), NewCard(CardDesignClover, 13, false)},
+			15,
 		},
 		{
 			"three of a kind Aces",
@@ -669,4 +741,139 @@ func TestChinesePoker_GetSuggestedArrangement(t *testing.T) {
 		require.NotNil(t, arr)
 		assert.True(t, arr.Foul, "前列が 2 のスリーカードになりファウルするはず")
 	})
+}
+
+func TestChinesePoker_SegmentRoyalties_ResolveAndSum(t *testing.T) {
+	card := func(design, value int) *Card { return NewCard(design, value, false) }
+
+	// Player:
+	// Front: Q♠, Q♥, 2♣ (Pair of Queens -> front royalty = 7)
+	// Middle: 9♠, 9♥, 9♣, 5♦, 5♠ (Full House 9s full of 5s -> middle royalty = 12)
+	// Back: 10♦, J♦, Q♦, K♦, A♦ (Royal Flush -> back royalty = 25)
+	// Total player royalty = 7 + 12 + 25 = 44
+	playerCards := []*Card{
+		card(CardDesignSpade, 12), card(CardDesignHeart, 12), card(CardDesignClover, 2), // Front (0,1,2)
+		card(CardDesignSpade, 9), card(CardDesignHeart, 9), card(CardDesignClover, 9), card(CardDesignDiamond, 5), card(CardDesignSpade, 5), // Middle (3,4,5,6,7)
+		card(CardDesignDiamond, 10), card(CardDesignDiamond, 11), card(CardDesignDiamond, 12), card(CardDesignDiamond, 13), card(CardDesignDiamond, 1), // Back (8,9,10,11,12)
+	}
+
+	// Dealer has no royalties (pairs <= 5 and high cards):
+	dealerCards := []*Card{
+		card(CardDesignSpade, 2), card(CardDesignHeart, 2),
+		card(CardDesignSpade, 3), card(CardDesignHeart, 3),
+		card(CardDesignSpade, 4), card(CardDesignHeart, 4),
+		card(CardDesignSpade, 5), card(CardDesignHeart, 5),
+		card(CardDesignSpade, 7), card(CardDesignHeart, 9),
+		card(CardDesignClover, 11), card(CardDesignDiamond, 13), card(CardDesignSpade, 1),
+	}
+
+	cp := NewDefaultChinesePoker()
+	cp.SetPhase(ChinesePokerPhaseSetHands)
+	cp.SetBet(100)
+	cp.SetPlayerCards(playerCards)
+	cp.SetDealerCards(dealerCards)
+
+	err := cp.SetHands([]int{0, 1, 2}, []int{3, 4, 5, 6, 7})
+	require.NoError(t, err)
+	assert.Equal(t, ChinesePokerPhaseEnd, cp.GetPhase())
+
+	// Player segment royalties verification
+	assert.Equal(t, 7, cp.GetPlayerFrontRoyalty(), "Player front pair of Queens royalty")
+	assert.Equal(t, 12, cp.GetPlayerMiddleRoyalty(), "Player middle full house royalty")
+	assert.Equal(t, 25, cp.GetPlayerBackRoyalty(), "Player back royal flush royalty")
+	assert.Equal(t, 44, cp.GetPlayerRoyalty(), "Player total royalty must match sum of segments")
+	assert.Equal(t, cp.GetPlayerFrontRoyalty()+cp.GetPlayerMiddleRoyalty()+cp.GetPlayerBackRoyalty(), cp.GetPlayerRoyalty())
+
+	// Dealer segment royalties verification (all 0)
+	assert.Equal(t, 0, cp.GetDealerFrontRoyalty(), "Dealer front royalty")
+	assert.Equal(t, 0, cp.GetDealerMiddleRoyalty(), "Dealer middle royalty")
+	assert.Equal(t, 0, cp.GetDealerBackRoyalty(), "Dealer back royalty")
+	assert.Equal(t, 0, cp.GetDealerRoyalty(), "Dealer total royalty must match sum of segments")
+	assert.Equal(t, cp.GetDealerFrontRoyalty()+cp.GetDealerMiddleRoyalty()+cp.GetDealerBackRoyalty(), cp.GetDealerRoyalty())
+
+	// Second round with different hands to verify another set of royalty values:
+	// Front: 6♠, 6♥, 2♣ (Pair of 6s -> front royalty = 1)
+	// Middle: 3♠, 3♥, 3♦, 4♦, 5♦ (Three of a Kind 3s -> middle royalty = 2)
+	// Back: 4♠, 5♠, 6♦, 7♠, 8♠ (Straight 4-8 -> back royalty = 2)
+	// Total player royalty = 1 + 2 + 2 = 5
+	playerCards2 := []*Card{
+		card(CardDesignSpade, 6), card(CardDesignHeart, 6), card(CardDesignClover, 2), // Front (0,1,2)
+		card(CardDesignSpade, 3), card(CardDesignHeart, 3), card(CardDesignDiamond, 3), card(CardDesignDiamond, 4), card(CardDesignDiamond, 5), // Middle (3,4,5,6,7)
+		card(CardDesignSpade, 4), card(CardDesignSpade, 5), card(CardDesignDiamond, 6), card(CardDesignSpade, 7), card(CardDesignSpade, 8), // Back (8,9,10,11,12)
+	}
+	cp2 := NewDefaultChinesePoker()
+	cp2.SetPhase(ChinesePokerPhaseSetHands)
+	cp2.SetBet(100)
+	cp2.SetPlayerCards(playerCards2)
+	cp2.SetDealerCards(dealerCards)
+
+	err = cp2.SetHands([]int{0, 1, 2}, []int{3, 4, 5, 6, 7})
+	require.NoError(t, err)
+	assert.Equal(t, 1, cp2.GetPlayerFrontRoyalty())
+	assert.Equal(t, 2, cp2.GetPlayerMiddleRoyalty())
+	assert.Equal(t, 2, cp2.GetPlayerBackRoyalty())
+	assert.Equal(t, 5, cp2.GetPlayerRoyalty())
+	assert.Equal(t, cp2.GetPlayerFrontRoyalty()+cp2.GetPlayerMiddleRoyalty()+cp2.GetPlayerBackRoyalty(), cp2.GetPlayerRoyalty())
+}
+
+func TestChinesePoker_Reset_ClearsSegmentRoyalties(t *testing.T) {
+	cp := NewDefaultChinesePoker()
+	cp.SetPlayerFrontRoyalty(7)
+	cp.SetPlayerMiddleRoyalty(12)
+	cp.SetPlayerBackRoyalty(25)
+	cp.SetPlayerRoyalty(44)
+	cp.SetDealerFrontRoyalty(1)
+	cp.SetDealerMiddleRoyalty(30)
+	cp.SetDealerBackRoyalty(10)
+	cp.SetDealerRoyalty(41)
+
+	// Verify non-zero before reset
+	assert.Equal(t, 7, cp.GetPlayerFrontRoyalty())
+	assert.Equal(t, 12, cp.GetPlayerMiddleRoyalty())
+	assert.Equal(t, 25, cp.GetPlayerBackRoyalty())
+	assert.Equal(t, 44, cp.GetPlayerRoyalty())
+	assert.Equal(t, 1, cp.GetDealerFrontRoyalty())
+	assert.Equal(t, 30, cp.GetDealerMiddleRoyalty())
+	assert.Equal(t, 10, cp.GetDealerBackRoyalty())
+	assert.Equal(t, 41, cp.GetDealerRoyalty())
+
+	cp.Reset()
+
+	// Verify all segment royalties and total royalties are reset to 0
+	assert.Equal(t, 0, cp.GetPlayerFrontRoyalty())
+	assert.Equal(t, 0, cp.GetPlayerMiddleRoyalty())
+	assert.Equal(t, 0, cp.GetPlayerBackRoyalty())
+	assert.Equal(t, 0, cp.GetPlayerRoyalty())
+	assert.Equal(t, 0, cp.GetDealerFrontRoyalty())
+	assert.Equal(t, 0, cp.GetDealerMiddleRoyalty())
+	assert.Equal(t, 0, cp.GetDealerBackRoyalty())
+	assert.Equal(t, 0, cp.GetDealerRoyalty())
+}
+
+func TestChinesePoker_JSON_SegmentRoyalties(t *testing.T) {
+	cp := NewDefaultChinesePoker()
+	cp.SetPlayerFrontRoyalty(3)
+	cp.SetPlayerMiddleRoyalty(4)
+	cp.SetPlayerBackRoyalty(6)
+	cp.SetPlayerRoyalty(13)
+	cp.SetDealerFrontRoyalty(0)
+	cp.SetDealerMiddleRoyalty(2)
+	cp.SetDealerBackRoyalty(4)
+	cp.SetDealerRoyalty(6)
+
+	data, err := json.Marshal(cp)
+	require.NoError(t, err)
+
+	var restored ChinesePoker
+	err = json.Unmarshal(data, &restored)
+	require.NoError(t, err)
+
+	assert.Equal(t, 3, restored.GetPlayerFrontRoyalty())
+	assert.Equal(t, 4, restored.GetPlayerMiddleRoyalty())
+	assert.Equal(t, 6, restored.GetPlayerBackRoyalty())
+	assert.Equal(t, 13, restored.GetPlayerRoyalty())
+	assert.Equal(t, 0, restored.GetDealerFrontRoyalty())
+	assert.Equal(t, 2, restored.GetDealerMiddleRoyalty())
+	assert.Equal(t, 4, restored.GetDealerBackRoyalty())
+	assert.Equal(t, 6, restored.GetDealerRoyalty())
 }

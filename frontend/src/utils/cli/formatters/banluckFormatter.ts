@@ -26,7 +26,7 @@ export function formatBanLuckState(state: BanLuckResponse): string {
   lines.push(`Round: ${state.roundNumber}`);
   lines.push(`Banker: ${state.seats[state.bankerSeat]?.name ?? '?'}`);
   // **義務は必ず名指しする。** 拒否されたことだけ伝わっても規則は伝わらない。
-  if (state.mustHit) lines.push('The banker cannot stand below 15 — you must draw.');
+  if (state.mustHit) lines.push(`The banker cannot stand below ${state.mustHitThreshold.toString()} — you must draw.`);
 
   lines.push(formatSeparator());
   state.seats.forEach((s, i) => {

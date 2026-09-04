@@ -32,12 +32,14 @@
     "controls": "Control buttons: Undo, Hint, Auto-complete.",
     "resetButton": "Press the reset button to start a new game."
   },
-  "landscapeBanner": "Rotate to landscape for easier play",
+  "landscapeBanner": "Landscape mode recommended",
   "freecellShort": "FC",
   "frontendHint": {
     "moveToFoundation": "A card can be moved to the foundation",
     "freeCellsNearlyFull": "Free cells are almost full — try to clear some",
     "useEmptyColumn": "An empty column is available — move the pre-base-rank card to use it",
     "useFreeCells": "Consider moving a card to a free cell to open up moves"
-  }
+  },
+  "hintAnnouncement": "Hint: move {{card}} from {{from}} to {{to}}",
+  "hintNoMoves": "No moves available"
 }

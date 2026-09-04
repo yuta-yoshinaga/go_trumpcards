@@ -35,6 +35,7 @@
     "peasantsWin": "Peasants win!",
     "summary": "{{summary}}"
   },
+  "handCards": "{{count}} cards",
   "settings": {
     "difficulty": "CPU Difficulty",
     "easy": "Easy",
@@ -71,5 +72,6 @@
       "bomb": "Bomb",
       "rocket": "Rocket"
     }
-  }
+  },
+  "landscapeBanner": "Landscape mode recommended"
 }

@@ -69,6 +69,13 @@ const MINCHIATE_PHASE_KEYS: Readonly<Record<number, string>> = {
 export const MinchiatePage = withTutorial(MinchiatePageContent, 'minchiate', MINCHIATE_TUTORIAL_STEPS);
 
 /** Inner content of the Minchiate page, wrapped by TutorialProvider. */
+/**
+ * Points the last trick is worth, mirroring `MinchiateLastTrickBonus` in
+ * `internal/domain/Minchiate.go`. `frontend/scripts/check-minchiate-last-trick.mjs`
+ * fails the build if the two drift apart.
+ */
+const MINCHIATE_LAST_TRICK_BONUS = 3;
+
 function MinchiatePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('minchiate');
@@ -280,6 +287,25 @@ function MinchiatePageContent() {
                         })}
                       </div>
                     ))}
+                    {/* **トリック数を足しても teamScores の増分と合わない。**精算には
+                        最終トリックボーナスとスカルト枚数分が乗っているのに、どちらの
+                        画面にも出ていなかった (#6512)。検算できないのは内訳が足りないから。 */}
+                    {state.lastTrickWinner >= 0 && (
+                      <div data-testid="mc-last-trick-bonus">
+                        {t('roundResult.lastTrick', {
+                          team: state.lastTrickWinner % 2,
+                          points: MINCHIATE_LAST_TRICK_BONUS,
+                        })}
+                      </div>
+                    )}
+                    {state.scartoCount > 0 && (
+                      <div data-testid="mc-scarto-bonus">
+                        {t('roundResult.scarto', {
+                          team: state.dealerIdx % 2,
+                          points: state.scartoCount,
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -301,11 +327,15 @@ function MinchiatePageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.minchiate.footer} px-4 py-2.5`}>
-            {canScarto && (
-              <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="minchiate-scarto-prompt">
-                {t('scartoPrompt', { count: MINCHIATE_SURPLUS })}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="minchiate-prompt-live" role="status" aria-live="polite">
+              {canScarto && (
+                <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="minchiate-scarto-prompt">
+                  {t('scartoPrompt', { count: MINCHIATE_SURPLUS })}
+                </div>
+              )}
+            </div>
 
             {humanPlayer && (
               <PlayerHandSection

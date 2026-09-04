@@ -38,5 +38,6 @@
   "frontendHint": {
     "trashDraw": "カードを引こう。置ける場所は自動で埋まる",
     "trashPlaceWildLow": "ワイルドは一番低い空き位置に置こう。低い方から埋めると次の札が生きる"
-  }
+  },
+  "landscapeBanner": "横画面での表示を推奨します"
 }

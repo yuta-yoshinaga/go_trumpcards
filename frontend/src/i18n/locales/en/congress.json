@@ -19,7 +19,7 @@
   "emptyStockAriaLabel": "The stock is empty (there is no redeal)",
   "emptyWasteAriaLabel": "The waste is empty",
   "stockOrWaste": "S/W",
-  "landscapeBanner": "Landscape orientation is recommended",
+  "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto-complete",
   "autoCompleteNotReady": "Available once a card can reach a foundation",
@@ -49,5 +49,7 @@
     "toTableau": "Take the suggested tableau move to dig out the pile",
     "fillGap": "Fill the empty pile straight from the stock and save a waste card",
     "draw": "Nothing can move, so turn a card from the stock"
-  }
+  },
+  "pileCardAriaLabel": "{{card}} in pile {{pile}}",
+  "pileTopCardAriaLabel": "{{card}} on top of pile {{pile}}"
 }

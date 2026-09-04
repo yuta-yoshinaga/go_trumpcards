@@ -106,6 +106,8 @@ func (p *FrenchTarotWebPresenter) buildBase(g interfaces.FrenchTarotGame) *contr
 	resObj.ChienRevealed = g.GetChienRevealed()
 	resObj.StashOwner = g.GetStashOwner()
 	resObj.Outcome = int(g.GetOutcome())
+	// 精算に乗っているのに画面にだけ出ていなかった (#6509)。
+	resObj.PetitAuBoutDelta = g.GetPetitAuBoutDelta()
 	resObj.Result = int(g.GetResult())
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerPlayer = g.GetWinnerPlayer()

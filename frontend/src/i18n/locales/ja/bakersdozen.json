@@ -10,6 +10,7 @@
   "giveup": "ギブアップ",
   "empty": "空",
   "lastCardWarning": "この列は二度と使えなくなります",
+  "emptyColNote": "注意: 空列は再利用できません",
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
   "landscapeBanner": "横画面での表示を推奨します",

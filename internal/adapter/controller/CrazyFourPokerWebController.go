@@ -63,6 +63,11 @@ type CrazyFourPokerWebOutput struct {
 	// **賭ける前に見えなければ意味がない。** いくら置くかは、何が当たれば
 	// 何倍かを知って決めるものです。
 	QueensUpPayouts []*CrazyFourPokerPayoutRow `json:"queensUpPayouts"`
+	// SuperBonusPayouts は Super Bonus の配当表 (配当の高い順)。
+	//
+	// **アンティを賭けると必ず付く**ので、賭ける前に見えている必要がある。
+	// Odds が文字列なのは 1.5:1 のような端数があるため。
+	SuperBonusPayouts []*CrazyFourPokerSuperBonusRow `json:"superBonusPayouts"`
 
 	Config *CrazyFourPokerWebOutCfg `json:"config,omitempty"`
 	WebOutputBase
@@ -76,6 +81,16 @@ type CrazyFourPokerPayoutRow struct {
 	Name string `json:"name"`
 	// Multiplier は X:1 の X。
 	Multiplier int `json:"multiplier"`
+}
+
+// CrazyFourPokerSuperBonusRow は Super Bonus 配当表の 1 行。
+//
+// Odds は "30" / "1.5" のような文字列。1/10 単位の内部表現をそのまま出すと
+// 300:1 に見えてしまうので、サーバ側で整形して渡す。
+type CrazyFourPokerSuperBonusRow struct {
+	Hand int    `json:"hand"`
+	Name string `json:"name"`
+	Odds string `json:"odds"`
 }
 
 // CrazyFourPokerWebController クレイジー 4 ポーカーWebコントローラークラス

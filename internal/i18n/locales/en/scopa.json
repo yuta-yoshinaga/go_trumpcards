@@ -1,4 +1,7 @@
 {
+  "errHandIndexOutOfRange": "Hand index {{idx}} is out of range.",
+  "errCaptureRequired": "A capture is available, so it must be taken.",
+  "errInvalidCapture": "Those table cards are not a legal capture for that card.",
   "helpTitle": "Scopa",
   "hintNone": "No hint available",
   "hintNoCapture": "No capture available; lay your lowest card",

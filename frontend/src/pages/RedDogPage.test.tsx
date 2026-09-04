@@ -181,6 +181,20 @@ describe('RedDogPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
   });
+
+  // ゲーム終了フェーズの場合のみ、配当内訳を表示する。
+  it('renders payout-breakdown in end phase', async () => {
+    mockApi.mockResolvedValue(winState);
+    renderWithProviders(<RedDogPage />);
+    await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
+  });
+
+  it('does not render payout-breakdown outside end phase', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<RedDogPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('payout-breakdown')).not.toBeInTheDocument();
+  });
 });
 
 // --- keyboard shortcut execution (#4429) ---

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -396,4 +397,69 @@ func TestAllFours_CpuBegPath(t *testing.T) {
 	a.CpuBeg()
 	// After CPU beg resolution, phase should be Play (or Beg after redeal).
 	assert.Contains(t, []domain.AllFoursPhase{domain.AllFoursPhasePlay, domain.AllFoursPhaseBeg}, a.GetPhase())
+}
+
+// **`runCount` だけでは「run の末の配り直し」を見分けられない。**デッキが尽きた
+// run は `redeal()` を呼び、そこで `runCount` は 0 に戻る ── 表示側から見ると
+// 最初の Beg と区別が付かなくなる (#6479)。`lastRunCount` は次のラウンドの
+// 配りまで残る。
+func TestAllFours_LastRunCountSurvivesTheRedeal(t *testing.T) {
+	// 親を人間にして、beg への応答 (run) を確実に自分で選べるようにする。
+	players := []*domain.AllFoursPlayer{
+		domain.NewAllFoursPlayer(false), // non-dealer (CPU)
+		domain.NewAllFoursPlayer(true),  // dealer (human)
+	}
+	g := domain.NewAllFours(domain.NewTrumpCards(0), players, domain.DefaultAllFoursConfig())
+
+	// **CPU が beg するまで配り直す。**stand されると Gift フェーズに入らず、
+	// run を選ぶ機会が来ない。到達できたことを assert してから測る。
+	reached := false
+	for range 200 {
+		g.Reset()
+		g.CpuBeg()
+		if g.GetPhase() == domain.AllFoursPhaseGift {
+			reached = true
+			break
+		}
+	}
+	require.True(t, reached, "the CPU never begged in 200 deals; the setup measures nothing")
+
+	require.Zero(t, g.GetLastRunCount(), "nothing has run yet")
+	require.NoError(t, g.PlayerRespondBeg(true))
+
+	// run は「切り札が変わってプレイ開始」か「配り直して Beg に戻る」で終わる。
+	// **どちらの道でも**起きたことが残る。
+	assert.Positive(t, g.GetLastRunCount(), "the run must stay visible after it resolves")
+	if g.GetPhase() == domain.AllFoursPhaseBeg {
+		// 配り直しの道: runCount は消えているのに lastRunCount は残る ──
+		// これが無いと最初の Beg と同じ画面になる。
+		assert.Zero(t, g.GetRunCount(), "redeal clears the per-deal counter")
+		assert.Positive(t, g.GetLastRunCount())
+	}
+}
+
+// 新しいラウンドの配りでは消える。持ち越すと、run の無いラウンドでも
+// 「ランザカードのあと」と言い続ける。
+func TestAllFours_LastRunCountClearsOnANewDeal(t *testing.T) {
+	players := []*domain.AllFoursPlayer{
+		domain.NewAllFoursPlayer(false),
+		domain.NewAllFoursPlayer(true),
+	}
+	g := domain.NewAllFours(domain.NewTrumpCards(0), players, domain.DefaultAllFoursConfig())
+
+	reached := false
+	for range 200 {
+		g.Reset()
+		g.CpuBeg()
+		if g.GetPhase() == domain.AllFoursPhaseGift {
+			reached = true
+			break
+		}
+	}
+	require.True(t, reached, "the CPU never begged in 200 deals; the setup measures nothing")
+	require.NoError(t, g.PlayerRespondBeg(true))
+	require.Positive(t, g.GetLastRunCount())
+
+	g.Reset()
+	assert.Zero(t, g.GetLastRunCount(), "a fresh deal must not claim a run happened")
 }

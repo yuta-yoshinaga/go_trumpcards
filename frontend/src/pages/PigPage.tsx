@@ -167,7 +167,10 @@ function PigPageContent() {
             {canSignal && (
               <div
                 className={`mb-3 rounded px-3 py-2 text-center font-semibold ${badgeWarningColors}`}
-                role="status"
+                // **合図は声に出さないので、気づくのが遅いことがそのまま負け。**
+                // polite だと既存の読み上げキューの後ろに回る。role="alert" は
+                // aria-live="assertive" を含意するので、二重指定はしない。
+                role="alert"
                 data-testid="pig-signal-alert"
               >
                 {t('status.signal')}

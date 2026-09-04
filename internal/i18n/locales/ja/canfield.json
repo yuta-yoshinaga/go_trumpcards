@@ -35,5 +35,8 @@
   "hintToTableau": "タブロー列{{col}}",
   "hintLine": "ヒント: {{from}} → {{to}}",
   "helpExampleDraw": "  d                    ストックから 1 枚めくる",
-  "helpUndo": "  u                    1手戻す"
+  "helpUndo": "  u                    1手戻す",
+  "errEmptyColumnAutoFillOnly": "リザーブがある場合、空列には自動補充のみ行われます。自分で置くことはできません。",
+  "errNotAlternateDescending": "カードの色を交互にし、数字が1つ小さくなるように置いてください。",
+  "reserveEmptyColumnRule": "※ リザーブがある場合、空列への移動はできません（自動で補充されます）"
 }

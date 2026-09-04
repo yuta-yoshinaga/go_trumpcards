@@ -35,6 +35,7 @@ import { parseStreetsAndAlleysCommand, STREETSANDALLEYS_HELP } from '../utils/cl
 import { formatStreetsAndAlleysState } from '../utils/cli/formatters/streetsandalleysFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { streetsAndAlleysLegalTargets } from '../utils/streetsAndAlleysLegalTargets';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -189,6 +190,16 @@ function StreetsAndAlleysPageContent() {
     selectedSource.col === col &&
     selectedSource.cardIndex === cardIndex;
 
+  // 選択中の札そのもの。列の末尾しか動かせないので、指定 index か列の一番上を読む。
+  const selectedCard =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
+      ? selectedSource.cardIndex !== undefined
+        ? state.tableau[selectedSource.col]?.[selectedSource.cardIndex]?.card
+        : state.tableau[selectedSource.col]?.at(-1)?.card
+      : undefined;
+  // 以前は選択中なら全列の一番上を無条件で光らせていた。ドメインは値差 -1 を要求する。
+  const legalTargets = streetsAndAlleysLegalTargets(state.tableau, state.foundation, selectedCard);
+
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx];
     const tableauColZone: StreetsAndAlleysMoveZone = { zone: 'tableau', col: colIdx };
@@ -208,7 +219,10 @@ function StreetsAndAlleysPageContent() {
                 onClick={() => game.handleSelectTarget(tableauColZone)}
                 disabled={!isPlaying || loading || !selectedSource}
                 style={{ height: dims.ch }}
-                className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}
+                data-target-candidate={legalTargets.tableau.has(colIdx) || undefined}
+                className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite} ${
+                  legalTargets.tableau.has(colIdx) ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2' : ''
+                }`}
               >
                 {t('empty')}
               </button>
@@ -221,11 +235,9 @@ function StreetsAndAlleysPageContent() {
                 };
                 const isTop = cardIdx === col.length - 1;
                 const isSelfSource = isSourceSelected('tableau', colIdx, cardIdx);
-                // When a source is picked, each column's top card is a drop
-                // target. Give it a subtle ring so keyboard/Tab users can see
-                // which cards are now selectable as a destination (the disabled
-                // state alone was invisible). Excludes the picked source itself.
-                const isTargetCandidate = !!selectedSource && isTop && !isSelfSource;
+                // Ring only the columns that can actually accept the selection, so the
+                // cue means "this move is legal" rather than "something is selected".
+                const isTargetCandidate = isTop && !isSelfSource && legalTargets.tableau.has(colIdx);
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -328,11 +340,11 @@ function StreetsAndAlleysPageContent() {
                               suit: FOUNDATION_SUITS[idx],
                               count: pile.length,
                             })}
-                            // Foundations accept the selection just as tableau tops do,
-                            // but only the tableau said so (#4827).
-                            data-target-candidate={selectedSource ? true : undefined}
+                            data-target-candidate={legalTargets.foundation.has(idx) || undefined}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                              selectedSource ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2' : ''
+                              legalTargets.foundation.has(idx)
+                                ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2'
+                                : ''
                             }`}
                           >
                             <AnimatedCard

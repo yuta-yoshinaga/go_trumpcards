@@ -239,10 +239,12 @@ describe('BaseballPokerPage', () => {
   });
 
   // **チェックとコールは場況で入れ替わる。** サーバの toCall に従う。
-  it('賭けが無ければチェック、あればコールを出す', async () => {
+  // また、プレイヤーにコール額やチェック可能であることを知らせるガイドが出る。
+  it('賭けが無ければチェック、あればコールと案内を出す', async () => {
     mockApi.mockResolvedValue(base);
     const { unmount } = renderWithProviders(<BaseballPokerPage />);
     await waitFor(() => expect(screen.getByTestId('bb-check')).toBeInTheDocument());
+    expect(screen.getByTestId('bb-bet-guide')).toBeInTheDocument();
     expect(screen.queryByTestId('bb-call')).not.toBeInTheDocument();
     expect(screen.getByTestId('bb-bet')).toBeInTheDocument();
     unmount();
@@ -250,6 +252,7 @@ describe('BaseballPokerPage', () => {
     mockApi.mockResolvedValue(withState({ toCall: 20, currentBet: 20 }));
     renderWithProviders(<BaseballPokerPage />);
     await waitFor(() => expect(screen.getByTestId('bb-call')).toBeInTheDocument());
+    expect(screen.getByTestId('bb-bet-guide')).toBeInTheDocument();
     expect(screen.queryByTestId('bb-check')).not.toBeInTheDocument();
     expect(screen.getByTestId('bb-raise')).toBeInTheDocument();
   });
@@ -302,6 +305,76 @@ describe('BaseballPokerPage', () => {
     mockApi.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '次のハンドへ' }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('next'));
+  });
+
+  // **なぜその配当になったのかが最後まで分からなかった** (#6579)。
+  it('ショーダウンで役名とベスト5枚を出す', async () => {
+    const best = [card(10), card(11), card(12), card(13), card(1)];
+    mockApi.mockResolvedValue(
+      withState({
+        phase: BaseballPhase.SHOWDOWN,
+        isHumanTurn: false,
+        seats: [
+          seat({ isTurn: false, wonAmount: 80, handRank: 9, bestHand: best }),
+          cpuSeat({ wonAmount: 0, handRank: 2, bestHand: best }),
+        ],
+      }),
+    );
+    renderWithProviders(<BaseballPokerPage />);
+
+    const mine = await screen.findByTestId('bp-showdown-0');
+    expect(mine).toHaveTextContent('ロイヤルフラッシュ');
+    expect(mine.querySelectorAll('img')).toHaveLength(5);
+    expect(screen.getByTestId('bp-showdown-1')).toHaveTextContent('ツーペア');
+  });
+
+  // **負のコントロール: ショーダウン前は出さない。**
+  // **ベスト札を持たせた盤で見る。** 既定のフィクスチャは bestHand が空なので、
+  // フェーズの判定を外しても素通りしてしまう。
+  // **3 と 9 がワイルドなので 5 カードは通常の出目。** ここを番号のまま出すと、
+  // 同じハンドを CUI は「Five of a Kind」、Web は「10」と呼ぶことになる。
+  it('ワイルドで揃った5カードを役名で出す', async () => {
+    const best = [card(10), card(10), card(10), card(3), card(9)];
+    mockApi.mockResolvedValue(
+      withState({
+        phase: BaseballPhase.SHOWDOWN,
+        seats: [seat({ handRank: 10, bestHand: best }), cpuSeat({ handRank: 2, bestHand: best })],
+      }),
+    );
+    renderWithProviders(<BaseballPokerPage />);
+    const box = await screen.findByTestId('bp-showdown-0');
+    expect(box).toHaveTextContent('ファイブカード');
+    expect(box).not.toHaveTextContent('10');
+  });
+
+  it('ショーダウン前は役を出さない', async () => {
+    const best = [card(10), card(11), card(12), card(13), card(1)];
+    mockApi.mockResolvedValue(
+      withState({
+        phase: BaseballPhase.BETTING,
+        seats: [seat({ handRank: 9, bestHand: best }), cpuSeat({ handRank: 2, bestHand: best })],
+      }),
+    );
+    renderWithProviders(<BaseballPokerPage />);
+    await waitFor(() => expect(mockApi).toHaveBeenCalled());
+    expect(screen.queryByTestId('bp-showdown-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('bp-showdown-1')).not.toBeInTheDocument();
+  });
+
+  // **未知のランクは番号のまま出す** (#6579)。
+  it('未知のランクは番号のまま出す', async () => {
+    const best = [card(10), card(11), card(12), card(13), card(1)];
+    mockApi.mockResolvedValue(
+      withState({
+        phase: BaseballPhase.SHOWDOWN,
+        isHumanTurn: false,
+        seats: [seat({ isTurn: false, wonAmount: 80, handRank: 99, bestHand: best }), cpuSeat()],
+      }),
+    );
+    renderWithProviders(<BaseballPokerPage />);
+
+    const mine = await screen.findByTestId('bp-showdown-0');
+    expect(mine).toHaveTextContent('99');
   });
 
   it('終局で勝者を出し、次のハンドを出さない', async () => {

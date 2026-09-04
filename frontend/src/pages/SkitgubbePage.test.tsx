@@ -194,4 +194,22 @@ describe('SkitgubbePage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('sk-forced-pickup-notice')).not.toBeInTheDocument();
   });
+  // 出し切った席は Skitgubbe になる危険から外れる。残る席にとって「誰がもう安全か」は
+  // 読みの前提なのに、finished はレスポンスに載ったまま一度も読まれていなかった。
+  it('badges the seats that have already shed their hand', async () => {
+    mockExec.mockResolvedValue(makeState({ players: [human(), cpu(1, { finished: true }), cpu(2)] }));
+    renderWithProviders(<SkitgubbePage />);
+    await waitFor(() => expect(screen.getByTestId('sg-finished-1')).toBeInTheDocument());
+    expect(screen.getByTestId('sg-finished-1')).toHaveTextContent('セーフ');
+    // まだ手札のある席には付かない。
+    expect(screen.queryByTestId('sg-finished-2')).not.toBeInTheDocument();
+  });
+
+  it('badges nobody while every seat still holds cards', async () => {
+    mockExec.mockResolvedValue(makeState({ players: [human(), cpu(1), cpu(2)] }));
+    renderWithProviders(<SkitgubbePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('sg-finished-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sg-finished-2')).not.toBeInTheDocument();
+  });
 });

@@ -13,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeQuadrillePlayers() []*domain.QuadrillePlayer {
@@ -223,4 +224,61 @@ func TestQuadrilleCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetPlayer", mock.Anything).Return(domain.NewQuadrillePlayer(true)).Maybe()
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// **呼べるスートはサーバが知っている (#6613)。** Web は `callableKingSuits` で
+// ボタンを出し分けているのに、CUI は構文を試行錯誤するしかなかった。
+func TestQuadrilleCuiPresenter_ListsCallableKingSuits(t *testing.T) {
+	// 王呼びフェーズのモックを、呼べるスートだけ差し替えて作る。
+	kingCallMock := func(suits []int) *interfaces.MockQuadrilleGame {
+		m := new(interfaces.MockQuadrilleGame)
+		m.On("GetRoundNumber").Return(1)
+		m.On("GetTrickNumber").Return(1)
+		m.On("GetWinningBid").Return(domain.QuadrilleBidEntrar)
+		m.On("GetHighestBid").Return(domain.QuadrilleBidNone)
+		m.On("IsRoiSeul").Return(false)
+		m.On("GetCalledKingSuit").Return(-1)
+		m.On("GetPartnerIdx").Return(-1)
+		m.On("GetCallableKingSuits").Return(suits)
+		m.On("IsHumanKingCallTurn").Return(true)
+		m.On("GetTrumpSuit").Return(domain.CardDesignHeart)
+		m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+		m.On("GetGameEndFlag").Return(false)
+		m.On("GetPhase").Return(domain.QuadrillePhaseKingCall)
+		m.On("GetCurrentPlayerIdx").Return(0)
+		m.On("GetCurrentBidderIdx").Return(1)
+		m.On("GetQuadrilleIdx").Return(0)
+		m.On("GetOutcome").Return(domain.QuadrilleOutcomeSacar)
+		m.On("GetWinnerPlayer").Return(-1)
+		m.On("GetPlayerScores").Return([domain.QuadrillePlayerCnt]int{0, 0, 0})
+		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+		players := makeQuadrillePlayers()
+		m.On("GetPlayerCnt").Return(3)
+		for i := 0; i < 3; i++ {
+			m.On("GetPlayer", i).Return(players[i])
+		}
+		return m
+	}
+
+	t.Run("lists exactly the suits the server offers", func(t *testing.T) {
+		m := kingCallMock([]int{domain.CardDesignSpade, domain.CardDesignHeart})
+
+		out := new(presenter.QuadrilleCuiPresenter).Output(m, nil)
+
+		// **出るスートと出ないスートの両方を見る。** 全部並べる実装でも
+		// 「スペードが出る」だけなら通ってしまう。
+		assert.Contains(t, out, i18n.T("quadrille.suitSpade"))
+		assert.Contains(t, out, i18n.T("quadrille.suitHeart"))
+		assert.NotContains(t, out, i18n.T("quadrille.suitDiamond"))
+		assert.NotContains(t, out, "{{")
+	})
+
+	// **負のコントロール**: 呼べる先が無いときは行ごと出さない。
+	t.Run("stays quiet when nothing can be called", func(t *testing.T) {
+		m := kingCallMock(nil)
+
+		out := new(presenter.QuadrilleCuiPresenter).Output(m, nil)
+
+		assert.NotContains(t, out, "呼べる王")
+	})
 }

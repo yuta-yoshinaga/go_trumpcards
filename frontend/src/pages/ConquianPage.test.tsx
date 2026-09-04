@@ -567,3 +567,85 @@ describe('ConquianPage', () => {
     expect(document.querySelectorAll('[data-layoff-target]')).toHaveLength(0);
   });
 });
+
+// `roundWinnerIdx` は毎レスポンスに乗っているのに一度も読まれておらず、誰が制したかは
+// 累計勝利数の表を前後で見比べるしかなかった (#6460)。
+describe('ConquianPage round winner', () => {
+  it('names the winner at round end', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, phase: 2, roundWinnerIdx: 1 });
+    renderWithProviders(<ConquianPage />);
+
+    const line = await screen.findByTestId('conquian-round-winner');
+    expect(line).toHaveTextContent('CPU 1');
+    expect(line).toHaveTextContent('制しました');
+    expect(line.textContent).not.toContain('{{');
+  });
+
+  it('names the human when they win', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, phase: 2, roundWinnerIdx: 0 });
+    renderWithProviders(<ConquianPage />);
+
+    expect(await screen.findByTestId('conquian-round-winner')).toHaveTextContent('あなた');
+  });
+
+  // -1 は山札切れの引き分け。勝者名を出すと嘘になる。
+  it('says it was a draw when nobody went out', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, phase: 2, roundWinnerIdx: -1 });
+    renderWithProviders(<ConquianPage />);
+
+    const line = await screen.findByTestId('conquian-round-winner');
+    expect(line).toHaveTextContent('引き分け');
+    expect(line).not.toHaveTextContent('制しました');
+  });
+
+  // 決着した局でも同じ行が要る。ここを試さないと `isRoundEnd || isGameEnd` の
+  // 片方の枝が一度も踏まれない。
+  it('names the winner at game end too', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, phase: 3, gameEndFlag: true, roundWinnerIdx: 1 });
+    renderWithProviders(<ConquianPage />);
+
+    expect(await screen.findByTestId('conquian-round-winner')).toHaveTextContent('CPU 1');
+  });
+
+  // **山札切れで引き分けた局でも、マッチには勝者が立つことがある。**
+  // `endMatchOnDraw` は累積勝利数から `matchWinnerIdx` を決めるので、
+  // `targetWins > 1` なら roundWinnerIdx === -1 かつ winnerIdx >= 0 になりうる。
+  // ここが「引き分けです」とだけ言うと、GameMessageBox が告げるマッチ勝者と
+  // 食い違う (レビュー指摘)。文言をラウンドに限定して両立させる。
+  it('keeps the draw line about the round when the match still has a winner', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      phase: 3,
+      gameEndFlag: true,
+      roundWinnerIdx: -1,
+      winnerIdx: 0,
+    });
+    renderWithProviders(<ConquianPage />);
+
+    const line = await screen.findByTestId('conquian-round-winner');
+    expect(line).toHaveTextContent('このラウンド');
+    expect(line).toHaveTextContent('引き分け');
+  });
+
+  it('says nothing mid-round', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, roundWinnerIdx: 1 });
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('conquian-round-winner')).not.toBeInTheDocument();
+  });
+
+  it('renders the discard pile when discardTop is present', async () => {
+    // 捨て札がある場合に一番上のカードを表示する (discardTop が truthy のときだけ表示)
+    mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: { design: 'SPADE', value: 1 } });
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(screen.getByTestId('cq-discard-pile')).toBeInTheDocument());
+  });
+
+  it('hides the discard pile when discardTop is undefined', async () => {
+    // 捨て札がない場合は表示しない
+    mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: null });
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(screen.queryByTestId('cq-discard-pile')).not.toBeInTheDocument());
+  });
+});

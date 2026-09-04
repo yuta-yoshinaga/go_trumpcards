@@ -63,5 +63,7 @@
     "current": "最小デッドウッド(1枚捨て後): {{value}}",
     "knockable": "ノック可能",
     "notKnockable": "ノック不可（{{threshold}}点以下が必要）"
-  }
+  },
+  "opponentMelds": "相手のメルド",
+  "opponentDeadwood": "相手のデッドウッド"
 }

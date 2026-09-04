@@ -14,7 +14,8 @@
     "tricks": "Tricks",
     "phase1": "Phase 1 (follow optional)",
     "phase2": "Phase 2 (must follow)",
-    "trumpNoneWithSuit": "Trump: {{suit}} (stock empty)"
+    "trumpNoneWithSuit": "Trump: {{suit}} (stock empty)",
+    "winAt": "({{target}} to win)"
   },
   "phase": {
     "play": "Play",

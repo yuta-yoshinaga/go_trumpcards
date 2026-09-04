@@ -65,3 +65,31 @@ func TestPishtiWebPresenter_ActionLog(t *testing.T) {
 	g := newPishtiForPresenter()
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// **暫定点はサーバが数える。**以前は画面が capturedCount と pistiBonus から
+// 近似していて、実際の得点源 (A / J / ♣2 / ♦10) が終局まで見えなかった (#6468)。
+func TestPishtiWebPresenter_ServesTheProvisionalScore(t *testing.T) {
+	p := new(presenter.PishtiWebPresenter)
+	g := newPishtiForPresenter()
+	g.Reset()
+	// 席 0 に ♦10 (=3点)。枚数の単独リーダーでもあるので +3 が乗る。
+	g.GetPlayer(0).AddCaptured([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, 10, false)})
+
+	var out struct {
+		Players []struct {
+			ID               int `json:"id"`
+			CapturedCount    int `json:"capturedCount"`
+			ProvisionalScore int `json:"provisionalScore"`
+		} `json:"players"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &out))
+	require.NotEmpty(t, out.Players)
+
+	want := domain.PishtiScoreTenDiamonds + domain.PishtiScoreMostCards
+	assert.Equal(t, want, out.Players[0].ProvisionalScore)
+	// **枚数からは出せない値であること。**1 枚しか捕っていないのに 6 点なので、
+	// capturedCount を足しただけの実装ではこの数にならない。
+	assert.Equal(t, 1, out.Players[0].CapturedCount)
+	// 何も捕っていない席は 0。
+	assert.Equal(t, 0, out.Players[1].ProvisionalScore)
+}

@@ -110,6 +110,13 @@ func (p *GermanSoloCuiPresenter) Output(g interfaces.GermanSoloGame, lastErr err
 			"trick", strconv.Itoa(g.GetTrickNumber()),
 			"trump", germanSoloTrumpLabel(g.GetTrumpSuit())) + "\n")
 
+		dealerIdx := g.GetDealerIdx()
+		b.WriteString(i18n.Tf("germansolo.dealer",
+			"name", cuiPlayerName(g.GetPlayer(dealerIdx), dealerIdx)) + "\n")
+		forehandIdx := g.GetForehandIdx()
+		b.WriteString(i18n.Tf("germansolo.forehand",
+			"name", cuiPlayerName(g.GetPlayer(forehandIdx), forehandIdx)) + "\n")
+
 		b.WriteString(germanSoloContractLine(g))
 		b.WriteString(germanSoloAceLine(g))
 

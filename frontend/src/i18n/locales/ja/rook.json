@@ -43,7 +43,10 @@
   },
   "settings": {
     "cpuDifficulty": "CPU難易度",
-    "targetScore": "目標スコア"
+    "targetScore": "目標スコア",
+    "easy": "やさしい",
+    "normal": "ふつう",
+    "hard": "むずかしい"
   },
   "tutorial": {
     "info": "ここにラウンド・契約・切り札色・チームスコアが表示されます。先に500点に到達したチームの勝ちです。",

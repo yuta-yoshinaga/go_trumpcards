@@ -27,5 +27,19 @@
   "hintConfidenceTableau": "（優先度: 中・盤面を整える手）",
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
-  "helpUndo": "  u 1手戻す"
+  "helpUndo": "  u 1手戻す",
+  "errNotPlaying": "プレイ中ではありません",
+  "errBadFromColumn": "移動元の列番号が不正です",
+  "errBadToColumn": "移動先の列番号が不正です",
+  "errSameColumn": "移動元と移動先が同じ列です",
+  "errBadCardIndex": "その列にその番号の札はありません",
+  "errCardFaceDown": "裏向きの札は動かせません",
+  "errCannotPlaceTableau": "タブローは色違いで1つ下の札にしか重ねられません",
+  "errBadColumn": "列番号が不正です",
+  "errColumnEmpty": "その列は空です",
+  "errBadFoundationCard": "基礎札に送れる札ではありません",
+  "errCannotPlaceFoundation": "基礎札は同じスートで1つ上の札にしか置けません",
+  "errNotAllFaceUp": "裏向きの札が残っているため自動で完成させられません",
+  "errUndoNotPlaying": "プレイ中ではないため取り消せません",
+  "errNothingToUndo": "取り消せる手がありません"
 }

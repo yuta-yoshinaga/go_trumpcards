@@ -26,9 +26,17 @@ func addPyramidExposedExpectations(pg *interfaces.MockPyramidGame) {
 }
 
 func setupPyramidCuiMock() *interfaces.MockPyramidGame {
-	pg := new(interfaces.MockPyramidGame)
+	return setupPyramidCuiMockOn(new(interfaces.MockPyramidGame))
+}
+
+// setupPyramidCuiMockOn fills in defaults on an existing mock, so a caller can
+// register the value it cares about first and have it win.
+func setupPyramidCuiMockOn(pg *interfaces.MockPyramidGame) *interfaces.MockPyramidGame {
 	pg.On("GetPhase").Return(domain.PyramidPhasePlaying).Maybe()
 	pg.On("GetMoveCount").Return(0).Maybe()
+	pg.On("GetSessionPlays").Return(0).Maybe()
+	pg.On("GetSessionWins").Return(0).Maybe()
+	pg.On("GetSessionFewestMoves").Return(0).Maybe()
 	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("GetStockCount").Return(24).Maybe()
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
@@ -80,6 +88,9 @@ func TestPyramidCuiPresenterOutput_GameClear(t *testing.T) {
 	pg.ExpectedCalls = nil
 	pg.On("GetPhase").Return(domain.PyramidPhaseGameClear).Maybe()
 	pg.On("GetMoveCount").Return(15).Maybe()
+	pg.On("GetSessionPlays").Return(0).Maybe()
+	pg.On("GetSessionWins").Return(0).Maybe()
+	pg.On("GetSessionFewestMoves").Return(0).Maybe()
 	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("GetStockCount").Return(0).Maybe()
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
@@ -106,6 +117,9 @@ func TestPyramidCuiPresenterOutput_GameClear(t *testing.T) {
 func TestPyramidCuiPresenterOutput_GameOver(t *testing.T) {
 	pg := setupPyramidCuiMock()
 	pg.ExpectedCalls = nil
+	pg.On("GetSessionPlays").Return(0).Maybe()
+	pg.On("GetSessionWins").Return(0).Maybe()
+	pg.On("GetSessionFewestMoves").Return(0).Maybe()
 	pg.On("GetPhase").Return(domain.PyramidPhaseGameOver).Maybe()
 	pg.On("GetMoveCount").Return(5).Maybe()
 	pg.On("CanUndo").Return(false).Maybe()
@@ -187,6 +201,9 @@ func TestPyramidCuiPresenterOutput_StalemateAndNonEmptyWaste(t *testing.T) {
 	pg.ExpectedCalls = nil
 	pg.On("GetPhase").Return(domain.PyramidPhasePlaying).Maybe()
 	pg.On("GetMoveCount").Return(7).Maybe()
+	pg.On("GetSessionPlays").Return(0).Maybe()
+	pg.On("GetSessionWins").Return(0).Maybe()
+	pg.On("GetSessionFewestMoves").Return(0).Maybe()
 	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("GetStockCount").Return(0).Maybe()
 	// Non-nil waste with one card exercises the wasteCard branch.
@@ -234,6 +251,9 @@ func TestPyramidCuiPresenterOutput_MarksRemovableKings(t *testing.T) {
 		pg := new(interfaces.MockPyramidGame)
 		pg.On("GetPhase").Return(domain.PyramidPhasePlaying).Maybe()
 		pg.On("GetMoveCount").Return(0).Maybe()
+		pg.On("GetSessionPlays").Return(0).Maybe()
+		pg.On("GetSessionWins").Return(0).Maybe()
+		pg.On("GetSessionFewestMoves").Return(0).Maybe()
 		pg.On("CanUndo").Return(false).Maybe()
 		pg.On("GetStockCount").Return(24).Maybe()
 		pg.On("GetWaste").Return(waste).Maybe()
@@ -295,5 +315,55 @@ func TestPyramidCuiPresenter_NoRedealNotice(t *testing.T) {
 		g.Reset()
 		require.Positive(t, g.GetStockCount(), "配り直したばかりなら山札はある")
 		assert.NotContains(t, p.Output(g, nil), i18n.T("pyramid.noRedeal"))
+	})
+}
+
+// The panel only makes sense once something has finished; before that there is
+// no record and a line of zeroes would just be noise.
+func TestPyramidCuiPresenter_SessionStats(t *testing.T) {
+	p := new(PyramidCuiPresenter)
+
+	build := func(plays, wins, fewest int) *interfaces.MockPyramidGame {
+		pg := new(interfaces.MockPyramidGame)
+		// Registered before the defaults so these values are the ones used.
+		pg.On("GetSessionPlays").Return(plays).Maybe()
+		pg.On("GetSessionWins").Return(wins).Maybe()
+		pg.On("GetSessionFewestMoves").Return(fewest).Maybe()
+		return setupPyramidCuiMockOn(pg)
+	}
+
+	t.Run("stays silent until the first game finishes", func(t *testing.T) {
+		assert.NotContains(t, p.Output(build(0, 0, 0), nil), "このセッション")
+	})
+
+	t.Run("shows plays, clears and the best move count", func(t *testing.T) {
+		out := p.Output(build(3, 1, 27), nil)
+		assert.Contains(t, out, "このセッション")
+		assert.Contains(t, out, "3")
+		assert.Contains(t, out, "27")
+	})
+
+	t.Run("shows a placeholder while nothing has been cleared", func(t *testing.T) {
+		out := p.Output(build(2, 0, 0), nil)
+		assert.Contains(t, out, "このセッション")
+		assert.Contains(t, out, i18n.T("pyramid.sessionNoBest"))
+	})
+
+	// 局が終わった画面こそ通算を見たい場面。記録は checkGameClear / GiveUp の
+	// 中で同期的に更新されるので、この画面が描かれる時点でもう入っている。
+	t.Run("is still there once the game is over", func(t *testing.T) {
+		for _, phase := range []domain.PyramidPhase{
+			domain.PyramidPhaseGameClear,
+			domain.PyramidPhaseGameOver,
+		} {
+			pg := new(interfaces.MockPyramidGame)
+			pg.On("GetPhase").Return(phase).Maybe()
+			pg.On("GetSessionPlays").Return(4).Maybe()
+			pg.On("GetSessionWins").Return(2).Maybe()
+			pg.On("GetSessionFewestMoves").Return(31).Maybe()
+			out := p.Output(setupPyramidCuiMockOn(pg), nil)
+			assert.Contains(t, out, "このセッション")
+			assert.Contains(t, out, "31")
+		}
 	})
 }

@@ -45,8 +45,17 @@ func (p *ShamrocksCuiPresenter) Output(g interfaces.ShamrocksGame, lastErr error
 			sb.WriteString(i18n.Tf("shamrocks.foundationLabel", "idx", strconv.Itoa(i)))
 			sb.WriteString(" " + llFoundationStrSH(foundation[i]) + "\n")
 		}
+		// **動かせる扇に印を付ける。** Web は #5678 以降リングで常時示しているのに、
+		// CUI は hint を打つか拒否されるまで分からなかった。判定はドメインが持つ。
+		movable := map[int]bool{}
+		for _, i := range g.GetMovableFans() {
+			movable[i] = true
+		}
 		for i, fan := range g.GetFans() {
 			sb.WriteString(i18n.Tf("shamrocks.fanLabel", "idx", strconv.Itoa(i)))
+			if movable[i] {
+				sb.WriteString(" " + CuiLegalMark)
+			}
 			sb.WriteString(" " + llPileStrSH(fan) + "\n")
 		}
 

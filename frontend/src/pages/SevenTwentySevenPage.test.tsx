@@ -170,3 +170,29 @@ describe('SevenTwentySevenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 });
+
+// **1 ラウンドで「引く/止まる」を何度も選ぶ (#6604)。** 何巡目かが出ないと、
+// もう 1 枚引くかの判断材料が画面に無い。CLI モードのフォーマッタは
+// `draw: N` として最初から出しており、GUI だけ落ちていた。
+describe('SevenTwentySevenPage draw round', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('shows which draw round is in progress', async () => {
+    mockExec.mockResolvedValue({ ...baseState, drawRound: 3 });
+    renderWithProviders(<SevenTwentySevenPage />);
+    const badge = await screen.findByTestId('stx-draw-round');
+    // **サーバの値がそのまま出ること。** 定数を返す実装を落とすため 1 以外で見る。
+    expect(badge).toHaveTextContent('3');
+    expect(badge.textContent).not.toContain('{{');
+  });
+
+  it('hides it once the round is decided', async () => {
+    // 決着後に残ると、もう関係の無い巡目を指し続ける。
+    mockExec.mockResolvedValue({ ...baseState, phase: SevenTwentySevenPhase.RESULT, drawRound: 3 });
+    renderWithProviders(<SevenTwentySevenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('stx-draw-round')).not.toBeInTheDocument();
+  });
+});

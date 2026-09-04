@@ -105,12 +105,21 @@ describe('NarcoticPage', () => {
   it('renders the discard pile with progress and the top card', async () => {
     renderWithProviders(<NarcoticPage />);
     await waitFor(() => expect(screen.getByTestId('narcotic-discard-pile')).toBeInTheDocument());
-    // Progress readout: discardCount out of the 48-card goal.
+    // **分母はデッキ全部。** ドメインの checkGameClear は 52 枚で判定するので、
+    // 48 だと 4 枚残したまま「48/48」と出る。
     expect(screen.getByText(/捨て札/)).toBeInTheDocument();
-    expect(screen.getByText(/\(4\/48\)/)).toBeInTheDocument();
+    expect(screen.getByText(/\(4\/52\)/)).toBeInTheDocument();
     // The most recently removed card is shown face-up.
     expect(screen.getByTestId('narcotic-discard-top')).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /♣ 7/ })).toBeInTheDocument();
+  });
+
+  // **勝った局で分母を超えないこと。** 48 のままだと 52/48 と出る。
+  it('reads 52/52 once the whole deck is discarded', async () => {
+    mockExec.mockResolvedValue({ ...playingState, discardCount: 52 });
+    renderWithProviders(<NarcoticPage />);
+    await waitFor(() => expect(screen.getByTestId('narcotic-discard-pile')).toBeInTheDocument());
+    expect(screen.getByText(/\(52\/52\)/)).toBeInTheDocument();
   });
 
   it('renders an empty discard placeholder when nothing has been removed', async () => {
@@ -118,7 +127,7 @@ describe('NarcoticPage', () => {
     renderWithProviders(<NarcoticPage />);
     await waitFor(() => expect(screen.getByTestId('narcotic-discard-pile')).toBeInTheDocument());
     expect(screen.getByTestId('narcotic-discard-empty')).toBeInTheDocument();
-    expect(screen.getByText(/\(0\/48\)/)).toBeInTheDocument();
+    expect(screen.getByText(/\(0\/52\)/)).toBeInTheDocument();
     expect(screen.queryByTestId('narcotic-discard-top')).not.toBeInTheDocument();
   });
 

@@ -22,6 +22,8 @@ type FourCardPokerInteractorIF interface {
 	Fold() string
 	// ActionLog returns the rendered action log.
 	ActionLog() string
+	// Hint returns the rendered hint.
+	Hint() string
 }
 
 // FourCardPokerInteractor is the Four Card Poker interactor.
@@ -62,6 +64,11 @@ func (fi *FourCardPokerInteractor) Fold() string {
 // ActionLog renders the action log via the presenter.
 func (fi *FourCardPokerInteractor) ActionLog() string {
 	return fi.fp.ActionLogOutput(fi.Game)
+}
+
+// Hint renders the hint via the presenter.
+func (fi *FourCardPokerInteractor) Hint() string {
+	return fi.fp.HintOutput(fi.Game)
 }
 
 // RestoreFourCardPokerInteractor deserialises JSON into an interactor.

@@ -418,11 +418,22 @@ function SevenBridgePageContent() {
                       ) : null,
                     )}
                   </div>
+                  {/* ポン/チーとメルドは押せない理由を読み上げるのに、レイオフだけ
+                      無言だった (#6343)。拒否の条件は2つあるので、**どちらで
+                      止まっているか**を言い分ける。 */}
+                  <span id="sb-layoff-hint" className="sr-only" data-testid="sb-layoff-hint">
+                    {layoffMelds.length === 0
+                      ? t('layoffNoMelds')
+                      : selectedCardIndices.length !== 1
+                        ? t('layoffRequireOne')
+                        : t('requirementMet')}
+                  </span>
                   <button
                     type="button"
                     className={btnPrimary}
                     onClick={() => handleLayoff(layoffTarget, layoffMeldIdx)}
                     disabled={loading || selectedCardIndices.length !== 1 || layoffMelds.length === 0}
+                    aria-describedby="sb-layoff-hint"
                   >
                     {t('layoffButton')}
                   </button>

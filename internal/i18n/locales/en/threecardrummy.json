@@ -34,5 +34,6 @@
   "push": "Push",
   "anteBonusPayoutLine": "Ante bonus: {{payout}}",
   "lowBonusPayoutLine": "Low bonus: {{payout}}",
-  "totalPayoutLine": "Total payout: {{payout}}"
+  "totalPayoutLine": "Total payout: {{payout}}",
+  "playRequiredLine": "To play: {{play}}"
 }

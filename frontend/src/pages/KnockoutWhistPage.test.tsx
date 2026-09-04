@@ -210,3 +210,62 @@ describe('KnockoutWhistPage', () => {
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
 });
+
+// **そのラウンドで何が起きたかが一目で分からなかった。**`roundResult.survived` /
+// `roundResult.eliminated` は ja/en に定義済みなのに一度も参照されていない死んだキー
+// だった (#6446)。クライアントでは導出できない ── 前ラウンドで脱落した席も毎ラウンド
+// `roundTricks === 0` になるので、「今ラウンド脱落した人」はサーバに聞くしかない。
+describe('KnockoutWhistPage round survivors and eliminations', () => {
+  const roundEnd = (over: Partial<Parameters<typeof makeKnockoutWhistState>[0]> = {}) =>
+    makeKnockoutWhistState({ phase: 2, roundWinnerIdx: 0, ...over });
+
+  it('names who spent a dogbone and who was knocked out', async () => {
+    mockExec.mockResolvedValue(roundEnd({ roundSurvived: [1], roundEliminated: [2, 3] }));
+    renderWithProviders(<KnockoutWhistPage />);
+
+    const survivors = await screen.findByTestId('kw-round-survivors');
+    expect(survivors).toHaveTextContent('CPU 1');
+    expect(survivors).toHaveTextContent('Dogbone');
+    expect(survivors.textContent).not.toContain('{{');
+
+    const out = screen.getByTestId('kw-round-eliminated');
+    expect(out).toHaveTextContent('CPU 2');
+    expect(out).toHaveTextContent('CPU 3');
+    // 生き残った席は脱落の行に混ざらない。
+    expect(out).not.toHaveTextContent('CPU 1');
+  });
+
+  it('omits each row when nobody fell into it', async () => {
+    mockExec.mockResolvedValue(roundEnd({ roundSurvived: [], roundEliminated: [] }));
+    renderWithProviders(<KnockoutWhistPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('kw-round-survivors')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('kw-round-eliminated')).not.toBeInTheDocument();
+  });
+
+  it('says nothing mid-round', async () => {
+    mockExec.mockResolvedValue(
+      makeKnockoutWhistState({ phase: 0, roundWinnerIdx: -1, roundSurvived: [1], roundEliminated: [2] }),
+    );
+    renderWithProviders(<KnockoutWhistPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('kw-round-survivors')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('kw-round-eliminated')).not.toBeInTheDocument();
+  });
+
+  // 切り札選択フェーズでのみ選択UIを出す（人間の番のとき）。
+  it('shows trump select UI in TRUMP_SELECT phase', async () => {
+    mockExec.mockResolvedValue(makeKnockoutWhistState({ phase: 4 }));
+    renderWithProviders(<KnockoutWhistPage />);
+    expect(await screen.findByTestId('knockoutwhist-trump-select')).toBeInTheDocument();
+  });
+
+  it('hides trump select UI when not in TRUMP_SELECT phase', async () => {
+    mockExec.mockResolvedValue(makeKnockoutWhistState({ phase: 0 }));
+    renderWithProviders(<KnockoutWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('knockoutwhist-trump-select')).not.toBeInTheDocument();
+  });
+});

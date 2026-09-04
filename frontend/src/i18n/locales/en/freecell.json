@@ -29,7 +29,7 @@
     "controls": "Control buttons: Undo, Hint, Auto-complete.",
     "resetButton": "Press the reset button to start a new game."
   },
-  "landscapeBanner": "Rotate to landscape for easier play",
+  "landscapeBanner": "Landscape mode recommended",
   "freecellShort": "FC",
   "frontendHint": {
     "moveToFoundation": "A card can be moved to the foundation",
@@ -41,5 +41,6 @@
       "freecell": "Free Cell",
       "foundation": "Foundation"
     }
-  }
+  },
+  "emptyColumnAriaLabel": "Empty column {{idx}}"
 }

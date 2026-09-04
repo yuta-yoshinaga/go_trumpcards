@@ -1,6 +1,6 @@
 {
   "gameEnd": "Game over! {{name}} wins the match!",
-  "helpTitle": "Ganjifa commands",
+  "helpTitle": "Ganjifa",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintNone": "No hint available.",
   "hintReasonFollowTrump": "Play a trump to take this trick",

@@ -18,6 +18,7 @@ func setupTriPeaksCuiMockDefaults(tg *interfaces.MockTriPeaksGame) {
 	tg.On("GetMoveCount").Return(0).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("GetScore").Return(0).Maybe()
+	tg.On("GetCombo").Return(0).Maybe()
 	tg.On("GetStockCount").Return(23).Maybe()
 	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	tg.On("IsStalemate").Return(false).Maybe()
@@ -56,6 +57,7 @@ func TestTriPeaksCuiPresenterOutput_PlayableAndBlocked(t *testing.T) {
 	tg.On("GetMoveCount").Return(0).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("GetScore").Return(0).Maybe()
+	tg.On("GetCombo").Return(0).Maybe()
 	tg.On("GetStockCount").Return(10).Maybe()
 	tg.On("IsStalemate").Return(false).Maybe()
 	// Waste top is a 2: adjacent to Ace(1) and 3, with K-A wrap also possible.
@@ -102,6 +104,7 @@ func TestTriPeaksCuiPresenterOutput_Stalemate(t *testing.T) {
 	tg.On("GetMoveCount").Return(5).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("GetScore").Return(0).Maybe()
+	tg.On("GetCombo").Return(0).Maybe()
 	tg.On("GetStockCount").Return(0).Maybe()
 	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	tg.On("IsStalemate").Return(true).Maybe()
@@ -125,6 +128,7 @@ func TestTriPeaksCuiPresenterOutput_GameClear(t *testing.T) {
 	tg.On("GetMoveCount").Return(10).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("GetScore").Return(0).Maybe()
+	tg.On("GetCombo").Return(0).Maybe()
 	tg.On("GetStockCount").Return(0).Maybe()
 	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	tg.On("IsStalemate").Return(false).Maybe()
@@ -144,6 +148,7 @@ func TestTriPeaksCuiPresenterOutput_GameOver(t *testing.T) {
 	tg.On("GetMoveCount").Return(5).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("GetScore").Return(0).Maybe()
+	tg.On("GetCombo").Return(0).Maybe()
 	tg.On("GetStockCount").Return(0).Maybe()
 	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	tg.On("IsStalemate").Return(false).Maybe()
@@ -163,6 +168,7 @@ func TestTriPeaksCuiPresenterOutput_WithWaste(t *testing.T) {
 	tg.On("GetMoveCount").Return(1).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("GetScore").Return(0).Maybe()
+	tg.On("GetCombo").Return(0).Maybe()
 	tg.On("GetStockCount").Return(22).Maybe()
 	tg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, true)}).Maybe()
 	tg.On("IsStalemate").Return(false).Maybe()
@@ -246,4 +252,33 @@ func TestTriPeaksCuiPresenter_ShowsTheScore(t *testing.T) {
 	assert.Contains(t, out, i18n.Tf("tripeaks.cuiScoreLine", "score", "1700"))
 	// 手数の行は残っていること。得点で置き換えると手数が消える。
 	assert.Contains(t, out, "手数: ")
+}
+
+// The web badges a chain from 2 and announces it; the CUI never called
+// GetCombo at all, so a run of removals looked like unrelated single moves.
+func TestTriPeaksCuiPresenter_ComboLine(t *testing.T) {
+	p := new(TriPeaksCuiPresenter)
+
+	build := func(combo int) *interfaces.MockTriPeaksGame {
+		tg := new(interfaces.MockTriPeaksGame)
+		// Registered before the defaults so this value is the one returned.
+		tg.On("GetCombo").Return(combo).Maybe()
+		setupTriPeaksCuiMockDefaults(tg)
+		return tg
+	}
+
+	t.Run("names a chain of two", func(t *testing.T) {
+		assert.Contains(t, p.Output(build(2), nil), "2")
+		assert.Contains(t, p.Output(build(2), nil), "連鎖")
+	})
+
+	t.Run("says nothing at one, which is not a chain", func(t *testing.T) {
+		// Printing it at 1 would make the line permanent and meaningless; the
+		// web badge starts at 2 for the same reason.
+		assert.NotContains(t, p.Output(build(1), nil), "連鎖")
+	})
+
+	t.Run("says nothing at zero", func(t *testing.T) {
+		assert.NotContains(t, p.Output(build(0), nil), "連鎖")
+	})
 }

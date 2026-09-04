@@ -28,6 +28,8 @@ export interface ColoradoResponse extends BaseGameResponse {
   phase: number;
   moveCount: number;
   canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
   hint?: ColoradoHint;
 }
 

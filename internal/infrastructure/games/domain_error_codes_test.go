@@ -107,3 +107,160 @@ func loadGoLocale(cache map[string]map[string]string, lang, ns string) (map[stri
 	cache[ns] = table
 	return table, nil
 }
+
+// presenterI18nKeyRe matches a literal key passed to i18n.T / i18n.Tf. Keys
+// built by concatenation (`"x.action." + suffix`) end at the quote and are
+// skipped by the trailing `[,)]`, which is what distinguishes a whole key from
+// a prefix.
+var presenterI18nKeyRe = regexp.MustCompile(`i18n\.Tf?\("([A-Za-z0-9_.]+)"\s*[,)]`)
+
+// TestPresenterI18nKeysResolve extends its sibling above from domain error
+// codes to **every literal key a presenter looks up**. The sibling exists
+// because a missing key ships as player-visible text; it just never covered
+// this class, so sixcardgolf spent its whole life printing
+//
+//	cuiPlayerNameHuman (累計=0, R=0) <<
+//
+// as the human's seat name -- `cuiPlayerNameHuman` and `cuiPlayerNameCPU` are
+// in no locale at all, and i18n.T hands back whatever it was given (#7061).
+// Nothing failed: not a test, not the linter, not the frontend message-code
+// guard. Only looking at the rendered board showed it.
+func TestPresenterI18nKeysResolve(t *testing.T) {
+	// **Controllers are covered too.** Scoping this to presenters is the very
+	// mistake that let the bug through in the first place: its sibling above
+	// guarded only domain error codes, so a seat-name key walked past it.
+	// Extending to presenters alone would have repeated that -- four CUI
+	// controllers (fortress / somerset / perseverance / mrsmop) were printing
+	// `fortress.promptToZone` and `mrsmop.moveUsage` at players for the same
+	// reason, and only turned up because this list was widened.
+	dirs := []string{
+		"internal/adapter/presenter",
+		"internal/adapter/controller",
+		"internal/adapter/controller/cuiutil",
+		"internal/infrastructure/ui",
+		"internal/infrastructure/update",
+		"internal/infrastructure/web",
+		"internal/usecase",
+		"cmd/trumpcards",
+	}
+
+	defined := map[string]map[string]struct{}{
+		"ja": loadLocaleKeys(t, "ja"),
+		"en": loadLocaleKeys(t, "en"),
+	}
+
+	type ref struct{ file, key string }
+	var refs []ref
+	for _, rel := range dirs {
+		dir := filepath.Join(repoRoot, rel)
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			t.Fatalf("read %s: %v", dir, err)
+		}
+		for _, e := range entries {
+			if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") || strings.HasSuffix(e.Name(), "_test.go") {
+				continue
+			}
+			src, err := os.ReadFile(filepath.Join(dir, e.Name()))
+			if err != nil {
+				t.Fatalf("read %s: %v", e.Name(), err)
+			}
+			for _, m := range presenterI18nKeyRe.FindAllStringSubmatch(string(src), -1) {
+				if strings.HasSuffix(m[1], ".") {
+					continue // a concatenation prefix, not a key
+				}
+				refs = append(refs, ref{rel + "/" + e.Name(), m[1]})
+			}
+		}
+	}
+
+	// **A walk that stops matching would pass this test in silence.** Measured
+	// at 9,016 across the listed directories; the floor only has to catch
+	// collapse, because a shrinking count makes this guard quieter, never louder.
+	if len(refs) < 6000 {
+		t.Fatalf("i18n キーを %d 件しか拾えていない -- 正規表現か走査先が壊れている", len(refs))
+	}
+
+	// **両方の言語を見る。** 英語だけ抜けていれば、英語で遊ぶ人にだけキー名が
+	// 見える。隣の TestDomainErrorCodesResolveInGoLocales も ja/en 両方を見る。
+	for _, lang := range []string{"ja", "en"} {
+		for _, r := range refs {
+			if _, ok := defined[lang][r.key]; !ok {
+				t.Errorf("%s: i18n キー %q が %s ロケールに無い。i18n.T は未知のキーを"+
+					"そのまま返すので、キー名が利用者に見える (#7061)", r.file, r.key, lang)
+			}
+		}
+	}
+}
+
+// loadLocaleKeys flattens one language's locale files into a key set. Nested
+// objects are joined with "." to match how presenters address them.
+func loadLocaleKeys(t *testing.T, lang string) map[string]struct{} {
+	t.Helper()
+	dir := filepath.Join(repoRoot, "internal/i18n/locales", lang)
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatalf("read %s: %v", dir, err)
+	}
+	out := map[string]struct{}{}
+	// **Do not restate which files are global.** i18n.go owns that list, and a
+	// copy here drifts silently: this guard first shipped with cli_help.json in
+	// it, which is wrong (its keys really are addressed as `cli_help.usage`),
+	// and the mistake was invisible until the walk was widened to cmd/.
+	bare := globalLocaleNamespaces(t)
+	for _, e := range entries {
+		if e.IsDir() || !strings.HasSuffix(e.Name(), ".json") {
+			continue
+		}
+		raw, err := os.ReadFile(filepath.Join(dir, e.Name()))
+		if err != nil {
+			t.Fatalf("read %s: %v", e.Name(), err)
+		}
+		var doc map[string]any
+		if json.Unmarshal(raw, &doc) != nil {
+			continue
+		}
+		prefix := ""
+		if !bare[strings.TrimSuffix(e.Name(), ".json")] {
+			prefix = strings.TrimSuffix(e.Name(), ".json") + "."
+		}
+		flattenLocale(doc, prefix, out)
+	}
+	return out
+}
+
+func flattenLocale(doc map[string]any, prefix string, out map[string]struct{}) {
+	for k, v := range doc {
+		full := prefix + k
+		out[full] = struct{}{}
+		if nested, ok := v.(map[string]any); ok {
+			flattenLocale(nested, full+".", out)
+		}
+	}
+}
+
+// globalLocaleNamespacesRe pulls the entries out of i18n.go's globalNamespaces
+// map literal, so this test cannot disagree with the loader it is checking.
+var globalLocaleNamespacesRe = regexp.MustCompile(`(?s)var globalNamespaces = map\[string\]bool\{(.*?)\}`)
+
+var globalLocaleEntryRe = regexp.MustCompile(`"([a-z_]+)":\s*true`)
+
+func globalLocaleNamespaces(t *testing.T) map[string]bool {
+	t.Helper()
+	src, err := os.ReadFile(filepath.Join(repoRoot, "internal/i18n/i18n.go"))
+	if err != nil {
+		t.Fatalf("read i18n.go: %v", err)
+	}
+	block := globalLocaleNamespacesRe.FindSubmatch(src)
+	if block == nil {
+		t.Fatal("i18n.go の globalNamespaces を読めない -- 宣言の形が変わった")
+	}
+	out := map[string]bool{}
+	for _, m := range globalLocaleEntryRe.FindAllSubmatch(block[1], -1) {
+		out[string(m[1])] = true
+	}
+	if len(out) == 0 {
+		t.Fatal("globalNamespaces が空に見える -- 正規表現が壊れている")
+	}
+	return out
+}

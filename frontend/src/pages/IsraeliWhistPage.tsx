@@ -329,6 +329,16 @@ function IsraeliWhistPageContent() {
               </div>
             )}
 
+            {/* **ノルマ下限と禁止値はボタンの有効・無効にしか出ていなかった。**
+                押せるボタンを探して下限を逆算するしかなく、読み上げでは 1 つずつ
+                確かめることになる。CUI が出しているのと同じ 2 行を出す。 */}
+            {isHumanBidTurn && (state.minimumBid > 0 || state.restrictedBid >= 0) && (
+              <div className="mt-4 text-ds-text-muted text-sm" data-testid="iw-limits">
+                {state.minimumBid > 0 && <div>{t('bidQuota', { n: state.minimumBid })}</div>}
+                {state.restrictedBid >= 0 && <div>{t('bidRestricted', { n: state.restrictedBid })}</div>}
+              </div>
+            )}
+
             <div className="mt-4 flex flex-wrap gap-2" data-tutorial="iw-actions">
               {isHumanAuctionTurn && (
                 <>

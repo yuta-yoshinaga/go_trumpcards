@@ -300,6 +300,88 @@ describe('DeuceToSevenPage', () => {
     expect(cardButtons[1].className).toContain('opacity-50'); // duplicate 2 → draw candidate
   });
 
+  it('adds hint descriptions to aria-label when hints are enabled', async () => {
+    localStorage.setItem('hint_enabled_deucetoseven', 'true');
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.DRAW,
+        drawIndex: 1,
+        currentTurn: 0,
+        players: [
+          humanPlayer({
+            cards: [
+              { design: 'SPADE', value: 2 },
+              { design: 'HEART', value: 2 },
+              { design: 'DIAMOND', value: 4 },
+              { design: 'CLOVER', value: 6 },
+              { design: 'SPADE', value: 8 },
+            ],
+          }),
+          cpuPlayer(1),
+          cpuPlayer(2),
+          cpuPlayer(3),
+        ],
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+
+    // Kept card should have '残す' in aria-label, and NOT '外す'.
+    expect(cardButtons[0].getAttribute('aria-label')).toContain('残す');
+    expect(cardButtons[0].getAttribute('aria-label')).not.toContain('外す');
+    expect(cardButtons[0].getAttribute('aria-label')).not.toContain('{{');
+
+    // Discard candidate should have '外す' in aria-label, and NOT '残す'.
+    expect(cardButtons[1].getAttribute('aria-label')).toContain('外す');
+    expect(cardButtons[1].getAttribute('aria-label')).not.toContain('残す');
+    expect(cardButtons[1].getAttribute('aria-label')).not.toContain('{{');
+
+    // Select the discard candidate to verify it retains selection label but loses the '外す' hint label
+    fireEvent.click(cardButtons[1]);
+    await waitFor(() => expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'true'));
+
+    // '(交換選択中)' is the translated string for cardSelected.
+    expect(cardButtons[1].getAttribute('aria-label')).toContain('(交換選択中)');
+    expect(cardButtons[1].getAttribute('aria-label')).not.toContain('外す');
+  });
+
+  it('does not add hint descriptions to aria-label when hints are disabled', async () => {
+    localStorage.clear();
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.DRAW,
+        drawIndex: 1,
+        currentTurn: 0,
+        players: [
+          humanPlayer({
+            cards: [
+              { design: 'SPADE', value: 2 },
+              { design: 'HEART', value: 2 },
+              { design: 'DIAMOND', value: 4 },
+              { design: 'CLOVER', value: 6 },
+              { design: 'SPADE', value: 8 },
+            ],
+          }),
+          cpuPlayer(1),
+          cpuPlayer(2),
+          cpuPlayer(3),
+        ],
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+
+    // No hint labels should be present.
+    expect(cardButtons[0].getAttribute('aria-label')).not.toContain('残す');
+    expect(cardButtons[0].getAttribute('aria-label')).not.toContain('外す');
+    expect(cardButtons[1].getAttribute('aria-label')).not.toContain('残す');
+    expect(cardButtons[1].getAttribute('aria-label')).not.toContain('外す');
+  });
+
   it('marks a selected card as pressed in draw phase', async () => {
     mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
     renderWithProviders(<DeuceToSevenPage />);

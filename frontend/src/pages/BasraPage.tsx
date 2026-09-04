@@ -168,6 +168,9 @@ function BasraPageContent() {
   const canPlay = isHumanTurn && handIndex !== null;
 
   const winnerNames = state.winners.map((i) => (state.players[i]?.isHuman ? t('you') : t('cpu', { id: i }))).join(', ');
+  // 内訳の各賞は席番号で返る。名前に直す口はここ 1 つに寄せる。
+  const seatName = (idx: number): string => (state.players[idx]?.isHuman ? t('you') : t('cpu', { id: idx }));
+  const detail = state.lastDealDetail;
 
   // A player's Basra counter is emphasised while their most recent sweep is celebrated.
   const basraEmphasisClass =
@@ -331,11 +334,15 @@ function BasraPageContent() {
             </div>
 
             {/* Turn prompt */}
-            {!isGameEnd && (
-              <div className="text-center text-sm text-ds-accent" data-testid="basra-prompt">
-                {isHumanTurn ? t('turnYours') : t('turnCpu', { id: state.currentTurn })}
-              </div>
-            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="basra-prompt-live" role="status" aria-live="polite">
+              {!isGameEnd && (
+                <div className="text-center text-sm text-ds-accent" data-testid="basra-prompt">
+                  {isHumanTurn ? t('turnYours') : t('turnCpu', { id: state.currentTurn })}
+                </div>
+              )}
+            </div>
 
             {/* Game-end result */}
             {isGameEnd && (
@@ -352,6 +359,40 @@ function BasraPageContent() {
                     })}
                   </div>
                 ))}
+                {/* **合計だけでは、なぜその点なのかが分からない。**サーバは
+                    A / バスラ / 7♦ / 10♦ / 最多枚数の内訳を全部返しているのに
+                    一度も読まれていなかった (#6490)。取った席がいない項目
+                    (-1) は行ごと出さない ── 誰も取っていない賞を並べない。 */}
+                {detail && (
+                  <div className="mt-2 pt-2 border-t border-white/10" data-testid="basra-breakdown">
+                    <div className="mb-1 text-ds-text-primary">{t('result.breakdownTitle')}</div>
+                    {state.players.map((p) => (
+                      <div key={p.id} data-testid={`basra-breakdown-${p.id}`}>
+                        {t('result.breakdownRow', {
+                          name: seatName(p.id),
+                          aces: detail.aces[p.id],
+                          basras: detail.basras[p.id],
+                          cards: detail.cards[p.id],
+                        })}
+                      </div>
+                    ))}
+                    {detail.hasSevenDiamonds >= 0 && (
+                      <div data-testid="basra-seven-diamonds">
+                        {t('result.sevenDiamonds', { name: seatName(detail.hasSevenDiamonds) })}
+                      </div>
+                    )}
+                    {detail.hasTenDiamonds >= 0 && (
+                      <div data-testid="basra-ten-diamonds">
+                        {t('result.tenDiamonds', { name: seatName(detail.hasTenDiamonds) })}
+                      </div>
+                    )}
+                    {detail.mostCards >= 0 && (
+                      <div data-testid="basra-most-cards">
+                        {t('result.mostCards', { name: seatName(detail.mostCards) })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 

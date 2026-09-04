@@ -61,6 +61,12 @@ export interface PopeJoanResponse extends BaseGameResponse {
    */
   validPlays: number[];
   currentPlayerIdx: number;
+  /**
+   * Seat dealing this hand. The dealer stakes the compartments and takes one
+   * outright when the turn-up is a Pope/A/K/Q/J, so the seat rotates the
+   * advantage every deal.
+   */
+  dealerIdx: number;
   /** All eight, always. */
   compartments: PopeJoanCompartment[];
   /** Set by the dead hand's last card. Compartments pay only on this suit. */

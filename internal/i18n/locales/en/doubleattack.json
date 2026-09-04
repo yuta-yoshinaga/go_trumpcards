@@ -15,6 +15,8 @@
   "upCardLine": "Dealer: {{card}} (the second card comes after your extra bet)",
   "dealerLine": "Dealer: {{cards}} = {{score}}",
   "handLine": "{{mark}}[{{idx}}] {{cards}} = {{score}} (bet {{bet}})",
+  "canDoubleLine": "  You can double (double)",
+  "canSplitLine": "  You can split (split)",
   "maxAttackLine": "Extra bet limit: {{max}}",
   "resultLine": "Hand {{idx}}: {{result}}",
   "bustItLine": "Bust It pays: {{payout}}",

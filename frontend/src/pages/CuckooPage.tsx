@@ -34,7 +34,6 @@ import { CUCKOO_HELP, parseCuckooCommand } from '../utils/cli/commands/cuckooCom
 import { formatCuckooState } from '../utils/cli/formatters/cuckooFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
-import { cuckooSwapTarget } from '../utils/cuckooSwapTarget';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** CPU difficulty options for the Cuckoo settings panel. */
@@ -203,9 +202,10 @@ function CuckooPageContent() {
     // 二重に見ない (片方が死んだ分岐になる)。
     if (!humanPlayer) return null;
     if (humanIsDealer) return t('swapTargetStock');
-    const targetIdx = cuckooSwapTarget(state.players, humanPlayer.id);
-    if (targetIdx === null) return null;
-    const target = state.players[targetIdx];
+    // 相手はサーバが返す (#6852)。以前はここで同じ規則を再計算していたが、
+    // 規則の実装が 2 つあると片方だけ直る。
+    const target = state.players[state.swapTargetIdx];
+    if (!target) return null;
     return t('swapTargetPreview', { name: playerLabel(target.id, target.isHuman) });
   })();
 

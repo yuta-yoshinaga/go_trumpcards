@@ -29,6 +29,17 @@ func TestSixBidSoloCuiController_Exec(t *testing.T) {
 		return m
 	}
 
+	// **hint コマンド自体が無かった** ── 6 段階のビッド・切札・プレイのどの局面でも
+	// 助言を得る手段が CUI に無く、Web だけが持っていた (#6528)。
+	t.Run("dispatches the hint command", func(t *testing.T) {
+		m := newMock()
+		m.On("Hint").Return("hint text")
+		c := controller.NewSixBidSoloCuiController(m)
+		assert.Equal(t, "hint text", c.Exec("hint"))
+		assert.Equal(t, "hint text", c.Exec("h"))
+		m.AssertCalled(t, "Hint")
+	})
+
 	t.Run("quit and reset", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewSixBidSoloCuiController(m)

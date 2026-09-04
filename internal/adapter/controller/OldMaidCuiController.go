@@ -30,6 +30,7 @@ func (c *OldMaidCuiController) Exec(command string) string {
 			"d", "draw", "s", "shuffle", "ro", "reorder", "sm", "setmode",
 			"sps", "setplacementstrategy", "smetaai", "smai",
 			"rp", "resetprofile", "sma", "setmemoryai",
+			"sh", "sethesitation",
 			"log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
@@ -75,6 +76,12 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "metaAiFlagRequired0Off1On", "invalidMetaAiFlag01", 0, 1, func(v int) string {
 					cfg := c.omi.GetConfig()
 					cfg.CpuMetaAI = v == 1
+					return c.omi.Reset(cfg, nil)
+				})
+			case "sh", "sethesitation":
+				return cuiutil.WithParsedIntKeys(args, "hesitationFlagRequired0Off1On", "invalidHesitationFlag01", 0, 1, func(v int) string {
+					cfg := c.omi.GetConfig()
+					cfg.CpuHesitationEnabled = v == 1
 					return c.omi.Reset(cfg, nil)
 				})
 			case "rp", "resetprofile":

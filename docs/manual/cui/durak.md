@@ -78,7 +78,7 @@ flowchart TD
 
 ```
 ==========
-Durak
+Durak (ドゥラーク)
 ==========
 Trump: ♥   Stock: 12
 Phase: ATTACK

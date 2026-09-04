@@ -328,4 +328,115 @@ describe('HighCardFlushPage', () => {
     await waitFor(() => expect(screen.getByRole('log')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
   });
+
+  it('disables bet button when ante is not a multiple of 10 and enables it when valid', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    const betButton = screen.getByRole('button', { name: 'ベット' });
+    expect(betButton).toBeEnabled();
+
+    const anteInput = screen.getByLabelText('アンテ');
+    fireEvent.change(anteInput, { target: { value: '15' } });
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(betButton).toBeDisabled();
+
+    fireEvent.change(anteInput, { target: { value: '100' } });
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(betButton).toBeEnabled();
+  });
+
+  it('disables bet button when total bet exceeds chip balance across the three bets', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ');
+    const flushBonusInput = screen.getByLabelText('フラッシュボーナス');
+    const straightFlushInput = screen.getByLabelText('ストレートフラッシュ');
+    const betButton = screen.getByRole('button', { name: 'ベット' });
+
+    fireEvent.change(anteInput, { target: { value: '400' } });
+    fireEvent.change(flushBonusInput, { target: { value: '400' } });
+    fireEvent.change(straightFlushInput, { target: { value: '300' } });
+
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(betButton).toBeDisabled();
+  });
+
+  it('allows betting with bonus bets remaining at 0', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    const flushBonusInput = screen.getByLabelText('フラッシュボーナス') as HTMLInputElement;
+    const straightFlushInput = screen.getByLabelText('ストレートフラッシュ') as HTMLInputElement;
+    expect(flushBonusInput.value).toBe('0');
+    expect(straightFlushInput.value).toBe('0');
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    const betButton = screen.getByRole('button', { name: 'ベット' });
+    expect(betButton).toBeEnabled();
+
+    fireEvent.click(betButton);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0, 0));
+  });
+
+  it('attaches aria-describedby to inputs and displays error message with role="alert" when invalid', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ');
+    const flushBonusInput = screen.getByLabelText('フラッシュボーナス');
+    const straightFlushInput = screen.getByLabelText('ストレートフラッシュ');
+
+    expect(anteInput).not.toHaveAttribute('aria-invalid');
+    expect(anteInput).not.toHaveAttribute('aria-describedby');
+
+    fireEvent.change(anteInput, { target: { value: '15' } });
+
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveAttribute('id', 'highcardflush-bet-error');
+    expect(alert).toHaveTextContent(
+      'アンテは10〜10000、ボーナスは0または10〜10000、ベットは10単位で、合計は残高以内で指定してください',
+    );
+
+    expect(anteInput).toHaveAttribute('aria-invalid', 'true');
+    expect(anteInput).toHaveAttribute('aria-describedby', 'highcardflush-bet-error');
+    expect(flushBonusInput).toHaveAttribute('aria-describedby', 'highcardflush-bet-error');
+    expect(straightFlushInput).toHaveAttribute('aria-describedby', 'highcardflush-bet-error');
+  });
+
+  it('places bet with valid amounts across ante and side bets', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ');
+    const flushBonusInput = screen.getByLabelText('フラッシュボーナス');
+    const straightFlushInput = screen.getByLabelText('ストレートフラッシュ');
+
+    fireEvent.change(anteInput, { target: { value: '200' } });
+    fireEvent.change(flushBonusInput, { target: { value: '50' } });
+    fireEvent.change(straightFlushInput, { target: { value: '30' } });
+
+    const betButton = screen.getByRole('button', { name: 'ベット' });
+    expect(betButton).toBeEnabled();
+
+    fireEvent.click(betButton);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 200, 50, 30));
+  });
+
+  it('disables bet button when ante exceeds maximum limit of 10000', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 50000 });
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 50000')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ');
+    fireEvent.change(anteInput, { target: { value: '10010' } });
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+  });
 });

@@ -6,6 +6,7 @@
   "helpNextRound": "  nr                        go to next deal",
   "helpSetDifficulty": "  sd [0-2]                  CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "round": "Deal: {{round}}  Trick: {{trick}}",
+  "excuseReturnsNote": "The Excuse is special — it never wins or loses a trick and always returns to the pile of whoever played it",
   "playerLine": "{{name}} ({{role}}): {{cards}} cards  Score: {{score}}  Tricks: {{tricks}}",
   "roleDealer": "Dealer",
   "rolePlayer": "Player",

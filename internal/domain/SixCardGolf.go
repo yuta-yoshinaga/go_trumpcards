@@ -26,6 +26,9 @@ const (
 // SixCardGolfGridSize 1プレイヤーのグリッドサイズ
 const SixCardGolfGridSize = 6
 
+// SixCardGolfColumnCount 列数 (3列)
+const SixCardGolfColumnCount = 3
+
 // SixCardGolfDefaultRounds デフォルトラウンド数
 const SixCardGolfDefaultRounds = 9
 
@@ -42,6 +45,13 @@ const SixCardGolfInitialFlips = 2
 type SixCardGolfSlot struct {
 	Card   *Card
 	FaceUp bool
+}
+
+// SixCardGolfColumnScore 1列のスコア内訳
+type SixCardGolfColumnScore struct {
+	Score     int  `json:"score"`
+	IsPair    bool `json:"isPair"`
+	HasHidden bool `json:"hasHidden"`
 }
 
 // SixCardGolfPlayer プレイヤー状態
@@ -640,6 +650,60 @@ func (g *SixCardGolf) scoreRound() {
 	}
 }
 
+// SixCardGolfCardScore カード1枚のスコア (K=0, A=1, J/Q=10, それ以外は額面)
+func SixCardGolfCardScore(c *Card) int {
+	if c == nil {
+		return 0
+	}
+	v := c.GetValue()
+	switch v {
+	case 13:
+		return 0
+	case 1:
+		return 1
+	case 11, 12:
+		return 10
+	default:
+		return v
+	}
+}
+
+// SixCardGolfColumnScores グリッドの列ごとのスコア内訳を計算する
+func SixCardGolfColumnScores(grid [SixCardGolfGridSize]SixCardGolfSlot) []SixCardGolfColumnScore {
+	result := make([]SixCardGolfColumnScore, SixCardGolfColumnCount)
+	for col := 0; col < SixCardGolfColumnCount; col++ {
+		top := grid[col]
+		bot := grid[col+SixCardGolfColumnCount]
+		// どちらかがまだ伏せている（または札が無い）列は、点が確定していない。
+		hasHidden := !top.FaceUp || top.Card == nil || !bot.FaceUp || bot.Card == nil
+		isPair := top.FaceUp && bot.FaceUp &&
+			top.Card != nil && bot.Card != nil &&
+			top.Card.GetValue() == bot.Card.GetValue()
+		if isPair {
+			result[col] = SixCardGolfColumnScore{
+				Score:     0,
+				IsPair:    true,
+				HasHidden: false,
+			}
+			continue
+		}
+		topScore := 0
+		if top.FaceUp && top.Card != nil {
+			topScore = SixCardGolfCardScore(top.Card)
+		}
+		botScore := 0
+		if bot.FaceUp && bot.Card != nil {
+			botScore = SixCardGolfCardScore(bot.Card)
+		}
+		result[col] = SixCardGolfColumnScore{
+			Score:     topScore + botScore,
+			IsPair:    false,
+			HasHidden: hasHidden,
+		}
+	}
+	return result
+}
+
 // ScorePlayer プレイヤーのスコア計算（列一致0点ルール適用）
 func (g *SixCardGolf) ScorePlayer(playerIdx int) int {
 	if playerIdx < 0 || playerIdx >= len(g.players) {
@@ -647,26 +711,8 @@ func (g *SixCardGolf) ScorePlayer(playerIdx int) int {
 	}
 	p := g.players[playerIdx]
 	total := 0
-	scored := [SixCardGolfGridSize]bool{}
-
-	for col := 0; col < 3; col++ {
-		top := col
-		bot := col + 3
-		if p.Grid[top].FaceUp && p.Grid[bot].FaceUp &&
-			p.Grid[top].Card != nil && p.Grid[bot].Card != nil &&
-			p.Grid[top].Card.GetValue() == p.Grid[bot].Card.GetValue() {
-			scored[top] = true
-			scored[bot] = true
-		}
-	}
-
-	for i := 0; i < SixCardGolfGridSize; i++ {
-		if scored[i] {
-			continue
-		}
-		if p.Grid[i].FaceUp {
-			total += g.sixCardGolfCardScore(p.Grid[i].Card)
-		}
+	for _, col := range SixCardGolfColumnScores(p.Grid) {
+		total += col.Score
 	}
 	return total
 }
@@ -717,20 +763,7 @@ func (g *SixCardGolf) RecommendedSwap() (pos int, formsPair bool) {
 
 // sixCardGolfCardScore カード1枚のスコア
 func (g *SixCardGolf) sixCardGolfCardScore(c *Card) int {
-	if c == nil {
-		return 0
-	}
-	v := c.GetValue()
-	switch v {
-	case 13:
-		return 0
-	case 1:
-		return 1
-	case 11, 12:
-		return 10
-	default:
-		return v
-	}
+	return SixCardGolfCardScore(c)
 }
 
 // findWinner 累積スコア最低プレイヤーを返す

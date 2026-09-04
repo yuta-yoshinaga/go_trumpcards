@@ -62,8 +62,20 @@ type ChinesePokerGame interface {
 	GetDealerBackRank() int
 	// GetPlayerRoyalty プレイヤーロイヤリティを取得する
 	GetPlayerRoyalty() int
+	// GetPlayerFrontRoyalty プレイヤーフロントロイヤリティを取得する
+	GetPlayerFrontRoyalty() int
+	// GetPlayerMiddleRoyalty プレイヤーミドルロイヤリティを取得する
+	GetPlayerMiddleRoyalty() int
+	// GetPlayerBackRoyalty プレイヤーバックロイヤリティを取得する
+	GetPlayerBackRoyalty() int
 	// GetDealerRoyalty ディーラーロイヤリティを取得する
 	GetDealerRoyalty() int
+	// GetDealerFrontRoyalty ディーラーフロントロイヤリティを取得する
+	GetDealerFrontRoyalty() int
+	// GetDealerMiddleRoyalty ディーラーミドルロイヤリティを取得する
+	GetDealerMiddleRoyalty() int
+	// GetDealerBackRoyalty ディーラーバックロイヤリティを取得する
+	GetDealerBackRoyalty() int
 	// GetScoop スクープフラグを取得する
 	GetScoop() bool
 	// GetChips チップを取得する

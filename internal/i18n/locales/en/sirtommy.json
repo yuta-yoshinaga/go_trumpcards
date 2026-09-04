@@ -21,6 +21,7 @@
   "foundationLabel": "[F{{idx}}] ",
   "foundationEmpty": "(empty)",
   "foundationNext": " → next: {{rank}}",
+  "foundationUpcoming": " → {{ranks}}",
   "foundationComplete": " → complete",
   "foundationFilled": "{{card}} ({{count}}/{{max}})",
   "wasteLabel": "[W{{idx}}] ",

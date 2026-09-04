@@ -16,6 +16,7 @@
   "empty": "Empty",
   "emptyDivanSlot": "Empty divan slot {{idx}}",
   "foundationSlot": "Foundation {{idx}}, top {{top}}",
+  "foundationSlotComplete": "Foundation {{idx}}, top {{top}} (complete)",
   "emptyFoundationSlot": "Foundation {{idx}}, empty (build from K)",
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",

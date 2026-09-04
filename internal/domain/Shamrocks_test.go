@@ -334,3 +334,49 @@ func TestShamrocks_JSONRoundTrip(t *testing.T) {
 		t.Error("expected error for a fan count over the cap")
 	}
 }
+
+// **動かせる扇の一覧は、盤全体に手があるかと同じ規則で答える。**
+//
+// 盤は手で組む — Reset() から配ると、どの扇が動かせるかが配り任せになる。
+// **空の扇を作らないこと。** Shamrocks は空の扇がどの札でも受けるので、
+// 1 つでも空があると全部の扇が「動かせる」になり、否定側を測れない。
+func TestShamrocksGetMovableFans(t *testing.T) {
+	g := newLlGameSH()
+	llClearSH(g)
+	// 扇 0: ♠A → 空の組札に置ける (findFoundation)
+	// 扇 1: ♥7 → 扇 2 の ♥8 に積める (差が 1、スートは見ない)
+	// 扇 2: ♥8 → ♥7 にも積める。つまりこの盤では 0/1/2 すべて動かせる
+	g.fans = [][]*Card{
+		{llCardSH(CardDesignSpade, 1)},
+		{llCardSH(CardDesignHeart, 7)},
+		{llCardSH(CardDesignHeart, 8)},
+	}
+	assert.ElementsMatch(t, []int{0, 1, 2}, g.GetMovableFans())
+	assert.True(t, g.hasAnyLegalMove())
+
+	// 動かせる扇が 1 つだけの盤。**どの 2 枚も差が 1 にならない値を選ぶ**:
+	// 13 / 9 / 5 / 1 は互いの差が 4・8・12 なので誰も積めず、組札は A しか
+	// 受けない。よって動かせるのは ♠A の扇だけ。
+	//
+	// 最初は 2 を置いていたが、**2 と A は差が 1 で積めてしまう** ── 「A だけが
+	// 動かせる」という説明と実際が食い違っていた (レビュー指摘)。
+	// 件数まで固定しないと、この食い違いはテストを通過してしまう。
+	llClearSH(g)
+	g.fans = [][]*Card{
+		{llCardSH(CardDesignSpade, 13)},
+		{llCardSH(CardDesignHeart, 9)},
+		{llCardSH(CardDesignClover, 5)},
+		{llCardSH(CardDesignSpade, 1)},
+	}
+	assert.Equal(t, []int{3}, g.GetMovableFans(), "動かせるのは組札へ行ける A だけ")
+	assert.True(t, g.hasAnyLegalMove())
+
+	// 手が 1 つも無い盤。**集合が空かどうかと「手があるか」は同じ問い。**
+	llClearSH(g)
+	g.fans = [][]*Card{
+		{llCardSH(CardDesignSpade, 13)},
+		{llCardSH(CardDesignHeart, 2)},
+	}
+	assert.Empty(t, g.GetMovableFans())
+	assert.False(t, g.hasAnyLegalMove())
+}

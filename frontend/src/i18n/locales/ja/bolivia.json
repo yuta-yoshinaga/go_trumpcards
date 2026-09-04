@@ -54,6 +54,7 @@
     "gameEnd": "ゲーム終了"
   },
   "red3s": "赤3",
+  "red3PenaltyWarning": "初回メルド未達なら罰点",
   "result": {
     "humanWin": "あなたのチームの勝利！",
     "cpuWin": "CPUチームの勝利！"

@@ -87,11 +87,18 @@ func (p *DuchessCuiPresenter) Output(d interfaces.DuchessGame, lastErr error) st
 
 		// タブロー
 		tableau := d.GetTableau()
+		reserveRemaining := 0
+		for i := range domain.DuchessReserveCnt {
+			reserveRemaining += len(reserve[i])
+		}
 		for col := range domain.DuchessTableauCnt {
 			colCards := tableau[col]
 			b.WriteString(i18n.Tf("duchess.columnLabel", "col", strconv.Itoa(col)))
 			if len(colCards) == 0 {
 				b.WriteString(" " + i18n.T("cuiEmptyCol"))
+				if reserveRemaining > 0 {
+					b.WriteString(" " + i18n.T("duchess.emptyColReserveOnly"))
+				}
 			} else {
 				b.WriteString(duchessColumnStr(colCards))
 			}

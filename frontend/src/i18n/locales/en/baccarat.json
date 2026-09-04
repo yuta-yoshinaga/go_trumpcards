@@ -31,7 +31,11 @@
   },
   "road": {
     "title": "Big Road",
-    "clear": "Clear History"
+    "clear": "Clear History",
+    "spokenEntry": "hand {{n}} {{side}}",
+    "sidePlayer": "Player",
+    "sideBanker": "Banker",
+    "sideTie": "Tie"
   },
   "stats": {
     "player": "P {{n}} ({{pct}}%)",

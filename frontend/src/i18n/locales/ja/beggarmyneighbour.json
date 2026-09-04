@@ -15,6 +15,7 @@
     "discardPile": "捨札",
     "total": "合計",
     "centralPile": "場の山",
+    "penaltyOwner": "{{name}} が支払い中",
     "penaltyRemaining": "残りペナルティ",
     "lastCard": "最後のカード",
     "rounds": "ラウンド",
@@ -48,5 +49,5 @@
     "resetButton": "新しいゲームを始めるボタンです。"
   },
   "phaseAnnounce": "フェーズ: {{phase}}",
-  "phaseAnnouncePenalty": "フェーズ: {{phase}}。残りペナルティ {{count}} 枚"
+  "phaseAnnouncePenalty": "フェーズ: {{phase}}。{{name}} が残りペナルティ {{count}} 枚を支払い中"
 }

@@ -423,6 +423,79 @@ func TestHoldemCuiController_TableSize_InvalidValue(t *testing.T) {
 	assert.Equal(t, "error from domain", c.Exec("ts -1"))
 }
 
+func TestHoldemCuiController_RebuyEnabled_On(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg := domain.DefaultHoldemConfig()
+	cfg.RebuyEnabled = true
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return("rbe ok")
+	assert.Equal(t, "rbe ok", c.Exec("rbe 1"))
+}
+
+// 既定が false なので、既定から始めて 0 を渡しても「触っていない」と
+// 区別がつかない。**有効になっている卓から**切るところを見る。
+func TestHoldemCuiController_RebuyEnabled_Off(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	on := domain.DefaultHoldemConfig()
+	on.RebuyEnabled = true
+	mi.On("GetConfig").Return(on)
+	off := domain.DefaultHoldemConfig()
+	off.RebuyEnabled = false
+	mi.On("ResetWithConfig", off, mock.Anything).Return("rbe ok")
+	assert.Equal(t, "rbe ok", c.Exec("setrebuyenabled 0"))
+}
+
+func TestHoldemCuiController_AddonEnabled_On(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg := domain.DefaultHoldemConfig()
+	cfg.AddonEnabled = true
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return("ade ok")
+	assert.Equal(t, "ade ok", c.Exec("ade 1"))
+}
+
+func TestHoldemCuiController_AddonEnabled_Off(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	on := domain.DefaultHoldemConfig()
+	on.AddonEnabled = true
+	mi.On("GetConfig").Return(on)
+	off := domain.DefaultHoldemConfig()
+	off.AddonEnabled = false
+	mi.On("ResetWithConfig", off, mock.Anything).Return("ade ok")
+	assert.Equal(t, "ade ok", c.Exec("setaddonenabled 0"))
+}
+
+// 引数の欠落と範囲外は、拒否したことが**画面に出る**ところまで見る。
+// 無言で既定に落とすと、有効にしたつもりの卓でリバイが永久に起きない。
+func TestHoldemCuiController_RebuyAddonEnabled_BadArgs(t *testing.T) {
+	cases := []struct {
+		name    string
+		command string
+		want    string
+	}{
+		{"rebuy without a value", "rbe", "リバイ設定の指定が必要です"},
+		{"rebuy out of range", "rbe 2", "無効なリバイ設定です: 2"},
+		{"rebuy not a number", "rbe x", "無効なリバイ設定です: x"},
+		{"addon without a value", "ade", "アドオン設定の指定が必要です"},
+		{"addon out of range", "ade 7", "無効なアドオン設定です: 7"},
+		{"addon not a number", "ade x", "無効なアドオン設定です: x"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			mi := new(usecase.MockHoldemInteractor)
+			c := NewHoldemCuiController(mi)
+			out := c.Exec(tc.command)
+			assert.Contains(t, out, tc.want)
+			assert.NotContains(t, out, "{{", "placeholder name mismatch prints a literal {{val}}")
+			mi.AssertNotCalled(t, "ResetWithConfig", mock.Anything, mock.Anything)
+		})
+	}
+}
+
 // --- rebuy ---
 
 func TestHoldemCuiController_Rebuy(t *testing.T) {

@@ -584,9 +584,18 @@ type ristikontraJSON struct {
 	CurrentTurn    int                  `json:"ct"`
 	Pile           []*Card              `json:"pi"`
 	LastCaptureIdx int                  `json:"lc"`
-	GameEndFlag    bool                 `json:"ge"`
-	Winners        []int                `json:"wn"`
-	ActionLog      []*ActionLogEntry    `json:"al"`
+	// **打ち返しの対象ランクも往復させる。** Worker はリクエストごとに KV から
+	// 盤を組み直すので、ここに無いと復元のたびに 0 に戻り、Web のリングも
+	// CUI の印も本番では一度も出ない (#6610)。
+	CounterRank int `json:"cr"`
+	// **奪える束そのものも往復させる。** 印を出すのは counterRank だが、
+	// 打ち返しが**成立するか**を決めているのは `isCounter`/`findCounterCard` が
+	// 見る counterCards の非 nil で、こちらが復元されないと「この札で束を奪える」
+	// と表示しておいて実際には奪えない、という嘘になる (レビュー指摘)。
+	CounterCards []*Card           `json:"cc"`
+	GameEndFlag  bool              `json:"ge"`
+	Winners      []int             `json:"wn"`
+	ActionLog    []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -599,6 +608,8 @@ func (g *Ristikontra) MarshalJSON() ([]byte, error) {
 		CurrentTurn:    g.state.currentTurn,
 		Pile:           g.state.pile,
 		LastCaptureIdx: g.state.lastCaptureIdx,
+		CounterRank:    g.state.counterRank,
+		CounterCards:   g.state.counterCards,
 		GameEndFlag:    g.state.gameEndFlag,
 		Winners:        g.state.winners,
 		ActionLog:      g.state.actionLog,
@@ -654,6 +665,21 @@ func (g *Ristikontra) UnmarshalJSON(data []byte) error {
 			return fmt.Errorf("ristikontra: winner index out of range")
 		}
 	}
+	// **打ち返しの2つの値は互いに矛盾しないこと。** 印を出すのは counterRank、
+	// 成立を決めるのは counterCards なので、片方だけが入った盤を受け取ると
+	// 「印は出るが奪えない」「印は出ないのに奪える」のどちらかになる。
+	// 隣の索引と同じく、壊れた KV を黙って受け入れないでおく。
+	if j.CounterRank != 0 && (j.CounterRank < 1 || j.CounterRank > CardValueMax) {
+		return fmt.Errorf("ristikontra: counter rank out of range")
+	}
+	if (j.CounterRank == 0) != (len(j.CounterCards) == 0) {
+		return fmt.Errorf("ristikontra: counter rank and counter cards disagree")
+	}
+	for _, c := range j.CounterCards {
+		if c == nil {
+			return fmt.Errorf("ristikontra: nil card in counter cards")
+		}
+	}
 
 	g.trumpCards = j.TrumpCards
 	g.players = j.Players
@@ -663,6 +689,8 @@ func (g *Ristikontra) UnmarshalJSON(data []byte) error {
 		currentTurn:    j.CurrentTurn,
 		pile:           j.Pile,
 		lastCaptureIdx: j.LastCaptureIdx,
+		counterRank:    j.CounterRank,
+		counterCards:   j.CounterCards,
 		gameEndFlag:    j.GameEndFlag,
 		winners:        j.Winners,
 		actionLogBase:  actionLogBase{actionLog: j.ActionLog},

@@ -4,7 +4,6 @@ package domain
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 )
 
@@ -169,10 +168,10 @@ func (ns *NapoleonsSquare) emptyFoundationForSuit(design int) int {
 // Draw 山札からウェイストへ 1 枚めくる（リサイクルなし、1 巡のみ）
 func (ns *NapoleonsSquare) Draw() error {
 	if ns.phase != NapoleonsSquarePhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "napoleonssquare.errNotPlaying", nil)
 	}
 	if len(ns.stock) == 0 {
-		return errors.New("no cards in stock")
+		return NewDomainErrorCode(ErrDeckExhausted, "napoleonssquare.errNoCardsInStock", nil)
 	}
 	ns.takeSnapshot()
 	card := ns.stock[0]
@@ -188,14 +187,14 @@ func (ns *NapoleonsSquare) MoveWasteToTableau(col int) error {
 		return err
 	}
 	if col < 0 || col >= NapoleonsSquareTableauCnt {
-		return errors.New("invalid column")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errBadColumn", nil)
 	}
 	if len(ns.waste) == 0 {
-		return errors.New("waste is empty")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errWasteEmpty", nil)
 	}
 	card := ns.waste[len(ns.waste)-1]
 	if !ns.canPlaceOnTableau(card, col) {
-		return errors.New("cannot place card on tableau")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errCannotPlaceTableau", nil)
 	}
 	ns.takeSnapshot()
 	ns.waste = ns.waste[:len(ns.waste)-1]
@@ -211,12 +210,12 @@ func (ns *NapoleonsSquare) MoveWasteToFoundation() error {
 		return err
 	}
 	if len(ns.waste) == 0 {
-		return errors.New("waste is empty")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errWasteEmpty", nil)
 	}
 	card := ns.waste[len(ns.waste)-1]
 	fIdx := ns.findFoundation(card)
 	if fIdx < 0 {
-		return errors.New("cannot place card on foundation")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errCannotPlaceFoundation", nil)
 	}
 	ns.takeSnapshot()
 	ns.waste = ns.waste[:len(ns.waste)-1]
@@ -232,13 +231,13 @@ func (ns *NapoleonsSquare) MoveTableauToTableau(fromCol, cardIndex, toCol int) e
 		return err
 	}
 	if fromCol < 0 || fromCol >= NapoleonsSquareTableauCnt {
-		return errors.New("invalid from column")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errBadFromColumn", nil)
 	}
 	if toCol < 0 || toCol >= NapoleonsSquareTableauCnt {
-		return errors.New("invalid to column")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errBadToColumn", nil)
 	}
 	if fromCol == toCol {
-		return errors.New("from and to columns are the same")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errSameColumn", nil)
 	}
 	fromCards := ns.tableau[fromCol]
 	// -1 は「最上段 1 枚」を表す。BeleagueredCastle など既存のソリティアと同じ約束で、
@@ -247,14 +246,14 @@ func (ns *NapoleonsSquare) MoveTableauToTableau(fromCol, cardIndex, toCol int) e
 		cardIndex = len(fromCards) - 1
 	}
 	if cardIndex < 0 || cardIndex >= len(fromCards) {
-		return errors.New("invalid card index")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errInvalidCardIndex", nil)
 	}
 	group := fromCards[cardIndex:]
 	if !napoleonsSquareIsRun(group) {
-		return errors.New("cards do not form a same-suit descending run")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errNotSameSuitDescending", nil)
 	}
 	if !ns.canPlaceOnTableau(group[0].Card, toCol) {
-		return errors.New("cannot place card on tableau")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errCannotPlaceTableau", nil)
 	}
 	ns.takeSnapshot()
 	// group は fromCards の内部を指しているので、切り詰める前にコピーを取る。
@@ -273,16 +272,16 @@ func (ns *NapoleonsSquare) MoveTableauToFoundation(col int) error {
 		return err
 	}
 	if col < 0 || col >= NapoleonsSquareTableauCnt {
-		return errors.New("invalid column")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errBadColumn", nil)
 	}
 	fromCards := ns.tableau[col]
 	if len(fromCards) == 0 {
-		return errors.New("tableau column is empty")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errColumnEmpty", nil)
 	}
 	card := fromCards[len(fromCards)-1].Card
 	fIdx := ns.findFoundation(card)
 	if fIdx < 0 {
-		return errors.New("cannot place card on foundation")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errCannotPlaceFoundation", nil)
 	}
 	ns.takeSnapshot()
 	ns.tableau[col] = fromCards[:len(fromCards)-1]
@@ -386,7 +385,7 @@ func (ns *NapoleonsSquare) tableauHint() *NapoleonsSquareHint {
 // AutoComplete 基礎札へ送れる札がなくなるまで自動で送る
 func (ns *NapoleonsSquare) AutoComplete() error {
 	if ns.phase != NapoleonsSquarePhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "napoleonssquare.errNotPlaying", nil)
 	}
 	moved := false
 	for {
@@ -406,7 +405,7 @@ func (ns *NapoleonsSquare) AutoComplete() error {
 		moved = true
 	}
 	if !moved {
-		return errors.New("no card can be auto-completed")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errNoAutoCompleted", nil)
 	}
 	return nil
 }
@@ -414,7 +413,7 @@ func (ns *NapoleonsSquare) AutoComplete() error {
 // Undo 直前の 1 手を取り消す
 func (ns *NapoleonsSquare) Undo() error {
 	if len(ns.history) == 0 {
-		return errors.New("nothing to undo")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errNothingToUndo", nil)
 	}
 	snap := ns.history[len(ns.history)-1]
 	ns.history = ns.history[:len(ns.history)-1]
@@ -477,7 +476,7 @@ func (ns *NapoleonsSquare) IsStalemate() bool { return ns.isStalemate }
 // requirePlaying プレイ中でなければエラーを返す
 func (ns *NapoleonsSquare) requirePlaying() error {
 	if ns.phase != NapoleonsSquarePhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "napoleonssquare.errNotPlaying", nil)
 	}
 	return nil
 }
@@ -621,16 +620,16 @@ func (s *napoleonsSquareSnapshot) UnmarshalJSON(data []byte) error {
 	}
 	if len(j.Stock) > napoleonsSquareMaxSliceLen ||
 		len(j.Waste) > napoleonsSquareMaxSliceLen {
-		return errors.New("napoleonssquare: snapshot array exceeds maximum allowed size")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errSnapshotArrayTooLarge", nil)
 	}
 	for _, pile := range j.Tableau {
 		if len(pile) > napoleonsSquareMaxSliceLen {
-			return errors.New("napoleonssquare: snapshot pile exceeds maximum allowed size")
+			return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errSnapshotPileTooLarge", nil)
 		}
 	}
 	for _, pile := range j.Foundation {
 		if len(pile) > napoleonsSquareMaxSliceLen {
-			return errors.New("napoleonssquare: snapshot pile exceeds maximum allowed size")
+			return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errSnapshotPileTooLarge", nil)
 		}
 	}
 	s.tableau = j.Tableau
@@ -691,7 +690,7 @@ func (ns *NapoleonsSquare) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.ActionLog) > napoleonsSquareMaxSliceLen || len(j.History) > napoleonsSquareMaxSliceLen {
-		return errors.New("napoleonssquare: input array exceeds maximum allowed size")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleonssquare.errInputArrayTooLarge", nil)
 	}
 	if j.Phase < NapoleonsSquarePhasePlaying || j.Phase > NapoleonsSquarePhaseGameOver {
 		return fmt.Errorf("invalid phase: %d", j.Phase)

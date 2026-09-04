@@ -12,6 +12,8 @@
   "promptBidHelp": "b <n>・・・ビッドを宣言 (0=pass, 2-4)",
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "play <idx>・・・カードを出す",
+  "previousTrick": "直前のトリック",
+  "previousTrickWinner": "  → {{name}} が獲得",
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了",

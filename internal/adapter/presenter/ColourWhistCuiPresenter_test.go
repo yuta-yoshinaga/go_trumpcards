@@ -79,6 +79,30 @@ func TestColourWhistCuiPresenter_NoTroelLineWhenBid(t *testing.T) {
 	assert.NotContains(t, new(ColourWhistCuiPresenter).Output(m, nil), "競りはありません")
 }
 
+// **Samen で指名された札を出す。** 出した人が相方として公開されます。
+func TestColourWhistCuiPresenter_ShowsCalledCard(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	m := new(interfaces.MockColourWhistGame)
+	m.On("GetCalledCard").Return(domain.NewCard(domain.CardDesignSpade, 1, false))
+	fillColourWhistDefaults(m)
+
+	out := new(ColourWhistCuiPresenter).Output(m, nil)
+	assert.Contains(t, out, "指名札: SPADE 1（この札を出した人が相方として公開されます）")
+}
+
+// **指名札が無ければその行は出ない。** 負のコントロールです。
+func TestColourWhistCuiPresenter_NoCalledCardWhenNil(t *testing.T) {
+	m := new(interfaces.MockColourWhistGame)
+	m.On("GetCalledCard").Return((*domain.Card)(nil))
+	fillColourWhistDefaults(m)
+
+	out := new(ColourWhistCuiPresenter).Output(m, nil)
+	assert.NotContains(t, out, "指名札")
+}
+
 func TestColourWhistCuiPresenter_ShowsTheTrickAndScores(t *testing.T) {
 	m := new(interfaces.MockColourWhistGame)
 	m.On("GetTrick").Return([]*domain.TrickCard{

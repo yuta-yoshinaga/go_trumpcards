@@ -229,3 +229,48 @@ func TestThreeCardBragCuiPresenter_NamesTheWinner(t *testing.T) {
 		assert.NotContains(t, out, i18n.Tf("threecardbrag.gameEnd", "player", "0"))
 	})
 }
+
+// **Seen になった瞬間に支払額が倍になる。**倍率はレイズ上限の計算には入っていたが
+// 数字の出所は説明されておらず、CUI プレイヤーは実際にコマンドを打つまで
+// 倍額になったことを知り得なかった (#6455)。Web は tcb-cost-notice で常に出している。
+func TestThreeCardBragCuiPresenter_SaysWhatACallCosts(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.ThreeCardBragCuiPresenter)
+
+	atStake := func(stake int, seen bool, humanTurn bool) *interfaces.MockThreeCardBragGame {
+		m, players := tcbSetupMockWithPlayers()
+		players[0].SetSeen(seen)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetStake")
+		m.On("GetStake").Return(stake)
+		if !humanTurn {
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+			m.On("GetCurrentPlayerIdx").Return(1)
+		}
+		return m
+	}
+
+	t.Run("blind pays the stake itself", func(t *testing.T) {
+		out := p.Output(atStake(3, false, true), nil)
+		assert.Contains(t, out, i18n.Tf("threecardbrag.costNoticeBlind", "cost", "3"))
+		assert.NotContains(t, out, i18n.Tf("threecardbrag.costNoticeSeen", "cost", "6"))
+		assert.NotContains(t, out, "{{")
+	})
+
+	// **倍額であることを数字で見る。**「Seen 用の文言が出た」だけでは、
+	// ステークをそのまま入れている実装と見分けが付かない。
+	t.Run("seen pays double the stake", func(t *testing.T) {
+		out := p.Output(atStake(3, true, true), nil)
+		assert.Contains(t, out, i18n.Tf("threecardbrag.costNoticeSeen", "cost", "6"))
+		assert.NotContains(t, out, i18n.Tf("threecardbrag.costNoticeSeen", "cost", "3"))
+		assert.NotContains(t, out, i18n.Tf("threecardbrag.costNoticeBlind", "cost", "3"))
+	})
+
+	// 相手の支払額は関係ない。
+	t.Run("says nothing on a CPU turn", func(t *testing.T) {
+		out := p.Output(atStake(3, true, false), nil)
+		assert.NotContains(t, out, i18n.Tf("threecardbrag.costNoticeSeen", "cost", "6"))
+		assert.NotContains(t, out, i18n.Tf("threecardbrag.costNoticeBlind", "cost", "3"))
+	})
+}

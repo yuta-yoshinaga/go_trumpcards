@@ -37,6 +37,9 @@ type UnsunKarutaGame interface {
 	CanDeclare() bool
 	// IsMustFollow いまのトリックにフォロー義務があるかを取得する
 	IsMustFollow() bool
+
+	// GetDeclarationKind いまのトリックの宣言種別 (0=無し 1=メリ 2=モンチ) を取得する
+	GetDeclarationKind() int
 	// IsDeclaredThisTrick いまのトリックで宣言が行われたかを取得する
 	IsDeclaredThisTrick() bool
 	// GetRoundNumber 現在のディール番号を取得する

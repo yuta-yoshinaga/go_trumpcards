@@ -15,7 +15,7 @@ const mockExec = vi.mocked(tarneebApi.exec);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
-function player(id: number, isHuman: boolean, team: number, trickCount: number) {
+function player(id: number, isHuman: boolean, team: number, trickCount: number, roundScore = 0) {
   return {
     id,
     isHuman,
@@ -23,7 +23,7 @@ function player(id: number, isHuman: boolean, team: number, trickCount: number) 
     cardCount: 5,
     cards: isHuman ? [card('SPADE', 1)] : [],
     bid: -1,
-    roundScore: 0,
+    roundScore,
     cumulativeScore: 0,
     trickCount,
   };
@@ -31,7 +31,12 @@ function player(id: number, isHuman: boolean, team: number, trickCount: number) 
 
 function makeState(overrides: Partial<TarneebResponse> = {}): TarneebResponse {
   return {
-    players: [player(0, true, 0, 3), player(1, false, 1, 2), player(2, false, 0, 1), player(3, false, 1, 0)],
+    players: [
+      player(0, true, 0, 3, 4),
+      player(1, false, 1, 2, 2),
+      player(2, false, 0, 1, 4),
+      player(3, false, 1, 0, 2),
+    ],
     teamScores: [10, 5],
     phase: 0,
     roundNumber: 1,
@@ -91,18 +96,57 @@ describe('TarneebPage', () => {
     expect(screen.queryByTestId('tarneeb-redeal-count')).not.toBeInTheDocument();
   });
 
-  it('labels the human team and opponents and shows round tricks + total per team', async () => {
+  it('labels the human team and opponents and shows round score + total per team', async () => {
     const { container } = renderWithProviders(<TarneebPage />);
     await waitFor(() => expect(container.querySelector('[data-tutorial="tn-score-table"] table')).not.toBeNull());
     const table = container.querySelector('[data-tutorial="tn-score-table"] table') as HTMLTableElement;
-    // Your team (team 0): round tricks 3 + 1 = 4, total 10.
-    const yourRow = within(table).getByText('あなたのチーム').closest('tr') as HTMLTableRowElement;
-    expect(within(yourRow).getByText('4')).toBeInTheDocument();
-    expect(within(yourRow).getByText('10')).toBeInTheDocument();
-    // Opponents (team 1): round tricks 2 + 0 = 2, total 5.
-    const oppRow = within(table).getByText('相手チーム').closest('tr') as HTMLTableRowElement;
-    expect(within(oppRow).getByText('2')).toBeInTheDocument();
-    expect(within(oppRow).getByText('5')).toBeInTheDocument();
+    // 列は チーム / トリック / 今ラウンド / 累計。数字が列をまたいで重複しうるので、
+    // テキスト一致ではなく列位置で読む。
+    const cellsOf = (label: string) => {
+      const row = within(table).getByText(label).closest('tr') as HTMLTableRowElement;
+      return Array.from(row.cells).map((c) => c.textContent);
+    };
+    // Your team (team 0): 4 tricks, round score 4, total 10.
+    expect(cellsOf('あなたのチーム')).toEqual(['あなたのチーム', '4', '4', '10']);
+    // Opponents (team 1): 2 tricks, round score 2, total 5.
+    expect(cellsOf('相手チーム')).toEqual(['相手チーム', '2', '2', '5']);
+  });
+
+  it('displays round score (including negative scores for failed bids) instead of trick count in the score table', async () => {
+    // Team 0 failed bid: bid 8, took 3+1=4 tricks -> roundScore is -8.
+    // Team 1 defenders: took 6+3=9 tricks -> roundScore is +9.
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, 0, 3, -8),
+          player(1, false, 1, 6, 9),
+          player(2, false, 0, 1, -8),
+          player(3, false, 1, 3, 9),
+        ],
+        teamScores: [2, 15],
+      }),
+    );
+    const { container } = renderWithProviders(<TarneebPage />);
+    await waitFor(() => expect(container.querySelector('[data-tutorial="tn-score-table"] table')).not.toBeNull());
+    const table = container.querySelector('[data-tutorial="tn-score-table"] table') as HTMLTableElement;
+
+    const cellsOf = (label: string) => {
+      const row = within(table).getByText(label).closest('tr') as HTMLTableRowElement;
+      return Array.from(row.cells).map((c) => c.textContent);
+    };
+    // チーム / トリック / 今ラウンド / 累計。
+    // Team 0: 4 tricks but a *negative* round score — the two columns must not agree here,
+    // which is the whole point of #6402.
+    expect(cellsOf('あなたのチーム')).toEqual(['あなたのチーム', '4', '-8', '2']);
+    // Team 1: 9 tricks, round score 9, total 15.
+    expect(cellsOf('相手チーム')).toEqual(['相手チーム', '9', '9', '15']);
+
+    // Player breakdown preserves individual trick counts (acceptance condition 3).
+    const breakdown = (await screen.findByTestId('tn-player-breakdown')) as HTMLDetailsElement;
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-0"]')?.textContent).toBe('3トリック');
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-2"]')?.textContent).toBe('1トリック');
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-1"]')?.textContent).toBe('6トリック');
+    expect(breakdown.querySelector('[data-testid="tn-breakdown-tricks-3"]')?.textContent).toBe('3トリック');
   });
 
   it('shows a per-player trick breakdown grouped by team (#3306)', async () => {
@@ -214,5 +258,76 @@ describe('TarneebPage', () => {
     for (const c of cards) {
       expect(c).not.toHaveAttribute('aria-disabled', 'true');
     }
+  });
+
+  // このページのヒントは `hintAvailable` を使わないので、読み上げガードが
+  // 一度も見ておらず aria-live が無いまま出荷されていた (#6663)。領域は
+  // **常設**で、分岐ごとにその分岐だけが出す語を見る。
+  describe('TarneebPage hint live region', () => {
+    it('is mounted and empty before any hint arrives', async () => {
+      mockExec.mockResolvedValue(makeState());
+      renderWithProviders(<TarneebPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      const region = screen.getByTestId('tarneeb-hint-live');
+      expect(region).toHaveAttribute('role', 'status');
+      expect(region).toHaveAttribute('aria-live', 'polite');
+      expect(region).toBeEmptyDOMElement();
+    });
+
+    it('names a bid recommendation', async () => {
+      const bidTurn = makeState({ phase: TarneebPhase.BID, bidPlayerIdx: 0 });
+      mockExec.mockResolvedValue(bidTurn);
+      renderWithProviders(<TarneebPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+      mockExec.mockResolvedValue({
+        ...bidTurn,
+        hint: { bid: 8, reason: 'bid_estimate' },
+      } as unknown as TarneebResponse);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      const region = await screen.findByTestId('tarneeb-hint-live');
+      await waitFor(() => expect(region).toHaveTextContent('推奨ビッド'));
+      expect(region).toHaveTextContent('8');
+      expect(region).not.toHaveTextContent('{{');
+    });
+
+    it('names a trump recommendation', async () => {
+      const trumpTurn = makeState({ phase: TarneebPhase.TRUMP_DECLARATION, bidWinnerIdx: 0 });
+      mockExec.mockResolvedValue(trumpTurn);
+      renderWithProviders(<TarneebPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+      mockExec.mockResolvedValue({
+        ...trumpTurn,
+        hint: { trumpSuit: 0, reason: 'trump_longest' },
+      } as unknown as TarneebResponse);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      const region = await screen.findByTestId('tarneeb-hint-live');
+      await waitFor(() => expect(region).toHaveTextContent('推奨トランプ'));
+      expect(region).not.toHaveTextContent('推奨ビッド');
+      expect(region).not.toHaveTextContent('{{');
+    });
+
+    it('names the card to play', async () => {
+      const playTurn = makeState({ phase: TarneebPhase.PLAY, currentPlayerIdx: 0 });
+      mockExec.mockResolvedValue(playTurn);
+      renderWithProviders(<TarneebPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+      mockExec.mockResolvedValue({
+        ...playTurn,
+        hint: { cardIndex: 2, reason: 'lead_strong' },
+      } as unknown as TarneebResponse);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      const region = await screen.findByTestId('tarneeb-hint-live');
+      await waitFor(() => expect(region).toHaveTextContent('推奨カード'));
+      expect(region).toHaveTextContent('[2]');
+      expect(region).not.toHaveTextContent('推奨トランプ');
+      expect(region).not.toHaveTextContent('{{');
+    });
   });
 });

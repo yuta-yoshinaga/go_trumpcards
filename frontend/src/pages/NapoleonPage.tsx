@@ -638,17 +638,24 @@ function NapoleonPageContent() {
 
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
-            {hint && (
-              <div className="text-ds-warning text-sm mb-2">
-                {hint.bid != null
-                  ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
-                  : hint.trumpSuit != null
-                    ? `${t('hintTrump')}: ${t(`suitName.${SUIT_KEYS[hint.trumpSuit]}`)} (${t(`hintReason.${hint.reason}`)})`
-                    : hint.discardIndex != null
-                      ? `${t('hintDiscard')}: [${hint.discardIndex}] (${t(`hintReason.${hint.reason}`)})`
-                      : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
-              </div>
-            )}
+            {/*
+              領域と中身を同じコミットで DOM に入れると、変化として扱われず読み上げ
+              られないことがある (#5955)。だから role/aria-live はヒントの有無に
+              かかわらず常設のラッパー側に置く。
+            */}
+            <div data-testid="np-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {hint.bid != null
+                    ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
+                    : hint.trumpSuit != null
+                      ? `${t('hintTrump')}: ${t(`suitName.${SUIT_KEYS[hint.trumpSuit]}`)} (${t(`hintReason.${hint.reason}`)})`
+                      : hint.discardIndex != null
+                        ? `${t('hintDiscard')}: [${hint.discardIndex}] (${t(`hintReason.${hint.reason}`)})`
+                        : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex gap-2 items-center flex-wrap">

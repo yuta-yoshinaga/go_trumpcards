@@ -16,7 +16,7 @@
   "bettingLimitRequired": "Betting limit type is required (0=Fixed, 1=PotLimit, 2=NoLimit).",
   "invalidBettingLimit": "Invalid betting limit: {{val}}. Please enter 0-2.",
   "outputTitle": "Indian Poker",
-  "dealerLine": "Dealer: Player {{idx}}",
+  "dealerLine": "Dealer: {{name}}",
   "potLine": "Pot: {{pot}}",
   "limitLine": "Limit: {{name}}",
   "anteLine": "Ante: {{ante}}",

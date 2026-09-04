@@ -194,6 +194,12 @@ func (_m *MockViraGame) GetLastRoundMade() bool {
 	return args.Bool(0)
 }
 
+// GetLastRoundPotWon モック
+func (_m *MockViraGame) GetLastRoundPotWon() int {
+	args := _m.Called()
+	return args.Int(0)
+}
+
 // GetWinnerPlayer モック
 func (_m *MockViraGame) GetWinnerPlayer() int {
 	args := _m.Called()

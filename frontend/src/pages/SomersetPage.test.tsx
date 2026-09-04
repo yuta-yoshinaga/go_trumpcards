@@ -20,7 +20,7 @@ const mockExec = vi.mocked(somersetApi.exec);
 
 function makeTableau(cols: SomersetTableauCard[][]): SomersetTableauCard[][] {
   const result: SomersetTableauCard[][] = [];
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 10; i++) {
     result.push(cols[i] ?? []);
   }
   return result;
@@ -35,6 +35,8 @@ const playingState: SomersetResponse = {
       { card: card('SPADE', 5), faceUp: true },
     ],
     [{ card: card('HEART', 6), faceUp: true }],
+    [],
+    [],
     [],
     [],
     [],
@@ -91,14 +93,36 @@ describe('SomersetPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
   });
 
-  it('labels all eight tableau columns with their 0-based index (matching hint text)', async () => {
+  it('labels all ten tableau columns with their 0-based index (matching hint text)', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SomersetPage />);
     await waitFor(() => expect(screen.getByText('#0')).toBeInTheDocument());
-    // Columns are numbered #0..#7 to match formatHintZone's raw fromCol/toCol.
-    for (let i = 0; i < 8; i++) {
+    // Columns are numbered #0..#9 to match formatHintZone's raw fromCol/toCol.
+    for (let i = 0; i < 10; i++) {
       expect(screen.getByText(`#${i}`)).toBeInTheDocument();
     }
+  });
+
+  it('renders cards placed in the 9th and 10th tableau columns (index 8 and 9)', async () => {
+    const customTableau = makeTableau([
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [{ card: card('DIAMOND', 9), faceUp: true }],
+      [{ card: card('CLOVER', 10), faceUp: true }],
+    ]);
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: customTableau,
+    });
+    renderWithProviders(<SomersetPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♦ 9' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♣ 10' })).toBeInTheDocument();
   });
 
   it('gives each empty tableau column a distinct column-numbered aria-label', async () => {
@@ -224,7 +248,7 @@ describe('SomersetPage', () => {
       renderWithProviders(<SomersetPage />);
       fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
       await waitFor(() => expect(markedColumns()).toContain('#1'));
-      expect(markedColumns().sort()).toEqual(['#1', '#2', '#3', '#4', '#5', '#6', '#7']);
+      expect(markedColumns().sort()).toEqual(['#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9']);
     });
 
     // **空の組札の唯一の受け手は A。**そこが光らないと、A にとって置き先が
@@ -243,8 +267,8 @@ describe('SomersetPage', () => {
           screen.getByRole('button', { name: '空の組札 (♠)' }).closest('[data-legal-target="true"]'),
         ).not.toBeNull(),
       );
-      // 組札 4 つ + 空き列 7 つ。組札側が 0 なら 7 で止まる。
-      expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(11);
+      // 組札 4 つ + 空き列 9 つ。組札側が 0 なら 9 で止まる。
+      expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(13);
     });
 
     // ファンデーションは A の上に同スートの 2 だけ。♠5 では光らない。
@@ -253,7 +277,7 @@ describe('SomersetPage', () => {
       const { unmount } = renderWithProviders(<SomersetPage />);
       fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
       await waitFor(() => expect(markedColumns()).toContain('#1'));
-      expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(7);
+      expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(9);
       unmount();
 
       mockExec.mockResolvedValue({
@@ -262,7 +286,7 @@ describe('SomersetPage', () => {
       });
       renderWithProviders(<SomersetPage />);
       fireEvent.click(await screen.findByRole('button', { name: '♠ 2' }));
-      await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBeGreaterThan(7));
+      await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBeGreaterThan(9));
     });
   });
 });
@@ -387,5 +411,23 @@ describe('SomersetPage destination preview', () => {
     await waitFor(() => expect(previews()).toHaveLength(0));
     expect(targets().length).toBe(hovered);
     expect(targets()[0]?.className).not.toContain('ring-ds-success/70');
+  });
+
+  // **携帯の桁割りは列数から作る。** 10 列を 8 列ぶんの幅で割ると 1 枚が広すぎて
+  // 画面から溢れ、この PR が届くようにした 8・9 列目がまさに見えなくなる。
+  it('sizes mobile cards for every tableau column, not eight of them', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    try {
+      // 空の組札枠だけが幅と高さの両方を style で持つので、そこを測る。
+      mockExec.mockResolvedValue({ ...playingState, foundation: [[], [], [], []] });
+      renderWithProviders(<SomersetPage />);
+      const slot = (await screen.findAllByRole('button', { name: /空の組札/ }))[0];
+      // 375 - 16 - 10*4 = 319 を 11 列で割ると 29 で、下限 30 に丸まる。
+      // 9 列のままだと 36 になるので、この 1 つの数字が桁割りの誤りを捕まえる。
+      expect(slot).toHaveStyle({ width: '30px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    }
   });
 });

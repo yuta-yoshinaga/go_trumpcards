@@ -868,7 +868,9 @@ func TestOmahaCuiPresenter_English(t *testing.T) {
 		out := p.Output(o, nil)
 		assert.Contains(t, out, "Omaha Hold'em")
 		assert.Contains(t, out, "Table: 4-max")
-		assert.Contains(t, out, "Dealer: Player")
+		// **座席番号ではなく名前** (#6470)。英語ロケールでも "Player 0" は出さない。
+		assert.Contains(t, out, "Dealer: ")
+		assert.NotContains(t, out, "Dealer: Player")
 		assert.Contains(t, out, "Pot:")
 		assert.NotContains(t, out, "テーブル") // no Japanese leakage
 	})
@@ -1205,5 +1207,43 @@ func TestOmahaCuiPresenter_Scoop(t *testing.T) {
 			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush",
 				WonAmount: 100, HiWonAmount: 100},
 		}), i18n.T("omaha.scoop"))
+	})
+}
+
+func TestOmahaCuiPresenter_Titles(t *testing.T) {
+	i18n.SetLang("ja")
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.OmahaCuiPresenter)
+
+	t.Run("Omaha", func(t *testing.T) {
+		h := domain.NewDefaultOmaha()
+		_ = h.Reset()
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "Omaha Hold")
+	})
+
+	t.Run("Big O", func(t *testing.T) {
+		h := domain.NewDefaultBigO()
+		_ = h.Reset()
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "Big O")
+	})
+
+	t.Run("Courchevel", func(t *testing.T) {
+		h := domain.NewDefaultCourchevel()
+		_ = h.Reset()
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "Courchevel")
+		assert.NotContains(t, result, "Big O")
+	})
+
+	t.Run("Courchevel Hi-Lo", func(t *testing.T) {
+		h := domain.NewDefaultCourchevelHiLo()
+		_ = h.Reset()
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "Courchevel")
+		assert.Contains(t, result, "Hi-Lo")
 	})
 }

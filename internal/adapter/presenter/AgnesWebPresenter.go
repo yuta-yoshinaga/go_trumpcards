@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra5
 
 package presenter
 
@@ -16,37 +16,17 @@ type AgnesWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *AgnesWebPresenter) Output(c interfaces.AgnesGame, lastErr error) string {
 	resObj := p.buildBaseOutput(c)
-
-	// タブロー
-	tableau := c.GetTableau()
-	resObj.Tableau = make([][]*controller.AgnesWebOutputTableauCard, domain.AgnesTableauCnt)
-	for i := 0; i < domain.AgnesTableauCnt; i++ {
-		col := tableau[i]
-		resObj.Tableau[i] = make([]*controller.AgnesWebOutputTableauCard, len(col))
-		for j, tc := range col {
-			var card *controller.WebOutputCard
-			if tc.FaceUp {
-				card = cardToOutput(tc.Card)
-			}
-			resObj.Tableau[i][j] = &controller.AgnesWebOutputTableauCard{Card: card, FaceUp: tc.FaceUp}
-		}
-	}
-
-	// ファンデーション
-	foundation := c.GetFoundation()
-	resObj.Foundation = make([][]*controller.WebOutputCard, domain.AgnesFoundationCnt)
-	for i := 0; i < domain.AgnesFoundationCnt; i++ {
-		pile := foundation[i]
-		resObj.Foundation[i] = make([]*controller.WebOutputCard, len(pile))
-		for j, fc := range pile {
-			resObj.Foundation[i][j] = cardToOutput(fc)
-		}
-	}
+	p.fillBoard(resObj, c)
 
 	// メッセージ
-	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
-	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
-	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
+	// **受動ヒントは Output() でも埋める。**盤面のリングなど `state.hint` を読む
+	// 分岐は、ヒントボタンを押していないときにも動く。ここで埋めないとそれらは
+	// 全部死ぬ (#4483)。
+	//
+	// **「HintOutput の応答はページの state にマージされない」と書いてあったが、
+	// このページでは誤り。**ヒントボタンは `useGameApi` の `exec('hint')` を呼び、
+	// `setState(res)` が状態を丸ごと差し替える。だから HintOutput も
+	// `fillBoard` で盤面を返す (#6800 / #6855)。
 	if c.GetPhase() == domain.AgnesPhasePlaying {
 		if hint := c.GetHint(); hint != nil {
 			resObj.Hint = &controller.AgnesWebOutputHint{
@@ -81,8 +61,7 @@ func (p *AgnesWebPresenter) Output(c interfaces.AgnesGame, lastErr error) string
 // HintOutput ヒントをJSON出力
 func (p *AgnesWebPresenter) HintOutput(c interfaces.AgnesGame) string {
 	resObj := p.buildBaseOutput(c)
-	resObj.Tableau = make([][]*controller.AgnesWebOutputTableauCard, 0)
-	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	p.fillBoard(resObj, c)
 
 	hint := c.GetHint()
 	if hint != nil {
@@ -103,6 +82,42 @@ func (p *AgnesWebPresenter) HintOutput(c interfaces.AgnesGame) string {
 // ActionLogOutput 棋譜をJSON出力
 func (p *AgnesWebPresenter) ActionLogOutput(c interfaces.AgnesGame) string {
 	return actionLogOutputJSON(c)
+}
+
+// fillBoard は盤面を埋める。
+//
+// **Output と HintOutput が同じ盤面を返すためにある。**HintOutput は以前
+// 盤面を空配列で潰していた ── `buildBaseOutput` は盤面を埋めないので、
+// 潰さないと JSON に `null` が出てフロントの `.map` が壊れる、という理由だった。
+// だがこのページのヒントボタン (と CLI の hint) は `useGameApi` の `exec` を
+// 呼び、`useGameApi` は `setState(res)` で状態を**丸ごと差し替える**ので、
+// その空配列がそのまま画面に流れ込んで盤面が消えていた (#6855、#6800 と同型)。
+func (p *AgnesWebPresenter) fillBoard(resObj *controller.AgnesWebOutput, c interfaces.AgnesGame) {
+	// タブロー
+	tableau := c.GetTableau()
+	resObj.Tableau = make([][]*controller.AgnesWebOutputTableauCard, domain.AgnesTableauCnt)
+	for i := 0; i < domain.AgnesTableauCnt; i++ {
+		col := tableau[i]
+		resObj.Tableau[i] = make([]*controller.AgnesWebOutputTableauCard, len(col))
+		for j, tc := range col {
+			var card *controller.WebOutputCard
+			if tc.FaceUp {
+				card = cardToOutput(tc.Card)
+			}
+			resObj.Tableau[i][j] = &controller.AgnesWebOutputTableauCard{Card: card, FaceUp: tc.FaceUp}
+		}
+	}
+
+	// ファンデーション
+	foundation := c.GetFoundation()
+	resObj.Foundation = make([][]*controller.WebOutputCard, domain.AgnesFoundationCnt)
+	for i := 0; i < domain.AgnesFoundationCnt; i++ {
+		pile := foundation[i]
+		resObj.Foundation[i] = make([]*controller.WebOutputCard, len(pile))
+		for j, fc := range pile {
+			resObj.Foundation[i][j] = cardToOutput(fc)
+		}
+	}
 }
 
 func (p *AgnesWebPresenter) buildBaseOutput(c interfaces.AgnesGame) *controller.AgnesWebOutput {

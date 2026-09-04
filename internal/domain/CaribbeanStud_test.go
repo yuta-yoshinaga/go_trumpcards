@@ -551,3 +551,27 @@ func TestCaribbeanStud_SetSettersExposeFields(t *testing.T) {
 	assert.Equal(t, 20, cs.GetJackpotBet())
 	assert.Equal(t, 200, cs.GetPlayBet())
 }
+
+func TestCaribbeanStud_TotalPayoutConsistency(t *testing.T) {
+	cs := domain.NewDefaultCaribbeanStud()
+	cs.SetChips(100000)
+	require.NoError(t, cs.Bet(100, 10))
+
+	// Player: flush (pays jackpot); Dealer: pair (qualifies but loses)
+	cs.SetPlayerHand(makeHand(
+		cd{domain.CardDesignSpade, 2}, cd{domain.CardDesignSpade, 5},
+		cd{domain.CardDesignSpade, 7}, cd{domain.CardDesignSpade, 9},
+		cd{domain.CardDesignSpade, 11}))
+	cs.SetDealerHand(makeHand(
+		cd{domain.CardDesignDiamond, 4}, cd{domain.CardDesignHeart, 4},
+		cd{domain.CardDesignClover, 6}, cd{domain.CardDesignSpade, 8},
+		cd{domain.CardDesignDiamond, 10}))
+
+	require.NoError(t, cs.Play())
+
+	// Ensure jackpot is non-zero so we are actually testing consistency with it
+	assert.Greater(t, cs.GetJackpotPayout(), 0)
+
+	totalExpected := cs.GetAntePayout() + cs.GetPlayPayout() + cs.GetJackpotPayout()
+	assert.Equal(t, totalExpected, cs.GetTotalPayout())
+}

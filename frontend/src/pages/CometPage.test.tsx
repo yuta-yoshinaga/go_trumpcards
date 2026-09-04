@@ -98,7 +98,7 @@ describe('CometPage', () => {
     expect(scores).toHaveTextContent('得点 0');
   });
 
-  it('shows the round result and advances', async () => {
+  it('shows the round result with cards left breakdown and advances', async () => {
     mockExec.mockResolvedValue(
       makeCometState({
         phase: 'roundEnd',
@@ -119,8 +119,58 @@ describe('CometPage', () => {
     expect(result).toHaveTextContent('2');
     expect(screen.getByTestId('comet-held-wild')).toBeInTheDocument();
 
+    // 4人分の残り札枚数の一覧
+    expect(screen.getByTestId('comet-cards-left-0')).toHaveTextContent('あなた: 残り 0 枚');
+    expect(screen.getByTestId('comet-cards-left-1')).toHaveTextContent('CPU 1: 残り 2 枚');
+    expect(screen.getByTestId('comet-cards-left-2')).toHaveTextContent('CPU 2: 残り 3 枚');
+    expect(screen.getByTestId('comet-cards-left-3')).toHaveTextContent('CPU 3: 残り 1 枚');
+    expect(result.textContent).not.toContain('{{');
+
     fireEvent.click(screen.getByTestId('comet-next-round'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('updates cards left breakdown when values change (positive control)', async () => {
+    mockExec.mockResolvedValue(
+      makeCometState({
+        phase: 'roundEnd',
+        isHumanTurn: false,
+        lastResult: {
+          winnerIdx: 1,
+          cardsLeft: [4, 0, 5, 2],
+          gained: [0, 12, 0, 0],
+          unplayedKings: 0,
+          heldWildIdx: -1,
+        },
+      }),
+    );
+    renderWithProviders(<CometPage />);
+    const result = await screen.findByTestId('comet-round-result');
+    expect(screen.getByTestId('comet-cards-left-0')).toHaveTextContent('あなた: 残り 4 枚');
+    expect(screen.getByTestId('comet-cards-left-1')).toHaveTextContent('CPU 1: 残り 0 枚');
+    expect(screen.getByTestId('comet-cards-left-2')).toHaveTextContent('CPU 2: 残り 5 枚');
+    expect(screen.getByTestId('comet-cards-left-3')).toHaveTextContent('CPU 3: 残り 2 枚');
+    expect(result.textContent).not.toContain('残り 3 枚');
+  });
+
+  it('omits round result and cards left outside roundEnd/gameEnd (negative control)', async () => {
+    mockExec.mockResolvedValue(
+      makeCometState({
+        phase: 'play',
+        isHumanTurn: true,
+        lastResult: {
+          winnerIdx: 0,
+          cardsLeft: [0, 2, 3, 1],
+          gained: [13, 0, 0, 0],
+          unplayedKings: 2,
+          heldWildIdx: 2,
+        },
+      }),
+    );
+    renderWithProviders(<CometPage />);
+    await screen.findByTestId('comet-pile');
+    expect(screen.queryByTestId('comet-round-result')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('comet-cards-left-0')).not.toBeInTheDocument();
   });
 
   it('omits the comet penalty line when nobody held it', async () => {

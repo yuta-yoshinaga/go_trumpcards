@@ -97,6 +97,11 @@ func (cp *IronCrossCuiPresenter) writeBetLine(sb *strings.Builder, c interfaces.
 	if c.GetPhase() != domain.IronCrossPhaseBetting {
 		return
 	}
+	// **上限に達すると Raise ボタンが黙って消える。** 何回目なのかを出しておけば
+	// 消えた理由が読める。回数も上限もドメインから来る。
+	sb.WriteString(i18n.Tf("ironcross.raiseCountLine",
+		"n", strconv.Itoa(c.GetRaiseCount()),
+		"max", strconv.Itoa(domain.IronCrossMaxRaisesPerRound)) + "\n")
 	if toCall := c.GetToCall(); toCall > 0 {
 		sb.WriteString(i18n.Tf("ironcross.toCallLine", "amount", strconv.Itoa(toCall)) + "\n")
 		return

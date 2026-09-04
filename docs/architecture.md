@@ -50,7 +50,7 @@ public/                        # Built frontend assets served by Go web server
 
 - **Presenter pattern**: `internal/usecase/presenter/` defines output interfaces (e.g., `BlackJackPresenter`). `internal/adapter/presenter/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
 - **Mock presenters**: `*_mock.go` files in `internal/usecase/presenter/` are used in tests to avoid I/O.
-- **Web API**: 367 endpoints, one per game. Each accepts JSON with a `command` field and the game state; the full list is in [Web API endpoints](#web-api-endpoints) below.
+- **Web API**: 368 endpoints, one per game. Each accepts JSON with a `command` field and the game state; the full list is in [Web API endpoints](#web-api-endpoints) below.
 - **Swagger UI**: Available at `/swagger/` -- serves the OpenAPI spec (`api/openapi.yaml`) via Swagger UI for interactive API documentation and testing. The spec is embedded into the binary with `go:embed`; the Swagger UI frontend is loaded from a CDN. Both routes accept `GET` and `HEAD` (HEAD returns headers only).
 - **SPA fallback**: All other GET/HEAD requests are served from `public/` via `http.FileServer`; unknown paths fall back to `public/index.html` so externally shared deep-links (e.g., `/blackjack`, `/poker`) reach the React HashRouter SPA instead of returning a bare 404. See `internal/infrastructure/web/spa.go`.
 
@@ -70,12 +70,12 @@ Go source (//go:build js && wasm)
   → wrangler deploy (Cloudflare Workers)
 ```
 
-Build commands: `make build-worker-{casino,classic,solo,extra,extra2,extra3,extra4}` or `make build-workers`.
+Build commands: `make build-worker-{casino,classic,solo,extra,extra2,extra3,extra4,extra5}` or `make build-workers`.
 
 ### Size buckets
 
-Games are distributed across **seven** Workers to stay under the 1 MB gzip size limit per Worker
-(`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`, `extra4`; see [ADR-0032](adr/0032-fourth-worker-capacity.md)
+Games are distributed across **eight** Workers to stay under the 1 MB gzip size limit per Worker
+(`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`, `extra4`, `extra5`; see [ADR-0032](adr/0032-fourth-worker-capacity.md)
 [ADR-0036](adr/0036-fifth-sixth-worker-capacity.md) and [ADR-0037](adr/0037-seventh-worker-capacity.md)). A `Category` is purely a binary-size
 bucket, **not** a user-facing taxonomy, and games move between buckets whenever one nears the
 limit.
@@ -122,7 +122,7 @@ constant in `frontend/src/api/gameApi.ts`. For the full set of registration poin
 
 ## Web API endpoints
 
-One `POST /<game>/exec` per registered game -- **367** in total. Every endpoint takes JSON with a
+One `POST /<game>/exec` per registered game -- **368** in total. Every endpoint takes JSON with a
 `command` field plus the game state, and returns that game's Web presenter output.
 
 One row per game, so adding a game is a one-line diff. This used to be a single inline paragraph
@@ -153,6 +153,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /bigo/exec` | 5 Card Omaha (Big O) |
 | `POST /bigohilo/exec` | 5 Card Omaha Hi-Lo (Big O) |
 | `POST /courchevel/exec` | Courchevel |
+| `POST /courchevelhilo/exec` | Courchevel Hi-Lo |
 | `POST /shortdeck/exec` | Short Deck (6+ Hold'em) |
 | `POST /pineapple/exec` | Pineapple Poker |
 | `POST /crazypineapple/exec` | Crazy Pineapple Poker |

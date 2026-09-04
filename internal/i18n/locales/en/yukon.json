@@ -27,5 +27,19 @@
   "hintConfidenceTableau": "(priority: medium - tableau reorganization)",
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
-  "helpUndo": "  u undo one move"
+  "helpUndo": "  u undo one move",
+  "errNotPlaying": "The game is not in play.",
+  "errBadFromColumn": "That source column does not exist.",
+  "errBadToColumn": "That destination column does not exist.",
+  "errSameColumn": "The source and destination columns are the same.",
+  "errBadCardIndex": "That column has no card at that index.",
+  "errCardFaceDown": "A face-down card cannot be moved.",
+  "errCannotPlaceTableau": "A tableau card only goes on a card of the opposite colour, one rank higher.",
+  "errBadColumn": "That column does not exist.",
+  "errColumnEmpty": "That column is empty.",
+  "errBadFoundationCard": "That card cannot go to a foundation.",
+  "errCannotPlaceFoundation": "A foundation only takes the same suit, one rank higher.",
+  "errNotAllFaceUp": "Cards are still face down, so the game cannot be finished automatically.",
+  "errUndoNotPlaying": "The game is not in play, so there is nothing to undo.",
+  "errNothingToUndo": "There is no move to undo."
 }

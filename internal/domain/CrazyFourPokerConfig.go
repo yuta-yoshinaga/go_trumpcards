@@ -114,6 +114,26 @@ func CrazyFourPokerQueensUpPayout() []CrazyFourPokerPayoutRow {
 	return rows
 }
 
+// CrazyFourPokerSuperBonusPayout は Super Bonus の配当表を強い順に返す。
+//
+// **アンティを賭けると必ず付く賭け**なので、賭ける前に見えている必要がある。
+// 倍率は 1/10 単位 (`CrazyFourPokerPayoutScale`)。4 枚のエースは
+// `crazyFourPokerSuperBonusPayouts` に入っていない別枠なので、ここで足す。
+func CrazyFourPokerSuperBonusPayout() []CrazyFourPokerPayoutRow {
+	rows := make([]CrazyFourPokerPayoutRow, 0, len(crazyFourPokerSuperBonusPayouts))
+	for hand, mult := range crazyFourPokerSuperBonusPayouts {
+		rows = append(rows, CrazyFourPokerPayoutRow{Hand: hand, Multiplier: mult})
+	}
+	// 倍率の降順。同率は役の強い順で決める (map の走査順は毎回変わる)。
+	sort.Slice(rows, func(i, j int) bool {
+		if rows[i].Multiplier != rows[j].Multiplier {
+			return rows[i].Multiplier > rows[j].Multiplier
+		}
+		return rows[i].Hand > rows[j].Hand
+	})
+	return rows
+}
+
 // CrazyFourPokerPayoutRow は配当表の 1 行 (役と X:1 の X)。
 type CrazyFourPokerPayoutRow struct {
 	Hand       int

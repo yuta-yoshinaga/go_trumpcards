@@ -29,6 +29,7 @@ func setupKlaverjasWebMock() *interfaces.MockKlaverjasGame {
 	m.On("GetTeamScores").Return([domain.KlaverjasTeamCnt]int{0, 0})
 	m.On("GetRoundCardPoints").Return([domain.KlaverjasTeamCnt]int{0, 0})
 	m.On("GetRoundRoem").Return([domain.KlaverjasTeamCnt]int{0, 0})
+	m.On("GetRoundPlayerRoem").Return([domain.KlaverjasPlayerCnt]int{0, 0, 0, 0})
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetPlayableIndices", 0).Return([]int{0})
 	m.On("IsHumanTurn").Return(true)
@@ -167,6 +168,20 @@ func TestKlaverjasWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 300, resObj.Players[0].TeamScore)
 		// player 1 is team 1, score 150
 		assert.Equal(t, 150, resObj.Players[1].TeamScore)
+	})
+
+	t.Run("round player roem populated in json", func(t *testing.T) {
+		m, _ := setupKlaverjasWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundRoem")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundPlayerRoem")
+		m.On("GetRoundRoem").Return([domain.KlaverjasTeamCnt]int{50, 20})
+		m.On("GetRoundPlayerRoem").Return([domain.KlaverjasPlayerCnt]int{50, 20, 0, 0})
+		result := p.Output(m, nil)
+		var resObj controller.KlaverjasWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, [domain.KlaverjasPlayerCnt]int{50, 20, 0, 0}, resObj.RoundPlayerRoem)
+		assert.Equal(t, [domain.KlaverjasTeamCnt]int{50, 20}, resObj.RoundRoem)
+		assert.Contains(t, result, `"roundPlayerRoem":[50,20,0,0]`)
 	})
 }
 

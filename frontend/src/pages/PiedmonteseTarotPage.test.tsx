@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { piedmonteseTarotApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makePiedmonteseTarotState } from '../test/stateFactories';
+import { PiedmonteseTarotPhase } from '../types/phases';
 import { PiedmonteseTarotPage } from './PiedmonteseTarotPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -248,5 +249,77 @@ describe('PiedmonteseTarotPage', () => {
     fireEvent.click(cards[2]);
     fireEvent.click(cards[3]);
     expect(screen.getByRole('button', { name: /捨てる/ })).toBeDisabled();
+  });
+
+  // **取ったのが誰か画面から読めなかった (#6623)。** サーバは lastTrickWinner を
+  // 最初から送っているのにページが読んでおらず、4 枚並んだ場札からタロッコの
+  // 切り札優先を毎回自分で解き直すことになっていた。
+  describe('trick winner highlight', () => {
+    const trickOf = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({
+        playerIdx: i,
+        card: { design: 'HEART' as const, value: i + 2, glyph: '♥', label: String(i + 2), color: 'red', deck: 'tarot' },
+      }));
+
+    it('marks the winning seat once the trick is over', async () => {
+      mockExec.mockResolvedValue(
+        makePiedmonteseTarotState({
+          phase: PiedmonteseTarotPhase.TRICK_END,
+          currentTrick: trickOf(4),
+          lastTrickWinner: 2,
+        }),
+      );
+      const { container } = renderWithProviders(<PiedmonteseTarotPage />);
+      await waitFor(() => expect(screen.getByTestId('trick-winner-badge')).toBeInTheDocument());
+      // 光るのはちょうど1席。全席に付ける実装だとここで落ちる。
+      expect(container.querySelectorAll('[data-trick-winner="true"]')).toHaveLength(1);
+    });
+
+    // **プレイ中は光らせない。** 最後の1枚で覆る答えを先に見せない。
+    it('marks nothing while the trick is still being played', async () => {
+      mockExec.mockResolvedValue(
+        makePiedmonteseTarotState({
+          phase: PiedmonteseTarotPhase.PLAY,
+          currentTrick: trickOf(3),
+          lastTrickWinner: 2,
+        }),
+      );
+      const { container } = renderWithProviders(<PiedmonteseTarotPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+      expect(container.querySelectorAll('[data-trick-winner="true"]')).toHaveLength(0);
+    });
+
+    // 受け入れ条件の「3人卓・4人卓どちらでも正しい席が光る」。席数と勝者の
+    // 両方を変えて、固定の席を光らせているだけでないことを見る。
+    it('marks the right seat on a three-handed table', async () => {
+      mockExec.mockResolvedValue(
+        makePiedmonteseTarotState({
+          phase: PiedmonteseTarotPhase.TRICK_END,
+          currentTrick: trickOf(3),
+          lastTrickWinner: 0,
+        }),
+      );
+      const { container } = renderWithProviders(<PiedmonteseTarotPage />);
+      await waitFor(() => expect(screen.getByTestId('trick-winner-badge')).toBeInTheDocument());
+      const marked = container.querySelectorAll('[data-trick-winner="true"]');
+      expect(marked).toHaveLength(1);
+      // 席 0 は人間。名前ごと当たっていることを見る (席を取り違えても数は1のため)。
+      expect(marked[0].textContent).toContain('あなた');
+    });
+  });
+
+  // **催促は常設のライブ領域の中にある (#6880)。** フェーズ切り替えで現れる
+  // テキストなので、領域が無いとスクリーンリーダには何も届かない。領域を
+  // 出現と同時に付けても読み上げられないため、常設にして中身だけ差し替える。
+  it('announces the prompt from an always-mounted live region', async () => {
+    mockExec.mockResolvedValue(scartoState);
+    renderWithProviders(<PiedmonteseTarotPage />);
+
+    const live = await screen.findByTestId('piedmontesetarot-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
+    expect(live).toContainElement(await screen.findByTestId('piedmontesetarot-discard-prompt'));
   });
 });

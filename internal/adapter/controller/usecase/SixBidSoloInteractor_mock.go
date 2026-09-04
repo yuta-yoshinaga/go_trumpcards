@@ -54,3 +54,8 @@ func (_m *MockSixBidSoloInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()
 	return ret.Get(0).([]byte), ret.Error(1)
 }
+
+// Hint モック
+func (_m *MockSixBidSoloInteractor) Hint() string {
+	return _m.Called().String(0)
+}

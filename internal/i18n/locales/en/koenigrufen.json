@@ -12,6 +12,8 @@
   "playerLine": "{{name}} ({{role}}): {{cards}} cards  Score: {{score}}  Tricks: {{tricks}}",
   "roleDeclarer": "Declarer",
   "rolePartner": "Partner",
+  "calledKing": "Called King: {{suit}}",
+  "partnerClueUnknown": "Whoever holds the {{suit}} King is the declarer's secret partner (still unknown)",
   "youArePartner": "You are the called partner (you hold the called King)",
   "roleOpponent": "Opponent",
   "bidNone": "-",

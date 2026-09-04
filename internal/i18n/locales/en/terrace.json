@@ -40,5 +40,21 @@
   "helpExampleHint": "  h                        ask for a move",
   "helpExampleAuto": "  ac                       send everything that can go to a foundation",
   "invalidUndoCount": "Invalid undo count: {{val}} (give a whole number of 1 or more)",
-  "helpUndoN": "  undo <n>                 undo n moves at once (to escape a dead end)"
+  "helpUndoN": "  undo <n>                 undo n moves at once (to escape a dead end)",
+  "errNotPlaying": "The game is not in play.",
+  "errStockEmpty": "The stock is empty and there is no redeal.",
+  "errReserveEmpty": "The reserve is empty.",
+  "errWasteEmpty": "The waste is empty.",
+  "errCannotPlaceFoundation": "The card cannot be placed on a foundation.",
+  "errCannotPlaceTableau": "The card cannot be placed on that pile.",
+  "errSamePile": "The source and destination are the same pile.",
+  "errEmptyPileFill": "An empty pile fills itself from the waste or the stock.",
+  "errNoAuto": "No card can be auto-completed.",
+  "errNothingToUndo": "There is nothing to undo.",
+  "errSnapshotArrayTooLarge": "The snapshot array exceeds the maximum allowed size.",
+  "errSnapshotPileTooLarge": "A snapshot pile exceeds the maximum allowed size.",
+  "errInputArrayTooLarge": "The input array exceeds the maximum allowed size.",
+  "errReserveStockWasteTooLarge": "The reserve/stock/waste is too large.",
+  "errBadColumn": "That column does not exist.",
+  "errEmptyPile": "That column is empty."
 }

@@ -128,6 +128,71 @@ func TestGrandfathersClockCuiPresenter_Output(t *testing.T) {
 		})
 	}
 
+	t.Run("playing phase shows completed faces count and moves", func(t *testing.T) {
+		g := new(interfaces.MockGrandfathersClockGame)
+		setupGrandfathersClockCuiMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsFoundationComplete")
+		for i := range domain.GrandfathersClockFoundationCnt {
+			g.On("IsFoundationComplete", i).Return(i < 5)
+		}
+
+		result := new(GrandfathersClockCuiPresenter).Output(g, nil)
+		assert.Contains(t, result, "完成した文字盤: 5/12")
+		assert.Contains(t, result, "手数: 0")
+	})
+
+	t.Run("playing phase shows completed faces count in English", func(t *testing.T) {
+		origLang := i18n.Lang()
+		i18n.SetLang("en")
+		defer i18n.SetLang(origLang)
+
+		g := new(interfaces.MockGrandfathersClockGame)
+		setupGrandfathersClockCuiMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsFoundationComplete")
+		for i := range domain.GrandfathersClockFoundationCnt {
+			g.On("IsFoundationComplete", i).Return(i < 5)
+		}
+
+		result := new(GrandfathersClockCuiPresenter).Output(g, nil)
+		assert.Contains(t, result, "Clock faces complete: 5/12")
+		assert.Contains(t, result, "Moves: 0")
+	})
+
+	t.Run("game clear phase does not show playing facesComplete line", func(t *testing.T) {
+		g := new(interfaces.MockGrandfathersClockGame)
+		setupGrandfathersClockCuiMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
+		g.On("GetPhase").Return(domain.GrandfathersClockPhaseGameClear)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsFoundationComplete")
+		for i := range domain.GrandfathersClockFoundationCnt {
+			g.On("IsFoundationComplete", i).Return(i < 5)
+		}
+
+		result := new(GrandfathersClockCuiPresenter).Output(g, nil)
+		assert.Contains(t, result, "ゲームクリア")
+		// 件数でなく**ラベルそのもの**が出ないことを見る。"5/12" だけ否定すると、
+		// 別の件数で行が出ていても通ってしまう。
+		assert.NotContains(t, result, "完成した文字盤:")
+	})
+
+	t.Run("game over phase shows summary and does not show playing facesComplete line", func(t *testing.T) {
+		g := new(interfaces.MockGrandfathersClockGame)
+		setupGrandfathersClockCuiMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
+		g.On("GetPhase").Return(domain.GrandfathersClockPhaseGameOver)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsFoundationComplete")
+		for i := range domain.GrandfathersClockFoundationCnt {
+			g.On("IsFoundationComplete", i).Return(i < 5)
+		}
+
+		result := new(GrandfathersClockCuiPresenter).Output(g, nil)
+		assert.Contains(t, result, "ゲームオーバー")
+		assert.Contains(t, result, "文字盤 5/12 個を完成")
+		// 件数でなく**ラベルそのもの**が出ないことを見る。"5/12" だけ否定すると、
+		// 別の件数で行が出ていても通ってしまう。
+		assert.NotContains(t, result, "完成した文字盤:")
+	})
+
 	t.Run("empty column and empty face", func(t *testing.T) {
 		g := new(interfaces.MockGrandfathersClockGame)
 		setupGrandfathersClockCuiMockDefaults(g)

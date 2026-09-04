@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra5
 
 package presenter
 
@@ -131,6 +131,13 @@ func (p *CegoCuiPresenter) Output(g interfaces.CegoGame, lastErr error) string {
 			b.WriteString(i18n.Tf("cego.declarerLine",
 				"name", cuiPlayerName(g.GetPlayer(declarer), declarer),
 				"contract", cegoContractLabel(g.GetContractType())) + "\n")
+		}
+
+		// **得点山の枚数はどちらが何点持つかの見積もりになる。**Web はプレイ中も
+		// 出し続けているのに、CUI では契約・交換のプロンプトを抜けた途端に消えて
+		// いた (#6515)。0 枚 (該当なし) では出さない ── Web と同じ条件。
+		if blind := g.GetBlindCount(); blind > 0 {
+			b.WriteString(i18n.Tf("cego.blindCountLine", "count", strconv.Itoa(blind)) + "\n")
 		}
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {

@@ -711,6 +711,76 @@ func (g *Preference) GetRoundTricks() [PreferencePlayerCnt]int { return g.roundT
 // SetRoundTricks 現ラウンドの獲得トリック数設定 (テスト用)
 func (g *Preference) SetRoundTricks(s [PreferencePlayerCnt]int) { g.roundTricks = s }
 
+// PreferenceDeclarerProgress は宣言者の契約達成状況。
+type PreferenceDeclarerProgress struct {
+	Won       int // これまでに取ったトリック数
+	Needed    int // 契約に必要なトリック数 (Misère は 0)
+	Remaining int // 残りのトリック数
+	IsMisere  bool
+	Made      bool // 達成が確定した
+	Failed    bool // 失敗が確定した
+}
+
+// GetDeclarerProgress は宣言者の契約達成状況を返す。
+// 宣言者が決まっていない、またはプレイ中/トリック終了以外のフェーズ、
+// または契約が Pass のときは nil を返す。
+//
+// **Misère は 1 トリック取った瞬間に失敗が確定する**。
+// Web の computeContractProgress (PreferencePage.tsx) と同じ 3 状態
+// ('made' / 'failed' / 'progress') の規則に従い、Made と Failed は同時に
+// true にならない。
+//
+// 残りトリック数は PreferenceTrickCount (10) から全席の獲得トリック数合計を引いて求め、
+// 負にならないよう 0 で下限を切る。
+func (g *Preference) GetDeclarerProgress() *PreferenceDeclarerProgress {
+	if g.phase != PreferencePhasePlay && g.phase != PreferencePhaseTrickEnd {
+		return nil
+	}
+	if g.declarerIdx < 0 || g.declarerIdx >= PreferencePlayerCnt {
+		return nil
+	}
+	if g.contract == PreferenceBidPass {
+		return nil
+	}
+	played := 0
+	for _, t := range g.roundTricks {
+		played += t
+	}
+	remaining := PreferenceTrickCount - played
+	if remaining < 0 {
+		remaining = 0
+	}
+	won := g.roundTricks[g.declarerIdx]
+	isMisere := g.contract == PreferenceBidMisere
+	needed := preferenceBidTarget(g.contract)
+
+	made, failed := false, false
+	if isMisere {
+		// Misère は 1 トリックでも取ったら即失敗。
+		// 達成が確定するのは全トリック取らずに終えたとき (残り 0)。
+		if won > 0 {
+			failed = true
+		} else if remaining == 0 {
+			made = true
+		}
+	} else {
+		if won >= needed {
+			made = true
+		} else if won+remaining < needed {
+			// 残りを全部取っても目標に届かない場合は失敗確定。
+			failed = true
+		}
+	}
+	return &PreferenceDeclarerProgress{
+		Won:       won,
+		Needed:    needed,
+		Remaining: remaining,
+		IsMisere:  isMisere,
+		Made:      made,
+		Failed:    failed,
+	}
+}
+
 // GetGameEndFlag ゲーム終了フラグ取得
 func (g *Preference) GetGameEndFlag() bool { return g.gameEndFlag }
 

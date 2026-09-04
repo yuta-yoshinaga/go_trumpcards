@@ -154,11 +154,14 @@ export function actionDesc(
       targetValue: valueName(action.targetValue),
     });
   }
-  return t('actionPlayed', {
+  const played = t('actionPlayed', {
     name: findPlayerName(players, action.playerIdx),
     design: c.design,
     value: valueName(c.value),
   });
+  // Reclaiming silently returns the joker to the hand: the card count goes up
+  // with nothing on screen to account for it.
+  return action.jokerReclaimed ? `${played} ${t('actionReclaimedJoker')}` : played;
 }
 
 /** CSS class for Sevens player area layout. */

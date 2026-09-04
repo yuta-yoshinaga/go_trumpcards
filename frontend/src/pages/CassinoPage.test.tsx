@@ -508,4 +508,58 @@ describe('CassinoPage action history', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('cs-action-log')).not.toBeInTheDocument();
   });
+  // 難易度の選択肢はモジュールトップレベルの定数で英語直書きだったので、
+  // 日本語UIでも Easy/Normal/Hard のままだった (#6345)。
+  //
+  // **キー名ではなく解決後の文言を見る。** i18next は未知のキーに対して
+  // キー文字列をそのまま返すので、キーと比べると翻訳が無くても通ってしまう。
+  it('translates the CPU difficulty choices instead of hardcoding English', async () => {
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    for (const label of ['やさしい', 'ふつう', 'むずかしい']) {
+      expect(screen.getByRole('option', { name: label })).toBeInTheDocument();
+    }
+    // 英語直書きの残骸も、未解決のキーも画面に出てはいけない。
+    expect(screen.queryByRole('option', { name: 'Easy' })).not.toBeInTheDocument();
+    expect(document.body.textContent).not.toContain('settings.difficulty');
+  });
+
+  it('renders the suggest area when a suggestion is available', async () => {
+    // アクションの提案がある場合に提案領域を表示する
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 1,
+            cards: [card('SPADE', 9)],
+            capturedCount: 0,
+            sweepCount: 0,
+            totalScore: 0,
+          },
+          { id: 1, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 2, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 3, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+        ],
+        tableCards: [card('SPADE', 4), card('HEART', 5)],
+      }),
+    );
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-1'));
+
+    expect(screen.getByTestId('cs-suggest-area')).toBeInTheDocument();
+  });
+
+  it('hides the suggest area when no suggestion is available', async () => {
+    // アクションの提案がない場合は提案領域を隠す
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('cs-suggest-area')).not.toBeInTheDocument();
+  });
 });

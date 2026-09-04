@@ -168,7 +168,7 @@ var gameRegistry = []GameRegistryEntry{
 			TitleKey:    "oldmaid.helpTitle",
 			ExampleKeys: []string{"oldmaid.helpExampleD"},
 			CommandKeys: []string{"oldmaid.helpDraw", "oldmaid.helpShuffle", "oldmaid.helpReorder", "oldmaid.helpLog"},
-			SettingKeys: []string{"oldmaid.helpSetMode", "oldmaid.helpSetPlacement", "oldmaid.helpSetMemoryAI"},
+			SettingKeys: []string{"oldmaid.helpSetMode", "oldmaid.helpSetPlacement", "oldmaid.helpSetMemoryAI", "oldmaid.helpSetHesitation"},
 		}),
 	BindCuiFor("daifugo",
 		func() usecase.DaifugoInteractorIF {
@@ -228,6 +228,7 @@ var gameRegistry = []GameRegistryEntry{
 			}, tournamentRebuyAddOnKeys...),
 			SettingKeys: append([]string{
 				"holdem.helpBettingLimit", "holdem.helpTournament",
+				"holdem.helpRebuyEnabled", "holdem.helpAddonEnabled",
 			}, holdemBlindKeys...),
 		}),
 	BindCuiFor("omaha",
@@ -882,7 +883,7 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			CommandKeys:       []string{"ohhell.helpBid", "ohhell.helpPlay", "ohhell.helpNext", "ohhell.helpNextRound", "ohhell.helpHint"},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"ohhell.helpSetDifficulty", "ohhell.helpSetMaxHand"},
+			SettingKeys:       []string{"ohhell.helpSetDifficulty", "ohhell.helpSetMaxHand", "ohhell.helpSetScoring"},
 		}),
 	BindCuiFor("ninetynine",
 		func() usecase.NinetyNineInteractorIF {
@@ -980,7 +981,7 @@ var gameRegistry = []GameRegistryEntry{
 			ExampleKeys: []string{
 				"golf.helpExampleHint",
 			},
-			CommandKeys:       []string{"golf.helpDraw", "golf.helpRemove", "golf.helpGiveUp", "golf.helpHint", "golf.helpUndo"},
+			CommandKeys:       []string{"golf.helpDraw", "golf.helpRemove", "golf.helpGiveUp", "golf.helpHint", "golf.helpUndo", "golf.helpResetNine"},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
 	BindCuiFor("pigtail",
@@ -1043,12 +1044,20 @@ var gameRegistry = []GameRegistryEntry{
 			"  d <atkIdx> <handIdx>     defend attack card",
 			"  p                        pass (stop attacking)",
 			"  t                        take cards (give up defense)",
+			"  tr <idx>                 transfer the attack (perevod; needs the setting on)",
 			"  sort <0|1>               sort hand (0=suit, 1=value)",
 			"  sd <0-2>                 set CPU difficulty",
 			"  l                        action log",
 			"  h                        hint",
 			"",
-			i18n.T("commonCommands"),
+			// **`commonCommands` というキーは存在しない。** i18n.T は未知の
+			// キーをそのまま返すので、durak のヘルプに `commonCommands` と
+			// いう行が出ていた (#7061)。定型ヘルプ (help_text.go) と同じ
+			// 3 行に揃える。
+			i18n.T("session"),
+			i18n.T("resetEntry"),
+			i18n.T("quitEntry"),
+			i18n.T("helpEntry"),
 		}}),
 	BindCuiFor("fortythieves",
 		func() usecase.FortyThievesInteractorIF {
@@ -1427,7 +1436,7 @@ var gameRegistry = []GameRegistryEntry{
 				"scorpion.helpGiveUp",
 				"scorpion.helpHint",
 				"scorpion.helpLegal",
-				"scorpion.helpAutoComplete", "scorpion.helpUndo",
+				"scorpion.helpAutoComplete", "scorpion.helpUndo", "scorpion.helpUndoN",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
@@ -2251,7 +2260,7 @@ var gameRegistry = []GameRegistryEntry{
 			ExampleKeys: []string{
 				"casinowar.helpExampleBet",
 			},
-			CommandKeys:       []string{"casinowar.helpBet", "casinowar.helpSurrender", "casinowar.helpWar"},
+			CommandKeys:       []string{"casinowar.helpBet", "casinowar.helpRebet", "casinowar.helpSurrender", "casinowar.helpWar"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
 	BindCuiFor("pitch",
@@ -2760,7 +2769,7 @@ var gameRegistry = []GameRegistryEntry{
 				"fourcardpoker.helpExampleBet",
 				"fourcardpoker.helpExamplePlay",
 			},
-			CommandKeys:       []string{"fourcardpoker.helpBet", "fourcardpoker.helpPlay", "fourcardpoker.helpFold"},
+			CommandKeys:       []string{"fourcardpoker.helpBet", "fourcardpoker.helpPlay", "fourcardpoker.helpFold", "fourcardpoker.helpHint"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
 	BindCuiFor("rummy500",
@@ -3156,6 +3165,7 @@ var gameRegistry = []GameRegistryEntry{
 				"bristol.helpMoveTF",
 				"bristol.helpMoveNT",
 				"bristol.helpMoveNF",
+				"bristol.helpTargets",
 				"bristol.helpGiveUp",
 				"bristol.helpHint",
 				"bristol.helpAutoComplete", "bristol.helpUndo",
@@ -5065,6 +5075,7 @@ var gameRegistry = []GameRegistryEntry{
 				"sixbidsolo.helpDeclare",
 				"sixbidsolo.helpPlay",
 				"sixbidsolo.helpNext",
+				"sixbidsolo.helpHint",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
@@ -5153,6 +5164,7 @@ var gameRegistry = []GameRegistryEntry{
 				"auldlangsyne.helpHint",
 				"auldlangsyne.helpAutoComplete",
 				"auldlangsyne.helpUndo",
+				"auldlangsyne.helpUndoN",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
@@ -6381,6 +6393,7 @@ var gameRegistry = []GameRegistryEntry{
 				"mrsmop.helpHint",
 				"mrsmop.helpAutoComplete",
 				"mrsmop.helpMoveShorthand", "mrsmop.helpUndo",
+				"mrsmop.helpTargets",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
@@ -7147,6 +7160,30 @@ var gameRegistry = []GameRegistryEntry{
 				"bolivia.helpNextRound", "bolivia.helpLog",
 			},
 			SettingKeys: []string{"bolivia.helpSetDifficulty", "bolivia.helpSetLimit"},
+		}),
+	BindCuiFor("courchevelhilo",
+		func() usecase.OmahaInteractorIF {
+			return usecase.NewOmahaInteractor(domain.NewDefaultCourchevelHiLo(), new(presenter.OmahaCuiPresenter))
+		},
+		controller.NewOmahaCuiController,
+		CuiHelpSpec{
+			TitleKey: "omaha.helpTitleCourchevelHiLo",
+			// Renders omaha's command rows, so it renders omaha's examples too.
+			ExampleKeys: []string{
+				"omaha.helpExampleCall",
+				"omaha.helpExampleRaise",
+			},
+			CommandKeys: append([]string{
+				"omaha.helpFold",
+				"omaha.helpCheck",
+				"omaha.helpCall",
+				"omaha.helpBet",
+				"omaha.helpRaise",
+				"omaha.helpAllIn", "omaha.helpLog",
+			}, tournamentRebuyAddOnKeys...),
+			SettingKeys: append([]string{
+				"omaha.helpBettingLimit", "omaha.helpTournament",
+			}, holdemBlindKeys...),
 		}),
 }
 

@@ -43,6 +43,12 @@ func (_m *MockDurakInteractor) TakeCards() string {
 	return ret.Get(0).(string)
 }
 
+// Transfer モック
+func (_m *MockDurakInteractor) Transfer(handIdx int) string {
+	ret := _m.Called(handIdx)
+	return ret.Get(0).(string)
+}
+
 // GetConfig モック
 func (_m *MockDurakInteractor) GetConfig() domain.DurakConfig {
 	ret := _m.Called()

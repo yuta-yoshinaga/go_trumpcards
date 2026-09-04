@@ -98,7 +98,7 @@ func TestAlaska_Reset(t *testing.T) {
 		}
 		totalCards += len(tableau[i])
 	}
-	assert.Equal(t, 52, totalCards)
+	assert.Equal(t, domain.AlaskaTotalCards, totalCards)
 
 	// Foundation: empty
 	foundation := r.GetFoundation()

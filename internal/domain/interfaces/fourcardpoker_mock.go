@@ -154,3 +154,8 @@ func (m *MockFourCardPokerGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return args.Get(0).([]*domain.ActionLogEntry)
 }
+
+func (m *MockFourCardPokerGame) RecommendPlayMultiplier() int {
+	args := m.Called()
+	return args.Int(0)
+}

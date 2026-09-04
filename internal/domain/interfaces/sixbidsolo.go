@@ -23,6 +23,12 @@ type SixBidSoloGame interface {
 	CpuPlay()
 	// SixBidSoloValidPlays 出せる手札インデックスを返す
 	SixBidSoloValidPlays(player int) []int
+	// SixBidSoloCpuBid 席の手札から妥当なビッドを返す (CUI のヒントが助言として読む)
+	SixBidSoloCpuBid(idx int) domain.SixBidSoloBidKind
+	// SixBidSoloCpuTrump 席の手札から妥当な切札を返す (同上)
+	SixBidSoloCpuTrump(idx int) int
+	// SixBidSoloCpuPlay 席の手札から妥当な出し札の添字を返す (同上、-1 は無し)
+	SixBidSoloCpuPlay(idx int) int
 	// SixBidSoloWidowPoints ウィドウのカード点を返す
 	SixBidSoloWidowPoints() int
 

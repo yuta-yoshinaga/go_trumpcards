@@ -23,6 +23,10 @@ func triPeaksAdjacentRank(v1, v2 int) bool {
 	return diff == 1 || diff == 12
 }
 
+// tripeaksComboMin is the chain length worth naming. It matches the web badge,
+// which appears from 2: a "combo" of 1 is just an ordinary removal.
+const tripeaksComboMin = 2
+
 // TriPeaksCuiPresenter renders the TriPeaks Solitaire CUI view.
 type TriPeaksCuiPresenter struct{}
 
@@ -125,6 +129,14 @@ func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 			// CUI からは参照する値がサーバ側に存在しなかった (#5511)。
 			b.WriteString(i18n.Tf("tripeaks.cuiScoreLine",
 				"score", strconv.Itoa(t.GetScore())) + "\n")
+			// **連鎖は得点そのものより打ち方を変える。** Web はバッジと
+			// aria-live で出しているのに、CUI は GetCombo を一度も呼んで
+			// いなかった。しきい値 2 は Web のバッジと同じ ── 1 は「連鎖して
+			// いない」であって、出すと常時表示になり意味が薄れる。
+			if combo := t.GetCombo(); combo >= tripeaksComboMin {
+				b.WriteString(color.Yellow(i18n.Tf("tripeaks.cuiComboLine",
+					"combo", strconv.Itoa(combo))) + "\n")
+			}
 		case domain.TriPeaksPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(t.GetMoveCount())) + "\n")

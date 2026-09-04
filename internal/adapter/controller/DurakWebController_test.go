@@ -22,6 +22,7 @@ func TestDurakWebController_Method(t *testing.T) {
 	diMock.On("Defend", mock.Anything, mock.Anything).Return(mockOutput)
 	diMock.On("Pass").Return(mockOutput)
 	diMock.On("TakeCards").Return(mockOutput)
+	diMock.On("Transfer", mock.Anything).Return(mockOutput)
 	diMock.On("ResetWithConfig", mock.Anything).Return(mockOutput)
 	diMock.On("Sort", mock.Anything).Return(mockOutput)
 	diMock.On("Hint").Return(mockOutput)
@@ -75,6 +76,14 @@ func TestDurakWebController_Method(t *testing.T) {
 
 	t.Run("success Exec take", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command":"t","sessionId":"s1"}`), &jsonInput)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(mockOutput)
+	})
+
+	t.Run("success Exec transfer", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command":"transfer","sessionId":"s1","cardIdx":2}`), &jsonInput)
+		defer diMock.AssertCalled(t, "Transfer", 2)
 		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(mockOutput)

@@ -15,6 +15,8 @@
   "eventSnapWrong": "{{name}} の誤宣言。ペナルティで1枚差し出しました。",
   "eventEliminated": "{{name}} のストックが尽きました。",
   "promptCurrentPlayer": "めくる番: {{name}}",
+  "pendingSnap": "！ {{name}} がスナップ宣言を予約しています。先に n を打てば割り込めます（t で反応を進めます）。",
+  "pendingStep": "{{name}} が次の1枚をめくろうとしています（t で反応を進めます）。",
   "promptPlay": "s・・・めくる / n・・・スナップ宣言 / t・・・CPUの反応を進める",
   "gameEndYou": "ゲーム終了！ あなたの勝ちです。",
   "gameEndCpu": "ゲーム終了！ {{name}} の勝ちです。",

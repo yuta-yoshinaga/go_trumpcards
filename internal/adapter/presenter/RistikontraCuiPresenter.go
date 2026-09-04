@@ -99,25 +99,34 @@ func ristikontraPlayerStr(pg interfaces.RistikontraGame, player *domain.Ristikon
 		// **場を取れるのは「場のトップと同ランク」か「ジャック(総取り)」** (#5672)。
 		// Web は該当札にリングを付けているのに、CUI は素の一覧で、毎ターン場の
 		// トップと手札を照合させていた。自分の手番でないときは出さない。
-		var capturing []int
+		marks := map[int]string{}
 		if pg.IsHumanTurn() {
 			top := pg.GetPileTop()
+			// **打ち返しはこのゲーム最大の見せ場。** 直前の捕獲を丸ごと奪える
+			// ので、Web はアクセント色とパルスで別扱いにしている。CUI は
+			// #5672 で通常の捕獲だけ印を付け、こちらが漏れていた (#6610)。
+			counter := pg.GetCounterRank()
 			for idx := 0; idx < player.GetCardsSize(); idx++ {
 				c := player.GetCard(idx)
 				if c == nil {
 					continue
 				}
+				switch {
+				// **奪い返しを先に見る。** 両方に当てはまる札は、価値の高い
+				// ほうの合図を出す (Web も同じ順で分岐している)。
+				case counter > 0 && c.GetValue() == counter:
+					marks[idx] = CuiCounterMark
 				// **ジャックは印を付けない。** クローン元のピシュティでは
 				// 万能の捕獲札だったが、このゲームで場を取れるのは
 				// 同ランクだけ。ジャックに印を付けると「これで取れる」と
 				// 嘘の合図を出すことになる。
-				if top != nil && c.GetValue() == top.GetValue() {
-					capturing = append(capturing, idx)
+				case top != nil && c.GetValue() == top.GetValue():
+					marks[idx] = CuiLegalMark
 				}
 			}
 		}
-		b.WriteString(cuiIndexMarkedCardListStr(player, capturing, CuiLegalMark) + "\n")
-		if len(capturing) > 0 {
+		b.WriteString(cuiIndexMarksCardListStr(player, marks) + "\n")
+		if len(marks) > 0 {
 			b.WriteString(i18n.T("ristikontra.captureLegend") + "\n")
 		}
 	}

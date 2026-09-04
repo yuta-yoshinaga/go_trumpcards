@@ -33,6 +33,8 @@ type NinetyNineGame interface {
 	GetGameEndFlag() bool
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() domain.NinetyNinePhase
+	// GetRoundSuccessBonus 直前のラウンドで的中者に付いたボーナス点を取得する
+	GetRoundSuccessBonus() int
 	// IsHumanTurn 現在の手番が人間かを返す
 	IsHumanTurn() bool
 	// IsHumanBidTurn 現在のビッド手番が人間かを返す

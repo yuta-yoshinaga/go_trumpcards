@@ -93,6 +93,11 @@ func (p *SeahavenTowersCuiPresenter) Output(s interfaces.SeahavenTowersGame, las
 			b.WriteString(i18n.Tf("seahaventowers.supermoveLine",
 				"limit", strconv.Itoa(1+emptyReserved),
 				"reserved", strconv.Itoa(emptyReserved)) + "\n")
+			// The web badges this state and pulses the button (#4776); the CUI
+			// mentioned neither that ac exists nor when it would actually finish.
+			if s.CanAutoComplete() {
+				b.WriteString(color.Green(i18n.T("seahaventowers.autoCompleteReady")) + "\n")
+			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(s.GetMoveCount())) + "\n")
 		case domain.SeahavenTowersPhaseGameClear:

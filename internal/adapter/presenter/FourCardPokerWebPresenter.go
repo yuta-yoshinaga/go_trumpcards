@@ -76,3 +76,8 @@ func (p *FourCardPokerWebPresenter) Output(g interfaces.FourCardPokerGame, lastE
 func (p *FourCardPokerWebPresenter) ActionLogOutput(g interfaces.FourCardPokerGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// HintOutput returns the game state JSON (fallback for Web presenter).
+func (p *FourCardPokerWebPresenter) HintOutput(g interfaces.FourCardPokerGame) string {
+	return p.Output(g, nil)
+}

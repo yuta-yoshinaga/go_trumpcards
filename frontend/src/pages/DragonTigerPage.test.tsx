@@ -326,3 +326,81 @@ describe('DragonTigerPage', () => {
     }
   });
 });
+
+describe('DragonTigerPage history capping (issue #6381)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    mockApi.mockReset();
+    mockApi.mockResolvedValue(betState);
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: false,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+  });
+
+  it('caps the rendered history badges at 20 when history exceeds 20 items', async () => {
+    const history25 = Array.from({ length: 25 }, () => DragonTigerHistoryResult.DRAGON);
+    mockApi.mockResolvedValueOnce({
+      ...dragonWinState,
+      history: history25,
+    });
+    const { container } = renderWithProviders(<DragonTigerPage />);
+    await waitFor(() => expect(screen.getByTestId('bigroad')).toBeInTheDocument());
+    const badges = container.querySelectorAll('[data-testid="bigroad-badge"]');
+    expect(badges).toHaveLength(20);
+  });
+
+  it('renders the trailing 20 outcomes dropping older outcomes from the front', async () => {
+    const history = [
+      ...Array.from({ length: 5 }, () => DragonTigerHistoryResult.DRAGON),
+      ...Array.from({ length: 20 }, () => DragonTigerHistoryResult.TIGER),
+    ];
+    mockApi.mockResolvedValueOnce({
+      ...tigerWinOnTigerBetState,
+      history,
+    });
+    const { container } = renderWithProviders(<DragonTigerPage />);
+    await waitFor(() => expect(screen.getByTestId('bigroad')).toBeInTheDocument());
+    const badges = Array.from(container.querySelectorAll('[data-testid="bigroad-badge"]'));
+    expect(badges).toHaveLength(20);
+    expect(badges.every((b) => b.textContent === 'T')).toBe(true);
+    expect(badges.some((b) => b.textContent === 'D')).toBe(false);
+  });
+
+  it('displays "+N件" overflow summary when history > 20 and hides it when history <= 20', async () => {
+    const history25 = Array.from({ length: 25 }, () => DragonTigerHistoryResult.DRAGON);
+    mockApi.mockResolvedValueOnce({
+      ...dragonWinState,
+      history: history25,
+    });
+    const { unmount } = renderWithProviders(<DragonTigerPage />);
+    const overflow = await screen.findByTestId('dragontiger-history-overflow');
+    expect(overflow).toHaveTextContent('+5件');
+    unmount();
+
+    const history20 = Array.from({ length: 20 }, () => DragonTigerHistoryResult.DRAGON);
+    mockApi.mockResolvedValueOnce({
+      ...dragonWinState,
+      history: history20,
+    });
+    renderWithProviders(<DragonTigerPage />);
+    await waitFor(() => expect(screen.getByTestId('bigroad')).toBeInTheDocument());
+    expect(screen.queryByTestId('dragontiger-history-overflow')).not.toBeInTheDocument();
+  });
+
+  it('passes the full untruncated history to RoadmapTrendBar', async () => {
+    const history25 = Array.from({ length: 25 }, () => DragonTigerHistoryResult.DRAGON);
+    mockApi.mockResolvedValueOnce({
+      ...dragonWinState,
+      history: history25,
+    });
+    renderWithProviders(<DragonTigerPage />);
+    const trendBar = await screen.findByTestId('dragontiger-trend-bar');
+    expect(trendBar).toHaveTextContent('25');
+  });
+});

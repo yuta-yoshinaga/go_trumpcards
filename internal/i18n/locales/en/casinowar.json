@@ -1,6 +1,7 @@
 {
   "helpTitle": "Casino War",
   "helpBet": "  b <amount>           bet (places ante and deals one card each)",
+  "helpRebet": "  rb                   repeat the last wager",
   "helpSurrender": "  surrender            tie: forfeit half the ante and end the round",
   "helpWar": "  war                  tie: place an additional bet equal to ante and re-draw",
   "chipsLine": "chips: {{chips}}",
@@ -23,5 +24,6 @@
   "push": "Push.",
   "totalPayoutLine": "total payout: {{payout}}",
   "helpExampleBet": "  b 100                bet 100 chips",
+  "noPreviousBet": "There is no previous bet. Place one first with b <amount>",
   "warInsufficientChips": "Not enough chips. Going to war costs {{ante}} chips"
 }

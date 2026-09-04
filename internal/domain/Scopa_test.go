@@ -396,3 +396,71 @@ func TestScopaCategoryWinners(t *testing.T) {
 		assert.Equal(t, ScopaScoreMostSevens+ScopaScoreSetteBello, perPlayer[1])
 	})
 }
+
+// **生の英語がそのまま画面に出ていた。**`applyPlay` の 3 件は
+// `NewDomainError` に英語の文面を直接渡しており、どちらのロケールでも
+// その英語が表示される (#6846、Scopone #6457 と同じ形)。
+func TestScopaPlayErrorsCarryMessageCodes(t *testing.T) {
+	tests := []struct {
+		name       string
+		setup      func(s *Scopa)
+		play       func(s *Scopa) error
+		wantCode   string
+		wantParams map[string]string
+		wantRaw    string
+	}{
+		{
+			name: "hand index out of range",
+			setup: func(s *Scopa) {
+				s.ScopaTestSetTable([]*Card{NewCard(CardDesignSpade, 2, false)})
+			},
+			play:       func(s *Scopa) error { return s.PlayerPlay(7, nil) },
+			wantCode:   "scopa.errHandIndexOutOfRange",
+			wantParams: map[string]string{"idx": "7"},
+			wantRaw:    "out of range",
+		},
+		{
+			name: "a capture is available",
+			setup: func(s *Scopa) {
+				s.GetPlayer(0).AddCard(NewCard(CardDesignDiamond, 5, false))
+				s.ScopaTestSetTable([]*Card{NewCard(CardDesignSpade, 5, false)})
+			},
+			play:     func(s *Scopa) error { return s.PlayerPlay(0, nil) },
+			wantCode: "scopa.errCaptureRequired",
+			wantRaw:  "must be taken",
+		},
+		{
+			name: "the selection is not a capture",
+			setup: func(s *Scopa) {
+				s.GetPlayer(0).AddCard(NewCard(CardDesignDiamond, 5, false))
+				s.ScopaTestSetTable([]*Card{NewCard(CardDesignSpade, 2, false)})
+			},
+			play:     func(s *Scopa) error { return s.PlayerPlay(0, []int{0}) },
+			wantCode: "scopa.errInvalidCapture",
+			wantRaw:  "valid capture",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := scopaPlayReady(t)
+			s.GetPlayer(1).AddCard(NewCard(CardDesignHeart, 2, false))
+			tt.setup(s)
+
+			err := tt.play(s)
+			code, params := ErrorMessageCode(err)
+			assert.Equal(t, tt.wantCode, code)
+			assert.Equal(t, tt.wantParams, params)
+			// 生の英語が漏れていないこと。コードだけを見ると、両方返す実装が通る。
+			assert.NotContains(t, err.Error(), tt.wantRaw)
+		})
+	}
+
+	// **センチネルは変えていない。**`errors.Is` で分岐している呼び出し元が
+	// 静かに壊れるのが一番怖い。
+	s := scopaPlayReady(t)
+	s.GetPlayer(0).AddCard(NewCard(CardDesignDiamond, 5, false))
+	s.GetPlayer(1).AddCard(NewCard(CardDesignHeart, 2, false))
+	s.ScopaTestSetTable([]*Card{NewCard(CardDesignSpade, 5, false)})
+	assert.ErrorIs(t, s.PlayerPlay(0, nil), ErrInvalidPlay)
+	assert.ErrorIs(t, s.PlayerPlay(7, nil), ErrInvalidCard)
+}

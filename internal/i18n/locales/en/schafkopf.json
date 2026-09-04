@@ -47,5 +47,6 @@
   "roundPickerWon": "Picker team won (receives chips)",
   "roundPickerLost": "Picker team lost (pays chips)",
   "helpExamplePlay": "  play 0               play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "dealer": "Dealer: {{name}}"
 }

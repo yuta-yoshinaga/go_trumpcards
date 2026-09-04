@@ -24,5 +24,6 @@
   "hintBury": "[HINT: 伏せ札 {{indices}} を推奨 ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "successBonusLine": "的中ボーナス: 的中者ひとりにつき +{{bonus}}点 (単独的中ほど高い)"
 }

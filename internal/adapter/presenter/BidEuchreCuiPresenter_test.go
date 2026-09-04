@@ -67,6 +67,31 @@ func TestBidEuchreCuiPresenter_HidesEveryOtherHand(t *testing.T) {
 	}
 }
 
+// **キティが無いことは基本ルールで毎回表示する** (#6527)。
+// Web では noKittyNote を常設表示しているが、CUI にはこれまで出力手段が無かった。
+// 解決済み文言を確認し、翻訳ミスで生キーが漏れていないことも保証する。
+func TestBidEuchreCuiPresenter_ShowsNoKittyNoteEveryTime(t *testing.T) {
+	// デフォルト（プレイフェーズ）で含まれる。
+	out := new(presenter.BidEuchreCuiPresenter).Output(setupBidEuchreCuiMock(defaultBidEuchreOpts()), nil)
+	assert.Contains(t, out, i18n.T("bideuchre.noKittyNote"))
+	assert.Contains(t, out, "キティはありません")
+	// 生キーが漏れていないこと（i18n.T が未知キーをそのまま返す仕様への防衛）。
+	assert.NotContains(t, out, "bideuchre.noKittyNote")
+
+	// フェーズが変わっても常設される。
+	for _, phase := range []domain.BidEuchrePhase{
+		domain.BidEuchrePhaseBid,
+		domain.BidEuchrePhaseChooseTrump,
+		domain.BidEuchrePhaseHandEnd,
+	} {
+		o := defaultBidEuchreOpts()
+		o.phase = phase
+		phaseOut := new(presenter.BidEuchreCuiPresenter).Output(setupBidEuchreCuiMock(o), nil)
+		assert.Contains(t, phaseOut, "キティはありません", "phase=%v", phase)
+		assert.NotContains(t, phaseOut, "bideuchre.noKittyNote", "phase=%v", phase)
+	}
+}
+
 // **親だけは同額で奪える。**入札画面で必ず読めること。
 func TestBidEuchreCuiPresenter_SaysTheDealerMayEqualTheBid(t *testing.T) {
 	o := defaultBidEuchreOpts()

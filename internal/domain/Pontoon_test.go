@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -1115,4 +1116,67 @@ func TestPontoonCpuSeatDoesNotChaseFromSeventeen(t *testing.T) {
 	p.playCpuSeat(s)
 	assert.Len(t, h.cards, 4, "a four-card 18 sticks rather than chasing the five-card trick")
 	assert.True(t, h.stuck)
+}
+
+func TestPontoon_ErrorsCarryAnI18nCode(t *testing.T) {
+	codeOf := func(t *testing.T, err error) string {
+		t.Helper()
+		if err == nil {
+			return ""
+		}
+		code, _ := ErrorMessageCode(err)
+		return code
+	}
+
+	t.Run("every refusal names a key instead of an English sentence", func(t *testing.T) {
+		cases := []struct {
+			name string
+			run  func(y *Pontoon) error
+		}{
+			{"PlaceBet outside phase", func(y *Pontoon) error {
+				y.phase = PontoonPhaseEnd
+				return y.PlaceBet(100)
+			}},
+			{"StartAsBanker when not banker", func(y *Pontoon) error {
+				y.phase = PontoonPhaseBet
+				y.banker = 1
+				return y.StartAsBanker()
+			}},
+			{"Stick below 15", func(y *Pontoon) error {
+				setupHumanTurn(y, 10, 4)
+				return y.Stick()
+			}},
+			{"Twist out of turn", func(y *Pontoon) error {
+				y.phase = PontoonPhaseEnd
+				return y.Twist()
+			}},
+			{"Buy out of turn", func(y *Pontoon) error {
+				y.phase = PontoonPhaseEnd
+				return y.Buy(10)
+			}},
+			{"Split non-matching cards", func(y *Pontoon) error {
+				setupHumanTurn(y, 10, 9)
+				return y.Split()
+			}},
+			{"BankerTwist out of phase", func(y *Pontoon) error {
+				y.phase = PontoonPhaseEnd
+				return y.BankerTwist()
+			}},
+			{"BankerStay out of phase", func(y *Pontoon) error {
+				y.phase = PontoonPhaseEnd
+				return y.BankerStay()
+			}},
+		}
+		for _, tc := range cases {
+			t.Run(tc.name, func(t *testing.T) {
+				y := newTestPontoon()
+				err := tc.run(y)
+				require.Error(t, err, "この操作は拒否されるはずで、拒否されないと何も測れない")
+				code := codeOf(t, err)
+				assert.NotEmpty(t, code, "コードが無いと CUI は英語をそのまま出す")
+				assert.Truef(t, strings.HasPrefix(code, "pontoon."),
+					"キーは pontoon 名前空間に置く (got %q)", code)
+			})
+		}
+	})
 }

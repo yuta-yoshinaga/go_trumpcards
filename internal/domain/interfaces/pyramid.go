@@ -38,6 +38,12 @@ type PyramidGame interface {
 	GetPhase() domain.PyramidPhase
 	// GetMoveCount 移動回数を取得する
 	GetMoveCount() int
+	// GetSessionPlays このプロセスで決着したゲーム数を取得する
+	GetSessionPlays() int
+	// GetSessionWins このプロセスでクリアした回数を取得する
+	GetSessionWins() int
+	// GetSessionFewestMoves クリア時の最少手数を取得する (0 は記録なし)
+	GetSessionFewestMoves() int
 	// GetStockCount 山札の残り枚数を取得する
 	GetStockCount() int
 	// GetWaste ウェイストのカード一覧を取得する

@@ -64,6 +64,29 @@ describe('GanjifaPage', () => {
     expect(readout).toHaveClass('text-ds-warning');
   });
 
+  // **色と文字だけでは反転が届かない。**向きはラウンドごとに入れ替わるので、
+  // 支援技術の利用者は気づかないまま前の並び順で打ってしまう (#6449)。
+  it('announces the rank direction through a live region when the round flips it', async () => {
+    // 強い群のラウンド終了から始めて、「次のラウンド」で弱い群へ移らせる。
+    mockExec.mockResolvedValue(makeGanjifaState({ ...roundEndState, trumpSuit: 3 }));
+    renderWithProviders(<GanjifaPage />);
+
+    const readout = await screen.findByTestId('ganjifa-trump-group');
+    expect(readout).toHaveAttribute('role', 'status');
+    expect(readout).toHaveAttribute('aria-live', 'polite');
+    expect(readout).toHaveTextContent('数字が大きいほど強い');
+
+    // **同じ要素の中身が入れ替わること。**領域ごと差し替わると変化として扱われず、
+    // 読み上げられないことがある。
+    mockExec.mockResolvedValue(makeGanjifaState({ ...roundEndState, trumpSuit: 6 }));
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
+
+    await waitFor(() => expect(screen.getByTestId('ganjifa-trump-group')).toHaveTextContent('数字が小さいほど強い'));
+    const after = screen.getByTestId('ganjifa-trump-group');
+    expect(after).toBe(readout);
+    expect(after).toHaveAttribute('aria-live', 'polite');
+  });
+
   it('names the trump suit with its glyph', async () => {
     mockExec.mockResolvedValue(makeGanjifaState({ trumpSuit: 2 }));
     renderWithProviders(<GanjifaPage />);

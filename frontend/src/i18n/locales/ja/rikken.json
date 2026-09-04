@@ -11,6 +11,7 @@
     "contract": "契約",
     "trump": "切り札",
     "declarer": "落札者",
+    "openHand": "オープンミゼールの公開手札（席{{seat}}）",
     "partner": "相方",
     "tricks": "トリック",
     "declarerTricks": "宣言側の獲得",

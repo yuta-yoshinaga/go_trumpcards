@@ -744,6 +744,37 @@ func (g *UnsunKaruta) IsMustFollow() bool { return g.mustFollow }
 // IsDeclaredThisTrick はいまのトリックで宣言が行われたかを返す。
 func (g *UnsunKaruta) IsDeclaredThisTrick() bool { return g.declaredThisTrick }
 
+// 宣言の種別。**この区別がこのゲームの通称「八人メリ」の由来**なのに、
+// これまでアプリのどの言語にも一度も出ていなかった (#6624)。
+const (
+	// UnsunKarutaDeclarationNone は宣言が無い状態。
+	UnsunKarutaDeclarationNone = 0
+	// UnsunKarutaDeclarationMeri は切り札リードの宣言 (メリ)。
+	UnsunKarutaDeclarationMeri = 1
+	// UnsunKarutaDeclarationMonchi は平札リードの宣言 (モンチ)。
+	UnsunKarutaDeclarationMonchi = 2
+)
+
+// GetDeclarationKind はいまのトリックの宣言種別を返す。
+//
+// **持たずに毎回台札から導く。** `mustFollow` と `currentTrick` は同じ場所で
+// 立ち、同じ場所で落ちる (`setDeclaration` と `resolveTrick`) ので、宣言が
+// 立っている間は必ず台札がある。種別を別のフィールドで持つと、KV 往復に
+// 載せ忘れたときに「宣言は出ているのに種別だけ消える」形の嘘が作れてしまう。
+func (g *UnsunKaruta) GetDeclarationKind() int {
+	if !g.mustFollow || len(g.currentTrick) == 0 {
+		return UnsunKarutaDeclarationNone
+	}
+	lead := g.currentTrick[0]
+	if lead == nil || lead.Card == nil {
+		return UnsunKarutaDeclarationNone
+	}
+	if lead.Card.GetDesign() == g.trumpSuit {
+		return UnsunKarutaDeclarationMeri
+	}
+	return UnsunKarutaDeclarationMonchi
+}
+
 // CanDeclare は人間がいま宣言できるか (リードの手番か) を返す。
 func (g *UnsunKaruta) CanDeclare() bool {
 	return g.phase == UnsunKarutaPhasePlay && len(g.currentTrick) == 0 && g.IsHumanTurn()

@@ -29,5 +29,22 @@
   "undoToEscape": "脱出には {{count}} 手戻す必要があります（undo {{count}} または u を繰り返す）",
   "helpExampleHint": "  h                        次の一手を教えてもらう",
   "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る",
-  "foundationProgress": "収納: {{count}}/{{total}} 枚 ({{percent}}%)"
+  "foundationProgress": "収納: {{count}}/{{total}} 枚 ({{percent}}%)",
+  "errNotPlaying": "プレイ中ではありません",
+  "errNoCardsInStock": "山札にカードがありません",
+  "errBadColumn": "列番号が不正です",
+  "errWasteEmpty": "ウェイストは空です",
+  "errCannotPlaceTableau": "そのカードはタブローに置けません",
+  "errCannotPlaceFoundation": "そのカードは基礎札に置けません",
+  "errBadFromColumn": "移動元の列番号が不正です",
+  "errBadToColumn": "移動先の列番号が不正です",
+  "errSameColumn": "移動元と移動先が同じ列です",
+  "errInvalidCardIndex": "その列にその番号の札はありません",
+  "errNotSameSuitDescending": "同じスートの降順の連番ではありません",
+  "errColumnEmpty": "その列は空です",
+  "errNoAutoCompleted": "自動で動かせるカードがありません",
+  "errNothingToUndo": "取り消せる手がありません",
+  "errSnapshotArrayTooLarge": "スナップショットの配列が最大許容サイズを超えています",
+  "errSnapshotPileTooLarge": "スナップショットのパイルが最大許容サイズを超えています",
+  "errInputArrayTooLarge": "入力配列が最大許容サイズを超えています"
 }

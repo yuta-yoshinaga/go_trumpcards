@@ -53,6 +53,8 @@ type KlaverjasGame interface {
 	GetRoundCardPoints() [domain.KlaverjasTeamCnt]int
 	// GetRoundRoem 現ラウンドのチーム別 Roem 点を取得する
 	GetRoundRoem() [domain.KlaverjasTeamCnt]int
+	// GetRoundPlayerRoem 現ラウンドのプレイヤー別 Roem 点を取得する
+	GetRoundPlayerRoem() [domain.KlaverjasPlayerCnt]int
 	// GetWinnerTeam 勝利チームを取得する (-1=未確定)
 	GetWinnerTeam() int
 	// GetPlayerCnt プレイヤー数を取得する

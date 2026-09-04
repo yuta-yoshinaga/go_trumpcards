@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { germanwhistApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -13,6 +14,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -111,6 +113,22 @@ function GermanWhistPageContent() {
   const handleGiveUp = useCallback(() => {
     void dispatch('giveup');
   }, [dispatch]);
+
+  // **通常表示のままキーボードだけで遊べるようにする。**フックは早期 return より
+  // 上に置く (biome の useHookAtTopLevel) ので、盤面の判定は `state?.` で読む。
+  const kbdIsGameEnd = state?.phase === GermanWhistPhase.GAME_END || state?.gameEndFlag === true;
+  const kbdIsHumanTurn = !kbdIsGameEnd && state !== null && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const actionBindings = useMemo(
+    () => [
+      { key: 'r', action: () => requestConfirm(handleReset), label: 'reset' },
+      // 投了はボタンと同じく終局後は消える。
+      { key: 'g', action: handleGiveUp, enabled: !kbdIsGameEnd, label: 'giveUp' },
+    ],
+    [requestConfirm, handleReset, handleGiveUp, kbdIsGameEnd],
+  );
+  // **終局後もリセットだけは残る。**CPU の手番で撃たないことがこの条件の目的で、
+  // 終局は「相手の手番」ではない。
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !loading && (kbdIsHumanTurn || kbdIsGameEnd) });
 
   if (!state) {
     return (
@@ -277,6 +295,8 @@ function GermanWhistPageContent() {
                 </button>
               )}
             </div>
+
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="germanwhist-kbd-shortcuts" />
 
             <SettingsPanel
               title={tc('settings.title')}

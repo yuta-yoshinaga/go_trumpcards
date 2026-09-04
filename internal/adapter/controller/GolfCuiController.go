@@ -26,7 +26,7 @@ func (c *GolfCuiController) Exec(command string) string {
 		func(_ []string) string {
 			return c.gi.Reset()
 		},
-		[]string{"d", "draw", "rm", "remove", "g", "giveup", "h", "hint", "log", "l", "u", "undo"},
+		[]string{"d", "draw", "rm", "remove", "g", "giveup", "h", "hint", "log", "l", "u", "undo", "r9", "reset9"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "d", "draw":
@@ -37,6 +37,8 @@ func (c *GolfCuiController) Exec(command string) string {
 				return c.gi.GiveUp(), true
 			case "u", "undo":
 				return c.gi.Undo(), true
+			case "r9", "reset9":
+				return c.gi.ResetNineHole(), true
 			default:
 				return handleCuiHintAndLog(cmd, c.gi.Hint, c.gi.ActionLog)
 			}

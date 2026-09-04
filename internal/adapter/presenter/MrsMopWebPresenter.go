@@ -108,6 +108,15 @@ func (p *MrsMopWebPresenter) HintOutput(s interfaces.MrsMopGame) string {
 	return marshalOrError(resObj)
 }
 
+// TargetsOutput は Web では通常の盤面をそのまま返す。
+//
+// 置ける先の強調は Web が `spiderMovableRun` でこの盤面から作っている ──
+// Web に `targets` に当たる操作は無く、選んだ瞬間に見えている。ここで別の形を
+// 返すと、CUI 専用の応答が Web の経路に紛れ込む (Perseverance と同じ扱い)。
+func (p *MrsMopWebPresenter) TargetsOutput(s interfaces.MrsMopGame, _, _ int) string {
+	return p.Output(s, nil)
+}
+
 // ActionLogOutput 棋譜をJSON出力
 func (p *MrsMopWebPresenter) ActionLogOutput(s interfaces.MrsMopGame) string {
 	return actionLogOutputJSON(s)

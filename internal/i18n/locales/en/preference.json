@@ -29,6 +29,8 @@
   "promptRoundEndResult": "{{name}}'s {{contract}}: won {{tricks}} tricks — {{outcome}}",
   "contractAchieved": "Achieved",
   "contractFailed": "Failed",
+  "declarerProgress": "Declarer: {{won}}/{{needed}} tricks ({{remaining}} left)",
+  "declarerProgressMisere": "Declarer (misere): {{won}} tricks taken ({{remaining}} left)",
   "roundEndTricks": "Tricks per player: {{list}}",
   "roundEndTrickEntry": "{{name}} {{tricks}}",
   "hintNone": "No hint available.",
@@ -46,5 +48,7 @@
   "result.humanWin": "Game over! You win!",
   "result.cpuWin": "Game over! Player {{player}} wins!",
   "helpExampleBid": "  pass                      drop out of the bidding",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "progressMade": " — made",
+  "progressFailed": " — failed"
 }

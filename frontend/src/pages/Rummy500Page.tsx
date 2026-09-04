@@ -8,6 +8,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -301,6 +302,14 @@ function Rummy500PageContent() {
                 )}
               </div>
             ))}
+            <RoundScoreAnnouncement
+              active={isRoundEnd || isGameEnd}
+              entries={state.players.map((p) => ({
+                name: playerName(p.id, p.isHuman),
+                roundScore: p.roundScore,
+                cumulativeScore: p.cumulativeScore,
+              }))}
+            />
           </div>
         </div>
 

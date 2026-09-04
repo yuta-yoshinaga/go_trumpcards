@@ -16,6 +16,7 @@
   "trumpUndecided": "切り札: 未決定",
   "contractLine": "契約: {{points}}点（チーム{{team}} / 倍率 x{{mult}}）",
   "biddablePoints": "宣言できる点: {{points}}",
+  "capotOption": "{{points}} (Capot)",
   "teamScoreLine": "チーム0: {{t0}}点  チーム1: {{t1}}点",
   "beloteBonusLine": "ベロート・ルベロート成立: チーム{{team}} に +{{points}}点（切札の K+Q）",
   "playerLine": "{{name}}: チーム{{team}} 獲得{{tricks}}トリック {{cards}}枚",

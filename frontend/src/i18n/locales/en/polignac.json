@@ -14,12 +14,12 @@
     "score": "{{score}} pts total (this round {{round}})"
   },
   "capot": {
-    "active": "{{name}} has declared capot ({{tricks}}/8 taken). One trick breaks it.",
+    "active": "{{name}} has declared capot ({{tricks}}/8 taken). One trick breaks it. Success costs everyone else {{stake}}; failure costs the declarer {{stake}}.",
     "mark": "[capot]"
   },
   "currentTrick": "Current trick",
   "actions": {
-    "declareCapot": "Declare capot",
+    "declareCapot": "Declare capot ({{stake}} at stake)",
     "pass": "Proceed without declaring",
     "nextRound": "Next round",
     "reset": "Reset",

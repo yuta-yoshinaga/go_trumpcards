@@ -341,6 +341,17 @@ function ZhengPageContent() {
                 {t(`invalidReason.${invalidReason}`)}
               </p>
             )}
+            {/* リード番はパスできない。選べない札に理由が出る (zheng-invalid-combo) のと
+                同じ扱いで、無効化の理由をボタンの手前に置く (#6516)。 */}
+            {isHumanTurn && isLead && (
+              <p
+                role="status"
+                data-testid="zheng-pass-disabled-reason"
+                className="mb-1 text-center font-medium text-ds-text-muted text-xs"
+              >
+                {t('passDisabledLead')}
+              </p>
+            )}
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="zheng-play-pass">
               <button
                 type="button"
@@ -355,6 +366,9 @@ function ZhengPageContent() {
                 type="button"
                 onClick={handlePass}
                 disabled={loading || !isHumanTurn || isLead}
+                // **理由の無い無効化は、故障と区別が付かない。**読み上げ側には
+                // announce.yourTurnLead があるのに、画面には手がかりが無かった (#6516)。
+                title={isHumanTurn && isLead ? t('passDisabledLead') : undefined}
                 className="px-4 py-2 rounded-lg bg-ds-warning hover:bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="pass-button"
               >

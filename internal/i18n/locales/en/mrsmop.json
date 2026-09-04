@@ -12,5 +12,10 @@
   "difficultyLine": "Difficulty: {{suits}} suit(s) (proper Mrs. Mop is 4)",
   "helpExampleHint": "  h                        ask for a move",
   "helpExampleAuto": "  ac                       send everything that can go to a foundation",
-  "helpUndo": "  u                    undo one move"
+  "helpUndo": "  u                    undo one move",
+  "targetsLine": "Column {{col}} from card {{idx}} can go to: {{targets}}",
+  "targetsNone": "Column {{col}} from card {{idx}} has nowhere to go",
+  "targetTableau": "column {{col}}",
+  "helpTargets": "  t <col> [idx]            list where that column can go",
+  "moveUsage": "Usage: m <col> <col>  or  m t <col> <cardId> t <col>"
 }

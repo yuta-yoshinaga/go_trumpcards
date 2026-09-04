@@ -25,6 +25,7 @@ func setupAllFoursCuiMock() *interfaces.MockAllFoursGame {
 	m.On("GetTrumpSuit").Return(domain.CardDesignHeart)
 	m.On("GetTurnUp").Return(domain.NewCard(domain.CardDesignHeart, 7, false))
 	m.On("GetRunCount").Return(0)
+	m.On("GetLastRunCount").Return(0).Maybe()
 	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.AllFoursPhaseBeg)

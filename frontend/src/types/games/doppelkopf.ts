@@ -64,8 +64,12 @@ export interface DoppelkopfResponse extends BaseGameResponse {
   youAreRe: boolean;
   /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
   playableIndices: number[];
-  /** Card points captured by the Re team this round. */
+  /** Card points captured by the Re team this round (determined at round end). */
   roundRePoints: number;
+  /** Card points captured by the Re team so far in the active round. */
+  liveRePoints: number;
+  /** Card points captured by the Kontra team so far in the active round. */
+  liveKontraPoints: number;
   /** Whether the Re team won the round. */
   roundReWon: boolean;
   /** Game points awarded for this round. */

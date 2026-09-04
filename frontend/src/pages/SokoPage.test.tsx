@@ -160,6 +160,21 @@ describe('SokoPage hand ranking reference', () => {
     expect(bold.join(' ')).toContain('4枚フラッシュ');
     expect(bold.join(' ')).toContain('4枚ストレート');
   });
+
+  // **太字と色は非視覚の利用者には届かない。**独自役であることをテキストでも名乗る。
+  it('names the Soko-only hands in text, not just in bold', async () => {
+    renderWithProviders(<SokoPage />);
+    const panel = await screen.findByTestId('soko-hand-ranking');
+    const rows = within(panel).getAllByRole('listitem');
+
+    expect(rows[8]).toHaveTextContent('（Soko独自の役）');
+    expect(rows[9]).toHaveTextContent('（Soko独自の役）');
+    // **他の 10 役の読み上げは変えない。**
+    const marked = rows.filter((li) => (li.textContent ?? '').includes('（Soko独自の役）'));
+    expect(marked).toHaveLength(2);
+    expect(rows[7]).not.toHaveTextContent('（Soko独自の役）');
+    expect(rows[10]).not.toHaveTextContent('（Soko独自の役）');
+  });
 });
 
 // 通常の Five Card Stud には出さない。

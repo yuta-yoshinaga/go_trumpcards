@@ -25,6 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { NiuNiuHand, NiuNiuResponse } from '../types/card';
 import { NiuNiuPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { NIUNIU_HELP, parseNiuNiuCommand } from '../utils/cli/commands/niuniuCommands';
 import { formatNiuNiuState } from '../utils/cli/formatters/niuniuFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -89,12 +90,26 @@ function NiuNiuPageContent() {
    */
   const renderHand = (hand: NiuNiuHand, label: string, keyPrefix: string) => {
     const inCombo = new Set(hand.comboIdx);
+    // 牛を作る3枚はリングでしか示されておらず、コードのコメント自身が
+    // 「5枚と役名だけでは何も説明にならない」と言っているのに、その情報が
+    // 読み上げには一切乗っていなかった (#6363)。
+    const comboCards = (hand.comboIdx ?? [])
+      .map((i) => hand.cards[i])
+      .filter((c) => !!c)
+      .map((c) => cardAlt(c))
+      .join(' ');
     return (
       <div className="text-center">
         <div
           className="flex gap-1 justify-center"
           role="img"
-          aria-label={hand.hidden ? label : t('seatAriaLabel', { name: label, rank: niuniuRankText(hand.rankKey) })}
+          aria-label={
+            hand.hidden
+              ? label
+              : `${t('seatAriaLabel', { name: label, rank: niuniuRankText(hand.rankKey) })}${
+                  comboCards ? ` ${t('comboAriaLabel', { cards: comboCards })}` : ''
+                }`
+          }
         >
           {hand.cards.map((card, i) => (
             <div

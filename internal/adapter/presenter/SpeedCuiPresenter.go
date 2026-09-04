@@ -1,8 +1,10 @@
 package presenter
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -39,7 +41,22 @@ func speedIndexedHandStr(s interfaces.SpeedGame, human cuiCardList) string {
 }
 
 // SpeedCuiPresenter renders the Speed CUI view.
-type SpeedCuiPresenter struct{}
+type SpeedCuiPresenter struct {
+	now        func() time.Time
+	isPlaying  bool
+	startTime  time.Time
+	lastTime   time.Duration
+	lastLogLen int
+	bestTime   time.Duration
+}
+
+// getNow returns the current time, falling back to time.Now if no clock seam is provided.
+func (p *SpeedCuiPresenter) getNow() time.Time {
+	if p.now == nil {
+		return time.Now()
+	}
+	return p.now()
+}
 
 // Output renders the current game state for the active locale (#1699).
 func (p *SpeedCuiPresenter) Output(s interfaces.SpeedGame, lastErr error) string {
@@ -84,6 +101,38 @@ func (p *SpeedCuiPresenter) Output(s interfaces.SpeedGame, lastErr error) string
 		case domain.SpeedPhaseStuck:
 			b.WriteString(color.Yellow(i18n.T("speed.promptStuck")) + "\n")
 			b.WriteString(i18n.T("speed.promptStuckHelp") + "\n")
+		}
+
+		now := p.getNow()
+		if !s.GetGameEndFlag() {
+			currentLogLen := len(s.GetActionLog())
+			if !p.isPlaying || (p.isPlaying && currentLogLen < p.lastLogLen) {
+				p.isPlaying = true
+				p.startTime = now
+			}
+			p.lastLogLen = currentLogLen
+		} else if p.isPlaying {
+			p.isPlaying = false
+			p.lastTime = now.Sub(p.startTime)
+			if p.bestTime == 0 || p.lastTime < p.bestTime {
+				p.bestTime = p.lastTime
+			}
+		}
+
+		var current time.Duration
+		if p.isPlaying {
+			current = now.Sub(p.startTime)
+		} else {
+			current = p.lastTime
+		}
+
+		if current > 0 || p.isPlaying {
+			timeStr := fmt.Sprintf("%02d:%02d", int(current.Minutes()), int(current.Seconds())%60)
+			b.WriteString(i18n.Tf("speed.elapsedTime", "time", timeStr) + "\n")
+		}
+		if p.bestTime > 0 {
+			bestStr := fmt.Sprintf("%02d:%02d", int(p.bestTime.Minutes()), int(p.bestTime.Seconds())%60)
+			b.WriteString(i18n.Tf("speed.sessionBestTime", "time", bestStr) + "\n")
 		}
 
 		// Outcome

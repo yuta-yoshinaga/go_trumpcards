@@ -146,7 +146,10 @@ function LingerLongerPageContent() {
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             <div className="text-ds-text-primary text-center mb-2" data-testid="ll-stock" data-tutorial="ll-stock">
               <span className="mr-4">{t('header.trick', { n: String(state.trickNumber + 1) })}</span>
-              <span>{t('header.stock', { n: String(state.stockSize) })}</span>
+              <span className="mr-4">{t('header.stock', { n: String(state.stockSize) })}</span>
+              {/* **山札の残りとは別の数字。** 山札は「あと何回補充できるか」、
+                  こちらはトリックが解決するたびに増える、二度と戻らない枚数。 */}
+              <span data-testid="ll-discarded">{t('header.discarded', { n: String(state.discarded) })}</span>
             </div>
 
             {/* **取っても得点にならない規則が要。** 先に出す。 */}

@@ -246,3 +246,54 @@ func TestTeenPattiCuiPresenter_ActionLogOutput(t *testing.T) {
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "bet")
 }
+
+// **勝者だけ席番号のままだった。**他の行は全部 `cuiPlayerName` で「あなた」「CPU 1」と
+// 出しているのに、勝者だけ `strconv.Itoa` の生インデックスで「Player 0 の勝ち」に
+// 見えていた。姉妹の Three Card Brag は #5659 で直してあった (#6456)。
+func TestTeenPattiCuiPresenter_NamesTheWinner(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.TeenPattiCuiPresenter)
+
+	t.Run("the match banner names the human", func(t *testing.T) {
+		m, _ := tpSetupMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMatchWinnerIdx")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetMatchWinnerIdx").Return(0)
+
+		out := p.Output(m, nil)
+		assert.Contains(t, out, i18n.Tf("teenpatti.gameEnd", "player", i18n.T("cuiPlayerYou")))
+		assert.NotContains(t, out, i18n.Tf("teenpatti.gameEnd", "player", "0"))
+	})
+
+	// **席を変えて踏む。**席 0 だけ見ていると「常に『あなた』と出す」実装を見逃す。
+	t.Run("the match banner names a CPU seat by its number", func(t *testing.T) {
+		m, _ := tpSetupMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMatchWinnerIdx")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetMatchWinnerIdx").Return(2)
+
+		out := p.Output(m, nil)
+		assert.Contains(t, out, i18n.Tf("teenpatti.gameEnd",
+			"player", i18n.Tf("cuiPlayerCpu", "idx", "2")))
+		// **バナーの文ごと見る。**素の「あなた」はプレイヤー一覧の行にも出るので、
+		// 語だけを否定しても「常に『あなた』と出す」実装を捕まえられない。
+		assert.NotContains(t, out, i18n.Tf("teenpatti.gameEnd", "player", i18n.T("cuiPlayerYou")))
+	})
+
+	t.Run("the round-end prompt names the winner too", func(t *testing.T) {
+		m, _ := tpSetupMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundWinnerIdx")
+		m.On("GetPhase").Return(domain.TeenPattiPhaseRoundEnd)
+		m.On("GetRoundWinnerIdx").Return(1)
+
+		out := p.Output(m, nil)
+		assert.Contains(t, out, i18n.Tf("teenpatti.promptRoundEnd",
+			"player", i18n.Tf("cuiPlayerCpu", "idx", "1")))
+		assert.NotContains(t, out, i18n.Tf("teenpatti.promptRoundEnd", "player", "1"))
+	})
+}

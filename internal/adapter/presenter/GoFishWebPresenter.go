@@ -26,6 +26,7 @@ func (p *GoFishWebPresenter) Output(gf interfaces.GoFishGame, lastErr error) str
 
 	// プレイヤー情報
 	resObj.Players = make([]*controller.GoFishWebOutputPlayer, 0, gf.GetPlayerCnt())
+	knownRanks := gf.GetKnownRanks()
 	for i := 0; i < gf.GetPlayerCnt(); i++ {
 		player := gf.GetPlayer(i)
 		pObj := &controller.GoFishWebOutputPlayer{
@@ -35,6 +36,8 @@ func (p *GoFishWebPresenter) Output(gf interfaces.GoFishGame, lastErr error) str
 			Cards:     playerCardsToOutput(player, player.GetIsHuman()),
 			BookCount: player.GetBookCount(),
 			Books:     booksToOutput(player.GetBooks()),
+			// Sent per seat so a reload restores what the table already knows.
+			KnownRanks: knownRanks[i],
 		}
 		resObj.Players = append(resObj.Players, pObj)
 	}

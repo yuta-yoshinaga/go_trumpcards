@@ -34,6 +34,7 @@ function makeState(overrides: Partial<CuckooResponse> = {}): CuckooResponse {
     pendingSwapTo: -1,
     roundLowest: -1,
     roundLosers: [],
+    swapTargetIdx: 1,
     config: { cpuDifficulty: 1, initialLives: 3 },
     message: '',
     ...overrides,

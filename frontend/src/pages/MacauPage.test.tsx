@@ -318,4 +318,35 @@ describe('MacauPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(document.querySelectorAll('[data-playable="true"]').length).toBeGreaterThan(1);
   });
+  // 上限に届いた席が出た時点で決着し、最高点が勝つ。累計だけでは自分がどれだけ
+  // 近いのか分からなかった。既定 (200) と違う上限でも反映されることまで見る。
+  it('shows each cumulative score against the point limit', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<MacauPage />);
+    await waitFor(() => expect(screen.getByTestId('macau-total-0')).toBeInTheDocument());
+    expect(screen.getByTestId('macau-total-0')).toHaveTextContent('/200');
+  });
+
+  it('reflects a non-default point limit', async () => {
+    // 既定と同じ 200 のままだと、設定を読む実装と定数を書いた実装を見分けられない。
+    mockExec.mockResolvedValue({ ...playPhaseState, config: { cpuDifficulty: 1, pointLimit: 350 } });
+    renderWithProviders(<MacauPage />);
+    await waitFor(() => expect(screen.getByTestId('macau-total-0')).toBeInTheDocument());
+    expect(screen.getByTestId('macau-total-0')).toHaveTextContent('/350');
+    expect(screen.getByTestId('macau-total-0')).not.toHaveTextContent('/200');
+  });
+
+  // スート指定がある場合のみ、捨て札背景に指定スートの透かしを表示する。
+  it('renders chosen-suit-watermark when chosenSuit is greater than zero', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, chosenSuit: 1 });
+    renderWithProviders(<MacauPage />);
+    await waitFor(() => expect(screen.getByTestId('chosen-suit-watermark')).toBeInTheDocument());
+  });
+
+  it('does not render chosen-suit-watermark when chosenSuit is zero', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<MacauPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('chosen-suit-watermark')).not.toBeInTheDocument();
+  });
 });

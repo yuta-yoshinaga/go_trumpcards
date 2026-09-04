@@ -63,4 +63,6 @@ type BouillotteGame interface {
 	CanRaise() bool
 	// GetHint ヒントを取得する
 	GetHint() *domain.BouillotteHint
+	// AnalyzeRetourneMatch 指定プレイヤーの手札と共有のルトゥルヌを比較し、一致状況を判定する
+	AnalyzeRetourneMatch(playerIdx int) *domain.BouillotteRetourneMatch
 }

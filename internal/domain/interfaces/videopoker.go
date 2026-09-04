@@ -24,6 +24,8 @@ type VideoPokerGame interface {
 	GetBetAmount() int
 	// GetChips チップを取得する
 	GetChips() int
+	// GetChipsRefilled 直前の Reset が残高を補充したかを返す
+	GetChipsRefilled() bool
 	// GetResult ゲーム結果を取得する
 	GetResult() domain.GameResult
 	// GetPayout 配当金額を取得する

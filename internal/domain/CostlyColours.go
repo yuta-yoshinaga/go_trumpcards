@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra5
 
 package domain
 
@@ -212,6 +212,30 @@ func (c *CostlyColours) resolveMog(seat int, accept bool) {
 	c.checkGameEnd()
 }
 
+// GetMogDiscardCard は、いま交換に応じたら人間が手放すことになる札を返す。
+//
+// **押す前に分かるようにする。** 手札は 3 枚のまま 1 対 1 で入れ替わるが、
+// 渡す 1 枚を選ぶのは `costlyWorstCardIdx` で、打ち手は「交換する」を押した
+// 結果を見るまでどれが失われるか知る術が無かった (#6631)。
+//
+// **選び方は swapOneCard と同じ関数を呼ぶ。** ここで基準を書き直すと、
+// 予告した札と実際に渡る札が食い違う。交換フェーズ以外では nil。
+func (c *CostlyColours) GetMogDiscardCard() *Card {
+	if c.phase != CostlyColoursPhaseMog {
+		return nil
+	}
+	seat := findHumanIdx(c.players)
+	if seat < 0 {
+		return nil
+	}
+	hand := c.players[seat].GetHand()
+	idx := costlyWorstCardIdx(hand)
+	if idx < 0 || idx >= len(hand) {
+		return nil
+	}
+	return hand[idx]
+}
+
 // swapOneCard は 2 席が 1 枚ずつ取り替える。
 //
 // **手札は 3 枚のまま。** 渡すのは互いにいちばん要らない札 ── ここでは
@@ -233,19 +257,28 @@ func (c *CostlyColours) swapOneCard(a, b int) {
 	}
 }
 
-// costlyWorstCardIdx は手放してよい札の位置を返す。
+// costlyWorstCardIdx は手放してよい札の位置を返す。札が1枚も無いときだけ -1。
 //
 // **J と 2 は残す。** どちらも手札にあるだけで点になるので、渡すと相手に
 // その点を献上することになる。
+//
+// ただしこれは**優先順位であって拒否権ではない**。交換は必ず1枚出す約束なので、
+// 手札が J と 2 だけの席でも誰かを出さねばならない。しきい値を J/2 のスコアと
+// 同じ -1 に置いていたため (`-1 > -1` は偽)、そういう席は -1 を返し、
+// 呼び出し側が交換もフラグ設定もせずに戻っていた ── その席だけ
+// 「交換に参加していない」ままフェーズが進む (#6666、実測 1%)。
 func costlyWorstCardIdx(hand []*Card) int {
-	best, bestScore := -1, -1
+	// costlyKeepScore は「本当は残したい」札の点。どの実札の点よりも低く、
+	// かつ「札が無い」を表す初期値よりは高い。
+	const costlyKeepScore = -1
+	best, bestScore := -1, costlyKeepScore-1
 	for i, card := range hand {
 		if card == nil {
 			continue
 		}
 		score := CostlyCardValue(card)
 		if CostlyIsJackOrDeuce(card) {
-			score = -1 // 最後まで残す。
+			score = costlyKeepScore
 		}
 		if score > bestScore {
 			best, bestScore = i, score

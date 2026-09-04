@@ -961,4 +961,55 @@ describe('SpadesPage cutthroat explanation', () => {
     expect(text).toMatch(/パートナー/);
     expect(text).toMatch(/個別|一人ひとり/);
   });
+
+  // このページのヒントは `hintAvailable` を使わないので、読み上げガードが
+  // 一度も見ておらず aria-live が無いまま出荷されていた (#6663)。領域は
+  // **常設**で、分岐ごとにその分岐だけが出す語を見る。
+  describe('SpadesPage hint live region', () => {
+    it('is mounted and empty before any hint arrives', async () => {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<SpadesPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      const region = screen.getByTestId('spades-hint-live');
+      expect(region).toHaveAttribute('role', 'status');
+      expect(region).toHaveAttribute('aria-live', 'polite');
+      expect(region).toBeEmptyDOMElement();
+    });
+
+    it('names a bid recommendation', async () => {
+      mockExec.mockResolvedValue(bidPhaseState);
+      renderWithProviders(<SpadesPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+      mockExec.mockResolvedValue({
+        ...bidPhaseState,
+        hint: { bid: 4, reason: 'strategic_bid' },
+      } as unknown as SpadesResponse);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      const region = await screen.findByTestId('spades-hint-live');
+      await waitFor(() => expect(region).toHaveTextContent('推奨ビッド'));
+      expect(region).toHaveTextContent('4');
+      expect(region).not.toHaveTextContent('{{');
+    });
+
+    it('names the card to play', async () => {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<SpadesPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        hint: { cardIndex: 2, reason: 'lead_strong' },
+      } as unknown as SpadesResponse);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+      const region = await screen.findByTestId('spades-hint-live');
+      await waitFor(() => expect(region).toHaveTextContent('推奨'));
+      expect(region).toHaveTextContent('[2]');
+      expect(region).not.toHaveTextContent('推奨ビッド');
+      expect(region).not.toHaveTextContent('{{');
+    });
+  });
 });

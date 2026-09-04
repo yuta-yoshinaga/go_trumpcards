@@ -910,6 +910,12 @@ func (g *Cinch) GetBidWinnerIdx() int { return g.bidWinnerIdx }
 // SetBidWinnerIdx は最高ビッダーのインデックスを設定する (テスト用)。
 func (g *Cinch) SetBidWinnerIdx(idx int) { g.bidWinnerIdx = idx }
 
+// SetLastDealDetail は直前ディールの得点内訳を設定する (テスト用)。
+//
+// 内訳は `scoreDeal` が組み立てるので、表示だけを確かめたい場面では
+// 1 ディール分プレイさせるより直接置くほうが、測りたいものがはっきりする。
+func (g *Cinch) SetLastDealDetail(d *CinchDealDetail) { g.lastDealDetail = d }
+
 // GetTrumpSuit は切り札スートを返す (CinchTrumpUnset=未確定)。
 func (g *Cinch) GetTrumpSuit() int { return g.trumpSuit }
 

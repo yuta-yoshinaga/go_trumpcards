@@ -46,6 +46,7 @@ var holdemArgfulCommands = []string{
 	"bl", "bettinglimit", "tm", "tournament",
 	"sb", "smallblind", "bb", "bigblind",
 	"lh", "levelhand", "ts", "tablesize",
+	"rbe", "setrebuyenabled", "ade", "setaddonenabled",
 	"mai", "metaai",
 }
 
@@ -153,6 +154,28 @@ func (c *HoldemCuiController) Exec(command string) string {
 				}
 				cfg := c.hi.GetConfig()
 				cfg.TableSize = v
+				return c.hi.ResetWithConfig(cfg, nil), true
+			case "rbe", "setrebuyenabled":
+				if len(args) < 1 {
+					return i18n.T("holdem.rebuyEnabledRequired"), true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 0 || v > 1 {
+					return invalidArg("holdem.invalidRebuyEnabled", "val", args[0]), true
+				}
+				cfg := c.hi.GetConfig()
+				cfg.RebuyEnabled = v == 1
+				return c.hi.ResetWithConfig(cfg, nil), true
+			case "ade", "setaddonenabled":
+				if len(args) < 1 {
+					return i18n.T("holdem.addonEnabledRequired"), true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 0 || v > 1 {
+					return invalidArg("holdem.invalidAddonEnabled", "val", args[0]), true
+				}
+				cfg := c.hi.GetConfig()
+				cfg.AddonEnabled = v == 1
 				return c.hi.ResetWithConfig(cfg, nil), true
 			case "mai", "metaai":
 				if len(args) < 1 {

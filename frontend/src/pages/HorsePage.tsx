@@ -375,7 +375,7 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
                   betAmount={betAmount}
                   onBetAmountChange={setBetAmount}
                   minRaise={Math.max(state.minRaise, 1)}
-                  maxBetAmount={state.seats[state.humanSeat]?.chips ?? 0}
+                  maxBetAmount={state.maxBetAmount}
                   potSize={state.pot}
                   // **「賭けられているか」はサーバが決める。** 固定すると、
                   // チェックできる場面でチェックが出ず、逆も起きる。

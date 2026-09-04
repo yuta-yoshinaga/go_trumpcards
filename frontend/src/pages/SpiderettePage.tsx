@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { SpideretteMoveZone, spideretteApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -173,8 +173,35 @@ function SpiderettePageContent() {
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
 
+  // Score breakdown popover: title-tooltips are unreachable on touch (#6389).
+  const [scoreOpen, setScoreOpen] = useState(false);
+  const scoreRef = useRef<HTMLSpanElement>(null);
+
+  // Dismiss the score popover on Escape or a click/tap outside its wrapper.
+  useEffect(() => {
+    if (!scoreOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setScoreOpen(false);
+    };
+    const onPointer = (e: MouseEvent) => {
+      if (scoreRef.current && !scoreRef.current.contains(e.target as Node)) setScoreOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onPointer);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onPointer);
+    };
+  }, [scoreOpen]);
+
   if (!state)
     return <GameSkeleton gameKey="spiderette" layout={{ kind: 'tableau', topRow: 1, tableau: TABLEAU_COLS }} />;
+
+  const scoreRuleText = t('scoreRule', {
+    start: state.scoring.start,
+    penalty: state.scoring.movePenalty,
+    bonus: state.scoring.suitBonus,
+  });
 
   const isPlaying = state.phase === SpiderettePhase.PLAYING;
   const isGameClear = state.phase === SpiderettePhase.GAME_CLEAR;
@@ -217,18 +244,31 @@ function SpiderettePageContent() {
           <span>
             {t('moveCount')}: {state.moveCount}
           </span>
-          {/* **数字が動く理由を推測させない** (#5593)。手数の減点とスート完成の
-              加点は、どちらの画面にも書かれていなかった。数字はサーバから。 */}
-          <span
-            className="ml-3"
-            data-testid="spiderette-score"
-            title={t('scoreRule', {
-              start: state.scoring.start,
-              penalty: state.scoring.movePenalty,
-              bonus: state.scoring.suitBonus,
-            })}
-          >
-            {t('score')}: {state.score}
+          {/* **数字が動く理由を推測させない** (#5593, #6389)。内訳ポップオーバーは
+              タッチ端末でも到達可能。数字はサーバから。 */}
+          <span className="relative inline-flex ml-3" ref={scoreRef}>
+            <button
+              type="button"
+              data-testid="spiderette-score"
+              className="normal-case inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded px-2 py-0.5 text-xs text-ds-text-primary hover:text-ds-accent focus:outline-none focus:ring-1 focus:ring-ds-accent"
+              aria-expanded={scoreOpen}
+              aria-haspopup="true"
+              onClick={() => setScoreOpen((o) => !o)}
+              title={scoreRuleText}
+            >
+              {t('score')}: {state.score}
+            </button>
+            {scoreOpen && (
+              /* aria-label is the region's *name*, so it must not repeat the body —
+                 a screen reader would read the same sentence twice. */
+              <section
+                data-testid="spiderette-score-popover"
+                aria-label={t('score')}
+                className="absolute top-full left-0 z-10 mt-1 w-max max-w-[16rem] rounded-lg bg-ds-surface border border-ds-accent/40 p-2 text-[11px] text-ds-text-primary shadow-lg"
+              >
+                {scoreRuleText}
+              </section>
+            )}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>

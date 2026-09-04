@@ -39,6 +39,8 @@ func (p *PopeJoanWebPresenter) buildBase(c interfaces.PopeJoanGame) *controller.
 		resObj.ValidPlays = make([]int, 0)
 	}
 	resObj.CurrentPlayerIdx = c.GetCurrentPlayerIdx()
+	// 誰が種銭を負担し、めくり札特典を得るのかは毎ディール回る (#6520)。
+	resObj.DealerIdx = c.GetDealerIdx()
 	resObj.TrumpSuit = c.GetTrumpSuit()
 	resObj.RunSuit = c.GetRunSuit()
 	resObj.RunRank = c.GetRunRank()

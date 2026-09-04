@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { doubleklondikeApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, DoubleKlondikeResponse } from '../types/card';
+import { DoubleKlondikePhase } from '../types/phases';
 import { DoubleKlondikePage } from './DoubleKlondikePage';
 
 vi.mock('../api/gameApi', () => ({
@@ -85,6 +86,48 @@ describe('DoubleKlondikePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('mwt', { col: 0 }));
   });
 
+  // **選択中であることが枠線の色でしか分からなかった** ── 音声には何も届かない
+  // (#6476)。盤面が通常のクロンダイクの 2 倍あるぶん選択元を見失いやすい。
+  it('announces the selected waste card as pressed', async () => {
+    renderWithProviders(<DoubleKlondikePage />);
+    const waste = await screen.findByTestId('waste');
+    expect(waste).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(waste);
+    await waitFor(() => expect(screen.getByTestId('waste')).toHaveAttribute('aria-pressed', 'true'));
+    // 別の場所を選ぶと解除される ── 押されっぱなしにする実装はここで落ちる。
+    fireEvent.click(screen.getByTestId('card-1-1'));
+    await waitFor(() => expect(screen.getByTestId('waste')).toHaveAttribute('aria-pressed', 'false'));
+  });
+
+  it('announces the grabbed tableau run as pressed, from the grabbed card down', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        tableau: (() => {
+          const t = Array.from({ length: 9 }, () => []) as ReturnType<typeof makeState>['tableau'];
+          // 掴めるのは表向きの札。0 は裏、1..2 が同色降順の束。
+          t[0] = [
+            { card: null, faceUp: false },
+            { card: card('SPADE', 9), faceUp: true },
+            { card: card('HEART', 8), faceUp: true },
+          ];
+          return t;
+        })(),
+      }),
+    );
+    renderWithProviders(<DoubleKlondikePage />);
+
+    const grabbed = await screen.findByTestId('card-0-1');
+    expect(grabbed).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(grabbed);
+
+    // 掴んだ札**とその下**が押された状態。リングと同じ範囲。
+    await waitFor(() => expect(screen.getByTestId('card-0-1')).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('card-0-2')).toHaveAttribute('aria-pressed', 'true');
+    // 掴んだ札より上 (裏向き) は押されていない。
+    expect(screen.getByTestId('card-0-0')).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('fans out the top 3 waste cards, keeping only the top selectable', async () => {
     mockExec.mockResolvedValue(
       makeState({ waste: [card('CLOVER', 2), card('SPADE', 3), card('HEART', 4), card('DIAMOND', 5)] }),
@@ -148,7 +191,7 @@ describe('DoubleKlondikePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('mtt', { fromCol: 0, cardIndex: 0, toCol: 5 }));
   });
 
-  it('auto-completes, undoes, hints and gives up', async () => {
+  it('auto-completes, undoes, hints', async () => {
     mockExec.mockResolvedValue(makeState({ canUndo: true }));
     renderWithProviders(<DoubleKlondikePage />);
     await screen.findByTestId('hint-button');
@@ -156,7 +199,6 @@ describe('DoubleKlondikePage', () => {
       ['auto-button', 'ac'],
       ['undo-button', 'u'],
       ['hint-button', 'hint'],
-      ['giveup-button', 'g'],
     ] as const) {
       mockExec.mockClear();
       fireEvent.click(screen.getByTestId(testid));
@@ -164,11 +206,29 @@ describe('DoubleKlondikePage', () => {
     }
   });
 
+  // 終局後など手番でない場合は操作ボタン類が隠れる
   it('hides controls at game over', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 2 }));
     renderWithProviders(<DoubleKlondikePage />);
     await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
     expect(screen.queryByTestId('hint-button')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('draw-button')).not.toBeInTheDocument();
+  });
+
+  // 手番中(canAct)は山札からカードを引くためのドローボタンが表示される
+  // 山札ボタンは `canAct = !isEnd` でしか出ない。phase の 1 は GAME_CLEAR で
+  // **決着済み**なので出ない (0 = PLAYING)。局が続いている間だけ押せる。
+  it('shows draw-button while the game is still in play', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: DoubleKlondikePhase.PLAYING }));
+    renderWithProviders(<DoubleKlondikePage />);
+    expect(await screen.findByTestId('draw-button')).toBeInTheDocument();
+  });
+
+  it('hides draw-button once the deal is cleared', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: DoubleKlondikePhase.GAME_CLEAR }));
+    renderWithProviders(<DoubleKlondikePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('draw-button')).not.toBeInTheDocument();
   });
 
   it('scrolls the tableau and foundations with 44px+ tap targets on mobile', async () => {
@@ -258,5 +318,47 @@ describe('DoubleKlondikePage', () => {
     // ♠2 would fit foundation 0 (which holds ♠A) but ♠2 is not what gets sent.
     await waitFor(() => expect(screen.getByTestId('foundation-1')).toHaveAttribute('data-move-target'));
     expect(screen.getByTestId('foundation-0')).not.toHaveAttribute('data-move-target');
+  });
+
+  // **ギブアップは取り消せない** (#6475)。リセットには確認が挟まるのに、
+  // ここは即座に対局を打ち切っていた。
+  it('asks before giving up, and only then dispatches', async () => {
+    renderWithProviders(<DoubleKlondikePage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalledWith('g');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('g'));
+  });
+
+  it('leaves the game untouched when the give-up dialog is cancelled', async () => {
+    renderWithProviders(<DoubleKlondikePage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('giveup-button'));
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('shows waste-fan when there are cards in the waste', async () => {
+    // 捨て札(waste)に1枚以上カードがある場合、ずらして表示するためのコンテナが出る
+    mockExec.mockResolvedValue(makeState({ waste: [{ design: 'SPADE', value: 1 }] }));
+    renderWithProviders(<DoubleKlondikePage />);
+    expect(await screen.findByTestId('waste-fan')).toBeInTheDocument();
+  });
+
+  it('does not show waste-fan when the waste is empty', async () => {
+    mockExec.mockResolvedValue(makeState({ waste: [] }));
+    renderWithProviders(<DoubleKlondikePage />);
+    await waitFor(() => expect(screen.getByTestId('stock')).toBeInTheDocument());
+    expect(screen.queryByTestId('waste-fan')).not.toBeInTheDocument();
   });
 });

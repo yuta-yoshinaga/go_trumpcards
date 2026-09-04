@@ -10,7 +10,7 @@
   "columnEmpty": "[empty]",
   "topCard": "[{{card}}]",
   "stockLine": "Stock: {{count}}",
-  "discardLine": " | Discard: {{count}}",
+  "discardLine": " | Discard: {{count}}/{{goal}}",
   "redealLine": " | Redeals: {{count}}",
   "hintRemove": "Hint: the four exposed cards match — discard them with rm",
   "hintMove": "Hint: stack col{{col}} onto the pile to its left showing the same rank",

@@ -256,12 +256,17 @@ function TuSacPageContent() {
             <div className="mb-3" data-tutorial="tusac-hand">
               <div className="text-ds-text-primary text-center text-sm font-bold mb-1">
                 {t('label.yourHand')}
-                {selected.length > 0 && (
-                  <span data-testid="tusac-selected">
-                    {' · '}
-                    {t('label.selected', { count: selected.length })}
-                  </span>
-                )}
+                {/* **ライブ領域は常設。** 選択と同時に領域ごと現れると、その中身は
+                    変化として扱われず読み上げられないことがある (#5955)。中身だけを
+                    出し入れするので、見た目は従来どおり 0 枚のときは何も出ない。 */}
+                <span role="status" aria-live="polite">
+                  {selected.length > 0 && (
+                    <span data-testid="tusac-selected">
+                      {' · '}
+                      {t('label.selected', { count: selected.length })}
+                    </span>
+                  )}
+                </span>
               </div>
               <div className="flex justify-center gap-1 flex-wrap" data-testid="tusac-hand">
                 {(human?.cards ?? []).map((card, i) => (

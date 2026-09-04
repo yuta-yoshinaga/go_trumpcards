@@ -76,7 +76,7 @@ function KingoPageContent() {
   const isBanker = !!state?.isHumanBanker;
   const canAct = isBetting && !gameOver;
 
-  const handleBet = useCallback(() => execApi('bet', { amount }), [execApi, amount]);
+  const handleBet = useCallback((bet: number) => execApi('bet', { amount: bet }), [execApi]);
 
   const actionBindings = useMemo(
     () => [{ key: 'n', action: () => execApi('next'), enabled: isResult && !gameOver }],
@@ -104,6 +104,9 @@ function KingoPageContent() {
   const human = state.seats[state.humanSeat];
   const humanWon = gameOver && state.winnerSeat === state.humanSeat;
   const minBet = state.config?.minBet ?? 10;
+  // **初期値も卓の最低額に合わせる。** 下限を入力欄に渡しても、一度も触らずに
+  // 「賭ける」を押した人は既定の 10 を送ってしまい、サーバに弾かれる。
+  const betAmount = Math.max(amount, minBet);
 
   return (
     <GamePageShell
@@ -266,16 +269,20 @@ function KingoPageContent() {
                       className={btnSuccess}
                       data-testid="kingo-bet"
                       data-hint-action="bet"
-                      onClick={handleBet}
+                      onClick={() => handleBet(betAmount)}
                       disabled={loading}
                     >
                       {t('button.bet')}
                     </button>
+                    {/* **案内文と入力欄は同じ minBet から作る。** 下限を渡さないと
+                        既定の 10 でクランプされ、卓の最低額を変えても入力欄だけ
+                        追従しない。 */}
                     <ChipBetInput
                       id="kingo-amount"
                       label={t('label.bet')}
-                      value={amount}
+                      value={betAmount}
                       onChange={setAmount}
+                      min={minBet}
                       max={human?.chips ?? 0}
                     />
                   </>

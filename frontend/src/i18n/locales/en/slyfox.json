@@ -30,7 +30,7 @@
   "stalemate": "No moves left",
   "noHint": "No hint available",
   "hintAvailable": "Hint available",
-  "landscapeBanner": "Landscape orientation recommended",
+  "landscapeBanner": "Landscape mode recommended",
   "frontendHint": {
     "slyFoxTableau": "This reserve card can go to a foundation",
     "slyFoxDealToFoundation": "The next card goes straight to a foundation (it does not count toward the twenty)",

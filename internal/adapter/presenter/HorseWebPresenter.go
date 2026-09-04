@@ -51,6 +51,7 @@ func (p *HorseWebPresenter) buildBase(g interfaces.HorseGame) *controller.HorseW
 	resObj.Pot = g.GetPot()
 	resObj.ToCall = g.GetToCall()
 	resObj.MinRaise = g.GetMinRaise()
+	resObj.MaxBetAmount = g.GetMaxBetAmount()
 	resObj.TablePhase = g.GetTablePhase()
 	// **バリアントと種目の並びはサーバーが出す。** 画面がルート名から
 	// 「8 種目のはず」と決め打つと、5 種目の卓に 8 個の見出しが並ぶ。

@@ -35,6 +35,11 @@ func kalookiPlayerStr(player *domain.KalookiPlayer, i int) string {
 			if mi > 0 {
 				b.WriteString(" | ")
 			}
+			// `lo <pIdx> <mIdx> <cIdx>` は狙うメルドの番号を要求するのに、場は
+			// 札を並べるだけで番号がどこにも出ていなかった ── 数えて当てるしかない
+			// (#6462)。Web は各メルドのボタンに `mi + 1` を出しているが、こちらは
+			// コマンドが取る 0 始まりの添字をそのまま出す。手札の `[0]` 表記と同じ形。
+			b.WriteString("[" + strconv.Itoa(mi) + "] ")
 			cardStrs := make([]string, len(meld))
 			for ci, c := range meld {
 				cardStrs[ci] = cuiCardStr(c)

@@ -233,4 +233,70 @@ describe('TrexPage', () => {
       expect(screen.queryByTestId('trex-penalty-card')).not.toBeInTheDocument();
     });
   });
+
+  describe('hand penalty-card highlight', () => {
+    beforeEach(() => {
+      localStorage.clear();
+      vi.clearAllMocks();
+      mockExec.mockResolvedValue(makeState());
+    });
+
+    const withHand = (contract: number, isTrix = false) =>
+      makeState({
+        phase: TrexPhase.PLAY,
+        contract,
+        isTrix,
+        players: [
+          seat(0, true, {
+            cards: [card('HEART', 13), card('DIAMOND', 5), card('SPADE', 12), card('CLOVER', 3)],
+          }),
+          seat(1, false),
+          seat(2, false),
+          seat(3, false),
+        ],
+      });
+
+    it('marks only the king of hearts in hand under King of Hearts contract', async () => {
+      mockExec.mockResolvedValue(withHand(TrexContract.KING_OF_HEARTS));
+      renderWithProviders(<TrexPage />);
+      await waitFor(() => expect(screen.getAllByTestId('trex-hand-penalty-card')).toHaveLength(1));
+      const penaltyCard = screen.getByTestId('trex-hand-penalty-card');
+      expect(penaltyCard.className).toContain('ring-2 ring-ds-error');
+      expect(penaltyCard).toHaveAttribute('title', 'この契約の失点カード');
+    });
+
+    it('marks only the diamonds in hand under Diamonds contract', async () => {
+      mockExec.mockResolvedValue(withHand(TrexContract.DIAMONDS));
+      renderWithProviders(<TrexPage />);
+      await waitFor(() => expect(screen.getAllByTestId('trex-hand-penalty-card')).toHaveLength(1));
+      const penaltyCard = screen.getByTestId('trex-hand-penalty-card');
+      expect(penaltyCard.className).toContain('ring-2 ring-ds-error');
+    });
+
+    it('marks only the queens in hand under Queens contract', async () => {
+      mockExec.mockResolvedValue(withHand(TrexContract.QUEENS));
+      renderWithProviders(<TrexPage />);
+      await waitFor(() => expect(screen.getAllByTestId('trex-hand-penalty-card')).toHaveLength(1));
+      const penaltyCard = screen.getByTestId('trex-hand-penalty-card');
+      expect(penaltyCard.className).toContain('ring-2 ring-ds-error');
+    });
+
+    it('marks nothing in hand under Dominoes (Trix) contract', async () => {
+      mockExec.mockResolvedValue(withHand(TrexContract.DOMINOES, true));
+      renderWithProviders(<TrexPage />);
+      await waitFor(() =>
+        expect(screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'play')).toHaveLength(4),
+      );
+      expect(screen.queryByTestId('trex-hand-penalty-card')).not.toBeInTheDocument();
+    });
+
+    it('marks nothing in hand under Tricks contract', async () => {
+      mockExec.mockResolvedValue(withHand(TrexContract.TRICKS));
+      renderWithProviders(<TrexPage />);
+      await waitFor(() =>
+        expect(screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'play')).toHaveLength(4),
+      );
+      expect(screen.queryByTestId('trex-hand-penalty-card')).not.toBeInTheDocument();
+    });
+  });
 });
