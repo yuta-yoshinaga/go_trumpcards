@@ -5,7 +5,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, WhiteheadResponse, WhiteheadTableauCard } from '../types/card';
-import { WhiteheadVegas } from '../types/phases';
+import { WhiteheadScoringMode, WhiteheadVegas } from '../types/phases';
 import { WhiteheadPage } from './WhiteheadPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -1220,5 +1220,19 @@ describe('WhiteheadPage Vegas formula', () => {
     renderWithProviders(<WhiteheadPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('kl-vegas-formula')).not.toBeInTheDocument();
+  });
+
+  // ベガススコアルールが有効な場合のみ、スコア表示領域を表示する。
+  it('renders kl-vegas-score when scoringMode is VEGAS', async () => {
+    mockExec.mockResolvedValue({ ...playingState, scoringMode: WhiteheadScoringMode.VEGAS });
+    renderWithProviders(<WhiteheadPage />);
+    await waitFor(() => expect(screen.getByTestId('kl-vegas-score')).toBeInTheDocument());
+  });
+
+  it('does not render kl-vegas-score when scoringMode is not VEGAS', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<WhiteheadPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('kl-vegas-score')).not.toBeInTheDocument();
   });
 });

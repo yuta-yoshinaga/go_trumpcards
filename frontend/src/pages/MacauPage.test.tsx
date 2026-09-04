@@ -335,4 +335,18 @@ describe('MacauPage', () => {
     expect(screen.getByTestId('macau-total-0')).toHaveTextContent('/350');
     expect(screen.getByTestId('macau-total-0')).not.toHaveTextContent('/200');
   });
+
+  // スート指定がある場合のみ、捨て札背景に指定スートの透かしを表示する。
+  it('renders chosen-suit-watermark when chosenSuit is greater than zero', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, chosenSuit: 1 });
+    renderWithProviders(<MacauPage />);
+    await waitFor(() => expect(screen.getByTestId('chosen-suit-watermark')).toBeInTheDocument());
+  });
+
+  it('does not render chosen-suit-watermark when chosenSuit is zero', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<MacauPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('chosen-suit-watermark')).not.toBeInTheDocument();
+  });
 });

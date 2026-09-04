@@ -1869,4 +1869,21 @@ describe('DramahaPage showdown split', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('dramaha-omaha-hand')).not.toBeInTheDocument();
   });
+
+  // 人間プレイヤーが存在する場合のみ、ドロー役判定領域を表示する。
+  it('renders dramaha-draw-hand when human player exists', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<DramahaPage />);
+    await waitFor(() => expect(screen.getByTestId('dramaha-draw-hand')).toBeInTheDocument());
+  });
+
+  it('does not render dramaha-draw-hand when human player does not exist', async () => {
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      players: [cpuPlayer(1), cpuPlayer(2)],
+    });
+    renderWithProviders(<DramahaPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('dramaha-draw-hand')).not.toBeInTheDocument();
+  });
 });
