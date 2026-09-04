@@ -93,10 +93,7 @@ async function walk(dir, matcher) {
 // same defect on a second surface -- a guard that watches only one of two surfaces lets
 // the next one through. `components/` is nested, so it needs the recursive walk.
 const isSource = (name) => name.endsWith('.tsx') && !name.endsWith('.test.tsx');
-const sourceFiles = [
-  ...(await walk(PAGES_DIR, isSource)),
-  ...(await walk(COMPONENTS_DIR, isSource)),
-].sort();
+const sourceFiles = [...(await walk(PAGES_DIR, isSource)), ...(await walk(COMPONENTS_DIR, isSource))].sort();
 
 const testFiles = await walk(SRC_DIR, (name) => /\.test\.tsx?$/.test(name));
 const e2eFiles = await walk(E2E_DIR, (name) => /\.ts$/.test(name));
