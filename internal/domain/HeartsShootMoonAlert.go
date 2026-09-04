@@ -1,3 +1,5 @@
+//go:build !js || !wasm || classic
+
 package domain
 
 // HeartsShootTheMoonAlertThreshold は「ムーンを狙っている」と見なす
