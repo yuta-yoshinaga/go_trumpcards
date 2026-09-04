@@ -26,6 +26,8 @@ export const WORKER_EXTRA2 = import.meta.env.VITE_WORKER_EXTRA2_URL || '';
 export const WORKER_EXTRA3 = import.meta.env.VITE_WORKER_EXTRA3_URL || '';
 /** Seventh size bucket (ADR-0037). */
 export const WORKER_EXTRA4 = import.meta.env.VITE_WORKER_EXTRA4_URL || '';
+/** Eighth size bucket. */
+export const WORKER_EXTRA5 = import.meta.env.VITE_WORKER_EXTRA5_URL || '';
 
 /** Maps each game to its Worker base URL. */
 export const workerUrl: Record<string, string> = {

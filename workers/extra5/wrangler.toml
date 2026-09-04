@@ -1,0 +1,38 @@
+name = "go-trumpcards-extra5"
+main = "./build/worker.mjs"
+compatibility_date = "2024-09-23"
+
+# **Workers のログを有効にする。**これが無いと Cloudflare は何も保存せず、
+# observability API は 7 日ぶんを問い合わせても 0 件を返す —— 本番で何が起きて
+# いるかを、本番を直接叩いて再現する以外に知る手段が無くなる。実際 klondike の
+# 503 (Cloudflare 1102) は、ログではなくデプロイ済み Worker への手動リクエストで
+# しか見つけられなかった。
+#
+# head_sampling_rate は 1 (全件)。この 8 本は無料枠の趣味プロジェクトで、
+# 取りこぼしを気にする量のトラフィックは無い。
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+
+# Dedicated namespaces, matching `extra`/`extra2`/`extra3`/`extra4` (ADR-0032, ADR-0036, ADR-0037).
+# Sharing one namespace across workers would be safe -- KV keys are
+# "<game>:<sessionId>" (worker_helper.go passes name+":" as the prefix) and a game
+# lives in exactly one bucket -- but separate stores let one worker's sessions be
+# listed or purged without touching another's.
+#
+# Production, preview and staging are three DIFFERENT namespaces. ADR-0036 Phase 1
+# used one placeholder token for both production and staging, so a find-replace
+# would have quietly pointed staging at the production store. These three ids were
+# created separately via the Cloudflare API and verified distinct.
+[[kv_namespaces]]
+binding = "GAME_SESSIONS"
+id = "4c1da3eff6864510be0613898038ebc1"
+preview_id = "694f07f8c4d94905b418f416267a9735"
+
+[env.staging]
+name = "go-trumpcards-extra5-staging"
+
+[[env.staging.kv_namespaces]]
+binding = "GAME_SESSIONS"
+id = "761df150983c4a9c9ee6aa3349298d8f"

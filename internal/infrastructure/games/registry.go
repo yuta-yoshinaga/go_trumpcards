@@ -8,9 +8,9 @@
 //     Category) for all 318 games. Cheap; no references to game code.
 //   - games_server.go (!js || !wasm)   — installs Web-server factories for
 //     every game via BindWebController. Imported by TrumpCardsWeb.
-//   - casino/, classic/, solo/, extra/, extra2/, extra3/ (js && wasm) —
+//   - casino/, classic/, solo/, extra/, extra2/, extra3/, extra4/, extra5/ (js && wasm) —
 //     per-category worker bindings. Each worker blank-imports only its own
-//     sub-package so TinyGo dead-code elimination can drop the other five
+//     sub-package so TinyGo dead-code elimination can drop the other seven
 //     categories' domain/usecase code.
 package games
 
@@ -52,6 +52,8 @@ const (
 	// games' worth -- and extra3 sat 188 bytes below the free-tier ceiling.
 	// See CategoryExtra2 for why the name says nothing about genre.
 	CategoryExtra4
+	// CategoryExtra5 is the eighth size bucket (ADR-0038). See CategoryExtra2.
+	CategoryExtra5
 )
 
 // String returns the lowercase worker name (casino/classic/solo). Panics on
@@ -74,6 +76,8 @@ func (c Category) String() string {
 		return "extra3"
 	case CategoryExtra4:
 		return "extra4"
+	case CategoryExtra5:
+		return "extra5"
 	default:
 		panic(fmt.Sprintf("games: unknown Category %d", int(c)))
 	}
@@ -1276,7 +1280,7 @@ func ByCategory(cat Category) []Game {
 }
 
 // AllCategories returns every Category value in canonical display order
-// (casino, classic, solo, extra, extra2, extra3, extra4). The returned slice is fresh per
+// (casino, classic, solo, extra, extra2, extra3, extra4, extra5). The returned slice is fresh per
 // call so callers
 // cannot mutate package state. Adding a new Category value to the iota above
 // requires extending this slice — that intentional coupling is the SSoT
@@ -1286,6 +1290,7 @@ func AllCategories() []Category {
 	return []Category{
 		CategoryCasino, CategoryClassic, CategorySolo,
 		CategoryExtra, CategoryExtra2, CategoryExtra3, CategoryExtra4,
+		CategoryExtra5,
 	}
 }
 
