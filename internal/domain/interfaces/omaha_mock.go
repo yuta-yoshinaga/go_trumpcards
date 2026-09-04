@@ -318,3 +318,9 @@ func (_m *MockOmahaGame) GetHoleCardCount() int {
 	ret := _m.Called()
 	return ret.Int(0)
 }
+
+// GetPreflopCommunityCount モック
+func (_m *MockOmahaGame) GetPreflopCommunityCount() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}

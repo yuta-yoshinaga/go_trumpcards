@@ -137,6 +137,9 @@ func (o *Omaha) holeCardCount() int {
 // GetHoleCardCount はホールカード配布枚数を返す (Big O では5)。
 func (o *Omaha) GetHoleCardCount() int { return o.holeCardCount() }
 
+// GetPreflopCommunityCount はプリフロップ前に公開するコミュニティ札の枚数を返す (Courchevel=1、他=0)
+func (o *Omaha) GetPreflopCommunityCount() int { return o.preflopCommunity }
+
 // Reset ゲーム初期化
 func (o *Omaha) Reset() error {
 	o.phase = OmahaPhaseInit

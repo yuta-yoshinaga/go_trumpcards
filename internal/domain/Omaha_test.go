@@ -465,3 +465,22 @@ func TestOmaha_MetaAI_PlayerActionRecordsAction(t *testing.T) {
 		assert.Nil(t, o.GetHumanProfile())
 	})
 }
+
+func TestOmaha_GetPreflopCommunityCount(t *testing.T) {
+	t.Run("Omaha", func(t *testing.T) {
+		o := NewDefaultOmaha()
+		assert.Equal(t, 0, o.GetPreflopCommunityCount())
+	})
+	t.Run("Big O", func(t *testing.T) {
+		o := NewDefaultBigO()
+		assert.Equal(t, 0, o.GetPreflopCommunityCount())
+	})
+	t.Run("Courchevel", func(t *testing.T) {
+		o := NewDefaultCourchevel()
+		assert.Equal(t, courchevelPreflopCommunity, o.GetPreflopCommunityCount())
+	})
+	t.Run("Courchevel Hi-Lo", func(t *testing.T) {
+		o := NewDefaultCourchevelHiLo()
+		assert.Equal(t, courchevelPreflopCommunity, o.GetPreflopCommunityCount())
+	})
+}
