@@ -89,6 +89,7 @@ export * from './games/continentalrummy';
 export * from './games/contractrummy';
 export * from './games/costlycolours';
 export * from './games/courchevel';
+export * from './games/courchevelhilo';
 export * from './games/courtpiece';
 export * from './games/crazyeights';
 export * from './games/crazyfourpoker';
@@ -395,6 +396,7 @@ export const games = [
   'bigo',
   'bigohilo',
   'courchevel',
+  'courchevelhilo',
   'shortdeck',
   'pineapple',
   'crazypineapple',
