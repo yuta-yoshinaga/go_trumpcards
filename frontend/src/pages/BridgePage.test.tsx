@@ -451,6 +451,20 @@ describe('BridgePage', () => {
     });
   });
 
+  // オープニングリード完了後に公開されたダミーの手札がある場合のみダミー領域を表示する。
+  it('renders bridge-dummy-area when opening lead is done and dummy hand exists', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('bridge-dummy-area')).toBeInTheDocument());
+  });
+
+  it('does not render bridge-dummy-area when opening lead is not done', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('bridge-dummy-area')).not.toBeInTheDocument();
+  });
+
   it('shows bid history when bids exist', async () => {
     mockExec.mockResolvedValue(bidHistoryState);
     renderWithProviders(<BridgePage />);

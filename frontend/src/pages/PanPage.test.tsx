@@ -602,4 +602,18 @@ describe('PanPage meld candidates', () => {
     expect(labelOf(second)).toContain('♦ 4');
     expect(labelOf(first)).not.toBe(labelOf(second));
   });
+
+  // プレイフェーズかつ自分の手番のときのみメルドボタンを表示する。
+  it('renders pan-meld-button when play phase and human turn', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PanPage />);
+    await waitFor(() => expect(screen.getByTestId('pan-meld-button')).toBeInTheDocument());
+  });
+
+  it('does not render pan-meld-button outside play phase', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<PanPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('pan-meld-button')).not.toBeInTheDocument();
+  });
 });

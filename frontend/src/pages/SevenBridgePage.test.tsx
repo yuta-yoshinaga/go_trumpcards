@@ -228,3 +228,19 @@ describe('SevenBridgePage layoff hint', () => {
     expect(button).toHaveAttribute('aria-describedby', 'sb-layoff-hint');
   });
 });
+
+describe('SevenBridgePage layoff melds picker', () => {
+  // レイオフ対象の選択欄は、カードを引いた後のプレイフェーズ（かつ自分の手番）でのみ表示するため。
+  it('renders sb-layoff-melds during the human play phase', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<SevenBridgePage />);
+    await waitFor(() => expect(screen.getByTestId('sb-layoff-melds')).toBeInTheDocument());
+  });
+
+  it('does not render sb-layoff-melds outside the play phase', async () => {
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<SevenBridgePage />);
+    await waitFor(() => expect(screen.getByTestId('sb-select-two-hint')).toBeInTheDocument());
+    expect(screen.queryByTestId('sb-layoff-melds')).not.toBeInTheDocument();
+  });
+});

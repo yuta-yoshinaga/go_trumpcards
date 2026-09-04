@@ -1852,4 +1852,21 @@ describe('DramahaPage showdown split', () => {
     await screen.findByTestId('dramaha-hands');
     expect(screen.queryByTestId('dramaha-split-results')).not.toBeInTheDocument();
   });
+
+  // 人間プレイヤーが存在する場合のみフッターの手札欄およびオマハ役判定領域を表示する。
+  it('renders dramaha-omaha-hand when human player exists', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<DramahaPage />);
+    await waitFor(() => expect(screen.getByTestId('dramaha-omaha-hand')).toBeInTheDocument());
+  });
+
+  it('does not render dramaha-omaha-hand when human player does not exist', async () => {
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      players: [cpuPlayer(1), cpuPlayer(2)],
+    });
+    renderWithProviders(<DramahaPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('dramaha-omaha-hand')).not.toBeInTheDocument();
+  });
 });

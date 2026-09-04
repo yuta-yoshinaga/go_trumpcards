@@ -275,3 +275,38 @@ describe('RussianPokerPage paid costs', () => {
     expect(screen.queryByTestId('rp-paid-costs')).not.toBeInTheDocument();
   });
 });
+
+describe('RussianPokerPage conditional rendering', () => {
+  beforeEach(() => {
+    localStorage.removeItem('hint_enabled_russianpoker');
+    mockExec.mockReset();
+  });
+
+  // 手札が配られていない初期状態では手札表示エリアを出さないため。
+  it('renders player-hand when playerHand is not empty', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<RussianPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('player-hand')).toBeInTheDocument());
+  });
+
+  it('does not render player-hand when playerHand is empty', async () => {
+    mockExec.mockResolvedValue(makeState({ playerHand: [] }));
+    renderWithProviders(<RussianPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('card-area')).toBeInTheDocument());
+    expect(screen.queryByTestId('player-hand')).not.toBeInTheDocument();
+  });
+
+  // カード交換のキーボード操作ヒントは、交換可能なアクションフェーズ中のみ表示するため。
+  it('renders russian-exchange-kbd-hint during the action phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: RussianPokerPhase.ACTION }));
+    renderWithProviders(<RussianPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('russian-exchange-kbd-hint')).toBeInTheDocument());
+  });
+
+  it('does not render russian-exchange-kbd-hint outside the action phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: RussianPokerPhase.BET }));
+    renderWithProviders(<RussianPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('card-area')).toBeInTheDocument());
+    expect(screen.queryByTestId('russian-exchange-kbd-hint')).not.toBeInTheDocument();
+  });
+});

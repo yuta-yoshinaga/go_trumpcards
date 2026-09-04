@@ -623,3 +623,19 @@ describe('SpeedPage centre piles stay reachable', () => {
     expect(centrePiles()[0].getAttribute('aria-label')).toMatch(/選/);
   });
 });
+
+describe('SpeedPage stuck flip popup', () => {
+  // 両者が出せるカードがなく手詰まりになった（STUCK）時のみ、中央のめくりポップアップを表示するため。
+  it('renders speed-stuck-flip-popup when stuck', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByTestId('speed-stuck-flip-popup')).toBeInTheDocument());
+  });
+
+  it('does not render speed-stuck-flip-popup during normal play', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByTestId('speed-timer')).toBeInTheDocument());
+    expect(screen.queryByTestId('speed-stuck-flip-popup')).not.toBeInTheDocument();
+  });
+});
