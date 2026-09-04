@@ -83,14 +83,13 @@ def ensure_register_func(tree: Tree, bucket: str) -> None:
     text = tree.read(p)
     if "func init()" in text:
         return
-    text = text.replace(
-        "// Currently empty. Phase 1 of ADR-0036 adds the bucket and proves the build and\n"
-        "// deploy path; Phase 2 moves games in.\n//\n",
+    # Strip the Phase-1 "Currently empty" comment. Use regex instead of a literal
+    # ADR number because matching a fixed string silently breaks on the next ADR.
+    text = re.sub(
+        r"// Currently empty\. Phase 1 of ADR-\d{4} adds the bucket and proves the build and\n"
+        r"// deploy path; Phase 2 moves games in\.\n(//\n)?",
         "",
-    ).replace(
-        "// Currently empty. Phase 1 of ADR-0036 adds the bucket and proves the build and\n"
-        "// deploy path; Phase 2 moves games in.\n",
-        "",
+        text,
     )
     tree.write(p, text.rstrip("\n") + "\n" + SCAFFOLD)
 

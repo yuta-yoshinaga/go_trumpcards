@@ -66,14 +66,6 @@ func init() {
 			return usecase.RestoreCasinoWarInteractor(data, new(presenter.CasinoWarWebPresenter))
 		},
 		controller.NewCasinoWarWebControllerWithProvider)
-	games.RegisterKVGame("cego", games.CategoryExtra4,
-		func() usecase.CegoInteractorIF {
-			return usecase.NewCegoInteractor(domain.NewDefaultCego(), new(presenter.CegoWebPresenter))
-		},
-		func(data []byte) (usecase.CegoInteractorIF, error) {
-			return usecase.RestoreCegoInteractor(data, new(presenter.CegoWebPresenter))
-		},
-		controller.NewCegoWebControllerWithProvider)
 	games.RegisterKVGame("chemindefer", games.CategoryExtra4,
 		func() usecase.ChemindeFerInteractorIF {
 			return usecase.NewChemindeFerInteractor(domain.NewDefaultChemindeFer(), new(presenter.ChemindeFerWebPresenter))
@@ -178,30 +170,6 @@ func init() {
 			return usecase.RestoreMendikotInteractor(data, new(presenter.MendikotWebPresenter))
 		},
 		controller.NewMendikotWebControllerWithProvider)
-	games.RegisterKVGame("mighty", games.CategoryExtra4,
-		func() usecase.MightyInteractorIF {
-			return usecase.NewMightyInteractor(domain.NewDefaultMighty(), new(presenter.MightyWebPresenter))
-		},
-		func(data []byte) (usecase.MightyInteractorIF, error) {
-			return usecase.RestoreMightyInteractor(data, new(presenter.MightyWebPresenter))
-		},
-		controller.NewMightyWebControllerWithProvider)
-	games.RegisterKVGame("napoleon", games.CategoryExtra4,
-		func() usecase.NapoleonInteractorIF {
-			return usecase.NewNapoleonInteractor(domain.NewDefaultNapoleon(), new(presenter.NapoleonWebPresenter))
-		},
-		func(data []byte) (usecase.NapoleonInteractorIF, error) {
-			return usecase.RestoreNapoleonInteractor(data, new(presenter.NapoleonWebPresenter))
-		},
-		controller.NewNapoleonWebControllerWithProvider)
-	games.RegisterKVGame("quadrille", games.CategoryExtra4,
-		func() usecase.QuadrilleInteractorIF {
-			return usecase.NewQuadrilleInteractor(domain.NewDefaultQuadrille(), new(presenter.QuadrilleWebPresenter))
-		},
-		func(data []byte) (usecase.QuadrilleInteractorIF, error) {
-			return usecase.RestoreQuadrilleInteractor(data, new(presenter.QuadrilleWebPresenter))
-		},
-		controller.NewQuadrilleWebControllerWithProvider)
 	games.RegisterKVGame("ombre", games.CategoryExtra4,
 		func() usecase.OmbreInteractorIF {
 			return usecase.NewOmbreInteractor(domain.NewDefaultOmbre(), new(presenter.OmbreWebPresenter))
@@ -290,14 +258,6 @@ func init() {
 			return usecase.RestoreTrenteEtQuaranteInteractor(data, new(presenter.TrenteEtQuaranteWebPresenter))
 		},
 		controller.NewTrenteEtQuaranteWebControllerWithProvider)
-	games.RegisterKVGame("ulti", games.CategoryExtra4,
-		func() usecase.UltiInteractorIF {
-			return usecase.NewUltiInteractor(domain.NewDefaultUlti(), new(presenter.UltiWebPresenter))
-		},
-		func(data []byte) (usecase.UltiInteractorIF, error) {
-			return usecase.RestoreUltiInteractor(data, new(presenter.UltiWebPresenter))
-		},
-		controller.NewUltiWebControllerWithProvider)
 	games.RegisterKVGame("colourwhist", games.CategoryExtra4,
 		func() usecase.ColourWhistInteractorIF {
 			return usecase.NewColourWhistInteractor(domain.NewDefaultColourWhist(), new(presenter.ColourWhistWebPresenter))

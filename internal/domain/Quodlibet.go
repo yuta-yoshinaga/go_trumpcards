@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra5
 
 // Package domain クオドリベット (Quodlibet) のドメインモデル。
 package domain

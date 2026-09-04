@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra5
 
 // Package domain グリーク (Gleek) のドメインモデル。
 //

@@ -51,10 +51,10 @@ func TestDocsMatchRegistry(t *testing.T) {
 		documented[worker] = keys
 	}
 
-	for _, cat := range []games.Category{
-		games.CategoryCasino, games.CategoryClassic, games.CategorySolo,
-		games.CategoryExtra, games.CategoryExtra2, games.CategoryExtra3,
-	} {
+	// Walk AllCategories rather than enumerating bucket names by hand: listing
+	// them manually left the 7th and 8th buckets uninspected even though the
+	// row-count assertion below was already derived.
+	for _, cat := range games.AllCategories() {
 		want := make([]string, 0, 64)
 		for _, g := range games.ByCategory(cat) {
 			want = append(want, g.Name)
