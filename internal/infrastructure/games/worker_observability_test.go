@@ -11,10 +11,10 @@ import (
 	"testing"
 )
 
-// workerNames are the seven Cloudflare Workers the games ship to. Listed rather
+// workerNames are the eight Cloudflare Workers the games ship to. Listed rather
 // than globbed so a worker that loses its wrangler.toml fails here instead of
 // silently dropping out of the check.
-var workerNames = []string{"casino", "classic", "solo", "extra", "extra2", "extra3", "extra4"}
+var workerNames = []string{"casino", "classic", "solo", "extra", "extra2", "extra3", "extra4", "extra5"}
 
 var observabilityEnabledRe = regexp.MustCompile(`(?m)^\[observability\]\s*$`)
 

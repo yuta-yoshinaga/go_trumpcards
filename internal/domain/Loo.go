@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra5
 
 // Package domain ルー (Loo / Lanterloo) のドメインモデル。
 //

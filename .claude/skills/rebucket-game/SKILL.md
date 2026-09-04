@@ -1,12 +1,12 @@
 ---
 name: rebucket-game
-description: Move an existing game between Cloudflare Worker size buckets (casino/classic/solo/extra/extra2/extra3/extra4) when its current worker exceeds or nears the 1 MB gzip free-tier limit. Scripts the 6 touchpoints (build tags, registry, KV registration, count assertions, gameExec.ts, docs) and measures the result locally with TinyGo. Use when the size-check CI step fails ("EXCEEDS free tier limit") or when routing a game to a different worker (e.g. "/rebucket-game scarto solo", "move <game> to <worker>").
+description: Move an existing game between Cloudflare Worker size buckets (casino/classic/solo/extra/extra2/extra3/extra4/extra5) when its current worker exceeds or nears the 1 MB gzip free-tier limit. Scripts the 6 touchpoints (build tags, registry, KV registration, count assertions, gameExec.ts, docs) and measures the result locally with TinyGo. Use when the size-check CI step fails ("EXCEEDS free tier limit") or when routing a game to a different worker (e.g. "/rebucket-game scarto solo", "move <game> to <worker>").
 ---
 
 # Rebucket Game
 
 Move `<game>` from its current worker bucket to `<target>` (`casino` | `classic` | `solo` |
-`extra` | `extra2` | `extra3` | `extra4`). The bucket is a **binary-size bucket, not a user-facing taxonomy** — rebucketing
+`extra` | `extra2` | `extra3` | `extra4` | `extra5`). The bucket is a **binary-size bucket, not a user-facing taxonomy** — rebucketing
 changes nothing about gameplay or UI, only which TinyGo WASM binary the game compiles into.
 Missing any touchpoint ships a broken worker route, so do ALL six, in one commit.
 
@@ -92,7 +92,7 @@ stranded five of them (ADR-0037). The tag check below is what catches it; retag 
 # Bucket-boundary type check: SECONDS, and the only cheap way to catch a stranded
 # symbol. `go build ./...` CANNOT fail on one -- every file is `!js || !wasm`, so
 # the whole tree compiles regardless of which bucket a game landed in.
-for w in casino classic solo extra extra2 extra3 extra4; do
+for w in casino classic solo extra extra2 extra3 extra4 extra5; do
   GOOS=js GOARCH=wasm go build -tags "$w" -o /dev/null "./cmd/workers/$w" || echo "FAIL $w"
 done
 

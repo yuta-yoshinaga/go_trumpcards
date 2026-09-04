@@ -8,9 +8,9 @@
 //     Category) for all 318 games. Cheap; no references to game code.
 //   - games_server.go (!js || !wasm)   — installs Web-server factories for
 //     every game via BindWebController. Imported by TrumpCardsWeb.
-//   - casino/, classic/, solo/, extra/, extra2/, extra3/ (js && wasm) —
+//   - casino/, classic/, solo/, extra/, extra2/, extra3/, extra4/, extra5/ (js && wasm) —
 //     per-category worker bindings. Each worker blank-imports only its own
-//     sub-package so TinyGo dead-code elimination can drop the other five
+//     sub-package so TinyGo dead-code elimination can drop the other seven
 //     categories' domain/usecase code.
 package games
 
@@ -52,6 +52,8 @@ const (
 	// games' worth -- and extra3 sat 188 bytes below the free-tier ceiling.
 	// See CategoryExtra2 for why the name says nothing about genre.
 	CategoryExtra4
+	// CategoryExtra5 is the eighth size bucket (ADR-0038). See CategoryExtra2.
+	CategoryExtra5
 )
 
 // String returns the lowercase worker name (casino/classic/solo). Panics on
@@ -74,6 +76,8 @@ func (c Category) String() string {
 		return "extra3"
 	case CategoryExtra4:
 		return "extra4"
+	case CategoryExtra5:
+		return "extra5"
 	default:
 		panic(fmt.Sprintf("games: unknown Category %d", int(c)))
 	}
@@ -116,10 +120,10 @@ var registry = []*Game{
 	{Name: "blackjack", Category: CategoryCasino},
 	{Name: "poker", Category: CategoryCasino},
 	{Name: "oldmaid", Category: CategoryClassic},
-	{Name: "daifugo", Category: CategoryClassic},
+	{Name: "daifugo", Category: CategoryExtra5},
 	{Name: "bigtwo", Category: CategoryExtra2},
 	{Name: "sevens", Category: CategoryClassic},
-	{Name: "doubt", Category: CategoryExtra2},
+	{Name: "doubt", Category: CategoryExtra5},
 	{Name: "holdem", Category: CategoryCasino},
 	{Name: "omaha", Category: CategoryCasino},
 	{Name: "omahahilo", Category: CategoryCasino},
@@ -150,7 +154,7 @@ var registry = []*Game{
 	{Name: "canasta", Category: CategoryExtra},
 	{Name: "spider", Category: CategorySolo},
 	// Napoleon is a trick-taking game.
-	{Name: "napoleon", Category: CategoryExtra4},
+	{Name: "napoleon", Category: CategoryExtra5},
 	{Name: "indianpoker", Category: CategoryCasino},
 	{Name: "videopoker", Category: CategoryCasino},
 	{Name: "deuceswild", Category: CategoryCasino},
@@ -159,7 +163,7 @@ var registry = []*Game{
 	{Name: "euchre", Category: CategorySolo},
 	{Name: "pyramid", Category: CategorySolo},
 	{Name: "tripeaks", Category: CategorySolo},
-	{Name: "cribbage", Category: CategoryExtra3},
+	{Name: "cribbage", Category: CategoryExtra5},
 	{Name: "threecard", Category: CategoryCasino},
 	{Name: "ohhell", Category: CategoryClassic},
 	// Ninety-Nine (David Parlett) is a trick-taking game; it shares its trick-play code
@@ -169,7 +173,7 @@ var registry = []*Game{
 	{Name: "bridge", Category: CategoryExtra3},
 	{Name: "speed", Category: CategoryExtra2},
 	{Name: "gofish", Category: CategoryExtra2},
-	{Name: "pinochle", Category: CategoryExtra2},
+	{Name: "pinochle", Category: CategoryExtra5},
 	{Name: "golf", Category: CategorySolo},
 	{Name: "pigtail", Category: CategoryExtra2},
 	{Name: "sevencardstud", Category: CategoryCasino},
@@ -290,13 +294,13 @@ var registry = []*Game{
 	{Name: "laughandliedown", Category: CategoryExtra2},
 
 	{Name: "shithead", Category: CategoryClassic},
-	{Name: "nertz", Category: CategoryExtra2},
+	{Name: "nertz", Category: CategoryExtra5},
 	{Name: "slapjack", Category: CategoryClassic},
 	{Name: "egyptianratscrew", Category: CategoryClassic},
 	{Name: "bakersdozen", Category: CategorySolo},
 	{Name: "tonk", Category: CategoryClassic},
 	{Name: "casinowar", Category: CategoryExtra4},
-	{Name: "pitch", Category: CategoryClassic},
+	{Name: "pitch", Category: CategoryExtra5},
 	{Name: "dragontiger", Category: CategoryExtra4},
 	{Name: "blackjackswitch", Category: CategoryCasino},
 	{Name: "montecarlo", Category: CategorySolo},
@@ -308,7 +312,7 @@ var registry = []*Game{
 	{Name: "belote", Category: CategoryExtra3},
 	{Name: "spiderette", Category: CategorySolo},
 	// Mighty is a trick-taking game.
-	{Name: "mighty", Category: CategoryExtra4},
+	{Name: "mighty", Category: CategoryExtra5},
 	{Name: "oasispoker", Category: CategoryCasino},
 	{Name: "beleagueredcastle", Category: CategorySolo},
 	// Streets and Alleys is a Beleaguered Castle variant.
@@ -318,7 +322,7 @@ var registry = []*Game{
 	{Name: "flowergarden", Category: CategoryExtra4},
 	{Name: "fortyandeight", Category: CategoryExtra3},
 	// Agnes Sorel is a Klondike+Canfield hybrid patience.
-	{Name: "agnes", Category: CategoryExtra},
+	{Name: "agnes", Category: CategoryExtra5},
 	// Sultan of Turkey is a two-deck King-foundation patience.
 	{Name: "sultan", Category: CategoryExtra},
 	// Piquet is a trick-taking game.
@@ -345,7 +349,7 @@ var registry = []*Game{
 	// Barbu is a compendium trick-taking game.
 	{Name: "barbu", Category: CategoryExtra4},
 	// Macau is a Crazy Eights variant.
-	{Name: "macau", Category: CategorySolo},
+	{Name: "macau", Category: CategoryExtra5},
 	// Thirty-One (Scat) is a draw-and-discard pub game.
 	{Name: "thirtyone", Category: CategorySolo},
 	// Tien Len (Vietnamese Big Two) is a shedding game.
@@ -578,7 +582,7 @@ var registry = []*Game{
 	// 126 card points), Betli (no trump, lose every trick), or Durchmarsch (no trump, win
 	// every trick) — takes the talon, discards 2, then leads 10 tricks. Coin settlement
 	// ±2/±5/±6 per defender.
-	{Name: "ulti", Category: CategoryExtra4},
+	{Name: "ulti", Category: CategoryExtra5},
 	// King (Greek/Brazilian compendium): a 4-player 52-card trick-avoidance game. Each
 	// deal the dealer picks one of 7 not-yet-played contracts (No Tricks / No Hearts / No
 	// Queens / No King♥ / No Last Two / No Men / King-Trump); the negatives penalise
@@ -597,7 +601,7 @@ var registry = []*Game{
 	// Players who play compete over 5 tricks (must-follow-and-head); each trick wins 1/5
 	// of the pot, and a player who plays but takes no trick is "looed" and pays a penalty
 	// into the next pot. Chips accumulate over repeated deals (no target-score race).
-	{Name: "loo", Category: CategoryExtra3},
+	{Name: "loo", Category: CategoryExtra5},
 	// Basra (Bastra): an Egyptian/Levantine fishing (capture) game on a 52-card deck. 4
 	// players (you + 3 CPU, individual scoring); each is dealt 4 cards with 4 face-up on
 	// the table. A played number card captures same-rank cards and any table subset
@@ -694,10 +698,10 @@ var registry = []*Game{
 	// Wizard is a 60-card (52 + 4 wizards + 4 jesters) exact-bid trick-taker; its
 	// wizard/jester cards are the first to use the non-52 procedural render path
 	// (ADR-0033).
-	{Name: "wizard", Category: CategoryExtra3},
+	{Name: "wizard", Category: CategoryExtra5},
 	// Oicho-Kabu is a kabufuda (40-card, values 1-10) baccarat-style banking game; its
 	// cards use the non-52 procedural render path (ADR-0033).
-	{Name: "oichokabu", Category: CategoryExtra},
+	{Name: "oichokabu", Category: CategoryExtra5},
 	// Rook is a 57-card (4 colors 1-14 + Rook bird) 2-team point-trick game; its special-
 	// deck cards use the non-52 procedural render path (ADR-0033).
 	{Name: "rook", Category: CategoryExtra3},
@@ -733,7 +737,7 @@ var registry = []*Game{
 	{Name: "scarto", Category: CategoryExtra4},
 	// Cego is a German (Baden) tarock trick-taker on the 54-card tarock deck with the
 	// signature Cego-blind swap; procedural render path (ADR-0033).
-	{Name: "cego", Category: CategoryExtra4},
+	{Name: "cego", Category: CategoryExtra5},
 	// Zheng Shangyou is a Chinese climbing/shedding game (ancestor of Big Two / Daifugo)
 	// on a 54-card deck (52 + 2 jokers); suits are irrelevant to rank strength.
 	{Name: "zheng", Category: CategorySolo},
@@ -989,7 +993,7 @@ var registry = []*Game{
 	// counts). The winner takes a four-card widow, discards four and names
 	// trump. Declaring **Shelem** replaces the number with a claim on every
 	// trick, and is settled the instant one is lost.
-	{Name: "shelem", Category: CategoryExtra2},
+	{Name: "shelem", Category: CategoryExtra5},
 	// Mendikot (メンディコット) -- インドの 2 対 2。**勝敗を決めるのは点数でも
 	// トリック数でもなく、4 枚の 10 を何枚取ったか。** 3 枚取れば勝ち、2 枚ずつなら
 	// トリックの多いほうが勝つ。切り札を選ぶフェーズは無く、最初にフォローできな
@@ -1005,12 +1009,12 @@ var registry = []*Game{
 	// 負う。30 枚（8〜A の 28 枚 + 7♠ + 7♥）を 10 枚ずつ配り、3+2+5 = 10 トリック
 	// ちょうどで割り切れる。多く取っても得点は増えず、超過は次ラウンドで相手の
 	// 良い札を召し上げる権利になる。
-	{Name: "teendopaanch", Category: CategorySolo},
+	{Name: "teendopaanch", Category: CategoryExtra5},
 	// Hasenpfeffer (ハーゼンプフェファー) -- アメリカのドイツ系移民に伝わる
 	// ユーカー派生。**ジョーカーが全カード中最強の切り札 (Best Bower)**、
 	// **競りは全員参加が義務**（3 人が降りたら親は降りられない）。25 枚を
 	// 6 枚ずつ + 伏せ札 1 枚で配り、6 トリック打つ。
-	{Name: "hasenpfeffer", Category: CategoryExtra3},
+	{Name: "hasenpfeffer", Category: CategoryExtra5},
 	// Sergeant Major (8-5-3 / サージェントメジャー) -- イギリス軍隊由来とされる
 	// 3 人専用。**ノルマは席順で決まり**、親が 8・左隣が 5・右隣が 3
 	// （合計 16 = トリック数）。52 枚を 16 枚ずつ配り、**余り 4 枚（キティ）は
@@ -1028,7 +1032,7 @@ var registry = []*Game{
 	// **競りをハイカードポイントの公開申告に置き換えたブリッジ入門用の版。**
 	// HCP の総和は必ず 40 なので「合計の多いペア」は 20-20 で決まらないことがあり
 	// （実測 8.1%）、そこは親の側が取る。デクレアラーはダミーも操作する。
-	{Name: "minibridge", Category: CategoryExtra3},
+	{Name: "minibridge", Category: CategoryExtra5},
 	// Pasur パスール
 	//
 	// イランのフィッシング系。**手札 1 枚と場の数札の合計が 11** になる組み合わせを
@@ -1079,7 +1083,7 @@ var registry = []*Game{
 	// 各自が自分のスートから 1 枚を伏せて出す。最高額が賞札のランクぶん得点し、
 	// 同点なら誰も取らない。**隠れているのは今いくら出したかだけ**で、相手の残り札
 	// は使ったぶんを引けば分かる。13 ラウンドちょうどで終わる。
-	{Name: "goofspiel", Category: CategoryExtra},
+	{Name: "goofspiel", Category: CategoryExtra5},
 	// Andar Bahar アンダーバハール
 	//
 	// **インド発の二者択一。** 基準札を 1 枚めくり、アンダーとバハールへ交互に配って、
@@ -1168,13 +1172,13 @@ var registry = []*Game{
 	//
 	// **おいちょかぶと同じ株札を使うが、競うものが違う。** 合計の下一桁では
 	// なく、同じ数字を何枚そろえたかで決まる ── 役の判定に総和は出てこない。
-	{Name: "kingo", Category: CategoryExtra},
+	{Name: "kingo", Category: CategoryExtra5},
 	// Tu Sac トゥーサック (四色牌)
 	//
 	// **4 色 × 7 種 × 4 枚 = 112 枚の専用デッキ。** 引いて捨てる形は
 	// ラミーと同じだが、数字の並びという概念が無いので「同スートの連番」に
 	// 当たるメルドが存在しない ── 同色同種 3 枚 / 異色の車馬砲 / 卒 5 枚の 3 つ。
-	{Name: "tusac", Category: CategorySolo},
+	{Name: "tusac", Category: CategoryExtra5},
 	// Sakura さくら (肥後花)
 	//
 	// **花札 48 枚を使うが、役ではなく点数の合計で競う。** こいこいや八八が
@@ -1221,33 +1225,33 @@ var registry = []*Game{
 	{Name: "seventwentyseven", Category: CategoryExtra4},
 	{Name: "threecardrummy", Category: CategoryCasino},
 	{Name: "caribbeandraw", Category: CategoryCasino},
-	{Name: "speculation", Category: CategoryExtra},
+	{Name: "speculation", Category: CategoryExtra5},
 	{Name: "dramaha", Category: CategoryCasino},
 	{Name: "put", Category: CategoryExtra4},
 	{Name: "ristikontra", Category: CategoryExtra2},
 	{Name: "brusquembille", Category: CategoryClassic},
 	{Name: "bauernschnapsen", Category: CategoryExtra},
-	{Name: "quadrille", Category: CategoryExtra4},
+	{Name: "quadrille", Category: CategoryExtra5},
 	{Name: "trappola", Category: CategoryExtra2},
 	{Name: "madrasso", Category: CategoryExtra3},
 	{Name: "julepe", Category: CategoryExtra2},
 	{Name: "schafkopf", Category: CategoryExtra4},
 	{Name: "coinche", Category: CategoryExtra3},
 	{Name: "germansolo", Category: CategoryClassic},
-	{Name: "gleek", Category: CategoryExtra},
+	{Name: "gleek", Category: CategoryExtra5},
 	{Name: "chicago", Category: CategoryCasino},
 	{Name: "eightgame", Category: CategoryCasino},
 	{Name: "piedmontesetarot", Category: CategoryExtra4},
 	{Name: "unsunkaruta", Category: CategoryClassic},
-	{Name: "quodlibet", Category: CategorySolo},
-	{Name: "dehlapakad", Category: CategoryExtra},
+	{Name: "quodlibet", Category: CategoryExtra5},
+	{Name: "dehlapakad", Category: CategoryExtra5},
 	{Name: "sutda", Category: CategoryExtra2},
 	{Name: "cirulla", Category: CategoryExtra3},
-	{Name: "diloti", Category: CategoryClassic},
-	{Name: "comet", Category: CategorySolo},
-	{Name: "costlycolours", Category: CategoryExtra},
+	{Name: "diloti", Category: CategoryExtra5},
+	{Name: "comet", Category: CategoryExtra5},
+	{Name: "costlycolours", Category: CategoryExtra5},
 	{Name: "baccaratbanque", Category: CategoryExtra2},
-	{Name: "continentalrummy", Category: CategoryExtra2},
+	{Name: "continentalrummy", Category: CategoryExtra5},
 	{Name: "bolivia", Category: CategoryExtra},
 	{Name: "courchevelhilo", Category: CategoryCasino},
 }
@@ -1276,7 +1280,7 @@ func ByCategory(cat Category) []Game {
 }
 
 // AllCategories returns every Category value in canonical display order
-// (casino, classic, solo, extra, extra2, extra3, extra4). The returned slice is fresh per
+// (casino, classic, solo, extra, extra2, extra3, extra4, extra5). The returned slice is fresh per
 // call so callers
 // cannot mutate package state. Adding a new Category value to the iota above
 // requires extending this slice — that intentional coupling is the SSoT
@@ -1286,6 +1290,7 @@ func AllCategories() []Category {
 	return []Category{
 		CategoryCasino, CategoryClassic, CategorySolo,
 		CategoryExtra, CategoryExtra2, CategoryExtra3, CategoryExtra4,
+		CategoryExtra5,
 	}
 }
 

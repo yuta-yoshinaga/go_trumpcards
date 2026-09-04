@@ -23,14 +23,6 @@ func init() {
 			return usecase.RestoreOldMaidInteractor(data, new(presenter.OldMaidWebPresenter))
 		},
 		controller.NewOldMaidWebControllerWithProvider)
-	games.RegisterKVGame("daifugo", games.CategoryClassic,
-		func() usecase.DaifugoInteractorIF {
-			return usecase.NewDaifugoInteractor(domain.NewDefaultDaifugo(), new(presenter.DaifugoWebPresenter))
-		},
-		func(data []byte) (usecase.DaifugoInteractorIF, error) {
-			return usecase.RestoreDaifugoInteractor(data, new(presenter.DaifugoWebPresenter))
-		},
-		controller.NewDaifugoWebControllerWithProvider)
 	games.RegisterKVGame("sevens", games.CategoryClassic,
 		func() usecase.SevensInteractorIF {
 			return usecase.NewSevensInteractor(domain.NewDefaultSevens(), new(presenter.SevensWebPresenter))
@@ -167,14 +159,6 @@ func init() {
 			return usecase.RestoreTonkInteractor(data, new(presenter.TonkWebPresenter))
 		},
 		controller.NewTonkWebControllerWithProvider)
-	games.RegisterKVGame("pitch", games.CategoryClassic,
-		func() usecase.PitchInteractorIF {
-			return usecase.NewPitchInteractor(domain.NewDefaultPitch(), new(presenter.PitchWebPresenter))
-		},
-		func(data []byte) (usecase.PitchInteractorIF, error) {
-			return usecase.RestorePitchInteractor(data, new(presenter.PitchWebPresenter))
-		},
-		controller.NewPitchWebControllerWithProvider)
 	games.RegisterKVGame("callbreak", games.CategoryClassic,
 		func() usecase.CallBreakInteractorIF {
 			return usecase.NewCallBreakInteractor(domain.NewDefaultCallBreak(), new(presenter.CallBreakWebPresenter))
@@ -436,12 +420,4 @@ func init() {
 			return usecase.RestoreGermanSoloInteractor(data, new(presenter.GermanSoloWebPresenter))
 		},
 		controller.NewGermanSoloWebControllerWithProvider)
-	games.RegisterKVGame("diloti", games.CategoryClassic,
-		func() usecase.DilotiInteractorIF {
-			return usecase.NewDilotiInteractor(domain.NewDefaultDiloti(), new(presenter.DilotiWebPresenter))
-		},
-		func(data []byte) (usecase.DilotiInteractorIF, error) {
-			return usecase.RestoreDilotiInteractor(data, new(presenter.DilotiWebPresenter))
-		},
-		controller.NewDilotiWebControllerWithProvider)
 }
