@@ -30,7 +30,7 @@
   "gameOver": "Game Over",
   "noHint": "No hint available",
   "noRedealsLeft": "No redeals remaining",
-  "landscapeBanner": "Rotate to landscape for easier play",
+  "landscapeBanner": "Landscape mode recommended",
   "tutorial": {
     "grid": "A 4-row by 13-column grid. Aces are removed, leaving four gaps.",
     "controls": "Action buttons. You can redeal up to three times.",

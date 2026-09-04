@@ -16,7 +16,7 @@
   "claim": "{{target}}点を宣言",
   "claimWarning": "到達していなければその場で負けます",
   "declare": "役を宣言",
-  "landscapeBanner": "横向きにするとカードが見やすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "phase.play": "プレイ",
   "phase.end": "終了",
   "suit.0": "スペード",

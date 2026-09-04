@@ -32,7 +32,7 @@
     "hintDisplay": "Press the Hint button to see available moves.",
     "resetButton": "Press the reset button to start a new game."
   },
-  "landscapeBanner": "Rotate to landscape for easier play",
+  "landscapeBanner": "Landscape mode recommended",
   "bestMoves": "Best",
   "bestMovesValue": "{{moves}} moves",
   "newBestMoves": "New record! Cleared in {{moves}} moves",

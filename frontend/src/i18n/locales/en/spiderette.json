@@ -32,7 +32,7 @@
     "controls": "Control buttons: Undo, Hint, Auto-complete.",
     "resetButton": "Press the reset button to start a new game."
   },
-  "landscapeBanner": "Rotate to landscape for easier play",
+  "landscapeBanner": "Landscape mode recommended",
   "frontendHint": {
     "completeSuit": "A suit sequence is nearly complete — focus on finishing it",
     "buildSameSuit": "A same-suit build move is available",

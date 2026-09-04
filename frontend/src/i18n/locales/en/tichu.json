@@ -53,5 +53,5 @@
     "play": "Play combinations (single, pair, straight, bomb, ...) like Daifugo to control the table. The four special cards — Dragon, Phoenix, Dog, Mahjong — are the key to the game.",
     "teams": "5s, 10s and Kings, plus the Dragon (+25) and Phoenix (-25), are the card points. Teams score by card points and finishing order; first to 1000 wins."
   },
-  "landscapeBanner": "Rotate to landscape for easier play"
+  "landscapeBanner": "Landscape mode recommended"
 }

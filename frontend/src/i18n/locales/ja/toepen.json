@@ -11,7 +11,7 @@
   "hint.fold": "強い札が残っていません。降りた方が安く済みます",
   "hint.play": "この札が最も安く取りに行けます",
   "hint.stay": "強い札が残っています。追随して構いません",
-  "landscapeBanner": "横向きにするとカードが見やすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "nextHand": "次のハンド",
   "noTrick": "リード待ち",
   "phase.end": "終了",

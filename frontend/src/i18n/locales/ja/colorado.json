@@ -34,7 +34,7 @@
   "stalemate": "手詰まりです",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
-  "landscapeBanner": "横向き画面推奨",
+  "landscapeBanner": "横画面での表示を推奨します",
   "frontendHint": {
     "coloradoWaste": "捨て札のカードを組札に置けます",
     "coloradoTableau": "場札のカードを組札に置けます",

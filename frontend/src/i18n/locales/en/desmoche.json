@@ -24,7 +24,7 @@
   "yourHand": "Your hand",
   "roundWinner": "Seat {{n}} melded ten and took the pot",
   "roundNoWinner": "Nobody got down to ten. The pot of {{n}} carries over",
-  "landscapeBanner": "Turn your device sideways for a better view",
+  "landscapeBanner": "Landscape mode recommended",
   "phase.draw": "Draw",
   "phase.act": "Meld or discard",
   "phase.roundEnd": "Round over",

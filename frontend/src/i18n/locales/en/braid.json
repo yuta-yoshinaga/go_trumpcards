@@ -34,7 +34,7 @@
   "stockAriaLabel": "Stock, {{count}} left",
   "emptyStockAriaLabel": "The stock is empty",
   "emptyWasteAriaLabel": "The waste is empty",
-  "landscapeBanner": "Landscape orientation is recommended",
+  "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto-complete",
   "autoCompleteNotReady": "Available once the direction is fixed",

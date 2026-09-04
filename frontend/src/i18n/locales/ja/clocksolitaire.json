@@ -8,7 +8,7 @@
     "firstStep": "中央パイルからカードをめくってスタートしましょう",
     "continueStep": "現在のカードに対応する位置のパイルにめくり続けます"
   },
-  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "phase": {
     "playing": "プレイ中",
     "gameClear": "ゲームクリア",

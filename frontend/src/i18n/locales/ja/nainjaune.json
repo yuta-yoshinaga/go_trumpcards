@@ -23,7 +23,7 @@
   "announceYourTurn": "あなたの手番です",
   "announceDealEnd": "ディールが終了しました",
   "announceAward": "区画が払い出されました",
-  "landscapeBanner": "横向きにするとカードが見やすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "phase.play": "出す",
   "phase.dealEnd": "ディール終了",
   "phase.end": "終了",

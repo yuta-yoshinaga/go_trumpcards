@@ -61,7 +61,7 @@
   "nav": {
     "spiteandmalice": "スパイト・アンド・マリス"
   },
-  "landscapeBanner": "横向き画面推奨",
+  "landscapeBanner": "横画面での表示を推奨します",
   "aria": {
     "goalTop": "{{label}} 一番上: {{card}} (残り{{count}}枚)",
     "goalEmpty": "{{label}}: 空",

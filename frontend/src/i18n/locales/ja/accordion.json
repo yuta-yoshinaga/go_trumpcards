@@ -27,7 +27,7 @@
   "noMergeAvailable": "マージ可能な手なし",
   "selectionMoves": "パイル{{idx}}を選択中。マージ可能な手が{{count}}通り",
   "selectionNoMoves": "パイル{{idx}}を選択中。マージ可能な手なし",
-  "landscapeBanner": "横向き画面推奨",
+  "landscapeBanner": "横画面での表示を推奨します",
   "frontendHint": {
     "accordionOffset1": "左隣のカードと合流できます",
     "accordionOffset3": "3つ左のカードと合流できます"

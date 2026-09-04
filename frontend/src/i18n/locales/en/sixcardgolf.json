@@ -74,5 +74,5 @@
   "gridSlotFaceDownAria": "Position {{pos}} (face down)",
   "cliUsagePos": "Usage: {{cmd}} <pos>",
   "cliUnknown": "Unknown: {{cmd}}",
-  "landscapeBanner": "Landscape orientation recommended"
+  "landscapeBanner": "Landscape mode recommended"
 }

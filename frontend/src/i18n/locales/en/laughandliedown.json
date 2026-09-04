@@ -14,7 +14,7 @@
   "yourHand": "Your hand",
   "score": "net {{n}}",
   "lastIn": "was last in: +{{amount}}",
-  "landscapeBanner": "Turn your device sideways for a better view",
+  "landscapeBanner": "Landscape mode recommended",
   "phase.play": "In progress",
   "phase.end": "Finished",
   "notYourTurnTooltip": "It is not your turn to play",

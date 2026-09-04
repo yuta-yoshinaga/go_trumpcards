@@ -20,7 +20,7 @@
   "queensAriaLabel": "{{count}} queens taken out of play; decoration only, not movable",
   "stockAriaLabel": "Stock, {{count}} cards left",
   "emptyStockAriaLabel": "The stock is empty (there is no redeal)",
-  "landscapeBanner": "Landscape orientation is recommended",
+  "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto-complete",
   "autoCompleteNotReady": "Enabled once a card can go to a foundation",

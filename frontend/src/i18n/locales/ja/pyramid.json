@@ -32,7 +32,7 @@
     "hintDisplay": "ヒントボタンを押すとヒントが表示されます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "bestMoves": "ベスト",
   "bestMovesValue": "{{moves}} 手",
   "newBestMoves": "新記録！ {{moves}} 手でクリア",

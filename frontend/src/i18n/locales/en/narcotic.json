@@ -38,7 +38,7 @@
     "controls": "The action buttons: discard, stack, deal and redeal.",
     "resetButton": "Reset starts a new game."
   },
-  "landscapeBanner": "Rotate to landscape for easier play",
+  "landscapeBanner": "Landscape mode recommended",
   "frontendHint": {
     "narcoticRemove": "All four exposed cards match — discard them",
     "narcoticMove": "Stack onto the pile to its left showing the same rank",

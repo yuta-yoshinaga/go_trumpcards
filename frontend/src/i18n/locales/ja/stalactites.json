@@ -30,7 +30,7 @@
     "controls": "元に戻す、ヒント、自動完了などの操作ボタンです。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "stalactitesShort": "FC",
   "frontendHint": {
     "moveToFoundation": "組札に移動できるカードがあります",

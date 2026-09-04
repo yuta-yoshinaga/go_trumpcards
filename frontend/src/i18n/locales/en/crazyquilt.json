@@ -19,7 +19,7 @@
   "redealLine": "Redeals left: {{count}}",
   "emptyWasteAriaLabel": "The waste is empty",
   "stockOrWaste": "S/W",
-  "landscapeBanner": "Landscape orientation is recommended",
+  "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto-complete",
   "autoCompleteNotReady": "Available once a card can reach a foundation",
