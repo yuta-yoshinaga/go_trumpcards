@@ -24,6 +24,7 @@ const SCANNING_REPO = rootFlag === -1;
 const FRONTEND = SCANNING_REPO ? fileURLToPath(new URL('..', import.meta.url)) : resolve(process.argv[rootFlag + 1]);
 
 const PAGES_DIR = join(FRONTEND, 'src/pages');
+const COMPONENTS_DIR = join(FRONTEND, 'src/components');
 const SRC_DIR = join(FRONTEND, 'src');
 const E2E_DIR = join(FRONTEND, 'e2e');
 
@@ -88,16 +89,14 @@ async function walk(dir, matcher) {
   return files;
 }
 
-let pageEntries = [];
-try {
-  pageEntries = await readdir(PAGES_DIR);
-} catch {
-  pageEntries = [];
-}
-const pageFiles = pageEntries
-  .filter((f) => f.endsWith('.tsx') && !f.endsWith('.test.tsx'))
-  .sort()
-  .map((f) => join(PAGES_DIR, f));
+// Pages are where this bit first, but a conditional block in a shared component is the
+// same defect on a second surface -- a guard that watches only one of two surfaces lets
+// the next one through. `components/` is nested, so it needs the recursive walk.
+const isSource = (name) => name.endsWith('.tsx') && !name.endsWith('.test.tsx');
+const sourceFiles = [
+  ...(await walk(PAGES_DIR, isSource)),
+  ...(await walk(COMPONENTS_DIR, isSource)),
+].sort();
 
 const testFiles = await walk(SRC_DIR, (name) => /\.test\.tsx?$/.test(name));
 const e2eFiles = await walk(E2E_DIR, (name) => /\.ts$/.test(name));
@@ -115,7 +114,7 @@ for (const f of testAndE2eFiles) {
 let conditionalTestidsCount = 0;
 const violations = [];
 
-for (const pagePath of pageFiles) {
+for (const pagePath of sourceFiles) {
   const content = await readFile(pagePath, 'utf8');
   const items = extractConditionalTestids(content);
   for (const item of items) {
@@ -132,11 +131,11 @@ for (const pagePath of pageFiles) {
   }
 }
 
-const pagesScanned = pageFiles.length;
+const filesScanned = sourceFiles.length;
 const conditionalTestids = conditionalTestidsCount;
 
 if (SCANNING_REPO) {
-  assertFloor('conditional-testid-coverage', pagesScanned, 240, 'page components');
+  assertFloor('conditional-testid-coverage', filesScanned, 340, 'page and component sources');
   assertFloor('conditional-testid-coverage', conditionalTestids, 800, 'conditional testids');
 }
 
@@ -153,5 +152,5 @@ if (violations.length > 0) {
 }
 
 console.log(
-  `conditional-testid-coverage: OK (${pagesScanned} page components scanned, ${conditionalTestids} conditional testids checked; all referenced).`,
+  `conditional-testid-coverage: OK (${filesScanned} page/component sources scanned, ${conditionalTestids} conditional testids checked; all referenced).`,
 );

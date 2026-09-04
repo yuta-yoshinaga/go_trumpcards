@@ -37,6 +37,33 @@ function run(files) {
 }
 
 describe('check-conditional-testid-coverage', () => {
+  // ページだけを見る guard は、共有コンポーネント側の同じ欠陥を通す。
+  // 面を 1 つしか見ない guard は、もう 1 つの面で必ず破られる。
+  it('rejects an unreferenced conditional testid in src/components as well', () => {
+    const r = run({
+      'src/components/SampleCard.tsx': `
+        export function SampleCard({ showBadge }) {
+          return (
+            <div>
+              {showBadge && (
+                <span data-testid="unreferenced-component-badge">Badge</span>
+              )}
+            </div>
+          );
+        }
+      `,
+      'src/components/SampleCard.test.tsx': `
+        it('renders card', () => {
+          render(<SampleCard showBadge={false} />);
+        });
+      `,
+    });
+
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain('SampleCard.tsx');
+    expect(r.stderr).toContain('unreferenced-component-badge');
+  });
+
   // フィクスチャ用の root は `--root` でしか渡せない。裸の位置引数でも root に
   // なってしまうと、**引数を 1 つ足すだけで floor が黙って無効になる**。
   // floor は「走査が壊れていないこと」を担保する唯一の仕掛けなので、そこは塞ぐ。
@@ -46,8 +73,8 @@ describe('check-conditional-testid-coverage', () => {
     const r = spawnSync(process.execPath, [GUARD, root], { encoding: 'utf8', cwd: process.cwd() });
     // 空ディレクトリを root に採ったなら "0 page components" になる。実リポジトリを
     // 走査していれば数百ページになる。後者であることを見る。
-    expect(r.stdout).not.toContain('0 page components scanned');
-    expect(r.stdout).toMatch(/[1-9]\d{2,} page components scanned/);
+    expect(r.stdout).not.toContain('0 page/component sources scanned');
+    expect(r.stdout).toMatch(/[1-9]\d{2,} page\/component sources scanned/);
   });
 
   // 弾く入力: 条件付きの中に、どのテストからも参照されない testid がある -> 検出される
