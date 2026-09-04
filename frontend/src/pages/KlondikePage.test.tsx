@@ -1194,4 +1194,18 @@ describe('KlondikePage Vegas formula', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('kl-vegas-formula')).not.toBeInTheDocument();
   });
+
+  // VEGASモードでのみスコア表示を出す。
+  it('shows vegas score in VEGAS scoring mode', async () => {
+    mockExec.mockResolvedValue({ ...playingState, scoringMode: 1, score: -37 });
+    renderWithProviders(<KlondikePage />);
+    expect(await screen.findByTestId('kl-vegas-score')).toBeInTheDocument();
+  });
+
+  it('hides vegas score when not in VEGAS scoring mode', async () => {
+    mockExec.mockResolvedValue({ ...playingState, scoringMode: 0 });
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('kl-vegas-score')).not.toBeInTheDocument();
+  });
 });

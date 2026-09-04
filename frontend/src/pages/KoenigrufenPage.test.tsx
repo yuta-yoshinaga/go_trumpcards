@@ -563,4 +563,26 @@ describe('KoenigrufenPage', () => {
     // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
     expect(live).toContainElement(await screen.findByTestId('koenigrufen-discard-prompt'));
   });
+
+  // 人間の呼びかけフェーズのときだけ呼びかけ催促を出す。
+  it('shows call prompt when it is human call phase', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      phase: 1, // 1 = CALL phase
+      isHumanCall: true,
+    });
+    renderWithProviders(<KoenigrufenPage />);
+    expect(await screen.findByTestId('koenigrufen-call-prompt')).toBeInTheDocument();
+  });
+
+  it('hides call prompt when it is not human call phase', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      phase: 1,
+      isHumanCall: false,
+    });
+    renderWithProviders(<KoenigrufenPage />);
+    await waitFor(() => expect(screen.getByTestId('koenigrufen-prompt-live')).toBeInTheDocument());
+    expect(screen.queryByTestId('koenigrufen-call-prompt')).not.toBeInTheDocument();
+  });
 });

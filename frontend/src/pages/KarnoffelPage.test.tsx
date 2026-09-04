@@ -259,4 +259,18 @@ describe('KarnoffelPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('karnoffel-up-rank-0')).not.toBeInTheDocument();
   });
+
+  // 場にカードが出ている時だけトリック領域を出す（0枚だと余白が浮くため）。
+  it('hides trick area when no cards are played', async () => {
+    mockExec.mockResolvedValue(makeState({ trick: [] }));
+    renderWithProviders(<KarnoffelPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('karnoffel-trick')).not.toBeInTheDocument();
+  });
+
+  it('shows trick area when cards are played', async () => {
+    mockExec.mockResolvedValue(makeState({ trick: [card('HEART', 7)] }));
+    renderWithProviders(<KarnoffelPage />);
+    expect(await screen.findByTestId('karnoffel-trick')).toBeInTheDocument();
+  });
 });

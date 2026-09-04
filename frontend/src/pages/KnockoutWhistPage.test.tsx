@@ -254,4 +254,18 @@ describe('KnockoutWhistPage round survivors and eliminations', () => {
     expect(screen.queryByTestId('kw-round-survivors')).not.toBeInTheDocument();
     expect(screen.queryByTestId('kw-round-eliminated')).not.toBeInTheDocument();
   });
+
+  // 切り札選択フェーズでのみ選択UIを出す（人間の番のとき）。
+  it('shows trump select UI in TRUMP_SELECT phase', async () => {
+    mockExec.mockResolvedValue(makeKnockoutWhistState({ phase: 4 }));
+    renderWithProviders(<KnockoutWhistPage />);
+    expect(await screen.findByTestId('knockoutwhist-trump-select')).toBeInTheDocument();
+  });
+
+  it('hides trump select UI when not in TRUMP_SELECT phase', async () => {
+    mockExec.mockResolvedValue(makeKnockoutWhistState({ phase: 0 }));
+    renderWithProviders(<KnockoutWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('knockoutwhist-trump-select')).not.toBeInTheDocument();
+  });
 });

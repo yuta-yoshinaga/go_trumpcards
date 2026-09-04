@@ -297,4 +297,38 @@ describe('KingoPage', () => {
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
     expect(screen.queryByTestId('kingo-bet')).not.toBeInTheDocument();
   });
+
+  // 親は張らずに配るため、親のときだけ配るボタンを出す。
+  it('shows deal guide for human banker in BET phase', async () => {
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: false,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    } as unknown as ReturnType<typeof useCliMode>);
+
+    mockApi.mockResolvedValue({ ...base, phase: KingoPhase.BET, isHumanBanker: true });
+    renderWithProviders(<KingoPage />);
+    expect(await screen.findByTestId('kingo-deal-guide')).toBeInTheDocument();
+  });
+
+  it('hides deal guide for non-banker in BET phase', async () => {
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: false,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    } as unknown as ReturnType<typeof useCliMode>);
+
+    mockApi.mockResolvedValue({ ...base, phase: KingoPhase.BET, isHumanBanker: false });
+    renderWithProviders(<KingoPage />);
+    await waitFor(() => expect(screen.getByTestId('kingo-chips')).toBeInTheDocument());
+    expect(screen.queryByTestId('kingo-deal-guide')).not.toBeInTheDocument();
+  });
 });

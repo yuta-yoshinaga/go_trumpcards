@@ -294,4 +294,30 @@ describe('KoiKoiPage', () => {
     // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
     expect(live).toContainElement(await screen.findByTestId('koikoi-prompt'));
   });
+
+  // 対戦相手がCPUの場合のみCPU領域を出す。
+  it('shows cpu area when there is a non-human player', async () => {
+    mockExec.mockResolvedValue({
+      ...playState,
+      players: [
+        { ...makeKoiKoiState().players[0], isHuman: true },
+        { ...makeKoiKoiState().players[1], isHuman: false },
+      ],
+    });
+    renderWithProviders(<KoiKoiPage />);
+    expect(await screen.findByTestId('koikoi-cpu')).toBeInTheDocument();
+  });
+
+  it('hides cpu area when all players are human', async () => {
+    mockExec.mockResolvedValue({
+      ...playState,
+      players: [
+        { ...makeKoiKoiState().players[0], isHuman: true },
+        { ...makeKoiKoiState().players[1], isHuman: true },
+      ],
+    });
+    renderWithProviders(<KoiKoiPage />);
+    await waitFor(() => expect(screen.getByTestId('koikoi-prompt-live')).toBeInTheDocument());
+    expect(screen.queryByTestId('koikoi-cpu')).not.toBeInTheDocument();
+  });
 });
