@@ -153,6 +153,18 @@ beforeEach(() => {
 });
 
 describe('CribbagePage', () => {
+  // 人間のカット番では、山札からカットするUIを出す
+  it('shows cut area when it is the human turn to cut', async () => {
+    mockExec.mockResolvedValue(cutPhaseState);
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByTestId('cb-cut-area')).toBeInTheDocument());
+  });
+
+  it('hides cut area when it is CPU turn to cut', async () => {
+    mockExec.mockResolvedValue(cutPhaseCpuState);
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.queryByTestId('cb-cut-area')).not.toBeInTheDocument());
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CribbagePage />);
