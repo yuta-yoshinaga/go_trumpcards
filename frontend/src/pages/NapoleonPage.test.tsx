@@ -224,6 +224,7 @@ describe('NapoleonPage', () => {
     await waitFor(() => expect(getByTestId('phase-indicator')).toBeInTheDocument());
     expect(queryByTestId('np-hand-discard-label')).not.toBeInTheDocument();
   });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<NapoleonPage />);

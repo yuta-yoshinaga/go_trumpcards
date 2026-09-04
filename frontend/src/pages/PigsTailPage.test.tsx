@@ -112,7 +112,7 @@ describe('PigsTailPage', () => {
     expect(queryByTestId('pigtail-penalty-flash')).not.toBeInTheDocument();
   });
 
-  it('renders skeleton initially', () => {
+  it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PigsTailPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
