@@ -52,6 +52,7 @@ describe('DoudizhuPage', () => {
           cards: [{ design: 'SPADE', value: 5 }],
           cardCount: 1,
           isLandlord: false,
+          isFinished: false,
         },
         ...defaultState.players.slice(1),
       ],
