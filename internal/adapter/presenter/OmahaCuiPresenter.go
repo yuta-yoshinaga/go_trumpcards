@@ -21,8 +21,12 @@ func (p *OmahaCuiPresenter) ActionLogOutput(o interfaces.OmahaGame) string {
 	return actionLogOutputTextForSeats[*domain.OmahaPlayer](o)
 }
 
-// omahaTitleKey は、ホールカード枚数 (4=オマハ, 5=Big O) と Hi-Lo フラグから
-// CUI ヘッダーに使う i18n タイトルキーを選択する。
+// omahaTitleKey は、ホールカード枚数 (4=オマハ, 5=Big O)、Hi-Lo フラグ、
+// プリフロップ公開枚数から CUI ヘッダーに使う i18n タイトルキーを選択する。
+//
+// **preflopCommunity を最優先で見る。** Courchevel は Big O と同じ 5 枚・
+// 非 Hi-Lo なので、枚数と Hi-Lo だけでは区別できず、盤面が別ゲーム名を
+// 名乗っていた (#7067)。0 枚なら従来どおりの分岐。
 func omahaTitleKey(holeCards int, hiLo bool, preflopCommunity int) string {
 	if preflopCommunity > 0 {
 		if hiLo {
