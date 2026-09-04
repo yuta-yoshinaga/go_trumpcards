@@ -329,4 +329,40 @@ describe('BostonPage', () => {
       expect(screen.queryByTestId(`boston-exposed-${id}`)).not.toBeInTheDocument();
     }
   });
+
+  // **契約は最高入札によって決まる。**誰も宣言していなければ出ない。
+  it('renders the contract only when a highBid exists', async () => {
+    mockExec.mockResolvedValue(makeState({ highBid: { player: 0, level: 4, name: 'seven', suit: 3 } }));
+    const { unmount } = renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getByTestId('boston-contract')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ highBid: null }));
+    renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.queryByTestId('boston-contract')).not.toBeInTheDocument());
+  });
+
+  // **場に出たカードがある場合のみトリック領域を描画する。**まだ誰も出していない時は出ない。
+  it('renders the trick area only when there are cards in the trick', async () => {
+    mockExec.mockResolvedValue(makeState({ trick: [card('SPADE', 1)] }));
+    const { unmount } = renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getByTestId('boston-trick')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ trick: [] }));
+    renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.queryByTestId('boston-trick')).not.toBeInTheDocument());
+  });
+
+  // **人間の入札手番でのみ注意事項を出す。**他人の手番やプレイ中には出ない。
+  it('renders the bid notice only on human bid turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BostonPhase.BID, bidPlayerIdx: 0, gameEndFlag: false }));
+    const { unmount } = renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getByTestId('boston-bid-notice')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: BostonPhase.BID, bidPlayerIdx: 1, gameEndFlag: false }));
+    renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.queryByTestId('boston-bid-notice')).not.toBeInTheDocument());
+  });
 });

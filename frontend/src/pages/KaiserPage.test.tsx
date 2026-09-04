@@ -337,4 +337,40 @@ describe('KaiserPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('kaiser-bid-history')).not.toBeInTheDocument();
   });
+
+  // **契約は最高入札によって決まる。**誰も宣言していなければ出ない。
+  it('renders the contract only when a highBid exists', async () => {
+    mockExec.mockResolvedValue(makeState({ highBid: { player: 0, value: 8, contract: 0 } }));
+    const { unmount } = renderWithProviders(<KaiserPage />);
+    await waitFor(() => expect(screen.getByTestId('kaiser-contract')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ highBid: null }));
+    renderWithProviders(<KaiserPage />);
+    await waitFor(() => expect(screen.queryByTestId('kaiser-contract')).not.toBeInTheDocument());
+  });
+
+  // **キティがある場合のみ枚数を表示する。**0枚なら出さない。
+  it('renders the kitty size only when kittySize > 0', async () => {
+    mockExec.mockResolvedValue(makeState({ kittySize: 2 }));
+    const { unmount } = renderWithProviders(<KaiserPage />);
+    await waitFor(() => expect(screen.getByTestId('kaiser-kitty')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ kittySize: 0 }));
+    renderWithProviders(<KaiserPage />);
+    await waitFor(() => expect(screen.queryByTestId('kaiser-kitty')).not.toBeInTheDocument());
+  });
+
+  // **場に出たカードがある場合のみトリック領域を描画する。**まだ誰も出していない時は出ない。
+  it('renders the trick area only when there are cards in the trick', async () => {
+    mockExec.mockResolvedValue(makeState({ trick: [card('SPADE', 1)] }));
+    const { unmount } = renderWithProviders(<KaiserPage />);
+    await waitFor(() => expect(screen.getByTestId('kaiser-trick')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ trick: [] }));
+    renderWithProviders(<KaiserPage />);
+    await waitFor(() => expect(screen.queryByTestId('kaiser-trick')).not.toBeInTheDocument());
+  });
 });
