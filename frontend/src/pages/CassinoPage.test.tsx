@@ -524,4 +524,42 @@ describe('CassinoPage action history', () => {
     expect(screen.queryByRole('option', { name: 'Easy' })).not.toBeInTheDocument();
     expect(document.body.textContent).not.toContain('settings.difficulty');
   });
+
+  it('renders the suggest area when a suggestion is available', async () => {
+    // アクションの提案がある場合に提案領域を表示する
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 1,
+            cards: [card('SPADE', 9)],
+            capturedCount: 0,
+            sweepCount: 0,
+            totalScore: 0,
+          },
+          { id: 1, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 2, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 3, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+        ],
+        tableCards: [card('SPADE', 4), card('HEART', 5)],
+      }),
+    );
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-1'));
+
+    expect(screen.getByTestId('cs-suggest-area')).toBeInTheDocument();
+  });
+
+  it('hides the suggest area when no suggestion is available', async () => {
+    // アクションの提案がない場合は提案領域を隠す
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('cs-suggest-area')).not.toBeInTheDocument();
+  });
 });

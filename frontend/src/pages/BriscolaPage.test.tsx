@@ -314,4 +314,18 @@ describe('BriscolaPage', () => {
     await screen.findByTestId('hint-tooltip');
     expect(screen.queryByTestId('briscola-hint')).not.toBeInTheDocument();
   });
+
+  it('renders the stock deck when stockRemaining > 0', async () => {
+    // 山札がまだ残っているため表示する
+    mockExec.mockResolvedValue(makeState({ stockRemaining: 1 }));
+    renderWithProviders(<BriscolaPage />);
+    await waitFor(() => expect(screen.getByTestId('briscola-stock-deck')).toBeInTheDocument());
+  });
+
+  it('hides the stock deck when stockRemaining is 0', async () => {
+    // 山札がない場合は表示しない
+    mockExec.mockResolvedValue(makeState({ stockRemaining: 0 }));
+    renderWithProviders(<BriscolaPage />);
+    await waitFor(() => expect(screen.queryByTestId('briscola-stock-deck')).not.toBeInTheDocument());
+  });
 });

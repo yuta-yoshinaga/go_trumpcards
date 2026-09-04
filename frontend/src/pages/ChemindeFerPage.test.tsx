@@ -350,4 +350,18 @@ describe('ChemindeFerPage', () => {
     await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
     expect(mockApi).not.toHaveBeenCalled();
   });
+
+  it('renders the bet line when stake is > 0', async () => {
+    // 賭け金が積まれている場合に現在のベット状況を表示する (stake > 0 のときだけ表示)
+    mockApi.mockResolvedValue(withState({ stake: 100 }));
+    renderWithProviders(<ChemindeFerPage />);
+    await waitFor(() => expect(screen.getByTestId('cdf-bet-line')).toBeInTheDocument());
+  });
+
+  it('hides the bet line when stake is 0', async () => {
+    // 賭け金がない場合は表示しない
+    mockApi.mockResolvedValue(withState({ stake: 0 }));
+    renderWithProviders(<ChemindeFerPage />);
+    await waitFor(() => expect(screen.queryByTestId('cdf-bet-line')).not.toBeInTheDocument());
+  });
 });

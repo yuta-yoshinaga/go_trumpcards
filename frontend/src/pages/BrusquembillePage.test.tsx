@@ -387,4 +387,18 @@ describe('BrusquembillePage tables of three to five', () => {
     expect(screen.getByTestId('brusquembille-cpu-2')).toBeInTheDocument();
     expect(screen.getByTestId('brusquembille-cpu-3')).toBeInTheDocument();
   });
+
+  it('renders the stock deck when stockRemaining > 0', async () => {
+    // 山札がまだ残っているため表示する
+    mockExec.mockResolvedValue(makeState({ stockRemaining: 1 }));
+    renderWithProviders(<BrusquembillePage />);
+    await waitFor(() => expect(screen.getByTestId('brusquembille-stock-deck')).toBeInTheDocument());
+  });
+
+  it('hides the stock deck when stockRemaining is 0', async () => {
+    // 山札がない場合は表示しない
+    mockExec.mockResolvedValue(makeState({ stockRemaining: 0 }));
+    renderWithProviders(<BrusquembillePage />);
+    await waitFor(() => expect(screen.queryByTestId('brusquembille-stock-deck')).not.toBeInTheDocument());
+  });
 });

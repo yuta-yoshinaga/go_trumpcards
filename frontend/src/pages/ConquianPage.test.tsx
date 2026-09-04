@@ -634,4 +634,18 @@ describe('ConquianPage round winner', () => {
 
     expect(screen.queryByTestId('conquian-round-winner')).not.toBeInTheDocument();
   });
+
+  it('renders the discard pile when discardTop is present', async () => {
+    // 捨て札がある場合に一番上のカードを表示する (discardTop が truthy のときだけ表示)
+    mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: { design: 'SPADE', value: 1 } });
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(screen.getByTestId('cq-discard-pile')).toBeInTheDocument());
+  });
+
+  it('hides the discard pile when discardTop is undefined', async () => {
+    // 捨て札がない場合は表示しない
+    mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: null });
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(screen.queryByTestId('cq-discard-pile')).not.toBeInTheDocument());
+  });
 });

@@ -608,4 +608,18 @@ describe('CaribbeanDrawPage keyboard shortcuts', () => {
     await flushPendingDispatch();
     expect(mockApi).not.toHaveBeenCalled();
   });
+
+  it('renders the draw guide when in DRAW phase', async () => {
+    // ドローフェーズの場合に交換のガイドを表示する (isDrawPhase が true のとき)
+    mockApi.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<CaribbeanDrawPage />);
+    await waitFor(() => expect(screen.getByTestId('cd-draw-guide')).toBeInTheDocument());
+  });
+
+  it('hides the draw guide when not in DRAW phase', async () => {
+    // ドローフェーズ以外では表示しない
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<CaribbeanDrawPage />);
+    await waitFor(() => expect(screen.queryByTestId('cd-draw-guide')).not.toBeInTheDocument());
+  });
 });

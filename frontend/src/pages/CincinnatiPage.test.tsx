@@ -258,4 +258,18 @@ describe('CincinnatiPage', () => {
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
     expect(screen.queryByTestId('cin-check')).not.toBeInTheDocument();
   });
+
+  it('renders the bet guide when it is the human turn to bet', async () => {
+    // プレイヤーのベッティングターンに行動ガイドを表示する (canAct が true のとき)
+    mockApi.mockResolvedValue(withState({ isHumanTurn: true, phase: CincinnatiPhase.BETTING }));
+    renderWithProviders(<CincinnatiPage />);
+    await waitFor(() => expect(screen.getByTestId('cin-bet-guide')).toBeInTheDocument());
+  });
+
+  it('hides the bet guide when it is not the human turn', async () => {
+    // プレイヤーのターンでない場合は表示しない
+    mockApi.mockResolvedValue(withState({ isHumanTurn: false, phase: CincinnatiPhase.BETTING }));
+    renderWithProviders(<CincinnatiPage />);
+    await waitFor(() => expect(screen.queryByTestId('cin-bet-guide')).not.toBeInTheDocument());
+  });
 });
