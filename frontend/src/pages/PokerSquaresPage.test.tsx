@@ -462,6 +462,9 @@ describe('PokerSquaresPage', () => {
   });
 
   it('does not render ps-board-wrapper when state is null', async () => {
+    // 他のページのように「条件が偽になる state」を返すのではなく、**解決しない
+    // Promise** を返す。ps-board-wrapper の条件は `state` が非 null であること
+    // そのものなので、state を持たせずに待たせるしかない。
     mockApi.mockReturnValueOnce(new Promise(() => {}));
     renderWithProviders(<PokerSquaresPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
