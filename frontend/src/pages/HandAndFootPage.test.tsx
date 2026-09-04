@@ -124,6 +124,19 @@ const gameEndState: HandAndFootResponse = {
 };
 
 describe('HandAndFootPage', () => {
+  // 最初の手札が配られるまでは捨て札の山がないので表示しない
+  it('hides discard pile when there is no discard top', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: null });
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.queryByTestId('hf-discard-pile')).not.toBeInTheDocument());
+  });
+
+  it('shows discard pile when discard top exists', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-discard-pile')).toBeInTheDocument());
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(drawPhaseState);

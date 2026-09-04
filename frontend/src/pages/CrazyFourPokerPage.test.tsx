@@ -164,6 +164,19 @@ describe('CrazyFourPokerPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play', { multiplier: 3 }));
   });
 
+  // 手札が配られたら、プレイヤーに判断させるために役を表示する
+  it('shows player hand rank once dealt', async () => {
+    mockApi.mockResolvedValue(dealt());
+    renderWithProviders(<CrazyFourPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('c4p-player-rank')).toBeInTheDocument());
+  });
+
+  it('hides player hand rank before being dealt', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<CrazyFourPokerPage />);
+    await waitFor(() => expect(screen.queryByTestId('c4p-player-rank')).not.toBeInTheDocument());
+  });
+
   it('降りるを送れる', async () => {
     mockApi.mockResolvedValue(dealt());
     renderWithProviders(<CrazyFourPokerPage />);

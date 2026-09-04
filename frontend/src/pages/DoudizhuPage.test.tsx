@@ -41,6 +41,32 @@ beforeEach(() => {
 });
 
 describe('DoudizhuPage', () => {
+  // プレイヤーがカードを選択したときのみ、その組み合わせが有効かどうかの判定や役名を表示する
+  it('shows combo hint when cards are selected', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cards: [{ design: 'SPADE', value: 5 }],
+          cardCount: 1,
+          isLandlord: false,
+        },
+        ...defaultState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<DoudizhuPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+    expect(await screen.findByTestId('ddz-combo-hint')).toBeInTheDocument();
+  });
+
+  it('hides combo hint when no cards are selected', async () => {
+    mockExec.mockResolvedValue(defaultState);
+    renderWithProviders(<DoudizhuPage />);
+    await waitFor(() => expect(screen.queryByTestId('ddz-combo-hint')).not.toBeInTheDocument());
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<DoudizhuPage />);

@@ -82,6 +82,19 @@ beforeEach(() => {
 });
 
 describe('DoubleAttackPage', () => {
+  // ディーラーのアップカードは、カードが配られた以降のフェーズで表示される
+  it('shows dealer cards when dealer has cards', async () => {
+    mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.PLAY, dealerCards: [card(10)] }));
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByTestId('da-dealer-cards')).toBeInTheDocument());
+  });
+
+  it('hides dealer cards when dealer has no cards', async () => {
+    mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.BET, dealerCards: [] }));
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.queryByTestId('da-dealer-cards')).not.toBeInTheDocument());
+  });
+
   it('マウント時に reset を呼ぶ', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<DoubleAttackPage />);

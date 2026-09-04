@@ -60,6 +60,21 @@ describe('DilotiPage', () => {
 
   // **宣言も番号付きで見せる。** 見えないと取る対象を指せず、グループ宣言か
   // どうかも分からない。
+  // 見えないと `d0` などで取る対象を指せず、グループかどうかも分からないため、宣言があるときは表示する
+  it('shows declarations area when declarations exist', async () => {
+    mockExec.mockResolvedValue(
+      makeDilotiState({ declarations: [{ ownerIdx: 0, value: 5, groups: [], isGroup: false }] }),
+    );
+    renderWithProviders(<DilotiPage />);
+    await waitFor(() => expect(screen.getByTestId('diloti-declarations')).toBeInTheDocument());
+  });
+
+  it('hides declarations area when no declarations exist', async () => {
+    mockExec.mockResolvedValue(makeDilotiState({ declarations: [] }));
+    renderWithProviders(<DilotiPage />);
+    await waitFor(() => expect(screen.queryByTestId('diloti-declarations')).not.toBeInTheDocument());
+  });
+
   it('shows the declarations with their index and kind', async () => {
     renderWithProviders(<DilotiPage />);
     const decl = await screen.findByTestId('diloti-declaration-0');

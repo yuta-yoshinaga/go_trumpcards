@@ -193,6 +193,19 @@ describe('GuandanPage', () => {
         ...overrides,
       });
 
+    // 還貢の際は「10以下の札から1枚選んで返す」というルールを表示する
+    it('shows tribute rules during tribute phase when human owes return', async () => {
+      mockExec.mockResolvedValue(tributeState());
+      renderWithProviders(<GuandanPage />);
+      await waitFor(() => expect(screen.getByTestId('guandan-tribute-rules')).toBeInTheDocument());
+    });
+
+    it('hides tribute rules when human does not owe return', async () => {
+      mockExec.mockResolvedValue(makeState({ phase: GuandanPhase.PLAY }));
+      renderWithProviders(<GuandanPage />);
+      await waitFor(() => expect(screen.queryByTestId('guandan-tribute-rules')).not.toBeInTheDocument());
+    });
+
     it('returns the single selected card', async () => {
       mockExec.mockResolvedValue(tributeState());
       renderWithProviders(<GuandanPage />);
