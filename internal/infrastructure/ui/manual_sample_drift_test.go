@@ -54,13 +54,6 @@ func TestManualSampleRowsExist(t *testing.T) {
 	locales := readAllJaLocales(t, root)
 	rendered := renderEveryGame()
 
-	exemptions := map[string]string{
-		"courchevel": "#7067 盤面が別ゲーム名を名乗るのは実物側の欠陥で、見本を合わせると誤りを固定化するため",
-	}
-	if len(exemptions) != 1 {
-		t.Fatalf("免除を増やすな。増やすならまず issue を立てて実物を直せ")
-	}
-
 	labels := 0
 	titles := 0
 	titleRe := regexp.MustCompile(`(?m)^==========\r?\n([^\r\n]+)`)
@@ -85,9 +78,7 @@ func TestManualSampleRowsExist(t *testing.T) {
 			sampleTitle := strings.TrimSpace(string(sampleTitleMatch[1]))
 			actualTitle := strings.TrimSpace(string(actualTitleMatch[1]))
 			if sampleTitle != actualTitle {
-				if _, exempted := exemptions[entry.Name]; !exempted {
-					t.Errorf("%s.md: タイトル行が一致しない。\n見本: %q\n実物: %q", entry.Name, sampleTitle, actualTitle)
-				}
+				t.Errorf("%s.md: タイトル行が一致しない。\n見本: %q\n実物: %q", entry.Name, sampleTitle, actualTitle)
 			}
 		}
 
