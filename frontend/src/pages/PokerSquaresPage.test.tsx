@@ -453,6 +453,20 @@ describe('PokerSquaresPage', () => {
     const preview = await screen.findByTestId('row-score-preview-0');
     expect(preview.textContent).toContain('+50');
   });
+
+  // ゲーム状態が存在するときのみ盤面ラッパーを表示する。
+  it('renders ps-board-wrapper when state exists', async () => {
+    mockApi.mockResolvedValue(playingState);
+    renderWithProviders(<PokerSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('ps-board-wrapper')).toBeInTheDocument());
+  });
+
+  it('does not render ps-board-wrapper when state is null', async () => {
+    mockApi.mockReturnValueOnce(new Promise(() => {}));
+    renderWithProviders(<PokerSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('ps-board-wrapper')).not.toBeInTheDocument();
+  });
 });
 
 // **シナジーを考慮した本格的なヒントは CUI しか受け取れていなかった (#4790)。**

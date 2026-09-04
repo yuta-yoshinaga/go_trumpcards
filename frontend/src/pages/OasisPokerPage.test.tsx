@@ -330,6 +330,20 @@ describe('OasisPokerPage keyboard shortcuts', () => {
     expect(mockApi).not.toHaveBeenCalled();
   });
 
+  // カード交換フェーズでのみ交換手数料の案内行を表示する。
+  it('renders oasis-exchange-fee-line during exchange phase', async () => {
+    mockApi.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('oasis-exchange-fee-line')).toBeInTheDocument());
+  });
+
+  it('does not render oasis-exchange-fee-line outside exchange phase', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('oasis-exchange-fee-line')).not.toBeInTheDocument();
+  });
+
   // #5595: 配当率も交換手数料も書いてあるのに、**アンティがプッシュになる理由**
   // （ディーラーの成立条件）だけどこにも無かった。
   describe('dealer qualification rule', () => {

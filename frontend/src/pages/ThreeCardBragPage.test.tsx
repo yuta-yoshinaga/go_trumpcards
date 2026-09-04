@@ -431,3 +431,19 @@ describe('ThreeCardBragPage', () => {
     expect(screen.queryByTestId('tcb-server-hint')).not.toBeInTheDocument();
   });
 });
+
+describe('ThreeCardBragPage raise controls', () => {
+  // ベッティングフェーズかつプレイヤーの手番でのみ、レイズ額の調整UIを表示するため。
+  it('renders tcb-raise-controls during a human betting turn', async () => {
+    mockExec.mockResolvedValue(bettingState);
+    renderWithProviders(<ThreeCardBragPage />);
+    await waitFor(() => expect(screen.getByTestId('tcb-raise-controls')).toBeInTheDocument());
+  });
+
+  it('does not render tcb-raise-controls on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<ThreeCardBragPage />);
+    await waitFor(() => expect(screen.getByTestId('threecardbrag-hint-live')).toBeInTheDocument());
+    expect(screen.queryByTestId('tcb-raise-controls')).not.toBeInTheDocument();
+  });
+});
