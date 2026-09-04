@@ -318,4 +318,44 @@ describe('ColourWhistPage', () => {
     await waitFor(() => expect(screen.getByTestId('colourwhist-contract')).toBeInTheDocument());
     expect(screen.queryByTestId('colourwhist-called-card')).not.toBeInTheDocument();
   });
+
+  it('shows colourwhist-declarer when declarerIdx is 0 or greater', async () => {
+    // 契約者が決まっている (0〜3) ときに宣言者とその獲得トリック数が表示される
+    mockApi.mockResolvedValue({
+      ...playState,
+      declarerIdx: 0,
+    });
+    renderWithProviders(<ColourWhistPage />);
+    expect(await screen.findByTestId('colourwhist-declarer')).toBeInTheDocument();
+  });
+
+  it('does not show colourwhist-declarer when declarerIdx is less than 0', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      declarerIdx: -1,
+    });
+    renderWithProviders(<ColourWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('colourwhist-contract')).toBeInTheDocument());
+    expect(screen.queryByTestId('colourwhist-declarer')).not.toBeInTheDocument();
+  });
+
+  it('shows colourwhist-trick when currentTrick has cards', async () => {
+    // 現在のトリックに1枚以上カードが出されているときに場札領域が表示される
+    mockApi.mockResolvedValue({
+      ...playState,
+      currentTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 1 } }],
+    });
+    renderWithProviders(<ColourWhistPage />);
+    expect(await screen.findByTestId('colourwhist-trick')).toBeInTheDocument();
+  });
+
+  it('does not show colourwhist-trick when currentTrick is empty', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      currentTrick: [],
+    });
+    renderWithProviders(<ColourWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('colourwhist-contract')).toBeInTheDocument());
+    expect(screen.queryByTestId('colourwhist-trick')).not.toBeInTheDocument();
+  });
 });

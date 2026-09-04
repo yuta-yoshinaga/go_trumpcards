@@ -328,4 +328,18 @@ describe('DoubleKlondikePage', () => {
     await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
     expect(mockExec).not.toHaveBeenCalled();
   });
+
+  it('shows waste-fan when there are cards in the waste', async () => {
+    // 捨て札(waste)に1枚以上カードがある場合、ずらして表示するためのコンテナが出る
+    mockExec.mockResolvedValue(makeState({ waste: [{ design: 'SPADE', value: 1 }] }));
+    renderWithProviders(<DoubleKlondikePage />);
+    expect(await screen.findByTestId('waste-fan')).toBeInTheDocument();
+  });
+
+  it('does not show waste-fan when the waste is empty', async () => {
+    mockExec.mockResolvedValue(makeState({ waste: [] }));
+    renderWithProviders(<DoubleKlondikePage />);
+    await waitFor(() => expect(screen.getByTestId('stock')).toBeInTheDocument());
+    expect(screen.queryByTestId('waste-fan')).not.toBeInTheDocument();
+  });
 });

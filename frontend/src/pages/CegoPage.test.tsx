@@ -388,4 +388,32 @@ describe('CegoPage', () => {
     // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
     expect(live).toContainElement(await screen.findByTestId('cego-exchange-prompt'));
   });
+
+  it('shows cego-blind when blindCount is greater than 0', async () => {
+    // ブラインドの残り枚数がある場合 (通常 10 枚) に表示される
+    mockExec.mockResolvedValue(makeCegoState({ blindCount: 10 }));
+    renderWithProviders(<CegoPage />);
+    expect(await screen.findByTestId('cego-blind')).toBeInTheDocument();
+  });
+
+  it('does not show cego-blind when blindCount is 0', async () => {
+    mockExec.mockResolvedValue(makeCegoState({ blindCount: 0 }));
+    renderWithProviders(<CegoPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('cego-blind')).not.toBeInTheDocument();
+  });
+
+  it('shows cego-contract-prompt when it is the human contract phase', async () => {
+    // プレイヤーがコントラクトを宣言するターンであることを示す
+    mockExec.mockResolvedValue(makeCegoState({ phase: 1, isHumanContract: true }));
+    renderWithProviders(<CegoPage />);
+    expect(await screen.findByTestId('cego-contract-prompt')).toBeInTheDocument();
+  });
+
+  it('does not show cego-contract-prompt when it is not the human contract phase', async () => {
+    mockExec.mockResolvedValue(makeCegoState({ phase: 1, isHumanContract: false }));
+    renderWithProviders(<CegoPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('cego-contract-prompt')).not.toBeInTheDocument();
+  });
 });
