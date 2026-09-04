@@ -40,6 +40,11 @@ const E2E_DIR = join(FRONTEND, 'e2e');
  * @param {string} content - JSX source text.
  * @returns {Array<{ tid: string, line: number, testidLine: number, ctx: string }>}
  */
+// 条件式を探して遡る上限。40 行のときは 47 行上・58 行上にある条件を取りこぼし、
+// その testid が違反一覧からも件数の集計からも消えていた (floor にも数えられない)。
+// 値を変えるときは、変えた前後で報告される件数が動くかを必ず確かめること。
+const MAX_BACKTRACK_LINES = 400;
+
 export function extractConditionalTestids(content) {
   const lines = content.split('\n');
   const out = [];
@@ -49,11 +54,7 @@ export function extractConditionalTestids(content) {
     if (!m) continue;
     const tid = m[1];
     let ind = ln.length - ln.trimStart().length;
-    // 遡り幅を最大 400 行とする。
-    // 以前の 40 行では 47 行上や 58 行上の条件式を取りこぼした実績があり、
-    // 条件がそれより上にあると違反一覧からも件数の集計からも消えてしまうため、
-    // 十分な深さまで遡れるよう 400 行に引き上げている。
-    const minJ = Math.max(-1, i - 400);
+    const minJ = Math.max(-1, i - MAX_BACKTRACK_LINES);
     for (let j = i - 1; j > minJ; j--) {
       const p = lines[j];
       const s = p.trim();
