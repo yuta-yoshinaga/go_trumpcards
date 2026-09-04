@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bidWhistApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BidWhistResponse, Card } from '../types/card';
+import { BidWhistPhase } from '../types/phases';
 import { BidWhistPage } from './BidWhistPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -348,5 +349,35 @@ describe('BidWhistPage', () => {
     renderWithProviders(<BidWhistPage />);
     await waitFor(() => expect(screen.getByTestId('bidwhist-hint-button')).toBeInTheDocument());
     expect(screen.queryByTestId('bidwhist-hint-line')).not.toBeInTheDocument();
+  });
+
+  // トリック終了時は次のトリックへ進むボタンを表示する。
+  it('shows next trick button when trick ends', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BidWhistPhase.TRICK_END }));
+    renderWithProviders(<BidWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('next-button')).toBeInTheDocument());
+  });
+
+  // トリック進行中など終了時以外は次のトリックへ進むボタンを表示しない。
+  it('hides next trick button outside trick end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BidWhistPhase.BID }));
+    renderWithProviders(<BidWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('next-button')).not.toBeInTheDocument();
+  });
+
+  // ラウンド終了時は次のラウンドへ進むボタンを表示する。
+  it('shows next round button when round ends', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BidWhistPhase.ROUND_END }));
+    renderWithProviders(<BidWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('nextround-button')).toBeInTheDocument());
+  });
+
+  // ラウンド終了時以外は次のラウンドへ進むボタンを表示しない。
+  it('hides next round button outside round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BidWhistPhase.BID }));
+    renderWithProviders(<BidWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('nextround-button')).not.toBeInTheDocument();
   });
 });

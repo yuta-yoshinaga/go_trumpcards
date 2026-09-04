@@ -264,4 +264,19 @@ describe('AndarBaharPage', () => {
     await waitFor(() => expect(screen.getByRole('log')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: /アンダーに賭ける/ })).not.toBeInTheDocument();
   });
+
+  // 決着フェーズでは配当内訳を表示する。
+  it('shows the payout breakdown at end phase', async () => {
+    mockApi.mockResolvedValue(andarWinState);
+    renderWithProviders(<AndarBaharPage />);
+    await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
+  });
+
+  // ベット中など決着前は配当内訳を表示しない。
+  it('hides the payout breakdown before end phase', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<AndarBaharPage />);
+    await waitFor(() => expect(screen.getByTestId('card-area')).toBeInTheDocument());
+    expect(screen.queryByTestId('payout-breakdown')).not.toBeInTheDocument();
+  });
 });

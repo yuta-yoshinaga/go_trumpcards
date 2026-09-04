@@ -208,4 +208,19 @@ describe('FourteenOutPage', () => {
     renderWithProviders(<FourteenOutPage />);
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
   });
+
+  // 有効なペアを取り除いた直後は成功トーストを表示する。
+  it('shows pair-removed toast when a valid pair is removed', async () => {
+    renderWithProviders(<FourteenOutPage />);
+    fireEvent.click(await screen.findByTestId('mc-col-0'));
+    fireEvent.click(screen.getByTestId('mc-col-1'));
+    await waitFor(() => expect(screen.getByTestId('mc-pair-toast')).toBeInTheDocument());
+  });
+
+  // ペアを取り除く前は成功トーストを表示しない。
+  it('hides pair-removed toast before removing a pair', async () => {
+    renderWithProviders(<FourteenOutPage />);
+    await waitFor(() => expect(screen.getByTestId('mc-col-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
+  });
 });

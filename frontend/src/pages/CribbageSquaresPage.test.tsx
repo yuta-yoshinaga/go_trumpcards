@@ -270,4 +270,19 @@ describe('CribbageSquaresPage', () => {
     renderWithProviders(<CribbageSquaresPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /再試行|retry/i })).toBeInTheDocument());
   });
+
+  // 現在のカードがない場合は空スロットのプレースホルダーを表示する。
+  it('shows empty slot placeholder when currentCard is null', async () => {
+    mockExec.mockResolvedValue(makeState({ currentCard: null }));
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('current-card-empty')).toBeInTheDocument());
+  });
+
+  // 現在のカードがある場合は空スロットのプレースホルダーを表示しない。
+  it('hides empty slot placeholder when currentCard exists', async () => {
+    mockExec.mockResolvedValue(makeState({ currentCard: card('HEART', 10) }));
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('current-card-empty')).not.toBeInTheDocument();
+  });
 });
