@@ -1746,4 +1746,22 @@ describe('CourchevelHiLoPage', () => {
       expect(el).toHaveTextContent('ハイ・ロー');
     }
   });
+
+  it('marks the pre-flop board card as the one dealt face up early', async () => {
+    // Courchevel's only difference from Big O: one flop card is exposed BEFORE
+    // the opening bet, so pre-flop legitimately has a board card.
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      communityCards: [{ design: 'SPADE', value: 14 } as unknown as OmahaResponse['communityCards'][number]],
+    });
+    renderWithProviders(<CourchevelHiLoPage />);
+    expect(await screen.findByTestId('cv-preflop-exposed-note')).toBeInTheDocument();
+  });
+
+  it('drops the pre-flop note once the rest of the flop is out', async () => {
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<CourchevelHiLoPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('cv-preflop-exposed-note')).not.toBeInTheDocument();
+  });
 });
