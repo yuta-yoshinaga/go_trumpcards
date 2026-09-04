@@ -81,6 +81,110 @@ func TestDocsMatchRegistry(t *testing.T) {
 	}
 }
 
+// gamesDocPath is the per-game documentation in docs/games.md.
+const gamesDocPath = "../../../docs/games.md"
+
+var (
+	gamesDocEntryRe    = regexp.MustCompile(`(?m)^- \*\*`)
+	gamesDocCategoryRe = regexp.MustCompile(`Category:\s*(\w+)\s*\(Cloudflare Worker\)`)
+	gamesDocDomainRe   = regexp.MustCompile(`internal/domain/(\w+)\.go`)
+	registerKVGameRe   = regexp.MustCompile(`RegisterKVGame\("([a-z0-9]+)",\s*games\.Category\w+,\s*\n?\s*func\(\)\s+usecase\.(\w+)InteractorIF`)
+)
+
+// TestGamesDocCategoriesMatchRegistry asserts that the "Category: <worker> (Cloudflare Worker)"
+// annotations in docs/games.md match each game's category in the registry.
+//
+// This guard exists because prose category tags drifted silently: out of 259
+// documented entries, 83 disagreed with registry.go (24 caused by the
+// eighth-worker rebucket, and 59 carried over from before ADR-0037).
+// Rebucketing is routine as binaries grow against the free-tier ceiling, so
+// maintaining per-game worker tags by hand is guaranteed to fall behind.
+// Entries omitting a Category annotation are ignored, but every documented
+// category must match the registry.
+func TestGamesDocCategoriesMatchRegistry(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Clean(gamesDocPath))
+	if err != nil {
+		t.Fatalf("read %s: %v", gamesDocPath, err)
+	}
+	text := string(raw)
+
+	// Build the Go domain type -> games.Game map from each bucket package's
+	// RegisterKVGame calls. Categories are walked dynamically via
+	// games.AllCategories() rather than hardcoded.
+	registryByName := make(map[string]games.Game, len(games.All()))
+	for _, g := range games.All() {
+		registryByName[g.Name] = g
+	}
+
+	validCategories := make(map[string]bool, len(games.AllCategories()))
+	typeToGame := make(map[string]games.Game)
+	for _, cat := range games.AllCategories() {
+		catName := cat.String()
+		validCategories[catName] = true
+		pkgFile := filepath.Join(catName, catName+".go")
+		src, err := os.ReadFile(filepath.Clean(pkgFile))
+		if err != nil {
+			t.Fatalf("read %s: %v", pkgFile, err)
+		}
+		for _, m := range registerKVGameRe.FindAllStringSubmatch(string(src), -1) {
+			gameName, goType := m[1], m[2]
+			if g, ok := registryByName[gameName]; ok {
+				typeToGame[goType] = g
+			}
+		}
+	}
+
+	indices := gamesDocEntryRe.FindAllStringIndex(text, -1)
+	if len(indices) == 0 {
+		t.Fatalf("no game bullets parsed from %s -- the format changed; update gamesDocEntryRe", gamesDocPath)
+	}
+
+	inspected := 0
+	for i, loc := range indices {
+		start := loc[0]
+		end := len(text)
+		if i+1 < len(indices) {
+			end = indices[i+1][0]
+		}
+		entry := text[start:end]
+
+		catMatch := gamesDocCategoryRe.FindStringSubmatch(entry)
+		if catMatch == nil {
+			continue
+		}
+		docCategory := catMatch[1]
+		if !validCategories[docCategory] {
+			t.Errorf("entry mentions unknown category %q: %.80s...", docCategory, strings.ReplaceAll(entry, "\n", " "))
+			continue
+		}
+
+		domMatches := gamesDocDomainRe.FindAllStringSubmatch(entry, -1)
+		var matchedGame games.Game
+		var found bool
+		for _, dm := range domMatches {
+			if g, ok := typeToGame[dm[1]]; ok {
+				matchedGame = g
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("entry with Category %q has no recognised internal/domain/<Type>.go: %.80s...", docCategory, strings.ReplaceAll(entry, "\n", " "))
+			continue
+		}
+
+		want := matchedGame.Category.String()
+		if docCategory != want {
+			t.Errorf("%s: docs say %q but registry says %q (entry: %.100s)", matchedGame.Name, docCategory, want, strings.ReplaceAll(entry, "\n", " "))
+		}
+		inspected++
+	}
+
+	if inspected == 0 {
+		t.Fatalf("inspected 0 game categories in %s -- regexes matched nothing", gamesDocPath)
+	}
+}
+
 // gameExecPath holds the frontend's game -> Worker URL map.
 const gameExecPath = "../../../frontend/src/api/gameExec.ts"
 
