@@ -268,4 +268,52 @@ describe('CinchPage', () => {
     // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
     expect(live).toContainElement(await screen.findByTestId('cinch-trump-prompt'));
   });
+
+  // **ディール結果が表示される。**
+  it('shows the deal result at the end of a round', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    const { unmount } = renderWithProviders(<CinchPage />);
+    await waitFor(() => expect(screen.getByTestId('cinch-deal-result')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<CinchPage />);
+    await waitFor(() => expect(screen.queryByTestId('cinch-deal-result')).not.toBeInTheDocument());
+  });
+
+  // **CPUの入札手番のときに誰がビッドしているか表示される。**
+  it('shows the CPU bid notice when it is the CPU turn to bid', async () => {
+    mockExec.mockResolvedValue(makeCinchState({ phase: 0, bidPlayerIdx: 1, isHumanTurn: false }));
+    const { unmount } = renderWithProviders(<CinchPage />);
+    await waitFor(() => expect(screen.getByTestId('cinch-bid-cpu')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<CinchPage />);
+    await waitFor(() => expect(screen.queryByTestId('cinch-bid-cpu')).not.toBeInTheDocument());
+  });
+
+  // **人間の入札手番のときにビッドボタンが表示される。**
+  it('shows the bid buttons when it is the human turn to bid', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    const { unmount } = renderWithProviders(<CinchPage />);
+    await waitFor(() => expect(screen.getByTestId('cinch-bid-buttons')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeCinchState({ phase: 0, bidPlayerIdx: 1, isHumanTurn: false }));
+    renderWithProviders(<CinchPage />);
+    await waitFor(() => expect(screen.queryByTestId('cinch-bid-buttons')).not.toBeInTheDocument());
+  });
+
+  // **人間の切札指名手番のときに切札ボタンが表示される。**
+  it('shows the trump buttons when it is the human turn to name trump', async () => {
+    mockExec.mockResolvedValue(nameTrumpState);
+    const { unmount } = renderWithProviders(<CinchPage />);
+    await waitFor(() => expect(screen.getByTestId('cinch-trump-buttons')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeCinchState({ phase: 1, bidWinnerIdx: 1, isHumanTurn: false }));
+    renderWithProviders(<CinchPage />);
+    await waitFor(() => expect(screen.queryByTestId('cinch-trump-buttons')).not.toBeInTheDocument());
+  });
 });

@@ -297,4 +297,64 @@ describe('SixBidSoloPage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+
+  // **高位入札があるときだけコントラクトが表示される。**
+  it('shows the current contract when there is a standing bid', async () => {
+    mockExec.mockResolvedValue(makeState({ highBid: { player: 1, kind: 3 } }));
+    const { unmount } = renderWithProviders(<SixBidSoloPage />);
+    await waitFor(() => expect(screen.getByTestId('sixbidsolo-contract')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ highBid: null }));
+    renderWithProviders(<SixBidSoloPage />);
+    await waitFor(() => expect(screen.queryByTestId('sixbidsolo-contract')).not.toBeInTheDocument());
+  });
+
+  // **コール・ソロで指名された札が表示される。**
+  it('shows the called card when one is named', async () => {
+    mockExec.mockResolvedValue(makeState({ calledCard: card('HEART', 13) }));
+    const { unmount } = renderWithProviders(<SixBidSoloPage />);
+    await waitFor(() => expect(screen.getByTestId('sixbidsolo-called')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ calledCard: null }));
+    renderWithProviders(<SixBidSoloPage />);
+    await waitFor(() => expect(screen.queryByTestId('sixbidsolo-called')).not.toBeInTheDocument());
+  });
+
+  // **トリックに札が出ているときだけトリック領域が表示される。**
+  it('shows the trick area only when cards have been played to the trick', async () => {
+    mockExec.mockResolvedValue(makeState({ trick: [card('SPADE', 1)] }));
+    const { unmount } = renderWithProviders(<SixBidSoloPage />);
+    await waitFor(() => expect(screen.getByTestId('sixbidsolo-trick')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ trick: [] }));
+    renderWithProviders(<SixBidSoloPage />);
+    await waitFor(() => expect(screen.queryByTestId('sixbidsolo-trick')).not.toBeInTheDocument());
+  });
+
+  // **人間の入札手番のときだけビッドの注意書きが表示される。**
+  it('shows the bid notice only on human bid turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: SixBidSoloPhase.BID, bidPlayerIdx: 0 }));
+    const { unmount } = renderWithProviders(<SixBidSoloPage />);
+    await waitFor(() => expect(screen.getByTestId('sixbidsolo-bid-notice')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: SixBidSoloPhase.BID, bidPlayerIdx: 1 }));
+    renderWithProviders(<SixBidSoloPage />);
+    await waitFor(() => expect(screen.queryByTestId('sixbidsolo-bid-notice')).not.toBeInTheDocument());
+  });
+
+  // **人間の宣言手番のときだけ宣言の注意書きが表示される。**
+  it('shows the declare notice only on human declare turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: SixBidSoloPhase.DECLARE, declarerIdx: 0 }));
+    const { unmount } = renderWithProviders(<SixBidSoloPage />);
+    await waitFor(() => expect(screen.getByTestId('sixbidsolo-declare-notice')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: SixBidSoloPhase.DECLARE, declarerIdx: 1 }));
+    renderWithProviders(<SixBidSoloPage />);
+    await waitFor(() => expect(screen.queryByTestId('sixbidsolo-declare-notice')).not.toBeInTheDocument());
+  });
 });
