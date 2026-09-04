@@ -36,6 +36,23 @@ beforeEach(() => {
 });
 
 describe('MinchiatePage', () => {
+  it('renders minchiate-scarto-done when scartoCount is greater than 0', async () => {
+    // スカルト（不要牌捨て）で既に捨てた枚数があるならその旨のメッセージを出す
+    const state = makeMinchiateState({ scartoCount: 1 });
+    mockExec.mockResolvedValue(state);
+    const { getByTestId } = renderWithProviders(<MinchiatePage />);
+    await waitFor(() => expect(getByTestId('minchiate-scarto-done')).toBeInTheDocument());
+  });
+
+  it('does not render minchiate-scarto-done when scartoCount is 0', async () => {
+    // スカルトでまだ1枚も捨てていないなら出さない
+    const state = makeMinchiateState({ scartoCount: 0 });
+    mockExec.mockResolvedValue(state);
+    const { queryByTestId, getByTestId } = renderWithProviders(<MinchiatePage />);
+    await waitFor(() => expect(getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(queryByTestId('minchiate-scarto-done')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<MinchiatePage />);

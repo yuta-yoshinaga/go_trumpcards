@@ -100,6 +100,23 @@ afterEach(() => {
 });
 
 describe('OasisPokerPage', () => {
+  it('renders player-hand when playerHand has cards', async () => {
+    // プレイヤーの手札が1枚以上配られていれば手札エリアを出す
+    const state = { ...betPhaseState, playerHand: [card('SPADE', 1)] };
+    mockApi.mockResolvedValue(state);
+    const { getByTestId } = renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(getByTestId('player-hand')).toBeInTheDocument());
+  });
+
+  it('does not render player-hand when playerHand is empty', async () => {
+    // プレイヤーの手札が空なら手札エリアは出さない
+    const state = { ...betPhaseState, playerHand: [] };
+    mockApi.mockResolvedValue(state);
+    const { queryByTestId, getByTestId } = renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(queryByTestId('player-hand')).not.toBeInTheDocument();
+  });
+
   it('renders bet phase on mount', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<OasisPokerPage />);

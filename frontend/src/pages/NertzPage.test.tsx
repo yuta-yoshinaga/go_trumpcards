@@ -89,6 +89,16 @@ afterEach(() => {
 });
 
 describe('NertzPage', () => {
+  it('renders nertz-kbd-shortcuts when state is loaded', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByTestId('nertz-kbd-shortcuts')).toBeInTheDocument());
+  });
+
   it('shows loading message before state arrives', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(
