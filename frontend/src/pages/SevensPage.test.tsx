@@ -222,6 +222,19 @@ describe('SevensPage', () => {
     expect(screen.queryByTestId('sevens-key-hints')).not.toBeInTheDocument();
   });
 
+  // GUIモードでゲーム画面が表示されている場合に直接出し用のキーボードショートカット一覧を描画する (CLIモードでは非表示)
+  it('renders sevens-kbd-shortcuts in GUI mode and hides it in CLI mode', async () => {
+    mockExec.mockResolvedValue(humanTurnState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByTestId('sevens-kbd-shortcuts')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(screen.queryByTestId('sevens-kbd-shortcuts')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+    expect(screen.getByTestId('sevens-kbd-shortcuts')).toBeInTheDocument();
+  });
+
   it('pass button is enabled on human turn with passes remaining', async () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).not.toBeDisabled());
