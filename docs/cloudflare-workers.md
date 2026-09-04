@@ -29,7 +29,7 @@ The worker entry points (`cmd/workers/{casino,classic,solo,extra,extra2,extra3,e
 2. `internal/infrastructure/games/games_server.go` — `BindWebControllerFor("<name>", …)` for the HTTP server factory
 3. `internal/infrastructure/games/{casino,classic,solo,extra,extra2,extra3,extra4,extra5}/<category>.go` — `games.RegisterKVGame("<name>", games.Category…, …)` for the KV-backed worker route (must match the `Category`)
 4. `internal/infrastructure/ui/GameManager.go` — `gameRegistry` entry for the CLI wiring
-5. `frontend/src/api/gameApi.ts` `workerUrl` — must match the `Category`
+5. `frontend/src/api/gameExec.ts` `workerUrl` (re-exported by `frontend/src/api/gameApi.ts`) — must match the `Category`
 
 Build: `make build-worker-{solo,casino,classic,extra,extra2,extra3,extra4,extra5}` or `make build-workers` (requires TinyGo).
 
