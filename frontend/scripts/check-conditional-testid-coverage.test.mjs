@@ -317,4 +317,122 @@ describe('check-conditional-testid-coverage', () => {
     expect(r.stdout).toContain('conditional-testid-coverage: OK');
     expect(r.stdout).toContain('1 conditional testids checked; all referenced');
   });
+
+  // ページ単位の判定: ページ A の条件付き testid をページ B のテストだけが参照している -> 弾かれる
+  it('rejects a conditional testid in PageA when only referenced by PageB test', () => {
+    const r = run({
+      'src/pages/PageA.tsx': `
+        export function PageA({ showBanner }) {
+          return (
+            <div>
+              {showBanner && (
+                <div data-testid="page-a-banner">Banner</div>
+              )}
+            </div>
+          );
+        }
+      `,
+      'src/pages/PageB.test.tsx': `
+        it('references page a banner in PageB test', () => {
+          expect(screen.getByTestId('page-a-banner')).toBeInTheDocument();
+        });
+      `,
+    });
+
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain('PageA.tsx');
+    expect(r.stderr).toContain('page-a-banner');
+  });
+
+  // ページ単位の判定: ページ A の条件付き testid をページ A 自身のテストが参照している -> 弾かれない
+  it('accepts a conditional testid in PageA when referenced by PageA own test', () => {
+    const r = run({
+      'src/pages/PageA.tsx': `
+        export function PageA({ showBanner }) {
+          return (
+            <div>
+              {showBanner && (
+                <div data-testid="page-a-banner">Banner</div>
+              )}
+            </div>
+          );
+        }
+      `,
+      'src/pages/PageA.test.tsx': `
+        it('renders banner when active', () => {
+          expect(screen.getByTestId('page-a-banner')).toBeInTheDocument();
+        });
+      `,
+    });
+
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain('conditional-testid-coverage: OK');
+    expect(r.stdout).toContain('1 conditional testids checked; all referenced');
+  });
+
+  // components は全体集合のまま: src/components/X.tsx の条件付き testid を src/pages/YPage.test.tsx が参照している -> 弾かれない
+  it('accepts a conditional testid in src/components when referenced by a page test', () => {
+    const r = run({
+      'src/components/SharedBadge.tsx': `
+        export function SharedBadge({ active }) {
+          return (
+            <div>
+              {active && (
+                <span data-testid="shared-status-badge">Active</span>
+              )}
+            </div>
+          );
+        }
+      `,
+      'src/pages/YPage.test.tsx': `
+        it('renders shared badge via page test', () => {
+          expect(screen.getByTestId('shared-status-badge')).toBeInTheDocument();
+        });
+      `,
+    });
+
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain('conditional-testid-coverage: OK');
+    expect(r.stdout).toContain('1 conditional testids checked; all referenced');
+  });
+
+  // 遡り幅: 条件が testid の 50 行上にあるフィクスチャで、未参照なら弾かれる (40 のままなら見逃す形)
+  it('rejects an unreferenced conditional testid whose condition is 50 lines above', () => {
+    const fillers = Array.from({ length: 50 }, (_, k) => `                <p>filler ${k}</p>`).join('\n');
+    const r = run({
+      'src/pages/DeepPage.tsx': `
+        export function DeepPage({ showDeep }) {
+          return (
+            <div>
+              {showDeep && (
+                <div>
+${fillers}
+                  <div data-testid="deep-50-line-testid">deep content</div>
+                </div>
+              )}
+            </div>
+          );
+        }
+      `,
+      'src/pages/DeepPage.test.tsx': `
+        it('renders deep page', () => {});
+      `,
+    });
+
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain('DeepPage.tsx');
+    expect(r.stderr).toContain('deep-50-line-testid');
+  });
+
+  // --root に値が無い: exit 1 になり、TypeError のスタックではなく理由が出ること
+  it('exits 1 with an error message and no TypeError stack when --root has no value', () => {
+    const r = spawnSync(process.execPath, [GUARD, '--root'], {
+      encoding: 'utf8',
+      cwd: process.cwd(),
+    });
+
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain('--root requires a directory argument');
+    expect(r.stderr).not.toContain('TypeError');
+  });
 });

@@ -20,6 +20,10 @@ import { assertFloor } from './lib/floor.mjs';
 // A bare positional argument must NOT disable them: a floor that a stray argv can switch
 // off is a floor that reports coverage it never checked.
 const rootFlag = process.argv.indexOf('--root');
+if (rootFlag !== -1 && (rootFlag + 1 >= process.argv.length || !process.argv[rootFlag + 1])) {
+  console.error('conditional-testid-coverage: --root requires a directory argument.');
+  process.exit(1);
+}
 const SCANNING_REPO = rootFlag === -1;
 const FRONTEND = SCANNING_REPO ? fileURLToPath(new URL('..', import.meta.url)) : resolve(process.argv[rootFlag + 1]);
 
@@ -45,8 +49,11 @@ export function extractConditionalTestids(content) {
     if (!m) continue;
     const tid = m[1];
     let ind = ln.length - ln.trimStart().length;
-    // Walk up at most 40 lines for the nearest opener at a smaller indent
-    const minJ = Math.max(-1, i - 40);
+    // 遡り幅を最大 400 行とする。
+    // 以前の 40 行では 47 行上や 58 行上の条件式を取りこぼした実績があり、
+    // 条件がそれより上にあると違反一覧からも件数の集計からも消えてしまうため、
+    // 十分な深さまで遡れるよう 400 行に引き上げている。
+    const minJ = Math.max(-1, i - 400);
     for (let j = i - 1; j > minJ; j--) {
       const p = lines[j];
       const s = p.trim();
@@ -93,36 +100,73 @@ async function walk(dir, matcher) {
 // same defect on a second surface -- a guard that watches only one of two surfaces lets
 // the next one through. `components/` is nested, so it needs the recursive walk.
 const isSource = (name) => name.endsWith('.tsx') && !name.endsWith('.test.tsx');
-const sourceFiles = [...(await walk(PAGES_DIR, isSource)), ...(await walk(COMPONENTS_DIR, isSource))].sort();
+const pageFiles = await walk(PAGES_DIR, isSource);
+const componentFiles = await walk(COMPONENTS_DIR, isSource);
+const sourceFiles = [...pageFiles, ...componentFiles].sort();
+const pageFileSet = new Set(pageFiles);
 
 const testFiles = await walk(SRC_DIR, (name) => /\.test\.tsx?$/.test(name));
 const e2eFiles = await walk(E2E_DIR, (name) => /\.ts$/.test(name));
-const testAndE2eFiles = [...testFiles, ...e2eFiles];
 
-const refs = new Set();
+const allRefs = new Set();
+const e2eRefs = new Set();
+const testRefsByFile = new Map();
+
 // リポジトリ内に mrsMop-hint-live や mrsMop-kbd-shortcuts など camelCase を含む testid が存在する。
 // 将来これらが条件付きブロックに入った際、テスト側で参照されていても小文字のみの正規表現だと
 // 参照として拾えず未参照と誤判定される偽陽性を防ぐため、英大文字も含めて抽出する。
 const REF_PATTERN = /["'`]([A-Za-z0-9][A-Za-z0-9_-]{2,})["'`]/g;
-for (const f of testAndE2eFiles) {
+
+for (const f of testFiles) {
+  const content = await readFile(f, 'utf8');
+  const fileRefs = new Set();
+  for (const m of content.matchAll(REF_PATTERN)) {
+    fileRefs.add(m[1]);
+    allRefs.add(m[1]);
+  }
+  testRefsByFile.set(f, fileRefs);
+}
+
+for (const f of e2eFiles) {
   const content = await readFile(f, 'utf8');
   for (const m of content.matchAll(REF_PATTERN)) {
-    refs.add(m[1]);
+    e2eRefs.add(m[1]);
+    allRefs.add(m[1]);
   }
 }
 
 let conditionalTestidsCount = 0;
 const violations = [];
 
-for (const pagePath of sourceFiles) {
-  const content = await readFile(pagePath, 'utf8');
+for (const sourcePath of sourceFiles) {
+  const content = await readFile(sourcePath, 'utf8');
   const items = extractConditionalTestids(content);
+  const isPage = pageFileSet.has(sourcePath);
+
+  let pageTestRefs = null;
+  if (isPage) {
+    const candidate1 = sourcePath.replace(/\.tsx?$/, '.test.tsx');
+    const candidate2 = sourcePath.replace(/\.tsx?$/, '.test.ts');
+    pageTestRefs = testRefsByFile.get(candidate1) || testRefsByFile.get(candidate2) || null;
+  }
+
   for (const item of items) {
     if (item.tid.includes('$') || item.tid.includes('{')) continue;
     conditionalTestidsCount += 1;
-    if (!refs.has(item.tid)) {
+
+    let referenced = false;
+    if (isPage) {
+      // ページの条件付き testid は、そのページ自身のテストファイルまたは E2E テストからの参照のみを有効とする。
+      // 同名のテストファイルが存在しないページは、E2E の参照だけで判定する。
+      referenced = e2eRefs.has(item.tid) || Boolean(pageTestRefs?.has(item.tid));
+    } else {
+      // components の条件付き testid は現行どおりリポジトリ全体（全テストおよび E2E）の集合で判定する。
+      referenced = allRefs.has(item.tid);
+    }
+
+    if (!referenced) {
       violations.push({
-        file: relative(FRONTEND, pagePath),
+        file: relative(FRONTEND, sourcePath),
         line: item.line,
         testidLine: item.testidLine,
         tid: item.tid,
