@@ -77,6 +77,12 @@ async function startGame() {
 }
 
 describe('OldMaidPage', () => {
+  it('renders old-maid-kbd-shortcuts when state is loaded', async () => {
+    // 状態がロードされてプレイ中であればショートカット一覧を出す
+    await startGame();
+    await waitFor(() => expect(screen.getByTestId('old-maid-kbd-shortcuts')).toBeInTheDocument());
+  });
+
   it('auto-starts game on mount and calls reset with defaults', async () => {
     renderWithProviders(<OldMaidPage />);
     await waitFor(() =>

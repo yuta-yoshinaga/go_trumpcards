@@ -118,6 +118,19 @@ describe('SpeculationPage', () => {
     await waitFor(() => expect(screen.getByTestId('sp-trump')).toHaveTextContent('ハート'));
   });
 
+  // ラウンドの切り札スートを決定する切り札カードがめくられている場合のみ切り札カードを表示する
+  it('renders sp-trump-card when trumpCard is present and hides it when absent', async () => {
+    mockApi.mockResolvedValue(withState({ trumpCard: undefined }));
+    const { unmount } = renderWithProviders(<SpeculationPage />);
+    await waitFor(() => expect(screen.getByTestId('sp-round-line')).toBeInTheDocument());
+    expect(screen.queryByTestId('sp-trump-card')).not.toBeInTheDocument();
+    unmount();
+
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<SpeculationPage />);
+    await waitFor(() => expect(screen.getByTestId('sp-trump-card')).toBeInTheDocument());
+  });
+
   it('ラウンドとポットを出す', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<SpeculationPage />);

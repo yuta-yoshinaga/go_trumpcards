@@ -341,4 +341,17 @@ describe('RikkenPage', () => {
     await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
     expect(mockApi).not.toHaveBeenCalled();
   });
+
+  // トリック進行中に出されたカードがある場合のみ現在のトリック表示エリアを描画する
+  it('renders rikken-trick when cards are played to current trick and hides it when empty', async () => {
+    mockApi.mockResolvedValue(bidState);
+    const { unmount } = renderWithProviders(<RikkenPage />);
+    await waitFor(() => expect(screen.getByTestId('rikken-seats')).toBeInTheDocument());
+    expect(screen.queryByTestId('rikken-trick')).not.toBeInTheDocument();
+    unmount();
+
+    mockApi.mockResolvedValue(playState);
+    renderWithProviders(<RikkenPage />);
+    await waitFor(() => expect(screen.getByTestId('rikken-trick')).toBeInTheDocument());
+  });
 });

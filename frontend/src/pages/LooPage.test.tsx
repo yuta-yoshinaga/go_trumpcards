@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { looApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeLooState } from '../test/stateFactories';
+import { LooPhase } from '../types/phases';
 import { LooPage } from './LooPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -39,6 +40,23 @@ beforeEach(() => {
 });
 
 describe('LooPage', () => {
+  it('renders loo-decide-buttons when it is human turn to decide', async () => {
+    // 参加するか降りるかの選択フェーズで人間の手番ならボタンを出す
+    const state = makeLooState({ phase: LooPhase.DECIDE, decidePlayerIdx: 0, isHumanTurn: true });
+    mockExec.mockResolvedValue(state);
+    const { getByTestId } = renderWithProviders(<LooPage />);
+    await waitFor(() => expect(getByTestId('loo-decide-buttons')).toBeInTheDocument());
+  });
+
+  it('does not render loo-decide-buttons when it is cpu turn', async () => {
+    // 参加するか降りるかの選択フェーズでもCPUの手番なら出さない
+    const state = makeLooState({ phase: LooPhase.DECIDE, decidePlayerIdx: 1, isHumanTurn: false });
+    mockExec.mockResolvedValue(state);
+    const { queryByTestId, getByTestId } = renderWithProviders(<LooPage />);
+    await waitFor(() => expect(getByTestId('loo-hint-live')).toBeInTheDocument());
+    expect(queryByTestId('loo-decide-buttons')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<LooPage />);
