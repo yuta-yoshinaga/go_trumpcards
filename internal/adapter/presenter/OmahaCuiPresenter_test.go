@@ -1209,3 +1209,41 @@ func TestOmahaCuiPresenter_Scoop(t *testing.T) {
 		}), i18n.T("omaha.scoop"))
 	})
 }
+
+func TestOmahaCuiPresenter_Titles(t *testing.T) {
+	i18n.SetLang("ja")
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.OmahaCuiPresenter)
+
+	t.Run("Omaha", func(t *testing.T) {
+		h := domain.NewDefaultOmaha()
+		_ = h.Reset()
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "Omaha Hold")
+	})
+
+	t.Run("Big O", func(t *testing.T) {
+		h := domain.NewDefaultBigO()
+		_ = h.Reset()
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "Big O")
+	})
+
+	t.Run("Courchevel", func(t *testing.T) {
+		h := domain.NewDefaultCourchevel()
+		_ = h.Reset()
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "Courchevel")
+		assert.NotContains(t, result, "Big O")
+	})
+
+	t.Run("Courchevel Hi-Lo", func(t *testing.T) {
+		h := domain.NewDefaultCourchevelHiLo()
+		_ = h.Reset()
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "Courchevel")
+		assert.Contains(t, result, "Hi-Lo")
+	})
+}
