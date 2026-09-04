@@ -1,3 +1,5 @@
+//go:build !js || !wasm || classic
+
 package controller
 
 import (

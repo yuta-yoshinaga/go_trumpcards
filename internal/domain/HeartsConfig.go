@@ -1,3 +1,5 @@
+//go:build !js || !wasm || classic
+
 package domain
 
 // HeartsCpuDifficulty CPU の難易度レベル
