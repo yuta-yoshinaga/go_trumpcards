@@ -7161,6 +7161,30 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			SettingKeys: []string{"bolivia.helpSetDifficulty", "bolivia.helpSetLimit"},
 		}),
+	BindCuiFor("courchevelhilo",
+		func() usecase.OmahaInteractorIF {
+			return usecase.NewOmahaInteractor(domain.NewDefaultCourchevelHiLo(), new(presenter.OmahaCuiPresenter))
+		},
+		controller.NewOmahaCuiController,
+		CuiHelpSpec{
+			TitleKey: "omaha.helpTitleCourchevelHiLo",
+			// Renders omaha's command rows, so it renders omaha's examples too.
+			ExampleKeys: []string{
+				"omaha.helpExampleCall",
+				"omaha.helpExampleRaise",
+			},
+			CommandKeys: append([]string{
+				"omaha.helpFold",
+				"omaha.helpCheck",
+				"omaha.helpCall",
+				"omaha.helpBet",
+				"omaha.helpRaise",
+				"omaha.helpAllIn", "omaha.helpLog",
+			}, tournamentRebuyAddOnKeys...),
+			SettingKeys: append([]string{
+				"omaha.helpBettingLimit", "omaha.helpTournament",
+			}, holdemBlindKeys...),
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
