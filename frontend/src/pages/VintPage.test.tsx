@@ -317,4 +317,40 @@ describe('VintPage', () => {
       expect(disabled).toEqual([true, true, true, false, false]);
     });
   });
+
+  // **契約は最高入札によって決まる。**誰も宣言していなければ出ない。
+  it('renders the contract only when a highBid exists', async () => {
+    mockExec.mockResolvedValue(makeState({ highBid: { player: 0, level: 3, denom: 3, trickValue: 30 } }));
+    const { unmount } = renderWithProviders(<VintPage />);
+    await waitFor(() => expect(screen.getByTestId('vint-contract')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ highBid: null }));
+    renderWithProviders(<VintPage />);
+    await waitFor(() => expect(screen.queryByTestId('vint-contract')).not.toBeInTheDocument());
+  });
+
+  // **場に出たカードがある場合のみトリック領域を描画する。**まだ誰も出していない時は出ない。
+  it('renders the trick area only when there are cards in the trick', async () => {
+    mockExec.mockResolvedValue(makeState({ trick: [card('SPADE', 1)] }));
+    const { unmount } = renderWithProviders(<VintPage />);
+    await waitFor(() => expect(screen.getByTestId('vint-trick')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ trick: [] }));
+    renderWithProviders(<VintPage />);
+    await waitFor(() => expect(screen.queryByTestId('vint-trick')).not.toBeInTheDocument());
+  });
+
+  // **人間の入札手番でのみ注意事項を出す。**他人の手番やプレイ中には出ない。
+  it('renders the bid notice only on human bid turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: VintPhase.BID, bidPlayerIdx: 0, gameEndFlag: false }));
+    const { unmount } = renderWithProviders(<VintPage />);
+    await waitFor(() => expect(screen.getByTestId('vint-bid-notice')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: VintPhase.BID, bidPlayerIdx: 1, gameEndFlag: false }));
+    renderWithProviders(<VintPage />);
+    await waitFor(() => expect(screen.queryByTestId('vint-bid-notice')).not.toBeInTheDocument());
+  });
 });

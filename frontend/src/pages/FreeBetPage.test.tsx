@@ -332,4 +332,32 @@ describe('FreeBetPage', () => {
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '配る' })).not.toBeInTheDocument();
   });
+
+  it('shows fb-dealer-cards when dealerCards is not empty', async () => {
+    // ディーラーにカードが配られている場合、ディーラーのカード領域が表示される
+    mockApi.mockResolvedValue(withState({ dealerCards: [card(10)] }));
+    renderWithProviders(<FreeBetPage />);
+    expect(await screen.findByTestId('fb-dealer-cards')).toBeInTheDocument();
+  });
+
+  it('does not show fb-dealer-cards when dealerCards is empty', async () => {
+    mockApi.mockResolvedValue(withState({ dealerCards: [] }));
+    renderWithProviders(<FreeBetPage />);
+    await waitFor(() => expect(screen.getByTestId('fb-chips')).toBeInTheDocument());
+    expect(screen.queryByTestId('fb-dealer-cards')).not.toBeInTheDocument();
+  });
+
+  it('shows fb-free-notice in play phase', async () => {
+    // プレイフェーズ（アクション選択時）に、無料ダブル・スプリットの条件を知らせる注記が表示される
+    mockApi.mockResolvedValue(playing());
+    renderWithProviders(<FreeBetPage />);
+    expect(await screen.findByTestId('fb-free-notice')).toBeInTheDocument();
+  });
+
+  it('does not show fb-free-notice outside play phase', async () => {
+    mockApi.mockResolvedValue(withState({ phase: FreeBetPhase.BET }));
+    renderWithProviders(<FreeBetPage />);
+    await waitFor(() => expect(screen.getByTestId('fb-chips')).toBeInTheDocument());
+    expect(screen.queryByTestId('fb-free-notice')).not.toBeInTheDocument();
+  });
 });

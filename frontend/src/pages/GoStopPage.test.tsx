@@ -305,4 +305,80 @@ describe('GoStopPage', () => {
     // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
     expect(live).toContainElement(await screen.findByTestId('gostop-prompt'));
   });
+
+  // **CPU対戦相手がいる場合のみCPU領域を描画する。**
+  it('renders the CPU area only when a CPU player exists', async () => {
+    mockExec.mockResolvedValue(playState);
+    const { unmount } = renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.getByTestId('gostop-cpu')).toBeInTheDocument());
+    unmount();
+
+    const noCpuState = makeGoStopState();
+    noCpuState.players = noCpuState.players.filter((p) => p.isHuman);
+    mockExec.mockResolvedValue(noCpuState);
+    renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.queryByTestId('gostop-cpu')).not.toBeInTheDocument());
+  });
+
+  // **ピバクの条件を満たしたラウンド終了時のみバッジを出す。**
+  it('renders the pi-bak badge when piBak is true', async () => {
+    const baseResult = roundEndState.lastRoundResult;
+    if (!baseResult) throw new Error('lastRoundResult must be set');
+
+    const piBakState = makeGoStopState({
+      phase: 2,
+      lastRoundResult: {
+        ...baseResult,
+        gwangBak: false,
+        piBak: true,
+        goBak: false,
+      },
+    });
+    mockExec.mockResolvedValue(piBakState);
+    const { unmount } = renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.getByTestId('gostop-bak-pi')).toBeInTheDocument());
+    unmount();
+
+    const noPiBakState = makeGoStopState({
+      phase: 2,
+      lastRoundResult: {
+        ...baseResult,
+        piBak: false,
+      },
+    });
+    mockExec.mockResolvedValue(noPiBakState);
+    renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.queryByTestId('gostop-bak-pi')).not.toBeInTheDocument());
+  });
+
+  // **ゴーバクの条件を満たしたラウンド終了時のみバッジを出す。**
+  it('renders the go-bak badge when goBak is true', async () => {
+    const baseResult = roundEndState.lastRoundResult;
+    if (!baseResult) throw new Error('lastRoundResult must be set');
+
+    const goBakState = makeGoStopState({
+      phase: 2,
+      lastRoundResult: {
+        ...baseResult,
+        gwangBak: false,
+        piBak: false,
+        goBak: true,
+      },
+    });
+    mockExec.mockResolvedValue(goBakState);
+    const { unmount } = renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.getByTestId('gostop-bak-go')).toBeInTheDocument());
+    unmount();
+
+    const noGoBakState = makeGoStopState({
+      phase: 2,
+      lastRoundResult: {
+        ...baseResult,
+        goBak: false,
+      },
+    });
+    mockExec.mockResolvedValue(noGoBakState);
+    renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.queryByTestId('gostop-bak-go')).not.toBeInTheDocument());
+  });
 });

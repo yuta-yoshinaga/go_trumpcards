@@ -285,4 +285,52 @@ describe('KlaberjassPage', () => {
     expect(hand()[0]).toHaveAttribute('aria-pressed', 'false');
     expect(hand()[2]).toHaveAttribute('aria-pressed', 'false');
   });
+
+  // **切札未決定かつめくり札があるときだけ、ヘッダにめくり札のスートが表示される。**
+  it('shows the turn-up suit in the header when trump is undecided and turn-up card exists', async () => {
+    mockExec.mockResolvedValue(makeState({ turnUpCard: card('HEART', 13), trumpSuit: 0 }));
+    const { unmount } = renderWithProviders(<KlaberjassPage />);
+    await waitFor(() => expect(screen.getByTestId('klaberjass-turnup')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ turnUpCard: card('HEART', 13), trumpSuit: 3 }));
+    renderWithProviders(<KlaberjassPage />);
+    await waitFor(() => expect(screen.queryByTestId('klaberjass-turnup')).not.toBeInTheDocument());
+  });
+
+  // **切札未決定かつめくり札があるときだけ、めくり札の画像が表示される。**
+  it('shows the turn-up card image when trump is undecided and turn-up card exists', async () => {
+    mockExec.mockResolvedValue(makeState({ turnUpCard: card('HEART', 13), trumpSuit: 0 }));
+    const { unmount } = renderWithProviders(<KlaberjassPage />);
+    await waitFor(() => expect(screen.getByTestId('klaberjass-turnup-card')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ turnUpCard: null, trumpSuit: 0 }));
+    renderWithProviders(<KlaberjassPage />);
+    await waitFor(() => expect(screen.queryByTestId('klaberjass-turnup-card')).not.toBeInTheDocument());
+  });
+
+  // **トリックに札が出ているときだけトリック領域が表示される。**
+  it('shows the trick area only when cards have been played to the trick', async () => {
+    mockExec.mockResolvedValue(makeState({ trick: [card('SPADE', 1)] }));
+    const { unmount } = renderWithProviders(<KlaberjassPage />);
+    await waitFor(() => expect(screen.getByTestId('klaberjass-trick')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ trick: [] }));
+    renderWithProviders(<KlaberjassPage />);
+    await waitFor(() => expect(screen.queryByTestId('klaberjass-trick')).not.toBeInTheDocument());
+  });
+
+  // **人間の入札手番のときだけビッドの注意書きが表示される。**
+  it('shows the bid notice only on human bid turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: KlaberjassPhase.BID_TURN_UP, bidPlayerIdx: 0 }));
+    const { unmount } = renderWithProviders(<KlaberjassPage />);
+    await waitFor(() => expect(screen.getByTestId('klaberjass-bid-notice')).toBeInTheDocument());
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: KlaberjassPhase.BID_TURN_UP, bidPlayerIdx: 1 }));
+    renderWithProviders(<KlaberjassPage />);
+    await waitFor(() => expect(screen.queryByTestId('klaberjass-bid-notice')).not.toBeInTheDocument());
+  });
 });

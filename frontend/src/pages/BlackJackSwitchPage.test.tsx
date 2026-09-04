@@ -442,6 +442,19 @@ describe('BlackJackSwitchPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
   });
+
+  // プレイヤーに手札が配られている間は手札の領域が表示され、賭け金入力中など手札がない間は表示されない
+  it('shows hands-area when hands exist, and hides it when empty', async () => {
+    mockApi.mockResolvedValueOnce({ ...betState, hands: [] });
+    const { unmount } = renderWithProviders(<BlackJackSwitchPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('hands-area')).not.toBeInTheDocument();
+    unmount();
+
+    mockApi.mockResolvedValueOnce(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    expect(await screen.findByTestId('hands-area')).toBeInTheDocument();
+  });
 });
 
 // **ヒントは前から算出されていたのに、ページが一度も読んでいなかった (#4708)。**

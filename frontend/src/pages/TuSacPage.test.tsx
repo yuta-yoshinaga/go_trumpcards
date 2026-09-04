@@ -156,18 +156,24 @@ describe('TuSacPage', () => {
   });
 
   // **引く場面と出す場面でボタンが入れ替わる。** サーバのフェーズに従う。
-  it('引く場面と捨てる場面で操作を切り替える', async () => {
-    mockApi.mockResolvedValue(base);
+  // 引くか拾う場面では、プレイヤーに引くか拾うかを促すガイドが出る
+  it('フェーズによって出すボタンとガイドを切り替える', async () => {
+    mockApi.mockResolvedValue(base); // DRAW phase
     const { unmount } = renderWithProviders(<TuSacPage />);
     await waitFor(() => expect(screen.getByTestId('tusac-draw')).toBeInTheDocument());
+    expect(screen.getByTestId('tusac-draw-guide')).toBeInTheDocument();
+    expect(screen.queryByTestId('tusac-discard-guide')).not.toBeInTheDocument();
     expect(screen.getByTestId('tusac-take')).toBeInTheDocument();
     expect(screen.queryByTestId('tusac-meld')).not.toBeInTheDocument();
     expect(screen.queryByTestId('tusac-discard')).not.toBeInTheDocument();
     unmount();
 
+    // 手札からメルドを組むか捨てる場面では、プレイヤーにそれらを促すガイドが出る
     mockApi.mockResolvedValue(withState({ phase: TuSacPhase.DISCARD }));
     renderWithProviders(<TuSacPage />);
     await waitFor(() => expect(screen.getByTestId('tusac-meld')).toBeInTheDocument());
+    expect(screen.getByTestId('tusac-discard-guide')).toBeInTheDocument();
+    expect(screen.queryByTestId('tusac-draw-guide')).not.toBeInTheDocument();
     expect(screen.getByTestId('tusac-discard')).toBeInTheDocument();
     expect(screen.queryByTestId('tusac-draw')).not.toBeInTheDocument();
   });

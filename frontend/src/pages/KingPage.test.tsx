@@ -261,4 +261,34 @@ describe('KingPage', () => {
     // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
     expect(live).toContainElement(await screen.findByTestId('king-select-prompt'));
   });
+
+  it('shows king-contract-buttons when it is the human turn to select a contract', async () => {
+    // 契約を選択するフェーズで、プレイヤー自身がディーラーの場合に表示される
+    mockExec.mockResolvedValue(selectPhaseState);
+    renderWithProviders(<KingPage />);
+    expect(await screen.findByTestId('king-contract-buttons')).toBeInTheDocument();
+  });
+
+  it('does not show king-contract-buttons if it is not human turn to select', async () => {
+    mockExec.mockResolvedValue(cpuSelectState);
+    renderWithProviders(<KingPage />);
+    await waitFor(() => expect(screen.getByTestId('king-select-cpu')).toBeInTheDocument());
+    expect(screen.queryByTestId('king-contract-buttons')).not.toBeInTheDocument();
+  });
+
+  it('shows king-trump-buttons when the user clicks the King/Trump contract', async () => {
+    // キング（切り札）契約を選んだ後、切り札となるスートを選ぶボタン群が表示される
+    mockExec.mockResolvedValue(selectPhaseState);
+    renderWithProviders(<KingPage />);
+    const trumpContractBtn = await screen.findByTestId('king-contract-6');
+    fireEvent.click(trumpContractBtn);
+    expect(await screen.findByTestId('king-trump-buttons')).toBeInTheDocument();
+  });
+
+  it('does not show king-trump-buttons before a contract is selected', async () => {
+    mockExec.mockResolvedValue(selectPhaseState);
+    renderWithProviders(<KingPage />);
+    await waitFor(() => expect(screen.getByTestId('king-contract-buttons')).toBeInTheDocument());
+    expect(screen.queryByTestId('king-trump-buttons')).not.toBeInTheDocument();
+  });
 });

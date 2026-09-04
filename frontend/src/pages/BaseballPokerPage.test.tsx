@@ -239,10 +239,12 @@ describe('BaseballPokerPage', () => {
   });
 
   // **チェックとコールは場況で入れ替わる。** サーバの toCall に従う。
-  it('賭けが無ければチェック、あればコールを出す', async () => {
+  // また、プレイヤーにコール額やチェック可能であることを知らせるガイドが出る。
+  it('賭けが無ければチェック、あればコールと案内を出す', async () => {
     mockApi.mockResolvedValue(base);
     const { unmount } = renderWithProviders(<BaseballPokerPage />);
     await waitFor(() => expect(screen.getByTestId('bb-check')).toBeInTheDocument());
+    expect(screen.getByTestId('bb-bet-guide')).toBeInTheDocument();
     expect(screen.queryByTestId('bb-call')).not.toBeInTheDocument();
     expect(screen.getByTestId('bb-bet')).toBeInTheDocument();
     unmount();
@@ -250,6 +252,7 @@ describe('BaseballPokerPage', () => {
     mockApi.mockResolvedValue(withState({ toCall: 20, currentBet: 20 }));
     renderWithProviders(<BaseballPokerPage />);
     await waitFor(() => expect(screen.getByTestId('bb-call')).toBeInTheDocument());
+    expect(screen.getByTestId('bb-bet-guide')).toBeInTheDocument();
     expect(screen.queryByTestId('bb-check')).not.toBeInTheDocument();
     expect(screen.getByTestId('bb-raise')).toBeInTheDocument();
   });
