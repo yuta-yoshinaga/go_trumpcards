@@ -352,4 +352,21 @@ describe('LiteraturePage', () => {
     expect(screen.queryByTestId('literature-last-claim')).not.toBeInTheDocument();
     expect(screen.queryByText('直近の宣言')).not.toBeInTheDocument();
   });
+
+  // CLIモードでない時のみスコア領域を出す（CLI時は端末が全画面になるため）。
+  it('shows scores area only in non-CLI mode', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<LiteraturePage />);
+
+    // 初期状態は non-CLI mode (GUI) なので出る
+    expect(await screen.findByTestId('literature-scores')).toBeInTheDocument();
+
+    // CLI モードに切り替え (GUI非表示)
+    const toggle = screen.getByRole('button', { name: /CLI/i });
+    fireEvent.click(toggle);
+
+    // テキストボックス(CLI)が出るまで待つ
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    expect(screen.queryByTestId('literature-scores')).not.toBeInTheDocument();
+  });
 });
