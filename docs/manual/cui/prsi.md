@@ -77,7 +77,7 @@ flowchart TD
 
 ```
 ==========
-Prší
+Prší (プルシー/チェコ版クレイジーエイト)
 ==========
 draw pile: 18
 discard: HEART 9

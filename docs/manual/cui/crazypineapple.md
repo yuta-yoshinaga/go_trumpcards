@@ -138,7 +138,7 @@ flowchart TD
 
 ```
 ==========
-Crazy Pineapple Poker
+Crazy Pineapple Poker (クレイジーパイナップル)
 ==========
 ディーラー: Player 0
 コミュニティ: ♠7  ♣10  ♥3

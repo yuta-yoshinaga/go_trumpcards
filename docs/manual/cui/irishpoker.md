@@ -138,7 +138,7 @@ flowchart TD
 
 ```
 ==========
-Irish Poker
+Irish Poker (アイリッシュポーカー)
 ==========
 ディーラー: Player 0
 コミュニティ: ♠7  ♣10  ♥3

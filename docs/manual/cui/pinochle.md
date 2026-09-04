@@ -89,7 +89,7 @@ flowchart TD
 
 ```
 ==========
-Pinochle
+Pinochle (ピノクル)
 ==========
 Phase: BID     Round: 1
 Scores: Team0/2=0   Team1/3=0

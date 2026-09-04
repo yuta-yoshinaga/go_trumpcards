@@ -102,7 +102,7 @@ flowchart TD
 
 ```
 ==========
-Machiavelli
+Machiavelli (マキャヴェッリ)
 ==========
 ラウンド: 2/3  山札: 40枚
 場のメルド:

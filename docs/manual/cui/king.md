@@ -94,7 +94,7 @@ flowchart TD
 
 ```
 ==========
-King (キング) - Deal 3/7
+キング（King）
 ==========
 Contract: No Queens (Q1枚につき -2 ... 実際は -6)   Trump: none
 Dealer: CPU1 (親)

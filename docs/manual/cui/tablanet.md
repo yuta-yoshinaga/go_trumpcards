@@ -93,7 +93,7 @@ flowchart TD
 
 ```
 ==========
-Tablanet (タブラネット)
+タブラネット（Tablanet / Tablić）
 ==========
 Round 1  Deck 32
 
