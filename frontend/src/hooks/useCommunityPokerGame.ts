@@ -18,7 +18,15 @@ import { usePhaseNames } from './usePhaseNames';
 export type CommunityPokerExec = HoldemLikeExec<OmahaResponse>;
 
 /** Community-card poker games sharing the Hold'em response shape + phase enum. */
-export type CommunityPokerName = 'holdem' | 'omaha' | 'omahahilo' | 'bigo' | 'bigohilo' | 'courchevel' | 'shortdeck';
+export type CommunityPokerName =
+  | 'holdem'
+  | 'omaha'
+  | 'omahahilo'
+  | 'bigo'
+  | 'bigohilo'
+  | 'courchevel'
+  | 'courchevelhilo'
+  | 'shortdeck';
 
 /** Config for {@link useCommunityPokerGame}. */
 export interface CommunityPokerGameConfig {

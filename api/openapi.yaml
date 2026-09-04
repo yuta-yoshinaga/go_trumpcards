@@ -84,6 +84,8 @@ tags:
     description: Courchevel (クールシュヴェル) game
   - name: bigohilo
     description: 5 Card Omaha Hi-Lo (Big O) / 8 or Better (split-pot variant)
+  - name: courchevelhilo
+    description: Courchevel Hi-Lo / 8 or Better (split-pot variant)
   - name: shortdeck
     description: Short Deck (6+ Hold'em) game
   - name: hearts
@@ -2118,6 +2120,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/HoldemResponse'
 
+  /courchevelhilo/exec:
+    post:
+      tags:
+        - courchevelhilo
+      summary: Execute a Courchevel Hi-Lo game command
+      operationId: courchevelHiLoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HoldemRequest'
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/HoldemResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
   /shortdeck/exec:
     post:
       tags:

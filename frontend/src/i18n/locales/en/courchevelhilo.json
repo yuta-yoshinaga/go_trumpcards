@@ -1,0 +1,111 @@
+{
+  "hiLo": {
+    "title": "Hi/Lo split",
+    "hi": "Hi",
+    "lo": "Lo",
+    "winner": "{{name}} (+{{amount}})",
+    "hiTakesAll": "No qualifying low — Hi scoops the pot"
+  },
+  "scoop": {
+    "badge": "🏆 Scoop! {{name}} takes both Hi & Lo (+{{total}})",
+    "youBadge": "🏆 Scoop! You take both Hi & Lo (+{{total}})"
+  },
+  "phase": {
+    "preFlop": "Pre-Flop",
+    "flop": "Flop",
+    "turn": "Turn",
+    "river": "River",
+    "showdown": "Showdown",
+    "end": "Result",
+    "init": "Initializing",
+    "rebuy": "Rebuy/Addon"
+  },
+  "communityCards": "Community Cards",
+  "yourHand": "Your Hand",
+  "mandatoryRule": "Rule: 2 hole + 3 board (Hi/Lo separately)",
+  "mandatoryRuleAria": "Courchevel Hi-Lo rule: each of high and low uses exactly 2 hole cards and 3 board cards",
+  "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
+  "rebuy": {
+    "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
+    "accept": "Rebuy",
+    "skip": "Skip"
+  },
+  "addon": {
+    "prompt": "Addon? ({{chips}} chips)",
+    "accept": "Addon",
+    "skip": "Skip"
+  },
+  "muck": {
+    "prompt": "Muck or show your hand.",
+    "muck": "Muck",
+    "show": "Show"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP (Voluntarily Put In Pot): % of hands where player voluntarily put chips in the pot",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR (Pre-Flop Raise): % of hands where player raised pre-flop",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet: % of hands where player re-raised an opponent's raise",
+    "af": "AF",
+    "afTooltip": "AF (Aggression Factor): ratio of aggressive actions (bet/raise) to passive actions (call)"
+  },
+  "learning": {
+    "title": "Learning Mode",
+    "toggle": "Learning Mode",
+    "equity": "Equity",
+    "potOdds": "Pot Odds",
+    "plusEV": "+EV (Positive Expected Value)",
+    "minusEV": "-EV (Negative Expected Value)",
+    "handOdds": "Hand Odds"
+  },
+  "settings": {
+    "cpuMetaAI": "Meta-AI (CPU learns your play style)"
+  },
+  "tutorial": {
+    "communityCards": "Community cards revealed progressively.",
+    "playerHand": "Your 5 hole cards. You must use exactly 2 of them.",
+    "combinationRule": "In Courchevel (5 Card Omaha), you must use exactly 2 hole cards and 3 community cards to form your hand.",
+    "actionButtons": "Choose your betting action.",
+    "potDisplay": "Shows pot size and blind levels.",
+    "cpuArea": "CPU opponent information.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "positiveEV": "Positive expected value — raise recommended",
+    "marginalEV": "Marginal expected value — call recommended",
+    "negativeEV": "Negative expected value — fold recommended",
+    "strongHandRank": "Strong hand — raise recommended",
+    "decentHandRank": "Decent hand — call recommended",
+    "weakHandRank": "Weak hand — fold recommended",
+    "scoopChance": "Scoop range (hi + lo) — raise recommended",
+    "lowDraw": "Low likely to qualify — call to chase the half"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive: plays few hands but bets strongly when in",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive: plays many hands and bets strongly",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive: plays few hands, mostly calls",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive: plays many hands but rarely raises",
+    "balanced": "BAL",
+    "balancedTooltip": "Balanced style"
+  },
+  "boardLow": {
+    "label": "Low",
+    "live": "Live",
+    "possible": "Possible",
+    "impossible": "No low",
+    "ariaLive": "The board shows 3 distinct low ranks (8 or lower); a low is live",
+    "ariaPossible": "{{needed}} more distinct low rank(s) of 8 or lower are needed for a low",
+    "ariaImpossible": "Fewer than 3 distinct low ranks on the board; no low is possible"
+  },
+  "hiLoUsage": {
+    "hi": "Hi",
+    "lo": "Lo",
+    "both": "Hi+Lo"
+  },
+  "exposedNotice": "The first board card is already face up before the opening bet"
+}

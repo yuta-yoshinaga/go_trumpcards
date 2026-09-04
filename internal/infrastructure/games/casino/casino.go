@@ -78,6 +78,14 @@ func init() {
 			return usecase.RestoreOmahaInteractor(data, new(presenter.OmahaWebPresenter))
 		},
 		controller.NewOmahaWebControllerWithProvider)
+	games.RegisterKVGame("courchevelhilo", games.CategoryCasino,
+		func() usecase.OmahaInteractorIF {
+			return usecase.NewOmahaInteractor(domain.NewDefaultCourchevelHiLo(), new(presenter.OmahaWebPresenter))
+		},
+		func(data []byte) (usecase.OmahaInteractorIF, error) {
+			return usecase.RestoreOmahaInteractor(data, new(presenter.OmahaWebPresenter))
+		},
+		controller.NewOmahaWebControllerWithProvider)
 	games.RegisterKVGame("shortdeck", games.CategoryCasino,
 		func() usecase.ShortDeckInteractorIF {
 			return usecase.NewShortDeckInteractor(domain.NewDefaultShortDeck(), new(presenter.ShortDeckWebPresenter))
