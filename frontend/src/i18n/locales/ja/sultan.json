@@ -18,7 +18,7 @@
   "foundationSlot": "組札{{idx}} 一番上 {{top}}",
   "foundationSlotComplete": "組札{{idx}} 一番上 {{top}}（完成）",
   "emptyFoundationSlot": "組札{{idx}} 空（Kから積む）",
-  "landscapeBanner": "横向き表示推奨",
+  "landscapeBanner": "横画面での表示を推奨します",
   "hint": "ヒント",
   "autoComplete": "自動完成",
   "autoCompleteNotReady": "山札とウェイストが空のときに使えます",

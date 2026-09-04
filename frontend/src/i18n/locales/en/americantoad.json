@@ -32,7 +32,7 @@
     "draw": "Nothing can move, so turn a card from the stock",
     "redeal": "You are out of moves. The redeal is a one-shot, so check for anything missed before spending it"
   },
-  "landscapeBanner": "Landscape orientation is recommended",
+  "landscapeBanner": "Landscape mode recommended",
   "moveCount": "Moves",
   "noHint": "No hint available",
   "passCount": "Pass: {{current}}/{{max}}",

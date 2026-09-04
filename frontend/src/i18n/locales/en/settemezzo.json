@@ -31,7 +31,7 @@
   "bankerTurn": "Draw or stop as the banker",
   "roundOver": "{{result}}",
   "bankPasses": "An exact 7.5 takes the bank",
-  "landscapeBanner": "Landscape orientation is recommended",
+  "landscapeBanner": "Landscape mode recommended",
   "seatAriaLabel": "{{name}}'s hand, total {{total}}",
   "hiddenHandAriaLabel": "{{name}}'s hand is face down, {{count}} cards",
   "bankerHandAriaLabel": "Banker's hand, total {{total}}",

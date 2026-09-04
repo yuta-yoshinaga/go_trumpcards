@@ -25,7 +25,7 @@
   "play": "出す",
   "nextDeal": "次のディールへ",
   "dealResult": "席{{n}} が出し切りました",
-  "landscapeBanner": "横向きにするとカードが見やすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "phase.play": "出す",
   "phase.dealEnd": "ディール終了",
   "phase.end": "終了",

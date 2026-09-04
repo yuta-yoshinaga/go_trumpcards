@@ -31,7 +31,7 @@
   "nextDeal": "次のディールへ",
   "pochenResult": "席{{n}} が pochen を制しました（{{pot}}）",
   "dealResult": "席{{n}} が出し切りました",
-  "landscapeBanner": "横向きにするとカードが見やすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "phase.pochen": "賭ける",
   "phase.stops": "出す",
   "phase.dealEnd": "ディール終了",

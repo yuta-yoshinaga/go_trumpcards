@@ -23,7 +23,7 @@
   "opponentHand": "{{name}}: 手札{{n}}枚",
   "opponentHandAriaLabel": "{{name}} の手札 {{n}} 枚（裏向き）",
   "yourHand": "あなたの手札",
-  "landscapeBanner": "横向きにするとカードが見やすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "phase.choose": "契約選択",
   "phase.play": "進行中",
   "phase.dealEnd": "ディール終了",

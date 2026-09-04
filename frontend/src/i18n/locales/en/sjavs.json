@@ -24,7 +24,7 @@
   "handTie": "60-60: nobody scores, but the next game is worth two more",
   "handScore": "Team {{team}} takes {{amount}} off",
   "vol": "(all tricks)",
-  "landscapeBanner": "Turn your device sideways for a better view",
+  "landscapeBanner": "Landscape mode recommended",
   "hint.bid": "this length beats the standing bid",
   "hint.pass": "nothing you hold beats the standing bid",
   "hint.play": "this card wastes the least",

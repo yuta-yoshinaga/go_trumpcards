@@ -30,7 +30,7 @@
   "stalemate": "手詰まりです",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
-  "landscapeBanner": "横向き画面推奨",
+  "landscapeBanner": "横画面での表示を推奨します",
   "frontendHint": {
     "slyFoxTableau": "リザーブのカードを組札に置けます",
     "slyFoxDealToFoundation": "めくった札をそのまま組札へ送れます（20枚に数えません）",

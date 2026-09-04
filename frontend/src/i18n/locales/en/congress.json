@@ -19,7 +19,7 @@
   "emptyStockAriaLabel": "The stock is empty (there is no redeal)",
   "emptyWasteAriaLabel": "The waste is empty",
   "stockOrWaste": "S/W",
-  "landscapeBanner": "Landscape orientation is recommended",
+  "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto-complete",
   "autoCompleteNotReady": "Available once a card can reach a foundation",

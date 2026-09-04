@@ -36,7 +36,7 @@
   "noHint": "No hint available",
   "hintAvailable": "Hint available",
   "stalemate": "Stalemate",
-  "landscapeBanner": "Landscape recommended",
+  "landscapeBanner": "Landscape mode recommended",
   "frontendHint": {
     "sirtommyStock": "The stock card can be played to a foundation",
     "sirtommyWaste": "A waste pile top can be played to a foundation"

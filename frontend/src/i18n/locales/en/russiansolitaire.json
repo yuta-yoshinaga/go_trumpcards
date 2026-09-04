@@ -43,5 +43,5 @@
   "dismissRule": "Dismiss rule note",
   "faceDownCardLabel": "Column {{col}}, card {{pos}} from top, face down",
   "blockMoveLabel": "moves as a block of {{n}} cards",
-  "landscapeBanner": "Landscape orientation recommended"
+  "landscapeBanner": "Landscape mode recommended"
 }

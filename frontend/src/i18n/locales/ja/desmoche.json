@@ -24,7 +24,7 @@
   "yourHand": "あなたの手札",
   "roundWinner": "席{{n}} が10枚を組んでポットを取りました",
   "roundNoWinner": "誰も10枚を組めませんでした。ポット{{n}}は次のラウンドへ持ち越します",
-  "landscapeBanner": "横向きにするとカードが見やすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "phase.draw": "引く",
   "phase.act": "出す・捨てる",
   "phase.roundEnd": "ラウンド終了",

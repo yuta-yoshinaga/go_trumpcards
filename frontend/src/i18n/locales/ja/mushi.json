@@ -12,7 +12,7 @@
   "opponentCaptured": "CPU の取り札",
   "roundResult": "このラウンド: {{delta}}",
   "nextRound": "次のラウンド",
-  "landscapeBanner": "横向きにすると札が見やすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "phase.play": "進行中",
   "phase.roundEnd": "ラウンド終了",
   "phase.end": "終了",

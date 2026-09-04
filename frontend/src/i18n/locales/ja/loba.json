@@ -23,7 +23,7 @@
   "yourHand": "あなたの手札",
   "roundWinner": "席{{n}} が上がりました",
   "roundWinnerClean": "席{{n}} が一気に上がりました（-10）",
-  "landscapeBanner": "横向きにするとカードが見やすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "phase.draw": "引く",
   "phase.act": "出す・捨てる",
   "phase.roundEnd": "ラウンド終了",

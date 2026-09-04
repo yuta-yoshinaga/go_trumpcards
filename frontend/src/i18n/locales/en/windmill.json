@@ -31,7 +31,7 @@
     "draw": "Nothing can move, so turn a card from the stock"
   },
   "kingsOnly": "K only",
-  "landscapeBanner": "Landscape orientation is recommended",
+  "landscapeBanner": "Landscape mode recommended",
   "moveCount": "Moves",
   "foundationProgress": "Foundations: {{count}}/{{total}} ({{percent}}%)",
   "noHint": "No hint available",

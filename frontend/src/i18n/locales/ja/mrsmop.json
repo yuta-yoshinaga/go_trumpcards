@@ -32,7 +32,7 @@
     "difficulty": "難易度を選べます。1スート（簡単）、2スート（普通）、4スート（難しい）。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "landscapeBanner": "横画面での表示を推奨します",
   "frontendHint": {
     "completeSuit": "スート列がほぼ完成しています — 完成を目指しましょう",
     "buildSameSuit": "同スートで積み重ねられるカードがあります",

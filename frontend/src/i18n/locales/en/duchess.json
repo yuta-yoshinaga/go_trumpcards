@@ -36,7 +36,7 @@
     "fromReserve": "Empty columns stay locked to the reserve until the reserve is gone",
     "draw": "Nothing can move, so turn a card from the stock"
   },
-  "landscapeBanner": "Landscape orientation is recommended",
+  "landscapeBanner": "Landscape mode recommended",
   "moveCount": "Moves",
   "noHint": "No hint available",
   "phase": {
