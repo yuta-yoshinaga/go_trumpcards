@@ -7,6 +7,7 @@ trigger: always_on
 
 - **コミット禁止**: `git commit` を実行しない。
 - **未コミット変更の保持**: `git reset` / `git checkout --` / `git stash` / `git restore` / `git push` を実行しない。「このファイルを触るな」は「編集するな」の意味であり「元の状態に戻せ」ではない。
+- **Git 安全ガード**: 破壊的 Git コマンド (`git commit` / `reset` / `checkout --` / `stash` / `restore` / `push`) の誤実行を防ぐため、`.agents/hooks.json` の PreToolUse hook で機械的にブロックする。
 - **一時ファイルの削除**: `patch_*.sh` や `grep_output.txt` などの作業用一時ファイルは作業後に必ず削除する。
 - **実装と単体試験の同伴**: 実装を追加・変更したら、同じ変更に単体試験を必ず追加する (必須要件)。
 - **事前検証**: 書いたコードは報告前にコンパイル・実行して確かめる。Go は `go build ./...`、フロントは `bun run typecheck`。試験が通ることを主張する前に実際に走らせる。
