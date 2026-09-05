@@ -15,6 +15,11 @@ jobs:
   auto-review:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない。値は PR #7111 の実測 max 5 分 36 秒
+    # (ジョブ全体、run 33957740692) のおよそ 3 倍。伸ばす前に、まず実測が伸びたのか
+    # ハングなのかを確かめること。
+    timeout-minutes: 15
     permissions:
       contents: write
       pull-requests: write
@@ -38,6 +43,7 @@ jobs:
           # Tools the review needs to read the diff and post inline + summary.
           claude_args: |
             --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+            --disallowedTools "Task,Agent"
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
@@ -51,11 +57,34 @@ jobs:
             overall summary grouped by severity. Clearly flag anything that must be
             fixed before merge. If the change looks good, say so briefly.
 
+            CRITICAL CONSTRAINTS:
+            - This is a static, read-only review. Do NOT attempt to run build, test, linter,
+              or formatter commands (e.g. `go build`, `go test`, `golangci-lint`, `bun run check`).
+              They are not permitted in this job and PR head is untrusted. CI runs test and lint
+              in separate jobs, which you can inspect using the `mcp__github_ci__*` tools.
+            - Do NOT delegate to sub-agents (Task/Agent). This job runs in a single session;
+              delegating will cause the execution to terminate before results are received,
+              leaving the review unposted while returning success.
+            - The final grouped review summary comment is the required deliverable of this job.
+              Do NOT finish with unchecked checklist items remaining. If you must cut short,
+              post a summary of findings gathered so far before completing.
+
+      - name: Verify review was posted
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bash .github/scripts/assert-review-posted.sh "${{ github.event.pull_request.number }}" "${{ github.repository }}"
+
   # Interactive response when someone mentions @claude on a PR or issue comment.
   # No prompt here: the action reads the comment as its instruction.
   mention-review:
     if: github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')
     runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない。値は auto-review と同等に実測 max
+    # (約 5.6 分) のおよそ 3 倍を設定。
+    timeout-minutes: 15
     permissions:
       contents: write
       pull-requests: write
