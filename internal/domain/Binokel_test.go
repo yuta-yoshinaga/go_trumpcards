@@ -955,6 +955,16 @@ func TestBinokel_AllPassForcedBid(t *testing.T) {
 				t.Errorf("forced bidder hand size expected 18, got %d", game.GetPlayer(winner).GetCardsSize())
 			}
 
+			// Forced bidder must have hasPassed reset to false, while other players remain passed
+			if game.GetPlayer(winner).GetHasPassed() {
+				t.Errorf("forced bidder %d hasPassed expected false, got true", winner)
+			}
+			for i := 0; i < BinokelPlayerCnt; i++ {
+				if i != winner && !game.GetPlayer(i).GetHasPassed() {
+					t.Errorf("non-forced bidder %d hasPassed expected true, got false", i)
+				}
+			}
+
 			// Verify action log contains "forced_bid" for the forced bidder
 			foundForcedBidLog := false
 			for _, entry := range game.GetActionLog() {

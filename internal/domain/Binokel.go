@@ -758,6 +758,8 @@ func (p *Binokel) advanceBidder() {
 		}
 		p.highestBid = BinokelMinBid
 		p.players[forcedBidder].SetBid(BinokelMinBid)
+		// 強制落札者はパスではなく落札者として扱うため、直前のパスフラグを解除する
+		p.players[forcedBidder].SetHasPassed(false)
 		p.addLog(forcedBidder, "forced_bid", fmt.Sprintf("全員パスのため最後の発言者が強制落札: %d点", BinokelMinBid), nil)
 		p.finishBidding(forcedBidder)
 		return
