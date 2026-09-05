@@ -16,6 +16,8 @@ from __future__ import annotations
 import collections, importlib.util, re, signal, sys
 from pathlib import Path
 
+BUILD_RE = re.compile(r"^//go:build .*$", re.M)
+
 # The documented usage pipes this into `head`, and the report is 200+ lines, so the
 # reader closes the pipe every time. Without this, Python prints a BrokenPipeError
 # traceback to stderr after a perfectly successful run.
@@ -76,9 +78,13 @@ def main() -> None:
             if match:
                 type_all_files[match].append(p)
                 
-            first = s.split("\n", 1)[0]
-            if not first.startswith("//go:build"): continue
-            tags = set(re.findall(r"\b(casino|classic|solo|extra[2345]?)\b", first))
+            # Search for the constraint rather than reading line 1: today all 4,161
+            # tagged files put it first, but a file with a licence header above it
+            # would read as untagged, and "untagged" is the direction that produces
+            # a false CLEAN -- the expensive kind of wrong answer here.
+            m = BUILD_RE.search(s)
+            if not m: continue
+            tags = set(re.findall(r"\b(casino|classic|solo|extra[2345]?)\b", m.group(0)))
             if not tags: continue
                 
             file_buckets[p] = tags
