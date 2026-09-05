@@ -186,6 +186,7 @@ import type {
   ManilleResponse,
   MaoResponse,
   MariasResponse,
+  MarjapussiResponse,
   MemoryResponse,
   MendikotResponse,
   MichiganResponse,
@@ -547,6 +548,7 @@ import { getMadrassoHint } from '../utils/hints/madrassoHint';
 import { getManilleHint } from '../utils/hints/manilleHint';
 import { getMaoHint } from '../utils/hints/maoHint';
 import { getMariasHint } from '../utils/hints/mariasHint';
+import { getMarjapussiHint } from '../utils/hints/marjapussiHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getMendikotHint } from '../utils/hints/mendikotHint';
 import { getMichiganHint } from '../utils/hints/michiganHint';
@@ -909,6 +911,7 @@ export const hintFactories = {
   citadel: (s) => getCitadelHint(s as CitadelResponse),
   batak: (s) => getBatakHint(s as BatakResponse),
   binokel: (s) => getBinokelHint(s as BinokelResponse),
+  marjapussi: (s) => getMarjapussiHint(s as MarjapussiResponse),
   diloti: (s) => getDilotiHint(s as DilotiResponse),
   comet: (s) => getCometHint(s as CometResponse),
   costlycolours: (s) => getCostlyColoursHint(s as CostlyColoursResponse),

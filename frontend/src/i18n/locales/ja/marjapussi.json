@@ -1,0 +1,85 @@
+{
+  "title": "マルヤプッシ",
+  "phase": {
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetPoints": "目標ポイント",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "trump": "切り札: {{suit}}",
+  "trumpNone": "未決定",
+  "target": "目標: {{points}}点",
+  "team": "チーム {{id}}",
+  "teamUs": "味方チーム（あなた & CPU 2）",
+  "teamThem": "相手チーム（CPU 1 & CPU 3）",
+  "team0": "チーム 0（あなた & CPU 2）",
+  "team1": "チーム 1（CPU 1 & CPU 3）",
+  "teamScore": "チーム得点: {{score}}",
+  "progressLabel": "進捗: {{score}} / {{target}}",
+  "marriageAvailable": "マリッジ可能: {{list}}（同スートのK・Qを両方持ち、リードで出すと成立）",
+  "lastMarriage": "直近のマリッジ宣言: {{player}} が {{suit}} を宣言（+{{points}}点）",
+  "noMarriage": "直近のマリッジ宣言: なし",
+  "pussi": "ベリー袋: {{count}}枚（伏せ札）",
+  "pussiResult": "ベリー袋（+{{points}}点）: チーム {{team}} が獲得",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "usBadge": "味方",
+  "themBadge": "相手",
+  "score": "得点: {{score}}",
+  "playerScore": "{{name}}: {{score}}点",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "playPhase": {
+    "lead": "あなたの番です — リードするカードを選んでください。",
+    "follow": "あなたの番です — リードスートに従って（フォローできなければ切り札を出して）カードを選んでください。"
+  },
+  "trickEnd": "トリック終了 — 次へ進んでください。",
+  "roundEnd": "ラウンド終了 — 次のラウンドへ進んでください。",
+  "result": {
+    "humanWin": "ゲーム終了！ あなたのチームの勝ち！",
+    "cpuWin": "ゲーム終了！ チーム {{team}} の勝ち！"
+  },
+  "roundResult": {
+    "title": "ラウンド結果",
+    "cardPoints": "チーム {{team}} カード点: {{points}}",
+    "marriage": "チーム {{team}} マリッジ点: {{points}}",
+    "pussi": "チーム {{team}} ベリー袋: {{points}}点"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "lead_low": "低い札でリードして温存することを推奨",
+    "lead_marriage": "マリッジを宣言 — キングかクイーンでリード",
+    "follow_win": "得点があるので勝てる札で取りに行く",
+    "follow_duck": "取れない／取る価値がないのでダック推奨",
+    "discard_low": "フォローできないので低い札を捨てる",
+    "leadLow": "低い札でリードして温存することを推奨",
+    "leadMarriage": "マリッジを宣言 — キングかクイーンでリード",
+    "followWin": "得点があるので勝てる札で取りに行く",
+    "followDuck": "取れない／取る価値がないのでダック推奨",
+    "discardLow": "フォローできないので低い札を捨てる"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。4人による2対2のチーム戦（席0+2 vs 1+3）です。リードスートにマストフォロー、なければ切り札を強制。点数は A=11, 10=10, K=4, Q=3, J=2（合計120点）。",
+    "playerHand": "あなたの手札です。同スートのKとQを持ちリードするとマリッジとなり、そのスートが即座に切り札になります（同スートなら40点、別スートなら20点）。",
+    "playButton": "カードを選んで出します。マリッジのKまたはQをリードすると切り札が宣言されます。",
+    "info": "マルヤプッシはフィンランドの4人・2対2チーム戦です。36枚デッキ（6-A）から各自8枚、伏せ札ベリー袋（pussi）4枚。第8トリック勝者チームがベリー袋を獲得します。累積500点先取で勝利。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
+}

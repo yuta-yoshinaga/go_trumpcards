@@ -402,6 +402,7 @@ export const workerUrl: Record<string, string> = {
   citadel: WORKER_SOLO,
   batak: WORKER_EXTRA5,
   binokel: WORKER_EXTRA5,
+  marjapussi: WORKER_EXTRA5,
 };
 
 export async function postJson<T>(url: string, body: unknown): Promise<T> {

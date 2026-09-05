@@ -7245,6 +7245,26 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"binokel.helpSetDifficulty", "binokel.helpSetLimit"},
 		}),
+	BindCuiFor("marjapussi",
+		func() usecase.MarjapussiInteractorIF {
+			return usecase.NewMarjapussiInteractor(domain.NewDefaultMarjapussi(), new(presenter.MarjapussiCuiPresenter))
+		},
+		controller.NewMarjapussiCuiController,
+		CuiHelpSpec{
+			TitleKey: "marjapussi.helpTitle",
+			ExampleKeys: []string{
+				"marjapussi.helpExamplePlay",
+				"marjapussi.helpExampleNext",
+			},
+			CommandKeys: []string{
+				"marjapussi.helpPlay",
+				"marjapussi.helpNext",
+				"marjapussi.helpNextRound",
+				"marjapussi.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"marjapussi.helpSetDifficulty"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

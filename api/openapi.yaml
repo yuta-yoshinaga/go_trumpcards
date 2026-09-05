@@ -760,6 +760,8 @@ tags:
     description: Batak (バタック) game - Turkish trick-taking auction game with spade trumps and asymmetric scoring
   - name: binokel
     description: Binokel (ビノクル) game - 3-player trick-taking and melding game with 48 cards and Dabb
+  - name: marjapussi
+    description: Marjapussi (マルツプッシ) game - Finnish 4-player partnership trick-taking game with 36 cards, marriages and berry bag (pussi)
 
 paths:
   /blackjack/exec:
@@ -33738,6 +33740,92 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BinokelResponse'
+  /marjapussi/exec:
+    post:
+      tags:
+        - marjapussi
+      summary: Execute a Marjapussi (マルヤプッシ) game command
+      description: |
+        Send a command to advance the Marjapussi game session identified by
+        `sessionId`. Marjapussi is a 4-player 2-vs-2 partnership trick-taking
+        game from Finland played with a 36-card deck (6-A in 4 suits).
+        Each player receives 8 cards, and 4 cards form the berry bag (pussi).
+        Play starts immediately without bidding. Holding both K and Q of a
+        suit on lead allows declaring a marriage to set trump and score 20 or
+        40 points. Must follow suit; if void, must trump. The team taking
+        the 8th trick wins the pussi cards. The first team to 500 points wins.
+
+        Phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Play      | `0`   | Trick-taking play phase |
+        | TrickEnd  | `1`   | Trick ended; call `next` / `n` |
+        | RoundEnd  | `2`   | Round ended; call `nextround` / `nr` |
+        | GameEnd   | `3`   | Target points reached; winner determined |
+
+        Commands:
+
+        | Command            | Aliases | Description |
+        |--------------------|---------|-------------|
+        | `reset` / `r`      |         | Restart with optional config |
+        | `play` / `p`       |         | Play card at `cardIndex` |
+        | `next` / `n`       |         | Advance to next trick |
+        | `nextround` / `nr` |         | Advance to next round |
+        | `setdifficulty` / `sd` |     | CPU difficulty (0=Easy, 1=Normal, 2=Hard) |
+        | `hint` / `h`       |         | Suggested move |
+        | `log` / `l`        |         | View action log |
+      operationId: marjapussiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, next, n, nextround, nr, setdifficulty, sd, hint, h, log, l]
+                cardIndex:
+                  type: integer
+                  description: Card index for `play`/`p`
+                config:
+                  $ref: '#/components/schemas/MarjapussiConfig'
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play a card
+                value:
+                  command: p
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/MarjapussiResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+                description: |
+                  The shape depends on the command. Ordinary commands return the game
+                  state; `log` returns the action log instead.
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarjapussiResponse'
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -80252,6 +80340,135 @@ components:
             $ref: '#/components/schemas/BinokelMeldTableEntry'
         config:
           $ref: '#/components/schemas/BinokelConfig'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    MarjapussiConfig:
+      type: object
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: "0 = Easy, 1 = Normal, 2 = Hard"
+          enum: [0, 1, 2]
+          default: 1
+        targetPoints:
+          type: integer
+          description: Target score to end the game (default 500)
+          default: 500
+
+    MarjapussiPlayer:
+      type: object
+      properties:
+        id:
+          type: integer
+        teamId:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        trickCount:
+          type: integer
+        score:
+          type: integer
+
+    MarjapussiHint:
+      type: object
+      properties:
+        cardIndices:
+          type: array
+          items:
+            type: integer
+        reason:
+          type: string
+
+    MarjapussiResponse:
+      type: object
+      description: |
+        Current state of the Marjapussi game.
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarjapussiPlayer'
+        phase:
+          type: integer
+          description: "0 = Play, 1 = TrickEnd, 2 = RoundEnd, 3 = GameEnd"
+          enum: [0, 1, 2, 3]
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: "0 = None, 1 = Spade, 2 = Clover, 3 = Heart, 4 = Diamond"
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        teamScores:
+          type: array
+          items:
+            type: integer
+        playerScores:
+          type: array
+          items:
+            type: integer
+        roundCardPoints:
+          type: array
+          items:
+            type: integer
+        roundMarriage:
+          type: array
+          items:
+            type: integer
+        pussiCount:
+          type: integer
+        pussi:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        pussiWinnerTeam:
+          type: integer
+        lastTrickWinner:
+          type: integer
+        playableIndices:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+        winnerTeam:
+          type: integer
+        isHumanTurn:
+          type: boolean
+        hint:
+          $ref: '#/components/schemas/MarjapussiHint'
+        config:
+          $ref: '#/components/schemas/MarjapussiConfig'
         message:
           type: string
         messageCode:

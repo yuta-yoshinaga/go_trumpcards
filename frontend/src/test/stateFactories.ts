@@ -45,6 +45,7 @@ import type {
   MadrassoResponse,
   ManilleResponse,
   MariasResponse,
+  MarjapussiResponse,
   MichiganResponse,
   MinchiateResponse,
   MusResponse,
@@ -1377,6 +1378,67 @@ const baseTysiacState: TysiacResponse = {
  */
 export function makeTysiacState(overrides?: Partial<TysiacResponse>): TysiacResponse {
   return { ...baseTysiacState, ...overrides };
+}
+
+/** Base Marjapussi state used as the default for {@link makeMarjapussiState}. Defaults to a human Play turn. */
+const baseMarjapussiState: MarjapussiResponse = {
+  players: [
+    {
+      id: 0,
+      teamId: 0,
+      isHuman: true,
+      cardCount: 8,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+        { design: 'SPADE' as const, value: 10 },
+        { design: 'CLOVER' as const, value: 11 },
+        { design: 'CLOVER' as const, value: 9 },
+        { design: 'DIAMOND' as const, value: 8 },
+        { design: 'DIAMOND' as const, value: 7 },
+      ],
+      trickCount: 0,
+      score: 0,
+    },
+    { id: 1, teamId: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, score: 0 },
+    { id: 2, teamId: 0, isHuman: false, cardCount: 8, cards: [], trickCount: 0, score: 0 },
+    { id: 3, teamId: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, score: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 0,
+  trumpSuit: 0,
+  currentTrick: [],
+  teamScores: [0, 0],
+  playerScores: [0, 0, 0, 0],
+  roundCardPoints: [0, 0],
+  roundMarriage: [0, 0],
+  pussiCount: 4,
+  pussiWinnerTeam: -1,
+  lastTrickWinner: -1,
+  playableIndices: [0, 1, 2, 3, 4, 5, 6, 7],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 500 },
+};
+
+/**
+ * Creates a {@link MarjapussiResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial MarjapussiResponse fields to override.
+ * @returns A complete MarjapussiResponse suitable for use in tests.
+ */
+export function makeMarjapussiState(overrides?: Partial<MarjapussiResponse>): MarjapussiResponse {
+  return { ...baseMarjapussiState, ...overrides };
 }
 
 /** Base Calabresella state used as the default for {@link makeCalabresellaState}. Defaults to a human Play turn. */

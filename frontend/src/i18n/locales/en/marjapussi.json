@@ -1,0 +1,85 @@
+{
+  "title": "Marjapussi",
+  "phase": {
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetPoints": "Target Points",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "trump": "Trump: {{suit}}",
+  "trumpNone": "None",
+  "target": "Target: {{points}} pts",
+  "team": "Team {{id}}",
+  "teamUs": "Your Team (You & CPU 2)",
+  "teamThem": "Opposing Team (CPU 1 & CPU 3)",
+  "team0": "Team 0 (You & CPU 2)",
+  "team1": "Team 1 (CPU 1 & CPU 3)",
+  "teamScore": "Team Score: {{score}}",
+  "progressLabel": "Progress: {{score}} / {{target}}",
+  "marriageAvailable": "Marriage available: {{list}} (lead K or Q with partner in hand to declare)",
+  "lastMarriage": "Latest marriage: {{player}} declared {{suit}} (+{{points}} pts)",
+  "noMarriage": "Latest marriage: None",
+  "pussi": "Pussi (Berry Bag): {{count}} cards (hidden)",
+  "pussiResult": "Pussi (+{{points}} pts) won by: Team {{team}}",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "usBadge": "Us",
+  "themBadge": "Them",
+  "score": "Score: {{score}}",
+  "playerScore": "{{name}}: {{score}} pts",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "playPhase": {
+    "lead": "Your turn — pick a card to lead.",
+    "follow": "Your turn — follow the led suit (trump when void)."
+  },
+  "trickEnd": "Trick complete — continue.",
+  "roundEnd": "Round complete — go to the next round.",
+  "result": {
+    "humanWin": "Game over! Your team wins!",
+    "cpuWin": "Game over! Team {{team}} wins."
+  },
+  "roundResult": {
+    "title": "Round Result",
+    "cardPoints": "Team {{team}} card points: {{points}}",
+    "marriage": "Team {{team}} marriage points: {{points}}",
+    "pussi": "Team {{team}} Pussi: {{points}} pts"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_low": "Lead a low card to conserve points",
+    "lead_marriage": "Declare a marriage — lead the King or Queen",
+    "follow_win": "Points on the table — win the trick",
+    "follow_duck": "Cannot/should not win — duck",
+    "discard_low": "Cannot follow suit — discard a low card",
+    "leadLow": "Lead a low card to conserve points",
+    "leadMarriage": "Declare a marriage — lead the King or Queen",
+    "followWin": "Points on the table — win the trick",
+    "followDuck": "Cannot/should not win — duck",
+    "discardLow": "Cannot follow suit — discard a low card"
+  },
+  "tutorial": {
+    "trickDisplay": "Current trick. 4 players in 2-vs-2 partnership (seats 0+2 vs 1+3). Must follow suit; must trump when void. Points: A=11, 10=10, K=4, Q=3, J=2 (120 total).",
+    "playerHand": "Your hand. Holding both K and Q of the same suit and leading one declares a marriage and sets trump (40 pts if current trump, 20 pts otherwise).",
+    "playButton": "Select a card and play it. Leading a King or Queen of a marriage declares trump.",
+    "info": "Marjapussi is a Finnish 4-player 2-vs-2 partnership game. 36-card deck (6-A), 8 cards each, 4 hidden pussi (berry bag) cards. The winner of trick 8 captures the pussi. First team to 500 wins.",
+    "resetButton": "Use the reset button to start a new game."
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
+}
