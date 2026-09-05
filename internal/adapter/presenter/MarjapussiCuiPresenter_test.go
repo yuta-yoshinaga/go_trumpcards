@@ -241,7 +241,7 @@ func TestMarjapussiCuiPresenter_HighlightsThePlayerNearTheTarget(t *testing.T) {
 	assert.NotEqual(t, "x", color.Yellow("x"), "colour must be enabled for this test to measure anything")
 
 	p := new(presenter.MarjapussiCuiPresenter)
-	target := domain.DefaultMarjapussiConfig().TargetPoints
+	target := domain.DefaultMarjapussiConfig().PointLimit
 
 	withScores := func(scores [domain.MarjapussiTeamCnt]int) string {
 		m, _ := setupMarjapussiCuiMockWithPlayers()

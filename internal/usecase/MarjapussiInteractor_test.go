@@ -53,7 +53,7 @@ func TestMarjapussiInteractor_ResetWithConfig(t *testing.T) {
 	gameMock := new(interfaces.MockMarjapussiGame)
 	cfg := domain.MarjapussiConfig{
 		CpuDifficulty: domain.MarjapussiCpuDifficultyHard,
-		TargetPoints:  500,
+		PointLimit:    500,
 	}
 	gameMock.On("SetConfig", cfg).Return()
 	gameMock.On("Reset").Return()
@@ -74,7 +74,7 @@ func TestMarjapussiInteractor_ResetWithConfigInvalid(t *testing.T) {
 	ti := usecase.NewMarjapussiInteractor(gameMock, tpMock)
 	bad := domain.MarjapussiConfig{
 		CpuDifficulty: domain.MarjapussiCpuDifficultyNormal,
-		TargetPoints:  0,
+		PointLimit:    0,
 	}
 	assert.Equal(t, marjapussiMockOutput, ti.ResetWithConfig(bad))
 	gameMock.AssertNotCalled(t, "Reset")

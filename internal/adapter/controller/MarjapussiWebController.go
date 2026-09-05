@@ -75,7 +75,7 @@ type MarjapussiWebOutputConfig struct {
 func (c *MarjapussiWebConfig) ToConfig() domain.MarjapussiConfig {
 	cfg := domain.DefaultMarjapussiConfig()
 	cfg.CpuDifficulty = domain.MarjapussiCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.MarjapussiCpuDifficultyEasy), int(domain.MarjapussiCpuDifficultyHard), int(cfg.CpuDifficulty)))
-	webutil.ApplyBoundedInt(&cfg.TargetPoints, c.TargetPoints, 1, 1000000)
+	webutil.ApplyBoundedInt(&cfg.PointLimit, c.TargetPoints, 1, 1000000)
 	return cfg
 }
 

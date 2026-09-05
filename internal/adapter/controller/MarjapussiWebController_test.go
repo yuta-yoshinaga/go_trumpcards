@@ -106,10 +106,10 @@ func TestMarjapussiWebController_ResetWithConfig(t *testing.T) {
 
 	t.Run("custom config passed through", func(t *testing.T) {
 		diff := 2
-		pts := 500
+		pts := 300
 		expected := domain.DefaultMarjapussiConfig()
 		expected.CpuDifficulty = domain.MarjapussiCpuDifficultyHard
-		expected.TargetPoints = 500
+		expected.PointLimit = 300
 		diMock := new(usecase.MockMarjapussiInteractor)
 		diMock.On("ResetWithConfig", expected).Return(mockOutput)
 		ctrl := controller.NewMarjapussiWebController(func() uc.MarjapussiInteractorIF { return diMock })

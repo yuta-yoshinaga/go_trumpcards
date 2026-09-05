@@ -4,7 +4,7 @@ package domain
 
 import "encoding/json"
 
-// MarjapussiPlayer サウザンド (Tysiąc) のプレイヤークラス。手札 (GamePlayer) と獲得トリック
+// MarjapussiPlayer マルヤプッシ (Marjapussi) のプレイヤークラス。手札 (GamePlayer) と獲得トリック
 // (TrickHolder) を保持する。点はゲーム本体が管理する。
 type MarjapussiPlayer struct {
 	*GamePlayer

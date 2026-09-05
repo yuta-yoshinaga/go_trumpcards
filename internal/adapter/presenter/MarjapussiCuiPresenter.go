@@ -50,7 +50,7 @@ func marjapussiPlayerStr(g interfaces.MarjapussiGame, idx int) string {
 		"score", strconv.Itoa(scores[team]),
 		"tricks", strconv.Itoa(player.GetTrickCount()),
 	)
-	if marjapussiNearWin(scores[team], g.GetConfig().TargetPoints) {
+	if marjapussiNearWin(scores[team], g.GetConfig().PointLimit) {
 		line = color.Yellow(line)
 	}
 	b.WriteString(line)
@@ -78,7 +78,7 @@ func (p *MarjapussiCuiPresenter) Output(g interfaces.MarjapussiGame, lastErr err
 
 		scores := g.GetTeamScores()
 		b.WriteString(i18n.Tf("marjapussi.headerInfo",
-			"target", strconv.Itoa(g.GetConfig().TargetPoints),
+			"target", strconv.Itoa(g.GetConfig().PointLimit),
 			"score0", strconv.Itoa(scores[0]),
 			"score1", strconv.Itoa(scores[1])) + "\n")
 

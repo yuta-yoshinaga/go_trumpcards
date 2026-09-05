@@ -42,7 +42,7 @@ export interface MarjapussiHint {
  * Marjapussi is a Finnish 4-player 2-vs-2 partnership trick-taker played with a 36-card deck (6-A).
  * Seats 0 and 2 form Team 0; seats 1 and 3 form Team 1.
  * There is no card exchange.
- * Leading a King or Queen with the matching partner card in hand declares a marriage and sets the trump suit.
+ * Leading a King or Queen while holding both in hand declares a marriage and sets the trump suit.
  * The winner of the 8th (final) trick captures the 4-card "pussi" (berry bag).
  */
 export interface MarjapussiResponse extends BaseGameResponse {

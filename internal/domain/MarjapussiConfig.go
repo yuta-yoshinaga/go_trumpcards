@@ -24,8 +24,6 @@ type MarjapussiConfig struct {
 	CpuDifficulty MarjapussiCpuDifficulty `json:"cd"`
 	// PointLimit マッチ勝利に必要な累積点 (デフォルト 500)。
 	PointLimit int `json:"pl"`
-	// TargetPoints マッチ勝利に必要な累積点 (PointLimit と同期)。
-	TargetPoints int `json:"tp"`
 }
 
 // DefaultMarjapussiConfig デフォルト設定を返す (標準は 500 点先取)。
@@ -33,7 +31,6 @@ func DefaultMarjapussiConfig() MarjapussiConfig {
 	return MarjapussiConfig{
 		CpuDifficulty: MarjapussiCpuDifficultyNormal,
 		PointLimit:    MarjapussiDefaultPointLimit,
-		TargetPoints:  MarjapussiDefaultPointLimit,
 	}
 }
 
@@ -42,18 +39,8 @@ func (c MarjapussiConfig) Validate() error {
 	if err := ValidateRange("CPU difficulty", int(c.CpuDifficulty), int(MarjapussiCpuDifficultyEasy), int(MarjapussiCpuDifficultyHard)); err != nil {
 		return err
 	}
-	if c.PointLimit > 0 {
-		if err := ValidateMin("point limit", c.PointLimit, 1); err != nil {
-			return err
-		}
-	}
-	if c.TargetPoints > 0 {
-		if err := ValidateMin("target points", c.TargetPoints, 1); err != nil {
-			return err
-		}
-	}
-	if c.PointLimit <= 0 && c.TargetPoints <= 0 {
-		return ValidateMin("point limit", c.PointLimit, 1)
+	if err := ValidateMin("point limit", c.PointLimit, 1); err != nil {
+		return err
 	}
 	return nil
 }
@@ -61,9 +48,6 @@ func (c MarjapussiConfig) Validate() error {
 func (c MarjapussiConfig) pointLimit() int {
 	if c.PointLimit > 0 {
 		return c.PointLimit
-	}
-	if c.TargetPoints > 0 {
-		return c.TargetPoints
 	}
 	return MarjapussiDefaultPointLimit
 }

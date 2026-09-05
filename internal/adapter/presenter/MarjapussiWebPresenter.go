@@ -71,7 +71,7 @@ func (p *MarjapussiWebPresenter) buildBase(g interfaces.MarjapussiGame) *control
 	cfg := g.GetConfig()
 	resObj.Config = controller.MarjapussiWebOutputConfig{
 		CpuDifficulty: int(cfg.CpuDifficulty),
-		TargetPoints:  cfg.TargetPoints,
+		TargetPoints:  cfg.PointLimit,
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())

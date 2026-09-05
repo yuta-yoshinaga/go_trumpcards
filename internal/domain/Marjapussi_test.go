@@ -696,13 +696,67 @@ func TestMarjapussiPlayer_JSON_And_ResetRound(t *testing.T) {
 func TestMarjapussiConfig_Validate(t *testing.T) {
 	assert.NoError(t, domain.DefaultMarjapussiConfig().Validate())
 	assert.Equal(t, domain.MarjapussiWinTarget, domain.DefaultMarjapussiConfig().PointLimit)
-	assert.Equal(t, domain.MarjapussiWinTarget, domain.DefaultMarjapussiConfig().TargetPoints)
 	assert.Equal(t, domain.MarjapussiCpuDifficultyNormal, domain.DefaultMarjapussiConfig().CpuDifficulty)
 
 	// Bad CPU difficulty.
 	assert.Error(t, domain.MarjapussiConfig{CpuDifficulty: 99, PointLimit: 500}.Validate())
 	// Non-positive point limit.
-	assert.Error(t, domain.MarjapussiConfig{CpuDifficulty: domain.MarjapussiCpuDifficultyEasy, PointLimit: 0, TargetPoints: 0}.Validate())
+	assert.Error(t, domain.MarjapussiConfig{CpuDifficulty: domain.MarjapussiCpuDifficultyEasy, PointLimit: 0}.Validate())
+}
+
+func TestMarjapussiConfig_UnmarshalLegacyTP(t *testing.T) {
+	// Verify that legacy JSON containing "tp" unmarshals cleanly without error and ignores "tp".
+	raw := `{"cd":1,"pl":300,"tp":500}`
+	var cfg domain.MarjapussiConfig
+	err := json.Unmarshal([]byte(raw), &cfg)
+	assert.NoError(t, err)
+	assert.Equal(t, domain.MarjapussiCpuDifficultyNormal, cfg.CpuDifficulty)
+	assert.Equal(t, 300, cfg.PointLimit)
+}
+
+func TestMarjapussi_CustomPointLimit_GameEnd(t *testing.T) {
+	g := newTestMarjapussi()
+	cfg := domain.DefaultMarjapussiConfig()
+	cfg.PointLimit = 200
+	g.SetConfig(cfg)
+
+	// Step 1: Score below limit (190 < 200) -> game does not end
+	g.SetPhase(domain.MarjapussiPhaseRoundEnd)
+	g.SetRoundCardPoints([domain.MarjapussiTeamCnt]int{50, 50})
+	g.SetRoundMarriage([domain.MarjapussiTeamCnt]int{40, 20})
+	g.SetTeamScores([domain.MarjapussiTeamCnt]int{100, 50})
+	g.ScoreRound()
+	assert.Equal(t, 190, g.GetTeamScores()[0])
+	assert.False(t, g.GetGameEndFlag())
+	assert.Equal(t, domain.MarjapussiPhaseRoundEnd, g.GetPhase())
+
+	// Step 2: Score reaches limit (190 + 30 = 220 >= 200) -> game ends (< 500 default)
+	g.SetRoundCardPoints([domain.MarjapussiTeamCnt]int{30, 10})
+	g.SetRoundMarriage([domain.MarjapussiTeamCnt]int{0, 0})
+	g.ScoreRound()
+	assert.Equal(t, 220, g.GetTeamScores()[0])
+	assert.True(t, g.GetGameEndFlag())
+	assert.Equal(t, 0, g.GetWinnerTeam())
+	assert.Equal(t, domain.MarjapussiPhaseGameEnd, g.GetPhase())
+}
+
+func TestMarjapussi_PointLimit_DefaultFallback(t *testing.T) {
+	g := newTestMarjapussi()
+	g.SetConfig(domain.MarjapussiConfig{PointLimit: 0})
+	g.SetPhase(domain.MarjapussiPhaseRoundEnd)
+	g.SetRoundCardPoints([domain.MarjapussiTeamCnt]int{70, 50})
+	g.SetRoundMarriage([domain.MarjapussiTeamCnt]int{40, 20})
+	g.SetTeamScores([domain.MarjapussiTeamCnt]int{350, 300})
+
+	// Score is 350 + 110 = 460 < 500 (fallback default limit) -> game does not end
+	g.ScoreRound()
+	assert.False(t, g.GetGameEndFlag())
+
+	// Score reaches 460 + 50 = 510 >= 500 -> game ends
+	g.SetRoundCardPoints([domain.MarjapussiTeamCnt]int{50, 0})
+	g.SetRoundMarriage([domain.MarjapussiTeamCnt]int{0, 0})
+	g.ScoreRound()
+	assert.True(t, g.GetGameEndFlag())
 }
 
 func TestMarjapussi_Statistical_2000Rounds(t *testing.T) {

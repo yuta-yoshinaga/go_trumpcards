@@ -26,7 +26,7 @@
   "team1": "Team 1 (CPU 1 & CPU 3)",
   "teamScore": "Team Score: {{score}}",
   "progressLabel": "Progress: {{score}} / {{target}}",
-  "marriageAvailable": "Marriage available: {{list}} (lead K or Q with partner in hand to declare)",
+  "marriageAvailable": "Marriage available: {{list}} (lead K or Q while holding both to declare)",
   "lastMarriage": "Latest marriage: {{player}} declared {{suit}} (+{{points}} pts)",
   "noMarriage": "Latest marriage: None",
   "pussi": "Pussi (Berry Bag): {{count}} cards (hidden)",
