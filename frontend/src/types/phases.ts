@@ -2685,6 +2685,13 @@ export const BeleagueredCastlePhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Citadel phase constants (sync: internal/domain/Citadel.go). */
+export const CitadelPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Bisley phase constants (sync: internal/domain/Bisley.go). */
 export const BisleyPhase = {
   PLAYING: 0,

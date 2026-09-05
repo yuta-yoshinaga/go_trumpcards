@@ -66,6 +66,7 @@ import type {
   CinchResponse,
   CincinnatiResponse,
   CirullaResponse,
+  CitadelResponse,
   ClockSolitaireResponse,
   CoincheResponse,
   ColoradoResponse,
@@ -420,6 +421,7 @@ import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getCincinnatiHint } from '../utils/hints/cincinnatiHint';
 import { getCirullaHint } from '../utils/hints/cirullaHint';
+import { getCitadelHint } from '../utils/hints/citadelHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCoincheHint } from '../utils/hints/coincheHint';
 import { getColoradoHint } from '../utils/hints/coloradoHint';
@@ -900,6 +902,7 @@ export const hintFactories = {
   dehlapakad: (s) => getDehlaPakadHint(s as DehlaPakadResponse),
   sutda: (s) => getSutdaHint(s as SutdaResponse),
   cirulla: (s) => getCirullaHint(s as CirullaResponse),
+  citadel: (s) => getCitadelHint(s as CitadelResponse),
   diloti: (s) => getDilotiHint(s as DilotiResponse),
   comet: (s) => getCometHint(s as CometResponse),
   costlycolours: (s) => getCostlyColoursHint(s as CostlyColoursResponse),

@@ -78,6 +78,7 @@ export * from './games/chineseten';
 export * from './games/cinch';
 export * from './games/cincinnati';
 export * from './games/cirulla';
+export * from './games/citadel';
 export * from './games/clocksolitaire';
 export * from './games/coinche';
 export * from './games/colorado';
@@ -748,6 +749,7 @@ export const games = [
   'speculation',
   'zheng',
   'bauernschnapsen',
+  'citadel',
 ] as const;
 
 /** Union of every registered game name — the keys of the `games` list. */

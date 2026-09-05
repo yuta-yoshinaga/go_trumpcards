@@ -7185,6 +7185,26 @@ var gameRegistry = []GameRegistryEntry{
 				"omaha.helpBettingLimit", "omaha.helpTournament",
 			}, holdemBlindKeys...),
 		}),
+	BindCuiFor("citadel",
+		func() usecase.CitadelInteractorIF {
+			return usecase.NewCitadelInteractor(domain.NewDefaultCitadel(), new(presenter.CitadelCuiPresenter))
+		},
+		controller.NewCitadelCuiController,
+		CuiHelpSpec{
+			TitleKey: "citadel.helpTitle",
+			ExampleKeys: []string{
+				"citadel.helpExampleHint",
+				"citadel.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"citadel.helpMoveTT",
+				"citadel.helpMoveTF",
+				"citadel.helpGiveUp",
+				"citadel.helpHint",
+				"citadel.helpAutoComplete", "citadel.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

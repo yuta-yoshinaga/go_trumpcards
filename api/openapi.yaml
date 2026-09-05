@@ -754,6 +754,8 @@ tags:
     description: Tarocchini (タロッキーニ) game
   - name: vira
     description: Vira (ヴィーラ) game
+  - name: citadel
+    description: Citadel (シタデル) game - Beleaguered Castle variant with 8 tableau columns where eligible cards auto-build to foundations during the initial deal and empty columns accept any card
 
 paths:
   /blackjack/exec:
@@ -12851,6 +12853,100 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BeleagueredCastleResponse'
+  /citadel/exec:
+    post:
+      tags:
+        - citadel
+      summary: Execute a Citadel game command
+      description: |
+        Send a command to advance the Citadel (シタデル) game
+        session identified by `sessionId`. Citadel is a
+        single-player open-information solitaire and a variant of Beleaguered
+        Castle using a single 52-card deck. The 4 aces are pre-seeded onto the
+        foundations at deal time. Remaining cards are dealt one by one: cards
+        that can build onto foundations (by suit Ace→King) are immediately placed
+        there, and only unplaceable cards are dealt across 8 tableau columns
+        (columns vary in length up to 6 cards, and foundations may start beyond
+        Aces, or the game may even clear directly on deal).
+        Foundations build up by suit Ace→King. Tableau builds rank-only descending
+        (suit doesn't matter); only single-card moves are allowed. Empty columns
+        accept any card. No stock or waste pile.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All foundations complete |
+        | GameOver  | `2`   | Player gave up |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `move`         | `m`     | Move a card between tableau/foundation |
+        | `undo`         | `u`     | Undo the last action |
+        | `giveup`       | `g`     | Give up the current game |
+        | `hint`         | `h`     | Show a hint for the next move |
+        | `autocomplete` | `ac`    | Auto-move cards to foundations |
+        | `log`          | `l`     | View action log |
+      operationId: citadelExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, undo, u, undo_n, giveup, g, hint, h, autocomplete, ac, log, l]
+                from:
+                  $ref: '#/components/schemas/BeleagueredCastleMoveZone'
+                to:
+                  $ref: '#/components/schemas/BeleagueredCastleMoveZone'
+                n:
+                  type: integer
+                  description: Number of times to undo (for undo_n command)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              move:
+                summary: Move tableau column 0's top card to column 5
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 0
+                  to:
+                    zone: tableau
+                    col: 5
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CitadelResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+                description: |
+                  The shape depends on the command. Ordinary commands return the game
+                  state; `log` returns the action log instead.
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CitadelResponse'
   /fortress/exec:
     post:
       tags:
@@ -71848,6 +71944,67 @@ components:
           type: object
 
     BeleagueredCastleResponse:
+      type: object
+      properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        tableau:
+          type: array
+          description: 8 tableau columns, each an array of cards (with face-up flag)
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                card:
+                  nullable: true
+                  allOf:
+                    - $ref: '#/components/schemas/Card'
+                faceUp:
+                  type: boolean
+        foundation:
+          type: array
+          description: 4 foundation piles (cards by suit, A→K). Pre-seeded with the four aces at deal time.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        hint:
+          type: object
+          nullable: true
+          properties:
+            fromCol:
+              type: integer
+            cardIndex:
+              type: integer
+            toZone:
+              type: string
+            toCol:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    CitadelResponse:
       type: object
       properties:
         entries:

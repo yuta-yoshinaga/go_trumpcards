@@ -254,6 +254,7 @@ export type GameKey =
   | 'somerset'
   | 'fortress'
   | 'beleagueredcastle'
+  | 'citadel'
   | 'streetsandalleys'
   | 'kingalbert'
   | 'flowergarden'
@@ -875,6 +876,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   somerset: CASINO,
   fortress: CASINO,
   beleagueredcastle: CASINO,
+  citadel: CASINO,
   streetsandalleys: CASINO,
   kingalbert: CASINO,
   flowergarden: CASINO,

@@ -1855,4 +1855,9 @@ func init() {
 			return usecase.NewContinentalRummyInteractor(domain.NewDefaultContinentalRummy(), new(presenter.ContinentalRummyWebPresenter))
 		},
 		controller.NewContinentalRummyWebController)
+	BindWebControllerFor("citadel",
+		func() usecase.CitadelInteractorIF {
+			return usecase.NewCitadelInteractor(domain.NewDefaultCitadel(), new(presenter.CitadelWebPresenter))
+		},
+		controller.NewCitadelWebController)
 }

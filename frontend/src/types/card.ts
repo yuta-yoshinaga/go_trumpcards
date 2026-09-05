@@ -72,6 +72,7 @@ export * from './games/chineseten';
 export * from './games/cinch';
 export * from './games/cincinnati';
 export * from './games/cirulla';
+export * from './games/citadel';
 export * from './games/clocksolitaire';
 export * from './games/coinche';
 export * from './games/colorado';
