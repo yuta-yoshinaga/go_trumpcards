@@ -1000,6 +1000,15 @@ export const CallBreakPhase = {
   GAME_END: 4,
 } as const;
 
+/** Batak phase constants (sync: internal/domain/Batak.go). */
+export const BatakPhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Pitch phase constants (sync: internal/domain/Pitch.go). */
 export const PitchPhase = {
   BID: 0,

@@ -400,6 +400,7 @@ export const workerUrl: Record<string, string> = {
   beggarmyneighbour: WORKER_EXTRA2,
   allfours: WORKER_CLASSIC,
   citadel: WORKER_SOLO,
+  batak: WORKER_EXTRA5,
 };
 
 export async function postJson<T>(url: string, body: unknown): Promise<T> {

@@ -379,6 +379,7 @@ var gameDescriptions = map[string]string{
 	"curdsandwhey":        "Curds and Whey (カーズ・アンド・ホエイ)",
 	"shamrocks":           "Shamrocks (シャムロックス)",
 	"citadel":             "Citadel (シタデル)",
+	"batak":               "Batak (バタック)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

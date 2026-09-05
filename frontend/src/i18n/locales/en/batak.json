@@ -1,0 +1,88 @@
+{
+  "phase": {
+    "bid": "Bid",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "maxRounds": "Total Rounds",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}} / {{max}}",
+  "trick": "Trick {{n}}",
+  "spadesBroken": "Spades Broken",
+  "spadesNotBroken": "Spades Not Broken",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "bid": "Bid {{n}}",
+  "bidNone": "No bid",
+  "bidPass": "Pass",
+  "passButton": "Pass",
+  "declarer": "Declarer: {{name}}",
+  "declarerBadge": "Declarer",
+  "highBid": "Highest bid: {{n}}",
+  "tricksWon": "Won {{n}}",
+  "bidProgressAria": "{{name}}'s bid progress",
+  "currentTrick": "Current Trick",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresBid": "Bid",
+  "scoresTricks": "Tricks",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "bidButton": "Bid",
+  "bidSelectLabel": "Select your bid",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "bidPhase": "Place your bid (5-13 or Pass)",
+  "mustTrumpSpadeTooltip": "You cannot play this card (follow the lead suit, or trump with a spade when void)",
+  "playPhase": {
+    "lead": "Lead a card",
+    "follow": "Play a card (must trump if void)"
+  },
+  "trickEnd": "Trick complete",
+  "roundEnd": "Round complete",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "hintBid": "Recommended bid",
+  "hintPlay": "Recommended card",
+  "hintReason": {
+    "strategic_bid": "Strategic bid",
+    "pass_weak_hand": "Pass due to weak hand",
+    "lead_strong": "Lead with a strong card",
+    "lead_low": "Lead with a low card",
+    "follow_suit": "Follow the lead suit",
+    "trump_cut": "Cut with spades",
+    "discard_high": "Discard a high card"
+  },
+  "tutorial": {
+    "bidControls": "In the bid phase, declare how many tricks (5-13) you expect to win, or pass.",
+    "trickDisplay": "The current trick. Spades are always trump.",
+    "playerHand": "Your hand. You must follow the lead suit, and you must trump with a spade if void.",
+    "playButton": "Press this button to play the selected card.",
+    "scoreTable": "Score table. The declarer scores +bid if successful, or -bid if failed. Other players score 1 point per trick won.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "bidEstimate": "Bid based on high cards and spades",
+    "passEstimate": "Pass recommended based on hand strength",
+    "leadNonSpade": "Lead with a non-spade card",
+    "leadStrategic": "Lead strategically",
+    "followSuit": "Follow the led suit",
+    "mustTrumpWithSpade": "Void: must trump with a spade",
+    "discardLowest": "Discard your lowest card"
+  },
+  "bidSelected": "Selected bid: {{n}}",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
+}

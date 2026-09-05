@@ -269,4 +269,12 @@ func init() {
 			return usecase.RestoreUltiInteractor(data, new(presenter.UltiWebPresenter))
 		},
 		controller.NewUltiWebControllerWithProvider)
+	games.RegisterKVGame("batak", games.CategoryExtra5,
+		func() usecase.BatakInteractorIF {
+			return usecase.NewBatakInteractor(domain.NewDefaultBatak(), new(presenter.BatakWebPresenter))
+		},
+		func(data []byte) (usecase.BatakInteractorIF, error) {
+			return usecase.RestoreBatakInteractor(data, new(presenter.BatakWebPresenter))
+		},
+		controller.NewBatakWebControllerWithProvider)
 }

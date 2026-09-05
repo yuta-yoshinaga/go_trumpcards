@@ -1860,4 +1860,9 @@ func init() {
 			return usecase.NewCitadelInteractor(domain.NewDefaultCitadel(), new(presenter.CitadelWebPresenter))
 		},
 		controller.NewCitadelWebController)
+	BindWebControllerFor("batak",
+		func() usecase.BatakInteractorIF {
+			return usecase.NewBatakInteractor(domain.NewDefaultBatak(), new(presenter.BatakWebPresenter))
+		},
+		controller.NewBatakWebController)
 }

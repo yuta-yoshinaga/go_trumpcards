@@ -756,6 +756,8 @@ tags:
     description: Vira (ヴィーラ) game
   - name: citadel
     description: Citadel (シタデル) game - Beleaguered Castle variant with 8 tableau columns where eligible cards auto-build to foundations during the initial deal and empty columns accept any card
+  - name: batak
+    description: Batak (バタック) game - Turkish trick-taking auction game with spade trumps and asymmetric scoring
 
 paths:
   /blackjack/exec:
@@ -33510,6 +33512,110 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ZhengResponse'
+  /batak/exec:
+    post:
+      tags:
+        - batak
+      summary: Execute a Batak (バタック) game command
+      description: |
+        Send a command to advance the Batak game session identified by
+        `sessionId`. Batak is a 4-player Turkish trick-taking auction game with
+        spades as permanent trumps. Players participate in a single-round auction
+        bidding 5..13 or pass (0). The highest bidder becomes the declarer (親)
+        and leads the first trick. If all pass, the last speaker is forced to
+        declare at minimum bid 5. Must follow led suit; if void in the led suit
+        and holding spades, you must trump with a spade. Scoring uses raw
+        integers: declarer scores +bid on make or -bid on set; defenders score
+        +1 per trick won. The game runs for 5 rounds by default and the highest
+        cumulative score wins.
+
+        Phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Clockwise auction; declare 5..13 or pass (0) |
+        | Play      | `1`   | 13-trick play (must follow / must trump if void) |
+        | TrickEnd  | `2`   | Trick resolved; call `n`/`next` to continue |
+        | RoundEnd  | `3`   | Round scored; call `nr`/`nextround` |
+        | GameEnd   | `4`   | MaxRounds reached; highest cumulative score wins |
+
+        Commands:
+
+        | Command       | Aliases       | Description |
+        |---------------|---------------|-------------|
+        | `reset` / `r` |               | Restart with optional config |
+        | `bid` / `b`   |               | Place bid (5..13 or 0 to pass) |
+        | `pass`        |               | Pass (declare bid 0) |
+        | `play` / `p`  |               | Play card at index |
+        | `next` / `n`  |               | Advance to next trick |
+        | `nextround` / `nr` |          | Score round and start next |
+        | `hint` / `h`  |               | Suggested move |
+        | `log` / `l`   |               | View action log |
+      operationId: batakExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, pass, play, p, next, n, nextround, nr, hint, h, log, l]
+                bid:
+                  type: integer
+                  description: Bid amount for `bid`/`b` (5..13, or 0 to pass)
+                cardIndex:
+                  type: integer
+                  description: Card index for `play`/`p`
+                config:
+                  $ref: '#/components/schemas/BatakConfig'
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Declare bid 5
+                value:
+                  command: b
+                  bid: 5
+                  sessionId: my-session-001
+              pass:
+                summary: Pass in auction
+                value:
+                  command: pass
+                  sessionId: my-session-001
+              play:
+                summary: Play hand[0]
+                value:
+                  command: p
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/BatakResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+                description: |
+                  The shape depends on the command. Ordinary commands return the game
+                  state; `log` returns the action log instead.
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatakResponse'
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -79753,3 +79859,123 @@ components:
               type: integer
         message:
           type: string
+
+    # -------------------------------------------------------------------------
+    # Batak
+    # -------------------------------------------------------------------------
+    BatakConfig:
+      type: object
+      description: Batak game configuration
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: CPU difficulty level (0 = Easy, 1 = Normal, 2 = Hard)
+          enum: [0, 1, 2]
+          default: 1
+        maxRounds:
+          type: integer
+          description: Number of rounds to play
+          default: 5
+          minimum: 1
+          maximum: 50
+
+    BatakResponse:
+      type: object
+      description: |
+        Current state of the Batak game. Scores are raw integers.
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              bid:
+                type: integer
+              roundScore:
+                type: integer
+                description: Round score
+              cumulativeScore:
+                type: integer
+                description: Cumulative score
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "0 = Bid, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        declarerIdx:
+          type: integer
+          description: Player index of the declarer (-1 if undecided)
+        highBid:
+          type: integer
+          description: Current highest bid (0 if none)
+        minLegalBid:
+          type: integer
+          description: Minimum legal bid for the human player (5..13, 0 if pass-only or not human turn)
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        spadesBroken:
+          type: boolean
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        validPlayIndices:
+          type: array
+          description: Indices in the human player's hand legal to play this turn
+          items:
+            type: integer
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            maxRounds:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        hint:
+          type: object
+          nullable: true
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+            bid:
+              type: integer
+              nullable: true
+            reason:
+              type: string

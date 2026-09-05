@@ -7205,6 +7205,22 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("batak",
+		func() usecase.BatakInteractorIF {
+			return usecase.NewBatakInteractor(domain.NewDefaultBatak(), new(presenter.BatakCuiPresenter))
+		},
+		controller.NewBatakCuiController,
+		CuiHelpSpec{
+			TitleKey: "batak.helpTitle",
+			ExampleKeys: []string{
+				"batak.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"batak.helpBid", "batak.helpPlay", "batak.helpNext", "batak.helpNextRound", "batak.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"batak.helpSetDifficulty", "batak.helpSetRounds"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
