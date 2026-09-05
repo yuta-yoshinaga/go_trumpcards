@@ -49,7 +49,7 @@ func TestCitadelCuiPresenter_Output(t *testing.T) {
 		p := new(CitadelCuiPresenter)
 
 		result := p.Output(bg, nil)
-		assert.Contains(t, result, "Beleaguered Castle")
+		assert.Contains(t, result, "Citadel")
 		assert.Contains(t, result, "Foundation")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")

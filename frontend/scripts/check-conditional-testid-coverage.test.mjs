@@ -73,7 +73,10 @@ describe('check-conditional-testid-coverage', () => {
     const r = spawnSync(process.execPath, [GUARD, root], { encoding: 'utf8', cwd: process.cwd() });
     // 空ディレクトリを root に採ったなら "0 page components" になる。実リポジトリを
     // 走査していれば数百ページになる。後者であることを見る。
-    expect(r.stdout).not.toContain('0 page/component sources scanned');
+    // 部分一致で見ると `500 page/component sources scanned` が `0 page/...` を
+    // 含んでしまい、走査件数の末尾が 0 になった瞬間に誤検知する (実際 Citadel 追加で
+    // 499 -> 500 になり落ちた)。開き括弧で位置を固定して、本当に 0 件のときだけ当てる。
+    expect(r.stdout).not.toMatch(/\(0 page\/component sources scanned/);
     expect(r.stdout).toMatch(/[1-9]\d{2,} page\/component sources scanned/);
   });
 
