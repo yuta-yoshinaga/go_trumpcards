@@ -755,7 +755,7 @@ tags:
   - name: vira
     description: Vira (ヴィーラ) game
   - name: citadel
-    description: Citadel (シタデル) game - Beleaguered Castle variant with 8 tableau columns where empty columns accept any card
+    description: Citadel (シタデル) game - Beleaguered Castle variant with 8 tableau columns where eligible cards auto-build to foundations during the initial deal and empty columns accept any card
 
 paths:
   /blackjack/exec:
@@ -12863,8 +12863,11 @@ paths:
         session identified by `sessionId`. Citadel is a
         single-player open-information solitaire and a variant of Beleaguered
         Castle using a single 52-card deck. The 4 aces are pre-seeded onto the
-        foundations at deal time and the remaining 48 cards are dealt face-up
-        into 8 tableau columns of 6 cards each flanking the centred foundations.
+        foundations at deal time. Remaining cards are dealt one by one: cards
+        that can build onto foundations (by suit Ace→King) are immediately placed
+        there, and only unplaceable cards are dealt across 8 tableau columns
+        (columns vary in length up to 6 cards, and foundations may start beyond
+        Aces, or the game may even clear directly on deal).
         Foundations build up by suit Ace→King. Tableau builds rank-only descending
         (suit doesn't matter); only single-card moves are allowed. Empty columns
         accept any card. No stock or waste pile.
