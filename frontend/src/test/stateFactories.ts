@@ -3,6 +3,7 @@ import type {
   AnacondaResponse,
   BaccaratBanqueResponse,
   BasraResponse,
+  BatakResponse,
   BeziqueResponse,
   BoliviaPlayerData,
   BoliviaResponse,
@@ -396,6 +397,81 @@ const baseCallBreakState: CallBreakResponse = {
  */
 export function makeCallBreakState(overrides?: Partial<CallBreakResponse>): CallBreakResponse {
   return { ...baseCallBreakState, ...overrides };
+}
+
+/** Base Batak player data used by {@link makeBatakState}. */
+const batakPlayers: BatakResponse['players'] = [
+  {
+    id: 0,
+    isHuman: true,
+    cardCount: 13,
+    cards: [
+      { design: 'SPADE' as const, value: 1 },
+      { design: 'HEART' as const, value: 11 },
+    ],
+    bid: 5,
+    roundScore: 0,
+    cumulativeScore: 0,
+    trickCount: 0,
+  },
+  {
+    id: 1,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    bid: 0,
+    roundScore: 0,
+    cumulativeScore: 4,
+    trickCount: 1,
+  },
+  {
+    id: 2,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    bid: 0,
+    roundScore: 0,
+    cumulativeScore: 3,
+    trickCount: 2,
+  },
+  {
+    id: 3,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    bid: 0,
+    roundScore: 0,
+    cumulativeScore: -5,
+    trickCount: 5,
+  },
+];
+
+/** Base Batak state for {@link makeBatakState}. */
+const baseBatakState: BatakResponse = {
+  players: batakPlayers,
+  phase: 1,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  bidPlayerIdx: 0,
+  declarerIdx: 0,
+  highBid: 5,
+  minLegalBid: 0,
+  currentTrick: [],
+  spadesBroken: false,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  leadPlayerIdx: 0,
+  message: '',
+  config: { cpuDifficulty: 1, maxRounds: 5 },
+  validPlayIndices: [],
+};
+
+/**
+ * Creates a {@link BatakResponse} with sensible defaults.
+ */
+export function makeBatakState(overrides?: Partial<BatakResponse>): BatakResponse {
+  return { ...baseBatakState, ...overrides };
 }
 
 /** Base Two Ten Jack player data used by {@link makeTwoTenJackState}. */

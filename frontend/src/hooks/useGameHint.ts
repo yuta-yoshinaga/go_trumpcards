@@ -20,6 +20,7 @@ import type {
   BarbuResponse,
   BaseballPokerResponse,
   BasraResponse,
+  BatakResponse,
   BauernschnapsenResponse,
   BeggarMyNeighbourResponse,
   BeleagueredCastleResponse,
@@ -375,6 +376,7 @@ import { getBanluckHint } from '../utils/hints/banluckHint';
 import { getBarbuHint } from '../utils/hints/barbuHint';
 import { getBaseballpokerHint } from '../utils/hints/baseballpokerHint';
 import { getBasraHint } from '../utils/hints/basraHint';
+import { getBatakHint } from '../utils/hints/batakHint';
 import { getBauernschnapsenHint } from '../utils/hints/bauernschnapsenHint';
 import { getBeggarMyNeighbourHint } from '../utils/hints/beggarmyneighbourHint';
 import { getBeleagueredcastleHint } from '../utils/hints/beleagueredcastleHint';
@@ -903,6 +905,7 @@ export const hintFactories = {
   sutda: (s) => getSutdaHint(s as SutdaResponse),
   cirulla: (s) => getCirullaHint(s as CirullaResponse),
   citadel: (s) => getCitadelHint(s as CitadelResponse),
+  batak: (s) => getBatakHint(s as BatakResponse),
   diloti: (s) => getDilotiHint(s as DilotiResponse),
   comet: (s) => getCometHint(s as CometResponse),
   costlycolours: (s) => getCostlyColoursHint(s as CostlyColoursResponse),

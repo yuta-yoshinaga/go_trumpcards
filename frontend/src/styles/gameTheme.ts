@@ -153,6 +153,7 @@ export type GameKey =
   | 'pinochle'
   | 'piquet'
   | 'callbreak'
+  | 'batak'
   | 'tarneeb'
   | 'briscola'
   | 'brusquembille'
@@ -788,6 +789,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   fivehundred: BLUE,
   rook: BLUE,
   callbreak: BLUE,
+  batak: BLUE,
   tarneeb: BLUE,
   briscola: BLUE,
   brusquembille: BLUE,

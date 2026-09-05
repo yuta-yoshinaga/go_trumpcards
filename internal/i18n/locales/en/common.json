@@ -209,6 +209,7 @@
   "bidValueRequired013": "Bid value is required (0-13).",
   "bidValueRequired113": "Bid value is required (1-13).",
   "bidValueRequiredPass114": "Bid value is required (0=pass, 1-14).",
+  "bidValueRequiredPass513": "Bid value is required (5-13, 0=pass).",
   "bidValueRequiredPass713": "Bid value is required (0=pass, 7-13).",
   "bidValueRequiredPass1217": "Bid value is required (0=pass, 12-17).",
   "bidValueRequiredPass24": "Bid value is required (0=pass, 2-4).",

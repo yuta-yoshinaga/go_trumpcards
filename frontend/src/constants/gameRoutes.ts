@@ -1178,6 +1178,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 4, 4, 3], skill: [2, 4, 4, 2], social: [1, 3, 5, 3, 4], theme: [2, 2, 1, 3, 2, 2] },
       },
       {
+        path: '/batak',
+        labelKey: 'nav.batak',
+        icon: '🇹🇷',
+        page: 'Batak',
+        profile: { mood: [2, 4, 4, 3], skill: [2, 4, 4, 2], social: [1, 3, 5, 3, 4], theme: [2, 3, 1, 3, 2, 3] },
+      },
+      {
         path: '/tarneeb',
         labelKey: 'nav.tarneeb',
         icon: '🎴',

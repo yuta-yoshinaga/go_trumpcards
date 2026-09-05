@@ -209,6 +209,7 @@
   "bidValueRequired013": "入札値を指定してください (0-13)。",
   "bidValueRequired113": "入札値を指定してください (1-13)。",
   "bidValueRequiredPass114": "入札値を指定してください (0=パス, 1-14)。",
+  "bidValueRequiredPass513": "入札値を指定してください (5-13、0=パス)。",
   "bidValueRequiredPass713": "入札値を指定してください (0=パス, 7-13)。",
   "bidValueRequiredPass1217": "入札値を指定してください (0=パス, 12-17)。",
   "bidValueRequiredPass24": "入札値を指定してください (0=パス, 2-4)。",

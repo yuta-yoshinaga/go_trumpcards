@@ -1,0 +1,88 @@
+{
+  "phase": {
+    "bid": "ビッド",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "maxRounds": "総ラウンド数",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}} / {{max}}",
+  "trick": "トリック {{n}}",
+  "spadesBroken": "スペードブレイク済",
+  "spadesNotBroken": "スペード未ブレイク",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "bid": "ビッド {{n}}",
+  "bidNone": "未ビッド",
+  "bidPass": "パス",
+  "passButton": "パス",
+  "declarer": "親: {{name}}",
+  "declarerBadge": "親",
+  "highBid": "最高ビッド: {{n}}",
+  "tricksWon": "獲得 {{n}}",
+  "bidProgressAria": "{{name}} のビッド達成状況",
+  "currentTrick": "現在のトリック",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresBid": "ビッド",
+  "scoresTricks": "トリック",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "bidButton": "ビッド",
+  "bidSelectLabel": "ビッド数を選択",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "bidPhase": "ビッド宣言 (5-13 または パス)",
+  "mustTrumpSpadeTooltip": "このカードは出せません (リードスートに従うか、ボイドならスペードで切ってください)",
+  "playPhase": {
+    "lead": "リードしてください",
+    "follow": "カードを出してください (ボイドならスペードで切る)"
+  },
+  "trickEnd": "トリック終了",
+  "roundEnd": "ラウンド終了",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "hintBid": "推奨ビッド",
+  "hintPlay": "推奨カード",
+  "hintReason": {
+    "strategic_bid": "戦略的なビッド",
+    "pass_weak_hand": "手札が弱いためパス",
+    "lead_strong": "強いカードでリード",
+    "lead_low": "低いカードでリード",
+    "follow_suit": "リードスートに追随",
+    "trump_cut": "スペードでカット",
+    "discard_high": "高いカードを捨てる"
+  },
+  "tutorial": {
+    "bidControls": "ビッドフェーズでは取れると思うトリック数 (5-13) を宣言するか、パスします。",
+    "trickDisplay": "現在のトリックです。スペードが常に切り札です。",
+    "playerHand": "あなたの手札です。リードスートに従い、ボイドならスペードで切らなければなりません。",
+    "playButton": "カードを選んだらこのボタンで出します。",
+    "scoreTable": "スコア表です。親はビッド達成で +bid 点、未達で -bid 点。子は獲得トリック数がそのまま加点されます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "bidEstimate": "手札の強さに基づくビッド推奨",
+    "passEstimate": "手札の強さからパスを推奨",
+    "leadNonSpade": "スペード以外のカードでリード推奨",
+    "leadStrategic": "戦略的にリード推奨",
+    "followSuit": "リードされたスートに従ってプレイ推奨",
+    "mustTrumpWithSpade": "ボイドなのでスペードで切らなければなりません",
+    "discardLowest": "最も低いカードを捨てることを推奨"
+  },
+  "bidSelected": "選択中のビッド: {{n}}",
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
+}
