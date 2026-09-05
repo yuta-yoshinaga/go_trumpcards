@@ -32,7 +32,7 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
    - **(b)** `BindWebControllerFor("<name>", …)` in `internal/infrastructure/games/games_server.go` — wires the HTTP server factory.
    - **(c)** `games.RegisterKVGame("<name>", games.Category…, …)` in the matching sub-package under `internal/infrastructure/games/{casino,classic,solo,extra,extra2,extra3,extra4,extra5}/` — the per-category split is what keeps each Cloudflare Worker WASM binary under the 1 MB gzipped free-tier limit, so the sub-package must match the `Category` in (a). `RegisterKVGame` panics at init if they disagree (via the underlying `games.BindWorker`), and `TestWorkerRegistrationsCoverAllGames` (in `registry_worker_consistency_test.go`) parses each sub-package source with `go/parser` and fails the build if the registry and a category's `RegisterKVGame` calls disagree (per ADR-0031, option 3).
    - **(d)** `GameRegistryEntry` entry in the `gameRegistry` slice in `internal/infrastructure/ui/GameManager.go` — the CLI-side wiring. Always use the `cuiEntry` helper with a `CuiHelpSpec`. For the standard help template, fill in `TitleKey`/`CommandKeys`/`SettingKeys`; for hand-authored help that does not fit the scaffold, set `CuiHelpSpec.Body` to the full help lines.
-6b. **Frontend worker URL**: verify `frontend/src/api/gameApi.ts` `workerUrl` maps the new game to the same worker name as its `Category`.
+6b. **Frontend worker URL**: verify `frontend/src/api/gameExec.ts` `workerUrl` maps the new game to the same worker name as its `Category`.
 7. **Run `goimports -w` and `golangci-lint run ./...`** on all new files
 8. **80%+ branch coverage** for all new packages
 
@@ -43,8 +43,8 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 11. **CLI mode**: Wire `useCliMode`, `useCliGame`, `CliToggle`, and `CliTerminal` in the page. At minimum add a stub config (`parseCommand` returns error, empty `helpText`). Place `CliToggle` inside `PhaseIndicator` and wrap GUI content with `{cliEnabled ? <CliTerminal .../> : <>{/* GUI */}</>}`
 12. **i18n**: Add `frontend/src/i18n/locales/{ja,en}/<game>.json` translation files (include `tutorial` keys if tutorial is added)
 13. **Router + concierge profile**: Add route in `frontend/src/App.tsx` and NavBar entry in `frontend/src/constants/gameRoutes.ts`. The `gameRoutes` entry must include the `profile: GameProfile` field (4 axes — see `frontend/src/constants/discoverAxes.ts` for option order). The TypeScript compiler will reject the file if `profile` is missing. Also add the per-game `discover.blurb.<page-kebab>` and `discover.stretch_blurb.<page-kebab>` entries in both `frontend/src/i18n/locales/{ja,en}/discover.json` so the AI Game Concierge `/discover` recommendations show real text for the new game.
-14. **Hint system**: Create `frontend/src/utils/hints/<game>Hint.ts` returning `HintResult | null` (or `null` stub if the game has no decisional hint), and register it in `frontend/src/hooks/useGameHint.ts` `hintFactories`. Add the matching `<game>Hint.test.ts` with 80%+ branch coverage. Wire `useGameHint` + `HintToggle` into the page. **`bun run check` enforces the registration** (`frontend/scripts/check-hint-coverage.mjs`) — four of the five games before the guard existed had skipped this step, because nothing failed when they did.
-15. **Tutorial**: Wrap `<Game>Page.tsx` content with `<TutorialWrapper gameName="<game>" steps={steps}>`, import `TutorialButton`, add `data-tutorial` attributes to key UI elements, and add `tutorial` keys to the i18n JSON files.
+14. **Hint system**: Create `frontend/src/utils/hints/<game>Hint.ts` returning `HintResult | null` (or `null` stub if the game has no decisional hint), and register it in `frontend/src/hooks/useGameHint.ts` `hintFactories`. Add the matching `<game>Hint.test.ts` with 80%+ branch coverage. Wire `useGameHint` into the page (in pages that use it, `HintToggle`). **`bun run check` enforces the registration** (`frontend/scripts/check-hint-coverage.mjs`) — four of the five games before the guard existed had skipped this step, because nothing failed when they did.
+15. **Tutorial**: Wrap `<Game>Page.tsx` with `withTutorial` (in pages that use them directly: `<TutorialWrapper gameName="<game>" steps={steps}>` and `TutorialButton`), add `data-tutorial` attributes to key UI elements, and add `tutorial` keys to the i18n JSON files.
 16. **Run `bun run build && bun run check && bun run test`**
 
 ## Documentation (same commit)
@@ -151,10 +151,10 @@ Run through this cross-check for the new `<game>`:
 - [ ] `frontend/src/constants/cuiManualTexts.ts` has both the `import` and the route mapping for `<game>`
 - [ ] `frontend/src/utils/hints/<game>Hint.ts` exists (real implementation or documented `null` stub)
 - [ ] `frontend/src/hooks/useGameHint.ts` registers `<game>` in `hintFactories`
-- [ ] `<Game>Page.tsx` is wrapped in `<TutorialWrapper>` and surfaces `TutorialButton` + `HintToggle`
+- [ ] In pages that use them: `<Game>Page.tsx` is wrapped in `<TutorialWrapper>` and surfaces `TutorialButton` + `HintToggle` (standard pages wrap with `withTutorial` instead)
 - [ ] `internal/infrastructure/games/registry.go` has a `{Name, Category}` entry for `<game>`
 - [ ] `internal/infrastructure/games/games_server.go` has a matching `BindWebControllerFor("<game>", ...)` call
 - [ ] `internal/infrastructure/games/<category>/<category>.go` has a matching `games.RegisterKVGame("<game>", games.Category…, ...)` call in the correct category sub-package
 - [ ] `internal/infrastructure/ui/GameManager.go` `gameRegistry` has a matching `GameRegistryEntry` for `<game>` (CLI wiring)
-- [ ] `frontend/src/api/gameApi.ts` `workerUrl` maps `<game>` to the worker matching that `Category`
-- [ ] Hardcoded game-count assertions are bumped: the `expected<Category>` consts in `internal/infrastructure/games/registry_test.go`, and the tutorial-progress counts in `frontend/src/hooks/useTutorialProgress.test.ts` + `frontend/src/components/tutorial/TutorialProgressPanel.test.tsx`
+- [ ] `frontend/src/api/gameExec.ts` `workerUrl` maps `<game>` to the worker matching that `Category`
+- [ ] Hardcoded game-count assertions are bumped: the `expected<Category>` consts in `internal/infrastructure/games/registry_test.go` (tutorial-progress counts in `frontend/src/hooks/useTutorialProgress.test.ts` and `TutorialProgressPanel.test.tsx` are derived from `gameRoutes.length` and need no manual bump)

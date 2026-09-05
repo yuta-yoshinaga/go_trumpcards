@@ -85,9 +85,12 @@ def ensure_register_func(tree: Tree, bucket: str) -> None:
         return
     # Strip the Phase-1 "Currently empty" comment. Use regex instead of a literal
     # ADR number because matching a fixed string silently breaks on the next ADR.
+    # Drop adjacent empty comment lines ('//') so goimports does not report trailing '//' (#7109).
     text = re.sub(
+        r"(?://\n)?"
         r"// Currently empty\. Phase 1 of ADR-\d{4} adds the bucket and proves the build and\n"
-        r"// deploy path; Phase 2 moves games in\.\n(//\n)?",
+        r"// deploy path; Phase 2 moves games in\.\n"
+        r"(?://\n)?",
         "",
         text,
     )

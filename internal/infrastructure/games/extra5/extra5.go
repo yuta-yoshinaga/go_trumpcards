@@ -10,7 +10,6 @@
 // deliberate: it holds whatever had to move to keep every TinyGo WASM binary
 // under the Cloudflare Workers free-tier 1 MB gzipped limit, and nothing about
 // a game's genre says it belongs here.
-//
 package extra5
 
 import (
