@@ -1584,6 +1584,18 @@ export const PinochlePhase = {
   GAME_END: 6,
 } as const;
 
+/** Binokel phase constants (sync: internal/domain/Binokel.go). */
+export const BinokelPhase = {
+  BID: 0,
+  DABB: 1,
+  TRUMP: 2,
+  MELD: 3,
+  PLAY: 4,
+  TRICK_END: 5,
+  ROUND_END: 6,
+  GAME_END: 7,
+} as const;
+
 /** Piquet phase constants (sync: internal/domain/Piquet.go). */
 export const PiquetPhase = {
   EXCHANGE: 0,

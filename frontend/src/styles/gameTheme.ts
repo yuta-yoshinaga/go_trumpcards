@@ -151,6 +151,7 @@ export type GameKey =
   | 'whist'
   | 'catchten'
   | 'pinochle'
+  | 'binokel'
   | 'piquet'
   | 'callbreak'
   | 'batak'
@@ -774,6 +775,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   whist: BLUE,
   catchten: CATCHTEN,
   pinochle: BLUE,
+  binokel: BLUE,
   piquet: BLUE,
   ramsch: BLUE,
   skat: BLUE,
