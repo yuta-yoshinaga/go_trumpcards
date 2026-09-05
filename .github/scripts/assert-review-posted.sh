@@ -10,8 +10,22 @@ Usage:
   assert-review-posted.sh <PR_NUMBER> <REPO>
   assert-review-posted.sh --stdin [COMMENT_URL]
   assert-review-posted.sh --file <FILE> [COMMENT_URL]
+  assert-review-posted.sh --comments-file <FILE>
 EOF
   exit 2
+}
+
+# jq filter expression to select the review tracking comment.
+# Flatten pages from --slurp via .[][] and pick the last tracking comment
+# posted by github-actions[bot] or claude[bot] starting with "**Claude ".
+SELECT_COMMENT_JQ='[ .[][] | select((.user.login == "github-actions[bot]" or .user.login == "claude[bot]") and (.body | test("^\\*\\*Claude "))) ] | last // empty'
+
+select_review_comment() {
+  if [ $# -gt 0 ]; then
+    jq "$SELECT_COMMENT_JQ" "$1"
+  else
+    jq "$SELECT_COMMENT_JQ"
+  fi
 }
 
 check_comment_body() {
@@ -67,6 +81,29 @@ if [ "${1:-}" = "--file" ]; then
   exit $?
 fi
 
+# Standalone comment selection testing mode: --comments-file
+if [ "${1:-}" = "--comments-file" ]; then
+  if [ $# -lt 2 ]; then
+    usage
+  fi
+  file="$2"
+  if [ ! -f "$file" ]; then
+    echo "ERROR: File not found: $file" >&2
+    exit 2
+  fi
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "ERROR: jq is required but not installed." >&2
+    exit 1
+  fi
+  comment_json=$(select_review_comment "$file")
+  if [ -z "$comment_json" ] || [ "$comment_json" = "null" ]; then
+    echo "ERROR: No review tracking comment found in comments file." >&2
+    exit 1
+  fi
+  printf '%s\n' "$comment_json"
+  exit 0
+fi
+
 # Normal PR check mode: <PR_NUMBER> <REPO>
 if [ $# -lt 2 ]; then
   usage
@@ -99,9 +136,8 @@ fi
 # If the action ever changes that header, this reports "no review comment
 # found" and the job goes red. That is the safe direction to fail: the bug this
 # guard exists for is a review that silently counts as success.
-comment_json=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" --jq '
-  [ .[] | select((.user.login == "github-actions[bot]" or .user.login == "claude[bot]") and (.body | test("^\\*\\*Claude "))) ] | last // empty
-')
+comment_json=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments?per_page=100" --paginate --slurp | select_review_comment)
+
 
 if [ -z "$comment_json" ] || [ "$comment_json" = "null" ]; then
   echo "ERROR: No review tracking comment found for PR #${PR_NUMBER} in ${REPO}." >&2
