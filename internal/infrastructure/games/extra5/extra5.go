@@ -285,4 +285,12 @@ func init() {
 			return usecase.RestoreBinokelInteractor(data, new(presenter.BinokelWebPresenter))
 		},
 		controller.NewBinokelWebControllerWithProvider)
+	games.RegisterKVGame("marjapussi", games.CategoryExtra5,
+		func() usecase.MarjapussiInteractorIF {
+			return usecase.NewMarjapussiInteractor(domain.NewDefaultMarjapussi(), new(presenter.MarjapussiWebPresenter))
+		},
+		func(data []byte) (usecase.MarjapussiInteractorIF, error) {
+			return usecase.RestoreMarjapussiInteractor(data, new(presenter.MarjapussiWebPresenter))
+		},
+		controller.NewMarjapussiWebControllerWithProvider)
 }

@@ -3277,3 +3277,11 @@ export const SpeculationPhase = {
   RESULT: 2,
   GAME_END: 3,
 } as const;
+
+/** Marjapussi phase constants (sync: internal/domain/Marjapussi.go). */
+export const MarjapussiPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;

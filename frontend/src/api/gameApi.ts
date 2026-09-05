@@ -205,6 +205,7 @@ export * from './games/madrasso';
 export * from './games/manille';
 export * from './games/mao';
 export * from './games/marias';
+export * from './games/marjapussi';
 export * from './games/memory';
 export * from './games/mendikot';
 export * from './games/michigan';
@@ -754,6 +755,7 @@ export const games = [
   'citadel',
   'batak',
   'binokel',
+  'marjapussi',
 ] as const;
 
 /** Union of every registered game name — the keys of the `games` list. */
