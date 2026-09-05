@@ -54,7 +54,8 @@ rebucketed to `solo` (this exact procedure).
 ## Use the scripts, not hand edits
 
 ```sh
-python3 .claude/skills/rebucket-game/scripts/crossrefs.py <target> <game>...  # check FIRST
+python3 .claude/skills/rebucket-game/scripts/movability.py            # 全ユニットを一括で見る
+python3 .claude/skills/rebucket-game/scripts/crossrefs.py <target> <game>...  # 1件を詳しく見る
 python3 .claude/skills/rebucket-game/scripts/move-game.py  <target> <game>...
 python3 .claude/skills/rebucket-game/scripts/move-game.py  --check            # layout
 ```
