@@ -10,6 +10,10 @@ tagged files (like daifugo or pitch) can still yield significant byte savings
 (e.g., 72KB) because removing their references from the bucket sub-package
 allows TinyGo's Dead Code Elimination (DCE) to drop them. Therefore, a unit
 showing "retag 0" is still a valid and impactful move candidate.
+
+Note: This script ignores underscores to correctly match snake_case files
+(e.g. interfaces/). However, move-game.py's game_files() uses strict prefix
+matching and misses them. You must manually retag these files (see ADR-0037).
 """
 
 from __future__ import annotations
@@ -73,12 +77,12 @@ def main() -> None:
     
     for d in mg.SRC_DIRS:
         for p in (mg.ROOT / d).rglob("*.go"):
-            if p.name.endswith("_test.go"): continue
+            if p.name.endswith(("_test.go", "_mock.go")): continue
             s = p.read_text(encoding="utf-8")
             
             file_size[p] = len(s.encode("utf-8"))
             stem = p.name[:-3].lower()
-            match = next((t for t in by_len if stem.startswith(t.lower())), None)
+            match = next((t for t in by_len if stem.replace("_", "").startswith(t.lower())), None)
             file_type[p] = match
             if match:
                 type_all_files[match].append(p)
