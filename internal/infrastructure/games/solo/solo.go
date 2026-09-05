@@ -442,4 +442,12 @@ func init() {
 			return usecase.RestoreSnapInteractor(data, new(presenter.SnapWebPresenter))
 		},
 		controller.NewSnapWebControllerWithProvider)
+	games.RegisterKVGame("citadel", games.CategorySolo,
+		func() usecase.CitadelInteractorIF {
+			return usecase.NewCitadelInteractor(domain.NewDefaultCitadel(), new(presenter.CitadelWebPresenter))
+		},
+		func(data []byte) (usecase.CitadelInteractorIF, error) {
+			return usecase.RestoreCitadelInteractor(data, new(presenter.CitadelWebPresenter))
+		},
+		controller.NewCitadelWebControllerWithProvider)
 }

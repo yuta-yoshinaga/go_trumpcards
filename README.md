@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した368種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した369種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -387,6 +387,7 @@ Go + Clean Architecture で実装した368種類のトランプゲーム。CLI �
 | リテラチャー (Literature) | `literature` | [CUI](docs/manual/cui/literature.md) / [Web](docs/manual/web/literature.md) |
 | 掼蛋 (Guandan) | `guandan` | [CUI](docs/manual/cui/guandan.md) / [Web](docs/manual/web/guandan.md) |
 | 升级 / 拖拉机 (Sheng Ji) | `shengji` | [CUI](docs/manual/cui/shengji.md) / [Web](docs/manual/web/shengji.md) |
+| シタデル (Citadel) | `citadel` | [CUI](docs/manual/cui/citadel.md) / [Web](docs/manual/web/citadel.md) |
 
 ## Demo
 
