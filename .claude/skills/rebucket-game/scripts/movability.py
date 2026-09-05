@@ -54,6 +54,11 @@ def find_wccs(nodes, edges):
     return wccs
 
 def main() -> None:
+    # Reject unknown flags the way move-game.py does. Silently ignoring them
+    # means a typo like `--al` prints the default view and reads as success.
+    unknown = [a for a in sys.argv[1:] if a != "--all"]
+    if unknown:
+        raise SystemExit(f"unknown argument(s): {' '.join(unknown)}\n{__doc__}")
     show_all = "--all" in sys.argv
     types, buckets_map = mg.load_games()
     all_types = list(types.values())
