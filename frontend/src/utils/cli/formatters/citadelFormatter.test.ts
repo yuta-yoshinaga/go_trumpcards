@@ -18,7 +18,7 @@ function makeState(overrides?: Partial<CitadelResponse>): CitadelResponse {
 describe('formatCitadelState', () => {
   it('renders header and empty board', () => {
     const result = formatCitadelState(makeState());
-    expect(result).toContain('Beleaguered Castle');
+    expect(result).toContain('Citadel');
     expect(result).toContain('foundation:');
     expect(result).toContain('t0: [empty]');
   });

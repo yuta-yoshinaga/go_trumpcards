@@ -3,13 +3,13 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
-/** A single tableau card in Beleaguered Castle. */
+/** A single tableau card in Citadel. */
 export interface CitadelTableauCard {
   card: Card | null;
   faceUp: boolean;
 }
 
-/** A suggested move hint in Beleaguered Castle. */
+/** A suggested move hint in Citadel. */
 export interface CitadelHint {
   fromCol: number;
   cardIndex: number;
@@ -17,7 +17,7 @@ export interface CitadelHint {
   toCol: number;
 }
 
-/** Full Beleaguered Castle game state returned from the API. */
+/** Full Citadel game state returned from the API. */
 export interface CitadelResponse extends BaseGameResponse {
   tableau: CitadelTableauCard[][];
   foundation: Card[][];
@@ -29,7 +29,7 @@ export interface CitadelResponse extends BaseGameResponse {
   hint?: CitadelHint;
 }
 
-/** Source or target zone for a Beleaguered Castle card move. */
+/** Source or target zone for a Citadel card move. */
 export interface CitadelMoveZone {
   zone: string;
   col?: number;

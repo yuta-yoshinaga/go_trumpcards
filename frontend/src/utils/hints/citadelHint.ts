@@ -2,9 +2,9 @@ import type { CitadelResponse } from '../../types/card';
 import type { HintResult } from '../../types/hint';
 import { CitadelPhase } from '../../types/phases';
 
-/** Returns a Beleaguered Castle frontend hint or null.
+/** Returns a Citadel frontend hint or null.
  *
- * Beleaguered Castle is a high-difficulty solitaire where every card sits face-up
+ * Citadel is a high-difficulty solitaire where every card sits face-up
  * from the start, so the strongest tactical advice is "always advance to the
  * foundation if legal" because freeing a column top opens future moves. The
  * backend supplies the next-move hint via `state.hint`; we surface it unchanged. */

@@ -4,7 +4,7 @@ package presenter
 
 import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
-// CitadelPresenter Beleaguered Castle プレゼンターインタフェース
+// CitadelPresenter Citadel プレゼンターインタフェース
 type CitadelPresenter interface {
 	GamePresenter[interfaces.CitadelGame]
 	// HintOutput ヒント情報を出力する

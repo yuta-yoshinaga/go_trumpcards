@@ -5,7 +5,7 @@ import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
 import { useHintRequest } from './useHintRequest';
 
-/** Hook that manages Beleaguered Castle game state, source selection, hints, and moves. */
+/** Hook that manages Citadel game state, source selection, hints, and moves. */
 export function useCitadelGame() {
   const { state, loading, error, exec: rawExec, retry } = useGameApi(citadelApi.exec);
   const [selectedSource, setSelectedSource] = useState<CitadelMoveZone | null>(null);

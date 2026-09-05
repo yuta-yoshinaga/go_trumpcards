@@ -10,7 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
-// CitadelWebPresenter Beleaguered Castle Web プレゼンタークラス
+// CitadelWebPresenter Citadel Web プレゼンタークラス
 type CitadelWebPresenter struct{}
 
 // Output ゲーム状態をJSON出力
@@ -18,7 +18,7 @@ func (p *CitadelWebPresenter) Output(bc interfaces.CitadelGame, lastErr error) s
 	resObj := new(controller.CitadelWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, bc, int(bc.GetPhase()))
 
-	// タブロー — every card in Beleaguered Castle is face-up by rule, but we
+	// タブロー — every card in Citadel is face-up by rule, but we
 	// surface the domain's FaceUp field rather than hardcoding it so a future
 	// hidden-deal variant would not silently leak state through this presenter.
 	tableau := bc.GetTableau()

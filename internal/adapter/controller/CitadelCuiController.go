@@ -11,7 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// CitadelCuiController Beleaguered Castle CUI コントローラークラス
+// CitadelCuiController Citadel CUI コントローラークラス
 type CitadelCuiController struct {
 	bi usecase.CitadelInteractorIF
 }
@@ -35,7 +35,7 @@ func (c *CitadelCuiController) Exec(command string) string {
 }
 
 // handleMove 移動コマンドを処理
-// Beleaguered Castle has no waste/stock; supported syntax:
+// Citadel has no waste/stock; supported syntax:
 //
 //	m <fromCol> <toCol>   - move top card between tableau columns
 //	m <fromCol> f         - move top card to foundation

@@ -8,7 +8,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// CitadelWebInput Beleaguered Castle Web インプット
+// CitadelWebInput Citadel Web インプット
 type CitadelWebInput struct {
 	BaseWebInput
 	From *CitadelWebZone `json:"from,omitempty"`
@@ -36,7 +36,7 @@ type CitadelWebOutputHint struct {
 	ToCol     int    `json:"toCol"`
 }
 
-// CitadelWebOutput Beleaguered Castle Web アウトプット
+// CitadelWebOutput Citadel Web アウトプット
 type CitadelWebOutput struct {
 	Tableau    [][]*CitadelWebOutputTableauCard `json:"tableau"`
 	Foundation [][]*WebOutputCard               `json:"foundation"`
@@ -45,7 +45,7 @@ type CitadelWebOutput struct {
 	WebOutputBase
 }
 
-// CitadelWebController Beleaguered Castle Web コントローラークラス
+// CitadelWebController Citadel Web コントローラークラス
 type CitadelWebController = GameWebController[usecase.CitadelInteractorIF, CitadelWebInput, *CitadelWebOutput]
 
 // NewCitadelWebController and NewCitadelWebControllerWithProvider are

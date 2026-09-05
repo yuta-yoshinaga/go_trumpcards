@@ -6,7 +6,7 @@ import { createSolitaireMoveApi } from '../gameExec';
 
 export type { CitadelMoveZone, CitadelResponse };
 
-/** API client for the Beleaguered Castle /citadel/exec endpoint. */
+/** API client for the Citadel /citadel/exec endpoint. */
 export const citadelApi = createSolitaireMoveApi<
   CitadelResponse,
   CitadelMoveZone,

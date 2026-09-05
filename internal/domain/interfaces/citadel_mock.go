@@ -8,7 +8,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
-// MockCitadelGame Beleaguered Castle ゲームモック
+// MockCitadelGame Citadel ゲームモック
 type MockCitadelGame struct {
 	mock.Mock
 }

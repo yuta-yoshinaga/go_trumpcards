@@ -4,7 +4,7 @@ package usecase
 
 import "github.com/stretchr/testify/mock"
 
-// MockCitadelInteractor Beleaguered Castle インタラクターモック
+// MockCitadelInteractor Citadel インタラクターモック
 type MockCitadelInteractor struct {
 	mock.Mock
 }

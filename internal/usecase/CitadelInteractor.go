@@ -8,7 +8,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
 
-// CitadelInteractorIF Beleaguered Castle インタラクターインタフェース
+// CitadelInteractorIF Citadel インタラクターインタフェース
 type CitadelInteractorIF interface {
 	// Snapshot serialises game state for KV persistence.
 	Snapshot() ([]byte, error)
@@ -32,7 +32,7 @@ type CitadelInteractorIF interface {
 	UndoN(n int) string
 }
 
-// CitadelInteractor Beleaguered Castle インタラクタークラス
+// CitadelInteractor Citadel インタラクタークラス
 type CitadelInteractor struct {
 	GameBase[interfaces.CitadelGame]
 	bcp presenter.CitadelPresenter

@@ -22,7 +22,7 @@ const VALID_COMMANDS = [
   '?',
 ];
 
-/** Parse a Beleaguered Castle CLI command into API exec arguments. */
+/** Parse a Citadel CLI command into API exec arguments. */
 export function parseCitadelCommand(input: string): CliParseResult<CitadelArgs> {
   const { cmd, args } = splitCommand(input);
 
@@ -96,7 +96,7 @@ function parseMoveCommand(args: string[]): CliParseResult<CitadelArgs> {
   return { error: 'Invalid target: use t<col> (tableau) or f / f<idx> (foundation)' };
 }
 
-/** Help text for Beleaguered Castle CLI mode. */
+/** Help text for Citadel CLI mode. */
 export const CITADEL_HELP: string[] = [
   'm t<c> t<c>     - Move tableau top to column',
   'm t<c> f        - Move to any foundation',

@@ -4,7 +4,7 @@ package interfaces
 
 import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
-// CitadelGame Beleaguered Castle ゲームインタフェース
+// CitadelGame Citadel ゲームインタフェース
 type CitadelGame interface {
 	SolitaireGame
 	// GetGameEndFlag reports whether the game has left the playing phase.

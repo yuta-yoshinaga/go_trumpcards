@@ -1,11 +1,11 @@
 import type { CitadelResponse } from '../../../types/card';
 import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
-/** Format a Beleaguered Castle game state as terminal text. */
+/** Format a Citadel game state as terminal text. */
 export function formatCitadelState(state: CitadelResponse): string {
   const lines: string[] = [];
 
-  lines.push(formatHeader('Beleaguered Castle'));
+  lines.push(formatHeader('Citadel'));
 
   // Foundations (4 suits)
   const fnd = state.foundation.map((pile) => (pile.length > 0 ? formatCard(pile[pile.length - 1]) : '[  ]'));

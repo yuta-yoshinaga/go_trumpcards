@@ -13,7 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// citadelColumnStr returns the display string for a Beleaguered Castle tableau column.
+// citadelColumnStr returns the display string for a Citadel tableau column.
 func citadelColumnStr(colCards []*domain.CitadelTableauCard) string {
 	parts := make([]string, len(colCards))
 	for j, tc := range colCards {
@@ -22,7 +22,7 @@ func citadelColumnStr(colCards []*domain.CitadelTableauCard) string {
 	return strings.Join(parts, " ")
 }
 
-// CitadelCuiPresenter renders the Beleaguered Castle CUI view.
+// CitadelCuiPresenter renders the Citadel CUI view.
 type CitadelCuiPresenter struct{}
 
 // Output renders the current game state for the active locale.
@@ -88,7 +88,7 @@ func (p *CitadelCuiPresenter) Output(bc interfaces.CitadelGame, lastErr error) s
 	})
 }
 
-// HintOutput emits the current Beleaguered Castle hint.
+// HintOutput emits the current Citadel hint.
 func (p *CitadelCuiPresenter) HintOutput(bc interfaces.CitadelGame) string {
 	hint := bc.GetHint()
 	if hint == nil {
