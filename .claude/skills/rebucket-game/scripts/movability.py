@@ -13,8 +13,13 @@ showing "retag 0" is still a valid and impactful move candidate.
 """
 
 from __future__ import annotations
-import collections, importlib.util, re, sys
+import collections, importlib.util, re, signal, sys
 from pathlib import Path
+
+# The documented usage pipes this into `head`, and the report is 200+ lines, so the
+# reader closes the pipe every time. Without this, Python prints a BrokenPipeError
+# traceback to stderr after a perfectly successful run.
+signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 HERE = Path(__file__).resolve().parent
 
