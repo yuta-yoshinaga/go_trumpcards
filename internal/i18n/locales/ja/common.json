@@ -513,6 +513,7 @@
   "usageCContract06Trumpsuit14ForKingTrump": "使い方: c <contract 0-6> [King Trump なら切り札スート 1-4]",
   "usageCContract06Trumpsuit14ForTrumps": "使い方: c <contract 0-6> [Trumps なら切り札スート 1-4]",
   "usageDiscardIJTwoCardIndices": "使い方: discard <i> <j> (手札の番号を 2 つ)\n",
+  "usageDiscardIJKThreeCardIndices": "使い方: discard <i> <j> <k> (手札の番号を 3 つ)\n",
   "usageExchangeI1I2I3I4I5I6SixCardIndicesToDiscard": "使い方: exchange <i1> <i2> <i3> <i4> <i5> <i6>  (捨てる手札の番号を 6 つ)\n",
   "usageExchangeIJKLMColor5CardIndicesTrumpColor14": "使い方: exchange <i> <j> <k> <l> <m> <color>  (手札の番号 5 つ + 切り札の色 1-4)\n",
   "usageExchangeIJKThreeCardIndicesToDiscard": "使い方: exchange <i> <j> <k>  (捨てる手札の番号を 3 つ)\n",

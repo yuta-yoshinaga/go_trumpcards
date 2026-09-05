@@ -7221,6 +7221,30 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"batak.helpSetDifficulty", "batak.helpSetRounds"},
 		}),
+	BindCuiFor("binokel",
+		func() usecase.BinokelInteractorIF {
+			return usecase.NewBinokelInteractor(domain.NewDefaultBinokel(), new(presenter.BinokelCuiPresenter))
+		},
+		controller.NewBinokelCuiController,
+		CuiHelpSpec{
+			TitleKey: "binokel.helpTitle",
+			ExampleKeys: []string{
+				"binokel.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"binokel.helpBid",
+				"binokel.helpPass",
+				"binokel.helpDiscard",
+				"binokel.helpTrump",
+				"binokel.helpMeld",
+				"binokel.helpPlay",
+				"binokel.helpNext",
+				"binokel.helpNextRound",
+				"binokel.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"binokel.helpSetDifficulty", "binokel.helpSetLimit"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

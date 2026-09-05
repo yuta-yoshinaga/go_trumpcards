@@ -37,6 +37,7 @@ export * from './games/bideuchre';
 export * from './games/bidwhist';
 export * from './games/bigben';
 export * from './games/bigtwo';
+export * from './games/binokel';
 export * from './games/bisley';
 export * from './games/blackhole';
 export * from './games/blackjack';

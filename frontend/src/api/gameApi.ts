@@ -42,6 +42,7 @@ export * from './games/bigben';
 export * from './games/bigo';
 export * from './games/bigohilo';
 export * from './games/bigtwo';
+export * from './games/binokel';
 export * from './games/bisley';
 export * from './games/blackhole';
 export * from './games/blackjack';
@@ -752,6 +753,7 @@ export const games = [
   'bauernschnapsen',
   'citadel',
   'batak',
+  'binokel',
 ] as const;
 
 /** Union of every registered game name — the keys of the `games` list. */

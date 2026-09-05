@@ -31,6 +31,7 @@ import type {
   BidWhistResponse,
   BigBenResponse,
   BigTwoResponse,
+  BinokelResponse,
   BisleyResponse,
   BlackHoleResponse,
   BlackJackResponse,
@@ -387,6 +388,7 @@ import { getBidEuchreHint } from '../utils/hints/bideuchreHint';
 import { getBidWhistHint } from '../utils/hints/bidwhistHint';
 import { getBigBenHint } from '../utils/hints/bigbenHint';
 import { getBigTwoHint } from '../utils/hints/bigtwoHint';
+import { getBinokelHint } from '../utils/hints/binokelHint';
 import { getBisleyHint } from '../utils/hints/bisleyHint';
 import { getBlackHoleHint } from '../utils/hints/blackholeHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
@@ -906,6 +908,7 @@ export const hintFactories = {
   cirulla: (s) => getCirullaHint(s as CirullaResponse),
   citadel: (s) => getCitadelHint(s as CitadelResponse),
   batak: (s) => getBatakHint(s as BatakResponse),
+  binokel: (s) => getBinokelHint(s as BinokelResponse),
   diloti: (s) => getDilotiHint(s as DilotiResponse),
   comet: (s) => getCometHint(s as CometResponse),
   costlycolours: (s) => getCostlyColoursHint(s as CostlyColoursResponse),

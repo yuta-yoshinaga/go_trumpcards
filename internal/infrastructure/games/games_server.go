@@ -1865,4 +1865,9 @@ func init() {
 			return usecase.NewBatakInteractor(domain.NewDefaultBatak(), new(presenter.BatakWebPresenter))
 		},
 		controller.NewBatakWebController)
+	BindWebControllerFor("binokel",
+		func() usecase.BinokelInteractorIF {
+			return usecase.NewBinokelInteractor(domain.NewDefaultBinokel(), new(presenter.BinokelWebPresenter))
+		},
+		controller.NewBinokelWebController)
 }

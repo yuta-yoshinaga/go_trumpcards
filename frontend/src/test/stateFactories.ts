@@ -5,6 +5,7 @@ import type {
   BasraResponse,
   BatakResponse,
   BeziqueResponse,
+  BinokelResponse,
   BoliviaPlayerData,
   BoliviaResponse,
   BouillotteResponse,
@@ -5368,4 +5369,82 @@ const baseCostlyColoursState: CostlyColoursResponse = {
  */
 export function makeCostlyColoursState(overrides?: Partial<CostlyColoursResponse>): CostlyColoursResponse {
   return { ...baseCostlyColoursState, ...overrides };
+}
+
+/** Base Binokel state used as default for {@link makeBinokelState}. */
+const baseBinokelState: BinokelResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 15,
+      cards: [],
+      score: 0,
+      trickCount: 0,
+      bid: 0,
+      hasPassed: false,
+      meldScore: 0,
+      trickPoints: 0,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 15,
+      cards: [],
+      score: 0,
+      trickCount: 0,
+      bid: 0,
+      hasPassed: false,
+      meldScore: 0,
+      trickPoints: 0,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      cardCount: 15,
+      cards: [],
+      score: 0,
+      trickCount: 0,
+      bid: 0,
+      hasPassed: false,
+      meldScore: 0,
+      trickPoints: 0,
+    },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 0,
+  currentPlayerIdx: 0,
+  bidPlayerIdx: 0,
+  dealerIdx: 2,
+  trumpSuit: 0,
+  highestBid: 0,
+  highestBidder: -1,
+  currentTrick: [],
+  scores: [0, 0, 0],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  leadPlayerIdx: -1,
+  playerMelds: [[], [], []],
+  dabb: [],
+  dabbDiscarded: [],
+  validPlayIndices: [],
+  meldTable: [
+    { type: 0, points: 10 },
+    { type: 1, points: 20 },
+    { type: 2, points: 40 },
+    { type: 17, points: 1500 },
+  ],
+  message: '',
+  config: { cpuDifficulty: 1, pointLimit: 1500 },
+};
+
+/**
+ * Creates a {@link BinokelResponse} with sensible defaults.
+ *
+ * @param overrides - Partial BinokelResponse fields to override.
+ * @returns A complete BinokelResponse suitable for use in tests.
+ */
+export function makeBinokelState(overrides?: Partial<BinokelResponse>): BinokelResponse {
+  return { ...baseBinokelState, ...overrides };
 }

@@ -758,6 +758,8 @@ tags:
     description: Citadel (シタデル) game - Beleaguered Castle variant with 8 tableau columns where eligible cards auto-build to foundations during the initial deal and empty columns accept any card
   - name: batak
     description: Batak (バタック) game - Turkish trick-taking auction game with spade trumps and asymmetric scoring
+  - name: binokel
+    description: Binokel (ビノクル) game - 3-player trick-taking and melding game with 48 cards and Dabb
 
 paths:
   /blackjack/exec:
@@ -33616,6 +33618,126 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BatakResponse'
+  /binokel/exec:
+    post:
+      tags:
+        - binokel
+      summary: Execute a Binokel (ビノクル) game command
+      description: |
+        Send a command to advance the Binokel game session identified by
+        `sessionId`. Binokel is a 3-player trick-taking and melding game from
+        Southwestern Germany (Württemberg), played with a 48-card deck (A, 10,
+        K, Q, J, 7 × 2). Each player receives 15 cards and 3 cards form the
+        widow (Dabb). Players bid in 10-point increments starting at 150. The
+        highest bidder wins the auction, takes the 3-card Dabb into hand,
+        discards 3 cards back to Dabb (which count toward trick points), and
+        calls the trump suit. Melds are declared and scored (Dix, Marriages,
+        Binokel, Arounds, Non-trump Run, Trump Run, Rundgang, and double
+        melds). Then 15 tricks are played with strict follow rules (must
+        follow, must head/win, must trump if void). Declarer scores meld and
+        trick points if meeting or exceeding the bid, or loses the bid amount.
+        The game ends when a player reaches the point limit (default 1000).
+
+        Phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Bidding phase (150+, step 10, or pass) |
+        | Dabb      | `1`   | Declarer takes Dabb and discards 3 cards |
+        | Trump     | `2`   | Declarer calls trump suit (1=S, 2=C, 3=H, 4=D) |
+        | Meld      | `3`   | All players declare melds; confirm to proceed |
+        | Play      | `4`   | 15-trick play phase |
+        | TrickEnd  | `5`   | Trick ended; call `next` / `n` |
+        | RoundEnd  | `6`   | Round ended; call `nextround` / `nr` |
+        | GameEnd   | `7`   | Point limit reached; winner determined |
+
+        Commands:
+
+        | Command            | Aliases | Description |
+        |--------------------|---------|-------------|
+        | `reset` / `r`      |         | Restart with optional config |
+        | `bid` / `b`        |         | Place bid (150+, step 10) |
+        | `pass` / `pa`      |         | Pass in auction |
+        | `discard` / `d`    |         | Discard 3 cards to Dabb |
+        | `trump` / `t`      |         | Call trump suit (1-4) |
+        | `meld` / `m`       |         | Confirm melds |
+        | `play` / `p`       |         | Play card at index |
+        | `next` / `n`       |         | Advance to next trick |
+        | `nextround` / `nr` |         | Advance to next round |
+        | `hint` / `h`       |         | Suggested move |
+        | `log` / `l`        |         | View action log |
+      operationId: binokelExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, pass, pa, discard, d, trump, t, meld, m, play, p, next, n, nextround, nr, hint, h, log, l]
+                bidAmount:
+                  type: integer
+                  description: Bid amount for `bid`/`b` (150+, step 10)
+                suit:
+                  type: integer
+                  description: Trump suit (1=Spade, 2=Clover, 3=Heart, 4=Diamond)
+                cardIndex:
+                  type: integer
+                  description: Card index for `play`/`p`
+                discardIndices:
+                  type: array
+                  items:
+                    type: integer
+                  description: 3 card indices to discard to Dabb
+                cardIndices:
+                  type: array
+                  items:
+                    type: integer
+                  description: Alternative field for discard indices
+                config:
+                  $ref: '#/components/schemas/BinokelConfig'
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 160
+                value:
+                  command: b
+                  bidAmount: 160
+                  sessionId: my-session-001
+              pass:
+                summary: Pass
+                value:
+                  command: pa
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/BinokelResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+                description: |
+                  The shape depends on the command. Ordinary commands return the game
+                  state; `log` returns the action log instead.
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BinokelResponse'
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -79979,3 +80101,162 @@ components:
               nullable: true
             reason:
               type: string
+
+    BinokelConfig:
+      type: object
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: "0 = Easy, 1 = Normal, 2 = Hard"
+          enum: [0, 1, 2]
+        pointLimit:
+          type: integer
+          description: Target score to end the game (default 1000)
+
+    BinokelPlayer:
+      type: object
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        score:
+          type: integer
+        trickCount:
+          type: integer
+        bid:
+          type: integer
+        hasPassed:
+          type: boolean
+        meldScore:
+          type: integer
+        trickPoints:
+          type: integer
+
+    BinokelMeld:
+      type: object
+      properties:
+        type:
+          type: integer
+        points:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+
+    BinokelMeldTableEntry:
+      type: object
+      properties:
+        type:
+          type: integer
+        points:
+          type: integer
+
+    BinokelHint:
+      type: object
+      nullable: true
+      properties:
+        cardIndex:
+          type: integer
+          nullable: true
+        bidAmount:
+          type: integer
+          nullable: true
+        pass:
+          type: boolean
+          nullable: true
+        suit:
+          type: integer
+          nullable: true
+        reason:
+          type: string
+
+    BinokelResponse:
+      type: object
+      description: |
+        Current state of the Binokel game.
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/BinokelPlayer'
+        phase:
+          type: integer
+          description: "0 = Bid, 1 = Dabb, 2 = Trump, 3 = Meld, 4 = Play, 5 = TrickEnd, 6 = RoundEnd, 7 = GameEnd"
+          enum: [0, 1, 2, 3, 4, 5, 6, 7]
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+        highestBid:
+          type: integer
+        highestBidder:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        scores:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        playerMelds:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/BinokelMeld'
+        dabb:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        dabbDiscarded:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        validPlayIndices:
+          type: array
+          items:
+            type: integer
+        hint:
+          $ref: '#/components/schemas/BinokelHint'
+        meldTable:
+          type: array
+          items:
+            $ref: '#/components/schemas/BinokelMeldTableEntry'
+        config:
+          $ref: '#/components/schemas/BinokelConfig'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string

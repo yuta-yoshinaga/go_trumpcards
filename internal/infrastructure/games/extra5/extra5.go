@@ -277,4 +277,12 @@ func init() {
 			return usecase.RestoreBatakInteractor(data, new(presenter.BatakWebPresenter))
 		},
 		controller.NewBatakWebControllerWithProvider)
+	games.RegisterKVGame("binokel", games.CategoryExtra5,
+		func() usecase.BinokelInteractorIF {
+			return usecase.NewBinokelInteractor(domain.NewDefaultBinokel(), new(presenter.BinokelWebPresenter))
+		},
+		func(data []byte) (usecase.BinokelInteractorIF, error) {
+			return usecase.RestoreBinokelInteractor(data, new(presenter.BinokelWebPresenter))
+		},
+		controller.NewBinokelWebControllerWithProvider)
 }

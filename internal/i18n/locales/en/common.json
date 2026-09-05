@@ -513,6 +513,7 @@
   "usageCContract06Trumpsuit14ForKingTrump": "Usage: c <contract 0-6> [trumpSuit 1-4 for King Trump]",
   "usageCContract06Trumpsuit14ForTrumps": "Usage: c <contract 0-6> [trumpSuit 1-4 for Trumps]",
   "usageDiscardIJTwoCardIndices": "Usage: discard <i> <j> (two card indices)\n",
+  "usageDiscardIJKThreeCardIndices": "Usage: discard <i> <j> <k> (three card indices)\n",
   "usageExchangeI1I2I3I4I5I6SixCardIndicesToDiscard": "Usage: exchange <i1> <i2> <i3> <i4> <i5> <i6>  (six card indices to discard)\n",
   "usageExchangeIJKLMColor5CardIndicesTrumpColor14": "Usage: exchange <i> <j> <k> <l> <m> <color>  (5 card indices + trump color 1-4)\n",
   "usageExchangeIJKThreeCardIndicesToDiscard": "Usage: exchange <i> <j> <k>  (three card indices to discard)\n",

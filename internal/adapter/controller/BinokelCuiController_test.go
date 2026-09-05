@@ -1,0 +1,397 @@
+//go:build test
+
+package controller_test
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	mockUsecases "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+)
+
+func newBinokelMock() *mockUsecases.MockBinokelInteractor {
+	m := new(mockUsecases.MockBinokelInteractor)
+	m.On("GetConfig").Return(domain.DefaultBinokelConfig())
+	m.On("ResetWithConfig", mock.Anything).Return(`{"phase":0}`)
+	m.On("Bid", mock.Anything).Return(`{"phase":0}`)
+	m.On("Pass").Return(`{"phase":0}`)
+	m.On("DiscardToDabb", mock.Anything).Return(`{"phase":0}`)
+	m.On("CallTrump", mock.Anything).Return(`{"phase":0}`)
+	m.On("ConfirmMelds").Return(`{"phase":0}`)
+	m.On("Play", mock.Anything).Return(`{"phase":0}`)
+	m.On("NextTrick").Return(`{"phase":0}`)
+	m.On("NextRound").Return(`{"phase":0}`)
+	m.On("Hint").Return(`{"phase":0}`)
+	m.On("ActionLog").Return(`[]`)
+	return m
+}
+
+func TestBinokelCuiController_Exec(t *testing.T) {
+	mockOutput := `{"phase":0}`
+
+	// quit
+	t.Run("quit command q", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		assert.Equal(t, "bye.", c.Exec("q"))
+	})
+
+	t.Run("quit command quit", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		assert.Equal(t, "bye.", c.Exec("quit"))
+	})
+
+	// reset
+	t.Run("reset command r preserves config", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("r")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "GetConfig")
+		m.AssertCalled(t, "ResetWithConfig", domain.DefaultBinokelConfig())
+	})
+
+	t.Run("reset command reset preserves config", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("reset")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "GetConfig")
+	})
+
+	// bid
+	t.Run("bid command b with amount", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("b 150")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Bid", 150)
+	})
+
+	t.Run("bid command bid with amount", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("bid 160")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Bid", 160)
+	})
+
+	t.Run("bid command no args", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("b")
+		assert.Contains(t, result, msgStem("bidAmountRequired"))
+	})
+
+	t.Run("bid command invalid arg", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("b abc")
+		assert.Contains(t, result, msgStem("invalidBidAmount"))
+	})
+
+	t.Run("bid command below min", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("b 140")
+		assert.Contains(t, result, msgKey("invalidBidAmount", "val", "140"))
+	})
+
+	t.Run("bid command not multiple of 10", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("b 155")
+		assert.Contains(t, result, msgKey("invalidBidAmount", "val", "155"))
+	})
+
+	// discard
+	t.Run("discard command d with three indices", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("d 0 1 2")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "DiscardToDabb", []int{0, 1, 2})
+	})
+
+	t.Run("discard command discard with three indices", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("discard 3 4 5")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "DiscardToDabb", []int{3, 4, 5})
+	})
+
+	t.Run("discard command fewer than 3 args", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("d 0 1")
+		assert.Contains(t, result, msgStem("usageDiscardIJKThreeCardIndices"))
+	})
+
+	t.Run("discard command invalid arg", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("d 0 abc 2")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
+	})
+
+	// pass
+	t.Run("pass command pa", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("pa")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Pass")
+	})
+
+	t.Run("pass command pass", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("pass")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Pass")
+	})
+
+	// trump
+	t.Run("trump command t with suit", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("t 3")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "CallTrump", 3)
+	})
+
+	t.Run("trump command trump with suit", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("trump 1")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "CallTrump", 1)
+	})
+
+	t.Run("trump command no args", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("t")
+		assert.Contains(t, result, msgStem("suitRequiredRange"))
+	})
+
+	t.Run("trump command invalid arg", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("t abc")
+		assert.Contains(t, result, msgStem("invalidSuit"))
+	})
+
+	t.Run("trump command out of range", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("t 5")
+		assert.Contains(t, result, msgKey("invalidSuit", "val", "5"))
+	})
+
+	// meld
+	t.Run("meld command m", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("m")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "ConfirmMelds")
+	})
+
+	t.Run("meld command meld", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("meld")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "ConfirmMelds")
+	})
+
+	// play
+	t.Run("play command p with index", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("p 2")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Play", 2)
+	})
+
+	t.Run("play command play with index", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("play 5")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Play", 5)
+	})
+
+	t.Run("play command no args", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("p")
+		assert.Contains(t, result, msgCardIndexRequired())
+	})
+
+	t.Run("play command invalid arg", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("p abc")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
+	})
+
+	// next
+	t.Run("next command n", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("n")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "NextTrick")
+	})
+
+	t.Run("next command next", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("next")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "NextTrick")
+	})
+
+	// nextround
+	t.Run("nextround command nr", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("nr")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "NextRound")
+	})
+
+	t.Run("nextround command nextround", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("nextround")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "NextRound")
+	})
+
+	// setdifficulty
+	t.Run("setdifficulty sd valid", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("sd 2")
+		assert.Equal(t, mockOutput, result)
+		expected := domain.DefaultBinokelConfig()
+		expected.CpuDifficulty = domain.BinokelCpuDifficultyHard
+		m.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("setdifficulty long form", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("setdifficulty 0")
+		assert.Equal(t, mockOutput, result)
+		expected := domain.DefaultBinokelConfig()
+		expected.CpuDifficulty = domain.BinokelCpuDifficultyEasy
+		m.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("setdifficulty no args", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("sd")
+		assert.Contains(t, result, msgCpuDifficultyRequired())
+	})
+
+	t.Run("setdifficulty invalid", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("sd abc")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
+	})
+
+	t.Run("setdifficulty out of range", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("sd 3")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
+	})
+
+	// setlimit
+	t.Run("setlimit sl valid", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("sl 2000")
+		assert.Equal(t, mockOutput, result)
+		expected := domain.DefaultBinokelConfig()
+		expected.PointLimit = 2000
+		m.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("setlimit long form", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("setlimit 500")
+		assert.Equal(t, mockOutput, result)
+		expected := domain.DefaultBinokelConfig()
+		expected.PointLimit = 500
+		m.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("setlimit no args", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("sl")
+		assert.True(t, msgRejected(result))
+	})
+
+	t.Run("setlimit invalid", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("sl abc")
+		assert.Contains(t, result, msgStem("invalidPointLimitPlain"))
+	})
+
+	t.Run("setlimit zero", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("sl 0")
+		assert.Contains(t, result, msgStem("invalidPointLimitPlain"))
+	})
+
+	// hint
+	t.Run("hint command h", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("h")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Hint")
+	})
+
+	t.Run("hint command hint", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("hint")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Hint")
+	})
+
+	// log
+	t.Run("log command l", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("l")
+		assert.Equal(t, `[]`, result)
+		m.AssertCalled(t, "ActionLog")
+	})
+
+	t.Run("log command log", func(t *testing.T) {
+		m := newBinokelMock()
+		c := controller.NewBinokelCuiController(m)
+		result := c.Exec("log")
+		assert.Equal(t, `[]`, result)
+		m.AssertCalled(t, "ActionLog")
+	})
+
+	// unknown / empty
+	t.Run("unknown command", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("unknown")
+		assert.Contains(t, result, "コマンドが不明です")
+	})
+
+	t.Run("unknown command suggests discard", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("discar 0 1 2")
+		assert.Contains(t, result, "discard")
+	})
+
+	t.Run("empty command", func(t *testing.T) {
+		c := controller.NewBinokelCuiController(newBinokelMock())
+		result := c.Exec("")
+		assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
+	})
+}
