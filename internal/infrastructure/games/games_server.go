@@ -1875,4 +1875,9 @@ func init() {
 			return usecase.NewMarjapussiInteractor(domain.NewDefaultMarjapussi(), new(presenter.MarjapussiWebPresenter))
 		},
 		controller.NewMarjapussiWebController)
+	BindWebControllerFor("omi",
+		func() usecase.OmiInteractorIF {
+			return usecase.NewOmiInteractor(domain.NewDefaultOmi(), new(presenter.OmiWebPresenter))
+		},
+		controller.NewOmiWebController)
 }

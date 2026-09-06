@@ -293,4 +293,12 @@ func init() {
 			return usecase.RestoreMarjapussiInteractor(data, new(presenter.MarjapussiWebPresenter))
 		},
 		controller.NewMarjapussiWebControllerWithProvider)
+	games.RegisterKVGame("omi", games.CategoryExtra5,
+		func() usecase.OmiInteractorIF {
+			return usecase.NewOmiInteractor(domain.NewDefaultOmi(), new(presenter.OmiWebPresenter))
+		},
+		func(data []byte) (usecase.OmiInteractorIF, error) {
+			return usecase.RestoreOmiInteractor(data, new(presenter.OmiWebPresenter))
+		},
+		controller.NewOmiWebControllerWithProvider)
 }
