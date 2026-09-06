@@ -1,0 +1,83 @@
+{
+  "phase": {
+    "callTrump": "Call Trump",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Point Limit",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "cards": "{{count}} cards",
+  "teamScores": "Team Scores",
+  "team": "Team {{n}}",
+  "teamYou": "Team {{n}} (You)",
+  "trumpSuit": "Trump: {{suit}}",
+  "noTrump": "Trump not yet called",
+  "dealer": "Dealer",
+  "trumpCaller": "Trump Caller",
+  "maker": "Maker: Team {{team}}",
+  "sittingOut": "Sitting out",
+  "currentTrick": "Current Trick",
+  "partnership": "Partner: {{partner}}",
+  "trickCount": "Tricks: {{count}}",
+  "callTrumpButton": "Call Trump",
+  "callTrumpPhase": "Choose a trump suit",
+  "cpuCallingTrump": "CPU is calling trump...",
+  "dealStage1Info": "4 cards dealt — awaiting trump call",
+  "dealStage2Info": "8 cards dealt",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "suitSpade": "♠ Spades",
+  "suitClover": "♣ Clubs",
+  "suitHeart": "♥ Hearts",
+  "suitDiamond": "♦ Diamonds",
+  "scoring": {
+    "title": "Scoring",
+    "fiveOrMore": "5+ tricks: 1 point",
+    "allEight": "All 8 tricks (Omi!): 2 points",
+    "fourFour": "4-4 draw: 0 points each",
+    "winAt": "First to {{limit}} points wins"
+  },
+  "teamTricks": "Tricks this round",
+  "result": {
+    "teamWin": "Team {{team}} wins!",
+    "team0Win": "Team 0 wins!",
+    "team1Win": "Team 1 wins!"
+  },
+  "hintPlay": "Recommended card",
+  "hintReason": {
+    "call_strong_suit": "Call trump with strong suit",
+    "lead_trump": "Lead with trump",
+    "lead_off_suit": "Lead with off-suit",
+    "follow_suit": "Follow the lead suit",
+    "trump_cut": "Cut with trump"
+  },
+  "tutorial": {
+    "trumpControls": "In the trump-calling phase, choose one of the four suits as trump.",
+    "trickDisplay": "The current trick. The trump suit beats all others.",
+    "playerHand": "Your hand. You must follow the lead suit if you can.",
+    "playButton": "Select a card and press this button to play it.",
+    "scoreTable": "Team scores. Seats 0+2 are one team, seats 1+3 are the other.",
+    "teamInfo": "Team composition. The player across from you is your partner.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "callStrongSuit": "Recommend calling trump with strong suit",
+    "leadTrump": "Recommend leading with trump",
+    "followSuit": "Follow the led suit",
+    "trumpCut": "Opportunity to cut with trump",
+    "leadOffSuit": "Lead with a non-trump card"
+  },
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
+}

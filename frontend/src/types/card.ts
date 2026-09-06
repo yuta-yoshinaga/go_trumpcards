@@ -221,6 +221,7 @@ export * from './games/oichokabu';
 export * from './games/oldmaid';
 export * from './games/omaha';
 export * from './games/ombre';
+export * from './games/omi';
 export * from './games/openfacechinese';
 export * from './games/osmosis';
 export * from './games/pageone';

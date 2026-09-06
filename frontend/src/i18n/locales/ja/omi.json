@@ -1,0 +1,83 @@
+{
+  "phase": {
+    "callTrump": "切り札宣言",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "cards": "{{count}}枚",
+  "teamScores": "チームスコア",
+  "team": "チーム {{n}}",
+  "teamYou": "チーム {{n}} (あなた)",
+  "trumpSuit": "切り札: {{suit}}",
+  "noTrump": "切り札未定",
+  "dealer": "ディーラー",
+  "trumpCaller": "切り札宣言者",
+  "maker": "メイカー: チーム {{team}}",
+  "sittingOut": "休み",
+  "currentTrick": "現在のトリック",
+  "partnership": "パートナー: {{partner}}",
+  "trickCount": "トリック: {{count}}",
+  "callTrumpButton": "切り札を宣言",
+  "callTrumpPhase": "切り札スートを選んでください",
+  "cpuCallingTrump": "CPU が切り札を宣言中...",
+  "dealStage1Info": "手札4枚 — 切り札宣言待ち",
+  "dealStage2Info": "手札8枚",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "suitSpade": "♠ スペード",
+  "suitClover": "♣ クラブ",
+  "suitHeart": "♥ ハート",
+  "suitDiamond": "♦ ダイヤ",
+  "scoring": {
+    "title": "得点規則",
+    "fiveOrMore": "5トリック以上: 1点",
+    "allEight": "8トリック全取り (Omi): 2点",
+    "fourFour": "4-4引き分け: 両者0点",
+    "winAt": "{{limit}}点先取で勝利"
+  },
+  "teamTricks": "今ラウンドのトリック数",
+  "result": {
+    "teamWin": "チーム {{team}} の勝利！",
+    "team0Win": "チーム0の勝利！",
+    "team1Win": "チーム1の勝利！"
+  },
+  "hintPlay": "推奨カード",
+  "hintReason": {
+    "call_strong_suit": "強いスートで切り札宣言推奨",
+    "lead_trump": "切り札でリード",
+    "lead_off_suit": "切り札以外でリード",
+    "follow_suit": "リードスートに追随",
+    "trump_cut": "切り札でカット"
+  },
+  "tutorial": {
+    "trumpControls": "切り札宣言フェーズでは4つのスートから切り札を選びます。",
+    "trickDisplay": "現在のトリックです。切り札スートが最強です。",
+    "playerHand": "あなたの手札です。リードスートに従う必要があります。",
+    "playButton": "カードを選んだらこのボタンで出します。",
+    "scoreTable": "チームスコアです。席0+2が同チーム、席1+3が対戦チームです。",
+    "teamInfo": "チーム構成です。向かい合ったプレイヤーがパートナーです。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "callStrongSuit": "強いスートで切り札宣言推奨",
+    "leadTrump": "切り札でリード推奨",
+    "followSuit": "リードされたスートに従ってプレイ推奨",
+    "trumpCut": "切り札でカットするチャンス",
+    "leadOffSuit": "切り札以外のカードでリード推奨"
+  },
+  "hintRequested": "ヒントがあります",
+  "noHint": "ヒントはありません"
+}
