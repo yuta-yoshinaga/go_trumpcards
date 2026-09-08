@@ -8,7 +8,6 @@
   "helpSetLimit": "  sl <n>               point limit",
   "helpHint": "  h                    show a hint",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpExampleTrump": "  t 1                  declare Spades as trump",
   "header": "Round: {{round}}  Trick: {{trick}}",
   "dealer": "Dealer: {{name}}",
   "trumpCaller": "Trump caller: {{name}}",

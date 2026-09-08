@@ -8,7 +8,6 @@
   "helpSetLimit": "  sl <n>               ポイント上限設定",
   "helpHint": "  h                    ヒントを表示",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpExampleTrump": "  t 1                  スペードを切り札に指定する",
   "header": "ラウンド: {{round}}  トリック: {{trick}}",
   "dealer": "ディーラー: {{name}}",
   "trumpCaller": "指名者: {{name}}",
