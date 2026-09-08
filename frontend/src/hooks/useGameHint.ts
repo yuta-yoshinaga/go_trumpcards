@@ -326,6 +326,7 @@ import type {
   TichuResponse,
   TienLenResponse,
   ToepenResponse,
+  TongitsResponse,
   TonkResponse,
   TrappolaResponse,
   TrashResponse,
@@ -692,6 +693,7 @@ import { getThreeThirteenHint } from '../utils/hints/threethirteenHint';
 import { getTichuHint } from '../utils/hints/tichuHint';
 import { getTienLenHint } from '../utils/hints/tienlenHint';
 import { getToepenHint } from '../utils/hints/toepenHint';
+import { getTongitsHint } from '../utils/hints/tongitsHint';
 import { getTonkHint } from '../utils/hints/tonkHint';
 import { getTrappolaHint } from '../utils/hints/trappolaHint';
 import { getTrashHint } from '../utils/hints/trashHint';
@@ -921,6 +923,7 @@ export const hintFactories = {
   king: (s) => getKingHint(s as KingResponse),
   flowergarden: (s) => getFlowergardenHint(s as FlowerGardenResponse),
   tonk: (s) => getTonkHint(s as TonkResponse),
+  tongits: (s) => getTongitsHint(s as TongitsResponse),
   thirtyone: (s) => getThirtyOneHint(s as ThirtyOneResponse),
   yaniv: (s) => getYanivHint(s as YanivResponse),
   trappola: (s) => getTrappolaHint(s as TrappolaResponse),

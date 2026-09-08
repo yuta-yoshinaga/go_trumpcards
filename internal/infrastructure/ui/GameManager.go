@@ -7285,6 +7285,20 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"omi.helpSetDifficulty", "omi.helpSetLimit"},
 		}),
+	BindCuiFor("tongits",
+		func() usecase.TongitsInteractorIF {
+			return usecase.NewTongitsInteractor(domain.NewDefaultTongits(), new(presenter.TongitsCuiPresenter))
+		},
+		controller.NewTongitsCuiController,
+		CuiHelpSpec{
+			TitleKey:    "tongits.helpTitle",
+			ExampleKeys: []string{"tongits.helpExampleDraw", "tongits.helpExampleDiscard"},
+			CommandKeys: []string{
+				"tongits.helpDrawStock", "tongits.helpDrawDiscard", "tongits.helpDiscard",
+				"tongits.helpKnock", "tongits.helpNextRound",
+			},
+			SettingKeys: []string{"tongits.helpSetDifficulty", "tongits.helpSetLimit"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

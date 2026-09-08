@@ -30,6 +30,7 @@ describe('gameTheme', () => {
   it('counting/rummy games use blue theme', () => {
     expect(gameTheme.ginrummy.bg).toContain('blue');
     expect(gameTheme.cribbage.bg).toContain('blue');
+    expect(gameTheme.tongits.bg).toContain('blue');
   });
 
   it('Indian Rummy uses its saffron/marigold theme', () => {

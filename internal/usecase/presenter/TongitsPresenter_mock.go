@@ -1,5 +1,4 @@
-//go:build !js || !wasm || extra5
-// +build test
+//go:build test
 
 package presenter
 

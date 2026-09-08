@@ -361,6 +361,7 @@
     "tienlen": "ティエンレン",
     "toepen": "トゥーペン",
     "tonk": "トンク",
+    "tongits": "トンギッツ",
     "trappola": "トラッポラ",
     "trash": "トラッシュ",
     "trenteetquarante": "トラント・エ・カラント",
@@ -2832,7 +2833,11 @@
     "pontoon.errNotHumanTurn": "あなたの手番ではありません",
     "pontoon.errNotPlayerTurn": "プレイヤーの手番ではありません",
     "pontoon.errSplitRequiresEqualRank": "スプリットは同じランクのカードが2枚必要です",
-    "pontoon.errTooManyHands": "これ以上手札を分割できません（最大 {{Max}}）"
+    "pontoon.errTooManyHands": "これ以上手札を分割できません（最大 {{Max}}）",
+    "tongits.discardPhase": "メルドや sapaw を出すか、手札から1枚捨ててください (出し切れば即勝ち)",
+    "tongits.drawPhase": "山札または捨て札から1枚引いてください",
+    "tongits.roundEnd": "ラウンド終了",
+    "tongits.tongitsOnDeal": "配牌 Tongits 成立！即勝利です"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

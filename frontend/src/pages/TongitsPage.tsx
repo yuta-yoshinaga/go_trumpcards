@@ -48,7 +48,12 @@ const TONGITS_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Tongits tutorial step definitions. */
 const TONGITS_TUTORIAL_STEPS: TutorialStep[] = [
-  { target: '[data-tutorial="tongits-draw-area"]', messageKey: 'tutorial.drawArea', placement: 'top', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="tongits-draw-area"]',
+    messageKey: 'tutorial.drawArea',
+    placement: 'top',
+    advanceOn: 'next',
+  },
   {
     target: '[data-tutorial="tongits-player-hand"]',
     messageKey: 'tutorial.playerHand',
