@@ -7265,6 +7265,26 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"marjapussi.helpSetDifficulty"},
 		}),
+	BindCuiFor("omi",
+		func() usecase.OmiInteractorIF {
+			return usecase.NewOmiInteractor(domain.NewDefaultOmi(), new(presenter.OmiCuiPresenter))
+		},
+		controller.NewOmiCuiController,
+		CuiHelpSpec{
+			TitleKey: "omi.helpTitle",
+			ExampleKeys: []string{
+				"omi.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"omi.helpTrump",
+				"omi.helpPlay",
+				"omi.helpNext",
+				"omi.helpNextRound",
+				"omi.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"omi.helpSetDifficulty", "omi.helpSetLimit"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

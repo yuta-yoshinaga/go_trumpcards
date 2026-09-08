@@ -214,6 +214,7 @@ import type {
   OldMaidResponse,
   OmahaResponse,
   OmbreResponse,
+  OmiResponse,
   OpenFaceChineseResponse,
   OsmosisResponse,
   PageOneResponse,
@@ -577,6 +578,7 @@ import { getOldMaidHint } from '../utils/hints/oldmaidHint';
 import { getOmahaHiLoHint } from '../utils/hints/omahaHiLoHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
 import { getOmbreHint } from '../utils/hints/ombreHint';
+import { getOmiHint } from '../utils/hints/omiHint';
 import { getOpenFaceChineseHint } from '../utils/hints/openfacechineseHint';
 import { getOsmosisHint } from '../utils/hints/osmosisHint';
 import { getPageOneHint } from '../utils/hints/pageoneHint';
@@ -912,6 +914,7 @@ export const hintFactories = {
   batak: (s) => getBatakHint(s as BatakResponse),
   binokel: (s) => getBinokelHint(s as BinokelResponse),
   marjapussi: (s) => getMarjapussiHint(s as MarjapussiResponse),
+  omi: (s) => getOmiHint(s as OmiResponse),
   diloti: (s) => getDilotiHint(s as DilotiResponse),
   comet: (s) => getCometHint(s as CometResponse),
   costlycolours: (s) => getCostlyColoursHint(s as CostlyColoursResponse),

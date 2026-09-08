@@ -234,6 +234,7 @@ export * from './games/oldmaid';
 export * from './games/omaha';
 export * from './games/omahahilo';
 export * from './games/ombre';
+export * from './games/omi';
 export * from './games/openfacechinese';
 export * from './games/osmosis';
 export * from './games/pageone';
@@ -756,6 +757,7 @@ export const games = [
   'batak',
   'binokel',
   'marjapussi',
+  'omi',
 ] as const;
 
 /** Union of every registered game name — the keys of the `games` list. */

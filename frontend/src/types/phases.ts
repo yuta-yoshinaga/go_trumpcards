@@ -3285,3 +3285,12 @@ export const MarjapussiPhase = {
   ROUND_END: 2,
   GAME_END: 3,
 } as const;
+
+/** Omi phase constants (sync: internal/domain/Omi.go). */
+export const OmiPhase = {
+  CALL_TRUMP: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
