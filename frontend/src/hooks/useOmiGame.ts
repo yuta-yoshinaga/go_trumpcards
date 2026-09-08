@@ -39,7 +39,7 @@ export function useOmiGame() {
   const apiExec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
   useEffect(() => {
-    apiExec('reset', undefined, undefined, undefined, DEFAULT_OMI_CONFIG);
+    apiExec('reset', undefined, undefined, DEFAULT_OMI_CONFIG);
   }, [apiExec]);
 
   const handleCallTrump = useCallback(

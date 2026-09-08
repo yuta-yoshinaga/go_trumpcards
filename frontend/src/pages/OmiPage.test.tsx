@@ -61,10 +61,7 @@ const playPhaseState: OmiResponse = {
   dealerIdx: 3,
   trumpSuit: 1,
   dealStage: 2,
-  faceUpCard: null,
   makerTeam: 1,
-  goingAlone: false,
-  goingAlonePlayerIdx: -1,
   currentTrick: [],
   teamScores: [0, 0],
   teamTricks: [0, 1],
@@ -161,7 +158,7 @@ describe('OmiPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<OmiPage />);
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, {
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
         cpuDifficulty: 1,
         pointLimit: 10,
       }),
@@ -500,7 +497,7 @@ describe('OmiPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, {
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
         cpuDifficulty: 2,
         pointLimit: 10,
       }),
@@ -521,7 +518,7 @@ describe('OmiPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, {
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
         cpuDifficulty: 1,
         pointLimit: 21,
       }),
@@ -607,7 +604,7 @@ describe('OmiPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, {
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
         cpuDifficulty: 1,
         pointLimit: 10,
       }),
@@ -645,7 +642,7 @@ describe('OmiPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, {
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
         cpuDifficulty: 1,
         pointLimit: 10,
       }),

@@ -25,7 +25,6 @@
   "dealer": "Dealer",
   "trumpCaller": "Trump Caller",
   "maker": "Maker: Team {{team}}",
-  "sittingOut": "Sitting out",
   "currentTrick": "Current Trick",
   "partnership": "Partner: {{partner}}",
   "trickCount": "Tricks: {{count}}",

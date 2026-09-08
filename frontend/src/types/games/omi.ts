@@ -47,13 +47,7 @@ export interface OmiResponse extends BaseGameResponse {
   trumpSuit: number;
   /** Deal stage: 1 = first 4 cards dealt (CallTrump phase); 2 = all 8 cards dealt (Play onwards). */
   dealStage: number;
-  /** Always null in Omi (no face-up card mechanic). */
-  faceUpCard: Card | null;
   makerTeam: number;
-  /** Always false in Omi (no going-alone mechanic). */
-  goingAlone: boolean;
-  /** Always -1 in Omi (no going-alone mechanic). */
-  goingAlonePlayerIdx: number;
   currentTrick: OmiTrickCard[];
   teamScores: number[];
   /** Tricks won per team this round: [team0Tricks, team1Tricks]. */

@@ -30,7 +30,7 @@ func mustOmiOutputJSON(msg string) string {
 }
 
 func TestOmiWebController_Method(t *testing.T) {
-	mockOutput := `{"players":[],"phase":0,"roundNumber":0,"trickNumber":0,"currentPlayerIdx":0,"bidPlayerIdx":0,"dealerIdx":0,"trumpSuit":0,"faceUpCard":null,"makerTeam":0,"goingAlone":false,"goingAlonePlayerIdx":0,"currentTrick":[],"teamScores":[0,0],"gameEndFlag":false,"winnerTeam":0,"leadPlayerIdx":0,"message":"","config":{"cpuDifficulty":0,"pointLimit":0}}`
+	mockOutput := `{"players":[],"phase":0,"roundNumber":0,"trickNumber":0,"currentPlayerIdx":0,"bidPlayerIdx":0,"dealerIdx":0,"trumpSuit":0,"makerTeam":0,"currentTrick":[],"teamScores":[0,0],"gameEndFlag":false,"winnerTeam":0,"leadPlayerIdx":0,"message":"","config":{"cpuDifficulty":0,"pointLimit":0}}`
 	expectedBody := mockOutput
 
 	eiMock := new(usecase.MockOmiInteractor)

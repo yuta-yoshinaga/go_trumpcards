@@ -43,27 +43,24 @@ type OmiWebOutputHint struct {
 
 // OmiWebOutput オミWebアウトプット
 type OmiWebOutput struct {
-	Players             []*OmiWebOutputPlayer `json:"players"`
-	Phase               int                   `json:"phase"`
-	RoundNumber         int                   `json:"roundNumber"`
-	TrickNumber         int                   `json:"trickNumber"`
-	CurrentPlayerIdx    int                   `json:"currentPlayerIdx"`
-	TrumpCallerIdx      int                   `json:"trumpCallerIdx"`
-	BidPlayerIdx        int                   `json:"bidPlayerIdx"`
-	DealerIdx           int                   `json:"dealerIdx"`
-	TrumpSuit           int                   `json:"trumpSuit"`
-	DealStage           int                   `json:"dealStage"`
-	FaceUpCard          *WebOutputCard        `json:"faceUpCard"`
-	MakerTeam           int                   `json:"makerTeam"`
-	GoingAlone          bool                  `json:"goingAlone"`
-	GoingAlonePlayerIdx int                   `json:"goingAlonePlayerIdx"`
-	CurrentTrick        []*WebOutputTrickCard `json:"currentTrick"`
-	TeamScores          [2]int                `json:"teamScores"`
-	TeamTricks          [2]int                `json:"teamTricks"`
-	GameEndFlag         bool                  `json:"gameEndFlag"`
-	WinnerTeam          int                   `json:"winnerTeam"`
-	LeadPlayerIdx       int                   `json:"leadPlayerIdx"`
-	Hint                *OmiWebOutputHint     `json:"hint,omitempty"`
+	Players          []*OmiWebOutputPlayer `json:"players"`
+	Phase            int                   `json:"phase"`
+	RoundNumber      int                   `json:"roundNumber"`
+	TrickNumber      int                   `json:"trickNumber"`
+	CurrentPlayerIdx int                   `json:"currentPlayerIdx"`
+	TrumpCallerIdx   int                   `json:"trumpCallerIdx"`
+	BidPlayerIdx     int                   `json:"bidPlayerIdx"`
+	DealerIdx        int                   `json:"dealerIdx"`
+	TrumpSuit        int                   `json:"trumpSuit"`
+	DealStage        int                   `json:"dealStage"`
+	MakerTeam        int                   `json:"makerTeam"`
+	CurrentTrick     []*WebOutputTrickCard `json:"currentTrick"`
+	TeamScores       [2]int                `json:"teamScores"`
+	TeamTricks       [2]int                `json:"teamTricks"`
+	GameEndFlag      bool                  `json:"gameEndFlag"`
+	WinnerTeam       int                   `json:"winnerTeam"`
+	LeadPlayerIdx    int                   `json:"leadPlayerIdx"`
+	Hint             *OmiWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config OmiWebOutputConfig `json:"config"`
 }

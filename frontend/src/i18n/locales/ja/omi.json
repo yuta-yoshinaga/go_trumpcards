@@ -25,7 +25,6 @@
   "dealer": "ディーラー",
   "trumpCaller": "切り札宣言者",
   "maker": "メイカー: チーム {{team}}",
-  "sittingOut": "休み",
   "currentTrick": "現在のトリック",
   "partnership": "パートナー: {{partner}}",
   "trickCount": "トリック: {{count}}",

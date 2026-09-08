@@ -35,7 +35,6 @@ import { OMI_HELP, parseOmiCommand } from '../utils/cli/commands/omiCommands';
 import { formatOmiState } from '../utils/cli/formatters/omiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { omiLegalPlayIndices } from '../utils/omiLegalPlay';
-import { omiSittingOutIdx } from '../utils/omiSittingOut';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -161,7 +160,7 @@ function OmiPageContent() {
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
-    void apiExec('reset', undefined, undefined, undefined, {
+    void apiExec('reset', undefined, undefined, {
       cpuDifficulty: omiConfig.cpuDifficulty,
       pointLimit: omiConfig.pointLimit,
     });
@@ -173,7 +172,6 @@ function OmiPageContent() {
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanTeam = humanPlayer?.team ?? 0;
   const humanIdx = state.players.findIndex((p) => p.isHuman);
-  const sittingOutIdx = omiSittingOutIdx(state);
   const isCallTrumpPhase = state.phase === OmiPhase.CALL_TRUMP;
   const isPlayPhase = state.phase === OmiPhase.PLAY;
   const isTrickEnd = state.phase === OmiPhase.TRICK_END;
@@ -317,18 +315,16 @@ function OmiPageContent() {
                       {state.players
                         .filter((p) => !p.isHuman)
                         .map((p) => {
-                          const sittingOut = sittingOutIdx === p.id;
                           return (
                             <div
                               key={p.id}
                               data-testid={`omi-player-row-${p.id}`}
-                              className={`text-ds-text-muted text-sm py-0.5 ${sittingOut ? 'opacity-40 grayscale' : ''}`}
+                              className="text-ds-text-muted text-sm py-0.5"
                             >
                               <CpuPlayerLine
                                 player={p}
                                 dealerIdx={state.dealerIdx}
                                 callerIdx={state.bidPlayerIdx}
-                                sittingOut={sittingOut}
                                 t={t}
                               />
                             </div>
@@ -340,19 +336,13 @@ function OmiPageContent() {
                   state.players
                     .filter((p) => !p.isHuman)
                     .map((p) => {
-                      const sittingOut = sittingOutIdx === p.id;
                       return (
-                        <div
-                          key={p.id}
-                          data-testid={`omi-player-row-${p.id}`}
-                          className={`mb-2 p-2 rounded bg-black/30 ${sittingOut ? 'opacity-40 grayscale' : ''}`}
-                        >
+                        <div key={p.id} data-testid={`omi-player-row-${p.id}`} className="mb-2 p-2 rounded bg-black/30">
                           <div className="text-ds-text-muted text-sm">
                             <CpuPlayerLine
                               player={p}
                               dealerIdx={state.dealerIdx}
                               callerIdx={state.bidPlayerIdx}
-                              sittingOut={sittingOut}
                               t={t}
                             />
                           </div>
@@ -556,13 +546,11 @@ function CpuPlayerLine({
   player,
   dealerIdx,
   callerIdx,
-  sittingOut,
   t,
 }: {
   player: OmiPlayerData;
   dealerIdx: number;
   callerIdx: number;
-  sittingOut: boolean;
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
   return (
@@ -571,11 +559,6 @@ function CpuPlayerLine({
       {t('team', { n: player.team })} | {t('trickCount', { count: player.trickCount })}
       {dealerIdx === player.id ? ` | ${t('dealer')}` : ''}
       {callerIdx === player.id && player.team !== undefined ? ` | ${t('trumpCaller')}` : ''}
-      {sittingOut && (
-        <span data-testid={`omi-sitting-out-${player.id}`} className="ml-2 text-ds-warning">
-          💤 {t('sittingOut')}
-        </span>
-      )}
     </>
   );
 }

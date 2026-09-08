@@ -17,7 +17,6 @@ export const omiApi = {
     command: 'reset' | 'calltrump' | 'play' | 'next' | 'nextround' | 'hint',
     cardIndex?: number,
     suit?: number,
-    _goAlone?: undefined,
     config?: OmiConfigInput,
   ) =>
     gameExec<OmiResponse>('omi', {

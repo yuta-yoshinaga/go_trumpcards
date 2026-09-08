@@ -44,10 +44,7 @@ func (p *OmiWebPresenter) buildBase(e interfaces.OmiGame) *controller.OmiWebOutp
 	} else {
 		resObj.DealStage = 2
 	}
-	resObj.FaceUpCard = nil
 	resObj.MakerTeam = e.GetMakerTeam()
-	resObj.GoingAlone = false
-	resObj.GoingAlonePlayerIdx = -1
 	resObj.TeamScores = [2]int{e.GetTeamScore(0), e.GetTeamScore(1)}
 
 	tricks0 := 0

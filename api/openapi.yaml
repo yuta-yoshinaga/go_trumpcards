@@ -44489,13 +44489,7 @@ components:
         dealStage:
           type: integer
           description: Deal stage, distinguishing the first 4-card deal from the second 4-card deal
-        faceUpCard:
-          $ref: '#/components/schemas/Card'
         makerTeam:
-          type: integer
-        goingAlone:
-          type: boolean
-        goingAlonePlayerIdx:
           type: integer
         currentTrick:
           type: array

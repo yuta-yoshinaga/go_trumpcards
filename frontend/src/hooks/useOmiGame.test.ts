@@ -39,9 +39,7 @@ describe('useOmiGame', () => {
 
   it('resets with the default config on mount', async () => {
     renderHook(() => useOmiGame(), { wrapper: createWrapper() });
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, DEFAULT_OMI_CONFIG),
-    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, DEFAULT_OMI_CONFIG));
   });
 
   // Omi: trump is called with `calltrump` + suit number (no goAlone)
