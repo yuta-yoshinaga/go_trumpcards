@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra5
+//go:build test
 // +build test
 
 package usecase
