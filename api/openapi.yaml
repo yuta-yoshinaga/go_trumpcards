@@ -530,6 +530,8 @@ tags:
     description: Call Break (コールブレイク) game - 4-player Spades-style trick-taking game from South Asia; spades are permanent trump, must-trump-if-void rule, int×10 scoring (bid hit = bid*10 + overtricks, miss = -bid*10); 5 rounds fixed, highest cumulative score wins
   - name: tarneeb
     description: Tarneeb (ターニーブ) game - 4-player Middle-Eastern partnership trick-taking. Bid 7..13 or pass; bid winner declares trump suit; bidder team scores +tricks on success / -bid on failure, defender team always scores +tricks; first team to PointLimit wins.
+  - name: omi
+    description: Omi (オミ) game - 4-player partnership trick-taking on a 32-card deck. Deal 4 cards, the dealer's right-hand neighbour declares trump, deal 4 more, then play 8 tricks; 5+ tricks scores 1 point, all 8 scores 2, and 4-4 scores 0 for both teams.
   - name: highcardflush
     description: High Card Flush (ハイカードフラッシュ) game - single-player casino table game. Both player and dealer get 7 cards; longest same-suit subset (flush length) decides the winner (ties broken by high card within the flush). Player places an Ante and optional Flush Bonus / Straight Flush Bonus side bets, then chooses Raise (1x/2x/3x capped by flush length) or Fold. Dealer qualifies on 3+ card flush with 9-high or better.
   - name: briscola
@@ -24510,6 +24512,81 @@ paths:
               schema:
                 $ref: '#/components/schemas/GapsResponse'
 
+  /omi/exec:
+    post:
+      tags:
+        - omi
+      summary: Execute an Omi (オミ) game command
+      description: |
+        Send a command to advance the Omi game session identified by `sessionId`.
+        Omi is a 4-player partnership trick-taking game using a 32-card deck
+        (7-A). Each player receives 4 cards first; the dealer's right-hand
+        neighbour must declare trump with no pass, then the remaining 4 cards
+        are dealt. Players play 8 tricks, following suit when possible.
+
+        | Phase       | Value | Description |
+        |-------------|-------|-------------|
+        | CallTrump   | `0`   | Four cards are dealt; the designated caller declares trump |
+        | Play        | `1`   | Eight-trick play; follow suit when possible |
+        | TrickEnd    | `2`   | Trick resolved; call `next` to continue |
+        | RoundEnd    | `3`   | Score the round; call `nextround` |
+        | GameEnd     | `4`   | A team reached the point limit |
+
+        Scoring is 1 point for 5 or more tricks, a total of 2 points for all
+        8 tricks (Omi), and 0 points for a 4-4 draw for both teams.
+
+        | Command           | Aliases | Description |
+        |-------------------|---------|-------------|
+        | `reset`           | `r`     | Restart with optional config |
+        | `trump`            | `t`, `c`, `call` | Declare trump (1=♠, 2=♣, 3=♥, 4=♦) |
+        | `play`             | `p`     | Play a card at `cardIndex` |
+        | `next`             | `n`     | Advance to the next trick |
+        | `nextround`        | `nr`    | Score the round and start the next |
+        | `setdifficulty`    | `sd`    | Set CPU difficulty (0-2) |
+        | `setlimit`         | `sl`    | Set the point limit |
+        | `hint`             | `h`     | Get a suggested move |
+        | `log`              | `l`     | View the action log |
+      operationId: omiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OmiRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              trump:
+                summary: Declare spades as trump
+                value:
+                  command: trump
+                  suit: 1
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/OmiResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OmiResponse'
+
   /highcardflush/exec:
     post:
       tags:
@@ -44329,6 +44406,148 @@ components:
     # -------------------------------------------------------------------------
     # Tarneeb
     # -------------------------------------------------------------------------
+    OmiRequest:
+      type: object
+      description: Omi game command input
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: "Game command. Accepted values include reset, trump, play, next, nextround, setdifficulty, setlimit, hint, and log, with the aliases documented on the endpoint."
+        suit:
+          type: integer
+          description: "Trump suit (1=♠, 2=♣, 3=♥, 4=♦). Required for trump/call."
+          minimum: 1
+          maximum: 4
+        cardIndex:
+          type: integer
+          description: Card index to play (0-based)
+        n:
+          type: integer
+          description: Common optional numeric input (unused by Omi)
+        config:
+          type: object
+          description: Optional game configuration, used by reset
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier
+
+    OmiResponse:
+      type: object
+      description: Current state of the Omi game
+      properties:
+        players:
+          type: array
+          description: Four players, including the human player
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              team:
+                type: integer
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0=CallTrump, 1=Play, 2=TrickEnd, 3=RoundEnd, 4=GameEnd"
+          enum: [0, 1, 2, 3, 4]
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        trumpCallerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: "Trump suit (1=♠, 2=♣, 3=♥, 4=♦, 0=not yet decided)"
+        dealStage:
+          type: integer
+          description: Deal stage, distinguishing the first 4-card deal from the second 4-card deal
+        faceUpCard:
+          $ref: '#/components/schemas/Card'
+        makerTeam:
+          type: integer
+        goingAlone:
+          type: boolean
+        goingAlonePlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        teamScores:
+          type: array
+          items:
+            type: integer
+        teamTricks:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        hint:
+          type: object
+          nullable: true
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+            suit:
+              type: integer
+              nullable: true
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+
     TarneebConfig:
       type: object
       description: Tarneeb game configuration

@@ -298,7 +298,12 @@ func TestGameManager_SwitchAliasTypoSuggestion(t *testing.T) {
 		typo string
 		want string
 	}{
-		{"gni", "gin"},       // distance 2 from alias "gin"
+		// "gni" sat at distance 2 from BOTH the alias "gin" and the game "omi"
+		// once Omi was added, and the tie broke toward "omi". Use a distance-1
+		// typo instead, like the two rows below. Measured against all 411
+		// names+aliases: "gim" is distance 1 from "gin" and the next candidate
+		// is distance 2, so a newly added short game name cannot flip it.
+		{"gim", "gin"},       // distance 1 from alias "gin"
 		{"7stu", "7stud"},    // distance 1 from alias "7stud"
 		{"crazy9", "crazy8"}, // distance 1 from alias "crazy8"
 	}
