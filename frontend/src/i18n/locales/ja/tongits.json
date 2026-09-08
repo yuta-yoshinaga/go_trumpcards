@@ -1,0 +1,69 @@
+{
+  "phase": {
+    "draw": "ドロー",
+    "discard": "ディスカード",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "drawPile": "山札: {{count}}枚",
+  "discardTop": "捨て札",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "drawStockButton": "山札から引く",
+  "drawDiscardButton": "捨て札から引く",
+  "drawDiscardCardLabel": "捨て札から引く: {{card}}",
+  "discardButton": "捨てる",
+  "knockButton": "ノック",
+  "knockUndercutWarning": "相手の手札が少ないため、アンダーカットのリスクがあります",
+  "nextRound": "次のラウンド",
+  "drawPhase": "山札または捨て札から1枚引いてください",
+  "discardPhase": "手札から1枚捨てるか、ノック (デッドウッド5点以下) してください",
+  "roundEnd": "ラウンド終了",
+  "tongitsOnDeal": "配牌Tongits成立！即勝利です",
+  "tongitsOnDealBanner": {
+    "title": "TONGITS!",
+    "points": "{{points}}点 即勝利",
+    "winner": "{{name}} の勝利"
+  },
+  "knockerMelds": "ノッカーのメルド",
+  "knockerDeadwood": "ノッカーのデッドウッド",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "tutorial": {
+    "drawArea": "山札または捨て札から1枚引きます。",
+    "playerHand": "あなたの手札（5枚）です。メルド（3枚以上の同ランク・同スート連続）を作りましょう。",
+    "discardButton": "不要なカードを1枚捨てます。",
+    "knockButton": "デッドウッドが5点以下になればノックして勝負できます。配牌時に49点・50点ならTongits即勝利！",
+    "scoreTable": "各プレイヤーのスコアが表示されます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "frontendHint": {
+    "tongitsTakeDiscard": "その札を拾うと組になり、端札が減る",
+    "tongitsDrawStock": "捨て札は組にならない。山札から引こう",
+    "tongitsKnock": "1 枚捨てれば端札が5点以下。ノックできる",
+    "tongitsDiscardHeavy": "端札が一番減る札を捨てよう"
+  },
+  "deadwood": {
+    "current": "最小デッドウッド(1枚捨て後): {{value}}",
+    "knockable": "ノック可能",
+    "notKnockable": "ノック不可（{{threshold}}点以下が必要）"
+  },
+  "opponentMelds": "相手のメルド",
+  "opponentDeadwood": "相手のデッドウッド"
+}

@@ -1,0 +1,351 @@
+//go:build test
+
+// +build test
+
+package presenter_test
+
+import (
+	"errors"
+	"strconv"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+)
+
+func setupTongitsCuiMock() *interfaces.MockTongitsGame {
+	m := new(interfaces.MockTongitsGame)
+	m.On("GetRoundNumber").Return(1)
+	m.On("GetDrawPileCount").Return(41)
+	m.On("GetDiscardTop").Return((*domain.Card)(nil))
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetPhase").Return(domain.TongitsPhaseDraw)
+	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetWinnerIdx").Return(-1)
+	m.On("GetIsTongits").Return(false)
+	m.On("GetKnockerMelds").Return(([][]*domain.Card)(nil)).Maybe()
+	m.On("GetKnockerDeadwood").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetOpponentMelds").Return(([][]*domain.Card)(nil)).Maybe()
+	m.On("GetOpponentDeadwood").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// #4750: ディスカード表示が最小デッドウッドを引くようになった。
+	m.On("GetBestDeadwood", 0).Return(3, 0).Maybe()
+
+	return m
+}
+
+func makeTongitsPlayers() []*domain.TongitsPlayer {
+	return []*domain.TongitsPlayer{
+		domain.NewTongitsPlayer(true),
+		domain.NewTongitsPlayer(false),
+	}
+}
+
+func setupTongitsCuiMockWithPlayers() (*interfaces.MockTongitsGame, []*domain.TongitsPlayer) {
+	m := setupTongitsCuiMock()
+	players := makeTongitsPlayers()
+	m.On("GetPlayerCnt").Return(2)
+	m.On("GetPlayer", 0).Return(players[0])
+	m.On("GetPlayer", 1).Return(players[1])
+	return m, players
+}
+
+func TestTongitsCuiPresenter_Output(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.TongitsCuiPresenter)
+
+	t.Run("initial state with header and player info", func(t *testing.T) {
+		m, players := setupTongitsCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "Tongits (トンギッツ)")
+		assert.Contains(t, result, "ラウンド: 1")
+		assert.Contains(t, result, "山札: 41枚")
+		assert.Contains(t, result, "あなた: 累積0点 ラウンド0点 2枚")
+		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "CPU 1: 累積0点 ラウンド0点 1枚")
+		assert.Contains(t, result, "手番: あなた")
+		assert.Contains(t, result, "ds")
+		assert.Contains(t, result, "dd")
+	})
+
+	t.Run("discard top shown", func(t *testing.T) {
+		m, _ := setupTongitsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
+		top := domain.NewCard(domain.CardDesignHeart, 7, false)
+		m.On("GetDiscardTop").Return(top)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "捨て札: HEART 7")
+	})
+
+	t.Run("error message shown", func(t *testing.T) {
+		m, _ := setupTongitsCuiMockWithPlayers()
+		testErr := errors.New("invalid card index")
+		result := p.Output(m, testErr)
+		assert.Contains(t, result, "invalid card index")
+	})
+
+	t.Run("game ended human winner", func(t *testing.T) {
+		m, _ := setupTongitsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerIdx").Return(0)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ゲーム終了！")
+		assert.Contains(t, result, "あなたの勝利です！")
+	})
+
+	t.Run("game ended CPU winner", func(t *testing.T) {
+		m, _ := setupTongitsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerIdx").Return(1)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "CPU 1の勝利です！")
+	})
+
+	t.Run("draw phase shows CPU current", func(t *testing.T) {
+		m, _ := setupTongitsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(1)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "手番: CPU 1")
+	})
+
+	t.Run("discard phase commands", func(t *testing.T) {
+		m, _ := setupTongitsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TongitsPhaseDiscard)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ディスカードフェーズ")
+		assert.Contains(t, result, "d <idx>")
+		assert.Contains(t, result, "k <idx>")
+	})
+
+	t.Run("discard phase shows knockable for a low hand", func(t *testing.T) {
+		m, players := setupTongitsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TongitsPhaseDiscard)
+		// **計算はドメインの仕事になった (#4750)。**ここで確かめるのは
+		// 「閾値と比べて正しい文言を選ぶこと」だけ。値そのものの正しさは
+		// TestTongits_GetBestDeadwood が実際の手札で見ている。
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBestDeadwood")
+		m.On("GetBestDeadwood", 0).Return(domain.TongitsKnockThreshold, 0)
+		_ = players
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "最小デッドウッド(1枚捨て後):")
+		assert.Contains(t, result, "ノック可能")
+	})
+
+	t.Run("discard phase shows not-knockable for a high hand", func(t *testing.T) {
+		m, players := setupTongitsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TongitsPhaseDiscard)
+		// 閾値のすぐ上。境界 (== 閾値) は上の subtest が押さえている。
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBestDeadwood")
+		m.On("GetBestDeadwood", 0).Return(domain.TongitsKnockThreshold+1, 0)
+		_ = players
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "最小デッドウッド(1枚捨て後):")
+		assert.Contains(t, result, "ノック不可")
+		assert.NotContains(t, result, "ノック可能")
+	})
+
+	t.Run("round end shows next command", func(t *testing.T) {
+		m, _ := setupTongitsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TongitsPhaseRoundEnd)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ラウンド終了")
+		assert.Contains(t, result, "nr / nextround")
+	})
+
+	t.Run("round end with tongits on deal flag", func(t *testing.T) {
+		m, _ := setupTongitsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetIsTongits")
+		m.On("GetPhase").Return(domain.TongitsPhaseRoundEnd)
+		m.On("GetIsTongits").Return(true)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "配牌Tongits成立")
+	})
+
+	t.Run("round end reveals knocker melds and CPU hands", func(t *testing.T) {
+		m, players := setupTongitsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnockerMelds")
+		m.On("GetPhase").Return(domain.TongitsPhaseRoundEnd)
+		m.On("GetKnockerMelds").Return([][]*domain.Card{
+			{ // set of 7s
+				domain.NewCard(domain.CardDesignSpade, 7, false),
+				domain.NewCard(domain.CardDesignHeart, 7, false),
+				domain.NewCard(domain.CardDesignClover, 7, false),
+			},
+			{ // run of clubs 4-5-6
+				domain.NewCard(domain.CardDesignClover, 4, false),
+				domain.NewCard(domain.CardDesignClover, 5, false),
+				domain.NewCard(domain.CardDesignClover, 6, false),
+			},
+		})
+		// The CPU's remaining hand is revealed at round end.
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 12, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "[ノッカーのメルド]")
+		assert.Contains(t, result, "メルド1(セット):")
+		assert.Contains(t, result, "メルド2(ラン):")
+		assert.Contains(t, result, "CPU 1の手札: DIAMOND 12")
+	})
+
+	// ラウンドの点差はアンダーカット判定（両者のデッドウッド比較）から来るのに、
+	// 出ていたのはノッカーのメルドだけで、比較の相手側が見えなかった。
+	t.Run("round end reveals the opponent side of the undercut comparison", func(t *testing.T) {
+		m, _ := setupTongitsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnockerDeadwood")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetOpponentMelds")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetOpponentDeadwood")
+		m.On("GetPhase").Return(domain.TongitsPhaseRoundEnd)
+		m.On("GetKnockerDeadwood").Return([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, 3, false)})
+		m.On("GetOpponentMelds").Return([][]*domain.Card{
+			{
+				domain.NewCard(domain.CardDesignHeart, 5, false),
+				domain.NewCard(domain.CardDesignHeart, 6, false),
+				domain.NewCard(domain.CardDesignHeart, 7, false),
+			},
+		})
+		m.On("GetOpponentDeadwood").Return([]*domain.Card{domain.NewCard(domain.CardDesignClover, 2, false)})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, i18n.T("tongits.opponentMeldsHeader"))
+		assert.Contains(t, result, "HEART 5")
+		// 点数はカードから導く。3 と 2 をそのまま書き写さない。
+		assert.Contains(t, result, i18n.Tf("tongits.knockerDeadwoodLine",
+			"cards", "DIAMOND 3",
+			"points", strconv.Itoa(domain.CalcDeadwoodValue([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, 3, false)}))))
+		assert.Contains(t, result, i18n.Tf("tongits.opponentDeadwoodLine",
+			"cards", "CLOVER 2",
+			"points", strconv.Itoa(domain.CalcDeadwoodValue([]*domain.Card{domain.NewCard(domain.CardDesignClover, 2, false)}))))
+	})
+
+	// アンダーカットが成立しない（相手側が空の）ラウンドでは何も出さない。
+	t.Run("nothing is revealed when the opponent side is empty", func(t *testing.T) {
+		m, _ := setupTongitsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TongitsPhaseRoundEnd)
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, i18n.T("tongits.opponentMeldsHeader"))
+	})
+
+	t.Run("CPU hands are not revealed during play", func(t *testing.T) {
+		m, players := setupTongitsCuiMockWithPlayers()
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 12, false))
+
+		result := p.Output(m, nil) // default phase is Draw
+		assert.NotContains(t, result, "CPU 1の手札:")
+	})
+}
+
+func TestTongitsCuiPresenter_ActionLogOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.TongitsCuiPresenter)
+
+	t.Run("with entries", func(t *testing.T) {
+		m := new(interfaces.MockTongitsGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "knock", Detail: "Player 0 knocks"},
+		}
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetActionLog").Return(entries)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		m.On("GetPlayer", mock.Anything).Return(domain.NewTongitsPlayer(true)).Maybe()
+
+		result := p.ActionLogOutput(m)
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "knock")
+		m.AssertExpectations(t)
+	})
+
+	t.Run("game not ended", func(t *testing.T) {
+		m := new(interfaces.MockTongitsGame)
+		m.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(m)
+		assert.Contains(t, result, "棋譜はありません")
+	})
+}
+
+// #5582: 相手の残りが少ないほどノックは裏目 (#1939)。Web はボタンに警告リングと
+// ⚠️ を出しているのに、CUI は各行の枚数を見比べさせるだけだった。
+func TestTongitsCuiPresenter_WarnsAboutTheUndercutRisk(t *testing.T) {
+	i18n.SetLang("ja")
+	build := func(oppCards int) string {
+		m, players := setupTongitsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TongitsPhaseDiscard)
+		for range oppCards {
+			players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, true))
+		}
+		return new(presenter.TongitsCuiPresenter).Output(m, nil)
+	}
+
+	// 境界値。閾値ちょうどでは出し、1 枚上では出さない (受け入れ条件3)。
+	assert.Contains(t, build(domain.TongitsUndercutRiskMax),
+		i18n.Tf("tongits.knockUndercutWarning", "count", strconv.Itoa(domain.TongitsUndercutRiskMax)))
+	assert.NotContains(t, build(domain.TongitsUndercutRiskMax+1),
+		i18n.Tf("tongits.knockUndercutWarning", "count", strconv.Itoa(domain.TongitsUndercutRiskMax+1)))
+
+	// **1 枚でも出ること。**「ちょうど 2 枚」だけを見る実装では通らない。
+	assert.Contains(t, build(1), i18n.Tf("tongits.knockUndercutWarning", "count", "1"))
+}
+
+// ドロー中は出さない。ノックできない局面で「ノックは危ない」と言っても仕方がない。
+func TestTongitsCuiPresenter_DoesNotWarnOutsideTheDiscardPhase(t *testing.T) {
+	i18n.SetLang("ja")
+	m, players := setupTongitsCuiMockWithPlayers()
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, true))
+
+	out := new(presenter.TongitsCuiPresenter).Output(m, nil)
+	assert.NotContains(t, out, i18n.Tf("tongits.knockUndercutWarning", "count", "1"))
+}
+
+// レビュー (#5941) の指摘: ノックを決めるのは人間なので、CPU の捨て札中に
+// 「相手の手札が少ない」と警告しても行動できない。上のデッドウッド表示と同じ条件。
+func TestTongitsCuiPresenter_WarnsOnlyOnTheHumanTurn(t *testing.T) {
+	i18n.SetLang("ja")
+	m, players := setupTongitsCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+	m.On("GetPhase").Return(domain.TongitsPhaseDiscard)
+	m.On("GetCurrentPlayerIdx").Return(1) // CPU の捨て札中
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, true))
+
+	out := new(presenter.TongitsCuiPresenter).Output(m, nil)
+	assert.NotContains(t, out, i18n.Tf("tongits.knockUndercutWarning", "count", "1"))
+}
