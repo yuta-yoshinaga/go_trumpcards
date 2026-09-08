@@ -7295,7 +7295,8 @@ var gameRegistry = []GameRegistryEntry{
 			ExampleKeys: []string{"tongits.helpExampleDraw", "tongits.helpExampleDiscard"},
 			CommandKeys: []string{
 				"tongits.helpDrawStock", "tongits.helpDrawDiscard", "tongits.helpDiscard",
-				"tongits.helpKnock", "tongits.helpNextRound",
+				"tongits.helpMeld", "tongits.helpSapaw", "tongits.helpChallenge",
+				"tongits.helpNextRound",
 			},
 			SettingKeys: []string{"tongits.helpSetDifficulty", "tongits.helpSetLimit"},
 		}),

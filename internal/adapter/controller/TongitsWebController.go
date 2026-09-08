@@ -13,8 +13,16 @@ import (
 // TongitsWebInput Tongits Webインプット
 type TongitsWebInput struct {
 	BaseWebInput
-	CardIndex *int              `json:"cardIndex,omitempty"`
-	Config    *TongitsWebConfig `json:"config,omitempty"`
+	CardIndex *int `json:"cardIndex,omitempty"`
+	// Indices は meld で公開する手札の位置。sapaw ではなく meld 専用。
+	Indices []int `json:"indices,omitempty"`
+	// TargetPlayerIdx / MeldIdx は sapaw の宛先。**他家のメルドも指せる**ので
+	// プレイヤー番号が要る -- ここが Tonk のノックと決定的に違う点。
+	TargetPlayerIdx *int `json:"targetPlayerIdx,omitempty"`
+	MeldIdx         *int `json:"meldIdx,omitempty"`
+	// Agreed は challenge に他家が応じたか。要素数はプレイヤー数-1。
+	Agreed []bool            `json:"agreed,omitempty"`
+	Config *TongitsWebConfig `json:"config,omitempty"`
 }
 
 // TongitsWebConfig Tongits Web設定
@@ -25,12 +33,16 @@ type TongitsWebConfig struct {
 
 // TongitsWebOutputPlayer Tongits Webアウトプットプレイヤー
 type TongitsWebOutputPlayer struct {
-	ID              int              `json:"id"`
-	IsHuman         bool             `json:"isHuman"`
-	CardCount       int              `json:"cardCount"`
-	Cards           []*WebOutputCard `json:"cards"`
-	RoundScore      int              `json:"roundScore"`
-	CumulativeScore int              `json:"cumulativeScore"`
+	ID        int              `json:"id"`
+	IsHuman   bool             `json:"isHuman"`
+	CardCount int              `json:"cardCount"`
+	Cards     []*WebOutputCard `json:"cards"`
+	// Melds はそのプレイヤーが場に公開しているメルド。**Tongits のメルドは
+	// 出した時点で全員に見える**ので、手札と違って伏せない。sapaw の宛先を
+	// 選ぶにもこれが要る。
+	Melds           []*TongitsWebOutputMeld `json:"melds"`
+	RoundScore      int                     `json:"roundScore"`
+	CumulativeScore int                     `json:"cumulativeScore"`
 }
 
 // TongitsWebOutputMeld メルドのアウトプット
@@ -48,23 +60,13 @@ type TongitsWebOutput struct {
 	DrawPileCount    int                       `json:"drawPileCount"`
 	GameEndFlag      bool                      `json:"gameEndFlag"`
 	WinnerIdx        int                       `json:"winnerIdx"`
-	KnockerIdx       int                       `json:"knockerIdx"`
-	KnockerMelds     []*TongitsWebOutputMeld   `json:"knockerMelds"`
-	KnockerDeadwood  []*WebOutputCard          `json:"knockerDeadwood"`
-	OpponentMelds    []*TongitsWebOutputMeld   `json:"opponentMelds"`
-	OpponentDeadwood []*WebOutputCard          `json:"opponentDeadwood"`
 	IsTongits        bool                      `json:"isTongits"`
-	// UndercutRiskMax は「アンダーカットされうる」と警告する相手の残り枚数 (#5582)。
-	// 閾値を画面に焼き込むと、変えたとき Web と CUI で警告の出る局面がずれる。
-	UndercutRiskMax int  `json:"undercutRiskMax"`
-	IsUndercut      bool `json:"isUndercut"`
-	// BestDeadwood は1枚捨てて到達できる最小デッドウッド。CUI は毎ターン
+	// RemainingPoints は手番のプレイヤーの残り点 (challenge の判定材料)。
+	// 手番でないときは -1。
+	RemainingPoints int `json:"remainingPoints"`
 	// これを閾値と比べて「ノック可能/不可」を出しているのに、Web は同じ判断を
 	// プレイヤーの手計算に任せていた。人間のディスカードフェーズ以外は -1。
-	BestDeadwood int `json:"bestDeadwood"`
-	// KnockThreshold はノックできるデッドウッド上限 (domain.TongitsKnockThreshold)。
 	// フロントに数値を写さず、判断の基準ごと送る。
-	KnockThreshold int `json:"knockThreshold"`
 	WebOutputBase
 	Config TongitsWebOutputConfig `json:"config"`
 }
@@ -99,15 +101,9 @@ var NewTongitsWebController, NewTongitsWebControllerWithProvider = webController
 
 func newTongitsDefaultOutput(msg string) *TongitsWebOutput {
 	return &TongitsWebOutput{
-		Players:          make([]*TongitsWebOutputPlayer, 0),
-		WinnerIdx:        -1,
-		KnockerIdx:       -1,
-		KnockerMelds:     make([]*TongitsWebOutputMeld, 0),
-		KnockerDeadwood:  make([]*WebOutputCard, 0),
-		OpponentMelds:    make([]*TongitsWebOutputMeld, 0),
-		OpponentDeadwood: make([]*WebOutputCard, 0),
-		// 閾値は盤面が無くても規則なので、既定の応答にも乗せる。
-		UndercutRiskMax: domain.TongitsUndercutRiskMax,
+		Players:         make([]*TongitsWebOutputPlayer, 0),
+		WinnerIdx:       -1,
+		RemainingPoints: -1,
 		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
@@ -125,11 +121,23 @@ func tongitsDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Tongi
 			return true
 		}
 		bc.writePresenterResponse(w, ci.Discard(*param.CardIndex))
-	case "k", "knock":
-		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
+	case "m", "meld":
+		if !requireParam(bc, w, newDefault, len(param.Indices) == 0, "param error: indices is required.") {
 			return true
 		}
-		bc.writePresenterResponse(w, ci.Knock(*param.CardIndex))
+		bc.writePresenterResponse(w, ci.Meld(param.Indices))
+	case "sp", "sapaw":
+		if !requireParam(bc, w, newDefault,
+			param.TargetPlayerIdx == nil || param.MeldIdx == nil || param.CardIndex == nil,
+			"param error: targetPlayerIdx, meldIdx and cardIndex are required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, ci.Sapaw(*param.TargetPlayerIdx, *param.MeldIdx, *param.CardIndex))
+	case "c", "challenge":
+		if !requireParam(bc, w, newDefault, len(param.Agreed) == 0, "param error: agreed is required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, ci.Challenge(param.Agreed))
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, ci.NextRound())
 	default:

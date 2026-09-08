@@ -17,9 +17,6 @@ const TongitsHandSize = 12
 // TongitsFirstPlayerHandSize is the initial hand size of the first player.
 const TongitsFirstPlayerHandSize = 13
 
-// TongitsKnockThreshold ノック可能なデッドウッド上限
-const TongitsKnockThreshold = 5
-
 // TongitsOnDealLow 配牌時のTongits(即勝利)成立点(下限)
 const TongitsOnDealLow = 49
 
@@ -29,16 +26,6 @@ const TongitsOnDealHigh = 50
 // TongitsBonus 配牌時Tongits成立時のボーナス点
 const TongitsBonus = 50
 
-// TongitsUndercutRiskMax は「アンダーカットされうる」と警告する相手の残り枚数。
-//
-// **ノックは相手の残りが少ないほど裏目になる。**相手が先に上がれば、こちらの
-// デッドウッドが低くても負ける (#1939)。Web はこの閾値でノックボタンに警告を
-// 出しているが、閾値が画面側に書かれていて CUI は何も出していなかった (#5582)。
-const TongitsUndercutRiskMax = 2
-
-// TongitsUndercutPenalty アンダーカット時のペナルティ点
-const TongitsUndercutPenalty = 5
-
 // TongitsPhase ゲームフェーズ
 type TongitsPhase int
 
@@ -46,7 +33,7 @@ type TongitsPhase int
 const (
 	// TongitsPhaseDraw ドローフェーズ (山札または捨て札から引く)
 	TongitsPhaseDraw TongitsPhase = 0
-	// TongitsPhaseDiscard ディスカードフェーズ (手札から1枚捨てる or ノック)
+	// TongitsPhaseDiscard ディスカードフェーズ (手札から1枚捨てる or challenge)
 	TongitsPhaseDiscard TongitsPhase = 1
 	// TongitsPhaseRoundEnd ラウンド終了フェーズ
 	TongitsPhaseRoundEnd TongitsPhase = 2
@@ -67,14 +54,8 @@ type Tongits struct {
 	winnerIdx        int
 	roundNumber      int
 	actionLogBase
-	knockerIdx       int       // ノック/Tongitsしたプレイヤーのインデックス (-1 = 未確定)
-	knockerMelds     [][]*Card // ノッカーのメルド
-	knockerDeadwood  []*Card   // ノッカーのデッドウッド
-	opponentMelds    [][]*Card // 相手のメルド (スコア確定時に格納)
-	opponentDeadwood []*Card   // 相手のデッドウッド
-	isTongits        bool      // 配牌Tongits(49/50点即勝利)かどうか
-	isUndercut       bool      // アンダーカット(ノッカーが負け)かどうか
-	rng              *rand.Rand
+	isTongits bool // 配牌Tongits(49/50点即勝利)かどうか
+	rng       *rand.Rand
 }
 
 // NewTongits コンストラクタ
@@ -85,7 +66,6 @@ func NewTongits(trumpCards *TrumpCards, players []*TongitsPlayer, config Tongits
 		config:      config,
 		winnerIdx:   -1,
 		roundNumber: 0,
-		knockerIdx:  -1,
 		rng:         rand.New(rand.NewSource(rand.Int63())),
 	}
 }
@@ -116,13 +96,7 @@ func (g *Tongits) Reset() {
 	g.drawPile = nil
 	g.currentPlayerIdx = 0
 	g.actionLog = nil
-	g.knockerIdx = -1
-	g.knockerMelds = nil
-	g.knockerDeadwood = nil
-	g.opponentMelds = nil
-	g.opponentDeadwood = nil
 	g.isTongits = false
-	g.isUndercut = false
 
 	for _, p := range g.players {
 		p.SetRoundScore(0)
@@ -148,13 +122,7 @@ func (g *Tongits) NextRound() {
 	g.discardPile = nil
 	g.drawPile = nil
 	g.currentPlayerIdx = 0
-	g.knockerIdx = -1
-	g.knockerMelds = nil
-	g.knockerDeadwood = nil
-	g.opponentMelds = nil
-	g.opponentDeadwood = nil
 	g.isTongits = false
-	g.isUndercut = false
 
 	for _, p := range g.players {
 		p.ResetRound()
@@ -216,9 +184,8 @@ func (g *Tongits) checkTongitsOnDeal() {
 		}
 		if total == TongitsOnDealLow || total == TongitsOnDealHigh {
 			g.isTongits = true
-			g.knockerIdx = i
 			g.appendLog(i, "tongits_on_deal", fmt.Sprintf("%s declares Tongits on deal! (hand value: %d)", playerName(g.players, i), total), nil)
-			g.scoreTongits(total)
+			g.scoreTongits(i, total)
 			return
 		}
 	}
@@ -429,6 +396,18 @@ func tongitsHandCards(p *TongitsPlayer) []*Card {
 	return cards
 }
 
+// tongitsRemainingPoints は手札の残り点を返す。ドロー宣言 (challenge) の勝敗は
+// これの少なさで決まる。1 枚あたりの規則は TongitsCardValue が持つ (絵札 10 / A 1 /
+// 数札は数字通り) ので、ここはその総和に徹する -- 点数の規則が 2 箇所に割れると、
+// CPU の判断と実際の決着が食い違う。
+func tongitsRemainingPoints(cards []*Card) int {
+	total := 0
+	for _, c := range cards {
+		total += TongitsCardValue(c)
+	}
+	return total
+}
+
 func tongitsIsMeld(cards []*Card) bool {
 	if len(cards) < 3 {
 		return false
@@ -494,50 +473,6 @@ func tongitsCanAddToMeld(meld []*Card, card *Card) bool {
 	return card.GetValue() == min-1 || card.GetValue() == max+1
 }
 
-// PlayerKnock 人間プレイヤーがノックする (カードを1枚捨ててノック)
-func (g *Tongits) PlayerKnock(cardIndex int) error {
-	if g.gameEndFlag {
-		return ErrGameEnded
-	}
-	if g.phase != TongitsPhaseDiscard {
-		return ErrWrongPhase
-	}
-	if !g.players[g.currentPlayerIdx].GetIsHuman() {
-		return ErrNotHumanTurn
-	}
-
-	player := g.players[g.currentPlayerIdx]
-	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
-	}
-
-	testCards := make([]*Card, 0, player.GetCardsSize()-1)
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if i != cardIndex {
-			testCards = append(testCards, player.GetCard(i))
-		}
-	}
-
-	melds, deadwood := FindBestMelds(testCards)
-	deadwoodValue := CalcDeadwoodValue(deadwood)
-
-	if deadwoodValue > TongitsKnockThreshold {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("デッドウッドが%d点以下でないとノックできません（現在%d点）", TongitsKnockThreshold, deadwoodValue))
-	}
-
-	discarded := player.RemoveCard(cardIndex)
-	g.discardPile = append(g.discardPile, discarded)
-
-	g.knockerIdx = g.currentPlayerIdx
-	g.knockerMelds = melds
-	g.knockerDeadwood = deadwood
-
-	g.appendLog(g.currentPlayerIdx, "knock", fmt.Sprintf("%s knocks (deadwood: %d)", playerName(g.players, g.currentPlayerIdx), deadwoodValue), []*Card{discarded})
-
-	g.scoreRound()
-	return nil
-}
-
 // CpuPlay 現在の手番がCPUの場合にターンを実行
 func (g *Tongits) CpuPlay() {
 	if g.gameEndFlag {
@@ -554,7 +489,7 @@ func (g *Tongits) CpuPlay() {
 	case TongitsPhaseDraw:
 		g.cpuDraw()
 	case TongitsPhaseDiscard:
-		g.cpuDiscardOrKnock()
+		g.cpuDiscardOrChallenge()
 	}
 }
 
@@ -570,22 +505,20 @@ func (g *Tongits) cpuDraw() {
 		}
 		testCards[player.GetCardsSize()] = topDiscard
 
-		_, deadwoodWith := FindBestMelds(testCards)
-		dwWith := CalcDeadwoodValue(deadwoodWith)
+		remainingWith := tongitsRemainingPoints(testCards)
 
 		currentCards := make([]*Card, player.GetCardsSize())
 		for i := 0; i < player.GetCardsSize(); i++ {
 			currentCards[i] = player.GetCard(i)
 		}
-		_, deadwoodWithout := FindBestMelds(currentCards)
-		dwWithout := CalcDeadwoodValue(deadwoodWithout)
+		remainingWithout := tongitsRemainingPoints(currentCards)
 
 		shouldPickDiscard := false
 		switch g.config.CpuDifficulty {
 		case TongitsCpuDifficultyHard:
-			shouldPickDiscard = dwWith < dwWithout
+			shouldPickDiscard = remainingWith < remainingWithout
 		case TongitsCpuDifficultyNormal:
-			shouldPickDiscard = dwWith < dwWithout-3
+			shouldPickDiscard = remainingWith < remainingWithout-3
 		default:
 			shouldPickDiscard = g.rng.Intn(3) == 0
 		}
@@ -614,128 +547,37 @@ func (g *Tongits) cpuDraw() {
 	g.phase = TongitsPhaseDiscard
 }
 
-// cpuDiscardOrKnock CPUがディスカードまたはノックする
-func (g *Tongits) cpuDiscardOrKnock() {
+// cpuDiscardOrChallenge CPUがディスカードまたはchallengeする
+func (g *Tongits) cpuDiscardOrChallenge() {
 	player := g.players[g.currentPlayerIdx]
-
-	bestDeadwood, bestDiscardIdx := g.GetBestDeadwood(g.currentPlayerIdx)
-	if bestDiscardIdx < 0 {
-		bestDiscardIdx = 0
+	if player.GetCardsSize() == 0 {
+		g.finishTongits(g.currentPlayerIdx)
+		return
 	}
 
-	if bestDeadwood <= TongitsKnockThreshold {
-		shouldKnock := false
-		switch g.config.CpuDifficulty {
-		case TongitsCpuDifficultyHard:
-			shouldKnock = bestDeadwood <= 3
-		case TongitsCpuDifficultyNormal:
-			shouldKnock = bestDeadwood <= 4
-		default:
-			shouldKnock = true
-		}
-
-		if shouldKnock {
-			testCards := make([]*Card, 0, player.GetCardsSize()-1)
-			for j := 0; j < player.GetCardsSize(); j++ {
-				if j != bestDiscardIdx {
-					testCards = append(testCards, player.GetCard(j))
-				}
-			}
-			melds, deadwood := FindBestMelds(testCards)
-			deadwoodValue := CalcDeadwoodValue(deadwood)
-
-			discarded := player.RemoveCard(bestDiscardIdx)
-			g.discardPile = append(g.discardPile, discarded)
-
-			g.knockerIdx = g.currentPlayerIdx
-			g.knockerMelds = melds
-			g.knockerDeadwood = deadwood
-
-			g.appendLog(g.currentPlayerIdx, "knock", fmt.Sprintf("%s knocks (deadwood: %d)", playerName(g.players, g.currentPlayerIdx), deadwoodValue), []*Card{discarded})
-
-			g.scoreRound()
-			return
-		}
+	if g.config.CpuDifficulty == TongitsCpuDifficultyHard && tongitsRemainingPoints(tongitsHandCards(player)) <= 10 {
+		g.PlayerChallenge([]bool{true, true})
+		return
 	}
 
-	discarded := player.RemoveCard(bestDiscardIdx)
+	discardIdx := 0
+	for i := 1; i < player.GetCardsSize(); i++ {
+		if TongitsCardValue(player.GetCard(i)) > TongitsCardValue(player.GetCard(discardIdx)) {
+			discardIdx = i
+		}
+	}
+	discarded := player.RemoveCard(discardIdx)
 	g.discardPile = append(g.discardPile, discarded)
 	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 	g.advanceTurn()
 }
 
-// scoreRound ノック後のスコアを確定する
-func (g *Tongits) scoreRound() {
-	knockerIdx := g.knockerIdx
-	knockerDeadwoodValue := CalcDeadwoodValue(g.knockerDeadwood)
-	bestIdx, bestValue := knockerIdx, knockerDeadwoodValue
-	for i, opponent := range g.players {
-		if i == knockerIdx {
-			continue
-		}
-		cards := tongitsHandCards(opponent)
-		melds, deadwood := FindBestMelds(cards)
-		value := CalcDeadwoodValue(deadwood)
-		if i == (knockerIdx+1)%TongitsPlayerCnt {
-			g.opponentMelds, g.opponentDeadwood = melds, deadwood
-		}
-		if value < bestValue {
-			bestIdx, bestValue = i, value
-		}
-	}
-	if bestIdx != knockerIdx {
-		g.isUndercut = true
-		score := knockerDeadwoodValue - bestValue + TongitsUndercutPenalty
-		g.players[bestIdx].SetRoundScore(score)
-		g.appendLog(bestIdx, "undercut", fmt.Sprintf("%s undercuts! Scores %d", playerName(g.players, bestIdx), score), nil)
-	} else {
-		score := 0
-		for i, opponent := range g.players {
-			if i == knockerIdx {
-				continue
-			}
-			_, deadwood := FindBestMelds(tongitsHandCards(opponent))
-			score += CalcDeadwoodValue(deadwood) - knockerDeadwoodValue
-		}
-		if score > 0 {
-			g.players[knockerIdx].SetRoundScore(score)
-		}
-		g.appendLog(knockerIdx, "score", fmt.Sprintf("%s scores %d", playerName(g.players, knockerIdx), score), nil)
-	}
-
-	for i := range g.players {
-		g.players[i].CommitRoundScore()
-	}
-
-	g.checkGameEnd()
-	if !g.gameEndFlag {
-		g.phase = TongitsPhaseRoundEnd
-	}
-}
-
 // scoreTongits 配牌Tongits成立時のスコア処理
-func (g *Tongits) scoreTongits(handValue int) {
-	knockerIdx := g.knockerIdx
-	// ノッカー(Tongits宣言者)の手札はメルド扱いせず、参考のためそのまま記録する
-	g.knockerMelds = nil
-	knockerCards := make([]*Card, g.players[knockerIdx].GetCardsSize())
-	for i := 0; i < g.players[knockerIdx].GetCardsSize(); i++ {
-		knockerCards[i] = g.players[knockerIdx].GetCard(i)
-	}
-	g.knockerDeadwood = knockerCards
-	for i, opponent := range g.players {
-		if i == knockerIdx {
-			continue
-		}
-		melds, deadwood := FindBestMelds(tongitsHandCards(opponent))
-		if g.opponentMelds == nil {
-			g.opponentMelds, g.opponentDeadwood = melds, deadwood
-		}
-	}
 
+func (g *Tongits) scoreTongits(winner int, handValue int) {
 	score := TongitsBonus + handValue
-	g.players[knockerIdx].SetRoundScore(score)
-	g.appendLog(knockerIdx, "tongits_score", fmt.Sprintf("%s scores %d (Tongits bonus %d + hand %d)", playerName(g.players, knockerIdx), score, TongitsBonus, handValue), nil)
+	g.players[winner].SetRoundScore(score)
+	g.appendLog(winner, "tongits_score", fmt.Sprintf("%s scores %d (Tongits bonus %d + hand %d)", playerName(g.players, winner), score, TongitsBonus, handValue), nil)
 
 	for i := range g.players {
 		g.players[i].CommitRoundScore()
@@ -750,7 +592,6 @@ func (g *Tongits) scoreTongits(handValue int) {
 // endRoundDraw 山札切れによる引き分け (スコアなし)
 func (g *Tongits) endRoundDraw() {
 	g.appendLog(-1, "draw", "Round ends in a draw (stock empty)", nil)
-	g.knockerIdx = -1
 
 	g.checkGameEnd()
 	if !g.gameEndFlag {
@@ -760,8 +601,7 @@ func (g *Tongits) endRoundDraw() {
 
 // ScoreRound ラウンドのスコア処理 (NextRoundから呼ぶ用。既にscoreRoundで処理済みの場合はnoop)
 func (g *Tongits) ScoreRound() {
-	// スコアリングはknock/tongits時に既に完了している
-	// このメソッドは互換性のために存在
+	// Challenge または Tongits の宣言時にスコアリングは完了している。
 }
 
 // advanceTurn 次のプレイヤーへ
@@ -799,39 +639,6 @@ func (g *Tongits) checkGameEnd() {
 }
 
 // --- State getters ---
-
-// GetPhase 現在のフェーズ取得
-// GetBestDeadwood は1枚捨てたときに到達できる最小デッドウッド値と、その捨て札の
-// 位置を返す。手札が空なら (0, -1)。
-//
-// **この計算は元々3箇所に散る寸前だった。**CPU の判断 (cpuDiscardOrKnock) と
-// CUI の表示 (tongitsBestDeadwood) が別々に同じループを持っており、Web にも
-// 3つ目を書くところだった。TongitsKnockThreshold と比べる値なので、実装が割れると
-// 「ノック可能と表示したのに弾かれる」ずれになる。
-func (g *Tongits) GetBestDeadwood(playerIdx int) (best int, discardIdx int) {
-	if playerIdx < 0 || playerIdx >= len(g.players) {
-		return 0, -1
-	}
-	player := g.players[playerIdx]
-	n := player.GetCardsSize()
-	best, discardIdx = -1, -1
-	for i := 0; i < n; i++ {
-		sub := make([]*Card, 0, n-1)
-		for j := 0; j < n; j++ {
-			if j != i {
-				sub = append(sub, player.GetCard(j))
-			}
-		}
-		_, dw := FindBestMelds(sub)
-		if v := CalcDeadwoodValue(dw); best < 0 || v < best {
-			best, discardIdx = v, i
-		}
-	}
-	if best < 0 {
-		return 0, -1
-	}
-	return best, discardIdx
-}
 
 func (g *Tongits) GetPhase() TongitsPhase { return g.phase }
 
@@ -892,38 +699,11 @@ func (g *Tongits) GetConfig() TongitsConfig { return g.config }
 // SetConfig 設定変更
 func (g *Tongits) SetConfig(cfg TongitsConfig) { g.config = cfg }
 
-// GetKnockerIdx ノッカーのインデックス取得
-func (g *Tongits) GetKnockerIdx() int { return g.knockerIdx }
-
-// SetKnockerIdx ノッカーのインデックス設定 (テスト用)
-func (g *Tongits) SetKnockerIdx(idx int) { g.knockerIdx = idx }
-
-// GetKnockerMelds ノッカーのメルド取得
-func (g *Tongits) GetKnockerMelds() [][]*Card { return g.knockerMelds }
-
-// SetKnockerMelds ノッカーのメルドを設定 (テスト用)
-func (g *Tongits) SetKnockerMelds(melds [][]*Card) { g.knockerMelds = melds }
-
-// GetKnockerDeadwood ノッカーのデッドウッド取得
-func (g *Tongits) GetKnockerDeadwood() []*Card { return g.knockerDeadwood }
-
-// SetKnockerDeadwood ノッカーのデッドウッドを設定 (テスト用)
-func (g *Tongits) SetKnockerDeadwood(deadwood []*Card) { g.knockerDeadwood = deadwood }
-
-// GetOpponentMelds 相手側のメルド取得
-func (g *Tongits) GetOpponentMelds() [][]*Card { return g.opponentMelds }
-
-// GetOpponentDeadwood 相手側のデッドウッド取得
-func (g *Tongits) GetOpponentDeadwood() []*Card { return g.opponentDeadwood }
-
 // GetIsTongits 配牌Tongitsかどうか取得
 func (g *Tongits) GetIsTongits() bool { return g.isTongits }
 
 // SetIsTongits 配牌Tongits設定 (テスト用)
 func (g *Tongits) SetIsTongits(isTongits bool) { g.isTongits = isTongits }
-
-// GetIsUndercut アンダーカットかどうか取得
-func (g *Tongits) GetIsUndercut() bool { return g.isUndercut }
 
 // --- Private methods ---
 
@@ -950,13 +730,7 @@ type tongitsJSON struct {
 	WinnerIdx        int               `json:"wi"`
 	RoundNumber      int               `json:"rn"`
 	ActionLog        []*ActionLogEntry `json:"al"`
-	KnockerIdx       int               `json:"ki"`
-	KnockerMelds     [][]*Card         `json:"km"`
-	KnockerDeadwood  []*Card           `json:"kd"`
-	OpponentMelds    [][]*Card         `json:"om"`
-	OpponentDeadwood []*Card           `json:"od"`
 	IsTongits        bool              `json:"it"`
-	IsUndercut       bool              `json:"iu"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -973,13 +747,7 @@ func (g *Tongits) MarshalJSON() ([]byte, error) {
 		WinnerIdx:        g.winnerIdx,
 		RoundNumber:      g.roundNumber,
 		ActionLog:        g.actionLog,
-		KnockerIdx:       g.knockerIdx,
-		KnockerMelds:     g.knockerMelds,
-		KnockerDeadwood:  g.knockerDeadwood,
-		OpponentMelds:    g.opponentMelds,
-		OpponentDeadwood: g.opponentDeadwood,
 		IsTongits:        g.isTongits,
-		IsUndercut:       g.isUndercut,
 	})
 }
 
@@ -994,9 +762,7 @@ func (g *Tongits) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Players) > tongitsMaxSliceLen || len(j.DiscardPile) > tongitsMaxSliceLen ||
-		len(j.DrawPile) > tongitsMaxSliceLen || len(j.ActionLog) > tongitsMaxSliceLen ||
-		len(j.KnockerMelds) > tongitsMaxSliceLen || len(j.KnockerDeadwood) > tongitsMaxSliceLen ||
-		len(j.OpponentMelds) > tongitsMaxSliceLen || len(j.OpponentDeadwood) > tongitsMaxSliceLen {
+		len(j.DrawPile) > tongitsMaxSliceLen || len(j.ActionLog) > tongitsMaxSliceLen {
 		return fmt.Errorf("tongits: input array exceeds maximum allowed size")
 	}
 
@@ -1026,25 +792,7 @@ func (g *Tongits) UnmarshalJSON(data []byte) error {
 	if g.actionLog == nil {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	}
-	g.knockerIdx = j.KnockerIdx
-	g.knockerMelds = j.KnockerMelds
-	if g.knockerMelds == nil {
-		g.knockerMelds = make([][]*Card, 0)
-	}
-	g.knockerDeadwood = j.KnockerDeadwood
-	if g.knockerDeadwood == nil {
-		g.knockerDeadwood = make([]*Card, 0)
-	}
-	g.opponentMelds = j.OpponentMelds
-	if g.opponentMelds == nil {
-		g.opponentMelds = make([][]*Card, 0)
-	}
-	g.opponentDeadwood = j.OpponentDeadwood
-	if g.opponentDeadwood == nil {
-		g.opponentDeadwood = make([]*Card, 0)
-	}
 	g.isTongits = j.IsTongits
-	g.isUndercut = j.IsUndercut
 	// **復元したら必ず乱数源を張り直す。**Cloudflare Worker は毎リクエスト KV から
 	// 組み直すので SetRand は一度も呼ばれない。rng を nil のままにすると、
 	// シャッフル以外で rng を使う経路 (CPU の乱択など) が nil デリファレンスで

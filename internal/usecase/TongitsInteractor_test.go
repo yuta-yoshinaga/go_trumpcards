@@ -234,7 +234,7 @@ func TestTongitsInteractor_Discard(t *testing.T) {
 	})
 }
 
-func TestTongitsInteractor_Knock(t *testing.T) {
+func TestTongitsInteractor_Meld(t *testing.T) {
 	mockOutput := `{}`
 
 	t.Run("valid", func(t *testing.T) {
@@ -242,12 +242,13 @@ func TestTongitsInteractor_Knock(t *testing.T) {
 		pMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 		gameMock := new(interfaces.MockTongitsGame)
 		gameMock.On("GetGameEndFlag").Return(false)
-		gameMock.On("PlayerKnock", 1).Return(nil)
-		gameMock.On("GetPhase").Return(domain.TongitsPhaseRoundEnd)
+		gameMock.On("PlayerMeld", []int{1, 2, 3}).Return(nil)
+		gameMock.On("GetPhase").Return(domain.TongitsPhaseDiscard)
 		gameMock.On("IsHumanTurn").Return(true)
 
 		ci := usecase.NewTongitsInteractor(gameMock, pMock)
-		assert.Equal(t, mockOutput, ci.Knock(1))
+		assert.Equal(t, mockOutput, ci.Meld([]int{1, 2, 3}))
+		gameMock.AssertCalled(t, "PlayerMeld", []int{1, 2, 3})
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -257,10 +258,10 @@ func TestTongitsInteractor_Knock(t *testing.T) {
 		gameMock := new(interfaces.MockTongitsGame)
 		gameMock.On("GetGameEndFlag").Return(false)
 		gameMock.On("IsHumanTurn").Return(true)
-		gameMock.On("PlayerKnock", 1).Return(err)
+		gameMock.On("PlayerMeld", []int{1, 2, 3}).Return(err)
 
 		ci := usecase.NewTongitsInteractor(gameMock, pMock)
-		assert.Equal(t, mockOutput, ci.Knock(1))
+		assert.Equal(t, mockOutput, ci.Meld([]int{1, 2, 3}))
 	})
 
 	t.Run("game ended", func(t *testing.T) {
@@ -270,8 +271,26 @@ func TestTongitsInteractor_Knock(t *testing.T) {
 		gameMock.On("GetGameEndFlag").Return(true)
 
 		ci := usecase.NewTongitsInteractor(gameMock, pMock)
-		assert.Equal(t, mockOutput, ci.Knock(0))
+		assert.Equal(t, mockOutput, ci.Meld([]int{1, 2, 3}))
 	})
+}
+
+func TestTongitsInteractor_SapawAndChallenge(t *testing.T) {
+	mockOutput := `{}`
+	pMock := new(presenter.MockTongitsPresenter)
+	pMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+	gameMock := new(interfaces.MockTongitsGame)
+	gameMock.On("GetGameEndFlag").Return(false)
+	gameMock.On("PlayerSapaw", 1, 0, 2).Return(nil)
+	gameMock.On("PlayerChallenge", []bool{true, false}).Return(nil)
+	gameMock.On("GetPhase").Return(domain.TongitsPhaseDiscard)
+	gameMock.On("IsHumanTurn").Return(true)
+
+	ci := usecase.NewTongitsInteractor(gameMock, pMock)
+	assert.Equal(t, mockOutput, ci.Sapaw(1, 0, 2))
+	assert.Equal(t, mockOutput, ci.Challenge([]bool{true, false}))
+	gameMock.AssertCalled(t, "PlayerSapaw", 1, 0, 2)
+	gameMock.AssertCalled(t, "PlayerChallenge", []bool{true, false})
 }
 
 func TestTongitsInteractor_NextRound(t *testing.T) {

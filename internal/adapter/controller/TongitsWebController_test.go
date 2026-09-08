@@ -18,15 +18,9 @@ import (
 
 func mustTongitsOutputJSON(msg string) string {
 	out := &controller.TongitsWebOutput{
-		Players:          []*controller.TongitsWebOutputPlayer{},
-		WinnerIdx:        -1,
-		KnockerIdx:       -1,
-		KnockerMelds:     []*controller.TongitsWebOutputMeld{},
-		KnockerDeadwood:  []*controller.WebOutputCard{},
-		OpponentMelds:    []*controller.TongitsWebOutputMeld{},
-		OpponentDeadwood: []*controller.WebOutputCard{},
-		// 閾値は盤面が無くても規則なので、既定の応答にも乗る (#5582)。
-		UndercutRiskMax: domain.TongitsUndercutRiskMax,
+		Players:         []*controller.TongitsWebOutputPlayer{},
+		WinnerIdx:       -1,
+		RemainingPoints: -1,
 		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -44,7 +38,9 @@ func TestTongitsWebController_Method(t *testing.T) {
 	siMock.On("DrawFromStock").Return(mockOutput)
 	siMock.On("DrawFromDiscard").Return(mockOutput)
 	siMock.On("Discard", 3).Return(mockOutput)
-	siMock.On("Knock", 3).Return(mockOutput)
+	siMock.On("Meld", []int{1, 2, 3}).Return(mockOutput)
+	siMock.On("Sapaw", 1, 0, 3).Return(mockOutput)
+	siMock.On("Challenge", []bool{true, false}).Return(mockOutput)
 	siMock.On("NextRound").Return(mockOutput)
 	siMock.On("ActionLog").Return(mockOutput)
 
@@ -98,14 +94,32 @@ func TestTongitsWebController_Method(t *testing.T) {
 		}
 	})
 
-	t.Run("knock with index", func(t *testing.T) {
-		for _, cmd := range []string{"k", "knock"} {
+	t.Run("meld with indices", func(t *testing.T) {
+		for _, cmd := range []string{"m", "meld"} {
 			var input controller.TongitsWebInput
-			_ = json.Unmarshal([]byte(fmt.Sprintf(`{"command":"%s","cardIndex":3,"sessionId":"s1"}`, cmd)), &input)
+			_ = json.Unmarshal([]byte(fmt.Sprintf(`{"command":"%s","indices":[1,2,3],"sessionId":"s1"}`, cmd)), &input)
 			recorded := execRequest(t, ctrl.Exec, &input)
 			recorded.CodeIs(http.StatusOK)
 			recorded.BodyIs(mockOutput)
 		}
+	})
+
+	t.Run("sapaw and challenge", func(t *testing.T) {
+		for _, raw := range []string{
+			`{"command":"sp","targetPlayerIdx":1,"meldIdx":0,"cardIndex":3,"sessionId":"s1"}`,
+			`{"command":"sapaw","targetPlayerIdx":1,"meldIdx":0,"cardIndex":3,"sessionId":"s1"}`,
+		} {
+			var input controller.TongitsWebInput
+			_ = json.Unmarshal([]byte(raw), &input)
+			recorded := execRequest(t, ctrl.Exec, &input)
+			recorded.CodeIs(http.StatusOK)
+			recorded.BodyIs(mockOutput)
+		}
+		var input controller.TongitsWebInput
+		_ = json.Unmarshal([]byte(`{"command":"c","agreed":[true,false],"sessionId":"s1"}`), &input)
+		recorded := execRequest(t, ctrl.Exec, &input)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(mockOutput)
 	})
 
 	t.Run("nextround", func(t *testing.T) {
@@ -169,12 +183,12 @@ func TestTongitsWebController_Method(t *testing.T) {
 		recorded.BodyIs(mustTongitsOutputJSON("param error: cardIndex is required."))
 	})
 
-	t.Run("knock no cardIndex", func(t *testing.T) {
+	t.Run("meld no indices", func(t *testing.T) {
 		var input controller.TongitsWebInput
-		_ = json.Unmarshal([]byte(`{"command":"k","sessionId":"s1"}`), &input)
+		_ = json.Unmarshal([]byte(`{"command":"m","sessionId":"s1"}`), &input)
 		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
-		recorded.BodyIs(mustTongitsOutputJSON("param error: cardIndex is required."))
+		recorded.BodyIs(mustTongitsOutputJSON("param error: indices is required."))
 	})
 }
 

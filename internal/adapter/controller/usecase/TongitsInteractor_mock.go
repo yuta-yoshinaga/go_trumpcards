@@ -34,8 +34,16 @@ func (_m *MockTongitsInteractor) Discard(cardIndex int) string {
 	return _m.Called(cardIndex).String(0)
 }
 
-func (_m *MockTongitsInteractor) Knock(cardIndex int) string {
-	return _m.Called(cardIndex).String(0)
+func (_m *MockTongitsInteractor) Meld(indices []int) string {
+	return _m.Called(indices).String(0)
+}
+
+func (_m *MockTongitsInteractor) Sapaw(targetPlayerIdx, meldIdx, cardIndex int) string {
+	return _m.Called(targetPlayerIdx, meldIdx, cardIndex).String(0)
+}
+
+func (_m *MockTongitsInteractor) Challenge(agreed []bool) string {
+	return _m.Called(agreed).String(0)
 }
 
 func (_m *MockTongitsInteractor) NextRound() string {

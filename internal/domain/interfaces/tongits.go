@@ -17,8 +17,12 @@ type TongitsGame interface {
 	PlayerDrawFromDiscard() error
 	// PlayerDiscard プレイヤーがカードを捨てる
 	PlayerDiscard(cardIndex int) error
-	// PlayerKnock プレイヤーがノックする
-	PlayerKnock(cardIndex int) error
+	// PlayerMeld 手札のカードでメルドを作り場に公開する
+	PlayerMeld(indices []int) error
+	// PlayerSapaw 公開済みメルド (他家のものを含む) に手札を1枚付け足す
+	PlayerSapaw(targetPlayerIdx, meldIdx, cardIndex int) error
+	// PlayerChallenge ドロー (challenge) を宣言する。他家全員が応じたら残り点で決着する
+	PlayerChallenge(agreed []bool) error
 	// CpuPlay CPUプレイヤーが1ターン実行する
 	CpuPlay()
 	// ScoreRound ラウンドの得点を計算する
@@ -35,8 +39,6 @@ type TongitsGame interface {
 	GetPhase() domain.TongitsPhase
 	// IsHumanTurn 現在の手番が人間かを返す
 	IsHumanTurn() bool
-	// GetBestDeadwood 1枚捨てて到達できる最小デッドウッドとその捨て札位置
-	GetBestDeadwood(playerIdx int) (int, int)
 	// GetRoundNumber 現在のラウンド番号を取得する
 	GetRoundNumber() int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
@@ -51,18 +53,6 @@ type TongitsGame interface {
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.TongitsPlayer
-	// GetKnockerIdx ノックしたプレイヤーインデックスを取得する
-	GetKnockerIdx() int
-	// GetKnockerMelds ノッカーのメルド一覧を取得する
-	GetKnockerMelds() [][]*domain.Card
-	// GetKnockerDeadwood ノッカーのデッドウッドを取得する
-	GetKnockerDeadwood() []*domain.Card
-	// GetOpponentMelds 相手側のメルド一覧を取得する
-	GetOpponentMelds() [][]*domain.Card
-	// GetOpponentDeadwood 相手側のデッドウッドを取得する
-	GetOpponentDeadwood() []*domain.Card
 	// GetIsTongits 配牌Tongitsかを返す
 	GetIsTongits() bool
-	// GetIsUndercut アンダーカットかを返す
-	GetIsUndercut() bool
 }

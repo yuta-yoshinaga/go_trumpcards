@@ -457,7 +457,7 @@ tags:
   - name: tonk
     description: Tonk (トンク) game - 2-player rummy variant with 5-card hands; instant Tonk win on a 49 or 50 point initial deal, knock when deadwood is 5 or less
   - name: tongits
-    description: Tongits (トンギッツ) game - 2-player Filipino rummy variant with 5-card hands; instant Tongits win on a 49 or 50 point initial deal, knock when deadwood is 5 or less
+    description: Tongits (トンギッツ) game - 3-player Filipino rummy; 13 cards to the dealer and 12 to each opponent, melds are exposed on the table, sapaw extends any player's meld, emptying your hand wins outright, and a challenge compares all three hands on remaining points
   - name: thirtyone
     description: Thirty-One (サーティワン / Scat) game - 4-player draw-and-discard survival game; build the highest single-suit total (A=11, J/Q/K=10), knock to stand pat, lowest score loses a life, hitting exactly 31 wins the round instantly
   - name: yaniv
@@ -46448,9 +46448,19 @@ components:
       properties:
         command:
           type: string
-          enum: [reset, r, drawstock, ds, drawdiscard, dd, discard, d, knock, k, nextround, nr, log, l]
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, discard, d, meld, m, sapaw, sp, challenge, c, nextround, nr, log, l]
         cardIndex:
           type: integer
+        indices:
+          type: array
+          items: {type: integer}
+        targetPlayerIdx:
+          type: integer
+        meldIdx:
+          type: integer
+        agreed:
+          type: array
+          items: {type: boolean}
         config:
           type: object
           properties:
@@ -46475,6 +46485,14 @@ components:
               cards:
                 type: array
                 items: {$ref: '#/components/schemas/Card'}
+              melds:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    cards:
+                      type: array
+                      items: {$ref: '#/components/schemas/Card'}
               roundScore: {type: integer}
               cumulativeScore: {type: integer}
         phase: {type: integer}
@@ -46484,34 +46502,8 @@ components:
         drawPileCount: {type: integer}
         gameEndFlag: {type: boolean}
         winnerIdx: {type: integer}
-        knockerIdx: {type: integer}
-        knockerMelds:
-          type: array
-          items:
-            type: object
-            properties:
-              cards:
-                type: array
-                items: {$ref: '#/components/schemas/Card'}
-        knockerDeadwood:
-          type: array
-          items: {$ref: '#/components/schemas/Card'}
-        opponentMelds:
-          type: array
-          items:
-            type: object
-            properties:
-              cards:
-                type: array
-                items: {$ref: '#/components/schemas/Card'}
-        opponentDeadwood:
-          type: array
-          items: {$ref: '#/components/schemas/Card'}
         isTongits: {type: boolean}
-        undercutRiskMax: {type: integer}
-        isUndercut: {type: boolean}
-        bestDeadwood: {type: integer}
-        knockThreshold: {type: integer}
+        remainingPoints: {type: integer}
         config:
           type: object
           properties:

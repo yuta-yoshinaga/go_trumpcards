@@ -12,26 +12,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// tongitsBestDeadwood returns the lowest deadwood value the player can reach by
-// discarding one card — the value that gates knocking (<= TongitsKnockThreshold).
-
-// tongitsMinOpponentCards は相手のうち最も手札が少ない枚数を返す。相手がいなければ false。
-//
-// 人間を除くのは、自分の枚数はアンダーカットのリスクと関係ないから。
-func tongitsMinOpponentCards(g interfaces.TongitsGame) (int, bool) {
-	minCards, found := 0, false
-	for i := range domain.TongitsPlayerCnt {
-		p := g.GetPlayer(i)
-		if p == nil || p.GetIsHuman() {
-			continue
-		}
-		if !found || p.GetCardsSize() < minCards {
-			minCards, found = p.GetCardsSize(), true
-		}
-	}
-	return minCards, found
-}
-
 // tongitsPlayerStr returns the display string for a single Tongits player.
 func tongitsPlayerStr(player *domain.TongitsPlayer, i int) string {
 	var b strings.Builder
@@ -60,55 +40,27 @@ func tongitsMeldIsSet(meld []*domain.Card) bool {
 	return true
 }
 
-// writeTongitsKnockerMelds lists the knocker's melds with a set/run label.
-func writeTongitsKnockerMelds(b *strings.Builder, melds [][]*domain.Card) {
+// writeTongitsPlayerMelds は 1 人分の公開メルドを書き出す。
+//
+// Tongits のメルドは**出した時点で全員に見える**ので、宣言した 1 人だけを特別扱いする
+// クローン元 (Tonk) の描画は成り立たない。誰のメルドかを添えて、全員分を同じ形で出す。
+func writeTongitsPlayerMelds(b *strings.Builder, name string, melds [][]*domain.Card) {
 	if len(melds) == 0 {
 		return
 	}
-	b.WriteString(color.Bold(i18n.T("tongits.knockerMeldsHeader")) + "\n")
+	b.WriteString(color.Bold(i18n.Tf("tongits.playerMeldsHeader", "name", name)) + "\n")
 	for i, meld := range melds {
 		typeLabel := i18n.T("tongits.meldRun")
 		if tongitsMeldIsSet(meld) {
 			typeLabel = i18n.T("tongits.meldSet")
 		}
-		b.WriteString(i18n.Tf("tongits.knockerMeldLine",
+		b.WriteString(i18n.Tf("tongits.playerMeldLine",
 			"idx", strconv.Itoa(i+1),
 			"type", typeLabel,
 			"cards", cuiCardSliceStr(meld)) + "\n")
 	}
 }
 
-// writeTongitsUndercutDetail lists the opponent's melds and both sides' deadwood.
-//
-// ラウンドの点差はアンダーカット判定（ノッカーと相手のデッドウッド比較）から
-// 来るのに、出ているのはノッカーのメルドだけで、比較の相手側が見えなかった。
-func writeTongitsUndercutDetail(b *strings.Builder, knockerDeadwood []*domain.Card, opponentMelds [][]*domain.Card, opponentDeadwood []*domain.Card) {
-	if len(knockerDeadwood) > 0 {
-		b.WriteString(i18n.Tf("tongits.knockerDeadwoodLine",
-			"cards", cuiCardSliceStr(knockerDeadwood),
-			"points", strconv.Itoa(domain.CalcDeadwoodValue(knockerDeadwood))) + "\n")
-	}
-	if len(opponentMelds) > 0 {
-		b.WriteString(color.Bold(i18n.T("tongits.opponentMeldsHeader")) + "\n")
-		for i, meld := range opponentMelds {
-			typeLabel := i18n.T("tongits.meldRun")
-			if tongitsMeldIsSet(meld) {
-				typeLabel = i18n.T("tongits.meldSet")
-			}
-			b.WriteString(i18n.Tf("tongits.opponentMeldLine",
-				"idx", strconv.Itoa(i+1),
-				"type", typeLabel,
-				"cards", cuiCardSliceStr(meld)) + "\n")
-		}
-	}
-	if len(opponentDeadwood) > 0 {
-		b.WriteString(i18n.Tf("tongits.opponentDeadwoodLine",
-			"cards", cuiCardSliceStr(opponentDeadwood),
-			"points", strconv.Itoa(domain.CalcDeadwoodValue(opponentDeadwood))) + "\n")
-	}
-}
-
-// tongitsHandCards returns a player's remaining cards as a slice.
 func tongitsHandCards(player *domain.TongitsPlayer) []*domain.Card {
 	cards := make([]*domain.Card, player.GetCardsSize())
 	for i := range cards {
@@ -157,42 +109,34 @@ func (p *TongitsCuiPresenter) Output(g interfaces.TongitsGame, lastErr error) st
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("tongits.promptDiscard",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			// 残り点は challenge の勝敗そのものなので、自分の手番のときだけ出す。
+			// CPU の手番に出しても人間は行動できない。
 			if cur := g.GetPlayer(currentIdx); cur.GetIsHuman() {
-				best, _ := g.GetBestDeadwood(currentIdx)
-				if best <= domain.TongitsKnockThreshold {
-					b.WriteString(color.Yellow(i18n.Tf("tongits.currentDeadwood", "value", strconv.Itoa(best))) +
-						" " + color.Yellow(i18n.T("tongits.knockable")) + "\n")
-				} else {
-					b.WriteString(i18n.Tf("tongits.currentDeadwood", "value", strconv.Itoa(best)) +
-						" " + i18n.T("tongits.knockUnable") + "\n")
-				}
+				b.WriteString(i18n.Tf("tongits.currentRemainingPoints",
+					"value", strconv.Itoa(tongitsHandPoints(cur))) + "\n")
 			}
+			b.WriteString(i18n.T("tongits.promptMeldHelp") + "\n")
+			b.WriteString(i18n.T("tongits.promptSapawHelp") + "\n")
 			b.WriteString(i18n.T("tongits.promptDiscardHelp") + "\n")
-			b.WriteString(i18n.T("tongits.promptKnockHelp") + "\n")
-			// **相手の残りが少ないほどノックは裏目。**Web はボタンに警告リングと
-			// ⚠️ を出しているのに、CUI は各行の枚数を見比べさせるだけだった (#5582)。
-			// 人間の手番だけに出す。上のデッドウッド表示と同じ条件 ── ノックを
-			// 決めるのは人間なので、CPU の捨て札中に警告しても行動できない。
-			if cur := g.GetPlayer(currentIdx); cur.GetIsHuman() {
-				if n, ok := tongitsMinOpponentCards(g); ok && n <= domain.TongitsUndercutRiskMax {
-					b.WriteString(color.Yellow(i18n.Tf("tongits.knockUndercutWarning", "count", strconv.Itoa(n))) + "\n")
-				}
-			}
+			b.WriteString(i18n.T("tongits.promptChallengeHelp") + "\n")
 		case domain.TongitsPhaseRoundEnd:
 			if g.GetIsTongits() {
 				b.WriteString(i18n.T("tongits.promptDealtTongits") + "\n")
 			}
-			// Reveal the knocker's melds and each CPU's remaining hand so the
-			// round score has visible justification (parity with the web panel).
-			writeTongitsKnockerMelds(b, g.GetKnockerMelds())
-			writeTongitsUndercutDetail(b, g.GetKnockerDeadwood(), g.GetOpponentMelds(), g.GetOpponentDeadwood())
+			// 決着の根拠を見せる。Tongits では melds は最初から場に公開されて
+			// いるので、ノッカーだけを特別扱いする理由が無い ── 全員のメルドと、
+			// challenge の判定材料である残り点を並べる。
 			for i := 0; i < g.GetPlayerCnt(); i++ {
 				cp := g.GetPlayer(i)
+				writeTongitsPlayerMelds(b, cuiPlayerName(cp, i), cp.GetMelds())
 				if !cp.GetIsHuman() && cp.GetCardsSize() > 0 {
 					b.WriteString(i18n.Tf("tongits.revealedHand",
 						"name", cuiPlayerName(cp, i),
 						"cards", cuiCardSliceStr(tongitsHandCards(cp))) + "\n")
 				}
+				b.WriteString(i18n.Tf("tongits.revealedPoints",
+					"name", cuiPlayerName(cp, i),
+					"value", strconv.Itoa(tongitsHandPoints(cp))) + "\n")
 			}
 			b.WriteString(i18n.T("tongits.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("tongits.promptRoundEndHelp") + "\n")
@@ -203,4 +147,13 @@ func (p *TongitsCuiPresenter) Output(g interfaces.TongitsGame, lastErr error) st
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TongitsCuiPresenter) ActionLogOutput(g interfaces.TongitsGame) string {
 	return actionLogOutputTextForSeats[*domain.TongitsPlayer](g)
+}
+
+// tongitsHandPoints は手札の残り点を返す。challenge の勝敗はこの少なさで決まる。
+func tongitsHandPoints(p *domain.TongitsPlayer) int {
+	total := 0
+	for i := 0; i < p.GetCardsSize(); i++ {
+		total += domain.TongitsCardValue(p.GetCard(i))
+	}
+	return total
 }

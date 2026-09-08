@@ -15,24 +15,24 @@ type TongitsWebPresenter struct{}
 func (p *TongitsWebPresenter) Output(g interfaces.TongitsGame, lastErr error) string {
 	resObj := new(controller.TongitsWebOutput)
 	resObj.Phase = int(g.GetPhase())
-	resObj.UndercutRiskMax = domain.TongitsUndercutRiskMax
 
-	// **CUI は毎ターン「ノック可能/不可」を出しているのに、Web は手計算だった。**
-	// 判断の基準ごと送るので、フロントは閾値の数値を写さずに済む。
-	resObj.KnockThreshold = domain.TongitsKnockThreshold
-	resObj.BestDeadwood = -1
+	// challenge の勝敗は残り点の少なさで決まるので、フロントが再計算せずに
+	// 済むよう手番のプレイヤーの残り点を送る。**点数の規則を 2 箇所に持たせない。**
+	resObj.RemainingPoints = -1
 	if g.GetPhase() == domain.TongitsPhaseDiscard && g.IsHumanTurn() {
-		best, _ := g.GetBestDeadwood(g.GetCurrentPlayerIdx())
-		resObj.BestDeadwood = best
+		cur := g.GetPlayer(g.GetCurrentPlayerIdx())
+		total := 0
+		for i := 0; i < cur.GetCardsSize(); i++ {
+			total += domain.TongitsCardValue(cur.GetCard(i))
+		}
+		resObj.RemainingPoints = total
 	}
 	resObj.RoundNumber = g.GetRoundNumber()
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()
 	resObj.DrawPileCount = g.GetDrawPileCount()
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerIdx = g.GetWinnerIdx()
-	resObj.KnockerIdx = g.GetKnockerIdx()
 	resObj.IsTongits = g.GetIsTongits()
-	resObj.IsUndercut = g.GetIsUndercut()
 
 	top := g.GetDiscardTop()
 	if top != nil {
@@ -43,21 +43,6 @@ func (p *TongitsWebPresenter) Output(g interfaces.TongitsGame, lastErr error) st
 	resObj.Config = controller.TongitsWebOutputConfig{
 		CpuDifficulty: int(cfg.CpuDifficulty),
 		PointLimit:    cfg.PointLimit,
-	}
-
-	resObj.KnockerMelds = tongitsMeldsToOutput(g.GetKnockerMelds())
-	resObj.OpponentMelds = tongitsMeldsToOutput(g.GetOpponentMelds())
-
-	knockerDeadwood := g.GetKnockerDeadwood()
-	resObj.KnockerDeadwood = make([]*controller.WebOutputCard, 0, len(knockerDeadwood))
-	for _, card := range knockerDeadwood {
-		resObj.KnockerDeadwood = append(resObj.KnockerDeadwood, cardToOutput(card))
-	}
-
-	opponentDeadwood := g.GetOpponentDeadwood()
-	resObj.OpponentDeadwood = make([]*controller.WebOutputCard, 0, len(opponentDeadwood))
-	for _, card := range opponentDeadwood {
-		resObj.OpponentDeadwood = append(resObj.OpponentDeadwood, cardToOutput(card))
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)
@@ -96,6 +81,7 @@ func (p *TongitsWebPresenter) buildPlayersOutput(g interfaces.TongitsGame) []*co
 			IsHuman:         player.GetIsHuman(),
 			CardCount:       player.GetCardsSize(),
 			Cards:           playerCardsToOutput(player, showCards),
+			Melds:           tongitsMeldsToOutput(player.GetMelds()),
 			RoundScore:      player.GetRoundScore(),
 			CumulativeScore: player.GetCumulativeScore(),
 		}

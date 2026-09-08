@@ -22,8 +22,12 @@ type TongitsInteractorIF interface {
 	DrawFromDiscard() string
 	// Discard カードを捨てる
 	Discard(cardIndex int) string
-	// Knock ノックする
-	Knock(cardIndex int) string
+	// Meld 手札のカードでメルドを作り場に公開する
+	Meld(indices []int) string
+	// Sapaw 公開済みメルド (他家のものを含む) に手札を1枚付け足す
+	Sapaw(targetPlayerIdx, meldIdx, cardIndex int) string
+	// Challenge ドロー (challenge) を宣言する
+	Challenge(agreed []bool) string
 	// NextRound 次のラウンドへ進む
 	NextRound() string
 	// GetConfig 現在の設定を取得
@@ -95,13 +99,34 @@ func (ci *TongitsInteractor) Discard(cardIndex int) string {
 	return ci.gp.Output(ci.Game, nil)
 }
 
-// Knock ノックする
-func (ci *TongitsInteractor) Knock(cardIndex int) string {
+// Meld 手札のカードでメルドを作り場に公開する
+func (ci *TongitsInteractor) Meld(indices []int) string {
 	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.Game.PlayerKnock(cardIndex)
-	if err != nil {
+	if err := ci.Game.PlayerMeld(indices); err != nil {
+		return ci.gp.Output(ci.Game, err)
+	}
+	return ci.gp.Output(ci.Game, nil)
+}
+
+// Sapaw 公開済みメルド (他家のものを含む) に手札を1枚付け足す
+func (ci *TongitsInteractor) Sapaw(targetPlayerIdx, meldIdx, cardIndex int) string {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
+		return out
+	}
+	if err := ci.Game.PlayerSapaw(targetPlayerIdx, meldIdx, cardIndex); err != nil {
+		return ci.gp.Output(ci.Game, err)
+	}
+	return ci.gp.Output(ci.Game, nil)
+}
+
+// Challenge ドロー (challenge) を宣言する。他家が全員応じたら残り点で決着する
+func (ci *TongitsInteractor) Challenge(agreed []bool) string {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
+		return out
+	}
+	if err := ci.Game.PlayerChallenge(agreed); err != nil {
 		return ci.gp.Output(ci.Game, err)
 	}
 	ci.runCpuTurns()

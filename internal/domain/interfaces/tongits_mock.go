@@ -19,9 +19,13 @@ func (m *MockTongitsGame) NextRound()                        { m.Called() }
 func (m *MockTongitsGame) PlayerDrawFromStock() error        { return m.Called().Error(0) }
 func (m *MockTongitsGame) PlayerDrawFromDiscard() error      { return m.Called().Error(0) }
 func (m *MockTongitsGame) PlayerDiscard(cardIndex int) error { return m.Called(cardIndex).Error(0) }
-func (m *MockTongitsGame) PlayerKnock(cardIndex int) error   { return m.Called(cardIndex).Error(0) }
-func (m *MockTongitsGame) CpuPlay()                          { m.Called() }
-func (m *MockTongitsGame) ScoreRound()                       { m.Called() }
+func (m *MockTongitsGame) PlayerMeld(indices []int) error    { return m.Called(indices).Error(0) }
+func (m *MockTongitsGame) PlayerSapaw(targetPlayerIdx, meldIdx, cardIndex int) error {
+	return m.Called(targetPlayerIdx, meldIdx, cardIndex).Error(0)
+}
+func (m *MockTongitsGame) PlayerChallenge(agreed []bool) error { return m.Called(agreed).Error(0) }
+func (m *MockTongitsGame) CpuPlay()                            { m.Called() }
+func (m *MockTongitsGame) ScoreRound()                         { m.Called() }
 func (m *MockTongitsGame) GetConfig() domain.TongitsConfig {
 	return m.Called().Get(0).(domain.TongitsConfig)
 }
@@ -43,27 +47,7 @@ func (m *MockTongitsGame) GetPlayer(i int) *domain.TongitsPlayer {
 	return m.Called(i).Get(0).(*domain.TongitsPlayer)
 }
 
-// GetBestDeadwood は1枚捨てて到達できる最小デッドウッドを返すモック。
-func (m *MockTongitsGame) GetBestDeadwood(playerIdx int) (int, int) {
-	ret := m.Called(playerIdx)
-	return ret.Int(0), ret.Int(1)
-}
-
 func (m *MockTongitsGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }
-func (m *MockTongitsGame) GetKnockerIdx() int { return m.Called().Int(0) }
-func (m *MockTongitsGame) GetKnockerMelds() [][]*domain.Card {
-	return m.Called().Get(0).([][]*domain.Card)
-}
-func (m *MockTongitsGame) GetKnockerDeadwood() []*domain.Card {
-	return m.Called().Get(0).([]*domain.Card)
-}
-func (m *MockTongitsGame) GetOpponentMelds() [][]*domain.Card {
-	return m.Called().Get(0).([][]*domain.Card)
-}
-func (m *MockTongitsGame) GetOpponentDeadwood() []*domain.Card {
-	return m.Called().Get(0).([]*domain.Card)
-}
-func (m *MockTongitsGame) GetIsTongits() bool  { return m.Called().Bool(0) }
-func (m *MockTongitsGame) GetIsUndercut() bool { return m.Called().Bool(0) }
+func (m *MockTongitsGame) GetIsTongits() bool { return m.Called().Bool(0) }

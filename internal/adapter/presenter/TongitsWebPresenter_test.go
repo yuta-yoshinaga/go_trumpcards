@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -27,16 +26,8 @@ func setupTongitsWebMock() *interfaces.MockTongitsGame {
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetConfig").Return(domain.DefaultTongitsConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
-	m.On("GetKnockerIdx").Return(-1)
-	m.On("GetKnockerMelds").Return(([][]*domain.Card)(nil))
-	m.On("GetKnockerDeadwood").Return(([]*domain.Card)(nil))
-	m.On("GetOpponentMelds").Return(([][]*domain.Card)(nil))
-	m.On("GetOpponentDeadwood").Return(([]*domain.Card)(nil))
 	m.On("GetIsTongits").Return(false)
-	m.On("GetIsUndercut").Return(false)
-	// #4750: ディスカードフェーズで最小デッドウッドを引く。
 	m.On("IsHumanTurn").Return(false).Maybe()
-	m.On("GetBestDeadwood", 0).Return(3, 0).Maybe()
 
 	return m
 }
@@ -44,9 +35,10 @@ func setupTongitsWebMock() *interfaces.MockTongitsGame {
 func setupTongitsWebMockWithPlayers() (*interfaces.MockTongitsGame, []*domain.TongitsPlayer) {
 	m := setupTongitsWebMock()
 	players := makeTongitsPlayers()
-	m.On("GetPlayerCnt").Return(2)
+	m.On("GetPlayerCnt").Return(3)
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
+	m.On("GetPlayer", 2).Return(players[2])
 	return m, players
 }
 
@@ -64,13 +56,13 @@ func TestTongitsWebPresenter_Output(t *testing.T) {
 		var resObj controller.TongitsWebOutput
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
-		assert.Equal(t, 2, len(resObj.Players))
+		assert.Equal(t, 3, len(resObj.Players))
 		assert.False(t, resObj.GameEndFlag)
 		assert.Equal(t, 0, resObj.Phase)
 		assert.Equal(t, 1, resObj.RoundNumber)
 		assert.Equal(t, 41, resObj.DrawPileCount)
 		assert.Equal(t, -1, resObj.WinnerIdx)
-		assert.Equal(t, -1, resObj.KnockerIdx)
+		assert.Equal(t, -1, resObj.RemainingPoints)
 		assert.False(t, resObj.IsTongits)
 		assert.Nil(t, resObj.DiscardTop)
 	})
@@ -127,31 +119,19 @@ func TestTongitsWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "oops", resObj.Message)
 	})
 
-	t.Run("knocker melds and deadwood serialized", func(t *testing.T) {
-		m, _ := setupTongitsWebMockWithPlayers()
-		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnockerIdx")
-		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnockerMelds")
-		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnockerDeadwood")
-		m.On("GetKnockerIdx").Return(0)
-		melds := [][]*domain.Card{
-			{
-				domain.NewCard(domain.CardDesignSpade, 5, false),
-				domain.NewCard(domain.CardDesignHeart, 5, false),
-				domain.NewCard(domain.CardDesignDiamond, 5, false),
-			},
-		}
-		m.On("GetKnockerMelds").Return(melds)
-		m.On("GetKnockerDeadwood").Return([]*domain.Card{
-			domain.NewCard(domain.CardDesignClover, 7, false),
+	t.Run("player melds serialized", func(t *testing.T) {
+		m, players := setupTongitsWebMockWithPlayers()
+		players[1].AppendMeld([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignHeart, 5, false),
+			domain.NewCard(domain.CardDesignDiamond, 5, false),
 		})
 
 		result := p.Output(m, nil)
 		var resObj controller.TongitsWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
-		assert.Equal(t, 0, resObj.KnockerIdx)
-		assert.Len(t, resObj.KnockerMelds, 1)
-		assert.Len(t, resObj.KnockerMelds[0].Cards, 3)
-		assert.Len(t, resObj.KnockerDeadwood, 1)
+		assert.Len(t, resObj.Players[1].Melds, 1)
+		assert.Len(t, resObj.Players[1].Melds[0].Cards, 3)
 	})
 
 	t.Run("discard top serialized", func(t *testing.T) {
@@ -207,10 +187,7 @@ func TestTongitsWebPresenter_Output(t *testing.T) {
 	})
 }
 
-// **CUI は毎ターン「ノック可能/不可」を出しているのに、Web はプレイヤーの
-// 手計算に任せていた (#4750)。**判断の基準 (閾値) ごと送るので、フロントは
-// 数値を写さずに済む。
-func TestTongitsWebPresenter_BestDeadwood(t *testing.T) {
+func TestTongitsWebPresenter_RemainingPoints(t *testing.T) {
 	p := new(presenter.TongitsWebPresenter)
 
 	decode := func(t *testing.T, m *interfaces.MockTongitsGame) controller.TongitsWebOutput {
@@ -220,18 +197,17 @@ func TestTongitsWebPresenter_BestDeadwood(t *testing.T) {
 		return out
 	}
 
-	t.Run("human discard turn carries the domain's answer and the threshold", func(t *testing.T) {
-		m, _ := setupTongitsWebMockWithPlayers()
+	t.Run("human discard turn carries remaining points", func(t *testing.T) {
+		m, players := setupTongitsWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
-		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBestDeadwood")
 		m.On("GetPhase").Return(domain.TongitsPhaseDiscard)
 		m.On("IsHumanTurn").Return(true)
-		m.On("GetBestDeadwood", 0).Return(4, 1)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 
 		out := decode(t, m)
-		assert.Equal(t, 4, out.BestDeadwood)
-		assert.Equal(t, domain.TongitsKnockThreshold, out.KnockThreshold)
+		assert.Equal(t, 9, out.RemainingPoints)
 	})
 
 	// **-1 は「まだ聞くべき場面でない」印。**0 にすると「デッドウッド0 =
@@ -241,7 +217,7 @@ func TestTongitsWebPresenter_BestDeadwood(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
 		m.On("IsHumanTurn").Return(true) // フェーズは Draw のまま
 
-		assert.Equal(t, -1, decode(t, m).BestDeadwood)
+		assert.Equal(t, -1, decode(t, m).RemainingPoints)
 	})
 
 	t.Run("cpu discard turn is -1 too", func(t *testing.T) {
@@ -249,7 +225,7 @@ func TestTongitsWebPresenter_BestDeadwood(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.TongitsPhaseDiscard) // IsHumanTurn は既定 false
 
-		assert.Equal(t, -1, decode(t, m).BestDeadwood)
+		assert.Equal(t, -1, decode(t, m).RemainingPoints)
 	})
 }
 
@@ -259,13 +235,13 @@ func TestTongitsWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockTongitsGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "knock", Detail: "knocks"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "challenge", Detail: "challenges"},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
 
 		result := p.ActionLogOutput(m)
-		assert.Contains(t, result, "knock")
+		assert.Contains(t, result, "challenge")
 	})
 
 	t.Run("game not ended", func(t *testing.T) {
@@ -274,16 +250,4 @@ func TestTongitsWebPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.NotEmpty(t, result)
 	})
-}
-
-// #5582: 閾値はドメインから渡すこと。画面に 2 を書くと、変えたとき Web と CUI で
-// 警告の出る局面がずれる。
-func TestTongitsWebPresenter_ShipsTheUndercutThreshold(t *testing.T) {
-	g := domain.NewDefaultTongits()
-	g.Reset()
-
-	var out controller.TongitsWebOutput
-	require.NoError(t, json.Unmarshal([]byte(new(presenter.TongitsWebPresenter).Output(g, nil)), &out))
-	assert.Equal(t, domain.TongitsUndercutRiskMax, out.UndercutRiskMax)
-	assert.NotZero(t, out.UndercutRiskMax)
 }
