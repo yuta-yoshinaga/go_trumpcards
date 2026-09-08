@@ -1,5 +1,4 @@
 //go:build test
-
 // +build test
 
 package controller_test
