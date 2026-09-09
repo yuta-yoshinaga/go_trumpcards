@@ -27,7 +27,7 @@ func mustQuinzeOutputJSON(msg string) string {
 }
 
 func TestQuinzeWebController_Method(t *testing.T) {
-	mockOutput := `{"seats":[],"bankerIdx":0,"isHumanBanker":false,"chips":1000,"activeSeat":0,"nextBanker":-1,"lastResult":"","phase":1,"targetHalves":15,"canHit":false,"canStand":false,"message":""}`
+	mockOutput := `{"seats":[],"bankerIdx":0,"isHumanBanker":false,"chips":1000,"activeSeat":0,"nextBanker":-1,"lastResult":"","phase":1,"targetPoints":15,"canHit":false,"canStand":false,"message":""}`
 
 	siMock := new(usecase.MockQuinzeInteractor)
 	siMock.On("Reset").Return(mockOutput)
@@ -78,5 +78,41 @@ func TestQuinzeWebController_Method(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			exec(t, tc.body).CodeIs(http.StatusBadRequest)
 		})
+	}
+}
+
+func TestQuinzeWebOutput_JSONUsesPointKeys(t *testing.T) {
+	out := &controller.QuinzeWebOutput{
+		Seats:          []*controller.QuinzeWebOutputSeat{{Hand: &controller.QuinzeWebOutputHand{TotalPoints: 15}}},
+		BankerHand:     &controller.QuinzeWebOutputHand{TotalPoints: 12},
+		TargetPoints:   15,
+		CpuStandPoints: 12,
+	}
+	b, err := json.Marshal(out)
+	if err != nil {
+		t.Fatalf("marshal Quinze output: %v", err)
+	}
+	var m map[string]any
+	if err := json.Unmarshal(b, &m); err != nil {
+		t.Fatalf("unmarshal Quinze output: %v", err)
+	}
+	for _, key := range []string{"targetPoints", "cpuStandPoints"} {
+		if _, ok := m[key]; !ok {
+			t.Errorf("serialized Quinze output is missing %q", key)
+		}
+	}
+	handJSON, err := json.Marshal(out.Seats[0].Hand)
+	if err != nil {
+		t.Fatalf("marshal Quinze hand: %v", err)
+	}
+	var hand map[string]any
+	if err := json.Unmarshal(handJSON, &hand); err != nil {
+		t.Fatalf("unmarshal Quinze hand: %v", err)
+	}
+	if _, ok := hand["totalPoints"]; !ok {
+		t.Error("serialized Quinze hand is missing \"totalPoints\"")
+	}
+	if _, ok := m["targetHalves"]; ok {
+		t.Error("serialized Quinze output unexpectedly contains targetHalves")
 	}
 }

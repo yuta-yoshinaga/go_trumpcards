@@ -31,8 +31,8 @@ func quinzeHandOutput(s interfaces.QuinzeGame, h *domain.QuinzeHand, reveal bool
 	if !reveal {
 		return out
 	}
-	out.TotalHalves = s.GetHandPoints(h)
-	out.TotalLabel = s.FormatPoints(out.TotalHalves)
+	out.TotalPoints = s.GetHandPoints(h)
+	out.TotalLabel = s.FormatPoints(out.TotalPoints)
 	for i, c := range cards {
 		out.Cards[i] = cardToOutput(c)
 	}
@@ -62,7 +62,7 @@ func (sp *QuinzeWebPresenter) Output(s interfaces.QuinzeGame, lastErr error) str
 	resObj.NextBanker = s.GetNextBanker()
 	resObj.LastResult = s.GetLastResult()
 	resObj.Phase = s.GetPhase()
-	resObj.Target = domain.QuinzeTarget
+	resObj.TargetPoints = domain.QuinzeTarget
 	resObj.CanHit = s.CanHit()
 	resObj.CanStand = s.CanStand()
 	resObj.CpuStandPoints = domain.QuinzeCpuStandPoints

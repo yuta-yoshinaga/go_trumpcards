@@ -21,9 +21,8 @@ export interface QuinzeHand {
   cards: (Card | null)[];
   bet: number;
   /**
-   * Total in points, as an integer. Face cards are worth half a point, and
-   * landing on exactly 15 is what takes the bank, so the comparison has to be
-   * exact rather than close. 0 while hidden.
+   * Total in points, as an integer. Aces are worth 1 point and face cards are
+   * worth 10 points. Landing on exactly 15 takes the bank. 0 while hidden.
    */
   totalPoints: number;
   /** The same total rendered for display, e.g. "15". Empty while hidden. */
@@ -55,10 +54,10 @@ export interface QuinzeResponse extends BaseGameResponse {
   nextBanker: number;
   lastResult: string;
   phase: number;
-  /** 15 in halves (15), sent so the target is not hardcoded on both sides. */
+  /** Target score of 15 points, sent so the target is not hardcoded on both sides. */
   targetPoints: number;
   canHit: boolean;
   canStand: boolean;
-  /** Total (in halves) at which the CPU seats and the banker stand. */
+  /** Total points at which the CPU seats and the banker stand. */
   cpuStandPoints: number;
 }

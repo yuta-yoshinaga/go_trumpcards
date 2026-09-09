@@ -85,8 +85,8 @@ func TestQuinzeWebPresenter_Output(t *testing.T) {
 		setupQuinzeWebMockDefaults(g)
 
 		result := parseQuinzeOutput(t, new(QuinzeWebPresenter).Output(g, nil))
-		assert.Equal(t, domain.QuinzeTarget, result.Target)
-		assert.Equal(t, 15, result.Target)
+		assert.Equal(t, domain.QuinzeTarget, result.TargetPoints)
+		assert.Equal(t, 15, result.TargetPoints)
 	})
 
 	// A hidden hand must not reach the wire -- the same hole Pontoon had before
@@ -99,7 +99,7 @@ func TestQuinzeWebPresenter_Output(t *testing.T) {
 
 		require.NotNil(t, result.BankerHand)
 		assert.True(t, result.BankerHand.Hidden)
-		assert.Zero(t, result.BankerHand.TotalHalves)
+		assert.Zero(t, result.BankerHand.TotalPoints)
 		assert.Empty(t, result.BankerHand.TotalLabel)
 		for i, c := range result.BankerHand.Cards {
 			assert.Nil(t, c, "banker card %d leaked", i)
@@ -124,7 +124,7 @@ func TestQuinzeWebPresenter_Output(t *testing.T) {
 		require.NotNil(t, own)
 		assert.False(t, own.Hidden)
 		assert.NotNil(t, own.Cards[0])
-		assert.Equal(t, 9, own.TotalHalves)
+		assert.Equal(t, 9, own.TotalPoints)
 		assert.Equal(t, "4.5", own.TotalLabel)
 	})
 
@@ -247,5 +247,5 @@ func TestQuinzeWebPresenter_CarriesTheCpuStandThreshold(t *testing.T) {
 	assert.Equal(t, domain.QuinzeCpuStandPoints, result.CpuStandPoints)
 	assert.NotZero(t, result.CpuStandPoints)
 	// 目標点とは別の数字であること。同じなら CPU は一度も引かない。
-	assert.NotEqual(t, result.Target, result.CpuStandPoints)
+	assert.NotEqual(t, result.TargetPoints, result.CpuStandPoints)
 }

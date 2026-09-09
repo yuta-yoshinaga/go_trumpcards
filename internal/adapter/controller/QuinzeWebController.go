@@ -19,9 +19,8 @@ type QuinzeWebInput struct {
 type QuinzeWebOutputHand struct {
 	Cards []*WebOutputCard `json:"cards"`
 	Bet   int              `json:"bet"`
-	// TotalHalves は合計を**半点単位**で表したもの。0.5 点札があるので、
-	// 小数をワイヤに載せずに正確な等値比較ができる形で渡す。
-	TotalHalves int `json:"totalHalves"`
+	// TotalPoints は合計を整数点で表したもの。A は 1 点、絵札は 10 点。
+	TotalPoints int `json:"totalPoints"`
 	// TotalLabel は "15" のような表示用の文字列。
 	TotalLabel string `json:"totalLabel"`
 	Stood      bool   `json:"stood"`
@@ -48,11 +47,11 @@ type QuinzeWebOutput struct {
 	NextBanker    int                    `json:"nextBanker"`
 	LastResult    string                 `json:"lastResult"`
 	Phase         int                    `json:"phase"`
-	// Target は 15 を半点単位で表したもの（15）。
-	Target int `json:"targetHalves"`
-	// CpuStandPoints は CPU 席と親が止まる合計（11 = 5.5 点、#5566）。
+	// TargetPoints はプレイヤーと親の目標点（15）。
+	TargetPoints int `json:"targetPoints"`
+	// CpuStandPoints は CPU 席と親が止まる合計点（12、#5566）。
 	// 数字を訳文に焼き込むと、閾値を変えたとき案内だけが嘘になる。
-	CpuStandPoints int  `json:"cpuStandHalves"`
+	CpuStandPoints int  `json:"cpuStandPoints"`
 	CanHit         bool `json:"canHit"`
 	CanStand       bool `json:"canStand"`
 	WebOutputBase

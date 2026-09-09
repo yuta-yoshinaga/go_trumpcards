@@ -257,7 +257,6 @@ func (s *Quinze) playCpuSeat(h *QuinzeHand) {
 			break
 		}
 		if total >= QuinzeCpuStandPoints {
-			h.stood = true
 			break
 		}
 		if !s.hit(h) {

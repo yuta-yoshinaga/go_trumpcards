@@ -17724,7 +17724,7 @@ paths:
                                 nullable: true
                             bet:
                               type: integer
-                            totalHalves:
+                            totalPoints:
                               type: integer
                             totalLabel:
                               type: string
@@ -17744,7 +17744,7 @@ paths:
                           nullable: true
                       bet:
                         type: integer
-                      totalHalves:
+                      totalPoints:
                         type: integer
                       totalLabel:
                         type: string
@@ -17768,9 +17768,9 @@ paths:
                     type: string
                   phase:
                     type: integer
-                  targetHalves:
+                  targetPoints:
                     type: integer
-                  cpuStandHalves:
+                  cpuStandPoints:
                     type: integer
                   canHit:
                     type: boolean
@@ -17814,7 +17814,7 @@ paths:
                                 nullable: true
                             bet:
                               type: integer
-                            totalHalves:
+                            totalPoints:
                               type: integer
                             totalLabel:
                               type: string
@@ -17834,7 +17834,7 @@ paths:
                           nullable: true
                       bet:
                         type: integer
-                      totalHalves:
+                      totalPoints:
                         type: integer
                       totalLabel:
                         type: string
@@ -17858,9 +17858,9 @@ paths:
                     type: string
                   phase:
                     type: integer
-                  targetHalves:
+                  targetPoints:
                     type: integer
-                  cpuStandHalves:
+                  cpuStandPoints:
                     type: integer
                   canHit:
                     type: boolean
