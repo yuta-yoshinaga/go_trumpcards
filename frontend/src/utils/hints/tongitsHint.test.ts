@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import i18n from '../../i18n';
 import type { Card, TongitsResponse } from '../../types/card';
 import { TongitsPhase } from '../../types/phases';
 import { getTongitsHint } from './tongitsHint';
@@ -32,23 +33,56 @@ function base(overrides: Partial<TongitsResponse> = {}): TongitsResponse {
     ...overrides,
   };
 }
+
 describe('getTongitsHint', () => {
-  it('suggests taking a discard that completes a meld', () => {
+  it('suggests taking a discard that completes a run', () => {
     expect(getTongitsHint(base({ phase: TongitsPhase.DRAW }))?.targetAction).toBe('takeDiscard');
   });
-  it('suggests drawing stock when discard does not improve the hand', () => {
+  it('suggests drawing stock when discard does not make a meld', () => {
     expect(getTongitsHint(base({ phase: TongitsPhase.DRAW, discardTop: card('DIAMOND', 2) }))?.targetAction).toBe(
       'drawStock',
     );
   });
-  it('suggests challenge using server remaining points', () => {
+  it('suggests drawing stock when there is no discard', () => {
+    expect(getTongitsHint(base({ phase: TongitsPhase.DRAW, discardTop: null }))?.targetAction).toBe('drawStock');
+  });
+  it('suggests a challenge when remaining points are low', () => {
     expect(getTongitsHint(base({ remainingPoints: 5 }))?.targetAction).toBe('challenge');
   });
-  it('suggests a discard when challenge is not available', () => {
+  it('suggests the best discard when challenge is unavailable', () => {
     expect(getTongitsHint(base({ remainingPoints: 6 }))?.targetAction).toBe('card-2');
   });
-  it('returns null when the game is over or CPU is acting', () => {
+  it('returns no hint during round end', () => {
+    expect(getTongitsHint(base({ phase: TongitsPhase.ROUND_END }))).toBeNull();
+  });
+  it('returns no hint after the game ends', () => {
     expect(getTongitsHint(base({ gameEndFlag: true }))).toBeNull();
+  });
+  it('returns no hint while a CPU is acting', () => {
     expect(getTongitsHint(base({ currentPlayerIdx: 1 }))).toBeNull();
+  });
+  it('does not suggest a pair as a meld', () => {
+    expect(getTongitsHint(base({ phase: TongitsPhase.DRAW, discardTop: card('DIAMOND', 5) }))?.targetAction).toBe(
+      'drawStock',
+    );
+  });
+  it('returns no hint for an empty human hand', () => {
+    const initial = base();
+    expect(
+      getTongitsHint(base({ players: [{ ...initial.players[0], cards: [], cardCount: 0 }, initial.players[1]] })),
+    ).toBeNull();
+  });
+  it('uses translated hint sentences instead of exposing raw i18n keys', () => {
+    const hints = [
+      getTongitsHint(base({ phase: TongitsPhase.DRAW })),
+      getTongitsHint(base({ phase: TongitsPhase.DRAW, discardTop: card('DIAMOND', 2) })),
+      getTongitsHint(base({ remainingPoints: 5 })),
+      getTongitsHint(base({ remainingPoints: 6 })),
+    ];
+    for (const hint of hints) {
+      const sentence = i18n.t(`tongits:${hint?.reason}`);
+      expect(sentence).not.toContain('tongits.');
+      expect(sentence).not.toBe(hint?.reason);
+    }
   });
 });
