@@ -124,6 +124,7 @@ var gameDescriptions = map[string]string{
 	"president":           "President / Scum (プレジデント)",
 	"cassino":             "Cassino (カッシーノ)",
 	"spanish21":           "Spanish 21 (スパニッシュ21)",
+	"doubleexposure":      "Double Exposure Blackjack (ダブルエクスポージャー・ブラックジャック)",
 	"calculation":         "Calculation (カルキュレーション)",
 	"sirtommy":            "サー・トミー（最古級のペイシェンス）",
 	"auldlangsyne":        "オールド・ラング・サイン（4列へ強制配りの古典ソリティア）",

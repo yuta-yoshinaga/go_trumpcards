@@ -11,6 +11,8 @@ const (
 	BJVariantStandard BlackJackVariantName = ""
 	// BJVariantSpanish21 スパニッシュ21
 	BJVariantSpanish21 BlackJackVariantName = "spanish21"
+	// BJVariantDoubleExposure ダブルエクスポージャー
+	BJVariantDoubleExposure BlackJackVariantName = "doubleexposure"
 )
 
 // BJBonusPayout はバリアント固有のボーナス配当を表す
@@ -35,6 +37,12 @@ type BlackJackVariantConfig struct {
 	Player21AlwaysWins bool
 	// PlayerBJBeatsDealerBJ true の場合、両者がナチュラルブラックジャックでもプレイヤー勝利
 	PlayerBJBeatsDealerBJ bool
+	// DealerCardsFaceUp true の場合、ディーラーの手札を最初からすべて表向きにする
+	DealerCardsFaceUp bool
+	// DealerWinsTies true の場合、ナチュラルBJ同士以外の同点はディーラー勝ちにする
+	DealerWinsTies bool
+	// BlackjackPaysEven true の場合、プレイヤーのナチュラルBJを1:1で配当する
+	BlackjackPaysEven bool
 	// BonusEval はボーナス配当判定関数 (nil = ボーナス無し)
 	// 引数: 完成したプレイヤーハンド、ディーラーアップカード
 	// 戻り値: ボーナス配当 (nil = 通常配当)
@@ -81,12 +89,25 @@ func Spanish21Variant() *BlackJackVariantConfig {
 	}
 }
 
+// DoubleExposureVariant はダブルエクスポージャー・ブラックジャックの設定を返す
+func DoubleExposureVariant() *BlackJackVariantConfig {
+	return &BlackJackVariantConfig{
+		Name:                  BJVariantDoubleExposure,
+		DealerCardsFaceUp:     true,
+		DealerWinsTies:        true,
+		BlackjackPaysEven:     true,
+		PlayerBJBeatsDealerBJ: true,
+	}
+}
+
 // ResolveBlackJackVariant はバリアント名から設定を復元する
 // (UnmarshalJSON でバリアント情報を再構築するために使用)
 func ResolveBlackJackVariant(name BlackJackVariantName) *BlackJackVariantConfig {
 	switch name {
 	case BJVariantSpanish21:
 		return Spanish21Variant()
+	case BJVariantDoubleExposure:
+		return DoubleExposureVariant()
 	default:
 		return nil
 	}

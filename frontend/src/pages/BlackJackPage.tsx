@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
-import { blackjackApi, spanish21Api } from '../api/gameApi';
+import { blackjackApi, doubleexposureApi, spanish21Api } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
@@ -158,8 +158,8 @@ const SPANISH21_TUTORIAL_STEPS: TutorialStep[] = [
   BJ_TUTORIAL_STEPS[6], // reset button
 ];
 
-/** Variant identifier shared by BlackJack and Spanish 21 (which reuses this page). */
-export type BlackJackVariant = 'blackjack' | 'spanish21';
+/** Variant identifier shared by BlackJack and its registered variants. */
+export type BlackJackVariant = 'blackjack' | 'spanish21' | 'doubleexposure';
 
 /** Props for {@link BlackJackPage}. */
 export interface BlackJackPageProps {
@@ -179,10 +179,13 @@ export function BlackJackPage({ variant = 'blackjack' }: BlackJackPageProps) {
 
 /** Inner content of the BlackJack page, wrapped by TutorialProvider. */
 function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
-  const apiClient = variant === 'spanish21' ? spanish21Api : blackjackApi;
-  const gamePath = variant === 'spanish21' ? '/spanish21' : '/';
-  const navTitleKey = variant === 'spanish21' ? 'nav.spanish21' : 'nav.blackjack';
-  const themeKey: 'blackjack' | 'spanish21' = variant === 'spanish21' ? 'spanish21' : 'blackjack';
+  const apiClient =
+    variant === 'spanish21' ? spanish21Api : variant === 'doubleexposure' ? doubleexposureApi : blackjackApi;
+  const gamePath = variant === 'spanish21' ? '/spanish21' : variant === 'doubleexposure' ? '/doubleexposure' : '/';
+  const navTitleKey =
+    variant === 'spanish21' ? 'nav.spanish21' : variant === 'doubleexposure' ? 'nav.doubleexposure' : 'nav.blackjack';
+  const themeKey: 'blackjack' | 'spanish21' | 'doubleexposure' =
+    variant === 'spanish21' ? 'spanish21' : variant === 'doubleexposure' ? 'doubleexposure' : 'blackjack';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup(variant);
   const phaseNames = usePhaseNames(variant, BJ_PHASE_KEYS);

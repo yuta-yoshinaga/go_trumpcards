@@ -12,6 +12,7 @@ export type GameKey =
   // Table games
   | 'blackjack'
   | 'spanish21'
+  | 'doubleexposure'
   | 'baccarat'
   | 'threecard'
   | 'threecardrummy'
@@ -641,6 +642,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
   blackjack: BRIGHT_GREEN,
   spanish21: BRIGHT_GREEN,
+  doubleexposure: BRIGHT_GREEN,
   baccarat: CASINO,
   threecard: CASINO,
   threecardrummy: CASINO,

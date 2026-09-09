@@ -115,6 +115,7 @@ export * from './games/diloti';
 export * from './games/diplomat';
 export * from './games/doppelkopf';
 export * from './games/doubleattack';
+export * from './games/doubleexposure';
 export * from './games/doubleklondike';
 export * from './games/doubt';
 export * from './games/doudizhu';
@@ -599,6 +600,7 @@ export const games = [
   'bristol',
   'bidwhist',
   'spanish21',
+  'doubleexposure',
   'spiteandmalice',
   'ramsch',
   'skat',

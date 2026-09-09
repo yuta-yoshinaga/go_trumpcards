@@ -1,0 +1,11 @@
+{
+  "helpTitle": "ダブルエクスポージャー・ブラックジャック",
+  "helpExampleH": "  h                    もう 1 枚引く",
+  "payoutRef.title": "配当表",
+  "payoutRef.blackjack": "ブラックジャック (1:1)",
+  "payoutRef.win": "通常勝利 (1:1)",
+  "payoutRef.insurance": "インシュランス (2:1)",
+  "payoutRef.push": "ディーラー勝利 (同点でもディーラーの勝ち)",
+  "payoutRef.surrender": "サレンダー (ベットの半額返金)",
+  "payoutRef.bust": "バスト (21超過: 負け)"
+}

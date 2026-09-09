@@ -13,6 +13,16 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+func newDoubleExposureBlackJack() *domain.BlackJack {
+	bj := domain.NewDefaultBlackJack()
+	cfg := bj.GetConfig()
+	cfg.Variant = domain.BJVariantDoubleExposure
+	if err := bj.SetConfig(cfg); err != nil {
+		panic(err)
+	}
+	return bj
+}
+
 // GameRegistryEntry holds a game's name and CUI constructor.
 // Description lives on games.Game (issue #1459 SSoT); use Description() to
 // look it up for a given entry.
@@ -7341,6 +7351,25 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("doubleexposure",
+		func() usecase.BlackJackInteractorIF {
+			return usecase.NewBlackJackInteractor(newDoubleExposureBlackJack(), new(presenter.BlackJackCuiPresenter))
+		},
+		controller.NewBlackJackCuiController,
+		CuiHelpSpec{
+			TitleKey:    "doubleexposure.helpTitle",
+			ExampleKeys: []string{"doubleexposure.helpExampleH"},
+			CommandKeys: []string{
+				"blackjack.helpBet",
+				"blackjack.helpHit",
+				"blackjack.helpStand",
+				"blackjack.helpDouble",
+				"blackjack.helpSplit",
+				"blackjack.helpInsurance",
+				"blackjack.helpDeclineInsurance", "blackjack.helpLog",
+			},
+			SettingKeys: []string{"blackjack.helpSetCpuCount"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -7401,6 +7430,8 @@ var GameAliases = map[string]string{
 	"mstud":   "mississippistud",
 	"sp21":    "spanish21",
 	"s21":     "spanish21",
+	"de":      "doubleexposure",
+	"double":  "doubleexposure",
 	"rummy":   "rummy500",
 	"500":     "rummy500",
 	"r500":    "rummy500",

@@ -33,6 +33,7 @@ export const WORKER_EXTRA5 = import.meta.env.VITE_WORKER_EXTRA5_URL || '';
 export const workerUrl: Record<string, string> = {
   blackjack: WORKER_CASINO,
   spanish21: WORKER_CASINO,
+  doubleexposure: WORKER_CASINO,
   baccarat: WORKER_CASINO,
   poker: WORKER_CASINO,
   holdem: WORKER_CASINO,

@@ -5,6 +5,7 @@ import { gameTheme } from './gameTheme';
 describe('gameTheme', () => {
   it('table games use green-bright theme', () => {
     expect(gameTheme.blackjack.bg).toContain('green-bright');
+    expect(gameTheme.doubleexposure.bg).toContain('green-bright');
   });
 
   it('Quinze uses the casino theme', () => {

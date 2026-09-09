@@ -13,6 +13,16 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+func newDoubleExposureBlackJack() *domain.BlackJack {
+	bj := domain.NewDefaultBlackJack()
+	cfg := bj.GetConfig()
+	cfg.Variant = domain.BJVariantDoubleExposure
+	if err := bj.SetConfig(cfg); err != nil {
+		panic(err)
+	}
+	return bj
+}
+
 func init() {
 	games.RegisterKVGame("blackjack", games.CategoryCasino,
 		func() usecase.BlackJackInteractorIF {
@@ -249,6 +259,14 @@ func init() {
 	games.RegisterKVGame("spanish21", games.CategoryCasino,
 		func() usecase.BlackJackInteractorIF {
 			return usecase.NewBlackJackInteractor(domain.NewSpanish21BlackJack(), new(presenter.BlackJackWebPresenter))
+		},
+		func(data []byte) (usecase.BlackJackInteractorIF, error) {
+			return usecase.RestoreBlackJackInteractor(data, new(presenter.BlackJackWebPresenter))
+		},
+		controller.NewBlackJackWebControllerWithProvider)
+	games.RegisterKVGame("doubleexposure", games.CategoryCasino,
+		func() usecase.BlackJackInteractorIF {
+			return usecase.NewBlackJackInteractor(newDoubleExposureBlackJack(), new(presenter.BlackJackWebPresenter))
 		},
 		func(data []byte) (usecase.BlackJackInteractorIF, error) {
 			return usecase.RestoreBlackJackInteractor(data, new(presenter.BlackJackWebPresenter))
