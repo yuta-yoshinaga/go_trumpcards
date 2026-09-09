@@ -335,6 +335,10 @@ func (g *Tongits) PlayerChallenge(agreed []bool) error {
 	if err := g.validateHumanPlay(TongitsPhaseDiscard); err != nil {
 		return err
 	}
+	return g.resolveChallenge(agreed)
+}
+
+func (g *Tongits) resolveChallenge(agreed []bool) error {
 	if len(agreed) != TongitsPlayerCnt-1 {
 		return NewDomainError(ErrInvalidPlay, "応答数が不正です")
 	}
@@ -556,8 +560,13 @@ func (g *Tongits) cpuDiscardOrChallenge() {
 	}
 
 	if g.config.CpuDifficulty == TongitsCpuDifficultyHard && tongitsRemainingPoints(tongitsHandCards(player)) <= 10 {
-		g.PlayerChallenge([]bool{true, true})
-		return
+		agreed := make([]bool, TongitsPlayerCnt-1)
+		for i := range agreed {
+			agreed[i] = true
+		}
+		if err := g.resolveChallenge(agreed); err == nil {
+			return
+		}
 	}
 
 	discardIdx := 0
