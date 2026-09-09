@@ -256,8 +256,8 @@ type tableauMove struct {
 // dispatchTableauOnlyMove validates and performs a tableau-to-tableau move for
 // the solitaires that allow no other kind, answering 400 for anything else.
 //
-// Consolidates 3 byte-identical dispatchers: scorpionMoveDispatch,
-// spideretteMoveDispatch, waspMoveDispatch. See issue #5368.
+// Consolidates 4 byte-identical dispatchers: scorpionMoveDispatch,
+// spideretteMoveDispatch, waspMoveDispatch, willOTheWispMoveDispatch. See issue #5368.
 //
 // Always returns true: unlike the command dispatchers, this one owns the whole
 // request. Reporting false would leave the caller to answer a request that has

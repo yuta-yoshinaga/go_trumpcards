@@ -450,4 +450,12 @@ func init() {
 			return usecase.RestoreCitadelInteractor(data, new(presenter.CitadelWebPresenter))
 		},
 		controller.NewCitadelWebControllerWithProvider)
+	games.RegisterKVGame("willothewisp", games.CategorySolo,
+		func() usecase.WillOTheWispInteractorIF {
+			return usecase.NewWillOTheWispInteractor(domain.NewDefaultWillOTheWisp(), new(presenter.WillOTheWispWebPresenter))
+		},
+		func(data []byte) (usecase.WillOTheWispInteractorIF, error) {
+			return usecase.RestoreWillOTheWispInteractor(data, new(presenter.WillOTheWispWebPresenter))
+		},
+		controller.NewWillOTheWispWebControllerWithProvider)
 }

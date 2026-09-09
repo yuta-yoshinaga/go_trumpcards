@@ -25,6 +25,7 @@ describe('gameTheme', () => {
   it('solitaire games use casino theme', () => {
     expect(gameTheme.klondike.bg).toContain('casino');
     expect(gameTheme.memory.bg).toContain('casino');
+    expect(gameTheme.willothewisp.bg).toContain('casino');
   });
 
   it('counting/rummy games use blue theme', () => {

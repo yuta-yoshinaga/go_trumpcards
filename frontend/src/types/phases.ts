@@ -1220,6 +1220,13 @@ export const SpiderettePhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Will o' the Wisp phase constants (sync: internal/domain/WillOTheWisp.go). */
+export const WillOTheWispPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Ramsch phase constants (sync: internal/domain/Ramsch.go).
  *
  * **入札も宣言も無いので 4 つだけ。** Skat の Bid / Pickup / Discard /

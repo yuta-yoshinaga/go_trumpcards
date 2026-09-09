@@ -1,0 +1,18 @@
+{
+  "helpTitle": "Will o' the Wisp",
+  "helpDeal": "  d                        deal from stock",
+  "helpMove": "  m t <col> <idx> t <col>  move tableau to tableau",
+  "helpMoveShorthand": "  m <col> <col>            move top card (shorthand)",
+  "helpGiveUp": "  g                        give up",
+  "helpHint": "  h                        hint",
+  "helpAutoComplete": "  ac                       auto-complete",
+  "header": "Completed: {{completed}}/{{total}} | Stock: {{stock}} | Score: {{score}}",
+  "columnLabel": "Column {{col}}:",
+  "gameClearLine": "Game clear! Moves: {{moves}} Score: {{score}}",
+  "hintLine": "Hint: tableau column {{fromCol}}[{{idx}}] → tableau column {{toCol}}",
+  "dealsRemaining": " | Deals left: {{count}}",
+  "helpExampleHint": "  h                        ask for a move",
+  "helpExampleAuto": "  ac                       send everything that can go to a foundation",
+  "helpUndo": "  u                        undo one move",
+  "scoreRule": "Score: starts at {{start}}, -{{penalty}} per move, +{{bonus}} per completed suit"
+}

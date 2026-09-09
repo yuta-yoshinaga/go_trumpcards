@@ -1885,4 +1885,9 @@ func init() {
 			return usecase.NewTongitsInteractor(domain.NewDefaultTongits(), new(presenter.TongitsWebPresenter))
 		},
 		controller.NewTongitsWebController)
+	BindWebControllerFor("willothewisp",
+		func() usecase.WillOTheWispInteractorIF {
+			return usecase.NewWillOTheWispInteractor(domain.NewDefaultWillOTheWisp(), new(presenter.WillOTheWispWebPresenter))
+		},
+		controller.NewWillOTheWispWebController)
 }

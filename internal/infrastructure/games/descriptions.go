@@ -203,6 +203,7 @@ var gameDescriptions = map[string]string{
 	"mississippistud":     "Mississippi Stud (ミシシッピ・スタッド)",
 	"belote":              "Belote (ベロート)",
 	"spiderette":          "Spiderette (スパイダレット)",
+	"willothewisp":        "Will o' the Wisp (ウィル・オ・ザ・ウィスプ)",
 	"mighty":              "Mighty (マイティ)",
 	"oasispoker":          "Oasis Poker (オアシスポーカー)",
 	"beleagueredcastle":   "Beleaguered Castle (包囲された城)",

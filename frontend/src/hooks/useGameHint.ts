@@ -352,6 +352,7 @@ import type {
   WattenResponse,
   WhistResponse,
   WhiteheadResponse,
+  WillOTheWispResponse,
   WindmillResponse,
   WizardResponse,
   YanivResponse,
@@ -719,6 +720,7 @@ import { getWaspHint } from '../utils/hints/waspHint';
 import { getWattenHint } from '../utils/hints/wattenHint';
 import { getWhistHint } from '../utils/hints/whistHint';
 import { getWhiteheadHint } from '../utils/hints/whiteheadHint';
+import { getWillOTheWispHint } from '../utils/hints/willothewispHint';
 import { getWindmillHint } from '../utils/hints/windmillHint';
 import { getWizardHint } from '../utils/hints/wizardHint';
 import { getYanivHint } from '../utils/hints/yanivHint';
@@ -1029,6 +1031,7 @@ export const hintFactories = {
   crescent: (s) => getCrescentHint(s as CrescentResponse),
   sthelena: (s) => getStHelenaHint(s as StHelenaResponse),
   spiderette: (s) => getSpideretteHint(s as SpideretteResponse),
+  willothewisp: (s) => getWillOTheWispHint(s as WillOTheWispResponse),
   gaps: (s) => getGapsHint(s as GapsResponse),
   fourcardpoker: (s) => getFourCardPokerHint(s as FourCardPokerResponse),
   rummy500: (s) => getRummy500Hint(s as Rummy500Response),

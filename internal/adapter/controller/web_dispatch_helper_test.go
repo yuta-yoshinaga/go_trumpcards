@@ -329,7 +329,7 @@ func TestDispatchRummyMeld_HintIsNotHandled(t *testing.T) {
 }
 
 // dispatchTableauOnlyMove consolidates scorpionMoveDispatch,
-// spideretteMoveDispatch and waspMoveDispatch — solitaires whose only legal
+// spideretteMoveDispatch, waspMoveDispatch and willOTheWispMoveDispatch — solitaires whose only legal
 // move is tableau-to-tableau, so anything else is a 400 rather than a branch.
 //
 // Zones are passed as plain values, not as a struct: every game declares its

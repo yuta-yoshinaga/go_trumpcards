@@ -271,6 +271,13 @@ func TestUndoToEscape_ClosureReadsEachGamesOwnSnapshot(t *testing.T) {
 			}
 			return g.UndoToEscape()
 		}},
+		{"WillOTheWisp", func(stale []bool) int {
+			g := &WillOTheWisp{isStalemate: true}
+			for _, s := range stale {
+				g.history = append(g.history, &willOTheWispSnapshot{isStalemate: s})
+			}
+			return g.UndoToEscape()
+		}},
 		{"StreetsAndAlleys", func(stale []bool) int {
 			g := &StreetsAndAlleys{isStalemate: true}
 			for _, s := range stale {
@@ -335,7 +342,7 @@ func TestUndoToEscape_ClosureReadsEachGamesOwnSnapshot(t *testing.T) {
 		{"no escape anywhere", []bool{true, true}, -1},
 	}
 
-	assert.Len(t, games, 42, "every game delegating to undoToEscape must be listed")
+	assert.Len(t, games, 43, "every game delegating to undoToEscape must be listed")
 
 	for _, g := range games {
 		for _, sc := range scenarios {
