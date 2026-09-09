@@ -5,6 +5,7 @@ package domain_test
 
 import (
 	"encoding/json"
+	"math/rand"
 	"strings"
 	"testing"
 
@@ -30,6 +31,22 @@ func TestTongitsThreePlayerDeal(t *testing.T) {
 	assert.Equal(t, 12, g.GetPlayer(1).GetCardsSize())
 	assert.Equal(t, 12, g.GetPlayer(2).GetCardsSize())
 	assert.Equal(t, 14, g.GetDrawPileCount())
+}
+
+func TestTongitsResetStartsWithDiscardPhase(t *testing.T) {
+	g := tongitsTestGame()
+	g.SetRand(rand.New(rand.NewSource(1)))
+	g.Reset()
+
+	assert.Equal(t, domain.TongitsFirstPlayerHandSize, g.GetPlayer(0).GetCardsSize())
+	assert.Equal(t, domain.TongitsHandSize, g.GetPlayer(1).GetCardsSize())
+	assert.Equal(t, domain.TongitsHandSize, g.GetPlayer(2).GetCardsSize())
+	assert.Equal(t, domain.TongitsPhaseDiscard, g.GetPhase())
+
+	require.NoError(t, g.PlayerDiscard(0))
+	assert.Equal(t, domain.TongitsHandSize, g.GetPlayer(0).GetCardsSize())
+	assert.Equal(t, 1, g.GetCurrentPlayerIdx())
+	assert.Equal(t, domain.TongitsPhaseDraw, g.GetPhase())
 }
 
 func TestTongitsMeldAndSapawAcrossPlayers(t *testing.T) {
@@ -432,6 +449,7 @@ func TestTongitsScoreRoundIsIdempotent(t *testing.T) {
 
 func TestTongitsNextRoundResetsRoundState(t *testing.T) {
 	g := tongitsTestGame()
+	g.SetRand(rand.New(rand.NewSource(1)))
 	g.SetRoundNumber(3)
 	g.SetPhase(domain.TongitsPhaseRoundEnd)
 	g.SetCurrentPlayerIdx(2)
@@ -442,6 +460,10 @@ func TestTongitsNextRoundResetsRoundState(t *testing.T) {
 	assert.Equal(t, 4, g.GetRoundNumber())
 	assert.Equal(t, 0, g.GetCurrentPlayerIdx())
 	assert.Len(t, g.GetDiscardPile(), 1)
+	assert.Equal(t, domain.TongitsFirstPlayerHandSize, g.GetPlayer(0).GetCardsSize())
+	assert.Equal(t, domain.TongitsHandSize, g.GetPlayer(1).GetCardsSize())
+	assert.Equal(t, domain.TongitsHandSize, g.GetPlayer(2).GetCardsSize())
+	assert.Equal(t, domain.TongitsPhaseDiscard, g.GetPhase())
 }
 
 func TestTongitsNextRoundIgnoresWrongPhase(t *testing.T) {

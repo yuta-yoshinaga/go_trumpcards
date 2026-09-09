@@ -108,7 +108,7 @@ func (g *Tongits) Reset() {
 	g.dealInitialCards()
 	g.sortAllHands()
 
-	g.phase = TongitsPhaseDraw
+	g.phase = TongitsPhaseDiscard
 	g.checkTongitsOnDeal()
 }
 
@@ -131,7 +131,7 @@ func (g *Tongits) NextRound() {
 	g.dealInitialCards()
 	g.sortAllHands()
 
-	g.phase = TongitsPhaseDraw
+	g.phase = TongitsPhaseDiscard
 	g.checkTongitsOnDeal()
 }
 
@@ -162,7 +162,7 @@ func (g *Tongits) dealInitialCards() {
 			}
 		}
 	}
-	if len(g.drawPile) > 0 {
+	for g.players[0].GetCardsSize() < TongitsFirstPlayerHandSize && len(g.drawPile) > 0 {
 		card := g.drawPile[len(g.drawPile)-1]
 		g.drawPile = g.drawPile[:len(g.drawPile)-1]
 		g.players[0].AddCard(card)
