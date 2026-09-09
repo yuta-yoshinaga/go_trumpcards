@@ -512,6 +512,8 @@ tags:
     description: Coinche (コワンシュ) game - the bidding form of Belote, where all 32 cards are dealt and the table then runs a contract auction (80-160 by tens, or Capot at 250) followed by coinche/surcoinche doubling; the round is judged against the declared target rather than against the opponents
   - name: spiderette
     description: Spiderette (スパイダレット) game - single-player solitaire combining Klondike's 7-column staircase deal with Spider's same-suit descending move rules on a single 52-card deck; clear all 4 suits to win
+  - name: willothewisp
+    description: Will o' the Wisp (ウィル・オ・ザ・ウィスプ) game - Spiderette variant with 21 face-up cards in 7 columns, rank-descending tableau moves, and four same-suit K-through-A clears
   - name: mighty
     description: Mighty (マイティ) game - Korean 5-player trick-taking card game with bidding for point cards (10/J/Q/K/A, 20 max) and a separate No-Trump axis; declarer names a trump suit and a secret partner card; special cards Mighty (♠A normally; ♦A under spade trump), Joker (second-highest when not led, with a Joker-lead demand-suit rule and a Joker Call card ♣3/♠3 forcing the Joker)
   - name: oasispoker
@@ -23616,6 +23618,42 @@ paths:
                 description: |
                   The shape depends on the command. Ordinary commands return the game
                   state; `log` returns the action log instead.
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpideretteResponse'
+
+  /willothewisp/exec:
+    post:
+      tags:
+        - willothewisp
+      summary: Execute a Will o' the Wisp game command
+      description: |
+        Send a command to advance the Will o' the Wisp (ウィル・オ・ザ・ウィスプ)
+        session identified by `sessionId`. Will o' the Wisp is a Spiderette variant
+        using one standard 52-card deck. Seven tableau columns start with three
+        face-up cards each; the remaining 31 cards form the stock. Deal one card
+        to every column four times, then deal the final three cards to the leftmost
+        three columns. Tableau cards build in descending rank regardless of suit,
+        same-suit descending runs move together, empty columns accept any card or
+        run, and completed same-suit K-through-A sequences are removed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpideretteRequest'
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SpideretteResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
           content:

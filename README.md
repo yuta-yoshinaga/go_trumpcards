@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した374種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した375種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -61,6 +61,7 @@ Go + Clean Architecture で実装した374種類のトランプゲーム。CLI �
 | ブラーコ (Burraco) | `burraco` | [CUI](docs/manual/cui/burraco.md) / [Web](docs/manual/web/burraco.md) |
 | スパイダーソリティア (Spider Solitaire) | `spider` | [CUI](docs/manual/cui/spider.md) / [Web](docs/manual/web/spider.md) |
 | スパイダレット (Spiderette) | `spiderette` | [CUI](docs/manual/cui/spiderette.md) / [Web](docs/manual/web/spiderette.md) |
+| ウィル・オ・ザ・ウィスプ (Will o' the Wisp) | `willothewisp` | [CUI](docs/manual/cui/willothewisp.md) / [Web](docs/manual/web/willothewisp.md) |
 | ナポレオン (Napoleon) | `napoleon` | [CUI](docs/manual/cui/napoleon.md) / [Web](docs/manual/web/napoleon.md) |
 | マイティ (Mighty) | `mighty` | [CUI](docs/manual/cui/mighty.md) / [Web](docs/manual/web/mighty.md) |
 | インディアンポーカー (Indian Poker) | `indianpoker` | [CUI](docs/manual/cui/indianpoker.md) / [Web](docs/manual/web/indianpoker.md) |

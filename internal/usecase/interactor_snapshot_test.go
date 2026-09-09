@@ -156,6 +156,17 @@ func (s *stubSpiderettePresenter) Output(_ interfaces.SpideretteGame, _ error) s
 func (s *stubSpiderettePresenter) ActionLogOutput(_ interfaces.SpideretteGame) string { return `{}` }
 func (s *stubSpiderettePresenter) HintOutput(_ interfaces.SpideretteGame) string      { return `{}` }
 
+// stubWillOTheWispPresenter implements presenter.WillOTheWispPresenter.
+type stubWillOTheWispPresenter struct{}
+
+func (s *stubWillOTheWispPresenter) Output(_ interfaces.WillOTheWispGame, _ error) string {
+	return `{}`
+}
+func (s *stubWillOTheWispPresenter) ActionLogOutput(_ interfaces.WillOTheWispGame) string {
+	return `{}`
+}
+func (s *stubWillOTheWispPresenter) HintOutput(_ interfaces.WillOTheWispGame) string { return `{}` }
+
 // stubPyramidPresenter implements presenter.PyramidPresenter (GamePresenter + HintOutput)
 type stubPyramidPresenter struct{}
 
@@ -520,6 +531,19 @@ func TestSpideretteInteractor_SnapshotRestore(t *testing.T) {
 func TestSpideretteInteractor_RestoreInvalidJSON(t *testing.T) {
 	_, err := RestoreSpideretteInteractor([]byte(`not json`), new(stubSpiderettePresenter))
 	require.Error(t, err)
+}
+
+func TestWillOTheWispInteractor_SnapshotRestore(t *testing.T) {
+	s := domain.NewDefaultWillOTheWisp()
+	si := NewWillOTheWispInteractor(s, new(stubWillOTheWispPresenter))
+
+	data, err := si.Snapshot()
+	require.NoError(t, err)
+	require.NotEmpty(t, data)
+
+	restored, err := RestoreWillOTheWispInteractor(data, new(stubWillOTheWispPresenter))
+	require.NoError(t, err)
+	require.NotNil(t, restored)
 }
 
 func TestPyramidInteractor_SnapshotRestore(t *testing.T) {

@@ -1,0 +1,44 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Will o' the Wisp",
+  "stock": "Stock",
+  "completed": "Completed",
+  "tableau": "Tableau",
+  "moveCount": "Moves",
+  "deal": "Deal",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available when stock is empty",
+  "undo": "Undo",
+  "empty": "Empty",
+  "score": "Score",
+  "gameClear": "Game Clear! Moves: {{moveCount}} Score: {{score}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "stalemate": "No more moves",
+  "dealsRemaining": "{{count}} deals remaining",
+  "cannotDealEmptyColExists": "Fill every empty column before dealing",
+  "tutorial": {
+    "stockPile": "Stock pile (31 cards). Click to deal one card to each column. All columns must contain cards. The final deal places the remaining three cards in the leftmost columns.",
+    "tableau": "Seven columns with three face-up cards each. Build descending runs regardless of suit; same-suit runs can be moved together and K-to-A runs are removed.",
+    "completedSuits": "Number of completed suits. Complete all 4 to win.",
+    "controls": "Control buttons: Undo, Hint, Auto-complete.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "landscapeBanner": "Landscape mode recommended",
+  "frontendHint": {
+    "completeSuit": "A suit sequence is nearly complete — focus on finishing it",
+    "buildSameSuit": "A same-suit build move is available",
+    "revealFaceDown": "Move cards to open a column for another run",
+    "useEmptyColumn": "An empty column is available — use it to reorganize",
+    "dealFromStock": "No obvious moves — try dealing from the stock"
+  },
+  "scoreRule": "Starts at {{start}}, -{{penalty}} per move, +{{bonus}} per completed suit"
+}

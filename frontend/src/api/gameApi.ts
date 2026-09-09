@@ -376,6 +376,7 @@ export * from './games/wasp';
 export * from './games/watten';
 export * from './games/whist';
 export * from './games/whitehead';
+export * from './games/willothewisp';
 export * from './games/windmill';
 export * from './games/wizard';
 export * from './games/yaniv';
@@ -625,6 +626,7 @@ export const games = [
   'jass',
   'watten',
   'spiderette',
+  'willothewisp',
   'mighty',
   'oasispoker',
   'stalactites',

@@ -7300,6 +7300,27 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			SettingKeys: []string{"tongits.helpSetDifficulty", "tongits.helpSetLimit"},
 		}),
+	BindCuiFor("willothewisp",
+		func() usecase.WillOTheWispInteractorIF {
+			return usecase.NewWillOTheWispInteractor(domain.NewDefaultWillOTheWisp(), new(presenter.WillOTheWispCuiPresenter))
+		},
+		controller.NewWillOTheWispCuiController,
+		CuiHelpSpec{
+			TitleKey: "willothewisp.helpTitle",
+			ExampleKeys: []string{
+				"willothewisp.helpExampleHint",
+				"willothewisp.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"willothewisp.helpDeal",
+				"willothewisp.helpMove",
+				"willothewisp.helpGiveUp",
+				"willothewisp.helpHint",
+				"willothewisp.helpAutoComplete",
+				"willothewisp.helpMoveShorthand", "willothewisp.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

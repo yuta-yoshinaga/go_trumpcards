@@ -283,6 +283,7 @@ export const workerUrl: Record<string, string> = {
   mississippistud: WORKER_CASINO,
   belote: WORKER_EXTRA3,
   spiderette: WORKER_SOLO,
+  willothewisp: WORKER_SOLO,
   mighty: WORKER_EXTRA5,
   oasispoker: WORKER_CASINO,
   russianpoker: WORKER_CASINO,

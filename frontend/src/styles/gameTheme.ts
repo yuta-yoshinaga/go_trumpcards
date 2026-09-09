@@ -245,6 +245,7 @@ export type GameKey =
   | 'seahaventowers'
   | 'spider'
   | 'spiderette'
+  | 'willothewisp'
   | 'pyramid'
   | 'gaps'
   | 'tripeaks'
@@ -872,6 +873,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   seahaventowers: CASINO,
   spider: CASINO,
   spiderette: CASINO,
+  willothewisp: CASINO,
   pyramid: CASINO,
   gaps: CASINO,
   tripeaks: CASINO,
