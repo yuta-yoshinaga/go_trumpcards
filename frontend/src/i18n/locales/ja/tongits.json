@@ -27,11 +27,12 @@
   "drawDiscardButton": "捨て札から引く",
   "drawDiscardCardLabel": "捨て札から引く: {{card}}",
   "discardButton": "捨てる",
-  "knockButton": "ノック",
-  "knockUndercutWarning": "相手の手札が少ないため、アンダーカットのリスクがあります",
+  "meldButton": "メルド",
+  "sapawButton": "{{player}}のメルド{{meld}}にサパウ",
+  "challengeButton": "チャレンジ",
   "nextRound": "次のラウンド",
   "drawPhase": "山札または捨て札から1枚引いてください",
-  "discardPhase": "手札から1枚捨てるか、ノック (デッドウッド5点以下) してください",
+  "discardPhase": "メルド、サパウ、ディスカード、またはチャレンジを選びます",
   "roundEnd": "ラウンド終了",
   "tongitsOnDeal": "配牌Tongits成立！即勝利です",
   "tongitsOnDealBanner": {
@@ -39,8 +40,10 @@
     "points": "{{points}}点 即勝利",
     "winner": "{{name}} の勝利"
   },
-  "knockerMelds": "ノッカーのメルド",
-  "knockerDeadwood": "ノッカーのデッドウッド",
+  "tableMelds": "公開メルド",
+  "remainingPoints": "残り点: {{value}}",
+  "challengeable": "チャレンジ可能",
+  "notChallengeable": "チャレンジできません",
   "result": {
     "humanWin": "あなたの勝利！",
     "cpuWin": "CPU {{cpuId}} の勝利！"
@@ -49,21 +52,15 @@
     "drawArea": "山札または捨て札から1枚引きます。",
     "playerHand": "あなたの手札（5枚）です。メルド（3枚以上の同ランク・同スート連続）を作りましょう。",
     "discardButton": "不要なカードを1枚捨てます。",
-    "knockButton": "デッドウッドが5点以下になればノックして勝負できます。配牌時に49点・50点ならTongits即勝利！",
+    "challengeButton": "残り点が5点以下ならチャレンジできます。必要ならディスカード前にメルドやサパウを行います。",
     "scoreTable": "各プレイヤーのスコアが表示されます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
   "frontendHint": {
     "tongitsTakeDiscard": "その札を拾うと組になり、端札が減る",
     "tongitsDrawStock": "捨て札は組にならない。山札から引こう",
-    "tongitsKnock": "1 枚捨てれば端札が5点以下。ノックできる",
+    "tongitsChallenge": "残り点が5点以下なのでチャレンジできます",
     "tongitsDiscardHeavy": "端札が一番減る札を捨てよう"
   },
-  "deadwood": {
-    "current": "最小デッドウッド(1枚捨て後): {{value}}",
-    "knockable": "ノック可能",
-    "notKnockable": "ノック不可（{{threshold}}点以下が必要）"
-  },
-  "opponentMelds": "相手のメルド",
-  "opponentDeadwood": "相手のデッドウッド"
+  "opponentMelds": "公開メルド"
 }

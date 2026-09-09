@@ -37,5 +37,6 @@
   "helpSapaw": "sp <player> <meld> <card> adds a card to a meld on the table (sapaw)",
   "helpChallenge": "c calls a draw; the fewest remaining points wins",
   "cardIndexRequired": "A card index is required",
-  "invalidCardIndex": "Invalid card index: {{val}}"
+  "invalidCardIndex": "Invalid card index: {{val}}",
+  "helpLog": "  l                    show the action log"
 }

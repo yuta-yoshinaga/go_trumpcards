@@ -51,10 +51,22 @@ export function useTongitsGame() {
     sendCommand('discard', selectedCardIndices[0]);
   }, [sendCommand, selectedCardIndices]);
 
-  const handleKnock = useCallback(() => {
-    if (selectedCardIndices.length !== 1) return;
-    sendCommand('knock', selectedCardIndices[0]);
+  const handleMeld = useCallback(() => {
+    if (selectedCardIndices.length < 3) return;
+    sendCommand('meld', undefined, undefined, selectedCardIndices);
   }, [sendCommand, selectedCardIndices]);
+
+  const handleSapaw = useCallback(
+    (targetPlayerIdx: number, meldIdx: number) => {
+      if (selectedCardIndices.length !== 1) return;
+      sendCommand('sapaw', selectedCardIndices[0], undefined, undefined, targetPlayerIdx, meldIdx);
+    },
+    [sendCommand, selectedCardIndices],
+  );
+
+  const handleChallenge = useCallback(() => {
+    sendCommand('challenge', undefined, undefined, undefined, undefined, undefined, [true, true]);
+  }, [sendCommand]);
 
   const handleNextRound = useCallback(() => {
     sendCommand('nextround');
@@ -73,7 +85,9 @@ export function useTongitsGame() {
     handleDrawStock,
     handleDrawDiscard,
     handleDiscard,
-    handleKnock,
+    handleMeld,
+    handleSapaw,
+    handleChallenge,
     handleNextRound,
     retry,
   };

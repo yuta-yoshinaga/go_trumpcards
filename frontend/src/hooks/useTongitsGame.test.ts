@@ -22,8 +22,16 @@ function createWrapper() {
 
 const defaultState: TongitsResponse = {
   players: [
-    { id: 0, isHuman: true, cardCount: 5, cards: [{ design: 'SPADE', value: 8 }], roundScore: 0, cumulativeScore: 0 },
-    { id: 1, isHuman: false, cardCount: 5, cards: [], roundScore: 0, cumulativeScore: 0 },
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 5,
+      cards: [{ design: 'SPADE', value: 8 }],
+      melds: [],
+      roundScore: 0,
+      cumulativeScore: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], melds: [], roundScore: 0, cumulativeScore: 0 },
   ],
   phase: 0,
   roundNumber: 1,
@@ -32,16 +40,8 @@ const defaultState: TongitsResponse = {
   drawPileCount: 41,
   gameEndFlag: false,
   winnerIdx: -1,
-  knockerIdx: -1,
-  knockerMelds: [],
-  knockerDeadwood: [],
-  opponentMelds: [],
-  opponentDeadwood: [],
   isTongits: false,
-  undercutRiskMax: 2,
-  isUndercut: false,
-  bestDeadwood: -1,
-  knockThreshold: 5,
+  remainingPoints: -1,
   message: '',
   config: { cpuDifficulty: 1, pointLimit: 50 },
 };
@@ -122,30 +122,29 @@ describe('useTongitsGame', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 
-  it('handleKnock dispatches knock with single selected card', async () => {
+  it('handleChallenge dispatches challenge with agreement', async () => {
     const { result } = renderHook(() => useTongitsGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
     act(() => {
-      result.current.toggleCard(3);
+      result.current.handleChallenge();
     });
 
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(defaultState);
-    act(() => {
-      result.current.handleKnock();
-    });
-
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('knock', 3));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('challenge', undefined, undefined, undefined, undefined, undefined, [
+        true,
+        true,
+      ]),
+    );
   });
 
-  it('handleKnock does nothing when no card selected', async () => {
+  it('handleMeld does nothing with fewer than three selected cards', async () => {
     const { result } = renderHook(() => useTongitsGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
     mockExec.mockClear();
     act(() => {
-      result.current.handleKnock();
+      result.current.handleMeld();
     });
 
     await flushPendingDispatch();

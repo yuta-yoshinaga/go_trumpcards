@@ -67,8 +67,8 @@ const TONGITS_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
   {
-    target: '[data-tutorial="tongits-knock-button"]',
-    messageKey: 'tutorial.knockButton',
+    target: '[data-tutorial="tongits-challenge-button"]',
+    messageKey: 'tutorial.challengeButton',
     placement: 'top',
     advanceOn: 'next',
   },
@@ -86,7 +86,7 @@ const TONGITS_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Renders the Tongits game page with draw, discard, and knock phases. */
+/** Renders the Tongits game page with draw, meld, sapaw, discard, and challenge actions. */
 export const TongitsPage = withTutorial(TongitsPageContent, 'tongits', TONGITS_TUTORIAL_STEPS);
 /** Inner content of the Tongits page, wrapped by TutorialProvider. */
 function TongitsPageContent() {
@@ -106,7 +106,9 @@ function TongitsPageContent() {
     handleDrawStock,
     handleDrawDiscard,
     handleDiscard,
-    handleKnock,
+    handleMeld,
+    handleSapaw,
+    handleChallenge,
     handleNextRound,
   } = useTongitsGame();
   const {
@@ -171,29 +173,20 @@ function TongitsPageContent() {
   const isGameEnd = state.phase === TongitsPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isDrawPhase || isDiscardPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
 
-  // When exactly one card is selected to discard, highlight which of the remaining
-  // four cards already form a meld (set or run) so the player can knock with confidence.
+  // When exactly three cards are selected, highlight the selected meld candidates.
   const meldHighlight = (() => {
-    if (!humanPlayer || !isDiscardPhase || !isHumanTurn || selectedCardIndices.length !== 1) {
+    if (!humanPlayer || !isDiscardPhase || !isHumanTurn || selectedCardIndices.length < 3) {
       return new Set<number>();
     }
-    const discardIdx = selectedCardIndices[0];
-    const remaining = humanPlayer.cards.map((card, idx) => ({ card, idx })).filter((x) => x.idx !== discardIdx);
-    const meldedPositions = tongitsMeldIndices(remaining.map((x) => x.card));
+    const selected = humanPlayer.cards
+      .map((card, idx) => ({ card, idx }))
+      .filter((x) => selectedCardIndices.includes(x.idx));
+    const meldedPositions = tongitsMeldIndices(selected.map((x) => x.card));
     const result = new Set<number>();
-    for (const pos of meldedPositions) result.add(remaining[pos].idx);
+    for (const pos of meldedPositions) result.add(selected[pos].idx);
     return result;
   })();
-  // Undercut early-warning: if any opponent has 2 or fewer cards, calling Knock is
-  // disproportionately risky (they're likely about to go out themselves, flipping the
-  // result). We add a warning ring + ⚠️ glyph + tooltip so the player notices the
-  // trap before committing. See issue #1939.
-  const minOpponentCards = state.players
-    .filter((p) => !p.isHuman)
-    .reduce((m, p) => Math.min(m, p.cardCount), Number.POSITIVE_INFINITY);
-  // 閾値はサーバから。画面に 2 を書くと、変えたとき CUI と警告の出る局面がずれる (#5582)。
-  const undercutRisk = Number.isFinite(minOpponentCards) && minOpponentCards <= state.undercutRiskMax;
-  const knockBtnClass = undercutRisk ? `${btnPrimary} ring-2 ring-ds-warning motion-safe:animate-pulse` : btnPrimary;
+  const canChallenge = state.remainingPoints >= 0;
 
   return (
     <GamePageShell
@@ -282,69 +275,23 @@ function TongitsPageContent() {
                     );
                   })()}
 
-                {state.knockerMelds.length > 0 && (
-                  <div className="my-3 p-2 rounded bg-black/30">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('knockerMelds')}</div>
-                    {state.knockerMelds.map((meld, meldIdx) => (
-                      <div key={`meld-${meldIdx}`} className="flex flex-wrap gap-1 mb-1">
-                        {meld.cards.map((card, cardIdx) => (
-                          <AnimatedCard
-                            key={`meld-${meldIdx}-${card.design}-${card.value}-${cardIdx}`}
-                            card={card}
-                            width={cardWidth * 0.7}
-                          />
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* ラウンドの点差はアンダーカット判定（両者のデッドウッド比較）から
-                    来るのに、比較の相手側が画面に出ていなかった。 */}
-                {state.knockerDeadwood.length > 0 && (
-                  <div className="my-3 p-2 rounded bg-black/30" data-testid="tongits-knocker-deadwood">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('knockerDeadwood')}</div>
-                    <div className="flex flex-wrap gap-1">
-                      {state.knockerDeadwood.map((card, cardIdx) => (
-                        <AnimatedCard
-                          key={`kdw-${card.design}-${card.value}-${cardIdx}`}
-                          card={card}
-                          width={cardWidth * 0.7}
-                        />
+                {state.players.flatMap((p) => p.melds.map((meld, meldIdx) => ({ p, meld, meldIdx }))).length > 0 && (
+                  <div className="my-3 p-2 rounded bg-black/30" data-testid="tongits-melds">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('tableMelds')}</div>
+                    {state.players
+                      .flatMap((p) => p.melds.map((meld, meldIdx) => ({ p, meld, meldIdx })))
+                      .map(({ p, meld, meldIdx }) => (
+                        <div key={`opp-meld-${meldIdx}`} className="flex flex-wrap gap-1 mb-1">
+                          <span className="text-ds-text-muted text-xs w-full">{playerName(p.id, p.isHuman)}</span>
+                          {meld.cards.map((card, cardIdx) => (
+                            <AnimatedCard
+                              key={`opp-meld-${meldIdx}-${card.design}-${card.value}-${cardIdx}`}
+                              card={card}
+                              width={cardWidth * 0.7}
+                            />
+                          ))}
+                        </div>
                       ))}
-                    </div>
-                  </div>
-                )}
-
-                {state.opponentMelds.length > 0 && (
-                  <div className="my-3 p-2 rounded bg-black/30" data-testid="tongits-opponent-melds">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('opponentMelds')}</div>
-                    {state.opponentMelds.map((meld, meldIdx) => (
-                      <div key={`opp-meld-${meldIdx}`} className="flex flex-wrap gap-1 mb-1">
-                        {meld.cards.map((card, cardIdx) => (
-                          <AnimatedCard
-                            key={`opp-meld-${meldIdx}-${card.design}-${card.value}-${cardIdx}`}
-                            card={card}
-                            width={cardWidth * 0.7}
-                          />
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {state.opponentDeadwood.length > 0 && (
-                  <div className="my-3 p-2 rounded bg-black/30" data-testid="tongits-opponent-deadwood">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('opponentDeadwood')}</div>
-                    <div className="flex flex-wrap gap-1">
-                      {state.opponentDeadwood.map((card, cardIdx) => (
-                        <AnimatedCard
-                          key={`odw-${card.design}-${card.value}-${cardIdx}`}
-                          card={card}
-                          width={cardWidth * 0.7}
-                        />
-                      ))}
-                    </div>
                   </div>
                 )}
               </div>
@@ -480,52 +427,49 @@ function TongitsPageContent() {
                   >
                     {t('discardButton')}
                   </button>
-                  {/* **CUI は毎ターン「ノック可能/不可」を出しているのに、Web は
-                      プレイヤーの手計算に任せていた。**ノックボタンは1枚選択されて
-                      いれば常に活性化するので、押すまで合法か分からなかった。
-                      -1 は「まだ聞くべき場面でない」印なので出さない。 */}
-                  {state.bestDeadwood >= 0 && (
+                  {state.remainingPoints >= 0 && (
                     <span
-                      className={`self-center text-xs ${
-                        state.bestDeadwood <= state.knockThreshold ? 'text-ds-success' : 'text-ds-text-muted'
-                      }`}
+                      className={`self-center text-xs ${canChallenge ? 'text-ds-success' : 'text-ds-text-muted'}`}
                       role="status"
                       aria-live="polite"
-                      data-testid="tongits-deadwood"
-                      data-knockable={state.bestDeadwood <= state.knockThreshold ? 'true' : undefined}
+                      data-testid="tongits-remaining-points"
+                      data-challengeable={canChallenge ? 'true' : undefined}
                     >
-                      {t('deadwood.current', { value: state.bestDeadwood })}{' '}
-                      {state.bestDeadwood <= state.knockThreshold
-                        ? t('deadwood.knockable')
-                        : t('deadwood.notKnockable', { threshold: state.knockThreshold })}
+                      {t('remainingPoints', { value: state.remainingPoints })}{' '}
+                      {canChallenge ? t('challengeable') : t('notChallengeable')}
                     </span>
                   )}
                   <button
                     type="button"
-                    className={knockBtnClass}
-                    onClick={handleKnock}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="tongits-knock-button"
-                    data-undercut-risk={undercutRisk ? 'true' : undefined}
-                    title={undercutRisk ? t('knockUndercutWarning') : undefined}
+                    className={btnPrimary}
+                    onClick={handleMeld}
+                    disabled={loading || selectedCardIndices.length < 3}
                   >
-                    {t('knockButton')}
-                    {undercutRisk && (
-                      <span className="ml-1" aria-hidden="true">
-                        ⚠️
-                      </span>
-                    )}
+                    {t('meldButton')}
                   </button>
-                  {undercutRisk && (
-                    <div
-                      className="text-ds-warning text-xs w-full text-center"
-                      role="status"
-                      data-testid="tongits-undercut-warning"
-                    >
-                      <span aria-hidden="true">⚠️ </span>
-                      {t('knockUndercutWarning')}
-                    </div>
-                  )}
+                  {state.players
+                    .flatMap((p) => p.melds.map((_, meldIdx) => ({ p, meldIdx })))
+                    .map(({ p, meldIdx }) => (
+                      <button
+                        key={`sapaw-${p.id}-${meldIdx}`}
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleSapaw(p.id, meldIdx)}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                      >
+                        {t('sapawButton', { player: playerName(p.id, p.isHuman), meld: meldIdx + 1 })}
+                      </button>
+                    ))}
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleChallenge}
+                    disabled={loading || !canChallenge}
+                    data-tutorial="tongits-challenge-button"
+                    data-challengeable={canChallenge ? 'true' : undefined}
+                  >
+                    {t('challengeButton')}
+                  </button>
                 </>
               )}
               {isRoundEnd && (

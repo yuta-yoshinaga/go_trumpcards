@@ -3,10 +3,8 @@ import type { HintResult } from '../../types/hint';
 import { TongitsPhase } from '../../types/phases';
 
 /**
- * ノックできるデッドウッドの上限 (sync: internal/domain/Tongits.go:17,
- * `TongitsKnockThreshold`). サーバはこの値を送ってこないので持ち直している。
+ * Challenge eligibility is based on the server-provided remaining points.
  */
-const KNOCK_THRESHOLD = 5;
 
 /** メルドは 3 枚以上 (sync: `findAllPossibleMelds`, internal/domain/GinRummy.go)。 */
 const MIN_MELD = 3;
@@ -15,16 +13,16 @@ const MIN_MELD = 3;
  * Returns a frontend {@link HintResult} for Tongits, or null when no suggestion is
  * available.
  *
- * There is no server-side GetHint here, so the deadwood search is done on the
+ * There is no server-side GetHint here, so the meld-value search is done on the
  * client. It is the same search the server runs — sets of three or more of a
  * rank, runs of three or more in a suit, recursively minimised — ported from
- * `FindBestMelds` / `CalcDeadwoodValue` (`internal/domain/GinRummy.go`), which is
- * what `Tongits.PlayerKnock` validates against.
+ * `FindBestMelds` / `CalcRemainingValue` (`internal/domain/GinRummy.go`), which is
+ * what the Tongits server validates against.
  *
  * **A pair is not a meld.** The first version of this file used the shallow
  * "connects with something" test the run-building rummies use, which counts a
- * pair as safe. That is not conservative here: it *under*-states deadwood, so a
- * hand like 2-2-K-K-Q reads as zero and the hint offers a knock the server
+ * pair as safe. That is not conservative here: it understates remaining points, so a
+ * hand like 2-2-K-K-Q reads as zero and the hint offers an invalid challenge
  * rejects with `ErrInvalidPlay`. Nothing shallow is safe in the direction that
  * matters, so the search is exact instead. A Tongits hand is five cards (six while
  * holding a draw), so the recursion is trivially small.
@@ -40,7 +38,7 @@ export function getTongitsHint(state: TongitsResponse): HintResult | null {
   if (state.phase === TongitsPhase.DRAW) {
     const top = state.discardTop;
     // 拾って減るかどうかで決める。サーバの `cpuDraw` (Tongits.go:356) と同じ判定。
-    const improves = top !== null && deadwoodValue([...hand, top]) < deadwoodValue(hand);
+    const improves = top !== null && remainingValue([...hand, top]) < remainingValue(hand);
     return improves
       ? { targetAction: 'takeDiscard', reason: 'frontendHint.tongitsTakeDiscard', confidence: 'moderate' }
       : { targetAction: 'drawStock', reason: 'frontendHint.tongitsDrawStock', confidence: 'moderate' };
@@ -50,25 +48,25 @@ export function getTongitsHint(state: TongitsResponse): HintResult | null {
 
   const best = bestDiscard(hand);
 
-  // ノックは捨てたあとの手札で判定される (`PlayerKnock` は捨て札を除いてから数える)。
-  if (best.deadwood <= KNOCK_THRESHOLD) {
-    return { targetAction: 'knock', reason: 'frontendHint.tongitsKnock', confidence: 'moderate' };
+  // The server evaluates the hand after the selected discard.
+  if (state.remainingPoints >= 0 && state.remainingPoints <= 5) {
+    return { targetAction: 'challenge', reason: 'frontendHint.tongitsChallenge', confidence: 'moderate' };
   }
   return { targetAction: `card-${best.index}`, reason: 'frontendHint.tongitsDiscardHeavy', confidence: 'moderate' };
 }
 
-/** 捨てたあとのデッドウッドが最小になる札。同点なら手前の札。 */
-function bestDiscard(hand: Card[]): { index: number; deadwood: number } {
+/** Finds the discard that leaves the lowest remaining card value. */
+function bestDiscard(hand: Card[]): { index: number; remaining: number } {
   let index = 0;
-  let deadwood = Number.POSITIVE_INFINITY;
+  let remaining = Number.POSITIVE_INFINITY;
   hand.forEach((_, i) => {
-    const dw = deadwoodValue(hand.filter((_, j) => j !== i));
-    if (dw < deadwood) {
-      deadwood = dw;
+    const value = remainingValue(hand.filter((_, j) => j !== i));
+    if (value < remaining) {
+      remaining = value;
       index = i;
     }
   });
-  return { index, deadwood };
+  return { index, remaining };
 }
 
 /** 札の点数。A は 1、10/J/Q/K は 10 (sync: `GinRummyCardValue`)。 */
@@ -77,13 +75,13 @@ function points(c: Card): number {
 }
 
 /** メルドに使えなかった札の合計点。最小になる分け方を探す。 */
-function deadwoodValue(hand: Card[]): number {
+function remainingValue(hand: Card[]): number {
   const melds = possibleMelds(hand);
   let best = hand.reduce((sum, c) => sum + points(c), 0);
   for (const meld of melds) {
     const rest = hand.filter((c) => !meld.includes(c));
-    const dw = deadwoodValue(rest);
-    if (dw < best) best = dw;
+    const value = remainingValue(rest);
+    if (value < best) best = value;
     if (best === 0) break;
   }
   return best;
@@ -99,7 +97,7 @@ function deadwoodValue(hand: Card[]): number {
  * 結果は変わらない。
  *
  * 「変わらないはず」で済ませず総当たりで確認した (#4640 のレビュー指摘):
- * 全窓版と左端固定版のデッドウッドを比べて、フルデッキ 52 枚からの 5 枚
+ * 全窓版と左端固定版の残り点を比べて、フルデッキ 52 枚からの 5 枚
  * 2,598,960 通りと、36 枚からの 6 枚 1,947,792 通りで **差 0 件**。
  * 左端固定側から 3 枚ランを外す負のコントロールでは 124,654 件の差が出たので、
  * 比較自体が空振りしていないことも確かめてある。

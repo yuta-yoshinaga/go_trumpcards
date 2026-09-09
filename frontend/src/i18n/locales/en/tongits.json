@@ -27,11 +27,12 @@
   "drawDiscardButton": "Draw Discard",
   "drawDiscardCardLabel": "Draw from discard: {{card}}",
   "discardButton": "Discard",
-  "knockButton": "Knock",
-  "knockUndercutWarning": "Opponent's hand is low — undercut risk is high",
+  "meldButton": "Meld",
+  "sapawButton": "Sapaw {{player}} meld {{meld}}",
+  "challengeButton": "Challenge",
   "nextRound": "Next Round",
   "drawPhase": "Draw a card from the stock or discard pile",
-  "discardPhase": "Discard a card or knock (deadwood <= 5)",
+  "discardPhase": "Meld, sapaw, discard, or challenge",
   "roundEnd": "Round end",
   "tongitsOnDeal": "Tongits on deal! Instant win",
   "tongitsOnDealBanner": {
@@ -39,8 +40,10 @@
     "points": "{{points}} pts — instant win",
     "winner": "{{name}} wins"
   },
-  "knockerMelds": "Knocker's melds",
-  "knockerDeadwood": "Knocker's deadwood",
+  "tableMelds": "Public melds",
+  "remainingPoints": "Remaining points: {{value}}",
+  "challengeable": "Challenge available",
+  "notChallengeable": "Challenge is unavailable",
   "result": {
     "humanWin": "You win!",
     "cpuWin": "CPU {{cpuId}} wins!"
@@ -49,21 +52,15 @@
     "drawArea": "Draw one card from the stock or discard pile.",
     "playerHand": "Your hand (5 cards). Build melds — 3+ of a rank, or 3+ in a suit run.",
     "discardButton": "Discard one card you don't need.",
-    "knockButton": "Knock when your deadwood is 5 or less. If your initial 5 cards total 49 or 50, you instantly win (Tongits).",
+    "challengeButton": "Challenge when your remaining points are five or less. Meld or sapaw before discarding when useful.",
     "scoreTable": "Shows each player's score.",
     "resetButton": "Reset to start a new game."
   },
   "frontendHint": {
-    "tongitsTakeDiscard": "Taking that card completes a meld and cuts your deadwood",
+    "tongitsTakeDiscard": "Taking that card completes a meld and lowers your remaining points",
     "tongitsDrawStock": "The discard does not meld — draw from the stock",
-    "tongitsKnock": "One discard leaves you at five points or fewer — you can knock",
-    "tongitsDiscardHeavy": "Discard the card that leaves the least deadwood"
+    "tongitsChallenge": "Your remaining points are five or fewer — you can challenge",
+    "tongitsDiscardHeavy": "Discard the card that leaves the fewest remaining points"
   },
-  "deadwood": {
-    "current": "Best deadwood after discarding: {{value}}",
-    "knockable": "Can knock",
-    "notKnockable": "Cannot knock (needs {{threshold}} or less)"
-  },
-  "opponentMelds": "Opponent melds",
-  "opponentDeadwood": "Opponent deadwood"
+  "opponentMelds": "Public melds"
 }

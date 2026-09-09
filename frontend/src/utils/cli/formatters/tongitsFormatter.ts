@@ -33,21 +33,11 @@ export function formatTongitsState(state: TongitsResponse): string {
   }
   lines.push('----------');
 
-  if (state.knockerIdx >= 0) {
-    const knocker = formatPlayerName(state.knockerIdx, state.players[state.knockerIdx]?.isHuman ?? false);
-    if (state.isTongits) {
-      lines.push(`${knocker} declared TONGITS on deal!`);
-    } else {
-      lines.push(`${knocker} knocked!${state.isUndercut ? ' (UNDERCUT!)' : ''}`);
-    }
-    if (state.knockerMelds.length > 0) {
-      lines.push('melds:');
-      for (const m of state.knockerMelds) {
-        lines.push(`  ${formatCardList(m.cards)}`);
-      }
-    }
-    if (state.knockerDeadwood.length > 0) {
-      lines.push(`deadwood: ${formatCardList(state.knockerDeadwood)}`);
+  if (state.isTongits) lines.push('TONGITS declared on deal!');
+  for (const p of state.players) {
+    if (p.melds.length > 0) {
+      lines.push(`${formatPlayerName(p.id, p.isHuman)} melds:`);
+      for (const m of p.melds) lines.push(`  ${formatCardList(m.cards)}`);
     }
   }
 

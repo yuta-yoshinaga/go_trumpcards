@@ -37,5 +37,6 @@
   "helpSapaw": "sp <相手> <メルド番号> <札番号> で公開メルドに付け足します (sapaw)",
   "helpChallenge": "c でドローを宣言し、残り点の少なさで勝負します",
   "cardIndexRequired": "札番号を指定してください",
-  "invalidCardIndex": "札番号が不正です: {{val}}"
+  "invalidCardIndex": "札番号が不正です: {{val}}",
+  "helpLog": "  l                    行動ログを表示"
 }

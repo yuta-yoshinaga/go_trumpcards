@@ -9,6 +9,7 @@ export interface TongitsPlayerData {
   isHuman: boolean;
   cardCount: number;
   cards: Card[];
+  melds: TongitsMeld[];
   roundScore: number;
   cumulativeScore: number;
 }
@@ -34,27 +35,9 @@ export interface TongitsResponse extends BaseGameResponse {
   drawPileCount: number;
   gameEndFlag: boolean;
   winnerIdx: number;
-  knockerIdx: number;
-  knockerMelds: TongitsMeld[];
-  knockerDeadwood: Card[];
-  opponentMelds: TongitsMeld[];
-  opponentDeadwood: Card[];
   isTongits: boolean;
-  /**
-   * Opponent hand size at or below which knocking risks an undercut. Sent so
-   * the warning fires on the same board state in both UIs.
-   */
-  undercutRiskMax: number;
-  isUndercut: boolean;
-  /**
-   * 1枚捨てて到達できる最小デッドウッド。人間のディスカードフェーズ以外は -1。
-   *
-   * **-1 は「まだ聞くべき場面でない」印であって 0 ではない。**0 にすると
-   * 「デッドウッド0 = 必ずノック可能」と読めてしまう。
-   */
-  bestDeadwood: number;
-  /** ノックできるデッドウッド上限。`domain.TongitsKnockThreshold` をサーバーが送る。 */
-  knockThreshold: number;
+  /** Remaining hand points for the human on their discard turn, or -1. */
+  remainingPoints: number;
   config: TongitsConfig;
 }
 

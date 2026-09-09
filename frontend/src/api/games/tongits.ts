@@ -13,13 +13,21 @@ export interface TongitsConfigInput {
 /** API client for the Tongits /tongits/exec endpoint. */
 export const tongitsApi = {
   exec: (
-    command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'knock' | 'nextround' | 'log',
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'meld' | 'sapaw' | 'challenge' | 'nextround' | 'log',
     cardIndex?: number,
     config?: TongitsConfigInput,
+    indices?: number[],
+    targetPlayerIdx?: number,
+    meldIdx?: number,
+    agreed?: boolean[],
   ) =>
     gameExec<TongitsResponse>('tongits', {
       command,
       cardIndex,
       config,
+      indices,
+      targetPlayerIdx,
+      meldIdx,
+      agreed,
     }),
 };
