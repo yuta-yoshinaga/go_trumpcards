@@ -2719,6 +2719,13 @@ export const gameCategories: readonly GameCategory[] = [
         page: 'Bauernschnapsen',
         profile: { mood: [2, 3, 4, 2], skill: [2, 4, 4, 2], social: [1, 3, 5, 2, 4], theme: [2, 5, 1, 1, 2, 3] },
       },
+      {
+        path: '/tongits',
+        labelKey: 'nav.tongits',
+        icon: '🃏',
+        page: 'Tongits',
+        profile: { mood: [3, 4, 3, 4], skill: [4, 4, 3, 3], social: [1, 3, 5, 4, 3], theme: [3, 1, 3, 2, 3, 2] },
+      },
     ],
   },
 ] as const;

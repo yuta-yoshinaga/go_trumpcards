@@ -1167,6 +1167,14 @@ export const TonkPhase = {
   GAME_END: 3,
 } as const;
 
+/** Tongits phase constants (sync: internal/domain/Tongits.go). */
+export const TongitsPhase = {
+  DRAW: 0,
+  DISCARD: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Thirty-One phase constants (sync: internal/domain/ThirtyOne.go). */
 export const ThirtyOnePhase = {
   DRAW: 0,

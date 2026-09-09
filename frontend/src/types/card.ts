@@ -333,6 +333,7 @@ export * from './games/threethirteen';
 export * from './games/tichu';
 export * from './games/tienlen';
 export * from './games/toepen';
+export * from './games/tongits';
 export * from './games/tonk';
 export * from './games/trappola';
 export * from './games/trash';

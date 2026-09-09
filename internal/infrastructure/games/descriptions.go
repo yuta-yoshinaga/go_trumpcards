@@ -172,6 +172,7 @@ var gameDescriptions = map[string]string{
 	"bigben":              "Big Ben (ビッグ・ベン)",
 	"followthequeen":      "Follow the Queen (フォロー・ザ・クイーン)",
 	"tonk":                "Tonk (トンク)",
+	"tongits":             "Tongits (トンギッツ)",
 	"casinowar":           "Casino War (カジノウォー)",
 	"pitch":               "Pitch / Setback (ピッチ / セットバック)",
 	"dragontiger":         "Dragon Tiger (ドラゴンタイガー)",

@@ -1880,4 +1880,9 @@ func init() {
 			return usecase.NewOmiInteractor(domain.NewDefaultOmi(), new(presenter.OmiWebPresenter))
 		},
 		controller.NewOmiWebController)
+	BindWebControllerFor("tongits",
+		func() usecase.TongitsInteractorIF {
+			return usecase.NewTongitsInteractor(domain.NewDefaultTongits(), new(presenter.TongitsWebPresenter))
+		},
+		controller.NewTongitsWebController)
 }

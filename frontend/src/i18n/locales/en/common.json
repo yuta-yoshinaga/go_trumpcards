@@ -361,6 +361,7 @@
     "tienlen": "Tien Len",
     "toepen": "Toepen",
     "tonk": "Tonk",
+    "tongits": "Tongits",
     "trappola": "Trappola",
     "trash": "Trash",
     "trenteetquarante": "Trente et Quarante",
@@ -2832,7 +2833,11 @@
     "pontoon.errNotHumanTurn": "It is not your turn.",
     "pontoon.errNotPlayerTurn": "It is not the player's turn.",
     "pontoon.errSplitRequiresEqualRank": "Split needs two cards of equal rank.",
-    "pontoon.errTooManyHands": "Cannot hold more than {{Max}} hands."
+    "pontoon.errTooManyHands": "Cannot hold more than {{Max}} hands.",
+    "tongits.discardPhase": "Lay a meld or sapaw, or discard one card (emptying your hand wins outright)",
+    "tongits.drawPhase": "Draw a card from the stock or the discard pile",
+    "tongits.roundEnd": "Round over",
+    "tongits.tongitsOnDeal": "Tongits on the deal -- an immediate win!"
   },
   "manual": {
     "ariaLabel": "Game Manual",

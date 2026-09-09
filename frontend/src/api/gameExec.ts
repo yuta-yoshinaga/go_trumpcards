@@ -404,6 +404,7 @@ export const workerUrl: Record<string, string> = {
   binokel: WORKER_EXTRA5,
   marjapussi: WORKER_EXTRA5,
   omi: WORKER_EXTRA5,
+  tongits: WORKER_EXTRA5,
 };
 
 export async function postJson<T>(url: string, body: unknown): Promise<T> {

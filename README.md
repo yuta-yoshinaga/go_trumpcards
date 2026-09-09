@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した373種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した374種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -214,6 +214,7 @@ Go + Clean Architecture で実装した373種類のトランプゲーム。CLI �
 | 包囲された城 (Beleaguered Castle) | `beleagueredcastle` | [CUI](docs/manual/cui/beleagueredcastle.md) / [Web](docs/manual/web/beleagueredcastle.md) |
 | ピケ (Piquet) | `piquet` | [CUI](docs/manual/cui/piquet.md) / [Web](docs/manual/web/piquet.md) |
 | トンク (Tonk) | `tonk` | [CUI](docs/manual/cui/tonk.md) / [Web](docs/manual/web/tonk.md) |
+| トンギッツ (Tongits) | `tongits` | [CUI](docs/manual/cui/tongits.md) / [Web](docs/manual/web/tongits.md) |
 | サーティワン (Thirty-One) | `thirtyone` | [CUI](docs/manual/cui/thirtyone.md) / [Web](docs/manual/web/thirtyone.md) |
 | ヤニブ (Yaniv) | `yaniv` | [CUI](docs/manual/cui/yaniv.md) / [Web](docs/manual/web/yaniv.md) |
 | 拱猪 (Gong Zhu) | `gongzhu` | [CUI](docs/manual/cui/gongzhu.md) / [Web](docs/manual/web/gongzhu.md) |

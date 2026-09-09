@@ -301,4 +301,12 @@ func init() {
 			return usecase.RestoreOmiInteractor(data, new(presenter.OmiWebPresenter))
 		},
 		controller.NewOmiWebControllerWithProvider)
+	games.RegisterKVGame("tongits", games.CategoryExtra5,
+		func() usecase.TongitsInteractorIF {
+			return usecase.NewTongitsInteractor(domain.NewDefaultTongits(), new(presenter.TongitsWebPresenter))
+		},
+		func(data []byte) (usecase.TongitsInteractorIF, error) {
+			return usecase.RestoreTongitsInteractor(data, new(presenter.TongitsWebPresenter))
+		},
+		controller.NewTongitsWebControllerWithProvider)
 }
