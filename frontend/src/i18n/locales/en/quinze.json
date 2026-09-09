@@ -1,0 +1,48 @@
+{
+  "phase": {
+    "bet": "Betting",
+    "playerTurn": "Your turn",
+    "bankerTurn": "Banker's turn",
+    "end": "Settled"
+  },
+  "chips": "Chips",
+  "banker": "Banker",
+  "bankerIsYou": "you",
+  "bankerHand": "Banker's hand",
+  "bet": "Bet",
+  "total": "Total",
+  "target": "Target",
+  "actions": {
+    "hit": "Draw",
+    "stand": "Stand",
+    "bankerHit": "Draw as banker",
+    "bankerStand": "Stop as banker",
+    "deal": "Deal",
+    "nextRound": "Next round"
+  },
+  "betLabel": "Choose your stake",
+  "betAmount": "{{amount}}",
+  "dealAsBanker": "You are the banker — deal the round",
+  "placeBet": "Choose your stake",
+  "yourTurn": "Draw or stand",
+  "bankerTurn": "Draw or stop as the banker",
+  "roundOver": "{{result}}",
+  "bankPasses": "An exact 15 takes the bank",
+  "landscapeBanner": "Landscape mode recommended",
+  "seatAriaLabel": "{{name}}'s hand, total {{total}}",
+  "hiddenHandAriaLabel": "{{name}}'s hand is face down, {{count}} cards",
+  "bankerHandAriaLabel": "Banker's hand, total {{total}}",
+  "hiddenBankerHandAriaLabel": "The banker's hand is face down, {{count}} cards",
+  "tutorial": {
+    "faceCards": "**Jacks, queens, and kings are worth 10 points.** Aces are worth 1 and number cards keep their face value.",
+    "target": "The target is **15**; over that is a bust. **Ties go to the banker**, so matching the banker's total still loses.",
+    "banker": "**A player who lands exactly 15 takes the bank next deal.** It does not rotate every round.",
+    "controls": "Buttons for drawing, standing, and the next round."
+  },
+  "frontendHint": {
+    "quinzeExact": "Exactly 15 — the only total that takes the bank. Stand",
+    "quinzeHitLow": "Still far from 15 — draw another card",
+    "quinzeStandClose": "Close to 15; drawing may bust you"
+  },
+  "cpuStand": "They stand at {{total}}"
+}

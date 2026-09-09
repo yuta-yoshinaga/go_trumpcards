@@ -7,6 +7,10 @@ describe('gameTheme', () => {
     expect(gameTheme.blackjack.bg).toContain('green-bright');
   });
 
+  it('Quinze uses the casino theme', () => {
+    expect(gameTheme.quinze.bg).toContain('casino');
+  });
+
   it('poker games use green-poker theme', () => {
     expect(gameTheme.holdem.bg).toContain('green-poker');
     expect(gameTheme.omaha.bg).toContain('green-poker');

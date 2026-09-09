@@ -2976,6 +2976,14 @@ export const SetteEMezzoPhase = {
   END: 4,
 } as const;
 
+/** Quinze phase constants (sync: internal/domain/Quinze.go). */
+export const QuinzePhase = {
+  BET: 1,
+  PLAYER_TURN: 2,
+  BANKER_TURN: 3,
+  END: 4,
+} as const;
+
 /** Pontoon phase constants (sync: internal/domain/Pontoon.go). */
 export const PontoonPhase = {
   BET: 1,

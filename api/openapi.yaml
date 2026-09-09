@@ -362,6 +362,8 @@ tags:
     description: Pontoon game - the British ancestor of blackjack; the banker's hand is face down, a five-card trick beats 21, and the banker keeps the bank while winning
   - name: settemezzo
     description: Sette e Mezzo game - the Italian 7.5 game on a 40-card deck; totals are carried in HALVES so the half-point cards compare exactly
+  - name: quinze
+    description: Quinze game - an 18th-century French banking game on a standard 52-card deck; players draw toward 15 and ties go to the banker
   - name: niuniu
     description: Niu Niu game - the Chinese bull game where three of five cards must sum to a multiple of ten, and the remaining pair's last digit is the rank
   - name: chineseten
@@ -17657,6 +17659,217 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SetteEMezzoResponse'
+  /quinze/exec:
+    post:
+      tags:
+        - quinze
+      summary: Execute a Quinze game command
+      description: |
+        Send a command to advance the Quinze (カーンズ) game session identified by
+        `sessionId`. It is an 18th-century French banking game on a standard
+        52-card deck. Aces count as 1, number cards at face value, and J/Q/K as
+        10. Players and the banker draw or stand without exceeding 15; 15 is
+        not a bust, and ties go to the banker.
+      operationId: quinzeExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bet, b, deal, hit, h, stand, s, bankerhit, bh, bankerstand, bs, log, l]
+                sessionId:
+                  type: string
+                amount:
+                  type: integer
+                  description: Stake for `bet`.
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+                  entries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
+                  seats:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        isCpu:
+                          type: boolean
+                        hand:
+                          type: object
+                          properties:
+                            cards:
+                              type: array
+                              items:
+                                $ref: '#/components/schemas/Card'
+                                nullable: true
+                            bet:
+                              type: integer
+                            totalPoints:
+                              type: integer
+                            totalLabel:
+                              type: string
+                            stood:
+                              type: boolean
+                            payout:
+                              type: integer
+                            hidden:
+                              type: boolean
+                  bankerHand:
+                    type: object
+                    properties:
+                      cards:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Card'
+                          nullable: true
+                      bet:
+                        type: integer
+                      totalPoints:
+                        type: integer
+                      totalLabel:
+                        type: string
+                      stood:
+                        type: boolean
+                      payout:
+                        type: integer
+                      hidden:
+                        type: boolean
+                  bankerIdx:
+                    type: integer
+                  isHumanBanker:
+                    type: boolean
+                  chips:
+                    type: integer
+                  activeSeat:
+                    type: integer
+                  nextBanker:
+                    type: integer
+                  lastResult:
+                    type: string
+                  phase:
+                    type: integer
+                  targetPoints:
+                    type: integer
+                  cpuStandPoints:
+                    type: integer
+                  canHit:
+                    type: boolean
+                  canStand:
+                    type: boolean
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+                  entries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
+                  seats:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        isCpu:
+                          type: boolean
+                        hand:
+                          type: object
+                          properties:
+                            cards:
+                              type: array
+                              items:
+                                $ref: '#/components/schemas/Card'
+                                nullable: true
+                            bet:
+                              type: integer
+                            totalPoints:
+                              type: integer
+                            totalLabel:
+                              type: string
+                            stood:
+                              type: boolean
+                            payout:
+                              type: integer
+                            hidden:
+                              type: boolean
+                  bankerHand:
+                    type: object
+                    properties:
+                      cards:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Card'
+                          nullable: true
+                      bet:
+                        type: integer
+                      totalPoints:
+                        type: integer
+                      totalLabel:
+                        type: string
+                      stood:
+                        type: boolean
+                      payout:
+                        type: integer
+                      hidden:
+                        type: boolean
+                  bankerIdx:
+                    type: integer
+                  isHumanBanker:
+                    type: boolean
+                  chips:
+                    type: integer
+                  activeSeat:
+                    type: integer
+                  nextBanker:
+                    type: integer
+                  lastResult:
+                    type: string
+                  phase:
+                    type: integer
+                  targetPoints:
+                    type: integer
+                  cpuStandPoints:
+                    type: integer
+                  canHit:
+                    type: boolean
+                  canStand:
+                    type: boolean
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
   /chineseten/exec:
     post:
       tags:

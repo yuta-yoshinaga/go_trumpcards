@@ -7321,6 +7321,26 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("quinze",
+		func() usecase.QuinzeInteractorIF {
+			return usecase.NewQuinzeInteractor(domain.NewDefaultQuinze(), new(presenter.QuinzeCuiPresenter))
+		},
+		controller.NewQuinzeCuiController,
+		CuiHelpSpec{
+			TitleKey: "quinze.helpTitle",
+			ExampleKeys: []string{
+				"quinze.helpExampleBet",
+			},
+			CommandKeys: []string{
+				"quinze.helpBet",
+				"quinze.helpDeal",
+				"quinze.helpHit",
+				"quinze.helpStand",
+				"quinze.helpBankerHit",
+				"quinze.helpBankerStand",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -385,6 +385,7 @@ var gameDescriptions = map[string]string{
 	"binokel":             "Binokel (ビノクル)",
 	"marjapussi":          "Marjapussi (マルヤプッシ)",
 	"omi":                 "Omi (オミ)",
+	"quinze":              "Quinze (カーンズ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

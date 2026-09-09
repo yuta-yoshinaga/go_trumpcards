@@ -1890,4 +1890,9 @@ func init() {
 			return usecase.NewWillOTheWispInteractor(domain.NewDefaultWillOTheWisp(), new(presenter.WillOTheWispWebPresenter))
 		},
 		controller.NewWillOTheWispWebController)
+	BindWebControllerFor("quinze",
+		func() usecase.QuinzeInteractorIF {
+			return usecase.NewQuinzeInteractor(domain.NewDefaultQuinze(), new(presenter.QuinzeWebPresenter))
+		},
+		controller.NewQuinzeWebController)
 }
