@@ -244,6 +244,7 @@ import type {
   PutResponse,
   PyramidResponse,
   QuadrilleResponse,
+  QuinzeResponse,
   QuodlibetResponse,
   RamschResponse,
   RamsResponse,
@@ -610,6 +611,7 @@ import { getPrsiHint } from '../utils/hints/prsiHint';
 import { getPutHint } from '../utils/hints/putHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getQuadrilleHint } from '../utils/hints/quadrilleHint';
+import { getQuinzeHint } from '../utils/hints/quinzeHint';
 import { getQuodlibetHint } from '../utils/hints/quodlibetHint';
 import { getRamschHint } from '../utils/hints/ramschHint';
 import { getRamsHint } from '../utils/hints/ramsHint';
@@ -836,6 +838,7 @@ export const hintFactories = {
   doubt: (s) => getDoubtHint(s as DoubtResponse),
   daifugo: (s) => getDaifugoHint(s as DaifugoResponse),
   settemezzo: (s) => getSetteEMezzoHint(s as SetteEMezzoResponse),
+  quinze: (s) => getQuinzeHint(s as QuinzeResponse),
   sevens: (s) => getSevensHint(s as SevensResponse),
   conquian: (s) => getConquianHint(s as ConquianResponse),
   chinchon: (s) => getChinchonHint(s as ChinchonResponse),

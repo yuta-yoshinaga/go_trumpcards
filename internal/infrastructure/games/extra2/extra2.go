@@ -421,4 +421,12 @@ func init() {
 			return usecase.RestoreBaccaratBanqueInteractor(data, new(presenter.BaccaratBanqueWebPresenter))
 		},
 		controller.NewBaccaratBanqueWebControllerWithProvider)
+	games.RegisterKVGame("quinze", games.CategoryExtra2,
+		func() usecase.QuinzeInteractorIF {
+			return usecase.NewQuinzeInteractor(domain.NewDefaultQuinze(), new(presenter.QuinzeWebPresenter))
+		},
+		func(data []byte) (usecase.QuinzeInteractorIF, error) {
+			return usecase.RestoreQuinzeInteractor(data, new(presenter.QuinzeWebPresenter))
+		},
+		controller.NewQuinzeWebControllerWithProvider)
 }

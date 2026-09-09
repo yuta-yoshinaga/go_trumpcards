@@ -2021,6 +2021,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 3, 3, 4], skill: [3, 3, 3, 4], social: [3, 4, 2, 4, 3], theme: [5, 1, 1, 1, 3, 2] },
       },
       {
+        path: '/quinze',
+        labelKey: 'nav.quinze',
+        icon: '🇫🇷',
+        page: 'Quinze',
+        profile: { mood: [4, 3, 3, 4], skill: [3, 3, 3, 4], social: [3, 4, 2, 4, 3], theme: [5, 1, 1, 1, 3, 2] },
+      },
+      {
         path: '/niuniu',
         labelKey: 'nav.niuniu',
         icon: '🐂',

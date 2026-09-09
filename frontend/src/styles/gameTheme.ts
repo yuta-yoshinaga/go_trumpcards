@@ -316,6 +316,7 @@ export type GameKey =
   | 'braid'
   | 'pontoon'
   | 'settemezzo'
+  | 'quinze'
   | 'niuniu'
   | 'bura'
   | 'mushi'
@@ -944,6 +945,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   braid: CASINO,
   pontoon: CASINO,
   settemezzo: CASINO,
+  quinze: CASINO,
   niuniu: CASINO,
   bura: CASINO,
   mushi: GREEN,
