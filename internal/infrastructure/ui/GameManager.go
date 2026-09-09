@@ -7292,7 +7292,7 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTongitsCuiController,
 		CuiHelpSpec{
 			TitleKey:    "tongits.helpTitle",
-			ExampleKeys: []string{"tongits.helpExampleDraw", "tongits.helpExampleDiscard"},
+			ExampleKeys: []string{"tongits.helpExampleDiscard", "tongits.helpExampleDraw"},
 			CommandKeys: []string{
 				"tongits.helpDrawStock", "tongits.helpDrawDiscard", "tongits.helpDiscard",
 				"tongits.helpMeld", "tongits.helpSapaw", "tongits.helpChallenge",
