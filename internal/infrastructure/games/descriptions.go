@@ -390,6 +390,7 @@ var gameDescriptions = map[string]string{
 	"quinze":              "Quinze (カーンズ)",
 	"basset":              "Basset (バセット)",
 	"tehonbiki":           "Tehonbiki (手本引き)",
+	"tapptarock":          "Tapp Tarock (タップ・タロック)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

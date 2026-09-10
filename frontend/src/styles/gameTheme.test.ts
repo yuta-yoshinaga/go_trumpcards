@@ -21,6 +21,10 @@ describe('gameTheme', () => {
     expect(gameTheme.tehonbiki.bg).toContain('green');
   });
 
+  it('Tapp Tarock uses the green tarock theme', () => {
+    expect(gameTheme.tapptarock.bg).toContain('green');
+  });
+
   it('poker games use green-poker theme', () => {
     expect(gameTheme.holdem.bg).toContain('green-poker');
     expect(gameTheme.omaha.bg).toContain('green-poker');

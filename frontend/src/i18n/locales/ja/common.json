@@ -397,6 +397,7 @@
     "yukon": "ユーコン",
     "zheng": "争上游",
     "zwanzigerrufen": "ツヴァンツィガールーフェン",
+    "tapptarock": "タップ・タロック",
     "zwicker": "ツヴィッカー",
     "baccaratbanque": "バカラ・バンク",
     "continentalrummy": "コンチネンタル・ラミー",
@@ -2861,6 +2862,7 @@
     "yukon.stalemateWithEscape": "手詰まりです。{{count}}手戻ると別の手が打てます。",
     "zheng.result.rankings": "ゲーム終了！ {{rankings}}",
     "zwanzigerrufen.result.scores": "ゲーム終了！ 得点: {{scores}}",
+    "tapptarock.result.scores": "ゲーム終了！ 得点: {{scores}}",
     "zwicker.lose": "負けました",
     "zwicker.win": "勝ちました"
   },

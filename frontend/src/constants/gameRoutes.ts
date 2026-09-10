@@ -220,6 +220,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 5, 2], skill: [5, 5, 4, 2], social: [4, 5, 4, 5, 2], theme: [2, 1, 1, 1, 5, 1] },
       },
       {
+        path: '/tapptarock',
+        labelKey: 'nav.tapptarock',
+        icon: '🃏',
+        page: 'TappTarock',
+        profile: { mood: [2, 3, 5, 2], skill: [5, 5, 4, 2], social: [4, 5, 4, 5, 2], theme: [2, 1, 1, 1, 5, 1] },
+      },
+      {
         path: '/troggu',
         labelKey: 'nav.troggu',
         icon: '🎴',

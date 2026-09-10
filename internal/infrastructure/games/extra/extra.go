@@ -315,4 +315,12 @@ func init() {
 			return usecase.RestoreMatrimonyInteractor(data, new(presenter.MatrimonyWebPresenter))
 		},
 		controller.NewMatrimonyWebControllerWithProvider)
+	games.RegisterKVGame("tapptarock", games.CategoryExtra,
+		func() usecase.TappTarockInteractorIF {
+			return usecase.NewTappTarockInteractor(domain.NewDefaultTappTarock(), new(presenter.TappTarockWebPresenter))
+		},
+		func(data []byte) (usecase.TappTarockInteractorIF, error) {
+			return usecase.RestoreTappTarockInteractor(data, new(presenter.TappTarockWebPresenter))
+		},
+		controller.NewTappTarockWebControllerWithProvider)
 }

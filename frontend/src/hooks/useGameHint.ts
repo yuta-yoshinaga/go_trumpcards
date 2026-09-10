@@ -314,6 +314,7 @@ import type {
   SultanResponse,
   SutdaResponse,
   TablanetResponse,
+  TappTarockResponse,
   TarabishResponse,
   TarneebResponse,
   TarocchiniResponse,
@@ -686,6 +687,7 @@ import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getSultanHint } from '../utils/hints/sultanHint';
 import { getSutdaHint } from '../utils/hints/sutdaHint';
 import { getTablanetHint } from '../utils/hints/tablanetHint';
+import { getTappTarockHint } from '../utils/hints/tapptarockHint';
 import { getTarabishHint } from '../utils/hints/tarabishHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTarocchiniHint } from '../utils/hints/tarocchiniHint';
@@ -959,6 +961,7 @@ export const hintFactories = {
   tusac: (s) => getTusacHint(s as TuSacResponse),
   sakura: (s) => getSakuraHint(s as SakuraResponse),
   zwanzigerrufen: (s) => getZwanzigerrufenHint(s as ZwanzigerrufenResponse),
+  tapptarock: (s) => getTappTarockHint(s as TappTarockResponse),
   troggu: (s) => getTrogguHint(s as TrogguResponse),
   eightgame: (s) => getHorseHint(s as HorseResponse),
   horse: (s) => getHorseHint(s as HorseResponse),

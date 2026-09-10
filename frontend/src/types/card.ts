@@ -321,6 +321,7 @@ export * from './games/sueca';
 export * from './games/sultan';
 export * from './games/sutda';
 export * from './games/tablanet';
+export * from './games/tapptarock';
 export * from './games/tarabish';
 export * from './games/tarneeb';
 export * from './games/tarocchini';

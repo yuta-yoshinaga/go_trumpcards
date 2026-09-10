@@ -7420,6 +7420,27 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("tapptarock",
+		func() usecase.TappTarockInteractorIF {
+			return usecase.NewTappTarockInteractor(domain.NewDefaultTappTarock(), new(presenter.TappTarockCuiPresenter))
+		},
+		controller.NewTappTarockCuiController,
+		CuiHelpSpec{
+			TitleKey: "tapptarock.helpTitle",
+			ExampleKeys: []string{
+				"tapptarock.helpExamplePlay",
+			},
+			CommandKeys: []string{
+				"tapptarock.helpBid",
+				"tapptarock.helpPass",
+				"tapptarock.helpDiscard",
+				"tapptarock.helpPlay",
+				"tapptarock.helpNext",
+				"tapptarock.helpNextRound", "tapptarock.helpHint",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"tapptarock.helpSetDifficulty", "tapptarock.helpSetDeals"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -7450,6 +7471,7 @@ func GameDescriptions() map[string]string {
 // GameAliases maps short alias names to their canonical game names.
 // Aliases are not shown in help or game lists.
 var GameAliases = map[string]string{
+	"tapp":    "tapptarock",
 	"bass":    "basset",
 	"7stud":   "sevencardstud",
 	"7cs":     "sevencardstud",

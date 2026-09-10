@@ -722,6 +722,8 @@ tags:
     description: Sakura / Higo-bana (さくら／肥後花) game
   - name: zwanzigerrufen
     description: Zwanzigerrufen (ツヴァンツィガールーフェン) game
+  - name: tapptarock
+    description: Tapp Tarock (タップ・タロック) game
   - name: troggu
     description: Troggu (トロッグ) game
   - name: horse
@@ -34409,6 +34411,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TehonbikiResponse'
+  /tapptarock/exec:
+    post:
+      tags:
+        - tapptarock
+      summary: Execute a Tapp Tarock game command
+      description: |
+        Send a command to advance a Tapp Tarock session identified by `sessionId`.
+        Tapp Tarock is a fixed three-player tarock trick-taking game. The highest
+        bidder plays one against two from the outset; unlike Zwanzigerrufen, no
+        partner is called. This repository's contract table and settlement are
+        house rules, not claims about historical detail.
+      operationId: tapptarockExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TappTarockRequest'
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/TappTarockResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TappTarockResponse'
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -34637,6 +34672,140 @@ components:
           type: object
           additionalProperties:
             type: string
+
+    TappTarockRequest:
+      type: object
+      required: [command, sessionId]
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bid, b, pass, discard, d, play, p, next, n, nextround, nr, hint, h, log, l, quit, q]
+        n:
+          type: integer
+          description: Optional shared input field; not used by Tapp Tarock commands.
+        cardIndex:
+          type: integer
+          description: 0-based hand index for play.
+        cardIndices:
+          type: array
+          description: Six 0-based hand indices to bury in the tapp during discard.
+          items:
+            type: integer
+        bid:
+          type: string
+          enum: [dreier, solo]
+          description: Contract to declare. Required for bid; trischaken is created only when all players pass.
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+              description: 0=Easy, 1=Normal, 2=Hard.
+              minimum: 0
+              maximum: 2
+            targetDeals:
+              type: integer
+              description: Number of deals in the match (1-12, default 4).
+              minimum: 1
+              maximum: 12
+        sessionId:
+          type: string
+
+    TappTarockResponse:
+      type: object
+      description: Response payload for /tapptarock/exec.
+      properties:
+        entries:
+          type: array
+          description: Present only in the reply to the log command.
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id: {type: integer}
+              isHuman: {type: boolean}
+              cardCount: {type: integer}
+              cards:
+                type: array
+                items: {$ref: '#/components/schemas/Card'}
+              trickCount: {type: integer}
+              cardPoints: {type: integer}
+              score: {type: integer}
+              isDeclarer: {type: boolean}
+        phase:
+          type: integer
+          description: "0=Bid, 1=Talon, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd"
+          enum: [0, 1, 2, 3, 4, 5]
+        roundNumber: {type: integer}
+        totalRounds: {type: integer}
+        trickNumber: {type: integer}
+        currentPlayerIdx: {type: integer}
+        dealerIdx: {type: integer}
+        bidPlayerIdx: {type: integer}
+        highestBid: {type: integer}
+        declarerIdx: {type: integer}
+        contract: {type: integer}
+        contractName: {type: string}
+        talonCount: {type: integer}
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx: {type: integer}
+              card: {$ref: '#/components/schemas/Card'}
+        lastTrickWinner: {type: integer}
+        lastTrickCards:
+          type: array
+          items: {$ref: '#/components/schemas/Card'}
+        outcome: {type: integer}
+        breakdown:
+          type: object
+          nullable: true
+          properties:
+            contract: {type: integer}
+            teamPoints: {type: integer}
+            threshold: {type: integer}
+            won: {type: boolean}
+            solo: {type: boolean}
+            base: {type: integer}
+            seats:
+              type: array
+              items: {type: integer}
+            loser: {type: integer}
+            name: {type: string}
+        playableIndices:
+          type: array
+          items: {type: integer}
+        discardableIndices:
+          type: array
+          items: {type: integer}
+        gameEndFlag: {type: boolean}
+        winnerPlayer: {type: integer}
+        isHumanTurn: {type: boolean}
+        hint:
+          type: object
+          nullable: true
+          properties:
+            bid: {type: integer, nullable: true}
+            cardIndex: {type: integer, nullable: true}
+            discardIndices:
+              type: array
+              items: {type: integer}
+            reason: {type: string}
+        config:
+          type: object
+          properties:
+            cpuDifficulty: {type: integer}
+            targetDeals: {type: integer}
+        message: {type: string}
+        messageCode: {type: string}
+        messageParams:
+          type: object
+          additionalProperties: {type: string}
 
     NapoleonsSquareMoveZone:
       type: object
