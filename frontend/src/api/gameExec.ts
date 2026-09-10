@@ -219,6 +219,7 @@ export const workerUrl: Record<string, string> = {
   bolivia: WORKER_EXTRA,
   handandfoot: WORKER_EXTRA,
   burraco: WORKER_EXTRA,
+  biriba: WORKER_EXTRA,
   cribbage: WORKER_EXTRA5,
   golf: WORKER_SOLO,
   acesup: WORKER_SOLO,

@@ -1267,6 +1267,8 @@ var registry = []*Game{
 	{Name: "matrimony", Category: CategoryExtra},
 	{Name: "tehonbiki", Category: CategoryExtra2},
 	{Name: "tapptarock", Category: CategoryExtra},
+	// Biriba is the pure same-suit-sequence Canasta variant: 106 cards including two jokers.
+	{Name: "biriba", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

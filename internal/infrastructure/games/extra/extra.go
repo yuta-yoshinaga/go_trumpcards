@@ -323,4 +323,12 @@ func init() {
 			return usecase.RestoreTappTarockInteractor(data, new(presenter.TappTarockWebPresenter))
 		},
 		controller.NewTappTarockWebControllerWithProvider)
+	games.RegisterKVGame("biriba", games.CategoryExtra,
+		func() usecase.BiribaInteractorIF {
+			return usecase.NewBiribaInteractor(domain.NewDefaultBiriba(), new(presenter.BiribaWebPresenter))
+		},
+		func(data []byte) (usecase.BiribaInteractorIF, error) {
+			return usecase.RestoreBiribaInteractor(data, new(presenter.BiribaWebPresenter))
+		},
+		controller.NewBiribaWebControllerWithProvider)
 }

@@ -1,0 +1,356 @@
+//go:build test
+
+package presenter_test
+
+import (
+	"errors"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+func setupBiribaCuiMock() *interfaces.MockBiribaGame {
+	m := new(interfaces.MockBiribaGame)
+	m.On("GetRoundNumber").Return(1)
+	m.On("GetDrawPileCount").Return(54)
+	m.On("GetDiscardPileCount").Return(0)
+	m.On("GetPozzettoCount").Return(2)
+	m.On("GetIsFrozen").Return(false)
+	m.On("GetDiscardTop").Return((*domain.Card)(nil))
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetPhase").Return(domain.BiribaPhaseDraw)
+	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetWinnerIdx").Return(-1)
+	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetDiscardPile").Return(([]*domain.Card)(nil)).Maybe()
+	return m
+}
+
+func setupBiribaCuiMockWithPlayers() (*interfaces.MockBiribaGame, []*domain.BiribaPlayer) {
+	m := setupBiribaCuiMock()
+	players := makeBiribaPlayers()
+	m.On("GetPlayerCnt").Return(2)
+	m.On("GetPlayer", 0).Return(players[0])
+	m.On("GetPlayer", 1).Return(players[1])
+	return m, players
+}
+
+// **山ごと取れるゲームなので捨て札の中身は公開情報。**Web は details で全部
+// 見せているのに、CUI は一番上の 1 枚しか出していなかった (#4833)。
+func TestBiribaCuiPresenter_ListsTheDiscardPile(t *testing.T) {
+	p := new(presenter.BiribaCuiPresenter)
+
+	withPile := func(n int) *interfaces.MockBiribaGame {
+		m, _ := setupBiribaCuiMockWithPlayers()
+		pile := make([]*domain.Card, 0, n)
+		for i := 0; i < n; i++ {
+			pile = append(pile, domain.NewCard(domain.CardDesignSpade, i%13+1, false))
+		}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardPile")
+		if n > 0 {
+			m.On("GetDiscardTop").Return(pile[len(pile)-1])
+		} else {
+			m.On("GetDiscardTop").Return((*domain.Card)(nil))
+		}
+		m.On("GetDiscardPile").Return(pile)
+		return m
+	}
+
+	t.Run("lists every card with its index", func(t *testing.T) {
+		out := p.Output(withPile(3), nil)
+		assert.Contains(t, out, "山の中身:")
+		assert.Contains(t, out, "[0]SPADE 1")
+		assert.Contains(t, out, "[2]SPADE 3")
+	})
+
+	t.Run("wraps a long pile over several lines", func(t *testing.T) {
+		out := p.Output(withPile(20), nil)
+		assert.Equal(t, 3, strings.Count(out, "山の中身:"), "8 枚ごとに折り返す")
+		assert.Contains(t, out, "[19]")
+	})
+
+	t.Run("says nothing when the pile is empty", func(t *testing.T) {
+		out := p.Output(withPile(0), nil)
+		assert.NotContains(t, out, "山の中身:")
+	})
+}
+
+func TestBiribaCuiPresenter_Output(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.BiribaCuiPresenter)
+
+	t.Run("initial state with header and player info", func(t *testing.T) {
+		m, players := setupBiribaCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "Biriba (ビリバ)")
+		assert.Contains(t, result, "ラウンド: 1")
+		assert.Contains(t, result, "山札: 54枚")
+		assert.Contains(t, result, "あなた: 累積0点 ラウンド0点 1枚")
+		assert.Contains(t, result, "[0]SPADE 5")
+		assert.Contains(t, result, "CPU 1: 累積0点 ラウンド0点 1枚")
+		assert.Contains(t, result, "手番: あなた")
+		assert.Contains(t, result, "ds")
+		assert.Contains(t, result, "dd")
+	})
+
+	t.Run("frozen pile shown", func(t *testing.T) {
+		m, _ := setupBiribaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetIsFrozen")
+		m.On("GetIsFrozen").Return(true)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "[フリーズ]")
+		// The draw prompt warns about the freeze constraint (top-only, no wild pickup).
+		assert.Contains(t, result, "フリーズ中: 上の1枚のみ")
+	})
+
+	t.Run("discard top shown", func(t *testing.T) {
+		m, _ := setupBiribaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
+		top := domain.NewCard(domain.CardDesignHeart, 7, false)
+		m.On("GetDiscardTop").Return(top)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "捨て札: HEART 7")
+	})
+
+	t.Run("discard top nil hides section", func(t *testing.T) {
+		m, _ := setupBiribaCuiMockWithPlayers()
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "捨て札:")
+	})
+
+	t.Run("player with scores", func(t *testing.T) {
+		m, players := setupBiribaCuiMockWithPlayers()
+		players[1].SetCumulativeScore(300)
+		players[1].SetRoundScore(100)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "CPU 1: 累積300点 ラウンド100点 0枚")
+	})
+
+	t.Run("player with meld shown", func(t *testing.T) {
+		m, players := setupBiribaCuiMockWithPlayers()
+		meld := &domain.BiribaMeld{
+			Cards: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 7, false),
+				domain.NewCard(domain.CardDesignHeart, 7, false),
+				domain.NewCard(domain.CardDesignClover, 7, false),
+			},
+			IsNatural: true,
+		}
+		players[0].SetMelds([]*domain.BiribaMeld{meld})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ナチュラル")
+		assert.Contains(t, result, "SPADE 7")
+	})
+
+	t.Run("error message shown", func(t *testing.T) {
+		m, _ := setupBiribaCuiMockWithPlayers()
+		testErr := errors.New("invalid card index")
+
+		result := p.Output(m, testErr)
+		assert.Contains(t, result, "invalid card index")
+	})
+
+	t.Run("game ended shows winner human", func(t *testing.T) {
+		m, _ := setupBiribaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerIdx").Return(0)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ゲーム終了！")
+		assert.Contains(t, result, "あなたの勝利です！")
+	})
+
+	t.Run("game ended shows winner CPU", func(t *testing.T) {
+		m, _ := setupBiribaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerIdx").Return(1)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ゲーム終了！")
+		assert.Contains(t, result, "CPU 1の勝利です！")
+	})
+
+	t.Run("draw phase shows current player CPU", func(t *testing.T) {
+		m, _ := setupBiribaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(1)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "手番: CPU 1")
+	})
+
+	t.Run("meld phase shows commands", func(t *testing.T) {
+		m, _ := setupBiribaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.BiribaPhaseMeld)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "メルドフェーズ")
+		assert.Contains(t, result, "m ")
+		assert.Contains(t, result, "sm")
+	})
+
+	t.Run("discard phase shows commands", func(t *testing.T) {
+		m, _ := setupBiribaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.BiribaPhaseDiscard)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ディスカードフェーズ")
+		assert.Contains(t, result, "d <idx>")
+		assert.Contains(t, result, "go")
+	})
+
+	t.Run("round end phase shows next command", func(t *testing.T) {
+		m, _ := setupBiribaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.BiribaPhaseRoundEnd)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ラウンド終了")
+		assert.Contains(t, result, "nr / nextround")
+	})
+
+	t.Run("red 3 tag shown", func(t *testing.T) {
+		m, players := setupBiribaCuiMockWithPlayers()
+		players[0].AddRed3(domain.NewCard(domain.CardDesignHeart, 3, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "赤3: 1枚")
+	})
+
+	t.Run("biriba star tag shown when player holds a biriba meld", func(t *testing.T) {
+		m, players := setupBiribaCuiMockWithPlayers()
+		// A 7-card natural meld of 4s satisfies HasBiriba() (>=7 cards).
+		// IsNatural=true also exercises the "ナチュラル" meld-type label;
+		// the m.IsBiriba() branch attaches "ビリバ" to that label.
+		cards := make([]*domain.Card, 7)
+		for i := range cards {
+			cards[i] = domain.NewCard(domain.CardDesignSpade, 4, false)
+		}
+		players[0].AddMeld(&domain.BiribaMeld{Cards: cards, IsNatural: true})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "★ビリバ")
+		assert.Contains(t, result, "ナチュラルビリバ")
+	})
+}
+
+func TestBiribaCuiPresenter_ActionLogOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.BiribaCuiPresenter)
+
+	t.Run("with entries", func(t *testing.T) {
+		m := new(interfaces.MockBiribaGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", Detail: "drew from stock"},
+		}
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetActionLog").Return(entries)
+		m.On("GetPlayer", mock.Anything).Return(domain.NewCanastaPlayer(true)).Maybe()
+
+		result := p.ActionLogOutput(m)
+		assert.Contains(t, result, "draw_stock")
+		m.AssertExpectations(t)
+	})
+
+	t.Run("game not ended returns empty", func(t *testing.T) {
+		m := new(interfaces.MockBiribaGame)
+		m.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(m)
+		assert.NotEmpty(t, result)
+		m.AssertExpectations(t)
+	})
+}
+
+// newBiribaHintGame builds a real 2-player Biriba game for hint tests.
+func newBiribaHintGame() *domain.Biriba {
+	players := []*domain.BiribaPlayer{
+		domain.NewCanastaPlayer(true),
+		domain.NewCanastaPlayer(false),
+	}
+	return domain.NewCanasta(domain.NewTrumpCardsWithDecks(2, 4), players, domain.DefaultCanastaConfig())
+}
+
+func TestBiribaCuiPresenter_HintOutput(t *testing.T) {
+	p := &presenter.BiribaCuiPresenter{}
+
+	t.Run("no hint on CPU turn", func(t *testing.T) {
+		g := newBiribaHintGame()
+		g.SetPhase(domain.BiribaPhaseDraw)
+		g.SetCurrentPlayerIdx(1) // CPU
+		out := p.HintOutput(g)
+		assert.NotEmpty(t, out)
+	})
+
+	t.Run("draw stock", func(t *testing.T) {
+		g := newBiribaHintGame()
+		g.SetPhase(domain.BiribaPhaseDraw)
+		g.SetCurrentPlayerIdx(0)
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 9, false)})
+		assert.NotEmpty(t, p.HintOutput(g))
+	})
+
+	t.Run("draw discard", func(t *testing.T) {
+		g := newBiribaHintGame()
+		g.SetPhase(domain.BiribaPhaseDraw)
+		g.SetCurrentPlayerIdx(0)
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)})
+		assert.NotEmpty(t, p.HintOutput(g))
+	})
+
+	t.Run("meld", func(t *testing.T) {
+		g := newBiribaHintGame()
+		g.SetPhase(domain.BiribaPhaseMeld)
+		g.SetCurrentPlayerIdx(0)
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		assert.NotEmpty(t, p.HintOutput(g))
+	})
+
+	t.Run("skip meld", func(t *testing.T) {
+		g := newBiribaHintGame()
+		g.SetPhase(domain.BiribaPhaseMeld)
+		g.SetCurrentPlayerIdx(0)
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		assert.NotEmpty(t, p.HintOutput(g))
+	})
+
+	t.Run("discard", func(t *testing.T) {
+		g := newBiribaHintGame()
+		g.SetPhase(domain.BiribaPhaseDiscard)
+		g.SetCurrentPlayerIdx(0)
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		out := p.HintOutput(g)
+		assert.NotEmpty(t, out)
+	})
+}

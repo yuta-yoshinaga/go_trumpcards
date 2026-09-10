@@ -24,6 +24,9 @@ type CanastaConfig struct {
 	// プレイヤーがポゼットを獲得する。ポゼット獲得かつブラーコ完成が上がり条件
 	// になる。Canasta では false（omitempty によりワイヤ形式は不変）。
 	UsePozzetto bool `json:"up,omitempty"`
+	// UseBiriba は Biriba モードを有効にする。同スートのシーケンス制メルド、
+	// ジョーカー2枚のデッキ、2山のポゼットを使用する（omitempty によりワイヤ形式は不変）。
+	UseBiriba bool `json:"ub,omitempty"`
 }
 
 // DefaultCanastaConfig デフォルト設定を返す

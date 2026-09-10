@@ -33,6 +33,7 @@ import type {
   BigBenResponse,
   BigTwoResponse,
   BinokelResponse,
+  BiribaResponse,
   BisleyResponse,
   BlackHoleResponse,
   BlackJackResponse,
@@ -399,6 +400,7 @@ import { getBidWhistHint } from '../utils/hints/bidwhistHint';
 import { getBigBenHint } from '../utils/hints/bigbenHint';
 import { getBigTwoHint } from '../utils/hints/bigtwoHint';
 import { getBinokelHint } from '../utils/hints/binokelHint';
+import { getBiribaHint } from '../utils/hints/biribaHint';
 import { getBisleyHint } from '../utils/hints/bisleyHint';
 import { getBlackHoleHint } from '../utils/hints/blackholeHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
@@ -892,6 +894,7 @@ export const hintFactories = {
   bridge: (s) => getBridgeHint(s as BridgeResponse),
   bristol: (s) => getBristolHint(s as BristolResponse),
   burraco: (s) => getBurracoHint(s as BurracoResponse),
+  biriba: (s) => getBiribaHint(s as BiribaResponse),
   canfield: (s) => getCanfieldHint(s as CanfieldResponse),
   agnes: (s) => getAgnesHint(s as AgnesResponse),
   openfacechinese: (s) => getOpenFaceChineseHint(s as OpenFaceChineseResponse),

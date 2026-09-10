@@ -7441,6 +7441,34 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"tapptarock.helpSetDifficulty", "tapptarock.helpSetDeals"},
 		}),
+	BindCuiFor("biriba",
+		func() usecase.BiribaInteractorIF {
+			return usecase.NewBiribaInteractor(domain.NewDefaultBiriba(), new(presenter.BiribaCuiPresenter))
+		},
+		controller.NewBiribaCuiController,
+		CuiHelpSpec{Body: []string{
+			"Biriba (ビリバ) Help",
+			"",
+			"Game Commands:",
+			"  ds                   draw from stock",
+			"  dd 0,1               take the discard pile (two matching natural cards)",
+			"  m 0,1,2              meld a same-suit sequence",
+			"  sm                   skip meld phase",
+			"  d <idx>              discard a card",
+			"  go                   go out (requires the kozes + a biriba)",
+			"  nr                   next round",
+			"  h                    hint (recommended action)",
+			"  l                    action log",
+			"",
+			"Settings:",
+			"  sd <0-2>             set CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+			"  sl <n>               set point limit",
+			"",
+			"Session:",
+			"  r / reset            reset game",
+			"  q / quit             quit",
+			"  ? / help             show help",
+		}}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -7514,6 +7542,7 @@ var GameAliases = map[string]string{
 	"scg":     "sixcardgolf",
 	"6golf":   "sixcardgolf",
 	"ddz":     "doudizhu",
+	"biri":    "biriba",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.

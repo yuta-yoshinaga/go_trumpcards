@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した381種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した382種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -59,6 +59,7 @@ Go + Clean Architecture で実装した381種類のトランプゲーム。CLI �
 | カナスタ (Canasta) | `canasta` | [CUI](docs/manual/cui/canasta.md) / [Web](docs/manual/web/canasta.md) |
 | ハンド・アンド・フット (Hand and Foot) | `handandfoot` | [CUI](docs/manual/cui/handandfoot.md) / [Web](docs/manual/web/handandfoot.md) |
 | ブラーコ (Burraco) | `burraco` | [CUI](docs/manual/cui/burraco.md) / [Web](docs/manual/web/burraco.md) |
+| ビリバ (Biriba) | `biriba` | [CUI](docs/manual/cui/biriba.md) / [Web](docs/manual/web/biriba.md) |
 | スパイダーソリティア (Spider Solitaire) | `spider` | [CUI](docs/manual/cui/spider.md) / [Web](docs/manual/web/spider.md) |
 | スパイダレット (Spiderette) | `spiderette` | [CUI](docs/manual/cui/spiderette.md) / [Web](docs/manual/web/spiderette.md) |
 | ウィル・オ・ザ・ウィスプ (Will o' the Wisp) | `willothewisp` | [CUI](docs/manual/cui/willothewisp.md) / [Web](docs/manual/web/willothewisp.md) |
