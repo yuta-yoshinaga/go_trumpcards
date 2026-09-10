@@ -1,6 +1,7 @@
 import type { Card, MarriageResponse } from '../../types/card';
 import { MarriagePhase } from '../../types/games/marriage';
 import type { HintResult } from '../../types/hint';
+import { marriageIsWild } from '../marriageDeclare';
 
 /**
  * Returns a frontend HintResult for Marriage, or null if no suggestion
@@ -49,9 +50,9 @@ function getDiscardHint(hand: Card[], wildRank: number): HintResult {
   return { targetAction: 'discard', reason: 'hint.discardDeadwood', confidence: 'moderate' };
 }
 
-/** A card is wild if it is a printed joker or matches the turned-up wild rank. */
+/** A card is wild according to Marriage's wild-rank rules. */
 export function isWild(card: Card, wildRank: number): boolean {
-  return card.design === 'JOKER' || (wildRank > 0 && card.value === wildRank);
+  return marriageIsWild(card, wildRank);
 }
 
 /** Check if a card fits with the hand to form (or extend) a potential meld. */

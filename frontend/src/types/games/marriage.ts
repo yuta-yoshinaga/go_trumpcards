@@ -39,8 +39,6 @@ export interface MarriageResponse extends BaseGameResponse {
   winnerIdx: number;
   declarerIdx: number;
   declarationValid: boolean;
-  humanDeadwood: number;
-  humanHasPureSequence: boolean;
   config: MarriageConfig;
 }
 

@@ -44,8 +44,6 @@ function makeState(overrides: Partial<MarriageResponse> = {}): MarriageResponse 
     winnerIdx: -1,
     declarerIdx: -1,
     declarationValid: false,
-    humanDeadwood: 20,
-    humanHasPureSequence: true,
     config: { playerCount: 2, cpuDifficulty: 1, targetRounds: 5 },
     message: '',
     messageCode: '',

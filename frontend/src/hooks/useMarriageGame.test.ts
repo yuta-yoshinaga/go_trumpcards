@@ -58,8 +58,6 @@ const defaultState: MarriageResponse = {
   winnerIdx: -1,
   declarerIdx: -1,
   declarationValid: false,
-  humanDeadwood: 0,
-  humanHasPureSequence: false,
   message: '',
   config: { playerCount: 5, cpuDifficulty: 1, targetRounds: 3 },
 };

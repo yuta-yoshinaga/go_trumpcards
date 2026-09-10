@@ -77265,10 +77265,6 @@ components:
           type: integer
         declarationValid:
           type: boolean
-        humanDeadwood:
-          type: integer
-        humanHasPureSequence:
-          type: boolean
         wildJoker:
           $ref: '#/components/schemas/Card'
         wildRank:

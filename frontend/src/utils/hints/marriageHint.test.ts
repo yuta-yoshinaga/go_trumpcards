@@ -39,8 +39,6 @@ function makeState(overrides: Partial<MarriageResponse> = {}): MarriageResponse 
     winnerIdx: -1,
     declarerIdx: -1,
     declarationValid: false,
-    humanDeadwood: 0,
-    humanHasPureSequence: false,
     message: '',
     config: { playerCount: 2, cpuDifficulty: 1, targetRounds: 3 },
     ...overrides,
@@ -198,6 +196,16 @@ describe('isWild', () => {
     expect(isWild(card('SPADE', 7), 7)).toBe(true);
   });
 
+  it('treats poplu and jhiplu ranks as wild', () => {
+    expect(isWild(card('HEART', 8), 7)).toBe(true);
+    expect(isWild(card('SPADE', 6), 7)).toBe(true);
+  });
+
+  it('wraps wild ranks between king and ace', () => {
+    expect(isWild(card('HEART', 1), 13)).toBe(true);
+    expect(isWild(card('SPADE', 13), 1)).toBe(true);
+  });
+
   it('is not wild when the rank does not match and wildRank is 0', () => {
     expect(isWild(card('HEART', 7), 0)).toBe(false);
   });
@@ -229,6 +237,11 @@ describe('calcDeadwood', () => {
   it('lets a wild-rank card cancel the highest unmatched card', () => {
     const hand = [card('HEART', 2), card('SPADE', 5), card('CLOVER', 9)];
     expect(calcDeadwood(hand, 2)).toBe(5);
+  });
+
+  it('treats poplu and jhiplu cards as wild when calculating deadwood', () => {
+    const hand = [card('HEART', 8), card('SPADE', 6), card('CLOVER', 13)];
+    expect(calcDeadwood(hand, 7)).toBe(0);
   });
 
   it('detects runs in the same suit', () => {

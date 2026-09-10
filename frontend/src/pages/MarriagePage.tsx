@@ -41,7 +41,7 @@ import { MARRIAGE_HELP, parseMarriageCommand } from '../utils/cli/commands/marri
 import { formatMarriageState } from '../utils/cli/formatters/marriageFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
-import { evaluateMarriageDeclare, MARRIAGE_HAND_SIZE } from '../utils/marriageDeclare';
+import { evaluateMarriageDeclare, MARRIAGE_HAND_SIZE, marriageIsWild } from '../utils/marriageDeclare';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -209,10 +209,7 @@ function MarriagePageContent() {
   const revealCpu = isRoundEnd || isGameEnd;
   const isHumanTurn = (isDrawPhase || isDiscardPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
 
-  // A card counts as wild when it is a printed joker or shares the rank of the round's wild joker.
-  const wildValue = state.wildJoker?.value;
-  const isWildCard = (card: Card): boolean =>
-    card.design === 'JOKER' || (wildValue !== undefined && card.value === wildValue);
+  const isWildCard = (card: Card): boolean => marriageIsWild(card, state.wildRank);
   const wildBadge = (card: Card) =>
     isWildCard(card) ? (
       <span

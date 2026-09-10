@@ -27,26 +27,6 @@ interface Meld {
   pure: boolean;
 }
 
-/** Whether a card is tiplu: the same rank and suit as the turned-up tiplu. */
-export function marriageIsTiplu(card: Card, tiplu: Card): boolean {
-  return card.design === tiplu.design && card.value === tiplu.value;
-}
-
-/** Whether a card is poplu: the rank above tiplu, wrapping K to A. */
-export function marriageIsPoplu(card: Card, tiplu: Card): boolean {
-  return card.value === (tiplu.value % 13) + 1;
-}
-
-/** Whether a card is jhiplu: the rank below tiplu, wrapping A to K. */
-export function marriageIsJhiplu(card: Card, tiplu: Card): boolean {
-  return card.value === ((tiplu.value + 11) % 13) + 1;
-}
-
-/** Whether a card is alter: another suit of tiplu's rank. */
-export function marriageIsAlter(card: Card, tiplu: Card): boolean {
-  return card.value === tiplu.value && card.design !== tiplu.design;
-}
-
 /** Whether a card is wild: a printed joker, tiplu, poplu, jhiplu, or alter. */
 export function marriageIsWild(card: Card, wildRank: number): boolean {
   if (card.design === 'JOKER') return true;

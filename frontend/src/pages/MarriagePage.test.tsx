@@ -56,8 +56,6 @@ const drawPhaseState: MarriageResponse = {
   winnerIdx: -1,
   declarerIdx: -1,
   declarationValid: false,
-  humanDeadwood: 0,
-  humanHasPureSequence: false,
   message: '',
   config: { playerCount: 5, cpuDifficulty: 1, targetRounds: 3 },
 };
@@ -256,6 +254,84 @@ describe('MarriagePage', () => {
     // The non-wild ace carries no wild annotation in its label.
     expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /♦ 5 .*ワイルド/ })).toBeInTheDocument();
+  });
+
+  it('marks the adjacent ranks as wild and leaves other ranks unmarked', async () => {
+    const adjacentWildState: MarriageResponse = {
+      ...drawPhaseState,
+      wildJoker: { design: 'CLOVER', value: 7 },
+      wildRank: 7,
+      players: [
+        player({
+          cards: [
+            { design: 'SPADE', value: 8 },
+            { design: 'HEART', value: 6 },
+            { design: 'DIAMOND', value: 9 },
+          ],
+        }),
+        drawPhaseState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(adjacentWildState);
+    renderWithProviders(<MarriagePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 8')).toBeInTheDocument());
+
+    expect(screen.getAllByTestId('marriage-wild-badge')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: /♠ 8 .*ワイルド/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♥ 6 .*ワイルド/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ 9' })).toBeInTheDocument();
+  });
+
+  it('wraps from king to ace when the wild rank is king', async () => {
+    const kingWildState: MarriageResponse = {
+      ...drawPhaseState,
+      wildJoker: { design: 'CLOVER', value: 13 },
+      wildRank: 13,
+      players: [
+        player({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 13 },
+            { design: 'DIAMOND', value: 11 },
+          ],
+        }),
+        drawPhaseState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(kingWildState);
+    renderWithProviders(<MarriagePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    expect(screen.getAllByTestId('marriage-wild-badge')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: /♠ A .*ワイルド/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♥ K .*ワイルド/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ J' })).toBeInTheDocument();
+  });
+
+  it('marks only printed jokers when the wild rank is zero', async () => {
+    const printedJokerWildState: MarriageResponse = {
+      ...drawPhaseState,
+      wildJoker: { design: 'JOKER', value: 0 },
+      wildRank: 0,
+      players: [
+        player({
+          cards: [
+            { design: 'JOKER', value: 0 },
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 13 },
+          ],
+        }),
+        drawPhaseState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(printedJokerWildState);
+    renderWithProviders(<MarriagePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    expect(screen.getAllByTestId('marriage-wild-badge')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: /ワイルド/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ K' })).toBeInTheDocument();
   });
 
   it('marks wild-rank cards in revealed CPU hands with a WILD badge', async () => {
