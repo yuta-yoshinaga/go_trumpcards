@@ -774,6 +774,8 @@ tags:
     description: Marjapussi (マルツプッシ) game - Finnish 4-player partnership trick-taking game with 36 cards, marriages and berry bag (pussi)
   - name: basset
     description: Basset (バセット) game
+  - name: matrimony
+    description: Matrimony (マトリモニー) game
 
 paths:
   /blackjack/exec:
@@ -7717,6 +7719,101 @@ paths:
         session identified by `sessionId`. A single-player patience played with
         **two 52-card decks (104 cards)**.
 
+        Sixteen single-card tableau slots are dealt face up; the other 88 cards
+        form the stock.
+
+        **The four foundations follow suit and wrap.** The two spade foundations
+        start at Q and build downward; the two diamond foundations start at J
+        and build upward. Each direction passes through all thirteen ranks, and
+        the other copy of each starting card joins its matching foundation.
+
+        A tableau slot holds exactly one card and refills from the stock or the
+        waste. When the stock is exhausted, the waste is collected for a redeal,
+        up to three times.
+
+        Move zones:
+
+        * `from`: `{zone: "tableau", col: 0..15}`, `{zone: "waste"}` or
+          `{zone: "stock"}`
+        * `to`: `{zone: "foundation"}` (the server picks the pile) or
+          `{zone: "tableau", col: 0..15}` for an empty slot
+      operationId: royalcotillionExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/RoyalCotillionMoveZone'
+                to:
+                  $ref: '#/components/schemas/RoyalCotillionMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              tableauToFoundation:
+                summary: Send the card in slot 3 to a foundation
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 3
+                  to:
+                    zone: foundation
+              fillSlotFromStock:
+                summary: Refill the emptied slot 3 straight from the stock
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: stock
+                  to:
+                    zone: tableau
+                    col: 3
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/RoyalCotillionResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+                description: |
+                  The shape depends on the command. Ordinary commands return the game
+                  state; `log` returns the action log instead.
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoyalCotillionResponse'
+  /matrimony/exec:
+    post:
+      tags:
+        - matrimony
+      summary: Execute a Matrimony game command
+      description: |
+        Send a command to advance the Matrimony (マトリモニー) game
+        session identified by `sessionId`. A single-player patience played with
+        **two 52-card decks (104 cards)**.
+
         Sixteen single-card tableau slots and four reserve piles of three (28
         cards in all) are dealt face up; the other 76 form the stock.
 
@@ -7735,7 +7832,7 @@ paths:
           `{zone: "waste"}` or `{zone: "stock"}`
         * `to`: `{zone: "foundation"}` (the server picks the pile) or
           `{zone: "tableau", col: 0..15}` for an empty slot
-      operationId: royalcotillionExec
+      operationId: matrimonyExec
       requestBody:
         required: true
         content:
@@ -62596,6 +62693,9 @@ components:
             type: boolean
         stockCount:
           type: integer
+        redealCount:
+          type: integer
+          description: Number of stock redeals used (Matrimony allows at most three).
         waste:
           type: array
           items:

@@ -90,6 +90,7 @@ export const workerUrl: Record<string, string> = {
   cribbagesquares: WORKER_EXTRA2,
   diplomat: WORKER_EXTRA,
   royalcotillion: WORKER_CLASSIC,
+  matrimony: WORKER_EXTRA,
   crazyquilt: WORKER_SOLO,
   germanwhist: WORKER_CLASSIC,
   slobberhannes: WORKER_CLASSIC,

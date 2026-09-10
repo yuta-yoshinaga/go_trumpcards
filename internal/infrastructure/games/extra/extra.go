@@ -307,4 +307,12 @@ func init() {
 			return usecase.RestoreStHelenaInteractor(data, new(presenter.StHelenaWebPresenter))
 		},
 		controller.NewStHelenaWebControllerWithProvider)
+	games.RegisterKVGame("matrimony", games.CategoryExtra,
+		func() usecase.MatrimonyInteractorIF {
+			return usecase.NewMatrimonyInteractor(domain.NewDefaultMatrimony(), new(presenter.MatrimonyWebPresenter))
+		},
+		func(data []byte) (usecase.MatrimonyInteractorIF, error) {
+			return usecase.RestoreMatrimonyInteractor(data, new(presenter.MatrimonyWebPresenter))
+		},
+		controller.NewMatrimonyWebControllerWithProvider)
 }

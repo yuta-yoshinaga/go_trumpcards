@@ -1905,4 +1905,9 @@ func init() {
 			return usecase.NewBassetInteractor(domain.NewDefaultBasset(), new(presenter.BassetWebPresenter))
 		},
 		controller.NewBassetWebController)
+	BindWebControllerFor("matrimony",
+		func() usecase.MatrimonyInteractorIF {
+			return usecase.NewMatrimonyInteractor(domain.NewDefaultMatrimony(), new(presenter.MatrimonyWebPresenter))
+		},
+		controller.NewMatrimonyWebController)
 }

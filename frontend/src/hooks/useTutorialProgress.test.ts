@@ -57,6 +57,6 @@ describe('useTutorialProgress', () => {
 // vacuous. A floor is enough — it must not be a handful of categories.
 describe('TOTAL_GAMES derivation', () => {
   it('counts games, not categories', () => {
-    expect(TOTAL_GAMES).toBe(378);
+    expect(TOTAL_GAMES).toBe(379);
   });
 });

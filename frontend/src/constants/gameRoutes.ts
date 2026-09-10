@@ -2511,6 +2511,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 1, 5, 2], skill: [2, 4, 4, 3], social: [5, 1, 0, 2, 4], theme: [1, 5, 3, 1, 2, 4] },
       },
       {
+        path: '/matrimony',
+        labelKey: 'nav.matrimony',
+        icon: '💍',
+        page: 'Matrimony',
+        profile: { mood: [5, 1, 5, 2], skill: [2, 4, 4, 3], social: [5, 1, 0, 2, 4], theme: [1, 5, 3, 1, 2, 4] },
+      },
+      {
         path: '/crazyquilt',
         labelKey: 'nav.crazyquilt',
         icon: '🧵',

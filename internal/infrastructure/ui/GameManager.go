@@ -7379,6 +7379,31 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("matrimony",
+		func() usecase.MatrimonyInteractorIF {
+			return usecase.NewMatrimonyInteractor(domain.NewDefaultMatrimony(), new(presenter.MatrimonyCuiPresenter))
+		},
+		controller.NewMatrimonyCuiController,
+		CuiHelpSpec{
+			TitleKey: "matrimony.helpTitle",
+			ExampleKeys: []string{
+				"matrimony.helpExampleHint",
+				"matrimony.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"matrimony.helpDraw",
+				"matrimony.helpMoveTF",
+				"matrimony.helpMoveRF",
+				"matrimony.helpMoveWF",
+				"matrimony.helpMoveWT",
+				"matrimony.helpMoveST",
+				"matrimony.helpGiveUp",
+				"matrimony.helpHint",
+				"matrimony.helpAutoComplete",
+				"matrimony.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

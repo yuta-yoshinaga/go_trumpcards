@@ -1847,6 +1847,13 @@ export const RoyalCotillionPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Matrimony phase constants (sync: internal/domain/Matrimony.go). */
+export const MatrimonyPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Crazy Quilt phase constants (sync: internal/domain/CrazyQuilt.go). */
 export const CrazyQuiltPhase = {
   PLAYING: 0,
