@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tehonbikiApi } from '../api/games/tehonbiki';
 import { useGameApi } from '../hooks/useGameApi';
@@ -75,5 +75,58 @@ describe('TehonbikiPage', () => {
     await waitFor(() => expect(screen.getByText('親の札: 6')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '次の勝負' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '張る' })).not.toBeInTheDocument();
+  });
+
+  it('clears selected numbers when the wager kind changes', async () => {
+    renderWithProviders(<TehonbikiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '張る' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '1' }));
+    expect(screen.getByRole('button', { name: '1' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'half' } });
+    expect(screen.getByRole('button', { name: '1' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('sends an incomplete selection when the user submits it', async () => {
+    renderWithProviders(<TehonbikiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '張る' })).toBeInTheDocument());
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'double' } });
+    fireEvent.click(screen.getByRole('button', { name: '1' }));
+    fireEvent.click(screen.getByRole('button', { name: '張る' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { numbers: [1], betType: 'double', bet: 50 }));
+  });
+
+  it('starts the next round from the result phase', async () => {
+    mockUseGameApi.mockReturnValue({
+      state: state({ phase: 1, parentCard: 2, numbers: [2], betType: 'single', result: 1, payout: 225 }),
+      loading: false,
+      error: null,
+      exec: mockExec,
+      retry: vi.fn(),
+    } as never);
+    renderWithProviders(<TehonbikiPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '次の勝負' }));
+    expect(mockExec).toHaveBeenCalledWith('next');
+  });
+
+  it('confirms a reset and resets at game end', async () => {
+    renderWithProviders(<TehonbikiPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    expect(mockExec).toHaveBeenCalledWith('reset');
+  });
+
+  it('resets immediately from the game-end phase', () => {
+    cleanup();
+    mockUseGameApi.mockReturnValue({
+      state: state({ phase: 2, gameEndFlag: true }),
+      loading: false,
+      error: null,
+      exec: mockExec,
+      retry: vi.fn(),
+    } as never);
+    renderWithProviders(<TehonbikiPage />);
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    expect(mockExec).toHaveBeenCalledWith('reset');
   });
 });
