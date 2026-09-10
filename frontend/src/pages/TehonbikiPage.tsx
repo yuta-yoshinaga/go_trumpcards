@@ -17,7 +17,7 @@ function TehonbikiPageContent() {
   const { t, tc, confirmOpen, requestConfirm, confirmReset, cancelReset } = useGamePageSetup('tehonbiki');
   const { state, loading, error, exec, retry } = useGameApi(tehonbikiApi.exec);
   const [betType, setBetType] = useState('single');
-  const [numbers, setNumbers] = useState<number[]>([1]);
+  const [numbers, setNumbers] = useState<number[]>([]);
   const [bet, setBet] = useState(50);
   useEffect(() => {
     exec('reset');
@@ -62,7 +62,13 @@ function TehonbikiPageContent() {
         </div>
         {state.phase === 0 ? (
           <>
-            <select value={betType} onChange={(e) => setBetType(e.target.value)}>
+            <select
+              value={betType}
+              onChange={(e) => {
+                setBetType(e.target.value);
+                setNumbers([]);
+              }}
+            >
               <option value="single">single</option>
               <option value="double">double</option>
               <option value="triple">triple</option>

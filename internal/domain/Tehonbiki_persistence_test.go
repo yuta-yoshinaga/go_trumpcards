@@ -9,35 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTehonbikiPayoutTableAndLossWithFixedParent(t *testing.T) {
-	tests := []struct {
-		name    string
-		kind    TehonbikiBetType
-		numbers []int
-		want    int
-	}{
-		{"single", TehonbikiBetSingle, []int{4}, 225},
-		{"double", TehonbikiBetDouble, []int{2, 4}, 90},
-		{"triple", TehonbikiBetTriple, []int{1, 4, 6}, 45},
-		{"half", TehonbikiBetHalf, []int{3, 4, 5}, 45},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			g := NewDefaultTehonbiki()
-			require.NoError(t, g.SetParentCard(4))
-			require.NoError(t, g.PlaceBet(tt.numbers, tt.kind, 50))
-			require.Equal(t, TehonbikiResultWin, g.GetResult())
-			require.Equal(t, tt.want, g.GetPayout())
-		})
-	}
-	g := NewDefaultTehonbiki()
-	require.NoError(t, g.SetParentCard(6))
-	require.NoError(t, g.PlaceBet([]int{1, 2}, TehonbikiBetDouble, 50))
-	require.Equal(t, TehonbikiResultLose, g.GetResult())
-	require.Equal(t, 0, g.GetPayout())
-	require.Equal(t, 950, g.GetChips(), "外れた賭け金は没収される")
-}
-
 func TestTehonbikiPersistenceRoundTripAndParentRange(t *testing.T) {
 	g := NewDefaultTehonbiki()
 	require.NoError(t, g.SetParentCard(5))

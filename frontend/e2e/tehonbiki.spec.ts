@@ -8,6 +8,9 @@ test.describe('Tehonbiki E2E', () => {
     await expect(page.getByRole('button', { name: '1' })).toBeVisible();
     await expect(page.getByRole('button', { name: '6' })).toBeVisible();
 
+    // A single bet covers exactly one number, and nothing is selected up front,
+    // so the wager is refused until the player picks one.
+    await page.getByRole('button', { name: '1' }).click();
     await page.getByRole('button', { name: '張る' }).click();
     await waitForLoaded(page);
     await expect(page.getByRole('button', { name: '次の勝負' })).toBeVisible({ timeout: TIMEOUT_ACTION });

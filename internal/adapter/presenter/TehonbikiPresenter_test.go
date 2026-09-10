@@ -56,6 +56,19 @@ func TestTehonbikiCuiPresenterShowsResultAndErrors(t *testing.T) {
 	}
 }
 
+func TestTehonbikiCuiPresenterShowsResultAtGameEnd(t *testing.T) {
+	p := new(TehonbikiCuiPresenter)
+	g := newTehonbikiPresenterGame(t)
+	g.SetChips(10)
+	require.NoError(t, g.SetParentCard(6))
+	require.NoError(t, g.PlaceBet([]int{1}, domain.TehonbikiBetSingle, 10))
+	require.NoError(t, g.NextRound())
+	got := p.Output(g, nil)
+	if !containsAll(got, "parent: 6", "result:", "payout:") {
+		t.Fatalf("game-end output=%q", got)
+	}
+}
+
 var errPresenterTest = presenterTestError("boom")
 
 type presenterTestError string

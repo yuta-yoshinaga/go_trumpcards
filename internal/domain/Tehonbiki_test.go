@@ -14,7 +14,7 @@ func TestTehonbikiPayoutsAndLosses(t *testing.T) {
 		{"single", TehonbikiBetSingle, []int{4}, 225},
 		{"double", TehonbikiBetDouble, []int{2, 4}, 90},
 		{"triple", TehonbikiBetTriple, []int{1, 4, 6}, 45},
-		{"half", TehonbikiBetHalf, []int{3, 4, 5}, 45},
+		{"half", TehonbikiBetHalf, []int{4, 5, 6}, 45},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -54,5 +54,29 @@ func TestTehonbikiParentCardRange(t *testing.T) {
 		if g.GetParentCard() < 1 || g.GetParentCard() > 6 {
 			t.Fatalf("parent card=%d", g.GetParentCard())
 		}
+	}
+}
+
+func TestTehonbikiHalfGroupsAndTripleSelection(t *testing.T) {
+	for _, numbers := range [][]int{{1, 2, 3}, {4, 5, 6}} {
+		g := NewDefaultTehonbiki()
+		if err := g.PlaceBet(numbers, TehonbikiBetHalf, 50); err != nil {
+			t.Fatalf("half group %v rejected: %v", numbers, err)
+		}
+	}
+	half := NewDefaultTehonbiki()
+	if err := half.PlaceBet([]int{1, 2, 4}, TehonbikiBetHalf, 50); err == nil {
+		t.Fatal("half accepted an arbitrary three-number selection")
+	}
+	triple := NewDefaultTehonbiki()
+	if err := triple.PlaceBet([]int{1, 2, 4}, TehonbikiBetTriple, 50); err != nil {
+		t.Fatalf("triple rejected an arbitrary three-number selection: %v", err)
+	}
+}
+
+func TestTehonbikiRemainingCardsUsesDeck(t *testing.T) {
+	g := NewDefaultTehonbiki()
+	if got := g.GetRemainingCards(); got != len(g.deck) {
+		t.Fatalf("remaining cards=%d, deck length=%d", got, len(g.deck))
 	}
 }

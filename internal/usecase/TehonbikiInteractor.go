@@ -51,11 +51,9 @@ func (ci *TehonbikiInteractor) ResetWithConfig(cfg domain.TehonbikiConfig) strin
 	return resetWithValidatedConfig(ci.Game, ci.cp, cfg, ci.Game.SetConfig, ci.Reset)
 }
 
-// PlaceBet 場札に賭けてゲートをめくる
+// PlaceBet 予想する数字と張り方、張り金を指定して伏せ札を開く
 //
-// **どの場札が得かはここで判定しない。** 場札に何枚同じスートが出ているかで
-// 期待値が変わるが、それはドメインの規則であって、ここで賭けを拒んだり
-// 選び直させたりする話ではない ── 損な賭けも、プレイヤーが選べる手である。
+// どの数字が当たりか、張り方ごとの個数や配当が正しいかはドメインで判定する。
 func (ci *TehonbikiInteractor) PlaceBet(numbers []int, kind domain.TehonbikiBetType, bet int) string {
 	return ci.runGuarded(func() error { return ci.Game.PlaceBet(numbers, kind, bet) })
 }

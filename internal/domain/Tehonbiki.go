@@ -27,6 +27,13 @@ const (
 	TehonbikiResultLose
 )
 
+const (
+	tehonbikiHalfFirstStart = 1
+	tehonbikiHalfFirstEnd   = 3
+	tehonbikiHalfLastStart  = 4
+	tehonbikiHalfLastEnd    = 6
+)
+
 // Tehonbiki is the number-guessing game using six stock cards. The payout is
 // the house table adopted by this repository: fair odds less ten percent.
 type Tehonbiki struct {
@@ -109,6 +116,9 @@ func (g *Tehonbiki) PlaceBet(ns []int, k TehonbikiBetType, bet int) error {
 		}
 		seen[n] = true
 	}
+	if k == TehonbikiBetHalf && !tehonbikiIsHalfGroup(seen) {
+		return NewDomainError(ErrInvalidPlay, "片山は1,2,3または4,5,6の組を指定してください")
+	}
 	if bet < TehonbikiMinBet || bet > TehonbikiMaxBet || !g.player.SubtractChips(bet) {
 		return errors.New("tehonbiki: invalid or insufficient bet")
 	}
@@ -160,8 +170,14 @@ func (g *Tehonbiki) GetChips() int                   { return g.player.GetChips(
 func (g *Tehonbiki) SetChips(n int)                  { g.player.SetChips(n) }
 func (g *Tehonbiki) GetPlayer() *TehonbikiPlayer     { return g.player }
 func (g *Tehonbiki) GetRoundNumber() int             { return g.roundNo }
-func (g *Tehonbiki) GetRemainingCards() int          { return 6 }
+func (g *Tehonbiki) GetRemainingCards() int          { return len(g.deck) }
 func (g *Tehonbiki) GetActionLog() []*ActionLogEntry { return g.actionLog }
+
+func tehonbikiIsHalfGroup(seen map[int]bool) bool {
+	first := seen[tehonbikiHalfFirstStart] && seen[tehonbikiHalfFirstStart+1] && seen[tehonbikiHalfFirstEnd]
+	last := seen[tehonbikiHalfLastStart] && seen[tehonbikiHalfLastStart+1] && seen[tehonbikiHalfLastEnd]
+	return first || last
+}
 
 // TehonbikiHint is the neutral hint shown before a wager.
 type TehonbikiHint struct {

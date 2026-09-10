@@ -55,13 +55,12 @@ describe('TehonbikiPage', () => {
   it('sends the selected numbers, wager kind, and amount', async () => {
     renderWithProviders(<TehonbikiPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '張る' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '1' }));
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'double' } });
     fireEvent.click(screen.getByRole('button', { name: '2' }));
     fireEvent.click(screen.getByRole('button', { name: '3' }));
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'double' } });
     fireEvent.click(screen.getByRole('button', { name: '張る' }));
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('bet', { numbers: [1, 2, 3], betType: 'double', bet: 50 }),
-    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { numbers: [2, 3], betType: 'double', bet: 50 }));
   });
 
   it('shows the revealed parent card and next-round action after a result', async () => {

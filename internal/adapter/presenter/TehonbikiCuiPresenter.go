@@ -17,7 +17,7 @@ type TehonbikiCuiPresenter struct{}
 func (*TehonbikiCuiPresenter) Output(c interfaces.TehonbikiGame, e error) string {
 	return buildCuiOutput(i18n.T("tehonbiki.outputTitle"), func(b *strings.Builder) {
 		b.WriteString("phase: " + strconv.Itoa(int(c.GetPhase())) + " chips: " + strconv.Itoa(c.GetChips()) + "\n")
-		if c.GetPhase() == domain.TehonbikiPhaseResult {
+		if c.GetPhase() == domain.TehonbikiPhaseResult || c.GetGameEndFlag() {
 			b.WriteString("parent: " + strconv.Itoa(c.GetParentCard()) + " result: " + strconv.Itoa(int(c.GetResult())) + " payout: " + strconv.Itoa(c.GetPayout()) + "\n")
 		}
 		cuiErrorBlock(b, e)
