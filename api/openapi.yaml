@@ -77203,12 +77203,6 @@ components:
         hasPureSequence:
           type: boolean
           description: "Whether this seat holds the pure sequence a valid declaration requires."
-        humanHasPureSequence:
-          type: boolean
-          description: "Whether the human holds that pure sequence. Shown every turn, as the CUI does."
-        humanDeadwood:
-          type: integer
-          description: "Deadwood points left in the human's hand."
         wildJoker:
           $ref: '#/components/schemas/Card'
           description: "Card turned up as the wild joker for this deal."
