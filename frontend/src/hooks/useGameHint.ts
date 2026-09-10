@@ -188,6 +188,7 @@ import type {
   MaoResponse,
   MariasResponse,
   MarjapussiResponse,
+  MatrimonyResponse,
   MemoryResponse,
   MendikotResponse,
   MichiganResponse,
@@ -555,6 +556,7 @@ import { getManilleHint } from '../utils/hints/manilleHint';
 import { getMaoHint } from '../utils/hints/maoHint';
 import { getMariasHint } from '../utils/hints/mariasHint';
 import { getMarjapussiHint } from '../utils/hints/marjapussiHint';
+import { getMatrimonyHint } from '../utils/hints/matrimonyHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getMendikotHint } from '../utils/hints/mendikotHint';
 import { getMichiganHint } from '../utils/hints/michiganHint';
@@ -799,6 +801,7 @@ export const hintFactories = {
   cribbagesquares: (s) => getCribbageSquaresHint(s as CribbageSquaresResponse),
   diplomat: (s) => getDiplomatHint(s as DiplomatResponse),
   royalcotillion: (s) => getRoyalCotillionHint(s as RoyalCotillionResponse),
+  matrimony: (s) => getMatrimonyHint(s as MatrimonyResponse),
   crazyquilt: (s) => getCrazyQuiltHint(s as CrazyQuiltResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   rook: (s) => getRookHint(s as RookResponse),
