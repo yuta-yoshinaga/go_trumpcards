@@ -34249,7 +34249,7 @@ paths:
       summary: Execute a Basset game command
       description: |
         Send a command to advance a Basset session. Basset is a banking game
-        descended from Basset: the player bets on one of 13 ranks, the bank deals
+        descended from Faro: the player bets on one of 13 ranks, the bank deals
         two cards, and a winning player chooses to take the payout or press on
         with paroli at multipliers 1, 7, 15, 33, and 67.
       operationId: bassetExec
@@ -71081,40 +71081,77 @@ components:
           description: Interpolation parameters for the message template keyed by placeholder name.
 
     BassetRequest:
-      allOf:
-        - $ref: '#/components/schemas/FaroRequest'
-        - type: object
-          properties:
-            command:
-              type: string
-              enum: [reset, r, bet, b, deal, d, take, takeWinnings, paroli, pressParoli, next, n, log, l]
+      type: object
+      required: [command, sessionId]
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bet, b, deal, d, take, takeWinnings, paroli, pressParoli, next, n, log, l]
+        rank:
+          type: integer
+        amount:
+          type: integer
+        sessionId:
+          type: string
+        n:
+          type: integer
 
     BassetResponse:
-      allOf:
-        - $ref: '#/components/schemas/FaroResponse'
-        - type: object
-          description: Current state of the Basset game
+      type: object
+      description: Current state of the Basset game
+      properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        phase:
+          type: integer
+          description: "Game phase: 1 Betting, 2 Turn, 3 Decision, 4 RoundEnd, 5 GameEnd"
+          enum: [1, 2, 3, 4, 5]
+          example: 1
+        chips:
+          type: integer
+        bet:
+          type: object
+          nullable: true
           properties:
-            bet:
-              type: object
-              nullable: true
-              properties:
-                rank:
-                  type: integer
-                amount:
-                  type: integer
-                stage:
-                  type: integer
-            bankerCard:
-              allOf:
-                - $ref: '#/components/schemas/Card'
-              nullable: true
-            playerCard:
-              allOf:
-                - $ref: '#/components/schemas/Card'
-              nullable: true
-            hit:
-              type: boolean
+            rank:
+              type: integer
+            amount:
+              type: integer
+            stage:
+              type: integer
+        bankerCard:
+          $ref: '#/components/schemas/Card'
+          nullable: true
+        playerCard:
+          $ref: '#/components/schemas/Card'
+          nullable: true
+        hit:
+          type: boolean
+        turnsPlayed:
+          type: integer
+        turnsTotal:
+          type: integer
+        remaining:
+          type: integer
+        remainingByRank:
+          type: array
+          items:
+            type: integer
+        totalPayout:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
 
     FaroRequest:
       type: object
