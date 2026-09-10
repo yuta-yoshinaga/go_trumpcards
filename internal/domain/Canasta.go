@@ -1449,6 +1449,11 @@ func validateBiribaSequence(cards []*Card) error {
 	if missing > wildCount {
 		return NewDomainError(ErrInvalidPlay, "シーケンスのランクが連続していません")
 	}
+	remainingWildCount := wildCount - missing
+	availableExtension := (minRank - 1) + (CardValueMax - maxRank)
+	if remainingWildCount > availableExtension {
+		return NewDomainError(ErrInvalidPlay, "ワイルドカードでシーケンスのランク範囲を超えることはできません")
+	}
 	return nil
 }
 

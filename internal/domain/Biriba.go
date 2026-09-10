@@ -14,7 +14,7 @@ package domain
 // (already at the 1 MB gzip free-tier limit) over the edge. Aliasing keeps the
 // footprint at zero new types.
 
-// Biriba はビリバゲーム（= ポゼット有効化した Canasta）。
+// Biriba はビリバゲーム（ポゼット有効、同スートのシーケンス制メルドの Canasta）。
 type Biriba = Canasta
 
 // BiribaPlayer はビリバプレイヤー。
@@ -60,10 +60,11 @@ const BiribaPozzettoSize = CanastaPozzettoSize
 // BiribaDefaultPointLimit ビリバのデフォルト目標スコア。
 const BiribaDefaultPointLimit = 2005
 
-// DefaultBiribaConfig はビリバのデフォルト設定（ポゼット有効, 2005点）を返す。
+// DefaultBiribaConfig はビリバのデフォルト設定（シーケンス制、ポゼット有効、2005点）を返す。
 func DefaultBiribaConfig() CanastaConfig {
 	cfg := DefaultCanastaConfig()
 	cfg.UsePozzetto = true
+	cfg.UseBiriba = true
 	cfg.PointLimit = BiribaDefaultPointLimit
 	return cfg
 }

@@ -290,7 +290,7 @@ func TestBiribaWebController_ResetWithConfig(t *testing.T) {
 	t.Run("custom config values are passed", func(t *testing.T) {
 		diff := 2
 		limit := 7500
-		expected := domain.BiribaConfig{CpuDifficulty: domain.BiribaCpuDifficultyHard, PointLimit: 7500, UsePozzetto: true}
+		expected := domain.BiribaConfig{CpuDifficulty: domain.BiribaCpuDifficultyHard, PointLimit: 7500, UsePozzetto: true, UseBiriba: true}
 		siMock := new(usecase.MockBiribaInteractor)
 		siMock.On("ResetWithConfig", expected).Return(mockOutput)
 

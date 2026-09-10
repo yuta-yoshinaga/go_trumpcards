@@ -27,6 +27,7 @@ func TestNewDefaultBiriba(t *testing.T) {
 	g := domain.NewDefaultBiriba()
 	g.Reset()
 	assert.True(t, g.GetConfig().UsePozzetto)
+	assert.True(t, g.GetConfig().UseBiriba)
 	assert.Equal(t, 2, g.GetPlayerCnt())
 	assert.Equal(t, domain.BiribaHandSize, g.GetPlayer(0).GetCardsSize())
 	assert.Equal(t, 2, g.GetPozzettoCount())
@@ -41,11 +42,11 @@ func TestBiriba_CpuMeld_TakesPozzetto(t *testing.T) {
 	cpu := g.GetPlayer(1)
 	cpu.Reset()
 	cpu.SetHasInitMeld(true)
-	cpu.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-	cpu.AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
-	cpu.AddCard(domain.NewCard(domain.CardDesignDiamond, 1, false))
+	cpu.AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+	cpu.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	cpu.AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
-	g.CpuPlay() // cpuMeld melds the three aces, emptying the hand → take pozzetto
+	g.CpuPlay() // cpuMeld melds the sequence, emptying the hand → take pozzetto
 
 	assert.True(t, cpu.GetTookPozzetto())
 	assert.Equal(t, 1, g.GetPozzettoCount())
@@ -84,8 +85,134 @@ func TestBiriba_CpuDiscard_EmptyHandAfterPozzettoAdvances(t *testing.T) {
 func TestBiriba_DefaultConfig(t *testing.T) {
 	cfg := domain.DefaultBiribaConfig()
 	assert.True(t, cfg.UsePozzetto)
+	assert.True(t, cfg.UseBiriba)
 	assert.Equal(t, domain.BiribaDefaultPointLimit, cfg.PointLimit)
 	assert.Equal(t, 2005, cfg.PointLimit)
+}
+
+func TestBiriba_PlayerMeld_UsesSameSuitSequence(t *testing.T) {
+	g := newTestBiriba()
+	g.SetPhase(domain.BiribaPhaseMeld)
+	g.SetCurrentPlayerIdx(0)
+	player := g.GetPlayer(0)
+	player.Reset()
+	player.SetHasInitMeld(true)
+	for value := 5; value <= 7; value++ {
+		player.AddCard(domain.NewCard(domain.CardDesignHeart, value, false))
+	}
+
+	require.NoError(t, g.PlayerMeld([][]int{{0, 1, 2}}))
+	assert.Len(t, player.GetMelds(), 1)
+}
+
+func TestBiriba_PlayerMeld_RejectsSameRankSet(t *testing.T) {
+	g := newTestBiriba()
+	g.SetPhase(domain.BiribaPhaseMeld)
+	g.SetCurrentPlayerIdx(0)
+	player := g.GetPlayer(0)
+	player.Reset()
+	player.SetHasInitMeld(true)
+	for _, design := range []int{domain.CardDesignHeart, domain.CardDesignSpade, domain.CardDesignDiamond} {
+		player.AddCard(domain.NewCard(design, 7, false))
+	}
+
+	assert.Error(t, g.PlayerMeld([][]int{{0, 1, 2}}))
+	assert.Empty(t, player.GetMelds())
+}
+
+func TestBurraco_PlayerMeld_AcceptsSameRankSet(t *testing.T) {
+	players := []*domain.CanastaPlayer{domain.NewCanastaPlayer(true), domain.NewCanastaPlayer(false)}
+	cfg := domain.DefaultCanastaConfig()
+	cfg.UsePozzetto = true
+	g := domain.NewCanasta(domain.NewTrumpCardsWithDecks(2, 4), players, cfg)
+	g.SetPhase(domain.CanastaPhaseMeld)
+	g.SetCurrentPlayerIdx(0)
+	player := g.GetPlayer(0)
+	player.Reset()
+	player.SetHasInitMeld(true)
+	for _, design := range []int{domain.CardDesignHeart, domain.CardDesignSpade, domain.CardDesignDiamond} {
+		player.AddCard(domain.NewCard(design, 7, false))
+	}
+
+	require.NoError(t, g.PlayerMeld([][]int{{0, 1, 2}}))
+	assert.Len(t, player.GetMelds(), 1)
+}
+
+func TestBiriba_CpuPlay_FindsSequenceMeld(t *testing.T) {
+	g := newTestBiriba()
+	g.SetPhase(domain.BiribaPhaseMeld)
+	g.SetCurrentPlayerIdx(1)
+	player := g.GetPlayer(1)
+	player.Reset()
+	player.SetHasInitMeld(true)
+	for value := 5; value <= 7; value++ {
+		player.AddCard(domain.NewCard(domain.CardDesignClover, value, false))
+	}
+
+	g.CpuPlay()
+
+	require.Len(t, player.GetMelds(), 1)
+	assert.Equal(t, 3, len(player.GetMelds()[0].Cards))
+	assert.Equal(t, domain.CanastaPhaseDiscard, g.GetPhase())
+}
+
+func TestBiriba_PlayerMeld_PureBiribaBonusIsScored(t *testing.T) {
+	g := newTestBiriba()
+	g.SetPhase(domain.BiribaPhaseMeld)
+	g.SetCurrentPlayerIdx(0)
+	player := g.GetPlayer(0)
+	player.Reset()
+	player.SetHasInitMeld(true)
+	player.SetTookPozzetto(true)
+	for value := 6; value <= 12; value++ {
+		player.AddCard(domain.NewCard(domain.CardDesignSpade, value, false))
+	}
+
+	require.NoError(t, g.PlayerMeld([][]int{{0, 1, 2, 3, 4, 5, 6}}))
+	assert.Equal(t, 60+domain.CanastaPureBiribaBonus+domain.CanastaGoingOutBonus, player.GetRoundScore())
+}
+
+func TestBiriba_PlayerMeld_SequenceWildcardsStayWithinRankRange(t *testing.T) {
+	tests := []struct {
+		name   string
+		values []int
+		wilds  int
+		valid  bool
+	}{
+		{name: "ace and king with three wilds still need an impossible gap", values: []int{1, 13}, wilds: 3, valid: false},
+		{name: "king with one wild can extend below jack", values: []int{11, 12, 13}, wilds: 1, valid: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := newTestBiriba()
+			g.SetPhase(domain.BiribaPhaseMeld)
+			g.SetCurrentPlayerIdx(0)
+			player := g.GetPlayer(0)
+			player.Reset()
+			player.SetHasInitMeld(true)
+			for _, value := range tt.values {
+				player.AddCard(domain.NewCard(domain.CardDesignHeart, value, false))
+			}
+			for i := 0; i < tt.wilds; i++ {
+				player.AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
+			}
+
+			err := g.PlayerMeld(intSliceToIndices(len(tt.values) + tt.wilds))
+			if tt.valid {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
+}
+
+func intSliceToIndices(n int) [][]int {
+	indices := make([]int, n)
+	for i := range indices {
+		indices[i] = i
+	}
+	return [][]int{indices}
 }
 
 func TestBiriba_Reset_DealsElevenPlusTwoPozzetti(t *testing.T) {
@@ -117,9 +244,9 @@ func TestBiriba_TakePozzetto_OnMeldEmptyingHand(t *testing.T) {
 	player := g.GetPlayer(0)
 	player.Reset()
 	player.SetHasInitMeld(true) // bypass initial-meld minimum
-	player.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-	player.AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
-	player.AddCard(domain.NewCard(domain.CardDesignDiamond, 1, false))
+	player.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	player.AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	player.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
 
 	require.NoError(t, g.PlayerMeld([][]int{{0, 1, 2}}))
 
