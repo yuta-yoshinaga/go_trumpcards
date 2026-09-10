@@ -2474,6 +2474,24 @@ export const ZwanzigerrufenBid = {
   SOLO: 3,
 } as const;
 
+/** Tapp Tarock phase constants (sync: internal/domain/TappTarock.go). */
+export const TappTarockPhase = {
+  BID: 0,
+  TALON: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** Tapp Tarock bid constants (sync: internal/domain/TappTarock.go). */
+export const TappTarockBid = {
+  PASS: 0,
+  TRISCHAKEN: 1,
+  DREIER: 2,
+  SOLO: 3,
+} as const;
+
 /** Troggu phase constants (sync: internal/domain/Troggu.go). */
 export const TrogguPhase = {
   BID: 0,

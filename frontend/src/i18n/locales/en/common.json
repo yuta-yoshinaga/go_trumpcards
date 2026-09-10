@@ -397,6 +397,7 @@
     "yukon": "Yukon",
     "zheng": "Zheng Shangyou",
     "zwanzigerrufen": "Zwanzigerrufen",
+    "tapptarock": "Tapp Tarock",
     "zwicker": "Zwicker",
     "baccaratbanque": "Baccarat Banque",
     "continentalrummy": "Continental Rummy",
@@ -2861,6 +2862,7 @@
     "yukon.stalemateWithEscape": "Stalemate. Undo {{count}} moves to find another play.",
     "zheng.result.rankings": "Game Over! {{rankings}}",
     "zwanzigerrufen.result.scores": "Game over! Scores: {{scores}}",
+    "tapptarock.result.scores": "Game over! Scores: {{scores}}",
     "zwicker.lose": "The other team wins",
     "zwicker.win": "Your team wins"
   },

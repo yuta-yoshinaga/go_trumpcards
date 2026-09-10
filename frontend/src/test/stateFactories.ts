@@ -70,6 +70,7 @@ import type {
   SuecaResponse,
   SutdaResponse,
   TablanetResponse,
+  TappTarockResponse,
   TarocchiniResponse,
   TeenPattiResponse,
   ThreeCardBragResponse,
@@ -4556,6 +4557,57 @@ const baseZwanzigerrufenState: ZwanzigerrufenResponse = {
  */
 export function makeZwanzigerrufenState(overrides?: Partial<ZwanzigerrufenResponse>): ZwanzigerrufenResponse {
   return { ...baseZwanzigerrufenState, ...overrides };
+}
+
+/** Base Tapp Tarock state used as the default for {@link makeTappTarockState}. */
+const baseTappTarockState: TappTarockResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 16,
+      cards: [
+        { design: 'SPADE', value: 8, glyph: '♠', label: 'K', color: 'black', deck: 'tarot' },
+        { design: 'HEART', value: 3, glyph: '♥', label: '3', color: 'red', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 16, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 16, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  totalRounds: 4,
+  trickNumber: 0,
+  currentPlayerIdx: 0,
+  dealerIdx: 0,
+  bidPlayerIdx: 0,
+  highestBid: 0,
+  declarerIdx: -1,
+  contract: 0,
+  contractName: 'pass',
+  talonCount: 6,
+  currentTrick: [],
+  lastTrickWinner: -1,
+  lastTrickCards: [],
+  outcome: 0,
+  breakdown: null,
+  playableIndices: [0, 1],
+  discardableIndices: [],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetDeals: 4 },
+};
+
+/** Creates a complete Tapp Tarock response suitable for page and hint tests. */
+export function makeTappTarockState(overrides?: Partial<TappTarockResponse>): TappTarockResponse {
+  return { ...baseTappTarockState, ...overrides };
 }
 
 /** Base Troggu state used as the default for {@link makeTrogguState}. Defaults to a human bid turn. */

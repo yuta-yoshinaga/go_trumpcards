@@ -1915,4 +1915,9 @@ func init() {
 			return usecase.NewMatrimonyInteractor(domain.NewDefaultMatrimony(), new(presenter.MatrimonyWebPresenter))
 		},
 		controller.NewMatrimonyWebController)
+	BindWebControllerFor("tapptarock",
+		func() usecase.TappTarockInteractorIF {
+			return usecase.NewTappTarockInteractor(domain.NewDefaultTappTarock(), new(presenter.TappTarockWebPresenter))
+		},
+		controller.NewTappTarockWebController)
 }

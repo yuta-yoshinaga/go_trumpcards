@@ -1266,6 +1266,7 @@ var registry = []*Game{
 	{Name: "basset", Category: CategoryExtra4},
 	{Name: "matrimony", Category: CategoryExtra},
 	{Name: "tehonbiki", Category: CategoryExtra2},
+	{Name: "tapptarock", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.
