@@ -11,11 +11,7 @@ import (
 
 func newDoubleExposureTestBlackJack(t *testing.T) *BlackJack {
 	t.Helper()
-	bj := NewDefaultBlackJack()
-	cfg := bj.GetConfig()
-	cfg.Variant = BJVariantDoubleExposure
-	require.NoError(t, bj.SetConfig(cfg))
-	return bj
+	return NewDoubleExposureBlackJack()
 }
 
 func doubleExposureHand(cards ...*Card) *BlackJackHand {
@@ -33,6 +29,7 @@ func TestDoubleExposureVariantConfig(t *testing.T) {
 	require.NotNil(t, v)
 	assert.Equal(t, BJVariantDoubleExposure, v.Name)
 	assert.True(t, v.DealerCardsFaceUp)
+	assert.True(t, v.InsuranceDisabled)
 	assert.True(t, v.DealerWinsTies)
 	assert.True(t, v.BlackjackPaysEven)
 	assert.True(t, v.PlayerBJBeatsDealerBJ)
@@ -41,6 +38,39 @@ func TestDoubleExposureVariantConfig(t *testing.T) {
 	resolved := ResolveBlackJackVariant(BJVariantDoubleExposure)
 	require.NotNil(t, resolved)
 	assert.Equal(t, v.Name, resolved.Name)
+}
+
+func stackInsuranceAceDeal(bj *BlackJack) {
+	bj.trumpCards.deck[0] = NewCard(CardDesignSpade, 10, false)
+	bj.trumpCards.deck[1] = NewCard(CardDesignHeart, 1, false)
+	bj.trumpCards.deck[2] = NewCard(CardDesignClover, 9, false)
+	bj.trumpCards.deck[3] = NewCard(CardDesignDiamond, 7, false)
+	bj.trumpCards.deckDrawCnt = 0
+}
+
+// TestDoubleExposureDisablesInsurance verifies that a visible dealer Ace does
+// not create an insurance phase, while standard blackjack still does.
+func TestDoubleExposureDisablesInsurance(t *testing.T) {
+	t.Run("double exposure skips insurance", func(t *testing.T) {
+		bj := NewDoubleExposureBlackJack()
+		stackInsuranceAceDeal(bj)
+
+		require.NoError(t, bj.PlayerBet(BJMinBet, 0, 0, 0))
+		assert.Equal(t, BJPhaseAction, bj.phase)
+		assert.False(t, bj.insuranceAvailable)
+		assert.Equal(t, 1, bj.dealer.GetCard(0).GetValue())
+		assert.ErrorIs(t, bj.PlayerInsurance(), ErrWrongPhase)
+	})
+
+	t.Run("standard blackjack still offers insurance", func(t *testing.T) {
+		bj := NewDefaultBlackJack()
+		stackInsuranceAceDeal(bj)
+
+		require.NoError(t, bj.PlayerBet(BJMinBet, 0, 0, 0))
+		assert.Equal(t, BJPhaseInsurance, bj.phase)
+		assert.True(t, bj.insuranceAvailable)
+		assert.NoError(t, bj.PlayerInsurance())
+	})
 }
 
 // TestDoubleExposureDealerWinsOrdinaryTies verifies that an equal non-BJ score loses.

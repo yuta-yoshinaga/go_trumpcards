@@ -9,16 +9,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-func newDoubleExposureBlackJack() *domain.BlackJack {
-	bj := domain.NewDefaultBlackJack()
-	cfg := bj.GetConfig()
-	cfg.Variant = domain.BJVariantDoubleExposure
-	if err := bj.SetConfig(cfg); err != nil {
-		panic(err)
-	}
-	return bj
-}
-
 // init attaches the HTTP-server-side factory for every game. The build tag
 // excludes this file from Cloudflare Worker (TinyGo) binaries so that their
 // Web-server-only controllers/dispatchers do not drag in 219 games of code.
@@ -452,7 +442,7 @@ func init() {
 		controller.NewBlackJackWebController)
 	BindWebControllerFor("doubleexposure",
 		func() usecase.BlackJackInteractorIF {
-			return usecase.NewBlackJackInteractor(newDoubleExposureBlackJack(), new(presenter.BlackJackWebPresenter))
+			return usecase.NewBlackJackInteractor(domain.NewDoubleExposureBlackJack(), new(presenter.BlackJackWebPresenter))
 		},
 		controller.NewBlackJackWebController)
 	BindWebControllerFor("calculation",

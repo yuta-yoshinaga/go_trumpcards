@@ -39,6 +39,9 @@ type BlackJackVariantConfig struct {
 	PlayerBJBeatsDealerBJ bool
 	// DealerCardsFaceUp true の場合、ディーラーの手札を最初からすべて表向きにする
 	DealerCardsFaceUp bool
+	// InsuranceDisabled true の場合、インシュランスを提示しない
+	// (ディーラーの手が見えているバリアントでは確定利益になるため)
+	InsuranceDisabled bool
 	// DealerWinsTies true の場合、ナチュラルBJ同士以外の同点はディーラー勝ちにする
 	DealerWinsTies bool
 	// BlackjackPaysEven true の場合、プレイヤーのナチュラルBJを1:1で配当する
@@ -94,6 +97,7 @@ func DoubleExposureVariant() *BlackJackVariantConfig {
 	return &BlackJackVariantConfig{
 		Name:                  BJVariantDoubleExposure,
 		DealerCardsFaceUp:     true,
+		InsuranceDisabled:     true,
 		DealerWinsTies:        true,
 		BlackjackPaysEven:     true,
 		PlayerBJBeatsDealerBJ: true,

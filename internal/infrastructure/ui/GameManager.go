@@ -13,16 +13,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-func newDoubleExposureBlackJack() *domain.BlackJack {
-	bj := domain.NewDefaultBlackJack()
-	cfg := bj.GetConfig()
-	cfg.Variant = domain.BJVariantDoubleExposure
-	if err := bj.SetConfig(cfg); err != nil {
-		panic(err)
-	}
-	return bj
-}
-
 // GameRegistryEntry holds a game's name and CUI constructor.
 // Description lives on games.Game (issue #1459 SSoT); use Description() to
 // look it up for a given entry.
@@ -7353,7 +7343,7 @@ var gameRegistry = []GameRegistryEntry{
 		}),
 	BindCuiFor("doubleexposure",
 		func() usecase.BlackJackInteractorIF {
-			return usecase.NewBlackJackInteractor(newDoubleExposureBlackJack(), new(presenter.BlackJackCuiPresenter))
+			return usecase.NewBlackJackInteractor(domain.NewDoubleExposureBlackJack(), new(presenter.BlackJackCuiPresenter))
 		},
 		controller.NewBlackJackCuiController,
 		CuiHelpSpec{
