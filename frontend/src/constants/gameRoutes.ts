@@ -346,6 +346,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 2, 2, 2], skill: [3, 3, 2, 4], social: [5, 2, 2, 2, 2], theme: [5, 1, 1, 1, 2, 2] },
       },
       {
+        path: '/tehonbiki',
+        labelKey: 'nav.tehonbiki',
+        icon: '🎴',
+        page: 'Tehonbiki',
+        profile: { mood: [5, 2, 3, 3], skill: [4, 3, 2, 4], social: [4, 3, 3, 3, 3], theme: [5, 1, 1, 3, 2, 2] },
+      },
+      {
         path: '/banluck',
         labelKey: 'nav.banluck',
         icon: '🧧',

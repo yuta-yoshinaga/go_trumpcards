@@ -1720,6 +1720,11 @@ func init() {
 			return usecase.NewMonteBankInteractor(domain.NewDefaultMonteBank(), new(presenter.MonteBankWebPresenter))
 		},
 		controller.NewMonteBankWebController)
+	BindWebControllerFor("tehonbiki",
+		func() usecase.TehonbikiInteractorIF {
+			return usecase.NewTehonbikiInteractor(domain.NewDefaultTehonbiki(), new(presenter.TehonbikiWebPresenter))
+		},
+		controller.NewTehonbikiWebController)
 	BindWebControllerFor("cincinnati",
 		func() usecase.CincinnatiInteractorIF {
 			return usecase.NewCincinnatiInteractor(domain.NewDefaultCincinnati(), new(presenter.CincinnatiWebPresenter))

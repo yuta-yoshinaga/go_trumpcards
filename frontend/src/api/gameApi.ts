@@ -344,6 +344,7 @@ export * from './games/tarneeb';
 export * from './games/tarocchini';
 export * from './games/teendopaanch';
 export * from './games/teenpatti';
+export * from './games/tehonbiki';
 export * from './games/terrace';
 export * from './games/texasholdembonus';
 export * from './games/thirtyone';
@@ -460,6 +461,7 @@ export const games = [
   'freebet',
   'banluck',
   'montebank',
+  'tehonbiki',
   'cincinnati',
   'ironcross',
   'baseballpoker',

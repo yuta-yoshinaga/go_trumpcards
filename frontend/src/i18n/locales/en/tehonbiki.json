@@ -1,0 +1,14 @@
+{
+  "title": "Tehonbiki",
+  "label.chips": "Chips",
+  "label.parentCard": "Parent card",
+  "label.bet": "Stake",
+  "button.bet": "Place bet",
+  "button.next": "Next round",
+  "phase.bet": "Bet",
+  "phase.result": "Result",
+  "phase.gameEnd": "Finished",
+  "result.win": "Hit",
+  "result.lose": "Miss",
+  "frontendHint.tehonbiki": "Choose numbers and wager your chips"
+}
