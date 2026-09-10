@@ -1925,4 +1925,9 @@ func init() {
 			return usecase.NewBiribaInteractor(domain.NewDefaultBiriba(), new(presenter.BiribaWebPresenter))
 		},
 		controller.NewBiribaWebController)
+	BindWebControllerFor("marriage",
+		func() usecase.MarriageInteractorIF {
+			return usecase.NewMarriageInteractor(domain.NewDefaultMarriage(), new(presenter.MarriageWebPresenter))
+		},
+		controller.NewMarriageWebController)
 }

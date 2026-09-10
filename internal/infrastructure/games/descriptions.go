@@ -392,6 +392,7 @@ var gameDescriptions = map[string]string{
 	"tehonbiki":           "Tehonbiki (手本引き)",
 	"tapptarock":          "Tapp Tarock (タップ・タロック)",
 	"biriba":              "Biriba (ビリバ) — pure same-suit-sequence rummy, 106 cards including two jokers (純ビリバ・同スートのシーケンス・106枚、ジョーカー2枚)",
+	"marriage":            "Marriage (マリッジ) — 3 decks + 6 jokers / 162 cards, 21-card hands, dynamic tiplu wild (3組+ジョーカー6枚の162枚、手札21枚、tiplu基準の動的ワイルド)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

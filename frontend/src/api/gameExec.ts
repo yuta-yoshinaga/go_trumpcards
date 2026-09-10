@@ -210,6 +210,7 @@ export const workerUrl: Record<string, string> = {
   memory: WORKER_SOLO,
   ginrummy: WORKER_EXTRA,
   indianrummy: WORKER_EXTRA,
+  marriage: WORKER_EXTRA5,
   machiavelli: WORKER_EXTRA,
   conquian: WORKER_EXTRA,
   chinchon: WORKER_EXTRA,

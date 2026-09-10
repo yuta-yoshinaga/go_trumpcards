@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全382ゲーム)](#12-ゲームドメイン-全382ゲーム)
+  - [1.2 ゲームドメイン (全383ゲーム)](#12-ゲームドメイン-全383ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -201,7 +201,7 @@ classDiagram
 新しいゲームでこれらを埋め込む場合、ゲーム側のコーデックがこの往復を壊していないか
 確認すること（[ADR-0031](../adr/0031-registry-consolidation.md) の登録手順を参照）。
 
-### 1.2 ゲームドメイン (全382ゲーム)
+### 1.2 ゲームドメイン (全383ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1740,7 +1740,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全382ゲーム共通)**
+**Interactor パターン (全383ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1825,8 +1825,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "382ゲーム × CUI/Web = 764 バインディング\n実装型は 730 種類 (CuiController 365 + WebController 365)\n差分は複数ゲームで共有される Controller\n(総称基底 GameWebController[I,P,O] は別)"
-    note for GameCuiPresenter "382ゲーム × CUI/Web = 764 バインディング\n実装型は 732 種類 (CuiPresenter 366 + WebPresenter 366)"
+    note for GameCuiController "383ゲーム × CUI/Web = 766 バインディング\n実装型は 732 種類 (CuiController 366 + WebController 366)\n差分は複数ゲームで共有される Controller\n(総称基底 GameWebController[I,P,O] は別)"
+    note for GameCuiPresenter "383ゲーム × CUI/Web = 766 バインディング\n実装型は 734 種類 (CuiPresenter 367 + WebPresenter 367)"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1865,8 +1865,8 @@ classDiagram
     }
 
     TrumpCardsWeb --> "*" gameEntry : registerAll() over games.All()
-    gameEntry --> GameWebController : holds 382 controllers
-    GameManager --> "*" CuiExecer : holds 382 games
+    gameEntry --> GameWebController : holds 383 controllers
+    GameManager --> "*" CuiExecer : holds 383 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```

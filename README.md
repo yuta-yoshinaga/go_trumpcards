@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した382種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した383種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -96,6 +96,7 @@ Go + Clean Architecture で実装した382種類のトランプゲーム。CLI �
 | ディプロマット (Diplomat) | `diplomat` | [CUI](docs/manual/cui/diplomat.md) / [Web](docs/manual/web/diplomat.md) |
 | ロイヤルコティヨン (Royal Cotillion) | `royalcotillion` | [CUI](docs/manual/cui/royalcotillion.md) / [Web](docs/manual/web/royalcotillion.md) |
 | マトリモニー (Matrimony) | `matrimony` | [CUI](docs/manual/cui/matrimony.md) / [Web](docs/manual/web/matrimony.md) |
+| マリッジ (Marriage) | `marriage` | [CUI](docs/manual/cui/marriage.md) / [Web](docs/manual/web/marriage.md) |
 | クレイジーキルト (Crazy Quilt) | `crazyquilt` | [CUI](docs/manual/cui/crazyquilt.md) / [Web](docs/manual/web/crazyquilt.md) |
 | ジャーマンホイスト (German Whist) | `germanwhist` | [CUI](docs/manual/cui/germanwhist.md) / [Web](docs/manual/web/germanwhist.md) |
 | スロバーハンネス (Slobberhannes) | `slobberhannes` | [CUI](docs/manual/cui/slobberhannes.md) / [Web](docs/manual/web/slobberhannes.md) |

@@ -189,6 +189,7 @@ import type {
   MaoResponse,
   MariasResponse,
   MarjapussiResponse,
+  MarriageResponse,
   MatrimonyResponse,
   MemoryResponse,
   MendikotResponse,
@@ -560,6 +561,7 @@ import { getManilleHint } from '../utils/hints/manilleHint';
 import { getMaoHint } from '../utils/hints/maoHint';
 import { getMariasHint } from '../utils/hints/mariasHint';
 import { getMarjapussiHint } from '../utils/hints/marjapussiHint';
+import { getMarriageHint } from '../utils/hints/marriageHint';
 import { getMatrimonyHint } from '../utils/hints/matrimonyHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getMendikotHint } from '../utils/hints/mendikotHint';
@@ -872,6 +874,7 @@ export const hintFactories = {
   memory: (s) => getMemoryHint(s as MemoryResponse),
   ginrummy: (s) => getGinRummyHint(s as GinRummyResponse),
   indianrummy: (s) => getIndianRummyHint(s as IndianRummyResponse),
+  marriage: (s) => getMarriageHint(s as MarriageResponse),
   machiavelli: (s) => getMachiavelliHint(s as MachiavelliResponse),
   cuarenta: (s) => getCuarentaHint(s as CuarentaResponse),
   cribbage: (s) => getCribbageHint(s as CribbageResponse),
