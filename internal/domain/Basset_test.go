@@ -2,6 +2,7 @@ package domain
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -214,13 +215,62 @@ func TestBasset_PlaceBetValidationAndReplacement(t *testing.T) {
 	if b.GetChips() != BassetDefaultStartChips-100 {
 		t.Fatalf("raised bet chips = %d", b.GetChips())
 	}
-	b.SetChips(0)
-	if err := b.PlayerPlaceBet(8, 10); err == nil {
+	insufficient := newBassetDeterministic(4, 3)
+	insufficient.SetChips(0)
+	if err := insufficient.PlayerPlaceBet(8, 10); err == nil {
 		t.Fatal("insufficient chips unexpectedly succeeded")
 	}
 	b.SetPhase(BassetPhaseDecision)
 	if err := b.PlayerPlaceBet(7, 10); err == nil {
 		t.Fatal("bet in decision phase unexpectedly succeeded")
+	}
+}
+
+func TestBasset_ChangingRankRefundsUnsettledBet(t *testing.T) {
+	b := newBassetDeterministic(4, 3)
+	if err := b.PlayerPlaceBet(1, 100); err != nil {
+		t.Fatal(err)
+	}
+	if err := b.PlayerPlaceBet(2, 40); err != nil {
+		t.Fatal(err)
+	}
+
+	if b.GetChips() != BassetDefaultStartChips-40 {
+		t.Fatalf("rank change chips = %d, want %d", b.GetChips(), BassetDefaultStartChips-40)
+	}
+	if bet, rank := b.GetBet(); bet == nil || rank != 2 || bet.Amount != 40 || bet.Stage != 0 {
+		t.Fatalf("rank change bet = %#v/%d, want amount 40, rank 2, stage 0", bet, rank)
+	}
+}
+
+func TestBasset_CannotChangeRankDuringParoli(t *testing.T) {
+	b := newBassetDeterministic(4, 1, 3, 2)
+	if err := b.PlayerPlaceBet(1, 10); err != nil {
+		t.Fatal(err)
+	}
+	if err := b.PlayerDealTurn(); err != nil {
+		t.Fatal(err)
+	}
+	if err := b.PlayerPressParoli(); err != nil {
+		t.Fatal(err)
+	}
+	chipsBefore := b.GetChips()
+	betBefore, rankBefore := b.GetBet()
+
+	err := b.PlayerPlaceBet(2, 20)
+	if err == nil {
+		t.Fatal("rank change during paroli unexpectedly succeeded")
+	}
+	domainErr, ok := err.(*DomainError)
+	if !ok || domainErr.Sentinel != ErrInvalidPlay || !strings.Contains(strings.ToLower(domainErr.Message), "paroli") {
+		t.Fatalf("rank change error = %v, want invalid-play paroli error", err)
+	}
+	if b.GetChips() != chipsBefore {
+		t.Fatalf("rank change during paroli changed chips to %d, want %d", b.GetChips(), chipsBefore)
+	}
+	betAfter, rankAfter := b.GetBet()
+	if betAfter == nil || betBefore == nil || *betAfter != *betBefore || rankAfter != rankBefore {
+		t.Fatalf("rank change during paroli changed bet: before %#v/%d, after %#v/%d", betBefore, rankBefore, betAfter, rankAfter)
 	}
 }
 

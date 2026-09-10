@@ -39,13 +39,10 @@ type BassetBet struct {
 
 // BassetTurnResult describes the two cards dealt by the bank.
 type BassetTurnResult struct {
-	BankerCard  *Card `json:"bc"`
-	PlayerCard  *Card `json:"pc"`
-	Hit         bool  `json:"ht"`
-	Net         int   `json:"nt"`
-	LosingCard  *Card `json:"-"`
-	WinningCard *Card `json:"-"`
-	Split       bool  `json:"-"`
+	BankerCard *Card `json:"bc"`
+	PlayerCard *Card `json:"pc"`
+	Hit        bool  `json:"ht"`
+	Net        int   `json:"nt"`
 }
 
 // Basset is the single-player Venetian banking game.
@@ -109,8 +106,15 @@ func (b *Basset) PlayerPlaceBet(rank, amount int) error {
 		return NewDomainError(ErrInvalidAmount, "Invalid bet amount.")
 	}
 	previous, stage := 0, 0
-	if b.bet != nil && b.betRank == rank {
-		previous, stage = b.bet.Amount, b.bet.Stage
+	if b.bet != nil {
+		if b.betRank != rank {
+			if b.bet.Stage > 0 {
+				return NewDomainError(ErrInvalidPlay, "Cannot change bet rank during paroli.")
+			}
+			b.chips.AddChips(b.bet.Amount)
+		} else {
+			previous, stage = b.bet.Amount, b.bet.Stage
+		}
 	}
 	delta := amount - previous
 	if delta > 0 && !b.chips.SubtractChips(delta) {
