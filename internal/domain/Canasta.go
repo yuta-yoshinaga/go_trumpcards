@@ -18,6 +18,10 @@ const CanastaHandSize = 15
 // CanastaBurracoHandSize Burraco モードの初期配布枚数 (2人制)
 const CanastaBurracoHandSize = 11
 
+// CanastaBiribaHandSize Biriba モードの初期配布枚数。Burraco と同じ 11 枚で、
+// 配布そのものは usesPozzetto() の分岐が担う。
+const CanastaBiribaHandSize = CanastaBurracoHandSize
+
 // CanastaPozzettoSize Burraco モードのポゼット（予備手札）1山の枚数
 const CanastaPozzettoSize = 11
 
@@ -30,6 +34,7 @@ const (
 	CanastaConcealedGoingOutBonus = 200 // コンシールド上がりボーナス (一度もメルドせずに上がる)
 	CanastaNaturalCanastaBonus    = 500 // ナチュラルカナスタボーナス (ワイルドなし)
 	CanastaMixedCanastaBonus      = 300 // ミックスカナスタボーナス (ワイルドあり)
+	CanastaPureBiribaBonus        = 200 // 純ビリバボーナス (7枚以上・ワイルドなしのシーケンス)
 	CanastaRed3Bonus              = 100 // 赤3のボーナス (1枚あたり)
 	CanastaAllRed3Bonus           = 800 // 赤3全4枚ボーナス
 )
@@ -167,7 +172,7 @@ func (g *Canasta) dealInitialCards() {
 
 	// 各プレイヤーに配布 (Canasta=15枚, Burraco=11枚)
 	handSize := CanastaHandSize
-	if g.config.UsePozzetto {
+	if g.usesPozzetto() {
 		handSize = CanastaBurracoHandSize
 	}
 	for i := 0; i < handSize; i++ {
@@ -181,7 +186,7 @@ func (g *Canasta) dealInitialCards() {
 	}
 
 	// Burraco モード: ポゼット（予備手札）を2山、各11枚ずつ脇に取り分ける
-	if g.config.UsePozzetto {
+	if g.usesPozzetto() {
 		g.pozzetti = make([][]*Card, 0, CanastaPlayerCnt)
 		for p := 0; p < CanastaPlayerCnt; p++ {
 			pile := make([]*Card, 0, CanastaPozzettoSize)
@@ -246,7 +251,7 @@ func (g *Canasta) autoLayRed3s(playerIdx int) {
 // （予備手札）を1山獲得して手札に加える。取得した場合 true を返す。
 func (g *Canasta) takePozzetto(playerIdx int) bool {
 	player := g.players[playerIdx]
-	if !g.config.UsePozzetto || player.tookPozzetto || len(g.pozzetti) == 0 {
+	if !g.usesPozzetto() || player.tookPozzetto || len(g.pozzetti) == 0 {
 		return false
 	}
 	pile := g.pozzetti[len(g.pozzetti)-1]
@@ -266,7 +271,7 @@ func (g *Canasta) takePozzetto(playerIdx int) bool {
 // カナスタ（ブラーコ）完成が必要。Canasta モードではカナスタ完成のみ。
 func (g *Canasta) canGoOut(playerIdx int) bool {
 	p := g.players[playerIdx]
-	if g.config.UsePozzetto && !p.tookPozzetto {
+	if g.usesPozzetto() && !p.tookPozzetto {
 		return false
 	}
 	return p.HasCanasta()
@@ -626,7 +631,7 @@ func (g *Canasta) PlayerMeld(meldGroups [][]int) error {
 
 	// 手札を出し切った場合の処理
 	if player.GetCardsSize() == 0 {
-		if g.config.UsePozzetto && !player.tookPozzetto {
+		if g.usesPozzetto() && !player.tookPozzetto {
 			// Burraco: 初めて手札を出し切った → ポゼットを獲得して継続
 			g.takePozzetto(g.currentPlayerIdx)
 		} else if player.HasCanasta() {
@@ -693,7 +698,7 @@ func (g *Canasta) PlayerDiscard(cardIndex int) error {
 	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 
 	// Burraco: 捨て札で手札を出し切り、まだポゼット未獲得なら獲得する
-	if g.config.UsePozzetto && player.GetCardsSize() == 0 && !player.tookPozzetto {
+	if g.usesPozzetto() && player.GetCardsSize() == 0 && !player.tookPozzetto {
 		g.takePozzetto(g.currentPlayerIdx)
 	}
 
@@ -715,7 +720,7 @@ func (g *Canasta) PlayerGoOut() error {
 
 	player := g.players[g.currentPlayerIdx]
 
-	if g.config.UsePozzetto && !player.tookPozzetto {
+	if g.usesPozzetto() && !player.tookPozzetto {
 		return NewDomainError(ErrInvalidPlay, "上がるにはポゼット（予備手札）を獲得している必要があります")
 	}
 	if !player.HasCanasta() {
@@ -918,7 +923,7 @@ func (g *Canasta) cpuMeld() {
 
 	// 手札を出し切った場合の処理
 	if player.GetCardsSize() == 0 {
-		if g.config.UsePozzetto && !player.tookPozzetto {
+		if g.usesPozzetto() && !player.tookPozzetto {
 			g.takePozzetto(g.currentPlayerIdx)
 		} else if player.HasCanasta() {
 			g.goOut(g.currentPlayerIdx, false)
@@ -937,10 +942,10 @@ func (g *Canasta) cpuDiscard() {
 	// prior meld emptied the hand but HasCanasta() was false so goOut didn't
 	// fire), do not try to discard — that path panics via RemoveCard → nil.
 	if player.GetCardsSize() == 0 {
-		if g.config.UsePozzetto && !player.tookPozzetto {
+		if g.usesPozzetto() && !player.tookPozzetto {
 			// Burraco: 手札を出し切ったがポゼット未獲得 → 獲得して継続
 			g.takePozzetto(g.currentPlayerIdx)
-		} else if g.config.UsePozzetto {
+		} else if g.usesPozzetto() {
 			// Burraco: ポゼット獲得済みだがブラーコ未完成 → 捨てられないので進む
 			g.advanceTurn()
 			return
@@ -1016,6 +1021,10 @@ func (g *Canasta) cpuFindNaturalPair(player *CanastaPlayer, topCard *Card) []int
 
 // cpuFindMelds CPUのメルド候補を見つける
 func (g *Canasta) cpuFindMelds(player *CanastaPlayer) [][]*Card {
+	if g.config.UseBiriba {
+		return g.cpuFindBiribaMelds(player)
+	}
+
 	var melds [][]*Card
 
 	// 手札をランクごとにグループ化
@@ -1055,6 +1064,37 @@ func (g *Canasta) cpuFindMelds(player *CanastaPlayer) [][]*Card {
 		}
 	}
 
+	return melds
+}
+
+// cpuFindBiribaMelds finds the longest natural same-suit runs available to
+// the CPU. Wild cards are left available for later additions; a natural run
+// is always a legal Biriba meld on its own.
+func (g *Canasta) cpuFindBiribaMelds(player *CanastaPlayer) [][]*Card {
+	bySuit := make(map[int][]*Card)
+	for i := 0; i < player.GetCardsSize(); i++ {
+		c := player.GetCard(i)
+		if !CanastaIsWild(c) && !CanastaIsRed3(c) && !CanastaIsBlack3(c) {
+			bySuit[c.GetDesign()] = append(bySuit[c.GetDesign()], c)
+		}
+	}
+	var melds [][]*Card
+	for _, cards := range bySuit {
+		sort.Slice(cards, func(i, j int) bool { return cards[i].GetValue() < cards[j].GetValue() })
+		run := make([]*Card, 0, len(cards))
+		for _, card := range cards {
+			if len(run) > 0 && card.GetValue() != run[len(run)-1].GetValue()+1 {
+				if len(run) >= 3 {
+					melds = append(melds, run)
+				}
+				run = nil
+			}
+			run = append(run, card)
+		}
+		if len(run) >= 3 {
+			melds = append(melds, run)
+		}
+	}
 	return melds
 }
 
@@ -1154,7 +1194,9 @@ func (g *Canasta) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 			}
 			// カナスタボーナス
 			if m.IsCanasta() {
-				if m.IsNatural {
+				if g.config.UseBiriba && m.IsNatural {
+					score += CanastaPureBiribaBonus
+				} else if m.IsNatural {
 					score += CanastaNaturalCanastaBonus
 				} else {
 					score += CanastaMixedCanastaBonus
@@ -1251,6 +1293,10 @@ func (g *Canasta) validateNewMeld(cards []*Card) error {
 		return NewDomainError(ErrInvalidPlay, "メルドには最低3枚のカードが必要です")
 	}
 
+	if g.config.UseBiriba {
+		return validateBiribaSequence(cards)
+	}
+
 	var naturalCount, wildCount int
 	rank := 0
 	for _, c := range cards {
@@ -1290,6 +1336,11 @@ func (g *Canasta) validateNewMeld(cards []*Card) error {
 
 // validateMeldAddition 既存メルドへの追加の検証
 func (g *Canasta) validateMeldAddition(existing *CanastaMeld, cards []*Card) error {
+	if g.config.UseBiriba {
+		combined := append(append([]*Card{}, existing.Cards...), cards...)
+		return validateBiribaSequence(combined)
+	}
+
 	rank := existing.GetRank()
 	existingWildCount := 0
 	for _, c := range existing.Cards {
@@ -1320,6 +1371,15 @@ func (g *Canasta) validateMeldAddition(existing *CanastaMeld, cards []*Card) err
 // findExistingMeldForCards カードが追加できる既存メルドのインデックスを返す (-1 = なし)
 func (g *Canasta) findExistingMeldForCards(playerIdx int, cards []*Card) int {
 	player := g.players[playerIdx]
+	if g.config.UseBiriba {
+		for i, m := range player.melds {
+			combined := append(append([]*Card{}, m.Cards...), cards...)
+			if validateBiribaSequence(combined) == nil {
+				return i
+			}
+		}
+		return -1
+	}
 	// カードのランクを特定（ナチュラルカードから）
 	rank := 0
 	for _, c := range cards {
@@ -1338,6 +1398,58 @@ func (g *Canasta) findExistingMeldForCards(playerIdx int, cards []*Card) int {
 		}
 	}
 	return -1
+}
+
+// usesPozzetto reports whether the reserve-hand mechanic is active.
+func (g *Canasta) usesPozzetto() bool { return g.config.UsePozzetto || g.config.UseBiriba }
+
+// validateBiribaSequence validates a same-suit consecutive meld. Wild cards
+// occupy gaps in the sequence; the public meld API does not require cards to
+// be supplied in rank order.
+func validateBiribaSequence(cards []*Card) error {
+	if len(cards) < 3 {
+		return NewDomainError(ErrInvalidPlay, "メルドには最低3枚のカードが必要です")
+	}
+	naturalCount, wildCount := 0, 0
+	suit, minRank, maxRank := 0, 0, 0
+	seen := make(map[int]bool)
+	for _, c := range cards {
+		if CanastaIsWild(c) {
+			wildCount++
+			continue
+		}
+		if CanastaIsBlack3(c) {
+			return NewDomainError(ErrInvalidPlay, "黒3はメルドできません")
+		}
+		naturalCount++
+		if suit == 0 {
+			suit = c.GetDesign()
+		} else if c.GetDesign() != suit {
+			return NewDomainError(ErrInvalidPlay, "シーケンスは同じスートで構成する必要があります")
+		}
+		rank := c.GetValue()
+		if seen[rank] {
+			return NewDomainError(ErrInvalidPlay, "シーケンスに同じランクを重複させることはできません")
+		}
+		seen[rank] = true
+		if minRank == 0 || rank < minRank {
+			minRank = rank
+		}
+		if rank > maxRank {
+			maxRank = rank
+		}
+	}
+	if naturalCount < 2 {
+		return NewDomainError(ErrInvalidPlay, "メルドにはナチュラルカードが最低2枚必要です")
+	}
+	if wildCount > 3 {
+		return NewDomainError(ErrInvalidPlay, "メルドにはワイルドカードは最大3枚までです")
+	}
+	missing := (maxRank - minRank + 1) - naturalCount
+	if missing > wildCount {
+		return NewDomainError(ErrInvalidPlay, "シーケンスのランクが連続していません")
+	}
+	return nil
 }
 
 // minimumMeldValue 初回メルドの最低点を返す

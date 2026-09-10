@@ -152,6 +152,8 @@ tags:
     description: Hand and Foot (ハンド・アンド・フット) — 4-player team Canasta variant
   - name: burraco
     description: Burraco (ブラーコ) — Canasta-derived rummy with pozzetto reserve hands
+  - name: biriba
+    description: Biriba (ビリバ) — Greek partnership rummy using same-suit sequences
   - name: pinochle
     description: Pinochle (ピノクル) game
   - name: spider
@@ -4130,6 +4132,81 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BurracoResponse'
+
+  /biriba/exec:
+    post:
+      tags:
+        - biriba
+      summary: Execute a Biriba game command
+      description: |
+        Send a command to advance the Biriba (ビリバ) game session identified by
+        `sessionId`. Biriba is a four-player partnership rummy game using two
+        52-card decks and two Jokers (106 cards). Each player receives 11 cards
+        and two kozes reserve hands are set aside. Melds are same-suit rank
+        sequences; Jokers and 2s are wild. The first team to empty its initial
+        hand takes a kozes, and a seven-card sequence without a wild is a pure
+        Biriba. Going out after using both kozes earns the additional bonus.
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Draw         | `0`   | Draw from stock or pick up discard pile |
+        | Meld         | `1`   | Meld sequences or skip |
+        | Discard      | `2`   | Discard a card or go out |
+        | RoundEnd     | `3`   | Round scored; advance with `nextround` |
+        | GameEnd      | `4`   | A team reached the point limit |
+
+        Burraco differs from Biriba: Burraco uses same-rank sets, while Biriba
+        uses same-suit sequences; they are not merely different names.
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `drawstock`    | `ds`    | Draw a card from the stock pile |
+        | `drawdiscard`  | `dd`    | Pick up the discard pile (requires `naturalPairIndices`) |
+        | `meld`         | `m`     | Meld sequences (requires `meldGroups`) |
+        | `skipmeld`     | `sm`    | Skip meld phase |
+        | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
+        | `goout`        | `go`    | Go out after both kozes are used |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `hint`         | `h`     | Get a hint for the next move |
+        | `log`          | `l`     | View action log |
+      operationId: biribaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BiribaRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              meld:
+                summary: Meld a same-suit sequence
+                value:
+                  command: meld
+                  meldGroups: [[0, 1, 2]]
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/BiribaResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+                description: |
+                  The shape depends on the command. Ordinary commands return the game
+                  state; `log` returns the action log instead.
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BiribaResponse'
 
   /pinochle/exec:
     post:
@@ -48392,6 +48469,110 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Biriba types
+    # -------------------------------------------------------------------------
+    BiribaRequest:
+      type: object
+      required: [command, sessionId]
+      properties:
+        command:
+          type: string
+          description: Accepted commands include reset, drawstock, drawdiscard, meld, skipmeld, discard, goout, nextround, log, and hint.
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, skipmeld, sm, discard, d, goout, go, nextround, nr, log, l, hint, h]
+        n:
+          type: integer
+          description: Optional numeric argument shared by Web inputs.
+        cardIndex:
+          type: integer
+          description: Card index required for `discard`.
+        naturalPairIndices:
+          type: array
+          description: Two natural-card indices required for `drawdiscard`.
+          items: {type: integer}
+        meldGroups:
+          type: array
+          description: Card-index groups forming same-suit sequences for `meld`.
+          items:
+            type: array
+            items: {type: integer}
+        config:
+          type: object
+          properties:
+            cpuDifficulty: {type: integer, minimum: 0, maximum: 2}
+            pointLimit: {type: integer, minimum: 1, maximum: 100000}
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    BiribaResponse:
+      type: object
+      description: Current state of the Biriba game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id: {type: integer}
+              isHuman: {type: boolean}
+              cardCount: {type: integer}
+              cards:
+                type: array
+                items: {$ref: '#/components/schemas/Card'}
+              melds:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    cards:
+                      type: array
+                      items: {$ref: '#/components/schemas/Card'}
+                    isNatural: {type: boolean}
+                    isBiriba: {type: boolean}
+                    rank: {type: integer}
+              red3Count: {type: integer}
+              red3s:
+                type: array
+                items: {$ref: '#/components/schemas/Card'}
+              roundScore: {type: integer}
+              cumulativeScore: {type: integer}
+              hasBiriba: {type: boolean}
+              hasInitMeld: {type: boolean}
+              tookPozzetto: {type: boolean}
+        phase: {type: integer, enum: [0, 1, 2, 3, 4]}
+        roundNumber: {type: integer}
+        currentPlayerIdx: {type: integer}
+        discardTop: {$ref: '#/components/schemas/Card'}
+        discardPile:
+          type: array
+          items: {$ref: '#/components/schemas/Card'}
+        drawPileCount: {type: integer}
+        discardPileCount: {type: integer}
+        pozzettoCount: {type: integer}
+        isFrozen: {type: boolean}
+        gameEndFlag: {type: boolean}
+        winnerIdx: {type: integer}
+        hint:
+          type: object
+          properties:
+            action: {type: string}
+            indices:
+              type: array
+              items: {type: integer}
+            reason: {type: string}
+        config:
+          type: object
+          properties:
+            cpuDifficulty: {type: integer}
+            pointLimit: {type: integer}
+        message: {type: string}
+        messageCode: {type: string}
+        messageParams:
+          type: object
+          additionalProperties: {type: string}
 
     # -------------------------------------------------------------------------
     # Pinochle types

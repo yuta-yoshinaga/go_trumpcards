@@ -1920,4 +1920,9 @@ func init() {
 			return usecase.NewTappTarockInteractor(domain.NewDefaultTappTarock(), new(presenter.TappTarockWebPresenter))
 		},
 		controller.NewTappTarockWebController)
+	BindWebControllerFor("biriba",
+		func() usecase.BiribaInteractorIF {
+			return usecase.NewBiribaInteractor(domain.NewDefaultBiriba(), new(presenter.BiribaWebPresenter))
+		},
+		controller.NewBiribaWebController)
 }

@@ -391,6 +391,7 @@ var gameDescriptions = map[string]string{
 	"basset":              "Basset (バセット)",
 	"tehonbiki":           "Tehonbiki (手本引き)",
 	"tapptarock":          "Tapp Tarock (タップ・タロック)",
+	"biriba":              "Biriba (ビリバ) — pure same-suit-sequence rummy, 106 cards including two jokers (純ビリバ・同スートのシーケンス・106枚、ジョーカー2枚)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

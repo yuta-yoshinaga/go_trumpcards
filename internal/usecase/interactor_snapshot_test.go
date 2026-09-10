@@ -186,6 +186,13 @@ type stubGinRummyPresenter struct{}
 func (s *stubGinRummyPresenter) Output(_ interfaces.GinRummyGame, _ error) string { return `{}` }
 func (s *stubGinRummyPresenter) ActionLogOutput(_ interfaces.GinRummyGame) string { return `{}` }
 
+// stubBiribaPresenter implements presenter.BiribaPresenter (= GamePresenter[interfaces.BiribaGame] + HintOutput).
+type stubBiribaPresenter struct{}
+
+func (s *stubBiribaPresenter) Output(_ interfaces.BiribaGame, _ error) string { return `{}` }
+func (s *stubBiribaPresenter) ActionLogOutput(_ interfaces.BiribaGame) string { return `{}` }
+func (s *stubBiribaPresenter) HintOutput(_ interfaces.BiribaGame) string      { return `{}` }
+
 // stubCribbagePresenter implements presenter.CribbagePresenter
 type stubCribbagePresenter struct{}
 
@@ -618,6 +625,17 @@ func TestPaiGowInteractor_SnapshotRestore(t *testing.T) {
 	require.NoError(t, err)
 
 	restored, err := RestorePaiGowInteractor(data, new(stubPaiGowPresenter))
+	require.NoError(t, err)
+	require.NotNil(t, restored)
+}
+
+func TestBiribaInteractor_SnapshotRestore(t *testing.T) {
+	bi := NewBiribaInteractor(domain.NewDefaultBiriba(), new(stubBiribaPresenter))
+
+	data, err := bi.Snapshot()
+	require.NoError(t, err)
+
+	restored, err := RestoreBiribaInteractor(data, new(stubBiribaPresenter))
 	require.NoError(t, err)
 	require.NotNil(t, restored)
 }

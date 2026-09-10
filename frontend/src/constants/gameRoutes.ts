@@ -2706,6 +2706,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 5, 1], skill: [1, 3, 5, 1], social: [1, 3, 5, 1, 4], theme: [2, 3, 3, 1, 2, 2] },
       },
       {
+        path: '/biriba',
+        labelKey: 'nav.biriba',
+        icon: '🎴',
+        page: 'Biriba',
+        profile: { mood: [2, 3, 5, 1], skill: [1, 3, 5, 1], social: [1, 3, 5, 1, 4], theme: [2, 3, 3, 1, 2, 2] },
+      },
+      {
         path: '/cribbage',
         labelKey: 'nav.cribbage',
         icon: '📌',

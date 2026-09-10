@@ -44,6 +44,7 @@ export * from './games/bigo';
 export * from './games/bigohilo';
 export * from './games/bigtwo';
 export * from './games/binokel';
+export * from './games/biriba';
 export * from './games/bisley';
 export * from './games/blackhole';
 export * from './games/blackjack';
@@ -499,6 +500,7 @@ export const games = [
   'bolivia',
   'handandfoot',
   'burraco',
+  'biriba',
   'spider',
   'indianpoker',
   'videopoker',

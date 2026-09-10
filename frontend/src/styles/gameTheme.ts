@@ -381,6 +381,7 @@ export type GameKey =
   | 'samba'
   | 'handandfoot'
   | 'burraco'
+  | 'biriba'
   | 'cribbage'
   | 'sevenbridge'
   | 'contractrummy'
@@ -1019,6 +1020,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   samba: SAMBA,
   handandfoot: BLUE,
   burraco: GREEN,
+  biriba: GREEN,
   cribbage: BLUE,
   sevenbridge: BLUE,
   contractrummy: BLUE,
