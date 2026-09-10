@@ -7360,6 +7360,25 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			SettingKeys: []string{"blackjack.helpSetCpuCount"},
 		}),
+	BindCuiFor("basset",
+		func() usecase.BassetInteractorIF {
+			return usecase.NewBassetInteractor(domain.NewDefaultBasset(), new(presenter.BassetCuiPresenter))
+		},
+		controller.NewBassetCuiController,
+		CuiHelpSpec{
+			TitleKey: "basset.helpTitle",
+			ExampleKeys: []string{
+				"basset.helpExampleBet",
+			},
+			CommandKeys: []string{
+				"basset.helpBet",
+				"basset.helpDeal",
+				"basset.helpTake",
+				"basset.helpParoli",
+				"basset.helpNext",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -7390,6 +7409,7 @@ func GameDescriptions() map[string]string {
 // GameAliases maps short alias names to their canonical game names.
 // Aliases are not shown in help or game lists.
 var GameAliases = map[string]string{
+	"bass":    "basset",
 	"7stud":   "sevencardstud",
 	"7cs":     "sevencardstud",
 	"clock":   "clocksolitaire",

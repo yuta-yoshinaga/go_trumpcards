@@ -12,6 +12,11 @@ describe('gameTheme', () => {
     expect(gameTheme.quinze.bg).toContain('casino');
   });
 
+  it('Basset uses the Faro-style casino theme', () => {
+    expect(gameTheme.basset.bg).toContain('faro');
+    expect(gameTheme.basset.footer).toContain('faro-dark');
+  });
+
   it('poker games use green-poker theme', () => {
     expect(gameTheme.holdem.bg).toContain('green-poker');
     expect(gameTheme.omaha.bg).toContain('green-poker');

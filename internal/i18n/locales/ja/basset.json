@@ -1,0 +1,3 @@
+{
+  "helpTitle": "バセット", "helpBet": "  b <ランク> <金額>  賭ける", "helpExampleBet": "  b 7 10              ランク 7 に 10 賭ける", "helpDeal": "  d  2枚めくる", "helpTake": "  take  配当を受け取る", "helpParoli": "  paroli  賭け金を残して倍率を上げる", "helpNext": "  n  次のディール", "chipsLine": "チップ: {{chips}}", "phaseLine": "フェーズ: {{phase}}", "betLine": "ランク {{rank}}: {{amount}}", "promptDecision": "配当を受け取るかパロリを選んでください。", "errBetArgs": "使い方: b <ランク> <金額>"
+}

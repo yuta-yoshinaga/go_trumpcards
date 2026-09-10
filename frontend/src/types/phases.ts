@@ -3125,6 +3125,15 @@ export const FaroPhase = {
   GAME_END: 5,
 } as const;
 
+/** Basset phase constants (sync: internal/domain/Basset.go). */
+export const BassetPhase = {
+  BETTING: 1,
+  TURN: 2,
+  DECISION: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
 /** Open Face Chinese Poker (OFC) phase constants (sync: internal/domain/OpenFaceChinese.go). */
 export const OpenFaceChinesePhase = {
   PLACING: 0,

@@ -386,4 +386,12 @@ func init() {
 			return usecase.RestoreSchafkopfInteractor(data, new(presenter.SchafkopfWebPresenter))
 		},
 		controller.NewSchafkopfWebControllerWithProvider)
+	games.RegisterKVGame("basset", games.CategoryExtra4,
+		func() usecase.BassetInteractorIF {
+			return usecase.NewBassetInteractor(domain.NewDefaultBasset(), new(presenter.BassetWebPresenter))
+		},
+		func(data []byte) (usecase.BassetInteractorIF, error) {
+			return usecase.RestoreBassetInteractor(data, new(presenter.BassetWebPresenter))
+		},
+		controller.NewBassetWebControllerWithProvider)
 }

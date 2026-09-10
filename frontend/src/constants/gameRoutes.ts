@@ -1178,6 +1178,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 3, 2, 4], skill: [2, 2, 4, 1], social: [5, 2, 1, 3, 2], theme: [1, 1, 5, 1, 2, 2] },
       },
       {
+        path: '/basset',
+        labelKey: 'nav.basset',
+        icon: '🎴',
+        page: 'Basset',
+        profile: { mood: [4, 3, 4, 3], skill: [3, 4, 4, 2], social: [3, 5, 1, 4, 3], theme: [5, 1, 2, 1, 4, 2] },
+      },
+      {
         path: '/openfacechinese',
         labelKey: 'nav.openfacechinese',
         icon: '🀄',

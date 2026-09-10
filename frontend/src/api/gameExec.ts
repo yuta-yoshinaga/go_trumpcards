@@ -78,6 +78,7 @@ export const workerUrl: Record<string, string> = {
   ristikontra: WORKER_EXTRA2,
   cuarenta: WORKER_EXTRA2,
   faro: WORKER_EXTRA2,
+  basset: WORKER_EXTRA4,
   openfacechinese: WORKER_CASINO,
   calculation: WORKER_SOLO,
   sirtommy: WORKER_EXTRA2,

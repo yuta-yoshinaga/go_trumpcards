@@ -1,0 +1,27 @@
+{
+  "chips": "チップ: {{count}}",
+  "turns": "ターン: {{played}}/{{total}}",
+  "remaining": "残り: {{count}}",
+  "bet": "賭け",
+  "noBet": "賭けなし",
+  "bankerCard": "親の札",
+  "playerCard": "子の札",
+  "placeBet": "賭ける",
+  "deal": "2枚めくる",
+  "take": "配当を受け取る",
+  "paroli": "パロリ",
+  "next": "次のディール",
+  "phase": {
+    "betting": "ベット",
+    "turn": "進行",
+    "decision": "選択",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "tutorial": {
+    "info": "ランクを選びチップを賭けます。",
+    "layout": "親の札が先、子の札が後にめくられます。",
+    "deal": "子の札が的中するとパロリを選べます。",
+    "resetButton": "ディールをリセットします。"
+  }
+}

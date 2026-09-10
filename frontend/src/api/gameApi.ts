@@ -29,6 +29,7 @@ export * from './games/banluck';
 export * from './games/barbu';
 export * from './games/baseballpoker';
 export * from './games/basra';
+export * from './games/basset';
 export * from './games/batak';
 export * from './games/bauernschnapsen';
 export * from './games/beggarmyneighbour';
@@ -704,6 +705,7 @@ export const games = [
   'ristikontra',
   'cuarenta',
   'faro',
+  'basset',
   'openfacechinese',
   'russianbank',
   'shamrocks',

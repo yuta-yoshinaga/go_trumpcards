@@ -1,0 +1,3 @@
+{
+  "helpTitle": "Basset", "helpBet": "  b <rank> <amount>  place a wager", "helpExampleBet": "  b 7 10              place a wager on rank 7", "helpDeal": "  d  deal two cards", "helpTake": "  take  receive winnings", "helpParoli": "  paroli  leave the stake and increase the payout", "helpNext": "  n  start the next deal", "chipsLine": "chips: {{chips}}", "phaseLine": "phase: {{phase}}", "betLine": "bet rank {{rank}}: {{amount}}", "promptDecision": "Choose take or paroli.", "errBetArgs": "Usage: b <rank> <amount>"
+}
