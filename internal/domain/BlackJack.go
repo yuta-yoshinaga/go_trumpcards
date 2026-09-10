@@ -87,6 +87,19 @@ func NewSpanish21BlackJack() *BlackJack {
 	return bj
 }
 
+// NewDoubleExposureBlackJack ダブルエクスポージャー・ブラックジャックを生成するファクトリ関数
+func NewDoubleExposureBlackJack() *BlackJack {
+	variant := DoubleExposureVariant()
+	bj := NewBlackJack(NewTrumpCardsWithDecks(BJDefaultDecks, 0), NewBlackJackPlayer(), NewBlackJackPlayer())
+	bj.player.SetChips(BJDefaultChips)
+	bj.dealer.SetChips(BJDefaultChips)
+	bj.deckCount = BJDefaultDecks
+	bj.config = DefaultBlackJackConfig()
+	bj.config.Variant = variant.Name
+	bj.variant = variant
+	return bj
+}
+
 // NewBlackJack コンストラクタ
 func NewBlackJack(trumpCards *TrumpCards, player *BlackJackPlayer, dealer *BlackJackPlayer) *BlackJack {
 	// 初期状態でもシャッフルしておく（Reset前にbetが呼ばれた場合の予測可能性を防ぐ）
@@ -254,7 +267,8 @@ func (b *BlackJack) PlayerBet(amount, ppBet, t3Bet, handCount int) error {
 	}
 
 	// ディーラーの表向きカード(1枚目)がエースならインシュランス可能
-	if b.dealer.GetCard(0) != nil && b.dealer.GetCard(0).GetValue() == 1 {
+	insuranceDisabled := b.variant != nil && b.variant.InsuranceDisabled
+	if b.dealer.GetCard(0) != nil && b.dealer.GetCard(0).GetValue() == 1 && !insuranceDisabled {
 		b.insuranceAvailable = true
 		b.phase = BJPhaseInsurance
 		b.cpuInsurance()

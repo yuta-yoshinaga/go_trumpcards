@@ -741,6 +741,7 @@ export const hintFactories = {
   bideuchre: (s) => getBidEuchreHint(s as BidEuchreResponse),
   blackjack: (s) => getBlackjackHint(s as BlackJackResponse),
   spanish21: (s) => getBlackjackHint(s as BlackJackResponse),
+  doubleexposure: (s) => getBlackjackHint(s as BlackJackResponse),
   pontoon: (s) => getPontoonHint(s as PontoonResponse),
   poker: (s) => getPokerHint(s as PokerResponse),
   handandfoot: (s) => getHandAndFootHint(s as HandAndFootResponse),

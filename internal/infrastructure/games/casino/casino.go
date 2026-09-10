@@ -254,6 +254,14 @@ func init() {
 			return usecase.RestoreBlackJackInteractor(data, new(presenter.BlackJackWebPresenter))
 		},
 		controller.NewBlackJackWebControllerWithProvider)
+	games.RegisterKVGame("doubleexposure", games.CategoryCasino,
+		func() usecase.BlackJackInteractorIF {
+			return usecase.NewBlackJackInteractor(domain.NewDoubleExposureBlackJack(), new(presenter.BlackJackWebPresenter))
+		},
+		func(data []byte) (usecase.BlackJackInteractorIF, error) {
+			return usecase.RestoreBlackJackInteractor(data, new(presenter.BlackJackWebPresenter))
+		},
+		controller.NewBlackJackWebControllerWithProvider)
 	games.RegisterKVGame("blackjackswitch", games.CategoryCasino,
 		func() usecase.BlackJackSwitchInteractorIF {
 			return usecase.NewBlackJackSwitchInteractor(domain.NewDefaultBlackJackSwitch(), new(presenter.BlackJackSwitchWebPresenter))

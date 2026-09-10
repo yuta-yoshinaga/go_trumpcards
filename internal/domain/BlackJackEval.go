@@ -133,6 +133,9 @@ func (b *BlackJack) judgeHandCore(hand *BlackJackHand, fromSplit bool) GameResul
 	if playerBJ && dealerBJ && b.variant != nil && b.variant.PlayerBJBeatsDealerBJ {
 		return GameResultWin
 	}
+	if b.variant != nil && b.variant.DealerWinsTies {
+		return GameResultLose
+	}
 
 	return GameResultDraw
 }
@@ -168,6 +171,12 @@ func (b *BlackJack) payoutHandWithVariant(player *BlackJackPlayer, hand *BlackJa
 			player.AddChips(bet + bet*bonus.MultiplierNum/bonus.MultiplierDen)
 			return bonus
 		}
+	}
+	if result == GameResultWin && hand.IsBlackJack() && !fromSplit &&
+		b.variant != nil && b.variant.BlackjackPaysEven {
+		bet := hand.GetBet()
+		player.AddChips(bet * 2)
+		return nil
 	}
 	payoutHand(player, hand, fromSplit, result)
 	return nil

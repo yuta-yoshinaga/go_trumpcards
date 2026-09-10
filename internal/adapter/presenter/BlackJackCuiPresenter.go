@@ -118,9 +118,17 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		b.WriteString(cuiCardListStr(dealer))
 		b.WriteString("\n")
 	} else {
-		b.WriteString("\n")
 		if dealer.GetCardsSize() > 0 {
-			fmt.Fprintf(&b, "%s, %s\n", cuiCardStr(dealer.GetCard(0)), i18n.T("blackjack.hiddenCard"))
+			if variant := bj.GetVariant(); variant != nil && variant.DealerCardsFaceUp {
+				fmt.Fprintf(&b, "%d\n", dealer.GetScore())
+				b.WriteString(cuiCardListStr(dealer))
+				b.WriteString("\n")
+			} else {
+				b.WriteString("\n")
+				fmt.Fprintf(&b, "%s, %s\n", cuiCardStr(dealer.GetCard(0)), i18n.T("blackjack.hiddenCard"))
+			}
+		} else {
+			b.WriteString("\n")
 		}
 	}
 	b.WriteString("----------\n")

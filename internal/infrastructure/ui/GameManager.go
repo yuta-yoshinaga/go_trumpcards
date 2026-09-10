@@ -7341,6 +7341,25 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("doubleexposure",
+		func() usecase.BlackJackInteractorIF {
+			return usecase.NewBlackJackInteractor(domain.NewDoubleExposureBlackJack(), new(presenter.BlackJackCuiPresenter))
+		},
+		controller.NewBlackJackCuiController,
+		CuiHelpSpec{
+			TitleKey:    "doubleexposure.helpTitle",
+			ExampleKeys: []string{"doubleexposure.helpExampleH"},
+			CommandKeys: []string{
+				"blackjack.helpBet",
+				"blackjack.helpHit",
+				"blackjack.helpStand",
+				"blackjack.helpDouble",
+				"blackjack.helpSplit",
+				"blackjack.helpInsurance",
+				"blackjack.helpDeclineInsurance", "blackjack.helpLog",
+			},
+			SettingKeys: []string{"blackjack.helpSetCpuCount"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -7401,6 +7420,8 @@ var GameAliases = map[string]string{
 	"mstud":   "mississippistud",
 	"sp21":    "spanish21",
 	"s21":     "spanish21",
+	"de":      "doubleexposure",
+	"double":  "doubleexposure",
 	"rummy":   "rummy500",
 	"500":     "rummy500",
 	"r500":    "rummy500",

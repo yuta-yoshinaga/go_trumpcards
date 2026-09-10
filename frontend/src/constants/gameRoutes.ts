@@ -80,6 +80,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 2, 3, 4], skill: [3, 5, 4, 2], social: [3, 5, 2, 3, 3], theme: [5, 1, 1, 1, 3, 1] },
       },
       {
+        path: '/doubleexposure',
+        labelKey: 'nav.doubleexposure',
+        icon: '👀',
+        page: 'DoubleExposure',
+        profile: { mood: [3, 2, 3, 4], skill: [3, 5, 4, 2], social: [3, 5, 2, 3, 3], theme: [5, 1, 1, 1, 3, 1] },
+      },
+      {
         path: '/baccarat',
         labelKey: 'nav.baccarat',
         icon: '💎',

@@ -64,7 +64,12 @@ func (bjp *BlackJackWebPresenter) buildDealerOutput(bj interfaces.BlackJackGame)
 		out.Score = dealer.GetScore()
 		out.Cards = playerCardsToOutput(dealer, true)
 	} else if dealer.GetCardsSize() > 0 {
-		out.Cards = append(out.Cards, cardToOutput(dealer.GetCard(0)))
+		if variant := bj.GetVariant(); variant != nil && variant.DealerCardsFaceUp {
+			out.Score = dealer.GetScore()
+			out.Cards = playerCardsToOutput(dealer, true)
+		} else {
+			out.Cards = append(out.Cards, cardToOutput(dealer.GetCard(0)))
+		}
 	}
 	return out
 }

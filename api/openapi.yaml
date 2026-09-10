@@ -142,6 +142,8 @@ tags:
     description: Mao (マオ) — Crazy Eights shedding game with magic cards (2/A/8) plus a secret hidden rule
   - name: spanish21
     description: Spanish 21 (スパニッシュ21) — BlackJack variant with 48-card deck and bonus payouts
+  - name: doubleexposure
+    description: Double Exposure Blackjack (ダブルエクスポージャー・ブラックジャック) game
   - name: canasta
     description: Canasta (カナスタ) game
   - name: handandfoot
@@ -15813,6 +15815,60 @@ paths:
             examples:
               reset:
                 summary: Start a new Spanish 21 game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/BlackJackResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+                description: |
+                  The shape depends on the command. Ordinary commands return the game
+                  state; `log` returns the action log instead.
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlackJackResponse'
+
+  /doubleexposure/exec:
+    post:
+      tags:
+        - doubleexposure
+      summary: Execute a Double Exposure Blackjack game command
+      description: |
+        Send a command to advance the Double Exposure Blackjack (ダブルエクスポージャー・ブラックジャック) game session
+        identified by `sessionId`. Double Exposure Blackjack exposes both dealer cards
+        from the initial deal, including the dealer's score. It uses a 6-8-deck shoe.
+        Ordinary ties go to the
+        dealer, except natural BJ versus natural BJ, which the player wins. A player
+        natural BJ pays even money (1:1), not the standard 3:2. Hit, stand, double,
+        split, and bust rules otherwise match `/blackjack/exec`.
+
+        See the BlackJack endpoint for the full command reference; the request
+        and response payloads are byte-for-byte compatible.
+      operationId: doubleexposureExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlackJackRequest'
+            examples:
+              reset:
+                summary: Start a new Double Exposure Blackjack game
                 value:
                   command: reset
                   sessionId: my-session-001

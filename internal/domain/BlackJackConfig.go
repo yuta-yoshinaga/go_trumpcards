@@ -77,7 +77,7 @@ func (c BlackJackConfig) Validate() error {
 		}
 	}
 	switch c.Variant {
-	case BJVariantStandard, BJVariantSpanish21:
+	case BJVariantStandard, BJVariantSpanish21, BJVariantDoubleExposure:
 		// ok
 	default:
 		return fmt.Errorf("unknown blackjack variant %q", c.Variant)
