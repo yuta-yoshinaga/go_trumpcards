@@ -624,7 +624,7 @@ func (g *TappTarock) NextTrick() {
 	if g.gameEndFlag || g.phase != TappTarockPhaseTrickEnd {
 		return
 	}
-	if g.trickNumber >= TappTarockTrickCount-1 {
+	if g.trickNumber >= TappTarockTrickCount {
 		g.finishRound()
 		return
 	}
@@ -1222,10 +1222,8 @@ const tapptarockMaxSliceLen = 1000
 
 // UnmarshalJSON implements json.Unmarshaler.
 //
-// **呼んだ切り札は 18..20 か「呼んでいない」しか無い。** 範囲を見ないと、保存を
-// 書き換えるだけで「1 番を呼んだ」ことにでき、パートナーの席を好きに選べる。
-// 契約との整合も見る ── Trischaken にデクレアラーが居る保存は、範囲検査だけなら
-// 通ってしまう。
+// 保存状態の設定・人数・フェーズ・ラウンド／トリック番号・プレイヤーの添字・契約・
+// タロン／脇札の整合性を検証してから復元する。
 func (g *TappTarock) UnmarshalJSON(data []byte) error {
 	var j tapptarockJSON
 	if err := json.Unmarshal(data, &j); err != nil {

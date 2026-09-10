@@ -23,13 +23,12 @@ func TestTappTarockDealUsesThreeHandsOfSixteenAndSixCardTalon(t *testing.T) {
 func TestTappTarockPlaysSixteenTricks(t *testing.T) {
 	players := []*TappTarockPlayer{NewTappTarockPlayer(true), NewTappTarockPlayer(false), NewTappTarockPlayer(false)}
 	g := NewTappTarock(players, DefaultTappTarockConfig())
-	g.phase, g.currentPlayerIdx, g.leadPlayerIdx = TappTarockPhasePlay, 0, 0
-	g.trickNumber = 0
 	deck := buildKoenigrufenDeck()
-	for i, c := range deck {
+	for i, c := range deck[:TappTarockPlayerCnt*TappTarockHandSize] {
 		players[i%TappTarockPlayerCnt].AddCard(c)
 	}
-	for trick := 0; trick < TappTarockTrickCount; trick++ {
+	g.startPlay()
+	for trick := 0; trick < TappTarockTrickCount && g.GetPhase() == TappTarockPhasePlay; trick++ {
 		for seat := 0; seat < TappTarockPlayerCnt; seat++ {
 			idxs := g.GetValidPlayIndices(g.currentPlayerIdx)
 			if len(idxs) == 0 {
@@ -42,6 +41,11 @@ func TestTappTarockPlaysSixteenTricks(t *testing.T) {
 	totalTricks := 0
 	for i := 0; i < TappTarockPlayerCnt; i++ {
 		totalTricks += g.GetPlayer(i).GetTrickCount()
+	}
+	for i := 0; i < TappTarockPlayerCnt; i++ {
+		if got := g.GetPlayer(i).GetCardsSize(); got != 0 {
+			t.Fatalf("player %d still has %d cards after the round", i, got)
+		}
 	}
 	if totalTricks != TappTarockTrickCount || g.GetPhase() != TappTarockPhaseRoundEnd {
 		t.Fatalf("expected %d completed tricks and round end, got %d/%d", TappTarockTrickCount, totalTricks, g.GetPhase())
