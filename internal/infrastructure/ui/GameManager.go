@@ -7403,6 +7403,23 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("tehonbiki",
+		func() usecase.TehonbikiInteractorIF {
+			return usecase.NewTehonbikiInteractor(domain.NewDefaultTehonbiki(), new(presenter.TehonbikiCuiPresenter))
+		},
+		controller.NewTehonbikiCuiController,
+		CuiHelpSpec{
+			TitleKey: "tehonbiki.helpTitle",
+			ExampleKeys: []string{
+				"tehonbiki.helpExampleBet",
+			},
+			CommandKeys: []string{
+				"tehonbiki.helpBet",
+				"tehonbiki.helpNext",
+				"tehonbiki.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -7463,6 +7480,7 @@ var GameAliases = map[string]string{
 	"ms":      "mississippistud",
 	"mstud":   "mississippistud",
 	"sp21":    "spanish21",
+	"tehon":   "tehonbiki",
 	"s21":     "spanish21",
 	"de":      "doubleexposure",
 	"double":  "doubleexposure",

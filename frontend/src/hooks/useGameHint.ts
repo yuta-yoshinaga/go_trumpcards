@@ -319,6 +319,7 @@ import type {
   TarocchiniResponse,
   TeenDoPaanchResponse,
   TeenPattiResponse,
+  TehonbikiResponse,
   TerraceResponse,
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
@@ -690,6 +691,7 @@ import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTarocchiniHint } from '../utils/hints/tarocchiniHint';
 import { getTeenDoPaanchHint } from '../utils/hints/teendopaanchHint';
 import { getTeenPattiHint } from '../utils/hints/teenPattiHint';
+import { getTehonbikiHint } from '../utils/hints/tehonbikiHint';
 import { getTerraceHint } from '../utils/hints/terraceHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
 import { getThirtyOneHint } from '../utils/hints/thirtyoneHint';
@@ -972,6 +974,7 @@ export const hintFactories = {
   freebet: (s) => getFreebetHint(s as FreeBetResponse),
   banluck: (s) => getBanluckHint(s as BanLuckResponse),
   montebank: (s) => getMontebankHint(s as MonteBankResponse),
+  tehonbiki: (s) => getTehonbikiHint(s as TehonbikiResponse),
   speculation: (s) => getSpeculationHint(s as SpeculationResponse),
   cincinnati: (s) => getCincinnatiHint(s as CincinnatiResponse),
   ironcross: (s) => getIroncrossHint(s as IronCrossResponse),

@@ -17,6 +17,10 @@ describe('gameTheme', () => {
     expect(gameTheme.basset.footer).toContain('faro-dark');
   });
 
+  it('Tehonbiki uses the green table theme', () => {
+    expect(gameTheme.tehonbiki.bg).toContain('green');
+  });
+
   it('poker games use green-poker theme', () => {
     expect(gameTheme.holdem.bg).toContain('green-poker');
     expect(gameTheme.omaha.bg).toContain('green-poker');

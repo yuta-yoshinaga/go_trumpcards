@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した379種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した380種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -139,6 +139,7 @@ Go + Clean Architecture で実装した379種類のトランプゲーム。CLI �
 | フリーベット・ブラックジャック (Free Bet Blackjack) | `freebet` | [CUI](docs/manual/cui/freebet.md) / [Web](docs/manual/web/freebet.md) |
 | バンラック (Ban Luck) | `banluck` | [CUI](docs/manual/cui/banluck.md) / [Web](docs/manual/web/banluck.md) |
 | モンテバンク (Monte Bank) | `montebank` | [CUI](docs/manual/cui/montebank.md) / [Web](docs/manual/web/montebank.md) |
+| 手本引き (Tehonbiki) | `tehonbiki` | [CUI](docs/manual/cui/tehonbiki.md) / [Web](docs/manual/web/tehonbiki.md) |
 | スペキュレーション (Speculation) | `speculation` | [CUI](docs/manual/cui/speculation.md) / [Web](docs/manual/web/speculation.md) |
 | シンシナティ (Cincinnati) | `cincinnati` | [CUI](docs/manual/cui/cincinnati.md) / [Web](docs/manual/web/cincinnati.md) |
 | アイアンクロス (Iron Cross) | `ironcross` | [CUI](docs/manual/cui/ironcross.md) / [Web](docs/manual/web/ironcross.md) |

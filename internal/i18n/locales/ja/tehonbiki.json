@@ -1,0 +1,1 @@
+{"helpTitle":"手本引き","helpBet":"  b, bet <種類> <数字...> <チップ>","helpExampleBet":"  b single 3 10       単張りで3に10チップ賭ける","helpNext":"  next                 次の勝負","helpHint":"  hint                 ルール説明","outputTitle":"手本引き","phaseBet":"予想","phaseResult":"結果","phaseGameEnd":"終了","hintNone":"助言はありません"}

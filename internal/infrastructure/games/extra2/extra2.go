@@ -429,4 +429,12 @@ func init() {
 			return usecase.RestoreQuinzeInteractor(data, new(presenter.QuinzeWebPresenter))
 		},
 		controller.NewQuinzeWebControllerWithProvider)
+	games.RegisterKVGame("tehonbiki", games.CategoryExtra2,
+		func() usecase.TehonbikiInteractorIF {
+			return usecase.NewTehonbikiInteractor(domain.NewDefaultTehonbiki(), new(presenter.TehonbikiWebPresenter))
+		},
+		func(data []byte) (usecase.TehonbikiInteractorIF, error) {
+			return usecase.RestoreTehonbikiInteractor(data, new(presenter.TehonbikiWebPresenter))
+		},
+		controller.NewTehonbikiWebControllerWithProvider)
 }

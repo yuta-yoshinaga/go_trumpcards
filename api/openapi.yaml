@@ -50,6 +50,8 @@ tags:
     description: Ban Luck (バンラック) game
   - name: montebank
     description: Monte Bank (モンテバンク) game
+  - name: tehonbiki
+    description: Tehonbiki (手本引き) game
   - name: speculation
     description: Speculation (スペキュレーション) game
   - name: cincinnati
@@ -34369,6 +34371,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BassetResponse'
+  /tehonbiki/exec:
+    post:
+      tags:
+        - tehonbiki
+      summary: Execute a Tehonbiki game command
+      description: |
+        Send a command to advance a Tehonbiki (手本引き) session identified by
+        `sessionId`. The parent secretly chooses one stock-card number from 1
+        through 6. Children predict the number and choose how many numbers to
+        cover before the parent card is revealed.
+
+        This implementation uses a repository house table, not historical
+        payouts: single (one number) pays a 4.5x profit, double (two numbers)
+        pays 1.8x, and triple or half (three numbers) pays 0.9x. Each profit
+        multiplier is the fair odds `(6-k)/k` with ten percent of the winning
+        profit removed.
+      operationId: tehonbikiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TehonbikiRequest'
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/TehonbikiResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TehonbikiResponse'
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -71179,6 +71219,96 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+
+    TehonbikiRequest:
+      type: object
+      required: [command, sessionId]
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bet, b, next, hint, log, l, quit, q]
+        numbers:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 6
+          description: Numbers covered by the wager.
+        betType:
+          type: string
+          enum: ['', single, double, triple, half]
+        bet:
+          type: integer
+          minimum: 10
+          maximum: 500
+          description: Chip amount to wager.
+        sessionId:
+          type: string
+
+    TehonbikiResponse:
+      type: object
+      description: Current state of the Tehonbiki game
+      properties:
+        entries:
+          type: array
+          description: Present only in the reply to the `log` command.
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        phase:
+          type: integer
+          description: "Game phase: 0 Bet, 1 Result, 2 GameEnd"
+          enum: [0, 1, 2]
+        parentCard:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 6
+          description: The parent's revealed number; omitted during betting.
+        numbers:
+          type: array
+          items:
+            type: integer
+        betType:
+          type: string
+          enum: ['', single, double, triple, half]
+        bet:
+          type: integer
+        result:
+          type: integer
+          description: "0 none, 1 win, 2 lose"
+          enum: [0, 1, 2]
+        payout:
+          type: integer
+        chips:
+          type: integer
+        roundNumber:
+          type: integer
+        remainingCards:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        payoutNum:
+          type: integer
+        payoutDen:
+          type: integer
+        config:
+          type: object
+          nullable: true
+          properties:
+            initialChips:
+              type: integer
+            defaultBet:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        reason:
+          type: string
 
     BassetRequest:
       type: object

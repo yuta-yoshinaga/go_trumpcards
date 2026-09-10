@@ -18,7 +18,7 @@ const (
 	expectedClassic = 50
 	expectedSolo    = 53
 	expectedExtra   = 37
-	expectedExtra2  = 51
+	expectedExtra2  = 52
 	expectedExtra3  = 39
 	expectedExtra4  = 46
 	expectedExtra5  = 36

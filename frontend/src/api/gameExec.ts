@@ -272,6 +272,7 @@ export const workerUrl: Record<string, string> = {
   freebet: WORKER_CASINO,
   banluck: WORKER_CASINO,
   montebank: WORKER_CASINO,
+  tehonbiki: WORKER_EXTRA2,
   cincinnati: WORKER_CASINO,
   ironcross: WORKER_CASINO,
   baseballpoker: WORKER_CASINO,

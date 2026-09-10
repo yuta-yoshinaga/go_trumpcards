@@ -1,0 +1,1 @@
+{"helpTitle":"Tehonbiki","helpBet":"  b, bet <type> <numbers...> <chips>","helpExampleBet":"  b single 3 10       bet 10 chips on single 3","helpNext":"  next                 Start the next round","helpHint":"  hint                 Show help","outputTitle":"Tehonbiki","phaseBet":"BET","phaseResult":"RESULT","phaseGameEnd":"GAME END","hintNone":"No wager advice"}

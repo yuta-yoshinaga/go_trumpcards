@@ -1,0 +1,14 @@
+{
+  "title": "手本引き",
+  "label.chips": "チップ",
+  "label.parentCard": "親の札",
+  "label.bet": "張り金",
+  "button.bet": "張る",
+  "button.next": "次の勝負",
+  "phase.bet": "予想",
+  "phase.result": "結果",
+  "phase.gameEnd": "終了",
+  "result.win": "的中",
+  "result.lose": "外れ",
+  "frontendHint.tehonbiki": "数字を選んでチップを張ります"
+}
