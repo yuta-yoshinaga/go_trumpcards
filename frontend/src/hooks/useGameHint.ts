@@ -20,6 +20,7 @@ import type {
   BarbuResponse,
   BaseballPokerResponse,
   BasraResponse,
+  BassetResponse,
   BatakResponse,
   BauernschnapsenResponse,
   BeggarMyNeighbourResponse,
@@ -382,6 +383,7 @@ import { getBanluckHint } from '../utils/hints/banluckHint';
 import { getBarbuHint } from '../utils/hints/barbuHint';
 import { getBaseballpokerHint } from '../utils/hints/baseballpokerHint';
 import { getBasraHint } from '../utils/hints/basraHint';
+import { getBassetHint } from '../utils/hints/bassetHint';
 import { getBatakHint } from '../utils/hints/batakHint';
 import { getBauernschnapsenHint } from '../utils/hints/bauernschnapsenHint';
 import { getBeggarMyNeighbourHint } from '../utils/hints/beggarmyneighbourHint';
@@ -828,6 +830,7 @@ export const hintFactories = {
   cucumber: (s) => getCucumberHint(s as CucumberResponse),
   goofspiel: (s) => getGoofspielHint(s as GoofspielResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
+  basset: (s) => getBassetHint(s as BassetResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
   mighty: (s) => getMightyHint(s as MightyResponse),

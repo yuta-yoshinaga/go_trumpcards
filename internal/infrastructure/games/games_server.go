@@ -1900,4 +1900,9 @@ func init() {
 			return usecase.NewQuinzeInteractor(domain.NewDefaultQuinze(), new(presenter.QuinzeWebPresenter))
 		},
 		controller.NewQuinzeWebController)
+	BindWebControllerFor("basset",
+		func() usecase.BassetInteractorIF {
+			return usecase.NewBassetInteractor(domain.NewDefaultBasset(), new(presenter.BassetWebPresenter))
+		},
+		controller.NewBassetWebController)
 }
