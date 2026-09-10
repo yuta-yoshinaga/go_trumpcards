@@ -111,7 +111,6 @@ function parseMoveCommand(args: string[]): CliParseResult<MatrimonyArgs> {
 export const MATRIMONY_HELP: string[] = [
   'd/draw          - Turn one card from the stock (redeal up to three times)',
   'm t<p> f        - Tableau top to a foundation',
-  'm t<p> t<p>     - Move one card between piles',
   'm w f           - Waste to a foundation',
   'm w t<p>        - Waste to a tableau pile',
   'm s t<p>        - Stock straight into an empty pile',

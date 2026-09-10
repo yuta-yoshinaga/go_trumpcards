@@ -18,7 +18,7 @@ type MatrimonyWebInput struct {
 // MatrimonyWebZone identifies a game zone.
 type MatrimonyWebZone struct {
 	Zone string `json:"zone"`
-	// Col はタブロー山（0..7）。捨て札・山札・基礎札では不要。
+	// Col はタブロー枠（0..15）。捨て札・山札・基礎札では不要。
 	Col *int `json:"col,omitempty"`
 }
 

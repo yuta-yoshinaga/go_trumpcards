@@ -29,8 +29,7 @@ const MatrimonyFoundationCnt = 4
 
 // MatrimonyFoundationTarget 基礎札 1 つあたりの完成枚数。
 //
-// 2 つ飛ばしでも**折り返す**ので、1 本で 13 枚すべてを通る。
-// A→3→…→K→2→4→…→Q の順で 13 枚。
+// ランクを一周するので、1 本で 13 枚すべてを通る。
 const MatrimonyFoundationTarget = CardValueMax
 
 // MatrimonyTotalCards 使用する総枚数（52 枚 2 組）
@@ -49,8 +48,7 @@ const (
 // matrimonyMaxSliceLen caps slice sizes during deserialisation.
 const matrimonyMaxSliceLen = 1000
 
-// matrimonySuitOrder 基礎札インデックスとスートの対応。前半 4 つが A 始まり、
-// 後半 4 つが 2 始まりで、どちらも同じスート順に並ぶ。
+// matrimonyFoundationStart 基礎札インデックスごとのスート、起点、方向。
 var matrimonyFoundationStart = [MatrimonyFoundationCnt]struct {
 	design int
 	value  int
@@ -74,30 +72,14 @@ type MatrimonyHint struct {
 
 // Matrimony マトリモニー ゲームクラス。
 //
-// 52 枚 2 組（104 枚）の 1 人用ソリティア。**16 枠のタブロー**に 1 枚ずつ、
-// **4 山のリザーブ**に 3 枚ずつ配り、残り 76 枚が山札になる。
+// 52 枚 2 組（104 枚）の 1 人用ソリティア。16 枠のタブローに 1 枚ずつ配り、
+// 残りを山札に置く。予備の山は設けず、空いた枠は山札または捨て札から
+// 補充する。
 //
-// 基礎札は 8 本。**2 つ飛ばしで積む**のがこのゲームの特徴で、前半 4 本は A から、
-// 後半 4 本は 2 から始まる。ただし**折り返す**ので、A 始まりの本は
-// A→3→5→7→9→J→K→2→4→6→8→10→Q の 13 枚、2 始まりの本は
-// 2→4→6→8→10→Q→A→3→5→7→9→J→K の 13 枚を通る。8×13 = 104 枚でクリア。
-//
-// タブローは**1 枠 1 枚**で重ねられず、空いた枠は山札か捨て札から補充される。
-// リザーブは**一番上だけ**が使え、**空いた山は二度と埋まらない**。この非対称が
-// このゲームの緊張で、リザーブを掘るほど選択肢は増えるが枠は戻らない。
-//
-// issue #5275 の仕様案とは 4 点異なり、いずれも実際の規則に合わせた:
-//   - **基礎札は 16 本ではなく 8 本。** 8 本が折り返して 13 枚ずつ通るので
-//     8×13 = 104 枚とちょうど一致する。issue の「奇数側 7 枚 + 偶数側 6 枚 ×
-//     16 本」も合計 104 になってしまうため、**枚数だけでは見分けられない**。
-//     決め手は折り返しの有無で、どの規則書も K の次は 2、Q の次は A と書いている
-//   - **盤面は 4×3 のグリッド 2 つではない。** 1 枚ずつの枠が 16、3 枚重ねの
-//     リザーブが 4 山（計 28 枚）で、山札は 76 枚になる
-//   - **補充されるのはタブロー枠**で、リザーブは補充されない。issue は
-//     「右グリッドが補充、左は補充されない」としており非対称の向きは合っているが、
-//     補充される側は「1 枚ずつの枠」であって「3 枚重ねの山」ではない
-//   - **スートは 4 つ。** issue の「8 スート×2 系統」は数え違いで、
-//     8 という数は 4 スート × 2 系統の**基礎札の本数**である
+// 基礎札は 4 本で、スペードの Q から降順に積む 2 本と、ダイヤの J から昇順に
+// 積む 2 本がある。どちらもランクを一周するため、K の次は A、A の前は K となる。
+// 2 組あるので同名の基礎札が 2 本ずつあり、104 枚すべてでクリアする。
+// 配り直しは最大 3 回まで行える。
 type Matrimony struct {
 	trumpCards *TrumpCards
 	// tableau は 1 枠 1 枚。空き枠は nil。
@@ -318,7 +300,7 @@ func (c *Matrimony) GetHint() *MatrimonyHint {
 // foundationHint 基礎札へ送れる手を 1 つ返す（オートコンプリート用）。
 //
 // タブロー枠を空ける手を優先する。枠が空けば山札・捨て札の出口が増えるので、
-// 同じ 1 点でもリザーブより盤面が動く。
+// 同じ 1 点でも、枠を空ける手を優先する。
 func (c *Matrimony) foundationHint() *MatrimonyHint {
 	if c.phase != MatrimonyPhasePlaying {
 		return nil
@@ -503,9 +485,9 @@ func (c *Matrimony) canPlaceOnFoundation(card *Card, fIdx int) bool {
 
 // findFoundation 置ける基礎札を探す（見つからなければ -1）。
 //
-// 同スート同値の札は 2 組ぶんでちょうど 2 枚あり、そのスートの 2 本
-// （A 始まりと 2 始まり）はどちらも全 13 値を 1 度ずつ通る。よって 2 枚は
-// 必ず別々の本に収まり、最初に見つかった本を使ってよい。
+// 同スート同値の札は 2 組ぶんでちょうど 2 枚あり、そのスートの 2 本は
+// どちらも全 13 値を 1 度ずつ通る。よって 2 枚は必ず別々の本に収まり、
+// 最初に見つかった本を使ってよい。
 func (c *Matrimony) findFoundation(card *Card) int {
 	for i := range MatrimonyFoundationCnt {
 		if c.canPlaceOnFoundation(card, i) {
@@ -520,7 +502,7 @@ func (c *Matrimony) afterMove(actionType, detail string, card *Card) {
 	afterMove(&c.moveCount, c, actionType, detail, card)
 }
 
-// checkGameClear 8 つの基礎札がすべて 13 枚積まれたか
+// checkGameClear 4 つの基礎札がすべて 13 枚積まれたか
 func (c *Matrimony) checkGameClear() {
 	for i := range MatrimonyFoundationCnt {
 		if len(c.foundation[i]) != MatrimonyFoundationTarget {

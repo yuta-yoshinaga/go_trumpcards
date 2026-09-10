@@ -24,11 +24,6 @@ func (_m *MockMatrimonyInteractor) MoveTableauToFoundation(pile int) string {
 	return ret.Get(0).(string)
 }
 
-func (_m *MockMatrimonyInteractor) MoveReserveToFoundation(pile int) string {
-	ret := _m.Called(pile)
-	return ret.Get(0).(string)
-}
-
 func (_m *MockMatrimonyInteractor) MoveWasteToFoundation() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)

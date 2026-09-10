@@ -7393,7 +7393,6 @@ var gameRegistry = []GameRegistryEntry{
 			CommandKeys: []string{
 				"matrimony.helpDraw",
 				"matrimony.helpMoveTF",
-				"matrimony.helpMoveRF",
 				"matrimony.helpMoveWF",
 				"matrimony.helpMoveWT",
 				"matrimony.helpMoveST",
