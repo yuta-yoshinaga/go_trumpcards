@@ -702,6 +702,8 @@ tags:
     description: Hachi-Hachi (八八) game
   - name: indianrummy
     description: Indian Rummy (インドラミー) game
+  - name: marriage
+    description: Marriage (マリッジ) game
   - name: jass
     description: Jass (ヤス／シーバー) game
   - name: kingalbert
@@ -31370,6 +31372,67 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/IndianRummyResponse'
+  /marriage/exec:
+    post:
+      tags:
+        - marriage
+      summary: Execute a Marriage (マリッジ) game command
+      description: |
+        Send a command to advance the Marriage game session identified by `sessionId`.
+        Marriage is a 21-card Nepalese/North Indian rummy using three standard decks and six printed jokers.
+      operationId: marriageExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                cardIndex:
+                  type: integer
+                config:
+                  type: object
+                  properties:
+                    playerCount:
+                      type: integer
+                    cpuDifficulty:
+                      type: integer
+                    targetRounds:
+                      type: integer
+                command:
+                  type: string
+                  enum: [drawstock, drawdiscard, discard, declare, nextround, setplayers, setdifficulty, setrounds, log, reset, quit, help]
+                  description: The Marriage game command to execute.
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one.
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/MarriageResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarriageResponse'
   /jass/exec:
     post:
       tags:
@@ -77102,6 +77165,8 @@ components:
                 type: integer
               deadwood:
                 type: integer
+              maal:
+                type: integer
               hasPureSequence:
                 type: boolean
         phase:
@@ -77150,6 +77215,77 @@ components:
         declarationValid:
           type: boolean
           description: "Whether the declaration that ended the deal was valid."
+        message:
+          type: string
+
+    MarriageResponse:
+      type: object
+      additionalProperties: true
+      description: Game state after the command was processed.
+      properties:
+        messageCode:
+          type: string
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              deadwood:
+                type: integer
+              maal:
+                type: integer
+              hasPureSequence:
+                type: boolean
+        phase:
+          type: integer
+          enum: [0, 1, 2, 3]
+        roundNumber:
+          type: integer
+        targetRounds:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        declarerIdx:
+          type: integer
+        declarationValid:
+          type: boolean
+        wildJoker:
+          $ref: '#/components/schemas/Card'
+        wildRank:
+          type: integer
+        drawPileCount:
+          type: integer
+        discardTop:
+          $ref: '#/components/schemas/Card'
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        config:
+          type: object
+          properties:
+            playerCount:
+              type: integer
+            cpuDifficulty:
+              type: integer
+            targetRounds:
+              type: integer
         message:
           type: string
 

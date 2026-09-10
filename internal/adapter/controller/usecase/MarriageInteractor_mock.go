@@ -1,0 +1,56 @@
+//go:build test
+
+package usecase
+
+import (
+	"github.com/stretchr/testify/mock"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+)
+
+// MockMarriageInteractor モック
+type MockMarriageInteractor struct {
+	mock.Mock
+}
+
+func (_m *MockMarriageInteractor) Reset() string {
+	return _m.Called().String(0)
+}
+
+func (_m *MockMarriageInteractor) ResetWithConfig(cfg domain.MarriageConfig) string {
+	return _m.Called(cfg).String(0)
+}
+
+func (_m *MockMarriageInteractor) DrawFromStock() string {
+	return _m.Called().String(0)
+}
+
+func (_m *MockMarriageInteractor) DrawFromDiscard() string {
+	return _m.Called().String(0)
+}
+
+func (_m *MockMarriageInteractor) Discard(cardIndex int) string {
+	return _m.Called(cardIndex).String(0)
+}
+
+func (_m *MockMarriageInteractor) Declare(cardIndex int) string {
+	return _m.Called(cardIndex).String(0)
+}
+
+func (_m *MockMarriageInteractor) NextRound() string {
+	return _m.Called().String(0)
+}
+
+func (_m *MockMarriageInteractor) GetConfig() domain.MarriageConfig {
+	return _m.Called().Get(0).(domain.MarriageConfig)
+}
+
+func (_m *MockMarriageInteractor) ActionLog() string {
+	return _m.Called().String(0)
+}
+
+// Snapshot モック
+func (_m *MockMarriageInteractor) Snapshot() ([]byte, error) {
+	ret := _m.Called()
+	return ret.Get(0).([]byte), ret.Error(1)
+}

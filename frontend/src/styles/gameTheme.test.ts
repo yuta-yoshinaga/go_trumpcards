@@ -56,6 +56,10 @@ describe('gameTheme', () => {
     expect(gameTheme.indianrummy.bg).toContain('indianrummy');
   });
 
+  it('Marriage uses the rummy theme', () => {
+    expect(gameTheme.marriage.bg).toContain('indianrummy');
+  });
+
   it('Machiavelli uses its Renaissance crimson theme', () => {
     expect(gameTheme.machiavelli.bg).toContain('machiavelli');
   });

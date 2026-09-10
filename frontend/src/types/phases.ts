@@ -1119,6 +1119,14 @@ export const IndianRummyPhase = {
   GAME_END: 3,
 } as const;
 
+/** Marriage phase constants (sync: internal/domain/Marriage.go). */
+export const MarriagePhase = {
+  DRAW: 0,
+  DISCARD: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Machiavelli phase constants (sync: internal/domain/Machiavelli.go). */
 export const MachiavelliPhase = {
   TURN: 0,

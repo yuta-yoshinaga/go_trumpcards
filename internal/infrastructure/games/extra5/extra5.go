@@ -309,4 +309,12 @@ func init() {
 			return usecase.RestoreTongitsInteractor(data, new(presenter.TongitsWebPresenter))
 		},
 		controller.NewTongitsWebControllerWithProvider)
+	games.RegisterKVGame("marriage", games.CategoryExtra5,
+		func() usecase.MarriageInteractorIF {
+			return usecase.NewMarriageInteractor(domain.NewDefaultMarriage(), new(presenter.MarriageWebPresenter))
+		},
+		func(data []byte) (usecase.MarriageInteractorIF, error) {
+			return usecase.RestoreMarriageInteractor(data, new(presenter.MarriageWebPresenter))
+		},
+		controller.NewMarriageWebControllerWithProvider)
 }

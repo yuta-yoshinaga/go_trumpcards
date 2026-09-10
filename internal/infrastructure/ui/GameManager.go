@@ -7469,6 +7469,27 @@ var gameRegistry = []GameRegistryEntry{
 			"  q / quit             quit",
 			"  ? / help             show help",
 		}}),
+	BindCuiFor("marriage",
+		func() usecase.MarriageInteractorIF {
+			return usecase.NewMarriageInteractor(domain.NewDefaultMarriage(), new(presenter.MarriageCuiPresenter))
+		},
+		controller.NewMarriageCuiController,
+		CuiHelpSpec{
+			TitleKey: "marriage.helpTitle",
+			ExampleKeys: []string{
+				"marriage.helpExampleDraw",
+				"marriage.helpExampleDiscard",
+			},
+			CommandKeys: []string{
+				"marriage.helpDrawStock",
+				"marriage.helpDrawDiscard",
+				"marriage.helpDiscard",
+				"marriage.helpDeclare",
+				"marriage.helpNextRound",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"marriage.helpSetPlayers", "marriage.helpSetDifficulty", "marriage.helpSetRounds"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -7506,6 +7527,7 @@ var GameAliases = map[string]string{
 	"clock":   "clocksolitaire",
 	"crazy8":  "crazyeights",
 	"indian":  "indianpoker",
+	"marr":    "marriage",
 	"video":   "videopoker",
 	"deuces":  "deuceswild",
 	"joker":   "jokerpoker",

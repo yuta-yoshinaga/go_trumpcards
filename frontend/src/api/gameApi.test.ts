@@ -3393,6 +3393,7 @@ describe('gameApi', () => {
       ['crazyeights', actionLogApi.crazyeights],
       ['ginrummy', actionLogApi.ginrummy],
       ['indianrummy', actionLogApi.indianrummy],
+      ['marriage', actionLogApi.marriage],
       ['pan', actionLogApi.pan],
       ['spider', actionLogApi.spider],
       ['indianpoker', actionLogApi.indianpoker],
