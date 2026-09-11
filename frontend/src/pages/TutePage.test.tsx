@@ -66,6 +66,39 @@ describe('TutePage', () => {
     });
   });
 
+  it('rings only trump cards and moves the rings when the trump suit changes', async () => {
+    mockExec.mockResolvedValue(makeTuteState({ trumpSuit: 3 }));
+    const firstRender = renderWithProviders(<TutePage />);
+    await screen.findByAltText('♥ Q');
+    expect(screen.getByAltText('♥ Q').closest('button')).toHaveAttribute('data-trump', 'true');
+    expect(screen.getByAltText('♥ K').closest('button')).toHaveAttribute('data-trump', 'true');
+    expect(screen.getByAltText('♠ A').closest('button')).not.toHaveAttribute('data-trump');
+
+    firstRender.unmount();
+    mockExec.mockResolvedValue(makeTuteState({ trumpSuit: 1 }));
+    renderWithProviders(<TutePage />);
+    await screen.findByAltText('♠ A');
+    expect(screen.getByAltText('♠ A').closest('button')).toHaveAttribute('data-trump', 'true');
+    expect(screen.getByAltText('♥ Q').closest('button')).not.toHaveAttribute('data-trump');
+  });
+
+  it('does not ring any cards when the trump suit is not set', async () => {
+    mockExec.mockResolvedValue(makeTuteState({ trumpSuit: 0 }));
+    renderWithProviders(<TutePage />);
+    await screen.findByAltText('♥ Q');
+    expect(document.querySelectorAll('[data-trump]')).toHaveLength(0);
+  });
+
+  it('keeps the trump ring on a card that is restricted from play', async () => {
+    mockExec.mockResolvedValue(makeTuteState({ trumpSuit: 3, playableIndices: [1, 2], canDeclareMarriage: true }));
+    renderWithProviders(<TutePage />);
+    const restrictedTrump = await screen.findByAltText('♥ Q');
+    const cardButton = restrictedTrump.closest('button');
+    expect(cardButton).toHaveAttribute('data-trump', 'true');
+    expect(cardButton).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: 'ハートのマリッジを宣言（40点）' })).toBeInTheDocument();
+  });
+
   it('selecting a card then playing dispatches play', async () => {
     renderWithProviders(<TutePage />);
     const card = await screen.findByAltText('♥ Q');
