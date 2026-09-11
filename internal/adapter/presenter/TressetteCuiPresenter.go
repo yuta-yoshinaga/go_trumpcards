@@ -13,11 +13,20 @@ import (
 )
 
 // tressettePlayerStr returns the display string for a single Tressette player.
-func tressettePlayerStr(player *domain.TressettePlayer, i int, playable []int) string {
+func tressettePlayerStr(player *domain.TressettePlayer, i int, playable []int, humanTeam int) string {
+	role := ""
+	if !player.GetIsHuman() && humanTeam >= 0 {
+		roleKey := "tressette.opponent"
+		if domain.TressetteTeamOf(i) == humanTeam {
+			roleKey = "tressette.partner"
+		}
+		role = " [" + i18n.T(roleKey) + "]"
+	}
 	var b strings.Builder
 	b.WriteString(i18n.Tf("tressette.playerLine",
 		"name", cuiPlayerName(player, i),
 		"team", tressetteTeamLabel(domain.TressetteTeamOf(i)),
+		"role", role,
 		"cards", strconv.Itoa(player.GetCardsSize()),
 		"tricks", strconv.Itoa(player.GetTrickCount()),
 	))
@@ -58,14 +67,23 @@ func (p *TressetteCuiPresenter) Output(g interfaces.TressetteGame, lastErr error
 			"bthird", strconv.Itoa(thirds[1])) + "\n")
 		b.WriteString(i18n.T("tressette.thirdsRule") + "\n")
 
-		for i := 0; i < g.GetPlayerCnt(); i++ {
+		playerCount := g.GetPlayerCnt()
+		humanTeam := -1
+		for i := 0; i < playerCount; i++ {
+			if player := g.GetPlayer(i); player != nil && player.GetIsHuman() {
+				humanTeam = domain.TressetteTeamOf(i)
+				break
+			}
+		}
+
+		for i := 0; i < playerCount; i++ {
 			if player := g.GetPlayer(i); player != nil {
 				// 目印はプレイフェーズで本人の手番のときだけ。
 				var playable []int
 				if g.GetPhase() == domain.TressettePhasePlay && g.GetCurrentPlayerIdx() == i {
 					playable = g.GetPlayableIndices(i)
 				}
-				b.WriteString(tressettePlayerStr(player, i, playable))
+				b.WriteString(tressettePlayerStr(player, i, playable, humanTeam))
 			}
 		}
 

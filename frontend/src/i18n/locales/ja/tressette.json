@@ -19,6 +19,8 @@
   "teamLabel": "チーム{{team}}",
   "teamScore": "チーム{{team}}: {{points}}点 (今R {{thirds}}/3)",
   "yourTeam": "あなたのチーム",
+  "partner": "味方",
+  "opponent": "相手",
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",
