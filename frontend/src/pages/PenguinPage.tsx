@@ -35,6 +35,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { PENGUIN_HELP, parsePenguinCommand } from '../utils/cli/commands/penguinCommands';
 import { formatPenguinState } from '../utils/cli/formatters/penguinFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { penguinFoundationTarget } from '../utils/penguinFoundationTarget';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -196,6 +197,17 @@ function PenguinPageContent() {
     },
     [apiExec],
   );
+  // Double-click / double-tap shortcut: auto-send an exposed card to its
+  // foundation when Penguin's base-rank and wraparound rules allow it.
+  const handleFoundationShortcut = useCallback(
+    (source: PenguinMoveZone, card: Card) => {
+      if (!state) return;
+      const target = penguinFoundationTarget(card, state.foundation, state.baseRank);
+      if (!target) return;
+      dispatchMove(source, target);
+    },
+    [state, dispatchMove],
+  );
   const dnd = useSolitaireDragDrop<PenguinMoveZone>({
     onMove: dispatchMove,
     isPlaying: !!isPlayingForKbd,
@@ -338,7 +350,13 @@ function PenguinPageContent() {
                         {card ? (
                           <button
                             type="button"
-                            onClick={() => handleSelectSource(freeCellZone)}
+                            onClick={(e) => {
+                              // The second click of a double-click also fires
+                              // onClick; let onDoubleClick own the shortcut.
+                              if (e.detail >= 2) return;
+                              handleSelectSource(freeCellZone);
+                            }}
+                            onDoubleClick={() => handleFoundationShortcut(freeCellZone, card)}
                             disabled={!isPlaying || loading}
                             aria-label={cardAlt(card)}
                             aria-pressed={isSourceSelected('freecell', undefined, idx)}
@@ -498,13 +516,21 @@ function PenguinPageContent() {
                                   {card ? (
                                     <button
                                       type="button"
-                                      onClick={() => {
+                                      onClick={(e) => {
+                                        // The second click of a double-click also
+                                        // fires onClick; let onDoubleClick own the shortcut.
+                                        if (e.detail >= 2) return;
                                         if (selectedSource) {
                                           handleSelectTarget(tableauColZone);
                                         } else {
                                           handleSelectSource(cardZone);
                                         }
                                       }}
+                                      onDoubleClick={
+                                        col.length - 1 === cardIdx
+                                          ? () => handleFoundationShortcut(cardZone, card)
+                                          : undefined
+                                      }
                                       disabled={!isPlaying || loading}
                                       // 上限超過は title とリングだけで示していたので、
                                       // ホバーできる人にしか届かない。draggable も落として

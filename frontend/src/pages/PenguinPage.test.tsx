@@ -300,6 +300,38 @@ describe('PenguinPage', () => {
     await waitFor(() => expect(cardButton.className).toContain('ring-2'));
   });
 
+  it('double-click sends a legal exposed card to its foundation', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 4)], [], [], [], [], [], []],
+    });
+    renderWithProviders(<PenguinPage />);
+    const cardButton = (await screen.findByAltText('♠ 4')).closest('button') as HTMLButtonElement;
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.doubleClick(cardButton);
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 0 },
+        { zone: 'foundation', col: 0 },
+      ),
+    );
+  });
+
+  it('does nothing when double-clicking an exposed card with no foundation target', async () => {
+    renderWithProviders(<PenguinPage />);
+    const cardButton = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+
+    mockExec.mockClear();
+    fireEvent.doubleClick(cardButton);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('target selection via handleSelectTarget on foundation click when source selected', async () => {
     renderWithProviders(<PenguinPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
