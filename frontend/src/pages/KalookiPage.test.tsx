@@ -214,6 +214,24 @@ describe('KalookiPage', () => {
     await waitFor(() => expect(screen.queryByTestId('kalooki-staged-group-0')).not.toBeInTheDocument());
   });
 
+  it('clears staged groups after a meld succeeds through retry', async () => {
+    mockExec
+      .mockResolvedValueOnce(meldState)
+      .mockRejectedValueOnce(new Error('network error'))
+      .mockResolvedValueOnce({ ...meldState, message: '', messageCode: 'kalooki.meld.success' });
+    renderWithProviders(<KalookiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Add group|グループに追加/ })).toBeInTheDocument());
+
+    stageGroup(0, 3);
+    fireEvent.click(screen.getByTestId('kalooki-submit-meld'));
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+    expect(screen.getByTestId('kalooki-staged-group-0')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Retry|再試行/i }));
+    await waitFor(() => expect(screen.queryByTestId('kalooki-staged-group-0')).not.toBeInTheDocument());
+    expect(mockExec).toHaveBeenLastCalledWith('meld', expect.objectContaining({ meldGroups: [[0, 1, 2]] }));
+  });
+
   it('does not clear staged groups when a later action succeeds after meld rejection', async () => {
     let resolveDiscard!: (state: KalookiResponse) => void;
     const discardResponse = new Promise<KalookiResponse>((resolve) => {

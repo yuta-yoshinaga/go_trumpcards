@@ -122,7 +122,19 @@ describe('useGameApi', () => {
       await result.current.exec();
     });
 
-    expect(onSuccess).toHaveBeenCalledWith({ data: 'hello' });
+    expect(onSuccess).toHaveBeenCalledWith({ data: 'hello' }, []);
+  });
+
+  it('calls onSuccess with the executed args', async () => {
+    const apiFn = vi.fn().mockResolvedValue({ ok: true });
+    const onSuccess = vi.fn();
+    const { result } = renderHook(() => useGameApi(apiFn, { onSuccess }), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.exec('meld', { meldGroups: [[0, 1, 2]] });
+    });
+
+    expect(onSuccess).toHaveBeenCalledWith({ ok: true }, ['meld', { meldGroups: [[0, 1, 2]] }]);
   });
 
   it('works without onSuccess option', async () => {

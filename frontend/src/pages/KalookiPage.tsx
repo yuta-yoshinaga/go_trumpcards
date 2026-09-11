@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { kalookiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -119,20 +119,14 @@ function KalookiPageContent() {
     setLayoffTarget(null);
   }, []);
 
-  const pendingMeldRef = useRef(false);
   const handleApiSuccess = useCallback(
-    (res: KalookiResponse) => {
-      if (!pendingMeldRef.current) return;
-      pendingMeldRef.current = false;
+    (res: KalookiResponse, args: Parameters<typeof kalookiApi.exec>) => {
+      if (args[0] !== 'meld') return;
       if (!isRejectedAction(res)) clearSelection();
     },
     [clearSelection],
   );
   const { state, loading, error, exec: execApi, retry } = useGameApi(kalookiApi.exec, { onSuccess: handleApiSuccess });
-
-  useEffect(() => {
-    if (error) pendingMeldRef.current = false;
-  }, [error]);
 
   useMountReset(execApi);
   const phaseNames = usePhaseNames('kalooki', KALOOKI_PHASE_KEYS);
@@ -234,7 +228,6 @@ function KalookiPageContent() {
 
   const handleMeld = useCallback(() => {
     if (meldGroups.length === 0) return;
-    pendingMeldRef.current = true;
     void execApi('meld', { meldGroups });
   }, [execApi, meldGroups]);
 
