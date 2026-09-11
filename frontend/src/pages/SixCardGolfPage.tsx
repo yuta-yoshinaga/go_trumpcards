@@ -246,9 +246,11 @@ function SixCardGolfPageContent() {
                         col.isPair ? 'bg-ds-success text-white' : 'bg-ds-surface-elevated text-ds-text-muted'
                       }`}
                     >
-                      {col.hasHidden
-                        ? t('label.columnScoreUncertain', { score: col.score })
-                        : t('label.columnScore', { score: col.score })}
+                      {col.isPair
+                        ? t('label.columnScorePair')
+                        : col.hasHidden
+                          ? t('label.columnScoreUncertain', { score: col.score })
+                          : t('label.columnScore', { score: col.score })}
                     </span>
                   ))}
                 </div>
