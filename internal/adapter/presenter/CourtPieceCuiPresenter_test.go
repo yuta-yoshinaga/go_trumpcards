@@ -50,8 +50,9 @@ func TestCourtPieceCuiPresenter_Output_PhaseLabels(t *testing.T) {
 	t.Run("trick end prompt", func(t *testing.T) {
 		cp := newCourtPieceForCuiTest()
 		cp.SetPhase(domain.CourtPiecePhaseTrickEnd)
+		cp.SetLeadPlayerIdx(1)
 		out := p.Output(cp, nil)
-		assert.NotEmpty(t, out)
+		assert.Contains(t, out, "CPU 1 がトリックを獲得")
 	})
 
 	t.Run("round end prompt", func(t *testing.T) {

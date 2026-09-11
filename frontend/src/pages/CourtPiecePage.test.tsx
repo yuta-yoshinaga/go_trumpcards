@@ -188,6 +188,58 @@ describe('CourtPiecePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
   });
 
+  it('marks the trick winner during the trick-end phase', async () => {
+    mockExec.mockResolvedValue(
+      makeCourtPieceState({
+        phase: 2,
+        trumpSuit: 3,
+        leadPlayerIdx: 2,
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'SPADE', value: 5 } },
+          { playerIdx: 1, card: { design: 'SPADE', value: 7 } },
+          { playerIdx: 2, card: { design: 'SPADE', value: 11 } },
+        ],
+      }),
+    );
+    renderWithProviders(<CourtPiecePage />);
+
+    await waitFor(() => expect(screen.getByTestId('trick-winner-badge')).toBeInTheDocument());
+    expect(document.querySelector('[data-trick-winner="true"]')).toHaveTextContent('CPU 2');
+  });
+
+  it('does not mark a winner while the trick is still being played', async () => {
+    mockExec.mockResolvedValue(
+      makeCourtPieceState({
+        phase: 1,
+        trumpSuit: 3,
+        leadPlayerIdx: 2,
+        currentTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 5 } }],
+      }),
+    );
+    renderWithProviders(<CourtPiecePage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
+
+  it('moves the winner badge when another seat wins', async () => {
+    mockExec.mockResolvedValue(
+      makeCourtPieceState({
+        phase: 2,
+        trumpSuit: 3,
+        leadPlayerIdx: 1,
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'SPADE', value: 5 } },
+          { playerIdx: 1, card: { design: 'SPADE', value: 7 } },
+        ],
+      }),
+    );
+    renderWithProviders(<CourtPiecePage />);
+
+    await waitFor(() => expect(screen.getByTestId('trick-winner-badge')).toBeInTheDocument());
+    expect(document.querySelector('[data-trick-winner="true"]')).toHaveTextContent('CPU 1');
+  });
+
   it('shows the live team-trick tally toward the 7-trick target during play', async () => {
     mockExec.mockResolvedValue(
       makeCourtPieceState({
