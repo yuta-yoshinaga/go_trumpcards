@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { simplesimonApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, SimpleSimonResponse } from '../types/card';
 import { SimpleSimonPage } from './SimpleSimonPage';
@@ -62,6 +63,18 @@ describe('SimpleSimonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
   });
 
+  it('selects a card and destination column with the keyboard', async () => {
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('card-1-0');
+    mockExec.mockClear();
+
+    fireEvent.keyDown(document, { key: '2' });
+    expect(screen.getByTestId('card-1-0')).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.keyDown(document, { key: '1' });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
+  });
+
   it('labels cards with name+position and reflects selection with aria-pressed', async () => {
     renderWithProviders(<SimpleSimonPage />);
     // column[1] is ♠8 at the top → "♠ 8（列2・上から1枚目）".
@@ -97,6 +110,36 @@ describe('SimpleSimonPage', () => {
       fireEvent.click(screen.getByTestId(testid));
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith(cmd));
     }
+  });
+
+  it('advertises keyboard shortcuts on undo, hint, and give-up buttons', async () => {
+    mockExec.mockResolvedValue(makeState({ canUndo: true }));
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('undo-button');
+
+    expect(screen.getByTestId('undo-button')).toHaveAttribute('aria-keyshortcuts', 'z');
+    expect(screen.getByTestId('hint-button')).toHaveAttribute('aria-keyshortcuts', 'h');
+    expect(screen.getByTestId('giveup-button')).toHaveAttribute('aria-keyshortcuts', 'g');
+  });
+
+  it('does not trigger keyboard navigation while an input has focus', async () => {
+    renderWithProviders(
+      <>
+        <SimpleSimonPage />
+        <input aria-label="test input" />
+      </>,
+    );
+    await screen.findByTestId('card-1-0');
+    const input = screen.getByRole('textbox', { name: 'test input' });
+    input.focus();
+    mockExec.mockClear();
+
+    fireEvent.keyDown(input, { key: '2' });
+    fireEvent.keyDown(input, { key: 'h' });
+    await flushPendingDispatch();
+
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(screen.getByTestId('card-1-0')).toHaveAttribute('aria-pressed', 'false');
   });
 
   // **ギブアップは取り消せない。**リセットには確認が挟まるのに、ここは即座に
