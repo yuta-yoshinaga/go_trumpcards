@@ -28,6 +28,7 @@ func makeSpoilFivePlayers() []*domain.SpoilFivePlayer {
 
 func setupSpoilFiveCuiMock() *interfaces.MockSpoilFiveGame {
 	m := new(interfaces.MockSpoilFiveGame)
+	m.On("GetConfig").Return(domain.DefaultSpoilFiveConfig())
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
@@ -113,6 +114,17 @@ func TestSpoilFiveCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, errors.New("boom"))
 		assert.Contains(t, result, "boom")
 	})
+}
+
+func TestSpoilFiveCuiPresenter_OutputIncludesTargetPoints(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	m, _ := setupSpoilFiveCuiMockWithPlayers()
+	out := new(presenter.SpoilFiveCuiPresenter).Output(m, nil)
+
+	assert.Contains(t, out, "目標: 30点")
 }
 
 func TestSpoilFiveCuiPresenter_HintOutput(t *testing.T) {

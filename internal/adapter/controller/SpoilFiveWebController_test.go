@@ -97,21 +97,40 @@ func TestSpoilFiveWebController_ResetWithConfig(t *testing.T) {
 	mockOutput := `{"players":[],"currentTrick":[]}`
 
 	t.Run("custom config passed through", func(t *testing.T) {
-		diff := 2
+		points := 20
 		expected := domain.DefaultSpoilFiveConfig()
 		expected.CpuDifficulty = domain.SpoilFiveCpuDifficultyHard
+		expected.TargetPoints = points
 		diMock := new(usecase.MockSpoilFiveInteractor)
 		diMock.On("ResetWithConfig", expected).Return(mockOutput)
 		ctrl := controller.NewSpoilFiveWebController(func() uc.SpoilFiveInteractorIF { return diMock })
 		defer ctrl.Stop()
 
-		input := controller.SpoilFiveWebInput{
-			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "c1"},
-			Config:       &controller.SpoilFiveWebConfig{CpuDifficulty: &diff},
+		var input controller.SpoilFiveWebInput
+		if err := json.Unmarshal([]byte(`{"command":"reset","sessionId":"c1","config":{"cpuDifficulty":2,"targetPoints":20}}`), &input); err != nil {
+			t.Fatal(err)
 		}
 		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		diMock.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("out of range target points keeps the default", func(t *testing.T) {
+		for _, points := range []int{0, -1} {
+			expected := domain.DefaultSpoilFiveConfig()
+			diMock := new(usecase.MockSpoilFiveInteractor)
+			diMock.On("ResetWithConfig", expected).Return(mockOutput)
+			ctrl := controller.NewSpoilFiveWebController(func() uc.SpoilFiveInteractorIF { return diMock })
+
+			var input controller.SpoilFiveWebInput
+			body := fmt.Sprintf(`{"command":"reset","sessionId":"points-%d","config":{"targetPoints":%d}}`, points, points)
+			if err := json.Unmarshal([]byte(body), &input); err != nil {
+				t.Fatal(err)
+			}
+			execRequest(t, ctrl.Exec, &input).CodeIs(http.StatusOK)
+			diMock.AssertCalled(t, "ResetWithConfig", expected)
+			ctrl.Stop()
+		}
 	})
 
 	t.Run("out of range difficulty falls back to default", func(t *testing.T) {

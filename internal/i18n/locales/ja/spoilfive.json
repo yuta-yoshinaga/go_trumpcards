@@ -4,6 +4,7 @@
   "helpNext": "  n                         次のトリックへ",
   "helpNextRound": "  nr                        次のラウンドへ",
   "helpSetDifficulty": "  sd [0-2]                  CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "target": "目標: {{n}}点",
   "round": "ラウンド: {{round}}  トリック: {{trick}}  切り札: {{trump}}  ポット: {{pot}}",
   "playerLine": "{{name}}: {{cards}}枚  今ラウンドのトリック: {{roundTricks}}  得点: {{score}}",
   "gameEnd": "ゲーム終了！{{name}}が目標点に到達してマッチ勝利！",

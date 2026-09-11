@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { spoilFiveApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeSpoilFiveState } from '../test/stateFactories';
-import { DEFAULT_SPOIL_FIVE_CONFIG, useSpoilFiveGame } from './useSpoilFiveGame';
+import { DEFAULT_SPOIL_FIVE_CONFIG, TARGET_POINTS_OPTIONS, useSpoilFiveGame } from './useSpoilFiveGame';
 
 vi.mock('../api/gameApi', () => ({
   spoilFiveApi: { exec: vi.fn() },
@@ -62,6 +62,17 @@ describe('useSpoilFiveGame', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', {
         config: { ...DEFAULT_SPOIL_FIVE_CONFIG, cpuDifficulty: 2 },
+      }),
+    );
+  });
+
+  it.each(TARGET_POINTS_OPTIONS)('sends targetPoints=%s in the reset config', async (targetPoints) => {
+    const { result } = renderHook(() => useSpoilFiveGame(), { wrapper: createWrapper() });
+    act(() => result.current.handleConfigChange('targetPoints', String(targetPoints)));
+    act(() => result.current.reset());
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: { ...DEFAULT_SPOIL_FIVE_CONFIG, targetPoints },
       }),
     );
   });

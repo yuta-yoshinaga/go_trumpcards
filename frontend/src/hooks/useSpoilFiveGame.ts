@@ -4,9 +4,10 @@ import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
 
-/** Default Spoil Five game configuration (CPU difficulty only). */
+/** Default Spoil Five game configuration. */
 export const DEFAULT_SPOIL_FIVE_CONFIG: Required<SpoilFiveConfigInput> = {
   cpuDifficulty: 1,
+  targetPoints: 30,
 };
 
 /** CPU difficulty level options for Spoil Five. */
@@ -15,6 +16,9 @@ export const CPU_DIFFICULTY_OPTIONS = [
   { value: 1, label: 'Normal' },
   { value: 2, label: 'Hard' },
 ] as const;
+
+/** Available target match-point options for Spoil Five (first player to reach wins). */
+export const TARGET_POINTS_OPTIONS = [20, 30, 40] as const;
 
 /**
  * Hook that manages Spoil Five game state and the single player action
