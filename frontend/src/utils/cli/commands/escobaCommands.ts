@@ -57,6 +57,7 @@ export function formatEscobaState(s: EscobaResponse): string {
 /** Help text shown in the CLI terminal for Escoba. */
 export const ESCOBA_HELP = [
   'p <hand> [tbl...]  - Play hand card; capture table cards summing to 15 (empty = lay)',
+  'Count J=8 / Q=9 / K=10 when calculating capture totals',
   'n/next             - Start next round',
   'r/reset            - Reset game',
   'l/log              - Show action log',

@@ -3803,6 +3803,7 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"escoba.helpSetDifficulty"},
+			NoteKeys:          []string{"escoba.helpCardValues"},
 		}),
 	BindCuiFor("handandfoot",
 		func() usecase.HandAndFootInteractorIF {
