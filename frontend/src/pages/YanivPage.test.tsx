@@ -279,6 +279,22 @@ describe('YanivPage', () => {
     expect(screen.getByTestId('yaniv-round-result')).toHaveTextContent('');
   });
 
+  it('keeps the round result empty when round end has no caller', async () => {
+    mockExec.mockResolvedValueOnce(makeState({ phase: YanivPhase.ROUND_END, callerIdx: -1, isAsaf: false }));
+    renderWithProviders(<YanivPage />);
+
+    const result = await screen.findByTestId('yaniv-round-result');
+    expect(result).toBeInTheDocument();
+    expect(result).toBeEmptyDOMElement();
+    expect(result).toHaveClass('sr-only');
+
+    mockExec.mockResolvedValueOnce(makeState({ phase: YanivPhase.ROUND_END, callerIdx: -1, isAsaf: true }));
+    fireEvent.click(screen.getByTestId('next-round-button'));
+
+    await waitFor(() => expect(screen.getByTestId('yaniv-round-result')).toBeEmptyDOMElement());
+    expect(screen.getByTestId('yaniv-round-result')).toHaveClass('sr-only');
+  });
+
   it('follows the caller index when displaying the caller name', async () => {
     mockExec.mockResolvedValue(makeState({ phase: YanivPhase.ROUND_END, callerIdx: 1, isAsaf: false }));
     renderWithProviders(<YanivPage />);
