@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import { useMemo, useState } from 'react';
 import { highcardflushApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
@@ -56,6 +57,20 @@ const HCF_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
+
+function RaiseRulesBlock({ t, showHeader = true }: { t: TFunction; showHeader?: boolean }) {
+  return (
+    <div>
+      {showHeader && <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.raiseRulesHeader')}</div>}
+      <ul className="space-y-0.5">
+        {(['raise24', 'raise5', 'raise67'] as const).map((key) => (
+          <li key={key}>{t(`payoutRef.${key}`)}</li>
+        ))}
+      </ul>
+      <div className="mt-1">{t('payoutRef.dealerQualify')}</div>
+    </div>
+  );
+}
 
 /** Renders the High Card Flush game page with betting, raise/fold action, and results. */
 export const HighCardFlushPage = withTutorial(HighCardFlushPageContent, 'highcardflush', HCF_TUTORIAL_STEPS);
@@ -234,15 +249,7 @@ function HighCardFlushPageContent() {
                         ))}
                       </ul>
                     </div>
-                    <div>
-                      <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.raiseRulesHeader')}</div>
-                      <ul className="space-y-0.5">
-                        {(['raise24', 'raise5', 'raise67'] as const).map((key) => (
-                          <li key={key}>{t(`payoutRef.${key}`)}</li>
-                        ))}
-                      </ul>
-                      <div className="mt-1">{t('payoutRef.dealerQualify')}</div>
-                    </div>
+                    <RaiseRulesBlock t={t} />
                   </div>
                 </details>
               </div>
@@ -434,6 +441,14 @@ function HighCardFlushPageContent() {
                 <div className="text-ds-text-muted text-xs">
                   {t('label.flushLen')}: {state.playerFlushLen} · {t('label.multiplier')} ≤ {maxMultiplier}
                 </div>
+                <details className="bg-black/30 rounded-lg w-full max-w-sm" data-testid="hcf-raise-rules-action">
+                  <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
+                    {t('payoutRef.raiseRulesHeader')}
+                  </summary>
+                  <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-2">
+                    <RaiseRulesBlock t={t} showHeader={false} />
+                  </div>
+                </details>
                 <div className="flex flex-wrap justify-center gap-2">
                   {[1, 2, 3].map((m) =>
                     maxMultiplier >= m ? (

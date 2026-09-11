@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, highcardflushApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -235,8 +235,25 @@ describe('HighCardFlushPage', () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderWithProviders(<HighCardFlushPage />);
     await waitFor(() => expect(screen.getByText('配当表')).toBeInTheDocument());
-    expect(screen.getByText(/レイズルール/)).toBeInTheDocument();
-    expect(screen.getByText(/ディーラークオリファイ/)).toBeInTheDocument();
+    const payoutReference = screen.getByText('配当表').closest('details');
+    expect(payoutReference).not.toBeNull();
+    expect(within(payoutReference as HTMLElement).getByText('2〜4枚フラッシュ: 最大1倍')).toBeInTheDocument();
+    expect(within(payoutReference as HTMLElement).getByText('5枚フラッシュ: 最大2倍')).toBeInTheDocument();
+    expect(within(payoutReference as HTMLElement).getByText('6〜7枚フラッシュ: 最大3倍')).toBeInTheDocument();
+    expect(within(payoutReference as HTMLElement).getByText('レイズルール')).toBeInTheDocument();
+    expect(within(payoutReference as HTMLElement).getByText(/ディーラークオリファイ/)).toBeInTheDocument();
+    expect(screen.queryByTestId('hcf-raise-rules-action')).not.toBeInTheDocument();
+  });
+
+  it('renders raise rules in the action phase details', async () => {
+    mockExec.mockResolvedValue(actionPhase5Flush);
+    renderWithProviders(<HighCardFlushPage />);
+    const actionRules = await waitFor(() => screen.getByTestId('hcf-raise-rules-action'));
+
+    expect(within(actionRules).getAllByText('レイズルール')).toHaveLength(1);
+    expect(within(actionRules).getByText('2〜4枚フラッシュ: 最大1倍')).toBeInTheDocument();
+    expect(within(actionRules).getByText('5枚フラッシュ: 最大2倍')).toBeInTheDocument();
+    expect(within(actionRules).getByText('6〜7枚フラッシュ: 最大3倍')).toBeInTheDocument();
   });
 
   it('shows hint tooltip when hints are enabled', async () => {
