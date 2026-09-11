@@ -545,12 +545,13 @@ function AlaskaPageContent() {
 
             {error && <ErrorAlert message={error} onRetry={retry} />}
 
-            {/* Visually hidden so the hint costs no footer space, but still announced to AT. */}
-            {requestedHint && (
-              <div className="sr-only" role="status" aria-live="polite">
-                {t('hintAnnouncement', { card: hintCardName, dest: hintDest })}
-              </div>
-            )}
+            {/*
+              ライブ領域は常設し、中身だけを更新する。領域と文言が同時に現れると
+              変化として扱われず読み上げられないことがある (#5596)。
+            */}
+            <div className="sr-only" data-testid="alaska-hint-live" role="status" aria-live="polite">
+              {requestedHint && t('hintAnnouncement', { card: hintCardName, dest: hintDest })}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection
