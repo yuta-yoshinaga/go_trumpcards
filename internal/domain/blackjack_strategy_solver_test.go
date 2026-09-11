@@ -134,7 +134,8 @@ func (r solverRules) dealerDist(u int) map[int]float64 {
 
 	out := map[int]float64{}
 	memo := map[[2]int]map[int]float64{}
-	for c, p := range holes {
+	for _, c := range sortedIntMapKeys(holes) {
+		p := holes[c]
 		total, soft := addCard(u, false, c)
 		if u == 1 || c == 1 {
 			soft = true
@@ -144,7 +145,9 @@ func (r solverRules) dealerDist(u int) map[int]float64 {
 				soft = false
 			}
 		}
-		for score, q := range r.dealerFrom(total, soft, memo) {
+		distribution := r.dealerFrom(total, soft, memo)
+		for _, score := range sortedIntMapKeys(distribution) {
+			q := distribution[score]
 			out[score] += q * p / norm
 		}
 	}
@@ -187,12 +190,26 @@ func (r solverRules) dealerFrom(total int, soft bool, memo map[[2]int]map[int]fl
 			continue
 		}
 		nt, ns := addCard(total, soft, c)
-		for score, q := range r.dealerFrom(nt, ns, memo) {
+		distribution := r.dealerFrom(nt, ns, memo)
+		for _, score := range sortedIntMapKeys(distribution) {
+			q := distribution[score]
 			res[score] += q * p
 		}
 	}
 	memo[key] = res
 	return res
+}
+
+// sortedIntMapKeys makes every accumulation over a dealer distribution
+// reproducible. Floating-point addition is order-dependent, so map iteration
+// would otherwise make equal EVs choose different actions between runs.
+func sortedIntMapKeys[V any](values map[int]V) []int {
+	keys := make([]int, 0, len(values))
+	for key := range values {
+		keys = append(keys, key)
+	}
+	sort.Ints(keys)
+	return keys
 }
 
 // addCard は (total, soft) にBJ値 c を足した結果を返す。
@@ -273,7 +290,8 @@ func (r solverRules) evStand(h handState, dealer map[int]float64) float64 {
 	}
 
 	var ev float64
-	for dscore, p := range dealer {
+	for _, dscore := range sortedIntMapKeys(dealer) {
+		p := dealer[dscore]
 		res := r.judge(h, dscore)
 		switch res {
 		case GameResultLose:

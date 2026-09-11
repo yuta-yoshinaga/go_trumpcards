@@ -217,6 +217,107 @@ func TestGenerateDoubleExposureTable(t *testing.T) {
 	}
 }
 
+// TestDoubleExposureTable_MatchesSolver keeps the committed tables and the
+// solver in step. Editing one without the other is exactly how a strategy
+// table rots.
+func TestDoubleExposureTable_MatchesSolver(t *testing.T) {
+	r := doubleExposureRules()
+	var drift []string
+
+	check := func(label string, h handState, isPair bool, pv int, got BJSuggestedAction, dealerTotal int, dealerSoft bool) {
+		want := r.solveCellVsDealerTotal(h, dealerTotal, dealerSoft, isPair, pv)
+		// The solver is deterministic because EV sums use sorted distribution keys,
+		// not map iteration order, so this comparison can be exact.
+		if got != want {
+			dealerState := fmt.Sprintf("hard%d", dealerTotal)
+			if dealerSoft {
+				dealerState = fmt.Sprintf("soft%d", dealerTotal)
+			}
+			drift = append(drift, fmt.Sprintf("%s-vs-%s: table=%s solver=%s",
+				label, dealerState, actionLetter(got), actionLetter(want)))
+		}
+	}
+
+	for dealerIndex := 0; dealerIndex < 26; dealerIndex++ {
+		dealerTotal, dealerSoft := dealerIndex+4, false
+		if dealerIndex >= 17 {
+			dealerTotal, dealerSoft = dealerIndex-5, true
+		}
+
+		for total := 5; total <= 20; total++ {
+			check(fmt.Sprintf("hard%d", total), hardHandOfTotal(total), false, 0,
+				doubleExposureHardTable[total-5][dealerIndex], dealerTotal, dealerSoft)
+		}
+		for total := 13; total <= 20; total++ {
+			check(fmt.Sprintf("soft%d", total), newHand(1, total-11), false, 0,
+				doubleExposureSoftTable[total-13][dealerIndex], dealerTotal, dealerSoft)
+		}
+		for pv := 1; pv <= 10; pv++ {
+			check(fmt.Sprintf("pair%d", pv), newHand(pv, pv), true, pv,
+				doubleExposurePairTable[pv-1][dealerIndex], dealerTotal, dealerSoft)
+		}
+	}
+
+	if len(drift) > 0 {
+		t.Fatalf("committed Double Exposure table drifted from the solver in %d cell(s):\n%s"+
+			"regenerate with: go test -tags test ./internal/domain -run TestGenerateDoubleExposureTable -v",
+			len(drift), joinLines(drift))
+	}
+}
+
+// TestDoubleExposureTable_StandInvariants checks the 192 hard/soft cells
+// where the dealer is already standing under the default S17 rules. In Double
+// Exposure a tie loses: standing must not be recommended when the player's
+// total is at most the dealer's, and must be recommended when it is greater.
+// Pairs are deliberately excluded because splitting changes the decision and
+// invalidates this direct stand-versus-draw argument.
+func TestDoubleExposureTable_StandInvariants(t *testing.T) {
+	type dealerState struct {
+		total int
+		soft  bool
+		name  string
+	}
+	dealers := []dealerState{
+		{total: 17, name: "hard17"},
+		{total: 18, name: "hard18"},
+		{total: 19, name: "hard19"},
+		{total: 20, name: "hard20"},
+		{total: 17, soft: true, name: "soft17"},
+		{total: 18, soft: true, name: "soft18"},
+		{total: 19, soft: true, name: "soft19"},
+		{total: 20, soft: true, name: "soft20"},
+	}
+
+	var violations []string
+	check := func(handLabel string, playerTotal int, got BJSuggestedAction, dealer dealerState) {
+		shouldStand := playerTotal > dealer.total
+		violates := (shouldStand && got != BJSuggestStand) || (!shouldStand && got == BJSuggestStand)
+		if violates {
+			violations = append(violations, fmt.Sprintf(
+				"%s-vs-%s: player=%d dealer=%d expected stand=%t got=%s",
+				handLabel, dealer.name, playerTotal, dealer.total, shouldStand, actionLetter(got)))
+		}
+	}
+
+	for _, dealer := range dealers {
+		dealerIndex := dealer.total - 4
+		if dealer.soft {
+			dealerIndex = 17 + dealer.total - 12
+		}
+		for total := 5; total <= 20; total++ {
+			check(fmt.Sprintf("hard%d", total), total, doubleExposureHardTable[total-5][dealerIndex], dealer)
+		}
+		for total := 13; total <= 20; total++ {
+			check(fmt.Sprintf("soft%d", total), total, doubleExposureSoftTable[total-13][dealerIndex], dealer)
+		}
+	}
+
+	if len(violations) > 0 {
+		t.Fatalf("Double Exposure stand invariant violated in %d cell(s):\n%s",
+			len(violations), joinLines(violations))
+	}
+}
+
 // TestSpanish21_SoftFourteenVsFour records why this cell disagrees with the
 // published Spanish 21 advice, so the divergence is evidence rather than doubt.
 //

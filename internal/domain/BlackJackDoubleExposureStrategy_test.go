@@ -58,6 +58,42 @@ func TestDoubleExposureStrategy_NaturalAndSoftRules(t *testing.T) {
 	)
 }
 
+func TestDoubleExposureStrategy_LookupBranchesAndDealerClamping(t *testing.T) {
+	t.Run("player 21 returns stand", func(t *testing.T) {
+		assert.Equal(t, BJSuggestStand, GetDoubleExposureStrategyAction(deHand(1, 10), 4, false))
+	})
+
+	t.Run("soft dealer clamps to both ends", func(t *testing.T) {
+		hand := deHand(9, 3)
+		assert.Equal(t, doubleExposureHardTable[7][17], GetDoubleExposureStrategyAction(hand, 11, true))
+		assert.Equal(t, doubleExposureHardTable[7][25], GetDoubleExposureStrategyAction(hand, 21, true))
+	})
+
+	t.Run("hard dealer clamps to both ends", func(t *testing.T) {
+		hand := deHand(9, 3)
+		assert.Equal(t, doubleExposureHardTable[7][0], GetDoubleExposureStrategyAction(hand, 3, false))
+		assert.Equal(t, doubleExposureHardTable[7][16], GetDoubleExposureStrategyAction(hand, 21, false))
+	})
+
+	t.Run("hard soft and pair hands use their tables", func(t *testing.T) {
+		hard := deHand(9, 3)
+		soft := deHand(1, 2)
+		pair := deHand(8, 8)
+		assert.Equal(t, doubleExposureHardTable[7][0], GetDoubleExposureStrategyAction(hard, 4, false))
+		assert.Equal(t, doubleExposureSoftTable[0][0], GetDoubleExposureStrategyAction(soft, 4, false))
+		assert.Equal(t, doubleExposurePairTable[7][0], GetDoubleExposureStrategyAction(pair, 4, false))
+	})
+
+	t.Run("soft and hard dealers use different columns", func(t *testing.T) {
+		hand := deHand(9, 3)
+		hard := GetDoubleExposureStrategyAction(hand, 13, false)
+		soft := GetDoubleExposureStrategyAction(hand, 13, true)
+		assert.Equal(t, doubleExposureHardTable[7][9], hard)
+		assert.Equal(t, doubleExposureHardTable[7][18], soft)
+		assert.NotEqual(t, hard, soft)
+	})
+}
+
 func TestDoubleExposureGame_SuggestionUsesVisibleDealerTotal(t *testing.T) {
 	bj := NewDoubleExposureBlackJack()
 	bj.ToggleHint()
