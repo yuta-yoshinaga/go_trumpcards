@@ -39,6 +39,7 @@ type ThreeThirteenWebOutput struct {
 	Players          []*ThreeThirteenWebOutputPlayer `json:"players"`
 	Phase            int                             `json:"phase"`
 	Round            int                             `json:"round"`
+	MaxRound         int                             `json:"maxRound"`
 	WildRank         int                             `json:"wildRank"`
 	DealCount        int                             `json:"dealCount"`
 	CurrentPlayerIdx int                             `json:"currentPlayerIdx"`

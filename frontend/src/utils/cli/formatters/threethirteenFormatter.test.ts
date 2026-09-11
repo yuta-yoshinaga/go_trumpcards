@@ -28,6 +28,7 @@ const baseState: ThreeThirteenResponse = {
   ],
   phase: 1,
   round: 2,
+  maxRound: 11,
   wildRank: 4,
   dealCount: 4,
   currentPlayerIdx: 0,
@@ -50,6 +51,12 @@ describe('formatThreeThirteenState', () => {
     expect(out).toContain('DISCARD');
     expect(out).toContain('total=30');
     expect(out).toContain('stock: 24');
+  });
+
+  it('falls back to UNKNOWN for an unrecognized phase', () => {
+    const out = formatThreeThirteenState({ ...baseState, phase: 99 });
+    expect(out).toContain('round: 2/11');
+    expect(out).toContain('phase: UNKNOWN');
   });
 
   it('renders knocker line when someone knocked', () => {

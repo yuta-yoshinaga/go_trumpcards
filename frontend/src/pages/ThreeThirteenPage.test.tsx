@@ -33,6 +33,7 @@ const drawPhaseState: ThreeThirteenResponse = {
   ],
   phase: 0,
   round: 2,
+  maxRound: 11,
   wildRank: 4,
   dealCount: 4,
   currentPlayerIdx: 0,
@@ -77,7 +78,15 @@ describe('ThreeThirteenPage', () => {
     await waitFor(() => expect(screen.getByTestId('threethirteen-round-banner')).toBeInTheDocument());
     const banner = screen.getByTestId('threethirteen-round-banner');
     expect(banner).toHaveTextContent('ワイルド: 4');
-    expect(banner).toHaveTextContent('ラウンド 2/11');
+    expect(banner).toHaveTextContent('ラウンド 2 / 11');
+    expect(screen.queryByTestId('threethirteen-final-round-badge')).not.toBeInTheDocument();
+  });
+
+  it('shows a badge on the final round', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, round: 11 });
+    renderWithProviders(<ThreeThirteenPage />);
+    await waitFor(() => expect(screen.getByTestId('threethirteen-final-round-badge')).toBeInTheDocument());
+    expect(screen.getByTestId('threethirteen-final-round-badge')).toHaveTextContent('最終ラウンド');
   });
 
   it('shows deadwood indicator during discard phase', async () => {

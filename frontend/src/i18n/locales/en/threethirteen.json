@@ -13,7 +13,8 @@
     "normal": "Normal",
     "hard": "Hard"
   },
-  "round": "Round {{n}}/11",
+  "round": "Round {{n}} / {{max}}",
+  "finalRound": "Final round",
   "wildRank": "Wild: {{rank}}",
   "wildBadge": "WILD",
   "wildAria": "(wild)",

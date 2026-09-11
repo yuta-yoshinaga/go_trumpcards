@@ -47040,6 +47040,9 @@ components:
         round:
           type: integer
           description: Current round number (1 to 11)
+        maxRound:
+          type: integer
+          description: Maximum number of rounds in the game
         wildRank:
           type: integer
           description: The wild card rank for the current round

@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -107,6 +108,12 @@ func TestThreeThirteenCuiPresenter_Output(t *testing.T) {
 		m2, _ := setupThreeThirteenCuiMock(domain.ThreeThirteenPhaseRoundEnd, false)
 		out2 := p.Output(m2, nil)
 		assert.NotContains(t, out2, "デッドウッド?") // all hands revealed at round end
+	})
+
+	t.Run("header includes the maximum round", func(t *testing.T) {
+		m, _ := setupThreeThirteenCuiMock(domain.ThreeThirteenPhaseDraw, false)
+		out := p.Output(m, nil)
+		assert.Contains(t, out, fmt.Sprintf("ラウンド 1/%d", domain.ThreeThirteenMaxRound))
 	})
 
 	t.Run("error block", func(t *testing.T) {
