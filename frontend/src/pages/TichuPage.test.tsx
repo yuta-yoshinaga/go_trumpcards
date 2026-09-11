@@ -109,7 +109,7 @@ describe('TichuPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/CPU 1/)).toBeInTheDocument();
     });
-    expect(screen.getByText('ティチュー')).toBeInTheDocument();
+    expect(screen.getByText(/14\s*枚\s*·\s*ティチュー/)).toBeInTheDocument();
     expect(screen.getByText(/グランドティチュー/)).toBeInTheDocument();
   });
 
