@@ -251,17 +251,19 @@ describe('KingoPage', () => {
 
     mockApi.mockClear();
     fireEvent.keyDown(document, { key: 'd' });
-    await waitFor(() => expect(mockApi).not.toHaveBeenCalledWith('deal'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(mockApi).not.toHaveBeenCalledWith('deal');
   });
 
   it('張りの段階でなければ d キーで配るを送らない', async () => {
-    mockApi.mockResolvedValue(withState({ phase: KingoPhase.RESULT, isHumanTurn: false }));
+    mockApi.mockResolvedValue(withState({ phase: KingoPhase.RESULT, isHumanBanker: true, isHumanTurn: false }));
     renderWithProviders(<KingoPage />);
     await waitFor(() => expect(screen.getByTestId('kingo-next')).toBeInTheDocument());
 
     mockApi.mockClear();
     fireEvent.keyDown(document, { key: 'd' });
-    await waitFor(() => expect(mockApi).not.toHaveBeenCalledWith('deal'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(mockApi).not.toHaveBeenCalledWith('deal');
   });
 
   it('決着では既存の n キーで次へ進む', async () => {
