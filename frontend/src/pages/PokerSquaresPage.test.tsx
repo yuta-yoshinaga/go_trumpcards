@@ -28,6 +28,13 @@ vi.mock('../hooks/useCliMode', () => ({
 const mockApi = vi.mocked(pokersquaresApi.exec);
 const mockUseCliMode = vi.mocked(useCliMode);
 
+const userEvent = {
+  click: async (element: HTMLElement) => {
+    fireEvent.pointerDown(element, { pointerType: 'mouse' });
+    fireEvent.click(element);
+  },
+};
+
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 /** Build an empty 5x5 board. */
@@ -128,6 +135,82 @@ describe('PokerSquaresPage', () => {
     mockApi.mockResolvedValue(playingStateWithUndo);
     fireEvent.click(screen.getByTestId('cell-2-3'));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('place', 2, 3));
+  });
+
+  it('does not place on the first touch tap and keeps the preview visible', async () => {
+    const board = emptyBoard();
+    board[0][0] = { card: card('HEART', 2) };
+    mockApi.mockResolvedValue({ ...playingState, board, currentCard: card('HEART', 2), placedCount: 1 });
+    renderWithProviders(<PokerSquaresPage />);
+    const cell = await screen.findByTestId('cell-0-1');
+    mockApi.mockClear();
+
+    fireEvent.pointerDown(cell, { pointerType: 'touch' });
+    fireEvent.click(cell);
+    fireEvent.pointerLeave(cell);
+    await flushPendingDispatch();
+
+    expect(mockApi).not.toHaveBeenCalledWith('place', 0, 1);
+    expect(cell).toHaveAttribute('data-armed', 'true');
+    expect(screen.getByTestId('row-partial-preview-0')).toBeInTheDocument();
+    expect(screen.getByTestId('ps-touch-hint')).toHaveTextContent('もう一度タップで確定');
+    expect(screen.getByTestId('ps-preview-live')).toHaveTextContent('もう一度タップで確定');
+  });
+
+  it('places once when the same cell is tapped twice', async () => {
+    mockApi.mockResolvedValue(playingState);
+    renderWithProviders(<PokerSquaresPage />);
+    const cell = await screen.findByTestId('cell-0-0');
+    mockApi.mockClear();
+
+    fireEvent.pointerDown(cell, { pointerType: 'touch' });
+    fireEvent.click(cell);
+    fireEvent.pointerDown(cell, { pointerType: 'touch' });
+    fireEvent.click(cell);
+
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('place', 0, 0));
+    expect(mockApi.mock.calls.filter(([action]) => action === 'place')).toHaveLength(1);
+  });
+
+  it('arms the second cell without placing when touch taps move from cell A to cell B', async () => {
+    mockApi.mockResolvedValue(playingState);
+    renderWithProviders(<PokerSquaresPage />);
+    const cellA = await screen.findByTestId('cell-0-0');
+    const cellB = screen.getByTestId('cell-0-1');
+    mockApi.mockClear();
+
+    fireEvent.pointerDown(cellA, { pointerType: 'touch' });
+    fireEvent.click(cellA);
+    fireEvent.pointerDown(cellB, { pointerType: 'touch' });
+    fireEvent.click(cellB);
+    await flushPendingDispatch();
+
+    expect(mockApi).not.toHaveBeenCalledWith('place', 0, 0);
+    expect(mockApi).not.toHaveBeenCalledWith('place', 0, 1);
+    expect(cellA).not.toHaveAttribute('data-armed');
+    expect(cellB).toHaveAttribute('data-armed', 'true');
+  });
+
+  it('places immediately for a mouse click', async () => {
+    mockApi.mockResolvedValue(playingState);
+    renderWithProviders(<PokerSquaresPage />);
+    const cell = await screen.findByTestId('cell-0-0');
+    mockApi.mockClear();
+
+    await userEvent.click(cell);
+
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('place', 0, 0));
+  });
+
+  it('places immediately for a click without pointerdown', async () => {
+    mockApi.mockResolvedValue(playingState);
+    renderWithProviders(<PokerSquaresPage />);
+    const cell = await screen.findByTestId('cell-0-0');
+    mockApi.mockClear();
+
+    fireEvent.click(cell);
+
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('place', 0, 0));
   });
 
   it('announces the row score preview in a live region on focus and clears it on blur', async () => {
