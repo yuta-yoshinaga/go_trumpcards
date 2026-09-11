@@ -250,6 +250,8 @@ function AcesUpPageContent() {
                           const top = rowIdx * (cardHeight - rowOverlap);
                           const isTop = rowIdx === topIdx;
                           if (isTop) {
+                            const isCardDisabled = !isPlaying || busy || !c.removable;
+                            const isDragSource = dnd.isDragSource(columnZone);
                             return (
                               <div
                                 key={`c-${colIdx.toString()}-${rowIdx.toString()}`}
@@ -259,17 +261,25 @@ function AcesUpPageContent() {
                                 <button
                                   type="button"
                                   onClick={() => handleRemove(colIdx)}
-                                  disabled={!isPlaying || busy || !c.removable}
+                                  disabled={isCardDisabled}
                                   aria-label={cardAlt(c.card)}
                                   draggable={isPlaying && !busy && c.movable === true}
                                   onDragStart={dnd.handleDragStart(columnZone)}
                                   onDragEnd={dnd.handleDragEnd}
-                                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
+                                  className={`relative p-0 ${c.movable ? 'border border-ds-info' : 'border-0'} bg-transparent rounded ${focusRingWhite} ${
                                     isHinted ? 'ring-2 ring-ds-warning' : ''
-                                  } ${!c.removable ? 'opacity-90' : ''} ${
-                                    dnd.isDragSource(columnZone) ? 'opacity-50' : ''
-                                  }`}
+                                  } ${isCardDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} ${
+                                    !c.removable || isDragSource ? 'opacity-50' : ''
+                                  } ${!c.removable ? 'grayscale' : ''}`}
                                 >
+                                  {c.movable && (
+                                    <span
+                                      aria-hidden="true"
+                                      className="absolute top-1 right-1 z-10 rounded border border-ds-info bg-ds-surface px-1 text-xs leading-tight text-ds-info"
+                                    >
+                                      ↗
+                                    </span>
+                                  )}
                                   <AnimatedCard card={c.card} width={cardWidth} />
                                 </button>
                               </div>

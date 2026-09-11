@@ -118,6 +118,37 @@ describe('AcesUpPage', () => {
     expect(screen.getAllByText('空').length).toBeGreaterThanOrEqual(1);
   });
 
+  it('marks non-removable and movable top cards clearly', async () => {
+    renderWithProviders(<AcesUpPage />);
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
+
+    const removableCard = screen.getByRole('button', { name: '♠ 5' });
+    const movableCard = screen.getByRole('button', { name: '♠ 9' });
+    const unavailableCard = screen.getByRole('button', { name: '♦ 6' });
+
+    expect(removableCard).not.toHaveClass('opacity-50', 'grayscale');
+    expect(removableCard).toHaveClass('cursor-pointer');
+    expect(removableCard).not.toHaveTextContent('↗');
+    expect(movableCard).toHaveTextContent('↗');
+    expect(unavailableCard).toBeDisabled();
+    expect(unavailableCard).toHaveClass('opacity-50', 'grayscale', 'cursor-not-allowed');
+    expect(unavailableCard).not.toHaveTextContent('↗');
+  });
+
+  it('keeps the movable marker visible alongside a hint ring', async () => {
+    renderWithProviders(<AcesUpPage />);
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({ ...playingState, hint: { type: 'move', col: 1 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => {
+      const hintedMovableCard = screen.getByRole('button', { name: '♠ 9' });
+      expect(hintedMovableCard).toHaveClass('ring-2', 'ring-ds-warning', 'border', 'border-ds-info');
+      expect(hintedMovableCard).toHaveTextContent('↗');
+      expect(hintedMovableCard).not.toHaveClass('ring-ds-info');
+    });
+  });
+
   it('clicking deal button dispatches draw', async () => {
     renderWithProviders(<AcesUpPage />);
     await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
