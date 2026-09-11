@@ -261,6 +261,7 @@ function BigOPageContent() {
                     faceDownCount={5}
                     showHandName={isShowdown}
                     usedHoleIdx={cpuUsedHoleIdx}
+                    usedHoleLabel={t('cardUsed')}
                     extraInfo={
                       player.totalHands > 0 ? (
                         <HudStats
