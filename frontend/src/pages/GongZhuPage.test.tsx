@@ -70,6 +70,33 @@ describe('GongZhuPage', () => {
     expect(hint.textContent).toContain('[1] ♦ J');
   });
 
+  it('names the cards in the live region when a server hint is returned', async () => {
+    mockExec.mockResolvedValueOnce(playPhaseState).mockResolvedValueOnce({
+      ...playPhaseState,
+      hint: { cardIndices: [0, 1], reason: 'lead_low' },
+    });
+    renderWithProviders(<GongZhuPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
+    const live = await screen.findByTestId('gongzhu-hint-live');
+    await waitFor(() => expect(live).toHaveTextContent('[0] ♠ Q, [1] ♦ J'));
+  });
+
+  it('falls back to only the index for an out-of-range server hint', async () => {
+    mockExec.mockResolvedValueOnce(playPhaseState).mockResolvedValueOnce({
+      ...playPhaseState,
+      hint: { cardIndices: [99], reason: 'lead_low' },
+    });
+    renderWithProviders(<GongZhuPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
+    const live = await screen.findByTestId('gongzhu-hint-live');
+    await waitFor(() => {
+      expect(live).toHaveTextContent('[99]');
+      expect(live).not.toHaveTextContent('undefined');
+    });
+  });
+
   it('shows exposed point cards with localized symbols and an aria-label', async () => {
     mockExec.mockResolvedValue(makeGongZhuState({ exposed: { pig: true, sheep: true, ace: true, doubler: true } }));
     renderWithProviders(<GongZhuPage />);
