@@ -7,7 +7,7 @@
   "helpNextRound": "  nr                   次のラウンドへ",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetPlayers": "  sp [2-4]             プレイヤー数",
-  "header": "ラウンド {{round}}/11  ワイルド: {{wild}}  山札: {{stock}}枚",
+  "header": "ラウンド {{round}}/{{maxRound}}  ワイルド: {{wild}}  山札: {{stock}}枚",
   "discardLine": "捨て札: {{card}}",
   "discardPreview": "  捨てた後のデッドウッド: {{values}}",
   "playerLine": "{{name}}: 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚 デッドウッド{{deadwood}}",

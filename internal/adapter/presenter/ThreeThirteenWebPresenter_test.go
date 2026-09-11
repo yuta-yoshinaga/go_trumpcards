@@ -60,6 +60,7 @@ func TestThreeThirteenWebPresenter_Output(t *testing.T) {
 		out := unmarshalThreeThirteen(t, p.Output(m, nil))
 		assert.Len(t, out.Players, 2)
 		assert.Equal(t, 2, out.Round)
+		assert.Equal(t, domain.ThreeThirteenMaxRound, out.MaxRound)
 		assert.Equal(t, 4, out.WildRank)
 		assert.Equal(t, "threethirteen.drawPhase", out.MessageCode)
 		assert.NotNil(t, out.DiscardTop)

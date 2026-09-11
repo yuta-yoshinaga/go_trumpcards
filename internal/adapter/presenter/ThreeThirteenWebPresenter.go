@@ -16,6 +16,7 @@ func (p *ThreeThirteenWebPresenter) Output(g interfaces.ThreeThirteenGame, lastE
 	resObj := new(controller.ThreeThirteenWebOutput)
 	resObj.Phase = int(g.GetPhase())
 	resObj.Round = g.GetRound()
+	resObj.MaxRound = domain.ThreeThirteenMaxRound
 	resObj.WildRank = g.WildRank()
 	resObj.DealCount = g.GetDealCount()
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()
