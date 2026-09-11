@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { bourreApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -57,6 +58,29 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="bourre-controls"]', messageKey: 'tutorial.decide', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="bourre-table"]', messageKey: 'tutorial.play', placement: 'bottom', advanceOn: 'next' },
 ];
+
+type PlayerDisplayProps = {
+  player: BourreResponse['players'][number];
+  isDealer: boolean;
+  testIds?: { player?: string; chips?: string };
+  t: TFunction;
+  playerStatus: (player: BourreResponse['players'][number]) => string;
+};
+
+function PlayerDisplay({ player, isDealer, testIds, t, playerStatus }: PlayerDisplayProps) {
+  return (
+    <div className="text-center text-ds-text-primary text-sm" data-testid={testIds?.player}>
+      <div className="font-bold">
+        {playerName(player.id, player.isHuman)}
+        {isDealer ? ` (${t('label.dealer')})` : ''}
+      </div>
+      <div data-testid={testIds?.chips}>
+        {player.chips} {t('label.chips')}
+      </div>
+      <div className="text-xs opacity-75">{playerStatus(player)}</div>
+    </div>
+  );
+}
 
 function parseBourreCommand(input: string): CliParseResult<[ApiArgs]> {
   const parts = input.trim().split(/\s+/);
@@ -300,16 +324,13 @@ function BourrePageContent() {
             {state.players
               .filter((p) => !p.isHuman)
               .map((p) => (
-                <div key={p.id} className="text-center text-ds-text-primary text-sm">
-                  <div className="font-bold">
-                    {playerName(p.id, p.isHuman)}
-                    {p.id === state.dealerIdx ? ` (${t('label.dealer')})` : ''}
-                  </div>
-                  <div>
-                    {p.chips} {t('label.chips')}
-                  </div>
-                  <div className="text-xs opacity-75">{playerStatus(p)}</div>
-                </div>
+                <PlayerDisplay
+                  key={p.id}
+                  player={p}
+                  isDealer={p.id === state.dealerIdx}
+                  t={t}
+                  playerStatus={playerStatus}
+                />
               ))}
           </div>
 
@@ -374,6 +395,17 @@ function BourrePageContent() {
             >
               {t('decideSummary', { pot: state.pot, penalty })}
             </p>
+          )}
+
+          {/* Human player */}
+          {humanPlayer && (
+            <PlayerDisplay
+              player={humanPlayer}
+              isDealer={humanPlayer.id === state.dealerIdx}
+              testIds={{ player: 'bourre-human-player', chips: 'bourre-human-chips' }}
+              t={t}
+              playerStatus={playerStatus}
+            />
           )}
 
           {/* Human hand */}
