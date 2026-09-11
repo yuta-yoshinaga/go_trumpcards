@@ -162,9 +162,13 @@ function MonteBankPageContent() {
                   // **リングと同じ式で押下状態を出す。** 決着後は isBetPhase が
                   // 偽になるので、張った札が色でだけ示されて読み上げから消えていた。
                   aria-pressed={isPickedOrSelected(entry, i)}
-                  disabled={!isBetPhase || loading}
-                  onClick={() => setSelected(i)}
-                  className={`flex flex-col items-center rounded px-1 py-1 ${
+                  disabled={loading}
+                  aria-disabled={!isBetPhase || undefined}
+                  onClick={() => {
+                    if (!isBetPhase) return;
+                    setSelected(i);
+                  }}
+                  className={`flex flex-col items-center rounded px-1 py-1 disabled:cursor-not-allowed aria-disabled:cursor-not-allowed ${
                     isPickedOrSelected(entry, i) ? 'ring-2 ring-ds-success' : ''
                   }`}
                 >
