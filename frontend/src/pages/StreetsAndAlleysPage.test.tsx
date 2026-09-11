@@ -151,6 +151,48 @@ describe('StreetsAndAlleysPage', () => {
     }
   });
 
+  it('highlights an empty foundation for an ace in preview and selection, but not for a five', async () => {
+    const emptyFoundationState: StreetsAndAlleysResponse = {
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 1), faceUp: true },
+        ],
+        [{ card: card('HEART', 6), faceUp: true }],
+        [{ card: card('DIAMOND', 5), faceUp: true }],
+        [],
+        [],
+        [],
+        [],
+        [],
+      ]),
+      foundation: [[], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+    };
+    mockExec.mockResolvedValue(emptyFoundationState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+
+    const emptyFoundation = await screen.findByRole('button', { name: '空の組札 (♠)' });
+    const ace = screen.getByRole('button', { name: '♠ A' });
+    const five = screen.getByRole('button', { name: '♦ 5' });
+
+    fireEvent.mouseEnter(ace);
+    await waitFor(() => expect(emptyFoundation).toHaveAttribute('data-target-candidate', 'true'));
+    expect(emptyFoundation.className.split(' ')).toContain('ring-ds-info/70');
+    expect(emptyFoundation.className.split(' ')).not.toContain('ring-ds-info');
+
+    fireEvent.mouseLeave(ace);
+    fireEvent.click(ace);
+    await waitFor(() => expect(emptyFoundation).not.toHaveAttribute('data-preview-target'));
+    expect(emptyFoundation).toHaveAttribute('data-target-candidate', 'true');
+    expect(emptyFoundation.className.split(' ')).toContain('ring-ds-info');
+    expect(emptyFoundation.className.split(' ')).not.toContain('ring-ds-info/70');
+
+    fireEvent.click(ace);
+    fireEvent.click(five);
+    await waitFor(() => expect(emptyFoundation).not.toHaveAttribute('data-target-candidate'));
+  });
+
   it('dims a tableau card while it is being dragged', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<StreetsAndAlleysPage />);
