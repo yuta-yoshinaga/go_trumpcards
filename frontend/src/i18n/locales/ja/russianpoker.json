@@ -69,6 +69,7 @@
   "exchangeGuide": "交換したいカードをタップで選択し、「交換」を押してください",
   "exchangeKbdHint": "キーボード: 数字キー(1〜9,0)で選択、Enterで交換、Escで選択解除",
   "exchangeFeeInfo": "手数料: 1枚あたりアンテ × {{ante}} = {{fee}}",
+  "buy6thFeeInfo": "「6枚目を購入」の手数料: アンテ同額 = {{fee}}",
   "exchangeFeeHighRisk": "高コスト警告",
   "exchangeSelected": "選択中: {{count}}枚",
   "selectGuide": "6枚のカードから1枚を選んで捨ててください",
