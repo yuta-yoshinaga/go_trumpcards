@@ -138,6 +138,30 @@ describe('PutPage', () => {
     expect(screen.getByRole('button', { name: '♦ J を出す' })).toBeInTheDocument();
   });
 
+  it('keeps the human count and trick total visible after the hand is empty', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 3,
+        players: [
+          { ...makeState().players[0], cardCount: 0, cards: [], trickCount: 2 },
+          { ...makeState().players[1], cardCount: 3, trickCount: 1 },
+        ],
+      }),
+    );
+    renderWithProviders(<PutPage />);
+
+    await waitFor(() => expect(screen.getByText(/あなた: 0 \/ 獲得トリック: 2/)).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '♠ A を出す' })).not.toBeInTheDocument();
+  });
+
+  it('keeps both count rows and the human cards visible during normal play', async () => {
+    renderWithProviders(<PutPage />);
+
+    await waitFor(() => expect(screen.getByText(/あなた: 3 \/ 獲得トリック: 0/)).toBeInTheDocument());
+    expect(screen.getByText(/CPU: 3 \/ 獲得トリック: 0/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ A を出す' })).toBeInTheDocument();
+  });
+
   it('fires play with the selected card index when a card is clicked', async () => {
     renderWithProviders(<PutPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '♥ 5 を出す' })).toBeInTheDocument());
