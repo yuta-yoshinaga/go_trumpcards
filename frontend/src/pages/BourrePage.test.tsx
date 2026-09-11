@@ -123,6 +123,48 @@ describe('BourrePage', () => {
     });
   });
 
+  it('renders the human player chip balance and follows state updates', async () => {
+    mockExec.mockResolvedValueOnce(
+      makeState({ phase: 'roundEnd', players: [player({ id: 0, isHuman: true, chips: 42 })] }),
+    );
+    mockExec.mockResolvedValueOnce(makeState({ players: [player({ id: 0, isHuman: true, chips: 17 })] }));
+    renderWithProviders(<BourrePage />);
+
+    const chips = await screen.findByTestId('bourre-human-chips');
+    expect(chips).toHaveTextContent('42 チップ');
+
+    fireEvent.click(screen.getByRole('button', { name: '次のハンド' }));
+    await waitFor(() => expect(chips).toHaveTextContent('17 チップ'));
+  });
+
+  it.each([
+    {
+      name: 'dealer',
+      state: makeState({ dealerIdx: 0 }),
+      expectedPlayer: 'あなた (親)',
+      expectedStatus: '0 トリック',
+    },
+    {
+      name: 'folded',
+      state: makeState({ players: [player({ id: 0, isHuman: true, folded: true })] }),
+      expectedPlayer: 'あなた',
+      expectedStatus: 'フォールド',
+    },
+    {
+      name: 'bourreed',
+      state: makeState({ players: [player({ id: 0, isHuman: true, bourreed: true })] }),
+      expectedPlayer: 'あなた',
+      expectedStatus: 'ブーレ',
+    },
+  ])('renders the human $name state with the CPU wording', async ({ state, expectedPlayer, expectedStatus }) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<BourrePage />);
+
+    const human = await screen.findByTestId('bourre-human-player');
+    expect(human).toHaveTextContent(expectedPlayer);
+    expect(human).toHaveTextContent(expectedStatus);
+  });
+
   it('shows localized CPU status for finished, folded, and bourréd players', async () => {
     mockExec.mockResolvedValue(
       makeState({
