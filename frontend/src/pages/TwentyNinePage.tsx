@@ -171,7 +171,10 @@ function TwentyNinePageContent() {
   const canPlay = isPlayPhase && isHumanTurn;
   // The trump suit is hidden until trumpRevealed flips true mid-play.
   const revealedTrumpSymbol = state.trumpSuit === 0 ? t('noTrump') : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
-  const trumpSymbol = !state.trumpRevealed ? t('hiddenTrump') : revealedTrumpSymbol;
+  const isHumanDeclarer = state.declarerIdx >= 0 && humanIdx === state.declarerIdx;
+  const trumpSymbol = !state.trumpRevealed && !isHumanDeclarer ? t('hiddenTrump') : revealedTrumpSymbol;
+  const trumpDisplay =
+    !state.trumpRevealed && isHumanDeclarer ? t('trumpVisibleToYou', { suit: trumpSymbol }) : trumpSymbol;
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
@@ -239,7 +242,7 @@ function TwentyNinePageContent() {
             <div className="text-ds-text-primary text-center mb-2" data-tutorial="twentynine-info">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
+              <span className="mr-4">{t('trump', { suit: trumpDisplay })}</span>
               <span>{t('target', { points: state.config.targetPoints })}</span>
             </div>
 

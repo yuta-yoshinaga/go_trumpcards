@@ -177,6 +177,41 @@ func TestTwentyNineCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestTwentyNineCuiPresenter_TrumpVisibility(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.TwentyNineCuiPresenter)
+
+	t.Run("human declarer sees the hidden trump with a private-visibility notice", func(t *testing.T) {
+		m, _ := setupTwentyNineCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpRevealed")
+		m.On("GetTrumpRevealed").Return(false)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ラウンド: 1  トリック: 1  切り札: SPADE（あなたのみ表示）")
+	})
+
+	t.Run("human defender does not see the hidden trump", func(t *testing.T) {
+		m, _ := setupTwentyNineCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeclarerIdx")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpRevealed")
+		m.On("GetDeclarerIdx").Return(1)
+		m.On("GetTrumpRevealed").Return(false)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ラウンド: 1  トリック: 1  切り札: 非公開")
+	})
+
+	t.Run("both perspectives see the revealed trump", func(t *testing.T) {
+		for _, declarerIdx := range []int{0, 1} {
+			m, _ := setupTwentyNineCuiMockWithPlayers()
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeclarerIdx")
+			m.On("GetDeclarerIdx").Return(declarerIdx)
+			result := p.Output(m, nil)
+			assert.Contains(t, result, "ラウンド: 1  トリック: 1  切り札: SPADE")
+		}
+	})
+}
+
 func TestTwentyNineCuiPresenter_HintOutput(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)
