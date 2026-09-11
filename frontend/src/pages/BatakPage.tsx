@@ -87,6 +87,12 @@ const BATAK_PHASE_KEYS: Readonly<Record<number, string>> = {
   [BatakPhase.GAME_END]: 'gameEnd',
 };
 
+function getRoundScorePresentation(roundScore: number) {
+  if (roundScore > 0) return { className: 'text-ds-success', sign: 'positive' };
+  if (roundScore < 0) return { className: 'text-ds-danger', sign: 'negative' };
+  return { className: '', sign: 'zero' };
+}
+
 /** Renders the Batak game page with bidding, trick play, and scoring. */
 export const BatakPage = withTutorial(BatakPageContent, 'batak', BATAK_TUTORIAL_STEPS);
 /** Inner content of the Batak page, wrapped by TutorialProvider. */
@@ -347,7 +353,12 @@ function BatakPageContent() {
                               </td>
                               <td className="text-center">{p.bid < 0 ? '-' : p.bid === 0 ? t('bidPass') : p.bid}</td>
                               <td className="text-center">{p.trickCount}</td>
-                              <td className="text-center">{p.roundScore}</td>
+                              <td
+                                className={`text-center ${getRoundScorePresentation(p.roundScore).className}`}
+                                data-score-sign={getRoundScorePresentation(p.roundScore).sign}
+                              >
+                                {p.roundScore}
+                              </td>
                               <td className="text-center">{p.cumulativeScore}</td>
                             </tr>
                           ))}
@@ -381,7 +392,12 @@ function BatakPageContent() {
                               </td>
                               <td className="text-center">{p.bid < 0 ? '-' : p.bid === 0 ? t('bidPass') : p.bid}</td>
                               <td className="text-center">{p.trickCount}</td>
-                              <td className="text-center">{p.roundScore}</td>
+                              <td
+                                className={`text-center ${getRoundScorePresentation(p.roundScore).className}`}
+                                data-score-sign={getRoundScorePresentation(p.roundScore).sign}
+                              >
+                                {p.roundScore}
+                              </td>
                               <td className="text-center">{p.cumulativeScore}</td>
                             </tr>
                           ))}
