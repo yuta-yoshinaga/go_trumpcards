@@ -25,6 +25,7 @@
   "declarer": "ディクレアラー",
   "dummy": "ダミー",
   "currentTrick": "現在のトリック",
+  "trickWinnerBadge": "勝ち",
   "partnership": "パートナー: {{partner}}",
   "trickCount": "トリック: {{count}}",
   "bidPhase": "ビッドしてください",

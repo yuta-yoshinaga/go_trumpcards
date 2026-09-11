@@ -25,6 +25,7 @@
   "declarer": "Declarer",
   "dummy": "Dummy",
   "currentTrick": "Current Trick",
+  "trickWinnerBadge": "WIN",
   "partnership": "Partner: {{partner}}",
   "trickCount": "Tricks: {{count}}",
   "bidPhase": "Place your bid",
