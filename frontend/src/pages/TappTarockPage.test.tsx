@@ -208,6 +208,93 @@ describe('TappTarockPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
+  it('styles a successful contract result with the success color', async () => {
+    mockExec.mockResolvedValue(
+      makeTappTarockState({
+        ...playState,
+        phase: 4,
+        breakdown: {
+          contract: 2,
+          teamPoints: 60,
+          threshold: 52,
+          won: true,
+          solo: false,
+          base: 18,
+          seats: [18, -18, 18],
+          loser: -1,
+          name: 'dreier',
+        },
+      }),
+    );
+
+    renderWithProviders(<TappTarockPage />);
+
+    const result = await screen.findByTestId('zw-round-result');
+    const message = result.querySelector('[data-result="won"]');
+    expect(message).toHaveClass('text-ds-success');
+    expect(message).toHaveTextContent('成功');
+  });
+
+  it('styles a failed contract result with the danger color', async () => {
+    mockExec.mockResolvedValue(
+      makeTappTarockState({
+        ...playState,
+        phase: 4,
+        breakdown: {
+          contract: 2,
+          teamPoints: 40,
+          threshold: 52,
+          won: false,
+          solo: false,
+          base: 18,
+          seats: [-18, 18, -18],
+          loser: -1,
+          name: 'dreier',
+        },
+      }),
+    );
+
+    renderWithProviders(<TappTarockPage />);
+
+    const result = await screen.findByTestId('zw-round-result');
+    const message = result.querySelector('[data-result="lost"]');
+    expect(message).toHaveClass('text-ds-danger');
+    expect(message).not.toHaveClass('text-ds-success');
+    expect(message).toHaveTextContent('失敗');
+  });
+
+  it('keeps a Trischaken result neutral', async () => {
+    mockExec.mockResolvedValue(
+      makeTappTarockState({
+        ...playState,
+        phase: 4,
+        declarerIdx: -1,
+        contract: 1,
+        contractName: 'trischaken',
+        breakdown: {
+          contract: 1,
+          teamPoints: 33,
+          threshold: 0,
+          won: false,
+          solo: false,
+          base: 3,
+          seats: [1, 1, -3],
+          loser: 2,
+          name: 'trischaken',
+        },
+      }),
+    );
+
+    renderWithProviders(<TappTarockPage />);
+
+    const result = await screen.findByTestId('zw-round-result');
+    const message = result.querySelector('[data-result="trischaken"]');
+    expect(message).not.toHaveClass('text-ds-success');
+    expect(message).not.toHaveClass('text-ds-danger');
+    expect(message).toHaveTextContent('CPU2');
+    expect(message).toHaveTextContent('33');
+  });
+
   // **トリシャーケンだけ結果の文が逆向き。** 最多得点者が負ける。
   it('reports the Trischaken loser instead of a contract result', async () => {
     mockExec.mockResolvedValue(

@@ -59,6 +59,14 @@ const BID_NAMES: Record<number, string> = {
 
 const DISCARD_COUNT = 6;
 
+type RoundResult = 'trischaken' | 'won' | 'lost';
+
+const ROUND_RESULT_COLORS: Record<RoundResult, string> = {
+  trischaken: 'text-ds-text-muted',
+  won: 'text-ds-success',
+  lost: 'text-ds-danger',
+};
+
 /** CPU difficulty options. */
 const CPU_DIFFICULTY_OPTIONS = [0, 1, 2] as const;
 
@@ -122,6 +130,13 @@ function TappTarockPageContent() {
   const isGameEnd = state.gameEndFlag;
   const isHumanTurn = state.isHumanTurn && !isGameEnd;
   const humanWon = isGameEnd && state.winnerPlayer === (human?.id ?? 0);
+  const result: RoundResult | null = state.breakdown
+    ? state.breakdown.loser >= 0
+      ? 'trischaken'
+      : state.breakdown.won
+        ? 'won'
+        : 'lost'
+    : null;
   const phaseName = isGameEnd
     ? t('phase.gameEnd')
     : isRoundEnd
@@ -233,13 +248,13 @@ function TappTarockPageContent() {
             {isRoundEnd && state.breakdown && (
               <div className="my-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="zw-round-result">
                 <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-                <div className="text-ds-success mb-1">
-                  {state.breakdown.loser >= 0
+                <div className={`${result ? ROUND_RESULT_COLORS[result] : ''} mb-1`} data-result={result}>
+                  {result === 'trischaken'
                     ? t('roundResult.trischaken', {
                         name: seatName(state.breakdown.loser),
                         points: state.breakdown.teamPoints,
                       })
-                    : t(state.breakdown.won ? 'roundResult.won' : 'roundResult.lost', {
+                    : t(result === 'won' ? 'roundResult.won' : 'roundResult.lost', {
                         points: state.breakdown.teamPoints,
                         threshold: state.breakdown.threshold,
                       })}
