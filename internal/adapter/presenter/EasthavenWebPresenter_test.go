@@ -147,6 +147,16 @@ func TestEasthavenWebPresenter_Output(t *testing.T) {
 		result := parseEasthavenOutput(t, p.Output(eg, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
 	})
+
+	t.Run("translates a domain error code", func(t *testing.T) {
+		eg := new(interfaces.MockEasthavenGame)
+		setupEasthavenOutputMock(eg)
+
+		result := parseEasthavenOutput(t, new(EasthavenWebPresenter).Output(eg,
+			domain.NewDomainErrorCode(domain.ErrInvalidPlay, "easthaven.errCannotPlaceOnTableau", nil)))
+		assert.Equal(t, "easthaven.errCannotPlaceOnTableau", result.MessageCode)
+		assert.Empty(t, result.Message)
+	})
 }
 
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の

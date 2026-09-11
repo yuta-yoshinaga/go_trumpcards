@@ -112,15 +112,15 @@ func (e *Easthaven) Reset() {
 // 空の列がある場合は配れない。ストックが7枚未満の最後の配りは左から残り枚数分だけ配る。
 func (e *Easthaven) Deal() error {
 	if e.phase != EasthavenPhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "easthaven.errWrongPhase", nil)
 	}
 	if len(e.stock) == 0 {
-		return errors.New("no cards in stock")
+		return NewDomainErrorCode(ErrDeckExhausted, "easthaven.errNoCardsInStock", nil)
 	}
 	// 空列がある場合は配れない
 	for i := range EasthavenTableauCnt {
 		if len(e.tableau[i]) == 0 {
-			return errors.New("cannot deal: empty column exists")
+			return NewDomainErrorCode(ErrInvalidPlay, "easthaven.errDealEmptyColumn", nil)
 		}
 	}
 	e.takeSnapshot()
@@ -142,39 +142,39 @@ func (e *Easthaven) Deal() error {
 // MoveTableauToTableau タブローからタブローにカードを移動
 func (e *Easthaven) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	if e.phase != EasthavenPhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "easthaven.errWrongPhase", nil)
 	}
 	if fromCol < 0 || fromCol >= EasthavenTableauCnt {
-		return errors.New("invalid from column")
+		return NewDomainErrorCode(ErrInvalidIndices, "easthaven.errInvalidFromColumn", nil)
 	}
 	if toCol < 0 || toCol >= EasthavenTableauCnt {
-		return errors.New("invalid to column")
+		return NewDomainErrorCode(ErrInvalidIndices, "easthaven.errInvalidToColumn", nil)
 	}
 	if fromCol == toCol {
-		return errors.New("from and to columns are the same")
+		return NewDomainErrorCode(ErrInvalidPlay, "easthaven.errSameColumn", nil)
 	}
 	fromCards := e.tableau[fromCol]
 	if cardIndex == -1 {
 		cardIndex = len(fromCards) - 1
 	}
 	if cardIndex < 0 || cardIndex >= len(fromCards) {
-		return errors.New("invalid card index")
+		return NewDomainErrorCode(ErrInvalidIndices, "easthaven.errInvalidCardIndex", nil)
 	}
 	tc := fromCards[cardIndex]
 	if tc == nil || tc.Card == nil {
 		return errors.New("card is nil")
 	}
 	if !tc.FaceUp {
-		return errors.New("card is face down")
+		return NewDomainErrorCode(ErrInvalidPlay, "easthaven.errCardFaceDown", nil)
 	}
 	// 移動するカード列は交互色降順の連続でなければならない
 	movingCards := fromCards[cardIndex:]
 	if !e.isValidEasthavenSequence(movingCards) {
-		return errors.New("cards are not a valid alternating-color descending sequence")
+		return NewDomainErrorCode(ErrInvalidPlay, "easthaven.errInvalidSequence", nil)
 	}
 	bottomCard := movingCards[0].Card
 	if !e.canPlaceOnTableau(bottomCard, toCol) {
-		return errors.New("cannot place card on tableau")
+		return NewDomainErrorCode(ErrInvalidPlay, "easthaven.errCannotPlaceOnTableau", nil)
 	}
 	e.takeSnapshot()
 	movedCards := make([]*Card, len(movingCards))
@@ -193,14 +193,14 @@ func (e *Easthaven) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 // MoveTableauToFoundation タブローからファンデーションにカードを移動
 func (e *Easthaven) MoveTableauToFoundation(col int) error {
 	if e.phase != EasthavenPhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "easthaven.errWrongPhase", nil)
 	}
 	if col < 0 || col >= EasthavenTableauCnt {
-		return errors.New("invalid column")
+		return NewDomainErrorCode(ErrInvalidIndices, "easthaven.errInvalidColumn", nil)
 	}
 	fromCards := e.tableau[col]
 	if len(fromCards) == 0 {
-		return errors.New("tableau column is empty")
+		return NewDomainErrorCode(ErrInvalidPlay, "easthaven.errTableauColumnEmpty", nil)
 	}
 	tc := fromCards[len(fromCards)-1]
 	if tc == nil || tc.Card == nil {
@@ -212,7 +212,7 @@ func (e *Easthaven) MoveTableauToFoundation(col int) error {
 		return errors.New("invalid card for foundation")
 	}
 	if !e.canPlaceOnFoundation(card, fIdx) {
-		return errors.New("cannot place card on foundation")
+		return NewDomainErrorCode(ErrInvalidPlay, "easthaven.errCannotPlaceOnFoundation", nil)
 	}
 	e.takeSnapshot()
 	e.tableau[col] = fromCards[:len(fromCards)-1]
@@ -314,10 +314,10 @@ func (e *Easthaven) GetHint() *EasthavenHint {
 // AutoComplete オートコンプリート（全カード表向きの場合に自動でファンデーションへ移動）
 func (e *Easthaven) AutoComplete() error {
 	if e.phase != EasthavenPhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "easthaven.errWrongPhase", nil)
 	}
 	if !e.AllFaceUp() {
-		return errors.New("not all cards are face up")
+		return NewDomainErrorCode(ErrInvalidPlay, "easthaven.errNotAllCardsFaceUp", nil)
 	}
 	e.takeSnapshot()
 	for {
@@ -409,10 +409,10 @@ func (e *Easthaven) SetFoundation(foundation [EasthavenFoundationCnt][]*Card) {
 // Undo 直前の操作を取り消す
 func (e *Easthaven) Undo() error {
 	if e.phase != EasthavenPhasePlaying {
-		return errors.New("cannot undo: game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "easthaven.errWrongPhase", nil)
 	}
 	if len(e.history) == 0 {
-		return errors.New("cannot undo: no history")
+		return NewDomainErrorCode(ErrInvalidPlay, "easthaven.errNoUndoHistory", nil)
 	}
 	snap := e.history[len(e.history)-1]
 	e.history = e.history[:len(e.history)-1]

@@ -38,6 +38,105 @@ func fullFoundationPile(design, maxValue int) []*domain.Card {
 	return pile
 }
 
+func assertEasthavenDomainError(t *testing.T, err error, sentinel error, code string) {
+	t.Helper()
+	require.Error(t, err)
+	assert.ErrorIs(t, err, sentinel)
+	de, ok := err.(*domain.DomainError)
+	require.True(t, ok, "expected DomainError, got %T", err)
+	assert.Equal(t, code, de.MessageCode())
+}
+
+func easthavenMoveErrorState() *domain.Easthaven {
+	e := setupPlayingEasthaven()
+	clearEasthavenTableau(e)
+	var tab [domain.EasthavenTableauCnt][]*domain.KlondikeTableauCard
+	tab[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 6, true)}
+	tab[1] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignHeart, 8, true)}
+	e.SetTableau(tab)
+	return e
+}
+
+func TestEasthaven_ValidationErrorsHaveCodes(t *testing.T) {
+	t.Run("deal validation", func(t *testing.T) {
+		e := setupPlayingEasthaven()
+		e.SetStock(nil)
+		assertEasthavenDomainError(t, e.Deal(), domain.ErrDeckExhausted, "easthaven.errNoCardsInStock")
+
+		e = setupPlayingEasthaven()
+		tab := e.GetTableau()
+		tab[0] = nil
+		e.SetTableau(tab)
+		assertEasthavenDomainError(t, e.Deal(), domain.ErrInvalidPlay, "easthaven.errDealEmptyColumn")
+
+		e = setupPlayingEasthaven()
+		e.SetPhase(domain.EasthavenPhaseGameOver)
+		assertEasthavenDomainError(t, e.Deal(), domain.ErrWrongPhase, "easthaven.errWrongPhase")
+	})
+
+	t.Run("tableau move validation", func(t *testing.T) {
+		cases := []struct {
+			name            string
+			from, index, to int
+			sentinel        error
+			code            string
+			setup           func(*domain.Easthaven)
+		}{
+			{"invalid from", -1, 0, 1, domain.ErrInvalidIndices, "easthaven.errInvalidFromColumn", nil},
+			{"invalid to", 0, 0, 9, domain.ErrInvalidIndices, "easthaven.errInvalidToColumn", nil},
+			{"same column", 0, 0, 0, domain.ErrInvalidPlay, "easthaven.errSameColumn", nil},
+			{"invalid card index", 0, 9, 1, domain.ErrInvalidIndices, "easthaven.errInvalidCardIndex", nil},
+			{"face down", 0, 0, 1, domain.ErrInvalidPlay, "easthaven.errCardFaceDown", func(e *domain.Easthaven) {
+				tab := e.GetTableau()
+				tab[0][0].FaceUp = false
+				e.SetTableau(tab)
+			}},
+			{"invalid sequence", 0, 0, 1, domain.ErrInvalidPlay, "easthaven.errInvalidSequence", func(e *domain.Easthaven) {
+				tab := e.GetTableau()
+				tab[0] = []*domain.KlondikeTableauCard{
+					makeTableauCard(domain.CardDesignSpade, 6, true),
+					makeTableauCard(domain.CardDesignClover, 5, true),
+				}
+				e.SetTableau(tab)
+			}},
+			{"cannot place on tableau", 0, 0, 1, domain.ErrInvalidPlay, "easthaven.errCannotPlaceOnTableau", nil},
+		}
+		for _, tc := range cases {
+			t.Run(tc.name, func(t *testing.T) {
+				e := easthavenMoveErrorState()
+				if tc.name == "face down" {
+					tab := e.GetTableau()
+					tab[0][0].FaceUp = false
+					e.SetTableau(tab)
+				}
+				if tc.setup != nil {
+					tc.setup(e)
+				}
+				assertEasthavenDomainError(t, e.MoveTableauToTableau(tc.from, tc.index, tc.to), tc.sentinel, tc.code)
+			})
+		}
+	})
+
+	t.Run("foundation and automatic move validation", func(t *testing.T) {
+		e := easthavenMoveErrorState()
+		assertEasthavenDomainError(t, e.MoveTableauToFoundation(-1), domain.ErrInvalidIndices, "easthaven.errInvalidColumn")
+		assertEasthavenDomainError(t, e.MoveTableauToFoundation(2), domain.ErrInvalidPlay, "easthaven.errTableauColumnEmpty")
+		assertEasthavenDomainError(t, e.MoveTableauToFoundation(0), domain.ErrInvalidPlay, "easthaven.errCannotPlaceOnFoundation")
+
+		e = setupPlayingEasthaven()
+		assertEasthavenDomainError(t, e.AutoComplete(), domain.ErrInvalidPlay, "easthaven.errNotAllCardsFaceUp")
+		e.SetPhase(domain.EasthavenPhaseGameClear)
+		assertEasthavenDomainError(t, e.AutoComplete(), domain.ErrWrongPhase, "easthaven.errWrongPhase")
+	})
+
+	t.Run("undo validation", func(t *testing.T) {
+		e := setupPlayingEasthaven()
+		assertEasthavenDomainError(t, e.Undo(), domain.ErrInvalidPlay, "easthaven.errNoUndoHistory")
+		e.SetPhase(domain.EasthavenPhaseGameOver)
+		assertEasthavenDomainError(t, e.Undo(), domain.ErrWrongPhase, "easthaven.errWrongPhase")
+	})
+}
+
 // --- Tests ---
 
 func TestNewEasthaven(t *testing.T) {
