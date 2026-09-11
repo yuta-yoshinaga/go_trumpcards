@@ -22,6 +22,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
 import { LaBelleLuciePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** La Belle Lucie tutorial step definitions. */
@@ -184,6 +185,17 @@ function LaBelleLuciePageContent() {
   const renderFan = (fan: Card[], idx: number) => {
     const isHintSource = hint?.fromFan === idx;
     const isHintDest = hint !== undefined && !hintFoundation && hint.toFan === idx;
+    const topCard = fan[fan.length - 1];
+    const fanState = isHintSource
+      ? t('hintSourceFan')
+      : isHintDest
+        ? t('hintDestinationFan')
+        : movableFans[idx] === true
+          ? t('movableFan')
+          : '';
+    const ariaLabel = topCard
+      ? t('fanAriaLabel', { index: idx + 1, card: cardAlt(topCard), state: fanState })
+      : t('emptyFanAriaLabel', { index: idx + 1 });
     // **リングは 1 つだけ選ぶ。** Tailwind の ring-* は同じ box-shadow 変数を
     // 共有するので重ねられない —— 連結すると、生成された CSS の順序で
     // どちらが勝つかが決まり、選択中かつ移動可能な扇 (ふつうに起きる組み合わせ)
@@ -206,6 +218,7 @@ function LaBelleLuciePageContent() {
         style={{ minHeight: Math.round(w * 1.4) }}
         onClick={canAct ? () => pickFan(idx) : undefined}
         disabled={!canAct}
+        aria-label={ariaLabel}
         data-testid={`fan-${idx}`}
         data-movable={movableFans[idx] === true ? 'true' : undefined}
         data-hint-source={isHintSource ? 'true' : undefined}
