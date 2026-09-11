@@ -126,12 +126,18 @@ describe('AcesUpPage', () => {
     const movableCard = screen.getByRole('button', { name: '♠ 9' });
     const unavailableCard = screen.getByRole('button', { name: '♦ 6' });
 
-    expect(removableCard).not.toHaveClass('opacity-50', 'grayscale');
+    expect(removableCard).not.toHaveClass('opacity-50');
+    expect(removableCard).not.toHaveClass('grayscale');
     expect(removableCard).toHaveClass('cursor-pointer');
     expect(removableCard).not.toHaveTextContent('↗');
     expect(movableCard).toHaveTextContent('↗');
+    expect(movableCard).toBeDisabled();
+    expect(movableCard).not.toHaveClass('opacity-50');
+    expect(movableCard).not.toHaveClass('grayscale');
     expect(unavailableCard).toBeDisabled();
-    expect(unavailableCard).toHaveClass('opacity-50', 'grayscale', 'cursor-not-allowed');
+    expect(unavailableCard).toHaveClass('opacity-50');
+    expect(unavailableCard).toHaveClass('grayscale');
+    expect(unavailableCard).toHaveClass('cursor-not-allowed');
     expect(unavailableCard).not.toHaveTextContent('↗');
   });
 

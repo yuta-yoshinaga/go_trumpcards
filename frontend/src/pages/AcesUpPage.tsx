@@ -269,8 +269,8 @@ function AcesUpPageContent() {
                                   className={`relative p-0 ${c.movable ? 'border border-ds-info' : 'border-0'} bg-transparent rounded ${focusRingWhite} ${
                                     isHinted ? 'ring-2 ring-ds-warning' : ''
                                   } ${isCardDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} ${
-                                    !c.removable || isDragSource ? 'opacity-50' : ''
-                                  } ${!c.removable ? 'grayscale' : ''}`}
+                                    (!c.removable && !c.movable) || isDragSource ? 'opacity-50' : ''
+                                  } ${!c.removable && !c.movable ? 'grayscale' : ''}`}
                                 >
                                   {c.movable && (
                                     <span
