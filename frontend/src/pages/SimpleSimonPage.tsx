@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { simplesimonApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CardImage } from '../components/CardImage';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -106,6 +107,10 @@ function SimpleSimonPageContent() {
 
   const isPlayingForKbd = state?.phase === SimpleSimonPhase.PLAYING;
 
+  // Double-click a grabbable run: auto-move it to the best legal destination
+  // (same-suit link > rank-only link > empty column). If none exists, deselect
+  // and show a notice. Single-click selection is preserved via the e.detail
+  // guard in the card's onClick.
   const autoMoveCard = useCallback(
     (col: number, idx: number) => {
       if (!state || !isPlayingForKbd || !isGrabbable(state.columns[col], idx)) return;
@@ -122,6 +127,8 @@ function SimpleSimonPageContent() {
     [exec, isPlayingForKbd, state, t],
   );
 
+  // Click a card: select it as the source, or — if a source in another column
+  // is already selected — move that run onto this column.
   const clickCard = useCallback(
     (col: number, idx: number) => {
       if (!state || !isPlayingForKbd) return;
@@ -211,13 +218,6 @@ function SimpleSimonPageContent() {
     setSelected(null);
     exec('reset');
   };
-
-  // Double-click a grabbable run: auto-move it to the best legal destination
-  // (same-suit link > rank-only link > empty column). If none exists, deselect
-  // and show a notice. Single-click selection is preserved via the e.detail
-  // guard in the card's onClick.
-  // Click a card: select it as the source, or — if a source in another column is
-  // already selected — move that run onto this column.
 
   const renderColumn = (column: Card[], col: number) => {
     const isDestination = Boolean(selected && selected.col !== col);
@@ -381,6 +381,7 @@ function SimpleSimonPageContent() {
             dataTutorial="ss-reset-button"
           />
         </div>
+        <ActionShortcutsPanel bindings={actionBindings} includeCardNav data-testid="simple-simon-kbd-shortcuts" />
       </GameFooter>
     </GamePageShell>
   );

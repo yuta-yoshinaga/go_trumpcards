@@ -172,6 +172,16 @@ describe('SimpleSimonPage', () => {
     expect(screen.getByTestId('giveup-button')).toHaveAttribute('aria-keyshortcuts', 'g');
   });
 
+  it('advertises card navigation shortcuts in the keyboard shortcuts panel', async () => {
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('giveup-button');
+
+    const panel = screen.getByTestId('simple-simon-kbd-shortcuts');
+    expect(panel).toBeInTheDocument();
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(screen.getByText('数字キーで手札のカードを選択')).toBeInTheDocument();
+  });
+
   it('executes hint and undo commands for their keyboard shortcuts', async () => {
     mockExec.mockResolvedValue(makeState({ canUndo: true }));
     renderWithProviders(<SimpleSimonPage />);
