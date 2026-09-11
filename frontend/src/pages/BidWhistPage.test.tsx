@@ -358,6 +358,47 @@ describe('BidWhistPage', () => {
     expect(screen.getByTestId('bid-dir-0')).toBeDisabled();
   });
 
+  it('includes the bid-too-low reason in title and aria-label only for invalid bids', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<BidWhistPage />);
+
+    const validWrap = await screen.findByTestId('bid-dir-wrap-0');
+    const validButton = screen.getByTestId('bid-dir-0');
+    expect(validWrap).toHaveAttribute('title', '切り札あり、Aが最強の通常序列');
+    expect(validButton).not.toHaveAttribute('aria-label');
+
+    mockExec.mockResolvedValue(makeState({ highestBid: { tricks: 3, direction: 2 }, highestBidder: 1 }));
+    fireEvent.click(screen.getByTestId('pass-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass'));
+
+    const invalidWrap = screen.getByTestId('bid-dir-wrap-0');
+    const invalidButton = screen.getByTestId('bid-dir-0');
+    expect(invalidWrap).toHaveAttribute('title', expect.stringContaining('切り札あり、Aが最強の通常序列'));
+    expect(invalidWrap).toHaveAttribute('title', expect.stringContaining('現在の最高ビッド'));
+    expect(invalidButton).toHaveAttribute('aria-label', expect.stringContaining('アップタウン —'));
+  });
+
+  it('uses the uptown direction text when the contract direction is outside the wire range', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BidWhistPhase.TRUMP_DECLARATION,
+        declarerIdx: 0,
+        contractDirection: 99,
+        players: [
+          player(0, true, sixCards, { isDeclarer: true }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<BidWhistPage />);
+
+    expect(await screen.findByTestId('contract-direction-help')).toHaveTextContent(
+      'アップタウン: 切り札あり、Aが最強の通常序列',
+    );
+  });
+
   it('disables lower-order directions but enables higher tricks after selecting them', async () => {
     mockExec.mockResolvedValue(makeState({ highestBid: { tricks: 4, direction: 0 }, highestBidder: 2 }));
     renderWithProviders(<BidWhistPage />);
