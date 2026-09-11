@@ -81,11 +81,25 @@ function DoubleAttackPageContent() {
 
   const actionBindings = useMemo(
     () => [
+      { key: 'a', action: handleAttack, enabled: isAttackPhase },
+      { key: 'q', action: handleDecline, enabled: isAttackPhase },
       { key: 'h', action: () => execApi('hit'), enabled: isPlayPhase },
       { key: 's', action: () => execApi('stand'), enabled: isPlayPhase },
+      { key: 'd', action: () => execApi('double'), enabled: isPlayPhase && !!state?.canDouble },
+      { key: 'p', action: () => execApi('split'), enabled: isPlayPhase && !!state?.canSplit },
       { key: 'n', action: () => execApi('next'), enabled: isResultPhase && !gameOver },
     ],
-    [execApi, isPlayPhase, isResultPhase, gameOver],
+    [
+      execApi,
+      gameOver,
+      handleAttack,
+      handleDecline,
+      isAttackPhase,
+      isPlayPhase,
+      isResultPhase,
+      state?.canDouble,
+      state?.canSplit,
+    ],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
@@ -277,6 +291,7 @@ function DoubleAttackPageContent() {
                       type="button"
                       className={btnPrimary}
                       data-hint-action="attack"
+                      aria-keyshortcuts="a"
                       onClick={handleAttack}
                       disabled={loading}
                     >
@@ -286,6 +301,7 @@ function DoubleAttackPageContent() {
                       type="button"
                       className={btnSecondary}
                       data-hint-action="decline"
+                      aria-keyshortcuts="q"
                       onClick={handleDecline}
                       disabled={loading}
                     >
@@ -303,6 +319,7 @@ function DoubleAttackPageContent() {
                       type="button"
                       className={btnSuccess}
                       data-hint-action="hit"
+                      aria-keyshortcuts="h"
                       onClick={() => execApi('hit')}
                       disabled={loading}
                     >
@@ -312,6 +329,7 @@ function DoubleAttackPageContent() {
                       type="button"
                       className={btnSecondary}
                       data-hint-action="stand"
+                      aria-keyshortcuts="s"
                       onClick={() => execApi('stand')}
                       disabled={loading}
                     >
@@ -323,6 +341,7 @@ function DoubleAttackPageContent() {
                         type="button"
                         className={btnWarning}
                         data-testid="da-double"
+                        aria-keyshortcuts="d"
                         onClick={() => execApi('double')}
                         disabled={loading}
                       >
@@ -334,6 +353,7 @@ function DoubleAttackPageContent() {
                         type="button"
                         className={btnWarning}
                         data-testid="da-split"
+                        aria-keyshortcuts="p"
                         onClick={() => execApi('split')}
                         disabled={loading}
                       >
@@ -345,7 +365,13 @@ function DoubleAttackPageContent() {
               )}
 
               {isResultPhase && !gameOver && (
-                <button type="button" className={btnPrimary} onClick={() => execApi('next')} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  aria-keyshortcuts="n"
+                  onClick={() => execApi('next')}
+                  disabled={loading}
+                >
                   {t('button.next')}
                 </button>
               )}

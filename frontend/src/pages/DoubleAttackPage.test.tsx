@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { doubleattackApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -154,6 +154,161 @@ describe('DoubleAttackPage', () => {
     mockApi.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '見送る' }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('attack', { amount: 0 }));
+  });
+
+  it('追加ベットのキーで指定額を送る', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: DoubleAttackPhase.ATTACK,
+        maxAttackBet: 50,
+        dealerCards: [card(6)],
+        hands: [hand()],
+      }),
+    );
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '賭け増す' })).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText(/追加ベット/), { target: { value: '30' } });
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'a' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('attack', { amount: 30 }));
+  });
+
+  it('見送りのキーで attack に amount 0 を送る', async () => {
+    mockApi.mockResolvedValue(
+      withState({ phase: DoubleAttackPhase.ATTACK, maxAttackBet: 50, dealerCards: [card(6)], hands: [hand()] }),
+    );
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '見送る' })).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'q' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('attack', { amount: 0 }));
+  });
+
+  it('canDouble が真のときダブルのキーが効く', async () => {
+    mockApi.mockResolvedValue(
+      withState({ phase: DoubleAttackPhase.PLAY, canDouble: true, dealerCards: [card(6), card(9)], hands: [hand()] }),
+    );
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByTestId('da-double')).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('double'));
+  });
+
+  it('canSplit が真のときスプリットのキーが効く', async () => {
+    mockApi.mockResolvedValue(
+      withState({ phase: DoubleAttackPhase.PLAY, canSplit: true, dealerCards: [card(6), card(9)], hands: [hand()] }),
+    );
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByTestId('da-split')).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'p' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('split'));
+  });
+
+  it('canDouble が偽のときダブルのキーは効かない', async () => {
+    mockApi.mockResolvedValue(
+      withState({ phase: DoubleAttackPhase.PLAY, canDouble: false, dealerCards: [card(6), card(9)], hands: [hand()] }),
+    );
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockApi).not.toHaveBeenCalled());
+  });
+
+  it('canSplit が偽のときスプリットのキーは効かない', async () => {
+    mockApi.mockResolvedValue(
+      withState({ phase: DoubleAttackPhase.PLAY, canSplit: false, dealerCards: [card(6), card(9)], hands: [hand()] }),
+    );
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'p' });
+    await waitFor(() => expect(mockApi).not.toHaveBeenCalled());
+  });
+
+  it('プレイフェーズ以外ではダブルとスプリットのキーは効かない', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: DoubleAttackPhase.ATTACK,
+        canDouble: true,
+        canSplit: true,
+        dealerCards: [card(6)],
+        hands: [hand()],
+      }),
+    );
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '見送る' })).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    fireEvent.keyDown(document, { key: 'p' });
+    await waitFor(() => expect(mockApi).not.toHaveBeenCalled());
+  });
+
+  it('既存の h / s / n キーが従来どおり動く', async () => {
+    mockApi.mockResolvedValue(
+      withState({ phase: DoubleAttackPhase.PLAY, dealerCards: [card(6), card(9)], hands: [hand()] }),
+    );
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'h' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('hit'));
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 's' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('stand'));
+
+    cleanup();
+    mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.RESULT, hands: [hand()] }));
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'n' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('next'));
+  });
+
+  it('7つの操作ボタンに aria-keyshortcuts を付ける', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: DoubleAttackPhase.PLAY,
+        canDouble: true,
+        canSplit: true,
+        dealerCards: [card(6), card(9)],
+        hands: [hand()],
+      }),
+    );
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByTestId('da-double')).toBeInTheDocument());
+
+    expect(screen.getByRole('button', { name: 'ヒット' })).toHaveAttribute('aria-keyshortcuts', 'h');
+    expect(screen.getByRole('button', { name: 'スタンド' })).toHaveAttribute('aria-keyshortcuts', 's');
+    expect(screen.getByRole('button', { name: 'ダブル' })).toHaveAttribute('aria-keyshortcuts', 'd');
+    expect(screen.getByRole('button', { name: 'スプリット' })).toHaveAttribute('aria-keyshortcuts', 'p');
+
+    cleanup();
+    mockApi.mockResolvedValue(
+      withState({ phase: DoubleAttackPhase.ATTACK, maxAttackBet: 50, dealerCards: [card(6)], hands: [hand()] }),
+    );
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '賭け増す' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '賭け増す' })).toHaveAttribute('aria-keyshortcuts', 'a');
+    expect(screen.getByRole('button', { name: '見送る' })).toHaveAttribute('aria-keyshortcuts', 'q');
+
+    cleanup();
+    mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.RESULT, hands: [hand()] }));
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '次のラウンド' })).toHaveAttribute('aria-keyshortcuts', 'n');
   });
 
   it('2枚目が配られたら点数を出す', async () => {
