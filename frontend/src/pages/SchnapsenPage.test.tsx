@@ -91,8 +91,10 @@ describe('SchnapsenPage', () => {
     mockExec.mockResolvedValue(makeState({ marriagePlays: [3, 4] })); // ♣ marriage, trump ♠ → 20 pts
     renderWithProviders(<SchnapsenPage />);
     const m3 = await screen.findByTestId('schnapsen-marriage-3');
+    expect(m3).toHaveTextContent('マリアージュ宣言 (20点)');
     expect(m3.getAttribute('aria-label')).toContain('♣');
     expect(m3.getAttribute('aria-label')).toContain('20');
+    expect(m3).not.toHaveAttribute('data-royal');
     mockExec.mockClear();
     fireEvent.click(screen.getByTestId('schnapsen-marriage-4'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('marriage', 4));
@@ -103,7 +105,15 @@ describe('SchnapsenPage', () => {
     mockExec.mockResolvedValue(makeState({ marriagePlays: [3, 4], trumpSuit: 2 }));
     renderWithProviders(<SchnapsenPage />);
     const m3 = await screen.findByTestId('schnapsen-marriage-3');
+    expect(m3).toHaveTextContent('マリアージュ宣言 (40点)');
     expect(m3.getAttribute('aria-label')).toContain('40');
+    expect(m3).toHaveAttribute('data-royal', 'true');
+    expect(m3.className).toContain('font-bold');
+    expect(m3.className).toContain('ring-2');
+    expect(m3.className).toContain('ring-ds-accent');
+    expect(m3.className).toContain('ring-offset-2');
+    expect(m3.className).toContain('ring-offset-ds-bg');
+    expect(m3.className).not.toContain('ring-ds-warning');
   });
 
   it('rings legal cards but keeps illegal cards clickable in the endgame (phase 2)', async () => {
