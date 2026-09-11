@@ -27,6 +27,7 @@
     "knocked": "Knocked!",
     "out": "OUT",
     "suitScores": "Suit totals",
+    "suitScoresForCpu": "{{player}} suit totals",
     "selectCard": "Select a card to discard",
     "knockBannerLastTurn": "{{knocker}} knocked — this is your last turn",
     "knockBannerActive": "{{knocker}} knocked"

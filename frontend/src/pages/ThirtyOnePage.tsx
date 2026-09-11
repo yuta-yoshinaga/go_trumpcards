@@ -12,6 +12,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { SuitScoreBadges } from '../components/SuitScoreBadges';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -30,7 +31,6 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
-import { fiftyOneBestSuit, fiftyOneSuitScores } from '../utils/fiftyOneSuitScores';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 type ThirtyOneArgs = Parameters<typeof thirtyoneApi.exec>;
@@ -178,10 +178,6 @@ function ThirtyOnePageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const humanCards = state?.players[0]?.cards;
-  const suitTotals = useMemo(() => fiftyOneSuitScores(humanCards ?? []), [humanCards]);
-  const bestSuit = useMemo(() => fiftyOneBestSuit(suitTotals), [suitTotals]);
-
   // Keyboard shortcuts — must be registered before the early return so the hook
   // order stays stable while state loads. Phase/turn flags use optional chaining
   // for the same reason. Letter keys only (Enter/Space would double-fire on a
@@ -222,6 +218,7 @@ function ThirtyOnePageContent() {
   const isDraw = state.phase === ThirtyOnePhase.DRAW;
   const isDiscard = state.phase === ThirtyOnePhase.DISCARD;
   const isRoundEnd = state.phase === ThirtyOnePhase.ROUND_END;
+  const showRevealedCpuCards = isGameEnd || isRoundEnd;
   const isHumanTurn = state.currentPlayerIdx === 0 && !isGameEnd && (isDraw || isDiscard);
   const human = state.players[0];
   const roundPlayerLabel = (idx: number) => {
@@ -274,15 +271,23 @@ function ThirtyOnePageContent() {
                       {state.knockerIdx === p.id && <span className="ml-1 text-ds-warning">{t('label.knocked')}</span>}
                     </div>
                     <div className="text-[10px] text-ds-text-muted mb-1">
-                      {t('label.score')}: {isGameEnd || isRoundEnd ? p.score : '?'}
+                      {t('label.score')}: {showRevealedCpuCards ? p.score : '?'}
                     </div>
                     <div className="flex gap-0.5 justify-center">
-                      {isGameEnd || isRoundEnd
+                      {showRevealedCpuCards
                         ? p.cards.map((c, i) => <AnimatedCard key={i} card={c} width={cardWidth * 0.6} />)
                         : Array.from({ length: p.cardCount }, (_, i) => (
                             <AnimatedCardBack key={i} width={cardWidth * 0.6} />
                           ))}
                     </div>
+                    {showRevealedCpuCards && (
+                      <SuitScoreBadges
+                        cards={p.cards}
+                        ariaLabel={t('label.suitScoresForCpu', { player: tc('player.cpu', { id: p.id }) })}
+                        listTestId={`suit-score-badges-cpu-${p.id}`}
+                        badgeTestId={(design) => `suit-badge-cpu-${p.id}-${design}`}
+                      />
+                    )}
                   </div>
                 ))}
             </div>
@@ -307,30 +312,7 @@ function ThirtyOnePageContent() {
                 {tc('player.you')} — <Lives lives={human.lives} out={human.isEliminated} /> · {t('label.score')}:{' '}
                 {human.score}
               </div>
-              <ul
-                className="flex justify-center gap-1.5 mb-1.5 text-xs flex-wrap list-none p-0 m-0"
-                aria-label={t('label.suitScores')}
-                data-testid="suit-score-badges"
-              >
-                {(['SPADE', 'CLOVER', 'HEART', 'DIAMOND'] as const).map((d) => {
-                  const isLeader = d === bestSuit && suitTotals[d] > 0;
-                  const symbol = d === 'SPADE' ? '♠' : d === 'CLOVER' ? '♣' : d === 'HEART' ? '♥' : '♦';
-                  const isRed = d === 'HEART' || d === 'DIAMOND';
-                  const classes = isLeader
-                    ? 'bg-ds-accent text-ds-text-on-accent border-ds-accent'
-                    : 'bg-ds-surface text-ds-text border-ds-border';
-                  return (
-                    <li
-                      key={d}
-                      data-testid={`suit-badge-${d}`}
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border font-medium ${classes}`}
-                    >
-                      <span className={isLeader ? '' : isRed ? 'text-ds-error' : ''}>{symbol}</span>
-                      <span className="tabular-nums">{suitTotals[d]}</span>
-                    </li>
-                  );
-                })}
-              </ul>
+              <SuitScoreBadges cards={human.cards} ariaLabel={t('label.suitScores')} />
               {isDiscard && isHumanTurn && (
                 <div className="text-xs text-ds-text-muted mb-1">{t('label.selectCard')}</div>
               )}
