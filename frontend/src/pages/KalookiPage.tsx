@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { kalookiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -16,7 +16,7 @@ import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
-import { useGameApi } from '../hooks/useGameApi';
+import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
@@ -99,11 +99,6 @@ function KalookiPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('kalooki');
   const { cardWidth } = useCardDimensions();
-  const { state, loading, error, exec: execApi, retry } = useGameApi(kalookiApi.exec);
-
-  useMountReset(execApi);
-  const phaseNames = usePhaseNames('kalooki', KALOOKI_PHASE_KEYS);
-
   const [config, setConfig] = useState<KalookiLocalConfig>({
     cpuDifficulty: 1,
     playerCount: 3,
@@ -117,6 +112,30 @@ function KalookiPageContent() {
 
   // Layoff target: { playerIdx, meldIdx }.
   const [layoffTarget, setLayoffTarget] = useState<{ playerIdx: number; meldIdx: number } | null>(null);
+
+  const clearSelection = useCallback(() => {
+    setSelectedCards([]);
+    setMeldGroups([]);
+    setLayoffTarget(null);
+  }, []);
+
+  const pendingMeldRef = useRef(false);
+  const handleApiSuccess = useCallback(
+    (res: KalookiResponse) => {
+      if (!pendingMeldRef.current) return;
+      pendingMeldRef.current = false;
+      if (!isRejectedAction(res)) clearSelection();
+    },
+    [clearSelection],
+  );
+  const { state, loading, error, exec: execApi, retry } = useGameApi(kalookiApi.exec, { onSuccess: handleApiSuccess });
+
+  useEffect(() => {
+    if (error) pendingMeldRef.current = false;
+  }, [error]);
+
+  useMountReset(execApi);
+  const phaseNames = usePhaseNames('kalooki', KALOOKI_PHASE_KEYS);
 
   const humanIdx = 0;
   const humanPlayer = state?.players[humanIdx];
@@ -183,12 +202,6 @@ function KalookiPageContent() {
     setSelectedCards((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
   }, []);
 
-  const clearSelection = useCallback(() => {
-    setSelectedCards([]);
-    setMeldGroups([]);
-    setLayoffTarget(null);
-  }, []);
-
   const handleConfigChange = useCallback((key: keyof KalookiLocalConfig, value: string) => {
     setConfig((prev) => ({ ...prev, [key]: Number(value) }));
   }, []);
@@ -221,9 +234,9 @@ function KalookiPageContent() {
 
   const handleMeld = useCallback(() => {
     if (meldGroups.length === 0) return;
+    pendingMeldRef.current = true;
     void execApi('meld', { meldGroups });
-    clearSelection();
-  }, [execApi, meldGroups, clearSelection]);
+  }, [execApi, meldGroups]);
 
   const handleLayoff = useCallback(() => {
     if (selectedCards.length !== 1 || !layoffTarget) return;

@@ -187,6 +187,55 @@ describe('KalookiPage', () => {
     );
   });
 
+  it('keeps staged groups after a rejected meld', async () => {
+    mockExec.mockResolvedValueOnce(meldState).mockResolvedValueOnce({
+      ...meldState,
+      message: '不正なメルドです',
+      messageCode: '',
+    });
+    renderWithProviders(<KalookiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Add group|グループに追加/ })).toBeInTheDocument());
+    stageGroup(0, 3);
+    fireEvent.click(screen.getByTestId('kalooki-submit-meld'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', expect.anything()));
+    expect(screen.getByTestId('kalooki-staged-group-0')).toBeInTheDocument();
+  });
+
+  it('clears staged groups after a successful meld', async () => {
+    mockExec.mockResolvedValueOnce(meldState).mockResolvedValueOnce({
+      ...meldState,
+      message: '',
+      messageCode: 'kalooki.meld.success',
+    });
+    renderWithProviders(<KalookiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Add group|グループに追加/ })).toBeInTheDocument());
+    stageGroup(0, 3);
+    fireEvent.click(screen.getByTestId('kalooki-submit-meld'));
+    await waitFor(() => expect(screen.queryByTestId('kalooki-staged-group-0')).not.toBeInTheDocument());
+  });
+
+  it('does not clear staged groups when a later action succeeds after meld rejection', async () => {
+    let resolveDiscard!: (state: KalookiResponse) => void;
+    const discardResponse = new Promise<KalookiResponse>((resolve) => {
+      resolveDiscard = resolve;
+    });
+    mockExec
+      .mockResolvedValueOnce(meldState)
+      .mockResolvedValueOnce({ ...meldState, message: '不正なメルドです', messageCode: '' })
+      .mockImplementationOnce(() => discardResponse);
+    renderWithProviders(<KalookiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Add group|グループに追加/ })).toBeInTheDocument());
+    stageGroup(0, 3);
+    fireEvent.click(screen.getByTestId('kalooki-submit-meld'));
+    await waitFor(() => expect(screen.getByTestId('kalooki-staged-group-0')).toBeInTheDocument());
+    fireEvent.click(handButtons()[3]);
+    fireEvent.click(screen.getByRole('button', { name: /Discard a card|カードを捨てる/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndex: 3 }));
+    stageGroup(0, 3);
+    resolveDiscard({ ...meldState, message: '', messageCode: 'kalooki.discard.success' });
+    await waitFor(() => expect(screen.getByTestId('kalooki-staged-group-0')).toBeInTheDocument());
+  });
+
   // Stage a meld group from the first `count` hand cards (starting at `start`).
   const stageGroup = (start: number, count: number) => {
     const cards = handButtons();

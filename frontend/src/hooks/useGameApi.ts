@@ -34,7 +34,7 @@ import { useOptionalSound } from '../providers/SoundProvider';
  * rejection. The ~11 presenters that do set a code on rejection simply fall
  * through and still sound, i.e. failures degrade to the old behavior.
  */
-function isRejectedAction(res: unknown): boolean {
+export function isRejectedAction(res: unknown): boolean {
   if (typeof res !== 'object' || res === null) return false;
   const r = res as { message?: unknown; messageCode?: unknown };
   return typeof r.message === 'string' && r.message.length > 0 && !r.messageCode;
