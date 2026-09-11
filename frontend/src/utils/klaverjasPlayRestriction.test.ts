@@ -57,6 +57,25 @@ describe('getKlaverjasPlayRestriction', () => {
     );
   });
 
+  it.each([
+    [11, 9],
+    [9, 1],
+    [1, 10],
+    [10, 13],
+    [13, 12],
+    [12, 8],
+    [8, 7],
+  ])('enforces the strict trump order %s > %s', (stronger, weaker) => {
+    const hand = [
+      { design: 'HEART' as const, value: weaker },
+      { design: 'HEART' as const, value: stronger },
+    ];
+    const trick = [{ playerIdx: 1, card: { design: 'HEART' as const, value: weaker } }];
+
+    expect(getKlaverjasPlayRestriction(hand, trick, 3, 0)).toBe('mustOvertrump');
+    expect(getKlaverjasPlayRestriction(hand, trick, 3, 1)).toBeUndefined();
+  });
+
   it('returns undefined when leading or playing a legal card', () => {
     const state = makeKlaverjasState();
     expect(getKlaverjasPlayRestriction(state.players[0].cards, [], state.trumpSuit, 0)).toBeUndefined();

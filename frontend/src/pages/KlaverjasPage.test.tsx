@@ -131,6 +131,14 @@ describe('KlaverjasPage', () => {
     expect(playableCard.closest('button')).not.toHaveAttribute('title', 'リードスートに従ってください');
   });
 
+  it('falls back to the generic tooltip when no restriction reason applies', async () => {
+    const state = makeKlaverjasState({ currentTrick: [], playableIndices: [0] });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<KlaverjasPage />);
+    const restrictedCard = await screen.findByAltText('♠ A');
+    expect(restrictedCard.closest('button')).toHaveAttribute('title', '出す');
+  });
+
   it('selecting a card then playing dispatches play', async () => {
     renderWithProviders(<KlaverjasPage />);
     const card = await screen.findByAltText('♥ Q');
