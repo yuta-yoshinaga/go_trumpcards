@@ -207,6 +207,11 @@ function SpoonsPageContent() {
   const humanWon = isGameEnd && state.winnerIdx === 0;
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
+  const firstGrabber =
+    state.firstGrabberIdx >= 0 && state.firstGrabberIdx < state.players.length
+      ? state.players[state.firstGrabberIdx]
+      : undefined;
+  const showFirstGrabber = !!firstGrabber && (state.grabWindowOpen || isRoundEnd || isGameEnd);
 
   // Build the spoon-icon row: one available icon per remaining spoon, plus one
   // grayed-out icon per player who already grabbed (labeled with the grabber).
@@ -348,6 +353,21 @@ function SpoonsPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {/* Keep this live region mounted so the grabber is announced when the
+                time-limited grab window opens, and remains available in results. */}
+            <div
+              className={showFirstGrabber ? 'my-3 p-2 rounded bg-black/30 text-ds-text-primary text-sm' : 'sr-only'}
+              data-testid="spoons-first-grabber-live"
+              role="status"
+              aria-live="polite"
+            >
+              {showFirstGrabber &&
+                firstGrabber &&
+                t('firstGrabber', {
+                  name: playerLabel(state.firstGrabberIdx, firstGrabber.isHuman),
+                })}
+            </div>
 
             <ActionLogSection
               isEndPhase={isGameEnd}

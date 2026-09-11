@@ -14,6 +14,7 @@
   "promptPass": "あなたの番です。p <n> で渡す札を選んでください",
   "promptCpuTurn": "CPU がカードを回しています...",
   "promptGrab": "誰かがフォーカードを揃えました！ g (grab) でスプーンを掴んでください！",
+  "firstGrabber": "最初に4枚揃えたのは{{name}}です。",
   "promptNextRound": "ラウンド終了。n (next) で次のラウンドへ進みます",
   "roundLoser": "{{name}} はスプーンを取れず、文字を1つ取りました",
   "winHuman": "あなたの勝ちです！",

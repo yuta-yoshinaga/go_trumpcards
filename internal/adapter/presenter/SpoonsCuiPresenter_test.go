@@ -40,8 +40,10 @@ func TestSpoonsCuiPresenter_Output(t *testing.T) {
 
 	t.Run("grab prompt", func(t *testing.T) {
 		g := setupSpoonsTest()
-		spoonsSetField(g, map[string]any{"ph": domain.SpoonsPhaseGrab, "gw": true})
-		assert.Contains(t, p.Output(g, nil), "g (grab)")
+		spoonsSetField(g, map[string]any{"ph": domain.SpoonsPhaseGrab, "gw": true, "fg": 1})
+		out := p.Output(g, nil)
+		assert.Contains(t, out, "g (grab)")
+		assert.Contains(t, out, "最初に4枚揃えたのはCPU 1です。")
 	})
 
 	t.Run("round end with loser", func(t *testing.T) {
@@ -49,6 +51,11 @@ func TestSpoonsCuiPresenter_Output(t *testing.T) {
 		spoonsSetField(g, map[string]any{"ph": domain.SpoonsPhaseRoundEnd, "rl": 2})
 		out := p.Output(g, nil)
 		assert.Contains(t, out, "n (next)")
+	})
+
+	t.Run("does not show an unset first grabber", func(t *testing.T) {
+		g := setupSpoonsTest()
+		assert.NotContains(t, p.Output(g, nil), "最初に4枚揃えたのは")
 	})
 
 	t.Run("cpu turn prompt", func(t *testing.T) {
@@ -75,6 +82,21 @@ func TestSpoonsCuiPresenter_Output(t *testing.T) {
 		g.GetPlayer(1).SetHasSpoon(true)
 		assert.Contains(t, p.Output(g, nil), "脱落")
 	})
+}
+
+func TestSpoonsCuiPresenter_FirstGrabberChangesWithIndex(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.SpoonsCuiPresenter)
+	g := setupSpoonsTest()
+	spoonsSetField(g, map[string]any{"ph": domain.SpoonsPhaseRoundEnd, "fg": 1})
+	assert.Contains(t, p.Output(g, nil), "最初に4枚揃えたのはCPU 1です。")
+
+	spoonsSetField(g, map[string]any{"fg": 2})
+	out := p.Output(g, nil)
+	assert.Contains(t, out, "最初に4枚揃えたのはCPU 2です。")
+	assert.NotContains(t, out, "最初に4枚揃えたのはCPU 1です。")
 }
 
 func TestSpoonsCuiPresenter_ActionLogOutput(t *testing.T) {
