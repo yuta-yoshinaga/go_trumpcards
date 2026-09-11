@@ -100,6 +100,14 @@ describe('BidWhistPage', () => {
     expect(label).toHaveTextContent('トリック数を選択');
   });
 
+  it('shows the meaning of all three bid directions', async () => {
+    renderWithProviders(<BidWhistPage />);
+    const help = await screen.findByTestId('bid-direction-help');
+    expect(help).toHaveTextContent('アップタウン: 切り札あり、Aが最強の通常序列');
+    expect(help).toHaveTextContent('ダウンタウン: 切り札あり、2が最強の逆序列');
+    expect(help).toHaveTextContent('ノートランプ: 切り札なし、A最強。ジョーカーは死札');
+  });
+
   it('bids a direction when a direction button is clicked', async () => {
     renderWithProviders(<BidWhistPage />);
     const uptown = await screen.findByRole('button', { name: 'アップタウン' });
@@ -130,6 +138,46 @@ describe('BidWhistPage', () => {
     const spade = await screen.findByTestId('trump-1');
     fireEvent.click(spade);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('trump', { trumpSuit: 1 }));
+  });
+
+  it('shows the reversed ranking during downtown trump declaration', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BidWhistPhase.TRUMP_DECLARATION,
+        declarerIdx: 0,
+        contractDirection: 1,
+        players: [
+          player(0, true, sixCards, { isDeclarer: true }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<BidWhistPage />);
+    expect(await screen.findByTestId('contract-direction-help')).toHaveTextContent(
+      'ダウンタウン: 切り札あり、2が最強の逆序列',
+    );
+  });
+
+  it('does not show the reversed ranking for an uptown contract', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BidWhistPhase.TRUMP_DECLARATION,
+        declarerIdx: 0,
+        contractDirection: 0,
+        players: [
+          player(0, true, sixCards, { isDeclarer: true }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<BidWhistPage />);
+    const help = await screen.findByTestId('contract-direction-help');
+    expect(help).toHaveTextContent('アップタウン: 切り札あり、Aが最強の通常序列');
+    expect(help).not.toHaveTextContent('2が最強の逆序列');
   });
 
   it('plays a selected card during the play phase', async () => {
