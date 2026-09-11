@@ -208,3 +208,48 @@ func TestPishtiCuiPresenter_ProvisionalScoreCountsCardPoints(t *testing.T) {
 	assert.NotContains(t, out, i18n.Tf("pishti.provisional",
 		"name", i18n.T("cuiPlayerYou"), "score", strconv.Itoa(domain.PishtiScoreMostCards)))
 }
+
+func TestPishtiCuiPresenter_AnnouncesLastTake(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.PishtiCuiPresenter)
+	for _, tc := range []struct {
+		name string
+		idx  int
+		want string
+	}{
+		{name: "human", idx: 0, want: "最後に捕獲したあなたが残り山札2枚を獲得しました"},
+		{name: "cpu", idx: 1, want: "最後に捕獲したCPU 1が残り山札2枚を獲得しました"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newPishtiForPresenter()
+			pishtiSetField(g, map[string]any{
+				"lc": tc.idx,
+				"ge": true,
+				"al": []*domain.ActionLogEntry{{ActionType: "lastTake", Cards: []*domain.Card{
+					domain.NewCard(domain.CardDesignSpade, 2, false),
+					domain.NewCard(domain.CardDesignHeart, 3, false),
+				}}},
+			})
+			assert.Contains(t, p.Output(g, nil), tc.want)
+		})
+	}
+
+	for _, tc := range []struct {
+		name   string
+		fields map[string]any
+	}{
+		{name: "no capturer", fields: map[string]any{"lc": -1, "ge": true}},
+		{name: "empty leftover", fields: map[string]any{
+			"lc": 0, "ge": true, "al": []*domain.ActionLogEntry{{ActionType: "lastTake"}},
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newPishtiForPresenter()
+			pishtiSetField(g, tc.fields)
+			out := p.Output(g, nil)
+			assert.NotContains(t, out, "残り山札")
+		})
+	}
+}

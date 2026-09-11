@@ -2051,6 +2051,8 @@
     "piquet.trickWin.elder": "Elder won the latest trick.",
     "piquet.trickWin.younger": "Younger won the latest trick.",
     "pishti.result.scores": "Game over. Scores: {{scores}}",
+    "pishti.result.scoresWithLastTakeHuman": "Game over. Scores: {{scores}}. You took the remaining {{count}} card(s) as the last capturer.",
+    "pishti.result.scoresWithLastTakeCpu": "Game over. Scores: {{scores}}. CPU {{id}} took the remaining {{count}} card(s) as the last capturer.",
     "pitch.bidPhase": "Declare your bid (0=pass, 2-4)",
     "pitch.playPhase.follow": "Play a card",
     "pitch.playPhase.lead": "Lead a card (first card sets trump)",

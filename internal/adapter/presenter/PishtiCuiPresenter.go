@@ -73,6 +73,11 @@ func (p *PishtiCuiPresenter) Output(pg interfaces.PishtiGame, lastErr error) str
 					"name", cuiPlayerName(pl, i),
 					"score", strconv.Itoa(score)) + "\n")
 			}
+			if idx, count, ok := pishtiLastTake(pg); ok {
+				b.WriteString(i18n.Tf("pishti.lastTake",
+					"name", cuiPlayerName(pg.GetPlayer(idx), idx),
+					"count", strconv.Itoa(count)) + "\n")
+			}
 			return
 		}
 		currentTurn := pg.GetCurrentTurn()
