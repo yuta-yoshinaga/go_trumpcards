@@ -703,6 +703,31 @@ describe('FortyAndEightPage', () => {
 // its action — a wrong `key` or a wrong `enabled` condition would have failed no
 // test. See issue #4429.
 describe('FortyAndEightPage keyboard shortcuts', () => {
+  it('pressing r dispatches redeal and advertises it in the shortcuts panel', async () => {
+    mockExec.mockResolvedValue(canRedealState);
+    renderWithProviders(<FortyAndEightPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(screen.getByText('リディールする')).toBeInTheDocument();
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(canRedealState);
+    fireEvent.keyDown(document, { key: 'r' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('redeal'));
+  });
+
+  it('does not dispatch redeal after it has been used', async () => {
+    mockExec.mockResolvedValue({ ...canRedealState, canRedeal: false, redealUsed: true });
+    renderWithProviders(<FortyAndEightPage />);
+    await waitFor(() => expect(screen.getByTestId('fe-redeal-used')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'r' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['d', 'draw'],
     ['h', 'hint'],
