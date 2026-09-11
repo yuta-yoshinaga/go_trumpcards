@@ -21,7 +21,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CassinoAction, CassinoResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
-import { cassinoTakeCandidates } from '../utils/cassinoTakeCandidates';
+import { cassinoBuildTakeCandidates, cassinoTakeCandidates } from '../utils/cassinoTakeCandidates';
 import { suggestCassinoAction } from '../utils/cassinoUtils';
 import {
   CASSINO_HELP,
@@ -200,6 +200,10 @@ function CassinoPageContent() {
     handIndex !== null && isHumanTurn
       ? cassinoTakeCandidates(state.tableCards, human.cards[handIndex]?.value ?? 0).indices
       : new Set<number>();
+  const buildTakeCandidateIndices =
+    handIndex !== null && isHumanTurn
+      ? cassinoBuildTakeCandidates(state.builds, human.cards[handIndex]?.value ?? 0).indices
+      : new Set<number>();
   const canTake = isHumanTurn && handIndex !== null && (tableIndices.length > 0 || buildIndices.length > 0);
   const canBuild = isHumanTurn && handIndex !== null && tableIndices.length > 0;
   const canTrail = isHumanTurn && handIndex !== null;
@@ -307,6 +311,7 @@ function CassinoPageContent() {
                     const kind = b.isMulti ? t('build.multi') : t('build.single');
                     const owner = b.ownerIdx === 0 ? tc('player.you') : tc('player.cpu', { id: b.ownerIdx });
                     const buildLabel = t('build.label', { value: b.value, kind, owner });
+                    const isCandidate = buildTakeCandidateIndices.has(i);
                     return (
                       <button
                         key={i}
@@ -314,10 +319,21 @@ function CassinoPageContent() {
                         onClick={() => isHumanTurn && toggleBuild(i)}
                         disabled={!isHumanTurn}
                         className={`px-3 py-1 rounded border text-sm ${
-                          buildIndices.includes(i) ? 'ring-2 ring-ds-info bg-ds-info/20' : 'border-white/20 bg-black/20'
+                          buildIndices.includes(i)
+                            ? 'ring-2 ring-ds-info bg-ds-info/20'
+                            : isCandidate
+                              ? 'ring-2 ring-ds-success motion-safe:animate-pulse'
+                              : 'border-white/20 bg-black/20'
                         } ${isHumanTurn ? 'cursor-pointer' : ''}`}
                         data-testid={`build-${i}`}
-                        aria-label={`${buildLabel}${buildIndices.includes(i) ? ` ${t('label.selected')}` : ''}`}
+                        data-take-candidate={isCandidate || undefined}
+                        aria-label={`${buildLabel}${
+                          buildIndices.includes(i)
+                            ? ` ${t('label.selected')}`
+                            : isCandidate
+                              ? ` ${t('label.takeCandidate')}`
+                              : ''
+                        }`}
                       >
                         {buildLabel}
                       </button>
