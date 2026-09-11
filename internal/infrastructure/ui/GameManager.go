@@ -3412,6 +3412,16 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"sueca.helpSetDifficulty"},
+			NoteKeys: []string{
+				"sueca.pointLegendTitle",
+				"sueca.pointLegendAce",
+				"sueca.pointLegendSeven",
+				"sueca.pointLegendKing",
+				"sueca.pointLegendJack",
+				"sueca.pointLegendQueen",
+				"sueca.pointLegendOthers",
+				"sueca.pointLegendNote",
+			},
 		}),
 	BindCuiFor("fortyfives",
 		func() usecase.FortyFivesInteractorIF {
