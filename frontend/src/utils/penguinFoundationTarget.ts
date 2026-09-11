@@ -24,6 +24,7 @@ const DESIGN_TO_FOUNDATION_INDEX: Record<string, number> = {
  */
 export function penguinFoundationTarget(card: Card, foundation: Card[][], baseRank: number): PenguinMoveZone | null {
   const fIdx = DESIGN_TO_FOUNDATION_INDEX[card.design];
+  // Penguin always supplies four foundation piles, so fIdx >= foundation.length is unreachable.
   if (fIdx === undefined || fIdx >= foundation.length) return null;
   const pile = foundation[fIdx];
   const placeable =

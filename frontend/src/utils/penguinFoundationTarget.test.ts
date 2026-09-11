@@ -27,4 +27,8 @@ describe('penguinFoundationTarget', () => {
   it('rejects a card with no legal foundation target', () => {
     expect(penguinFoundationTarget(card('CLOVER', 7), emptyFoundation(), 4)).toBeNull();
   });
+
+  it('rejects a joker because it has no foundation index', () => {
+    expect(penguinFoundationTarget(card('JOKER', 1), emptyFoundation(), 4)).toBeNull();
+  });
 });

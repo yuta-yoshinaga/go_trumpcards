@@ -321,6 +321,41 @@ describe('PenguinPage', () => {
     );
   });
 
+  it('does not select a free-cell card on the second click of a double-click', async () => {
+    renderWithProviders(<PenguinPage />);
+    const cardButton = await screen.findByTestId('pg-freecell-0');
+
+    expect(cardButton).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cardButton, { detail: 2 });
+
+    await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'false'));
+  });
+
+  it('does not select a tableau card on the second click of a double-click', async () => {
+    renderWithProviders(<PenguinPage />);
+    const cardButton = await screen.findByTestId('pg-tableau-0-0');
+
+    expect(cardButton).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cardButton, { detail: 2 });
+
+    await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'false'));
+  });
+
+  it('does not double-click a non-exposed tableau card to its foundation', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 4), card('SPADE', 5)], [], [], [], [], [], []],
+    });
+    renderWithProviders(<PenguinPage />);
+    const cardButton = await screen.findByTestId('pg-tableau-0-0');
+
+    mockExec.mockClear();
+    fireEvent.doubleClick(cardButton);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('does nothing when double-clicking an exposed card with no foundation target', async () => {
     renderWithProviders(<PenguinPage />);
     const cardButton = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
