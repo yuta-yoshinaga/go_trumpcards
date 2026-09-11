@@ -255,6 +255,70 @@ describe('CassinoPage', () => {
     expect(b1.textContent).toContain('CPU 2');
   });
 
+  it('highlights only builds whose declared value matches the selected hand', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 1,
+            cards: [card('HEART', 8)],
+            capturedCount: 0,
+            sweepCount: 0,
+            totalScore: 0,
+          },
+          { id: 1, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 2, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 3, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+        ],
+        builds: [
+          { ownerIdx: 1, value: 8, groups: [[card('SPADE', 3), card('HEART', 5)]], isMulti: false },
+          { ownerIdx: 2, value: 9, groups: [[card('CLUB', 9)]], isMulti: false },
+        ],
+        tableCards: [card('SPADE', 3)],
+      }),
+    );
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('build-0')).toBeInTheDocument());
+
+    expect(screen.getByTestId('build-0')).not.toHaveAttribute('data-take-candidate', 'true');
+    expect(screen.getByTestId('build-1')).not.toHaveAttribute('data-take-candidate', 'true');
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    await waitFor(() => expect(screen.getByTestId('build-0')).toHaveAttribute('data-take-candidate', 'true'));
+    expect(screen.getByTestId('build-0')).toHaveClass('ring-ds-success', 'motion-safe:animate-pulse');
+    expect(screen.getByTestId('build-1')).not.toHaveAttribute('data-take-candidate', 'true');
+  });
+
+  it('does not highlight a build reachable only by summing a table card', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 1,
+            cards: [card('HEART', 5)],
+            capturedCount: 0,
+            sweepCount: 0,
+            totalScore: 0,
+          },
+          { id: 1, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 2, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 3, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+        ],
+        tableCards: [card('SPADE', 3)],
+        builds: [{ ownerIdx: 1, value: 8, groups: [[card('SPADE', 3)]], isMulti: false }],
+      }),
+    );
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('build-0')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    await waitFor(() => expect(screen.getByTestId('build-0')).not.toHaveAttribute('data-take-candidate', 'true'));
+  });
+
   it('toggles a build selection and includes it in take', async () => {
     mockExec.mockResolvedValue(
       makeState({
