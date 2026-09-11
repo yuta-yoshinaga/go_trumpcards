@@ -19,6 +19,8 @@
   "trickWinner": "{{name}} がトリックを獲得",
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "round": "ラウンド: {{round}}  トリック: {{trick}}  切り札: {{trump}}",
+  "dealer": "ディーラー: {{name}}",
+  "trumpAutoNote": "切り札はディーラーの手札で最も多いスートから自動で決まります（選択操作はありません）",
   "roundEndTrickEntry": "{{name}} {{tricks}}",
   "roundEndTricks": "各プレイヤーのトリック数: {{list}}",
   "trumpGroupStrong": "切り札は強い群 — 数字が大きいほど強い",

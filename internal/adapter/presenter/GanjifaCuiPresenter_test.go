@@ -25,6 +25,7 @@ func setupGanjifaCuiMock() *interfaces.MockGanjifaGame {
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetTrumpSuit").Return(1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetDealerIdx").Return(0)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.GanjifaPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -58,6 +59,8 @@ func TestGanjifaCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ガンジファ")
 		assert.Contains(t, result, "[0]")
+		assert.Contains(t, result, "ディーラー: あなた")
+		assert.Contains(t, result, "切り札はディーラーの手札で最も多いスートから自動で決まります（選択操作はありません）")
 	})
 
 	// The whole point of the game is that ranks read in opposite directions, so
