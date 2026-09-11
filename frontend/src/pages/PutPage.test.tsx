@@ -154,6 +154,15 @@ describe('PutPage', () => {
     expect(screen.queryByRole('button', { name: '♠ A を出す' })).not.toBeInTheDocument();
   });
 
+  it('falls back to zero counts and renders no hand buttons without a human player', async () => {
+    const players = makeState().players.map((player) => ({ ...player, isHuman: false }));
+    mockExec.mockResolvedValue(makeState({ players }));
+    renderWithProviders(<PutPage />);
+
+    await waitFor(() => expect(screen.getByText(/あなた: 0 \/ 獲得トリック: 0/)).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: /を出す$/ })).not.toBeInTheDocument();
+  });
+
   it('keeps both count rows and the human cards visible during normal play', async () => {
     renderWithProviders(<PutPage />);
 
