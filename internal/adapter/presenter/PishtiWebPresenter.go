@@ -79,9 +79,35 @@ func (pwp *PishtiWebPresenter) Output(pg interfaces.PishtiGame, lastErr error) s
 		resObj.MessageParams = map[string]string{
 			"scores": pwp.encodeScoresParam(pg),
 		}
+		if idx, count, ok := pishtiLastTake(pg); ok {
+			resObj.MessageCode = "pishti.result.scoresWithLastTakeCpu"
+			resObj.MessageParams["count"] = fmt.Sprintf("%d", count)
+			resObj.MessageParams["id"] = fmt.Sprintf("%d", idx)
+			if pg.GetPlayer(idx).GetIsHuman() {
+				resObj.MessageCode = "pishti.result.scoresWithLastTakeHuman"
+				delete(resObj.MessageParams, "id")
+			}
+		}
 	}
 
 	return marshalOrError(resObj)
+}
+
+// pishtiLastTake returns the valid last capturer and the number of cards in the
+// existing final lastTake log entry. An absent or empty entry means there is no
+// leftover pile to announce.
+func pishtiLastTake(pg interfaces.PishtiGame) (int, int, bool) {
+	idx := pg.GetLastCaptureIdx()
+	if idx < 0 || idx >= pg.GetPlayerCnt() || pg.GetPlayer(idx) == nil {
+		return 0, 0, false
+	}
+	for i := len(pg.GetActionLog()) - 1; i >= 0; i-- {
+		entry := pg.GetActionLog()[i]
+		if entry != nil && entry.ActionType == "lastTake" && len(entry.Cards) > 0 {
+			return idx, len(entry.Cards), true
+		}
+	}
+	return 0, 0, false
 }
 
 // encodeScoresParam は最終得点を "0:11,1:7,..." 形式のロケール非依存文字列へ詰める。

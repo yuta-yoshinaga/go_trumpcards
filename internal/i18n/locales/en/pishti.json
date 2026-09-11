@@ -12,6 +12,8 @@
   "deckLine": "Stock: {{count}} left",
   "gameEnd": "Game over!",
   "scoreEntry": "  {{name}}: {{score}} pts",
+  "lastTakeHuman": "{{name}} took the remaining {{count}} card(s) as the last capturer",
+  "lastTakeCpu": "{{name}} took the remaining {{count}} card(s) as the last capturer",
   "promptCurrentTurn": "Turn: {{name}}",
   "promptHelp": "p <hand> to play a card (capture the pile by matching rank or with a Jack)",
   "result.scores": "Game over. Scores: {{scores}}",
