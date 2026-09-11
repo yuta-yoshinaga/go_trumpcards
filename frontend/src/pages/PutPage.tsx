@@ -239,11 +239,11 @@ function PutPageContent() {
         {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
         <ErrorAlert message={error} onRetry={retry} />
 
-        {human && human.cards.length > 0 && (
-          <div className="mt-4" data-tutorial="put-hand">
-            <div className="text-ds-text-muted text-sm mb-1">
-              {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
-            </div>
+        <div className="mt-4" data-tutorial="put-hand">
+          <div className="text-ds-text-muted text-sm mb-1">
+            {t('header.you')}: {human?.cardCount ?? 0} / {t('header.tricks')}: {human?.trickCount ?? 0}
+          </div>
+          {human && human.cards.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {human.cards.map((card, idx) => (
                 <button
@@ -258,8 +258,8 @@ function PutPageContent() {
                 </button>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
           {isHumanPlayTurn && state.canDeclarePut && (
