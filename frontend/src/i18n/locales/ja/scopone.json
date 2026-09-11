@@ -24,6 +24,15 @@
     "scopaBadge": "スコパ！",
     "scopaBadgeOwn": "スコパ！ あなたのチーム"
   },
+  "scoreRules": {
+    "title": "得点カテゴリ（各1点）",
+    "cards": "最多カード（1点）",
+    "diamonds": "最多ダイヤ（1点）",
+    "sevens": "最多の7（1点）",
+    "settebello": "セッテベッロ (7♦)（1点）",
+    "scopas": "スコパ（1回1点）",
+    "tie": "最多カード・最多ダイヤ・最多の7は同数なら加点なし"
+  },
   "button": {
     "take": "取る",
     "lay": "場に置く",

@@ -68,8 +68,14 @@ func TestScoponeCuiPresenter_HintOutput(t *testing.T) {
 func TestScoponeCuiPresenter_Output(t *testing.T) {
 	p := &presenter.ScoponeCuiPresenter{}
 	s := spBuildPlayedScopone(t)
-	if out := p.Output(s, nil); out == "" {
+	s.SetPhase(domain.ScoponePhasePlayerTurn)
+	out := p.Output(s, nil)
+	if out == "" {
 		t.Fatal("expected non-empty output")
+	}
+	const scoreRules = "得点: 最多カード/最多ダイヤ/最多の7/セッテベッロ(7♦)は各1点、スコパは1回1点（最多が同数なら加点なし）"
+	if !strings.Contains(out, scoreRules) {
+		t.Errorf("expected score rules in prompt, got: %s", out)
 	}
 }
 

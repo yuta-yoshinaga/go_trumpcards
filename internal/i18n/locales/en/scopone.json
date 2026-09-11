@@ -20,6 +20,8 @@
   "promptNext": "n to start the next round",
   "promptCurrentTurn": "Current turn: {{name}} (Team {{team}})",
   "promptHelp": "p <hand> [table...] to capture or lay / n for the next round",
+  "promptScore": "Scoring: most cards/most diamonds/most sevens/Settebello (7♦) are 1 point each; each scopa is 1 point (ties for most score none)",
+  "scoreRules": "Most cards/most diamonds/most sevens/Settebello (7♦) are 1 point each; each scopa is 1 point. Ties for most cards, diamonds, or sevens score none.",
   "helpExampleNext": "  n                        read the round result, then continue",
   "errHandIndexOutOfRange": "Hand index {{idx}} is out of range.",
   "errInvalidCapture": "Those table cards are not a legal capture for that card.",

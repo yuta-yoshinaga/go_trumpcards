@@ -226,6 +226,21 @@ function ScoponePageContent() {
               ))}
             </div>
 
+            <div
+              className="mx-auto max-w-xl rounded-lg bg-black/20 px-3 py-2 text-xs text-ds-text-muted"
+              data-testid="scopone-score-rules"
+            >
+              <div className="mb-1 text-center font-semibold text-ds-text-primary">{t('scoreRules.title')}</div>
+              <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+                <li>{t('scoreRules.cards')}</li>
+                <li>{t('scoreRules.diamonds')}</li>
+                <li>{t('scoreRules.sevens')}</li>
+                <li>{t('scoreRules.settebello')}</li>
+                <li>{t('scoreRules.scopas')}</li>
+              </ul>
+              <div className="mt-1 text-center">{t('scoreRules.tie')}</div>
+            </div>
+
             {/* CPU players */}
             <div className="flex justify-center gap-6 flex-wrap" data-tutorial="sp-cpu-area">
               {state.players

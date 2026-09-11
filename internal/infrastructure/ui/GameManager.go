@@ -3785,6 +3785,7 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"scopone.helpSetDifficulty"},
+			NoteKeys:          []string{"scopone.scoreRules"},
 		}),
 	BindCuiFor("escoba",
 		func() usecase.EscobaInteractorIF {
