@@ -73,6 +73,134 @@ beforeEach(() => {
 });
 
 describe('SpiteAndMalicePage', () => {
+  const foundationButtons = () => screen.getAllByRole('button', { name: /ファウンデーション|Foundation/ });
+
+  it('marks only matching foundations after selecting a hand, goal, or side card', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      foundations: [[card('HEART', 5)], [], [], []],
+      foundationTops: [5, 0, 0, 0],
+      players: [
+        {
+          ...baseState.players[0],
+          hand: [card('SPADE', 6)],
+          goalTop: card('DIAMOND', 1),
+          sides: [[card('CLOVER', 1)], [], [], []],
+        },
+        baseState.players[1],
+      ],
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    const [hand] = await screen.findAllByRole('button', { name: /♠ 6/ });
+    fireEvent.click(hand);
+    expect(foundationButtons().map((button) => button.getAttribute('data-playable'))).toEqual([
+      'true',
+      null,
+      null,
+      null,
+    ]);
+
+    fireEvent.click(screen.getByRole('button', { name: /ゴール|Goal/ }));
+    expect(foundationButtons().map((button) => button.getAttribute('data-playable'))).toEqual([
+      null,
+      'true',
+      'true',
+      'true',
+    ]);
+
+    fireEvent.click(screen.getByRole('button', { name: /サイド 1/ }));
+    expect(foundationButtons().map((button) => button.getAttribute('data-playable'))).toEqual([
+      null,
+      'true',
+      'true',
+      'true',
+    ]);
+  });
+
+  it('marks no foundations before a card is selected', async () => {
+    renderWithProviders(<SpiteAndMalicePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(foundationButtons().every((button) => button.getAttribute('data-playable') === null)).toBe(true);
+  });
+
+  it('prioritizes the hint ring over the playable ring', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      players: [{ ...baseState.players[0], hand: [card('SPADE', 2)] }, baseState.players[1]],
+      foundationTops: [1, 1, 0, 0],
+      hint: { source: 'hand', index: 0, foundationIdx: 0, discard: false },
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    if (!(toggle as HTMLInputElement).checked) fireEvent.click(toggle);
+    fireEvent.click(await screen.findByRole('button', { name: /♠ 2/ }));
+
+    const [hintAndPlayable, playableOnly, idle] = foundationButtons();
+    expect(hintAndPlayable.className).toContain('ring-ds-info');
+    expect(hintAndPlayable.className).not.toContain('ring-ds-success');
+    expect(playableOnly.className).toContain('ring-ds-success');
+    expect(playableOnly.className).not.toContain('ring-ds-info');
+    expect(idle.className).not.toContain('ring-ds-info');
+    expect(idle.className).not.toContain('ring-ds-success');
+  });
+
+  it('marks incomplete foundations for a selected K, including after an effective K top', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      foundations: [[card('HEART', 13), card('SPADE', 8)], [], [], Array.from({ length: 12 }, () => card('CLOVER', 1))],
+      foundationTops: [8, 0, 0, 12],
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    fireEvent.click(await screen.findByRole('button', { name: /♣ K/ }));
+    expect(foundationButtons().map((button) => button.getAttribute('data-playable'))).toEqual([
+      'true',
+      'true',
+      'true',
+      null,
+    ]);
+  });
+
+  it('uses the API effective top when a foundation contains a K', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      foundations: [[card('HEART', 13)], [], [], []],
+      foundationTops: [8, 0, 0, 0],
+      players: [{ ...baseState.players[0], hand: [card('SPADE', 9)] }, baseState.players[1]],
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    fireEvent.click(await screen.findByRole('button', { name: /♠ 9/ }));
+    expect(foundationButtons()[0]).toHaveAttribute('data-playable', 'true');
+  });
+
+  it('does not mark foundations when a selected hand slot has no card', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      foundationTops: [4, 0, 0, 0],
+      players: [
+        { ...baseState.players[0], hand: [card('SPADE', 5), undefined as unknown as Card] },
+        baseState.players[1],
+      ],
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    fireEvent.click(await screen.findByRole('button', { name: /♠ 5/ }));
+    expect(foundationButtons()[0]).toHaveAttribute('data-playable', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: /手札 2/ }));
+    await waitFor(() => expect(foundationButtons()[0]).not.toHaveAttribute('data-playable'));
+  });
+
+  it('does not mark foundations when the selected goal pile has no top card', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      foundationTops: [0, 0, 0, 0],
+      players: [{ ...baseState.players[0], goalTop: undefined, goalSize: 1 }, baseState.players[1]],
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    const goalButton = await screen.findByRole('button', { name: /ゴール|Goal/ });
+    fireEvent.click(goalButton);
+    expect(foundationButtons().every((button) => button.getAttribute('data-playable') === null)).toBe(true);
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<SpiteAndMalicePage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());

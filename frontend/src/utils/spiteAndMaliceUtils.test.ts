@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { isGoalTopPlayableToFoundation, isSpiteAndMaliceWild } from './spiteAndMaliceUtils';
+import {
+  canPlaceSpiteAndMaliceCardOnFoundation,
+  isGoalTopPlayableToFoundation,
+  isSpiteAndMaliceWild,
+  SpiteAndMaliceFoundationMax,
+  SpiteAndMaliceWildValue,
+} from './spiteAndMaliceUtils';
 
 const card = (value: number, design: Card['design'] = 'SPADE'): Card => ({ design, value });
 
@@ -32,8 +38,6 @@ describe('isGoalTopPlayableToFoundation', () => {
   });
 });
 
-// #5560: K がワイルドという規則が表示に一切出ていなかった。判定はユーティリティ側に
-// 置いて、画面がもう一度 13 を書かないようにする。
 describe('isSpiteAndMaliceWild', () => {
   it('is true only for the King', () => {
     expect(isSpiteAndMaliceWild({ value: 13 })).toBe(true);
@@ -44,5 +48,31 @@ describe('isSpiteAndMaliceWild', () => {
   it('is false for a missing card', () => {
     expect(isSpiteAndMaliceWild(null)).toBe(false);
     expect(isSpiteAndMaliceWild(undefined)).toBe(false);
+  });
+});
+
+describe('canPlaceSpiteAndMaliceCardOnFoundation', () => {
+  it('accepts the next value and rejects a mismatched value', () => {
+    expect(canPlaceSpiteAndMaliceCardOnFoundation(6, 5, 5)).toBe(true);
+    expect(canPlaceSpiteAndMaliceCardOnFoundation(7, 5, 5)).toBe(false);
+  });
+
+  it('accepts a wild card on every incomplete foundation', () => {
+    expect(canPlaceSpiteAndMaliceCardOnFoundation(SpiteAndMaliceWildValue, 7, 7)).toBe(true);
+    expect(canPlaceSpiteAndMaliceCardOnFoundation(SpiteAndMaliceWildValue, 0, SpiteAndMaliceFoundationMax)).toBe(false);
+  });
+
+  it('uses the general next-value rule for an empty foundation', () => {
+    expect(canPlaceSpiteAndMaliceCardOnFoundation(1, 0, 0)).toBe(true);
+    expect(canPlaceSpiteAndMaliceCardOnFoundation(2, 0, 0)).toBe(false);
+  });
+
+  it('accepts the next effective value after a wild card', () => {
+    expect(canPlaceSpiteAndMaliceCardOnFoundation(9, 8, 8)).toBe(true);
+  });
+
+  it('rejects a non-wild card when the foundation is complete', () => {
+    expect(canPlaceSpiteAndMaliceCardOnFoundation(12, 11, SpiteAndMaliceFoundationMax)).toBe(false);
+    expect(canPlaceSpiteAndMaliceCardOnFoundation(12, 11, SpiteAndMaliceFoundationMax - 1)).toBe(true);
   });
 });
