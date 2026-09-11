@@ -34,6 +34,11 @@
   },
   "teamScore": "{{team}}: {{score}} pts",
   "playButton": "Play",
+  "playRestriction": {
+    "followSuit": "Follow the led suit",
+    "mustTrump": "You must play trump",
+    "mustOvertrump": "You must overtrump with a stronger trump"
+  },
   "nextTrick": "Next Trick",
   "trickWinner": "{{team}} won the trick",
   "nextRound": "Next Round",

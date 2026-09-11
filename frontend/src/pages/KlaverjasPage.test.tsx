@@ -58,6 +58,79 @@ describe('KlaverjasPage', () => {
     });
   });
 
+  it.each([
+    {
+      name: 'must follow suit',
+      state: makeKlaverjasState({
+        currentTrick: [{ playerIdx: 1, card: { design: 'SPADE', value: 10 } }],
+        trumpSuit: 4,
+        playableIndices: [2],
+      }),
+      card: '♥ Q',
+      reason: 'リードスートに従ってください',
+    },
+    {
+      name: 'must play trump',
+      state: makeKlaverjasState({
+        players: [
+          {
+            ...makeKlaverjasState().players[0],
+            cards: [
+              { design: 'HEART', value: 12 },
+              { design: 'SPADE', value: 1 },
+            ],
+          },
+          ...makeKlaverjasState().players.slice(1),
+        ],
+        currentTrick: [{ playerIdx: 1, card: { design: 'CLOVER', value: 7 } }],
+        trumpSuit: 3,
+        playableIndices: [0],
+      }),
+      card: '♠ A',
+      reason: '切り札を出してください',
+    },
+    {
+      name: 'must overtrump',
+      state: makeKlaverjasState({
+        players: [
+          {
+            ...makeKlaverjasState().players[0],
+            cards: [
+              { design: 'HEART', value: 12 },
+              { design: 'HEART', value: 13 },
+              { design: 'SPADE', value: 1 },
+            ],
+          },
+          ...makeKlaverjasState().players.slice(1),
+        ],
+        currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 12 } }],
+        trumpSuit: 3,
+        playableIndices: [1],
+      }),
+      card: '♥ Q',
+      reason: 'より強い切り札で追い越してください',
+    },
+  ])('shows the reason for a restricted card when $name', async ({ state, card, reason }) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<KlaverjasPage />);
+    const matchingCard = (await screen.findAllByAltText(card)).find(
+      (image) => image.closest('button')?.getAttribute('title') === reason,
+    );
+    expect(matchingCard).toBeDefined();
+  });
+
+  it('does not show a restriction reason for a playable card', async () => {
+    const state = makeKlaverjasState({
+      currentTrick: [{ playerIdx: 1, card: { design: 'SPADE', value: 10 } }],
+      trumpSuit: 4,
+      playableIndices: [2],
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<KlaverjasPage />);
+    const playableCard = await screen.findByAltText('♠ A');
+    expect(playableCard.closest('button')).not.toHaveAttribute('title', 'リードスートに従ってください');
+  });
+
   it('selecting a card then playing dispatches play', async () => {
     renderWithProviders(<KlaverjasPage />);
     const card = await screen.findByAltText('♥ Q');
