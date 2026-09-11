@@ -89,7 +89,17 @@ describe('KingAlbertPage', () => {
   it('renders a reserve card', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<KingAlbertPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♦ 7' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '♦ 7（リザーブ枠 0）' })).toBeInTheDocument());
+  });
+
+  it('includes the card name and slot number in reserve card accessible names', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [card('DIAMOND', 7), null, card('HEART', 8), null, null, null, null],
+    });
+    renderWithProviders(<KingAlbertPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♦ 7（リザーブ枠 0）' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♥ 8（リザーブ枠 2）' })).toBeInTheDocument();
   });
 
   it('gives each empty reserve slot a role=img with a numbered aria-label', async () => {
@@ -117,7 +127,7 @@ describe('KingAlbertPage', () => {
   it('selecting a reserve card marks it as selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<KingAlbertPage />);
-    const reserveBtn = await screen.findByRole('button', { name: '♦ 7' });
+    const reserveBtn = await screen.findByRole('button', { name: '♦ 7（リザーブ枠 0）' });
     fireEvent.click(reserveBtn);
     await waitFor(() => expect(reserveBtn).toHaveAttribute('aria-pressed', 'true'));
   });
@@ -212,7 +222,7 @@ describe('KingAlbertPage', () => {
     renderWithProviders(<KingAlbertPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: '♦ A' }));
+    fireEvent.click(screen.getByRole('button', { name: '♦ A（リザーブ枠 0）' }));
     await waitFor(() => expect(screen.getByLabelText(/空の組札/)).toHaveAttribute('data-target-candidate'));
     // 既に A が乗っている 3 つは 2 を待っているので、A では光らない。
     for (const f of screen.getAllByLabelText(/組札 1枚/)) {
@@ -228,7 +238,7 @@ describe('KingAlbertPage', () => {
     renderWithProviders(<KingAlbertPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: '♦ 2' }));
+    fireEvent.click(screen.getByRole('button', { name: '♦ 2（リザーブ枠 0）' }));
     await waitFor(() => {
       const rung = screen.getAllByLabelText(/組札/).filter((f) => f.hasAttribute('data-target-candidate'));
       expect(rung).toHaveLength(1);

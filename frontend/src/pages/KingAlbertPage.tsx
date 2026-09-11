@@ -326,7 +326,7 @@ function KingAlbertPageContent() {
           type="button"
           onClick={() => game.handleSelectSource(reserveZone)}
           disabled={!isPlaying || loading}
-          aria-label={cardAlt(reserveCard)}
+          aria-label={t('reserveCardAriaLabel', { card: cardAlt(reserveCard), idx: cellIdx })}
           aria-pressed={isSourceSelected('reserve', cellIdx)}
           draggable={isPlaying && !loading}
           onDragStart={dnd.handleDragStart(reserveZone)}
