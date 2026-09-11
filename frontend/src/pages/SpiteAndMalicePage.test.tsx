@@ -172,6 +172,35 @@ describe('SpiteAndMalicePage', () => {
     expect(foundationButtons()[0]).toHaveAttribute('data-playable', 'true');
   });
 
+  it('does not mark foundations when a selected hand slot has no card', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      foundationTops: [4, 0, 0, 0],
+      players: [
+        { ...baseState.players[0], hand: [card('SPADE', 5), undefined as unknown as Card] },
+        baseState.players[1],
+      ],
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    fireEvent.click(await screen.findByRole('button', { name: /♠ 5/ }));
+    expect(foundationButtons()[0]).toHaveAttribute('data-playable', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: /手札 2/ }));
+    await waitFor(() => expect(foundationButtons()[0]).not.toHaveAttribute('data-playable'));
+  });
+
+  it('does not mark foundations when the selected goal pile has no top card', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      foundationTops: [0, 0, 0, 0],
+      players: [{ ...baseState.players[0], goalTop: undefined, goalSize: 1 }, baseState.players[1]],
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    const goalButton = await screen.findByRole('button', { name: /ゴール|Goal/ });
+    fireEvent.click(goalButton);
+    expect(foundationButtons().every((button) => button.getAttribute('data-playable') === null)).toBe(true);
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<SpiteAndMalicePage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());

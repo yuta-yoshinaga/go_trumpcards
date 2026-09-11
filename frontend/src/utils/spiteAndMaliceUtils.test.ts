@@ -70,4 +70,9 @@ describe('canPlaceSpiteAndMaliceCardOnFoundation', () => {
   it('accepts the next effective value after a wild card', () => {
     expect(canPlaceSpiteAndMaliceCardOnFoundation(9, 8, 8)).toBe(true);
   });
+
+  it('rejects a non-wild card when the foundation is complete', () => {
+    expect(canPlaceSpiteAndMaliceCardOnFoundation(12, 11, SpiteAndMaliceFoundationMax)).toBe(false);
+    expect(canPlaceSpiteAndMaliceCardOnFoundation(12, 11, SpiteAndMaliceFoundationMax - 1)).toBe(true);
+  });
 });
