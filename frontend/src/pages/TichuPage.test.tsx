@@ -109,6 +109,44 @@ describe('TichuPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/CPU 1/)).toBeInTheDocument();
     });
+    expect(screen.getByText('ティチュー')).toBeInTheDocument();
+    expect(screen.getByText(/グランドティチュー/)).toBeInTheDocument();
+  });
+
+  it('play phase: shows the human Tichu declaration badge', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player({ id: 0, isHuman: true, declType: 1 }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    renderWithProviders(<TichuPage />);
+    expect(await screen.findByTestId('tichu-declaration-badge')).toHaveTextContent('ティチュー');
+  });
+
+  it('play phase: shows the human Grand Tichu declaration badge', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player({ id: 0, isHuman: true, declType: 2 }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    renderWithProviders(<TichuPage />);
+    expect(await screen.findByTestId('tichu-declaration-badge')).toHaveTextContent('グランドティチュー');
+  });
+
+  it('play phase: hides the human declaration badge when no declaration was made', async () => {
+    renderWithProviders(<TichuPage />);
+    await screen.findByTestId('tichu-score-bar');
+    expect(screen.queryByTestId('tichu-declaration-badge')).not.toBeInTheDocument();
   });
 
   it('declaration phase: all three buttons dispatch declare', async () => {
