@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cuckooApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CuckooPlayer, CuckooResponse } from '../types/card';
 import { CuckooPage } from './CuckooPage';
@@ -189,17 +190,29 @@ describe('CuckooPage', () => {
     renderWithProviders(<CuckooPage />);
     const btn = await screen.findByRole('button', { name: /キングを公開して拒否/ });
     expect(btn).toBeEnabled();
+    expect(btn).not.toHaveAttribute('aria-disabled');
+    expect(btn).not.toHaveAttribute('aria-describedby');
     mockExec.mockClear();
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('refuse'));
   });
 
-  it('disables the refuse button with a reason when the human holds no King', async () => {
+  it('keeps the no-King refuse button focusable and describes why it cannot be used', async () => {
     mockExec.mockResolvedValue(refuseNoKingState);
     renderWithProviders(<CuckooPage />);
     const btn = await screen.findByTestId('cuckoo-refuse-button');
-    expect(btn).toBeDisabled();
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
     expect(btn).toHaveAttribute('title', '拒否できるのはキングを持っているときだけです。');
+    const describedBy = btn.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    const reason = document.getElementById(describedBy ?? '');
+    expect(reason).toBeInTheDocument();
+    expect(reason).toHaveTextContent('拒否できるのはキングを持っているときだけです。');
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('refuse');
     // The accept button remains available.
     expect(screen.getByRole('button', { name: '受け入れる' })).toBeEnabled();
   });
