@@ -219,7 +219,11 @@ function BauernschnapsenPageContent() {
           <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
           <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
           <span>
-            {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
+            {isContractPhase
+              ? t('trumpPending')
+              : state.trumpSuit > 0
+                ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) })
+                : t('noTrump')}
           </span>
         </div>
 
