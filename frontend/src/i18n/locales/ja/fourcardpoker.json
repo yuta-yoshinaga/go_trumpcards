@@ -13,7 +13,7 @@
   },
   "button": {
     "bet": "ベット",
-    "playMult": "プレイ {{mult}}x",
+    "playMult": "プレイ {{mult}}x（{{amount}}）",
     "fold": "フォールド",
     "reset": "リセット"
   },
