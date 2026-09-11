@@ -19,6 +19,13 @@ func (p *PiquetWebPresenter) Output(g interfaces.PiquetGame, lastErr error) stri
 		resObj.Message = lastErr.Error()
 	} else {
 		resObj.MessageCode = piquetPhaseMessageCode(g.GetPhase())
+		if trickWin := piquetLatestTrickWin(g.GetActionLog()); trickWin != nil {
+			if trickWin.PlayerIdx == g.GetElderIdx() {
+				resObj.MessageCode = "piquet.trickWin.elder"
+			} else if trickWin.PlayerIdx == g.GetYoungerIdx() {
+				resObj.MessageCode = "piquet.trickWin.younger"
+			}
+		}
 	}
 
 	// 合法プレイインデックス (人間ターンのみ)
@@ -41,6 +48,17 @@ func (p *PiquetWebPresenter) Output(g interfaces.PiquetGame, lastErr error) stri
 	}
 
 	return marshalOrError(resObj)
+}
+
+func piquetLatestTrickWin(entries []*domain.ActionLogEntry) *domain.ActionLogEntry {
+	if len(entries) == 0 {
+		return nil
+	}
+	last := entries[len(entries)-1]
+	if last != nil && last.ActionType == "trick_win" {
+		return last
+	}
+	return nil
 }
 
 // HintOutput ヒントをJSON出力

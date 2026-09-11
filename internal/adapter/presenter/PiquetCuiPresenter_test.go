@@ -78,6 +78,32 @@ func TestPiquetCuiPresenter_Output_WithError(t *testing.T) {
 	}
 }
 
+func TestPiquetCuiPresenter_Output_TrickWinner(t *testing.T) {
+	origLang := i18n.Lang()
+	defer i18n.SetLang(origLang)
+	origColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origColor)
+
+	g := newPiquetForPresenter(t)
+	data, _ := json.Marshal(g)
+	var raw map[string]any
+	_ = json.Unmarshal(data, &raw)
+	raw["ph"] = int(domain.PiquetPhasePlay)
+	raw["al"] = []map[string]any{{"t": 10, "p": 0, "a": "trick_win", "d": "Player", "c": []any{}}}
+	mod, _ := json.Marshal(raw)
+	g2 := &domain.Piquet{}
+	if err := json.Unmarshal(mod, g2); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+
+	i18n.SetLang("ja")
+	out := (&PiquetCuiPresenter{}).Output(g2, nil)
+	if !strings.Contains(out, "Elder (あなた) が直前のトリックを獲得しました。") {
+		t.Errorf("expected Japanese trick winner text, got: %s", out)
+	}
+}
+
 func TestPiquetCuiPresenter_HintOutput(t *testing.T) {
 	g := newPiquetForPresenter(t)
 	p := &PiquetCuiPresenter{}

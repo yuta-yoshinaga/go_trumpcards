@@ -93,6 +93,7 @@ func piquetWriteDeclarationView(b *strings.Builder, g interfaces.PiquetGame) {
 
 func piquetWritePlayView(b *strings.Builder, g interfaces.PiquetGame) {
 	b.WriteString(i18n.T("piquet.playHeader") + "\n")
+	piquetWriteLastTrickWinner(b, g)
 	if len(g.GetCurrentTrick()) > 0 {
 		b.WriteString("  ")
 		for _, tc := range g.GetCurrentTrick() {
@@ -102,6 +103,21 @@ func piquetWritePlayView(b *strings.Builder, g interfaces.PiquetGame) {
 	}
 	b.WriteString("  " + i18n.Tf("piquet.trickNumber",
 		"trick", strconv.Itoa(g.GetTrickNumber()+1)) + "\n")
+}
+
+func piquetWriteLastTrickWinner(b *strings.Builder, g interfaces.PiquetGame) {
+	for i := len(g.GetActionLog()) - 1; i >= 0; i-- {
+		entry := g.GetActionLog()[i]
+		if entry != nil && entry.ActionType == "trick_win" {
+			role := i18n.T("piquet.roleYounger")
+			if entry.PlayerIdx == g.GetElderIdx() {
+				role = i18n.T("piquet.roleElder")
+			}
+			b.WriteString("  " + i18n.Tf("piquet.trickWinner",
+				"player", role+" ("+cuiPlayerName(g.GetPlayer(entry.PlayerIdx), entry.PlayerIdx)+")") + "\n")
+			return
+		}
+	}
 }
 
 func piquetWriteRoundEndView(b *strings.Builder, g interfaces.PiquetGame) {

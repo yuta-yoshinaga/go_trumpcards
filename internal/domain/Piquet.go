@@ -722,6 +722,8 @@ func (p *Piquet) resolveTrick() {
 	}
 	p.players[winner].AddTrick(trickCards)
 	p.tricksWon[winner]++
+	p.appendLog(winner, "trick_win",
+		fmt.Sprintf("%s wins trick %d", playerName(p.players[:], winner), p.trickNumber+1), trickCards)
 
 	// 最終トリックボーナス
 	if p.trickNumber == PiquetTricksPerRound-1 {
