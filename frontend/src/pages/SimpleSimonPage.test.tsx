@@ -75,6 +75,56 @@ describe('SimpleSimonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
   });
 
+  it('confirms a keyboard-selected card with Enter and auto-moves it', async () => {
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('card-1-0');
+    mockExec.mockClear();
+
+    fireEvent.keyDown(document, { key: '2' });
+    fireEvent.keyDown(document, { key: 'Enter' });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
+  });
+
+  it('does not execute a move when Enter is pressed without a keyboard selection', async () => {
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('card-1-0');
+    mockExec.mockClear();
+
+    fireEvent.keyDown(document, { key: 'Enter' });
+
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('clears the keyboard selection and auto-move notice with Escape', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        columns: (() => {
+          const columns: Card[][] = Array.from({ length: 10 }, () => []);
+          columns[0] = [card('SPADE', 2)];
+          return columns;
+        })(),
+      }),
+    );
+    renderWithProviders(<SimpleSimonPage />);
+    const srcCard = await screen.findByTestId('card-0-0');
+
+    fireEvent.keyDown(document, { key: '1' });
+    expect(srcCard).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.keyDown(document, { key: 'Enter' });
+    expect(await screen.findByTestId('ss-automove-notice')).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: '1' });
+    expect(srcCard).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    await waitFor(() => {
+      expect(srcCard).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.queryByTestId('ss-automove-notice')).not.toBeInTheDocument();
+    });
+  });
+
   it('labels cards with name+position and reflects selection with aria-pressed', async () => {
     renderWithProviders(<SimpleSimonPage />);
     // column[1] is ♠8 at the top → "♠ 8（列2・上から1枚目）".
@@ -120,6 +170,44 @@ describe('SimpleSimonPage', () => {
     expect(screen.getByTestId('undo-button')).toHaveAttribute('aria-keyshortcuts', 'z');
     expect(screen.getByTestId('hint-button')).toHaveAttribute('aria-keyshortcuts', 'h');
     expect(screen.getByTestId('giveup-button')).toHaveAttribute('aria-keyshortcuts', 'g');
+  });
+
+  it('executes hint and undo commands for their keyboard shortcuts', async () => {
+    mockExec.mockResolvedValue(makeState({ canUndo: true }));
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('undo-button');
+
+    for (const [key, command] of [
+      ['h', 'hint'],
+      ['z', 'u'],
+    ] as const) {
+      mockExec.mockClear();
+      fireEvent.keyDown(document, { key });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith(command));
+    }
+  });
+
+  it('asks for confirmation before giving up via the keyboard shortcut', async () => {
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'g' });
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalledWith('g');
+  });
+
+  it('dispatches reset after confirming the reset dialog', async () => {
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('giveup-button');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() => expect(screen.getByText('リセット確認')).toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalledWith('reset');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   it('does not trigger keyboard navigation while an input has focus', async () => {
