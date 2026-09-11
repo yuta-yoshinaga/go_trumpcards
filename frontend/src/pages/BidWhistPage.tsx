@@ -60,10 +60,10 @@ const SUITS: { id: number; glyph: string }[] = [
 const KITTY_SIZE = 6;
 
 /** Bid direction options shown as buttons. */
-const DIRECTIONS: { id: number; key: string }[] = [
-  { id: BidWhistDirection.UPTOWN, key: 'dirUptown' },
-  { id: BidWhistDirection.DOWNTOWN, key: 'dirDowntown' },
-  { id: BidWhistDirection.NO_TRUMP, key: 'dirNoTrump' },
+const DIRECTIONS: { id: number; key: string; meaningKey: string }[] = [
+  { id: BidWhistDirection.UPTOWN, key: 'dirUptown', meaningKey: 'directionMeaningUptown' },
+  { id: BidWhistDirection.DOWNTOWN, key: 'dirDowntown', meaningKey: 'directionMeaningDowntown' },
+  { id: BidWhistDirection.NO_TRUMP, key: 'dirNoTrump', meaningKey: 'directionMeaningNoTrump' },
 ];
 
 /** Returns the glyph for a suit id, or "NT" when there is no trump (-1). */
@@ -410,6 +410,13 @@ function BidWhistPageContent() {
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="bw-actions">
               {isHumanBidTurn && (
                 <>
+                  <div className="w-full text-center text-xs text-ds-text-muted" data-testid="bid-direction-help">
+                    {DIRECTIONS.map((d) => (
+                      <span key={d.id} className="mx-1 inline-block">
+                        {t(d.key)}: {t(d.meaningKey)}
+                      </span>
+                    ))}
+                  </div>
                   <label
                     htmlFor="bw-bid-tricks"
                     className="text-xs text-ds-text-muted self-center"
@@ -444,10 +451,15 @@ function BidWhistPageContent() {
                             dir: t(DIRECTIONS[state.highestBid.direction]?.key ?? 'dirUptown'),
                           })
                         : undefined;
+                    const meaning = t(d.meaningKey);
                     // The title lives on the wrapping span: browsers suppress native tooltips on
                     // disabled buttons, so hovering the span still surfaces the reason.
                     return (
-                      <span key={d.id} title={reason} data-testid={`bid-dir-wrap-${d.id}`}>
+                      <span
+                        key={d.id}
+                        title={reason ? `${meaning} — ${reason}` : meaning}
+                        data-testid={`bid-dir-wrap-${d.id}`}
+                      >
                         <button
                           type="button"
                           onClick={() => bid(bidTricks, d.id)}
@@ -476,6 +488,10 @@ function BidWhistPageContent() {
 
               {isHumanTrumpTurn && (
                 <>
+                  <div className="w-full text-center text-xs text-ds-text-muted" data-testid="contract-direction-help">
+                    {t(DIRECTIONS[state.contractDirection]?.key ?? 'dirUptown')}:{' '}
+                    {t(DIRECTIONS[state.contractDirection]?.meaningKey ?? 'directionMeaningUptown')}
+                  </div>
                   <span className="text-xs text-ds-text-muted self-center">{t('declareTrumpPrompt')}</span>
                   {SUITS.map((s) => (
                     <button

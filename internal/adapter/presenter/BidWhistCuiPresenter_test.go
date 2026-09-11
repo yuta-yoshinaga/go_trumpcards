@@ -78,6 +78,20 @@ func TestBidWhistCuiPresenter_Output_Phases(t *testing.T) {
 	})
 }
 
+func TestBidWhistCuiPresenter_BidAndTrumpHelpExplainsDirectionRankings(t *testing.T) {
+
+	p := &presenter.BidWhistCuiPresenter{}
+
+	g := newBidWhistGame()
+	g.SetPhase(domain.BidWhistPhaseBid)
+	out := p.Output(g, nil)
+	assert.Contains(t, out, "方向: アップタウン=切り札あり・Aが最強、ダウンタウン=切り札あり・2が最強の逆序列、ノートランプ=切り札なし・A最強・ジョーカーは死札")
+
+	g.SetPhase(domain.BidWhistPhaseTrumpDeclaration)
+	out = p.Output(g, nil)
+	assert.Contains(t, out, "アップタウンはAが最強、ダウンタウンは2が最強の逆序列、ノートランプは切り札なしでジョーカーは死札")
+}
+
 // 目標点は Web の Config には出ているのに CUI には無かった (#7059)。
 // 何点先取なのか判らないと、点差の意味が読めない。
 func TestBidWhistCuiPresenterStatesTheTargetScore(t *testing.T) {
