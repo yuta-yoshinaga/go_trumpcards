@@ -106,7 +106,9 @@ func (p *ThreeCardBragWebPresenter) buildPlayersOutput(g interfaces.ThreeCardBra
 		// 人間は常に公開。ショーダウン時は非フォールドの手も公開する。
 		showCards := player.GetIsHuman() || (reveal && !player.GetFolded())
 		handName := ""
-		if showCards && !player.GetIsHuman() {
+		showHandName := (player.GetIsHuman() && (player.GetSeen() || reveal)) ||
+			(!player.GetIsHuman() && reveal && !player.GetFolded())
+		if showHandName {
 			handName = threeCardBragHandName(player)
 		}
 		out = append(out, &controller.ThreeCardBragWebOutputPlayer{
