@@ -95,6 +95,104 @@ describe('StreetsAndAlleysPage', () => {
     expect(screen.getByRole('button', { name: '♠ 5' })).not.toHaveAttribute('data-target-candidate');
   });
 
+  it('preserves destination rings for empty tableau, tableau cards, and foundations', async () => {
+    const previewState: StreetsAndAlleysResponse = {
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 2), faceUp: true },
+        ],
+        [{ card: card('HEART', 3), faceUp: true }],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+      ]),
+    };
+    mockExec.mockResolvedValue(previewState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    const source = await screen.findByRole('button', { name: '♠ 2' });
+    const tableauTarget = screen.getByRole('button', { name: '♥ 3' });
+    const emptyTableauTarget = screen.getAllByRole('button', { name: '空' })[0];
+    const foundationTarget = screen.getAllByLabelText(/組札 1枚/)[0];
+
+    expect(foundationTarget.className).toBe(
+      'p-0 border-0 bg-transparent cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80',
+    );
+
+    fireEvent.mouseEnter(source);
+    await waitFor(() => expect(tableauTarget).toHaveAttribute('data-preview-target', 'true'));
+    for (const target of [emptyTableauTarget, tableauTarget, foundationTarget]) {
+      expect(target).toHaveAttribute('data-target-candidate', 'true');
+      expect(target.className).toContain('motion-safe:hover:ring-2');
+      expect(target.className).toContain('focus:ring-2');
+      expect(target.className).toContain('ring-ds-info/70');
+    }
+
+    fireEvent.mouseLeave(source);
+    await waitFor(() => expect(tableauTarget).not.toHaveAttribute('data-preview-target'));
+    expect(tableauTarget.className).not.toContain('ring-ds-info/70');
+
+    fireEvent.focus(source);
+    await waitFor(() => expect(tableauTarget).toHaveAttribute('data-preview-target', 'true'));
+    expect(tableauTarget.className).toContain('ring-ds-info/70');
+
+    fireEvent.click(source);
+    await waitFor(() => expect(tableauTarget).toHaveAttribute('data-target-candidate', 'true'));
+    for (const target of [emptyTableauTarget, tableauTarget, foundationTarget]) {
+      expect(target).not.toHaveAttribute('data-preview-target');
+      expect(target.className).toContain('motion-safe:hover:ring-2');
+      expect(target.className).toContain('focus:ring-2');
+      expect(target.className).toContain('ring-ds-info');
+      expect(target.className).not.toContain('ring-ds-info/70');
+    }
+  });
+
+  it('highlights an empty foundation for an ace in preview and selection, but not for a five', async () => {
+    const emptyFoundationState: StreetsAndAlleysResponse = {
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 1), faceUp: true },
+        ],
+        [{ card: card('HEART', 6), faceUp: true }],
+        [{ card: card('DIAMOND', 5), faceUp: true }],
+        [],
+        [],
+        [],
+        [],
+        [],
+      ]),
+      foundation: [[], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+    };
+    mockExec.mockResolvedValue(emptyFoundationState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+
+    const emptyFoundation = await screen.findByRole('button', { name: '空の組札 (♠)' });
+    const ace = screen.getByRole('button', { name: '♠ A' });
+    const five = screen.getByRole('button', { name: '♦ 5' });
+
+    fireEvent.mouseEnter(ace);
+    await waitFor(() => expect(emptyFoundation).toHaveAttribute('data-target-candidate', 'true'));
+    expect(emptyFoundation.className.split(' ')).toContain('ring-ds-info/70');
+    expect(emptyFoundation.className.split(' ')).not.toContain('ring-ds-info');
+
+    fireEvent.mouseLeave(ace);
+    fireEvent.click(ace);
+    await waitFor(() => expect(emptyFoundation).not.toHaveAttribute('data-preview-target'));
+    expect(emptyFoundation).toHaveAttribute('data-target-candidate', 'true');
+    expect(emptyFoundation.className.split(' ')).toContain('ring-ds-info');
+    expect(emptyFoundation.className.split(' ')).not.toContain('ring-ds-info/70');
+
+    fireEvent.click(ace);
+    fireEvent.click(five);
+    await waitFor(() => expect(emptyFoundation).not.toHaveAttribute('data-target-candidate'));
+  });
+
   it('dims a tableau card while it is being dragged', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<StreetsAndAlleysPage />);

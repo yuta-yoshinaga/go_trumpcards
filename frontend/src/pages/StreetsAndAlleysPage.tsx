@@ -21,6 +21,7 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useDestinationPreview } from '../hooks/useDestinationPreview';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
@@ -171,6 +172,10 @@ function StreetsAndAlleysPageContent() {
     enabled: !!isPlayingForKbd && !loading,
   });
 
+  // Keep this hook before the early return so its hook order stays stable while
+  // the game state is loading.
+  const preview = useDestinationPreview<StreetsAndAlleysMoveZone>(selectedSource);
+
   if (!state) return <GameSkeleton gameKey="streetsandalleys" layout={{ kind: 'tableau', topRow: 4, tableau: 8 }} />;
 
   const isPlaying = state.phase === StreetsAndAlleysPhase.PLAYING;
@@ -190,15 +195,20 @@ function StreetsAndAlleysPageContent() {
     selectedSource.col === col &&
     selectedSource.cardIndex === cardIndex;
 
-  // 選択中の札そのもの。列の末尾しか動かせないので、指定 index か列の一番上を読む。
-  const selectedCard =
-    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
-      ? selectedSource.cardIndex !== undefined
-        ? state.tableau[selectedSource.col]?.[selectedSource.cardIndex]?.card
-        : state.tableau[selectedSource.col]?.at(-1)?.card
+  // 選択中、またはホバー/フォーカス中の札そのもの。列の末尾しか動かせない。
+  const previewSource = preview.source;
+  const previewedCard =
+    previewSource?.zone === 'tableau' && previewSource.col !== undefined
+      ? previewSource.cardIndex !== undefined
+        ? state.tableau[previewSource.col]?.[previewSource.cardIndex]?.card
+        : state.tableau[previewSource.col]?.at(-1)?.card
       : undefined;
   // 以前は選択中なら全列の一番上を無条件で光らせていた。ドメインは値差 -1 を要求する。
-  const legalTargets = streetsAndAlleysLegalTargets(state.tableau, state.foundation, selectedCard);
+  const legalTargets = streetsAndAlleysLegalTargets(state.tableau, state.foundation, previewedCard);
+  /** Ring for a legal destination: softer while it is only a hover preview. */
+  const targetRing = preview.isPreview
+    ? ' rounded ring-1 ring-ds-info/70 motion-safe:hover:ring-2 focus:ring-2'
+    : ' rounded ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2';
 
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx];
@@ -220,8 +230,9 @@ function StreetsAndAlleysPageContent() {
                 disabled={!isPlaying || loading || !selectedSource}
                 style={{ height: dims.ch }}
                 data-target-candidate={legalTargets.tableau.has(colIdx) || undefined}
-                className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite} ${
-                  legalTargets.tableau.has(colIdx) ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2' : ''
+                data-preview-target={legalTargets.tableau.has(colIdx) && preview.isPreview ? 'true' : undefined}
+                className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}${
+                  legalTargets.tableau.has(colIdx) ? targetRing : ''
                 }`}
               >
                 {t('empty')}
@@ -247,6 +258,7 @@ function StreetsAndAlleysPageContent() {
                     {tc.card ? (
                       <button
                         type="button"
+                        {...(isTop ? preview.previewProps(cardZone) : {})}
                         onClick={() => {
                           if (selectedSource) {
                             game.handleSelectTarget(tableauColZone);
@@ -258,10 +270,11 @@ function StreetsAndAlleysPageContent() {
                         aria-label={cardAlt(tc.card)}
                         aria-pressed={isSelfSource}
                         data-target-candidate={isTargetCandidate || undefined}
+                        data-preview-target={isTargetCandidate && preview.isPreview ? 'true' : undefined}
                         draggable={isPlaying && !loading && isTop}
                         onDragStart={dnd.handleDragStart(cardZone)}
                         onDragEnd={dnd.handleDragEnd}
-                        className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSelfSource ? 'ring-2 ring-ds-warning' : ''} ${isTargetCandidate ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                        className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSelfSource ? 'ring-2 ring-ds-warning' : ''}${isTargetCandidate ? targetRing : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                       >
                         <AnimatedCard
                           card={tc.card}
@@ -341,10 +354,11 @@ function StreetsAndAlleysPageContent() {
                               count: pile.length,
                             })}
                             data-target-candidate={legalTargets.foundation.has(idx) || undefined}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                              legalTargets.foundation.has(idx)
-                                ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2'
-                                : ''
+                            data-preview-target={
+                              legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined
+                            }
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}${
+                              legalTargets.foundation.has(idx) ? targetRing : ''
                             }`}
                           >
                             <AnimatedCard
@@ -361,7 +375,13 @@ function StreetsAndAlleysPageContent() {
                             disabled={!isPlaying || loading || !selectedSource}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                             style={{ width: dims.cw, height: dims.ch }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            data-target-candidate={legalTargets.foundation.has(idx) || undefined}
+                            data-preview-target={
+                              legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined
+                            }
+                            className={`border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${
+                              legalTargets.foundation.has(idx) ? targetRing : ' rounded'
+                            }`}
                           >
                             A
                           </button>
