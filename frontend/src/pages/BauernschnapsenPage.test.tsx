@@ -104,6 +104,27 @@ describe('BauernschnapsenPage', () => {
     expect(screen.queryByText('めくり札')).not.toBeInTheDocument();
   });
 
+  it('shows an undecided trump during the contract phase instead of no trump', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BauernschnapsenPhase.CONTRACT, trumpSuit: 0 }));
+    renderWithProviders(<BauernschnapsenPage />);
+    await waitFor(() => expect(screen.getByText('切り札: 未定')).toBeInTheDocument());
+    expect(screen.queryByText('切り札なし')).not.toBeInTheDocument();
+    expect(screen.queryByText('trumpPending')).not.toBeInTheDocument();
+  });
+
+  it('shows the settled trump suit after a trump-taking contract', async () => {
+    renderWithProviders(<BauernschnapsenPage />);
+    await waitFor(() => expect(screen.getByText('切り札: スペード')).toBeInTheDocument());
+    expect(screen.queryByText('trumpPending')).not.toBeInTheDocument();
+  });
+
+  it('shows no trump after a settled Bettel contract', async () => {
+    mockExec.mockResolvedValue(makeState({ contract: 3, trumpSuit: 0 }));
+    renderWithProviders(<BauernschnapsenPage />);
+    await waitFor(() => expect(screen.getByText('切り札なし')).toBeInTheDocument());
+    expect(screen.queryByText('trumpPending')).not.toBeInTheDocument();
+  });
+
   // 契約フェーズを抜ける操作面が無いと、盤面は最初の手番で固まる。
   it('offers the contract controls on the human bid, and dispatches the declaration', async () => {
     mockExec.mockResolvedValue(makeState({ phase: BauernschnapsenPhase.CONTRACT, contract: 0, declarerIdx: -1 }));
