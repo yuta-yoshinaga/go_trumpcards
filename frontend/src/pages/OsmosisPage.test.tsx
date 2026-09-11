@@ -333,6 +333,14 @@ describe('OsmosisPage', () => {
     expect(screen.getByRole('button', { name: /ウェイスト/ })).toHaveAccessibleName(/♣ J/);
   });
 
+  it('preserves the complete accessible names for non-empty waste and reserve piles', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.getByRole('button', { name: 'ウェイスト: ♥ 4' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'リザーブ 0: ♠ 2' })).toBeInTheDocument();
+  });
+
   it('does not expose undefined in the waste name when waste is empty', async () => {
     mockExec.mockResolvedValue({ ...playingState, waste: [] });
     renderWithProviders(<OsmosisPage />);
