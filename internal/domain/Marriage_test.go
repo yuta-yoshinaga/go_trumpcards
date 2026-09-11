@@ -470,6 +470,7 @@ func TestMarriage_Declare_Valid(t *testing.T) {
 	g.SetCurrentPlayerIdx(0)
 	g.SetPhase(domain.MarriagePhaseDiscard)
 	g.SetWildRank(0)
+	g.SetWildJoker(marriageCard(domain.CardDesignSpade, 13))
 
 	hand := append(validMarriageHand(), marriageCard(domain.CardDesignClover, 2)) // 22nd = finish
 	setMarriageHand(g.GetPlayer(0), hand)
@@ -482,6 +483,7 @@ func TestMarriage_Declare_Valid(t *testing.T) {
 	assert.True(t, g.GetDeclarationValid())
 	assert.Equal(t, 0, g.GetDeclarerIdx())
 	assert.Equal(t, domain.MarriagePhaseRoundEnd, g.GetPhase())
+	assert.NotZero(t, g.PlayerMaalValue(0))
 	assert.Equal(t, -g.PlayerMaalValue(0), g.GetPlayer(0).GetRoundScore()) // winner scores minus maal
 	assert.Less(t, g.GetPlayer(0).GetRoundScore(), 0)
 	assert.Equal(t, domain.MarriageDeadwoodCap, g.GetPlayer(1).GetRoundScore()) // no pure → 80
@@ -494,6 +496,7 @@ func TestMarriage_Declare_Invalid(t *testing.T) {
 	g.SetCurrentPlayerIdx(0)
 	g.SetPhase(domain.MarriagePhaseDiscard)
 	g.SetWildRank(0)
+	g.SetWildJoker(marriageCard(domain.CardDesignSpade, 13))
 
 	// Intentionally short invalid hand with non-melding cards and a finish card.
 	junk := []*domain.Card{
