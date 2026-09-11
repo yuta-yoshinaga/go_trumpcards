@@ -78,12 +78,7 @@ func (p *SedmaCuiPresenter) Output(g interfaces.SedmaGame, lastErr error) string
 			// (the next lead) and the card points (each A or 10 is worth 10) they
 			// just collected — the key information Sedma's CUI previously omitted.
 			winnerIdx := g.GetLeadPlayerIdx()
-			trickPts := 0
-			for _, tc := range g.GetCurrentTrick() {
-				if v := tc.Card.GetValue(); v == 1 || v == 10 {
-					trickPts += 10
-				}
-			}
+			trickPts := sedmaTrickPoints(g.GetCurrentTrick())
 			b.WriteString(i18n.Tf("sedma.trickWinner",
 				"name", cuiPlayerName(g.GetPlayer(winnerIdx), winnerIdx),
 				"points", strconv.Itoa(trickPts)) + "\n")

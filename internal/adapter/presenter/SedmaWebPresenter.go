@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -107,7 +108,19 @@ func (p *SedmaWebPresenter) buildMessage(g interfaces.SedmaGame, lastErr error) 
 		}
 		return "", "sedma.playPhase.follow", nil
 	case domain.SedmaPhaseTrickEnd:
-		return "", "sedma.trickEnd", nil
+		// ResolveTrick sets leadPlayerIdx to the trick winner (Sedma.go:229),
+		// and this remains true during TrickEnd until NextTrick starts.
+		winnerIdx := g.GetLeadPlayerIdx()
+		messageCode := "sedma.trickEnd.cpuWin"
+		// GetPlayer may be nil for an invalid index; treat that defensive case
+		// as a CPU winner so the presenter never dereferences a nil player.
+		if winnerIdx >= 0 && winnerIdx < g.GetPlayerCnt() {
+			if winner := g.GetPlayer(winnerIdx); winner != nil && winner.GetIsHuman() {
+				messageCode = "sedma.trickEnd.humanWin"
+			}
+		}
+		params := map[string]string{"points": strconv.Itoa(sedmaTrickPoints(g.GetCurrentTrick()))}
+		return "", messageCode, params
 	case domain.SedmaPhaseRoundEnd:
 		return "", "sedma.roundEnd", nil
 	}
