@@ -131,6 +131,16 @@ describe('ZwanzigerrufenPage', () => {
     expect(screen.getByTestId('zw-seat-3')).not.toHaveAttribute('data-turn');
   });
 
+  it('marks only the current player during the talon phase', async () => {
+    mockExec.mockResolvedValue(makeZwanzigerrufenState({ ...talonState, currentPlayerIdx: 3 }));
+    renderWithProviders(<ZwanzigerrufenPage />);
+
+    expect(await screen.findByTestId('zw-seat-3')).toHaveAttribute('data-turn', 'true');
+    expect(screen.getByTestId('zw-seat-0')).not.toHaveAttribute('data-turn');
+    expect(screen.getByTestId('zw-seat-1')).not.toHaveAttribute('data-turn');
+    expect(screen.getByTestId('zw-seat-2')).not.toHaveAttribute('data-turn');
+  });
+
   it('marks only the bidding player during the bid phase', async () => {
     mockExec.mockResolvedValue(makeZwanzigerrufenState({ bidPlayerIdx: 1, currentPlayerIdx: 2 }));
     renderWithProviders(<ZwanzigerrufenPage />);
