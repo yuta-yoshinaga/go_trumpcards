@@ -1,7 +1,11 @@
 import type { Card } from '../types/card';
 
-/** Spite & Malice: K (13) acts as a wild that fills any foundation slot. */
-export const KING_VALUE = 13;
+/** Spite & Malice: K acts as a wild that fills any foundation slot. */
+export const SpiteAndMaliceWildValue = 13;
+/** Spite & Malice foundations stop accepting cards after twelve cards. */
+export const SpiteAndMaliceFoundationMax = 12;
+/** Backward-compatible alias used by existing goal-pile affordance code. */
+export const KING_VALUE = SpiteAndMaliceWildValue;
 
 /**
  * True when the card is the wild King.
@@ -13,7 +17,21 @@ export function isSpiteAndMaliceWild(card: { value: number } | null | undefined)
   return card?.value === KING_VALUE;
 }
 /** Spite & Malice: a foundation completes at Q (12) — the next card cannot stack on a full foundation. */
-const FOUNDATION_TOP_COMPLETE = 12;
+const FOUNDATION_TOP_COMPLETE = SpiteAndMaliceFoundationMax;
+
+/**
+ * Returns whether a selected card can be placed on one foundation.
+ * `foundationTopValue` is the effective top value supplied by the API.
+ */
+export function canPlaceSpiteAndMaliceCardOnFoundation(
+  cardValue: number,
+  foundationTopValue: number,
+  foundationSize: number,
+): boolean {
+  if (cardValue === SpiteAndMaliceWildValue) return foundationSize < SpiteAndMaliceFoundationMax;
+  if (foundationSize >= SpiteAndMaliceFoundationMax) return false;
+  return cardValue === foundationTopValue + 1;
+}
 
 /**
  * Returns true when the goal pile's top card can legally be played onto at

@@ -29,7 +29,11 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { isGoalTopPlayableToFoundation, isSpiteAndMaliceWild } from '../utils/spiteAndMaliceUtils';
+import {
+  canPlaceSpiteAndMaliceCardOnFoundation,
+  isGoalTopPlayableToFoundation,
+  isSpiteAndMaliceWild,
+} from '../utils/spiteAndMaliceUtils';
 
 const samRunner = spiteAndMaliceApi;
 
@@ -156,6 +160,14 @@ function SpiteAndMalicePageContent() {
 
   const [selection, setSelection] = useState<Selection>(null);
   const [cpuSpeed, setCpuSpeed] = useState<SamCpuSpeed>(loadSamCpuSpeed);
+  const selectedCard = useMemo(() => {
+    const human = state?.players[0];
+    if (!human || !selection) return null;
+    if (selection.kind === 'hand') return human.hand[selection.idx] ?? null;
+    if (selection.kind === 'goal') return human.goalTop ?? null;
+    const side = human.sides[selection.idx];
+    return side[side.length - 1] ?? null;
+  }, [selection, state]);
 
   const handleSelectCpuSpeed = useCallback((v: string) => {
     const speed: SamCpuSpeed = v === 'slow' || v === 'fast' ? v : 'normal';
@@ -351,6 +363,12 @@ function SpiteAndMalicePageContent() {
                   topValue={state.foundationTops[idx]}
                   cardWidth={cardWidth}
                   highlight={isHintTarget(`hand${selection?.kind === 'hand' ? selection.idx : ''}-to-f${idx}`)}
+                  playable={
+                    isHumanTurn &&
+                    !isGameOver &&
+                    selectedCard !== null &&
+                    canPlaceSpiteAndMaliceCardOnFoundation(selectedCard.value, state.foundationTops[idx], pile.length)
+                  }
                   selected={selection !== null}
                   onClick={() => handleFoundationClick(idx)}
                   ariaTop={(pileNo, card, top) =>
@@ -528,6 +546,7 @@ function FoundationPile({
   topValue,
   cardWidth,
   highlight,
+  playable,
   selected,
   onClick,
   ariaTop,
@@ -538,6 +557,7 @@ function FoundationPile({
   topValue: number;
   cardWidth: number;
   highlight: boolean;
+  playable: boolean;
   selected: boolean;
   onClick: () => void;
   ariaTop: (n: number, card: string, top: number) => string;
@@ -545,12 +565,13 @@ function FoundationPile({
 }) {
   const top = pile.length > 0 ? pile[pile.length - 1] : undefined;
   const ariaLabel = top ? ariaTop(idx + 1, cardAlt(top), topValue) : ariaEmpty(idx + 1);
-  const baseRing = highlight ? 'ring-2 ring-ds-info' : '';
+  const baseRing = [highlight ? 'ring-2 ring-ds-info' : '', playable ? 'ring-2 ring-ds-success' : ''].join(' ');
   const interactive = selected ? 'cursor-pointer hover:-translate-y-0.5' : 'cursor-default';
   return (
     <button
       type="button"
       data-hint-action={`hand-to-f${idx}`}
+      data-playable={playable ? 'true' : undefined}
       className={`relative ${focusRingWhite} rounded-lg transition-transform ${baseRing} ${interactive}`}
       onClick={onClick}
       disabled={!selected}
