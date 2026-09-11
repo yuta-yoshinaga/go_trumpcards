@@ -37,6 +37,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CallBreakResponse } from '../types/card';
 import { CallBreakPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { type CallBreakIllegalReason, callBreakIllegalReason } from '../utils/callBreakIllegalReason';
 import { cardAlt } from '../utils/cardAlt';
 import { CALLBREAK_HELP, parseCallBreakCommand } from '../utils/cli/commands/callbreakCommands';
 import { formatCallBreakState } from '../utils/cli/formatters/callbreakFormatter';
@@ -197,6 +198,21 @@ function CallBreakPageContent() {
   const isGameEnd = state.phase === CallBreakPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
+  const cardTitleFor = (idx: number): string | undefined => {
+    const reason = callBreakIllegalReason(
+      idx,
+      humanPlayer?.cards ?? [],
+      state.currentTrick,
+      state.spadesBroken,
+      state.validPlayIndices,
+    );
+    const reasonKeys: Record<CallBreakIllegalReason, string> = {
+      spadesNotBroken: 'spadesNotBrokenTooltip',
+      followSuit: 'followSuitTooltip',
+      mustTrumpSpade: 'mustTrumpSpadeTooltip',
+    };
+    return reason ? t(reasonKeys[reason]) : undefined;
+  };
 
   return (
     <GamePageShell
@@ -457,6 +473,7 @@ function CallBreakPageContent() {
                   dataTutorialPrefix="cb"
                   validIndices={isHumanTurn ? state.validPlayIndices : undefined}
                   restrictedTooltip={t('mustTrumpSpadeTooltip')}
+                  cardTitleFor={isHumanTurn ? cardTitleFor : undefined}
                 />
               </>
             )}

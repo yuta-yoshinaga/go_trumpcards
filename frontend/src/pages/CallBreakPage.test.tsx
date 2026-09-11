@@ -176,26 +176,85 @@ describe('CallBreakPage', () => {
   });
 
   it('marks cards outside validPlayIndices as aria-disabled with tooltip on human play turn', async () => {
-    const must = makeCallBreakState({ validPlayIndices: [0] });
+    const must = makeCallBreakState({ validPlayIndices: [1] });
     mockExec.mockResolvedValue(must);
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    const allowed = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
-    const blocked = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
+    const allowed = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
+    const blocked = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
 
     expect(allowed).not.toHaveAttribute('aria-disabled');
     expect(blocked).toHaveAttribute('aria-disabled', 'true');
     // Critical accessibility constraint: aria-disabled cards must stay focusable
     // so keyboard / screen-reader users can reach the tooltip explaining the rule.
     expect(blocked).not.toBeDisabled();
-    expect(blocked).toHaveAttribute(
-      'title',
-      'このカードは出せません (リードスートに従うか、ボイドならスペードで切ってください)',
-    );
+    expect(blocked).toHaveAttribute('title', 'このカードは出せません (スペードはまだブレイクされていません)');
 
     fireEvent.click(blocked);
     expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
+  });
+
+  it.each([
+    {
+      name: 'unbroken spade lead',
+      state: makeCallBreakState({ validPlayIndices: [1] }),
+      card: '♠ A',
+      title: 'このカードは出せません (スペードはまだブレイクされていません)',
+    },
+    {
+      name: 'following the lead suit',
+      state: makeCallBreakState({
+        players: makeCallBreakState().players.map((p, i) =>
+          i === 0
+            ? {
+                ...p,
+                cards: [
+                  { design: 'DIAMOND' as const, value: 3 },
+                  { design: 'HEART' as const, value: 11 },
+                ],
+              }
+            : p,
+        ),
+        currentTrick: [{ playerIdx: 1, card: { design: 'DIAMOND', value: 5 } }],
+        validPlayIndices: [0],
+      }),
+      card: '♥ J',
+      title: 'このカードは出せません (リードスートに従ってください)',
+    },
+    {
+      name: 'trumping with a spade when void',
+      state: makeCallBreakState({
+        players: makeCallBreakState().players.map((p, i) =>
+          i === 0
+            ? {
+                ...p,
+                cards: [
+                  { design: 'HEART' as const, value: 11 },
+                  { design: 'SPADE' as const, value: 1 },
+                ],
+              }
+            : p,
+        ),
+        currentTrick: [{ playerIdx: 1, card: { design: 'DIAMOND', value: 5 } }],
+        validPlayIndices: [1],
+      }),
+      card: '♥ J',
+      title: 'このカードは出せません (リードスートが無い場合はスペードで切らなければなりません)',
+    },
+  ])('shows the $name reason on the restricted card', async ({ state, card, title }) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByAltText(card)).toBeInTheDocument());
+    expect(screen.getByAltText(card).closest('button')).toHaveAttribute('title', title);
+  });
+
+  it('does not show a restriction reason on a playable card', async () => {
+    const state = makeCallBreakState({ validPlayIndices: [0] });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.getByAltText('♠ A').closest('button')).not.toHaveAttribute('title');
   });
 
   it('does not show play button when not human turn', async () => {
