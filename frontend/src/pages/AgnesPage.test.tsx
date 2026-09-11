@@ -254,6 +254,57 @@ describe('AgnesPage', () => {
     expect(endButton).toHaveAttribute('draggable', 'true');
   });
 
+  it('highlights legal foundation and tableau destinations while dragging', async () => {
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const dataTransfer = { setData: vi.fn(), effectAllowed: '', dropEffect: '' };
+    fireEvent.dragStart(screen.getByAltText('♥ 5').closest('button') as HTMLButtonElement, { dataTransfer });
+    await waitFor(() => expect(document.querySelectorAll('[data-eligible="true"]')).toHaveLength(1));
+    expect(document.querySelector('[data-eligible="true"]')?.parentElement).toHaveClass(
+      'border-2',
+      'border-ds-success',
+    );
+  });
+
+  it('highlights only legal tableau destinations, excluding the drag source', async () => {
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const dataTransfer = { setData: vi.fn(), effectAllowed: '', dropEffect: '' };
+    fireEvent.dragStart(screen.getByAltText('♣ 6').closest('button') as HTMLButtonElement, { dataTransfer });
+    await waitFor(() => expect(document.querySelectorAll('[data-eligible="true"]')).toHaveLength(1));
+
+    const eligible = document.querySelector('[data-eligible="true"]') as HTMLElement;
+    expect(eligible.parentElement).toHaveClass('border-2', 'border-ds-success');
+    expect(eligible.parentElement).not.toHaveClass('ring-2');
+    expect(screen.getByAltText('♠ 7').closest('button')?.closest('[data-eligible="true"]')).not.toBeNull();
+    expect(screen.getByAltText('♥ 8').closest('button')?.closest('[data-eligible="true"]')).toBeNull();
+    expect(screen.getByAltText('♣ 6').closest('button')?.closest('[data-eligible="true"]')).toBeNull();
+  });
+
+  it('does not highlight destinations when no drag is in progress', async () => {
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(document.querySelectorAll('[data-eligible="true"]')).toHaveLength(0);
+  });
+
+  it('keeps the legal border and hover ring visible together', async () => {
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const dataTransfer = { setData: vi.fn(), effectAllowed: '', dropEffect: '' };
+    fireEvent.dragStart(screen.getByAltText('♣ 6').closest('button') as HTMLButtonElement, { dataTransfer });
+    await waitFor(() => expect(document.querySelectorAll('[data-eligible="true"]')).toHaveLength(1));
+    const eligible = document.querySelector('[data-eligible="true"]') as HTMLElement;
+    fireEvent.dragOver(eligible.parentElement as HTMLElement, { dataTransfer });
+
+    await waitFor(() => {
+      expect(eligible.parentElement).toHaveClass('border-2', 'border-ds-success');
+      expect(eligible.parentElement).toHaveClass('ring-2', 'ring-ds-info');
+    });
+  });
+
   it('hides game action buttons after game over (only reset remains)', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<AgnesPage />);

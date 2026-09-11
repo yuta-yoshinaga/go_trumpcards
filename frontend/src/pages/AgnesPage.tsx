@@ -34,6 +34,7 @@ import type { TutorialStep } from '../types/tutorial';
 import {
   agnesCanPlaceOnFoundation,
   agnesCanPlaceOnTableau,
+  agnesFoundationIndex,
   agnesNextFoundationMove,
   endFaceUpCard,
 } from '../utils/agnesMoves';
@@ -185,6 +186,12 @@ function AgnesPageContent() {
     isPlaying,
     disabled: loading,
   });
+  // The only draggable Agnes cards are face-up tableau end cards, so resolve
+  // the drag source in the same way as the per-column move buttons below.
+  const draggedCard =
+    dnd.dragSource?.zone === 'tableau' && dnd.dragSource.col !== undefined
+      ? endFaceUpCard(state?.tableau[dnd.dragSource.col] ?? [])
+      : null;
   const isGameClear = phase === AgnesPhase.GAME_CLEAR;
   const isEnded = phase === AgnesPhase.GAME_CLEAR || phase === AgnesPhase.GAME_OVER;
 
@@ -278,9 +285,15 @@ function AgnesPageContent() {
             <div className="mb-3 flex gap-2" data-tutorial="ag-foundation">
               {state.foundation.map((pile, i) => {
                 const fZone: AgnesMoveZone = { zone: 'foundation', col: i };
+                const isEligible =
+                  dnd.isDragging &&
+                  draggedCard !== null &&
+                  agnesFoundationIndex(draggedCard) === i &&
+                  agnesCanPlaceOnFoundation(draggedCard, state.foundation, state.baseRank);
                 return (
                   <DropZone
                     key={`f-${i}`}
+                    className={isEligible ? 'border-2 border-ds-success rounded' : ''}
                     isDropTarget={dnd.isDropTarget(fZone)}
                     onDragOver={dnd.handleDragOver(fZone)}
                     onDrop={dnd.handleDrop(fZone)}
@@ -289,6 +302,7 @@ function AgnesPageContent() {
                     <div
                       className="relative rounded border border-white/30"
                       style={{ width: cardWidth, height: cardHeight }}
+                      data-eligible={isEligible ? 'true' : undefined}
                     >
                       {pile.length > 0 ? (
                         <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
@@ -331,16 +345,27 @@ function AgnesPageContent() {
               {state.tableau.map((col, i) => {
                 const tZone: AgnesMoveZone = { zone: 'tableau', col: i };
                 const endIndex = col.length - 1;
+                const isDragSourceColumn = dnd.dragSource?.zone === 'tableau' && dnd.dragSource.col === i;
+                const isEligible =
+                  dnd.isDragging &&
+                  !isDragSourceColumn &&
+                  draggedCard !== null &&
+                  agnesCanPlaceOnTableau(draggedCard, col);
                 return (
                   <div key={`t-${i}`} className="flex flex-col gap-1">
                     <span className="text-xs text-ds-text-muted">#{i}</span>
                     <DropZone
+                      className={isEligible ? 'border-2 border-ds-success rounded' : ''}
                       isDropTarget={dnd.isDropTarget(tZone)}
                       onDragOver={dnd.handleDragOver(tZone)}
                       onDrop={dnd.handleDrop(tZone)}
                       onDragLeave={dnd.handleDragLeave}
                     >
-                      <div className="relative" style={{ width: cardWidth, minHeight: cardHeight }}>
+                      <div
+                        className="relative"
+                        style={{ width: cardWidth, minHeight: cardHeight }}
+                        data-eligible={isEligible ? 'true' : undefined}
+                      >
                         {col.length === 0 ? (
                           <div
                             className="rounded border border-dashed border-white/30"
