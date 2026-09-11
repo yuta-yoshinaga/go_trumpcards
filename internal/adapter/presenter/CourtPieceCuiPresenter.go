@@ -116,7 +116,10 @@ func (p *CourtPieceCuiPresenter) Output(t interfaces.CourtPieceGame, lastErr err
 				"name", cuiPlayerName(t.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("courtpiece.promptPlayHelp") + "\n")
 		case domain.CourtPiecePhaseTrickEnd:
-			b.WriteString(i18n.T("courtpiece.promptTrickEnd") + "\n")
+			// ResolveTrick は TrickEnd で必ず勝者席を leadPlayerIdx に設定する。
+			winnerIdx := t.GetLeadPlayerIdx()
+			b.WriteString(i18n.Tf("courtpiece.promptTrickEnd",
+				"name", cuiPlayerName(t.GetPlayer(winnerIdx), winnerIdx)) + "\n")
 			b.WriteString(i18n.T("courtpiece.promptTrickEndHelp") + "\n")
 		case domain.CourtPiecePhaseRoundEnd:
 			b.WriteString(i18n.T("courtpiece.promptRoundEnd") + "\n")

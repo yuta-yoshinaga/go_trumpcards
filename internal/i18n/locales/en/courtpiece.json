@@ -16,7 +16,7 @@
   "promptTrumpHelp": "t <1-4> — call trump (1=S 2=C 3=H 4=D)",
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "p <idx> — play a card",
-  "promptTrickEnd": "Trick ended",
+  "promptTrickEnd": "{{name}} takes the trick",
   "promptTrickEndHelp": "n — advance to the next trick",
   "promptRoundEnd": "Round ended",
   "roundEndCourt": "Court bonus (sweep or back-to-back win) — 2 points this round",

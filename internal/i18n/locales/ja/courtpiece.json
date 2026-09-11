@@ -16,7 +16,7 @@
   "promptTrumpHelp": "t <1-4>・・・切り札を宣言 (1=♠ 2=♣ 3=♥ 4=♦)",
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "p <idx>・・・カードを出す",
-  "promptTrickEnd": "トリック終了",
+  "promptTrickEnd": "{{name}} がトリックを獲得",
   "promptTrickEndHelp": "n・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了",
   "roundEndCourt": "Court（独占／連勝ボーナス）成立 — このラウンドは +2 点",
