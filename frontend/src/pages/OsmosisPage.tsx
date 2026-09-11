@@ -31,6 +31,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, OsmosisResponse } from '../types/card';
 import { OsmosisPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { OSMOSIS_HELP, parseOsmosisCommand } from '../utils/cli/commands/osmosisCommands';
 import { formatOsmosisState } from '../utils/cli/formatters/osmosisFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -201,6 +202,7 @@ function OsmosisPageContent() {
   // `frontendHint` の有無がそのままゲートになる。
   const hintedMove = frontendHint ? (state.hint ?? null) : null;
   const topWaste = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
+  const wasteAriaLabel = topWaste ? `${t('waste')}: ${cardAlt(topWaste)}` : t('waste');
   const isSelected = (zone: OsmosisMoveZone) => !!selected && selected.zone === zone.zone && selected.col === zone.col;
 
   // Resolve a source zone (waste top or a reserve-column top) to its actual card,
@@ -334,6 +336,7 @@ function OsmosisPageContent() {
             <div className="mb-3 flex gap-2" data-tutorial="os-reserve">
               {state.reserve.map((pile, i) => {
                 const top = pile.length > 0 ? pile[pile.length - 1] : null;
+                const reserveAriaLabel = top ? `${t('reserve')} ${i}: ${cardAlt(top)}` : `${t('reserve')} ${i}`;
                 const zone: OsmosisMoveZone = { zone: 'reserve', col: i };
                 return (
                   <div key={`r-${i}`} className="flex flex-col items-center gap-1">
@@ -346,7 +349,7 @@ function OsmosisPageContent() {
                         onDragEnd={dnd.handleDragEnd}
                         onClick={() => handleSelectSource(zone)}
                         disabled={!isPlaying || loading}
-                        aria-label={`${t('reserve')} ${i}`}
+                        aria-label={reserveAriaLabel}
                         aria-pressed={isSelected(zone)}
                         className={`p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                           isSelected(zone) ? 'border-ds-info' : 'border-transparent'
@@ -400,7 +403,7 @@ function OsmosisPageContent() {
                       onDragEnd={dnd.handleDragEnd}
                       onClick={() => handleSelectSource({ zone: 'waste' })}
                       disabled={!isPlaying || loading}
-                      aria-label={t('waste')}
+                      aria-label={wasteAriaLabel}
                       aria-pressed={isSelected({ zone: 'waste' })}
                       className={`p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                         isSelected({ zone: 'waste' }) ? 'border-ds-info' : 'border-transparent'
