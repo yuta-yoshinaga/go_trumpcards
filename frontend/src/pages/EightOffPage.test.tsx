@@ -186,6 +186,14 @@ describe('EightOffPage', () => {
     expect(imgs.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('shows the double-click and double-tap foundation hint on the board', async () => {
+    renderWithProviders(<EightOffPage />);
+    const hint = await screen.findByTestId('eo-doubleclick-hint');
+
+    expect(hint).toHaveTextContent('カードをダブルクリック（ダブルタップ）すると組札へ送れます');
+    expect(hint).not.toHaveTextContent('doubleClickHint');
+  });
+
   // --- Free cells ---
 
   it('renders free cells (empty)', async () => {
