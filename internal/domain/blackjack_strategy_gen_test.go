@@ -88,6 +88,10 @@ func normalizeD(a BJSuggestedAction) BJSuggestedAction {
 
 // hardHandOfTotal は指定ハードトータルの2枚ハンドを、ペアにならない組で作る。
 func hardHandOfTotal(total int) handState {
+	// Hard 20 has no non-pair two-card form; keep it explicit for the solver.
+	if total == 20 {
+		return newHand(10, 10)
+	}
 	for a := 2; a <= 9; a++ {
 		b := total - a
 		if b < 2 || b > 10 || a == b {
@@ -95,8 +99,7 @@ func hardHandOfTotal(total int) handState {
 		}
 		return newHand(a, b)
 	}
-	// 5 は 2+3 で作れるのでここには来ないが、保険。
-	return newHand(2, total-2)
+	panic(fmt.Sprintf("cannot construct hard total %d from two cards", total))
 }
 
 func upLabel(up int) string {
@@ -178,6 +181,39 @@ func TestGenerateSpanish21Table(t *testing.T) {
 			cells[i] = r.solveCell(newHand(pv, pv), up, true, pv)
 		}
 		t.Logf("%s, // pair %d", renderRow(cells), pv)
+	}
+}
+
+// TestGenerateDoubleExposureTable prints the Double Exposure table solved from
+// this game's own rules. It is intentionally output-only; the committed table
+// is checked against the solver by the strategy tests.
+func TestGenerateDoubleExposureTable(t *testing.T) {
+	if testing.Short() {
+		t.Skip("generator")
+	}
+	r := doubleExposureRules()
+	columns := func(h handState, isPair bool, pv int) []BJSuggestedAction {
+		cells := make([]BJSuggestedAction, 0, 26)
+		for total := 4; total <= 20; total++ {
+			cells = append(cells, r.solveCellVsDealerTotal(h, total, false, isPair, pv))
+		}
+		for total := 12; total <= 20; total++ {
+			cells = append(cells, r.solveCellVsDealerTotal(h, total, true, isPair, pv))
+		}
+		return cells
+	}
+
+	t.Log("// hard 5..20 (columns: hard 4..20, soft 12..20)")
+	for total := 5; total <= 20; total++ {
+		t.Logf("%s, // hard %d", renderRow(columns(hardHandOfTotal(total), false, 0)), total)
+	}
+	t.Log("// soft 13..20 (columns: hard 4..20, soft 12..20)")
+	for total := 13; total <= 20; total++ {
+		t.Logf("%s, // soft %d", renderRow(columns(newHand(1, total-11), false, 0)), total)
+	}
+	t.Log("// pairs A,A then 2,2..10,10 (columns: hard 4..20, soft 12..20)")
+	for _, pv := range []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10} {
+		t.Logf("%s, // pair %d", renderRow(columns(newHand(pv, pv), true, pv)), pv)
 	}
 }
 
