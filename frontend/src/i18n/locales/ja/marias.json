@@ -65,5 +65,5 @@
   },
   "hintRequested": "ヒントがあります",
   "noHint": "ヒントはありません",
-  "marriageEarned": "結婚ボーナス確定: +{{points}}（K・Qを出しても消えません）"
+  "marriageEarned": "結婚ボーナス確定: +{{points}}（{{details}}、K・Qを出しても消えません）"
 }

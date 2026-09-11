@@ -147,6 +147,12 @@ func (_m *MockMariasGame) GetRoundMarriage() [domain.MariasPlayerCnt]int {
 	return ret.Get(0).([domain.MariasPlayerCnt]int)
 }
 
+// GetRoundMarriageSuits モック
+func (_m *MockMariasGame) GetRoundMarriageSuits() [domain.MariasPlayerCnt][]domain.MariasMarriage {
+	ret := _m.Called()
+	return ret.Get(0).([domain.MariasPlayerCnt][]domain.MariasMarriage)
+}
+
 // GetWinnerPlayer モック
 func (_m *MockMariasGame) GetWinnerPlayer() int {
 	ret := _m.Called()

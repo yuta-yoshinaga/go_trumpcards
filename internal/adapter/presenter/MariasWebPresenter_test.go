@@ -30,6 +30,7 @@ func setupMariasWebMock() *interfaces.MockMariasGame {
 	m.On("GetPlayerScores").Return([domain.MariasPlayerCnt]int{0, 0, 0})
 	m.On("GetRoundCardPoints").Return([domain.MariasPlayerCnt]int{0, 0, 0})
 	m.On("GetRoundMarriage").Return([domain.MariasPlayerCnt]int{0, 0, 0})
+	m.On("GetRoundMarriageSuits").Return([domain.MariasPlayerCnt][]domain.MariasMarriage{})
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayableIndices", 0).Return([]int{0})
 	m.On("IsHumanTurn").Return(true)
@@ -193,6 +194,23 @@ func TestMariasWebPresenter_HintOutput(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Nil(t, resObj.Hint)
 	})
+}
+
+func TestMariasWebPresenter_OutputCarriesMarriageDetails(t *testing.T) {
+	m, _ := setupMariasWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundMarriageSuits")
+	m.On("GetRoundMarriageSuits").Return([domain.MariasPlayerCnt][]domain.MariasMarriage{
+		{{Suit: domain.CardDesignSpade, Points: 40}, {Suit: domain.CardDesignHeart, Points: 20}},
+		{},
+		{},
+	})
+
+	var output controller.MariasWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.MariasWebPresenter).Output(m, nil)), &output))
+	assert.Equal(t, []domain.MariasMarriage{
+		{Suit: domain.CardDesignSpade, Points: 40},
+		{Suit: domain.CardDesignHeart, Points: 20},
+	}, output.RoundMarriageSuits[0])
 }
 
 func TestMariasWebPresenter_ActionLogOutput(t *testing.T) {

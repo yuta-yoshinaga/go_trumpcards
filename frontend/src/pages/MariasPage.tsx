@@ -138,6 +138,13 @@ function MariasPageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
+  const marriageDetails = (playerIdx: number) =>
+    (state.roundMarriageSuits[playerIdx] ?? [])
+      .map(
+        (marriage) =>
+          `${t(`suitName.${['', 'spade', 'club', 'heart', 'diamond'][marriage.suit] ?? ''}`)}: ${marriage.points}`,
+      )
+      .join(', ');
 
   // **結婚ボーナスは配った時点で確定している。**`detectMarriages` はラウンド
   // 開始時に一度だけ走って `roundMarriage` に加点し、以後 K・Q を場に出しても
@@ -290,6 +297,7 @@ function MariasPageContent() {
                               name: playerName(p.id, p.isHuman),
                               points: state.roundMarriage[p.id] ?? 0,
                             })}
+                            <span className="ml-1">({marriageDetails(p.id)})</span>
                           </div>
                         )}
                       </div>
@@ -351,7 +359,7 @@ function MariasPageContent() {
                 role="status"
                 aria-live="polite"
               >
-                {t('marriageEarned', { points: marriagePoints })}
+                {t('marriageEarned', { points: marriagePoints, details: marriageDetails(humanIdx) })}
               </div>
             )}
             {humanPlayer && (

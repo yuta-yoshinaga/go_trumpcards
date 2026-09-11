@@ -38,6 +38,14 @@ export interface MariasHint {
   reason: string;
 }
 
+/** A marriage bonus for one suit, including the points awarded by the rules. */
+export interface MariasMarriage {
+  /** Suit number (1=♠, 2=♣, 3=♥, 4=♦). */
+  suit: number;
+  /** Points awarded for this suit's marriage. */
+  points: number;
+}
+
 /** Full Mariáš game state returned from the API. */
 export interface MariasResponse extends BaseGameResponse {
   players: MariasPlayer[];
@@ -58,6 +66,8 @@ export interface MariasResponse extends BaseGameResponse {
   roundCardPoints: number[];
   /** Marriage (K+Q same suit) points scored per player this round — [p0, p1, p2]. */
   roundMarriage: number[];
+  /** Marriage bonuses by player and suit; each item includes its awarded points. */
+  roundMarriageSuits: MariasMarriage[][];
   /** Seat index of the last (10th) trick winner, or -1. */
   lastTrickWinner: number;
   /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */

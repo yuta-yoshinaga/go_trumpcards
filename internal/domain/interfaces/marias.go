@@ -55,6 +55,8 @@ type MariasGame interface {
 	GetRoundCardPoints() [domain.MariasPlayerCnt]int
 	// GetRoundMarriage 現ラウンドのプレイヤー別結婚点を取得する
 	GetRoundMarriage() [domain.MariasPlayerCnt]int
+	// GetRoundMarriageSuits 現ラウンドのスート別結婚点を取得する
+	GetRoundMarriageSuits() [domain.MariasPlayerCnt][]domain.MariasMarriage
 	// GetWinnerPlayer 勝利プレイヤーを取得する (-1=未確定)
 	GetWinnerPlayer() int
 	// GetPlayerCnt プレイヤー数を取得する
