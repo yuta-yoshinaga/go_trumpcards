@@ -121,6 +121,34 @@ describe('ZwanzigerrufenPage', () => {
     }
   });
 
+  it('marks only the current player during the play phase', async () => {
+    mockExec.mockResolvedValue(makeZwanzigerrufenState({ ...playState, currentPlayerIdx: 2 }));
+    renderWithProviders(<ZwanzigerrufenPage />);
+
+    expect(await screen.findByTestId('zw-seat-2')).toHaveAttribute('data-turn', 'true');
+    expect(screen.getByTestId('zw-seat-0')).not.toHaveAttribute('data-turn');
+    expect(screen.getByTestId('zw-seat-1')).not.toHaveAttribute('data-turn');
+    expect(screen.getByTestId('zw-seat-3')).not.toHaveAttribute('data-turn');
+  });
+
+  it('marks only the bidding player during the bid phase', async () => {
+    mockExec.mockResolvedValue(makeZwanzigerrufenState({ bidPlayerIdx: 1, currentPlayerIdx: 2 }));
+    renderWithProviders(<ZwanzigerrufenPage />);
+
+    expect(await screen.findByTestId('zw-seat-1')).toHaveAttribute('data-turn', 'true');
+    expect(screen.getByTestId('zw-seat-0')).not.toHaveAttribute('data-turn');
+    expect(screen.getByTestId('zw-seat-2')).not.toHaveAttribute('data-turn');
+    expect(screen.getByTestId('zw-seat-3')).not.toHaveAttribute('data-turn');
+  });
+
+  it('does not mark a seat during the trick-end phase', async () => {
+    mockExec.mockResolvedValue(makeZwanzigerrufenState({ phase: 3, currentPlayerIdx: 1 }));
+    renderWithProviders(<ZwanzigerrufenPage />);
+
+    const seats = await screen.findByTestId('zw-seats');
+    expect(seats.querySelectorAll('[data-turn="true"]')).toHaveLength(0);
+  });
+
   it('names the partner once revealed', async () => {
     mockExec.mockResolvedValue(
       makeZwanzigerrufenState({

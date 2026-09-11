@@ -203,20 +203,29 @@ function ZwanzigerrufenPageContent() {
             )}
 
             <div className="flex flex-wrap justify-center gap-3" data-testid="zw-seats">
-              {state.players.map((p) => (
-                <div key={p.id} className="text-center text-xs text-ds-text-muted" data-testid={`zw-seat-${p.id}`}>
-                  <div className="text-ds-text-primary">
-                    {seatName(p.id)}
-                    {p.isDeclarer && <span className="ml-1 text-ds-warning">{t('roleDeclarer')}</span>}
-                    {state.partnerRevealed && p.isPartner && (
-                      <span className="ml-1 text-ds-info">{t('rolePartner')}</span>
-                    )}
+              {state.players.map((p) => {
+                const isTurn =
+                  (isBid && p.id === state.bidPlayerIdx) || ((isTalon || isPlay) && p.id === state.currentPlayerIdx);
+                return (
+                  <div
+                    key={p.id}
+                    className={`rounded px-2 py-1 text-center text-xs text-ds-text-muted ${isTurn ? 'ring-2 ring-ds-success' : ''}`}
+                    data-testid={`zw-seat-${p.id}`}
+                    data-turn={isTurn ? 'true' : undefined}
+                  >
+                    <div className="text-ds-text-primary">
+                      {seatName(p.id)}
+                      {p.isDeclarer && <span className="ml-1 text-ds-warning">{t('roleDeclarer')}</span>}
+                      {state.partnerRevealed && p.isPartner && (
+                        <span className="ml-1 text-ds-info">{t('rolePartner')}</span>
+                      )}
+                    </div>
+                    <div>{t('cards', { count: p.cardCount })}</div>
+                    <div data-testid={`zw-seat-${p.id}-points`}>{t('points', { points: p.cardPoints })}</div>
+                    <div>{t('score', { score: p.score })}</div>
                   </div>
-                  <div>{t('cards', { count: p.cardCount })}</div>
-                  <div data-testid={`zw-seat-${p.id}-points`}>{t('points', { points: p.cardPoints })}</div>
-                  <div>{t('score', { score: p.score })}</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <TrickDisplay
