@@ -6,6 +6,7 @@
   "emptyReserveSlot": "空のリザーブ枠 {{idx}}",
   "foundation": "組札",
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
+  "foundationProgress": "{{count}}/13",
   "frontendHint": {
     "tableau": "フラワーベッド{{col}}",
     "reserve": "ブーケ{{col}}",
