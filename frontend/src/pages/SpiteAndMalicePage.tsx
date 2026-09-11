@@ -565,7 +565,7 @@ function FoundationPile({
 }) {
   const top = pile.length > 0 ? pile[pile.length - 1] : undefined;
   const ariaLabel = top ? ariaTop(idx + 1, cardAlt(top), topValue) : ariaEmpty(idx + 1);
-  const baseRing = [highlight ? 'ring-2 ring-ds-info' : '', playable ? 'ring-2 ring-ds-success' : ''].join(' ');
+  const baseRing = highlight ? 'ring-2 ring-ds-info' : playable ? 'ring-2 ring-ds-success' : '';
   const interactive = selected ? 'cursor-pointer hover:-translate-y-0.5' : 'cursor-default';
   return (
     <button

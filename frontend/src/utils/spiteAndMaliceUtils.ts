@@ -4,9 +4,6 @@ import type { Card } from '../types/card';
 export const SpiteAndMaliceWildValue = 13;
 /** Spite & Malice foundations stop accepting cards after twelve cards. */
 export const SpiteAndMaliceFoundationMax = 12;
-/** Backward-compatible alias used by existing goal-pile affordance code. */
-export const KING_VALUE = SpiteAndMaliceWildValue;
-
 /**
  * True when the card is the wild King.
  *
@@ -14,7 +11,7 @@ export const KING_VALUE = SpiteAndMaliceWildValue;
  * 表示がその規則を自前で持つと、片方だけ直したときに黙って食い違う。
  */
 export function isSpiteAndMaliceWild(card: { value: number } | null | undefined): boolean {
-  return card?.value === KING_VALUE;
+  return card?.value === SpiteAndMaliceWildValue;
 }
 /** Spite & Malice: a foundation completes at Q (12) — the next card cannot stack on a full foundation. */
 const FOUNDATION_TOP_COMPLETE = SpiteAndMaliceFoundationMax;
@@ -43,7 +40,7 @@ export function canPlaceSpiteAndMaliceCardOnFoundation(
  */
 export function isGoalTopPlayableToFoundation(top: Card | undefined, foundationTops: readonly number[]): boolean {
   if (!top) return false;
-  if (top.value === KING_VALUE) {
+  if (top.value === SpiteAndMaliceWildValue) {
     return foundationTops.some((t) => t < FOUNDATION_TOP_COMPLETE);
   }
   return foundationTops.some((t) => top.value === t + 1);

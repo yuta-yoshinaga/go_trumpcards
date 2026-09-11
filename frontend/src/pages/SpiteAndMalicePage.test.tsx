@@ -123,6 +123,27 @@ describe('SpiteAndMalicePage', () => {
     expect(foundationButtons().every((button) => button.getAttribute('data-playable') === null)).toBe(true);
   });
 
+  it('prioritizes the hint ring over the playable ring', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      players: [{ ...baseState.players[0], hand: [card('SPADE', 2)] }, baseState.players[1]],
+      foundationTops: [1, 1, 0, 0],
+      hint: { source: 'hand', index: 0, foundationIdx: 0, discard: false },
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    if (!(toggle as HTMLInputElement).checked) fireEvent.click(toggle);
+    fireEvent.click(await screen.findByRole('button', { name: /♠ 2/ }));
+
+    const [hintAndPlayable, playableOnly, idle] = foundationButtons();
+    expect(hintAndPlayable.className).toContain('ring-ds-info');
+    expect(hintAndPlayable.className).not.toContain('ring-ds-success');
+    expect(playableOnly.className).toContain('ring-ds-success');
+    expect(playableOnly.className).not.toContain('ring-ds-info');
+    expect(idle.className).not.toContain('ring-ds-info');
+    expect(idle.className).not.toContain('ring-ds-success');
+  });
+
   it('marks incomplete foundations for a selected K, including after an effective K top', async () => {
     mockExec.mockResolvedValue({
       ...baseState,
