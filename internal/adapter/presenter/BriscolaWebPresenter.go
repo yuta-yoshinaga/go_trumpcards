@@ -1,7 +1,7 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -84,8 +84,8 @@ func (p *BriscolaWebPresenter) buildMessage(b interfaces.BriscolaGame, lastErr e
 		p0 := b.GetPlayerPoints(0)
 		p1 := b.GetPlayerPoints(1)
 		params := map[string]string{
-			"p0": fmt.Sprintf("%d", p0),
-			"p1": fmt.Sprintf("%d", p1),
+			"p0": strconv.Itoa(p0),
+			"p1": strconv.Itoa(p1),
 		}
 		switch b.GetWinnerIdx() {
 		case 0:
@@ -103,7 +103,17 @@ func (p *BriscolaWebPresenter) buildMessage(b interfaces.BriscolaGame, lastErr e
 		}
 		return "", "briscola.playPhase.follow", nil
 	case domain.BriscolaPhaseTrickEnd:
-		return "", "briscola.trickEnd", nil
+		winnerIdx := b.GetLeadPlayerIdx()
+		messageCode := "briscola.trickEnd.p1Win"
+		winner := b.GetPlayer(winnerIdx)
+		// elemAt は範囲外で nil を返すため、未解決の leadPlayerIdx は無害に扱う。
+		if winner != nil && winner.GetIsHuman() {
+			messageCode = "briscola.trickEnd.p0Win"
+		}
+		params := map[string]string{
+			"points": strconv.Itoa(b.GetLastTrickPoints()),
+		}
+		return "", messageCode, params
 	}
 	return "", "", nil
 }

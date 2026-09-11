@@ -98,6 +98,7 @@ type Briscola struct {
 	trumpCard        *Card // 場に表向きで置かれるトランプ (山札の最後)
 	trumpSuit        int
 	leadPlayerIdx    int
+	lastTrickPoints  int
 	dealerIdx        int
 	playerPoints     []int
 	gameEndFlag      bool
@@ -108,11 +109,12 @@ type Briscola struct {
 // NewBriscola コンストラクタ
 func NewBriscola(trumpCards *TrumpCards, players []*BriscolaPlayer, config BriscolaConfig) *Briscola {
 	return &Briscola{
-		trumpCards:   trumpCards,
-		players:      players,
-		config:       config,
-		winnerIdx:    -1,
-		playerPoints: make([]int, len(players)),
+		trumpCards:      trumpCards,
+		players:         players,
+		config:          config,
+		winnerIdx:       -1,
+		lastTrickPoints: 0,
+		playerPoints:    make([]int, len(players)),
 	}
 }
 
@@ -133,6 +135,7 @@ func (b *Briscola) Reset() {
 	b.trickNumber = 0
 	b.currentTrick = nil
 	b.leadPlayerIdx = -1
+	b.lastTrickPoints = 0
 	b.currentPlayerIdx = -1
 	b.dealerIdx = 0
 	b.playerPoints = make([]int, len(b.players))
@@ -214,6 +217,7 @@ func (b *Briscola) ResolveTrick() {
 
 	b.players[winnerIdx].AddTrick(trickCards)
 	b.playerPoints[winnerIdx] += trickPoints
+	b.lastTrickPoints = trickPoints
 
 	b.appendLog(winnerIdx, "trick_win",
 		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(b.players, winnerIdx), b.trickNumber, trickPoints),
@@ -315,6 +319,9 @@ func (b *Briscola) SetPlayerPoints(i, points int) {
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (b *Briscola) GetLeadPlayerIdx() int { return b.leadPlayerIdx }
+
+// GetLastTrickPoints returns the points scored by the most recently resolved trick.
+func (b *Briscola) GetLastTrickPoints() int { return b.lastTrickPoints }
 
 // SetLeadPlayerIdx リードプレイヤーインデックス設定 (テスト用)
 func (b *Briscola) SetLeadPlayerIdx(idx int) { b.leadPlayerIdx = idx }

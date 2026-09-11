@@ -140,6 +140,58 @@ func TestBriscolaWebPresenter_Output_GameEndTie(t *testing.T) {
 	assert.Equal(t, "briscola.result.tie", out.MessageCode)
 }
 
+func TestBriscolaWebPresenter_Output_TrickEndMessageHumanWins(t *testing.T) {
+	p := new(presenter.BriscolaWebPresenter)
+	m, _ := setupBriscolaWebMockWithPlayers(nil)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
+	m.On("GetPhase").Return(domain.BriscolaPhaseTrickEnd)
+	m.On("GetLeadPlayerIdx").Return(0)
+	m.On("GetLastTrickPoints").Return(15)
+
+	got := p.Output(m, nil)
+	var out controller.BriscolaWebOutput
+	require.NoError(t, json.Unmarshal([]byte(got), &out))
+	assert.Equal(t, "briscola.trickEnd.p0Win", out.MessageCode)
+	assert.Equal(t, map[string]string{
+		"points": "15",
+	}, out.MessageParams)
+}
+
+func TestBriscolaWebPresenter_Output_TrickEndMessageCPUWins(t *testing.T) {
+	p := new(presenter.BriscolaWebPresenter)
+	m, _ := setupBriscolaWebMockWithPlayers(nil)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
+	m.On("GetPhase").Return(domain.BriscolaPhaseTrickEnd)
+	m.On("GetLeadPlayerIdx").Return(1)
+	m.On("GetLastTrickPoints").Return(15)
+
+	got := p.Output(m, nil)
+	var out controller.BriscolaWebOutput
+	require.NoError(t, json.Unmarshal([]byte(got), &out))
+	assert.Equal(t, "briscola.trickEnd.p1Win", out.MessageCode)
+	assert.Equal(t, map[string]string{
+		"points": "15",
+	}, out.MessageParams)
+}
+
+func TestBriscolaWebPresenter_Output_TrickEndMessageWithNoLeadPlayer(t *testing.T) {
+	p := new(presenter.BriscolaWebPresenter)
+	m, _ := setupBriscolaWebMockWithPlayers(nil)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
+	m.On("GetPhase").Return(domain.BriscolaPhaseTrickEnd)
+	m.On("GetLeadPlayerIdx").Return(-1)
+	m.On("GetPlayer", -1).Return((*domain.BriscolaPlayer)(nil))
+	m.On("GetLastTrickPoints").Return(15)
+
+	got := p.Output(m, nil)
+	var out controller.BriscolaWebOutput
+	require.NoError(t, json.Unmarshal([]byte(got), &out))
+	assert.Equal(t, "briscola.trickEnd.p1Win", out.MessageCode)
+}
+
 func TestBriscolaWebPresenter_Output_Error(t *testing.T) {
 	p := new(presenter.BriscolaWebPresenter)
 	m, _ := setupBriscolaWebMockWithPlayers(nil)
