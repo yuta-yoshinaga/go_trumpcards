@@ -55,6 +55,26 @@ const withFoundationState: FreeCellResponse = {
   foundation: [[card('SPADE', 1)], [], [card('HEART', 1), card('HEART', 2)], []],
 };
 
+const foundationMoveInitialState: FreeCellResponse = {
+  ...playingState,
+  tableau: [[card('SPADE', 1)], [card('HEART', 12)], [], [], [], [], [], []],
+};
+
+const foundationMoveAfterState: FreeCellResponse = {
+  ...foundationMoveInitialState,
+  tableau: [[], [card('HEART', 12)], [], [], [], [], [], []],
+  foundation: [[card('SPADE', 1)], [], [], []],
+};
+
+const FOUNDATION_ORDER: readonly CardDesign[] = ['SPADE', 'CLOVER', 'HEART', 'DIAMOND'];
+
+const completeFoundationState: FreeCellResponse = {
+  ...playingState,
+  foundation: Array.from({ length: 4 }, (_, pileIndex) =>
+    Array.from({ length: 13 }, (_, cardIndex) => card(FOUNDATION_ORDER[pileIndex], cardIndex + 1)),
+  ),
+};
+
 const withHintState: FreeCellResponse = {
   ...playingState,
   hint: { fromZone: 'freecell', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 3 },
@@ -134,6 +154,30 @@ describe('BakersGamePage', () => {
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
     const imgs = screen.getAllByRole('img');
     expect(imgs.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('shows the total number of cards in the foundations', async () => {
+    mockExec.mockResolvedValue(withFoundationState);
+    renderWithProviders(<BakersGamePage />);
+    await waitFor(() => expect(screen.getByTestId('bg-foundation-total')).toHaveTextContent('3/52'));
+  });
+
+  it('updates the foundation total after moving a card there', async () => {
+    mockExec.mockResolvedValueOnce(foundationMoveInitialState).mockResolvedValueOnce(foundationMoveAfterState);
+    renderWithProviders(<BakersGamePage />);
+    await waitFor(() => expect(screen.getByTestId('bg-foundation-total')).toHaveTextContent('0/52'));
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByRole('button', { name: '♠ ファンデーション (空)' }));
+
+    await waitFor(() => expect(screen.getByTestId('bg-foundation-total')).toHaveTextContent('1/52'));
+  });
+
+  it('uses the success color when all cards are in the foundations', async () => {
+    mockExec.mockResolvedValue(completeFoundationState);
+    renderWithProviders(<BakersGamePage />);
+    await waitFor(() => expect(screen.getByTestId('bg-foundation-total')).toHaveTextContent('52/52'));
+    expect(screen.getByTestId('bg-foundation-total')).toHaveClass('text-ds-success', 'tabular-nums');
   });
 
   // --- Free cells ---

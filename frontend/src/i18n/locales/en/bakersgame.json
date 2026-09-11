@@ -12,6 +12,7 @@
   "autoComplete": "Auto Complete",
   "undo": "Undo",
   "moveCount": "Moves",
+  "foundationProgress": "Foundations: {{count}}/52",
   "empty": "Empty",
   "hintAvailable": "Hint",
   "foundationAriaLabel": "{{suit}} Foundation ({{cardCount}} cards)",

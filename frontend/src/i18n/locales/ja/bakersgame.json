@@ -12,6 +12,7 @@
   "autoComplete": "オートコンプリート",
   "undo": "元に戻す",
   "moveCount": "手数",
+  "foundationProgress": "基礎: {{count}}/52",
   "empty": "空",
   "hintAvailable": "ヒント",
   "foundationAriaLabel": "{{suit}} ファンデーション ({{cardCount}}枚)",

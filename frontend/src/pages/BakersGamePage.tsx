@@ -188,6 +188,7 @@ function BakersGamePageContent() {
 
   if (!state) return <GameSkeleton gameKey="bakersgame" layout={{ kind: 'tableau', topRow: 8, tableau: 8 }} />;
 
+  const foundationTotal = state.foundation.reduce((sum, pile) => sum + pile.length, 0);
   const isPlaying = state.phase === FreeCellPhase.PLAYING;
   const isGameClear = state.phase === FreeCellPhase.GAME_CLEAR;
   const isGameOver = state.phase === FreeCellPhase.GAME_OVER;
@@ -236,6 +237,12 @@ function BakersGamePageContent() {
         <>
           <span>
             {t('moveCount')}: {state.moveCount}
+          </span>
+          <span
+            data-testid="bg-foundation-total"
+            className={foundationTotal === 52 ? 'text-ds-success tabular-nums' : 'tabular-nums'}
+          >
+            {t('foundationProgress', { count: foundationTotal })}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
