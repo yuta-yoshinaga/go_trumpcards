@@ -20,7 +20,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { CPU_DIFFICULTY_OPTIONS, useSpoilFiveGame } from '../hooks/useSpoilFiveGame';
+import { CPU_DIFFICULTY_OPTIONS, TARGET_POINTS_OPTIONS, useSpoilFiveGame } from '../hooks/useSpoilFiveGame';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -250,6 +250,14 @@ function SpoilFivePageContent() {
                     })),
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
                   },
+                  {
+                    type: 'select',
+                    id: 'targetPoints',
+                    label: t('settings.targetPoints'),
+                    value: spoilFiveConfig.targetPoints,
+                    options: TARGET_POINTS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('targetPoints', v),
+                  },
                   hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
               },
@@ -261,6 +269,9 @@ function SpoilFivePageContent() {
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
               <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
+              <span className="mr-4" data-testid="spoilfive-target">
+                {t('target', { n: state.config.targetPoints })}
+              </span>
               <span className={potDelta > 0 ? 'font-semibold text-ds-warning motion-safe:animate-pulse' : ''}>
                 {t('pot', { n: state.pot })}
               </span>

@@ -69034,9 +69034,10 @@ components:
               type: integer
               minimum: 0
               maximum: 2
-            targetScore:
+            targetPoints:
               type: integer
               minimum: 1
+              maximum: 1000
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)

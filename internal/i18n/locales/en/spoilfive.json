@@ -4,6 +4,7 @@
   "helpNext": "  n                         go to next trick",
   "helpNextRound": "  nr                        go to next round",
   "helpSetDifficulty": "  sd [0-2]                  CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "target": "Target: {{n}} points",
   "round": "Round: {{round}}  Trick: {{trick}}  Trump: {{trump}}  Pot: {{pot}}",
   "playerLine": "{{name}}: {{cards}} cards  Round tricks: {{roundTricks}}  Score: {{score}}",
   "gameEnd": "Game over! {{name}} reaches the target and wins the match!",
