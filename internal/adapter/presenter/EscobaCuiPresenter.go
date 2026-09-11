@@ -54,6 +54,7 @@ func (p *EscobaCuiPresenter) Output(eg interfaces.EscobaGame, lastErr error) str
 		b.WriteString(i18n.Tf("escoba.promptCurrentTurn",
 			"name", cuiPlayerName(eg.GetPlayer(currentTurn), currentTurn)) + "\n")
 		b.WriteString(i18n.T("escoba.promptHelp") + "\n")
+		b.WriteString(i18n.T("escoba.helpCardValues") + "\n")
 	})
 }
 

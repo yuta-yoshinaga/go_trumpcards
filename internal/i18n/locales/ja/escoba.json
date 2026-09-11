@@ -21,5 +21,6 @@
   "promptNext": "n で次のラウンドを開始する",
   "promptCurrentTurn": "手番: {{name}}",
   "promptHelp": "p <hand> [table...] で捕獲または場に置く / n で次のラウンド",
+  "helpCardValues": "  捕獲の合計は J=8 / Q=9 / K=10 として数える",
   "helpExampleNext": "  n                        ラウンドの結果を見てから次へ"
 }
