@@ -86,6 +86,38 @@ describe('FlowerGardenPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
   });
 
+  it('renders per-foundation progress counters (n/13) for all four piles', async () => {
+    const progressState: FlowerGardenResponse = {
+      ...playingState,
+      foundation: [
+        [card('SPADE', 1), card('SPADE', 2), card('SPADE', 3), card('SPADE', 4), card('SPADE', 5)],
+        [card('CLOVER', 1)],
+        [card('HEART', 1), card('HEART', 2)],
+        [card('DIAMOND', 1)],
+      ],
+    };
+    mockExec.mockResolvedValue(progressState);
+    renderWithProviders(<FlowerGardenPage />);
+    expect(await screen.findByTestId('fg-foundation-progress-0')).toHaveTextContent('5/13');
+    expect(screen.getByTestId('fg-foundation-progress-1')).toHaveTextContent('1/13');
+    expect(screen.getByTestId('fg-foundation-progress-2')).toHaveTextContent('2/13');
+    expect(screen.getByTestId('fg-foundation-progress-3')).toHaveTextContent('1/13');
+  });
+
+  it('marks a completed foundation with a success color and checkmark', async () => {
+    const fullSpades = Array.from({ length: 13 }, (_, i) => card('SPADE', i + 1));
+    const completeState: FlowerGardenResponse = {
+      ...playingState,
+      foundation: [fullSpades, [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+    };
+    mockExec.mockResolvedValue(completeState);
+    renderWithProviders(<FlowerGardenPage />);
+    const done = await screen.findByTestId('fg-foundation-progress-0');
+    expect(done).toHaveTextContent('13/13');
+    expect(done.textContent).toContain('✓');
+    expect(done.className).toContain('text-ds-success');
+  });
+
   it('renders a reserve card', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FlowerGardenPage />);
