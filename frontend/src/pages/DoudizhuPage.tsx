@@ -19,6 +19,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DoudizhuResponse } from '../types/card';
@@ -303,6 +304,16 @@ function DoudizhuPageContent() {
           {/* Human hand — shown during both bid and play phases (display-only while bidding) */}
           {humanPlayer && (phase === 'play' || phase === 'bid') && (
             <div data-tutorial="ddz-hand">
+              {state.landlordIdx >= 0 && (
+                <div className="mb-2 flex justify-center">
+                  <span
+                    data-testid="ddz-own-role"
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${badgeInfoColors}`}
+                  >
+                    {humanPlayer.isLandlord ? t('label.landlord') : t('label.peasant')}
+                  </span>
+                </div>
+              )}
               <div className="flex flex-wrap justify-center gap-1">
                 {humanPlayer.cards.map((c, i) => {
                   const interactive = phase === 'play';
