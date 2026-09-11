@@ -74,6 +74,23 @@ describe('RussianPokerPage', () => {
     expect(within(line).queryByText(/⚠/)).not.toBeInTheDocument();
   });
 
+  it.each([100, 250])('shows the sixth-card fee preview for an ante of %s', async (anteBet) => {
+    mockExec.mockResolvedValue(makeState({ anteBet }));
+    renderWithProviders(<RussianPokerPage />);
+
+    const line = await screen.findByTestId('russian-buy6th-fee-line');
+    expect(line).toHaveTextContent('6枚目を購入');
+    expect(line).toHaveTextContent(String(anteBet));
+  });
+
+  it('does not show the sixth-card fee preview outside the action phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: RussianPokerPhase.BET }));
+    renderWithProviders(<RussianPokerPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('russian-buy6th-fee-line')).not.toBeInTheDocument();
+  });
+
   it('updates the exchange fee as cards are selected', async () => {
     renderWithProviders(<RussianPokerPage />);
     await screen.findByTestId('russian-exchange-fee-line');
