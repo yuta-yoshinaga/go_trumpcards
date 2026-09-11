@@ -166,6 +166,7 @@ function KnockoutWhistPageContent() {
   const renderPlayerPanel = (p: KnockoutWhistResponse['players'][number]) => {
     const isLeader = !isGameEnd && state.leadPlayerIdx === p.id;
     const isRoundWinner = (isRoundEnd || isGameEnd) && state.roundWinnerIdx === p.id;
+    const isDogboneWarning = !p.eliminated && p.dogbones === 0;
     return (
       <div
         key={p.id}
@@ -181,6 +182,14 @@ function KnockoutWhistPageContent() {
         {isLeader && <span className={`px-1.5 py-0.5 rounded text-xs ${badgeInfoColors}`}>{t('leader')}</span>}
         {isRoundWinner && (
           <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('roundWinner')}</span>
+        )}
+        {isDogboneWarning && (
+          <span
+            className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}
+            data-testid="kw-dogbone-warning-badge"
+          >
+            {t('dogboneWarning')}
+          </span>
         )}
       </div>
     );

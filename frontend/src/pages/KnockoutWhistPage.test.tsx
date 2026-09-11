@@ -186,6 +186,34 @@ describe('KnockoutWhistPage', () => {
     expect(badge.className).not.toContain('bg-white/20');
   });
 
+  it('warns active players with no Dogbones and preserves the other status badges', async () => {
+    const state = makeKnockoutWhistState({
+      phase: 2,
+      roundWinnerIdx: 0,
+      players: makeKnockoutWhistState().players.map((player, index) =>
+        index === 0
+          ? { ...player, dogbones: 0, eliminated: false }
+          : index === 1
+            ? { ...player, dogbones: 1, eliminated: false }
+            : index === 2
+              ? { ...player, dogbones: 0, eliminated: true }
+              : player,
+      ),
+    });
+    mockExec.mockResolvedValue(state);
+    const { container } = renderWithProviders(<KnockoutWhistPage />);
+
+    const warningBadges = await screen.findAllByTestId('kw-dogbone-warning-badge');
+    expect(warningBadges).toHaveLength(1);
+    expect(warningBadges[0]).toHaveTextContent('次ラウンド0トリックで脱落');
+    expect(warningBadges[0].className).toContain('border-ds-warning');
+    expect(screen.getByText('リーダー')).toBeInTheDocument();
+    expect(screen.getByText('ラウンド勝者')).toBeInTheDocument();
+    const playerRows = container.querySelectorAll('[data-eliminated]');
+    expect(playerRows[1].querySelector('[data-testid="kw-dogbone-warning-badge"]')).not.toBeInTheDocument();
+    expect(playerRows[2].querySelector('[data-testid="kw-dogbone-warning-badge"]')).not.toBeInTheDocument();
+  });
+
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
   // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
   it('renders no hint banner when the hint was not requested', async () => {
