@@ -341,7 +341,7 @@ function MacauPageContent() {
                         {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                         {t('roundScore', { score: p.roundScore })}
                         {/* Finished players have 0 cards, so cardCount === 1 excludes them automatically. */}
-                        <div role="status" aria-live="polite">
+                        <span role="status" aria-live="polite">
                           {p.cardCount === 1 && (
                             <span
                               data-testid={`macau-cpu-last-card-${p.id}`}
@@ -350,7 +350,7 @@ function MacauPageContent() {
                               {t('cpuLastCardWarning', { name: playerName(p.id, p.isHuman) })}
                             </span>
                           )}
-                        </div>
+                        </span>
                       </div>
                     </div>
                   ))}
