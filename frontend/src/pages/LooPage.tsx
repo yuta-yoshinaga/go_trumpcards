@@ -346,20 +346,24 @@ function LooPageContent() {
                 </div>
               )}
             </div>
-            {canDecide &&
-              (() => {
-                const { looPenalty, perTrick, maxWin } = computeLooPotRisk(state.pot, state.potStart);
-                return (
-                  <div
-                    className="mb-2 mx-auto max-w-md p-2 rounded bg-black/30 text-center text-sm"
-                    data-testid="loo-pot-risk"
-                  >
-                    <div className="text-ds-text-muted mb-0.5">{t('potRisk.label')}</div>
-                    <div className="text-ds-accent">{t('potRisk.win', { pot: maxWin, perTrick })}</div>
-                    <div className="text-ds-error">{t('potRisk.loss', { penalty: looPenalty })}</div>
-                  </div>
-                );
-              })()}
+            {/* ポットの損益表示は領域を常設し、中身だけを判断フェーズで差し替える。領域と
+                パネルを同時に挿入すると、変化として読み上げられないことがある (#7352)。 */}
+            <div data-testid="loo-pot-risk-live" role="status" aria-live="polite">
+              {canDecide &&
+                (() => {
+                  const { looPenalty, perTrick, maxWin } = computeLooPotRisk(state.pot, state.potStart);
+                  return (
+                    <div
+                      className="mb-2 mx-auto max-w-md p-2 rounded bg-black/30 text-center text-sm"
+                      data-testid="loo-pot-risk"
+                    >
+                      <div className="text-ds-text-muted mb-0.5">{t('potRisk.label')}</div>
+                      <div className="text-ds-accent">{t('potRisk.win', { pot: maxWin, perTrick })}</div>
+                      <div className="text-ds-error">{t('potRisk.loss', { penalty: looPenalty })}</div>
+                    </div>
+                  );
+                })()}
+            </div>
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
