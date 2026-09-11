@@ -91,6 +91,38 @@ describe('BeleagueredCastlePage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
   });
 
+  it('renders per-foundation progress counters (n/13) for all piles', async () => {
+    const progressState: BeleagueredCastleResponse = {
+      ...playingState,
+      foundation: [
+        [card('SPADE', 1), card('SPADE', 2), card('SPADE', 3), card('SPADE', 4), card('SPADE', 5)],
+        [card('CLOVER', 1)],
+        [card('HEART', 1), card('HEART', 2)],
+        [card('DIAMOND', 1)],
+      ],
+    };
+    mockExec.mockResolvedValue(progressState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    expect(await screen.findByTestId('bc-foundation-progress-0')).toHaveTextContent('5/13');
+    expect(screen.getByTestId('bc-foundation-progress-1')).toHaveTextContent('1/13');
+    expect(screen.getByTestId('bc-foundation-progress-2')).toHaveTextContent('2/13');
+    expect(screen.getByTestId('bc-foundation-progress-3')).toHaveTextContent('1/13');
+  });
+
+  it('marks a completed foundation with a success color and checkmark', async () => {
+    const fullSpades = Array.from({ length: 13 }, (_, i) => card('SPADE', i + 1));
+    const completeState: BeleagueredCastleResponse = {
+      ...playingState,
+      foundation: [fullSpades, [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+    };
+    mockExec.mockResolvedValue(completeState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    const done = await screen.findByTestId('bc-foundation-progress-0');
+    expect(done).toHaveTextContent('13/13');
+    expect(done.textContent).toContain('✓');
+    expect(done.className).toContain('text-ds-success');
+  });
+
   it('labels all eight tableau columns with their 0-based index (matching hint text)', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BeleagueredCastlePage />);
