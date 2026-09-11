@@ -250,6 +250,47 @@ describe('YanivPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
+  it('shows the caller and successful Yaniv result at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: YanivPhase.ROUND_END, callerIdx: 2, isAsaf: false }));
+    renderWithProviders(<YanivPage />);
+
+    const result = await screen.findByTestId('yaniv-round-result');
+    expect(result).toHaveTextContent('CPU 2');
+    expect(result).toHaveTextContent('Yaniv');
+    expect(result).toHaveTextContent('ラウンドに勝利');
+    expect(result).not.toHaveTextContent('アサフ');
+  });
+
+  it('shows the caller and Asaf result at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: YanivPhase.ROUND_END, callerIdx: 0, isAsaf: true }));
+    renderWithProviders(<YanivPage />);
+
+    const result = await screen.findByTestId('yaniv-round-result');
+    expect(result).toHaveTextContent('あなた');
+    expect(result).toHaveTextContent('アサフ');
+    expect(result).not.toHaveTextContent('ラウンドに勝利');
+  });
+
+  it('does not show a round result outside the round-end phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: YanivPhase.DISCARD, callerIdx: 0, isAsaf: true }));
+    renderWithProviders(<YanivPage />);
+
+    await screen.findByTestId('discard-button');
+    expect(screen.getByTestId('yaniv-round-result')).toHaveTextContent('');
+  });
+
+  it('follows the caller index when displaying the caller name', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: YanivPhase.ROUND_END, callerIdx: 1, isAsaf: false }));
+    renderWithProviders(<YanivPage />);
+
+    expect(await screen.findByTestId('yaniv-round-result')).toHaveTextContent('CPU 1');
+    mockExec.mockResolvedValue(makeState({ phase: YanivPhase.ROUND_END, callerIdx: 3, isAsaf: false }));
+    fireEvent.click(screen.getByTestId('next-round-button'));
+
+    await waitFor(() => expect(screen.getByTestId('yaniv-round-result')).toHaveTextContent('CPU 3'));
+    expect(screen.getByTestId('yaniv-round-result')).not.toHaveTextContent('CPU 1');
+  });
+
   it('renders an eliminated indicator', async () => {
     mockExec.mockResolvedValue(
       makeState({
