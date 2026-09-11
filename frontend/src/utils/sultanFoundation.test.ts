@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { SULTAN_FOUNDATION_FULL, sultanFoundationInfo } from './sultanFoundation';
+import {
+  canPlaceCardOnSultanFoundation,
+  SULTAN_CARD_VALUE_MAX,
+  SULTAN_FOUNDATION_FULL,
+  sultanFoundationInfo,
+} from './sultanFoundation';
 
 const card = (design: Card['design'], value: number): Card => ({ design, value });
 
@@ -34,5 +39,33 @@ describe('sultanFoundationInfo', () => {
     expect(info.design).toBeNull();
     expect(info.count).toBe(0);
     expect(info.complete).toBe(false);
+  });
+});
+
+describe('canPlaceCardOnSultanFoundation', () => {
+  it('allows the next card of the same suit', () => {
+    expect(canPlaceCardOnSultanFoundation(card('SPADE', 2), [[card('SPADE', 13), card('SPADE', 1)]])).toBe(true);
+  });
+
+  it('allows an Ace on a King', () => {
+    expect(canPlaceCardOnSultanFoundation(card('HEART', 1), [[card('HEART', SULTAN_CARD_VALUE_MAX)]])).toBe(true);
+  });
+
+  it('rejects a two on a King', () => {
+    expect(canPlaceCardOnSultanFoundation(card('HEART', 2), [[card('HEART', SULTAN_CARD_VALUE_MAX)]])).toBe(false);
+  });
+
+  it('rejects every card on a completed Queen pile', () => {
+    expect(canPlaceCardOnSultanFoundation(card('HEART', 1), [[card('HEART', 13), card('HEART', 12)]])).toBe(false);
+  });
+
+  it('rejects a card of a different suit', () => {
+    expect(canPlaceCardOnSultanFoundation(card('DIAMOND', 2), [[card('SPADE', 13), card('SPADE', 1)]])).toBe(false);
+  });
+
+  it('allows a card when either of two same-suit foundations accepts it', () => {
+    expect(
+      canPlaceCardOnSultanFoundation(card('SPADE', 2), [[card('SPADE', 13)], [card('SPADE', 13), card('SPADE', 1)]]),
+    ).toBe(true);
   });
 });
