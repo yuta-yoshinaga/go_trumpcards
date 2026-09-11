@@ -8,6 +8,7 @@
   "trumpLine": "Trump upcard: {{card}}",
   "trumpLineNone": "Trump: {{suit}} (stock exhausted)",
   "scoreLine": "Match score: You={{p0}}  CPU={{p1}}",
+  "scoreRules": "Scoring: 3+ tricks = 1 point, all 5 (Vole) = 2. A turned King of trumps gives the dealer +1; declaring a King held in hand when play starts gives that player +1.",
   "playerLine": "{{name}}: {{tricks}} tricks  deal {{deal}} pts  match {{match}} pts  {{cards}} cards",
   "gameEndP0": "Game over! You win ({{p0}}-{{p1}})!",
   "gameEndP1": "Game over! CPU wins ({{p0}}-{{p1}}).",

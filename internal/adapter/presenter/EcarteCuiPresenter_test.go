@@ -67,6 +67,8 @@ func TestEcarteCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "トリック: 1")
 		assert.Contains(t, out, "山札: 21枚")
 		assert.Contains(t, out, "累積得点: あなた=4  CPU=3")
+		assert.Contains(t, out, "切り札のKがめくれたらディーラーに+1点")
+		assert.Contains(t, out, "プレイ開始時に切り札のKを手札に持って宣言すると")
 		assert.Contains(t, out, "play <idx>")
 	})
 

@@ -42,6 +42,9 @@
   "cpu": "CPU {{id}}",
   "matchScoreTitle": "Score",
   "scoreLine": "{{name}}: match {{match}} / deal {{deal}} / {{tricks}} tricks",
+  "scoreRules": {
+    "kingBonus": "A turned King of trumps gives the dealer +1. Holding the King of trumps when play starts and declaring it gives that player +1."
+  },
   "playButton": "Play",
   "proposeButton": "Propose",
   "standButton": "Stand",
@@ -79,7 +82,7 @@
     "info": "Deal, trump suit (and the trump card), the stock count, and each player's match / deal score are shown here. Écarté is a 2-player French trick game played with a 32-card deck. The first player to reach the target score (default 5) wins.",
     "trick": "Cards played to the current trick appear here. During play it is strict must-follow (follow suit and win if able, otherwise trump). The rank order is K>Q>J>A>10>9>8>7.",
     "hand": "This is your hand. During play, click a card and press Play. In the Exchange phase, select the cards you want to discard and press Exchange.",
-    "actions": "In the Exchange phase the elder (non-dealer) chooses Propose or Stand; if proposed, the dealer Accepts or Refuses. After accepting, each player discards any number of cards and draws replacements, repeating until the stock empties. Then 5 tricks are played: 3+ tricks scores 1 point, all 5 (Vole) scores 2. Press Next Deal between deals and games."
+    "actions": "In the Exchange phase the elder (non-dealer) chooses Propose or Stand; if proposed, the dealer Accepts or Refuses. After accepting, each player discards any number of cards and draws replacements, repeating until the stock empties. Then 5 tricks are played: 3+ tricks scores 1 point, all 5 (Vole) scores 2. A turned King of trumps gives the dealer +1; when play starts (after Stand or the final exchange), declaring a King of trumps held in hand gives that player +1. Press Next Deal between deals and games."
   },
   "hintRequested": "Hint available",
   "noHint": "No hint available",

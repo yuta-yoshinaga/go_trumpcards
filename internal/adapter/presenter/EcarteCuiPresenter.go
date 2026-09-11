@@ -49,6 +49,7 @@ func (p *EcarteCuiPresenter) Output(b interfaces.EcarteGame, lastErr error) stri
 		sb.WriteString(i18n.Tf("ecarte.scoreLine",
 			"p0", strconv.Itoa(b.GetMatchScore(0)),
 			"p1", strconv.Itoa(b.GetMatchScore(1))) + "\n")
+		sb.WriteString(i18n.T("ecarte.scoreRules") + "\n")
 
 		for i := 0; i < b.GetPlayerCnt(); i++ {
 			sb.WriteString(ecartePlayerStr(b.GetPlayer(i), i, b.GetDealPoints(i), b.GetMatchScore(i)))
