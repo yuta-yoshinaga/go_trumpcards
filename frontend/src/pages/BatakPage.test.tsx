@@ -276,6 +276,47 @@ describe('BatakPage', () => {
     expect(screen.queryByText('1.2')).not.toBeInTheDocument();
   });
 
+  it('colors negative and positive round scores, but not zero, on both score table layouts', async () => {
+    const originalWidth = window.innerWidth;
+    const scoreState = makeBatakState({
+      players: makeBatakState().players.map((p, index) => ({
+        ...p,
+        roundScore: index === 0 ? -5 : index === 1 ? 5 : 0,
+      })),
+    });
+
+    try {
+      for (const width of [1024, 375]) {
+        window.innerWidth = width;
+        window.dispatchEvent(new Event('resize'));
+        mockExec.mockResolvedValue(scoreState);
+        const { unmount } = renderWithProviders(<BatakPage />);
+
+        await waitFor(() => expect(mockExec).toHaveBeenCalled());
+        const scoreCells = screen.getAllByRole('cell').filter((cell) => cell.hasAttribute('data-score-sign'));
+        expect(scoreCells).toHaveLength(4);
+        expect(scoreCells.map((cell) => cell.getAttribute('data-score-sign'))).toEqual([
+          'negative',
+          'positive',
+          'zero',
+          'zero',
+        ]);
+        expect(scoreCells[0]).toHaveClass('text-ds-error');
+        expect(scoreCells[1]).toHaveClass('text-ds-success');
+        expect(scoreCells[0]).not.toHaveClass('text-ds-danger');
+        expect(scoreCells[1]).not.toHaveClass('text-ds-danger');
+        expect(scoreCells[2]).not.toHaveClass('text-ds-error');
+        expect(scoreCells[2]).not.toHaveClass('text-ds-success');
+        expect(document.querySelectorAll('.text-ds-danger')).toHaveLength(0);
+
+        unmount();
+      }
+    } finally {
+      window.innerWidth = originalWidth;
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('renders declarer information on the page', async () => {
     const declarerState = makeBatakState({
       declarerIdx: 0,
