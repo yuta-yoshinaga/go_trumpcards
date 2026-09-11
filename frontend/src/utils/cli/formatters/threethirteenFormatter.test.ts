@@ -53,6 +53,12 @@ describe('formatThreeThirteenState', () => {
     expect(out).toContain('stock: 24');
   });
 
+  it('falls back to UNKNOWN for an unrecognized phase', () => {
+    const out = formatThreeThirteenState({ ...baseState, phase: 99 });
+    expect(out).toContain('round: 2/11');
+    expect(out).toContain('phase: UNKNOWN');
+  });
+
   it('renders knocker line when someone knocked', () => {
     const out = formatThreeThirteenState({ ...baseState, knockerIdx: 0 });
     expect(out).toContain('knocked!');
