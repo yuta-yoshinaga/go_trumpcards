@@ -157,6 +157,22 @@ describe('PokerSquaresPage', () => {
     expect(screen.getByTestId('ps-preview-live')).toHaveTextContent('もう一度タップで確定');
   });
 
+  it('hides the touch placement hint when another cell is hovered after arming', async () => {
+    mockApi.mockResolvedValue(playingState);
+    renderWithProviders(<PokerSquaresPage />);
+    const cellA = await screen.findByTestId('cell-0-0');
+    const cellB = screen.getByTestId('cell-0-1');
+
+    fireEvent.pointerDown(cellA, { pointerType: 'touch' });
+    fireEvent.click(cellA);
+    fireEvent.pointerEnter(cellB);
+    await flushPendingDispatch();
+
+    expect(screen.queryByTestId('ps-touch-hint')).not.toBeInTheDocument();
+    expect(screen.getByTestId('ps-preview-live')).not.toHaveTextContent('もう一度タップで確定');
+    expect(cellA).toHaveAttribute('data-armed', 'true');
+  });
+
   it('places once when the same cell is tapped twice', async () => {
     mockApi.mockResolvedValue(playingState);
     renderWithProviders(<PokerSquaresPage />);

@@ -171,6 +171,9 @@ function PokerSquaresPageContent() {
     };
   }, [state, crossHover]);
 
+  const isArmedCellHovered =
+    armedCell !== null && crossHover !== null && armedCell.row === crossHover.row && armedCell.col === crossHover.col;
+
   // Mirror the visual `+N / hand` score preview into a polite live region so
   // keyboard users hear how the focused cell would change the row/column score.
   // Stays empty when the placement completes nothing (or scores 0), so screen
@@ -220,9 +223,9 @@ function PokerSquaresPageContent() {
         }),
       );
     }
-    if (armedCell) parts.push(t('touchPlaceHint'));
+    if (isArmedCellHovered) parts.push(t('touchPlaceHint'));
     return parts.join(' ');
-  }, [state, crossHover, preview, armedCell, t]);
+  }, [state, crossHover, preview, isArmedCellHovered, t]);
 
   const handlePlace = (row: number, col: number) => {
     execApi('place', row, col);
@@ -476,7 +479,7 @@ function PokerSquaresPageContent() {
                   </div>
                 </div>
 
-                {armedCell && (
+                {isArmedCellHovered && (
                   <p className="text-center text-sm text-ds-accent mb-2" data-testid="ps-touch-hint">
                     {t('touchPlaceHint')}
                   </p>
