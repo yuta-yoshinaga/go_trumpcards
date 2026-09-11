@@ -32,6 +32,8 @@ type solverRules struct {
 	// player21AlwaysWins / playerBJBeatsDealerBJ は variant のフラグ。
 	player21AlwaysWins    bool
 	playerBJBeatsDealerBJ bool
+	dealerWinsTies        bool
+	blackjackPaysEven     bool
 	// bonuses が真なら spanish21BonusEval 相当のボーナスを支払う。
 	bonuses bool
 	// surrender はレイトサレンダーが使えるか (SurrenderRule == BJSurrenderLate)。
@@ -89,6 +91,26 @@ func spanish21Rules() solverRules {
 	}
 }
 
+// doubleExposureRules は NewDoubleExposureBlackJack() が作るゲームの規則。
+func doubleExposureRules() solverRules {
+	counts := map[int]int{}
+	for v := 1; v <= 13; v++ {
+		counts[v] = 4
+	}
+	cfg := DefaultBlackJackConfig()
+	variant := DoubleExposureVariant()
+	return solverRules{
+		probs:                 deckProbs(counts),
+		dealerHitsSoft17:      cfg.DealerHitsSoft17,
+		player21AlwaysWins:    variant.Player21AlwaysWins,
+		playerBJBeatsDealerBJ: variant.PlayerBJBeatsDealerBJ,
+		dealerWinsTies:        variant.DealerWinsTies,
+		blackjackPaysEven:     variant.BlackjackPaysEven,
+		surrender:             cfg.SurrenderRule == BJSurrenderLate,
+		canDouble:             true,
+	}
+}
+
 // dealerOutcome はディーラーの最終結果。bust は 22 で表す。
 const dealerBust = 22
 
@@ -112,7 +134,8 @@ func (r solverRules) dealerDist(u int) map[int]float64 {
 
 	out := map[int]float64{}
 	memo := map[[2]int]map[int]float64{}
-	for c, p := range holes {
+	for _, c := range sortedIntMapKeys(holes) {
+		p := holes[c]
 		total, soft := addCard(u, false, c)
 		if u == 1 || c == 1 {
 			soft = true
@@ -122,11 +145,19 @@ func (r solverRules) dealerDist(u int) map[int]float64 {
 				soft = false
 			}
 		}
-		for score, q := range r.dealerFrom(total, soft, memo) {
+		distribution := r.dealerFrom(total, soft, memo)
+		for _, score := range sortedIntMapKeys(distribution) {
+			q := distribution[score]
 			out[score] += q * p / norm
 		}
 	}
 	return out
+}
+
+// dealerDistFromTotal はディーラーの公開された2枚の合計から、ナチュラルを
+// 除外せずに最終スコア分布を返す。
+func (r solverRules) dealerDistFromTotal(total int, soft bool) map[int]float64 {
+	return r.dealerFrom(total, soft, map[[2]int]map[int]float64{})
 }
 
 // dealerFrom はディーラーが (total, soft) から引き切ったときの最終スコア分布。
@@ -159,12 +190,26 @@ func (r solverRules) dealerFrom(total int, soft bool, memo map[[2]int]map[int]fl
 			continue
 		}
 		nt, ns := addCard(total, soft, c)
-		for score, q := range r.dealerFrom(nt, ns, memo) {
+		distribution := r.dealerFrom(nt, ns, memo)
+		for _, score := range sortedIntMapKeys(distribution) {
+			q := distribution[score]
 			res[score] += q * p
 		}
 	}
 	memo[key] = res
 	return res
+}
+
+// sortedIntMapKeys makes every accumulation over a dealer distribution
+// reproducible. Floating-point addition is order-dependent, so map iteration
+// would otherwise make equal EVs choose different actions between runs.
+func sortedIntMapKeys[V any](values map[int]V) []int {
+	keys := make([]int, 0, len(values))
+	for key := range values {
+		keys = append(keys, key)
+	}
+	sort.Ints(keys)
+	return keys
 }
 
 // addCard は (total, soft) にBJ値 c を足した結果を返す。
@@ -245,7 +290,8 @@ func (r solverRules) evStand(h handState, dealer map[int]float64) float64 {
 	}
 
 	var ev float64
-	for dscore, p := range dealer {
+	for _, dscore := range sortedIntMapKeys(dealer) {
+		p := dealer[dscore]
 		res := r.judge(h, dscore)
 		switch res {
 		case GameResultLose:
@@ -255,7 +301,11 @@ func (r solverRules) evStand(h handState, dealer map[int]float64) float64 {
 		case GameResultWin:
 			switch {
 			case h.isNaturalBJ():
-				ev += p * 1.5
+				payout := 1.5
+				if r.blackjackPaysEven {
+					payout = 1
+				}
+				ev += p * payout
 			default:
 				if m := r.bonusMultiplier(h); m > 0 {
 					ev += p * m
@@ -289,6 +339,9 @@ func (r solverRules) judge(h handState, dscore int) GameResult {
 	// 同点。ディーラーはナチュラルでないので、プレイヤーがナチュラルなら勝ち。
 	if h.isNaturalBJ() {
 		return GameResultWin
+	}
+	if r.dealerWinsTies {
+		return GameResultLose
 	}
 	return GameResultDraw
 }
@@ -398,6 +451,15 @@ func bjOf(v int) int {
 // solveCell は1マスの最善手を返す。
 func (r solverRules) solveCell(h handState, upcard int, isPair bool, pairValue int) BJSuggestedAction {
 	dealer := r.dealerDist(upcard)
+	return r.solveCellWithDealer(h, dealer, isPair, pairValue)
+}
+
+// solveCellVsDealerTotal はディーラーの表向きの2枚の状態で1マスを解く。
+func (r solverRules) solveCellVsDealerTotal(h handState, dealerTotal int, dealerSoft bool, isPair bool, pairValue int) BJSuggestedAction {
+	return r.solveCellWithDealer(h, r.dealerDistFromTotal(dealerTotal, dealerSoft), isPair, pairValue)
+}
+
+func (r solverRules) solveCellWithDealer(h handState, dealer map[int]float64, isPair bool, pairValue int) BJSuggestedAction {
 	memo := map[string]float64{}
 
 	standEV := r.evStand(h, dealer)

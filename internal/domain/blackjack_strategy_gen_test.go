@@ -88,6 +88,10 @@ func normalizeD(a BJSuggestedAction) BJSuggestedAction {
 
 // hardHandOfTotal は指定ハードトータルの2枚ハンドを、ペアにならない組で作る。
 func hardHandOfTotal(total int) handState {
+	// Hard 20 has no non-pair two-card form; keep it explicit for the solver.
+	if total == 20 {
+		return newHand(10, 10)
+	}
 	for a := 2; a <= 9; a++ {
 		b := total - a
 		if b < 2 || b > 10 || a == b {
@@ -95,8 +99,7 @@ func hardHandOfTotal(total int) handState {
 		}
 		return newHand(a, b)
 	}
-	// 5 は 2+3 で作れるのでここには来ないが、保険。
-	return newHand(2, total-2)
+	panic(fmt.Sprintf("cannot construct hard total %d from two cards", total))
 }
 
 func upLabel(up int) string {
@@ -178,6 +181,140 @@ func TestGenerateSpanish21Table(t *testing.T) {
 			cells[i] = r.solveCell(newHand(pv, pv), up, true, pv)
 		}
 		t.Logf("%s, // pair %d", renderRow(cells), pv)
+	}
+}
+
+// TestGenerateDoubleExposureTable prints the Double Exposure table solved from
+// this game's own rules. It is intentionally output-only; the committed table
+// is checked against the solver by the strategy tests.
+func TestGenerateDoubleExposureTable(t *testing.T) {
+	if testing.Short() {
+		t.Skip("generator")
+	}
+	r := doubleExposureRules()
+	columns := func(h handState, isPair bool, pv int) []BJSuggestedAction {
+		cells := make([]BJSuggestedAction, 0, 26)
+		for total := 4; total <= 20; total++ {
+			cells = append(cells, r.solveCellVsDealerTotal(h, total, false, isPair, pv))
+		}
+		for total := 12; total <= 20; total++ {
+			cells = append(cells, r.solveCellVsDealerTotal(h, total, true, isPair, pv))
+		}
+		return cells
+	}
+
+	t.Log("// hard 5..20 (columns: hard 4..20, soft 12..20)")
+	for total := 5; total <= 20; total++ {
+		t.Logf("%s, // hard %d", renderRow(columns(hardHandOfTotal(total), false, 0)), total)
+	}
+	t.Log("// soft 13..20 (columns: hard 4..20, soft 12..20)")
+	for total := 13; total <= 20; total++ {
+		t.Logf("%s, // soft %d", renderRow(columns(newHand(1, total-11), false, 0)), total)
+	}
+	t.Log("// pairs A,A then 2,2..10,10 (columns: hard 4..20, soft 12..20)")
+	for _, pv := range []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10} {
+		t.Logf("%s, // pair %d", renderRow(columns(newHand(pv, pv), true, pv)), pv)
+	}
+}
+
+// TestDoubleExposureTable_MatchesSolver keeps the committed tables and the
+// solver in step. Editing one without the other is exactly how a strategy
+// table rots.
+func TestDoubleExposureTable_MatchesSolver(t *testing.T) {
+	r := doubleExposureRules()
+	var drift []string
+
+	check := func(label string, h handState, isPair bool, pv int, got BJSuggestedAction, dealerTotal int, dealerSoft bool) {
+		want := r.solveCellVsDealerTotal(h, dealerTotal, dealerSoft, isPair, pv)
+		// The solver is deterministic because EV sums use sorted distribution keys,
+		// not map iteration order, so this comparison can be exact.
+		if got != want {
+			dealerState := fmt.Sprintf("hard%d", dealerTotal)
+			if dealerSoft {
+				dealerState = fmt.Sprintf("soft%d", dealerTotal)
+			}
+			drift = append(drift, fmt.Sprintf("%s-vs-%s: table=%s solver=%s",
+				label, dealerState, actionLetter(got), actionLetter(want)))
+		}
+	}
+
+	for dealerIndex := 0; dealerIndex < 26; dealerIndex++ {
+		dealerTotal, dealerSoft := dealerIndex+4, false
+		if dealerIndex >= 17 {
+			dealerTotal, dealerSoft = dealerIndex-5, true
+		}
+
+		for total := 5; total <= 20; total++ {
+			check(fmt.Sprintf("hard%d", total), hardHandOfTotal(total), false, 0,
+				doubleExposureHardTable[total-5][dealerIndex], dealerTotal, dealerSoft)
+		}
+		for total := 13; total <= 20; total++ {
+			check(fmt.Sprintf("soft%d", total), newHand(1, total-11), false, 0,
+				doubleExposureSoftTable[total-13][dealerIndex], dealerTotal, dealerSoft)
+		}
+		for pv := 1; pv <= 10; pv++ {
+			check(fmt.Sprintf("pair%d", pv), newHand(pv, pv), true, pv,
+				doubleExposurePairTable[pv-1][dealerIndex], dealerTotal, dealerSoft)
+		}
+	}
+
+	if len(drift) > 0 {
+		t.Fatalf("committed Double Exposure table drifted from the solver in %d cell(s):\n%s"+
+			"regenerate with: go test -tags test ./internal/domain -run TestGenerateDoubleExposureTable -v",
+			len(drift), joinLines(drift))
+	}
+}
+
+// TestDoubleExposureTable_StandInvariants checks the 192 hard/soft cells
+// where the dealer is already standing under the default S17 rules. In Double
+// Exposure a tie loses: standing must not be recommended when the player's
+// total is at most the dealer's, and must be recommended when it is greater.
+// Pairs are deliberately excluded because splitting changes the decision and
+// invalidates this direct stand-versus-draw argument.
+func TestDoubleExposureTable_StandInvariants(t *testing.T) {
+	type dealerState struct {
+		total int
+		soft  bool
+		name  string
+	}
+	dealers := []dealerState{
+		{total: 17, name: "hard17"},
+		{total: 18, name: "hard18"},
+		{total: 19, name: "hard19"},
+		{total: 20, name: "hard20"},
+		{total: 17, soft: true, name: "soft17"},
+		{total: 18, soft: true, name: "soft18"},
+		{total: 19, soft: true, name: "soft19"},
+		{total: 20, soft: true, name: "soft20"},
+	}
+
+	var violations []string
+	check := func(handLabel string, playerTotal int, got BJSuggestedAction, dealer dealerState) {
+		shouldStand := playerTotal > dealer.total
+		violates := (shouldStand && got != BJSuggestStand) || (!shouldStand && got == BJSuggestStand)
+		if violates {
+			violations = append(violations, fmt.Sprintf(
+				"%s-vs-%s: player=%d dealer=%d expected stand=%t got=%s",
+				handLabel, dealer.name, playerTotal, dealer.total, shouldStand, actionLetter(got)))
+		}
+	}
+
+	for _, dealer := range dealers {
+		dealerIndex := dealer.total - 4
+		if dealer.soft {
+			dealerIndex = 17 + dealer.total - 12
+		}
+		for total := 5; total <= 20; total++ {
+			check(fmt.Sprintf("hard%d", total), total, doubleExposureHardTable[total-5][dealerIndex], dealer)
+		}
+		for total := 13; total <= 20; total++ {
+			check(fmt.Sprintf("soft%d", total), total, doubleExposureSoftTable[total-13][dealerIndex], dealer)
+		}
+	}
+
+	if len(violations) > 0 {
+		t.Fatalf("Double Exposure stand invariant violated in %d cell(s):\n%s",
+			len(violations), joinLines(violations))
 	}
 }
 
