@@ -19,6 +19,8 @@
   "teamLabel": "Team {{team}}",
   "teamScore": "Team {{team}}: {{points}} pts (this round {{thirds}}/3)",
   "yourTeam": "Your team",
+  "partner": "Partner",
+  "opponent": "Opponent",
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",

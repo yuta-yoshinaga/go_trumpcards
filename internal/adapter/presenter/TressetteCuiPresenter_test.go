@@ -61,6 +61,24 @@ func TestTressetteCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "サード: 3トリック")
 	})
 
+	t.Run("marks partner and opponent CPUs", func(t *testing.T) {
+		m, _ := setupTressetteCuiMockWithPlayers()
+		result := p.Output(m, nil)
+		lines := strings.Split(result, "\n")
+		lineFor := func(name string) string {
+			for _, line := range lines {
+				if strings.Contains(line, name) {
+					return line
+				}
+			}
+			return ""
+		}
+		assert.Contains(t, lineFor("CPU 2"), "味方")
+		assert.Contains(t, lineFor("CPU 1"), "相手")
+		// Negative control: the opponent team must not be labelled as the partner.
+		assert.NotContains(t, lineFor("CPU 1"), "味方")
+	})
+
 	t.Run("trick end prompt", func(t *testing.T) {
 		m, _ := setupTressetteCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
