@@ -168,6 +168,25 @@ describe('FourCardPokerPage', () => {
     expect(screen.queryByLabelText(/プレイ倍率/)).not.toBeInTheDocument();
   });
 
+  it('shows each play amount and updates it when the ante changes', async () => {
+    const updatedActionPhaseState = { ...actionPhaseState, anteBet: 150 };
+    mockExec.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(updatedActionPhaseState);
+    renderWithProviders(<FourCardPokerPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'プレイ 1x（100）' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'プレイ 2x（200）' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'プレイ 3x（300）' })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('play-1x'));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'プレイ 1x（150）' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'プレイ 2x（300）' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'プレイ 3x（450）' })).toBeInTheDocument();
+    });
+  });
+
   it('sends play command with the chosen multiplier button', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<FourCardPokerPage />);
