@@ -20,6 +20,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TichuResponse } from '../types/card';
@@ -274,6 +275,14 @@ function TichuPageContent() {
               <span className={humanTeam === 1 ? 'font-bold text-ds-accent' : ''}>
                 {t('label.teamB')}: {state.scores[1]}
               </span>
+              {humanPlayer && humanPlayer.declType > 0 && (
+                <span
+                  className={`rounded px-1.5 py-0.5 text-xs font-semibold ${badgeWarningColors}`}
+                  data-testid="tichu-declaration-badge"
+                >
+                  {declLabel(humanPlayer.declType)}
+                </span>
+              )}
               {state.isOneTwo && <span className="text-xs opacity-75">{t('label.oneTwo')}</span>}
             </div>
           )}
