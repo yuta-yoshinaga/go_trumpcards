@@ -8,6 +8,7 @@
   "helpSetDifficulty": "  sd [0-2]                  CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "round": "Round: {{round}}  Trick: {{trick}}  Trump: {{trump}}",
   "hiddenTrump": "hidden",
+  "trumpVisibleToYou": "{{suit}} (shown only to you)",
   "teamScores": "Game points — Team A: {{teamA}}  Team B: {{teamB}}",
   "roundPoints": "This round — Team A: {{teamA}}  Team B: {{teamB}}",
   "contractLine": "Declarer: {{name}} (Team {{team}}) — {{contract}}",

@@ -8,6 +8,7 @@
   "helpSetDifficulty": "  sd [0-2]                  CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "round": "ラウンド: {{round}}  トリック: {{trick}}  切り札: {{trump}}",
   "hiddenTrump": "非公開",
+  "trumpVisibleToYou": "{{suit}}（あなたのみ表示）",
   "teamScores": "ゲーム点 — チームA: {{teamA}}  チームB: {{teamB}}",
   "roundPoints": "今ラウンド — チームA: {{teamA}}  チームB: {{teamB}}",
   "contractLine": "落札者: {{name}}（チーム{{team}}） — {{contract}}",

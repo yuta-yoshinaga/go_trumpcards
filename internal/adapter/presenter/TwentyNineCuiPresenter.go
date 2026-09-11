@@ -39,13 +39,17 @@ func twentyNineBidName(bid int) string {
 	}
 }
 
-// twentyNineTrumpStr renders the trump glyph only when the hidden trump has been
-// revealed; otherwise it shows a "hidden" label (29 uses a hidden trump).
-func twentyNineTrumpStr(suit int, revealed bool) string {
-	if !revealed || suit < domain.CardDesignSpade {
+// twentyNineTrumpStr renders the trump for the declarer before it is publicly
+// revealed, while keeping it hidden from the other players.
+func twentyNineTrumpStr(suit int, revealed, viewerIsDeclarer bool) string {
+	if (!revealed && !viewerIsDeclarer) || suit < domain.CardDesignSpade {
 		return i18n.T("twentynine.hiddenTrump")
 	}
-	return cuiSuitName(suit)
+	trump := cuiSuitName(suit)
+	if !revealed {
+		return i18n.Tf("twentynine.trumpVisibleToYou", "suit", trump)
+	}
+	return trump
 }
 
 // twentyNinePlayerStr returns the display string for a single player.
@@ -90,10 +94,16 @@ type TwentyNineCuiPresenter struct{}
 // Output renders the current game state for the active locale.
 func (p *TwentyNineCuiPresenter) Output(g interfaces.TwentyNineGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("twentynine.helpTitle"), func(b *strings.Builder) {
+		declarerIdx := g.GetDeclarerIdx()
+		viewerIsDeclarer := false
+		if declarerIdx >= 0 && declarerIdx < g.GetPlayerCnt() {
+			declarer := g.GetPlayer(declarerIdx)
+			viewerIsDeclarer = declarer != nil && declarer.GetIsHuman()
+		}
 		b.WriteString(i18n.Tf("twentynine.round",
 			"round", strconv.Itoa(g.GetRoundNumber()),
 			"trick", strconv.Itoa(g.GetTrickNumber()),
-			"trump", twentyNineTrumpStr(g.GetTrumpSuit(), g.GetTrumpRevealed())) + "\n")
+			"trump", twentyNineTrumpStr(g.GetTrumpSuit(), g.GetTrumpRevealed(), viewerIsDeclarer)) + "\n")
 
 		// **公開は出来事で、状態ではない。**trump 行は書き換わるが、前回の出力と
 		// 見比べない限り「いつ公開されたのか」は分からなかった (#6440)。Web は
@@ -114,8 +124,8 @@ func (p *TwentyNineCuiPresenter) Output(g interfaces.TwentyNineGame, lastErr err
 			"teamA", strconv.Itoa(points[0]),
 			"teamB", strconv.Itoa(points[1])) + "\n")
 
-		if g.GetDeclarerIdx() >= 0 {
-			declIdx := g.GetDeclarerIdx()
+		if declarerIdx >= 0 {
+			declIdx := declarerIdx
 			b.WriteString(i18n.Tf("twentynine.contractLine",
 				"name", cuiPlayerName(g.GetPlayer(declIdx), declIdx),
 				"team", twentyNineTeamLabel(domain.TwentyNineTeamOf(declIdx)),
