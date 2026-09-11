@@ -275,6 +275,7 @@ function SchnapsenPageContent() {
                 <div className="flex flex-wrap gap-2">
                   {human.cards.map((card, idx) => {
                     const legal = legalRing.has(idx);
+                    const marriagePoints = DESIGN_TO_SUIT[card.design] === state.trumpSuit ? 40 : 20;
                     return (
                       <div key={`${card.design}-${card.value}-${idx}`} className="flex flex-col items-center gap-1">
                         <button
@@ -291,14 +292,15 @@ function SchnapsenPageContent() {
                             type="button"
                             onClick={() => handleMarriage(idx)}
                             disabled={loading}
-                            className={`${btnWarning} text-xs px-2 py-1`}
+                            className={`${btnWarning} text-xs px-2 py-1 ${marriagePoints === 40 ? 'font-bold ring-2 ring-ds-accent ring-offset-2 ring-offset-ds-bg' : ''}`}
                             data-testid={`schnapsen-marriage-${idx.toString()}`}
+                            data-royal={marriagePoints === 40 ? 'true' : undefined}
                             aria-label={t('actions.marriageAria', {
                               suit: suitSymbol(card.design),
-                              points: DESIGN_TO_SUIT[card.design] === state.trumpSuit ? 40 : 20,
+                              points: marriagePoints,
                             })}
                           >
-                            👑 {t('actions.marriage')}
+                            👑 {t('actions.marriagePoints', { points: marriagePoints })}
                           </button>
                         )}
                       </div>
