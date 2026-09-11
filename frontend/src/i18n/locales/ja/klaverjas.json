@@ -34,6 +34,11 @@
   },
   "teamScore": "{{team}}: {{score}}点",
   "playButton": "出す",
+  "playRestriction": {
+    "followSuit": "リードスートに従ってください",
+    "mustTrump": "切り札を出してください",
+    "mustOvertrump": "より強い切り札で追い越してください"
+  },
   "nextTrick": "次のトリック",
   "trickWinner": "{{team}} がトリック獲得",
   "nextRound": "次のラウンド",
