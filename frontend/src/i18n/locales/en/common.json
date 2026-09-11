@@ -2304,6 +2304,8 @@
     "sedma.result.humanWin": "Game over! Your team wins!",
     "sedma.roundEnd": "Round complete — go to the next round.",
     "sedma.trickEnd": "Trick complete — continue.",
+    "sedma.trickEnd.cpuWin": "CPU won the trick (+{{points}} pts)",
+    "sedma.trickEnd.humanWin": "You won the trick (+{{points}} pts)",
     "sergeantmajor.discard.choose": "You have taken the {{kitty}}-card kitty. Discard {{n}}.",
     "sergeantmajor.discard.wait": "The dealer is sorting the kitty.",
     "sergeantmajor.play": "Your target is {{target}} tricks and you have {{took}}. Every extra trick scores.",

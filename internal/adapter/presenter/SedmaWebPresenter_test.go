@@ -94,14 +94,41 @@ func TestSedmaWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "sedma.playPhase.follow", resObj.MessageCode)
 	})
 
-	t.Run("trick end message code", func(t *testing.T) {
+	t.Run("trick end human winner includes card points", func(t *testing.T) {
 		m, _ := setupSedmaWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
 		m.On("GetPhase").Return(domain.SedmaPhaseTrickEnd)
+		m.On("GetLeadPlayerIdx").Return(0)
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
+			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
+			{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
+		})
 		result := p.Output(m, nil)
 		var resObj controller.SedmaWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
-		assert.Equal(t, "sedma.trickEnd", resObj.MessageCode)
+		assert.Equal(t, "sedma.trickEnd.humanWin", resObj.MessageCode)
+		assert.Equal(t, map[string]string{"points": "20"}, resObj.MessageParams)
+	})
+
+	t.Run("trick end cpu winner includes zero card points", func(t *testing.T) {
+		m, _ := setupSedmaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
+		m.On("GetPhase").Return(domain.SedmaPhaseTrickEnd)
+		m.On("GetLeadPlayerIdx").Return(1)
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
+			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 13, false)},
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 7, false)},
+		})
+		result := p.Output(m, nil)
+		var resObj controller.SedmaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, "sedma.trickEnd.cpuWin", resObj.MessageCode)
+		assert.Equal(t, map[string]string{"points": "0"}, resObj.MessageParams)
 	})
 
 	t.Run("round end message code", func(t *testing.T) {
