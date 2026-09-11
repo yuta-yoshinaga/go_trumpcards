@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { pokersquaresApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -119,6 +119,8 @@ function PokerSquaresPageContent() {
   // Cross-highlight: while the player hovers/focuses an empty cell, highlight its row + column
   // and the corresponding row/col score badges so they can preview which lines a placement affects.
   const [crossHover, setCrossHover] = useState<{ row: number; col: number } | null>(null);
+  const [armedCell, setArmedCell] = useState<{ row: number; col: number } | null>(null);
+  const pointerTypeRef = useRef<string>('');
   const clearCrossHover = useCallback(() => setCrossHover(null), []);
 
   // Disabled buttons do not always fire pointerleave/blur, so the hover state can get stuck after
@@ -127,10 +129,12 @@ function PokerSquaresPageContent() {
   useEffect(() => {
     if (loading) {
       setCrossHover(null);
+      setArmedCell(null);
       return;
     }
     if (crossHover && state?.board[crossHover.row]?.[crossHover.col]?.card) {
       setCrossHover(null);
+      setArmedCell(null);
     }
   }, [loading, state?.board, crossHover]);
 
@@ -167,14 +171,17 @@ function PokerSquaresPageContent() {
     };
   }, [state, crossHover]);
 
+  const isArmedCellHovered =
+    armedCell !== null && crossHover !== null && armedCell.row === crossHover.row && armedCell.col === crossHover.col;
+
   // Mirror the visual `+N / hand` score preview into a polite live region so
   // keyboard users hear how the focused cell would change the row/column score.
   // Stays empty when the placement completes nothing (or scores 0), so screen
   // readers aren't spammed while tabbing across cells.
   const previewAnnouncement = useMemo(() => {
-    if (!state || !crossHover || !preview) return '';
+    if (!state || !crossHover) return '';
     const parts: string[] = [];
-    if (preview.row) {
+    if (preview?.row) {
       const delta = preview.row.score - state.rowScores[crossHover.row];
       if (delta !== 0) {
         parts.push(
@@ -186,7 +193,7 @@ function PokerSquaresPageContent() {
         );
       }
     }
-    if (preview.col) {
+    if (preview?.col) {
       const delta = preview.col.score - state.colScores[crossHover.col];
       if (delta !== 0) {
         parts.push(
@@ -200,7 +207,7 @@ function PokerSquaresPageContent() {
     }
     // For still-incomplete lines, announce the best made partial hand so keyboard
     // users get the same early-game guidance the muted on-board label provides.
-    if (preview.rowPartial != null) {
+    if (preview?.rowPartial != null) {
       parts.push(
         t('previewRowPartialAnnounce', {
           row: crossHover.row + 1,
@@ -208,7 +215,7 @@ function PokerSquaresPageContent() {
         }),
       );
     }
-    if (preview.colPartial != null) {
+    if (preview?.colPartial != null) {
       parts.push(
         t('previewColPartialAnnounce', {
           col: crossHover.col + 1,
@@ -216,8 +223,9 @@ function PokerSquaresPageContent() {
         }),
       );
     }
+    if (isArmedCellHovered) parts.push(t('touchPlaceHint'));
     return parts.join(' ');
-  }, [state, crossHover, preview, t]);
+  }, [state, crossHover, preview, isArmedCellHovered, t]);
 
   const handlePlace = (row: number, col: number) => {
     execApi('place', row, col);
@@ -311,6 +319,7 @@ function PokerSquaresPageContent() {
                         {state.board.map((row, rowIdx) =>
                           row.map((cell, colIdx) => {
                             const filled = !!cell.card;
+                            const isArmed = armedCell?.row === rowIdx && armedCell?.col === colIdx;
                             const cellAction = `cell-${rowIdx}-${colIdx}`;
                             const isHintTarget =
                               frontendHintEnabled && frontendHint?.targetAction === cellAction && !filled;
@@ -323,18 +332,39 @@ function PokerSquaresPageContent() {
                                 data-testid={`cell-${rowIdx}-${colIdx}`}
                                 data-hint-action={cellAction}
                                 data-cross-hover={inCross ? 'true' : undefined}
+                                data-armed={isArmed ? 'true' : undefined}
                                 aria-label={
                                   cell.card ? cardAlt(cell.card) : `${t('label.empty')} ${rowIdx + 1}-${colIdx + 1}`
                                 }
-                                onClick={() => handlePlace(rowIdx, colIdx)}
+                                onPointerDown={(event) => {
+                                  pointerTypeRef.current = event.pointerType;
+                                }}
+                                onClick={() => {
+                                  if (pointerTypeRef.current === 'touch') {
+                                    if (isArmed) {
+                                      handlePlace(rowIdx, colIdx);
+                                      setArmedCell(null);
+                                    } else {
+                                      setArmedCell({ row: rowIdx, col: colIdx });
+                                      setCrossHover({ row: rowIdx, col: colIdx });
+                                    }
+                                  } else {
+                                    handlePlace(rowIdx, colIdx);
+                                  }
+                                  pointerTypeRef.current = '';
+                                }}
                                 onPointerEnter={() => !filled && setCrossHover({ row: rowIdx, col: colIdx })}
-                                onPointerLeave={clearCrossHover}
+                                onPointerLeave={() => {
+                                  if (!isArmed) clearCrossHover();
+                                }}
                                 onFocus={() => !filled && setCrossHover({ row: rowIdx, col: colIdx })}
-                                onBlur={clearCrossHover}
+                                onBlur={() => {
+                                  if (!isArmed) clearCrossHover();
+                                }}
                                 disabled={!isPlaying || loading || filled || !state.currentCard}
                                 className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${
                                   filled ? '' : 'cursor-pointer'
-                                } ${isHintTarget ? 'ring-2 ring-ds-warning' : ''}${inCross ? ' bg-white/10' : ''}`}
+                                } ${isHintTarget ? 'ring-2 ring-ds-warning' : ''}${isArmed ? ' ring-2 ring-ds-accent' : ''}${inCross ? ' bg-white/10' : ''}`}
                               >
                                 {cell.card ? (
                                   <AnimatedCard card={cell.card} width={cardWidth} />
@@ -448,6 +478,12 @@ function PokerSquaresPageContent() {
                     </div>
                   </div>
                 </div>
+
+                {isArmedCellHovered && (
+                  <p className="text-center text-sm text-ds-accent mb-2" data-testid="ps-touch-hint">
+                    {t('touchPlaceHint')}
+                  </p>
+                )}
 
                 <div className="text-center text-ds-text-primary text-lg font-bold mb-2" data-testid="total-score">
                   {t('label.totalScore')}: {state.totalScore}

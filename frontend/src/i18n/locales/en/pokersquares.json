@@ -49,5 +49,6 @@
   "previewColAnnounce": "Column {{col}} completes {{hand}} for {{delta}} points",
   "previewPartialPrefix": "~",
   "previewRowPartialAnnounce": "Row {{row}} is developing {{hand}}",
-  "previewColPartialAnnounce": "Column {{col}} is developing {{hand}}"
+  "previewColPartialAnnounce": "Column {{col}} is developing {{hand}}",
+  "touchPlaceHint": "Tap again to confirm"
 }
