@@ -195,6 +195,13 @@ func TestBriscola_ResolveTrick_AwardsPoints(t *testing.T) {
 	if got := b.GetPlayer(0).GetTrickCount(); got != 1 {
 		t.Errorf("p0 trick count = %d, want 1", got)
 	}
+	if got := b.GetLastTrickPoints(); got != 15 {
+		t.Errorf("last trick points = %d, want 15", got)
+	}
+	b.Reset()
+	if got := b.GetLastTrickPoints(); got != 0 {
+		t.Errorf("last trick points after reset = %d, want 0", got)
+	}
 }
 
 func TestBriscola_PlayerPlay_HappyPath(t *testing.T) {
