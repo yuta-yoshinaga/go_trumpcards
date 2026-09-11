@@ -234,6 +234,47 @@ describe('KingoPage', () => {
     expect(mockApi).not.toHaveBeenCalledWith('bet', { amount: 10 });
   });
 
+  it('親で張りの段階なら d キーで配るを送る', async () => {
+    mockApi.mockResolvedValue(withState({ isHumanBanker: true, bankerSeat: 0 }));
+    renderWithProviders(<KingoPage />);
+    await waitFor(() => expect(screen.getByTestId('kingo-deal')).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('deal'));
+  });
+
+  it('子のときは d キーで配るを送らない', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<KingoPage />);
+    await waitFor(() => expect(screen.getByTestId('kingo-bet')).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockApi).not.toHaveBeenCalledWith('deal'));
+  });
+
+  it('張りの段階でなければ d キーで配るを送らない', async () => {
+    mockApi.mockResolvedValue(withState({ phase: KingoPhase.RESULT, isHumanTurn: false }));
+    renderWithProviders(<KingoPage />);
+    await waitFor(() => expect(screen.getByTestId('kingo-next')).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockApi).not.toHaveBeenCalledWith('deal'));
+  });
+
+  it('決着では既存の n キーで次へ進む', async () => {
+    mockApi.mockResolvedValue(withState({ phase: KingoPhase.RESULT, isHumanTurn: false }));
+    renderWithProviders(<KingoPage />);
+    await waitFor(() => expect(screen.getByTestId('kingo-next')).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'n' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('next'));
+    expect(mockApi).not.toHaveBeenCalledWith('deal');
+  });
+
   // **配当はサーバが送った値を出す。** 画面が 3 倍を持たない。
   it('サーバが送った配当倍率を出す', async () => {
     mockApi.mockResolvedValue(base);
