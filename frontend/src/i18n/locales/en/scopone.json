@@ -24,6 +24,15 @@
     "scopaBadge": "Scopa!",
     "scopaBadgeOwn": "Scopa! Your team"
   },
+  "scoreRules": {
+    "title": "Scoring categories (1 point each)",
+    "cards": "Most cards (1 point)",
+    "diamonds": "Most diamonds (1 point)",
+    "sevens": "Most sevens (1 point)",
+    "settebello": "Settebello (7♦) (1 point)",
+    "scopas": "Scopa (1 point each)",
+    "tie": "Ties for most cards, most diamonds, or most sevens score no point"
+  },
   "button": {
     "take": "Take",
     "lay": "Lay",

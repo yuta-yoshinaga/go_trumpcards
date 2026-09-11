@@ -20,6 +20,8 @@
   "promptNext": "n で次のラウンドを開始する",
   "promptCurrentTurn": "手番: {{name}} (チーム{{team}})",
   "promptHelp": "p <hand> [table...] で捕獲または場に置く / n で次のラウンド",
+  "promptScore": "得点: 最多カード/最多ダイヤ/最多の7/セッテベッロ(7♦)は各1点、スコパは1回1点（最多が同数なら加点なし）",
+  "scoreRules": "最多カード/最多ダイヤ/最多の7/セッテベッロ(7♦)は各1点、スコパは1回1点。最多カード・最多ダイヤ・最多の7は同数なら加点なし。",
   "helpExampleNext": "  n                        ラウンドの結果を見てから次へ",
   "errHandIndexOutOfRange": "手札の番号 {{idx}} は範囲外です。",
   "errInvalidCapture": "選んだ場札ではその札で取れません。",
