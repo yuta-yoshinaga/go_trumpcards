@@ -43,6 +43,7 @@
   "roleQuadrille": "Quadrille",
   "roleCoalition": "Coalition",
   "quadrilleBadge": "Quadrille",
+  "partnerBadge": "Partner",
   "score": "Score: {{score}}",
   "playerScore": "{{name}}: {{score}} pts",
   "playButton": "Play",

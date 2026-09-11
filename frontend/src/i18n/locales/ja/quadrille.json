@@ -43,6 +43,7 @@
   "roleQuadrille": "カドリール",
   "roleCoalition": "連合",
   "quadrilleBadge": "カドリール",
+  "partnerBadge": "パートナー",
   "score": "得点: {{score}}",
   "playerScore": "{{name}}: {{score}}点",
   "playButton": "出す",

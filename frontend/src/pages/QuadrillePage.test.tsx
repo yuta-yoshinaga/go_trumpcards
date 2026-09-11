@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { quadrilleApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -71,6 +71,29 @@ describe('QuadrillePage', () => {
     });
     // The human (seat 0) is the default Quadrille — the badge renders (heading also reads カドリール).
     expect(screen.getAllByText('カドリール').length).toBeGreaterThan(1);
+  });
+
+  it('marks only the revealed partner and keeps the Quadrille badge distinct', async () => {
+    mockExec.mockResolvedValue(makeQuadrilleState({ partnerIdx: 2 }));
+    renderWithProviders(<QuadrillePage />);
+
+    const partnerName = await screen.findByText('CPU 2: 得点: 0');
+    const partnerRow = partnerName.parentElement;
+    expect(partnerRow).not.toBeNull();
+    expect(partnerRow?.querySelector('[data-role="partner"]')).toHaveTextContent('パートナー');
+    expect(document.querySelectorAll('[data-role="partner"]')).toHaveLength(1);
+    const quadrilleName = screen.getByText('あなた: 得点: 0');
+    expect(within(quadrilleName.parentElement as HTMLElement).getByText('カドリール')).toBeInTheDocument();
+    expect(screen.queryByText('partnerBadge')).not.toBeInTheDocument();
+  });
+
+  it('does not mark any partner while the partner is hidden', async () => {
+    mockExec.mockResolvedValue(makeQuadrilleState({ partnerIdx: -1 }));
+    renderWithProviders(<QuadrillePage />);
+
+    await screen.findByTestId('quadrille-king-line');
+    expect(document.querySelectorAll('[data-role="partner"]')).toHaveLength(0);
+    expect(screen.queryByText('partnerBadge')).not.toBeInTheDocument();
   });
 
   it('renders the bid phase with entrar, solo and pass buttons', async () => {
@@ -304,6 +327,7 @@ describe('QuadrillePage king call', () => {
     renderWithProviders(<QuadrillePage />);
     await waitFor(() => expect(screen.getByTestId('quadrille-king-line')).toBeInTheDocument());
     expect(screen.getByTestId('quadrille-king-line')).toHaveTextContent('Roi seul');
+    expect(document.querySelectorAll('[data-role="partner"]')).toHaveLength(0);
   });
 
   // **催促は常設のライブ領域の中にある (#6880)。** フェーズ切り替えで現れる
