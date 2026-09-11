@@ -21,6 +21,7 @@
   "playing": "カードを移動してください",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
+  "foundationProgress": "{{count}}/13",
   "gameOverSummary": "ファウンデーション {{count}}/52 枚（{{percent}}%）まで到達",
   "hintAvailable": "ヒントがあります",
   "noHint": "ヒントはありません",
