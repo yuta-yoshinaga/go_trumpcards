@@ -102,7 +102,7 @@ describe('OsmosisPage', () => {
   it('selects waste then moves it to a foundation row', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    screen.getByRole('button', { name: 'ウェイスト' }).click();
+    screen.getByRole('button', { name: /^ウェイスト:/ }).click();
     // Foundation row 0 becomes enabled once a source is selected.
     await waitFor(() => expect(screen.getByRole('button', { name: '組札 0' })).toBeEnabled());
     screen.getByRole('button', { name: '組札 0' }).click();
@@ -114,7 +114,7 @@ describe('OsmosisPage', () => {
   it('selects a reserve column then moves it to a foundation row', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    screen.getByRole('button', { name: 'リザーブ 1' }).click();
+    screen.getByRole('button', { name: /^リザーブ 1:/ }).click();
     await waitFor(() => expect(screen.getByRole('button', { name: '組札 2' })).toBeEnabled());
     screen.getByRole('button', { name: '組札 2' }).click();
     await waitFor(() =>
@@ -127,7 +127,7 @@ describe('OsmosisPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     // ♥9 (reserve col 1): wrong suit for the ♠ base row and not the base rank
     // for the empty rows → cannot be placed anywhere.
-    screen.getByRole('button', { name: 'リザーブ 1' }).click();
+    screen.getByRole('button', { name: /^リザーブ 1:/ }).click();
     await waitFor(() =>
       expect(screen.getByRole('button', { name: '組札 0' })).toHaveAttribute('title', 'この段には置けません'),
     );
@@ -159,7 +159,7 @@ describe('OsmosisPage', () => {
   it('renders whatever board the hint response carries, so the server must send one', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.getByRole('button', { name: 'リザーブ 1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^リザーブ 1:/ })).toBeInTheDocument();
 
     mockExec.mockResolvedValueOnce({
       ...playingState,
@@ -171,8 +171,8 @@ describe('OsmosisPage', () => {
     screen.getByRole('button', { name: 'ヒント' }).click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
 
-    await waitFor(() => expect(screen.queryByRole('button', { name: 'リザーブ 1' })).not.toBeInTheDocument());
-    expect(screen.queryByRole('button', { name: 'ウェイスト' })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('button', { name: /^リザーブ 1:/ })).not.toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: /^ウェイスト:/ })).not.toBeInTheDocument();
   });
 
   it('autocomplete button triggers autocomplete command', async () => {
@@ -303,7 +303,89 @@ describe('OsmosisPage', () => {
     mockExec.mockResolvedValue({ ...playingState, waste: [] });
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.queryByRole('button', { name: 'ウェイスト' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^ウェイスト:/ })).not.toBeInTheDocument();
+  });
+
+  it('includes the reserve top card in each reserve button name', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [
+        [card('SPADE', 2), card('DIAMOND', 7)],
+        [card('HEART', 9), card('CLOVER', 4)],
+        ...playingState.reserve.slice(2),
+      ],
+    });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.getByRole('button', { name: /リザーブ 0/ })).toHaveAccessibleName(/♦ 7/);
+    expect(screen.getByRole('button', { name: /リザーブ 1/ })).toHaveAccessibleName(/♣ 4/);
+  });
+
+  it('includes the waste top card in the waste button name', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      waste: [card('HEART', 4), card('CLOVER', 11)],
+    });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.getByRole('button', { name: /ウェイスト/ })).toHaveAccessibleName(/♣ J/);
+  });
+
+  it('preserves the complete accessible names for non-empty waste and reserve piles', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.getByRole('button', { name: 'ウェイスト: ♥ 4' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'リザーブ 0: ♠ 2' })).toBeInTheDocument();
+  });
+
+  it('does not expose undefined in the waste name when waste is empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [] });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(
+      screen.getAllByRole('button').every((button) => !button.getAttribute('aria-label')?.includes('undefined')),
+    ).toBe(true);
+  });
+
+  it('does not expose undefined in reserve names when reserve is empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, reserve: [] });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(
+      screen.getAllByRole('button').every((button) => !button.getAttribute('aria-label')?.includes('undefined')),
+    ).toBe(true);
+  });
+
+  it('selects the same reserve top card that its name announces', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [[card('SPADE', 2)], [card('SPADE', 3)], ...playingState.reserve.slice(2)],
+    });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const reserve0 = screen.getByRole('button', { name: /リザーブ 0/ });
+    expect(reserve0).toHaveAccessibleName(/♠ 2/);
+    reserve0.click();
+    await waitFor(() => expect(screen.getByRole('button', { name: '組札 0' })).toBeEnabled());
+    screen.getByRole('button', { name: '組札 0' }).click();
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 0 }, { zone: 'foundation', col: 0 }),
+    );
+
+    const reserve1 = screen.getByRole('button', { name: /リザーブ 1/ });
+    expect(reserve1).toHaveAccessibleName(/♠ 3/);
+    reserve1.click();
+    await waitFor(() => expect(screen.getByRole('button', { name: '組札 0' })).toBeEnabled());
+    screen.getByRole('button', { name: '組札 0' }).click();
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 1 }, { zone: 'foundation', col: 0 }),
+    );
   });
 
   describe('drag and drop', () => {
@@ -323,15 +405,15 @@ describe('OsmosisPage', () => {
     it('reserve and waste top cards are draggable while playing', async () => {
       renderWithProviders(<OsmosisPage />);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-      expect(screen.getByRole('button', { name: 'ウェイスト' })).toHaveAttribute('draggable', 'true');
-      expect(screen.getByRole('button', { name: 'リザーブ 0' })).toHaveAttribute('draggable', 'true');
+      expect(screen.getByRole('button', { name: /ウェイスト/ })).toHaveAttribute('draggable', 'true');
+      expect(screen.getByRole('button', { name: /リザーブ 0/ })).toHaveAttribute('draggable', 'true');
     });
 
     it('dragging the waste top onto a foundation row dispatches move', async () => {
       mockExec.mockResolvedValue({ ...playingState, waste: [card('SPADE', 3)] });
       renderWithProviders(<OsmosisPage />);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-      const wasteBtn = screen.getByRole('button', { name: 'ウェイスト' });
+      const wasteBtn = screen.getByRole('button', { name: /ウェイスト/ });
       const dt = buildDataTransfer();
       fireEvent.dragStart(wasteBtn, { dataTransfer: dt });
       const dropZone = screen.getByRole('button', { name: '組札 0' }).parentElement as HTMLElement;
@@ -346,7 +428,7 @@ describe('OsmosisPage', () => {
     it('dragging a reserve top onto a foundation row dispatches move', async () => {
       renderWithProviders(<OsmosisPage />);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-      const reserveBtn = screen.getByRole('button', { name: 'リザーブ 0' });
+      const reserveBtn = screen.getByRole('button', { name: /リザーブ 0/ });
       const dt = buildDataTransfer();
       fireEvent.dragStart(reserveBtn, { dataTransfer: dt });
       const dropZone = screen.getByRole('button', { name: '組札 0' }).parentElement as HTMLElement;
@@ -373,7 +455,7 @@ describe('OsmosisPage', () => {
       renderWithProviders(<OsmosisPage />);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
       // Reserve col 1 top is ♥9 — wrong suit for the ♠ base row and not the base rank.
-      const reserveBtn = screen.getByRole('button', { name: 'リザーブ 1' });
+      const reserveBtn = screen.getByRole('button', { name: /リザーブ 1/ });
       const dt = buildDataTransfer();
       fireEvent.dragStart(reserveBtn, { dataTransfer: dt });
       const foundation0 = screen.getByRole('button', { name: '組札 0' });
@@ -393,7 +475,7 @@ describe('OsmosisPage blocked foundation rows', () => {
     await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
 
     // ♥4 を選ぶ。ベース段 (♠) にも、まだ何も入っていない下の段にも置けない。
-    fireEvent.click(screen.getByRole('button', { name: 'ウェイスト' }));
+    fireEvent.click(screen.getByRole('button', { name: /ウェイスト/ }));
 
     // 名前は状態で変えず、理由は説明として結びつける。
     const row0 = await screen.findByRole('button', { name: '組札 0' });
@@ -423,12 +505,12 @@ describe('OsmosisPage hint highlight', () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
 
-    const reserve1 = screen.getByRole('button', { name: 'リザーブ 1' });
+    const reserve1 = screen.getByRole('button', { name: /リザーブ 1/ });
     const foundation2 = screen.getByRole('button', { name: '組札 2' });
     expect(reserve1.className).toContain('ring-ds-warning');
     expect(foundation2.className).toContain('ring-ds-warning');
 
-    const reserve0 = screen.getByRole('button', { name: 'リザーブ 0' });
+    const reserve0 = screen.getByRole('button', { name: /リザーブ 0/ });
     const foundation0 = screen.getByRole('button', { name: '組札 0' });
     expect(reserve0.className).not.toContain('ring-ds-warning');
     expect(foundation0.className).not.toContain('ring-ds-warning');
@@ -458,7 +540,7 @@ describe('OsmosisPage hint highlight', () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
 
-    const waste = screen.getByRole('button', { name: 'ウェイスト' });
+    const waste = screen.getByRole('button', { name: /ウェイスト/ });
     const foundation0 = screen.getByRole('button', { name: '組札 0' });
     expect(waste.className).toContain('ring-ds-warning');
     expect(foundation0.className).toContain('ring-ds-warning');
@@ -473,7 +555,7 @@ describe('OsmosisPage hint highlight', () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
 
-    const reserve1 = screen.getByRole('button', { name: 'リザーブ 1' });
+    const reserve1 = screen.getByRole('button', { name: /リザーブ 1/ });
     const foundation2 = screen.getByRole('button', { name: '組札 2' });
     expect(reserve1.className).not.toContain('ring-ds-warning');
     expect(foundation2.className).not.toContain('ring-ds-warning');

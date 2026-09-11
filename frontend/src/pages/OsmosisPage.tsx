@@ -31,6 +31,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, OsmosisResponse } from '../types/card';
 import { OsmosisPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { OSMOSIS_HELP, parseOsmosisCommand } from '../utils/cli/commands/osmosisCommands';
 import { formatOsmosisState } from '../utils/cli/formatters/osmosisFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -346,7 +347,7 @@ function OsmosisPageContent() {
                         onDragEnd={dnd.handleDragEnd}
                         onClick={() => handleSelectSource(zone)}
                         disabled={!isPlaying || loading}
-                        aria-label={`${t('reserve')} ${i}`}
+                        aria-label={`${t('reserve')} ${i}: ${cardAlt(top)}`}
                         aria-pressed={isSelected(zone)}
                         className={`p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                           isSelected(zone) ? 'border-ds-info' : 'border-transparent'
@@ -400,7 +401,7 @@ function OsmosisPageContent() {
                       onDragEnd={dnd.handleDragEnd}
                       onClick={() => handleSelectSource({ zone: 'waste' })}
                       disabled={!isPlaying || loading}
-                      aria-label={t('waste')}
+                      aria-label={`${t('waste')}: ${cardAlt(topWaste)}`}
                       aria-pressed={isSelected({ zone: 'waste' })}
                       className={`p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                         isSelected({ zone: 'waste' }) ? 'border-ds-info' : 'border-transparent'
