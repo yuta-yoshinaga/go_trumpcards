@@ -301,10 +301,13 @@ describe('BatakPage', () => {
           'zero',
           'zero',
         ]);
-        expect(scoreCells[0]).toHaveClass('text-ds-danger');
+        expect(scoreCells[0]).toHaveClass('text-ds-error');
         expect(scoreCells[1]).toHaveClass('text-ds-success');
-        expect(scoreCells[2]).not.toHaveClass('text-ds-danger');
+        expect(scoreCells[0]).not.toHaveClass('text-ds-danger');
+        expect(scoreCells[1]).not.toHaveClass('text-ds-danger');
+        expect(scoreCells[2]).not.toHaveClass('text-ds-error');
         expect(scoreCells[2]).not.toHaveClass('text-ds-success');
+        expect(document.querySelectorAll('.text-ds-danger')).toHaveLength(0);
 
         unmount();
       }

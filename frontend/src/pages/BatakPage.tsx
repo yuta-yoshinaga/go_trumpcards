@@ -89,7 +89,8 @@ const BATAK_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 function getRoundScorePresentation(roundScore: number) {
   if (roundScore > 0) return { className: 'text-ds-success', sign: 'positive' };
-  if (roundScore < 0) return { className: 'text-ds-danger', sign: 'negative' };
+  // Color is supplemental; the numeric sign remains readable without relying on it.
+  if (roundScore < 0) return { className: 'text-ds-error', sign: 'negative' };
   return { className: '', sign: 'zero' };
 }
 
@@ -345,23 +346,23 @@ function BatakPageContent() {
                           </tr>
                         </thead>
                         <tbody>
-                          {state.players.map((p) => (
-                            <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                              <td>
-                                {playerName(p.id, p.isHuman)}
-                                {p.id === state.declarerIdx ? ` (${t('declarerBadge')})` : ''}
-                              </td>
-                              <td className="text-center">{p.bid < 0 ? '-' : p.bid === 0 ? t('bidPass') : p.bid}</td>
-                              <td className="text-center">{p.trickCount}</td>
-                              <td
-                                className={`text-center ${getRoundScorePresentation(p.roundScore).className}`}
-                                data-score-sign={getRoundScorePresentation(p.roundScore).sign}
-                              >
-                                {p.roundScore}
-                              </td>
-                              <td className="text-center">{p.cumulativeScore}</td>
-                            </tr>
-                          ))}
+                          {state.players.map((p) => {
+                            const { className, sign } = getRoundScorePresentation(p.roundScore);
+                            return (
+                              <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                                <td>
+                                  {playerName(p.id, p.isHuman)}
+                                  {p.id === state.declarerIdx ? ` (${t('declarerBadge')})` : ''}
+                                </td>
+                                <td className="text-center">{p.bid < 0 ? '-' : p.bid === 0 ? t('bidPass') : p.bid}</td>
+                                <td className="text-center">{p.trickCount}</td>
+                                <td className={`text-center ${className}`} data-score-sign={sign}>
+                                  {p.roundScore}
+                                </td>
+                                <td className="text-center">{p.cumulativeScore}</td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
@@ -384,23 +385,23 @@ function BatakPageContent() {
                           </tr>
                         </thead>
                         <tbody>
-                          {state.players.map((p) => (
-                            <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                              <td>
-                                {playerName(p.id, p.isHuman)}
-                                {p.id === state.declarerIdx ? ` (${t('declarerBadge')})` : ''}
-                              </td>
-                              <td className="text-center">{p.bid < 0 ? '-' : p.bid === 0 ? t('bidPass') : p.bid}</td>
-                              <td className="text-center">{p.trickCount}</td>
-                              <td
-                                className={`text-center ${getRoundScorePresentation(p.roundScore).className}`}
-                                data-score-sign={getRoundScorePresentation(p.roundScore).sign}
-                              >
-                                {p.roundScore}
-                              </td>
-                              <td className="text-center">{p.cumulativeScore}</td>
-                            </tr>
-                          ))}
+                          {state.players.map((p) => {
+                            const { className, sign } = getRoundScorePresentation(p.roundScore);
+                            return (
+                              <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                                <td>
+                                  {playerName(p.id, p.isHuman)}
+                                  {p.id === state.declarerIdx ? ` (${t('declarerBadge')})` : ''}
+                                </td>
+                                <td className="text-center">{p.bid < 0 ? '-' : p.bid === 0 ? t('bidPass') : p.bid}</td>
+                                <td className="text-center">{p.trickCount}</td>
+                                <td className={`text-center ${className}`} data-score-sign={sign}>
+                                  {p.roundScore}
+                                </td>
+                                <td className="text-center">{p.cumulativeScore}</td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
