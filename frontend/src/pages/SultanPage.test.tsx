@@ -87,12 +87,41 @@ const withHintState: SultanResponse = {
   hint: { fromZone: 'waste', fromIdx: -1, toFoundation: 3 },
 };
 
+const playablePreviewState: SultanResponse = {
+  ...playingState,
+  foundation: [
+    [card('SPADE', 13)],
+    [card('SPADE', 13), card('SPADE', 1)],
+    [card('CLOVER', 13)],
+    [card('CLOVER', 13)],
+    [card('HEART', 13)],
+    [card('HEART', 13)],
+    [card('DIAMOND', 13)],
+    [card('DIAMOND', 13)],
+  ],
+  waste: [card('SPADE', 2)],
+  divan: [card('HEART', 1), card('CLOVER', 2), null, null, null, null, null, null],
+};
+
 beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
 });
 
 describe('SultanPage', () => {
+  it('marks only playable waste and divan cards', async () => {
+    mockExec.mockResolvedValue(playablePreviewState);
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 2')).toBeInTheDocument());
+
+    expect(screen.getByAltText('♠ 2').closest('button')).toHaveAttribute('data-playable', 'true');
+    expect(screen.getByAltText('♠ 2').closest('button')).toHaveClass('ring-2', 'ring-ds-success');
+    expect(screen.getByAltText('♥ A').closest('button')).toHaveAttribute('data-playable', 'true');
+    expect(screen.getByAltText('♥ A').closest('button')).toHaveClass('ring-2', 'ring-ds-success');
+    expect(screen.getByAltText('♣ 2').closest('button')).not.toHaveAttribute('data-playable');
+    expect(screen.getByAltText('♣ 2').closest('button')).not.toHaveClass('ring-ds-success');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SultanPage />);
