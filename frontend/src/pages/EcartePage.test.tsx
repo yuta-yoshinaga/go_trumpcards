@@ -58,6 +58,55 @@ describe('EcartePage', () => {
     expect(screen.getByTestId('ecarte-stand')).toBeInTheDocument();
   });
 
+  it('shows the King bonus breakdown when this deal has a trump King bonus', async () => {
+    renderWithProviders(<EcartePage />);
+    expect(await screen.findByTestId('ecarte-score-rules')).toHaveTextContent(ja.scoreRules.kingBonus);
+  });
+
+  it('shows the King bonus breakdown when the human holds the trump King', async () => {
+    mockExec.mockResolvedValue(
+      makeEcarteState({
+        trumpCard: { design: 'HEART', value: 12 },
+        players: [
+          { ...makeEcarteState().players[0], cards: [{ design: 'HEART', value: 13 }] },
+          makeEcarteState().players[1],
+        ],
+      }),
+    );
+    renderWithProviders(<EcartePage />);
+    expect(await screen.findByTestId('ecarte-score-rules')).toHaveTextContent(ja.scoreRules.kingBonus);
+  });
+
+  it('does not show the King bonus breakdown when this deal has no trump King bonus', async () => {
+    mockExec.mockResolvedValue(
+      makeEcarteState({
+        trumpCard: { design: 'HEART', value: 12 },
+        players: [
+          { ...makeEcarteState().players[0], cards: [{ design: 'DIAMOND', value: 11 }] },
+          makeEcarteState().players[1],
+        ],
+      }),
+    );
+    renderWithProviders(<EcartePage />);
+    await waitFor(() => expect(screen.getByText('ディール 1')).toBeInTheDocument());
+    expect(screen.queryByTestId('ecarte-score-rules')).not.toBeInTheDocument();
+  });
+
+  it('does not show the King bonus breakdown when only the CPU holds the trump King', async () => {
+    mockExec.mockResolvedValue(
+      makeEcarteState({
+        trumpCard: { design: 'HEART', value: 12 },
+        players: [
+          makeEcarteState().players[0],
+          { ...makeEcarteState().players[1], cards: [{ design: 'HEART', value: 13 }] },
+        ],
+      }),
+    );
+    renderWithProviders(<EcartePage />);
+    await waitFor(() => expect(screen.getByText('ディール 1')).toBeInTheDocument());
+    expect(screen.queryByTestId('ecarte-score-rules')).not.toBeInTheDocument();
+  });
+
   // #5658: 損得説明はネイティブツールチップ (title) と sr-only にしか無く、
   // **タッチ端末では hover が起きない**ので目の見える利用者が読めなかった。
   it('shows the propose/stand consequences as visible text for touch users', async () => {
