@@ -86,6 +86,7 @@ function CincinnatiPageContent() {
       { key: 'k', action: () => execApi('check'), enabled: canAct && !facingBet },
       { key: 'c', action: () => execApi('call'), enabled: canAct && facingBet },
       { key: 'n', action: () => execApi('next'), enabled: isShowdown && !gameOver },
+      { key: 'f', action: () => execApi('fold'), enabled: canAct },
     ],
     [execApi, canAct, facingBet, isShowdown, gameOver],
   );

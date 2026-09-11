@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cincinnatiApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CincinnatiResponse } from '../types/card';
 import { CincinnatiPhase } from '../types/phases';
@@ -166,6 +167,55 @@ describe('CincinnatiPage', () => {
     mockApi.mockClear();
     fireEvent.click(screen.getByTestId('cin-bet'));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', { amount: 20 }));
+  });
+
+  it.each([0, 20])('場況にかかわらず f キーで fold を送る (toCall=%i)', async (toCall) => {
+    mockApi.mockResolvedValue(withState({ toCall, currentBet: toCall }));
+    renderWithProviders(<CincinnatiPage />);
+    await waitFor(() => expect(screen.getByTestId('cin-fold')).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'f' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('fold'));
+  });
+
+  it('自分の手番でないときは f キーで fold を送らない', async () => {
+    mockApi.mockResolvedValue(withState({ isHumanTurn: false, turnSeat: 1 }));
+    renderWithProviders(<CincinnatiPage />);
+    await waitFor(() => expect(screen.getByTestId('cin-hand')).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'f' });
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalledWith('fold');
+  });
+
+  it('既存の k/c/n キーは従来どおり対応する操作を送る', async () => {
+    const cases = [
+      { state: base, testId: 'cin-check', key: 'k', action: 'check' },
+      { state: withState({ toCall: 20, currentBet: 20 }), testId: 'cin-call', key: 'c', action: 'call' },
+      {
+        state: withState({ phase: CincinnatiPhase.SHOWDOWN, isHumanTurn: false }),
+        testId: undefined,
+        key: 'n',
+        action: 'next',
+      },
+    ] as const;
+
+    for (const { state, testId, key, action } of cases) {
+      mockApi.mockResolvedValue(state);
+      const { unmount } = renderWithProviders(<CincinnatiPage />);
+      await waitFor(() =>
+        expect(
+          testId ? screen.getByTestId(testId) : screen.getByRole('button', { name: '次のハンドへ' }),
+        ).toBeInTheDocument(),
+      );
+
+      mockApi.mockClear();
+      fireEvent.keyDown(document, { key });
+      await waitFor(() => expect(mockApi).toHaveBeenCalledWith(action));
+      unmount();
+    }
   });
 
   it('他人の手番では操作ボタンを出さない', async () => {
