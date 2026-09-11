@@ -35,6 +35,27 @@ func TestCuarentaCuiPresenter_Output(t *testing.T) {
 	}
 }
 
+func TestCuarentaCuiPresenter_ShowsTargetScore(t *testing.T) {
+	p := &presenter.CuarentaCuiPresenter{}
+
+	makeGame := func(target int) *domain.Cuarenta {
+		g := domain.NewDefaultCuarenta()
+		cfg := g.GetConfig()
+		cfg.TargetScore = target
+		g.SetConfig(cfg)
+		g.Reset()
+		return g
+	}
+
+	lowTarget := p.Output(makeGame(40), nil)
+	highTarget := p.Output(makeGame(55), nil)
+
+	assert.Contains(t, lowTarget, "チームA: 0 / 40点")
+	assert.NotContains(t, lowTarget, "チームA: 0 / 55点")
+	assert.Contains(t, highTarget, "チームA: 0 / 55点")
+	assert.NotContains(t, highTarget, "チームA: 0 / 40点")
+}
+
 func TestCuarentaCuiPresenter_Error(t *testing.T) {
 	p := &presenter.CuarentaCuiPresenter{}
 	g := buildPlayedCuarenta(t)
