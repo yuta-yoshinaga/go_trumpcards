@@ -231,6 +231,22 @@ describe('MacauPage', () => {
     });
   });
 
+  it('shows the last-card warning only for a CPU with one card', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: playPhaseState.players.map((player) =>
+        player.isHuman ? player : { ...player, cardCount: player.id === 1 ? 1 : player.id === 2 ? 2 : 0 },
+      ),
+    });
+    renderWithProviders(<MacauPage />);
+
+    const badge = await screen.findByTestId('macau-cpu-last-card-1');
+    expect(badge).toHaveTextContent('CPU 1は残り1枚です。');
+    expect(badge).not.toHaveAttribute('aria-label');
+    expect(screen.queryByTestId('macau-cpu-last-card-2')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('macau-cpu-last-card-3')).not.toBeInTheDocument();
+  });
+
   it('shows discard top card', async () => {
     renderWithProviders(<MacauPage />);
     await waitFor(() => {

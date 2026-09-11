@@ -22,6 +22,7 @@
   "cards": "{{count}} cards",
   "cumulativeScore": "Total: {{score}}",
   "roundScore": "Round: {{score}}",
+  "cpuLastCardWarning": "{{name}} has one card left.",
   "scores": "Scores",
   "scoresPlayer": "Player",
   "scoresRound": "Round",
