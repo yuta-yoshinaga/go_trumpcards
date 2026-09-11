@@ -17,6 +17,7 @@
   "declarationHeader": "[宣言フェーズ]",
   "nextDeclStage": "次の宣言: {{kind}}",
   "playHeader": "[プレイフェーズ]",
+  "trickWinner": "{{player}} が直前のトリックを獲得しました。",
   "trickNumber": "トリック {{trick}} / 12",
   "roundEnd": "ラウンド終了",
   "partieWinner": "★ パルティ勝者: プレイヤー {{idx}}",

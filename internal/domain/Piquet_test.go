@@ -86,6 +86,32 @@ func TestPiquetReset(t *testing.T) {
 	}
 }
 
+func TestPiquetResolveTrickLogsWinner(t *testing.T) {
+	p := newPiquetForTest()
+	p.trickNumber = 2
+	p.leadPlayerIdx = 0
+	p.currentTrick = []*TrickCard{
+		{PlayerIdx: 0, Card: cl(7)},
+		{PlayerIdx: 1, Card: cl(1)},
+	}
+
+	p.resolveTrick()
+
+	if len(p.actionLog) != 1 {
+		t.Fatalf("action log length = %d, want 1", len(p.actionLog))
+	}
+	entry := p.actionLog[0]
+	if entry.ActionType != "trick_win" {
+		t.Errorf("action type = %q, want trick_win", entry.ActionType)
+	}
+	if entry.PlayerIdx != 1 {
+		t.Errorf("winner = %d, want 1", entry.PlayerIdx)
+	}
+	if entry.Detail != "CPU 1 wins trick 3" {
+		t.Errorf("detail = %q, want CPU 1 wins trick 3", entry.Detail)
+	}
+}
+
 // ───── Card rank/pip helpers ─────
 
 func TestPiquetCardRank(t *testing.T) {

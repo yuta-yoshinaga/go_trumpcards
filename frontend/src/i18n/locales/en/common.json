@@ -2032,6 +2032,8 @@
     "pinochle.trumpPhase": "Declare the trump suit",
     "piquet.hintAvailable": "Hint available",
     "piquet.noHint": "No hint available",
+    "piquet.trickWin.elder": "Elder won the latest trick.",
+    "piquet.trickWin.younger": "Younger won the latest trick.",
     "pishti.result.scores": "Game over. Scores: {{scores}}",
     "pitch.bidPhase": "Declare your bid (0=pass, 2-4)",
     "pitch.playPhase.follow": "Play a card",

@@ -40,6 +40,78 @@ func TestPiquetWebPresenter_Output_WithError(t *testing.T) {
 	}
 }
 
+func TestPiquetWebPresenter_Output_TrickWinnerMessage(t *testing.T) {
+	cases := []struct {
+		name string
+		p    int
+		want string
+	}{
+		{name: "elder", p: 0, want: "piquet.trickWin.elder"},
+		{name: "younger", p: 1, want: "piquet.trickWin.younger"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newPiquetForPresenter(t)
+			g2 := piquetPresenterState(t, g, []map[string]any{
+				{"t": 10, "p": tc.p, "a": "trick_win", "d": "Player", "c": []any{}},
+			})
+
+			parsed := piquetWebOutput(t, g2)
+			if parsed["messageCode"] != tc.want {
+				t.Errorf("messageCode = %v, want %s", parsed["messageCode"], tc.want)
+			}
+			if _, ok := parsed["messageParams"]; ok {
+				t.Errorf("messageParams = %v, want absent", parsed["messageParams"])
+			}
+		})
+	}
+
+	t.Run("returns to phase message after another log entry", func(t *testing.T) {
+		g := newPiquetForPresenter(t)
+		g2 := piquetPresenterState(t, g, []map[string]any{
+			{"t": 10, "p": 0, "a": "trick_win", "d": "Player", "c": []any{}},
+			{"t": 11, "p": 1, "a": "play", "d": "Player", "c": []any{}},
+		})
+
+		parsed := piquetWebOutput(t, g2)
+		if parsed["messageCode"] != "piquet.play" {
+			t.Errorf("messageCode = %v, want piquet.play", parsed["messageCode"])
+		}
+	})
+}
+
+func piquetPresenterState(t *testing.T, g *domain.Piquet, actionLog []map[string]any) *domain.Piquet {
+	t.Helper()
+	data, err := json.Marshal(g)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	var raw map[string]any
+	if err := json.Unmarshal(data, &raw); err != nil {
+		t.Fatalf("unmarshal raw: %v", err)
+	}
+	raw["ph"] = int(domain.PiquetPhasePlay)
+	raw["al"] = actionLog
+	mod, err := json.Marshal(raw)
+	if err != nil {
+		t.Fatalf("marshal modified: %v", err)
+	}
+	g2 := &domain.Piquet{}
+	if err := json.Unmarshal(mod, g2); err != nil {
+		t.Fatalf("unmarshal modified: %v", err)
+	}
+	return g2
+}
+
+func piquetWebOutput(t *testing.T, g *domain.Piquet) map[string]any {
+	t.Helper()
+	var parsed map[string]any
+	if err := json.Unmarshal([]byte((&PiquetWebPresenter{}).Output(g, nil)), &parsed); err != nil {
+		t.Fatalf("invalid JSON: %v", err)
+	}
+	return parsed
+}
+
 func TestPiquetWebPresenter_HintOutput(t *testing.T) {
 	g := newPiquetForPresenter(t)
 	p := &PiquetWebPresenter{}

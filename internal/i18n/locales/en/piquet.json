@@ -17,6 +17,7 @@
   "declarationHeader": "[Declaration phase]",
   "nextDeclStage": "Next declaration: {{kind}}",
   "playHeader": "[Play phase]",
+  "trickWinner": "{{player}} won the latest trick.",
   "trickNumber": "Trick {{trick}} / 12",
   "roundEnd": "Round ended",
   "partieWinner": "★ Partie winner: player {{idx}}",

@@ -2032,6 +2032,8 @@
     "pinochle.trumpPhase": "トランプスートを宣言してください",
     "piquet.hintAvailable": "ヒントがあります",
     "piquet.noHint": "ヒントはありません",
+    "piquet.trickWin.elder": "Elder が直前のトリックを取りました。",
+    "piquet.trickWin.younger": "Younger が直前のトリックを取りました。",
     "pishti.result.scores": "ゲーム終了。スコア: {{scores}}",
     "pitch.bidPhase": "ビッド宣言 (0=パス, 2-4)",
     "pitch.playPhase.follow": "カードを出してください",
