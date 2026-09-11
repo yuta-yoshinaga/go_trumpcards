@@ -260,11 +260,17 @@ function FortressPageContent() {
                   cardIndex: cardIdx,
                 };
                 const isTop = cardIdx === col.length - 1;
+                const hintFrom = hint?.fromCol === colIdx && hint.cardIndex === cardIdx;
+                const hintTo = hint?.toZone === 'tableau' && hint.toCol === colIdx && isTop;
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
-                    className="absolute left-0 right-0"
+                    className={`absolute left-0 right-0${
+                      hintFrom ? ' rounded ring-2 ring-ds-info motion-safe:animate-pulse' : ''
+                    }${hintTo ? ' rounded ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
                     style={{ top: cardIdx * dims.co }}
+                    data-hint-from={hintFrom ? 'true' : undefined}
+                    data-hint-to={hintTo ? 'true' : undefined}
                   >
                     {tc.card ? (
                       <button
@@ -346,12 +352,14 @@ function FortressPageContent() {
               <div className="flex flex-col items-center gap-1 sm:gap-2 mb-3" data-tutorial="fortress-foundation">
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: FortressMoveZone = { zone: 'foundation', col: idx };
+                  const isFoundationHintTarget = hint?.toZone === 'foundation' && hint.toCol === idx;
                   return (
                     <div
                       key={`f-${idx.toString()}`}
                       className={`text-center${legalTargets.foundation.has(idx) ? targetRing : ''}`}
                       data-legal-target={legalTargets.foundation.has(idx) ? 'true' : undefined}
                       data-preview-target={legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined}
+                      data-hint-to={isFoundationHintTarget ? 'true' : undefined}
                     >
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
                       <DropZone
@@ -369,7 +377,10 @@ function FortressPageContent() {
                               suit: FOUNDATION_SUITS[idx],
                               count: pile.length,
                             })}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}${
+                              isFoundationHintTarget ? ' ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                            }`}
+                            data-hint-to={isFoundationHintTarget ? 'true' : undefined}
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}
@@ -385,7 +396,10 @@ function FortressPageContent() {
                             disabled={!isPlaying || loading || !selectedSource}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                             style={{ width: dims.cw, height: dims.ch }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${
+                              isFoundationHintTarget ? ' ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                            }`}
+                            data-hint-to={isFoundationHintTarget ? 'true' : undefined}
                           >
                             A
                           </button>

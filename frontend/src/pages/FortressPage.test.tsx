@@ -400,6 +400,59 @@ describe('FortressPage destination preview', () => {
     expect(region.textContent).toBe('ヒントがあります: タブロー列1 → 組札');
   });
 
+  describe('hint card highlighting', () => {
+    const hintedState: FortressResponse = {
+      ...playingState,
+      hint: { fromCol: 0, cardIndex: 1, toZone: 'tableau', toCol: 1 },
+    };
+
+    const renderHintedState = async () => {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<FortressPage />);
+      await screen.findByRole('button', { name: '♠ 5' });
+      mockExec.mockResolvedValue(hintedState);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+      await waitFor(() => expect(screen.getByTestId('fortress-hint-live')).toHaveTextContent(/→/));
+    };
+
+    it('marks the hinted source card and the last card in the hinted tableau destination', async () => {
+      await renderHintedState();
+
+      const source = await screen.findByRole('button', { name: '♠ 5' });
+      const destination = screen.getByRole('button', { name: '♠ 6' });
+      expect(source.closest('[data-hint-from="true"]')).not.toBeNull();
+      expect(destination.closest('[data-hint-to="true"]')).not.toBeNull();
+    });
+
+    it('does not mark any card when no hint is available', async () => {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<FortressPage />);
+
+      await screen.findByRole('button', { name: '♠ 5' });
+      expect(document.querySelectorAll('[data-hint-from], [data-hint-to]')).toHaveLength(0);
+    });
+
+    it('does not mark cards that are not part of the hinted move', async () => {
+      await renderHintedState();
+
+      const source = await screen.findByRole('button', { name: '♠ 5' });
+      const unrelated = screen.getByRole('button', { name: '♠ K' });
+      expect(source.closest('[data-hint-from="true"]')).not.toBeNull();
+      expect(unrelated).not.toHaveAttribute('data-hint-from');
+      expect(unrelated).not.toHaveAttribute('data-hint-to');
+    });
+
+    it('keeps the selected ring and hint ring visible together', async () => {
+      await renderHintedState();
+
+      const source = await screen.findByRole('button', { name: '♠ 5' });
+      fireEvent.click(source);
+      await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+      expect(source.className).toContain('ring-ds-warning');
+      expect(source.closest('[data-hint-from="true"]')?.className).toContain('ring-ds-info');
+    });
+  });
+
   // hover と選択で同じ集合を指す ── プレビューが嘘をつかないことの検証。
   it('previews exactly the set the selection then commits to', async () => {
     const spadeFive = await render();
