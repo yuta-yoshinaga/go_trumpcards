@@ -1,21 +1,10 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { alaskaHintApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { AlaskaResponse, Card, CardDesign } from '../types/card';
 import { AlaskaPage } from './AlaskaPage';
-
-/**
- * This page's own hint region.
- *
- * **`GameMessageBox` is also `role="status"`**, and it now renders on every
- * phase because this game's messageCodes are translated (#5291). Querying the
- * role alone therefore matches two elements; the message box is the one built
- * from `glass-panel`, so the hint region is the other one.
- */
-const hintLiveRegion = () =>
-  screen.queryAllByRole('status').find((el) => !el.classList.contains('glass-panel')) ?? null;
 
 vi.mock('../api/gameApi', () => ({
   alaskaHintApi: { exec: vi.fn() },
@@ -168,6 +157,13 @@ describe('AlaskaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
+  it('keeps the hint live region mounted before a hint is requested', async () => {
+    renderWithProviders(<AlaskaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.getByTestId('alaska-hint-live')).toBeInTheDocument();
+  });
+
   it('embeds the hint in card aria-labels instead of a text panel', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
@@ -184,9 +180,9 @@ describe('AlaskaPage', () => {
     // The hint live region survives for screen readers but is visually hidden,
     // so it no longer squeezes the footer on mobile. It names the card since
     // "this card" is ambiguous when announced without focus context.
-    const liveRegion = hintLiveRegion();
+    const liveRegion = screen.getByTestId('alaska-hint-live');
     expect(liveRegion).toHaveClass('sr-only');
-    expect(liveRegion).toHaveTextContent('♥ 8');
+    expect(within(liveRegion).getByText('ヒント: ♥ 8を場札 4へ移動')).toBeInTheDocument();
   });
 
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
@@ -205,8 +201,8 @@ describe('AlaskaPage', () => {
     // The hint live region survives for screen readers but is visually hidden,
     // so it no longer squeezes the footer on mobile. It names the card since
     // "this card" is ambiguous when announced without focus context.
-    // 頼んでいないので live region ごと出ない。
-    expect(hintLiveRegion()).not.toBeInTheDocument();
+    const liveRegion = screen.getByTestId('alaska-hint-live');
+    expect(within(liveRegion).queryByText('ヒント: ♥ 8を場札 4へ移動')).not.toBeInTheDocument();
   });
 
   it('labels the hint source with the foundation destination', async () => {
