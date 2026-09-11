@@ -20,6 +20,8 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { gameTheme } from '../styles/gameTheme';
 import type { BarbuResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
+import { suitName } from '../utils/cardUtils';
 import {
   BARBU_HELP,
   type BarbuCliArgs,
@@ -339,16 +341,22 @@ function BarbuPageContent() {
                       // GetPlayableIndices は全インデックスを返すので、空になるのは
                       // 人間の手番でないとき (＝ボタン自体が押せない) だけ。
                       state.playableIndices.length === 0 || state.playableIndices.includes(i);
+                  const isTrump =
+                    state.currentContract === CONTRACT_TRUMPS &&
+                    state.trumpSuit >= 1 &&
+                    c.design === suitName(state.trumpSuit);
                   return (
                     <button
                       key={i}
                       type="button"
                       onClick={() => isHumanPlay && setHandIndex(handIndex === i ? null : i)}
                       disabled={!isHumanPlay || !playable}
-                      className={`rounded transition-all ${
+                      className={`rounded border-2 transition-all ${isTrump ? 'border-ds-accent' : 'border-transparent'} ${
                         handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
                       } ${isHumanPlay && playable ? 'cursor-pointer hover:opacity-90' : 'opacity-50 cursor-default'}`}
                       data-testid={`hand-card-${i}`}
+                      data-trump={isTrump ? 'true' : undefined}
+                      aria-label={isTrump ? `${cardAlt(c)} (${t('label.trumpCard')})` : cardAlt(c)}
                     >
                       <AnimatedCard card={c} width={cardWidth} />
                     </button>

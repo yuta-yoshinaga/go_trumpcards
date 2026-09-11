@@ -241,4 +241,56 @@ describe('BarbuPage', () => {
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeEnabled());
     expect(screen.getByTestId('hand-card-1')).toBeEnabled();
   });
+
+  it('marks only trump-suit cards during the Trumps contract and names them accessibly', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'play',
+        currentContract: 5,
+        trumpSuit: 3,
+        currentTurn: 0,
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 3,
+            cards: [card('SPADE', 3), card('HEART', 5), card('HEART', 9)],
+            trickCount: 0,
+            dominoRank: 0,
+            totalScore: 0,
+          },
+          { id: 1, isHuman: false, cardCount: 3, cards: [], trickCount: 0, dominoRank: 0, totalScore: 0 },
+          { id: 2, isHuman: false, cardCount: 3, cards: [], trickCount: 0, dominoRank: 0, totalScore: 0 },
+          { id: 3, isHuman: false, cardCount: 3, cards: [], trickCount: 0, dominoRank: 0, totalScore: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<BarbuPage />);
+
+    const nonTrump = await screen.findByTestId('hand-card-0');
+    const trump = screen.getByTestId('hand-card-1');
+    const secondTrump = screen.getByTestId('hand-card-2');
+    expect(nonTrump).not.toHaveAttribute('data-trump');
+    expect(trump).toHaveAttribute('data-trump', 'true');
+    expect(secondTrump).toHaveAttribute('data-trump', 'true');
+    expect(trump).toHaveAttribute('aria-label', '♥ 5 (切札のカード)');
+    fireEvent.click(trump);
+    expect(trump).toHaveClass('border-ds-accent', 'ring-2', 'ring-ds-info');
+  });
+
+  it('does not mark cards when the Dominoes contract has a stale trump suit', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'play',
+        currentContract: 6,
+        trumpSuit: 3,
+        currentTurn: 0,
+        dominoPlayable: [0, 1],
+      }),
+    );
+    renderWithProviders(<BarbuPage />);
+
+    expect(await screen.findByTestId('hand-card-0')).not.toHaveAttribute('data-trump');
+    expect(screen.getByTestId('hand-card-1')).not.toHaveAttribute('data-trump');
+  });
 });
