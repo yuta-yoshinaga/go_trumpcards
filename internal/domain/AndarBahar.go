@@ -439,6 +439,37 @@ func AndarBaharSidePayout(band int) (int, bool) {
 	return andarBaharSidePayouts[band], true
 }
 
+// AndarBaharSideProbability は帯 band に決着する確率を返す。
+//
+// ジョーカーを除く 51 枚には基準札と同ランクの札が 3 枚あり、最初の
+// マッチが k 枚目に来る確率は C(51-k, 2) / C(51, 3) です。
+func AndarBaharSideProbability(band int) (float64, bool) {
+	if band < AndarBaharSideFirst || band > AndarBaharSide36Plus {
+		return 0, false
+	}
+	lo, hi, _ := AndarBaharSideBand(band)
+	if hi > AndarBaharMaxCards {
+		hi = AndarBaharMaxCards
+	}
+	denominator := combination(51, 3)
+	numerator := 0
+	for k := lo; k <= hi; k++ {
+		numerator += combination(51-k, 2)
+	}
+	return float64(numerator) / float64(denominator), true
+}
+
+func combination(n, r int) int {
+	if r < 0 || r > n {
+		return 0
+	}
+	result := 1
+	for i := 1; i <= r; i++ {
+		result = result * (n - r + i) / i
+	}
+	return result
+}
+
 // GetHint は人間への助言を返す。
 //
 // **先に配る列のほうが 51.50% で有利**ですが、配当が 0.9:1 に下げられているぶん

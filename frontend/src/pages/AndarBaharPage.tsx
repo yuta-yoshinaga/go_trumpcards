@@ -295,7 +295,7 @@ function AndarBaharPageContent() {
                     {ANDAR_BAHAR_SIDE_BANDS.map((b) => (
                       <option key={`band-${b.band}`} value={b.band}>
                         {b.lo === b.hi ? t('band.exact', { count: b.lo }) : t('band.range', { lo: b.lo, hi: b.hi })} (
-                        {(b.payout / 10).toFixed(1)}x)
+                        {(b.payout / 10).toFixed(1)}x, {(state.sideBandProbabilities[b.band] * 100).toFixed(2)}%)
                       </option>
                     ))}
                   </select>

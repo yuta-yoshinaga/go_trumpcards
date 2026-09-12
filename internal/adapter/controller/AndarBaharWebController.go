@@ -39,9 +39,11 @@ type AndarBaharWebOutput struct {
 	//
 	// **サイドベットは別の賭け。** 合計だけでは、外したのがメインなのかサイドなのか
 	// 画面から読めません。合計は常に両者の和です。
-	MainPayout int   `json:"mainPayout"`
-	SidePayout int   `json:"sidePayout"`
-	History    []int `json:"history"`
+	MainPayout int `json:"mainPayout"`
+	SidePayout int `json:"sidePayout"`
+	// SideBandProbabilities は帯 0〜6 の的中確率を順番に返す。
+	SideBandProbabilities []float64 `json:"sideBandProbabilities"`
+	History               []int     `json:"history"`
 	WebOutputBase
 }
 
@@ -56,11 +58,12 @@ var NewAndarBaharWebController, NewAndarBaharWebControllerWithProvider = webCont
 
 func newAndarBaharDefaultOutput(msg string) *AndarBaharWebOutput {
 	return &AndarBaharWebOutput{
-		AndarCards:    make([]*WebOutputCard, 0),
-		BaharCards:    make([]*WebOutputCard, 0),
-		History:       make([]int, 0),
-		Winner:        -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		AndarCards:            make([]*WebOutputCard, 0),
+		BaharCards:            make([]*WebOutputCard, 0),
+		History:               make([]int, 0),
+		SideBandProbabilities: make([]float64, 0),
+		Winner:                -1,
+		WebOutputBase:         WebOutputBase{Message: msg},
 	}
 }
 
