@@ -147,8 +147,53 @@ func TestCribbageCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "出せる手札: [0]")
-		assert.NotContains(t, result, "出せる手札: [0] [1]")
+		assert.Contains(t, result, "出せる手札（出した後の合計）: [0]→31")
+		assert.NotContains(t, result, "出せる手札（出した後の合計）: [0]→31 [1]→32")
+	})
+
+	t.Run("pegging legend shows totals for two peg counts including face cards and ace", func(t *testing.T) {
+		for _, tc := range []struct {
+			name     string
+			pegCount int
+			want     string
+		}{
+			{name: "from 17", pegCount: 17, want: "出せる手札（出した後の合計）: [0]→27 [1]→27 [2]→27 [3]→18 [4]→24 [5]→27"},
+			{name: "from 0", pegCount: 0, want: "出せる手札（出した後の合計）: [0]→10 [1]→10 [2]→10 [3]→1 [4]→7 [5]→10"},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				m, players := setupCribbageCuiMockWithPlayers()
+				m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+				m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPegCount")
+				m.On("GetPhase").Return(domain.CribbagePhasePegging)
+				m.On("GetPegCount").Return(tc.pegCount)
+				players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))  // K = 10
+				players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 12, false))  // Q = 10
+				players[0].AddCard(domain.NewCard(domain.CardDesignClover, 11, false)) // J = 10
+				players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 1, false)) // A = 1
+				players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+				players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+
+				result := p.Output(m, nil)
+				assert.Contains(t, result, tc.want)
+				assert.NotContains(t, result, "{{")
+			})
+		}
+	})
+
+	t.Run("pegging legend omits cards over 31", func(t *testing.T) {
+		m, players := setupCribbageCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPegCount")
+		m.On("GetPhase").Return(domain.CribbagePhasePegging)
+		m.On("GetPegCount").Return(25)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "出せる手札（出した後の合計）: [1]→30 [2]→26")
+		assert.NotContains(t, result, "[0]→35")
+		assert.NotContains(t, result, "{{")
 	})
 
 	t.Run("pegging warns to declare go when nothing fits", func(t *testing.T) {
@@ -162,7 +207,8 @@ func TestCribbageCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "go を宣言してください")
-		assert.NotContains(t, result, "出せる手札:")
+		assert.NotContains(t, result, "出せる手札（出した後の合計）:")
+		assert.NotContains(t, result, "{{")
 	})
 
 	t.Run("game ended shows winner human", func(t *testing.T) {
