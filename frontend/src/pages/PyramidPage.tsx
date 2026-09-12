@@ -442,7 +442,7 @@ function PyramidPageContent() {
                   {' · '}
                   {t('clears', { wins: stats.wins, plays: stats.plays })}
                   {' · '}
-                  {t('winRate', { rate: Math.round(pyramidWinRate(stats) * 100) })}
+                  {t('winRate', { rate: pyramidWinRate(stats) })}
                 </>
               )}
             </div>

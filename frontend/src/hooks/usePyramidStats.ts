@@ -24,9 +24,15 @@ export function emptyPyramidStats(): PyramidStats {
   return { plays: 0, wins: 0, fewestMoves: null };
 }
 
-/** Returns the fraction of finished Pyramid games that were cleared. */
+/**
+ * Returns the percentage of finished Pyramid games that were cleared, rounded
+ * to a whole number. Matches spiderWinRate/whiteheadWinRate, the two other
+ * solitaire stat helpers, which also return 0-100 so the call site does not
+ * repeat the scaling.
+ */
 export function pyramidWinRate(stats: PyramidStats): number {
-  return stats.plays > 0 ? stats.wins / stats.plays : 0;
+  if (stats.plays === 0) return 0;
+  return Math.round((stats.wins / stats.plays) * 100);
 }
 
 function isValidStats(value: unknown): value is PyramidStats {
