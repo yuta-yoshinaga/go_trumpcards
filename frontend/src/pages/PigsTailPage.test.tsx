@@ -239,6 +239,40 @@ describe('PigsTailPage', () => {
     expect(reveal).toHaveTextContent('ペナルティ');
   });
 
+  it('renders the human penalty count for different penalty sizes', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      lastDrawCard: { design: 'HEART', value: 3 },
+      lastPenalty: true,
+      humanAction: { drawPlayerIdx: 0, drawnCard: null, penaltyFlag: true, penaltyCount: 2 },
+    });
+    renderWithProviders(<PigsTailPage />);
+    expect(await screen.findByTestId('pt-draw-reveal')).toHaveTextContent('ペナルティ！ (+2)');
+
+    mockExec.mockResolvedValue({
+      ...baseState,
+      lastDrawCard: { design: 'DIAMOND', value: 7 },
+      lastPenalty: true,
+      humanAction: { drawPlayerIdx: 0, drawnCard: null, penaltyFlag: true, penaltyCount: 6 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    expect(await screen.findByTestId('pt-draw-reveal')).toHaveTextContent('ペナルティ！ (+6)');
+  });
+
+  it('does not render a penalty count when the human action is null', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      lastDrawCard: { design: 'HEART', value: 3 },
+      lastPenalty: true,
+      humanAction: null,
+    });
+    renderWithProviders(<PigsTailPage />);
+    const reveal = await screen.findByTestId('pt-draw-reveal');
+    expect(reveal).toHaveTextContent('ペナルティ！');
+    expect(reveal).not.toHaveTextContent('(+2)');
+    expect(reveal).not.toHaveTextContent('(+6)');
+  });
+
   it('does not render the draw reveal before any card is drawn', async () => {
     renderWithProviders(<PigsTailPage />);
     await waitFor(() => expect(screen.getByTestId('circular-deck')).toBeInTheDocument());

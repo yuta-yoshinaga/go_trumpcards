@@ -271,7 +271,9 @@ function PigsTailPageContent() {
                   </div>
                 </div>
                 <div className={`text-sm font-medium ${state.lastPenalty ? 'text-ds-error' : 'text-ds-success'}`}>
-                  {state.lastPenalty ? t('label.penalty') : t('label.safe')}
+                  {state.lastPenalty
+                    ? `${t('label.penalty')}${state.humanAction ? ` (+${state.humanAction.penaltyCount})` : ''}`
+                    : t('label.safe')}
                 </div>
               </div>
             )}

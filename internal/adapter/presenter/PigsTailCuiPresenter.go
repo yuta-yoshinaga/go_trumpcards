@@ -31,9 +31,17 @@ func (p *PigsTailCuiPresenter) Output(pt interfaces.PigsTailGame, lastErr error)
 		if drawn := pt.GetLastDrawCard(); drawn != nil {
 			key, colorize := "pigtail.lastDrawSafe", color.Green
 			if pt.GetLastPenalty() {
-				key, colorize = "pigtail.lastDrawPenalty", color.Red
+				key, colorize = "pigtail.lastDrawPenaltyNoCount", color.Red
+				if action := pt.GetHumanAction(); action != nil {
+					b.WriteString(colorize(i18n.Tf("pigtail.lastDrawPenalty",
+						"card", cuiCardStr(drawn),
+						"count", strconv.Itoa(action.PenaltyCount))) + "\n")
+				} else {
+					b.WriteString(colorize(i18n.Tf(key, "card", cuiCardStr(drawn))) + "\n")
+				}
+			} else {
+				b.WriteString(colorize(i18n.Tf(key, "card", cuiCardStr(drawn))) + "\n")
 			}
-			b.WriteString(colorize(i18n.Tf(key, "card", cuiCardStr(drawn))) + "\n")
 		}
 
 		b.WriteString("----------\n")
