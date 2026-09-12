@@ -27,6 +27,8 @@ func mustMendikotOutputJSON(msg string) string {
 		TensInDeck:      domain.MendikotTensInDeck,
 		TrumpChooserIdx: -1,
 		LastHandWinner:  -1,
+		LastTrick:       []*controller.WebOutputTrickCard{},
+		LastTrickWinner: -1,
 		WinnerTeam:      -1,
 		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
