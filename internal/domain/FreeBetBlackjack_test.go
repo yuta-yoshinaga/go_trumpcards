@@ -60,6 +60,18 @@ func fbStaged(t *testing.T, ante int, player, dealer []*Card) *FreeBetBlackjack 
 	return g
 }
 
+func TestFreeBetDealerHoleRevealedFollowsPhase(t *testing.T) {
+	g := newFreeBetForTest(t)
+
+	assert.False(t, g.IsDealerHoleRevealed(), "ベット中は手札が空なので非公開扱いにする")
+
+	g.phase = FreeBetPhasePlay
+	assert.False(t, g.IsDealerHoleRevealed())
+
+	g.phase = FreeBetPhaseResult
+	assert.True(t, g.IsDealerHoleRevealed())
+}
+
 // --- 無料ダブルの条件 ---
 
 // **ハードの 9・10・11 だけ。** ソフトも 3 枚目以降も対象外。

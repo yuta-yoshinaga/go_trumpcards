@@ -39,6 +39,11 @@ func (cp *FreeBetBlackjackCuiPresenter) writeDealer(sb *strings.Builder, c inter
 		return
 	}
 	sb.WriteString("----------\n")
+	if !c.IsDealerHoleRevealed() {
+		sb.WriteString(i18n.Tf("freebet.dealerLineHidden",
+			"cards", cuiCardStr(cards[0])+" "+i18n.T("blackjack.hiddenCard")) + "\n")
+		return
+	}
 	sb.WriteString(i18n.Tf("freebet.dealerLine",
 		"cards", freeBetCardsStr(cards),
 		"score", strconv.Itoa(c.GetDealerScore())) + "\n")

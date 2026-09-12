@@ -61318,6 +61318,11 @@ components:
             $ref: '#/components/schemas/Card'
         dealerScore:
           type: integer
+        dealerHoleRevealed:
+          type: boolean
+          description: >-
+            False while the hand is still being played, when dealerCards holds
+            only the up-card and dealerScore is withheld.
         dealerPushed22:
           type: boolean
           description: The dealer busted with exactly 22, so surviving hands push.
