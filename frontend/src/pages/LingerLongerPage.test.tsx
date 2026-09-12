@@ -97,6 +97,24 @@ describe('LingerLongerPage', () => {
     expect(within(line).getByTestId('ll-discarded')).toHaveTextContent('場から消えた札 21枚');
   });
 
+  it('shows the eliminated count and total player count', async () => {
+    const first = renderWithProviders(<LingerLongerPage />);
+    expect(await screen.findByTestId('ll-eliminated-summary')).toHaveTextContent('脱落 0 / 全 4 人');
+    first.unmount();
+
+    mockExec.mockResolvedValue(makeState({ eliminatedCnt: 2, players: [seat(0), seat(1), seat(2), seat(3), seat(4)] }));
+    renderWithProviders(<LingerLongerPage />);
+    expect(await screen.findByTestId('ll-eliminated-summary')).toHaveTextContent('脱落 2 / 全 5 人');
+  });
+
+  it('shows the eliminated summary alongside an empty-stock notice', async () => {
+    mockExec.mockResolvedValue(makeState({ stockSize: 0, eliminatedCnt: 2 }));
+    renderWithProviders(<LingerLongerPage />);
+
+    expect(await screen.findByTestId('ll-no-stock')).toBeInTheDocument();
+    expect(screen.getByTestId('ll-eliminated-summary')).toHaveTextContent('脱落 2 / 全 4 人');
+  });
+
   // **山札が尽きた瞬間から局は終わりに向かう。** 盤面からは読み取れない。
   it('announces the empty stock', async () => {
     const { unmount } = renderWithProviders(<LingerLongerPage />);
