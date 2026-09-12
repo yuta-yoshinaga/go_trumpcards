@@ -378,6 +378,8 @@ describe('ContractRummyPage', () => {
     const meldButton = await screen.findByRole('button', { name: /メルド1/ });
     expect(meldButton).toBeEnabled();
     expect(meldButton).toHaveClass('cursor-pointer');
+    expect(meldButton).toHaveClass('ring-2', 'ring-ds-warning');
+    expect(meldButton).toHaveAttribute('aria-pressed', 'false');
     // 活性のときは理由を名前に足さない。
     expect(meldButton.getAttribute('aria-label')).not.toContain('レイオフできません');
   });
@@ -434,6 +436,23 @@ describe('ContractRummyPage', () => {
     fireEvent.click(invalidMeld);
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('layoff', expect.anything());
+  });
+
+  it('does not show a layoff target when no met player has melds', async () => {
+    const state: ContractRummyResponse = {
+      ...playState,
+      players: [
+        { ...playState.players[0], contractMet: true, cards: [card('SPADE', 5)], cardCount: 1 },
+        { ...playState.players[1], contractMet: true, melds: [] },
+        { ...playState.players[2], contractMet: true, melds: [] },
+      ],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<ContractRummyPage />);
+
+    await screen.findByTestId('cr-hand');
+    expect(screen.queryByTestId('cr-layoff-target')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Lay off|レイオフ/ })).toBeDisabled();
   });
 
   it('shows per-slot progress and only enables Submit when both slots satisfy their contract', async () => {

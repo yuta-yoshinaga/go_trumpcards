@@ -837,8 +837,8 @@ func TestContractRummy_CanAddToContractRummyMeld(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := canAddToContractRummyMeld(tt.meld, tt.card); got != tt.want {
-				t.Errorf("canAddToContractRummyMeld(%s) = %v, want %v", tt.name, got, tt.want)
+			if got := CanAddToContractRummyMeld(tt.meld, tt.card); got != tt.want {
+				t.Errorf("CanAddToContractRummyMeld(%s) = %v, want %v", tt.name, got, tt.want)
 			}
 		})
 	}

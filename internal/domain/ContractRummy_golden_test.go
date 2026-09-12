@@ -42,7 +42,7 @@ func TestContractRummyCanAddToMeld_GoldenVectors(t *testing.T) {
 				meld = append(meld, NewCard(designs[card.Suit], card.Value, false))
 			}
 			card := NewCard(designs[c.Card.Suit], c.Card.Value, false)
-			require.Equal(t, c.Valid, canAddToContractRummyMeld(meld, card))
+			require.Equal(t, c.Valid, CanAddToContractRummyMeld(meld, card))
 		})
 	}
 }
