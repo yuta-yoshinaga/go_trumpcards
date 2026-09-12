@@ -228,8 +228,8 @@ describe('OmiPage', () => {
     renderWithProviders(<OmiPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     // playPhaseState has dealStage=2 and 2 cards visible (test hand shortened for readability)
-    // The deal stage banner must NOT be shown in play phase
-    expect(screen.queryByTestId('omi-deal-stage-info')).not.toBeInTheDocument();
+    expect(screen.getByTestId('omi-deal-stage-info')).toHaveTextContent('手札8枚');
+    expect(screen.getByTestId('omi-deal-stage-info')).not.toHaveTextContent('手札4枚');
     // Human has their cards rendered
     expect(screen.getByAltText('♠ A')).toBeInTheDocument();
   });
@@ -393,10 +393,16 @@ describe('OmiPage', () => {
     expect(screen.getByTestId('omi-deal-stage-info')).toHaveTextContent('手札4枚');
   });
 
-  it('does NOT show deal stage banner during Play phase', async () => {
+  it('shows deal stage 2 info banner during Play phase', async () => {
     renderWithProviders(<OmiPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
-    expect(screen.queryByTestId('omi-deal-stage-info')).not.toBeInTheDocument();
+    expect(screen.getByTestId('omi-deal-stage-info')).toHaveTextContent('手札8枚');
+  });
+
+  it('does not show deal stage 1 info during Play phase', async () => {
+    renderWithProviders(<OmiPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.getByTestId('omi-deal-stage-info')).not.toHaveTextContent('手札4枚');
   });
 
   // ─── Team scores ──────────────────────────────────────────────────────────
