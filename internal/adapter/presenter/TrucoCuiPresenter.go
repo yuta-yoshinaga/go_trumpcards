@@ -39,6 +39,26 @@ func trucoPlayerStr(player *domain.TrucoPlayer, idx int) string {
 	return b.String()
 }
 
+// trucoHistoryStr returns the completed baza results for the current mano.
+func trucoHistoryStr(g interfaces.TrucoGame) string {
+	results := g.GetTrickResults()
+	if len(results) == 0 {
+		return ""
+	}
+	var b strings.Builder
+	b.WriteString(i18n.T("truco.historyTitle") + "\n")
+	for i, result := range results {
+		if result == -1 {
+			b.WriteString(i18n.Tf("truco.historyParda", "baza", strconv.Itoa(i+1)) + "\n")
+			continue
+		}
+		b.WriteString(i18n.Tf("truco.historyWinner",
+			"baza", strconv.Itoa(i+1),
+			"name", cuiPlayerName(g.GetPlayer(result), result)) + "\n")
+	}
+	return b.String()
+}
+
 // TrucoCuiPresenter renders the Truco CUI view.
 type TrucoCuiPresenter struct{}
 
@@ -55,6 +75,9 @@ func (p *TrucoCuiPresenter) Output(g interfaces.TrucoGame, lastErr error) string
 		sb.WriteString(i18n.Tf("truco.stakeLine",
 			"stake", strconv.Itoa(g.GetHandStake()),
 			"level", trucoLevelLabel(g.GetAcceptedLevel())) + "\n")
+		sb.WriteString(i18n.Tf("truco.manoLine",
+			"name", cuiPlayerName(g.GetPlayer(g.GetManoIdx()), g.GetManoIdx())) + "\n")
+		sb.WriteString(trucoHistoryStr(g))
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			sb.WriteString(trucoPlayerStr(g.GetPlayer(i), i))
