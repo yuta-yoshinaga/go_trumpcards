@@ -199,6 +199,12 @@ function RikkenPageContent() {
                   {t('label.declarer')}: #{state.declarerIdx} ({t('label.declarerTricks')} {state.declarerTricks})
                 </div>
               )}
+              {state.contract === RikkenContract.RIK && state.calledCard && (
+                <div className="flex items-center justify-center gap-1" data-testid="rikken-called-card">
+                  <span>{t('label.calledCard')}:</span>
+                  <AnimatedCard card={state.calledCard} width={cardWidth * 0.6} />
+                </div>
+              )}
               {state.contract === RikkenContract.RIK && (
                 <div data-testid="rikken-partner">
                   {t('label.partner')}: {state.partnerIdx >= 0 ? `#${state.partnerIdx}` : t('label.hidden')}
