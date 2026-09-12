@@ -312,6 +312,18 @@ describe('TonkPage', () => {
     expect(screen.getByTestId('tonk-undercut-result')).toHaveTextContent('UNDERCUT!');
   });
 
+  // FindBestMelds returns an empty slice when the whole hand is melds, so reverting the
+  // condition would hide only 0-point deadwood panels at round end.
+  it('shows zero-point deadwoods when both hands are fully melded at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: TonkPhase.ROUND_END, knockerIdx: 0 }));
+    renderWithProviders(<TonkPage />);
+
+    const knockerDeadwood = await screen.findByTestId('tonk-knocker-deadwood');
+    const opponentDeadwood = screen.getByTestId('tonk-opponent-deadwood');
+    expect(knockerDeadwood).toHaveTextContent('0点');
+    expect(opponentDeadwood).toHaveTextContent('0点');
+  });
+
   it('does not show the undercut result when the round was not undercut', async () => {
     mockExec.mockResolvedValue(
       makeState({
