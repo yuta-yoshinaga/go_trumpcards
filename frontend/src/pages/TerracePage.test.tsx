@@ -153,6 +153,17 @@ describe('TerracePage', () => {
     expect(screen.getByRole('button', { name: '♠ 7' })).toBeDisabled();
   });
 
+  it('disables a buried tableau card until a source is selected', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[card('HEART', 8), card('CLOVER', 6)], [card('SPADE', 7)]]),
+    });
+    renderWithProviders(<TerracePage />);
+
+    expect(await screen.findByRole('button', { name: '♥ 8' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '♣ 6' })).toBeEnabled();
+  });
+
   it('does not dispatch a move when dragging the terrace onto a tableau pile', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<TerracePage />);

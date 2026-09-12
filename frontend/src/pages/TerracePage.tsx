@@ -215,7 +215,7 @@ function TerracePageContent() {
                       type="button"
                       onClick={() => {
                         if (selectedSource) {
-                          if (!isTerraceSourceSelected) game.handleSelectTarget(pileZone);
+                          game.handleSelectTarget(pileZone);
                         } else if (isTop) {
                           game.handleSelectSource(pileZone);
                         }
