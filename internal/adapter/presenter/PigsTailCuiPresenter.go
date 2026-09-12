@@ -31,7 +31,7 @@ func (p *PigsTailCuiPresenter) Output(pt interfaces.PigsTailGame, lastErr error)
 		if drawn := pt.GetLastDrawCard(); drawn != nil {
 			key, colorize := "pigtail.lastDrawSafe", color.Green
 			if pt.GetLastPenalty() {
-				key, colorize = "pigtail.lastDrawPenalty", color.Red
+				key = "pigtail.lastDrawPenalty"
 			}
 			b.WriteString(colorize(i18n.Tf(key, "card", cuiCardStr(drawn))) + "\n")
 		}
@@ -46,6 +46,18 @@ func (p *PigsTailCuiPresenter) Output(pt interfaces.PigsTailGame, lastErr error)
 		}
 
 		b.WriteString("----------\n")
+
+		// Human action
+		if action := pt.GetHumanAction(); action != nil {
+			name := cuiPlayerName(pt.GetPlayer(action.DrawPlayerIdx), action.DrawPlayerIdx)
+			if action.PenaltyFlag {
+				b.WriteString(i18n.Tf("pigtail.cpuActionPenalty",
+					"name", name,
+					"count", strconv.Itoa(action.PenaltyCount)) + "\n")
+			} else {
+				b.WriteString(i18n.Tf("pigtail.cpuActionSafe", "name", name) + "\n")
+			}
+		}
 
 		// CPU action history
 		if cpuActions := pt.GetCpuActions(); len(cpuActions) > 0 {

@@ -23,6 +23,15 @@ func newTestPigsTailForPresenter() *domain.PigsTail {
 	return pt
 }
 
+func humanPlayerIdx(pt *domain.PigsTail) int {
+	for i := 0; i < pt.GetPlayerCnt(); i++ {
+		if pt.GetPlayer(i).GetIsHuman() {
+			return i
+		}
+	}
+	return -1
+}
+
 func TestPigsTailCuiPresenter_Output(t *testing.T) {
 	p := &presenter.PigsTailCuiPresenter{}
 
@@ -55,10 +64,12 @@ func TestPigsTailCuiPresenter_Output(t *testing.T) {
 			assert.Contains(t, p.Output(pt, nil), "→ セーフ")
 		}
 
-		// ペナルティ側の文言も踏む。引いた札は保ったままフラグだけ立てる。
+		// ペナルティ側の文言も踏む。人間行動とは独立した表示であることを確認する。
+		pt.SetHumanAction(nil)
 		pt.SetLastPenalty(true)
 
 		output := p.Output(pt, nil)
+		assert.Contains(t, output, "→ ペナルティ！")
 		assert.Contains(t, output, "→ ペナルティ！ 場札を全て引き取り")
 		assert.NotContains(t, output, "→ セーフ")
 	})
@@ -92,6 +103,64 @@ func TestPigsTailCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, output, "CPUの行動")
 		assert.Contains(t, output, "セーフ")
 		assert.Contains(t, output, "ペナルティ")
+	})
+	t.Run("human action includes the number of collected cards", func(t *testing.T) {
+		orig := color.NoColor()
+		color.SetNoColor(true)
+		defer color.SetNoColor(orig)
+
+		for _, tc := range []struct {
+			count    int
+			expected string
+		}{
+			{count: 2, expected: "あなたが引いた → ペナルティ！ 2枚引き取り"},
+			{count: 6, expected: "あなたが引いた → ペナルティ！ 6枚引き取り"},
+		} {
+			pt := newTestPigsTailForPresenter()
+			pt.SetLastDrawCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+			pt.SetHumanAction(&domain.PigsTailCpuAction{
+				DrawPlayerIdx: humanPlayerIdx(pt),
+				DrawnCard:     domain.NewCard(domain.CardDesignSpade, 1, false),
+				PenaltyFlag:   true,
+				PenaltyCount:  tc.count,
+			})
+			output := p.Output(pt, nil)
+			assert.Contains(t, output, tc.expected)
+			assert.NotContains(t, output, "{{")
+		}
+	})
+	t.Run("human penalty without an action keeps the legacy message", func(t *testing.T) {
+		orig := color.NoColor()
+		color.SetNoColor(true)
+		defer color.SetNoColor(orig)
+
+		pt := newTestPigsTailForPresenter()
+		pt.SetLastDrawCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		pt.SetLastPenalty(true)
+		output := p.Output(pt, nil)
+		assert.Contains(t, output, "直前に引いた札: SPADE 1 → ペナルティ！ 場札を全て引き取り")
+		assert.NotContains(t, output, "あなたが引いた")
+		assert.NotContains(t, output, "{{")
+		assert.NotContains(t, output, "枚引き取り")
+	})
+	t.Run("human action is separate from a safe last draw", func(t *testing.T) {
+		orig := color.NoColor()
+		color.SetNoColor(true)
+		defer color.SetNoColor(orig)
+
+		pt := newTestPigsTailForPresenter()
+		pt.SetLastDrawCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		pt.SetLastPenalty(false)
+		pt.SetHumanAction(&domain.PigsTailCpuAction{
+			DrawPlayerIdx: humanPlayerIdx(pt),
+			PenaltyFlag:   true,
+			PenaltyCount:  5,
+		})
+		output := p.Output(pt, nil)
+		assert.Contains(t, output, "直前に引いた札: SPADE 1 → セーフ")
+		assert.NotContains(t, output, "直前に引いた札: SPADE 1 → セーフ (+5)")
+		assert.Contains(t, output, "あなたが引いた → ペナルティ！ 5枚引き取り")
+		assert.NotContains(t, output, "{{")
 	})
 }
 
