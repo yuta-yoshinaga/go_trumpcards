@@ -2698,7 +2698,7 @@
     "trappola.result.humanTeamWin": "ゲーム終了 — あなたのチームの勝ちです。",
     "trappola.result.teamAWin": "ゲーム終了 — チームAの勝ちです。",
     "trappola.result.teamBWin": "ゲーム終了 — チームBの勝ちです。",
-    "trappola.roundEnd": "ラウンド終了 — 次のラウンドへ進んでください。",
+    "trappola.roundBreakdown": "ラウンド内訳: チーム{{a}} thirds{{athird}} / チーム{{b}} thirds{{bthird}}（ラストトリック: チーム{{lastteam}}）",
     "trappola.trickEnd": "トリック終了 — 次へ進んでください。",
     "trash.awaitWild": "ワイルドカードを置く場所を選んでください",
     "trash.cpuAwaitWild": "CPUがワイルドカードを置いています",
