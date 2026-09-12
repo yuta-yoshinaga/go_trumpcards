@@ -198,12 +198,3 @@ func ptrOrNeg(p *int) int {
 	}
 	return *p
 }
-
-// joinInts formats an int slice as a space-separated string.
-func joinInts(xs []int) string {
-	parts := make([]string, len(xs))
-	for i, x := range xs {
-		parts[i] = strconv.Itoa(x)
-	}
-	return strings.Join(parts, " ")
-}
