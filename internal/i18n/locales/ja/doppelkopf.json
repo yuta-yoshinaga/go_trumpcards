@@ -14,7 +14,7 @@
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "play <idx>・・・カードを出す（マストフォロー）",
   "promptAnnounce": "a / announce・・・Re または Kontra を宣言してスコアを上げる",
-  "promptTrickEnd": "トリック終了",
+  "promptTrickEnd": "トリック終了: {{name}}が{{points}}点獲得",
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了（Re {{rePts}}点, {{outcome}}, {{gamePts}}ゲームポイント）",
   "outcomeReWins": "Re の勝ち",

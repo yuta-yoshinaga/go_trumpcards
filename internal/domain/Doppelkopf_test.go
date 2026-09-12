@@ -409,6 +409,7 @@ func TestDoppelkopf_HintAndPlayable(t *testing.T) {
 func TestDoppelkopf_JSONRoundTrip(t *testing.T) {
 	g := newDKGame(true)
 	g.Reset()
+	g.lastTrickPoints = 15
 	data, err := json.Marshal(g)
 	if err != nil {
 		t.Fatalf("marshal err: %v", err)
@@ -419,6 +420,28 @@ func TestDoppelkopf_JSONRoundTrip(t *testing.T) {
 	}
 	if g2.GetPhase() != g.GetPhase() || g2.GetPlayerCnt() != DoppelkopfPlayerCnt {
 		t.Error("round trip mismatch")
+	}
+	if g2.GetLastTrickPoints() != 15 {
+		t.Errorf("last trick points = %d, want 15", g2.GetLastTrickPoints())
+	}
+}
+
+func TestDoppelkopf_ResolveTrickStoresPointsAndResetClearsThem(t *testing.T) {
+	g := newDKGame(true)
+	g.SetPhase(DoppelkopfPhaseTrickEnd)
+	g.SetCurrentTrick([]*TrickCard{
+		{PlayerIdx: 0, Card: dkCard(CardDesignClover, 1)},
+		{PlayerIdx: 1, Card: dkCard(CardDesignSpade, 10)},
+		{PlayerIdx: 2, Card: dkCard(CardDesignHeart, 13)},
+		{PlayerIdx: 3, Card: dkCard(CardDesignDiamond, 12)},
+	})
+	g.ResolveTrick()
+	if got := g.GetLastTrickPoints(); got != 28 {
+		t.Fatalf("last trick points = %d, want 28", got)
+	}
+	g.Reset()
+	if got := g.GetLastTrickPoints(); got != 0 {
+		t.Fatalf("last trick points after reset = %d, want 0", got)
 	}
 }
 

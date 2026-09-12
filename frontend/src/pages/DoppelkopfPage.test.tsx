@@ -148,6 +148,16 @@ describe('DoppelkopfPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
   });
 
+  it('names the trick winner and the points they took', async () => {
+    mockExec.mockResolvedValue({
+      ...trickEndState,
+      messageCode: 'doppelkopf.trickEnd.cpuWin',
+      messageParams: { winnerId: '2', points: '28' },
+    });
+    renderWithProviders(<DoppelkopfPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 2 が 28点獲得/)).toBeInTheDocument());
+  });
+
   it('renders round end with the next round button and the round result', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<DoppelkopfPage />);

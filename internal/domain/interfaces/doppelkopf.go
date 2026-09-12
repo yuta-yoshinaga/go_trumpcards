@@ -45,6 +45,8 @@ type DoppelkopfGame interface {
 	GetCurrentTrick() []*domain.TrickCard
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
+	// GetLastTrickPoints 直前に解決したトリックの獲得点数を取得する
+	GetLastTrickPoints() int
 	// GetDealerIdx ディーラーインデックスを取得する
 	GetDealerIdx() int
 	// IsRe playerIdx が Re チームかを返す
