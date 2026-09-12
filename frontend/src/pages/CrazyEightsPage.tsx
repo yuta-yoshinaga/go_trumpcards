@@ -348,6 +348,34 @@ function CrazyEightsPageContent() {
                     </div>
                   ))}
 
+                <details className="mb-2 p-2 rounded bg-black/30" data-testid="crazyeights-point-legend">
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {t('pointLegend.title')}
+                  </summary>
+                  <div className="mt-1 text-ds-text-muted text-xs">
+                    <table className="w-full">
+                      <tbody>
+                        <tr>
+                          <td className="text-left">{t('pointLegend.eight')}</td>
+                          <td className="text-right">50</td>
+                        </tr>
+                        <tr>
+                          <td className="text-left">{t('pointLegend.ace')}</td>
+                          <td className="text-right">1</td>
+                        </tr>
+                        <tr>
+                          <td className="text-left">{t('pointLegend.faceCards')}</td>
+                          <td className="text-right">10</td>
+                        </tr>
+                        <tr>
+                          <td className="text-left">{t('pointLegend.other')}</td>
+                          <td className="text-right">{t('pointLegend.faceValue')}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
+
                 {/* Score table */}
                 <div className="my-3 p-2 rounded bg-black/30">
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>

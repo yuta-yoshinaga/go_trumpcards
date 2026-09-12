@@ -74,6 +74,11 @@ func TestCrazyEightsCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "play <idx>")
 		assert.Contains(t, result, "draw")
+		assert.Contains(t, result, "  8                    50点")
+		assert.Contains(t, result, "  A                     1点")
+		assert.Contains(t, result, "  J / Q / K            10点")
+		assert.Contains(t, result, "  その他               額面どおり")
+		assert.NotContains(t, result, "{{")
 	})
 
 	t.Run("discard top shown", func(t *testing.T) {

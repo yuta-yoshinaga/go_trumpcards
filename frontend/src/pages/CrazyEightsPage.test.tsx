@@ -117,6 +117,21 @@ describe('CrazyEightsPage', () => {
     });
   });
 
+  it('shows the leftover-card penalty legend during play', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    const legend = await screen.findByTestId('crazyeights-point-legend');
+    expect(legend).toHaveTextContent('手札に残った札の失点');
+    expect(legend).toHaveTextContent('8');
+    expect(legend).toHaveTextContent('50');
+    expect(legend).toHaveTextContent('A');
+    expect(legend).toHaveTextContent('1');
+    expect(legend).toHaveTextContent('J / Q / K');
+    expect(legend).toHaveTextContent('10');
+    expect(legend).toHaveTextContent('その他');
+    expect(legend).toHaveTextContent('額面どおり');
+    expect(legend.textContent).not.toContain('{{');
+  });
+
   it('highlights legal cards and dims illegal ones on the human turn', async () => {
     // Discard top ♥7; hand has ♥J (legal — same suit) and ♠A (illegal).
     renderWithProviders(<CrazyEightsPage />);

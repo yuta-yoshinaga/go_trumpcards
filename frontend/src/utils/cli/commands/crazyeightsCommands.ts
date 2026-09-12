@@ -52,4 +52,9 @@ export const CRAZYEIGHTS_HELP: string[] = [
   'nr/nextround- Next round',
   'r/reset     - Reset game',
   'h/hint      - Get a hint',
+  '  Penalty for cards left in hand',
+  '  8                    50 points',
+  '  A                     1 point',
+  '  J / Q / K            10 points',
+  '  Other                face value',
 ];

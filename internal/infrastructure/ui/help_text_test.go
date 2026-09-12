@@ -762,3 +762,47 @@ func TestSpadesHelpSaysItIsCutthroat(t *testing.T) {
 		t.Errorf("spades help should say the game is cutthroat (no partnerships); got:\n%s", lines)
 	}
 }
+
+func TestCrazyEightsHelpIncludesPointLegendInBothLocales(t *testing.T) {
+	original := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(original) })
+
+	var crazyeights *GameRegistryEntry
+	for _, e := range GameRegistry() {
+		if e.Name == "crazyeights" {
+			entry := e
+			crazyeights = &entry
+			break
+		}
+	}
+	if crazyeights == nil {
+		t.Fatal("crazyeights is not registered")
+	}
+
+	wantByLang := map[string][]string{
+		"ja": {
+			"  8                    50点",
+			"  A                     1点",
+			"  J / Q / K            10点",
+			"  その他               額面どおり",
+		},
+		"en": {
+			"  8                    50 points",
+			"  A                     1 point",
+			"  J / Q / K            10 points",
+			"  Other                face value",
+		},
+	}
+	for _, lang := range []string{"ja", "en"} {
+		i18n.SetLang(lang)
+		lines := strings.Join(crazyeights.NewCui().HelpLines(), "\n")
+		for _, want := range wantByLang[lang] {
+			if !strings.Contains(lines, want) {
+				t.Errorf("help crazyeights (%s) does not contain %q", lang, want)
+			}
+		}
+		if strings.Contains(lines, "{{") {
+			t.Errorf("help crazyeights (%s) contains an unresolved template: %s", lang, lines)
+		}
+	}
+}
