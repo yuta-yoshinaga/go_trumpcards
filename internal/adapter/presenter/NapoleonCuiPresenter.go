@@ -163,6 +163,9 @@ func (p *NapoleonCuiPresenter) Output(n interfaces.NapoleonGame, lastErr error) 
 			b.WriteString(i18n.T("napoleon.promptTrumpHeader") + "\n")
 			b.WriteString(i18n.T("napoleon.promptTrumpDeclareHelp") + "\n")
 			b.WriteString(i18n.T("napoleon.promptTrumpSuitLegend") + "\n")
+			if n.IsHumanDeclareTurn() {
+				b.WriteString(i18n.T("napoleon.adjutantInHandNote") + "\n")
+			}
 		case domain.NapoleonPhaseKittyExchange:
 			b.WriteString(i18n.T("napoleon.promptKittyHeader") + "\n")
 			b.WriteString(i18n.T("napoleon.promptKittyHelp") + "\n")
