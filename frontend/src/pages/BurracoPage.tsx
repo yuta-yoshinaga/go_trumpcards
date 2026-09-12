@@ -296,8 +296,16 @@ function BurracoPageContent() {
               <span>
                 {t('drawPile', { count: state.drawPileCount })} / {t('discardPile', { count: state.discardPileCount })}
               </span>
-              <span className="ml-4" data-testid="bu-pozzetto-count">
+              <span
+                className="ml-4"
+                data-testid="bu-pozzetto-count"
+                title={t('pozzettoDescription')}
+                aria-describedby="bu-pozzetto-description"
+              >
                 {t('pozzetto', { count: state.pozzettoCount })}
+                <span id="bu-pozzetto-description" className="sr-only">
+                  {t('pozzettoDescription')}
+                </span>
               </span>
               {state.isFrozen && <span className="ml-2 text-ds-info font-bold">[{t('frozen')}]</span>}
             </div>

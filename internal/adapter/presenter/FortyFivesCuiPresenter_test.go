@@ -71,6 +71,15 @@ func TestFortyFivesCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
+	t.Run("shows the complete trump order with the top-trump explanation", func(t *testing.T) {
+		m, players := setupFortyFivesCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTopTrumpIndices")
+		m.On("GetTopTrumpIndices", mock.Anything).Return([]int{0})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "SPADE 5 > SPADE 11 > HEART 1 > SPADE 1 > SPADE 13 > SPADE 12 > SPADE 10 > SPADE 9 > SPADE 8 > SPADE 7 > SPADE 6 > SPADE 4 > SPADE 3 > SPADE 2")
+	})
+
 	t.Run("bid phase prompt", func(t *testing.T) {
 		m, _ := setupFortyFivesCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")

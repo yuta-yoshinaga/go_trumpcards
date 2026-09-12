@@ -12,6 +12,7 @@
   "contractLine": "落札者: {{name}}（チーム{{team}}） — {{contract}}",
   "playerLine": "{{name}}（チーム{{team}}・{{role}}）: {{cards}}枚  チーム得点: {{score}}  トリック: {{tricks}}",
   "topTrumpLegend": "!! = 最上位の切り札（切り札の5・切り札のJ・♥A）。持っているとマストフォローが免除されます",
+  "trumpOrder": "切り札の強さ順: {{order}}（上位3枚はフォロー義務免除）",
   "roleDeclarer": "落札者",
   "roleDefender": "ディフェンダー",
   "bid.pass": "パス",

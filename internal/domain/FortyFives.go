@@ -559,26 +559,47 @@ func (g *FortyFives) trickWinner() int {
 }
 
 // fortyFivesRank Spoil Five 系の固定ランクを返す (高いほど強い)。
-func (g *FortyFives) fortyFivesRank(card *Card) int {
+func fortyFivesRank(card *Card, trumpSuit int) int {
 	d, v := card.GetDesign(), card.GetValue()
 	switch {
-	case d == g.trumpSuit && v == 5:
+	case d == trumpSuit && v == 5:
 		return 1000
-	case d == g.trumpSuit && v == 11:
+	case d == trumpSuit && v == 11:
 		return 999
 	case d == CardDesignHeart && v == 1:
 		return 998
-	case d == g.trumpSuit && v == 1:
+	case d == trumpSuit && v == 1:
 		return 997
-	case d == g.trumpSuit && v == 13:
+	case d == trumpSuit && v == 13:
 		return 996
-	case d == g.trumpSuit && v == 12:
+	case d == trumpSuit && v == 12:
 		return 995
-	case d == g.trumpSuit:
+	case d == trumpSuit:
 		return 900 + fortyFivesPip(v)
 	default:
 		return fortyFivesPip(v)
 	}
+}
+
+// fortyFivesRank returns the fixed Spoil Five rank for the supplied trump suit.
+func (g *FortyFives) fortyFivesRank(card *Card) int {
+	return fortyFivesRank(card, g.trumpSuit)
+}
+
+// FortyFivesTrumpOrder は指定の切り札スートにおける切り札の強さ順を、
+// エンジンが採点に使う fortyFivesRank そのもので並べて返す (強い順)。
+func FortyFivesTrumpOrder(trumpSuit int) []*Card {
+	cards := make([]*Card, 0, CardValueMax+1)
+	for value := 1; value <= CardValueMax; value++ {
+		cards = append(cards, NewCard(trumpSuit, value, false))
+	}
+	if trumpSuit != CardDesignHeart {
+		cards = append(cards, NewCard(CardDesignHeart, 1, false))
+	}
+	sort.SliceStable(cards, func(i, j int) bool {
+		return fortyFivesRank(cards[i], trumpSuit) > fortyFivesRank(cards[j], trumpSuit)
+	})
+	return cards
 }
 
 // fortyFivesPip 数札の相対強さ (A 高, 10-high 簡略)。

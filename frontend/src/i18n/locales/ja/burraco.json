@@ -27,6 +27,7 @@
   "discardPile": "捨て札: {{count}}枚",
   "handCards": "{{count}}枚",
   "pozzetto": "ポゼット: 残り{{count}}山",
+  "pozzettoDescription": "ポゼットは11枚の予備手札です。最初に手札をすべて出し切ったプレイヤーが新しい手札として獲得します。ポゼットを獲得しないと上がれません。",
   "tookPozzetto": "ポゼット獲得済",
   "pozzettoTakenBanner": "{{player}} がポゼットを獲得！",
   "frozen": "フリーズ中",

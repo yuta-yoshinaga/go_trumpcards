@@ -203,6 +203,18 @@ describe('BurracoPage', () => {
     expect(screen.getByRole('checkbox', { name: 'ヒント表示' })).toBeInTheDocument();
   });
 
+  it('explains what the pozzetto is accessibly', async () => {
+    renderWithProviders(<BurracoPage />);
+    const count = await screen.findByTestId('bu-pozzetto-count');
+    expect(count).toHaveAttribute(
+      'title',
+      'ポゼットは11枚の予備手札です。最初に手札をすべて出し切ったプレイヤーが新しい手札として獲得します。ポゼットを獲得しないと上がれません。',
+    );
+    expect(count).toHaveTextContent(
+      'ポゼットは11枚の予備手札です。最初に手札をすべて出し切ったプレイヤーが新しい手札として獲得します。ポゼットを獲得しないと上がれません。',
+    );
+  });
+
   it('shows HintTooltip when hint is enabled in draw phase', async () => {
     localStorage.setItem('hint_enabled_burraco', 'true');
     // drawPhaseState: human turn (currentPlayerIdx=0), DRAW phase → returns drawStock hint

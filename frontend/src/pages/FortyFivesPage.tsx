@@ -32,6 +32,7 @@ import { FORTY_FIVES_HELP, parseFortyFivesCommand } from '../utils/cli/commands/
 import { formatFortyFivesState } from '../utils/cli/formatters/fortyFivesFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { fortyFivesTopTrumpIndices } from '../utils/fortyFivesTopTrump';
+import { formatFortyFivesTrumpOrder } from '../utils/fortyFivesTrump';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -275,6 +276,27 @@ function FortyFivesPageContent() {
 
               {/* Right: info sidebar */}
               <div>
+                {state.trumpSuit > 0 && (
+                  <details className="mb-2 p-2 rounded bg-black/30" data-testid="ff-trump-legend">
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                      {t('trumpLegend.title')}
+                    </summary>
+                    <div className="mt-1 text-ds-text-muted text-xs">
+                      <div className="mb-1">{t('trumpLegend.caption')}</div>
+                      <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                        {formatFortyFivesTrumpOrder(trumpSymbol).map((symbol, i, order) => (
+                          <span key={symbol} className="inline-flex items-center gap-1">
+                            <span className={i < 3 ? 'font-mono text-ds-warning' : 'font-mono text-ds-text-primary'}>
+                              {symbol}
+                            </span>
+                            {i < order.length - 1 && <span aria-hidden="true">&gt;</span>}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </details>
+                )}
+
                 {/* Team match scores */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                   <div>{t('teamScore', { team: t('team.a'), score: state.teamScores[0] ?? 0 })}</div>

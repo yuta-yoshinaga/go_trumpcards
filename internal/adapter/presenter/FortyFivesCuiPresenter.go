@@ -45,6 +45,16 @@ func fortyFivesTrumpStr(suit int) string {
 	return cuiSuitName(suit)
 }
 
+// fortyFivesTrumpOrderStr renders the domain's fixed trump order for the current suit.
+func fortyFivesTrumpOrderStr(suit int) string {
+	cards := domain.FortyFivesTrumpOrder(suit)
+	order := make([]string, 0, len(cards))
+	for _, card := range cards {
+		order = append(order, cuiCardStr(card))
+	}
+	return strings.Join(order, " > ")
+}
+
 // fortyFivesPlayerStr returns the display string for a single player.
 func fortyFivesPlayerStr(g interfaces.FortyFivesGame, idx int) string {
 	player := g.GetPlayer(idx)
@@ -75,6 +85,7 @@ func fortyFivesPlayerStr(g interfaces.FortyFivesGame, idx int) string {
 		b.WriteString(cuiIndexMarkedCardListStr(player, tops, CuiTopTrumpMark) + "\n")
 		if len(tops) > 0 {
 			b.WriteString(i18n.T("fortyfives.topTrumpLegend") + "\n")
+			b.WriteString(i18n.Tf("fortyfives.trumpOrder", "order", fortyFivesTrumpOrderStr(g.GetTrumpSuit())) + "\n")
 		}
 	}
 	return b.String()

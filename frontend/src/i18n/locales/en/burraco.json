@@ -27,6 +27,7 @@
   "discardPile": "Discard: {{count}} cards",
   "handCards": "{{count}} cards",
   "pozzetto": "Pozzetti: {{count}} left",
+  "pozzettoDescription": "The pozzetto is an 11-card reserve hand. The first player to empty their hand takes it as a new hand, and must take it before going out.",
   "tookPozzetto": "Pozzetto taken",
   "pozzettoTakenBanner": "{{player}} took the pozzetto!",
   "frozen": "Frozen",
