@@ -40,7 +40,7 @@ export function getTonkHint(state: TonkResponse): HintResult | null {
   if (state.phase === TonkPhase.DRAW) {
     const top = state.discardTop;
     // 拾って減るかどうかで決める。サーバの `cpuDraw` (Tonk.go:356) と同じ判定。
-    const improves = top !== null && deadwoodValue([...hand, top]) < deadwoodValue(hand);
+    const improves = top !== null && calcTonkDeadwoodValue([...hand, top]) < calcTonkDeadwoodValue(hand);
     return improves
       ? { targetAction: 'takeDiscard', reason: 'frontendHint.tonkTakeDiscard', confidence: 'moderate' }
       : { targetAction: 'drawStock', reason: 'frontendHint.tonkDrawStock', confidence: 'moderate' };
@@ -62,7 +62,7 @@ function bestDiscard(hand: Card[]): { index: number; deadwood: number } {
   let index = 0;
   let deadwood = Number.POSITIVE_INFINITY;
   hand.forEach((_, i) => {
-    const dw = deadwoodValue(hand.filter((_, j) => j !== i));
+    const dw = calcTonkDeadwoodValue(hand.filter((_, j) => j !== i));
     if (dw < deadwood) {
       deadwood = dw;
       index = i;
@@ -76,13 +76,13 @@ function points(c: Card): number {
   return c.value >= 10 ? 10 : c.value;
 }
 
-/** メルドに使えなかった札の合計点。最小になる分け方を探す。 */
-function deadwoodValue(hand: Card[]): number {
+/** Calculate Tonk deadwood using the server's Gin Rummy card-value rules. */
+export function calcTonkDeadwoodValue(hand: Card[]): number {
   const melds = possibleMelds(hand);
   let best = hand.reduce((sum, c) => sum + points(c), 0);
   for (const meld of melds) {
     const rest = hand.filter((c) => !meld.includes(c));
-    const dw = deadwoodValue(rest);
+    const dw = calcTonkDeadwoodValue(rest);
     if (dw < best) best = dw;
     if (best === 0) break;
   }

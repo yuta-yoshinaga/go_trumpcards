@@ -43,7 +43,8 @@
   "knockerDeadwood": "Knocker's deadwood",
   "result": {
     "humanWin": "You win!",
-    "cpuWin": "CPU {{cpuId}} wins!"
+    "cpuWin": "CPU {{cpuId}} wins!",
+    "undercut": "UNDERCUT! The knocker was undercut"
   },
   "tutorial": {
     "drawArea": "Draw one card from the stock or discard pile.",
@@ -61,6 +62,7 @@
   },
   "deadwood": {
     "current": "Best deadwood after discarding: {{value}}",
+    "score": "{{value}} pts",
     "knockable": "Can knock",
     "notKnockable": "Cannot knock (needs {{threshold}} or less)"
   },

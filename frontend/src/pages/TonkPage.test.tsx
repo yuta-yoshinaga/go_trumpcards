@@ -307,6 +307,24 @@ describe('TonkPage', () => {
     await waitFor(() => expect(screen.getByTestId('tonk-opponent-melds')).toBeInTheDocument());
     expect(screen.getByTestId('tonk-opponent-deadwood')).toBeInTheDocument();
     expect(screen.getByTestId('tonk-knocker-deadwood')).toBeInTheDocument();
+    expect(screen.getByTestId('tonk-knocker-deadwood')).toHaveTextContent('7点');
+    expect(screen.getByTestId('tonk-opponent-deadwood')).toHaveTextContent('2点');
+    expect(screen.getByTestId('tonk-undercut-result')).toHaveTextContent('UNDERCUT!');
+  });
+
+  it('does not show the undercut result when the round was not undercut', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: TonkPhase.ROUND_END,
+        knockerIdx: 0,
+        knockerDeadwood: [card('DIAMOND', 7)],
+        opponentDeadwood: [card('CLOVER', 2)],
+        isUndercut: false,
+      }),
+    );
+    renderWithProviders(<TonkPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('tonk-undercut-result')).not.toBeInTheDocument();
   });
 
   it('shows no opponent panels while nothing has been revealed', async () => {
