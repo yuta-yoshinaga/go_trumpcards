@@ -1,13 +1,17 @@
 {
   "aceFoundation": "昇順 (A→K)",
-  "aceFoundationAriaLabel": "{{suit}} 昇順組札 {{count}}枚",
+  "aceFoundationAriaLabel": "{{suit}} 昇順組札 {{count}}枚、次に置くべきカード {{rank}}",
   "autoComplete": "自動完成",
   "autoCompleteNotReady": "組札を配り札より先へ進めると有効になります",
   "cardPosAria": "{{card}}（列{{col}}・上から{{pos}}枚目）",
+  "completeAceFoundationAriaLabel": "{{suit}} 昇順組札 {{count}}枚",
+  "completeEmptyAceFoundationAriaLabel": "{{suit}} 昇順組札 完成（このスートは反対側の組札で完成しています）",
+  "completeEmptyKingFoundationAriaLabel": "{{suit}} 降順組札 完成（このスートは反対側の組札で完成しています）",
+  "completeKingFoundationAriaLabel": "{{suit}} 降順組札 {{count}}枚",
   "empty": "空",
-  "emptyAceFoundationAriaLabel": "空の昇順組札 ({{suit}})",
+  "emptyAceFoundationAriaLabel": "空の昇順組札 ({{suit}})、次に置くべきカード {{rank}}",
   "emptyColumnAriaLabel": "空のタブロー列 {{col}}",
-  "emptyKingFoundationAriaLabel": "空の降順組札 ({{suit}})",
+  "emptyKingFoundationAriaLabel": "空の降順組札 ({{suit}})、次に置くべきカード {{rank}}",
   "frontendHint": {
     "tableau": "タブロー列{{col}}",
     "aceFoundation": "{{suit}} 昇順組札",
@@ -25,9 +29,10 @@
     "toTableau": "示唆された場札への移動で下のカードを掘り出しましょう"
   },
   "kingFoundation": "降順 (K→A)",
-  "kingFoundationAriaLabel": "{{suit}} 降順組札 {{count}}枚",
+  "kingFoundationAriaLabel": "{{suit}} 降順組札 {{count}}枚、次に置くべきカード {{rank}}",
   "landscapeBanner": "横画面での表示を推奨します",
   "moveCount": "手数",
+  "nextRankBadge": "次:{{rank}}",
   "noHint": "ヒントはありません",
   "phase": {
     "playing": "プレイ中",
