@@ -464,7 +464,7 @@ func (g *ContractRummy) applyLayoff(targetPlayerIdx, meldIdx, cardIndex int) err
 
 	card := current.GetCard(cardIndex)
 	meld := target.GetMeld(meldIdx)
-	if !canAddToContractRummyMeld(meld, card) {
+	if !CanAddToContractRummyMeld(meld, card) {
 		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("%s はそのメルドに追加できません", cardStr(card)))
 	}
 	target.AddCardToMeld(meldIdx, card)
@@ -667,7 +667,7 @@ func (g *ContractRummy) findLayoffTargetFor(card *Card) int {
 			continue
 		}
 		for mi := 0; mi < g.players[pi].GetMeldCount(); mi++ {
-			if canAddToContractRummyMeld(g.players[pi].GetMeld(mi), card) {
+			if CanAddToContractRummyMeld(g.players[pi].GetMeld(mi), card) {
 				return mi
 			}
 		}
@@ -682,7 +682,7 @@ func (g *ContractRummy) locateLayoffTarget(card *Card) (int, int, bool) {
 			continue
 		}
 		for mi := 0; mi < g.players[pi].GetMeldCount(); mi++ {
-			if canAddToContractRummyMeld(g.players[pi].GetMeld(mi), card) {
+			if CanAddToContractRummyMeld(g.players[pi].GetMeld(mi), card) {
 				return pi, mi, true
 			}
 		}
@@ -925,11 +925,11 @@ func isConsecutive(values []int) bool {
 	return true
 }
 
-// canAddToContractRummyMeld は ContractRummy 用のレイオフ可否判定。
+// CanAddToContractRummyMeld は ContractRummy 用のレイオフ可否判定。
 // GinRummy 系の canAddToMeld との違いは:
 //   - セットでのスート重複を許容する（2 デッキ運用の標準）
 //   - ラン末尾に Ace を継ぎ足せる（K-high の上に A を置ける）
-func canAddToContractRummyMeld(meld []*Card, card *Card) bool {
+func CanAddToContractRummyMeld(meld []*Card, card *Card) bool {
 	if len(meld) == 0 || card == nil {
 		return false
 	}

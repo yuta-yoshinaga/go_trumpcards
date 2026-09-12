@@ -1,6 +1,7 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { contractrummyApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ContractRummyResponse } from '../types/card';
 import { ContractRummyPage } from './ContractRummyPage';
@@ -377,8 +378,81 @@ describe('ContractRummyPage', () => {
     const meldButton = await screen.findByRole('button', { name: /メルド1/ });
     expect(meldButton).toBeEnabled();
     expect(meldButton).toHaveClass('cursor-pointer');
+    expect(meldButton).toHaveClass('ring-2', 'ring-ds-warning');
+    expect(meldButton).toHaveAttribute('aria-pressed', 'false');
     // 活性のときは理由を名前に足さない。
     expect(meldButton.getAttribute('aria-label')).not.toContain('レイオフできません');
+  });
+
+  it('enables and rings only melds that accept the selected card', async () => {
+    const state: ContractRummyResponse = {
+      ...playState,
+      players: [
+        { ...playState.players[0], contractMet: true, cards: [card('SPADE', 5)], cardCount: 1 },
+        {
+          ...playState.players[1],
+          contractMet: true,
+          melds: [{ cards: [card('HEART', 5), card('DIAMOND', 5), card('CLOVER', 5)] }],
+        },
+        {
+          ...playState.players[2],
+          contractMet: true,
+          melds: [{ cards: [card('SPADE', 8), card('SPADE', 9), card('SPADE', 10)] }],
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<ContractRummyPage />);
+
+    const hand = await screen.findByTestId('cr-hand');
+    fireEvent.click(within(hand).getByRole('button', { name: '♠ 5' }));
+    const tableau = screen.getByTestId('cr-tableau');
+    const buttons = within(tableau).getAllByRole('button');
+    expect(buttons[0]).toBeEnabled();
+    expect(buttons[1]).toBeDisabled();
+    expect(buttons[0]).toHaveClass('cursor-pointer');
+    expect(buttons[1]).toHaveClass('cursor-not-allowed');
+  });
+
+  it('does not send layoff when an invalid meld is clicked', async () => {
+    const state: ContractRummyResponse = {
+      ...playState,
+      players: [
+        { ...playState.players[0], contractMet: true, cards: [card('SPADE', 5)], cardCount: 1 },
+        {
+          ...playState.players[1],
+          contractMet: true,
+          melds: [{ cards: [card('SPADE', 8), card('SPADE', 9), card('SPADE', 10)] }],
+        },
+        playState.players[2],
+      ],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<ContractRummyPage />);
+    const hand = await screen.findByTestId('cr-hand');
+    fireEvent.click(within(hand).getByRole('button', { name: '♠ 5' }));
+    const invalidMeld = within(screen.getByTestId('cr-tableau')).getByRole('button', { name: /メルド1/ });
+    expect(invalidMeld).toBeDisabled();
+    fireEvent.click(invalidMeld);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('layoff', expect.anything());
+  });
+
+  it('does not show a layoff target when no met player has melds', async () => {
+    const state: ContractRummyResponse = {
+      ...playState,
+      players: [
+        { ...playState.players[0], contractMet: true, cards: [card('SPADE', 5)], cardCount: 1 },
+        { ...playState.players[1], contractMet: true, melds: [] },
+        { ...playState.players[2], contractMet: true, melds: [] },
+      ],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<ContractRummyPage />);
+
+    await screen.findByTestId('cr-hand');
+    expect(screen.queryByTestId('cr-layoff-target')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Lay off|レイオフ/ })).toBeDisabled();
   });
 
   it('shows per-slot progress and only enables Submit when both slots satisfy their contract', async () => {

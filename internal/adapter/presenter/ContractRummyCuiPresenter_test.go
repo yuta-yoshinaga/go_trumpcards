@@ -5,6 +5,7 @@ package presenter_test
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -160,4 +161,99 @@ func TestContractRummyCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)
+}
+
+func TestContractRummyCuiPresenter_LayoffTargets(t *testing.T) {
+	p := new(presenter.ContractRummyCuiPresenter)
+	m, players := setupContractRummyCuiMock(domain.ContractRummyPhasePlay, false)
+	players[0].SetContractMet(true)
+	players[0].Reset()
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[1].SetContractMet(true)
+	players[1].AppendMeld([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 5, false),
+		domain.NewCard(domain.CardDesignDiamond, 5, false),
+		domain.NewCard(domain.CardDesignClover, 5, false),
+	})
+	players[2].SetContractMet(true)
+	players[2].AppendMeld([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 8, false),
+		domain.NewCard(domain.CardDesignSpade, 9, false),
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+	})
+
+	out := p.Output(m, nil)
+	assert.Contains(t, out, "レイオフ可能なメルド: 1/0 (プレイヤー/メルド)")
+	assert.NotContains(t, out, "2/0")
+}
+
+func TestContractRummyCuiPresenter_OmitsLayoffTargetsWhenNoneAccept(t *testing.T) {
+	p := new(presenter.ContractRummyCuiPresenter)
+	m, players := setupContractRummyCuiMock(domain.ContractRummyPhasePlay, false)
+	players[0].SetContractMet(true)
+	players[0].Reset()
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[1].SetContractMet(true)
+	players[1].AppendMeld([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 8, false),
+		domain.NewCard(domain.CardDesignSpade, 9, false),
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+	})
+
+	out := p.Output(m, nil)
+	assert.NotContains(t, out, "レイオフ可能なメルド:")
+}
+
+func TestContractRummyCuiPresenter_LayoffTargetsUseDomainRule(t *testing.T) {
+	tests := []struct {
+		name string
+		card *domain.Card
+		meld []*domain.Card
+		want bool
+	}{
+		{
+			name: "run extends at high end",
+			card: domain.NewCard(domain.CardDesignSpade, 8, false),
+			meld: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 5, false),
+				domain.NewCard(domain.CardDesignSpade, 6, false),
+				domain.NewCard(domain.CardDesignSpade, 7, false),
+			},
+			want: true,
+		},
+		{
+			name: "run rejects a different suit",
+			card: domain.NewCard(domain.CardDesignHeart, 8, false),
+			meld: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 5, false),
+				domain.NewCard(domain.CardDesignSpade, 6, false),
+				domain.NewCard(domain.CardDesignSpade, 7, false),
+			},
+			want: false,
+		},
+		{
+			name: "run accepts ace above king",
+			card: domain.NewCard(domain.CardDesignSpade, 1, false),
+			meld: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 11, false),
+				domain.NewCard(domain.CardDesignSpade, 12, false),
+				domain.NewCard(domain.CardDesignSpade, 13, false),
+			},
+			want: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m, players := setupContractRummyCuiMock(domain.ContractRummyPhasePlay, false)
+			players[0].SetContractMet(true)
+			players[0].Reset()
+			players[0].AddCard(tt.card)
+			players[1].SetContractMet(true)
+			players[1].AppendMeld(tt.meld)
+
+			out := (&presenter.ContractRummyCuiPresenter{}).Output(m, nil)
+			assert.Equal(t, tt.want, strings.Contains(out, "1/0 (プレイヤー/メルド)"))
+		})
+	}
 }
