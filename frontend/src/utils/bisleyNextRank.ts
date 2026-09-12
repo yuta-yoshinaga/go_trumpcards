@@ -6,7 +6,7 @@ const RANKS_PER_SUIT = 13;
 /**
  * Return the next rank required by a Bisley foundation, or null when complete.
  * @param topValue The rank at the top of the foundation in this direction.
- * @param suitCardsPlaced The total in the ascending and descending foundations; Bisley splits one suit across two foundations. 昇順と降順の合計。ビズリーは 1 スートを 2 つの山で分け合うため。
+ * @param suitCardsPlaced The total in the ascending and descending foundations; Bisley splits one suit across two foundations.
  * @param direction The direction in which this foundation is built.
  */
 export function bisleyNextRank(

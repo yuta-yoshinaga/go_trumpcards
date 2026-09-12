@@ -113,12 +113,14 @@ describe('BisleyPage', () => {
         [card('HEART', 1)],
         [card('DIAMOND', 1)],
       ],
-      kingFoundations: [[...Array.from({ length: 13 }, (_, i) => card('SPADE', 13 - i))], [], [], []],
+      kingFoundations: [[], [], [], []],
     });
     renderWithProviders(<BisleyPage />);
 
     const ascending = await screen.findByRole('button', { name: '♠ 昇順組札 13枚' });
-    const descending = screen.getByRole('button', { name: '♠ 降順組札 13枚' });
+    const descending = screen.getByRole('button', {
+      name: '♠ 降順組札 完成（このスートは反対側の組札で完成しています）',
+    });
     expect(ascending).not.toHaveAccessibleName(/次/);
     expect(descending).not.toHaveAccessibleName(/次/);
     expect(ascending.getAttribute('aria-label')).not.toContain('{{');

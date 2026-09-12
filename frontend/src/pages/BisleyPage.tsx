@@ -305,6 +305,8 @@ function BisleyPageContent() {
     const piles = kind === 'ace' ? state.aceFoundations : state.kingFoundations;
     const labelKey = kind === 'ace' ? 'aceFoundationAriaLabel' : 'kingFoundationAriaLabel';
     const emptyLabelKey = kind === 'ace' ? 'emptyAceFoundationAriaLabel' : 'emptyKingFoundationAriaLabel';
+    const completeEmptyLabelKey =
+      kind === 'ace' ? 'completeEmptyAceFoundationAriaLabel' : 'completeEmptyKingFoundationAriaLabel';
     const placeholder = kind === 'ace' ? 'A' : 'K';
     const direction = kind === 'ace' ? 'ascending' : 'descending';
     return (
@@ -358,7 +360,11 @@ function BisleyPageContent() {
                       type="button"
                       onClick={() => game.handleSelectTarget(foundationZone)}
                       disabled={!isPlaying || loading || !selectedSource}
-                      aria-label={t(emptyLabelKey, { suit, rank: nextRankLabel ?? '' })}
+                      aria-label={
+                        nextRankLabel
+                          ? t(emptyLabelKey, { suit, rank: nextRankLabel })
+                          : t(completeEmptyLabelKey, { suit })
+                      }
                       style={{ width: dims.cw, height: dims.ch }}
                       className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                     >

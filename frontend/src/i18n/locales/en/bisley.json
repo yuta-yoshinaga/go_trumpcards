@@ -5,6 +5,8 @@
   "autoCompleteNotReady": "Available once a foundation builds past the deal",
   "cardPosAria": "{{card}} (column {{col}}, position {{pos}})",
   "completeAceFoundationAriaLabel": "{{suit}} ascending foundation {{count}} cards",
+  "completeEmptyAceFoundationAriaLabel": "{{suit}} ascending foundation complete (this suit is complete in the opposite foundation)",
+  "completeEmptyKingFoundationAriaLabel": "{{suit}} descending foundation complete (this suit is complete in the opposite foundation)",
   "completeKingFoundationAriaLabel": "{{suit}} descending foundation {{count}} cards",
   "empty": "Empty",
   "emptyAceFoundationAriaLabel": "Empty ascending foundation ({{suit}}), next required card {{rank}}",

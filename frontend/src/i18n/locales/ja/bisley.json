@@ -5,6 +5,8 @@
   "autoCompleteNotReady": "組札を配り札より先へ進めると有効になります",
   "cardPosAria": "{{card}}（列{{col}}・上から{{pos}}枚目）",
   "completeAceFoundationAriaLabel": "{{suit}} 昇順組札 {{count}}枚",
+  "completeEmptyAceFoundationAriaLabel": "{{suit}} 昇順組札 完成（このスートは反対側の組札で完成しています）",
+  "completeEmptyKingFoundationAriaLabel": "{{suit}} 降順組札 完成（このスートは反対側の組札で完成しています）",
   "completeKingFoundationAriaLabel": "{{suit}} 降順組札 {{count}}枚",
   "empty": "空",
   "emptyAceFoundationAriaLabel": "空の昇順組札 ({{suit}})、次に置くべきカード {{rank}}",
