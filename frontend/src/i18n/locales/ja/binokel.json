@@ -30,6 +30,7 @@
   "meldScore": "メルド得点",
   "meldHighlightHint": "メルドバッジをクリックすると手札の対応カードがハイライトされます",
   "trickPoints": "トリック得点",
+  "points": "{{points}}点",
   "trickCount": "獲得トリック",
   "round": "ラウンド",
   "trick": "トリック",
