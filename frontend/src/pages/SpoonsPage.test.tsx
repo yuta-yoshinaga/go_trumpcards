@@ -136,6 +136,53 @@ describe('SpoonsPage', () => {
     expect(grabbed[0]).toHaveTextContent('CPU 1 が取得');
   });
 
+  it('shows the first four-of-a-kind player during the grab window and in round results', async () => {
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        phase: 1,
+        grabWindowOpen: true,
+        firstGrabberIdx: 1,
+        players: [
+          makePlayer({ name: 'You', isHuman: true }),
+          makePlayer({ name: 'Fast CPU' }),
+          makePlayer(),
+          makePlayer(),
+        ],
+      }),
+    );
+    renderWithProviders(<SpoonsPage />);
+    const live = await screen.findByTestId('spoons-first-grabber-live');
+    expect(live).toHaveTextContent('最初に4枚揃えたのはCPU 1です。');
+    expect(live).not.toHaveClass('sr-only');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        phase: 2,
+        firstGrabberIdx: 2,
+        isHumanTurn: false,
+        players: [
+          makePlayer({ name: 'You', isHuman: true }),
+          makePlayer({ name: 'Fast CPU' }),
+          makePlayer({ name: 'Other CPU' }),
+          makePlayer(),
+        ],
+      }),
+    );
+    fireEvent.click(await screen.findByTestId('spoons-grab-button'));
+    await waitFor(() => expect(live).toHaveTextContent('最初に4枚揃えたのはCPU 2です。'));
+  });
+
+  it('keeps the first grabber region empty when no player has completed four of a kind', async () => {
+    mockExec.mockResolvedValue(makeState({ firstGrabberIdx: -1 }));
+    renderWithProviders(<SpoonsPage />);
+    const live = await screen.findByTestId('spoons-first-grabber-live');
+    expect(live).toBeEmptyDOMElement();
+    expect(live).toBeInTheDocument();
+    expect(live).toHaveClass('sr-only');
+  });
+
   it('renders the human hand as pass buttons naming each card', async () => {
     renderWithProviders(<SpoonsPage />);
     // Each pass button names the card it would hand over (e.g. ♠A → "♠ A を渡す").

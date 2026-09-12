@@ -59,7 +59,17 @@ func (p *SpoonsCuiPresenter) Output(g interfaces.SpoonsGame, lastErr error) stri
 		}
 		b.WriteString("----------\n")
 
-		switch g.GetPhase() {
+		firstGrabberIdx := g.GetFirstGrabberIdx()
+		phase := g.GetPhase()
+		if firstGrabberIdx >= 0 && firstGrabberIdx < g.GetPlayerCnt() &&
+			(phase == domain.SpoonsPhaseGrab || phase == domain.SpoonsPhaseRoundEnd || g.GetGameEndFlag()) {
+			if firstGrabber := g.GetPlayer(firstGrabberIdx); firstGrabber != nil {
+				b.WriteString(i18n.Tf("spoons.firstGrabber",
+					"name", cuiPlayerName(firstGrabber, firstGrabberIdx)) + "\n")
+			}
+		}
+
+		switch phase {
 		case domain.SpoonsPhaseGrab:
 			b.WriteString(color.Yellow(i18n.T("spoons.promptGrab")) + "\n")
 		case domain.SpoonsPhasePass:

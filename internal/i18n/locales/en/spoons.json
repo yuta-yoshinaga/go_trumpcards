@@ -14,6 +14,7 @@
   "promptPass": "Your turn. Use p <n> to choose a card to pass.",
   "promptCpuTurn": "CPUs are passing cards...",
   "promptGrab": "Someone got four of a kind! Use g (grab) to grab a spoon!",
+  "firstGrabber": "{{name}} was first to get four of a kind.",
   "promptNextRound": "Round over. Use n (next) to start the next round.",
   "roundLoser": "{{name}} failed to grab a spoon and took a letter",
   "winHuman": "You win!",
