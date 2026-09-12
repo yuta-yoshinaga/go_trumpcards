@@ -71,6 +71,26 @@ func (m *MockVideoPokerGame) GetPayout() int {
 	return args.Int(0)
 }
 
+func (m *MockVideoPokerGame) GetHands() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
+func (m *MockVideoPokerGame) GetWins() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
+func (m *MockVideoPokerGame) GetTotalBet() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
+func (m *MockVideoPokerGame) GetTotalPayout() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
 func (m *MockVideoPokerGame) GetHandRank() int {
 	args := m.Called()
 	return args.Int(0)
