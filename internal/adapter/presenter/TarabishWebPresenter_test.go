@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -87,16 +88,72 @@ func TestTarabishWebPresenterBidMessages(t *testing.T) {
 
 func TestTarabishWebPresenterRoundEndMessage(t *testing.T) {
 	p := new(TarabishWebPresenter)
-	tb := newTarabishForWeb(t)
-	tb.SetPhaseForTest(domain.TarabishPhaseRoundEnd)
-	tb.SetRoundPointsForTest(0, 90)
-	tb.SetRoundPointsForTest(1, 72)
+	t.Run("includes the last-trick bonus breakdown for team 0", func(t *testing.T) {
+		tb := tarabishRoundEndWithBonusTeam(t, 0)
 
-	m := decodeTarabish(t, p.Output(tb, nil))
-	assert.Equal(t, "tarabish.roundEnd", m["messageCode"])
-	params := m["messageParams"].(map[string]any)
-	assert.Equal(t, "90", params["t0"])
-	assert.Equal(t, "72", params["t1"])
+		m := decodeTarabish(t, p.Output(tb, nil))
+		assert.Equal(t, "tarabish.roundEnd.lastTrickBonusTeam0", m["messageCode"])
+		params := m["messageParams"].(map[string]any)
+		assert.Equal(t, "10", params["bonus"])
+		assert.NotContains(t, params, "bonusTeam")
+		assert.Equal(t, "1", params["round"])
+		assert.NotEmpty(t, params["t0"])
+		assert.NotEmpty(t, params["t1"])
+	})
+
+	t.Run("includes the last-trick bonus breakdown for team 1", func(t *testing.T) {
+		tb := tarabishRoundEndWithBonusTeam(t, 1)
+
+		m := decodeTarabish(t, p.Output(tb, nil))
+		assert.Equal(t, "tarabish.roundEnd.lastTrickBonusTeam1", m["messageCode"])
+		params := m["messageParams"].(map[string]any)
+		assert.Equal(t, "10", params["bonus"])
+		assert.NotContains(t, params, "bonusTeam")
+		assert.Equal(t, "1", params["round"])
+		assert.NotEmpty(t, params["t0"])
+		assert.NotEmpty(t, params["t1"])
+	})
+
+	t.Run("does not claim a bonus when none was recorded", func(t *testing.T) {
+		tb := newTarabishForWeb(t)
+		tb.SetPhaseForTest(domain.TarabishPhaseRoundEnd)
+		tb.SetRoundPointsForTest(0, 90)
+		tb.SetRoundPointsForTest(1, 72)
+
+		m := decodeTarabish(t, p.Output(tb, nil))
+		assert.Equal(t, "tarabish.roundEnd", m["messageCode"])
+		params := m["messageParams"].(map[string]any)
+		assert.Equal(t, "90", params["t0"])
+		assert.Equal(t, "72", params["t1"])
+		assert.NotContains(t, params, "bonus")
+		assert.NotContains(t, params, "bonusTeam")
+	})
+}
+
+func tarabishRoundEndWithBonusTeam(t *testing.T, winningTeam int) *domain.Tarabish {
+	t.Helper()
+	tb := newTarabishForWeb(t)
+	tb.SetConfig(domain.TarabishConfig{Target: 10000})
+	tb.SetTrumpSuitForTest(domain.CardDesignHeart)
+	tb.SetPhaseForTest(domain.TarabishPhasePlay)
+	tb.SetTrickNumberForTest(domain.TarabishTricksPerRound - 1)
+	if winningTeam == 0 {
+		tb.SetCurrentTrickForTest([]*domain.TrickCard{
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 6, false)},
+			{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 7, false)},
+			{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 8, false)},
+			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 9, false)},
+		})
+	} else {
+		tb.SetCurrentTrickForTest([]*domain.TrickCard{
+			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 6, false)},
+			{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 7, false)},
+			{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 8, false)},
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 9, false)},
+		})
+	}
+	tb.ResolveTrickForTest()
+	return tb
 }
 
 func TestTarabishWebPresenterResultMessage(t *testing.T) {
@@ -119,6 +176,43 @@ func TestTarabishWebPresenterResultMessage(t *testing.T) {
 
 			m := decodeTarabish(t, p.Output(tb, nil))
 			assert.Equal(t, tc.wantCode, m["messageCode"])
+			params, ok := m["messageParams"].(map[string]any)
+			require.True(t, ok)
+			assert.NotContains(t, params, "bonus")
+		})
+	}
+}
+
+func TestTarabishWebPresenterResultMessageWithBonus(t *testing.T) {
+	p := new(TarabishWebPresenter)
+
+	for _, tc := range []struct {
+		name      string
+		t0, t1    int
+		bonusTeam int
+		wantCode  string
+	}{
+		{"your team wins with your bonus", 520, 300, 0, "tarabish.result.team0.bonusYou"},
+		{"your team wins with their bonus", 520, 300, 1, "tarabish.result.team0.bonusThem"},
+		{"they win with your bonus", 300, 520, 0, "tarabish.result.team1.bonusYou"},
+		{"they win with their bonus", 300, 520, 1, "tarabish.result.team1.bonusThem"},
+		{"a tie with your bonus", 500, 500, 0, "tarabish.result.tie.bonusYou"},
+		{"a tie with their bonus", 500, 500, 1, "tarabish.result.tie.bonusThem"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			tb := newTarabishForWeb(t)
+			tb.SetScoreForTestUse(0, tc.t0)
+			tb.SetScoreForTestUse(1, tc.t1)
+			tb.FinishGameForTest()
+			tb.SetLastTrickBonusTeamForTest(tc.bonusTeam)
+
+			m := decodeTarabish(t, p.Output(tb, nil))
+			assert.Equal(t, tc.wantCode, m["messageCode"])
+			params, ok := m["messageParams"].(map[string]any)
+			require.True(t, ok)
+			assert.Equal(t, "10", params["bonus"])
+			assert.Equal(t, strconv.Itoa(tc.t0), params["t0"])
+			assert.Equal(t, strconv.Itoa(tc.t1), params["t1"])
 		})
 	}
 }

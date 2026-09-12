@@ -117,6 +117,9 @@ func (p *TarabishCuiPresenter) Output(t interfaces.TarabishGame, lastErr error) 
 				banner = i18n.Tf("tarabish.gameEndTie", "t0", strconv.Itoa(t.GetScore(0)), "t1", strconv.Itoa(t.GetScore(1)))
 			}
 			sb.WriteString(color.Green(banner) + "\n")
+			if bonusLine := cuiTarabishLastTrickBonusLine(t.GetLastTrickBonusTeam()); bonusLine != "" {
+				sb.WriteString(bonusLine + "\n")
+			}
 			return
 		}
 
@@ -131,6 +134,9 @@ func (p *TarabishCuiPresenter) Output(t interfaces.TarabishGame, lastErr error) 
 			}
 			return
 		case domain.TarabishPhaseRoundEnd:
+			if bonusLine := cuiTarabishLastTrickBonusLine(t.GetLastTrickBonusTeam()); bonusLine != "" {
+				sb.WriteString(bonusLine + "\n")
+			}
 			sb.WriteString(i18n.T("tarabish.promptRoundEnd") + "\n")
 			sb.WriteString(i18n.T("tarabish.promptNext") + "\n")
 			return
@@ -141,6 +147,17 @@ func (p *TarabishCuiPresenter) Output(t interfaces.TarabishGame, lastErr error) 
 			"name", cuiPlayerName(t.GetPlayer(currentIdx), currentIdx)) + "\n")
 		sb.WriteString(i18n.T("tarabish.promptPlay") + "\n")
 	})
+}
+
+func cuiTarabishLastTrickBonusLine(team int) string {
+	switch team {
+	case 0:
+		return i18n.Tf("tarabish.lastTrickBonusTeam0", "bonus", strconv.Itoa(domain.TarabishLastTrickBonus))
+	case 1:
+		return i18n.Tf("tarabish.lastTrickBonusTeam1", "bonus", strconv.Itoa(domain.TarabishLastTrickBonus))
+	default:
+		return ""
+	}
 }
 
 // tarabishSuitName スート番号を i18n のスート名に変換する
