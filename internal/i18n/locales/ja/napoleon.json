@@ -28,6 +28,7 @@
   "promptTrumpHeader": "切り札宣言フェーズ",
   "promptTrumpDeclareHelp": "t <suit> <adjSuit> <adjVal>・・・切り札と副官を宣言",
   "promptTrumpSuitLegend": "  suit: 1=♠ 2=♣ 3=♥ 4=♦",
+  "adjutantInHandNote": "自分の手札のカードを指名すると自分が副官になります",
   "promptKittyHeader": "場札交換フェーズ",
   "promptKittyHelp": "e <idx>・・・捨てるカードを選択",
   "promptPlayTurn": "手番: {{name}}",

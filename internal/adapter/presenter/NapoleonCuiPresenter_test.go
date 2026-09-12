@@ -291,13 +291,34 @@ func TestNapoleonCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("trump declaration phase", func(t *testing.T) {
-		m, _ := setupNapoleonCuiMockWithPlayers()
+		m, players := setupNapoleonCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("IsHumanDeclareTurn").Return(true)
 		m.On("GetPhase").Return(domain.NapoleonPhaseTrumpDeclaration)
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "切り札宣言フェーズ")
 		assert.Contains(t, result, "t <suit> <adjSuit> <adjVal>")
+		assert.Contains(t, result, "  suit: 1=♠ 2=♣ 3=♥ 4=♦")
+		assert.Contains(t, result, "自分の手札のカードを指名すると自分が副官になります")
+		assert.Contains(t, result, "[0]HEART 7")
+		assert.NotContains(t, result, "{{")
+	})
+
+	t.Run("trump declaration phase does not show hand note for CPU Napoleon", func(t *testing.T) {
+		m, players := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("IsHumanDeclareTurn").Return(false)
+		m.On("GetPhase").Return(domain.NapoleonPhaseTrumpDeclaration)
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "自分の手札のカードを指名すると自分が副官になります")
+		assert.Contains(t, result, "切り札宣言フェーズ")
+		assert.Contains(t, result, "t <suit> <adjSuit> <adjVal>")
+		assert.Contains(t, result, "  suit: 1=♠ 2=♣ 3=♥ 4=♦")
+		assert.NotContains(t, result, "{{")
 	})
 
 	t.Run("kitty exchange phase", func(t *testing.T) {

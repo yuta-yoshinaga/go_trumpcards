@@ -28,6 +28,7 @@
   "promptTrumpHeader": "Trump declaration phase",
   "promptTrumpDeclareHelp": "t <suit> <adjSuit> <adjVal> — declare trump & adjutant",
   "promptTrumpSuitLegend": "  suit: 1=♠ 2=♣ 3=♥ 4=♦",
+  "adjutantInHandNote": "Naming a card in your own hand makes you your own adjutant",
   "promptKittyHeader": "Kitty exchange phase",
   "promptKittyHelp": "e <idx> — pick a card to discard",
   "promptPlayTurn": "Turn: {{name}}",
