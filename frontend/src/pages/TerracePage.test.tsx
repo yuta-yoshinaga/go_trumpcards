@@ -119,10 +119,30 @@ describe('TerracePage', () => {
     await waitFor(() => expect(terrace).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: '空の組札0' }));
+    const foundation = screen.getByRole('button', { name: '空の組札0' });
+    expect(foundation).toBeEnabled();
+    fireEvent.click(foundation);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve' }, { zone: 'foundation', col: 0 }),
     );
+  });
+
+  it('disables tableau cards while the terrace is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<TerracePage />);
+    fireEvent.click(await screen.findByTestId('terrace-pile'));
+
+    expect(screen.getByRole('button', { name: '♥ 8' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '♠ 7' })).toBeDisabled();
+  });
+
+  it('keeps tableau cards enabled while a non-terrace source is selected', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 4)] });
+    renderWithProviders(<TerracePage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♦ 4' }));
+
+    expect(screen.getByRole('button', { name: '♥ 8' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: '♠ 7' })).toBeEnabled();
   });
 
   it('shows an empty terrace slot once it runs out', async () => {
