@@ -15,6 +15,7 @@
   "meldRun": "ラン{{len}}枚",
   "meldBella": "ベラ",
   "meldSummary": "{{detail}}={{points}}点",
+  "lastTrickBonus": "チーム{{team}}が最終トリックボーナス +{{bonus}} 点を獲得。",
   "promptCurrentPlayer": "手番: {{name}}",
   "promptPlay": "play <idx>・・・カードを出す",
   "promptBid": "この札のスートを切り札として引き受けますか？",

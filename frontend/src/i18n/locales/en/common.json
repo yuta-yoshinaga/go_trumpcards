@@ -2584,6 +2584,8 @@
     "tarabish.result.team1": "The other team wins ({{t0}} — {{t1}}).",
     "tarabish.result.tie": "It's a tie ({{t0}} — {{t1}}).",
     "tarabish.roundEnd": "Round {{round}} is over ({{t0}} — {{t1}}).",
+    "tarabish.roundEnd.lastTrickBonusTeam0": "Round {{round}} is over ({{t0}} — {{t1}}). Your team earned the +{{bonus}} last-trick bonus.",
+    "tarabish.roundEnd.lastTrickBonusTeam1": "Round {{round}} is over ({{t0}} — {{t1}}). The other team earned the +{{bonus}} last-trick bonus.",
     "tarneeb.bidPhase": "Place your bid (7-13, or 0 to pass)",
     "tarneeb.gameEndCpuWin": "Game over! Team {{team}} (CPU) wins!",
     "tarneeb.gameEndHumanWin": "Game over! Team {{team}} (you) wins!",

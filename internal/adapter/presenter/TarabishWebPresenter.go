@@ -103,10 +103,20 @@ func (p *TarabishWebPresenter) buildMessage(t interfaces.TarabishGame, lastErr e
 		}
 		return "", "tarabish.bid.choose", nil
 	case domain.TarabishPhaseRoundEnd:
-		return "", "tarabish.roundEnd", map[string]string{
+		params := map[string]string{
 			"round": strconv.Itoa(t.GetRoundNumber()),
 			"t0":    strconv.Itoa(t.GetRoundPoints(0)),
 			"t1":    strconv.Itoa(t.GetRoundPoints(1)),
+		}
+		switch t.GetLastTrickBonusTeam() {
+		case 0:
+			params["bonus"] = strconv.Itoa(domain.TarabishLastTrickBonus)
+			return "", "tarabish.roundEnd.lastTrickBonusTeam0", params
+		case 1:
+			params["bonus"] = strconv.Itoa(domain.TarabishLastTrickBonus)
+			return "", "tarabish.roundEnd.lastTrickBonusTeam1", params
+		default:
+			return "", "tarabish.roundEnd", params
 		}
 	}
 	return "", "tarabish.play", nil

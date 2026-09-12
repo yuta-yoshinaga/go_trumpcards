@@ -131,6 +131,11 @@ func (p *TarabishCuiPresenter) Output(t interfaces.TarabishGame, lastErr error) 
 			}
 			return
 		case domain.TarabishPhaseRoundEnd:
+			if team := t.GetLastTrickBonusTeam(); team >= 0 {
+				sb.WriteString(i18n.Tf("tarabish.lastTrickBonus",
+					"team", strconv.Itoa(team),
+					"bonus", strconv.Itoa(domain.TarabishLastTrickBonus)) + "\n")
+			}
 			sb.WriteString(i18n.T("tarabish.promptRoundEnd") + "\n")
 			sb.WriteString(i18n.T("tarabish.promptNext") + "\n")
 			return

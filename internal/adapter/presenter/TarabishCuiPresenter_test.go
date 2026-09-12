@@ -83,13 +83,21 @@ func TestTarabishCuiPresenterMeldSummary(t *testing.T) {
 
 func TestTarabishCuiPresenterRoundEnd(t *testing.T) {
 	p := new(TarabishCuiPresenter)
-	tb := newTarabishForCui(t)
-	tb.SetPhaseForTest(domain.TarabishPhaseRoundEnd)
+	t.Run("shows the last-trick bonus breakdown", func(t *testing.T) {
+		out := tarabishPlain(p.Output(tarabishRoundEndWithBonus(t), nil))
+		assert.Contains(t, out, "チーム0が最終トリックボーナス +10 点を獲得。")
+	})
 
-	out := p.Output(tb, nil)
-	assert.Contains(t, out, i18n.T("tarabish.promptRoundEnd"))
-	assert.Contains(t, out, i18n.T("tarabish.promptNext"))
-	assert.NotContains(t, out, i18n.T("tarabish.promptPlay"))
+	t.Run("does not show an unrecorded bonus", func(t *testing.T) {
+		tb := newTarabishForCui(t)
+		tb.SetPhaseForTest(domain.TarabishPhaseRoundEnd)
+
+		out := p.Output(tb, nil)
+		assert.Contains(t, out, i18n.T("tarabish.promptRoundEnd"))
+		assert.Contains(t, out, i18n.T("tarabish.promptNext"))
+		assert.NotContains(t, out, "最終トリックボーナス")
+		assert.NotContains(t, out, i18n.T("tarabish.promptPlay"))
+	})
 }
 
 func TestTarabishCuiPresenterError(t *testing.T) {

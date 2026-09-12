@@ -112,8 +112,9 @@ type Tarabish struct {
 	dealerIdx        int
 
 	// scores はチームごとの累計点、roundPoints は現ラウンドのカード点。
-	scores      [TarabishTeamCnt]int
-	roundPoints [TarabishTeamCnt]int
+	scores             [TarabishTeamCnt]int
+	roundPoints        [TarabishTeamCnt]int
+	lastTrickBonusTeam int // 最終トリックボーナスを得たチーム (-1: 未発生)
 
 	gameEndFlag bool
 	winnerTeam  int
@@ -123,7 +124,7 @@ type Tarabish struct {
 
 // NewTarabish コンストラクタ
 func NewTarabish(trumpCards *TrumpCards, players []*TarabishPlayer, config TarabishConfig) *Tarabish {
-	return &Tarabish{trumpCards: trumpCards, players: players, config: config, trumpTakerIdx: -1, winnerTeam: -1}
+	return &Tarabish{trumpCards: trumpCards, players: players, config: config, trumpTakerIdx: -1, lastTrickBonusTeam: -1, winnerTeam: -1}
 }
 
 // NewDefaultTarabish 既定構成（人間 1 + CPU 3）のコンストラクタ
@@ -145,6 +146,7 @@ func (t *Tarabish) Reset() {
 	t.gameEndFlag = false
 	t.winnerTeam = -1
 	t.scores = [TarabishTeamCnt]int{}
+	t.lastTrickBonusTeam = -1
 	t.actionLog = nil
 	for _, p := range t.players {
 		p.ResetGame()
@@ -158,6 +160,7 @@ func (t *Tarabish) dealRound() {
 	t.trickNumber = 0
 	t.currentTrick = nil
 	t.roundPoints = [TarabishTeamCnt]int{}
+	t.lastTrickBonusTeam = -1
 	t.trumpTakerIdx = -1
 	t.trumpSuit = 0
 	for _, p := range t.players {
@@ -516,7 +519,9 @@ func (t *Tarabish) resolveTrick() {
 
 	if t.trickNumber >= TarabishTricksPerRound {
 		// **最終トリックに 10 点。** 152 + 10 = 162 がラウンドの総点。
-		t.roundPoints[TarabishTeamOf(winner)] += TarabishLastTrickBonus
+		team := TarabishTeamOf(winner)
+		t.roundPoints[team] += TarabishLastTrickBonus
+		t.lastTrickBonusTeam = team
 		t.appendLog(winner, "last", fmt.Sprintf("最終トリック +%d", TarabishLastTrickBonus), nil)
 		t.finishRound()
 	}
@@ -845,6 +850,9 @@ func (t *Tarabish) GetRoundPoints(team int) int {
 	return t.roundPoints[team]
 }
 
+// GetLastTrickBonusTeam 最終トリックボーナスを得たチームを返す (-1: 未発生)。
+func (t *Tarabish) GetLastTrickBonusTeam() int { return t.lastTrickBonusTeam }
+
 // GetCurrentTrick 現在のトリック
 func (t *Tarabish) GetCurrentTrick() []*TrickCard { return t.currentTrick }
 
@@ -902,47 +910,50 @@ func (t *Tarabish) appendLog(playerIdx int, actionType, detail string, cards []*
 
 // tarabishJSON is the KV snapshot format for Tarabish.
 type tarabishJSON struct {
-	TrumpCards       *TrumpCards          `json:"tc"`
-	Players          []*TarabishPlayer    `json:"pl"`
-	Config           TarabishConfig       `json:"cf"`
-	Phase            TarabishPhase        `json:"ph"`
-	RoundNumber      int                  `json:"rn"`
-	TrickNumber      int                  `json:"tn"`
-	TrumpSuit        int                  `json:"ts"`
-	UpCard           *Card                `json:"uc"`
-	TrumpTakerIdx    int                  `json:"tt"`
-	CurrentTrick     []*TrickCard         `json:"ct"`
-	CurrentPlayerIdx int                  `json:"cp"`
-	LeadPlayerIdx    int                  `json:"lp"`
-	DealerIdx        int                  `json:"di"`
-	Scores           [TarabishTeamCnt]int `json:"sc"`
-	RoundPoints      [TarabishTeamCnt]int `json:"rp"`
-	GameEndFlag      bool                 `json:"ge"`
-	WinnerTeam       int                  `json:"wt"`
-	ActionLog        []*ActionLogEntry    `json:"al"`
+	TrumpCards         *TrumpCards          `json:"tc"`
+	Players            []*TarabishPlayer    `json:"pl"`
+	Config             TarabishConfig       `json:"cf"`
+	Phase              TarabishPhase        `json:"ph"`
+	RoundNumber        int                  `json:"rn"`
+	TrickNumber        int                  `json:"tn"`
+	TrumpSuit          int                  `json:"ts"`
+	UpCard             *Card                `json:"uc"`
+	TrumpTakerIdx      int                  `json:"tt"`
+	CurrentTrick       []*TrickCard         `json:"ct"`
+	CurrentPlayerIdx   int                  `json:"cp"`
+	LeadPlayerIdx      int                  `json:"lp"`
+	DealerIdx          int                  `json:"di"`
+	Scores             [TarabishTeamCnt]int `json:"sc"`
+	RoundPoints        [TarabishTeamCnt]int `json:"rp"`
+	LastTrickBonusTeam *int                 `json:"lb"`
+	GameEndFlag        bool                 `json:"ge"`
+	WinnerTeam         int                  `json:"wt"`
+	ActionLog          []*ActionLogEntry    `json:"al"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
 func (t *Tarabish) MarshalJSON() ([]byte, error) {
+	bonusTeam := t.lastTrickBonusTeam
 	return json.Marshal(&tarabishJSON{
-		TrumpCards:       t.trumpCards,
-		Players:          t.players,
-		Config:           t.config,
-		Phase:            t.phase,
-		RoundNumber:      t.roundNumber,
-		TrickNumber:      t.trickNumber,
-		TrumpSuit:        t.trumpSuit,
-		UpCard:           t.upCard,
-		TrumpTakerIdx:    t.trumpTakerIdx,
-		CurrentTrick:     t.currentTrick,
-		CurrentPlayerIdx: t.currentPlayerIdx,
-		LeadPlayerIdx:    t.leadPlayerIdx,
-		DealerIdx:        t.dealerIdx,
-		Scores:           t.scores,
-		RoundPoints:      t.roundPoints,
-		GameEndFlag:      t.gameEndFlag,
-		WinnerTeam:       t.winnerTeam,
-		ActionLog:        t.actionLog,
+		TrumpCards:         t.trumpCards,
+		Players:            t.players,
+		Config:             t.config,
+		Phase:              t.phase,
+		RoundNumber:        t.roundNumber,
+		TrickNumber:        t.trickNumber,
+		TrumpSuit:          t.trumpSuit,
+		UpCard:             t.upCard,
+		TrumpTakerIdx:      t.trumpTakerIdx,
+		CurrentTrick:       t.currentTrick,
+		CurrentPlayerIdx:   t.currentPlayerIdx,
+		LeadPlayerIdx:      t.leadPlayerIdx,
+		DealerIdx:          t.dealerIdx,
+		Scores:             t.scores,
+		RoundPoints:        t.roundPoints,
+		LastTrickBonusTeam: &bonusTeam,
+		GameEndFlag:        t.gameEndFlag,
+		WinnerTeam:         t.winnerTeam,
+		ActionLog:          t.actionLog,
 	})
 }
 
@@ -985,6 +996,9 @@ func (t *Tarabish) UnmarshalJSON(data []byte) error {
 	if j.WinnerTeam < -1 || j.WinnerTeam >= TarabishTeamCnt {
 		return fmt.Errorf("invalid winner team: %d", j.WinnerTeam)
 	}
+	if j.LastTrickBonusTeam != nil && (*j.LastTrickBonusTeam < -1 || *j.LastTrickBonusTeam >= TarabishTeamCnt) {
+		return fmt.Errorf("invalid last trick bonus team: %d", *j.LastTrickBonusTeam)
+	}
 	if j.TrumpCards != nil {
 		t.trumpCards = j.TrumpCards
 	}
@@ -1004,6 +1018,10 @@ func (t *Tarabish) UnmarshalJSON(data []byte) error {
 	t.dealerIdx = j.DealerIdx
 	t.scores = j.Scores
 	t.roundPoints = j.RoundPoints
+	t.lastTrickBonusTeam = -1
+	if j.LastTrickBonusTeam != nil {
+		t.lastTrickBonusTeam = *j.LastTrickBonusTeam
+	}
 	t.gameEndFlag = j.GameEndFlag
 	t.winnerTeam = j.WinnerTeam
 	t.actionLog = j.ActionLog

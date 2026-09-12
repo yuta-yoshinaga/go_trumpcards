@@ -440,6 +440,13 @@ func TestTarabish_LastTrickBonus(t *testing.T) {
 
 	// 札はすべて 0 点なので、加算されるのは最終トリックの 10 点だけ。
 	assert.Equal(t, TarabishLastTrickBonus, tb.GetRoundPoints(0))
+	assert.Equal(t, 0, tb.GetLastTrickBonusTeam(), "最終トリックを取ったチームを記録する")
+
+	tb.NextRound()
+	assert.Equal(t, -1, tb.GetLastTrickBonusTeam(), "次のラウンドでは最終トリックの記録を消す")
+
+	tb.Reset()
+	assert.Equal(t, -1, tb.GetLastTrickBonusTeam(), "リセットでも最終トリックの記録を消す")
 }
 
 // メルド点はラウンド終了時にチーム得点へ乗る。
@@ -717,6 +724,7 @@ func TestTarabish_JSONRoundTrip(t *testing.T) {
 	tb.SetScoreForTestUse(0, 120)
 	tb.SetScoreForTestUse(1, 80)
 	tb.SetRoundPointsForTest(0, 30)
+	tb.lastTrickBonusTeam = 0
 	tb.GetPlayer(0).SetMeldPoints(50)
 	tb.GetPlayer(0).SetHasBella(true)
 
@@ -729,6 +737,7 @@ func TestTarabish_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, 120, restored.GetScore(0))
 	assert.Equal(t, 80, restored.GetScore(1))
 	assert.Equal(t, 30, restored.GetRoundPoints(0))
+	assert.Equal(t, 0, restored.GetLastTrickBonusTeam(), "最終トリックボーナスのチームが往復する")
 	assert.Equal(t, 50, restored.GetPlayer(0).GetMeldPoints(), "メルド点が往復する")
 	assert.True(t, restored.GetPlayer(0).GetHasBella())
 	assert.Equal(t, tb.GetTrumpSuit(), restored.GetTrumpSuit(), "切り札が往復する")

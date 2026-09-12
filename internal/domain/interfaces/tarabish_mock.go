@@ -52,6 +52,7 @@ func (m *MockTarabishGame) GetWinnerTeam() int       { return m.Called().Int(0) 
 
 func (m *MockTarabishGame) GetScore(team int) int       { return m.Called(team).Int(0) }
 func (m *MockTarabishGame) GetRoundPoints(team int) int { return m.Called(team).Int(0) }
+func (m *MockTarabishGame) GetLastTrickBonusTeam() int  { return m.Called().Int(0) }
 
 func (m *MockTarabishGame) GetUpCard() *domain.Card {
 	args := m.Called()

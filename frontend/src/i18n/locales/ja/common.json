@@ -2584,6 +2584,8 @@
     "tarabish.result.team1": "相手チームの勝ちです（{{t0}} － {{t1}}）。",
     "tarabish.result.tie": "同点です（{{t0}} － {{t1}}）。",
     "tarabish.roundEnd": "ラウンド{{round}}が終了しました（{{t0}} － {{t1}}）。",
+    "tarabish.roundEnd.lastTrickBonusTeam0": "ラウンド{{round}}が終了しました（{{t0}} － {{t1}}）。あなたのチームが最終トリックボーナス +{{bonus}} 点を獲得。",
+    "tarabish.roundEnd.lastTrickBonusTeam1": "ラウンド{{round}}が終了しました（{{t0}} － {{t1}}）。相手チームが最終トリックボーナス +{{bonus}} 点を獲得。",
     "tarneeb.bidPhase": "ビッドを宣言してください (7-13、または 0=パス)",
     "tarneeb.gameEndCpuWin": "ゲーム終了！ チーム {{team}}（CPU）の勝ち！",
     "tarneeb.gameEndHumanWin": "ゲーム終了！ チーム {{team}}（あなた）の勝ち！",

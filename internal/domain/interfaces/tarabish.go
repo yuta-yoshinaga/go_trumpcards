@@ -51,6 +51,8 @@ type TarabishGame interface {
 	GetScore(team int) int
 	// GetRoundPoints チームの現ラウンド点を取得する
 	GetRoundPoints(team int) int
+	// GetLastTrickBonusTeam 最終トリックボーナスを得たチームを取得する (-1: 未発生)
+	GetLastTrickBonusTeam() int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
