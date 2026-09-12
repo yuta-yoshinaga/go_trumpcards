@@ -135,6 +135,18 @@ func TestSoloWhistWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "solowhist.roundEnd", resObj.MessageCode)
 	})
 
+	t.Run("passed out round end message code", func(t *testing.T) {
+		m, _ := setupSoloWhistWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeclarerIdx")
+		m.On("GetPhase").Return(domain.SoloWhistPhaseRoundEnd)
+		m.On("GetDeclarerIdx").Return(-1)
+		result := p.Output(m, nil)
+		var resObj controller.SoloWhistWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, "solowhist.roundEnd.passedOut", resObj.MessageCode)
+	})
+
 	t.Run("error message takes priority", func(t *testing.T) {
 		m, _ := setupSoloWhistWebMockWithPlayers()
 		result := p.Output(m, errors.New("boom"))

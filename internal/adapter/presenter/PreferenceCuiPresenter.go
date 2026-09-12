@@ -128,7 +128,11 @@ func (p *PreferenceCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Pr
 		b.WriteString(i18n.T("preference.promptTrickEnd") + "\n")
 		b.WriteString(i18n.T("preference.promptTrickEndHelp") + "\n")
 	case domain.PreferencePhaseRoundEnd:
-		b.WriteString(i18n.T("preference.promptRoundEnd") + "\n")
+		promptKey := "preference.promptRoundEnd"
+		if g.GetDeclarerIdx() < 0 {
+			promptKey = "preference.promptRoundEndPassedOut"
+		}
+		b.WriteString(i18n.T(promptKey) + "\n")
 		p.writeRoundEndResult(b, g)
 		b.WriteString(i18n.T("preference.promptRoundEndHelp") + "\n")
 	}

@@ -28,6 +28,7 @@
   "promptTrickEnd": "Trick complete",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "promptRoundEnd": "Round complete",
+  "promptRoundEndPassedOut": "Everyone passed, so the round was thrown in.",
   "promptRoundEndHelp": "nr / nextround ... score and go to the next round",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",

@@ -127,6 +127,9 @@ func (p *PreferenceWebPresenter) buildMessage(g interfaces.PreferenceGame, lastE
 	case domain.PreferencePhaseTrickEnd:
 		return "", "preference.trickEnd", nil
 	case domain.PreferencePhaseRoundEnd:
+		if g.GetDeclarerIdx() < 0 {
+			return "", "preference.roundEnd.passedOut", nil
+		}
 		return "", "preference.roundEnd", nil
 	}
 	return "", "", nil

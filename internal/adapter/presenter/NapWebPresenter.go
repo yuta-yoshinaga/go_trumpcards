@@ -127,6 +127,9 @@ func (p *NapWebPresenter) buildMessage(g interfaces.NapGame, lastErr error) (str
 	case domain.NapPhaseTrickEnd:
 		return "", "nap.trickEnd", nil
 	case domain.NapPhaseRoundEnd:
+		if g.GetDeclarerIdx() < 0 {
+			return "", "nap.roundEnd.passedOut", nil
+		}
 		return "", "nap.roundEnd", nil
 	}
 	return "", "", nil

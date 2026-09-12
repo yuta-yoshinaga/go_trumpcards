@@ -25,6 +25,7 @@
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了",
+  "promptRoundEndPassedOut": "全員がパスしたため、このラウンドは流れました。",
   "promptRoundEndHelp": "nr / nextround・・・スコアリングして次のラウンドへ",
   "promptRoundEndResult": "{{name}} の {{contract}}: {{tricks}} トリック獲得 — {{outcome}}",
   "contractAchieved": "達成",
