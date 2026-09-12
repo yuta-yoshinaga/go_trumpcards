@@ -21,6 +21,7 @@
     "yourTurn": "あなたのターン",
     "cpuTurn": "CPU{{id}}のターン",
     "suitScores": "スート別合計",
+    "suitBadge": "{{score}}/{{max}}",
     "stopCalledBy": "ストップ宣言中（{{name}}）— 残り1巡が最終ラウンドです"
   },
   "settings": {

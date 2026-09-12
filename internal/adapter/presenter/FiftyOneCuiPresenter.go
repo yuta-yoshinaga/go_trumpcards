@@ -69,7 +69,8 @@ func (p *FiftyOneCuiPresenter) Output(fo interfaces.FiftyOneGame, lastErr error)
 				name := cuiPlayerName(fo.GetPlayer(i), i)
 				b.WriteString(i18n.Tf("fiftyone.scoreEntry",
 					"name", name,
-					"score", strconv.Itoa(fo.GetPlayer(i).BestSuitScore())) + "\n")
+					"score", strconv.Itoa(fo.GetPlayer(i).BestSuitScore()),
+					"max", strconv.Itoa(domain.FiftyOneMaxScore)) + "\n")
 			}
 			winnerIdx := fo.GetWinnerIdx()
 			winner := fo.GetPlayer(winnerIdx)
@@ -98,7 +99,9 @@ func fiftyOneSuitScoreLine(player *domain.FiftyOnePlayer) string {
 	parts := make([]string, 0, len(suits))
 	for _, design := range suits {
 		entry := i18n.Tf("fiftyone.suitScoreEntry",
-			"suit", cuiSuitName(design), "score", strconv.Itoa(scores[design]))
+			"suit", cuiSuitName(design),
+			"score", strconv.Itoa(scores[design]),
+			"max", strconv.Itoa(domain.FiftyOneMaxScore))
 		if design == best {
 			entry += i18n.T("fiftyone.suitScoreBestMark")
 		}

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { fiftyOneBestSuit, fiftyOneCardScore, fiftyOneSuitScores } from './fiftyOneSuitScores';
+import { FIFTY_ONE_MAX_SCORE, fiftyOneBestSuit, fiftyOneCardScore, fiftyOneSuitScores } from './fiftyOneSuitScores';
+
+describe('FIFTY_ONE_MAX_SCORE', () => {
+  it('is 51 (matching domain.FiftyOneMaxScore)', () => {
+    expect(FIFTY_ONE_MAX_SCORE).toBe(51);
+  });
+});
 
 describe('fiftyOneCardScore', () => {
   it.each([
