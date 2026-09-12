@@ -1,0 +1,4 @@
+{
+  "perfectPairs": { "mixed": 6, "colored": 12, "perfect": 25 },
+  "twentyOnePlus3": { "flush": 5, "straight": 10, "trips": 30, "straightFlush": 40, "suitedTrips": 100 }
+}

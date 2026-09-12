@@ -47,6 +47,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { BLACKJACK_SIDE_BET_PAYOUTS } from '../utils/blackjackSideBetPayouts';
 import { BLACKJACK_HELP, parseBlackjackCommand } from '../utils/cli/commands/blackjackCommands';
 import { formatBlackjackState } from '../utils/cli/formatters/blackjackFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -400,7 +401,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                   <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
                     {t('payoutRef.title')}
                   </summary>
-                  <ul className="text-ds-text-muted text-sm space-y-1 px-4 pb-3">
+                  <ul data-testid="bj-payout-ref-list" className="text-ds-text-muted text-sm space-y-1 px-4 pb-3">
                     {(variant === 'spanish21'
                       ? ([
                           'blackjack',
@@ -421,6 +422,22 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                     ).map((key) => (
                       <li key={key}>{t(`payoutRef.${key}`)}</li>
                     ))}
+                    <li>
+                      {t('payoutRef.perfectPairs', {
+                        mixed: BLACKJACK_SIDE_BET_PAYOUTS.perfectPairs.mixed,
+                        colored: BLACKJACK_SIDE_BET_PAYOUTS.perfectPairs.colored,
+                        perfect: BLACKJACK_SIDE_BET_PAYOUTS.perfectPairs.perfect,
+                      })}
+                    </li>
+                    <li>
+                      {t('payoutRef.twentyOnePlus3', {
+                        flush: BLACKJACK_SIDE_BET_PAYOUTS.twentyOnePlus3.flush,
+                        straight: BLACKJACK_SIDE_BET_PAYOUTS.twentyOnePlus3.straight,
+                        trips: BLACKJACK_SIDE_BET_PAYOUTS.twentyOnePlus3.trips,
+                        straightFlush: BLACKJACK_SIDE_BET_PAYOUTS.twentyOnePlus3.straightFlush,
+                        suitedTrips: BLACKJACK_SIDE_BET_PAYOUTS.twentyOnePlus3.suitedTrips,
+                      })}
+                    </li>
                   </ul>
                 </details>
               </div>
