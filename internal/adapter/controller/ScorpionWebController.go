@@ -33,10 +33,11 @@ type ScorpionWebOutputHint struct {
 
 // ScorpionWebOutput スコーピオンWebアウトプット
 type ScorpionWebOutput struct {
-	Tableau        [][]*KlondikeWebOutputTableauCard `json:"tableau"`
-	StockCount     int                               `json:"stockCount"`
-	CompletedSuits int                               `json:"completedSuits"`
-	Hint           *ScorpionWebOutputHint            `json:"hint,omitempty"`
+	Tableau           [][]*KlondikeWebOutputTableauCard `json:"tableau"`
+	StockCount        int                               `json:"stockCount"`
+	CompletedSuits    int                               `json:"completedSuits"`
+	CompletedSuitMask int                               `json:"completedSuitMask"`
+	Hint              *ScorpionWebOutputHint            `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }

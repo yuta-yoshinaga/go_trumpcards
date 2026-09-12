@@ -33,10 +33,11 @@ type WaspWebOutputHint struct {
 
 // WaspWebOutput ワスプWebアウトプット
 type WaspWebOutput struct {
-	Tableau        [][]*KlondikeWebOutputTableauCard `json:"tableau"`
-	StockCount     int                               `json:"stockCount"`
-	CompletedSuits int                               `json:"completedSuits"`
-	Hint           *WaspWebOutputHint                `json:"hint,omitempty"`
+	Tableau           [][]*KlondikeWebOutputTableauCard `json:"tableau"`
+	StockCount        int                               `json:"stockCount"`
+	CompletedSuits    int                               `json:"completedSuits"`
+	CompletedSuitMask int                               `json:"completedSuitMask"`
+	Hint              *WaspWebOutputHint                `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }

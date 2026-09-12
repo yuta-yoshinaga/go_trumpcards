@@ -67,8 +67,10 @@ type Scorpion struct {
 	tableau        [ScorpionTableauCnt][]*KlondikeTableauCard
 	stock          []*Card
 	completedSuits int
-	phase          ScorpionPhase
-	moveCount      int
+	// completedSuitMask uses bit (design-1): Spade(1)=bit0, Clover(2)=bit1, Heart(3)=bit2, Diamond(4)=bit3.
+	completedSuitMask int
+	phase             ScorpionPhase
+	moveCount         int
 	actionLogBase
 	history     []*scorpionSnapshot
 	isStalemate bool
@@ -76,12 +78,13 @@ type Scorpion struct {
 
 // scorpionSnapshot アンドゥ用スナップショット
 type scorpionSnapshot struct {
-	tableau        [ScorpionTableauCnt][]*KlondikeTableauCard
-	stock          []*Card
-	completedSuits int
-	phase          ScorpionPhase
-	moveCount      int
-	isStalemate    bool
+	tableau           [ScorpionTableauCnt][]*KlondikeTableauCard
+	stock             []*Card
+	completedSuits    int
+	completedSuitMask int
+	phase             ScorpionPhase
+	moveCount         int
+	isStalemate       bool
 }
 
 // NewScorpion コンストラクタ
@@ -106,6 +109,7 @@ func (s *Scorpion) Reset() {
 	s.history = nil
 	s.isStalemate = false
 	s.completedSuits = 0
+	s.completedSuitMask = 0
 
 	// タブローに配る: 列0-3は先頭3枚裏+残り4枚表、列4-6は7枚全て表
 	for i := range ScorpionTableauCnt {
@@ -389,6 +393,9 @@ func (s *Scorpion) GetTableau() [ScorpionTableauCnt][]*KlondikeTableauCard { ret
 // GetCompletedSuits 完成スート数取得
 func (s *Scorpion) GetCompletedSuits() int { return s.completedSuits }
 
+// GetCompletedSuitMask returns the bit mask of completed suits.
+func (s *Scorpion) GetCompletedSuitMask() int { return s.completedSuitMask }
+
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (s *Scorpion) GetGameEndFlag() bool { return s.phase != ScorpionPhasePlaying }
 
@@ -452,6 +459,7 @@ func (s *Scorpion) checkAndRemoveCompletedSuit(col int) bool {
 	}
 	s.tableau[col] = cards[:startIdx]
 	s.completedSuits++
+	s.completedSuitMask |= 1 << (suit - 1)
 	s.appendLog("complete", fmt.Sprintf("タブロー列%dでスートが完成しました", col), nil)
 	s.autoFlipTableau(col)
 	s.checkGameClear()
@@ -485,10 +493,11 @@ func (s *Scorpion) checkScorpionStalemate() {
 // takeSnapshot 現在の状態をスナップショットとして保存
 func (s *Scorpion) takeSnapshot() {
 	snap := &scorpionSnapshot{
-		completedSuits: s.completedSuits,
-		phase:          s.phase,
-		moveCount:      s.moveCount,
-		isStalemate:    s.isStalemate,
+		completedSuits:    s.completedSuits,
+		completedSuitMask: s.completedSuitMask,
+		phase:             s.phase,
+		moveCount:         s.moveCount,
+		isStalemate:       s.isStalemate,
 	}
 	for i := range ScorpionTableauCnt {
 		snap.tableau[i] = make([]*KlondikeTableauCard, len(s.tableau[i]))
@@ -506,6 +515,7 @@ func (s *Scorpion) restoreSnapshot(snap *scorpionSnapshot) {
 	s.tableau = snap.tableau
 	s.stock = snap.stock
 	s.completedSuits = snap.completedSuits
+	s.completedSuitMask = snap.completedSuitMask
 	s.phase = snap.phase
 	s.moveCount = snap.moveCount
 	s.isStalemate = snap.isStalemate
@@ -518,15 +528,16 @@ func (s *Scorpion) appendLog(actionType, detail string, cards []*Card) {
 
 // scorpionJSON is the JSON wire format for Scorpion.
 type scorpionJSON struct {
-	TrumpCards     *TrumpCards                                `json:"tc"`
-	Tableau        [ScorpionTableauCnt][]*KlondikeTableauCard `json:"tb"`
-	Stock          []*Card                                    `json:"st"`
-	CompletedSuits int                                        `json:"cs"`
-	Phase          ScorpionPhase                              `json:"ps"`
-	MoveCount      int                                        `json:"mc"`
-	ActionLog      []*ActionLogEntry                          `json:"al"`
-	IsStalemate    bool                                       `json:"sl"`
-	History        []*scorpionSnapshot                        `json:"hi,omitempty"`
+	TrumpCards        *TrumpCards                                `json:"tc"`
+	Tableau           [ScorpionTableauCnt][]*KlondikeTableauCard `json:"tb"`
+	Stock             []*Card                                    `json:"st"`
+	CompletedSuits    int                                        `json:"cs"`
+	CompletedSuitMask int                                        `json:"cm"`
+	Phase             ScorpionPhase                              `json:"ps"`
+	MoveCount         int                                        `json:"mc"`
+	ActionLog         []*ActionLogEntry                          `json:"al"`
+	IsStalemate       bool                                       `json:"sl"`
+	History           []*scorpionSnapshot                        `json:"hi,omitempty"`
 }
 
 // scorpionSnapshotJSON is the wire format for a single undo snapshot.
@@ -534,23 +545,25 @@ type scorpionJSON struct {
 // shape with explicit Marshal/Unmarshal methods. Field names match
 // scorpionJSON's short keys to keep the KV payload compact (#1654).
 type scorpionSnapshotJSON struct {
-	Tableau        [ScorpionTableauCnt][]*KlondikeTableauCard `json:"tb"`
-	Stock          []*Card                                    `json:"st"`
-	CompletedSuits int                                        `json:"cs"`
-	Phase          ScorpionPhase                              `json:"ps"`
-	MoveCount      int                                        `json:"mc"`
-	IsStalemate    bool                                       `json:"sl"`
+	Tableau           [ScorpionTableauCnt][]*KlondikeTableauCard `json:"tb"`
+	Stock             []*Card                                    `json:"st"`
+	CompletedSuits    int                                        `json:"cs"`
+	CompletedSuitMask int                                        `json:"cm"`
+	Phase             ScorpionPhase                              `json:"ps"`
+	MoveCount         int                                        `json:"mc"`
+	IsStalemate       bool                                       `json:"sl"`
 }
 
 // MarshalJSON implements json.Marshaler for scorpionSnapshot.
 func (s *scorpionSnapshot) MarshalJSON() ([]byte, error) {
 	return json.Marshal(scorpionSnapshotJSON{
-		Tableau:        s.tableau,
-		Stock:          s.stock,
-		CompletedSuits: s.completedSuits,
-		Phase:          s.phase,
-		MoveCount:      s.moveCount,
-		IsStalemate:    s.isStalemate,
+		Tableau:           s.tableau,
+		Stock:             s.stock,
+		CompletedSuits:    s.completedSuits,
+		CompletedSuitMask: s.completedSuitMask,
+		Phase:             s.phase,
+		MoveCount:         s.moveCount,
+		IsStalemate:       s.isStalemate,
 	})
 }
 
@@ -574,6 +587,7 @@ func (s *scorpionSnapshot) UnmarshalJSON(data []byte) error {
 		s.stock = make([]*Card, 0)
 	}
 	s.completedSuits = j.CompletedSuits
+	s.completedSuitMask = j.CompletedSuitMask
 	s.phase = j.Phase
 	s.moveCount = j.MoveCount
 	s.isStalemate = j.IsStalemate
@@ -583,15 +597,16 @@ func (s *scorpionSnapshot) UnmarshalJSON(data []byte) error {
 // MarshalJSON implements json.Marshaler.
 func (s *Scorpion) MarshalJSON() ([]byte, error) {
 	return json.Marshal(scorpionJSON{
-		TrumpCards:     s.trumpCards,
-		Tableau:        s.tableau,
-		Stock:          s.stock,
-		CompletedSuits: s.completedSuits,
-		Phase:          s.phase,
-		MoveCount:      s.moveCount,
-		ActionLog:      s.actionLog,
-		IsStalemate:    s.isStalemate,
-		History:        s.history,
+		TrumpCards:        s.trumpCards,
+		Tableau:           s.tableau,
+		Stock:             s.stock,
+		CompletedSuits:    s.completedSuits,
+		CompletedSuitMask: s.completedSuitMask,
+		Phase:             s.phase,
+		MoveCount:         s.moveCount,
+		ActionLog:         s.actionLog,
+		IsStalemate:       s.isStalemate,
+		History:           s.history,
 	})
 }
 
@@ -623,6 +638,7 @@ func (s *Scorpion) UnmarshalJSON(data []byte) error {
 		s.stock = make([]*Card, 0)
 	}
 	s.completedSuits = j.CompletedSuits
+	s.completedSuitMask = j.CompletedSuitMask
 	s.phase = j.Phase
 	s.moveCount = j.MoveCount
 	s.actionLog = j.ActionLog

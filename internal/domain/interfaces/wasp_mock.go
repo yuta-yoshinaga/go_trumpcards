@@ -90,6 +90,11 @@ func (_m *MockWaspGame) GetCompletedSuits() int {
 	return ret.Int(0)
 }
 
+func (_m *MockWaspGame) GetCompletedSuitMask() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 func (_m *MockWaspGame) AllFaceUp() bool {
 	ret := _m.Called()
 	return ret.Bool(0)

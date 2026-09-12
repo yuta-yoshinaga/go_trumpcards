@@ -7,6 +7,7 @@ function makeState(overrides: Partial<ScorpionResponse> = {}): ScorpionResponse 
     tableau: [],
     stockCount: 0,
     completedSuits: 0,
+    completedSuitMask: 0,
     phase: 0,
     moveCount: 0,
     canUndo: false,

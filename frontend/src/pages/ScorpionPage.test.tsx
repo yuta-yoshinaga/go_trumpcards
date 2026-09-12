@@ -44,6 +44,7 @@ const playingState: ScorpionResponse = {
   ],
   stockCount: 3,
   completedSuits: 0,
+  completedSuitMask: 0,
   phase: 0,
   moveCount: 0,
   canUndo: false,
@@ -57,6 +58,7 @@ const gameClearState: ScorpionResponse = {
   phase: 1,
   moveCount: 42,
   completedSuits: 4,
+  completedSuitMask: 15,
   messageCode: 'scorpion.gameClear',
   messageParams: { moveCount: '42' },
 };
@@ -75,6 +77,13 @@ beforeEach(() => {
 });
 
 describe('ScorpionPage', () => {
+  it('passes the completed suit mask to the badge', async () => {
+    mockExec.mockResolvedValue({ ...playingState, completedSuitMask: 12 });
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(screen.getByTestId('suit-progress')).toHaveAttribute('aria-label', '2/4'));
+    expect(screen.getAllByTestId('suit-done')).toHaveLength(2);
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
