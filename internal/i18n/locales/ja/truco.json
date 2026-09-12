@@ -7,7 +7,7 @@
   "header": "マノ: {{hand}}  バサ: {{baza}}  目標: {{target}}点",
   "matchLine": "マッチ得点: あなた={{p0}}  CPU={{p1}}",
   "stakeLine": "賭け点: {{stake}}  ({{level}})",
-  "manoLine": "マノ: {{name}}",
+  "manoLine": "先手: {{name}}",
   "historyTitle": "バサ履歴",
   "historyWinner": "{{baza}}バサ: {{name}}の勝ち",
   "historyParda": "{{baza}}バサ: パルダ（引き分け）",

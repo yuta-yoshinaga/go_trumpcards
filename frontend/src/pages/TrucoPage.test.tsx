@@ -112,12 +112,12 @@ describe('TrucoPage', () => {
     mockExec.mockResolvedValue(makeState({ manoIdx: 0 }));
     const { unmount } = renderWithProviders(<TrucoPage />);
     const mano = await screen.findByTestId('truco-mano');
-    expect(mano).toHaveTextContent('マノ: あなた');
+    expect(mano).toHaveTextContent('先手: あなた');
     unmount();
 
     mockExec.mockResolvedValue(makeState({ manoIdx: 1 }));
     renderWithProviders(<TrucoPage />);
-    expect(await screen.findByTestId('truco-mano')).toHaveTextContent('マノ: CPU');
+    expect(await screen.findByTestId('truco-mano')).toHaveTextContent('先手: CPU');
   });
 
   it('shows baza winners and distinguishes parda in the trick history', async () => {

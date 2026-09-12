@@ -70,7 +70,7 @@ func TestTrucoCuiPresenter_Output_ManoAndTrickHistory(t *testing.T) {
 
 	out := p.Output(g, nil)
 	plain := strings.NewReplacer("\x1b[1m", "", "\x1b[0m", "").Replace(out)
-	assert.Contains(t, plain, "マノ: CPU 1")
+	assert.Contains(t, plain, "先手: CPU 1")
 	assert.Contains(t, plain, "1バサ: あなたの勝ち")
 	assert.Contains(t, plain, "2バサ: パルダ（引き分け）")
 	assert.Contains(t, plain, "3バサ: CPU 1の勝ち")
