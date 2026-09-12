@@ -100,6 +100,9 @@ const passDirectionKeys = ['left', 'right', 'across', 'none'] as const;
 /** Decorative arrow glyph per pass direction (0=left, 1=right, 2=across, 3=none). */
 const PASS_ARROWS = ['←', '→', '↑', ''] as const;
 
+/** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol. */
+const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
+
 /** Renders the Hearts game page with card passing, trick play, and scoring. */
 export const HeartsPage = withTutorial(HeartsPageContent, 'hearts', HT_TUTORIAL_STEPS);
 /** Inner content of the Hearts page, wrapped by TutorialProvider. */
@@ -334,14 +337,7 @@ function HeartsPageContent() {
                               </span>{' '}
                               | {t('roundScore', { score: p.roundScore })} |{' '}
                               <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
-                              <HeartsVoidSuits
-                                suits={p.voidSuits ?? []}
-                                label={t('voidSuits', {
-                                  suits: (p.voidSuits ?? [])
-                                    .map((s) => ({ 1: '♠', 2: '♣', 3: '♥', 4: '♦' })[s])
-                                    .join(' '),
-                                })}
-                              />
+                              <HeartsVoidSuits suits={p.voidSuits ?? []} t={t} />
                               {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
                             </div>
                           );
@@ -358,12 +354,7 @@ function HeartsPageContent() {
                           {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                           {t('roundScore', { score: p.roundScore })} |{' '}
                           <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
-                          <HeartsVoidSuits
-                            suits={p.voidSuits ?? []}
-                            label={t('voidSuits', {
-                              suits: (p.voidSuits ?? []).map((s) => ({ 1: '♠', 2: '♣', 3: '♥', 4: '♦' })[s]).join(' '),
-                            })}
-                          />
+                          <HeartsVoidSuits suits={p.voidSuits ?? []} t={t} />
                           {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
                         </div>
                       </div>
@@ -586,14 +577,25 @@ function HeartsPageContent() {
   );
 }
 
-function HeartsVoidSuits({ suits, label }: { suits: number[]; label: string }) {
-  const symbols: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
+function HeartsVoidSuits({
+  suits,
+  t,
+}: {
+  suits: number[];
+  t: (key: string, opts?: Record<string, unknown>) => string;
+}) {
   if (suits.length === 0) return null;
+  const label = t('voidSuits', { suits: suits.map((suit) => SUIT_SYMBOLS[suit]).join(' ') });
   return (
     <span className="ml-1 inline-flex gap-0.5" role="img" aria-label={label}>
       {suits.map((suit) => (
-        <span key={suit} className="rounded bg-ds-surface px-1 text-ds-text-primary" data-testid="hearts-void-suit">
-          {symbols[suit]}
+        <span
+          key={suit}
+          aria-hidden="true"
+          className="rounded bg-ds-surface px-1 text-ds-text-primary"
+          data-testid="hearts-void-suit"
+        >
+          {SUIT_SYMBOLS[suit]}
         </span>
       ))}
     </span>

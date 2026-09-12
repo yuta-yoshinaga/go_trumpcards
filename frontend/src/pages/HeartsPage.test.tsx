@@ -58,7 +58,9 @@ describe('HeartsPage', () => {
       }),
     );
     renderWithProviders(<HeartsPage />);
-    expect(await screen.findByLabelText('ボイド: ♣ ♥')).toBeInTheDocument();
+    const voidSuits = await screen.findByLabelText('ボイド: ♣ ♥');
+    expect(voidSuits).toBeInTheDocument();
+    expect(voidSuits.querySelectorAll('[aria-hidden="true"]')).toHaveLength(2);
     expect(screen.getAllByTestId('hearts-void-suit')).toHaveLength(2);
   });
 
