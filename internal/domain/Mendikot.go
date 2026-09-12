@@ -87,7 +87,10 @@ type Mendikot struct {
 	// trumpChooserIdx は切り札を決めた／決めるプレイヤー (-1: まだ居ない)。
 	trumpChooserIdx int
 
-	currentTrick     []*TrickCard
+	currentTrick []*TrickCard
+	lastTrick    []*TrickCard
+	// lastTrickWinner は直前に解決したトリックの勝者 (-1: まだ無い)。
+	lastTrickWinner  int
 	currentPlayerIdx int
 	leadPlayerIdx    int
 	dealerIdx        int
@@ -107,7 +110,7 @@ type Mendikot struct {
 func NewMendikot(trumpCards *TrumpCards, players []*MendikotPlayer, config MendikotConfig) *Mendikot {
 	return &Mendikot{
 		trumpCards: trumpCards, players: players, config: config,
-		trumpChooserIdx: -1, lastHandWinner: -1, winnerTeam: -1,
+		trumpChooserIdx: -1, lastTrickWinner: -1, lastHandWinner: -1, winnerTeam: -1,
 	}
 }
 
@@ -131,6 +134,8 @@ func (m *Mendikot) Reset() {
 	m.winnerTeam = -1
 	m.lastHandWinner = -1
 	m.lastHandKind = ""
+	m.lastTrickWinner = -1
+	m.lastTrick = nil
 	m.scores = [MendikotTeamCnt]int{}
 	m.actionLog = nil
 	for _, p := range m.players {
@@ -144,6 +149,8 @@ func (m *Mendikot) dealHand() {
 	m.phase = MendikotPhasePlay
 	m.trickNumber = 0
 	m.currentTrick = nil
+	m.lastTrick = nil
+	m.lastTrickWinner = -1
 	m.trumpSuit = 0
 	m.trumpChooserIdx = -1
 	for _, p := range m.players {
@@ -222,6 +229,12 @@ func (m *Mendikot) play(playerIdx, cardIndex int) error {
 	card := p.GetCard(cardIndex)
 	if !m.canPlay(playerIdx, card) {
 		return errors.New("must follow suit")
+	}
+	// 解決済みトリックの札は、次のトリックの1枚目を出す直前まで表示する。
+	// 新しいトリックが始まるここで、表示用の直前勝者と一緒に片付ける。
+	if len(m.currentTrick) == 0 && len(m.lastTrick) > 0 {
+		m.lastTrick = nil
+		m.lastTrickWinner = -1
 	}
 
 	// **切り札が未定で、この人が初めてフォローできなかったなら、ここで決まる。**
@@ -307,6 +320,8 @@ func (m *Mendikot) GetValidPlayIndices(playerIdx int) []int {
 // resolveTrick トリックを解決し、10 の枚数を数える
 func (m *Mendikot) resolveTrick() {
 	winner := m.trickWinner()
+	m.lastTrick = m.currentTrick
+	m.lastTrickWinner = winner
 	cards := make([]*Card, 0, len(m.currentTrick))
 	tens := 0
 	for _, tc := range m.currentTrick {
@@ -664,6 +679,12 @@ func (m *Mendikot) GetLastHandKind() string { return m.lastHandKind }
 // GetCurrentTrick 現在のトリック
 func (m *Mendikot) GetCurrentTrick() []*TrickCard { return m.currentTrick }
 
+// GetLastTrick 直前に解決したトリック
+func (m *Mendikot) GetLastTrick() []*TrickCard { return m.lastTrick }
+
+// GetLastTrickWinner 直前に解決したトリックの勝者 (-1: まだ無い)
+func (m *Mendikot) GetLastTrickWinner() int { return m.lastTrickWinner }
+
 // GetCurrentPlayerIdx 現在の手番
 func (m *Mendikot) GetCurrentPlayerIdx() int { return m.currentPlayerIdx }
 
@@ -722,6 +743,8 @@ type mendikotJSON struct {
 	TrumpSuit        int                  `json:"ts"`
 	TrumpChooserIdx  int                  `json:"tx"`
 	CurrentTrick     []*TrickCard         `json:"ct"`
+	LastTrick        []*TrickCard         `json:"lt"`
+	LastTrickWinner  *int                 `json:"ltw,omitempty"`
 	CurrentPlayerIdx int                  `json:"cp"`
 	LeadPlayerIdx    int                  `json:"lp"`
 	DealerIdx        int                  `json:"di"`
@@ -745,6 +768,8 @@ func (m *Mendikot) MarshalJSON() ([]byte, error) {
 		TrumpSuit:        m.trumpSuit,
 		TrumpChooserIdx:  m.trumpChooserIdx,
 		CurrentTrick:     m.currentTrick,
+		LastTrick:        m.lastTrick,
+		LastTrickWinner:  &m.lastTrickWinner,
 		CurrentPlayerIdx: m.currentPlayerIdx,
 		LeadPlayerIdx:    m.leadPlayerIdx,
 		DealerIdx:        m.dealerIdx,
@@ -787,6 +812,9 @@ func (m *Mendikot) UnmarshalJSON(data []byte) error {
 	if j.TrickNumber < 0 || j.TrickNumber > MendikotTricksPerRound {
 		return fmt.Errorf("invalid trick number: %d", j.TrickNumber)
 	}
+	if j.LastTrickWinner != nil && (*j.LastTrickWinner < -1 || *j.LastTrickWinner >= MendikotPlayerCnt) {
+		return fmt.Errorf("invalid last trick winner: %d", *j.LastTrickWinner)
+	}
 	if j.HandNumber < 1 {
 		return fmt.Errorf("invalid hand number: %d", j.HandNumber)
 	}
@@ -795,6 +823,9 @@ func (m *Mendikot) UnmarshalJSON(data []byte) error {
 	}
 	if len(j.CurrentTrick) > MendikotPlayerCnt {
 		return fmt.Errorf("current trick holds %d cards", len(j.CurrentTrick))
+	}
+	if len(j.LastTrick) > MendikotPlayerCnt {
+		return fmt.Errorf("last trick holds %d cards", len(j.LastTrick))
 	}
 	for name, idx := range map[string]int{
 		"current player": j.CurrentPlayerIdx,
@@ -826,6 +857,11 @@ func (m *Mendikot) UnmarshalJSON(data []byte) error {
 	m.trumpSuit = j.TrumpSuit
 	m.trumpChooserIdx = j.TrumpChooserIdx
 	m.currentTrick = j.CurrentTrick
+	m.lastTrick = j.LastTrick
+	m.lastTrickWinner = -1
+	if j.LastTrickWinner != nil {
+		m.lastTrickWinner = *j.LastTrickWinner
+	}
 	m.currentPlayerIdx = j.CurrentPlayerIdx
 	m.leadPlayerIdx = j.LeadPlayerIdx
 	m.dealerIdx = j.DealerIdx

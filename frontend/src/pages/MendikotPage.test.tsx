@@ -47,6 +47,8 @@ function makeState(overrides: Partial<MendikotResponse> = {}): MendikotResponse 
     currentPlayerIdx: 0,
     leadPlayerIdx: 0,
     currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
     validPlays: [0, 1, 2],
     gameEndFlag: false,
     winnerTeam: -1,
@@ -62,6 +64,50 @@ beforeEach(() => {
 });
 
 describe('MendikotPage', () => {
+  it('marks the previous trick winner with a ring and WIN badge', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        lastTrick: [
+          { playerIdx: 0, card: card('SPADE', 2) },
+          { playerIdx: 1, card: card('HEART', 10) },
+          { playerIdx: 2, card: card('CLOVER', 3) },
+          { playerIdx: 3, card: card('DIAMOND', 4) },
+        ],
+        lastTrickWinner: 1,
+      } as Partial<MendikotResponse>),
+    );
+    renderWithProviders(<MendikotPage />);
+
+    expect(await screen.findByTestId('trick-winner-badge')).toHaveTextContent('WIN');
+    expect(document.querySelector('[data-trick-winner="true"]')).not.toBeNull();
+  });
+
+  it('clears the previous trick after the next card is played', async () => {
+    mockExec
+      .mockResolvedValueOnce(
+        makeState({
+          lastTrick: [{ playerIdx: 1, card: card('HEART', 10) }],
+          lastTrickWinner: 1,
+        } as Partial<MendikotResponse>),
+      )
+      .mockResolvedValueOnce(makeState({ currentTrick: [{ playerIdx: 0, card: card('SPADE', 2) }] }));
+    renderWithProviders(<MendikotPage />);
+
+    expect(await screen.findByTestId('trick-winner-badge')).toBeInTheDocument();
+    fireEvent.click((await screen.findAllByRole('button', { name: /を出す/ }))[0]);
+    await waitFor(() => expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument());
+  });
+
+  it('does not show a winner badge before a trick is resolved', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ currentTrick: [{ playerIdx: 1, card: card('HEART', 10) }] } as Partial<MendikotResponse>),
+    );
+    renderWithProviders(<MendikotPage />);
+
+    await screen.findByText('現在のトリック');
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<MendikotPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

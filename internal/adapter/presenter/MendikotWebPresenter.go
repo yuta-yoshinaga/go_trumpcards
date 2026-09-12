@@ -43,6 +43,8 @@ func (p *MendikotWebPresenter) buildBase(m interfaces.MendikotGame) *controller.
 	resObj.GameEndFlag = m.GetGameEndFlag()
 	resObj.WinnerTeam = m.GetWinnerTeam()
 	resObj.CurrentTrick = trickCardsToOutput(m.GetCurrentTrick())
+	resObj.LastTrick = trickCardsToOutput(m.GetLastTrick())
+	resObj.LastTrickWinner = m.GetLastTrickWinner()
 	resObj.Players = p.buildPlayersOutput(m)
 
 	scores := make([]int, 0, domain.MendikotTeamCnt)

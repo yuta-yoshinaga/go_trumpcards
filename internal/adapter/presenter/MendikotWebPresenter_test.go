@@ -37,6 +37,8 @@ func TestMendikotWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(-1), m["trumpChooserIdx"])
 	assert.Equal(t, float64(domain.MendikotTensInDeck), m["tensInDeck"])
 	assert.Equal(t, float64(-1), m["lastHandWinner"])
+	assert.Equal(t, float64(-1), m["lastTrickWinner"])
+	assert.Empty(t, m["lastTrick"])
 
 	players := m["players"].([]any)
 	require.Len(t, players, domain.MendikotPlayerCnt)
@@ -48,6 +50,22 @@ func TestMendikotWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(1), players[1].(map[string]any)["team"])
 	assert.Len(t, human["cards"], domain.MendikotHandSize, "人間の手札だけ見える")
 	assert.Empty(t, players[1].(map[string]any)["cards"], "CPU の手札は伏せる")
+}
+
+func TestMendikotWebPresenterCarriesLastTrickWinner(t *testing.T) {
+	p := new(MendikotWebPresenter)
+	m := newMendikotForWeb(t)
+	data, err := json.Marshal(m)
+	require.NoError(t, err)
+	var snapshot map[string]any
+	require.NoError(t, json.Unmarshal(data, &snapshot))
+	snapshot["ltw"] = 2
+	data, err = json.Marshal(snapshot)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(data, m))
+
+	out := decodeMendikot(t, p.Output(m, nil))
+	assert.Equal(t, float64(2), out["lastTrickWinner"])
 }
 
 // **勝敗を決めるのは 10 の枚数。** 盤面から読めないので必ずワイヤに載せる。
