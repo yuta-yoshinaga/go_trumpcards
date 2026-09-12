@@ -27,14 +27,14 @@
   "playing": "Move a card",
   "gameClear": "Game clear! Moves: {{moveCount}}",
   "gameOver": "Game over",
-  "gameOverSummary": "Reached {{count}}/104 cards on the foundations ({{percent}}%)",
+  "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
   "hintAvailable": "A hint is available",
   "noHint": "No hint available",
   "tutorial": {
-    "foundation": "There are eight foundations, two per suit. They **start empty**: an Ace goes up when one appears, and each then builds A-K in suit, 13 cards. All eight -- 8 x 13 = 104 -- wins the game.",
-    "tableau": "Eight tableau piles, dealt **one card each** (the other 96 are the stock). Build down **ignoring suit and colour**, but **only one card moves at a time**.",
+    "foundation": "There are four foundations: two build down by suit from ♠Q, past A to K, and two build up by suit from ♦J, past K to A. Ranks wrap around, and all four foundations reaching 13 cards each (52 cards total) wins the game.",
+    "tableau": "Sixteen tableau slots, dealt **one card each** (the other 88 are the stock). Tableau cards can **only be sent to the foundations**, not built on the tableau. Empty slots are refilled **from the stock or waste**.",
     "emptyPile": "When a pile empties it can be refilled **only from the stock or the waste**. A tableau card can never move into a gap, so an empty pile is not a tool for rearranging the board -- it is an outlet for the stock.",
-    "stock": "Turn the stock one card at a time onto the waste. **There is no redeal -- one pass only.** When a pile is empty you can place straight from the stock without spending a turn on the waste.",
+    "stock": "Turn the stock one card at a time onto the waste. **You can redeal up to three times.** When an empty slot is available, you can place straight from the stock without spending a turn on the waste.",
     "controls": "Draw, hint, undo, auto-complete, and the other controls."
   },
   "frontendHint": {

@@ -83,7 +83,7 @@ func (p *MatrimonyCuiPresenter) Output(c interfaces.MatrimonyGame, lastErr error
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 			fnd := c.GetFoundation()
 			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
-				cuiCountPileCards(fnd[:]...), domain.MatrimonyTotalCards)) + "\n")
+				cuiCountPileCards(fnd[:]...), domain.MatrimonyFoundationGoal)) + "\n")
 		}
 	})
 }

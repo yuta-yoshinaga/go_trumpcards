@@ -257,14 +257,15 @@ describe('MatrimonyPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 
-  it('counts the summary against 104 cards, not 52', async () => {
+  it('shows 100% when all foundation piles are full', async () => {
     mockExec.mockResolvedValue({
       ...gameOverState,
-      foundation: [[card('SPADE', 1)], [], [], [], [], [], [], []],
+      foundation: Array.from({ length: 4 }, () => Array.from({ length: 13 }, () => card('SPADE', 1))),
     });
     renderWithProviders(<MatrimonyPage />);
     const summary = await screen.findByTestId('cg-gameover-summary');
-    expect(summary).toHaveTextContent('1/104');
+    expect(summary).toHaveTextContent('52/52');
+    expect(summary).toHaveTextContent('100%');
   });
 
   it('does not show the progress summary on game clear', async () => {
