@@ -100,12 +100,7 @@ describe('RollingStonePage', () => {
         gameEndFlag: true,
         phase: 1,
         winnerIdx: 0,
-        players: [
-          seat(0, { cardCount: 0, finishedAt: 1 }),
-          seat(1, { cardCount: 0, finishedAt: 2 }),
-          seat(2),
-          seat(3),
-        ],
+        players: [seat(0, { cardCount: 0, finishedAt: 1 }), seat(1, { cardCount: 0, finishedAt: 2 }), seat(2), seat(3)],
       }),
     );
     renderWithProviders(<RollingStonePage />);
