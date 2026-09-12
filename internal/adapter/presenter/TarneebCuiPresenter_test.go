@@ -94,6 +94,31 @@ func TestTarneebCuiPresenter_Output_PhaseLabels(t *testing.T) {
 	})
 }
 
+func TestTarneebCuiPresenter_Output_RoundScore(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.TarneebCuiPresenter)
+
+	t.Run("positive round", func(t *testing.T) {
+		tn := newTarneebForCuiTest()
+		tn.SetPhase(domain.TarneebPhaseRoundEnd)
+		tn.GetPlayer(0).SetRoundScore(8)
+		tn.GetPlayer(1).SetRoundScore(5)
+		out := p.Output(tn, nil)
+		assert.Contains(t, out, "今回: チーム0=+8  チーム1=+5")
+	})
+
+	t.Run("negative round", func(t *testing.T) {
+		tn := newTarneebForCuiTest()
+		tn.SetPhase(domain.TarneebPhaseRoundEnd)
+		tn.GetPlayer(0).SetRoundScore(-8)
+		tn.GetPlayer(1).SetRoundScore(9)
+		out := p.Output(tn, nil)
+		assert.Contains(t, out, "今回: チーム0=-8  チーム1=+9")
+	})
+}
+
 func TestTarneebCuiPresenter_HintOutput(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)

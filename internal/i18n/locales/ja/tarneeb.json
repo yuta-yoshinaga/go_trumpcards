@@ -12,6 +12,7 @@
   "trumpLine": "切り札: {{suit}}",
   "trumpUndeclared": "未宣言",
   "scoreLine": "累計: チーム0={{team0}}  チーム1={{team1}}",
+  "roundScoreLine": "今回: チーム0={{team0}}  チーム1={{team1}}",
   "playerLine": "{{name}} (チーム{{team}}) ビッド={{bid}} 獲得{{tricks}}トリック 手札{{cards}}枚",
   "bidWinnerLine": "落札: {{name}} ({{bid}})",
   "bidPending": "未ビッド",

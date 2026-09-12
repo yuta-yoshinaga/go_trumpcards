@@ -69,6 +69,11 @@ func (p *TarneebCuiPresenter) Output(t interfaces.TarneebGame, lastErr error) st
 		b.WriteString(i18n.Tf("tarneeb.scoreLine",
 			"team0", strconv.Itoa(t.GetTeamScore(0)),
 			"team1", strconv.Itoa(t.GetTeamScore(1))) + "\n")
+		if t.GetPhase() == domain.TarneebPhaseRoundEnd {
+			b.WriteString(i18n.Tf("tarneeb.roundScoreLine",
+				"team0", cuiSignedScore(tarneebTeamRoundScore(t, 0)),
+				"team1", cuiSignedScore(tarneebTeamRoundScore(t, 1))) + "\n")
+		}
 		if t.GetBidWinnerIdx() >= 0 {
 			bw := t.GetPlayer(t.GetBidWinnerIdx())
 			b.WriteString(i18n.Tf("tarneeb.bidWinnerLine",
@@ -128,6 +133,19 @@ func (p *TarneebCuiPresenter) Output(t interfaces.TarneebGame, lastErr error) st
 			b.WriteString(i18n.T("tarneeb.promptRoundEndHelp") + "\n")
 		}
 	})
+}
+
+// tarneebTeamRoundScore returns the round score from the first player in a team.
+// Tarneeb stores the team's delta on each member, matching the web grouping
+// utility's first-member selection rather than summing the duplicated values.
+func tarneebTeamRoundScore(t interfaces.TarneebGame, team int) int {
+	for i := 0; i < t.GetPlayerCnt(); i++ {
+		player := t.GetPlayer(i)
+		if player.GetTeam() == team {
+			return player.GetRoundScore()
+		}
+	}
+	return 0
 }
 
 // HintOutput emits the current Tarneeb hint.

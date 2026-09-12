@@ -12,6 +12,7 @@
   "trumpLine": "Trump: {{suit}}",
   "trumpUndeclared": "not yet declared",
   "scoreLine": "Total: team 0 = {{team0}}, team 1 = {{team1}}",
+  "roundScoreLine": "Round: team 0 = {{team0}}, team 1 = {{team1}}",
   "playerLine": "{{name}} (team {{team}}) bid={{bid}} won {{tricks}} tricks, {{cards}} cards",
   "bidWinnerLine": "Contract: {{name}} ({{bid}})",
   "bidPending": "no bid yet",
