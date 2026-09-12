@@ -33,5 +33,6 @@
   "helpExampleBet": "  b 10                 ante 10 and get a hand",
   "helpExamplePlay": "  p                    call, placing a play bet of 2x the ante",
   "helpHint": "  h                    show a hint",
-  "jackpotHelp": "Jackpot (optional): pays on a flush or better, whether or not you beat the dealer"
+  "jackpotHelp": "Jackpot (optional): pays on a flush or better, whether or not you beat the dealer",
+  "dealerQualifyHelp": "Dealer Qualify: If the dealer does not have a pair or better, or Ace-King high, they do not qualify. When not qualified, the ante pays 1:1 and the play bet pushes (is returned)."
 }

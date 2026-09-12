@@ -142,6 +142,16 @@ describe('CaribbeanStudPage', () => {
     expect(help.querySelector('summary')).toBeInTheDocument();
   });
 
+  it('shows dealer qualify help in the bet phase', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<CaribbeanStudPage />);
+    const help = await screen.findByTestId('dealer-qualify-help');
+    expect(help).toHaveTextContent('ディーラークオリファイとは？');
+    expect(help.querySelector('summary')).toBeInTheDocument();
+    // Verify it resolved to actual Japanese, not the i18n key name
+    expect(help).toHaveTextContent('ディーラーがペア以上またはA-Kハイを持たない場合');
+  });
+
   it('renders skeleton before state loads', () => {
     mockApi.mockReturnValue(new Promise(() => {}));
     renderWithProviders(<CaribbeanStudPage />);
@@ -167,6 +177,7 @@ describe('CaribbeanStudPage', () => {
     await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument();
+    expect(screen.queryByTestId('dealer-not-qualified-note')).not.toBeInTheDocument();
   });
 
   it('shows end phase with dealer wins', async () => {
@@ -203,6 +214,9 @@ describe('CaribbeanStudPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'コール' }));
     await waitFor(() => expect(screen.getAllByText(/未クオリファイ/).length).toBeGreaterThanOrEqual(1));
+    const note = screen.getByTestId('dealer-not-qualified-note');
+    expect(note).toHaveTextContent('未クオリファイのため、アンテは1:1配当、プレイベットは返却されます。');
+    expect(note).not.toHaveTextContent('dealerNotQualifiedNote');
   });
 
   it('shows payout breakdown with jackpot', async () => {

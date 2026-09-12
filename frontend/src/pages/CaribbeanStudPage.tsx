@@ -327,6 +327,11 @@ function CaribbeanStudPageContent() {
                     </span>
                   )}
                 </div>
+                {isEndPhase && !state.dealerQualified && (
+                  <div className="text-center text-xs text-ds-text-muted mb-2" data-testid="dealer-not-qualified-note">
+                    {t('dealerNotQualifiedNote')}
+                  </div>
+                )}
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.dealerHand.map((card, i) =>
                     isMaskedCard(card) ? (
@@ -406,6 +411,10 @@ function CaribbeanStudPageContent() {
                 <details data-testid="jackpot-help" className="text-xs text-ds-text-muted max-w-xs">
                   <summary className="cursor-pointer text-ds-info">{t('jackpotHelpTitle')}</summary>
                   <p className="pt-1">{t('jackpotHelp')}</p>
+                </details>
+                <details data-testid="dealer-qualify-help" className="text-xs text-ds-text-muted max-w-xs">
+                  <summary className="cursor-pointer text-ds-info">{t('dealerQualifyHelpTitle')}</summary>
+                  <p className="pt-1">{t('dealerQualifyHelp')}</p>
                 </details>
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
                   {t('button.bet')}
