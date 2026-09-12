@@ -440,12 +440,14 @@ func TestSpiderAutoComplete(t *testing.T) {
 
 	t.Run("not playing", func(t *testing.T) {
 		s.SetPhase(SpiderPhaseGameOver)
+		assert.False(t, s.CanAutoComplete())
 		assert.Error(t, s.AutoComplete())
 		s.SetPhase(SpiderPhasePlaying)
 	})
 
 	t.Run("not all face up", func(t *testing.T) {
 		// Default state has face-down cards
+		assert.False(t, s.CanAutoComplete())
 		assert.Error(t, s.AutoComplete())
 	})
 
@@ -465,6 +467,7 @@ func TestSpiderAutoComplete(t *testing.T) {
 		s.SetCompletedSuits(0)
 		s.SetScore(500)
 
+		assert.True(t, s.CanAutoComplete())
 		err := s.AutoComplete()
 		require.NoError(t, err)
 		assert.Equal(t, 1, s.GetCompletedSuits())

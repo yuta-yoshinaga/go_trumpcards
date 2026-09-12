@@ -99,6 +99,11 @@ func (_m *MockSpiderGame) AllFaceUp() bool {
 	return ret.Bool(0)
 }
 
+func (_m *MockSpiderGame) CanAutoComplete() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
 func (_m *MockSpiderGame) GetActionLog() []*domain.ActionLogEntry {
 	ret := _m.Called()
 	v := ret.Get(0)

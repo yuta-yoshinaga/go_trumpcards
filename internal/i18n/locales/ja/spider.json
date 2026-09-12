@@ -10,6 +10,7 @@
   "columnLabel": "列{{col}}:",
   "gameClearLine": "ゲームクリア！ 手数: {{moves}} スコア: {{score}}",
   "hintLine": "ヒント: タブロー列{{fromCol}}[{{idx}}] → タブロー列{{toCol}}",
+  "autoCompleteReady": "オートコンプリート可能です (ac)",
   "difficultyLine": "難易度: {{suits}}スート / 残りディール: {{deals}}回",
   "dealBlockedEmpty": "空の列があるためディール不可（全列にカードを置いてください）",
   "helpExampleHint": "  h                        次の一手を教えてもらう",

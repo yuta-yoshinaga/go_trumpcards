@@ -335,6 +335,11 @@ func (s *Spider) AutoComplete() error {
 	return nil
 }
 
+// CanAutoComplete はいまオートコンプリートが実行できるかを返す。
+func (s *Spider) CanAutoComplete() bool {
+	return s.phase == SpiderPhasePlaying && s.AllFaceUp()
+}
+
 // AllFaceUp 全カードが表向きかどうか
 func (s *Spider) AllFaceUp() bool {
 	if len(s.stock) > 0 {

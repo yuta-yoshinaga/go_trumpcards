@@ -81,6 +81,9 @@ func (p *SpiderCuiPresenter) Output(s interfaces.SpiderGame, lastErr error) stri
 						"count", strconv.Itoa(n))) + "\n")
 				}
 			}
+			if s.CanAutoComplete() {
+				b.WriteString(color.Green(i18n.T("spider.autoCompleteReady")) + "\n")
+			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(s.GetMoveCount())) + "\n")
 		case domain.SpiderPhaseGameClear:
