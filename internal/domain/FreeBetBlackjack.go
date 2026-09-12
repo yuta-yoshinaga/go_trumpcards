@@ -588,6 +588,13 @@ func (g *FreeBetBlackjack) GetDealerScore() int {
 	return g.dealerHand.GetScore()
 }
 
+// IsDealerHoleRevealed はディーラーの伏せ札が公開済みかを返す。
+// ベット中は手札が空で、プレイ中は判断材料にならないよう非公開とし、
+// 決着後の Result フェーズだけ公開済みとする。
+func (g *FreeBetBlackjack) IsDealerHoleRevealed() bool {
+	return g.phase == FreeBetPhaseResult
+}
+
 // IsDealerPushed22 はディーラーが 22 でバストしたかを返す。
 func (g *FreeBetBlackjack) IsDealerPushed22() bool { return g.dealerPushed22 }
 

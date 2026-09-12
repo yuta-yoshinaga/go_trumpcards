@@ -12,6 +12,7 @@
   "roundLine": "ラウンド: {{round}}（チップ: {{chips}}）",
   "anteLine": "アンティ: {{ante}}",
   "dealerLine": "ディーラー: {{cards}} = {{score}}",
+  "dealerLineHidden": "ディーラー: {{cards}}",
   "handLine": "{{mark}}[{{idx}}] {{cards}} = {{score}}（賭け {{bet}}）",
   "freeSuffix": " + ハウス {{free}}",
   "freeAvailableLine": "いま無料でできる操作: {{actions}}",

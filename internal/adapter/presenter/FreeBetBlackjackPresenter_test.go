@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -87,6 +88,38 @@ func TestFreeBetCuiPresenter_ShowsResultAndNet(t *testing.T) {
 	assert.Contains(t, out, "収支:")
 	assert.Contains(t, out, "手札1:")
 	assert.NotContains(t, out, "freebet.")
+}
+
+func TestFreeBetCuiPresenter_HidesDealerHoleDuringPlayAndRevealsAtResult(t *testing.T) {
+	cp := new(FreeBetBlackjackCuiPresenter)
+	g := freeBetDealtUntil(t, func(g *domain.FreeBetBlackjack) bool {
+		return g.GetPhase() == domain.FreeBetPhasePlay && len(g.GetDealerCards()) >= 2
+	})
+
+	play := cp.Output(g, nil)
+	playDealerLine := freeBetDealerLine(t, play)
+	assert.Contains(t, playDealerLine, "[??]")
+	assert.NotContains(t, playDealerLine, " = ", "伏せたディーラー行に空の点数区切りを出してはいけない")
+	assert.NotContains(t, playDealerLine, strconv.Itoa(g.GetDealerScore()), "プレイ中にディーラー点数を出してはいけない")
+
+	for g.GetPhase() == domain.FreeBetPhasePlay {
+		require.NoError(t, g.Stand())
+	}
+	result := cp.Output(g, nil)
+	resultDealerLine := freeBetDealerLine(t, result)
+	assert.NotContains(t, resultDealerLine, "[??]")
+	assert.Contains(t, resultDealerLine, strconv.Itoa(g.GetDealerScore()))
+}
+
+func freeBetDealerLine(t *testing.T, output string) string {
+	t.Helper()
+	for _, line := range strings.Split(output, "\n") {
+		if strings.Contains(line, "ディーラー") {
+			return line
+		}
+	}
+	t.Fatalf("ディーラーの行が出力されていません: %q", output)
+	return ""
 }
 
 // **ディーラーの 22 は画面で名指しする。** 無料ダブル / 無料スプリットの対価が
@@ -196,6 +229,31 @@ func TestFreeBetWebPresenter_FreeActionFlagsAreOnTheWire(t *testing.T) {
 	assert.Equal(t, int(domain.FreeBetPhasePlay), got.Phase)
 }
 
+func TestFreeBetWebPresenter_HidesDealerHoleDuringPlayAndRevealsAtResult(t *testing.T) {
+	cp := new(FreeBetBlackjackWebPresenter)
+	g := freeBetDealtUntil(t, func(g *domain.FreeBetBlackjack) bool {
+		return g.GetPhase() == domain.FreeBetPhasePlay && len(g.GetDealerCards()) >= 2
+	})
+
+	var play struct {
+		DealerCards        []json.RawMessage `json:"dealerCards"`
+		DealerScore        int               `json:"dealerScore"`
+		DealerHoleRevealed bool              `json:"dealerHoleRevealed"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(cp.Output(g, nil)), &play))
+	assert.Len(t, play.DealerCards, 1)
+	assert.Zero(t, play.DealerScore)
+	assert.False(t, play.DealerHoleRevealed)
+
+	for g.GetPhase() == domain.FreeBetPhasePlay {
+		require.NoError(t, g.Stand())
+	}
+	require.NoError(t, json.Unmarshal([]byte(cp.Output(g, nil)), &play))
+	assert.Len(t, play.DealerCards, len(g.GetDealerCards()))
+	assert.Equal(t, g.GetDealerScore(), play.DealerScore)
+	assert.True(t, play.DealerHoleRevealed)
+}
+
 func TestFreeBetWebPresenter_HandsCarryTheirState(t *testing.T) {
 	cp := new(FreeBetBlackjackWebPresenter)
 	g := newFreeBetForPresenter(t)
@@ -288,6 +346,7 @@ func TestFreeBetWebPresenter_SplitTwentyOneIsNotFlaggedAsBlackjack(t *testing.T)
 	m.On("GetActiveHandIdx").Return(0)
 	m.On("GetDealerCards").Return([]*domain.Card{})
 	m.On("GetDealerScore").Return(20)
+	m.On("IsDealerHoleRevealed").Return(true)
 	m.On("IsDealerPushed22").Return(false)
 	m.On("CanFreeDouble").Return(false)
 	m.On("CanFreeSplit").Return(false)

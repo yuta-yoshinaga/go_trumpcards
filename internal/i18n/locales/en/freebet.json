@@ -12,6 +12,7 @@
   "roundLine": "Round: {{round}} (chips: {{chips}})",
   "anteLine": "Ante: {{ante}}",
   "dealerLine": "Dealer: {{cards}} = {{score}}",
+  "dealerLineHidden": "Dealer: {{cards}}",
   "handLine": "{{mark}}[{{idx}}] {{cards}} = {{score}} (bet {{bet}})",
   "freeSuffix": " + house {{free}}",
   "freeAvailableLine": "Free actions available: {{actions}}",
