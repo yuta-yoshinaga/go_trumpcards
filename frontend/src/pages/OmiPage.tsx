@@ -249,11 +249,9 @@ function OmiPageContent() {
             </div>
 
             {/* Deal stage info: 4 cards first, 8 after trump */}
-            {isCallTrumpPhase && (
-              <div className="text-ds-text-muted text-xs text-center mb-2" data-testid="omi-deal-stage-info">
-                {t('dealStage1Info')}
-              </div>
-            )}
+            <div className="text-ds-text-muted text-xs text-center mb-2" data-testid="omi-deal-stage-info">
+              {t(isCallTrumpPhase ? 'dealStage1Info' : 'dealStage2Info')}
+            </div>
 
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
