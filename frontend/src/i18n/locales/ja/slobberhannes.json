@@ -25,6 +25,7 @@
     "clean": "無傷(+{{bonus}}点)"
   },
   "currentTrick": "現在のトリック",
+  "dealerBadge": "親",
   "actions": {
     "reset": "リセット",
     "nextRound": "次のラウンドへ",
