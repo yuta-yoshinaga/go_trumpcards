@@ -167,8 +167,11 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(h, nil)
 		assert.Contains(t, result, "[CPU行動]")
-		assert.Contains(t, result, "Player 1: コール")
-		assert.Contains(t, result, "Player 2: レイズ")
+		assert.Contains(t, result, "CPU 1: コール")
+		assert.Contains(t, result, "CPU 2: レイズ")
+		assert.NotContains(t, result, "Player 1")
+		assert.NotContains(t, result, "Player 2")
+		assert.NotContains(t, result, "{{")
 		assert.Contains(t, result, "(30)")
 	})
 
