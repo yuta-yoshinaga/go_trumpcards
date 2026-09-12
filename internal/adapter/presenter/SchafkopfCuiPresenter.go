@@ -57,7 +57,11 @@ func schafkopfPlayerStr(g interfaces.SchafkopfGame, i int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		var playable []int
+		if g.GetPhase() == domain.SchafkopfPhasePlay && g.GetCurrentPlayerIdx() == i {
+			playable = g.GetPlayableIndices(i)
+		}
+		b.WriteString(cuiPlayableMarkedCardListStr(player, playable) + "\n")
 	}
 	return b.String()
 }
