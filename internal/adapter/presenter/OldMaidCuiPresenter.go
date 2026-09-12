@@ -66,6 +66,13 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 			if discarded > 0 {
 				b.WriteString(i18n.Tf("oldmaid.drawActionDiscard",
 					"count", strconv.Itoa(discarded)))
+				if discardedCards := om.GetLastDiscardedCards(); len(discardedCards) > 0 {
+					cards := make([]string, 0, len(discardedCards))
+					for _, card := range discardedCards {
+						cards = append(cards, cuiCardStr(card))
+					}
+					b.WriteString(i18n.Tf("oldmaid.drawActionDiscardCards", "cards", strings.Join(cards, " ")))
+				}
 			}
 			b.WriteString("\n")
 		}
