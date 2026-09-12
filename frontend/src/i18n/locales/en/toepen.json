@@ -19,6 +19,7 @@
   "phase.play": "Playing",
   "ranking": "ranking: 10 > 9 > 8 > 7 > A > K > Q > J (the ten is highest, the jack lowest)",
   "redeal": "Redeal (poverty)",
+  "redealHint": "Your hand is nothing but A/K/Q/J (poverty) -- you can request a redeal",
   "stake": "Stake",
   "stay": "Stay in",
   "toep": "Toep (+1 stake)",
