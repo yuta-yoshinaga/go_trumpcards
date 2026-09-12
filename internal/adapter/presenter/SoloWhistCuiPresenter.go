@@ -143,7 +143,11 @@ func (p *SoloWhistCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Sol
 		b.WriteString(i18n.T("solowhist.promptTrickEnd") + "\n")
 		b.WriteString(i18n.T("solowhist.promptTrickEndHelp") + "\n")
 	case domain.SoloWhistPhaseRoundEnd:
-		b.WriteString(i18n.T("solowhist.promptRoundEnd") + "\n")
+		promptKey := "solowhist.promptRoundEnd"
+		if g.GetDeclarerIdx() < 0 {
+			promptKey = "solowhist.promptRoundEndPassedOut"
+		}
+		b.WriteString(i18n.T(promptKey) + "\n")
 		b.WriteString(i18n.T("solowhist.promptRoundEndHelp") + "\n")
 	}
 }

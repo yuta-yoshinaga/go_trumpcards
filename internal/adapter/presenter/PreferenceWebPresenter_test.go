@@ -134,6 +134,18 @@ func TestPreferenceWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "preference.roundEnd", resObj.MessageCode)
 	})
 
+	t.Run("passed out round end message code", func(t *testing.T) {
+		m, _ := setupPreferenceWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeclarerIdx")
+		m.On("GetPhase").Return(domain.PreferencePhaseRoundEnd)
+		m.On("GetDeclarerIdx").Return(-1)
+		result := p.Output(m, nil)
+		var resObj controller.PreferenceWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, "preference.roundEnd.passedOut", resObj.MessageCode)
+	})
+
 	t.Run("error message takes priority", func(t *testing.T) {
 		m, _ := setupPreferenceWebMockWithPlayers()
 		result := p.Output(m, errors.New("boom"))

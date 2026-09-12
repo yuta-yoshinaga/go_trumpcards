@@ -97,7 +97,19 @@ func TestPreferenceCuiPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.PreferencePhaseRoundEnd)
 		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
+		assert.Contains(t, result, "ラウンド終了")
+		assert.NotContains(t, result, "全員がパスしたため、このラウンドは流れました。")
+	})
+
+	t.Run("passed out round end prompt", func(t *testing.T) {
+		m, _ := setupPreferenceCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeclarerIdx")
+		m.On("GetPhase").Return(domain.PreferencePhaseRoundEnd)
+		m.On("GetDeclarerIdx").Return(-1)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "全員がパスしたため、このラウンドは流れました。")
+		assert.NotContains(t, result, "ラウンド終了\n")
 	})
 
 	t.Run("round end shows the declarer's contract as achieved", func(t *testing.T) {

@@ -127,6 +127,9 @@ func (p *SoloWhistWebPresenter) buildMessage(g interfaces.SoloWhistGame, lastErr
 	case domain.SoloWhistPhaseTrickEnd:
 		return "", "solowhist.trickEnd", nil
 	case domain.SoloWhistPhaseRoundEnd:
+		if g.GetDeclarerIdx() < 0 {
+			return "", "solowhist.roundEnd.passedOut", nil
+		}
 		return "", "solowhist.roundEnd", nil
 	}
 	return "", "", nil
