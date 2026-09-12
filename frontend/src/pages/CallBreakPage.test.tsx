@@ -257,6 +257,31 @@ describe('CallBreakPage', () => {
     expect(screen.getByAltText('♠ A').closest('button')).not.toHaveAttribute('title');
   });
 
+  it('falls back to the generic tooltip when the illegal reason is unknown', async () => {
+    const state = makeCallBreakState({
+      players: makeCallBreakState().players.map((p, i) =>
+        i === 0
+          ? {
+              ...p,
+              cards: [
+                { design: 'DIAMOND' as const, value: 3 },
+                { design: 'HEART' as const, value: 11 },
+              ],
+            }
+          : p,
+      ),
+      currentTrick: [{ playerIdx: 1, card: { design: 'DIAMOND', value: 5 } }],
+      validPlayIndices: [],
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByAltText('♦ 3')).toBeInTheDocument());
+    expect(screen.getByAltText('♦ 3').closest('button')).toHaveAttribute(
+      'title',
+      'このカードは出せません (リードスートが無い場合はスペードで切らなければなりません)',
+    );
+  });
+
   it('does not show play button when not human turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<CallBreakPage />);
