@@ -221,6 +221,21 @@ describe('NiuNiuPage', () => {
     // 生のキーが出ていないこと
     expect(queryByText(/niuniu/i)).not.toBeInTheDocument();
     expect(queryByText(/rankNone/i)).not.toBeInTheDocument();
+
+    // 折り畳み本体。**既定は閉じている** —— モバイルで操作の邪魔にならないこと。
+    const details = screen.getByTestId('nn-payout-ref');
+    expect(details).toBeInTheDocument();
+    expect(details).not.toHaveAttribute('open');
+  });
+
+  // 賭け終わったあとは出さない。もう賭け金を決められないので場所を取るだけ。
+  it('hides the payout reference outside the betting phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2 }));
+    renderWithProviders(<NiuNiuPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('nn-payout-ref')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('nn-payout-ref-list')).not.toBeInTheDocument();
   });
 });
 
