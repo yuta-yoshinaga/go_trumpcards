@@ -320,9 +320,15 @@ func TestCaribbeanStudCuiPresenter_Output_JackpotIsExplainedBeforeBetting(t *tes
 	// Web の説明と揃っていること: フラッシュ以上で、勝敗に関係なく配当。
 	assert.Contains(t, i18n.T("caribbeanstud.jackpotHelp"), "フラッシュ")
 
+	// Dealer qualify help check using literal strings as requested
+	assert.Contains(t, betOut, "ディーラークオリファイ: ディーラーがペア以上またはA-Kハイを持たない場合、未クオリファイとなります。未クオリファイ時はアンテのみ1:1で配当され、プレイベットはプッシュで返却されます")
+
 	// **賭け終わった後には出さない。**もう選べないものの説明は場所を取るだけ。
-	assert.NotContains(t, outputInPhase(domain.CaribbeanStudPhaseAction),
-		i18n.T("caribbeanstud.jackpotHelp"))
-	assert.NotContains(t, outputInPhase(domain.CaribbeanStudPhaseEnd),
-		i18n.T("caribbeanstud.jackpotHelp"))
+	actionOut := outputInPhase(domain.CaribbeanStudPhaseAction)
+	assert.NotContains(t, actionOut, i18n.T("caribbeanstud.jackpotHelp"))
+	assert.NotContains(t, actionOut, "ディーラークオリファイ: ディーラーがペア以上またはA-Kハイを持たない場合、未クオリファイとなります。未クオリファイ時はアンテのみ1:1で配当され、プレイベットはプッシュで返却されます")
+
+	endOut := outputInPhase(domain.CaribbeanStudPhaseEnd)
+	assert.NotContains(t, endOut, i18n.T("caribbeanstud.jackpotHelp"))
+	assert.NotContains(t, endOut, "ディーラークオリファイ: ディーラーがペア以上またはA-Kハイを持たない場合、未クオリファイとなります。未クオリファイ時はアンテのみ1:1で配当され、プレイベットはプッシュで返却されます")
 }
