@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bassetApi } from '../api/games/basset';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card } from '../types/common';
 import type { BassetResponse } from '../types/games/basset';
@@ -88,6 +89,7 @@ describe('BassetPage', () => {
 
     fireEvent.click(reset);
     expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('reset');
 
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
