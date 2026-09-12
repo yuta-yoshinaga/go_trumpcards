@@ -12,6 +12,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -109,11 +110,10 @@ function RamschPageContent() {
 
   if (!state) {
     return (
-      <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.ramsch.bg}`}>
-        <div className="flex-1 flex items-center justify-center text-ds-text-primary">
-          <p>{tc('skeleton.loading')}</p>
-        </div>
-      </div>
+      <GameSkeleton
+        gameKey="ramsch"
+        layout={{ kind: 'trick-taking', opponents: 2, trickArea: true, footerHandSize: 10 }}
+      />
     );
   }
 
