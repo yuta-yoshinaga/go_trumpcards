@@ -85,4 +85,8 @@ describe('ESCOBA_HELP', () => {
   it('lists the play command', () => {
     expect(ESCOBA_HELP.some((l) => l.startsWith('p <hand>'))).toBe(true);
   });
+
+  it('lists the face card values used for capture totals', () => {
+    expect(ESCOBA_HELP).toContain('Count J=8 / Q=9 / K=10 when calculating capture totals');
+  });
 });

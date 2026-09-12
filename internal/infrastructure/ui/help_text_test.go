@@ -699,6 +699,44 @@ func TestBuildCuiHelp_omitsNotesWhenEmpty(t *testing.T) {
 	}
 }
 
+func TestEscobaHelpIncludesCardValues(t *testing.T) {
+	original := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(original) })
+
+	var escoba *GameRegistryEntry
+	for _, entry := range GameRegistry() {
+		if entry.Name == "escoba" {
+			entryCopy := entry
+			escoba = &entryCopy
+			break
+		}
+	}
+	if escoba == nil {
+		t.Fatal("escoba is missing from the game registry")
+	}
+
+	tests := []struct {
+		lang string
+		want string
+	}{
+		{lang: "en", want: "  Count J=8 / Q=9 / K=10 when calculating capture totals"},
+		{lang: "ja", want: "  捕獲の合計は J=8 / Q=9 / K=10 として数える"},
+	}
+	for _, tt := range tests {
+		i18n.SetLang(tt.lang)
+		found := false
+		for _, line := range escoba.NewCui().HelpLines() {
+			if line == tt.want {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("help escoba (%s) does not contain %q", tt.lang, tt.want)
+		}
+	}
+}
+
 // #5498: この実装にはチーム/パートナーの概念が無く、ScoreRound はビッド・トリック・
 // ニルボーナス・バッグペナルティを4人それぞれ個別に計算する。つまりカットスロート
 // 方式なのに、そう書かれた場所がどこにも無かった。**標準スペードを知っている

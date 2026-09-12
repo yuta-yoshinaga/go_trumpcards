@@ -81,6 +81,13 @@ func TestEscobaCuiPresenter_Output(t *testing.T) {
 	}
 }
 
+func TestEscobaCuiPresenter_OutputShowsCardValues(t *testing.T) {
+	p := &presenter.EscobaCuiPresenter{}
+	out := p.Output(escobaBuildCuiGame(t), nil)
+
+	assert.Contains(t, out, "捕獲の合計は J=8 / Q=9 / K=10 として数える")
+}
+
 func TestEscobaCuiPresenter_Error(t *testing.T) {
 	p := &presenter.EscobaCuiPresenter{}
 	e := escobaBuildCuiGame(t)

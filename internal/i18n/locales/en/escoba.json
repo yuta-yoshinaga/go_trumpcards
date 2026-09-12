@@ -21,5 +21,6 @@
   "promptNext": "n to start the next round",
   "promptCurrentTurn": "Current turn: {{name}}",
   "promptHelp": "p <hand> [table...] to capture or lay / n for the next round",
+  "helpCardValues": "  Count J=8 / Q=9 / K=10 when calculating capture totals",
   "helpExampleNext": "  n                        read the round result, then continue"
 }
