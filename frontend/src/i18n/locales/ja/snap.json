@@ -11,7 +11,8 @@
     "stock": "ストック {{n}}枚",
     "you": "あなた",
     "cpu": "CPU{{idx}}",
-    "yourTurn": "あなたがめくる番"
+    "yourTurn": "あなたがめくる番",
+    "outOfCards": "札切れ"
   },
   "event": {
     "step": "{{name}} がめくりました",

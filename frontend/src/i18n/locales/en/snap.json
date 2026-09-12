@@ -11,7 +11,8 @@
     "stock": "{{n}} in stock",
     "you": "You",
     "cpu": "CPU{{idx}}",
-    "yourTurn": "Your turn to turn a card"
+    "yourTurn": "Your turn to turn a card",
+    "outOfCards": "out of cards"
   },
   "event": {
     "step": "{{name}} turned a card over",

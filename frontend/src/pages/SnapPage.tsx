@@ -199,6 +199,11 @@ function SnapPageContent() {
                   <span className="text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
                   </span>
+                  {p.stockSize === 0 && (
+                    <span className="ml-1 text-ds-text-muted" data-testid={`sp-out-${p.id.toString()}`}>
+                      {t('header.outOfCards')}
+                    </span>
+                  )}
                   {p.id === state.currentTurnIdx && !isGameEnd && (
                     <span className="ml-1 text-ds-accent">{t('header.yourTurn')}</span>
                   )}
