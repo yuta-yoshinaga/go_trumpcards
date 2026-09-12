@@ -4,14 +4,148 @@ package presenter
 
 import (
 	"errors"
+	"regexp"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
+
+func triPeaksCuiMockWithLayout(layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard) *interfaces.MockTriPeaksGame {
+	tg := new(interfaces.MockTriPeaksGame)
+	setupTriPeaksCuiMockDefaults(tg)
+	tg.ExpectedCalls = filterCalls(tg.ExpectedCalls, "GetLayout")
+	tg.On("GetLayout").Return(layout).Maybe()
+	tg.On("IsExposed", mock.Anything, mock.Anything).Return(true).Maybe()
+	return tg
+}
+
+func triPeaksRemainingLine(output string) string {
+	for _, line := range strings.Split(output, "\n") {
+		if strings.Contains(line, "山の残り:") {
+			return line
+		}
+	}
+	return ""
+}
+
+func TestTriPeaksCuiPresenterOutput_PeakRemaining(t *testing.T) {
+	makeLayout := func(cards ...struct {
+		row, col int
+		removed  bool
+	}) [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard {
+		var layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
+		for i, card := range cards {
+			layout[card.row][card.col] = &domain.TriPeaksCard{
+				Card:    domain.NewCard(domain.CardDesignSpade, i+1, true),
+				Removed: card.removed,
+			}
+		}
+		return layout
+	}
+
+	t.Run("counts two different layouts", func(t *testing.T) {
+		tests := []struct {
+			name   string
+			layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
+			want   string
+		}{
+			{
+				name: "one card in each peak",
+				layout: makeLayout(
+					struct {
+						row, col int
+						removed  bool
+					}{3, 0, false},
+					struct {
+						row, col int
+						removed  bool
+					}{2, 3, false},
+					struct {
+						row, col int
+						removed  bool
+					}{1, 6, false},
+				),
+				want: "山の残り: 左 1 / 中 1 / 右 1",
+			},
+			{
+				name: "removed cards and column boundaries",
+				layout: makeLayout(
+					struct {
+						row, col int
+						removed  bool
+					}{3, 0, false},
+					struct {
+						row, col int
+						removed  bool
+					}{3, 2, true},
+					struct {
+						row, col int
+						removed  bool
+					}{3, 3, false},
+					struct {
+						row, col int
+						removed  bool
+					}{3, 5, false},
+					struct {
+						row, col int
+						removed  bool
+					}{3, 6, false},
+				),
+				want: "山の残り: 左 1 / 中 2 / 右 1",
+			},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				out := (&TriPeaksCuiPresenter{}).Output(triPeaksCuiMockWithLayout(tt.layout), nil)
+				assert.Equal(t, tt.want, triPeaksRemainingLine(out))
+				assert.NotContains(t, out, "{{")
+			})
+		}
+	})
+}
+
+func TestTriPeaksCuiPresenterOutput_PeakRemainingInitialLayoutTotals28(t *testing.T) {
+	game := domain.NewDefaultTriPeaks()
+	game.Reset()
+	tg := triPeaksCuiMockWithLayout(game.GetLayout())
+
+	out := (&TriPeaksCuiPresenter{}).Output(tg, nil)
+	assert.Equal(t, "山の残り: 左 9 / 中 9 / 右 10", triPeaksRemainingLine(out))
+
+	// The three counts must account for every tableau card. This is the only
+	// thing that catches a column-to-peak mapping that disagrees with
+	// peakOfColumn in TriPeaksPage.tsx -- the two live in different languages
+	// and never appear in each other's tests, so a drift would leave both green.
+	// Read the numbers back out of the rendered line rather than restating them.
+	var sum int
+	for _, field := range regexp.MustCompile(`\d+`).FindAllString(triPeaksRemainingLine(out), -1) {
+		n, err := strconv.Atoi(field)
+		assert.NoError(t, err)
+		sum += n
+	}
+	assert.Equal(t, domain.TriPeaksTableauCnt, sum)
+}
+
+func TestTriPeaksCuiPresenterOutput_PeakRemainingMarksOnlyEmptyPeaks(t *testing.T) {
+	var layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
+	layout[3][3] = &domain.TriPeaksCard{Card: domain.NewCard(domain.CardDesignSpade, 1, true)}
+	layout[3][6] = &domain.TriPeaksCard{Card: domain.NewCard(domain.CardDesignHeart, 2, true)}
+
+	out := (&TriPeaksCuiPresenter{}).Output(triPeaksCuiMockWithLayout(layout), nil)
+	assert.Equal(t, "山の残り: 左 0 ✓ / 中 1 / 右 1", triPeaksRemainingLine(out))
+	assert.Contains(t, out, "SPADE 1")
+	assert.NotContains(t, out, "中 1 ✓")
+	assert.NotContains(t, out, "右 1 ✓")
+	assert.NotContains(t, out, "{{")
+}
 
 func setupTriPeaksCuiMockDefaults(tg *interfaces.MockTriPeaksGame) {
 	tg.On("GetPhase").Return(domain.TriPeaksPhasePlaying).Maybe()
