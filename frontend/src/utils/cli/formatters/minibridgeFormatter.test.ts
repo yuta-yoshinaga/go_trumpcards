@@ -106,9 +106,21 @@ describe('formatMinibridgeState', () => {
   });
 
   // **ダミーは契約が決まってから公開される。**
-  it("shows the dummy's hand only once it is revealed", () => {
+  it("shows the dummy's hand for a human declarer", () => {
     expect(formatMinibridgeState(state())).not.toContain("dummy's hand");
     expect(formatMinibridgeState(state({ dummyHand: [card('SPADE', 1)] }))).toContain("dummy's hand");
+  });
+
+  it('marks a human dummy and does not repeat its hand', () => {
+    const out = formatMinibridgeState(
+      state({
+        dummyIdx: 0,
+        dummyHand: [card('HEART', 1), card('SPADE', 8)],
+      }),
+    );
+
+    expect(out).toContain('your hand [dummy]:');
+    expect(out).not.toContain("dummy's hand");
   });
 
   it('shows the current trick when there is one', () => {
