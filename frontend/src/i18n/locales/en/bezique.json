@@ -18,6 +18,7 @@
   "trump": "Trump: {{suit}}",
   "trumpCard": "Trump card: {{card}}",
   "stock": "Stock: {{count}}",
+  "trickPoints": "Trick points: A={{ace}} / 10={{ten}} / K={{king}} / Q={{queen}} / J={{jack}} / other={{other}}",
   "noTrump": "undeclared",
   "stockLowWarning": "Endgame approaching ({{count}} left in stock) — declare your melds soon.",
   "endgameNotice": "Phase 2 (endgame) — strict must-follow. No melds. Last trick scores +10.",

@@ -70,6 +70,7 @@ func TestBeziqueCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "トリック: 1")
 		assert.Contains(t, out, "山札: 40枚")
 		assert.Contains(t, out, "累積得点: あなた=118  CPU=45")
+		assert.Contains(t, out, "トリック得点: A=11 / 10=10 / K=4 / Q=3 / J=2 / その他=0")
 		assert.Contains(t, out, "play <idx>")
 	})
 

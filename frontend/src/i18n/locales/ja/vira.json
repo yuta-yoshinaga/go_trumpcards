@@ -18,6 +18,7 @@
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
   "trump": "切り札: {{suit}}",
+  "trumpAutoNote": "切り札は宣言者の最長スートから自動で決まります（選択操作はありません）",
   "noTrump": "なし",
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
