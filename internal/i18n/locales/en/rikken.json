@@ -12,6 +12,7 @@
   "roundLine": "Round: {{round}} / {{total}}",
   "contractLine": "Contract: {{contract}} (trump: {{trump}})",
   "declarerLine": "Declarer: seat {{seat}} ({{tricks}} tricks)",
+  "calledCardLine": "Called card: {{card}} (whoever plays it is revealed as the partner)",
   "scoreLine": "Scores: {{scores}}",
   "trickCardLine": "  seat {{seat}}: {{card}}",
   "handLine": "Hand: {{cards}}",

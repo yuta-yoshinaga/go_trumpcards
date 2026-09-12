@@ -101,6 +101,7 @@ const playState: RikkenResponse = {
   validPlays: [1, 4],
   contract: RikkenContract.RIK,
   declarerIdx: 0,
+  calledCard: { design: 'SPADE', value: 1 },
   trumpSuit: 3,
   currentTrick: [{ playerIdx: 1, card: { design: 'CLOVER', value: 13 } }],
   declarerTricks: 3,
@@ -207,6 +208,18 @@ describe('RikkenPage', () => {
     expect(screen.getByTestId('rikken-contract')).toHaveTextContent('リク');
     expect(screen.getByTestId('rikken-contract')).toHaveTextContent('ハート');
     expect(screen.getByTestId('rikken-declarer')).toHaveTextContent('#0');
+  });
+
+  it('shows the called card only for Rik', async () => {
+    mockApi.mockResolvedValue(playState);
+    const { unmount } = renderWithProviders(<RikkenPage />);
+    await waitFor(() => expect(screen.getByTestId('rikken-called-card')).toHaveTextContent('指名した札'));
+    unmount();
+
+    mockApi.mockResolvedValue({ ...playState, contract: RikkenContract.SOLO });
+    renderWithProviders(<RikkenPage />);
+    await waitFor(() => expect(screen.getByTestId('rikken-contract')).toBeInTheDocument());
+    expect(screen.queryByTestId('rikken-called-card')).not.toBeInTheDocument();
   });
 
   // **相方は公開されるまで伏せる。**

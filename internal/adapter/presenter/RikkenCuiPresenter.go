@@ -30,6 +30,11 @@ func (rp *RikkenCuiPresenter) Output(r interfaces.RikkenGame, lastErr error) str
 				"seat", strconv.Itoa(r.GetDeclarerIdx()),
 				"tricks", strconv.Itoa(r.GetDeclarerTricks())) + "\n")
 		}
+		if r.GetContract() == domain.RikkenContractRik {
+			if card := r.GetCalledCard(); card != nil {
+				sb.WriteString(i18n.Tf("rikken.calledCardLine", "card", cuiCardStr(card)) + "\n")
+			}
+		}
 		rp.writeScores(sb, r)
 		rp.writeTrick(sb, r)
 		rp.writeHand(sb, r)

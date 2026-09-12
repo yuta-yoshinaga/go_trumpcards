@@ -68,6 +68,27 @@ func TestRikkenCuiPresenter_Output(t *testing.T) {
 	assert.NotContains(t, out, "rikken.", "生キーが漏れている")
 }
 
+func TestRikkenCuiPresenter_CalledCardOnlyForRik(t *testing.T) {
+	t.Run("shows the called card for Rik", func(t *testing.T) {
+		m := new(interfaces.MockRikkenGame)
+		m.On("GetCalledCard").Return(domain.NewCard(domain.CardDesignSpade, 1, false))
+		fillRikkenDefaults(m)
+
+		out := new(RikkenCuiPresenter).Output(m, nil)
+		assert.Contains(t, out, "指名札: SPADE 1（この札を出した人が相方として公開されます）")
+	})
+
+	t.Run("does not show the called card for other contracts", func(t *testing.T) {
+		m := new(interfaces.MockRikkenGame)
+		m.On("GetContract").Return(domain.RikkenContractSolo)
+		m.On("GetCalledCard").Return(domain.NewCard(domain.CardDesignSpade, 1, false))
+		fillRikkenDefaults(m)
+
+		out := new(RikkenCuiPresenter).Output(m, nil)
+		assert.NotContains(t, out, "指名札")
+	})
+}
+
 // **契約は4種類とも名前で出す。**
 func TestRikkenCuiPresenter_ContractNames(t *testing.T) {
 	p := new(RikkenCuiPresenter)
