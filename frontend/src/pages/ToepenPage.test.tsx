@@ -226,6 +226,26 @@ describe('ToepenPage redeal', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('redeal'));
   });
 
+  it('displays redeal condition hint and title when canRedeal is true, and hides when false', async () => {
+    mockExec.mockResolvedValue(makeState({ canRedeal: false }));
+    renderWithProviders(<ToepenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('toepen-redeal-hint')).not.toBeInTheDocument();
+
+    mockExec.mockResolvedValue(makeState({ canRedeal: true }));
+    renderWithProviders(<ToepenPage />);
+    await waitFor(() => expect(screen.getByTestId('toepen-redeal-hint')).toBeInTheDocument());
+
+    const hintEl = screen.getByTestId('toepen-redeal-hint');
+    expect(hintEl).toHaveTextContent('手札が A/K/Q/J だけなので配り直しを要求できます');
+    expect(hintEl).not.toHaveTextContent('redealHint');
+    expect(hintEl).not.toHaveTextContent('{{');
+
+    const button = screen.getByRole('button', { name: '配り直し（貧民）' });
+    expect(button).toHaveAttribute('title', '手札が A/K/Q/J だけなので配り直しを要求できます');
+  });
+
   describe('last trick winner display', () => {
     beforeEach(() => {
       vi.clearAllMocks();
