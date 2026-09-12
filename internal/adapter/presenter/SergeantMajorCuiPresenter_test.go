@@ -106,17 +106,33 @@ func TestSergeantMajorCuiPresenterPrompts(t *testing.T) {
 // **前ラウンドの札のやり取りは盤面に痕跡が残らない。**
 func TestSergeantMajorCuiPresenterReportsTheExchange(t *testing.T) {
 	p := new(SergeantMajorCuiPresenter)
-	fresh := newSergeantMajorForCui(t)
-	assert.NotContains(t, p.Output(fresh, nil), fixedPart("sergeantmajor.exchangeLine"))
 
-	s := newSergeantMajorForCui(t)
-	s.SetPhaseForTest(domain.SergeantMajorPhasePlay)
-	s.SetSurplusForTest([]int{1, -1, 0})
-	s.ExchangeForTest()
-	out := p.Output(s, nil)
-	assert.Contains(t, out, fixedPart("sergeantmajor.exchangeLine"))
-	assert.Contains(t, out, "失った札:")
-	assert.Contains(t, out, "受け取った札:")
+	t.Run("やり取りなし", func(t *testing.T) {
+		fresh := newSergeantMajorForCui(t)
+		assert.NotContains(t, p.Output(fresh, nil), "前ラウンドの過不足で")
+	})
+
+	t.Run("CPU 同士だけの交換", func(t *testing.T) {
+		s := newSergeantMajorForCui(t)
+		s.SetPhaseForTest(domain.SergeantMajorPhasePlay)
+		s.SetLastExchangeForTest(2, nil, nil)
+		out := p.Output(s, nil)
+		assert.Contains(t, out, "前ラウンドの過不足で 2 枚を移しました。")
+		assert.NotContains(t, out, "失った札:")
+		assert.NotContains(t, out, "受け取った札:")
+	})
+
+	t.Run("人間が絡む交換", func(t *testing.T) {
+		s := newSergeantMajorForCui(t)
+		s.SetPhaseForTest(domain.SergeantMajorPhasePlay)
+		lost := []*domain.Card{domain.NewCard(domain.CardDesignSpade, 14, false)}
+		received := []*domain.Card{domain.NewCard(domain.CardDesignHeart, 2, false)}
+		s.SetLastExchangeForTest(1, lost, received)
+		out := p.Output(s, nil)
+		assert.Contains(t, out, "前ラウンドの過不足で 1 枚を移しました。")
+		assert.Contains(t, out, "失った札: SPADE 14")
+		assert.Contains(t, out, "受け取った札: \x1b[31mHEART 2\x1b[0m")
+	})
 }
 
 func TestSergeantMajorCuiPresenterRoundEndPrompt(t *testing.T) {

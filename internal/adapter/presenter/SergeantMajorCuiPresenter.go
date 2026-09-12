@@ -85,9 +85,16 @@ func (p *SergeantMajorCuiPresenter) Output(s interfaces.SergeantMajorGame, lastE
 		// **前ラウンドの札のやり取りは盤面に痕跡が残らない。**
 		if s.GetLastExchange() > 0 {
 			sb.WriteString(i18n.Tf("sergeantmajor.exchangeLine",
-				"n", strconv.Itoa(s.GetLastExchange()),
-				"lost", formatCardSlice(s.GetLastExchangeLost(), cuiCardStr, ", "),
-				"received", formatCardSlice(s.GetLastExchangeReceived(), cuiCardStr, ", ")) + "\n")
+				"n", strconv.Itoa(s.GetLastExchange())) + "\n")
+
+			if len(s.GetLastExchangeLost()) > 0 {
+				sb.WriteString(i18n.Tf("sergeantmajor.exchangeLost",
+					"cards", formatCardSlice(s.GetLastExchangeLost(), cuiCardStr, ", ")) + "\n")
+			}
+			if len(s.GetLastExchangeReceived()) > 0 {
+				sb.WriteString(i18n.Tf("sergeantmajor.exchangeReceived",
+					"cards", formatCardSlice(s.GetLastExchangeReceived(), cuiCardStr, ", ")) + "\n")
+			}
 		}
 
 		for i := 0; i < s.GetPlayerCnt(); i++ {
