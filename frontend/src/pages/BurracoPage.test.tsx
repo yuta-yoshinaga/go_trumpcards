@@ -203,16 +203,18 @@ describe('BurracoPage', () => {
     expect(screen.getByRole('checkbox', { name: 'ヒント表示' })).toBeInTheDocument();
   });
 
-  it('explains what the pozzetto is accessibly', async () => {
+  it('shows the pozzetto explanation visually and to screen readers', async () => {
     renderWithProviders(<BurracoPage />);
     const count = await screen.findByTestId('bu-pozzetto-count');
-    expect(count).toHaveAttribute(
-      'title',
-      'ポゼットは11枚の予備手札です。最初に手札をすべて出し切ったプレイヤーが新しい手札として獲得します。ポゼットを獲得しないと上がれません。',
-    );
-    expect(count).toHaveTextContent(
-      'ポゼットは11枚の予備手札です。最初に手札をすべて出し切ったプレイヤーが新しい手札として獲得します。ポゼットを獲得しないと上がれません。',
-    );
+    const description = screen.getByTestId('bu-pozzetto-description');
+    const explanation =
+      'ポゼットは11枚の予備手札です。最初に手札をすべて出し切ったプレイヤーが新しい手札として獲得します。ポゼットを獲得しないと上がれません。';
+
+    expect(count).toHaveAttribute('title', explanation);
+    // toHaveTextContent does not account for CSS, so sr-only text would pass this check too.
+    expect(description).toHaveTextContent(explanation);
+    expect(description).not.toHaveClass('sr-only');
+    expect(count).toHaveAttribute('aria-describedby', description.id);
   });
 
   it('shows HintTooltip when hint is enabled in draw phase', async () => {

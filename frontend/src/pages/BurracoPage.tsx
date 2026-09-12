@@ -303,11 +303,18 @@ function BurracoPageContent() {
                 aria-describedby="bu-pozzetto-description"
               >
                 {t('pozzetto', { count: state.pozzettoCount })}
-                <span id="bu-pozzetto-description" className="sr-only">
-                  {t('pozzettoDescription')}
-                </span>
               </span>
               {state.isFrozen && <span className="ml-2 text-ds-info font-bold">[{t('frozen')}]</span>}
+            </div>
+            {/* **ポゼットはこのゲーム固有の用語。** 残り山数とバナーだけでは
+                意味不明な数字にしかならない。title だけだとタッチ操作で読めないので
+                常時見える 1 行として出す (読み上げには aria-describedby で結ぶ)。 */}
+            <div
+              id="bu-pozzetto-description"
+              className="text-ds-text-muted text-xs"
+              data-testid="bu-pozzetto-description"
+            >
+              {t('pozzettoDescription')}
             </div>
 
             <div className={lgTwoColGrid}>

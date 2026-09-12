@@ -85,6 +85,11 @@ func fortyFivesPlayerStr(g interfaces.FortyFivesGame, idx int) string {
 		b.WriteString(cuiIndexMarkedCardListStr(player, tops, CuiTopTrumpMark) + "\n")
 		if len(tops) > 0 {
 			b.WriteString(i18n.T("fortyfives.topTrumpLegend") + "\n")
+		}
+		// **強さ順は手札の中身と関係なく要る。** 上位 3 枚を持っているかで
+		// 出し分けると、ほとんどの配りで一度も出ない。ページ側も
+		// `state.trumpSuit > 0` だけで出しているので、条件を揃える。
+		if g.GetTrumpSuit() > 0 {
 			b.WriteString(i18n.Tf("fortyfives.trumpOrder", "order", fortyFivesTrumpOrderStr(g.GetTrumpSuit())) + "\n")
 		}
 	}
