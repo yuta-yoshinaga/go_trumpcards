@@ -13,7 +13,7 @@ import (
 )
 
 // israeliWhistPlayerStr returns the display string for a single player.
-func israeliWhistPlayerStr(player *domain.IsraeliWhistPlayer, idx int, declarer bool) string {
+func israeliWhistPlayerStr(player *domain.IsraeliWhistPlayer, idx int, declarer bool, roundEnd bool) string {
 	var b strings.Builder
 	b.WriteString(i18n.Tf("israeliwhist.playerLine",
 		"name", cuiPlayerName(player, idx),
@@ -23,6 +23,10 @@ func israeliWhistPlayerStr(player *domain.IsraeliWhistPlayer, idx int, declarer 
 		"total", strconv.Itoa(player.GetTotalScore()),
 		"cards", strconv.Itoa(player.GetCardsSize()),
 	))
+	if roundEnd {
+		b.WriteString(" " + i18n.Tf("israeliwhist.roundDelta",
+			"delta", cuiSignedScore(player.GetRoundScore())))
+	}
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
@@ -75,7 +79,8 @@ func (p *IsraeliWhistCuiPresenter) Output(w interfaces.IsraeliWhistGame, lastErr
 		}
 
 		for i := 0; i < w.GetPlayerCnt(); i++ {
-			sb.WriteString(israeliWhistPlayerStr(w.GetPlayer(i), i, i == w.GetDeclarerIdx()))
+			sb.WriteString(israeliWhistPlayerStr(w.GetPlayer(i), i, i == w.GetDeclarerIdx(),
+				w.GetPhase() == domain.IsraeliWhistPhaseRoundEnd))
 		}
 
 		sb.WriteString("----------\n")

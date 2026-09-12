@@ -629,3 +629,9 @@ func TestSuitDisplayName_ColorsRedSuitsLikeACard(t *testing.T) {
 	assert.Equal(t, "?", suitDisplayName(0))
 	assert.Equal(t, "?", suitDisplayName(99))
 }
+
+func TestCuiSignedScore(t *testing.T) {
+	assert.Equal(t, "+10", cuiSignedScore(10))
+	assert.Equal(t, "±0", cuiSignedScore(0))
+	assert.Equal(t, "-5", cuiSignedScore(-5))
+}

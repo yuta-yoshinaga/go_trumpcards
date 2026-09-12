@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { GLEEK_HELP, parseGleekCommand } from '../utils/cli/commands/gleekCommands';
 import { formatGleekState } from '../utils/cli/formatters/gleekFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -78,13 +79,6 @@ const SUIT_KEYS = ['suitNone', 'suitSpade', 'suitClub', 'suitHeart', 'suitDiamon
 
 /** Meld-rank i18n keys, keyed by the card value the set is made of. */
 const RANK_KEYS: Readonly<Record<number, string>> = { 1: 'rankAce', 13: 'rankKing', 12: 'rankQueen', 11: 'rankJack' };
-
-/** Signed round delta: the plus sign is ours to add, and 0 reads as "no change" (±0). */
-function formatSignedDelta(n: number): string {
-  if (n > 0) return `+${n.toString()}`;
-  if (n === 0) return '±0';
-  return n.toString();
-}
 
 /**
  * Renders the Gleek game page: a 3-player 44-card trick-taker that settles four

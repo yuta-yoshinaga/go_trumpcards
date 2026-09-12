@@ -164,21 +164,10 @@ func (p *GleekCuiPresenter) writePrompt(b *strings.Builder, g interfaces.GleekGa
 		for i, delta := range g.GetRoundDelta() {
 			b.WriteString(i18n.Tf("gleek.promptRoundDelta",
 				"name", cuiPlayerName(g.GetPlayer(i), i),
-				"delta", gleekSignedScore(delta)) + "\n")
+				"delta", cuiSignedScore(delta)) + "\n")
 		}
 		b.WriteString(i18n.T("gleek.promptRoundEndHelp") + "\n")
 	}
-}
-
-// gleekSignedScore は増減を符号付きで表す。正には + を付け、0 は ±0 とする。
-func gleekSignedScore(n int) string {
-	if n > 0 {
-		return "+" + strconv.Itoa(n)
-	}
-	if n == 0 {
-		return "±0"
-	}
-	return strconv.Itoa(n)
 }
 
 // gleekStockLine 表向きの札と落札の行を組み立てる。
