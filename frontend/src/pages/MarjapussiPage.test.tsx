@@ -90,6 +90,9 @@ describe('MarjapussiPage', () => {
   // --- 必須テスト 2: チーム分けが画面に出ていること (席 0+2 と 1+3 が別チームとして描かれる) ---
   it('displays partnership teams on screen (seats 0+2 as us, seats 1+3 as them)', async () => {
     renderWithProviders(<MarjapussiPage />);
+    expect(await screen.findByText('味方チーム（あなた & CPU 2）')).toBeInTheDocument();
+    expect(screen.getByText('相手チーム（CPU 1 & CPU 3）')).toBeInTheDocument();
+
     // 席 0 (人間) と 席 2 (CPU 2) は味方チーム
     const p0 = await screen.findByTestId('marjapussi-player-team-0');
     expect(p0).toHaveTextContent('味方');
