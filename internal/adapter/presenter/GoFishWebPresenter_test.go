@@ -38,6 +38,7 @@ func setupGoFishMock() *interfaces.MockGoFishGame {
 	m.On("GetHumanAction").Return((*domain.GoFishCpuAction)(nil))
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("IsHumanTurn").Return(true)
+	m.On("GetHint").Return((*domain.GoFishHint)(nil)).Maybe()
 
 	for i := range 4 {
 		p := domain.NewGoFishPlayer(i == 0)

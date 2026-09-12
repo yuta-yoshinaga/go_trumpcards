@@ -3,6 +3,7 @@
 package presenter_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,6 +12,26 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
+
+func TestGoFishCuiPresenter_HintOutput_TranslatesAllReasons(t *testing.T) {
+	p := new(presenter.GoFishCuiPresenter)
+	for _, reason := range []string{"ask_known_rank", "ask_most_copies"} {
+		m := setupGoFishMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
+		m.On("GetHint").Return(&domain.GoFishHint{Action: "ask", Rank: 1, Indices: []int{0}, Reason: reason})
+		out := p.HintOutput(m)
+		assert.NotContains(t, out, reason)
+		assert.NotContains(t, out, "hint_")
+	}
+}
+
+func TestGoFishCuiPresenter_HintOutput_None(t *testing.T) {
+	p := new(presenter.GoFishCuiPresenter)
+	m := setupGoFishMock()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
+	m.On("GetHint").Return((*domain.GoFishHint)(nil))
+	assert.True(t, strings.Contains(p.HintOutput(m), "ヒントはありません。"))
+}
 
 func TestGoFishCuiPresenter_Output_Initial(t *testing.T) {
 	p := new(presenter.GoFishCuiPresenter)
