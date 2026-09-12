@@ -239,38 +239,52 @@ describe('PigsTailPage', () => {
     expect(reveal).toHaveTextContent('ペナルティ');
   });
 
-  it('renders the human penalty count for different penalty sizes', async () => {
+  it('renders the human action with different penalty counts', async () => {
     mockExec.mockResolvedValue({
       ...baseState,
-      lastDrawCard: { design: 'HEART', value: 3 },
-      lastPenalty: true,
-      humanAction: { drawPlayerIdx: 0, drawnCard: null, penaltyFlag: true, penaltyCount: 2 },
+      humanAction: { drawPlayerIdx: 0, drawnCard: { design: 'HEART', value: 3 }, penaltyFlag: true, penaltyCount: 2 },
     });
     renderWithProviders(<PigsTailPage />);
-    expect(await screen.findByTestId('pt-draw-reveal')).toHaveTextContent('ペナルティ！ (+2)');
+    expect(await screen.findByTestId('pt-human-action')).toHaveTextContent('あなた: ♥3 — ペナルティ！ (+2)');
 
     mockExec.mockResolvedValue({
       ...baseState,
-      lastDrawCard: { design: 'DIAMOND', value: 7 },
-      lastPenalty: true,
-      humanAction: { drawPlayerIdx: 0, drawnCard: null, penaltyFlag: true, penaltyCount: 6 },
+      humanAction: { drawPlayerIdx: 0, drawnCard: { design: 'DIAMOND', value: 7 }, penaltyFlag: true, penaltyCount: 6 },
     });
     fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
-    expect(await screen.findByTestId('pt-draw-reveal')).toHaveTextContent('ペナルティ！ (+6)');
+    expect(await screen.findByTestId('pt-human-action')).toHaveTextContent('あなた: ♦7 — ペナルティ！ (+6)');
   });
 
-  it('does not render a penalty count when the human action is null', async () => {
+  it('does not render a human action when it is null', async () => {
     mockExec.mockResolvedValue({
       ...baseState,
-      lastDrawCard: { design: 'HEART', value: 3 },
       lastPenalty: true,
       humanAction: null,
     });
     renderWithProviders(<PigsTailPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('pt-human-action')).not.toBeInTheDocument();
+  });
+
+  it('does not put the human penalty count on a CPU penalty draw', async () => {
+    // The regression this guards: lastDrawCard/lastPenalty describe whoever drew
+    // LAST, and the interactor runs every CPU turn before rendering, while
+    // humanAction still holds the human's own earlier draw. Pairing the two put
+    // the human's count next to a CPU's card on essentially every turn.
+    // lastPenalty must be true here -- with false, the reveal says "safe" and
+    // even the broken version printed no count, so the test would prove nothing.
+    mockExec.mockResolvedValue({
+      ...baseState,
+      lastDrawCard: { design: 'SPADE', value: 1 },
+      lastPenalty: true,
+      humanAction: { drawPlayerIdx: 0, drawnCard: { design: 'HEART', value: 3 }, penaltyFlag: true, penaltyCount: 5 },
+    });
+    renderWithProviders(<PigsTailPage />);
     const reveal = await screen.findByTestId('pt-draw-reveal');
-    expect(reveal).toHaveTextContent('ペナルティ！');
-    expect(reveal).not.toHaveTextContent('(+2)');
-    expect(reveal).not.toHaveTextContent('(+6)');
+    expect(reveal).toHaveTextContent('ペナルティ');
+    expect(reveal).not.toHaveTextContent('(+5)');
+    // The count belongs on the human's own row, which names the human's card.
+    expect(await screen.findByTestId('pt-human-action')).toHaveTextContent('あなた: ♥3 — ペナルティ！ (+5)');
   });
 
   it('does not render the draw reveal before any card is drawn', async () => {

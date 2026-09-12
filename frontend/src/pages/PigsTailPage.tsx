@@ -271,10 +271,24 @@ function PigsTailPageContent() {
                   </div>
                 </div>
                 <div className={`text-sm font-medium ${state.lastPenalty ? 'text-ds-error' : 'text-ds-success'}`}>
-                  {state.lastPenalty
-                    ? `${t('label.penalty')}${state.humanAction ? ` (+${state.humanAction.penaltyCount})` : ''}`
-                    : t('label.safe')}
+                  {state.lastPenalty ? t('label.penalty') : t('label.safe')}
                 </div>
+              </div>
+            )}
+
+            {/* Human action */}
+            {state.humanAction && (
+              <div
+                data-testid="pt-human-action"
+                className={`text-xs px-2 py-1 rounded ${state.humanAction.penaltyFlag ? badgeErrorColors : 'bg-black/30 text-ds-text-muted'}`}
+              >
+                {playerName(state.humanAction.drawPlayerIdx, true)}:{' '}
+                {state.humanAction.drawnCard
+                  ? (SUIT_SYMBOLS[state.humanAction.drawnCard.design] ?? '?') + state.humanAction.drawnCard.value
+                  : '?'}
+                {state.humanAction.penaltyFlag
+                  ? ` — ${t('label.penalty')} (+${state.humanAction.penaltyCount})`
+                  : ` — ${t('label.safe')}`}
               </div>
             )}
 
