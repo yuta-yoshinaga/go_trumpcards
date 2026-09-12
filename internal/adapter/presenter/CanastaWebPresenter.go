@@ -117,3 +117,10 @@ func (p *CanastaWebPresenter) buildMessage(g interfaces.CanastaGame, lastErr err
 func (p *CanastaWebPresenter) ActionLogOutput(g interfaces.CanastaGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// HintOutput emits the current hint. Web hints are calculated client-side
+// (useGameHint), so return the normal state output to satisfy the presenter
+// interface without changing the Web response shape.
+func (p *CanastaWebPresenter) HintOutput(g interfaces.CanastaGame) string {
+	return p.Output(g, nil)
+}

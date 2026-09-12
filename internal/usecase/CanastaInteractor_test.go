@@ -453,6 +453,16 @@ func TestCanastaInteractor_ActionLog(t *testing.T) {
 	pMock.AssertExpectations(t)
 }
 
+func TestCanastaInteractor_Hint(t *testing.T) {
+	pMock := new(presenter.MockCanastaPresenter)
+	gameMock := new(interfaces.MockCanastaGame)
+	pMock.On("HintOutput", gameMock).Return("hint")
+
+	ci := usecase.NewCanastaInteractor(gameMock, pMock)
+	assert.Equal(t, "hint", ci.Hint())
+	pMock.AssertExpectations(t)
+}
+
 func TestCanastaInteractor_RunCpuTurns(t *testing.T) {
 	mockOutput := `{"phase":0}`
 

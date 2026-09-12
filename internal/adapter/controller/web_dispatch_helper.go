@@ -195,8 +195,8 @@ type rummyMeldFns struct {
 	goOut           func() string
 	nextRound       func() string
 	actionLog       func() string
-	// hint is optional: Canasta and Samba have no Hint() on their interactor, so
-	// a nil here keeps the old log-only fallthrough for them.
+	// hint is optional: Samba has no Hint() on its interactor, so a nil here
+	// keeps the old log-only fallthrough for it.
 	hint func() string
 }
 

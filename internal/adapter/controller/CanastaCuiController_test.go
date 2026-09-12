@@ -28,6 +28,7 @@ func TestCanastaCuiController_Exec(t *testing.T) {
 		m.On("GoOut").Return(mockOutput)
 		m.On("NextRound").Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
+		m.On("Hint").Return(mockOutput)
 		return m
 	}
 
@@ -301,6 +302,21 @@ func TestCanastaCuiController_Exec(t *testing.T) {
 		result := c.Exec("l")
 		assert.Equal(t, mockOutput, result)
 		m.AssertCalled(t, "ActionLog")
+	})
+
+	// hint
+	t.Run("hint command hint", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewCanastaCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("hint"))
+		m.AssertCalled(t, "Hint")
+	})
+
+	t.Run("hint command h", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewCanastaCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("h"))
+		m.AssertCalled(t, "Hint")
 	})
 
 	// unknown

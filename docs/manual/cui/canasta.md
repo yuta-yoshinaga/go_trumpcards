@@ -102,6 +102,7 @@ flowchart TD
 | discard idx | d idx | カードを捨てる |
 | goout | go | 上がる（カナスタが必要） |
 | nextround | nr | 次のラウンドへ |
+| hint | h | ヒントを表示 |
 | setdifficulty n | sd n | CPU難易度変更 (0=Easy, 1=Normal, 2=Hard) |
 | setlimit n | sl n | 目標スコア変更 |
 | log | l | 棋譜を表示 |

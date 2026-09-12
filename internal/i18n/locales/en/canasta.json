@@ -7,6 +7,7 @@
   "helpDiscard": "  d <idx>              discard a card",
   "helpGoOut": "  go                   go out (requires a canasta)",
   "helpNextRound": "  nr                   next round",
+  "helpHint": "  h                    show a hint",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetLimit": "  sl <n>               point limit",
   "header": "Round: {{round}}  Stock: {{stock}}  Discard: {{discard}}",
@@ -38,5 +39,16 @@
   "drawBlockerBlackThreeTop": "* A black three is on top, so the discard pile cannot be taken",
   "drawBlockerWildTop": "* A wild card is on top, so the discard pile cannot be taken",
   "drawBlockerNoPairInHand": "* Your hand has no natural pair matching the top rank, so the pile cannot be taken yet",
-  "concealedBonusHint": "Concealed go-out available: going out with no initial meld pays {{bonus}} instead of {{normal}}"
+  "concealedBonusHint": "Concealed go-out available: going out with no initial meld pays {{bonus}} instead of {{normal}}",
+  "hintNone": "No hint available",
+  "hintDrawStock": "Recommended: draw from stock ({{reason}})",
+  "hintDrawDiscard": "Recommended: take the discard pile [{{indices}}] ({{reason}})",
+  "hintMeld": "Recommended meld: [{{indices}}] ({{reason}})",
+  "hintSkipMeld": "Recommended: skip melding ({{reason}})",
+  "hintDiscard": "Recommended discard: [{{idx}}] {{card}} ({{reason}})",
+  "hintReasonDrawStock": "no useful pair matches the discard top, so draw from stock",
+  "hintReasonDrawDiscard": "a natural pair matches the discard top, so take the pile",
+  "hintReasonMeld": "a meldable combination is available",
+  "hintReasonNoMeld": "no valid meld, so skip",
+  "hintReasonDiscard": "discard the least useful card"
 }

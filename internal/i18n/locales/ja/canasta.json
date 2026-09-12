@@ -7,6 +7,7 @@
   "helpDiscard": "  d <idx>              カードを捨てる",
   "helpGoOut": "  go                   上がる (カナスタが必要)",
   "helpNextRound": "  nr                   次のラウンドへ",
+  "helpHint": "  h                    ヒントを表示",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetLimit": "  sl <n>               ポイント上限",
   "header": "ラウンド: {{round}}  山札: {{stock}}枚  廃棄山: {{discard}}枚",
@@ -38,5 +39,16 @@
   "drawBlockerBlackThreeTop": "※ 黒3がトップなので捨て札の山は取れません",
   "drawBlockerWildTop": "※ ワイルドカードがトップなので捨て札の山は取れません",
   "drawBlockerNoPairInHand": "※ トップと同ランクの自然札が手札に2枚無いので、いまは捨て札の山を取れません",
-  "concealedBonusHint": "コンシールド上がり圏内: 初回メルドをせずに上がると {{bonus}}点 (通常の上がりは {{normal}}点)"
+  "concealedBonusHint": "コンシールド上がり圏内: 初回メルドをせずに上がると {{bonus}}点 (通常の上がりは {{normal}}点)",
+  "hintNone": "ヒントはありません",
+  "hintDrawStock": "推奨: 山札から引く ({{reason}})",
+  "hintDrawDiscard": "推奨: 捨て札の山を取る [{{indices}}] ({{reason}})",
+  "hintMeld": "推奨メルド: [{{indices}}] ({{reason}})",
+  "hintSkipMeld": "推奨: メルドをスキップ ({{reason}})",
+  "hintDiscard": "推奨ディスカード: [{{idx}}] {{card}} ({{reason}})",
+  "hintReasonDrawStock": "捨て札トップと揃うペアがないため山札から引く",
+  "hintReasonDrawDiscard": "捨て札トップとナチュラルペアが揃うため山を取る",
+  "hintReasonMeld": "メルド可能な組み合わせがある",
+  "hintReasonNoMeld": "有効なメルドがないためスキップ",
+  "hintReasonDiscard": "最も不要なカードを捨てる"
 }

@@ -47,6 +47,13 @@ func setupCanastaWebMockWithPlayers() (*interfaces.MockCanastaGame, []*domain.Ca
 	return m, players
 }
 
+func TestCanastaWebPresenter_HintOutput(t *testing.T) {
+	// Web hints are client-side, so HintOutput mirrors Output.
+	p := new(presenter.CanastaWebPresenter)
+	m, _ := setupCanastaWebMockWithPlayers()
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+}
+
 func TestCanastaWebPresenter_Output(t *testing.T) {
 	p := new(presenter.CanastaWebPresenter)
 

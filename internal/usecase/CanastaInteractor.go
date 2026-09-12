@@ -34,6 +34,8 @@ type CanastaInteractorIF interface {
 	GetConfig() domain.CanastaConfig
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒントを出力する
+	Hint() string
 }
 
 // CanastaInteractor カナスタインタラクタークラス
@@ -151,6 +153,11 @@ func (ci *CanastaInteractor) GetConfig() domain.CanastaConfig {
 // ActionLog 棋譜を出力する
 func (ci *CanastaInteractor) ActionLog() string {
 	return ci.gp.ActionLogOutput(ci.Game)
+}
+
+// Hint ヒントを出力する
+func (ci *CanastaInteractor) Hint() string {
+	return ci.gp.HintOutput(ci.Game)
 }
 
 // runCpuTurns CPUターンを実行

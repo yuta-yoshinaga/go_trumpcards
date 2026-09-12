@@ -164,6 +164,59 @@ func (p *CanastaCuiPresenter) Output(g interfaces.CanastaGame, lastErr error) st
 	})
 }
 
+// canastaHintReasonKeys maps Canasta-specific hint reasons to i18n keys.
+var canastaHintReasonKeys = map[string]string{
+	"draw_discard_pair": "canasta.hintReasonDrawDiscard",
+	"draw_stock_safe":   "canasta.hintReasonDrawStock",
+	"meld_available":    "canasta.hintReasonMeld",
+	"no_meld":           "canasta.hintReasonNoMeld",
+	"discard_safe":      "canasta.hintReasonDiscard",
+}
+
+// HintOutput emits the current recommended action for the human player.
+func (p *CanastaCuiPresenter) HintOutput(g interfaces.CanastaGame) string {
+	hint := g.GetHint()
+	if hint == nil {
+		return i18n.T("canasta.hintNone") + "\n"
+	}
+	reason := hintReasonStr(hint.Reason, canastaHintReasonKeys)
+	switch hint.Action {
+	case "draw_stock":
+		return color.Yellow(i18n.Tf("canasta.hintDrawStock", "reason", reason)) + "\n"
+	case "draw_discard":
+		return color.Yellow(i18n.Tf("canasta.hintDrawDiscard",
+			"indices", canastaJoinInts(hint.Indices), "reason", reason)) + "\n"
+	case "meld":
+		return color.Yellow(i18n.Tf("canasta.hintMeld",
+			"indices", canastaJoinInts(hint.Indices), "reason", reason)) + "\n"
+	case "skip_meld":
+		return color.Yellow(i18n.Tf("canasta.hintSkipMeld", "reason", reason)) + "\n"
+	case "discard":
+		idx := 0
+		if len(hint.Indices) > 0 {
+			idx = hint.Indices[0]
+		}
+		card := ""
+		if player := g.GetPlayer(g.GetCurrentPlayerIdx()); player != nil {
+			if c := player.GetCard(idx); c != nil {
+				card = cuiCardStr(c)
+			}
+		}
+		return color.Yellow(i18n.Tf("canasta.hintDiscard",
+			"idx", strconv.Itoa(idx), "card", card, "reason", reason)) + "\n"
+	}
+	return i18n.T("canasta.hintNone") + "\n"
+}
+
+// canastaJoinInts formats a slice of indices as a comma-separated string.
+func canastaJoinInts(xs []int) string {
+	parts := make([]string, len(xs))
+	for i, x := range xs {
+		parts[i] = strconv.Itoa(x)
+	}
+	return strings.Join(parts, ",")
+}
+
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CanastaCuiPresenter) ActionLogOutput(g interfaces.CanastaGame) string {
 	return actionLogOutputTextForSeats[*domain.CanastaPlayer](g)

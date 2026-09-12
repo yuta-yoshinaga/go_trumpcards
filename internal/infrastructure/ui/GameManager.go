@@ -671,6 +671,7 @@ var gameRegistry = []GameRegistryEntry{
 			"  d <idx>              discard a card",
 			"  go                   go out (requires canasta)",
 			"  nr                   next round",
+			"  h                    show a hint",
 			"  l                    action log",
 			"",
 			"Settings:",

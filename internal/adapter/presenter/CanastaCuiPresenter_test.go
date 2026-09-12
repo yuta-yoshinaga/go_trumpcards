@@ -340,6 +340,69 @@ func TestCanastaCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestCanastaCuiPresenter_HintOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.CanastaCuiPresenter)
+
+	tests := []struct {
+		name string
+		hint *domain.CanastaHint
+		want string
+	}{
+		{
+			name: "draw stock",
+			hint: &domain.CanastaHint{Action: "draw_stock", Reason: "draw_stock_safe"},
+			want: "推奨: 山札から引く (捨て札トップと揃うペアがないため山札から引く)",
+		},
+		{
+			name: "draw discard",
+			hint: &domain.CanastaHint{Action: "draw_discard", Indices: []int{1, 3}, Reason: "draw_discard_pair"},
+			want: "推奨: 捨て札の山を取る [1,3] (捨て札トップとナチュラルペアが揃うため山を取る)",
+		},
+		{
+			name: "meld",
+			hint: &domain.CanastaHint{Action: "meld", Indices: []int{0, 2, 4}, Reason: "meld_available"},
+			want: "推奨メルド: [0,2,4] (メルド可能な組み合わせがある)",
+		},
+		{
+			name: "skip meld",
+			hint: &domain.CanastaHint{Action: "skip_meld", Reason: "no_meld"},
+			want: "推奨: メルドをスキップ (有効なメルドがないためスキップ)",
+		},
+		{
+			name: "discard",
+			hint: &domain.CanastaHint{Action: "discard", Indices: []int{0}, Reason: "discard_safe"},
+			want: "推奨ディスカード: [0] HEART 7 (最も不要なカードを捨てる)",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := setupCanastaCuiMock()
+			m.On("GetHint").Return(tt.hint)
+			if tt.name == "discard" {
+				player := domain.NewCanastaPlayer(true)
+				player.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+				m.On("GetPlayer", 0).Return(player)
+			}
+			out := p.HintOutput(m)
+			assert.Contains(t, out, tt.want)
+			for _, reason := range []string{"draw_stock_safe", "draw_discard_pair", "meld_available", "no_meld", "discard_safe"} {
+				assert.NotContains(t, out, reason)
+			}
+			assert.NotContains(t, out, "{{")
+		})
+	}
+
+	t.Run("nil hint", func(t *testing.T) {
+		m := setupCanastaCuiMock()
+		m.On("GetHint").Return((*domain.CanastaHint)(nil))
+		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
+	})
+}
+
 func TestCanastaCuiPresenter_ActionLogOutput(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
