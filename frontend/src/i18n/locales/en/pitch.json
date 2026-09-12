@@ -47,6 +47,7 @@
   "scoresTotal": "Total",
   "bidButton": "Bid",
   "passButton": "Pass",
+  "dealerMustBid": "The dealer cannot pass when everyone has passed. Declare a bid from 2 to 4.",
   "playButton": "Play",
   "nextTrick": "Next trick",
   "nextRound": "Next round",

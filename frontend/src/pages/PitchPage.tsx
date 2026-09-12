@@ -236,16 +236,18 @@ function PitchPageContent() {
     else if (isRoundEnd && !isGameEnd) handleNextRound();
   }, [isTrickEnd, isRoundEnd, isGameEnd, handleNextTrick, handleNextRound]);
   const currentBid = state?.currentBid ?? 0;
+  const dealerMustBid = isHumanBidTurn && state?.dealerIdx === humanIdx && currentBid === 0;
   const canBid = isHumanBidTurn && !loading;
+  const canPass = canBid && !dealerMustBid;
   const actionBindings = useMemo(
     () => [
-      { key: 'p', action: () => handleBid(0), enabled: canBid },
+      { key: 'p', action: () => handleBid(0), enabled: canPass },
       { key: '2', action: () => handleBid(2), enabled: canBid && 2 > currentBid },
       { key: '3', action: () => handleBid(3), enabled: canBid && 3 > currentBid },
       { key: '4', action: () => handleBid(4), enabled: canBid && 4 > currentBid },
       { key: 'n', action: handleNext, enabled: (isTrickEnd || (isRoundEnd && !isGameEnd)) && !loading },
     ],
-    [handleBid, handleNext, canBid, currentBid, isTrickEnd, isRoundEnd, isGameEnd, loading],
+    [handleBid, handleNext, canBid, canPass, currentBid, isTrickEnd, isRoundEnd, isGameEnd, loading],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state });
 
@@ -561,13 +563,23 @@ function PitchPageContent() {
                 <button
                   type="button"
                   className={btnSecondary}
-                  disabled={!isHumanBidTurn || loading}
+                  disabled={!canPass}
                   onClick={() => handleBid(0)}
                   aria-keyshortcuts="p"
+                  title={dealerMustBid ? t('dealerMustBid') : undefined}
                 >
                   {t('passButton')}
                   <KbdBadge label={t('kbd.pass')} />
                 </button>
+                {dealerMustBid && (
+                  <p
+                    role="alert"
+                    className="text-ds-error text-sm basis-full text-center"
+                    data-testid="pitch-pass-restriction"
+                  >
+                    {t('dealerMustBid')}
+                  </p>
+                )}
                 {[2, 3, 4].map((n) => (
                   <button
                     key={n}

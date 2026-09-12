@@ -53,6 +53,10 @@
   "betNotice": "Your turn — choose See, Bet, Raise or Fold.",
   "sideShowTitle": "Side Show Request",
   "sideShowPending": "{{requester}} requested a Side Show with {{target}}. Accept or decline.",
+  "consequence": {
+    "accept": "Accepting compares the hands, and the loser folds immediately.",
+    "refuse": "Declining skips the comparison and play continues."
+  },
   "sideShowResult": {
     "title": "Side Show Result",
     "outcome": "{{winner}} ({{winnerHand}}) beat {{loser}} ({{loserHand}}); {{loser}} folded."

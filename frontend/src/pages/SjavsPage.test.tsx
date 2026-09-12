@@ -202,6 +202,24 @@ describe('SjavsPage', () => {
     }
   });
 
+  it('shows the double victory badge for a double victory', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: SjavsPhase.GAME_END, gameEndFlag: true, winnerTeam: 0, doubleVictory: true }),
+    );
+    renderWithProviders(<SjavsPage />);
+    const badge = await screen.findByTestId('sjavs-double-victory');
+    expect(badge).toHaveTextContent('ダブル勝利');
+  });
+
+  it('hides the double victory badge for a normal victory', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: SjavsPhase.GAME_END, gameEndFlag: true, winnerTeam: 0, doubleVictory: false }),
+    );
+    renderWithProviders(<SjavsPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('sjavs-double-victory')).not.toBeInTheDocument();
+  });
+
   // **CUI は sjavs.hintBid で推奨ビッド長を明示している。**Web はビッドボタンを
   // 素で並べていて、シャウス最大の判断点に手掛かりが無かった (#4883)。
   describe('bid hint', () => {

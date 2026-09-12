@@ -10,6 +10,7 @@
   "phase.play": "進行中",
   "phase.handEnd": "ハンド終了",
   "phase.end": "終了",
+  "doubleVictory": "ダブル勝利",
   "bid": "{{n}}枚を申告",
   "pass": "パス",
   "bidPrompt": "切札スート長を申告してください（{{min}}枚以上、あなたの最長は{{longest}}枚）",

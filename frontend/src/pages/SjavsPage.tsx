@@ -250,6 +250,15 @@ function SjavsPageContent() {
               messageParams={state.messageParams}
             />
 
+            {ended && state.doubleVictory && (
+              <div
+                className="text-center text-ds-warning text-sm font-semibold mb-3"
+                data-testid="sjavs-double-victory"
+              >
+                {t('doubleVictory')}
+              </div>
+            )}
+
             <ActionLogSection
               isEndPhase={ended}
               actionLog={actionLog}
