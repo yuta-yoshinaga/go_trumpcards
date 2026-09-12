@@ -90,7 +90,10 @@ type SergeantMajor struct {
 	surplus []int
 	// lastExchange は直前に動いた札の枚数（0 = やり取り無し）。
 	lastExchange int
-	gameEndFlag  bool
+	// lastExchangeLost/Received は人間席の直前の交換内容。
+	lastExchangeLost     []*Card
+	lastExchangeReceived []*Card
+	gameEndFlag          bool
 	// winnerIdx は勝者 (-1: 未確定/同点)。
 	winnerIdx int
 	actionLogBase
@@ -130,6 +133,8 @@ func (s *SergeantMajor) Reset() {
 	s.dealerIdx = 0
 	s.surplus = make([]int, SergeantMajorPlayerCnt)
 	s.lastExchange = 0
+	s.lastExchangeLost = nil
+	s.lastExchangeReceived = nil
 	s.gameEndFlag = false
 	s.winnerIdx = -1
 	s.actionLog = nil
@@ -146,6 +151,8 @@ func (s *SergeantMajor) startRound() {
 	s.trickNumber = 0
 	s.currentTrick = nil
 	s.lastExchange = 0
+	s.lastExchangeLost = nil
+	s.lastExchangeReceived = nil
 	for _, p := range s.players {
 		p.ResetRound()
 	}
@@ -351,6 +358,8 @@ func (s *SergeantMajor) chooseCpuDiscard(playerIdx int) []int {
 // 最強札を渡し、代わりに相手の最弱札を受け取ります。
 func (s *SergeantMajor) exchangeCards() {
 	moved := 0
+	s.lastExchangeLost = nil
+	s.lastExchangeReceived = nil
 	for taker := range SergeantMajorPlayerCnt {
 		for s.surplus[taker] > 0 {
 			giver := s.nextDeficit()
@@ -414,6 +423,14 @@ func (s *SergeantMajor) moveBestCard(giver, taker int) bool {
 	}
 	if worst != nil {
 		gp.AddCard(worst)
+	}
+	if giver == 0 {
+		s.lastExchangeLost = append(s.lastExchangeLost, best)
+		s.lastExchangeReceived = append(s.lastExchangeReceived, worst)
+	}
+	if taker == 0 {
+		s.lastExchangeReceived = append(s.lastExchangeReceived, best)
+		s.lastExchangeLost = append(s.lastExchangeLost, worst)
 	}
 	return true
 }
@@ -745,6 +762,12 @@ func (s *SergeantMajor) GetCurrentTrick() []*TrickCard { return s.currentTrick }
 // GetLastExchange は直前のラウンド間で動いた札の枚数を返す。
 func (s *SergeantMajor) GetLastExchange() int { return s.lastExchange }
 
+// GetLastExchangeLost は人間が直前のラウンド間交換で失った札を返す。
+func (s *SergeantMajor) GetLastExchangeLost() []*Card { return s.lastExchangeLost }
+
+// GetLastExchangeReceived は人間が直前のラウンド間交換で受け取った札を返す。
+func (s *SergeantMajor) GetLastExchangeReceived() []*Card { return s.lastExchangeReceived }
+
 // GetSurplus は指定インデックスのプレイヤーの前ラウンド過不足を返す（+ が超過、- が不足。次の配りで消費されるので ROUND_END の間だけ意味がある）。
 // 範囲外は 0 を返す。
 func (s *SergeantMajor) GetSurplus(i int) int {
@@ -773,23 +796,25 @@ func (s *SergeantMajor) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // sergeantMajorJSON は KV スナップショットの表現。
 type sergeantMajorJSON struct {
-	TrumpCards       *TrumpCards            `json:"tc"`
-	Players          []*SergeantMajorPlayer `json:"pl"`
-	Config           SergeantMajorConfig    `json:"cf"`
-	Phase            SergeantMajorPhase     `json:"ph"`
-	TrumpSuit        int                    `json:"ts"`
-	RoundNumber      int                    `json:"rn"`
-	TrickNumber      int                    `json:"tn"`
-	Kitty            []*Card                `json:"ki"`
-	CurrentTrick     []*TrickCard           `json:"ct"`
-	CurrentPlayerIdx int                    `json:"ci"`
-	LeadPlayerIdx    int                    `json:"li"`
-	DealerIdx        int                    `json:"dl"`
-	Surplus          []int                  `json:"sp"`
-	LastExchange     int                    `json:"le"`
-	GameEndFlag      bool                   `json:"ge"`
-	WinnerIdx        int                    `json:"wi"`
-	ActionLog        []*ActionLogEntry      `json:"al"`
+	TrumpCards           *TrumpCards            `json:"tc"`
+	Players              []*SergeantMajorPlayer `json:"pl"`
+	Config               SergeantMajorConfig    `json:"cf"`
+	Phase                SergeantMajorPhase     `json:"ph"`
+	TrumpSuit            int                    `json:"ts"`
+	RoundNumber          int                    `json:"rn"`
+	TrickNumber          int                    `json:"tn"`
+	Kitty                []*Card                `json:"ki"`
+	CurrentTrick         []*TrickCard           `json:"ct"`
+	CurrentPlayerIdx     int                    `json:"ci"`
+	LeadPlayerIdx        int                    `json:"li"`
+	DealerIdx            int                    `json:"dl"`
+	Surplus              []int                  `json:"sp"`
+	LastExchange         int                    `json:"le"`
+	LastExchangeLost     []*Card                `json:"lel"`
+	LastExchangeReceived []*Card                `json:"ler"`
+	GameEndFlag          bool                   `json:"ge"`
+	WinnerIdx            int                    `json:"wi"`
+	ActionLog            []*ActionLogEntry      `json:"al"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -799,7 +824,8 @@ func (s *SergeantMajor) MarshalJSON() ([]byte, error) {
 		TrumpSuit: s.trumpSuit, RoundNumber: s.roundNumber, TrickNumber: s.trickNumber,
 		Kitty: s.kitty, CurrentTrick: s.currentTrick, CurrentPlayerIdx: s.currentPlayerIdx,
 		LeadPlayerIdx: s.leadPlayerIdx, DealerIdx: s.dealerIdx, Surplus: s.surplus,
-		LastExchange: s.lastExchange, GameEndFlag: s.gameEndFlag, WinnerIdx: s.winnerIdx,
+		LastExchange: s.lastExchange, LastExchangeLost: s.lastExchangeLost,
+		LastExchangeReceived: s.lastExchangeReceived, GameEndFlag: s.gameEndFlag, WinnerIdx: s.winnerIdx,
 		ActionLog: s.actionLog,
 	})
 }
@@ -894,7 +920,8 @@ func (s *SergeantMajor) UnmarshalJSON(data []byte) error {
 	s.roundNumber, s.trickNumber, s.kitty = j.RoundNumber, j.TrickNumber, j.Kitty
 	s.currentTrick, s.currentPlayerIdx = j.CurrentTrick, j.CurrentPlayerIdx
 	s.leadPlayerIdx, s.dealerIdx, s.surplus = j.LeadPlayerIdx, j.DealerIdx, j.Surplus
-	s.lastExchange, s.gameEndFlag, s.winnerIdx = j.LastExchange, j.GameEndFlag, j.WinnerIdx
+	s.lastExchange, s.lastExchangeLost, s.lastExchangeReceived = j.LastExchange, j.LastExchangeLost, j.LastExchangeReceived
+	s.gameEndFlag, s.winnerIdx = j.GameEndFlag, j.WinnerIdx
 	s.actionLog = j.ActionLog
 	return nil
 }

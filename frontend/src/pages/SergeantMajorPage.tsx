@@ -18,10 +18,10 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { badgeInfoColors } from '../styles/badgeStyles';
+import { badgeInfoColors, badgeSuccessColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { SergeantMajorResponse } from '../types/card';
+import type { Card, SergeantMajorResponse } from '../types/card';
 import { SergeantMajorPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -152,6 +152,9 @@ function SergeantMajorPageContent() {
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
   // キティ由来の位置はサーバが解決して送る (手札は取り込み時に並べ替わる)。
   const kittyIndices = new Set(state.kittyIndices ?? []);
+  const receivedExchangeCards = state.lastExchangeReceived ?? [];
+  const isReceivedExchangeCard = (card: Card) =>
+    receivedExchangeCards.some((received) => received.design === card.design && received.value === card.value);
 
   const togglePicked = (idx: number) => {
     setPicked((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
@@ -204,10 +207,24 @@ function SergeantMajorPageContent() {
               {t('header.rule')}
             </div>
 
-            {/* **前ラウンドの札のやり取りは盤面に痕跡が残らない。** */}
+            {/* **前ラウンドの交換内容は具体的な札まで表示する。** */}
             {state.lastExchange > 0 && (
               <div className="text-center mb-3 text-ds-accent text-sm" role="status" data-testid="sm-exchange">
-                {t('header.exchange', { n: String(state.lastExchange) })}
+                <div>{t('header.exchange', { n: String(state.lastExchange) })}</div>
+                {state.lastExchangeLost && state.lastExchangeLost.length > 0 && (
+                  <div data-testid="sm-exchange-lost">
+                    {t('header.exchangeLost', {
+                      cards: state.lastExchangeLost.map((card) => cardAlt(card)).join(', '),
+                    })}
+                  </div>
+                )}
+                {state.lastExchangeReceived && state.lastExchangeReceived.length > 0 && (
+                  <div data-testid="sm-exchange-received">
+                    {t('header.exchangeReceived', {
+                      cards: state.lastExchangeReceived.map((card) => cardAlt(card)).join(', '),
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
@@ -295,6 +312,15 @@ function SergeantMajorPageContent() {
                         >
                           <span aria-hidden="true">{t('header.kittyBadge')}</span>
                           <span className="sr-only">{t('header.kittyAria')}</span>
+                        </span>
+                      )}
+                      {isReceivedExchangeCard(card) && (
+                        <span
+                          data-testid={`sm-exchange-received-${idx.toString()}`}
+                          className={`absolute bottom-0 left-0 rounded-tr px-1 text-[10px] leading-tight ${badgeSuccessColors}`}
+                        >
+                          <span aria-hidden="true">↔</span>
+                          <span className="sr-only">{t('header.exchangeReceivedBadge')}</span>
                         </span>
                       )}
                     </button>

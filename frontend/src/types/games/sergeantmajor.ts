@@ -86,6 +86,10 @@ export interface SergeantMajorResponse extends BaseGameResponse {
    * your target costs your best cards; nothing on the board shows this.
    */
   lastExchange: number;
+  /** Cards the human lost in the last round's exchange. */
+  lastExchangeLost?: Card[];
+  /** Cards the human received in the last round's exchange. */
+  lastExchangeReceived?: Card[];
   currentPlayerIdx: number;
   leadPlayerIdx: number;
   /** The dealer. **This seat owes 8 and names trump.** */

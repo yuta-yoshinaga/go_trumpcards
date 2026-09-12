@@ -188,6 +188,19 @@ describe('SergeantMajorPage', () => {
     mockExec.mockResolvedValue(playing({ lastExchange: 3 } as Partial<SergeantMajorResponse>));
     renderWithProviders(<SergeantMajorPage />);
     expect(await screen.findByTestId('sm-exchange')).toHaveTextContent('3');
+
+    unmount();
+    mockExec.mockResolvedValue(
+      playing({
+        lastExchange: 1,
+        lastExchangeLost: [card('HEART', 1)],
+        lastExchangeReceived: [card('SPADE', 9)],
+      } as Partial<SergeantMajorResponse>),
+    );
+    renderWithProviders(<SergeantMajorPage />);
+    expect(await screen.findByTestId('sm-exchange-lost')).toHaveTextContent('失った札: ♥ A');
+    expect(screen.getByTestId('sm-exchange-received')).toHaveTextContent('受け取った札: ♠ 9');
+    expect(screen.getByTestId('sm-exchange-received-1')).toBeInTheDocument();
   });
 
   it('advances to the next round when the button is pressed', async () => {

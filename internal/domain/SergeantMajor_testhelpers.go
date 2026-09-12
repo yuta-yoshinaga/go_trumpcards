@@ -57,6 +57,13 @@ func (s *SergeantMajor) CpuDiscardChoiceForTest(playerIdx int) []int {
 // ExchangeForTest は札のやり取りを直接呼ぶ
 func (s *SergeantMajor) ExchangeForTest() { s.exchangeCards() }
 
+// SetLastExchangeForTest は lastExchange などの状態を設定する
+func (s *SergeantMajor) SetLastExchangeForTest(n int, lost, received []*Card) {
+	s.lastExchange = n
+	s.lastExchangeLost = lost
+	s.lastExchangeReceived = received
+}
+
 // FinishRoundForTest はラウンド精算を直接呼ぶ
 func (s *SergeantMajor) FinishRoundForTest() { s.finishRound() }
 

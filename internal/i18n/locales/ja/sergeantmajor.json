@@ -10,6 +10,8 @@
   "trumpLine": "切り札: {{suit}}（{{name}} が宣言）",
   "trumpUndecided": "切り札: 未宣言（親が決めます。キティ {{kitty}} 枚は親が取り込みます）",
   "exchangeLine": "前ラウンドの過不足で {{n}} 枚を移しました。",
+  "exchangeLost": "失った札: {{cards}}",
+  "exchangeReceived": "受け取った札: {{cards}}",
   "playerLine": "{{name}}{{role}}: ノルマ{{target}} 獲得{{took}} 累計{{score}} 手札{{cards}}枚",
   "roleDealer": "[親/ノルマ8]",
   "promptTrump": "あなたが親です。切り札を宣言してください。",
