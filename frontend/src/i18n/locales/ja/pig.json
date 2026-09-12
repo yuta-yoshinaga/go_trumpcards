@@ -23,6 +23,7 @@
     "next": "次のラウンドへ",
     "players": "人数",
     "difficulty": "CPUの反応",
+    "difficultyTip": "1回の判定でCPUが合図に気づく確率です。遅い＝45%、普通＝65%、速い＝85%。",
     "difficultyEasy": "遅い",
     "difficultyNormal": "普通",
     "difficultyHard": "速い",

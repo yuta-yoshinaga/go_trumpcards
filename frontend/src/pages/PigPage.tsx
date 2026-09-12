@@ -334,6 +334,7 @@ function PigPageContent() {
                       type: 'select',
                       id: 'pig-difficulty',
                       label: t('actions.difficulty'),
+                      tooltip: t('actions.difficultyTip'),
                       value: String(difficulty),
                       options: [
                         { value: '0', label: t('actions.difficultyEasy') },
