@@ -2816,6 +2816,8 @@
     "unsunkaruta.roundEnd": "The deal is over.",
     "unsunkaruta.trickEnd": "The trick is decided.",
     "videopoker.chipsRefilled": "Your balance fell below the minimum bet, so it was topped up to {{chips}}",
+    "dragontiger.result.bankrollRefilled": "Your balance fell below the minimum bet, so it was topped up to {{chips}} chips",
+    "ultimatetexasholdem.result.bankrollRefilled": "Your balance fell below the minimum bet, so it was topped up to {{chips}} chips",
     "videopoker.result.lose": "You lose.",
     "videopoker.result.win": "You are the winner.",
     "vint.bidPhase": "Bidding -- spades are the LOWEST and no trump the highest, the reverse of bridge",

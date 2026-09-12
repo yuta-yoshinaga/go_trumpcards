@@ -72,6 +72,7 @@ type UltimateTexasHoldem struct {
 	folded          bool        // リバーでフォールドしたかどうか
 	phase           int         // 現在のフェーズ
 	gameEndFlag     bool        // ゲーム終了フラグ
+	chipsRefilled   bool        // Reset がこのターンに残高を補充したか (永続化しない)
 	result          GameResult  // ショーダウン結果（フォールド時は Lose）
 	dealerQualified bool        // ディーラークオリファイ（ペア以上）
 	antePayout      int         // アンテ配当（返却額込み）
@@ -124,8 +125,15 @@ func (u *UltimateTexasHoldem) Reset() {
 	u.playerBest = nil
 	u.dealerBest = nil
 	u.actionLog = nil
+	// 補充は突然チップが現れるため、何も知らせないと残高が勝手に回復した
+	// ように見えてしまう。このフラグは直前の Reset で起きた事実だけを表し、
+	// presenter が同じ応答で説明するために使う。JSON には含めないので、
+	// 保存後のリロードで補充を再通知したり、古い状態に通知を持ち越したり
+	// しない。
+	u.chipsRefilled = false
 	if u.chips.GetChips() < UltimateTexasHoldemMinBet*2 {
 		u.chips.SetChips(UltimateTexasHoldemDefaultChips)
+		u.chipsRefilled = true
 	}
 	// Reset re-creates and re-shuffles the deck. Ten shuffles (vs one in the
 	// constructor) is a deliberate paranoia step to reduce correlation between
@@ -680,6 +688,10 @@ func (u *UltimateTexasHoldem) SetPlayBet(amount int) { u.playBet = amount }
 
 // SetChips チップ設定（テスト用）
 func (u *UltimateTexasHoldem) SetChips(chips int) { u.chips.SetChips(chips) }
+
+// GetChipsRefilled は直前の Reset が最低ベット割れで残高を補充したかを返す。
+// 保存対象ではないので、リロード後は false に戻る。
+func (u *UltimateTexasHoldem) GetChipsRefilled() bool { return u.chipsRefilled }
 
 // ultimateTexasHoldemJSON は UltimateTexasHoldem の JSON ワイヤーフォーマット
 type ultimateTexasHoldemJSON struct {

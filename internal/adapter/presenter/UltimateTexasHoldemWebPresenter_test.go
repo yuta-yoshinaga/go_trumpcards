@@ -14,6 +14,7 @@ import (
 
 func setupUltimateTexasHoldemWebMockDefaults(m *interfaces.MockUltimateTexasHoldemGame) {
 	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetPhase").Return(domain.UltimateTexasHoldemPhaseBet).Maybe()
 	m.On("GetPlayerHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetDealerHand").Return(([]*domain.Card)(nil)).Maybe()
@@ -34,6 +35,19 @@ func setupUltimateTexasHoldemWebMockDefaults(m *interfaces.MockUltimateTexasHold
 	m.On("GetPlayerHandRank").Return(0).Maybe()
 	m.On("GetDealerHandRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+}
+
+func TestUltimateTexasHoldemWebPresenter_Output_ChipsRefilledNotice(t *testing.T) {
+	m := new(interfaces.MockUltimateTexasHoldemGame)
+	setupUltimateTexasHoldemWebMockDefaults(m)
+	m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetChipsRefilled")
+	m.On("GetChipsRefilled").Return(true)
+	out := parseUltimateTexasHoldemOutput(t, new(UltimateTexasHoldemWebPresenter).Output(m, nil))
+	// **文言はロケール側。** このファイルの他の結果も Message は空で、
+	// messageCode だけを返している。
+	assert.Empty(t, out.Message)
+	assert.Equal(t, "ultimatetexasholdem.result.bankrollRefilled", out.MessageCode)
+	assert.Equal(t, "1000", out.MessageParams["chips"])
 }
 
 func parseUltimateTexasHoldemOutput(t *testing.T, jsonStr string) *controller.UltimateTexasHoldemWebOutput {
