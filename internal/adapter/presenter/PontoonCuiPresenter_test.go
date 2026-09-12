@@ -230,6 +230,15 @@ func TestPontoonCuiPresenter_ShowsBothStickThresholds(t *testing.T) {
 	assert.Contains(t, out, strconv.Itoa(domain.PontoonCpuStickMin))
 }
 
+func TestPontoonCuiPresenter_ShowsTieRule(t *testing.T) {
+	i18n.SetLang("ja")
+	g := new(interfaces.MockPontoonGame)
+	setupPontoonCuiMockDefaults(g)
+
+	out := new(PontoonCuiPresenter).Output(g, nil)
+	assert.Contains(t, out, "同点は親の勝ちなので、親と同じ点で止まっても負けます。")
+}
+
 // 打てる手が無い局面では案内ごと出さない。手番でもないのに停止ラインだけ
 // 残ると、誰の話をしているのか分からない。
 func TestPontoonCuiPresenter_HidesTheThresholdsWithNoLegalAction(t *testing.T) {
@@ -243,4 +252,5 @@ func TestPontoonCuiPresenter_HidesTheThresholdsWithNoLegalAction(t *testing.T) {
 	assert.NotContains(t, out, i18n.Tf("pontoon.cpuStickLine",
 		"cpuMin", strconv.Itoa(domain.PontoonCpuStickMin),
 		"min", strconv.Itoa(domain.PontoonStickMin)))
+	assert.NotContains(t, out, i18n.T("pontoon.helpTieRule"))
 }

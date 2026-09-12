@@ -30,6 +30,7 @@
   "bankPasses": "{{name}} がポンツーンで親を取りました",
   "helpExampleBet": "  b 100                   100 チップを賭ける",
   "cpuStickLine": "親は合計 {{cpuMin}} 以上になるまで引きます。CPU 席は {{min}} 以上で止まります（4枚のときだけ {{cpuMin}} 未満でももう1枚引きます）。",
+  "helpTieRule": "同点は親の勝ちなので、親と同じ点で止まっても負けます。",
   "errActionLogTooLarge": "アクションログが最大サイズを超えています",
   "errBankerAlreadyBust": "親はすでにバーストしています",
   "errBankerDoesNotBet": "親はベットしません",

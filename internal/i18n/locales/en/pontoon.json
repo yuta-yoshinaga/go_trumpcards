@@ -30,6 +30,7 @@
   "bankPasses": "{{name}} takes the bank with a pontoon",
   "helpExampleBet": "  b 100                    bet 100 chips",
   "cpuStickLine": "The banker draws until {{cpuMin}} or more. A CPU seat sticks at {{min}} or more (on four cards it takes one more below {{cpuMin}}).",
+  "helpTieRule": "Ties go to the banker, so matching the banker's total still loses.",
   "errActionLogTooLarge": "The action log exceeds the maximum allowed size.",
   "errBankerAlreadyBust": "The banker has already bust.",
   "errBankerDoesNotBet": "The banker does not place a bet.",

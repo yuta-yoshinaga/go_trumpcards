@@ -144,7 +144,8 @@ func (pp *PontoonCuiPresenter) actionHints(p interfaces.PontoonGame) string {
 	return i18n.Tf("pontoon.actionsLine", "options", strings.Join(opts, " / ")) + "\n" +
 		color.Yellow(i18n.Tf("pontoon.cpuStickLine",
 			"cpuMin", strconv.Itoa(domain.PontoonCpuStickMin),
-			"min", strconv.Itoa(domain.PontoonStickMin))) + "\n"
+			"min", strconv.Itoa(domain.PontoonStickMin))) + "\n" +
+		color.Yellow(i18n.T("pontoon.helpTieRule")) + "\n"
 }
 
 // ActionLogOutput 棋譜をテキスト出力
