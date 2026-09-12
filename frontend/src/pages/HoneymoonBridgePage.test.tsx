@@ -85,8 +85,13 @@ describe('HoneymoonBridgePage', () => {
   it('marks drawn cards and leaves unmarked cards alone', async () => {
     mockExec.mockResolvedValue(makeState({ drawnIndices: [1] }));
     renderWithProviders(<HoneymoonBridgePage />);
-    expect(await screen.findByTestId('hb-drawn-1')).toHaveTextContent('補充');
+    const badge = await screen.findByTestId('hb-drawn-1');
+    expect(badge).toHaveTextContent('補充');
     expect(screen.queryByTestId('hb-drawn-0')).not.toBeInTheDocument();
+    // **絶対配置の印は positioned ancestor が要る。** 札のボタンに relative が
+    // 無いと、印はページのどこか別の場所に飛ぶ (DOM にはあるので存在検査では
+    // 気づけない)。
+    expect(badge.closest('button')).toHaveClass('relative');
   });
   it('resets on mount', async () => {
     renderWithProviders(<HoneymoonBridgePage />);
