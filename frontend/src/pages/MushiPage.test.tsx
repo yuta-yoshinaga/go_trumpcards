@@ -198,3 +198,52 @@ describe('MushiPage wild marker', () => {
     // それまで落とすと「説明文があるだけ」で赤くなる。
   });
 });
+
+describe('MushiPage card points', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('renders points for cards scoring > 0', async () => {
+    const state = makeState({
+      players: [human({ cards: [], captured: [] }), cpu({ cards: [], captured: [] })],
+      field: [
+        { ...card(1, 1, 3), points: 20 },
+        { ...card(2, 1, 2), points: 10 },
+        { ...card(1, 3, 0), points: 0 },
+      ],
+    });
+    mockExec.mockResolvedValue(state);
+    const { container } = renderWithProviders(<MushiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const pointsNodes = Array.from(container.querySelectorAll('div.text-ds-warning.text-\\[10px\\]')).map(
+      (el) => el.textContent,
+    );
+
+    expect(pointsNodes).toHaveLength(2);
+    expect(pointsNodes).toContain('20');
+    expect(pointsNodes).toContain('10');
+    expect(pointsNodes).not.toContain('0');
+  });
+
+  it('renders no points when all cards score 0', async () => {
+    const state = makeState({
+      players: [human({ cards: [], captured: [] }), cpu({ cards: [], captured: [] })],
+      field: [
+        { ...card(1, 3, 0), points: 0 },
+        { ...card(1, 4, 0), points: 0 },
+      ],
+    });
+    mockExec.mockResolvedValue(state);
+    const { container } = renderWithProviders(<MushiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const pointsNodes = Array.from(container.querySelectorAll('div.text-ds-warning.text-\\[10px\\]')).map(
+      (el) => el.textContent,
+    );
+
+    expect(pointsNodes).toHaveLength(0);
+  });
+});

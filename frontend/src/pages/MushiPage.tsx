@@ -86,6 +86,7 @@ function MushiPageContent() {
   const renderCard = (card: MushiCard, key: string, extra?: string) => (
     <div key={key} className={`text-center ${extra ?? ''}`}>
       <AnimatedCard card={card} width={cardWidth} draggable={false} />
+      {card.points > 0 && <div className="text-ds-warning text-[10px] mt-0.5 font-bold">{card.points}</div>}
       <div className="text-game-text-muted text-[10px] mt-0.5">
         {t(`category.${card.category}`)}
         {/* ★ は記号なので、読み上げても「星」としか言われずワイルドだと伝わらない。
