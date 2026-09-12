@@ -20,6 +20,18 @@ const mockExec = vi.mocked(terraceApi.exec);
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
+function buildDataTransfer() {
+  const store: Record<string, string> = {};
+  return {
+    setData: (type: string, value: string) => {
+      store[type] = value;
+    },
+    getData: (type: string) => store[type] ?? '',
+    effectAllowed: '',
+    dropEffect: '',
+  };
+}
+
 function makeTableau(piles: Card[][]): Card[][] {
   return Array.from({ length: 9 }, (_, i) => piles[i] ?? []);
 }
@@ -119,10 +131,94 @@ describe('TerracePage', () => {
     await waitFor(() => expect(terrace).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: '空の組札0' }));
+    const foundation = screen.getByRole('button', { name: '空の組札0' });
+    expect(foundation).toBeEnabled();
+    fireEvent.click(foundation);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve' }, { zone: 'foundation', col: 0 }),
     );
+  });
+
+  it('disables tableau cards while the terrace is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<TerracePage />);
+    fireEvent.click(await screen.findByTestId('terrace-pile'));
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '♥ 8' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+    expect(screen.getByRole('button', { name: '♥ 8' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '♠ 7' })).toBeDisabled();
+  });
+
+  it('disables a buried tableau card until a source is selected', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[card('HEART', 8), card('CLOVER', 6)], [card('SPADE', 7)]]),
+    });
+    renderWithProviders(<TerracePage />);
+
+    expect(await screen.findByRole('button', { name: '♥ 8' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '♣ 6' })).toBeEnabled();
+  });
+
+  it('does not dispatch a move when dragging the terrace onto a tableau pile', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<TerracePage />);
+    const terrace = await screen.findByTestId('terrace-pile');
+    const target = screen.getByRole('button', { name: '♠ 7' }).closest('[role="presentation"]') as HTMLElement;
+
+    mockExec.mockClear();
+    const dataTransfer = buildDataTransfer();
+    fireEvent.dragStart(terrace, { dataTransfer });
+    fireEvent.dragOver(target, { dataTransfer });
+    fireEvent.drop(target, { dataTransfer });
+
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  it('dispatches a move when dragging waste onto a tableau pile', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 4)] });
+    renderWithProviders(<TerracePage />);
+    const waste = await screen.findByRole('button', { name: '♦ 4' });
+    const target = screen.getByRole('button', { name: '♠ 7' }).closest('[role="presentation"]') as HTMLElement;
+
+    mockExec.mockClear();
+    const dataTransfer = buildDataTransfer();
+    fireEvent.dragStart(waste, { dataTransfer });
+    fireEvent.dragOver(target, { dataTransfer });
+    fireEvent.drop(target, { dataTransfer });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'tableau', col: 1 }));
+  });
+
+  it('dispatches a move when dragging the terrace onto a foundation', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<TerracePage />);
+    const terrace = await screen.findByTestId('terrace-pile');
+    const target = screen.getByRole('button', { name: '空の組札0' }).closest('[role="presentation"]') as HTMLElement;
+
+    mockExec.mockClear();
+    const dataTransfer = buildDataTransfer();
+    fireEvent.dragStart(terrace, { dataTransfer });
+    fireEvent.dragOver(target, { dataTransfer });
+    fireEvent.drop(target, { dataTransfer });
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve' }, { zone: 'foundation', col: 0 }),
+    );
+  });
+
+  it('keeps tableau cards enabled while a non-terrace source is selected', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 4)] });
+    renderWithProviders(<TerracePage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♦ 4' }));
+
+    expect(screen.getByRole('button', { name: '♥ 8' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: '♠ 7' })).toBeEnabled();
   });
 
   it('shows an empty terrace slot once it runs out', async () => {
