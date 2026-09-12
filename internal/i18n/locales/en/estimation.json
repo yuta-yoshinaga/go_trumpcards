@@ -17,7 +17,7 @@
   "promptCurrentPlayer": "Turn: {{name}}",
   "promptPlay": "play <idx> ... Play a card",
   "promptTrump": "You are the dealer. Choose the trump suit (t <1-4>).",
-  "promptTrumpWait": "The dealer is choosing the trump suit.",
+  "promptTrumpWait": "{{name}} is the dealer, choosing the trump suit.",
   "promptBid": "Estimate your tricks (b <0-13>). 0 is a Dash Call.",
   "promptBidRestricted": "You bid last, so {{n}} is barred -- it would make the total 13.",
   "promptRoundEnd": "Round over.",
