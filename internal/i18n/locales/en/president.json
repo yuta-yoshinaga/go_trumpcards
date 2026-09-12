@@ -20,6 +20,7 @@
   "gameEnd": "Game over!",
   "rankEntry": "  {{name}}: {{rank}}",
   "promptCurrentTurn": "{{name}} to act",
+  "clubThreeStarter": "{{name}} leads because they hold the ♣3",
   "promptPlayHelp": "p [indices...] to play / p to pass",
   "rankPresident": "President",
   "rankVicePresident": "Vice-President",

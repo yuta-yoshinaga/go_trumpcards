@@ -93,6 +93,10 @@ func (p *PresidentCuiPresenter) Output(pg interfaces.PresidentGame, lastErr erro
 		}
 
 		cuiErrorBlock(b, lastErr)
+		if starterIdx := pg.GetClubThreeStarterIdx(); starterIdx >= 0 {
+			b.WriteString(i18n.Tf("president.clubThreeStarter",
+				"name", cuiPlayerName(pg.GetPlayer(starterIdx), starterIdx)) + "\n")
+		}
 
 		if pg.GetGameEndFlag() {
 			b.WriteString(i18n.T("president.gameEnd") + "\n")

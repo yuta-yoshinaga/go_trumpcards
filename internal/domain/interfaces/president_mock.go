@@ -124,6 +124,12 @@ func (_m *MockPresidentGame) GetCurrentTurn() int {
 	return ret.Int(0)
 }
 
+// GetClubThreeStarterIdx モック
+func (_m *MockPresidentGame) GetClubThreeStarterIdx() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 // GetConfig モック
 func (_m *MockPresidentGame) GetConfig() domain.PresidentConfig {
 	ret := _m.Called()

@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -74,16 +75,32 @@ func (pwp *PresidentWebPresenter) Output(pg interfaces.PresidentGame, lastErr er
 		resObj.Players = append(resObj.Players, pObj)
 	}
 
-	// メッセージ
-	if lastErr != nil {
-		resObj.Message = lastErr.Error()
-	} else if pg.GetGameEndFlag() {
-		resObj.Message = pwp.buildResultMessage(pg)
-		resObj.MessageCode = "president.result.rankings"
-		resObj.MessageParams = map[string]string{"rankings": resObj.Message}
-	}
+	resObj.Message, resObj.MessageCode, resObj.MessageParams = pwp.buildMessage(pg, lastErr)
 
 	return marshalOrError(resObj)
+}
+
+// buildMessage はエラー、結果、初回ラウンドの先手理由を優先順に構築する。
+func (pwp *PresidentWebPresenter) buildMessage(pg interfaces.PresidentGame, lastErr error) (string, string, map[string]string) {
+	if lastErr != nil {
+		return lastErr.Error(), "", nil
+	}
+	if pg.GetGameEndFlag() {
+		msg := pwp.buildResultMessage(pg)
+		return msg, "president.result.rankings", map[string]string{"rankings": msg}
+	}
+	starterIdx := pg.GetClubThreeStarterIdx()
+	if starterIdx < 0 {
+		return "", "", nil
+	}
+	// **文言はロケールに置く。** `Message` は messageCode が解決しなかったときの
+	// フォールバックで、GameMessageBox は code を優先する。ここに日本語を書くと
+	// 表示されないまま Go に 1 ロケールが焼き付く (buildResultMessage は
+	// ランキングを組み立てる都合で文字列を返す既存の例外)。
+	if starterIdx == 0 {
+		return "", "president.start.clubThreeHuman", nil
+	}
+	return "", "president.start.clubThreeCPU", map[string]string{"idx": strconv.Itoa(starterIdx)}
 }
 
 // buildResultMessage ゲーム終了メッセージ

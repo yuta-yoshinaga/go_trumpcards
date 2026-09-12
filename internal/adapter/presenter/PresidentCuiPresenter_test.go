@@ -1,10 +1,13 @@
 package presenter_test
 
 import (
+	"encoding/json"
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -138,6 +141,7 @@ func TestPresidentCuiPresenter_Output(t *testing.T) {
 		m.On("GetTableCards").Return(([]*domain.Card)(nil))
 		m.On("GetHumanAction").Return((*domain.PresidentCpuAction)(nil))
 		m.On("GetCpuActions").Return(([]*domain.PresidentCpuAction)(nil))
+		m.On("GetClubThreeStarterIdx").Return(-1)
 		m.On("GetGameEndFlag").Return(true)
 
 		result := p.Output(m, nil)
@@ -163,11 +167,58 @@ func TestPresidentCuiPresenter_Output(t *testing.T) {
 		m.On("GetTableCards").Return(([]*domain.Card)(nil))
 		m.On("GetHumanAction").Return((*domain.PresidentCpuAction)(nil))
 		m.On("GetCpuActions").Return(([]*domain.PresidentCpuAction)(nil))
+		m.On("GetClubThreeStarterIdx").Return(-1)
 		m.On("GetGameEndFlag").Return(true)
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "不明")
 	})
+}
+
+func TestPresidentCuiPresenter_ClubThreeStarter(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.PresidentCuiPresenter)
+
+	for _, tt := range []struct {
+		name       string
+		starterIdx int
+		want       string
+	}{
+		{"human starter", 0, "♣3を持つ あなた が先手です"},
+		{"CPU starter", 2, "♣3を持つ CPU 2 が先手です"},
+		{"no club-3 starter", -1, ""},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			pg := presidentForStarterMessage(t, tt.starterIdx)
+			result := p.Output(pg, nil)
+			if tt.want == "" {
+				assert.NotContains(t, result, "♣3を持つ")
+				return
+			}
+			assert.Contains(t, result, tt.want)
+		})
+	}
+}
+
+func presidentForStarterMessage(t *testing.T, starterIdx int) *domain.President {
+	t.Helper()
+	players := makePresidentPlayersForPresenter()
+	for i, player := range players {
+		player.AddCard(domain.NewCard(domain.CardDesignHeart, 5+i, false))
+	}
+	pg := domain.NewPresident(domain.NewTrumpCards(0), players, domain.DefaultPresidentConfig())
+	data, err := json.Marshal(pg)
+	require.NoError(t, err)
+	var snapshot map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &snapshot))
+	snapshot["c3"] = json.RawMessage(strconv.Itoa(starterIdx))
+	data, err = json.Marshal(snapshot)
+	require.NoError(t, err)
+	var restored domain.President
+	require.NoError(t, json.Unmarshal(data, &restored))
+	return &restored
 }
 
 func TestPresidentCuiPresenter_HintOutput(t *testing.T) {
