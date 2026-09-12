@@ -102,12 +102,37 @@ func TestOhHellCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ビッド合計: 5 / 手札枚数: 10 (アンダー)")
 	})
 
-	t.Run("trick end", func(t *testing.T) {
+	t.Run("trick end names winner at seat 0", func(t *testing.T) {
 		m, _ := setupOhHellCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.OhHellPhaseTrickEnd)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "トリック終了")
+		assert.Contains(t, result, "あなた がトリックを獲得")
+		assert.NotContains(t, result, "{{")
+	})
+
+	t.Run("trick end names winner at seat 1", func(t *testing.T) {
+		m, _ := setupOhHellCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.OhHellPhaseTrickEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
+		m.On("GetLeadPlayerIdx").Return(1)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "CPU 1 がトリックを獲得")
+		assert.NotContains(t, result, "あなた がトリックを獲得")
+		assert.NotContains(t, result, "{{")
+	})
+
+	t.Run("trick end omits winner when lead is unset", func(t *testing.T) {
+		m, _ := setupOhHellCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.OhHellPhaseTrickEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
+		m.On("GetLeadPlayerIdx").Return(-1)
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "がトリックを獲得")
+		assert.NotContains(t, result, "{{")
 	})
 
 	t.Run("round end", func(t *testing.T) {

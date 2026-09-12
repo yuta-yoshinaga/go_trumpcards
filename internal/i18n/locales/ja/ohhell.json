@@ -24,6 +24,7 @@
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "play <idx>・・・カードを出す",
   "promptTrickEnd": "トリック終了",
+  "trickWinner": "{{name}} がトリックを獲得",
   "promptTrickEndHelp": "next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
