@@ -59,6 +59,17 @@ func (m *MockMendikotGame) GetCurrentTrick() []*domain.TrickCard {
 	return args.Get(0).([]*domain.TrickCard)
 }
 
+// GetLastTrick モック
+func (m *MockMendikotGame) GetLastTrick() []*domain.TrickCard {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).([]*domain.TrickCard)
+}
+
+func (m *MockMendikotGame) GetLastTrickWinner() int { return m.Called().Int(0) }
+
 // WillSetTrump モック
 func (m *MockMendikotGame) WillSetTrump(playerIdx int) bool {
 	return m.Called(playerIdx).Bool(0)

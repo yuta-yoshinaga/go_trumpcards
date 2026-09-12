@@ -58297,6 +58297,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MendikotTrickCard'
+        lastTrick:
+          type: array
+          description: >-
+            The trick just resolved, kept until the next trick starts so the
+            winning card can be marked. Empty at other times.
+          items:
+            $ref: '#/components/schemas/MendikotTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Seat that took lastTrick, or -1 when there is none.
         validPlays:
           type: array
           description: Hand indices you may legally play. Following suit is compulsory.

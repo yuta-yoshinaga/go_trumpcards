@@ -159,6 +159,54 @@ func TestMendikot_NoTrumpMeansLeadSuitWins(t *testing.T) {
 	assert.Equal(t, 1, m.GetPlayer(1).GetTrickCount(), "A が勝つ")
 }
 
+func TestMendikot_LastTrickWinnerIsShownUntilNextTrickAndSurvivesJSON(t *testing.T) {
+	m := newTestMendikot(t)
+	m.SetLeadPlayerIdxForTest(0)
+	m.SetCurrentPlayerIdxForTest(0)
+	for i, rank := range []int{5, 7, 9, 11} {
+		mendikotHandOf(m, i, NewCard(CardDesignSpade, rank, false))
+	}
+
+	for i := range MendikotPlayerCnt {
+		require.NoError(t, m.PlayForTest(i, 0))
+	}
+	assert.Equal(t, 3, m.GetLastTrickWinner())
+	assert.Empty(t, m.GetCurrentTrick(), "解決後も現在のトリックは空に戻す")
+	assert.Len(t, m.GetLastTrick(), MendikotPlayerCnt, "解決直後は直前トリックを保持する")
+
+	data, err := json.Marshal(m)
+	require.NoError(t, err)
+	var restored Mendikot
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, 3, restored.GetLastTrickWinner())
+	assert.Len(t, restored.GetLastTrick(), MendikotPlayerCnt)
+
+	restored.GetPlayer(3).AddCard(NewCard(CardDesignHeart, 2, false))
+	require.NoError(t, restored.PlayForTest(3, 0))
+	assert.Equal(t, -1, restored.GetLastTrickWinner(), "次のトリック開始時に直前勝者をクリアする")
+	assert.Empty(t, restored.GetLastTrick())
+	assert.Len(t, restored.GetCurrentTrick(), 1)
+}
+
+func TestMendikot_ResolvedTrickDoesNotChangePlayValidation(t *testing.T) {
+	m := newTestMendikot(t)
+	m.SetLeadPlayerIdxForTest(0)
+	m.SetCurrentPlayerIdxForTest(0)
+	for i := range MendikotPlayerCnt {
+		mendikotHandOf(m, i, NewCard(CardDesignSpade, i+2, false))
+	}
+	for i := range MendikotPlayerCnt {
+		require.NoError(t, m.PlayForTest(i, 0))
+	}
+	m.GetPlayer(3).AddCard(NewCard(CardDesignHeart, 2, false))
+	m.GetPlayer(3).AddCard(NewCard(CardDesignSpade, 3, false))
+	m.SetCurrentPlayerIdxForTest(3)
+	require.NoError(t, m.PlayForTest(3, 1))
+	m.GetPlayer(0).AddCard(NewCard(CardDesignHeart, 4, false))
+	m.GetPlayer(0).AddCard(NewCard(CardDesignSpade, 5, false))
+	assert.Equal(t, []int{1}, m.GetValidPlayIndices(0))
+}
+
 // --- 勝敗判定 ---
 
 // **issue の「10 を 3 枚かつ 7 トリック以上」では決着しないハンドが出る。**
