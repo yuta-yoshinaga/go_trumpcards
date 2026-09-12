@@ -17,6 +17,7 @@
   "invalidToZone": "Invalid destination: {{val}} (use f or t)",
   "invalidCardIndex": "Invalid card index: {{val}}",
   "baseRankLine": "Base rank: {{rank}}",
+  "passCount": "Pass: {{current}}/{{max}}",
   "foundationHeader": "Foundations: ",
   "reserveLine": "Reserve: {{card}} ({{count}} left)",
   "reserveEmpty": "Reserve: empty (the waste can now fill a gap)",
