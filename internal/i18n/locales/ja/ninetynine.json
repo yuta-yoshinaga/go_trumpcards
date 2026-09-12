@@ -10,7 +10,7 @@
   "trumpSuit": "切り札: {{suit}}",
   "dealer": "ディーラー: {{name}}",
   "bidPending": "未宣言",
-  "playerLine": "{{name}}: 宣言={{bid}} 獲得{{tricks}}トリック 累積{{cum}}点 ディール{{round}}点 {{cards}}枚",
+  "playerLine": "{{name}}: 宣言={{bid}} 獲得{{tricks}}トリック 累積{{cum}}点 ディール{{round}}点 {{cards}}枚 伏せ{{buried}}枚",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "promptBid": "ビッドフェーズ: {{name}}の番",
   "promptBidHelp": "b <i> <j> <k>・・・3枚を伏せて宣言 (♦=0/♠=1/♥=2/♣=3 の合計が宣言トリック数)",

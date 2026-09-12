@@ -101,6 +101,40 @@ func TestNinetyNineCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestNinetyNineCuiPresenter_OutputIncludesBuriedCountOnly(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	m, players := setupNinetyNineCuiMockWithPlayers()
+	players[0].SetBid(4)
+	players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 2, false)})
+	players[0].SetCumulativeScore(20)
+	players[0].SetRoundScore(7)
+	for i := 0; i < 5; i++ {
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, i+2, false))
+	}
+	players[0].SetBuried([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 1, false),
+		domain.NewCard(domain.CardDesignHeart, 12, false),
+		domain.NewCard(domain.CardDesignClover, 13, false),
+	})
+
+	result := new(presenter.NinetyNineCuiPresenter).Output(m, nil)
+
+	assert.Contains(t, result, "あなた: 宣言=4 獲得1トリック 累積20点 ディール7点 5枚 伏せ3枚")
+	assert.Contains(t, result, "CPU 1: 宣言=未宣言 獲得0トリック 累積0点 ディール0点 0枚 伏せ0枚")
+	// The buried cards are secret: only their count may appear. This presenter
+	// renders cards through cuiCardStr as "SPADE 1", not "♠A", so assert the
+	// format it actually emits -- and pick buried cards that are absent from the
+	// hand (HEART 2..6, which IS printed for the human) so a leak is the only
+	// way these strings could show up.
+	assert.NotContains(t, result, "SPADE 1")
+	assert.NotContains(t, result, "HEART 12")
+	assert.NotContains(t, result, "CLOVER 13")
+	assert.NotContains(t, result, "{{")
+}
+
 func TestNinetyNineCuiPresenter_HintOutput(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
