@@ -240,7 +240,10 @@ function WarPageContent() {
   const humanWon = isGameEnd && state.winnerIdx === 0;
   const human = state.players[0];
   const cpu = state.players[1];
-  const roundLimitWarning = state.roundsPlayed * 10 >= state.config.maxRounds * 9;
+  // Mirrors WarCuiPresenter.go's expression exactly, guard included: integer
+  // arithmetic so the two surfaces flip on the same round, and maxRounds > 0 so
+  // a zero-valued config cannot make 0 >= 0 warn on round zero.
+  const roundLimitWarning = state.config.maxRounds > 0 && state.roundsPlayed * 10 >= state.config.maxRounds * 9;
 
   const phaseName = isGameEnd
     ? t('phase.end')
