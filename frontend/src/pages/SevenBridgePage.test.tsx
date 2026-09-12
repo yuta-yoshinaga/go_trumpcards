@@ -73,8 +73,8 @@ describe('SevenBridgePage', () => {
   });
 
   it.each([
-    [100, '目標スコア: 100点'],
-    [250, '目標スコア: 250点'],
+    [100, '目標: 100点'],
+    [250, '目標: 250点'],
   ])('renders the server-provided target score for pointLimit %s', async (pointLimit, expected) => {
     mockExec.mockResolvedValue({
       ...drawState,

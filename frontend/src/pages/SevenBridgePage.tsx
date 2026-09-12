@@ -246,7 +246,7 @@ function SevenBridgePageContent() {
                       the score rows below render nothing in that case. */}
                   {state && (
                     <div data-testid="sb-target-score" className="text-ds-text-muted text-sm mb-1">
-                      {t('targetScore', { limit: state.config.pointLimit })}
+                      {t('target', { points: state.config.pointLimit })}
                     </div>
                   )}
                   <table className="w-full text-sm text-ds-text-muted">
