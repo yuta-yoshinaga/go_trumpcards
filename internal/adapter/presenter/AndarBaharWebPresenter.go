@@ -34,6 +34,13 @@ func (ap *AndarBaharWebPresenter) Output(ab interfaces.AndarBaharGame, lastErr e
 	resObj.Payout = ab.GetPayout()
 	resObj.MainPayout = ab.GetMainPayout()
 	resObj.SidePayout = ab.GetSidePayout()
+	resObj.SideBandProbabilities = make([]float64, 0, domain.AndarBaharSide36Plus+1)
+	for band := domain.AndarBaharSideFirst; band <= domain.AndarBaharSide36Plus; band++ {
+		probability, ok := domain.AndarBaharSideProbability(band)
+		if ok {
+			resObj.SideBandProbabilities = append(resObj.SideBandProbabilities, probability)
+		}
+	}
 	resObj.History = intSliceOrEmpty(ab.GetHistory())
 
 	if lastErr != nil {

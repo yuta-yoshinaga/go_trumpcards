@@ -168,22 +168,28 @@ func (ap *AndarBaharCuiPresenter) columnStr(col int) string {
 	}
 }
 
-// writeSideBandList はサイドベットの帯 0-6 の範囲と払戻倍率を並べる。
+// writeSideBandList はサイドベットの帯 0-6 の範囲、払戻倍率、的中確率を並べる。
 //
 // **賭ける前にしか意味がない。** 帯が確定したあとは確定した帯だけを出す。
 func (ap *AndarBaharCuiPresenter) writeSideBandList(b *strings.Builder) {
 	b.WriteString(i18n.T("andarbahar.bandListTitle") + "\n")
 	for band := domain.AndarBaharSideFirst; band <= domain.AndarBaharSide36Plus; band++ {
 		payout, ok := domain.AndarBaharSidePayout(band)
-		if !ok {
+		probability, probabilityOK := domain.AndarBaharSideProbability(band)
+		if !ok || !probabilityOK {
 			continue
 		}
 		b.WriteString(i18n.Tf("andarbahar.bandListLine",
 			"band", strconv.Itoa(band),
 			"range", ap.bandStr(band),
 			"payout", andarBaharPayoutStr(payout),
+			"probability", andarBaharProbabilityStr(probability),
 		) + "\n")
 	}
+}
+
+func andarBaharProbabilityStr(probability float64) string {
+	return strconv.FormatFloat(probability*100, 'f', 2, 64) + "%"
 }
 
 // andarBaharPayoutStr は 1/10 単位の倍率を "15.0" のような文字列にする。

@@ -15,6 +15,9 @@ const base: AndarBaharResponse = {
   betTarget: AndarBaharColumn.ANDAR,
   sideAmount: 0,
   sideBand: AndarBaharSideBand.NONE,
+  sideBandProbabilities: [
+    0.0588235294, 0.212244898, 0.2170468187, 0.169027611, 0.2180072029, 0.0979591837, 0.0268907563,
+  ],
   winner: -1,
   result: 0,
   payout: 0,

@@ -17,11 +17,12 @@ import (
 
 func mustAndarBaharOutputJSON(msg string) string {
 	out := &controller.AndarBaharWebOutput{
-		AndarCards:    make([]*controller.WebOutputCard, 0),
-		BaharCards:    make([]*controller.WebOutputCard, 0),
-		History:       make([]int, 0),
-		Winner:        -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		AndarCards:            make([]*controller.WebOutputCard, 0),
+		BaharCards:            make([]*controller.WebOutputCard, 0),
+		History:               make([]int, 0),
+		SideBandProbabilities: make([]float64, 0),
+		Winner:                -1,
+		WebOutputBase:         controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
