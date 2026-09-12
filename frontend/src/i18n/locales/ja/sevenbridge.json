@@ -23,6 +23,7 @@
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",
   "scoresTotal": "累計",
+  "targetScore": "目標スコア: {{limit}}点",
   "drawStockButton": "山札から引く",
   "ponButton": "ポン",
   "chiButton": "チー",

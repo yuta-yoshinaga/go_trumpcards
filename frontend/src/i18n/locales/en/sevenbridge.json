@@ -23,6 +23,7 @@
   "scoresPlayer": "Player",
   "scoresRound": "Round",
   "scoresTotal": "Total",
+  "targetScore": "Target: {{limit}} pts",
   "drawStockButton": "Draw from stock",
   "ponButton": "Pon",
   "chiButton": "Chi",

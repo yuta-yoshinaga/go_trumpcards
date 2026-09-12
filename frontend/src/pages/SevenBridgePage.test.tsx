@@ -72,6 +72,21 @@ describe('SevenBridgePage', () => {
     expect(container.querySelector('.bg-ds-bg')).not.toBeInTheDocument();
   });
 
+  it.each([
+    [100, '目標スコア: 100点'],
+    [250, '目標スコア: 250点'],
+  ])('renders the server-provided target score for pointLimit %s', async (pointLimit, expected) => {
+    mockExec.mockResolvedValue({
+      ...drawState,
+      config: { ...drawState.config, pointLimit },
+    });
+    renderWithProviders(<SevenBridgePage />);
+
+    const targetScore = await screen.findByTestId('sb-target-score');
+    expect(targetScore).toHaveTextContent(expected);
+    expect(targetScore).not.toHaveTextContent('{{');
+  });
+
   it('renders draw phase controls', async () => {
     mockExec.mockResolvedValue(drawState);
     renderWithProviders(<SevenBridgePage />);
