@@ -103,6 +103,11 @@ func (p *CrazyEightsCuiPresenter) Output(g interfaces.CrazyEightsGame, lastErr e
 		}
 		switch phase {
 		case domain.CrazyEightsPhasePlay:
+			b.WriteString(i18n.T("crazyeights.pointLegendTitle") + "\n")
+			b.WriteString(i18n.T("crazyeights.pointLegendEight") + "\n")
+			b.WriteString(i18n.T("crazyeights.pointLegendAce") + "\n")
+			b.WriteString(i18n.T("crazyeights.pointLegendFaceCards") + "\n")
+			b.WriteString(i18n.T("crazyeights.pointLegendOther") + "\n")
 			b.WriteString(i18n.Tf("crazyeights.promptCurrentPlayer",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("crazyeights.promptPlayHelp") + "\n")

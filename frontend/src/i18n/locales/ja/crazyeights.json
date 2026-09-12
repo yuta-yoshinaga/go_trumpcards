@@ -42,6 +42,14 @@
   "playPhase": "カードを出すか、山札から引いてください",
   "chooseSuitPhase": "スートを選択してください",
   "roundEnd": "ラウンド終了",
+  "pointLegend": {
+    "title": "手札に残った札の失点",
+    "eight": "8",
+    "ace": "A",
+    "faceCards": "J / Q / K",
+    "other": "その他",
+    "faceValue": "額面どおり"
+  },
   "result": {
     "humanWin": "あなたの勝利！",
     "cpuWin": "CPU {{cpuId}} の勝利！"

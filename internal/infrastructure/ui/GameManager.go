@@ -610,6 +610,7 @@ var gameRegistry = []GameRegistryEntry{
 			CommandKeys:       []string{"crazyeights.helpPlay", "crazyeights.helpDraw", "crazyeights.helpSuit", "crazyeights.helpNextRound", "crazyeights.helpHint"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"crazyeights.helpSetDifficulty", "crazyeights.helpSetLimit"},
+			NoteKeys:          []string{"crazyeights.pointLegendTitle", "crazyeights.pointLegendEight", "crazyeights.pointLegendAce", "crazyeights.pointLegendFaceCards", "crazyeights.pointLegendOther"},
 		}),
 	BindCuiFor("ginrummy",
 		func() usecase.GinRummyInteractorIF {

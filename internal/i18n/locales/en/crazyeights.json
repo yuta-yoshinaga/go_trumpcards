@@ -28,5 +28,10 @@
   "hintReasonPlayValid": "a legal play",
   "hintReasonChooseLongestSuit": "your longest suit",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "pointLegendTitle": "  Penalty for cards left in hand",
+  "pointLegendEight": "  8                    50 points",
+  "pointLegendAce": "  A                     1 point",
+  "pointLegendFaceCards": "  J / Q / K            10 points",
+  "pointLegendOther": "  Other                face value"
 }
