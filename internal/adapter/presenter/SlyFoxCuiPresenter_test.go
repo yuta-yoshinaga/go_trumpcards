@@ -137,9 +137,38 @@ func TestSlyFoxCuiPresenter_Output(t *testing.T) {
 			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 			g.On("GetPhase").Return(tc.val)
 
-			assert.Contains(t, new(SlyFoxCuiPresenter).Output(g, nil), tc.want)
+			result := new(SlyFoxCuiPresenter).Output(g, nil)
+			assert.Contains(t, result, tc.want)
+			if tc.val == domain.SlyFoxPhaseGameOver {
+				assert.Contains(t, result, "組札 0/104 枚（0%）まで到達")
+			}
 		})
 	}
+
+	t.Run("game over summary counts every foundation", func(t *testing.T) {
+		g := new(interfaces.MockSlyFoxGame)
+		setupSlyFoxCuiMockDefaults(g)
+		g.ExpectedCalls = filterCalls(filterCalls(g.ExpectedCalls, "GetPhase"), "GetFoundation")
+		g.On("GetPhase").Return(domain.SlyFoxPhaseGameOver)
+		var foundation [domain.SlyFoxFoundationCnt][]*domain.Card
+		foundation[0] = []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 1, true),
+			domain.NewCard(domain.CardDesignSpade, 2, true),
+		}
+		foundation[7] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 13, true)}
+		g.On("GetFoundation").Return(foundation)
+
+		assert.Contains(t, new(SlyFoxCuiPresenter).Output(g, nil), "組札 3/104 枚（3%）まで到達")
+	})
+
+	t.Run("game clear has no game over summary", func(t *testing.T) {
+		g := new(interfaces.MockSlyFoxGame)
+		setupSlyFoxCuiMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
+		g.On("GetPhase").Return(domain.SlyFoxPhaseGameClear)
+
+		assert.NotContains(t, new(SlyFoxCuiPresenter).Output(g, nil), "組札 0/104 枚（0%）まで到達")
+	})
 }
 
 func TestSlyFoxCuiPresenter_HintOutput(t *testing.T) {
