@@ -9,13 +9,22 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary } from '../styles/buttonStyles';
+import { TehonbikiPhase } from '../types/phases';
+
+const TEHONBIKI_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [TehonbikiPhase.BET]: 'bet',
+  [TehonbikiPhase.RESULT]: 'result',
+  [TehonbikiPhase.GAME_END]: 'gameEnd',
+};
 
 /** Renders the Tehonbiki number-guessing game. */
 export const TehonbikiPage = withTutorial(TehonbikiPageContent, 'tehonbiki', []);
 function TehonbikiPageContent() {
   const { t, tc, confirmOpen, requestConfirm, confirmReset, cancelReset } = useGamePageSetup('tehonbiki');
   const { state, loading, error, exec, retry } = useGameApi(tehonbikiApi.exec);
+  const phaseNames = usePhaseNames('tehonbiki', TEHONBIKI_PHASE_KEYS);
   const [betType, setBetType] = useState('single');
   const [numbers, setNumbers] = useState<number[]>([]);
   const [bet, setBet] = useState(50);
@@ -28,7 +37,7 @@ function TehonbikiPageContent() {
     <GamePageShell
       title={tc('nav.tehonbiki')}
       gameThemeBg="bg-ds-surface"
-      phaseName={String(state.phase)}
+      phaseName={phaseNames[state.phase]}
       gamePath="/tehonbiki"
       gameEndFlag={state.gameEndFlag}
       loading={loading}
@@ -69,10 +78,10 @@ function TehonbikiPageContent() {
                 setNumbers([]);
               }}
             >
-              <option value="single">single</option>
-              <option value="double">double</option>
-              <option value="triple">triple</option>
-              <option value="half">half</option>
+              <option value="single">{t('betType.single')}</option>
+              <option value="double">{t('betType.double')}</option>
+              <option value="triple">{t('betType.triple')}</option>
+              <option value="half">{t('betType.half')}</option>
             </select>
             <input type="number" value={bet} onChange={(e) => setBet(Number(e.target.value))} />
             <button className={btnPrimary} type="button" onClick={() => exec('bet', { numbers, betType, bet })}>
