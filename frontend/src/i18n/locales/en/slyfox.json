@@ -26,6 +26,7 @@
   "pileCountAria": "{{count}} cards",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
+  "gameOverSummary": "Reached {{count}}/104 cards on the foundations ({{percent}}%)",
   "playing": "Playing",
   "stalemate": "No moves left",
   "noHint": "No hint available",

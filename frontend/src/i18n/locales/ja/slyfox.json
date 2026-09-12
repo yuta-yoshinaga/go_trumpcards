@@ -26,6 +26,7 @@
   "pileCountAria": "{{count}}枚",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
+  "gameOverSummary": "組札 {{count}}/104 枚（{{percent}}%）まで到達",
   "playing": "プレイ中",
   "stalemate": "手詰まりです",
   "noHint": "ヒントはありません",

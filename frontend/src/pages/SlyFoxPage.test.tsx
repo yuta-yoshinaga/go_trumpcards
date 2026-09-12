@@ -283,6 +283,20 @@ describe('SlyFoxPage', () => {
     await waitFor(() => expect(screen.queryByTestId('co-deal-button')).not.toBeInTheDocument());
   });
 
+  it('shows the foundation progress summary on game over', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2 }));
+    renderWithProviders(<SlyFoxPage />);
+    const summary = await screen.findByTestId('slyfox-gameover-summary');
+    expect(summary).toHaveTextContent('組札 2/104 枚（2%）まで到達');
+  });
+
+  it('does not show the progress summary on game clear', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1 }));
+    renderWithProviders(<SlyFoxPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ゲームクリア'));
+    expect(screen.queryByTestId('slyfox-gameover-summary')).not.toBeInTheDocument();
+  });
+
   it('gives up through the confirm dialog', async () => {
     renderWithProviders(<SlyFoxPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());

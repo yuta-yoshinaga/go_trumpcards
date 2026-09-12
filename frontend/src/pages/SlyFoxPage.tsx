@@ -208,6 +208,7 @@ function SlyFoxPageContent() {
   const isGameOver = state.phase === SlyFoxPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
   const phaseName = isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing');
+  const foundationCount = state.foundation.reduce((count, pile) => count + pile.length, 0);
 
   const reserveLocked = state.reserveLocked;
   const dealsLeft = state.dealCycle - state.dealtThisCycle;
@@ -405,6 +406,15 @@ function SlyFoxPageContent() {
                 messageCode={state.messageCode}
                 messageParams={state.messageParams}
               />
+
+              {isGameOver && (
+                <p data-testid="slyfox-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+                  {t('gameOverSummary', {
+                    count: foundationCount,
+                    percent: Math.round((foundationCount / (FOUNDATION_PILE_FULL * FOUNDATION_CNT)) * 100),
+                  })}
+                </p>
+              )}
 
               {/*
                 ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
