@@ -1,0 +1,16 @@
+[
+  { "trump": true, "value": 5 },
+  { "trump": true, "value": 11 },
+  { "trump": false, "design": "HEART", "value": 1 },
+  { "trump": true, "value": 1 },
+  { "trump": true, "value": 13 },
+  { "trump": true, "value": 12 },
+  { "trump": true, "value": 10 },
+  { "trump": true, "value": 9 },
+  { "trump": true, "value": 8 },
+  { "trump": true, "value": 7 },
+  { "trump": true, "value": 6 },
+  { "trump": true, "value": 4 },
+  { "trump": true, "value": 3 },
+  { "trump": true, "value": 2 }
+]

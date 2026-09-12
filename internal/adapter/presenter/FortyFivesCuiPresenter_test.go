@@ -71,6 +71,26 @@ func TestFortyFivesCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
+	t.Run("shows the complete trump order with the top-trump explanation", func(t *testing.T) {
+		m, players := setupFortyFivesCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTopTrumpIndices")
+		m.On("GetTopTrumpIndices", mock.Anything).Return([]int{0})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "SPADE 5 > SPADE 11 > HEART 1 > SPADE 1 > SPADE 13 > SPADE 12 > SPADE 10 > SPADE 9 > SPADE 8 > SPADE 7 > SPADE 6 > SPADE 4 > SPADE 3 > SPADE 2")
+	})
+
+	t.Run("shows trump order even when the hand has no top trumps", func(t *testing.T) {
+		m, players := setupFortyFivesCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTopTrumpIndices")
+		m.On("GetTopTrumpIndices", mock.Anything).Return([]int{})
+		result := p.Output(m, nil)
+		// The order must not depend on the dealt hand, or most deals would never show it.
+		assert.Contains(t, result, "SPADE 5 > SPADE 11 > HEART 1 > SPADE 1 > SPADE 13 > SPADE 12 > SPADE 10 > SPADE 9 > SPADE 8 > SPADE 7 > SPADE 6 > SPADE 4 > SPADE 3 > SPADE 2")
+		assert.NotContains(t, result, "!! = 最上位の切り札（切り札の5・切り札のJ・♥A）。持っているとマストフォローが免除されます")
+	})
+
 	t.Run("bid phase prompt", func(t *testing.T) {
 		m, _ := setupFortyFivesCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
