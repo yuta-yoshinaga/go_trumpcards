@@ -72,7 +72,7 @@ func TestTriPeaksCuiPresenterOutput_PeakRemaining(t *testing.T) {
 						removed  bool
 					}{1, 6, false},
 				),
-				want: "  山の残り: 左 1 / 中 1 / 右 1",
+				want: "山の残り: 左 1 / 中 1 / 右 1",
 			},
 			{
 				name: "removed cards and column boundaries",
@@ -98,7 +98,7 @@ func TestTriPeaksCuiPresenterOutput_PeakRemaining(t *testing.T) {
 						removed  bool
 					}{3, 6, false},
 				),
-				want: "  山の残り: 左 1 / 中 2 / 右 1",
+				want: "山の残り: 左 1 / 中 2 / 右 1",
 			},
 		}
 
@@ -118,7 +118,7 @@ func TestTriPeaksCuiPresenterOutput_PeakRemainingInitialLayoutTotals28(t *testin
 	tg := triPeaksCuiMockWithLayout(game.GetLayout())
 
 	out := (&TriPeaksCuiPresenter{}).Output(tg, nil)
-	assert.Equal(t, "  山の残り: 左 9 / 中 9 / 右 10", triPeaksRemainingLine(out))
+	assert.Equal(t, "山の残り: 左 9 / 中 9 / 右 10", triPeaksRemainingLine(out))
 
 	// The three counts must account for every tableau card. This is the only
 	// thing that catches a column-to-peak mapping that disagrees with
@@ -140,7 +140,7 @@ func TestTriPeaksCuiPresenterOutput_PeakRemainingMarksOnlyEmptyPeaks(t *testing.
 	layout[3][6] = &domain.TriPeaksCard{Card: domain.NewCard(domain.CardDesignHeart, 2, true)}
 
 	out := (&TriPeaksCuiPresenter{}).Output(triPeaksCuiMockWithLayout(layout), nil)
-	assert.Equal(t, "  山の残り: 左 0 ✓ / 中 1 / 右 1", triPeaksRemainingLine(out))
+	assert.Equal(t, "山の残り: 左 0 ✓ / 中 1 / 右 1", triPeaksRemainingLine(out))
 	assert.Contains(t, out, "SPADE 1")
 	assert.NotContains(t, out, "中 1 ✓")
 	assert.NotContains(t, out, "右 1 ✓")
