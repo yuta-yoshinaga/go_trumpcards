@@ -115,6 +115,11 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
 		players[3].SetIsFinished(true)
 		_ = om.PlayerDraw(0)
+		// PlayerDraw shuffles the hand before DiscardPairs walks it (so the drawn
+		// card's position stays hidden), so the two cards of the discarded pair
+		// come out in either order. Pin the whole output exactly, with just that
+		// one pair normalised -- the order is genuinely unspecified, everything
+		// else is not.
 		expected := "==========\nOld Maid (ババ抜き)\n==========\n" +
 			"あなた: 上がり\n" +
 			"CPU 1: 上がり\n" +
@@ -126,7 +131,11 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 			"1. あなたがCPU 1から引いた (1組捨て) [あなた上がり] [CPU 1上がり]\n" +
 			"ゲーム終了！ CPU 2の負け！\n" +
 			"==========\n"
-		assert.Equal(t, expected, top.Output(om, nil))
+		got := top.Output(om, nil)
+		assert.Equal(t, expected, strings.Replace(got, "（SPADE 3 CLOVER 3）", "（CLOVER 3 SPADE 3）", 1))
+		// Both cards must be named whichever order they land in.
+		assert.Contains(t, got, "SPADE 3")
+		assert.Contains(t, got, "CLOVER 3")
 	})
 
 	t.Run("success Output human zero cards not finished", func(t *testing.T) {
