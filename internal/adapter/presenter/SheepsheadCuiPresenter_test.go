@@ -45,10 +45,27 @@ func setupSheepsheadCuiMock() *interfaces.MockSheepsheadGame {
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("IsPartnerRevealed").Return(false)
 	m.On("GetRoundPickerPoints").Return(0)
+	m.On("GetLivePickerPoints").Return(23)
+	m.On("GetLiveDefenderPoints").Return(97)
 	m.On("GetRoundMultiplier").Return(1)
 	m.On("GetRoundPickerWon").Return(false)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
+}
+
+func TestSheepsheadCuiPresenter_LivePoints(t *testing.T) {
+	p := new(presenter.SheepsheadCuiPresenter)
+
+	for _, phase := range []domain.SheepsheadPhase{domain.SheepsheadPhasePlay, domain.SheepsheadPhaseTrickEnd} {
+		m, _ := setupSheepsheadCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(phase)
+		assert.Contains(t, p.Output(m, nil), "現在の獲得点: ピッカー組 23点（勝利ライン 61点） / 守備組 97点")
+	}
+
+	// The progress is actionable only while cards are being played or a trick awaits acknowledgement.
+	m, _ := setupSheepsheadCuiMockWithPlayers()
+	assert.NotContains(t, p.Output(m, nil), "現在の獲得点:")
 }
 
 func setupSheepsheadCuiMockWithPlayers() (*interfaces.MockSheepsheadGame, []*domain.SheepsheadPlayer) {

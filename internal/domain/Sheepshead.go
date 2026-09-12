@@ -880,6 +880,13 @@ func (g *Sheepshead) IsPartnerRevealed() bool { return g.partnerRevealed }
 // GetPassCount 現ピックフェーズのパス人数取得
 func (g *Sheepshead) GetPassCount() int { return g.passCount }
 
+// GetLivePickerPoints はプレイ中を含むピッカー組の暫定カードポイントを返す。
+func (g *Sheepshead) GetLivePickerPoints() int { return g.pickerTeamPoints() }
+
+// GetLiveDefenderPoints はプレイ中を含む守備組の暫定カードポイントを返す。
+// 埋め札を含むピッカー組の点と合わせて常に 120 点になる。
+func (g *Sheepshead) GetLiveDefenderPoints() int { return SheepsheadTotalPoints - g.pickerTeamPoints() }
+
 // GetRoundPickerPoints 直近ラウンドのピッカー組得点取得
 func (g *Sheepshead) GetRoundPickerPoints() int { return g.roundPickerPts }
 

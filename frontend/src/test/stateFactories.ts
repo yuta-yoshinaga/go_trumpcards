@@ -835,6 +835,8 @@ const baseSheepsheadState: SheepsheadResponse = {
   callableSuits: [],
   playableIndices: [0, 1],
   roundPickerPoints: 0,
+  livePickerPoints: 0,
+  liveDefenderPoints: 120,
   roundMultiplier: 1,
   roundPickerWon: false,
   gameEndFlag: false,

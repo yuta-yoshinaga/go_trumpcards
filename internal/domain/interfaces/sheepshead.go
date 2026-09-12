@@ -65,6 +65,10 @@ type SheepsheadGame interface {
 	IsPartnerRevealed() bool
 	// GetPassCount 現ピックフェーズのパス人数を取得する
 	GetPassCount() int
+	// GetLivePickerPoints プレイ中を含むピッカー組の暫定カードポイントを取得する
+	GetLivePickerPoints() int
+	// GetLiveDefenderPoints プレイ中を含む守備組の暫定カードポイントを取得する
+	GetLiveDefenderPoints() int
 	// GetRoundPickerPoints 直近ラウンドのピッカー組得点を取得する
 	GetRoundPickerPoints() int
 	// GetRoundMultiplier 直近ラウンドの倍率を取得する

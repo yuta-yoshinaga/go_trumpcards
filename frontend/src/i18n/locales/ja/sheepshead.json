@@ -56,6 +56,11 @@
     "pickerLost": "ピッカー側の負け",
     "buried": "埋め札"
   },
+  "livePoints": {
+    "title": "現在の獲得点",
+    "picker": "ピッカー組: {{points}}点（勝利ライン {{target}}点）",
+    "defenders": "守備組: {{points}}点"
+  },
   "passCount": "パス: {{count}}人",
   "hintAvailable": "ヒント",
   "hint": {

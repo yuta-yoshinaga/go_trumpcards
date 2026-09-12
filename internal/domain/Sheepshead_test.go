@@ -137,6 +137,57 @@ func TestSheepshead_CardPoints(t *testing.T) {
 	}
 }
 
+func TestSheepshead_LiveTeamPoints(t *testing.T) {
+	tests := []struct {
+		name          string
+		pickerTricks  [][]*Card
+		partnerTricks [][]*Card
+		buried        []*Card
+		wantPicker    int
+	}{
+		{
+			name:         "picker and partner captured cards with buried points",
+			pickerTricks: [][]*Card{{ssCard(CardDesignSpade, 1)}},
+			partnerTricks: [][]*Card{{
+				ssCard(CardDesignClover, 10), ssCard(CardDesignDiamond, 11),
+			}},
+			buried:     []*Card{ssCard(CardDesignHeart, 13), ssCard(CardDesignSpade, 12)},
+			wantPicker: 30,
+		},
+		{
+			name:         "only picker captured cards",
+			pickerTricks: [][]*Card{{ssCard(CardDesignHeart, 1), ssCard(CardDesignClover, 12)}},
+			buried:       []*Card{ssCard(CardDesignDiamond, 10), ssCard(CardDesignSpade, 13)},
+			wantPicker:   28,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := newSSGame(false)
+			g.SetPickerIdx(0)
+			g.SetPartnerIdx(1)
+			for _, trick := range tt.pickerTricks {
+				g.GetPlayer(0).AddTrick(trick)
+			}
+			for _, trick := range tt.partnerTricks {
+				g.GetPlayer(1).AddTrick(trick)
+			}
+			g.buried = tt.buried
+
+			if got := g.GetLivePickerPoints(); got != tt.wantPicker {
+				t.Errorf("picker points = %d, want %d", got, tt.wantPicker)
+			}
+			if got := g.GetLiveDefenderPoints(); got != SheepsheadTotalPoints-tt.wantPicker {
+				t.Errorf("defender points = %d, want %d", got, SheepsheadTotalPoints-tt.wantPicker)
+			}
+			if got := g.GetLivePickerPoints() + g.GetLiveDefenderPoints(); got != SheepsheadTotalPoints {
+				t.Errorf("team points total = %d, want %d", got, SheepsheadTotalPoints)
+			}
+		})
+	}
+}
+
 func TestSheepshead_PickFlow(t *testing.T) {
 	g := newSSGame(true)
 	g.Reset()
