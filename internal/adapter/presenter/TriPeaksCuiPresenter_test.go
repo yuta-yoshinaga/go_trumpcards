@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -49,6 +50,95 @@ func TestTriPeaksCuiPresenterOutput_Playing(t *testing.T) {
 	// No waste top -> nothing playable; stock remains, so draw is recommended.
 	assert.Contains(t, result, "今出せるカード: 0枚")
 	assert.Contains(t, result, "ドロー推奨")
+}
+
+func triPeaksCuiMockForLayout(layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard) *interfaces.MockTriPeaksGame {
+	tg := new(interfaces.MockTriPeaksGame)
+	tg.On("GetPhase").Return(domain.TriPeaksPhasePlaying).Maybe()
+	tg.On("GetMoveCount").Return(0).Maybe()
+	tg.On("CanUndo").Return(false).Maybe()
+	tg.On("GetScore").Return(0).Maybe()
+	tg.On("GetCombo").Return(0).Maybe()
+	tg.On("GetStockCount").Return(0).Maybe()
+	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
+	tg.On("IsStalemate").Return(false).Maybe()
+	tg.On("UndoToEscape").Return(0).Maybe()
+	tg.On("IsExposed", mock.Anything, mock.Anything).Return(true).Maybe()
+	tg.On("GetLayout").Return(layout).Maybe()
+	return tg
+}
+
+func TestTriPeaksCuiPresenterOutput_PeakRemaining(t *testing.T) {
+	makeCard := func(removed bool) *domain.TriPeaksCard {
+		return &domain.TriPeaksCard{Card: domain.NewCard(domain.CardDesignSpade, 1, false), Removed: removed}
+	}
+
+	tests := []struct {
+		name   string
+		layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
+		want   string
+	}{
+		{
+			name: "first board",
+			layout: func() [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard {
+				var layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
+				layout[3][0] = makeCard(false)
+				layout[3][1] = makeCard(true)
+				layout[3][2] = makeCard(false)
+				layout[3][3] = makeCard(false)
+				layout[3][6] = makeCard(false)
+				return layout
+			}(),
+			want: "  山の残り: 左 2 / 中 1 / 右 1",
+		},
+		{
+			name: "second board",
+			layout: func() [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard {
+				var layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
+				layout[3][0] = makeCard(false)
+				layout[3][3] = makeCard(false)
+				layout[3][4] = makeCard(true)
+				layout[3][6] = makeCard(true)
+				layout[3][7] = makeCard(false)
+				layout[3][8] = makeCard(false)
+				layout[3][9] = makeCard(false)
+				return layout
+			}(),
+			want: "  山の残り: 左 1 / 中 1 / 右 3",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := (&TriPeaksCuiPresenter{}).Output(triPeaksCuiMockForLayout(tt.layout), nil)
+			assert.Contains(t, result, tt.want)
+			assert.NotContains(t, result, "{{")
+		})
+	}
+}
+
+func TestTriPeaksCuiPresenterOutput_PeakRemainingInitialLayout(t *testing.T) {
+	game := domain.NewDefaultTriPeaks()
+	layout := game.GetLayout()
+	tg := triPeaksCuiMockForLayout(layout)
+	result := (&TriPeaksCuiPresenter{}).Output(tg, nil)
+
+	assert.Contains(t, result, "  山の残り: 左 9 / 中 9 / 右 10")
+	assert.Equal(t, 28, 9+9+10)
+	assert.NotContains(t, result, "{{")
+}
+
+func TestTriPeaksCuiPresenterOutput_PeakRemainingCheckmark(t *testing.T) {
+	var layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
+	layout[3][0] = &domain.TriPeaksCard{Card: domain.NewCard(domain.CardDesignSpade, 1, false)}
+	layout[3][3] = &domain.TriPeaksCard{Card: domain.NewCard(domain.CardDesignSpade, 2, false)}
+	layout[3][6] = &domain.TriPeaksCard{Card: domain.NewCard(domain.CardDesignSpade, 3, false), Removed: true}
+
+	result := (&TriPeaksCuiPresenter{}).Output(triPeaksCuiMockForLayout(layout), nil)
+	assert.Contains(t, result, "  山の残り: 左 1 / 中 1 / 右 0 ✓")
+	assert.NotContains(t, result, "左 0 ✓")
+	assert.NotContains(t, result, "中 0 ✓")
+	assert.NotContains(t, result, "{{")
 }
 
 func TestTriPeaksCuiPresenterOutput_PlayableAndBlocked(t *testing.T) {

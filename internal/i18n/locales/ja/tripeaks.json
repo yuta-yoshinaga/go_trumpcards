@@ -18,5 +18,6 @@
   "helpExampleHint": "  h                        次の一手を教えてもらう",
   "helpUndo": "  u                        1手戻す",
   "cuiScoreLine": "スコア: {{score}}",
-  "cuiComboLine": "🔥 {{combo}}連鎖中"
+  "cuiComboLine": "🔥 {{combo}}連鎖中",
+  "peakRemaining": "  山の残り: 左 {{left}} / 中 {{middle}} / 右 {{right}}"
 }

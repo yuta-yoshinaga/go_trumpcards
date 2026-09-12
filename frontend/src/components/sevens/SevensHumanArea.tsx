@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useCardDimensions } from '../../hooks/useCardDimensions';
 import { focusRingWhite } from '../../styles/buttonStyles';
-import { playableCardStyle } from '../../styles/cardStyles';
+import { playableCardStyle, selectedCardStyle } from '../../styles/cardStyles';
 import type { Card, SevensPlayerData } from '../../types/card';
 import { valueName } from '../../utils/cardUtils';
 import { playerName } from '../../utils/playerUtils';
@@ -119,9 +119,13 @@ function HumanArea({
                 cursor: playable ? 'pointer' : 'default',
                 borderRadius: 8,
                 ...playableCardStyle(playable),
-                ...(i === jokerCardIdx
-                  ? { border: '3px solid var(--color-ds-info)', transform: 'translateY(-8px)' }
-                  : {}),
+                // selectedCardStyle is the repo-wide "this hand card is selected"
+                // idiom (Daifugo, PlayerHandSection, MobileHandGrid, Doubt). It
+                // replaces both properties playableCardStyle sets, so a selected
+                // joker does not keep the green playable glow underneath a second
+                // marker. Spread only when selected -- selectedCardStyle(false)
+                // would clobber the playable border on every other card.
+                ...(i === jokerCardIdx ? selectedCardStyle(true) : {}),
                 opacity: isCurrentTurn && !playable ? 0.5 : 1,
                 boxSizing: 'border-box',
               }}

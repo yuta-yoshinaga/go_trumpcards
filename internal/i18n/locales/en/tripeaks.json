@@ -18,5 +18,6 @@
   "helpExampleHint": "  h                        ask for a move",
   "helpUndo": "  u                        undo one move",
   "cuiScoreLine": "Score: {{score}}",
-  "cuiComboLine": "🔥 {{combo}} in a row"
+  "cuiComboLine": "🔥 {{combo}} in a row",
+  "peakRemaining": "  Peaks left: L {{left}} / M {{middle}} / R {{right}}"
 }
