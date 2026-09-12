@@ -42,6 +42,17 @@ const DIFFICULTY_OPTIONS = [
   { value: '2', label: 'Hard' },
 ];
 
+// Values match the Go domain constants: 0=Invalid, 1=Single, 2=Pair,
+// 3=Triple, 4=Straight, 5=ThreePairRun, 6=FourOfAKind.
+const TIENLEN_PLAY_TYPE_KEYS: Record<number, string> = {
+  1: 'single',
+  2: 'pair',
+  3: 'triple',
+  4: 'straight',
+  5: 'threePairRun',
+  6: 'fourOfAKind',
+};
+
 /** Tutorial steps for Tien Len. */
 const TL_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="tl-cpu-area"]', messageKey: 'tutorial.cpuArea', placement: 'bottom', advanceOn: 'next' },
@@ -208,6 +219,11 @@ function TienLenPageContent() {
                   state.tableCards.map((c, i) => <AnimatedCard key={i} card={c} width={cardWidth * 0.9} />)
                 )}
               </div>
+              {state.tableCards.length > 0 && TIENLEN_PLAY_TYPE_KEYS[state.tablePlayType] && (
+                <div className="text-center text-sm font-semibold text-ds-accent mt-2" data-testid="tl-table-playtype">
+                  {`${t('tablePlayLabel')}: ${t(`playType.${TIENLEN_PLAY_TYPE_KEYS[state.tablePlayType]}`)}`}
+                </div>
+              )}
             </div>
 
             {/* Human hand */}

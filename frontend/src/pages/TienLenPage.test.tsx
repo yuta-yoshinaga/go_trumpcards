@@ -153,6 +153,29 @@ describe('TienLenPage', () => {
     expect(owner).toHaveTextContent('CPU 2'); // findPlayerName for a non-human player
   });
 
+  it.each([
+    [1, 'シングル'],
+    [2, 'ペア'],
+    [6, 'フォーカード'],
+  ])('shows the table play type for type %i', async (tablePlayType, label) => {
+    mockExec.mockResolvedValue(
+      makeState({
+        tableCards: [card('SPADE', 3)],
+        tablePlayType,
+      }),
+    );
+    renderWithProviders(<TienLenPage />);
+    const playType = await screen.findByTestId('tl-table-playtype');
+    expect(playType).toHaveTextContent(label);
+  });
+
+  it('does not show the table play type when the table is empty', async () => {
+    mockExec.mockResolvedValue(makeState({ tableCards: [], tablePlayType: 0 }));
+    renderWithProviders(<TienLenPage />);
+    await screen.findByTestId('pass-button');
+    expect(screen.queryByTestId('tl-table-playtype')).not.toBeInTheDocument();
+  });
+
   it('does not show the table owner label when the table is empty (new round lead)', async () => {
     mockExec.mockResolvedValue(makeState({ tableCards: [], lastPlayPlayerIdx: -1 }));
     renderWithProviders(<TienLenPage />);
