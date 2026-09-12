@@ -44,6 +44,31 @@ func TestCucumberCuiPresenterOutput(t *testing.T) {
 	assert.Contains(t, out, i18n.T("cucumber.promptLead"))
 }
 
+func TestCucumberCuiPresenterMarksOnlyTheFinalTrick(t *testing.T) {
+	p := new(CucumberCuiPresenter)
+
+	t.Run("final trick shows the scoring warning alongside the play prompt", func(t *testing.T) {
+		c := newCucumberForCui(t)
+		c.SetTrickNumberForTest(domain.CucumberHandSize - 1)
+		c.SetCurrentPlayerIdxForTest(0)
+		c.GiveHandForTest(0, domain.NewCard(domain.CardDesignSpade, 10, false))
+		c.SetCurrentTrickForTest([]*domain.TrickCard{
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 9, false)},
+		})
+
+		out := p.Output(c, nil)
+		assert.Contains(t, out, "これは最終トリックです。取った人だけが失点します。")
+		assert.Contains(t, out, "9 より高い札を出してください。")
+	})
+
+	t.Run("earlier trick has no scoring warning", func(t *testing.T) {
+		c := newCucumberForCui(t)
+		c.SetTrickNumberForTest(domain.CucumberHandSize - 2)
+
+		assert.NotContains(t, p.Output(c, nil), "これは最終トリックです。取った人だけが失点します。")
+	})
+}
+
 // **超える基準を出します。** 盤面から数えさせません。
 func TestCucumberCuiPresenterShowsTheThreshold(t *testing.T) {
 	p := new(CucumberCuiPresenter)

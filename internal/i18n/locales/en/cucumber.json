@@ -4,6 +4,7 @@
   "helpNext": "  n                    Deal the next round",
   "helpGiveUp": "  g                    Give up",
   "header": "Round: {{round}}  Trick: {{trick}}/{{total}}  Ends at: {{target}} penalty",
+  "finalTrick": "This is the final trick. Only its winner scores penalty points.",
   "rule": "Suits do not matter at all. If you hold a card higher than the highest one played so far, you must play one of them; if you do not, you must play your lowest card. The only choice is which higher card to spend. The highest rank takes the trick -- but penalty points are scored only by whoever takes the LAST trick, equal to the rank of the card they took it with. Every other trick is worth nothing. Fewest penalty points wins.",
   "highest": "Highest so far: {{n}}",
   "playerLine": "{{name}}{{role}}: {{cards}} cards, {{penalty}} penalty",

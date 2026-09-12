@@ -9,6 +9,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -18,6 +19,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { badgeWarning } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { CucumberResponse } from '../types/card';
@@ -175,6 +177,14 @@ function CucumberPageContent() {
             >
               {state.highestInTrick > 0 ? t('header.highest', { n: String(state.highestInTrick) }) : t('header.lead')}
             </div>
+
+            {state.trickNumber + 1 === state.totalTricks && (
+              <div className={`mb-3 text-center ${badgeWarning}`} data-testid="cu-final-trick">
+                {t('status.finalTrick')}
+              </div>
+            )}
+
+            <LiveAnnouncement message={state.trickNumber + 1 === state.totalTricks ? t('status.finalTrick') : ''} />
 
             {/* **失点がそのまま順位。** 少ないほうが良い。 */}
             <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="cu-seats">

@@ -16,6 +16,12 @@ vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
+vi.mock('../components/LiveAnnouncement', () => ({
+  LiveAnnouncement: ({ message }: { message: string }) => (
+    <div data-testid="live-announcement" data-message={message} />
+  ),
+}));
+
 const mockExec = vi.mocked(cucumberApi.exec);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
@@ -73,6 +79,30 @@ describe('CucumberPage', () => {
     renderWithProviders(<CucumberPage />);
 
     expect(await screen.findByText('トリック 3/7')).toBeInTheDocument();
+  });
+
+  it('warns that only the final trick scores, while retaining the play status', async () => {
+    mockExec.mockResolvedValue(makeState({ trickNumber: 6, highestInTrick: 9 }));
+    renderWithProviders(<CucumberPage />);
+
+    expect(await screen.findByTestId('cu-final-trick')).toHaveTextContent(
+      'これは最終トリックです。取った人だけが失点します。',
+    );
+    expect(screen.getByTestId('cu-final-trick')).not.toHaveAttribute('role', 'status');
+    expect(screen.getByTestId('live-announcement')).toHaveAttribute(
+      'data-message',
+      'これは最終トリックです。取った人だけが失点します。',
+    );
+    expect(screen.getByTestId('cu-status')).toHaveTextContent('9 より高い札を出してください。');
+  });
+
+  it('does not warn before the final trick', async () => {
+    mockExec.mockResolvedValue(makeState({ trickNumber: 5 }));
+    renderWithProviders(<CucumberPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('cu-final-trick')).not.toBeInTheDocument();
+    expect(screen.getByTestId('live-announcement')).toHaveAttribute('data-message', '');
   });
 
   it('states the comparison rule and that only the last trick scores', async () => {
