@@ -34,7 +34,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, focusRingAccent } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { DoubtCpuAction, DoubtResponse } from '../types/card';
+import type { DoubtResponse } from '../types/card';
 import { DoubtPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
@@ -220,11 +220,7 @@ function DoubtPageContent() {
   const isDoubtPhase = state.phase === DoubtPhase.DOUBT;
   const cpuPlayed = isDoubtPhase && state.lastAction !== null && !state.players[state.lastAction.playerIdx]?.isHuman;
 
-  const cpuTells = new Set(
-    [...state.cpuActions, state.lastAction]
-      .filter((a): a is DoubtCpuAction => a !== null && a.hasTell === true)
-      .map((a) => a.playerIdx),
-  );
+  const cpuTells = new Set(cpuPlayed && state.lastAction?.hasTell === true ? [state.lastAction.playerIdx] : []);
 
   return (
     <GamePageShell
@@ -429,7 +425,10 @@ function DoubtPageContent() {
                   </div>
                 )}
                 {state.cpuActions && state.cpuActions.length > 0 && (
-                  <div className="bg-black/40 rounded-lg text-game-text-muted py-2 px-3.5 my-2 whitespace-pre-line text-xs">
+                  <div
+                    className="bg-black/40 rounded-lg text-game-text-muted py-2 px-3.5 my-2 whitespace-pre-line text-xs"
+                    data-testid="doubt-cpu-action-log"
+                  >
                     {[tc('label.cpuActions'), ...state.cpuActions.map((a) => actionDesc(a, state.players, t))].join(
                       '\n',
                     )}
