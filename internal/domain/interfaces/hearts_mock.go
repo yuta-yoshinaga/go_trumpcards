@@ -172,6 +172,12 @@ func (_m *MockHeartsGame) GetPassedCards() [domain.HeartsPlayerCnt][]*domain.Car
 	return ret.Get(0).([domain.HeartsPlayerCnt][]*domain.Card)
 }
 
+// GetVoidSuits モック
+func (_m *MockHeartsGame) GetVoidSuits() [domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool {
+	ret := _m.Called()
+	return ret.Get(0).([domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool)
+}
+
 // GetHint モック
 func (_m *MockHeartsGame) GetHint() *domain.HeartsHint {
 	ret := _m.Called()

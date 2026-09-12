@@ -51,6 +51,19 @@ beforeEach(() => {
 });
 
 describe('HeartsPage', () => {
+  it('shows confirmed void-suit badges only for the void opponent', async () => {
+    mockExec.mockResolvedValue(
+      makeHeartsState({
+        players: makeHeartsState().players.map((p) => ({ ...p, voidSuits: p.id === 1 ? [2, 3] : [] })),
+      }),
+    );
+    renderWithProviders(<HeartsPage />);
+    const voidSuits = await screen.findByLabelText('ボイド: ♣ ♥');
+    expect(voidSuits).toBeInTheDocument();
+    expect(voidSuits.querySelectorAll('[aria-hidden="true"]')).toHaveLength(2);
+    expect(screen.getAllByTestId('hearts-void-suit')).toHaveLength(2);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<HeartsPage />);

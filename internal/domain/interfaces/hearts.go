@@ -63,6 +63,8 @@ type HeartsGame interface {
 	GetPassReady() [domain.HeartsPlayerCnt]bool
 	// GetPassedCards 各プレイヤーのパスしたカードを取得する
 	GetPassedCards() [domain.HeartsPlayerCnt][]*domain.Card
+	// GetVoidSuits 各プレイヤーがこのディールで確定したボイドスートを取得する
+	GetVoidSuits() [domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool
 	// GetHint ヒントを取得する
 	GetHint() *domain.HeartsHint
 }

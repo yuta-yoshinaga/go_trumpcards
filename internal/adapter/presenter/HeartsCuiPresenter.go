@@ -15,7 +15,7 @@ import (
 // heartsPlayerStr returns the display string for a single Hearts player. The
 // cumulative score is highlighted once a player passes 80% of the point limit,
 // since reaching it ends the game (and loses).
-func heartsPlayerStr(player *domain.HeartsPlayer, i, pointLimit int) string {
+func heartsPlayerStr(player *domain.HeartsPlayer, i, pointLimit int, voidSuits [domain.CardDesignMax + 1]bool) string {
 	var b strings.Builder
 	cum := strconv.Itoa(player.GetCumulativeScore())
 	if pointLimit > 0 && player.GetCumulativeScore()*100 >= pointLimit*80 {
@@ -28,6 +28,15 @@ func heartsPlayerStr(player *domain.HeartsPlayer, i, pointLimit int) string {
 		"cards", strconv.Itoa(player.GetCardsSize()),
 		"tricks", strconv.Itoa(player.GetTrickCount()),
 	))
+	void := make([]string, 0)
+	for suit := domain.CardDesignSpade; suit <= domain.CardDesignMax; suit++ {
+		if voidSuits[suit] {
+			void = append(void, suitDisplayName(suit))
+		}
+	}
+	if len(void) > 0 {
+		b.WriteString(" " + i18n.Tf("hearts.voidSuits", "suits", strings.Join(void, " ")))
+	}
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
@@ -78,7 +87,7 @@ func (p *HeartsCuiPresenter) Output(h interfaces.HeartsGame, lastErr error) stri
 		}
 
 		for i := 0; i < h.GetPlayerCnt(); i++ {
-			b.WriteString(heartsPlayerStr(h.GetPlayer(i), i, pointLimit))
+			b.WriteString(heartsPlayerStr(h.GetPlayer(i), i, pointLimit, h.GetVoidSuits()[i]))
 		}
 
 		b.WriteString("----------\n")

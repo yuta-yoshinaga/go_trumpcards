@@ -43466,6 +43466,12 @@ components:
             True when the omnibus rule is enabled and this player captured the
             J♦ (-10). Always false while the rule is off.
           example: false
+        voidSuits:
+          type: array
+          description: Card-design values for suits this player has proven void in this deal (1=spades, 2=clubs, 3=hearts, 4=diamonds).
+          items:
+            type: integer
+          example: [2, 3]
 
     HeartsTrickCard:
       type: object

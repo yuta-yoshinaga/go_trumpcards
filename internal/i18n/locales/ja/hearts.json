@@ -11,6 +11,7 @@
   "heartsBrokenNo": "ハートブレイク: なし",
   "limitProgress": "上限: {{limit}}点 / 最多失点: {{name}} {{score}}点",
   "playerLine": "{{name}}: 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚 {{tricks}}トリック",
+  "voidSuits": "ボイド: {{suits}}",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "promptPass": "パスフェーズ: {{direction}}",
   "promptPassHelp": "pass <idx> <idx> <idx>・・・3枚のカードを選択",
