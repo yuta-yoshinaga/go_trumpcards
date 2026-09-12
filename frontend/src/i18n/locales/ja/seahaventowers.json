@@ -7,6 +7,7 @@
   "reserved": "リザーブセル",
   "foundation": "ファンデーション",
   "supermoveLimitLabel": "一括移動上限: {{limit}}枚",
+  "emptyColumnRule": "空の列にはキングのみ置けます",
   "tableau": "タブロー",
   "giveup": "ギブアップ",
   "hint": "ヒント",

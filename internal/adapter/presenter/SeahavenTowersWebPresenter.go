@@ -64,7 +64,12 @@ func (p *SeahavenTowersWebPresenter) Output(s interfaces.SeahavenTowersGame, las
 	}
 
 	if lastErr != nil {
-		resObj.Message = lastErr.Error()
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			resObj.MessageCode = code
+			resObj.MessageParams = params
+		} else {
+			resObj.Message = lastErr.Error()
+		}
 	} else {
 		phase := s.GetPhase()
 		switch phase {

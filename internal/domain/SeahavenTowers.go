@@ -146,8 +146,8 @@ func (s *SeahavenTowers) MoveTableauToTableau(fromCol, cardIndex, toCol int) err
 	}
 
 	bottomCard := movingCards[0]
-	if !s.canPlaceOnTableau(bottomCard, toCol) {
-		return errors.New("cannot place card on tableau")
+	if err := s.tableauPlaceError(bottomCard, toCol); err != nil {
+		return err
 	}
 
 	// 移動実行
@@ -235,8 +235,8 @@ func (s *SeahavenTowers) MoveFreeCellToTableau(cell, col int) error {
 		return errors.New("free cell is empty")
 	}
 	card := s.freeCells[cell]
-	if !s.canPlaceOnTableau(card, col) {
-		return errors.New("cannot place card on tableau")
+	if err := s.tableauPlaceError(card, col); err != nil {
+		return err
 	}
 	s.takeSnapshot()
 	s.freeCells[cell] = nil
@@ -549,15 +549,26 @@ func (s *SeahavenTowers) SetFoundation(foundation [SeahavenTowersFoundationCnt][
 
 // --- Private helpers ---
 
+// tableauPlaceError は card を col に置けない理由をコード化エラーで返す。置けるなら nil。
+func (s *SeahavenTowers) tableauPlaceError(card *Card, col int) error {
+	colCards := s.tableau[col]
+	if len(colCards) == 0 {
+		if card.GetValue() != CardValueMax {
+			return NewDomainErrorCode(ErrInvalidPlay, "seahaventowers.errEmptyColumnKingOnly", nil)
+		}
+		return nil
+	}
+	top := colCards[len(colCards)-1]
+	if !s.isSameSuitDescending(card, top) {
+		return NewDomainErrorCode(ErrInvalidPlay, "seahaventowers.errNotSameSuitDescending", nil)
+	}
+	return nil
+}
+
 // canPlaceOnTableau タブローにカードを置けるか判定。
 // 空列には King のみ、それ以外は同じスートで 1 つ小さいランクのみ。
 func (s *SeahavenTowers) canPlaceOnTableau(card *Card, col int) bool {
-	colCards := s.tableau[col]
-	if len(colCards) == 0 {
-		return card.GetValue() == CardValueMax
-	}
-	topCard := colCards[len(colCards)-1]
-	return s.isSameSuitDescending(card, topCard)
+	return s.tableauPlaceError(card, col) == nil
 }
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定

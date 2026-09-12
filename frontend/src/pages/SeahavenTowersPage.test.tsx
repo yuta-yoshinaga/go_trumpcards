@@ -95,6 +95,12 @@ describe('SeahavenTowersPage', () => {
     expect(limit).toHaveTextContent('3');
   });
 
+  it('shows the empty-column King-only rule in Japanese', async () => {
+    renderWithProviders(<SeahavenTowersPage />);
+    const rule = await screen.findByTestId('st-empty-column-rule');
+    expect(rule).toHaveTextContent('空の列にはキングのみ置けます');
+  });
+
   it('renders foundation piles with all four suit symbols', async () => {
     renderWithProviders(<SeahavenTowersPage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());

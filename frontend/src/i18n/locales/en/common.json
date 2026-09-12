@@ -2311,6 +2311,8 @@
     "scorpion.playing": "Playing",
     "scorpion.stalemate": "No moves can lead to a win. Please undo or give up.",
     "seahaventowers.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "seahaventowers.errEmptyColumnKingOnly": "Only a King can be placed in an empty column.",
+    "seahaventowers.errNotSameSuitDescending": "Place the card on a card of the same suit and one rank higher.",
     "seahaventowers.gameOver": "Game Over",
     "seahaventowers.hintAvailable": "Hint available",
     "seahaventowers.noHint": "No hint available",
