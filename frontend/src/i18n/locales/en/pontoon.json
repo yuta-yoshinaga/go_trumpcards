@@ -54,7 +54,7 @@
   "hiddenBankerHandAriaLabel": "The banker's hand is face down",
   "tutorial": {
     "faceDown": "In Pontoon **every hand is dealt face down, including the banker's**. Unlike blackjack there is no up-card to read.",
-    "rank": "Strength is not just a total: **a Pontoon (ace + ten-value, two cards) beats a five card trick (exactly five cards, 21 or less) beats any points**. The top two pay double.",
+    "rank": "Strength is not just a total: **a Pontoon (ace + ten-value, two cards) beats a five card trick (exactly five cards, 21 or less) beats any points**. The top two pay double. **Ties go to the banker**, so matching the banker's total still loses.",
     "stick": "**You cannot stick below 15.** Below that you must keep drawing, which makes 12–14 the worst place to be.",
     "buy": "**Buy raises and draws, but is dead once the hand has twisted.** Choosing how to take the first card is the real decision.",
     "banker": "**A player who makes a Pontoon takes the bank next deal.** When you bank you place no stake and decide the draw at the end.",
