@@ -3,7 +3,7 @@
   "helpPlay": "  p <h>                    手札hを出す (同ランクを捕獲、無ければ場に置く)",
   "helpNext": "  n                        次のラウンドを開始する",
   "helpSetDifficulty": "  sd [0-2]                 CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
-  "teamScoreLine": "チーム{{team}}: {{score}}点",
+  "teamScoreLine": "チーム{{team}}: {{score}} / {{target}}点",
   "playerLine": "{{name}} (チーム{{team}}): 手札{{hand}}枚 / 捕獲{{captured}}枚",
   "capturePreview": "(取れる: {{count}}枚)",
   "tableLine": "場: {{cards}}",
