@@ -56,6 +56,11 @@
     "pickerLost": "Picker team lost",
     "buried": "Buried"
   },
+  "livePoints": {
+    "title": "Card points so far",
+    "picker": "Picker team: {{points}} (needs {{target}})",
+    "defenders": "Defenders: {{points}}"
+  },
   "passCount": "Passed: {{count}}",
   "hintAvailable": "Hint",
   "hint": {

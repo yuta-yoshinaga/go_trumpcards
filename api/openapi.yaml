@@ -66841,6 +66841,12 @@ components:
         roundPickerPoints:
           type: integer
           description: Card points accumulated by the picker team this round (including buried)
+        livePickerPoints:
+          type: integer
+          description: Card points held by the picker team so far, including buried cards
+        liveDefenderPoints:
+          type: integer
+          description: Complementary defender card points; together with livePickerPoints this is always 120
         roundMultiplier:
           type: integer
           description: "Chip stake multiplier for this round: 1=normal, 2=Schneider, 3=Schwarz"

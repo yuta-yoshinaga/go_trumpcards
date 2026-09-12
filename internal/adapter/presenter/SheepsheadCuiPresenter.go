@@ -100,6 +100,13 @@ func (p *SheepsheadCuiPresenter) Output(g interfaces.SheepsheadGame, lastErr err
 			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
+		if phase := g.GetPhase(); phase == domain.SheepsheadPhasePlay || phase == domain.SheepsheadPhaseTrickEnd {
+			b.WriteString(i18n.Tf("sheepshead.livePoints",
+				"pickerPts", strconv.Itoa(g.GetLivePickerPoints()),
+				"defenderPts", strconv.Itoa(g.GetLiveDefenderPoints()),
+				"pickerTarget", strconv.Itoa(61),
+			) + "\n")
+		}
 
 		cuiErrorBlock(b, lastErr)
 

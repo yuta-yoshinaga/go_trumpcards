@@ -62,21 +62,23 @@ type SheepsheadWebOutput struct {
 	DealerIdx        int                          `json:"dealerIdx"`
 	CurrentTrick     []*WebOutputTrickCard        `json:"currentTrick"`
 	// BlindCount ブラインドの枚数 (ピックフェーズ中は枚数のみ公開)
-	BlindCount        int                      `json:"blindCount"`
-	Buried            []*WebOutputCard         `json:"buried"`
-	PickerIdx         int                      `json:"pickerIdx"`
-	PartnerIdx        int                      `json:"partnerIdx"`
-	CalledSuit        int                      `json:"calledSuit"`
-	PartnerRevealed   bool                     `json:"partnerRevealed"`
-	PassCount         int                      `json:"passCount"`
-	CallableSuits     []int                    `json:"callableSuits"`
-	PlayableIndices   []int                    `json:"playableIndices"`
-	RoundPickerPoints int                      `json:"roundPickerPoints"`
-	RoundMultiplier   int                      `json:"roundMultiplier"`
-	RoundPickerWon    bool                     `json:"roundPickerWon"`
-	GameEndFlag       bool                     `json:"gameEndFlag"`
-	WinnerIdx         int                      `json:"winnerIdx"`
-	Hint              *SheepsheadWebOutputHint `json:"hint,omitempty"`
+	BlindCount         int                      `json:"blindCount"`
+	Buried             []*WebOutputCard         `json:"buried"`
+	PickerIdx          int                      `json:"pickerIdx"`
+	PartnerIdx         int                      `json:"partnerIdx"`
+	CalledSuit         int                      `json:"calledSuit"`
+	PartnerRevealed    bool                     `json:"partnerRevealed"`
+	PassCount          int                      `json:"passCount"`
+	CallableSuits      []int                    `json:"callableSuits"`
+	PlayableIndices    []int                    `json:"playableIndices"`
+	RoundPickerPoints  int                      `json:"roundPickerPoints"`
+	LivePickerPoints   int                      `json:"livePickerPoints"`
+	LiveDefenderPoints int                      `json:"liveDefenderPoints"`
+	RoundMultiplier    int                      `json:"roundMultiplier"`
+	RoundPickerWon     bool                     `json:"roundPickerWon"`
+	GameEndFlag        bool                     `json:"gameEndFlag"`
+	WinnerIdx          int                      `json:"winnerIdx"`
+	Hint               *SheepsheadWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config SheepsheadWebOutputConfig `json:"config"`
 }

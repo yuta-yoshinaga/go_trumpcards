@@ -70,6 +70,10 @@ export interface SheepsheadResponse extends BaseGameResponse {
   playableIndices: number[];
   /** Card points captured by the picker's team this round. */
   roundPickerPoints: number;
+  /** Card points held by the picker team so far, including buried cards. */
+  livePickerPoints: number;
+  /** Complementary defender card points; together with livePickerPoints this is always 120. */
+  liveDefenderPoints: number;
   /** Score multiplier applied to this round's result. */
   roundMultiplier: number;
   /** Whether the picker's team won the round. */

@@ -51,6 +51,8 @@ func (p *SheepsheadWebPresenter) buildBase(g interfaces.SheepsheadGame) *control
 	resObj.CalledSuit = g.GetCalledSuit()
 	resObj.PartnerRevealed = g.IsPartnerRevealed()
 	resObj.RoundPickerPoints = g.GetRoundPickerPoints()
+	resObj.LivePickerPoints = g.GetLivePickerPoints()
+	resObj.LiveDefenderPoints = g.GetLiveDefenderPoints()
 	resObj.RoundMultiplier = g.GetRoundMultiplier()
 	resObj.RoundPickerWon = g.GetRoundPickerWon()
 

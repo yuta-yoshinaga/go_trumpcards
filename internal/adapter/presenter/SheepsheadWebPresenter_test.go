@@ -36,6 +36,8 @@ func setupSheepsheadWebMock() *interfaces.MockSheepsheadGame {
 	m.On("GetPlayableIndices", 0).Return([]int{0})
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetRoundPickerPoints").Return(0)
+	m.On("GetLivePickerPoints").Return(17)
+	m.On("GetLiveDefenderPoints").Return(103)
 	m.On("GetRoundMultiplier").Return(1)
 	m.On("GetRoundPickerWon").Return(false)
 	m.On("GetWinnerIdx").Return(-1)
@@ -77,6 +79,8 @@ func TestSheepsheadWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, -1, resObj.PickerIdx)
 		assert.Equal(t, -1, resObj.PartnerIdx)
 		assert.Equal(t, "sheepshead.pickPhase", resObj.MessageCode)
+		assert.Equal(t, 17, resObj.LivePickerPoints)
+		assert.Equal(t, 103, resObj.LiveDefenderPoints)
 		// human cards visible, CPU hidden
 		assert.Len(t, resObj.Players[0].Cards, 1)
 		assert.Len(t, resObj.Players[1].Cards, 0)
