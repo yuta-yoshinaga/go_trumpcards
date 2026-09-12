@@ -42,6 +42,7 @@ func setupHeartsCuiMock() *interfaces.MockHeartsGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultHeartsConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetVoidSuits").Return([domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{})
 	return m
 }
 
@@ -319,6 +320,19 @@ func TestHeartsCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "UNKNOWN")
 	})
+}
+
+func TestHeartsCuiPresenter_OutputShowsVoidSuits(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	m, _ := setupHeartsCuiMockWithPlayers()
+	voidSuits := [domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{}
+	voidSuits[1][domain.CardDesignClover] = true
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetVoidSuits")
+	m.On("GetVoidSuits").Return(voidSuits)
+
+	assert.Contains(t, new(presenter.HeartsCuiPresenter).Output(m, nil), "ボイド: ♣")
 }
 
 func TestHeartsCuiPresenter_ActionLogOutput(t *testing.T) {

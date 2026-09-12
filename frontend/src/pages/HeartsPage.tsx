@@ -334,6 +334,14 @@ function HeartsPageContent() {
                               </span>{' '}
                               | {t('roundScore', { score: p.roundScore })} |{' '}
                               <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
+                              <HeartsVoidSuits
+                                suits={p.voidSuits ?? []}
+                                label={t('voidSuits', {
+                                  suits: (p.voidSuits ?? [])
+                                    .map((s) => ({ 1: '♠', 2: '♣', 3: '♥', 4: '♦' })[s])
+                                    .join(' '),
+                                })}
+                              />
                               {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
                             </div>
                           );
@@ -350,6 +358,12 @@ function HeartsPageContent() {
                           {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                           {t('roundScore', { score: p.roundScore })} |{' '}
                           <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
+                          <HeartsVoidSuits
+                            suits={p.voidSuits ?? []}
+                            label={t('voidSuits', {
+                              suits: (p.voidSuits ?? []).map((s) => ({ 1: '♠', 2: '♣', 3: '♥', 4: '♦' })[s]).join(' '),
+                            })}
+                          />
                           {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
                         </div>
                       </div>
@@ -569,6 +583,20 @@ function HeartsPageContent() {
         </>
       )}
     </GamePageShell>
+  );
+}
+
+function HeartsVoidSuits({ suits, label }: { suits: number[]; label: string }) {
+  const symbols: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
+  if (suits.length === 0) return null;
+  return (
+    <span className="ml-1 inline-flex gap-0.5" role="img" aria-label={label}>
+      {suits.map((suit) => (
+        <span key={suit} className="rounded bg-ds-surface px-1 text-ds-text-primary" data-testid="hearts-void-suit">
+          {symbols[suit]}
+        </span>
+      ))}
+    </span>
   );
 }
 

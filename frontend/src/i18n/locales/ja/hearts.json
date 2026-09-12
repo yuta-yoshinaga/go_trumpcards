@@ -33,6 +33,7 @@
   "penaltyHearts": "ハート{{count}}枚",
   "penaltyQueenSpades": "スペードのクイーン獲得",
   "penaltyNone": "ペナルティなし",
+  "voidSuits": "ボイド: {{suits}}",
   "currentTrick": "現在のトリック",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",

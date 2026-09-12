@@ -73,8 +73,19 @@ func (p *HeartsWebPresenter) buildPlayersOutput(h interfaces.HeartsGame) []*cont
 			TrickCount:      player.GetTrickCount(),
 			PenaltyCards:    heartsPenaltyCardsOutput(player),
 			TookOmnibusJD:   omnibus && heartsPlayerTookOmnibusJD(player),
+			VoidSuits:       heartsVoidSuitsOutput(h.GetVoidSuits()[i]),
 		}
 		out = append(out, pObj)
+	}
+	return out
+}
+
+func heartsVoidSuitsOutput(voidSuits [domain.CardDesignMax + 1]bool) []int {
+	out := make([]int, 0)
+	for suit := domain.CardDesignSpade; suit <= domain.CardDesignMax; suit++ {
+		if voidSuits[suit] {
+			out = append(out, suit)
+		}
 	}
 	return out
 }

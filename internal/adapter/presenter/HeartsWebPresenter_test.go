@@ -29,11 +29,27 @@ func setupHeartsWebMock() *interfaces.MockHeartsGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultHeartsConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetVoidSuits").Return([domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{})
 	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
 	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
 	m.On("GetHint").Return(nil).Maybe()
 
 	return m
+}
+
+func TestHeartsWebPresenter_VoidSuits(t *testing.T) {
+	p := new(presenter.HeartsWebPresenter)
+	m, _ := setupHeartsWebMockWithPlayers()
+	voidSuits := [domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{}
+	voidSuits[1][domain.CardDesignClover] = true
+	m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "GetVoidSuits")
+	m.On("GetVoidSuits").Return(voidSuits)
+
+	var out controller.HeartsWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
+	assert.Equal(t, []int{domain.CardDesignClover}, out.Players[1].VoidSuits)
+	assert.NotNil(t, out.Players[0].VoidSuits)
+	assert.Empty(t, out.Players[0].VoidSuits)
 }
 
 func setupHeartsWebMockWithPlayers() (*interfaces.MockHeartsGame, []*domain.HeartsPlayer) {

@@ -33,6 +33,7 @@
   "penaltyHearts": "{{count}} hearts",
   "penaltyQueenSpades": "Queen of Spades taken",
   "penaltyNone": "No penalties",
+  "voidSuits": "Void: {{suits}}",
   "currentTrick": "Current Trick",
   "scores": "Scores",
   "scoresPlayer": "Player",

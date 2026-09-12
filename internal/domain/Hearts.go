@@ -70,11 +70,13 @@ type Hearts struct {
 	currentPlayerIdx int
 	currentTrick     []*TrickCard
 	heartsBroken     bool
-	passedCards      [HeartsPlayerCnt][]*Card
-	passReady        [HeartsPlayerCnt]bool
-	leadPlayerIdx    int
-	gameEndFlag      bool
-	winnerIdx        int
+	// voidSuits records suits each seat has proven it cannot follow in this deal.
+	voidSuits     [HeartsPlayerCnt][CardDesignMax + 1]bool
+	passedCards   [HeartsPlayerCnt][]*Card
+	passReady     [HeartsPlayerCnt]bool
+	leadPlayerIdx int
+	gameEndFlag   bool
+	winnerIdx     int
 	actionLogBase
 }
 
@@ -125,6 +127,7 @@ func (h *Hearts) Reset() {
 
 	h.passedCards = [HeartsPlayerCnt][]*Card{}
 	h.passReady = [HeartsPlayerCnt]bool{}
+	h.voidSuits = [HeartsPlayerCnt][CardDesignMax + 1]bool{}
 
 	h.trumpCards.Shuffle()
 	dealAllCards(h.trumpCards, h.players)
@@ -153,6 +156,7 @@ func (h *Hearts) NextRound() {
 
 	h.passedCards = [HeartsPlayerCnt][]*Card{}
 	h.passReady = [HeartsPlayerCnt]bool{}
+	h.voidSuits = [HeartsPlayerCnt][CardDesignMax + 1]bool{}
 
 	h.trumpCards.Shuffle()
 	dealAllCards(h.trumpCards, h.players)
@@ -486,6 +490,10 @@ func (h *Hearts) GetPassReady() [HeartsPlayerCnt]bool { return h.passReady }
 // GetPassedCards パス済みカード取得
 func (h *Hearts) GetPassedCards() [HeartsPlayerCnt][]*Card { return h.passedCards }
 
+// GetVoidSuits returns the suits each seat has proven void during this deal.
+// The first index is the player seat and the second is a CardDesign value.
+func (h *Hearts) GetVoidSuits() [HeartsPlayerCnt][CardDesignMax + 1]bool { return h.voidSuits }
+
 // SetRoundNumber ラウンド番号設定 (テスト用)
 func (h *Hearts) SetRoundNumber(n int) { h.roundNumber = n }
 
@@ -520,6 +528,14 @@ func (h *Hearts) findTwoOfClubs() int {
 
 // playCard カードをプレイする共通処理
 func (h *Hearts) playCard(playerIdx int, card *Card) {
+	// The same follow-suit rule validated in validatePlay proves a void when a
+	// player legally discards a different suit after the lead card is present.
+	if len(h.currentTrick) > 0 {
+		leadSuit := h.currentTrick[0].Card.GetDesign()
+		if card.GetDesign() != leadSuit && !h.playerHasSuit(playerIdx, leadSuit) {
+			h.voidSuits[playerIdx][leadSuit] = true
+		}
+	}
 	h.currentTrick = append(h.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
@@ -1111,6 +1127,7 @@ type heartsJSON struct {
 	GameEndFlag      bool                     `json:"ge"`
 	WinnerIdx        int                      `json:"wi"`
 	ActionLog        []*ActionLogEntry        `json:"al"`
+	VoidSuits        [][]bool                 `json:"vs"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1131,12 +1148,21 @@ func (h *Hearts) MarshalJSON() ([]byte, error) {
 		GameEndFlag:      h.gameEndFlag,
 		WinnerIdx:        h.winnerIdx,
 		ActionLog:        h.actionLog,
+		VoidSuits:        heartsVoidSuitsToJSON(h.voidSuits),
 	})
 }
 
 // heartsMaxSliceLen caps slice sizes during deserialisation to prevent
 // excessive memory allocation from malformed input.
 const heartsMaxSliceLen = 1000
+
+func heartsVoidSuitsToJSON(voidSuits [HeartsPlayerCnt][CardDesignMax + 1]bool) [][]bool {
+	out := make([][]bool, HeartsPlayerCnt)
+	for i := range voidSuits {
+		out[i] = append([]bool(nil), voidSuits[i][:]...)
+	}
+	return out
+}
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (h *Hearts) UnmarshalJSON(data []byte) error {
@@ -1151,6 +1177,16 @@ func (h *Hearts) UnmarshalJSON(data []byte) error {
 	for i := range j.PassedCards {
 		if len(j.PassedCards[i]) > heartsMaxSliceLen {
 			return fmt.Errorf("hearts: input array exceeds maximum allowed size")
+		}
+	}
+	if j.VoidSuits != nil {
+		if len(j.VoidSuits) != HeartsPlayerCnt {
+			return fmt.Errorf("hearts: void suits player count is invalid")
+		}
+		for _, suits := range j.VoidSuits {
+			if len(suits) != CardDesignMax+1 {
+				return fmt.Errorf("hearts: void suits suit count is invalid")
+			}
 		}
 	}
 	h.trumpCards = j.TrumpCards
@@ -1177,6 +1213,10 @@ func (h *Hearts) UnmarshalJSON(data []byte) error {
 	h.gameEndFlag = j.GameEndFlag
 	h.winnerIdx = j.WinnerIdx
 	h.actionLog = j.ActionLog
+	h.voidSuits = [HeartsPlayerCnt][CardDesignMax + 1]bool{}
+	for i, suits := range j.VoidSuits {
+		copy(h.voidSuits[i][:], suits)
+	}
 	if h.actionLog == nil {
 		h.actionLog = make([]*ActionLogEntry, 0)
 	}

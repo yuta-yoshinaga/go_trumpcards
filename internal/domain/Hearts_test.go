@@ -3,6 +3,7 @@
 package domain_test
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 
@@ -55,6 +56,7 @@ func TestNewHearts(t *testing.T) {
 	assert.Equal(t, -1, h.GetWinnerIdx())
 	assert.False(t, h.GetGameEndFlag())
 	assert.False(t, h.GetHeartsBroken())
+	assert.Equal(t, [domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{}, h.GetVoidSuits())
 	assert.Nil(t, h.GetCurrentTrick())
 	assert.Nil(t, h.GetActionLog())
 }
@@ -454,6 +456,44 @@ func TestHearts_PlayerPlay_FirstTrick_NoTwoClubs(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestHearts_PlayerPlay_FollowSuitDoesNotMarkVoid(t *testing.T) {
+	h := newTestHearts()
+	setupPlayPhase(h, 0, 1, 2)
+	h.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 5, false)}})
+	player := h.GetPlayer(0)
+	player.Reset()
+	player.AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
+
+	assert.NoError(t, h.PlayerPlay(0))
+	assert.False(t, h.GetVoidSuits()[0][domain.CardDesignClover])
+}
+
+func TestHearts_VoidSuitsJSONAndRoundReset(t *testing.T) {
+	h := newTestHearts()
+	setupPlayPhase(h, 0, 1, 2)
+	h.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 5, false)}})
+	h.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	assert.NoError(t, h.PlayerPlay(0))
+
+	data, err := json.Marshal(h)
+	assert.NoError(t, err)
+	var restored domain.Hearts
+	assert.NoError(t, json.Unmarshal(data, &restored))
+	assert.True(t, restored.GetVoidSuits()[0][domain.CardDesignClover])
+
+	h.SetPhase(domain.HeartsPhaseRoundEnd)
+	h.NextRound()
+	assert.Equal(t, [domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{}, h.GetVoidSuits())
+}
+
+func TestHearts_UnmarshalJSON_VoidSuitsValidationAndLegacySnapshot(t *testing.T) {
+	var h domain.Hearts
+	assert.Error(t, json.Unmarshal([]byte(`{"vs":[[false,false,false,false,false]]}`), &h))
+	assert.Error(t, json.Unmarshal([]byte(`{"vs":[[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]]}`), &h))
+	assert.NoError(t, json.Unmarshal([]byte(`{"tc":null,"ps":null}`), &h))
+	assert.Equal(t, [domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{}, h.GetVoidSuits())
+}
+
 func TestHearts_PlayerPlay_MustFollowSuit(t *testing.T) {
 	h := newTestHearts()
 	setupPlayPhase(h, 0, 1, 2) // human's turn after lead
@@ -494,6 +534,7 @@ func TestHearts_PlayerPlay_CanPlayOffSuitWhenVoid(t *testing.T) {
 
 	err := h.PlayerPlay(0)
 	assert.NoError(t, err)
+	assert.True(t, h.GetVoidSuits()[0][domain.CardDesignClover])
 }
 
 func TestHearts_PlayerPlay_CantLeadHeartsUnbroken(t *testing.T) {
@@ -1000,6 +1041,7 @@ func TestHearts_NextRound(t *testing.T) {
 	assert.Equal(t, 2, h.GetRoundNumber())
 	assert.Equal(t, 0, h.GetTrickNumber()) // stays 0 until pass completes (round 2 = right)
 	assert.False(t, h.GetHeartsBroken())
+	assert.Equal(t, [domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{}, h.GetVoidSuits())
 	assert.Nil(t, h.GetCurrentTrick())
 
 	// 52 cards distributed
