@@ -100,6 +100,19 @@ describe('BelotePage', () => {
     );
   });
 
+  it('shows the configured target score beside the team scores', async () => {
+    const state = makeState({ config: { ...initialState.config, targetScore: 750 } });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<BelotePage />);
+    const target = await screen.findByTestId('belote-target-score');
+    expect(target).toHaveTextContent('目標: 750点');
+    expect(target).not.toHaveTextContent('targetScore');
+
+    mockExec.mockResolvedValue(makeState({ config: { ...initialState.config, targetScore: 1500 } }));
+    fireEvent.click(screen.getByRole('button', { name: '取る' }));
+    await waitFor(() => expect(screen.getByTestId('belote-target-score')).toHaveTextContent('目標: 1500点'));
+  });
+
   // The phase key map must hold bare keys; usePhaseNames adds the `phase.`
   // prefix itself, so a prefixed key resolved to the literal
   // "phase.phase.bidPickUp" on screen. See issue #4374.

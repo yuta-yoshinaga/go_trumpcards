@@ -357,6 +357,9 @@ function BelotePageContent() {
               </tr>
             </tbody>
           </table>
+          <div className="text-ds-text-muted text-sm mt-1" data-testid="belote-target-score">
+            {t('targetScore', { score: state.config.targetScore })}
+          </div>
           {(state.roundBeloteBonus[0] > 0 || state.roundBeloteBonus[1] > 0) && (
             <div className="text-xs text-ds-warning mt-1">{t('beloteRebelote')}</div>
           )}
