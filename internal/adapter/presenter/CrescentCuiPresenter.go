@@ -100,6 +100,9 @@ func (p *CrescentCuiPresenter) Output(cr interfaces.CrescentGame, lastErr error)
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(cr.GetMoveCount())) + "\n")
 		case domain.CrescentPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := cr.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.CrescentFoundationCnt*domain.CardValueMax)) + "\n")
 		}
 	})
 }

@@ -75,6 +75,46 @@ func TestCrescentCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func crescentFoundationWithCount(count int) [domain.CrescentFoundationCnt][]*domain.Card {
+	var foundation [domain.CrescentFoundationCnt][]*domain.Card
+	for i := 0; i < count; i++ {
+		foundation[i%domain.CrescentFoundationCnt] = append(
+			foundation[i%domain.CrescentFoundationCnt],
+			domain.NewCard(domain.CrescentFoundationSuit(i%domain.CrescentFoundationCnt), 1, false),
+		)
+	}
+	return foundation
+}
+
+func TestCrescentCuiPresenter_GameOverShowsFoundationProgress(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		count int
+		want  string
+	}{
+		{name: "two cards", count: 2, want: "組札 2/104 枚（2%）まで到達"},
+		{name: "five cards", count: 5, want: "組札 5/104 枚（5%）まで到達"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cg := new(interfaces.MockCrescentGame)
+			setupCrescentCuiMockDefaults(cg)
+			cg.ExpectedCalls = filterCalls(filterCalls(cg.ExpectedCalls, "GetPhase"), "GetFoundation")
+			cg.On("GetPhase").Return(domain.CrescentPhaseGameOver)
+			cg.On("GetFoundation").Return(crescentFoundationWithCount(tc.count))
+
+			out := new(CrescentCuiPresenter).Output(cg, nil)
+			assert.Contains(t, out, tc.want)
+		})
+	}
+
+	t.Run("not shown while playing", func(t *testing.T) {
+		cg := new(interfaces.MockCrescentGame)
+		setupCrescentCuiMockDefaults(cg)
+		out := new(CrescentCuiPresenter).Output(cg, nil)
+		assert.NotContains(t, out, "組札 8/104 枚（8%）まで到達")
+	})
+}
+
 func TestCrescentCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("tableau to tableau", func(t *testing.T) {
 		cg := new(interfaces.MockCrescentGame)
