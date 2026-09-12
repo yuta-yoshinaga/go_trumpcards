@@ -58983,6 +58983,13 @@ components:
           description: >-
             Cards left in the stock: 26 at the deal, two fewer after each
             draw-phase trick, and 0 from the auction onwards.
+        drawnIndices:
+          type: array
+          description: >-
+            Hand positions of the cards drawn after the last draw-phase
+            trick, so they can be marked. Empty outside the draw phase.
+          items:
+            type: integer
         trumpSuit:
           type: integer
           description: 0 means no-trump -- during the draw phase and for a no-trump contract.

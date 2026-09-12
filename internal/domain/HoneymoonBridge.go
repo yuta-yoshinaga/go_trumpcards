@@ -68,13 +68,15 @@ const honeymoonBridgeMaxSliceLen = 1000
 // **後半がブリッジ。** 手札が確定してから競り、契約を決めて 13 トリックを
 // 打ちます。
 type HoneymoonBridge struct {
-	players     []*HoneymoonBridgePlayer
-	config      HoneymoonBridgeConfig
-	phase       HoneymoonBridgePhase
-	trumpCards  *TrumpCards
-	stock       []*Card
-	roundNumber int
-	trickNumber int
+	players    []*HoneymoonBridgePlayer
+	config     HoneymoonBridgeConfig
+	phase      HoneymoonBridgePhase
+	trumpCards *TrumpCards
+	stock      []*Card
+	// drawnIndices は直前の引き合いで人間の手札に入った札の位置。
+	drawnIndices []int
+	roundNumber  int
+	trickNumber  int
 	// trumpSuit は契約のスート（0 = ノートランプ、競り前も 0）。
 	trumpSuit int
 	// declarerIdx は落札者 (-1 = 競り中)。
@@ -162,6 +164,7 @@ func (h *HoneymoonBridge) startRound() {
 	h.trumpSuit = 0
 	h.trickNumber = 0
 	h.currentTrick = nil
+	h.drawnIndices = nil
 	h.declarerIdx = -1
 	h.contractLevel = 0
 	h.passCount = 0
@@ -334,15 +337,29 @@ func (h *HoneymoonBridge) resolveTrick() {
 
 // drawAfterTrick は勝者→敗者の順に山札から 1 枚ずつ引かせる。
 func (h *HoneymoonBridge) drawAfterTrick(winner int) {
+	var drawn *Card
 	for i := range HoneymoonBridgePlayerCnt {
 		idx := (winner + i) % HoneymoonBridgePlayerCnt
 		if len(h.stock) == 0 {
 			break
 		}
-		h.players[idx].AddCard(h.stock[0])
+		card := h.stock[0]
+		h.players[idx].AddCard(card)
+		if idx == 0 {
+			drawn = card
+		}
 		h.stock = h.stock[1:]
 	}
 	h.sortAllHands()
+	h.drawnIndices = nil
+	if drawn != nil {
+		for i := 0; i < h.players[0].GetCardsSize(); i++ {
+			if h.players[0].GetCard(i) == drawn {
+				h.drawnIndices = []int{i}
+				break
+			}
+		}
+	}
 }
 
 // trickWinner は切り札 > リードスートの順で最強札を出した人を返す。
@@ -374,6 +391,7 @@ func (h *HoneymoonBridge) trickWinner() int {
 // startBidding は引き合いを終えて競りに入る。
 func (h *HoneymoonBridge) startBidding() {
 	h.phase = HoneymoonBridgePhaseBid
+	h.drawnIndices = nil
 	h.trickNumber = 0
 	h.passCount = 0
 	// **競りは親の左隣から。**
@@ -730,6 +748,9 @@ func (h *HoneymoonBridge) GetRoundNumber() int { return h.roundNumber }
 // GetTrickNumber は現在のトリック番号を返す。
 func (h *HoneymoonBridge) GetTrickNumber() int { return h.trickNumber }
 
+// GetDrawnIndices は直前の引き合いで人間の手札に入った札の位置を返す。
+func (h *HoneymoonBridge) GetDrawnIndices() []int { return append([]int(nil), h.drawnIndices...) }
+
 // GetStockSize は山札の残り枚数を返す。
 func (h *HoneymoonBridge) GetStockSize() int { return len(h.stock) }
 
@@ -802,6 +823,7 @@ type honeymoonBridgeJSON struct {
 	GameEndFlag      bool                     `json:"ge"`
 	WinnerIdx        int                      `json:"wi"`
 	ActionLog        []*ActionLogEntry        `json:"al"`
+	DrawnIndices     []int                    `json:"dx"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -814,6 +836,7 @@ func (h *HoneymoonBridge) MarshalJSON() ([]byte, error) {
 		LeadPlayerIdx: h.leadPlayerIdx, DealerIdx: h.dealerIdx,
 		LastMade: h.lastMade, LastTricks: h.lastTricks,
 		GameEndFlag: h.gameEndFlag, WinnerIdx: h.winnerIdx, ActionLog: h.actionLog,
+		DrawnIndices: h.drawnIndices,
 	})
 }
 
@@ -911,6 +934,7 @@ func (h *HoneymoonBridge) UnmarshalJSON(data []byte) error {
 		h.players = j.Players
 	}
 	h.config, h.phase, h.stock = j.Config, j.Phase, j.Stock
+	h.drawnIndices = append([]int(nil), j.DrawnIndices...)
 	h.roundNumber, h.trickNumber, h.trumpSuit = j.RoundNumber, j.TrickNumber, j.TrumpSuit
 	h.declarerIdx, h.contractLevel, h.passCount = j.DeclarerIdx, j.ContractLevel, j.PassCount
 	h.currentTrick, h.currentPlayerIdx = j.CurrentTrick, j.CurrentPlayerIdx

@@ -51,6 +51,7 @@ function makeState(overrides: Partial<HoneymoonBridgeResponse> = {}): HoneymoonB
     dealerIdx: 0,
     currentTrick: [],
     validPlays: [0, 1, 2],
+    drawnIndices: [],
     gameEndFlag: false,
     winnerIdx: -1,
     config: { target: 100 },
@@ -81,6 +82,17 @@ beforeEach(() => {
 });
 
 describe('HoneymoonBridgePage', () => {
+  it('marks drawn cards and leaves unmarked cards alone', async () => {
+    mockExec.mockResolvedValue(makeState({ drawnIndices: [1] }));
+    renderWithProviders(<HoneymoonBridgePage />);
+    const badge = await screen.findByTestId('hb-drawn-1');
+    expect(badge).toHaveTextContent('補充');
+    expect(screen.queryByTestId('hb-drawn-0')).not.toBeInTheDocument();
+    // **絶対配置の印は positioned ancestor が要る。** 札のボタンに relative が
+    // 無いと、印はページのどこか別の場所に飛ぶ (DOM にはあるので存在検査では
+    // 気づけない)。
+    expect(badge.closest('button')).toHaveClass('relative');
+  });
   it('resets on mount', async () => {
     renderWithProviders(<HoneymoonBridgePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

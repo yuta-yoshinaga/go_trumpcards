@@ -22,7 +22,9 @@
     "declarer": "[declarer]",
     "dealer": "[dealer]",
     "you": "You",
-    "cpu": "CPU{{idx}}"
+    "cpu": "CPU{{idx}}",
+    "drawnBadge": "drawn",
+    "drawnAria": "drawn during the draw phase"
   },
   "currentTrick": "Current trick",
   "roundResult": {

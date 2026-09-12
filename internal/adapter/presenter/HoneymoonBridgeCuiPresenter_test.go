@@ -35,6 +35,17 @@ func TestHoneymoonBridgeCuiPresenterOutput(t *testing.T) {
 		domain.HoneymoonBridgePlayerCnt, "両者の席行に獲得数と累計が出る")
 }
 
+func TestHoneymoonBridgeCuiPresenterMarksDrawnCards(t *testing.T) {
+	p := new(HoneymoonBridgeCuiPresenter)
+	h := newHoneymoonBridgeForCui(t)
+	h.SetDrawnIndicesForTest([]int{0})
+	out := p.Output(h, nil)
+	assert.Contains(t, out, CuiKittyMark)
+
+	h.SetDrawnIndicesForTest(nil)
+	assert.NotContains(t, p.Output(h, nil), CuiKittyMark)
+}
+
 // **引き合いのあいだは山札の残りを出す。** 何枚引けるかが読めないと打てない。
 // **親はラウンドごとに交代し、引き合いの最初のリードを決める起点。**
 // どの局面にも出ていなかった。落札者とは別の役として並べる。
