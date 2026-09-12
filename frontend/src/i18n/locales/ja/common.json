@@ -2126,6 +2126,8 @@
     "preference.roundEnd.passedOut": "全員がパスしたため、このラウンドは流れました。",
     "preference.trickEnd": "トリック終了 — 次へ進んでください。",
     "president.result.rankings": "{{rankings}}",
+    "president.start.clubThreeHuman": "♣3を持っているため、あなたが先手です。",
+    "president.start.clubThreeCPU": "♣3を持っているため、CPU {{idx}} が先手です。",
     "primero.bettingPhase": "あなたの番です — コール・レイズ（ヴィ）・フォールドを選んでください。",
     "primero.hintRequested": "ヒントがあります",
     "primero.noHint": "ヒントはありません",

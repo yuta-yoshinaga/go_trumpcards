@@ -20,6 +20,7 @@
   "gameEnd": "ゲーム終了！",
   "rankEntry": "  {{name}}: {{rank}}",
   "promptCurrentTurn": "手番: {{name}}",
+  "clubThreeStarter": "♣3を持つ {{name}} が先手です",
   "promptPlayHelp": "p [インデックス...] でカードを出す / p でパス",
   "rankPresident": "大統領",
   "rankVicePresident": "副大統領",

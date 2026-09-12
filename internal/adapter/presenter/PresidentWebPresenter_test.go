@@ -3,6 +3,7 @@ package presenter_test
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -55,4 +56,32 @@ func TestPresidentWebPresenter_HintOutput(t *testing.T) {
 	players := makePresidentPlayersForPresenter()
 	pg := domain.NewPresident(domain.NewTrumpCards(0), players, domain.DefaultPresidentConfig())
 	assert.Equal(t, p.Output(pg, nil), p.HintOutput(pg))
+}
+
+func TestPresidentWebPresenter_ClubThreeStarterMessage(t *testing.T) {
+	p := new(presenter.PresidentWebPresenter)
+
+	for _, tt := range []struct {
+		name       string
+		starterIdx int
+		message    string
+		code       string
+	}{
+		// **文言はロケール側。** Message は空で、messageCode だけが席を分ける。
+		{"human starter", 0, "", "president.start.clubThreeHuman"},
+		{"CPU starter", 2, "", "president.start.clubThreeCPU"},
+		{"no club-3 starter", -1, "", ""},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			pg := presidentForStarterMessage(t, tt.starterIdx)
+			var out controller.PresidentWebOutput
+			require.NoError(t, json.Unmarshal([]byte(p.Output(pg, nil)), &out))
+			assert.Equal(t, tt.message, out.Message)
+			assert.Equal(t, tt.code, out.MessageCode)
+			// 席が params に載っていること。載せ忘れると 2 席が同じ文言になる。
+			if tt.code == "president.start.clubThreeCPU" {
+				assert.Equal(t, strconv.Itoa(tt.starterIdx), out.MessageParams["idx"])
+			}
+		})
+	}
 }

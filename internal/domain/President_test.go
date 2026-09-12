@@ -2,6 +2,7 @@ package domain_test
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -79,6 +80,23 @@ func TestPresident_Reset(t *testing.T) {
 			}
 		}
 		assert.True(t, has, "starter should hold ♣3")
+		assert.Equal(t, pr.GetCurrentTurn(), pr.GetClubThreeStarterIdx())
+	})
+
+	t.Run("later rounds do not retain a club-3 starter", func(t *testing.T) {
+		pr := domain.NewDefaultPresident()
+		pr.Reset()
+		for i, rank := range []int{
+			domain.PresidentRankPresident,
+			domain.PresidentRankVicePresident,
+			domain.PresidentRankViceScum,
+			domain.PresidentRankScum,
+		} {
+			pr.GetPlayer(i).SetRank(rank)
+		}
+
+		pr.Reset()
+		assert.Equal(t, -1, pr.GetClubThreeStarterIdx())
 	})
 
 	t.Run("resets revolution flag", func(t *testing.T) {
@@ -366,6 +384,35 @@ func TestPresident_JSONRoundTrip(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, pr.GetPlayerCnt(), other.GetPlayerCnt())
 	assert.Equal(t, pr.GetCurrentTurn(), other.GetCurrentTurn())
+	assert.Equal(t, pr.GetClubThreeStarterIdx(), other.GetClubThreeStarterIdx())
+}
+
+func TestPresident_JSONClubThreeStarterIdxValidation(t *testing.T) {
+	pr := domain.NewDefaultPresident()
+	pr.Reset()
+	data, err := json.Marshal(pr)
+	require.NoError(t, err)
+
+	var snapshot map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &snapshot))
+
+	for _, starterIdx := range []int{-2, pr.GetPlayerCnt()} {
+		t.Run("rejects out-of-range index "+strconv.Itoa(starterIdx), func(t *testing.T) {
+			snapshot["c3"] = json.RawMessage(strconv.Itoa(starterIdx))
+			invalid, marshalErr := json.Marshal(snapshot)
+			require.NoError(t, marshalErr)
+			assert.Error(t, json.Unmarshal(invalid, &domain.President{}))
+		})
+	}
+
+	t.Run("old snapshot without c3 defaults to -1", func(t *testing.T) {
+		delete(snapshot, "c3")
+		oldSnapshot, marshalErr := json.Marshal(snapshot)
+		require.NoError(t, marshalErr)
+		var restored domain.President
+		require.NoError(t, json.Unmarshal(oldSnapshot, &restored))
+		assert.Equal(t, -1, restored.GetClubThreeStarterIdx())
+	})
 }
 
 func TestPresidentConfig_Validate(t *testing.T) {

@@ -2126,6 +2126,8 @@
     "preference.roundEnd.passedOut": "Everyone passed, so the round was thrown in.",
     "preference.trickEnd": "Trick over — continue to the next one.",
     "president.result.rankings": "{{rankings}}",
+    "president.start.clubThreeHuman": "You lead because you hold the ♣3.",
+    "president.start.clubThreeCPU": "CPU {{idx}} leads because it holds the ♣3.",
     "primero.bettingPhase": "Your turn — call, raise (vie), or fold.",
     "primero.hintRequested": "A hint is available",
     "primero.noHint": "No hint available",
