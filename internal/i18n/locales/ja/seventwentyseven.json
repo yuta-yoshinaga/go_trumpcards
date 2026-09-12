@@ -10,6 +10,7 @@
   "helpSetChips": "  sc <n>               初期チップ",
   "helpSetRounds": "  st <n>               ラウンド数",
   "roundLine": "ラウンド: {{round}}  ポット: {{pot}}  アンティ: {{ante}}",
+  "drawRound": "{{n}}巡目",
   "playerLine": "{{name}}  チップ {{chips}}  賭け {{bet}}  [{{status}}]",
   "statusOut": "脱落",
   "statusDrawing": "まだ引く",

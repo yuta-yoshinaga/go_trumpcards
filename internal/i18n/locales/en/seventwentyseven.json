@@ -10,6 +10,7 @@
   "helpSetChips": "  sc <n>               starting chips",
   "helpSetRounds": "  st <n>               number of rounds",
   "roundLine": "Round: {{round}}  Pot: {{pot}}  Ante: {{ante}}",
+  "drawRound": "Draw {{n}}",
   "playerLine": "{{name}}  chips {{chips}}  bet {{bet}}  [{{status}}]",
   "statusOut": "out",
   "statusDrawing": "still drawing",
