@@ -135,20 +135,22 @@ func TestBolivia_GoingOutRequiresAnEscalera(t *testing.T) {
 	})
 	g.players[2].SetMelds(nil)
 	require.Equal(t, 2, g.teamCompletedCount(g.players[0].team), "完成メルドが 2 つになっていない")
-	assert.False(t, g.canGoOut(0), "エスカレラ無しで上がれてしまっている")
+	// CanGoOut は手番のプレイヤーを見るため、手番のチームを固定する。
+	require.Equal(t, g.players[0].team, g.players[g.currentPlayerIdx].team, "手番が players[0] のチームでない")
+	assert.False(t, g.CanGoOut(), "エスカレラ無しで上がれてしまっている")
 
 	// パートナーがエスカレラを持てば上がれる (チームで数える)。
 	g.players[2].SetMelds([]*BoliviaMeld{
 		{Kind: BoliviaMeldEscalera, Cards: seven(CardDesignHeart, 4), IsNatural: true},
 	})
-	assert.True(t, g.canGoOut(0), "エスカレラがあるのに上がれない")
+	assert.True(t, g.CanGoOut(), "エスカレラがあるのに上がれない")
 
 	// 相手チームのエスカレラでは上がれない。
 	g.players[2].SetMelds(nil)
 	g.players[1].SetMelds([]*BoliviaMeld{
 		{Kind: BoliviaMeldEscalera, Cards: seven(CardDesignHeart, 4), IsNatural: true},
 	})
-	assert.False(t, g.canGoOut(0), "相手のエスカレラで上がれてしまっている")
+	assert.False(t, g.CanGoOut(), "相手のエスカレラで上がれてしまっている")
 }
 
 // **目標はサンバの 10000 ではなく 15000。**

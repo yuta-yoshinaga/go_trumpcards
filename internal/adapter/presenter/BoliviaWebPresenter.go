@@ -22,6 +22,7 @@ func (p *BoliviaWebPresenter) Output(g interfaces.BoliviaGame, lastErr error) st
 	resObj.IsFrozen = g.GetIsFrozen()
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerIdx = g.GetWinnerIdx()
+	resObj.CanGoOut = g.CanGoOut()
 
 	top := g.GetDiscardTop()
 	if top != nil {

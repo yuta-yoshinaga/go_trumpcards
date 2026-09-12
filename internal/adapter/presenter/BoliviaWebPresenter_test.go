@@ -35,6 +35,7 @@ func setupBoliviaWebMock() *interfaces.MockBoliviaGame {
 	m.On("GetPhase").Return(domain.BoliviaPhaseDraw)
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
+	m.On("CanGoOut").Return(false)
 	m.On("GetConfig").Return(domain.DefaultBoliviaConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetTeamCount").Return(2)
@@ -72,6 +73,15 @@ func TestBoliviaWebPresenter_Output(t *testing.T) {
 		require.Equal(2, len(resObj.TeamScores))
 		require.Equal(0, resObj.Players[0].Team)
 		require.Equal(1, resObj.Players[1].Team)
+	})
+
+	t.Run("canGoOut is exposed", func(t *testing.T) {
+		m, _ := setupBoliviaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "CanGoOut")
+		m.On("CanGoOut").Return(true)
+		var resObj controller.BoliviaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &resObj))
+		assert.True(t, resObj.CanGoOut)
 	})
 
 	t.Run("human cards shown, CPU hidden in draw phase", func(t *testing.T) {

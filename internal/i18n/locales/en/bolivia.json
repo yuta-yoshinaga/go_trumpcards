@@ -43,6 +43,7 @@
   "promptDiscard": "Turn: {{name}} (discard phase)",
   "promptDiscardHelp": "d <idx> ... discard a card",
   "promptGoOutHelp": "go ... go out (two completed melds, at least one an escalera)",
+  "promptGoOutUnavailable": "go / goout is not available yet (two completed melds, at least one an escalera)",
   "promptRoundEnd": "Round over",
   "promptRoundEndHelp": "nr / nextround ... go to the next round"
 }

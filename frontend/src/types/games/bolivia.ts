@@ -73,6 +73,7 @@ export interface BoliviaResponse extends BaseGameResponse {
   isFrozen: boolean;
   gameEndFlag: boolean;
   winnerIdx: number;
+  canGoOut: boolean;
   config: BoliviaConfig;
 }
 

@@ -29,6 +29,7 @@ func (m *MockBoliviaGame) PlayerDiscard(cardIndex int) error {
 	return m.Called(cardIndex).Error(0)
 }
 func (m *MockBoliviaGame) PlayerGoOut() error { return m.Called().Error(0) }
+func (m *MockBoliviaGame) CanGoOut() bool     { return m.Called().Bool(0) }
 func (m *MockBoliviaGame) CpuPlay()           { m.Called() }
 func (m *MockBoliviaGame) GetConfig() domain.BoliviaConfig {
 	return m.Called().Get(0).(domain.BoliviaConfig)

@@ -28,6 +28,7 @@ func setupBoliviaCuiMock() *interfaces.MockBoliviaGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.BoliviaPhaseDraw)
 	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("CanGoOut").Return(false)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetTeamScore", 0).Return(0)
@@ -178,6 +179,7 @@ func TestBoliviaCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ディスカードフェーズ")
 		assert.Contains(t, result, "go")
+		assert.Contains(t, result, i18n.T("bolivia.promptGoOutUnavailable"))
 	})
 
 	t.Run("round end prompt", func(t *testing.T) {

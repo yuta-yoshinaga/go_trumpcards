@@ -73990,6 +73990,8 @@ components:
           type: boolean
         winnerIdx:
           type: integer
+        canGoOut:
+          type: boolean
         config:
           type: object
           properties:

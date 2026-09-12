@@ -43,6 +43,7 @@
   "promptDiscard": "手番: {{name}} (ディスカードフェーズ)",
   "promptDiscardHelp": "d <idx>・・・カードを捨てる",
   "promptGoOutHelp": "go・・・上がる (完成メルド2個以上＋最低1本はエスカレラ)",
+  "promptGoOutUnavailable": "go / goout はまだ使えません (完成メルド2個以上＋最低1本はエスカレラ)",
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ"
 }
