@@ -24,6 +24,7 @@
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",
   "scoresTotal": "累計",
+  "targetScore": "目標スコア: {{limit}}点",
   "playButton": "出す",
   "drawButton": "引く",
   "declareButton": "ページワン！",
