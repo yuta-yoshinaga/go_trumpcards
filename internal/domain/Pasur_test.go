@@ -628,3 +628,70 @@ func TestPasur_UnmarshalRejectsAPackCountThatDisagreesWithTheDeck(t *testing.T) 
 	assert.NoError(t, json.Unmarshal(good, &ok))
 	assert.Equal(t, 1, ok.GetPacksDealt())
 }
+
+func TestPasur_LeftoverFinalPlay(t *testing.T) {
+	for _, tc := range []struct {
+		name                     string
+		last, wantIdx, wantCount int
+		capture                  bool
+	}{
+		{"leftover to human", 0, 0, 2, false},
+		{"leftover to CPU", 2, 2, 2, false},
+		{"empty table", 2, -1, 0, true},
+		{"no capturer", -1, -1, 0, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newTestPasur(t)
+			g.EmptyHandsForTest()
+			g.DrainDeckForTest()
+			g.packsDealt = 3
+			g.currentPlayerIdx = 0
+			g.lastCaptureIdx = tc.last
+			g.tableCards = []*Card{NewCard(CardDesignHeart, 7, false)}
+			value := 12
+			var targets []int
+			if tc.capture {
+				value = 4
+				targets = []int{0}
+			}
+			g.GetPlayer(0).AddCard(NewCard(CardDesignSpade, value, false))
+			require.NoError(t, g.PlayerPlay(0, targets))
+			require.True(t, g.GetGameEndFlag())
+			assert.Equal(t, tc.wantIdx, g.GetLeftoverIdx())
+			assert.Equal(t, tc.wantCount, g.GetLeftoverCount())
+			data, err := json.Marshal(g)
+			require.NoError(t, err)
+			var restored Pasur
+			require.NoError(t, json.Unmarshal(data, &restored))
+			assert.Equal(t, tc.wantIdx, restored.GetLeftoverIdx())
+			assert.Equal(t, tc.wantCount, restored.GetLeftoverCount())
+			restored.Reset()
+			assert.Equal(t, -1, restored.GetLeftoverIdx())
+			assert.Zero(t, restored.GetLeftoverCount())
+		})
+	}
+}
+
+func TestPasur_LeftoverSnapshotValidation(t *testing.T) {
+	g := newTestPasur(t)
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var snapshot map[string]any
+	require.NoError(t, json.Unmarshal(data, &snapshot))
+	delete(snapshot, "li")
+	delete(snapshot, "ln")
+	legacy, err := json.Marshal(snapshot)
+	require.NoError(t, err)
+	var restored Pasur
+	require.NoError(t, json.Unmarshal(legacy, &restored))
+	assert.Equal(t, -1, restored.GetLeftoverIdx())
+	assert.Zero(t, restored.GetLeftoverCount())
+	for _, tc := range []struct{ idx, count int }{
+		{-2, 0}, {4, 1}, {-1, -1}, {0, 53}, {0, 0}, {-1, 2}, {0, 2},
+	} {
+		snapshot["li"], snapshot["ln"] = tc.idx, tc.count
+		bad, err := json.Marshal(snapshot)
+		require.NoError(t, err)
+		assert.ErrorContains(t, json.Unmarshal(bad, &restored), "invalid leftover capture")
+	}
+}

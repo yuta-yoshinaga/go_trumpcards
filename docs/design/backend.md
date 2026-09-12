@@ -3824,3 +3824,19 @@ stateDiagram-v2
 ```
 
 **注:** Barbu は 4 人・52 枚デッキのコンペンディウム型トリックテイキング。フェーズ定数は文字列で保持する。各プレイヤーがディーラーを 7 回務め計 28 ディール。ディーラーは 7 コントラクト (No Tricks / No Hearts / No Queens / Barbu(K♥) / No Last Trick / Trumps / Dominoes) を 1 回ずつ選択する。得点は `BarbuContracts.go` の Strategy テーブルで切り替える。6 つのトリック系コントラクトは共通のフォロースート処理 (Hearts/Whist と同型) を、Dominoes は Sevens 同型の bitmask レイアウト (`BarbuDominoes.go`) を再利用する。28 ディール後の累計最高得点が勝者。
+
+### Pasur 終局時の残り札
+
+```mermaid
+classDiagram
+    class Pasur {
+        -int leftoverIdx
+        -int leftoverCount
+        +GetLeftoverIdx() int
+        +GetLeftoverCount() int
+    }
+```
+
+最後の手札を出して終局する際、場に札があり最後の捕獲者が存在する場合だけ受取席・枚数を記録する。
+Reset で受取席を -1、枚数を 0 に戻し、KV JSON の li / ln に保存・復元する。
+Web は勝敗別の messageCode と messageParams の leftoverIdx / leftoverCount で表示し、CUI は終局バナーに受取人と枚数を1行追加する。

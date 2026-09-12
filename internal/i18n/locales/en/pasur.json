@@ -13,6 +13,7 @@
   "captureLine": "  hand {{idx}} {{card}} -> table {{targets}}",
   "captureNone": "No capture is available; you can only lay a card on the table.",
   "promptPlay": "play <i> [t...] ... play hand card i (t... are table indices)",
+  "leftover": "{{name}} took the remaining {{count}} cards from the table.",
   "gameEndYou": "Game over! You win.",
   "gameEndCpu": "Game over! {{name}} wins.",
   "gameEndTie": "Game over! {{n}} players tie.",

@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
@@ -280,4 +281,27 @@ func TestPasurCuiPresenterCaptureOptions_En(t *testing.T) {
 	outNoCap := p.Output(g, nil)
 	assert.Contains(t, outNoCap, "No capture is available; you can only lay a card on the table.")
 	assert.NotContains(t, outNoCap, "Captures available:")
+}
+
+func TestPasurCuiPresenterLeftover(t *testing.T) {
+	originalNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(originalNoColor)
+	defer i18n.SetLang("ja")
+	for _, tc := range []struct {
+		lang, line, result, absent string
+	}{
+		{"ja", "CPU 2 が場の残り 2 枚を取りました。", "ゲーム終了！ 4 人が同点です。", "場の残り"},
+		{"en", "CPU 2 took the remaining 2 cards from the table.", "Game over! 4 players tie.", "remaining"},
+	} {
+		t.Run(tc.lang, func(t *testing.T) {
+			i18n.SetLang(tc.lang)
+			p := new(PasurCuiPresenter)
+			out := p.Output(finalPasurPlay(t, 2, false), nil)
+			assert.Contains(t, out, tc.line+"\n")
+			assert.Contains(t, out, tc.result)
+			assert.NotContains(t, p.Output(finalPasurPlay(t, 2, true), nil), tc.absent)
+			assert.NotContains(t, p.Output(finalPasurPlay(t, -1, false), nil), tc.absent)
+		})
+	}
 }

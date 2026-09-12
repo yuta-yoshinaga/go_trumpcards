@@ -100,7 +100,10 @@ type Pasur struct {
 	// lastCaptureIdx は最後に捕獲した席（-1 = まだ誰も取っていない）。
 	//
 	// **場に残った札はここへ行く。** 取り手がいないと札が消える。
-	lastCaptureIdx   int
+	lastCaptureIdx int
+	// leftoverIdx / leftoverCount は終局時に残り札を受け取った席と枚数。
+	leftoverIdx      int
+	leftoverCount    int
 	currentPlayerIdx int
 
 	gameEndFlag bool
@@ -118,7 +121,7 @@ func NewPasur(players []*PasurPlayer, config PasurConfig) *Pasur {
 	if len(players) != config.PlayerCnt {
 		players = newPasurSeats(config.PlayerCnt)
 	}
-	return &Pasur{players: players, config: config, lastCaptureIdx: -1}
+	return &Pasur{players: players, config: config, lastCaptureIdx: -1, leftoverIdx: -1}
 }
 
 // newPasurSeats は標準の席（人間 1 + CPU）を返す。
@@ -146,6 +149,7 @@ func (p *Pasur) Reset() {
 	p.phase = PasurPhasePlay
 	p.packsDealt = 0
 	p.lastCaptureIdx = -1
+	p.leftoverIdx, p.leftoverCount = -1, 0
 	p.currentPlayerIdx = 0
 	p.gameEndFlag = false
 	p.winners = nil
@@ -404,6 +408,7 @@ func (p *Pasur) finishGame() {
 	// **場に残った札は最後に取った人のもの。** 取り手がいなければ場に残したまま
 	// ——どの席にも入れないので、総得点が 21 に満たないことがあります。
 	if len(p.tableCards) > 0 && p.lastCaptureIdx >= 0 {
+		p.leftoverIdx, p.leftoverCount = p.lastCaptureIdx, len(p.tableCards)
 		p.players[p.lastCaptureIdx].AddCaptured(p.tableCards)
 		p.addLog(p.lastCaptureIdx, "leftover",
 			fmt.Sprintf("場の残り %d 枚を取りました", len(p.tableCards)), p.tableCards)
@@ -559,6 +564,12 @@ func (p *Pasur) GetDeckRemaining() int {
 // GetPacksDealt は配ったパック数を返す。
 func (p *Pasur) GetPacksDealt() int { return p.packsDealt }
 
+// GetLeftoverIdx は終局時の残り札の受取席を返す（-1: 受け取りなし）。
+func (p *Pasur) GetLeftoverIdx() int { return p.leftoverIdx }
+
+// GetLeftoverCount は終局時に受け取った残り札の枚数を返す。
+func (p *Pasur) GetLeftoverCount() int { return p.leftoverCount }
+
 // GetLastCaptureIdx は最後に捕獲した席を返す（-1 = なし）。
 func (p *Pasur) GetLastCaptureIdx() int { return p.lastCaptureIdx }
 
@@ -598,6 +609,8 @@ type pasurJSON struct {
 	Phase            PasurPhase        `json:"ph"`
 	TableCards       []*Card           `json:"tb"`
 	PacksDealt       int               `json:"pd"`
+	LeftoverIdx      int               `json:"li"`
+	LeftoverCount    int               `json:"ln"`
 	LastCaptureIdx   int               `json:"lc"`
 	CurrentPlayerIdx int               `json:"ci"`
 	GameEndFlag      bool              `json:"ge"`
@@ -611,6 +624,7 @@ func (p *Pasur) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&pasurJSON{
 		TrumpCards: p.trumpCards, Players: p.players, Config: p.config, Phase: p.phase,
 		TableCards: p.tableCards, PacksDealt: p.packsDealt,
+		LeftoverIdx: p.leftoverIdx, LeftoverCount: p.leftoverCount,
 		LastCaptureIdx: p.lastCaptureIdx, CurrentPlayerIdx: p.currentPlayerIdx,
 		GameEndFlag: p.gameEndFlag, Winners: p.winners, Scores: p.scores,
 		ActionLog: p.actionLog,
@@ -623,7 +637,7 @@ func (p *Pasur) MarshalJSON() ([]byte, error) {
 // ので、フェーズ × 各フィールドの表として書いています (#5302〜#5313)。とくに
 // **まとめて立つフィールドの対**（終了フラグ・フェーズ・得点・勝者）を等値で見ます。
 func (p *Pasur) UnmarshalJSON(data []byte) error {
-	var j pasurJSON
+	j := pasurJSON{LeftoverIdx: -1}
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
@@ -643,6 +657,12 @@ func (p *Pasur) UnmarshalJSON(data []byte) error {
 	}
 	if j.LastCaptureIdx < -1 || j.LastCaptureIdx >= j.Config.PlayerCnt {
 		return fmt.Errorf("invalid last capture: %d", j.LastCaptureIdx)
+	}
+	if j.LeftoverIdx < -1 || j.LeftoverIdx >= j.Config.PlayerCnt ||
+		j.LeftoverCount < 0 || j.LeftoverCount > PasurDeckSize ||
+		(j.LeftoverCount == 0) != (j.LeftoverIdx == -1) ||
+		(j.LeftoverCount > 0 && (!j.GameEndFlag || j.LeftoverIdx != j.LastCaptureIdx || len(j.TableCards) > 0)) {
+		return errors.New("invalid leftover capture")
 	}
 	if j.PacksDealt < 0 {
 		return fmt.Errorf("invalid packs dealt: %d", j.PacksDealt)
@@ -703,6 +723,7 @@ func (p *Pasur) UnmarshalJSON(data []byte) error {
 	p.trumpCards = j.TrumpCards
 	p.players, p.config, p.phase = j.Players, j.Config, j.Phase
 	p.tableCards, p.packsDealt = j.TableCards, j.PacksDealt
+	p.leftoverIdx, p.leftoverCount = j.LeftoverIdx, j.LeftoverCount
 	p.lastCaptureIdx, p.currentPlayerIdx = j.LastCaptureIdx, j.CurrentPlayerIdx
 	p.gameEndFlag, p.winners, p.scores = j.GameEndFlag, j.Winners, j.Scores
 	p.actionLog = j.ActionLog

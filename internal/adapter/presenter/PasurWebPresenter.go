@@ -96,16 +96,43 @@ func (p *PasurWebPresenter) buildMessage(s interfaces.PasurGame, lastErr error) 
 	}
 	if s.GetGameEndFlag() {
 		winners := s.GetWinners()
+		code := "pasur.result.tie"
+		params := map[string]string{"n": strconv.Itoa(len(winners))}
 		switch {
-		case len(winners) > 1:
-			return "", "pasur.result.tie", map[string]string{"n": strconv.Itoa(len(winners))}
 		case len(winners) == 1 && winners[0] == 0:
-			return "", "pasur.result.you", nil
+			code, params = "pasur.result.you", nil
 		case len(winners) == 1:
-			return "", "pasur.result.cpu", map[string]string{"idx": strconv.Itoa(winners[0])}
-		default:
-			return "", "pasur.result.tie", map[string]string{"n": "0"}
+			code, params = "pasur.result.cpu", map[string]string{"idx": strconv.Itoa(winners[0])}
 		}
+		if s.GetLeftoverCount() > 0 {
+			leftoverIdx := s.GetLeftoverIdx()
+			switch code {
+			case "pasur.result.you":
+				code = "pasur.result.you.leftoverYou"
+			case "pasur.result.cpu":
+				code = "pasur.result.cpu.leftoverYou"
+			default:
+				code = "pasur.result.tie.leftoverYou"
+			}
+			if leftoverIdx != 0 {
+				switch code {
+				case "pasur.result.you.leftoverYou":
+					code = "pasur.result.you.leftoverCpu"
+				case "pasur.result.cpu.leftoverYou":
+					code = "pasur.result.cpu.leftoverCpu"
+				default:
+					code = "pasur.result.tie.leftoverCpu"
+				}
+			}
+			if params == nil {
+				params = make(map[string]string)
+			}
+			params["leftoverCount"] = strconv.Itoa(s.GetLeftoverCount())
+			if leftoverIdx != 0 {
+				params["leftoverIdx"] = strconv.Itoa(leftoverIdx)
+			}
+		}
+		return "", code, params
 	}
 	// **場に何が残っているかがこのゲームの情報のすべて。**
 	return "", "pasur.play", map[string]string{
