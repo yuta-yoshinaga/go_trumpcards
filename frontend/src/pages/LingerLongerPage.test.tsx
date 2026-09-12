@@ -102,9 +102,7 @@ describe('LingerLongerPage', () => {
     expect(await screen.findByTestId('ll-eliminated-summary')).toHaveTextContent('脱落 0 / 全 4 人');
     first.unmount();
 
-    mockExec.mockResolvedValue(
-      makeState({ eliminatedCnt: 2, players: [seat(0), seat(1), seat(2), seat(3), seat(4)] }),
-    );
+    mockExec.mockResolvedValue(makeState({ eliminatedCnt: 2, players: [seat(0), seat(1), seat(2), seat(3), seat(4)] }));
     renderWithProviders(<LingerLongerPage />);
     expect(await screen.findByTestId('ll-eliminated-summary')).toHaveTextContent('脱落 2 / 全 5 人');
   });
