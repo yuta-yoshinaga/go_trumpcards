@@ -287,6 +287,13 @@ describe('HoldemPage', () => {
     expect(within(limitDisplay).getByText(expectedLabel)).toBeInTheDocument();
   });
 
+  it('shows the fixed-limit label when the betting limit is out of range', async () => {
+    mockExec.mockResolvedValue({ ...preFlopState, bettingLimit: 99 });
+    renderWithProviders(<HoldemPage />);
+    const limitDisplay = await screen.findByTestId('holdem-betting-limit');
+    expect(within(limitDisplay).getByText('固定リミット')).toBeInTheDocument();
+  });
+
   // ---- community cards ----
   it('shows 5 CardBack placeholders when communityCards is empty', async () => {
     mockExec.mockResolvedValue(preFlopState);
