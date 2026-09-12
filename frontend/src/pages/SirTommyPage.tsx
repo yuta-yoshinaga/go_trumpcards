@@ -316,6 +316,7 @@ function SirTommyPageContent() {
   const isGameClear = state.phase === SirTommyPhase.GAME_CLEAR;
   const isGameOver = state.phase === SirTommyPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const foundationCount = isGameOver ? state.foundations.reduce((sum, pile) => sum + pile.length, 0) : 0;
 
   const phaseName = isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing');
 
@@ -554,6 +555,15 @@ function SirTommyPageContent() {
                 messageCode={state.messageCode}
                 messageParams={state.messageParams}
               />
+
+              {isGameOver && (
+                <p data-testid="sirtommy-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+                  {t('gameOverSummary', {
+                    count: foundationCount,
+                    percent: Math.round((foundationCount / 52) * 100),
+                  })}
+                </p>
+              )}
 
               {/*
                 ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
