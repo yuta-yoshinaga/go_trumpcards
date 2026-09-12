@@ -182,6 +182,17 @@ func TestBoliviaCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, i18n.T("bolivia.promptGoOutUnavailable"))
 	})
 
+	t.Run("discard phase commands when can go out", func(t *testing.T) {
+		m, _ := setupBoliviaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "CanGoOut")
+		m.On("GetPhase").Return(domain.BoliviaPhaseDiscard)
+		m.On("CanGoOut").Return(true)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "go・・・上がる (完成メルド2個以上＋最低1本はエスカレラ)")
+		assert.NotContains(t, result, "go / goout はまだ使えません (完成メルド2個以上＋最低1本はエスカレラ)")
+	})
+
 	t.Run("round end prompt", func(t *testing.T) {
 		m, _ := setupBoliviaCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
