@@ -7469,7 +7469,7 @@ var gameRegistry = []GameRegistryEntry{
 			"  m 0,1,2              meld a same-suit sequence",
 			"  sm                   skip meld phase",
 			"  d <idx>              discard a card",
-			"  go                   go out (requires the kozes + a biriba)",
+			"  go                   go out (requires the pozzetto + a biriba)",
 			"  nr                   next round",
 			"  h                    hint (recommended action)",
 			"  l                    action log",
