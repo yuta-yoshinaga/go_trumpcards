@@ -1623,4 +1623,11 @@ describe('BigOPage', () => {
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.objectContaining({ bettingLimit: 2 })),
     );
   });
+
+  it('renders action shortcuts panel during betting phase', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<BigOPage />);
+    const panel = await screen.findByTestId('bigo-kbd-shortcuts');
+    expect(panel).toBeInTheDocument();
+  });
 });

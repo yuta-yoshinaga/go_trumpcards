@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { bigOHiLoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
 import { BoardLowBadge } from '../components/BoardLowBadge';
 import { CpuAccordion } from '../components/CpuAccordion';
@@ -147,6 +148,7 @@ function BigOHiLoPageContent() {
     isAddonPhase,
     humanRebuyCount,
     cpuPlayers,
+    actionBindings,
   } = useCommunityPokerGame({
     game: 'bigohilo',
     exec: bigOHiLoApi.exec,
@@ -630,6 +632,7 @@ function BigOHiLoPageContent() {
               dataTutorial="bohl-reset-button"
               className="min-w-[90px]"
             />
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="bigohilo-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

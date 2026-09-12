@@ -1764,4 +1764,11 @@ describe('CourchevelHiLoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('cv-preflop-exposed-note')).not.toBeInTheDocument();
   });
+
+  it('renders action shortcuts panel during betting phase', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<CourchevelHiLoPage />);
+    const panel = await screen.findByTestId('courchevelhilo-kbd-shortcuts');
+    expect(panel).toBeInTheDocument();
+  });
 });

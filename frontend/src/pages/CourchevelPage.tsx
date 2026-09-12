@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { courchevelApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
@@ -151,6 +152,7 @@ function CourchevelPageContent() {
     isAddonPhase,
     humanRebuyCount,
     cpuPlayers,
+    actionBindings,
   } = useCommunityPokerGame({
     game: 'courchevel',
     exec: courchevelApi.exec,
@@ -591,6 +593,7 @@ function CourchevelPageContent() {
               dataTutorial="bo-reset-button"
               className="min-w-[90px]"
             />
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="courchevel-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

@@ -1710,4 +1710,11 @@ describe('OmahaHiLoPage', () => {
     expect(badge).toHaveTextContent('300');
     expect(badge).not.toHaveAttribute('data-scoop-human');
   });
+
+  it('renders action shortcuts panel during betting phase', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<OmahaHiLoPage />);
+    const panel = await screen.findByTestId('omahahilo-kbd-shortcuts');
+    expect(panel).toBeInTheDocument();
+  });
 });
