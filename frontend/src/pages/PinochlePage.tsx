@@ -319,7 +319,10 @@ function PinochlePageContent() {
                       onTurn ? 'ring-2 ring-ds-warning' : ''
                     }`}
                   >
-                    <div className="font-bold">{playerName(p.id, p.isHuman)}</div>
+                    <div className="font-bold">
+                      {playerName(p.id, p.isHuman)}
+                      {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
+                    </div>
                     <div>
                       {t('team')} {p.team} | {t('bid')}: {p.bid} | {t('meldScore')}: {p.meldScore} | {t('trickCount')}:{' '}
                       {p.trickCount}
