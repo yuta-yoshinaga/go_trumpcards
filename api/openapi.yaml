@@ -4144,10 +4144,10 @@ paths:
         Send a command to advance the Biriba (ビリバ) game session identified by
         `sessionId`. Biriba is a four-player partnership rummy game using two
         52-card decks and two Jokers (106 cards). Each player receives 11 cards
-        and two kozes reserve hands are set aside. Melds are same-suit rank
+        and two pozzetto reserve hands are set aside. Melds are same-suit rank
         sequences; Jokers and 2s are wild. The first team to empty its initial
-        hand takes a kozes, and a seven-card sequence without a wild is a pure
-        Biriba. Going out after using both kozes earns the additional bonus.
+        hand takes a pozzetto, and a seven-card sequence without a wild is a pure
+        Biriba. Going out after using both pozzetto hands earns the additional bonus.
 
         | Phase        | Value | Description |
         |--------------|-------|-------------|
@@ -4168,7 +4168,7 @@ paths:
         | `meld`         | `m`     | Meld sequences (requires `meldGroups`) |
         | `skipmeld`     | `sm`    | Skip meld phase |
         | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
-        | `goout`        | `go`    | Go out after both kozes are used |
+        | `goout`        | `go`    | Go out after both pozzetto hands are used |
         | `nextround`    | `nr`    | Score the round and start the next |
         | `hint`         | `h`     | Get a hint for the next move |
         | `log`          | `l`     | View action log |
