@@ -81,6 +81,22 @@ describe('HasenpfefferPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('marks only the dealer seat', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 2 }));
+    renderWithProviders(<HasenpfefferPage />);
+
+    expect(await screen.findByTestId('hpf-seat-2')).toHaveTextContent('/ 親');
+    expect(screen.getByTestId('hpf-seat-0')).not.toHaveTextContent('/ 親');
+  });
+
+  it('moves the dealer mark when dealerIdx changes', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 1 }));
+    renderWithProviders(<HasenpfefferPage />);
+
+    expect(await screen.findByTestId('hpf-seat-1')).toHaveTextContent('/ 親');
+    expect(screen.getByTestId('hpf-seat-3')).not.toHaveTextContent('/ 親');
+  });
+
   // **ジョーカーが最強という序列は知らないと打ち方が変わる。**
   it('states the joker ranking', async () => {
     renderWithProviders(<HasenpfefferPage />);

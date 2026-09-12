@@ -1,4 +1,5 @@
 {
+  "dealerBadge": "Dealer",
   "phase": {
     "bid": "Bidding",
     "discard": "Discard",
