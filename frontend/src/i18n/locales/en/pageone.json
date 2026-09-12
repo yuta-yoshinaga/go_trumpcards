@@ -24,6 +24,7 @@
   "scoresPlayer": "Player",
   "scoresRound": "Round",
   "scoresTotal": "Total",
+  "target": "Target: {{points}} pts",
   "playButton": "Play",
   "drawButton": "Draw",
   "declareButton": "Page One!",
