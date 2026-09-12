@@ -94,6 +94,7 @@ func (p *SevenTwentySevenCuiPresenter) Output(g interfaces.SevenTwentySevenGame,
 
 		switch g.GetPhase() {
 		case domain.SevenTwentySevenPhaseDraw:
+			b.WriteString(i18n.Tf("seventwentyseven.drawRound", "n", strconv.Itoa(g.GetDrawRound())) + "\n")
 			// **狙える 2 つの目標を毎回書く。** 「7 と 27 のどちらに寄せるか」が
 			// このゲームそのもので、書いていなければ何を選んでいるのか読めない。
 			b.WriteString(i18n.T("seventwentyseven.targetsNote") + "\n")

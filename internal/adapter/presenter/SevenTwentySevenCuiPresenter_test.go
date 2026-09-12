@@ -50,6 +50,21 @@ func TestSevenTwentySevenCuiPresenter_Output_MarksABustedSide(t *testing.T) {
 	assert.Contains(t, out, i18n.Tf("seventwentyseven.yourScore", "score", "- / 19"))
 }
 
+func TestSevenTwentySevenCuiPresenter_Output_ShowsDrawRoundOnlyDuringDraw(t *testing.T) {
+	s27NoColor(t)
+	p := new(presenter.SevenTwentySevenCuiPresenter)
+	g := domain.NewDefaultSevenTwentySeven()
+	require.NoError(t, g.TakeCard(true))
+
+	out := p.Output(g, nil)
+	assert.Contains(t, out, "2巡目")
+
+	g.StandEveryoneForTest()
+	g.SettleForTest()
+	out = p.Output(g, nil)
+	assert.NotContains(t, out, "巡目")
+}
+
 // **両側の勝者を名指しする。** どちらを取ったのかが分からないと、
 // なぜ半分なのかが読めない。
 func TestSevenTwentySevenCuiPresenter_Output_NamesBothSideWinners(t *testing.T) {
