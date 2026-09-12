@@ -6,6 +6,7 @@
     "hand": "マノ",
     "baza": "バサ",
     "target": "目標",
+    "mano": "マノ",
     "match": "マッチ得点",
     "you": "あなた",
     "cpu": "CPU",
@@ -41,6 +42,12 @@
     "cpuWin": "CPUの勝ち ({{p0}}-{{p1}})"
   },
   "respondPrompt": "{{name}} が {{level}} を宣言しました。応答してください。",
+  "history": {
+    "title": "バサ履歴",
+    "baza": "{{number}}バサ",
+    "winner": "{{name}}の勝ち",
+    "parda": "パルダ（引き分け）"
+  },
   "hintReason": {
     "leadStrong": "強いカードでリードしましょう",
     "leadLow": "弱いカードでリードして強い札を温存",
