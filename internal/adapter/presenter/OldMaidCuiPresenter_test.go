@@ -249,6 +249,47 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		om.AssertExpectations(t)
 	})
 
+	t.Run("success Output cpu actions reveal every discarded card across multiple actions", func(t *testing.T) {
+		om := new(interfaces.MockOldMaidGame)
+		om.On("GetConfig").Return(domain.OldMaidConfig{})
+		om.On("GetPlayerCnt").Return(0)
+		om.On("GetHasDrawn").Return(false)
+		om.On("GetCpuActions").Return([]*domain.OldMaidCpuAction{
+			{
+				DrawPlayerIdx:  0,
+				DrawFromIdx:    1,
+				DiscardedPairs: 1,
+				DiscardedCards: []*domain.Card{
+					domain.NewCard(domain.CardDesignSpade, 4, false),
+					domain.NewCard(domain.CardDesignHeart, 4, false),
+				},
+			},
+			{
+				DrawPlayerIdx:  1,
+				DrawFromIdx:    0,
+				DiscardedPairs: 1,
+				DiscardedCards: []*domain.Card{
+					domain.NewCard(domain.CardDesignClover, 9, false),
+					domain.NewCard(domain.CardDesignDiamond, 9, false),
+				},
+			},
+		})
+		om.On("GetPlayer", mock.Anything).Return((*domain.OldMaidPlayer)(nil))
+		om.On("GetDrawHistory").Return([]*domain.OldMaidDrawHistoryEntry(nil))
+		om.On("GetHumanProfile").Return((*domain.OldMaidHumanProfile)(nil))
+		om.On("GetGameEndFlag").Return(false)
+		om.On("GetCurrentTurn").Return(0)
+		om.On("GetNextDrawTargetIdx").Return(-1)
+
+		result := top.Output(om, nil)
+		assert.Contains(t, result, "SPADE 4")
+		assert.Contains(t, result, "HEART 4")
+		assert.Contains(t, result, "CLOVER 9")
+		assert.Contains(t, result, "DIAMOND 9")
+		assert.NotContains(t, result, "{{")
+		om.AssertExpectations(t)
+	})
+
 	t.Run("success Output getCardStr all designs", func(t *testing.T) {
 		om, players := setupOldMaidCuiTest()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
