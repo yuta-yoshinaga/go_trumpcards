@@ -14,6 +14,7 @@ import (
 
 func setupDragonTigerWebMockDefaults(m *interfaces.MockDragonTigerGame) {
 	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetPhase").Return(domain.DragonTigerPhaseBet).Maybe()
 	m.On("GetDragonCard").Return((*domain.Card)(nil)).Maybe()
 	m.On("GetTigerCard").Return((*domain.Card)(nil)).Maybe()
@@ -24,6 +25,19 @@ func setupDragonTigerWebMockDefaults(m *interfaces.MockDragonTigerGame) {
 	m.On("GetPayout").Return(0).Maybe()
 	m.On("GetHistory").Return(([]int)(nil)).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+}
+
+func TestDragonTigerWebPresenter_Output_ChipsRefilledNotice(t *testing.T) {
+	m := new(interfaces.MockDragonTigerGame)
+	setupDragonTigerWebMockDefaults(m)
+	m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetChipsRefilled")
+	m.On("GetChipsRefilled").Return(true)
+	out := parseDragonTigerOutput(t, new(DragonTigerWebPresenter).Output(m, nil))
+	// **文言はロケール側。** このファイルの他の結果も Message は空で、
+	// messageCode だけを返している。
+	assert.Empty(t, out.Message)
+	assert.Equal(t, "dragontiger.result.bankrollRefilled", out.MessageCode)
+	assert.Equal(t, "1000", out.MessageParams["chips"])
 }
 
 func parseDragonTigerOutput(t *testing.T, jsonStr string) *controller.DragonTigerWebOutput {

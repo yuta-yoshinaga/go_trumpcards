@@ -456,6 +456,9 @@ function MightyPageContent() {
                     open={isRoundEnd || isGameEnd || undefined}
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
+                    <div className="text-ds-text-muted text-sm mt-1" data-testid="mighty-point-limit">
+                      {t('pointLimit', { limit: state.config.pointLimit })}
+                    </div>
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[420px] mt-1">
                         <thead>
@@ -497,6 +500,9 @@ function MightyPageContent() {
                 ) : (
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="mighty-score-table">
                     <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                    <div className="text-ds-text-muted text-sm mt-1" data-testid="mighty-point-limit">
+                      {t('pointLimit', { limit: state.config.pointLimit })}
+                    </div>
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[420px]">
                         <thead>

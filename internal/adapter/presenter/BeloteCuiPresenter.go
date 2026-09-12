@@ -65,6 +65,8 @@ func (p *BeloteCuiPresenter) Output(b interfaces.BeloteGame, lastErr error) stri
 		out.WriteString(i18n.Tf("belote.teamScoreLine",
 			"t0", strconv.Itoa(b.GetTeamScore(0)),
 			"t1", strconv.Itoa(b.GetTeamScore(1))) + "\n")
+		out.WriteString(i18n.Tf("belote.targetScoreLine",
+			"score", strconv.Itoa(b.GetConfig().TargetScore)) + "\n")
 
 		// **20 点規模のボーナスに気づけない。**Web は専用バッジと読み上げまで
 		// 用意しているのに、CUI は累計点しか出しておらず、Belote/Rebelote が

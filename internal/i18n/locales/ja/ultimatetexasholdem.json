@@ -20,6 +20,7 @@
   "phaseRiver": "RIVER",
   "phaseEnd": "END",
   "phaseUnknown": "UNKNOWN",
+  "bankrollRefilled": "残高が最低ベットを下回ったため、{{chips}}チップを補充しました",
   "dealerQualified": "ディーラー: クオリファイ (ペア以上)",
   "dealerNotQualified": "ディーラー: クオリファイなし (アンテはプッシュ)",
   "playerWins": "プレイヤーの勝ち！",

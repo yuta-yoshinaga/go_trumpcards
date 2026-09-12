@@ -2816,6 +2816,8 @@
     "unsunkaruta.roundEnd": "ディールが終わりました。",
     "unsunkaruta.trickEnd": "トリックが決まりました。",
     "videopoker.chipsRefilled": "残高が最低ベットを下回ったため、{{chips}}コインを補充しました",
+    "dragontiger.result.bankrollRefilled": "残高が最低ベットを下回ったため、{{chips}}チップを補充しました",
+    "ultimatetexasholdem.result.bankrollRefilled": "残高が最低ベットを下回ったため、{{chips}}チップを補充しました",
     "videopoker.result.lose": "あなたの負けです。",
     "videopoker.result.win": "あなたの勝ちです。",
     "vint.bidPhase": "宣言フェーズ — ♠が最弱でNTが最強です（ブリッジとは逆）",

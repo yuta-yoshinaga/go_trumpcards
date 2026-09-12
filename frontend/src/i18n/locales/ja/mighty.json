@@ -59,6 +59,7 @@
     "partner": "副官カード"
   },
   "scores": "スコア",
+  "pointLimit": "決着ライン: +{{limit}}点（宣言側の累計が+{{limit}}点で勝利、-{{limit}}点で即敗北）",
   "scoresPlayer": "プレイヤー",
   "scoresBid": "ビッド",
   "scoresPointCards": "得点札",

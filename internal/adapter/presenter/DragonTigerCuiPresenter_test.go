@@ -13,6 +13,7 @@ import (
 
 func setupDragonTigerCuiMockDefaults(m *interfaces.MockDragonTigerGame) {
 	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetPhase").Return(domain.DragonTigerPhaseBet).Maybe()
 	m.On("GetDragonCard").Return((*domain.Card)(nil)).Maybe()
 	m.On("GetTigerCard").Return((*domain.Card)(nil)).Maybe()
@@ -25,6 +26,14 @@ func setupDragonTigerCuiMockDefaults(m *interfaces.MockDragonTigerGame) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 }
 
+func TestDragonTigerCuiPresenter_Output_ChipsRefilledNotice(t *testing.T) {
+	m := new(interfaces.MockDragonTigerGame)
+	setupDragonTigerCuiMockDefaults(m)
+	m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetChipsRefilled")
+	m.On("GetChipsRefilled").Return(true)
+	assert.Contains(t, new(DragonTigerCuiPresenter).Output(m, nil), "残高が最低ベットを下回ったため、1000チップを補充しました")
+}
+
 func TestDragonTigerCuiPresenter_Output_BetPhase(t *testing.T) {
 	p := new(DragonTigerCuiPresenter)
 	m := new(interfaces.MockDragonTigerGame)
@@ -33,6 +42,7 @@ func TestDragonTigerCuiPresenter_Output_BetPhase(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
 	assert.Contains(t, result, "フェーズ: BET")
+	assert.NotContains(t, result, "残高が最低ベットを下回ったため、1000チップを補充しました")
 	// No history yet, so the history line is omitted.
 	assert.NotContains(t, result, "履歴:")
 }

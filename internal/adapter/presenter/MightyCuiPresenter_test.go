@@ -267,6 +267,23 @@ func TestMightyCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestMightyCuiPresenter_ShowsTheConfiguredFinishLines(t *testing.T) {
+	i18n.SetLang("ja")
+	p := new(presenter.MightyCuiPresenter)
+	build := func(pointLimit int) string {
+		m, _ := setupMightyCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetConfig")
+		cfg := domain.DefaultMightyConfig()
+		cfg.PointLimit = pointLimit
+		m.On("GetConfig").Return(cfg)
+		return p.Output(m, nil)
+	}
+
+	assert.Contains(t, build(100), "決着ライン: +100点（宣言側の累計が+100点で勝利、-100点で即敗北）")
+	assert.Contains(t, build(300), "決着ライン: +300点（宣言側の累計が+300点で勝利、-300点で即敗北）")
+	assert.NotContains(t, build(300), "決着ライン: +100点")
+}
+
 func TestMightyCuiPresenter_HintOutput(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)

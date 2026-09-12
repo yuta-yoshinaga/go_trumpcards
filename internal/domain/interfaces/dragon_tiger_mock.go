@@ -77,6 +77,11 @@ func (m *MockDragonTigerGame) GetChips() int {
 	return args.Int(0)
 }
 
+func (m *MockDragonTigerGame) GetChipsRefilled() bool {
+	args := m.Called()
+	return args.Bool(0)
+}
+
 func (m *MockDragonTigerGame) GetHistory() []int {
 	args := m.Called()
 	if args.Get(0) == nil {

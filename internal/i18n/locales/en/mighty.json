@@ -24,6 +24,7 @@
   "partnerRevealed": " (revealed)",
   "partnerHidden": " (hidden)",
   "highestBid": "Highest bid: {{bid}}",
+  "pointLimitLine": "Finish line: +{{limit}} points (declarer side wins at +{{limit}} total, but loses immediately at -{{limit}})",
   "gameEndDeclarerWin": "Game over! Declarer side wins!",
   "gameEndOppositionWin": "Game over! Opposition wins!",
   "promptBid": "Bid phase: {{name}}'s turn",

@@ -40,16 +40,17 @@ const (
 // （A=1 が最弱、K=13 が最強）。タイベット未実施でタイになった場合、メイン
 // ベット額の半分が返還される（業界標準の "tie returns half" ルール）。
 type DragonTiger struct {
-	trumpCards  *TrumpCards
-	dragonCard  *Card
-	tigerCard   *Card
-	chips       ChipHolder
-	betAmount   int
-	betType     int
-	phase       int
-	gameEndFlag bool
-	result      GameResult
-	payout      int
+	trumpCards    *TrumpCards
+	dragonCard    *Card
+	tigerCard     *Card
+	chips         ChipHolder
+	betAmount     int
+	betType       int
+	phase         int
+	gameEndFlag   bool
+	chipsRefilled bool // Reset がこのターンに残高を補充したか (永続化しない)
+	result        GameResult
+	payout        int
 	actionLogBase
 	history []int // 罫線（Big Road）履歴
 }
@@ -81,8 +82,15 @@ func (dt *DragonTiger) Reset() {
 	dt.result = 0
 	dt.payout = 0
 	dt.actionLog = nil
+	// 補充は突然チップが現れるため、何も知らせないと残高が勝手に回復した
+	// ように見えてしまう。このフラグは直前の Reset で起きた事実だけを表し、
+	// presenter が同じ応答で説明するために使う。JSON には含めないので、
+	// 保存後のリロードで補充を再通知したり、古い状態に通知を持ち越したり
+	// しない。
+	dt.chipsRefilled = false
 	if dt.chips.GetChips() < DragonTigerMinBet {
 		dt.chips.SetChips(DragonTigerDefaultChips)
+		dt.chipsRefilled = true
 	}
 	dt.trumpCards = NewTrumpCards(0)
 	dt.trumpCards.Shuffle()
@@ -239,6 +247,10 @@ func (dt *DragonTiger) GetPayout() int { return dt.payout }
 
 // GetChips チップ
 func (dt *DragonTiger) GetChips() int { return dt.chips.GetChips() }
+
+// GetChipsRefilled は直前の Reset が最低ベット割れで残高を補充したかを返す。
+// 保存対象ではないので、リロード後は false に戻る。
+func (dt *DragonTiger) GetChipsRefilled() bool { return dt.chipsRefilled }
 
 // GetHistory 罫線履歴を取得する
 func (dt *DragonTiger) GetHistory() []int { return dt.history }

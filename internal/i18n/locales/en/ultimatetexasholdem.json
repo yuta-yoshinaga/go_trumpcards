@@ -20,6 +20,7 @@
   "phaseRiver": "RIVER",
   "phaseEnd": "END",
   "phaseUnknown": "UNKNOWN",
+  "bankrollRefilled": "Your balance fell below the minimum bet, so it was topped up to {{chips}} chips",
   "dealerQualified": "Dealer qualified (pair or better)",
   "dealerNotQualified": "Dealer did not qualify (Ante pushes)",
   "playerWins": "Player wins!",
