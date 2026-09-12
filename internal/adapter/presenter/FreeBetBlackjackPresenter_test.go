@@ -100,7 +100,9 @@ func TestFreeBetCuiPresenter_HidesDealerHoleDuringPlayAndRevealsAtResult(t *test
 	playDealerLine := freeBetDealerLine(t, play)
 	assert.Contains(t, playDealerLine, "[??]")
 	assert.NotContains(t, playDealerLine, " = ", "伏せたディーラー行に空の点数区切りを出してはいけない")
-	assert.NotContains(t, playDealerLine, strconv.Itoa(g.GetDealerScore()), "プレイ中にディーラー点数を出してはいけない")
+	// アップカードの印字値と伏せ札込みの点数がたまたま一致する配りがある。
+	// 部分文字列で点数の不在を判定すると、約 1/10 の配りで誤って落ちる。
+	assert.True(t, strings.HasSuffix(playDealerLine, "[??]"), "プレイ中のディーラー行は伏せ札で終わらなければいけない")
 
 	for g.GetPhase() == domain.FreeBetPhasePlay {
 		require.NoError(t, g.Stand())
