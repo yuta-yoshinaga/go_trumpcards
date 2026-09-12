@@ -23,26 +23,6 @@ func triPeaksAdjacentRank(v1, v2 int) bool {
 	return diff == 1 || diff == 12
 }
 
-func triPeaksPeakRemaining(layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard) [3]int {
-	var remaining [3]int
-	for _, row := range layout {
-		for col, tc := range row {
-			if tc == nil || tc.Card == nil || tc.Removed {
-				continue
-			}
-			remaining[min(col/3, 2)]++
-		}
-	}
-	return remaining
-}
-
-func triPeaksPeakRemainingValue(n int) string {
-	if n == 0 {
-		return "0 ✓"
-	}
-	return strconv.Itoa(n)
-}
-
 // tripeaksComboMin is the chain length worth naming. It matches the web badge,
 // which appears from 2: a "combo" of 1 is just an ordinary removal.
 const tripeaksComboMin = 2
@@ -103,12 +83,6 @@ func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 			}
 			b.WriteString("\n")
 		}
-
-		remaining := triPeaksPeakRemaining(layout)
-		b.WriteString(i18n.Tf("tripeaks.peakRemaining",
-			"left", triPeaksPeakRemainingValue(remaining[0]),
-			"middle", triPeaksPeakRemainingValue(remaining[1]),
-			"right", triPeaksPeakRemainingValue(remaining[2])) + "\n")
 
 		b.WriteString("----------\n")
 
