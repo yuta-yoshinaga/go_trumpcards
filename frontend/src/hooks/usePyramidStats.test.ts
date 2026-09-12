@@ -4,9 +4,18 @@ import {
   applyPyramidResult,
   emptyPyramidStats,
   PYRAMID_STATS_KEY,
+  pyramidWinRate,
   readPyramidStats,
   usePyramidStats,
 } from './usePyramidStats';
+
+describe('pyramidWinRate', () => {
+  it('returns the win rate and avoids division by zero', () => {
+    expect(pyramidWinRate({ plays: 10, wins: 3, fewestMoves: null })).toBe(30);
+    expect(pyramidWinRate({ plays: 3, wins: 1, fewestMoves: null })).toBe(33);
+    expect(pyramidWinRate({ plays: 0, wins: 0, fewestMoves: null })).toBe(0);
+  });
+});
 
 describe('applyPyramidResult', () => {
   it('records a clear and a new fewest-moves record', () => {
