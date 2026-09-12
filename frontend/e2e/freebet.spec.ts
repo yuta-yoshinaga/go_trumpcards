@@ -22,11 +22,13 @@ test.describe('Free Bet Blackjack E2E', () => {
     await deal.click();
     await waitForLoaded(page);
 
-    // 伏せ札は無いので、配った時点でディーラーの点数が出る。
-    await expect(page.getByTestId('fb-dealer-score')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    // 配った直後はディーラーの伏せ札と点数が隠れている。
+    await expect(page.getByTestId('fb-dealer-hidden')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
     await standOut(page);
 
+    // 決着後はディーラーの札と点数が公開される。
+    await expect(page.getByTestId('fb-dealer-score')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
     await expect(page.getByTestId('fb-result')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
     const next = page.getByRole('button', { name: '次のラウンド' });
     await expect(next).toBeVisible({ timeout: TIMEOUT_ACTION });
