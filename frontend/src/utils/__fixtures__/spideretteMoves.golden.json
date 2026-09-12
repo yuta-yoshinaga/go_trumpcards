@@ -1,0 +1,39 @@
+{
+  "_comment": "Golden vectors shared by frontend/src/utils/spideretteMoves.golden.test.ts and internal/domain/Spiderette_test.go. A source is valid only when its suffix is same-suit descending and every card is face-up.",
+  "cases": [
+    {
+      "name": "single face-up card is movable",
+      "cards": [{ "suit": 1, "value": 13, "faceUp": true }],
+      "sourceIndex": 0,
+      "valid": true
+    },
+    {
+      "name": "same-suit descending face-up sequence is movable",
+      "cards": [
+        { "suit": 1, "value": 13, "faceUp": true },
+        { "suit": 1, "value": 12, "faceUp": true },
+        { "suit": 1, "value": 11, "faceUp": true }
+      ],
+      "sourceIndex": 0,
+      "valid": true
+    },
+    {
+      "name": "different suit breaks the sequence",
+      "cards": [{ "suit": 1, "value": 13, "faceUp": true }, { "suit": 2, "value": 12, "faceUp": true }],
+      "sourceIndex": 0,
+      "valid": false
+    },
+    {
+      "name": "skipped rank breaks the sequence",
+      "cards": [{ "suit": 1, "value": 13, "faceUp": true }, { "suit": 1, "value": 11, "faceUp": true }],
+      "sourceIndex": 0,
+      "valid": false
+    },
+    {
+      "name": "face-down continuation breaks the sequence",
+      "cards": [{ "suit": 1, "value": 13, "faceUp": true }, { "suit": 1, "value": 12, "faceUp": false }],
+      "sourceIndex": 0,
+      "valid": false
+    }
+  ]
+}

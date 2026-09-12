@@ -151,6 +151,28 @@ describe('SpiderettePage', () => {
     expect(screen.getByText(/\(24\)/)).toBeInTheDocument();
   });
 
+  it('disables invalid tableau sources while keeping valid sources selectable', async () => {
+    mockSend.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('HEART', 12), faceUp: true },
+        ],
+        [{ card: card('CLOVER', 9), faceUp: true }],
+      ]),
+    });
+    renderWithProviders(<SpiderettePage />);
+
+    const invalidSource = await screen.findByTestId('spdt-card-0-0');
+    const validSource = screen.getByTestId('spdt-card-0-1');
+    expect(invalidSource).toBeDisabled();
+    expect(validSource).not.toBeDisabled();
+
+    fireEvent.click(validSource);
+    expect(validSource).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('renders move count', async () => {
     renderWithProviders(<SpiderettePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
