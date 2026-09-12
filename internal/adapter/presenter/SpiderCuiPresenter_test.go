@@ -23,6 +23,7 @@ func setupSpiderCuiMockDefaults(sg *interfaces.MockSpiderGame) {
 	sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit).Maybe()
 	sg.On("IsStalemate").Return(false).Maybe()
 	sg.On("UndoToEscape").Return(0).Maybe()
+	sg.On("CanAutoComplete").Return(false).Maybe()
 
 	var tableau [domain.SpiderTableauCnt][]*domain.SpiderTableauCard
 	for i := 0; i < domain.SpiderTableauCnt; i++ {
@@ -138,6 +139,27 @@ func TestSpiderCuiPresenter_Output(t *testing.T) {
 		result := p.Output(sg, nil)
 		// Columns with more than 1 card have face-down cards
 		assert.Contains(t, result, "??")
+	})
+
+	t.Run("auto-complete ready", func(t *testing.T) {
+		sg := new(interfaces.MockSpiderGame)
+		setupSpiderCuiMockDefaults(sg)
+		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "CanAutoComplete")
+		sg.On("CanAutoComplete").Return(true)
+
+		p := new(SpiderCuiPresenter)
+		result := p.Output(sg, nil)
+		assert.Contains(t, result, "オートコンプリート可能です (ac)")
+		assert.NotContains(t, result, "{{")
+	})
+
+	t.Run("auto-complete not ready", func(t *testing.T) {
+		sg := new(interfaces.MockSpiderGame)
+		setupSpiderCuiMockDefaults(sg)
+		p := new(SpiderCuiPresenter)
+		result := p.Output(sg, nil)
+		assert.NotContains(t, result, "オートコンプリート可能です (ac)")
+		assert.NotContains(t, result, "{{")
 	})
 }
 

@@ -31,6 +31,8 @@ type SpiderGame interface {
 	GetCompletedSuits() int
 	// AllFaceUp 全カードが表向きかを返す
 	AllFaceUp() bool
+	// CanAutoComplete オートコンプリートが実行可能かを返す
+	CanAutoComplete() bool
 	// GetScore 現在のスコアを取得する
 	GetScore() int
 	// GetDifficulty 難易度を取得する
