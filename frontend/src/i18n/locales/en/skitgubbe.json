@@ -29,5 +29,6 @@
   "tutorial.stunsa": "Equal ranks are a stunsa: the cards stay on the table, the same player leads again, and whoever settles it takes everything that piled up.",
   "you": "You",
   "yourHand": "Your hand",
-  "finishedBadge": "safe"
+  "finishedBadge": "safe",
+  "duelLeaderBadge": "leading"
 }

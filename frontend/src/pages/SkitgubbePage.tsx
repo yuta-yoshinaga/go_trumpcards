@@ -21,7 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSkitgubbeGame } from '../hooks/useSkitgubbeGame';
-import { badgeSuccessColors } from '../styles/badgeStyles';
+import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SkitgubbeResponse } from '../types/card';
 import { SkitgubbePhase } from '../types/phases';
@@ -138,6 +138,14 @@ function SkitgubbePageContent() {
                         {t('finishedBadge')}
                       </span>
                     )}
+                    {collecting && state.duelLeader === o.id && (
+                      <span
+                        className={`ml-1 rounded px-1 ${badgeWarningColors}`}
+                        data-testid={`sg-duel-leader-${o.id.toString()}`}
+                      >
+                        {t('duelLeaderBadge')}
+                      </span>
+                    )}
                   </div>
                   <div
                     className="flex gap-1 justify-center flex-wrap"
@@ -170,6 +178,11 @@ function SkitgubbePageContent() {
                 {t('yourHand')}
                 {' · '}
                 {t('collected', { n: human?.collectedCount ?? 0 })}
+                {collecting && state.duelLeader === 0 && (
+                  <span className={`ml-1 rounded px-1 ${badgeWarningColors}`} data-testid="sg-duel-leader-0">
+                    {t('duelLeaderBadge')}
+                  </span>
+                )}
               </div>
               <div className="flex gap-1 justify-center flex-wrap">
                 {(human?.cards ?? []).map((card, i) => {
