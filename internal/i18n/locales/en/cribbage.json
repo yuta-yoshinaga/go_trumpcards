@@ -23,7 +23,7 @@
   "promptCutHelp": "c / cut: cut the deck to reveal the starter",
   "promptPegging": "{{name}} to act (pegging phase)",
   "promptPeggingHelp": "p <idx>: play a card",
-  "legalPegLegend": "Playable: {{indices}}",
+  "legalPegLegend": "Playable (total after play): {{indices}}",
   "mustGo": "No playable card → declare go",
   "promptPeggingGo": "go: declare Go",
   "promptShow": "Show phase",

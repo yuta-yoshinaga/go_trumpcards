@@ -23,7 +23,7 @@
   "promptCutHelp": "c / cut・・・デッキをカットしてスターターを公開する",
   "promptPegging": "手番: {{name}} (ペギングフェーズ)",
   "promptPeggingHelp": "p <idx>・・・カードを出す",
-  "legalPegLegend": "出せる手札: {{indices}}",
+  "legalPegLegend": "出せる手札（出した後の合計）: {{indices}}",
   "mustGo": "出せる札がありません → go を宣言してください",
   "promptPeggingGo": "go・・・Goを宣言する",
   "promptShow": "ショーフェーズ",

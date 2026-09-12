@@ -123,8 +123,9 @@ func (p *CribbageCuiPresenter) Output(g interfaces.CribbageGame, lastErr error) 
 				pegCount := g.GetPegCount()
 				var legal []string
 				for i := 0; i < cur.GetCardsSize(); i++ {
-					if pegCount+cribbagePegValue(cur.GetCard(i)) <= domain.CribbagePegLimit {
-						legal = append(legal, "["+strconv.Itoa(i)+"]")
+					cardTotal := pegCount + cribbagePegValue(cur.GetCard(i))
+					if cardTotal <= domain.CribbagePegLimit {
+						legal = append(legal, "["+strconv.Itoa(i)+"]→"+strconv.Itoa(cardTotal))
 					}
 				}
 				if len(legal) > 0 {
