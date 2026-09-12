@@ -31,5 +31,16 @@
   "helpHint": "  h                    助言を表示",
   "helpRebet": "  rb                   直前と同じ額でベット (再ベット)",
   "antePayoutLine": "  アンテ配当: {{payout}}",
-  "playPayoutLine": "  プレイ配当: {{payout}}"
+  "playPayoutLine": "  プレイ配当: {{payout}}",
+  "payoutRef.title": "配当表",
+  "payoutRef.anteBonusHeader": "アンテボーナス",
+  "payoutRef.anteBonusStraight": "ストレート:           {{payout}}:1",
+  "payoutRef.anteBonusThreeOfAKind": "スリーカード:         {{payout}}:1",
+  "payoutRef.anteBonusStraightFlush": "ストレートフラッシュ: {{payout}}:1",
+  "payoutRef.pairPlusHeader": "ペアプラス",
+  "payoutRef.pairPlusPair": "ペア:                 {{payout}}:1",
+  "payoutRef.pairPlusFlush": "フラッシュ:           {{payout}}:1",
+  "payoutRef.pairPlusStraight": "ストレート:           {{payout}}:1",
+  "payoutRef.pairPlusThreeOfAKind": "スリーカード:         {{payout}}:1",
+  "payoutRef.pairPlusStraightFlush": "ストレートフラッシュ: {{payout}}:1"
 }

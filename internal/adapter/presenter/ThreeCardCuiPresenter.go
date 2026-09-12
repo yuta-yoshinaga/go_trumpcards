@@ -25,6 +25,12 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 	sb.WriteString(i18n.Tf("threecard.chipsLine", "chips", strconv.Itoa(tc.GetChips())) + "\n")
 	sb.WriteString(i18n.Tf("threecard.phaseLine", "phase", tp.phaseStr(tc.GetPhase())) + "\n")
 
+	// Web と同じく、ベット判断の前に配当倍率を表示する。倍率はドメインの
+	// 定数から渡し、ロケールに数字を重複して持たせない。
+	if tc.GetPhase() == domain.ThreeCardPhaseBet && !tc.GetGameEndFlag() {
+		sb.WriteString(tp.payoutTable())
+	}
+
 	playerHand := tc.GetPlayerHand()
 	if len(playerHand) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("threecard.playerHeader")) + " ---\n")
@@ -106,6 +112,29 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 	}
 
 	return sb.String()
+}
+
+// payoutTable はベットフェーズの配当倍率一覧を返す。
+func (tp *ThreeCardCuiPresenter) payoutTable() string {
+	var sb strings.Builder
+	sb.WriteString(color.Bold(i18n.T("threecard.payoutRef.title")) + "\n")
+	anteBonusWidth := len(strconv.Itoa(domain.ThreeCardPairPlusStraightFlush))
+	sb.WriteString("  " + i18n.T("threecard.payoutRef.anteBonusHeader") + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.anteBonusStraight", "payout", threeCardPayoutRate(domain.ThreeCardAnteBonusStraight, anteBonusWidth)) + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.anteBonusThreeOfAKind", "payout", threeCardPayoutRate(domain.ThreeCardAnteBonusThreeOfAKind, anteBonusWidth)) + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.anteBonusStraightFlush", "payout", threeCardPayoutRate(domain.ThreeCardAnteBonusStraightFlush, anteBonusWidth)) + "\n")
+	sb.WriteString("  " + i18n.T("threecard.payoutRef.pairPlusHeader") + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.pairPlusPair", "payout", threeCardPayoutRate(domain.ThreeCardPairPlusPair, anteBonusWidth)) + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.pairPlusFlush", "payout", threeCardPayoutRate(domain.ThreeCardPairPlusFlush, anteBonusWidth)) + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.pairPlusStraight", "payout", threeCardPayoutRate(domain.ThreeCardPairPlusStraight, anteBonusWidth)) + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.pairPlusThreeOfAKind", "payout", threeCardPayoutRate(domain.ThreeCardPairPlusThreeOfAKind, anteBonusWidth)) + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.pairPlusStraightFlush", "payout", threeCardPayoutRate(domain.ThreeCardPairPlusStraightFlush, anteBonusWidth)) + "\n")
+	return sb.String()
+}
+
+func threeCardPayoutRate(rate, width int) string {
+	payout := strconv.Itoa(rate)
+	return strings.Repeat(" ", width-len(payout)) + payout
 }
 
 // threeCardShouldPlay reports whether the player's three-card hand meets the
