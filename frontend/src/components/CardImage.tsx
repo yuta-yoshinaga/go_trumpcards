@@ -101,12 +101,13 @@ export interface CardBackProps {
   style?: React.CSSProperties;
   className?: string;
   onClick?: () => void;
+  disabled?: boolean;
   /** Only applies when onClick is provided (button mode). */
   ariaLabel?: string;
 }
 
 /** Renders a face-down card back image, optionally as a clickable button. */
-export function CardBack({ width, style, className, onClick, ariaLabel }: CardBackProps) {
+export function CardBack({ width, style, className, onClick, disabled = false, ariaLabel }: CardBackProps) {
   const { t } = useTranslation('common');
   const effectiveAriaLabel = onClick ? ariaLabel || t('card.back') : undefined;
   const w = width ?? 80;
@@ -135,9 +136,16 @@ export function CardBack({ width, style, className, onClick, ariaLabel }: CardBa
       <button
         type="button"
         onClick={onClick}
+        disabled={disabled}
         aria-label={effectiveAriaLabel}
-        className={`${focusRingWhite} rounded-md`}
-        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', lineHeight: 0 }}
+        className={`${focusRingWhite} rounded-md disabled:opacity-40 disabled:cursor-not-allowed`}
+        style={{
+          background: 'none',
+          border: 'none',
+          padding: 0,
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          lineHeight: 0,
+        }}
       >
         {img}
       </button>

@@ -172,6 +172,50 @@ describe('WillOTheWispPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/完成: 0\/4/));
   });
 
+  it('deals from the stock when clicked in the normal state', async () => {
+    renderWithProviders(<WillOTheWispPage />);
+    const stockButton = (await screen.findAllByRole('button', { name: '配る' }))[0];
+    mockSend.mockClear();
+
+    fireEvent.click(stockButton);
+
+    await waitFor(() => expect(mockSend).toHaveBeenCalledWith('deal'));
+  });
+
+  it('does not deal from the stock again while loading', async () => {
+    renderWithProviders(<WillOTheWispPage />);
+    const stockButton = (await screen.findAllByRole('button', { name: '配る' }))[0];
+    mockSend.mockClear();
+    mockSend.mockReturnValue(new Promise(() => undefined));
+
+    fireEvent.click(stockButton);
+    await waitFor(() => expect(mockSend).toHaveBeenCalledWith('deal'));
+    const disabledStockButton = (await screen.findAllByRole('button', { name: '配る' }))[0];
+    expect(disabledStockButton).toBeDisabled();
+    fireEvent.click(disabledStockButton);
+
+    expect(mockSend).toHaveBeenCalledTimes(1);
+    expect(mockSend).toHaveBeenCalledWith('deal');
+  });
+
+  it('does not deal from the stock while auto-completing', async () => {
+    const autoCompleteReadyState = { ...playingState, stockCount: 0 };
+    mockSend.mockReset();
+    mockSend.mockResolvedValue(playingState);
+    mockSend.mockResolvedValueOnce(autoCompleteReadyState).mockResolvedValueOnce(playingState);
+    renderWithProviders(<WillOTheWispPage />);
+    const autoCompleteButton = await screen.findByTestId('autocomplete-button');
+    fireEvent.click(autoCompleteButton);
+
+    const stockButton = (await screen.findAllByRole('button', { name: '配る' }))[0];
+    expect(stockButton).toBeDisabled();
+    mockSend.mockClear();
+    fireEvent.click(stockButton);
+
+    await flushPendingDispatch();
+    expect(mockSend).not.toHaveBeenCalledWith('deal');
+  });
+
   it('shows game clear phase label', async () => {
     mockSend.mockResolvedValue(gameClearState);
     renderWithProviders(<WillOTheWispPage />);
@@ -214,6 +258,46 @@ describe('WillOTheWispPage keyboard shortcuts', () => {
     await waitFor(() => expect(mockSend).toHaveBeenCalledWith(command));
   });
 
+  it('pressing d dispatches deal in the normal state', async () => {
+    mockSend.mockResolvedValue(playingState);
+    renderWithProviders(<WillOTheWispPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockSend.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockSend).toHaveBeenCalledWith('deal'));
+  });
+
+  it('the d shortcut is disabled while a request is in flight', async () => {
+    mockSend.mockResolvedValue(playingState);
+    renderWithProviders(<WillOTheWispPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockSend.mockClear();
+    mockSend.mockReturnValue(new Promise(() => undefined));
+
+    fireEvent.keyDown(document, { key: 'd' });
+    fireEvent.keyDown(document, { key: 'd' });
+
+    await flushPendingDispatch();
+    expect(mockSend).toHaveBeenCalledTimes(1);
+    expect(mockSend).toHaveBeenCalledWith('deal');
+  });
+
+  it('pressing d does not deal while auto-completing', async () => {
+    const autoCompleteReadyState = { ...playingState, stockCount: 0 };
+    mockSend.mockReset();
+    mockSend.mockResolvedValue(playingState);
+    mockSend.mockResolvedValueOnce(autoCompleteReadyState).mockResolvedValueOnce(playingState);
+    renderWithProviders(<WillOTheWispPage />);
+    const autoCompleteButton = await screen.findByTestId('autocomplete-button');
+    fireEvent.click(autoCompleteButton);
+
+    mockSend.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+
+    await flushPendingDispatch();
+    expect(mockSend).not.toHaveBeenCalledWith('deal');
+  });
+
   it('pressing g asks for give-up confirmation rather than firing it', async () => {
     // give-up is irreversible, so the key must route through the dialog (#2099)
     // instead of dispatching straight away.
@@ -223,6 +307,7 @@ describe('WillOTheWispPage keyboard shortcuts', () => {
     mockSend.mockClear();
     fireEvent.keyDown(document, { key: 'g' });
     expect(await screen.findByText('投了確認')).toBeInTheDocument();
+    await flushPendingDispatch();
     expect(mockSend).not.toHaveBeenCalled();
   });
 

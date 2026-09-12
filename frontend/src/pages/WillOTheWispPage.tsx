@@ -305,6 +305,7 @@ function WillOTheWispPageContent() {
                   <AnimatedCardBack
                     width={tableau.cw}
                     onClick={isPlaying ? handleDealGuarded : undefined}
+                    disabled={loading || isAutoCompleting}
                     ariaLabel={t('deal')}
                   />
                 ) : (
