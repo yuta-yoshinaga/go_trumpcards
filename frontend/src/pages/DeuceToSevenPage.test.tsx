@@ -171,6 +171,37 @@ describe('DeuceToSevenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined, undefined, undefined, 0));
   });
 
+  it.each([
+    ['Fixed', 0],
+    ['Pot Limit', 1],
+  ])('disables Raise at the cap in %s', async (_label, bettingLimit) => {
+    mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.BET, lastBet: 20, bettingLimit, raiseCount: 4 }));
+    renderWithProviders(<DeuceToSevenPage />);
+
+    const raiseButton = await screen.findByRole('button', { name: /レイズ/ });
+    expect(raiseButton).toBeDisabled();
+    expect(screen.getByText('このラウンドのレイズ上限に達しました。')).toBeInTheDocument();
+  });
+
+  it('keeps Raise enabled below the cap in a capped mode', async () => {
+    mockExec.mockResolvedValue(
+      baseState({ phase: DeuceToSevenPhase.BET, lastBet: 20, bettingLimit: 0, raiseCount: 3 }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+
+    expect(await screen.findByRole('button', { name: /レイズ/ })).toBeEnabled();
+  });
+
+  it('keeps Raise enabled at or above four raises in No Limit', async () => {
+    mockExec.mockResolvedValue(
+      baseState({ phase: DeuceToSevenPhase.BET, lastBet: 20, bettingLimit: 2, raiseCount: 4 }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+
+    expect(await screen.findByRole('button', { name: /レイズ/ })).toBeEnabled();
+    expect(screen.queryByText('このラウンドのレイズ上限に達しました。')).not.toBeInTheDocument();
+  });
+
   it('wires fold and allin', async () => {
     mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.BET, currentTurn: 0, lastBet: 20 }));
     renderWithProviders(<DeuceToSevenPage />);

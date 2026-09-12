@@ -22,6 +22,10 @@ export interface BettingControlsProps {
   onCheck: () => void;
   onFold: () => void;
   onAllIn: () => void;
+  /** Disables only the Raise action when a game-specific rule prevents it. */
+  raiseDisabled?: boolean;
+  /** Explains why the Raise action is disabled. */
+  raiseDisabledReason?: string;
 }
 
 /** Renders betting action buttons (call/raise/bet/check/fold/all-in) with amount input. */
@@ -40,6 +44,8 @@ export function BettingControls({
   onCheck,
   onFold,
   onAllIn,
+  raiseDisabled = false,
+  raiseDisabledReason,
 }: BettingControlsProps) {
   const { t } = useTranslation('common');
   // Per-button key hints are a desktop affordance; on touch there's no keyboard.
@@ -58,6 +64,7 @@ export function BettingControls({
   const hasMax = max > 0;
   const isOutOfRange = Number.isNaN(betAmount) || betAmount < minRaise || (hasMax && betAmount > max);
   const canBet = !loading && !isOutOfRange;
+  const canRaise = canBet && !raiseDisabled;
   const pot = potSize ?? 0;
   const showPresets = pot > 0;
   const clampAmount = (v: number) => {
@@ -134,13 +141,24 @@ export function BettingControls({
           <button
             type="button"
             className={`${btnPokerAccent} min-w-[80px]`}
-            disabled={!canBet}
+            disabled={!canRaise}
             onClick={withChipSound(onRaise)}
             aria-keyshortcuts="r"
+            aria-describedby={raiseDisabledReason ? `${inputId}-raise-limit` : undefined}
+            title={raiseDisabledReason}
           >
             {t('action.raise')}
             {kbd('R')}
           </button>
+          {/* Static explanation linked by aria-describedby, not a live region:
+              this repo's live regions (CpuActionBubble, LiveAnnouncement) stay
+              mounted and swap their contents, because a region that enters the
+              DOM together with its text is not announced as a change. */}
+          {raiseDisabledReason && (
+            <p id={`${inputId}-raise-limit`} className="text-ds-warning text-xs mt-1">
+              {raiseDisabledReason}
+            </p>
+          )}
         </>
       ) : (
         <>

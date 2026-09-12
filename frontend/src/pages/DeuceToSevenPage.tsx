@@ -32,7 +32,7 @@ import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DeuceToSevenResponse } from '../types/card';
-import { DeuceToSevenPhase } from '../types/phases';
+import { BETTING_MAX_RAISES_PER_ROUND, BettingLimit, DeuceToSevenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { DEUCE_TO_SEVEN_HELP, parseDeuceToSevenCommand } from '../utils/cli/commands/deuceToSevenCommands';
@@ -137,6 +137,9 @@ function DeuceToSevenPageContent() {
   const isBettingPhase = phase === DeuceToSevenPhase.DEAL || phase === DeuceToSevenPhase.BET;
   const isEnd = phase === DeuceToSevenPhase.END;
   const isHandOver = phase === DeuceToSevenPhase.SHOWDOWN || phase === DeuceToSevenPhase.END;
+  const isRaiseLimitReached =
+    (state?.bettingLimit === BettingLimit.FIXED || state?.bettingLimit === BettingLimit.POT_LIMIT) &&
+    (state?.raiseCount ?? 0) >= BETTING_MAX_RAISES_PER_ROUND;
   const drawIndex = state?.drawIndex ?? 0;
   const phaseLabel =
     phase === DeuceToSevenPhase.DRAW
@@ -387,6 +390,8 @@ function DeuceToSevenPageContent() {
                   onCheck={() => execAction('check', undefined, undefined, undefined, getElapsed())}
                   onFold={() => execAction('fold', undefined, undefined, undefined, getElapsed())}
                   onAllIn={() => execAction('allin', undefined, undefined, undefined, getElapsed())}
+                  raiseDisabled={isRaiseLimitReached}
+                  raiseDisabledReason={isRaiseLimitReached ? t('raiseLimitReached') : undefined}
                 />
               </div>
             )}
