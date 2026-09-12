@@ -299,6 +299,12 @@ function ViraPageContent() {
                 : t('contractUndecided')}
             </div>
 
+            {state.contract !== ViraContract.PASS && state.contract !== ViraContract.MISERE && (
+              <div className="text-ds-text-muted text-center mb-2 text-xs" data-testid="vira-trump-note">
+                {t('trumpAutoNote')}
+              </div>
+            )}
+
             {contractProgress && (
               <div
                 className={`text-center mb-2 text-sm font-semibold ${CONTRACT_STATUS_COLOR[contractProgress.status]}`}

@@ -110,6 +110,7 @@ type BeziqueHint struct {
 }
 
 // BeziqueCardPoints カードのトリック得点を返す (A=11,10=10,K=4,Q=3,J=2; その他=0)。
+// 表示文言の配点表はこの switch と同期すること。
 func BeziqueCardPoints(c *Card) int {
 	if c == nil {
 		return 0

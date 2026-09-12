@@ -79,6 +79,13 @@ describe('BeziquePage', () => {
     expect(breakdown).toHaveTextContent('4');
   });
 
+  it('shows the literal trick point table', async () => {
+    mockExec.mockResolvedValue(makeBeziqueState());
+    renderWithProviders(<BeziquePage />);
+    const points = await screen.findByTestId('bezique-trick-points');
+    expect(points).toHaveTextContent('トリック得点: A=11 / 10=10 / K=4 / Q=3 / J=2 / その他=0');
+  });
+
   it('renders the play phase with the human cards and the play button', async () => {
     renderWithProviders(<BeziquePage />);
     await waitFor(() => {
