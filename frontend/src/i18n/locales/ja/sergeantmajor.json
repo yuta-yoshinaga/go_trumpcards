@@ -12,13 +12,16 @@
     "trumpUndecided": "切り札: 未宣言（親が決めます。余りの {{kitty}} 枚は親が取り込みます）",
     "rule": "ノルマは席順で決まります。親が8、左隣が5、右隣が3——合計16がトリック数と一致し、宣言する余地はありません。多く取ればノルマとの差がそのまま得点になり、届かなかったぶんは次のラウンドで良い札を召し上げられます。",
     "exchange": "前ラウンドの過不足で {{n}} 枚が動きました。",
+    "exchangeLost": "失った札: {{cards}}",
+    "exchangeReceived": "受け取った札: {{cards}}",
     "target": "ノルマ{{target}} / 獲得{{took}}",
     "score": "累計{{n}}",
     "dealer": "[親/ノルマ8]",
     "you": "あなた",
     "cpu": "CPU{{idx}}",
     "kittyBadge": "キティ",
-    "kittyAria": "キティから入ってきた札"
+    "kittyAria": "キティから入ってきた札",
+    "exchangeReceivedBadge": "交換で受け取った札"
   },
   "currentTrick": "現在のトリック",
   "actions": {

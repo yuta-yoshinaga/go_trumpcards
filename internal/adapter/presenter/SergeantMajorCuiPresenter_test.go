@@ -113,7 +113,10 @@ func TestSergeantMajorCuiPresenterReportsTheExchange(t *testing.T) {
 	s.SetPhaseForTest(domain.SergeantMajorPhasePlay)
 	s.SetSurplusForTest([]int{1, -1, 0})
 	s.ExchangeForTest()
-	assert.Contains(t, p.Output(s, nil), fixedPart("sergeantmajor.exchangeLine"))
+	out := p.Output(s, nil)
+	assert.Contains(t, out, fixedPart("sergeantmajor.exchangeLine"))
+	assert.Contains(t, out, "失った札:")
+	assert.Contains(t, out, "受け取った札:")
 }
 
 func TestSergeantMajorCuiPresenterRoundEndPrompt(t *testing.T) {

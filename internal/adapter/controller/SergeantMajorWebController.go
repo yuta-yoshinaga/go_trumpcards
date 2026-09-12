@@ -65,15 +65,19 @@ type SergeantMajorWebOutput struct {
 	KittySize    int `json:"kittySize"`
 	DiscardCount int `json:"discardCount"`
 	// LastExchange は直前のラウンド間で動いた札の枚数。
-	LastExchange     int                         `json:"lastExchange"`
-	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
-	DealerIdx        int                         `json:"dealerIdx"`
-	CurrentTrick     []*WebOutputTrickCard       `json:"currentTrick"`
-	ValidPlays       []int                       `json:"validPlays"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	WinnerIdx        int                         `json:"winnerIdx"`
-	Hint             *SergeantMajorWebOutputHint `json:"hint,omitempty"`
+	LastExchange int `json:"lastExchange"`
+	// LastExchangeLost は人間が直前の交換で失った札。
+	LastExchangeLost []*WebOutputCard `json:"lastExchangeLost"`
+	// LastExchangeReceived は人間が直前の交換で受け取った札。
+	LastExchangeReceived []*WebOutputCard            `json:"lastExchangeReceived"`
+	CurrentPlayerIdx     int                         `json:"currentPlayerIdx"`
+	LeadPlayerIdx        int                         `json:"leadPlayerIdx"`
+	DealerIdx            int                         `json:"dealerIdx"`
+	CurrentTrick         []*WebOutputTrickCard       `json:"currentTrick"`
+	ValidPlays           []int                       `json:"validPlays"`
+	GameEndFlag          bool                        `json:"gameEndFlag"`
+	WinnerIdx            int                         `json:"winnerIdx"`
+	Hint                 *SergeantMajorWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config SergeantMajorWebOutputConfig `json:"config"`
 }
@@ -115,12 +119,14 @@ var NewSergeantMajorWebController, NewSergeantMajorWebControllerWithProvider = w
 
 func newSergeantMajorDefaultOutput(msg string) *SergeantMajorWebOutput {
 	return &SergeantMajorWebOutput{
-		Players:       make([]*SergeantMajorWebOutputPlayer, 0),
-		CurrentTrick:  make([]*WebOutputTrickCard, 0),
-		ValidPlays:    make([]int, 0),
-		DiscardCount:  domain.SergeantMajorKittySize,
-		WinnerIdx:     -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:              make([]*SergeantMajorWebOutputPlayer, 0),
+		LastExchangeLost:     make([]*WebOutputCard, 0),
+		LastExchangeReceived: make([]*WebOutputCard, 0),
+		CurrentTrick:         make([]*WebOutputTrickCard, 0),
+		ValidPlays:           make([]int, 0),
+		DiscardCount:         domain.SergeantMajorKittySize,
+		WinnerIdx:            -1,
+		WebOutputBase:        WebOutputBase{Message: msg},
 	}
 }
 

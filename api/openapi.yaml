@@ -58847,6 +58847,16 @@ components:
           description: >-
             How many cards changed hands for last round's shortfall. Falling
             short of your target costs your best cards; nothing else shows it.
+        lastExchangeLost:
+          type: array
+          description: Cards the human handed over in that exchange; empty when none moved.
+          items:
+            $ref: '#/components/schemas/Card'
+        lastExchangeReceived:
+          type: array
+          description: Cards the human got back in that exchange; empty when none moved.
+          items:
+            $ref: '#/components/schemas/Card'
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:
