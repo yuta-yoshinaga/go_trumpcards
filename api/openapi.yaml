@@ -46942,6 +46942,11 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/Card'
+        layoffableIndices:
+          type: array
+          description: Indices of hand cards that can be laid off during the layoff phase
+          items:
+            type: integer
         config:
           type: object
           properties:

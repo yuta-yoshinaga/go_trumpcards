@@ -30,6 +30,7 @@ function base({ hand = [card('SPADE', 3), card('HEART', 11)], ...overrides }: Pa
     winnerIdx: -1,
     knockerIdx: -1,
     knockerMelds: [],
+    layoffableIndices: [],
     message: '',
     config: { cpuDifficulty: 1, targetScore: 100 },
     ...overrides,

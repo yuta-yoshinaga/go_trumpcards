@@ -40,6 +40,7 @@ const drawPhaseState: ChinchonResponse = {
   winnerIdx: -1,
   knockerIdx: -1,
   knockerMelds: [],
+  layoffableIndices: [],
   message: '',
   config: { cpuDifficulty: 1, playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
 };
@@ -59,6 +60,7 @@ const layoffPhaseState: ChinchonResponse = {
       ],
     },
   ],
+  layoffableIndices: [0],
 };
 
 const roundEndState: ChinchonResponse = { ...drawPhaseState, phase: 3 };
@@ -516,6 +518,17 @@ describe('ChinchonPage', () => {
     await waitFor(() => expect(screen.getByTestId('chinchon-hand-card-0')).toBeInTheDocument());
     expect(screen.getByTestId('chinchon-hand-card-0')).not.toHaveAttribute('data-meld');
     expect(screen.queryByTestId('chinchon-meld-legend')).not.toBeInTheDocument();
+  });
+
+  it('rings layoffable hand cards and not unavailable cards', async () => {
+    mockExec.mockResolvedValue(layoffPhaseState);
+    renderWithProviders(<ChinchonPage />);
+    await waitFor(() => expect(screen.getByTestId('chinchon-hand-card-0')).toBeInTheDocument());
+
+    expect(screen.getByTestId('chinchon-hand-card-0')).toHaveAttribute('data-layoffable', 'true');
+    expect(screen.getByTestId('chinchon-hand-card-0').style.outline).toContain('var(--color-ds-success)');
+    expect(screen.getByTestId('chinchon-hand-card-1')).toHaveAttribute('data-layoffable', 'false');
+    expect(screen.getByTestId('chinchon-hand-card-1').style.outline).not.toContain('var(--color-ds-success)');
   });
 
   // **ヒント経路はページ側からも踏む。**ファクトリ単体テストだけだと

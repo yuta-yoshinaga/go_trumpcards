@@ -39,5 +39,6 @@ export interface ChinchonResponse extends BaseGameResponse {
   winnerIdx: number;
   knockerIdx: number;
   knockerMelds: ChinchonMeld[];
+  layoffableIndices: number[];
   config: ChinchonConfig;
 }

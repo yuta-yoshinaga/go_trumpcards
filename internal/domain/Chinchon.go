@@ -783,6 +783,24 @@ func (g *Chinchon) SetKnockerIdx(idx int) { g.knockerIdx = idx }
 // GetKnockerMelds ノッカーのメルド取得
 func (g *Chinchon) GetKnockerMelds() [][]*Card { return g.knockerMelds }
 
+// GetLayoffableIndices はレイオフ可能な現在プレイヤーの手札インデックスを返す。
+func (g *Chinchon) GetLayoffableIndices() []int {
+	indices := make([]int, 0)
+	if g.phase != ChinchonPhaseLayoff {
+		return indices
+	}
+	player := g.GetPlayer(g.currentPlayerIdx)
+	if player == nil {
+		return indices
+	}
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if g.canLayoff(player.GetCard(i)) {
+			indices = append(indices, i)
+		}
+	}
+	return indices
+}
+
 // SetKnockerMelds ノッカーのメルド設定 (テスト用)
 func (g *Chinchon) SetKnockerMelds(melds [][]*Card) { g.knockerMelds = melds }
 

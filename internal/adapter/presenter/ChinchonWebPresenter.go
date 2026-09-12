@@ -21,6 +21,10 @@ func (p *ChinchonWebPresenter) Output(g interfaces.ChinchonGame, lastErr error) 
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerIdx = g.GetWinnerIdx()
 	resObj.KnockerIdx = g.GetKnockerIdx()
+	resObj.LayoffableIndices = make([]int, 0)
+	if resObj.Phase == int(domain.ChinchonPhaseLayoff) {
+		resObj.LayoffableIndices = append(resObj.LayoffableIndices, g.GetLayoffableIndices()...)
+	}
 
 	if top := g.GetDiscardTop(); top != nil {
 		resObj.DiscardTop = cardToOutput(top)

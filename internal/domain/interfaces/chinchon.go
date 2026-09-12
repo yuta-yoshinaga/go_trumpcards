@@ -59,4 +59,6 @@ type ChinchonGame interface {
 	GetKnockerIdx() int
 	// GetKnockerMelds ノッカーのメルドを取得する
 	GetKnockerMelds() [][]*domain.Card
+	// GetLayoffableIndices レイオフ可能な現在プレイヤーの手札インデックスを取得する
+	GetLayoffableIndices() []int
 }
