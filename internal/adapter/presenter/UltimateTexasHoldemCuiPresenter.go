@@ -65,6 +65,10 @@ func (up *UltimateTexasHoldemCuiPresenter) Output(g interfaces.UltimateTexasHold
 	sb.WriteString("----------\n")
 	fmt.Fprintf(&sb, "%s\n", i18n.Tf("ultimatetexasholdem.chipsLine", "chips", strconv.Itoa(g.GetChips())))
 	fmt.Fprintf(&sb, "%s\n", i18n.Tf("ultimatetexasholdem.phaseLine", "phase", up.phaseStr(g.GetPhase())))
+	if g.GetPhase() == domain.UltimateTexasHoldemPhaseBet && g.GetChipsRefilled() {
+		fmt.Fprintf(&sb, "%s\n", color.Yellow(i18n.Tf("ultimatetexasholdem.bankrollRefilled",
+			"chips", strconv.Itoa(domain.UltimateTexasHoldemDefaultChips))))
+	}
 
 	// During play (not the final result block), surface the current bets so the
 	// player can size the play-bet multiple; omitted before the ante is placed.

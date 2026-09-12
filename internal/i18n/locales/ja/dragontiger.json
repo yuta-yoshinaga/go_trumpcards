@@ -11,6 +11,7 @@
   "phaseBet": "BET",
   "phaseEnd": "END",
   "phaseUnknown": "UNKNOWN",
+  "bankrollRefilled": "残高が最低ベットを下回ったため、{{chips}}チップを補充しました",
   "betTypeDragon": "DRAGON",
   "betTypeTiger": "TIGER",
   "betTypeTie": "TIE",

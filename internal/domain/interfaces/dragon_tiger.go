@@ -32,6 +32,8 @@ type DragonTigerGame interface {
 	GetPayout() int
 	// GetChips チップ
 	GetChips() int
+	// GetChipsRefilled 直前の Reset が残高を補充したか
+	GetChipsRefilled() bool
 	// GetHistory 罫線履歴
 	GetHistory() []int
 }

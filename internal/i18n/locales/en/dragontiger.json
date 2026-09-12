@@ -11,6 +11,7 @@
   "phaseBet": "BET",
   "phaseEnd": "END",
   "phaseUnknown": "UNKNOWN",
+  "bankrollRefilled": "Your balance fell below the minimum bet, so it was topped up to {{chips}} chips",
   "betTypeDragon": "DRAGON",
   "betTypeTiger": "TIGER",
   "betTypeTie": "TIE",

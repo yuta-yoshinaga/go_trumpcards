@@ -3,6 +3,8 @@
 package presenter
 
 import (
+	"strconv"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -59,6 +61,9 @@ func (up *UltimateTexasHoldemWebPresenter) Output(g interfaces.UltimateTexasHold
 			resObj.MessageCode = "ultimatetexasholdem.result.push"
 		default:
 		}
+	} else if g.GetPhase() == domain.UltimateTexasHoldemPhaseBet && g.GetChipsRefilled() {
+		resObj.MessageCode = "ultimatetexasholdem.result.bankrollRefilled"
+		resObj.MessageParams = map[string]string{"chips": strconv.Itoa(domain.UltimateTexasHoldemDefaultChips)}
 	}
 
 	return marshalOrError(resObj)

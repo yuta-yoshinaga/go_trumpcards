@@ -3,6 +3,8 @@
 package presenter
 
 import (
+	"strconv"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -37,6 +39,9 @@ func (dp *DragonTigerWebPresenter) Output(dt interfaces.DragonTigerGame, lastErr
 		resObj.Message = lastErr.Error()
 	} else if dt.GetGameEndFlag() {
 		resObj.Message, resObj.MessageCode = dragonTigerEndMessage(dt)
+	} else if dt.GetPhase() == domain.DragonTigerPhaseBet && dt.GetChipsRefilled() {
+		resObj.MessageCode = "dragontiger.result.bankrollRefilled"
+		resObj.MessageParams = map[string]string{"chips": strconv.Itoa(domain.DragonTigerDefaultChips)}
 	}
 
 	return marshalOrError(resObj)

@@ -38,6 +38,7 @@ func TestDragonTiger_Reset_RefillChips(t *testing.T) {
 	dt.SetChips(5)
 	dt.Reset()
 	assert.Equal(t, domain.DragonTigerDefaultChips, dt.GetChips())
+	assert.True(t, dt.GetChipsRefilled())
 }
 
 func TestDragonTiger_Reset_NoRefillAboveThreshold(t *testing.T) {
@@ -45,6 +46,19 @@ func TestDragonTiger_Reset_NoRefillAboveThreshold(t *testing.T) {
 	dt.SetChips(500)
 	dt.Reset()
 	assert.Equal(t, 500, dt.GetChips())
+	assert.False(t, dt.GetChipsRefilled())
+}
+
+func TestDragonTiger_Reset_RefillFlagIsNotPersisted(t *testing.T) {
+	dt := domain.NewDefaultDragonTiger()
+	dt.SetChips(0)
+	dt.Reset()
+	data, err := json.Marshal(dt)
+	require.NoError(t, err)
+	assert.NotContains(t, string(data), "chipsRefilled")
+	restored := domain.NewDefaultDragonTiger()
+	require.NoError(t, json.Unmarshal(data, restored))
+	assert.False(t, restored.GetChipsRefilled())
 }
 
 func TestDragonTiger_Reset_PreservesHistory(t *testing.T) {
