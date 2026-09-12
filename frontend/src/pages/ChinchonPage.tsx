@@ -500,7 +500,7 @@ function ChinchonPageContent() {
                       padding: 0,
                       borderRadius: 8,
                       ...(isDiscardPhase ? meldCardStyle(meldedIndices.has(idx)) : undefined),
-                      ...(isLayoffPhase && state.layoffableIndices.includes(idx) ? meldCardStyle(true) : undefined),
+                      ...(isLayoffPhase ? meldCardStyle(state.layoffableIndices.includes(idx)) : undefined),
                       ...selectedCardStyle(selectedCardIndices.includes(idx)),
                       boxSizing: 'border-box',
                     }}
