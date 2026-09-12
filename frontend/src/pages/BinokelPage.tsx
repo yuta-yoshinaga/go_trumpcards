@@ -368,7 +368,8 @@ function BinokelPageContent() {
                       {t('scores')}: {scoreVal} | {t('bid')}: {bidDisplay}
                     </div>
                     <div>
-                      {t('meldScore')}: {p.meldScore} | {t('trickCount')}: {p.trickCount} ({p.trickPoints}pts)
+                      {t('meldScore')}: {p.meldScore} | {t('trickCount')}: {p.trickCount} (
+                      {t('points', { points: p.trickPoints })})
                     </div>
                   </div>
                 );

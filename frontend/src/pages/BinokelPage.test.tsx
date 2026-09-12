@@ -344,6 +344,18 @@ describe('BinokelPage', () => {
     });
   });
 
+  it('renders trick points with the Japanese translation', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: makePlayers([{ ...playPhaseState.players[0], trickPoints: 23 }]),
+    });
+    renderWithProviders(<BinokelPage />);
+
+    await waitFor(() => expect(screen.getByText(/23/)).toBeInTheDocument());
+    expect(screen.getByText(/23/)).toHaveTextContent('23点');
+    expect(screen.queryByText(/pts/)).not.toBeInTheDocument();
+  });
+
   it('calls meld command when confirm melds button is clicked', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<BinokelPage />);
