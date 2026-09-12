@@ -1886,4 +1886,11 @@ describe('DramahaPage showdown split', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('dramaha-draw-hand')).not.toBeInTheDocument();
   });
+
+  it('renders action shortcuts panel during betting phase', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<DramahaPage />);
+    const panel = await screen.findByTestId('dramaha-kbd-shortcuts');
+    expect(panel).toBeInTheDocument();
+  });
 });

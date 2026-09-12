@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { omahaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
@@ -143,6 +144,7 @@ function OmahaPageContent() {
     isAddonPhase,
     humanRebuyCount,
     cpuPlayers,
+    actionBindings,
   } = useCommunityPokerGame({
     game: 'omaha',
     exec: omahaApi.exec,
@@ -539,6 +541,7 @@ function OmahaPageContent() {
               dataTutorial="oh-reset-button"
               className="min-w-[90px]"
             />
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="omaha-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

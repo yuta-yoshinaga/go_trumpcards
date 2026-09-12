@@ -1578,4 +1578,30 @@ describe('OmahaPage', () => {
     expect(unused.length).toBeGreaterThan(0);
     expect(unused[0]).toHaveTextContent('未使用');
   });
+
+  it('renders action shortcuts panel during betting phase', async () => {
+    // 1. When no outstanding bet, Check (k) is available
+    mockExec.mockResolvedValue(preFlopState);
+    const { unmount } = renderWithProviders(<OmahaPage />);
+    const panel = await screen.findByTestId('omaha-kbd-shortcuts');
+    expect(panel).toBeInTheDocument();
+    fireEvent.click(within(panel).getByText('キーボードショートカット'));
+
+    expect(panel).toHaveTextContent('レイズ / ベット');
+    expect(panel).toHaveTextContent('チェック');
+    expect(panel).toHaveTextContent('フォールド');
+    expect(panel).toHaveTextContent('オールイン');
+    expect(panel).not.toHaveTextContent('コール');
+    unmount();
+
+    // 2. When outstanding bet exists, Call (c) is available instead of Check (k)
+    mockExec.mockResolvedValue(preFlopWithBetState);
+    renderWithProviders(<OmahaPage />);
+    const panelWithBet = await screen.findByTestId('omaha-kbd-shortcuts');
+    expect(panelWithBet).toBeInTheDocument();
+    fireEvent.click(within(panelWithBet).getByText('キーボードショートカット'));
+
+    expect(panelWithBet).toHaveTextContent('コール');
+    expect(panelWithBet).not.toHaveTextContent('チェック');
+  });
 });

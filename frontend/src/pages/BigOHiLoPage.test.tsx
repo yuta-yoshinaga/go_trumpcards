@@ -1746,4 +1746,11 @@ describe('BigOHiLoPage', () => {
       expect(el).toHaveTextContent('ハイ・ロー');
     }
   });
+
+  it('renders action shortcuts panel during betting phase', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<BigOHiLoPage />);
+    const panel = await screen.findByTestId('bigohilo-kbd-shortcuts');
+    expect(panel).toBeInTheDocument();
+  });
 });

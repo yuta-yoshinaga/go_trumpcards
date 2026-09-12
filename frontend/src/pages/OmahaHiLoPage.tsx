@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { omahaHiLoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
 import { BoardLowBadge } from '../components/BoardLowBadge';
 import { CpuAccordion } from '../components/CpuAccordion';
@@ -200,6 +201,7 @@ function OmahaHiLoPageContent() {
     isAddonPhase,
     humanRebuyCount,
     cpuPlayers,
+    actionBindings,
   } = useCommunityPokerGame({
     game: 'omahahilo',
     exec: omahaHiLoApi.exec,
@@ -680,6 +682,7 @@ function OmahaHiLoPageContent() {
               dataTutorial="ohl-reset-button"
               className="min-w-[90px]"
             />
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="omahahilo-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

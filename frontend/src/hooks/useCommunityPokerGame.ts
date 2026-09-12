@@ -134,23 +134,35 @@ export function useCommunityPokerGame(config: CommunityPokerGameConfig) {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'c', action: () => execApi('call', undefined, undefined, getElapsed()), enabled: hasOutstandingBet },
+      {
+        key: 'c',
+        action: () => execApi('call', undefined, undefined, getElapsed()),
+        enabled: hasOutstandingBet,
+        label: 'call',
+      },
       {
         key: 'r',
         action: () =>
           hasOutstandingBet
             ? execApi('raise', betAmount, undefined, getElapsed())
             : execApi('bet', betAmount, undefined, getElapsed()),
+        label: 'raiseOrBet',
       },
-      { key: 'k', action: () => execApi('check', undefined, undefined, getElapsed()), enabled: !hasOutstandingBet },
-      { key: 'f', action: () => execApi('fold', undefined, undefined, getElapsed()) },
-      { key: 'a', action: () => execApi('allin', undefined, undefined, getElapsed()) },
+      {
+        key: 'k',
+        action: () => execApi('check', undefined, undefined, getElapsed()),
+        enabled: !hasOutstandingBet,
+        label: 'check',
+      },
+      { key: 'f', action: () => execApi('fold', undefined, undefined, getElapsed()), label: 'fold' },
+      { key: 'a', action: () => execApi('allin', undefined, undefined, getElapsed()), label: 'allin' },
     ],
     [execApi, hasOutstandingBet, betAmount, getElapsed],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: canAct && !loading });
 
   return {
+    actionBindings,
     t,
     tc,
     actionLog,
