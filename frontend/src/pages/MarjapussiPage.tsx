@@ -363,6 +363,13 @@ function MarjapussiPageContent() {
 
               {/* Right: info sidebar */}
               <div data-tutorial="marjapussi-info">
+                {humanPlayer && (
+                  <div className="text-ds-text-muted text-sm text-center mb-2">
+                    <div>{t('teamUs')}</div>
+                    <div>{t('teamThem')}</div>
+                  </div>
+                )}
+
                 {/* Team scores with progress toward the target */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                   <div className="font-semibold text-ds-text-primary mb-1">{t('teamScore', { score: '' })}</div>
