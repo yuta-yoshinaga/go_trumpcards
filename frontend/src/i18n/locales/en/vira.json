@@ -18,7 +18,7 @@
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
   "trump": "Trump: {{suit}}",
-  "trumpAutoNote": "The trump suit is set automatically to the declarer's longest suit (there is no selection)",
+  "trumpAutoNote": "The trump suit is set automatically from the declarer’s longest suit — there is nothing to choose.",
   "noTrump": "none",
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
