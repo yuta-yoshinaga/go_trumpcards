@@ -30,6 +30,7 @@ func setupFourteenOutCuiMockDefaults(g *interfaces.MockFourteenOutGame) {
 	g.On("GetPhase").Return(domain.FourteenOutPhasePlaying).Maybe()
 	g.On("GetRemovedCount").Return(0).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
+	g.On("CanUndo").Return(false).Maybe()
 	g.On("GetColumns").Return(foCuiColumns(
 		[]*domain.Card{foCuiCard(domain.CardDesignSpade, 3), foCuiCard(domain.CardDesignSpade, 7)},
 	)).Maybe()
@@ -41,6 +42,7 @@ func newFourteenOutCuiMock(phase domain.FourteenOutPhase, removed int, stalemate
 	g.On("GetPhase").Return(phase).Maybe()
 	g.On("GetRemovedCount").Return(removed).Maybe()
 	g.On("IsStalemate").Return(stalemate).Maybe()
+	g.On("CanUndo").Return(false).Maybe()
 	g.On("CountRemovablePairs").Return(0).Maybe()
 	g.On("GetColumns").Return(foCuiColumns()).Maybe()
 	return g
@@ -85,6 +87,40 @@ func TestFourteenOutCuiPresenter_Output(t *testing.T) {
 		g := newFourteenOutCuiMock(domain.FourteenOutPhasePlaying, 2, false)
 		assert.Contains(t, new(FourteenOutCuiPresenter).Output(g, nil),
 			i18n.Tf("fourteenout.columnEmpty", "col", "0"))
+	})
+}
+
+func TestFourteenOutCuiPresenter_OutputUndoHint(t *testing.T) {
+	i18n.SetLang("ja")
+
+	t.Run("when undo is available", func(t *testing.T) {
+		g := new(interfaces.MockFourteenOutGame)
+		g.On("GetPhase").Return(domain.FourteenOutPhasePlaying)
+		g.On("GetRemovedCount").Return(0)
+		g.On("IsStalemate").Return(false)
+		g.On("GetColumns").Return(foCuiColumns())
+		g.On("CountRemovablePairs").Return(0)
+		g.On("CanUndo").Return(true)
+
+		out := new(FourteenOutCuiPresenter).Output(g, nil)
+
+		assert.Contains(t, out, "（u で 1 手戻せます）")
+		assert.NotContains(t, out, "（戻せる手はありません）")
+	})
+
+	t.Run("when undo is unavailable", func(t *testing.T) {
+		g := new(interfaces.MockFourteenOutGame)
+		g.On("GetPhase").Return(domain.FourteenOutPhasePlaying)
+		g.On("GetRemovedCount").Return(0)
+		g.On("IsStalemate").Return(false)
+		g.On("GetColumns").Return(foCuiColumns())
+		g.On("CountRemovablePairs").Return(0)
+		g.On("CanUndo").Return(false)
+
+		out := new(FourteenOutCuiPresenter).Output(g, nil)
+
+		assert.Contains(t, out, "（戻せる手はありません）")
+		assert.NotContains(t, out, "（u で 1 手戻せます）")
 	})
 }
 
@@ -150,6 +186,7 @@ func TestFourteenOutCuiPresenter_ShowsTheRemovablePairCount(t *testing.T) {
 		g.On("IsStalemate").Return(false).Maybe()
 		g.On("GetColumns").Return(foCuiColumns()).Maybe()
 		g.On("CountRemovablePairs").Return(pairs).Maybe()
+		g.On("CanUndo").Return(false).Maybe()
 		return new(FourteenOutCuiPresenter).Output(g, nil)
 	}
 

@@ -54,7 +54,7 @@ func (pr *FourteenOutCuiPresenter) Output(g interfaces.FourteenOutGame, lastErr 
 			if pairs == 0 {
 				line = color.Yellow(line)
 			}
-			b.WriteString(line + "\n")
+			b.WriteString(line + cuiSolitaireUndoHint(g.CanUndo()) + "\n")
 			if g.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("fourteenout.stalemate")) + "\n")
 			}
