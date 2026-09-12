@@ -92,6 +92,8 @@ func TestDoppelkopfCuiPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLiveRePoints")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLiveKontraPoints")
+		m.On("GetLeadPlayerIdx").Return(0)
+		m.On("GetLastTrickPoints").Return(15)
 		m.On("GetPhase").Return(domain.DoppelkopfPhaseTrickEnd)
 		m.On("GetLiveRePoints").Return(45)
 		m.On("GetLiveKontraPoints").Return(25)
@@ -99,8 +101,22 @@ func TestDoppelkopfCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "Re 45")
 		assert.Contains(t, result, "Kontra 25")
+		assert.Contains(t, result, "トリック終了: あなたが15点獲得")
 		assert.NotContains(t, result, "{{")
 		assert.NotEmpty(t, result)
+	})
+
+	t.Run("trick end prompt names a CPU winner and shows points", func(t *testing.T) {
+		m, _ := setupDoppelkopfCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.DoppelkopfPhaseTrickEnd)
+		m.On("GetLeadPlayerIdx").Return(2)
+		m.On("GetLastTrickPoints").Return(28)
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "Trick complete: CPU 2 won 28 points")
+		assert.NotContains(t, result, "{{")
 	})
 
 	t.Run("round end prompt shows localized Kontra-wins outcome and hides live points", func(t *testing.T) {

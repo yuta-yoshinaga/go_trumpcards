@@ -71,6 +71,7 @@ type Doppelkopf struct {
 	currentPlayerIdx int
 	currentTrick     []*TrickCard
 	leadPlayerIdx    int
+	lastTrickPoints  int
 	dealerIdx        int
 	reTeam           [DoppelkopfPlayerCnt]bool // Re チームのメンバー
 	soloRe           bool                      // 1 人が ♣Q を 2 枚持つソロ Re
@@ -110,6 +111,7 @@ func NewDefaultDoppelkopf() *Doppelkopf {
 func (g *Doppelkopf) Reset() {
 	g.gameEndFlag = false
 	g.winnerIdx = -1
+	g.lastTrickPoints = 0
 	g.roundNumber = 1
 	g.dealerIdx = 0
 	for _, p := range g.players {
@@ -133,6 +135,7 @@ func (g *Doppelkopf) NextRound() {
 func (g *Doppelkopf) startRound() {
 	g.trickNumber = 1
 	g.currentTrick = nil
+	g.lastTrickPoints = 0
 	g.reTeam = [DoppelkopfPlayerCnt]bool{}
 	g.soloRe = false
 	g.teamsRevealed = false
@@ -292,6 +295,7 @@ func (g *Doppelkopf) ResolveTrick() {
 		pts += dkCardPoints(tc.Card.GetValue())
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
+	g.lastTrickPoints = pts
 	g.appendLog(winnerIdx, "trick_win",
 		fmt.Sprintf("%s wins trick %d (%d pts)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
 
@@ -681,6 +685,9 @@ func (g *Doppelkopf) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = tric
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Doppelkopf) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
 
+// GetLastTrickPoints returns the points scored by the most recently resolved trick.
+func (g *Doppelkopf) GetLastTrickPoints() int { return g.lastTrickPoints }
+
 // SetLeadPlayerIdx リードプレイヤーインデックス設定 (テスト用)
 func (g *Doppelkopf) SetLeadPlayerIdx(idx int) { g.leadPlayerIdx = idx }
 
@@ -929,6 +936,7 @@ type doppelkopfJSON struct {
 	CurrentPlayerIdx int                       `json:"ci"`
 	CurrentTrick     []*TrickCard              `json:"ct"`
 	LeadPlayerIdx    int                       `json:"li"`
+	LastTrickPoints  int                       `json:"lp"`
 	DealerIdx        int                       `json:"di"`
 	ReTeam           [DoppelkopfPlayerCnt]bool `json:"rt"`
 	SoloRe           bool                      `json:"sr"`
@@ -955,6 +963,7 @@ func (g *Doppelkopf) MarshalJSON() ([]byte, error) {
 		CurrentPlayerIdx: g.currentPlayerIdx,
 		CurrentTrick:     g.currentTrick,
 		LeadPlayerIdx:    g.leadPlayerIdx,
+		LastTrickPoints:  g.lastTrickPoints,
 		DealerIdx:        g.dealerIdx,
 		ReTeam:           g.reTeam,
 		SoloRe:           g.soloRe,
@@ -1004,6 +1013,7 @@ func (g *Doppelkopf) UnmarshalJSON(data []byte) error {
 		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
+	g.lastTrickPoints = j.LastTrickPoints
 	g.dealerIdx = j.DealerIdx
 	g.reTeam = j.ReTeam
 	g.soloRe = j.SoloRe
