@@ -7,6 +7,7 @@
   "exposedCard": "({{col}}){{card}}",
   "playableCard": "({{col}}){{card}}*",
   "stockLine": "Stock: {{count}}",
+  "combo": "Combo ×{{count}}",
   "wasteCard": " | Waste: {{card}}",
   "wasteEmpty": " | Waste: [empty]",
   "holeScore": "Hole {{hole}}/{{holes}}  this deal: {{score}}  total: {{total}}",
