@@ -11,6 +11,7 @@
   "outputTitle": "Chemin de Fer (シュマン・ド・フェール)",
   "phaseLine": "フェーズ: {{phase}}",
   "roundLine": "ラウンド: {{round}} / {{total}}",
+  "shoe": "シュー残り: {{n}} 枚",
   "bankerLine": "親: 席 {{seat}}（バンク額 {{stake}}）",
   "betLine": "賭け合計: {{total}}（未消化 {{remaining}}）",
   "betTurnLine": "席 {{seat}} の賭け番です（上限 {{max}}）",

@@ -64,6 +64,34 @@ func TestChemindeFerCuiPresenter_ShowsBettingProgress(t *testing.T) {
 	assert.NotContains(t, out, "chemindefer.")
 }
 
+func TestChemindeFerCuiPresenter_ShowsShoeCount(t *testing.T) {
+	cp := new(ChemindeFerCuiPresenter)
+
+	full := newChemindeFerForPresenter(t)
+	assert.Contains(t, cp.Output(full, nil), "シュー残り: 312 枚")
+
+	cfg := domain.DefaultChemindeFerConfig()
+	players := make([]*domain.ChemindeFerPlayer, domain.ChemindeFerSeatCnt)
+	for i := range players {
+		players[i] = domain.NewChemindeFerPlayer("seat", cfg.InitialChips, i == 0)
+	}
+	short := domain.NewChemindeFer(domain.NewTrumpCardsWithDecks(1, 0), players, cfg)
+	assert.Contains(t, cp.Output(short, nil), "シュー残り: 52 枚")
+}
+
+func TestChemindeFerCuiPresenter_ShowsReplenishedShoeCount(t *testing.T) {
+	cfg := domain.DefaultChemindeFerConfig()
+	players := make([]*domain.ChemindeFerPlayer, domain.ChemindeFerSeatCnt)
+	for i := range players {
+		players[i] = domain.NewChemindeFerPlayer("seat", cfg.InitialChips, i == 0)
+	}
+	g := domain.NewChemindeFer(domain.NewTrumpCardsWithDecks(1, 0), players, cfg)
+	g.Reset()
+
+	assert.Equal(t, 312, g.GetRemainingCards(), "Reset should replenish a shoe with fewer than 12 cards")
+	assert.Contains(t, (new(ChemindeFerCuiPresenter)).Output(g, nil), "シュー残り: 312 枚")
+}
+
 // **選べない合計であることを画面に出す。**
 //
 // 黙って引かせると、なぜ手が飛んだのか読み取れない。
