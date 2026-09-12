@@ -109,6 +109,19 @@ describe('CasinoWarPage', () => {
     expect(screen.getByRole('button', { name: /サレンダー/ })).toBeInTheDocument();
   });
 
+  it('explains that a re-tie is a player win only during the tie decision', async () => {
+    mockApi.mockResolvedValue(tieState);
+    const { unmount } = renderWithProviders(<CasinoWarPage />);
+    const actions = await screen.findByTestId('cw-action-buttons');
+    expect(actions).toHaveTextContent('ウォーで再びタイになった場合はプレイヤーの勝利になります');
+
+    unmount();
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /ベット/ })).toBeInTheDocument());
+    expect(screen.queryByTestId('cw-war-tie-rule')).not.toBeInTheDocument();
+  });
+
   it('triggers surrender on surrender click', async () => {
     mockApi.mockResolvedValue(tieState);
     renderWithProviders(<CasinoWarPage />);

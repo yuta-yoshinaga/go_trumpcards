@@ -151,7 +151,8 @@ func TestTeenPattiCuiPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSideShowTarget")
 		m.On("GetSideShowTarget").Return(0) // human target
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "accept or decline")
+		assert.Contains(t, result, "accepting compares the hands and makes the loser fold immediately")
+		assert.Contains(t, result, "declining skips the comparison and play continues")
 	})
 
 	t.Run("showdown reveals all non-folded hands", func(t *testing.T) {

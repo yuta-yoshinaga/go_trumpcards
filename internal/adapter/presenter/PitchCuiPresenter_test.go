@@ -78,6 +78,21 @@ func TestPitchCuiPresenter_Output_Bid(t *testing.T) {
 	assert.Contains(t, result, "ビッド: 0")
 	assert.Contains(t, result, "ビッドフェーズ: あなたの番")
 	assert.Contains(t, result, "あなた: ビッド=未ビッド")
+	assert.NotContains(t, result, "親は全員パスのときパスできません。2-4のビッドを宣言してください。")
+}
+
+func TestPitchCuiPresenter_Output_Bid_DealerMustBid(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.PitchCuiPresenter)
+
+	m, _ := setupPitchCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDealerIdx")
+	m.On("GetDealerIdx").Return(0)
+	result := p.Output(m, nil)
+
+	assert.Contains(t, result, "親は全員パスのときパスできません。2-4のビッドを宣言してください。")
 }
 
 func TestPitchCuiPresenter_Output_PassedBidShown(t *testing.T) {

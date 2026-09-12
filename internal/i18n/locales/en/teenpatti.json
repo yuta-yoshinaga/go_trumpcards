@@ -13,7 +13,7 @@
   "promptRaiseRange": "Raise range: {{min}}-{{max}} (use rs <n>)",
   "promptRaiseUnavailable": "Not enough chips to raise.",
   "promptSideShow": "{{requester}} requests a side show with {{target}}.",
-  "promptSideShowYou": "You are being challenged — accept or decline.",
+  "promptSideShowYou": "You are being challenged — accepting compares the hands and makes the loser fold immediately; declining skips the comparison and play continues.",
   "promptSideShowHelp": "ac=accept  dc=decline",
   "promptShowdown": "Showdown: comparing hands.",
   "promptRoundEnd": "Round over. Player {{player}} won.",

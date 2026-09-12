@@ -13,7 +13,7 @@
   "promptRaiseRange": "レイズ可能額: {{min}}〜{{max}} (rs <n> で指定)",
   "promptRaiseUnavailable": "チップ不足のためレイズできません。",
   "promptSideShow": "{{requester}} が {{target}} にサイドショーを要求しました。",
-  "promptSideShowYou": "あなたが要求されています。受諾するか辞退してください。",
+  "promptSideShowYou": "あなたが要求されています。受諾すると手役を比較し、負けた側はその場でフォールドします。辞退すると比較せずに続行します。",
   "promptSideShowHelp": "ac=受諾  dc=辞退",
   "promptShowdown": "ショーダウン: 役を比較します。",
   "promptRoundEnd": "ラウンド終了。プレイヤー{{player}} が勝ちました。",
