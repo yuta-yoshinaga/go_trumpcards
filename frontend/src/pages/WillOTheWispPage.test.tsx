@@ -212,6 +212,7 @@ describe('WillOTheWispPage', () => {
     mockSend.mockClear();
     fireEvent.click(stockButton);
 
+    await flushPendingDispatch();
     expect(mockSend).not.toHaveBeenCalledWith('deal');
   });
 
