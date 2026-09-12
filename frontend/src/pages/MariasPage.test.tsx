@@ -24,6 +24,7 @@ const roundEndState = makeMariasState({
   phase: 2,
   roundCardPoints: [55, 35, 30],
   roundMarriage: [40, 0, 0],
+  roundMarriageSuits: [[{ suit: 3, points: 40 }], [], []],
 });
 const gameEndState = makeMariasState({
   phase: 3,
@@ -68,10 +69,12 @@ describe('MariasPage', () => {
   // レンダー手札を走査して K と Q の両方を持っているかを見ていたので、どちらかを
   // 出した瞬間に消え、「出したのでボーナスを失った」という誤解を与えていた。
   it('shows the settled marriage bonus during play', async () => {
-    mockExec.mockResolvedValue(makeMariasState({ roundMarriage: [40, 0, 0] }));
+    mockExec.mockResolvedValue(
+      makeMariasState({ roundMarriage: [40, 0, 0], roundMarriageSuits: [[{ suit: 3, points: 40 }], [], []] }),
+    );
     renderWithProviders(<MariasPage />);
     const banner = await screen.findByTestId('marias-marriage');
-    expect(banner).toHaveTextContent('40');
+    expect(banner).toHaveTextContent('ハート: 40');
   });
 
   // **これがこの issue の本体。**K を場に出しても点数は動かないので、バナーも
@@ -157,6 +160,7 @@ describe('MariasPage', () => {
     renderWithProviders(<MariasPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
+    expect(screen.getByText(/ハート: 40/)).toBeInTheDocument();
   });
 
   it('shows the Soloist-vs-Defenders total comparison, highlighting the winning Soloist', async () => {

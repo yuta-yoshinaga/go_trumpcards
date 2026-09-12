@@ -23,6 +23,14 @@ func mariasSuitSymbol(suit int) string {
 	return mariasSuitSymbols[suit]
 }
 
+func mariasMarriageDetails(marriages []domain.MariasMarriage) string {
+	parts := make([]string, 0, len(marriages))
+	for _, marriage := range marriages {
+		parts = append(parts, mariasSuitSymbol(marriage.Suit)+" "+strconv.Itoa(marriage.Points))
+	}
+	return strings.Join(parts, ", ")
+}
+
 func mariasPlayerStr(g interfaces.MariasGame, idx int) string {
 	player := g.GetPlayer(idx)
 	if player == nil {
@@ -99,7 +107,8 @@ func (p *MariasCuiPresenter) Output(g interfaces.MariasGame, lastErr error) stri
 			// ラウンドが終わるまで自分の点に何が乗っているのか分からなかった。
 			if marriage := g.GetRoundMarriage(); marriage[currentIdx] > 0 && g.GetPlayer(currentIdx).GetIsHuman() {
 				b.WriteString(i18n.Tf("marias.marriageEarned",
-					"points", strconv.Itoa(marriage[currentIdx])) + "\n")
+					"points", strconv.Itoa(marriage[currentIdx]),
+					"details", mariasMarriageDetails(g.GetRoundMarriageSuits()[currentIdx])) + "\n")
 			}
 		case domain.MariasPhaseTrickEnd:
 			b.WriteString(i18n.T("marias.promptTrickEnd") + "\n")

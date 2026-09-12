@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 )
 
@@ -129,6 +130,16 @@ func TestMarias_MarriageDetection(t *testing.T) {
 	rm := g.GetRoundMarriage()
 	if rm[0] != 60 {
 		t.Errorf("player 0 marriage = %d, want 60 (20 plain + 40 trump)", rm[0])
+	}
+	if got, want := g.GetRoundMarriageSuits()[0], []MariasMarriage{{Suit: CardDesignSpade, Points: 20}, {Suit: CardDesignHeart, Points: 40}}; !reflect.DeepEqual(got, want) {
+		t.Errorf("marriage details = %v, want %v", got, want)
+	}
+	g.roundMarriageSuits[0] = []MariasMarriage{{Suit: 99, Points: 999}}
+	g.startRound()
+	for _, marriage := range g.GetRoundMarriageSuits()[0] {
+		if marriage.Suit == 99 {
+			t.Error("marriage details should reset at the start of a round")
+		}
 	}
 }
 
@@ -269,6 +280,9 @@ func TestMarias_JSONRoundTrip(t *testing.T) {
 	}
 	if g2.GetTrumpSuit() != g.GetTrumpSuit() || g2.GetSoloistIdx() != g.GetSoloistIdx() {
 		t.Error("round-trip mismatch")
+	}
+	if !reflect.DeepEqual(g2.GetRoundMarriageSuits(), g.GetRoundMarriageSuits()) {
+		t.Errorf("marriage details round-trip mismatch: got %v, want %v", g2.GetRoundMarriageSuits(), g.GetRoundMarriageSuits())
 	}
 }
 

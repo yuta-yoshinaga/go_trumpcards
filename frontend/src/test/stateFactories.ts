@@ -1253,6 +1253,7 @@ const baseMariasState: MariasResponse = {
   playerScores: [0, 0, 0],
   roundCardPoints: [0, 0, 0],
   roundMarriage: [0, 0, 0],
+  roundMarriageSuits: [[], [], []],
   lastTrickWinner: -1,
   playableIndices: [0, 1, 2],
   gameEndFlag: false,

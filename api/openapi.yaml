@@ -68103,6 +68103,18 @@ components:
           items:
             type: integer
           description: Marriage bonus points per player auto-detected at deal for the current round
+        roundMarriageSuits:
+          type: array
+          description: Marriage bonuses by player and suit, including the awarded points
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                suit:
+                  type: integer
+                points:
+                  type: integer
         lastTrickWinner:
           type: integer
           description: Index of the player who won the last (10th) trick (-1 if not yet completed)
