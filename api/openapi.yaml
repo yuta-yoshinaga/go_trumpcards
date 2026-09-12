@@ -79633,6 +79633,8 @@ components:
           type: integer
         completedSuits:
           type: integer
+        completedSuitMask:
+          type: integer
         phase:
           type: integer
         moveCount:
@@ -81105,6 +81107,8 @@ components:
         stockCount:
           type: integer
         completedSuits:
+          type: integer
+        completedSuitMask:
           type: integer
         phase:
           type: integer

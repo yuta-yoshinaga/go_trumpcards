@@ -577,6 +577,34 @@ func TestWasp_AutoComplete(t *testing.T) {
 	})
 }
 
+func TestWasp_CompletedSuitMask(t *testing.T) {
+	s := newTestWasp()
+	s.Reset()
+	clearWaspTableau(s)
+	var tab [domain.WaspTableauCnt][]*domain.KlondikeTableauCard
+	for col, design := range []int{domain.CardDesignSpade, domain.CardDesignHeart} {
+		cards := make([]*domain.KlondikeTableauCard, 0, domain.CardValueMax)
+		for value := domain.CardValueMax; value >= 1; value-- {
+			cards = append(cards, makeTableauCard(design, value, true))
+		}
+		tab[col] = cards
+	}
+	s.SetTableau(tab)
+
+	assert.NoError(t, s.AutoComplete())
+	assert.Equal(t, 2, s.GetCompletedSuits())
+	assert.Equal(t, 5, s.GetCompletedSuitMask())
+
+	data, err := json.Marshal(s)
+	assert.NoError(t, err)
+	restored := newTestWasp()
+	assert.NoError(t, json.Unmarshal(data, restored))
+	assert.Equal(t, 5, restored.GetCompletedSuitMask())
+
+	restored.Reset()
+	assert.Equal(t, 0, restored.GetCompletedSuitMask())
+}
+
 func TestWasp_ResetClearsStalemate(t *testing.T) {
 	s := setupPlayingWasp()
 	s.SetIsStalemate(true)

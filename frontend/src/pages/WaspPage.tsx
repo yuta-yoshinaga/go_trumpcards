@@ -412,7 +412,7 @@ function WaspPageContent() {
           </span>
           <span data-tutorial="sc-stock" className="inline-flex items-center gap-2">
             {t('stock')}: {state.stockCount}
-            <SuitProgressBadge completed={state.completedSuits} label={t('completed')} />
+            <SuitProgressBadge completedMask={state.completedSuitMask} label={t('completed')} />
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>

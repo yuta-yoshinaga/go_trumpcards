@@ -67,8 +67,10 @@ type Wasp struct {
 	tableau        [WaspTableauCnt][]*KlondikeTableauCard
 	stock          []*Card
 	completedSuits int
-	phase          WaspPhase
-	moveCount      int
+	// completedSuitMask uses bit (design-1): Spade(1)=bit0, Clover(2)=bit1, Heart(3)=bit2, Diamond(4)=bit3.
+	completedSuitMask int
+	phase             WaspPhase
+	moveCount         int
 	actionLogBase
 	history     []*waspSnapshot
 	isStalemate bool
@@ -76,12 +78,13 @@ type Wasp struct {
 
 // waspSnapshot アンドゥ用スナップショット
 type waspSnapshot struct {
-	tableau        [WaspTableauCnt][]*KlondikeTableauCard
-	stock          []*Card
-	completedSuits int
-	phase          WaspPhase
-	moveCount      int
-	isStalemate    bool
+	tableau           [WaspTableauCnt][]*KlondikeTableauCard
+	stock             []*Card
+	completedSuits    int
+	completedSuitMask int
+	phase             WaspPhase
+	moveCount         int
+	isStalemate       bool
 }
 
 // NewWasp コンストラクタ
@@ -106,6 +109,7 @@ func (s *Wasp) Reset() {
 	s.history = nil
 	s.isStalemate = false
 	s.completedSuits = 0
+	s.completedSuitMask = 0
 
 	// タブローに配る: 列0-3は先頭3枚裏+残り4枚表、列4-6は7枚全て表
 	for i := range WaspTableauCnt {
@@ -389,6 +393,9 @@ func (s *Wasp) GetTableau() [WaspTableauCnt][]*KlondikeTableauCard { return s.ta
 // GetCompletedSuits 完成スート数取得
 func (s *Wasp) GetCompletedSuits() int { return s.completedSuits }
 
+// GetCompletedSuitMask returns the bit mask of completed suits.
+func (s *Wasp) GetCompletedSuitMask() int { return s.completedSuitMask }
+
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (s *Wasp) GetGameEndFlag() bool { return s.phase != WaspPhasePlaying }
 
@@ -453,6 +460,7 @@ func (s *Wasp) checkAndRemoveCompletedSuit(col int) bool {
 	}
 	s.tableau[col] = cards[:startIdx]
 	s.completedSuits++
+	s.completedSuitMask |= 1 << (suit - 1)
 	s.appendLog("complete", fmt.Sprintf("タブロー列%dでスートが完成しました", col), nil)
 	s.autoFlipTableau(col)
 	s.checkGameClear()
@@ -486,10 +494,11 @@ func (s *Wasp) checkWaspStalemate() {
 // takeSnapshot 現在の状態をスナップショットとして保存
 func (s *Wasp) takeSnapshot() {
 	snap := &waspSnapshot{
-		completedSuits: s.completedSuits,
-		phase:          s.phase,
-		moveCount:      s.moveCount,
-		isStalemate:    s.isStalemate,
+		completedSuits:    s.completedSuits,
+		completedSuitMask: s.completedSuitMask,
+		phase:             s.phase,
+		moveCount:         s.moveCount,
+		isStalemate:       s.isStalemate,
 	}
 	for i := range WaspTableauCnt {
 		snap.tableau[i] = make([]*KlondikeTableauCard, len(s.tableau[i]))
@@ -507,6 +516,7 @@ func (s *Wasp) restoreSnapshot(snap *waspSnapshot) {
 	s.tableau = snap.tableau
 	s.stock = snap.stock
 	s.completedSuits = snap.completedSuits
+	s.completedSuitMask = snap.completedSuitMask
 	s.phase = snap.phase
 	s.moveCount = snap.moveCount
 	s.isStalemate = snap.isStalemate
@@ -519,15 +529,16 @@ func (s *Wasp) appendLog(actionType, detail string, cards []*Card) {
 
 // waspJSON is the JSON wire format for Wasp.
 type waspJSON struct {
-	TrumpCards     *TrumpCards                            `json:"tc"`
-	Tableau        [WaspTableauCnt][]*KlondikeTableauCard `json:"tb"`
-	Stock          []*Card                                `json:"st"`
-	CompletedSuits int                                    `json:"cs"`
-	Phase          WaspPhase                              `json:"ps"`
-	MoveCount      int                                    `json:"mc"`
-	ActionLog      []*ActionLogEntry                      `json:"al"`
-	IsStalemate    bool                                   `json:"sl"`
-	History        []*waspSnapshot                        `json:"hi,omitempty"`
+	TrumpCards        *TrumpCards                            `json:"tc"`
+	Tableau           [WaspTableauCnt][]*KlondikeTableauCard `json:"tb"`
+	Stock             []*Card                                `json:"st"`
+	CompletedSuits    int                                    `json:"cs"`
+	CompletedSuitMask int                                    `json:"cm"`
+	Phase             WaspPhase                              `json:"ps"`
+	MoveCount         int                                    `json:"mc"`
+	ActionLog         []*ActionLogEntry                      `json:"al"`
+	IsStalemate       bool                                   `json:"sl"`
+	History           []*waspSnapshot                        `json:"hi,omitempty"`
 }
 
 // waspSnapshotJSON is the wire format for a single undo snapshot.
@@ -535,23 +546,25 @@ type waspJSON struct {
 // shape with explicit Marshal/Unmarshal methods. Field names match
 // waspJSON's short keys to keep the KV payload compact (#1654).
 type waspSnapshotJSON struct {
-	Tableau        [WaspTableauCnt][]*KlondikeTableauCard `json:"tb"`
-	Stock          []*Card                                `json:"st"`
-	CompletedSuits int                                    `json:"cs"`
-	Phase          WaspPhase                              `json:"ps"`
-	MoveCount      int                                    `json:"mc"`
-	IsStalemate    bool                                   `json:"sl"`
+	Tableau           [WaspTableauCnt][]*KlondikeTableauCard `json:"tb"`
+	Stock             []*Card                                `json:"st"`
+	CompletedSuits    int                                    `json:"cs"`
+	CompletedSuitMask int                                    `json:"cm"`
+	Phase             WaspPhase                              `json:"ps"`
+	MoveCount         int                                    `json:"mc"`
+	IsStalemate       bool                                   `json:"sl"`
 }
 
 // MarshalJSON implements json.Marshaler for waspSnapshot.
 func (s *waspSnapshot) MarshalJSON() ([]byte, error) {
 	return json.Marshal(waspSnapshotJSON{
-		Tableau:        s.tableau,
-		Stock:          s.stock,
-		CompletedSuits: s.completedSuits,
-		Phase:          s.phase,
-		MoveCount:      s.moveCount,
-		IsStalemate:    s.isStalemate,
+		Tableau:           s.tableau,
+		Stock:             s.stock,
+		CompletedSuits:    s.completedSuits,
+		CompletedSuitMask: s.completedSuitMask,
+		Phase:             s.phase,
+		MoveCount:         s.moveCount,
+		IsStalemate:       s.isStalemate,
 	})
 }
 
@@ -575,6 +588,7 @@ func (s *waspSnapshot) UnmarshalJSON(data []byte) error {
 		s.stock = make([]*Card, 0)
 	}
 	s.completedSuits = j.CompletedSuits
+	s.completedSuitMask = j.CompletedSuitMask
 	s.phase = j.Phase
 	s.moveCount = j.MoveCount
 	s.isStalemate = j.IsStalemate
@@ -584,15 +598,16 @@ func (s *waspSnapshot) UnmarshalJSON(data []byte) error {
 // MarshalJSON implements json.Marshaler.
 func (s *Wasp) MarshalJSON() ([]byte, error) {
 	return json.Marshal(waspJSON{
-		TrumpCards:     s.trumpCards,
-		Tableau:        s.tableau,
-		Stock:          s.stock,
-		CompletedSuits: s.completedSuits,
-		Phase:          s.phase,
-		MoveCount:      s.moveCount,
-		ActionLog:      s.actionLog,
-		IsStalemate:    s.isStalemate,
-		History:        s.history,
+		TrumpCards:        s.trumpCards,
+		Tableau:           s.tableau,
+		Stock:             s.stock,
+		CompletedSuits:    s.completedSuits,
+		CompletedSuitMask: s.completedSuitMask,
+		Phase:             s.phase,
+		MoveCount:         s.moveCount,
+		ActionLog:         s.actionLog,
+		IsStalemate:       s.isStalemate,
+		History:           s.history,
 	})
 }
 
@@ -624,6 +639,7 @@ func (s *Wasp) UnmarshalJSON(data []byte) error {
 		s.stock = make([]*Card, 0)
 	}
 	s.completedSuits = j.CompletedSuits
+	s.completedSuitMask = j.CompletedSuitMask
 	s.phase = j.Phase
 	s.moveCount = j.MoveCount
 	s.actionLog = j.ActionLog
