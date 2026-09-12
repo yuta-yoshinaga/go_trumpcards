@@ -73390,6 +73390,7 @@ components:
         ante: { type: integer }
         bettingLimit: { type: integer }
         raiseCount: { type: integer }
+        maxRaises: { type: integer }
         maxBetAmount: { type: integer }
         roundResults:
           type: array

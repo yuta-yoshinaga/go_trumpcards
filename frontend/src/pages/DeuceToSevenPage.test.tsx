@@ -65,6 +65,7 @@ const baseState = (overrides: Partial<DeuceToSevenResponse> = {}): DeuceToSevenR
   ante: 10,
   bettingLimit: 0,
   raiseCount: 0,
+  maxRaises: 4,
   maxBetAmount: 0,
   roundResults: [],
   cpuActions: [],
@@ -175,7 +176,9 @@ describe('DeuceToSevenPage', () => {
     ['Fixed', 0],
     ['Pot Limit', 1],
   ])('disables Raise at the cap in %s', async (_label, bettingLimit) => {
-    mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.BET, lastBet: 20, bettingLimit, raiseCount: 4 }));
+    mockExec.mockResolvedValue(
+      baseState({ phase: DeuceToSevenPhase.BET, lastBet: 20, bettingLimit, raiseCount: 4, maxRaises: 4 }),
+    );
     renderWithProviders(<DeuceToSevenPage />);
 
     const raiseButton = await screen.findByRole('button', { name: /レイズ/ });
@@ -185,7 +188,7 @@ describe('DeuceToSevenPage', () => {
 
   it('keeps Raise enabled below the cap in a capped mode', async () => {
     mockExec.mockResolvedValue(
-      baseState({ phase: DeuceToSevenPhase.BET, lastBet: 20, bettingLimit: 0, raiseCount: 3 }),
+      baseState({ phase: DeuceToSevenPhase.BET, lastBet: 20, bettingLimit: 0, raiseCount: 3, maxRaises: 4 }),
     );
     renderWithProviders(<DeuceToSevenPage />);
 
@@ -194,7 +197,7 @@ describe('DeuceToSevenPage', () => {
 
   it('keeps Raise enabled at or above four raises in No Limit', async () => {
     mockExec.mockResolvedValue(
-      baseState({ phase: DeuceToSevenPhase.BET, lastBet: 20, bettingLimit: 2, raiseCount: 4 }),
+      baseState({ phase: DeuceToSevenPhase.BET, lastBet: 20, bettingLimit: 2, raiseCount: 4, maxRaises: 0 }),
     );
     renderWithProviders(<DeuceToSevenPage />);
 

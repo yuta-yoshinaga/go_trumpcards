@@ -107,16 +107,6 @@ export const DeuceToSevenAction = {
   ALL_IN: 5,
 } as const;
 
-/** Betting limit values (sync: internal/domain/betting.go). */
-export const BettingLimit = {
-  FIXED: 0,
-  POT_LIMIT: 1,
-  NO_LIMIT: 2,
-} as const;
-
-/** Maximum raises per round for Fixed and Pot Limit (sync: bettingMaxRaisesPerRound in internal/domain/betting.go). */
-export const BETTING_MAX_RAISES_PER_ROUND = 4;
-
 /** Texas Hold'em phase constants (sync: internal/domain/Holdem.go). */
 export const HoldemPhase = {
   INIT: 0,

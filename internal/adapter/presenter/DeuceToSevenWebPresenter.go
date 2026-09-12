@@ -40,7 +40,7 @@ func (dwp *DeuceToSevenWebPresenter) buildOutput(g interfaces.DeuceToSevenGame, 
 	out.Ante = g.GetAnte()
 	out.BettingLimit = int(g.GetConfig().BettingLimit)
 	out.RaiseCount = g.GetRaiseCount()
-	_, out.MaxBetAmount = domain.CalculateBettingLimits(g.GetConfig().BettingLimit, g.GetPot(), g.GetLastBet())
+	out.MaxRaises, out.MaxBetAmount = domain.CalculateBettingLimits(g.GetConfig().BettingLimit, g.GetPot(), g.GetLastBet())
 
 	out.SidePots = dwp.buildSidePots(g)
 	out.Players = dwp.buildPlayers(g)

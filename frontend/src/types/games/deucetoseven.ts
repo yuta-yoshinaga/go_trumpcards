@@ -79,6 +79,7 @@ export interface DeuceToSevenResponse extends BaseGameResponse {
   ante: number;
   bettingLimit: number;
   raiseCount: number;
+  maxRaises: number;
   maxBetAmount: number;
   roundResults: DeuceToSevenResult[];
   cpuActions: DeuceToSevenCpuAction[];
