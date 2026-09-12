@@ -13,6 +13,7 @@
   "captureLine": "  手札{{idx}} {{card}} → 場札 {{targets}}",
   "captureNone": "取れる組み合わせはありません。場に置くしかありません。",
   "promptPlay": "play <i> [t...]・・・手札 i を出す（t... は場札の番号）",
+  "leftover": "{{name}} が場の残り {{count}} 枚を取りました。",
   "gameEndYou": "ゲーム終了！ あなたの勝ちです。",
   "gameEndCpu": "ゲーム終了！ {{name}} の勝ちです。",
   "gameEndTie": "ゲーム終了！ {{n}} 人が同点です。",

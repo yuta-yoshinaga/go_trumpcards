@@ -86,6 +86,12 @@ func (p *PasurCuiPresenter) Output(s interfaces.PasurGame, lastErr error) string
 				banner = i18n.Tf("pasur.gameEndTie", "n", "0")
 			}
 			sb.WriteString(color.Green(banner) + "\n")
+			if s.GetLeftoverCount() > 0 {
+				idx := s.GetLeftoverIdx()
+				sb.WriteString(i18n.Tf("pasur.leftover",
+					"name", cuiPlayerName(s.GetPlayer(idx), idx),
+					"count", strconv.Itoa(s.GetLeftoverCount())) + "\n")
+			}
 			return
 		}
 

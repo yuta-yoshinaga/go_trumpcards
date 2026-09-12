@@ -35,6 +35,10 @@ type PasurGame interface {
 	GetDeckRemaining() int
 	// GetPacksDealt 配ったパック数を取得する
 	GetPacksDealt() int
+	// GetLeftoverIdx 終局時の残り札の受取席を取得する (-1: なし)
+	GetLeftoverIdx() int
+	// GetLeftoverCount 終局時に受け取った残り札の枚数を取得する
+	GetLeftoverCount() int
 	// GetLastCaptureIdx 最後に捕獲した席を取得する (-1: なし)
 	GetLastCaptureIdx() int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する

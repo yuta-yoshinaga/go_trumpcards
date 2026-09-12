@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 func newPasurForWeb(t *testing.T) *domain.Pasur {
@@ -187,4 +188,83 @@ func TestPasurWebPresenterActionLogOutput(t *testing.T) {
 
 	g.GiveUp()
 	assert.NotEmpty(t, decodePasur(t, p.ActionLogOutput(g))["entries"])
+}
+
+// finalPasurPlay ends a round by playing its final hand card.
+func finalPasurPlay(t *testing.T, last int, capture bool) *domain.Pasur {
+	t.Helper()
+	g := newPasurForWeb(t)
+	g.EmptyHandsForTest()
+	g.DrainDeckForTest()
+	g.SetCurrentPlayerIdxForTest(0)
+	g.SetLastCaptureIdxForTest(last)
+	g.SetTableForTest([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 7, false)})
+	value := 12
+	var targets []int
+	if capture {
+		value = 4
+		targets = []int{0}
+	}
+	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, value, false))
+	require.NoError(t, g.PlayerPlay(0, targets))
+	require.True(t, g.GetGameEndFlag())
+	return g
+}
+
+func TestPasurWebPresenterLeftover(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		last    int
+		capture bool
+		want    bool
+	}{
+		{"leftover", 2, false, true},
+		{"empty table", 2, true, false},
+		{"no capturer", -1, false, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := finalPasurPlay(t, tc.last, tc.capture)
+			m := decodePasur(t, new(PasurWebPresenter).Output(g, nil))
+			params := m["messageParams"].(map[string]any)
+			if tc.want {
+				assert.Equal(t, "pasur.result.tie.leftoverCpu", m["messageCode"])
+				assert.Equal(t, "2", params["leftoverIdx"])
+				assert.Equal(t, "2", params["leftoverCount"])
+			} else {
+				assert.Equal(t, "pasur.result.tie", m["messageCode"])
+				assert.NotContains(t, params, "leftoverIdx")
+				assert.NotContains(t, params, "leftoverCount")
+			}
+			assert.Equal(t, "4", params["n"])
+		})
+	}
+}
+
+func TestPasurWebPresenterLeftoverWinners(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		code        string
+		winners     []int
+		leftoverIdx int
+		params      map[string]string
+	}{
+		{"you winner, human recipient", "pasur.result.you.leftoverYou", []int{0}, 0, map[string]string{"leftoverCount": "3"}},
+		{"you winner, CPU recipient", "pasur.result.you.leftoverCpu", []int{0}, 2, map[string]string{"leftoverIdx": "2", "leftoverCount": "3"}},
+		{"CPU winner, human recipient", "pasur.result.cpu.leftoverYou", []int{1}, 0, map[string]string{"idx": "1", "leftoverCount": "3"}},
+		{"CPU winner, CPU recipient", "pasur.result.cpu.leftoverCpu", []int{1}, 2, map[string]string{"idx": "1", "leftoverIdx": "2", "leftoverCount": "3"}},
+		{"tie, human recipient", "pasur.result.tie.leftoverYou", []int{0, 1}, 0, map[string]string{"n": "2", "leftoverCount": "3"}},
+		{"no winners, CPU recipient", "pasur.result.tie.leftoverCpu", nil, 2, map[string]string{"n": "0", "leftoverIdx": "2", "leftoverCount": "3"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := new(interfaces.MockPasurGame)
+			g.On("GetGameEndFlag").Return(true)
+			g.On("GetWinners").Return(tc.winners)
+			g.On("GetLeftoverCount").Return(3)
+			g.On("GetLeftoverIdx").Return(tc.leftoverIdx)
+			_, code, params := new(PasurWebPresenter).buildMessage(g, nil)
+			assert.Equal(t, tc.code, code)
+			assert.Equal(t, tc.params, params)
+			g.AssertExpectations(t)
+		})
+	}
 }
