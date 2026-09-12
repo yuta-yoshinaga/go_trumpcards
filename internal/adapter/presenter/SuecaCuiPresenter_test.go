@@ -5,6 +5,7 @@ package presenter_test
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,6 +16,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 )
 
 func makeSuecaPlayers() []*domain.SuecaPlayer {
@@ -261,4 +263,33 @@ func TestSuecaCuiPresenter_ShowsTheRoundAward(t *testing.T) {
 		assert.NotContains(t, out, i18n.T("sueca.roundGamePointsDraw"))
 		assert.NotContains(t, out, i18n.T("sueca.gamePointsNormal"))
 	})
+}
+
+func TestSuecaCuiPresenter_HelpIncludesCardPointLegend(t *testing.T) {
+	// Sueca puts the legend in the help notes, so it does not add seven lines
+	// to every turn's output. Assert the rendered literals rather than i18n.T:
+	// using the translator for both sides would make a missing key self-validating.
+	help := ui.BuildCuiHelp(ui.CuiHelpSpec{
+		TitleKey: "sueca.helpTitle",
+		NoteKeys: []string{
+			"sueca.pointLegendTitle",
+			"sueca.pointLegendAce",
+			"sueca.pointLegendSeven",
+			"sueca.pointLegendKing",
+			"sueca.pointLegendJack",
+			"sueca.pointLegendQueen",
+			"sueca.pointLegendOthers",
+			"sueca.pointLegendNote",
+		},
+	})
+	joined := strings.Join(help, "\n")
+	// 6 行すべてをリテラルで固定する。この表は桁が揃っていることが値打ちなので、
+	// どれか 1 行のパディングを動かしたら落ちてほしい (数字の右端は全行 29 桁目)。
+	assert.Contains(t, joined, "A（エース）              11点")
+	assert.Contains(t, joined, "7                        10点")
+	assert.Contains(t, joined, "K（レイ）                 4点")
+	assert.Contains(t, joined, "J（バラーテ）             3点")
+	assert.Contains(t, joined, "Q（ダーマ）               2点")
+	assert.Contains(t, joined, "その他（2〜6）            0点")
+	assert.Contains(t, joined, "1ラウンドの合計は120点。61点以上を取ったチームの勝ち。")
 }
