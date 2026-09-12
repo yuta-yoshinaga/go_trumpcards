@@ -173,6 +173,77 @@ describe('SpiderettePage', () => {
     expect(validSource).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('keeps an invalid source disabled after selecting a valid source', async () => {
+    mockSend.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('HEART', 12), faceUp: true },
+        ],
+        [{ card: card('CLOVER', 9), faceUp: true }],
+      ]),
+    });
+    renderWithProviders(<SpiderettePage />);
+
+    const invalidSource = await screen.findByTestId('spdt-card-0-0');
+    const validSource = screen.getByTestId('spdt-card-0-1');
+    fireEvent.click(validSource);
+
+    expect(validSource).toHaveAttribute('aria-pressed', 'true');
+    expect(invalidSource).toBeDisabled();
+    fireEvent.click(invalidSource);
+    expect(validSource).toHaveAttribute('aria-pressed', 'true');
+    expect(invalidSource).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('allows switching from one valid source to another', async () => {
+    mockSend.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 12), faceUp: true },
+        ],
+      ]),
+    });
+    renderWithProviders(<SpiderettePage />);
+
+    const firstSource = await screen.findByTestId('spdt-card-0-0');
+    const secondSource = screen.getByTestId('spdt-card-0-1');
+    fireEvent.click(firstSource);
+    fireEvent.click(secondSource);
+
+    expect(firstSource).toHaveAttribute('aria-pressed', 'false');
+    expect(secondSource).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('attempts a move when a target column is clicked while a source is selected', async () => {
+    mockSend.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [{ card: card('SPADE', 13), faceUp: true }],
+        [
+          { card: card('HEART', 5), faceUp: true },
+          { card: card('CLOVER', 4), faceUp: true },
+        ],
+      ]),
+    });
+    renderWithProviders(<SpiderettePage />);
+
+    const source = await screen.findByTestId('spdt-card-0-0');
+    fireEvent.click(source);
+    fireEvent.click(screen.getByTestId('spdt-card-1-0'));
+
+    await waitFor(() =>
+      expect(mockSend).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 0 },
+        { zone: 'tableau', col: 1 },
+      ),
+    );
+  });
+
   it('renders move count', async () => {
     renderWithProviders(<SpiderettePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));

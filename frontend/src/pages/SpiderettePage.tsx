@@ -374,7 +374,8 @@ function SpiderettePageContent() {
                                       disabled={
                                         !isPlaying ||
                                         loading ||
-                                        (!selectedSource && !spideretteCanSelectSource(col, cardIdx))
+                                        ((!selectedSource || selectedSource.col === colIdx) &&
+                                          !spideretteCanSelectSource(col, cardIdx))
                                       }
                                       aria-label={cardAlt(tc.card)}
                                       aria-pressed={isSourceSelected(colIdx, cardIdx)}
