@@ -1,6 +1,6 @@
+import goldenPenalties from '../constants/trexPenalties.json';
 import type { Card } from '../types/card';
 import { TrexContract } from '../types/phases';
-import goldenPenalties from './__fixtures__/trexPenalties.golden.json';
 
 /**
  * Trex の失点定数。
@@ -39,18 +39,4 @@ export function trexCardPenalty(card: Card | null | undefined, contract: number)
     default:
       return 0;
   }
-}
-
-/**
- * Whether this card is a penalty card under the contract in play.
- * Implemented via `trexCardPenalty(card, contract) !== 0`.
- *
- * **Five contracts rotate within one kingdom**, so which cards are dangerous
- * changes deal to deal and cannot be learned once (#4911).
- * @param card - The card to test.
- * @param contract - The contract in play, from `TrexResponse.contract`.
- * @returns Whether taking this card costs points.
- */
-export function trexIsPenaltyCard(card: Card | null | undefined, contract: number): boolean {
-  return trexCardPenalty(card, contract) !== 0;
 }

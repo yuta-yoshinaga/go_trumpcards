@@ -21,10 +21,10 @@ type trexPenaltiesGolden struct {
 }
 
 // TestTrexPenalties_GoldenValues verifies that the penalty values used in frontend
-// (frontend/src/utils/__fixtures__/trexPenalties.golden.json) match the domain constants.
+// (frontend/src/constants/trexPenalties.json) match the domain constants.
 func TestTrexPenalties_GoldenValues(t *testing.T) {
 	raw, err := os.ReadFile(filepath.Join(
-		"..", "..", "frontend", "src", "utils", "__fixtures__", "trexPenalties.golden.json"))
+		"..", "..", "frontend", "src", "constants", "trexPenalties.json"))
 	require.NoError(t, err)
 
 	var golden trexPenaltiesGolden

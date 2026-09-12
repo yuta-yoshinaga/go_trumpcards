@@ -1,5 +1,5 @@
+import niuniuMultipliersGolden from '../constants/niuniuMultipliers.json';
 import i18n from '../i18n';
-import niuniuMultipliersGolden from './__fixtures__/niuniuMultipliers.golden.json';
 
 /**
  * Renders a Niu Niu rank key as text in the current locale.

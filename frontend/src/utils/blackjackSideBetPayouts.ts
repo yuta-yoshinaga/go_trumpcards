@@ -7,13 +7,13 @@
  * `BJT3StraightFlushPayout`, `BJT3SuitedTripsPayout`).
  *
  * `TestBlackJackSideBetPayouts_GoldenValues` (Go side) reads
- * `frontend/src/utils/__fixtures__/blackjackSideBetPayouts.golden.json` and
+ * `frontend/src/constants/blackjackSideBetPayouts.json` and
  * asserts that every value matches the Go constants independently.
  * Changing only one side will fail that side's test, and regenerating the
  * fixture to fix it will break the other side.
  */
 
-import raw from './__fixtures__/blackjackSideBetPayouts.golden.json';
+import raw from '../constants/blackjackSideBetPayouts.json';
 
 /** Perfect Pairs side-bet payout multipliers. */
 export interface PerfectPairsPayout {
