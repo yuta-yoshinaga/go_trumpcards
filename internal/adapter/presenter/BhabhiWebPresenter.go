@@ -32,6 +32,8 @@ func (p *BhabhiWebPresenter) buildBase(b interfaces.BhabhiGame) *controller.Bhab
 	resObj.LeadSuit = b.GetLeadSuit()
 	resObj.LastPickupIdx = b.GetLastPickupIdx()
 	resObj.LastPickupSize = b.GetLastPickupSize()
+	resObj.LastFinishedIdx = b.GetLastFinishedIdx()
+	resObj.LastFinishedRank = b.GetLastFinishedRank()
 	resObj.CurrentPlayerIdx = b.GetCurrentPlayerIdx()
 	resObj.LeadPlayerIdx = b.GetLeadPlayerIdx()
 	resObj.ValidPlays = intSliceOrEmpty(b.GetValidPlayIndices(0))

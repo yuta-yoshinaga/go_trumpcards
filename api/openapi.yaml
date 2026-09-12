@@ -58410,6 +58410,12 @@ components:
         lastPickupSize:
           type: integer
           description: How many cards that pickup was worth.
+        lastFinishedIdx:
+          type: integer
+          description: "Seat that most recently went out, or -1 when none has"
+        lastFinishedRank:
+          type: integer
+          description: Finishing position of that seat; 0 when none has gone out.
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:

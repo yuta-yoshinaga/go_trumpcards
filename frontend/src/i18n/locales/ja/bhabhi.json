@@ -17,6 +17,7 @@
   },
   "pile": "場札",
   "lastPickup": "直前に {{name}} が {{n}} 枚引き取りました。",
+  "lastFinished": "直前に {{name}} が {{rank}}番目に上がりました。",
   "actions": {
     "reset": "リセット",
     "giveUp": "投了",
