@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { actionLogApi, blackjackApi } from '../api/gameApi';
+import { actionLogApi, blackjackApi, doubleexposureApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -10,10 +10,12 @@ import { BlackJackPage } from './BlackJackPage';
 
 vi.mock('../api/gameApi', () => ({
   blackjackApi: { exec: vi.fn() },
+  doubleexposureApi: { exec: vi.fn() },
   actionLogApi: { blackjack: vi.fn() },
 }));
 
 const mockExec = vi.mocked(blackjackApi.exec);
+const mockDoubleExposureExec = vi.mocked(doubleexposureApi.exec);
 
 const betPhaseState: BlackJackResponse = {
   dealer: { chips: 1000 },
@@ -159,6 +161,7 @@ const endPhaseState: BlackJackResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(betPhaseState);
+  mockDoubleExposureExec.mockResolvedValue(betPhaseState);
 });
 
 describe('BlackJackPage', () => {
@@ -357,6 +360,19 @@ describe('BlackJackPage', () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
     expect(screen.queryByText('ディーラー手札')).not.toBeInTheDocument();
+  });
+
+  it('shows the Double Exposure payout rows without blackjack odds or insurance', async () => {
+    renderWithProviders(<BlackJackPage variant="doubleexposure" />);
+    await waitFor(() => expect(screen.getByText('ブラックジャック (1:1、イーブンマネー)')).toBeInTheDocument());
+    expect(screen.queryByText(/3:2/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/インシュランス \(2:1\)/)).not.toBeInTheDocument();
+  });
+
+  it('keeps the standard blackjack payout rows', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText('ブラックジャック (3:2)')).toBeInTheDocument());
+    expect(screen.getByText('インシュランス (2:1)')).toBeInTheDocument();
   });
 
   it('does not expand card area with flex-1 during bet phase', async () => {

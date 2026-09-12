@@ -118,10 +118,10 @@
   "betGuide": "Place your bet to start",
   "payoutRef": {
     "title": "Payouts",
-    "blackjack": "Blackjack (3:2)",
+    "blackjack": "Blackjack (1:1, even money)",
     "win": "Regular Win (1:1)",
     "insurance": "Insurance (2:1)",
-    "push": "Push (Tie: bet returned)",
+    "push": "Tie (dealer wins; player wins only when both have natural blackjack)",
     "surrender": "Surrender (half bet returned)",
     "bust": "Bust (over 21: lose)"
   },

@@ -415,7 +415,9 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                           'bonus678',
                           'bonus777',
                         ] as const)
-                      : (['blackjack', 'win', 'insurance', 'push', 'surrender', 'bust'] as const)
+                      : variant === 'doubleexposure'
+                        ? (['blackjack', 'win', 'push', 'surrender', 'bust'] as const)
+                        : (['blackjack', 'win', 'insurance', 'push', 'surrender', 'bust'] as const)
                     ).map((key) => (
                       <li key={key}>{t(`payoutRef.${key}`)}</li>
                     ))}
