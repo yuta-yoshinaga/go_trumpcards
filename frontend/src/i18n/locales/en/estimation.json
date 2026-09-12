@@ -16,7 +16,6 @@
     "total": "{{n}} total",
     "you": "You",
     "cpu": "CPU{{idx}}",
-    "dealer": "Dealer",
     "roundDelta": "this round {{delta}}"
   },
   "bid": {
@@ -26,6 +25,7 @@
     "risk": "Risk ({{n}})"
   },
   "currentTrick": "Current trick",
+  "dealerBadge": "dealer",
   "actions": {
     "trump": "Trump {{suit}}",
     "dash": "Dash (0)",

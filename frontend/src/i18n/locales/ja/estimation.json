@@ -16,7 +16,6 @@
     "total": "累計{{n}}",
     "you": "あなた",
     "cpu": "CPU{{idx}}",
-    "dealer": "親",
     "roundDelta": "今回 {{delta}}"
   },
   "bid": {
@@ -26,6 +25,7 @@
     "risk": "Risk({{n}})"
   },
   "currentTrick": "現在のトリック",
+  "dealerBadge": "親",
   "actions": {
     "trump": "切り札 {{suit}}",
     "dash": "Dash(0)",
