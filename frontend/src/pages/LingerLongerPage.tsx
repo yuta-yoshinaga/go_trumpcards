@@ -152,6 +152,13 @@ function LingerLongerPageContent() {
               <span data-testid="ll-discarded">{t('header.discarded', { n: String(state.discarded) })}</span>
             </div>
 
+            <div className="mb-3 text-center text-ds-text-primary" role="status" data-testid="ll-eliminated-summary">
+              {t('header.eliminatedSummary', {
+                eliminated: String(state.eliminatedCnt),
+                total: String(state.players.length),
+              })}
+            </div>
+
             {/* **取っても得点にならない規則が要。** 先に出す。 */}
             <div
               className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
