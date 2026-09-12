@@ -701,6 +701,28 @@ describe('PyramidPage best-record', () => {
     expect(screen.queryByTestId('py-best-moves')).not.toBeInTheDocument();
     expect(screen.queryByTestId('py-best-badge')).not.toBeInTheDocument();
   });
+
+  it('shows a 30% win rate for 3 wins in 10 plays', async () => {
+    localStorage.setItem(PYRAMID_STATS_KEY, JSON.stringify({ plays: 10, wins: 3, fewestMoves: null }));
+    renderWithProviders(<PyramidPage />);
+
+    await waitFor(() => expect(screen.getByTestId('py-stats-panel')).toHaveTextContent('勝率 30%'));
+  });
+
+  it('rounds a 1-in-3 win rate to 33%', async () => {
+    localStorage.setItem(PYRAMID_STATS_KEY, JSON.stringify({ plays: 3, wins: 1, fewestMoves: null }));
+    renderWithProviders(<PyramidPage />);
+
+    await waitFor(() => expect(screen.getByTestId('py-stats-panel')).toHaveTextContent('勝率 33%'));
+  });
+
+  it('does not show a win rate when there have been no plays', async () => {
+    localStorage.setItem(PYRAMID_STATS_KEY, JSON.stringify({ plays: 0, wins: 0, fewestMoves: null }));
+    renderWithProviders(<PyramidPage />);
+
+    await waitFor(() => expect(screen.getByTestId('py-stats-panel')).toBeInTheDocument());
+    expect(screen.getByTestId('py-stats-panel')).not.toHaveTextContent('勝率');
+  });
 });
 
 // #5510: Draw は山札を引き切ると二度と引けない設計なのに、空表示は「なし」としか

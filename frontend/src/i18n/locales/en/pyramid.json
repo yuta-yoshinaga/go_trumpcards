@@ -37,6 +37,7 @@
   "bestMovesValue": "{{moves}} moves",
   "newBestMoves": "New record! Cleared in {{moves}} moves",
   "clears": "Cleared {{wins}}/{{plays}}",
+  "winRate": "Win rate {{rate}}%",
   "frontendHint": {
     "removeKing": "An exposed King can be removed directly",
     "removePair": "There is a pair of exposed cards that sums to 13",

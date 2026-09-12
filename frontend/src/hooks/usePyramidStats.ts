@@ -24,6 +24,11 @@ export function emptyPyramidStats(): PyramidStats {
   return { plays: 0, wins: 0, fewestMoves: null };
 }
 
+/** Returns the fraction of finished Pyramid games that were cleared. */
+export function pyramidWinRate(stats: PyramidStats): number {
+  return stats.plays > 0 ? stats.wins / stats.plays : 0;
+}
+
 function isValidStats(value: unknown): value is PyramidStats {
   if (typeof value !== 'object' || value === null) return false;
   const s = value as Record<string, unknown>;

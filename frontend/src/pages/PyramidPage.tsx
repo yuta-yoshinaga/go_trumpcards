@@ -25,7 +25,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { usePyramidGame } from '../hooks/usePyramidGame';
-import { usePyramidStats } from '../hooks/usePyramidStats';
+import { pyramidWinRate, usePyramidStats } from '../hooks/usePyramidStats';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { PyramidResponse } from '../types/card';
@@ -441,6 +441,8 @@ function PyramidPageContent() {
                 <>
                   {' · '}
                   {t('clears', { wins: stats.wins, plays: stats.plays })}
+                  {' · '}
+                  {t('winRate', { rate: Math.round(pyramidWinRate(stats) * 100) })}
                 </>
               )}
             </div>
