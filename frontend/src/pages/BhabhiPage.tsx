@@ -9,6 +9,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -230,6 +231,32 @@ function BhabhiPageContent() {
                   name:
                     state.lastPickupIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(state.lastPickupIdx) }),
                   n: String(state.lastPickupSize),
+                })}
+              </div>
+            )}
+
+            <LiveAnnouncement
+              message={
+                state.lastFinishedIdx >= 0 && !isGameEnd
+                  ? t('lastFinished', {
+                      name:
+                        state.lastFinishedIdx === 0
+                          ? t('header.you')
+                          : t('header.cpu', { idx: String(state.lastFinishedIdx) }),
+                      rank: String(state.lastFinishedRank),
+                    })
+                  : ''
+              }
+            />
+
+            {state.lastFinishedIdx >= 0 && !isGameEnd && (
+              <div className="text-center my-2 text-ds-accent text-sm" role="status" data-testid="bh-last-finished">
+                {t('lastFinished', {
+                  name:
+                    state.lastFinishedIdx === 0
+                      ? t('header.you')
+                      : t('header.cpu', { idx: String(state.lastFinishedIdx) }),
+                  rank: String(state.lastFinishedRank),
                 })}
               </div>
             )}

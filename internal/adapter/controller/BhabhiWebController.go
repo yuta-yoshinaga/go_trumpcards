@@ -50,8 +50,11 @@ type BhabhiWebOutput struct {
 	// Pile は場に出ている札。**フォローできない人がこれを全部引き取る。**
 	Pile []*WebOutputTrickCard `json:"pile"`
 	// LastPickupIdx / LastPickupSize は直前の引き取り (-1 / 0)。
-	LastPickupIdx    int   `json:"lastPickupIdx"`
-	LastPickupSize   int   `json:"lastPickupSize"`
+	LastPickupIdx  int `json:"lastPickupIdx"`
+	LastPickupSize int `json:"lastPickupSize"`
+	// LastFinishedIdx / LastFinishedRank は直前の上がり (-1 / 0)。
+	LastFinishedIdx  int   `json:"lastFinishedIdx"`
+	LastFinishedRank int   `json:"lastFinishedRank"`
 	CurrentPlayerIdx int   `json:"currentPlayerIdx"`
 	LeadPlayerIdx    int   `json:"leadPlayerIdx"`
 	ValidPlays       []int `json:"validPlays"`

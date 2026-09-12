@@ -37,6 +37,10 @@ type BhabhiGame interface {
 	GetLastPickupIdx() int
 	// GetLastPickupSize 直前に引き取った枚数を取得する
 	GetLastPickupSize() int
+	// GetLastFinishedIdx 直前に上がった人を取得する (-1: まだ無い)
+	GetLastFinishedIdx() int
+	// GetLastFinishedRank 直前に上がった人の順位を取得する (0: まだ無い)
+	GetLastFinishedRank() int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する

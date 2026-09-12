@@ -10,6 +10,7 @@
   "stateCards": "手札{{n}}枚",
   "stateOut": "{{rank}}番目に上がり",
   "lastPickup": "直前に {{name}} が {{n}} 枚引き取りました。",
+  "lastFinished": "直前に {{name}} が {{rank}}番目に上がりました。",
   "promptCurrentPlayer": "手番: {{name}}",
   "promptPlay": "play <idx>・・・カードを出す",
   "gameEndYou": "ゲーム終了！ あなたが Bhabhi です。",

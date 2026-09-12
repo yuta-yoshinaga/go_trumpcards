@@ -10,6 +10,7 @@
   "stateCards": "{{n}} cards",
   "stateOut": "out, {{rank}} to finish",
   "lastPickup": "{{name}} just picked up {{n}} cards.",
+  "lastFinished": "{{name}} just finished in {{rank}} place.",
   "promptCurrentPlayer": "Turn: {{name}}",
   "promptPlay": "play <idx> ... Play a card",
   "gameEndYou": "Game over! You are the Bhabhi.",

@@ -39,6 +39,8 @@ function makeState(overrides: Partial<BhabhiResponse> = {}): BhabhiResponse {
     pile: [],
     lastPickupIdx: -1,
     lastPickupSize: 0,
+    lastFinishedIdx: -1,
+    lastFinishedRank: 0,
     currentPlayerIdx: 0,
     leadPlayerIdx: 0,
     validPlays: [0, 1, 2],
@@ -129,6 +131,22 @@ describe('BhabhiPage', () => {
     mockExec.mockResolvedValue(makeState({ lastPickupIdx: 2, lastPickupSize: 5 }));
     renderWithProviders(<BhabhiPage />);
     expect(await screen.findByTestId('bh-last-pickup')).toHaveTextContent('5');
+  });
+
+  it('announces and shows the player who just finished', async () => {
+    mockExec.mockResolvedValue(makeState({ lastFinishedIdx: 2, lastFinishedRank: 1 }));
+    renderWithProviders(<BhabhiPage />);
+    expect(await screen.findByTestId('bh-last-finished')).toHaveTextContent('直前に CPU2 が 1番目に上がりました。');
+    expect(
+      screen.getAllByRole('status').some((node) => node.textContent === '直前に CPU2 が 1番目に上がりました。'),
+    ).toBe(true);
+  });
+
+  it('keeps the finish announcement empty when nobody has finished', async () => {
+    renderWithProviders(<BhabhiPage />);
+    await flushPendingDispatch();
+    expect(screen.queryByTestId('bh-last-finished')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('status').some((node) => node.textContent)).toBe(false);
   });
 
   it('drops the pickup line once the game is over', async () => {

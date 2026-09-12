@@ -70,8 +70,12 @@ type Bhabhi struct {
 	lastPickupIdx int
 	// lastPickupSize は直前に引き取った枚数。
 	lastPickupSize int
-	finishedCnt    int
-	gameEndFlag    bool
+	// lastFinishedIdx は直前に上がった人（-1 = まだ無い）。
+	lastFinishedIdx int
+	// lastFinishedRank は直前に上がった人の順位。
+	lastFinishedRank int
+	finishedCnt      int
+	gameEndFlag      bool
 	// bhabhiIdx は敗者（-1 = 未確定）。
 	bhabhiIdx int
 	// stalemate は膠着で打ち切ったかどうか。
@@ -82,11 +86,12 @@ type Bhabhi struct {
 // NewBhabhi はコンストラクタ。
 func NewBhabhi(players []*BhabhiPlayer, config BhabhiConfig) *Bhabhi {
 	return &Bhabhi{
-		players:       players,
-		config:        config,
-		leadSuit:      0,
-		lastPickupIdx: -1,
-		bhabhiIdx:     -1,
+		players:         players,
+		config:          config,
+		leadSuit:        0,
+		lastPickupIdx:   -1,
+		lastFinishedIdx: -1,
+		bhabhiIdx:       -1,
 	}
 }
 
@@ -119,6 +124,8 @@ func (b *Bhabhi) Reset() {
 	b.trickNumber = 0
 	b.lastPickupIdx = -1
 	b.lastPickupSize = 0
+	b.lastFinishedIdx = -1
+	b.lastFinishedRank = 0
 	b.finishedCnt = 0
 	b.gameEndFlag = false
 	b.bhabhiIdx = -1
@@ -258,12 +265,12 @@ func (b *Bhabhi) play(playerIdx, cardIndex int) error {
 // advance は次の手番へ進め、一周したらトリックを解決する。
 func (b *Bhabhi) advance() {
 	// **手札が尽きた人はその場で抜ける。** 引き取りが起きないかぎり戻れません。
-	b.markFinished()
-	if b.gameEndFlag {
-		return
-	}
 	if b.trickComplete() {
 		b.resolveTrick()
+		return
+	}
+	b.markFinished()
+	if b.gameEndFlag {
 		return
 	}
 	next := b.nextInTrick(b.currentIdx)
@@ -317,6 +324,8 @@ func (b *Bhabhi) nextInTrick(from int) int {
 //
 // **場札は捨てる。** 引き取らせるとカードが場から消えず、誰も上がれません。
 func (b *Bhabhi) resolveTrick() {
+	b.lastFinishedIdx = -1
+	b.lastFinishedRank = 0
 	winner := b.trickWinner()
 	discarded := len(b.pile)
 	b.pile = nil
@@ -357,6 +366,8 @@ func (b *Bhabhi) trickWinner() int {
 
 // pickUpPile は playerIdx に場札を全部引き取らせ、そのままリードさせる。
 func (b *Bhabhi) pickUpPile(playerIdx int) {
+	b.lastFinishedIdx = -1
+	b.lastFinishedRank = 0
 	p := b.players[playerIdx]
 	taken := len(b.pile)
 	for _, tc := range b.pile {
@@ -402,6 +413,8 @@ func (b *Bhabhi) markFinished() {
 		b.finishedCnt++
 		p.SetRank(b.finishedCnt)
 		p.SetIsFinished(true)
+		b.lastFinishedIdx = i
+		b.lastFinishedRank = b.finishedCnt
 		b.addLog(i, "finish", fmt.Sprintf("%d 位で上がりました", b.finishedCnt), nil)
 	}
 	if b.aliveCount() <= 1 {
@@ -627,6 +640,12 @@ func (b *Bhabhi) GetLastPickupIdx() int { return b.lastPickupIdx }
 // GetLastPickupSize は直前に引き取った枚数を返す。
 func (b *Bhabhi) GetLastPickupSize() int { return b.lastPickupSize }
 
+// GetLastFinishedIdx は直前に上がった人を返す（-1 = まだ無い）。
+func (b *Bhabhi) GetLastFinishedIdx() int { return b.lastFinishedIdx }
+
+// GetLastFinishedRank は直前に上がった人の順位を返す（0 = まだ無い）。
+func (b *Bhabhi) GetLastFinishedRank() int { return b.lastFinishedRank }
+
 // GetAliveCount はまだ手札が残っている人数を返す。
 func (b *Bhabhi) GetAliveCount() int { return b.aliveCount() }
 
@@ -649,41 +668,45 @@ func (b *Bhabhi) addLog(playerIdx int, actionType, detail string, cards []*Card)
 // **非公開フィールドは全部ここに載せる。** Worker はリクエストごとに JSON
 // からゲームを作り直すので、載せ忘れたものは毎回消えます (#4478)。
 type bhabhiJSON struct {
-	Players        []*BhabhiPlayer   `json:"pl"`
-	Config         BhabhiConfig      `json:"cf"`
-	Phase          BhabhiPhase       `json:"ph"`
-	Pile           []*TrickCard      `json:"pi"`
-	LeadSuit       int               `json:"ls"`
-	CurrentIdx     int               `json:"ci"`
-	LeadIdx        int               `json:"li"`
-	TrickNumber    int               `json:"tn"`
-	LastPickupIdx  int               `json:"lpi"`
-	LastPickupSize int               `json:"lps"`
-	FinishedCnt    int               `json:"fc"`
-	GameEndFlag    bool              `json:"ge"`
-	BhabhiIdx      int               `json:"bi"`
-	Stalemate      bool              `json:"sm"`
-	ActionLog      []*ActionLogEntry `json:"al"`
+	Players          []*BhabhiPlayer   `json:"pl"`
+	Config           BhabhiConfig      `json:"cf"`
+	Phase            BhabhiPhase       `json:"ph"`
+	Pile             []*TrickCard      `json:"pi"`
+	LeadSuit         int               `json:"ls"`
+	CurrentIdx       int               `json:"ci"`
+	LeadIdx          int               `json:"li"`
+	TrickNumber      int               `json:"tn"`
+	LastPickupIdx    int               `json:"lpi"`
+	LastPickupSize   int               `json:"lps"`
+	LastFinishedIdx  int               `json:"lfi"`
+	LastFinishedRank int               `json:"lfr"`
+	FinishedCnt      int               `json:"fc"`
+	GameEndFlag      bool              `json:"ge"`
+	BhabhiIdx        int               `json:"bi"`
+	Stalemate        bool              `json:"sm"`
+	ActionLog        []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
 func (b *Bhabhi) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&bhabhiJSON{
-		Players:        b.players,
-		Config:         b.config,
-		Phase:          b.phase,
-		Pile:           b.pile,
-		LeadSuit:       b.leadSuit,
-		CurrentIdx:     b.currentIdx,
-		LeadIdx:        b.leadIdx,
-		TrickNumber:    b.trickNumber,
-		LastPickupIdx:  b.lastPickupIdx,
-		LastPickupSize: b.lastPickupSize,
-		FinishedCnt:    b.finishedCnt,
-		GameEndFlag:    b.gameEndFlag,
-		BhabhiIdx:      b.bhabhiIdx,
-		Stalemate:      b.stalemate,
-		ActionLog:      b.actionLog,
+		Players:          b.players,
+		Config:           b.config,
+		Phase:            b.phase,
+		Pile:             b.pile,
+		LeadSuit:         b.leadSuit,
+		CurrentIdx:       b.currentIdx,
+		LeadIdx:          b.leadIdx,
+		TrickNumber:      b.trickNumber,
+		LastPickupIdx:    b.lastPickupIdx,
+		LastPickupSize:   b.lastPickupSize,
+		LastFinishedIdx:  b.lastFinishedIdx,
+		LastFinishedRank: b.lastFinishedRank,
+		FinishedCnt:      b.finishedCnt,
+		GameEndFlag:      b.gameEndFlag,
+		BhabhiIdx:        b.bhabhiIdx,
+		Stalemate:        b.stalemate,
+		ActionLog:        b.actionLog,
 	})
 }
 
@@ -692,6 +715,11 @@ func (b *Bhabhi) UnmarshalJSON(data []byte) error {
 	var j bhabhiJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
+	}
+	// Snapshots written before the finish announcement fields existed have both
+	// values at their zero value, which means "no announcement".
+	if j.LastFinishedIdx == 0 && j.LastFinishedRank == 0 {
+		j.LastFinishedIdx = -1
 	}
 	if err := j.Config.Validate(); err != nil {
 		return err
@@ -738,7 +766,7 @@ func (b *Bhabhi) UnmarshalJSON(data []byte) error {
 			return fmt.Errorf("invalid %s: %d", name, idx)
 		}
 	}
-	for name, idx := range map[string]int{"last pickup": j.LastPickupIdx, "bhabhi": j.BhabhiIdx} {
+	for name, idx := range map[string]int{"last pickup": j.LastPickupIdx, "last finished": j.LastFinishedIdx, "bhabhi": j.BhabhiIdx} {
 		if idx < -1 || idx >= n {
 			return fmt.Errorf("invalid %s: %d", name, idx)
 		}
@@ -753,6 +781,12 @@ func (b *Bhabhi) UnmarshalJSON(data []byte) error {
 	if j.LastPickupSize < 0 || j.LastPickupSize > BhabhiDeckSize {
 		return fmt.Errorf("invalid pickup size: %d", j.LastPickupSize)
 	}
+	if j.LastFinishedRank < 0 || j.LastFinishedRank > n {
+		return fmt.Errorf("invalid finished rank: %d", j.LastFinishedRank)
+	}
+	if (j.LastFinishedIdx == -1) != (j.LastFinishedRank == 0) {
+		return errors.New("last finished index and rank must be set together")
+	}
 
 	b.players = j.Players
 	b.config = j.Config
@@ -764,6 +798,8 @@ func (b *Bhabhi) UnmarshalJSON(data []byte) error {
 	b.trickNumber = j.TrickNumber
 	b.lastPickupIdx = j.LastPickupIdx
 	b.lastPickupSize = j.LastPickupSize
+	b.lastFinishedIdx = j.LastFinishedIdx
+	b.lastFinishedRank = j.LastFinishedRank
 	b.finishedCnt = j.FinishedCnt
 	b.gameEndFlag = j.GameEndFlag
 	b.bhabhiIdx = j.BhabhiIdx

@@ -35,6 +35,8 @@ func TestBhabhiWebPresenterOutput(t *testing.T) {
 	assert.Empty(t, m["pile"])
 	assert.Equal(t, float64(-1), m["bhabhiIdx"], "敗者は未確定")
 	assert.Equal(t, float64(-1), m["lastPickupIdx"])
+	assert.Equal(t, float64(-1), m["lastFinishedIdx"])
+	assert.Equal(t, float64(0), m["lastFinishedRank"])
 	assert.False(t, m["stalemate"].(bool))
 	assert.Equal(t, float64(domain.BhabhiStalemateTricks), m["stalemateTricks"])
 	assert.Equal(t, float64(domain.BhabhiDefaultPlayers), m["aliveCount"])
