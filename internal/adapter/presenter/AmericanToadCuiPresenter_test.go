@@ -19,6 +19,7 @@ func setupAmericanToadCuiMockDefaults(g *interfaces.MockAmericanToadGame) {
 	g.On("GetMoveCount").Return(0).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	g.On("CanRedeal").Return(false).Maybe()
+	g.On("GetPassesUsed").Return(0).Maybe()
 	g.On("GetStockCount").Return(75).Maybe()
 	g.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 9, true)}).Maybe()
 	g.On("GetReserve").Return([]*domain.Card{domain.NewCard(domain.CardDesignClover, 3, true)}).Maybe()
@@ -86,6 +87,27 @@ func TestAmericanToadCuiPresenter_Output(t *testing.T) {
 		g.On("CanRedeal").Return(true)
 
 		assert.Contains(t, new(AmericanToadCuiPresenter).Output(g, nil), i18n.T("americantoad.redealAvailable"))
+	})
+
+	t.Run("pass count shows the current pass and maximum", func(t *testing.T) {
+		for _, tc := range []struct {
+			passesUsed int
+			want       string
+		}{
+			{passesUsed: 0, want: "山札の通し: 1/2"},
+			{passesUsed: 1, want: "山札の通し: 2/2"},
+		} {
+			g := new(interfaces.MockAmericanToadGame)
+			setupAmericanToadCuiMockDefaults(g)
+			g.ExpectedCalls = filterCalls(filterCalls(g.ExpectedCalls, "GetPassesUsed"), "CanRedeal")
+			g.On("GetPassesUsed").Return(tc.passesUsed)
+			g.On("CanRedeal").Return(true)
+
+			result := new(AmericanToadCuiPresenter).Output(g, nil)
+			assert.Contains(t, result, tc.want)
+			assert.Contains(t, result, "山札が尽きました。d でめくり直せます（1回だけ）")
+			assert.NotContains(t, result, "{{")
+		}
 	})
 
 	t.Run("stalemate shows undo-to-escape guidance", func(t *testing.T) {

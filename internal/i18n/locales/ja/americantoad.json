@@ -17,6 +17,7 @@
   "invalidToZone": "無効な移動先です: {{val}} (f または t を指定してください)",
   "invalidCardIndex": "無効なカード位置です: {{val}}",
   "baseRankLine": "開始ランク: {{rank}}",
+  "passCount": "山札の通し: {{current}}/{{max}}",
   "foundationHeader": "基礎札: ",
   "reserveLine": "リザーブ: {{card}} (残り{{count}}枚)",
   "reserveEmpty": "リザーブ: なし（空き列は捨て札から埋められます）",
