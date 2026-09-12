@@ -369,9 +369,14 @@ function CasinoHoldemPageContent() {
             )}
             {isFlopPhase && (
               <div className="flex justify-center gap-2 pb-2" data-tutorial="ch-flop-buttons">
-                <button type="button" className={btnSuccess} onClick={handleCall} disabled={loading}>
-                  {t('button.call')}
-                </button>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-ds-text-primary text-sm" data-testid="ch-flop-call-bet">
+                    {t('label.callAmount')}: {state.callBet}
+                  </span>
+                  <button type="button" className={btnSuccess} onClick={handleCall} disabled={loading}>
+                    {t('button.call')}
+                  </button>
+                </div>
                 <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
                   {t('button.fold')}
                 </button>
