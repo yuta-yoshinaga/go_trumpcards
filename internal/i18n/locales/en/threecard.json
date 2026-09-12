@@ -31,5 +31,16 @@
   "helpHint": "  h                    show a hint",
   "helpRebet": "  rb                   bet the same as last round",
   "antePayoutLine": "  Ante payout: {{payout}}",
-  "playPayoutLine": "  Play payout: {{payout}}"
+  "playPayoutLine": "  Play payout: {{payout}}",
+  "payoutRef.title": "Payout Table",
+  "payoutRef.anteBonusHeader": "Ante bonus",
+  "payoutRef.anteBonusStraight": "Straight:        {{payout}}:1",
+  "payoutRef.anteBonusThreeOfAKind": "Three of a Kind: {{payout}}:1",
+  "payoutRef.anteBonusStraightFlush": "Straight Flush:  {{payout}}:1",
+  "payoutRef.pairPlusHeader": "Pair Plus",
+  "payoutRef.pairPlusPair": "Pair:            {{payout}}:1",
+  "payoutRef.pairPlusFlush": "Flush:           {{payout}}:1",
+  "payoutRef.pairPlusStraight": "Straight:        {{payout}}:1",
+  "payoutRef.pairPlusThreeOfAKind": "Three of a Kind: {{payout}}:1",
+  "payoutRef.pairPlusStraightFlush": "Straight Flush:  {{payout}}:1"
 }

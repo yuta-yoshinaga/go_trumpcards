@@ -1,14 +1,34 @@
 package presenter
 
 import (
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
+
+func TestThreeCardPayoutRateWidth(t *testing.T) {
+	rates := []int{
+		domain.ThreeCardAnteBonusStraight,
+		domain.ThreeCardAnteBonusThreeOfAKind,
+		domain.ThreeCardAnteBonusStraightFlush,
+		domain.ThreeCardPairPlusPair,
+		domain.ThreeCardPairPlusFlush,
+		domain.ThreeCardPairPlusStraight,
+		domain.ThreeCardPairPlusThreeOfAKind,
+		domain.ThreeCardPairPlusStraightFlush,
+	}
+	w := threeCardPayoutRateWidth()
+	for _, rate := range rates {
+		got := threeCardPayoutRate(rate, w)
+		assert.Len(t, got, w)
+		assert.Equal(t, strconv.Itoa(rate), strings.TrimLeft(got, " "))
+	}
+}
 
 func setupThreeCardCuiMockDefaults(m *interfaces.MockThreeCardGame) {
 	m.On("GetChips").Return(1000).Maybe()
@@ -41,6 +61,43 @@ func TestThreeCardCuiPresenter_Output_BetPhase(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
 	assert.Contains(t, result, "フェーズ: BET")
+}
+
+func TestThreeCardCuiPresenter_Output_BetPhase_PayoutTable(t *testing.T) {
+	p := new(ThreeCardCuiPresenter)
+	m := new(interfaces.MockThreeCardGame)
+	setupThreeCardCuiMockDefaults(m)
+
+	result := p.Output(m, nil)
+	for _, line := range []string{
+		"  ストレート:            1:1",
+		"  スリーカード:          4:1",
+		"  ストレートフラッシュ:  5:1",
+		"  アンテボーナス",
+		"  ペアプラス",
+		"  ペア:                  1:1",
+		"  フラッシュ:            3:1",
+		"  ストレート:            6:1",
+		"  スリーカード:         30:1",
+		"  ストレートフラッシュ: 40:1",
+	} {
+		assert.Contains(t, result, line)
+	}
+	assert.NotContains(t, result, "{{")
+}
+
+func TestThreeCardCuiPresenter_Output_NonBetPhase_HidesPayoutTable(t *testing.T) {
+	p := new(ThreeCardCuiPresenter)
+	m := new(interfaces.MockThreeCardGame)
+	m.On("GetChips").Return(1000)
+	m.On("GetPhase").Return(domain.ThreeCardPhaseAction)
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetPlayerHand").Return(([]*domain.Card)(nil))
+	m.On("GetDealerHand").Return(([]*domain.Card)(nil))
+
+	result := p.Output(m, nil)
+	assert.NotContains(t, result, "配当表")
+	assert.NotContains(t, result, "ペアプラス")
 }
 
 func TestThreeCardCuiPresenter_HintOutput(t *testing.T) {
@@ -291,20 +348,20 @@ func TestThreeCardCuiPresenter_PayoutBreakdown(t *testing.T) {
 
 	t.Run("shows both lines when both wagers paid", func(t *testing.T) {
 		out := p.Output(build(20, 20), nil)
-		assert.Contains(t, out, i18n.Tf("threecard.antePayoutLine", "payout", "20"))
-		assert.Contains(t, out, i18n.Tf("threecard.playPayoutLine", "payout", "20"))
+		assert.Contains(t, out, "  アンテ配当: 20")
+		assert.Contains(t, out, "  プレイ配当: 20")
 	})
 
 	t.Run("shows the ante alone when the dealer did not qualify", func(t *testing.T) {
 		out := p.Output(build(20, 0), nil)
-		assert.Contains(t, out, i18n.Tf("threecard.antePayoutLine", "payout", "20"))
+		assert.Contains(t, out, "  アンテ配当: 20")
 		// The play bet was pushed, so printing a zero line would read as a loss.
-		assert.NotContains(t, out, i18n.T("threecard.playPayoutLine"))
+		assert.NotContains(t, out, "  プレイ配当: 0")
 	})
 
 	t.Run("shows neither when nothing paid", func(t *testing.T) {
 		out := p.Output(build(0, 0), nil)
-		assert.NotContains(t, out, i18n.T("threecard.antePayoutLine"))
-		assert.NotContains(t, out, i18n.T("threecard.playPayoutLine"))
+		assert.NotContains(t, out, "  アンテ配当: 0")
+		assert.NotContains(t, out, "  プレイ配当: 0")
 	})
 }
