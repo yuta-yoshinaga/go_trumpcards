@@ -270,6 +270,11 @@ func (g *Bolivia) canGoOut(playerIdx int) bool {
 	return g.teamCompletedCount(team) >= BoliviaGoOutRequiredMelds && g.teamHasEscalera(team)
 }
 
+// CanGoOut は現在の手番プレイヤーが上がれるかを返す。
+func (g *Bolivia) CanGoOut() bool {
+	return g.canGoOut(g.currentPlayerIdx)
+}
+
 // teamHasEscalera はチームが完成したエスカレラを持っているかを返す。
 func (g *Bolivia) teamHasEscalera(team int) bool {
 	for _, p := range g.players {

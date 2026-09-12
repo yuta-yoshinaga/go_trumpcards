@@ -563,9 +563,15 @@ function BoliviaPageContent() {
                   >
                     {t('discardButton')}
                   </button>
-                  <button type="button" className={btnSuccess} onClick={handleGoOut} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleGoOut}
+                    disabled={loading || !state.canGoOut}
+                  >
                     {t('goOutButton')}
                   </button>
+                  {!state.canGoOut && <p className="text-ds-text-muted text-xs">{t('goOutRule')}</p>}
                 </>
               )}
               {isRoundEnd && (

@@ -4267,6 +4267,7 @@ const baseBoliviaState: BoliviaResponse = {
   isFrozen: false,
   gameEndFlag: false,
   winnerIdx: -1,
+  canGoOut: false,
   message: '',
   messageCode: 'bolivia.drawPhase',
   config: { cpuDifficulty: 1, pointLimit: 10000 },

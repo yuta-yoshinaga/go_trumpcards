@@ -162,7 +162,11 @@ func (p *BoliviaCuiPresenter) Output(g interfaces.BoliviaGame, lastErr error) st
 			b.WriteString(i18n.Tf("bolivia.promptDiscard",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("bolivia.promptDiscardHelp") + "\n")
-			b.WriteString(i18n.T("bolivia.promptGoOutHelp") + "\n")
+			if g.CanGoOut() {
+				b.WriteString(i18n.T("bolivia.promptGoOutHelp") + "\n")
+			} else {
+				b.WriteString(i18n.T("bolivia.promptGoOutUnavailable") + "\n")
+			}
 		case domain.BoliviaPhaseRoundEnd:
 			b.WriteString(i18n.T("bolivia.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("bolivia.promptRoundEndHelp") + "\n")
