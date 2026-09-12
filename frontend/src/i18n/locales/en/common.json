@@ -537,6 +537,8 @@
     "errorBoundaryDetails": "Show error details"
   },
   "messageCode": {
+    "settemezzo.bankerChanged": "The banker has changed — place your bet",
+    "settemezzo.bankerChangedYou": "You are now the banker — deal the round",
     "accordion.gameClear": "Game Clear! Moves: {{moveCount}}",
     "accordion.gameOver": "Game Over",
     "accordion.hintAvailable": "Hint available",

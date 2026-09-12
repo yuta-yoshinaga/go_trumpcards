@@ -25,11 +25,22 @@ func (p *FiveCardStudCuiPresenter) Output(s interfaces.FiveCardStudGame, lastErr
 	return buildCuiOutput(i18n.T("fivecardstud.outputTitle"), func(b *strings.Builder) {
 		cfg := s.GetConfig()
 		if cfg.TournamentMode {
+			handCount := s.GetHandCount()
+			anteLevel := 1
+			handsUntilLevelUp := cfg.AnteLevelHands
+			if cfg.AnteLevelHands > 0 && handCount > 0 {
+				// Reset raises the ante at a positive multiple, then increments
+				// handCount; this matches FiveCardStud.Reset exactly.
+				anteLevel = (handCount-1)/cfg.AnteLevelHands + 1
+				handsUntilLevelUp = cfg.AnteLevelHands - (handCount-1)%cfg.AnteLevelHands
+			}
 			b.WriteString(i18n.Tf("fivecardstud.tournamentLine",
-				"hand", strconv.Itoa(s.GetHandCount()),
+				"hand", strconv.Itoa(handCount),
 				"ante", strconv.Itoa(cfg.Ante),
 				"bringIn", strconv.Itoa(cfg.BringIn),
-				"levelup", strconv.Itoa(cfg.AnteLevelHands)) + "\n")
+				"levelup", strconv.Itoa(cfg.AnteLevelHands),
+				"level", strconv.Itoa(anteLevel),
+				"remaining", strconv.Itoa(handsUntilLevelUp)) + "\n")
 			if cfg.RebuyEnabled {
 				b.WriteString(i18n.Tf("fivecardstud.rebuyLine",
 					"chips", strconv.Itoa(cfg.RebuyChips),

@@ -98,6 +98,11 @@ func (_m *MockSetteEMezzoGame) GetNextBanker() int {
 	return ret.Int(0)
 }
 
+func (_m *MockSetteEMezzoGame) GetBankerChanged() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
 func (_m *MockSetteEMezzoGame) GetLastResult() string {
 	ret := _m.Called()
 	return ret.String(0)

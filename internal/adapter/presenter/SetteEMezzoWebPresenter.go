@@ -75,7 +75,11 @@ func (sp *SetteEMezzoWebPresenter) Output(s interfaces.SetteEMezzoGame, lastErr 
 	} else {
 		switch s.GetPhase() {
 		case domain.SetteEMezzoPhaseBet:
-			if s.IsHumanBanker() {
+			if s.GetBankerChanged() && s.IsHumanBanker() {
+				resObj.MessageCode = "settemezzo.bankerChangedYou"
+			} else if s.GetBankerChanged() {
+				resObj.MessageCode = "settemezzo.bankerChanged"
+			} else if s.IsHumanBanker() {
 				resObj.MessageCode = "settemezzo.dealAsBanker"
 			} else {
 				resObj.MessageCode = "settemezzo.placeBet"

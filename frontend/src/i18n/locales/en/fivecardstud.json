@@ -13,7 +13,7 @@
   "holeCards": "Hole Cards",
   "yourHand": "Your Hand",
   "anteBringIn": "Ante/Bring-in",
-  "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
+  "handNumber": "Hand #{{count}} (Ante level {{anteLevel}}; next level in {{remaining}} hands; level up: every {{level}} hands)",
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
     "accept": "Rebuy",
