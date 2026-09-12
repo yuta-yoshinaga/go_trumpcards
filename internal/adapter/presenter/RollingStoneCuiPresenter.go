@@ -50,6 +50,9 @@ func (p *RollingStoneCuiPresenter) Output(s interfaces.RollingStoneGame, lastErr
 			"trick", strconv.Itoa(s.GetTrickNumber()+1),
 			"deck", strconv.Itoa(s.GetDeckSize()),
 			"left", strconv.Itoa(s.GetDeckSize()-s.GetDiscarded())) + "\n")
+		sb.WriteString(i18n.Tf("rollingstone.finishedCount",
+			"finished", strconv.Itoa(s.GetFinishedCnt()),
+			"total", strconv.Itoa(s.GetPlayerCnt())) + "\n")
 		// **勝利条件が逆さまなのが規則そのもの。** 毎回書く。
 		sb.WriteString(i18n.T("rollingstone.rule") + "\n")
 
