@@ -118,18 +118,38 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 func (tp *ThreeCardCuiPresenter) payoutTable() string {
 	var sb strings.Builder
 	sb.WriteString(color.Bold(i18n.T("threecard.payoutRef.title")) + "\n")
-	anteBonusWidth := len(strconv.Itoa(domain.ThreeCardPairPlusStraightFlush))
+	rateWidth := threeCardPayoutRateWidth()
 	sb.WriteString("  " + i18n.T("threecard.payoutRef.anteBonusHeader") + "\n")
-	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.anteBonusStraight", "payout", threeCardPayoutRate(domain.ThreeCardAnteBonusStraight, anteBonusWidth)) + "\n")
-	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.anteBonusThreeOfAKind", "payout", threeCardPayoutRate(domain.ThreeCardAnteBonusThreeOfAKind, anteBonusWidth)) + "\n")
-	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.anteBonusStraightFlush", "payout", threeCardPayoutRate(domain.ThreeCardAnteBonusStraightFlush, anteBonusWidth)) + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.anteBonusStraight", "payout", threeCardPayoutRate(domain.ThreeCardAnteBonusStraight, rateWidth)) + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.anteBonusThreeOfAKind", "payout", threeCardPayoutRate(domain.ThreeCardAnteBonusThreeOfAKind, rateWidth)) + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.anteBonusStraightFlush", "payout", threeCardPayoutRate(domain.ThreeCardAnteBonusStraightFlush, rateWidth)) + "\n")
 	sb.WriteString("  " + i18n.T("threecard.payoutRef.pairPlusHeader") + "\n")
-	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.pairPlusPair", "payout", threeCardPayoutRate(domain.ThreeCardPairPlusPair, anteBonusWidth)) + "\n")
-	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.pairPlusFlush", "payout", threeCardPayoutRate(domain.ThreeCardPairPlusFlush, anteBonusWidth)) + "\n")
-	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.pairPlusStraight", "payout", threeCardPayoutRate(domain.ThreeCardPairPlusStraight, anteBonusWidth)) + "\n")
-	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.pairPlusThreeOfAKind", "payout", threeCardPayoutRate(domain.ThreeCardPairPlusThreeOfAKind, anteBonusWidth)) + "\n")
-	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.pairPlusStraightFlush", "payout", threeCardPayoutRate(domain.ThreeCardPairPlusStraightFlush, anteBonusWidth)) + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.pairPlusPair", "payout", threeCardPayoutRate(domain.ThreeCardPairPlusPair, rateWidth)) + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.pairPlusFlush", "payout", threeCardPayoutRate(domain.ThreeCardPairPlusFlush, rateWidth)) + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.pairPlusStraight", "payout", threeCardPayoutRate(domain.ThreeCardPairPlusStraight, rateWidth)) + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.pairPlusThreeOfAKind", "payout", threeCardPayoutRate(domain.ThreeCardPairPlusThreeOfAKind, rateWidth)) + "\n")
+	sb.WriteString("  " + i18n.Tf("threecard.payoutRef.pairPlusStraightFlush", "payout", threeCardPayoutRate(domain.ThreeCardPairPlusStraightFlush, rateWidth)) + "\n")
 	return sb.String()
+}
+
+func threeCardPayoutRateWidth() int {
+	rates := []int{
+		domain.ThreeCardAnteBonusStraight,
+		domain.ThreeCardAnteBonusThreeOfAKind,
+		domain.ThreeCardAnteBonusStraightFlush,
+		domain.ThreeCardPairPlusPair,
+		domain.ThreeCardPairPlusFlush,
+		domain.ThreeCardPairPlusStraight,
+		domain.ThreeCardPairPlusThreeOfAKind,
+		domain.ThreeCardPairPlusStraightFlush,
+	}
+	width := 0
+	for _, rate := range rates {
+		if rateWidth := len(strconv.Itoa(rate)); rateWidth > width {
+			width = rateWidth
+		}
+	}
+	return width
 }
 
 func threeCardPayoutRate(rate, width int) string {

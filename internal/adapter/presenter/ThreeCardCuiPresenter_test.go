@@ -1,6 +1,8 @@
 package presenter
 
 import (
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,6 +10,25 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
+
+func TestThreeCardPayoutRateWidth(t *testing.T) {
+	rates := []int{
+		domain.ThreeCardAnteBonusStraight,
+		domain.ThreeCardAnteBonusThreeOfAKind,
+		domain.ThreeCardAnteBonusStraightFlush,
+		domain.ThreeCardPairPlusPair,
+		domain.ThreeCardPairPlusFlush,
+		domain.ThreeCardPairPlusStraight,
+		domain.ThreeCardPairPlusThreeOfAKind,
+		domain.ThreeCardPairPlusStraightFlush,
+	}
+	w := threeCardPayoutRateWidth()
+	for _, rate := range rates {
+		got := threeCardPayoutRate(rate, w)
+		assert.Len(t, got, w)
+		assert.Equal(t, strconv.Itoa(rate), strings.TrimLeft(got, " "))
+	}
+}
 
 func setupThreeCardCuiMockDefaults(m *interfaces.MockThreeCardGame) {
 	m.On("GetChips").Return(1000).Maybe()
