@@ -284,7 +284,7 @@ function PageOnePageContent() {
                 <div className="my-3 p-2 rounded bg-black/30">
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                   <div data-testid="po-target-score" className="text-ds-text-muted text-sm mb-1">
-                    {t('targetScore', { limit: state.config.pointLimit })}
+                    {t('target', { points: state.config.pointLimit })}
                   </div>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>

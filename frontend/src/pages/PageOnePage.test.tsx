@@ -111,8 +111,8 @@ describe('PageOnePage', () => {
   });
 
   it.each([
-    [200, '目標スコア: 200点'],
-    [300, '目標スコア: 300点'],
+    [200, '目標: 200点'],
+    [300, '目標: 300点'],
   ])('renders the server-provided target score (%i)', async (pointLimit, expectedText) => {
     mockExec.mockResolvedValue({ ...playPhaseState, config: { ...playPhaseState.config, pointLimit } });
     renderWithProviders(<PageOnePage />);
