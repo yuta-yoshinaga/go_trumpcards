@@ -658,6 +658,29 @@ func TestScorpion_Undo(t *testing.T) {
 		assert.Equal(t, 1, len(s.GetTableau()[1]))
 	})
 
+	t.Run("undo completed suit restores mask and count", func(t *testing.T) {
+		s := newTestScorpion()
+		s.Reset()
+		clearScorpionTableau(s)
+
+		var tab [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard
+		tab[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 1, true)}
+		for value := domain.CardValueMax; value >= 2; value-- {
+			tab[1] = append(tab[1], makeTableauCard(domain.CardDesignSpade, value, true))
+		}
+		s.SetTableau(tab)
+
+		err := s.MoveTableauToTableau(0, 0, 1)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, s.GetCompletedSuits())
+		assert.Equal(t, 1, s.GetCompletedSuitMask())
+
+		err = s.Undo()
+		assert.NoError(t, err)
+		assert.Equal(t, 0, s.GetCompletedSuits())
+		assert.Equal(t, 0, s.GetCompletedSuitMask())
+	})
+
 	t.Run("no history", func(t *testing.T) {
 		s := setupPlayingScorpion()
 		err := s.Undo()
