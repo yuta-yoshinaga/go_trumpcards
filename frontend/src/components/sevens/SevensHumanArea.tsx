@@ -20,6 +20,7 @@ export interface HumanAreaProps {
   endStopEnabled: boolean;
   jokerConsecutiveBanned: boolean;
   loading: boolean;
+  jokerCardIdx: number | null;
   onPlay: (idx: number) => void;
 }
 
@@ -33,6 +34,7 @@ function HumanArea({
   endStopEnabled,
   jokerConsecutiveBanned,
   loading,
+  jokerCardIdx,
   onPlay,
 }: HumanAreaProps) {
   const { t } = useTranslation('sevens');
@@ -111,16 +113,24 @@ function HumanArea({
               // card (useCardKeyboardNav maps digit 0 → index 9); advertise the
               // shortcut only where it is a legal move this turn.
               aria-keyshortcuts={playable && i <= 9 ? String((i + 1) % 10) : undefined}
-              data-testid={playable ? 'playable-card' : undefined}
               style={{
                 background: 'none',
                 padding: 0,
                 cursor: playable ? 'pointer' : 'default',
                 borderRadius: 8,
                 ...playableCardStyle(playable),
+                ...(i === jokerCardIdx
+                  ? { border: '3px solid var(--color-ds-info)', transform: 'translateY(-8px)' }
+                  : {}),
                 opacity: isCurrentTurn && !playable ? 0.5 : 1,
                 boxSizing: 'border-box',
               }}
+              // Kept as its own attribute rather than folded into data-testid:
+              // eight unit assertions and frontend/e2e/sevens.spec.ts locate cards
+              // by [data-testid="playable-card"], and a selected joker must stay in
+              // that set.
+              data-joker-selected={i === jokerCardIdx ? 'true' : undefined}
+              data-testid={playable ? 'playable-card' : undefined}
             >
               <CardImage card={card} width={cardWidth} />
             </button>

@@ -421,6 +421,7 @@ function SevensPageContent() {
                   endStopEnabled={state.config.endStopEnabled}
                   jokerConsecutiveBanned={state.config.jokerConsecutiveBanned}
                   loading={loading}
+                  jokerCardIdx={jokerCardIdx}
                   onPlay={handleCardPlay}
                 />
                 {/* Number-key shortcut hint, shown while the human's card bindings are
