@@ -133,11 +133,62 @@ func TestLetItRideCuiPresenter_Output_EndPhase_Win(t *testing.T) {
 	m.On("GetBet3Active").Return(true)
 	m.On("GetResult").Return(domain.GameResultWin)
 	m.On("GetHandRank").Return(domain.PokerHandTwoPair)
+	m.On("GetBet1Payout").Return(0)
+	m.On("GetBet2Payout").Return(0)
+	m.On("GetBet3Payout").Return(0)
 	m.On("GetTotalPayout").Return(900)
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "プレイヤーの勝ち！")
 	assert.Contains(t, result, "合計払戻し: 900")
+}
+
+func TestLetItRideCuiPresenter_Output_EndPhase_PayoutBreakdown(t *testing.T) {
+	p := new(LetItRideCuiPresenter)
+	m := new(interfaces.MockLetItRideGame)
+
+	m.On("GetChips").Return(1906)
+	m.On("GetPhase").Return(domain.LetItRidePhaseEnd)
+	m.On("GetPlayerHand").Return(([]*domain.Card)(nil))
+	m.On("GetCommunityCards").Return(([]*domain.Card)(nil))
+	m.On("GetGameEndFlag").Return(true)
+	m.On("GetBetAmount").Return(100)
+	m.On("GetBet1Active").Return(true)
+	m.On("GetBet2Active").Return(false)
+	m.On("GetBet3Active").Return(true)
+	m.On("GetResult").Return(domain.GameResultWin)
+	m.On("GetHandRank").Return(domain.PokerHandTwoPair)
+	m.On("GetBet1Payout").Return(101)
+	m.On("GetBet2Payout").Return(202)
+	m.On("GetBet3Payout").Return(303)
+	m.On("GetTotalPayout").Return(606)
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "ベット1: ")
+	assert.Contains(t, result, "ベット2: ")
+	assert.Contains(t, result, "ベット3: ")
+	assert.Contains(t, result, "RIDE")
+	assert.Contains(t, result, "PULL")
+	assert.Contains(t, result, "ベット1払戻し: 101")
+	assert.Contains(t, result, "ベット2払戻し: 202")
+	assert.Contains(t, result, "ベット3払戻し: 303")
+	assert.Contains(t, result, "合計払戻し: 606")
+	assert.NotContains(t, result, "{{")
+}
+
+func TestLetItRideCuiPresenter_Output_NonEndPhase_NoPayoutBreakdown(t *testing.T) {
+	p := new(LetItRideCuiPresenter)
+	m := new(interfaces.MockLetItRideGame)
+	setupLetItRideCuiMockDefaults(m)
+	m.On("GetPhase").Return(domain.LetItRidePhaseFirstDecision).Unset()
+	m.On("GetPhase").Return(domain.LetItRidePhaseFirstDecision)
+	m.On("GetGameEndFlag").Return(false).Unset()
+	m.On("GetGameEndFlag").Return(false)
+
+	result := p.Output(m, nil)
+	assert.NotContains(t, result, "ベット1払戻し:")
+	assert.NotContains(t, result, "ベット2払戻し:")
+	assert.NotContains(t, result, "ベット3払戻し:")
 }
 
 func TestLetItRideCuiPresenter_Output_EndPhase_Loss(t *testing.T) {
@@ -155,6 +206,9 @@ func TestLetItRideCuiPresenter_Output_EndPhase_Loss(t *testing.T) {
 	m.On("GetBet3Active").Return(true)
 	m.On("GetResult").Return(domain.GameResultLose)
 	m.On("GetHandRank").Return(0)
+	m.On("GetBet1Payout").Return(0)
+	m.On("GetBet2Payout").Return(0)
+	m.On("GetBet3Payout").Return(0)
 	m.On("GetTotalPayout").Return(0)
 
 	result := p.Output(m, nil)

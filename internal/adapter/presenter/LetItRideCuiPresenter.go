@@ -99,6 +99,20 @@ func (lp *LetItRideCuiPresenter) Output(lir interfaces.LetItRideGame, lastErr er
 			sb.WriteString(color.Red(i18n.T("letitride.playerLoses")) + "\n")
 		default:
 		}
+		if lir.GetPhase() == domain.LetItRidePhaseEnd {
+			for _, item := range []struct {
+				key    string
+				amount int
+			}{
+				{"letitride.bet1PayoutLine", lir.GetBet1Payout()},
+				{"letitride.bet2PayoutLine", lir.GetBet2Payout()},
+				{"letitride.bet3PayoutLine", lir.GetBet3Payout()},
+			} {
+				if item.amount != 0 {
+					fmt.Fprintf(&sb, "%s\n", i18n.Tf(item.key, "payout", strconv.Itoa(item.amount)))
+				}
+			}
+		}
 		fmt.Fprintf(&sb, "%s\n", i18n.Tf("letitride.totalPayoutLine", "payout", strconv.Itoa(lir.GetTotalPayout())))
 		sb.WriteString("----------\n")
 	}
