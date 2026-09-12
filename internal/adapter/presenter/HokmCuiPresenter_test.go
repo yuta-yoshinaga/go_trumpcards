@@ -73,21 +73,43 @@ func TestHokmCuiPresenterMarksTheHakem(t *testing.T) {
 func TestHokmCuiPresenterExplainsHowTheHandEnded(t *testing.T) {
 	p := new(HokmCuiPresenter)
 
-	kot := newHokmForCui(t)
-	kot.GiveTricksForTest(0, domain.HokmTricksToWin)
-	kot.FinishHandForTest(0)
-	require.Equal(t, domain.HokmPhaseHandEnd, kot.GetPhase())
-	outKot := p.Output(kot, nil)
-	assert.Contains(t, outKot, i18n.T("hokm.promptHandEndKot"))
-	assert.NotContains(t, outKot, i18n.T("hokm.promptHandEnd"))
-
-	normal := newHokmForCui(t)
-	normal.GiveTricksForTest(0, domain.HokmTricksToWin)
-	normal.GiveTricksForTest(1, 1)
-	normal.FinishHandForTest(0)
-	outNormal := p.Output(normal, nil)
-	assert.Contains(t, outNormal, i18n.T("hokm.promptHandEnd"))
-	assert.NotContains(t, outNormal, i18n.T("hokm.promptHandEndKot"))
+	for _, tc := range []struct {
+		name string
+		kot  bool
+		team int
+		want string
+	}{
+		{
+			name: "normal team 0",
+			team: 0,
+			want: "チーム0 が7トリック先取でこのハンドを制しました（+1）。",
+		},
+		{
+			name: "kot team 1",
+			kot:  true,
+			team: 1,
+			want: "チーム1 が相手に1トリックも取らせず、Kot で +2 です。",
+		},
+		{
+			name: "normal team 1",
+			team: 1,
+			want: "チーム1 が7トリック先取でこのハンドを制しました（+1）。",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			h := newHokmForCui(t)
+			h.GiveTricksForTest(tc.team, domain.HokmTricksToWin)
+			if tc.kot {
+				h.FinishHandForTest(tc.team)
+			} else {
+				otherTeam := 1 - tc.team
+				h.GiveTricksForTest(otherTeam, 1)
+				h.FinishHandForTest(tc.team)
+			}
+			require.Equal(t, domain.HokmPhaseHandEnd, h.GetPhase())
+			assert.Contains(t, p.Output(h, nil), tc.want)
+		})
+	}
 }
 
 func TestHokmCuiPresenterPlayPrompt(t *testing.T) {

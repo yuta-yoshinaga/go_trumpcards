@@ -96,9 +96,12 @@ func (p *HokmCuiPresenter) Output(h interfaces.HokmGame, lastErr error) string {
 		case domain.HokmPhaseHandEnd:
 			// **Kot は 2 点。** 何が起きたのかを言わないと得点が飛んで見える。
 			if h.GetLastHandKot() {
-				sb.WriteString(i18n.T("hokm.promptHandEndKot") + "\n")
+				sb.WriteString(i18n.Tf("hokm.promptHandEndKot",
+					"team", strconv.Itoa(h.GetLastHandWinner())) + "\n")
 			} else {
-				sb.WriteString(i18n.T("hokm.promptHandEnd") + "\n")
+				sb.WriteString(i18n.Tf("hokm.promptHandEnd",
+					"team", strconv.Itoa(h.GetLastHandWinner()),
+					"need", strconv.Itoa(domain.HokmTricksToWin)) + "\n")
 			}
 			// **親は負けたときだけ交代する。**次に自分が切り札を選べるかを
 			// 左右するのに、次ハンドが始まるまで分からなかった (#5753)。
