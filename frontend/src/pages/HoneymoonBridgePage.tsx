@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { HoneymoonBridgeResponse } from '../types/card';
@@ -173,6 +174,7 @@ function HoneymoonBridgePageContent() {
 
   // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
+  const drawnIndices = new Set(state.drawnIndices ?? []);
 
   const resultBanner = (() => {
     if (!isGameEnd) return null;
@@ -345,6 +347,15 @@ function HoneymoonBridgePageContent() {
                       className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       <CardImage card={card} width={cardWidth} />
+                      {drawnIndices.has(idx) && (
+                        <span
+                          data-testid={`hb-drawn-${idx.toString()}`}
+                          className={`absolute top-0 left-0 rounded-br px-1 text-[10px] leading-tight ${badgeInfoColors}`}
+                        >
+                          <span aria-hidden="true">{t('header.drawnBadge')}</span>
+                          <span className="sr-only">{t('header.drawnAria')}</span>
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>

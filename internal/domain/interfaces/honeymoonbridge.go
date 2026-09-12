@@ -41,6 +41,8 @@ type HoneymoonBridgeGame interface {
 	GetRoundNumber() int
 	// GetTrickNumber 現在のトリック番号を取得する
 	GetTrickNumber() int
+	// GetDrawnIndices 引き合いで人間の手札に補充された札の位置を取得する
+	GetDrawnIndices() []int
 	// GetStockSize 山札の残り枚数を取得する
 	GetStockSize() int
 	// GetTrumpSuit 切り札のスートを取得する (0: ノートランプ)

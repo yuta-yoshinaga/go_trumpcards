@@ -13,7 +13,7 @@ import (
 )
 
 // honeymoonBridgePlayerStr returns the display string for a single player.
-func honeymoonBridgePlayerStr(player *domain.HoneymoonBridgePlayer, idx int, isDealer, isDeclarer, current bool) string {
+func honeymoonBridgePlayerStr(player *domain.HoneymoonBridgePlayer, idx int, isDealer, isDeclarer, current bool, drawnIndices []int) string {
 	var b strings.Builder
 	// **親は NextRound ごとに交代し、引き合いの最初のリードを決める起点。**
 	// 落札者とは別の役なので、両方に当たる席では両方を並べる。
@@ -37,7 +37,7 @@ func honeymoonBridgePlayerStr(player *domain.HoneymoonBridgePlayer, idx int, isD
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		b.WriteString(cuiIndexMarkedCardListStr(player, drawnIndices, CuiKittyMark) + "\n")
 	}
 	return b.String()
 }
@@ -75,7 +75,8 @@ func (p *HoneymoonBridgeCuiPresenter) Output(s interfaces.HoneymoonBridgeGame, l
 			sb.WriteString(honeymoonBridgePlayerStr(s.GetPlayer(i), i,
 				i == s.GetDealerIdx(),
 				i == s.GetDeclarerIdx(),
-				i == s.GetCurrentPlayerIdx() && !s.GetGameEndFlag()))
+				i == s.GetCurrentPlayerIdx() && !s.GetGameEndFlag(),
+				s.GetDrawnIndices()))
 		}
 
 		sb.WriteString("----------\n")

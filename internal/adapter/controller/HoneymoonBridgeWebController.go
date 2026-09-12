@@ -77,6 +77,7 @@ type HoneymoonBridgeWebOutput struct {
 	DealerIdx        int                           `json:"dealerIdx"`
 	CurrentTrick     []*WebOutputTrickCard         `json:"currentTrick"`
 	ValidPlays       []int                         `json:"validPlays"`
+	DrawnIndices     []int                         `json:"drawnIndices"`
 	GameEndFlag      bool                          `json:"gameEndFlag"`
 	WinnerIdx        int                           `json:"winnerIdx"`
 	Hint             *HoneymoonBridgeWebOutputHint `json:"hint,omitempty"`

@@ -109,6 +109,32 @@ func TestHoneymoonBridge_TheTrickWinnerDrawsFirst(t *testing.T) {
 	assert.Equal(t, 13, h.GetPlayer(0).GetCard(0).GetValue(), "♠A で勝った 0 が K を引く")
 	assert.Equal(t, 2, h.GetPlayer(1).GetCard(0).GetValue())
 	assert.Equal(t, 0, h.GetLeadPlayerIdx(), "勝者が次のリード")
+	assert.Equal(t, []int{0}, h.GetDrawnIndices(), "並べ替え後の人間の補充札の位置を記録する")
+
+	data, err := json.Marshal(h)
+	require.NoError(t, err)
+	var restored HoneymoonBridge
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, []int{0}, restored.GetDrawnIndices(), "JSON 往復でも補充札の位置を保つ")
+
+	// 次のトリックでは前の位置を残さず、最新の補充札の位置へ更新する。
+	honeymoonBridgeHandOf(h, 0, NewCard(CardDesignHeart, 13, false), NewCard(CardDesignSpade, 5, false))
+	honeymoonBridgeHandOf(h, 1, NewCard(CardDesignHeart, 2, false))
+	h.SetCurrentPlayerIdxForTest(0)
+	h.SetLeadPlayerIdxForTest(0)
+	h.SetStockForTest([]*Card{NewCard(CardDesignSpade, 13, false)})
+	require.NoError(t, h.PlayForTest(0, 0))
+	require.NoError(t, h.PlayForTest(1, 0))
+	assert.Equal(t, []int{1}, h.GetDrawnIndices(), "次のトリック解決で前の印を最新の印に置き換える")
+}
+
+func TestHoneymoonBridge_DrawnIndicesAreClearedWhenTheAuctionStarts(t *testing.T) {
+	h := newTestHoneymoonBridge(t)
+	for h.GetPhase() == HoneymoonBridgePhaseDraw {
+		idx := h.GetCurrentPlayerIdx()
+		require.NoError(t, h.PlayForTest(idx, h.CpuChoiceForTest(idx)))
+	}
+	assert.Empty(t, h.GetDrawnIndices(), "競りへ移ると補充札の印を消す")
 }
 
 // **引き合いは切り札なし。** 別スートの A は取れない。
