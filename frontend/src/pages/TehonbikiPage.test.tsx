@@ -52,6 +52,20 @@ describe('TehonbikiPage', () => {
     for (let n = 1; n <= 6; n++) expect(screen.getByRole('button', { name: String(n) })).toBeInTheDocument();
   });
 
+  it('renders the translated phase name', () => {
+    renderWithProviders(<TehonbikiPage />);
+    expect(screen.getByText('予想')).toBeInTheDocument();
+    expect(screen.queryByText('0')).not.toBeInTheDocument();
+  });
+
+  it('renders translated wager options', () => {
+    renderWithProviders(<TehonbikiPage />);
+    for (const name of ['単張り', '二丁掛け', '三丁掛け', '片山']) {
+      expect(screen.getByRole('option', { name })).toBeInTheDocument();
+    }
+    expect(screen.queryByText('single')).not.toBeInTheDocument();
+  });
+
   it('sends the selected numbers, wager kind, and amount', async () => {
     renderWithProviders(<TehonbikiPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '張る' })).toBeInTheDocument());
