@@ -159,6 +159,12 @@ function RollingStonePageContent() {
                 })}
               </span>
             </div>
+            <div className="text-ds-text-primary text-center mb-2" data-testid="rs-finished-count">
+              {t('header.finishedCount', {
+                finished: String(state.finishedCnt),
+                total: String(state.players.length),
+              })}
+            </div>
 
             {/* **勝利条件が逆さまなのが規則そのもの。** 先に出す。 */}
             <div
