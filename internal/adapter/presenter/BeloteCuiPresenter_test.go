@@ -85,6 +85,23 @@ func TestBeloteCuiPresenter_NamesTheBeloteRebeloteBonus(t *testing.T) {
 	assert.NotContains(t, p.Output(build(0, 0), nil), "ベロート・ルベロート成立")
 }
 
+func TestBeloteCuiPresenter_ShowsTheConfiguredTargetScore(t *testing.T) {
+	i18n.SetLang("ja")
+	p := new(presenter.BeloteCuiPresenter)
+	build := func(targetScore int) string {
+		m, _ := setupBeloteCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetConfig")
+		cfg := domain.DefaultBeloteConfig()
+		cfg.TargetScore = targetScore
+		m.On("GetConfig").Return(cfg)
+		return p.Output(m, nil)
+	}
+
+	assert.Contains(t, build(750), "目標: 750点")
+	assert.Contains(t, build(1500), "目標: 1500点")
+	assert.NotContains(t, build(1500), "目標: 750点")
+}
+
 func TestBeloteCuiPresenter_Output(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)

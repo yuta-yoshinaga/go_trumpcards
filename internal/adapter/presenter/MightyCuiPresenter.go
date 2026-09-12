@@ -133,6 +133,9 @@ func (p *MightyCuiPresenter) Output(m interfaces.MightyGame, lastErr error) stri
 			b.WriteString("\n")
 		}
 
+		b.WriteString(i18n.Tf("mighty.pointLimitLine",
+			"limit", strconv.Itoa(m.GetConfig().PointLimit)) + "\n")
+
 		for i := 0; i < m.GetPlayerCnt(); i++ {
 			b.WriteString(mightyPlayerStr(m.GetPlayer(i), i, m.GetPartnerRevealed()))
 		}
