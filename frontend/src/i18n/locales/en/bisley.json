@@ -1,13 +1,15 @@
 {
   "aceFoundation": "Ascending (A->K)",
-  "aceFoundationAriaLabel": "{{suit}} ascending foundation {{count}} cards",
+  "aceFoundationAriaLabel": "{{suit}} ascending foundation {{count}} cards, next required card {{rank}}",
   "autoComplete": "Auto Complete",
   "autoCompleteNotReady": "Available once a foundation builds past the deal",
   "cardPosAria": "{{card}} (column {{col}}, position {{pos}})",
+  "completeAceFoundationAriaLabel": "{{suit}} ascending foundation {{count}} cards",
+  "completeKingFoundationAriaLabel": "{{suit}} descending foundation {{count}} cards",
   "empty": "Empty",
-  "emptyAceFoundationAriaLabel": "Empty ascending foundation ({{suit}})",
+  "emptyAceFoundationAriaLabel": "Empty ascending foundation ({{suit}}), next required card {{rank}}",
   "emptyColumnAriaLabel": "Empty tableau column {{col}}",
-  "emptyKingFoundationAriaLabel": "Empty descending foundation ({{suit}})",
+  "emptyKingFoundationAriaLabel": "Empty descending foundation ({{suit}}), next required card {{rank}}",
   "frontendHint": {
     "tableau": "Tableau column {{col}}",
     "aceFoundation": "{{suit}} ascending foundation",
@@ -25,9 +27,10 @@
     "toTableau": "Apply the suggested tableau move to dig out the cards underneath."
   },
   "kingFoundation": "Descending (K->A)",
-  "kingFoundationAriaLabel": "{{suit}} descending foundation {{count}} cards",
+  "kingFoundationAriaLabel": "{{suit}} descending foundation {{count}} cards, next required card {{rank}}",
   "landscapeBanner": "Landscape mode recommended",
   "moveCount": "Moves",
+  "nextRankBadge": "Next: {{rank}}",
   "noHint": "No hint available",
   "phase": {
     "playing": "Playing",

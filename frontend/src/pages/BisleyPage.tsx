@@ -30,6 +30,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BisleyMoveZone, BisleyResponse } from '../types/card';
 import { BisleyPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { bisleyNextRank } from '../utils/bisleyNextRank';
 import { getBisleyStackTargets } from '../utils/bisleyStackTargets';
 import { cardAlt, suitSymbol } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
@@ -305,6 +306,7 @@ function BisleyPageContent() {
     const labelKey = kind === 'ace' ? 'aceFoundationAriaLabel' : 'kingFoundationAriaLabel';
     const emptyLabelKey = kind === 'ace' ? 'emptyAceFoundationAriaLabel' : 'emptyKingFoundationAriaLabel';
     const placeholder = kind === 'ace' ? 'A' : 'K';
+    const direction = kind === 'ace' ? 'ascending' : 'descending';
     return (
       <div className="flex flex-col items-center">
         <div className="text-game-text-muted text-xs mb-1">
@@ -313,11 +315,17 @@ function BisleyPageContent() {
         <div className="flex gap-1 sm:gap-2">
           {FOUNDATION_SUITS.map((suit, idx) => {
             const pile = piles[idx] ?? [];
+            const top = pile[pile.length - 1];
+            const suitCardsPlaced =
+              (state.aceFoundations[idx]?.length ?? 0) + (state.kingFoundations[idx]?.length ?? 0);
+            const nextRank = bisleyNextRank(top?.value, suitCardsPlaced, direction);
+            const nextRankLabel = nextRank !== null ? valueName(nextRank) : null;
             const foundationZone: BisleyMoveZone = { zone: kind, col: idx };
             return (
               <div key={`${kind}-${suit}`} className="text-center">
                 <div className="text-game-text-muted text-xs mb-1">{suit}</div>
                 <DropZone
+                  className="relative"
                   isDropTarget={dnd.isDropTarget(foundationZone)}
                   onDragOver={dnd.handleDragOver(foundationZone)}
                   onDrop={dnd.handleDrop(foundationZone)}
@@ -328,7 +336,14 @@ function BisleyPageContent() {
                       type="button"
                       onClick={() => game.handleSelectTarget(foundationZone)}
                       disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
-                      aria-label={t(labelKey, { suit, count: pile.length })}
+                      aria-label={
+                        nextRankLabel
+                          ? t(labelKey, { suit, count: pile.length, rank: nextRankLabel })
+                          : t(kind === 'ace' ? 'completeAceFoundationAriaLabel' : 'completeKingFoundationAriaLabel', {
+                              suit,
+                              count: pile.length,
+                            })
+                      }
                       className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                     >
                       <AnimatedCard
@@ -343,12 +358,20 @@ function BisleyPageContent() {
                       type="button"
                       onClick={() => game.handleSelectTarget(foundationZone)}
                       disabled={!isPlaying || loading || !selectedSource}
-                      aria-label={t(emptyLabelKey, { suit })}
+                      aria-label={t(emptyLabelKey, { suit, rank: nextRankLabel ?? '' })}
                       style={{ width: dims.cw, height: dims.ch }}
                       className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                     >
                       {placeholder}
                     </button>
+                  )}
+                  {nextRankLabel && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-ds-text-on-accent text-[10px] font-bold leading-none ring-1 ring-white/30"
+                    >
+                      {t('nextRankBadge', { rank: nextRankLabel })}
+                    </span>
                   )}
                 </DropZone>
               </div>
