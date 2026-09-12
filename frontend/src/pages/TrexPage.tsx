@@ -30,7 +30,7 @@ import { parseTrexCommand, TREX_HELP } from '../utils/cli/commands/trexCommands'
 import { formatTrexState } from '../utils/cli/formatters/trexFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { trexIsPenaltyCard } from '../utils/trexPenaltyCards';
+import { trexCardPenalty } from '../utils/trexPenaltyCards';
 
 const TX_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="tx-rule"]', messageKey: 'tutorial.contracts', placement: 'bottom', advanceOn: 'next' },
@@ -182,13 +182,13 @@ function TrexPageContent() {
                       state.trick.map((tc2) => {
                         // **失点対象は契約ごとに違う。**5 種が 1 王国内で切り替わる
                         // ので、どれが危険かを記憶と暗算で追わせることになる (#4911)。
-                        const penalty = trexIsPenaltyCard(tc2.card, state.contract);
+                        const penalty = trexCardPenalty(tc2.card, state.contract);
                         return (
                           <div
                             key={`trick-${tc2.playerIdx.toString()}`}
-                            className={penalty ? 'rounded ring-2 ring-ds-error' : ''}
-                            data-testid={penalty ? 'trex-penalty-card' : undefined}
-                            title={penalty ? t('penaltyCard') : undefined}
+                            className={penalty !== 0 ? 'rounded ring-2 ring-ds-error' : ''}
+                            data-testid={penalty !== 0 ? 'trex-penalty-card' : undefined}
+                            title={penalty !== 0 ? t('penaltyCardWithPoints', { points: penalty }) : undefined}
                           >
                             <AnimatedCard card={tc2.card} width={cardWidth} draggable={false} />
                           </div>
@@ -211,14 +211,14 @@ function TrexPageContent() {
               <div className="flex gap-1 justify-center flex-wrap">
                 {(human?.cards ?? []).map((card, i) => {
                   const canPlay = isHumanTurn && !choosing && playable.has(i);
-                  const penalty = trexIsPenaltyCard(card, state.contract);
+                  const penalty = trexCardPenalty(card, state.contract);
                   return (
                     <button
                       key={`hand-${i.toString()}`}
                       type="button"
                       data-hint-action="play"
-                      data-testid={penalty ? 'trex-hand-penalty-card' : undefined}
-                      title={penalty ? t('penaltyCard') : undefined}
+                      data-testid={penalty !== 0 ? 'trex-hand-penalty-card' : undefined}
+                      title={penalty !== 0 ? t('penaltyCardWithPoints', { points: penalty }) : undefined}
                       // Kept focusable while it cannot act so the reason is
                       // announced rather than the control leaving the tab order.
                       aria-disabled={!canPlay}
@@ -228,7 +228,7 @@ function TrexPageContent() {
                         canPlay ? 'hover:-translate-y-2' : 'opacity-60',
                         frontendHintEnabled && state.hint?.cardIndex === i
                           ? 'ring-2 ring-ds-warning'
-                          : penalty
+                          : penalty !== 0
                             ? 'ring-2 ring-ds-error'
                             : '',
                       ].join(' ')}
