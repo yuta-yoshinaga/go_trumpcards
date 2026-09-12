@@ -240,6 +240,7 @@ function WarPageContent() {
   const humanWon = isGameEnd && state.winnerIdx === 0;
   const human = state.players[0];
   const cpu = state.players[1];
+  const roundLimitWarning = state.roundsPlayed * 10 >= state.config.maxRounds * 9;
 
   const phaseName = isGameEnd
     ? t('phase.end')
@@ -346,8 +347,19 @@ function WarPageContent() {
                     ))}
                   </div>
                 )}
-                <div className="text-xs text-ds-text-muted mt-1">
-                  {t('label.rounds')}: {state.roundsPlayed} / {state.config.maxRounds}
+                <div
+                  className={`text-xs mt-1 ${roundLimitWarning ? 'text-ds-warning font-semibold' : 'text-ds-text-muted'}`}
+                >
+                  {roundLimitWarning ? (
+                    <>
+                      <span aria-hidden="true">⚠ </span>
+                      {t('label.roundProgress', { played: state.roundsPlayed, max: state.config.maxRounds })}
+                    </>
+                  ) : (
+                    <>
+                      {t('label.rounds')}: {state.roundsPlayed} / {state.config.maxRounds}
+                    </>
+                  )}
                 </div>
               </div>
               <div className="text-center">

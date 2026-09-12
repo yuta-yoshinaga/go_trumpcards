@@ -17,6 +17,7 @@
     "potCount": "{{count}} in pot",
     "lastBurialCount": "(Buried {{count}})",
     "rounds": "Rounds",
+    "roundProgress": "Round {{played}} of {{max}} (at the cap the larger total wins)",
     "maxRounds": "Max rounds"
   },
   "settings": {
