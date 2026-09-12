@@ -60,11 +60,12 @@ export function formatMinibridgeState(state: MinibridgeResponse | null): string 
     const hand = human.cards
       .map((c, i) => `[${i}]${formatCard(c)}${state.validPlays.includes(i) ? '*' : ''}`)
       .join('  ');
-    lines.push(`your hand: ${hand || '(empty)'}`);
+    const humanIsDummy = human.id === state.dummyIdx;
+    lines.push(`your hand${humanIsDummy ? ' [dummy]' : ''}: ${hand || '(empty)'}`);
   }
 
   // **ダミーは契約が決まってから公開される。** デクレアラーはここからも出す。
-  if (state.dummyHand.length > 0) {
+  if (state.dummyHand.length > 0 && human?.id !== state.dummyIdx) {
     lines.push(`dummy's hand: ${state.dummyHand.map((c, i) => `[${i}]${formatCard(c)}`).join('  ')}`);
   }
 
