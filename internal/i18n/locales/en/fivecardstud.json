@@ -27,7 +27,7 @@
   "tableSizeRequired": "Table size is required (2-6).",
   "invalidTableSize": "Invalid table size: {{val}}. Please enter 2-6.",
   "outputTitle": "Five Card Stud",
-  "tournamentLine": "Tournament hand #{{hand}} Ante:{{ante}} BringIn:{{bringIn}} (level-up every {{levelup}} hands)",
+  "tournamentLine": "Tournament hand #{{hand}} Ante:{{ante}} BringIn:{{bringIn}} (ante level {{level}}, next level in {{remaining}} hands; level-up every {{levelup}} hands)",
   "rebuyLine": "Rebuy: {{chips}} chips (max {{max}}, through hand {{period}})",
   "addonLine": "Add-on: {{chips}} chips (offered after hand {{after}})",
   "tableMax": "Table: {{n}}-max",

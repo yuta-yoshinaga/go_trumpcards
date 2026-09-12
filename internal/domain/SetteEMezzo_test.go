@@ -56,6 +56,24 @@ func TestSetteEMezzo_Reset(t *testing.T) {
 	}
 }
 
+func TestSetteEMezzo_BankerChangedIsTransientAndOnlyReportsAnActualChange(t *testing.T) {
+	s := newTestSetteEMezzo()
+	s.nextBanker = 0
+	s.Reset()
+	assert.True(t, s.GetBankerChanged())
+
+	data, err := json.Marshal(s)
+	require.NoError(t, err)
+	restored := NewDefaultSetteEMezzo()
+	restored.bankerChanged = true
+	require.NoError(t, json.Unmarshal(data, restored))
+	assert.False(t, restored.GetBankerChanged(), "transient announcement must not be persisted")
+
+	s.nextBanker = s.banker
+	s.Reset()
+	assert.False(t, s.GetBankerChanged(), "selecting the current banker is not a change")
+}
+
 // A brand-new session must open on the ordinary flow -- place a bet -- rather
 // than on "you deal". The zero value of `banker` is the human seat, so leaving
 // it unset would put every new player in the banker's chair before they had

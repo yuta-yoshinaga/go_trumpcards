@@ -131,6 +131,9 @@ type SetteEMezzo struct {
 	chips      ChipHolder
 	activeSeat int
 	phase      int
+	// bankerChanged is transient: persisting it would announce the same change
+	// again after every reload instead of only after the Reset that caused it.
+	bankerChanged bool
 	// nextBanker はこの局で 7.5 を出した最初のプレイヤー（いなければ -1）。
 	nextBanker int
 	lastResult string
@@ -164,6 +167,7 @@ func NewDefaultSetteEMezzo() *SetteEMezzo {
 
 // Reset 新しい局を始める。親は前局から引き継ぐ。
 func (s *SetteEMezzo) Reset() {
+	s.bankerChanged = false
 	if s.chips.GetChips() < SetteEMezzoMinBet {
 		s.chips.SetChips(SetteEMezzoDefaultChips)
 	}
@@ -174,6 +178,7 @@ func (s *SetteEMezzo) Reset() {
 		}
 	}
 	if s.nextBanker >= 0 && s.nextBanker < len(s.seats) {
+		s.bankerChanged = s.nextBanker != s.banker
 		s.banker = s.nextBanker
 	}
 	s.nextBanker = -1
@@ -577,6 +582,9 @@ func (s *SetteEMezzo) GetActiveSeat() int { return s.activeSeat }
 // GetNextBanker 次局の親（未定なら -1）
 func (s *SetteEMezzo) GetNextBanker() int { return s.nextBanker }
 
+// GetBankerChanged reports whether the immediately preceding Reset changed the banker.
+func (s *SetteEMezzo) GetBankerChanged() bool { return s.bankerChanged }
+
 // GetLastResult 直近の精算の要約
 func (s *SetteEMezzo) GetLastResult() string { return s.lastResult }
 
@@ -749,6 +757,9 @@ func (s *SetteEMezzo) UnmarshalJSON(data []byte) error {
 	s.activeSeat = j.ActiveSeat
 	s.phase = j.Phase
 	s.nextBanker = j.NextBanker
+	// bankerChanged is intentionally absent from the snapshot, so restored
+	// games must never retain a stale in-memory announcement.
+	s.bankerChanged = false
 	s.lastResult = j.LastResult
 	s.actionLog = j.ActionLog
 	return nil

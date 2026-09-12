@@ -183,6 +183,29 @@ beforeEach(() => {
 });
 
 describe('FiveCardStudPage', () => {
+  it.each([
+    [11, 'ハンド#11 (アンテレベル2; 次のレベルアップまで10ハンド; レベルアップ:10ハンド毎)'],
+    [15, 'ハンド#15 (アンテレベル2; 次のレベルアップまで6ハンド; レベルアップ:10ハンド毎)'],
+    [19, 'ハンド#19 (アンテレベル2; 次のレベルアップまで2ハンド; レベルアップ:10ハンド毎)'],
+  ])('shows ante level and remaining hands at hand %s', async (handCount, expected) => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      players: [humanPlayer(), cpuPlayer(1)],
+      phase: 1,
+      message: '',
+      tournamentMode: true,
+      handCount,
+    });
+    renderWithProviders(<FiveCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('fcs-tournament-info')).toHaveTextContent(expected));
+  });
+
+  it('does not show tournament ante details outside tournament mode', async () => {
+    mockExec.mockResolvedValue({ ...secondStreetState, handCount: 15, tournamentMode: false });
+    renderWithProviders(<FiveCardStudPage />);
+    await waitFor(() => expect(screen.queryByTestId('fcs-tournament-info')).not.toBeInTheDocument());
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<FiveCardStudPage />);

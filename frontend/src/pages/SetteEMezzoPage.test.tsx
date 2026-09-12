@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { settemezzoApi } from '../api/gameApi';
+import { GameMessageBox } from '../components/GameMessageBox';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SetteEMezzoHand, SetteEMezzoResponse } from '../types/card';
@@ -76,6 +77,13 @@ describe('SetteEMezzoPage', () => {
     expect(screen.getByText(/親: CPU1/)).toBeInTheDocument();
     // 7.5 comes from the server in halves so it is not hardcoded twice.
     expect(screen.getByText(/目標: 7\.5/)).toBeInTheDocument();
+  });
+
+  it('announces the banker change and betting action through the live message box', async () => {
+    renderWithProviders(<GameMessageBox message="" messageCode="settemezzo.bankerChanged" />);
+    const announcement = await screen.findByRole('status');
+    expect(announcement).toHaveTextContent('親が交代しました。ベットしてください');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
   });
 
   // The server withholds a hidden hand's cards; the page renders backs from

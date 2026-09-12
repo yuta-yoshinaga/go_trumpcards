@@ -42,6 +42,7 @@ func setupSemWebMockDefaults(g *interfaces.MockSetteEMezzoGame) {
 	g.On("IsHumanBanker").Return(false).Maybe()
 	g.On("GetActiveSeat").Return(0).Maybe()
 	g.On("GetNextBanker").Return(-1).Maybe()
+	g.On("GetBankerChanged").Return(false).Maybe()
 	g.On("GetLastResult").Return("").Maybe()
 	g.On("GetGameEndFlag").Return(false).Maybe()
 	g.On("CanHit").Return(true).Maybe()
@@ -171,22 +172,26 @@ func TestSetteEMezzoWebPresenter_Output(t *testing.T) {
 	})
 
 	for _, tc := range []struct {
-		name        string
-		phase       int
-		humanBanker bool
-		code        string
+		name          string
+		phase         int
+		humanBanker   bool
+		bankerChanged bool
+		code          string
 	}{
-		{"betting", domain.SetteEMezzoPhaseBet, false, "settemezzo.placeBet"},
-		{"betting while banking", domain.SetteEMezzoPhaseBet, true, "settemezzo.dealAsBanker"},
-		{"banker turn", domain.SetteEMezzoPhaseBankerTurn, true, "settemezzo.bankerTurn"},
+		{"betting", domain.SetteEMezzoPhaseBet, false, false, "settemezzo.placeBet"},
+		{"betting after CPU banker change", domain.SetteEMezzoPhaseBet, false, true, "settemezzo.bankerChanged"},
+		{"betting while banking", domain.SetteEMezzoPhaseBet, true, false, "settemezzo.dealAsBanker"},
+		{"banker turn", domain.SetteEMezzoPhaseBankerTurn, true, false, "settemezzo.bankerTurn"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			g := new(interfaces.MockSetteEMezzoGame)
 			setupSemWebMockDefaults(g)
 			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsHumanBanker")
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetBankerChanged")
 			g.On("GetPhase").Return(tc.phase)
 			g.On("IsHumanBanker").Return(tc.humanBanker)
+			g.On("GetBankerChanged").Return(tc.bankerChanged)
 
 			result := parseSemOutput(t, new(SetteEMezzoWebPresenter).Output(g, nil))
 			assert.Equal(t, tc.code, result.MessageCode)

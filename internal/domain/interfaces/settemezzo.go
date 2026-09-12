@@ -40,6 +40,8 @@ type SetteEMezzoGame interface {
 	GetActiveSeat() int
 	// GetNextBanker 次局の親を取得する（未定なら -1）
 	GetNextBanker() int
+	// GetBankerChanged 直前の Reset で親が交代したかを取得する
+	GetBankerChanged() bool
 	// GetLastResult 直近の精算の要約を取得する
 	GetLastResult() string
 	// GetGameEndFlag 局が終わっているか
