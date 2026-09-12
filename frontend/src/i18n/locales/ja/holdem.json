@@ -13,6 +13,12 @@
   "winningHand": "役: {{hand}}",
   "yourHand": "あなたの手札",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
+  "bettingLimit": {
+    "label": "リミット",
+    "fixed": "固定リミット",
+    "potLimit": "ポットリミット",
+    "noLimit": "ノーリミット"
+  },
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
     "accept": "リバイ",
