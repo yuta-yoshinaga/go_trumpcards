@@ -22,6 +22,7 @@ func (cp *ChemindeFerCuiPresenter) Output(c interfaces.ChemindeFerGame, lastErr 
 		sb.WriteString(i18n.Tf("chemindefer.roundLine",
 			"round", strconv.Itoa(c.GetRoundNumber()),
 			"total", strconv.Itoa(c.GetConfig().Rounds)) + "\n")
+		sb.WriteString(i18n.Tf("chemindefer.shoe", "n", strconv.Itoa(c.GetRemainingCards())) + "\n")
 		sb.WriteString(i18n.Tf("chemindefer.bankerLine",
 			"seat", strconv.Itoa(c.GetBankerIdx()),
 			"stake", strconv.Itoa(c.GetStake())) + "\n")

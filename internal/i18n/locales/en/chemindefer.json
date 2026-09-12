@@ -11,6 +11,7 @@
   "outputTitle": "Chemin de Fer",
   "phaseLine": "Phase: {{phase}}",
   "roundLine": "Coup: {{round}} / {{total}}",
+  "shoe": "Shoe: {{n}} card(s) left",
   "bankerLine": "Banker: seat {{seat}} (bank {{stake}})",
   "betLine": "Bet total: {{total}} (uncovered {{remaining}})",
   "betTurnLine": "Seat {{seat}} to bet (up to {{max}})",
