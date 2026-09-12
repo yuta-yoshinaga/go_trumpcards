@@ -246,6 +246,14 @@ function ShelemPageContent() {
               {t('header.pointTable')}
             </div>
 
+            {state.widowSize > 0 && (
+              <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="sh-widow">
+                <div className="text-ds-text-primary">
+                  {t('widowTitle')}: {t('widowHidden', { count: state.widowSize })}
+                </div>
+              </div>
+            )}
+
             <div className="text-ds-text-primary text-center mb-3" data-testid="sh-contract">
               {state.declarerIdx < 0
                 ? t('header.contractUndecided', { min: String(state.minBid) })

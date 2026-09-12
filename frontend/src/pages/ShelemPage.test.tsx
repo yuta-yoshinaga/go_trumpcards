@@ -92,6 +92,24 @@ describe('ShelemPage', () => {
     expect(box).toHaveTextContent(/100/);
   });
 
+  it('shows the face-down widow count before the declarer takes it', async () => {
+    renderWithProviders(<ShelemPage />);
+    expect(await screen.findByTestId('sh-widow')).toHaveTextContent('ウィドウ: 伏せ 4枚');
+  });
+
+  it('shows the actual face-down widow count', async () => {
+    mockExec.mockResolvedValue(makeState({ widowSize: 6 }));
+    renderWithProviders(<ShelemPage />);
+    expect(await screen.findByTestId('sh-widow')).toHaveTextContent('ウィドウ: 伏せ 6枚');
+  });
+
+  it('hides the widow after the declarer takes it', async () => {
+    mockExec.mockResolvedValue(makeState({ widowSize: 0 }));
+    renderWithProviders(<ShelemPage />);
+    await screen.findByTestId('sh-points');
+    expect(screen.queryByTestId('sh-widow')).not.toBeInTheDocument();
+  });
+
   // **上回れる額だけを出す。** サーバが必ず拒否する額のボタンは作らない。
   it('offers only bids that beat the standing one', async () => {
     mockExec.mockResolvedValue(makeState({ minBid: 85 }));
