@@ -64,6 +64,63 @@ func contractDescription(c domain.Contract) string {
 	return strings.Join(parts, " + ")
 }
 
+// contractRummyCanAddToMeld mirrors the domain's layoff rule for presentation.
+func contractRummyCanAddToMeld(meld []*domain.Card, card *domain.Card) bool {
+	if len(meld) == 0 || card == nil {
+		return false
+	}
+	if meld[0] == nil {
+		return false
+	}
+	isSet := len(meld) >= 2
+	for _, m := range meld[1:] {
+		if m == nil || m.GetValue() != meld[0].GetValue() {
+			isSet = false
+			break
+		}
+	}
+	if isSet {
+		return card.GetValue() == meld[0].GetValue()
+	}
+	if card.GetDesign() != meld[0].GetDesign() {
+		return false
+	}
+	minValue, maxValue := meld[0].GetValue(), meld[0].GetValue()
+	for _, m := range meld[1:] {
+		if m == nil {
+			return false
+		}
+		minValue = min(minValue, m.GetValue())
+		maxValue = max(maxValue, m.GetValue())
+	}
+	return card.GetValue() == minValue-1 || card.GetValue() == maxValue+1 || (card.GetValue() == 1 && maxValue == 13)
+}
+
+// contractRummyLayoffTargets returns the table melds that accept at least one card in the human's hand.
+func contractRummyLayoffTargets(g interfaces.ContractRummyGame) []string {
+	human := g.GetPlayer(0)
+	if human == nil || !human.IsContractMet() {
+		return nil
+	}
+	targets := make([]string, 0)
+	for pi := 0; pi < g.GetPlayerCnt(); pi++ {
+		player := g.GetPlayer(pi)
+		if player == nil || !player.IsContractMet() {
+			continue
+		}
+		for mi := 0; mi < player.GetMeldCount(); mi++ {
+			meld := player.GetMeld(mi)
+			for ci := 0; ci < human.GetCardsSize(); ci++ {
+				if contractRummyCanAddToMeld(meld, human.GetCard(ci)) {
+					targets = append(targets, strconv.Itoa(pi)+"/"+strconv.Itoa(mi))
+					break
+				}
+			}
+		}
+	}
+	return targets
+}
+
 // ContractRummyCuiPresenter renders the Contract Rummy CUI view.
 type ContractRummyCuiPresenter struct{}
 
@@ -115,6 +172,11 @@ func (p *ContractRummyCuiPresenter) Output(g interfaces.ContractRummyGame, lastE
 			} else {
 				b.WriteString(i18n.T("contractrummy.promptPlayHelpContractRequired") + "\n")
 				b.WriteString(i18n.T("contractrummy.promptPlayHelpMeldContract") + "\n")
+			}
+			if currentIdx == 0 {
+				if targets := contractRummyLayoffTargets(g); len(targets) > 0 {
+					b.WriteString(i18n.Tf("contractrummy.promptPlayHelpLayoffTargets", "targets", strings.Join(targets, ", ")) + "\n")
+				}
 			}
 			b.WriteString(i18n.T("contractrummy.promptPlayHelpLayoff") + "\n")
 			b.WriteString(i18n.T("contractrummy.promptPlayHelpDiscard") + "\n")

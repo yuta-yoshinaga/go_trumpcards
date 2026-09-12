@@ -31,6 +31,7 @@ import { CONTRACTRUMMY_HELP, parseContractRummyCommand } from '../utils/cli/comm
 import { formatContractRummyState } from '../utils/cli/formatters/contractrummyFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { contractRummyCanAddToMeld } from '../utils/contractRummyLayoff';
 import { evaluateContractSlot, isContractRummyMeld } from '../utils/contractRummyUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -213,13 +214,24 @@ function ContractRummyPageContent() {
 
   const handleLayoff = useCallback(() => {
     if (selectedCards.length !== 1 || !layoffTarget) return;
+    const targetPlayer = state?.players.find((p) => p.id === layoffTarget.playerIdx);
+    const targetMeld = targetPlayer?.melds[layoffTarget.meldIdx];
+    const selectedCard = humanPlayer?.cards[selectedCards[0]];
+    if (
+      !humanPlayer?.contractMet ||
+      !targetPlayer?.contractMet ||
+      !targetMeld ||
+      !contractRummyCanAddToMeld(targetMeld.cards, selectedCard)
+    ) {
+      return;
+    }
     void execApi('layoff', {
       targetPlayerIdx: layoffTarget.playerIdx,
       meldIdx: layoffTarget.meldIdx,
       cardIndex: selectedCards[0],
     });
     clearSelection();
-  }, [execApi, selectedCards, layoffTarget, clearSelection]);
+  }, [execApi, selectedCards, layoffTarget, clearSelection, state, humanPlayer]);
 
   const handleNextRound = useCallback(() => {
     void execApi('nextround');
@@ -368,7 +380,7 @@ function ContractRummyPageContent() {
               </section>
             )}
 
-            <section className="px-4 py-2 grid gap-2 md:grid-cols-3">
+            <section className="px-4 py-2 grid gap-2 md:grid-cols-3" data-testid="cr-tableau">
               {state.players.map((p) => (
                 <div
                   key={p.id}
@@ -394,7 +406,12 @@ function ContractRummyPageContent() {
                         const isLayoffTarget = layoffTarget?.playerIdx === p.id && layoffTarget?.meldIdx === mi;
                         const playerLabel = p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id });
                         // The meld is only a selectable layoff target once both contracts are met.
-                        const canLayoff = humanPlayer?.contractMet === true && p.contractMet;
+                        const selectedCard =
+                          selectedCards.length === 1 ? humanPlayer?.cards[selectedCards[0]] : undefined;
+                        const canLayoff =
+                          humanPlayer?.contractMet === true &&
+                          p.contractMet &&
+                          (selectedCards.length !== 1 || contractRummyCanAddToMeld(m.cards, selectedCard));
                         return (
                           <button
                             type="button"
@@ -411,7 +428,9 @@ function ContractRummyPageContent() {
                             // Only expose the toggle semantics when the meld is actually actionable.
                             aria-pressed={canLayoff ? isLayoffTarget : undefined}
                             className={`flex flex-wrap gap-1 mb-1 px-1 rounded ${focusRingWhite} ${
-                              isLayoffTarget ? 'ring-2 ring-ds-warning bg-ds-warning/20' : ''
+                              canLayoff ? 'ring-2 ring-ds-warning' : ''
+                            } ${
+                              isLayoffTarget && canLayoff ? 'bg-ds-warning/20' : ''
                             } ${canLayoff ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
                           >
                             {m.cards.map((c, ci) => (
@@ -427,7 +446,7 @@ function ContractRummyPageContent() {
             </section>
 
             {humanPlayer && (
-              <section className="px-4 py-2" data-tutorial="cr-hand">
+              <section className="px-4 py-2" data-testid="cr-hand" data-tutorial="cr-hand">
                 <div className="text-white text-sm mb-1">
                   {t('yourHand')} ({humanPlayer.cardCount})
                   {contractSlots.length > 0 && (

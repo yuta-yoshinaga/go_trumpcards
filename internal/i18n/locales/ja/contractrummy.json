@@ -28,6 +28,7 @@
   "promptPlayHelpMeldContract": "mc <a,b,c> <d,e,f>・・・コントラクトを場に出す",
   "promptPlayHelpMeldExtra": "me <a,b,c>・・・追加メルド（コントラクト達成後）",
   "promptPlayHelpLayoff": "lo <pIdx> <mIdx> <cIdx>・・・既存メルドにカード追加",
+  "promptPlayHelpLayoffTargets": "▶ レイオフ可能なメルド: {{targets}} (プレイヤー/メルド)",
   "promptPlayHelpDiscard": "d <idx>・・・カードを捨てる",
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",

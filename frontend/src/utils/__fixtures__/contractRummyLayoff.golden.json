@@ -1,0 +1,41 @@
+{
+  "cases": [
+    {
+      "name": "same-rank card extends a set",
+      "meld": [{ "suit": 0, "value": 5 }, { "suit": 1, "value": 5 }, { "suit": 2, "value": 5 }],
+      "card": { "suit": 3, "value": 5 },
+      "valid": true
+    },
+    {
+      "name": "different-rank card cannot extend a set",
+      "meld": [{ "suit": 0, "value": 5 }, { "suit": 1, "value": 5 }, { "suit": 2, "value": 5 }],
+      "card": { "suit": 3, "value": 6 },
+      "valid": false
+    },
+    {
+      "name": "card extends the lower end of a run",
+      "meld": [{ "suit": 0, "value": 5 }, { "suit": 0, "value": 6 }, { "suit": 0, "value": 7 }],
+      "card": { "suit": 0, "value": 4 },
+      "valid": true
+    },
+    {
+      "name": "card extends the upper end of a run",
+      "meld": [{ "suit": 0, "value": 5 }, { "suit": 0, "value": 6 }, { "suit": 0, "value": 7 }],
+      "card": { "suit": 0, "value": 8 },
+      "valid": true
+    },
+    {
+      "name": "different suit cannot extend a run",
+      "meld": [{ "suit": 0, "value": 5 }, { "suit": 0, "value": 6 }, { "suit": 0, "value": 7 }],
+      "card": { "suit": 1, "value": 8 },
+      "valid": false
+    },
+    {
+      "name": "ace extends the king-high end",
+      "meld": [{ "suit": 0, "value": 11 }, { "suit": 0, "value": 12 }, { "suit": 0, "value": 13 }],
+      "card": { "suit": 0, "value": 1 },
+      "valid": true
+    },
+    { "name": "empty meld cannot be extended", "meld": [], "card": { "suit": 0, "value": 5 }, "valid": false }
+  ]
+}

@@ -28,6 +28,7 @@
   "promptPlayHelpMeldContract": "mc <a,b,c> <d,e,f>: meet the round contract",
   "promptPlayHelpMeldExtra": "me <a,b,c>: lay an extra meld (after contract met)",
   "promptPlayHelpLayoff": "lo <pIdx> <mIdx> <cIdx>: add a card to an existing meld",
+  "promptPlayHelpLayoffTargets": "▶ Melds accepting a layoff: {{targets}} (player/meld)",
   "promptPlayHelpDiscard": "d <idx>: discard a card",
   "promptRoundEnd": "Round complete",
   "promptRoundEndHelp": "nr / nextround: advance to next round",
