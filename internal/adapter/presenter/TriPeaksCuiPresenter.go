@@ -27,6 +27,34 @@ func triPeaksAdjacentRank(v1, v2 int) bool {
 // which appears from 2: a "combo" of 1 is just an ordinary removal.
 const tripeaksComboMin = 2
 
+// triPeaksRemainingCounts counts present, non-removed cards by their peak's
+// column range. The ranges mirror peakOfColumn in the web TriPeaks page.
+func triPeaksRemainingCounts(layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard) [3]int {
+	var remaining [3]int
+	for row := range layout {
+		for col, tc := range layout[row] {
+			if tc == nil || tc.Card == nil || tc.Removed {
+				continue
+			}
+			peak := 2
+			if col < 3 {
+				peak = 0
+			} else if col < 6 {
+				peak = 1
+			}
+			remaining[peak]++
+		}
+	}
+	return remaining
+}
+
+func triPeaksRemainingText(count int) string {
+	if count == 0 {
+		return "0 ✓"
+	}
+	return strconv.Itoa(count)
+}
+
 // TriPeaksCuiPresenter renders the TriPeaks Solitaire CUI view.
 type TriPeaksCuiPresenter struct{}
 
@@ -96,6 +124,12 @@ func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 			b.WriteString(i18n.T("tripeaks.wasteEmpty"))
 		}
 		b.WriteString("\n")
+
+		remaining := triPeaksRemainingCounts(layout)
+		b.WriteString(i18n.Tf("tripeaks.peakRemaining",
+			"left", triPeaksRemainingText(remaining[0]),
+			"middle", triPeaksRemainingText(remaining[1]),
+			"right", triPeaksRemainingText(remaining[2])) + "\n")
 
 		// Playable-now summary: how many cards can be taken onto the waste top,
 		// plus a pre-emptive draw hint when none can (and the stock isn't empty).
