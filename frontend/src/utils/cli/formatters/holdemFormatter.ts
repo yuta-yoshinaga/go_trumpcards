@@ -1,5 +1,6 @@
 import type { HoldemResponse } from '../../../types/card';
 import { HoldemPhase } from '../../../types/phases';
+import { getHoldemBettingLimitName } from '../../holdemBettingLimits';
 import { formatGenericState } from './genericFormatter';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -16,6 +17,7 @@ const PHASE_NAMES: Record<number, string> = {
 /** Format a Texas Hold'em game state as terminal text. */
 export function formatHoldemState(state: HoldemResponse): string {
   const customLines: string[] = [];
+  customLines.push(`limit: ${getHoldemBettingLimitName(state.bettingLimit)}`);
   if (state.tournamentMode)
     customLines.push(`blinds: ${state.smallBlind}/${state.bigBlind} (hand #${state.handCount})`);
   if (state.rebuyAvailable) customLines.push('Rebuy available!');

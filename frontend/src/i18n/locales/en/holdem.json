@@ -13,6 +13,12 @@
   "winningHand": "Hand: {{hand}}",
   "yourHand": "Your Hand",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
+  "bettingLimit": {
+    "label": "Limit",
+    "fixed": "Fixed",
+    "potLimit": "Pot Limit",
+    "noLimit": "No Limit"
+  },
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
     "accept": "Rebuy",

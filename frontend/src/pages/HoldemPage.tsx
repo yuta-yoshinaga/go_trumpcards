@@ -45,6 +45,7 @@ import { formatHoldemState } from '../utils/cli/formatters/holdemFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { holdemBestFive } from '../utils/holdemBestFive';
+import { HOLDEM_BETTING_LIMIT_KEYS } from '../utils/holdemBettingLimits';
 import { findPlayerName } from '../utils/playerUtils';
 
 /** Texas Hold'em tutorial step definitions. */
@@ -172,6 +173,7 @@ function HoldemPageContent() {
   }, [cpuMetaAI]);
 
   const phase = state?.phase ?? HoldemPhase.INIT;
+  const bettingLimitKey = HOLDEM_BETTING_LIMIT_KEYS[state?.bettingLimit ?? 0] ?? 'fixed';
   const isActive = phase >= HoldemPhase.PRE_FLOP && phase <= HoldemPhase.RIVER;
   const isShowdown = phase === HoldemPhase.SHOWDOWN || phase === HoldemPhase.END;
   const humanPlayer = state?.players?.find((p) => p.isHuman);
@@ -272,6 +274,9 @@ function HoldemPageContent() {
             <strong>
               {state?.smallBlind ?? 0}/{state?.bigBlind ?? 0}
             </strong>
+          </span>
+          <span data-testid="holdem-betting-limit">
+            {t('bettingLimit.label')}: <strong>{t(`bettingLimit.${bettingLimitKey}`)}</strong>
           </span>
           <span>
             {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>

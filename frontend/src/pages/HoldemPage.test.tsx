@@ -276,6 +276,17 @@ describe('HoldemPage', () => {
     expect(screen.getAllByText('あなた').length).toBeGreaterThan(0);
   });
 
+  it.each([
+    [0, '固定リミット'],
+    [1, 'ポットリミット'],
+    [2, 'ノーリミット'],
+  ] as const)('shows the betting limit label for limit %s', async (bettingLimit, expectedLabel) => {
+    mockExec.mockResolvedValue({ ...preFlopState, bettingLimit });
+    renderWithProviders(<HoldemPage />);
+    const limitDisplay = await screen.findByTestId('holdem-betting-limit');
+    expect(within(limitDisplay).getByText(expectedLabel)).toBeInTheDocument();
+  });
+
   // ---- community cards ----
   it('shows 5 CardBack placeholders when communityCards is empty', async () => {
     mockExec.mockResolvedValue(preFlopState);
