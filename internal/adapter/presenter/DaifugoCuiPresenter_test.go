@@ -196,6 +196,21 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		}
 	})
 
+	t.Run("success Output distinguishes partial suit lock from full suit lock", func(t *testing.T) {
+		partialConfig := domain.DefaultDaifugoConfig()
+		partialConfig.SuitLockMode = domain.DaifugoSuitLockPartial
+		partial := domain.NewDaifugo(domain.NewTrumpCards(0), makeDaifugoPlayersForPresenter(), partialConfig)
+		partial.SetSuitLocked(true, domain.CardDesignSpade)
+		partialResult := tdp.Output(partial, nil)
+		assert.Contains(t, partialResult, "【スート縛り】SPADE (片縛り)")
+
+		full := domain.NewDaifugo(domain.NewTrumpCards(0), makeDaifugoPlayersForPresenter(), domain.DefaultDaifugoConfig())
+		full.SetSuitLocked(true, domain.CardDesignSpade)
+		fullResult := tdp.Output(full, nil)
+		assert.Contains(t, fullResult, "【スート縛り】SPADE")
+		assert.NotContains(t, fullResult, "(片縛り)")
+	})
+
 	t.Run("success Output table is sequence", func(t *testing.T) {
 		dg, _ := setupDaifugoCuiTest()
 		dg.SetTableIsSequence(true)

@@ -15,6 +15,7 @@
   "ruleRevolution": "【革命中】2が最弱、3が最強",
   "ruleElevenBack": "【11バック】強さが逆転中",
   "ruleSuitLockedPrefix": "【スート縛り】",
+  "ruleSuitLockedPartialSuffix": " (片縛り)",
   "ruleSequence": "【階段】",
   "ruleNineReverse": "【9リバース】",
   "ruleNumberLocked": "【連番縛り】",
