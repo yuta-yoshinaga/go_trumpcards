@@ -2311,6 +2311,8 @@
     "scorpion.playing": "プレイ中",
     "scorpion.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
     "seahaventowers.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "seahaventowers.errEmptyColumnKingOnly": "空の列にはキングしか置けません。",
+    "seahaventowers.errNotSameSuitDescending": "同じスートで、1つ小さいカードに重ねてください。",
     "seahaventowers.gameOver": "ゲームオーバー",
     "seahaventowers.hintAvailable": "ヒントがあります",
     "seahaventowers.noHint": "ヒントはありません",

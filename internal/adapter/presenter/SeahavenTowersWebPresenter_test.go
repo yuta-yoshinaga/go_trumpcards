@@ -119,6 +119,25 @@ func TestSeahavenTowersWebPresenterOutputError(t *testing.T) {
 	assert.Contains(t, out.Message, "test error")
 }
 
+func TestSeahavenTowersWebPresenterOutputErrorMessageCode(t *testing.T) {
+	p := new(SeahavenTowersWebPresenter)
+	s := domain.NewSeahavenTowers(domain.NewTrumpCards(0))
+	s.Reset()
+
+	for _, code := range []string{
+		"seahaventowers.errEmptyColumnKingOnly",
+		"seahaventowers.errNotSameSuitDescending",
+	} {
+		result := p.Output(s, domain.NewDomainErrorCode(domain.ErrInvalidPlay, code, nil))
+
+		var out controller.SeahavenTowersWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.Equal(t, code, out.MessageCode)
+		assert.Empty(t, out.Message)
+	}
+}
+
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
 // レスポンスで、ページの state にはマージされない (#4483)。
 func TestSeahavenTowersWebPresenterOutputCarriesTheHint(t *testing.T) {

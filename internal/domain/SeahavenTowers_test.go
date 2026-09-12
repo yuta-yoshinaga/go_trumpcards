@@ -114,6 +114,21 @@ func TestSeahavenTowersMoveTableauToTableauDifferentSuitRejected(t *testing.T) {
 
 	err := s.MoveTableauToTableau(1, 0, 0)
 	assert.Error(t, err)
+	code, _ := ErrorMessageCode(err)
+	assert.Equal(t, "seahaventowers.errNotSameSuitDescending", code)
+}
+
+func TestSeahavenTowersMoveTableauToTableauWrongRankRejected(t *testing.T) {
+	s := setupPlayingSeahavenTowers()
+	clearTableauST(s)
+	clearReservedST(s)
+	s.tableau[0] = []*Card{makeCard(CardDesignSpade, 7)}
+	s.tableau[1] = []*Card{makeCard(CardDesignSpade, 5)}
+
+	err := s.MoveTableauToTableau(1, 0, 0)
+	assert.Error(t, err)
+	code, _ := ErrorMessageCode(err)
+	assert.Equal(t, "seahaventowers.errNotSameSuitDescending", code)
 }
 
 func TestSeahavenTowersMoveTableauToTableauKingToEmpty(t *testing.T) {
@@ -139,6 +154,8 @@ func TestSeahavenTowersMoveTableauToTableauNonKingToEmptyRejected(t *testing.T) 
 
 	err := s.MoveTableauToTableau(0, 0, 1)
 	assert.Error(t, err)
+	code, _ := ErrorMessageCode(err)
+	assert.Equal(t, "seahaventowers.errEmptyColumnKingOnly", code)
 }
 
 func TestSeahavenTowersMoveTableauToTableauSupermove(t *testing.T) {
@@ -383,6 +400,8 @@ func TestSeahavenTowersMoveFreeCellToTableauWrongSuitRejected(t *testing.T) {
 	s.freeCells[0] = makeCard(CardDesignHeart, 5) // different suit — rejected
 	err := s.MoveFreeCellToTableau(0, 0)
 	assert.Error(t, err)
+	code, _ := ErrorMessageCode(err)
+	assert.Equal(t, "seahaventowers.errNotSameSuitDescending", code)
 }
 
 func TestSeahavenTowersMoveFreeCellToTableauNonKingToEmptyRejected(t *testing.T) {
@@ -392,6 +411,8 @@ func TestSeahavenTowersMoveFreeCellToTableauNonKingToEmptyRejected(t *testing.T)
 	s.freeCells[0] = makeCard(CardDesignSpade, 5)
 	err := s.MoveFreeCellToTableau(0, 0)
 	assert.Error(t, err)
+	code, _ := ErrorMessageCode(err)
+	assert.Equal(t, "seahaventowers.errEmptyColumnKingOnly", code)
 }
 
 func TestSeahavenTowersMoveFreeCellToTableauErrors(t *testing.T) {
