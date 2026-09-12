@@ -27,7 +27,7 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 	hands := vp.GetHands()
 	winRate := 0
 	if hands > 0 {
-		winRate = vp.GetWins() * 100 / hands
+		winRate = (vp.GetWins()*200 + hands) / (hands * 2)
 	}
 	net := vp.GetTotalPayout() - vp.GetTotalBet()
 	sb.WriteString(i18n.Tf("videopoker.statsSummary",

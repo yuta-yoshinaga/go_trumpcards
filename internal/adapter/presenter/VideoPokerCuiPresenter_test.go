@@ -36,6 +36,13 @@ func setupVideoPokerCuiMockDefaults(m *interfaces.MockVideoPokerGame) {
 	m.On("GetVariantName").Return("videopoker").Maybe()
 }
 
+func setupVideoPokerCuiStatsMockDefaults(m *interfaces.MockVideoPokerGame) {
+	m.On("GetHands").Return(0).Maybe()
+	m.On("GetWins").Return(0).Maybe()
+	m.On("GetTotalBet").Return(0).Maybe()
+	m.On("GetTotalPayout").Return(0).Maybe()
+}
+
 func TestVideoPokerCuiPresenter_Output_SessionStats(t *testing.T) {
 	p := new(VideoPokerCuiPresenter)
 	m := new(interfaces.MockVideoPokerGame)
@@ -53,6 +60,24 @@ func TestVideoPokerCuiPresenter_Output_SessionStats(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "4 ハンド / 勝率 25% / 収支 -3")
 	assert.Contains(t, result, "配当表")
+}
+
+func TestVideoPokerCuiPresenter_Output_SessionStats_RoundsWinRate(t *testing.T) {
+	p := new(VideoPokerCuiPresenter)
+	m := new(interfaces.MockVideoPokerGame)
+	m.On("GetChips").Return(1000)
+	m.On("GetPhase").Return(domain.VideoPokerPhaseBet)
+	m.On("GetHands").Return(3)
+	m.On("GetWins").Return(2)
+	m.On("GetTotalBet").Return(12)
+	m.On("GetTotalPayout").Return(9)
+	m.On("GetHand").Return(([]*domain.Card)(nil))
+	m.On("GetChipsRefilled").Return(false)
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetVariantName").Return("videopoker")
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "3 ハンド / 勝率 67% / 収支 -3")
 }
 
 func TestVideoPokerCuiPresenter_Output_SessionStats_ZeroHands(t *testing.T) {
@@ -102,6 +127,7 @@ func TestVideoPokerCuiPresenter_Output_BetPhase_JokerPokerPaytable(t *testing.T)
 	m.On("GetHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetVariantName").Return("jokerpoker").Maybe()
+	setupVideoPokerCuiStatsMockDefaults(m)
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "キングス・オア・ベター x1")
@@ -125,6 +151,7 @@ func TestVideoPokerCuiPresenter_Output_BetPhase_Paytable_EnLocale(t *testing.T) 
 	m.On("GetHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetVariantName").Return("jokerpoker").Maybe()
+	setupVideoPokerCuiStatsMockDefaults(m)
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "Kings or Better x1")
@@ -153,6 +180,7 @@ func TestVideoPokerCuiPresenter_Output_DrawPhase_WithHand(t *testing.T) {
 	m.On("GetHandName").Return("").Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{true, true, false, false, true}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	setupVideoPokerCuiStatsMockDefaults(m)
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "フェーズ: ドロー")
@@ -185,6 +213,7 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Win(t *testing.T) {
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{true, true, true, true, false}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("GetVariantName").Return("videopoker").Maybe()
+	setupVideoPokerCuiStatsMockDefaults(m)
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "フェーズ: リザルト")
@@ -220,6 +249,7 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Win_DeucesWildTranslated(t *t
 		m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
 		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 		m.On("GetVariantName").Return(variant).Maybe()
+		setupVideoPokerCuiStatsMockDefaults(m)
 		return m
 	}
 	p := new(VideoPokerCuiPresenter)
@@ -281,6 +311,7 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Lose(t *testing.T) {
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("GetVariantName").Return("videopoker").Maybe()
+	setupVideoPokerCuiStatsMockDefaults(m)
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "役なし。")
@@ -330,6 +361,7 @@ func TestVideoPokerCuiPresenter_Output_JokerHighlighted(t *testing.T) {
 		domain.NewCard(domain.CardDesignJoker, 0, false),
 		domain.NewCard(domain.CardDesignSpade, 5, false),
 	}).Maybe()
+	setupVideoPokerCuiStatsMockDefaults(m)
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, color.BoldYellow("JOKER"))
@@ -355,6 +387,7 @@ func TestVideoPokerCuiPresenter_Output_DeucesWildTwosHighlighted(t *testing.T) {
 		domain.NewCard(domain.CardDesignSpade, 2, false),
 		domain.NewCard(domain.CardDesignSpade, 5, false),
 	}).Maybe()
+	setupVideoPokerCuiStatsMockDefaults(m)
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, color.Yellow("HEART 2"))
@@ -379,6 +412,7 @@ func TestVideoPokerCuiPresenter_Output_PlainVariantTwoNotHighlighted(t *testing.
 	m.On("GetHand").Return([]*domain.Card{
 		domain.NewCard(domain.CardDesignSpade, 2, false),
 	}).Maybe()
+	setupVideoPokerCuiStatsMockDefaults(m)
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "SPADE 2")
@@ -618,6 +652,7 @@ func TestVideoPokerCuiPresenter_MadeHandLine(t *testing.T) {
 		m.On("GetHandKey").Return("").Maybe()
 		m.On("GetVariantName").Return("jokerpoker").Maybe()
 		m.On("GetCurrentHandKey").Return(key).Maybe()
+		setupVideoPokerCuiStatsMockDefaults(m)
 		return m
 	}
 
