@@ -30,7 +30,7 @@ import { NIUNIU_HELP, parseNiuNiuCommand } from '../utils/cli/commands/niuniuCom
 import { formatNiuNiuState } from '../utils/cli/formatters/niuniuFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
-import { niuniuRankText } from '../utils/niuniuRankText';
+import { niuniuMultiplier, niuniuRankText } from '../utils/niuniuRankText';
 
 const BET_OPTIONS = [10, 50, 100, 500];
 
@@ -231,31 +231,51 @@ function NiuNiuPageContent() {
 
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="nn-controls">
               {isBetting && (
-                <>
-                  <span className="text-sm text-ds-text-muted">{t('betLabel')}</span>
-                  {BET_OPTIONS.map((amount) => (
-                    <button
-                      key={`bet-${amount.toString()}`}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => game.handleBet(amount)}
-                      // The loss can be `maxMultiplier` times the stake, so the
-                      // stack has to cover that, not just the stake itself — and
-                      // greying the button out never said so (#4908).
-                      disabled={loading || amount * state.maxMultiplier > state.chips}
-                      title={
-                        amount * state.maxMultiplier > state.chips
-                          ? t('betTooHigh', {
-                              multiplier: state.maxMultiplier,
-                              needed: amount * state.maxMultiplier,
-                            })
-                          : undefined
-                      }
-                    >
-                      {t('betAmount', { amount })}
-                    </button>
-                  ))}
-                </>
+                <div className="flex flex-col items-center justify-center py-4 gap-4 w-full">
+                  <details
+                    className="bg-black/30 rounded-lg w-full max-w-sm"
+                    data-tutorial="nn-payout-ref"
+                    data-testid="nn-payout-ref"
+                  >
+                    <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
+                      {t('payoutRef.title')}
+                    </summary>
+                    <ul className="text-ds-text-muted text-sm space-y-1 px-4 pb-3" data-testid="nn-payout-ref-list">
+                      <li>
+                        {t('payoutRef.row', { rank: niuniuRankText('niuniu'), multiplier: niuniuMultiplier('niuniu') })}
+                      </li>
+                      <li>{t('payoutRef.row', { rank: t('payoutRef.n7ton9'), multiplier: niuniuMultiplier('n7') })}</li>
+                      <li>
+                        {t('payoutRef.row', { rank: t('payoutRef.others'), multiplier: niuniuMultiplier('none') })}
+                      </li>
+                    </ul>
+                  </details>
+                  <div className="flex gap-2 items-center flex-wrap justify-center">
+                    <span className="text-sm text-ds-text-muted">{t('betLabel')}</span>
+                    {BET_OPTIONS.map((amount) => (
+                      <button
+                        key={`bet-${amount.toString()}`}
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => game.handleBet(amount)}
+                        // The loss can be `maxMultiplier` times the stake, so the
+                        // stack has to cover that, not just the stake itself — and
+                        // greying the button out never said so (#4908).
+                        disabled={loading || amount * state.maxMultiplier > state.chips}
+                        title={
+                          amount * state.maxMultiplier > state.chips
+                            ? t('betTooHigh', {
+                                multiplier: state.maxMultiplier,
+                                needed: amount * state.maxMultiplier,
+                              })
+                            : undefined
+                        }
+                      >
+                        {t('betAmount', { amount })}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
 
               <GameResetButton

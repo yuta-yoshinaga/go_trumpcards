@@ -34,5 +34,11 @@
   "rankNiuNiu": "Niu Niu",
   "rankN": "Niu {{n}}",
   "bankerResult": "Banker: {{rank}}",
-  "comboAriaLabel": "The three cards making the niu: {{cards}}"
+  "comboAriaLabel": "The three cards making the niu: {{cards}}",
+  "payoutRef": {
+    "title": "Payouts",
+    "row": "{{rank}} ... {{multiplier}}x",
+    "n7ton9": "Niu 7 – Niu 9",
+    "others": "Others"
+  }
 }
