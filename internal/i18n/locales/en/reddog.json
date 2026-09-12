@@ -22,6 +22,7 @@
   "playerWins": "Player wins!",
   "playerLoses": "Player loses.",
   "push": "Push.",
+  "pairResult": "The initial cards were a pair, so the spread decision was skipped and the result was decided directly by the third card (11:1 payout).",
   "totalPayoutLine": "total payout: {{payout}}",
   "hintRaiseRec": "Raise recommended",
   "hintStayRec": "Stay recommended",

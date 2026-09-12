@@ -11,6 +11,10 @@ import (
 // RedDogWebPresenter レッドドッグWebプレゼンタークラス
 type RedDogWebPresenter struct{}
 
+func redDogHasPair(initial []*domain.Card) bool {
+	return len(initial) == 2 && initial[0].GetValue() == initial[1].GetValue()
+}
+
 // Output ゲーム状態を出力
 func (rp *RedDogWebPresenter) Output(rd interfaces.RedDogGame, lastErr error) string {
 	resObj := new(controller.RedDogWebOutput)
@@ -30,16 +34,26 @@ func (rp *RedDogWebPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if rd.GetGameEndFlag() {
+		pair := redDogHasPair(rd.GetInitialCards())
 		switch rd.GetResult() {
 		case domain.GameResultWin:
 			resObj.Message = "Player wins!"
 			resObj.MessageCode = "reddog.result.playerWins"
+			if pair {
+				resObj.MessageCode = "reddog.result.pairWins"
+			}
 		case domain.GameResultLose:
 			resObj.Message = "Player loses."
 			resObj.MessageCode = "reddog.result.playerLoses"
+			if pair {
+				resObj.MessageCode = "reddog.result.pairLoses"
+			}
 		default:
 			resObj.Message = "Push."
 			resObj.MessageCode = "reddog.result.push"
+			if pair {
+				resObj.MessageCode = "reddog.result.pairPush"
+			}
 		}
 	}
 

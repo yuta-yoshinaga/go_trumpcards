@@ -130,6 +130,10 @@ func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 	}
 
 	if rd.GetGameEndFlag() {
+		pair := redDogHasPair(rd.GetInitialCards())
+		if pair {
+			sb.WriteString(i18n.T("reddog.pairResult") + "\n")
+		}
 		switch rd.GetResult() {
 		case domain.GameResultWin:
 			sb.WriteString(color.Green(i18n.T("reddog.playerWins")) + "\n")
