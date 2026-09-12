@@ -40,6 +40,7 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { scorpionLegalTargets } from '../utils/scorpionUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const noop = () => {};
 
@@ -247,6 +248,7 @@ function ScorpionPageContent() {
     [preview.source, state],
   );
   const dealBlockedByEmpty = hasEmptyColumn && (state?.stockCount ?? 0) > 0;
+  const autoCompleteReady = (state?.stockCount ?? 0) === 0 && isTableauAllFaceUp(state?.tableau ?? []);
   const handleDealGuarded = useCallback(() => {
     if (dealBlockedByEmpty) {
       setEmptyDealAttemptKey((k) => k + 1);
@@ -563,7 +565,14 @@ function ScorpionPageContent() {
                   <button type="button" className={btnOutline} onClick={handleHint} disabled={loading}>
                     {t('hint')}
                   </button>
-                  <button type="button" className={btnSuccess} onClick={handleAutoComplete} disabled={loading}>
+                  <button
+                    type="button"
+                    className={`${btnSuccess}${autoCompleteReady && !loading ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+                    onClick={handleAutoComplete}
+                    disabled={loading || !autoCompleteReady}
+                    data-testid="autocomplete-button"
+                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+                  >
                     {t('autoComplete')}
                   </button>
                   <button

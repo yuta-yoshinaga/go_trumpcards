@@ -23,6 +23,7 @@
   "hintAvailable": "Hint available",
   "stalemate": "Stalemate",
   "cannotDealEmptyColExists": "Fill every empty column before dealing",
+  "autoCompleteNotReady": "Available once every card is face up",
   "landscapeBanner": "Landscape mode recommended",
   "frontendHint": {
     "moveToTableau": "A card can be moved between tableau columns",
