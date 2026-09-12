@@ -143,6 +143,22 @@ describe('BettingControls', () => {
     expect(onRaise).toHaveBeenCalled();
   });
 
+  it('disables Raise and shows its reason when raiseDisabled is true', () => {
+    render(
+      <BettingControls
+        {...makeProps({ hasOutstandingBet: true, raiseDisabled: true, raiseDisabledReason: '上限です' })}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'レイズ' })).toBeDisabled();
+    expect(screen.getByText('上限です')).toBeInTheDocument();
+  });
+
+  it('enables Raise and omits its reason when raiseDisabled is false', () => {
+    render(<BettingControls {...makeProps({ hasOutstandingBet: true, raiseDisabled: false })} />);
+    expect(screen.getByRole('button', { name: 'レイズ' })).toBeEnabled();
+    expect(screen.queryByText('上限です')).not.toBeInTheDocument();
+  });
+
   it('calls onFold when fold button clicked', () => {
     const onFold = vi.fn();
     render(<BettingControls {...makeProps({ onFold })} />);

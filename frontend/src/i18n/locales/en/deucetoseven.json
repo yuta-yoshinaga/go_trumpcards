@@ -18,6 +18,7 @@
   "cpuExchangeEntry": "Player {{idx}} (draw {{draw}}): exchanged {{count}}",
   "exchangeCount": "Drew: {{count}}",
   "cardSelected": "(selected to exchange)",
+  "raiseLimitReached": "The maximum number of raises for this round has been reached.",
   "settings": {
     "title": "Settings",
     "cpuMetaAI": "Meta-AI (CPUs learn your style)"

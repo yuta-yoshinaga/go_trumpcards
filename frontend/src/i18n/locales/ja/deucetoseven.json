@@ -18,6 +18,7 @@
   "cpuExchangeEntry": "Player {{idx}} (draw {{draw}}): {{count}}枚交換",
   "exchangeCount": "交換: {{count}}枚",
   "cardSelected": "(交換選択中)",
+  "raiseLimitReached": "このラウンドのレイズ上限に達しました。",
   "settings": {
     "title": "設定",
     "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"

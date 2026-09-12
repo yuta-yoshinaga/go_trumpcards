@@ -42,6 +42,32 @@ func TestDeuceToSevenWebPresenter_Output_Initial(t *testing.T) {
 	assert.Len(t, out.RoundResults, 0)
 }
 
+func TestDeuceToSevenWebPresenter_Output_MaxRaises(t *testing.T) {
+	pres := new(presenter.DeuceToSevenWebPresenter)
+
+	t.Run("capped", func(t *testing.T) {
+		dt, _ := makeDeuceToSevenForPresenter()
+		cfg := dt.GetConfig()
+		cfg.BettingLimit = domain.BettingLimitFixed
+		dt.SetConfig(cfg)
+
+		var out controller.DeuceToSevenWebOutput
+		require.NoError(t, json.Unmarshal([]byte(pres.Output(dt, nil)), &out))
+		assert.Equal(t, 4, out.MaxRaises)
+	})
+
+	t.Run("no limit", func(t *testing.T) {
+		dt, _ := makeDeuceToSevenForPresenter()
+		cfg := dt.GetConfig()
+		cfg.BettingLimit = domain.BettingLimitNoLimit
+		dt.SetConfig(cfg)
+
+		var out controller.DeuceToSevenWebOutput
+		require.NoError(t, json.Unmarshal([]byte(pres.Output(dt, nil)), &out))
+		assert.Equal(t, 0, out.MaxRaises)
+	})
+}
+
 func TestDeuceToSevenWebPresenter_Output_HumanCardsVisibleInDraw(t *testing.T) {
 	pres := new(presenter.DeuceToSevenWebPresenter)
 	dt, players := makeDeuceToSevenForPresenter()
