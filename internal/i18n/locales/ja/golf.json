@@ -7,6 +7,7 @@
   "exposedCard": "({{col}}){{card}}",
   "playableCard": "({{col}}){{card}}*",
   "stockLine": "Stock: {{count}}枚",
+  "combo": "コンボ ×{{count}}",
   "wasteCard": " | Waste: {{card}}",
   "wasteEmpty": " | Waste: [空]",
   "holeScore": "ホール {{hole}}/{{holes}}  今回: {{score}}  合計: {{total}}",
