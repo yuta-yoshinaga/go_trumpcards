@@ -141,13 +141,14 @@ function WillOTheWispPageContent() {
   const hasEmptyColumn = useMemo(() => state?.tableau.some((col) => col.length === 0) ?? false, [state?.tableau]);
   const dealBlockedByEmpty = hasEmptyColumn && (state?.stockCount ?? 0) > 0;
   const handleDealGuarded = useCallback(() => {
+    if (loading || isAutoCompleting) return;
     if (dealBlockedByEmpty) {
       setEmptyDealAttemptKey((k) => k + 1);
       return;
     }
     setEmptyDealAttemptKey(0);
     handleDeal();
-  }, [dealBlockedByEmpty, handleDeal]);
+  }, [dealBlockedByEmpty, handleDeal, isAutoCompleting, loading]);
 
   const dispatchMove = useCallback(
     (source: WillOTheWispMoveZone, target: WillOTheWispMoveZone) => {
@@ -305,6 +306,7 @@ function WillOTheWispPageContent() {
                   <AnimatedCardBack
                     width={tableau.cw}
                     onClick={isPlaying ? handleDealGuarded : undefined}
+                    disabled={loading || isAutoCompleting}
                     ariaLabel={t('deal')}
                   />
                 ) : (

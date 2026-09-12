@@ -161,6 +161,16 @@ describe('CardBack', () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
+  it('disables the button when disabled is true', () => {
+    render(<CardBack onClick={() => undefined} disabled />);
+    expect(screen.getByRole('button', { name: 'カード裏面' })).toBeDisabled();
+  });
+
+  it('keeps the button enabled when disabled is omitted', () => {
+    render(<CardBack onClick={() => undefined} />);
+    expect(screen.getByRole('button', { name: 'カード裏面' })).toBeEnabled();
+  });
+
   it('renders button with custom aria-label when ariaLabel is provided', () => {
     const onClick = vi.fn();
     render(<CardBack onClick={onClick} ariaLabel="カード 1 枚目を引く" />);

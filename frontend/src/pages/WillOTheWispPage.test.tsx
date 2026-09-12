@@ -172,6 +172,49 @@ describe('WillOTheWispPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/完成: 0\/4/));
   });
 
+  it('deals from the stock when clicked in the normal state', async () => {
+    renderWithProviders(<WillOTheWispPage />);
+    const stockButton = (await screen.findAllByRole('button', { name: '配る' }))[0];
+    mockSend.mockClear();
+
+    fireEvent.click(stockButton);
+
+    await waitFor(() => expect(mockSend).toHaveBeenCalledWith('deal'));
+  });
+
+  it('does not deal from the stock again while loading', async () => {
+    renderWithProviders(<WillOTheWispPage />);
+    const stockButton = (await screen.findAllByRole('button', { name: '配る' }))[0];
+    mockSend.mockClear();
+    mockSend.mockReturnValue(new Promise(() => undefined));
+
+    fireEvent.click(stockButton);
+    await waitFor(() => expect(mockSend).toHaveBeenCalledWith('deal'));
+    const disabledStockButton = (await screen.findAllByRole('button', { name: '配る' }))[0];
+    expect(disabledStockButton).toBeDisabled();
+    fireEvent.click(disabledStockButton);
+
+    expect(mockSend).toHaveBeenCalledTimes(1);
+    expect(mockSend).toHaveBeenCalledWith('deal');
+  });
+
+  it('does not deal from the stock while auto-completing', async () => {
+    const autoCompleteReadyState = { ...playingState, stockCount: 0 };
+    mockSend.mockReset();
+    mockSend.mockResolvedValue(playingState);
+    mockSend.mockResolvedValueOnce(autoCompleteReadyState).mockResolvedValueOnce(playingState);
+    renderWithProviders(<WillOTheWispPage />);
+    const autoCompleteButton = await screen.findByTestId('autocomplete-button');
+    fireEvent.click(autoCompleteButton);
+
+    const stockButton = (await screen.findAllByRole('button', { name: '配る' }))[0];
+    expect(stockButton).toBeDisabled();
+    mockSend.mockClear();
+    fireEvent.click(stockButton);
+
+    expect(mockSend).not.toHaveBeenCalledWith('deal');
+  });
+
   it('shows game clear phase label', async () => {
     mockSend.mockResolvedValue(gameClearState);
     renderWithProviders(<WillOTheWispPage />);
