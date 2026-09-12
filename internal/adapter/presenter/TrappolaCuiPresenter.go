@@ -109,13 +109,13 @@ func (p *TrappolaCuiPresenter) Output(g interfaces.TrappolaGame, lastErr error) 
 			// Break down each team's thirds this round and name the team that took
 			// the last trick (the ultima-presa +1/3 bonus goes to that trick's
 			// winner, who becomes the next lead).
-			lastTeam := domain.TrappolaTeamOf(g.GetLeadPlayerIdx())
+			params := trappolaRoundBreakdownParams(thirds, g.GetLeadPlayerIdx())
 			b.WriteString(i18n.Tf("trappola.roundBreakdown",
-				"a", trappolaTeamLabel(0),
-				"athird", strconv.Itoa(thirds[0]),
-				"b", trappolaTeamLabel(1),
-				"bthird", strconv.Itoa(thirds[1]),
-				"lastteam", trappolaTeamLabel(lastTeam)) + "\n")
+				"a", params["a"],
+				"athird", params["athird"],
+				"b", params["b"],
+				"bthird", params["bthird"],
+				"lastteam", params["lastteam"]) + "\n")
 			b.WriteString(i18n.T("trappola.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("trappola.promptRoundEndHelp") + "\n")
 		}

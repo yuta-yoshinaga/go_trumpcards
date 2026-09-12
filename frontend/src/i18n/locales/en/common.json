@@ -2698,7 +2698,7 @@
     "trappola.result.humanTeamWin": "Game over — your team wins.",
     "trappola.result.teamAWin": "Game over — Team A wins.",
     "trappola.result.teamBWin": "Game over — Team B wins.",
-    "trappola.roundEnd": "Round complete — go to the next round.",
+    "trappola.roundBreakdown": "Round breakdown: Team {{a}} thirds {{athird}} / Team {{b}} thirds {{bthird}} (last trick: Team {{lastteam}})",
     "trappola.trickEnd": "Trick complete — continue.",
     "trash.awaitWild": "Choose where to place the wild card",
     "trash.cpuAwaitWild": "The CPU is placing a wild card",

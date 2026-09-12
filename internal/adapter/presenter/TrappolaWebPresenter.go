@@ -125,7 +125,8 @@ func (p *TrappolaWebPresenter) buildMessage(g interfaces.TrappolaGame, lastErr e
 	case domain.TrappolaPhaseTrickEnd:
 		return "", "trappola.trickEnd", nil
 	case domain.TrappolaPhaseRoundEnd:
-		return "", "trappola.roundEnd", nil
+		return "", "trappola.roundBreakdown", trappolaRoundBreakdownParams(
+			g.GetTeamRoundThirds(), g.GetLeadPlayerIdx())
 	}
 	return "", "", nil
 }
