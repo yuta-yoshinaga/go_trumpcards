@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -129,10 +130,6 @@ func TestTarabishWebPresenterRoundEndMessage(t *testing.T) {
 	})
 }
 
-func tarabishRoundEndWithBonus(t *testing.T) *domain.Tarabish {
-	return tarabishRoundEndWithBonusTeam(t, 0)
-}
-
 func tarabishRoundEndWithBonusTeam(t *testing.T, winningTeam int) *domain.Tarabish {
 	t.Helper()
 	tb := newTarabishForWeb(t)
@@ -179,6 +176,43 @@ func TestTarabishWebPresenterResultMessage(t *testing.T) {
 
 			m := decodeTarabish(t, p.Output(tb, nil))
 			assert.Equal(t, tc.wantCode, m["messageCode"])
+			params, ok := m["messageParams"].(map[string]any)
+			require.True(t, ok)
+			assert.NotContains(t, params, "bonus")
+		})
+	}
+}
+
+func TestTarabishWebPresenterResultMessageWithBonus(t *testing.T) {
+	p := new(TarabishWebPresenter)
+
+	for _, tc := range []struct {
+		name      string
+		t0, t1    int
+		bonusTeam int
+		wantCode  string
+	}{
+		{"your team wins with your bonus", 520, 300, 0, "tarabish.result.team0.bonusYou"},
+		{"your team wins with their bonus", 520, 300, 1, "tarabish.result.team0.bonusThem"},
+		{"they win with your bonus", 300, 520, 0, "tarabish.result.team1.bonusYou"},
+		{"they win with their bonus", 300, 520, 1, "tarabish.result.team1.bonusThem"},
+		{"a tie with your bonus", 500, 500, 0, "tarabish.result.tie.bonusYou"},
+		{"a tie with their bonus", 500, 500, 1, "tarabish.result.tie.bonusThem"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			tb := newTarabishForWeb(t)
+			tb.SetScoreForTestUse(0, tc.t0)
+			tb.SetScoreForTestUse(1, tc.t1)
+			tb.FinishGameForTest()
+			tb.SetLastTrickBonusTeamForTest(tc.bonusTeam)
+
+			m := decodeTarabish(t, p.Output(tb, nil))
+			assert.Equal(t, tc.wantCode, m["messageCode"])
+			params, ok := m["messageParams"].(map[string]any)
+			require.True(t, ok)
+			assert.Equal(t, "10", params["bonus"])
+			assert.Equal(t, strconv.Itoa(tc.t0), params["t0"])
+			assert.Equal(t, strconv.Itoa(tc.t1), params["t1"])
 		})
 	}
 }

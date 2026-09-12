@@ -86,13 +86,36 @@ func (p *TarabishWebPresenter) buildMessage(t interfaces.TarabishGame, lastErr e
 			"t0": strconv.Itoa(t.GetScore(0)),
 			"t1": strconv.Itoa(t.GetScore(1)),
 		}
-		switch t.GetWinnerTeam() {
+		switch t.GetLastTrickBonusTeam() {
 		case 0:
-			return "", "tarabish.result.team0", params
+			params["bonus"] = strconv.Itoa(domain.TarabishLastTrickBonus)
+			switch t.GetWinnerTeam() {
+			case 0:
+				return "", "tarabish.result.team0.bonusYou", params
+			case 1:
+				return "", "tarabish.result.team1.bonusYou", params
+			default:
+				return "", "tarabish.result.tie.bonusYou", params
+			}
 		case 1:
-			return "", "tarabish.result.team1", params
+			params["bonus"] = strconv.Itoa(domain.TarabishLastTrickBonus)
+			switch t.GetWinnerTeam() {
+			case 0:
+				return "", "tarabish.result.team0.bonusThem", params
+			case 1:
+				return "", "tarabish.result.team1.bonusThem", params
+			default:
+				return "", "tarabish.result.tie.bonusThem", params
+			}
 		default:
-			return "", "tarabish.result.tie", params
+			switch t.GetWinnerTeam() {
+			case 0:
+				return "", "tarabish.result.team0", params
+			case 1:
+				return "", "tarabish.result.team1", params
+			default:
+				return "", "tarabish.result.tie", params
+			}
 		}
 	}
 	switch t.GetPhase() {
