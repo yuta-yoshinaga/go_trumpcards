@@ -183,6 +183,41 @@ describe('WhistPage', () => {
     expect(team1Chips.length).toBeGreaterThan(0);
   });
 
+  it("shows each player's trick count in both desktop and mobile layouts", async () => {
+    const originalWidth = window.innerWidth;
+    const state = makeState({
+      players: playState.players.map((p, index) => ({
+        ...p,
+        trickCount: index === 0 ? 2 : index === 1 ? 3 : p.trickCount,
+      })),
+    });
+    mockExec.mockResolvedValue(state);
+
+    try {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+      window.dispatchEvent(new Event('resize'));
+      renderWithProviders(<WhistPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('whist-human-team')).toHaveTextContent('獲得2トリック');
+        expect(screen.getByText(/CPU 1: 獲得3トリック/)).toBeInTheDocument();
+      });
+      expect(document.body.textContent).not.toContain('{{');
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('whist-human-team')).toHaveTextContent('獲得2トリック');
+        expect(screen.getByText(/CPU 1: 獲得3トリック/)).toBeInTheDocument();
+      });
+      expect(document.body.textContent).not.toContain('{{');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   // **ドメインは合法手を判定済みなのに、画面が使っていなかった (#4742)。**
   // フォロースートに反する札もクリックでき、サーバーのエラーが返って初めて
   // 出せないと分かる状態だった。
