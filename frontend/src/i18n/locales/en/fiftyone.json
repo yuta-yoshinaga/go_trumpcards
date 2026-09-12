@@ -21,6 +21,7 @@
     "yourTurn": "Your turn",
     "cpuTurn": "CPU {{id}}'s turn",
     "suitScores": "Suit totals",
+    "suitBadge": "{{score}}/{{max}}",
     "stopCalledBy": "Stop is in effect ({{name}}) — this is the final round"
   },
   "settings": {

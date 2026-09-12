@@ -30,7 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
-import { fiftyOneBestSuit, fiftyOneSuitScores } from '../utils/fiftyOneSuitScores';
+import { FIFTY_ONE_MAX_SCORE, fiftyOneBestSuit, fiftyOneSuitScores } from '../utils/fiftyOneSuitScores';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 type FiftyOneArgs = Parameters<typeof fiftyoneApi.exec>;
@@ -319,7 +319,9 @@ function FiftyOnePageContent() {
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border font-medium ${classes}`}
                     >
                       <span className={isLeader ? '' : isRed ? 'text-ds-error' : ''}>{symbol}</span>
-                      <span className="tabular-nums">{suitTotals[d]}</span>
+                      <span className="tabular-nums">
+                        {t('label.suitBadge', { score: suitTotals[d], max: FIFTY_ONE_MAX_SCORE })}
+                      </span>
                     </li>
                   );
                 })}

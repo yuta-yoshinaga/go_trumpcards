@@ -227,17 +227,47 @@ describe('FiftyOnePage', () => {
     await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('errorBuzz'));
   });
 
-  it('renders suit score badges and highlights the leading suit', async () => {
+  it('renders suit score badges with score/51 format and highlights the leading suit', async () => {
     const { FiftyOnePage } = await import('./FiftyOnePage');
     renderWithProviders(<FiftyOnePage />);
     await waitFor(() => expect(screen.getByTestId('suit-score-badges')).toBeInTheDocument());
     // SPADE=11+10=21, CLOVER=2, HEART=5, DIAMOND=3 → SPADE leads.
     const spade = screen.getByTestId('suit-badge-SPADE');
-    expect(spade).toHaveTextContent('21');
+    expect(spade).toHaveTextContent('21/51');
     expect(spade.className).toContain('bg-ds-accent');
     const heart = screen.getByTestId('suit-badge-HEART');
-    expect(heart).toHaveTextContent('5');
+    expect(heart).toHaveTextContent('5/51');
     expect(heart.className).not.toContain('bg-ds-accent');
+
+    // i18n キー名が生で画面に出ていないこと (i18n が解決している証拠)
+    expect(screen.queryByText(/suitBadge/)).not.toBeInTheDocument();
+  });
+
+  it('renders suit score badges with custom hand and verifies score/51 format', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      players: [
+        {
+          ...baseState.players[0],
+          cards: [
+            { design: 'CLOVER', value: 1 },
+            { design: 'CLOVER', value: 13 },
+            { design: 'CLOVER', value: 12 },
+            { design: 'SPADE', value: 2 },
+            { design: 'HEART', value: 3 },
+          ],
+        },
+        ...baseState.players.slice(1),
+      ],
+    });
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(screen.getByTestId('suit-score-badges')).toBeInTheDocument());
+    const clover = screen.getByTestId('suit-badge-CLOVER');
+    expect(clover).toHaveTextContent('31/51');
+    const spade = screen.getByTestId('suit-badge-SPADE');
+    expect(spade).toHaveTextContent('2/51');
+    expect(screen.queryByText(/suitBadge/)).not.toBeInTheDocument();
   });
 });
 
