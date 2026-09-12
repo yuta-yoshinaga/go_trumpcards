@@ -5,4 +5,8 @@ package presenter
 import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 // CanastaPresenter カナスタプレゼンタインタフェース
-type CanastaPresenter = GamePresenter[interfaces.CanastaGame]
+type CanastaPresenter interface {
+	GamePresenter[interfaces.CanastaGame]
+	// HintOutput ヒント情報を出力する
+	HintOutput(g interfaces.CanastaGame) string
+}

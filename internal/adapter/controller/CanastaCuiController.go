@@ -17,6 +17,7 @@ var canastaNoArgCommands = cuiutil.NewCommandMap[usecase.CanastaInteractorIF]().
 	Add(usecase.CanastaInteractorIF.SkipMeld, "sm", "skipmeld").
 	Add(usecase.CanastaInteractorIF.GoOut, "go", "goout").
 	Add(usecase.CanastaInteractorIF.NextRound, "nr", "nextround").
+	Add(usecase.CanastaInteractorIF.Hint, "h", "hint").
 	Add(usecase.CanastaInteractorIF.ActionLog, "log", "l")
 
 // canastaArgfulCommands lists alias names for argful commands handled in the
