@@ -23,6 +23,18 @@ const GoFishTotalBooks = 13
 // goFishShuffleCount シャッフル回数
 const goFishShuffleCount = 10
 
+// GoFishHint は Go Fish の現在の人間の手番に対する推奨。
+type GoFishHint struct {
+	// Action は推奨アクション種別。
+	Action string
+	// Rank は要求を推奨するランク。
+	Rank int
+	// Indices は推奨ランクの手札インデックス。
+	Indices []int
+	// Reason はヒント理由の i18n キー (接頭辞なし)。
+	Reason string
+}
+
 // GoFishPhase ゲームフェーズ
 type GoFishPhase int
 
@@ -617,6 +629,57 @@ func (g *GoFish) IsHumanTurn() bool {
 
 // GetGameEndFlag ゲーム終了フラグを取得する
 func (g *GoFish) GetGameEndFlag() bool { return g.gameEndFlag }
+
+// GetHint は現在の人間の手番に対する Go Fish の推奨を返す。
+func (g *GoFish) GetHint() *GoFishHint {
+	if g.gameEndFlag || g.phase != GoFishPhasePlay || !g.IsHumanTurn() {
+		return nil
+	}
+
+	human := g.players[g.currentTurn]
+	if human.GetCardsSize() == 0 {
+		return nil
+	}
+
+	knownRanks := make(map[int]bool)
+	if g.lastAskPlayerIdx >= 0 && g.lastAskPlayerIdx != g.currentTurn &&
+		g.lastAskTargetIdx != g.currentTurn && g.lastAskSuccess {
+		knownRanks[g.lastAskRank] = true
+	}
+	for _, action := range g.cpuActions {
+		if action.AskPlayerIdx != g.currentTurn && action.AskTargetIdx != g.currentTurn && action.Success {
+			knownRanks[action.AskRank] = true
+		}
+	}
+
+	bestRank := 0
+	bestReason := "ask_most_copies"
+	for _, rank := range human.GetDistinctRanks() {
+		if knownRanks[rank] && (bestRank == 0 || rank < bestRank) {
+			bestRank = rank
+			bestReason = "ask_known_rank"
+		}
+	}
+	if bestRank == 0 {
+		ranks := human.GetDistinctRanks()
+		sort.Ints(ranks)
+		bestCount := 0
+		for _, rank := range ranks {
+			if count := human.CountRank(rank); count > bestCount {
+				bestRank = rank
+				bestCount = count
+			}
+		}
+	}
+
+	indices := make([]int, 0, human.GetCardsSize())
+	for i := 0; i < human.GetCardsSize(); i++ {
+		if human.GetCard(i).GetValue() == bestRank {
+			indices = append(indices, i)
+		}
+	}
+	return &GoFishHint{Action: "ask", Rank: bestRank, Indices: indices, Reason: bestReason}
+}
 
 // GetPhase ゲームフェーズを取得する
 func (g *GoFish) GetPhase() GoFishPhase { return g.phase }

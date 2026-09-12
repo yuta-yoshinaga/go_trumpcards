@@ -29,6 +29,15 @@ func (_m *MockGoFishGame) GetGameEndFlag() bool {
 	return ret.Bool(0)
 }
 
+// GetHint モック
+func (_m *MockGoFishGame) GetHint() *domain.GoFishHint {
+	ret := _m.Called()
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).(*domain.GoFishHint)
+}
+
 // IsHumanTurn モック
 func (_m *MockGoFishGame) IsHumanTurn() bool {
 	ret := _m.Called()

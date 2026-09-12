@@ -19,5 +19,10 @@
   "knownRanks": "{{name}}の既知ランク: {{ranks}}",
   "knownRanksLegend": "(* = あなたも持つランク = 有利な要求先)",
   "helpExampleAsk": "  ask 1 7              プレイヤー1に 7 を要求する",
-  "helpLog": "  l                 行動ログを表示"
+  "helpLog": "  l                 行動ログを表示",
+  "helpHint": "  h                 ヒントを表示",
+  "hintNone": "ヒントはありません。",
+  "hintDecision": "[HINT: ランク {{rank}} (手札 {{indices}}) を要求 ({{reason}})]",
+  "hintReasonKnownRank": "相手が持つと分かっているランク",
+  "hintReasonMostCopies": "手札で最も多く持っているランク"
 }

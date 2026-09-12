@@ -948,7 +948,7 @@ var gameRegistry = []GameRegistryEntry{
 			ExampleKeys: []string{
 				"gofish.helpExampleAsk",
 			},
-			CommandKeys: []string{"gofish.helpAsk", "gofish.helpLog"},
+			CommandKeys: []string{"gofish.helpAsk", "gofish.helpHint", "gofish.helpLog"},
 			SettingKeys: []string{"gofish.helpSetDifficulty"},
 		}),
 	BindCuiFor("pinochle",

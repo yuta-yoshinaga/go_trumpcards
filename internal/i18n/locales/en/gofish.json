@@ -19,5 +19,10 @@
   "knownRanks": "{{name}} known ranks: {{ranks}}",
   "knownRanksLegend": "(* = a rank you also hold = a strong ask target)",
   "helpExampleAsk": "  ask 1 7              ask player 1 for a 7",
-  "helpLog": "  l                      show the action log"
+  "helpLog": "  l                      show the action log",
+  "helpHint": "  h                      show a hint",
+  "hintNone": "No hint available.",
+  "hintDecision": "[HINT: ask for rank {{rank}} (hand {{indices}}) ({{reason}})]",
+  "hintReasonKnownRank": "an opponent is known to hold this rank",
+  "hintReasonMostCopies": "you hold the most copies of this rank"
 }

@@ -31,6 +31,12 @@ func (_m *MockGoFishInteractor) Ask(targetIdx, rank int) string {
 	return ret.Get(0).(string)
 }
 
+// Hint モック
+func (_m *MockGoFishInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // ActionLog モック
 func (_m *MockGoFishInteractor) ActionLog() string {
 	ret := _m.Called()
