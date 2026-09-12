@@ -14,6 +14,7 @@
   "drawAction": "{{drawer}}が{{from}}から1枚引きました",
   "drawActionWithCard": " ({{card}})",
   "drawActionDiscard": "。{{count}}組捨てました",
+  "drawActionDiscardCards": "（{{cards}}）",
   "cpuActionsHeader": "[CPUの行動]",
   "drawHistoryHeader": "[引き履歴]",
   "drawHistoryOmitted": "…他{{count}}件（棋譜は log コマンドで参照可）",

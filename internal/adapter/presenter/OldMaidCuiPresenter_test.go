@@ -93,6 +93,10 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, "CPU 2: 上がり")
 		assert.Contains(t, result, "CPU 3: 上がり")
 		assert.Contains(t, result, "あなたがCPU 1から1枚引きました (HEART 7)。1組捨てました")
+		assert.Contains(t, result, "（")
+		assert.Contains(t, result, "SPADE 5")
+		assert.Contains(t, result, "CLOVER 5")
+		assert.NotContains(t, result, "{{")
 		assert.Contains(t, result, "ゲーム終了！ あなたの負け！")
 	})
 
@@ -111,18 +115,27 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
 		players[3].SetIsFinished(true)
 		_ = om.PlayerDraw(0)
+		// PlayerDraw shuffles the hand before DiscardPairs walks it (so the drawn
+		// card's position stays hidden), so the two cards of the discarded pair
+		// come out in either order. Pin the whole output exactly, with just that
+		// one pair normalised -- the order is genuinely unspecified, everything
+		// else is not.
 		expected := "==========\nOld Maid (ババ抜き)\n==========\n" +
 			"あなた: 上がり\n" +
 			"CPU 1: 上がり\n" +
 			"CPU 2: 1枚\n" +
 			"CPU 3: 上がり\n" +
 			"----------\n" +
-			"あなたがCPU 1から1枚引きました (CLOVER 3)。1組捨てました\n" +
+			"あなたがCPU 1から1枚引きました (CLOVER 3)。1組捨てました（CLOVER 3 SPADE 3）\n" +
 			"[引き履歴]\n" +
 			"1. あなたがCPU 1から引いた (1組捨て) [あなた上がり] [CPU 1上がり]\n" +
 			"ゲーム終了！ CPU 2の負け！\n" +
 			"==========\n"
-		assert.Equal(t, expected, top.Output(om, nil))
+		got := top.Output(om, nil)
+		assert.Equal(t, expected, strings.Replace(got, "（SPADE 3 CLOVER 3）", "（CLOVER 3 SPADE 3）", 1))
+		// Both cards must be named whichever order they land in.
+		assert.Contains(t, got, "SPADE 3")
+		assert.Contains(t, got, "CLOVER 3")
 	})
 
 	t.Run("success Output human zero cards not finished", func(t *testing.T) {
@@ -180,7 +193,7 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, "not human player's turn")
 	})
 
-	t.Run("success Output cpu actions with discard does not reveal drawn card", func(t *testing.T) {
+	t.Run("success Output cpu discard reveals discarded cards", func(t *testing.T) {
 		tc := domain.NewTrumpCards(1)
 		cpuPlayers := []*domain.OldMaidPlayer{
 			domain.NewOldMaidPlayer(false),
@@ -203,8 +216,78 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		result := top.Output(om, nil)
 		assert.Contains(t, result, "[CPUの行動]")
 		assert.Contains(t, result, "CPU 0がCPU 1から1枚引きました。1組捨てました")
-		// Drawn card must not appear even when a pair was discarded
-		assert.NotContains(t, result, "CLOVER 10")
+		assert.Contains(t, result, "（")
+		assert.Contains(t, result, "SPADE 10")
+		assert.Contains(t, result, "CLOVER 10")
+		// The discarded pair is public, but the *draw* line must still not name
+		// the card the CPU drew -- that is the fairness rule this case has
+		// guarded since it was written. Only the discard line may show it.
+		assert.NotContains(t, result, "1枚引きました (CLOVER 10)")
+		assert.NotContains(t, result, "{{")
+	})
+
+	t.Run("success Output does not show cards when discarded card list is empty", func(t *testing.T) {
+		om := new(interfaces.MockOldMaidGame)
+		om.On("GetConfig").Return(domain.OldMaidConfig{})
+		om.On("GetPlayerCnt").Return(0)
+		om.On("GetHasDrawn").Return(true)
+		om.On("GetLastDrawPlayerIdx").Return(0)
+		om.On("GetLastDrawFromIdx").Return(0)
+		om.On("GetPlayer", 0).Return((*domain.OldMaidPlayer)(nil))
+		om.On("GetLastDrawCard").Return((*domain.Card)(nil))
+		om.On("GetLastDiscardedPairs").Return(1)
+		om.On("GetLastDiscardedCards").Return([]*domain.Card{})
+		om.On("GetCpuActions").Return([]*domain.OldMaidCpuAction(nil))
+		om.On("GetDrawHistory").Return([]*domain.OldMaidDrawHistoryEntry(nil))
+		om.On("GetHumanProfile").Return((*domain.OldMaidHumanProfile)(nil))
+		om.On("GetGameEndFlag").Return(false)
+		om.On("GetCurrentTurn").Return(0)
+		om.On("GetNextDrawTargetIdx").Return(-1)
+		result := top.Output(om, nil)
+		assert.NotContains(t, result, "（")
+		assert.NotContains(t, result, "{{")
+		om.AssertExpectations(t)
+	})
+
+	t.Run("success Output cpu actions reveal every discarded card across multiple actions", func(t *testing.T) {
+		om := new(interfaces.MockOldMaidGame)
+		om.On("GetConfig").Return(domain.OldMaidConfig{})
+		om.On("GetPlayerCnt").Return(0)
+		om.On("GetHasDrawn").Return(false)
+		om.On("GetCpuActions").Return([]*domain.OldMaidCpuAction{
+			{
+				DrawPlayerIdx:  0,
+				DrawFromIdx:    1,
+				DiscardedPairs: 1,
+				DiscardedCards: []*domain.Card{
+					domain.NewCard(domain.CardDesignSpade, 4, false),
+					domain.NewCard(domain.CardDesignHeart, 4, false),
+				},
+			},
+			{
+				DrawPlayerIdx:  1,
+				DrawFromIdx:    0,
+				DiscardedPairs: 1,
+				DiscardedCards: []*domain.Card{
+					domain.NewCard(domain.CardDesignClover, 9, false),
+					domain.NewCard(domain.CardDesignDiamond, 9, false),
+				},
+			},
+		})
+		om.On("GetPlayer", mock.Anything).Return((*domain.OldMaidPlayer)(nil))
+		om.On("GetDrawHistory").Return([]*domain.OldMaidDrawHistoryEntry(nil))
+		om.On("GetHumanProfile").Return((*domain.OldMaidHumanProfile)(nil))
+		om.On("GetGameEndFlag").Return(false)
+		om.On("GetCurrentTurn").Return(0)
+		om.On("GetNextDrawTargetIdx").Return(-1)
+
+		result := top.Output(om, nil)
+		assert.Contains(t, result, "SPADE 4")
+		assert.Contains(t, result, "HEART 4")
+		assert.Contains(t, result, "CLOVER 9")
+		assert.Contains(t, result, "DIAMOND 9")
+		assert.NotContains(t, result, "{{")
+		om.AssertExpectations(t)
 	})
 
 	t.Run("success Output getCardStr all designs", func(t *testing.T) {

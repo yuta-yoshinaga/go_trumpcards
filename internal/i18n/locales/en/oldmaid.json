@@ -14,6 +14,7 @@
   "drawAction": "{{drawer}} drew a card from {{from}}",
   "drawActionWithCard": " ({{card}})",
   "drawActionDiscard": ". Discarded {{count}} pair(s)",
+  "drawActionDiscardCards": " ({{cards}})",
   "cpuActionsHeader": "[CPU actions]",
   "drawHistoryHeader": "[Draw history]",
   "drawHistoryOmitted": "…and {{count}} more (use the log command for the full record)",
