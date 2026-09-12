@@ -176,6 +176,25 @@ func TestMatrimonyCuiPresenter_Output(t *testing.T) {
 			assert.Contains(t, new(MatrimonyCuiPresenter).Output(g, nil), tc.want)
 		})
 	}
+
+	t.Run("game over progress uses the foundation goal", func(t *testing.T) {
+		g := new(mockMatrimonyGame)
+		setupMatrimonyCuiMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetFoundation")
+		g.On("GetPhase").Return(domain.MatrimonyPhaseGameOver)
+		var full [domain.MatrimonyFoundationCnt][]*domain.Card
+		for i := range full {
+			for j := 0; j < domain.MatrimonyFoundationTarget; j++ {
+				full[i] = append(full[i], domain.NewCard(domain.CardDesignSpade, (j%13)+1, true))
+			}
+		}
+		g.On("GetFoundation").Return(full)
+
+		result := new(MatrimonyCuiPresenter).Output(g, nil)
+		assert.Contains(t, result, "52/52")
+		assert.Contains(t, result, "100%")
+	})
 }
 
 func TestMatrimonyCuiPresenter_HintOutput(t *testing.T) {

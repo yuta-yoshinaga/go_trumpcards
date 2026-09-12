@@ -41,7 +41,8 @@ const FOUNDATION_LABELS = ['Q♠↓', 'Q♠↓', 'J♦↑', 'J♦↑'] as const;
 const TABLEAU_SLOTS = 16;
 /** Slots per row in the 4x4 board. */
 const SLOTS_PER_ROW = 4;
-const TOTAL_CARDS = 104;
+/** Foundation completion goal: four foundations with thirteen cards each. */
+const FOUNDATION_GOAL = 4 * 13;
 
 const CG_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -395,7 +396,7 @@ function MatrimonyPageContent() {
               <p data-testid="cg-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
                 {t('gameOverSummary', {
                   count: foundationCount,
-                  percent: Math.round((foundationCount / TOTAL_CARDS) * 100),
+                  percent: Math.round((foundationCount / FOUNDATION_GOAL) * 100),
                 })}
               </p>
             )}

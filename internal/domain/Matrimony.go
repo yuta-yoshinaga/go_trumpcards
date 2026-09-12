@@ -32,6 +32,9 @@ const MatrimonyFoundationCnt = 4
 // ランクを一周するので、1 本で 13 枚すべてを通る。
 const MatrimonyFoundationTarget = CardValueMax
 
+// MatrimonyFoundationGoal クリアに必要な基礎札の合計枚数（4 本 × 13 枚）。
+const MatrimonyFoundationGoal = MatrimonyFoundationCnt * MatrimonyFoundationTarget
+
 // MatrimonyTotalCards 使用する総枚数（52 枚 2 組）
 const MatrimonyTotalCards = CardCnt * 2
 
@@ -78,7 +81,7 @@ type MatrimonyHint struct {
 //
 // 基礎札は 4 本で、スペードの Q から降順に積む 2 本と、ダイヤの J から昇順に
 // 積む 2 本がある。どちらもランクを一周するため、K の次は A、A の前は K となる。
-// 2 組あるので同名の基礎札が 2 本ずつあり、104 枚すべてでクリアする。
+// 4 本すべてが 13 枚になる（合計 52 枚）とクリアする。
 // 配り直しは最大 3 回まで行える。
 type Matrimony struct {
 	trumpCards *TrumpCards
