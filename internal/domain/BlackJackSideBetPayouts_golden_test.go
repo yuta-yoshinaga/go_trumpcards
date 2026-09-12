@@ -15,7 +15,7 @@ import (
 )
 
 // sideBetPayoutsGolden mirrors the structure of
-// frontend/src/utils/__fixtures__/blackjackSideBetPayouts.golden.json.
+// frontend/src/constants/blackjackSideBetPayouts.json.
 type sideBetPayoutsGolden struct {
 	PerfectPairs struct {
 		Mixed   int `json:"mixed"`
@@ -39,7 +39,7 @@ type sideBetPayoutsGolden struct {
 // Source of truth: internal/domain/BlackJackSideBet.go
 func TestBlackJackSideBetPayouts_GoldenValues(t *testing.T) {
 	raw, err := os.ReadFile(filepath.Join(
-		"..", "..", "frontend", "src", "utils", "__fixtures__", "blackjackSideBetPayouts.golden.json"))
+		"..", "..", "frontend", "src", "constants", "blackjackSideBetPayouts.json"))
 	require.NoError(t, err, "golden fixture must be readable")
 
 	var g sideBetPayoutsGolden

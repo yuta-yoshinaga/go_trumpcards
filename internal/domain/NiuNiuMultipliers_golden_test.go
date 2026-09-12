@@ -18,7 +18,7 @@ import (
 
 func TestNiuNiuMultipliers_GoldenVectors(t *testing.T) {
 	raw, err := os.ReadFile(filepath.Join(
-		"..", "..", "frontend", "src", "utils", "__fixtures__", "niuniuMultipliers.golden.json"))
+		"..", "..", "frontend", "src", "constants", "niuniuMultipliers.json"))
 	require.NoError(t, err)
 
 	var golden map[string]int
