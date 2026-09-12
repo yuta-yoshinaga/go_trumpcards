@@ -23,6 +23,10 @@ func setupVideoPokerCuiMockDefaults(m *interfaces.MockVideoPokerGame) {
 	m.On("GetBetAmount").Return(0).Maybe()
 	m.On("GetResult").Return(domain.GameResult(0)).Maybe()
 	m.On("GetPayout").Return(0).Maybe()
+	m.On("GetHands").Return(0).Maybe()
+	m.On("GetWins").Return(0).Maybe()
+	m.On("GetTotalBet").Return(0).Maybe()
+	m.On("GetTotalPayout").Return(0).Maybe()
 	m.On("GetHandRank").Return(0).Maybe()
 	m.On("GetHandName").Return("").Maybe()
 	m.On("GetHandKey").Return("").Maybe()
@@ -30,6 +34,44 @@ func setupVideoPokerCuiMockDefaults(m *interfaces.MockVideoPokerGame) {
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("GetVariantName").Return("videopoker").Maybe()
+}
+
+func TestVideoPokerCuiPresenter_Output_SessionStats(t *testing.T) {
+	p := new(VideoPokerCuiPresenter)
+	m := new(interfaces.MockVideoPokerGame)
+	m.On("GetChips").Return(1000)
+	m.On("GetPhase").Return(domain.VideoPokerPhaseBet)
+	m.On("GetHands").Return(4)
+	m.On("GetWins").Return(1)
+	m.On("GetTotalBet").Return(12)
+	m.On("GetTotalPayout").Return(9)
+	m.On("GetHand").Return(([]*domain.Card)(nil))
+	m.On("GetChipsRefilled").Return(false)
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetVariantName").Return("videopoker")
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "4 ハンド / 勝率 25% / 収支 -3")
+	assert.Contains(t, result, "配当表")
+}
+
+func TestVideoPokerCuiPresenter_Output_SessionStats_ZeroHands(t *testing.T) {
+	p := new(VideoPokerCuiPresenter)
+	m := new(interfaces.MockVideoPokerGame)
+	m.On("GetChips").Return(1000)
+	m.On("GetPhase").Return(domain.VideoPokerPhaseBet)
+	m.On("GetHands").Return(0)
+	m.On("GetWins").Return(0)
+	m.On("GetTotalBet").Return(0)
+	m.On("GetTotalPayout").Return(0)
+	m.On("GetHand").Return(([]*domain.Card)(nil))
+	m.On("GetChipsRefilled").Return(false)
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetVariantName").Return("videopoker")
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "0 ハンド / 勝率 0% / 収支 +0")
+	assert.NotContains(t, result, "NaN")
 }
 
 func TestVideoPokerCuiPresenter_Output_BetPhase(t *testing.T) {

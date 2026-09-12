@@ -30,6 +30,14 @@ type VideoPokerGame interface {
 	GetResult() domain.GameResult
 	// GetPayout 配当金額を取得する
 	GetPayout() int
+	// GetHands RESULT に到達したハンド数を取得する
+	GetHands() int
+	// GetWins 払戻しが発生したハンド数を取得する
+	GetWins() int
+	// GetTotalBet セッション中に賭けたコインの累計を取得する
+	GetTotalBet() int
+	// GetTotalPayout セッション中に払い戻されたコインの累計を取得する
+	GetTotalPayout() int
 	// GetHandRank ハンドランクを取得する
 	GetHandRank() int
 	// GetHandName ハンド名を取得する

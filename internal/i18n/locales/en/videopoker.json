@@ -9,6 +9,7 @@
   "phaseDraw": "DRAW",
   "phaseResult": "RESULT",
   "phaseUnknown": "UNKNOWN",
+  "statsSummary": "{{hands}} hands / win rate {{winRate}}% / net {{net}}",
   "handHeader": "--- HAND ---",
   "holdLabel": "[HOLD]",
   "betLine": "bet: {{bet}} coin(s)",

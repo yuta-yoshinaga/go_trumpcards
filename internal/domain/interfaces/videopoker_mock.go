@@ -71,6 +71,23 @@ func (m *MockVideoPokerGame) GetPayout() int {
 	return args.Int(0)
 }
 
+func (m *MockVideoPokerGame) GetHands() int { return m.optionalIntCall("GetHands") }
+
+func (m *MockVideoPokerGame) GetWins() int { return m.optionalIntCall("GetWins") }
+
+func (m *MockVideoPokerGame) GetTotalBet() int { return m.optionalIntCall("GetTotalBet") }
+
+func (m *MockVideoPokerGame) GetTotalPayout() int { return m.optionalIntCall("GetTotalPayout") }
+
+func (m *MockVideoPokerGame) optionalIntCall(method string) int {
+	for _, call := range m.ExpectedCalls {
+		if call.Method == method {
+			return m.MethodCalled(method).Int(0)
+		}
+	}
+	return 0
+}
+
 func (m *MockVideoPokerGame) GetHandRank() int {
 	args := m.Called()
 	return args.Int(0)

@@ -9,6 +9,7 @@
   "phaseDraw": "ドロー",
   "phaseResult": "リザルト",
   "phaseUnknown": "不明",
+  "statsSummary": "{{hands}} ハンド / 勝率 {{winRate}}% / 収支 {{net}}",
   "handHeader": "--- 手札 ---",
   "holdLabel": "[ホールド]",
   "betLine": "ベット: {{bet}} コイン",
