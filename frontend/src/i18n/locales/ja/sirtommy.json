@@ -32,6 +32,7 @@
   "foundationCompleteAria": "完成",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
+  "gameOverSummary": "組札 {{count}}/52 枚（{{percent}}%）まで到達",
   "playing": "プレイ中",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",

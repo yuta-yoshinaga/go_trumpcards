@@ -95,6 +95,33 @@ describe('SirTommyPage', () => {
     await waitFor(() => expect(screen.getAllByText(/ゲームオーバー/).length).toBeGreaterThan(0));
   });
 
+  it.each([
+    { name: 'zero cards', foundations: [[], [], [], []], expected: '組札 0/52 枚（0%）まで到達' },
+    {
+      name: 'six cards',
+      foundations: [
+        [card('SPADE', 1), card('SPADE', 2), card('SPADE', 3)],
+        [card('HEART', 1), card('HEART', 2)],
+        [card('CLOVER', 1)],
+        [],
+      ],
+      expected: '組札 6/52 枚（12%）まで到達',
+    },
+  ])('shows game-over foundation summary for $name', async ({ foundations, expected }) => {
+    mockExec.mockResolvedValue({ ...gameOverState, foundations });
+    renderWithProviders(<SirTommyPage />);
+    const summary = await screen.findByTestId('sirtommy-gameover-summary');
+    expect(summary).toHaveTextContent(expected);
+    expect(summary).not.toHaveTextContent('{{');
+  });
+
+  it('does not show the game-over foundation summary while playing', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<SirTommyPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('sirtommy-gameover-summary')).not.toBeInTheDocument();
+  });
+
   it('hint button triggers hint command', async () => {
     renderWithProviders(<SirTommyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
