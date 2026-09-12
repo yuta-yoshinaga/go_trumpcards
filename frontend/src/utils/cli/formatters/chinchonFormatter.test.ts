@@ -35,6 +35,7 @@ const baseState: ChinchonResponse = {
   winnerIdx: -1,
   knockerIdx: -1,
   knockerMelds: [],
+  layoffableIndices: [],
   message: '',
   messageCode: '',
   config: { cpuDifficulty: 1, playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },

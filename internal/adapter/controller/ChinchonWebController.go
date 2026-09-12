@@ -44,16 +44,17 @@ type ChinchonWebOutputPlayer struct {
 
 // ChinchonWebOutput チンチョンWebアウトプット
 type ChinchonWebOutput struct {
-	Players          []*ChinchonWebOutputPlayer `json:"players"`
-	Phase            int                        `json:"phase"`
-	RoundNumber      int                        `json:"roundNumber"`
-	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
-	DiscardTop       *WebOutputCard             `json:"discardTop"`
-	DrawPileCount    int                        `json:"drawPileCount"`
-	GameEndFlag      bool                       `json:"gameEndFlag"`
-	WinnerIdx        int                        `json:"winnerIdx"`
-	KnockerIdx       int                        `json:"knockerIdx"`
-	KnockerMelds     []*ChinchonWebOutputMeld   `json:"knockerMelds"`
+	Players           []*ChinchonWebOutputPlayer `json:"players"`
+	Phase             int                        `json:"phase"`
+	RoundNumber       int                        `json:"roundNumber"`
+	CurrentPlayerIdx  int                        `json:"currentPlayerIdx"`
+	DiscardTop        *WebOutputCard             `json:"discardTop"`
+	DrawPileCount     int                        `json:"drawPileCount"`
+	GameEndFlag       bool                       `json:"gameEndFlag"`
+	WinnerIdx         int                        `json:"winnerIdx"`
+	KnockerIdx        int                        `json:"knockerIdx"`
+	KnockerMelds      []*ChinchonWebOutputMeld   `json:"knockerMelds"`
+	LayoffableIndices []int                      `json:"layoffableIndices"`
 	WebOutputBase
 	Config ChinchonWebOutputConfig `json:"config"`
 }
@@ -92,11 +93,12 @@ var NewChinchonWebController, NewChinchonWebControllerWithProvider = webControll
 
 func newChinchonDefaultOutput(msg string) *ChinchonWebOutput {
 	return &ChinchonWebOutput{
-		Players:       make([]*ChinchonWebOutputPlayer, 0),
-		WinnerIdx:     -1,
-		KnockerIdx:    -1,
-		KnockerMelds:  make([]*ChinchonWebOutputMeld, 0),
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:           make([]*ChinchonWebOutputPlayer, 0),
+		WinnerIdx:         -1,
+		KnockerIdx:        -1,
+		KnockerMelds:      make([]*ChinchonWebOutputMeld, 0),
+		LayoffableIndices: make([]int, 0),
+		WebOutputBase:     WebOutputBase{Message: msg},
 	}
 }
 

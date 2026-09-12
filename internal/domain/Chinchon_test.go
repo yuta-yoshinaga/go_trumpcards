@@ -413,6 +413,45 @@ func TestChinchon_Layoff_Invalid(t *testing.T) {
 	assert.Error(t, g.PlayerLayoff([]int{0, 0}))
 }
 
+func TestChinchon_GetLayoffableIndices(t *testing.T) {
+	t.Run("returns indices accepted by the knocker melds", func(t *testing.T) {
+		g := newTestChinchon(2)
+		g.Reset()
+		chClearState(g)
+		g.SetKnockerMelds([][]*domain.Card{{
+			chCard(domain.CardDesignSpade, 1),
+			chCard(domain.CardDesignSpade, 2),
+			chCard(domain.CardDesignSpade, 3),
+		}})
+		chSetHand(g.GetPlayer(1), chCard(domain.CardDesignSpade, 4), chCard(domain.CardDesignHeart, 13))
+		g.SetCurrentPlayerIdx(1)
+		g.SetPhase(domain.ChinchonPhaseLayoff)
+		assert.Equal(t, []int{0}, g.GetLayoffableIndices())
+	})
+
+	t.Run("uses the current hand indices for a different hand", func(t *testing.T) {
+		g := newTestChinchon(2)
+		g.Reset()
+		chClearState(g)
+		g.SetKnockerMelds([][]*domain.Card{{
+			chCard(domain.CardDesignHeart, 5),
+			chCard(domain.CardDesignSpade, 5),
+			chCard(domain.CardDesignClover, 5),
+		}})
+		chSetHand(g.GetPlayer(1), chCard(domain.CardDesignHeart, 13), chCard(domain.CardDesignDiamond, 5))
+		g.SetCurrentPlayerIdx(1)
+		g.SetPhase(domain.ChinchonPhaseLayoff)
+		assert.Equal(t, []int{1}, g.GetLayoffableIndices())
+	})
+
+	t.Run("returns an empty slice outside layoff", func(t *testing.T) {
+		g := newTestChinchon(2)
+		g.SetPhase(domain.ChinchonPhaseDiscard)
+		assert.NotNil(t, g.GetLayoffableIndices())
+		assert.Empty(t, g.GetLayoffableIndices())
+	})
+}
+
 func TestChinchon_Elimination(t *testing.T) {
 	g := newTestChinchon(2)
 	cfg := g.GetConfig()

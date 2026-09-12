@@ -491,12 +491,16 @@ function ChinchonPageContent() {
                     aria-pressed={selectedCardIndices.includes(idx)}
                     data-testid={`chinchon-hand-card-${idx}`}
                     data-meld={isDiscardPhase ? (meldedIndices.has(idx) ? 'meld' : 'deadwood') : undefined}
+                    data-layoffable={
+                      isLayoffPhase ? (state.layoffableIndices.includes(idx) ? 'true' : 'false') : undefined
+                    }
                     className={`transition-transform ${focusRingCard}`}
                     style={{
                       background: 'none',
                       padding: 0,
                       borderRadius: 8,
                       ...(isDiscardPhase ? meldCardStyle(meldedIndices.has(idx)) : undefined),
+                      ...(isLayoffPhase && state.layoffableIndices.includes(idx) ? meldCardStyle(true) : undefined),
                       ...selectedCardStyle(selectedCardIndices.includes(idx)),
                       boxSizing: 'border-box',
                     }}
