@@ -31,10 +31,10 @@
   "gamePointsShutout": "4倍（完封・120点）",
   "pointLegendTitle": "  カード得点",
   "pointLegendAce": "  A（エース）              11点",
-  "pointLegendSeven": "  7                       10点",
+  "pointLegendSeven": "  7                        10点",
   "pointLegendKing": "  K（レイ）                 4点",
-  "pointLegendJack": "  J（バラーテ）              3点",
-  "pointLegendQueen": "  Q（ダーマ）                2点",
-  "pointLegendOthers": "  その他（2〜6）              0点",
+  "pointLegendJack": "  J（バラーテ）             3点",
+  "pointLegendQueen": "  Q（ダーマ）               2点",
+  "pointLegendOthers": "  その他（2〜6）            0点",
   "pointLegendNote": "  1ラウンドの合計は120点。61点以上を取ったチームの勝ち。"
 }
