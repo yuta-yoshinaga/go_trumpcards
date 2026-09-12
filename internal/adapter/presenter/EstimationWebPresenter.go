@@ -88,14 +88,17 @@ func (p *EstimationWebPresenter) buildMessage(e interfaces.EstimationGame, lastE
 		if e.IsHumanTrumpTurn() {
 			return "", "estimation.trump.choose", nil
 		}
-		return "", "estimation.trump.wait", nil
+		return "", "estimation.trump.wait", map[string]string{"idx": strconv.Itoa(e.GetDealerIdx())}
 	case domain.EstimationPhaseBid:
 		// **最後の宣言者だけ選べない数がある。** 案内を変えないと、押せない
 		// 宣言を出してから拒否されることになる。
-		if r := e.GetRestrictedBid(); r >= 0 && e.IsHumanBidTurn() {
-			return "", "estimation.bid.restricted", map[string]string{"n": strconv.Itoa(r)}
+		if e.IsHumanBidTurn() {
+			if r := e.GetRestrictedBid(); r >= 0 {
+				return "", "estimation.bid.restricted", map[string]string{"n": strconv.Itoa(r)}
+			}
+			return "", "estimation.bid.choose", nil
 		}
-		return "", "estimation.bid.choose", nil
+		return "", "estimation.bid.wait", map[string]string{"idx": strconv.Itoa(e.GetBidPlayerIdx())}
 	case domain.EstimationPhaseRoundEnd:
 		return "", "estimation.roundEnd", map[string]string{
 			"round": strconv.Itoa(e.GetRoundNumber()),

@@ -117,7 +117,9 @@ func (p *EstimationCuiPresenter) Output(e interfaces.EstimationGame, lastErr err
 			if e.IsHumanTrumpTurn() {
 				sb.WriteString(i18n.T("estimation.promptTrump") + "\n")
 			} else {
-				sb.WriteString(i18n.T("estimation.promptTrumpWait") + "\n")
+				dealerIdx := e.GetDealerIdx()
+				sb.WriteString(i18n.Tf("estimation.promptTrumpWait",
+					"name", cuiPlayerName(e.GetPlayer(dealerIdx), dealerIdx)) + "\n")
 			}
 			return
 		case domain.EstimationPhaseBid:

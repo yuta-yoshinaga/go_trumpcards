@@ -16,6 +16,7 @@
     "total": "{{n}} total",
     "you": "You",
     "cpu": "CPU{{idx}}",
+    "dealer": "Dealer",
     "roundDelta": "this round {{delta}}"
   },
   "bid": {

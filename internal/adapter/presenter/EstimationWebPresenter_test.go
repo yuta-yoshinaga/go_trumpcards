@@ -95,11 +95,22 @@ func TestEstimationWebPresenterTrumpMessages(t *testing.T) {
 
 	dealer := newEstimationForWeb(t)
 	dealer.SetDealerIdxForTest(0)
-	assert.Equal(t, "estimation.trump.choose", decodeEstimation(t, p.Output(dealer, nil))["messageCode"])
+	dealerM := decodeEstimation(t, p.Output(dealer, nil))
+	assert.Equal(t, "estimation.trump.choose", dealerM["messageCode"])
+	assert.Nil(t, dealerM["messageParams"])
 
 	other := newEstimationForWeb(t)
 	other.SetDealerIdxForTest(2)
-	assert.Equal(t, "estimation.trump.wait", decodeEstimation(t, p.Output(other, nil))["messageCode"])
+	otherM := decodeEstimation(t, p.Output(other, nil))
+	assert.Equal(t, "estimation.trump.wait", otherM["messageCode"])
+	assert.Equal(t, "2", otherM["messageParams"].(map[string]any)["idx"])
+
+	// 異なる席 (固定文字列でないことを検証)
+	other3 := newEstimationForWeb(t)
+	other3.SetDealerIdxForTest(3)
+	other3M := decodeEstimation(t, p.Output(other3, nil))
+	assert.Equal(t, "estimation.trump.wait", other3M["messageCode"])
+	assert.Equal(t, "3", other3M["messageParams"].(map[string]any)["idx"])
 }
 
 func TestEstimationWebPresenterBidMessage(t *testing.T) {
@@ -108,7 +119,22 @@ func TestEstimationWebPresenterBidMessage(t *testing.T) {
 	e.SetDealerIdxForTest(0)
 	require.NoError(t, e.SelectTrump(domain.CardDesignSpade))
 
-	assert.Equal(t, "estimation.bid.choose", decodeEstimation(t, p.Output(e, nil))["messageCode"])
+	// 人間の手番
+	humanM := decodeEstimation(t, p.Output(e, nil))
+	assert.Equal(t, "estimation.bid.choose", humanM["messageCode"])
+	assert.Nil(t, humanM["messageParams"])
+
+	// CPU の手番 (待ち)
+	e.SetBidPlayerIdxForTest(1)
+	cpu1M := decodeEstimation(t, p.Output(e, nil))
+	assert.Equal(t, "estimation.bid.wait", cpu1M["messageCode"])
+	assert.Equal(t, "1", cpu1M["messageParams"].(map[string]any)["idx"])
+
+	// 異なる席 (固定文字列でないことを検証)
+	e.SetBidPlayerIdxForTest(2)
+	cpu2M := decodeEstimation(t, p.Output(e, nil))
+	assert.Equal(t, "estimation.bid.wait", cpu2M["messageCode"])
+	assert.Equal(t, "2", cpu2M["messageParams"].(map[string]any)["idx"])
 }
 
 func TestEstimationWebPresenterRoundEndMessage(t *testing.T) {

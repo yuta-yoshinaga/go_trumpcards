@@ -52,13 +52,21 @@ func TestEstimationCuiPresenterTrumpPrompts(t *testing.T) {
 
 	dealer := newEstimationForCui(t)
 	dealer.SetDealerIdxForTest(0)
-	assert.Contains(t, p.Output(dealer, nil), i18n.T("estimation.promptTrump"))
+	dealerOut := estimationPlain(p.Output(dealer, nil))
+	assert.Contains(t, dealerOut, "あなたが親です。切り札スートを決めてください")
+	assert.NotContains(t, dealerOut, "親です。切り札を決めています。")
 
 	other := newEstimationForCui(t)
 	other.SetDealerIdxForTest(2)
-	out := p.Output(other, nil)
-	assert.Contains(t, out, i18n.T("estimation.promptTrumpWait"))
-	assert.NotContains(t, out, i18n.T("estimation.promptTrump"))
+	out := estimationPlain(p.Output(other, nil))
+	assert.Contains(t, out, "CPU 2 が親です。切り札を決めています。")
+	assert.NotContains(t, out, "あなたが親です。切り札スートを決めてください")
+
+	// 異なる席 (固定文字列でないことを検証)
+	other3 := newEstimationForCui(t)
+	other3.SetDealerIdxForTest(3)
+	out3 := estimationPlain(p.Output(other3, nil))
+	assert.Contains(t, out3, "CPU 3 が親です。切り札を決めています。")
 }
 
 // **最後の宣言者には禁止値を先に伝える。** 押せない宣言を出させない。

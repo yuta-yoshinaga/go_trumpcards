@@ -17,7 +17,7 @@
   "promptCurrentPlayer": "手番: {{name}}",
   "promptPlay": "play <idx>・・・カードを出す",
   "promptTrump": "あなたが親です。切り札スートを決めてください（t <1-4>）。",
-  "promptTrumpWait": "親が切り札を決めています。",
+  "promptTrumpWait": "{{name}} が親です。切り札を決めています。",
   "promptBid": "獲得予定トリック数を宣言してください（b <0-13>）。0 は Dash Call です。",
   "promptBidRestricted": "あなたが最後の宣言者です。合計が13になるため {{n}} は宣言できません。",
   "promptRoundEnd": "ラウンド終了。",

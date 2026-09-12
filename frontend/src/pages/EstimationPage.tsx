@@ -223,6 +223,14 @@ function EstimationPageContent() {
                   <span className="text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
                   </span>
+                  {p.id === state.dealerIdx && (
+                    <span
+                      className="ml-1 rounded bg-ds-accent/20 px-1 text-xs text-ds-accent"
+                      data-testid={`est-dealer-${p.id.toString()}`}
+                    >
+                      {t('header.dealer')}
+                    </span>
+                  )}
                   {': '}
                   {bidStr(p)}
                   {' / '}
