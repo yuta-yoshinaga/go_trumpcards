@@ -27,6 +27,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { ISRAELIWHIST_HELP, parseIsraeliWhistCommand } from '../utils/cli/commands/israeliwhistCommands';
 import { formatIsraeliWhistState } from '../utils/cli/formatters/israeliwhistFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Tricks per round (thirteen cards each). */
@@ -263,6 +264,14 @@ function IsraeliWhistPageContent() {
                   {t('header.took', { n: String(p.trickCount) })}
                   {' / '}
                   {t('header.total', { n: String(p.totalScore) })}
+                  {isRoundEnd && (
+                    <span
+                      className={`ml-2 ${p.roundScore < 0 ? 'text-ds-error' : 'text-ds-success'}`}
+                      data-testid={`iw-round-delta-${p.id.toString()}`}
+                    >
+                      {t('header.roundDelta', { delta: formatSignedDelta(p.roundScore) })}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

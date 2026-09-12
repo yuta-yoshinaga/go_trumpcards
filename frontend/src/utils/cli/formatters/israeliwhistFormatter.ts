@@ -1,5 +1,6 @@
 import type { IsraeliWhistPlayer, IsraeliWhistResponse } from '../../../types/card';
 import { IsraeliWhistPhase } from '../../../types/phases';
+import { formatSignedDelta } from '../../formatSignedDelta';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -63,8 +64,10 @@ export function formatIsraeliWhistState(state: IsraeliWhistResponse | null): str
   state.players.forEach((p) => {
     const marker = p.id === state.currentPlayerIdx && !state.gameEndFlag ? '>' : ' ';
     const call = p.bid < 0 ? 'no call' : `call ${p.bid}`;
+    const roundDelta =
+      state.phase === IsraeliWhistPhase.ROUND_END ? ` | this round ${formatSignedDelta(p.roundScore)}` : '';
     lines.push(
-      `${marker}${formatPlayerName(p.id, p.isHuman)}[${roleStr(p, p.id === state.declarerIdx)}]: ${call} | ${p.trickCount} tricks | ${p.totalScore} total | ${p.cardCount} cards`,
+      `${marker}${formatPlayerName(p.id, p.isHuman)}[${roleStr(p, p.id === state.declarerIdx)}]: ${call} | ${p.trickCount} tricks | ${p.totalScore} total | ${p.cardCount} cards${roundDelta}`,
     );
   });
 

@@ -509,3 +509,15 @@ func cuiRankName(value int) string {
 		return strconv.Itoa(value)
 	}
 }
+
+// cuiSignedScore は増減を符号付きで表す。**+ は自分で付ける。**
+// 0 は「動かなかった」ことを示すので ±0 と書く。
+func cuiSignedScore(n int) string {
+	if n > 0 {
+		return "+" + strconv.Itoa(n)
+	}
+	if n == 0 {
+		return "±0"
+	}
+	return strconv.Itoa(n)
+}

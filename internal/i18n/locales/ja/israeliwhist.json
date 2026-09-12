@@ -11,6 +11,7 @@
   "auctionLine": "オークション中: 最高入札 {{n}} ({{suit}})",
   "trumpLine": "切り札: {{suit}}（落札 {{n}} トリック）",
   "playerLine": "{{name}}[{{role}}]: {{bid}} 獲得{{tricks}} 累計{{total}} 手札{{cards}}枚",
+  "roundDelta": "今回: {{delta}}",
   "roleDeclarer": "落札 {{n}}",
   "rolePassed": "降り",
   "roleActive": "入札中",

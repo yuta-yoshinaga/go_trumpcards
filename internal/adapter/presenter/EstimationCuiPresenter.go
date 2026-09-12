@@ -26,25 +26,13 @@ func estimationPlayerStr(player *domain.EstimationPlayer, idx int, roundEnd bool
 	// 暗算させない** (#5751)。増減が確定するラウンド終了時にだけ出す。
 	if roundEnd {
 		b.WriteString(" " + i18n.Tf("estimation.roundDelta",
-			"delta", estimationSignedScore(player.GetRoundScore())))
+			"delta", cuiSignedScore(player.GetRoundScore())))
 	}
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
-}
-
-// estimationSignedScore は増減を符号付きで表す。**+ は自分で付ける。**
-// 0 は「動かなかった」ことを示すので ±0 と書く。
-func estimationSignedScore(n int) string {
-	if n > 0 {
-		return "+" + strconv.Itoa(n)
-	}
-	if n == 0 {
-		return "±0"
-	}
-	return strconv.Itoa(n)
 }
 
 // estimationBidStr 宣言を種類つきで短く表す

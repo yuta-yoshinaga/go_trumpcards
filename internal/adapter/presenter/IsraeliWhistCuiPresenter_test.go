@@ -114,6 +114,23 @@ func TestIsraeliWhistCuiPresenterRoundEnd(t *testing.T) {
 	assert.NotContains(t, out, i18n.T("israeliwhist.promptPlay"))
 }
 
+func TestIsraeliWhistCuiPresenterShowsSignedRoundDeltasOnlyAtRoundEnd(t *testing.T) {
+	p := new(IsraeliWhistCuiPresenter)
+	w := newIsraeliWhistForCui(t)
+	w.SetPhaseForTest(domain.IsraeliWhistPhaseRoundEnd)
+	w.GetPlayer(0).SetRoundScore(59)
+	w.GetPlayer(1).SetRoundScore(-20)
+	w.GetPlayer(2).SetRoundScore(0)
+
+	out := p.Output(w, nil)
+	assert.Contains(t, out, "今回: +59")
+	assert.Contains(t, out, "今回: -20")
+	assert.Contains(t, out, "今回: ±0")
+
+	w.SetPhaseForTest(domain.IsraeliWhistPhasePlay)
+	assert.NotContains(t, p.Output(w, nil), "今回: +59")
+}
+
 func TestIsraeliWhistCuiPresenterPlayPrompt(t *testing.T) {
 	p := new(IsraeliWhistCuiPresenter)
 	w := newIsraeliWhistForCui(t)

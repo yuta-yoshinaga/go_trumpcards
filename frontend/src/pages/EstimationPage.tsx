@@ -27,14 +27,8 @@ import { cardAlt } from '../utils/cardAlt';
 import { ESTIMATION_HELP, parseEstimationCommand } from '../utils/cli/commands/estimationCommands';
 import { formatEstimationState } from '../utils/cli/formatters/estimationFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Signed round delta: the plus sign is ours to add, and 0 reads as "no change". */
-function signedScore(n: number): string {
-  if (n > 0) return `+${n.toString()}`;
-  if (n === 0) return '±0';
-  return n.toString();
-}
 
 /** Tricks per round (thirteen cards each). */
 const TRICKS_PER_ROUND = 13;
@@ -237,7 +231,7 @@ function EstimationPageContent() {
                       className={`ml-2 ${p.roundScore < 0 ? 'text-ds-error' : 'text-ds-success'}`}
                       data-testid={`est-round-delta-${p.id.toString()}`}
                     >
-                      {t('header.roundDelta', { delta: signedScore(p.roundScore) })}
+                      {t('header.roundDelta', { delta: formatSignedDelta(p.roundScore) })}
                     </span>
                   )}
                 </div>

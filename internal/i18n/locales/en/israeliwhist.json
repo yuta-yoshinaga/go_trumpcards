@@ -11,6 +11,7 @@
   "auctionLine": "Auction under way: high bid {{n}} ({{suit}})",
   "trumpLine": "Trump: {{suit}} (won with {{n}} tricks)",
   "playerLine": "{{name}}[{{role}}]: {{bid}}, {{tricks}} tricks, {{total}} total, {{cards}} in hand",
+  "roundDelta": "this round: {{delta}}",
   "roleDeclarer": "won {{n}}",
   "rolePassed": "passed",
   "roleActive": "bidding",
