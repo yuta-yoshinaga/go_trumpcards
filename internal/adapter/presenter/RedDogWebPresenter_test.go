@@ -148,6 +148,29 @@ func TestRedDogWebPresenter_Output_EndPairLose(t *testing.T) {
 	assert.Equal(t, "reddog.result.pairLoses", r.MessageCode)
 }
 
+func TestRedDogWebPresenter_Output_EndPairPush(t *testing.T) {
+	p := new(RedDogWebPresenter)
+	m := new(interfaces.MockRedDogGame)
+	setupRedDogWebMockDefaults(m)
+	m.ExpectedCalls = nil
+	m.On("GetInitialCards").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignHeart, 5, false),
+	})
+	m.On("GetGameEndFlag").Return(true)
+	m.On("GetResult").Return(domain.GameResultDraw)
+	m.On("GetChips").Return(1000)
+	m.On("GetPhase").Return(domain.RedDogPhaseEnd)
+	m.On("GetThirdCard").Return((*domain.Card)(nil))
+	m.On("GetAnte").Return(100)
+	m.On("GetRaise").Return(0)
+	m.On("GetSpread").Return(0)
+	m.On("GetTotalPayout").Return(100)
+
+	r := parseRedDogOutput(t, p.Output(m, nil))
+	assert.Equal(t, "reddog.result.pairPush", r.MessageCode)
+}
+
 func TestRedDogWebPresenter_Output_EndNonPairKeepsResultCode(t *testing.T) {
 	p := new(RedDogWebPresenter)
 	m := new(interfaces.MockRedDogGame)
