@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bassetApi } from '../api/games/basset';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card } from '../types/common';
 import type { BassetResponse } from '../types/games/basset';
@@ -79,6 +80,32 @@ describe('BassetPage', () => {
     expect(screen.getByText('ターン: 0/25')).toBeInTheDocument();
     expect(screen.getByText('残り: 52')).toBeInTheDocument();
     expect(screen.getByText('賭けなし')).toBeInTheDocument();
+  });
+
+  it('shows the reset button and waits for confirmation before resetting', async () => {
+    renderWithProviders(<BassetPage />);
+    const reset = await screen.findByRole('button', { name: 'リセット' });
+    mockExec.mockClear();
+
+    fireEvent.click(reset);
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('reset');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows an error when a request fails after the game has loaded', async () => {
+    mockExec.mockResolvedValue(bettingState);
+    renderWithProviders(<BassetPage />);
+    await screen.findByRole('button', { name: 'リセット' });
+
+    mockExec.mockRejectedValue(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
   });
 
   it('places the selected rank and amount as a bet', async () => {

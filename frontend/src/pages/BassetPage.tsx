@@ -2,7 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { bassetApi } from '../api/games/basset';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GamePageShell } from '../components/GamePageShell';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCliGame } from '../hooks/useCliGame';
@@ -25,8 +28,8 @@ const PHASES: Record<number, string> = { 1: 'betting', 2: 'turn', 3: 'decision',
 export const BassetPage = withTutorial(BassetPageContent, 'basset', STEPS);
 
 function BassetPageContent() {
-  const { t, tc, confirmOpen, confirmReset, cancelReset } = useGamePageSetup('basset');
-  const { state, loading, exec } = useGameApi(bassetApi.exec);
+  const { t, tc, confirmOpen, requestConfirm, confirmReset, cancelReset } = useGamePageSetup('basset');
+  const { state, loading, error, exec, retry } = useGameApi(bassetApi.exec);
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('basset');
   const [rank, setRank] = useState(1);
   const [amount, setAmount] = useState(10);
@@ -138,6 +141,17 @@ function BassetPageContent() {
           </div>
         </div>
       )}
+      <GameFooter className={`${gameTheme.basset.footer} px-4 pt-3`}>
+        <ErrorAlert message={error} onRetry={retry} />
+        <div className="flex justify-center pb-2">
+          <GameResetButton
+            isGameEnd={ended}
+            onReset={() => void exec('reset')}
+            requestConfirm={requestConfirm}
+            loading={loading}
+          />
+        </div>
+      </GameFooter>
     </GamePageShell>
   );
 }
