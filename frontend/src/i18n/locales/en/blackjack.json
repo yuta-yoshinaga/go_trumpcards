@@ -123,7 +123,9 @@
     "insurance": "Insurance (2:1)",
     "push": "Push (Tie: bet returned)",
     "surrender": "Surrender (half bet returned)",
-    "bust": "Bust (over 21: lose)"
+    "bust": "Bust (over 21: lose)",
+    "perfectPairs": "Perfect Pairs (mixed {{mixed}}:1 / coloured {{colored}}:1 / perfect {{perfect}}:1)",
+    "twentyOnePlus3": "Poker-hand side bet (flush {{flush}}:1 / straight {{straight}}:1 / three of a kind {{trips}}:1 / straight flush {{straightFlush}}:1 / suited trips {{suitedTrips}}:1)"
   },
   "kbd": {
     "insurance": "I",
