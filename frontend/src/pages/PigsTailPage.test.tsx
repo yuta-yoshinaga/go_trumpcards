@@ -239,6 +239,27 @@ describe('PigsTailPage', () => {
     expect(reveal).toHaveTextContent('ペナルティ');
   });
 
+  it('renders a safe human draw without a penalty count', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      humanAction: { drawPlayerIdx: 0, drawnCard: { design: 'SPADE', value: 9 }, penaltyFlag: false, penaltyCount: 0 },
+    });
+    renderWithProviders(<PigsTailPage />);
+    const row = await screen.findByTestId('pt-human-action');
+    expect(row).toHaveTextContent('あなた: ♠9 — セーフ');
+    // A safe draw takes nothing, so no count is shown at all -- not "(+0)".
+    expect(row).not.toHaveTextContent('(+');
+  });
+
+  it('renders a human action whose card is not known', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      humanAction: { drawPlayerIdx: 0, drawnCard: null, penaltyFlag: true, penaltyCount: 4 },
+    });
+    renderWithProviders(<PigsTailPage />);
+    expect(await screen.findByTestId('pt-human-action')).toHaveTextContent('あなた: ? — ペナルティ！ (+4)');
+  });
+
   it('renders the human action with different penalty counts', async () => {
     mockExec.mockResolvedValue({
       ...baseState,
