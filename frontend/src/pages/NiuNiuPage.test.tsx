@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { niuniuApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -198,6 +198,44 @@ describe('NiuNiuPage', () => {
     const refused = screen.getAllByRole('button').filter((b) => b.hasAttribute('disabled') && b.title);
     expect(refused.length).toBeGreaterThan(0);
     expect(refused[0]?.title).toMatch(/チップ/);
+  });
+
+  it('renders the payout reference table during the betting phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1 }));
+    renderWithProviders(<NiuNiuPage />);
+
+    // 表があること
+    const tableList = await screen.findByTestId('nn-payout-ref-list');
+    expect(tableList).toBeInTheDocument();
+
+    // 表の中のテキストだけをテスト
+    // (body全体を検索すると他の場所の「牛牛」なども拾ってしまうため、withinでスコープを絞る)
+    const { getByText, queryByText } = within(tableList);
+
+    // 倍率 3 / 2 / 1 (等倍は1とは書かれないかもしれないが、「3倍」「2倍」があるか)
+    // 実際には "牛牛 ... 3倍", "牛7〜牛9 ... 2倍", "それ以外 ... 1倍" となっている。
+    expect(getByText(/3倍/)).toBeInTheDocument();
+    expect(getByText(/2倍/)).toBeInTheDocument();
+    expect(getByText(/1倍/)).toBeInTheDocument();
+
+    // 生のキーが出ていないこと
+    expect(queryByText(/niuniu/i)).not.toBeInTheDocument();
+    expect(queryByText(/rankNone/i)).not.toBeInTheDocument();
+
+    // 折り畳み本体。**既定は閉じている** —— モバイルで操作の邪魔にならないこと。
+    const details = screen.getByTestId('nn-payout-ref');
+    expect(details).toBeInTheDocument();
+    expect(details).not.toHaveAttribute('open');
+  });
+
+  // 賭け終わったあとは出さない。もう賭け金を決められないので場所を取るだけ。
+  it('hides the payout reference outside the betting phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2 }));
+    renderWithProviders(<NiuNiuPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('nn-payout-ref')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('nn-payout-ref-list')).not.toBeInTheDocument();
   });
 });
 
