@@ -122,6 +122,7 @@ function MinibridgePageContent() {
   }
 
   const human = state.players.find((p) => p.isHuman);
+  const humanIsDummy = human?.id === state.dummyIdx;
   // 味方かどうかは人間のチーム番号との一致で決まる。
   const humanTeam = human?.team;
   const isContract = state.phase === MinibridgePhase.CONTRACT;
@@ -309,7 +310,7 @@ function MinibridgePageContent() {
             <ErrorAlert message={error} onRetry={retry} />
 
             {/* **ダミーは契約が決まると公開され、デクレアラーが操作する。** */}
-            {state.dummyHand.length > 0 && (
+            {state.dummyHand.length > 0 && !humanIsDummy && (
               <div className="mt-4" data-testid="mb-dummy">
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.dummyHand')}
@@ -338,6 +339,7 @@ function MinibridgePageContent() {
               <div className="mt-4" data-tutorial="mb-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
+                  {humanIsDummy && <span className="ml-2 text-ds-accent">{t('header.cpuOperatedDummy')}</span>}
                   {isHumanTurn && !isHumanDummyTurn && (
                     <span className="ml-2 text-ds-accent">{t('header.yourTurn')}</span>
                   )}
