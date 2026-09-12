@@ -10,7 +10,7 @@
   "trumpSuit": "Trump: {{suit}}",
   "dealer": "Dealer: {{name}}",
   "bidPending": "no bid",
-  "playerLine": "{{name}}: declared={{bid}} won {{tricks}} tricks, cum {{cum}}pt deal {{round}}pt {{cards}} cards",
+  "playerLine": "{{name}}: declared={{bid}} won {{tricks}} tricks, cum {{cum}}pt deal {{round}}pt {{cards}} cards buried {{buried}}",
   "gameEnd": "Game over! {{name}} wins!",
   "promptBid": "Bid phase — {{name}} to act",
   "promptBidHelp": "b <i> <j> <k> — bury 3 cards (suit sum ♦=0/♠=1/♥=2/♣=3 = declared tricks)",
