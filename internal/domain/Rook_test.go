@@ -302,6 +302,9 @@ func TestRookScoreRoundMadeAndSet(t *testing.T) {
 	g.GetPlayer(0).SetPoints(90) // team 0
 	g.GetPlayer(1).SetPoints(70) // team 1
 	g.ScoreRound()
+	if result := g.GetRoundResult(); result == nil || !result.Made || result.DeclarerTeam != 0 || result.TeamPoints != 90 || result.ContractBid != 80 || result.ScoreDelta != 90 {
+		t.Fatalf("made result = %+v", result)
+	}
 	if g.GetTeamScore(0) != 90 {
 		t.Errorf("made: team0 = %d, want 90", g.GetTeamScore(0))
 	}
@@ -317,6 +320,9 @@ func TestRookScoreRoundMadeAndSet(t *testing.T) {
 	g2.GetPlayer(1).SetPoints(60) // team 1 captured only 60 < 100
 	g2.GetPlayer(0).SetPoints(120)
 	g2.ScoreRound()
+	if result := g2.GetRoundResult(); result == nil || result.Made || result.DeclarerTeam != 1 || result.TeamPoints != 60 || result.ContractBid != 100 || result.ScoreDelta != -100 {
+		t.Fatalf("set result = %+v", result)
+	}
 	if g2.GetTeamScore(1) != -100 {
 		t.Errorf("set: team1 = %d, want -100", g2.GetTeamScore(1))
 	}

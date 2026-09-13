@@ -30,6 +30,7 @@
   "promptPlayHelpMeldExtra": "me <a,b,c>: lay an extra meld (after contract met)",
   "promptPlayHelpLayoff": "lo <pIdx> <mIdx> <cIdx>: add a card to an existing meld",
   "promptPlayHelpDiscard": "d <idx>: discard a card",
+  "jokerRule": "Each joker left in hand at round end costs {{points}} points.",
   "promptRoundEnd": "Round complete",
   "roundEndedBy": "{{name}} went out and ended the round.",
   "promptRoundEndHelp": "nr / nextround: advance to next round",

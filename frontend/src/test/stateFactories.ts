@@ -4379,7 +4379,8 @@ const baseSambaState: SambaResponse = {
   winnerIdx: -1,
   message: '',
   messageCode: 'samba.drawPhase',
-  config: { cpuDifficulty: 1, pointLimit: 10000 },
+  config: { cpuDifficulty: 1, pointLimit: 10000, goOutRequiredMelds: 2 },
+  completedMelds: [0, 0],
 };
 
 /**

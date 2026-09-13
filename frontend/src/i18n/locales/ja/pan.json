@@ -68,5 +68,6 @@
     "scoreTable": "各プレイヤーのチップとスコアが表示されます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "valleBadge": "★バジェ"
+  "valleBadge": "★バジェ",
+  "chipUnits": "チップ{{count}}ユニット"
 }

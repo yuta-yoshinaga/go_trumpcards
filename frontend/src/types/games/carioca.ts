@@ -34,6 +34,7 @@ export interface CariocaConfig {
   playerCount: number;
   cpuDifficulty: number;
   failContractPenalty: number;
+  jokerPenalty: number;
 }
 
 /** Carioca API response. */

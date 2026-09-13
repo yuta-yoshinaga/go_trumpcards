@@ -74,7 +74,7 @@ const drawState: CariocaResponse = {
     { kind: 0, size: 3 },
     { kind: 0, size: 3 },
   ],
-  config: { playerCount: 3, cpuDifficulty: 1, failContractPenalty: 25 },
+  config: { playerCount: 3, cpuDifficulty: 1, failContractPenalty: 25, jokerPenalty: 25 },
   message: '',
 };
 
@@ -126,6 +126,12 @@ describe('CariocaPage', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /Submit contract|コントラクトを場に出す/ })).toBeInTheDocument(),
     );
+  });
+
+  it('explains the joker penalty using the configured value', async () => {
+    renderWithProviders(<CariocaPage />);
+    const help = await screen.findByTestId('ca-joker-penalty-help');
+    expect(help).toHaveTextContent('25点');
   });
 
   it('shows next-round button at round end', async () => {

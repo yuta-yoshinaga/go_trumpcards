@@ -197,6 +197,37 @@ func TestSambaPlayer_CompletedCounts(t *testing.T) {
 	assert.True(t, p.HasSamba())
 }
 
+func TestSamba_GetTeamCompletedMeldCount_MatchesGoOutRequirement(t *testing.T) {
+	tests := []struct {
+		name         string
+		melds        int
+		wantCanGoOut bool
+	}{
+		{name: "zero", melds: 0, wantCanGoOut: false},
+		{name: "one", melds: 1, wantCanGoOut: false},
+		{name: "two", melds: 2, wantCanGoOut: true},
+		{name: "more than two", melds: 3, wantCanGoOut: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := newTestSamba()
+			for i := 0; i < tt.melds; i++ {
+				g.GetPlayer(i % 2 * 2).AddMeld(sambaSevenSet(5 + i))
+			}
+			assert.Equal(t, tt.melds, g.GetTeamCompletedMeldCount(0))
+
+			setupSambaDiscardPhase(g, 0)
+			err := g.PlayerGoOut()
+			if tt.wantCanGoOut {
+				assert.NoError(t, err)
+			} else {
+				assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+			}
+		})
+	}
+}
+
 // --- Phase guards ---
 
 func TestSamba_DrawFromStock_Guards(t *testing.T) {

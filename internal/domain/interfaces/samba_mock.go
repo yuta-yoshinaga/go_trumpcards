@@ -57,6 +57,11 @@ func (m *MockSambaGame) GetTeamScore(team int) int {
 	return m.Called(team).Int(0)
 }
 
+// GetTeamCompletedMeldCount モック
+func (m *MockSambaGame) GetTeamCompletedMeldCount(team int) int {
+	return m.Called(team).Int(0)
+}
+
 // GetMinimumMeldValue モック
 func (m *MockSambaGame) GetMinimumMeldValue(playerIdx int) int {
 	return m.Called(playerIdx).Int(0)

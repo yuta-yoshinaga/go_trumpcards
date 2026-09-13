@@ -39,6 +39,15 @@ export interface RookHint {
   reason: string;
 }
 
+/** Authoritative scoring result produced by Rook's ScoreRound. */
+export interface RookRoundResult {
+  declarerTeam: number;
+  teamPoints: number;
+  contractBid: number;
+  made: boolean;
+  scoreDelta: number;
+}
+
 /** Full Rook game state returned from the API. */
 export interface RookResponse extends BaseGameResponse {
   players: RookPlayerData[];
@@ -71,6 +80,7 @@ export interface RookResponse extends BaseGameResponse {
   winnerTeam: number;
   config: RookConfig;
   hint?: RookHint;
+  roundResult?: RookRoundResult;
 }
 
 // --- Bid Whist (ビッド・ホイスト) ---

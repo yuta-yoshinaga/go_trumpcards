@@ -15,6 +15,14 @@ import (
 // RookCuiPresenter renders the Rook (ルーク) CUI view.
 type RookCuiPresenter struct{}
 
+func rookScoreDeltaStr(delta int) string {
+	result := strconv.Itoa(delta)
+	if delta > 0 {
+		return "+" + result
+	}
+	return result
+}
+
 // rookCuiHintReasonKeys maps Rook-specific hint reasons to i18n keys.
 var rookCuiHintReasonKeys = map[string]string{
 	"pass_recommended": "rook.hintReasonPass",
@@ -127,6 +135,17 @@ func (p *RookCuiPresenter) Output(g interfaces.RookGame, lastErr error) string {
 		)
 
 		cuiErrorBlock(b, lastErr)
+		// **ラウンド終了の画面でだけ出す。** `GetRoundResult()` は次のラウンドが
+		// 始まっても直前の結果を持ち続けるので、フェーズを見ないと play 中の盤に
+		// 「契約達成」が貼りついたままになる。
+		if result := g.GetRoundResult(); result != nil &&
+			(g.GetPhase() == domain.RookPhaseRoundEnd || g.GetGameEndFlag()) {
+			status := i18n.T("rook.contractFailed")
+			if result.Made {
+				status = i18n.T("rook.contractMade")
+			}
+			b.WriteString(i18n.Tf("rook.roundResult", "team", strconv.Itoa(result.DeclarerTeam), "points", strconv.Itoa(result.TeamPoints), "bid", strconv.Itoa(result.ContractBid), "status", status, "delta", rookScoreDeltaStr(result.ScoreDelta)) + "\n")
+		}
 
 		if g.GetGameEndFlag() {
 			banner := i18n.Tf("rook.gameEnd", "team", strconv.Itoa(g.GetWinnerTeam()))

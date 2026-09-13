@@ -152,6 +152,14 @@ func (p *SambaCuiPresenter) Output(g interfaces.SambaGame, lastErr error) string
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("samba.promptDiscardHelp") + "\n")
 			b.WriteString(i18n.T("samba.promptGoOutHelp") + "\n")
+			completed := 0
+			team := g.GetPlayer(currentIdx).GetTeam()
+			for i := 0; i < g.GetPlayerCnt(); i++ {
+				if player := g.GetPlayer(i); player.GetTeam() == team {
+					completed += player.CompletedMeldCount()
+				}
+			}
+			b.WriteString(i18n.Tf("samba.goOutProgress", "completed", strconv.Itoa(completed), "required", strconv.Itoa(domain.SambaGoOutRequiredMelds)) + "\n")
 		case domain.SambaPhaseRoundEnd:
 			b.WriteString(i18n.T("samba.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("samba.promptRoundEndHelp") + "\n")
