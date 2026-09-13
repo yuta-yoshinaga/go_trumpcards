@@ -9,6 +9,7 @@
   "trumpLine": "Trump: {{suit}} (declared by {{name}})",
   "trumpUndecided": "Trump: undeclared (the 5-target seat chooses from its first {{seen}} cards)",
   "exchangeLine": "{{n}} cards moved for last round's shortfall.",
+  "trickWinner": "Last trick won by {{name}}",
   "playerLine": "{{name}}{{role}}: target {{target}}, took {{took}}, met {{met}}, {{cards}} in hand",
   "roleFive": "[declares trump / target 5]",
   "promptTrump": "Declare trump -- you can see only {{seen}} of your cards.",

@@ -58551,6 +58551,16 @@ components:
       type: object
       description: Response payload for /teendopaanch/exec
       properties:
+        lastTrick:
+          type: array
+          description: >-
+            The trick just resolved, kept until the next trick starts so the
+            winning card can be marked. Empty at other times.
+          items:
+            $ref: '#/components/schemas/TeenDoPaanchTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Seat that took the trick just resolved, or -1 before the first one
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."

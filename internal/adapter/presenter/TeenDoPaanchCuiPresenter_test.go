@@ -35,6 +35,25 @@ func TestTeenDoPaanchCuiPresenterOutput(t *testing.T) {
 		domain.TeenDoPaanchPlayerCnt, "全員の席行にノルマと獲得数が出る")
 }
 
+func TestTeenDoPaanchCuiPresenterReportsLastTrickWinner(t *testing.T) {
+	p := new(TeenDoPaanchCuiPresenter)
+	g := newTeenDoPaanchForCui(t)
+	g.SetPhaseForTest(domain.TeenDoPaanchPhasePlay)
+	g.SetTrumpSuitForTest(domain.CardDesignDiamond)
+	g.SetCurrentTrickForTest([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 8, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 13, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},
+	})
+	g.ResolveTrickForTest()
+
+	assert.Contains(t, p.Output(g, nil), "CPU 1")
+
+	g.SetCurrentTrickForTest([]*domain.TrickCard{{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 8, false)}})
+	assert.NotContains(t, p.Output(g, nil), fixedPart("teendopaanch.trickWinner"),
+		"進行中のトリックでは前の勝者を表示しない")
+}
+
 // 切り札は未宣言と確定の両側を踏む。
 func TestTeenDoPaanchCuiPresenterTrumpLine(t *testing.T) {
 	p := new(TeenDoPaanchCuiPresenter)

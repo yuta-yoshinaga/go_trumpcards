@@ -53,6 +53,9 @@ func (g *TeenDoPaanch) FinishGameForTest() { g.finishGame() }
 // TrickWinnerForTest はトリックの勝者を返す
 func (g *TeenDoPaanch) TrickWinnerForTest() int { return g.trickWinner() }
 
+// ResolveTrickForTest は現在のトリックを解決する。
+func (g *TeenDoPaanch) ResolveTrickForTest() { g.resolveTrick() }
+
 // teenDoPaanchHandOf は playerIdx の手札を cards ちょうどに置き換える。
 //
 // **配りの上に積んではいけない。** 残った札が混ざると配り依存で落ちる。

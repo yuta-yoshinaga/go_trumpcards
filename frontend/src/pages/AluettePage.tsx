@@ -235,6 +235,7 @@ function AluettePageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
                   dataTutorial="aluette-trick-display"
                 />
               </div>

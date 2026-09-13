@@ -41,9 +41,11 @@ func (p *TeenDoPaanchWebPresenter) buildBase(g interfaces.TeenDoPaanchGame) *con
 	}
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()
 	resObj.LeadPlayerIdx = g.GetLeadPlayerIdx()
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.ValidPlays = intSliceOrEmpty(g.GetValidPlayIndices(0))
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerIdx = g.GetWinnerIdx()
+	resObj.LastTrick = trickCardsToOutput(g.GetLastTrick())
 	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(g)
 	resObj.Config = controller.TeenDoPaanchWebOutputConfig{Rounds: g.GetConfig().Rounds}
