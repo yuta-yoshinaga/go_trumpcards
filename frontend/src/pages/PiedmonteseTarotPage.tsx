@@ -93,6 +93,13 @@ function formatSigned(n: number): string {
   return n > 0 ? `+${n}` : String(n);
 }
 
+/** Formats thirds as whole points with an optional one-third remainder. */
+function formatThirds(thirds: number): string {
+  const whole = Math.floor(thirds / 3);
+  const remainder = thirds % 3;
+  return remainder === 0 ? String(whole) : `${whole} ${remainder}/3`;
+}
+
 /**
  * Renders the Tarocco Piemontese page: the Piedmontese 78-card tarot for three
  * or four players, with the dealer burying the talon and trump-priority tricks.
@@ -350,11 +357,27 @@ function PiedmonteseTarotPageContent() {
                       </div>
                       {state.players.map((p, i) => (
                         <div key={p.id}>
-                          {t('roundResult.earnedLine', {
-                            name: playerName(p.id, p.isHuman),
-                            points: p.cardPoints,
-                            scaled: formatSigned(state.dealScores[i] ?? 0),
-                          })}
+                          <div>
+                            {t('roundResult.earnedLine', {
+                              name: playerName(p.id, p.isHuman),
+                              points: p.cardPoints,
+                              scaled: formatSigned(state.dealScores[i] ?? 0),
+                            })}
+                          </div>
+                          <div>
+                            {t('roundResult.trickPoints', {
+                              name: playerName(p.id, p.isHuman),
+                              points: formatThirds(p.cardThirds - p.scartoThirds),
+                            })}
+                          </div>
+                          {p.scartoThirds > 0 && (
+                            <div>
+                              {t('roundResult.scartoPoints', {
+                                name: playerName(p.id, p.isHuman),
+                                points: formatThirds(p.scartoThirds),
+                              })}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

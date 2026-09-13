@@ -169,6 +169,11 @@ func TestPiedmonteseTarot_EveryCardIsAccountedForAfterADeal(t *testing.T) {
 				total += v
 			}
 			assert.Equal(t, PiedmonteseTarotTotalThirds, total, "%d 人卓で札の取り分が合わない", seats)
+			// **スカルト分はディーラーの取り分の一部。** 上の恒等式で書くと
+			// 何を入れても通るので、独立に読める 2 つの上界で挟む。
+			assert.LessOrEqual(t, g.GetScartoThirds(), g.CapturedThirds()[g.GetDealerIdx()],
+				"%d 人卓でスカルト分が親の取り分を超えている", seats)
+			assert.GreaterOrEqual(t, g.GetScartoThirds(), 0, "%d 人卓でスカルト分が負", seats)
 
 			sum := 0
 			for _, v := range g.GetDealScores() {
@@ -177,6 +182,25 @@ func TestPiedmonteseTarot_EveryCardIsAccountedForAfterADeal(t *testing.T) {
 			assert.Zero(t, sum, "%d 人卓のディール精算が釣り合っていない", seats)
 		}
 	}
+}
+
+func TestPiedmonteseTarot_ScartoBreakdownAlsoSumsWithoutScarto(t *testing.T) {
+	g := newPiedmonteseTarotForTest(t, 4)
+	piedmonteseTarotPlayHand(t, g)
+	dealer := g.GetDealerIdx()
+	scarto := append([]*Card(nil), g.scarto...)
+	assert.NotEmpty(t, scarto)
+	assert.Positive(t, g.GetScartoThirds())
+	for _, c := range scarto {
+		g.players[dealer].AddTrick([]*Card{c})
+	}
+	g.scarto = nil
+	total := 0
+	for _, thirds := range g.CapturedThirds() {
+		total += thirds
+	}
+	assert.Equal(t, PiedmonteseTarotTotalThirds, total)
+	assert.Zero(t, g.GetScartoThirds())
 }
 
 // **Matto は取られない。** 出した本人の獲得札に残り、トリックは他の札で決まる。

@@ -28,6 +28,7 @@
   "roundEndTotal": "Card points on the table: {{total}} (of 78)",
   "roundEndFormulaLine": "change = seats x your card points - table total (zero sum)",
   "roundEndEarned": "{{name}}: took {{points}} -> change {{scaled}}",
+  "roundEndScarto": "{{name}}: scarto {{points}}",
   "promptRoundEndHelp": "nr / nextround ... next deal",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",

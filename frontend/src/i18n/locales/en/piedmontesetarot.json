@@ -49,6 +49,8 @@
     "playerLine": "{{name}}: {{delta}} (total {{score}})",
     "total": "Card points on the table: {{total}} (of 78)",
     "earnedLine": "{{name}}: took {{points}} -> change {{scaled}}",
+    "trickPoints": "{{name}}: tricks {{points}}",
+    "scartoPoints": "{{name}}: scarto {{points}}",
     "formula": "change = seats ({{n}}) x your card points - table total"
   },
   "hintAvailable": "Hint",

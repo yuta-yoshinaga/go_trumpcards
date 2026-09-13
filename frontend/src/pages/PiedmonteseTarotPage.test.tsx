@@ -49,6 +49,7 @@ const shortOnPipsState = makePiedmonteseTarotState({
       ],
       trickCount: 0,
       cardThirds: 0,
+      scartoThirds: 0,
       cardPoints: '0',
       score: 0,
       isDealer: true,
@@ -82,6 +83,7 @@ const scartoState = makePiedmonteseTarotState({
       ],
       trickCount: 0,
       cardThirds: 0,
+      scartoThirds: 0,
       cardPoints: '0',
       score: 0,
       isDealer: true,
@@ -109,6 +111,7 @@ const roundEndState = makePiedmonteseTarotState({
   players: makePiedmonteseTarotState().players.map((p, i) => ({
     ...p,
     cardThirds: i === 0 ? 90 : 48,
+    scartoThirds: i === 0 ? 6 : 0,
     cardPoints: i === 0 ? '30' : '16',
     score: i === 0 ? 12 : -4,
   })),
@@ -202,6 +205,8 @@ describe('PiedmonteseTarotPage', () => {
     const breakdown = screen.getByTestId('piedmontesetarot-breakdown');
     expect(breakdown).toHaveTextContent('78');
     expect(breakdown).toHaveTextContent('+12');
+    expect(breakdown).toHaveTextContent('トリック 28点');
+    expect(breakdown).toHaveTextContent('スカルト 2点');
     expect(screen.getByTestId('piedmontesetarot-formula')).toHaveTextContent('4');
   });
 

@@ -28,6 +28,7 @@
   "roundEndTotal": "卓のカード点合計: {{total}}点 (78 点)",
   "roundEndFormulaLine": "変動 = 席数 × 自分のカード点 − 卓の合計 (ゼロサム)",
   "roundEndEarned": "{{name}}: 獲得 {{points}}点 → 変動 {{scaled}}",
+  "roundEndScarto": "{{name}}: スカルト {{points}}点",
   "promptRoundEndHelp": "nr / nextround ... 次のディールへ",
   "hintNone": "ヒントはありません。",
   "hintCard": "[ヒント: {{cards}} ({{reason}})]",
