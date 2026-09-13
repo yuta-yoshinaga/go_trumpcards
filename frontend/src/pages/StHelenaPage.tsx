@@ -268,6 +268,9 @@ function StHelenaPageContent() {
     stHelenaColumnCanReach(selectedSource.col, idx, state.restrictionsActive);
   const targetRingClass = (valid: boolean, active: boolean) =>
     valid && !active ? 'ring-2 ring-ds-success rounded' : '';
+  const isHintFoundationTarget = (idx: number) => hint?.toZone === 'foundation' && hint.toCol === idx;
+  const isHintTableauTarget = (colIdx: number) => hint?.toZone === 'tableau' && hint.toCol === colIdx;
+  const isHintSource = (colIdx: number) => hint?.fromCol === colIdx;
 
   // The legal-destination rings are colour only, so a screen-reader user cannot
   // tell whether a selection leads anywhere. Count the same predicates the rings
@@ -348,7 +351,10 @@ function StHelenaPageContent() {
                             onDragOver={dnd.handleDragOver(foundationZone)}
                             onDrop={dnd.handleDrop(foundationZone)}
                             onDragLeave={dnd.handleDragLeave}
-                            className={targetRingClass(isFoundationTarget(idx), dnd.isDropTarget(foundationZone))}
+                            className={targetRingClass(
+                              isFoundationTarget(idx) || isHintFoundationTarget(idx),
+                              dnd.isDropTarget(foundationZone),
+                            )}
                           >
                             {pile.length > 0 ? (
                               <button
@@ -420,7 +426,7 @@ function StHelenaPageContent() {
                             onDragOver={dnd.handleDragOver(tableauColZone)}
                             onDrop={dnd.handleDrop(tableauColZone)}
                             onDragLeave={dnd.handleDragLeave}
-                            className={`relative block ${targetRingClass(isTableauTarget(colIdx), dnd.isDropTarget(tableauColZone))}`}
+                            className={`relative block ${targetRingClass(isTableauTarget(colIdx) || isHintTableauTarget(colIdx), dnd.isDropTarget(tableauColZone))}`}
                           >
                             <div className="relative" style={{ minHeight: tableauDim.ch }}>
                               {col.length === 0 ? (
@@ -456,7 +462,7 @@ function StHelenaPageContent() {
                                           draggable={isPlaying && !loading && isTop}
                                           onDragStart={isTop ? dnd.handleDragStart(tableauColZone) : undefined}
                                           onDragEnd={dnd.handleDragEnd}
-                                          className={`p-0 border-0 bg-transparent w-full rounded ${isTop ? 'cursor-pointer' : 'cursor-default'} ${focusRingWhite} ${isTop && isSourceSelected('tableau', colIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(tableauColZone) && isTop ? 'opacity-50' : ''} ${isTop && selectedCard !== null && !isTableauTarget(colIdx) && !isSourceSelected('tableau', colIdx) ? 'opacity-40' : ''}`}
+                                          className={`p-0 border-0 bg-transparent w-full rounded ${isTop ? 'cursor-pointer' : 'cursor-default'} ${focusRingWhite} ${isTop && isSourceSelected('tableau', colIdx) ? 'ring-2 ring-ds-warning' : isTop && isHintSource(colIdx) ? 'ring-2 ring-ds-info motion-safe:animate-pulse' : ''} ${dnd.isDragSource(tableauColZone) && isTop ? 'opacity-50' : ''} ${isTop && selectedCard !== null && !isTableauTarget(colIdx) && !isSourceSelected('tableau', colIdx) ? 'opacity-40' : ''}`}
                                         >
                                           <AnimatedCard
                                             card={tc.card}
@@ -551,7 +557,7 @@ function StHelenaPageContent() {
                   <div data-tutorial="sthelena-redeal">
                     <button
                       type="button"
-                      className={btnPrimary}
+                      className={`${btnPrimary} ${hint?.redeal ? targetRingClass(true, false) : ''}`}
                       onClick={handleRedeal}
                       disabled={loading || isAutoCompleting || state.redealsRemaining === 0}
                       title={state.redealsRemaining === 0 ? t('redealUnavailable') : undefined}

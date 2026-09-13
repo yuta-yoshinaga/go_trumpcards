@@ -199,6 +199,63 @@ describe('StHelenaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
+  it('marks hint source and legal destination, and keeps unrelated zones unmarked', async () => {
+    const hintedState = {
+      ...playingState,
+      tableau: sideTableau(
+        [{ card: card('SPADE', 4), faceUp: true }],
+        [{ card: card('SPADE', 5), faceUp: true }],
+        [{ card: card('HEART', 6), faceUp: true }],
+      ),
+      foundation: [[card('SPADE', 3)], ...playingState.foundation.slice(1)],
+    };
+    mockExec.mockImplementation((cmd: string) =>
+      Promise.resolve(
+        cmd === 'hint'
+          ? { ...hintedState, hint: { fromCol: SIDE_A, toZone: 'tableau', toCol: SIDE_B, redeal: false } }
+          : hintedState,
+      ),
+    );
+    renderWithProviders(<StHelenaPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
+
+    const sourceButton = await screen.findByRole('button', { name: '♠ 4' });
+    expect(sourceButton.className).toContain('ring-ds-info');
+    expect(screen.getByAltText('♠ 5').closest('[class*="ring-ds-success"]')).not.toBeNull();
+    expect(screen.getByAltText('♥ 6').closest('[class*="ring-ds-success"]')).toBeNull();
+  });
+
+  it('marks the redeal button for a redeal hint', async () => {
+    mockExec.mockImplementation((cmd: string) =>
+      Promise.resolve(
+        cmd === 'hint'
+          ? { ...playingState, hint: { fromCol: 0, toZone: 'redeal', toCol: -1, redeal: true } }
+          : playingState,
+      ),
+    );
+    renderWithProviders(<StHelenaPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
+    const redeal = await screen.findByRole('button', { name: /再配り \(3\)/ });
+    expect(redeal.className).toContain('ring-2');
+    expect(redeal.className).toContain('ring-ds-success');
+  });
+
+  it('lets the selected-source ring win over a simultaneous hint-source ring', async () => {
+    mockExec.mockImplementation((cmd: string) =>
+      Promise.resolve(
+        cmd === 'hint'
+          ? { ...playingState, hint: { fromCol: SIDE_A, toZone: 'tableau', toCol: SIDE_B, redeal: false } }
+          : playingState,
+      ),
+    );
+    renderWithProviders(<StHelenaPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
+    const source = await screen.findByRole('button', { name: '♠ 4' });
+    fireEvent.click(source);
+    await waitFor(() => expect(source.className).toContain('ring-ds-warning'));
+    expect(source.className).not.toContain('ring-ds-info');
+  });
+
   it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<StHelenaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
