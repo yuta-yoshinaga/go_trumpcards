@@ -922,8 +922,34 @@ func TestOmahaWebPresenter_Equity(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, out.Equity)
 		assert.Greater(t, out.Equity.WinProbability, 0.0)
+		assert.Equal(t, 0.0, out.Equity.LowProbability)
 		assert.NotEmpty(t, out.Equity.HandOdds)
 		assert.NotNil(t, out.PotOdds)
+	})
+
+	t.Run("equity populated with LowProbability for Hi-Lo during active phase", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.OmahaPlayer{
+			domain.NewOmahaPlayer(true, domain.HoldemStyleTAG),
+			domain.NewOmahaPlayer(false, domain.HoldemStyleLAP),
+			domain.NewOmahaPlayer(false, domain.HoldemStyleTAP),
+			domain.NewOmahaPlayer(false, domain.HoldemStyleGTO),
+		}
+		h := domain.NewOmahaHiLo(tc, players, domain.DefaultOmahaConfig())
+		h.SetPhase(domain.OmahaPhasePreFlop)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.NotNil(t, out.Equity)
+		assert.Greater(t, out.Equity.WinProbability, 0.0)
+		assert.Greater(t, out.Equity.LowProbability, 0.0)
+		assert.NotEmpty(t, out.Equity.HandOdds)
 	})
 
 	t.Run("equity nil during showdown", func(t *testing.T) {

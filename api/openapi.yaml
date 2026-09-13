@@ -43287,6 +43287,14 @@ components:
           minimum: 0
           maximum: 1
           example: 0.75
+        lowProbability:
+          type: number
+          format: double
+          description: |
+            Hi-Lo only: the share of the low half this hand expects to take.
+            Absent for high-only games, where winProbability is the whole pot.
+          minimum: 0
+          maximum: 1
         handOdds:
           type: array
           items:

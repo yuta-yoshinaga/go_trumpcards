@@ -1583,6 +1583,41 @@ describe('OmahaHiLoPage', () => {
       fireEvent.click(screen.getByLabelText('ラーニングモード'));
       expect(screen.queryByTestId('equity-display')).not.toBeInTheDocument();
     });
+
+    it('shows low share percentage when learning mode is on and lowProbability exists', async () => {
+      const stateWithLowEquity: OmahaResponse = {
+        ...preFlopState,
+        equity: {
+          winProbability: 0.75,
+          lowProbability: 0.42,
+          handOdds: [
+            { handRank: 0, handName: 'High Card', probability: 0.1 },
+            { handRank: 1, handName: 'One Pair', probability: 0.9 },
+          ],
+        },
+        potOdds: 33.3,
+      };
+      mockExec.mockResolvedValue(stateWithLowEquity);
+      renderWithProviders(<OmahaHiLoPage />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.getByTestId('equity-display')).toBeInTheDocument();
+      const lowDisplay = screen.getByTestId('low-probability');
+      expect(lowDisplay).toBeInTheDocument();
+      expect(lowDisplay).toHaveTextContent('ローの取り分: 42%');
+    });
+
+    it('does not show low share when equity has no lowProbability', async () => {
+      mockExec.mockResolvedValue(stateWithEquity);
+      renderWithProviders(<OmahaHiLoPage />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.getByTestId('equity-display')).toBeInTheDocument();
+      expect(screen.queryByTestId('low-probability')).not.toBeInTheDocument();
+      expect(screen.queryByText(/ローの取り分/)).not.toBeInTheDocument();
+    });
   });
 
   it('renders tutorial button', async () => {

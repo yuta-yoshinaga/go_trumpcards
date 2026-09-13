@@ -60,6 +60,7 @@
     "title": "Learning Mode",
     "toggle": "Learning Mode",
     "equity": "Equity",
+    "lowEquity": "Low share",
     "potOdds": "Pot Odds",
     "plusEV": "+EV (Positive Expected Value)",
     "minusEV": "-EV (Negative Expected Value)",

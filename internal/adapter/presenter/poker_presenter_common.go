@@ -113,6 +113,7 @@ func buildCommunityCardBaseOutput(g communityCardPresenterGame) *controller.Hold
 		}
 		resObj.Equity = &controller.HoldemWebOutputEquity{
 			WinProbability: eq.Equity,
+			LowProbability: eq.LowProbability,
 			HandOdds:       handOdds,
 		}
 		potOdds := g.GetPotOdds()

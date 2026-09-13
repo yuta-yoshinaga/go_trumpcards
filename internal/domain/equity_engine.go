@@ -48,15 +48,15 @@ func calcEquityCore(humanCards, communityCards []*Card, activePlayers, simulatio
 	remainingCommunity := 5 - len(communityCards)
 	neededCards := remainingCommunity + activePlayers*cfg.holeCardsPerOpponent
 
-	totalWins, totalHandCounts := runParallelSimulations(simulations, rng,
-		func(sims int, localRng *rand.Rand) (float64, []int) {
+	totalWins, _, totalHandCounts := runParallelSimulations(simulations, rng,
+		func(sims int, localRng *rand.Rand) (float64, float64, []int) {
 			wins := 0.0
 			handCounts := make([]int, len(cfg.handNames))
 			shufflePool := make([]*Card, len(pool))
 			simCommunity := make([]*Card, 0, 5)
 
 			if neededCards > len(shufflePool) {
-				return wins, handCounts
+				return wins, 0, handCounts
 			}
 
 			for i := 0; i < sims; i++ {
@@ -91,7 +91,7 @@ func calcEquityCore(humanCards, communityCards []*Card, activePlayers, simulatio
 					wins++
 				}
 			}
-			return wins, handCounts
+			return wins, 0, handCounts
 		})
 
 	return buildEquityResultFromNames(totalWins, totalHandCounts, simulations, cfg.handNames)
