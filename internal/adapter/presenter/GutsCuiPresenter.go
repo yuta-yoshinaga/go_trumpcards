@@ -105,6 +105,7 @@ func (p *GutsCuiPresenter) Output(g interfaces.GutsGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("guts.helpTitle"), func(b *strings.Builder) {
 		b.WriteString(i18n.Tf("guts.roundLine",
 			"round", strconv.Itoa(g.GetRoundNumber()),
+			"total", strconv.Itoa(g.GetTargetRounds()),
 			"pot", strconv.Itoa(g.GetPot()),
 			"ante", strconv.Itoa(g.GetAnte()),
 		) + "\n")

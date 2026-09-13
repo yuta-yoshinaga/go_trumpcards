@@ -433,3 +433,21 @@ func TestPrimero_UnmarshalDefaults(t *testing.T) {
 	assert.Equal(t, 3, g.GetPlayerCnt())
 	assert.NotNil(t, g.GetActionLog())
 }
+
+// TestPrimero_GetTargetRounds は getter が設定値をそのまま返すことを固定する。
+// 画面 (Web の情報行と CUI の roundLine) はここからマッチの長さを読むので、
+// 既定値を返すだけの実装だと「設定したのに表示が変わらない」になる。
+func TestPrimero_GetTargetRounds(t *testing.T) {
+	g := domain.NewDefaultPrimero()
+	assert.Equal(t, g.GetConfig().TargetRounds, g.GetTargetRounds(), "既定では設定値と一致する")
+
+	// 既定と違う値に変えて追従することを見る。1 値だけだと定数を返す実装でも通る。
+	cfg := g.GetConfig()
+	cfg.TargetRounds = domain.PrimeroMinTargetRounds
+	g.SetConfig(cfg)
+	assert.Equal(t, domain.PrimeroMinTargetRounds, g.GetTargetRounds())
+
+	cfg.TargetRounds = domain.PrimeroMaxTargetRounds
+	g.SetConfig(cfg)
+	assert.Equal(t, domain.PrimeroMaxTargetRounds, g.GetTargetRounds())
+}

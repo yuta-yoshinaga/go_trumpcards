@@ -25,6 +25,8 @@ type GutsGame interface {
 	GetGameEndFlag() bool
 	// GetRoundNumber 現在のラウンド番号を取得する
 	GetRoundNumber() int
+	// GetTargetRounds ゲーム終了までのラウンド数を取得する
+	GetTargetRounds() int
 	// GetPot 現在のポットを取得する
 	GetPot() int
 	// GetCarryPot 次ラウンドへの持ち越し種銭を取得する

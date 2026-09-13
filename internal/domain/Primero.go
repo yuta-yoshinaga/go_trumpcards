@@ -705,6 +705,9 @@ func (g *Primero) GetGameEndFlag() bool { return g.state.gameEndFlag }
 // GetRoundNumber は現在のラウンド番号を返す。
 func (g *Primero) GetRoundNumber() int { return g.state.roundNumber }
 
+// GetTargetRounds はゲーム終了までのラウンド数を返す。
+func (g *Primero) GetTargetRounds() int { return g.config.TargetRounds }
+
 // GetDealerIdx はディーラーの座席番号を返す。
 func (g *Primero) GetDealerIdx() int { return g.state.dealerIdx }
 

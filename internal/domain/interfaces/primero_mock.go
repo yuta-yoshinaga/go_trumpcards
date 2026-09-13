@@ -64,6 +64,12 @@ func (_m *MockPrimeroGame) GetRoundNumber() int {
 	return ret.Get(0).(int)
 }
 
+// GetTargetRounds モック
+func (_m *MockPrimeroGame) GetTargetRounds() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetDealerIdx モック
 func (_m *MockPrimeroGame) GetDealerIdx() int {
 	ret := _m.Called()

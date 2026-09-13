@@ -706,6 +706,9 @@ func (g *Bouillotte) GetGameEndFlag() bool { return g.state.gameEndFlag }
 // GetRoundNumber は現在のラウンド番号を返す。
 func (g *Bouillotte) GetRoundNumber() int { return g.state.roundNumber }
 
+// GetTargetRounds はゲーム終了までのラウンド数を返す。
+func (g *Bouillotte) GetTargetRounds() int { return g.config.TargetRounds }
+
 // GetDealerIdx はディーラーの座席番号を返す。
 func (g *Bouillotte) GetDealerIdx() int { return g.state.dealerIdx }
 

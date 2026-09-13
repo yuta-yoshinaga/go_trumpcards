@@ -33,6 +33,8 @@ type AnacondaGame interface {
 	GetGameEndFlag() bool
 	// GetRoundNumber 現在のラウンド番号を取得する
 	GetRoundNumber() int
+	// GetTargetRounds ゲーム終了までのラウンド数を取得する
+	GetTargetRounds() int
 	// GetDealerIdx ディーラーの座席番号を取得する
 	GetDealerIdx() int
 	// GetCurrentPlayerIdx 現在の手番プレイヤーの座席番号を取得する

@@ -13,7 +13,7 @@
   },
   "you": "You",
   "cpu": "CPU {{id}}",
-  "round": "Round {{n}}",
+  "round": "Round {{n}} / {{total}}",
   "pot": "Pot: {{amount}}",
   "ante": "Ante: {{amount}}",
   "chips": "Chips: {{amount}}",

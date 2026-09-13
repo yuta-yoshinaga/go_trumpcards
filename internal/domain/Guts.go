@@ -523,6 +523,9 @@ func (g *Guts) GetGameEndFlag() bool { return g.state.gameEndFlag }
 // GetRoundNumber は現在のラウンド番号を返す。
 func (g *Guts) GetRoundNumber() int { return g.state.roundNumber }
 
+// GetTargetRounds はゲーム終了までのラウンド数を返す。
+func (g *Guts) GetTargetRounds() int { return g.config.TargetRounds }
+
 // GetPot は現在のポットを返す。
 func (g *Guts) GetPot() int { return g.state.pot }
 
