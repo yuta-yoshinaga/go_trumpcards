@@ -646,6 +646,12 @@ func (p *Poch) cpuPochen(idx int) PochCpuAction {
 	}
 	combo := PochBestCombo(hand)
 	behind := p.betTarget - pl.GetBet()
+	if p.config.CpuDifficulty == PochCpuDifficultyEasy && combo.Size < 3 && behind > 0 {
+		return PochCpuAction{Type: "fold", HandIdx: -1}
+	}
+	if p.config.CpuDifficulty == PochCpuDifficultyHard && combo.Size >= 2 {
+		return PochCpuAction{Type: "bet", HandIdx: -1}
+	}
 	switch {
 	case combo.Size >= 3:
 		return PochCpuAction{Type: "bet", HandIdx: -1}
@@ -666,12 +672,17 @@ func (p *Poch) cpuPlayIdx(idx int) int {
 		return -1
 	}
 	best, bestRank := -1, 1<<30
+	if p.config.CpuDifficulty == PochCpuDifficultyEasy {
+		bestRank = -1
+	}
 	for i := range pl.GetCardsSize() {
 		c := pl.GetCard(i)
 		if !p.playable(c) {
 			continue
 		}
-		if r := pochRankOrder(c.GetValue()); r < bestRank {
+		r := pochRankOrder(c.GetValue())
+		if (p.config.CpuDifficulty == PochCpuDifficultyEasy && r > bestRank) ||
+			(p.config.CpuDifficulty != PochCpuDifficultyEasy && r < bestRank) {
 			best, bestRank = i, r
 		}
 	}

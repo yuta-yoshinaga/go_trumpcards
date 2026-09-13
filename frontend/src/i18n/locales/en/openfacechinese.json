@@ -54,5 +54,10 @@
   "pendingAnnounce": "To place: {{card}}",
   "hintRequested": "Hint available",
   "noHint": "No hint available",
-  "foulRiskWarning": "Careful: placing it in the {{rows}} row fouls the hand (the row order breaks)"
+  "foulRiskWarning": "Careful: placing it in the {{rows}} row fouls the hand (the row order breaks)",
+  "settings.cpuDifficulty": "CPU difficulty",
+  "settings.playerCount": "Players",
+  "settings.difficulty.easy": "Easy",
+  "settings.difficulty.normal": "Normal",
+  "settings.difficulty.hard": "Hard"
 }

@@ -104,6 +104,17 @@ describe('OpenFaceChinesePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('sends the selected difficulty and player count when resetting settings', async () => {
+    renderWithProviders(<OpenFaceChinesePage />);
+    await screen.findByTestId('player-0');
+    mockExec.mockClear();
+
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2, playerCount: 2 } }),
+    );
+  });
+
   it('shows the round number and the player boards', async () => {
     renderWithProviders(<OpenFaceChinesePage />);
     await waitFor(() => expect(screen.getByTestId('player-0')).toBeInTheDocument());
