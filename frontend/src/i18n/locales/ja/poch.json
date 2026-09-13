@@ -45,5 +45,9 @@
   "tutorial.stops": "ストップスでは同じスートの次に高い札を順に出します。誰も次を持っていなければ止まり、最後に最高札を出した人が好きな札から始め直します",
   "awardLineYou": "あなたが {{pool}} を獲得（{{chips}}）",
   "pochenResultYou": "あなたが pochen を制しました（{{pot}}）",
-  "dealResultYou": "あなたが出し切りました"
+  "dealResultYou": "あなたが出し切りました",
+  "settings.cpuDifficulty": "CPU難易度",
+  "settings.difficulty.easy": "やさしい",
+  "settings.difficulty.normal": "ふつう",
+  "settings.difficulty.hard": "むずかしい"
 }

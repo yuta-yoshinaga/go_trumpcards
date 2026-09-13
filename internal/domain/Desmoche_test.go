@@ -649,6 +649,53 @@ func TestDesmocheCpuDecideEmptyHand(t *testing.T) {
 	}
 }
 
+func TestDesmocheCpuHardPrioritizesMeldAndLayoff(t *testing.T) {
+	setup := func(difficulty DesmocheCpuDifficulty) (*Desmoche, DesmocheCpuAction) {
+		g := NewDefaultDesmoche()
+		g.SetConfig(DesmocheConfig{CpuDifficulty: difficulty})
+		setDesmocheHand(g, 1, desmocheCards(
+			[2]int{CardDesignSpade, 7}, [2]int{CardDesignHeart, 7},
+			[2]int{CardDesignClover, 7}, [2]int{CardDesignDiamond, 7},
+		))
+		startDesmocheAct(g, 1)
+		return g, g.DesmocheCpuDecide(1)
+	}
+
+	_, easy := setup(DesmocheCpuDifficultyEasy)
+	_, hard := setup(DesmocheCpuDifficultyHard)
+	// Hard keeps the stronger four-card meld, while Easy stops at the first meld it finds.
+	if len(easy.MeldIdxs) != 3 || !equalInts(easy.MeldIdxs, []int{0, 1, 2}) {
+		t.Fatalf("Easy should choose the first three-card meld, got %+v", easy)
+	}
+	if len(hard.MeldIdxs) != 4 || !equalInts(hard.MeldIdxs, []int{0, 1, 2, 3}) {
+		t.Fatalf("Hard should prefer the four-card meld, got %+v", hard)
+	}
+
+	g := NewDefaultDesmoche()
+	g.SetConfig(DesmocheConfig{CpuDifficulty: DesmocheCpuDifficultyHard})
+	setDesmocheHand(g, 1, desmocheCards([2]int{CardDesignSpade, 8}))
+	g.melds = []*DesmocheMeld{{Owner: 0, Kind: DesmocheMeldRun, Cards: desmocheCards(
+		[2]int{CardDesignSpade, 5}, [2]int{CardDesignSpade, 6}, [2]int{CardDesignSpade, 7},
+	)}}
+	startDesmocheAct(g, 1)
+	action := g.DesmocheCpuDecide(1)
+	if !action.LayOff || action.LayOffHandIdx != 0 || action.LayOffMeldIdx != 0 {
+		t.Fatalf("Hard should choose the valid layoff, got %+v", action)
+	}
+}
+
+func equalInts(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
 // TestDesmocheCpuDrivesRoundsToAnEnd は、CPU だけで回してもラウンドが必ず
 // 終わることを確かめる。
 func TestDesmocheCpuDrivesRoundsToAnEnd(t *testing.T) {
@@ -723,6 +770,14 @@ func TestDesmocheConfigValidate(t *testing.T) {
 	g.SetConfig(DesmocheConfig{CpuDifficulty: DesmocheCpuDifficultyNormal})
 	if g.GetConfig().CpuDifficulty != DesmocheCpuDifficultyNormal {
 		t.Error("SetConfig/GetConfig disagree")
+	}
+}
+
+func TestDesmocheConfigAcceptsAllDifficulties(t *testing.T) {
+	for difficulty := DesmocheCpuDifficultyEasy; difficulty <= DesmocheCpuDifficultyHard; difficulty++ {
+		if err := (DesmocheConfig{CpuDifficulty: difficulty}).Validate(); err != nil {
+			t.Fatalf("difficulty %d: %v", difficulty, err)
+		}
 	}
 }
 

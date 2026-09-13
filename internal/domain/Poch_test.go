@@ -664,6 +664,37 @@ func TestPochConfigValidate(t *testing.T) {
 	}
 }
 
+func TestPochConfigAcceptsAllDifficulties(t *testing.T) {
+	for difficulty := PochCpuDifficultyEasy; difficulty <= PochCpuDifficultyHard; difficulty++ {
+		if err := (PochConfig{CpuDifficulty: difficulty, TargetDeals: 5}).Validate(); err != nil {
+			t.Fatalf("difficulty %d: %v", difficulty, err)
+		}
+	}
+}
+
+func TestPochCpuDifficultyChangesTheChosenPlay(t *testing.T) {
+	setup := func(difficulty PochCpuDifficulty) PochCpuAction {
+		p := pcReady(t, PochPhaseStops, 0)
+		p.SetConfig(PochConfig{CpuDifficulty: difficulty, TargetDeals: 5})
+		setPcHand(p, 0, []*Card{
+			pcCard(CardDesignSpade, 3),
+			pcCard(CardDesignHeart, 13),
+		})
+		p.SetStopsForTest(-1, 0)
+		return p.PochCpuDecide(0)
+	}
+
+	easy := setup(PochCpuDifficultyEasy)
+	hard := setup(PochCpuDifficultyHard)
+	// Hard preserves the high card by playing the low card first; Easy does the reverse.
+	if easy.Type != "play" || easy.HandIdx != 1 {
+		t.Fatalf("Easy should play the high card at index 1, got %+v", easy)
+	}
+	if hard.Type != "play" || hard.HandIdx != 0 {
+		t.Fatalf("Hard should play the low card at index 0, got %+v", hard)
+	}
+}
+
 func TestPochAccessorBounds(t *testing.T) {
 	p := NewDefaultPoch()
 	p.Reset()
