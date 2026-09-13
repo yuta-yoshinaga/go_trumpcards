@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ristikontraApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -14,6 +15,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -134,6 +136,31 @@ function RistikontraPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
+
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const isHumanTurnForKbd = state?.phase === 'play' && state?.currentTurn === 0 && !state?.gameEndFlag;
+  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+  const toggleSelect = useCallback((idx: number) => {
+    setSelectedIdx((prev) => (prev === idx ? null : idx));
+  }, []);
+  const clearSelect = useCallback(() => setSelectedIdx(null), []);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset selection when the turn or phase changes.
+  useEffect(() => {
+    setSelectedIdx(null);
+  }, [state?.currentTurn, state?.phase]);
+  const confirmPlay = useCallback(() => {
+    if (selectedIdx !== null) {
+      void exec('play', { handIndex: selectedIdx });
+      clearSelect();
+    }
+  }, [clearSelect, exec, selectedIdx]);
+  useCardKeyboardNav({
+    cardCount: humanCardCountForKbd,
+    onToggle: toggleSelect,
+    onConfirm: confirmPlay,
+    onClear: clearSelect,
+    enabled: !!isHumanTurnForKbd && !loading,
+  });
 
   // Celebrate a **counter** the instant it lands. Ristikontra's highlight is the
   // steal — laying the rank that just captured takes the whole bundle away — and
@@ -346,7 +373,8 @@ function RistikontraPageContent() {
                     disabled={!isHumanTurn || loading}
                     className={`rounded transition-all ${
                       isHumanTurn ? 'cursor-pointer hover:opacity-90 hover:-translate-y-1' : 'cursor-default'
-                    } ${captureRing(c)}`}
+                    } ${captureRing(c)} ${selectedIdx === i ? 'ring-2 ring-ds-warning' : ''}`}
+                    aria-pressed={selectedIdx === i}
                     data-testid={`hand-card-${i}`}
                     aria-label={
                       captureRing(c)
@@ -390,6 +418,7 @@ function RistikontraPageContent() {
                 dataTutorial="ristikontra-reset-button"
               />
             </div>
+            <CardNavShortcutsPanel data-testid="ristikontra-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

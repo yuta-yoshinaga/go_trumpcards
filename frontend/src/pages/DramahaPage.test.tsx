@@ -1690,6 +1690,35 @@ describe('DramahaPage draw round', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, { indices: [] }));
   });
 
+  it('uses number keys and Enter for draw, without firing betting actions', async () => {
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<DramahaPage />);
+    await screen.findByTestId('draw-controls');
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    expect(screen.getByTestId('dramaha-draw-selected')).toHaveTextContent('1');
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, { indices: [0] }));
+    expect(mockExec).not.toHaveBeenCalledWith('bet', expect.anything(), expect.anything(), expect.anything());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, { indices: [] }));
+  });
+
+  it('disables draw keyboard actions when the draw turn belongs to a CPU', async () => {
+    mockExec.mockResolvedValue({ ...drawState, currentTurn: 1 });
+    renderWithProviders(<DramahaPage />);
+    const card = await screen.findByTestId('dramaha-hole-card-0');
+    expect(card).toBeDisabled();
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    fireEvent.keyDown(document, { key: 'Enter' });
+    expect(card).not.toHaveAttribute('aria-pressed');
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   it('stands pat with an empty list even after cards were ticked and unticked', async () => {
     mockExec.mockResolvedValue(drawState);
     renderWithProviders(<DramahaPage />);
