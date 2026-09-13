@@ -30,6 +30,12 @@ func (_m *MockZhengGame) IsHumanTurn() bool {
 	return ret.Bool(0)
 }
 
+// HasPlayableResponse モック
+func (_m *MockZhengGame) HasPlayableResponse() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
 // PlayerPlay モック
 func (_m *MockZhengGame) PlayerPlay(indices []int) error {
 	ret := _m.Called(indices)

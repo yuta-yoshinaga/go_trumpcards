@@ -33,6 +33,9 @@ func (_m *MockZhengInteractor) GetConfig() domain.ZhengConfig {
 	return _m.Called().Get(0).(domain.ZhengConfig)
 }
 
+// Hint モック
+func (_m *MockZhengInteractor) Hint() string { return _m.Called().String(0) }
+
 // ActionLog モック
 func (_m *MockZhengInteractor) ActionLog() string {
 	return _m.Called().String(0)

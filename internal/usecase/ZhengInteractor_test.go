@@ -32,6 +32,14 @@ func TestNewZhengInteractor_NilGuards(t *testing.T) {
 	})
 }
 
+func TestZhengInteractor_Hint(t *testing.T) {
+	pMock := new(presenter.MockZhengPresenter)
+	gameMock := new(interfaces.MockZhengGame)
+	pMock.On("HintOutput", gameMock).Return("hint")
+	zi := usecase.NewZhengInteractor(gameMock, pMock)
+	assert.Equal(t, "hint", zi.Hint())
+}
+
 func TestZhengInteractor_Reset(t *testing.T) {
 	mockOutput := `{"players":[]}`
 	pMock := new(presenter.MockZhengPresenter)

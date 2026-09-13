@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -32,6 +33,24 @@ func zhengPlayerStr(player *domain.ZhengPlayer, i int) string {
 
 // ZhengCuiPresenter renders the Zheng Shangyou CUI view.
 type ZhengCuiPresenter struct{}
+
+// HintOutput emits a hint based on the domain's legal-play predicate.
+func (p *ZhengCuiPresenter) HintOutput(zg interfaces.ZhengGame) string {
+	if zg.GetGameEndFlag() {
+		return color.Yellow(i18n.T("zheng.hintGameEnd")) + "\n"
+	}
+	if !zg.IsHumanTurn() {
+		return color.Yellow(i18n.T("zheng.hintNotYourTurn")) + "\n"
+	}
+	if len(zg.GetTableCards()) == 0 {
+		return color.Yellow(i18n.T("zheng.hintPlayLow")) + "\n"
+	}
+	key := "zheng.hintShouldPass"
+	if zg.HasPlayableResponse() {
+		key = "zheng.hintCanPlay"
+	}
+	return color.Yellow(i18n.T(key)) + "\n"
+}
 
 // Output renders the current game state for the active locale.
 func (p *ZhengCuiPresenter) Output(zg interfaces.ZhengGame, lastErr error) string {

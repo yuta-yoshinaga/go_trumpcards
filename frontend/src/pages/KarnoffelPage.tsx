@@ -294,7 +294,12 @@ function KarnoffelPageContent() {
                 {humanCards.map((c, i) => {
                   // The ladder text names the titled cards, but which card in hand
                   // holds a title depends on the suit chosen this deal (#4773).
-                  const rankKey = karnoffelRankKey(c, state.chosenSuit);
+                  const rankKey =
+                    karnoffelRankKey(c, state.chosenSuit) === 'devil'
+                      ? state.trick.length === 0
+                        ? 'devilLead'
+                        : 'devilFollow'
+                      : karnoffelRankKey(c, state.chosenSuit);
                   return (
                     <button
                       key={`hand-${c.design}-${c.value}-${i}`}

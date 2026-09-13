@@ -128,6 +128,27 @@ func TestBidEuchreCuiPresenter_SaysTheLeftBowerIsATrump(t *testing.T) {
 	assert.Contains(t, out, "出せる札: 0")
 }
 
+func TestBidEuchreCuiPresenter_ShowsNoTrumpLowNoteDuringPlay(t *testing.T) {
+	o := defaultBidEuchreOpts()
+	o.trump = domain.BidEuchreTrumpNoLow
+	out := new(presenter.BidEuchreCuiPresenter).Output(setupBidEuchreCuiMock(o), nil)
+
+	assert.Contains(t, out, "【NTローは序列が逆転し9が最強】になります")
+}
+
+func TestBidEuchreCuiPresenter_DoesNotShowNoTrumpLowNoteForOtherTrumps(t *testing.T) {
+	for _, trump := range []domain.BidEuchreTrump{
+		domain.BidEuchreTrumpSpade,
+		domain.BidEuchreTrumpNoHigh,
+	} {
+		o := defaultBidEuchreOpts()
+		o.trump = trump
+		out := new(presenter.BidEuchreCuiPresenter).Output(setupBidEuchreCuiMock(o), nil)
+
+		assert.NotContains(t, out, "【NTローは序列が逆転し9が最強】になります", "trump=%v", trump)
+	}
+}
+
 func TestBidEuchreCuiPresenter_ShowsTheContractOnlyOnceBid(t *testing.T) {
 	withBid := new(presenter.BidEuchreCuiPresenter).Output(setupBidEuchreCuiMock(defaultBidEuchreOpts()), nil)
 	assert.Contains(t, withBid, "契約:")

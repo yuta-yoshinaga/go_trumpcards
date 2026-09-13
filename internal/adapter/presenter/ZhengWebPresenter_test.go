@@ -120,6 +120,13 @@ func TestZhengWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestZhengWebPresenter_HintOutputMatchesOutput(t *testing.T) {
+	p := new(presenter.ZhengWebPresenter)
+	m, _ := setupZhengWebMock()
+
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+}
+
 func TestZhengWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.ZhengWebPresenter)
 	m := new(interfaces.MockZhengGame)

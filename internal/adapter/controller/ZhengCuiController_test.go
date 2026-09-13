@@ -22,6 +22,7 @@ func TestZhengCuiController_Exec(t *testing.T) {
 		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
 		m.On("Play", mock.Anything).Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
+		m.On("Hint").Return(mockOutput)
 		return m
 	}
 
@@ -77,6 +78,14 @@ func TestZhengCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, c.Exec("log"))
 		assert.Equal(t, mockOutput, c.Exec("l"))
 		m.AssertCalled(t, "ActionLog")
+	})
+
+	t.Run("hint", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewZhengCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("h"))
+		assert.Equal(t, mockOutput, c.Exec("hint"))
+		m.AssertNumberOfCalls(t, "Hint", 2)
 	})
 
 	t.Run("unknown command", func(t *testing.T) {
