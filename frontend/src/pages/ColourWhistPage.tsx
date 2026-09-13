@@ -13,6 +13,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
+import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -34,6 +35,7 @@ import { COLOURWHIST_CLI_HELP, parseColourWhistCommand } from '../utils/cli/comm
 import { formatColourWhistState } from '../utils/cli/formatters/colourwhistFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { colourWhistHasPartner } from '../utils/colourWhistPartner';
+import { findPlayerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const CW_TUTORIAL_STEPS: TutorialStep[] = [
@@ -241,6 +243,26 @@ function ColourWhistPageContent() {
                   ))}
                 </div>
               </div>
+            )}
+
+            {state.lastTrick.length > 0 && (
+              <details className="mb-4 p-2 rounded bg-black/30" data-testid="colourwhist-previous-trick">
+                <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                  {t('previousTrick')}
+                </summary>
+                <TrickDisplay
+                  currentTrick={state.lastTrick}
+                  players={state.players}
+                  cardWidth={Math.round(cardWidth * 0.7)}
+                  label={t('previousTrickWinner', {
+                    name: findPlayerName(state.players, state.lastTrickWinner),
+                  })}
+                  winnerIdx={state.lastTrickWinner}
+                  winnerLabel={t('previousTrickWinner', {
+                    name: findPlayerName(state.players, state.lastTrickWinner),
+                  })}
+                />
+              </details>
             )}
 
             <div className="flex justify-center gap-4 flex-wrap mb-4" data-testid="colourwhist-seats">

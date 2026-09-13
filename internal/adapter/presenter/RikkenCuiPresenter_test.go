@@ -111,6 +111,32 @@ func TestRikkenCuiPresenter_ShowsTheTrickAndScores(t *testing.T) {
 	assert.Contains(t, out, "得点:")
 }
 
+func TestRikkenCuiPresenter_ShowsThePreviousTrick(t *testing.T) {
+	t.Run("displays previous trick and winner when available", func(t *testing.T) {
+		m := new(interfaces.MockRikkenGame)
+		m.On("GetLastTrick").Return([]*domain.TrickCard{
+			{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignClover, 11, false)},
+		})
+		m.On("GetLastTrickWinner").Return(3)
+		fillRikkenDefaults(m)
+
+		out := new(RikkenCuiPresenter).Output(m, nil)
+		assert.Contains(t, out, "前のトリック")
+		assert.Contains(t, out, "席 3:")
+		assert.Contains(t, out, "→ 席 3 が獲得")
+	})
+
+	t.Run("does not display anything when last trick is empty", func(t *testing.T) {
+		m := new(interfaces.MockRikkenGame)
+		m.On("GetLastTrick").Return([]*domain.TrickCard{})
+		fillRikkenDefaults(m)
+
+		out := new(RikkenCuiPresenter).Output(m, nil)
+		assert.NotContains(t, out, "前のトリック")
+		assert.NotContains(t, out, "が獲得")
+	})
+}
+
 func TestRikkenCuiPresenter_Result(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)

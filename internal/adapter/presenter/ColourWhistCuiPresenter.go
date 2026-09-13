@@ -41,6 +41,7 @@ func (cp *ColourWhistCuiPresenter) Output(c interfaces.ColourWhistGame, lastErr 
 		}
 		cp.writeScores(sb, c)
 		cp.writeTrick(sb, c)
+		cp.writeLastTrick(sb, c)
 		cp.writeHand(sb, c)
 		cuiErrorBlock(sb, lastErr)
 
@@ -78,6 +79,23 @@ func (cp *ColourWhistCuiPresenter) writeTrick(sb *strings.Builder, c interfaces.
 	for _, tc := range trick {
 		sb.WriteString(i18n.Tf("colourwhist.trickCardLine",
 			"seat", strconv.Itoa(tc.PlayerIdx), "card", cuiCardStr(tc.Card)) + "\n")
+	}
+}
+
+// writeLastTrick は直前のトリックを書き出す。
+func (cp *ColourWhistCuiPresenter) writeLastTrick(sb *strings.Builder, c interfaces.ColourWhistGame) {
+	trick := c.GetLastTrick()
+	if len(trick) == 0 {
+		return
+	}
+	sb.WriteString("----------\n")
+	sb.WriteString(i18n.T("colourwhist.previousTrick") + "\n")
+	for _, tc := range trick {
+		sb.WriteString(i18n.Tf("colourwhist.trickCardLine",
+			"seat", strconv.Itoa(tc.PlayerIdx), "card", cuiCardStr(tc.Card)) + "\n")
+	}
+	if winner := c.GetLastTrickWinner(); winner >= 0 {
+		sb.WriteString(i18n.Tf("colourwhist.previousTrickWinner", "name", strconv.Itoa(winner)) + "\n")
 	}
 }
 

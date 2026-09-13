@@ -3,6 +3,8 @@
   "bidGuide": "いまより強い契約を宣言するか、降りてください",
   "callGuide": "切り札を決めてください",
   "playGuide": "出せる札だけが選べます",
+  "previousTrick": "前のトリック",
+  "previousTrickWinner": "→ {{name}} が獲得",
   "troelNotice": "エース3枚のため競り抜きで契約が決まりました",
   "label": {
     "you": "あなた",

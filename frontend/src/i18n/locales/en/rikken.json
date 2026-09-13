@@ -3,6 +3,8 @@
   "bidGuide": "Bid a stronger contract, or drop out",
   "callGuide": "Choose the trump suit",
   "playGuide": "Only legal cards can be chosen",
+  "previousTrick": "Previous trick",
+  "previousTrickWinner": "-> Taken by {{name}}",
   "label": {
     "you": "You",
     "seat": "Seat",
