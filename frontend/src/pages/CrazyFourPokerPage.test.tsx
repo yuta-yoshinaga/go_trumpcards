@@ -263,6 +263,44 @@ describe('CrazyFourPokerPage', () => {
     expect(result).not.toHaveTextContent('Queens Up:');
   });
 
+  it('ペアの最低ランク未満はサイドベットを当たり表示しない', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: CrazyFourPokerPhase.RESULT,
+        anteBet: 50,
+        superBet: 50,
+        queensUpBet: 50,
+        playBet: 50,
+        playerBest: [five, five, ace, king],
+        playerHandRank: 2,
+        result: CRAZY_FOUR_POKER_RESULT.win,
+        payout: 50,
+      }),
+    );
+    renderWithProviders(<CrazyFourPokerPage />);
+    const result = await screen.findByTestId('c4p-result');
+    expect(result).toHaveTextContent('Super Bonus（ワンペア）: 0');
+    expect(result).toHaveTextContent('Queens Up: -50');
+  });
+
+  it('クイーンのペアは Queens Up の当たり表示になる', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: CrazyFourPokerPhase.RESULT,
+        anteBet: 50,
+        superBet: 50,
+        queensUpBet: 50,
+        playBet: 50,
+        playerBest: [{ ...ace, value: 12 }, { ...ace, value: 12 }, ace, king],
+        playerHandRank: 2,
+        result: CRAZY_FOUR_POKER_RESULT.win,
+        payout: 50,
+      }),
+    );
+    renderWithProviders(<CrazyFourPokerPage />);
+    expect(await screen.findByTestId('c4p-result')).toHaveTextContent('Queens Up: 50');
+  });
+
   it('ディーラー不成立を表示する', async () => {
     mockApi.mockResolvedValue(
       withState({

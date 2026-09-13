@@ -114,15 +114,15 @@ func ramsRoundSettlement(r interfaces.RamsGame) []*controller.RamsWebRoundSettle
 		}
 	}
 	currentRoundEntries := entries[start:]
-	if latestAction(currentRoundEntries, "penalty") == nil && latestAction(currentRoundEntries, "payout") == nil {
-		return settlement
-	}
 	byPlayer := make(map[int]*controller.RamsWebRoundSettlement)
 	for _, entry := range currentRoundEntries {
 		if entry == nil {
 			continue
 		}
 		if entry.PlayerIdx < 0 {
+			continue
+		}
+		if entry.ActionType != "penalty" && entry.ActionType != "payout" {
 			continue
 		}
 		item := byPlayer[entry.PlayerIdx]

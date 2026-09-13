@@ -34,6 +34,42 @@ import { formatCrazyFourPokerState } from '../utils/cli/formatters/crazyfourpoke
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+/** `FourCardHandPair` (four_card_hand_eval.go:11). */
+const FOUR_CARD_HAND_PAIR = 2;
+/** `CrazyFourPokerSuperBonusMinPair` (CrazyFourPokerConfig.go:164) — aces only. */
+const SUPER_BONUS_MIN_PAIR = 1;
+/** `CrazyFourPokerQueensUpMinPair` (CrazyFourPokerConfig.go:144) — queens or better. */
+const QUEENS_UP_MIN_PAIR = 12;
+
+/**
+ * Whether the player's hand clears the pair minimum a side bet requires.
+ *
+ * domain_rule_quoted:
+ * 	func crazyFourPokerPairAtLeast(best []*Card, minPair int) bool {
+ * 		if len(best) == 0 { return false }
+ * 		rank := evalFourCardHand(best)
+ * 		if rank > FourCardHandPair { return true }
+ * 		if rank != FourCardHandPair { return false }
+ * 		pv := fourCardPairSortedValues(best)
+ * 		...
+ * 	}
+ *
+ * edge_cases:
+ * - Anything above a pair clears every minimum outright.
+ * - Aces count high, so an ace pair is 14 rather than 1 on both sides of the
+ *   comparison — which is why the Super Bonus minimum of 1 means "aces only"
+ *   and not "any pair".
+ */
+function crazyFourPokerPairAtLeast(best: CrazyFourPokerResponse['playerBest'], handRank: number, minPair: number) {
+  if (handRank > FOUR_CARD_HAND_PAIR) return true;
+  if (handRank !== FOUR_CARD_HAND_PAIR) return false;
+  const counts = new Map<number, number>();
+  for (const card of best) counts.set(card.value, (counts.get(card.value) ?? 0) + 1);
+  const pair = [...counts.entries()].find(([, count]) => count >= 2)?.[0];
+  if (pair === undefined) return false;
+  return (pair === 1 ? 14 : pair) >= (minPair === 1 ? 14 : minPair);
+}
+
 const C4P_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="c4p-bet"]', messageKey: 'tutorial.bet', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="c4p-hand"]', messageKey: 'tutorial.hand', placement: 'bottom', advanceOn: 'next' },
@@ -123,6 +159,8 @@ function CrazyFourPokerPageContent() {
   const superBonus = state.superBonusPayouts?.find(
     (row) =>
       row.hand === state.playerHandRank &&
+      (row.hand !== FOUR_CARD_HAND_PAIR ||
+        crazyFourPokerPairAtLeast(state.playerBest, state.playerHandRank, SUPER_BONUS_MIN_PAIR)) &&
       (fourAces
         ? row.name.includes('エース') || row.name.includes('Ace')
         : !row.name.includes('エース') && !row.name.includes('Ace')),
@@ -137,7 +175,12 @@ function CrazyFourPokerPageContent() {
             state.result === CRAZY_FOUR_POKER_RESULT.dealerNotQualified
           ? state.superBet
           : 0;
-  const queensUpPayout = state.queensUpPayouts?.find((row) => row.hand === state.playerHandRank);
+  const queensUpPayout = state.queensUpPayouts?.find(
+    (row) =>
+      row.hand === state.playerHandRank &&
+      (row.hand !== FOUR_CARD_HAND_PAIR ||
+        crazyFourPokerPairAtLeast(state.playerBest, state.playerHandRank, QUEENS_UP_MIN_PAIR)),
+  );
   const queensUpReturn = queensUpPayout ? state.queensUpBet * (queensUpPayout.multiplier + 1) : 0;
 
   const handRow = (label: string, cards: CrazyFourPokerResponse['playerHand'], testId: string) => (

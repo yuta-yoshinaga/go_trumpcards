@@ -147,6 +147,17 @@ func TestRamsWebPresenterRoundSettlementIsPureAndSurvivesJSON(t *testing.T) {
 	assert.Equal(t, 1, strings.Count(first, `"playerIdx"`), "精算行は一度だけ")
 }
 
+func TestRamsWebPresenterShowsSettlementOnFinalRound(t *testing.T) {
+	r := newRamsForWeb(t)
+	r.SetConfig(domain.RamsConfig{PlayerCnt: domain.RamsPlayerCntDefault, Rounds: 1})
+	r.GetPlayer(0).SetInRound(true)
+	r.GetPlayer(0).SetRoundTricks(1)
+	r.FinishRoundForTest()
+
+	settlement := decodeRams(t, new(RamsWebPresenter).Output(r, nil))["roundSettlement"].([]any)
+	assert.NotEmpty(t, settlement)
+}
+
 func TestRamsWebPresenterRoundSettlementJSONBranches(t *testing.T) {
 	entries := []*domain.ActionLogEntry{
 		{ActionType: "deal"},

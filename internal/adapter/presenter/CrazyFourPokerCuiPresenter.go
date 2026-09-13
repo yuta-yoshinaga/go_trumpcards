@@ -144,7 +144,8 @@ func (cp *CrazyFourPokerCuiPresenter) writeResult(sb *strings.Builder, c interfa
 	if c.GetSuperBet() > 0 {
 		mult := 0
 		for _, row := range domain.CrazyFourPokerSuperBonusPayout() {
-			if row.Hand == c.GetPlayerHandRank() {
+			if row.Hand == c.GetPlayerHandRank() &&
+				(row.Hand != domain.FourCardHandPair || domain.CrazyFourPokerPairAtLeast(c.GetPlayerBest(), domain.CrazyFourPokerSuperBonusMinPair)) {
 				mult = row.Multiplier
 				break
 			}
@@ -165,7 +166,8 @@ func (cp *CrazyFourPokerCuiPresenter) writeResult(sb *strings.Builder, c interfa
 	if c.GetQueensUpBet() > 0 {
 		queensReturn := 0
 		for _, row := range domain.CrazyFourPokerQueensUpPayout() {
-			if row.Hand == c.GetPlayerHandRank() {
+			if row.Hand == c.GetPlayerHandRank() &&
+				(row.Hand != domain.FourCardHandPair || domain.CrazyFourPokerPairAtLeast(c.GetPlayerBest(), domain.CrazyFourPokerQueensUpMinPair)) {
 				queensReturn = c.GetQueensUpBet() + c.GetQueensUpBet()*row.Multiplier
 				break
 			}

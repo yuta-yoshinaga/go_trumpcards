@@ -200,6 +200,17 @@ func TestRamsCuiPresenterGameEnd(t *testing.T) {
 	})
 }
 
+func TestRamsCuiPresenterShowsSettlementOnFinalRound(t *testing.T) {
+	r := newRamsForCui(t)
+	r.SetConfig(domain.RamsConfig{PlayerCnt: domain.RamsPlayerCntDefault, Rounds: 1})
+	r.GetPlayer(0).SetInRound(true)
+	r.GetPlayer(0).SetRoundTricks(1)
+	r.FinishRoundForTest()
+
+	assert.True(t, r.GetGameEndFlag())
+	assert.Contains(t, ramsPlain(ramsRoundSettlementLine(r)), "精算:")
+}
+
 // **選択フェーズのヒントは札ではなく参加可否。** 書式そのものが違う。
 func TestRamsCuiPresenterHintInDecidePhase(t *testing.T) {
 	p := new(RamsCuiPresenter)

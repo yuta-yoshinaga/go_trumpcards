@@ -133,9 +133,6 @@ func ramsRoundSettlementLine(r interfaces.RamsGame) string {
 		}
 	}
 	currentRoundEntries := entries[start:]
-	if latestAction(currentRoundEntries, "penalty") == nil && latestAction(currentRoundEntries, "payout") == nil {
-		return ""
-	}
 	penalties := make([]string, 0)
 	payouts := make([]string, 0)
 	for _, entry := range currentRoundEntries {

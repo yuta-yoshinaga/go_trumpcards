@@ -344,6 +344,11 @@ func crazyFourPokerPairAtLeast(best []*Card, minPair int) bool {
 	return crazyFourPokerRankOrder(pv[0]) >= crazyFourPokerRankOrder(minPair)
 }
 
+// CrazyFourPokerPairAtLeast は、指定ランク以上のペア（またはそれより強い役）かを返す。
+func CrazyFourPokerPairAtLeast(best []*Card, minPair int) bool {
+	return crazyFourPokerPairAtLeast(best, minPair)
+}
+
 // resolve は勝敗を決め、すべての賭けを精算する。
 func (g *CrazyFourPoker) resolve() {
 	cmp := compareFourCardHands(g.playerBest, g.dealerBest)

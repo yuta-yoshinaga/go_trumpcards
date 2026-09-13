@@ -137,6 +137,58 @@ func TestCrazyFourPokerCuiPresenterResultBreakdownBranches(t *testing.T) {
 	}
 }
 
+func TestCrazyFourPokerCuiPresenterOnlyShowsPayingPairSideBets(t *testing.T) {
+	aceSpade := domain.NewCard(domain.CardDesignSpade, 1, true)
+	aceHeart := domain.NewCard(domain.CardDesignHeart, 1, true)
+	fiveSpade := domain.NewCard(domain.CardDesignSpade, 5, true)
+	fiveHeart := domain.NewCard(domain.CardDesignHeart, 5, true)
+	queenSpade := domain.NewCard(domain.CardDesignSpade, 12, true)
+	queenHeart := domain.NewCard(domain.CardDesignHeart, 12, true)
+	jackSpade := domain.NewCard(domain.CardDesignSpade, 11, true)
+	jackHeart := domain.NewCard(domain.CardDesignHeart, 11, true)
+	king := domain.NewCard(domain.CardDesignClover, 13, true)
+	for _, tt := range []struct {
+		name      string
+		best      []*domain.Card
+		superHit  bool
+		queensHit bool
+	}{
+		{name: "ace pair pays both side bets", best: []*domain.Card{aceSpade, aceHeart, fiveSpade, king}, superHit: true, queensHit: true},
+		{name: "five pair does not pay Super Bonus", best: []*domain.Card{fiveSpade, fiveHeart, aceSpade, king}},
+		{name: "queen pair pays Queens Up", best: []*domain.Card{queenSpade, queenHeart, aceSpade, king}, queensHit: true},
+		{name: "jack pair does not pay Queens Up", best: []*domain.Card{jackSpade, jackHeart, aceSpade, king}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.superHit, domain.CrazyFourPokerPairAtLeast(tt.best, domain.CrazyFourPokerSuperBonusMinPair))
+			g := new(interfaces.MockCrazyFourPokerGame)
+			g.On("GetPhase").Return(domain.CrazyFourPokerPhaseResult)
+			g.On("GetAnteBet").Return(50)
+			g.On("GetSuperBet").Return(50)
+			g.On("GetQueensUpBet").Return(20)
+			g.On("GetPlayBet").Return(50)
+			g.On("GetPayout").Return(50)
+			g.On("GetResult").Return(domain.CrazyFourPokerResultWin)
+			g.On("GetPlayerHandRank").Return(domain.FourCardHandPair)
+			g.On("GetPlayerBest").Return(tt.best)
+			g.On("GetGameEndFlag").Return(false)
+
+			var sb strings.Builder
+			new(CrazyFourPokerCuiPresenter).writeResult(&sb, g)
+			out := sb.String()
+			if tt.superHit {
+				assert.Contains(t, out, "Super Bonus（Pair）: 50")
+			} else {
+				assert.Contains(t, out, "Super Bonus（Pair）: 0")
+			}
+			if tt.queensHit {
+				assert.Contains(t, out, "Queens Up: 20")
+			} else {
+				assert.Contains(t, out, "Queens Up: -20")
+			}
+		})
+	}
+}
+
 func TestCrazyFourPokerCuiPresenter_ShowsErrorsAndUnknownPhase(t *testing.T) {
 	cp := new(CrazyFourPokerCuiPresenter)
 	g := newCrazyFourPokerForPresenter(t)
