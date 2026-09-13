@@ -26,8 +26,6 @@
   "sidePlayer": "プレイヤー",
   "sideBanker": "バンカー",
   "helpExampleBet": "  b 100 0              100 をプレイヤーに賭ける",
-  "pairBetRequired": "ペアベット額を指定してください。",
-  "invalidPairBet": "無効なペアベット額です: {{val}}。0以上を指定してください。",
   "payoutRefTitle": "配当表",
   "payoutRefPlayer": "プレイヤー勝利 (1:1)",
   "payoutRefBanker": "バンカー勝利 (1:1、コミッション {{commission}}%)",
