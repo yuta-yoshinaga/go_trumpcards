@@ -48,4 +48,15 @@ describe('getCalculationHint', () => {
     expect(hint?.targetAction).toBe('waste1-to-f0');
     expect(hint?.confidence).toBe('strong');
   });
+
+  it('returns a stock-to-waste hint when the backend indicates no foundation move', () => {
+    const hint = getCalculationHint(makeState({ hint: { fromZone: 'stockToWaste', wasteIdx: 3, foundationIdx: -1 } }));
+    expect(hint).not.toBeNull();
+    expect(hint?.reason).toBe('frontendHint.calculationStockToWaste');
+    expect(hint?.reason).not.toBe('frontendHint.calculationWaste');
+    expect(hint?.targetAction).toBe('stock-to-waste3');
+    expect(hint?.targetAction).not.toContain('-1');
+    expect(hint?.reasonParams).toEqual({ idx: 3 });
+    expect(hint?.confidence).toBe('strong');
+  });
 });

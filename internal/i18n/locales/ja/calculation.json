@@ -28,6 +28,7 @@
   "stockLine": "ストック: {{count}}枚",
   "stockNext": " 次のカード: {{card}}",
   "hintStock": "ヒント: ストック → ファンデーション{{foundation}}",
+  "hintStockToWaste": "ヒント: ストック → ウェイスト{{waste}}（先に必要な札を埋めにくい捨て先）",
   "hintWaste": "ヒント: ウェイスト{{waste}} → ファンデーション{{foundation}}",
   "nextRank": " → 次: {{rank}}",
   "helpExampleHint": "  h                   次の一手を教えてもらう",

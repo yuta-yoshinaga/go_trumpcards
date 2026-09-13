@@ -11,6 +11,7 @@
   "foundation": "組札",
   "tableau": "場札",
   "baseRank": "ベースランク",
+  "baseRankRule": "ファンデーションはベースランクから始まり、Kの次はAへ循環します",
   "moveCount": "手数",
   "draw": "引く",
   "giveup": "ギブアップ",

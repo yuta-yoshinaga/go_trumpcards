@@ -254,7 +254,7 @@ function CanfieldPageContent() {
       cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
-          <span className="text-sm text-ds-text-muted">
+          <span className="text-sm text-ds-text-muted" data-testid="cf-base-rank">
             {t('baseRank')}: {state.baseRank || '?'}
           </span>
           <span className="text-sm text-ds-text-muted">
@@ -287,6 +287,10 @@ function CanfieldPageContent() {
           />
 
           <LandscapeBanner message={phaseName} />
+
+          <p className="mb-2 text-center text-xs text-ds-text-muted" data-testid="cf-base-rank-rule" role="note">
+            {t('baseRankRule')}
+          </p>
 
           <div className="flex-1 overflow-y-auto px-4 pt-3 lg:px-8">
             {/* Foundation */}
