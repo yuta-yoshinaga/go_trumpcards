@@ -741,7 +741,7 @@ var gameRegistry = []GameRegistryEntry{
 				"indianpoker.helpCall",
 				"indianpoker.helpBet",
 				"indianpoker.helpRaise",
-				"indianpoker.helpAllIn", "indianpoker.helpLog",
+				"indianpoker.helpAllIn", "indianpoker.helpHint", "indianpoker.helpLog",
 			},
 			SettingKeys: []string{"indianpoker.helpAnte", "indianpoker.helpBettingLimit", "indianpoker.helpMetaAI"},
 		}),

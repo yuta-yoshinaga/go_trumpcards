@@ -38,6 +38,7 @@
   "wonAmount": " → won {{total}} chips",
   "gameEnd": "Game over",
   "helpExampleFold": "  f                    fold this hand",
+  "helpHint": "  h                    show a hint",
   "helpLog": "  l                    show the action log"
   ,"hintNone": "No hint available"
   ,"hintAction": "[hint: {{action}} ({{reason}})]"

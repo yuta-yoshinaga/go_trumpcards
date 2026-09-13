@@ -38,6 +38,7 @@
   "wonAmount": " → {{total}}チップ獲得",
   "gameEnd": "ゲーム終了",
   "helpExampleFold": "  f                    この手を降りる",
+  "helpHint": "  h                    助言を表示",
   "helpLog": "  l                    行動ログを表示"
   ,"hintNone": "助言はありません"
   ,"hintAction": "［助言: {{action}}（{{reason}}）］"
