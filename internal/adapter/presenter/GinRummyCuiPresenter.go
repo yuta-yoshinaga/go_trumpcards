@@ -15,28 +15,7 @@ import (
 // ginRummyBestDeadwood returns the lowest deadwood value the player can reach by
 // discarding one card — the value that gates knocking (<= GinRummyKnockThreshold).
 func ginRummyBestDeadwood(player *domain.GinRummyPlayer) int {
-	n := player.GetCardsSize()
-	cards := make([]*domain.Card, n)
-	for i := 0; i < n; i++ {
-		cards[i] = player.GetCard(i)
-	}
-	best := -1
-	for skip := 0; skip < n; skip++ {
-		sub := make([]*domain.Card, 0, n-1)
-		for i, c := range cards {
-			if i != skip {
-				sub = append(sub, c)
-			}
-		}
-		_, deadwood := domain.FindBestMelds(sub)
-		if v := domain.CalcDeadwoodValue(deadwood); best < 0 || v < best {
-			best = v
-		}
-	}
-	if best < 0 {
-		best = 0
-	}
-	return best
+	return domain.GinRummyBestDeadwood(player)
 }
 
 // ginRummyPlayerStr returns the display string for a single GinRummy player.
@@ -185,6 +164,28 @@ func writeGinRummyKnockerMelds(b *strings.Builder, melds [][]*domain.Card) {
 			"type", typeLabel,
 			"cards", formatCardSlice(meld, cuiCardStr, ", ")) + "\n")
 	}
+}
+
+// HintOutput emits the current hint.
+func (p *GinRummyCuiPresenter) HintOutput(g interfaces.GinRummyGame) string {
+	hint := g.GetHint()
+	if hint == nil || hint.Reason == "none" {
+		return i18n.T("ginrummy.hintNone") + "\n"
+	}
+	reason := hintReasonStr(hint.Reason, ginRummyHintReasonKeys)
+	return color.Yellow(i18n.Tf("ginrummy.hintAction",
+		"action", i18n.T("ginrummy.action."+hint.Action), "reason", reason)) + "\n"
+}
+
+var ginRummyHintReasonKeys = map[string]string{
+	"draw_discard":     "ginrummy.hintReasonDrawDiscard",
+	"draw_stock":       "ginrummy.hintReasonDrawStock",
+	"gin_opportunity":  "ginrummy.hintReasonGinOpportunity",
+	"knock_now":        "ginrummy.hintReasonKnockNow",
+	"discard_deadwood": "ginrummy.hintReasonDiscardDeadwood",
+	"layoff_cards":     "ginrummy.hintReasonLayoffCards",
+	"skip_layoff":      "ginrummy.hintReasonSkipLayoff",
+	"none":             "ginrummy.hintNone",
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

@@ -1558,3 +1558,146 @@ func TestGinRummy_EasyCpuTakesTheDiscardSometimesAndSometimesNot(t *testing.T) {
 	assert.True(t, drewFromDiscard, "Easy が捨て札を拾う枝を一度も通らなかった")
 	assert.True(t, drewFromStock, "Easy が山札から引く枝を一度も通らなかった")
 }
+
+func TestGinRummy_GetHint(t *testing.T) {
+	t.Run("draw phase - discard fits hand", func(t *testing.T) {
+		g := newTestGinRummy()
+		g.SetPhase(domain.GinRummyPhaseDraw)
+		g.SetCurrentPlayerIdx(0)
+		p := g.GetPlayer(0)
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 4, false)})
+
+		assert.Equal(t, &domain.GinRummyHint{Action: "drawDiscard", Reason: "draw_discard"}, g.GetHint())
+	})
+
+	t.Run("draw phase - discard does not fit hand", func(t *testing.T) {
+		g := newTestGinRummy()
+		g.SetPhase(domain.GinRummyPhaseDraw)
+		g.SetCurrentPlayerIdx(0)
+		p := g.GetPlayer(0)
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignClover, 12, false)})
+
+		assert.Equal(t, &domain.GinRummyHint{Action: "drawStock", Reason: "draw_stock"}, g.GetHint())
+	})
+
+	t.Run("discard phase - gin opportunity", func(t *testing.T) {
+		g := newTestGinRummy()
+		g.SetPhase(domain.GinRummyPhaseDiscard)
+		g.SetCurrentPlayerIdx(0)
+		p := g.GetPlayer(0)
+		// 3 sets of 3 + 1 extra card (total 10 cards)
+		// Melds: Spade 1,2,3; Heart 1,2,3; Diamond 1,2,3,4 (10 cards) + Clover 10 (discarding it leaves 0 deadwood)
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		p.AddCard(domain.NewCard(domain.CardDesignDiamond, 1, false))
+		p.AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		p.AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+		p.AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		p.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+
+		assert.Equal(t, &domain.GinRummyHint{Action: "knock", Reason: "gin_opportunity"}, g.GetHint())
+	})
+
+	t.Run("discard phase - knock now", func(t *testing.T) {
+		g := newTestGinRummy()
+		g.SetPhase(domain.GinRummyPhaseDiscard)
+		g.SetCurrentPlayerIdx(0)
+		p := g.GetPlayer(0)
+		// 9 melded cards (Spade 1,2,3; Heart 1,2,3; Diamond 1,2,3) + Clover 5 (deadwood 5) + Clover 10 (deadwood 10)
+		// Discarding Clover 10 leaves Clover 5 (deadwood 5 <= 10)
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		p.AddCard(domain.NewCard(domain.CardDesignDiamond, 1, false))
+		p.AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		p.AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		p.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+
+		assert.Equal(t, &domain.GinRummyHint{Action: "knock", Reason: "knock_now"}, g.GetHint())
+	})
+
+	t.Run("discard phase - discard deadwood", func(t *testing.T) {
+		g := newTestGinRummy()
+		g.SetPhase(domain.GinRummyPhaseDiscard)
+		g.SetCurrentPlayerIdx(0)
+		p := g.GetPlayer(0)
+		// Unmelded cards with high deadwood
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		p.AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
+		p.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
+
+		assert.Equal(t, &domain.GinRummyHint{Action: "discard", Reason: "discard_deadwood"}, g.GetHint())
+	})
+
+	t.Run("layoff phase - cards can layoff", func(t *testing.T) {
+		g := newTestGinRummy()
+		g.SetPhase(domain.GinRummyPhaseLayoff)
+		g.SetCurrentPlayerIdx(0)
+		g.SetKnockerMelds([][]*domain.Card{
+			{
+				domain.NewCard(domain.CardDesignSpade, 2, false),
+				domain.NewCard(domain.CardDesignSpade, 3, false),
+				domain.NewCard(domain.CardDesignSpade, 4, false),
+			},
+		})
+		p := g.GetPlayer(0)
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+		assert.Equal(t, &domain.GinRummyHint{Action: "layoff", Reason: "layoff_cards"}, g.GetHint())
+	})
+
+	t.Run("layoff phase - no cards can layoff", func(t *testing.T) {
+		g := newTestGinRummy()
+		g.SetPhase(domain.GinRummyPhaseLayoff)
+		g.SetCurrentPlayerIdx(0)
+		g.SetKnockerMelds([][]*domain.Card{
+			{
+				domain.NewCard(domain.CardDesignSpade, 2, false),
+				domain.NewCard(domain.CardDesignSpade, 3, false),
+				domain.NewCard(domain.CardDesignSpade, 4, false),
+			},
+		})
+		p := g.GetPlayer(0)
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+
+		assert.Equal(t, &domain.GinRummyHint{Action: "skipLayoff", Reason: "skip_layoff"}, g.GetHint())
+	})
+
+	t.Run("negative controls", func(t *testing.T) {
+		// Not human turn
+		g := newTestGinRummy()
+		g.SetPhase(domain.GinRummyPhaseDraw)
+		g.SetCurrentPlayerIdx(1)
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		assert.Equal(t, &domain.GinRummyHint{Reason: "none"}, g.GetHint())
+
+		// Game ended
+		g.SetCurrentPlayerIdx(0)
+		g.SetGameEndFlag(true)
+		assert.Equal(t, &domain.GinRummyHint{Reason: "none"}, g.GetHint())
+
+		// Round end phase
+		g.SetGameEndFlag(false)
+		g.SetPhase(domain.GinRummyPhaseRoundEnd)
+		assert.Equal(t, &domain.GinRummyHint{Reason: "none"}, g.GetHint())
+
+		// Empty hand
+		g.SetPhase(domain.GinRummyPhaseDraw)
+		g.GetPlayer(0).Reset()
+		assert.Equal(t, &domain.GinRummyHint{Reason: "none"}, g.GetHint())
+	})
+}

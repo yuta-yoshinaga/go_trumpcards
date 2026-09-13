@@ -98,6 +98,25 @@ func (p *IndianRummyCuiPresenter) Output(g interfaces.IndianRummyGame, lastErr e
 	})
 }
 
+// HintOutput emits the current hint.
+func (p *IndianRummyCuiPresenter) HintOutput(g interfaces.IndianRummyGame) string {
+	hint := g.GetHint()
+	if hint == nil || hint.Reason == "none" {
+		return i18n.T("indianrummy.hintNone") + "\n"
+	}
+	reason := hintReasonStr(hint.Reason, indianRummyHintReasonKeys)
+	return color.Yellow(i18n.Tf("indianrummy.hintAction",
+		"action", i18n.T("indianrummy.action."+hint.Action), "reason", reason)) + "\n"
+}
+
+var indianRummyHintReasonKeys = map[string]string{
+	"draw_discard":     "indianrummy.hintReasonDrawDiscard",
+	"draw_stock":       "indianrummy.hintReasonDrawStock",
+	"declare_now":      "indianrummy.hintReasonDeclareNow",
+	"discard_deadwood": "indianrummy.hintReasonDiscardDeadwood",
+	"none":             "indianrummy.hintNone",
+}
+
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *IndianRummyCuiPresenter) ActionLogOutput(g interfaces.IndianRummyGame) string {
 	return actionLogOutputTextForSeats[*domain.IndianRummyPlayer](g)

@@ -11,6 +11,12 @@ import (
 // IndianRummyWebPresenter インドラミー Web プレゼンター
 type IndianRummyWebPresenter struct{}
 
+// HintOutput returns the current state as JSON. The Web GUI computes its own
+// hint client-side, so this mirrors Output to satisfy IndianRummyPresenter.
+func (p *IndianRummyWebPresenter) HintOutput(g interfaces.IndianRummyGame) string {
+	return p.Output(g, nil)
+}
+
 // Output ゲーム状態を JSON 出力
 func (p *IndianRummyWebPresenter) Output(g interfaces.IndianRummyGame, lastErr error) string {
 	resObj := new(controller.IndianRummyWebOutput)

@@ -32,6 +32,15 @@ func (m *MockGinRummyGame) GetGameEndFlag() bool                { return m.Calle
 func (m *MockGinRummyGame) GetPhase() domain.GinRummyPhase {
 	return m.Called().Get(0).(domain.GinRummyPhase)
 }
+
+// GetHint モック
+func (m *MockGinRummyGame) GetHint() *domain.GinRummyHint {
+	ret := m.Called()
+	if val, ok := ret.Get(0).(*domain.GinRummyHint); ok {
+		return val
+	}
+	return nil
+}
 func (m *MockGinRummyGame) IsHumanTurn() bool        { return m.Called().Bool(0) }
 func (m *MockGinRummyGame) GetRoundNumber() int      { return m.Called().Int(0) }
 func (m *MockGinRummyGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }

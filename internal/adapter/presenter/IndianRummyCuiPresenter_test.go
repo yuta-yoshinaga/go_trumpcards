@@ -121,3 +121,19 @@ func TestIndianRummyCuiPresenter_ActionLogOutput(t *testing.T) {
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)
 }
+
+func TestIndianRummyCuiPresenter_HintOutput(t *testing.T) {
+	p := new(presenter.IndianRummyCuiPresenter)
+
+	t.Run("shows recommendation", func(t *testing.T) {
+		m := new(interfaces.MockIndianRummyGame)
+		m.On("GetHint").Return(&domain.IndianRummyHint{Action: "drawStock", Reason: "draw_stock"}).Once()
+		assert.Equal(t, "\x1b[33m［助言: 山札から引く（捨て札が合いません）］\x1b[0m\n", p.HintOutput(m))
+	})
+
+	t.Run("no hint when not human turn or none", func(t *testing.T) {
+		m := new(interfaces.MockIndianRummyGame)
+		m.On("GetHint").Return(&domain.IndianRummyHint{Reason: "none"}).Once()
+		assert.Equal(t, "助言はありません\n", p.HintOutput(m))
+	})
+}

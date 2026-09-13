@@ -119,3 +119,9 @@ func TestIndianRummyWebPresenter_ActionLogOutput(t *testing.T) {
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)
 }
+
+func TestIndianRummyWebPresenter_HintOutput(t *testing.T) {
+	p := new(presenter.IndianRummyWebPresenter)
+	m, _ := setupIndianRummyWebMock(domain.IndianRummyPhaseDraw, false)
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+}

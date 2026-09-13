@@ -11,6 +11,12 @@ import (
 // GinRummyWebPresenter ジンラミーWebプレゼンタークラス
 type GinRummyWebPresenter struct{}
 
+// HintOutput returns the current state as JSON. The Web GUI computes its own
+// hint client-side, so this mirrors Output to satisfy GinRummyPresenter.
+func (p *GinRummyWebPresenter) HintOutput(g interfaces.GinRummyGame) string {
+	return p.Output(g, nil)
+}
+
 // Output ゲーム状態をJSON出力
 func (p *GinRummyWebPresenter) Output(g interfaces.GinRummyGame, lastErr error) string {
 	resObj := new(controller.GinRummyWebOutput)

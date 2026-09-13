@@ -13,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupGinRummyCuiMock() *interfaces.MockGinRummyGame {
@@ -316,5 +317,22 @@ func TestGinRummyCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜はありません")
 		m.AssertExpectations(t)
+	})
+}
+
+func TestGinRummyCuiPresenter_HintOutput(t *testing.T) {
+	i18n.SetLang("ja")
+	p := new(presenter.GinRummyCuiPresenter)
+
+	t.Run("shows recommendation", func(t *testing.T) {
+		m := new(interfaces.MockGinRummyGame)
+		m.On("GetHint").Return(&domain.GinRummyHint{Action: "drawStock", Reason: "draw_stock"}).Once()
+		assert.Equal(t, "\x1b[33m［助言: 山札から引く（捨て札が合いません）］\x1b[0m\n", p.HintOutput(m))
+	})
+
+	t.Run("no hint when not human turn or none", func(t *testing.T) {
+		m := new(interfaces.MockGinRummyGame)
+		m.On("GetHint").Return(&domain.GinRummyHint{Reason: "none"}).Once()
+		assert.Equal(t, "助言はありません\n", p.HintOutput(m))
 	})
 }

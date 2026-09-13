@@ -186,6 +186,7 @@ type stubGinRummyPresenter struct{}
 
 func (s *stubGinRummyPresenter) Output(_ interfaces.GinRummyGame, _ error) string { return `{}` }
 func (s *stubGinRummyPresenter) ActionLogOutput(_ interfaces.GinRummyGame) string { return `{}` }
+func (s *stubGinRummyPresenter) HintOutput(_ interfaces.GinRummyGame) string      { return `{}` }
 
 // stubBiribaPresenter implements presenter.BiribaPresenter (= GamePresenter[interfaces.BiribaGame] + HintOutput).
 type stubBiribaPresenter struct{}

@@ -417,3 +417,9 @@ func TestGinRummyWebPresenter_ActionLogOutput(t *testing.T) {
 		m.AssertExpectations(t)
 	})
 }
+
+func TestGinRummyWebPresenter_HintOutput(t *testing.T) {
+	p := new(presenter.GinRummyWebPresenter)
+	m, _ := setupGinRummyWebMockWithPlayers()
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+}
