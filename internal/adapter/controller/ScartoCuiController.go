@@ -29,6 +29,7 @@ func NewScartoCuiController(di usecase.ScartoInteractorIF) *ScartoCuiController 
 //	n / next                          → 次のトリックへ
 //	nr / nextround                    → 次のディールへ (スコアリング)
 //	sd / setdifficulty <0-2>          → CPU難易度設定
+//	std / settargetdeals <1-100>       → マッチの目標ディール数設定
 //	h / hint                          → ヒント表示
 //	log / l                           → 棋譜表示
 func (c *ScartoCuiController) Exec(command string) string {
@@ -41,7 +42,7 @@ func (c *ScartoCuiController) Exec(command string) string {
 		[]string{
 			"scarto", "discard", "play",
 			"n", "next", "nr", "nextround",
-			"sd", "setdifficulty", "h", "hint", "log", "l",
+			"sd", "setdifficulty", "std", "settargetdeals", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -57,6 +58,15 @@ func (c *ScartoCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuDifficulty = domain.ScartoCpuDifficulty(v)
+					return c.di.ResetWithConfig(cfg)
+				})
+			case "std", "settargetdeals":
+				return cuiutil.WithParsedIntKeys(args, "scarto.targetDealsRequired", "scarto.invalidTargetDeals", 1, domain.ScartoMaxTargetDeals, func(v int) string {
+					cfg := c.di.GetConfig()
+					cfg.TargetDeals = v
+					// Minchiate の str と違い、ここに追加の規則は無い。
+					// ScartoConfig.Validate() が見るのは TargetDeals >= 1 だけで、
+					// それは上の WithParsedIntKeys の下限がもう見ている。
 					return c.di.ResetWithConfig(cfg)
 				})
 			default:

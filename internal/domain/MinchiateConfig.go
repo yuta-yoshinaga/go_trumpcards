@@ -4,6 +4,13 @@ package domain
 
 import "fmt"
 
+// MinchiateMaxTargetRounds は CUI で指定できる最大ラウンド数。
+// **ドメイン (Validate) に上限は無い。**Web のセレクトが 4/8/12 しか出さないのは
+// 見せ方の都合で、13 局を「無効」と言う理由はドメインの側に無い。CUI に上限が
+// 要るのは打ち間違いで遊べない長さのマッチが始まらないようにするためだけなので、
+// ディーラー 25 巡と広めに取る。倍数の制約のほうは Validate がそのまま持つ。
+const MinchiateMaxTargetRounds = MinchiatePlayerCnt * 25
+
 // MinchiateCpuDifficulty CPU の難易度。
 type MinchiateCpuDifficulty int
 

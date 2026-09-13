@@ -4802,7 +4802,7 @@ var gameRegistry = []GameRegistryEntry{
 				"minchiate.helpNextRound", "minchiate.helpHint",
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"minchiate.helpSetDifficulty"},
+			SettingKeys:       []string{"minchiate.helpSetDifficulty", "minchiate.helpSetTargetRounds"},
 		}),
 	BindCuiFor("tarocchini",
 		func() usecase.TarocchiniInteractorIF {
@@ -4837,7 +4837,7 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			CommandKeys:       []string{"scarto.helpScarto", "scarto.helpPlay", "scarto.helpNext", "scarto.helpNextRound", "scarto.helpHint"},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"scarto.helpSetDifficulty"},
+			SettingKeys:       []string{"scarto.helpSetDifficulty", "scarto.helpSetTargetDeals"},
 		}),
 	BindCuiFor("cego",
 		func() usecase.CegoInteractorIF {
