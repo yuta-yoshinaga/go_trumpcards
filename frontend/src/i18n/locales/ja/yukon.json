@@ -21,7 +21,9 @@
   "hintAvailable": "ヒントがあります",
   "hintFromAria": "ヒント: このカードを{{dest}}へ移動",
   "hintToAria": "ヒント: 移動先",
-  "hintAnnouncement": "ヒント: {{card}}を{{dest}}へ移動",
+  "hintAnnouncement": "ヒント: {{card}}を{{dest}}へ移動。{{confidence}}",
+  "hintConfidenceFoundation": "優先度: 高・基礎へ送れる安全な手",
+  "hintConfidenceTableau": "優先度: 中・盤面を整える手",
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
   "suitNames": {

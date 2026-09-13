@@ -30,4 +30,6 @@
   "noteCutthroat": "  * This is cutthroat Spades: all four players score individually, with no partnerships",
   "nilOk": "Nil still alive",
   "nilFail": "Nil broken (took a trick)"
+  ,"bidRemaining": "{{remaining}} more trick(s) to make bid"
+  ,"bidMade": "Bid made ({{bags}} bags)"
 }

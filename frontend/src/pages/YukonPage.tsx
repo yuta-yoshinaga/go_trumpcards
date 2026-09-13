@@ -285,6 +285,11 @@ function YukonPageContent() {
       ? t('foundation')
       : `${t('tableau')} ${requestedHint.toCol}`
     : '';
+  const hintConfidence = requestedHint
+    ? requestedHint.toZone === 'foundation'
+      ? t('hintConfidenceFoundation')
+      : t('hintConfidenceTableau')
+    : '';
   const hintCard = requestedHint ? state.tableau[requestedHint.fromCol]?.[requestedHint.cardIndex]?.card : null;
   const hintCardName = hintCard ? cardAlt(hintCard) : '';
 
@@ -517,7 +522,7 @@ function YukonPageContent() {
             {/* Visually hidden so the hint costs no footer space, but still announced to AT. */}
             {requestedHint && (
               <div className="sr-only" role="status" aria-live="polite">
-                {t('hintAnnouncement', { card: hintCardName, dest: hintDest })}
+                {t('hintAnnouncement', { card: hintCardName, dest: hintDest, confidence: hintConfidence })}
               </div>
             )}
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

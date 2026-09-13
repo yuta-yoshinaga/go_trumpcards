@@ -12,6 +12,15 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+func removePaiGowMockCall(calls []*mock.Call, method string) []*mock.Call {
+	for i, call := range calls {
+		if call.Method == method {
+			return append(calls[:i], calls[i+1:]...)
+		}
+	}
+	return calls
+}
+
 func setupPaiGowCuiMockDefaults(m *interfaces.MockPaiGowGame) {
 	m.On("GetChips").Return(1000).Maybe()
 	m.On("GetPhase").Return(domain.PaiGowPhaseBet).Maybe()
@@ -79,11 +88,33 @@ func TestPaiGowCuiPresenter_Output_SetHandsPhase(t *testing.T) {
 	m.On("GetDealerLowRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("IsFoulSplit", mock.Anything, mock.Anything).Return(false).Maybe()
+	m.On("GetHint").Return(&domain.PaiGowHint{LowIdx0: 0, LowIdx1: 1}).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "フェーズ: SET HANDS")
 	assert.Contains(t, result, "[0]")
 	assert.Contains(t, result, "[6]")
+	assert.Contains(t, result, "ハウスウェイ推奨: [0] [1] (SPADE 1 CLOVER 10) をローハンドへ")
+}
+
+func TestPaiGowCuiPresenter_Output_SetHandsPhaseWithoutHouseWay(t *testing.T) {
+	m := new(interfaces.MockPaiGowGame)
+	setupPaiGowCuiMockDefaults(m)
+	m.ExpectedCalls = removePaiGowMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removePaiGowMockCall(m.ExpectedCalls, "GetPlayerCards")
+	m.On("GetPhase").Return(domain.PaiGowPhaseSetHands).Maybe()
+	m.On("GetPlayerCards").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 1, false),
+		domain.NewCard(domain.CardDesignClover, 10, false),
+		domain.NewCard(domain.CardDesignHeart, 5, false),
+		domain.NewCard(domain.CardDesignDiamond, 13, false),
+		domain.NewCard(domain.CardDesignSpade, 8, false),
+		domain.NewCard(domain.CardDesignClover, 3, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+	}).Maybe()
+
+	result := (&PaiGowCuiPresenter{}).Output(m, nil)
+	assert.Contains(t, result, "ハウスウェイ推奨: 計算できません（この手札では自動分割できません）")
 }
 
 func TestPaiGowCuiPresenter_Output_Error(t *testing.T) {
@@ -361,6 +392,7 @@ func TestPaiGowCuiPresenter_FoulSplits(t *testing.T) {
 		m.On("GetPhase").Return(domain.PaiGowPhaseSetHands)
 		m.On("GetPlayerCards").Return(dummyCards)
 		m.On("GetGameEndFlag").Return(false)
+		m.On("GetHint").Return((*domain.PaiGowHint)(nil))
 
 		// Return true for IsFoulSplit(0,1) and IsFoulSplit(2,3)
 		m.On("IsFoulSplit", 0, 1).Return(true)
@@ -385,6 +417,7 @@ func TestPaiGowCuiPresenter_FoulSplits(t *testing.T) {
 		m.On("GetPhase").Return(domain.PaiGowPhaseSetHands)
 		m.On("GetPlayerCards").Return(dummyCards)
 		m.On("GetGameEndFlag").Return(false)
+		m.On("GetHint").Return((*domain.PaiGowHint)(nil))
 
 		for i := range 7 {
 			for j := i + 1; j < 7; j++ {
