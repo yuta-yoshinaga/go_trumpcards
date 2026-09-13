@@ -101,6 +101,22 @@ func wizardPlayerStr(player *domain.WizardPlayer, i int, legal []bool) string {
 	return b.String()
 }
 
+func wizardBidTotalSummary(o interfaces.WizardGame) (int, string) {
+	total := 0
+	for i := 0; i < o.GetPlayerCnt(); i++ {
+		if bid := o.GetPlayer(i).GetBid(); bid >= 0 {
+			total += bid
+		}
+	}
+	status := "wizard.bidTotalUnder"
+	if total > o.GetHandSize() {
+		status = "wizard.bidTotalOver"
+	} else if total == o.GetHandSize() {
+		status = "wizard.bidTotalExact"
+	}
+	return total, i18n.T(status)
+}
+
 // WizardCuiPresenter renders the Wizard CUI view.
 type WizardCuiPresenter struct{}
 
@@ -171,6 +187,9 @@ func (p *WizardCuiPresenter) Output(o interfaces.WizardGame, lastErr error) stri
 			} else {
 				b.WriteString(i18n.Tf("wizard.promptBid", "name", name) + "\n")
 			}
+			total, status := wizardBidTotalSummary(o)
+			b.WriteString(i18n.Tf("wizard.bidTotal",
+				"total", strconv.Itoa(total), "hand", strconv.Itoa(o.GetHandSize()), "status", status) + "\n")
 			b.WriteString(i18n.T("wizard.promptBidHelp") + "\n")
 		case domain.WizardPhasePlay:
 			currentIdx := o.GetCurrentPlayerIdx()

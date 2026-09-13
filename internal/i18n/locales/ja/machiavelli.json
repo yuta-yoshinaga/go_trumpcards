@@ -12,6 +12,7 @@
   "tableEmpty": "  (まだメルドはありません)",
   "meldLine": "  [{{idx}}] {{cards}}",
   "playerLine": "{{name}}: 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚",
+  "deadwoodLine": "  デッドウッド: {{value}}点",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "promptTurn": "手番: {{name}}",
   "promptDrawHelp": "dr・・・山札から1枚引く (ターン終了)",

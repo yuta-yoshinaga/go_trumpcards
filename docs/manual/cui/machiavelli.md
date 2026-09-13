@@ -110,6 +110,7 @@ Machiavelli (マキャヴェッリ)
   [1] HEART 9  SPADE 9  CLOVER 9
 ----------
 [You]: 累積0点 ラウンド0点 13枚
+  デッドウッド: 79点
 [0]SPADE 3  [1]SPADE 4  [2]SPADE 5  ...
 CPU 1: 累積10点 ラウンド0点 13枚
 ----------
