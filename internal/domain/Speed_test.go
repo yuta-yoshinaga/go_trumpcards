@@ -284,6 +284,7 @@ func TestSpeed_CpuPlay_Easy(t *testing.T) {
 
 	actions := s.CpuPlay()
 	assert.Len(t, actions, 1) // Easy plays only 1
+	assert.NotNil(t, actions[0].Card)
 }
 
 func TestSpeed_CpuPlay_Greedy(t *testing.T) {
@@ -621,6 +622,7 @@ func TestSpeed_CpuPlay_Hard_Basic(t *testing.T) {
 	actions := s.CpuPlay()
 	assert.NotEmpty(t, actions)
 	assert.Equal(t, 4, s.GetCenterPile(0).GetValue())
+	assert.Equal(t, s.GetCenterPile(0), actions[0].Card)
 }
 
 func TestSpeed_CpuPlay_Hard_MultipleCards(t *testing.T) {
@@ -640,6 +642,9 @@ func TestSpeed_CpuPlay_Hard_MultipleCards(t *testing.T) {
 
 	actions := s.CpuPlay()
 	assert.GreaterOrEqual(t, len(actions), 2, "should play multiple cards in a chain")
+	for _, action := range actions {
+		assert.NotNil(t, action.Card)
+	}
 }
 
 func TestSpeed_CpuPlay_Hard_BlockingChoice(t *testing.T) {

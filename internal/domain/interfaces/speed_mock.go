@@ -28,6 +28,12 @@ func (_m *MockSpeedGame) CpuPlay() []*domain.SpeedCpuAction {
 	return ret.Get(0).([]*domain.SpeedCpuAction)
 }
 
+func (_m *MockSpeedGame) GetCpuActions() []*domain.SpeedCpuAction {
+	ret := _m.Called()
+	return ret.Get(0).([]*domain.SpeedCpuAction)
+}
+func (_m *MockSpeedGame) SetCpuActions(_ []*domain.SpeedCpuAction) {}
+
 // Flip モック
 func (_m *MockSpeedGame) Flip() error {
 	ret := _m.Called()

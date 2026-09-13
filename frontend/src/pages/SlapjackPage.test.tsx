@@ -221,6 +221,33 @@ describe('SlapjackPage', () => {
     await waitFor(() => expect(announce).toHaveTextContent('スラップ成功（あなた）'));
   });
 
+  it('shows the cards won in the correct slap burst and announcement', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      lastEventKind: SlapjackEventKind.SLAP_CORRECT,
+      lastEventPlayerIdx: 0,
+      lastEventCardsWon: 4,
+    });
+    renderWithProviders(<SlapjackPage />);
+    const burst = await screen.findByTestId('slap-burst');
+    expect(burst).toHaveTextContent('ジャック！4枚獲得');
+    expect(await screen.findByTestId('sj-slap-announce')).toHaveTextContent('スラップ成功（あなた、4枚獲得）');
+  });
+
+  it('does not show a cards-won count for a wrong slap', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      lastEventKind: SlapjackEventKind.SLAP_WRONG,
+      lastEventPlayerIdx: 0,
+      lastEventCardsWon: 0,
+    });
+    renderWithProviders(<SlapjackPage />);
+    const burst = await screen.findByTestId('slap-burst');
+    expect(burst).toHaveTextContent('ミス！');
+    expect(burst).not.toHaveTextContent('枚獲得');
+    expect(await screen.findByTestId('sj-slap-announce')).toHaveTextContent('お手つき（あなた）');
+  });
+
   it('announces a false slap by the CPU naming the offender', async () => {
     mockExec.mockResolvedValueOnce({
       ...baseState,

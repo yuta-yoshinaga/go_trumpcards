@@ -15,6 +15,7 @@
   "dealer": "Dealer: {{name}}",
   "trumpLine": "Trump: {{suit}} (Maker: Team {{team}})",
   "trumpUndecided": "Trump: undecided",
+  "bowerHelp": "[R] = right bower (Jack of trump), [L] = left bower (same-colour Jack)",
   "faceUpCard": "Face-up card: {{card}}",
   "goingAlone": "Going alone: {{name}}",
   "teamScoreLine": "Team 0: {{t0}}  Team 1: {{t1}}",

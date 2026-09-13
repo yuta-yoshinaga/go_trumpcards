@@ -18,6 +18,13 @@ func (p *SpeedWebPresenter) Output(s interfaces.SpeedGame, lastErr error) string
 	resObj.Config = controller.SpeedWebOutputConfig{
 		CpuDifficulty: int(s.GetConfig().CpuDifficulty),
 	}
+	for _, action := range s.GetCpuActions() {
+		resObj.CpuActions = append(resObj.CpuActions, &controller.SpeedWebOutputCpuAction{
+			CardIndex: action.CardIndex,
+			PileIndex: action.PileIndex,
+			Card:      cardToOutput(action.Card),
+		})
+	}
 
 	// 台札
 	resObj.CenterPiles = make([]*controller.WebOutputCard, 0, 2)

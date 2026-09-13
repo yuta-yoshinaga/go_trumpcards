@@ -113,12 +113,19 @@ function SlapjackPageContent() {
       (kind !== prev.kind || player !== prev.player)
     ) {
       const outcome: SlapOutcome = kind === SlapjackEventKind.SLAP_CORRECT ? 'correct' : 'wrong';
-      const label = outcome === 'wrong' ? t('slapjack.burst.miss') : t('slapjack.burst.jack');
+      const count = state.lastEventCardsWon ?? 0;
+      const label = outcome === 'wrong' ? t('slapjack.burst.miss') : t('slapjack.burst.jack', { count });
       // Counter (not Date.now()) keeps repeated slap events distinct even
       // when they happen within the same millisecond.
       setSlapBurst((prevBurst) => ({ key: prevBurst.key + 1, outcome, label }));
       const slapper = player === 0 ? tc('player.you') : tc('player.cpu', { id: player });
-      setSlapAnnounce(t(`slapjack.slapAnnounce.${outcome}`, { player: slapper }));
+      setSlapAnnounce(
+        outcome === 'correct' && count > 0
+          ? t('slapjack.slapAnnounce.correct', { player: slapper, count })
+          : outcome === 'correct'
+            ? t('slapjack.slapAnnounce.correctLegacy', { player: slapper })
+            : t('slapjack.slapAnnounce.wrong', { player: slapper }),
+      );
       // Sound only for the human's own slap so a fanfare never celebrates the
       // CPU (and a buzz never blames the player for the CPU's miss). Mute is
       // handled globally by SoundProvider.

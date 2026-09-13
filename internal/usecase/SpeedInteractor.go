@@ -29,7 +29,8 @@ type SpeedInteractorIF interface {
 // SpeedInteractor スピードインタラクタークラス
 type SpeedInteractor struct {
 	GameBase[interfaces.SpeedGame]
-	sp presenter.SpeedPresenter
+	sp         presenter.SpeedPresenter
+	cpuActions []*domain.SpeedCpuAction
 }
 
 // NewSpeedInteractor コンストラクタ
@@ -40,6 +41,8 @@ func NewSpeedInteractor(s interfaces.SpeedGame, sp presenter.SpeedPresenter) *Sp
 
 // Reset ゲーム初期化
 func (si *SpeedInteractor) Reset() string {
+	si.cpuActions = nil
+	si.Game.SetCpuActions(nil)
 	return runAndPresent(si.Game, si.sp, si.Game.Reset)
 }
 
@@ -59,7 +62,11 @@ func (si *SpeedInteractor) Play(cardIndex, pileIndex int) string {
 	}
 	// CPU自動応答ループ
 	if !si.Game.GetGameEndFlag() {
-		si.Game.CpuPlay()
+		si.cpuActions = si.Game.CpuPlay()
+		si.Game.SetCpuActions(si.cpuActions)
+	} else {
+		si.cpuActions = nil
+		si.Game.SetCpuActions(nil)
 	}
 	// フェーズ更新 (膠着判定)
 	si.Game.UpdatePhase()
@@ -77,11 +84,18 @@ func (si *SpeedInteractor) Flip() string {
 	}
 	// フリップ後にCPU自動応答
 	if !si.Game.GetGameEndFlag() {
-		si.Game.CpuPlay()
+		si.cpuActions = si.Game.CpuPlay()
+		si.Game.SetCpuActions(si.cpuActions)
+	} else {
+		si.cpuActions = nil
+		si.Game.SetCpuActions(nil)
 		si.Game.UpdatePhase()
 	}
 	return si.sp.Output(si.Game, nil)
 }
+
+// CpuActions returns the CPU actions from the most recent automatic turn.
+func (si *SpeedInteractor) CpuActions() []*domain.SpeedCpuAction { return si.cpuActions }
 
 // Hint ヒントを取得する
 func (si *SpeedInteractor) Hint() string {

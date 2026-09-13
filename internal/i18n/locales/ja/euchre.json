@@ -15,6 +15,7 @@
   "dealer": "ディーラー: {{name}}",
   "trumpLine": "切り札: {{suit}} (メイカー: チーム{{team}})",
   "trumpUndecided": "切り札: 未決定",
+  "bowerHelp": "[R]=ライトバウアー（切り札のJ）、[L]=レフトバウアー（同色スートのJ）",
   "faceUpCard": "表向きカード: {{card}}",
   "goingAlone": "ゴーアローン: {{name}}",
   "teamScoreLine": "チーム0: {{t0}}点  チーム1: {{t1}}点",

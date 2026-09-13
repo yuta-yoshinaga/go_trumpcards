@@ -88,6 +88,16 @@ func (p *SpeedCuiPresenter) Output(s interfaces.SpeedGame, lastErr error) string
 			"draw", strconv.Itoa(human.GetDrawPileSize())) + "\n")
 		b.WriteString(speedIndexedHandStr(s, human) + "\n")
 
+		// **CPU は 1 ティックで複数枚出す。** 直前のターンぶんだけ、出した札と
+		// 行き先を並べる。台札の番号は 0 始まり — すぐ上の [台札] 行も
+		// `p <card> <pile>` も 0 始まりなので、ここだけ 1 始まりにすると
+		// 「1 番」を読んで `p 2 1` と打ち、隣の台札を触ることになる。
+		for _, action := range s.GetCpuActions() {
+			b.WriteString(i18n.Tf("speed.cpuAction",
+				"card", cuiCardStr(action.Card),
+				"pile", strconv.Itoa(action.PileIndex)) + "\n")
+		}
+
 		// Hint
 		ci, pi, found := s.GetHint()
 		if found {

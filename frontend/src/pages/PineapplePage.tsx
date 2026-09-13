@@ -265,31 +265,24 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   // Poker is the exception: it throws two, so "what remains after discarding
   // one" does not describe its choice. Each entry carries both the i18n hand key
   // and the raw rank, so the strongest keep can be flagged as recommended below.
-  const candidatePreviews = useMemo<({ handKey: string; rank: PokerHandRank } | null)[] | null>(() => {
+  const candidatePreviews = useMemo(() => {
     if (variant === 'irishpoker' || !isDiscardPhase) return null;
-    const hole = humanPlayer?.cards ?? [];
-    const board = state?.communityCards ?? [];
-    if (board.length < 3) return null;
-    return hole.map((_, discardIdx) => {
-      const all = [...hole.filter((_, i) => i !== discardIdx), ...board];
-      const picked = holdemBestFive(all);
-      const rank = picked ? evaluateFiveCardHand(picked.map((i) => all[i])) : null;
-      return rank == null ? null : { handKey: pokerHandKey(rank), rank };
-    });
-  }, [variant, isDiscardPhase, humanPlayer, state?.communityCards]);
+    return (
+      state?.discardPreviews?.map((preview) => ({
+        handKey: pokerHandKey(preview.handRank as PokerHandRank),
+        rank: preview.handRank,
+        recommended: preview.recommended,
+      })) ?? null
+    );
+  }, [variant, isDiscardPhase, state?.discardPreviews]);
   // The Crazy Pineapple discard(s) whose removal leaves the strongest resulting
   // hand — flagged with a "recommended" badge and ring. When several discards
   // tie for the best rank, all of them are flagged.
   const recommendedDiscards = useMemo<Set<number>>(() => {
     const out = new Set<number>();
     if (!candidatePreviews) return out;
-    let best = -1;
-    for (const p of candidatePreviews) {
-      if (p && p.rank > best) best = p.rank;
-    }
-    if (best < 0) return out;
     candidatePreviews.forEach((p, i) => {
-      if (p && p.rank === best) out.add(i);
+      if (p?.recommended) out.add(i);
     });
     return out;
   }, [candidatePreviews]);
