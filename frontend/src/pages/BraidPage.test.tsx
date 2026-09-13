@@ -164,6 +164,32 @@ describe('BraidPage', () => {
     renderWithProviders(<BraidPage />);
     await waitFor(() => expect(screen.getByLabelText(/空のブレイド札1/)).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: /空のブレイド札1/ })).not.toBeInTheDocument();
+    expect(screen.getAllByText('自動補充')).toHaveLength(2);
+  });
+
+  it('marks only the hovered empty braid field as invalid during drag', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BraidPage />);
+    const firstEmptyField = await screen.findByLabelText(/空のブレイド札1/);
+    const secondEmptyField = screen.getByLabelText(/空のブレイド札3/);
+    expect(firstEmptyField).toHaveTextContent('自動補充');
+
+    fireEvent.dragEnter(firstEmptyField);
+    expect(firstEmptyField).toHaveClass('border-ds-error');
+    expect(secondEmptyField).not.toHaveClass('border-ds-error');
+
+    const dataTransfer = { dropEffect: 'move' };
+    const dataTransferDescriptor = Object.getOwnPropertyDescriptor(window, 'DataTransfer');
+    Object.defineProperty(window, 'DataTransfer', { configurable: true, value: undefined });
+    try {
+      fireEvent.dragOver(firstEmptyField, { dataTransfer });
+    } finally {
+      if (dataTransferDescriptor) Object.defineProperty(window, 'DataTransfer', dataTransferDescriptor);
+    }
+    expect(dataTransfer.dropEffect).toBe('none');
+
+    fireEvent.dragLeave(firstEmptyField);
+    expect(firstEmptyField).not.toHaveClass('border-ds-error');
   });
 
   // An empty helper *is* a target -- but only the waste can fill it.

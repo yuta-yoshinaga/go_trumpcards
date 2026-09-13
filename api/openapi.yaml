@@ -80050,6 +80050,21 @@ components:
     SkatResponse:
       type: object
       properties:
+        playableIndices:
+          type: array
+          description: >-
+            Hand indices the human may legally play. Empty outside the play
+            phase and on any turn but theirs.
+          items:
+            type: integer
+        trumpIndices:
+          type: array
+          description: >-
+            Hand indices that count as trump under the declared contract --
+            the suit plus every jack, or the jacks alone in a Grand. Empty on
+            the same terms as playableIndices.
+          items:
+            type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."

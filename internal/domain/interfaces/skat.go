@@ -115,6 +115,8 @@ type SkatGame interface {
 
 	// GetValidPlayIndices returns indices of legally playable cards.
 	GetValidPlayIndices(playerIdx int) []int
+	// GetTrumpIndices returns indices of the player's trump cards.
+	GetTrumpIndices(playerIdx int) []int
 	// GetHint returns a hint for the human player.
 	GetHint() *domain.SkatHint
 }

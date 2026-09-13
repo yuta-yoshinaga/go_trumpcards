@@ -29,6 +29,7 @@
   "emptyBraidAriaLabel": "ブレイドは空です",
   "fieldAriaLabel": "ブレイド札{{idx}}",
   "emptyFieldAriaLabel": "空のブレイド札{{idx}}（ブレイドから自動で補充されます）",
+  "autoRefill": "自動補充",
   "helperAriaLabel": "ヘルパー{{idx}}",
   "emptyHelperAriaLabel": "空のヘルパー{{idx}}（捨て札からのみ埋められます）",
   "stockAriaLabel": "山札 残り{{count}}枚",

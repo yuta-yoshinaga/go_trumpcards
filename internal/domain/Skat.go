@@ -1248,6 +1248,21 @@ func (s *Skat) GetValidPlayIndices(playerIdx int) []int {
 	return valid
 }
 
+// GetTrumpIndices returns indices of the player's trump cards.
+func (s *Skat) GetTrumpIndices(playerIdx int) []int {
+	if playerIdx < 0 || playerIdx >= len(s.players) {
+		return nil
+	}
+	p := s.players[playerIdx]
+	trump := make([]int, 0)
+	for i := 0; i < p.GetCardsSize(); i++ {
+		if s.isTrump(p.GetCard(i)) {
+			trump = append(trump, i)
+		}
+	}
+	return trump
+}
+
 // GetHint returns a hint for the human player based on the current phase.
 func (s *Skat) GetHint() *SkatHint {
 	humanIdx := findHumanIdx(s.players)

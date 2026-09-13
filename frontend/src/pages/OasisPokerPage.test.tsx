@@ -248,6 +248,24 @@ describe('OasisPokerPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200, 10));
   });
 
+  it('links bet maxima and does not submit when the combined bet exceeds chips', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 1000 });
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ');
+    const jackpotInput = screen.getByLabelText('ジャックポット');
+    expect(anteInput).toHaveAttribute('max', '1000');
+    expect(jackpotInput).toHaveAttribute('max', '900');
+
+    fireEvent.change(anteInput, { target: { value: '1000' } });
+    expect(jackpotInput).toHaveAttribute('max', '0');
+    fireEvent.change(jackpotInput, { target: { value: '500' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 1000, 0));
+    expect(mockApi).not.toHaveBeenCalledWith('bet', 1000, 500);
+  });
+
   // **CUI は交換すべき札をインデックスで列挙しているのに、Web は「交換すべき」
   // としか言っていなかった (#4711)。**5枚を個別にクリックする UI があるのに、
   // どれを選ぶかの案内が無い。
@@ -345,6 +363,29 @@ describe('OasisPokerPage keyboard shortcuts', () => {
     fireEvent.keyDown(document, { key: 'p' });
     await flushPendingDispatch();
     expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  it('does not dispatch bet from the keyboard when the combined bet exceeds chips', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 50 });
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+
+    fireEvent.keyDown(document, { key: 'b' });
+    await flushPendingDispatch();
+
+    expect(mockApi).not.toHaveBeenCalledWith('bet', 100, 0);
+  });
+
+  it('dispatches the keyboard bet when the combined bet fits within chips', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+
+    fireEvent.keyDown(document, { key: 'b' });
+
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 100, 0));
   });
 
   // カード交換フェーズでのみ交換手数料の案内行を表示する。

@@ -116,6 +116,19 @@ type LobaMeld struct {
 // lobaIsJoker は c がジョーカーかを返す。
 func lobaIsJoker(c *Card) bool { return c != nil && c.GetDesign() == CardDesignJoker }
 
+// lobaHandIsAllJokers は p の手札が空でなく、すべてジョーカーかを返す。
+func lobaHandIsAllJokers(p *LobaPlayer) bool {
+	if p == nil || p.GetCardsSize() == 0 {
+		return false
+	}
+	for i := range p.GetCardsSize() {
+		if !lobaIsJoker(p.GetCard(i)) {
+			return false
+		}
+	}
+	return true
+}
+
 // LobaValidateMeld は cards が正しいメルドかを判定し、種別を返す。
 //
 // ピエルナは**異なる 3 スート**が要る。同じスートを 2 枚含めた 3 枚は、ランクが
@@ -520,8 +533,9 @@ func (l *Loba) Discard(player, handIdx int) error {
 		return fmt.Errorf("card index %d out of range", handIdx)
 	}
 	card := p.GetCard(handIdx)
-	// **ジョーカーは通常は捨てられない。**手札が 1 枚だけのときだけ例外。
-	if lobaIsJoker(card) && p.GetCardsSize() > 1 {
+	// **ジョーカーは通常は捨てられない。**ただし、打てる手が 1 つも無い状態に
+	// プレイヤーを追い込まないため、手札 1 枚のときと全てジョーカーのときは例外。
+	if lobaIsJoker(card) && p.GetCardsSize() > 1 && !lobaHandIsAllJokers(p) {
 		return fmt.Errorf("a joker cannot be discarded")
 	}
 
@@ -714,7 +728,8 @@ func (l *Loba) findMeld(idx int) []int {
 	return nil
 }
 
-// pickDiscard は捨てる札を選ぶ。ジョーカーは (手札 1 枚のときを除き) 捨てない。
+// pickDiscard は捨てる札を選ぶ。ジョーカーは (手札 1 枚または全てジョーカーの
+// ときを除き) 捨てない。候補がない場合は合法そうな添字 0 でごまかさず、-1 を返す。
 //
 // **単純に「最も点の高い札」を捨てると、手札が一生メルドに育たない。**引いて
 // 捨てるだけで枚数が減らないので、誰も上がらずラウンドが終わらなくなる
@@ -728,7 +743,7 @@ func (l *Loba) pickDiscard(idx int) int {
 	best, bestUse, bestPts := -1, 99, -1
 	for i := range p.GetCardsSize() {
 		c := p.GetCard(i)
-		if lobaIsJoker(c) && p.GetCardsSize() > 1 {
+		if lobaIsJoker(c) && p.GetCardsSize() > 1 && !lobaHandIsAllJokers(p) {
 			continue
 		}
 		use := l.discardUsefulness(idx, i)
@@ -737,9 +752,6 @@ func (l *Loba) pickDiscard(idx int) int {
 		if best == -1 || use < bestUse || (use == bestUse && pts > bestPts) {
 			best, bestUse, bestPts = i, use, pts
 		}
-	}
-	if best < 0 {
-		return 0
 	}
 	return best
 }

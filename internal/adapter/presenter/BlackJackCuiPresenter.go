@@ -211,13 +211,17 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		if len(hands) > 1 {
 			b.WriteString(bjMultiHandResultStr(bj, len(hands)))
 		} else {
-			switch bj.GameJudgment() {
-			case domain.GameResultDraw:
-				b.WriteString(color.Yellow(i18n.T("blackjack.resultDraw")) + "\n")
-			case domain.GameResultWin:
-				b.WriteString(color.Green(i18n.T("blackjack.resultWin")) + "\n")
-			case domain.GameResultLose:
-				b.WriteString(color.Red(i18n.T("blackjack.resultLose")) + "\n")
+			if spanish21Player21BeatsDealer21(bj) {
+				b.WriteString(color.Green(i18n.T("blackjack.spanish21Player21BeatsDealer21")) + "\n")
+			} else {
+				switch bj.GameJudgment() {
+				case domain.GameResultDraw:
+					b.WriteString(color.Yellow(i18n.T("blackjack.resultDraw")) + "\n")
+				case domain.GameResultWin:
+					b.WriteString(color.Green(i18n.T("blackjack.resultWin")) + "\n")
+				case domain.GameResultLose:
+					b.WriteString(color.Red(i18n.T("blackjack.resultLose")) + "\n")
+				}
 			}
 		}
 		// Variant bonuses (e.g. Spanish 21's 5/6/7-card 21, 6-7-8, 7-7-7). Empty
