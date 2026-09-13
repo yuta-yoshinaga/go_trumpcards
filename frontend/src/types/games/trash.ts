@@ -25,6 +25,7 @@ export interface TrashResponse extends BaseGameResponse {
   discardSize: number;
   discardTop?: Card;
   pending?: Card;
+  suggestedWildSlot: number;
   moveCount: number;
   winner: number;
 }

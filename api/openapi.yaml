@@ -80760,6 +80760,11 @@ components:
           $ref: '#/components/schemas/Card'
         pending:
           $ref: '#/components/schemas/Card'
+        suggestedWildSlot:
+          type: integer
+          description: |
+            Zero-based slot the domain recommends for a wild, or -1 when every
+            slot is face up. The CUI and the Web hint both read this one value.
         moveCount:
           type: integer
         winner:

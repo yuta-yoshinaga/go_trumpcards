@@ -27,15 +27,16 @@ type TrashWebPlayer struct {
 
 // TrashWebOutput トラッシュWebアウトプット
 type TrashWebOutput struct {
-	Phase       int                                   `json:"phase"`
-	Current     int                                   `json:"current"`
-	Players     [domain.TrashPlayerCnt]TrashWebPlayer `json:"players"`
-	StockSize   int                                   `json:"stockSize"`
-	DiscardSize int                                   `json:"discardSize"`
-	DiscardTop  *WebOutputCard                        `json:"discardTop,omitempty"`
-	Pending     *WebOutputCard                        `json:"pending,omitempty"`
-	MoveCount   int                                   `json:"moveCount"`
-	Winner      int                                   `json:"winner"`
+	Phase             int                                   `json:"phase"`
+	Current           int                                   `json:"current"`
+	Players           [domain.TrashPlayerCnt]TrashWebPlayer `json:"players"`
+	StockSize         int                                   `json:"stockSize"`
+	DiscardSize       int                                   `json:"discardSize"`
+	DiscardTop        *WebOutputCard                        `json:"discardTop,omitempty"`
+	Pending           *WebOutputCard                        `json:"pending,omitempty"`
+	SuggestedWildSlot int                                   `json:"suggestedWildSlot"`
+	MoveCount         int                                   `json:"moveCount"`
+	Winner            int                                   `json:"winner"`
 	WebOutputBase
 }
 

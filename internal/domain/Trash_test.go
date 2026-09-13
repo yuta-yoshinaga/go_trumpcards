@@ -30,6 +30,51 @@ func aceThroughTen() [TrashSlotCnt]*Card {
 	return out
 }
 
+func TestTrashSuggestWildSlot(t *testing.T) {
+	tr := NewDefaultTrash()
+	tr.Reset()
+
+	var human, cpu [TrashSlotCnt]TrashSlot
+	for i := range human {
+		human[i] = TrashSlot{Card: NewCard(CardDesignSpade, i+1, false), FaceUp: true}
+		cpu[i] = TrashSlot{Card: NewCard(CardDesignHeart, i+1, false), FaceUp: false}
+	}
+	// Only slots 3 and 8 are open. Visible 3s leave two copies, while visible
+	// 8s leave none, so the scarcer rank must win.
+	human[2] = TrashSlot{Card: NewCard(CardDesignSpade, 3, false), FaceUp: false}
+	human[7] = TrashSlot{Card: NewCard(CardDesignSpade, 8, false), FaceUp: false}
+	cpu[0] = TrashSlot{Card: NewCard(CardDesignClover, 8, false), FaceUp: true}
+	cpu[1] = TrashSlot{Card: NewCard(CardDesignDiamond, 8, false), FaceUp: true}
+	cpu[2] = TrashSlot{Card: NewCard(CardDesignClover, 3, false), FaceUp: true}
+	cpu[3] = TrashSlot{Card: NewCard(CardDesignHeart, 8, false), FaceUp: true}
+	tr.SetPlayerSlots(TrashHumanIdx, human)
+	tr.SetPlayerSlots(TrashCpuIdx, cpu)
+	tr.SetDiscard([]*Card{
+		NewCard(CardDesignDiamond, 8, false),
+		NewCard(CardDesignHeart, 3, false),
+	})
+
+	assert.Equal(t, 7, tr.SuggestWildSlot())
+
+	// Equal remaining counts resolve to the lower index and stay deterministic.
+	human[2].FaceUp = false
+	human[7].FaceUp = false
+	cpu[0].FaceUp = false
+	cpu[1].FaceUp = false
+	tr.SetPlayerSlots(TrashHumanIdx, human)
+	tr.SetPlayerSlots(TrashCpuIdx, cpu)
+	tr.SetDiscard(nil)
+	for range 5 {
+		assert.Equal(t, 2, tr.SuggestWildSlot())
+	}
+
+	for i := range human {
+		human[i].FaceUp = true
+	}
+	tr.SetPlayerSlots(TrashHumanIdx, human)
+	assert.Equal(t, -1, tr.SuggestWildSlot())
+}
+
 func TestNewDefaultTrashConstruction(t *testing.T) {
 	tr := NewDefaultTrash()
 	assert.NotNil(t, tr)

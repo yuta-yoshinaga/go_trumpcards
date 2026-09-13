@@ -37,7 +37,7 @@
   "tutorial.win": "First to flip all 10 slots face-up wins.",
   "frontendHint": {
     "trashDraw": "Draw — a playable card fills its slot on its own",
-    "trashPlaceWildLow": "Put the wild in the lowest empty slot — filling from the bottom keeps later draws useful"
+    "trashPlaceWildScarce": "Spend the wild on the position whose rank is scarcest among the visible cards — that slot is the least likely to fill itself"
   },
   "landscapeBanner": "Landscape mode recommended"
 }

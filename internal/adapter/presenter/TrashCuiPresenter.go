@@ -146,9 +146,7 @@ func (p *TrashCuiPresenter) HintOutput(t interfaces.TrashGame) string {
 		if len(slots) == 0 {
 			return i18n.T("trash.hintGameOver") + "\n"
 		}
-		// Filling the highest open position first keeps the low ranks — which
-		// you are equally likely to draw — available to place themselves.
-		rec := slots[len(slots)-1]
+		rec := strconv.Itoa(t.SuggestWildSlot() + 1)
 		return i18n.Tf("trash.hintWild", "slots", strings.Join(slots, ", "), "rec", rec) + "\n"
 	case domain.TrashPhasePlayerTurn:
 		return i18n.T("trash.hintDrawStock") + "\n"
