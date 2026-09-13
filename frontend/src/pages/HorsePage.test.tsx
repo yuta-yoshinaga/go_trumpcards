@@ -33,7 +33,19 @@ describe('HorsePage', () => {
     expect(info).toHaveTextContent('H');
     expect(info).toHaveTextContent('テキサスホールデム');
     expect(info).toHaveTextContent('ハンド 1/2');
+    expect(info).toHaveTextContent('1種目目/全5種目');
     expect(screen.getByTestId('ho-pot')).toHaveTextContent('30');
+  });
+
+  it('shows the discipline position for both rotations', async () => {
+    mockExec.mockResolvedValue(makeHorseState({ disciplinePosition: 3, disciplineTotal: 8 }));
+    const { unmount } = renderWithProviders(<HorsePage />);
+    expect(await screen.findByTestId('ho-discipline')).toHaveTextContent('3種目目/全8種目');
+    unmount();
+
+    mockExec.mockResolvedValue(makeHorseState({ disciplinePosition: 5, disciplineTotal: 5 }));
+    renderWithProviders(<HorsePage />);
+    expect(await screen.findByTestId('ho-discipline')).toHaveTextContent('5種目目/全5種目');
   });
 
   it('shows every seat with its chips', async () => {

@@ -31,5 +31,6 @@
   "hintReasonAlreadySafe": "You have made the required tricks; take what you can",
   "helpExampleIn": "  in                   declare that you will play this hand",
   "helpHint": "  h                    show a hint",
-  "dealerMark": "[dealer]"
+  "dealerMark": "[dealer]",
+  "beastMark": "[BEAST: double ante next round]"
 }

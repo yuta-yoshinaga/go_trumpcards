@@ -34,9 +34,9 @@
     "follow_dump": "You can't win — dump a low card"
   },
   "result": {
-    "youWin": "You win! ({{p0}}-{{p1}})",
+    "youWin": "You win! ({{scores}})",
     "cpuWin": "CPU wins ({{p0}}-{{p1}})",
-    "tie": "Tie ({{p0}}-{{p1}})",
+    "tie": "Tie ({{scores}})",
     "cpuWinSeat": "CPU {{seat}} wins ({{scores}})"
   },
   "message": {

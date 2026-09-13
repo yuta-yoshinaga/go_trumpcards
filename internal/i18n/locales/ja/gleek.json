@@ -13,6 +13,7 @@
   "stockUnsold": "ストック: 表向き {{turnup}} — 競り中",
   "stockSold": "ストック: 表向き {{turnup}} — {{name}} が {{bid}} で落札",
   "ruffLine": "ラフ: {{name}} が {{suit}} の {{total}} で獲得",
+  "ruffOtherLine": "{{name}}: {{suit}} の {{total}}",
   "meldGleek": "グリーク: {{name}} の{{rank}}3枚（各相手から {{value}}）",
   "meldMournival": "マーニヴァル: {{name}} の{{rank}}4枚（各相手から {{value}}）",
   "playerLine": "{{name}} ({{role}}): {{cards}}枚  得点: {{score}}  トリック: {{tricks}}  札点: {{points}}",

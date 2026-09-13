@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -107,10 +108,22 @@ func TestGleekCuiPresenter_Output(t *testing.T) {
 		})
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ラフ")
+		assert.Contains(t, result, "31")
+		assert.Contains(t, result, "18")
 		assert.Contains(t, result, "スペード")
 		assert.Contains(t, result, "キング3枚")
 		assert.Contains(t, result, "ジャック4枚")
 		assert.Contains(t, result, "マーニヴァル")
+		assert.Equal(t, 1, strings.Count(result, "で獲得"), "only the ruff winner may be described as collecting the payment")
+	})
+
+	t.Run("ruff lines do not claim a winner when no winner is reported", func(t *testing.T) {
+		m, _ := setupGleekCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRuffWinnerIdx")
+		m.On("GetRuffWinnerIdx").Return(-1)
+		result := p.Output(m, nil)
+		assert.Equal(t, 0, strings.Count(result, "で獲得"))
+		assert.Contains(t, result, "あなた: ハート の 20")
 	})
 
 	t.Run("bid phase names the amount that may still be bid", func(t *testing.T) {

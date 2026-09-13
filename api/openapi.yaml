@@ -60494,6 +60494,12 @@ components:
         disciplineName:
           type: string
           description: "holdem | omahaHiLo | razz | stud | studHiLo"
+        disciplinePosition:
+          type: integer
+          description: 1-based position of the current discipline in the rotation.
+        disciplineTotal:
+          type: integer
+          description: How many disciplines the rotation has (5 for H.O.R.S.E., 8 for Eight-Game Mix).
         handInDiscipline:
           type: integer
         handNumber:

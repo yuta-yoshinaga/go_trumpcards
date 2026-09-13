@@ -91,10 +91,40 @@ describe('GleekPage', () => {
     const stage = await screen.findByTestId('gleek-stage-line');
     expect(stage).toHaveTextContent('14 で落札');
     expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent('ハート');
+    expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent('31');
+    expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent('24');
+    expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent('20');
     const melds = screen.getAllByTestId('gleek-meld-line');
     expect(melds).toHaveLength(2);
     expect(melds[0]).toHaveTextContent('グリーク');
     expect(melds[1]).toHaveTextContent('マーニヴァル');
+    expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent('あなた が ハート の 31 で獲得');
+    expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent('CPU 1: スペード の 24');
+    expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent('CPU 2: クラブ の 20');
+    expect(screen.getByTestId('gleek-ruff-line').textContent?.match(/で獲得/g)).toHaveLength(1);
+  });
+
+  it('uses the non-winning ruff wording for every seat when there is no winner', async () => {
+    mockExec.mockResolvedValue(makeGleekState({ ruffWinnerIdx: -1 }));
+    renderWithProviders(<GleekPage />);
+    const ruff = await screen.findByTestId('gleek-ruff-line');
+    expect(ruff).not.toHaveTextContent('で獲得');
+    expect(ruff).toHaveTextContent('あなた: ハート の 31');
+    expect(ruff).toHaveTextContent('CPU 1: スペード の 24');
+    expect(ruff).toHaveTextContent('CPU 2: クラブ の 20');
+  });
+
+  it('renders a zero-point ruff and its no-suit label', async () => {
+    mockExec.mockResolvedValue(
+      makeGleekState({
+        players: makeGleekState().players.map((player, index) =>
+          index === 2 ? { ...player, ruff: 0, ruffSuit: 0 } : player,
+        ),
+      }),
+    );
+    renderWithProviders(<GleekPage />);
+    expect(await screen.findByTestId('gleek-ruff-line')).toHaveTextContent('0');
+    expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent(' - の 0');
   });
 
   it('omits the ruff line before the ruff is scored', async () => {

@@ -50,6 +50,8 @@ function makeState(overrides: Partial<JulepeResponse> = {}): JulepeResponse {
     gameEndFlag: false,
     winnerIdx: -1,
     config: { playerCnt: 4, rounds: 4 },
+    requiredTricks: 2,
+    beast: [false, false, false, false],
     message: '',
     ...overrides,
   } as unknown as JulepeResponse;
@@ -155,6 +157,14 @@ describe('JulepePage', () => {
     expect(screen.getByTestId('rm-seat-0')).toHaveTextContent('50チップ / 獲得2');
     expect(screen.getByTestId('rm-seat-1')).toHaveTextContent('降り');
     expect(screen.getByTestId('rm-seat-2')).toHaveTextContent('未定');
+  });
+
+  it('marks each seat whose next ante will be doubled', async () => {
+    mockExec.mockResolvedValue(makeState({ beast: [false, true, false, true] }));
+    renderWithProviders(<JulepePage />);
+    expect(await screen.findByTestId('rm-beast-1')).toHaveTextContent('ビースト');
+    expect(screen.getByTestId('rm-beast-3')).toBeInTheDocument();
+    expect(screen.queryByTestId('rm-beast-0')).not.toBeInTheDocument();
   });
 
   // **降りたラウンドは「見ている」と伝える。** 操作待ちに見えてはいけない。

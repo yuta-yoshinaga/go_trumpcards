@@ -231,13 +231,17 @@ function GleekPageContent() {
                     })
                   : t('stockUnsold', { bid: state.highestBid })}
               </div>
-              {state.ruffWinnerIdx >= 0 && (
+              {state.phase >= GleekPhase.PLAY && (
                 <div data-testid="gleek-ruff-line">
-                  {t('ruffLine', {
-                    name: playerName(state.ruffWinnerIdx, state.ruffWinnerIdx === humanIdx),
-                    total: state.players[state.ruffWinnerIdx]?.ruff ?? 0,
-                    suit: t(SUIT_KEYS[state.players[state.ruffWinnerIdx]?.ruffSuit ?? 0] ?? 'suitNone'),
-                  })}
+                  {state.players.map((player) => (
+                    <div key={player.id}>
+                      {t(player.id === state.ruffWinnerIdx ? 'ruffLine' : 'ruffOtherLine', {
+                        name: playerName(player.id, player.id === humanIdx),
+                        total: player.ruff,
+                        suit: t(SUIT_KEYS[player.ruffSuit] ?? 'suitNone'),
+                      })}
+                    </div>
+                  ))}
                 </div>
               )}
               {state.melds.map((m) => (

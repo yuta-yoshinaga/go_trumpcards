@@ -212,6 +212,9 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               </span>
               <span className="mr-3 text-ds-text-primary">{disciplineName}</span>
               <span className="mr-3">
+                {t('disciplineOrder', { position: state.disciplinePosition, total: state.disciplineTotal })}
+              </span>
+              <span className="mr-3">
                 {t('hand', { n: state.handInDiscipline, total: state.config.handsPerDiscipline })}
               </span>
               {roundLabel && (

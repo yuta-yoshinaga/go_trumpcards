@@ -44,6 +44,10 @@ export interface HorseResponse extends BaseGameResponse {
   disciplineLetter: string;
   /** Stable key for the current discipline ("holdem", "omahaHiLo", ...). */
   disciplineName: string;
+  /** One-based position of the current discipline in the rotation. */
+  disciplinePosition: number;
+  /** Number of disciplines in the current rotation. */
+  disciplineTotal: number;
   handInDiscipline: number;
   handNumber: number;
   currentTurn: number;

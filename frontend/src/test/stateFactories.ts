@@ -4755,6 +4755,8 @@ const baseHorseState: HorseResponse = {
   discipline: 0,
   disciplineLetter: 'H',
   disciplineName: 'holdem',
+  disciplinePosition: 1,
+  disciplineTotal: 5,
   handInDiscipline: 1,
   handNumber: 1,
   currentTurn: 0,

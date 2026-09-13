@@ -13,6 +13,7 @@
   "stockUnsold": "Stock: turn-up {{turnup}} - still being bid for",
   "stockSold": "Stock: turn-up {{turnup}} - bought by {{name}} for {{bid}}",
   "ruffLine": "Ruff: {{name}} wins it with {{total}} in {{suit}}",
+  "ruffOtherLine": "{{name}}: {{total}} in {{suit}}",
   "meldGleek": "Gleek: {{name}} shows three {{rank}} ({{value}} from each opponent)",
   "meldMournival": "Mournival: {{name}} shows four {{rank}} ({{value}} from each opponent)",
   "playerLine": "{{name}} ({{role}}): {{cards}} cards  score: {{score}}  tricks: {{tricks}}  points: {{points}}",

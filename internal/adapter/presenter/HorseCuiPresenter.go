@@ -25,6 +25,8 @@ func (p *HorseCuiPresenter) Output(g interfaces.HorseGame, lastErr error) string
 		b.WriteString(i18n.Tf("horse.round",
 			"letter", g.GetDisciplineLetter(),
 			"name", i18n.T("horse.discipline."+domain.HorseDisciplineName(g.GetDiscipline())),
+			"position", strconv.Itoa(domain.HorseRotationIndex(g.GetVariant(), g.GetDiscipline())+1),
+			"disciplines", strconv.Itoa(len(domain.HorseRotation(g.GetVariant()))),
 			"hand", strconv.Itoa(g.GetHandInDiscipline()),
 			"hands", strconv.Itoa(cfg.HandsPerDiscipline),
 			"total", strconv.Itoa(g.GetHandNumber())) + "\n")

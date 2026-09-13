@@ -22,6 +22,7 @@
   "stockUnsold": "ストック: 競り中（最高額 {{bid}}）",
   "stockSold": "ストック: {{name}} が {{bid}} で落札",
   "ruffLine": "ラフ: {{name}} が {{suit}} の {{total}} で獲得",
+  "ruffOtherLine": "{{name}}: {{suit}} の {{total}}",
   "meldGleek": "グリーク: {{name}} の{{rank}}3枚（各相手から {{value}}）",
   "meldMournival": "マーニヴァル: {{name}} の{{rank}}4枚（各相手から {{value}}）",
   "rankAce": "エース",
