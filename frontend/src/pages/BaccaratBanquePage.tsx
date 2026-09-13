@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { baccaratbanqueApi } from '../api/gameApi';
+import type { baccaratbanqueApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -14,13 +14,16 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import {
+  BACCARAT_BANQUE_DIFFICULTY_OPTIONS,
+  BACCARAT_BANQUE_START_CHIPS_OPTIONS,
+  useBaccaratBanqueGame,
+} from '../hooks/useBaccaratBanqueGame';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
-import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -61,7 +64,16 @@ function BaccaratBanquePageContent() {
     useGamePageSetup('baccaratbanque');
 
   const { cardWidth } = useCardDimensions();
-  const { state, loading, error, exec: execApi, retry } = useGameApi(baccaratbanqueApi.exec);
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+    config,
+    handleConfigChange,
+    handleResetWithConfig,
+  } = useBaccaratBanqueGame();
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('baccaratbanque');
   const cliConfig: CliGameConfig<BaccaratBanqueResponse, Parameters<typeof baccaratbanqueApi.exec>> = useMemo(
@@ -74,8 +86,6 @@ function BaccaratBanquePageContent() {
     [],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  useMountReset(execApi);
 
   // **出せる操作はサーバの phase だけで決める。** 引き際の規則をページ側で
   // 組み直すと必ずドメインとずれる。とくに親はどの合計でも自由なので、
@@ -252,7 +262,34 @@ function BaccaratBanquePageContent() {
             <ErrorAlert message={error} onRetry={retry} />
             <SettingsPanel
               title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select',
+                      id: 'baccaratbanque-cpuDifficulty',
+                      label: t('settings.cpuDifficulty'),
+                      value: config.cpuDifficulty,
+                      options: BACCARAT_BANQUE_DIFFICULTY_OPTIONS.map((value) => ({
+                        value,
+                        label: t(`settings.difficulty.${value}`),
+                      })),
+                      onSelect: (value) => handleConfigChange('cpuDifficulty', value),
+                      testId: 'baccaratbanque-cpuDifficulty',
+                    },
+                    {
+                      type: 'select',
+                      id: 'baccaratbanque-startChips',
+                      label: t('settings.startChips'),
+                      value: config.startChips,
+                      options: BACCARAT_BANQUE_START_CHIPS_OPTIONS.map((value) => ({ value, label: String(value) })),
+                      onSelect: (value) => handleConfigChange('startChips', value),
+                      testId: 'baccaratbanque-startChips',
+                    },
+                    hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+                  ],
+                },
+              ]}
             />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
@@ -324,7 +361,7 @@ function BaccaratBanquePageContent() {
                 </button>
                 <GameResetButton
                   isGameEnd={gameOver}
-                  onReset={() => execApi('reset')}
+                  onReset={handleResetWithConfig}
                   requestConfirm={requestConfirm}
                   loading={loading}
                 />

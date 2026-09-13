@@ -24,6 +24,7 @@
   "cumulativeScore": "Total: {{score}}",
   "deadwoodShort": "Deadwood {{score}}",
   "maalShort": "Maal {{score}}",
+  "maalRule": "Maal: Tiplu 3 points; Poplu/Jhiplu 2 each; Alter 1; printed joker 1. The total is deducted from the round score only with at least three pure sequences.",
   "pureSequenceBadge": "Pure seq.",
   "scores": "Scores",
   "scoresPlayer": "Player",

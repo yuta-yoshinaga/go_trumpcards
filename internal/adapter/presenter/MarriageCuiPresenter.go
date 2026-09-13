@@ -61,6 +61,8 @@ func (p *MarriageCuiPresenter) Output(g interfaces.MarriageGame, lastErr error) 
 			b.WriteString(marriagePlayerStr(g, i))
 		}
 
+		b.WriteString(i18n.T("marriage.maalRule") + "\n")
+
 		b.WriteString("----------\n")
 
 		cuiErrorBlock(b, lastErr)

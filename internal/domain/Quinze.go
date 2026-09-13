@@ -105,9 +105,10 @@ type Quinze struct {
 	activeSeat int
 	phase      int
 	// nextBanker はこの局で 15 を出した最初のプレイヤー（いなければ -1）。
-	nextBanker int
-	lastResult string
-	actionLog  []*ActionLogEntry
+	nextBanker       int
+	lastResult       string
+	chipsReplenished bool
+	actionLog        []*ActionLogEntry
 }
 
 // quinzeOpeningBanker 最初の局の親。
@@ -137,8 +138,10 @@ func NewDefaultQuinze() *Quinze {
 
 // Reset 新しい局を始める。親は前局から引き継ぐ。
 func (s *Quinze) Reset() {
+	s.chipsReplenished = false
 	if s.chips.GetChips() < QuinzeMinBet {
 		s.chips.SetChips(QuinzeDefaultChips)
+		s.chipsReplenished = true
 	}
 	if s.seats == nil {
 		s.seats = make([]*QuinzeSeat, QuinzeSeatCnt)
@@ -485,6 +488,9 @@ func (s *Quinze) GetNextBanker() int { return s.nextBanker }
 // GetLastResult 直近の精算の要約
 func (s *Quinze) GetLastResult() string { return s.lastResult }
 
+// WasChipsReplenished reports whether the most recent reset restored the chips.
+func (s *Quinze) WasChipsReplenished() bool { return s.chipsReplenished }
+
 // GetActionLog 棋譜取得
 func (s *Quinze) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
@@ -576,31 +582,33 @@ func (s *QuinzeSeat) UnmarshalJSON(data []byte) error {
 
 // quinzeJSON is the JSON wire format for Quinze.
 type quinzeJSON struct {
-	TrumpCards *TrumpCards       `json:"tc"`
-	Seats      []*QuinzeSeat     `json:"st"`
-	Banker     int               `json:"bk"`
-	BankerHand *QuinzeHand       `json:"bh"`
-	Chips      int               `json:"ch"`
-	ActiveSeat int               `json:"as"`
-	Phase      int               `json:"ph"`
-	NextBanker int               `json:"nb"`
-	LastResult string            `json:"lr"`
-	ActionLog  []*ActionLogEntry `json:"al"`
+	TrumpCards       *TrumpCards       `json:"tc"`
+	Seats            []*QuinzeSeat     `json:"st"`
+	Banker           int               `json:"bk"`
+	BankerHand       *QuinzeHand       `json:"bh"`
+	Chips            int               `json:"ch"`
+	ActiveSeat       int               `json:"as"`
+	Phase            int               `json:"ph"`
+	NextBanker       int               `json:"nb"`
+	LastResult       string            `json:"lr"`
+	ChipsReplenished bool              `json:"cr"`
+	ActionLog        []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
 func (s *Quinze) MarshalJSON() ([]byte, error) {
 	return json.Marshal(quinzeJSON{
-		TrumpCards: s.trumpCards,
-		Seats:      s.seats,
-		Banker:     s.banker,
-		BankerHand: s.bankerHand,
-		Chips:      s.chips.GetChips(),
-		ActiveSeat: s.activeSeat,
-		Phase:      s.phase,
-		NextBanker: s.nextBanker,
-		LastResult: s.lastResult,
-		ActionLog:  s.actionLog,
+		TrumpCards:       s.trumpCards,
+		Seats:            s.seats,
+		Banker:           s.banker,
+		BankerHand:       s.bankerHand,
+		Chips:            s.chips.GetChips(),
+		ActiveSeat:       s.activeSeat,
+		Phase:            s.phase,
+		NextBanker:       s.nextBanker,
+		LastResult:       s.lastResult,
+		ChipsReplenished: s.chipsReplenished,
+		ActionLog:        s.actionLog,
 	})
 }
 
@@ -643,6 +651,7 @@ func (s *Quinze) UnmarshalJSON(data []byte) error {
 	s.phase = j.Phase
 	s.nextBanker = j.NextBanker
 	s.lastResult = j.LastResult
+	s.chipsReplenished = j.ChipsReplenished
 	s.actionLog = j.ActionLog
 	return nil
 }

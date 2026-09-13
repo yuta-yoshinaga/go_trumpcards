@@ -40,6 +40,9 @@ func (sp *QuinzeCuiPresenter) Output(s interfaces.QuinzeGame, lastErr error) str
 
 	sb.WriteString("----------\n")
 	sb.WriteString(i18n.Tf("quinze.chipsLine", "chips", strconv.Itoa(s.GetChips())) + "\n")
+	if s.WasChipsReplenished() {
+		sb.WriteString(color.Yellow(i18n.T("quinze.chipsReplenished")) + "\n")
+	}
 	bankerName := i18n.T("quinze.bankerIsYou")
 	if !s.IsHumanBanker() {
 		bankerName = s.GetSeats()[s.GetBankerIdx()].GetName()

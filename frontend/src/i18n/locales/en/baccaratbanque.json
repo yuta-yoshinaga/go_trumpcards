@@ -1,4 +1,9 @@
 {
+  "settings": {
+    "cpuDifficulty": "CPU Difficulty",
+    "startChips": "Starting chips",
+    "difficulty": { "0": "Easy", "1": "Normal", "2": "Hard" }
+  },
   "title": "Baccarat Banque",
   "bankerGuide": "Your total is {{total}}. You may draw or stand on any total - there is no fixed table",
   "waitNotice": "Dealing…",

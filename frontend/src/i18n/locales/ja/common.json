@@ -537,6 +537,7 @@
     "errorBoundaryDetails": "エラーの詳細を表示"
   },
   "messageCode": {
+    "quinze.chipsReplenished": "チップが不足したため、開始チップに補充しました。",
     "settemezzo.bankerChanged": "親が交代しました。ベットしてください",
     "settemezzo.bankerChangedYou": "あなたが親になりました。配ってください",
     "accordion.gameClear": "ゲームクリア！ 手数: {{moveCount}}",

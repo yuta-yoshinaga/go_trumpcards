@@ -820,6 +820,13 @@ describe('MarriagePage', () => {
 // #5501: 表示されるのは合計の未メルド点数だけで、なぜその数字になるのかを
 // 個々のカードから逆算する手掛かりが無かった。
 describe('MarriagePage points legend', () => {
+  it('explains maal scoring beside the score table', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<MarriagePage />);
+    expect(await screen.findByTestId('marriage-maal-rule')).toHaveTextContent('ティプル3点');
+    expect(screen.getByTestId('marriage-maal-rule')).toHaveTextContent('純シーケンス3組以上');
+  });
+
   it('shows the card-point legend next to the deadwood readout', async () => {
     mockExec.mockResolvedValue(discardPhaseState);
     renderWithProviders(<MarriagePage />);

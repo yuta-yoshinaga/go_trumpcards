@@ -39,6 +39,19 @@ func TestQuinzeResetUsesTheExpectedDefaults(t *testing.T) {
 	}
 }
 
+func TestQuinzeResetReportsChipReplenishmentForOneRoundOnly(t *testing.T) {
+	game := quinzeTestGame()
+	game.chips.SetChips(QuinzeMinBet - 1)
+	game.Reset()
+	if !game.WasChipsReplenished() {
+		t.Fatal("expected chip replenishment to be reported")
+	}
+	game.Reset()
+	if game.WasChipsReplenished() {
+		t.Fatal("chip replenishment should not remain set for the next round")
+	}
+}
+
 func TestQuinzeDeckHas52Cards(t *testing.T) {
 	deck := NewTrumpCards(0)
 	total := 0

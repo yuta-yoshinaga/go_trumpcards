@@ -7,6 +7,7 @@
   "helpBankerHit": "  bh                       Draw a card as the banker",
   "helpBankerStand": "  bs                       Stop drawing and settle as the banker",
   "chipsLine": "Chips: {{chips}}",
+  "chipsReplenished": "Your chips were replenished to the starting amount because they were too low.",
   "bankerLine": "Banker: {{name}}",
   "bankerIsYou": "you",
   "bankerHandHeader": "Banker:",
