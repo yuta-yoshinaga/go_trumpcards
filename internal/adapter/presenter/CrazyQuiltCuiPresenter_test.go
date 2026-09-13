@@ -158,6 +158,51 @@ func TestCrazyQuiltCuiPresenter_Output(t *testing.T) {
 	}
 }
 
+func TestCrazyQuiltCellMarkKeepsColoredBoardRowsAligned(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
+
+	g := new(interfaces.MockCrazyQuiltGame)
+	setupCrazyQuiltCuiMockDefaults(g)
+	var quilt [domain.CrazyQuiltCells]*domain.Card
+	for i := range quilt {
+		quilt[i] = domain.NewCard(domain.CardDesignSpade, (i%13)+1, true)
+	}
+	quilt[0] = domain.NewCard(domain.CardDesignHeart, 1, true)
+	quilt[1] = domain.NewCard(domain.CardDesignDiamond, 2, true)
+	quilt[2] = domain.NewCard(domain.CardDesignHeart, 3, true)
+	quilt[3] = domain.NewCard(domain.CardDesignDiamond, 4, true)
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetQuilt")
+	g.On("GetQuilt").Return(quilt)
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsAvailable")
+	for i := range domain.CrazyQuiltCells {
+		g.On("IsAvailable", i).Return(i < 2)
+	}
+
+	out := new(CrazyQuiltCuiPresenter).Output(g, nil)
+	board := strings.Split(out, "----------\n")[1]
+	rows := strings.Split(board, "\n")[:domain.CrazyQuiltGridSize]
+	stripANSI := func(s string) string {
+		return strings.ReplaceAll(strings.ReplaceAll(s, "\033[31m", ""), "\033[0m", "")
+	}
+	for _, row := range rows[1:] {
+		assert.Equal(t, len(stripANSI(rows[0])), len(stripANSI(row)), "every colored board row has the same display width")
+	}
+	assert.Contains(t, stripANSI(rows[0]), "[*HEART 1   ]", "red available vertical cell is aligned")
+	assert.Contains(t, stripANSI(rows[0]), "(*DIAMOND 2 )", "red available horizontal cell is aligned")
+	assert.Contains(t, stripANSI(rows[0]), "[ HEART 3   ]", "red unavailable vertical cell is aligned")
+	assert.Contains(t, stripANSI(rows[0]), "( DIAMOND 4 )", "red unavailable horizontal cell is aligned")
+
+	color.SetNoColor(true)
+	out = new(CrazyQuiltCuiPresenter).Output(g, nil)
+	board = strings.Split(out, "----------\n")[1]
+	rows = strings.Split(board, "\n")[:domain.CrazyQuiltGridSize]
+	for _, row := range rows[1:] {
+		assert.Equal(t, len(rows[0]), len(row), "every no-color board row has the same display width")
+	}
+}
+
 func TestCrazyQuiltCuiPresenter_HintOutput(t *testing.T) {
 	for _, tc := range []struct {
 		name     string
