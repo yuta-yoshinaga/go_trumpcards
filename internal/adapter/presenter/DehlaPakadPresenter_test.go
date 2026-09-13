@@ -54,12 +54,24 @@ func TestDehlaPakadCuiPresenter_Output(t *testing.T) {
 
 	// **切り札を決める前に見えるのは 5 枚だけ。** 13 枚見せると別のゲームになる。
 	t.Run("shows only five cards before the trump is called", func(t *testing.T) {
-		out := p.Output(dehlaPakadGame(), nil)
+		d := dehlaPakadGame()
+		chooser := d.GetPlayer(d.GetTrumpChooserIdx())
+		chooser.ResetDeal()
+		chooser.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		chooser.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		chooser.AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		chooser.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		chooser.AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+
+		out := p.Output(d, nil)
 		assert.Contains(t, out, "[4]")
 		assert.NotContains(t, out, "[5]", "宣言前に 6 枚目が見えている")
 		assert.Contains(t, out, strings.SplitN(i18n.T("dehlapakad.promptTrump"), "{{", 2)[0])
 		assert.NotContains(t, out, strings.SplitN(i18n.T("dehlapakad.trump"), "{{", 2)[0])
-		assert.Contains(t, out, "スート内訳")
+		assert.Contains(t, out, "スペード（♠） 3枚")
+		assert.Contains(t, out, "クラブ（♣） 1枚")
+		assert.Contains(t, out, "ハート（♥） 0枚")
+		assert.Contains(t, out, "ダイヤ（♦） 1枚")
 	})
 
 	// **絵札は A/J/Q/K で出す。** 10 が的のゲームで、A が「1」と出ると
