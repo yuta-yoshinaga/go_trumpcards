@@ -28,6 +28,7 @@
   },
   "landscapeBanner": "Landscape mode recommended",
   "moveCount": "Moves",
+  "runMoveAria": "{{count}} cards can move together",
   "noHint": "No hint available",
   "phase": {
     "playing": "Playing",

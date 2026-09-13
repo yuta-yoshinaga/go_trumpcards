@@ -113,6 +113,69 @@ describe('MissMilliganPage', () => {
     );
   });
 
+  it('highlights the selected run as one connected block', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<MissMilliganPage />);
+    const head = await screen.findByRole('button', { name: /^♠ 9（/ });
+    fireEvent.click(head);
+    await waitFor(() => expect(head).toHaveAttribute('aria-pressed', 'true'));
+    expect(head.parentElement).toHaveClass('ring-ds-warning');
+    expect(screen.getByRole('button', { name: /^♥ 8（/ }).parentElement).toHaveClass('ring-ds-warning');
+  });
+
+  it('marks tableau destinations after selecting a card', async () => {
+    const state = {
+      ...playingState,
+      tableau: makeTableau([[{ card: card('SPADE', 9), faceUp: true }], [{ card: card('HEART', 10), faceUp: true }]]),
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<MissMilliganPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /^♠ 9（/ }));
+    await waitFor(() => expect(screen.getByTestId('mm-tableau-col-1')).toHaveClass('ring-ds-success'));
+    expect(screen.getByTestId('mm-tableau-col-0')).not.toHaveClass('ring-ds-success');
+  });
+
+  it('does not mark foundations when a buried card is selected', async () => {
+    const state = {
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 9), faceUp: true },
+          { card: card('HEART', 8), faceUp: true },
+        ],
+        [{ card: card('HEART', 10), faceUp: true }],
+      ]),
+      foundation: [[card('SPADE', 8)], [], [], [], [], [], [], []],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<MissMilliganPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /^♠ 9（/ }));
+    await waitFor(() => expect(screen.getByTestId('mm-tableau-col-1')).toHaveClass('ring-ds-success'));
+    expect(screen.getByTestId('mm-foundation-0')).not.toHaveClass('ring-ds-success');
+  });
+
+  it('marks an invalid selected run as an error and shows no destinations', async () => {
+    const state = {
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 9), faceUp: true },
+          { card: card('CLOVER', 8), faceUp: true },
+        ],
+        [{ card: card('HEART', 10), faceUp: true }],
+      ]),
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<MissMilliganPage />);
+    const head = await screen.findByRole('button', { name: /^♠ 9（/ });
+    fireEvent.click(head);
+    await waitFor(() => expect(head).toHaveAttribute('aria-pressed', 'true'));
+    expect(head.parentElement).toHaveClass('ring-ds-error');
+    expect(screen.getByRole('button', { name: /^♣ 8（/ }).parentElement).toHaveClass('ring-ds-error');
+    expect(screen.getByTestId('mm-tableau-col-1')).not.toHaveClass('ring-ds-success');
+    expect(screen.getByTestId('mm-foundation-0')).not.toHaveClass('ring-ds-success');
+  });
+
   // The waive control only exists once the stock is gone, and only on columns
   // that actually hold something.
   it('offers waiving per column only when it is available', async () => {

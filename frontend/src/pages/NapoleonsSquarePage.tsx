@@ -34,6 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { NAPOLEONSSQUARE_HELP, parseNapoleonsSquareCommand } from '../utils/cli/commands/napoleonssquareCommands';
 import { formatNapoleonsSquareState } from '../utils/cli/formatters/napoleonssquareFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isNapoleonsSquareRun } from '../utils/napoleonsSquareRuns';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 // Two foundations per suit; the order is pinned by domain.napoleonsSquareSuitOrder
@@ -213,6 +214,8 @@ function NapoleonsSquarePageContent() {
                 // unlike the one-card-at-a-time solitaires where only the top is.
                 const cardZone: NapoleonsSquareMoveZone = { zone: 'tableau', col: colIdx, cardIndex: cardIdx };
                 const isSelected = isSourceSelected('tableau', colIdx, cardIdx);
+                const runLength = isNapoleonsSquareRun(col, cardIdx) ? col.length - cardIdx : 0;
+                const runHintId = `ns-run-hint-${colIdx.toString()}-${cardIdx.toString()}`;
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -232,10 +235,11 @@ function NapoleonsSquarePageContent() {
                         disabled={!isPlaying || loading}
                         aria-label={t('cardPosAria', { card: cardAlt(tc2.card), col: colIdx, pos: cardIdx + 1 })}
                         aria-pressed={isSelected}
+                        aria-describedby={runLength > 0 ? runHintId : undefined}
                         draggable={isPlaying && !loading}
                         onDragStart={dnd.handleDragStart(cardZone)}
                         onDragEnd={dnd.handleDragEnd}
-                        className={`p-0 border-0 bg-transparent w-full rounded cursor-pointer ${focusRingWhite} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                        className={`p-0 border-0 bg-transparent w-full rounded cursor-pointer ${focusRingWhite} ${runLength > 0 && !isSelected ? 'ring-2 ring-ds-success' : ''} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                       >
                         <AnimatedCard
                           card={tc2.card}
@@ -244,6 +248,11 @@ function NapoleonsSquarePageContent() {
                           style={{ width: '100%' }}
                           wrapperClassName="block w-full"
                         />
+                        {runLength > 0 && (
+                          <span id={runHintId} className="sr-only" data-testid="ns-run-hint">
+                            {t('runMoveAria', { count: runLength })}
+                          </span>
+                        )}
                       </button>
                     ) : null}
                   </div>
