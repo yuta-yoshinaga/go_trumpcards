@@ -26,6 +26,7 @@ type shengJiComboGoldenCase struct {
 	Kind      int                      `json:"kind"`
 	Rank      int                      `json:"rank"`
 	Size      int                      `json:"size"`
+	Trump     bool                     `json:"trump"`
 }
 
 func TestShengJiComboGoldenValues(t *testing.T) {
@@ -62,6 +63,8 @@ func TestShengJiComboGoldenValues(t *testing.T) {
 			require.Equal(t, tc.Kind, int(got.Kind))
 			require.Equal(t, tc.Rank, got.Rank)
 			require.Equal(t, tc.Size, got.Size)
+			// TS 側 (shengjiCombo.test.ts) も trump を見る。**両側が同じだけ検査する**のがこのガードの前提。
+			require.Equal(t, tc.Trump, got.Trump)
 		})
 	}
 }
