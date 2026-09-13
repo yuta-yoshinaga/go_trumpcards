@@ -9,6 +9,7 @@
   "promptPlay": "手番: {{name}}",
   "resultWinner": "勝者: {{names}}",
   "resultScores": "最終得点: {{scores}}",
+  "resultDetail": "内訳: A {{aces}}枚 / J {{jacks}}枚 / タブラ {{tablas}}回 / 10♦ {{tenDiamonds}} / 2♣ {{twoClubs}} / 最多枚数 {{mostCards}}",
   "promptGameEnd": "ゲーム終了。nr で新しいゲームを始めます。",
   "promptHelp": "p <h> [t...] でプレイ（t 省略でトレイル。ジャックは場を一掃）",
   "hintNone": "ヒントはありません。",

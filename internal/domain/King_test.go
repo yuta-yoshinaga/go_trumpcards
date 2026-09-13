@@ -492,9 +492,12 @@ func TestKing_Getters(t *testing.T) {
 
 func TestKing_GetHint(t *testing.T) {
 	g := newTestKing()
-	// Not play phase -> nil.
+	// Contract selection returns a contract recommendation for a human dealer.
 	g.SetPhase(domain.KingPhaseSelectContract)
-	assert.Nil(t, g.GetHint())
+	selectionHint := g.GetHint()
+	require.NotNil(t, selectionHint)
+	assert.GreaterOrEqual(t, selectionHint.Contract, 0)
+	assert.Contains(t, selectionHint.Reason, "select_")
 
 	// Play phase, human turn, negative contract -> avoid_low.
 	g.SetPhase(domain.KingPhasePlay)

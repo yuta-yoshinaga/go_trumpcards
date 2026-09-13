@@ -110,6 +110,37 @@ func TestKingWebPresenter_HintOutput(t *testing.T) {
 	assert.Contains(t, decoded, "hint")
 }
 
+func TestKingWebPresenter_HintOutputIncludesNoTricksContract(t *testing.T) {
+	g := domain.NewDefaultKing()
+	cfg := g.GetConfig()
+	cfg.CpuDifficulty = domain.KingDifficultyEasy
+	g.SetConfig(cfg)
+	g.Reset()
+	p := new(presenter.KingWebPresenter)
+
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	hint, ok := decoded["hint"].(map[string]any)
+	require.True(t, ok)
+	assert.Equal(t, float64(domain.KingContractNoTricks), hint["contract"])
+}
+
+func TestKingWebPresenter_PlayHintUsesNoContractSentinel(t *testing.T) {
+	g := domain.NewDefaultKing()
+	g.Reset()
+	g.SetCurrentContract(domain.KingContractNoTricks)
+	g.SetTrumpSuit(-1)
+	g.SetPhase(domain.KingPhasePlay)
+	g.SetCurrentTurn(0)
+	p := new(presenter.KingWebPresenter)
+
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	hint, ok := decoded["hint"].(map[string]any)
+	require.True(t, ok)
+	assert.Equal(t, float64(-1), hint["contract"])
+}
+
 func TestKingWebPresenter_ActionLog(t *testing.T) {
 	g := domain.NewDefaultKing()
 	g.Reset()

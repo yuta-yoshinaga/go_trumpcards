@@ -6,7 +6,7 @@
   "blackHoleLabel": "Black Hole:",
   "progress": "Swallowed: {{count}}/{{total}}",
   "fanLabel": "Fan {{idx}}:",
-  "hintLine": "[HINT: fan {{fan}} can be played]",
+  "hintLine": "[HINT: fan {{fan}} can be played ({{movesAfter}} legal moves after)]",
   "acceptableRanks": "Accepted ranks: {{ranks}}",
   "acceptableRanksNone": "Accepted ranks: none",
   "legalMoveCount": "Legal moves: {{count}}",

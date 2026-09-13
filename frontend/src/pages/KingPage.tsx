@@ -395,7 +395,12 @@ function KingPageContent() {
             <div data-testid="king-hint-live" role="status" aria-live="polite">
               {state.hint && isRequestedHint(state) && (
                 <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.contract !== undefined && state.hint.contract >= 0
+                    ? t('hintContract', {
+                        contract: t(`contracts.${state.hint.contract}`),
+                        reason: t(`hint.${state.hint.reason}`),
+                      })
+                    : `${t('hintAvailable')}: ${t(`hint.${state.hint.reason}`)}`}
                   {state.hint.cardIndices &&
                     state.hint.cardIndices.length > 0 &&
                     ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}

@@ -162,7 +162,7 @@ describe('BlackHolePage', () => {
   it('strongly emphasises the backend-recommended fan, distinct from other legal fans', async () => {
     // Hole top 7 → fan0 top ♣6 and fan2 top ♠8 are both legal; the backend
     // recommends fan 2.
-    const state = makeState({ blackHole: [card('SPADE', 7)], hint: { fan: 2 } });
+    const state = makeState({ blackHole: [card('SPADE', 7)], hint: { fan: 2, movesAfter: 0 } });
     state.fans[2] = [card('SPADE', 8)];
     mockExec.mockResolvedValue(state);
     renderWithProviders(<BlackHolePage />);
@@ -183,7 +183,7 @@ describe('BlackHolePage', () => {
     expect(otherLegal.className).not.toContain('outline-ds-warning');
 
     // The live region leads with the recommendation.
-    expect(screen.getByTestId('bh-hint-announce')).toHaveTextContent('おすすめ: ♠ 8（ファン3）');
+    expect(screen.getByTestId('bh-hint-announce')).toHaveTextContent('おすすめ: ♠ 8（ファン3、直後の合法手0）');
   });
 
   it('labels fan cards and the black hole for screen readers', async () => {

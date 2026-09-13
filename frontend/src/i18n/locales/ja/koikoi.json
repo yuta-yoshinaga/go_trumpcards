@@ -45,7 +45,7 @@
     "title": "ラウンド結果",
     "winner": "勝者: {{name}}",
     "draw": "引き分け",
-    "total": "{{base}} × {{mult}} = {{total}}文"
+    "total": "役 {{base}}点 × {{mult}}倍 = {{total}}点"
   },
   "result": {
     "title": "最終得点",

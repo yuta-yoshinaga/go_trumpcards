@@ -185,7 +185,7 @@ function BlackHolePageContent() {
   const hintAnnounce = !showLegalHint
     ? ''
     : recommendedTop && recommendedFan !== null
-      ? `${t('hintRecommendedAnnounce', { card: cardAlt(recommendedTop), fan: recommendedFan + 1 })} · ${legalFansAnnounce}`
+      ? `${t('hintRecommendedAnnounce', { card: cardAlt(recommendedTop), fan: recommendedFan + 1, movesAfter: state.hint?.movesAfter ?? 0 })} · ${legalFansAnnounce}`
       : legalFansAnnounce;
 
   const renderFan = (fan: (typeof state.fans)[number], idx: number) => (
