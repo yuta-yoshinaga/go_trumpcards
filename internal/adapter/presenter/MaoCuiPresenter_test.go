@@ -34,6 +34,7 @@ func setupMaoCuiMock() *interfaces.MockMaoGame {
 	m.On("GetPlayerCorrectCount").Return(1)
 	m.On("GetRuleHintKey").Return("")
 	m.On("GetRulePenaltyFlag").Return(false)
+	m.On("GetSayWordHistory").Return([]domain.MaoSayWordAttempt(nil))
 	return m
 }
 
@@ -103,6 +104,18 @@ func TestMaoCuiPresenter_Output(t *testing.T) {
 		m.On("GetRulePenaltyFlag").Return(true)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ペナルティ")
+	})
+
+	t.Run("word history shows outcomes", func(t *testing.T) {
+		m, _ := setupMaoCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSayWordHistory")
+		m.On("GetSayWordHistory").Return([]domain.MaoSayWordAttempt{{Word: "spade", Penalty: false}, {Word: "wrong", Penalty: true}})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "宣言履歴")
+		assert.Contains(t, result, "spade")
+		assert.Contains(t, result, "正解")
+		assert.Contains(t, result, "wrong")
+		assert.Contains(t, result, "不正解（ペナルティ）")
 	})
 
 	t.Run("discard top shown", func(t *testing.T) {

@@ -20,6 +20,7 @@
   "promptGiftHelp": "gift・・・1点を渡す / run・・・引き直す",
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "play <idx>・・・カードを出す",
+  "legalPlayLegend": "{{indices}} の札が合法手です。",
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "next・・・次のトリックへ",
   "promptRoundEnd": "ディール終了",

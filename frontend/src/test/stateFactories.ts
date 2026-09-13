@@ -1362,6 +1362,7 @@ const baseTysiacState: TysiacResponse = {
   dealerIdx: 2,
   forehandIdx: 0,
   declarerIdx: 0,
+  talonRecipientIdx: 1,
   contract: 100,
   currentBid: 100,
   trumpSuit: 3,

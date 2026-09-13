@@ -79,6 +79,16 @@ func (p *MaoCuiPresenter) Output(g interfaces.MaoGame, lastErr error) string {
 		if g.GetRulePenaltyFlag() {
 			b.WriteString(color.Red(i18n.T("mao.rulePenalty")) + "\n")
 		}
+		if history := g.GetSayWordHistory(); len(history) > 0 {
+			b.WriteString(i18n.T("mao.sayWordHistoryTitle") + "\n")
+			for _, attempt := range history {
+				outcome := i18n.T("mao.sayWordCorrect")
+				if attempt.Penalty {
+					outcome = i18n.T("mao.sayWordPenalty")
+				}
+				b.WriteString(i18n.Tf("mao.sayWordHistoryLine", "word", attempt.Word, "outcome", outcome) + "\n")
+			}
+		}
 
 		b.WriteString("----------\n")
 

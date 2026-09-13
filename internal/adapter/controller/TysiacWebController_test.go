@@ -16,13 +16,14 @@ import (
 
 func mustTysiacOutputJSON(msg string) string {
 	out := &controller.TysiacWebOutput{
-		Players:         []*controller.TysiacWebOutputPlayer{},
-		CurrentTrick:    []*controller.WebOutputTrickCard{},
-		PlayableIndices: []int{},
-		DeclarerIdx:     -1,
-		LastTrickWinner: -1,
-		WinnerPlayer:    -1,
-		WebOutputBase:   controller.WebOutputBase{Message: msg},
+		Players:           []*controller.TysiacWebOutputPlayer{},
+		CurrentTrick:      []*controller.WebOutputTrickCard{},
+		PlayableIndices:   []int{},
+		DeclarerIdx:       -1,
+		TalonRecipientIdx: -1,
+		LastTrickWinner:   -1,
+		WinnerPlayer:      -1,
+		WebOutputBase:     controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

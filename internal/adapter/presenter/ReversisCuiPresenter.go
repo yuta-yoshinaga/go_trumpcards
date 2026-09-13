@@ -89,6 +89,21 @@ func (p *ReversisCuiPresenter) Output(r interfaces.ReversisGame, lastErr error) 
 		)
 
 		cuiErrorBlock(sb, lastErr)
+		if lastErr == nil {
+			if entries := latestActions(r.GetActionLog(), "marked"); len(entries) > 0 {
+				name := cuiPlayerName(r.GetPlayer(entries[0].PlayerIdx), entries[0].PlayerIdx)
+				marks := make([]string, 0, len(entries))
+				for _, entry := range entries {
+					mark := i18n.T("reversis.markQuinola")
+					if len(entry.Cards) > 0 && domain.ReversisIsDiamondAce(entry.Cards[0]) {
+						mark = i18n.T("reversis.markDiamondAce")
+					}
+					marks = append(marks, mark)
+				}
+				sb.WriteString(color.Yellow(i18n.Tf("reversis.marked", "name", name, "mark", strings.Join(marks, ", "),
+					"penalty", strconv.Itoa(len(entries)*domain.ReversisMarkedPenalty), "stake", strconv.Itoa(len(entries)*domain.ReversisMarkedStake))) + "\n")
+			}
+		}
 
 		if r.GetGameEndFlag() {
 			var banner string

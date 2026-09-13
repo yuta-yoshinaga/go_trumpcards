@@ -85,6 +85,26 @@ func TestSpadesCuiPresenter_Output(t *testing.T) {
 		assert.NotContains(t, result, "ニル失敗")
 	})
 
+	t.Run("shows remaining tricks for an ordinary bid", func(t *testing.T) {
+		m, players := setupSpadesCuiMockWithPlayers()
+		players[0].SetBid(4)
+		players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 2, false)})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "あと3トリックでビッド達成")
+	})
+
+	t.Run("shows made bid and bags for an ordinary bid", func(t *testing.T) {
+		m, players := setupSpadesCuiMockWithPlayers()
+		players[0].SetBid(2)
+		players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 2, false)})
+		players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 3, false)})
+		players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 4, false)})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ビッド達成（バッグ1）")
+	})
+
 	t.Run("initial state with header and player info", func(t *testing.T) {
 		m, players := setupSpadesCuiMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))

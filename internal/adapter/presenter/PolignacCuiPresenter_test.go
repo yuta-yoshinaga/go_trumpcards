@@ -71,6 +71,47 @@ func TestPolignacCuiPresenterRoundEnd(t *testing.T) {
 	assert.NotContains(t, out, i18n.T("polignac.promptPlay"))
 }
 
+func TestPolignacCuiPresenterCapotResult(t *testing.T) {
+	p := new(PolignacCuiPresenter)
+
+	t.Run("success", func(t *testing.T) {
+		g := newPolignacForCui(t)
+		g.SetPhaseForTest(domain.PolignacPhaseRoundEnd)
+		g.SetCapotIdxForTest(0)
+		g.SetCapotTricksForTest(domain.PolignacTricksPerRound)
+		out := p.Output(g, nil)
+		assert.Contains(t, out, "capot成功！全8トリックを獲得しました。")
+		assert.NotContains(t, out, "capot失敗。全8トリックを獲得できませんでした。")
+	})
+
+	t.Run("failure", func(t *testing.T) {
+		g := newPolignacForCui(t)
+		g.SetPhaseForTest(domain.PolignacPhaseRoundEnd)
+		g.SetCapotIdxForTest(0)
+		g.SetCapotTricksForTest(domain.PolignacTricksPerRound - 1)
+		out := p.Output(g, nil)
+		assert.Contains(t, out, "capot失敗。全8トリックを獲得できませんでした。")
+		assert.NotContains(t, out, "capot成功！全8トリックを獲得しました。")
+	})
+
+	t.Run("without a capot attempt", func(t *testing.T) {
+		g := newPolignacForCui(t)
+		g.SetPhaseForTest(domain.PolignacPhaseRoundEnd)
+		out := p.Output(g, nil)
+		assert.NotContains(t, out, "capot成功！全8トリックを獲得しました。")
+		assert.NotContains(t, out, "capot失敗。全8トリックを獲得できませんでした。")
+	})
+
+	t.Run("outside round end", func(t *testing.T) {
+		g := newPolignacForCui(t)
+		g.SetCapotIdxForTest(0)
+		g.SetCapotTricksForTest(domain.PolignacTricksPerRound)
+		out := p.Output(g, nil)
+		assert.NotContains(t, out, "capot成功！全8トリックを獲得しました。")
+		assert.NotContains(t, out, "capot失敗。全8トリックを獲得できませんでした。")
+	})
+}
+
 func TestPolignacCuiPresenterError(t *testing.T) {
 	p := new(PolignacCuiPresenter)
 	assert.Contains(t, p.Output(newPolignacForCui(t), assert.AnError), assert.AnError.Error())

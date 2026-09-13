@@ -317,6 +317,79 @@ describe('GapsPage', () => {
     expect(mockedRun).not.toHaveBeenCalledWith('hint');
   });
 
+  it('moves a card through source-then-target clicks, preserving the drag path', async () => {
+    const grid = makeGrid();
+    grid[0] = [card('HEART', 5), ...Array.from({ length: 12 }, () => null)];
+    mockedRun.mockResolvedValue({ ...playingState, grid });
+    renderWithProviders(<GapsPage />);
+    const source = await screen.findByTestId('gaps-cell-0-0');
+    const target = screen.getByTestId('gaps-cell-0-1');
+    fireEvent.click(source);
+    expect(source).toHaveAttribute('aria-pressed', 'true');
+    mockedRun.mockClear();
+    fireEvent.click(target);
+    await waitFor(() =>
+      expect(mockedRun).toHaveBeenCalledWith(
+        'move',
+        { zone: 'grid', row: 0, col: 0 },
+        { zone: 'grid', row: 0, col: 1 },
+      ),
+    );
+  });
+
+  it('does not move when an unselected gap is clicked', async () => {
+    renderWithProviders(<GapsPage />);
+    const target = await screen.findByTestId('gaps-cell-0-12');
+
+    expect(target).toBeDisabled();
+    mockedRun.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockedRun).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  it('keeps the gap drop handlers on an enabled wrapper while its click button is disabled', async () => {
+    const grid = makeGrid();
+    grid[0] = [card('HEART', 5), ...Array.from({ length: 12 }, () => null)];
+    mockedRun.mockResolvedValue({ ...playingState, grid });
+    renderWithProviders(<GapsPage />);
+    const source = await screen.findByTestId('gaps-cell-0-0');
+    const target = screen.getByTestId('gaps-cell-0-1');
+    const dropZone = target.parentElement;
+    expect(dropZone).not.toBeNull();
+    expect(dropZone).not.toHaveAttribute('disabled');
+    expect(target).toBeDisabled();
+
+    const dataTransfer = {
+      data: {} as Record<string, string>,
+      effectAllowed: '',
+      dropEffect: '',
+      setData(type: string, value: string) {
+        this.data[type] = value;
+      },
+      getData(type: string) {
+        return this.data[type] ?? '';
+      },
+    };
+    fireEvent.dragStart(source, { dataTransfer });
+    fireEvent.dragOver(dropZone as HTMLElement, { dataTransfer });
+    fireEvent.drop(dropZone as HTMLElement, { dataTransfer });
+
+    await waitFor(() =>
+      expect(mockedRun).toHaveBeenCalledWith(
+        'move',
+        { zone: 'grid', row: 0, col: 0 },
+        { zone: 'grid', row: 0, col: 1 },
+      ),
+    );
+  });
+
+  it('keeps click selection disabled while the board is loading', async () => {
+    mockedRun.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<GapsPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
   it('does not lock a row whose leftmost card is not a 2', async () => {
     const grid = makeGrid();
     grid[0] = [card('HEART', 5), card('HEART', 6), ...Array.from({ length: 11 }, () => null)];
