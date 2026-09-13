@@ -2,7 +2,9 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fiveHundredApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { makeFiveHundredState } from '../test/stateFactories';
 import type { Card, FiveHundredResponse } from '../types/card';
+import { FiveHundredContract } from '../types/phases';
 import { FiveHundredPage } from './FiveHundredPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -74,6 +76,72 @@ beforeEach(() => {
 });
 
 describe('FiveHundredPage', () => {
+  it('renders every bid format and the player bid branches', async () => {
+    const base = makeFiveHundredState();
+    mockExec.mockResolvedValue(
+      makeFiveHundredState({
+        highestBid: { kind: FiveHundredContract.SUIT, tricks: 7, suit: 1, value: 140 },
+        highestBidder: 1,
+        players: [
+          base.players[0],
+          { ...base.players[1], passed: true },
+          { ...base.players[2], bid: { kind: FiveHundredContract.NO_TRUMP, tricks: 8, suit: -1, value: 240 } },
+          { ...base.players[3], bid: { kind: FiveHundredContract.MISERE, tricks: 0, suit: -1, value: 250 } },
+        ],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+
+    expect(await screen.findByText('最高ビッド: 7♠ (140点)（CPU 1）')).toBeInTheDocument();
+    expect(screen.getByText('CPU 1').parentElement).toHaveTextContent('パス');
+    expect(screen.getByText('直近のビッド: 8NT (240点)')).toBeInTheDocument();
+    expect(screen.getByText('直近のビッド: ミゼール (250点)')).toBeInTheDocument();
+  });
+
+  it('does not show a bid for a player who has neither passed nor bid', async () => {
+    const base = makeFiveHundredState();
+    mockExec.mockResolvedValue(
+      makeFiveHundredState({
+        players: [base.players[0], { ...base.players[1], passed: true }, base.players[2], base.players[3]],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+
+    await screen.findByText('CPU 3');
+    expect(screen.getByText('CPU 3').parentElement).not.toHaveTextContent('パス');
+    expect(screen.getByText('CPU 3').parentElement).not.toHaveTextContent('直近のビッド');
+  });
+
+  it('renders an open misere bid', async () => {
+    mockExec.mockResolvedValue(
+      makeFiveHundredState({
+        highestBid: { kind: FiveHundredContract.OPEN_MISERE, tricks: 0, suit: -1, value: 520 },
+        highestBidder: 1,
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+
+    expect(await screen.findByText('最高ビッド: オープンミゼール (520点)（CPU 1）')).toBeInTheDocument();
+  });
+
+  it('renders an empty formatted bid for an unknown bid kind', async () => {
+    mockExec.mockResolvedValue(
+      makeFiveHundredState({
+        // 99 is intentionally outside the contract-kind enum to exercise the default branch.
+        highestBid: { kind: 99, tricks: 0, suit: -1, value: 999 },
+        highestBidder: 1,
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+    expect(await screen.findByText('最高ビッド: （CPU 1）')).toBeInTheDocument();
+  });
+
+  it('shows an undecided contract when there is no highest bid', async () => {
+    mockExec.mockResolvedValue(makeFiveHundredState({ highestBid: null }));
+    renderWithProviders(<FiveHundredPage />);
+    expect(await screen.findByText('契約: 未決定')).toBeInTheDocument();
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<FiveHundredPage />);
     await waitFor(() =>
@@ -112,6 +180,25 @@ describe('FiveHundredPage', () => {
   it('shows bid controls on the human bid turn', async () => {
     renderWithProviders(<FiveHundredPage />);
     expect(await screen.findByTestId('pass-button')).toBeEnabled();
+  });
+
+  it('describes the highest bid, bidder, and each CPU bid', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        highestBid: { kind: FiveHundredContract.SUIT, tricks: 6, suit: 1, value: 40 },
+        highestBidder: 1,
+        players: [
+          player(0, true, [card('SPADE', 5)]),
+          player(1, false, [], { bid: { kind: FiveHundredContract.SUIT, tricks: 6, suit: 1, value: 40 } }),
+          player(2, false, [], { bid: { kind: FiveHundredContract.MISERE, tricks: 0, suit: -1, value: 250 } }),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+    await waitFor(() => expect(screen.getByText('最高ビッド: 6♠ (40点)（CPU 1）')).toBeInTheDocument());
+    expect(screen.getByText('直近のビッド: 6♠ (40点)')).toBeInTheDocument();
+    expect(screen.getByText('直近のビッド: ミゼール (250点)')).toBeInTheDocument();
   });
 
   it('bids a suit when a suit button is clicked', async () => {

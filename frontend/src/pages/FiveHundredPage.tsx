@@ -128,6 +128,20 @@ function FiveHundredPageContent() {
   } = useGameHint('fivehundred', state);
 
   const [bidTricks, setBidTricks] = useState(6);
+  const formatBid = (bid: NonNullable<FiveHundredResponse['highestBid']>): string => {
+    switch (bid.kind) {
+      case FiveHundredContract.SUIT:
+        return t('bidSuit', { tricks: bid.tricks, suit: suitGlyph(bid.suit), value: bid.value });
+      case FiveHundredContract.NO_TRUMP:
+        return t('bidNoTrump', { tricks: bid.tricks, value: bid.value });
+      case FiveHundredContract.MISERE:
+        return t('bidMisere', { value: bid.value });
+      case FiveHundredContract.OPEN_MISERE:
+        return t('bidOpenMisere', { value: bid.value });
+      default:
+        return '';
+    }
+  };
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fivehundred');
@@ -236,7 +250,10 @@ function FiveHundredPageContent() {
               <div>
                 {state.contractKind === FiveHundredContract.NONE
                   ? state.highestBid
-                    ? t('highestBid', { value: state.highestBid.value })
+                    ? t('highestBid', {
+                        bid: formatBid(state.highestBid),
+                        bidder: playerName(state.highestBidder, state.players[state.highestBidder]?.isHuman ?? false),
+                      })
                     : t('contractUndecided')
                   : t('contractLine', {
                       suit: state.contractKind === FiveHundredContract.SUIT ? suitGlyph(state.trumpSuit) : 'NT',
@@ -258,7 +275,11 @@ function FiveHundredPageContent() {
                         ({t('teamShort', { team: p.team })}) {p.trickCount}🂠
                       </span>
                       {p.isDeclarer && <span className="font-bold text-ds-warning">★</span>}
-                      {p.passed && <span className="opacity-60">{t('passed')}</span>}
+                      {p.passed ? (
+                        <span className="opacity-60">{t('passed')}</span>
+                      ) : (
+                        p.bid && <span className="ml-1">{t('playerBid', { bid: formatBid(p.bid) })}</span>
+                      )}
                     </div>
                     <div className="flex gap-0.5 justify-center">
                       {Array.from({ length: Math.min(p.cardCount, 13) }, (_, i) => (
