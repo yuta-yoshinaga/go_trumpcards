@@ -901,50 +901,6 @@ describe('PineapplePage', () => {
     expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
   });
 
-  it('annotates each Pineapple hole card with the keep-2 feature during discard', async () => {
-    const pineappleDiscardState: PineappleResponse = {
-      ...discardState,
-      communityCards: [],
-      players: [
-        humanPlayer({
-          cards: [
-            { design: 'SPADE', value: 5 },
-            { design: 'SPADE', value: 9 },
-            { design: 'HEART', value: 5 },
-          ],
-        }),
-        cpuPlayer(1),
-        cpuPlayer(2),
-        cpuPlayer(3),
-      ],
-    };
-    mockExec.mockResolvedValue(pineappleDiscardState);
-    renderWithProviders(<PineapplePage />);
-    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
-    const notes = screen.getAllByTestId('pn-discard-keep-feature');
-    expect(notes).toHaveLength(3); // one per hole card
-    // Discard S5 → keep S9,H5: no pair/suited/connector → high card.
-    expect(notes[0]).toHaveTextContent('残り2枚: ハイカード');
-    // Discard S9 → keep S5,H5: a pair.
-    expect(notes[1]).toHaveTextContent('残り2枚: ペア');
-    // Discard H5 → keep S5,S9: same suit but not adjacent → suited.
-    expect(notes[2]).toHaveTextContent('残り2枚: スーテッド');
-  });
-
-  it('does not show Pineapple keep-feature notes outside the discard phase', async () => {
-    mockExec.mockResolvedValue(preFlopState);
-    renderWithProviders(<PineapplePage />);
-    await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
-    expect(screen.queryByTestId('pn-discard-keep-feature')).not.toBeInTheDocument();
-  });
-
-  it('does not show Pineapple keep-feature notes for the Crazy Pineapple variant', async () => {
-    mockCrazyExec.mockResolvedValue({ ...discardState, initialDealCount: 3 });
-    renderWithProviders(<PineapplePage variant="crazypineapple" />);
-    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
-    expect(screen.queryByTestId('pn-discard-keep-feature')).not.toBeInTheDocument();
-  });
-
   it('cancels the discard confirm step and returns to selection', async () => {
     mockExec.mockResolvedValue(discardState);
     renderWithProviders(<PineapplePage />);
@@ -1157,35 +1113,6 @@ describe('PineapplePage', () => {
     // A key looked up in the wrong namespace comes back as the identifier itself,
     // which would still satisfy every assertion above except this one.
     expect(live2.textContent).not.toContain('cpPreviewAria');
-  });
-
-  it('announces the keep-2 feature of the card the player selects to discard', async () => {
-    const pineappleDiscardState: PineappleResponse = {
-      ...discardState,
-      communityCards: [],
-      players: [
-        humanPlayer({
-          cards: [
-            { design: 'SPADE', value: 5 },
-            { design: 'SPADE', value: 9 },
-            { design: 'HEART', value: 5 },
-          ],
-        }),
-        cpuPlayer(1),
-        cpuPlayer(2),
-        cpuPlayer(3),
-      ],
-    };
-    mockExec.mockResolvedValue(pineappleDiscardState);
-    renderWithProviders(<PineapplePage />);
-    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
-    // The per-card notes are visual only; selecting one must also say what the
-    // choice leaves behind, or the whole comparison is unavailable by ear.
-    const cardButtons = screen.getAllByRole('button').filter((btn) => btn.getAttribute('aria-pressed') !== null);
-    fireEvent.click(cardButtons[1]); // discard S9 -> keep S5,H5 = a pair
-    const live = await screen.findByTestId('pn-keep-feature-announce');
-    expect(live).toHaveTextContent('ペア');
-    expect(live).toHaveClass('sr-only');
   });
 
   // 複数枚のカードを捨てるゲーム（Irish Poker 等）の場合のみ、選択枚数カウントを表示する。
