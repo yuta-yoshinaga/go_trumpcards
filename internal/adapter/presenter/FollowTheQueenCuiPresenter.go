@@ -361,6 +361,8 @@ func (p *FollowTheQueenCuiPresenter) HintOutput(s interfaces.FollowTheQueenGame)
 		reason = "check_free"
 	case followTheQueenHasHighCard(player.GetAllCards()):
 		reason = "high"
+	case owed > 0:
+		action = "followthequeen.hintFold"
 	}
 	return color.Yellow(i18n.Tf("followthequeen.hint",
 		"action", i18n.T(action), "reason", hintReasonStr(reason, followTheQueenHintReasonKeys))) + "\n"
@@ -394,6 +396,9 @@ func followTheQueenHasHighCard(cards []*domain.Card) bool {
 }
 
 var followTheQueenHintReasonKeys = map[string]string{
+	// Third-street advice returns complete i18n keys and passes through the shared
+	// hintReasonStr helper, so those keys intentionally map to themselves. The
+	// later-street advice below uses short reason codes, like the other presenters.
 	"followthequeen.hintReasonPair":     "followthequeen.hintReasonPair",
 	"followthequeen.hintReasonWildOne":  "followthequeen.hintReasonWildOne",
 	"followthequeen.hintReasonWildTwo":  "followthequeen.hintReasonWildTwo",

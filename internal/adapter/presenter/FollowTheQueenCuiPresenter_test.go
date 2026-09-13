@@ -395,7 +395,9 @@ func TestFollowTheQueenCuiPresenter_Hint_LaterStreetBranches(t *testing.T) {
 			domain.FollowTheQueenPhaseSeventhStreet,
 		} {
 			s, _ := setup(phase, weak...)
-			assert.Contains(t, p.HintOutput(s), "続行条件を満たしません")
+			out := p.HintOutput(s)
+			assert.Contains(t, out, "推奨: フォールド")
+			assert.Contains(t, out, "続行条件を満たしません")
 		}
 	})
 
@@ -426,6 +428,7 @@ func TestFollowTheQueenCuiPresenter_Hint_LaterStreetBranches(t *testing.T) {
 				}
 				assert.Equal(t, map[string]int{"one wild": 1, "two wilds": 2}[tc.name], wildCount)
 				out := p.HintOutput(s)
+				assert.Contains(t, out, "推奨: レイズ")
 				assert.Contains(t, out, "レイズ")
 				assert.Contains(t, out, tc.reason)
 			})
@@ -437,18 +440,24 @@ func TestFollowTheQueenCuiPresenter_Hint_LaterStreetBranches(t *testing.T) {
 			card(domain.CardDesignSpade, 7), card(domain.CardDesignHeart, 7), card(domain.CardDesignClover, 2))
 		assert.Equal(t, 10, s.GetLastBet())
 		assert.Equal(t, 0, s.GetPlayer(0).GetCurrentBet())
-		assert.Contains(t, p.HintOutput(s), "ワンペア以上")
+		out := p.HintOutput(s)
+		assert.Contains(t, out, "推奨: レイズ")
+		assert.Contains(t, out, "ワンペア以上")
 
 		s, _ = setup(domain.FollowTheQueenPhaseFourthStreet,
 			card(domain.CardDesignSpade, 14), card(domain.CardDesignHeart, 6), card(domain.CardDesignClover, 8))
 		assert.Equal(t, 10, s.GetLastBet())
 		assert.Equal(t, 0, s.GetPlayer(0).GetCurrentBet())
-		assert.Contains(t, p.HintOutput(s), "3枚とも高札")
+		out = p.HintOutput(s)
+		assert.Contains(t, out, "推奨: コール")
+		assert.Contains(t, out, "3枚とも高札")
 
 		s, _ = setup(domain.FollowTheQueenPhaseFourthStreet, weak...)
 		assert.Equal(t, 10, s.GetLastBet())
 		assert.Equal(t, 0, s.GetPlayer(0).GetCurrentBet())
-		assert.Contains(t, p.HintOutput(s), "続行条件を満たしません")
+		out = p.HintOutput(s)
+		assert.Contains(t, out, "推奨: フォールド")
+		assert.Contains(t, out, "続行条件を満たしません")
 	})
 
 	t.Run("check and call reflect the amount owed", func(t *testing.T) {
@@ -456,11 +465,22 @@ func TestFollowTheQueenCuiPresenter_Hint_LaterStreetBranches(t *testing.T) {
 		s.SetLastBet(5)
 		player.SetCurrentBet(5)
 		assert.Equal(t, 0, s.GetLastBet()-player.GetCurrentBet())
-		assert.Contains(t, p.HintOutput(s), "チェック")
+		out := p.HintOutput(s)
+		assert.Contains(t, out, "推奨: チェック")
+		assert.Contains(t, out, "無料でチェックできる")
 
 		s.SetLastBet(10)
 		assert.Greater(t, s.GetLastBet()-player.GetCurrentBet(), 0)
-		assert.Contains(t, p.HintOutput(s), "コール")
+		out = p.HintOutput(s)
+		assert.Contains(t, out, "推奨: フォールド")
+		assert.Contains(t, out, "続行条件を満たしません")
+
+		// A qualifying high card keeps the call recommendation when money is owed.
+		s, _ = setup(domain.FollowTheQueenPhaseFourthStreet,
+			card(domain.CardDesignSpade, 14), card(domain.CardDesignHeart, 6), card(domain.CardDesignClover, 8))
+		out = p.HintOutput(s)
+		assert.Contains(t, out, "推奨: コール")
+		assert.Contains(t, out, "3枚とも高札")
 	})
 
 	t.Run("does not advise after fold, all-in, empty hand, game end, or outside betting", func(t *testing.T) {
