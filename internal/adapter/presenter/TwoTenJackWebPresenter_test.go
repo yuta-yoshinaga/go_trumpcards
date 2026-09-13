@@ -23,6 +23,42 @@ func TestTwoTenJackWebPresenter_ValidPlayIndices(t *testing.T) {
 	assert.Equal(t, []int{0, 2}, output.ValidPlayIndices)
 }
 
+func TestTwoTenJackWebPresenter_ValidPlayIndices_NonPlayPhase(t *testing.T) {
+	m, _ := setupTTJWebMock()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.TwoTenJackPhaseDeclare)
+
+	result := new(presenter.TwoTenJackWebPresenter).Output(m, nil)
+	var output controller.TwoTenJackWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Equal(t, []int{}, output.ValidPlayIndices)
+	assert.Contains(t, result, `"validPlayIndices":[]`)
+}
+
+func TestTwoTenJackWebPresenter_ValidPlayIndices_NonHumanTurn(t *testing.T) {
+	m, _ := setupTTJWebMock()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+	m.On("IsHumanTurn").Return(false)
+
+	result := new(presenter.TwoTenJackWebPresenter).Output(m, nil)
+	var output controller.TwoTenJackWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Equal(t, []int{}, output.ValidPlayIndices)
+	assert.Contains(t, result, `"validPlayIndices":[]`)
+}
+
+func TestTwoTenJackWebPresenter_ValidPlayIndices_Nil(t *testing.T) {
+	m, _ := setupTTJWebMock()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+	m.On("GetValidPlayIndices", 0).Return([]int(nil))
+
+	result := new(presenter.TwoTenJackWebPresenter).Output(m, nil)
+	var output controller.TwoTenJackWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Equal(t, []int{}, output.ValidPlayIndices)
+	assert.Contains(t, result, `"validPlayIndices":[]`)
+}
+
 func setupTTJWebMock() (*interfaces.MockTwoTenJackGame, []*domain.TwoTenJackPlayer) {
 	m := new(interfaces.MockTwoTenJackGame)
 	players := makeTTJPlayers()
