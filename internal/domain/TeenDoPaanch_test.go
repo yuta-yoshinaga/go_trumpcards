@@ -590,6 +590,8 @@ func TestTeenDoPaanch_UnmarshalRejectsBrokenSnapshots(t *testing.T) {
 		{"surplus does not cancel out", func(m map[string]any) { m["sp"] = []any{2, 0, 0} }},
 		{"surplus has the wrong length", func(m map[string]any) { m["sp"] = []any{0, 0} }},
 		{"config out of range", func(m map[string]any) { m["cf"] = map[string]any{"r": 0} }},
+		{"last trick winner out of range", func(m map[string]any) { m["lw"] = TeenDoPaanchPlayerCnt }},
+		{"last trick winner below -1", func(m map[string]any) { m["lw"] = -2 }},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			m := base(t)

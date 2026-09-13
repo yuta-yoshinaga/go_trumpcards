@@ -801,6 +801,12 @@ func (g *TeenDoPaanch) UnmarshalJSON(data []byte) error {
 	if j.WinnerIdx < -1 || j.WinnerIdx >= TeenDoPaanchPlayerCnt {
 		return fmt.Errorf("invalid winner: %d", j.WinnerIdx)
 	}
+	// **席を指す値は全部ここで弾く。** Worker はリクエストごとに JSON から
+	// 卓を組み直すので、範囲外の席が入ると壊れた盤をそのまま受け入れる。
+	// いま panic しないのは GetPlayer が nil に落ちるからで、正しさではない。
+	if j.LastTrickWinner < -1 || j.LastTrickWinner >= TeenDoPaanchPlayerCnt {
+		return fmt.Errorf("invalid last trick winner: %d", j.LastTrickWinner)
+	}
 	// **勝者が決まっているのは終局後だけ。**
 	if !j.GameEndFlag && j.WinnerIdx != -1 {
 		return fmt.Errorf("winner %d before the game ended", j.WinnerIdx)
