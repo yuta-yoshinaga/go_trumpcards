@@ -852,11 +852,12 @@ describe('PineapplePage', () => {
     expect(screen.queryByTestId('cp-discard-recommended')).not.toBeInTheDocument();
   });
 
-  it('does not show a recommended badge for the plain Pineapple variant', async () => {
+  it('shows candidate labels and a recommended badge for the plain Pineapple variant with a board', async () => {
     mockExec.mockResolvedValue(discardState);
     renderWithProviders(<PineapplePage />);
     await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
-    expect(screen.queryByTestId('cp-discard-recommended')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('cp-discard-candidate').length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId('cp-discard-recommended').length).toBeGreaterThan(0);
   });
 
   it('omits Crazy Pineapple candidate labels when the board is too small to evaluate', async () => {
@@ -903,6 +904,7 @@ describe('PineapplePage', () => {
   it('annotates each Pineapple hole card with the keep-2 feature during discard', async () => {
     const pineappleDiscardState: PineappleResponse = {
       ...discardState,
+      communityCards: [],
       players: [
         humanPlayer({
           cards: [
@@ -1160,6 +1162,7 @@ describe('PineapplePage', () => {
   it('announces the keep-2 feature of the card the player selects to discard', async () => {
     const pineappleDiscardState: PineappleResponse = {
       ...discardState,
+      communityCards: [],
       players: [
         humanPlayer({
           cards: [

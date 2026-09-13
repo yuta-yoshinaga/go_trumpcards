@@ -653,10 +653,20 @@ func TestPineapple_GetHumanDiscardPreviews(t *testing.T) {
 			"CPU が捨てる札 (index %d) は推奨に含まれるべき", cpuPick)
 	})
 
-	t.Run("returns nothing before the flop is on the table", func(t *testing.T) {
-		// プレーンな Pineapple はフロップ前に捨てる。残る2枚だけでは役を
-		// 名指しできないので、ここは何も返さない (#4685 の性質表示が出る)。
+	t.Run("returns previews for regular Pineapple when board has 3 cards", func(t *testing.T) {
+		// 通常 Pineapple はフロップ公開直後にディスカードフェーズに入るため、
+		// 既にボードが3枚ある。この場合は役が判定できるのでプレビューを返す。
+		p := pineappleDiscardFixture(t, spadeFlushHole, spadeBoard)
+		p.discardAfterFlopBetting = false
+		previews := p.GetHumanDiscardPreviews()
+		require.NotNil(t, previews)
+		require.Len(t, previews, 3)
+	})
+
+	t.Run("returns nothing when the board has less than 3 cards", func(t *testing.T) {
+		// ボードが3枚未満の場合は役を名指しできないので、ここは何も返さない。
 		p := pineappleDiscardFixture(t, spadeFlushHole, nil)
+		p.discardAfterFlopBetting = false
 		assert.Nil(t, p.GetHumanDiscardPreviews())
 	})
 

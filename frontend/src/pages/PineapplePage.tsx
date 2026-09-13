@@ -266,9 +266,10 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   // carries both the i18n hand key and the raw rank, so the strongest keep can be
   // flagged as recommended below.
   const candidatePreviews = useMemo<({ handKey: string; rank: PokerHandRank } | null)[] | null>(() => {
-    if (variant !== 'crazypineapple' || !isDiscardPhase) return null;
+    if (variant === 'irishpoker' || !isDiscardPhase) return null;
     const hole = humanPlayer?.cards ?? [];
     const board = state?.communityCards ?? [];
+    if (board.length < 3) return null;
     return hole.map((_, discardIdx) => {
       const all = [...hole.filter((_, i) => i !== discardIdx), ...board];
       const picked = holdemBestFive(all);
@@ -342,15 +343,17 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   const keepFeaturePreviews = useMemo<(PineappleKeepFeature[] | null)[] | null>(() => {
     if (variant !== 'pineapple' || !isDiscardPhase) return null;
     const hole = humanPlayer?.cards ?? [];
+    const board = state?.communityCards ?? [];
+    if (board.length >= 3) return null;
     if (hole.length !== 3) return null;
     return hole.map((_, discardIdx) => {
       const [a, b] = hole.filter((_, i) => i !== discardIdx);
       return pineappleKeepFeatures(a, b);
     });
-  }, [variant, isDiscardPhase, humanPlayer]);
+  }, [variant, isDiscardPhase, humanPlayer, state?.communityCards]);
 
   const cpSelectedPreview = useMemo(() => {
-    if (variant !== 'crazypineapple' || !isDiscardPhase) return null;
+    if (variant === 'irishpoker' || !isDiscardPhase) return null;
     if (selectedDiscards.length !== discardCount) return null;
     const discardIdx = selectedDiscards[0];
     const cand = candidatePreviews?.[discardIdx];
