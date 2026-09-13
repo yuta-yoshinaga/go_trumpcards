@@ -57283,6 +57283,13 @@ components:
           type: integer
         nobs:
           type: integer
+        cards:
+          type: array
+          description: >-
+            The cards this row or column scored with, in placement order.
+            Contains the non-empty cards currently placed in the row or column.
+          items:
+            $ref: '#/components/schemas/Card'
         total:
           type: integer
     DiplomatMoveZone:

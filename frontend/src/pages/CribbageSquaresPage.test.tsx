@@ -122,13 +122,33 @@ describe('CribbageSquaresPage', () => {
   });
 
   it('shows a per-hand breakdown once the hands score', async () => {
-    const details = [{ fifteens: 4, pairs: 2, runs: 0, flush: 0, nobs: 0, total: 6 }, zero(), zero(), zero()];
+    const details = [
+      { cards: [card('HEART', 5), card('CLOVER', 5)], fifteens: 4, pairs: 2, runs: 0, flush: 0, nobs: 0, total: 6 },
+      zero(),
+      zero(),
+      zero(),
+    ];
     mockExec.mockResolvedValue(makeState({ rowDetails: details, rowScores: [6, 0, 0, 0], phase: 1 }));
     renderWithProviders(<CribbageSquaresPage />);
     await waitFor(() => expect(screen.getByTestId('row-breakdown-0')).toBeInTheDocument());
     expect(screen.getByTestId('row-breakdown-0')).toHaveTextContent('15が4');
+    expect(screen.getByTestId('row-score-cards-0')).toHaveTextContent('♥ 5');
     // A hand that scored nothing shows no breakdown at all.
     expect(screen.queryByTestId('row-breakdown-1')).not.toBeInTheDocument();
+  });
+
+  it('shows cards for a scored column and omits them for an empty one', async () => {
+    const details = [
+      zero(),
+      { cards: [card('DIAMOND', 12)], fifteens: 0, pairs: 0, runs: 3, flush: 0, nobs: 0, total: 3 },
+      zero(),
+      zero(),
+    ];
+    mockExec.mockResolvedValue(makeState({ colDetails: details, colScores: [0, 3, 0, 0], phase: 1 }));
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('col-score-cards-1')).toBeInTheDocument());
+    expect(screen.getByTestId('col-score-cards-1')).toHaveTextContent('♦ Q');
+    expect(screen.queryByTestId('col-score-cards-0')).not.toBeInTheDocument();
   });
 
   // #6088: 公式の内訳はスターターがめくれる 16 枚目まで**必ず 0**。対局中に

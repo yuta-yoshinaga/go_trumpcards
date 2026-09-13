@@ -69,9 +69,15 @@ describe('formatCribbageSquaresState', () => {
 
   // Only the components that scored are listed; a row of zeros would bury them.
   it('lists only the scoring components of a hand', () => {
-    const details = [{ fifteens: 4, pairs: 2, runs: 0, flush: 0, nobs: 0, total: 6 }, zero(), zero(), zero()];
+    const details = [
+      { cards: [card('HEART', 5), card('CLOVER', 5)], fifteens: 4, pairs: 2, runs: 0, flush: 0, nobs: 0, total: 6 },
+      zero(),
+      zero(),
+      zero(),
+    ];
     const out = formatCribbageSquaresState(makeState({ rowDetails: details, rowScores: [6, 0, 0, 0] }));
     expect(out).toContain('15s 4');
+    expect(out).toContain('♥5 ♣5');
     expect(out).toContain('pairs 2');
     expect(out).not.toContain('runs 0');
   });

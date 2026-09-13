@@ -43,13 +43,13 @@ func (pr *CribbageSquaresWebPresenter) Output(p interfaces.CribbageSquaresGame, 
 	resObj.RowDetails = make([]*controller.CribbageSquaresWebOutputScore, domain.CribbageSquaresGridSize)
 	resObj.ColDetails = make([]*controller.CribbageSquaresWebOutputScore, domain.CribbageSquaresGridSize)
 	// 確定ぶんは別枠。公式のスコアはスターターが出るまで 0 のまま据え置く (#6088)。
-	resObj.RowPartialDetails = make([]*controller.CribbageSquaresWebOutputScore, domain.CribbageSquaresGridSize)
-	resObj.ColPartialDetails = make([]*controller.CribbageSquaresWebOutputScore, domain.CribbageSquaresGridSize)
+	resObj.RowPartialDetails = make([]*controller.CribbageSquaresWebOutputPartialScore, domain.CribbageSquaresGridSize)
+	resObj.ColPartialDetails = make([]*controller.CribbageSquaresWebOutputPartialScore, domain.CribbageSquaresGridSize)
 	for i := range domain.CribbageSquaresGridSize {
-		resObj.RowDetails[i] = cribbageSquaresScoreOutput(p.RowDetail(i))
-		resObj.ColDetails[i] = cribbageSquaresScoreOutput(p.ColDetail(i))
-		resObj.RowPartialDetails[i] = cribbageSquaresScoreOutput(p.RowPartialDetail(i))
-		resObj.ColPartialDetails[i] = cribbageSquaresScoreOutput(p.ColPartialDetail(i))
+		resObj.RowDetails[i] = cribbageSquaresScoreOutput(p.RowDetail(i), cribbageSquaresLineCards(board, i, true))
+		resObj.ColDetails[i] = cribbageSquaresScoreOutput(p.ColDetail(i), cribbageSquaresLineCards(board, i, false))
+		resObj.RowPartialDetails[i] = cribbageSquaresPartialScoreOutput(p.RowPartialDetail(i))
+		resObj.ColPartialDetails[i] = cribbageSquaresPartialScoreOutput(p.ColPartialDetail(i))
 		resObj.RowScores[i] = resObj.RowDetails[i].Total
 		resObj.ColScores[i] = resObj.ColDetails[i].Total
 		resObj.TotalScore += resObj.RowScores[i] + resObj.ColScores[i]
@@ -106,8 +106,15 @@ func (pr *CribbageSquaresWebPresenter) HintOutput(p interfaces.CribbageSquaresGa
 }
 
 // cribbageSquaresScoreOutput はクリベッジの得点内訳を JSON 用の形に移す。
-func cribbageSquaresScoreOutput(d domain.CribbageScoreDetail) *controller.CribbageSquaresWebOutputScore {
+func cribbageSquaresScoreOutput(d domain.CribbageScoreDetail, cards []*domain.Card) *controller.CribbageSquaresWebOutputScore {
+	outputs := make([]*controller.WebOutputCard, 0, len(cards))
+	for _, card := range cards {
+		if output := cardToOutput(card); output != nil {
+			outputs = append(outputs, output)
+		}
+	}
 	return &controller.CribbageSquaresWebOutputScore{
+		Cards:    outputs,
 		Fifteens: d.Fifteens,
 		Pairs:    d.Pairs,
 		Runs:     d.Runs,
@@ -115,6 +122,31 @@ func cribbageSquaresScoreOutput(d domain.CribbageScoreDetail) *controller.Cribba
 		Nobs:     d.Nobs,
 		Total:    d.Total,
 	}
+}
+
+func cribbageSquaresPartialScoreOutput(d domain.CribbageScoreDetail) *controller.CribbageSquaresWebOutputPartialScore {
+	return &controller.CribbageSquaresWebOutputPartialScore{
+		Fifteens: d.Fifteens,
+		Pairs:    d.Pairs,
+		Runs:     d.Runs,
+		Flush:    d.Flush,
+		Nobs:     d.Nobs,
+		Total:    d.Total,
+	}
+}
+
+func cribbageSquaresLineCards(board [domain.CribbageSquaresGridSize][domain.CribbageSquaresGridSize]*domain.Card, index int, row bool) []*domain.Card {
+	cards := make([]*domain.Card, 0, domain.CribbageSquaresGridSize)
+	for i := range domain.CribbageSquaresGridSize {
+		card := board[index][i]
+		if !row {
+			card = board[i][index]
+		}
+		if card != nil {
+			cards = append(cards, card)
+		}
+	}
+	return cards
 }
 
 // cribbageSquaresWebHint はドメインのヒントを JSON 用の形に移す。

@@ -419,7 +419,16 @@ function ColoradoPageContent() {
                       className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${selected ? 'ring-2 ring-ds-warning' : ''} ${hintTableau === idx || hintTableauTarget === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${isTarget && !selected ? 'ring-2 ring-ds-info/70' : ''}`}
                     >
                       {top ? (
-                        <AnimatedCard card={top} width={cardWidth} />
+                        <div className="flex flex-col items-center">
+                          {pile.map((card, cardIndex) => (
+                            <AnimatedCard
+                              key={`t-${idx.toString()}-card-${cardIndex.toString()}`}
+                              card={card}
+                              width={cardWidth}
+                              style={cardIndex === 0 ? undefined : { marginTop: -Math.round(cardWidth * 1.15) }}
+                            />
+                          ))}
+                        </div>
                       ) : (
                         <div
                           style={{ width: cardWidth, height: cardHeight }}
