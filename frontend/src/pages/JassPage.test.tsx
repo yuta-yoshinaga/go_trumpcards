@@ -59,6 +59,7 @@ function makeState(overrides: Partial<JassResponse> = {}): JassResponse {
     gameEndFlag: false,
     winnerTeam: -1,
     leadPlayerIdx: 0,
+    validPlayIndices: [0, 1, 2],
     message: '',
     config: {
       cpuDifficulty: 1,
@@ -147,6 +148,24 @@ describe('JassPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, 0));
+  });
+
+  it('dims cards outside validPlayIndices on the human play turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.PLAY, validPlayIndices: [1] }));
+    renderWithProviders(<JassPage />);
+
+    const cards = await screen.findAllByRole('button', { name: /♠ J|♥ 10|♣ 9/ });
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
+    expect(cards[2]).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('does not restrict cards during a CPU play turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.PLAY, currentPlayerIdx: 1, validPlayIndices: [] }));
+    renderWithProviders(<JassPage />);
+
+    const cards = await screen.findAllByRole('button', { name: /♠ J|♥ 10|♣ 9/ });
+    for (const card of cards) expect(card).not.toHaveAttribute('aria-disabled', 'true');
   });
 
   it('renders the team score table during play', async () => {

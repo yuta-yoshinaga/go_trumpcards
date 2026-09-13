@@ -1,15 +1,27 @@
 package presenter_test
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
+
+func TestTwoTenJackWebPresenter_ValidPlayIndices(t *testing.T) {
+	m, _ := setupTTJWebMock()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+	m.On("GetValidPlayIndices", 0).Return([]int{0, 2})
+
+	var output controller.TwoTenJackWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.TwoTenJackWebPresenter).Output(m, nil)), &output))
+	assert.Equal(t, []int{0, 2}, output.ValidPlayIndices)
+}
 
 func setupTTJWebMock() (*interfaces.MockTwoTenJackGame, []*domain.TwoTenJackPlayer) {
 	m := new(interfaces.MockTwoTenJackGame)
@@ -22,6 +34,8 @@ func setupTTJWebMock() (*interfaces.MockTwoTenJackGame, []*domain.TwoTenJackPlay
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.TwoTenJackPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("IsHumanTurn").Return(true).Maybe()
+	m.On("GetValidPlayIndices", 0).Return([]int{}).Maybe()
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultTwoTenJackConfig())

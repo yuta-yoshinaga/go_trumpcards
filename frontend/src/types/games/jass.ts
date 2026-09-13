@@ -59,6 +59,7 @@ export interface JassResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   winnerTeam: number;
   leadPlayerIdx: number;
+  validPlayIndices: number[];
   config: JassConfig;
   hint?: JassHint;
 }

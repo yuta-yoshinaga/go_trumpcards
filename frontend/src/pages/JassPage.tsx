@@ -383,6 +383,7 @@ function JassPageContent() {
             cardWidth={cardWidth}
             isMobile={isMobile}
             dataTutorialPrefix="ja"
+            validIndices={isHumanTurn ? state.validPlayIndices : undefined}
           />
         )}
 

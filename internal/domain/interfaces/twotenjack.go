@@ -37,6 +37,8 @@ type TwoTenJackGame interface {
 	IsHumanTurn() bool
 	// IsHumanDeclareTurn 現在の宣言手番が人間かを返す
 	IsHumanDeclareTurn() bool
+	// GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
+	GetValidPlayIndices(playerIdx int) []int
 	// GetRoundNumber 現在のラウンド番号を取得する
 	GetRoundNumber() int
 	// GetTrickNumber 現在のトリック番号を取得する

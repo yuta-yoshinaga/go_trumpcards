@@ -20,7 +20,7 @@ test.describe('Jass (Schieber) E2E', () => {
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
     const suitButton = page.getByRole('button', { name: /♠|♣|♥|♦/ }).first();
-    const handCards = page.locator('button[aria-pressed]:has(img)');
+    const handCards = page.locator('button[aria-pressed]:has(img):not([aria-disabled="true"])');
     const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
 
     const MAX_TURNS = 60;

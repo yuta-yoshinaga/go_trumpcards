@@ -68,6 +68,7 @@ type JassWebOutput struct {
 	GameEndFlag      bool                   `json:"gameEndFlag"`
 	WinnerTeam       int                    `json:"winnerTeam"`
 	LeadPlayerIdx    int                    `json:"leadPlayerIdx"`
+	ValidPlayIndices []int                  `json:"validPlayIndices"`
 	Hint             *JassWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config JassWebOutputConfig `json:"config"`

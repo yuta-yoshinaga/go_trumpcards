@@ -181,6 +181,38 @@ describe('TwoTenJackPage', () => {
     expect(screen.getByRole('button', { name: '\u51fa\u3059' })).not.toBeDisabled();
   });
 
+  it('dims cards outside validPlayIndices on the human play turn', async () => {
+    mockExec.mockResolvedValue(makeTwoTenJackState({ validPlayIndices: [1] }));
+    renderWithProviders(<TwoTenJackPage />);
+
+    const cards = await screen.findAllByRole('button', { name: /♠ A|♥ J/ });
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('does not restrict cards during a CPU play turn', async () => {
+    mockExec.mockResolvedValue(makeTwoTenJackState({ currentPlayerIdx: 1, validPlayIndices: [] }));
+    renderWithProviders(<TwoTenJackPage />);
+
+    const cards = await screen.findAllByRole('button', { name: /♠ A|♥ J/ });
+    for (const card of cards) expect(card).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('keeps the hint highlight on a legal card', async () => {
+    const playState = makeTwoTenJackState({ validPlayIndices: [0] });
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByTestId('tt-hint-button')).toBeInTheDocument());
+    mockExec.mockResolvedValueOnce({ ...playState, hint: { cardIndex: 0, reason: 'lead' } });
+    fireEvent.click(screen.getByTestId('tt-hint-button'));
+
+    const cards = await screen.findAllByRole('button', { name: /♠ A|♥ J/ });
+    await waitFor(() => expect(screen.getByTestId('tt-hint')).toBeInTheDocument());
+    expect(cards[0]).not.toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByTestId('tt-hint')).toHaveTextContent('[0]');
+  });
+
   it('does not show play button when not human turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<TwoTenJackPage />);
