@@ -110,6 +110,7 @@ func (p *KoenigrufenWebPresenter) buildBase(g interfaces.KoenigrufenGame) *contr
 	resObj.TalonCount = g.GetTalonCount()
 	resObj.StashOwner = g.GetStashOwner()
 	resObj.Outcome = int(g.GetOutcome())
+	resObj.TeamPoints = g.GetTeamPoints()
 	resObj.Result = int(g.GetResult())
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerPlayer = g.GetWinnerPlayer()

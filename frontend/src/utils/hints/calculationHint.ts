@@ -9,6 +9,15 @@ export function getCalculationHint(state: CalculationResponse): HintResult | nul
   if (state.phase >= PHASE_GAME_CLEAR) return null;
   if (!state.hint) return null;
 
+  if (state.hint.fromZone === 'stockToWaste') {
+    return {
+      targetAction: `stock-to-waste${state.hint.wasteIdx}`,
+      reason: 'frontendHint.calculationStockToWaste',
+      reasonParams: { idx: state.hint.wasteIdx },
+      confidence: 'strong',
+    };
+  }
+
   if (state.hint.fromZone === 'stock') {
     return {
       targetAction: `stock-to-f${state.hint.foundationIdx}`,

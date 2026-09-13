@@ -55,6 +55,14 @@
   "settings": {
     "title": "Settings"
   },
+  "session": {
+    "title": "Session results",
+    "tally": "{{wins}}W {{losses}}L {{pushes}}P",
+    "hands": "{{hands}} hands",
+    "net": "Net",
+    "note": "Saved in this browser",
+    "clear": "Clear"
+  },
   "betGuide": "Set your ante and optional bonus side bet",
   "payoutRef": {
     "title": "Payout Table",

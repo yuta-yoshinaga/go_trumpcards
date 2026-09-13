@@ -29,9 +29,10 @@ const CalculationWasteCnt = 4
 
 // CalculationHint カルキュレーションのヒント
 type CalculationHint struct {
-	// FromZone 移動元ゾーン "stock" または "waste"
+	// FromZone 移動元ゾーン "stock" または "waste"。"stockToWaste" は
+	// ストックをウェイストへ捨てるヒントを表す新しいヒント種別。
 	FromZone string
-	// WasteIdx 移動元がウェイストの場合のインデックス、stockの場合は -1
+	// WasteIdx 移動元がウェイストの場合は移動元、stockToWasteの場合は移動先。
 	WasteIdx int
 	// FoundationIdx 移動先ファンデーションのインデックス
 	FoundationIdx int
@@ -212,7 +213,35 @@ func (c *Calculation) GetHint() *CalculationHint {
 			}
 		}
 	}
-	return nil
+	if len(c.stock) == 0 {
+		return nil
+	}
+	// When the stock card cannot advance a foundation, the only legal move is
+	// to bury it in a waste. Preserve cards needed soonest by the foundations:
+	// reuse GetUpcomingFoundationRanks (the same +1/+2/+3/+4 look-ahead used by
+	// the web preview), and choose the waste whose top rank is needed furthest
+	// ahead. An empty waste is safest because it buries nothing. The scores are
+	// ordered as empty (1000) > outside the look-ahead (MaxLookAhead+1) > inside
+	// the look-ahead (rankIdx+1), so a larger score means safer to bury.
+	bestWaste, bestScore := -1, -1
+	for wIdx, waste := range c.wastes {
+		score := 1000
+		if len(waste) > 0 {
+			score = CalculationMaxLookAhead + 1
+			topRank := waste[len(waste)-1].GetValue()
+			for fIdx := range CalculationFoundationCnt {
+				for rankIdx, rank := range c.GetUpcomingFoundationRanks(fIdx, CalculationMaxLookAhead) {
+					if rank == topRank && rankIdx+1 < score {
+						score = rankIdx + 1
+					}
+				}
+			}
+		}
+		if score > bestScore {
+			bestWaste, bestScore = wIdx, score
+		}
+	}
+	return &CalculationHint{FromZone: "stockToWaste", WasteIdx: bestWaste, FoundationIdx: -1}
 }
 
 // AutoComplete オートコンプリート（ストックが空の場合、残るウェイストをファンデーションに自動で送る）。

@@ -308,6 +308,18 @@ describe('CalculationPage', () => {
     expect(screen.getByText(/ウェイスト 0 → ファンデーション 1/)).toBeInTheDocument();
   });
 
+  it('renders a stock-to-waste hint and marks its destination', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'stockToWaste', wasteIdx: 3, foundationIdx: -1 },
+      messageCode: 'calculation.hintAvailable',
+    });
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByText(/ストック → ウェイスト 3/)).toBeInTheDocument();
+    expect(screen.getByTestId('calc-waste-button-3').className).toContain('ring-ds-success');
+  });
+
   it('renders a stalemate escape button when the game is stalled', async () => {
     mockExec.mockResolvedValue({
       ...playingState,

@@ -156,6 +156,50 @@ describe('TexasHoldemBonusPage', () => {
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
+  it('records a losing END round once even when END renders again', async () => {
+    mockApi.mockResolvedValue(endDealerWins);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(screen.getByTestId('thb-session-tally')).toHaveTextContent('0勝 1敗 0分'));
+    expect(screen.getByTestId('thb-session-net')).toHaveTextContent('収支: -300');
+    fireEvent.click(screen.getByRole('checkbox'));
+    await waitFor(() => expect(screen.getByTestId('thb-session-tally')).toHaveTextContent('0勝 1敗 0分'));
+  });
+
+  it('records a winning END round', async () => {
+    mockApi.mockResolvedValue(endPlayerWins);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(screen.getByTestId('thb-session-tally')).toHaveTextContent('1勝 0敗 0分'));
+  });
+
+  it('records a push END round', async () => {
+    mockApi.mockResolvedValue(endPush);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(screen.getByTestId('thb-session-tally')).toHaveTextContent('0勝 0敗 1分'));
+  });
+
+  it('does not record a round before END phase', async () => {
+    mockApi.mockResolvedValue(preFlopState);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ/ })).toBeInTheDocument());
+    expect(screen.queryByTestId('thb-session-stats')).not.toBeInTheDocument();
+  });
+
+  it('hides the session block until a hand has been recorded, and clears it on request', async () => {
+    // **ハンド数が 0 のあいだはブロックごと出ない** (`tally.hands > 0` の枝)。
+    mockApi.mockResolvedValue(preFlopState);
+    const { unmount } = renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ/ })).toBeInTheDocument());
+    expect(screen.queryByTestId('thb-session-stats')).not.toBeInTheDocument();
+    unmount();
+
+    mockApi.mockResolvedValue(endDealerWins);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(screen.getByTestId('thb-session-stats')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('thb-session-clear'));
+    await waitFor(() => expect(screen.queryByTestId('thb-session-stats')).not.toBeInTheDocument());
+  });
+
   it('previews the Play bet cost (2× ante) on the pre-flop button', async () => {
     mockApi.mockResolvedValue(preFlopState);
     renderWithProviders(<TexasHoldemBonusPage />);

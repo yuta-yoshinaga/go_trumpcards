@@ -167,6 +167,22 @@ function GrandfathersClockPageContent() {
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
 
+  /**
+   * Mirrors the domain's conditional clock-face placement rule for the selected tableau top.
+   *
+   * domain_rule_quoted: `canPlaceOnFoundation` requires a non-nil card, a non-empty and
+   * incomplete face, the same suit as its top card, and the next rank (K wraps to A).
+   */
+  const canPlaceSelectedOnFace = (fIdx: number): boolean => {
+    if (selectedSource?.zone !== 'tableau' || selectedSource.col === undefined) return false;
+    const card = state.tableau[selectedSource.col]?.at(-1)?.card;
+    const face = state.foundation[fIdx];
+    const top = face?.cards.at(-1);
+    if (!card || !face || !top || face.complete) return false;
+    const nextRank = top.value >= 13 ? 1 : top.value + 1;
+    return card.design === top.design && card.value === nextRank;
+  };
+
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx] ?? [];
     const tableauColZone: GrandfathersClockMoveZone = { zone: 'tableau', col: colIdx };
@@ -282,15 +298,16 @@ function GrandfathersClockPageContent() {
               {state.foundation.map((face, idx) => {
                 const faceZone: GrandfathersClockMoveZone = { zone: 'foundation', col: idx };
                 const top = face.cards.length > 0 ? face.cards[face.cards.length - 1] : null;
+                const canPlace = canPlaceSelectedOnFace(idx);
                 return (
                   <div key={`f-${idx.toString()}`} className="text-center">
                     <div className="text-game-text-muted text-xs mb-1">
                       {t('hourLabel', { hour: CLOCK_HOURS[idx] })}
                     </div>
                     <DropZone
-                      isDropTarget={dnd.isDropTarget(faceZone)}
-                      onDragOver={dnd.handleDragOver(faceZone)}
-                      onDrop={dnd.handleDrop(faceZone)}
+                      isDropTarget={canPlace && dnd.isDropTarget(faceZone)}
+                      onDragOver={canPlace ? dnd.handleDragOver(faceZone) : (event) => event.preventDefault()}
+                      onDrop={canPlace ? dnd.handleDrop(faceZone) : () => undefined}
                       onDragLeave={dnd.handleDragLeave}
                     >
                       {top ? (
@@ -306,13 +323,13 @@ function GrandfathersClockPageContent() {
                           }}
                           disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
                           aria-disabled={face.complete || undefined}
-                          aria-label={t('faceAriaLabel', {
+                          aria-label={`${t('faceAriaLabel', {
                             idx,
                             hour: CLOCK_HOURS[idx],
                             target: face.targetRank,
                             count: face.cards.length,
-                          })}
-                          className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${face.complete ? 'opacity-60 cursor-default' : 'cursor-pointer'}`}
+                          })} ${selectedSource ? t(canPlace ? 'facePlacementAvailable' : 'facePlacementUnavailable') : ''}`}
+                          className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${face.complete ? 'opacity-60 cursor-default' : canPlace ? 'ring-2 ring-ds-success' : selectedSource ? 'opacity-50' : 'cursor-pointer'}`}
                         >
                           <AnimatedCard
                             card={top}

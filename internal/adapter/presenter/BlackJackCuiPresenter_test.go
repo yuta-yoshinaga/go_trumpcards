@@ -387,6 +387,25 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 	})
 }
 
+func TestBlackJackCuiPresenterSpanish21Player21BeatsDealer21Message(t *testing.T) {
+	bj := domain.NewSpanish21BlackJack()
+	bj.Reset()
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
+	bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+	bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 11, false))
+	bj.SetPhase(domain.BJPhaseAction)
+	assert.NoError(t, bj.PlayerStand())
+
+	output := new(presenter.BlackJackCuiPresenter).Output(bj, nil)
+	assert.Contains(t, output, "スパニッシュ21では、ディーラーも21でもプレイヤーの21が勝ちです。")
+	assert.NotContains(t, output, i18n.T("blackjack.resultWin"))
+	assert.NotContains(t, output, i18n.T("blackjack.resultDraw"))
+	assert.NotContains(t, output, i18n.T("blackjack.resultLose"))
+}
+
 func TestBlackJackCuiPresenter_SurrenderAndHint(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)

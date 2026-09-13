@@ -5,6 +5,7 @@ import type { BaseGameResponse, Card } from '../common';
 
 /** A suggested move hint in Calculation. */
 export interface CalculationHint {
+  /** `stockToWaste` means `wasteIdx` is the recommended destination. */
   fromZone: string;
   wasteIdx: number;
   foundationIdx: number;

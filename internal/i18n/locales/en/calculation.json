@@ -28,6 +28,7 @@
   "stockLine": "Stock: {{count}}",
   "stockNext": " next: {{card}}",
   "hintStock": "Hint: stock → foundation {{foundation}}",
+  "hintStockToWaste": "Hint: stock → waste {{waste}} (least likely to bury a needed card soon)",
   "hintWaste": "Hint: waste {{waste}} → foundation {{foundation}}",
   "nextRank": " -> next: {{rank}}",
   "helpExampleHint": "  h                   ask for a move",

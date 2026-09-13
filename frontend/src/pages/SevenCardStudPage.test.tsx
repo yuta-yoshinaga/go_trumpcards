@@ -432,7 +432,14 @@ describe('SevenCardStudPage', () => {
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        ante: 1,
+        bettingLimit: 0,
+        cpuMetaAI: false,
+        tournamentMode: false,
+      }),
+    );
   });
 
   it('uses outline style for reset button', async () => {
@@ -737,7 +744,70 @@ describe('SevenCardStudPage', () => {
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: true }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        ante: 1,
+        bettingLimit: 0,
+        cpuMetaAI: true,
+        tournamentMode: false,
+      }),
+    );
+  });
+
+  it('enables tournament mode from settings and sends it on reset', async () => {
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const tournamentCheckbox = screen.getByRole('checkbox', { name: 'トーナメントモード' });
+    fireEvent.click(tournamentCheckbox);
+    expect(tournamentCheckbox).toBeChecked();
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        ante: 1,
+        bettingLimit: 0,
+        cpuMetaAI: false,
+        tournamentMode: true,
+      }),
+    );
+  });
+
+  it('sends changed ante and betting limit on reset', async () => {
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.change(screen.getByLabelText('アンティ額'), { target: { value: '5' } });
+    fireEvent.change(screen.getByLabelText('ベッティングリミット'), { target: { value: '2' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        ante: 5,
+        bettingLimit: 2,
+        cpuMetaAI: false,
+        tournamentMode: false,
+      }),
+    );
+  });
+
+  it('renders the tournament hand block only when enabled', async () => {
+    mockExec.mockResolvedValue({ ...thirdStreetState, tournamentMode: true, handCount: 3, anteLevelHands: 10 });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByText(/ハンド#3/)).toBeInTheDocument());
+  });
+
+  it('does not render the tournament hand block when disabled', async () => {
+    mockExec.mockResolvedValue({ ...thirdStreetState, tournamentMode: false, handCount: 3, anteLevelHands: 10 });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByText('サードストリート')).toBeInTheDocument());
+    expect(screen.queryByText(/ハンド#3/)).not.toBeInTheDocument();
   });
 
   // ---- end phase + win celebration ----

@@ -97,6 +97,20 @@ describe('GrandfathersClockPage', () => {
     expect(screen.getByLabelText(/文字盤11 \(12時\) 目標12/)).toBeInTheDocument();
   });
 
+  it('marks only legal clock faces after selecting a card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[{ card: card('HEART', 3), faceUp: true }]]),
+    });
+    renderWithProviders(<GrandfathersClockPage />);
+    const source = await screen.findByRole('button', { name: /^♥ 3（/ });
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+
+    expect(screen.getByLabelText(/文字盤0 \(1時\).*配置できます/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/文字盤1 \(2時\).*配置できません/)).toBeInTheDocument();
+  });
+
   it('labels all eight tableau columns with their 0-based index', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<GrandfathersClockPage />);

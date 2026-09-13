@@ -5,6 +5,7 @@
   "helpPlay": "  p <1|2|3>            play (1x/2x/3x ante)",
   "helpFold": "  f                    fold",
   "chipsLine": "chips: {{chips}}",
+  "chipsRefilled": "Your balance fell below the minimum round cost, so it was topped up to {{chips}}",
   "phaseLine": "phase: {{phase}}",
   "anteLine": "ante: {{amount}}",
   "handLine": "hand: {{hand}}",

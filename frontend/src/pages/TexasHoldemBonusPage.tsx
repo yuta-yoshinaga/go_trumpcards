@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { texasholdembonusApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -24,6 +24,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
+import { outcomeFromTexasHoldemBonusResult, useTexasHoldemBonusStats } from '../hooks/useTexasHoldemBonusStats';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -121,6 +122,19 @@ function TexasHoldemBonusPageContent() {
   const isTurnPhase = state?.phase === TexasHoldemBonusPhase.TURN;
   const isPostFlopPhase = isFlopPhase || isTurnPhase;
   const isEndPhase = state?.phase === TexasHoldemBonusPhase.END;
+  const { tally, recordRound, clearHistory } = useTexasHoldemBonusStats();
+  const recordedRef = useRef(false);
+  const net = state ? state.totalPayout - (state.anteBet + state.bonusBet + state.totalPlayBet) : 0;
+  useEffect(() => {
+    if (isEndPhase) {
+      if (!recordedRef.current) {
+        recordedRef.current = true;
+        recordRound({ outcome: outcomeFromTexasHoldemBonusResult(state.result), net });
+      }
+    } else {
+      recordedRef.current = false;
+    }
+  }, [isEndPhase, state, net, recordRound]);
 
   const actionBindings = useMemo(
     () => [
@@ -200,6 +214,36 @@ function TexasHoldemBonusPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {tally.hands > 0 && (
+              <div
+                data-testid="thb-session-stats"
+                className="mx-auto mb-3 max-w-sm rounded-lg bg-black/30 px-4 py-2 text-center text-sm"
+              >
+                <div className="font-bold text-ds-text-primary mb-1">{t('session.title')}</div>
+                <div className="flex items-center justify-center gap-3 text-ds-text-muted">
+                  <span data-testid="thb-session-tally">
+                    {t('session.tally', { wins: tally.wins, losses: tally.losses, pushes: tally.pushes })}
+                  </span>
+                  <span>{t('session.hands', { hands: tally.hands })}</span>
+                  <span data-testid="thb-session-net" className="font-bold">
+                    {t('session.net')}: {tally.net > 0 ? `+${tally.net}` : tally.net}
+                  </span>
+                </div>
+                <div className="mt-1 flex items-center justify-center gap-3 text-xs text-ds-text-muted">
+                  <span>{t('session.note')}</span>
+                  <button
+                    type="button"
+                    className="underline"
+                    onClick={clearHistory}
+                    disabled={loading}
+                    data-testid="thb-session-clear"
+                  >
+                    {t('session.clear')}
+                  </button>
+                </div>
+              </div>
+            )}
 
             <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer min-h-[44px]">
               <input

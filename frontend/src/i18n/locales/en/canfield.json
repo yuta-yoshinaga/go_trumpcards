@@ -11,6 +11,7 @@
   "foundation": "Foundation",
   "tableau": "Tableau",
   "baseRank": "Base rank",
+  "baseRankRule": "Foundations start at the base rank and wrap from K back to A",
   "moveCount": "Moves",
   "draw": "Draw",
   "giveup": "Give up",
