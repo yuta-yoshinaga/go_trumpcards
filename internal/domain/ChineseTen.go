@@ -458,6 +458,9 @@ func (c *ChineseTen) GetCurrentPlayerIdx() int { return c.currentIdx }
 // GetPendingCard は選択待ちの札を返す (無ければ nil)。
 func (c *ChineseTen) GetPendingCard() *Card { return c.pending }
 
+// GetPendingFlip は選択待ちの札が山札めくりに由来するかを返す。
+func (c *ChineseTen) GetPendingFlip() bool { return c.pendingFlip }
+
 // GetSelectableIndices は選択フェーズで取れる場札の添字を返す。
 func (c *ChineseTen) GetSelectableIndices() []int {
 	if c.phase != ChineseTenPhaseSelect {

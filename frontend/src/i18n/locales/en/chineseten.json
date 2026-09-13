@@ -9,6 +9,7 @@
   "opponentHand": "CPU hand: {{n}} cards",
   "opponentHandAriaLabel": "CPU hand, {{n}} cards face down",
   "pendingLine": "Played:",
+  "pendingFlipLine": "Flipped:",
   "yourHand": "Your hand",
   "yourCaptured": "Your captures",
   "opponentCaptured": "CPU captures",

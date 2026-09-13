@@ -53,6 +53,7 @@ func (p *ChineseTenWebPresenter) buildBase(c interfaces.ChineseTenGame) *control
 	resObj.WinnerIdx = c.GetWinnerIdx()
 	resObj.Layout = chineseTenCardsOutput(c.GetLayout())
 	resObj.PendingCard = chineseTenCardOutput(c.GetPendingCard())
+	resObj.PendingFlip = c.GetPendingFlip()
 
 	sel := c.GetSelectableIndices()
 	resObj.SelectableIndices = make([]int, 0, len(sel))

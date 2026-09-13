@@ -41,6 +41,7 @@ func ctStub(phase domain.ChineseTenPhase, winner int, gameEnd bool) *interfaces.
 	g.On("GetStockCount").Return(0)
 	g.On("GetLayout").Return([]*domain.Card{})
 	g.On("GetPendingCard").Return((*domain.Card)(nil))
+	g.On("GetPendingFlip").Return(false)
 	g.On("GetSelectableIndices").Return([]int{})
 	g.On("GetConfig").Return(domain.DefaultChineseTenConfig())
 	g.On("GetPlayers").Return([]*domain.ChineseTenPlayer{
@@ -110,6 +111,43 @@ func TestChineseTenWebPresenter_ShipsSelectableIndices(t *testing.T) {
 	assert.NotNil(t, out["pendingCard"])
 }
 
+func TestChineseTenWebPresenter_ShipsPendingFlipOnlyWhenTrue(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		flip bool
+		want bool
+	}{
+		{name: "flip", flip: true, want: true},
+		{name: "hand", flip: false, want: false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := ctStub(domain.ChineseTenPhaseSelect, -1, false)
+			g.ExpectedCalls = nil
+			g.On("GetPhase").Return(domain.ChineseTenPhaseSelect)
+			g.On("GetGameEndFlag").Return(false)
+			g.On("GetCurrentPlayerIdx").Return(0)
+			g.On("GetWinnerIdx").Return(-1)
+			g.On("GetStockCount").Return(0)
+			g.On("GetLayout").Return([]*domain.Card{})
+			g.On("GetPendingCard").Return((*domain.Card)(nil))
+			g.On("GetPendingFlip").Return(tc.flip)
+			g.On("GetSelectableIndices").Return([]int{})
+			g.On("GetConfig").Return(domain.DefaultChineseTenConfig())
+			g.On("GetPlayers").Return([]*domain.ChineseTenPlayer{domain.NewChineseTenPlayer(true)})
+			g.On("GetCaptured", mock.Anything).Return([]*domain.Card{})
+			g.On("GetScore", mock.Anything).Return(0)
+			g.On("ChineseTenCpuDecide", mock.Anything).Return(domain.ChineseTenCpuAction{HandIdx: 0, LayoutIdx: 0})
+
+			out := ctDecode(t, new(ChineseTenWebPresenter).Output(g, nil))
+			if tc.want {
+				assert.Equal(t, true, out["pendingFlip"])
+			} else {
+				assert.NotContains(t, out, "pendingFlip")
+			}
+		})
+	}
+}
+
 func TestChineseTenWebPresenter_ReportsEveryOutcome(t *testing.T) {
 	for _, tc := range []struct {
 		name   string
@@ -158,6 +196,7 @@ func TestChineseTenWebPresenter_HintCoversEveryBranch(t *testing.T) {
 		g.On("GetStockCount").Return(0)
 		g.On("GetLayout").Return([]*domain.Card{})
 		g.On("GetPendingCard").Return((*domain.Card)(nil))
+		g.On("GetPendingFlip").Return(false)
 		g.On("GetSelectableIndices").Return([]int{})
 		g.On("GetConfig").Return(domain.DefaultChineseTenConfig())
 		g.On("GetPlayers").Return([]*domain.ChineseTenPlayer{domain.NewChineseTenPlayer(true)})
@@ -178,6 +217,7 @@ func TestChineseTenWebPresenter_HintCoversEveryBranch(t *testing.T) {
 		g.On("GetStockCount").Return(0)
 		g.On("GetLayout").Return([]*domain.Card{})
 		g.On("GetPendingCard").Return((*domain.Card)(nil))
+		g.On("GetPendingFlip").Return(false)
 		g.On("GetSelectableIndices").Return([]int{1})
 		g.On("GetConfig").Return(domain.DefaultChineseTenConfig())
 		g.On("GetPlayers").Return([]*domain.ChineseTenPlayer{domain.NewChineseTenPlayer(true)})
@@ -210,6 +250,7 @@ func TestChineseTenWebPresenter_HintCoversEveryBranch(t *testing.T) {
 				g.On("GetStockCount").Return(0)
 				g.On("GetLayout").Return([]*domain.Card{})
 				g.On("GetPendingCard").Return((*domain.Card)(nil))
+				g.On("GetPendingFlip").Return(false)
 				g.On("GetSelectableIndices").Return([]int{})
 				g.On("GetConfig").Return(domain.DefaultChineseTenConfig())
 				g.On("GetPlayers").Return([]*domain.ChineseTenPlayer{domain.NewChineseTenPlayer(true)})
@@ -238,6 +279,7 @@ func TestChineseTenWebPresenter_SkipsANilSeatAndRendersTheLog(t *testing.T) {
 	g.On("GetStockCount").Return(0)
 	g.On("GetLayout").Return([]*domain.Card{})
 	g.On("GetPendingCard").Return((*domain.Card)(nil))
+	g.On("GetPendingFlip").Return(false)
 	g.On("GetSelectableIndices").Return([]int{})
 	g.On("GetConfig").Return(domain.DefaultChineseTenConfig())
 	g.On("GetPlayers").Return([]*domain.ChineseTenPlayer{domain.NewChineseTenPlayer(true), nil})

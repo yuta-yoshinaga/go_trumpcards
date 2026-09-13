@@ -47,6 +47,8 @@ export interface ChineseTenResponse extends BaseGameResponse {
   stockCount: number;
   /** The card awaiting a capture choice, if any. */
   pendingCard?: ChineseTenCard;
+  /** Whether {@link ChineseTenResponse.pendingCard} came from the stock flip. */
+  pendingFlip?: boolean;
   /**
    * Layout indices the pending card may take. Carries BOTH capture rules
    * (sum-to-ten for A-9, same rank for 10-K), so the page never re-derives a

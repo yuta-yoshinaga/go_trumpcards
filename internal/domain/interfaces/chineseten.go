@@ -41,6 +41,8 @@ type ChineseTenGame interface {
 	GetScore(idx int) int
 	// GetPendingCard 選択待ちの札を取得する
 	GetPendingCard() *domain.Card
+	// GetPendingFlip 選択待ちの札が山札めくりに由来するかを取得する
+	GetPendingFlip() bool
 	// GetSelectableIndices 選択できる場札の添字を取得する
 	GetSelectableIndices() []int
 	// GetWinnerIdx 勝者の添字を取得する (-1: 引き分け)

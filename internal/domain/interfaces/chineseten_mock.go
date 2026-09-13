@@ -80,6 +80,8 @@ func (_m *MockChineseTenGame) GetPendingCard() *domain.Card {
 	return nil
 }
 
+func (_m *MockChineseTenGame) GetPendingFlip() bool { return _m.Called().Bool(0) }
+
 func (_m *MockChineseTenGame) GetSelectableIndices() []int {
 	if v, ok := _m.Called().Get(0).([]int); ok {
 		return v
