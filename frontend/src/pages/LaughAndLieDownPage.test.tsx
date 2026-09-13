@@ -89,6 +89,18 @@ describe('LaughAndLieDownPage', () => {
     expect(screen.getByText(/取り札9枚 · 降りた/)).toBeInTheDocument();
   });
 
+  it('marks the human as laid down when the server reports it', async () => {
+    mockExec.mockResolvedValue(makeState({ players: [human({ laidDown: true, cards: [] }), cpu(1)] }));
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(screen.getByText(/あなたの手札 · 取り札4枚 · 降りた/)).toBeInTheDocument());
+  });
+
+  it('does not mark the human as laid down when the server reports they are still in', async () => {
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(screen.getByText(/あなたの手札 · 取り札4枚/)).toBeInTheDocument());
+    expect(screen.queryByText(/あなたの手札 · 取り札4枚 · 降りた/)).not.toBeInTheDocument();
+  });
+
   it('only plays the hand cards the server marked valid', async () => {
     renderWithProviders(<LaughAndLieDownPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());

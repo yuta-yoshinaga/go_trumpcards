@@ -128,6 +128,36 @@ describe('NertzPage', () => {
     expect(screen.getByRole('button', { name: '35' })).toBeInTheDocument();
   });
 
+  it('renders each CPU tableau and visible waste card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      players: [
+        playingState.players[0],
+        {
+          ...playingState.players[1],
+          tableau: [
+            [{ card: { design: 'SPADE', value: 8 }, faceUp: true }],
+            [{ card: { design: 'HEART', value: 9 }, faceUp: true }],
+            [],
+            [],
+          ],
+          wasteTop: { design: 'CLOVER', value: 4 },
+          wasteSize: 2,
+        },
+      ],
+    });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByAltText('♠ 8')).toBeInTheDocument());
+    expect(screen.getByAltText('♥ 9')).toBeInTheDocument();
+    expect(screen.getByAltText('♣ 4')).toBeInTheDocument();
+    expect(screen.getByText('ウェイスト: 2')).toBeInTheDocument();
+    expect(screen.getByText('ストック: 35')).toBeInTheDocument();
+  });
+
   it('selects a tableau card on click and renders empty columns as placeholders', async () => {
     const foundations: NertzResponse['foundations'] = Array.from({ length: 8 }, () => ({ suit: -1, size: 0 }));
     // One foundation carries a top card (covers the foundation card-image branch).

@@ -303,6 +303,18 @@ describe('ShitheadPage', () => {
     expect(screen.getByTestId('sh-facedown-0')).not.toHaveTextContent('?');
   });
 
+  it('gives each face-down slot a distinct accessible name', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    await screen.findByTestId('sh-facedown-0');
+    expect(screen.getByRole('button', { name: '裏向きの場札 1/3' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '裏向きの場札 2/3' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '裏向きの場札 3/3' })).toBeInTheDocument();
+  });
+
   it('makes face-down cards selectable with a ring when currentSource is facedown', async () => {
     mockExec.mockResolvedValue({ ...humanTurnState, currentSource: 'facedown' });
     renderWithProviders(
