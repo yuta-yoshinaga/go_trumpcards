@@ -4,6 +4,8 @@ package controller
 
 import (
 	"math"
+	"strconv"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -24,7 +26,7 @@ func NewConquianCuiController(ci usecase.ConquianInteractorIF) *ConquianCuiContr
 //
 // メルドコマンド (m/meld) はグループを ';' で区切り、各グループ内のインデックスは
 // スペースまたはカンマ区切りで指定する (例: "m 0,1,2;3" → [[0,1,2],[3]])。
-// 共有ヘルパー parseMeldGroups (Canasta と共通) を利用する。
+// Conquian 固有の parseConquianMeld でグループと延長先を解釈する。
 func (c *ConquianCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
@@ -45,7 +47,8 @@ func (c *ConquianCuiController) Exec(command string) string {
 			case "dd", "drawdiscard":
 				return c.ci.DrawFromDiscard(), true
 			case "m", "meld":
-				return c.ci.Meld(parseMeldGroups(args)), true
+				groups, targets := parseConquianMeld(args)
+				return c.ci.MeldWithTargets(groups, targets), true
 			case "d", "discard":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
 			case "nr", "nextround":
@@ -67,4 +70,29 @@ func (c *ConquianCuiController) Exec(command string) string {
 			}
 		},
 	)
+}
+
+// parseConquianMeld parses groups and optional explicit extension targets.
+// Each group may end in @meldIndex, for example "m 0,1,2;3@1".
+func parseConquianMeld(args []string) ([][]int, []int) {
+	if len(args) == 0 {
+		return nil, nil
+	}
+	groups := make([][]int, 0)
+	targets := make([]int, 0)
+	joined := strings.ReplaceAll(strings.Join(args, " "), " -- ", ";")
+	for _, raw := range strings.Split(joined, ";") {
+		parts := strings.SplitN(raw, "@", 2)
+		indices := strings.FieldsFunc(parts[0], func(r rune) bool { return r == ',' || r == ' ' })
+		group := parseIntList(indices)
+		groups = append(groups, group)
+		target := -1
+		if len(parts) == 2 {
+			if t, err := strconv.Atoi(strings.TrimSpace(parts[1])); err == nil {
+				target = t
+			}
+		}
+		targets = append(targets, target)
+	}
+	return groups, targets
 }

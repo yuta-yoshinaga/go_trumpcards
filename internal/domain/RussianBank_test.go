@@ -363,6 +363,47 @@ func TestRussianBank_StalemateEndsGame(t *testing.T) {
 	}
 }
 
+func TestRussianBank_StalemateUsesStopPointsAsTieBreaker(t *testing.T) {
+	g := newRbGame()
+	rbClearBoard(g)
+	g.current = 0
+	g.players[0].pushReserve(rbCard(CardDesignSpade, 13))
+	g.players[1].pushReserve(rbCard(CardDesignClover, 12))
+	g.stopPoints[1] = 1
+	_ = g.Discard()
+	_ = g.Discard()
+	if g.GetWinner() != 1 {
+		t.Fatalf("winner = %d, want 1 from stop-point tie-break", g.GetWinner())
+	}
+}
+
+func TestRussianBank_StalemateStopPointTieBreakCases(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		stop0      int
+		stop1      int
+		wantWinner int
+	}{
+		{name: "seat zero has more stop points", stop0: 1, stop1: 0, wantWinner: 0},
+		{name: "equal stop points is a draw", stop0: 0, stop1: 0, wantWinner: -1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newRbGame()
+			rbClearBoard(g)
+			g.current = 0
+			g.players[0].pushReserve(rbCard(CardDesignSpade, 13))
+			g.players[1].pushReserve(rbCard(CardDesignClover, 12))
+			g.stopPoints[0] = tc.stop0
+			g.stopPoints[1] = tc.stop1
+			_ = g.Discard()
+			_ = g.Discard()
+			if g.GetWinner() != tc.wantWinner {
+				t.Errorf("winner = %d, want %d", g.GetWinner(), tc.wantWinner)
+			}
+		})
+	}
+}
+
 // **送り先はスートで決まる。**画面が「どこへ行くのか」を示せるよう、各台が
 // 次に受ける札そのものを渡す ── 規則をクライアントに書き写すと必ずずれる (#6473)。
 func TestRussianBank_GetFoundationNextDescribesEachPile(t *testing.T) {

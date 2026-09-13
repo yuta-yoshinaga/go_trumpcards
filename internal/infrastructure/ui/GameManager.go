@@ -5124,6 +5124,7 @@ var gameRegistry = []GameRegistryEntry{
 				"literature.helpAsk",
 				"literature.helpClaim",
 				"literature.helpConfirm",
+				"literature.helpHistory",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),

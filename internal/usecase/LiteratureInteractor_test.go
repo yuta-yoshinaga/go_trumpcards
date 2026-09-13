@@ -4,6 +4,7 @@ package usecase_test
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,6 +17,16 @@ import (
 )
 
 const literatureMockOutput = `{"phase":0}`
+
+type literatureAllAsksPresenter struct {
+	*presenter.MockLiteraturePresenter
+	game interfaces.LiteratureGame
+}
+
+func (p *literatureAllAsksPresenter) AllAsksOutput(g interfaces.LiteratureGame) string {
+	p.game = g
+	return strconv.Itoa(len(g.GetAsks()))
+}
 
 func TestNewLiteratureInteractor_NilGuards(t *testing.T) {
 	pMock := new(presenter.MockLiteraturePresenter)
@@ -179,6 +190,29 @@ func TestLiteratureInteractor_GetConfigAndActionLog(t *testing.T) {
 	li := usecase.NewLiteratureInteractor(gameMock, pMock)
 	assert.Equal(t, cfg, li.GetConfig())
 	assert.Equal(t, `[]`, li.ActionLog())
+}
+
+func TestLiteratureInteractor_AllAsks(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		count int
+	}{
+		{name: "empty", count: 0},
+		{name: "same as board limit", count: 5},
+		{name: "more than board limit", count: 6},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			gameMock := new(interfaces.MockLiteratureGame)
+			gameMock.On("GetAsks").Return(make([]*domain.LiteratureAsk, tc.count))
+			pMock := &literatureAllAsksPresenter{
+				MockLiteraturePresenter: new(presenter.MockLiteraturePresenter),
+			}
+			li := usecase.NewLiteratureInteractor(gameMock, pMock)
+
+			assert.Equal(t, strconv.Itoa(tc.count), li.AllAsks())
+			assert.Same(t, gameMock, pMock.game)
+		})
+	}
 }
 
 func TestLiteratureInteractor_SnapshotAndRestore(t *testing.T) {

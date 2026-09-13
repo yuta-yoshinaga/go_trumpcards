@@ -26,7 +26,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { LiteratureClaim, LiteratureResponse } from '../types/card';
 import { LiteraturePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { LITERATURE_HELP, parseLiteratureCommand } from '../utils/cli/commands/literatureCommands';
+import {
+  LITERATURE_HELP,
+  literatureLocalCommand,
+  parseLiteratureCommand,
+} from '../utils/cli/commands/literatureCommands';
 import { formatLiteratureState } from '../utils/cli/formatters/literatureFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -124,9 +128,9 @@ function LiteraturePageContent() {
       parseCommand: parseLiteratureCommand,
       formatResponse: formatLiteratureState,
       helpText: LITERATURE_HELP,
-      localCommand: hintLocalCommand(frontendHint),
+      localCommand: hintLocalCommand(frontendHint, (input) => (state ? literatureLocalCommand(input, state) : null)),
     }),
-    [frontendHint],
+    [frontendHint, state],
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -290,15 +294,41 @@ function LiteraturePageContent() {
             {state.asks.length > 0 && (
               <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="literature-history">
                 <div className="mb-1 text-ds-text-primary">{t('historyTitle')}</div>
-                {state.asks.slice(-5).map((a, i) => (
-                  <div key={`ask-${a.from}-${a.to}-${a.card?.design}-${a.card?.value}-${i}`}>
-                    {t(a.success ? 'askHitLine' : 'askMissLine', {
-                      from: a.from,
-                      to: a.to,
-                      card: a.card ? `${suitLabel(suitOf(a.card.design))}${a.card.value}` : '?',
-                    })}
-                  </div>
-                ))}
+                <div className="mt-1">
+                  {state.asks.slice(-5).map((a, i) => (
+                    <div
+                      data-testid="literature-recent-ask"
+                      key={`ask-${a.from}-${a.to}-${a.card?.design}-${a.card?.value}-${i}`}
+                    >
+                      {t(a.success ? 'askHitLine' : 'askMissLine', {
+                        from: a.from,
+                        to: a.to,
+                        card: a.card ? `${suitLabel(suitOf(a.card.design))}${a.card.value}` : '?',
+                      })}
+                    </div>
+                  ))}
+                </div>
+                {state.asks.length > 5 && (
+                  <details>
+                    <summary className="cursor-pointer text-ds-text-primary">
+                      {t('historyMore', { count: state.asks.length - 5 })}
+                    </summary>
+                    <div className="mt-1">
+                      {state.asks.slice(0, -5).map((a, i) => (
+                        <div
+                          data-testid="literature-older-ask"
+                          key={`old-ask-${a.from}-${a.to}-${a.card?.design}-${a.card?.value}-${i}`}
+                        >
+                          {t(a.success ? 'askHitLine' : 'askMissLine', {
+                            from: a.from,
+                            to: a.to,
+                            card: a.card ? `${suitLabel(suitOf(a.card.design))}${a.card.value}` : '?',
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                )}
               </div>
             )}
 

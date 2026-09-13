@@ -47,7 +47,7 @@ func (c *LiteratureCuiController) Exec(command string) string {
 			cfg := c.li.GetConfig()
 			return c.li.ResetWithConfig(cfg)
 		},
-		[]string{"a", "ask", "c", "claim", "y", "yes", "log", "l"},
+		[]string{"a", "ask", "c", "claim", "y", "yes", "ah", "history", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			// **確認待ちは宣言と確認以外のどのコマンドでも取り消す。**残したまま
 			// だと、あとで打った y が意図しない宣言を確定させてしまう。
@@ -69,6 +69,8 @@ func (c *LiteratureCuiController) Exec(command string) string {
 				}
 				c.pendingClaim = nil
 				return c.li.Claim(pending.half, pending.holders), true
+			case "ah", "history":
+				return c.li.AllAsks(), true
 			default:
 				return handleCuiLog(cmd, c.li.ActionLog)
 			}

@@ -56,6 +56,15 @@ const HF_TUTORIAL_STEPS: TutorialStep[] = [
   },
   { target: '[data-tutorial="hf-meld-area"]', messageKey: 'tutorial.meldArea', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="hf-actions"]', messageKey: 'tutorial.actionButtons', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="hf-draw-area"]', messageKey: 'tutorial.frozenRule', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="hf-player-hand"]', messageKey: 'tutorial.footRule', placement: 'top', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="hf-meld-area"]',
+    messageKey: 'tutorial.initialMeldRule',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  { target: '[data-tutorial="hf-actions"]', messageKey: 'tutorial.goOutRule', placement: 'top', advanceOn: 'next' },
 ];
 
 /** Hand and Foot game page. */

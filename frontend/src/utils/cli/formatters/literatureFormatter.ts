@@ -42,13 +42,10 @@ export function formatLiteratureState(state: LiteratureResponse): string {
   });
   lines.push('----------');
 
-  // **要求の履歴は公開情報。**直近だけ出す。
+  // **要求の履歴は公開情報。**盤面には直近5件だけを出し、全件は `ah` で表示する。
   if (state.asks.length > 0) {
     lines.push('recent asks (everyone sees these):');
-    for (const a of state.asks.slice(-5)) {
-      const card = a.card ? formatCard(a.card) : '?';
-      lines.push(`  seat ${a.from} -> seat ${a.to}: ${card} ... ${a.success ? 'hit' : 'miss'}`);
-    }
+    lines.push(...formatAskLines(state.asks.slice(-5)));
   }
 
   if (state.lastClaim) {
@@ -76,4 +73,16 @@ export function formatLiteratureState(state: LiteratureResponse): string {
 
   lines.push(formatSeparator());
   return lines.join('\n');
+}
+
+/** Format the complete public ask history for the Literature `ah` command. */
+export function formatLiteratureAsks(state: LiteratureResponse): string {
+  return ['all asks (everyone sees these):', ...formatAskLines(state.asks)].join('\n');
+}
+
+function formatAskLines(asks: LiteratureResponse['asks']): string[] {
+  return asks.map((a) => {
+    const card = a.card ? formatCard(a.card) : '?';
+    return `  seat ${a.from} -> seat ${a.to}: ${card} ... ${a.success ? 'hit' : 'miss'}`;
+  });
 }

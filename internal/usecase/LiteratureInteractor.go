@@ -24,6 +24,8 @@ type LiteratureInteractorIF interface {
 	GetConfig() domain.LiteratureConfig
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// AllAsks は要求履歴を全件出力する。
+	AllAsks() string
 }
 
 // LiteratureInteractor リテラチャー (Literature) のインタラクタークラス
@@ -84,6 +86,16 @@ func (li *LiteratureInteractor) GetConfig() domain.LiteratureConfig {
 // ActionLog 棋譜を出力する
 func (li *LiteratureInteractor) ActionLog() string {
 	return li.gp.ActionLogOutput(li.Game)
+}
+
+// AllAsks は要求履歴を全件出力する。
+func (li *LiteratureInteractor) AllAsks() string {
+	if p, ok := li.gp.(interface {
+		AllAsksOutput(interfaces.LiteratureGame) string
+	}); ok {
+		return p.AllAsksOutput(li.Game)
+	}
+	return li.gp.Output(li.Game, nil)
 }
 
 // literatureMaxCpuSteps bounds runCpuTurns so a malformed state can never spin
