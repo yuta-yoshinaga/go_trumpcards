@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -99,7 +101,7 @@ func TestPiquetCuiPresenter_Output_TrickWinner(t *testing.T) {
 
 	i18n.SetLang("ja")
 	out := (&PiquetCuiPresenter{}).Output(g2, nil)
-	if !strings.Contains(out, "Elder (あなた) が直前のトリックを獲得しました。") {
+	if !strings.Contains(out, "Elder (あなた) が直前のトリック (") {
 		t.Errorf("expected Japanese trick winner text, got: %s", out)
 	}
 }
@@ -123,12 +125,17 @@ func TestPiquetCuiPresenter_HintOutput_PlayPhase(t *testing.T) {
 }
 
 func TestPiquetCuiPresenter_ActionLogOutput(t *testing.T) {
-	g := newPiquetForPresenter(t)
+	origLang := i18n.Lang()
+	defer i18n.SetLang(origLang)
+	i18n.SetLang("ja")
+	g := driveToPhase(t, domain.PiquetPhasePlay)
+	for len(g.GetActionLog()) == 0 || g.GetActionLog()[len(g.GetActionLog())-1].ActionType != "trick_point" {
+		g.CpuPlay()
+	}
 	p := &PiquetCuiPresenter{}
 	out := p.ActionLogOutput(g)
-	if out == "" {
-		t.Error("expected non-empty log output")
-	}
+	assert.Contains(t, out, "wins trick 1")
+	assert.Contains(t, out, "トリック点 +1")
 }
 
 func TestPiquetCuiPresenter_Output_DeclarationPhase(t *testing.T) {

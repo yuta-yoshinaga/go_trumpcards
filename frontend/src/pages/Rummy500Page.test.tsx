@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { rummy500Api } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Rummy500Response } from '../types/card';
 import { Rummy500Page } from './Rummy500Page';
@@ -116,6 +117,37 @@ describe('Rummy500Page', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /山札から引く/ })).toBeInTheDocument();
     });
+  });
+
+  it('uses card digits for discard draws and an action key for stock draws', async () => {
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByRole('button', { name: /山札から引く/ });
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard', undefined, undefined, undefined, 0));
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
+  });
+
+  it('uses card selection and Enter for meld, while action keys are disabled on CPU turns', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByRole('button', { name: /メルドする/ });
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    fireEvent.keyDown(document, { key: '2' });
+    fireEvent.keyDown(document, { key: '3' });
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [0, 1, 2]));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 1 });
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByTestId('rummy500-card-kbd-shortcuts');
+    fireEvent.keyDown(document, { key: 'm' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('meld', expect.anything(), expect.anything(), expect.anything());
   });
 
   it('clicking discard card in Draw phase calls drawdiscard', async () => {

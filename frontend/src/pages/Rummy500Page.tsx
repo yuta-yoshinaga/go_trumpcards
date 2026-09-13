@@ -1,5 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -11,7 +13,9 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -80,6 +84,7 @@ function Rummy500PageContent() {
     rummy500Config,
     selectedCardIndices,
     toggleCard,
+    clearSelection,
     handleConfigChange,
     handleDrawStock,
     handleDrawDiscard,
@@ -113,20 +118,12 @@ function Rummy500PageContent() {
     });
   }, [gameExec, hideActionLog, rummy500Config.cpuDifficulty, rummy500Config.pointLimit]);
 
-  if (!state)
-    return (
-      <GameSkeleton
-        gameKey="rummy500"
-        layout={{ kind: 'trick-taking', opponents: 1, centerCard: true, trickArea: true, footerHandSize: 13 }}
-      />
-    );
-
-  const humanPlayer = state.players.find((p) => p.isHuman);
-  const isDrawPhase = state.phase === Rummy500Phase.DRAW;
-  const isPlayPhase = state.phase === Rummy500Phase.PLAY;
-  const isRoundEnd = state.phase === Rummy500Phase.ROUND_END;
-  const isGameEnd = state.phase === Rummy500Phase.GAME_END || state.gameEndFlag;
-  const isHumanTurn = (isDrawPhase || isPlayPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const humanPlayer = state?.players.find((p) => p.isHuman);
+  const isDrawPhase = state?.phase === Rummy500Phase.DRAW;
+  const isPlayPhase = state?.phase === Rummy500Phase.PLAY;
+  const isRoundEnd = state?.phase === Rummy500Phase.ROUND_END;
+  const isGameEnd = state?.phase === Rummy500Phase.GAME_END || state?.gameEndFlag === true;
+  const isHumanTurn = (isDrawPhase || isPlayPhase) && state?.players[state.currentPlayerIdx]?.isHuman === true;
 
   // Front-side meld pre-validation: mirror the backend set/run rules so the Meld
   // button stays disabled (and a warning shows) for an invalid 3+ card selection,
@@ -144,6 +141,83 @@ function Rummy500PageContent() {
     ) ??
       false);
   const showInvalidMeld = selectedCardIndices.length >= 3 && !meldValid;
+
+  const keyboardActions = useMemo(
+    () => [
+      { key: 'd', action: handleDrawStock, enabled: isDrawPhase && isHumanTurn, label: 'draw' },
+      { key: 'm', action: handleMeld, enabled: isPlayPhase && isHumanTurn && meldValid, label: 'meld' },
+      {
+        key: 'l',
+        action: () => {
+          if (layoffTarget) {
+            handleLayoff(layoffTarget.owner, layoffTarget.meldIdx);
+            setLayoffTarget(null);
+            return;
+          }
+          const target = state?.layoffTargets?.[selectedCardIndices[0]]?.[0];
+          if (selectedCardIndices.length === 1 && target) {
+            setLayoffTarget({
+              owner: target.owner,
+              meldIdx: target.meldIdx,
+              ownerName: playerName(target.owner, state?.players[target.owner]?.isHuman ?? false),
+            });
+          }
+        },
+        enabled: isPlayPhase && isHumanTurn && (selectedLayoffIsLegal || selectedCardIndices.length === 1),
+        label: 'layoff',
+      },
+      {
+        key: 'x',
+        action: handleDiscard,
+        enabled: isPlayPhase && isHumanTurn && selectedCardIndices.length === 1,
+        label: 'discard',
+      },
+    ],
+    [
+      handleDrawStock,
+      handleMeld,
+      handleLayoff,
+      handleDiscard,
+      isDrawPhase,
+      isPlayPhase,
+      isHumanTurn,
+      meldValid,
+      layoffTarget,
+      selectedLayoffIsLegal,
+      selectedCardIndices,
+      state,
+    ],
+  );
+  const confirmKeyboardAction = useCallback(() => {
+    if (selectedCardIndices.length >= 3 && meldValid) handleMeld();
+    else if (selectedLayoffIsLegal && layoffTarget) handleLayoff(layoffTarget.owner, layoffTarget.meldIdx);
+    else if (selectedCardIndices.length === 1) handleDiscard();
+  }, [
+    selectedCardIndices.length,
+    meldValid,
+    handleMeld,
+    selectedLayoffIsLegal,
+    layoffTarget,
+    handleLayoff,
+    handleDiscard,
+  ]);
+  useActionKeyboardNav({ bindings: keyboardActions, enabled: !!state && !loading && !!isHumanTurn });
+  useCardKeyboardNav({
+    cardCount: isHumanTurn ? (humanPlayer?.cards.length ?? 0) : 0,
+    onToggle: toggleCard,
+    onConfirm: confirmKeyboardAction,
+    onClear: clearSelection,
+    onDirectPlay: isDrawPhase ? handleDrawDiscard : undefined,
+    enabled: !!state && !loading && !!isHumanTurn,
+  });
+
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="rummy500"
+        layout={{ kind: 'trick-taking', opponents: 1, centerCard: true, trickArea: true, footerHandSize: 13 }}
+      />
+    );
 
   return (
     <GamePageShell
@@ -324,6 +398,8 @@ function Rummy500PageContent() {
       </div>
 
       <GameFooter className={`${gameTheme.rummy500.footer} px-4 py-2.5`}>
+        <ActionShortcutsPanel bindings={keyboardActions} data-testid="rummy500-kbd-shortcuts" />
+        <CardNavShortcutsPanel data-testid="rummy500-card-kbd-shortcuts" />
         {humanPlayer && humanPlayer.cards.length > 0 && (
           <div className="flex justify-end mb-1 text-xs">
             <span

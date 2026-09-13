@@ -706,6 +706,12 @@ func (p *Piquet) resolveTrick() {
 		}
 	}
 	winner := p.currentTrick[bestIdx].PlayerIdx
+	trickCards := make([]*Card, 0, PiquetPlayerCnt)
+	for _, tc := range p.currentTrick {
+		trickCards = append(trickCards, tc.Card)
+	}
+	p.appendLog(winner, "trick_win",
+		fmt.Sprintf("%s wins trick %d", playerName(p.players[:], winner), p.trickNumber+1), trickCards)
 
 	// 取得点: リーダー側が勝った場合は既に +1 加算済み (PlayCardのリード加点)
 	// リーダー以外が取った場合は +1
@@ -716,19 +722,15 @@ func (p *Piquet) resolveTrick() {
 	}
 
 	// トリック保管
-	trickCards := make([]*Card, 0, PiquetPlayerCnt)
-	for _, tc := range p.currentTrick {
-		trickCards = append(trickCards, tc.Card)
-	}
 	p.players[winner].AddTrick(trickCards)
 	p.tricksWon[winner]++
-	p.appendLog(winner, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(p.players[:], winner), p.trickNumber+1), trickCards)
+	p.appendLog(winner, "trick_point", "トリック点 +1", nil)
 
 	// 最終トリックボーナス
 	if p.trickNumber == PiquetTricksPerRound-1 {
 		p.players[winner].AddTrickScore(PiquetLastTrickBonus)
 		p.recordFirstScorer(winner)
+		p.appendLog(winner, "last_trick_bonus", "最終トリックボーナス +1", nil)
 		p.checkPique(winner)
 	}
 

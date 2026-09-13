@@ -150,6 +150,18 @@ function ScopaPageContent() {
         : t('label.noTakeCandidate')
       : '';
   const phaseName = isGameEnd ? t('phase.end') : t(`phase.${state.phase}`, t('phase.play'));
+  const actionText = (action: ScopaResponse['humanAction']) => {
+    if (!action) return '';
+    const played = action.playedCard ? cardAlt(action.playedCard) : '-';
+    if (action.capturedCards.length > 0) {
+      return t('actionCapture', {
+        played,
+        count: action.capturedCards.length,
+        suffix: action.isScopa ? t('actionScopaSuffix') : '',
+      });
+    }
+    return t('actionLay', { played });
+  };
   // Round-end score breakdown: only surfaced once the round is scored so the
   // player can see why each point was awarded (carte/denari/primiera/settebello
   // + scopa sweeps). The award data comes straight from the presenter's
@@ -342,6 +354,23 @@ function ScopaPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            {(state.humanAction || state.cpuActions.length > 0) && (
+              <div data-testid="scopa-action-lines" className="text-sm text-ds-text-muted space-y-0.5">
+                {state.humanAction && <div>{t('humanActionLine', { text: actionText(state.humanAction) })}</div>}
+                {state.cpuActions.length > 0 && (
+                  <div>
+                    {t('cpuActionLine', {
+                      name: (() => {
+                        const action = state.cpuActions.at(-1);
+                        const player = action ? state.players[action.playerIdx] : undefined;
+                        return player ? playerName(player.id) : '';
+                      })(),
+                      text: actionText(state.cpuActions.at(-1) ?? null),
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 
