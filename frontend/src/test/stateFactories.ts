@@ -1889,6 +1889,8 @@ const baseFrenchTarotState: FrenchTarotResponse = {
   playerScores: [0, 0, 0, 0],
   lastTrickWinner: -1,
   outcome: 0,
+  declarerCaptured: 0,
+  target: 56,
   petitAuBoutDelta: 0,
   result: 0,
   playableIndices: [0, 1, 2, 3, 4],

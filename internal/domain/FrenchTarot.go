@@ -812,6 +812,12 @@ func (g *FrenchTarot) GetPetitAuBoutDelta() int {
 	return g.petitAuBoutSign() * FrenchTarotPetitAuBoutBonus * frenchTarotBidMult(g.contract)
 }
 
+// GetTarget ラウンド判定に使う目標点を返す。
+func (g *FrenchTarot) GetTarget() int {
+	_, bouts := g.declarerCaptured()
+	return FrenchTarotTargetForBouts(bouts)
+}
+
 // computeBreakdown 現在のディールの得点内訳を計算する。
 func (g *FrenchTarot) computeBreakdown() FrenchTarotBreakdown {
 	declHalf, bouts := g.declarerCaptured()
@@ -1688,6 +1694,12 @@ func (g *FrenchTarot) GetChienRevealed() bool { return g.chienRevealed }
 // GetStashOwner stash (脇に置いた 6 枚) の所有側取得 (0=デクレアラー, 1=防御側)
 func (g *FrenchTarot) GetStashOwner() int { return g.stashOwner }
 
+// SetStash stash と所有側を設定する (テスト用)。
+func (g *FrenchTarot) SetStash(stash []*Card, owner int) {
+	g.stash = stash
+	g.stashOwner = owner
+}
+
 // GetPlayerScores プレイヤー別累積得点取得
 func (g *FrenchTarot) GetPlayerScores() [FrenchTarotPlayerCnt]int { return g.playerScores }
 
@@ -1706,6 +1718,15 @@ func (g *FrenchTarot) GetCardPoints(i int) int {
 		}
 	}
 	return sum
+}
+
+// GetDeclarerCapturedPoints は勝敗判定に使う親の獲得点を整数点で返す。
+// declarerCaptured と同じ経路なので、犬 (stash) の分も含む。
+// ハーフポイントの端数は切り捨てる。勝敗判定の half >= target*2 と
+// floor(half/2) >= target は同値なので、画面表示と判定が食い違わない。
+func (g *FrenchTarot) GetDeclarerCapturedPoints() int {
+	half, _ := g.declarerCaptured()
+	return half / 2
 }
 
 // GetOutcome 直近ディールの結果取得

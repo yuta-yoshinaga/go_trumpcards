@@ -8,7 +8,7 @@
   "helpHint": "  hint                 Show advice",
   "outputTitle": "Tu Sac (Four Colours)",
   "roundLine": "Round: {{round}} of {{total}}",
-  "stockLine": "Stock: {{stock}} / Top discard: {{discard}}",
+  "stockLine": "Stock: {{stock}} / Discard pile: {{discardCount}} / Top discard: {{discard}}",
   "seatLine": "{{mark}}{{name}} {{count}} cards / score {{score}} : {{melds}}",
   "handLine": "Your hand: {{cards}}",
   "drawPrompt": "Draw from the stock (draw) or take the discard (take)",

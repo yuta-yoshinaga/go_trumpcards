@@ -3,6 +3,7 @@
   "notice": "112 four-colour cards. With no numeric order, only three combinations exist",
   "label.round": "Round {{round}} of {{total}}",
   "label.stock": "Stock {{count}}",
+  "label.discardCount": "Discard pile {{count}}",
   "label.discard": "Discard",
   "label.discardEmpty": "No discard",
   "label.yourHand": "Your hand",

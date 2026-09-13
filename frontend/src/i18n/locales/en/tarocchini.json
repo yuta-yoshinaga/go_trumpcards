@@ -28,7 +28,7 @@
   "teamScore": "Team {{n}}: {{score}}",
   "dealerBadge": "dealer",
   "papiNote": "The four papi rank equal -- if more than one lands in a trick, the later-played wins",
-  "scartoPrompt": "Choose {{count}} cards to bury (trumps and the Matto cannot be chosen)",
+  "scartoPrompt": "{{count}}/{{total}} cards selected. Choose cards to bury (trumps and the Matto cannot be chosen)",
   "scartoButton": "Bury",
   "scartoDone": "Buried: {{count}} cards",
   "playButton": "Play",

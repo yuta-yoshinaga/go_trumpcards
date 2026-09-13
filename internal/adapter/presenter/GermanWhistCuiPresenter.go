@@ -41,6 +41,7 @@ func (p *GermanWhistCuiPresenter) Output(g interfaces.GermanWhistGame, lastErr e
 		sb.WriteString(i18n.Tf("germanwhist.header",
 			"trick", strconv.Itoa(g.GetTrickNumber()+1),
 			"stock", strconv.Itoa(g.GetStockCount()),
+			"target", strconv.Itoa(domain.GermanWhistWinTricks),
 			"phase", i18n.T(phaseKey)) + "\n")
 
 		sb.WriteString(i18n.Tf("germanwhist.trumpLine",

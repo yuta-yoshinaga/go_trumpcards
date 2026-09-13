@@ -31,6 +31,7 @@
   "promptTrickEnd": "トリック完了",
   "promptTrickEndHelp": "n / next ... 次のトリックへ",
   "promptRoundEnd": "ディール完了 (デクレアラー {{declarer}}: {{outcome}})",
+  "roundTarget": "獲得点 {{captured}} / 目標 {{target}}",
   "petitAuBout": "プティ・オ・ブー: {{side}}が獲得（防御側1人あたり {{points}}点）",
   "petitAuBoutDeclarer": "デクレアラー",
   "petitAuBoutDefenders": "防御側",

@@ -33,6 +33,7 @@ func (p *GermanWhistWebPresenter) buildBase(g interfaces.GermanWhistGame) *contr
 	resObj := new(controller.GermanWhistWebOutput)
 	resObj.Phase = int(g.GetPhase())
 	resObj.TrickNumber = g.GetTrickNumber()
+	resObj.WinThreshold = domain.GermanWhistWinTricks
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()
 	resObj.LeadPlayerIdx = g.GetLeadPlayerIdx()
 	resObj.TrumpSuit = g.GetTrumpSuit()

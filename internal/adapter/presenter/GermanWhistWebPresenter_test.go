@@ -36,6 +36,7 @@ func TestGermanWhistWebPresenterOutput(t *testing.T) {
 	m := decodeGermanWhist(t, p.Output(g, nil))
 
 	assert.Equal(t, float64(domain.GermanWhistPhaseDraw), m["phase"])
+	assert.Equal(t, float64(domain.GermanWhistWinTricks), m["winThreshold"])
 	assert.False(t, m["gameEndFlag"].(bool))
 	assert.Equal(t, float64(-1), m["winnerIdx"])
 	// 配り終えた直後: 各 13 枚、表向き 1 枚、残りが山札。

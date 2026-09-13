@@ -76,6 +76,7 @@
     "declarer": "Declarer: {{name}}",
     "contract": "Contract: {{contract}}",
     "captured": "Captured: {{points}} pts",
+    "target": "Target: {{points}} pts",
     "petitAuBout": "Petit au bout: {{side}} took it ({{points}} per defender)",
     "petitAuBoutDeclarer": "the declarer",
     "petitAuBoutDefenders": "the defenders"

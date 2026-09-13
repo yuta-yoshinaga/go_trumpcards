@@ -304,10 +304,20 @@ describe('FrenchTarotPage', () => {
   });
 
   it('renders round end with the next deal button and the deal result', async () => {
-    mockExec.mockResolvedValue(roundEndState);
+    mockExec.mockResolvedValue(
+      makeFrenchTarotState({
+        phase: 4,
+        outcome: 2,
+        declarerCaptured: 43,
+        target: 51,
+        players: roundEndState.players.map((p, i) => (i === 0 ? { ...p, cardPoints: 86 } : p)),
+      }),
+    );
     renderWithProviders(<FrenchTarotPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のディール' })).toBeInTheDocument());
     expect(screen.getByTestId('frenchtarot-result')).toBeInTheDocument();
+    expect(screen.getByTestId('frenchtarot-result')).toHaveTextContent('43');
+    expect(screen.getByTestId('frenchtarot-result')).toHaveTextContent('51');
   });
 
   it('renders the game end message', async () => {

@@ -74,7 +74,22 @@ func TestFrenchTarotCuiPresenter_Output(t *testing.T) {
 		g.SetDeclarerIdx(0)
 		g.SetContract(domain.FrenchTarotBidGarde)
 		g.SetPhase(domain.FrenchTarotPhaseRoundEnd)
-		assert.NotEmpty(t, p.Output(g, nil))
+		cards := make([]*domain.Card, 8)
+		for i := range cards {
+			cards[i] = domain.NewCard(domain.CardDesignHeart, domain.FrenchTarotKingValue, false)
+		}
+		cards = append(cards, domain.NewCard(domain.FrenchTarotTrumpDesign, domain.FrenchTarotPetitValue, false))
+		g.GetPlayer(0).AddTrick(cards)
+		g.SetStash([]*domain.Card{
+			domain.NewCard(domain.CardDesignHeart, 5, false),
+			domain.NewCard(domain.CardDesignHeart, 6, false),
+			domain.NewCard(domain.CardDesignHeart, 7, false),
+			domain.NewCard(domain.CardDesignHeart, 8, false),
+			domain.NewCard(domain.CardDesignHeart, 9, false),
+		}, 0)
+		result := p.Output(g, nil)
+		assert.NotEmpty(t, result)
+		assert.Contains(t, result, "獲得点 43 / 目標 51")
 	})
 
 	t.Run("game end banner", func(t *testing.T) {

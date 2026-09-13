@@ -40,6 +40,8 @@ export interface GermanWhistResponse extends BaseGameResponse {
   /** `0` = Draw (first 13 tricks, no score), `1` = Scoring, `2` = GameEnd. */
   phase: number;
   trickNumber: number;
+  /** Number of scoring-half tricks needed to win. */
+  winThreshold: number;
   currentPlayerIdx: number;
   leadPlayerIdx: number;
   currentTrick: GermanWhistTrickCard[];

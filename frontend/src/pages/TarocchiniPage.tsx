@@ -320,7 +320,7 @@ function TarocchiniPageContent() {
             <div data-testid="tarocchini-prompt-live" role="status" aria-live="polite">
               {canScarto && (
                 <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="tarocchini-scarto-prompt">
-                  {t('scartoPrompt', { count: TAROCCHINI_SURPLUS })}
+                  {t('scartoPrompt', { count: selectedCardIndices.length, total: TAROCCHINI_SURPLUS })}
                 </div>
               )}
             </div>

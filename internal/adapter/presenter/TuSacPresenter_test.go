@@ -40,6 +40,7 @@ func TestTuSacCuiPresenter_RendersJapaneseNotRawKeys(t *testing.T) {
 
 	assert.Contains(t, out, "ラウンド:")
 	assert.Contains(t, out, "山:")
+	assert.Contains(t, out, "捨て札: 1 枚")
 	assert.Contains(t, out, "あなたの手札:")
 	assert.NotContains(t, out, "tusac.", "生の i18n キーが出力に混ざっている")
 }
