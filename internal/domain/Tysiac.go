@@ -101,7 +101,7 @@ type Tysiac struct {
 	playerScores     [TysiacPlayerCnt]int  // 累積ゲーム点
 	roundCardPts     [TysiacPlayerCnt]int  // 現ラウンドのプレイヤー別カード得点
 	roundMarriage    [TysiacPlayerCnt]int  // 現ラウンドのプレイヤー別結婚点
-	lastTrickWinner  int                   // 最終トリック勝者 (-1=未確定)
+	lastTrickWinner  int                   // 直前トリックの勝者 (-1=未確定)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
 	actionLogBase
@@ -577,8 +577,8 @@ func (g *Tysiac) ResolveTrick() {
 		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
+	g.lastTrickWinner = winnerIdx
 	if g.trickNumber >= TysiacTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.phase = TysiacPhaseRoundEnd
 	} else {
 		g.phase = TysiacPhaseTrickEnd
@@ -1014,6 +1014,9 @@ func (g *Tysiac) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *Tysiac) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を取得する (-1=なし)
+func (g *Tysiac) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Tysiac) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }

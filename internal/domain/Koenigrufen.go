@@ -773,8 +773,8 @@ func (g *Koenigrufen) ResolveTrick() {
 		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), allCards)
 
 	g.leadPlayerIdx = winnerIdx
+	g.lastTrickWinner = winnerIdx
 	if g.trickNumber >= KoenigrufenTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.lastTrickCards = allCards
 		g.phase = KoenigrufenPhaseRoundEnd
 		g.enterRoundEnd()
@@ -1605,6 +1605,9 @@ func (g *Koenigrufen) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *Koenigrufen) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を取得する (-1=なし)
+func (g *Koenigrufen) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Koenigrufen) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }

@@ -506,8 +506,8 @@ func (g *Scarto) ResolveTrick() {
 		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), allCards)
 
 	g.leadPlayerIdx = winnerIdx
+	g.lastTrickWinner = winnerIdx
 	if g.trickNumber >= ScartoTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.phase = ScartoPhaseRoundEnd
 		g.enterRoundEnd()
 	} else {
@@ -1045,6 +1045,9 @@ func (g *Scarto) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *Scarto) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を取得する (-1=なし)
+func (g *Scarto) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Scarto) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }

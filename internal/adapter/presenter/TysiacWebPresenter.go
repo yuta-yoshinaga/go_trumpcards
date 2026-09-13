@@ -49,7 +49,7 @@ func (p *TysiacWebPresenter) buildBase(g interfaces.TysiacGame) *controller.Tysi
 	resObj.PlayerScores = g.GetPlayerScores()
 	resObj.RoundCardPoints = g.GetRoundCardPoints()
 	resObj.RoundMarriage = g.GetRoundMarriage()
-	resObj.LastTrickWinner = -1
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 
 	resObj.PlayableIndices = p.playableIndices(g)

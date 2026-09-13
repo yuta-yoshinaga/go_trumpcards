@@ -37,7 +37,7 @@ import { KOENIGRUFEN_HELP, parseKoenigrufenCommand } from '../utils/cli/commands
 import { formatKoenigrufenState } from '../utils/cli/formatters/koenigrufenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Königrufen tutorial step definitions. */
@@ -312,6 +312,12 @@ function KoenigrufenPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
+                  winnerLabel={
+                    isTrickEnd
+                      ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
+                      : undefined
+                  }
                   dataTutorial="koenigrufen-trick-display"
                 />
               </div>

@@ -25,6 +25,7 @@ const bidPhaseState = makeQuadrilleState({
 });
 const trickEndState = makeQuadrilleState({
   phase: QuadrillePhase.TRICK_END,
+  lastTrickWinner: 1,
   currentTrick: [
     { playerIdx: 0, card: { design: 'HEART', value: 12 } },
     { playerIdx: 1, card: { design: 'CLOVER', value: 13 } },
@@ -180,6 +181,20 @@ describe('QuadrillePage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<QuadrillePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('CPU 1 が獲得');
+  });
+
+  it('does not render a winner badge while a trick is in progress', async () => {
+    mockExec.mockResolvedValue(
+      makeQuadrilleState({
+        phase: QuadrillePhase.PLAY,
+        lastTrickWinner: 1,
+        currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 12 } }],
+      }),
+    );
+    renderWithProviders(<QuadrillePage />);
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
   it('renders round end with the next deal button and the deal result', async () => {

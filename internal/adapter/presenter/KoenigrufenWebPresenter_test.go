@@ -43,6 +43,29 @@ func TestKoenigrufenWebPresenter_Output(t *testing.T) {
 	}
 }
 
+func TestKoenigrufenWebPresenterOutputsLastTrickWinner(t *testing.T) {
+	g := newKoenigrufenGame()
+	g.Reset()
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.KoenigrufenPhaseTrickEnd)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 2, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 3, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.KoenigrufenTrumpDesign, 4, false)},
+		{PlayerIdx: 3, Card: domain.NewCard(domain.KoenigrufenSkusDesign, domain.KoenigrufenSkusValue, false)},
+	})
+	g.ResolveTrick()
+
+	p := &presenter.KoenigrufenWebPresenter{}
+	var parsed controller.KoenigrufenWebOutput
+	if err := json.Unmarshal([]byte(p.Output(g, nil)), &parsed); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if parsed.LastTrickWinner != g.GetLastTrickWinner() {
+		t.Errorf("lastTrickWinner = %d, want %d", parsed.LastTrickWinner, g.GetLastTrickWinner())
+	}
+}
+
 // TestKoenigrufenWebPresenter_ProceduralFaces asserts a trump serializes with
 // deck:"tarot" + purple, the Sküs with label "Sküs" + gold, and suit cards with
 // the suit colour.

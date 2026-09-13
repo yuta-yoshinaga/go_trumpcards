@@ -80,6 +80,9 @@ func (_m *MockScartoGame) GetCurrentTrick() []*domain.TrickCard {
 	return _m.Called().Get(0).([]*domain.TrickCard)
 }
 
+// GetLastTrickWinner モック
+func (_m *MockScartoGame) GetLastTrickWinner() int { return _m.Called().Int(0) }
+
 // GetLeadPlayerIdx モック
 func (_m *MockScartoGame) GetLeadPlayerIdx() int { return _m.Called().Int(0) }
 

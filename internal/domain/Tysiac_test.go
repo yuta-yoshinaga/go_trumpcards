@@ -54,6 +54,22 @@ func TestTysiac_ResetDeal(t *testing.T) {
 	assert.Equal(t, g.GetForehandIdx(), g.GetCurrentPlayerIdx())
 }
 
+func TestTysiacLastTrickWinnerIsSetOnEveryTrick(t *testing.T) {
+	g := newTestTysiac()
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.TysiacPhaseTrickEnd)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: tysCard(domain.CardDesignSpade, 14)},
+		{PlayerIdx: 1, Card: tysCard(domain.CardDesignHeart, 9)},
+		{PlayerIdx: 2, Card: tysCard(domain.CardDesignSpade, 10)},
+	})
+
+	g.ResolveTrick()
+
+	assert.NotEqual(t, -1, g.GetLastTrickWinner())
+	assert.Equal(t, g.GetLeadPlayerIdx(), g.GetLastTrickWinner())
+}
+
 func TestTysiac_DeckIsUnique24(t *testing.T) {
 	// Reconstruct the whole round's cards (7*3 hands + 3 talon via marshal) and
 	// verify 24 unique cards, each of 9,J,Q,K,10,A across 4 suits.

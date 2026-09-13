@@ -20,6 +20,7 @@ func setupTysiacWebMock() *interfaces.MockTysiacGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.TysiacPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -81,6 +82,17 @@ func TestTysiacWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 1, resObj.ForehandIdx)
 		assert.Equal(t, 100, resObj.Contract)
 		assert.Equal(t, 100, resObj.CurrentBid)
+	})
+
+	t.Run("includes the last trick winner", func(t *testing.T) {
+		m, _ := setupTysiacWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickWinner")
+		m.On("GetLastTrickWinner").Return(2)
+
+		result := p.Output(m, nil)
+		var resObj controller.TysiacWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, 2, resObj.LastTrickWinner)
 	})
 
 	t.Run("config values", func(t *testing.T) {
