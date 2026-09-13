@@ -53,6 +53,7 @@ const (
 type SlapjackLastEvent struct {
 	Kind      SlapjackEventKind `json:"kind"`
 	PlayerIdx int               `json:"playerIdx"`
+	CardsWon  int               `json:"cardsWon"`
 }
 
 // SlapjackPending 保留中の CPU アクション
@@ -316,7 +317,7 @@ func (g *Slapjack) applyCorrectSlap(playerIdx int) {
 	g.rng.Shuffle(len(got), func(i, j int) { got[i], got[j] = got[j], got[i] })
 	g.players[playerIdx].AddToStockBottom(got...)
 	g.currentTurnIdx = playerIdx
-	g.lastEvent = SlapjackLastEvent{Kind: SlapjackEventSlapCorrect, PlayerIdx: playerIdx}
+	g.lastEvent = SlapjackLastEvent{Kind: SlapjackEventSlapCorrect, PlayerIdx: playerIdx, CardsWon: len(got)}
 	g.appendLog(playerIdx, "slap", fmt.Sprintf("correct slap, +%d cards", len(got)), nil)
 	g.pending = SlapjackPending{Kind: SlapjackPendingNone}
 	g.maybeScheduleCpuStep()

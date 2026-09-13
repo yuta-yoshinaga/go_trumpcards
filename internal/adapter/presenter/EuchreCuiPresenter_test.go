@@ -258,6 +258,22 @@ func TestEuchreCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestEuchreCuiPresenter_Output_BowerMarks(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	m, players := setupEuchreCuiMockWithPlayers()
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 11, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+
+	result := (&presenter.EuchreCuiPresenter{}).Output(m, nil)
+	assert.Contains(t, result, "SPADE 11[R]")
+	assert.Contains(t, result, "CLOVER 11[L]")
+	assert.NotContains(t, result, "HEART 11[R]")
+	assert.NotContains(t, result, "HEART 11[L]")
+}
+
 func TestEuchreCuiPresenter_ActionLogOutput(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)

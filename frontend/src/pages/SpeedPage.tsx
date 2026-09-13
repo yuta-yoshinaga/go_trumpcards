@@ -231,6 +231,13 @@ function SpeedPageContent() {
                 {t('drawPile')}: {cpuPlayer.drawPileSize}
               </span>
             </div>
+            {state.cpuActions && state.cpuActions.length > 0 && (
+              <p className="text-center text-sm text-ds-info" data-testid="speed-cpu-actions" role="status">
+                {state.cpuActions
+                  .map((action) => t('cpuAction', { card: cardAlt(action.card), pile: action.pileIndex + 1 }))
+                  .join(' / ')}
+              </p>
+            )}
 
             {/* Center piles — clickable for play (normal) or flip (stuck) */}
             <div className="relative flex items-center justify-center gap-6" data-tutorial="sp-center-piles">
@@ -410,7 +417,7 @@ function SpeedPageContent() {
               {tc('button.hint')}
             </button>
             <ActionLogSection
-              isEndPhase={!!isGameEnd}
+              isEndPhase={isGameEnd}
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}

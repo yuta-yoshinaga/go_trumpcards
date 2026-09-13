@@ -41,6 +41,7 @@ type SlapjackWebOutput struct {
 	PendingDeadlineMs  int64                `json:"pendingDeadlineMs"`
 	LastEventKind      int                  `json:"lastEventKind"`
 	LastEventPlayerIdx int                  `json:"lastEventPlayerIdx"`
+	LastEventCardsWon  int                  `json:"lastEventCardsWon"`
 	WebOutputBase
 }
 

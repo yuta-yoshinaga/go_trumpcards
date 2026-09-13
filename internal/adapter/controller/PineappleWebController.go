@@ -36,7 +36,15 @@ type PineappleWebOutput struct {
 	// Omaha の Web は同じ表示を TypeScript 側で組み直しているが、こちらは
 	// サーバが答える。役の探索をフロントにもう 1 つ持つと、ドメインを直した
 	// ときに片方だけ古くなる (#5601 で Agnes から同じ複製を消したばかり)。
-	LiveBestHand string `json:"liveBestHand"`
+	LiveBestHand    string                        `json:"liveBestHand"`
+	DiscardPreviews []*PineappleWebDiscardPreview `json:"discardPreviews,omitempty"`
+}
+
+// PineappleWebDiscardPreview is the server's evaluation of one discard candidate.
+type PineappleWebDiscardPreview struct {
+	CardIdx     int  `json:"cardIdx"`
+	HandRank    int  `json:"handRank"`
+	Recommended bool `json:"recommended"`
 }
 
 // ToConfig builds a PineappleConfig from the web input.

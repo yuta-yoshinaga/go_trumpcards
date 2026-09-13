@@ -40,6 +40,7 @@ func NewSpeedInteractor(s interfaces.SpeedGame, sp presenter.SpeedPresenter) *Sp
 
 // Reset ゲーム初期化
 func (si *SpeedInteractor) Reset() string {
+	si.Game.SetCpuActions(nil)
 	return runAndPresent(si.Game, si.sp, si.Game.Reset)
 }
 
@@ -59,7 +60,9 @@ func (si *SpeedInteractor) Play(cardIndex, pileIndex int) string {
 	}
 	// CPU自動応答ループ
 	if !si.Game.GetGameEndFlag() {
-		si.Game.CpuPlay()
+		si.Game.SetCpuActions(si.Game.CpuPlay())
+	} else {
+		si.Game.SetCpuActions(nil)
 	}
 	// フェーズ更新 (膠着判定)
 	si.Game.UpdatePhase()
@@ -77,9 +80,12 @@ func (si *SpeedInteractor) Flip() string {
 	}
 	// フリップ後にCPU自動応答
 	if !si.Game.GetGameEndFlag() {
-		si.Game.CpuPlay()
-		si.Game.UpdatePhase()
+		si.Game.SetCpuActions(si.Game.CpuPlay())
+	} else {
+		si.Game.SetCpuActions(nil)
 	}
+	// フェーズ更新 (膠着判定)
+	si.Game.UpdatePhase()
 	return si.sp.Output(si.Game, nil)
 }
 

@@ -111,6 +111,20 @@ func TestSpeedWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, int(domain.SpeedCpuDifficultyNormal), resObj.Config.CpuDifficulty)
 	})
 
+	t.Run("cpu actions are included in output", func(t *testing.T) {
+		s := setupSpeedWebTest()
+		card := domain.NewCard(domain.CardDesignSpade, 7, false)
+		s.SetCpuActions([]*domain.SpeedCpuAction{{CardIndex: 2, PileIndex: 1, Card: card}})
+		result := p.Output(s, nil)
+		var resObj controller.SpeedWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, []*controller.SpeedWebOutputCpuAction{{
+			CardIndex: 2,
+			PileIndex: 1,
+			Card:      &controller.WebOutputCard{Design: "SPADE", Value: 7},
+		}}, resObj.CpuActions)
+	})
+
 	t.Run("hint included when available", func(t *testing.T) {
 		s := setupSpeedWebTest()
 		result := p.Output(s, nil)
