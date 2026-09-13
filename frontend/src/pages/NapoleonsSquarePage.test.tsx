@@ -128,6 +128,30 @@ describe('NapoleonsSquarePage', () => {
     await waitFor(() => expect(buried).toHaveAttribute('aria-pressed', 'true'));
   });
 
+  it('marks only legal run heads and announces the actual movable count', async () => {
+    const state = {
+      ...playingState,
+      tableau: makeTableau(
+        playingState.tableau.map((column, index) =>
+          index === 2
+            ? [
+                { card: card('SPADE', 7), faceUp: true },
+                { card: card('HEART', 6), faceUp: true },
+              ]
+            : column,
+        ),
+      ),
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<NapoleonsSquarePage />);
+    const head = (await screen.findAllByRole('button', { name: /^♠ 7（/ }))[0];
+    const brokenHead = screen.getAllByRole('button', { name: /^♠ 7（/ })[1];
+    expect(head).toHaveClass('ring-ds-success');
+    expect(brokenHead).not.toHaveClass('ring-ds-success');
+    expect(head).toHaveAttribute('aria-describedby');
+    expect(screen.getAllByTestId('ns-run-hint')[0]).toHaveTextContent('2枚まとめて動かせます');
+  });
+
   it('sends the selected run head with the move', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<NapoleonsSquarePage />);

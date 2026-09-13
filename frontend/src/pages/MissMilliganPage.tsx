@@ -34,6 +34,8 @@ import { cardAlt } from '../utils/cardAlt';
 import { MISSMILLIGAN_HELP, parseMissMilliganCommand } from '../utils/cli/commands/missmilliganCommands';
 import { formatMissMilliganState } from '../utils/cli/formatters/missmilliganFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { missMilliganLegalTargets } from '../utils/missMilliganLegalTargets';
+import { isMissMilliganRun } from '../utils/missMilliganRuns';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
@@ -163,6 +165,25 @@ function MissMilliganPageContent() {
   const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
   const isHolding = state.waived.length > 0;
+  const selectedCard =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+      ? state.tableau[selectedSource.col]?.[selectedSource.cardIndex]?.card
+      : selectedSource?.zone === 'waived'
+        ? state.waived[0]
+        : undefined;
+  const selectedTableauRunIsLegal =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+      ? isMissMilliganRun(state.tableau[selectedSource.col] ?? [], selectedSource.cardIndex)
+      : selectedSource?.zone === 'waived';
+  const legalTargets = selectedTableauRunIsLegal
+    ? missMilliganLegalTargets(
+        state.tableau,
+        state.foundation,
+        selectedCard,
+        selectedSource?.zone === 'tableau' ? selectedSource.col : undefined,
+        selectedSource?.zone === 'tableau' ? selectedSource.cardIndex : undefined,
+      )
+    : { tableau: new Set<number>(), foundation: new Set<number>() };
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -183,7 +204,11 @@ function MissMilliganPageContent() {
     const col = state.tableau[colIdx] ?? [];
     const tableauColZone: MissMilliganMoveZone = { zone: 'tableau', col: colIdx };
     return (
-      <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+      <div
+        key={`col-${colIdx.toString()}`}
+        className={`flex-1 min-w-0 ${legalTargets.tableau.has(colIdx) ? 'rounded ring-2 ring-ds-success' : ''}`}
+        data-testid={`mm-tableau-col-${colIdx}`}
+      >
         <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
           #{colIdx}
         </div>
@@ -211,10 +236,17 @@ function MissMilliganPageContent() {
                 // Any card can head a run, so every card is a potential source.
                 const cardZone: MissMilliganMoveZone = { zone: 'tableau', col: colIdx, cardIndex: cardIdx };
                 const isSelected = isSourceSelected('tableau', colIdx, cardIdx);
+                const selectedRun =
+                  selectedSource?.zone === 'tableau' &&
+                  selectedSource.col === colIdx &&
+                  selectedSource.cardIndex !== undefined;
+                const isInSelectedRun =
+                  selectedRun && selectedSource.cardIndex !== undefined && cardIdx >= selectedSource.cardIndex;
+                const selectedRunRing = selectedTableauRunIsLegal ? 'ring-ds-warning' : 'ring-ds-error';
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
-                    className="absolute left-0 right-0"
+                    className={`absolute left-0 right-0 ${isInSelectedRun ? `ring-2 ${selectedRunRing}` : ''}`}
                     style={{ top: cardIdx * dims.co }}
                   >
                     {tc2.card ? (
@@ -233,7 +265,7 @@ function MissMilliganPageContent() {
                         draggable={isPlaying && !loading}
                         onDragStart={dnd.handleDragStart(cardZone)}
                         onDragEnd={dnd.handleDragEnd}
-                        className={`p-0 border-0 bg-transparent w-full rounded cursor-pointer ${focusRingWhite} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                        className={`p-0 border-0 bg-transparent w-full rounded cursor-pointer ${focusRingWhite} ${isSelected ? `ring-2 ${selectedRunRing}` : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                       >
                         <AnimatedCard
                           card={tc2.card}
@@ -306,7 +338,11 @@ function MissMilliganPageContent() {
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: MissMilliganMoveZone = { zone: 'foundation', col: idx };
                   return (
-                    <div key={`f-${idx.toString()}`} className="text-center">
+                    <div
+                      key={`f-${idx.toString()}`}
+                      className={`text-center ${legalTargets.foundation.has(idx) ? 'rounded ring-2 ring-ds-success' : ''}`}
+                      data-testid={`mm-foundation-${idx}`}
+                    >
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
                       <DropZone
                         isDropTarget={dnd.isDropTarget(foundationZone)}
