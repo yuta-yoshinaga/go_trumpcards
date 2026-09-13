@@ -3,6 +3,7 @@
   "notice": "四色牌112枚。数字の並びが無いので、作れるのは3つの組み合わせだけです",
   "label.round": "ラウンド {{round}} / {{total}}",
   "label.stock": "山 {{count}} 枚",
+  "label.discardCount": "捨て札 {{count}} 枚",
   "label.discard": "捨て札",
   "label.discardEmpty": "捨て札なし",
   "label.yourHand": "あなたの手札",

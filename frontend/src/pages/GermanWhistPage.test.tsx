@@ -44,6 +44,7 @@ function makeState(overrides: Partial<GermanWhistResponse> = {}): GermanWhistRes
     validPlays: [0, 1, 2],
     gameEndFlag: false,
     winnerIdx: -1,
+    winThreshold: 7,
     message: '',
     ...overrides,
   } as unknown as GermanWhistResponse;
@@ -55,6 +56,10 @@ beforeEach(() => {
 });
 
 describe('GermanWhistPage', () => {
+  it('shows the scoring trick win threshold', async () => {
+    renderWithProviders(<GermanWhistPage />);
+    expect(await screen.findByTestId('gw-trick')).toHaveTextContent('7');
+  });
   it('resets on mount', async () => {
     renderWithProviders(<GermanWhistPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

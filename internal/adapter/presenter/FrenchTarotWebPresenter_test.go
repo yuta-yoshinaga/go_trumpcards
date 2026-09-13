@@ -46,6 +46,12 @@ func TestFrenchTarotWebPresenter_Output(t *testing.T) {
 	if parsed.LastTrickWinner != 2 {
 		t.Errorf("lastTrickWinner = %d, want 2", parsed.LastTrickWinner)
 	}
+	if parsed.Target != domain.FrenchTarotTargetForBouts(0) {
+		t.Errorf("target = %d, want %d", parsed.Target, domain.FrenchTarotTargetForBouts(0))
+	}
+	if parsed.DeclarerCaptured != g.GetDeclarerCapturedPoints() {
+		t.Errorf("declarerCaptured = %d, want %d", parsed.DeclarerCaptured, g.GetDeclarerCapturedPoints())
+	}
 }
 
 // TestFrenchTarotWebPresenter_ProceduralFaces asserts a trump serializes with

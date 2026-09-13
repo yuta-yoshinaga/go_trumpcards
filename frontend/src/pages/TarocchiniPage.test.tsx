@@ -145,6 +145,7 @@ describe('TarocchiniPage', () => {
       mockExec.mockResolvedValue(scartoState);
       renderWithProviders(<TarocchiniPage />);
       expect(await screen.findByTestId('tarocchini-scarto-prompt')).toHaveTextContent('2');
+      expect(screen.getByTestId('tarocchini-scarto-prompt')).toHaveTextContent('0/2');
 
       const bury = screen.getByRole('button', { name: '捨てる' });
       expect(bury).toBeDisabled();
@@ -152,6 +153,7 @@ describe('TarocchiniPage', () => {
       // 1 枚だけでは足りない。
       fireEvent.click(screen.getByRole('button', { name: 'Re ♠' }));
       expect(screen.getByRole('button', { name: '捨てる' })).toBeDisabled();
+      expect(screen.getByTestId('tarocchini-scarto-prompt')).toHaveTextContent('1/2');
 
       fireEvent.click(screen.getByRole('button', { name: '20 ✦' }));
       mockExec.mockClear();

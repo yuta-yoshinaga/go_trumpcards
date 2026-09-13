@@ -397,9 +397,10 @@ function FrenchTarotPageContent() {
                         <div>{t('roundResult.contract', { contract: contractLabel })}</div>
                         <div>
                           {t('roundResult.captured', {
-                            points: state.players[state.declarerIdx]?.cardPoints ?? 0,
+                            points: state.declarerCaptured,
                           })}
                         </div>
+                        <div>{t('roundResult.target', { points: state.target })}</div>
                         {/* **プティ・オ・ブーが乗ると、獲得点から逆算した数字と精算が
                             合わなくなる。**ルールは実装済みで精算にも乗っているのに、
                             どちらの画面にも出ていなかった (#6509)。0 は未発生。 */}

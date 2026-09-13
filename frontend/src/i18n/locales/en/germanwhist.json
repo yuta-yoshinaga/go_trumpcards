@@ -6,6 +6,7 @@
   },
   "header": {
     "trick": "Trick",
+    "winAt": "({{target}} scoring tricks to win)",
     "stock": "Stock",
     "trump": "Trump",
     "phase1": "First half: play for the face-up card",

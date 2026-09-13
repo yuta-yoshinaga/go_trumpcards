@@ -31,6 +31,7 @@
   "promptTrickEnd": "Trick complete",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "promptRoundEnd": "Deal complete (Declarer {{declarer}}: {{outcome}})",
+  "roundTarget": "Captured {{captured}} / target {{target}}",
   "petitAuBout": "Petit au bout: {{side}} took it ({{points}} per defender)",
   "petitAuBoutDeclarer": "the declarer",
   "petitAuBoutDefenders": "the defenders",

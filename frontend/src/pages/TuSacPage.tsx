@@ -169,6 +169,8 @@ function TuSacPageContent() {
               {t('label.round', { round: state.roundNumber, total: state.rounds })}
               {' · '}
               <span data-testid="tusac-stock">{t('label.stock', { count: state.stockCount })}</span>
+              {' · '}
+              <span data-testid="tusac-discard-count">{t('label.discardCount', { count: state.discardCount })}</span>
             </div>
 
             <p className="text-ds-text-muted text-center text-xs mb-1" data-testid="tusac-notice">

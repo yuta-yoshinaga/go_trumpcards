@@ -2,7 +2,7 @@
   "helpTitle": "German Whist",
   "helpPlay": "  p <idx>              Play a card",
   "helpGiveUp": "  g                    Give up",
-  "header": "Trick: {{trick}}/26  Stock: {{stock}}  ({{phase}})",
+  "header": "Trick: {{trick}}/26  Stock: {{stock}}  Win at: {{target}} scoring tricks  ({{phase}})",
   "phaseFirst": "First half: play for the face-up card (no score)",
   "phaseSecond": "Second half: every trick scores",
   "trumpLine": "Trump: {{suit}}",

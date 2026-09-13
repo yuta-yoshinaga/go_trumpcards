@@ -39,6 +39,7 @@ type GermanWhistWebOutput struct {
 	Players          []*GermanWhistWebOutputPlayer `json:"players"`
 	Phase            int                           `json:"phase"`
 	TrickNumber      int                           `json:"trickNumber"`
+	WinThreshold     int                           `json:"winThreshold"`
 	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
 	LeadPlayerIdx    int                           `json:"leadPlayerIdx"`
 	CurrentTrick     []*WebOutputTrickCard         `json:"currentTrick"`

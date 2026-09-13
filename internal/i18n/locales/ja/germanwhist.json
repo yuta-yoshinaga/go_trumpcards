@@ -2,7 +2,7 @@
   "helpTitle": "German Whist (ジャーマンホイスト)",
   "helpPlay": "  p <idx>              カードを出す",
   "helpGiveUp": "  g                    投了する",
-  "header": "トリック: {{trick}}/26  山札: {{stock}}枚  ({{phase}})",
+  "header": "トリック: {{trick}}/26  山札: {{stock}}枚  勝利条件: 後半{{target}}トリック  ({{phase}})",
   "phaseFirst": "前半: 表向きの札を取り合う (得点にならない)",
   "phaseSecond": "後半: 取ったトリックがそのまま得点",
   "trumpLine": "切り札: {{suit}}",

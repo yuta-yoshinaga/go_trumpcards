@@ -8,7 +8,7 @@
   "helpHint": "  hint                 助言を表示",
   "outputTitle": "四色牌 (トゥーサック)",
   "roundLine": "ラウンド: {{round}} / {{total}}",
-  "stockLine": "山: {{stock}} 枚 / 捨て札の一番上: {{discard}}",
+  "stockLine": "山: {{stock}} 枚 / 捨て札: {{discardCount}} 枚 / 捨て札の一番上: {{discard}}",
   "seatLine": "{{mark}}{{name}} 手札 {{count}} 枚 / 得点 {{score}} : {{melds}}",
   "handLine": "あなたの手札: {{cards}}",
   "drawPrompt": "山から引く（draw）か、捨て札を拾う（take）か選んでください",

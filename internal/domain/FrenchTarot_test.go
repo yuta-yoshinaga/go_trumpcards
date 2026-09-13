@@ -126,6 +126,45 @@ func TestFrenchTarotTargetForBouts(t *testing.T) {
 	assert.Equal(t, 41, domain.FrenchTarotTargetForBouts(2))
 	assert.Equal(t, 36, domain.FrenchTarotTargetForBouts(3))
 	assert.Equal(t, 36, domain.FrenchTarotTargetForBouts(3)) // clamp
+	g := domain.NewDefaultFrenchTarot()
+	g.Reset()
+	assert.Equal(t, 56, g.GetTarget())
+}
+
+func TestFrenchTarotDeclarerCapturedPointsIncludesStash(t *testing.T) {
+	g := frenchTarotNewReset()
+	g.SetDeclarerIdx(0)
+	g.GetPlayer(0).AddTrick([]*domain.Card{frenchTarotSuitCard(domain.CardDesignHeart, 14)})
+	g.SetStash([]*domain.Card{frenchTarotSuitCard(domain.CardDesignHeart, 5)}, 0)
+
+	assert.NotEqual(t, g.GetCardPoints(0)/2, g.GetDeclarerCapturedPoints())
+	assert.Equal(t, 5, g.GetDeclarerCapturedPoints())
+}
+
+func TestFrenchTarotDeclarerCapturedPointsMatchesOutcome(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		kingCount   int
+		wantOutcome domain.FrenchTarotOutcome
+	}{
+		{name: "loss", kingCount: 5, wantOutcome: domain.FrenchTarotOutcomeLoss},
+		{name: "win", kingCount: 13, wantOutcome: domain.FrenchTarotOutcomeWin},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := frenchTarotNewReset()
+			g.SetDeclarerIdx(0)
+			cards := make([]*domain.Card, tc.kingCount)
+			for i := range cards {
+				cards[i] = frenchTarotSuitCard(domain.CardDesignHeart, domain.FrenchTarotKingValue)
+			}
+			g.GetPlayer(0).AddTrick(cards)
+			g.SetPhase(domain.FrenchTarotPhaseRoundEnd)
+			g.ScoreRound()
+
+			assert.Equal(t, tc.wantOutcome, g.GetOutcome())
+			assert.Equal(t, g.GetDeclarerCapturedPoints() >= g.GetTarget(), g.GetOutcome() == domain.FrenchTarotOutcomeWin)
+		})
+	}
 }
 
 func TestFrenchTarotBidMult(t *testing.T) {

@@ -63116,6 +63116,9 @@ components:
       type: object
       description: Response payload for /germanwhist/exec
       properties:
+        winThreshold:
+          type: integer
+          description: Tricks needed to win the second half (GermanWhistWinTricks)
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -76546,6 +76549,15 @@ components:
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        declarerCaptured:
+          type: integer
+          description: >-
+            Card points the declarer took, in whole points and including the
+            chien when they own it -- the same figure the target is compared
+            against. Not the halved `players[].cardPoints`.
+        target:
+          type: integer
+          description: Card points the declarer needed, set by the bout count
         messageCode:
           type: string
         players:

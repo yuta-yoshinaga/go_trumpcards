@@ -276,6 +276,7 @@ describe('TuSacPage', () => {
     await waitFor(() => expect(screen.getByTestId('tusac-round')).toHaveTextContent('3'));
     expect(screen.getByTestId('tusac-round')).toHaveTextContent('5');
     expect(screen.getByTestId('tusac-stock')).toHaveTextContent('7');
+    expect(screen.getByTestId('tusac-discard-count')).toHaveTextContent('1');
   });
 
   it('決着で得点の内訳と次のラウンドを出す', async () => {

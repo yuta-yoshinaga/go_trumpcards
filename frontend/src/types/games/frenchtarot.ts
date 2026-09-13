@@ -86,6 +86,10 @@ export interface FrenchTarotResponse extends BaseGameResponse {
   lastTrickWinner: number;
   /** Deal outcome (0=None, 1=Win/contract made, 2=Loss/contract failed). */
   outcome: number;
+  /** Declarer's captured card points in integer points, including the chien stash. */
+  declarerCaptured: number;
+  /** Card-point target used to decide the declarer's deal outcome. */
+  target: number;
   /**
    * Petit au bout adjustment, per defender. Positive when the declarer took the
    * petit in the last trick, negative when the defenders did, `0` when it did

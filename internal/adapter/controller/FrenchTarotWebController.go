@@ -70,6 +70,8 @@ type FrenchTarotWebOutput struct {
 	PlayerScores     [domain.FrenchTarotPlayerCnt]int `json:"playerScores"`
 	LastTrickWinner  int                              `json:"lastTrickWinner"`
 	Outcome          int                              `json:"outcome"`
+	Target           int                              `json:"target"`
+	DeclarerCaptured int                              `json:"declarerCaptured"`
 	// PetitAuBoutDelta プティ・オ・ブーの調整額 (防御側 1 人あたり、0 なら未発生)。
 	PetitAuBoutDelta int                       `json:"petitAuBoutDelta"`
 	Result           int                       `json:"result"`
