@@ -258,9 +258,6 @@ function ColourWhistPageContent() {
                     name: findPlayerName(state.players, state.lastTrickWinner),
                   })}
                   winnerIdx={state.lastTrickWinner}
-                  winnerLabel={t('previousTrickWinner', {
-                    name: findPlayerName(state.players, state.lastTrickWinner),
-                  })}
                 />
               </details>
             )}

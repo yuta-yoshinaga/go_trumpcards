@@ -333,7 +333,8 @@ describe('BotifarraPage', () => {
 
     const previous = await screen.findByTestId('botifarra-previous-trick');
     expect(previous).toHaveTextContent('前のトリック');
-    expect(previous).toHaveTextContent('→ CPU 2 が獲得');
+    expect(previous.querySelector('div.my-3 > div')).toHaveTextContent('→ CPU 2 が獲得');
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent(/^WIN$/);
     expect(previous.querySelectorAll('[data-testid="animated-card"]')).toHaveLength(2);
     expect(screen.getByTestId('botifarra-trick')).toBeInTheDocument();
   });
