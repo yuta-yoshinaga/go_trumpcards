@@ -46,6 +46,14 @@ function DesmochePageContent() {
     useGamePageSetup('desmoche');
   const game = useDesmocheGame();
   const { state, loading, error, retry } = game;
+  const difficultyOptions = useMemo(
+    () => [
+      { value: '0', label: t('settings.difficulty.easy') },
+      { value: '1', label: t('settings.difficulty.normal') },
+      { value: '2', label: t('settings.difficulty.hard') },
+    ],
+    [t],
+  );
 
   // Which hand cards are selected. A meld is several cards at once, so
   // selection has to be explicit rather than click-to-play.
@@ -123,7 +131,22 @@ function DesmochePageContent() {
 
       <SettingsPanel
         title={tc('settings.title')}
-        groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+        groups={[
+          {
+            items: [
+              {
+                type: 'select',
+                id: 'desmoche-difficulty',
+                label: t('settings.cpuDifficulty'),
+                value: String(state.config?.cpuDifficulty ?? 1),
+                options: difficultyOptions,
+                onSelect: (v: string) =>
+                  game.exec('reset', undefined, undefined, undefined, undefined, { cpuDifficulty: Number(v) }),
+              },
+              hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+            ],
+          },
+        ]}
       />
 
       {cliEnabled ? (

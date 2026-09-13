@@ -41,6 +41,8 @@ export interface DesmocheHintPayload {
 
 /** Full Desmoche game state returned from the API. */
 export interface DesmocheResponse extends BaseGameResponse {
+  /** Current CPU difficulty. */
+  config?: { cpuDifficulty: number };
   players: DesmochePlayer[];
   /** 0 = Draw, 1 = Act, 2 = RoundEnd, 3 = GameEnd. */
   phase: number;

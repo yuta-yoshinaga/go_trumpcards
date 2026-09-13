@@ -7,6 +7,12 @@ import { gameExec } from '../gameExec';
 /** Commands accepted by the Open Face Chinese Poker (OFC) /openfacechinese/exec endpoint. */
 export type OpenFaceChineseCommand = 'reset' | 'place' | 'nextround' | 'hint' | 'log';
 
+/** Optional OFC settings sent with reset. */
+export interface OpenFaceChineseOptions {
+  row?: number;
+  config?: { cpuDifficulty?: number; playerCount?: number };
+}
+
 /**
  * API client for the Open Face Chinese Poker (OFC) /openfacechinese/exec endpoint.
  *
@@ -17,9 +23,10 @@ export type OpenFaceChineseCommand = 'reset' | 'place' | 'nextround' | 'hint' | 
  *   - `reset` / `nextround` / `hint` / `log` carry no extra fields
  */
 export const openfacechineseApi = {
-  exec: (command: OpenFaceChineseCommand, opts?: { row?: number }) =>
+  exec: (command: OpenFaceChineseCommand, opts?: OpenFaceChineseOptions) =>
     gameExec<OpenFaceChineseResponse>('openfacechinese', {
       command,
       row: opts?.row,
+      config: opts?.config,
     }),
 };

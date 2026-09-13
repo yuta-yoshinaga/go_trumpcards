@@ -4,6 +4,7 @@ package controller
 
 import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -35,7 +36,7 @@ func (c *PochCuiController) Exec(command string) string {
 			cfg := c.pi.GetConfig()
 			return c.pi.ResetWithConfig(cfg)
 		},
-		[]string{"b", "bet", "f", "fold", "p", "play", "n", "next", "h", "hint", "log", "l"},
+		[]string{"b", "bet", "f", "fold", "p", "play", "n", "next", "sd", "setdifficulty", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
@@ -48,6 +49,12 @@ func (c *PochCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, cuiutil.NoMax, c.pi.Play)
 			case "n", "next":
 				return c.pi.NextDeal(), true
+			case "sd", "setdifficulty":
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
+					cfg := c.pi.GetConfig()
+					cfg.CpuDifficulty = domain.PochCpuDifficulty(v)
+					return c.pi.ResetWithConfig(cfg)
+				})
 			default:
 				return handleCuiHintAndLog(cmd, c.pi.Hint, c.pi.ActionLog)
 			}

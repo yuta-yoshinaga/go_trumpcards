@@ -77,6 +77,15 @@ describe('PochPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('sends a changed difficulty in the reset request', async () => {
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+    mockExec.mockClear();
+
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
+  });
+
   it('shows both rules permanently', async () => {
     renderWithProviders(<PochPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
