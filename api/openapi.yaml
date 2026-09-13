@@ -79601,6 +79601,12 @@ components:
         config:
           type: object
           properties:
+            goOutRequiredMelds:
+              type: integer
+              description: >-
+                Completed canastas/sambas a team needs before it may go out
+                (SambaGoOutRequiredMelds), sent so the progress indicator
+                cannot disagree with what canGoOut enforces.
             cpuDifficulty:
               type: integer
             pointLimit:

@@ -73,8 +73,9 @@ type SambaWebOutput struct {
 
 // SambaWebOutputConfig サンバ設定アウトプット
 type SambaWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	PointLimit    int `json:"pointLimit"`
+	CpuDifficulty      int `json:"cpuDifficulty"`
+	PointLimit         int `json:"pointLimit"`
+	GoOutRequiredMelds int `json:"goOutRequiredMelds"`
 }
 
 // ToConfig builds a SambaConfig from the nested web config, applying bounds checking.

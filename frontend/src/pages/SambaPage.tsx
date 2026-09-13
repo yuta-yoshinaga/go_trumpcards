@@ -121,7 +121,8 @@ function SambaPageContent() {
   const isRoundEnd = state?.phase === SambaPhase.ROUND_END;
   const isGameEnd = state?.phase === SambaPhase.GAME_END || !!state?.gameEndFlag;
   const completedMelds = state && humanPlayer ? state.completedMelds[humanPlayer.team] : 0;
-  const canGoOut = completedMelds >= 2;
+  const goOutRequiredMelds = state?.config.goOutRequiredMelds ?? 0;
+  const canGoOut = completedMelds >= goOutRequiredMelds;
 
   const drawDiscardReason = useMemo(() => {
     if (!isDrawPhase) return '';
@@ -509,7 +510,7 @@ function SambaPageContent() {
                     className={`w-full text-xs ${canGoOut ? 'text-ds-success' : 'text-ds-warning'}`}
                     data-testid="sa-go-out-progress"
                   >
-                    {t('goOutProgress', { completed: completedMelds, required: 2 })}
+                    {t('goOutProgress', { completed: completedMelds, required: goOutRequiredMelds })}
                   </div>
                   <button
                     type="button"
@@ -524,7 +525,7 @@ function SambaPageContent() {
                     className={btnSuccess}
                     onClick={handleGoOut}
                     disabled={loading}
-                    title={!canGoOut ? t('goOutUnavailable', { required: 2 }) : undefined}
+                    title={!canGoOut ? t('goOutUnavailable', { required: goOutRequiredMelds }) : undefined}
                   >
                     {t('goOutButton')}
                   </button>

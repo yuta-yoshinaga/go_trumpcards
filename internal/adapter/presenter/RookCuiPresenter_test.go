@@ -168,7 +168,7 @@ func TestRookCuiPresenter_RoundResultOnlyAtRoundEnd(t *testing.T) {
 		want       string
 		notWant    string
 	}{
-		{name: "made", phase: domain.RookPhaseRoundEnd, teamPoints: 85, want: "契約達成（85）", notWant: "セット（契約未達）"},
+		{name: "made", phase: domain.RookPhaseRoundEnd, teamPoints: 85, want: "契約達成（+85）", notWant: "セット（契約未達）"},
 		{name: "failed", phase: domain.RookPhaseRoundEnd, teamPoints: 60, want: "セット（契約未達）（-80）", notWant: "契約達成"},
 	}
 

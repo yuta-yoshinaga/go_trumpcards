@@ -72,6 +72,7 @@ func TestSambaWebPresenter_Output(t *testing.T) {
 		require.Equal(80, resObj.DrawPileCount)
 		require.Equal(-1, resObj.WinnerIdx)
 		require.Equal(2, len(resObj.TeamScores))
+		require.Equal(domain.SambaGoOutRequiredMelds, resObj.Config.GoOutRequiredMelds)
 		require.Equal(0, resObj.Players[0].Team)
 		require.Equal(1, resObj.Players[1].Team)
 	})

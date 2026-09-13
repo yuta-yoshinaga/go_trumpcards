@@ -36,8 +36,9 @@ func (p *SambaWebPresenter) Output(g interfaces.SambaGame, lastErr error) string
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.SambaWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		PointLimit:    cfg.PointLimit,
+		CpuDifficulty:      int(cfg.CpuDifficulty),
+		PointLimit:         cfg.PointLimit,
+		GoOutRequiredMelds: domain.SambaGoOutRequiredMelds,
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)

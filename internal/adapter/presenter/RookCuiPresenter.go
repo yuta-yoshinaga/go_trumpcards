@@ -15,6 +15,14 @@ import (
 // RookCuiPresenter renders the Rook (ルーク) CUI view.
 type RookCuiPresenter struct{}
 
+func rookScoreDeltaStr(delta int) string {
+	result := strconv.Itoa(delta)
+	if delta > 0 {
+		return "+" + result
+	}
+	return result
+}
+
 // rookCuiHintReasonKeys maps Rook-specific hint reasons to i18n keys.
 var rookCuiHintReasonKeys = map[string]string{
 	"pass_recommended": "rook.hintReasonPass",
@@ -136,7 +144,7 @@ func (p *RookCuiPresenter) Output(g interfaces.RookGame, lastErr error) string {
 			if result.Made {
 				status = i18n.T("rook.contractMade")
 			}
-			b.WriteString(i18n.Tf("rook.roundResult", "team", strconv.Itoa(result.DeclarerTeam), "points", strconv.Itoa(result.TeamPoints), "bid", strconv.Itoa(result.ContractBid), "status", status, "delta", strconv.Itoa(result.ScoreDelta)) + "\n")
+			b.WriteString(i18n.Tf("rook.roundResult", "team", strconv.Itoa(result.DeclarerTeam), "points", strconv.Itoa(result.TeamPoints), "bid", strconv.Itoa(result.ContractBid), "status", status, "delta", rookScoreDeltaStr(result.ScoreDelta)) + "\n")
 		}
 
 		if g.GetGameEndFlag() {

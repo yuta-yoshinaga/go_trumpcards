@@ -133,6 +133,22 @@ describe('SambaPage', () => {
     }
   });
 
+  it('uses the server-provided go-out requirement for progress and tooltip', async () => {
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        phase: 2,
+        completedMelds: [2, 0],
+        config: { ...makeSambaState().config, goOutRequiredMelds: 3 },
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+    await waitFor(() => expect(screen.getByTestId('sa-go-out-progress')).toHaveTextContent('完成メルド 2/3'));
+    expect(screen.getByRole('button', { name: '上がる' })).toHaveAttribute(
+      'title',
+      '上がるにはチームで完成メルドが3個必要です',
+    );
+  });
+
   it('shows next round button at round end', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<SambaPage />);

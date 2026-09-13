@@ -9,6 +9,11 @@ export interface SambaConfig {
   pointLimit: number;
 }
 
+/** Samba configuration values returned by the server, including rule constants. */
+export interface SambaResponseConfig extends SambaConfig {
+  goOutRequiredMelds: number;
+}
+
 /**
  * A single meld on the table in Samba. `kind` distinguishes same-rank sets
  * (0) from suited sequences (1); `isCanasta`/`isSamba` flag the completed
@@ -53,7 +58,7 @@ export interface SambaResponse extends BaseGameResponse {
   isFrozen: boolean;
   gameEndFlag: boolean;
   winnerIdx: number;
-  config: SambaConfig;
+  config: SambaResponseConfig;
   /** Completed canasta/samba counts by team, calculated by the domain rule. */
   completedMelds: [number, number];
 }
