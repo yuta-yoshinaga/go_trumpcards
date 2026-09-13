@@ -21,6 +21,10 @@ func machiavelliPlayerStr(g interfaces.MachiavelliGame, i int) string {
 		"cum", strconv.Itoa(player.GetCumulativeScore()),
 		"round", strconv.Itoa(player.GetRoundScore()),
 		"cards", strconv.Itoa(player.GetCardsSize())) + "\n")
+	if player.GetIsHuman() {
+		b.WriteString(i18n.Tf("machiavelli.deadwoodLine",
+			"value", strconv.Itoa(g.PlayerDeadwoodValue(i))) + "\n")
+	}
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
