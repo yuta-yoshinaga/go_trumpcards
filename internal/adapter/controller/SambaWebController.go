@@ -67,7 +67,8 @@ type SambaWebOutput struct {
 	GameEndFlag      bool                    `json:"gameEndFlag"`
 	WinnerIdx        int                     `json:"winnerIdx"`
 	WebOutputBase
-	Config SambaWebOutputConfig `json:"config"`
+	Config         SambaWebOutputConfig `json:"config"`
+	CompletedMelds [2]int               `json:"completedMelds"`
 }
 
 // SambaWebOutputConfig サンバ設定アウトプット

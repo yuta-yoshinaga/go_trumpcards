@@ -71,14 +71,24 @@ type RookWebOutput struct {
 	// PlayableIndices は人間の手番でのみ埋まる、出せる手札のインデックス。
 	// **リードスート追随は強制**なので、出す前に示さないと拒否されて初めて
 	// 分かることになる (#4928)。
-	PlayableIndices []int              `json:"playableIndices"`
-	TeamScores      [2]int             `json:"teamScores"`
-	TeamPoints      [2]int             `json:"teamPoints"`
-	GameEndFlag     bool               `json:"gameEndFlag"`
-	WinnerTeam      int                `json:"winnerTeam"`
-	Hint            *RookWebOutputHint `json:"hint,omitempty"`
+	PlayableIndices []int                     `json:"playableIndices"`
+	TeamScores      [2]int                    `json:"teamScores"`
+	TeamPoints      [2]int                    `json:"teamPoints"`
+	GameEndFlag     bool                      `json:"gameEndFlag"`
+	WinnerTeam      int                       `json:"winnerTeam"`
+	Hint            *RookWebOutputHint        `json:"hint,omitempty"`
+	RoundResult     *RookWebOutputRoundResult `json:"roundResult,omitempty"`
 	WebOutputBase
 	Config RookWebOutputConfig `json:"config"`
+}
+
+// RookWebOutputRoundResult is the authoritative outcome of the latest scored round.
+type RookWebOutputRoundResult struct {
+	DeclarerTeam int  `json:"declarerTeam"`
+	TeamPoints   int  `json:"teamPoints"`
+	ContractBid  int  `json:"contractBid"`
+	Made         bool `json:"made"`
+	ScoreDelta   int  `json:"scoreDelta"`
 }
 
 // RookWebOutputConfig ルーク(Rook) 設定アウトプット

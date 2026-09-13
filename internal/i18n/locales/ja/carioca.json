@@ -30,6 +30,7 @@
   "promptPlayHelpMeldExtra": "me <a,b,c>・・・追加メルド（コントラクト達成後）",
   "promptPlayHelpLayoff": "lo <pIdx> <mIdx> <cIdx>・・・既存メルドにカード追加",
   "promptPlayHelpDiscard": "d <idx>・・・カードを捨てる",
+  "jokerRule": "ラウンド終了時に手札へ残ったジョーカー1枚につき{{points}}点のペナルティです。",
   "promptRoundEnd": "ラウンド終了",
   "roundEndedBy": "{{name}} がラウンドを終了させました。",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",

@@ -108,6 +108,11 @@ describe('SambaPage', () => {
     renderWithProviders(<SambaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '上がる' })).toBeInTheDocument();
+    expect(screen.getByTestId('sa-go-out-progress')).toHaveTextContent('完成メルド 0/2');
+    expect(screen.getByRole('button', { name: '上がる' })).toHaveAttribute(
+      'title',
+      '上がるにはチームで完成メルドが2個必要です',
+    );
   });
 
   it('shows next round button at round end', async () => {

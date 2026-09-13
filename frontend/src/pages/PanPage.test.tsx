@@ -69,6 +69,7 @@ const playPhaseState: PanResponse = {
       meldedCount: 3,
       laidMelds: [
         {
+          chipUnits: 0,
           cards: [
             { design: 'DIAMOND', value: 4 },
             { design: 'HEART', value: 4 },
@@ -92,6 +93,7 @@ const valleMeldState: PanResponse = {
       cardCount: 7,
       laidMelds: [
         {
+          chipUnits: 1,
           cards: [
             { design: 'DIAMOND', value: 5 },
             { design: 'HEART', value: 5 },
@@ -99,6 +101,7 @@ const valleMeldState: PanResponse = {
           ],
         },
         {
+          chipUnits: 0,
           cards: [
             { design: 'DIAMOND', value: 4 },
             { design: 'HEART', value: 4 },
@@ -578,8 +581,8 @@ describe('PanPage meld candidates', () => {
     mockExec.mockResolvedValue(valleMeldState);
     renderWithProviders(<PanPage />);
 
-    await waitFor(() => expect(screen.getByTestId('pan-valle-1-0')).toBeInTheDocument());
-    expect(screen.queryByTestId('pan-valle-1-1')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('pan-chip-units-1-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('pan-chip-units-1-1')).not.toBeInTheDocument();
   });
   // **同じ「レイオフ」が卓の上に何個も並ぶ。**読み上げではどのプレイヤーの
   // どのメルド宛かが区別できなかった (#6502)。姉妹ゲーム Machiavelli は

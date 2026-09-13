@@ -14,6 +14,12 @@
   "contractLine": "Contract: {{value}} / trump",
   "trumpUndeclared": "undeclared",
   "teamScores": "Team 0: {{t0}} / Team 1: {{t1}}",
+  "roundResult": {
+    "title": "Round result",
+    "summary": "Contract team {{team}}: {{points}} points / {{bid}} bid",
+    "made": "Contract made",
+    "failed": "Set"
+  },
   "teamShort": "T{{team}}",
   "passed": "pass",
   "pointsSuffix": " pts",

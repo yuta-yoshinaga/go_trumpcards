@@ -286,6 +286,20 @@ describe('RookPage', () => {
     fireEvent.click(await screen.findByTestId('nextround-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
+
+  it('shows the authoritative round scoring result', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 4,
+        declarerIdx: 0,
+        roundResult: { declarerTeam: 0, teamPoints: 85, contractBid: 80, made: true, scoreDelta: 85 },
+      }),
+    );
+    renderWithProviders(<RookPage />);
+    const result = await screen.findByTestId('rook-round-result');
+    expect(result).toHaveTextContent('落札チーム0: 獲得85点 / 契約80点');
+    expect(result).toHaveTextContent('契約達成 (+85)');
+  });
 });
 
 // **追随は強制。**出せない札を押せてしまうと、拒否されて初めて義務に気づく (#4928)。

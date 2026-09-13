@@ -41,6 +41,9 @@ func (p *SambaWebPresenter) Output(g interfaces.SambaGame, lastErr error) string
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)
+	for team := 0; team < 2; team++ {
+		resObj.CompletedMelds[team] = g.GetTeamCompletedMeldCount(team)
+	}
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)
