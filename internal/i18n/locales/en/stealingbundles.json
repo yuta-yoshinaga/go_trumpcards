@@ -12,7 +12,6 @@
   "playerLine": "{{name}}{{role}}: {{cards}} cards, bundle {{bundle}}, top [{{top}}]",
   "promptCurrentPlayer": "Turn: {{name}}",
   "promptMustCapture": "A capture is available. You cannot place a card on the table.",
-  "promptTake": "take <idx> ... capture from the table",
   "promptTakeCards": "take <idx> ... capture {{cards}} from the table",
   "promptSteal": "steal <idx> <seat> ... take that seat's bundle",
   "promptNoCapture": "No capture is available. Place a card on the table.",

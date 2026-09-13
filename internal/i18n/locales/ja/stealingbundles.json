@@ -12,7 +12,6 @@
   "playerLine": "{{name}}{{role}}: 手札{{cards}}枚 束{{bundle}}枚 一番上[{{top}}]",
   "promptCurrentPlayer": "手番: {{name}}",
   "promptMustCapture": "取れる手があります。場に置くことはできません。",
-  "promptTake": "take <idx>・・・場札を取る",
   "promptTakeCards": "take <idx>・・・{{cards}} を場から取る",
   "promptSteal": "steal <idx> <席>・・・相手の束を奪う",
   "promptNoCapture": "取れる手がありません。場に置いてください。",

@@ -102,7 +102,7 @@ func TestStealingBundlesCuiPresenterGameEndBanners(t *testing.T) {
 	require.True(t, won.GetGameEndFlag())
 	out := p.Output(won, nil)
 	assert.Contains(t, out, fixedPart("stealingbundles.gameEndYou"))
-	assert.NotContains(t, out, i18n.T("stealingbundles.promptTake"), "終局後は促さない")
+	assert.NotContains(t, out, "take <idx>・・・場札を取る", "終局後は促さない")
 
 	lost := newStealingBundlesForCui(t)
 	lost.GiveUp()
