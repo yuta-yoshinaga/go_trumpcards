@@ -45,24 +45,33 @@ type RamsWebOutputHint struct {
 	Reason    string `json:"reason"`
 }
 
+// RamsWebRoundSettlement describes one player's round-end chip movement.
+type RamsWebRoundSettlement struct {
+	PlayerIdx int `json:"playerIdx"`
+	Penalty   int `json:"penalty"`
+	Payout    int `json:"payout"`
+}
+
 // RamsWebOutput ラムスWebアウトプット
 type RamsWebOutput struct {
-	Players          []*RamsWebOutputPlayer `json:"players"`
-	Phase            int                    `json:"phase"`
-	RoundNumber      int                    `json:"roundNumber"`
-	TrickNumber      int                    `json:"trickNumber"`
-	Pot              int                    `json:"pot"`
-	TrumpSuit        int                    `json:"trumpSuit"`
-	UpCard           *WebOutputCard         `json:"upCard,omitempty"`
-	CurrentPlayerIdx int                    `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                    `json:"leadPlayerIdx"`
-	DealerIdx        int                    `json:"dealerIdx"`
-	ActiveCount      int                    `json:"activeCount"`
-	CurrentTrick     []*WebOutputTrickCard  `json:"currentTrick"`
-	ValidPlays       []int                  `json:"validPlays"`
-	GameEndFlag      bool                   `json:"gameEndFlag"`
-	WinnerIdx        int                    `json:"winnerIdx"`
-	Hint             *RamsWebOutputHint     `json:"hint,omitempty"`
+	Players          []*RamsWebOutputPlayer    `json:"players"`
+	Phase            int                       `json:"phase"`
+	RoundNumber      int                       `json:"roundNumber"`
+	TrickNumber      int                       `json:"trickNumber"`
+	Pot              int                       `json:"pot"`
+	TrumpSuit        int                       `json:"trumpSuit"`
+	UpCard           *WebOutputCard            `json:"upCard,omitempty"`
+	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                       `json:"leadPlayerIdx"`
+	DealerIdx        int                       `json:"dealerIdx"`
+	ActiveCount      int                       `json:"activeCount"`
+	CurrentTrick     []*WebOutputTrickCard     `json:"currentTrick"`
+	ValidPlays       []int                     `json:"validPlays"`
+	GameEndFlag      bool                      `json:"gameEndFlag"`
+	WinnerIdx        int                       `json:"winnerIdx"`
+	Hint             *RamsWebOutputHint        `json:"hint,omitempty"`
+	RoundSettlement  []*RamsWebRoundSettlement `json:"roundSettlement"`
+	MissPenalty      int                       `json:"missPenalty"`
 	WebOutputBase
 	Config RamsWebOutputConfig `json:"config"`
 }

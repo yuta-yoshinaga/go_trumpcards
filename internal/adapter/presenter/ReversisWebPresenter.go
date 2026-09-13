@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -67,6 +68,22 @@ func (p *ReversisWebPresenter) buildPlayersOutput(r interfaces.ReversisGame) []*
 func (p *ReversisWebPresenter) buildMessage(r interfaces.ReversisGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
+	}
+	if entries := latestActions(r.GetActionLog(), "marked"); len(entries) > 0 {
+		name := "CPU " + strconv.Itoa(entries[0].PlayerIdx)
+		if r.GetPlayer(entries[0].PlayerIdx).GetIsHuman() {
+			name = "You"
+		}
+		marks := make([]string, 0, len(entries))
+		for _, entry := range entries {
+			mark := "♥J"
+			if len(entry.Cards) > 0 && domain.ReversisIsDiamondAce(entry.Cards[0]) {
+				mark = "♦A"
+			}
+			marks = append(marks, mark)
+		}
+		return "", "reversis.marked", map[string]string{"name": name, "mark": strings.Join(marks, ", "),
+			"penalty": strconv.Itoa(len(entries) * domain.ReversisMarkedPenalty), "stake": strconv.Itoa(len(entries) * domain.ReversisMarkedStake)}
 	}
 	if r.GetGameEndFlag() {
 		if r.GetWinnerIdx() < 0 {

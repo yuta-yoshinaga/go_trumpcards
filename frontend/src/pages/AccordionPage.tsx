@@ -457,7 +457,11 @@ function AccordionPageContent() {
                 role="status"
                 aria-live="polite"
               >
-                {t('hintMove', { from: state.hint.fromIdx, to: state.hint.toIdx })}
+                {t('hintMove', {
+                  from: state.hint.fromIdx,
+                  to: state.hint.toIdx,
+                  reason: t(state.hint.fromIdx - state.hint.toIdx === 3 ? 'hintReasonOffset3' : 'hintReasonOffset1'),
+                })}
               </div>
             )}
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

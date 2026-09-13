@@ -89,6 +89,13 @@ describe('BadugiPage', () => {
     // Dealer renders via playerName (CPU 2), not the raw index.
     expect(screen.getAllByText('CPU 2').length).toBeGreaterThan(0);
     expect(screen.queryByText(/Player 2|プレイヤー 2/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/サイドポット|Side pot/)).not.toBeInTheDocument();
+  });
+
+  it('lists side pots with eligible player names', async () => {
+    mockExec.mockResolvedValue(baseState({ sidePots: [{ amount: 25, eligiblePlayers: [0, 2] }] }));
+    renderWithProviders(<BadugiPage />);
+    expect(await screen.findByText('サイドポット1: 25チップ（受給資格: あなた, CPU 2）')).toBeInTheDocument();
   });
 
   it('renders the pre-draw badge on the initial deal', async () => {
