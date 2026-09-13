@@ -26,18 +26,27 @@ test.describe('Colour Whist E2E', () => {
 
     await expect(page.getByTestId('colourwhist-contract')).toBeVisible({ timeout: TIMEOUT_ACTION });
 
-    // **出せる札があるときだけ出します。** ラウンドが終わっていれば手札は空です。
-    const legal = page.locator('[data-testid="colourwhist-hand"] button:not([aria-disabled="true"])');
+    // **出せる札があるときだけ出します。**
+    //
+    // 出せる札が無い理由は 2 つあり、区別しないと嘘の失敗になります。ページは
+    // `playable = isPlayPhase && state.isHumanTurn && legal.has(i)` で
+    // `aria-disabled` を決める (`ColourWhistPage.tsx:267`) ので、
+    // **CPU の手番のあいだは手札が満杯でも全部 disabled** になります。
+    // 「押せる札が無い == ラウンドが終わった」と読むと、CPU が先導している
+    // ふつうの局面で `cw-next-button` を待って落ちます (配り依存)。
+    const handButtons = page.locator('[data-testid="colourwhist-hand"] button');
+    const legal = handButtons.locator(':scope:not([aria-disabled="true"])');
     if (await legal.first().isVisible()) {
-      const before = await page.locator('[data-testid="colourwhist-hand"] button').count();
+      const before = await handButtons.count();
       await legal.first().click();
       await waitForLoaded(page);
-      await expect(page.locator('[data-testid="colourwhist-hand"] button')).toHaveCount(before - 1, {
-        timeout: TIMEOUT_ACTION,
-      });
-    } else {
-      // 手札が無いならラウンドが終わっている——次のラウンドへ進めることを確かめます。
+      await expect(handButtons).toHaveCount(before - 1, { timeout: TIMEOUT_ACTION });
+    } else if ((await handButtons.count()) === 0) {
+      // 手札そのものが無いならラウンドが終わっている——次へ進めることを確かめます。
       await expect(page.getByTestId('cw-next-button')).toBeVisible({ timeout: TIMEOUT_ACTION });
+    } else {
+      // 札はあるが自分の手番でない。盤が生きていることだけ確かめて終わります。
+      await expect(page.getByTestId('colourwhist-seats')).toBeVisible({ timeout: TIMEOUT_ACTION });
     }
   });
 
