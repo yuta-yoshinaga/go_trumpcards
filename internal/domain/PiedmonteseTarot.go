@@ -928,6 +928,15 @@ func (g *PiedmonteseTarot) GetCardThirds(i int) int {
 	return thirds[i]
 }
 
+// GetScartoThirds は親がスカルトに埋めた札の点を 1/3 単位で返す。
+func (g *PiedmonteseTarot) GetScartoThirds() int {
+	total := 0
+	for _, c := range g.scarto {
+		total += piedmonteseTarotCardThirds(c)
+	}
+	return total
+}
+
 // GetPlayerCnt は席数を返す。
 func (g *PiedmonteseTarot) GetPlayerCnt() int { return len(g.players) }
 

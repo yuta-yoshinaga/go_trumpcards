@@ -64,6 +64,8 @@ type PiedmonteseTarotGame interface {
 	GetDealScores() []int
 	// GetCardThirds 指定席の獲得点を 1/3 単位で取得する
 	GetCardThirds(i int) int
+	// GetScartoThirds 親がスカルトに埋めた札の点を 1/3 単位で取得する
+	GetScartoThirds() int
 	// GetLastTrickWinner 最後のトリックを取った席を取得する
 	GetLastTrickWinner() int
 	// GetOutcome 直近ディールの結果を取得する

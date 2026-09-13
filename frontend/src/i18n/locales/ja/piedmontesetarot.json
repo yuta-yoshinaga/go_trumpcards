@@ -49,6 +49,8 @@
     "playerLine": "{{name}}: {{delta}}（累計 {{score}}）",
     "total": "卓のカード点合計: {{total}}点（78点）",
     "earnedLine": "{{name}}: 獲得 {{points}}点 → 変動 {{scaled}}",
+    "trickPoints": "{{name}}: トリック {{points}}点",
+    "scartoPoints": "{{name}}: スカルト {{points}}点",
     "formula": "変動 = 席数（{{n}}人）× 自分のカード点 − 卓の合計"
   },
   "hintAvailable": "ヒント",

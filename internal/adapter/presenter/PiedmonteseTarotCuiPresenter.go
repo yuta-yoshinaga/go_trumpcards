@@ -227,10 +227,19 @@ func piedmonteseTarotWriteBreakdown(b *strings.Builder, g interfaces.Piedmontese
 		if i < len(deal) {
 			scaled = deal[i]
 		}
+		trickThirds := g.GetCardThirds(i)
+		if i == g.GetDealerIdx() {
+			trickThirds -= g.GetScartoThirds()
+		}
 		b.WriteString(i18n.Tf("piedmontesetarot.roundEndEarned",
 			"name", cuiPlayerName(g.GetPlayer(i), i),
-			"points", domain.PiedmonteseTarotFormatThirds(g.GetCardThirds(i)),
+			"points", domain.PiedmonteseTarotFormatThirds(trickThirds),
 			"scaled", piedmonteseTarotSignedStr(scaled)) + "\n")
+		if i == g.GetDealerIdx() && g.GetScartoThirds() != 0 {
+			b.WriteString(i18n.Tf("piedmontesetarot.roundEndScarto",
+				"name", cuiPlayerName(g.GetPlayer(i), i),
+				"points", domain.PiedmonteseTarotFormatThirds(g.GetScartoThirds())) + "\n")
+		}
 	}
 }
 

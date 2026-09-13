@@ -78847,6 +78847,9 @@ components:
               cardThirds:
                 type: integer
                 description: "Card points of this seat's captured pile, in thirds. Scoring counts cards in groups of three, so a pile is rarely a whole number of points; cardPoints carries the same figure in readable form."
+              scartoThirds:
+                type: integer
+                description: "Of cardThirds, the part the dealer buried in the scarto rather than won in a trick. Zero for every seat but the dealer."
         scartoCount:
           type: integer
           description: "Cards the dealer has buried so far this deal."

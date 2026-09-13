@@ -120,6 +120,9 @@ func (_m *MockPiedmonteseTarotGame) GetDealScores() []int {
 // GetCardThirds モック
 func (_m *MockPiedmonteseTarotGame) GetCardThirds(i int) int { return _m.Called(i).Int(0) }
 
+// GetScartoThirds モック
+func (_m *MockPiedmonteseTarotGame) GetScartoThirds() int { return _m.Called().Int(0) }
+
 // GetLastTrickWinner モック
 func (_m *MockPiedmonteseTarotGame) GetLastTrickWinner() int { return _m.Called().Int(0) }
 

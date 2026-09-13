@@ -23,6 +23,8 @@ export interface PiedmonteseTarotPlayer {
   cardThirds: number;
   /** The same figure written for the screen, e.g. "26 1/3". */
   cardPoints: string;
+  /** Points buried by the dealer in the scarto, in thirds. */
+  scartoThirds: number;
   /** Cumulative match score of this seat. */
   score: number;
   /** Whether this seat deals — and therefore performs the scarto — this deal. */

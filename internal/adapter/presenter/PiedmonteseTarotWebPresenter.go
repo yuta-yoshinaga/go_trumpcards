@@ -149,6 +149,10 @@ func (p *PiedmonteseTarotWebPresenter) buildPlayersOutput(g interfaces.Piedmonte
 			score = scores[i]
 		}
 		thirds := g.GetCardThirds(i)
+		scartoThirds := 0
+		if i == dealer {
+			scartoThirds = g.GetScartoThirds()
+		}
 		out = append(out, &controller.PiedmonteseTarotWebOutputPlayer{
 			ID:         i,
 			IsHuman:    player.GetIsHuman(),
@@ -158,9 +162,10 @@ func (p *PiedmonteseTarotWebPresenter) buildPlayersOutput(g interfaces.Piedmonte
 			CardThirds: thirds,
 			// **画面に出すのは読める形。** 1/3 単位の生の数をそのまま出すと、
 			// 78 点のゲームで 234 という数字が並ぶ。
-			CardPoints: domain.PiedmonteseTarotFormatThirds(thirds),
-			Score:      score,
-			IsDealer:   i == dealer,
+			CardPoints:   domain.PiedmonteseTarotFormatThirds(thirds),
+			ScartoThirds: scartoThirds,
+			Score:        score,
+			IsDealer:     i == dealer,
 		})
 	}
 	return out

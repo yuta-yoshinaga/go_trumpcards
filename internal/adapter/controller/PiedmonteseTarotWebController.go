@@ -39,8 +39,10 @@ type PiedmonteseTarotWebOutputPlayer struct {
 	CardThirds int `json:"cardThirds"`
 	// CardPoints は同じ点を読める形にしたもの ("26 1/3" など)。
 	CardPoints string `json:"cardPoints"`
-	Score      int    `json:"score"`
-	IsDealer   bool   `json:"isDealer"`
+	// ScartoThirds は親がスカルトに埋めた札の点を 1/3 単位で表したもの。
+	ScartoThirds int  `json:"scartoThirds"`
+	Score        int  `json:"score"`
+	IsDealer     bool `json:"isDealer"`
 }
 
 // PiedmonteseTarotWebOutput はピエモンテ・タロッコの Web アウトプット。
