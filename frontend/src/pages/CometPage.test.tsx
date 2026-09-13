@@ -20,6 +20,19 @@ beforeEach(() => {
 });
 
 describe('CometPage', () => {
+  it('marks the Comet in the hand and pile accessibly', async () => {
+    const state = makeCometState({
+      players: [
+        { ...makeCometState().players[0], cards: [{ design: 'DIAMOND', value: 9 }] },
+        ...makeCometState().players.slice(1),
+      ],
+      pile: [{ design: 'DIAMOND', value: 9 }],
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<CometPage />);
+    expect(await screen.findAllByText('★')).toHaveLength(2);
+    expect(screen.getAllByTitle('ワイルド（コメット）: どのランクの代わりにもなります')).toHaveLength(2);
+  });
   it('calls reset on mount with the configured table', async () => {
     renderWithProviders(<CometPage />);
     await waitFor(() =>

@@ -31,6 +31,7 @@
   "winner": "{{name}} wins!",
   "nextRound": "Next round",
   "restrictedTooltip": "You cannot play this now",
+  "wildMark": "Wild (Comet): can stand for any rank",
   "hintAvailable": "Hint",
   "hint": {
     "go_out": "this card goes out",
