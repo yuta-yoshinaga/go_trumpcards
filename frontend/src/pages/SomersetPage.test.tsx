@@ -1,7 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { somersetApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { SOMERSET_STATS_KEY } from '../hooks/useSomersetStats';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SomersetResponse, SomersetTableauCard } from '../types/card';
@@ -68,6 +69,8 @@ const gameOverState: SomersetResponse = {
 };
 
 describe('SomersetPage', () => {
+  afterEach(() => localStorage.clear());
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
@@ -146,6 +149,35 @@ describe('SomersetPage', () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<SomersetPage />);
     await waitFor(() => expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument());
+  });
+
+  it('shows stats and a personal-best badge after a clear', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<SomersetPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('somerset-stats-panel')).toHaveTextContent('勝率 100% (1/1) · 最少 3手'),
+    );
+    expect(screen.getByTestId('somerset-best-badge')).toHaveTextContent('自己ベスト更新！');
+  });
+
+  it('records an ended game only once across rerenders', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<SomersetPage />);
+    await waitFor(() => expect(screen.getByTestId('somerset-best-badge')).toBeInTheDocument());
+    expect(JSON.parse(localStorage.getItem(SOMERSET_STATS_KEY) ?? '{}')).toMatchObject({ plays: 1, wins: 1 });
+  });
+
+  it('records a game over as a loss without changing the fewest-moves record', async () => {
+    localStorage.setItem(SOMERSET_STATS_KEY, JSON.stringify({ plays: 1, wins: 1, fewestMoves: 3 }));
+    mockExec.mockResolvedValue({ ...gameOverState, moveCount: 99 });
+    renderWithProviders(<SomersetPage />);
+    await waitFor(() => expect(screen.getByTestId('somerset-stats-panel')).toHaveTextContent('勝率 50% (1/2)'));
+    expect(screen.getByTestId('somerset-stats-panel')).toHaveTextContent('最少 3手');
+    expect(JSON.parse(localStorage.getItem(SOMERSET_STATS_KEY) ?? '{}')).toMatchObject({
+      plays: 2,
+      wins: 1,
+      fewestMoves: 3,
+    });
   });
 
   it('giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {

@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cruelApi } from '../api/gameApi';
+import { CRUEL_STATS_KEY } from '../hooks/useCruelStats';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CruelResponse } from '../types/card';
@@ -63,10 +64,13 @@ const gameOverState: CruelResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.clear();
   mockExec.mockResolvedValue(playingState);
 });
 
 describe('CruelPage', () => {
+  afterEach(() => localStorage.clear());
+
   it('renders heading', async () => {
     renderWithProviders(<CruelPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -92,6 +96,35 @@ describe('CruelPage', () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<CruelPage />);
     await waitFor(() => expect(screen.getAllByText('ゲームオーバー').length).toBeGreaterThan(0));
+  });
+
+  it('shows stats and a personal-best badge after a clear', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<CruelPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('cruel-stats-panel')).toHaveTextContent('勝率 100% (1/1) · 最少 42手'),
+    );
+    expect(screen.getByTestId('cruel-best-badge')).toHaveTextContent('自己ベスト更新！');
+  });
+
+  it('records an ended game only once across rerenders', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(screen.getByTestId('cruel-best-badge')).toBeInTheDocument());
+    expect(JSON.parse(localStorage.getItem(CRUEL_STATS_KEY) ?? '{}')).toMatchObject({ plays: 1, wins: 1 });
+  });
+
+  it('records a game over as a loss without changing the fewest-moves record', async () => {
+    localStorage.setItem(CRUEL_STATS_KEY, JSON.stringify({ plays: 1, wins: 1, fewestMoves: 10 }));
+    mockExec.mockResolvedValue({ ...gameOverState, moveCount: 99 });
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(screen.getByTestId('cruel-stats-panel')).toHaveTextContent('勝率 50% (1/2)'));
+    expect(screen.getByTestId('cruel-stats-panel')).toHaveTextContent('最少 10手');
+    expect(JSON.parse(localStorage.getItem(CRUEL_STATS_KEY) ?? '{}')).toMatchObject({
+      plays: 2,
+      wins: 1,
+      fewestMoves: 10,
+    });
   });
 
   it('shift button fires shift command', async () => {

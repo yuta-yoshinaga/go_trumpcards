@@ -42,5 +42,10 @@
       "stalactites": "セル",
       "foundation": "ファンデーション"
     }
+  },
+  "stats": {
+    "winRate": "勝率 {{rate}}%",
+    "fewestMoves": "最少 {{moves}}手",
+    "newBest": "自己ベスト更新！"
   }
 }

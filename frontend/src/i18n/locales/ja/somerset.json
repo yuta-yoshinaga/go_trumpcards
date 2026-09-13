@@ -34,6 +34,11 @@
     "tableau": "タブロー列{{col}}",
     "foundation": "組札"
   },
+  "stats": {
+    "winRate": "勝率 {{rate}}%",
+    "fewestMoves": "最少 {{moves}}手",
+    "newBest": "自己ベスト更新！"
+  },
   "hintReason": {
     "toFoundation": "このカードを組札に上げると後の展開が楽になります",
     "toTableau": "示唆された場札への移動でロックされたカードを動かしましょう"

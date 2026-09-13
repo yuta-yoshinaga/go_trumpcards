@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { StalactitesMoveZone, stalactitesApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -26,6 +26,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
+import { stalactiteWinRate, useStalactiteStats } from '../hooks/useStalactiteStats';
 import { useStalactitesGame } from '../hooks/useStalactitesGame';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -153,6 +154,23 @@ function StalactitesPageContent() {
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const isPlayingForKbd = state?.phase === StalactitesPhase.PLAYING;
+  const { stats, recordResult } = useStalactiteStats();
+  const [bestUpdate, setBestUpdate] = useState(false);
+  const recordedRef = useRef(false);
+  const currentPhase = state?.phase;
+  const currentMoves = state?.moveCount;
+  useEffect(() => {
+    const ended = currentPhase === StalactitesPhase.GAME_CLEAR || currentPhase === StalactitesPhase.GAME_OVER;
+    if (!ended) {
+      recordedRef.current = false;
+      return;
+    }
+    if (recordedRef.current) return;
+    recordedRef.current = true;
+    const won = currentPhase === StalactitesPhase.GAME_CLEAR;
+    const update = recordResult({ won, moves: currentMoves ?? 0 });
+    setBestUpdate(won ? update : false);
+  }, [currentPhase, currentMoves, recordResult]);
 
   const dispatchMove = useCallback(
     (source: StalactitesMoveZone, target: StalactitesMoveZone) => {
@@ -563,6 +581,16 @@ function StalactitesPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            {isGameClear && bestUpdate && (
+              <div
+                data-testid="stalactites-best-badge"
+                role="status"
+                className="text-center text-ds-success font-semibold text-sm mb-2"
+              >
+                {t('stats.newBest')}
+              </div>
+            )}
           </div>
 
           {/* Settings */}
@@ -578,6 +606,10 @@ function StalactitesPageContent() {
           <GameFooter className={`${gameTheme.stalactites.footer} px-4 py-2.5`}>
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
+              <div data-testid="stalactites-stats-panel" className="w-full text-game-text-muted text-xs">
+                {t('stats.winRate', { rate: stalactiteWinRate(stats) })} ({stats.wins}/{stats.plays})
+                {stats.fewestMoves !== null && <> · {t('stats.fewestMoves', { moves: stats.fewestMoves })}</>}
+              </div>
               {isPlaying && (
                 <div data-tutorial="fc-controls">
                   <button
