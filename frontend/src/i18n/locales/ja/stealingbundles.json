@@ -20,7 +20,7 @@
     "lastCaptureSteal": "[直前に {{name}} の束を盗んだ]"
   },
   "actions": {
-    "take": "場から取る",
+    "take": "場から取る: {{cards}}",
     "steal": "{{name}} の束を奪う",
     "trail": "場に置く",
     "cancel": "選び直す",

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, FiveCardStudResponse } from '../../types/card';
 import { FiveCardStudPhase } from '../../types/phases';
-import { getFiveCardStudHint } from './fivecardstudHint';
 import { getSokoHint } from './sokoHint';
 
 const card = (design: Card['design'], value: number): Card => ({ design, value });
@@ -63,16 +62,31 @@ describe('getSokoHint', () => {
   // same pot odds — and the extra hand ranks are resolved server-side before the
   // page sees them. So the contract this pins is the delegation itself: if
   // someone forks a private copy here, these tests catch the divergence.
-  it('returns exactly what the Five Card Stud hint returns, on a pair', () => {
+  it('raises a four-card flush even when the same cards also contain a pair', () => {
+    const s = base({
+      hole: [card('SPADE', 9), card('HEART', 9)],
+      door: [card('SPADE', 4), card('SPADE', 7), card('SPADE', 8)],
+    });
+    expect(getSokoHint(s)).toEqual({
+      targetAction: 'raise',
+      reason: 'frontendHint.sokoRaiseFourCard',
+      confidence: 'strong',
+    });
+  });
+
+  it('raises a four-card straight including the ace-low boundary', () => {
+    const s = base({ hole: [card('SPADE', 1), card('HEART', 2)], door: [card('CLOVER', 3), card('DIAMOND', 4)] });
+    expect(getSokoHint(s)?.reason).toBe('frontendHint.sokoRaiseFourCard');
+  });
+
+  it('keeps the standard hint for an ordinary pair', () => {
     const s = base({ hole: [card('SPADE', 9)], door: [card('HEART', 9)] });
-    const hint = getSokoHint(s);
-    expect(hint).not.toBeNull();
-    expect(hint).toEqual(getFiveCardStudHint(s));
+    expect(getSokoHint(s)?.reason).toBe('frontendHint.fivecardstudRaisePair');
   });
 
   it('agrees with the Five Card Stud hint on a weak holding too', () => {
     const s = base({ hole: [card('SPADE', 3)], door: [card('HEART', 8)], lastBet: 40, currentBet: 0 });
-    expect(getSokoHint(s)).toEqual(getFiveCardStudHint(s));
+    expect(getSokoHint(s)?.reason).toBe('frontendHint.fivecardstudFoldWeak');
   });
 
   it('stays quiet once the game is over', () => {

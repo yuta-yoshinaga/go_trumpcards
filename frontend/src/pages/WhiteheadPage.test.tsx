@@ -101,6 +101,11 @@ beforeEach(() => {
 });
 
 describe('WhiteheadPage', () => {
+  it('shows foundation progress when the game is over', async () => {
+    mockExec.mockResolvedValue({ ...gameOverState, foundation: withFoundationState.foundation });
+    renderWithProviders(<WhiteheadPage />);
+    expect(await screen.findByTestId('whitehead-gameover-summary')).toHaveTextContent('組札 3/52 枚 (6%)');
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<WhiteheadPage />);

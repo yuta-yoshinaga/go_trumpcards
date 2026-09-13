@@ -96,6 +96,29 @@ describe('BalootPage', () => {
     expect(screen.getByTestId('bl-mode')).toHaveTextContent('♥');
   });
 
+  it.each([
+    ['Sun', 1, 0, 2],
+    ['Hokom', 2, 3, 20],
+  ] as const)('shows the settled %s card points', async (_modeName, mode, trumpSuit, expectedPoints) => {
+    mockExec.mockResolvedValue(
+      playing({
+        mode,
+        trumpSuit,
+        players: [seat(0, { cards: [card('HEART', 11)], cardCount: 1 }), seat(1), seat(2), seat(3)],
+      } as Partial<BalootResponse>),
+    );
+    renderWithProviders(<BalootPage />);
+
+    expect(await screen.findByTestId('bl-points-0')).toHaveTextContent(String(expectedPoints));
+  });
+
+  it('does not show card points before the mode is settled', async () => {
+    renderWithProviders(<BalootPage />);
+
+    await screen.findByTestId('bl-mode');
+    expect(screen.queryByTestId('bl-points-0')).not.toBeInTheDocument();
+  });
+
   it('offers Sun, all four Hokom suits and pass while declaring', async () => {
     renderWithProviders(<BalootPage />);
     expect(await screen.findByTestId('bl-sun-btn')).toBeInTheDocument();
