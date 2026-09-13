@@ -137,6 +137,20 @@ describe('CribbageSquaresPage', () => {
     expect(screen.queryByTestId('row-breakdown-1')).not.toBeInTheDocument();
   });
 
+  it('shows cards for a scored column and omits them for an empty one', async () => {
+    const details = [
+      zero(),
+      { cards: [card('DIAMOND', 12)], fifteens: 0, pairs: 0, runs: 3, flush: 0, nobs: 0, total: 3 },
+      zero(),
+      zero(),
+    ];
+    mockExec.mockResolvedValue(makeState({ colDetails: details, colScores: [0, 3, 0, 0], phase: 1 }));
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('col-score-cards-1')).toBeInTheDocument());
+    expect(screen.getByTestId('col-score-cards-1')).toHaveTextContent('♦ Q');
+    expect(screen.queryByTestId('col-score-cards-0')).not.toBeInTheDocument();
+  });
+
   // #6088: 公式の内訳はスターターがめくれる 16 枚目まで**必ず 0**。対局中に
   // 出せるのは「スターター抜きで確定しているぶん」だけで、CUI は #6083 から
   // それを出している。

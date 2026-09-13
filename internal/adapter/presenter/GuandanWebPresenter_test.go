@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -43,6 +44,7 @@ type guandanMockOpts struct {
 	tributes   []*domain.GuandanTribute
 	cancelled  bool
 	lastResult *domain.GuandanHandResult
+	actionLog  []*domain.ActionLogEntry
 	// humanHand overrides seat 0's hand; nil keeps the default two cards.
 	humanHand []*domain.Card
 	// noHuman makes every seat a CPU (there is no human to read a hand from).
@@ -78,7 +80,7 @@ func setupGuandanMock(o guandanMockOpts) *interfaces.MockGuandanGame {
 	m.On("GetTributes").Return(o.tributes)
 	m.On("IsTributeCancelled").Return(o.cancelled)
 	m.On("GetLastResult").Return(o.lastResult)
-	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
+	m.On("GetActionLog").Return(o.actionLog)
 	for i := range players {
 		m.On("GetPlayer", i).Return(players[i])
 	}
@@ -155,6 +157,38 @@ func TestGuandanWebPresenter_Output(t *testing.T) {
 	t.Run("an empty table has no combination", func(t *testing.T) {
 		out := parseGuandanOutput(t, p.Output(setupGuandanMock(defaultGuandanOpts()), nil))
 		assert.Nil(t, out.LastCombo)
+	})
+
+	// **場の役に対応する実札も返す。**役の数字だけでは、フロントが
+	// 場に出た札を再現できない。
+	t.Run("the table combination carries the cards from the latest play", func(t *testing.T) {
+		o := defaultGuandanOpts()
+		o.combo = &domain.GuandanCombo{Kind: domain.GuandanComboNone, Rank: 0, Size: 3}
+		o.actionLog = []*domain.ActionLogEntry{
+			{ActionType: "pass"},
+			{ActionType: "play", Cards: []*domain.Card{
+				gdTestCard(domain.CardDesignSpade, 10),
+				nil,
+				gdTestCard(domain.CardDesignHeart, 10),
+			}},
+			{ActionType: "draw", Cards: []*domain.Card{gdTestCard(domain.CardDesignClover, 2)}},
+		}
+		out := parseGuandanOutput(t, p.Output(setupGuandanMock(o), nil))
+		require.NotNil(t, out.LastCombo)
+		assert.Equal(t, 3, out.LastCombo.Size)
+		assert.Equal(t, []*controller.WebOutputCard{
+			{Design: "SPADE", Value: 10},
+			{Design: "HEART", Value: 10},
+		}, out.LastCombo.Cards)
+	})
+
+	t.Run("a combination has an empty card list when no play was logged", func(t *testing.T) {
+		o := defaultGuandanOpts()
+		o.combo = &domain.GuandanCombo{Kind: domain.GuandanComboPair, Rank: 7, Size: 2}
+		o.actionLog = []*domain.ActionLogEntry{{ActionType: "pass"}, nil}
+		out := parseGuandanOutput(t, p.Output(setupGuandanMock(o), nil))
+		require.NotNil(t, out.LastCombo)
+		assert.Empty(t, out.LastCombo.Cards)
 	})
 
 	// **貢は次局の手札を動かす。**返した札まで見えないと不公平に見える。

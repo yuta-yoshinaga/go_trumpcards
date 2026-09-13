@@ -96,6 +96,8 @@ describe('ColoradoPage', () => {
     renderWithProviders(<ColoradoPage />);
     await waitFor(() => expect(screen.getByTestId('co-tableau-0')).toBeInTheDocument());
     expect(screen.getByTestId(`co-tableau-${(TABLEAU_CNT - 1).toString()}`)).toBeInTheDocument();
+    expect(screen.getByTestId('co-tableau-0')).toHaveAccessibleName('場札 0 1枚');
+    expect(screen.getByTestId('co-tableau-0').querySelectorAll('[data-testid="animated-card"]')).toHaveLength(1);
   });
 
   it('shows cards buried under a tableau pile', async () => {

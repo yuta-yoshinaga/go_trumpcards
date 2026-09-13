@@ -68,6 +68,15 @@ describe('formatPopeJoanState', () => {
     expect(out).toContain('targets in your hand: Intrigue (Q-J)');
   });
 
+  it('reports both targets in their rule order', () => {
+    const out = formatPopeJoanState(
+      makeState({
+        players: [seat(0, true, { cards: [card('SPADE', 13), card('SPADE', 12), card('SPADE', 11)] }), seat(1, false)],
+      }),
+    );
+    expect(out).toContain('targets in your hand: Matrimony (K-Q), Intrigue (Q-J)');
+  });
+
   it('reports none when neither target is in the trump suit', () => {
     expect(formatPopeJoanState(makeState())).toContain('targets in your hand: none');
   });
