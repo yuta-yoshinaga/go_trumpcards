@@ -31,7 +31,7 @@ export interface DiplomatFoundationRequirement {
  * @returns An object with `suit`, `nextRank` (1..13 or `null` if completed), and `canPlace`.
  */
 export function diplomatFoundationRequirement(fIdx: number, pile: readonly Card[]): DiplomatFoundationRequirement {
-  const suit = DIPLOMAT_FOUNDATION_SUITS[fIdx] ?? 'SPADE';
+  const suit = DIPLOMAT_FOUNDATION_SUITS[fIdx];
   const pileLen = pile.length;
   if (pileLen >= DIPLOMAT_FOUNDATION_TARGET) {
     return {
@@ -40,9 +40,7 @@ export function diplomatFoundationRequirement(fIdx: number, pile: readonly Card[
       canPlace: () => false,
     };
   }
-  // pileLen > 0 なら最後の要素は必ずあるので、既定値を置くとその枝は死ぬ。
-  // noUncheckedIndexedAccess のために non-null 表明で受ける。
-  const nextRank = pileLen === 0 ? 1 : pile[pileLen - 1]!.value + 1;
+  const nextRank = pileLen === 0 ? 1 : pile[pileLen - 1].value + 1;
   return {
     suit,
     nextRank,
