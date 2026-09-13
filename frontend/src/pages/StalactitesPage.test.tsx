@@ -105,6 +105,19 @@ describe('StalactitesPage', () => {
     expect(JSON.parse(localStorage.getItem(STALACTITE_STATS_KEY) ?? '{}')).toMatchObject({ plays: 1, wins: 1 });
   });
 
+  it('records a game over as a loss without changing the fewest-moves record', async () => {
+    localStorage.setItem(STALACTITE_STATS_KEY, JSON.stringify({ plays: 1, wins: 1, fewestMoves: 5 }));
+    mockExec.mockResolvedValue({ ...gameOverState, moveCount: 99 });
+    renderWithProviders(<StalactitesPage />);
+    await waitFor(() => expect(screen.getByTestId('stalactites-stats-panel')).toHaveTextContent('勝率 50% (1/2)'));
+    expect(screen.getByTestId('stalactites-stats-panel')).toHaveTextContent('最少 5手');
+    expect(JSON.parse(localStorage.getItem(STALACTITE_STATS_KEY) ?? '{}')).toMatchObject({
+      plays: 2,
+      wins: 1,
+      fewestMoves: 5,
+    });
+  });
+
   // --- Tableau ---
 
   it('renders tableau without index headers', async () => {

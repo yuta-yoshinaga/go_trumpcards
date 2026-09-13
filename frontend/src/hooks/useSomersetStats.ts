@@ -1,22 +1,27 @@
 import { createFlatStatsReader, createLocalStorageStats } from './createLocalStorageStats';
 
+/** localStorage key for Somerset play statistics. */
 export const SOMERSET_STATS_KEY = 'trumpcards-somerset-stats';
 
+/** Aggregated statistics for Somerset games. */
 export interface SomersetStats {
   plays: number;
   wins: number;
   fewestMoves: number | null;
 }
 
+/** Outcome of one finished Somerset game. */
 export interface SomersetResult {
   won: boolean;
   moves: number;
 }
 
+/** Returns an empty Somerset statistics record. */
 export function emptySomersetStats(): SomersetStats {
   return { plays: 0, wins: 0, fewestMoves: null };
 }
 
+/** Returns the whole-number Somerset win rate. */
 export function somersetWinRate(stats: SomersetStats): number {
   if (stats.plays === 0) return 0;
   return Math.round((stats.wins / stats.plays) * 100);
@@ -32,6 +37,7 @@ function isValidStats(value: unknown): value is SomersetStats {
   );
 }
 
+/** Adds one finished Somerset game and reports whether it set a new move record. */
 export function applySomersetResult(
   stats: SomersetStats,
   result: SomersetResult,
@@ -49,6 +55,7 @@ export function applySomersetResult(
   return { stats: next, newBest };
 }
 
+/** Reads persisted Somerset statistics, falling back to an empty record. */
 export const readSomersetStats = createFlatStatsReader(SOMERSET_STATS_KEY, emptySomersetStats, isValidStats);
 
 const store = createLocalStorageStats<SomersetStats, SomersetResult, boolean>({
@@ -60,4 +67,5 @@ const store = createLocalStorageStats<SomersetStats, SomersetResult, boolean>({
   },
 });
 
+/** Provides persisted Somerset statistics and a one-game result recorder. */
 export const useSomersetStats = store.useStats;

@@ -151,7 +151,8 @@ function SomersetPageContent() {
     if (recordedRef.current) return;
     recordedRef.current = true;
     const won = currentPhase === SomersetPhase.GAME_CLEAR;
-    setBestUpdate(won ? recordResult({ won, moves: currentMoves ?? 0 }) : false);
+    const update = recordResult({ won, moves: currentMoves ?? 0 });
+    setBestUpdate(won ? update : false);
   }, [currentPhase, currentMoves, recordResult]);
 
   const dispatchMove = useCallback(

@@ -114,6 +114,19 @@ describe('CruelPage', () => {
     expect(JSON.parse(localStorage.getItem(CRUEL_STATS_KEY) ?? '{}')).toMatchObject({ plays: 1, wins: 1 });
   });
 
+  it('records a game over as a loss without changing the fewest-moves record', async () => {
+    localStorage.setItem(CRUEL_STATS_KEY, JSON.stringify({ plays: 1, wins: 1, fewestMoves: 10 }));
+    mockExec.mockResolvedValue({ ...gameOverState, moveCount: 99 });
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(screen.getByTestId('cruel-stats-panel')).toHaveTextContent('勝率 50% (1/2)'));
+    expect(screen.getByTestId('cruel-stats-panel')).toHaveTextContent('最少 10手');
+    expect(JSON.parse(localStorage.getItem(CRUEL_STATS_KEY) ?? '{}')).toMatchObject({
+      plays: 2,
+      wins: 1,
+      fewestMoves: 10,
+    });
+  });
+
   it('shift button fires shift command', async () => {
     renderWithProviders(<CruelPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

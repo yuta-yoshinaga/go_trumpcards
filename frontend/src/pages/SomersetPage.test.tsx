@@ -167,6 +167,19 @@ describe('SomersetPage', () => {
     expect(JSON.parse(localStorage.getItem(SOMERSET_STATS_KEY) ?? '{}')).toMatchObject({ plays: 1, wins: 1 });
   });
 
+  it('records a game over as a loss without changing the fewest-moves record', async () => {
+    localStorage.setItem(SOMERSET_STATS_KEY, JSON.stringify({ plays: 1, wins: 1, fewestMoves: 3 }));
+    mockExec.mockResolvedValue({ ...gameOverState, moveCount: 99 });
+    renderWithProviders(<SomersetPage />);
+    await waitFor(() => expect(screen.getByTestId('somerset-stats-panel')).toHaveTextContent('勝率 50% (1/2)'));
+    expect(screen.getByTestId('somerset-stats-panel')).toHaveTextContent('最少 3手');
+    expect(JSON.parse(localStorage.getItem(SOMERSET_STATS_KEY) ?? '{}')).toMatchObject({
+      plays: 2,
+      wins: 1,
+      fewestMoves: 3,
+    });
+  });
+
   it('giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SomersetPage />);

@@ -269,7 +269,8 @@ function CruelPageContent() {
     if (recordedRef.current) return;
     recordedRef.current = true;
     const won = currentPhase === CruelPhase.GAME_CLEAR;
-    setBestUpdate(won ? recordResult({ won, moves: currentMoves ?? 0 }) : false);
+    const update = recordResult({ won, moves: currentMoves ?? 0 });
+    setBestUpdate(won ? update : false);
   }, [currentPhase, currentMoves, recordResult]);
 
   const actionBindings = useMemo(
@@ -299,9 +300,7 @@ function CruelPageContent() {
   const isGameClear = state.phase === CruelPhase.GAME_CLEAR;
   const isGameOver = state.phase === CruelPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
-  // The first positive result is necessarily a new record; keep the badge
-  // visible even if React replays the completion effect in development.
-  const showBestBadge = bestUpdate || (isGameClear && stats.plays === 1 && stats.fewestMoves === state.moveCount);
+  const showBestBadge = bestUpdate;
 
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;

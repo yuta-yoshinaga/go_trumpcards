@@ -1,22 +1,27 @@
 import { createFlatStatsReader, createLocalStorageStats } from './createLocalStorageStats';
 
+/** localStorage key for Stalactites play statistics. */
 export const STALACTITE_STATS_KEY = 'trumpcards-stalactite-stats';
 
+/** Aggregated statistics for Stalactites games. */
 export interface StalactiteStats {
   plays: number;
   wins: number;
   fewestMoves: number | null;
 }
 
+/** Outcome of one finished Stalactites game. */
 export interface StalactiteResult {
   won: boolean;
   moves: number;
 }
 
+/** Returns an empty Stalactites statistics record. */
 export function emptyStalactiteStats(): StalactiteStats {
   return { plays: 0, wins: 0, fewestMoves: null };
 }
 
+/** Returns the whole-number Stalactites win rate. */
 export function stalactiteWinRate(stats: StalactiteStats): number {
   if (stats.plays === 0) return 0;
   return Math.round((stats.wins / stats.plays) * 100);
@@ -32,6 +37,7 @@ function isValidStats(value: unknown): value is StalactiteStats {
   );
 }
 
+/** Adds one finished Stalactites game and reports whether it set a new move record. */
 export function applyStalactiteResult(
   stats: StalactiteStats,
   result: StalactiteResult,
@@ -49,6 +55,7 @@ export function applyStalactiteResult(
   return { stats: next, newBest };
 }
 
+/** Reads persisted Stalactites statistics, falling back to an empty record. */
 export const readStalactiteStats = createFlatStatsReader(STALACTITE_STATS_KEY, emptyStalactiteStats, isValidStats);
 
 const store = createLocalStorageStats<StalactiteStats, StalactiteResult, boolean>({
@@ -60,4 +67,5 @@ const store = createLocalStorageStats<StalactiteStats, StalactiteResult, boolean
   },
 });
 
+/** Provides persisted Stalactites statistics and a one-game result recorder. */
 export const useStalactiteStats = store.useStats;
