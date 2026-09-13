@@ -27,7 +27,7 @@ func (cc *CaribbeanDrawCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return cc.ci.Reset() },
-		[]string{"b", "bet", "d", "draw", "p", "play", "f", "fold", "h", "hint", "log", "l"},
+		[]string{"b", "bet", "d", "draw", "p", "play", "f", "fold", "h", "hint", "log", "l", "clearstats"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
@@ -62,6 +62,8 @@ func (cc *CaribbeanDrawCuiController) Exec(command string) string {
 				return cc.ci.Fold(), true
 			case "h", "hint":
 				return cc.ci.Hint(), true
+			case "clearstats":
+				return cc.ci.ClearSession(), true
 			default:
 				return handleCuiLog(cmd, cc.ci.ActionLog)
 			}

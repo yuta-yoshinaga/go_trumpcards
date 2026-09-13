@@ -77,5 +77,6 @@
   "scoresRoundPoints": "This round",
   "roundPointsOf": "{{points}} / {{total}}",
   "trumpSuit": "Trump: {{suit}}",
-  "noTrump": "Trump undecided"
+  "noTrump": "Trump undecided",
+  "roundBreakdown": "Round breakdown: Team {{a}} {{athird}} pts / Team {{b}} {{bthird}} pts (last trick: Team {{lastteam}})"
 }

@@ -4,11 +4,21 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
+
+func removeCaribbeanDrawMockCall(calls []*mock.Call, method string) []*mock.Call {
+	for i, call := range calls {
+		if call.Method == method {
+			return append(calls[:i], calls[i+1:]...)
+		}
+	}
+	return calls
+}
 
 func setupCaribbeanDrawCuiMockDefaults(m *interfaces.MockCaribbeanDrawGame) {
 	m.On("GetChips").Return(1000).Maybe()
@@ -126,6 +136,55 @@ func TestCaribbeanDrawCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	assert.Contains(t, result, "ディーラー")
 	assert.Contains(t, result, "（クオリファイ）")
 	assert.Contains(t, result, "合計払戻し: 1000")
+}
+
+func TestCaribbeanDrawCuiPresenter_Output_SessionStatsAndReset(t *testing.T) {
+	p := new(CaribbeanDrawCuiPresenter)
+	game := new(interfaces.MockCaribbeanDrawGame)
+	setupCaribbeanDrawCuiMockDefaults(game)
+	game.ExpectedCalls = removeCaribbeanDrawMockCall(game.ExpectedCalls, "GetPhase")
+	game.On("GetPhase").Return(domain.CaribbeanDrawPhaseEnd).Maybe()
+	game.ExpectedCalls = removeCaribbeanDrawMockCall(game.ExpectedCalls, "GetGameEndFlag")
+	game.On("GetGameEndFlag").Return(true).Maybe()
+	game.ExpectedCalls = removeCaribbeanDrawMockCall(game.ExpectedCalls, "GetResult")
+	game.On("GetResult").Return(domain.GameResultWin).Maybe()
+	game.ExpectedCalls = removeCaribbeanDrawMockCall(game.ExpectedCalls, "GetTotalPayout")
+	game.On("GetTotalPayout").Return(1000).Maybe()
+	game.ExpectedCalls = removeCaribbeanDrawMockCall(game.ExpectedCalls, "GetAnteBet")
+	game.On("GetAnteBet").Return(100).Maybe()
+	game.ExpectedCalls = removeCaribbeanDrawMockCall(game.ExpectedCalls, "GetJackpotBet")
+	game.On("GetJackpotBet").Return(25).Maybe()
+	game.ExpectedCalls = removeCaribbeanDrawMockCall(game.ExpectedCalls, "GetPlayBet")
+	game.On("GetPlayBet").Return(200).Maybe()
+	game.ExpectedCalls = removeCaribbeanDrawMockCall(game.ExpectedCalls, "GetDrawCost")
+	game.On("GetDrawCost").Return(15).Maybe()
+	out := p.Output(game, nil)
+	assert.Contains(t, out, "通算: 1勝 0敗 0分 / 収支: +660")
+
+	game.ExpectedCalls = removeCaribbeanDrawMockCall(game.ExpectedCalls, "GetPhase")
+	game.On("GetPhase").Return(domain.CaribbeanDrawPhaseBet).Maybe()
+	out = p.Output(game, nil)
+	assert.Contains(t, out, "通算: 1勝 0敗 0分 / 収支: +660")
+
+	// The next result is a second hand, not a new session.
+	game.ExpectedCalls = removeCaribbeanDrawMockCall(game.ExpectedCalls, "GetPhase")
+	game.On("GetPhase").Return(domain.CaribbeanDrawPhaseEnd).Maybe()
+	game.ExpectedCalls = removeCaribbeanDrawMockCall(game.ExpectedCalls, "GetTotalPayout")
+	game.On("GetTotalPayout").Return(500).Maybe()
+	game.ExpectedCalls = removeCaribbeanDrawMockCall(game.ExpectedCalls, "GetAnteBet")
+	game.On("GetAnteBet").Return(50).Maybe()
+	game.ExpectedCalls = removeCaribbeanDrawMockCall(game.ExpectedCalls, "GetJackpotBet")
+	game.On("GetJackpotBet").Return(0).Maybe()
+	game.ExpectedCalls = removeCaribbeanDrawMockCall(game.ExpectedCalls, "GetPlayBet")
+	game.On("GetPlayBet").Return(100).Maybe()
+	game.ExpectedCalls = removeCaribbeanDrawMockCall(game.ExpectedCalls, "GetDrawCost")
+	game.On("GetDrawCost").Return(0).Maybe()
+	out = p.Output(game, nil)
+	assert.Contains(t, out, "通算: 2勝 0敗 0分 / 収支: +1010")
+
+	p.ClearSession()
+	out = p.Output(game, nil)
+	assert.NotContains(t, out, "通算:")
 }
 
 func TestCaribbeanDrawCuiPresenter_Output_EndPhase_Fold(t *testing.T) {
