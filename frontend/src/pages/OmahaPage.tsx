@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { omahaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -98,6 +98,9 @@ const OMAHA_PHASE_KEYS: Readonly<Record<number, string>> = {
 export const OmahaPage = withTutorial(OmahaPageContent, 'omaha', OH_TUTORIAL_STEPS);
 /** Inner content of the Omaha Hold'em page, wrapped by TutorialProvider. */
 function OmahaPageContent() {
+  // 0 = fixed, the DefaultHoldemConfig zero value the server already used.
+  const [bettingLimit, setBettingLimit] = useState(0);
+  const omahaResetConfig = useMemo(() => ({ bettingLimit }), [bettingLimit]);
   const {
     t,
     tc,
@@ -150,6 +153,7 @@ function OmahaPageContent() {
     exec: omahaApi.exec,
     phaseKeys: OMAHA_PHASE_KEYS,
     cli: { parseCommand: parseOmahaCommand, formatResponse: formatOmahaState, helpText: OMAHA_HELP },
+    resetConfig: omahaResetConfig,
   });
 
   // At showdown, highlight the human's winning 5 cards under Omaha's
@@ -529,6 +533,19 @@ function OmahaPageContent() {
                   <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
                     <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
                     {t('settings.cpuMetaAI')}
+                  </label>
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                    {tc('betting.bettingLimit')}
+                    <select
+                      id="omahaBettingLimit"
+                      className="bg-ds-surface text-ds-text-primary border border-ds-border rounded px-1 py-0.5"
+                      value={bettingLimit}
+                      onChange={(e) => setBettingLimit(Number(e.target.value))}
+                    >
+                      <option value={0}>{tc('betting.fixed')}</option>
+                      <option value={1}>{tc('betting.potLimit')}</option>
+                      <option value={2}>{tc('betting.noLimit')}</option>
+                    </select>
                   </label>
                 </div>
               </div>
