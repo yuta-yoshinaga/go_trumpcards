@@ -84,7 +84,7 @@ func (p *BlackHoleCuiPresenter) HintOutput(g interfaces.BlackHoleGame) string {
 	if hint == nil {
 		return i18n.T("cuiHintNone") + "\n"
 	}
-	return color.Yellow(i18n.Tf("blackhole.hintLine", "fan", strconv.Itoa(hint.Fan))) + "\n"
+	return color.Yellow(i18n.Tf("blackhole.hintLine", "fan", strconv.Itoa(hint.Fan), "movesAfter", strconv.Itoa(hint.MovesAfter))) + "\n"
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

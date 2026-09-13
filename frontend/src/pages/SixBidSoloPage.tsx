@@ -229,7 +229,9 @@ function SixBidSoloPageContent() {
               <div className="mt-1 text-ds-text-muted">{t('widowNote')}</div>
               {state.calledCard && (
                 <div className="mt-1 text-ds-text-muted" data-testid="sixbidsolo-called">
-                  {t('calledCard')}: {t('calledNote')}
+                  <span>{t('calledCard')}: </span>
+                  <CardImage card={state.calledCard} width={42} />
+                  <span>{t('calledNote')}</span>
                 </div>
               )}
               {state.spreadOpen && (

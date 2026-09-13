@@ -94,7 +94,7 @@ type DesmocheWebOutputConfig struct {
 func (c *DesmocheWebConfig) ToConfig() domain.DesmocheConfig {
 	cfg := domain.DefaultDesmocheConfig()
 	cfg.CpuDifficulty = domain.DesmocheCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.DesmocheCpuDifficultyNormal), int(domain.DesmocheCpuDifficultyNormal),
+		int(domain.DesmocheCpuDifficultyEasy), int(domain.DesmocheCpuDifficultyHard),
 		int(cfg.CpuDifficulty)))
 	return cfg
 }

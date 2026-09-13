@@ -187,6 +187,8 @@ function TablanetPageContent() {
     captureCandidates.size === state.tableCards.length;
 
   const winnerNames = state.winners.map((i) => (state.players[i]?.isHuman ? t('you') : t('cpu', { id: i }))).join(', ');
+  const scoreDetailOwner = (idx: number) =>
+    idx < 0 ? '-' : state.players[idx]?.isHuman ? t('you') : t('cpu', { id: idx });
 
   // タブラ数だけは強調の対象になるので、文字列に混ぜず個別の要素で出す。
   const humanStats = human
@@ -380,6 +382,18 @@ function TablanetPageContent() {
                     })}
                   </div>
                 ))}
+                {state.lastDealDetail && (
+                  <div data-testid="tablanet-score-detail">
+                    {t('result.detail', {
+                      aces: Object.values(state.lastDealDetail.aces).reduce((sum, value) => sum + value, 0),
+                      jacks: Object.values(state.lastDealDetail.jacks).reduce((sum, value) => sum + value, 0),
+                      tablas: Object.values(state.lastDealDetail.tablas).reduce((sum, value) => sum + value, 0),
+                      tenDiamonds: scoreDetailOwner(state.lastDealDetail.hasTenDiamonds),
+                      twoClubs: scoreDetailOwner(state.lastDealDetail.hasTwoClubs),
+                      mostCards: scoreDetailOwner(state.lastDealDetail.mostCards),
+                    })}
+                  </div>
+                )}
               </div>
             )}
 

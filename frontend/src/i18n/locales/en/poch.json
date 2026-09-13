@@ -45,5 +45,9 @@
   "tutorial.stops": "In the play, each card must be the next higher of the same suit. When nobody holds it the run stops, and whoever played the last, highest card leads again with anything.",
   "awardLineYou": "You take {{pool}} ({{chips}})",
   "pochenResultYou": "You win the pochen ({{pot}})",
-  "dealResultYou": "You go out"
+  "dealResultYou": "You go out",
+  "settings.cpuDifficulty": "CPU difficulty",
+  "settings.difficulty.easy": "Easy",
+  "settings.difficulty.normal": "Normal",
+  "settings.difficulty.hard": "Hard"
 }

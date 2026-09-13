@@ -48,6 +48,15 @@ type KingWebOutputDealDetail struct {
 	Gained    map[int]int `json:"gained"`
 }
 
+// KingWebOutputHint はキング専用のヒント出力。
+type KingWebOutputHint struct {
+	CardIndices []int `json:"cardIndices"`
+	// Contract は 0 (No Tricks) も有効値なので omitempty を付けない。
+	// プレイフェーズでは契約選択ではないことを示すため -1 を入れる。
+	Contract int    `json:"contract"`
+	Reason   string `json:"reason"`
+}
+
 // KingWebOutput はキング Web アウトプット。
 type KingWebOutput struct {
 	Players         []*KingWebOutputPlayer   `json:"players"`
@@ -69,7 +78,7 @@ type KingWebOutput struct {
 	RoundWinners    []int                    `json:"roundWinners"`
 	LastDealDetail  *KingWebOutputDealDetail `json:"lastDealDetail"`
 	IsHumanTurn     bool                     `json:"isHumanTurn"`
-	Hint            *WebOutputCardHint       `json:"hint,omitempty"`
+	Hint            *KingWebOutputHint       `json:"hint,omitempty"`
 	WebOutputBase
 }
 

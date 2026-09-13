@@ -45,7 +45,7 @@
     "title": "Round Result",
     "winner": "Winner: {{name}}",
     "draw": "Draw",
-    "total": "{{base}} × {{mult}} = {{total}} pts"
+    "total": "{{base}} pts x {{mult}} = {{total}} pts"
   },
   "result": {
     "title": "Final Score",

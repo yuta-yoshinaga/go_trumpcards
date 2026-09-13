@@ -41,9 +41,10 @@ type GuandanWebOutputPlayer struct {
 
 // GuandanWebOutputCombo 掼蛋 Webアウトプット役
 type GuandanWebOutputCombo struct {
-	Kind int `json:"kind"`
-	Rank int `json:"rank"`
-	Size int `json:"size"`
+	Kind  int              `json:"kind"`
+	Rank  int              `json:"rank"`
+	Size  int              `json:"size"`
+	Cards []*WebOutputCard `json:"cards"`
 }
 
 // GuandanWebOutputTribute 掼蛋 Webアウトプット進貢

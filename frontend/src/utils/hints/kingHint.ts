@@ -16,7 +16,7 @@ export function getKingHint(state: KingResponse): HintResult | null {
   const hint = state.hint;
   if (!hint?.reason) return null;
   return {
-    targetAction: 'play',
+    targetAction: hint.contract >= 0 ? 'contract' : 'play',
     reason: `hint.${hint.reason}`,
     confidence: 'moderate',
   };

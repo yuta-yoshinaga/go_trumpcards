@@ -28,6 +28,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"math/bits"
 	"math/rand"
 	"sort"
 )
@@ -562,8 +563,16 @@ func (d *Desmoche) NextRound() error {
 
 // DesmocheCpuAction は CPU が選んだ手。
 type DesmocheCpuAction struct {
+	// DrawFromDiscard は捨て札から引く (false: 山札から引く)。
+	DrawFromDiscard bool
+	// LayOff はレイオフを実行する。
+	LayOff bool
 	// MeldIdxs は出すメルドの手札添字 (無ければ nil)。
 	MeldIdxs []int
+	// LayOffHandIdx は付ける手札の添字 (-1: 付けない)。
+	LayOffHandIdx int
+	// LayOffMeldIdx は付け先メルドの添字 (-1: 付けない)。
+	LayOffMeldIdx int
 	// DiscardIdx は捨てる手札の添字 (-1: 捨てない)。
 	DiscardIdx int
 }
@@ -571,12 +580,47 @@ type DesmocheCpuAction struct {
 // DesmocheCpuDecide は idx の CPU が取る手を決める。
 func (d *Desmoche) DesmocheCpuDecide(idx int) DesmocheCpuAction {
 	if d.phase == DesmochePhaseDraw {
-		return DesmocheCpuAction{DiscardIdx: -1}
+		return DesmocheCpuAction{DrawFromDiscard: d.config.CpuDifficulty == DesmocheCpuDifficultyHard && d.canMeldDiscard(idx), LayOffHandIdx: -1, LayOffMeldIdx: -1, DiscardIdx: -1}
 	}
 	if meld := d.findMeld(idx); meld != nil {
-		return DesmocheCpuAction{MeldIdxs: meld, DiscardIdx: -1}
+		return DesmocheCpuAction{MeldIdxs: meld, LayOffHandIdx: -1, LayOffMeldIdx: -1, DiscardIdx: -1}
 	}
-	return DesmocheCpuAction{DiscardIdx: d.pickDiscard(idx)}
+	if d.config.CpuDifficulty == DesmocheCpuDifficultyHard {
+		if handIdx, meldIdx := d.findLayOff(idx); handIdx >= 0 {
+			return DesmocheCpuAction{LayOff: true, LayOffHandIdx: handIdx, LayOffMeldIdx: meldIdx, DiscardIdx: -1}
+		}
+	}
+	return DesmocheCpuAction{LayOffHandIdx: -1, LayOffMeldIdx: -1, DiscardIdx: d.pickDiscard(idx)}
+}
+
+// canMeldDiscard は捨て札を加えればメルドを作れるかを返す。
+func (d *Desmoche) canMeldDiscard(idx int) bool {
+	top := d.GetDiscardTop()
+	p := d.GetPlayer(idx)
+	if top == nil || p == nil {
+		return false
+	}
+	cards := make([]*Card, 0, p.GetCardsSize()+1)
+	for i := range p.GetCardsSize() {
+		cards = append(cards, p.GetCard(i))
+	}
+	cards = append(cards, top)
+	for mask := 1; mask < 1<<len(cards); mask++ {
+		if bits.OnesCount(uint(mask)) < DesmocheMinMeldSize {
+			continue
+		}
+		candidate := make([]*Card, 0, len(cards))
+		for i := range cards {
+			if mask&(1<<i) != 0 {
+				candidate = append(candidate, cards[i])
+			}
+		}
+		// << binds more tightly than -, so parentheses are required around the discard bit index.
+		if _, err := DesmocheValidateMeld(candidate); err == nil && mask&(1<<(len(cards)-1)) != 0 {
+			return true
+		}
+	}
+	return false
 }
 
 // findMeld は手札から出せるメルドを 1 つ探す。
@@ -586,17 +630,52 @@ func (d *Desmoche) findMeld(idx int) []int {
 		return nil
 	}
 	n := p.GetCardsSize()
-	for a := range n {
-		for b := a + 1; b < n; b++ {
-			for c := b + 1; c < n; c++ {
-				cards := []*Card{p.GetCard(a), p.GetCard(b), p.GetCard(c)}
-				if _, err := DesmocheValidateMeld(cards); err == nil {
-					return []int{a, b, c}
-				}
+	var best []int
+	limit := 1 << n
+	for mask := 1; mask < limit; mask++ {
+		if bits.OnesCount(uint(mask)) < DesmocheMinMeldSize {
+			continue
+		}
+		candidate := make([]int, 0, n)
+		cards := make([]*Card, 0, n)
+		for i := range n {
+			if mask&(1<<i) != 0 {
+				candidate = append(candidate, i)
+				cards = append(cards, p.GetCard(i))
+			}
+		}
+		if _, err := DesmocheValidateMeld(cards); err != nil {
+			continue
+		}
+		if d.config.CpuDifficulty == DesmocheCpuDifficultyEasy {
+			return candidate
+		}
+		if d.config.CpuDifficulty != DesmocheCpuDifficultyHard && len(candidate) > DesmocheMinMeldSize {
+			continue
+		}
+		if len(candidate) > len(best) {
+			best = candidate
+		}
+	}
+	return best
+}
+
+// findLayOff は Hard CPU が手札を減らせるレイオフを 1 つ選ぶ。
+func (d *Desmoche) findLayOff(idx int) (int, int) {
+	p := d.GetPlayer(idx)
+	if p == nil {
+		return -1, -1
+	}
+	for handIdx := range p.GetCardsSize() {
+		card := p.GetCard(handIdx)
+		for meldIdx, meld := range d.melds {
+			grown := append(append([]*Card(nil), meld.Cards...), card)
+			if _, err := DesmocheValidateMeld(grown); err == nil {
+				return handIdx, meldIdx
 			}
 		}
 	}
-	return nil
+	return -1, -1
 }
 
 // pickDiscard は捨てる札を選ぶ。組みかけの札を残し、繋がらない札から捨てる。

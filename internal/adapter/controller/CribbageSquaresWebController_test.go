@@ -22,8 +22,8 @@ func mustCribbageSquaresOutputJSON(msg string) string {
 		RowDetails: []*controller.CribbageSquaresWebOutputScore{},
 		ColDetails: []*controller.CribbageSquaresWebOutputScore{},
 		// **空配列で返す。**null だとフロントの map が落ちる (#6088)。
-		RowPartialDetails: []*controller.CribbageSquaresWebOutputScore{},
-		ColPartialDetails: []*controller.CribbageSquaresWebOutputScore{},
+		RowPartialDetails: []*controller.CribbageSquaresWebOutputPartialScore{},
+		ColPartialDetails: []*controller.CribbageSquaresWebOutputPartialScore{},
 		WinScore:          domain.CribbageSquaresWinScore,
 		WebOutputBase:     controller.WebOutputBase{Message: msg},
 	}

@@ -63,7 +63,7 @@ func TestBlackHoleWebPresenter_Output(t *testing.T) {
 		out := p.HintOutput(bhState(t, js))
 		for _, frag := range []string{
 			"blackhole.hintAvailable",
-			`"hint":{"fan":0}`,
+			`"hint":{"fan":0,"movesAfter":0}`,
 			`"fans":[[`, // the board is preserved so the tableau does not blank out
 			`"blackHole":[`,
 		} {

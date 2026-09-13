@@ -153,6 +153,9 @@ func (p *KingCuiPresenter) HintOutput(kg interfaces.KingGame) string {
 		return i18n.T("king.hintNone") + "\n"
 	}
 	reason := hintReasonStr(hint.Reason, kingHintReasonKeys)
+	if hint.Contract >= 0 {
+		return color.Yellow(i18n.Tf("king.hintContract", "contract", kingContractLabel(hint.Contract), "reason", reason)) + "\n"
+	}
 	if len(hint.CardIndices) > 0 {
 		turn := kg.GetCurrentTurn()
 		player := kg.GetPlayer(turn)
@@ -173,8 +176,15 @@ func (p *KingCuiPresenter) HintOutput(kg interfaces.KingGame) string {
 
 // kingHintReasonKeys maps King-specific hint-reason identifiers to i18n keys.
 var kingHintReasonKeys = map[string]string{
-	"avoid_low": "king.hintReasonAvoidLow",
-	"win_high":  "king.hintReasonWinHigh",
+	"avoid_low":          "king.hintReasonAvoidLow",
+	"win_high":           "king.hintReasonWinHigh",
+	"select_no_tricks":   "king.hintReasonSelectNoTricks",
+	"select_no_hearts":   "king.hintReasonSelectNoHearts",
+	"select_no_queens":   "king.hintReasonSelectNoQueens",
+	"select_king_heart":  "king.hintReasonSelectKingHeart",
+	"select_no_last_two": "king.hintReasonSelectNoLastTwo",
+	"select_no_men":      "king.hintReasonSelectNoMen",
+	"select_king_trump":  "king.hintReasonSelectKingTrump",
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

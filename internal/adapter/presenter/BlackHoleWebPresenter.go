@@ -37,7 +37,7 @@ func (p *BlackHoleWebPresenter) Output(g interfaces.BlackHoleGame, lastErr error
 	// 全扇を走査することになる。他ゲームと形が違うのはこの理由 (#4542 のレビュー指摘)。
 	if g.GetPhase() == domain.BlackHolePhasePlaying {
 		if hint := g.GetHint(); hint != nil {
-			resObj.Hint = &controller.BlackHoleWebOutputHint{Fan: hint.Fan}
+			resObj.Hint = &controller.BlackHoleWebOutputHint{Fan: hint.Fan, MovesAfter: hint.MovesAfter}
 		}
 	}
 
@@ -71,7 +71,7 @@ func (p *BlackHoleWebPresenter) HintOutput(g interfaces.BlackHoleGame) string {
 	resObj.Fans = blackHoleFansOutput(g.GetFans())
 	resObj.BlackHole = cardsToOutputOrEmpty(g.GetBlackHole())
 	if hint := g.GetHint(); hint != nil {
-		resObj.Hint = &controller.BlackHoleWebOutputHint{Fan: hint.Fan}
+		resObj.Hint = &controller.BlackHoleWebOutputHint{Fan: hint.Fan, MovesAfter: hint.MovesAfter}
 		resObj.MessageCode = "blackhole.hintAvailable"
 	} else {
 		resObj.MessageCode = "blackhole.noHint"

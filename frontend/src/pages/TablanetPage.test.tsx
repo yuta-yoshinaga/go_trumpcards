@@ -62,6 +62,12 @@ beforeEach(() => {
 });
 
 describe('TablanetPage', () => {
+  it('renders the score breakdown from lastDealDetail', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<TablanetPage />);
+    const detail = await screen.findByTestId('tablanet-score-detail');
+    expect(detail).toHaveTextContent('内訳: A 4枚 / J 4枚 / タブラ 2回 / 10♦ あなた / 2♣ あなた / 最多枚数 あなた');
+  });
   it('renders skeleton fallback when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TablanetPage />);

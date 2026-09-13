@@ -243,4 +243,7 @@ func TestCribbageSquaresWebPresenter_CarriesThePartialDetails(t *testing.T) {
 	assert.Equal(t, 2, out.RowPartialDetails[0].Fifteens)
 	assert.Equal(t, 0, out.RowPartialDetails[1].Total, "何も置いていない行に点が付いている")
 	assert.Len(t, out.ColPartialDetails, domain.CribbageSquaresGridSize)
+	encoded, err := json.Marshal(out.RowPartialDetails[0])
+	assert.NoError(t, err)
+	assert.NotContains(t, string(encoded), `"cards"`)
 }

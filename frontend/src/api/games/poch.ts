@@ -9,5 +9,6 @@ export type PochCommand = 'reset' | 'bet' | 'fold' | 'play' | 'next' | 'hint' | 
 
 /** API client for the Poch /poch/exec endpoint. */
 export const pochApi = {
-  exec: (command: PochCommand, cardIndex?: number) => gameExec<PochResponse>('poch', { command, cardIndex }),
+  exec: (command: PochCommand, cardIndex?: number, config?: { cpuDifficulty?: number }) =>
+    gameExec<PochResponse>('poch', { command, cardIndex, config }),
 };

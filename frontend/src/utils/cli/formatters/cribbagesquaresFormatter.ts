@@ -23,7 +23,8 @@ function formatBreakdown(d: CribbageSquaresScore | undefined): string {
   if (d.runs > 0) parts.push(`runs ${d.runs}`);
   if (d.flush > 0) parts.push(`flush ${d.flush}`);
   if (d.nobs > 0) parts.push(`nobs ${d.nobs}`);
-  return parts.length > 0 ? ` (${parts.join(', ')})` : '';
+  const cards = d.cards && d.cards.length > 0 ? ` [${d.cards.map(formatCard).join(' ')}]` : '';
+  return parts.length > 0 ? ` (${parts.join(', ')})${cards}` : cards;
 }
 
 /** Format a Cribbage Squares game state as terminal text. */
