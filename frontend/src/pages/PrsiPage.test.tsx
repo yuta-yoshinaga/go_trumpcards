@@ -535,4 +535,78 @@ describe('PrsiPage', () => {
 
     await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('errorBuzz'));
   });
+
+  // #7343: 残り1枚のプレイヤーが目立たない。
+  describe('last-card badge', () => {
+    it('shows the badge when a CPU player has 1 card', async () => {
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        players: [
+          { id: 0, isHuman: true, cardCount: 3, cards: [] },
+          { id: 1, isHuman: false, cardCount: 1, cards: [] }, // 残り1枚
+          { id: 2, isHuman: false, cardCount: 5, cards: [] },
+          { id: 3, isHuman: false, cardCount: 5, cards: [] },
+        ],
+      });
+      renderWithProviders(<PrsiPage />);
+      const badge = await screen.findByTestId('prsi-cpu-1-last-card-badge');
+      // リテラル文字列で確認（i18n.T に依存しない）。
+      expect(badge.textContent).toContain('残り1枚！');
+      expect(badge).toHaveAttribute('role', 'status');
+    });
+
+    // 否定対照: 残り2枚では出ないこと。
+    it('does not show the badge when a CPU player has 2 cards', async () => {
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        players: [
+          { id: 0, isHuman: true, cardCount: 3, cards: [] },
+          { id: 1, isHuman: false, cardCount: 2, cards: [] },
+          { id: 2, isHuman: false, cardCount: 5, cards: [] },
+          { id: 3, isHuman: false, cardCount: 5, cards: [] },
+        ],
+      });
+      renderWithProviders(<PrsiPage />);
+      await waitFor(() => expect(screen.getByText(/CPU 1.*2枚/)).toBeInTheDocument());
+      expect(screen.queryByTestId('prsi-cpu-1-last-card-badge')).not.toBeInTheDocument();
+    });
+
+    // 人間が残り1枚でも出ること（受け入れ条件1）。
+    it('shows the badge when the human player has 1 card', async () => {
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 1,
+            cards: [{ design: 'SPADE', value: 1 }],
+          },
+          { id: 1, isHuman: false, cardCount: 5, cards: [] },
+          { id: 2, isHuman: false, cardCount: 5, cards: [] },
+          { id: 3, isHuman: false, cardCount: 5, cards: [] },
+        ],
+      });
+      renderWithProviders(<PrsiPage />);
+      const badge = await screen.findByTestId('prsi-human-last-card-badge');
+      expect(badge.textContent).toContain('残り1枚！');
+      expect(badge).toHaveAttribute('role', 'status');
+    });
+
+    // ゲーム終了後はバッジが出続けないこと。
+    it('does not show the badge after game end', async () => {
+      mockExec.mockResolvedValue({
+        ...gameEndState,
+        players: [
+          { id: 0, isHuman: true, cardCount: 0, cards: [] },
+          { id: 1, isHuman: false, cardCount: 1, cards: [] },
+          { id: 2, isHuman: false, cardCount: 5, cards: [] },
+          { id: 3, isHuman: false, cardCount: 5, cards: [] },
+        ],
+      });
+      renderWithProviders(<PrsiPage />);
+      await waitFor(() => expect(screen.getByText('Game end!')).toBeInTheDocument());
+      expect(screen.queryByTestId('prsi-cpu-1-last-card-badge')).not.toBeInTheDocument();
+    });
+  });
 });

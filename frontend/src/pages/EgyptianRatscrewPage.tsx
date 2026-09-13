@@ -88,7 +88,7 @@ function EgyptianRatscrewPageContent() {
   const handleSlap = useCallback(() => execApi('slap'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
 
-  // SlapBurst trigger: refire whenever a new SLAP_CORRECT or SLAP_WRONG event arrives.
+  // SlapBurst trigger: refire whenever a new SLAP_CORRECT, SLAP_WRONG, or CHANCE_WIN event arrives.
   const [slapBurst, setSlapBurst] = useState<{ key: number; outcome: SlapOutcome; label: string }>({
     key: 0,
     outcome: 'correct',
@@ -107,35 +107,49 @@ function EgyptianRatscrewPageContent() {
     const player = state.lastEventPlayerIdx;
     const prev = prevSlapEventRef.current;
     if (
-      (kind === EgyptianRatscrewEventKind.SLAP_CORRECT || kind === EgyptianRatscrewEventKind.SLAP_WRONG) &&
+      (kind === EgyptianRatscrewEventKind.SLAP_CORRECT ||
+        kind === EgyptianRatscrewEventKind.SLAP_WRONG ||
+        kind === EgyptianRatscrewEventKind.CHANCE_WIN) &&
       (kind !== prev.kind || player !== prev.player)
     ) {
-      const outcome: SlapOutcome = kind === EgyptianRatscrewEventKind.SLAP_CORRECT ? 'correct' : 'wrong';
-      const label =
-        outcome === 'wrong'
-          ? t('egyptianratscrew.burst.miss')
-          : state.lastSlapReason === EgyptianRatscrewSlapReason.SANDWICH
-            ? t('egyptianratscrew.burst.sandwich')
-            : t('egyptianratscrew.burst.pair');
-      // Incrementing counter is more robust than Date.now() for trigger keys:
-      // back-to-back events within the same ms still register as distinct.
-      setSlapBurst((prevBurst) => ({ key: prevBurst.key + 1, outcome, label }));
       const slapper = player === 0 ? tc('player.you') : tc('player.cpu', { id: player });
-      if (outcome === 'correct') {
-        const reason =
-          state.lastSlapReason === EgyptianRatscrewSlapReason.SANDWICH
-            ? t('egyptianratscrew.slapReason.sandwich')
-            : t('egyptianratscrew.slapReason.pair');
-        setSlapAnnounce(t('egyptianratscrew.slapAnnounce.correct', { player: slapper, reason }));
+      if (kind === EgyptianRatscrewEventKind.CHANCE_WIN) {
+        // PlayerIdx==0 means the human took the pile (green); otherwise CPU took it (red).
+        // Mirrors CUI: chanceWinHuman → color.Green, chanceWinCpu → color.Red.
+        const outcome: SlapOutcome = player === 0 ? 'correct' : 'wrong';
+        setSlapBurst((prevBurst) => ({
+          key: prevBurst.key + 1,
+          outcome,
+          label: t('egyptianratscrew.burst.chanceWin'),
+        }));
+        setSlapAnnounce(t('egyptianratscrew.slapAnnounce.chanceWin', { player: slapper }));
       } else {
-        setSlapAnnounce(t('egyptianratscrew.slapAnnounce.wrong', { player: slapper }));
-      }
-      // **人間自身のスラップのときだけ鳴らす (#4749)。**姉妹ゲームの Slapjack と
-      // 同じ扱い。CPU の成功でファンファーレが鳴ったり、CPU のミスでブザーが
-      // 鳴って人間が責められたように感じたりしないため。ミュートは
-      // SoundProvider が全体で見る。
-      if (player === 0) {
-        playSound(outcome === 'correct' ? 'winFanfare' : 'errorBuzz');
+        const outcome: SlapOutcome = kind === EgyptianRatscrewEventKind.SLAP_CORRECT ? 'correct' : 'wrong';
+        const label =
+          outcome === 'wrong'
+            ? t('egyptianratscrew.burst.miss')
+            : state.lastSlapReason === EgyptianRatscrewSlapReason.SANDWICH
+              ? t('egyptianratscrew.burst.sandwich')
+              : t('egyptianratscrew.burst.pair');
+        // Incrementing counter is more robust than Date.now() for trigger keys:
+        // back-to-back events within the same ms still register as distinct.
+        setSlapBurst((prevBurst) => ({ key: prevBurst.key + 1, outcome, label }));
+        if (outcome === 'correct') {
+          const reason =
+            state.lastSlapReason === EgyptianRatscrewSlapReason.SANDWICH
+              ? t('egyptianratscrew.slapReason.sandwich')
+              : t('egyptianratscrew.slapReason.pair');
+          setSlapAnnounce(t('egyptianratscrew.slapAnnounce.correct', { player: slapper, reason }));
+        } else {
+          setSlapAnnounce(t('egyptianratscrew.slapAnnounce.wrong', { player: slapper }));
+        }
+        // **人間自身のスラップのときだけ鳴らす (#4749)。**姉妹ゲームの Slapjack と
+        // 同じ扱い。CPU の成功でファンファーレが鳴ったり、CPU のミスでブザーが
+        // 鳴って人間が責められたように感じたりしないため。ミュートは
+        // SoundProvider が全体で見る。
+        if (player === 0) {
+          playSound(outcome === 'correct' ? 'winFanfare' : 'errorBuzz');
+        }
       }
       prevSlapEventRef.current = { kind, player };
     }

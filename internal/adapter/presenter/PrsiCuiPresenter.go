@@ -13,9 +13,15 @@ import (
 // prsiPlayerStr returns the display string for a single Prsi player.
 func prsiPlayerStr(player *domain.PrsiPlayer, i int) string {
 	var b strings.Builder
-	b.WriteString(i18n.Tf("prsi.playerLine",
+	line := i18n.Tf("prsi.playerLine",
 		"name", cuiPlayerName(player, i),
-		"cards", strconv.Itoa(player.GetCardsSize())) + "\n")
+		"cards", strconv.Itoa(player.GetCardsSize()))
+	// 残り1枚は次の一手で勝敗が決まる最重要局面。Tysiac の nearWin 強調と同じ
+	// 手法で黄色にして見落としを防ぐ。Web の lastCardBadge と同じ閾値。
+	if player.GetCardsSize() == 1 {
+		line = color.Yellow(line)
+	}
+	b.WriteString(line + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
