@@ -56056,6 +56056,12 @@ components:
               type: array
               items:
                 type: integer
+            contract:
+              type: integer
+              description: >-
+                Contract the hint recommends during the select-contract phase
+                (0=No Tricks .. 6=King Trump), or -1 while playing. 0 is a real
+                contract, so this field is always present, never omitted when zero.
             reason:
               type: string
         config:
@@ -72927,6 +72933,12 @@ components:
           properties:
             fan:
               type: integer
+            movesAfter:
+              type: integer
+              description: >-
+                Legal moves that would remain after playing the recommended fan.
+                This is the score the recommendation was chosen by, so a larger
+                value is what makes one fan better than another.
         message:
           type: string
         messageCode:

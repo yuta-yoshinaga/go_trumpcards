@@ -547,6 +547,7 @@ func TestHeartsWebPresenterOutputCarriesTheHint(t *testing.T) {
 
 	result := new(presenter.HeartsWebPresenter).Output(htg, nil)
 	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	assert.NotContains(t, result, `"contract"`, "shared card hints must not expose King's contract field")
 	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
 	assert.NotContains(t, result, "hearts.hintRequested")
 }

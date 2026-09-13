@@ -26,7 +26,8 @@
   "result": {
     "title": "Final Scores",
     "winner": "Winner: {{names}}",
-    "score": "{{name}}: {{score}} pts"
+    "score": "{{name}}: {{score}} pts",
+    "detail": "Breakdown: A {{aces}} / J {{jacks}} / tablas {{tablas}} / 10♦ {{tenDiamonds}} / 2♣ {{twoClubs}} / most cards {{mostCards}}"
   },
   "settings": {
     "title": "Settings",

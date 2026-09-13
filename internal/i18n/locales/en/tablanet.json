@@ -9,6 +9,7 @@
   "promptPlay": "Turn: {{name}}",
   "resultWinner": "Winner: {{names}}",
   "resultScores": "Final scores: {{scores}}",
+  "resultDetail": "Breakdown: A {{aces}} / J {{jacks}} / tablas {{tablas}} / 10♦ {{tenDiamonds}} / 2♣ {{twoClubs}} / most cards {{mostCards}}",
   "promptGameEnd": "Game over. Use nr to start a new game.",
   "promptHelp": "p <h> [t...] to play (omit t to trail; a Jack sweeps the table)",
   "hintNone": "No hint available.",

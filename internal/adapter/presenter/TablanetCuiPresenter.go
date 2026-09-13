@@ -89,10 +89,34 @@ func (p *TablanetCuiPresenter) Output(g interfaces.TablanetGame, lastErr error) 
 			}
 			b.WriteString(i18n.Tf("tablanet.resultScores",
 				"scores", strings.Join(scores, " / ")) + "\n")
+			if detail := g.GetLastDealDetail(); detail != nil {
+				b.WriteString(i18n.Tf("tablanet.resultDetail",
+					"aces", strconv.Itoa(sumScoreDetail(detail.Aces)),
+					"jacks", strconv.Itoa(sumScoreDetail(detail.Jacks)),
+					"tablas", strconv.Itoa(sumScoreDetail(detail.Tablas)),
+					"tenDiamonds", tablanetSeatLabel(g, detail.HasTenDiamonds),
+					"twoClubs", tablanetSeatLabel(g, detail.HasTwoClubs),
+					"mostCards", tablanetSeatLabel(g, detail.MostCards)) + "\n")
+			}
 			b.WriteString(i18n.T("tablanet.promptGameEnd") + "\n")
 		}
 		b.WriteString(i18n.T("tablanet.promptHelp") + "\n")
 	})
+}
+
+func sumScoreDetail(values map[int]int) int {
+	total := 0
+	for _, value := range values {
+		total += value
+	}
+	return total
+}
+
+func tablanetSeatLabel(g interfaces.TablanetGame, idx int) string {
+	if idx < 0 {
+		return "-"
+	}
+	return cuiPlayerName(g.GetPlayer(idx), idx)
 }
 
 // HintOutput emits the current Tablanet hint.

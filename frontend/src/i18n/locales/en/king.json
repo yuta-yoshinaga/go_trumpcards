@@ -79,7 +79,14 @@
     "avoid_low": "Play a low card to avoid penalties",
     "win_high": "Safe to win — take the trick with a high card",
     "avoidLow": "Play a low card to avoid penalties",
-    "winHigh": "Safe to win — take the trick with a high card"
+    "winHigh": "Safe to win — take the trick with a high card",
+    "select_no_tricks": "A weak hand with few strong cards is suited to avoiding tricks",
+    "select_no_hearts": "This hand has very few hearts",
+    "select_no_queens": "This hand has no queens",
+    "select_king_heart": "The king of hearts can be disposed of safely",
+    "select_no_last_two": "Many low cards help avoid the last two tricks",
+    "select_no_men": "This hand has few jacks or kings",
+    "select_king_trump": "This hand has strong cards and a long suit"
   },
   "tutorial": {
     "trickDisplay": "This is the current trick. You must follow the led suit; when void you may play any card. Each contract punishes a different set of penalty cards.",
@@ -89,5 +96,6 @@
     "resetButton": "Use the reset button to start a new game."
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "hintContract": "Recommended: {{contract}} — {{reason}}"
 }

@@ -6,7 +6,7 @@
   "blackHoleLabel": "ブラックホール:",
   "progress": "吸い込み: {{count}}/{{total}}枚",
   "fanLabel": "扇{{idx}}:",
-  "hintLine": "[HINT: 扇{{fan}} を積めます]",
+  "hintLine": "[HINT: 扇{{fan}} を積めます（直後の合法手 {{movesAfter}}）]",
   "acceptableRanks": "出せるランク: {{ranks}}",
   "acceptableRanksNone": "出せるランク: なし",
   "legalMoveCount": "残り合法手: {{count}}",

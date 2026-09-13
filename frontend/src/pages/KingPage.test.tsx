@@ -181,7 +181,7 @@ describe('KingPage', () => {
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
   // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
   it('renders no hint banner when the hint was not requested', async () => {
-    mockExec.mockResolvedValue({ ...playPhaseState, hint: { cardIndices: [0], reason: 'x' } });
+    mockExec.mockResolvedValue({ ...playPhaseState, hint: { cardIndices: [0], contract: -1, reason: 'x' } });
     renderWithProviders(<KingPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     // バナーは推奨札の位置を `([0])` の形で含む。トグルのラベル (「ヒント表示」)
@@ -195,11 +195,23 @@ describe('KingPage', () => {
     mockExec.mockResolvedValue({
       ...playPhaseState,
       // このページのバナーは `cardIndices` を並べる。`cardIndex` は型に無い。
-      hint: { cardIndices: [0], reason: 'x' },
+      hint: { cardIndices: [0], contract: -1, reason: 'x' },
       messageCode: 'king.hintRequested',
     });
     renderWithProviders(<KingPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
+  });
+
+  it('renders a No Tricks contract hint as a contract recommendation', async () => {
+    mockExec.mockResolvedValue({
+      ...selectPhaseState,
+      hint: { cardIndices: [], contract: 0, reason: 'select_no_tricks' },
+      messageCode: 'king.hintRequested',
+    });
+    renderWithProviders(<KingPage />);
+    expect(
+      await screen.findByText('おすすめ: ノートリック — 強い札が少なく、トリックを避けやすい手札'),
+    ).toBeInTheDocument();
   });
 
   it('carries the contract type and description into the accessible name', async () => {

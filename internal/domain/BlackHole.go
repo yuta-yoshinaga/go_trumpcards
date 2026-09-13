@@ -34,7 +34,8 @@ const (
 
 // BlackHoleHint 推奨手。Fan は移動可能な扇のインデックス。
 type BlackHoleHint struct {
-	Fan int
+	Fan        int
+	MovesAfter int
 }
 
 // BlackHole Black Hole (ブラックホール) 本体。状態のみを保持する。
@@ -228,7 +229,7 @@ func (g *BlackHole) GetHint() *BlackHoleHint {
 	if best < 0 {
 		return nil
 	}
-	return &BlackHoleHint{Fan: best}
+	return &BlackHoleHint{Fan: best, MovesAfter: bestScore}
 }
 
 // legalMovesAfter は扇 i を打った直後に残る合法手の数を返す。

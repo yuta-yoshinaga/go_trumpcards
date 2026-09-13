@@ -284,11 +284,20 @@ func (g *King) lowestIndex(p *KingPlayer, valid []int) int {
 // KingHint はヒント情報。
 type KingHint struct {
 	CardIndices []int  // 推奨カードインデックス (play フェーズ)
+	Contract    int    // 推奨コントラクト (selectContract フェーズ、play では -1)
 	Reason      string // ヒント理由キー
 }
 
 // GetHint は人間プレイヤーの手番における推奨アクションを返す。
 func (g *King) GetHint() *KingHint {
+	if g.phase == KingPhaseSelectContract {
+		dealer := g.GetPlayer(g.dealerIdx)
+		if dealer == nil || !dealer.GetIsHuman() {
+			return nil
+		}
+		contract, _ := g.cpuSelectContract()
+		return &KingHint{Contract: contract, Reason: kingContractHintReason(contract)}
+	}
 	if g.phase != KingPhasePlay {
 		return nil
 	}
@@ -307,5 +316,9 @@ func (g *King) GetHint() *KingHint {
 		idx = g.cpuTrickWin(turn, valid)
 		reason = "win_high"
 	}
-	return &KingHint{CardIndices: []int{idx}, Reason: reason}
+	return &KingHint{CardIndices: []int{idx}, Contract: -1, Reason: reason}
+}
+
+func kingContractHintReason(contract int) string {
+	return []string{"select_no_tricks", "select_no_hearts", "select_no_queens", "select_king_heart", "select_no_last_two", "select_no_men", "select_king_trump"}[contract]
 }

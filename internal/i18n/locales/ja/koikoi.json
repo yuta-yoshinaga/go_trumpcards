@@ -14,7 +14,7 @@
   "promptDecisionInfo": "勝負なら確定 {{confirmed}}点（倍率×{{mult}}） — 現在の累計 あなた{{you}} 対 相手{{opp}}",
   "promptGameEnd": "ゲーム終了。nr で新しいゲームを始めます。",
   "promptHelp": "p <h> [f] でプレイ（f は 2 枚一致時の場札）。kk=こいこい, sb=勝負, nr=次へ",
-  "roundWin": "{{name}} がラウンド勝利！ {{yaku}} → {{total}}点（×{{mult}}）",
+  "roundWin": "{{name}} がラウンド勝利！ {{yaku}} → 役 {{base}}点 × {{mult}}倍 = {{total}}点",
   "roundDraw": "引き分け（役なし）。",
   "hintNone": "ヒントはありません。",
   "hintCard": "[HINT: {{card}} ({{reason}})]",
