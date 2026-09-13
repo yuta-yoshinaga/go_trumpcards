@@ -39,6 +39,40 @@ func andarBaharEnded(t *testing.T) *AndarBahar {
 	return ab
 }
 
+// andarBaharMaxDealtEnded は、交互配布を保った49枚の決着済み盤面を手で組む。
+func andarBaharMaxDealtEnded() *AndarBahar {
+	joker := NewCard(CardDesignSpade, 1, true)
+	andar := make([]*Card, 0, 25)
+	bahar := make([]*Card, 0, 24)
+	for i := range 24 {
+		andar = append(andar, NewCard(CardDesignSpade, i%12+2, false))
+		bahar = append(bahar, NewCard(CardDesignHeart, i%12+2, false))
+	}
+	andar = append(andar, NewCard(CardDesignClover, 1, false))
+
+	return &AndarBahar{
+		joker:       joker,
+		andar:       andar,
+		bahar:       bahar,
+		firstColumn: AndarBaharBetAndar,
+		sideBand:    AndarBaharSideNone,
+		phase:       AndarBaharPhaseEnd,
+		gameEndFlag: true,
+		winner:      AndarBaharBetAndar,
+	}
+}
+
+// **総枚数の検査が交互配布の検査より先に走るので、枚数を増やすと別のエラーに当たる。**
+func TestAndarBahar_MaxDealtTamperAddingCardsHitsTotalLimitFirst(t *testing.T) {
+	base := andarBaharMaxDealtEnded()
+	err := andarBaharTampered(t, base, func(m map[string]any) {
+		andar := m["an"].([]any)
+		m["an"] = append(andar, andarBaharCardJSON(CardDesignSpade, 2), andarBaharCardJSON(CardDesignClover, 3))
+	})
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "51 cards dealt, at most 49 are possible")
+}
+
 // **ベット前・決着後のどちらも往復する。** これが負のコントロールです。
 func TestAndarBahar_ReachableStatesSurviveARoundTrip(t *testing.T) {
 	for round := range 60 {
@@ -195,10 +229,10 @@ func TestAndarBahar_UnmarshalRejectsTamperedState(t *testing.T) {
 			name:  "列の枚数が交互配布と食い違う",
 			ended: true,
 			mutate: func(m map[string]any) {
-				// **空の列は JSON では `null`** なので comma-ok で受ける。素で
-				// キャストすると、バハールが先に配られて 1 枚目で決着した回に落ちる。
-				andar, _ := m["an"].([]any)
-				m["an"] = append(andar, andarBaharCardJSON(CardDesignSpade, 2), andarBaharCardJSON(CardDesignClover, 3))
+				bahar := m["bh"].([]any)
+				andar := m["an"].([]any)
+				m["bh"] = bahar[:len(bahar)-1]
+				m["an"] = append(andar, bahar[len(bahar)-1])
 			},
 			want: "the columns do not alternate",
 		},
@@ -242,7 +276,11 @@ func TestAndarBahar_UnmarshalRejectsTamperedState(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			base := NewDefaultAndarBahar()
 			if tt.ended {
-				base = andarBaharEnded(t)
+				if tt.name == "列の枚数が交互配布と食い違う" {
+					base = andarBaharMaxDealtEnded()
+				} else {
+					base = andarBaharEnded(t)
+				}
 			}
 			err := andarBaharTampered(t, base, tt.mutate)
 			require.Error(t, err, "改竄した保存データが素通しした")
