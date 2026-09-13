@@ -263,6 +263,26 @@ function QuodlibetPageContent() {
                     </div>
                   ))}
                 </div>
+                {state.players
+                  .filter((p) => !p.isHuman && p.cards.length > 0)
+                  .map((p) => (
+                    <div
+                      key={p.id}
+                      className="mb-2 p-2 rounded bg-black/30"
+                      data-testid={`quodlibet-visible-hand-${p.id}`}
+                    >
+                      <div className="text-ds-text-muted text-xs mb-1">{playerName(p.id, false)}</div>
+                      <div className="flex flex-wrap gap-1">
+                        {p.cards.map((card, i) => (
+                          <CardImage
+                            key={`${card.design}-${card.value}-${i}`}
+                            card={card}
+                            width={Math.min(cardWidth, 48)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
 
                 {/* **選べるのはこの輪の残りだけ。** 全 12 種目を並べると、
                     押せない選択肢を勧めることになる。 */}
