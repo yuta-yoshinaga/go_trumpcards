@@ -127,7 +127,9 @@ func (p *TysiacCuiPresenter) Output(g interfaces.TysiacGame, lastErr error) stri
 			declarerIdx := g.GetDeclarerIdx()
 			b.WriteString(i18n.Tf("tysiac.promptTalon",
 				"name", cuiPlayerName(g.GetPlayer(declarerIdx), declarerIdx)) + "\n")
-			b.WriteString(i18n.T("tysiac.promptTalonHelp") + "\n")
+			recipientIdx := g.GetTalonRecipientIdx()
+			b.WriteString(i18n.Tf("tysiac.promptTalonHelp",
+				"recipient", cuiPlayerName(g.GetPlayer(recipientIdx), recipientIdx)) + "\n")
 		case domain.TysiacPhasePlay:
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("tysiac.promptPlay",

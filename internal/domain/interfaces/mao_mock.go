@@ -56,3 +56,6 @@ func (m *MockMaoGame) GetPlayerCorrectCount() int { return m.Called().Int(0) }
 func (m *MockMaoGame) GetHintUnlocked() bool      { return m.Called().Bool(0) }
 func (m *MockMaoGame) GetRuleHintKey() string     { return m.Called().String(0) }
 func (m *MockMaoGame) GetRulePenaltyFlag() bool   { return m.Called().Bool(0) }
+func (m *MockMaoGame) GetSayWordHistory() []domain.MaoSayWordAttempt {
+	return m.Called().Get(0).([]domain.MaoSayWordAttempt)
+}

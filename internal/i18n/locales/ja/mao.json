@@ -37,5 +37,9 @@
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "compliance": "ルール適合: {{count}}/{{total}}（{{total}}回正解でヒント解放）",
+  "sayWordHistoryTitle": "宣言履歴:",
+  "sayWordHistoryLine": "  「{{word}}」 — {{outcome}}",
+  "sayWordCorrect": "正解",
+  "sayWordPenalty": "不正解（ペナルティ）",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

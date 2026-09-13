@@ -22,6 +22,7 @@
   "target": "目標: {{points}}点",
   "bidPrompt": "あなたのビッド番です — パスするか 1〜14 を宣言してください。",
   "bidCpu": "CPU {{id}} がビッド中です…",
+  "trumpCpu": "CPU {{id}} が切り札を選択中です…",
   "bidPass": "パス",
   "bidStrength": {
     "range": "手札の推定獲得点: {{min}}〜{{max}}点（切り札次第の目安）",

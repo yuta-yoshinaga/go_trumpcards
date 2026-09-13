@@ -40,28 +40,29 @@ type TysiacWebOutputPlayer struct {
 
 // TysiacWebOutput サウザンドのWebアウトプット
 type TysiacWebOutput struct {
-	Players          []*TysiacWebOutputPlayer    `json:"players"`
-	Phase            int                         `json:"phase"`
-	RoundNumber      int                         `json:"roundNumber"`
-	TrickNumber      int                         `json:"trickNumber"`
-	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
-	DealerIdx        int                         `json:"dealerIdx"`
-	ForehandIdx      int                         `json:"forehandIdx"`
-	DeclarerIdx      int                         `json:"declarerIdx"`
-	Contract         int                         `json:"contract"`
-	CurrentBid       int                         `json:"currentBid"`
-	TrumpSuit        int                         `json:"trumpSuit"`
-	CurrentTrick     []*WebOutputTrickCard       `json:"currentTrick"`
-	PlayerScores     [domain.TysiacPlayerCnt]int `json:"playerScores"`
-	RoundCardPoints  [domain.TysiacPlayerCnt]int `json:"roundCardPoints"`
-	RoundMarriage    [domain.TysiacPlayerCnt]int `json:"roundMarriage"`
-	LastTrickWinner  int                         `json:"lastTrickWinner"`
-	PlayableIndices  []int                       `json:"playableIndices"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	WinnerPlayer     int                         `json:"winnerPlayer"`
-	IsHumanTurn      bool                        `json:"isHumanTurn"`
-	Hint             *WebOutputCardHint          `json:"hint,omitempty"`
+	Players           []*TysiacWebOutputPlayer    `json:"players"`
+	Phase             int                         `json:"phase"`
+	RoundNumber       int                         `json:"roundNumber"`
+	TrickNumber       int                         `json:"trickNumber"`
+	CurrentPlayerIdx  int                         `json:"currentPlayerIdx"`
+	LeadPlayerIdx     int                         `json:"leadPlayerIdx"`
+	DealerIdx         int                         `json:"dealerIdx"`
+	ForehandIdx       int                         `json:"forehandIdx"`
+	DeclarerIdx       int                         `json:"declarerIdx"`
+	TalonRecipientIdx int                         `json:"talonRecipientIdx"`
+	Contract          int                         `json:"contract"`
+	CurrentBid        int                         `json:"currentBid"`
+	TrumpSuit         int                         `json:"trumpSuit"`
+	CurrentTrick      []*WebOutputTrickCard       `json:"currentTrick"`
+	PlayerScores      [domain.TysiacPlayerCnt]int `json:"playerScores"`
+	RoundCardPoints   [domain.TysiacPlayerCnt]int `json:"roundCardPoints"`
+	RoundMarriage     [domain.TysiacPlayerCnt]int `json:"roundMarriage"`
+	LastTrickWinner   int                         `json:"lastTrickWinner"`
+	PlayableIndices   []int                       `json:"playableIndices"`
+	GameEndFlag       bool                        `json:"gameEndFlag"`
+	WinnerPlayer      int                         `json:"winnerPlayer"`
+	IsHumanTurn       bool                        `json:"isHumanTurn"`
+	Hint              *WebOutputCardHint          `json:"hint,omitempty"`
 	WebOutputBase
 	Config TysiacWebOutputConfig `json:"config"`
 }
@@ -96,13 +97,14 @@ var NewTysiacWebController, NewTysiacWebControllerWithProvider = webControllerPa
 
 func newTysiacDefaultOutput(msg string) *TysiacWebOutput {
 	return &TysiacWebOutput{
-		Players:         make([]*TysiacWebOutputPlayer, 0),
-		CurrentTrick:    make([]*WebOutputTrickCard, 0),
-		PlayableIndices: make([]int, 0),
-		DeclarerIdx:     -1,
-		LastTrickWinner: -1,
-		WinnerPlayer:    -1,
-		WebOutputBase:   WebOutputBase{Message: msg},
+		Players:           make([]*TysiacWebOutputPlayer, 0),
+		CurrentTrick:      make([]*WebOutputTrickCard, 0),
+		PlayableIndices:   make([]int, 0),
+		DeclarerIdx:       -1,
+		TalonRecipientIdx: -1,
+		LastTrickWinner:   -1,
+		WinnerPlayer:      -1,
+		WebOutputBase:     WebOutputBase{Message: msg},
 	}
 }
 
