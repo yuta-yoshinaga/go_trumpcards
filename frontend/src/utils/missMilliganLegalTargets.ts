@@ -28,12 +28,6 @@ export interface MissMilliganLegalTargets {
  * - A null card produces no targets.
  * - The source tableau column is excluded when it is provided.
  * - 組札へは最上段しか行かないので、途中の札を選んでいるときは組札の候補を出さない。
- *
- * edge_cases:
- * - Empty tableau columns accept Kings only.
- * - Empty foundations accept only the Ace of their fixed suit.
- * - A null card produces no targets.
- * - The source tableau column is excluded when it is provided.
  */
 export function missMilliganLegalTargets(
   tableau: readonly MissMilliganTableauCard[][],
