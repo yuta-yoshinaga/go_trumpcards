@@ -214,7 +214,37 @@ describe('ChinesePokerPage', () => {
     renderWithProviders(<ChinesePokerPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
     fireEvent.keyDown(document, { key: 'b' });
+    await flushPendingDispatch();
     expect(mockExec).toHaveBeenCalledWith('bet', 100);
+  });
+
+  it('assigns a selected card to each row with keyboard shortcuts', async () => {
+    mockExec.mockResolvedValue(setHandsState);
+    renderWithProviders(<ChinesePokerPage />);
+    await screen.findByTestId('cp-row-preview');
+
+    fireEvent.keyDown(document, { key: '1' });
+    await flushPendingDispatch();
+    fireEvent.keyDown(document, { key: 'f' });
+    await flushPendingDispatch();
+    expect(screen.getByRole('button', { name: '♥ A（フロント）' })).toBeInTheDocument();
+
+    // q/w/e extend the existing number-key navigation to cards 11–13.
+    fireEvent.keyDown(document, { key: 'q' });
+    await flushPendingDispatch();
+    fireEvent.keyDown(document, { key: 'm' });
+    await flushPendingDispatch();
+    expect(screen.getByRole('button', { name: '♦ J（ミドル）' })).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: '1' });
+    await flushPendingDispatch();
+    fireEvent.keyDown(document, { key: 'k' });
+    await flushPendingDispatch();
+    expect(screen.getByRole('button', { name: '♥ A' })).toBeInTheDocument();
+
+    const shortcuts = screen.getByTestId('chinese-poker-kbd-shortcuts');
+    fireEvent.click(within(shortcuts).getByText('キーボードショートカット'));
+    expect(within(shortcuts).getByText('k')).toBeInTheDocument();
   });
 
   it('submits the edited bet amount via the ChipBetInput', async () => {

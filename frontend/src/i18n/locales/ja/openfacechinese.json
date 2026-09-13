@@ -54,5 +54,10 @@
   "pendingAnnounce": "配置待ち: {{card}}",
   "hintRequested": "ヒントがあります",
   "noHint": "ヒントはありません",
-  "foulRiskWarning": "注意: {{rows}}に置くと反則（強さの順が崩れます）"
+  "foulRiskWarning": "注意: {{rows}}に置くと反則（強さの順が崩れます）",
+  "settings.cpuDifficulty": "CPU難易度",
+  "settings.playerCount": "プレイヤー数",
+  "settings.difficulty.easy": "やさしい",
+  "settings.difficulty.normal": "ふつう",
+  "settings.difficulty.hard": "むずかしい"
 }

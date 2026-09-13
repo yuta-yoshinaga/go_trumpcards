@@ -649,6 +649,40 @@ func TestZwickerConfigValidate(t *testing.T) {
 	}
 }
 
+func TestZwickerConfigAcceptsAllDifficulties(t *testing.T) {
+	for difficulty := ZwickerCpuDifficultyEasy; difficulty <= ZwickerCpuDifficultyHard; difficulty++ {
+		if err := (ZwickerConfig{CpuDifficulty: difficulty, TargetScore: 61}).Validate(); err != nil {
+			t.Fatalf("difficulty %d: %v", difficulty, err)
+		}
+	}
+}
+
+func TestZwickerCpuDifficultyChangesTheChosenCapture(t *testing.T) {
+	setup := func(difficulty ZwickerCpuDifficulty) ZwickerCpuAction {
+		z := zwReady(t, 0)
+		z.SetConfig(ZwickerConfig{CpuDifficulty: difficulty, TargetScore: 61})
+		setZwHand(z, 0, []*Card{
+			zwCard(CardDesignHeart, 5),
+			zwCard(CardDesignClover, 10),
+		})
+		z.SetTableCardsForTest([]*Card{
+			zwCard(CardDesignSpade, 5),
+			zwCard(CardDesignDiamond, 10),
+		})
+		return z.ZwickerCpuDecide(0)
+	}
+
+	easy := setup(ZwickerCpuDifficultyEasy)
+	hard := setup(ZwickerCpuDifficultyHard)
+	// Hard captures the ♦10 scoring card; Easy takes the first available low-value capture.
+	if easy.Type != "take" || easy.HandIdx != 0 || easy.Value != 5 || !equalInts(easy.TableIdxs, []int{0}) {
+		t.Fatalf("Easy should take the five, got %+v", easy)
+	}
+	if hard.Type != "take" || hard.HandIdx != 1 || hard.Value != 10 || !equalInts(hard.TableIdxs, []int{1}) {
+		t.Fatalf("Hard should take the scoring ten, got %+v", hard)
+	}
+}
+
 func TestZwickerAccessorBounds(t *testing.T) {
 	z := NewDefaultZwicker()
 	z.Reset()

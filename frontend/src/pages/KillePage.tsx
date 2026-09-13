@@ -60,6 +60,14 @@ const KILLE_LADDER = [
   { label: 'Mask', color: 'text-ds-text-muted' },
 ];
 
+const KILLE_EFFECTS = [
+  { glyph: '🐦', name: 'Cuckoo', descriptionKey: 'effect.cuckoo' },
+  { glyph: '⚔', name: 'Hussar', descriptionKey: 'effect.hussar' },
+  { glyph: '🐖', name: 'Pig', descriptionKey: 'effect.pig' },
+  { glyph: '🐎', name: 'Cavalier', descriptionKey: 'effect.cavalier' },
+  { glyph: '🏠', name: 'Inn', descriptionKey: 'effect.inn' },
+] as const;
+
 /** Kille tutorial step definitions. */
 const KILLE_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -329,6 +337,15 @@ function KillePageContent() {
                 ))}
               </div>
               <div className="mt-1 text-ds-text-muted">{t('deckNote')}</div>
+              <div className="mt-2 grid gap-1" data-testid="kille-effect-legend">
+                <div className="text-ds-text-primary">{t('effectLegendTitle')}</div>
+                {KILLE_EFFECTS.map((effect) => (
+                  <div key={effect.name}>
+                    <span aria-hidden="true">{effect.glyph}</span> <span className="font-semibold">{effect.name}</span>:{' '}
+                    {t(effect.descriptionKey)}
+                  </div>
+                ))}
+              </div>
             </div>
 
             <GameMessageBox

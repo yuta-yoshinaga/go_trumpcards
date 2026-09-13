@@ -47,6 +47,14 @@ function ZwickerPageContent() {
     useGamePageSetup('zwicker');
   const game = useZwickerGame();
   const { state, loading, error, retry } = game;
+  const difficultyOptions = useMemo(
+    () => [
+      { value: '0', label: t('settings.difficulty.easy') },
+      { value: '1', label: t('settings.difficulty.normal') },
+      { value: '2', label: t('settings.difficulty.hard') },
+    ],
+    [t],
+  );
 
   // 出す 1 枚と、その札をどの値で使うか。**A と絵札は 2 択を持つ**ので、
   // 札を選んだだけでは捕獲が決まらない。
@@ -160,7 +168,21 @@ function ZwickerPageContent() {
 
       <SettingsPanel
         title={tc('settings.title')}
-        groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+        groups={[
+          {
+            items: [
+              {
+                type: 'select',
+                id: 'zwicker-difficulty',
+                label: t('settings.cpuDifficulty'),
+                value: String(state.config?.cpuDifficulty ?? 1),
+                options: difficultyOptions,
+                onSelect: (v: string) => game.exec('reset', { config: { cpuDifficulty: Number(v) } }),
+              },
+              hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+            ],
+          },
+        ]}
       />
 
       {cliEnabled ? (

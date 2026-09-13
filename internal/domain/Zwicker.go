@@ -567,6 +567,16 @@ func (z *Zwicker) ZwickerCpuDecide(idx int) ZwickerCpuAction {
 				s += ZwickerScoreOfCard(z.tableCards[i]) * 10
 				s++
 			}
+			if z.config.CpuDifficulty == ZwickerCpuDifficultyEasy && bestScore >= 0 {
+				continue
+			}
+			if z.config.CpuDifficulty == ZwickerCpuDifficultyHard {
+				// Hard also values removing high-scoring cards from the table,
+				// which is the key defensive decision in Zwicker.
+				for _, i := range idxs {
+					s += ZwickerScoreOfCard(z.tableCards[i]) * 5
+				}
+			}
 			if s > bestScore {
 				bestScore = s
 				best = ZwickerCpuAction{Type: "take", HandIdx: h, Value: v, TableIdxs: idxs}

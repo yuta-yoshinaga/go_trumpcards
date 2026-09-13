@@ -133,6 +133,41 @@ func TestDesmocheInteractor_CpuMeldsBeforeDiscarding(t *testing.T) {
 	g.AssertCalled(t, "Meld", 1, []int{0, 1, 2})
 }
 
+func TestDesmocheInteractor_CpuUsesDiscardAndLayoffActions(t *testing.T) {
+	t.Run("discard draw", func(t *testing.T) {
+		g := new(interfaces.MockDesmocheGame)
+		cp := new(presenter.MockDesmochePresenter)
+		cp.On("Output", mock.Anything, mock.Anything).Return(dsOut)
+		g.On("Reset").Return()
+		g.On("GetGameEndFlag").Return(false)
+		g.On("GetPhase").Return(domain.DesmochePhaseDraw).Once()
+		g.On("GetPhase").Return(domain.DesmochePhaseRoundEnd)
+		g.On("GetCurrentPlayerIdx").Return(1)
+		g.On("DesmocheCpuDecide", 1).Return(domain.DesmocheCpuAction{DrawFromDiscard: true})
+		g.On("DrawFromDiscard", 1).Return(nil)
+
+		usecase.NewDesmocheInteractor(g, cp).Reset()
+		g.AssertCalled(t, "DrawFromDiscard", 1)
+		g.AssertNotCalled(t, "DrawFromStock", mock.Anything)
+	})
+
+	t.Run("layoff", func(t *testing.T) {
+		g := new(interfaces.MockDesmocheGame)
+		cp := new(presenter.MockDesmochePresenter)
+		cp.On("Output", mock.Anything, mock.Anything).Return(dsOut)
+		g.On("Reset").Return()
+		g.On("GetGameEndFlag").Return(false)
+		g.On("GetPhase").Return(domain.DesmochePhaseAct).Once()
+		g.On("GetPhase").Return(domain.DesmochePhaseRoundEnd)
+		g.On("GetCurrentPlayerIdx").Return(1)
+		g.On("DesmocheCpuDecide", 1).Return(domain.DesmocheCpuAction{LayOff: true, LayOffHandIdx: 2, LayOffMeldIdx: 0})
+		g.On("LayOff", 1, 2, 0).Return(nil)
+
+		usecase.NewDesmocheInteractor(g, cp).Reset()
+		g.AssertCalled(t, "LayOff", 1, 2, 0)
+	})
+}
+
 func TestDesmocheInteractor_CpuLoopStopsAtTheEndOfARound(t *testing.T) {
 	// ラウンド終了で止めないと、ポットが持ち越されたのかを読む間もなく次が配られる。
 	g := new(interfaces.MockDesmocheGame)

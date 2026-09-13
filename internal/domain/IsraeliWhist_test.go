@@ -157,7 +157,8 @@ func TestIsraeliWhist_AuctionClosesOnLastSurvivor(t *testing.T) {
 	require.NoError(t, w.PlayerAuctionBid(7, CardDesignHeart))
 	for _, i := range []int{1, 2, 3} {
 		w.SetAuctionPlayerIdxForTest(i)
-		w.CpuAuction()
+		// CPU は手札次第で入札するので、後から SetPassed を付けても既に最高入札者になっている
+		// (実測 約1/5000 で発生)。ここでは席 0 だけが入札した状態を直接作る。
 		w.GetPlayer(i).SetPassed(true)
 	}
 	if w.GetPhase() == IsraeliWhistPhaseAuction {

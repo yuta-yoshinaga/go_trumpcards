@@ -38,5 +38,9 @@
   "tutorial.pot": "山札が尽きるまで誰も10枚を組めなければ勝者なしで、ポットは次のラウンドへ持ち越されます",
   "meldOwnerYou": "あなたのメルド",
   "foreignMeldWarning": "このメルドは他家のものです。ここへ足してもあなたの上がり枚数には加算されません（自分の札を移すと逆に減ります）。",
-  "roundWinnerYou": "あなたが10枚を組んでポットを取りました"
+  "roundWinnerYou": "あなたが10枚を組んでポットを取りました",
+  "settings.cpuDifficulty": "CPU難易度",
+  "settings.difficulty.easy": "やさしい",
+  "settings.difficulty.normal": "ふつう",
+  "settings.difficulty.hard": "むずかしい"
 }
