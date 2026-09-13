@@ -424,7 +424,7 @@ function ShengJiPageContent() {
                   type="button"
                   className={btnPrimary}
                   onClick={handlePlay}
-                  disabled={loading || selectedCombo === null}
+                  disabled={loading || selected.length === 0}
                 >
                   {t('playButton')}
                 </button>

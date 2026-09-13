@@ -232,7 +232,30 @@ describe('ShengJiPage', () => {
     fireEvent.click(screen.getByTestId('hand-card-0'));
     fireEvent.click(screen.getByTestId('hand-card-2'));
     expect(screen.getByTestId('shengji-combo-invalid')).toHaveTextContent('成立する役ではありません');
-    expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '出す' })).toBeEnabled();
+  });
+
+  it('allows a legal off-suit follow even when it is not a previewable combo', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0, true, { cards: [card('HEART', 7), card('SPADE', 9)] }),
+          seat(1, false),
+          seat(2, false),
+          seat(3, false),
+        ],
+        trick: [{ seat: 1, cards: [card('HEART', 7), card('HEART', 7)] }],
+        leadCombo: { kind: 2, rank: 7, size: 2, trump: false, suit: 3 },
+      }),
+    );
+    renderWithProviders(<ShengJiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+
+    expect(screen.getByTestId('shengji-combo-invalid')).toHaveTextContent('成立する役ではありません');
+    expect(screen.getByRole('button', { name: '出す' })).toBeEnabled();
   });
 
   // **選び直せる。**一度選んだ札を外せないと手が組めない。
