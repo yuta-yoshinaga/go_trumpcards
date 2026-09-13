@@ -169,8 +169,11 @@ func TestPiedmonteseTarot_EveryCardIsAccountedForAfterADeal(t *testing.T) {
 				total += v
 			}
 			assert.Equal(t, PiedmonteseTarotTotalThirds, total, "%d 人卓で札の取り分が合わない", seats)
-			trickTotal := total - g.GetScartoThirds()
-			assert.Equal(t, total, trickTotal+g.GetScartoThirds(), "%d 人卓のトリック点とスカルト点が二重計上/取りこぼし", seats)
+			// **スカルト分はディーラーの取り分の一部。** 上の恒等式で書くと
+			// 何を入れても通るので、独立に読める 2 つの上界で挟む。
+			assert.LessOrEqual(t, g.GetScartoThirds(), g.CapturedThirds()[g.GetDealerIdx()],
+				"%d 人卓でスカルト分が親の取り分を超えている", seats)
+			assert.GreaterOrEqual(t, g.GetScartoThirds(), 0, "%d 人卓でスカルト分が負", seats)
 
 			sum := 0
 			for _, v := range g.GetDealScores() {
