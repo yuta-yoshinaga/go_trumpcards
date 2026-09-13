@@ -28,6 +28,56 @@ func clearTableauFC(f *FreeCell) {
 	}
 }
 
+func TestFreeCellCanAutoComplete(t *testing.T) {
+	card := func(value int) *Card { return makeCard(CardDesignSpade, value) }
+	descendingTableau := func() [FreeCellTableauCnt][]*Card {
+		var tableau [FreeCellTableauCnt][]*Card
+		tableau[0] = []*Card{card(13), card(12), card(11)}
+		tableau[1] = []*Card{card(10), card(9)}
+		return tableau
+	}
+
+	t.Run("returns true for descending tableau columns", func(t *testing.T) {
+		f := setupPlayingFreeCell()
+		f.tableau = descendingTableau()
+
+		assert.True(t, f.CanAutoComplete())
+	})
+
+	t.Run("returns false when a column ascends", func(t *testing.T) {
+		f := setupPlayingFreeCell()
+		tableau := descendingTableau()
+		tableau[1] = []*Card{card(9), card(10)}
+		f.tableau = tableau
+
+		assert.False(t, f.CanAutoComplete())
+	})
+
+	t.Run("returns false for equal ranks conservatively", func(t *testing.T) {
+		f := setupPlayingFreeCell()
+		tableau := descendingTableau()
+		tableau[1] = []*Card{card(10), makeCard(CardDesignHeart, 10)}
+		f.tableau = tableau
+
+		assert.False(t, f.CanAutoComplete())
+	})
+
+	t.Run("free cells do not affect readiness", func(t *testing.T) {
+		f := setupPlayingFreeCell()
+		f.tableau = descendingTableau()
+		f.freeCells[0] = card(1)
+
+		assert.True(t, f.CanAutoComplete())
+	})
+
+	t.Run("returns true for an empty tableau", func(t *testing.T) {
+		f := setupPlayingFreeCell()
+		clearTableauFC(f)
+
+		assert.True(t, f.CanAutoComplete())
+	})
+}
+
 // --- Reset tests ---
 
 func TestFreeCellReset(t *testing.T) {

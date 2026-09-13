@@ -104,6 +104,9 @@ func (p *FreeCellCuiPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 						"count", strconv.Itoa(n))) + "\n")
 				}
 			}
+			if f.CanAutoComplete() {
+				b.WriteString(color.Green(i18n.T("freecell.autoCompleteReady")) + "\n")
+			}
 			// **何枚まとめて動かせるかは CUI に出ていなかった (#4777)。**Web は
 			// fc-supermove-limit で常時出し、上限を超える列には赤いリングまで
 			// 付けている。CUI は空きフリーセル数と空き列数から暗算するか、

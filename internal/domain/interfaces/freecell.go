@@ -23,6 +23,8 @@ type FreeCellGame interface {
 	MoveFreeCellToFoundation(cell int) error
 	// GetHint ヒントを取得する
 	GetHint() *domain.FreeCellHint
+	// CanAutoComplete いまオートコンプリートを押せば最後まで通るかを返す
+	CanAutoComplete() bool
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() domain.FreeCellPhase
 	// GetMoveCount 移動回数を取得する
