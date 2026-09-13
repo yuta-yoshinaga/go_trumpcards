@@ -29,6 +29,7 @@ func setupUltiWebMock() *interfaces.MockUltiGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.UltiPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -94,6 +95,17 @@ func TestUltiWebPresenter_Output(t *testing.T) {
 		assert.True(t, resObj.TalonTaken)
 		assert.Equal(t, 2, resObj.DiscardCount)
 		assert.True(t, resObj.IsHumanTurn)
+	})
+
+	t.Run("includes the last trick winner", func(t *testing.T) {
+		m, _ := setupUltiWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickWinner")
+		m.On("GetLastTrickWinner").Return(2)
+
+		result := p.Output(m, nil)
+		var resObj controller.UltiWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, 2, resObj.LastTrickWinner)
 	})
 
 	t.Run("config values", func(t *testing.T) {

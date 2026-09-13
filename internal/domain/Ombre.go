@@ -1177,6 +1177,9 @@ func (g *Ombre) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 // GetCurrentTrick 現在のトリック取得
 func (g *Ombre) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
+// GetLastTrickWinner 直前トリックの勝者を返す (-1 = なし)。
+func (g *Ombre) GetLastTrickWinner() int { return g.lastTrickWinner }
+
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Ombre) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 

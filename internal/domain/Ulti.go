@@ -1153,6 +1153,9 @@ func (g *Ulti) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 // GetCurrentTrick 現在のトリック取得
 func (g *Ulti) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
+// GetLastTrickWinner 直前トリックの勝者を返す (-1 = なし)。
+func (g *Ulti) GetLastTrickWinner() int { return g.lastTrickWinner }
+
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Ulti) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 

@@ -931,6 +931,9 @@ func (g *Calabresella) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 // GetCurrentTrick 現在のトリック取得
 func (g *Calabresella) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
+// GetLastTrickWinner 直前トリックの勝者を返す (-1 = なし)。
+func (g *Calabresella) GetLastTrickWinner() int { return g.lastTrickWinner }
+
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Calabresella) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
