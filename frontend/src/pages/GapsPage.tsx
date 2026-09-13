@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { type GapsMoveZone, gapsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
+import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -147,6 +148,28 @@ function GapsPageContent() {
     disabled: loading,
   });
 
+  // Keep the existing drag path and add a click/touch/keyboard path: select a
+  // movable card first, then activate the destination cell.
+  const [selectedSource, setSelectedSource] = useState<GapsMoveZone | null>(null);
+  const isSameZone = useCallback(
+    (left: GapsMoveZone | null, right: GapsMoveZone) =>
+      left?.zone === right.zone && left?.row === right.row && left?.col === right.col,
+    [],
+  );
+  const handleSelectSource = useCallback((zone: GapsMoveZone) => {
+    setSelectedSource((previous) =>
+      previous?.zone === zone.zone && previous.row === zone.row && previous.col === zone.col ? null : zone,
+    );
+  }, []);
+  const handleSelectTarget = useCallback(
+    (zone: GapsMoveZone) => {
+      if (!selectedSource) return;
+      dispatchMove(selectedSource, zone);
+      setSelectedSource(null);
+    },
+    [dispatchMove, selectedSource],
+  );
+
   // Keyboard shortcuts mirror the sibling solitaire pages (EightOff / Baker's
   // Dozen). Bind letter keys only — Enter/Space would double-fire on a focused
   // button. Undo/redeal expose per-binding `enabled` so a disabled action's key
@@ -230,51 +253,58 @@ function GapsPageContent() {
                             ? t('gapAriaBlocked')
                             : t('gap');
                     return (
-                      <button
-                        type="button"
+                      <DropZone
                         key={`cell-${rIdx.toString()}-${cIdx.toString()}`}
+                        isDropTarget={dnd.isDropTarget(zone)}
                         onDragOver={dnd.handleDragOver(zone)}
                         onDragLeave={dnd.handleDragLeave}
                         onDrop={dnd.handleDrop(zone)}
-                        aria-label={gapAria}
-                        data-testid={`gaps-cell-${rIdx.toString()}-${cIdx.toString()}`}
-                        className={`relative flex items-center justify-center rounded border-2 ${
-                          dnd.isDropTarget(zone)
-                            ? 'border-ds-warning bg-ds-warning/20'
-                            : 'border-dashed border-white/30'
-                        } ${isHintTo ? 'ring-2 ring-ds-warning' : ''} ${focusRingWhite}`}
-                        style={{ width: cardWidth, height: cardHeight }}
-                        disabled={!isPlaying || loading}
+                        className="relative"
                       >
-                        {ghost?.kind === 'needed' && (
-                          <span
-                            aria-hidden="true"
-                            data-testid={`gaps-ghost-${rIdx}-${cIdx}`}
-                            className={`text-base font-semibold opacity-30 ${RED_DESIGNS.has(ghost.design) ? 'text-ds-error' : 'text-ds-text-primary'}`}
-                          >
-                            {SUIT_SYMBOLS[ghost.design]}
-                            {valueName(ghost.value)}
-                          </span>
-                        )}
-                        {ghost?.kind === 'anySuit' && (
-                          <span
-                            aria-hidden="true"
-                            data-testid={`gaps-ghost-${rIdx}-${cIdx}`}
-                            className="text-base font-semibold text-white opacity-30"
-                          >
-                            {valueName(ghost.value)}
-                          </span>
-                        )}
-                        {ghost?.kind === 'blocked' && (
-                          <span
-                            aria-hidden="true"
-                            data-testid={`gaps-ghost-${rIdx}-${cIdx}-blocked`}
-                            className="text-xl opacity-40"
-                          >
-                            🚫
-                          </span>
-                        )}
-                      </button>
+                        {/* Keep drag handlers on an enabled div: browsers do not dispatch dragover/drop to disabled form controls. */}
+                        <button
+                          type="button"
+                          onClick={() => handleSelectTarget(zone)}
+                          aria-label={gapAria}
+                          data-testid={`gaps-cell-${rIdx.toString()}-${cIdx.toString()}`}
+                          className={`relative flex items-center justify-center rounded border-2 ${
+                            dnd.isDropTarget(zone)
+                              ? 'border-ds-warning bg-ds-warning/20'
+                              : 'border-dashed border-white/30'
+                          } ${isHintTo ? 'ring-2 ring-ds-warning' : ''} ${focusRingWhite}`}
+                          style={{ width: cardWidth, height: cardHeight }}
+                          disabled={!isPlaying || loading || !selectedSource}
+                        >
+                          {ghost?.kind === 'needed' && (
+                            <span
+                              aria-hidden="true"
+                              data-testid={`gaps-ghost-${rIdx}-${cIdx}`}
+                              className={`text-base font-semibold opacity-30 ${RED_DESIGNS.has(ghost.design) ? 'text-ds-error' : 'text-ds-text-primary'}`}
+                            >
+                              {SUIT_SYMBOLS[ghost.design]}
+                              {valueName(ghost.value)}
+                            </span>
+                          )}
+                          {ghost?.kind === 'anySuit' && (
+                            <span
+                              aria-hidden="true"
+                              data-testid={`gaps-ghost-${rIdx}-${cIdx}`}
+                              className="text-base font-semibold text-white opacity-30"
+                            >
+                              {valueName(ghost.value)}
+                            </span>
+                          )}
+                          {ghost?.kind === 'blocked' && (
+                            <span
+                              aria-hidden="true"
+                              data-testid={`gaps-ghost-${rIdx}-${cIdx}-blocked`}
+                              className="text-xl opacity-40"
+                            >
+                              🚫
+                            </span>
+                          )}
+                        </button>
+                      </DropZone>
                     );
                   }
                   const isLocked = cIdx < lockedCount;
@@ -289,8 +319,12 @@ function GapsPageContent() {
                       draggable={isPlaying && !loading && !isLocked}
                       onDragStart={dnd.handleDragStart(zone)}
                       onDragEnd={dnd.handleDragEnd}
+                      onClick={() =>
+                        selectedSource ? handleSelectTarget(zone) : !isLocked && handleSelectSource(zone)
+                      }
                       aria-label={isLocked ? `${cardAlt(cell)} ${t('lockedAria')}` : cardAlt(cell)}
                       disabled={!isPlaying || loading}
+                      aria-pressed={isSameZone(selectedSource, zone)}
                       data-testid={
                         isLocked
                           ? `gaps-locked-${rIdx.toString()}-${cIdx.toString()}`
