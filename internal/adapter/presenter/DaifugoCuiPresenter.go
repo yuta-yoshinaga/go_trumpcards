@@ -72,9 +72,13 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 			b.WriteString(color.BoldYellow(i18n.T("daifugo.ruleElevenBack")) + "\n")
 		}
 		if dg.GetSuitLocked() {
+			suitLockSuffix := ""
+			if dg.GetConfig().SuitLockMode == domain.DaifugoSuitLockPartial {
+				suitLockSuffix = i18n.T("daifugo.ruleSuitLockedPartialSuffix")
+			}
 			fmt.Fprintf(b, "%s%s\n",
 				color.BoldYellow(i18n.T("daifugo.ruleSuitLockedPrefix")),
-				cuiSuitName(dg.GetLockedSuit()))
+				cuiSuitName(dg.GetLockedSuit())+suitLockSuffix)
 		}
 		if dg.GetTableIsSequence() {
 			b.WriteString(color.BoldYellow(i18n.T("daifugo.ruleSequence")) + "\n")

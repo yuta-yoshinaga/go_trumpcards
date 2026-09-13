@@ -24,9 +24,10 @@ import { badgeErrorColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { activeTurnClass, finishedPlayerClass } from '../styles/gameConstants';
 import { gameTheme } from '../styles/gameTheme';
-import type { BigTwoResponse } from '../types/card';
+import type { BigTwoAction, BigTwoResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { type BigTwoSortMode, bigTwoPlayTypeKey, classifyBigTwoPlay, sortedBigTwoHand } from '../utils/bigTwoSort';
+import { cardLabel } from '../utils/cardUtils';
 import {
   BIGTWO_HELP,
   type BigTwoCliArgs,
@@ -35,6 +36,7 @@ import {
 } from '../utils/cli/commands/bigtwoCommands';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { findPlayerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Hand sort options for the Big Two footer. */
@@ -154,6 +156,13 @@ function BigTwoPageContent() {
   const selectedInvalid = selectedIndices.length > 0 && selectedPlayType === 0;
   const canPlay = isHumanTurn && selectedIndices.length > 0 && !selectedInvalid;
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');
+  const actionDescription = (players: { id: number; isHuman: boolean }[], action: BigTwoAction): string => {
+    if (!action.playedCards || action.playedCards.length === 0) {
+      return t('actionPassed', { name: findPlayerName(players, action.playerIdx) });
+    }
+    const cards = action.playedCards.map(cardLabel).join(', ');
+    return t('actionPlayed', { name: findPlayerName(players, action.playerIdx), cards });
+  };
 
   return (
     <GamePageShell
@@ -212,6 +221,14 @@ function BigTwoPageContent() {
                   </div>
                 ))}
             </div>
+
+            {state.cpuActions && state.cpuActions.length > 0 && (
+              <div className="bg-black/40 rounded-lg text-ds-text-primary py-2 px-3.5 my-2 whitespace-pre-line text-xs">
+                {[tc('label.cpuActions'), ...state.cpuActions.map((a) => actionDescription(state.players, a))].join(
+                  '\n',
+                )}
+              </div>
+            )}
 
             {/* Table cards */}
             <div className="py-3 bg-black/20 rounded-lg" data-tutorial="bt-table-cards">

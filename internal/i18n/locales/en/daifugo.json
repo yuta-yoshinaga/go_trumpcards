@@ -15,6 +15,7 @@
   "ruleRevolution": "[Revolution] 2 weakest, 3 strongest",
   "ruleElevenBack": "[Eleven Back] ranks reversed",
   "ruleSuitLockedPrefix": "[Suit lock] ",
+  "ruleSuitLockedPartialSuffix": " (Partial)",
   "ruleSequence": "[Sequence]",
   "ruleNineReverse": "[Nine Reverse]",
   "ruleNumberLocked": "[Number lock]",
