@@ -638,3 +638,107 @@ func TestOmaha_GetBoardLowOutlook(t *testing.T) {
 		assert.Equal(t, OmahaBoardLowPossible, got.Status)
 	})
 }
+
+func TestOmaha_GetEquity_HiLo_PreservesPlayerState(t *testing.T) {
+	tc := NewTrumpCards(0)
+	human := NewOmahaPlayer(true, HoldemStyleTAG)
+	cpu1 := NewOmahaPlayer(false, HoldemStyleLAP)
+	cpu2 := NewOmahaPlayer(false, HoldemStyleTAP)
+	players := []*OmahaPlayer{human, cpu1, cpu2}
+	o := NewOmahaHiLo(tc, players, DefaultOmahaConfig())
+	o.SetPhase(OmahaPhaseFlop)
+
+	human.AddCard(NewCard(CardDesignSpade, 1, false))
+	human.AddCard(NewCard(CardDesignHeart, 2, false))
+	human.AddCard(NewCard(CardDesignDiamond, 10, false))
+	human.AddCard(NewCard(CardDesignClover, 11, false))
+
+	cpu1.AddCard(NewCard(CardDesignClover, 3, false))
+	cpu1.AddCard(NewCard(CardDesignDiamond, 4, false))
+	cpu1.AddCard(NewCard(CardDesignHeart, 9, false))
+	cpu1.AddCard(NewCard(CardDesignSpade, 12, false))
+
+	o.communityCards = []*Card{
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignHeart, 6, false),
+		NewCard(CardDesignDiamond, 7, false),
+	}
+
+	// Preset specific low states to verify pure function execution without mutating players
+	dummyLow := []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+		NewCard(CardDesignSpade, 5, false),
+	}
+	human.lowQualifies = true
+	human.lowBestHand = dummyLow
+	cpu1.lowQualifies = false
+	cpu1.lowBestHand = nil
+
+	eq := o.GetEquity()
+	assert.NotNil(t, eq)
+	assert.Greater(t, eq.Equity, 0.0)
+	assert.Greater(t, eq.LowProbability, 0.0)
+
+	// Verify that lowQualifies and lowBestHand were NOT mutated by simulation
+	assert.True(t, human.GetLowQualifies())
+	assert.Equal(t, dummyLow, human.GetLowBestHand())
+	assert.False(t, cpu1.GetLowQualifies())
+	assert.Nil(t, cpu1.GetLowBestHand())
+}
+
+func TestOmaha_GetEquity_HiOnly_Unchanged(t *testing.T) {
+	tc := NewTrumpCards(0)
+	human := NewOmahaPlayer(true, HoldemStyleTAG)
+	cpu := NewOmahaPlayer(false, HoldemStyleLAP)
+	players := []*OmahaPlayer{human, cpu}
+	o := NewOmaha(tc, players, DefaultOmahaConfig()) // Standard Omaha High
+	o.SetPhase(OmahaPhaseFlop)
+
+	human.AddCard(NewCard(CardDesignSpade, 1, false))
+	human.AddCard(NewCard(CardDesignHeart, 1, false))
+	human.AddCard(NewCard(CardDesignSpade, 13, false))
+	human.AddCard(NewCard(CardDesignHeart, 13, false))
+
+	o.communityCards = []*Card{
+		NewCard(CardDesignDiamond, 1, false),
+		NewCard(CardDesignClover, 2, false),
+		NewCard(CardDesignSpade, 7, false),
+	}
+
+	eq := o.GetEquity()
+	assert.NotNil(t, eq)
+	assert.Greater(t, eq.Equity, 0.0)
+	// LowProbability must be 0 for Hi-only games
+	assert.Equal(t, 0.0, eq.LowProbability)
+}
+
+func TestOmaha_GetEquity_HiLo_FoldedPlayersExcluded(t *testing.T) {
+	tc := NewTrumpCards(0)
+	human := NewOmahaPlayer(true, HoldemStyleTAG)
+	cpu1 := NewOmahaPlayer(false, HoldemStyleLAP)
+	cpu2 := NewOmahaPlayer(false, HoldemStyleTAP)
+	players := []*OmahaPlayer{human, cpu1, cpu2}
+	o := NewOmahaHiLo(tc, players, DefaultOmahaConfig())
+	o.SetPhase(OmahaPhaseFlop)
+
+	human.AddCard(NewCard(CardDesignSpade, 1, false))
+	human.AddCard(NewCard(CardDesignHeart, 2, false))
+	human.AddCard(NewCard(CardDesignDiamond, 10, false))
+	human.AddCard(NewCard(CardDesignClover, 11, false))
+
+	// cpu1 folds, only cpu2 is active
+	cpu1.SetFolded(true)
+
+	o.communityCards = []*Card{
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignHeart, 6, false),
+		NewCard(CardDesignDiamond, 7, false),
+	}
+
+	eq := o.GetEquity()
+	assert.NotNil(t, eq)
+	assert.Greater(t, eq.Equity, 0.0)
+}

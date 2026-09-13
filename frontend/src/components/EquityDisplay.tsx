@@ -6,10 +6,12 @@ import type { HoldemEquity } from '../types/card';
 export interface EquityDisplayProps {
   equity: HoldemEquity;
   potOdds: number;
+  /** Hi-Lo low-side expected share, if this is a split-pot game. */
+  lowProbability?: number;
 }
 
 /** Renders a Hold'em equity display with win probability, pot odds, and hand odds table. */
-export function EquityDisplay({ equity, potOdds }: EquityDisplayProps) {
+export function EquityDisplay({ equity, potOdds, lowProbability }: EquityDisplayProps) {
   const { t } = useTranslation('holdem');
   const [showHandOdds, setShowHandOdds] = useState(false);
 
@@ -35,6 +37,12 @@ export function EquityDisplay({ equity, potOdds }: EquityDisplayProps) {
           {t('learning.potOdds')}: <strong>{potOdds.toFixed(1)}%</strong>
         </div>
       </div>
+
+      {lowProbability != null && (
+        <div className="text-ds-text-primary text-sm mb-2" data-testid="low-probability">
+          {t('learning.lowEquity')}: <strong>{Math.round(lowProbability * 100)}%</strong>
+        </div>
+      )}
 
       <div className="flex items-center gap-2 mb-1">
         <span

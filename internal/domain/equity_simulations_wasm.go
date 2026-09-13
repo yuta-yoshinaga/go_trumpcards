@@ -8,5 +8,6 @@ package domain
 const (
 	holdemEquitySimulations    = 200
 	omahaEquitySimulations     = 200
+	omahaHiLoEquitySimulations = 100
 	shortDeckEquitySimulations = 200
 )

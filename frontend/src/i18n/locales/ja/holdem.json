@@ -60,6 +60,7 @@
     "title": "ラーニングモード",
     "toggle": "ラーニングモード",
     "equity": "エクイティ",
+    "lowEquity": "ローの取り分",
     "potOdds": "ポットオッズ",
     "plusEV": "+EV (期待値プラス)",
     "minusEV": "-EV (期待値マイナス)",

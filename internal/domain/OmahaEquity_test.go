@@ -221,6 +221,154 @@ func TestCalcOmahaEquity_DeterministicWithSeededRng(t *testing.T) {
 	})
 }
 
+func TestCalcOmahaHiLoEquity(t *testing.T) {
+	t.Run("no qualifying low possible produces identical equity to Hi-only and zero LowProbability", func(t *testing.T) {
+		// Quad Aces on a high board: human holds 2 Aces, board has 2 Aces and three cards >= 9.
+		// No low can qualify (only 1 distinct rank <= 8 on board; Omaha low requires 3 distinct ranks <= 8 from board).
+		// Opponents cannot beat or tie Quad Aces.
+		humanCards := []*Card{
+			NewCard(CardDesignSpade, 1, false),
+			NewCard(CardDesignHeart, 1, false),
+			NewCard(CardDesignSpade, 13, false),
+			NewCard(CardDesignHeart, 13, false),
+		}
+		communityCards := []*Card{
+			NewCard(CardDesignDiamond, 1, false),
+			NewCard(CardDesignClover, 1, false),
+			NewCard(CardDesignSpade, 9, false),
+			NewCard(CardDesignDiamond, 10, false),
+			NewCard(CardDesignClover, 11, false),
+		}
+		rng1 := rand.New(rand.NewSource(42))
+		rng2 := rand.New(rand.NewSource(42))
+
+		hiResult := CalcOmahaEquity(humanCards, communityCards, 1, 500, rng1)
+		hiloResult := CalcOmahaHiLoEquity(humanCards, communityCards, 1, 500, rng2)
+
+		assert.Equal(t, 1.0, hiResult.Equity)
+		assert.Equal(t, hiResult.Equity, hiloResult.Equity)
+		assert.Equal(t, 0.0, hiloResult.LowProbability)
+	})
+
+	t.Run("0 opponents returns equity 1.0", func(t *testing.T) {
+		humanCards := []*Card{
+			NewCard(CardDesignSpade, 1, false),
+			NewCard(CardDesignHeart, 2, false),
+			NewCard(CardDesignClover, 3, false),
+			NewCard(CardDesignDiamond, 4, false),
+		}
+		result := CalcOmahaHiLoEquity(humanCards, nil, 0, 500, nil)
+		assert.Equal(t, 1.0, result.Equity)
+		assert.Len(t, result.HandOdds, len(PokerHandNames))
+	})
+
+	t.Run("0 simulations returns zero equity", func(t *testing.T) {
+		humanCards := []*Card{
+			NewCard(CardDesignSpade, 1, false),
+			NewCard(CardDesignHeart, 2, false),
+			NewCard(CardDesignClover, 3, false),
+			NewCard(CardDesignDiamond, 4, false),
+		}
+		result := CalcOmahaHiLoEquity(humanCards, nil, 1, 0, nil)
+		assert.Equal(t, 0.0, result.Equity)
+		assert.Len(t, result.HandOdds, len(PokerHandNames))
+	})
+
+	t.Run("low-only winning hand has positive share (> 0) despite losing high", func(t *testing.T) {
+		// Board: 3c, 4c, 8c, Ks, Qs (three low cards: 3, 4, 8)
+		// Human has: Ah, 2h, 6d, 7d -> nut low (A-2-3-4-8), high is at best King-high
+		// Even if high is lost, human's share of the split pot is > 0
+		humanCards := []*Card{
+			NewCard(CardDesignHeart, 1, false),
+			NewCard(CardDesignHeart, 2, false),
+			NewCard(CardDesignDiamond, 6, false),
+			NewCard(CardDesignDiamond, 7, false),
+		}
+		communityCards := []*Card{
+			NewCard(CardDesignClover, 3, false),
+			NewCard(CardDesignClover, 4, false),
+			NewCard(CardDesignClover, 8, false),
+			NewCard(CardDesignSpade, 13, false),
+			NewCard(CardDesignSpade, 12, false),
+		}
+		rng := rand.New(rand.NewSource(42))
+		result := CalcOmahaHiLoEquity(humanCards, communityCards, 1, 2000, rng)
+
+		// Low half share: nut low wins almost every time (or ties with another A-2)
+		assert.Greater(t, result.LowProbability, 0.60)
+		assert.LessOrEqual(t, result.LowProbability, 1.0)
+
+		// Pot share: since 0.5 * lowShare > 0, overall equity is strictly positive
+		assert.Greater(t, result.Equity, 0.30)
+		assert.Less(t, result.Equity, 0.65)
+	})
+
+	t.Run("scoop hand approaches 1.0 equity", func(t *testing.T) {
+		// Community: 3d, 4d, 5d, Kc, Qc
+		// Human: Ad, 2d, As, 2s -> Straight Flush (A-2-3-4-5 diamonds) + Wheel nut low (A-2-3-4-5)
+		// Scoops both high and low pots
+		humanCards := []*Card{
+			NewCard(CardDesignDiamond, 1, false),
+			NewCard(CardDesignDiamond, 2, false),
+			NewCard(CardDesignSpade, 1, false),
+			NewCard(CardDesignSpade, 2, false),
+		}
+		communityCards := []*Card{
+			NewCard(CardDesignDiamond, 3, false),
+			NewCard(CardDesignDiamond, 4, false),
+			NewCard(CardDesignDiamond, 5, false),
+			NewCard(CardDesignClover, 13, false),
+			NewCard(CardDesignClover, 12, false),
+		}
+		rng := rand.New(rand.NewSource(42))
+		result := CalcOmahaHiLoEquity(humanCards, communityCards, 1, 2000, rng)
+
+		assert.Greater(t, result.Equity, 0.95)
+		assert.LessOrEqual(t, result.Equity, 1.0)
+		assert.Greater(t, result.LowProbability, 0.95)
+		assert.LessOrEqual(t, result.LowProbability, 1.0)
+	})
+
+	t.Run("too many opponents for available deck returns zero", func(t *testing.T) {
+		humanCards := []*Card{
+			NewCard(CardDesignSpade, 1, false),
+			NewCard(CardDesignHeart, 2, false),
+			NewCard(CardDesignClover, 3, false),
+			NewCard(CardDesignDiamond, 4, false),
+		}
+		communityCards := []*Card{
+			NewCard(CardDesignClover, 5, false),
+			NewCard(CardDesignDiamond, 7, false),
+			NewCard(CardDesignSpade, 9, false),
+		}
+		rng := rand.New(rand.NewSource(42))
+		result := CalcOmahaHiLoEquity(humanCards, communityCards, 12, 100, rng)
+		assert.Equal(t, 0.0, result.Equity)
+	})
+
+	t.Run("HandOdds probabilities sum to approximately 1.0", func(t *testing.T) {
+		humanCards := []*Card{
+			NewCard(CardDesignSpade, 1, false),
+			NewCard(CardDesignHeart, 2, false),
+			NewCard(CardDesignClover, 3, false),
+			NewCard(CardDesignDiamond, 4, false),
+		}
+		communityCards := []*Card{
+			NewCard(CardDesignClover, 5, false),
+			NewCard(CardDesignDiamond, 7, false),
+			NewCard(CardDesignSpade, 9, false),
+		}
+		rng := rand.New(rand.NewSource(42))
+		result := CalcOmahaHiLoEquity(humanCards, communityCards, 1, 1000, rng)
+
+		sum := 0.0
+		for _, h := range result.HandOdds {
+			sum += h.Probability
+		}
+		assert.InDelta(t, 1.0, sum, 0.01)
+	})
+}
+
 func BenchmarkCalcOmahaEquity(b *testing.B) {
 	humanCards := []*Card{
 		NewCard(CardDesignSpade, 1, false),

@@ -1198,7 +1198,12 @@ func (o *Omaha) GetEquity() *HoldemEquityResult {
 			activePlayers++
 		}
 	}
-	result := calcOmahaEquityWithHoleCount(humanCards, o.communityCards, activePlayers, omahaEquitySimulations, nil, o.holeCardCount())
+	var result HoldemEquityResult
+	if o.GetIsHiLo() {
+		result = calcOmahaHiLoEquityWithHoleCount(humanCards, o.communityCards, activePlayers, omahaHiLoEquitySimulations, nil, o.holeCardCount())
+	} else {
+		result = calcOmahaEquityWithHoleCount(humanCards, o.communityCards, activePlayers, omahaEquitySimulations, nil, o.holeCardCount())
+	}
 	return &result
 }
 
