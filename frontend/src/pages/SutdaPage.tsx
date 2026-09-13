@@ -31,7 +31,12 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SutdaResponse } from '../types/card';
 import { SutdaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { parseSutdaCommand, SUTDA_HELP, sutdaLocalCommand } from '../utils/cli/commands/sutdaCommands';
+import {
+  parseSutdaCommand,
+  SUTDA_HAND_RANKING_KEYS,
+  SUTDA_HELP,
+  sutdaLocalCommand,
+} from '../utils/cli/commands/sutdaCommands';
 import { formatSutdaState } from '../utils/cli/formatters/sutdaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
@@ -209,11 +214,9 @@ function SutdaPageContent() {
             <div className="glass-panel rounded-lg p-3 mt-1 text-xs text-ds-text-primary">
               <p className="mb-2 text-ds-text-muted">{t('handRanking.description')}</p>
               <ol className="grid grid-cols-2 gap-x-4 gap-y-1 list-decimal list-inside">
-                {Object.keys(t('handName', { returnObjects: true }) as Record<string, string>)
-                  .filter((key) => key !== 'none')
-                  .map((key) => (
-                    <li key={key}>{t(`handName.${key}`)}</li>
-                  ))}
+                {SUTDA_HAND_RANKING_KEYS.map((key) => (
+                  <li key={key}>{t(`handName.${key}`)}</li>
+                ))}
               </ol>
             </div>
           </details>

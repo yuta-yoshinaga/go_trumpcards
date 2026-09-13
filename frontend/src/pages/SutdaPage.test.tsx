@@ -45,8 +45,13 @@ describe('SutdaPage', () => {
     renderWithProviders(<SutdaPage />);
     const ranking = await screen.findByTestId('sutda-hand-ranking');
     expect(ranking).toHaveTextContent('役の強弱順');
-    expect(ranking).toHaveTextContent('38光ッタン');
-    expect(ranking).toHaveTextContent('マントン（0ット）');
+    const rankingText = ranking.textContent ?? '';
+    const handPositions = ['38光ッタン', 'アリ（1+2）', 'マントン（0ット）'].map((handName) =>
+      rankingText.indexOf(handName),
+    );
+    expect(handPositions.every((position) => position >= 0)).toBe(true);
+    expect(handPositions[0]).toBeLessThan(handPositions[1]);
+    expect(handPositions[1]).toBeLessThan(handPositions[2]);
   });
 
   it('keeps opponents face down until they are revealed', async () => {
