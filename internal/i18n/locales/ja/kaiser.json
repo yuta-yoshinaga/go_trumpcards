@@ -12,6 +12,8 @@
   "spadeThreeTaken": "♠3 (−3点): {{name}}",
   "notTakenYet": "未取得",
   "contractLine": "契約: {{value}} {{kind}} 切札: {{trump}}",
+  "bidHistoryEntry": "{{name}}: {{value}} {{contract}}",
+  "bidHistoryPass": "{{name}}: パス",
   "withTrump": "切札あり",
   "noTrump": "ノートランプ",
   "lowNoTrump": "ロー・ノートランプ",

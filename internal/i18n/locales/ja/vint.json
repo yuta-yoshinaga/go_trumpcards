@@ -8,6 +8,8 @@
   "noDummyNote": "【ダミーはありません。】味方の手札も最後まで伏せられます。",
   "scoreLine": "チーム0: 線下 {{b0}} 線上 {{a0}} ゲーム {{g0}} / チーム1: 線下 {{b1}} 線上 {{a1}} ゲーム {{g1}}",
   "contractLine": "契約: {{level}} {{denom}}  トリック単価 {{value}}",
+  "bidHistoryEntry": "{{name}}: {{level}} {{denom}}",
+  "bidHistoryPass": "{{name}}: パス",
   "noTrump": "NT",
   "hiddenHand": "非公開 {{count}}枚",
   "dealerTag": "[親]",

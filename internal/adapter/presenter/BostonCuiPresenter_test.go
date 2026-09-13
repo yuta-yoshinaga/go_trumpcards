@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -41,6 +42,7 @@ func setupBostonCuiMock(o bostonMockOpts) *interfaces.MockBostonGame {
 	m.On("GetGameEndFlag").Return(o.gameEnd)
 	m.On("GetWinnerIdx").Return(o.winner)
 	m.On("GetHighBid").Return(o.highBid)
+	m.On("GetBids").Return([]*domain.BostonBidRecord{}).Maybe()
 	m.On("GetPlayers").Return(players)
 	m.On("IsHumanTurn").Return(true)
 	m.On("BostonValidPlays", 0).Return([]int{0})
@@ -245,4 +247,52 @@ func TestBostonCuiPresenter_LadderShowsThePayouts(t *testing.T) {
 func bostonLadderPayoutForTest(level int) string {
 	return i18n.Tf("boston.ladderPayout",
 		"n", strconv.Itoa(domain.BostonBidPayout(domain.BostonBidLevel(level))))
+}
+
+// #7388: 競りの履歴は公開情報で、どの段まで競られ誰が降りたかが次の判断材料。
+// CUI でも 1 行ずつ表示し、パスは宣言と区別して出す。
+func TestBostonCuiPresenter_BiddingHistory(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	defer i18n.SetLang("ja")
+
+	p := new(presenter.BostonCuiPresenter)
+
+	t.Run("lists all bids and passes in Japanese and English", func(t *testing.T) {
+		m := setupBostonCuiMock(defaultBostonOpts())
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBids")
+		m.On("GetBids").Return([]*domain.BostonBidRecord{
+			{Player: 0, Level: domain.BostonBidFive, Suit: domain.CardDesignSpade},
+			{Player: 1, Level: domain.BostonBidPass, Suit: 0},
+			{Player: 2, Level: domain.BostonBidLittleMisere, Suit: 0},
+		})
+
+		i18n.SetLang("ja")
+		outJa := p.Output(m, nil)
+		assert.Contains(t, outJa, "あなた: 5トリック ♠")
+		assert.Contains(t, outJa, "CPU 1: パス")
+		assert.Contains(t, outJa, "CPU 2: リトル・ミゼール")
+		assert.NotContains(t, outJa, "CPU 1: 0")
+		assert.NotContains(t, outJa, "{{")
+
+		i18n.SetLang("en")
+		outEn := p.Output(m, nil)
+		assert.Contains(t, outEn, "You: 5 tricks ♠")
+		assert.Contains(t, outEn, "CPU 1: pass")
+		assert.Contains(t, outEn, "CPU 2: Little Misere")
+		assert.NotContains(t, outEn, "CPU 1: 0")
+		assert.NotContains(t, outEn, "{{")
+	})
+
+	t.Run("shows no history before the first bid", func(t *testing.T) {
+		o := defaultBostonOpts()
+		o.highBid = nil
+		m := setupBostonCuiMock(o)
+		i18n.SetLang("ja")
+		out := p.Output(m, nil)
+		assert.NotContains(t, out, "パス")
+		assert.NotContains(t, out, "5トリック")
+		assert.NotContains(t, out, "リトル・ミゼール")
+	})
 }

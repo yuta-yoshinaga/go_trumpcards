@@ -74,5 +74,8 @@
     "bostonForced": "出せる札はこれ 1 枚だけです（フォローは強制）",
     "bostonPushContract": "あなたは宣言側です。契約を達成する側で考えましょう",
     "bostonBreakContract": "あなたは守る側です。契約を崩す側で考えましょう"
-  }
+  },
+  "bidHistoryTitle": "宣言の経過",
+  "bidHistoryEntry": "{{name}}: {{bid}}",
+  "bidHistoryPass": "{{name}}: パス"
 }

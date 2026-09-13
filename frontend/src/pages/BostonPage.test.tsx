@@ -365,4 +365,37 @@ describe('BostonPage', () => {
     renderWithProviders(<BostonPage />);
     await waitFor(() => expect(screen.queryByTestId('boston-bid-notice')).not.toBeInTheDocument());
   });
+
+  // #7388: 相方がどの段で宣言し、誰がどこで降りたかは公開情報で、続けるか降りるかの
+  // 判断そのもの。
+  it('lists who bid what, and who passed', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        bids: [
+          { player: 0, level: 1, name: 'five', suit: 1 },
+          { player: 1, level: 0, name: 'pass', suit: 0 },
+          { player: 2, level: 3, name: 'littleMisere', suit: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<BostonPage />);
+
+    const history = await screen.findByTestId('boston-bid-history');
+    expect(history).toHaveTextContent('あなた');
+    expect(history).toHaveTextContent('5トリック');
+    // パスは他の宣言と区別できる形で出る
+    expect(screen.getByTestId('boston-bid-1')).toHaveTextContent('パス');
+    expect(screen.getByTestId('boston-bid-1')).not.toHaveTextContent('0');
+    // 段の名前が出る (2 件目はリトル・ミゼール)
+    expect(screen.getByTestId('boston-bid-2')).toHaveTextContent('リトル・ミゼール');
+    expect(history.textContent).not.toContain('{{');
+  });
+
+  // 負のコントロール: まだ誰も宣言していない局面では表ごと出さない。
+  it('shows no history before the first bid', async () => {
+    mockExec.mockResolvedValue(makeState({ bids: [] }));
+    renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('boston-bid-history')).not.toBeInTheDocument();
+  });
 });
