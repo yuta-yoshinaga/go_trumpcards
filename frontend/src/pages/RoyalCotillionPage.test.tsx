@@ -461,3 +461,97 @@ describe('RoyalCotillionPage slot numbers in the accessible names', () => {
     expect(screen.getAllByText(/空のリザーブ \d+ \(二度と埋まりません\)/)).toHaveLength(4);
   });
 });
+
+describe('RoyalCotillionPage foundation next rank badges', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('renders next rank badges on foundations with 1 or more cards and shows different values for Ace vs Two starts', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [
+        [card('SPADE', 1)], // fIdx 0 (Ace-start, 1 card placed): next is 3
+        [card('CLOVER', 1), card('CLOVER', 3)], // fIdx 1 (Ace-start, 2 cards placed): next is 5
+        [], // fIdx 2 (Ace-start, empty): next is A
+        [],
+        [card('SPADE', 2)], // fIdx 4 (Two-start, 1 card placed): next is 4
+        [card('CLOVER', 2), card('CLOVER', 4)], // fIdx 5 (Two-start, 2 cards placed): next is 6
+        [], // fIdx 6 (Two-start, empty): next is 2
+        [],
+      ],
+    });
+    renderWithProviders(<RoyalCotillionPage />);
+
+    // Foundation with 1 card placed: Ace-start needs 3, Two-start needs 4
+    expect(await screen.findByTestId('royalcotillion-foundation-next-0')).toHaveTextContent('次:3');
+    expect(screen.getByTestId('royalcotillion-foundation-next-4')).toHaveTextContent('次:4');
+
+    // Foundation with 2 cards placed: Ace-start needs 5, Two-start needs 6
+    expect(screen.getByTestId('royalcotillion-foundation-next-1')).toHaveTextContent('次:5');
+    expect(screen.getByTestId('royalcotillion-foundation-next-5')).toHaveTextContent('次:6');
+
+    // Empty foundations
+    expect(screen.getByTestId('royalcotillion-foundation-next-2')).toHaveTextContent('次:A');
+    expect(screen.getByTestId('royalcotillion-foundation-next-6')).toHaveTextContent('次:2');
+  });
+
+  it('wraps around correctly at boundaries: K is followed by 2, Q is followed by A', async () => {
+    // Ace-start pile up to K(13): 7 cards
+    const aceUpToK: Card[] = [
+      card('SPADE', 1),
+      card('SPADE', 3),
+      card('SPADE', 5),
+      card('SPADE', 7),
+      card('SPADE', 9),
+      card('SPADE', 11),
+      card('SPADE', 13),
+    ];
+    // Two-start pile up to Q(12): 6 cards
+    const twoUpToQ: Card[] = [
+      card('CLOVER', 2),
+      card('CLOVER', 4),
+      card('CLOVER', 6),
+      card('CLOVER', 8),
+      card('CLOVER', 10),
+      card('CLOVER', 12),
+    ];
+    // Full 13-card pile
+    const fullAcePile: Card[] = [
+      ...aceUpToK,
+      card('SPADE', 2),
+      card('SPADE', 4),
+      card('SPADE', 6),
+      card('SPADE', 8),
+      card('SPADE', 10),
+      card('SPADE', 12),
+    ];
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [
+        aceUpToK, // fIdx 0 (Ace-start, top is K): next must be 2
+        fullAcePile, // fIdx 1 (complete): no badge
+        [],
+        [],
+        twoUpToQ, // fIdx 4 (Two-start, top is Q): next must be A
+        [],
+        [],
+        [],
+      ],
+    });
+    renderWithProviders(<RoyalCotillionPage />);
+
+    // Boundary wrap-around assertions
+    expect(await screen.findByTestId('royalcotillion-foundation-next-0')).toHaveTextContent('次:2');
+    expect(screen.getByTestId('royalcotillion-foundation-next-4')).toHaveTextContent('次:A');
+
+    // Negative controls: ensure it is not plain +2 (15 or 14)
+    expect(screen.getByTestId('royalcotillion-foundation-next-0')).not.toHaveTextContent('次:15');
+    expect(screen.getByTestId('royalcotillion-foundation-next-4')).not.toHaveTextContent('次:14');
+
+    // Complete foundation has no badge
+    expect(screen.queryByTestId('royalcotillion-foundation-next-1')).not.toBeInTheDocument();
+  });
+});

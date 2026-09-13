@@ -31,9 +31,11 @@ import type { RoyalCotillionMoveZone, RoyalCotillionResponse } from '../types/ca
 import { RoyalCotillionPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 import { parseRoyalCotillionCommand, ROYALCOTILLION_HELP } from '../utils/cli/commands/royalcotillionCommands';
 import { formatRoyalCotillionState } from '../utils/cli/formatters/royalcotillionFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { royalCotillionNextRank } from '../utils/royalCotillionNthValue';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
@@ -334,6 +336,12 @@ function RoyalCotillionPageContent() {
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="cg-foundation">
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: RoyalCotillionMoveZone = { zone: 'foundation', col: idx };
+                  // `foundationOdd` は presenter が必ず 8 本ぶん埋める
+                  // (RoyalCotillionWebPresenter.go:40-42)。既定を `idx < 4` と書くと
+                  // `royalCotillionIsOdd` の規則がここに 3 つ目の写しとして増える。
+                  const isOdd = state.foundationOdd?.[idx] ?? false;
+                  const nextRank = royalCotillionNextRank(pile.length, isOdd);
+                  const nextRankLabel = nextRank !== null ? valueName(nextRank) : null;
                   return (
                     <div key={`f-${idx.toString()}`} className="text-center">
                       <div className="text-game-text-muted text-xs mb-1">
@@ -341,6 +349,7 @@ function RoyalCotillionPageContent() {
                         {FOUNDATION_SUITS[idx]}
                       </div>
                       <DropZone
+                        className="relative inline-block"
                         isDropTarget={dnd.isDropTarget(foundationZone)}
                         onDragOver={dnd.handleDragOver(foundationZone)}
                         onDrop={dnd.handleDrop(foundationZone)}
@@ -376,6 +385,15 @@ function RoyalCotillionPageContent() {
                           >
                             A
                           </button>
+                        )}
+                        {nextRankLabel && (
+                          <span
+                            data-testid={`royalcotillion-foundation-next-${idx.toString()}`}
+                            aria-hidden="true"
+                            className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-ds-text-on-accent text-[10px] font-bold leading-none ring-1 ring-white/30 pointer-events-none"
+                          >
+                            {t('nextRankBadge', { rank: nextRankLabel })}
+                          </span>
                         )}
                       </DropZone>
                     </div>
