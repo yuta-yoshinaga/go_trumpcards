@@ -11,6 +11,7 @@
   "rankName.0": "Buta, weakest",
   "rankName.9": "Kabu, strongest",
   "rankNameSuffix": " ({{name}})",
+  "rankRule": "The score is the remainder after adding the card points (10 counts as 0) and dividing the total by 10.",
   "dealerPolicyDrew": "Banker policy: drew a third card because the rank was at or below {{threshold}}",
   "dealerPolicyStood": "Banker policy: stood on {{rank}}, above the {{threshold}} draw threshold",
   "playerHeader": "Player (You)",

@@ -8,6 +8,8 @@
   "stock": "Stock",
   "tableau": "Tableau",
   "tableauColAria": "Build-down column {{num}} ({{count}} cards)",
+  "canPlaceHere": "A card can be placed here",
+  "cannotPlaceHere": "A card cannot be placed here",
   "tableauRule": "Tableau: {{count}} build-down columns (any suit)",
   "fan": "Fan",
   "foundation": "Foundation",

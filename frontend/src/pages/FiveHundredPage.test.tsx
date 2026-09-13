@@ -114,6 +114,25 @@ describe('FiveHundredPage', () => {
     expect(await screen.findByTestId('pass-button')).toBeEnabled();
   });
 
+  it('describes the highest bid, bidder, and each CPU bid', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        highestBid: { kind: 1, tricks: 6, suit: 1, value: 40 },
+        highestBidder: 1,
+        players: [
+          player(0, true, [card('SPADE', 5)]),
+          player(1, false, [], { bid: { kind: 1, tricks: 6, suit: 1, value: 40 } }),
+          player(2, false, [], { bid: { kind: 3, tricks: 0, suit: -1, value: 250 } }),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+    await waitFor(() => expect(screen.getByText('最高ビッド: 6♠ (40点)（CPU 1）')).toBeInTheDocument());
+    expect(screen.getByText('直近のビッド: 6♠ (40点)')).toBeInTheDocument();
+    expect(screen.getByText('直近のビッド: ミゼール (250点)')).toBeInTheDocument();
+  });
+
   it('bids a suit when a suit button is clicked', async () => {
     renderWithProviders(<FiveHundredPage />);
     const spade = await screen.findByTestId('fh-bid-suit-1');
