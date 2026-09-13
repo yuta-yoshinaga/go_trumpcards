@@ -28,6 +28,7 @@ describe('parseSakuraCommand', () => {
     expect(parseSakuraCommand('setseats x')).toEqual({ error: 'Usage: ss <2-4>' });
     expect(parseSakuraCommand('sr')).toEqual({ error: 'Usage: sr <1-12>' });
     expect(parseSakuraCommand('setrounds x')).toEqual({ error: 'Usage: sr <1-12>' });
+    expect(parseSakuraCommand('nextroun')).toEqual({ error: 'Unknown command: nextroun. Did you mean: nextround?' });
     expect(parseSakuraCommand('wat')).toEqual({ error: 'Unknown command: wat' });
   });
   it('exposes help text', () => expect(SAKURA_HELP.length).toBeGreaterThan(0));

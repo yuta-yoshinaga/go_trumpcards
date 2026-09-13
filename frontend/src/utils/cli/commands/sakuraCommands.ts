@@ -68,7 +68,9 @@ export function parseSakuraCommand(input: string): CliParseResult<SakuraArgs> {
       return { args: ['reset'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      return { error: suggestion ? `Unknown command: ${cmd}. Did you mean ${suggestion}?` : `Unknown command: ${cmd}` };
+      return {
+        error: suggestion ? `Unknown command: ${cmd}. Did you mean: ${suggestion}?` : `Unknown command: ${cmd}`,
+      };
     }
   }
 }
