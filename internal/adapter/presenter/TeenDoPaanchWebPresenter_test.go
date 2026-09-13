@@ -34,6 +34,8 @@ func TestTeenDoPaanchWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(1), m["roundNumber"])
 	assert.Equal(t, float64(0), m["trumpSuit"], "まだ宣言されていない")
 	assert.Equal(t, float64(-1), m["winnerIdx"])
+	assert.Equal(t, float64(-1), m["lastTrickWinner"])
+	assert.Empty(t, m["lastTrick"])
 	assert.Equal(t, float64(0), m["lastExchange"])
 
 	players := m["players"].([]any)

@@ -30,6 +30,7 @@ const state = (over: Partial<TeenDoPaanchResponse> = {}): TeenDoPaanchResponse =
     validPlays: [0],
     gameEndFlag: false,
     winnerIdx: -1,
+    lastTrickWinner: -1,
     config: { rounds: 3 },
     message: '',
     ...over,

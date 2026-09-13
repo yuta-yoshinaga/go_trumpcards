@@ -9,6 +9,7 @@
   "trumpLine": "切り札: {{suit}}（{{name}} が宣言）",
   "trumpUndecided": "切り札: 未宣言（ノルマ5の席が最初の{{seen}}枚だけを見て決めます）",
   "exchangeLine": "前ラウンドの過不足で {{n}} 枚を移しました。",
+  "trickWinner": "直前のトリック: {{name}} が獲得",
   "playerLine": "{{name}}{{role}}: ノルマ{{target}} 獲得{{took}} 達成{{met}}回 手札{{cards}}枚",
   "roleFive": "[切り札決定/ノルマ5]",
   "promptTrump": "切り札を宣言してください（手札は{{seen}}枚しか見えていません）。",

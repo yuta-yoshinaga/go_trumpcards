@@ -61,6 +61,8 @@ type TeenDoPaanchWebOutput struct {
 	LastExchangePairs []domain.TeenDoPaanchExchange `json:"lastExchangePairs"`
 	CurrentPlayerIdx  int                           `json:"currentPlayerIdx"`
 	LeadPlayerIdx     int                           `json:"leadPlayerIdx"`
+	LastTrickWinner   int                           `json:"lastTrickWinner"`
+	LastTrick         []*WebOutputTrickCard         `json:"lastTrick"`
 	CurrentTrick      []*WebOutputTrickCard         `json:"currentTrick"`
 	ValidPlays        []int                         `json:"validPlays"`
 	GameEndFlag       bool                          `json:"gameEndFlag"`
@@ -99,11 +101,13 @@ var NewTeenDoPaanchWebController, NewTeenDoPaanchWebControllerWithProvider = web
 
 func newTeenDoPaanchDefaultOutput(msg string) *TeenDoPaanchWebOutput {
 	return &TeenDoPaanchWebOutput{
-		Players:       make([]*TeenDoPaanchWebOutputPlayer, 0),
-		CurrentTrick:  make([]*WebOutputTrickCard, 0),
-		ValidPlays:    make([]int, 0),
-		WinnerIdx:     -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:         make([]*TeenDoPaanchWebOutputPlayer, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		ValidPlays:      make([]int, 0),
+		LastTrickWinner: -1,
+		WinnerIdx:       -1,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

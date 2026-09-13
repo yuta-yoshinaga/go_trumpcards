@@ -51,8 +51,12 @@ type TeenDoPaanchGame interface {
 	GetCurrentPlayerIdx() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
+	// GetLastTrickWinner 直前トリックの勝者を取得する (-1 = 未確定)
+	GetLastTrickWinner() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetLastTrick 直前のトリックを取得する
+	GetLastTrick() []*domain.TrickCard
 	// GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 	GetValidPlayIndices(playerIdx int) []int
 	// GetPlayerCnt プレイヤー数を取得する

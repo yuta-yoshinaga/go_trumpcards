@@ -232,6 +232,8 @@ function TeenDoPaanchPageContent() {
                 players={state.players}
                 cardWidth={cardWidth}
                 label={t('currentTrick')}
+                lastTrick={state.lastTrick}
+                lastTrickWinner={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
               />
             </div>
 

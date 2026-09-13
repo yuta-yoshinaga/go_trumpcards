@@ -18,11 +18,13 @@ func intPtrTdp(v int) *int { return &v }
 
 func mustTeenDoPaanchOutputJSON(msg string) string {
 	out := &controller.TeenDoPaanchWebOutput{
-		Players:       []*controller.TeenDoPaanchWebOutputPlayer{},
-		CurrentTrick:  []*controller.WebOutputTrickCard{},
-		ValidPlays:    []int{},
-		WinnerIdx:     -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:         []*controller.TeenDoPaanchWebOutputPlayer{},
+		LastTrick:       []*controller.WebOutputTrickCard{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
+		ValidPlays:      []int{},
+		LastTrickWinner: -1,
+		WinnerIdx:       -1,
+		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
