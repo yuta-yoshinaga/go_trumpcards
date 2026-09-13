@@ -129,9 +129,16 @@ type ActionLogEntry struct {
   ステップ 1 でビルドを壊してから移すため、**移行期間中は develop をマージできない。**
   ゲーム単位ではなく、`appendLog` のシグネチャ変更とその全呼び出しの書き換えを
   **1 つの PR に閉じる**必要がある。これは本 repo で最大級の機械的変更になる。
-- ロケールファイルに `log.*` が 2,423 件分 (重複を除いても数百件) 増える。
-  TinyGo Worker のバイナリに載る i18n JSON が太るので、**8 worker の gzip 余裕を
-  移行前に実測する**こと (`.claude/skills/rebucket-game/scripts/measure.sh`)。
+- ロケールファイルに `log.*` が 2,423 件分 (重複を除いても数百件) 増える。ただし
+  `i18n_stub.go` により Worker には i18n JSON が載らず、サイズへの影響は server と CLI の
+  バイナリだけに限られる。Worker のサイズに効くのは、ドメインの Go 文字列リテラルである。
+  `appendLog` に渡している人間向けの文面 (例 `"ディール%d開始 (Elder=%d)"`、
+  `fmt.Sprintf("raise to %d", amount)`) は短いキー (例 `"piquet.log.deal"`) に置き換わるため、
+  文字列テーブルはむしろ縮む向きであり、`fmt.Sprintf` の呼び出しが減る分もある。
+  したがって、**移行前に 8 worker の gzip 余裕を実測する**という条件は置かず、
+  **移行後に実測して確認する**。2026-09-14 の実測値は casino 25.8KB (97.5%) /
+  extra 77.4KB / extra2 85.7KB / extra5 86.2KB / solo 90.8KB / classic 98.3KB /
+  extra3 99.6KB / extra4 99.8KB であり、**移行後は逼迫している casino を最初に確認する**。
 - 旧形式の後方互換分岐を 1 リリース抱える。
 
 **やらないこと**
