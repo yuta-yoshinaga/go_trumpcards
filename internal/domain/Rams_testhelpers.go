@@ -7,7 +7,9 @@ package domain
 // and are not part of the production game logic.
 
 // SetPhaseForTest フェーズを設定する（テスト用）
-func (r *Rams) SetPhaseForTest(phase RamsPhase) { r.phase = phase }
+func (r *Rams) SetPhaseForTest(phase RamsPhase) {
+	r.phase = phase
+}
 
 // SetTrickNumberForTest 現在のトリック番号を設定する（テスト用）
 func (r *Rams) SetTrickNumberForTest(n int) { r.trickNumber = n }

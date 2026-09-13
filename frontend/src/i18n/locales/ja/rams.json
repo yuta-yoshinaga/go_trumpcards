@@ -14,7 +14,8 @@
     "risk": "毎ラウンド全員がアンティ {{ante}} を払います。さらに参加して1トリックも取れないと、ポットへ追加で {{penalty}} 支払います。",
     "you": "あなた",
     "cpu": "CPU{{idx}}",
-    "seat": "{{chips}}チップ / 獲得{{tricks}}"
+    "seat": "{{chips}}チップ / 獲得{{tricks}}",
+    "roundDelta": "（このラウンド {{delta}}）"
   },
   "status": {
     "in": "参加",
