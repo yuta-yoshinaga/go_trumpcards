@@ -294,6 +294,14 @@ describe('NarcoticPage', () => {
     expect(screen.queryByText(/空き列/)).not.toBeInTheDocument();
   });
 
+  it('highlights the remove button when hint is remove with col -1', async () => {
+    renderWithProviders(<NarcoticPage />);
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
+    mockExec.mockResolvedValue({ ...playingState, columns: matchedColumns(), hint: { type: 'remove', col: -1 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByTestId('narcotic-remove-all').className).toContain('ring-ds-info'));
+  });
+
   it('renders a draw hint via HintTooltip without a column', async () => {
     renderWithProviders(<NarcoticPage />);
     await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());

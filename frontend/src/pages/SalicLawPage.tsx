@@ -26,6 +26,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSalicLawGame } from '../hooks/useSalicLawGame';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { HINT_FROM_RING, HINT_TO_RING } from '../styles/cardStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SalicLawMoveZone, SalicLawResponse } from '../types/card';
 import { SalicLawPhase } from '../types/phases';
@@ -177,6 +178,10 @@ function SalicLawPageContent() {
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
 
+  const isHintFrom = (zone: string, idx?: number) =>
+    hint !== null && hint.fromZone === zone && (idx === undefined || hint.fromIdx === idx);
+  const isHintTo = (zone: string, idx: number) => hint !== null && hint.toZone === zone && hint.toIdx === idx;
+
   const renderPile = (pileIdx: number) => {
     const cards = state.tableau[pileIdx] ?? [];
     const pileZone: SalicLawMoveZone = { zone: 'tableau', col: pileIdx };
@@ -184,7 +189,10 @@ function SalicLawPageContent() {
     // (長さ 0) とは別物なので、見た目でも操作でも区別する。
     const isBareKing = cards.length === 1;
     return (
-      <div key={`pile-${pileIdx.toString()}`} className="flex-1 min-w-0">
+      <div
+        key={`pile-${pileIdx.toString()}`}
+        className={`flex-1 min-w-0 rounded ${isHintTo('tableau', pileIdx) ? HINT_TO_RING : ''}`}
+      >
         <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
           #{pileIdx}
         </div>
@@ -249,7 +257,7 @@ function SalicLawPageContent() {
                       draggable={isTop && isPlaying && !loading}
                       onDragStart={dnd.handleDragStart(pileZone)}
                       onDragEnd={dnd.handleDragEnd}
-                      className={`p-0 border-0 bg-transparent w-full rounded cursor-pointer ${focusRingWhite} ${isTop && isSourceSelected('tableau', pileIdx) ? 'ring-2 ring-ds-warning' : ''}`}
+                      className={`p-0 border-0 bg-transparent w-full rounded cursor-pointer ${focusRingWhite} ${isTop && isSourceSelected('tableau', pileIdx) ? 'ring-2 ring-ds-warning' : isTop && isHintFrom('tableau', pileIdx) ? HINT_FROM_RING : ''}`}
                     >
                       <AnimatedCard
                         card={card}
@@ -306,7 +314,10 @@ function SalicLawPageContent() {
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: SalicLawMoveZone = { zone: 'foundation', col: idx };
                   return (
-                    <div key={`f-${idx.toString()}`} className="text-center">
+                    <div
+                      key={`f-${idx.toString()}`}
+                      className={`text-center rounded ${isHintTo('foundation', idx) ? HINT_TO_RING : ''}`}
+                    >
                       {/* **番号は飾り。** 組札ボタン自身が foundationAriaLabel /
                           emptyFoundationAriaLabel で番号を含む説明を持っているので、
                           ここを読み上げると「F0」が二重に流れる。列番号 (#{pileIdx})
@@ -369,7 +380,7 @@ function SalicLawPageContent() {
                     }
                     data-testid="sl-deal-button"
                     style={{ width: dims.cw, height: dims.ch }}
-                    className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                    className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${isHintFrom('stock') ? HINT_FROM_RING : ''}`}
                   >
                     {state.stockCount}
                   </button>
