@@ -105,6 +105,12 @@ func (_m *MockCegoGame) GetCurrentTrick() []*domain.TrickCard {
 	return _m.Called().Get(0).([]*domain.TrickCard)
 }
 
+// GetLastTrickWinner モック
+func (_m *MockCegoGame) GetLastTrickWinner() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetLeadPlayerIdx モック
 func (_m *MockCegoGame) GetLeadPlayerIdx() int { return _m.Called().Int(0) }
 

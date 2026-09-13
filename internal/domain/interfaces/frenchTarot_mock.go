@@ -94,6 +94,12 @@ func (_m *MockFrenchTarotGame) GetCurrentTrick() []*domain.TrickCard {
 	return _m.Called().Get(0).([]*domain.TrickCard)
 }
 
+// GetLastTrickWinner モック
+func (_m *MockFrenchTarotGame) GetLastTrickWinner() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetLeadPlayerIdx モック
 func (_m *MockFrenchTarotGame) GetLeadPlayerIdx() int { return _m.Called().Int(0) }
 

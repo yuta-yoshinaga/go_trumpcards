@@ -15,6 +15,7 @@ const mockExec = vi.mocked(mariasApi.exec);
 const playPhaseState = makeMariasState();
 const trickEndState = makeMariasState({
   phase: 1,
+  lastTrickWinner: 1,
   currentTrick: [
     { playerIdx: 0, card: { design: 'HEART', value: 12 } },
     { playerIdx: 1, card: { design: 'CLOVER', value: 13 } },
@@ -153,6 +154,16 @@ describe('MariasPage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<MariasPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('CPU 1 が獲得');
+  });
+
+  it('does not render a winner badge while a trick is in progress', async () => {
+    mockExec.mockResolvedValue(
+      makeMariasState({ phase: 0, lastTrickWinner: 1, currentTrick: trickEndState.currentTrick.slice(0, 1) }),
+    );
+    renderWithProviders(<MariasPage />);
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
   it('renders round end with the next round button and the round result', async () => {

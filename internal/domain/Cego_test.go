@@ -185,6 +185,25 @@ func TestCegoTrickWinnerHighestOfLedSuit(t *testing.T) {
 	assert.Equal(t, 1, g.TrickWinnerPublic())
 }
 
+func TestCegoResolveTrickRecordsWinnerBeforeRoundEnd(t *testing.T) {
+	g := domain.NewDefaultCego()
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.CegoPhaseTrickEnd)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: cegoSuitCard(domain.CardDesignSpade, 3)},
+		{PlayerIdx: 1, Card: cegoSuitCard(domain.CardDesignSpade, 7)},
+		{PlayerIdx: 2, Card: cegoSuitCard(domain.CardDesignSpade, 5)},
+		{PlayerIdx: 3, Card: cegoSuitCard(domain.CardDesignSpade, 4)},
+	})
+	g.ResolveTrick()
+	if g.GetLastTrickWinner() == -1 {
+		t.Fatal("last trick winner should be recorded for every resolved trick")
+	}
+	if g.GetLastTrickWinner() != g.GetLeadPlayerIdx() {
+		t.Fatalf("last trick winner = %d, lead player = %d", g.GetLastTrickWinner(), g.GetLeadPlayerIdx())
+	}
+}
+
 // --- Bidding ---
 
 func TestCegoBiddingFirstBidWins(t *testing.T) {

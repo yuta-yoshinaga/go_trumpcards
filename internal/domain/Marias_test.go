@@ -164,6 +164,24 @@ func TestMarias_ResolveTrickPointsAndLastBonus(t *testing.T) {
 	}
 }
 
+func TestMariasResolveTrickRecordsWinnerBeforeRoundEnd(t *testing.T) {
+	g := newMarGame(false)
+	g.SetPhase(MariasPhaseTrickEnd)
+	g.SetTrickNumber(1)
+	g.SetCurrentTrick([]*TrickCard{
+		{PlayerIdx: 0, Card: marCard(CardDesignClover, 1)},
+		{PlayerIdx: 1, Card: marCard(CardDesignClover, 10)},
+		{PlayerIdx: 2, Card: marCard(CardDesignClover, 13)},
+	})
+	g.ResolveTrick()
+	if g.GetLastTrickWinner() == -1 {
+		t.Fatal("last trick winner should be recorded for every resolved trick")
+	}
+	if g.GetLastTrickWinner() != g.GetLeadPlayerIdx() {
+		t.Fatalf("last trick winner = %d, lead player = %d", g.GetLastTrickWinner(), g.GetLeadPlayerIdx())
+	}
+}
+
 func TestMarias_ScoreRoundSoloistWinAndLoss(t *testing.T) {
 	// Soloist wins: soloist total > defense.
 	g := newMarGame(false)

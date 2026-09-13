@@ -158,6 +158,25 @@ func TestGermanSolo_TrumpOrderIsSpadilleManilleBasta(t *testing.T) {
 		"♠Q は切り札なので平札の A に勝つ")
 }
 
+func TestGermanSoloResolveTrickRecordsWinnerBeforeRoundEnd(t *testing.T) {
+	g := newTestGermanSolo()
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.GermanSoloPhaseTrickEnd)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: germanSoloCard(domain.CardDesignDiamond, 8)},
+		{PlayerIdx: 1, Card: germanSoloCard(domain.CardDesignDiamond, 9)},
+		{PlayerIdx: 2, Card: germanSoloCard(domain.CardDesignDiamond, 10)},
+		{PlayerIdx: 3, Card: germanSoloCard(domain.CardDesignDiamond, 11)},
+	})
+	g.ResolveTrick()
+	if g.GetLastTrickWinner() == -1 {
+		t.Fatal("last trick winner should be recorded for every resolved trick")
+	}
+	if g.GetLastTrickWinner() != g.GetLeadPlayerIdx() {
+		t.Fatalf("last trick winner = %d, lead player = %d", g.GetLastTrickWinner(), g.GetLeadPlayerIdx())
+	}
+}
+
 func TestGermanSolo_PlainSuitRanksAceHighSevenLow(t *testing.T) {
 	trump := domain.CardDesignSpade
 	// 同じ平札スート内では A > K > Q > J > 10 > 9 > 8 > 7。

@@ -33,7 +33,7 @@ import { CEGO_HELP, parseCegoCommand } from '../utils/cli/commands/cegoCommands'
 import { formatCegoState } from '../utils/cli/formatters/cegoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Cego tutorial step definitions. */
@@ -234,6 +234,12 @@ function CegoPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
+                  winnerLabel={
+                    isTrickEnd
+                      ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
+                      : undefined
+                  }
                   dataTutorial="cego-trick-display"
                 />
               </div>

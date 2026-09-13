@@ -105,6 +105,12 @@ func (_m *MockMariasGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+// GetLastTrickWinner モック
+func (_m *MockMariasGame) GetLastTrickWinner() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetLeadPlayerIdx モック
 func (_m *MockMariasGame) GetLeadPlayerIdx() int {
 	ret := _m.Called()

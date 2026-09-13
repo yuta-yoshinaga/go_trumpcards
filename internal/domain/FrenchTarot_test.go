@@ -522,6 +522,39 @@ func TestFrenchTarotResolveTrickExcuseKeptByOwner(t *testing.T) {
 	assert.Equal(t, 9, g.GetCardPoints(3))
 }
 
+func TestFrenchTarotResolveTrickRecordsWinnerBeforeRoundEnd(t *testing.T) {
+	g := frenchTarotNewReset()
+	g.SetContract(domain.FrenchTarotBidPetite)
+	g.SetDeclarerIdx(0)
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.FrenchTarotPhaseTrickEnd)
+	g.SetCurrentTrick(frenchTarotTrickCards(
+		&domain.TrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignSpade, 5)},
+		&domain.TrickCard{PlayerIdx: 1, Card: frenchTarotSuitCard(domain.CardDesignSpade, 9)},
+		&domain.TrickCard{PlayerIdx: 2, Card: frenchTarotTrumpCard(4)},
+		&domain.TrickCard{PlayerIdx: 3, Card: frenchTarotSuitCard(domain.CardDesignSpade, 3)},
+	))
+	g.ResolveTrick()
+	assert.NotEqual(t, -1, g.GetLastTrickWinner())
+	assert.Equal(t, g.GetLeadPlayerIdx(), g.GetLastTrickWinner())
+}
+
+func TestFrenchTarotPetitAuBoutStaysZeroDuringTrickPlay(t *testing.T) {
+	g := frenchTarotNewReset()
+	g.SetContract(domain.FrenchTarotBidPetite)
+	g.SetDeclarerIdx(0)
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.FrenchTarotPhaseTrickEnd)
+	g.SetCurrentTrick(frenchTarotTrickCards(
+		&domain.TrickCard{PlayerIdx: 0, Card: frenchTarotTrumpCard(domain.FrenchTarotPetitValue)},
+		&domain.TrickCard{PlayerIdx: 1, Card: frenchTarotSuitCard(domain.CardDesignSpade, 9)},
+		&domain.TrickCard{PlayerIdx: 2, Card: frenchTarotSuitCard(domain.CardDesignSpade, 5)},
+		&domain.TrickCard{PlayerIdx: 3, Card: frenchTarotSuitCard(domain.CardDesignSpade, 3)},
+	))
+	g.ResolveTrick()
+	assert.Zero(t, g.GetPetitAuBoutDelta())
+}
+
 // --- Round-end scoring zero-sum & petit au bout ---
 
 func TestFrenchTarotEnterRoundEndZeroSum(t *testing.T) {

@@ -719,6 +719,12 @@ func (g *FrenchTarot) ResolveTrick() {
 		return
 	}
 	winnerIdx := g.trickWinner()
+	// **どのトリックの勝者も憶えておく** — TrickEnd の画面がこれを読む。
+	// ただし petitAuBoutSign() も lastTrickWinner を読んで得点に使う。そちらへ
+	// 途中の値が漏れないのは、**lastTrickCards が最終トリックの枝の中でしか
+	// 代入されない**からで (下の if を参照)、Petit の有無を先に見る
+	// petitAuBoutSign() がラウンド途中では必ず 0 を返す。この 2 つは対で動く。
+	g.lastTrickWinner = winnerIdx
 	var excuseOwner = -1
 	var excuseCard *Card
 	won := make([]*Card, 0, FrenchTarotPlayerCnt)
@@ -742,7 +748,8 @@ func (g *FrenchTarot) ResolveTrick() {
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= FrenchTarotTrickCount {
-		g.lastTrickWinner = winnerIdx
+		// **ここを枝の外へ出さないこと。** petitAuBoutSign() が途中の
+		// lastTrickWinner を得点に使わないための唯一の歯止めがこの一行の位置。
 		g.lastTrickCards = allCards
 		g.phase = FrenchTarotPhaseRoundEnd
 		g.enterRoundEnd()
@@ -1611,6 +1618,9 @@ func (g *FrenchTarot) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *FrenchTarot) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を返す (-1 = なし)。
+func (g *FrenchTarot) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *FrenchTarot) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }

@@ -717,6 +717,7 @@ func (g *Cego) ResolveTrick() {
 		return
 	}
 	winnerIdx := g.trickWinner()
+	g.lastTrickWinner = winnerIdx
 	allCards := make([]*Card, 0, CegoPlayerCnt)
 	for _, tc := range g.currentTrick {
 		allCards = append(allCards, tc.Card)
@@ -727,7 +728,6 @@ func (g *Cego) ResolveTrick() {
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= CegoTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.lastTrickCards = allCards
 		g.phase = CegoPhaseRoundEnd
 		g.enterRoundEnd()
@@ -1483,6 +1483,9 @@ func (g *Cego) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *Cego) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を返す (-1 = なし)。
+func (g *Cego) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Cego) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }

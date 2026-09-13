@@ -47,7 +47,7 @@ func (p *MariasWebPresenter) buildBase(g interfaces.MariasGame) *controller.Mari
 	resObj.RoundCardPoints = g.GetRoundCardPoints()
 	resObj.RoundMarriage = g.GetRoundMarriage()
 	resObj.RoundMarriageSuits = g.GetRoundMarriageSuits()
-	resObj.LastTrickWinner = -1
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 
 	resObj.PlayableIndices = p.playableIndices(g)
