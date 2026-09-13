@@ -59,6 +59,13 @@ export function duchessLegalTargets(
   const result: DuchessLegalTargets = { tableau: new Set(), foundation: new Set() };
   if (!card) return result;
 
+  // **開始ランクが決まるまでは、組札どころかどの手も打てない。**
+  // `Duchess.requireBaseChosen` は `MoveTableauToTableau` (Duchess.go:336) や
+  // `MoveWasteToTableau` (286) を含む**移動 7 箇所すべて**の入口にあり、
+  // `baseRank == 0` なら例外なく弾く。組札だけを黙らせてタブローにリングを出すと、
+  // 配りによっては置ける先があるように見えて、押すとサーバに拒まれる。
+  if (awaitingBaseRank || baseRank === 0) return result;
+
   const reserveRemaining = reserve.reduce((sum, fan) => sum + fan.length, 0);
   tableau.forEach((column, index) => {
     const top = column[column.length - 1]?.card;
@@ -72,9 +79,6 @@ export function duchessLegalTargets(
       result.tableau.add(index);
     }
   });
-
-  // Before the base rank is chosen, no foundation can receive a card.
-  if (awaitingBaseRank || baseRank === 0) return result;
 
   foundation.forEach((pile, index) => {
     if (FOUNDATION_SUITS[index] !== card.design) return;

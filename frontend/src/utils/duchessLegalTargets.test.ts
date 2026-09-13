@@ -110,6 +110,19 @@ describe('duchessLegalTargets', () => {
     expect(reserveGone.tableau.size).toBe(4);
   });
 
+  // Duchess.requireBaseChosen は移動 7 箇所すべての入口にある。開始ランク未決定なら
+  // タブローの置き先もひとつも無い。組札だけを黙らせると、配りによっては
+  // 置ける先があるように見えて、押すとサーバに拒まれる。
+  it('offers no tableau target either before the base rank is chosen', () => {
+    const board = tableau(column(card('SPADE', 9)), column(card('HEART', 10)));
+    const playable = duchessLegalTargets(board, foundations(), [[], [], [], []], 5, false, card('HEART', 9), 'waste');
+    const awaiting = duchessLegalTargets(board, foundations(), [[], [], [], []], 0, true, card('HEART', 9), 'waste');
+    // 同じ盤面・同じ札で、開始ランクが決まっていれば置き先はある。
+    expect(playable.tableau.size).toBeGreaterThan(0);
+    expect(awaiting.tableau.size).toBe(0);
+    expect(awaiting.foundation.size).toBe(0);
+  });
+
   it('accepts the base rank on an empty matching foundation', () => {
     const result = duchessLegalTargets(tableau(), foundations(), [[], [], [], []], 5, false, card('HEART', 5));
     expect([...result.foundation]).toEqual([2]);
