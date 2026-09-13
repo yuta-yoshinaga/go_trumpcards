@@ -41,7 +41,9 @@ func TestQuinzeCuiPresenter_Output(t *testing.T) {
 		g := new(interfaces.MockQuinzeGame)
 		g.On("WasChipsReplenished").Return(true)
 		setupQuinzeCuiMockDefaults(g)
-		assert.Contains(t, new(QuinzeCuiPresenter).Output(g, nil), "チップが不足したため")
+		out := new(QuinzeCuiPresenter).Output(g, nil)
+		assert.Contains(t, out, "チップが不足したため、900チップに補充しました。")
+		assert.NotContains(t, out, "{{")
 	})
 	i18n.SetLang("ja")
 
