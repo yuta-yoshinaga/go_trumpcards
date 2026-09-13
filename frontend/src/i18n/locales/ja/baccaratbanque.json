@@ -1,4 +1,9 @@
 {
+  "settings": {
+    "cpuDifficulty": "CPU難易度",
+    "startChips": "開始チップ",
+    "difficulty": { "0": "Easy", "1": "Normal", "2": "Hard" }
+  },
   "title": "バカラ・バンク",
   "bankerGuide": "あなたの合計は {{total}}。どの合計でも引く / 引かないは自由です（固定表はありません）",
   "waitNotice": "配っています…",

@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { continentalrummyApi } from '../api/gameApi';
+import type { continentalrummyApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -18,10 +18,14 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
-import { useGameApi } from '../hooks/useGameApi';
+import {
+  CONTINENTAL_RUMMY_DIFFICULTY_OPTIONS,
+  CONTINENTAL_RUMMY_MAX_ROUNDS,
+  CONTINENTAL_RUMMY_MIN_ROUNDS,
+  useContinentalRummyGame,
+} from '../hooks/useContinentalRummyGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -65,7 +69,16 @@ function ContinentalRummyPageContent() {
     useGamePageSetup('continentalrummy');
 
   const { cardWidth, isMobile } = useCardDimensions();
-  const { state, loading, error, exec: execApi, retry } = useGameApi(continentalrummyApi.exec);
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+    config,
+    handleConfigChange,
+    handleResetWithConfig,
+  } = useContinentalRummyGame();
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('continentalrummy');
   const cliConfig: CliGameConfig<ContinentalRummyResponse, Parameters<typeof continentalrummyApi.exec>> = useMemo(
@@ -78,8 +91,6 @@ function ContinentalRummyPageContent() {
     [],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  useMountReset(execApi);
 
   const phase = state?.phase;
   const gameOver = !!state?.gameEndFlag;
@@ -275,7 +286,37 @@ function ContinentalRummyPageContent() {
             <ErrorAlert message={error} onRetry={retry} />
             <SettingsPanel
               title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select',
+                      id: 'continentalrummy-cpuDifficulty',
+                      label: t('settings.cpuDifficulty'),
+                      value: config.cpuDifficulty,
+                      options: CONTINENTAL_RUMMY_DIFFICULTY_OPTIONS.map((value) => ({
+                        value,
+                        label: t(`settings.difficulty.${value}`),
+                      })),
+                      onSelect: (value) => handleConfigChange('cpuDifficulty', value),
+                      testId: 'continentalrummy-cpuDifficulty',
+                    },
+                    {
+                      type: 'select',
+                      id: 'continentalrummy-totalRounds',
+                      label: t('settings.totalRounds'),
+                      value: config.totalRounds,
+                      options: Array.from(
+                        { length: CONTINENTAL_RUMMY_MAX_ROUNDS - CONTINENTAL_RUMMY_MIN_ROUNDS + 1 },
+                        (_, index) => index + CONTINENTAL_RUMMY_MIN_ROUNDS,
+                      ).map((value) => ({ value, label: String(value) })),
+                      onSelect: (value) => handleConfigChange('totalRounds', value),
+                      testId: 'continentalrummy-totalRounds',
+                    },
+                    hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+                  ],
+                },
+              ]}
             />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
@@ -381,7 +422,7 @@ function ContinentalRummyPageContent() {
                 </button>
                 <GameResetButton
                   isGameEnd={gameOver}
-                  onReset={() => execApi('reset')}
+                  onReset={handleResetWithConfig}
                   requestConfirm={requestConfirm}
                   loading={loading}
                 />

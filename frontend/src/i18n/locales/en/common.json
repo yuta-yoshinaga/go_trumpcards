@@ -537,6 +537,7 @@
     "errorBoundaryDetails": "Show error details"
   },
   "messageCode": {
+    "quinze.chipsReplenished": "Your chips were replenished to the starting amount because they were too low.",
     "settemezzo.bankerChanged": "The banker has changed — place your bet",
     "settemezzo.bankerChangedYou": "You are now the banker — deal the round",
     "accordion.gameClear": "Game Clear! Moves: {{moveCount}}",

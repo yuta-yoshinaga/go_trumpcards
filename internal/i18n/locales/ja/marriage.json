@@ -13,6 +13,7 @@
   "discardLine": "捨て札: {{card}}",
   "playerLine": "{{name}}: 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚",
   "playerLineWithMaal": "{{name}}: 累積{{cum}}点 ラウンド{{round}}点 マール{{maal}}点 {{cards}}枚",
+  "maalRule": "マール: ティプル3点、ポプル/ジプル各2点、アルター1点、印刷ジョーカー1点。純シーケンス3組以上なら合計をラウンド点から差し引きます。",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "promptDraw": "手番: {{name}} (ドローフェーズ)",
   "promptDrawHelpStock": "ds・・・山札から引く",

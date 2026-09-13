@@ -15,6 +15,7 @@ import (
 
 func setupQuinzeCuiMockDefaults(g *interfaces.MockQuinzeGame) {
 	g.On("GetPhase").Return(domain.QuinzePhasePlayerTurn).Maybe()
+	g.On("WasChipsReplenished").Return(false).Maybe()
 	g.On("GetChips").Return(900).Maybe()
 	g.On("GetBankerIdx").Return(1).Maybe()
 	g.On("IsHumanBanker").Return(false).Maybe()
@@ -36,6 +37,14 @@ func setupQuinzeCuiMockDefaults(g *interfaces.MockQuinzeGame) {
 }
 
 func TestQuinzeCuiPresenter_Output(t *testing.T) {
+	t.Run("explains chip replenishment", func(t *testing.T) {
+		g := new(interfaces.MockQuinzeGame)
+		g.On("WasChipsReplenished").Return(true)
+		setupQuinzeCuiMockDefaults(g)
+		out := new(QuinzeCuiPresenter).Output(g, nil)
+		assert.Contains(t, out, "チップが不足したため、900チップに補充しました。")
+		assert.NotContains(t, out, "{{")
+	})
 	i18n.SetLang("ja")
 
 	t.Run("chips and the banker lead the view", func(t *testing.T) {

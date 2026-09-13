@@ -358,6 +358,9 @@ function MarriagePageContent() {
                 {/* Score table */}
                 <div className="my-3 p-2 rounded bg-black/30" data-tutorial="marriage-score-table">
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                  <p className="text-ds-text-muted text-xs mb-2" data-testid="marriage-maal-rule">
+                    {t('maalRule')}
+                  </p>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>

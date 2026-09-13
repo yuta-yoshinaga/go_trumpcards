@@ -70,23 +70,27 @@ func (sp *QuinzeWebPresenter) Output(s interfaces.QuinzeGame, lastErr error) str
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else {
-		switch s.GetPhase() {
-		case domain.QuinzePhaseBet:
-			if s.IsHumanBanker() {
-				resObj.MessageCode = "quinze.dealAsBanker"
-			} else {
-				resObj.MessageCode = "quinze.placeBet"
-			}
-		case domain.QuinzePhasePlayerTurn:
-			resObj.MessageCode = "quinze.yourTurn"
-		case domain.QuinzePhaseBankerTurn:
-			resObj.MessageCode = "quinze.bankerTurn"
-		case domain.QuinzePhaseEnd:
-			resObj.Message = s.GetLastResult()
-			resObj.MessageCode = "quinze.roundOver"
-			resObj.MessageParams = map[string]string{"result": s.GetLastResult()}
-			if s.GetNextBanker() >= 0 {
-				resObj.MessageCode = "quinze.bankPasses"
+		if s.WasChipsReplenished() && s.GetPhase() == domain.QuinzePhaseBet {
+			resObj.MessageCode = "quinze.chipsReplenished"
+		} else {
+			switch s.GetPhase() {
+			case domain.QuinzePhaseBet:
+				if s.IsHumanBanker() {
+					resObj.MessageCode = "quinze.dealAsBanker"
+				} else {
+					resObj.MessageCode = "quinze.placeBet"
+				}
+			case domain.QuinzePhasePlayerTurn:
+				resObj.MessageCode = "quinze.yourTurn"
+			case domain.QuinzePhaseBankerTurn:
+				resObj.MessageCode = "quinze.bankerTurn"
+			case domain.QuinzePhaseEnd:
+				resObj.Message = s.GetLastResult()
+				resObj.MessageCode = "quinze.roundOver"
+				resObj.MessageParams = map[string]string{"result": s.GetLastResult()}
+				if s.GetNextBanker() >= 0 {
+					resObj.MessageCode = "quinze.bankPasses"
+				}
 			}
 		}
 	}

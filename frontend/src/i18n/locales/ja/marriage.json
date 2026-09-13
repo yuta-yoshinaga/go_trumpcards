@@ -24,6 +24,7 @@
   "cumulativeScore": "累計: {{score}}",
   "deadwoodShort": "デッドウッド {{score}}",
   "maalShort": "マール {{score}}",
+  "maalRule": "マール: ティプル3点、ポプル/ジプル各2点、アルター1点、印刷ジョーカー1点。純シーケンス3組以上のとき、合計をラウンド点から差し引きます。",
   "pureSequenceBadge": "純シーケンス有",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",

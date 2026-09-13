@@ -56,6 +56,8 @@ func TestMarriageCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "ラウンド")
 		assert.Contains(t, out, "ワイルドジョーカー")
 		assert.Contains(t, out, "マール3点")
+		assert.Contains(t, out, "ティプル3点")
+		assert.Contains(t, out, "ポプル/ジプル各2点")
 		assert.NotContains(t, out, "マール4点", "通常時は CPU のマールを隠す")
 	})
 

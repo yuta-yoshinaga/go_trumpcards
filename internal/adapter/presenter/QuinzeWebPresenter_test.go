@@ -43,6 +43,7 @@ func setupQuinzeWebMockDefaults(g *interfaces.MockQuinzeGame) {
 	g.On("GetActiveSeat").Return(0).Maybe()
 	g.On("GetNextBanker").Return(-1).Maybe()
 	g.On("GetLastResult").Return("").Maybe()
+	g.On("WasChipsReplenished").Return(false).Maybe()
 	g.On("GetGameEndFlag").Return(false).Maybe()
 	g.On("CanHit").Return(true).Maybe()
 	g.On("CanStand").Return(true).Maybe()
@@ -66,6 +67,44 @@ func parseQuinzeOutput(t *testing.T, jsonStr string) *controller.QuinzeWebOutput
 }
 
 func TestQuinzeWebPresenter_Output(t *testing.T) {
+	t.Run("reports chip replenishment during betting", func(t *testing.T) {
+		g := new(interfaces.MockQuinzeGame)
+		setupQuinzeWebMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "WasChipsReplenished")
+		g.On("GetPhase").Return(domain.QuinzePhaseBet).Maybe()
+		g.On("WasChipsReplenished").Return(true)
+
+		result := parseQuinzeOutput(t, new(QuinzeWebPresenter).Output(g, nil))
+		assert.Equal(t, "quinze.chipsReplenished", result.MessageCode)
+	})
+	t.Run("keeps the round result after replenishment", func(t *testing.T) {
+		g := new(interfaces.MockQuinzeGame)
+		setupQuinzeWebMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "WasChipsReplenished")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResult")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetNextBanker")
+		g.On("GetPhase").Return(domain.QuinzePhaseEnd).Maybe()
+		g.On("WasChipsReplenished").Return(true)
+		g.On("GetLastResult").Return("親は 6.5").Maybe()
+		g.On("GetNextBanker").Return(-1).Maybe()
+
+		result := parseQuinzeOutput(t, new(QuinzeWebPresenter).Output(g, nil))
+		assert.Equal(t, "quinze.roundOver", result.MessageCode)
+		assert.Equal(t, "親は 6.5", result.Message)
+	})
+	t.Run("keeps the usual betting message without replenishment", func(t *testing.T) {
+		g := new(interfaces.MockQuinzeGame)
+		setupQuinzeWebMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "WasChipsReplenished")
+		g.On("GetPhase").Return(domain.QuinzePhaseBet).Maybe()
+		g.On("WasChipsReplenished").Return(false)
+
+		result := parseQuinzeOutput(t, new(QuinzeWebPresenter).Output(g, nil))
+		assert.Equal(t, "quinze.placeBet", result.MessageCode)
+	})
 	t.Run("player turn", func(t *testing.T) {
 		g := new(interfaces.MockQuinzeGame)
 		setupQuinzeWebMockDefaults(g)

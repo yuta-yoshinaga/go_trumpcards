@@ -7,6 +7,7 @@
   "helpBankerHit": "  bh                       親として1枚引く",
   "helpBankerStand": "  bs                       親として引き止めて精算する",
   "chipsLine": "チップ: {{chips}}",
+  "chipsReplenished": "チップが不足したため、{{chips}}チップに補充しました。",
   "bankerLine": "親: {{name}}",
   "bankerIsYou": "あなた",
   "bankerHandHeader": "親:",
