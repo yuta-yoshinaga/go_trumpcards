@@ -12,6 +12,7 @@
   "moveCount": "Moves",
   "giveup": "Give up",
   "empty": "Empty",
+  "nextRankBadge": "Next:{{rank}}",
   "foundationAriaLabel": "{{suit}} foundation {{idx}}, {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation {{idx}} ({{suit}}, starts at the Ace)",
   "emptyPileAriaLabel": "empty column {{pile}} (any card may go here)",
