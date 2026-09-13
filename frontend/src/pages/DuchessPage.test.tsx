@@ -141,6 +141,38 @@ describe('DuchessPage', () => {
     );
   });
 
+  it('highlights only legal destinations after selecting a tableau card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [[], [], [], []],
+      tableau: makeTableau([
+        [{ card: card('SPADE', 9), faceUp: true }],
+        [{ card: card('HEART', 10), faceUp: true }],
+        [{ card: card('CLOVER', 10), faceUp: true }],
+        [],
+      ]),
+    });
+    renderWithProviders(<DuchessPage />);
+    const source = await screen.findByRole('button', { name: '♠ 9（列0・上から1枚目）' });
+    fireEvent.click(source);
+
+    await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBe(2));
+    expect(screen.getByText('#1').closest('[data-legal-target="true"]')).toBeInTheDocument();
+    expect(screen.getByText('#3').closest('[data-legal-target="true"]')).toBeInTheDocument();
+    expect(screen.getByText('#2').closest('[data-legal-target="true"]')).not.toBeInTheDocument();
+  });
+
+  it('does not highlight a foundation or tableau with an illegal rank or colour', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<DuchessPage />);
+    const source = await screen.findByRole('button', { name: '♥ 8（列0・上から2枚目）' });
+    fireEvent.click(source);
+
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+    expect(document.querySelectorAll('[data-legal-target="true"]').length).toBe(0);
+    expect(screen.getByText('#0').closest('[data-legal-target="true"]')).not.toBeInTheDocument();
+  });
+
   it('renders an empty reserve fan as a non-interactive slot', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<DuchessPage />);
