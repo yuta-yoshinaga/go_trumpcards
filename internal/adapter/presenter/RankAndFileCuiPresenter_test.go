@@ -54,6 +54,31 @@ func TestRankAndFileCuiPresenterTargetsOutput(t *testing.T) {
 		fg.AssertExpectations(t)
 	})
 
+	t.Run("列が範囲外ならエラー", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		out := p.TargetsOutput(fg, domain.RankAndFileTableauCnt, -1)
+		assert.Contains(t, out, "無効な列番号です: 10")
+		assert.Contains(t, out, "\n")
+		fg.AssertNotCalled(t, "SequenceStarts", domain.RankAndFileTableauCnt)
+	})
+
+	t.Run("掴める並びがなければ明示する", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		fg.On("SequenceStarts", 0).Return([]int{})
+		out := p.TargetsOutput(fg, 0, -1)
+		assert.Equal(t, "列0の札を置ける先はありません\n", out)
+		fg.AssertExpectations(t)
+	})
+
+	t.Run("指定した掴める札なら合法手を列挙する", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		fg.On("SequenceStarts", 0).Return([]int{1, 2})
+		fg.On("LegalTargets", 0, 2).Return([]int{4})
+		out := p.TargetsOutput(fg, 0, 2)
+		assert.Equal(t, "列0の札2を置ける先: 列4\n", out)
+		fg.AssertExpectations(t)
+	})
+
 	t.Run("置ける先がないときは明示する", func(t *testing.T) {
 		fg := new(interfaces.MockRankAndFileGame)
 		fg.On("SequenceStarts", 0).Return([]int{1})

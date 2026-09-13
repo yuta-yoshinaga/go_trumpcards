@@ -984,6 +984,7 @@ func TestRankAndFile_SequenceStartsStopsAtTheBreakAndAtHiddenCards(t *testing.T)
 
 	assert.Equal(t, []int{3, 2}, ft.SequenceStarts(0), "top card first, stopping where the sequence breaks")
 	assert.Empty(t, ft.SequenceStarts(1), "an empty column has no sequence start")
+	assert.Nil(t, ft.SequenceStarts(-1), "a negative column is out of range")
 	assert.Nil(t, ft.SequenceStarts(domain.RankAndFileTableauCnt), "out of range is nil, not a panic")
 }
 
@@ -1013,8 +1014,16 @@ func TestRankAndFile_LegalTargetsHandlesAvailableUnavailableAndUnmovable(t *test
 	})
 	t.Run("returns none for an invalid or out of range selection", func(t *testing.T) {
 		ft := build()
+		assert.Nil(t, ft.LegalTargets(-1, -1))
 		assert.Nil(t, ft.LegalTargets(0, 1))
 		assert.Nil(t, ft.LegalTargets(domain.RankAndFileTableauCnt, 0))
+	})
+	t.Run("returns none when the selected column is empty", func(t *testing.T) {
+		ft := build()
+		tableau := ft.GetTableau()
+		tableau[0] = nil
+		ft.SetTableau(tableau)
+		assert.Nil(t, ft.LegalTargets(0, -1))
 	})
 }
 
