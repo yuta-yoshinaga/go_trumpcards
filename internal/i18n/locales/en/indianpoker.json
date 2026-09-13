@@ -38,5 +38,12 @@
   "wonAmount": " → won {{total}} chips",
   "gameEnd": "Game over",
   "helpExampleFold": "  f                    fold this hand",
+  "helpHint": "  h                    show a hint",
   "helpLog": "  l                    show the action log"
+  ,"hintNone": "No hint available"
+  ,"hintAction": "[hint: {{action}} ({{reason}})]"
+  ,"hintReasonStrong": "the estimated equity is strong enough to be aggressive"
+  ,"hintReasonFreeLook": "you can see the next card for free"
+  ,"hintReasonPotOddsShort": "the equity is below the pot-odds threshold"
+  ,"hintReasonPotOddsOK": "the equity justifies continuing at these pot odds"
 }

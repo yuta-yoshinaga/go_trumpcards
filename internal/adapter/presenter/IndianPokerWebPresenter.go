@@ -11,6 +11,12 @@ import (
 // IndianPokerWebPresenter インディアンポーカーWebプレゼンタークラス
 type IndianPokerWebPresenter struct{}
 
+// HintOutput returns the current state as JSON. The Web GUI computes its own
+// hint client-side, so this mirrors Output to satisfy IndianPokerPresenter.
+func (iwp *IndianPokerWebPresenter) HintOutput(ip interfaces.IndianPokerGame) string {
+	return iwp.Output(ip, nil)
+}
+
 // Output ゲーム状態をJSON出力
 func (iwp *IndianPokerWebPresenter) Output(ip interfaces.IndianPokerGame, lastErr error) string {
 	resObj := iwp.buildOutput(ip, lastErr)

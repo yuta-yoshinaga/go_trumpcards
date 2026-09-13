@@ -51,6 +51,49 @@ func TestIndianPoker_GetEstimatedStrength(t *testing.T) {
 	assert.GreaterOrEqual(t, s, 50)
 }
 
+func TestIndianPoker_GetHint(t *testing.T) {
+	tests := []struct {
+		name           string
+		visibleRank    int
+		pot            int
+		lastBet        int
+		currentBet     int
+		expectedAction int
+		expectedReason string
+	}{
+		{name: "pot odds short folds", visibleRank: 13, pot: 40, lastBet: 50, currentBet: 10, expectedAction: IndianPokerActionFold, expectedReason: "pot_odds_short"},
+		{name: "pot odds sufficient calls", visibleRank: 10, pot: 100, lastBet: 50, currentBet: 10, expectedAction: IndianPokerActionCall, expectedReason: "pot_odds_ok"},
+		{name: "strong equity raises", visibleRank: 2, pot: 40, lastBet: 50, currentBet: 10, expectedAction: IndianPokerActionRaise, expectedReason: "strong_hand"},
+		{name: "free weak look checks", visibleRank: 13, pot: 40, lastBet: 10, currentBet: 10, expectedAction: IndianPokerActionCheck, expectedReason: "free_look"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ip, players := newIndianPokerTestGame(defaultTestConfig())
+			ip.SetPhase(IndianPokerPhaseBetting)
+			ip.SetCurrentTurn(0)
+			ip.SetPot(tt.pot)
+			ip.SetLastBet(tt.lastBet)
+			players[0].SetCurrentBet(tt.currentBet)
+			// Only visible opponent cards are changed; the test does not depend on a deal.
+			players[1].AddCard(NewCard(CardDesignClover, tt.visibleRank, false))
+
+			hint := ip.GetHint()
+			assert.Equal(t, tt.expectedAction, hint.Action)
+			assert.Equal(t, tt.expectedReason, hint.Reason)
+		})
+	}
+
+	t.Run("not human turn and folded player have no hint", func(t *testing.T) {
+		ip, players := newIndianPokerTestGame(defaultTestConfig())
+		ip.SetPhase(IndianPokerPhaseBetting)
+		ip.SetCurrentTurn(1)
+		assert.Equal(t, &IndianPokerHint{Reason: "none"}, ip.GetHint())
+		ip.SetCurrentTurn(0)
+		players[0].SetFolded(true)
+		assert.Equal(t, &IndianPokerHint{Reason: "none"}, ip.GetHint())
+	})
+}
+
 func TestIndianPokerPhaseConstants(t *testing.T) {
 	assert.Equal(t, 0, IndianPokerPhaseInit)
 	assert.Equal(t, 1, IndianPokerPhaseAnte)

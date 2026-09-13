@@ -55,6 +55,7 @@ func (s *stubIndianPokerPresenter) Output(_ interfaces.IndianPokerGame, _ error)
 func (s *stubIndianPokerPresenter) ActionLogOutput(_ interfaces.IndianPokerGame) string {
 	return `{}`
 }
+func (s *stubIndianPokerPresenter) HintOutput(_ interfaces.IndianPokerGame) string { return `{}` }
 
 // stubVideoPokerPresenter implements presenter.VideoPokerPresenter (= GamePresenter[interfaces.VideoPokerGame])
 type stubVideoPokerPresenter struct{}
