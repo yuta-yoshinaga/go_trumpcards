@@ -41,6 +41,7 @@
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current trick",
+  "previousTrickWinner": "Won by {{name}}",
   "players": "Players",
   "you": "You",
   "cpu": "CPU {{id}}",

@@ -20,6 +20,7 @@ func setupGermanSoloWebMock() *interfaces.MockGermanSoloGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.GermanSoloPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -208,6 +209,19 @@ func TestGermanSoloWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 3, resObj.Players[1].Score)
 		assert.Equal(t, 0, resObj.Players[2].Score)
 	})
+}
+
+func TestGermanSoloWebPresenter_IncludesLastTrickWinner(t *testing.T) {
+	m, _ := setupGermanSoloWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickWinner")
+	m.On("GetLastTrickWinner").Return(3)
+	var output controller.GermanSoloWebOutput
+	if err := json.Unmarshal([]byte((&presenter.GermanSoloWebPresenter{}).Output(m, nil)), &output); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if output.LastTrickWinner != 3 {
+		t.Errorf("lastTrickWinner = %d, want 3", output.LastTrickWinner)
+	}
 }
 
 func TestGermanSoloWebPresenter_HintOutput(t *testing.T) {

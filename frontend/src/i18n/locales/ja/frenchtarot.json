@@ -30,6 +30,7 @@
   "points": "{{points}}点",
   "score": "得点: {{score}}",
   "currentTrick": "現在のトリック",
+  "previousTrickWinner": "{{name}} が獲得",
   "players": "プレイヤー",
   "chienLabel": "シアン（公開）",
   "bouts": {

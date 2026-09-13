@@ -79,7 +79,7 @@ type Marias struct {
 	roundCardPts       [MariasPlayerCnt]int              // 現ラウンドのプレイヤー別カード得点
 	roundMarriage      [MariasPlayerCnt]int              // 現ラウンドのプレイヤー別結婚点
 	roundMarriageSuits [MariasPlayerCnt][]MariasMarriage // スート別結婚点
-	lastTrickWinner    int                               // 最終トリック勝者 (-1=未確定)
+	lastTrickWinner    int                               // 直前トリックの勝者 (-1=未確定)
 	gameEndFlag        bool
 	winnerPlayer       int // -1=未確定
 	actionLogBase
@@ -263,6 +263,7 @@ func (g *Marias) ResolveTrick() {
 		return
 	}
 	winnerIdx := g.trickWinner()
+	g.lastTrickWinner = winnerIdx
 	trickCards := make([]*Card, len(g.currentTrick))
 	pts := 0
 	for i, tc := range g.currentTrick {
@@ -276,7 +277,6 @@ func (g *Marias) ResolveTrick() {
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= MariasTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.roundCardPts[winnerIdx] += MariasLastTrickBonus
 		g.phase = MariasPhaseRoundEnd
 	} else {
@@ -591,6 +591,9 @@ func (g *Marias) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *Marias) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を返す (-1 = なし)。
+func (g *Marias) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Marias) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }

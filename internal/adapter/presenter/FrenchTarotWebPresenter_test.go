@@ -20,6 +20,7 @@ func newFrenchTarotGame() *domain.FrenchTarot {
 func TestFrenchTarotWebPresenter_Output(t *testing.T) {
 	g := newFrenchTarotGame()
 	g.Reset()
+	g.SetLastTrick(2, []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
 	p := &presenter.FrenchTarotWebPresenter{}
 
 	var parsed controller.FrenchTarotWebOutput
@@ -41,6 +42,9 @@ func TestFrenchTarotWebPresenter_Output(t *testing.T) {
 	}
 	if parsed.ChienCount != domain.FrenchTarotChienSize {
 		t.Errorf("chienCount = %d", parsed.ChienCount)
+	}
+	if parsed.LastTrickWinner != 2 {
+		t.Errorf("lastTrickWinner = %d, want 2", parsed.LastTrickWinner)
 	}
 }
 

@@ -30,6 +30,7 @@
   "points": "{{points}} pts",
   "score": "Score: {{score}}",
   "currentTrick": "Current Trick",
+  "previousTrickWinner": "Won by {{name}}",
   "players": "Players",
   "chienLabel": "Chien (revealed)",
   "bouts": {

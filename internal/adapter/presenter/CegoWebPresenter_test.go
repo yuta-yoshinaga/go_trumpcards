@@ -20,6 +20,15 @@ func newCegoGame() *domain.Cego {
 func TestCegoWebPresenter_Output(t *testing.T) {
 	g := newCegoGame()
 	g.Reset()
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.CegoPhaseTrickEnd)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 3, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 7, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 5, false)},
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 4, false)},
+	})
+	g.ResolveTrick()
 	p := &presenter.CegoWebPresenter{}
 
 	var parsed controller.CegoWebOutput
@@ -40,6 +49,9 @@ func TestCegoWebPresenter_Output(t *testing.T) {
 	}
 	if parsed.BlindCount != domain.CegoBlindSize {
 		t.Errorf("blindCount = %d, want %d", parsed.BlindCount, domain.CegoBlindSize)
+	}
+	if parsed.LastTrickWinner == -1 {
+		t.Error("lastTrickWinner should be present in JSON after resolving a trick")
 	}
 }
 

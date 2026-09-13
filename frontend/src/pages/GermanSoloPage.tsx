@@ -33,7 +33,7 @@ import { formatGermanSoloState } from '../utils/cli/formatters/germansoloFormatt
 import type { CliGameConfig } from '../utils/cli/types';
 import { MATADOR_NAME_KEY, matadorRank } from '../utils/germansoloMatadors';
 import { isRequestedHint } from '../utils/hintRequest';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** GermanSolo tutorial step definitions. */
@@ -305,6 +305,12 @@ function GermanSoloPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
+                  winnerLabel={
+                    isTrickEnd
+                      ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
+                      : undefined
+                  }
                   dataTutorial="germansolo-trick-display"
                 />
               </div>

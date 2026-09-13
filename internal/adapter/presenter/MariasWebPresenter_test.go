@@ -20,6 +20,7 @@ func setupMariasWebMock() *interfaces.MockMariasGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.MariasPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -168,6 +169,19 @@ func TestMariasWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 2, resObj.Players[1].Score)
 		assert.Equal(t, 0, resObj.Players[2].Score)
 	})
+}
+
+func TestMariasWebPresenter_IncludesLastTrickWinner(t *testing.T) {
+	m, _ := setupMariasWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickWinner")
+	m.On("GetLastTrickWinner").Return(2)
+	var output controller.MariasWebOutput
+	if err := json.Unmarshal([]byte((&presenter.MariasWebPresenter{}).Output(m, nil)), &output); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if output.LastTrickWinner != 2 {
+		t.Errorf("lastTrickWinner = %d, want 2", output.LastTrickWinner)
+	}
 }
 
 func TestMariasWebPresenter_HintOutput(t *testing.T) {

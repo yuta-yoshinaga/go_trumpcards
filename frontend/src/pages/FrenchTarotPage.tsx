@@ -40,7 +40,7 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { frenchTarotTarget, heldBouts } from '../utils/frenchTarotBouts';
 import { frenchTarotUnburiableReason } from '../utils/frenchtarotEcart';
 import { isRequestedHint } from '../utils/hintRequest';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** French Tarot tutorial step definitions. */
@@ -272,6 +272,12 @@ function FrenchTarotPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
+                  winnerLabel={
+                    isTrickEnd
+                      ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
+                      : undefined
+                  }
                   dataTutorial="frenchtarot-trick-display"
                 />
                 {/* Chien reveal for the human declarer during écart */}

@@ -195,7 +195,7 @@ type GermanSolo struct {
 	bidTrump         [GermanSoloPlayerCnt]int           // 各プレイヤーが宣言時に選んだ切り札 (-1=なし)
 	bidActed         [GermanSoloPlayerCnt]bool          // 各プレイヤーが宣言済みか
 	playerScores     [GermanSoloPlayerCnt]int           // 累積ゲーム点
-	lastTrickWinner  int                                // 最終トリック勝者 (-1=未確定)
+	lastTrickWinner  int                                // 直前トリックの勝者 (-1=未確定)
 
 	// エース呼び。calledAceSuit は指名されたエースのスート (-1=未指名)。
 	// **呼び声は卓で聞こえるのでエース自体は公開情報**だが、誰が持っているかは
@@ -922,6 +922,7 @@ func (g *GermanSolo) ResolveTrick() {
 	}
 	g.trickResolved = true
 	winnerIdx := g.trickWinner()
+	g.lastTrickWinner = winnerIdx
 	trickCards := make([]*Card, len(g.currentTrick))
 	for i, tc := range g.currentTrick {
 		trickCards[i] = tc.Card
@@ -932,7 +933,6 @@ func (g *GermanSolo) ResolveTrick() {
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= GermanSoloTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.phase = GermanSoloPhaseRoundEnd
 		g.enterRoundEnd()
 	} else {
@@ -1569,6 +1569,9 @@ func (g *GermanSolo) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *GermanSolo) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を返す (-1 = なし)。
+func (g *GermanSolo) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *GermanSolo) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
