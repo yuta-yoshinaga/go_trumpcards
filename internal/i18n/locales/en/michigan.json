@@ -7,7 +7,7 @@
   "helpSetAnte": "  sa <n>                    Ante amount",
   "helpSetChips": "  sc <n>                    Starting chips",
   "helpSetRounds": "  st <n>                    Target rounds",
-  "roundLine": "Round: {{round}}  Ante: {{ante}}",
+  "roundLine": "Round: {{round}} / {{total}}  Ante: {{ante}}",
   "boodleHeader": "Boodles (betting cards):",
   "boodleLine": "{{card}}  chips {{chips}}  [{{status}}]",
   "boodleOpen": "open",

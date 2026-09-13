@@ -6,7 +6,7 @@
   "helpSetAnte": "  sa <n>                    Ante amount",
   "helpSetChips": "  sc <n>                    Starting chips",
   "helpSetRounds": "  st <n>                    Target rounds",
-  "roundLine": "Round: {{round}}  Pot: {{pot}}  Ante: {{ante}}",
+  "roundLine": "Round: {{round}} / {{total}}  Pot: {{pot}}  Ante: {{ante}}",
   "playerLine": "{{name}}  chips {{chips}}  bet {{bet}}  [{{status}}]",
   "statusOut": "OUT",
   "statusFolded": "folded",

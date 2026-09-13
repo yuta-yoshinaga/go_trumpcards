@@ -24,6 +24,20 @@ func TestGutsCuiPresenter_OutputDeclarePhase(t *testing.T) {
 	assert.Contains(t, out, "宣言")
 }
 
+func TestGutsCuiPresenter_OutputShowsConfiguredTargetRounds(t *testing.T) {
+	p := new(presenter.GutsCuiPresenter)
+	for _, tc := range []struct {
+		targetRounds int
+		want         string
+	}{{4, "ラウンド: 1 / 4"}, {12, "ラウンド: 1 / 12"}} {
+		g := domain.NewDefaultGuts()
+		cfg := g.GetConfig()
+		cfg.TargetRounds = tc.targetRounds
+		g.SetConfig(cfg)
+		assert.Contains(t, p.Output(g, nil), tc.want)
+	}
+}
+
 func TestGutsCuiPresenter_OutputError(t *testing.T) {
 	g := domain.NewDefaultGuts()
 	p := new(presenter.GutsCuiPresenter)

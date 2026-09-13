@@ -76,6 +76,12 @@ func (_m *MockAnacondaGame) GetRoundNumber() int {
 	return ret.Get(0).(int)
 }
 
+// GetTargetRounds モック
+func (_m *MockAnacondaGame) GetTargetRounds() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetDealerIdx モック
 func (_m *MockAnacondaGame) GetDealerIdx() int {
 	ret := _m.Called()

@@ -13,7 +13,7 @@
   },
   "you": "あなた",
   "cpu": "CPU {{id}}",
-  "round": "ラウンド {{n}}",
+  "round": "ラウンド {{n}} / {{total}}",
   "pot": "ポット: {{amount}}",
   "ante": "アンティ: {{amount}}",
   "chips": "チップ: {{amount}}",

@@ -92,6 +92,20 @@ beforeEach(() => {
 });
 
 describe('BouillottePage', () => {
+  it('shows the configured target rounds', async () => {
+    for (const { targetRounds, text } of [
+      { targetRounds: 4, text: 'ラウンド 1 / 4' },
+      { targetRounds: 12, text: 'ラウンド 1 / 12' },
+    ]) {
+      mockExec.mockResolvedValueOnce(
+        makeBouillotteState({ config: { ...makeBouillotteState().config, targetRounds } }),
+      );
+      const { unmount } = renderWithProviders(<BouillottePage />);
+      await waitFor(() => expect(screen.getByText(text)).toBeInTheDocument());
+      unmount();
+    }
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<BouillottePage />);

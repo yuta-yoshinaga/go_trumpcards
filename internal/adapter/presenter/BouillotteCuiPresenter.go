@@ -91,6 +91,7 @@ func (p *BouillotteCuiPresenter) Output(g interfaces.BouillotteGame, lastErr err
 	return buildCuiOutput(i18n.T("bouillotte.helpTitle"), func(b *strings.Builder) {
 		b.WriteString(i18n.Tf("bouillotte.roundLine",
 			"round", strconv.Itoa(g.GetRoundNumber()),
+			"total", strconv.Itoa(g.GetTargetRounds()),
 			"pot", strconv.Itoa(g.GetPot()),
 			"ante", strconv.Itoa(g.GetAnte()),
 		) + "\n")

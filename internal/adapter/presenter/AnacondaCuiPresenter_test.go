@@ -26,6 +26,20 @@ func TestAnacondaCuiPresenter_OutputPassPhase(t *testing.T) {
 	assert.Contains(t, out, strings.Split(i18n.T("anaconda.promptPassTo"), "{{")[0])
 }
 
+func TestAnacondaCuiPresenter_OutputShowsConfiguredTargetRounds(t *testing.T) {
+	p := new(presenter.AnacondaCuiPresenter)
+	for _, tc := range []struct {
+		targetRounds int
+		want         string
+	}{{4, "ラウンド: 1 / 4"}, {12, "ラウンド: 1 / 12"}} {
+		g := domain.NewDefaultAnaconda()
+		cfg := g.GetConfig()
+		cfg.TargetRounds = tc.targetRounds
+		g.SetConfig(cfg)
+		assert.Contains(t, p.Output(g, nil), tc.want)
+	}
+}
+
 func TestAnacondaCuiPresenter_PassNoRecipientWhenAlone(t *testing.T) {
 	g := domain.NewDefaultAnaconda()
 	// Eliminate every non-human seat → the human is the only participant, so

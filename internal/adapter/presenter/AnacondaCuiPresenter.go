@@ -90,6 +90,7 @@ func (p *AnacondaCuiPresenter) Output(g interfaces.AnacondaGame, lastErr error) 
 	return buildCuiOutput(i18n.T("anaconda.helpTitle"), func(b *strings.Builder) {
 		b.WriteString(i18n.Tf("anaconda.roundLine",
 			"round", strconv.Itoa(g.GetRoundNumber()),
+			"total", strconv.Itoa(g.GetTargetRounds()),
 			"pot", strconv.Itoa(g.GetPot()),
 			"ante", strconv.Itoa(g.GetAnte()),
 		) + "\n")

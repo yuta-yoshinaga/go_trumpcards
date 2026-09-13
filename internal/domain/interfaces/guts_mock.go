@@ -52,6 +52,12 @@ func (_m *MockGutsGame) GetRoundNumber() int {
 	return ret.Get(0).(int)
 }
 
+// GetTargetRounds モック
+func (_m *MockGutsGame) GetTargetRounds() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetPot モック
 func (_m *MockGutsGame) GetPot() int {
 	ret := _m.Called()

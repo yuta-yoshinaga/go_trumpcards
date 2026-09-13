@@ -23,6 +23,20 @@ func TestMichiganCuiPresenter_OutputBetPhase(t *testing.T) {
 	assert.Contains(t, out, "ブードル")
 }
 
+func TestMichiganCuiPresenter_OutputShowsConfiguredTargetRounds(t *testing.T) {
+	p := new(presenter.MichiganCuiPresenter)
+	for _, tc := range []struct {
+		targetRounds int
+		want         string
+	}{{4, "ラウンド: 1 / 4"}, {12, "ラウンド: 1 / 12"}} {
+		g := domain.NewDefaultMichigan()
+		cfg := g.GetConfig()
+		cfg.TargetRounds = tc.targetRounds
+		g.SetConfig(cfg)
+		assert.Contains(t, p.Output(g, nil), tc.want)
+	}
+}
+
 func TestMichiganCuiPresenter_OutputBetHint(t *testing.T) {
 	p := new(presenter.MichiganCuiPresenter)
 
