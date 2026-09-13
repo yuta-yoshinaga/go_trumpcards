@@ -83,6 +83,9 @@ func (p *RamsCuiPresenter) Output(r interfaces.RamsGame, lastErr error) string {
 		)
 
 		cuiErrorBlock(sb, lastErr)
+		if settlement := ramsRoundSettlementLine(r); settlement != "" {
+			sb.WriteString(settlement + "\n")
+		}
 
 		if r.GetGameEndFlag() {
 			var banner string
@@ -119,6 +122,50 @@ func (p *RamsCuiPresenter) Output(r interfaces.RamsGame, lastErr error) string {
 			"name", cuiPlayerName(r.GetPlayer(currentIdx), currentIdx)) + "\n")
 		sb.WriteString(i18n.T("rams.promptPlay") + "\n")
 	})
+}
+
+func ramsRoundSettlementLine(r interfaces.RamsGame) string {
+	entries := r.GetActionLog()
+	start := 0
+	for i, entry := range entries {
+		if entry != nil && entry.ActionType == "deal" {
+			start = i + 1
+		}
+	}
+	currentRoundEntries := entries[start:]
+	if latestAction(currentRoundEntries, "penalty") == nil && latestAction(currentRoundEntries, "payout") == nil {
+		return ""
+	}
+	penalties := make([]string, 0)
+	payouts := make([]string, 0)
+	for _, entry := range currentRoundEntries {
+		if entry == nil || entry.PlayerIdx < 0 {
+			continue
+		}
+		name := cuiPlayerName(r.GetPlayer(entry.PlayerIdx), entry.PlayerIdx)
+		if entry.ActionType == "penalty" {
+			amount := lastActionLogNumber(entry.Detail)
+			penalties = append(penalties, i18n.Tf("rams.roundPenalty", "name", name, "amount", strconv.Itoa(amount)))
+		}
+		if entry.ActionType == "payout" {
+			amount := lastActionLogNumber(entry.Detail)
+			payouts = append(payouts, i18n.Tf("rams.roundPayout", "name", name, "amount", strconv.Itoa(amount)))
+		}
+	}
+	if len(penalties) == 0 && len(payouts) == 0 {
+		return ""
+	}
+	return i18n.Tf("rams.roundSettlement", "penalties", strings.Join(penalties, ", "), "payouts", strings.Join(payouts, ", "))
+}
+
+func lastActionLogNumber(detail string) int {
+	fields := strings.Fields(detail)
+	for i := len(fields) - 1; i >= 0; i-- {
+		if amount, err := strconv.Atoi(fields[i]); err == nil {
+			return amount
+		}
+	}
+	return 0
 }
 
 // HintOutput emits the current hint.

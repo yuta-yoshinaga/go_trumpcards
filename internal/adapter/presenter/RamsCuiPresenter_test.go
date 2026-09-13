@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"encoding/json"
 	"regexp"
 	"strconv"
 	"strings"
@@ -92,6 +93,31 @@ func TestRamsCuiPresenterRoundEnd(t *testing.T) {
 	out := p.Output(r, nil)
 	assert.Contains(t, out, i18n.T("rams.promptRoundEnd"))
 	assert.Contains(t, out, i18n.T("rams.promptNext"))
+	assert.Equal(t, out, p.Output(r, nil), "描画はゲーム状態を消費しない")
+}
+
+func TestRamsCuiPresenterRoundSettlementIsPureAndSurvivesJSON(t *testing.T) {
+	p := new(RamsCuiPresenter)
+	r := newRamsForCui(t)
+	r.GetPlayer(0).SetInRound(true)
+	r.GetPlayer(0).SetRoundTricks(1)
+	r.FinishRoundForTest()
+
+	out := p.Output(r, nil)
+	payout := i18n.Tf("rams.roundPayout", "name", cuiPlayerName(r.GetPlayer(0), 0), "amount", "12")
+	settlement := i18n.Tf("rams.roundSettlement", "penalties", "", "payouts", payout)
+	require.Contains(t, out, settlement)
+	assert.Equal(t, 1, strings.Count(out, settlement))
+	assert.Equal(t, out, p.Output(r, nil))
+
+	b, err := json.Marshal(r)
+	require.NoError(t, err)
+	restored := domain.NewDefaultRams()
+	require.NoError(t, json.Unmarshal(b, restored))
+	assert.Equal(t, out, p.Output(restored, nil))
+
+	r.NextRound()
+	assert.NotContains(t, p.Output(r, nil), settlement)
 }
 
 func TestRamsCuiPresenterError(t *testing.T) {

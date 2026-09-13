@@ -42,6 +42,13 @@ export interface RamsHint {
   reason: string;
 }
 
+/** Chip movements made during the most recently completed round. */
+export interface RamsRoundSettlement {
+  playerIdx: number;
+  penalty: number;
+  payout: number;
+}
+
 /** Table-size and round-count settings. */
 export interface RamsConfig {
   /** Players at the table (3..5, default 4). */
@@ -76,5 +83,7 @@ export interface RamsResponse extends BaseGameResponse {
   /** `-1` until decided, and `-1` on a tie. */
   winnerIdx: number;
   hint?: RamsHint;
+  roundSettlement: RamsRoundSettlement[];
+  missPenalty: number;
   config: RamsConfig;
 }

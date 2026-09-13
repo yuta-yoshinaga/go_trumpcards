@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -118,6 +119,30 @@ func TestRamsWebPresenterRoundEndMessage(t *testing.T) {
 	m := decodeRams(t, p.Output(r, nil))
 	assert.Equal(t, "rams.roundEnd", m["messageCode"])
 	assert.Equal(t, "1", m["messageParams"].(map[string]any)["round"])
+	assert.Equal(t, "rams.roundEnd", decodeRams(t, p.Output(r, nil))["messageCode"])
+}
+
+func TestRamsWebPresenterRoundSettlementIsPureAndSurvivesJSON(t *testing.T) {
+	p := new(RamsWebPresenter)
+	r := newRamsForWeb(t)
+	r.GetPlayer(0).SetInRound(true)
+	r.GetPlayer(0).SetRoundTricks(1)
+	r.FinishRoundForTest()
+
+	first := p.Output(r, nil)
+	second := p.Output(r, nil)
+	assert.Equal(t, first, second, "描画はゲーム状態を消費しない")
+	assert.Len(t, decodeRams(t, first)["roundSettlement"], 1)
+
+	b, err := json.Marshal(r)
+	require.NoError(t, err)
+	restored := domain.NewDefaultRams()
+	require.NoError(t, json.Unmarshal(b, restored))
+	assert.Equal(t, first, p.Output(restored, nil))
+
+	r.NextRound()
+	assert.Empty(t, decodeRams(t, p.Output(r, nil))["roundSettlement"])
+	assert.Equal(t, 1, strings.Count(first, `"playerIdx"`), "精算行は一度だけ")
 }
 
 func TestRamsWebPresenterResultMessage(t *testing.T) {

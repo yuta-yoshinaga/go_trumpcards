@@ -16,6 +16,19 @@ type gameEndLogger interface {
 	GetActionLog() []*domain.ActionLogEntry
 }
 
+// latestAction returns the last log entry only when it has the requested type.
+// Presenters use this to derive transient messages without mutating the game.
+func latestAction(entries []*domain.ActionLogEntry, actionType string) *domain.ActionLogEntry {
+	if len(entries) == 0 {
+		return nil
+	}
+	entry := entries[len(entries)-1]
+	if entry == nil || entry.ActionType != actionType {
+		return nil
+	}
+	return entry
+}
+
 // actionLogOutputText returns the action log as plain text, or an empty log if the game is not finished.
 func actionLogOutputText(game gameEndLogger) string {
 	if !game.GetGameEndFlag() {

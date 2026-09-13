@@ -218,6 +218,21 @@ function BadugiPageContent() {
           <span>
             {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
           </span>
+          {state.sidePots.length > 0 && (
+            <div className="text-xs">
+              {state.sidePots.map((sidePot, index) => (
+                <div key={`side-pot-${index}`}>
+                  {t('sidePot', {
+                    index: index + 1,
+                    amount: sidePot.amount,
+                    eligiblePlayers: sidePot.eligiblePlayers
+                      .map((playerIdx) => findPlayerName(state.players, playerIdx))
+                      .join(', '),
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }

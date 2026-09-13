@@ -131,6 +131,47 @@ func (cp *CrazyFourPokerCuiPresenter) writeResult(sb *strings.Builder, c interfa
 	}
 	staked := c.GetAnteBet() + c.GetSuperBet() + c.GetQueensUpBet() + c.GetPlayBet()
 	net := c.GetPayout() - staked
+	mainReturn := 0
+	switch c.GetResult() {
+	case domain.CrazyFourPokerResultWin:
+		mainReturn = (c.GetAnteBet() + c.GetPlayBet()) * 2
+	case domain.CrazyFourPokerResultPush:
+		mainReturn = c.GetAnteBet() + c.GetPlayBet()
+	case domain.CrazyFourPokerResultDealerNotQualified:
+		mainReturn = c.GetAnteBet()*2 + c.GetPlayBet()
+	}
+	sb.WriteString(i18n.Tf("crazyfourpoker.mainBreakdown", "amount", strconv.Itoa(mainReturn-c.GetAnteBet()-c.GetPlayBet())) + "\n")
+	if c.GetSuperBet() > 0 {
+		mult := 0
+		for _, row := range domain.CrazyFourPokerSuperBonusPayout() {
+			if row.Hand == c.GetPlayerHandRank() {
+				mult = row.Multiplier
+				break
+			}
+		}
+		fourAces := len(c.GetPlayerBest()) == domain.CrazyFourPokerBestSize
+		for _, card := range c.GetPlayerBest() {
+			fourAces = fourAces && card.GetValue() == 1
+		}
+		if fourAces {
+			mult = domain.CrazyFourPokerFourAcesPayout
+		}
+		bonusReturn := c.GetSuperBet() + c.GetSuperBet()*mult/domain.CrazyFourPokerPayoutScale
+		if mult == 0 && (c.GetResult() == domain.CrazyFourPokerResultWin || c.GetResult() == domain.CrazyFourPokerResultPush || c.GetResult() == domain.CrazyFourPokerResultDealerNotQualified) {
+			bonusReturn = c.GetSuperBet()
+		}
+		sb.WriteString(i18n.Tf("crazyfourpoker.superBonusBreakdown", "hand", crazyFourPokerRankName(c.GetPlayerHandRank()), "amount", strconv.Itoa(bonusReturn-c.GetSuperBet())) + "\n")
+	}
+	if c.GetQueensUpBet() > 0 {
+		queensReturn := 0
+		for _, row := range domain.CrazyFourPokerQueensUpPayout() {
+			if row.Hand == c.GetPlayerHandRank() {
+				queensReturn = c.GetQueensUpBet() + c.GetQueensUpBet()*row.Multiplier
+				break
+			}
+		}
+		sb.WriteString(i18n.Tf("crazyfourpoker.queensUpBreakdown", "amount", strconv.Itoa(queensReturn-c.GetQueensUpBet())) + "\n")
+	}
 	msg := i18n.Tf("crazyfourpoker.resultLine",
 		"result", crazyFourPokerResultName(c.GetResult()),
 		"net", strconv.Itoa(net))

@@ -14,7 +14,8 @@
     "risk": "Everyone antes {{ante}} each round. On top of that, play and take no trick at all and you pay {{penalty}} more into the pot.",
     "you": "You",
     "cpu": "CPU{{idx}}",
-    "seat": "{{chips}} chips / {{tricks}} taken"
+    "seat": "{{chips}} chips / {{tricks}} taken",
+    "roundDelta": " (this round {{delta}})"
   },
   "status": {
     "in": "in",

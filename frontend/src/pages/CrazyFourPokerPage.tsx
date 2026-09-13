@@ -111,6 +111,34 @@ function CrazyFourPokerPageContent() {
   const staked = state.anteBet + state.superBet + state.queensUpBet + state.playBet;
   const net = state.payout - staked;
   const won = state.result === CRAZY_FOUR_POKER_RESULT.win;
+  const mainReturn =
+    state.result === CRAZY_FOUR_POKER_RESULT.win
+      ? (state.anteBet + state.playBet) * 2
+      : state.result === CRAZY_FOUR_POKER_RESULT.push
+        ? state.anteBet + state.playBet
+        : state.result === CRAZY_FOUR_POKER_RESULT.dealerNotQualified
+          ? state.anteBet * 2 + state.playBet
+          : 0;
+  const fourAces = state.playerBest.length === 4 && state.playerBest.every((card) => card.value === 1);
+  const superBonus = state.superBonusPayouts?.find(
+    (row) =>
+      row.hand === state.playerHandRank &&
+      (fourAces
+        ? row.name.includes('エース') || row.name.includes('Ace')
+        : !row.name.includes('エース') && !row.name.includes('Ace')),
+  );
+  const superReturn =
+    state.superBet === 0
+      ? 0
+      : superBonus
+        ? state.superBet + Math.round((state.superBet * Number(superBonus.odds)) / 1)
+        : state.result === CRAZY_FOUR_POKER_RESULT.win ||
+            state.result === CRAZY_FOUR_POKER_RESULT.push ||
+            state.result === CRAZY_FOUR_POKER_RESULT.dealerNotQualified
+          ? state.superBet
+          : 0;
+  const queensUpPayout = state.queensUpPayouts?.find((row) => row.hand === state.playerHandRank);
+  const queensUpReturn = queensUpPayout ? state.queensUpBet * (queensUpPayout.multiplier + 1) : 0;
 
   const handRow = (label: string, cards: CrazyFourPokerResponse['playerHand'], testId: string) => (
     <div className="mb-2">
@@ -195,6 +223,20 @@ function CrazyFourPokerPageContent() {
             {isResultPhase && (
               <div className="text-center mb-2" data-testid="c4p-result">
                 <div className="text-ds-text-primary text-base font-bold">{t(`result.${resultKey}`)}</div>
+                <div className="text-sm">
+                  {t('result.main', { amount: mainReturn - state.anteBet - state.playBet })}
+                </div>
+                {state.superBet > 0 && (
+                  <div className="text-sm">
+                    {t('result.superBonus', {
+                      hand: t(`rank.${state.playerHandRank}`),
+                      amount: superReturn - state.superBet,
+                    })}
+                  </div>
+                )}
+                {state.queensUpBet > 0 && (
+                  <div className="text-sm">{t('result.queensUp', { amount: queensUpReturn - state.queensUpBet })}</div>
+                )}
                 <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error'}`}>
                   {t('label.net')}: {net}
                 </div>
