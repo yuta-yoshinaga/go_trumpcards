@@ -848,6 +848,57 @@ func TestSevenCardStudCuiPresenter_Hint_ChicagoSpadeLock(t *testing.T) {
 	assert.Contains(t, out, "続行条件を満たしません")
 }
 
+func TestSevenCardStudCuiPresenter_Hint_ChicagoSpadeLockGuards(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.SevenCardStudCuiPresenter)
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	newChicago := func(phase int) (*domain.SevenCardStud, *domain.SevenCardStudPlayer) {
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewSevenCardStudChicago(domain.NewTrumpCards(0), players, domain.DefaultSevenCardStudConfig())
+		s.SetPhase(phase)
+		s.SetCurrentTurn(0)
+		players[0].AddHoleCard(card(domain.CardDesignSpade, 1))
+		players[0].AddHoleCard(card(domain.CardDesignHeart, 2))
+		players[0].AddDoorCard(card(domain.CardDesignClover, 9))
+		return s, players[0]
+	}
+
+	t.Run("falls through outside Chicago betting phases", func(t *testing.T) {
+		s, _ := newChicago(domain.SevenCardStudPhaseShowdown)
+		assert.Contains(t, p.HintOutput(s), "現在ヒントはありません。")
+	})
+
+	for _, tc := range []struct {
+		name   string
+		mutate func(*domain.SevenCardStudPlayer)
+	}{
+		{"folded", func(player *domain.SevenCardStudPlayer) { player.SetFolded(true) }},
+		{"all-in", func(player *domain.SevenCardStudPlayer) { player.SetAllIn(true) }},
+		{"empty hand", func(player *domain.SevenCardStudPlayer) { player.ClearCards() }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s, player := newChicago(domain.SevenCardStudPhaseSixthStreet)
+			tc.mutate(player)
+			assert.Contains(t, p.HintOutput(s), "現在ヒントはありません。")
+		})
+	}
+
+	t.Run("rounds a negative owed amount down to a check", func(t *testing.T) {
+		s, player := newChicago(domain.SevenCardStudPhaseSixthStreet)
+		s.SetLastBet(5)
+		player.SetCurrentBet(10)
+		out := p.HintOutput(s)
+		assert.Contains(t, out, "チェック")
+		assert.Contains(t, out, "伏せ札の A♠ でポットの半分が確定")
+	})
+}
+
 // #5543: Hi-Lo の結果は合計額しか出ておらず、ハイを取ったのかローを取ったのか、
 // スクープしたのかが CUI からは読み取れなかった。Web は StudHiLoSplit が
 // 3 通りを別バッジで出している。
