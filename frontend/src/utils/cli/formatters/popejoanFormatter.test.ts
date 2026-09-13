@@ -77,6 +77,16 @@ describe('formatPopeJoanState', () => {
     expect(out).toContain('targets in your hand: Matrimony (K-Q), Intrigue (Q-J)');
   });
 
+  it('ignores K-Q outside the trump suit', () => {
+    const out = formatPopeJoanState(
+      makeState({
+        trumpSuit: 1,
+        players: [seat(0, true, { cards: [card('HEART', 13), card('HEART', 12)] }), seat(1, false)],
+      }),
+    );
+    expect(out).toContain('targets in your hand: none');
+  });
+
   it('reports none when neither target is in the trump suit', () => {
     expect(formatPopeJoanState(makeState())).toContain('targets in your hand: none');
   });
