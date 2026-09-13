@@ -114,7 +114,21 @@ func piquetWriteLastTrickWinner(b *strings.Builder, g interfaces.PiquetGame) {
 				role = i18n.T("piquet.roleElder")
 			}
 			b.WriteString("  " + i18n.Tf("piquet.trickWinner",
-				"player", role+" ("+cuiPlayerName(g.GetPlayer(entry.PlayerIdx), entry.PlayerIdx)+")") + "\n")
+				"player", role+" ("+cuiPlayerName(g.GetPlayer(entry.PlayerIdx), entry.PlayerIdx)+")",
+				"cards", cuiCardSliceStr(entry.Cards)) + "\n")
+			for _, result := range g.GetActionLog()[i+1:] {
+				if result == nil {
+					continue
+				}
+				switch result.ActionType {
+				case "trick_point":
+					b.WriteString("  " + i18n.T("piquet.trickPoint") + "\n")
+				case "last_trick_bonus":
+					b.WriteString("  " + i18n.T("piquet.lastTrickBonus") + "\n")
+				case "pique":
+					b.WriteString("  " + i18n.T("piquet.piqueBonus") + "\n")
+				}
+			}
 			return
 		}
 	}

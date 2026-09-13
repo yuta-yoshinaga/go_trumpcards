@@ -97,8 +97,8 @@ func TestPiquetResolveTrickLogsWinner(t *testing.T) {
 
 	p.resolveTrick()
 
-	if len(p.actionLog) != 1 {
-		t.Fatalf("action log length = %d, want 1", len(p.actionLog))
+	if len(p.actionLog) < 2 {
+		t.Fatalf("action log length = %d, want trick result and point entries", len(p.actionLog))
 	}
 	entry := p.actionLog[0]
 	if entry.ActionType != "trick_win" {
@@ -109,6 +109,9 @@ func TestPiquetResolveTrickLogsWinner(t *testing.T) {
 	}
 	if entry.Detail != "CPU 1 wins trick 3" {
 		t.Errorf("detail = %q, want CPU 1 wins trick 3", entry.Detail)
+	}
+	if len(entry.Cards) != 2 {
+		t.Errorf("cards = %d, want 2", len(entry.Cards))
 	}
 }
 

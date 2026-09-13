@@ -20,6 +20,7 @@ func (p *PiquetWebPresenter) Output(g interfaces.PiquetGame, lastErr error) stri
 	} else {
 		resObj.MessageCode = piquetPhaseMessageCode(g.GetPhase())
 		if trickWin := piquetLatestTrickWin(g.GetActionLog()); trickWin != nil {
+			resObj.MessageParams = map[string]string{"cards": cuiCardSliceStr(trickWin.Cards)}
 			if trickWin.PlayerIdx == g.GetElderIdx() {
 				resObj.MessageCode = "piquet.trickWin.elder"
 			} else if trickWin.PlayerIdx == g.GetYoungerIdx() {
@@ -54,9 +55,20 @@ func piquetLatestTrickWin(entries []*domain.ActionLogEntry) *domain.ActionLogEnt
 	if len(entries) == 0 {
 		return nil
 	}
-	last := entries[len(entries)-1]
-	if last != nil && last.ActionType == "trick_win" {
-		return last
+	for i := len(entries) - 1; i >= 0; i-- {
+		if entries[i] == nil {
+			return nil
+		}
+		switch entries[i].ActionType {
+		case "trick_point", "last_trick_bonus", "pique":
+			// These are the non-winning entries resolveTrick can append for the same trick.
+			continue
+		case "trick_win":
+			return entries[i]
+		default:
+			// Do not reuse a trick_win from an earlier trick, deal, or phase.
+			return nil
+		}
 	}
 	return nil
 }

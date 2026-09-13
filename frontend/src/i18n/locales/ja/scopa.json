@@ -24,6 +24,11 @@
     "humanStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / スコパ{{scopa}} / 累計{{score}}pt",
     "roundEnd": "ラウンド終了 — 得点を確認して「次のラウンド」へ進んでください"
   },
+  "humanActionLine": "あなたの行動: {{text}}",
+  "cpuActionLine": "  {{name}}: {{text}}",
+  "actionCapture": "捕獲 played={{played}} captured={{count}}枚{{suffix}}",
+  "actionScopaSuffix": " (スコパ!)",
+  "actionLay": "場に置く {{played}}",
   "breakdown": {
     "title": "得点内訳",
     "cards": "カルテ（最多カード）",

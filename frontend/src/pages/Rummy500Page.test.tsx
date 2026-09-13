@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { rummy500Api } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Rummy500Response } from '../types/card';
 import { Rummy500Page } from './Rummy500Page';
@@ -116,6 +117,121 @@ describe('Rummy500Page', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /山札から引く/ })).toBeInTheDocument();
     });
+  });
+
+  it('uses card digits for discard draws and an action key for stock draws', async () => {
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByRole('button', { name: /山札から引く/ });
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard', undefined, undefined, undefined, 0));
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
+  });
+
+  it('allows discard keyboard indices beyond the hand size', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      players: [
+        { ...drawPhaseState.players[0], cards: [drawPhaseState.players[0].cards[0]] },
+        drawPhaseState.players[1],
+      ],
+      discardPile: [...drawPhaseState.discardPile, { design: 'DIAMOND', value: 9 }],
+    });
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByRole('button', { name: /山札から引く/ });
+    mockExec.mockClear();
+
+    fireEvent.keyDown(document, { key: '3' });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard', undefined, undefined, undefined, 2));
+  });
+
+  it('ignores discard keyboard indices beyond the discard pile', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      players: [
+        { ...drawPhaseState.players[0], cards: [...drawPhaseState.players[0].cards, { design: 'DIAMOND', value: 9 }] },
+        drawPhaseState.players[1],
+      ],
+      discardPile: [drawPhaseState.discardPile[0]],
+    });
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByRole('button', { name: /山札から引く/ });
+    mockExec.mockClear();
+
+    fireEvent.keyDown(document, { key: '2' });
+    await flushPendingDispatch();
+
+    expect(mockExec).not.toHaveBeenCalledWith('drawdiscard', undefined, undefined, undefined, 1);
+  });
+
+  it('uses card selection and Enter for meld, while action keys are disabled on CPU turns', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByRole('button', { name: /メルドする/ });
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    fireEvent.keyDown(document, { key: '2' });
+    fireEvent.keyDown(document, { key: '3' });
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [0, 1, 2]));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 1 });
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByTestId('rummy500-card-kbd-shortcuts');
+    fireEvent.keyDown(document, { key: 'm' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('meld', expect.anything(), expect.anything(), expect.anything());
+  });
+
+  it('uses the m action key for meld and clears the selection', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByRole('button', { name: /メルドする/ });
+    const handCards = document.querySelectorAll('[data-tutorial="r5-player-hand"] button');
+    for (const card of handCards) fireEvent.click(card);
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'm' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [0, 1, 2]));
+    await waitFor(() => expect(handCards[0]).toHaveAttribute('aria-pressed', 'false'));
+  });
+
+  it('uses the l action key for layoff', async () => {
+    const state: Rummy500Response = {
+      ...playPhaseState,
+      layoffTargets: [[{ owner: 1, meldIdx: 0 }]],
+      players: [
+        playPhaseState.players[0],
+        { ...playPhaseState.players[1], laidMelds: [{ cards: [{ design: 'DIAMOND', value: 4 }] }] },
+      ],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByTestId('layoff-meld-1-0');
+    fireEvent.click(document.querySelector('[data-tutorial="r5-player-hand"] button') as HTMLButtonElement);
+    fireEvent.keyDown(document, { key: 'l' });
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'l' });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('layoff', undefined, undefined, undefined, undefined, {
+        meldOwner: 1,
+        meldIdx: 0,
+        cardIndex: 0,
+      }),
+    );
+  });
+
+  it('uses the x action key for discard', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByRole('button', { name: /^捨てる$/ });
+    fireEvent.click(document.querySelector('[data-tutorial="r5-player-hand"] button') as HTMLButtonElement);
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'x' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', 0));
   });
 
   it('clicking discard card in Draw phase calls drawdiscard', async () => {
