@@ -80,8 +80,9 @@ func TestCrazyQuiltCuiPresenter_Output(t *testing.T) {
 		board := strings.Split(out, "----------\n")[1]
 		rows := strings.Split(board, "\n")[:domain.CrazyQuiltGridSize]
 		require.Len(t, rows, domain.CrazyQuiltGridSize)
-		for _, row := range rows[1:] {
-			assert.Len(t, row, len(rows[0]), "every Crazy Quilt row has the same display width")
+		for _, row := range rows {
+			assert.Equal(t, crazyQuiltDisplayWidth(row), crazyQuiltDisplayWidth(rows[0]),
+				"every Crazy Quilt row has the same display width")
 		}
 	})
 
@@ -186,8 +187,9 @@ func TestCrazyQuiltCellMarkKeepsColoredBoardRowsAligned(t *testing.T) {
 	stripANSI := func(s string) string {
 		return strings.ReplaceAll(strings.ReplaceAll(s, "\033[31m", ""), "\033[0m", "")
 	}
-	for _, row := range rows[1:] {
-		assert.Equal(t, len(stripANSI(rows[0])), len(stripANSI(row)), "every colored board row has the same display width")
+	for _, row := range rows {
+		assert.Equal(t, crazyQuiltDisplayWidth(stripANSI(rows[0])), crazyQuiltDisplayWidth(stripANSI(row)),
+			"every colored board row has the same display width")
 	}
 	assert.Contains(t, stripANSI(rows[0]), "[*HEART 1   ]", "red available vertical cell is aligned")
 	assert.Contains(t, stripANSI(rows[0]), "(*DIAMOND 2 )", "red available horizontal cell is aligned")
@@ -198,8 +200,27 @@ func TestCrazyQuiltCellMarkKeepsColoredBoardRowsAligned(t *testing.T) {
 	out = new(CrazyQuiltCuiPresenter).Output(g, nil)
 	board = strings.Split(out, "----------\n")[1]
 	rows = strings.Split(board, "\n")[:domain.CrazyQuiltGridSize]
-	for _, row := range rows[1:] {
-		assert.Equal(t, len(rows[0]), len(row), "every no-color board row has the same display width")
+	for _, row := range rows {
+		assert.Equal(t, crazyQuiltDisplayWidth(rows[0]), crazyQuiltDisplayWidth(row),
+			"every no-color board row has the same display width")
+	}
+}
+
+func TestCrazyQuiltCuiPresenter_JapaneseEmptyCellsKeepRowsAligned(t *testing.T) {
+	origLang := i18n.Lang()
+	i18n.SetLang("ja")
+	defer i18n.SetLang(origLang)
+
+	g := new(interfaces.MockCrazyQuiltGame)
+	setupCrazyQuiltCuiMockDefaults(g)
+
+	out := new(CrazyQuiltCuiPresenter).Output(g, nil)
+	board := strings.Split(out, "----------\n")[1]
+	rows := strings.Split(board, "\n")[:domain.CrazyQuiltGridSize]
+	require.Contains(t, out, "・", "Japanese empty cells are present in the mixed board")
+	for _, row := range rows {
+		assert.Equal(t, crazyQuiltDisplayWidth(rows[0]), crazyQuiltDisplayWidth(row),
+			"Japanese empty-cell markers must occupy two terminal columns")
 	}
 }
 

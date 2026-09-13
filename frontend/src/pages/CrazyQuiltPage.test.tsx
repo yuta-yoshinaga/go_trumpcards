@@ -75,7 +75,7 @@ describe('CrazyQuiltPage', () => {
     expect(horizontal.querySelector('.rotate-90')).not.toBeInTheDocument();
   });
 
-  it('shows orientation and corner shape on both cards and empty cells', async () => {
+  it('shows effective orientation corner shapes on both cards and empty cells', async () => {
     const quilt = makeQuilt();
     quilt[0] = null;
     mockExec.mockResolvedValue({ ...playingState, quilt });
@@ -88,11 +88,11 @@ describe('CrazyQuiltPage', () => {
     expect(emptyVertical).toHaveAttribute('data-orientation', 'vertical');
     expect(horizontalCard).toHaveAttribute('data-orientation', 'horizontal');
     expect(emptyHorizontal).toHaveAttribute('data-orientation', 'horizontal');
-    expect(emptyVertical.className).toContain('rounded-tl-none rounded-br-none');
-    expect(horizontalCard.className).toContain('rounded-tr-none rounded-bl-none');
-    expect(emptyHorizontal.className).toContain('rounded-tr-none rounded-bl-none');
-    expect(emptyVertical.className).not.toContain('rounded-tr-none rounded-bl-none');
-    expect(horizontalCard.className).not.toContain('rounded-tl-none rounded-br-none');
+    expect(emptyVertical.className).toContain('rounded-tl-lg rounded-br-lg');
+    expect(horizontalCard.className).toContain('rounded-tr-lg rounded-bl-lg');
+    expect(emptyHorizontal.className).toContain('rounded-tr-lg rounded-bl-lg');
+    expect(emptyVertical.className).not.toContain('rounded-tr-lg rounded-bl-lg');
+    expect(horizontalCard.className).not.toContain('rounded-tl-lg rounded-br-lg');
   });
 
   // **The rule the issue got wrong.** Availability depends on the card's

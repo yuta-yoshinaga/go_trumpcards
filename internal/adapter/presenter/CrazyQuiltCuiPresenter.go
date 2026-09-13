@@ -28,19 +28,34 @@ func crazyQuiltCellMark(card string, available, vertical bool) string {
 		mark = "*"
 	}
 	// Keep every cell the same width so that the 8x8 board remains a grid.
-	const cardWidth = len("DIAMOND 13")
+	const cardWidth = 10 // display width of the longest ASCII card, "DIAMOND 13"
 	const redPrefix = "\033[31m"
 	const colorSuffix = "\033[0m"
 	if strings.HasPrefix(card, redPrefix) && strings.HasSuffix(card, colorSuffix) {
 		plainCard := card[len(redPrefix) : len(card)-len(colorSuffix)]
-		card = redPrefix + plainCard + strings.Repeat(" ", cardWidth-len(plainCard)) + colorSuffix
+		card = redPrefix + plainCard + strings.Repeat(" ", cardWidth-crazyQuiltDisplayWidth(plainCard)) + colorSuffix
 	} else {
-		card += strings.Repeat(" ", cardWidth-len(card))
+		card += strings.Repeat(" ", cardWidth-crazyQuiltDisplayWidth(card))
 	}
 	if vertical {
 		return "[" + mark + card + "]"
 	}
 	return "(" + mark + card + ")"
+}
+
+// crazyQuiltDisplayWidth covers every character emitted in a quilt cell:
+// card names and padding are ASCII, while the Japanese empty-cell marker ・ is
+// the only non-ASCII character and occupies two terminal columns.
+func crazyQuiltDisplayWidth(s string) int {
+	width := 0
+	for _, r := range s {
+		if r == '・' {
+			width += 2
+		} else {
+			width++
+		}
+	}
+	return width
 }
 
 // CrazyQuiltCuiPresenter renders the CrazyQuilt CUI view.

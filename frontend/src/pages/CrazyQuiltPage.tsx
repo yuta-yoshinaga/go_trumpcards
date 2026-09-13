@@ -190,7 +190,7 @@ function CrazyQuiltPageContent() {
         <div
           key={`cell-${idx.toString()}`}
           style={{ width: dims.cw, height: dims.ch }}
-          className={`flex items-center justify-center border-2 border-dashed border-ds-text-muted/70 ${vertical ? 'rounded-tl-none rounded-br-none' : 'rounded-tr-none rounded-bl-none'}`}
+          className={`flex items-center justify-center border-2 border-dashed border-ds-text-muted/70 ${vertical ? 'rounded-tl-lg rounded-br-lg' : 'rounded-tr-lg rounded-bl-lg'}`}
           data-testid={`cq-cell-${idx.toString()}`}
           data-orientation={vertical ? 'vertical' : 'horizontal'}
         >
@@ -212,7 +212,7 @@ function CrazyQuiltPageContent() {
         data-testid={`cq-cell-${idx.toString()}`}
         data-available={available ? 'true' : undefined}
         data-orientation={vertical ? 'vertical' : 'horizontal'}
-        className={`p-0 bg-transparent flex items-center justify-center border-2 border-ds-text-muted ${vertical ? 'rounded-tl-none rounded-br-none' : 'rounded-tr-none rounded-bl-none'} ${focusRingWhite} ${
+        className={`p-0 bg-transparent flex items-center justify-center border-2 border-ds-text-muted ${vertical ? 'rounded-tl-lg rounded-br-lg' : 'rounded-tr-lg rounded-bl-lg'} ${focusRingWhite} ${
           available ? 'cursor-pointer ring-1 ring-ds-info/70' : 'opacity-60'
         } ${isSourceSelected('quilt', idx) ? 'ring-2 ring-ds-warning' : ''}`}
         style={{ width: dims.cw, height: dims.ch }}
