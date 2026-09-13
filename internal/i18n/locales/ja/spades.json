@@ -29,7 +29,7 @@
   "helpHint": "  h                    助言を表示",
   "noteCutthroat": "  ※ このスペードは4人が個別に得点を競うカットスロート方式です (パートナーシップはありません)",
   "nilOk": "ニル継続中",
-  "nilFail": "ニル失敗 (トリックを取得)"
-  ,"bidRemaining": "あと{{remaining}}トリックでビッド達成"
-  ,"bidMade": "ビッド達成（バッグ{{bags}}）"
+  "nilFail": "ニル失敗 (トリックを取得)",
+  "bidRemaining": "あと{{remaining}}トリックでビッド達成",
+  "bidMade": "ビッド達成（バッグ{{bags}}）"
 }

@@ -106,7 +106,7 @@ flowchart TD
 --- PLAYER ---
 カード: [0]DIAMOND 13 [1]DIAMOND 11 [2]SPADE 12 [3]CLOVER 10 [4]HEART 8 [5]HEART 11 [6]CLOVER 5
 反則になる分割: [0,1] [0,5] [1,5]
-ハウスウェイ推奨: [4] [5] (CLOVER 10 CLOVER 1) をローハンドへ
+ハウスウェイ推奨: [0] [2] (DIAMOND 13 SPADE 12) をローハンドへ
 ----------
 
 > s 5 6
