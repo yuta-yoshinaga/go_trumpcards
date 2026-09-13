@@ -57,6 +57,7 @@
     "weakHandRank": "弱いハンド — フォールド推奨"
   },
   "frontendHint": {
+    "sokoRaiseFourCard": "4枚役ができています。Sokoでは強いので攻めましょう",
     "fivecardstudRaisePair": "ペアができています。攻めましょう",
     "fivecardstudCallHigh": "高い札があります。見に行く価値があります",
     "fivecardstudCheckFree": "まだ役がありません。ただで見られるならチェックしましょう",

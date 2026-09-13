@@ -125,7 +125,17 @@ func (p *StealingBundlesCuiPresenter) Output(s interfaces.StealingBundlesGame, l
 		// **取れるときは置けません。** 黙っていると trail が弾かれる理由が分かりません。
 		if s.CanCapture(0) {
 			sb.WriteString(color.Yellow(i18n.T("stealingbundles.promptMustCapture")) + "\n")
-			sb.WriteString(i18n.T("stealingbundles.promptTake") + "\n")
+			for i := 0; i < s.GetPlayer(0).GetCardsSize(); i++ {
+				matches := s.GetTableMatches(0, i)
+				if len(matches) == 0 {
+					continue
+				}
+				cards := make([]string, 0, len(matches))
+				for _, tableIdx := range matches {
+					cards = append(cards, cuiCardStr(s.GetTableCards()[tableIdx]))
+				}
+				sb.WriteString(i18n.Tf("stealingbundles.promptTakeCards", "idx", strconv.Itoa(i), "cards", strings.Join(cards, ", ")) + "\n")
+			}
 			sb.WriteString(i18n.T("stealingbundles.promptSteal") + "\n")
 			return
 		}

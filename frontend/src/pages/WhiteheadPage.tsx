@@ -248,6 +248,7 @@ function WhiteheadPageContent() {
   const isGameClear = state.phase === WhiteheadPhase.GAME_CLEAR;
   const isGameOver = state.phase === WhiteheadPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
   const isVegas = state.scoringMode === WhiteheadScoringMode.VEGAS;
   const currentStat = getStat(state.drawCount, state.scoringMode);
 
@@ -585,6 +586,15 @@ function WhiteheadPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {isGameOver && (
+              <p data-testid="whitehead-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+                {t('gameOverSummary', {
+                  count: foundationCount,
+                  percent: Math.round((foundationCount / 52) * 100),
+                })}
+              </p>
+            )}
 
             {/* Personal-best badge on the clear screen (#3031). */}
             {isGameClear && bestUpdate && (bestUpdate.newBestTime || bestUpdate.newFewestMoves) && (

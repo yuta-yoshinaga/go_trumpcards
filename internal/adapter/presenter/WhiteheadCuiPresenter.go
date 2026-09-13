@@ -137,7 +137,10 @@ func (p *WhiteheadCuiPresenter) Output(k interfaces.WhiteheadGame, lastErr error
 			}
 			b.WriteString("\n")
 		case domain.WhiteheadPhaseGameOver:
-			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + " ")
+			fnd := k.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.WhiteheadFoundationCnt*domain.CardValueMax)) + "\n")
 		}
 	})
 }
