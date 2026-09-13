@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type CruelMoveZone, cruelApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -21,6 +21,7 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { cruelWinRate, useCruelStats } from '../hooks/useCruelStats';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -254,6 +255,22 @@ function CruelPageContent() {
   );
 
   const isPlayingForKbd = state?.phase === CruelPhase.PLAYING;
+  const { stats, recordResult } = useCruelStats();
+  const [bestUpdate, setBestUpdate] = useState(false);
+  const recordedRef = useRef(false);
+  const currentPhase = state?.phase;
+  const currentMoves = state?.moveCount;
+  useEffect(() => {
+    const ended = currentPhase === CruelPhase.GAME_CLEAR || currentPhase === CruelPhase.GAME_OVER;
+    if (!ended) {
+      recordedRef.current = false;
+      return;
+    }
+    if (recordedRef.current) return;
+    recordedRef.current = true;
+    const won = currentPhase === CruelPhase.GAME_CLEAR;
+    setBestUpdate(won ? recordResult({ won, moves: currentMoves ?? 0 }) : false);
+  }, [currentPhase, currentMoves, recordResult]);
 
   const actionBindings = useMemo(
     () => [
@@ -282,6 +299,9 @@ function CruelPageContent() {
   const isGameClear = state.phase === CruelPhase.GAME_CLEAR;
   const isGameOver = state.phase === CruelPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  // The first positive result is necessarily a new record; keep the badge
+  // visible even if React replays the completion effect in development.
+  const showBestBadge = bestUpdate || (isGameClear && stats.plays === 1 && stats.fewestMoves === state.moveCount);
 
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
@@ -514,7 +534,21 @@ function CruelPageContent() {
               hideActionLog={hideActionLog}
             />
 
+            {isGameClear && showBestBadge && (
+              <div
+                data-testid="cruel-best-badge"
+                role="status"
+                className="text-center text-ds-success font-semibold text-sm mb-2"
+              >
+                {t('stats.newBest')}
+              </div>
+            )}
+
             <GameFooter>
+              <div data-testid="cruel-stats-panel" className="w-full text-game-text-muted text-xs">
+                {t('stats.winRate', { rate: cruelWinRate(stats) })} ({stats.wins}/{stats.plays})
+                {stats.fewestMoves !== null && <> · {t('stats.fewestMoves', { moves: stats.fewestMoves })}</>}
+              </div>
               <GameResetButton
                 isGameEnd={isEnded}
                 onReset={handleManualReset}

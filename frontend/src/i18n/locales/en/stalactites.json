@@ -42,5 +42,10 @@
       "stalactites": "Free Cell",
       "foundation": "Foundation"
     }
+  },
+  "stats": {
+    "winRate": "Win rate {{rate}}%",
+    "fewestMoves": "{{moves}} moves",
+    "newBest": "New personal best!"
   }
 }
