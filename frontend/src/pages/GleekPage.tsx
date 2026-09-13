@@ -233,11 +233,15 @@ function GleekPageContent() {
               </div>
               {state.ruffWinnerIdx >= 0 && (
                 <div data-testid="gleek-ruff-line">
-                  {t('ruffLine', {
-                    name: playerName(state.ruffWinnerIdx, state.ruffWinnerIdx === humanIdx),
-                    total: state.players[state.ruffWinnerIdx]?.ruff ?? 0,
-                    suit: t(SUIT_KEYS[state.players[state.ruffWinnerIdx]?.ruffSuit ?? 0] ?? 'suitNone'),
-                  })}
+                  {state.players.map((player) => (
+                    <div key={player.id}>
+                      {t('ruffLine', {
+                        name: playerName(player.id, player.id === humanIdx),
+                        total: player.ruff,
+                        suit: t(SUIT_KEYS[player.ruffSuit] ?? 'suitNone'),
+                      })}
+                    </div>
+                  ))}
                 </div>
               )}
               {state.melds.map((m) => (

@@ -91,10 +91,26 @@ describe('GleekPage', () => {
     const stage = await screen.findByTestId('gleek-stage-line');
     expect(stage).toHaveTextContent('14 で落札');
     expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent('ハート');
+    expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent('31');
+    expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent('24');
+    expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent('20');
     const melds = screen.getAllByTestId('gleek-meld-line');
     expect(melds).toHaveLength(2);
     expect(melds[0]).toHaveTextContent('グリーク');
     expect(melds[1]).toHaveTextContent('マーニヴァル');
+  });
+
+  it('renders a zero-point ruff and its no-suit label', async () => {
+    mockExec.mockResolvedValue(
+      makeGleekState({
+        players: makeGleekState().players.map((player, index) =>
+          index === 2 ? { ...player, ruff: 0, ruffSuit: 0 } : player,
+        ),
+      }),
+    );
+    renderWithProviders(<GleekPage />);
+    expect(await screen.findByTestId('gleek-ruff-line')).toHaveTextContent('0');
+    expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent(' - の 0');
   });
 
   it('omits the ruff line before the ruff is scored', async () => {

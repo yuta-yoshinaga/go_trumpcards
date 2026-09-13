@@ -49,5 +49,7 @@
     "hand": "Your hand. Playable cards get a green border. Aim first at making the required trick count."
   },
   "dealerBadge": "dealer",
-  "dealerAria": "the dealer this round (deciding and leading start to their left)"
+  "dealerAria": "the dealer this round (deciding and leading start to their left)",
+  "beastBadge": "beast",
+  "beastAria": "this seat pays double ante next round"
 }

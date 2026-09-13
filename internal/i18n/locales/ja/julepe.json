@@ -31,5 +31,6 @@
   "hintReasonAlreadySafe": "規定トリック数を確保済み。あとは取れるだけ取る",
   "helpExampleIn": "  in                   配られた手で勝負すると宣言する",
   "helpHint": "  h                    助言を表示",
-  "dealerMark": "[親]"
+  "dealerMark": "[親]",
+  "beastMark": "[ビースト: 次ラウンドのアンテ倍]"
 }

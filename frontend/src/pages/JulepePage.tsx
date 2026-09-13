@@ -238,6 +238,15 @@ function JulepePageContent() {
                       <span className="sr-only">{t('dealerAria')}</span>
                     </span>
                   )}
+                  {state.beast[p.id] && (
+                    <span
+                      className={`ml-1 rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
+                      data-testid={`rm-beast-${p.id.toString()}`}
+                    >
+                      <span aria-hidden="true">{t('beastBadge')}</span>
+                      <span className="sr-only">{t('beastAria')}</span>
+                    </span>
+                  )}
                   {': '}
                   {t('header.seat', { chips: String(p.chips), tricks: String(p.roundTricks) })} [{statusStr(p)}]
                 </div>

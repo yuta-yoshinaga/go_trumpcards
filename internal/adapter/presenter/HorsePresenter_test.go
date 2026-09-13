@@ -121,24 +121,26 @@ func TestHorseWebPresenter_Output(t *testing.T) {
 			IsHuman bool   `json:"isHuman"`
 			Chips   int    `json:"chips"`
 		} `json:"seats"`
-		Phase            int    `json:"phase"`
-		Discipline       int    `json:"discipline"`
-		DisciplineLetter string `json:"disciplineLetter"`
-		DisciplineName   string `json:"disciplineName"`
-		HandInDiscipline int    `json:"handInDiscipline"`
-		HandNumber       int    `json:"handNumber"`
-		CurrentTurn      int    `json:"currentTurn"`
-		HumanSeat        int    `json:"humanSeat"`
-		IsHumanTurn      bool   `json:"isHumanTurn"`
-		Pot              int    `json:"pot"`
-		MinRaise         int    `json:"minRaise"`
-		MaxBetAmount     int    `json:"maxBetAmount"`
-		TablePhase       int    `json:"tablePhase"`
-		GameEndFlag      bool   `json:"gameEndFlag"`
-		WinnerSeat       int    `json:"winnerSeat"`
-		Message          string `json:"message"`
-		MessageCode      string `json:"messageCode"`
-		Config           struct {
+		Phase              int    `json:"phase"`
+		Discipline         int    `json:"discipline"`
+		DisciplineLetter   string `json:"disciplineLetter"`
+		DisciplineName     string `json:"disciplineName"`
+		DisciplinePosition int    `json:"disciplinePosition"`
+		DisciplineTotal    int    `json:"disciplineTotal"`
+		HandInDiscipline   int    `json:"handInDiscipline"`
+		HandNumber         int    `json:"handNumber"`
+		CurrentTurn        int    `json:"currentTurn"`
+		HumanSeat          int    `json:"humanSeat"`
+		IsHumanTurn        bool   `json:"isHumanTurn"`
+		Pot                int    `json:"pot"`
+		MinRaise           int    `json:"minRaise"`
+		MaxBetAmount       int    `json:"maxBetAmount"`
+		TablePhase         int    `json:"tablePhase"`
+		GameEndFlag        bool   `json:"gameEndFlag"`
+		WinnerSeat         int    `json:"winnerSeat"`
+		Message            string `json:"message"`
+		MessageCode        string `json:"messageCode"`
+		Config             struct {
 			Seats              int `json:"seats"`
 			InitialChips       int `json:"initialChips"`
 			HandsPerDiscipline int `json:"handsPerDiscipline"`
@@ -155,6 +157,8 @@ func TestHorseWebPresenter_Output(t *testing.T) {
 	}
 	assert.Equal(t, "H", out.DisciplineLetter)
 	assert.Equal(t, "holdem", out.DisciplineName)
+	assert.Equal(t, 1, out.DisciplinePosition)
+	assert.Equal(t, 5, out.DisciplineTotal)
 	assert.Equal(t, 1, out.HandInDiscipline)
 	assert.Equal(t, 1, out.HandNumber)
 	assert.Equal(t, g.GetHumanSeat(), out.HumanSeat)
@@ -297,10 +301,12 @@ func TestHorseCuiPresenter_DrawTurnHint(t *testing.T) {
 func TestHorseWebPresenter_ReportsTheVariantAndRotation(t *testing.T) {
 	p := &presenter.HorseWebPresenter{}
 	var out struct {
-		Variant     int   `json:"variant"`
-		Rotation    []int `json:"rotation"`
-		IsDrawPhase bool  `json:"isDrawPhase"`
-		DrawIndex   int   `json:"drawIndex"`
+		Variant            int   `json:"variant"`
+		Rotation           []int `json:"rotation"`
+		IsDrawPhase        bool  `json:"isDrawPhase"`
+		DrawIndex          int   `json:"drawIndex"`
+		DisciplinePosition int   `json:"disciplinePosition"`
+		DisciplineTotal    int   `json:"disciplineTotal"`
 	}
 
 	g := domain.NewDefaultEightGame()
@@ -309,12 +315,16 @@ func TestHorseWebPresenter_ReportsTheVariantAndRotation(t *testing.T) {
 	assert.Equal(t, int(domain.HorseVariantEightGame), out.Variant)
 	assert.Len(t, out.Rotation, 8)
 	assert.Equal(t, int(domain.HorseTripleDraw), out.Rotation[7])
+	assert.Equal(t, 1, out.DisciplinePosition)
+	assert.Equal(t, 8, out.DisciplineTotal)
 	assert.False(t, out.IsDrawPhase, "ホールデムの手が引き直しを名乗っている")
 	assert.Zero(t, out.DrawIndex)
 
 	require.NoError(t, json.Unmarshal([]byte(p.Output(newHorseForPresenter(t), nil)), &out))
 	assert.Equal(t, int(domain.HorseVariantHorse), out.Variant)
 	assert.Len(t, out.Rotation, 5)
+	assert.Equal(t, 1, out.DisciplinePosition)
+	assert.Equal(t, 5, out.DisciplineTotal)
 }
 
 // 引き直しの番であることと、何回目かが Web にも届く。

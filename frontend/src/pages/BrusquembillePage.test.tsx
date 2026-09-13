@@ -163,7 +163,24 @@ describe('BrusquembillePage', () => {
       }),
     );
     renderWithProviders(<BrusquembillePage />);
-    await waitFor(() => expect(screen.getByText(/あなたの勝ち！.*70.*50/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('あなたの勝ち！ (70-50)')).toBeInTheDocument());
+  });
+
+  it('shows every seat score in a three-player result banner', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        gameEndFlag: true,
+        winnerIdx: 0,
+        players: [
+          { id: 0, isHuman: true, cardCount: 0, cards: [], points: 70, trickCount: 10 },
+          { id: 1, isHuman: false, cardCount: 0, cards: [], points: 30, trickCount: 10 },
+          { id: 2, isHuman: false, cardCount: 0, cards: [], points: 20, trickCount: 10 },
+        ],
+      }),
+    );
+    renderWithProviders(<BrusquembillePage />);
+    expect(await screen.findByText(/あなたの勝ち！ \(70 - 30 - 20\)/)).toBeInTheDocument();
   });
 
   it('shows cpuWin banner when winnerIdx is 1', async () => {
@@ -195,7 +212,7 @@ describe('BrusquembillePage', () => {
       }),
     );
     renderWithProviders(<BrusquembillePage />);
-    await waitFor(() => expect(screen.getByText(/引き分け/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('引き分け (60-60)')).toBeInTheDocument());
   });
 
   it('hides trump card label when stock is exhausted', async () => {

@@ -194,18 +194,16 @@ func gleekStageLine(g interfaces.GleekGame) string {
 		return ""
 	}
 	var b strings.Builder
-	if idx := g.GetRuffWinnerIdx(); idx >= 0 {
-		total := 0
-		suit := -1
+	if g.GetRuffWinnerIdx() >= 0 {
 		for _, r := range g.GetRuffs() {
-			if r != nil && r.PlayerIdx == idx {
-				total, suit = r.Total, r.Suit
+			if r == nil {
+				continue
 			}
+			b.WriteString(i18n.Tf("gleek.ruffLine",
+				"name", cuiPlayerName(g.GetPlayer(r.PlayerIdx), r.PlayerIdx),
+				"total", strconv.Itoa(r.Total),
+				"suit", gleekSuitLabel(r.Suit)) + "\n")
 		}
-		b.WriteString(i18n.Tf("gleek.ruffLine",
-			"name", cuiPlayerName(g.GetPlayer(idx), idx),
-			"total", strconv.Itoa(total),
-			"suit", gleekSuitLabel(suit)) + "\n")
 	}
 	for _, m := range g.GetMelds() {
 		if m == nil {

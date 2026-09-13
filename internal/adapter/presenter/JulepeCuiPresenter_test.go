@@ -185,6 +185,20 @@ func TestJulepeCuiPresenterMarksTheDealer(t *testing.T) {
 	assert.NotContains(t, movedOut, julepePlain(cuiPlayerName(moved.GetPlayer(2), 2))+i18n.T("julepe.dealerMark"))
 }
 
+func TestJulepeCuiPresenterMarksBeastSeats(t *testing.T) {
+	p := new(JulepeCuiPresenter)
+	r := newJulepeForCui(t)
+	for i := range r.GetPlayerCnt() {
+		r.GetPlayer(i).SetInRound(true)
+		r.GetPlayer(i).SetRoundTricks(0)
+	}
+	r.GetPlayer(0).SetRoundTricks(r.GetRequiredTricks())
+	r.FinishRoundForTest()
+
+	out := julepePlain(p.Output(r, nil))
+	assert.Equal(t, r.GetPlayerCnt()-1, strings.Count(out, i18n.T("julepe.beastMark")))
+}
+
 // #6616: Web は validPlays で出せる札をリング表示しているのに、CUI は素の一覧
 // だけで、番号を打ってエラーを踏むまで分からなかった。
 func TestJulepeCuiPresenterMarksThePlayableCards(t *testing.T) {

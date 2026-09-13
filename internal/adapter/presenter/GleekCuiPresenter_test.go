@@ -107,6 +107,8 @@ func TestGleekCuiPresenter_Output(t *testing.T) {
 		})
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ラフ")
+		assert.Contains(t, result, "31")
+		assert.Contains(t, result, "18")
 		assert.Contains(t, result, "スペード")
 		assert.Contains(t, result, "キング3枚")
 		assert.Contains(t, result, "ジャック4枚")

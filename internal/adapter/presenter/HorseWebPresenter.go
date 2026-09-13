@@ -42,6 +42,8 @@ func (p *HorseWebPresenter) buildBase(g interfaces.HorseGame) *controller.HorseW
 	resObj.Discipline = int(g.GetDiscipline())
 	resObj.DisciplineLetter = g.GetDisciplineLetter()
 	resObj.DisciplineName = domain.HorseDisciplineName(g.GetDiscipline())
+	resObj.DisciplinePosition = domain.HorseRotationIndex(g.GetVariant(), g.GetDiscipline()) + 1
+	resObj.DisciplineTotal = len(domain.HorseRotation(g.GetVariant()))
 	resObj.HandInDiscipline = g.GetHandInDiscipline()
 	resObj.HandNumber = g.GetHandNumber()
 	resObj.CurrentTurn = g.GetCurrentTurn()

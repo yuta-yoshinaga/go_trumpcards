@@ -74,18 +74,20 @@ type HorseWebOutputConfig struct {
 // 見えている札 ── 役の判定や勝敗の内訳は種目側の実装が持っているので、ここへ
 // 写すと 5 種目ぶんの表示を二重に持つことになる。
 type HorseWebOutput struct {
-	Seats            []*HorseWebOutputSeat `json:"seats"`
-	Phase            int                   `json:"phase"`
-	Discipline       int                   `json:"discipline"`
-	DisciplineLetter string                `json:"disciplineLetter"`
-	DisciplineName   string                `json:"disciplineName"`
-	HandInDiscipline int                   `json:"handInDiscipline"`
-	HandNumber       int                   `json:"handNumber"`
-	CurrentTurn      int                   `json:"currentTurn"`
-	HumanSeat        int                   `json:"humanSeat"`
-	IsHumanTurn      bool                  `json:"isHumanTurn"`
-	CommunityCards   []*WebOutputCard      `json:"communityCards"`
-	Pot              int                   `json:"pot"`
+	Seats              []*HorseWebOutputSeat `json:"seats"`
+	Phase              int                   `json:"phase"`
+	Discipline         int                   `json:"discipline"`
+	DisciplineLetter   string                `json:"disciplineLetter"`
+	DisciplineName     string                `json:"disciplineName"`
+	DisciplinePosition int                   `json:"disciplinePosition"`
+	DisciplineTotal    int                   `json:"disciplineTotal"`
+	HandInDiscipline   int                   `json:"handInDiscipline"`
+	HandNumber         int                   `json:"handNumber"`
+	CurrentTurn        int                   `json:"currentTurn"`
+	HumanSeat          int                   `json:"humanSeat"`
+	IsHumanTurn        bool                  `json:"isHumanTurn"`
+	CommunityCards     []*WebOutputCard      `json:"communityCards"`
+	Pot                int                   `json:"pot"`
 	// ToCall はコールに要する額 (0 ならチェック可)。
 	ToCall int `json:"toCall"`
 	// MinRaise はいまの種目が受け付ける最小のレイズ幅。

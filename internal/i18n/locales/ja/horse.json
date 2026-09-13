@@ -4,7 +4,7 @@
   "helpNext": "  n                         次のハンドへ",
   "helpSetSeats": "  ss <4|6|9>                席数設定",
   "helpSetHands": "  sh <1-10>                 1 種目あたりのハンド数",
-  "round": "{{letter}} — {{name}}  ({{hand}}/{{hands}} ハンド目、通算 {{total}})",
+  "round": "{{letter}} — {{name}}  ({{position}}種目目/全{{disciplines}}種目、{{hand}}/{{hands}}ハンド目、通算{{total}})",
   "community": "場:",
   "seatLine": "{{name}}: {{chips}} チップ",
   "turnMark": "  ← 手番",
