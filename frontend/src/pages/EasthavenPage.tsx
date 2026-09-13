@@ -403,6 +403,9 @@ function EasthavenPageContent() {
                 );
               })}
             </div>
+            <span data-testid="eh-doubleclick-hint" className="text-game-text-muted text-xs self-center">
+              {t('doubleClickHint')}
+            </span>
 
             {/* Tableau */}
             <div className="flex gap-1 sm:gap-2 justify-center" data-tutorial="eh-tableau">

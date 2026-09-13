@@ -376,6 +376,9 @@ function FreeCellPageContent() {
                   );
                 })}
               </div>
+              <span data-testid="fc-doubleclick-hint" className="text-game-text-muted text-xs self-center">
+                {t('doubleClickHint')}
+              </span>
             </div>
 
             {/* Max bulk-move (supermove) limit, derived from empty free cells/columns */}

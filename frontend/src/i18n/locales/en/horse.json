@@ -21,6 +21,8 @@
   "community": "Board",
   "chips": "{{chips}} chips",
   "you": "You",
+  "label.folded": "folded",
+  "label.allIn": "all-in",
   "nextHand": "Next hand",
   "newGame": "New game",
   "result": {

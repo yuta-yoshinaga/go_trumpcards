@@ -325,6 +325,23 @@ func TestHorse_Accessors(t *testing.T) {
 	assert.Equal(t, 500, g.GetConfig().InitialChips)
 }
 
+func TestHorse_SeatStatusesAreReadFromEveryHorseDiscipline(t *testing.T) {
+	for _, discipline := range []HorseDiscipline{HorseHoldem, HorseOmahaHiLo, HorseRazz, HorseStud, HorseStudHiLo} {
+		t.Run(HorseDisciplineName(discipline), func(t *testing.T) {
+			g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+			g.discipline = discipline
+			g.startHand()
+			require.NotNil(t, g.table)
+			g.horseStatusPlayer(1).SetFolded(true)
+			g.horseStatusPlayer(2).SetAllIn(true)
+			assert.True(t, g.GetSeatFolded(1))
+			assert.False(t, g.GetSeatFolded(2))
+			assert.True(t, g.GetSeatAllIn(2))
+			assert.False(t, g.GetSeatAllIn(1))
+		})
+	}
+}
+
 func TestHorse_WinnerSeat(t *testing.T) {
 	t.Parallel()
 	g := newHorseForTest(t)

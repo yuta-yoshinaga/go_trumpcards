@@ -120,6 +120,8 @@ func TestHorseWebPresenter_Output(t *testing.T) {
 			Name    string `json:"name"`
 			IsHuman bool   `json:"isHuman"`
 			Chips   int    `json:"chips"`
+			Folded  bool   `json:"folded"`
+			AllIn   bool   `json:"allIn"`
 		} `json:"seats"`
 		Phase            int    `json:"phase"`
 		Discipline       int    `json:"discipline"`
@@ -152,6 +154,8 @@ func TestHorseWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, g.GetSeatName(i), s.Name)
 		// **出るのは打っている最中の残高。** 正本はハンドが終わるまで動かない。
 		assert.Equal(t, g.GetSeatLiveChips(i), s.Chips)
+		assert.Equal(t, g.GetSeatFolded(i), s.Folded)
+		assert.Equal(t, g.GetSeatAllIn(i), s.AllIn)
 	}
 	assert.Equal(t, "H", out.DisciplineLetter)
 	assert.Equal(t, "holdem", out.DisciplineName)

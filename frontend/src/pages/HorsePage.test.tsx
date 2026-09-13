@@ -44,6 +44,17 @@ describe('HorsePage', () => {
     }
   });
 
+  it('shows folded and all-in seat statuses', async () => {
+    const base = makeHorseState();
+    mockExec.mockResolvedValue({
+      ...base,
+      seats: base.seats.map((seat, i) => ({ ...seat, folded: i === 1, allIn: i === 2 })),
+    });
+    renderWithProviders(<HorsePage />);
+    expect(await screen.findByTestId('ho-seat-1')).toHaveTextContent('フォールド');
+    expect(screen.getByTestId('ho-seat-2')).toHaveTextContent('オールイン');
+  });
+
   // **6 つの手をすべて送れる。** 綴りが 1 つ違うと、その手だけが打てなくなる。
   it.each([
     ['コール', 'call'],

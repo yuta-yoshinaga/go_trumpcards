@@ -21,6 +21,8 @@
   "community": "場",
   "chips": "{{chips}} チップ",
   "you": "あなた",
+  "label.folded": "フォールド",
+  "label.allIn": "オールイン",
   "nextHand": "次のハンドへ",
   "newGame": "新しいゲーム",
   "result": {

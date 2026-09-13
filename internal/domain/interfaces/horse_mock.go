@@ -91,6 +91,33 @@ func (_m *MockHorseGame) GetSeatIsHuman(i int) bool {
 	return ret.Bool(0)
 }
 
+// GetSeatFolded モック
+func (_m *MockHorseGame) GetSeatFolded(i int) bool {
+	if !hasHorseMockExpectation(_m, "GetSeatFolded") {
+		return false
+	}
+	ret := _m.Called(i)
+	return ret.Bool(0)
+}
+
+// GetSeatAllIn モック
+func (_m *MockHorseGame) GetSeatAllIn(i int) bool {
+	if !hasHorseMockExpectation(_m, "GetSeatAllIn") {
+		return false
+	}
+	ret := _m.Called(i)
+	return ret.Bool(0)
+}
+
+func hasHorseMockExpectation(m *MockHorseGame, method string) bool {
+	for _, call := range m.ExpectedCalls {
+		if call.Method == method {
+			return true
+		}
+	}
+	return false
+}
+
 // GetSeatCount モック
 func (_m *MockHorseGame) GetSeatCount() int {
 	ret := _m.Called()

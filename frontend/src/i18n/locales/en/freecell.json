@@ -15,6 +15,7 @@
   "moveCount": "Moves",
   "empty": "Empty",
   "hintAvailable": "Hint",
+  "doubleClickHint": "Double-click or double-tap a card to send it to the foundation",
   "foundationAriaLabel": "{{suit}} Foundation ({{cardCount}} cards)",
   "emptyFoundationAriaLabel": "{{suit}} Foundation (empty)",
   "emptyFreecellAriaLabel": "Free Cell {{idx}} (empty)",

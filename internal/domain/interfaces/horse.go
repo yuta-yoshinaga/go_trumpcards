@@ -39,6 +39,10 @@ type HorseGame interface {
 	GetSeatName(i int) string
 	// GetSeatIsHuman 指定席が人間かを取得する
 	GetSeatIsHuman(i int) bool
+	// GetSeatFolded 指定席がフォールド済みかを取得する
+	GetSeatFolded(i int) bool
+	// GetSeatAllIn 指定席がオールイン済みかを取得する
+	GetSeatAllIn(i int) bool
 	// GetSeatCount 席数を取得する
 	GetSeatCount() int
 	// GetHumanSeat 人間の席を取得する

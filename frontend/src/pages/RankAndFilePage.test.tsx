@@ -103,6 +103,10 @@ beforeEach(() => {
 });
 
 describe('RankAndFilePage', () => {
+  it('shows the persistent double-click foundation hint', async () => {
+    renderWithProviders(<RankAndFilePage />);
+    expect(await screen.findByTestId('rf-doubleclick-hint')).toHaveTextContent('ダブルクリック');
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<RankAndFilePage />);

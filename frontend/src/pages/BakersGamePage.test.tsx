@@ -96,6 +96,10 @@ beforeEach(() => {
 });
 
 describe('BakersGamePage', () => {
+  it('shows the persistent double-click foundation hint', async () => {
+    renderWithProviders(<BakersGamePage />);
+    expect(await screen.findByTestId('bg-doubleclick-hint')).toHaveTextContent('ダブルクリック');
+  });
   // --- Skeleton ---
 
   it('renders skeleton when state is null', () => {

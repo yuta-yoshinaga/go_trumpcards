@@ -60460,6 +60460,12 @@ components:
                 type: boolean
               chips:
                 type: integer
+              folded:
+                type: boolean
+                description: "The seat has folded out of the current hand."
+              allIn:
+                type: boolean
+                description: "The seat is all in and cannot act again this hand."
               cards:
                 type: array
                 description: >-

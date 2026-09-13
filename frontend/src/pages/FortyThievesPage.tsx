@@ -380,6 +380,9 @@ function FortyThievesPageContent() {
                   );
                 })}
               </div>
+              <span data-testid="ft-doubleclick-hint" className="text-game-text-muted text-xs self-center">
+                {t('doubleClickHint')}
+              </span>
             </div>
 
             {/* Tableau */}

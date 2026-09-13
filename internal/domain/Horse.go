@@ -609,6 +609,41 @@ func (g *Horse) GetSeatIsHuman(i int) bool {
 	return g.seats[i].isHuman
 }
 
+// GetSeatFolded は指定席の現在のハンドのフォールド状態を返す。
+func (g *Horse) GetSeatFolded(seat int) bool {
+	p := g.horseStatusPlayer(seat)
+	return p != nil && p.GetFolded()
+}
+
+// GetSeatAllIn は指定席の現在のハンドのオールイン状態を返す。
+func (g *Horse) GetSeatAllIn(seat int) bool {
+	p := g.horseStatusPlayer(seat)
+	return p != nil && p.GetAllIn()
+}
+
+// horseStatusPlayer は 5 種目の異なるプレイヤー型を共通の状態インタフェースに変換する。
+func (g *Horse) horseStatusPlayer(seat int) BettingPlayer {
+	if g.table == nil {
+		return nil
+	}
+	ti := g.horseTableIdx(seat)
+	if ti < 0 {
+		return nil
+	}
+	switch t := g.table.(type) {
+	case *Holdem:
+		return t.GetPlayer(ti)
+	case *Omaha:
+		return t.GetPlayer(ti)
+	case *SevenCardStud:
+		return t.GetPlayer(ti)
+	case *DeuceToSeven:
+		return horseDrawPlayer(t, ti)
+	default:
+		return nil
+	}
+}
+
 // GetSeatCount は席数を返す。
 func (g *Horse) GetSeatCount() int { return len(g.seats) }
 

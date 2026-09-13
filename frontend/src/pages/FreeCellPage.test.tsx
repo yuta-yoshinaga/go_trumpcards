@@ -76,6 +76,10 @@ beforeEach(() => {
 });
 
 describe('FreeCellPage', () => {
+  it('shows the persistent double-click foundation hint', async () => {
+    renderWithProviders(<FreeCellPage />);
+    expect(await screen.findByTestId('fc-doubleclick-hint')).toHaveTextContent('ダブルクリック');
+  });
   // --- Skeleton ---
 
   it('renders skeleton when state is null', () => {
