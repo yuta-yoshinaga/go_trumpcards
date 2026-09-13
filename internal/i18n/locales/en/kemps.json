@@ -19,7 +19,7 @@
   "promptExchange": "Your turn. Use s <h> <f> to swap, p to pass.",
   "promptCpuTurn": "CPUs are swapping cards...",
   "promptDeclare": "Declare window! k for Kemps, c <seat> for Counter-Kemps, p to decline.",
-  "counterRisk": "A wrong Counter-Kemps call costs your team 1 point (never below 0).",
+  "counterRisk": "A wrong Counter-Kemps call costs your team {{points}} point (never below 0).",
   "promptPartnerSignal": "Your partner is signaling! Use k (kemps) to declare!",
   "promptOpponentSignal": "Something stirs in the opposing team... use c <seat> for Counter-Kemps.",
   "promptNextRound": "Round over. Use n (next) to start the next round.",

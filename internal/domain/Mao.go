@@ -335,13 +335,13 @@ func (g *Mao) PlayerDeclareWord(word string) error {
 	if !g.awaitingWord {
 		// 宣言待ちでないのに言葉を発した → ルール違反 (誤発言ペナルティ)
 		g.applyRulePenalty(humanIdx)
-		g.sayWordHistory = append(g.sayWordHistory, MaoSayWordAttempt{Word: strings.TrimSpace(word), Penalty: true})
+		g.sayWordHistory = append(g.sayWordHistory, MaoSayWordAttempt{Word: normalizeMaoWord(word), Penalty: true})
 		return nil
 	}
 	trimmed := strings.TrimSpace(word)
 	correct := strings.EqualFold(trimmed, g.hiddenRule.RequiredWord)
 	g.resolvePendingWord(humanIdx, correct)
-	g.sayWordHistory = append(g.sayWordHistory, MaoSayWordAttempt{Word: trimmed, Penalty: !correct})
+	g.sayWordHistory = append(g.sayWordHistory, MaoSayWordAttempt{Word: normalizeMaoWord(trimmed), Penalty: !correct})
 	return nil
 }
 
@@ -1072,6 +1072,19 @@ func (g *Mao) MarshalJSON() ([]byte, error) {
 // excessive memory allocation from malformed input.
 const maoMaxSliceLen = 1000
 
+// maoMaxWordLen caps each persisted declaration. Words are truncated when
+// recorded so normal play remains available, and rejected during restore so
+// older or tampered state cannot reintroduce oversized entries.
+const maoMaxWordLen = 1000
+
+func normalizeMaoWord(word string) string {
+	runes := []rune(strings.TrimSpace(word))
+	if len(runes) > maoMaxWordLen {
+		runes = runes[:maoMaxWordLen]
+	}
+	return string(runes)
+}
+
 // UnmarshalJSON implements json.Unmarshaler.
 func (g *Mao) UnmarshalJSON(data []byte) error {
 	var j maoJSON
@@ -1082,6 +1095,11 @@ func (g *Mao) UnmarshalJSON(data []byte) error {
 		len(j.DrawPile) > maoMaxSliceLen || len(j.ActionLog) > maoMaxSliceLen ||
 		len(j.SayWordHistory) > maoMaxSliceLen {
 		return fmt.Errorf("mao: input array exceeds maximum allowed size")
+	}
+	for _, attempt := range j.SayWordHistory {
+		if len([]rune(attempt.Word)) > maoMaxWordLen {
+			return fmt.Errorf("mao: say word exceeds maximum allowed length")
+		}
 	}
 	if err := j.Config.Validate(); err != nil {
 		return fmt.Errorf("mao: invalid config: %w", err)

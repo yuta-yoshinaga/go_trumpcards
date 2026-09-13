@@ -1038,10 +1038,12 @@ func (g *Tysiac) GetDeclarerIdx() int { return g.declarerIdx }
 
 // GetTalonRecipientIdx returns the opponent receiving the next discarded card.
 func (g *Tysiac) GetTalonRecipientIdx() int {
-	if g.declarerIdx < 0 || g.discardCount < 0 || g.discardCount >= TysiacTalonSize {
+	if g.declarerIdx < 0 || g.discardCount < 0 {
 		return -1
 	}
 	recipients := g.opponentsOf(g.declarerIdx)
+	// The recipient list is the actual exchange range (one card per opponent),
+	// so its length check is sufficient and also covers the completed exchange.
 	if g.discardCount >= len(recipients) {
 		return -1
 	}

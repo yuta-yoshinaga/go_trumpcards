@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { KEMPS_COUNTER_PENALTY } from '../../../constants/kemps';
 import { KEMPS_HELP, parseKempsCommand } from './kempsCommands';
 
 describe('parseKempsCommand', () => {
@@ -76,5 +77,6 @@ describe('parseKempsCommand', () => {
     expect(KEMPS_HELP.length).toBeGreaterThan(0);
     expect(KEMPS_HELP.some((line) => line.toLowerCase().includes('swap'))).toBe(true);
     expect(KEMPS_HELP.some((line) => line.toLowerCase().includes('kemps'))).toBe(true);
+    expect(KEMPS_HELP.some((line) => line.includes(`${KEMPS_COUNTER_PENALTY} point`))).toBe(true);
   });
 });

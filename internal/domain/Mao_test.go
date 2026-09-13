@@ -416,6 +416,31 @@ func TestMao_JSONRoundTripKeepsTheSayWordHistory(t *testing.T) {
 	assert.Equal(t, "seven", restored.GetSayWordHistory()[0].Word)
 }
 
+func TestMao_SayWordHistoryWordLengthLimit(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		word string
+		want int
+	}{
+		{name: "at limit", word: strings.Repeat("あ", maoMaxWordLen), want: maoMaxWordLen},
+		{name: "over limit", word: strings.Repeat("い", maoMaxWordLen+1), want: maoMaxWordLen},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newTestMao()
+			require.NoError(t, g.PlayerDeclareWord(tc.word))
+			assert.Len(t, []rune(g.GetSayWordHistory()[0].Word), tc.want)
+		})
+	}
+
+	g := newTestMao()
+	g.Reset()
+	g.sayWordHistory = []MaoSayWordAttempt{{Word: strings.Repeat("う", maoMaxWordLen+1)}}
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var restored Mao
+	assert.Error(t, json.Unmarshal(data, &restored))
+}
+
 func TestMao_UnmarshalRejectsBadInput(t *testing.T) {
 	// invalid JSON
 	var g Mao
