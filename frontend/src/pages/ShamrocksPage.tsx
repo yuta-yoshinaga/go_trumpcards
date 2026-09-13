@@ -255,7 +255,7 @@ function ShamrocksPageContent() {
               <button
                 type="button"
                 key={`fnd-${i}`}
-                className={`rounded ${foundationAcceptsSelected(pile) ? 'ring-1 ring-ds-success' : ''} ${canAct ? 'cursor-pointer' : ''}`}
+                className={`rounded ${foundationAcceptsSelected(pile) ? 'ring-1 ring-ds-success cursor-pointer' : ''}`}
                 onClick={foundationAcceptsSelected(pile) ? sendToFoundation : undefined}
                 disabled={!canAct || !foundationAcceptsSelected(pile)}
                 data-testid={`foundation-${i}`}

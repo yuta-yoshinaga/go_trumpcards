@@ -229,7 +229,10 @@ describe('StHelenaPage', () => {
     mockExec.mockImplementation((cmd: string) =>
       Promise.resolve(
         cmd === 'hint'
-          ? { ...playingState, hint: { fromCol: 0, toZone: 'redeal', toCol: -1, redeal: true } }
+          ? // **サーバが実際に返す形。** StHelena.go:345 は再配りヒントを
+            // {FromCol: -1, ToZone: "", ToCol: -1, Redeal: true} で返す。
+            // fromCol: 0 で組むと、列 0 が誤って光る回帰を通してしまう。
+            { ...playingState, hint: { fromCol: -1, toZone: '', toCol: -1, redeal: true } }
           : playingState,
       ),
     );
@@ -238,6 +241,8 @@ describe('StHelenaPage', () => {
     const redeal = await screen.findByRole('button', { name: /再配り \(3\)/ });
     expect(redeal.className).toContain('ring-2');
     expect(redeal.className).toContain('ring-ds-success');
+    // 再配りヒントはどの列も指していない。移動元のリングが一つも出ないこと。
+    expect(document.querySelectorAll('.ring-ds-info')).toHaveLength(0);
   });
 
   it('lets the selected-source ring win over a simultaneous hint-source ring', async () => {

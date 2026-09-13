@@ -270,7 +270,9 @@ function StHelenaPageContent() {
     valid && !active ? 'ring-2 ring-ds-success rounded' : '';
   const isHintFoundationTarget = (idx: number) => hint?.toZone === 'foundation' && hint.toCol === idx;
   const isHintTableauTarget = (colIdx: number) => hint?.toZone === 'tableau' && hint.toCol === colIdx;
-  const isHintSource = (colIdx: number) => hint?.fromCol === colIdx;
+  // **再配りヒントは列を指していない。** サーバは FromCol: -1 を返すので
+  // 今は列に当たらないが、その不変条件に寄りかからず redeal を明示的に外す。
+  const isHintSource = (colIdx: number) => hint !== null && !hint.redeal && hint.fromCol === colIdx;
 
   // The legal-destination rings are colour only, so a screen-reader user cannot
   // tell whether a selection leads anywhere. Count the same predicates the rings
