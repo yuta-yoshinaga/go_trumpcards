@@ -1,5 +1,7 @@
 import type { Card } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
+import { CardRoleBadge } from './CardRoleBadge';
 import { AnimatedCard } from './motion/AnimatedCard';
 
 /** One card played into the current trick. Matches all trick-taking game TrickCard shapes. */
@@ -45,6 +47,8 @@ export interface TrickDisplayProps {
    * the existing games render exactly as before.
    */
   wrap?: boolean;
+  /** Optional per-card role marker, rendered in both the visual and accessible card label. */
+  cardBadgeFor?: (card: Card) => { glyph: string; title: string } | null;
 }
 
 /**
@@ -69,6 +73,7 @@ export function TrickDisplay({
   lastTrickWinner,
   winnerLabel,
   wrap = false,
+  cardBadgeFor,
 }: TrickDisplayProps) {
   const displayedTrick = currentTrick.length > 0 ? currentTrick : (lastTrick ?? []);
   const displayedWinnerIdx = currentTrick.length > 0 ? winnerIdx : (lastTrickWinner ?? winnerIdx);
@@ -106,6 +111,7 @@ export function TrickDisplay({
             : isFoe
               ? 'text-ds-error font-semibold'
               : 'text-game-text-muted';
+          const badge = cardBadgeFor?.(trickCard.card);
           return (
             <div
               key={`trick-${trickCard.playerIdx}`}
@@ -114,7 +120,13 @@ export function TrickDisplay({
               data-team-role={isAlly ? 'ally' : isFoe ? 'foe' : undefined}
               data-trick-winner={isWinner || undefined}
             >
-              <AnimatedCard card={trickCard.card} width={cardWidth} wrapperClassName={wrapperClass || undefined} />
+              <AnimatedCard
+                card={trickCard.card}
+                width={cardWidth}
+                wrapperClassName={wrapperClass || undefined}
+                ariaLabel={badge ? `${cardAlt(trickCard.card)} (${badge.title})` : undefined}
+              />
+              {badge && <CardRoleBadge idx={trickCard.playerIdx} glyph={badge.glyph} title={badge.title} />}
               {isWinner && (
                 <span
                   data-testid="trick-winner-badge"

@@ -324,6 +324,10 @@ function CostlyColoursPageContent() {
                 validIndices={canPlay ? playable : undefined}
                 legalIndices={canPlay ? playable : undefined}
                 restrictedTooltip={t('restrictedTooltip')}
+                cardBadgeFor={(idx) => {
+                  const card = humanPlayer.cards[idx];
+                  return card.value === 11 || card.value === 2 ? { glyph: '★', title: t('jackDeuceMark') } : null;
+                }}
               />
             )}
 

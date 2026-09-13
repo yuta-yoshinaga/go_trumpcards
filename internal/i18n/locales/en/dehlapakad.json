@@ -20,6 +20,8 @@
   "pileGoesTo": "{{name}} takes the whole pile by winning the next trick too.",
   "promptTrump": "{{name}} calls the trump (only the first {{n}} cards are dealt so far).",
   "promptTrumpHelp": "trump <1-4> ... 1=S 2=C 3=H 4=D",
+  "suitBreakdown": "First five suit counts: {{counts}}",
+  "suitCount": "{{suit}} {{n}}",
   "promptPlay": "Turn: {{name}}",
   "playableList": "Playable: {{cards}}",
   "promptPlayHelp": "play <idx> ... play a card",

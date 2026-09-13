@@ -70,6 +70,62 @@ describe('ScopaPage', () => {
     expect(screen.getByTestId('table-card-1')).toBeInTheDocument();
   });
 
+  it('renders the latest human and CPU actions using the CUI wording rules', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        humanAction: { playerIdx: 0, playedCard: card('HEART', 5), capturedCards: [card('SPADE', 2)], isScopa: true },
+        cpuActions: [{ playerIdx: 1, playedCard: card('DIAMOND', 7), capturedCards: [], isScopa: false }],
+      }),
+    );
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('scopa-action-lines')).toBeInTheDocument());
+    expect(screen.getByTestId('scopa-action-lines')).toHaveTextContent('捕獲 played=♥ 5 captured=1枚 (スコパ!)');
+    expect(screen.getByTestId('scopa-action-lines')).toHaveTextContent('場に置く ♦ 7');
+  });
+
+  it('renders a captured action without the scopa suffix', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        cpuActions: [
+          { playerIdx: 1, playedCard: card('DIAMOND', 7), capturedCards: [card('SPADE', 2)], isScopa: false },
+        ],
+      }),
+    );
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('scopa-action-lines')).toBeInTheDocument());
+    expect(screen.getByTestId('scopa-action-lines')).toHaveTextContent('CPU 1: 捕獲 played=♦ 7 captured=1枚');
+    expect(screen.getByTestId('scopa-action-lines')).not.toHaveTextContent('スコパ');
+  });
+
+  it('renders missing played cards and ignores a nil latest action', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        cpuActions: [null as unknown as ScopaResponse['cpuActions'][number]],
+      }),
+    );
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('scopa-action-lines')).toBeInTheDocument());
+    expect(screen.getByTestId('scopa-action-lines')).toHaveTextContent(':');
+    expect(screen.getByTestId('scopa-action-lines')).not.toHaveTextContent('場に置く');
+  });
+
+  it('renders a capture with a missing played card', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        cpuActions: [{ playerIdx: 1, playedCard: null, capturedCards: [card('SPADE', 2)], isScopa: false }],
+      }),
+    );
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('scopa-action-lines')).toBeInTheDocument());
+    expect(screen.getByTestId('scopa-action-lines')).toHaveTextContent('捕獲 played=- captured=1枚');
+  });
+
+  it('does not render action lines when neither action exists', async () => {
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('scopa-action-lines')).not.toBeInTheDocument();
+  });
+
   it('exposes capture candidates, selection state, and a candidate-count live region', async () => {
     mockExec.mockResolvedValue(makeState());
     renderWithProviders(<ScopaPage />);

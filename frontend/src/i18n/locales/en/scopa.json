@@ -24,6 +24,11 @@
     "humanStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}} / Total {{score}} pt",
     "roundEnd": "Round over — review the score, then continue to the next round"
   },
+  "humanActionLine": "Your move: {{text}}",
+  "cpuActionLine": "  {{name}}: {{text}}",
+  "actionCapture": "captured {{count}} card(s) with {{played}}{{suffix}}",
+  "actionScopaSuffix": " (Scopa!)",
+  "actionLay": "laid {{played}} on the table",
   "breakdown": {
     "title": "Score breakdown",
     "cards": "Carte (most cards)",

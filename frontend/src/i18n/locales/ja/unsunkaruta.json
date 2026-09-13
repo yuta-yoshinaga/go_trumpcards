@@ -37,6 +37,7 @@
   "dealerBadge": "親",
   "mustFollow": "宣言あり — 台札のスートに従ってください（持っていなければ何でも出せます）。",
   "canDeclare": "あなたのリードです。「宣言して出す」を押すと、このトリックは全員がフォロー義務を負います。",
+  "roundSuitMark": "丸物: このスートは 1 が最強です",
   "playButton": "出す",
   "declareButton": "宣言して出す",
   "nextTrick": "次のトリック",

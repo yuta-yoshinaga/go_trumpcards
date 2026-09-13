@@ -20,6 +20,31 @@ beforeEach(() => {
 });
 
 describe('UnsunKarutaPage', () => {
+  it('marks round suits in both the hand and trick with the reverse-rank explanation', async () => {
+    mockExec.mockResolvedValue(
+      makeUnsunKarutaState({
+        players: [
+          {
+            ...makeUnsunKarutaState().players[0],
+            cards: [
+              { design: 'JOKER', value: 1, deck: 'unsun', glyph: '任意の字形', label: '1', color: 'red' },
+              { design: 'JOKER', value: 2, deck: 'unsun', glyph: '杯', label: '2', color: 'black' },
+            ],
+          },
+          ...makeUnsunKarutaState().players.slice(1),
+        ],
+        currentTrick: [
+          {
+            playerIdx: 1,
+            card: { design: 'JOKER', value: 1, deck: 'unsun', glyph: '任意の字形', label: '1', color: 'red' },
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<UnsunKarutaPage />);
+    expect(await screen.findAllByText('↺')).toHaveLength(2);
+    expect(screen.getAllByTitle('丸物: このスートは 1 が最強です')).toHaveLength(2);
+  });
   it('calls reset on mount with the configured match length', async () => {
     renderWithProviders(<UnsunKarutaPage />);
     await waitFor(() =>
@@ -64,7 +89,7 @@ describe('UnsunKarutaPage', () => {
   // 生まれてしまう。
   it('sends the declaration together with the card', async () => {
     renderWithProviders(<UnsunKarutaPage />);
-    fireEvent.click(await screen.findByRole('button', { name: 'ウン 杯' }));
+    fireEvent.click(await screen.findByRole('button', { name: /ウン 杯/ }));
     fireEvent.click(screen.getByTestId('unsunkaruta-declare'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 2, declare: true }));
   });

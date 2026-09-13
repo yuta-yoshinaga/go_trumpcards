@@ -25,6 +25,8 @@ function getImagePath(card: Card): string {
 /** Props for {@link CardImage}. */
 export interface CardImageProps {
   card: Card;
+  /** Optional accessible name override, used when a game-specific marker is present. */
+  ariaLabel?: string;
   width?: number;
   style?: React.CSSProperties;
   className?: string;
@@ -48,6 +50,7 @@ const noCalloutStyle = {
 /** Renders a face-up playing card image. */
 export function CardImage({
   card,
+  ariaLabel,
   width,
   style,
   className,
@@ -61,6 +64,7 @@ export function CardImage({
     return (
       <CardFace
         card={card}
+        ariaLabel={ariaLabel}
         width={width}
         style={style}
         className={className}
@@ -74,7 +78,7 @@ export function CardImage({
   return (
     <img
       src={getImagePath(card)}
-      alt={cardAlt(card)}
+      alt={ariaLabel ?? cardAlt(card)}
       width={CARD_NATURAL_WIDTH}
       height={CARD_NATURAL_HEIGHT}
       loading="lazy"

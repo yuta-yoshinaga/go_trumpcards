@@ -31,6 +31,33 @@ beforeEach(() => {
 });
 
 describe('DehlaPakadPage', () => {
+  it('shows the five-card suit breakdown, including empty suits', async () => {
+    mockExec.mockResolvedValue(
+      makeDehlaPakadState({
+        players: trumpState.players.map((p) =>
+          p.isHuman
+            ? {
+                ...p,
+                cards: [
+                  { design: 'SPADE' as const, value: 1, color: 'black' as const },
+                  { design: 'SPADE' as const, value: 2, color: 'black' as const },
+                  { design: 'CLOVER' as const, value: 3, color: 'black' as const },
+                  { design: 'DIAMOND' as const, value: 4, color: 'red' as const },
+                  { design: 'DIAMOND' as const, value: 5, color: 'red' as const },
+                ],
+              }
+            : p,
+        ),
+      }),
+    );
+    renderWithProviders(<DehlaPakadPage />);
+    const breakdown = await screen.findByTestId('dehlapakad-trump-breakdown');
+    expect(breakdown.querySelector('[aria-label="スペード（♠） 2"]')).toBeInTheDocument();
+    expect(breakdown.querySelector('[aria-label="クラブ（♣） 1"]')).toBeInTheDocument();
+    expect(breakdown.querySelector('[aria-label="ハート（♥） 0"]')).toBeInTheDocument();
+    expect(breakdown.querySelector('[aria-label="ダイヤ（♦） 2"]')).toBeInTheDocument();
+  });
+
   it('calls reset on mount with the configured match length', async () => {
     renderWithProviders(<DehlaPakadPage />);
     await waitFor(() =>

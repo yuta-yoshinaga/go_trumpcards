@@ -22,6 +22,7 @@ function inkColor(color?: string): string {
 /** Props for {@link CardFace}. */
 export interface CardFaceProps {
   card: Card;
+  ariaLabel?: string;
   width?: number;
   style?: React.CSSProperties;
   className?: string;
@@ -48,13 +49,23 @@ const noCalloutStyle = {
  * harmonizes with the standard PNG cards. See ADR-0033 and `CardImage`, which
  * dispatches here when a card carries a `deck`.
  */
-export function CardFace({ card, width, style, className, draggable, onDragStart, onDragOver, onDrop }: CardFaceProps) {
+export function CardFace({
+  card,
+  ariaLabel,
+  width,
+  style,
+  className,
+  draggable,
+  onDragStart,
+  onDragOver,
+  onDrop,
+}: CardFaceProps) {
   const w = width ?? 80;
   const h = w * CARD_ASPECT;
   const ink = inkColor(card.color);
   const label = card.label ?? String(card.value);
   const glyph = card.glyph ?? label.charAt(0);
-  const ariaLabel = card.glyph ? `${label} ${card.glyph}` : label;
+  const defaultAriaLabel = card.glyph ? `${label} ${card.glyph}` : label;
 
   const cornerBase: React.CSSProperties = {
     position: 'absolute',
@@ -67,7 +78,7 @@ export function CardFace({ card, width, style, className, draggable, onDragStart
   return (
     <div
       role="img"
-      aria-label={ariaLabel}
+      aria-label={ariaLabel ?? defaultAriaLabel}
       className={className}
       draggable={draggable}
       onDragStart={onDragStart}
