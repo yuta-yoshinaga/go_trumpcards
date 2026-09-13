@@ -136,6 +136,26 @@ func (p *DehlaPakadCuiPresenter) writePrompt(b *strings.Builder, g interfaces.De
 		b.WriteString(i18n.Tf("dehlapakad.promptTrump",
 			"name", cuiPlayerName(g.GetPlayer(idx), idx),
 			"n", strconv.Itoa(domain.DehlaPakadFirstBatch)) + "\n")
+		if player := g.GetPlayer(idx); player != nil {
+			counts := make([]int, 4)
+			for i := 0; i < player.GetCardsSize(); i++ {
+				switch player.GetCard(i).GetDesign() {
+				case domain.CardDesignSpade:
+					counts[0]++
+				case domain.CardDesignClover:
+					counts[1]++
+				case domain.CardDesignHeart:
+					counts[2]++
+				case domain.CardDesignDiamond:
+					counts[3]++
+				}
+			}
+			parts := make([]string, len(counts))
+			for i, count := range counts {
+				parts[i] = i18n.Tf("dehlapakad.suitCount", "suit", i18n.T("dehlapakad.suit."+domain.DehlaPakadSuitName(i+1)), "n", strconv.Itoa(count))
+			}
+			b.WriteString(i18n.Tf("dehlapakad.suitBreakdown", "counts", strings.Join(parts, " ")) + "\n")
+		}
 		b.WriteString(i18n.T("dehlapakad.promptTrumpHelp") + "\n")
 	case domain.DehlaPakadPhasePlay:
 		idx := g.GetCurrentTurn()

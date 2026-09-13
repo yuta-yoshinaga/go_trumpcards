@@ -20,6 +20,7 @@
   "chooseCapture": "Choose what to take",
   "noCapture": "This card captures nothing - you may lay it off.",
   "takeGroup": "Take {{cards}}",
+  "captureAvailable": "Capture options are available",
   "layOffButton": "Lay off",
   "score": "{{n}} pts",
   "taken": "{{n}} taken ({{denari}} denari)",

@@ -145,6 +145,9 @@ function CirullaPageContent() {
   // 組み直すと必ずずれる。
   const options = selectedHandIdx !== null ? (state.captureOptions[selectedHandIdx] ?? []) : [];
   const handValidIndices = canPlay ? humanPlayer?.cards.map((_, i) => i) : undefined;
+  const captureIndices = canPlay
+    ? state.captureOptions.map((cardOptions, i) => (cardOptions.length > 0 ? i : -1)).filter((i) => i >= 0)
+    : undefined;
 
   const handleManualReset = () => {
     hideActionLog();
@@ -339,17 +342,22 @@ function CirullaPageContent() {
 
           <GameFooter className={`${gameTheme.cirulla.footer} px-4 py-2.5`}>
             {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedHandIdx === null ? [] : [selectedHandIdx]}
-                toggleCard={selectHand}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="cirulla"
-                validIndices={handValidIndices}
-                legalIndices={handValidIndices}
-                restrictedTooltip={t('restrictedTooltip')}
-              />
+              <div data-testid="cirulla-capture-markers">
+                <PlayerHandSection
+                  humanPlayer={humanPlayer}
+                  selectedCardIndices={selectedHandIdx === null ? [] : [selectedHandIdx]}
+                  toggleCard={selectHand}
+                  cardWidth={cardWidth}
+                  isMobile={isMobile}
+                  dataTutorialPrefix="cirulla"
+                  validIndices={handValidIndices}
+                  legalIndices={handValidIndices}
+                  restrictedTooltip={t('restrictedTooltip')}
+                  cardBadgeFor={(idx) =>
+                    captureIndices?.includes(idx) ? { glyph: '取', title: t('captureAvailable') } : null
+                  }
+                />
+              </div>
             )}
 
             <ErrorAlert message={error} onRetry={retry} />

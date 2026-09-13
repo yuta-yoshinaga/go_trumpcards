@@ -59,6 +59,7 @@ func TestDehlaPakadCuiPresenter_Output(t *testing.T) {
 		assert.NotContains(t, out, "[5]", "宣言前に 6 枚目が見えている")
 		assert.Contains(t, out, strings.SplitN(i18n.T("dehlapakad.promptTrump"), "{{", 2)[0])
 		assert.NotContains(t, out, strings.SplitN(i18n.T("dehlapakad.trump"), "{{", 2)[0])
+		assert.Contains(t, out, "スート内訳")
 	})
 
 	// **絵札は A/J/Q/K で出す。** 10 が的のゲームで、A が「1」と出ると

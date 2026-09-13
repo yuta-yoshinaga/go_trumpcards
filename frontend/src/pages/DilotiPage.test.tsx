@@ -34,6 +34,14 @@ beforeEach(() => {
 });
 
 describe('DilotiPage', () => {
+  it('marks take, declare, and trail cards across the whole hand', async () => {
+    renderWithProviders(<DilotiPage />);
+    const hand = await screen.findByTestId('diloti-move-markers');
+    expect(hand.querySelector('[data-testid="card-role-badge-0"]')).toHaveTextContent('取/置');
+    expect(hand.querySelector('[data-testid="card-role-badge-1"]')).toHaveTextContent('宣/置');
+    expect(hand.querySelector('[data-testid="card-role-badge-2"]')).toHaveTextContent('取');
+  });
+
   it('calls reset on mount with the configured target', async () => {
     renderWithProviders(<DilotiPage />);
     await waitFor(() =>
