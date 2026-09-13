@@ -226,7 +226,7 @@ function ChinesePokerPageContent() {
         label: 'setMiddle',
       },
       {
-        key: 'b',
+        key: 'k',
         action: () => keyboardCardIndex !== null && assignCard(keyboardCardIndex, 'back'),
         enabled: isSetHandsPhase && keyboardCardIndex !== null,
         label: 'setBack',
