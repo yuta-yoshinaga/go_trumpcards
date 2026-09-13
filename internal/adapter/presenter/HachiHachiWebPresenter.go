@@ -50,6 +50,9 @@ func (p *HachiHachiWebPresenter) Output(g interfaces.HachiHachiGame, lastErr err
 	resObj := p.buildBase(g)
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
+	} else if entry := latestAction(g.GetActionLog(), "draw"); entry != nil && len(entry.Cards) > 1 {
+		resObj.MessageCode = "hachihachi.drawCapture"
+		resObj.MessageParams = map[string]string{"card": domain.HachiHachiCardLabel(entry.Cards[0]), "captured": hachiHachiCapturedLabels(entry.Cards[1:])}
 	} else if g.GetGameEndFlag() || g.GetPhase() == domain.HachiHachiPhaseGameEnd {
 		resObj.Message = p.buildResultMessage(g)
 		resObj.MessageCode = "hachihachi.result.scores"
@@ -60,6 +63,14 @@ func (p *HachiHachiWebPresenter) Output(g interfaces.HachiHachiGame, lastErr err
 	// その場合 Hint は設定されない。
 	p.applyHint(resObj, g)
 	return marshalOrError(resObj)
+}
+
+func hachiHachiCapturedLabels(cards []*domain.Card) string {
+	labels := make([]string, 0, len(cards))
+	for _, card := range cards {
+		labels = append(labels, domain.HachiHachiCardLabel(card))
+	}
+	return strings.Join(labels, ", ")
 }
 
 // applyHint は人間の手番であればヒント情報を出力オブジェクトへ埋める。

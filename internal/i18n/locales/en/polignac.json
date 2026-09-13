@@ -18,6 +18,8 @@
   "promptDeclare": "Declare capot?",
   "promptDeclareHelp": "capot ... undertake to win all 8 tricks / pass ... proceed without declaring",
   "promptRoundEnd": "Round over.",
+  "capotSuccess": "Capot successful! All eight tricks were taken.",
+  "capotFailed": "Capot failed. All eight tricks were not taken.",
   "promptNext": "next ... Start the next round",
   "gameEndWinner": "Game over! {{name}} wins with {{score}} penalty points!",
   "gameEndTie": "Game over! It's a tie.",

@@ -102,6 +102,12 @@ func (p *HachiHachiCuiPresenter) Output(g interfaces.HachiHachiGame, lastErr err
 		b.WriteString("----------\n")
 
 		cuiErrorBlock(b, lastErr)
+		if lastErr == nil {
+			if entry := latestAction(g.GetActionLog(), "draw"); entry != nil && len(entry.Cards) > 1 {
+				b.WriteString(color.Yellow(i18n.Tf("hachihachi.drawCapture", "card", hachihachiCuiCardStr(entry.Cards[0]),
+					"captured", hachiHachiCapturedLabels(entry.Cards[1:]))) + "\n")
+			}
+		}
 
 		switch g.GetPhase() {
 		case domain.HachiHachiPhasePlay:

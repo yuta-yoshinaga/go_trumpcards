@@ -18,6 +18,8 @@
   "promptDeclare": "capot を宣言しますか？",
   "promptDeclareHelp": "capot・・・全8トリック獲得を宣言 / pass・・・宣言せずに進む",
   "promptRoundEnd": "ラウンド終了。",
+  "capotSuccess": "capot成功！全8トリックを獲得しました。",
+  "capotFailed": "capot失敗。全8トリックを獲得できませんでした。",
   "promptNext": "next・・・次のラウンドへ",
   "gameEndWinner": "ゲーム終了！ 勝者は {{name}}（失点 {{score}}）！",
   "gameEndTie": "ゲーム終了！ 同点で決着つかず。",

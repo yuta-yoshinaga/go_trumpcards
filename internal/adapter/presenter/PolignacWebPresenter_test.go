@@ -94,6 +94,28 @@ func TestPolignacWebPresenterRoundEndMessage(t *testing.T) {
 	assert.Equal(t, "1", m["messageParams"].(map[string]any)["round"])
 }
 
+func TestPolignacWebPresenterCapotResultMessages(t *testing.T) {
+	p := new(PolignacWebPresenter)
+	for _, tc := range []struct {
+		name  string
+		trick int
+		code  string
+	}{
+		{name: "success", trick: domain.PolignacTricksPerRound, code: "polignac.roundEnd.capotSuccess"},
+		{name: "failed", trick: domain.PolignacTricksPerRound - 1, code: "polignac.roundEnd.capotFailed"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := domain.NewDefaultPolignac()
+			g.Reset()
+			require.NoError(t, g.DeclareCapot())
+			g.SetPhaseForTest(domain.PolignacPhaseRoundEnd)
+			g.SetCapotTricksForTest(tc.trick)
+
+			assert.Equal(t, tc.code, decodePolignac(t, p.Output(g, nil))["messageCode"])
+		})
+	}
+}
+
 func TestPolignacWebPresenterResultMessage(t *testing.T) {
 	p := new(PolignacWebPresenter)
 

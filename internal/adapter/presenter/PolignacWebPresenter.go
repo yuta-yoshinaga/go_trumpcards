@@ -82,6 +82,13 @@ func (p *PolignacWebPresenter) buildMessage(g interfaces.PolignacGame, lastErr e
 	case domain.PolignacPhaseDeclare:
 		return "", "polignac.declarePhase", nil
 	case domain.PolignacPhaseRoundEnd:
+		if g.GetCapotIdx() >= 0 {
+			key := "polignac.roundEnd.capotFailed"
+			if g.GetCapotTricks() >= domain.PolignacTricksPerRound {
+				key = "polignac.roundEnd.capotSuccess"
+			}
+			return "", key, map[string]string{"round": strconv.Itoa(g.GetRoundNumber())}
+		}
 		return "", "polignac.roundEnd", map[string]string{"round": strconv.Itoa(g.GetRoundNumber())}
 	}
 	// **capot 宣言中は狙いが変わる。** 失点を避けるより、宣言を潰すほうが大きい。
