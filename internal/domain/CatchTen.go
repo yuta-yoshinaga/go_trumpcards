@@ -105,6 +105,9 @@ func catchTenPlainRank(value int) int {
 
 // catchTenHonorPoints はカードがトリックを獲得したチームに与える名誉点を返す。
 // トランプの J=11, 10=10, A=4, K=3, Q=2。非トランプは0点。
+//
+// **同じ配点が Web GUI にもある** (frontend/src/utils/catchTenHonorPoints.ts、
+// 手札の名誉点バッジ用)。片方だけ変えると 2 つの面が違う点数を言う。
 func catchTenHonorPoints(card *Card, trumpSuit int) int {
 	if card == nil || card.GetDesign() != trumpSuit {
 		return 0

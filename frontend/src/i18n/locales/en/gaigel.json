@@ -29,7 +29,7 @@
   "roundPoints": "Round: {{points}} pts",
   "marriagePoints": "Marriage: {{points}} pts",
   "marriageButton": "Marriage",
-  "marriageBadge": "Marriage available (King + Queen)",
+  "marriageBadge": "Marriage available ({{points}} points: King + Queen)",
   "declareMarriage": "Declare King + Queen for bonus points",
   "playButton": "Play",
   "nextTrick": "Next Trick",

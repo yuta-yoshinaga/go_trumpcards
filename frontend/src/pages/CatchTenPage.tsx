@@ -33,6 +33,7 @@ import type { CatchTenPlayerData, CatchTenResponse } from '../types/card';
 import { CatchTenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { catchTenHonorPoints } from '../utils/catchTenHonorPoints';
 import { CATCHTEN_HELP, parseCatchTenCommand } from '../utils/cli/commands/catchtenCommands';
 import { formatCatchTenState } from '../utils/cli/formatters/catchtenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -206,6 +207,11 @@ function CatchTenPageContent() {
   // (CatchTenDrawTeam → winnerTeam < 0) never satisfies this, so the
   // celebration only fires for the human team's outright win.
   const humanWon = isGameEnd && state.winnerTeam === 0;
+  const honorBadgeFor = (idx: number): { glyph: string; title: string } | null => {
+    if (state.trumpSuit === 0) return null;
+    const points = catchTenHonorPoints(humanPlayer?.cards[idx], state.trumpSuit);
+    return points > 0 ? { glyph: '★', title: t('honorBadge', { points }) } : null;
+  };
 
   // Render a CPU player's stats as a definition list so screen readers
   // announce each field (hand size, team, cumulative/round score) as an
@@ -486,6 +492,7 @@ function CatchTenPageContent() {
                 highlightIndices={isHumanTurn && hint?.cardIndex !== undefined ? [hint.cardIndex] : undefined}
                 validIndices={isHumanTurn ? state.validPlayIndices : undefined}
                 restrictedTooltip={t('restrictedCard')}
+                cardBadgeFor={honorBadgeFor}
               />
             )}
 

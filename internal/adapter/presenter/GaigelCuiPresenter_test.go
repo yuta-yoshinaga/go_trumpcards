@@ -94,6 +94,16 @@ func TestGaigelCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, strings.Split(i18n.T("gaigel.promptMarriageCards"), "{{")[0])
 		assert.Contains(t, result, "[0]")
 		assert.Contains(t, result, "[1]")
+		assert.Contains(t, result, "(40点)")
+
+		// A non-trump candidate receives the ordinary marriage bonus.
+		players[0].Reset()
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 12, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMarriageIndices")
+		m.On("GetMarriageIndices", 0).Return([]int{0, 1})
+		result = p.Output(m, nil)
+		assert.Contains(t, result, "(20点)")
 	})
 
 	t.Run("cpu turn does not leak marriage cards", func(t *testing.T) {

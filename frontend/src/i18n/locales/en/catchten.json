@@ -16,6 +16,7 @@
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
   "trumpSuit": "Trump Suit",
+  "honorBadge": "Honor points: {{points}}",
   "cards": "{{count}} cards",
   "cumulativeScore": "Total: {{score}}",
   "roundScore": "Round: {{score}}",
