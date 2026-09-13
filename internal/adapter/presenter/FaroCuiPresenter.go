@@ -68,9 +68,9 @@ func (fp *FaroCuiPresenter) Output(f interfaces.FaroGame, lastErr error) string 
 
 	sb.WriteString("----------\n")
 
-	if lastErr != nil {
-		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
-	}
+	// **共有ヘルパを通すこと。** lastErr.Error() を直に書くと、DomainError の Code
+	// しか持たないエラーは訳文でなくコード文字列そのものを画面に出す。
+	cuiErrorBlock(&sb, lastErr)
 
 	if f.GetPhase() == domain.FaroPhaseRoundEnd || f.GetPhase() == domain.FaroPhaseGameEnd {
 		if f.GetCallOrder() != nil {

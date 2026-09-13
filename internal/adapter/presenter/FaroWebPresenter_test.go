@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -46,6 +47,20 @@ func parseFaroOutput(t *testing.T, jsonStr string) *controller.FaroWebOutput {
 	var out controller.FaroWebOutput
 	assert.NoError(t, json.Unmarshal([]byte(jsonStr), &out))
 	return &out
+}
+
+// TestFaroWebPresenter_Output_ErrorCodeReachesTheClient は、Code しか持たない
+// DomainError が messageCode として届くことを固定する。ここを埋めないと、
+// クライアントは訳文の代わりに "faro.errRankDepleted" を表示する。
+func TestFaroWebPresenter_Output_ErrorCodeReachesTheClient(t *testing.T) {
+	p := new(FaroWebPresenter)
+	m := new(interfaces.MockFaroGame)
+	setupFaroWebMockDefaults(m)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "faro.errRankDepleted", nil)
+
+	var resObj controller.FaroWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+	assert.Equal(t, "faro.errRankDepleted", resObj.MessageCode)
 }
 
 func TestFaroWebPresenter_Output_BettingPhase(t *testing.T) {

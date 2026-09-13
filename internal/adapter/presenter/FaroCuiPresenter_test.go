@@ -77,6 +77,20 @@ func TestFaroCuiPresenter_Output_Error(t *testing.T) {
 	assert.Contains(t, result, "oops")
 }
 
+// TestFaroCuiPresenter_Output_ErrorCodeIsTranslated は、Code しか持たない
+// DomainError が**訳文**として出ることを固定する。Error() はコード文字列を
+// 返すので、共有の cuiErrorBlock を通さず lastErr.Error() を直に書くと
+// 画面に "faro.errRankDepleted" がそのまま出る。
+func TestFaroCuiPresenter_Output_ErrorCodeIsTranslated(t *testing.T) {
+	p := new(FaroCuiPresenter)
+	m := new(interfaces.MockFaroGame)
+	setupFaroCuiMockDefaults(m)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "faro.errRankDepleted", nil)
+	result := p.Output(m, err)
+	assert.Contains(t, result, "そのランクのカードはすべて出ています。")
+	assert.NotContains(t, result, "faro.errRankDepleted", "コード文字列が生で出てはいけない")
+}
+
 func TestFaroCuiPresenter_Output_WithBetsAndTurn(t *testing.T) {
 	p := new(FaroCuiPresenter)
 	m := new(interfaces.MockFaroGame)
