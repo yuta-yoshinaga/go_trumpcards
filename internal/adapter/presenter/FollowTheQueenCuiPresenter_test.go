@@ -337,3 +337,29 @@ func TestFollowTheQueenCuiPresenter_Hint_CountsWilds(t *testing.T) {
 		assert.NotContains(t, out, i18n.T("followthequeen.hintReasonPair"))
 	})
 }
+
+func TestFollowTheQueenCuiPresenter_Hint_LaterStreets(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.FollowTheQueenCuiPresenter)
+	s, players := makeFollowTheQueenForPresenter()
+	s.SetPhase(domain.FollowTheQueenPhaseFifthStreet)
+	s.SetCurrentTurn(0)
+	players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddHoleCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 9, false))
+	s.SetWildRankForTest(9)
+
+	// ワイルドをペアより優先し、負債が無いときは存在する bet を案内する。
+	out := p.HintOutput(s)
+	assert.Contains(t, out, "ベット")
+	assert.Contains(t, out, "ワイルドを1枚持っている（実質ペア以上）")
+	assert.NotContains(t, out, "ワンペア以上")
+
+	// 負債があれば、同じワイルドの助言でも call 相当の raise を案内する。
+	s.SetLastBet(5)
+	out = p.HintOutput(s)
+	assert.Contains(t, out, "レイズ")
+	assert.Contains(t, out, "ワイルドを1枚持っている（実質ペア以上）")
+}

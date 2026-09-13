@@ -792,6 +792,62 @@ func TestSevenCardStudCuiPresenter_HintOutput(t *testing.T) {
 	})
 }
 
+func TestSevenCardStudCuiPresenter_Hint_ChicagoSpadeLock(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.SevenCardStudCuiPresenter)
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	players := []*domain.SevenCardStudPlayer{
+		domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+		domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+	}
+	s := domain.NewSevenCardStudChicago(domain.NewTrumpCards(0), players, domain.DefaultSevenCardStudConfig())
+	s.SetPhase(domain.SevenCardStudPhaseSixthStreet)
+	s.SetCurrentTurn(0)
+	players[0].AddHoleCard(card(domain.CardDesignSpade, 1))
+	players[0].AddHoleCard(card(domain.CardDesignHeart, 2))
+	players[0].AddDoorCard(card(domain.CardDesignClover, 9))
+
+	// 伏せ札の A♠ は、ハイの役が弱くてもスペード側の半分を確定する。
+	out := p.HintOutput(s)
+	assert.Contains(t, out, "チェック")
+	assert.Contains(t, out, "伏せ札の A♠ でポットの半分が確定")
+
+	s.SetLastBet(5)
+	out = p.HintOutput(s)
+	assert.Contains(t, out, "コール")
+	assert.Contains(t, out, "伏せ札の A♠ でポットの半分が確定")
+
+	newChicago := func() (*domain.SevenCardStud, *domain.SevenCardStudPlayer) {
+		chicagoPlayers := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		chicago := domain.NewSevenCardStudChicago(domain.NewTrumpCards(0), chicagoPlayers, domain.DefaultSevenCardStudConfig())
+		chicago.SetPhase(domain.SevenCardStudPhaseThirdStreet)
+		chicago.SetCurrentTurn(0)
+		chicagoPlayers[0].AddHoleCard(card(domain.CardDesignHeart, 2))
+		chicagoPlayers[0].AddHoleCard(card(domain.CardDesignClover, 4))
+		return chicago, chicagoPlayers[0]
+	}
+
+	// A♠ が伏せ札に無ければ、Chicago 専用ヒントではなく通常ハイの既存分岐を使う。
+	noLock, noLockPlayer := newChicago()
+	noLockPlayer.AddDoorCard(card(domain.CardDesignDiamond, 1))
+	out = p.HintOutput(noLock)
+	assert.Contains(t, out, "続行条件を満たしません")
+	assert.NotContains(t, out, "現在ヒントはありません。")
+
+	// 表向きの A♠ は対象外で、通常ハイの既存分岐を使う。
+	plain, plainPlayer := newChicago()
+	plainPlayer.AddDoorCard(card(domain.CardDesignSpade, 1))
+	out = p.HintOutput(plain)
+	assert.NotContains(t, out, "伏せ札の A♠ でポットの半分が確定")
+	assert.Contains(t, out, "続行条件を満たしません")
+}
+
 // #5543: Hi-Lo の結果は合計額しか出ておらず、ハイを取ったのかローを取ったのか、
 // スクープしたのかが CUI からは読み取れなかった。Web は StudHiLoSplit が
 // 3 通りを別バッジで出している。
