@@ -22,7 +22,7 @@ func NewBaccaratCuiController(bi usecase.BaccaratInteractorIF) *BaccaratCuiContr
 }
 
 // Exec ゲーム実行
-// コマンド例: "r", "b 100 0", "ch", "q"
+// コマンド例: "r", "b 100 0 20 20", "ch", "q"
 func (bcc *BaccaratCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
@@ -39,7 +39,15 @@ func (bcc *BaccaratCuiController) Exec(command string) string {
 				if !ok {
 					return errMsg, true
 				}
-				return bcc.bi.Bet(amount, betType, 0, 0), true
+				playerPairBet, errMsg, ok := parseOptionalBaccaratPairBet(args, 2)
+				if !ok {
+					return errMsg, true
+				}
+				bankerPairBet, errMsg, ok := parseOptionalBaccaratPairBet(args, 3)
+				if !ok {
+					return errMsg, true
+				}
+				return bcc.bi.Bet(amount, betType, playerPairBet, bankerPairBet), true
 			case "ch", "clearhistory":
 				return bcc.bi.ClearHistory(), true
 			default:
@@ -47,4 +55,11 @@ func (bcc *BaccaratCuiController) Exec(command string) string {
 			}
 		},
 	)
+}
+
+func parseOptionalBaccaratPairBet(args []string, idx int) (int, string, bool) {
+	if len(args) <= idx {
+		return 0, "", true
+	}
+	return cuiutil.ParseIntArgKeys(args[idx:], "pairBetRequired", "invalidPairBet", 0, math.MaxInt)
 }

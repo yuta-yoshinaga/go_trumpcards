@@ -624,5 +624,7 @@
   "numberOfDealsRequired18": "Number of deals is required (1-8).",
   "invalidNumberOfDeals18": "Invalid number of deals: {{val}}. Please enter 1-8.",
   "targetKotsRequired": "Please specify the number of kots.",
-  "invalidTargetKots": "Invalid number of kots: {{val}}."
+  "invalidTargetKots": "Invalid number of kots: {{val}}.",
+  "pairBetRequired": "A pair bet amount is required.",
+  "invalidPairBet": "Invalid pair bet amount: {{val}}. Please enter 0 or more."
 }

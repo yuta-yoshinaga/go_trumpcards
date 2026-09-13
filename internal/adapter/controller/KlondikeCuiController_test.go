@@ -8,11 +8,19 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
 func newMockKlondikeInteractor() *mockusecase.MockKlondikeInteractor {
 	return new(mockusecase.MockKlondikeInteractor)
 }
+
+type klondikeCuiTestPresenter struct{}
+
+func (klondikeCuiTestPresenter) Output(interfaces.KlondikeGame, error) string   { return "" }
+func (klondikeCuiTestPresenter) ActionLogOutput(interfaces.KlondikeGame) string { return "" }
+func (klondikeCuiTestPresenter) HintOutput(interfaces.KlondikeGame) string      { return "" }
 
 func TestKlondikeCuiControllerQuit(t *testing.T) {
 	ki := newMockKlondikeInteractor()
@@ -27,6 +35,19 @@ func TestKlondikeCuiControllerReset(t *testing.T) {
 	ki.On("Reset").Return("reset_output")
 	assert.Equal(t, "reset_output", c.Exec("r"))
 	assert.Equal(t, "reset_output", c.Exec("reset"))
+}
+
+func TestKlondikeCuiControllerScoringMode(t *testing.T) {
+	ki := usecase.NewKlondikeInteractor(domain.NewDefaultKlondike(), klondikeCuiTestPresenter{})
+	c := NewKlondikeCuiController(ki)
+	assert.Equal(t, "", c.Exec("sm 1"))
+	assert.Equal(t, domain.KlondikeScoringVegas, ki.GetConfig().ScoringMode)
+	assert.Equal(t, "", c.Exec("reset"))
+	assert.Equal(t, domain.KlondikeScoringVegas, ki.GetConfig().ScoringMode)
+
+	for _, command := range []string{"sm", "sm -1", "sm 2", "setscoringmode 2"} {
+		assert.Contains(t, NewKlondikeCuiController(newMockKlondikeInteractor()).Exec(command), "スコアリング")
+	}
 }
 
 func TestKlondikeCuiControllerDraw(t *testing.T) {
