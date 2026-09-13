@@ -263,10 +263,14 @@ function MonteCarloPageContent() {
                           data-testid={`mc-cell-${rowIdx}-${colIdx}`}
                           data-hint-action={`mc-cell-${rowIdx}-${colIdx}`}
                           aria-label={
-                            cell.card ? cardAlt(cell.card) : `${t('label.empty')} ${rowIdx + 1}-${colIdx + 1}`
+                            cell.card
+                              ? `${cardAlt(cell.card)}${isMatchingPair ? ` (${t('label.matchingCandidate')})` : ''}${
+                                  dimmed ? ` (${t('label.notAValidTarget')})` : ''
+                                }`
+                              : `${t('label.empty')} ${rowIdx + 1}-${colIdx + 1}`
                           }
                           onClick={() => handleCellClick(rowIdx, colIdx)}
-                          disabled={!isPlaying || loading || !filled}
+                          disabled={!isPlaying || loading || !filled || dimmed}
                           aria-pressed={filled ? isSelected : undefined}
                           data-pair-match={isMatchingPair ? 'true' : undefined}
                           data-dimmed={dimmed ? 'true' : undefined}

@@ -63,6 +63,7 @@ type MississippiStud struct {
 	result            GameResult                    // ゲーム結果
 	handRank          int                           // 最終ハンドランク
 	payoutMultiplier  int                           // 適用された配当倍率 (-1=プッシュ, 0=ロス)
+	chipsRefilled     bool                          // Reset がこのターンに残高を補充したか (永続化しない)
 	antePayout        int                           // アンティ部分の配当
 	streetPayouts     [MississippiStudStreetCnt]int // ストリートベット部分の配当
 	totalPayout       int                           // 合計配当
@@ -102,8 +103,10 @@ func (m *MississippiStud) Reset() {
 	m.streetPayouts = [MississippiStudStreetCnt]int{}
 	m.totalPayout = 0
 	m.actionLog = nil
+	m.chipsRefilled = false
 	if m.chips.GetChips() < MississippiStudMinBet*mississippiStudMinRoundCost {
 		m.chips.SetChips(MississippiStudDefaultChips)
+		m.chipsRefilled = true
 	}
 	m.trumpCards = NewTrumpCards(0)
 	m.trumpCards.Shuffle()
@@ -544,6 +547,10 @@ func (m *MississippiStud) GetTotalPayout() int { return m.totalPayout }
 
 // GetChips チップ残高を取得する。
 func (m *MississippiStud) GetChips() int { return m.chips.GetChips() }
+
+// GetChipsRefilled は直前の Reset が最低ラウンドコスト割れで残高を補充したかを返す。
+// 保存対象ではないので、リロード後は false に戻る。
+func (m *MississippiStud) GetChipsRefilled() bool { return m.chipsRefilled }
 
 // --- Test helpers ---
 

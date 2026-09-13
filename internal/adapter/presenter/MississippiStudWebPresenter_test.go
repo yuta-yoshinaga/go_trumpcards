@@ -3,6 +3,7 @@ package presenter
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,8 +13,13 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
-func setupMississippiStudWebMockDefaults(m *interfaces.MockMississippiStudGame) {
+func setupMississippiStudWebMockDefaults(m *interfaces.MockMississippiStudGame, refilled ...bool) {
+	refilledValue := false
+	if len(refilled) > 0 {
+		refilledValue = refilled[0]
+	}
 	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetChipsRefilled").Return(refilledValue).Maybe()
 	m.On("GetPhase").Return(domain.MississippiStudPhaseAnte).Maybe()
 	m.On("GetPlayerHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetCommunityCards").Return(([]*domain.Card)(nil)).Maybe()
@@ -60,6 +66,15 @@ func TestMississippiStudWebPresenter_Output_Error(t *testing.T) {
 
 	result := parseMississippiStudOutput(t, p.Output(m, errors.New("oops")))
 	assert.Equal(t, "oops", result.Message)
+}
+
+func TestMississippiStudWebPresenter_ChipsRefilledMessage(t *testing.T) {
+	m := new(interfaces.MockMississippiStudGame)
+	setupMississippiStudWebMockDefaults(m, true)
+
+	out := parseMississippiStudOutput(t, new(MississippiStudWebPresenter).Output(m, nil))
+	assert.Equal(t, "mississippistud.chipsRefilled", out.MessageCode)
+	assert.Equal(t, strconv.Itoa(domain.MississippiStudDefaultChips), out.MessageParams["chips"])
 }
 
 func TestMississippiStudWebPresenter_Output_ThirdSt_MasksCommunity(t *testing.T) {
