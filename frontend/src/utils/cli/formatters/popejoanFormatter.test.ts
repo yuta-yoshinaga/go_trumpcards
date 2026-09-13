@@ -51,6 +51,27 @@ describe('formatPopeJoanState', () => {
     expect(out).toContain('8D is out');
   });
 
+  it('reports Matrimony in a non-first trump suit', () => {
+    const out = formatPopeJoanState(
+      makeState({
+        trumpSuit: 4,
+        players: [seat(0, true, { cards: [card('DIAMOND', 13), card('DIAMOND', 12)] }), seat(1, false)],
+      }),
+    );
+    expect(out).toContain('targets in your hand: Matrimony (K-Q)');
+  });
+
+  it('reports Intrigue in the trump suit', () => {
+    const out = formatPopeJoanState(
+      makeState({ players: [seat(0, true, { cards: [card('SPADE', 12), card('SPADE', 11)] }), seat(1, false)] }),
+    );
+    expect(out).toContain('targets in your hand: Intrigue (Q-J)');
+  });
+
+  it('reports none when neither target is in the trump suit', () => {
+    expect(formatPopeJoanState(makeState())).toContain('targets in your hand: none');
+  });
+
   it("prints all eight compartments with the dealer's fixed dress", () => {
     const out = formatPopeJoanState(makeState());
     for (const name of COMPS) {

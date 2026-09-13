@@ -41,8 +41,8 @@ type CribbageSquaresWebOutput struct {
 	// いる**ぶん。RowDetails はスターターがめくれる 16 枚目まで必ず 0 なので、
 	// これが無いと対局中の内訳を何も出せない (#6088)。スターターは点を足す
 	// ことしかしないので、この値は最終点の下限になる。
-	RowPartialDetails []*CribbageSquaresWebOutputScore `json:"rowPartialDetails"`
-	ColPartialDetails []*CribbageSquaresWebOutputScore `json:"colPartialDetails"`
+	RowPartialDetails []*CribbageSquaresWebOutputPartialScore `json:"rowPartialDetails"`
+	ColPartialDetails []*CribbageSquaresWebOutputPartialScore `json:"colPartialDetails"`
 	// WinScore はクリア基準（61 点）。フロントで数値を持ち直さない。
 	WinScore int                           `json:"winScore"`
 	IsWin    bool                          `json:"isWin"`
@@ -59,6 +59,16 @@ type CribbageSquaresWebOutputScore struct {
 	Flush    int              `json:"flush"`
 	Nobs     int              `json:"nobs"`
 	Total    int              `json:"total"`
+}
+
+// CribbageSquaresWebOutputPartialScore はスターター抜きの確定得点内訳。
+type CribbageSquaresWebOutputPartialScore struct {
+	Fifteens int `json:"fifteens"`
+	Pairs    int `json:"pairs"`
+	Runs     int `json:"runs"`
+	Flush    int `json:"flush"`
+	Nobs     int `json:"nobs"`
+	Total    int `json:"total"`
 }
 
 // CribbageSquaresWebOutputHint はサーバ側のシナジー考慮ヒント (#4790)。
@@ -90,8 +100,8 @@ func newCribbageSquaresDefaultOutput(msg string) *CribbageSquaresWebOutput {
 		RowDetails: make([]*CribbageSquaresWebOutputScore, 0),
 		ColDetails: make([]*CribbageSquaresWebOutputScore, 0),
 		// **配列は必ず空配列で返す。**null を返すと、フロントの map が落ちる。
-		RowPartialDetails: make([]*CribbageSquaresWebOutputScore, 0),
-		ColPartialDetails: make([]*CribbageSquaresWebOutputScore, 0),
+		RowPartialDetails: make([]*CribbageSquaresWebOutputPartialScore, 0),
+		ColPartialDetails: make([]*CribbageSquaresWebOutputPartialScore, 0),
 		WinScore:          domain.CribbageSquaresWinScore,
 		WebOutputBase:     WebOutputBase{Message: msg},
 	}

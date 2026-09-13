@@ -57274,7 +57274,7 @@ components:
           type: array
           description: >-
             The cards this row or column scored with, in placement order.
-            Empty until the line is complete.
+            Contains the non-empty cards currently placed in the row or column.
           items:
             $ref: '#/components/schemas/Card'
         total:

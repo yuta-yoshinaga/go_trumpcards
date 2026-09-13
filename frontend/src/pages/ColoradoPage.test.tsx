@@ -98,6 +98,17 @@ describe('ColoradoPage', () => {
     expect(screen.getByTestId(`co-tableau-${(TABLEAU_CNT - 1).toString()}`)).toBeInTheDocument();
   });
 
+  it('shows cards buried under a tableau pile', async () => {
+    const piles = tableau();
+    piles[7] = [card('SPADE', 2), card('HEART', 12)];
+    mockExec.mockResolvedValue(makeState({ tableau: piles }));
+    renderWithProviders(<ColoradoPage />);
+    await waitFor(() => expect(screen.getByTestId('co-tableau-7')).toBeInTheDocument());
+    const pile = screen.getByTestId('co-tableau-7');
+    expect(pile).toHaveAccessibleName('場札 7 2枚');
+    expect(pile.querySelectorAll('[data-testid="animated-card"]')).toHaveLength(2);
+  });
+
   it('draws from the stock', async () => {
     renderWithProviders(<ColoradoPage />);
     await waitFor(() => expect(screen.getByTestId('co-draw-button')).toBeInTheDocument());

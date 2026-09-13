@@ -43,13 +43,13 @@ func (pr *CribbageSquaresWebPresenter) Output(p interfaces.CribbageSquaresGame, 
 	resObj.RowDetails = make([]*controller.CribbageSquaresWebOutputScore, domain.CribbageSquaresGridSize)
 	resObj.ColDetails = make([]*controller.CribbageSquaresWebOutputScore, domain.CribbageSquaresGridSize)
 	// 確定ぶんは別枠。公式のスコアはスターターが出るまで 0 のまま据え置く (#6088)。
-	resObj.RowPartialDetails = make([]*controller.CribbageSquaresWebOutputScore, domain.CribbageSquaresGridSize)
-	resObj.ColPartialDetails = make([]*controller.CribbageSquaresWebOutputScore, domain.CribbageSquaresGridSize)
+	resObj.RowPartialDetails = make([]*controller.CribbageSquaresWebOutputPartialScore, domain.CribbageSquaresGridSize)
+	resObj.ColPartialDetails = make([]*controller.CribbageSquaresWebOutputPartialScore, domain.CribbageSquaresGridSize)
 	for i := range domain.CribbageSquaresGridSize {
 		resObj.RowDetails[i] = cribbageSquaresScoreOutput(p.RowDetail(i), cribbageSquaresLineCards(board, i, true))
 		resObj.ColDetails[i] = cribbageSquaresScoreOutput(p.ColDetail(i), cribbageSquaresLineCards(board, i, false))
-		resObj.RowPartialDetails[i] = cribbageSquaresScoreOutput(p.RowPartialDetail(i), cribbageSquaresLineCards(board, i, true))
-		resObj.ColPartialDetails[i] = cribbageSquaresScoreOutput(p.ColPartialDetail(i), cribbageSquaresLineCards(board, i, false))
+		resObj.RowPartialDetails[i] = cribbageSquaresPartialScoreOutput(p.RowPartialDetail(i))
+		resObj.ColPartialDetails[i] = cribbageSquaresPartialScoreOutput(p.ColPartialDetail(i))
 		resObj.RowScores[i] = resObj.RowDetails[i].Total
 		resObj.ColScores[i] = resObj.ColDetails[i].Total
 		resObj.TotalScore += resObj.RowScores[i] + resObj.ColScores[i]
@@ -115,6 +115,17 @@ func cribbageSquaresScoreOutput(d domain.CribbageScoreDetail, cards []*domain.Ca
 	}
 	return &controller.CribbageSquaresWebOutputScore{
 		Cards:    outputs,
+		Fifteens: d.Fifteens,
+		Pairs:    d.Pairs,
+		Runs:     d.Runs,
+		Flush:    d.Flush,
+		Nobs:     d.Nobs,
+		Total:    d.Total,
+	}
+}
+
+func cribbageSquaresPartialScoreOutput(d domain.CribbageScoreDetail) *controller.CribbageSquaresWebOutputPartialScore {
+	return &controller.CribbageSquaresWebOutputPartialScore{
 		Fifteens: d.Fifteens,
 		Pairs:    d.Pairs,
 		Runs:     d.Runs,
