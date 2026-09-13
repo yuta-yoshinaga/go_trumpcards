@@ -12,6 +12,7 @@
   "seat": "{{name}}: チップ{{chips}} 手札{{n}}枚（{{pts}}点）",
   "opponentHandAriaLabel": "{{name}} の手札 {{n}} 枚（裏向き）",
   "played": "場に出た札",
+  "runStopped": "停止中",
   "yourHand": "あなたの手札",
   "yourChips": "チップ{{n}}",
   "yourPoints": "手札{{n}}点",

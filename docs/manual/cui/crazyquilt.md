@@ -64,12 +64,17 @@ flowchart TD
 ## 画面の見方
 
 ```
-組札(↑=A→K, ↓=K→A): ↑♠A | ↑♣A | ↑♥A | ↑♦A | ↓♠K | ↓♣K | ↓♥K | ↓♦K
+組札(↑=A→K, ↓=K→A): ↑SPADE 1 | ↑CLOVER 1 | ↑HEART 1 | ↑DIAMOND 1 | ↓SPADE 13 | ↓CLOVER 13 | ↓HEART 13 | ↓DIAMOND 13
 山札: 32枚 組み直し: 残り1回 捨て札: ♥9 (1枚)
 ----------
-*♠5 *♥7  ♣3  ♦10 *♠9  ・  *♥2 *♣8
- ♦4  ♠J   ♥6  ♣A  ♦Q   ♠2  ♥10 *♣7
-...
+[*CLOVER 3  ]( CLOVER 12 )[*HEART 8   ]( DIAMOND 8 )[*HEART 9   ]( SPADE 5   )[*CLOVER 5  ](*CLOVER 10 )
+(*DIAMOND 6 )[ DIAMOND 10]( DIAMOND 2 )[ SPADE 8   ]( CLOVER 8  )[ DIAMOND 11]( SPADE 11  )[ DIAMOND 5 ]
+[ CLOVER 7  ]( SPADE 12  )[ DIAMOND 12]( HEART 7   )[ HEART 11  ]( CLOVER 4  )[ SPADE 11  ](*SPADE 2   )
+(*DIAMOND 13)[ DIAMOND 5 ]( CLOVER 6  )[ DIAMOND 9 ]( HEART 13  )[ CLOVER 2  ]( SPADE 3   )[ HEART 9   ]
+[ DIAMOND 4 ]( HEART 12  )[ HEART 7   ]( CLOVER 11 )[ DIAMOND 9 ]( SPADE 4   )[ HEART 3   ](*CLOVER 2  )
+(*CLOVER 6  )[ SPADE 9   ]( DIAMOND 2 )[ HEART 5   ]( DIAMOND 1 )[ SPADE 1   ]( HEART 10  )[ SPADE 8   ]
+[ SPADE 13  ]( HEART 1   )[ DIAMOND 7 ]( SPADE 9   )[ DIAMOND 12]( HEART 12  )[ HEART 4   ](*CLOVER 10 )
+(*HEART 2   )[*HEART 6   ]( HEART 3   )[*CLOVER 5  ]( HEART 5   )[*DIAMOND 3 ]( SPADE 2   )[*SPADE 6   ]
 * が付いた札だけ取れます（短辺が空いている札）
 ----------
 手数: 0
@@ -87,4 +92,3 @@ flowchart TD
 - **捨て札への連番置きが主要な崩し手。** 組札に上げられない札でも、捨て札と 1 つ違いなら動かせます。これを使わないとキルトはほとんど減りません
 - **組み直しは 1 度だけ。** 使う前に、キルトから捨て札へ送れる札が残っていないか確認する
 - 同じ数字の札は 2 枚あり、そのスートの昇順・降順の 2 本がそれぞれ 1 枚ずつ必要とするので、片方に入らなくてももう一方が受け入れます
-

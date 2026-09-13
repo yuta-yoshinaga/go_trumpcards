@@ -402,16 +402,25 @@ function FourSeasonsPageContent() {
                       }
                       className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${selected ? 'ring-2 ring-ds-warning' : ''} ${hintTableau === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source && !selected ? 'ring-2 ring-ds-info/70' : ''}`}
                     >
-                      {top ? (
-                        <AnimatedCard card={top} width={cardWidth} />
-                      ) : (
-                        <div
-                          style={{ width: cardWidth, height: cardHeight }}
-                          className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
+                      <div className="relative">
+                        {top ? (
+                          <AnimatedCard card={top} width={cardWidth} />
+                        ) : (
+                          <div
+                            style={{ width: cardWidth, height: cardHeight }}
+                            className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
+                          >
+                            {t('empty')}
+                          </div>
+                        )}
+                        <span
+                          data-testid={`fs-tableau-next-${idx.toString()}`}
+                          aria-hidden="true"
+                          className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-ds-text-on-accent text-[10px] font-bold leading-none ring-1 ring-white/30"
                         >
-                          {t('empty')}
-                        </div>
-                      )}
+                          {accepts !== null ? t('nextRankBadge', { rank: valueName(accepts) }) : t('acceptsAny')}
+                        </span>
+                      </div>
                     </button>
                   </div>
                 );

@@ -333,6 +333,7 @@ function GoofspielPageContent() {
                         { value: '0', label: t('actions.tieDiscard') },
                         { value: '1', label: t('actions.tieCarry') },
                       ],
+                      tooltip: t('actions.tieRuleTip'),
                       onSelect: (v: string) => setTieRule(Number(v)),
                       testId: 'gs-tie-select',
                     },
