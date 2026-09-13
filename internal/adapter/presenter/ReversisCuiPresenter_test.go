@@ -61,6 +61,56 @@ func TestReversisCuiPresenterRoundEnd(t *testing.T) {
 	assert.NotContains(t, out, i18n.T("reversis.promptPlay"))
 }
 
+func TestReversisCuiPresenterShowsMarkedCapture(t *testing.T) {
+	p := new(ReversisCuiPresenter)
+	message := func(mark string) string {
+		return "CPU 1 が" + mark + "を獲得: +" + strconv.Itoa(domain.ReversisMarkedPenalty) +
+			"失点、プールに +" + strconv.Itoa(domain.ReversisMarkedStake) + "チップ"
+	}
+	marked := func(card *domain.Card) *domain.ActionLogEntry {
+		return &domain.ActionLogEntry{PlayerIdx: 1, ActionType: "marked", Cards: []*domain.Card{card}}
+	}
+
+	t.Run("quinola", func(t *testing.T) {
+		r := newReversisForCui(t)
+		r.SetActionLogForTest([]*domain.ActionLogEntry{marked(domain.NewCard(domain.CardDesignHeart, domain.ReversisQuinolaValue, true))})
+		assert.Contains(t, reversisPlain(p.Output(r, nil)), message("♥J"))
+	})
+
+	t.Run("diamond ace", func(t *testing.T) {
+		r := newReversisForCui(t)
+		card := domain.NewCard(domain.CardDesignDiamond, 1, true)
+		r.SetActionLogForTest([]*domain.ActionLogEntry{marked(card)})
+		assert.Contains(t, reversisPlain(p.Output(r, nil)), message("♦A"))
+	})
+
+	t.Run("both marks in one trick", func(t *testing.T) {
+		r := newReversisForCui(t)
+		quinola := domain.NewCard(domain.CardDesignHeart, domain.ReversisQuinolaValue, true)
+		diamondAce := domain.NewCard(domain.CardDesignDiamond, 1, true)
+		r.SetActionLogForTest([]*domain.ActionLogEntry{
+			marked(quinola),
+			marked(diamondAce),
+		})
+		out := reversisPlain(p.Output(r, nil))
+		assert.Contains(t, out, message("♦A"))
+		assert.NotContains(t, out, message("キノラ"), "表示対象はアクションログ末尾の marked")
+	})
+
+	t.Run("no marked card", func(t *testing.T) {
+		r := newReversisForCui(t)
+		r.SetActionLogForTest([]*domain.ActionLogEntry{{ActionType: "play"}})
+		out := reversisPlain(p.Output(r, nil))
+		assert.NotContains(t, out, "を獲得: +"+strconv.Itoa(domain.ReversisMarkedPenalty)+"失点")
+	})
+
+	t.Run("a later action hides the marked message", func(t *testing.T) {
+		r := newReversisForCui(t)
+		r.SetActionLogForTest([]*domain.ActionLogEntry{marked(domain.NewCard(domain.CardDesignHeart, domain.ReversisQuinolaValue, true)), {ActionType: "play"}})
+		assert.NotContains(t, reversisPlain(p.Output(r, nil)), "を獲得: +"+strconv.Itoa(domain.ReversisMarkedPenalty)+"失点")
+	})
+}
+
 func TestReversisCuiPresenterError(t *testing.T) {
 	p := new(ReversisCuiPresenter)
 	assert.Contains(t, p.Output(newReversisForCui(t), assert.AnError), assert.AnError.Error())
