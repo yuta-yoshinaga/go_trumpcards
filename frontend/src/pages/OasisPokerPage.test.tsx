@@ -365,6 +365,29 @@ describe('OasisPokerPage keyboard shortcuts', () => {
     expect(mockApi).not.toHaveBeenCalled();
   });
 
+  it('does not dispatch bet from the keyboard when the combined bet exceeds chips', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 50 });
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+
+    fireEvent.keyDown(document, { key: 'b' });
+    await flushPendingDispatch();
+
+    expect(mockApi).not.toHaveBeenCalledWith('bet', 100, 0);
+  });
+
+  it('dispatches the keyboard bet when the combined bet fits within chips', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockApi.mockClear();
+
+    fireEvent.keyDown(document, { key: 'b' });
+
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 100, 0));
+  });
+
   // カード交換フェーズでのみ交換手数料の案内行を表示する。
   it('renders oasis-exchange-fee-line during exchange phase', async () => {
     mockApi.mockResolvedValue(exchangePhaseState);
