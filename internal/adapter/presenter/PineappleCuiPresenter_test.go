@@ -65,6 +65,21 @@ func TestPineappleCuiPresenterLearning(t *testing.T) {
 	n.On("IsHumanTurn").Return(true)
 	n.On("GetEquity").Return((*domain.HoldemEquityResult)(nil))
 	assert.NotContains(t, p.Output(n, nil), "[学習モード]")
+
+	f, _ := setupPineappleCuiMockWithPlayers()
+	f.ExpectedCalls = removeMockCall(f.ExpectedCalls, "IsHumanTurn")
+	f.On("IsHumanTurn").Return(false)
+	assert.NotContains(t, p.Output(f, nil), "[学習モード]")
+
+	z, _ := setupPineappleCuiMockWithPlayers()
+	z.ExpectedCalls = removeMockCall(z.ExpectedCalls, "IsHumanTurn")
+	z.On("IsHumanTurn").Return(true)
+	z.On("GetEquity").Return(&domain.HoldemEquityResult{Equity: 0.5})
+	z.On("GetPotOdds").Return(0.0)
+	result := p.Output(z, nil)
+	assert.Contains(t, result, "[学習モード]")
+	assert.NotContains(t, result, "  +EV (勝率がポットオッズを上回っています。コール有利)")
+	assert.NotContains(t, result, "  -EV (勝率がポットオッズ以下です。コール不利)")
 }
 
 func setupPineappleCuiMockWithPlayers() (*interfaces.MockPineappleGame, []*domain.PineapplePlayer) {

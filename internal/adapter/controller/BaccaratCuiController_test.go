@@ -17,6 +17,7 @@ func newMockBaccaratInteractor() *usecase.MockBaccaratInteractor {
 	m.On("Bet", 100, 0, 0, 0).Return("bet player result")
 	m.On("Bet", 100, 1, 0, 0).Return("bet banker result")
 	m.On("Bet", 100, 2, 0, 0).Return("bet tie result")
+	m.On("Bet", 100, 0, 50, 0).Return("bet player pair result")
 	m.On("Bet", 100, 0, 20, 20).Return("bet pair result")
 	m.On("ActionLog").Return("action log result")
 	m.On("ClearHistory").Return("clear history result")
@@ -61,6 +62,10 @@ func TestBaccaratCuiController_Bet(t *testing.T) {
 
 	t.Run("pair bets reach the domain", func(t *testing.T) {
 		assert.Equal(t, "bet pair result", c.Exec("b 100 0 20 20"))
+	})
+
+	t.Run("player pair bet without banker pair bet", func(t *testing.T) {
+		assert.Equal(t, "bet player pair result", c.Exec("b 100 0 50"))
 	})
 }
 
@@ -110,7 +115,12 @@ func TestBaccaratCuiController_Bet_Errors(t *testing.T) {
 
 	t.Run("negative pair bet", func(t *testing.T) {
 		result := c.Exec("b 100 0 -1")
-		assert.Contains(t, result, "invalidPairBet")
+		assert.Contains(t, result, "無効なペアベット額です: -1。0以上を指定してください。")
+	})
+
+	t.Run("non-numeric pair bet", func(t *testing.T) {
+		result := c.Exec("b 100 0 abc")
+		assert.Contains(t, result, "無効なペアベット額です: abc。0以上を指定してください。")
 	})
 }
 
