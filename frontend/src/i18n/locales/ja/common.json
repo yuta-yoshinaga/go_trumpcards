@@ -1276,6 +1276,7 @@
     "euchre.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
     "euchre.roundEnd": "ラウンド終了 — 次のラウンドへ進んでください。",
     "euchre.trickEnd": "トリック終了 — 次へ進んでください。",
+    "faro.errRankDepleted": "そのランクのカードはすべて出ています",
     "faro.result.callLost": "コール外れ。",
     "faro.result.callWon": "コール的中！",
     "faro.result.gameEnd": "チップが尽きました。ゲーム終了です。",

@@ -97,6 +97,16 @@ describe('FaroPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { rank: 7, amount: 10, copper: false }));
   });
 
+  it('disables depleted ranks while leaving ranks with cards available', async () => {
+    const counts = [...bettingState.remainingByRank];
+    counts[2] = 0;
+    mockExec.mockResolvedValue(makeState({ remainingByRank: counts }));
+    renderWithProviders(<FaroPage />);
+
+    expect(await screen.findByTestId('rank-2')).toBeDisabled();
+    expect(screen.getByTestId('rank-7')).toBeEnabled();
+  });
+
   it('selects a chip amount and bets with it', async () => {
     renderWithProviders(<FaroPage />);
     await screen.findByTestId('rank-7');

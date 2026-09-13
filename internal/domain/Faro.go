@@ -177,6 +177,12 @@ func (f *Faro) PlayerPlaceBet(rank, amount int, copper bool) error {
 	if amount < f.config.MinBet || amount%f.config.MinBet != 0 || amount > f.config.MaxBet {
 		return NewDomainError(ErrInvalidAmount, "Invalid bet amount.")
 	}
+	// A depleted rank cannot receive new money because no future card can settle it.
+	// Existing bets may still be overwritten so players retain the established
+	// adjustment/refund semantics, and PlayerClearBet remains available to unlock them.
+	if _, alreadyBet := f.bets[rank]; !alreadyBet && f.GetRemainingByRank()[rank] == 0 {
+		return NewDomainErrorCode(ErrInvalidPlay, "faro.errRankDepleted", nil)
+	}
 	// 既存ベットを返金してから新しい金額を差し引く（上書きセマンティクス）。
 	prev := 0
 	if b, ok := f.bets[rank]; ok {

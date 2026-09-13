@@ -246,8 +246,12 @@ function FaroPageContent() {
                     <button
                       key={`rank-${rank}`}
                       type="button"
-                      onClick={() => isBetting && exec('bet', { rank, amount: chipAmount, copper })}
-                      disabled={!isBetting || loading}
+                      onClick={() => {
+                        if (isBetting && !loading && remaining[rank] > 0) {
+                          void exec('bet', { rank, amount: chipAmount, copper });
+                        }
+                      }}
+                      disabled={!isBetting || loading || remaining[rank] === 0}
                       className={`relative w-12 h-14 rounded border text-lg font-bold transition-all ${
                         bet?.copper
                           ? 'border-ds-accent bg-ds-accent/20 text-ds-accent'

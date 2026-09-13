@@ -1276,6 +1276,7 @@
     "euchre.playPhase.lead": "Your turn — pick a card to lead.",
     "euchre.roundEnd": "Round complete — go to the next round.",
     "euchre.trickEnd": "Trick complete — continue.",
+    "faro.errRankDepleted": "All cards of that rank have already been dealt",
     "faro.result.callLost": "Call lost.",
     "faro.result.callWon": "Call won!",
     "faro.result.gameEnd": "Out of chips. Game over.",

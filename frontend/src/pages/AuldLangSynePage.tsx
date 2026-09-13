@@ -318,6 +318,7 @@ function AuldLangSynePageContent() {
   if (!state) return <GameSkeleton gameKey="auldlangsyne" layout={{ kind: 'tableau', topRow: 4, tableau: 4 }} />;
 
   const isPlaying = state.phase === AuldLangSynePhase.PLAYING;
+  const selectedWasteValue = selectedWaste !== null ? state.wastes[selectedWaste]?.at(-1)?.value : undefined;
   const isGameClear = state.phase === AuldLangSynePhase.GAME_CLEAR;
   const isGameOver = state.phase === AuldLangSynePhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
@@ -383,13 +384,18 @@ function AuldLangSynePageContent() {
                 const nextRankLabel = nextRank !== null ? valueName(nextRank) : null;
                 const upcomingRanks = auldlangsyneUpcomingRanks(top?.value, pile.length);
                 const upcomingLabel = upcomingRanks.map(valueName).join(' → ');
+                const isLegalTarget =
+                  isPlaying && !loading && selectedWasteValue !== undefined && selectedWasteValue === nextRank;
                 return (
                   <div key={`f-${idx.toString()}`} className="flex flex-col items-center">
                     <button
                       type="button"
-                      className={`flex flex-col items-center p-1 rounded ${focusRingWhite} ${isHint ? 'ring-2 ring-ds-success animate-pulse' : ''} ${selectedWaste !== null ? 'cursor-pointer' : 'cursor-default'}`}
-                      onClick={() => playToFoundation(idx)}
-                      disabled={!isPlaying || loading || selectedWaste === null}
+                      className={`flex flex-col items-center p-1 rounded ${focusRingWhite} ${isHint ? 'ring-2 ring-ds-success animate-pulse' : ''} ${isLegalTarget ? 'rounded ring-2 ring-ds-success' : ''} ${selectedWaste !== null ? 'cursor-pointer' : 'cursor-default'}`}
+                      onClick={() => {
+                        if (isLegalTarget) playToFoundation(idx);
+                      }}
+                      disabled={!isLegalTarget}
+                      data-legal-target={isLegalTarget ? 'true' : undefined}
                       title={upcomingLabel ? t('upcomingRanksTooltip', { sequence: upcomingLabel }) : undefined}
                       aria-label={
                         nextRankLabel
