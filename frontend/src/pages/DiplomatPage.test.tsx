@@ -458,6 +458,27 @@ describe('DiplomatPage dead-end columns', () => {
     }
   });
 
+  // 選択元がウェイストの経路。タブローからの選択しか試していないと、
+  // selectedSourceCard のこの枝が一度も通らない。
+  it('reads the selected card from the waste, not only from the tableau', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      waste: [card('SPADE', 1)],
+      tableau: makeTableau([[card('HEART', 9)]]),
+      tableauDeadEnd: [false, false, false, false, false, false, false, false],
+      foundation: [[], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<DiplomatPage />);
+
+    const wasteCard = await screen.findByRole('button', { name: /^♠ A/ });
+    fireEvent.click(wasteCard);
+
+    // 空の ♠ 組札 (fIdx 0 と 4) だけが ♠A を受ける。
+    await waitFor(() => expect(screen.getByRole('button', { name: /空の組札0/ })).toBeEnabled());
+    expect(screen.getByRole('button', { name: /空の組札0/ })).toHaveAttribute('data-legal-target', 'true');
+    expect(screen.getByRole('button', { name: /空の組札1/ })).toBeDisabled();
+  });
+
   it('handles two foundations of the same suit independently when placing the first card', async () => {
     const twoDeckState: DiplomatResponse = {
       ...playingState,
