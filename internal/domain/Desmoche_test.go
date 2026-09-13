@@ -703,6 +703,34 @@ func TestDesmocheCpuHardDrawsDiscardWhenItCompletesAMeld(t *testing.T) {
 	}
 }
 
+func TestDesmocheCpuHardDrawDecisionRequiresDiscardForMeld(t *testing.T) {
+	const cpu = 1
+	setup := func(hand ...[2]int) *Desmoche {
+		g := NewDefaultDesmoche()
+		g.SetConfig(DesmocheConfig{CpuDifficulty: DesmocheCpuDifficultyHard})
+		setDesmocheHand(g, cpu, desmocheCards(hand...))
+		g.SetDiscardForTest(desmocheCards([2]int{CardDesignClover, 7}))
+		g.SetPhaseForTest(DesmochePhaseDraw)
+		return g
+	}
+
+	// The same discard is irrelevant because the hand already contains a meld.
+	if action := setup(
+		[2]int{CardDesignSpade, 9}, [2]int{CardDesignHeart, 9},
+		[2]int{CardDesignDiamond, 9}, [2]int{CardDesignDiamond, 2},
+	).DesmocheCpuDecide(cpu); action.DrawFromDiscard {
+		t.Fatalf("Hard should draw from stock when the hand already has a meld, got %+v", action)
+	}
+
+	// The same discard is required to complete the only available meld.
+	if action := setup(
+		[2]int{CardDesignSpade, 7}, [2]int{CardDesignHeart, 7},
+		[2]int{CardDesignDiamond, 2},
+	).DesmocheCpuDecide(cpu); !action.DrawFromDiscard {
+		t.Fatalf("Hard should take the discard that completes a meld, got %+v", action)
+	}
+}
+
 func TestDesmocheCpuHardSkipsInvalidLayoff(t *testing.T) {
 	g := NewDefaultDesmoche()
 	g.SetConfig(DesmocheConfig{CpuDifficulty: DesmocheCpuDifficultyHard})

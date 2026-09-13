@@ -615,7 +615,8 @@ func (d *Desmoche) canMeldDiscard(idx int) bool {
 				candidate = append(candidate, cards[i])
 			}
 		}
-		if _, err := DesmocheValidateMeld(candidate); err == nil && mask&(1<<len(cards)-1) != 0 {
+		// << binds more tightly than -, so parentheses are required around the discard bit index.
+		if _, err := DesmocheValidateMeld(candidate); err == nil && mask&(1<<(len(cards)-1)) != 0 {
 			return true
 		}
 	}
