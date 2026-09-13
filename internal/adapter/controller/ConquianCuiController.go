@@ -26,7 +26,7 @@ func NewConquianCuiController(ci usecase.ConquianInteractorIF) *ConquianCuiContr
 //
 // メルドコマンド (m/meld) はグループを ';' で区切り、各グループ内のインデックスは
 // スペースまたはカンマ区切りで指定する (例: "m 0,1,2;3" → [[0,1,2],[3]])。
-// 共有ヘルパー parseMeldGroups (Canasta と共通) を利用する。
+// Conquian 固有の parseConquianMeld でグループと延長先を解釈する。
 func (c *ConquianCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
@@ -80,19 +80,17 @@ func parseConquianMeld(args []string) ([][]int, []int) {
 	}
 	groups := make([][]int, 0)
 	targets := make([]int, 0)
-	for _, raw := range strings.Split(strings.Join(args, " "), ";") {
+	joined := strings.ReplaceAll(strings.Join(args, " "), " -- ", ";")
+	for _, raw := range strings.Split(joined, ";") {
 		parts := strings.SplitN(raw, "@", 2)
 		indices := strings.FieldsFunc(parts[0], func(r rune) bool { return r == ',' || r == ' ' })
-		group := make([]int, 0, len(indices))
-		for _, s := range indices {
-			if n, err := strconv.Atoi(s); err == nil {
-				group = append(group, n)
-			}
-		}
+		group := parseIntList(indices)
 		groups = append(groups, group)
 		target := -1
 		if len(parts) == 2 {
-			target, _ = strconv.Atoi(strings.TrimSpace(parts[1]))
+			if t, err := strconv.Atoi(strings.TrimSpace(parts[1])); err == nil {
+				target = t
+			}
 		}
 		targets = append(targets, target)
 	}

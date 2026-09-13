@@ -110,4 +110,10 @@ describe('hintLocalCommand', () => {
     // the player would see "Unknown command" instead of "no hint available".
     expect(hintLocalCommand(null)('hint')).not.toBeNull();
   });
+
+  it('answers an additional local command after hint requests', () => {
+    const cmd = hintLocalCommand(base, (input) => (input === 'history' ? 'all history' : null));
+    expect(cmd('history')).toBe('all history');
+    expect(cmd('other')).toBeNull();
+  });
 });

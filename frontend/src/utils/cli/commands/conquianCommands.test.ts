@@ -27,10 +27,11 @@ describe('parseConquianCommand', () => {
     });
   });
 
-  it('preserves a non-numeric extension target as NaN', () => {
-    expect(parseConquianCommand('meld 3@oops')).toEqual({
-      args: ['meld', undefined, undefined, [[3]], [Number.NaN]],
-    });
+  it('rejects malformed extension targets', () => {
+    for (const input of ['m 3@x', 'm 3@']) {
+      const result = parseConquianCommand(input);
+      expect(result).toEqual({ error: 'Usage: meld <idx...>[;<idx...>@<meldIndex>]' });
+    }
   });
 
   it('parses discard with index', () => {

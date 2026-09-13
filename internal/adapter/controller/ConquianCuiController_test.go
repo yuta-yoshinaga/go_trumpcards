@@ -58,6 +58,12 @@ func TestConquianCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "MeldWithTargets", [][]int{{0, 1, 2}, {3}}, []int{-1, -1})
 	})
 
+	t.Run("meld preserves double-dash group separator", func(t *testing.T) {
+		m := newMock()
+		assert.Equal(t, mockOutput, controller.NewConquianCuiController(m).Exec("m 0,1,2 -- 3"))
+		m.AssertCalled(t, "MeldWithTargets", [][]int{{0, 1, 2}, {3}}, []int{-1, -1})
+	})
+
 	t.Run("meld m no args", func(t *testing.T) {
 		m := newMock()
 		assert.Equal(t, mockOutput, controller.NewConquianCuiController(m).Exec("m"))
@@ -69,6 +75,14 @@ func TestConquianCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, controller.NewConquianCuiController(m).Exec("m 0,1,2;3@1"))
 		m.AssertCalled(t, "MeldWithTargets", [][]int{{0, 1, 2}, {3}}, []int{-1, 1})
 	})
+
+	for _, command := range []string{"m 5@x", "m 5@"} {
+		t.Run("invalid extension target falls back to automatic selection: "+command, func(t *testing.T) {
+			m := newMock()
+			assert.Equal(t, mockOutput, controller.NewConquianCuiController(m).Exec(command))
+			m.AssertCalled(t, "MeldWithTargets", [][]int{{5}}, []int{-1})
+		})
+	}
 
 	t.Run("discard d with index", func(t *testing.T) {
 		m := newMock()

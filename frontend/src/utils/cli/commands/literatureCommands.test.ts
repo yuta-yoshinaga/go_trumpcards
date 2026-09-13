@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LITERATURE_HELP, parseLiteratureCommand } from './literatureCommands';
+import { LITERATURE_HELP, literatureLocalCommand, parseLiteratureCommand } from './literatureCommands';
 
 /** The error message, or '' when the input parsed successfully. */
 function parseError(input: string): string {
@@ -68,12 +68,27 @@ describe('parseLiteratureCommand', () => {
   });
 
   it('documents every command it accepts', () => {
-    for (const cmd of ['a <seat> <1-4> <1-13>', 'c <half> <seat x6>', 'l / log', 'r / reset']) {
+    for (const cmd of ['a <seat> <1-4> <1-13>', 'c <half> <seat x6>', 'ah / history', 'l / log', 'r / reset']) {
       expect(LITERATURE_HELP.some((line) => line.startsWith(cmd))).toBe(true);
     }
     // **相手にのみ・持っている組・持っていない札**を help でも言う。
     expect(LITERATURE_HELP.some((line) => line.includes('OPPONENT'))).toBe(true);
     expect(LITERATURE_HELP.some((line) => line.includes('not that card'))).toBe(true);
     expect(LITERATURE_HELP.some((line) => line.includes('all six cards'))).toBe(true);
+  });
+
+  it('shows all asks through the ah and history local commands', () => {
+    const state = {
+      asks: [
+        { from: 0, to: 1, card: { design: 'SPADE' as const, value: 2 }, success: true },
+        { from: 1, to: 0, card: null, success: false },
+      ],
+    } as Parameters<typeof literatureLocalCommand>[1];
+    for (const command of ['ah', 'history']) {
+      const output = literatureLocalCommand(command, state);
+      expect(output).toContain('all asks (everyone sees these)');
+      expect(output).toContain('seat 0 -> seat 1');
+      expect(output).toContain('seat 1 -> seat 0');
+    }
   });
 });

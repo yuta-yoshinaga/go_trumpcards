@@ -26,7 +26,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { LiteratureClaim, LiteratureResponse } from '../types/card';
 import { LiteraturePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { LITERATURE_HELP, parseLiteratureCommand } from '../utils/cli/commands/literatureCommands';
+import {
+  LITERATURE_HELP,
+  literatureLocalCommand,
+  parseLiteratureCommand,
+} from '../utils/cli/commands/literatureCommands';
 import { formatLiteratureState } from '../utils/cli/formatters/literatureFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -124,9 +128,9 @@ function LiteraturePageContent() {
       parseCommand: parseLiteratureCommand,
       formatResponse: formatLiteratureState,
       helpText: LITERATURE_HELP,
-      localCommand: hintLocalCommand(frontendHint),
+      localCommand: hintLocalCommand(frontendHint, (input) => (state ? literatureLocalCommand(input, state) : null)),
     }),
-    [frontendHint],
+    [frontendHint, state],
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

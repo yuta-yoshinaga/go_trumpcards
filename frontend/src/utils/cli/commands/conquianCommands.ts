@@ -42,10 +42,18 @@ export function parseConquianCommand(input: string): CliParseResult<ConquianArgs
       const targets: number[] = [];
       for (const rawGroup of args.join(' ').split(';')) {
         const [rawIndices, rawTarget] = rawGroup.split('@', 2);
+        const hasTarget = rawGroup.includes('@');
         const parsed = parseIntSlice((rawIndices ?? '').replaceAll(',', ' ').trim().split(/\s+/).filter(Boolean));
         if ('error' in parsed) return { error: 'Usage: meld <idx...>[;<idx...>@<meldIndex>]' };
         groups.push(parsed.values);
-        targets.push(rawTarget === undefined ? -1 : Number.parseInt(rawTarget.trim(), 10));
+        if (!hasTarget) {
+          targets.push(-1);
+        } else {
+          const targetArg = rawTarget?.trim() ?? '';
+          const parsedTarget = parseIntArg(targetArg === '' ? [] : [targetArg], 0);
+          if ('error' in parsedTarget) return { error: 'Usage: meld <idx...>[;<idx...>@<meldIndex>]' };
+          targets.push(parsedTarget.value);
+        }
       }
       return { args: ['meld', undefined, undefined, groups, targets] };
     }

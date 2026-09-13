@@ -53,6 +53,9 @@ export function hintCliText(hint: HintResult | null): string {
  * Returns `null` for anything that is not a hint request, which is the contract
  * `localCommand` uses to fall through to the game's own parser.
  */
-export function hintLocalCommand(hint: HintResult | null): (input: string) => string | null {
-  return (input: string) => (isHintCommand(input) ? hintCliText(hint) : null);
+export function hintLocalCommand(
+  hint: HintResult | null,
+  additionalCommand?: (input: string) => string | null,
+): (input: string) => string | null {
+  return (input: string) => (isHintCommand(input) ? hintCliText(hint) : (additionalCommand?.(input) ?? null));
 }

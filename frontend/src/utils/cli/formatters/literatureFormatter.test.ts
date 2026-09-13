@@ -84,14 +84,14 @@ describe('formatLiteratureState', () => {
         ],
       }),
     );
-    expect(out).toContain('all asks (everyone sees these)');
+    expect(out).toContain('recent asks (everyone sees these)');
     expect(out).toContain('... hit');
     expect(out).toContain('... miss');
     // card が無くても落ちない。
     expect(out).toContain('seat 2 -> seat 3: ?');
   });
 
-  it('shows older asks so the CUI retains the complete public history', () => {
+  it('shows only the five most recent asks', () => {
     const asks = Array.from({ length: 6 }, (_, i) => ({
       from: 0,
       to: 1,
@@ -99,7 +99,8 @@ describe('formatLiteratureState', () => {
       success: false,
     }));
     const out = formatLiteratureState(makeState({ asks }));
-    expect(out).toContain('♠2 ... miss');
+    expect(out).not.toContain('♠2 ... miss');
+    expect(out).toContain('♠3 ... miss');
     expect(out).toContain('♠7 ... miss');
   });
 
