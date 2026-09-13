@@ -1,6 +1,6 @@
 {
   "helpTitle": "Baccarat",
-  "helpBet": "  b <amount> <type>    bet (type: 0=Player, 1=Banker, 2=Tie)",
+  "helpBet": "  b <amount> <type> [<playerPair>] [<bankerPair>]    bet (type: 0=Player, 1=Banker, 2=Tie)",
   "chipsLine": "chips: {{chips}}",
   "sideBetWin": "{{type}}: hit +{{payout}}",
   "sideBetLose": "{{type}}: miss",
@@ -26,6 +26,8 @@
   "sidePlayer": "Player",
   "sideBanker": "Banker",
   "helpExampleBet": "  b 100 0              bet 100 on the Player",
+  "pairBetRequired": "A pair bet amount is required.",
+  "invalidPairBet": "Invalid pair bet amount: {{val}}. Please enter 0 or more.",
   "payoutRefTitle": "Payouts",
   "payoutRefPlayer": "Player win (1:1)",
   "payoutRefBanker": "Banker win (1:1, {{commission}}% commission)",

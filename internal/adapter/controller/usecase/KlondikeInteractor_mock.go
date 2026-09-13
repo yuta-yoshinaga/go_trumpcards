@@ -13,6 +13,11 @@ type MockKlondikeInteractor struct {
 	mock.Mock
 }
 
+func (_m *MockKlondikeInteractor) GetConfig() domain.KlondikeConfig {
+	ret := _m.Called()
+	return ret.Get(0).(domain.KlondikeConfig)
+}
+
 func (_m *MockKlondikeInteractor) Reset() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)

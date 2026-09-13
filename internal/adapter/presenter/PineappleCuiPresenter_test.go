@@ -39,10 +39,32 @@ func setupPineappleCuiMock() *interfaces.MockPineappleGame {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetInitialDealCount").Return(3).Maybe()
 	m.On("IsDiscardAfterFlopBetting").Return(false).Maybe()
+	m.On("IsHumanTurn").Return(false).Maybe()
 	m.On("GetDiscardDone").Return(([]bool)(nil)).Maybe()
 	m.On("GetHumanDiscardPairPreviews").Return(([]domain.PineappleDiscardPairPreview)(nil)).Maybe()
 	m.On("GetHumanDiscardPreviews").Return(([]domain.PineappleDiscardPreview)(nil)).Maybe()
 	return m
+}
+
+func TestPineappleCuiPresenterLearning(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.PineappleCuiPresenter)
+	m, _ := setupPineappleCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetInitialDealCount")
+	m.On("IsHumanTurn").Return(true)
+	m.On("GetInitialDealCount").Return(4)
+	m.On("GetEquity").Return(&domain.HoldemEquityResult{Equity: 0.5})
+	m.On("GetPotOdds").Return(20.0)
+	assert.Contains(t, p.Output(m, nil), "勝率: 50.0% / ポットオッズ: 20.0%")
+
+	n, _ := setupPineappleCuiMockWithPlayers()
+	n.ExpectedCalls = removeMockCall(n.ExpectedCalls, "IsHumanTurn")
+	n.On("IsHumanTurn").Return(true)
+	n.On("GetEquity").Return((*domain.HoldemEquityResult)(nil))
+	assert.NotContains(t, p.Output(n, nil), "[学習モード]")
 }
 
 func setupPineappleCuiMockWithPlayers() (*interfaces.MockPineappleGame, []*domain.PineapplePlayer) {

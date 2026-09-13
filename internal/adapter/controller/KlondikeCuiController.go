@@ -25,7 +25,7 @@ var klondikeNoArgCommands = cuiutil.NewCommandMap[usecase.KlondikeInteractorIF](
 // Exec switch. "f" is included even though it can be no-arg, because it
 // behaves differently with vs. without a column argument and isn't a clean
 // nullary call.
-var klondikeArgfulCommands = []string{"m", "move", "f"}
+var klondikeArgfulCommands = []string{"m", "move", "f", "sm", "setscoringmode"}
 
 // KlondikeCuiController クロンダイクCUIコントローラークラス
 type KlondikeCuiController struct {
@@ -60,6 +60,12 @@ func (c *KlondikeCuiController) Exec(command string) string {
 				return c.handleFoundationShorthand(args), true
 			case "m", "move":
 				return c.handleMove(args), true
+			case "sm", "setscoringmode":
+				return cuiutil.WithParsedIntKeys(args, "klondike.scoringModeRequired", "klondike.invalidScoringMode", int(domain.KlondikeScoringNone), int(domain.KlondikeScoringVegas), func(v int) string {
+					cfg := c.ki.GetConfig()
+					cfg.ScoringMode = domain.KlondikeScoringMode(v)
+					return c.ki.ResetWithConfig(cfg)
+				})
 			default:
 				return "", false
 			}

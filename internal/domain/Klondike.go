@@ -554,6 +554,11 @@ func (k *Klondike) SetFoundation(foundation [KlondikeFoundationCnt][]*Card) {
 // GetDrawCount ドローカウント取得
 func (k *Klondike) GetDrawCount() int { return k.drawCount }
 
+// GetConfig 現在の設定を取得する
+func (k *Klondike) GetConfig() KlondikeConfig {
+	return KlondikeConfig{DrawCount: k.drawCount, ScoringMode: k.scoringMode}
+}
+
 // SetDrawCount ドローカウント設定 (テスト用)
 func (k *Klondike) SetDrawCount(n int) { k.drawCount = n }
 
