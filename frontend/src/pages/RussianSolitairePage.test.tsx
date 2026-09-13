@@ -438,4 +438,28 @@ describe('RussianSolitairePage block move announcement', () => {
     expect(label).toContain('♣ 5');
     expect(label).not.toContain('枚まとめて');
   });
+
+  it('rings the selected card and every card above it with distinct colors', async () => {
+    mockExec.mockResolvedValue(blockState);
+    renderWithProviders(<RussianSolitairePage />);
+    const selected = await screen.findByRole('button', { name: /♥ 8/ });
+    const carried = screen.getByRole('button', { name: /♣ 5/ });
+
+    fireEvent.click(selected);
+
+    await waitFor(() => expect(selected).toHaveClass('ring-2', 'ring-ds-warning'));
+    expect(carried).toHaveClass('ring-2', 'ring-ds-accent/70');
+    expect(carried).not.toHaveClass('ring-ds-warning');
+  });
+
+  it('keeps the block ring on hover before a card is selected', async () => {
+    mockExec.mockResolvedValue(blockState);
+    renderWithProviders(<RussianSolitairePage />);
+    const hovered = await screen.findByRole('button', { name: /♥ 8/ });
+    const carried = screen.getByRole('button', { name: /♣ 5/ });
+
+    fireEvent.mouseEnter(hovered);
+
+    expect(carried).toHaveClass('ring-2', 'ring-ds-accent/70');
+  });
 });
