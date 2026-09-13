@@ -172,7 +172,7 @@ type Ulti struct {
 	discards         []*Card      // デクレアラーが伏せて捨てた 2 枚
 	playerCoins      [UltiPlayerCnt]int
 	lastDealCoins    [UltiPlayerCnt]int // 直近ディールの精算 (符号付き増減、ゼロサム)
-	lastTrickWinner  int                // 最終トリック勝者 (-1=未確定)
+	lastTrickWinner  int                // 直前トリックの勝者 (-1=未確定)
 	outcome          UltiOutcome        // 直近ディールの結果
 	result           UltiResult         // 人間視点のマッチ結果
 	scored           bool               // 当該ディールの得点計算済みか (RoundEnd 突入時に一度だけ)
@@ -449,8 +449,12 @@ func (g *Ulti) ResolveTrick() {
 		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
+	// **どのトリックの勝者も憶えておく。** 以前は最終トリックのぶんしか入れて
+	// おらず、しかもその枝は同時に RoundEnd へ移るので、TrickEnd の画面では
+	// この値がいつも -1 だった。King (King.go:333) は毎トリック入れており、
+	// getter の説明「直前トリックの勝者」もそちらの意味で書かれている。
+	g.lastTrickWinner = winnerIdx
 	if g.trickNumber >= UltiTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.phase = UltiPhaseRoundEnd
 		g.enterRoundEnd()
 	} else {
