@@ -28,6 +28,7 @@ type RankAndFileInteractorIF interface {
 	GiveUp() string
 	// Hint ヒント取得
 	Hint() string
+	Targets(fromCol, cardIndex int) string
 	// AutoComplete オートコンプリート
 	AutoComplete() string
 	// ActionLog 棋譜を出力する
@@ -88,6 +89,11 @@ func (fi *RankAndFileInteractor) MoveTableauToFoundation(col int) string {
 // Hint ヒント取得
 func (fi *RankAndFileInteractor) Hint() string {
 	return fi.ftp.HintOutput(fi.Game)
+}
+
+// Targets は置ける先を一覧する。
+func (fi *RankAndFileInteractor) Targets(fromCol, cardIndex int) string {
+	return fi.ftp.TargetsOutput(fi.Game, fromCol, cardIndex)
 }
 
 // ActionLog 棋譜を出力する

@@ -33,6 +33,7 @@ func (c *TongitsCuiController) Exec(command string) string {
 		[]string{
 			"ds", "drawstock", "dd", "drawdiscard", "d", "discard",
 			"m", "meld",
+			"h", "hint",
 			"sp", "sapaw",
 			"c", "challenge",
 			"nr", "nextround",
@@ -40,6 +41,8 @@ func (c *TongitsCuiController) Exec(command string) string {
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
+			case "h", "hint":
+				return c.ci.Hint(), true
 			case "ds", "drawstock":
 				return c.ci.DrawFromStock(), true
 			case "dd", "drawdiscard":

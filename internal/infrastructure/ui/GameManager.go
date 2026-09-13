@@ -6434,7 +6434,7 @@ var gameRegistry = []GameRegistryEntry{
 				"rankandfile.helpMoveTT",
 				"rankandfile.helpGiveUp",
 				"rankandfile.helpHint",
-				"rankandfile.helpAutoComplete", "rankandfile.helpUndo",
+				"rankandfile.helpAutoComplete", "rankandfile.helpUndo", "rankandfile.helpTargets",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
@@ -7314,7 +7314,7 @@ var gameRegistry = []GameRegistryEntry{
 			CommandKeys: []string{
 				"tongits.helpDrawStock", "tongits.helpDrawDiscard", "tongits.helpDiscard",
 				"tongits.helpMeld", "tongits.helpSapaw", "tongits.helpChallenge",
-				"tongits.helpNextRound", "tongits.helpLog",
+				"tongits.helpNextRound", "tongits.helpHint", "tongits.helpLog",
 			},
 			SettingKeys: []string{"tongits.helpSetDifficulty", "tongits.helpSetLimit"},
 		}),

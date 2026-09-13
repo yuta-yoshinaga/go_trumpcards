@@ -34,6 +34,7 @@ type TongitsInteractorIF interface {
 	GetConfig() domain.TongitsConfig
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	Hint() string
 }
 
 // TongitsInteractor Tongitsインタラクタークラス
@@ -147,6 +148,9 @@ func (ci *TongitsInteractor) GetConfig() domain.TongitsConfig {
 func (ci *TongitsInteractor) ActionLog() string {
 	return ci.gp.ActionLogOutput(ci.Game)
 }
+
+// Hint ヒント取得
+func (ci *TongitsInteractor) Hint() string { return ci.gp.HintOutput(ci.Game) }
 
 // runCpuTurns CPUターンを実行
 func (ci *TongitsInteractor) runCpuTurns() {

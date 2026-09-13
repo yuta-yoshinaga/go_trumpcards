@@ -5,4 +5,7 @@ package presenter
 import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 // TongitsPresenter Tongitsプレゼンターインタフェース
-type TongitsPresenter = GamePresenter[interfaces.TongitsGame]
+type TongitsPresenter interface {
+	GamePresenter[interfaces.TongitsGame]
+	HintOutput(g interfaces.TongitsGame) string
+}

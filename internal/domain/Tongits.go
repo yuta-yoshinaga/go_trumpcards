@@ -29,6 +29,16 @@ const TongitsBonus = 50
 // TongitsPhase ゲームフェーズ
 type TongitsPhase int
 
+// TongitsHint is a bounded-cost recommendation for the human player.
+type TongitsHint struct {
+	Action          string
+	CardIndex       int
+	MeldIndices     []int
+	TargetPlayerIdx int
+	MeldIdx         int
+	SapawCardIndex  int
+}
+
 // Tongitsのフェーズ定数
 const (
 	// TongitsPhaseDraw ドローフェーズ (山札または捨て札から引く)
@@ -189,6 +199,91 @@ func (g *Tongits) checkTongitsOnDeal() {
 			return
 		}
 	}
+}
+
+// GetHint returns a first applicable action without exhaustive subset search.
+func (g *Tongits) GetHint() *TongitsHint {
+	if g.gameEndFlag || g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) || !g.players[g.currentPlayerIdx].GetIsHuman() {
+		return nil
+	}
+	p := g.players[g.currentPlayerIdx]
+	if g.phase == TongitsPhaseDraw {
+		if top := g.GetDiscardTop(); top != nil && tongitsRemainingValue(append(tongitsHandCardsForHint(p), top)) < tongitsRemainingValue(tongitsHandCardsForHint(p)) {
+			return &TongitsHint{Action: "draw_discard"}
+		}
+		return &TongitsHint{Action: "draw_stock"}
+	}
+	if g.phase != TongitsPhaseDiscard {
+		return nil
+	}
+	if meld := tongitsFindMeld(p); len(meld) > 0 {
+		return &TongitsHint{Action: "meld", MeldIndices: meld}
+	}
+	for i := 0; i < p.GetCardsSize(); i++ {
+		for playerIdx, target := range g.players {
+			for meldIdx, meld := range target.GetMelds() {
+				if tongitsCanAddToMeld(meld, p.GetCard(i)) {
+					return &TongitsHint{Action: "sapaw", TargetPlayerIdx: playerIdx, MeldIdx: meldIdx, SapawCardIndex: i}
+				}
+			}
+		}
+	}
+	best, bestValue := 0, int(^uint(0)>>1)
+	for i := 0; i < p.GetCardsSize(); i++ {
+		hand := tongitsHandCardsForHint(p)
+		hand = append(hand[:i], hand[i+1:]...)
+		if v := tongitsRemainingValue(hand); v < bestValue {
+			best, bestValue = i, v
+		}
+	}
+	if bestValue <= 5 {
+		return &TongitsHint{Action: "challenge"}
+	}
+	return &TongitsHint{Action: "discard", CardIndex: best}
+}
+
+func tongitsHandCardsForHint(p *TongitsPlayer) []*Card {
+	out := make([]*Card, p.GetCardsSize())
+	for i := range out {
+		out[i] = p.GetCard(i)
+	}
+	return out
+}
+func tongitsFindMeld(p *TongitsPlayer) []int {
+	for i := 0; i < p.GetCardsSize(); i++ {
+		for j := i + 1; j < p.GetCardsSize(); j++ {
+			for k := j + 1; k < p.GetCardsSize(); k++ {
+				if tongitsIsMeld([]*Card{p.GetCard(i), p.GetCard(j), p.GetCard(k)}) {
+					return []int{i, j, k}
+				}
+			}
+		}
+	}
+	return nil
+}
+func tongitsRemainingValue(hand []*Card) int {
+	best := 0
+	for _, c := range hand {
+		best += TongitsCardValue(c)
+	}
+	for i := 0; i < len(hand); i++ {
+		for j := i + 1; j < len(hand); j++ {
+			for k := j + 1; k < len(hand); k++ {
+				if tongitsIsMeld([]*Card{hand[i], hand[j], hand[k]}) {
+					rest := make([]*Card, 0, len(hand)-3)
+					for n, c := range hand {
+						if n != i && n != j && n != k {
+							rest = append(rest, c)
+						}
+					}
+					if v := tongitsRemainingValue(rest); v < best {
+						best = v
+					}
+				}
+			}
+		}
+	}
+	return best
 }
 
 // PlayerDrawFromStock 人間プレイヤーが山札からカードを引く

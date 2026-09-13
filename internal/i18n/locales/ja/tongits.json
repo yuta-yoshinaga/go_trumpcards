@@ -38,5 +38,12 @@
   "helpChallenge": "c でドローを宣言し、残り点の少なさで勝負します",
   "cardIndexRequired": "札番号を指定してください",
   "invalidCardIndex": "札番号が不正です: {{val}}",
-  "helpLog": "  l                    行動ログを表示"
+  "helpHint": "  h                    ヒント",
+  "helpLog": "  l                    行動ログを表示",
+  "hintDrawDiscard": "捨て札から引くとメルド後の残り点が減ります",
+  "hintDrawStock": "山札から引くことを推奨します",
+  "hintMeld": "札{{indices}}でメルドを作ることを推奨します",
+  "hintSapaw": "札{{card}}をプレイヤー{{player}}のメルド{{meld}}にサパウできます",
+  "hintChallenge": "チャレンジを宣言することを推奨します",
+  "hintDiscard": "札{{card}}を捨てることを推奨します"
 }

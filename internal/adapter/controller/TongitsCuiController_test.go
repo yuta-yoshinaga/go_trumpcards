@@ -30,6 +30,7 @@ func TestTongitsCuiController_Exec(t *testing.T) {
 		m.On("Sapaw", mock.Anything, mock.Anything, mock.Anything).Return(mockOutput)
 		m.On("Challenge", mock.Anything).Return(mockOutput)
 		m.On("NextRound").Return(mockOutput)
+		m.On("Hint").Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
 		return m
 	}
@@ -54,6 +55,14 @@ func TestTongitsCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, c.Exec("ds"))
 		assert.Equal(t, mockOutput, c.Exec("drawstock"))
 		m.AssertCalled(t, "DrawFromStock")
+	})
+
+	t.Run("hint aliases", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewTongitsCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("h"))
+		assert.Equal(t, mockOutput, c.Exec("hint"))
+		m.AssertNumberOfCalls(t, "Hint", 2)
 	})
 
 	t.Run("drawdiscard", func(t *testing.T) {

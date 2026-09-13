@@ -28,6 +28,6 @@
   "cardPosAria": "{{card}}（列{{col}}・上から{{pos}}枚目）",
   "emptyColAria": "列{{col}}（空）",
   "frontendHint": {
-    "curdsandwheyMove": "この列の札を別の列へ移せます"
+    "curdsandwheyMove": "列{{fromCol}}の札を列{{toCol}}へ移せます"
   }
 }

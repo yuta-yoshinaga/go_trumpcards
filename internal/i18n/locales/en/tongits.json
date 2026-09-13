@@ -38,5 +38,12 @@
   "helpChallenge": "c calls a draw; the fewest remaining points wins",
   "cardIndexRequired": "A card index is required",
   "invalidCardIndex": "Invalid card index: {{val}}",
-  "helpLog": "  l                    show the action log"
+  "helpHint": "  h                    hint",
+  "helpLog": "  l                    show the action log",
+  "hintDrawDiscard": "Draw from the discard pile to reduce your remaining meld value",
+  "hintDrawStock": "Draw from the stock",
+  "hintMeld": "Make a meld with cards {{indices}}",
+  "hintSapaw": "Sapaw card {{card}} onto player {{player}} meld {{meld}}",
+  "hintChallenge": "Declare a challenge",
+  "hintDiscard": "Discard card {{card}}"
 }

@@ -30,6 +30,7 @@ type TongitsGame interface {
 
 	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.TongitsConfig
+	GetHint() *domain.TongitsHint
 	// SetConfig ゲーム設定をセットする
 	SetConfig(cfg domain.TongitsConfig)
 

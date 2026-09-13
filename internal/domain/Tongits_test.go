@@ -23,6 +23,94 @@ func tongitsTestGame() *domain.Tongits {
 }
 func tongitsCard(suit, value int) *domain.Card { return domain.NewCard(suit, value, false) }
 
+func TestTongitsGetHintDrawsFromStockWhenDiscardDoesNotImprove(t *testing.T) {
+	g := tongitsTestGame()
+	g.SetPhase(domain.TongitsPhaseDraw)
+	g.SetCurrentPlayerIdx(0)
+	hint := g.GetHint()
+	require.NotNil(t, hint)
+	assert.Equal(t, "draw_stock", hint.Action)
+}
+
+func TestTongitsGetHintCoversAllActionsAndEarlyReturns(t *testing.T) {
+	newGame := func() *domain.Tongits {
+		g := tongitsTestGame()
+		g.SetPhase(domain.TongitsPhaseDiscard)
+		g.SetCurrentPlayerIdx(0)
+		return g
+	}
+
+	t.Run("draw discard when it reduces remaining value", func(t *testing.T) {
+		g := newGame()
+		for _, v := range []int{7, 7, 10} {
+			g.GetPlayer(0).AddCard(tongitsCard(domain.CardDesignSpade, v))
+		}
+		g.SetPhase(domain.TongitsPhaseDraw)
+		g.SetDiscardPile([]*domain.Card{tongitsCard(domain.CardDesignHeart, 7)})
+		assert.Equal(t, "draw_discard", g.GetHint().Action)
+	})
+
+	t.Run("returns nil outside discard and for invalid or non-human turns", func(t *testing.T) {
+		g := newGame()
+		g.SetPhase(domain.TongitsPhaseRoundEnd)
+		assert.Nil(t, g.GetHint())
+		g.SetPhase(domain.TongitsPhaseDiscard)
+		g.SetCurrentPlayerIdx(-1)
+		assert.Nil(t, g.GetHint())
+		g.SetCurrentPlayerIdx(3)
+		assert.Nil(t, g.GetHint())
+		g.SetCurrentPlayerIdx(1)
+		assert.Nil(t, g.GetHint())
+	})
+
+	t.Run("suggests meld and reports its indices", func(t *testing.T) {
+		g := newGame()
+		for _, v := range []int{4, 4, 4, 9} {
+			g.GetPlayer(0).AddCard(tongitsCard(domain.CardDesignSpade, v))
+		}
+		h := g.GetHint()
+		require.NotNil(t, h)
+		assert.Equal(t, "meld", h.Action)
+		assert.Equal(t, []int{0, 1, 2}, h.MeldIndices)
+	})
+
+	t.Run("suggests sapaw with target and card indices", func(t *testing.T) {
+		g := newGame()
+		g.GetPlayer(1).AppendMeld([]*domain.Card{
+			tongitsCard(domain.CardDesignHeart, 5), tongitsCard(domain.CardDesignHeart, 6), tongitsCard(domain.CardDesignHeart, 7),
+		})
+		g.GetPlayer(0).AddCard(tongitsCard(domain.CardDesignHeart, 8))
+		h := g.GetHint()
+		require.NotNil(t, h)
+		assert.Equal(t, &domain.TongitsHint{Action: "sapaw", TargetPlayerIdx: 1, MeldIdx: 0, SapawCardIndex: 0}, h)
+	})
+
+	t.Run("challenge when the best remaining value is at most five", func(t *testing.T) {
+		g := newGame()
+		g.GetPlayer(0).AddCard(tongitsCard(domain.CardDesignSpade, 5))
+		assert.Equal(t, "challenge", g.GetHint().Action)
+	})
+
+	t.Run("discards the unique card that minimizes remaining value", func(t *testing.T) {
+		g := newGame()
+		for _, v := range []int{13, 9, 8} {
+			g.GetPlayer(0).AddCard(tongitsCard(domain.CardDesignSpade, v))
+		}
+		h := g.GetHint()
+		require.NotNil(t, h)
+		assert.Equal(t, "discard", h.Action)
+		assert.Equal(t, 0, h.CardIndex)
+	})
+
+	t.Run("returns nil after the game has ended", func(t *testing.T) {
+		g := newGame()
+		g.SetConfig(domain.TongitsConfig{PointLimit: 1})
+		g.GetPlayer(0).SetCumulativeScore(1)
+		require.NoError(t, g.PlayerChallenge([]bool{true, true}))
+		assert.Nil(t, g.GetHint())
+	})
+}
+
 func TestTongitsThreePlayerDeal(t *testing.T) {
 	g := tongitsTestGame()
 	g.Reset()

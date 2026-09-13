@@ -213,3 +213,27 @@ func TestTongitsCuiPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, "棋譜はありません")
 	})
 }
+
+func TestTongitsCuiPresenter_HintOutput(t *testing.T) {
+	tests := []struct {
+		name string
+		hint *domain.TongitsHint
+		want string
+	}{
+		{"draw discard", &domain.TongitsHint{Action: "draw_discard"}, "捨て札から引くとメルド後の残り点が減ります"},
+		{"draw stock", &domain.TongitsHint{Action: "draw_stock"}, "山札から引くことを推奨します"},
+		{"meld", &domain.TongitsHint{Action: "meld", MeldIndices: []int{0, 1, 2}}, "札0, 1, 2でメルドを作ることを推奨します"},
+		{"sapaw", &domain.TongitsHint{Action: "sapaw", TargetPlayerIdx: 1, MeldIdx: 2, SapawCardIndex: 3}, "札3をプレイヤー1のメルド2にサパウできます"},
+		{"challenge", &domain.TongitsHint{Action: "challenge"}, "チャレンジを宣言することを推奨します"},
+		{"discard", &domain.TongitsHint{Action: "discard", CardIndex: 4}, "札4を捨てることを推奨します"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := new(interfaces.MockTongitsGame)
+			m.On("GetHint").Return(tt.hint)
+			out := new(presenter.TongitsCuiPresenter).HintOutput(m)
+			assert.Contains(t, out, tt.want)
+			assert.NotContains(t, out, "{{")
+		})
+	}
+}

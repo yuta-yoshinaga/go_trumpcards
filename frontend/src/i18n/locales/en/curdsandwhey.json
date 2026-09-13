@@ -28,6 +28,6 @@
   "cardPosAria": "{{card}} (column {{col}}, position {{pos}})",
   "emptyColAria": "column {{col}} (empty)",
   "frontendHint": {
-    "curdsandwheyMove": "Cards in this column can move to another"
+    "curdsandwheyMove": "Cards in column {{fromCol}} can move to column {{toCol}}"
   }
 }
