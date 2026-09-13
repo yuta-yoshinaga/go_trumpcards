@@ -729,7 +729,7 @@ func (l *Loba) findMeld(idx int) []int {
 }
 
 // pickDiscard は捨てる札を選ぶ。ジョーカーは (手札 1 枚または全てジョーカーの
-// ときを除き) 捨てない。
+// ときを除き) 捨てない。候補がない場合は合法そうな添字 0 でごまかさず、-1 を返す。
 //
 // **単純に「最も点の高い札」を捨てると、手札が一生メルドに育たない。**引いて
 // 捨てるだけで枚数が減らないので、誰も上がらずラウンドが終わらなくなる
@@ -752,11 +752,6 @@ func (l *Loba) pickDiscard(idx int) int {
 		if best == -1 || use < bestUse || (use == bestUse && pts > bestPts) {
 			best, bestUse, bestPts = i, use, pts
 		}
-	}
-	if best < 0 {
-		// 呼び出し側が扱えない状態を、合法そうな添字 0 でごまかさない。
-		// 全ジョーカーの手札でも上の例外で best は立つため、ここは空手だけ。
-		return -1
 	}
 	return best
 }

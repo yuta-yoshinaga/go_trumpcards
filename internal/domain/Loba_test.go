@@ -42,6 +42,23 @@ func TestLoba_CardPointsCountTheJokerAsTen(t *testing.T) {
 	assert.Zero(t, LobaCardPoints(nil))
 }
 
+func TestLobaHandIsAllJokersRequiresANonEmptyHand(t *testing.T) {
+	assert.False(t, lobaHandIsAllJokers(nil))
+
+	empty := NewLobaPlayer(false)
+	assert.False(t, lobaHandIsAllJokers(empty), "an empty hand is not all jokers")
+
+	allJokers := NewLobaPlayer(false)
+	allJokers.AddCard(lbJoker())
+	allJokers.AddCard(lbJoker())
+	assert.True(t, lobaHandIsAllJokers(allJokers))
+
+	mixed := NewLobaPlayer(false)
+	mixed.AddCard(lbJoker())
+	mixed.AddCard(lbCard(CardDesignSpade, 7))
+	assert.False(t, lobaHandIsAllJokers(mixed))
+}
+
 func TestLoba_APiernaNeedsThreeDifferentSuits(t *testing.T) {
 	// #4414 が触れていない、Loba を Loba たらしめている規則。
 	kind, err := LobaValidateMeld([]*Card{
