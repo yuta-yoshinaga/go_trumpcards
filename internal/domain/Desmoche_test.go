@@ -684,6 +684,39 @@ func TestDesmocheCpuHardPrioritizesMeldAndLayoff(t *testing.T) {
 	}
 }
 
+func TestDesmocheCpuHardDrawsDiscardWhenItCompletesAMeld(t *testing.T) {
+	g := NewDefaultDesmoche()
+	g.SetConfig(DesmocheConfig{CpuDifficulty: DesmocheCpuDifficultyHard})
+	setDesmocheHand(g, 1, desmocheCards(
+		[2]int{CardDesignSpade, 7}, [2]int{CardDesignHeart, 7},
+		[2]int{CardDesignDiamond, 2},
+	))
+	g.SetDiscardForTest(desmocheCards([2]int{CardDesignClover, 7}))
+	g.SetPhaseForTest(DesmochePhaseDraw)
+	if action := g.DesmocheCpuDecide(1); !action.DrawFromDiscard {
+		t.Fatalf("Hard should take the discard that completes a set, got %+v", action)
+	}
+
+	g.SetDiscardForTest(desmocheCards([2]int{CardDesignClover, 9}))
+	if action := g.DesmocheCpuDecide(1); action.DrawFromDiscard {
+		t.Fatalf("Hard should draw from stock when the discard makes no meld, got %+v", action)
+	}
+}
+
+func TestDesmocheCpuHardSkipsInvalidLayoff(t *testing.T) {
+	g := NewDefaultDesmoche()
+	g.SetConfig(DesmocheConfig{CpuDifficulty: DesmocheCpuDifficultyHard})
+	setDesmocheHand(g, 1, desmocheCards([2]int{CardDesignSpade, 8}))
+	g.melds = []*DesmocheMeld{{Owner: 0, Kind: DesmocheMeldRun, Cards: desmocheCards(
+		[2]int{CardDesignHeart, 5}, [2]int{CardDesignHeart, 6}, [2]int{CardDesignHeart, 7},
+	)}}
+	startDesmocheAct(g, 1)
+	action := g.DesmocheCpuDecide(1)
+	if action.LayOff || action.LayOffHandIdx != -1 || action.LayOffMeldIdx != -1 {
+		t.Fatalf("Hard should not lay off an incompatible card, got %+v", action)
+	}
+}
+
 func equalInts(a, b []int) bool {
 	if len(a) != len(b) {
 		return false

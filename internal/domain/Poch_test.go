@@ -695,6 +695,26 @@ func TestPochCpuDifficultyChangesTheChosenPlay(t *testing.T) {
 	}
 }
 
+func TestPochEasyCpuFoldsAndChoosesTheHighestPlayableCard(t *testing.T) {
+	p := pcReady(t, PochPhasePochen, 1)
+	p.SetConfig(PochConfig{CpuDifficulty: PochCpuDifficultyEasy, TargetDeals: 5})
+	setPcHand(p, 1, []*Card{pcCard(CardDesignSpade, 7), pcCard(CardDesignHeart, 8)})
+	p.SetCurrentPlayerForTest(0)
+	if err := p.Bet(0); err != nil {
+		t.Fatalf("Bet: %v", err)
+	}
+	p.SetCurrentPlayerForTest(1)
+	if action := p.PochCpuDecide(1); action.Type != "fold" {
+		t.Fatalf("Easy should fold when a weak hand is behind, got %+v", action)
+	}
+
+	p.SetPhaseForTest(PochPhaseStops)
+	p.SetStopsForTest(-1, 0)
+	if action := p.PochCpuDecide(1); action.Type != "play" || action.HandIdx != 1 {
+		t.Fatalf("Easy should choose the highest playable card, got %+v", action)
+	}
+}
+
 func TestPochAccessorBounds(t *testing.T) {
 	p := NewDefaultPoch()
 	p.Reset()

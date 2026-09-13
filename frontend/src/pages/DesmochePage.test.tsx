@@ -68,6 +68,17 @@ describe('DesmochePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('sends a changed difficulty in the reset request', async () => {
+    renderWithProviders(<DesmochePage />);
+    await screen.findByTestId('desmoche-meld');
+    mockExec.mockClear();
+
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, undefined, { cpuDifficulty: 2 }),
+    );
+  });
+
   it('shows both rules permanently and the pot', async () => {
     renderWithProviders(<DesmochePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
