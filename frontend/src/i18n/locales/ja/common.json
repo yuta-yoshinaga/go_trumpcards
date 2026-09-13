@@ -763,6 +763,8 @@
     "blackjack.result.draw": "引き分けです。",
     "blackjack.result.lose": "あなたの負けです。",
     "blackjack.result.win": "あなたの勝ちです。",
+    "spanish21.result.player21BeatsDealer21": "スパニッシュ21では、ディーラーも21でもプレイヤーの21が勝ちです。",
+    "sevencardstud.anteLevelUp": "アンティが上昇しました: {{from}}→{{to}}",
     "blackjackswitch.result.dealer22Push": "ディーラー22 — 引き分け（プッシュ）です。",
     "blackjackswitch.result.overallDraw": "プッシュ",
     "blackjackswitch.result.overallLose": "あなたの負けです。",

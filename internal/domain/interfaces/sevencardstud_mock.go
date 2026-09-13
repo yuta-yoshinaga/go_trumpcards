@@ -121,6 +121,11 @@ func (_m *MockSevenCardStudGame) GetConfig() domain.SevenCardStudConfig {
 	return ret.Get(0).(domain.SevenCardStudConfig)
 }
 
+func (_m *MockSevenCardStudGame) GetPreviousAnte() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 func (_m *MockSevenCardStudGame) SetConfig(cfg domain.SevenCardStudConfig) {
 	_m.Called(cfg)
 }

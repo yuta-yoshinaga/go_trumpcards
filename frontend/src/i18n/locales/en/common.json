@@ -763,6 +763,8 @@
     "blackjack.result.draw": "It is a draw.",
     "blackjack.result.lose": "It is your loss.",
     "blackjack.result.win": "You are the winner.",
+    "spanish21.result.player21BeatsDealer21": "In Spanish 21, a player 21 beats a dealer 21.",
+    "sevencardstud.anteLevelUp": "Ante increased: {{from}}→{{to}}",
     "blackjackswitch.result.dealer22Push": "Dealer 22: hands pushed.",
     "blackjackswitch.result.overallDraw": "Push.",
     "blackjackswitch.result.overallLose": "You lose.",

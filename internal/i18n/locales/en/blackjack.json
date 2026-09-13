@@ -43,6 +43,7 @@
   "multiHandResultPrefix": "hand {{idx}}: ",
   "resultDraw": "It is a draw.",
   "resultWin": "You are the winner.",
+  "spanish21Player21BeatsDealer21": "In Spanish 21, a player 21 beats a dealer 21.",
   "resultLose": "It is your loss.",
   "phaseBet": "BET",
   "phaseDeal": "DEAL",
