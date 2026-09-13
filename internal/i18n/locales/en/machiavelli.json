@@ -12,6 +12,7 @@
   "tableEmpty": "  (no melds yet)",
   "meldLine": "  [{{idx}}] {{cards}}",
   "playerLine": "{{name}}: cumulative {{cum}} round {{round}} cards {{cards}}",
+  "deadwoodLine": "  Deadwood: {{value}} points",
   "gameEnd": "Game over! {{name}} wins!",
   "promptTurn": "{{name}} to act",
   "promptDrawHelp": "dr: draw one card from stock (ends turn)",

@@ -165,9 +165,12 @@ func TestTysiac_Talon_DeclarerExchange(t *testing.T) {
 		tysCard(domain.CardDesignDiamond, 9))
 	g.SetPhase(domain.TysiacPhaseTalon)
 	g.SetCurrentPlayerIdx(0)
+	assert.Equal(t, 1, g.GetTalonRecipientIdx())
 
 	require.NoError(t, g.PlayerDiscard(0)) // give to first opponent
+	assert.Equal(t, 2, g.GetTalonRecipientIdx())
 	require.NoError(t, g.PlayerDiscard(0)) // give to second opponent -> starts play
+	assert.Equal(t, -1, g.GetTalonRecipientIdx())
 
 	// After exchange every player holds 8 cards.
 	for i := 0; i < g.GetPlayerCnt(); i++ {

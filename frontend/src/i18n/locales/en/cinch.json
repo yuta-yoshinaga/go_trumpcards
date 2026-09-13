@@ -22,6 +22,7 @@
   "target": "Target: {{points}} pts",
   "bidPrompt": "Your turn to bid — pass or declare 1-14.",
   "bidCpu": "CPU {{id}} is bidding…",
+  "trumpCpu": "CPU {{id}} is choosing trump…",
   "bidPass": "Pass",
   "bidStrength": {
     "range": "Estimated points held: {{min}}-{{max}} pts (rough guide, depends on trump)",

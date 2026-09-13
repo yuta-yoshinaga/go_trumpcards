@@ -41,6 +41,17 @@ func TestActionLogOutputText(t *testing.T) {
 	})
 }
 
+func TestLatestAction(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{ActionType: "payout"},
+		{ActionType: "deal"},
+	}
+	assert.Nil(t, latestAction(entries, "payout"), "末尾が違う種別なら古い精算を返さない")
+	assert.Equal(t, entries[1], latestAction(entries, "deal"))
+	assert.Nil(t, latestAction(nil, "deal"))
+	assert.Nil(t, latestAction([]*domain.ActionLogEntry{nil}, "deal"))
+}
+
 func TestActionLogOutputJSON(t *testing.T) {
 	t.Run("game not ended returns empty log", func(t *testing.T) {
 		g := &stubGameEndLogger{ended: false}
@@ -214,4 +225,16 @@ func TestActionLogTextIsTranslated(t *testing.T) {
 		result := actionLogToTextWithNames(entries, func(int) string { return "" })
 		assert.Contains(t, result, "T1", "名前が引けなくても行そのものは出る")
 	})
+}
+
+func TestLatestActionOnlyReturnsTheCurrentEvent(t *testing.T) {
+	marked := &domain.ActionLogEntry{ActionType: "marked"}
+	draw := &domain.ActionLogEntry{ActionType: "draw", Cards: []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 1, true),
+		domain.NewCard(domain.CardDesignSpade, 2, true),
+	}}
+
+	assert.Same(t, marked, latestAction([]*domain.ActionLogEntry{marked}, "marked"))
+	assert.Nil(t, latestAction([]*domain.ActionLogEntry{marked, draw}, "marked"), "次の操作で一時メッセージを消す")
+	assert.Equal(t, "松·短", hachiHachiCapturedLabels(draw.Cards[1:]))
 }

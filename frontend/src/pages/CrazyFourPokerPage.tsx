@@ -34,6 +34,42 @@ import { formatCrazyFourPokerState } from '../utils/cli/formatters/crazyfourpoke
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+/** `FourCardHandPair` (four_card_hand_eval.go:11). */
+const FOUR_CARD_HAND_PAIR = 2;
+/** `CrazyFourPokerSuperBonusMinPair` (CrazyFourPokerConfig.go:164) — aces only. */
+const SUPER_BONUS_MIN_PAIR = 1;
+/** `CrazyFourPokerQueensUpMinPair` (CrazyFourPokerConfig.go:144) — queens or better. */
+const QUEENS_UP_MIN_PAIR = 12;
+
+/**
+ * Whether the player's hand clears the pair minimum a side bet requires.
+ *
+ * domain_rule_quoted:
+ * 	func crazyFourPokerPairAtLeast(best []*Card, minPair int) bool {
+ * 		if len(best) == 0 { return false }
+ * 		rank := evalFourCardHand(best)
+ * 		if rank > FourCardHandPair { return true }
+ * 		if rank != FourCardHandPair { return false }
+ * 		pv := fourCardPairSortedValues(best)
+ * 		...
+ * 	}
+ *
+ * edge_cases:
+ * - Anything above a pair clears every minimum outright.
+ * - Aces count high, so an ace pair is 14 rather than 1 on both sides of the
+ *   comparison — which is why the Super Bonus minimum of 1 means "aces only"
+ *   and not "any pair".
+ */
+function crazyFourPokerPairAtLeast(best: CrazyFourPokerResponse['playerBest'], handRank: number, minPair: number) {
+  if (handRank > FOUR_CARD_HAND_PAIR) return true;
+  if (handRank !== FOUR_CARD_HAND_PAIR) return false;
+  const counts = new Map<number, number>();
+  for (const card of best) counts.set(card.value, (counts.get(card.value) ?? 0) + 1);
+  const pair = [...counts.entries()].find(([, count]) => count >= 2)?.[0];
+  if (pair === undefined) return false;
+  return (pair === 1 ? 14 : pair) >= (minPair === 1 ? 14 : minPair);
+}
+
 const C4P_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="c4p-bet"]', messageKey: 'tutorial.bet', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="c4p-hand"]', messageKey: 'tutorial.hand', placement: 'bottom', advanceOn: 'next' },
@@ -111,6 +147,41 @@ function CrazyFourPokerPageContent() {
   const staked = state.anteBet + state.superBet + state.queensUpBet + state.playBet;
   const net = state.payout - staked;
   const won = state.result === CRAZY_FOUR_POKER_RESULT.win;
+  const mainReturn =
+    state.result === CRAZY_FOUR_POKER_RESULT.win
+      ? (state.anteBet + state.playBet) * 2
+      : state.result === CRAZY_FOUR_POKER_RESULT.push
+        ? state.anteBet + state.playBet
+        : state.result === CRAZY_FOUR_POKER_RESULT.dealerNotQualified
+          ? state.anteBet * 2 + state.playBet
+          : 0;
+  const fourAces = state.playerBest.length === 4 && state.playerBest.every((card) => card.value === 1);
+  const superBonus = state.superBonusPayouts?.find(
+    (row) =>
+      row.hand === state.playerHandRank &&
+      (row.hand !== FOUR_CARD_HAND_PAIR ||
+        crazyFourPokerPairAtLeast(state.playerBest, state.playerHandRank, SUPER_BONUS_MIN_PAIR)) &&
+      (fourAces
+        ? row.name.includes('エース') || row.name.includes('Ace')
+        : !row.name.includes('エース') && !row.name.includes('Ace')),
+  );
+  const superReturn =
+    state.superBet === 0
+      ? 0
+      : superBonus
+        ? state.superBet + Math.round((state.superBet * Number(superBonus.odds)) / 1)
+        : state.result === CRAZY_FOUR_POKER_RESULT.win ||
+            state.result === CRAZY_FOUR_POKER_RESULT.push ||
+            state.result === CRAZY_FOUR_POKER_RESULT.dealerNotQualified
+          ? state.superBet
+          : 0;
+  const queensUpPayout = state.queensUpPayouts?.find(
+    (row) =>
+      row.hand === state.playerHandRank &&
+      (row.hand !== FOUR_CARD_HAND_PAIR ||
+        crazyFourPokerPairAtLeast(state.playerBest, state.playerHandRank, QUEENS_UP_MIN_PAIR)),
+  );
+  const queensUpReturn = queensUpPayout ? state.queensUpBet * (queensUpPayout.multiplier + 1) : 0;
 
   const handRow = (label: string, cards: CrazyFourPokerResponse['playerHand'], testId: string) => (
     <div className="mb-2">
@@ -195,6 +266,20 @@ function CrazyFourPokerPageContent() {
             {isResultPhase && (
               <div className="text-center mb-2" data-testid="c4p-result">
                 <div className="text-ds-text-primary text-base font-bold">{t(`result.${resultKey}`)}</div>
+                <div className="text-sm">
+                  {t('result.main', { amount: mainReturn - state.anteBet - state.playBet })}
+                </div>
+                {state.superBet > 0 && (
+                  <div className="text-sm">
+                    {t('result.superBonus', {
+                      hand: t(`rank.${state.playerHandRank}`),
+                      amount: superReturn - state.superBet,
+                    })}
+                  </div>
+                )}
+                {state.queensUpBet > 0 && (
+                  <div className="text-sm">{t('result.queensUp', { amount: queensUpReturn - state.queensUpBet })}</div>
+                )}
                 <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error'}`}>
                   {t('label.net')}: {net}
                 </div>

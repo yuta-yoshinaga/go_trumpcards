@@ -13,6 +13,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { KEMPS_COUNTER_PENALTY } from '../constants/kemps';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -447,7 +448,7 @@ function KempsPageContent() {
                     className="w-full text-xs text-ds-text-muted"
                     data-testid="kemps-counter-risk"
                   >
-                    {t('counterRisk')}
+                    {t('counterRisk', { points: KEMPS_COUNTER_PENALTY })}
                   </p>
                   {opponentSeats.map(({ p, idx }) => (
                     <button

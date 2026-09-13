@@ -49,6 +49,11 @@ beforeEach(() => {
 });
 
 describe('TysiacPage', () => {
+  it('shows the current talon recipient', async () => {
+    mockExec.mockResolvedValue(talonPhaseState);
+    renderWithProviders(<TysiacPage />);
+    await waitFor(() => expect(screen.getByTestId('tysiac-talon-prompt')).toHaveTextContent('CPU 1'));
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TysiacPage />);

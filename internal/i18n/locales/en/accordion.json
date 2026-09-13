@@ -16,7 +16,9 @@
   "header": "Piles remaining: {{count}}",
   "pileSingle": "[{{idx}}]{{card}} ",
   "pileStack": "[{{idx}}]{{card}}(+{{count}}) ",
-  "hintLine": "Hint: pile {{from}} → pile {{to}}",
+  "hintLine": "Hint: pile {{from}} → pile {{to}} {{reason}}",
+  "hintReasonOffset1": "(a move that preserves fewer options)",
+  "hintReasonOffset3": "(an important move that preserves your options)",
   "helpExampleHint": "  h                   ask for a move",
   "helpAutoPlay": "  ac                  play automatically"
 }

@@ -264,11 +264,11 @@ func (r *Reversis) resolveTrick() {
 		penalty += ReversisCardPenalty(tc.Card)
 		if ReversisIsQuinola(tc.Card) {
 			r.players[winner].SetTookQuinola(true)
-			r.chargeMarked(winner, "キノラ（♥J）")
+			r.chargeMarked(winner, "キノラ（♥J）", tc.Card)
 		}
 		if ReversisIsDiamondAce(tc.Card) {
 			r.players[winner].SetTookDiamondAce(true)
-			r.chargeMarked(winner, "♦A")
+			r.chargeMarked(winner, "♦A", tc.Card)
 		}
 	}
 	r.players[winner].AddTrick(cards)
@@ -287,12 +287,12 @@ func (r *Reversis) resolveTrick() {
 }
 
 // chargeMarked 印付きの札を取った罰。**追加失点とプールへの支払いの両方。**
-func (r *Reversis) chargeMarked(winner int, name string) {
+func (r *Reversis) chargeMarked(winner int, name string, card *Card) {
 	r.players[winner].AddRoundPenalty(ReversisMarkedPenalty)
 	r.players[winner].AddChips(-ReversisMarkedStake)
 	r.pool += ReversisMarkedStake
 	r.appendLog(winner, "marked",
-		fmt.Sprintf("%s を取った（+%d失点、プールへ %d）", name, ReversisMarkedPenalty, ReversisMarkedStake), nil)
+		fmt.Sprintf("%s を取った（+%d失点、プールへ %d）", name, ReversisMarkedPenalty, ReversisMarkedStake), []*Card{card})
 }
 
 // ReversisCardPenalty その札の失点を返す。A=4 / K=3 / Q=2 / J=1 / その他=0。

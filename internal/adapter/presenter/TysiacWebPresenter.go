@@ -41,6 +41,7 @@ func (p *TysiacWebPresenter) buildBase(g interfaces.TysiacGame) *controller.Tysi
 	resObj.DealerIdx = g.GetDealerIdx()
 	resObj.ForehandIdx = g.GetForehandIdx()
 	resObj.DeclarerIdx = g.GetDeclarerIdx()
+	resObj.TalonRecipientIdx = g.GetTalonRecipientIdx()
 	resObj.Contract = g.GetContract()
 	resObj.CurrentBid = g.GetCurrentBid()
 	resObj.TrumpSuit = g.GetTrumpSuit()
