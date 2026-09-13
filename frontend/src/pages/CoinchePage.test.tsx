@@ -435,4 +435,21 @@ describe('CoinchePage', () => {
     const humanCard = await screen.findByRole('button', { name: '♥ 10' });
     expect(humanCard).not.toHaveAttribute('data-legal');
   });
+
+  it('supports card keyboard selection and keeps it disabled on a CPU turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: CoinchePhase.PLAY, currentPlayerIdx: 0 }));
+    renderWithProviders(<CoinchePage />);
+    const card = await screen.findByRole('button', { name: '♠ J' });
+    expect(screen.getByTestId('coinche-kbd-shortcuts')).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: '1' });
+    expect(card).toHaveAttribute('aria-pressed', 'true');
+
+    mockExec.mockResolvedValue(makeState({ phase: CoinchePhase.PLAY, currentPlayerIdx: 1 }));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ J' })).toBeInTheDocument());
+    const cpuTurnCard = screen.getByRole('button', { name: '♠ J' });
+    fireEvent.keyDown(document, { key: '1' });
+    expect(cpuTurnCard).toHaveAttribute('aria-pressed', 'false');
+  });
 });

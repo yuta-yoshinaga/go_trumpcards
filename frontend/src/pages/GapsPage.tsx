@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { type GapsMoveZone, gapsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -147,6 +147,28 @@ function GapsPageContent() {
     disabled: loading,
   });
 
+  // Keep the existing drag path and add a click/touch/keyboard path: select a
+  // movable card first, then activate the destination cell.
+  const [selectedSource, setSelectedSource] = useState<GapsMoveZone | null>(null);
+  const isSameZone = useCallback(
+    (left: GapsMoveZone | null, right: GapsMoveZone) =>
+      left?.zone === right.zone && left?.row === right.row && left?.col === right.col,
+    [],
+  );
+  const handleSelectSource = useCallback((zone: GapsMoveZone) => {
+    setSelectedSource((previous) =>
+      previous?.zone === zone.zone && previous.row === zone.row && previous.col === zone.col ? null : zone,
+    );
+  }, []);
+  const handleSelectTarget = useCallback(
+    (zone: GapsMoveZone) => {
+      if (!selectedSource) return;
+      dispatchMove(selectedSource, zone);
+      setSelectedSource(null);
+    },
+    [dispatchMove, selectedSource],
+  );
+
   // Keyboard shortcuts mirror the sibling solitaire pages (EightOff / Baker's
   // Dozen). Bind letter keys only — Enter/Space would double-fire on a focused
   // button. Undo/redeal expose per-binding `enabled` so a disabled action's key
@@ -236,6 +258,7 @@ function GapsPageContent() {
                         onDragOver={dnd.handleDragOver(zone)}
                         onDragLeave={dnd.handleDragLeave}
                         onDrop={dnd.handleDrop(zone)}
+                        onClick={() => handleSelectTarget(zone)}
                         aria-label={gapAria}
                         data-testid={`gaps-cell-${rIdx.toString()}-${cIdx.toString()}`}
                         className={`relative flex items-center justify-center rounded border-2 ${
@@ -244,7 +267,7 @@ function GapsPageContent() {
                             : 'border-dashed border-white/30'
                         } ${isHintTo ? 'ring-2 ring-ds-warning' : ''} ${focusRingWhite}`}
                         style={{ width: cardWidth, height: cardHeight }}
-                        disabled={!isPlaying || loading}
+                        disabled={!isPlaying || loading || !selectedSource}
                       >
                         {ghost?.kind === 'needed' && (
                           <span
@@ -289,8 +312,12 @@ function GapsPageContent() {
                       draggable={isPlaying && !loading && !isLocked}
                       onDragStart={dnd.handleDragStart(zone)}
                       onDragEnd={dnd.handleDragEnd}
+                      onClick={() =>
+                        selectedSource ? handleSelectTarget(zone) : !isLocked && handleSelectSource(zone)
+                      }
                       aria-label={isLocked ? `${cardAlt(cell)} ${t('lockedAria')}` : cardAlt(cell)}
-                      disabled={!isPlaying || loading}
+                      disabled={!isPlaying || loading || (!!selectedSource && !isPlaying)}
+                      aria-pressed={isSameZone(selectedSource, zone)}
                       data-testid={
                         isLocked
                           ? `gaps-locked-${rIdx.toString()}-${cIdx.toString()}`
