@@ -301,7 +301,16 @@ function ColoradoPageContent() {
                     </span>
                     <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
                       {top ? (
-                        <AnimatedCard card={top} width={cardWidth} />
+                        <div className="flex flex-col items-center">
+                          {pile.map((card, cardIndex) => (
+                            <AnimatedCard
+                              key={`t-${idx.toString()}-card-${cardIndex.toString()}`}
+                              card={card}
+                              width={cardWidth}
+                              style={cardIndex === 0 ? undefined : { marginTop: -Math.round(cardWidth * 1.15) }}
+                            />
+                          ))}
+                        </div>
                       ) : (
                         <div
                           style={{ width: cardWidth, height: cardHeight }}

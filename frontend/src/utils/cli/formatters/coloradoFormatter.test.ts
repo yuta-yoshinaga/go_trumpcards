@@ -44,6 +44,7 @@ describe('formatColoradoState', () => {
     expect(out).toContain('T0:');
     expect(out).toContain('T1: [  ] (0)');
     expect(out).toContain('T2:');
+    expect(out).toContain('♥9 ♣4');
     expect(out).toContain('(2)');
   });
 

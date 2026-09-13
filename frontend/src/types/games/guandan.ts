@@ -29,6 +29,8 @@ export interface GuandanCombo {
   kind: number;
   rank: number;
   size: number;
+  /** The actual cards in the play, kept public after they leave the hand. */
+  cards?: Card[];
 }
 
 /** One tribute payment for this hand. */

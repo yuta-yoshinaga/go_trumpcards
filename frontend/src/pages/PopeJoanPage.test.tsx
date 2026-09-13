@@ -80,6 +80,15 @@ describe('PopeJoanPage', () => {
     expect(screen.getByText(/♦8 が抜いてあるので/)).toBeInTheDocument();
   });
 
+  it('shows which trump combinations can be targeted from the hand', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: [seat(0, true, { cards: [card('SPADE', 13), card('SPADE', 12), card('HEART', 11)] })] }),
+    );
+    renderWithProviders(<PopeJoanPage />);
+    await waitFor(() => expect(screen.getByTestId('popejoan-targets')).toHaveTextContent('マトリモニー（K-Q）'));
+    expect(screen.getByTestId('popejoan-targets')).not.toHaveTextContent('イントリーグ（Q-J）');
+  });
+
   // **8 区画すべてが出ていないと、持ち越しがどこに乗っているか読めない。**
   it("shows all eight compartments with the dealer's fixed dress", async () => {
     renderWithProviders(<PopeJoanPage />);

@@ -122,11 +122,17 @@ describe('CribbageSquaresPage', () => {
   });
 
   it('shows a per-hand breakdown once the hands score', async () => {
-    const details = [{ fifteens: 4, pairs: 2, runs: 0, flush: 0, nobs: 0, total: 6 }, zero(), zero(), zero()];
+    const details = [
+      { cards: [card('HEART', 5), card('CLOVER', 5)], fifteens: 4, pairs: 2, runs: 0, flush: 0, nobs: 0, total: 6 },
+      zero(),
+      zero(),
+      zero(),
+    ];
     mockExec.mockResolvedValue(makeState({ rowDetails: details, rowScores: [6, 0, 0, 0], phase: 1 }));
     renderWithProviders(<CribbageSquaresPage />);
     await waitFor(() => expect(screen.getByTestId('row-breakdown-0')).toBeInTheDocument());
     expect(screen.getByTestId('row-breakdown-0')).toHaveTextContent('15が4');
+    expect(screen.getByTestId('row-score-cards-0')).toHaveTextContent('♥ 5');
     // A hand that scored nothing shows no breakdown at all.
     expect(screen.queryByTestId('row-breakdown-1')).not.toBeInTheDocument();
   });

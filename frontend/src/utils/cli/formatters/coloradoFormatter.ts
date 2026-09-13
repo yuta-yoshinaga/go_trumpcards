@@ -21,8 +21,8 @@ export function formatColoradoState(state: ColoradoResponse): string {
 
   for (let col = 0; col < state.tableau.length; col++) {
     const pile = state.tableau[col];
-    const top = pile.length > 0 ? formatCard(pile[pile.length - 1]) : '[  ]';
-    lines.push(`T${col}: ${top} (${pile.length})`);
+    const cards = pile.length > 0 ? pile.map(formatCard).join(' ') : '[  ]';
+    lines.push(`T${col}: ${cards} (${pile.length})`);
   }
 
   lines.push(`moves: ${state.moveCount}`);

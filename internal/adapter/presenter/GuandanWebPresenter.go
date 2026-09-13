@@ -37,6 +37,7 @@ func (p *GuandanWebPresenter) Output(g interfaces.GuandanGame, lastErr error) st
 	if c := g.GetLastCombo(); c != nil {
 		resObj.LastCombo = &controller.GuandanWebOutputCombo{
 			Kind: int(c.Kind), Rank: c.Rank, Size: c.Size,
+			Cards: guandanLastPlayCards(g),
 		}
 	}
 
@@ -73,6 +74,22 @@ func (p *GuandanWebPresenter) Output(g interfaces.GuandanGame, lastErr error) st
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)
+}
+
+func guandanLastPlayCards(g interfaces.GuandanGame) []*controller.WebOutputCard {
+	logs := g.GetActionLog()
+	for i := len(logs) - 1; i >= 0; i-- {
+		if logs[i] != nil && logs[i].ActionType == "play" {
+			cards := make([]*controller.WebOutputCard, 0, len(logs[i].Cards))
+			for _, card := range logs[i].Cards {
+				if output := cardToOutput(card); output != nil {
+					cards = append(cards, output)
+				}
+			}
+			return cards
+		}
+	}
+	return make([]*controller.WebOutputCard, 0)
 }
 
 // buildPlayersOutput プレイヤー情報を構築

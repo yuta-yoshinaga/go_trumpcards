@@ -28,6 +28,14 @@ export function formatPopeJoanState(state: PopeJoanResponse): string {
   lines.push(
     'a compartment pays only on a trump (the Pope, 9D, excepted) / the 8D is out, so a run always dies at the 7',
   );
+  const human = state.players.find((p) => p.isHuman);
+  const trumpCards = (human?.cards ?? []).filter(
+    (card) => card.design === ['SPADE', 'CLOVER', 'HEART', 'DIAMOND'][state.trumpSuit - 1],
+  );
+  const targets = [];
+  if (trumpCards.some((c) => c.value === 13) && trumpCards.some((c) => c.value === 12)) targets.push('Matrimony (K-Q)');
+  if (trumpCards.some((c) => c.value === 12) && trumpCards.some((c) => c.value === 11)) targets.push('Intrigue (Q-J)');
+  lines.push(`targets in your hand: ${targets.length > 0 ? targets.join(', ') : 'none'}`);
   lines.push(`board: ${state.compartments.map((c) => `${c.name}:${c.chips.toString()}`).join(' ')}`);
 
   for (const a of state.awards) {

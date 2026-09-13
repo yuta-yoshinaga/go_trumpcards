@@ -52,12 +52,13 @@ type CribbageSquaresWebOutput struct {
 
 // CribbageSquaresWebOutputScore は 1 手ぶんのクリベッジ得点内訳。
 type CribbageSquaresWebOutputScore struct {
-	Fifteens int `json:"fifteens"`
-	Pairs    int `json:"pairs"`
-	Runs     int `json:"runs"`
-	Flush    int `json:"flush"`
-	Nobs     int `json:"nobs"`
-	Total    int `json:"total"`
+	Cards    []*WebOutputCard `json:"cards"`
+	Fifteens int              `json:"fifteens"`
+	Pairs    int              `json:"pairs"`
+	Runs     int              `json:"runs"`
+	Flush    int              `json:"flush"`
+	Nobs     int              `json:"nobs"`
+	Total    int              `json:"total"`
 }
 
 // CribbageSquaresWebOutputHint はサーバ側のシナジー考慮ヒント (#4790)。

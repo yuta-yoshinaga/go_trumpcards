@@ -11,6 +11,8 @@ export interface CribbageSquaresBoardCell {
 
 /** One hand's cribbage score breakdown (sync: `domain.CribbageScoreDetail`). */
 export interface CribbageSquaresScore {
+  /** The cards in the scored row or column. */
+  cards?: Card[];
   fifteens: number;
   pairs: number;
   runs: number;
