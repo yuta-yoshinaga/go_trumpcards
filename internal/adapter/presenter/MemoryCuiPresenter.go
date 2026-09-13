@@ -74,8 +74,8 @@ func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 
 		// 13 列で折り返して描画する。行数は盤面の長さから決めること: ペア数設定で
 		// 52 枚未満になりうるため (ADR-0035)、4 行固定だと index out of range になる。
-		// Web プレゼンターで同じ誤りを踏んでおり、こちらは CUI にペア数変更コマンドが
-		// 無いので現状は到達しないが、同じ地雷を残す理由はない。
+		// Web プレゼンターで同じ誤りを踏んだ。**CUI でも sp / setpaircount で
+		// ペア数を変えられるようになったので、この経路は現に通る。**
 		const memoryCuiCols = 13
 		resultMatch := m.GetPhase() == domain.MemoryPhaseResult && m.GetLastMatchResult()
 		knownMatchIdx, hasKnownMatch := domain.MemoryKnownMatchIdx(board)
