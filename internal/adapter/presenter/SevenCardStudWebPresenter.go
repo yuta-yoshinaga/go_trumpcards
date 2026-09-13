@@ -208,7 +208,7 @@ func (p *SevenCardStudWebPresenter) buildMessage(s interfaces.SevenCardStudGame,
 		return "", "sevencardstud.muck.prompt", nil
 	}
 	if cfg := s.GetConfig(); cfg.TournamentMode && cfg.AnteLevelHands > 0 && s.GetHandCount() > 1 && (s.GetHandCount()-1)%cfg.AnteLevelHands == 0 {
-		previous := cfg.Ante * 100 / cfg.AnteMultiplier
+		previous := s.GetPreviousAnte()
 		return "", "sevencardstud.anteLevelUp", map[string]string{"from": strconv.Itoa(previous), "to": strconv.Itoa(cfg.Ante)}
 	}
 	if s.GetGameEndFlag() {

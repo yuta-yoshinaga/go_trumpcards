@@ -52,8 +52,7 @@
     "potLimit": "Pot limit",
     "noLimit": "No limit",
     "tournamentMode": "Tournament mode",
-    "tournamentModeHelp": "The ante rises every few hands (guide: it doubles every 10 hands). Changes take effect after reset.",
-    "anteLevelUp": "Ante increased: {{from}}→{{to}}"
+    "tournamentModeHelp": "The ante rises every few hands (guide: it doubles every 10 hands). Changes take effect after reset."
   },
   "tutorial": {
     "playerHand": "Your cards. Some are face-down (only you see them) and some face-up (everyone sees them). The high hand is ordinary seven-card stud.",

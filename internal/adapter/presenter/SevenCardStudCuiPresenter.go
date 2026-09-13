@@ -51,7 +51,7 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 				"bringIn", strconv.Itoa(cfg.BringIn),
 				"levelup", strconv.Itoa(cfg.AnteLevelHands)) + "\n")
 			if cfg.AnteLevelHands > 0 && s.GetHandCount() > 1 && (s.GetHandCount()-1)%cfg.AnteLevelHands == 0 {
-				previous := cfg.Ante * 100 / cfg.AnteMultiplier
+				previous := s.GetPreviousAnte()
 				b.WriteString(i18n.Tf("sevencardstud.anteLevelUp", "from", strconv.Itoa(previous), "to", strconv.Itoa(cfg.Ante)) + "\n")
 			}
 			if cfg.RebuyEnabled {

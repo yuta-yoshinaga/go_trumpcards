@@ -448,11 +448,16 @@ func TestSevenCardStudCuiPresenterAnteLevelUpBoundaries(t *testing.T) {
 			s, _ := makeSevenCardStudForPresenter()
 			cfg := s.GetConfig()
 			cfg.TournamentMode = true
-			cfg.Ante = 2
+			cfg.Ante = 1
 			cfg.AnteMultiplier = 200
 			cfg.AnteLevelHands = 10
 			s.SetConfig(cfg)
-			s.SetHandCount(tt.handCount)
+			if tt.want {
+				s.SetHandCount(tt.handCount - 1)
+				assert.NoError(t, s.Reset())
+			} else {
+				s.SetHandCount(tt.handCount)
+			}
 
 			output := new(presenter.SevenCardStudCuiPresenter).Output(s, nil)
 			if tt.want {
@@ -462,6 +467,25 @@ func TestSevenCardStudCuiPresenterAnteLevelUpBoundaries(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSevenCardStudCuiPresenterAnteLevelUpUsesActualPreviousAnte(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	s, _ := makeSevenCardStudForPresenter()
+	cfg := s.GetConfig()
+	cfg.TournamentMode = true
+	cfg.Ante = 5
+	cfg.AnteMultiplier = 150
+	cfg.AnteLevelHands = 10
+	s.SetConfig(cfg)
+	s.SetHandCount(10)
+	assert.NoError(t, s.Reset())
+
+	output := new(presenter.SevenCardStudCuiPresenter).Output(s, nil)
+	assert.Contains(t, output, "アンティが上昇しました: 5→7")
 }
 
 func TestSevenCardStudCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {

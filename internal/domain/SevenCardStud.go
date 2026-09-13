@@ -97,6 +97,8 @@ type SevenCardStud struct {
 	lowball          bool // ローボール (Razz) モード
 	hiLo             bool // Hi-Lo (8 or Better) スプリットモード
 	chicago          bool // Chicago スプリットモード (半分は伏せ札の最高スペードへ)
+	// previousAnte は直前の Reset でアンティが上昇する前の値。永続化せず、リロード後に前回の上昇を再表示しない。
+	previousAnte int
 }
 
 // NewSevenCardStud コンストラクタ
@@ -244,6 +246,7 @@ func (s *SevenCardStud) Reset() error {
 
 	// トーナメントモード: アンティエスカレーション
 	if s.config.TournamentMode && s.config.AnteLevelHands > 0 && s.handCount > 0 && s.handCount%s.config.AnteLevelHands == 0 {
+		s.previousAnte = s.config.Ante
 		s.config.Ante = s.config.Ante * s.config.AnteMultiplier / 100
 		s.config.BringIn = s.config.BringIn * s.config.AnteMultiplier / 100
 		s.config.SmallBet = s.config.SmallBet * s.config.AnteMultiplier / 100
@@ -1117,6 +1120,9 @@ func (s *SevenCardStud) ImportProfile(data []byte) error {
 
 // GetConfig 設定取得
 func (s *SevenCardStud) GetConfig() SevenCardStudConfig { return s.config }
+
+// GetPreviousAnte は直前のアンティ上昇前の値を取得する。
+func (s *SevenCardStud) GetPreviousAnte() int { return s.previousAnte }
 
 // SetConfig 設定変更
 func (s *SevenCardStud) SetConfig(cfg SevenCardStudConfig) { s.config = cfg }

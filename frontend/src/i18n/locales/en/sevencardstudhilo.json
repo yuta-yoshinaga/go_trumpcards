@@ -53,8 +53,7 @@
     "potLimit": "Pot limit",
     "noLimit": "No limit",
     "tournamentMode": "Tournament mode",
-    "tournamentModeHelp": "The ante rises every few hands (guide: it doubles every 10 hands). Changes take effect after reset.",
-    "anteLevelUp": "Ante increased: {{from}}→{{to}}"
+    "tournamentModeHelp": "The ante rises every few hands (guide: it doubles every 10 hands). Changes take effect after reset."
   },
   "tutorial": {
     "playerHand": "Your hole cards and door cards. Make the best 5-card hand from 7 cards.",
