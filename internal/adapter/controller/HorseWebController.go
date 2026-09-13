@@ -57,6 +57,8 @@ type HorseWebOutputSeat struct {
 	Name    string `json:"name"`
 	IsHuman bool   `json:"isHuman"`
 	Chips   int    `json:"chips"`
+	Folded  bool   `json:"folded"`
+	AllIn   bool   `json:"allIn"`
 	// Cards はその席から見えている札 (CPU は表向きのみ)。
 	Cards []*WebOutputCard `json:"cards"`
 }

@@ -37,6 +37,7 @@ const gameEndState = makeSakuraState({
 beforeEach(() => {
   mockExec.mockReset();
   mockExec.mockResolvedValue(playState);
+  localStorage.removeItem('cli-mode-sakura');
 });
 
 describe('SakuraPage', () => {
@@ -82,6 +83,20 @@ describe('SakuraPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<SakuraPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('toggles CLI mode on and back off', async () => {
+    renderWithProviders(<SakuraPage />);
+    await screen.findByTestId('hand-card-0');
+
+    const toggle = screen.getByRole('button', { name: 'CLIモードに切り替え' });
+    fireEvent.click(toggle);
+    expect(await screen.findByLabelText('コマンドを入力...')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'GUIモードに切り替え' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+    expect(await screen.findByTestId('hand-card-0')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'CLIモードに切り替え' })).toBeInTheDocument();
   });
 
   it('shows the round, stock and dealer', async () => {

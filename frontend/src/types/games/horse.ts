@@ -18,6 +18,10 @@ export interface HorseSeat {
   name: string;
   isHuman: boolean;
   chips: number;
+  /** Whether this seat has folded the current hand. */
+  folded: boolean;
+  /** Whether this seat has committed all available chips. */
+  allIn: boolean;
   cards: Card[];
 }
 

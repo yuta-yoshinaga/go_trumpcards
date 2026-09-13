@@ -35,6 +35,8 @@ func (p *HorseWebPresenter) buildBase(g interfaces.HorseGame) *controller.HorseW
 			Name:    g.GetSeatName(i),
 			IsHuman: g.GetSeatIsHuman(i),
 			Chips:   g.GetSeatLiveChips(i),
+			Folded:  g.GetSeatFolded(i),
+			AllIn:   g.GetSeatAllIn(i),
 			Cards:   cardsToOutputOrEmpty(g.GetSeatCards(i)),
 		})
 	}

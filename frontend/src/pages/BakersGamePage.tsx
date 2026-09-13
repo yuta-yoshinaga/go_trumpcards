@@ -374,6 +374,9 @@ function BakersGamePageContent() {
                   );
                 })}
               </div>
+              <span data-testid="bg-doubleclick-hint" className="text-game-text-muted text-xs self-center">
+                {t('doubleClickHint')}
+              </span>
             </div>
 
             {/* Tableau */}

@@ -15,6 +15,7 @@
   "moveCount": "手数",
   "empty": "空",
   "hintAvailable": "ヒント",
+  "doubleClickHint": "カードをダブルクリック（ダブルタップ）すると組札へ送れます",
   "foundationAriaLabel": "{{suit}} ファンデーション ({{cardCount}}枚)",
   "emptyFoundationAriaLabel": "{{suit}} ファンデーション (空)",
   "emptyFreecellAriaLabel": "フリーセル {{idx}} (空)",

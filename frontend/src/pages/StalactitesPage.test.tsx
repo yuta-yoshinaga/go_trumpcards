@@ -79,6 +79,10 @@ beforeEach(() => {
 });
 
 describe('StalactitesPage', () => {
+  it('shows the persistent double-click foundation hint', async () => {
+    renderWithProviders(<StalactitesPage />);
+    expect(await screen.findByTestId('st-doubleclick-hint')).toHaveTextContent('ダブルクリック');
+  });
   afterEach(() => localStorage.clear());
 
   // --- Skeleton ---
