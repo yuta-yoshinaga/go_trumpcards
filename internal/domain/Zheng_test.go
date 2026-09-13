@@ -457,6 +457,24 @@ func TestZheng_HasPlayableResponse(t *testing.T) {
 	assert.False(t, z.HasPlayableResponse())
 }
 
+func TestZheng_HasPlayableResponse_GuardsInvalidState(t *testing.T) {
+	t.Run("game ended", func(t *testing.T) {
+		z := newZhengTestGame()
+		z.round.gameEndFlag = true
+		assert.False(t, z.HasPlayableResponse())
+	})
+	t.Run("current turn out of range", func(t *testing.T) {
+		z := newZhengTestGame()
+		z.round.currentTurn = len(z.players)
+		assert.False(t, z.HasPlayableResponse())
+	})
+	t.Run("current player is nil", func(t *testing.T) {
+		z := newZhengTestGame()
+		z.players[0] = nil
+		assert.False(t, z.HasPlayableResponse())
+	})
+}
+
 func zhengHasPlayableResponseReference(z *Zheng) bool {
 	player := z.players[z.round.currentTurn]
 	cards := make([]*Card, 0, player.GetCardsSize())
@@ -479,6 +497,7 @@ func zhengHasPlayableResponseReference(z *Zheng) bool {
 
 func TestZheng_HasPlayableResponseMatchesSubsetReference(t *testing.T) {
 	rng := rand.New(rand.NewSource(7379))
+	jokerHands := 0
 	playTypes := []struct {
 		table []*Card
 		type_ ZhengPlayType
@@ -496,14 +515,25 @@ func TestZheng_HasPlayableResponseMatchesSubsetReference(t *testing.T) {
 		z.round.currentTurn = 0
 		p := z.players[0]
 		handSize := 8 + rng.Intn(7)
+		hasJoker := false
 		for j := 0; j < handSize; j++ {
+			if rng.Intn(27) == 0 { // 2 jokers in a 54-card deck
+				p.AddCard(zhengCard(1+rng.Intn(2), CardDesignJoker))
+				hasJoker = true
+				continue
+			}
 			p.AddCard(zhengCard(3+rng.Intn(11), 1+rng.Intn(4)))
+		}
+		if hasJoker {
+			jokerHands++
 		}
 		play := playTypes[i%len(playTypes)]
 		z.round.tableCards = play.table
 		z.round.tablePlayType = play.type_
 		assert.Equal(t, zhengHasPlayableResponseReference(z), z.HasPlayableResponse(), "case %d", i)
 	}
+	assert.Greater(t, jokerHands, 0)
+	t.Logf("hands containing a joker: %d/200", jokerHands)
 }
 
 func BenchmarkZhengHasPlayableResponseWorstCase(b *testing.B) {

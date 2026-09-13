@@ -108,6 +108,18 @@ func TestZhengCuiPresenter_HintOutput(t *testing.T) {
 		m, _ := setupZhengCuiMock()
 		assert.Contains(t, p.HintOutput(m), "リードです。弱いカードから出しましょう")
 	})
+	t.Run("game ended", func(t *testing.T) {
+		m, _ := setupZhengCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.On("GetGameEndFlag").Return(true)
+		assert.Equal(t, "ゲームは終了しています\n", p.HintOutput(m))
+	})
+	t.Run("not human turn", func(t *testing.T) {
+		m, _ := setupZhengCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.On("IsHumanTurn").Return(false)
+		assert.Equal(t, "いまはあなたの番ではありません\n", p.HintOutput(m))
+	})
 	t.Run("response exists", func(t *testing.T) {
 		m, _ := setupZhengCuiMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTableCards")
