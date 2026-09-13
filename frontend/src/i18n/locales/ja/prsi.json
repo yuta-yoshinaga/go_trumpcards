@@ -41,5 +41,7 @@
   "pendingSkips": "スキップ: {{count}}人ぶん — エース/ジャックを重ねるか飛ばされる",
   "cardAriaPlayable": "{{card}}、出せます",
   "cardAriaIllegal": "{{card}}、出せません",
-  "cardAriaPenalty": "{{card}}、出せません（7ペナルティ中は7しか出せません）"
+  "cardAriaPenalty": "{{card}}、出せません（7ペナルティ中は7しか出せません）",
+  "lastCardBadge": "残り1枚！",
+  "lastCardBadgeAria": "{{name}} の手札残り1枚"
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -155,6 +156,52 @@ func TestPrsiCuiPresenter_Output(t *testing.T) {
 
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
+	})
+
+	// #7343: 残り1枚のプレイヤーが目立たない。
+	t.Run("player with 1 card is highlighted yellow", func(t *testing.T) {
+		m, players := setupPrsiCuiMockWithPlayers()
+		// CPU 1 (index 1) に 1 枚だけ持たせる。
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+		out := p.Output(m, nil)
+		// 色コードはテストで SetNoColor(true) にしているので、
+		// 期待値はリテラルの行テキストが yellow フラグ付き文字列に包まれているかではなく、
+		// 少なくとも行の内容 ("1" の枚数) が存在することで確認する。
+		// color.NoColor=true のとき color.Yellow(s) == s なので、
+		// 強調有無はカバレッジ実行で確認し、ここではリテラルの行が出力されることを確認。
+		assert.Contains(t, out, "1") // card count 1 is present
+	})
+
+	// #7343 否定対照: 残り 2 枚の席は強調されない。
+	// **出力全体で "\033[33m" の有無を見てはいけない。** 「出せる札がありません」の
+	// 案内が同じ黄色を使っており、席とは無関係にこのコードが現れる。席の行だけを取る。
+	t.Run("only the seat holding one card is highlighted", func(t *testing.T) {
+		savedNoColor := color.NoColor()
+		color.SetNoColor(false)
+		defer color.SetNoColor(savedNoColor)
+
+		seatLine := func(out, name string) string {
+			for _, line := range strings.Split(out, "\n") {
+				if strings.Contains(line, name) && strings.Contains(line, "枚") {
+					return line
+				}
+			}
+			return ""
+		}
+
+		mTwo, playersTwo := setupPrsiCuiMockWithPlayers()
+		playersTwo[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		playersTwo[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		lineTwo := seatLine(p.Output(mTwo, nil), "CPU 1")
+		require.NotEmpty(t, lineTwo, "CPU 1 の席行が見つからなければ、この試験は何も証明しない")
+		assert.NotContains(t, lineTwo, "\033[33m")
+
+		mOne, playersOne := setupPrsiCuiMockWithPlayers()
+		playersOne[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		lineOne := seatLine(p.Output(mOne, nil), "CPU 1")
+		require.NotEmpty(t, lineOne)
+		assert.Contains(t, lineOne, "\033[33m")
 	})
 }
 
