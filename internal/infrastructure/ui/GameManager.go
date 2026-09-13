@@ -6616,7 +6616,7 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			CommandKeys: []string{
 				"caribbeandraw.helpBet", "caribbeandraw.helpDraw",
-				"caribbeandraw.helpPlay", "caribbeandraw.helpFold", "caribbeandraw.helpHint",
+				"caribbeandraw.helpPlay", "caribbeandraw.helpFold", "caribbeandraw.helpHint", "caribbeandraw.helpClearStats",
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),

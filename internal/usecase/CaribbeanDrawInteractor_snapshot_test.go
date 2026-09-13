@@ -15,6 +15,8 @@ import (
 // stubCaribbeanDrawPresenter is a minimal presenter for snapshot tests.
 type stubCaribbeanDrawPresenter struct{}
 
+func (s *stubCaribbeanDrawPresenter) ClearSession() {}
+
 func (s *stubCaribbeanDrawPresenter) Output(_ interfaces.CaribbeanDrawGame, _ error) string {
 	return `{"ok":true}`
 }

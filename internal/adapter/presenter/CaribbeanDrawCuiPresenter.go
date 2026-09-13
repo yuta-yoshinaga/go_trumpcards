@@ -14,25 +14,33 @@ import (
 
 // CaribbeanDrawCuiPresenter カリビアン・ドロー・ポーカーCUIプレゼンタークラス
 type CaribbeanDrawCuiPresenter struct {
+	lastPhase     int
+	hasSeenState  bool
+	sessionWins   int
+	sessionLosses int
+	sessionPushes int
+	sessionNet    int
 }
 
 // Output ゲーム状態を出力
 func (cp *CaribbeanDrawCuiPresenter) Output(cs interfaces.CaribbeanDrawGame, lastErr error) string {
 	var sb strings.Builder
+	phase := cs.GetPhase()
+	cp.updateSession(cs, phase)
 
 	sb.WriteString("----------\n")
 	sb.WriteString(i18n.Tf("caribbeandraw.chipsLine", "chips", strconv.Itoa(cs.GetChips())) + "\n")
-	sb.WriteString(i18n.Tf("caribbeandraw.phaseLine", "phase", cp.phaseStr(cs.GetPhase())) + "\n")
+	sb.WriteString(i18n.Tf("caribbeandraw.phaseLine", "phase", cp.phaseStr(phase)) + "\n")
 
 	// ジャックポットは任意の追加ベット。Web には常設の説明があるのに CUI には
 	// 一言も無く、"b <ante> <jackpot>" で実チップを賭けさせていた (#5528)。
 	// 賭け終わった後は出さない -- もう選べないものの説明は場所を取るだけ。
-	if cs.GetPhase() == domain.CaribbeanDrawPhaseBet {
+	if phase == domain.CaribbeanDrawPhaseBet {
 		sb.WriteString(i18n.T("caribbeandraw.jackpotHelp") + "\n")
 	}
 	// **交換できるのはこの一瞬だけ。** 手数料が要ることも併せて出さないと、
 	// 引いてから残高が減っていることに気付くことになる。
-	if cs.GetPhase() == domain.CaribbeanDrawPhaseDraw {
+	if phase == domain.CaribbeanDrawPhaseDraw {
 		sb.WriteString(i18n.Tf("caribbeandraw.drawHelp",
 			"max", strconv.Itoa(domain.CaribbeanDrawMaxExchange),
 			"cost", strconv.Itoa(cs.GetAnteBet()*domain.CaribbeanDrawExchangeCostRatio)) + "\n")
@@ -56,7 +64,7 @@ func (cp *CaribbeanDrawCuiPresenter) Output(cs interfaces.CaribbeanDrawGame, las
 	dealerHand := cs.GetDealerHand()
 	if len(dealerHand) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("caribbeandraw.dealerHeader")) + " ---\n")
-		if cs.GetPhase() == domain.CaribbeanDrawPhaseEnd {
+		if phase == domain.CaribbeanDrawPhaseEnd {
 			rank := cs.GetDealerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
 				sb.WriteString(i18n.Tf("caribbeandraw.handLine", "hand", domain.PokerHandNames[rank]) + "\n")
@@ -121,8 +129,44 @@ func (cp *CaribbeanDrawCuiPresenter) Output(cs interfaces.CaribbeanDrawGame, las
 		sb.WriteString(i18n.Tf("caribbeandraw.totalPayoutLine", "payout", strconv.Itoa(cs.GetTotalPayout())) + "\n")
 		sb.WriteString("----------\n")
 	}
+	if cp.sessionRounds() > 0 {
+		sb.WriteString(i18n.Tf("caribbeandraw.sessionStats",
+			"wins", strconv.Itoa(cp.sessionWins), "losses", strconv.Itoa(cp.sessionLosses),
+			"pushes", strconv.Itoa(cp.sessionPushes), "net", signedChips(cp.sessionNet)) + "\n")
+	}
 
 	return sb.String()
+}
+
+func (cp *CaribbeanDrawCuiPresenter) sessionRounds() int {
+	return cp.sessionWins + cp.sessionLosses + cp.sessionPushes
+}
+
+// ClearSession clears the accumulated hand statistics without resetting the game.
+func (cp *CaribbeanDrawCuiPresenter) ClearSession() {
+	cp.sessionWins, cp.sessionLosses, cp.sessionPushes, cp.sessionNet = 0, 0, 0, 0
+}
+
+func (cp *CaribbeanDrawCuiPresenter) updateSession(cs interfaces.CaribbeanDrawGame, phase int) {
+	if phase == domain.CaribbeanDrawPhaseEnd && (!cp.hasSeenState || cp.lastPhase != domain.CaribbeanDrawPhaseEnd) {
+		switch cs.GetResult() {
+		case domain.GameResultWin:
+			cp.sessionWins++
+		case domain.GameResultLose:
+			cp.sessionLosses++
+		case domain.GameResultDraw:
+			cp.sessionPushes++
+		}
+		cp.sessionNet += cs.GetTotalPayout() - (cs.GetAnteBet() + cs.GetJackpotBet() + cs.GetPlayBet() + cs.GetDrawCost())
+	}
+	cp.lastPhase, cp.hasSeenState = phase, true
+}
+
+func signedChips(value int) string {
+	if value > 0 {
+		return "+" + strconv.Itoa(value)
+	}
+	return strconv.Itoa(value)
 }
 
 // caribbeanDrawAceValue / caribbeanDrawKingValue はエースとキングのカード値。

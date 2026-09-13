@@ -70,6 +70,9 @@ func TestThreeCardRummyCuiPresenter_Output_BetPhaseExplainsTheInvertedRule(t *te
 	assert.Contains(t, out, "3枚の合計が低いほど強く、0点が最強")
 	assert.Contains(t, out, "絵札=10、A=1")
 	assert.Contains(t, out, "ディーラーは合計20点以下でクオリファイします")
+	for _, payout := range []string{"9:1", "3:1", "1:1", "100:1", "20:1", "4:1"} {
+		assert.Contains(t, out, payout)
+	}
 }
 
 func TestThreeCardRummyCuiPresenter_Output_ScoringNotesOnlyInTheBetPhase(t *testing.T) {

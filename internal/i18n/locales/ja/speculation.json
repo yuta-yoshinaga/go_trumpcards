@@ -14,6 +14,7 @@
   "holdsLine": "【最高札 {{card}}】",
   "offerToYou": "{{buyer}} があなたの札に {{amount}} を提示しています。a で売る、d で断る。",
   "offerFromYou": "{{owner}} は最高札を {{amount}} で譲るそうです。a で買う、bid <額> で上乗せ、d で見送る。",
+  "minRaise": "上乗せするなら {{amount}} 以上を指定してください。",
   "phaseFlip": "めくり",
   "phaseAuction": "競り",
   "phaseResult": "ラウンド結果",

@@ -14,6 +14,7 @@
   "holdsLine": "[best {{card}}]",
   "offerToYou": "{{buyer}} offers {{amount}} for your card. `a` to sell, `d` to decline.",
   "offerFromYou": "{{owner}} will part with the best trump for {{amount}}. `a` to buy, `bid <amount>` to raise, `d` to pass.",
+  "minRaise": "A raise must be at least {{amount}}.",
   "phaseFlip": "Turn up",
   "phaseAuction": "Bidding",
   "phaseResult": "Round result",
