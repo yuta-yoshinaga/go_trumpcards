@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { type GapsMoveZone, gapsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
+import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -252,52 +253,58 @@ function GapsPageContent() {
                             ? t('gapAriaBlocked')
                             : t('gap');
                     return (
-                      <button
-                        type="button"
+                      <DropZone
                         key={`cell-${rIdx.toString()}-${cIdx.toString()}`}
+                        isDropTarget={dnd.isDropTarget(zone)}
                         onDragOver={dnd.handleDragOver(zone)}
                         onDragLeave={dnd.handleDragLeave}
                         onDrop={dnd.handleDrop(zone)}
-                        onClick={() => handleSelectTarget(zone)}
-                        aria-label={gapAria}
-                        data-testid={`gaps-cell-${rIdx.toString()}-${cIdx.toString()}`}
-                        className={`relative flex items-center justify-center rounded border-2 ${
-                          dnd.isDropTarget(zone)
-                            ? 'border-ds-warning bg-ds-warning/20'
-                            : 'border-dashed border-white/30'
-                        } ${isHintTo ? 'ring-2 ring-ds-warning' : ''} ${focusRingWhite}`}
-                        style={{ width: cardWidth, height: cardHeight }}
-                        disabled={!isPlaying || loading || !selectedSource}
+                        className="relative"
                       >
-                        {ghost?.kind === 'needed' && (
-                          <span
-                            aria-hidden="true"
-                            data-testid={`gaps-ghost-${rIdx}-${cIdx}`}
-                            className={`text-base font-semibold opacity-30 ${RED_DESIGNS.has(ghost.design) ? 'text-ds-error' : 'text-ds-text-primary'}`}
-                          >
-                            {SUIT_SYMBOLS[ghost.design]}
-                            {valueName(ghost.value)}
-                          </span>
-                        )}
-                        {ghost?.kind === 'anySuit' && (
-                          <span
-                            aria-hidden="true"
-                            data-testid={`gaps-ghost-${rIdx}-${cIdx}`}
-                            className="text-base font-semibold text-white opacity-30"
-                          >
-                            {valueName(ghost.value)}
-                          </span>
-                        )}
-                        {ghost?.kind === 'blocked' && (
-                          <span
-                            aria-hidden="true"
-                            data-testid={`gaps-ghost-${rIdx}-${cIdx}-blocked`}
-                            className="text-xl opacity-40"
-                          >
-                            🚫
-                          </span>
-                        )}
-                      </button>
+                        {/* Keep drag handlers on an enabled div: browsers do not dispatch dragover/drop to disabled form controls. */}
+                        <button
+                          type="button"
+                          onClick={() => handleSelectTarget(zone)}
+                          aria-label={gapAria}
+                          data-testid={`gaps-cell-${rIdx.toString()}-${cIdx.toString()}`}
+                          className={`relative flex items-center justify-center rounded border-2 ${
+                            dnd.isDropTarget(zone)
+                              ? 'border-ds-warning bg-ds-warning/20'
+                              : 'border-dashed border-white/30'
+                          } ${isHintTo ? 'ring-2 ring-ds-warning' : ''} ${focusRingWhite}`}
+                          style={{ width: cardWidth, height: cardHeight }}
+                          disabled={!isPlaying || loading || !selectedSource}
+                        >
+                          {ghost?.kind === 'needed' && (
+                            <span
+                              aria-hidden="true"
+                              data-testid={`gaps-ghost-${rIdx}-${cIdx}`}
+                              className={`text-base font-semibold opacity-30 ${RED_DESIGNS.has(ghost.design) ? 'text-ds-error' : 'text-ds-text-primary'}`}
+                            >
+                              {SUIT_SYMBOLS[ghost.design]}
+                              {valueName(ghost.value)}
+                            </span>
+                          )}
+                          {ghost?.kind === 'anySuit' && (
+                            <span
+                              aria-hidden="true"
+                              data-testid={`gaps-ghost-${rIdx}-${cIdx}`}
+                              className="text-base font-semibold text-white opacity-30"
+                            >
+                              {valueName(ghost.value)}
+                            </span>
+                          )}
+                          {ghost?.kind === 'blocked' && (
+                            <span
+                              aria-hidden="true"
+                              data-testid={`gaps-ghost-${rIdx}-${cIdx}-blocked`}
+                              className="text-xl opacity-40"
+                            >
+                              🚫
+                            </span>
+                          )}
+                        </button>
+                      </DropZone>
                     );
                   }
                   const isLocked = cIdx < lockedCount;
@@ -316,7 +323,7 @@ function GapsPageContent() {
                         selectedSource ? handleSelectTarget(zone) : !isLocked && handleSelectSource(zone)
                       }
                       aria-label={isLocked ? `${cardAlt(cell)} ${t('lockedAria')}` : cardAlt(cell)}
-                      disabled={!isPlaying || loading || (!!selectedSource && !isPlaying)}
+                      disabled={!isPlaying || loading}
                       aria-pressed={isSameZone(selectedSource, zone)}
                       data-testid={
                         isLocked
