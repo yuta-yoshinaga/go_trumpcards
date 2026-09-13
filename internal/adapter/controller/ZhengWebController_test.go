@@ -36,6 +36,7 @@ func TestZhengWebController_Method(t *testing.T) {
 	ziMock.On("Reset").Return(mockOutput)
 	ziMock.On("Play", []int{0, 1}).Return(mockOutput)
 	ziMock.On("Play", []int{}).Return(mockOutput)
+	ziMock.On("Hint").Return(mockOutput)
 	ziMock.On("ActionLog").Return(mockOutput)
 
 	factory := func() uc.ZhengInteractorIF { return ziMock }
@@ -70,6 +71,16 @@ func TestZhengWebController_Method(t *testing.T) {
 
 	t.Run("log", func(t *testing.T) {
 		for _, cmd := range []string{"log", "l"} {
+			var input controller.ZhengWebInput
+			_ = json.Unmarshal([]byte(fmt.Sprintf(`{"command":"%s","sessionId":"s1"}`, cmd)), &input)
+			recorded := execRequest(t, ctrl.Exec, &input)
+			recorded.CodeIs(http.StatusOK)
+			recorded.BodyIs(mockOutput)
+		}
+	})
+
+	t.Run("hint", func(t *testing.T) {
+		for _, cmd := range []string{"hint", "h"} {
 			var input controller.ZhengWebInput
 			_ = json.Unmarshal([]byte(fmt.Sprintf(`{"command":"%s","sessionId":"s1"}`, cmd)), &input)
 			recorded := execRequest(t, ctrl.Exec, &input)

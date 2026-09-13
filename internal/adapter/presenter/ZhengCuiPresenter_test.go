@@ -98,6 +98,32 @@ func TestZhengCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestZhengCuiPresenter_HintOutput(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.ZhengCuiPresenter)
+
+	t.Run("lead", func(t *testing.T) {
+		m, _ := setupZhengCuiMock()
+		assert.Contains(t, p.HintOutput(m), "リードです。弱いカードから出しましょう")
+	})
+	t.Run("response exists", func(t *testing.T) {
+		m, _ := setupZhengCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTableCards")
+		m.On("GetTableCards").Return([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)})
+		m.On("HasPlayableResponse").Return(true)
+		assert.Contains(t, p.HintOutput(m), "場を上回れる組み合わせがあります")
+	})
+	t.Run("must pass", func(t *testing.T) {
+		m, _ := setupZhengCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTableCards")
+		m.On("GetTableCards").Return([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)})
+		m.On("HasPlayableResponse").Return(false)
+		assert.Contains(t, p.HintOutput(m), "場を上回れません。パスを検討しましょう")
+	})
+}
+
 func TestZhengCuiPresenter_ActionLogOutput(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)

@@ -362,4 +362,17 @@ describe('BidEuchrePage', () => {
     renderWithProviders(<BidEuchrePage />);
     await waitFor(() => expect(screen.queryByTestId('bideuchre-trump-notice')).not.toBeInTheDocument());
   });
+
+  it('repeats the no-trump-low ranking during play, but not for other trumps', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BidEuchrePhase.PLAY, trump: 5, currentPlayerIdx: 0 }));
+    const { unmount } = renderWithProviders(<BidEuchrePage />);
+    await waitFor(() => expect(screen.getByTestId('bideuchre-ntlow-play-note')).toBeInTheDocument());
+    expect(screen.getByTestId('bideuchre-ntlow-play-note')).toHaveTextContent('9が最強');
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: BidEuchrePhase.PLAY, trump: 0, currentPlayerIdx: 0 }));
+    renderWithProviders(<BidEuchrePage />);
+    await waitFor(() => expect(screen.getByTestId('bideuchre-play-notice')).toBeInTheDocument());
+    expect(screen.queryByTestId('bideuchre-ntlow-play-note')).not.toBeInTheDocument();
+  });
 });

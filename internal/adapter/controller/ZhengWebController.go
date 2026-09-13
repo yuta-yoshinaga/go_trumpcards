@@ -92,7 +92,7 @@ func zhengDispatch(bc *baseController, w http.ResponseWriter, zi usecase.ZhengIn
 		}
 		bc.writePresenterResponse(w, zi.Play(indices))
 	default:
-		return dispatchLog(param.Command, bc, w, zi.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, zi.Hint, zi.ActionLog)
 	}
 	return true
 }

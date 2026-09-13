@@ -2,6 +2,7 @@ package domain
 
 import (
 	"encoding/json"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
@@ -441,6 +442,91 @@ func TestZheng_PlayerPlay_PassOnTable(t *testing.T) {
 	require.NotNil(t, z.GetHumanAction())
 	assert.Nil(t, z.GetHumanAction().PlayedCards)
 	assert.Equal(t, 1, z.GetPassCount())
+}
+
+func TestZheng_HasPlayableResponse(t *testing.T) {
+	z := newZhengTestGame()
+	z.round.currentTurn = 0
+	z.round.tableCards = []*Card{zhengCard(10, CardDesignSpade)}
+	z.round.tablePlayType = ZhengPlaySingle
+	z.players[0].AddCard(zhengCard(11, CardDesignHeart))
+	assert.True(t, z.HasPlayableResponse())
+
+	z.players[0] = NewZhengPlayer(true)
+	z.players[0].AddCard(zhengCard(9, CardDesignHeart))
+	assert.False(t, z.HasPlayableResponse())
+}
+
+func zhengHasPlayableResponseReference(z *Zheng) bool {
+	player := z.players[z.round.currentTurn]
+	cards := make([]*Card, 0, player.GetCardsSize())
+	for i := 0; i < player.GetCardsSize(); i++ {
+		cards = append(cards, player.GetCard(i))
+	}
+	for mask := 1; mask < (1 << len(cards)); mask++ {
+		candidate := make([]*Card, 0)
+		for i, card := range cards {
+			if mask&(1<<i) != 0 {
+				candidate = append(candidate, card)
+			}
+		}
+		if zhengIsPlayable(candidate, z.round.tableCards, z.round.tablePlayType) {
+			return true
+		}
+	}
+	return false
+}
+
+func TestZheng_HasPlayableResponseMatchesSubsetReference(t *testing.T) {
+	rng := rand.New(rand.NewSource(7379))
+	playTypes := []struct {
+		table []*Card
+		type_ ZhengPlayType
+	}{
+		{[]*Card{zhengCard(13, CardDesignSpade)}, ZhengPlaySingle},
+		{[]*Card{zhengCard(13, CardDesignSpade), zhengCard(13, CardDesignHeart)}, ZhengPlayPair},
+		{[]*Card{zhengCard(13, CardDesignSpade), zhengCard(13, CardDesignHeart), zhengCard(13, CardDesignClover)}, ZhengPlayTriple},
+		{[]*Card{zhengCard(3, CardDesignSpade), zhengCard(4, CardDesignHeart), zhengCard(5, CardDesignClover)}, ZhengPlayStraight},
+		{[]*Card{zhengCard(3, CardDesignSpade), zhengCard(3, CardDesignHeart), zhengCard(4, CardDesignSpade), zhengCard(4, CardDesignHeart), zhengCard(5, CardDesignSpade), zhengCard(5, CardDesignHeart)}, ZhengPlayPairRun},
+		{[]*Card{zhengCard(13, CardDesignSpade), zhengCard(13, CardDesignHeart), zhengCard(13, CardDesignClover), zhengCard(13, CardDesignDiamond)}, ZhengPlayBomb},
+		{[]*Card{zhengSmallJoker(), zhengBigJoker()}, ZhengPlayJokerBomb},
+	}
+	for i := 0; i < 200; i++ {
+		z := newZhengTestGame()
+		z.round.currentTurn = 0
+		p := z.players[0]
+		handSize := 8 + rng.Intn(7)
+		for j := 0; j < handSize; j++ {
+			p.AddCard(zhengCard(3+rng.Intn(11), 1+rng.Intn(4)))
+		}
+		play := playTypes[i%len(playTypes)]
+		z.round.tableCards = play.table
+		z.round.tablePlayType = play.type_
+		assert.Equal(t, zhengHasPlayableResponseReference(z), z.HasPlayableResponse(), "case %d", i)
+	}
+}
+
+func BenchmarkZhengHasPlayableResponseWorstCase(b *testing.B) {
+	z := newZhengTestGame()
+	z.round.currentTurn = 0
+	z.round.tableCards = []*Card{zhengBigJoker()}
+	z.round.tablePlayType = ZhengPlaySingle
+	for value := 3; value <= 5; value++ {
+		for design := CardDesignSpade; design <= CardDesignClover; design++ {
+			z.players[0].AddCard(zhengCard(value, design))
+		}
+	}
+	for value := 6; value <= 7; value++ {
+		for design := CardDesignSpade; design <= CardDesignHeart; design++ {
+			z.players[0].AddCard(zhengCard(value, design))
+		}
+	}
+	z.players[0].AddCard(zhengCard(8, CardDesignSpade))
+	for i := 0; i < b.N; i++ {
+		if z.HasPlayableResponse() {
+			b.Fatal("unexpected playable response")
+		}
+	}
 }
 
 func TestZheng_PlayerPlay_InvalidCard(t *testing.T) {
