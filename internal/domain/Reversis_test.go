@@ -134,6 +134,36 @@ func TestReversis_MarkedCardChargesPenaltyAndChips(t *testing.T) {
 	assert.False(t, r.GetPlayer(1).GetTookQuinola(), "出した人には付かない")
 }
 
+func TestReversis_MarkedCardsInOneTrickChargeBoth(t *testing.T) {
+	r := newTestReversis(t)
+	poolBefore := r.GetPool()
+	chipsBefore := r.GetPlayer(0).GetChips()
+
+	r.trickNumber = 2
+	r.leadPlayerIdx = 0
+	r.currentTrick = []*TrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 1, false)},
+		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, ReversisQuinolaValue, false)},
+		{PlayerIdx: 2, Card: NewCard(CardDesignDiamond, 1, false)},
+		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 3, false)},
+	}
+	r.resolveTrick()
+
+	p := r.GetPlayer(0)
+	assert.True(t, p.GetTookQuinola())
+	assert.True(t, p.GetTookDiamondAce())
+	assert.Equal(t, 4+1+4+ReversisMarkedPenalty*2, p.GetRoundPenalty())
+	assert.Equal(t, chipsBefore-ReversisMarkedStake*2, p.GetChips())
+	assert.Equal(t, poolBefore+ReversisMarkedStake*2, r.GetPool())
+	marked := 0
+	for _, entry := range r.GetActionLog() {
+		if entry.ActionType == "marked" {
+			marked++
+		}
+	}
+	assert.Equal(t, 2, marked)
+}
+
 func TestReversis_DiamondAceCharges(t *testing.T) {
 	r := newTestReversis(t)
 	r.trickNumber = 2

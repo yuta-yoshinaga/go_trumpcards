@@ -337,3 +337,200 @@ func TestFollowTheQueenCuiPresenter_Hint_CountsWilds(t *testing.T) {
 		assert.NotContains(t, out, i18n.T("followthequeen.hintReasonPair"))
 	})
 }
+
+func TestFollowTheQueenCuiPresenter_Hint_LaterStreets(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.FollowTheQueenCuiPresenter)
+	s, players := makeFollowTheQueenForPresenter()
+	s.SetPhase(domain.FollowTheQueenPhaseFifthStreet)
+	s.SetCurrentTurn(0)
+	players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddHoleCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 9, false))
+	s.SetWildRankForTest(9)
+
+	// ワイルドをペアより優先し、負債が無いときは存在する bet を案内する。
+	out := p.HintOutput(s)
+	assert.Contains(t, out, "ベット")
+	assert.Contains(t, out, "ワイルドを1枚持っている（実質ペア以上）")
+	assert.NotContains(t, out, "ワンペア以上")
+
+	// 負債があれば、同じワイルドの助言でも call 相当の raise を案内する。
+	s.SetLastBet(5)
+	out = p.HintOutput(s)
+	assert.Contains(t, out, "レイズ")
+	assert.Contains(t, out, "ワイルドを1枚持っている（実質ペア以上）")
+}
+
+func TestFollowTheQueenCuiPresenter_Hint_LaterStreetBranches(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.FollowTheQueenCuiPresenter)
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	setup := func(phase int, cards ...*domain.Card) (*domain.FollowTheQueen, *domain.FollowTheQueenPlayer) {
+		s, players := makeFollowTheQueenForPresenter()
+		s.SetPhase(phase)
+		s.SetCurrentTurn(0)
+		s.SetLastBet(10)
+		for i, c := range cards {
+			if i < 2 {
+				players[0].AddHoleCard(c)
+			} else {
+				players[0].AddDoorCard(c)
+			}
+		}
+		return s, players[0]
+	}
+
+	weak := []*domain.Card{card(domain.CardDesignSpade, 3), card(domain.CardDesignHeart, 6), card(domain.CardDesignClover, 8)}
+	t.Run("advises on every later street", func(t *testing.T) {
+		for _, phase := range []int{
+			domain.FollowTheQueenPhaseFourthStreet,
+			domain.FollowTheQueenPhaseFifthStreet,
+			domain.FollowTheQueenPhaseSixthStreet,
+			domain.FollowTheQueenPhaseSeventhStreet,
+		} {
+			s, _ := setup(phase, weak...)
+			out := p.HintOutput(s)
+			assert.Contains(t, out, "推奨: フォールド")
+			assert.Contains(t, out, "続行条件を満たしません")
+		}
+	})
+
+	t.Run("wild count has priority over pair and weak hand", func(t *testing.T) {
+		for _, tc := range []struct {
+			name   string
+			rank   int
+			reason string
+		}{
+			{"one wild", 8, "ワイルドを1枚持っている（実質ペア以上）"},
+			{"two wilds", 3, "ワイルドを2枚持っている（スリーカード以上が確定）"},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				cards := weak
+				if tc.name == "two wilds" {
+					cards = []*domain.Card{card(domain.CardDesignSpade, 3), card(domain.CardDesignHeart, 6), card(domain.CardDesignClover, 3)}
+				}
+				s, player := setup(domain.FollowTheQueenPhaseFourthStreet, cards...)
+				s.SetWildRankForTest(tc.rank)
+				assert.Equal(t, domain.FollowTheQueenPhaseFourthStreet, s.GetPhase())
+				assert.Equal(t, 10, s.GetLastBet())
+				assert.Equal(t, 0, player.GetCurrentBet())
+				wildCount := 0
+				for _, c := range player.GetAllCards() {
+					if s.IsWild(c) {
+						wildCount++
+					}
+				}
+				assert.Equal(t, map[string]int{"one wild": 1, "two wilds": 2}[tc.name], wildCount)
+				out := p.HintOutput(s)
+				assert.Contains(t, out, "推奨: レイズ")
+				assert.Contains(t, out, "レイズ")
+				assert.Contains(t, out, tc.reason)
+			})
+		}
+	})
+
+	t.Run("pair and high card continue, but weak hand folds", func(t *testing.T) {
+		s, _ := setup(domain.FollowTheQueenPhaseFourthStreet,
+			card(domain.CardDesignSpade, 7), card(domain.CardDesignHeart, 7), card(domain.CardDesignClover, 2))
+		assert.Equal(t, 10, s.GetLastBet())
+		assert.Equal(t, 0, s.GetPlayer(0).GetCurrentBet())
+		out := p.HintOutput(s)
+		assert.Contains(t, out, "推奨: レイズ")
+		assert.Contains(t, out, "ワンペア以上")
+
+		s, _ = setup(domain.FollowTheQueenPhaseFourthStreet,
+			card(domain.CardDesignSpade, 14), card(domain.CardDesignHeart, 6), card(domain.CardDesignClover, 8))
+		assert.Equal(t, 10, s.GetLastBet())
+		assert.Equal(t, 0, s.GetPlayer(0).GetCurrentBet())
+		out = p.HintOutput(s)
+		assert.Contains(t, out, "推奨: コール")
+		assert.Contains(t, out, "3枚とも高札")
+
+		s, _ = setup(domain.FollowTheQueenPhaseFourthStreet, weak...)
+		assert.Equal(t, 10, s.GetLastBet())
+		assert.Equal(t, 0, s.GetPlayer(0).GetCurrentBet())
+		out = p.HintOutput(s)
+		assert.Contains(t, out, "推奨: フォールド")
+		assert.Contains(t, out, "続行条件を満たしません")
+	})
+
+	t.Run("check and call reflect the amount owed", func(t *testing.T) {
+		s, player := setup(domain.FollowTheQueenPhaseFourthStreet, weak...)
+		s.SetLastBet(5)
+		player.SetCurrentBet(5)
+		assert.Equal(t, 0, s.GetLastBet()-player.GetCurrentBet())
+		out := p.HintOutput(s)
+		assert.Contains(t, out, "推奨: チェック")
+		assert.Contains(t, out, "無料でチェックできる")
+
+		s.SetLastBet(10)
+		assert.Greater(t, s.GetLastBet()-player.GetCurrentBet(), 0)
+		out = p.HintOutput(s)
+		assert.Contains(t, out, "推奨: フォールド")
+		assert.Contains(t, out, "続行条件を満たしません")
+
+		// A qualifying high card keeps the call recommendation when money is owed.
+		s, _ = setup(domain.FollowTheQueenPhaseFourthStreet,
+			card(domain.CardDesignSpade, 14), card(domain.CardDesignHeart, 6), card(domain.CardDesignClover, 8))
+		out = p.HintOutput(s)
+		assert.Contains(t, out, "推奨: コール")
+		assert.Contains(t, out, "3枚とも高札")
+	})
+
+	t.Run("does not advise after fold, all-in, empty hand, game end, or outside betting", func(t *testing.T) {
+		cases := []func(*domain.FollowTheQueen, *domain.FollowTheQueenPlayer){
+			func(_ *domain.FollowTheQueen, player *domain.FollowTheQueenPlayer) { player.SetFolded(true) },
+			func(_ *domain.FollowTheQueen, player *domain.FollowTheQueenPlayer) { player.SetAllIn(true) },
+			func(_ *domain.FollowTheQueen, player *domain.FollowTheQueenPlayer) { player.ClearCards() },
+			func(s *domain.FollowTheQueen, _ *domain.FollowTheQueenPlayer) { s.SetGameEndFlag(true) },
+			func(s *domain.FollowTheQueen, _ *domain.FollowTheQueenPlayer) {
+				s.SetPhase(domain.FollowTheQueenPhaseEnd)
+			},
+		}
+		for i, mutate := range cases {
+			s, player := setup(domain.FollowTheQueenPhaseFourthStreet, weak...)
+			mutate(s, player)
+			switch i {
+			case 0:
+				assert.True(t, player.GetFolded())
+			case 1:
+				assert.True(t, player.GetAllIn())
+			case 2:
+				assert.Empty(t, player.GetAllCards())
+			case 3:
+				assert.True(t, s.GetGameEndFlag())
+				s.SetPhase(domain.FollowTheQueenPhaseEnd)
+			}
+			if i < 3 {
+				assert.Equal(t, domain.FollowTheQueenPhaseFourthStreet, s.GetPhase())
+			} else {
+				assert.Equal(t, domain.FollowTheQueenPhaseEnd, s.GetPhase())
+			}
+			assert.Contains(t, p.HintOutput(s), "現在ヒントはありません。")
+		}
+	})
+}
+
+func TestFollowTheQueenCuiPresenter_Hint_ThirdStreetAndBringInRemain(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.FollowTheQueenCuiPresenter)
+	s, players := makeFollowTheQueenForPresenter()
+	s.SetPhase(domain.FollowTheQueenPhaseThirdStreet)
+	s.SetCurrentTurn(0)
+	players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+	players[0].AddHoleCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 2, false))
+	assert.Contains(t, p.HintOutput(s), "続行")
+
+	s.SetBringInPlayerIdx(0)
+	out := p.Output(s, nil)
+	assert.Contains(t, out, "ブリングイン: あなた")
+}

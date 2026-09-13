@@ -1,4 +1,5 @@
 {
+  "cpuAction": "CPU: {{card}}を{{pile}}番の台札へ",
   "helpTitle": "Speed (スピード)",
   "helpPlay": "  p <card> <pile>      play card (card=hand index, pile=center pile index)",
   "helpFlip": "  f                    flip center cards (when stuck)",

@@ -1,6 +1,6 @@
 {
   "helpTitle": "Baccarat (バカラ)",
-  "helpBet": "  b <amount> <type>    bet (type: 0=Player, 1=Banker, 2=Tie)",
+  "helpBet": "  b <amount> <type> [<playerPair>] [<bankerPair>]    bet (type: 0=Player, 1=Banker, 2=Tie)",
   "chipsLine": "チップ: {{chips}}",
   "sideBetWin": "{{type}}: 的中 +{{payout}}",
   "sideBetLose": "{{type}}: 外れ",

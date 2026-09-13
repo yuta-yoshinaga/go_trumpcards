@@ -29,5 +29,7 @@
   "helpExampleBet": "  b 100                bet 100 chips",
   "foulHighMustBeat": "Foul: the two-card low hand must be weaker than the five-card high hand",
   "foulSplits": "Foul splits: {{splits}}",
-  "foulSplitsNone": "No foul splits."
+  "foulSplitsNone": "No foul splits.",
+  "recommendedSplit": "House-way recommendation: put [{{idx0}}] [{{idx1}}] ({{cards}}) in the low hand",
+  "recommendedSplitUnavailable": "House-way recommendation unavailable (this hand cannot be auto-split)"
 }

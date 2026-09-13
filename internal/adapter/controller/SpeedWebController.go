@@ -36,8 +36,9 @@ type SpeedWebOutputPlayer struct {
 
 // SpeedWebOutputCpuAction CPU行動記録
 type SpeedWebOutputCpuAction struct {
-	CardIndex int `json:"cardIndex"`
-	PileIndex int `json:"pileIndex"`
+	CardIndex int            `json:"cardIndex"`
+	PileIndex int            `json:"pileIndex"`
+	Card      *WebOutputCard `json:"card"`
 }
 
 // SpeedWebOutputHint ヒント情報

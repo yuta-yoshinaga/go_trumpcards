@@ -21,7 +21,9 @@
   "hintAvailable": "Hint available",
   "hintFromAria": "Hint: move this card to {{dest}}",
   "hintToAria": "Hint: destination for the hinted card",
-  "hintAnnouncement": "Hint: move {{card}} to {{dest}}",
+  "hintAnnouncement": "Hint: move {{card}} to {{dest}}. {{confidence}}",
+  "hintConfidenceFoundation": "Priority: high — a safe move to the foundation",
+  "hintConfidenceTableau": "Priority: medium — a move that improves the tableau",
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "suitNames": {

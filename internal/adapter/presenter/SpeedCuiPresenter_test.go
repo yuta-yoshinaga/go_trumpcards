@@ -98,6 +98,17 @@ func TestSpeedCuiPresenter_Output(t *testing.T) {
 
 	p := new(presenter.SpeedCuiPresenter)
 
+	t.Run("shows the CPU's played card, numbering the pile the way the board and `p` do", func(t *testing.T) {
+		s := setupSpeedWebTest()
+		s.SetCpuActions([]*domain.SpeedCpuAction{
+			{CardIndex: 2, PileIndex: 0, Card: domain.NewCard(domain.CardDesignSpade, 7, false)},
+		})
+		result := p.Output(s, nil)
+		assert.Contains(t, result, "[1] ")
+		assert.Contains(t, result, "CPU: SPADE 7を0番の台札へ")
+		assert.NotContains(t, result, "1番の台札")
+	})
+
 	t.Run("initial state", func(t *testing.T) {
 		s := setupSpeedWebTest()
 		result := p.Output(s, nil)

@@ -130,6 +130,11 @@ const discardState: PineappleResponse = {
   phase: 8,
   isDiscardPhase: true,
   discardDone: [false, true, true, true],
+  discardPreviews: [
+    { cardIdx: 0, handRank: 1, recommended: true },
+    { cardIdx: 1, handRank: 1, recommended: true },
+    { cardIdx: 2, handRank: 1, recommended: true },
+  ],
   communityCards: [
     { design: 'SPADE', value: 10 },
     { design: 'HEART', value: 5 },
@@ -421,6 +426,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: false },
+        { cardIdx: 2, handRank: 1, recommended: true },
+      ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
@@ -462,6 +472,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: true },
+        { cardIdx: 1, handRank: 1, recommended: true },
+        { cardIdx: 2, handRank: 1, recommended: true },
+      ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
@@ -505,6 +520,7 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
@@ -537,6 +553,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: false },
+        { cardIdx: 2, handRank: 1, recommended: true },
+      ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
@@ -577,6 +598,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: false },
+        { cardIdx: 2, handRank: 3, recommended: true },
+      ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
@@ -784,6 +810,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: false },
+        { cardIdx: 2, handRank: 3, recommended: true },
+      ],
     };
     mockCrazyExec.mockResolvedValue(crazyDiscardState);
     renderWithProviders(<PineapplePage variant="crazypineapple" />);
@@ -820,11 +851,35 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: true },
+        { cardIdx: 1, handRank: 1, recommended: true },
+        { cardIdx: 2, handRank: 1, recommended: true },
+      ],
     };
     mockCrazyExec.mockResolvedValue(crazyDiscardState);
     renderWithProviders(<PineapplePage variant="crazypineapple" />);
     await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
     expect(screen.getAllByTestId('cp-discard-recommended')).toHaveLength(3);
+  });
+
+  it('uses the server recommended flag for Crazy Pineapple badges', async () => {
+    const serverRecommendationState: PineappleResponse = {
+      ...discardState,
+      discardPreviews: [
+        { cardIdx: 0, handRank: 3, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: true },
+        { cardIdx: 2, handRank: 9, recommended: false },
+      ],
+    };
+    mockCrazyExec.mockResolvedValue(serverRecommendationState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const labels = screen.getAllByTestId('cp-discard-candidate');
+    expect(screen.getAllByTestId('cp-discard-recommended')).toHaveLength(1);
+    expect(labels[1].previousElementSibling).toHaveClass('ring-2', 'ring-ds-info');
+    expect(labels[0].previousElementSibling).not.toHaveClass('ring-ds-info');
+    expect(labels[2].previousElementSibling).not.toHaveClass('ring-ds-info');
   });
 
   it('shows no Crazy Pineapple recommended badge when the board is too small', async () => {
@@ -845,6 +900,7 @@ describe('PineapplePage', () => {
       ],
       communityCards: [],
       discardDone: [false, true, true, true],
+      discardPreviews: [],
     };
     mockCrazyExec.mockResolvedValue(crazyNoBoardState);
     renderWithProviders(<PineapplePage variant="crazypineapple" />);
@@ -878,6 +934,7 @@ describe('PineapplePage', () => {
       ],
       communityCards: [], // keep(2) + board(0) < 5 → no hand can be evaluated
       discardDone: [false, true, true, true],
+      discardPreviews: [],
     };
     mockCrazyExec.mockResolvedValue(crazyNoBoardState);
     renderWithProviders(<PineapplePage variant="crazypineapple" />);
@@ -1018,6 +1075,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: false },
+        { cardIdx: 2, handRank: 3, recommended: true },
+      ],
     };
     mockIrishExec.mockResolvedValue(st);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
@@ -1086,6 +1148,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: false },
+        { cardIdx: 2, handRank: 3, recommended: true },
+      ],
     };
     mockCrazyExec.mockResolvedValue(crazyDiscardState);
     renderWithProviders(<PineapplePage variant="crazypineapple" />);

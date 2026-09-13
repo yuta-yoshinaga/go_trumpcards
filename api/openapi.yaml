@@ -52427,6 +52427,21 @@ components:
         - cpuActions
         - message
       properties:
+        discardPreviews:
+          type: array
+          description: >-
+            The server's own evaluation of each discard candidate, from the
+            same evaluator the CPU uses. Present only during the discard
+            phase; the client renders `recommended` rather than re-deriving it.
+          items:
+            type: object
+            properties:
+              cardIdx:
+                type: integer
+              handRank:
+                type: integer
+              recommended:
+                type: boolean
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -52717,6 +52732,13 @@ components:
                 type: integer
               pileIndex:
                 type: integer
+              card:
+                allOf:
+                  - $ref: '#/components/schemas/Card'
+                description: >-
+                  The card actually played. `cardIndex` is its position in the
+                  hand at the moment it left, which no longer points at it once
+                  the hand closes up, so the card itself is what the screen shows.
         hint:
           type: object
           description: Hint for the human player (present when hint command is used)
@@ -62658,6 +62680,26 @@ components:
       type: object
       description: Response payload for /rams/exec
       properties:
+        missPenalty:
+          type: integer
+          description: >-
+            Chips a player who took no trick pays on top of the pot. Sent so
+            the screen can name the amount instead of hardcoding it.
+        roundSettlement:
+          type: array
+          description: >-
+            Per-seat chip movement for the round that just ended: the miss
+            penalty paid and the share of the pot received. Empty outside
+            the round-end phase.
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              penalty:
+                type: integer
+              payout:
+                type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -80172,6 +80214,9 @@ components:
     SlapjackResponse:
       type: object
       properties:
+        lastEventCardsWon:
+          type: integer
+          description: Cards the last correct slap took, or 0 when none has happened
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -80876,6 +80921,12 @@ components:
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        talonRecipientIdx:
+          type: integer
+          description: >-
+            Seat the next discarded card goes to, following the order
+            giveDiscard uses (opponentsOf the declarer, indexed by
+            discardCount). -1 outside the talon phase.
         messageCode:
           type: string
         players:

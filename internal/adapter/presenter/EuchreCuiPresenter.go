@@ -20,7 +20,7 @@ import (
 // ルールを含むので、CUI では自力でルールを再現するか、出せない札を選んで
 // エラーを受け取るまで気づけなかった (#4781)。Web は同じ判定で合法な札に
 // 枠線を付けている。
-func euchrePlayerStr(player *domain.EuchrePlayer, i int, sittingOut bool, playable []int) string {
+func euchrePlayerStr(player *domain.EuchrePlayer, i int, sittingOut bool, playable []int, trumpSuit int) string {
 	var b strings.Builder
 	b.WriteString(i18n.Tf("euchre.playerLine",
 		"name", cuiPlayerName(player, i),
@@ -33,17 +33,14 @@ func euchrePlayerStr(player *domain.EuchrePlayer, i int, sittingOut bool, playab
 	}
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(euchreHandStr(player, playable) + "\n")
+		b.WriteString(euchreHandStr(player, playable, trumpSuit) + "\n")
 	}
 	return b.String()
 }
 
 // euchreHandStr renders the hand as an indexed list, starring the cards that
 // may legally be played right now.
-func euchreHandStr(player *domain.EuchrePlayer, playable []int) string {
-	if len(playable) == 0 {
-		return cuiIndexedCardListStr(player)
-	}
+func euchreHandStr(player *domain.EuchrePlayer, playable []int, trumpSuit int) string {
 	mark := make(map[int]bool, len(playable))
 	for _, idx := range playable {
 		mark[idx] = true
@@ -54,8 +51,27 @@ func euchreHandStr(player *domain.EuchrePlayer, playable []int) string {
 		if mark[i] {
 			parts[i] += "*"
 		}
+		if role := euchreBowerRole(player.GetCard(i), trumpSuit); role != "" {
+			parts[i] += "[" + role + "]"
+		}
 	}
 	return strings.Join(parts, "  ")
+}
+
+// euchreBowerRole mirrors the Web bower rule: the Jack of trump is the right
+// bower and the Jack of the same-colour suit is the left bower.
+func euchreBowerRole(card *domain.Card, trumpSuit int) string {
+	if card == nil || trumpSuit <= 0 || card.GetValue() != 11 {
+		return ""
+	}
+	if card.GetDesign() == trumpSuit {
+		return "R"
+	}
+	same := map[int]int{domain.CardDesignSpade: domain.CardDesignClover, domain.CardDesignClover: domain.CardDesignSpade, domain.CardDesignHeart: domain.CardDesignDiamond, domain.CardDesignDiamond: domain.CardDesignHeart}
+	if card.GetDesign() == same[trumpSuit] {
+		return "L"
+	}
+	return ""
 }
 
 // euchrePlayableIndices returns the human's legal plays, or nil when it is not
@@ -135,8 +151,11 @@ func (p *EuchreCuiPresenter) Output(e interfaces.EuchreGame, lastErr error) stri
 
 		sittingOutIdx := euchreSittingOutIdx(e)
 		playable := euchrePlayableIndices(e)
+		if e.GetTrumpSuit() > 0 {
+			b.WriteString(i18n.T("euchre.bowerHelp") + "\n")
+		}
 		for i := 0; i < e.GetPlayerCnt(); i++ {
-			b.WriteString(euchrePlayerStr(e.GetPlayer(i), i, i == sittingOutIdx, playable))
+			b.WriteString(euchrePlayerStr(e.GetPlayer(i), i, i == sittingOutIdx, playable, e.GetTrumpSuit()))
 		}
 
 		b.WriteString("----------\n")

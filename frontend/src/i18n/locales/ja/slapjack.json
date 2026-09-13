@@ -28,11 +28,12 @@
     "jackOnTop": "Jだ！叩け！",
     "jackAnnounce": "ジャックが出ました！スラップチャンス！",
     "burst": {
-      "jack": "ジャック！",
+      "jack": "ジャック！{{count}}枚獲得",
       "miss": "ミス！"
     },
     "slapAnnounce": {
-      "correct": "スラップ成功（{{player}}）",
+      "correct": "スラップ成功（{{player}}、{{count}}枚獲得）",
+      "correctLegacy": "スラップ成功（{{player}}）",
       "wrong": "お手つき（{{player}}）"
     }
   },

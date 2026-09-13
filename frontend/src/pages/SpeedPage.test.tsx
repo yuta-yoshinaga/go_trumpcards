@@ -70,6 +70,11 @@ const errorState: SpeedResponse = {
   messageCode: 'error',
 };
 
+const cpuActionState: SpeedResponse = {
+  ...playState,
+  cpuActions: [{ cardIndex: 2, pileIndex: 0, card: { design: 'CLOVER', value: 11 } }],
+};
+
 describe('SpeedPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -153,6 +158,29 @@ describe('SpeedPage', () => {
   it('shows CPU card count and draw pile', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText(/CPU手札/)).toBeInTheDocument());
+  });
+
+  it('shows CPU actions when the server returns them', async () => {
+    mockExec.mockResolvedValue(cpuActionState);
+    renderWithProviders(<SpeedPage />);
+    expect(await screen.findByTestId('speed-cpu-actions')).toHaveTextContent('CPU: ♣ J を 1番の台札へ');
+    expect(screen.getByText('手札')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^台札1:/ })).toBeInTheDocument();
+  });
+
+  it('does not show CPU actions when the server returns none', async () => {
+    mockExec.mockResolvedValue({ ...playState, cpuActions: [] });
+    renderWithProviders(<SpeedPage />);
+    await screen.findByText('手札');
+    expect(screen.queryByTestId('speed-cpu-actions')).not.toBeInTheDocument();
+  });
+
+  it('removes CPU actions on the next turn', async () => {
+    mockExec.mockResolvedValueOnce(cpuActionState).mockResolvedValueOnce({ ...playState, cpuActions: [] });
+    renderWithProviders(<SpeedPage />);
+    await screen.findByTestId('speed-cpu-actions');
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.queryByTestId('speed-cpu-actions')).not.toBeInTheDocument());
   });
 
   it('shows error message from API', async () => {

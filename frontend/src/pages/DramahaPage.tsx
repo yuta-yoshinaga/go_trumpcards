@@ -25,6 +25,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsLargeDesktop, useIsMobile } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -225,7 +226,7 @@ function DramahaPageContent() {
   // the shared hook covers PRE_FLOP..RIVER only, so the draw phase is
   // deliberately outside it: no betting is legal here.
   const isDrawPhase = phase === DramahaPhase.DRAW;
-  const canDraw = isDrawPhase && !!humanPlayer && !humanPlayer.folded;
+  const canDraw = isDrawPhase && !!humanPlayer && !humanPlayer.folded && state?.currentTurn === humanPlayer.id;
   const [selectedDraw, setSelectedDraw] = useState<number[]>([]);
 
   // Drop a stale selection when the draw round ends, so the cards the player
@@ -251,6 +252,17 @@ function DramahaPageContent() {
     },
     [execApi],
   );
+
+  const confirmDraw = useCallback(() => {
+    submitDraw([...selectedDraw]);
+  }, [selectedDraw, submitDraw]);
+  useCardKeyboardNav({
+    cardCount: humanPlayer?.cards?.length ?? 0,
+    onToggle: toggleDraw,
+    onConfirm: confirmDraw,
+    onClear: () => setSelectedDraw([]),
+    enabled: canDraw && !loading,
+  });
 
   // Both halves of the split, from the same five cards. Recomputed on every
   // board change: the Omaha half moves with the board, the draw half never

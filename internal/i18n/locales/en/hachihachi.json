@@ -5,6 +5,7 @@
   "helpSetDifficulty": "  sd <0-2>             set CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "roundLine": "Round: {{round}}/{{total}}  Deck: {{deck}}",
   "fieldLine": "Field: {{field}}",
+  "drawCapture": "Drawn card {{card}} captured {{captured}}",
   "playerLine": "{{name}}: hand {{hand}}  captured: {{captured}}  raw: {{raw}}  total: {{score}}  yaku: {{yaku}}",
   "promptPlay": "Turn: {{name}}",
   "promptGameEnd": "Game over. Type nr to start a new game.",

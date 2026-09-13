@@ -49,6 +49,8 @@ function makeState(overrides: Partial<RamsResponse> = {}): RamsResponse {
     validPlays: [0, 1, 2],
     gameEndFlag: false,
     winnerIdx: -1,
+    missPenalty: 5,
+    roundSettlement: [],
     config: { playerCnt: 4, rounds: 4 },
     message: '',
     ...overrides,
@@ -159,6 +161,21 @@ describe('RamsPage', () => {
     expect(screen.getByTestId('rm-seat-0')).toHaveTextContent('50チップ / 獲得2');
     expect(screen.getByTestId('rm-seat-1')).toHaveTextContent('降り');
     expect(screen.getByTestId('rm-seat-2')).toHaveTextContent('未定');
+  });
+
+  it("shows each seat's round chip movement", async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        roundSettlement: [
+          { playerIdx: 0, penalty: 5, payout: 20 },
+          { playerIdx: 1, penalty: 5, payout: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<RamsPage />);
+    expect(await screen.findByTestId('rm-seat-0')).toHaveTextContent('このラウンド 15');
+    expect(screen.getByTestId('rm-seat-1')).toHaveTextContent('このラウンド -5');
   });
 
   // **降りたラウンドは「見ている」と伝える。** 操作待ちに見えてはいけない。

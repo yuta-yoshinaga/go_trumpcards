@@ -129,6 +129,7 @@ func TestSlapjack_Slap_CorrectOnJack_TakesPile(t *testing.T) {
 	assert.Equal(t, 1, g.GetPlayer(0).GetStockSize()) // J 1 枚を取得 (元 stock 0 + pile 1)
 	assert.Equal(t, 0, g.GetCurrentTurnIdx())         // 取った人が次のターン
 	assert.Equal(t, SlapjackEventSlapCorrect, g.GetLastEvent().Kind)
+	assert.Equal(t, 1, g.GetLastEvent().CardsWon)
 	// 取得後手番は人間なので CPU 予約は無し
 	assert.Equal(t, SlapjackPendingNone, g.GetPending().Kind)
 }
@@ -157,6 +158,7 @@ func TestSlapjack_Slap_WrongOnNonJack_Penalty(t *testing.T) {
 	assert.Equal(t, 1, g.GetPlayer(0).GetStockSize())
 	assert.Equal(t, 3, g.GetPlayer(1).GetStockSize())
 	assert.Equal(t, SlapjackEventSlapWrong, g.GetLastEvent().Kind)
+	assert.Equal(t, 0, g.GetLastEvent().CardsWon)
 }
 
 func TestSlapjack_Slap_WrongDrainsStock_GameEnds(t *testing.T) {

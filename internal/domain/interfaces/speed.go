@@ -11,6 +11,8 @@ type SpeedGame interface {
 	PlayerPlay(cardIndex, pileIndex int) error
 	// CpuPlay CPUがカードを出す
 	CpuPlay() []*domain.SpeedCpuAction
+	GetCpuActions() []*domain.SpeedCpuAction
+	SetCpuActions([]*domain.SpeedCpuAction)
 	// Flip 膠着時に台札をめくる
 	Flip() error
 	// UpdatePhase フェーズを再計算する

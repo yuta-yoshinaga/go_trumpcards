@@ -258,6 +258,18 @@ func TestKlondikeInteractorResetWithConfig(t *testing.T) {
 	kg.AssertCalled(t, "ResetWithConfig", cfg)
 }
 
+func TestKlondikeInteractorGetConfig(t *testing.T) {
+	kg := newMockKlondikeGame()
+	kp := newMockKlondikePresenter()
+	ki := NewKlondikeInteractor(kg, kp)
+
+	cfg := domain.KlondikeConfig{DrawCount: 3, ScoringMode: domain.KlondikeScoringVegas}
+	kg.On("GetConfig").Return(cfg)
+
+	assert.Equal(t, cfg, ki.GetConfig())
+	kg.AssertCalled(t, "GetConfig")
+}
+
 func TestKlondikeInteractorUndo(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		kg := newMockKlondikeGame()

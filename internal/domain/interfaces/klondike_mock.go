@@ -13,6 +13,11 @@ type MockKlondikeGame struct {
 	mock.Mock
 }
 
+func (_m *MockKlondikeGame) GetConfig() domain.KlondikeConfig {
+	ret := _m.Called()
+	return ret.Get(0).(domain.KlondikeConfig)
+}
+
 func (_m *MockKlondikeGame) Reset() {
 	_m.Called()
 }

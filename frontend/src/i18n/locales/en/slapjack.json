@@ -28,11 +28,12 @@
     "jackOnTop": "JACK! Slap fast!",
     "jackAnnounce": "A Jack is up! Slap chance!",
     "burst": {
-      "jack": "JACK!",
+      "jack": "JACK! {{count}} cards won",
       "miss": "MISS!"
     },
     "slapAnnounce": {
-      "correct": "Slap won by {{player}}",
+      "correct": "Slap won by {{player}}: {{count}} cards",
+      "correctLegacy": "Slap won by {{player}}",
       "wrong": "False slap by {{player}}"
     }
   },

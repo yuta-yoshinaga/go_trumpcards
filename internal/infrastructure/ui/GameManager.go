@@ -490,6 +490,7 @@ var gameRegistry = []GameRegistryEntry{
 				"klondike.helpFoundation", "klondike.helpUndo",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
+			SettingKeys:       []string{"klondike.helpSetScoringMode"},
 		}),
 	BindCuiFor("freecell",
 		func() usecase.FreeCellInteractorIF {

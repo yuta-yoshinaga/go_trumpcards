@@ -293,6 +293,12 @@ describe('CinchPage', () => {
     await waitFor(() => expect(screen.queryByTestId('cinch-bid-cpu')).not.toBeInTheDocument());
   });
 
+  it('shows the CPU trump notice when it is the CPU turn to name trump', async () => {
+    mockExec.mockResolvedValue(makeCinchState({ phase: 1, bidWinnerIdx: 1 }));
+    renderWithProviders(<CinchPage />);
+    await waitFor(() => expect(screen.getByTestId('cinch-trump-cpu')).toHaveTextContent('CPU 1'));
+  });
+
   // **人間の入札手番のときにビッドボタンが表示される。**
   it('shows the bid buttons when it is the human turn to bid', async () => {
     mockExec.mockResolvedValue(bidPhaseState);

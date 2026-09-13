@@ -226,7 +226,29 @@ describe('RistikontraPage', () => {
     mockExec.mockClear();
     fireEvent.click(cardBtn);
     await flushPendingDispatch();
-    expect(mockExec).not.toHaveBeenCalled();
+    await waitFor(() => expect(mockExec).not.toHaveBeenCalled());
+  });
+
+  it('plays the selected card with keyboard and ignores keys on a CPU turn', async () => {
+    renderWithProviders(<RistikontraPage />);
+    const card = await screen.findByTestId('hand-card-0');
+    expect(screen.getByTestId('ristikontra-kbd-shortcuts')).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: '1' });
+    expect(card).toHaveAttribute('aria-pressed', 'true');
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { handIndex: 0 }));
+
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(makeState({ currentTurn: 2 }));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    const cpuTurnCard = await screen.findByTestId('hand-card-0');
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    expect(cpuTurnCard).toHaveAttribute('aria-pressed', 'false');
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', { handIndex: 0 });
   });
 
   it('shows the win message and a next-game button when the human wins', async () => {

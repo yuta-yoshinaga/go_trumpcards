@@ -139,6 +139,21 @@ func (p *WattenCuiPresenter) Output(g interfaces.WattenGame, lastErr error) stri
 			}
 			out.WriteString(i18n.T("watten.promptPlayHelp") + "\n")
 		case domain.WattenPhaseRespond:
+			raiserTeam := g.GetRaiserTeam()
+			if raiserTeam >= 0 {
+				humanTeam := -1
+				for i := 0; i < g.GetPlayerCnt(); i++ {
+					if player := g.GetPlayer(i); player != nil && player.GetIsHuman() {
+						humanTeam = player.GetTeam()
+						break
+					}
+				}
+				teamLabel := i18n.T("watten.raiserOpponentTeam")
+				if raiserTeam == humanTeam {
+					teamLabel = i18n.T("watten.raiserOwnTeam")
+				}
+				out.WriteString(i18n.Tf("watten.raiserTeam", "team", teamLabel) + "\n")
+			}
 			respIdx := g.GetResponderIdx()
 			out.WriteString(i18n.Tf("watten.promptRespond",
 				"name", cuiPlayerName(g.GetPlayer(respIdx), respIdx),

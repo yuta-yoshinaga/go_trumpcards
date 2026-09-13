@@ -170,6 +170,29 @@ func TestSpeed_PlayerPlay_Valid(t *testing.T) {
 	assert.Equal(t, 1, s.GetPlayer(0).GetCardsSize())
 }
 
+func TestSpeed_FlipThenCpuPlayCanBecomeStuckAgain(t *testing.T) {
+	s := setupSpeedManual(
+		[]*domain.Card{newCard(domain.CardDesignSpade, 2)},
+		[]*domain.Card{
+			newCard(domain.CardDesignClover, 2),
+			newCard(domain.CardDesignHeart, 7),
+		},
+		newCard(domain.CardDesignDiamond, 5),
+		newCard(domain.CardDesignSpade, 9),
+		[]*domain.Card{newCard(domain.CardDesignHeart, 4)},
+		[]*domain.Card{newCard(domain.CardDesignClover, 8)},
+	)
+	require.Equal(t, domain.SpeedPhaseStuck, s.GetPhase())
+
+	require.NoError(t, s.Flip())
+	require.Equal(t, domain.SpeedPhasePlay, s.GetPhase())
+	actions := s.CpuPlay()
+	require.Len(t, actions, 1)
+
+	s.UpdatePhase()
+	assert.Equal(t, domain.SpeedPhaseStuck, s.GetPhase())
+}
+
 func TestSpeed_PlayerPlay_NotAdjacent(t *testing.T) {
 	// Human has 10 and 6. 6 is adj to 5 (keeps phase=Play), but 10 is not adj to 5
 	s := setupSpeedManual(
@@ -284,6 +307,7 @@ func TestSpeed_CpuPlay_Easy(t *testing.T) {
 
 	actions := s.CpuPlay()
 	assert.Len(t, actions, 1) // Easy plays only 1
+	assert.NotNil(t, actions[0].Card)
 }
 
 func TestSpeed_CpuPlay_Greedy(t *testing.T) {
@@ -621,6 +645,7 @@ func TestSpeed_CpuPlay_Hard_Basic(t *testing.T) {
 	actions := s.CpuPlay()
 	assert.NotEmpty(t, actions)
 	assert.Equal(t, 4, s.GetCenterPile(0).GetValue())
+	assert.Equal(t, s.GetCenterPile(0), actions[0].Card)
 }
 
 func TestSpeed_CpuPlay_Hard_MultipleCards(t *testing.T) {
@@ -640,6 +665,9 @@ func TestSpeed_CpuPlay_Hard_MultipleCards(t *testing.T) {
 
 	actions := s.CpuPlay()
 	assert.GreaterOrEqual(t, len(actions), 2, "should play multiple cards in a chain")
+	for _, action := range actions {
+		assert.NotNil(t, action.Card)
+	}
 }
 
 func TestSpeed_CpuPlay_Hard_BlockingChoice(t *testing.T) {

@@ -16,6 +16,7 @@ export interface SpeedPlayerData {
 export interface SpeedCpuAction {
   cardIndex: number;
   pileIndex: number;
+  card: Card;
 }
 
 /** Speed hint information. */

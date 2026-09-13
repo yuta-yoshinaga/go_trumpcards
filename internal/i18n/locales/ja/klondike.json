@@ -28,5 +28,8 @@
   "hintLine": "ヒント: {{from}} → {{to}}",
   "autoCompleteReady": "オートコンプリート可能です (ac)",
   "helpExampleDraw": "  d                    山札から1枚めくる",
-  "helpUndo": "  u                    1手戻す"
+  "helpUndo": "  u                    1手戻す",
+  "helpSetScoringMode": "  sm <0-1>              スコアリング方式 (0=なし, 1=ベガス)",
+  "scoringModeRequired": "スコアリング方式を指定してください (0-1)。",
+  "invalidScoringMode": "無効なスコアリング方式です: {{val}}。0-1を指定してください。"
 }
