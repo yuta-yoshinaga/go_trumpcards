@@ -23,7 +23,7 @@ import type { Card } from '../types/card';
 import { ShamrocksPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { shamrocksMovableFans } from '../utils/shamrocksLegalMove';
+import { fitsFoundation, shamrocksMovableFans } from '../utils/shamrocksLegalMove';
 
 /** Shamrocks tutorial step definitions. */
 const LL_TUTORIAL_STEPS: TutorialStep[] = [
@@ -153,6 +153,9 @@ function ShamrocksPageContent() {
   // The move to highlight, only while the highlight is active.
   const hint = showHint ? state.hint : undefined;
   const hintFoundation = hint?.toFoundation === true;
+  const selectedCard = selected === null ? undefined : state.fans[selected]?.at(-1);
+  const foundationAcceptsSelected = (pile: Card[]) =>
+    selectedCard !== undefined && fitsFoundation(selectedCard, [pile]);
 
   // Picking a fan: first click selects the source; second click moves to that fan.
   const pickFan = (idx: number) => {
@@ -252,9 +255,9 @@ function ShamrocksPageContent() {
               <button
                 type="button"
                 key={`fnd-${i}`}
-                className={`rounded ${selected !== null ? 'ring-1 ring-ds-success' : ''} ${canAct ? 'cursor-pointer' : ''}`}
-                onClick={selected !== null ? sendToFoundation : undefined}
-                disabled={selected === null}
+                className={`rounded ${foundationAcceptsSelected(pile) ? 'ring-1 ring-ds-success cursor-pointer' : ''}`}
+                onClick={foundationAcceptsSelected(pile) ? sendToFoundation : undefined}
+                disabled={!canAct || !foundationAcceptsSelected(pile)}
                 data-testid={`foundation-${i}`}
               >
                 {pile.length > 0 ? (

@@ -121,6 +121,24 @@ describe('ShamrocksPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('ff', 2));
   });
 
+  it('rings and enables only foundations that accept the selected fan', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        fans: [[card('SPADE', 2)]],
+        foundation: [[card('SPADE', 1)], [card('HEART', 5)], [], []],
+      }),
+    );
+    renderWithProviders(<ShamrocksPage />);
+    fireEvent.click(await screen.findByTestId('fan-0'));
+
+    const valid = screen.getByTestId('foundation-0');
+    const invalid = screen.getByTestId('foundation-1');
+    expect(valid.className).toContain('ring-ds-success');
+    expect(valid).toBeEnabled();
+    expect(invalid.className).not.toContain('ring-ds-success');
+    expect(invalid).toBeDisabled();
+  });
+
   it('auto-completes, undoes, hints', async () => {
     mockExec.mockResolvedValue(makeState({ canUndo: true }));
     renderWithProviders(<ShamrocksPage />);
