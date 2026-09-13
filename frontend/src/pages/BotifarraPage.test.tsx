@@ -319,6 +319,34 @@ describe('BotifarraPage', () => {
     }
   });
 
+  it('shows the previous trick separately with its winner', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      currentTrick: [{ playerIdx: 0, card: { design: 'HEART', value: 2 } }],
+      lastTrick: [
+        { playerIdx: 1, card: { design: 'SPADE', value: 12 } },
+        { playerIdx: 2, card: { design: 'CLOVER', value: 3 } },
+      ],
+      lastTrickWinner: 2,
+    });
+    renderWithProviders(<BotifarraPage />);
+
+    const previous = await screen.findByTestId('botifarra-previous-trick');
+    expect(previous).toHaveTextContent('前のトリック');
+    expect(previous.querySelector('div.my-3 > div')).toHaveTextContent('→ CPU 2 が獲得');
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent(/^WIN$/);
+    expect(previous.querySelectorAll('[data-testid="animated-card"]')).toHaveLength(2);
+    expect(screen.getByTestId('botifarra-trick')).toBeInTheDocument();
+  });
+
+  it('does not show a previous trick block when there is no previous trick', async () => {
+    mockApi.mockResolvedValue({ ...playState, lastTrick: [], lastTrickWinner: -1 });
+    renderWithProviders(<BotifarraPage />);
+
+    await waitFor(() => expect(screen.getByTestId('botifarra-seats')).toBeInTheDocument());
+    expect(screen.queryByTestId('botifarra-previous-trick')).not.toBeInTheDocument();
+  });
+
   it('renders the CLI terminal when CLI mode is on', async () => {
     mockUseCliMode.mockReturnValue({
       cliEnabled: true,

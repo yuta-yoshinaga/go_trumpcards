@@ -115,6 +115,32 @@ func TestColourWhistCuiPresenter_ShowsTheTrickAndScores(t *testing.T) {
 	assert.Contains(t, out, "得点:")
 }
 
+func TestColourWhistCuiPresenter_ShowsThePreviousTrick(t *testing.T) {
+	t.Run("displays previous trick and winner when available", func(t *testing.T) {
+		m := new(interfaces.MockColourWhistGame)
+		m.On("GetLastTrick").Return([]*domain.TrickCard{
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 11, false)},
+		})
+		m.On("GetLastTrickWinner").Return(1)
+		fillColourWhistDefaults(m)
+
+		out := new(ColourWhistCuiPresenter).Output(m, nil)
+		assert.Contains(t, out, "前のトリック")
+		assert.Contains(t, out, "席 1:")
+		assert.Contains(t, out, "→ 席 1 が獲得")
+	})
+
+	t.Run("does not display anything when last trick is empty", func(t *testing.T) {
+		m := new(interfaces.MockColourWhistGame)
+		m.On("GetLastTrick").Return([]*domain.TrickCard{})
+		fillColourWhistDefaults(m)
+
+		out := new(ColourWhistCuiPresenter).Output(m, nil)
+		assert.NotContains(t, out, "前のトリック")
+		assert.NotContains(t, out, "が獲得")
+	})
+}
+
 func TestColourWhistCuiPresenter_Result(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)

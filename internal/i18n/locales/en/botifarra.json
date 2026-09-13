@@ -14,6 +14,8 @@
   "declarerLine": "Declarer: seat {{declarer}} (dealer is seat {{dealer}})",
   "declarerDelegatedLine": "Declarer: seat {{declarer}} (dealer seat {{dealer}} delegated it)",
   "roundPointsLine": "This round: your team {{team0}} / theirs {{team1}} (of {{total}})",
+  "previousTrick": "Previous trick",
+  "previousTrickWinner": "  -> taken by seat {{name}}",
   "trickCardLine": "  seat {{seat}}: {{card}}",
   "handLine": "Hand: {{cards}}",
   "handLegend": "Only cards marked * are legal (you must win the trick if you can)",

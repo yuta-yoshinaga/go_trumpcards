@@ -37,6 +37,7 @@ func (rp *RikkenCuiPresenter) Output(r interfaces.RikkenGame, lastErr error) str
 		}
 		rp.writeScores(sb, r)
 		rp.writeTrick(sb, r)
+		rp.writeLastTrick(sb, r)
 		rp.writeHand(sb, r)
 		cuiErrorBlock(sb, lastErr)
 
@@ -74,6 +75,23 @@ func (rp *RikkenCuiPresenter) writeTrick(sb *strings.Builder, r interfaces.Rikke
 	for _, tc := range trick {
 		sb.WriteString(i18n.Tf("rikken.trickCardLine",
 			"seat", strconv.Itoa(tc.PlayerIdx), "card", cuiCardStr(tc.Card)) + "\n")
+	}
+}
+
+// writeLastTrick は直前のトリックを書き出す。
+func (rp *RikkenCuiPresenter) writeLastTrick(sb *strings.Builder, r interfaces.RikkenGame) {
+	trick := r.GetLastTrick()
+	if len(trick) == 0 {
+		return
+	}
+	sb.WriteString("----------\n")
+	sb.WriteString(i18n.T("rikken.previousTrick") + "\n")
+	for _, tc := range trick {
+		sb.WriteString(i18n.Tf("rikken.trickCardLine",
+			"seat", strconv.Itoa(tc.PlayerIdx), "card", cuiCardStr(tc.Card)) + "\n")
+	}
+	if winner := r.GetLastTrickWinner(); winner >= 0 {
+		sb.WriteString(i18n.Tf("rikken.previousTrickWinner", "name", strconv.Itoa(winner)) + "\n")
 	}
 }
 

@@ -78,6 +78,32 @@ func TestBotifarraCuiPresenter_ShowsTheTrick(t *testing.T) {
 	assert.Contains(t, out, "席 1:")
 }
 
+func TestBotifarraCuiPresenter_ShowsThePreviousTrick(t *testing.T) {
+	t.Run("displays previous trick and winner when available", func(t *testing.T) {
+		m := new(interfaces.MockBotifarraGame)
+		m.On("GetLastTrick").Return([]*domain.TrickCard{
+			{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 10, false)},
+		})
+		m.On("GetLastTrickWinner").Return(2)
+		fillBotifarraDefaults(m)
+
+		out := new(BotifarraCuiPresenter).Output(m, nil)
+		assert.Contains(t, out, "前のトリック")
+		assert.Contains(t, out, "席 2:")
+		assert.Contains(t, out, "→ 席 2 が獲得")
+	})
+
+	t.Run("does not display anything when last trick is empty", func(t *testing.T) {
+		m := new(interfaces.MockBotifarraGame)
+		m.On("GetLastTrick").Return([]*domain.TrickCard{})
+		fillBotifarraDefaults(m)
+
+		out := new(BotifarraCuiPresenter).Output(m, nil)
+		assert.NotContains(t, out, "前のトリック")
+		assert.NotContains(t, out, "が獲得")
+	})
+}
+
 func TestBotifarraCuiPresenter_Result(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)

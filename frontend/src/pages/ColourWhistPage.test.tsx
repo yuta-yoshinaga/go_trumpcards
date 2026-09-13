@@ -358,4 +358,28 @@ describe('ColourWhistPage', () => {
     await waitFor(() => expect(screen.getByTestId('colourwhist-contract')).toBeInTheDocument());
     expect(screen.queryByTestId('colourwhist-trick')).not.toBeInTheDocument();
   });
+
+  it('shows the previous trick separately with its winner', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      lastTrick: [{ playerIdx: 2, card: { design: 'CLOVER', value: 13 } }],
+      lastTrickWinner: 2,
+    });
+    renderWithProviders(<ColourWhistPage />);
+
+    const previous = await screen.findByTestId('colourwhist-previous-trick');
+    expect(previous).toHaveTextContent('前のトリック');
+    expect(previous.querySelector('div.my-3 > div')).toHaveTextContent('→ CPU 2 が獲得');
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent(/^WIN$/);
+    expect(previous.querySelectorAll('[data-testid="animated-card"]')).toHaveLength(1);
+    expect(screen.getByTestId('colourwhist-trick')).toBeInTheDocument();
+  });
+
+  it('does not show a previous trick block when there is no previous trick', async () => {
+    mockApi.mockResolvedValue({ ...playState, lastTrick: [], lastTrickWinner: -1 });
+    renderWithProviders(<ColourWhistPage />);
+
+    await waitFor(() => expect(screen.getByTestId('colourwhist-contract')).toBeInTheDocument());
+    expect(screen.queryByTestId('colourwhist-previous-trick')).not.toBeInTheDocument();
+  });
 });
