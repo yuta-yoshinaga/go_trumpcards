@@ -4863,7 +4863,7 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewZhengCuiController,
 		CuiHelpSpec{
 			TitleKey:    "zheng.helpTitle",
-			CommandKeys: []string{"zheng.helpPlay", "zheng.helpLog"},
+			CommandKeys: []string{"zheng.helpPlay", "zheng.helpLog", "zheng.helpHint"},
 			SettingKeys: []string{"zheng.helpSetDifficulty"},
 		}),
 	BindCuiFor("desmoche",
