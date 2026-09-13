@@ -10,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -108,7 +109,44 @@ func TestTablanetCuiPresenter_GameEndNamesWinnerAndScores(t *testing.T) {
 	// **合計だけでなく席ごとの点。**勝者名しか出さない実装はここで落ちる。
 	assert.Contains(t, out, "31")
 	assert.Contains(t, out, "12")
+	assert.NotContains(t, out, "内訳:")
 	assert.NotContains(t, out, "{{")
+}
+
+func TestTablanetCuiPresenter_GameEndShowsScoreDetail(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	g := &interfaces.MockTablanetGame{}
+	players := []*domain.TablanetPlayer{
+		domain.NewTablanetPlayer(true),
+		domain.NewTablanetPlayer(false),
+	}
+	for i, player := range players {
+		g.On("GetPlayer", i).Return(player)
+	}
+	g.On("GetPhase").Return(domain.TablanetPhaseGameEnd)
+	g.On("GetRoundNumber").Return(0)
+	g.On("GetRemainingDeck").Return(0)
+	g.On("GetTableCards").Return([]*domain.Card(nil))
+	g.On("GetPlayerCnt").Return(len(players))
+	g.On("GetWinners").Return([]int{0})
+	g.On("GetLastDealDetail").Return(&domain.TablanetScoreDetail{
+		Aces:           map[int]int{0: 1, 1: 5},
+		Jacks:          map[int]int{0: 3},
+		Tablas:         map[int]int{0: 4},
+		HasTenDiamonds: 0,
+		HasTwoClubs:    -1,
+		MostCards:      1,
+	})
+
+	out := new(presenter.TablanetCuiPresenter).Output(g, nil)
+
+	// Assert resolved text and substituted totals, rather than the i18n key.
+	assert.Contains(t, out, "内訳: A 6枚 / J 3枚 / タブラ 4回 / 10♦ あなた / 2♣ - / 最多枚数 CPU 1")
+	assert.NotContains(t, out, "tablanet.resultDetail")
+	assert.True(t, g.AssertExpectations(t))
 }
 
 // 同点なら全員を並べる (`scoreGame` は最高点の席をすべて winners に入れる)。

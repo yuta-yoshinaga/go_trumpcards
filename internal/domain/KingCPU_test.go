@@ -28,3 +28,16 @@ func TestKingGetHint_SelectContractCoversEveryContract(t *testing.T) {
 		require.Equal(t, "select_"+[]string{"no_tricks", "no_hearts", "no_queens", "king_heart", "no_last_two", "no_men", "king_trump"}[contract], hint.Reason)
 	}
 }
+
+func TestKingGetHint_SelectContractReturnsNilWhenDealerIsNotHuman(t *testing.T) {
+	for _, dealerIdx := range []int{1, -1} {
+		g := NewDefaultKing()
+		g.phase = KingPhaseSelectContract
+		g.dealerIdx = dealerIdx
+
+		hint := g.GetHint()
+		if hint != nil {
+			t.Fatalf("dealer index %d should not produce a hint: %#v", dealerIdx, hint)
+		}
+	}
+}
