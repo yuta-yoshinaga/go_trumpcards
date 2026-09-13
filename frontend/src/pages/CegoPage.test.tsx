@@ -132,10 +132,16 @@ beforeEach(() => {
 });
 
 describe('CegoPage', () => {
-  it('shows which CPU is bidding', async () => {
+  it('shows the CPU name when a CPU is bidding', async () => {
     mockExec.mockResolvedValue(cpuBidState);
     renderWithProviders(<CegoPage />);
     await waitFor(() => expect(screen.getByTestId('cego-bid-prompt')).toHaveTextContent('CPU 1が入札中'));
+  });
+
+  it('shows the human name when the human is bidding', async () => {
+    mockExec.mockResolvedValue(makeCegoState({ phase: 0, bidPlayerIdx: 0, isHumanBidTurn: true }));
+    renderWithProviders(<CegoPage />);
+    await waitFor(() => expect(screen.getByTestId('cego-bid-prompt')).toHaveTextContent('あなたが入札中'));
   });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));

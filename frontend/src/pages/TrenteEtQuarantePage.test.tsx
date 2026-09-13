@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { useEffect } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { trenteetquaranteApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -28,6 +29,16 @@ vi.mock('../hooks/useCliMode', () => ({
 
 const mockApi = vi.mocked(trenteetquaranteApi.exec);
 const mockUseCliMode = vi.mocked(useCliMode);
+let currentReset: (() => void) | undefined;
+
+vi.mock('../hooks/useMountReset', () => ({
+  useMountReset: (reset: () => void) => {
+    currentReset = reset;
+    useEffect(() => {
+      void reset();
+    }, [reset]);
+  },
+}));
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -109,6 +120,24 @@ describe('TrenteEtQuarantePage', () => {
     renderWithProviders(<TrenteEtQuarantePage />);
     await waitFor(() => expect(screen.getByLabelText('既定ベット')).toBeInTheDocument());
     expect(screen.getByLabelText('既定ベット')).toHaveValue('0');
+  });
+
+  it('sends the changed default bet when resetting', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    const defaultBet = await screen.findByLabelText('既定ベット');
+    fireEvent.change(defaultBet, { target: { value: String(TrenteEtQuaranteBetType.INVERSE) } });
+    expect(defaultBet).toHaveValue(String(TrenteEtQuaranteBetType.INVERSE));
+
+    // Trente et Quarante has no in-page reset control; invoke the page's
+    // mount-reset callback again to represent resetting the page.
+    currentReset?.();
+
+    await waitFor(() =>
+      expect(mockApi).toHaveBeenCalledWith('reset', undefined, undefined, {
+        defaultBet: TrenteEtQuaranteBetType.INVERSE,
+      }),
+    );
   });
 
   it('highlights the selected bet with a check mark and always shows the descriptions', async () => {
