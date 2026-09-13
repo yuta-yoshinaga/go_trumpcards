@@ -5,6 +5,7 @@
   "helpPlay": "  p <1|2|3>            プレイ (1x/2x/3x ベット)",
   "helpFold": "  f                    フォールド",
   "chipsLine": "チップ: {{chips}}",
+  "chipsRefilled": "残高が最低ラウンドコストを下回ったため、{{chips}}コインを補充しました",
   "phaseLine": "フェーズ: {{phase}}",
   "anteLine": "アンティ: {{amount}}",
   "handLine": "ハンド: {{hand}}",

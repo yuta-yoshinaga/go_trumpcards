@@ -55,6 +55,14 @@
   "settings": {
     "title": "設定"
   },
+  "session": {
+    "title": "セッション収支",
+    "tally": "{{wins}}勝 {{losses}}敗 {{pushes}}分",
+    "hands": "{{hands}}ハンド",
+    "net": "収支",
+    "note": "このブラウザに保存",
+    "clear": "クリア"
+  },
   "betGuide": "アンテと任意のボーナスを設定してベット",
   "payoutRef": {
     "title": "配当表",

@@ -12,6 +12,8 @@
     "dealCount": "Deals",
     "selectFirst": "Select the first card",
     "selectSecond": "Select an adjacent same-rank card",
+    "matchingCandidate": "matching candidate",
+    "notAValidTarget": "not a valid target",
     "removablePairs": "Removable: {{n}} pairs",
     "stalemate": "No moves available",
     "win": "All 52 cards removed!",

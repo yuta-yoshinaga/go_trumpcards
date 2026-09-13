@@ -39,6 +39,40 @@ func andarBaharEnded(t *testing.T) *AndarBahar {
 	return ab
 }
 
+// andarBaharMaxDealtEnded は、交互配布を保った49枚の決着済み盤面を手で組む。
+func andarBaharMaxDealtEnded() *AndarBahar {
+	joker := NewCard(CardDesignSpade, 1, true)
+	andar := make([]*Card, 0, 25)
+	bahar := make([]*Card, 0, 24)
+	for i := range 24 {
+		andar = append(andar, NewCard(CardDesignSpade, i%12+2, false))
+		bahar = append(bahar, NewCard(CardDesignHeart, i%12+2, false))
+	}
+	andar = append(andar, NewCard(CardDesignClover, 1, false))
+
+	return &AndarBahar{
+		joker:       joker,
+		andar:       andar,
+		bahar:       bahar,
+		firstColumn: AndarBaharBetAndar,
+		sideBand:    AndarBaharSideNone,
+		phase:       AndarBaharPhaseEnd,
+		gameEndFlag: true,
+		winner:      AndarBaharBetAndar,
+	}
+}
+
+// **総枚数の検査が交互配布の検査より先に走るので、枚数を増やすと別のエラーに当たる。**
+func TestAndarBahar_MaxDealtTamperAddingCardsHitsTotalLimitFirst(t *testing.T) {
+	base := andarBaharMaxDealtEnded()
+	err := andarBaharTampered(t, base, func(m map[string]any) {
+		andar := m["an"].([]any)
+		m["an"] = append(andar, andarBaharCardJSON(CardDesignSpade, 2), andarBaharCardJSON(CardDesignClover, 3))
+	})
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "51 cards dealt, at most 49 are possible")
+}
+
 // **ベット前・決着後のどちらも往復する。** これが負のコントロールです。
 func TestAndarBahar_ReachableStatesSurviveARoundTrip(t *testing.T) {
 	for round := range 60 {
@@ -71,8 +105,9 @@ func TestAndarBahar_ReachableStatesSurviveARoundTrip(t *testing.T) {
 // 数えないため**です。
 func TestAndarBahar_UnmarshalRejectsTamperedState(t *testing.T) {
 	tests := []struct {
-		name   string
-		ended  bool
+		name string
+		// base explicitly owns the fixture, so renaming a subtest cannot change its board.
+		base   func(t *testing.T) *AndarBahar
 		mutate func(m map[string]any)
 		want   string
 	}{
@@ -104,13 +139,13 @@ func TestAndarBahar_UnmarshalRejectsTamperedState(t *testing.T) {
 		},
 		{
 			name:   "ベット額が 10 の倍数でない",
-			ended:  true,
+			base:   andarBaharEnded,
 			mutate: func(m map[string]any) { m["ba"] = 15 },
 			want:   "bet amount out of range",
 		},
 		{
 			name:   "ベット額が上限超え",
-			ended:  true,
+			base:   andarBaharEnded,
 			mutate: func(m map[string]any) { m["ba"] = AndarBaharMaxBet + 10 },
 			want:   "bet amount out of range",
 		},
@@ -118,20 +153,20 @@ func TestAndarBahar_UnmarshalRejectsTamperedState(t *testing.T) {
 			// **内訳と合計は同時に決まる** (#5770)。片方だけ書き換わった保存を
 			// 通すと、画面が「メインは当たったのに合計は減っている」と出す。
 			name:   "払い戻しの内訳が合計と食い違う",
-			ended:  true,
+			base:   andarBaharEnded,
 			mutate: func(m map[string]any) { m["pm"] = andarBaharToInt(m["pm"]) + 10 },
 			want:   "does not add up to",
 		},
 		{
 			name:   "内訳が負",
-			ended:  true,
+			base:   andarBaharEnded,
 			mutate: func(m map[string]any) { m["pm"] = -10; m["pd"] = andarBaharToInt(m["po"]) + 10 },
 			want:   "payout breakdown cannot be negative",
 		},
 		{
 			// **張っていないサイドベットには払い戻せない。**
-			name:  "帯なしなのにサイドの払い戻しがある",
-			ended: true,
+			name: "帯なしなのにサイドの払い戻しがある",
+			base: andarBaharEnded,
 			mutate: func(m map[string]any) {
 				m["sb"] = AndarBaharSideNone
 				m["sa"] = 0
@@ -144,20 +179,20 @@ func TestAndarBahar_UnmarshalRejectsTamperedState(t *testing.T) {
 		},
 		{
 			name:   "サイドベット額が範囲外",
-			ended:  true,
+			base:   andarBaharEnded,
 			mutate: func(m map[string]any) { m["sa"] = -10 },
 			want:   "side bet amount out of range",
 		},
 		{
 			name:   "サイドベットの帯が範囲外",
-			ended:  true,
+			base:   andarBaharEnded,
 			mutate: func(m map[string]any) { m["sb"] = 99 },
 			want:   "side bet band out of range",
 		},
 		{
 			// **賭けていない帯に金額は載らない。**
 			name:   "帯なしなのに金額が載っている",
-			ended:  true,
+			base:   andarBaharEnded,
 			mutate: func(m map[string]any) { m["sb"] = AndarBaharSideNone; m["sa"] = 50 },
 			want:   "staked on no side bet band",
 		},
@@ -165,13 +200,13 @@ func TestAndarBahar_UnmarshalRejectsTamperedState(t *testing.T) {
 			// **逆向きも同じく作れない。** 帯 0 は有効な値なので、番号だけを見て
 			// 「賭けていない」とは判定できない——金額が 0 なら帯は載りません。
 			name:   "帯があるのに金額が 0",
-			ended:  true,
+			base:   andarBaharEnded,
 			mutate: func(m map[string]any) { m["sa"] = 0 },
 			want:   "carries no stake",
 		},
 		{
 			name:   "払戻額が負",
-			ended:  true,
+			base:   andarBaharEnded,
 			mutate: func(m map[string]any) { m["po"] = -1 },
 			want:   "payout cannot be negative",
 		},
@@ -192,26 +227,26 @@ func TestAndarBahar_UnmarshalRejectsTamperedState(t *testing.T) {
 		},
 		{
 			// **交互配布なので、先の列は後の列と同数か 1 枚多いだけ。**
-			name:  "列の枚数が交互配布と食い違う",
-			ended: true,
+			name: "列の枚数が交互配布と食い違う",
+			base: func(t *testing.T) *AndarBahar { t.Helper(); return andarBaharMaxDealtEnded() },
 			mutate: func(m map[string]any) {
-				// **空の列は JSON では `null`** なので comma-ok で受ける。素で
-				// キャストすると、バハールが先に配られて 1 枚目で決着した回に落ちる。
-				andar, _ := m["an"].([]any)
-				m["an"] = append(andar, andarBaharCardJSON(CardDesignSpade, 2), andarBaharCardJSON(CardDesignClover, 3))
+				bahar := m["bh"].([]any)
+				andar := m["an"].([]any)
+				m["bh"] = bahar[:len(bahar)-1]
+				m["an"] = append(andar, bahar[len(bahar)-1])
 			},
 			want: "the columns do not alternate",
 		},
 		{
 			name:   "決着したのに勝った列が無い",
-			ended:  true,
+			base:   andarBaharEnded,
 			mutate: func(m map[string]any) { m["wn"] = -1 },
 			want:   "winner out of range",
 		},
 		{
 			// **勝った列の末尾が同ランクでなければ、そこで止まった説明がつかない。**
-			name:  "勝った列が基準札と同ランクで終わっていない",
-			ended: true,
+			name: "勝った列が基準札と同ランクで終わっていない",
+			base: andarBaharEnded,
 			mutate: func(m map[string]any) {
 				j := m["jk"].(map[string]any)
 				j["v"] = andarBaharToInt(j["v"])%13 + 1
@@ -220,13 +255,13 @@ func TestAndarBahar_UnmarshalRejectsTamperedState(t *testing.T) {
 		},
 		{
 			name:   "決着後なのに 1 枚も配られていない",
-			ended:  true,
+			base:   andarBaharEnded,
 			mutate: func(m map[string]any) { m["an"] = []any{}; m["bh"] = []any{} },
 			want:   "ended without dealing a card",
 		},
 		{
-			name:  "棋譜が長すぎる",
-			ended: true,
+			name: "棋譜が長すぎる",
+			base: andarBaharEnded,
 			mutate: func(m map[string]any) {
 				log := make([]any, andarBaharMaxSliceLen+1)
 				for i := range log {
@@ -241,8 +276,8 @@ func TestAndarBahar_UnmarshalRejectsTamperedState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			base := NewDefaultAndarBahar()
-			if tt.ended {
-				base = andarBaharEnded(t)
+			if tt.base != nil {
+				base = tt.base(t)
 			}
 			err := andarBaharTampered(t, base, tt.mutate)
 			require.Error(t, err, "改竄した保存データが素通しした")

@@ -29,6 +29,7 @@
   "emptyBraidAriaLabel": "The braid is empty",
   "fieldAriaLabel": "Braid field {{idx}}",
   "emptyFieldAriaLabel": "Empty braid field {{idx}} (refills from the braid)",
+  "autoRefill": "Auto-refills",
   "helperAriaLabel": "Helper {{idx}}",
   "emptyHelperAriaLabel": "Empty helper {{idx}} (can only be filled from the waste)",
   "stockAriaLabel": "Stock, {{count}} left",

@@ -1,7 +1,10 @@
 import { useCallback, useState } from 'react';
-import { trenteetquaranteApi } from '../api/gameApi';
+import { type TrenteEtQuaranteConfigInput, trenteetquaranteApi } from '../api/gameApi';
 import { TrenteEtQuaranteBetType, TrenteEtQuarantePhase } from '../types/phases';
 import { useGameApi } from './useGameApi';
+import { useGameConfig } from './useGameConfig';
+
+export const DEFAULT_TRENTE_ET_QUARANTE_CONFIG: Required<TrenteEtQuaranteConfigInput> = { defaultBet: 0 };
 
 /** A previously placed bet, remembered so it can be replayed in the next round. */
 export interface LastBet {
@@ -23,8 +26,10 @@ export function useTrenteEtQuaranteGame() {
   const [betType, setBetType] = useState<number>(TrenteEtQuaranteBetType.NOIR);
   const [betAmount, setBetAmount] = useState(100);
   const [lastBet, setLastBet] = useState<LastBet | null>(null);
+  const { config, handleConfigChange } = useGameConfig(DEFAULT_TRENTE_ET_QUARANTE_CONFIG);
 
   const { state, loading, error, exec: execApi, retry } = useGameApi(trenteetquaranteApi.exec);
+  const reset = useCallback(() => void execApi('reset', undefined, undefined, config), [execApi, config]);
 
   const isBetPhase = state?.phase === TrenteEtQuarantePhase.BET;
   const isResultPhase = state?.phase === TrenteEtQuarantePhase.RESULT;
@@ -65,5 +70,8 @@ export function useTrenteEtQuaranteGame() {
     handleBet,
     handleNextRound,
     handleRebet,
+    config,
+    handleConfigChange,
+    reset,
   };
 }

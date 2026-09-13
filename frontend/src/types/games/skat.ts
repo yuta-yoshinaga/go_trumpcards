@@ -87,6 +87,8 @@ export interface SkatResponse extends BaseGameResponse {
   };
   gameEndFlag: boolean;
   leadPlayerIdx: number;
+  playableIndices: number[];
+  trumpIndices: number[];
   config: SkatConfig;
   hint?: SkatHint;
 }

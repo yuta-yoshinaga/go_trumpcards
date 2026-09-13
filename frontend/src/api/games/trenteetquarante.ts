@@ -4,6 +4,10 @@
 import type { TrenteEtQuaranteResponse } from '../../types/card';
 import { gameExec } from '../gameExec';
 
+export interface TrenteEtQuaranteConfigInput {
+  defaultBet?: number;
+}
+
 /**
  * API client for the Trente et Quarante (Rouge et Noir) /trenteetquarante/exec endpoint.
  *
@@ -16,6 +20,10 @@ import { gameExec } from '../gameExec';
  *   - `log` and `hint` carry no extra fields.
  */
 export const trenteetquaranteApi = {
-  exec: (command: 'reset' | 'bet' | 'nextround' | 'log' | 'hint', bet?: number, stake?: number) =>
-    gameExec<TrenteEtQuaranteResponse>('trenteetquarante', { command, bet, stake }),
+  exec: (
+    command: 'reset' | 'bet' | 'nextround' | 'log' | 'hint',
+    bet?: number,
+    stake?: number,
+    config?: TrenteEtQuaranteConfigInput,
+  ) => gameExec<TrenteEtQuaranteResponse>('trenteetquarante', { command, bet, stake, config }),
 };

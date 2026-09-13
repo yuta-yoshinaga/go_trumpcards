@@ -21,6 +21,8 @@
   "handGame": "ハンドゲーム",
   "discardSelected": "選択した2枚を伏せる",
   "trumpSuitLabel": "切り札スート",
+  "trump": "切り札",
+  "invalidPlay": "この札はフォロースートのルールでは出せません",
   "spades": "スペード",
   "clubs": "クラブ",
   "hearts": "ハート",

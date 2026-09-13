@@ -43,6 +43,8 @@ type SevenCardStudGame interface {
 	GetCpuActions() []domain.SevenCardStudCpuAction
 	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.SevenCardStudConfig
+	// GetPreviousAnte 直前のアンティ上昇前の値を取得する
+	GetPreviousAnte() int
 	// SetConfig ゲーム設定を変更する
 	SetConfig(cfg domain.SevenCardStudConfig)
 	// IsHumanTurn 現在の手番が人間かを返す

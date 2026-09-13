@@ -223,6 +223,20 @@ describe('MonteCarloPage', () => {
     expect(screen.getByTestId('mc-cell-4-4')).not.toHaveAttribute('data-dimmed');
   });
 
+  it('announces matching candidates and invalid targets in cell labels only after selection', async () => {
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.getByTestId('mc-cell-0-1')).toHaveAttribute('aria-label', '♥ 7');
+    expect(screen.getByTestId('mc-cell-2-2')).toHaveAttribute('aria-label', '♣ 5');
+
+    fireEvent.click(screen.getByTestId('mc-cell-0-0'));
+
+    expect(screen.getByTestId('mc-cell-0-1')).toHaveAttribute('aria-label', '♥ 7 (一致候補)');
+    expect(screen.getByTestId('mc-cell-2-2')).toHaveAttribute('aria-label', '♣ 5 (対象外)');
+    expect(screen.getByTestId('mc-cell-2-2')).toBeDisabled();
+  });
+
   it('rings the hint-suggested cells with the warning color when a hint is active', async () => {
     // boardWithPair: ♠7 at (0,0), ♥7 at (0,1) — the removable pair the hint points at.
     vi.mocked(useGameHint).mockReturnValue({

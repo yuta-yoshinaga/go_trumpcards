@@ -119,6 +119,7 @@ function OasisPokerPageContent() {
   };
 
   const handleBet = () => {
+    if (!state || anteAmount + jackpotAmount > state.chips) return;
     setSelectedIndices([]);
     execApi('bet', anteAmount, jackpotAmount);
   };
@@ -149,7 +150,14 @@ function OasisPokerPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: () => execApi('bet', anteAmount, jackpotAmount), enabled: isBetPhase, label: 'bet' },
+      {
+        key: 'b',
+        action: () => {
+          if (state && anteAmount + jackpotAmount <= state.chips) execApi('bet', anteAmount, jackpotAmount);
+        },
+        enabled: isBetPhase,
+        label: 'bet',
+      },
       { key: 's', action: () => execApi('stand'), enabled: isExchangePhase, label: 'stand' },
       {
         key: 'e',
@@ -161,7 +169,17 @@ function OasisPokerPageContent() {
       { key: 'f', action: () => execApi('fold'), enabled: isActionPhase, label: 'fold' },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
     ],
-    [execApi, isBetPhase, isExchangePhase, isActionPhase, isEndPhase, anteAmount, jackpotAmount, selectedIndices],
+    [
+      execApi,
+      isBetPhase,
+      isExchangePhase,
+      isActionPhase,
+      isEndPhase,
+      anteAmount,
+      jackpotAmount,
+      selectedIndices,
+      state,
+    ],
   );
 
   useActionKeyboardNav({
@@ -425,7 +443,7 @@ function OasisPokerPageContent() {
                   value={anteAmount}
                   onChange={setAnteAmount}
                   min={10}
-                  max={state.chips}
+                  max={Math.max(0, state.chips - jackpotAmount)}
                   step={10}
                   disabled={loading}
                   showSteppers
@@ -436,12 +454,17 @@ function OasisPokerPageContent() {
                   value={jackpotAmount}
                   onChange={setJackpotAmount}
                   min={0}
-                  max={state.chips}
+                  max={Math.max(0, state.chips - anteAmount)}
                   step={10}
                   disabled={loading}
                   showSteppers
                 />
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleBet}
+                  disabled={loading || anteAmount + jackpotAmount > state.chips}
+                >
                   {t('button.bet')}
                 </button>
               </div>

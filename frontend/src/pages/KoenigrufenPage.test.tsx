@@ -245,6 +245,18 @@ beforeEach(() => {
 });
 
 describe('KoenigrufenPage', () => {
+  it('shows declarer-side team points in the round result', async () => {
+    mockExec.mockResolvedValue(
+      makeKoenigrufenState({
+        phase: 5,
+        outcome: 1,
+        teamPoints: 70,
+        players: makeKoenigrufenState().players.map((p, i) => (i === 0 ? { ...p, cardPoints: 20 } : p)),
+      }),
+    );
+    renderWithProviders(<KoenigrufenPage />);
+    await waitFor(() => expect(screen.getByTestId('koenigrufen-result')).toHaveTextContent('宣言者側の獲得点: 70 点'));
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<KoenigrufenPage />);

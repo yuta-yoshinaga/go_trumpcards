@@ -337,9 +337,11 @@ function CegoPageContent() {
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
             <div data-testid="cego-prompt-live" role="status" aria-live="polite">
-              {canBid && (
+              {isBidPhase && (
                 <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="cego-bid-prompt">
-                  {t('bidPhase')}
+                  {t('bidTurn', {
+                    name: playerName(state.bidPlayerIdx, state.players[state.bidPlayerIdx]?.isHuman ?? false),
+                  })}
                 </div>
               )}
               {canContract && (

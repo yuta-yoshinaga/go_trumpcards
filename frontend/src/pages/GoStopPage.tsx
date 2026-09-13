@@ -176,9 +176,12 @@ function GoStopPageContent() {
   };
 
   const playerLine = (label: string, p: (typeof state.players)[number]) =>
-    `${label} — ${t('captured', { count: p.capturedCount })} · ${t('score', { score: p.score })} · ${t('points', {
-      points: p.points,
-    })}`;
+    `${label} — ${t('captured', { count: p.capturedCount })} · ${t('score', { score: p.score })} · ${t('goCount', { count: p.goCount })} · ${t(
+      'points',
+      {
+        points: p.points,
+      },
+    )}`;
 
   const winnerName = state.winner < 0 ? '' : state.winner === (human?.id ?? 0) ? t('you') : t('cpu');
 

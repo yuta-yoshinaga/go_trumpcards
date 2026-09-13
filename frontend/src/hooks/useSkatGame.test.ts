@@ -66,6 +66,8 @@ const baseSkatState: SkatResponse = {
       trickCount: 0,
     },
   ],
+  playableIndices: [],
+  trumpIndices: [],
   phase: 0,
   roundNumber: 1,
   trickNumber: 0,

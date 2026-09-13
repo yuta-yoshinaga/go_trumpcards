@@ -62,6 +62,13 @@ beforeEach(() => {
 });
 
 describe('GoStopPage', () => {
+  it("renders each player's go count", async () => {
+    mockExec.mockResolvedValue(
+      makeGoStopState({ players: [makeGoStopState().players[0], { ...makeGoStopState().players[1], goCount: 2 }] }),
+    );
+    renderWithProviders(<GoStopPage />);
+    await waitFor(() => expect(screen.getByTestId('gostop-cpu')).toHaveTextContent('ゴー 2回'));
+  });
   it('renders the loading fallback when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<GoStopPage />);

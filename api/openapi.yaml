@@ -57104,10 +57104,17 @@ components:
       properties:
         fromZone:
           type: string
-          enum: [stock, waste]
+          enum: [stock, waste, stockToWaste]
+          description: >-
+            `stock`/`waste` name where a card goes to a foundation from.
+            `stockToWaste` is the advice given when no foundation move
+            exists, which is the ordinary case: it names which waste to
+            bury the stock's top card on.
         wasteIdx:
           type: integer
-          description: Waste pile index (-1 if fromZone is `stock`)
+          description: >-
+            Waste pile index. -1 when `fromZone` is `stock`; the destination
+            pile when it is `stockToWaste`.
         foundationIdx:
           type: integer
           description: Target foundation index (0..3)
@@ -77743,6 +77750,9 @@ components:
         partnerRevealed:
           type: boolean
           description: "True once the called king has been played and the partner is known."
+        teamPoints:
+          type: integer
+          description: "Card points captured by the declarer and the called partner together. This is the total the contract is settled against, so it can exceed the declarer's own cardPoints."
         talonCount:
           type: integer
           description: "Cards left in the talon."
@@ -80062,6 +80072,21 @@ components:
     SkatResponse:
       type: object
       properties:
+        playableIndices:
+          type: array
+          description: >-
+            Hand indices the human may legally play. Empty outside the play
+            phase and on any turn but theirs.
+          items:
+            type: integer
+        trumpIndices:
+          type: array
+          description: >-
+            Hand indices that count as trump under the declared contract --
+            the suit plus every jack, or the jacks alone in a Grand. Empty on
+            the same terms as playableIndices.
+          items:
+            type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."

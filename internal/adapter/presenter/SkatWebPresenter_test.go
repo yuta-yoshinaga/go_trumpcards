@@ -69,6 +69,21 @@ func TestSkatWebPresenter_OutputBidPhase(t *testing.T) {
 	assert.Equal(t, 2, resObj.ActiveBidActorIdx)
 }
 
+func TestSkatWebPresenter_OutputPlayIndicators(t *testing.T) {
+	m := setupSkatWebMock()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.SkatPhasePlay)
+	m.On("IsHumanTurn").Return(true)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+	m.On("GetValidPlayIndices", 0).Return([]int{0, 2})
+	m.On("GetTrumpIndices", 0).Return([]int{2})
+
+	var out controller.SkatWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.SkatWebPresenter).Output(m, nil)), &out))
+	assert.Equal(t, []int{0, 2}, out.PlayableIndices)
+	assert.Equal(t, []int{2}, out.TrumpIndices)
+}
+
 func TestSkatWebPresenter_OutputErrorMessage(t *testing.T) {
 	p := new(presenter.SkatWebPresenter)
 	m := setupSkatWebMock()

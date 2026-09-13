@@ -93,6 +93,8 @@ export interface KoenigrufenResponse extends BaseGameResponse {
   lastTrickWinner: number;
   /** Deal outcome (0=None, 1=Win/contract made, 2=Loss/contract failed). */
   outcome: number;
+  /** Card points captured by the declarer side, including the talon. */
+  teamPoints: number;
   /** Match result from the human's perspective (-1 lose, 0 none, 1 win). */
   result: number;
   /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
