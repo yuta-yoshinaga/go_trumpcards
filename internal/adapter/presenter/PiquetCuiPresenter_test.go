@@ -106,6 +106,34 @@ func TestPiquetCuiPresenter_Output_TrickWinner(t *testing.T) {
 	}
 }
 
+func TestPiquetCuiPresenter_Output_TrickWinnerBonusesAndNilLogEntry(t *testing.T) {
+	origLang := i18n.Lang()
+	defer i18n.SetLang(origLang)
+	origColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origColor)
+
+	g := newPiquetForPresenter(t)
+	g2 := piquetPresenterStateForPhase(t, g, domain.PiquetPhasePlay, []map[string]any{
+		{"t": 10, "p": 0, "a": "trick_win", "d": "Player", "c": []any{
+			map[string]any{"d": domain.CardDesignSpade, "v": 7, "w": false},
+			map[string]any{"d": domain.CardDesignHeart, "v": 11, "w": false},
+		}},
+		{"t": 11, "p": -1, "a": "trick_point", "d": "Trick point", "c": []any{}},
+		nil,
+		{"t": 12, "p": -1, "a": "last_trick_bonus", "d": "Last trick bonus", "c": []any{}},
+		{"t": 13, "p": -1, "a": "pique", "d": "Pique", "c": []any{}},
+	})
+
+	i18n.SetLang("en")
+	out := (&PiquetCuiPresenter{}).Output(g2, nil)
+	assert.Contains(t, out, "Elder (You)")
+	assert.Contains(t, out, "SPADE 7, HEART 11")
+	assert.Contains(t, out, "Trick point +1")
+	assert.Contains(t, out, "Last trick bonus +1")
+	assert.Contains(t, out, "Pique bonus +30")
+}
+
 func TestPiquetCuiPresenter_HintOutput(t *testing.T) {
 	g := newPiquetForPresenter(t)
 	p := &PiquetCuiPresenter{}

@@ -48,6 +48,7 @@ func TestPiquetWebPresenter_Output_TrickWinnerMessage(t *testing.T) {
 	}{
 		{name: "elder", p: 0, want: "piquet.trickWin.elder"},
 		{name: "younger", p: 1, want: "piquet.trickWin.younger"},
+		{name: "unknown player", p: 2, want: "piquet.play"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

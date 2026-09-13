@@ -150,6 +150,53 @@ describe('Rummy500Page', () => {
     expect(mockExec).not.toHaveBeenCalledWith('meld', expect.anything(), expect.anything(), expect.anything());
   });
 
+  it('uses the m action key for meld and clears the selection', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByRole('button', { name: /メルドする/ });
+    const handCards = document.querySelectorAll('[data-tutorial="r5-player-hand"] button');
+    for (const card of handCards) fireEvent.click(card);
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'm' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, [0, 1, 2]));
+    await waitFor(() => expect(handCards[0]).toHaveAttribute('aria-pressed', 'false'));
+  });
+
+  it('uses the l action key for layoff', async () => {
+    const state: Rummy500Response = {
+      ...playPhaseState,
+      layoffTargets: [[{ owner: 1, meldIdx: 0 }]],
+      players: [
+        playPhaseState.players[0],
+        { ...playPhaseState.players[1], laidMelds: [{ cards: [{ design: 'DIAMOND', value: 4 }] }] },
+      ],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByTestId('layoff-meld-1-0');
+    fireEvent.click(document.querySelector('[data-tutorial="r5-player-hand"] button') as HTMLButtonElement);
+    fireEvent.keyDown(document, { key: 'l' });
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'l' });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('layoff', undefined, undefined, undefined, undefined, {
+        meldOwner: 1,
+        meldIdx: 0,
+        cardIndex: 0,
+      }),
+    );
+  });
+
+  it('uses the x action key for discard', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<Rummy500Page />);
+    await screen.findByRole('button', { name: /^捨てる$/ });
+    fireEvent.click(document.querySelector('[data-tutorial="r5-player-hand"] button') as HTMLButtonElement);
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'x' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', 0));
+  });
+
   it('clicking discard card in Draw phase calls drawdiscard', async () => {
     renderWithProviders(<Rummy500Page />);
     const card = await screen.findByTestId('disc-card-0');
