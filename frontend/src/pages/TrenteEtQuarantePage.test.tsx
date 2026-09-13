@@ -29,11 +29,8 @@ vi.mock('../hooks/useCliMode', () => ({
 
 const mockApi = vi.mocked(trenteetquaranteApi.exec);
 const mockUseCliMode = vi.mocked(useCliMode);
-let currentReset: (() => void) | undefined;
-
 vi.mock('../hooks/useMountReset', () => ({
   useMountReset: (reset: () => void) => {
-    currentReset = reset;
     useEffect(() => {
       void reset();
     }, [reset]);
@@ -129,15 +126,35 @@ describe('TrenteEtQuarantePage', () => {
     fireEvent.change(defaultBet, { target: { value: String(TrenteEtQuaranteBetType.INVERSE) } });
     expect(defaultBet).toHaveValue(String(TrenteEtQuaranteBetType.INVERSE));
 
-    // Trente et Quarante has no in-page reset control; invoke the page's
-    // mount-reset callback again to represent resetting the page.
-    currentReset?.();
+    const resetButton = await screen.findByRole('button', { name: 'リセット' });
+    await waitFor(() => expect(resetButton).not.toBeDisabled());
+    mockApi.mockClear();
+    fireEvent.click(resetButton);
+    await waitFor(() => expect(screen.getByText('リセット確認')).toBeInTheDocument());
+    expect(mockApi).not.toHaveBeenCalledWith('reset');
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
       expect(mockApi).toHaveBeenCalledWith('reset', undefined, undefined, {
         defaultBet: TrenteEtQuaranteBetType.INVERSE,
       }),
     );
+  });
+
+  it('does not reset when the reset confirmation is cancelled', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await screen.findByLabelText('既定ベット');
+    const resetButton = await screen.findByRole('button', { name: 'リセット' });
+    await waitFor(() => expect(resetButton).not.toBeDisabled());
+    mockApi.mockClear();
+
+    fireEvent.click(resetButton);
+    await waitFor(() => expect(screen.getByText('リセット確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalledWith('reset');
   });
 
   it('highlights the selected bet with a check mark and always shows the descriptions', async () => {

@@ -10,6 +10,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
+import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -61,7 +62,7 @@ const BET_OPTIONS: readonly { type: number; labelKey: string; descKey: string }[
 export const TrenteEtQuarantePage = withTutorial(TrenteEtQuarantePageContent, 'trenteetquarante', TEQ_TUTORIAL_STEPS);
 
 function TrenteEtQuarantePageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, confirmReset, cancelReset } =
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('trenteetquarante');
   const { cardWidth } = useCardDimensions();
 
@@ -346,6 +347,15 @@ function TrenteEtQuarantePageContent() {
                 </button>
               </div>
             )}
+            <div className="flex justify-center pb-2">
+              <GameResetButton
+                isGameEnd={false}
+                onReset={reset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="teq-reset-button"
+              />
+            </div>
             <ActionShortcutsPanel bindings={actionBindings} data-testid="trente-et-quarante-kbd-shortcuts" />
           </GameFooter>
         </>
