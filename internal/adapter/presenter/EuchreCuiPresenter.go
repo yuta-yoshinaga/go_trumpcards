@@ -41,9 +41,6 @@ func euchrePlayerStr(player *domain.EuchrePlayer, i int, sittingOut bool, playab
 // euchreHandStr renders the hand as an indexed list, starring the cards that
 // may legally be played right now.
 func euchreHandStr(player *domain.EuchrePlayer, playable []int, trumpSuit int) string {
-	if len(playable) == 0 {
-		playable = []int{}
-	}
 	mark := make(map[int]bool, len(playable))
 	for _, idx := range playable {
 		mark[idx] = true

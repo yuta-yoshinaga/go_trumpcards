@@ -417,7 +417,7 @@ function SpeedPageContent() {
               {tc('button.hint')}
             </button>
             <ActionLogSection
-              isEndPhase={!!isGameEnd || !!actionLog}
+              isEndPhase={isGameEnd}
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}

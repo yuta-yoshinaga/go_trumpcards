@@ -100,8 +100,8 @@ func TestSpeedInteractor_Play(t *testing.T) {
 		assert.Equal(t, mockOutput, result)
 		gameMock.AssertCalled(t, "PlayerPlay", 0, 1)
 		gameMock.AssertCalled(t, "CpuPlay")
+		assert.Equal(t, actions, gameMock.GetCpuActions())
 		gameMock.AssertCalled(t, "UpdatePhase")
-		assert.Equal(t, actions, si.CpuActions())
 	})
 
 	t.Run("next play replaces the previous CPU actions", func(t *testing.T) {
@@ -118,7 +118,7 @@ func TestSpeedInteractor_Play(t *testing.T) {
 		si := usecase.NewSpeedInteractor(gameMock, spMock)
 		si.Play(0, 0)
 		si.Play(0, 1)
-		assert.Empty(t, si.CpuActions())
+		assert.Empty(t, gameMock.GetCpuActions())
 	})
 
 	t.Run("invalid play returns error", func(t *testing.T) {
@@ -182,7 +182,8 @@ func TestSpeedInteractor_Flip(t *testing.T) {
 		assert.Equal(t, mockOutput, result)
 		gameMock.AssertCalled(t, "Flip")
 		gameMock.AssertCalled(t, "CpuPlay")
-		assert.Equal(t, actions, si.CpuActions())
+		assert.Equal(t, actions, gameMock.GetCpuActions())
+		gameMock.AssertCalled(t, "UpdatePhase")
 	})
 
 	t.Run("flip error", func(t *testing.T) {

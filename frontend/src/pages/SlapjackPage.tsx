@@ -114,11 +114,16 @@ function SlapjackPageContent() {
     ) {
       const outcome: SlapOutcome = kind === SlapjackEventKind.SLAP_CORRECT ? 'correct' : 'wrong';
       const count = state.lastEventCardsWon ?? 0;
-      const label = outcome === 'wrong' ? t('slapjack.burst.miss') : t('slapjack.burst.jack', { count });
+      const slapper = player === 0 ? tc('player.you') : tc('player.cpu', { id: player });
+      const label =
+        outcome === 'wrong'
+          ? t('slapjack.burst.miss')
+          : count > 0
+            ? t('slapjack.burst.jack', { count })
+            : t('slapjack.slapAnnounce.correctLegacy', { player: slapper });
       // Counter (not Date.now()) keeps repeated slap events distinct even
       // when they happen within the same millisecond.
       setSlapBurst((prevBurst) => ({ key: prevBurst.key + 1, outcome, label }));
-      const slapper = player === 0 ? tc('player.you') : tc('player.cpu', { id: player });
       setSlapAnnounce(
         outcome === 'correct' && count > 0
           ? t('slapjack.slapAnnounce.correct', { player: slapper, count })

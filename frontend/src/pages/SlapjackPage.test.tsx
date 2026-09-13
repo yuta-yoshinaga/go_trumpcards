@@ -234,6 +234,17 @@ describe('SlapjackPage', () => {
     expect(await screen.findByTestId('sj-slap-announce')).toHaveTextContent('スラップ成功（あなた、4枚獲得）');
   });
 
+  it('uses the legacy correct-slap label when no cards-won count is available', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      lastEventKind: SlapjackEventKind.SLAP_CORRECT,
+      lastEventPlayerIdx: 0,
+      lastEventCardsWon: 0,
+    });
+    renderWithProviders(<SlapjackPage />);
+    expect(await screen.findByTestId('slap-burst')).toHaveTextContent('スラップ成功（あなた）');
+  });
+
   it('does not show a cards-won count for a wrong slap', async () => {
     mockExec.mockResolvedValueOnce({
       ...baseState,

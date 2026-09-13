@@ -11,6 +11,7 @@ import (
 // MockSpeedGame スピードゲームモック
 type MockSpeedGame struct {
 	mock.Mock
+	cpuActions []*domain.SpeedCpuAction
 }
 
 // Reset モック
@@ -29,10 +30,9 @@ func (_m *MockSpeedGame) CpuPlay() []*domain.SpeedCpuAction {
 }
 
 func (_m *MockSpeedGame) GetCpuActions() []*domain.SpeedCpuAction {
-	ret := _m.Called()
-	return ret.Get(0).([]*domain.SpeedCpuAction)
+	return _m.cpuActions
 }
-func (_m *MockSpeedGame) SetCpuActions(_ []*domain.SpeedCpuAction) {}
+func (m *MockSpeedGame) SetCpuActions(actions []*domain.SpeedCpuAction) { m.cpuActions = actions }
 
 // Flip モック
 func (_m *MockSpeedGame) Flip() error {
