@@ -72,6 +72,51 @@ func TestFaro_PlaceBet_Validation(t *testing.T) {
 	}
 }
 
+func TestFaro_PlaceBet_RejectsNewBetOnDepletedRank(t *testing.T) {
+	f := newFaroForTest()
+	f.trumpCards.RemoveCardsByValue(7, 4)
+
+	err := f.PlayerPlaceBet(7, 100, false)
+	if err == nil {
+		t.Fatal("new bet on a depleted rank should be rejected")
+	}
+	code, _ := ErrorMessageCode(err)
+	if code != "faro.errRankDepleted" {
+		t.Errorf("message code = %q, want faro.errRankDepleted", code)
+	}
+	if _, ok := f.GetBets()[7]; ok {
+		t.Error("depleted rank should not receive a new bet")
+	}
+}
+
+func TestFaro_PlaceBet_AllowsAvailableRankAndExistingBetOverwriteWhenDepleted(t *testing.T) {
+	f := newFaroForTest()
+	if err := f.PlayerPlaceBet(6, 100, false); err != nil {
+		t.Fatalf("available rank bet rejected: %v", err)
+	}
+	f.trumpCards.RemoveCardsByValue(6, 4)
+
+	if err := f.PlayerPlaceBet(6, 40, true); err != nil {
+		t.Fatalf("existing depleted-rank bet overwrite rejected: %v", err)
+	}
+	if got := f.GetBets()[6]; got == nil || got.Amount != 40 || !got.Copper {
+		t.Errorf("overwritten bet = %+v, want amount 40 copper", got)
+	}
+}
+
+func TestFaro_ClearBet_AllowsDepletedRank(t *testing.T) {
+	f := newFaroForTest()
+	f.SetBet(8, 100, false)
+	f.trumpCards.RemoveCardsByValue(8, 4)
+
+	if err := f.PlayerClearBet(8); err != nil {
+		t.Fatalf("clearing depleted-rank bet rejected: %v", err)
+	}
+	if _, ok := f.GetBets()[8]; ok {
+		t.Error("depleted-rank bet should be cleared")
+	}
+}
+
 func TestFaro_PlaceBet_OverwriteRefundsDelta(t *testing.T) {
 	f := newFaroForTest()
 	_ = f.PlayerPlaceBet(7, 100, false)

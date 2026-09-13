@@ -54,7 +54,14 @@ func (fp *FaroWebPresenter) Output(f interfaces.FaroGame, lastErr error) string 
 	}
 
 	if lastErr != nil {
+		// **Code だけを持つ DomainError は Error() がコード文字列を返す。**
+		// 解決して MessageCode に載せないと、クライアントは訳文の代わりに
+		// "faro.errRankDepleted" をそのまま表示する (SutdaWebPresenter と同じ扱い)。
 		resObj.Message = lastErr.Error()
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			resObj.MessageCode = code
+			resObj.MessageParams = params
+		}
 	} else if f.GetPhase() == domain.FaroPhaseRoundEnd && f.GetCallOrder() != nil {
 		if f.GetCallWon() {
 			resObj.Message = "Call won!"

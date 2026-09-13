@@ -178,6 +178,23 @@ describe('AuldLangSynePage', () => {
     );
   });
 
+  it('enables and highlights only foundations that accept the selected waste rank', async () => {
+    const targetState: AuldLangSyneResponse = {
+      ...playingState,
+      foundations: [[card('SPADE', 1)], [card('HEART', 2)], [card('DIAMOND', 1)], [card('CLOVER', 1)]],
+    };
+    mockExec.mockResolvedValue(targetState);
+    renderWithProviders(<AuldLangSynePage />);
+
+    fireEvent.click(await screen.findByTestId('als-waste-button-0'));
+    const legalFoundation = screen.getByRole('button', { name: /ファンデーション 0/ });
+    const illegalFoundation = screen.getByRole('button', { name: /ファンデーション 1/ });
+    expect(legalFoundation).toBeEnabled();
+    expect(illegalFoundation).toBeDisabled();
+    expect(legalFoundation).toHaveAttribute('data-legal-target', 'true');
+    expect(illegalFoundation).not.toHaveAttribute('data-legal-target');
+  });
+
   // A foundation click with nothing selected must not fire a move: there is no
   // stock source here, so the selection is the only thing that can supply a card.
   it('does not move when no waste is selected', async () => {
