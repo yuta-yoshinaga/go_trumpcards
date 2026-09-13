@@ -113,7 +113,7 @@ func TestAllFoursCuiPresenter_MarksLegalPlays(t *testing.T) {
 		m, players := setupAllFoursCuiMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 		out := p.Output(m, nil)
-		assert.NotContains(t, out, "Legal plays:")
+		assert.NotContains(t, out, "の札が合法手です。")
 	})
 }
 
