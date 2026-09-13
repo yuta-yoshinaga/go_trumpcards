@@ -32,6 +32,8 @@ type GinRummyInteractorIF interface {
 	GetConfig() domain.GinRummyConfig
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒントを出力する
+	Hint() string
 }
 
 // GinRummyInteractor ジンラミーインタラクタークラス
@@ -136,6 +138,11 @@ func (ci *GinRummyInteractor) GetConfig() domain.GinRummyConfig {
 // ActionLog 棋譜を出力する
 func (ci *GinRummyInteractor) ActionLog() string {
 	return ci.gp.ActionLogOutput(ci.Game)
+}
+
+// Hint ヒントを出力する
+func (ci *GinRummyInteractor) Hint() string {
+	return ci.gp.HintOutput(ci.Game)
 }
 
 // runCpuTurns CPUターンを実行

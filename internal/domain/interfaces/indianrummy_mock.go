@@ -28,6 +28,15 @@ func (m *MockIndianRummyGame) GetGameEndFlag() bool                   { return m
 func (m *MockIndianRummyGame) GetPhase() domain.IndianRummyPhase {
 	return m.Called().Get(0).(domain.IndianRummyPhase)
 }
+
+// GetHint モック
+func (m *MockIndianRummyGame) GetHint() *domain.IndianRummyHint {
+	ret := m.Called()
+	if val, ok := ret.Get(0).(*domain.IndianRummyHint); ok {
+		return val
+	}
+	return nil
+}
 func (m *MockIndianRummyGame) IsHumanTurn() bool        { return m.Called().Bool(0) }
 func (m *MockIndianRummyGame) GetRoundNumber() int      { return m.Called().Int(0) }
 func (m *MockIndianRummyGame) GetTargetRounds() int     { return m.Called().Int(0) }

@@ -30,6 +30,8 @@ type IndianRummyInteractorIF interface {
 	GetConfig() domain.IndianRummyConfig
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒントを出力する
+	Hint() string
 }
 
 // IndianRummyInteractor インドラミーインタラクター
@@ -117,6 +119,11 @@ func (ci *IndianRummyInteractor) GetConfig() domain.IndianRummyConfig {
 // ActionLog 棋譜を出力する
 func (ci *IndianRummyInteractor) ActionLog() string {
 	return ci.gp.ActionLogOutput(ci.Game)
+}
+
+// Hint ヒントを出力する
+func (ci *IndianRummyInteractor) Hint() string {
+	return ci.gp.HintOutput(ci.Game)
 }
 
 // runCpuTurns CPU ターンを連続で処理する

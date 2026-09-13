@@ -35,6 +35,8 @@ type GinRummyGame interface {
 	GetGameEndFlag() bool
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() domain.GinRummyPhase
+	// GetHint は人間への推奨手を取得する
+	GetHint() *domain.GinRummyHint
 	// IsHumanTurn 現在の手番が人間かを返す
 	IsHumanTurn() bool
 	// GetRoundNumber 現在のラウンド番号を取得する

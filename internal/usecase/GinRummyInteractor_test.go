@@ -492,3 +492,11 @@ func TestGinRummyInteractor_RunCpuTurns(t *testing.T) {
 		gameMock.AssertCalled(t, "CpuPlay")
 	})
 }
+
+func TestGinRummyInteractor_Hint(t *testing.T) {
+	mg := new(interfaces.MockGinRummyGame)
+	mp := new(presenter.MockGinRummyPresenter)
+	mp.On("HintOutput", mg).Return("hint output")
+	gi := usecase.NewGinRummyInteractor(mg, mp)
+	assert.Equal(t, "hint output", gi.Hint())
+}

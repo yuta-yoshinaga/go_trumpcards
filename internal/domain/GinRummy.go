@@ -57,6 +57,14 @@ const (
 	GinRummyPhaseGameEnd GinRummyPhase = 4
 )
 
+// GinRummyHint represents a hint for the human player.
+type GinRummyHint struct {
+	// Action is the recommended action name.
+	Action string
+	// Reason is the identifier of the reason.
+	Reason string
+}
+
 // GinRummy ジンラミーゲームクラス
 type GinRummy struct {
 	trumpCards       *TrumpCards
@@ -790,6 +798,9 @@ func (g *GinRummy) SetDrawPile(pile []*Card) { g.drawPile = pile }
 // GetGameEndFlag ゲーム終了フラグ取得
 func (g *GinRummy) GetGameEndFlag() bool { return g.gameEndFlag }
 
+// SetGameEndFlag ゲーム終了フラグ設定 (テスト用)
+func (g *GinRummy) SetGameEndFlag(flag bool) { g.gameEndFlag = flag }
+
 // GetWinnerIdx 勝者インデックス取得 (-1 = 未確定)
 func (g *GinRummy) GetWinnerIdx() int { return g.winnerIdx }
 
@@ -835,6 +846,126 @@ func (g *GinRummy) GetIsGin() bool { return g.isGin }
 
 // SetIsGin ジンを設定 (テスト用)
 func (g *GinRummy) SetIsGin(isGin bool) { g.isGin = isGin }
+
+// GinRummyBestDeadwood returns the lowest deadwood value the player can reach by
+// discarding one card — the value that gates knocking (<= GinRummyKnockThreshold).
+func GinRummyBestDeadwood(player *GinRummyPlayer) int {
+	if player == nil {
+		return 0
+	}
+	n := player.GetCardsSize()
+	if n == 0 {
+		return 0
+	}
+	cards := make([]*Card, n)
+	for i := 0; i < n; i++ {
+		cards[i] = player.GetCard(i)
+	}
+	best := -1
+	for skip := 0; skip < n; skip++ {
+		sub := make([]*Card, 0, n-1)
+		for i, c := range cards {
+			if i != skip {
+				sub = append(sub, c)
+			}
+		}
+		_, deadwood := FindBestMelds(sub)
+		if v := CalcDeadwoodValue(deadwood); best < 0 || v < best {
+			best = v
+		}
+	}
+	if best < 0 {
+		best = 0
+	}
+	return best
+}
+
+// ginRummyFitsWithHand checks if card fits with hand to form a potential meld.
+// Sync: frontend/src/utils/hints/ginrummyHint.ts (fitsWithHand)
+func ginRummyFitsWithHand(card *Card, hand []*Card) bool {
+	if card == nil {
+		return false
+	}
+	// Check for set: same value
+	sameValue := 0
+	for _, c := range hand {
+		if c.GetValue() == card.GetValue() {
+			sameValue++
+		}
+	}
+	if sameValue >= 2 {
+		return true
+	}
+
+	// Check for run: same suit, adjacent values
+	for _, c := range hand {
+		if c.GetDesign() == card.GetDesign() {
+			diff := c.GetValue() - card.GetValue()
+			if diff < 0 {
+				diff = -diff
+			}
+			if diff == 1 || diff == 2 {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// GetHint returns the recommended action for the human player.
+// Sync: frontend/src/utils/hints/ginrummyHint.ts (getGinRummyHint)
+func (g *GinRummy) GetHint() *GinRummyHint {
+	human := findHumanIdx(g.players)
+	if human < 0 || g.gameEndFlag || g.currentPlayerIdx != human {
+		return &GinRummyHint{Reason: "none"}
+	}
+	player := g.players[human]
+	if player.GetCardsSize() == 0 {
+		return &GinRummyHint{Reason: "none"}
+	}
+
+	switch g.phase {
+	case GinRummyPhaseDraw:
+		// Sync: frontend/src/utils/hints/ginrummyHint.ts (getDrawHint)
+		cards := make([]*Card, player.GetCardsSize())
+		for i := 0; i < player.GetCardsSize(); i++ {
+			cards[i] = player.GetCard(i)
+		}
+		top := g.GetDiscardTop()
+		if top != nil && ginRummyFitsWithHand(top, cards) {
+			return &GinRummyHint{Action: "drawDiscard", Reason: "draw_discard"}
+		}
+		return &GinRummyHint{Action: "drawStock", Reason: "draw_stock"}
+
+	case GinRummyPhaseDiscard:
+		// Sync: frontend/src/utils/hints/ginrummyHint.ts (getDiscardHint)
+		bestDw := GinRummyBestDeadwood(player)
+		if bestDw == 0 {
+			return &GinRummyHint{Action: "knock", Reason: "gin_opportunity"}
+		}
+		if bestDw <= GinRummyKnockThreshold {
+			return &GinRummyHint{Action: "knock", Reason: "knock_now"}
+		}
+		return &GinRummyHint{Action: "discard", Reason: "discard_deadwood"}
+
+	case GinRummyPhaseLayoff:
+		// Sync: frontend/src/utils/hints/ginrummyHint.ts (getLayoffHint)
+		canLayoffAny := false
+		for i := 0; i < player.GetCardsSize(); i++ {
+			if g.canLayoff(player.GetCard(i)) {
+				canLayoffAny = true
+				break
+			}
+		}
+		if canLayoffAny {
+			return &GinRummyHint{Action: "layoff", Reason: "layoff_cards"}
+		}
+		return &GinRummyHint{Action: "skipLayoff", Reason: "skip_layoff"}
+
+	default:
+		return &GinRummyHint{Reason: "none"}
+	}
+}
 
 // --- Private methods ---
 

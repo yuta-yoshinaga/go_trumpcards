@@ -5,6 +5,7 @@
   "helpDiscard": "  d <idx>              discard a card",
   "helpDeclare": "  de <idx>             declare (discard 14th and go out)",
   "helpNextRound": "  nr                   next round",
+  "helpHint": "  h                    show a hint",
   "helpSetPlayers": "  pc [2-4]             player count",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetRounds": "  sr <n>               number of rounds",
@@ -26,5 +27,15 @@
   "promptRoundEndHelp": "nr / nextround: advance to next round",
   "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
   "helpExampleDiscard": "  d 0                  discard hand card 0",
-  "pointsLegend": "Points: A, 10, J, Q, K = 10 / 2-9 = face value / wild = 0"
+  "pointsLegend": "Points: A, 10, J, Q, K = 10 / 2-9 = face value / wild = 0",
+  "hintNone": "No hint available",
+  "hintAction": "[hint: {{action}} ({{reason}})]",
+  "action.drawStock": "draw from stock",
+  "action.drawDiscard": "draw from discard",
+  "action.discard": "discard",
+  "action.declare": "declare",
+  "hintReasonDrawDiscard": "it fits your hand",
+  "hintReasonDrawStock": "discard does not fit your hand",
+  "hintReasonDeclareNow": "all 13 cards form valid melds",
+  "hintReasonDiscardDeadwood": "reduce deadwood"
 }

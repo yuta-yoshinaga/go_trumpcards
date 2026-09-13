@@ -31,6 +31,8 @@ type IndianRummyGame interface {
 	GetGameEndFlag() bool
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() domain.IndianRummyPhase
+	// GetHint は人間への推奨手を取得する
+	GetHint() *domain.IndianRummyHint
 	// IsHumanTurn 現在の手番が人間か
 	IsHumanTurn() bool
 	// GetRoundNumber 現在のラウンド番号

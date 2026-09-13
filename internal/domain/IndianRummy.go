@@ -71,6 +71,14 @@ const (
 	IndianRummyPhaseGameEnd IndianRummyPhase = 3
 )
 
+// IndianRummyHint represents a hint for the human player.
+type IndianRummyHint struct {
+	// Action is the recommended action name.
+	Action string
+	// Reason is the identifier of the reason.
+	Reason string
+}
+
 // newIndianRummyDeck インドラミー用 108 枚デッキ（標準 52 枚デッキ×2 + ジョーカー 4 枚）を構築する。
 func newIndianRummyDeck() *TrumpCards {
 	return NewTrumpCardsWithDecks(2, 4)
@@ -587,6 +595,9 @@ func (g *IndianRummy) SetWildRank(r int) { g.wildRank = r }
 // GetGameEndFlag ゲーム終了フラグ
 func (g *IndianRummy) GetGameEndFlag() bool { return g.gameEndFlag }
 
+// SetGameEndFlag ゲーム終了フラグ設定（テスト用）
+func (g *IndianRummy) SetGameEndFlag(v bool) { g.gameEndFlag = v }
+
 // GetWinnerIdx 勝者インデックス（-1 未確定）
 func (g *IndianRummy) GetWinnerIdx() int { return g.winnerIdx }
 
@@ -632,6 +643,75 @@ func (g *IndianRummy) PlayerHasPureSequence(i int) bool {
 		return false
 	}
 	return IndianRummyHasPureSequence(indianRummyCollectCards(p), g.wildRank)
+}
+
+// indianRummyFitsWithHand checks if card fits with hand to form a potential meld.
+// Sync: frontend/src/utils/hints/indianRummyHint.ts (fitsWithHand)
+func indianRummyFitsWithHand(card *Card, hand []*Card, wildRank int) bool {
+	if card == nil {
+		return false
+	}
+	var natural []*Card
+	for _, c := range hand {
+		if !indianRummyIsWild(c, wildRank) {
+			natural = append(natural, c)
+		}
+	}
+
+	// Set: another card of the same value.
+	for _, c := range natural {
+		if c.GetValue() == card.GetValue() {
+			return true
+		}
+	}
+
+	// Run: same suit within two ranks (adjacent or one-gap).
+	for _, c := range natural {
+		if c.GetDesign() == card.GetDesign() {
+			diff := c.GetValue() - card.GetValue()
+			if diff < 0 {
+				diff = -diff
+			}
+			if diff == 1 || diff == 2 {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// GetHint returns the recommended action for the human player.
+// Sync: frontend/src/utils/hints/indianRummyHint.ts (getIndianRummyHint)
+func (g *IndianRummy) GetHint() *IndianRummyHint {
+	human := findHumanIdx(g.players)
+	if human < 0 || g.gameEndFlag || g.currentPlayerIdx != human {
+		return &IndianRummyHint{Reason: "none"}
+	}
+	player := g.players[human]
+	if player.GetCardsSize() == 0 {
+		return &IndianRummyHint{Reason: "none"}
+	}
+
+	switch g.phase {
+	case IndianRummyPhaseDraw:
+		// Sync: frontend/src/utils/hints/indianRummyHint.ts (getDrawHint)
+		cards := indianRummyCollectCards(player)
+		top := g.GetDiscardTop()
+		if top != nil && !indianRummyIsWild(top, g.wildRank) && indianRummyFitsWithHand(top, cards, g.wildRank) {
+			return &IndianRummyHint{Action: "drawDiscard", Reason: "draw_discard"}
+		}
+		return &IndianRummyHint{Action: "drawStock", Reason: "draw_stock"}
+
+	case IndianRummyPhaseDiscard:
+		// Sync: frontend/src/utils/hints/indianRummyHint.ts (getDiscardHint)
+		if _, canDeclare := g.cpuFindDeclareCard(player); canDeclare {
+			return &IndianRummyHint{Action: "declare", Reason: "declare_now"}
+		}
+		return &IndianRummyHint{Action: "discard", Reason: "discard_deadwood"}
+
+	default:
+		return &IndianRummyHint{Reason: "none"}
+	}
 }
 
 // --- Private helpers ---

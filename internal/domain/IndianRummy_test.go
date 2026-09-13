@@ -572,3 +572,101 @@ func TestIndianRummy_ActionLogAccumulates(t *testing.T) {
 	require.NoError(t, g.PlayerDrawFromStock())
 	assert.NotEmpty(t, g.GetActionLog())
 }
+
+func TestIndianRummy_GetHint(t *testing.T) {
+	t.Run("draw phase - discard fits hand", func(t *testing.T) {
+		g := newTestIndianRummy(2)
+		g.SetPhase(domain.IndianRummyPhaseDraw)
+		g.SetCurrentPlayerIdx(0)
+		g.SetWildRank(0)
+		p := g.GetPlayer(0)
+		setIndianRummyHand(p, []*domain.Card{
+			indianRummyCard(domain.CardDesignSpade, 3),
+			indianRummyCard(domain.CardDesignSpade, 4),
+		})
+		g.SetDiscardPile([]*domain.Card{indianRummyCard(domain.CardDesignSpade, 5)})
+
+		assert.Equal(t, &domain.IndianRummyHint{Action: "drawDiscard", Reason: "draw_discard"}, g.GetHint())
+	})
+
+	t.Run("draw phase - discard top is wild", func(t *testing.T) {
+		g := newTestIndianRummy(2)
+		g.SetPhase(domain.IndianRummyPhaseDraw)
+		g.SetCurrentPlayerIdx(0)
+		g.SetWildRank(5)
+		p := g.GetPlayer(0)
+		setIndianRummyHand(p, []*domain.Card{
+			indianRummyCard(domain.CardDesignSpade, 3),
+			indianRummyCard(domain.CardDesignSpade, 4),
+		})
+		// Spade 5 is wild because wildRank is 5
+		g.SetDiscardPile([]*domain.Card{indianRummyCard(domain.CardDesignSpade, 5)})
+
+		assert.Equal(t, &domain.IndianRummyHint{Action: "drawStock", Reason: "draw_stock"}, g.GetHint())
+	})
+
+	t.Run("draw phase - discard does not fit hand", func(t *testing.T) {
+		g := newTestIndianRummy(2)
+		g.SetPhase(domain.IndianRummyPhaseDraw)
+		g.SetCurrentPlayerIdx(0)
+		g.SetWildRank(0)
+		p := g.GetPlayer(0)
+		setIndianRummyHand(p, []*domain.Card{
+			indianRummyCard(domain.CardDesignSpade, 3),
+			indianRummyCard(domain.CardDesignHeart, 7),
+		})
+		g.SetDiscardPile([]*domain.Card{indianRummyCard(domain.CardDesignClover, 12)})
+
+		assert.Equal(t, &domain.IndianRummyHint{Action: "drawStock", Reason: "draw_stock"}, g.GetHint())
+	})
+
+	t.Run("discard phase - declare now", func(t *testing.T) {
+		g := newTestIndianRummy(2)
+		g.SetPhase(domain.IndianRummyPhaseDiscard)
+		g.SetCurrentPlayerIdx(0)
+		g.SetWildRank(0)
+		p := g.GetPlayer(0)
+		cards := validIndianRummyHand()
+		cards = append(cards, indianRummyCard(domain.CardDesignClover, 1)) // 14th card
+		setIndianRummyHand(p, cards)
+
+		assert.Equal(t, &domain.IndianRummyHint{Action: "declare", Reason: "declare_now"}, g.GetHint())
+	})
+
+	t.Run("discard phase - discard deadwood", func(t *testing.T) {
+		g := newTestIndianRummy(2)
+		g.SetPhase(domain.IndianRummyPhaseDiscard)
+		g.SetCurrentPlayerIdx(0)
+		g.SetWildRank(0)
+		p := g.GetPlayer(0)
+		// Random unmelded cards
+		setIndianRummyHand(p, []*domain.Card{
+			indianRummyCard(domain.CardDesignSpade, 1),
+			indianRummyCard(domain.CardDesignHeart, 3),
+			indianRummyCard(domain.CardDesignDiamond, 7),
+			indianRummyCard(domain.CardDesignClover, 9),
+		})
+
+		assert.Equal(t, &domain.IndianRummyHint{Action: "discard", Reason: "discard_deadwood"}, g.GetHint())
+	})
+
+	t.Run("negative controls", func(t *testing.T) {
+		g := newTestIndianRummy(2)
+		g.SetPhase(domain.IndianRummyPhaseDraw)
+		g.SetCurrentPlayerIdx(1)
+		g.GetPlayer(0).AddCard(indianRummyCard(domain.CardDesignSpade, 1))
+		assert.Equal(t, &domain.IndianRummyHint{Reason: "none"}, g.GetHint())
+
+		g.SetCurrentPlayerIdx(0)
+		g.SetGameEndFlag(true)
+		assert.Equal(t, &domain.IndianRummyHint{Reason: "none"}, g.GetHint())
+
+		g.SetGameEndFlag(false)
+		g.SetPhase(domain.IndianRummyPhaseRoundEnd)
+		assert.Equal(t, &domain.IndianRummyHint{Reason: "none"}, g.GetHint())
+
+		g.SetPhase(domain.IndianRummyPhaseDraw)
+		g.GetPlayer(0).Reset()
+		assert.Equal(t, &domain.IndianRummyHint{Reason: "none"}, g.GetHint())
+	})
+}
