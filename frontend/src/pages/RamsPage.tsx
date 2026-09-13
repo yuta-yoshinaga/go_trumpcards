@@ -34,8 +34,6 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 const TRICKS_PER_ROUND = 5;
 
 /** The extra payment a player owes for entering and taking no trick. */
-const MISS_PENALTY = 5;
-
 /**
  * Chips every seat pays into the pot at the start of a round, whether or not
  * it plays (sync: `RamsAnte` in internal/domain/Rams.go).
@@ -207,7 +205,7 @@ function RamsPageContent() {
                 </div>
               )}
               <div className="rounded bg-black/30 px-3 py-2 text-ds-text-muted text-sm" data-testid="rm-risk">
-                {t('header.risk', { ante: String(ANTE), penalty: String(MISS_PENALTY) })}
+                {t('header.risk', { ante: String(ANTE), penalty: String(state.missPenalty) })}
               </div>
             </div>
 
@@ -235,6 +233,16 @@ function RamsPageContent() {
                   )}
                   {': '}
                   {t('header.seat', { chips: String(p.chips), tricks: String(p.roundTricks) })} [{statusStr(p)}]
+                  {(() => {
+                    const movement = state.roundSettlement?.find((item) => item.playerIdx === p.id);
+                    if (!movement) return null;
+                    const delta = movement.payout - movement.penalty;
+                    return (
+                      <span className={delta >= 0 ? 'ml-1 text-ds-success' : 'ml-1 text-ds-error'}>
+                        {t('header.roundDelta', { delta })}
+                      </span>
+                    );
+                  })()}
                 </div>
               ))}
             </div>

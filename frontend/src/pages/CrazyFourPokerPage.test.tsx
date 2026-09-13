@@ -222,6 +222,47 @@ describe('CrazyFourPokerPage', () => {
     expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument();
   });
 
+  it('決着後は参加したベットだけ内訳を出す', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: CrazyFourPokerPhase.RESULT,
+        anteBet: 50,
+        superBet: 50,
+        queensUpBet: 50,
+        playBet: 50,
+        playerHand: [ace, ace, ace, ace, five],
+        playerBest: [ace, ace, ace, ace],
+        playerHandRank: 8,
+        dealerHand: [king, king, five, five, ace],
+        dealerBest: [king, king, five, five],
+        dealerHandRank: 3,
+        dealerQualifies: true,
+        result: CRAZY_FOUR_POKER_RESULT.win,
+        payout: 4300,
+      }),
+    );
+    renderWithProviders(<CrazyFourPokerPage />);
+    const result = await screen.findByTestId('c4p-result');
+    expect(result).toHaveTextContent('本戦（Ante + Play）: 100');
+    expect(result).toHaveTextContent('Super Bonus（フォーカード）: 10000');
+    expect(result).toHaveTextContent('Queens Up: 2500');
+  });
+
+  it('参加していないサイドベットの内訳は出さない', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: CrazyFourPokerPhase.RESULT,
+        anteBet: 50,
+        superBet: 50,
+        playBet: 50,
+        result: CRAZY_FOUR_POKER_RESULT.lose,
+      }),
+    );
+    renderWithProviders(<CrazyFourPokerPage />);
+    const result = await screen.findByTestId('c4p-result');
+    expect(result).not.toHaveTextContent('Queens Up:');
+  });
+
   it('ディーラー不成立を表示する', async () => {
     mockApi.mockResolvedValue(
       withState({

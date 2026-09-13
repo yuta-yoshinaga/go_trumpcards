@@ -459,6 +459,7 @@ func (r *Rams) drainPot() {
 			amount++
 		}
 		r.players[idx].AddChips(amount)
+		r.appendLog(idx, "payout", fmt.Sprintf("0 トリックで %d 獲得", amount), nil)
 	}
 	r.appendLog(-1, "pot", fmt.Sprintf("最終ラウンド。残りポット %d を %d 人で分配", r.pot, len(recipients)), nil)
 	r.pot = 0

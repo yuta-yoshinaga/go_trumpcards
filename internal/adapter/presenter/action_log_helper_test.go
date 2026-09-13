@@ -41,6 +41,17 @@ func TestActionLogOutputText(t *testing.T) {
 	})
 }
 
+func TestLatestAction(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{ActionType: "payout"},
+		{ActionType: "deal"},
+	}
+	assert.Nil(t, latestAction(entries, "payout"), "末尾が違う種別なら古い精算を返さない")
+	assert.Equal(t, entries[1], latestAction(entries, "deal"))
+	assert.Nil(t, latestAction(nil, "deal"))
+	assert.Nil(t, latestAction([]*domain.ActionLogEntry{nil}, "deal"))
+}
+
 func TestActionLogOutputJSON(t *testing.T) {
 	t.Run("game not ended returns empty log", func(t *testing.T) {
 		g := &stubGameEndLogger{ended: false}

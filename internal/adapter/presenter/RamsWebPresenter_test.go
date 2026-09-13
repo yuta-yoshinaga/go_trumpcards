@@ -4,12 +4,14 @@ package presenter
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 func newRamsForWeb(t *testing.T) *domain.Rams {
@@ -36,6 +38,7 @@ func TestRamsWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(1), m["roundNumber"])
 	// **ポットと切り札は参加判断の材料。** 常に出す。
 	assert.Equal(t, float64(domain.RamsAnte*domain.RamsPlayerCntDefault), m["pot"])
+	assert.Empty(t, m["roundSettlement"], "ラウンド終了フェーズ外では精算を出さない")
 	require.NotNil(t, m["upCard"], "切り札を決めた 1 枚が出る")
 	assert.Equal(t, float64(r.GetTrumpSuit()), m["trumpSuit"])
 
@@ -118,6 +121,81 @@ func TestRamsWebPresenterRoundEndMessage(t *testing.T) {
 	m := decodeRams(t, p.Output(r, nil))
 	assert.Equal(t, "rams.roundEnd", m["messageCode"])
 	assert.Equal(t, "1", m["messageParams"].(map[string]any)["round"])
+	assert.Equal(t, "rams.roundEnd", decodeRams(t, p.Output(r, nil))["messageCode"])
+}
+
+func TestRamsWebPresenterRoundSettlementIsPureAndSurvivesJSON(t *testing.T) {
+	p := new(RamsWebPresenter)
+	r := newRamsForWeb(t)
+	r.GetPlayer(0).SetInRound(true)
+	r.GetPlayer(0).SetRoundTricks(1)
+	r.FinishRoundForTest()
+
+	first := p.Output(r, nil)
+	second := p.Output(r, nil)
+	assert.Equal(t, first, second, "描画はゲーム状態を消費しない")
+	assert.Len(t, decodeRams(t, first)["roundSettlement"], 1)
+
+	b, err := json.Marshal(r)
+	require.NoError(t, err)
+	restored := domain.NewDefaultRams()
+	require.NoError(t, json.Unmarshal(b, restored))
+	assert.Equal(t, first, p.Output(restored, nil))
+
+	r.NextRound()
+	assert.Empty(t, decodeRams(t, p.Output(r, nil))["roundSettlement"])
+	assert.Equal(t, 1, strings.Count(first, `"playerIdx"`), "精算行は一度だけ")
+}
+
+func TestRamsWebPresenterRoundSettlementJSONBranches(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{ActionType: "deal"},
+		{PlayerIdx: 0, ActionType: "penalty", Detail: "0 トリックで 5 支払い"},
+		{PlayerIdx: 1, ActionType: "penalty", Detail: "0 トリックで 5 支払い"},
+		{PlayerIdx: 2, ActionType: "payout", Detail: "2 トリックで 20 獲得"},
+		{PlayerIdx: 3, ActionType: "payout", Detail: "1 トリックで 10 獲得"},
+		{PlayerIdx: -1, ActionType: "penalty", Detail: "0 トリックで 5 支払い"},
+	}
+	g := new(interfaces.MockRamsGame)
+	g.On("GetConfig").Return(domain.DefaultRamsConfig())
+	g.On("GetPhase").Return(domain.RamsPhaseRoundEnd)
+	g.On("GetRoundNumber").Return(1)
+	g.On("GetTrickNumber").Return(0)
+	g.On("GetPot").Return(0)
+	g.On("GetTrumpSuit").Return(0)
+	g.On("GetUpCard").Return(nil)
+	g.On("GetCurrentPlayerIdx").Return(0)
+	g.On("GetLeadPlayerIdx").Return(0)
+	g.On("GetDealerIdx").Return(0)
+	g.On("GetActiveCount").Return(1)
+	g.On("GetValidPlayIndices", 0).Return([]int{})
+	g.On("GetGameEndFlag").Return(false)
+	g.On("GetWinnerIdx").Return(-1)
+	g.On("GetCurrentTrick").Return([]*domain.TrickCard{})
+	g.On("GetPlayerCnt").Return(4)
+	for i := 0; i < 4; i++ {
+		g.On("GetPlayer", i).Return(domain.NewRamsPlayer(i == 0))
+	}
+	g.On("GetActionLog").Return(entries)
+	g.On("GetHint").Return(nil)
+
+	got := decodeRams(t, new(RamsWebPresenter).Output(g, nil))["roundSettlement"].([]any)
+	require.Len(t, got, 4)
+	assert.Equal(t, map[string]any{"playerIdx": float64(0), "penalty": float64(5), "payout": float64(0)}, got[0])
+	assert.Equal(t, map[string]any{"playerIdx": float64(1), "penalty": float64(5), "payout": float64(0)}, got[1])
+	assert.Equal(t, map[string]any{"playerIdx": float64(2), "penalty": float64(0), "payout": float64(20)}, got[2])
+	assert.Equal(t, map[string]any{"playerIdx": float64(3), "penalty": float64(0), "payout": float64(10)}, got[3])
+
+	g.ExpectedCalls = nil
+	g.On("GetActionLog").Return([]*domain.ActionLogEntry{{ActionType: "deal"}, {PlayerIdx: 0, ActionType: "play"}})
+	assert.Empty(t, ramsRoundSettlement(g))
+
+	g.ExpectedCalls = nil
+	g.On("GetActionLog").Return([]*domain.ActionLogEntry{{PlayerIdx: 0, ActionType: "payout", Detail: "1 トリックで 12 獲得"}})
+	settlement := ramsRoundSettlement(g)
+	require.Len(t, settlement, 1)
+	assert.Equal(t, 0, settlement[0].PlayerIdx)
+	assert.Equal(t, 12, settlement[0].Payout)
 }
 
 func TestRamsWebPresenterResultMessage(t *testing.T) {

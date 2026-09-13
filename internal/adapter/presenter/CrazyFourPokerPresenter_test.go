@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -79,6 +81,60 @@ func TestCrazyFourPokerCuiPresenter_ShowsBetsAndResult(t *testing.T) {
 	assert.Contains(t, out, "Queens Up 20")
 	assert.Contains(t, out, "決着:")
 	assert.NotContains(t, out, "crazyfourpoker.")
+}
+
+func TestCrazyFourPokerCuiPresenterResultBreakdownBranches(t *testing.T) {
+	card := domain.NewCard(domain.CardDesignHeart, 2, true)
+	for _, tt := range []struct {
+		name      string
+		superBet  int
+		queensBet int
+		rank      int
+		best      []*domain.Card
+		wantLines []string
+		dontLines []string
+	}{
+		{
+			name:      "neither side bet",
+			wantLines: []string{"本戦（Ante + Play）: 100", "決着: あなたの勝ち（収支 -50）"},
+			dontLines: []string{"Super Bonus:", "Queens Up:"},
+		},
+		{
+			name:     "super bonus hit names the hand",
+			superBet: 50, rank: domain.FourCardHandFourOfAKind, best: []*domain.Card{card, card, card, card},
+			wantLines: []string{"Super Bonus（Four of a Kind）: 1500", "決着: あなたの勝ち（収支 -100）"},
+			dontLines: []string{"Queens Up:"},
+		},
+		{
+			name:     "super miss and queens miss",
+			superBet: 50, queensBet: 20, rank: domain.FourCardHandHighCard, best: []*domain.Card{card, card, card, card},
+			wantLines: []string{"Super Bonus（High Card）: 0", "Queens Up: -20", "決着: あなたの勝ち（収支 -120）"},
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			g := new(interfaces.MockCrazyFourPokerGame)
+			g.On("GetPhase").Return(domain.CrazyFourPokerPhaseResult)
+			g.On("GetAnteBet").Return(50)
+			g.On("GetSuperBet").Return(tt.superBet)
+			g.On("GetQueensUpBet").Return(tt.queensBet)
+			g.On("GetPlayBet").Return(50)
+			g.On("GetPayout").Return(50)
+			g.On("GetResult").Return(domain.CrazyFourPokerResultWin)
+			g.On("GetPlayerHandRank").Return(tt.rank)
+			g.On("GetPlayerBest").Return(tt.best)
+			g.On("GetGameEndFlag").Return(false)
+
+			var sb strings.Builder
+			new(CrazyFourPokerCuiPresenter).writeResult(&sb, g)
+			out := sb.String()
+			for _, want := range tt.wantLines {
+				assert.Contains(t, out, want)
+			}
+			for _, dont := range tt.dontLines {
+				assert.NotContains(t, out, dont)
+			}
+		})
+	}
 }
 
 func TestCrazyFourPokerCuiPresenter_ShowsErrorsAndUnknownPhase(t *testing.T) {

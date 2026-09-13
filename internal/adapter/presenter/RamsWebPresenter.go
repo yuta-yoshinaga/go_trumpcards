@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -44,6 +45,8 @@ func (p *RamsWebPresenter) buildBase(r interfaces.RamsGame) *controller.RamsWebO
 	resObj.WinnerIdx = r.GetWinnerIdx()
 	resObj.CurrentTrick = trickCardsToOutput(r.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(r)
+	resObj.RoundSettlement = ramsRoundSettlement(r)
+	resObj.MissPenalty = domain.RamsMissPenalty
 	resObj.Config = controller.RamsWebOutputConfig{
 		PlayerCnt: r.GetConfig().PlayerCnt,
 		Rounds:    r.GetConfig().Rounds,
@@ -99,6 +102,44 @@ func (p *RamsWebPresenter) buildMessage(r interfaces.RamsGame, lastErr error) (s
 		return "", "rams.watching", nil
 	}
 	return "", "rams.play", map[string]string{"pot": strconv.Itoa(r.GetPot())}
+}
+
+func ramsRoundSettlement(r interfaces.RamsGame) []*controller.RamsWebRoundSettlement {
+	settlement := make([]*controller.RamsWebRoundSettlement, 0)
+	start := 0
+	entries := r.GetActionLog()
+	for i, entry := range entries {
+		if entry != nil && entry.ActionType == "deal" {
+			start = i + 1
+		}
+	}
+	currentRoundEntries := entries[start:]
+	if latestAction(currentRoundEntries, "penalty") == nil && latestAction(currentRoundEntries, "payout") == nil {
+		return settlement
+	}
+	byPlayer := make(map[int]*controller.RamsWebRoundSettlement)
+	for _, entry := range currentRoundEntries {
+		if entry == nil {
+			continue
+		}
+		if entry.PlayerIdx < 0 {
+			continue
+		}
+		item := byPlayer[entry.PlayerIdx]
+		if item == nil {
+			item = &controller.RamsWebRoundSettlement{PlayerIdx: entry.PlayerIdx}
+			byPlayer[entry.PlayerIdx] = item
+			settlement = append(settlement, item)
+		}
+		switch entry.ActionType {
+		case "penalty":
+			_, _ = fmt.Sscanf(entry.Detail, "0 トリックで %d 支払い", &item.Penalty)
+		case "payout":
+			var tricks int
+			_, _ = fmt.Sscanf(entry.Detail, "%d トリックで %d 獲得", &tricks, &item.Payout)
+		}
+	}
+	return settlement
 }
 
 // HintOutput ヒント情報をJSON出力する
