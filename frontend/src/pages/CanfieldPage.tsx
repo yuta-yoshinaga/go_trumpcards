@@ -254,7 +254,7 @@ function CanfieldPageContent() {
       cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
-          <span className="text-sm text-ds-text-muted">
+          <span className="text-sm text-ds-text-muted" data-testid="cf-base-rank">
             {t('baseRank')}: {state.baseRank || '?'}
           </span>
           <span className="text-sm text-ds-text-muted">
