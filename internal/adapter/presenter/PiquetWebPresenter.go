@@ -60,8 +60,8 @@ func piquetLatestTrickWin(entries []*domain.ActionLogEntry) *domain.ActionLogEnt
 			return nil
 		}
 		switch entries[i].ActionType {
-		case "trick_point", "last_trick_bonus":
-			// These entries are appended after trick_win while resolving the same trick.
+		case "trick_point", "last_trick_bonus", "pique":
+			// These are the non-winning entries resolveTrick can append for the same trick.
 			continue
 		case "trick_win":
 			return entries[i]

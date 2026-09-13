@@ -203,7 +203,7 @@ function Rummy500PageContent() {
   ]);
   useActionKeyboardNav({ bindings: keyboardActions, enabled: !!state && !loading && !!isHumanTurn });
   useCardKeyboardNav({
-    cardCount: isHumanTurn ? (humanPlayer?.cards.length ?? 0) : 0,
+    cardCount: isDrawPhase ? (state?.discardPile.length ?? 0) : isHumanTurn ? (humanPlayer?.cards.length ?? 0) : 0,
     onToggle: toggleCard,
     onConfirm: confirmKeyboardAction,
     onClear: clearSelection,

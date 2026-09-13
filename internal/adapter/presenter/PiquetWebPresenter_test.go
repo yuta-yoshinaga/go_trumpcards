@@ -80,6 +80,42 @@ func TestPiquetWebPresenter_Output_TrickWinnerMessage(t *testing.T) {
 			t.Errorf("messageCode = %v, want trick winner", parsed["messageCode"])
 		}
 	})
+
+	for _, tc := range []struct {
+		name string
+		logs []map[string]any
+	}{
+		{
+			name: "pique before trick point",
+			logs: []map[string]any{
+				{"t": 10, "p": 0, "a": "trick_win", "d": "Player", "c": []any{}},
+				{"t": 11, "p": 0, "a": "pique", "d": "ピーク +30", "c": []any{}},
+				{"t": 12, "p": 0, "a": "trick_point", "d": "トリック点 +1", "c": []any{}},
+			},
+		},
+		{
+			name: "pique after last trick bonus",
+			logs: []map[string]any{
+				{"t": 10, "p": 0, "a": "trick_win", "d": "Player", "c": []any{}},
+				{"t": 11, "p": 0, "a": "last_trick_bonus", "d": "最終トリックボーナス +1", "c": []any{}},
+				{"t": 12, "p": 0, "a": "pique", "d": "ピーク +30", "c": []any{}},
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newPiquetForPresenter(t)
+			g2 := piquetPresenterState(t, g, tc.logs)
+
+			parsed := piquetWebOutput(t, g2)
+			if parsed["messageCode"] != "piquet.trickWin.elder" {
+				t.Errorf("messageCode = %v, want trick winner", parsed["messageCode"])
+			}
+			params, ok := parsed["messageParams"].(map[string]any)
+			if !ok || params["cards"] == nil {
+				t.Errorf("messageParams = %v, want cards", parsed["messageParams"])
+			}
+		})
+	}
 }
 
 func TestPiquetWebPresenter_Output_DoesNotReuseTrickWinnerAcrossPhases(t *testing.T) {
