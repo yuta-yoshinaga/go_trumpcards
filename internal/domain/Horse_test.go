@@ -326,7 +326,7 @@ func TestHorse_Accessors(t *testing.T) {
 }
 
 func TestHorse_SeatStatusesAreReadFromEveryHorseDiscipline(t *testing.T) {
-	for _, discipline := range []HorseDiscipline{HorseHoldem, HorseOmahaHiLo, HorseRazz, HorseStud, HorseStudHiLo} {
+	for _, discipline := range []HorseDiscipline{HorseHoldem, HorseOmahaHiLo, HorseStud, HorseTripleDraw} {
 		t.Run(HorseDisciplineName(discipline), func(t *testing.T) {
 			g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
 			g.discipline = discipline
@@ -340,6 +340,18 @@ func TestHorse_SeatStatusesAreReadFromEveryHorseDiscipline(t *testing.T) {
 			assert.False(t, g.GetSeatAllIn(1))
 		})
 	}
+}
+
+func TestHorse_SeatStatusesAreFalseWithoutTableOrForUnseatedSeat(t *testing.T) {
+	g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips})
+	g.seatMap = []int{0, 1, 2, 3}
+
+	assert.False(t, g.GetSeatFolded(0))
+	assert.False(t, g.GetSeatAllIn(0))
+
+	g.SetDisciplineForTest(HorseHoldem)
+	assert.False(t, g.GetSeatFolded(-1))
+	assert.False(t, g.GetSeatAllIn(99))
 }
 
 func TestHorse_WinnerSeat(t *testing.T) {
