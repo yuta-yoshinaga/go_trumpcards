@@ -110,6 +110,29 @@ func TestWattenCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "応答")
+		assert.Contains(t, result, "吊り上げ: 相手チーム")
+	})
+
+	t.Run("respond phase hides an unset raiser", func(t *testing.T) {
+		m, _ := setupWattenCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRaiserTeam")
+		m.On("GetPhase").Return(domain.WattenPhaseRespond)
+		m.On("GetRaiserTeam").Return(-1)
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "吊り上げ:")
+	})
+
+	t.Run("respond phase identifies a raise by the human team", func(t *testing.T) {
+		m, _ := setupWattenCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRaiserTeam")
+		m.On("GetPhase").Return(domain.WattenPhaseRespond)
+		m.On("GetRaiserTeam").Return(0)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "吊り上げ: 自チーム")
 	})
 
 	t.Run("phase: round end", func(t *testing.T) {

@@ -20,6 +20,7 @@
   "promptGiftHelp": "gift = give 1 point / run = re-deal",
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> = play a card",
+  "legalPlayLegend": "Legal plays: {{indices}}.",
   "promptTrickEnd": "Trick over",
   "promptTrickEndHelp": "next = next trick",
   "promptRoundEnd": "Deal over",
