@@ -21,6 +21,9 @@ func (r *Reversis) SetCurrentTrickForTest(t []*TrickCard) { r.currentTrick = t }
 // SetPoolForTest プールのチップを設定する（テスト用）
 func (r *Reversis) SetPoolForTest(n int) { r.pool = n }
 
+// SetActionLogForTest は直近イベント表示を検証するため棋譜を設定する。
+func (r *Reversis) SetActionLogForTest(entries []*ActionLogEntry) { r.actionLog = entries }
+
 // FinishRoundForTest ラウンドの配当を確定させる（テスト用）
 func (r *Reversis) FinishRoundForTest() { r.finishRound() }
 

@@ -151,3 +151,31 @@ func actionLogToTextWithNames(entries []*domain.ActionLogEntry, nameOf func(idx 
 	}
 	return sb.String()
 }
+
+func latestAction(entries []*domain.ActionLogEntry, actionType string) *domain.ActionLogEntry {
+	if len(entries) == 0 {
+		return nil
+	}
+	entry := entries[len(entries)-1]
+	if entry == nil || entry.ActionType != actionType {
+		return nil
+	}
+	return entry
+}
+
+// latestActions returns the consecutive matching entries at the end of the log.
+func latestActions(entries []*domain.ActionLogEntry, actionType string) []*domain.ActionLogEntry {
+	end := len(entries)
+	start := end
+	for start > 0 {
+		entry := entries[start-1]
+		if entry == nil || entry.ActionType != actionType {
+			break
+		}
+		start--
+	}
+	if start == end {
+		return nil
+	}
+	return entries[start:end]
+}
