@@ -41,6 +41,14 @@ describe('SutdaPage', () => {
     expect(await screen.findByTestId('sutda-hand')).toHaveTextContent('38光ッタン');
   });
 
+  it('offers the complete hand strength ranking', async () => {
+    renderWithProviders(<SutdaPage />);
+    const ranking = await screen.findByTestId('sutda-hand-ranking');
+    expect(ranking).toHaveTextContent('役の強弱順');
+    expect(ranking).toHaveTextContent('38光ッタン');
+    expect(ranking).toHaveTextContent('マントン（0ット）');
+  });
+
   it('keeps opponents face down until they are revealed', async () => {
     renderWithProviders(<SutdaPage />);
     await screen.findByTestId('sutda-hand');

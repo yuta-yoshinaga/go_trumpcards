@@ -26,6 +26,14 @@ beforeEach(() => {
 });
 
 describe('CirullaPage', () => {
+  it('marks every hand card that has a server-provided capture', async () => {
+    renderWithProviders(<CirullaPage />);
+    const hand = await screen.findByTestId('cirulla-capture-markers');
+    expect(hand.querySelector('[data-testid="card-role-badge-0"]')).toHaveTextContent('取');
+    expect(hand.querySelector('[data-testid="card-role-badge-2"]')).toHaveTextContent('取');
+    expect(hand.querySelector('[data-testid="card-role-badge-1"]')).not.toBeInTheDocument();
+  });
+
   it('calls reset on mount with the configured target', async () => {
     renderWithProviders(<CirullaPage />);
     await waitFor(() =>

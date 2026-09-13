@@ -48,6 +48,7 @@ func TestPiquetWebPresenter_Output_TrickWinnerMessage(t *testing.T) {
 	}{
 		{name: "elder", p: 0, want: "piquet.trickWin.elder"},
 		{name: "younger", p: 1, want: "piquet.trickWin.younger"},
+		{name: "unknown player", p: 2, want: "piquet.play"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -60,27 +61,81 @@ func TestPiquetWebPresenter_Output_TrickWinnerMessage(t *testing.T) {
 			if parsed["messageCode"] != tc.want {
 				t.Errorf("messageCode = %v, want %s", parsed["messageCode"], tc.want)
 			}
-			if _, ok := parsed["messageParams"]; ok {
-				t.Errorf("messageParams = %v, want absent", parsed["messageParams"])
+			params, ok := parsed["messageParams"].(map[string]any)
+			if !ok || params["cards"] == nil {
+				t.Errorf("messageParams = %v, want cards", parsed["messageParams"])
 			}
 		})
 	}
 
-	t.Run("returns to phase message after another log entry", func(t *testing.T) {
+	t.Run("keeps trick message after same-trick log entry", func(t *testing.T) {
 		g := newPiquetForPresenter(t)
 		g2 := piquetPresenterState(t, g, []map[string]any{
 			{"t": 10, "p": 0, "a": "trick_win", "d": "Player", "c": []any{}},
-			{"t": 11, "p": 1, "a": "play", "d": "Player", "c": []any{}},
+			{"t": 11, "p": 1, "a": "trick_point", "d": "トリック点 +1", "c": []any{}},
 		})
 
 		parsed := piquetWebOutput(t, g2)
-		if parsed["messageCode"] != "piquet.play" {
-			t.Errorf("messageCode = %v, want piquet.play", parsed["messageCode"])
+		if parsed["messageCode"] != "piquet.trickWin.elder" {
+			t.Errorf("messageCode = %v, want trick winner", parsed["messageCode"])
 		}
 	})
+
+	for _, tc := range []struct {
+		name string
+		logs []map[string]any
+	}{
+		{
+			name: "pique before trick point",
+			logs: []map[string]any{
+				{"t": 10, "p": 0, "a": "trick_win", "d": "Player", "c": []any{}},
+				{"t": 11, "p": 0, "a": "pique", "d": "ピーク +30", "c": []any{}},
+				{"t": 12, "p": 0, "a": "trick_point", "d": "トリック点 +1", "c": []any{}},
+			},
+		},
+		{
+			name: "pique after last trick bonus",
+			logs: []map[string]any{
+				{"t": 10, "p": 0, "a": "trick_win", "d": "Player", "c": []any{}},
+				{"t": 11, "p": 0, "a": "last_trick_bonus", "d": "最終トリックボーナス +1", "c": []any{}},
+				{"t": 12, "p": 0, "a": "pique", "d": "ピーク +30", "c": []any{}},
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newPiquetForPresenter(t)
+			g2 := piquetPresenterState(t, g, tc.logs)
+
+			parsed := piquetWebOutput(t, g2)
+			if parsed["messageCode"] != "piquet.trickWin.elder" {
+				t.Errorf("messageCode = %v, want trick winner", parsed["messageCode"])
+			}
+			params, ok := parsed["messageParams"].(map[string]any)
+			if !ok || params["cards"] == nil {
+				t.Errorf("messageParams = %v, want cards", parsed["messageParams"])
+			}
+		})
+	}
+}
+
+func TestPiquetWebPresenter_Output_DoesNotReuseTrickWinnerAcrossPhases(t *testing.T) {
+	g := newPiquetForPresenter(t)
+	g2 := piquetPresenterStateForPhase(t, g, domain.PiquetPhaseExchange, []map[string]any{
+		{"t": 10, "p": 0, "a": "trick_win", "d": "Player", "c": []any{}},
+		{"t": 11, "p": 0, "a": "cards", "d": "カード +10", "c": []any{}},
+	})
+
+	parsed := piquetWebOutput(t, g2)
+	if parsed["messageCode"] != "piquet.exchange" {
+		t.Errorf("messageCode = %v, want piquet.exchange", parsed["messageCode"])
+	}
 }
 
 func piquetPresenterState(t *testing.T, g *domain.Piquet, actionLog []map[string]any) *domain.Piquet {
+	return piquetPresenterStateForPhase(t, g, domain.PiquetPhasePlay, actionLog)
+}
+
+func piquetPresenterStateForPhase(t *testing.T, g *domain.Piquet, phase domain.PiquetPhase, actionLog []map[string]any) *domain.Piquet {
 	t.Helper()
 	data, err := json.Marshal(g)
 	if err != nil {
@@ -90,7 +145,7 @@ func piquetPresenterState(t *testing.T, g *domain.Piquet, actionLog []map[string
 	if err := json.Unmarshal(data, &raw); err != nil {
 		t.Fatalf("unmarshal raw: %v", err)
 	}
-	raw["ph"] = int(domain.PiquetPhasePlay)
+	raw["ph"] = int(phase)
 	raw["al"] = actionLog
 	mod, err := json.Marshal(raw)
 	if err != nil {

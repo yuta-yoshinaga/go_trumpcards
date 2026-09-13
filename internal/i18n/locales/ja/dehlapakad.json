@@ -20,6 +20,8 @@
   "pileGoesTo": "{{name}}が次のトリックも取れば、この山ごと引き取ります。",
   "promptTrump": "{{name}} が切り札を決めます（見えているのは最初の {{n}} 枚だけ）。",
   "promptTrumpHelp": "trump <1-4> ... 1=♠ 2=♣ 3=♥ 4=♦",
+  "suitBreakdown": "最初の5枚のスート内訳: {{counts}}",
+  "suitCount": "{{suit}} {{n}}枚",
   "promptPlay": "手番: {{name}}",
   "playableList": "出せる札: {{cards}}",
   "promptPlayHelp": "play <idx> ... 札を出す",
