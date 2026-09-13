@@ -13,10 +13,8 @@ test.describe('Dramaha E2E', () => {
   });
 
   test('reaches the draw round and the hand keeps moving after standing pat', async ({ page }) => {
-    await navigateTo(page, '/dramaha');
-    await waitForLoaded(page);
-
     const standPat = page.getByTestId('dramaha-draw-standpat');
+    const maxDeals = 6;
 
     // **名前で拾わない。** `getByRole('button', {name: /チェック|コール/})` は
     // このページで 8 個に当たり、その先頭はプレイスタイルの説明バッジ
@@ -26,25 +24,37 @@ test.describe('Dramaha E2E', () => {
     // aria-keyshortcuts は c=コール / k=チェックで、行動ボタンにしか付かない。
     const act = page.locator('button[aria-keyshortcuts="c"], button[aria-keyshortcuts="k"]');
 
-    // 曖昧なロケータに戻ったら、ここで気づけるようにする。
-    await expect(act, 'action button locator must resolve to exactly one control').toHaveCount(1);
-
-    for (let i = 0; i < 12; i++) {
-      if (await standPat.isVisible().catch(() => false)) break;
-      try {
-        await act.first().waitFor({ state: 'visible', timeout: 10_000 });
-      } catch {
-        break; // stand-pat も行動ボタンも出ない = 下の到達アサーションが報告する
-      }
-      await act.first().click();
+    // 配りによってはドローラウンドの前にハンドが終わる。それは不具合では
+    // ないので、ドローラウンドまで着ける配りを引いてから回帰を検査する。
+    for (let deal = 0; deal < maxDeals; deal++) {
+      await navigateTo(page, '/dramaha');
       await waitForLoaded(page);
+
+      // 曖昧なロケータに戻ったら、ここで気づけるようにする。
+      await expect(act, 'action button locator must resolve to exactly one control').toHaveCount(1);
+
+      for (let i = 0; i < 12; i++) {
+        if (await standPat.isVisible()) break;
+        try {
+          await act.first().waitFor({ state: 'visible', timeout: 5_000 });
+        } catch {
+          break; // stand-pat も行動ボタンも出ない = 次の配りを試す
+        }
+        await act.first().click();
+        await waitForLoaded(page);
+      }
+
+      if (await standPat.isVisible()) break;
     }
 
     // **到達自体を先に assert する。** 回帰はこの後のクリックにしか無いので、
     // `if (visible)` で包むと、ドローラウンドに着かなかった回は何も検査せず
     // 通ってしまう。
-    await expect(standPat, 'never reached the draw round, so the stall regression was never exercised').toBeVisible({
-      timeout: 10_000,
+    await expect(
+      standPat,
+      `${maxDeals} 回の配りすべてでドローラウンドに着かなかった (配りの運ではなく、ドローラウンドに到達できない不具合)。never reached the draw round, so the stall regression was never exercised`,
+    ).toBeVisible({
+      timeout: 5_000,
     });
 
     await standPat.click();
