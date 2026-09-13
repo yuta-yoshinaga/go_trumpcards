@@ -11,6 +11,7 @@
   "empty": "Empty",
   "lastCardWarning": "This column will be lost for good",
   "emptyColNote": "Note: empty columns cannot be refilled",
+  "kingRule": "Kings are moved to the bottom of each column when dealt.",
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "landscapeBanner": "Landscape mode recommended",

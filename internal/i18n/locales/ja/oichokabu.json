@@ -11,6 +11,7 @@
   "rankName.0": "ブタ、最弱",
   "rankName.9": "カブ、最強",
   "rankNameSuffix": "（{{name}}）",
+  "rankRule": "目は手札の点数（10は0）を合計し、その合計を10で割った余りです。",
   "dealerPolicyDrew": "親のドロー方針: 目が規定値（{{threshold}}）以下だったため3枚目を引きました",
   "dealerPolicyStood": "親のドロー方針: 目{{rank}}で規定値（{{threshold}}）を超えていたため引きませんでした",
   "playerHeader": "子 (あなた)",

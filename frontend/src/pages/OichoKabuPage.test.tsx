@@ -163,6 +163,13 @@ describe('OichoKabuPage', () => {
     expect(screen.getByTestId('payout-breakdown')).toHaveAttribute('role', 'status');
   });
 
+  it('explains that the rank is the total modulo 10', async () => {
+    mockApi.mockResolvedValue(drawState);
+    renderWithProviders(<OichoKabuPage />);
+    const help = await screen.findByTestId('oichokabu-rank-help');
+    expect(help).toHaveTextContent('目は手札の点数（10は0）を合計し、その合計を10で割った余りです。');
+  });
+
   it('discloses the banker stand policy with its revealed rank at result', async () => {
     mockApi.mockResolvedValue(winState); // 2-card banker, rank 7 (> threshold 6) => stood
     renderWithProviders(<OichoKabuPage />);

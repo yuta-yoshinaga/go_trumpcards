@@ -283,6 +283,8 @@ function BristolPageContent() {
               <div className="flex gap-2">
                 {state.foundation.map((pile, i) => {
                   const zone: BristolMoveZone = { zone: 'foundation', col: i };
+                  const canPlace = previewSource !== null && legalFoundation.has(i);
+                  const placementDescriptionId = `br-foundation-placement-${i.toString()}`;
                   return (
                     <DropZone
                       key={`f-${i}`}
@@ -300,6 +302,7 @@ function BristolPageContent() {
                             ? t('foundationAria', { num: i, card: cardAlt(pile[pile.length - 1]), count: pile.length })
                             : t('foundationAriaEmpty', { num: i })
                         }
+                        aria-describedby={previewSource ? placementDescriptionId : undefined}
                         className={
                           previewSource && legalFoundation.has(i)
                             ? `rounded border p-0.5 ${focusRingWhite} ${targetBorder}`
@@ -319,6 +322,11 @@ function BristolPageContent() {
                           </span>
                         )}
                       </button>
+                      {previewSource && (
+                        <span id={placementDescriptionId} className="sr-only">
+                          {t(canPlace ? 'canPlaceHere' : 'cannotPlaceHere')}
+                        </span>
+                      )}
                     </DropZone>
                   );
                 })}
@@ -332,6 +340,8 @@ function BristolPageContent() {
             <div className="mb-3 flex gap-1 sm:gap-2" data-tutorial="br-tableau">
               {state.tableau.map((col, colIdx) => {
                 const zone: BristolMoveZone = { zone: 'tableau', col: colIdx };
+                const canPlace = previewSource !== null && legalTableau.has(colIdx);
+                const placementDescriptionId = `br-tableau-placement-${colIdx.toString()}`;
                 const colHeight = col.length > 0 ? (col.length - 1) * colOffset + cardHeight : cardHeight;
                 return (
                   <div key={`col-${colIdx}`} className="flex flex-1 flex-col items-center gap-1 min-w-0">
@@ -351,6 +361,7 @@ function BristolPageContent() {
                         onClick={() => handleTableauClick(colIdx)}
                         disabled={!isPlaying || loading || (col.length === 0 && !selected)}
                         aria-label={t('tableauColAria', { num: colIdx + 1, count: col.length })}
+                        aria-describedby={previewSource ? placementDescriptionId : undefined}
                         aria-pressed={isSelected(zone)}
                         {...preview.previewProps(zone)}
                         className={
@@ -385,6 +396,11 @@ function BristolPageContent() {
                           ))
                         )}
                       </button>
+                      {previewSource && (
+                        <span id={placementDescriptionId} className="sr-only">
+                          {t(canPlace ? 'canPlaceHere' : 'cannotPlaceHere')}
+                        </span>
+                      )}
                     </DropZone>
                   </div>
                 );

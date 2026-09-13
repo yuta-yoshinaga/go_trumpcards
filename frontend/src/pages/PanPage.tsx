@@ -35,7 +35,7 @@ import { PAN_HELP, parsePanCommand } from '../utils/cli/commands/panCommands';
 import { formatPanState } from '../utils/cli/formatters/panFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
-import { isPanValleMeld, panLayoffIndices, panMeldCandidates } from '../utils/panMeldCandidates';
+import { panLayoffIndices, panMeldCandidates } from '../utils/panMeldCandidates';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -329,12 +329,12 @@ function PanPageContent() {
                               ))}
                               {/* バジェ (3/5/7 のセット) は全員にチップを配る。どのメルドが
                                   その原因なのかが盤面から読めなかった (#4853)。 */}
-                              {isPanValleMeld(meld.cards) && (
+                              {meld.chipUnits > 0 && (
                                 <span
                                   className={`text-xs font-bold px-1.5 py-0.5 rounded ${badgeWarningColors}`}
-                                  data-testid={`pan-valle-${p.id}-${meldIdx}`}
+                                  data-testid={`pan-chip-units-${p.id}-${meldIdx}`}
                                 >
-                                  {t('valleBadge')}
+                                  {t('chipUnits', { count: meld.chipUnits })}
                                 </span>
                               )}
                               {canLayoff && (
@@ -448,14 +448,6 @@ function PanPageContent() {
                         data-testid={`pan-candidate-${cand.indices.join('-')}`}
                       >
                         <span className="text-xs font-bold">{kindLabel}</span>
-                        {isPanValleMeld(cards) && (
-                          <span
-                            className={`text-xs font-bold px-1.5 py-0.5 rounded ${badgeWarningColors}`}
-                            data-testid={`pan-candidate-valle-${cand.indices.join('-')}`}
-                          >
-                            {t('valleBadge')}
-                          </span>
-                        )}
                         {cards.map((card, ci) => (
                           <AnimatedCard
                             key={`cand-card-${card.design}-${card.value}-${ci}`}

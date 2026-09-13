@@ -51,5 +51,7 @@
     "9": "カブ、最強"
   },
   "rankAriaLabelNamed": "{{hand}}の目{{rank}}（{{name}}）",
-  "rankAriaLabelPlain": "{{hand}}の目{{rank}}"
+  "rankAriaLabelPlain": "{{hand}}の目{{rank}}",
+  "rankRuleSummary": "目の数え方",
+  "rankRule": "目は手札の点数（10は0）を合計し、その合計を10で割った余りです。"
 }

@@ -33,6 +33,7 @@ func (p *CariocaWebPresenter) Output(g interfaces.CariocaGame, lastErr error) st
 		PlayerCount:         cfg.PlayerCount,
 		CpuDifficulty:       int(cfg.CpuDifficulty),
 		FailContractPenalty: cfg.FailContractPenalty,
+		JokerPenalty:        domain.CariocaJokerPenalty,
 	}
 
 	contract := g.GetCurrentContract()
