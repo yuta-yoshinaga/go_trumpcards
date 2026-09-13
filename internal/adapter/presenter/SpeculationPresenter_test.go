@@ -289,6 +289,20 @@ func TestSpeculationCuiPresenter_Output_OfferLineWordedByDirection(t *testing.T)
 	assert.NotEqual(t, specLineContaining(t, selling, "34"), specLineContaining(t, buying, "34"))
 }
 
+func TestSpeculationCuiPresenter_Output_MinRaiseOnlyWhenHumanBuys(t *testing.T) {
+	cp := new(SpeculationCuiPresenter)
+
+	humanBuys := specAuctionBoard(false)
+	humanBuys.offerFrom, humanBuys.offerTo = 0, 2
+	assert.Contains(t, cp.Output(humanBuys.mock(), nil), "上乗せするなら 35 以上")
+
+	// In a four-player game the offer may be between two CPUs. The human is
+	// neither buyer nor owner, so the raise advice must not be shown.
+	cpuTrade := specAuctionBoard(false)
+	cpuTrade.offerFrom, cpuTrade.offerTo = 1, 2
+	assert.NotContains(t, cp.Output(cpuTrade.mock(), nil), "上乗せするなら")
+}
+
 func TestSpeculationCuiPresenter_Output_OfferLineSkippedWhenSeatsAreOutOfRange(t *testing.T) {
 	b := specAuctionBoard(true)
 	b.offerFrom, b.offerTo = 9, 0
@@ -412,6 +426,13 @@ func TestSpeculationCuiPresenter_HintOutput_DiffersByPhase(t *testing.T) {
 	assert.Contains(t, other, "いま助言できることはありません")
 }
 
+func TestSpeculationCuiPresenter_Output_ShowsMinimumRaise(t *testing.T) {
+	b := specAuctionBoard(false)
+	b.offerAmount = 40
+	out := new(SpeculationCuiPresenter).Output(b.mock(), nil)
+	assert.Contains(t, out, "上乗せするなら 41 以上")
+}
+
 // TestSpeculationCuiPresenter_HintOutput_SellingVsBuying pins the four auction
 // hints. The rule is about how many cards are still face down, not about the
 // card's rank: with plenty left the lead will likely be beaten (sell / pass),
@@ -455,6 +476,7 @@ func TestSpeculationI18nKeysResolve(t *testing.T) {
 		"speculation.roundLine", "speculation.potLine", "speculation.trumpLine",
 		"speculation.phaseLine", "speculation.seatLine", "speculation.holdsLine",
 		"speculation.offerToYou", "speculation.offerFromYou",
+		"speculation.minRaise",
 		"speculation.phaseFlip", "speculation.phaseAuction", "speculation.phaseResult",
 		"speculation.phaseGameEnd", "speculation.phaseUnknown",
 		"speculation.youWin", "speculation.seatWins", "speculation.voidRound",

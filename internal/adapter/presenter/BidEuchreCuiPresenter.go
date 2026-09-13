@@ -149,6 +149,9 @@ func (p *BidEuchreCuiPresenter) Output(g interfaces.BidEuchreGame, lastErr error
 				b.WriteString(i18n.Tf("bideuchre.playable", "indexes", strings.TrimSpace(v.String())) + "\n")
 			}
 			b.WriteString(i18n.T("bideuchre.promptPlayHelp") + "\n")
+			if g.GetTrump() == domain.BidEuchreTrumpNoLow {
+				b.WriteString(i18n.T("bideuchre.promptPlayHelpNote") + "\n")
+			}
 		case domain.BidEuchrePhaseHandEnd:
 			if r := g.GetLastResult(); r != nil {
 				key := "bideuchre.setLine"

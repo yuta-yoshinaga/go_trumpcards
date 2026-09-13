@@ -4863,7 +4863,7 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewZhengCuiController,
 		CuiHelpSpec{
 			TitleKey:    "zheng.helpTitle",
-			CommandKeys: []string{"zheng.helpPlay", "zheng.helpLog"},
+			CommandKeys: []string{"zheng.helpPlay", "zheng.helpLog", "zheng.helpHint"},
 			SettingKeys: []string{"zheng.helpSetDifficulty"},
 		}),
 	BindCuiFor("desmoche",
@@ -6616,7 +6616,7 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			CommandKeys: []string{
 				"caribbeandraw.helpBet", "caribbeandraw.helpDraw",
-				"caribbeandraw.helpPlay", "caribbeandraw.helpFold", "caribbeandraw.helpHint",
+				"caribbeandraw.helpPlay", "caribbeandraw.helpFold", "caribbeandraw.helpHint", "caribbeandraw.helpClearStats",
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),

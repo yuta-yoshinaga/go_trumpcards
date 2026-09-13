@@ -119,3 +119,15 @@ func TestCaribbeanDrawInteractor_ActionLog(t *testing.T) {
 	result := ci.ActionLog()
 	assert.Equal(t, "log output", result)
 }
+
+func TestCaribbeanDrawInteractor_ClearSession(t *testing.T) {
+	mockGame := new(interfaces.MockCaribbeanDrawGame)
+	mockPresenter := new(presenter.MockCaribbeanDrawPresenter)
+	ci := NewCaribbeanDrawInteractor(mockGame, mockPresenter)
+
+	mockPresenter.On("ClearSession").Return()
+	mockPresenter.On("Output", mockGame, nil).Return("cleared output")
+
+	assert.Equal(t, "cleared output", ci.ClearSession())
+	mockPresenter.AssertCalled(t, "ClearSession")
+}

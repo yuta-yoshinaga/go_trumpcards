@@ -39,5 +39,7 @@
   "hintDrawWeak": "交換を検討: 役がありません。残す価値のない札を捨てて役を狙えます",
   "helpDraw": "  d [番号...]          最大2枚交換（手数料あり）。番号なしで交換しない",
   "helpExampleDraw": "  d 1 3               1枚目と3枚目を交換",
-  "jackpotPayoutLine": "ジャックポット: {{payout}}"
+  "jackpotPayoutLine": "ジャックポット: {{payout}}",
+  "sessionStats": "通算: {{wins}}勝 {{losses}}敗 {{pushes}}分 / 収支: {{net}}",
+  "helpClearStats": "  clearstats           通算成績をクリア"
 }

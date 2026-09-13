@@ -155,7 +155,14 @@ func (p *MadrassoWebPresenter) buildMessage(g interfaces.MadrassoGame, lastErr e
 	case domain.MadrassoPhaseTrickEnd:
 		return "", "madrasso.trickEnd", nil
 	case domain.MadrassoPhaseRoundEnd:
-		return "", "madrasso.roundEnd", nil
+		thirds := g.GetTeamRoundPoints()
+		return "", "madrasso.roundBreakdown", map[string]string{
+			"a":        "A",
+			"athird":   fmt.Sprintf("%d", thirds[0]),
+			"b":        "B",
+			"bthird":   fmt.Sprintf("%d", thirds[1]),
+			"lastteam": madrassoTeamLabel(domain.MadrassoTeamOf(g.GetLeadPlayerIdx())),
+		}
 	}
 	return "", "", nil
 }

@@ -44,6 +44,11 @@ func (m *MockCaribbeanDrawInteractor) Hint() string {
 	return args.String(0)
 }
 
+func (m *MockCaribbeanDrawInteractor) ClearSession() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 // Snapshot モック
 func (m *MockCaribbeanDrawInteractor) Snapshot() ([]byte, error) {
 	ret := m.Called()

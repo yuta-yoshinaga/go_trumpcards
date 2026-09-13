@@ -115,6 +115,10 @@ func (cp *SpeculationCuiPresenter) writeOffer(sb *strings.Builder, c interfaces.
 		"buyer", players[from].GetName(),
 		"owner", players[to].GetName(),
 		"amount", strconv.Itoa(c.GetOfferAmount()))) + "\n")
+	if from == 0 {
+		sb.WriteString(i18n.Tf("speculation.minRaise",
+			"amount", strconv.Itoa(c.GetOfferAmount()+1)) + "\n")
+	}
 }
 
 // writeResult はラウンドの決着を出す。

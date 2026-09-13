@@ -106,3 +106,8 @@ func (p *ZhengWebPresenter) buildRankings(zg interfaces.ZhengGame) string {
 func (p *ZhengWebPresenter) ActionLogOutput(zg interfaces.ZhengGame) string {
 	return actionLogOutputJSON(zg)
 }
+
+// HintOutput は Web ではヒント専用の応答を持たないので通常の状態を返す。
+func (p *ZhengWebPresenter) HintOutput(zg interfaces.ZhengGame) string {
+	return p.Output(zg, nil)
+}

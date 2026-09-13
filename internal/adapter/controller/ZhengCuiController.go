@@ -28,7 +28,7 @@ func (c *ZhengCuiController) Exec(command string) string {
 			cfg := c.zi.GetConfig()
 			return c.zi.ResetWithConfig(cfg)
 		},
-		[]string{"p", "play", "sd", "setdifficulty", "log", "l"},
+		[]string{"p", "play", "sd", "setdifficulty", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
@@ -46,6 +46,8 @@ func (c *ZhengCuiController) Exec(command string) string {
 					cfg.CpuDifficulty = domain.ZhengCpuDifficulty(v)
 					return c.zi.ResetWithConfig(cfg)
 				})
+			case "h", "hint":
+				return c.zi.Hint(), true
 			default:
 				return handleCuiLog(cmd, c.zi.ActionLog)
 			}

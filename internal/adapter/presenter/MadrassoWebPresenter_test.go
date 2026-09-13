@@ -105,7 +105,7 @@ func TestMadrassoWebPresenter_Output(t *testing.T) {
 	t.Run("trick end / round end message codes", func(t *testing.T) {
 		for phase, code := range map[domain.MadrassoPhase]string{
 			domain.MadrassoPhaseTrickEnd: "madrasso.trickEnd",
-			domain.MadrassoPhaseRoundEnd: "madrasso.roundEnd",
+			domain.MadrassoPhaseRoundEnd: "madrasso.roundBreakdown",
 		} {
 			m, _ := setupMadrassoWebMockWithPlayers()
 			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
@@ -114,6 +114,11 @@ func TestMadrassoWebPresenter_Output(t *testing.T) {
 			var resObj controller.MadrassoWebOutput
 			assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 			assert.Equal(t, code, resObj.MessageCode)
+			if phase == domain.MadrassoPhaseRoundEnd {
+				assert.Equal(t, map[string]string{
+					"a": "A", "athird": "0", "b": "B", "bthird": "0", "lastteam": "A",
+				}, resObj.MessageParams)
+			}
 		}
 	})
 

@@ -1692,7 +1692,7 @@
     "madrasso.playPhase.lead": "Your turn — pick a card to lead.",
     "madrasso.result.cpuTeamWin": "Game over — the opposing team wins.",
     "madrasso.result.humanTeamWin": "Game over — your team wins.",
-    "madrasso.roundEnd": "Deal complete — go to the next deal.",
+    "madrasso.roundBreakdown": "Round breakdown: Team {{a}} {{athird}} pts / Team {{b}} {{bthird}} pts (last trick: Team {{lastteam}})",
     "madrasso.trickEnd": "Trick complete — continue.",
     "manille.hintRequested": "A hint is available",
     "manille.noHint": "No hint available",

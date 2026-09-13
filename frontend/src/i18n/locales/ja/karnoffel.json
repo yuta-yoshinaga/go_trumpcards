@@ -53,6 +53,8 @@
   "rankBadge": {
     "karnoffel": "カルニッフェル",
     "devil": "悪魔",
+    "devilLead": "悪魔（リード）",
+    "devilFollow": "悪魔（追随・最弱）",
     "pope": "法王",
     "kaiser": "皇帝",
     "oberstecher": "オーバー",
