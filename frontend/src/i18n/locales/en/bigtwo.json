@@ -55,6 +55,8 @@
   },
   "tablePlayLabel": "Play",
   "selectedPlayLabel": "Selected",
+  "actionPlayed": "{{name}} played: {{cards}}",
+  "actionPassed": "{{name}} passed",
   "invalidCombo": "Invalid combination",
   "frontendHint": {
     "bigtwoLead": "The table is clear — lead your weakest card",
