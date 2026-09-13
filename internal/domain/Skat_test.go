@@ -556,6 +556,27 @@ func TestSkatGetValidPlayIndicesNoFollow(t *testing.T) {
 	}
 }
 
+func TestSkatGetTrumpIndicesUsesGameRules(t *testing.T) {
+	g := newSkatForTest(t, DefaultSkatConfig())
+	p := g.GetPlayer(0)
+	base := p.GetCardsSize()
+	p.AddCard(NewCard(CardDesignSpade, skatValueAce, false))
+	p.AddCard(NewCard(CardDesignHeart, skatValueJack, false))
+	p.AddCard(NewCard(CardDesignHeart, skatValueAce, false))
+
+	g.round.gameType = SkatGameSuit
+	g.round.trumpSuit = CardDesignSpade
+	got := g.GetTrumpIndices(0)
+	assert.Contains(t, got, base)
+	assert.Contains(t, got, base+1)
+	assert.NotContains(t, got, base+2)
+	g.round.gameType = SkatGameGrand
+	got = g.GetTrumpIndices(0)
+	assert.NotContains(t, got, base)
+	assert.Contains(t, got, base+1)
+	assert.NotContains(t, got, base+2)
+}
+
 func TestSkatGetterDefaults(t *testing.T) {
 	g := newSkatForTest(t, DefaultSkatConfig())
 	if g.GetPlayerCnt() != SkatPlayerCnt {

@@ -29,6 +29,8 @@ function makeState(overrides?: Partial<SkatResponse>): SkatResponse {
     message: '',
     config: { cpuDifficulty: 0, targetScore: 1000 },
     ...overrides,
+    playableIndices: overrides?.playableIndices ?? [],
+    trumpIndices: overrides?.trumpIndices ?? [],
   };
 }
 

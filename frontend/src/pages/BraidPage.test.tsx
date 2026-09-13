@@ -164,6 +164,7 @@ describe('BraidPage', () => {
     renderWithProviders(<BraidPage />);
     await waitFor(() => expect(screen.getByLabelText(/空のブレイド札1/)).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: /空のブレイド札1/ })).not.toBeInTheDocument();
+    expect(screen.getAllByText('自動補充')).toHaveLength(2);
   });
 
   // An empty helper *is* a target -- but only the waste can fill it.

@@ -274,6 +274,11 @@ function SkatPageContent() {
                 cardWidth={cardWidth}
                 isMobile={_isMobile}
                 dataTutorialPrefix="sk"
+                validIndices={state.phase === SkatPhase.PLAY ? state.playableIndices : undefined}
+                legalIndices={state.phase === SkatPhase.PLAY ? state.playableIndices : undefined}
+                trumpIndices={state.phase === SkatPhase.PLAY ? state.trumpIndices : undefined}
+                trumpTitle={t('trump')}
+                restrictedTooltip={t('invalidPlay')}
               />
             )}
 
