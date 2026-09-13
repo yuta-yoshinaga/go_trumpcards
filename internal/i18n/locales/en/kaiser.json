@@ -12,6 +12,8 @@
   "spadeThreeTaken": "Spade 3 (-3): {{name}}",
   "notTakenYet": "not taken yet",
   "contractLine": "Contract: {{value}} {{kind}} trump: {{trump}}",
+  "bidHistoryEntry": "{{name}}: {{value}} {{contract}}",
+  "bidHistoryPass": "{{name}}: pass",
   "withTrump": "with trump",
   "noTrump": "no trump",
   "lowNoTrump": "low no trump",

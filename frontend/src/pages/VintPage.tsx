@@ -225,6 +225,29 @@ function VintPageContent() {
               <div className="mt-1 text-ds-text-muted">{t('ladderNote')}</div>
             </div>
 
+            {/* **相方がどの組・レベルで宣言し、誰がどこで降りたかは公開情報で、続けるか
+                降りるかの判断そのもの。**パス (level=0) も区別して並べる (#7389)。 */}
+            {state.bids.length > 0 && (
+              <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="vint-bid-history">
+                <div className="mb-1 text-ds-text-primary">{t('bidHistoryTitle')}</div>
+                <div className="flex flex-wrap gap-x-3">
+                  {state.bids.map((b, i) => (
+                    <span key={`bid-${b.player}-${i}`} data-testid={`vint-bid-${i}`}>
+                      {b.level === 0
+                        ? t('bidHistoryPass', {
+                            name: playerLabel(b.player, state.players[b.player]?.isHuman === true),
+                          })
+                        : t('bidHistoryEntry', {
+                            name: playerLabel(b.player, state.players[b.player]?.isHuman === true),
+                            level: b.level,
+                            denom: denomLabel(b.denom),
+                          })}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Score sheet */}
             <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="vint-scores">
               <div className="mb-1 text-ds-text-primary">{t('scoreTitle')}</div>

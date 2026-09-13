@@ -36,6 +36,7 @@ func setupVintCuiMock(o vintMockOpts) *interfaces.MockVintGame {
 	m.On("GetGameEndFlag").Return(o.gameEnd)
 	m.On("GetWinnerTeam").Return(o.winner)
 	m.On("GetHighBid").Return(o.highBid)
+	m.On("GetBids").Return([]*domain.VintBid{}).Maybe()
 	m.On("GetLastResult").Return(o.result)
 	m.On("GetPlayers").Return(players)
 	m.On("IsHumanTurn").Return(true)
@@ -218,4 +219,52 @@ func TestVintCuiPresenter_AlwaysExplainsThereIsNoDummy(t *testing.T) {
 	// **キーではなく解決後の文言を見る** ── i18n.T は未知のキーをそのまま返す。
 	assert.Contains(t, out, i18n.T("vint.noDummyNote"))
 	assert.NotContains(t, out, "vint.noDummyNote")
+}
+
+// #7389: 競りの履歴は公開情報で、誰がどの組・レベルで宣言し誰が降りたかが次の判断材料。
+// CUI でも 1 行ずつ表示し、パスは宣言と区別して出す。
+func TestVintCuiPresenter_BiddingHistory(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	defer i18n.SetLang("ja")
+
+	p := new(presenter.VintCuiPresenter)
+
+	t.Run("lists all bids and passes in Japanese and English", func(t *testing.T) {
+		m := setupVintCuiMock(defaultVintOpts())
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBids")
+		m.On("GetBids").Return([]*domain.VintBid{
+			{Player: 0, Level: 1, Denom: domain.VintDenomSpade},
+			{Player: 1, Level: 0, Denom: domain.VintDenomSpade},
+			{Player: 2, Level: 2, Denom: domain.VintDenomNoTrump},
+		})
+
+		i18n.SetLang("ja")
+		outJa := p.Output(m, nil)
+		assert.Contains(t, outJa, "あなた: 1 ♠")
+		assert.Contains(t, outJa, "CPU 1: パス")
+		assert.Contains(t, outJa, "CPU 2: 2 NT")
+		assert.NotContains(t, outJa, "CPU 1: 0")
+		assert.NotContains(t, outJa, "{{")
+
+		i18n.SetLang("en")
+		outEn := p.Output(m, nil)
+		assert.Contains(t, outEn, "You: 1 ♠")
+		assert.Contains(t, outEn, "CPU 1: pass")
+		assert.Contains(t, outEn, "CPU 2: 2 NT")
+		assert.NotContains(t, outEn, "CPU 1: 0")
+		assert.NotContains(t, outEn, "{{")
+	})
+
+	t.Run("shows no history before the first bid", func(t *testing.T) {
+		o := defaultVintOpts()
+		o.highBid = nil
+		m := setupVintCuiMock(o)
+		i18n.SetLang("ja")
+		out := p.Output(m, nil)
+		assert.NotContains(t, out, "パス")
+		assert.NotContains(t, out, "1 ♠")
+		assert.NotContains(t, out, "2 NT")
+	})
 }

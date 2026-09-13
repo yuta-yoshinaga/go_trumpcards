@@ -7,6 +7,8 @@
   "helpNext": "  n / next                  次の局へ",
   "header": "局: {{hand}} / {{target}}",
   "contractLine": "契約: {{bid}}  切札: {{trump}}",
+  "bidHistoryEntry": "{{name}}: {{bid}}",
+  "bidHistoryPass": "{{name}}: パス",
   "noTrump": "なし",
   "hiddenHand": "非公開 {{count}}枚",
   "dealerTag": "[親]",

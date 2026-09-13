@@ -353,4 +353,37 @@ describe('VintPage', () => {
     renderWithProviders(<VintPage />);
     await waitFor(() => expect(screen.queryByTestId('vint-bid-notice')).not.toBeInTheDocument());
   });
+
+  // #7389: 相方がどの組・レベルで宣言し、誰がどこで降りたかは公開情報で、
+  // 続けるか降りるかの判断そのもの。
+  it('lists who bid what, and who passed', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        bids: [
+          { player: 0, level: 1, denom: 0, trickValue: 4 },
+          { player: 1, level: 0, denom: 0, trickValue: 0 },
+          { player: 2, level: 2, denom: 4, trickValue: 32 },
+        ],
+      }),
+    );
+    renderWithProviders(<VintPage />);
+
+    const history = await screen.findByTestId('vint-bid-history');
+    expect(history).toHaveTextContent('あなた');
+    expect(history).toHaveTextContent('1 ♠');
+    // パスは他の宣言と区別できる形で出る
+    expect(screen.getByTestId('vint-bid-1')).toHaveTextContent('パス');
+    expect(screen.getByTestId('vint-bid-1')).not.toHaveTextContent('0');
+    // 組とレベルが出る (2 件目は 2 NT)
+    expect(screen.getByTestId('vint-bid-2')).toHaveTextContent('2 NT');
+    expect(history.textContent).not.toContain('{{');
+  });
+
+  // 負のコントロール: まだ誰も宣言していない局面では表ごと出さない。
+  it('shows no history before the first bid', async () => {
+    mockExec.mockResolvedValue(makeState({ bids: [] }));
+    renderWithProviders(<VintPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('vint-bid-history')).not.toBeInTheDocument();
+  });
 });

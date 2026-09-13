@@ -74,5 +74,8 @@
     "bostonForced": "This is the only legal card — following suit is compulsory",
     "bostonPushContract": "You are on the declaring side — play to make the contract",
     "bostonBreakContract": "You are defending — play to break the contract"
-  }
+  },
+  "bidHistoryTitle": "Bidding so far",
+  "bidHistoryEntry": "{{name}}: {{bid}}",
+  "bidHistoryPass": "{{name}}: pass"
 }

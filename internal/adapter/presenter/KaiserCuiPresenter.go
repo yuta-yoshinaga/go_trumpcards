@@ -92,6 +92,21 @@ func (p *KaiserCuiPresenter) Output(g interfaces.KaiserGame, lastErr error) stri
 				"trump", kaiserSuitName(g.GetTrumpSuit())) + "\n")
 		}
 
+		for _, bid := range g.GetBids() {
+			if bid == nil {
+				continue
+			}
+			name := cuiPlayerName(g.GetPlayer(bid.Player), bid.Player)
+			if bid.Value == 0 {
+				b.WriteString(i18n.Tf("kaiser.bidHistoryPass", "name", name) + "\n")
+			} else {
+				b.WriteString(i18n.Tf("kaiser.bidHistoryEntry",
+					"name", name,
+					"value", strconv.Itoa(bid.Value),
+					"contract", kaiserContractName(bid.Contract)) + "\n")
+			}
+		}
+
 		for i := range g.GetPlayers() {
 			b.WriteString(kaiserPlayerStr(g, i))
 		}
