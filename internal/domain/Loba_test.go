@@ -393,6 +393,47 @@ func TestLoba_RejectsIllegalRequests(t *testing.T) {
 	assert.Error(t, l.LayOff(cur, 0, 99), "no such meld")
 }
 
+func TestLoba_PickDiscardCanDiscardFromAnAllJokerHand(t *testing.T) {
+	l := lbReady(t, 0)
+	p := l.GetPlayer(0)
+	p.Reset()
+	p.AddCard(lbJoker())
+	p.AddCard(lbJoker())
+
+	idx := l.pickDiscard(0)
+	require.GreaterOrEqual(t, idx, 0)
+	require.NoError(t, l.Discard(0, idx))
+}
+
+func TestLoba_DiscardAllowsAnAllJokerHand(t *testing.T) {
+	l := lbReady(t, 0)
+	p := l.GetPlayer(0)
+	p.Reset()
+	p.AddCard(lbJoker())
+	p.AddCard(lbJoker())
+
+	assert.NoError(t, l.Discard(0, 0))
+}
+
+func TestLoba_PickDiscardKeepsJokersProtectedWithOtherCards(t *testing.T) {
+	l := lbReady(t, 0)
+	p := l.GetPlayer(0)
+	p.Reset()
+	p.AddCard(lbJoker())
+	p.AddCard(lbCard(CardDesignSpade, 7))
+
+	assert.Equal(t, 1, l.pickDiscard(0))
+	assert.ErrorContains(t, l.Discard(0, 0), "a joker cannot be discarded")
+}
+
+func TestLoba_PickDiscardReturnsNegativeOneForAnEmptyHand(t *testing.T) {
+	l := lbReady(t, 0)
+	p := l.GetPlayer(0)
+	p.Reset()
+
+	assert.Equal(t, -1, l.pickDiscard(0))
+}
+
 // lbPlayRound drives one round with CPU decisions. Returns false if it stalls.
 // lbFreshRoundPlayed は「1 ラウンド打ち切れる配り」を引くまで卓を配り直し、
 // 打ち切れた卓を返す。
