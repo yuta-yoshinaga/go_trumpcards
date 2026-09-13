@@ -363,6 +363,18 @@ func TestIndianPokerCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestIndianPokerCuiPresenter_HintOutput(t *testing.T) {
+	p := new(presenter.IndianPokerCuiPresenter)
+	ip, players := makeIndianPokerForPresenter()
+	ip.SetPhase(domain.IndianPokerPhaseBetting)
+	ip.SetCurrentTurn(0)
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+
+	assert.Equal(t, "\x1b[33m［助言: ベット（推定勝率が高く、強気に攻められます）］\x1b[0m\n", p.HintOutput(ip))
+	ip.SetCurrentTurn(1)
+	assert.Equal(t, "助言はありません\n", p.HintOutput(ip))
+}
+
 func TestIndianPokerCuiPresenter_ActionLogOutput(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)

@@ -228,6 +228,15 @@ func TestIndianPokerCuiController_ActionLog(t *testing.T) {
 	assert.Equal(t, "log output", c.Exec("log"))
 }
 
+func TestIndianPokerCuiController_Hint(t *testing.T) {
+	mi := new(usecase.MockIndianPokerInteractor)
+	c := NewIndianPokerCuiController(mi)
+	mi.On("Hint").Return("hint output")
+	assert.Equal(t, "hint output", c.Exec("h"))
+	assert.Equal(t, "hint output", c.Exec("hint"))
+	mi.AssertNumberOfCalls(t, "Hint", 2)
+}
+
 func TestIndianPokerCuiController_Empty(t *testing.T) {
 	mi := new(usecase.MockIndianPokerInteractor)
 	c := NewIndianPokerCuiController(mi)

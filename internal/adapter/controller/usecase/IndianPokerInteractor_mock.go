@@ -43,6 +43,12 @@ func (_m *MockIndianPokerInteractor) ActionLog() string {
 	return ret.Get(0).(string)
 }
 
+// Hint モック
+func (_m *MockIndianPokerInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // Snapshot モック
 func (_m *MockIndianPokerInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()

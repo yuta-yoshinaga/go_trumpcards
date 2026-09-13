@@ -39,4 +39,10 @@
   "gameEnd": "ゲーム終了",
   "helpExampleFold": "  f                    この手を降りる",
   "helpLog": "  l                    行動ログを表示"
+  ,"hintNone": "助言はありません"
+  ,"hintAction": "［助言: {{action}}（{{reason}}）］"
+  ,"hintReasonStrong": "推定勝率が高く、強気に攻められます"
+  ,"hintReasonFreeLook": "無料で次のカードを見られます"
+  ,"hintReasonPotOddsShort": "ポットオッズに勝率が届かないため降ります"
+  ,"hintReasonPotOddsOK": "ポットオッズに見合う勝率があります"
 }

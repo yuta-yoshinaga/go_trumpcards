@@ -18,6 +18,20 @@ const (
 	IndianPokerPhaseEnd      = 4 // ゲーム終了
 )
 
+// IndianPokerHint は人間への推奨手。
+type IndianPokerHint struct {
+	// Action は勧めるアクション。
+	Action int
+	// Reason は理由の識別子。
+	Reason string
+}
+
+// これらのしきい値は経験則であり、最適解を保証するものではない。
+const (
+	indianPokerStrongEquity = 60
+	indianPokerRaiseMargin  = 25
+)
+
 // アクション定数 (共通定数のエイリアス)
 const (
 	IndianPokerActionFold  = bettingActionFold  // フォールド
@@ -623,6 +637,43 @@ func (ip *IndianPoker) GetPhase() int { return ip.phase }
 // 見えないインディアンポーカーで、見えている相手札から算出した勝率であり、CUI
 // のエクイティ表示と CPU 判断で共有する単一ロジック。
 func (ip *IndianPoker) GetEstimatedStrength(idx int) int { return ip.estimateOwnStrength(idx) }
+
+// GetHint は人間の手番に対する推奨アクションを返す。
+// 推奨は経験則に基づくものであり、最適解を保証するものではない。
+func (ip *IndianPoker) GetHint() *IndianPokerHint {
+	human := findHumanIdx(ip.players)
+	if human < 0 || ip.gameEndFlag || ip.phase != IndianPokerPhaseBetting || ip.currentTurn != human {
+		return &IndianPokerHint{Reason: "none"}
+	}
+	player := ip.players[human]
+	if player.GetFolded() || player.GetAllIn() {
+		return &IndianPokerHint{Reason: "none"}
+	}
+
+	equity := ip.GetEstimatedStrength(human)
+	toCall := ip.lastBet - player.GetCurrentBet()
+	if toCall <= 0 {
+		if equity >= indianPokerStrongEquity {
+			return &IndianPokerHint{Action: IndianPokerActionBet, Reason: "strong_hand"}
+		}
+		return &IndianPokerHint{Action: IndianPokerActionCheck, Reason: "free_look"}
+	}
+
+	potWithCall := ip.pot + toCall
+	// ポットとコール額は通常どちらも非負で、toCall > 0 のため正になる。
+	// 復元データ等で不正な負のポットが入ってもゼロ除算は避ける。
+	if potWithCall <= 0 {
+		return &IndianPokerHint{Action: IndianPokerActionFold, Reason: "pot_odds_short"}
+	}
+	required := toCall * 100 / potWithCall
+	if equity < required {
+		return &IndianPokerHint{Action: IndianPokerActionFold, Reason: "pot_odds_short"}
+	}
+	if equity >= required+indianPokerRaiseMargin {
+		return &IndianPokerHint{Action: IndianPokerActionRaise, Reason: "strong_hand"}
+	}
+	return &IndianPokerHint{Action: IndianPokerActionCall, Reason: "pot_odds_ok"}
+}
 
 // GetPlayers プレイヤー一覧取得
 func (ip *IndianPoker) GetPlayers() []*IndianPokerPlayer { return ip.players }
