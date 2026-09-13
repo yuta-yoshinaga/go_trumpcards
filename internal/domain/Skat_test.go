@@ -556,6 +556,46 @@ func TestSkatGetValidPlayIndicesNoFollow(t *testing.T) {
 	}
 }
 
+func TestSkatGetTrumpIndicesUsesGameRules(t *testing.T) {
+	g := newSkatForTest(t, DefaultSkatConfig())
+	p := g.GetPlayer(0)
+	base := p.GetCardsSize()
+	p.AddCard(NewCard(CardDesignSpade, skatValueAce, false))
+	p.AddCard(NewCard(CardDesignHeart, skatValueJack, false))
+	p.AddCard(NewCard(CardDesignHeart, skatValueAce, false))
+
+	g.round.gameType = SkatGameSuit
+	g.round.trumpSuit = CardDesignSpade
+	got := g.GetTrumpIndices(0)
+	assert.Contains(t, got, base)
+	assert.Contains(t, got, base+1)
+	assert.NotContains(t, got, base+2)
+	g.round.gameType = SkatGameGrand
+	got = g.GetTrumpIndices(0)
+	assert.NotContains(t, got, base)
+	assert.Contains(t, got, base+1)
+	assert.NotContains(t, got, base+2)
+}
+
+func TestSkatGetTrumpIndicesBoundsExactAndEmpty(t *testing.T) {
+	g := newSkatForTest(t, DefaultSkatConfig())
+	resetForControlledPhase(g)
+
+	p := g.GetPlayer(0)
+	p.AddCard(NewCard(CardDesignHeart, skatValueAce, false))
+	p.AddCard(NewCard(CardDesignSpade, skatValueAce, false))
+	p.AddCard(NewCard(CardDesignHeart, skatValueJack, false))
+	g.round.gameType = SkatGameSuit
+	g.round.trumpSuit = CardDesignSpade
+
+	assert.Nil(t, g.GetTrumpIndices(-1))
+	assert.Nil(t, g.GetTrumpIndices(len(g.players)))
+	assert.Equal(t, []int{1, 2}, g.GetTrumpIndices(0))
+
+	assert.NotNil(t, g.GetTrumpIndices(1))
+	assert.Empty(t, g.GetTrumpIndices(1))
+}
+
 func TestSkatGetterDefaults(t *testing.T) {
 	g := newSkatForTest(t, DefaultSkatConfig())
 	if g.GetPlayerCnt() != SkatPlayerCnt {

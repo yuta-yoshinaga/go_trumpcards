@@ -98,10 +98,12 @@ type SkatWebOutput struct {
 	WinnerSide          int                    `json:"winnerSide"`
 	GameValue           int                    `json:"gameValue"`
 	// ScoreBreakdown はラウンド得点の内訳 (#5561)。ラウンド前は null。
-	ScoreBreakdown *SkatWebOutputScoreBreakdown `json:"scoreBreakdown,omitempty"`
-	GameEndFlag    bool                         `json:"gameEndFlag"`
-	LeadPlayerIdx  int                          `json:"leadPlayerIdx"`
-	Hint           *SkatWebOutputHint           `json:"hint,omitempty"`
+	ScoreBreakdown  *SkatWebOutputScoreBreakdown `json:"scoreBreakdown,omitempty"`
+	GameEndFlag     bool                         `json:"gameEndFlag"`
+	LeadPlayerIdx   int                          `json:"leadPlayerIdx"`
+	Hint            *SkatWebOutputHint           `json:"hint,omitempty"`
+	PlayableIndices []int                        `json:"playableIndices"`
+	TrumpIndices    []int                        `json:"trumpIndices"`
 	WebOutputBase
 	Config SkatWebOutputConfig `json:"config"`
 }
@@ -142,6 +144,8 @@ func newSkatDefaultOutput(msg string) *SkatWebOutput {
 	return &SkatWebOutput{
 		Players:           make([]*SkatWebOutputPlayer, 0),
 		CurrentTrick:      make([]*WebOutputTrickCard, 0),
+		PlayableIndices:   make([]int, 0),
+		TrumpIndices:      make([]int, 0),
 		WinnerSide:        domain.SkatWinnerUndecided,
 		DeclarerIdx:       -1,
 		ActiveBidActorIdx: -1,

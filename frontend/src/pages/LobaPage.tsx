@@ -252,12 +252,19 @@ function LobaPageContent() {
               {acting && isHumanTurn && <div className="text-[10px] text-ds-text-muted mt-1">{t('selectHint')}</div>}
               {/* Lay off needs a meld picked too, and that half lived only in the
                   button's disabled condition (#5574). Added, not substituted: one
-                  selected card is also what a discard looks like. */}
-              {acting && isHumanTurn && selected.length === 1 && meldTarget === null && state.melds.length > 0 && (
-                <div className="text-[10px] text-ds-text-muted mt-1" data-testid="loba-layoff-hint">
-                  {t('layOffTargetHint')}
-                </div>
-              )}
+                  selected card is also what a discard looks like. Unmelded players
+                  see the prerequisite; melded players see the target hint only until
+                  a target is selected. Once all requirements are met, stay silent so
+                  the enabled button is not made to sound unavailable. */}
+              {acting &&
+                isHumanTurn &&
+                selected.length === 1 &&
+                state.melds.length > 0 &&
+                (!human?.hasMelded || meldTarget === null) && (
+                  <div className="text-[10px] text-ds-text-muted mt-1" data-testid="loba-layoff-hint">
+                    {human?.hasMelded ? t('layOffTargetHint') : t('layOffRequiresMeld')}
+                  </div>
+                )}
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
@@ -321,7 +328,7 @@ function LobaPageContent() {
                   <button
                     type="button"
                     className={`${btnSecondary} min-h-11`}
-                    disabled={selected.length !== 1 || meldTarget === null}
+                    disabled={selected.length !== 1 || meldTarget === null || !human?.hasMelded}
                     onClick={() => {
                       if (selected.length === 1 && meldTarget !== null) {
                         game.handleLayOff(selected[0], meldTarget);
