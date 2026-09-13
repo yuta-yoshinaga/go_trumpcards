@@ -98,6 +98,20 @@ describe('GleekPage', () => {
     expect(melds).toHaveLength(2);
     expect(melds[0]).toHaveTextContent('グリーク');
     expect(melds[1]).toHaveTextContent('マーニヴァル');
+    expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent('あなた が ハート の 31 で獲得');
+    expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent('CPU 1: スペード の 24');
+    expect(screen.getByTestId('gleek-ruff-line')).toHaveTextContent('CPU 2: クラブ の 20');
+    expect(screen.getByTestId('gleek-ruff-line').textContent?.match(/で獲得/g)).toHaveLength(1);
+  });
+
+  it('uses the non-winning ruff wording for every seat when there is no winner', async () => {
+    mockExec.mockResolvedValue(makeGleekState({ ruffWinnerIdx: -1 }));
+    renderWithProviders(<GleekPage />);
+    const ruff = await screen.findByTestId('gleek-ruff-line');
+    expect(ruff).not.toHaveTextContent('で獲得');
+    expect(ruff).toHaveTextContent('あなた: ハート の 31');
+    expect(ruff).toHaveTextContent('CPU 1: スペード の 24');
+    expect(ruff).toHaveTextContent('CPU 2: クラブ の 20');
   });
 
   it('renders a zero-point ruff and its no-suit label', async () => {

@@ -22,6 +22,7 @@
   "stockUnsold": "Stock: still being bid for (highest {{bid}})",
   "stockSold": "Stock: bought by {{name}} for {{bid}}",
   "ruffLine": "Ruff: {{name}} wins it with {{total}} in {{suit}}",
+  "ruffOtherLine": "{{name}}: {{total}} in {{suit}}",
   "meldGleek": "Gleek: {{name}} shows three {{rank}} ({{value}} from each opponent)",
   "meldMournival": "Mournival: {{name}} shows four {{rank}} ({{value}} from each opponent)",
   "rankAce": "aces",

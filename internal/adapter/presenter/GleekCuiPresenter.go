@@ -190,20 +190,24 @@ func gleekStockLine(g interfaces.GleekGame) string {
 // **段階の点は盤に出さないと見えない。** 競りとトリックの間で動いた点を出さないと、
 // 累積点だけが理由なく増減しているように見える。
 func gleekStageLine(g interfaces.GleekGame) string {
-	if g.GetRuffWinnerIdx() < 0 && len(g.GetMelds()) == 0 {
+	ruffs := g.GetRuffs()
+	ruffWinnerIdx := g.GetRuffWinnerIdx()
+	if len(ruffs) == 0 && len(g.GetMelds()) == 0 {
 		return ""
 	}
 	var b strings.Builder
-	if g.GetRuffWinnerIdx() >= 0 {
-		for _, r := range g.GetRuffs() {
-			if r == nil {
-				continue
-			}
-			b.WriteString(i18n.Tf("gleek.ruffLine",
-				"name", cuiPlayerName(g.GetPlayer(r.PlayerIdx), r.PlayerIdx),
-				"total", strconv.Itoa(r.Total),
-				"suit", gleekSuitLabel(r.Suit)) + "\n")
+	for _, r := range ruffs {
+		if r == nil {
+			continue
 		}
+		key := "gleek.ruffOtherLine"
+		if r.PlayerIdx == ruffWinnerIdx {
+			key = "gleek.ruffLine"
+		}
+		b.WriteString(i18n.Tf(key,
+			"name", cuiPlayerName(g.GetPlayer(r.PlayerIdx), r.PlayerIdx),
+			"total", strconv.Itoa(r.Total),
+			"suit", gleekSuitLabel(r.Suit)) + "\n")
 	}
 	for _, m := range g.GetMelds() {
 		if m == nil {

@@ -231,11 +231,11 @@ function GleekPageContent() {
                     })
                   : t('stockUnsold', { bid: state.highestBid })}
               </div>
-              {state.ruffWinnerIdx >= 0 && (
+              {state.phase >= GleekPhase.PLAY && (
                 <div data-testid="gleek-ruff-line">
                   {state.players.map((player) => (
                     <div key={player.id}>
-                      {t('ruffLine', {
+                      {t(player.id === state.ruffWinnerIdx ? 'ruffLine' : 'ruffOtherLine', {
                         name: playerName(player.id, player.id === humanIdx),
                         total: player.ruff,
                         suit: t(SUIT_KEYS[player.ruffSuit] ?? 'suitNone'),
