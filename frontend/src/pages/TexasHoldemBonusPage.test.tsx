@@ -165,6 +165,25 @@ describe('TexasHoldemBonusPage', () => {
     await waitFor(() => expect(screen.getByTestId('thb-session-tally')).toHaveTextContent('0勝 1敗 0分'));
   });
 
+  it('records a winning END round', async () => {
+    mockApi.mockResolvedValue(endPlayerWins);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(screen.getByTestId('thb-session-tally')).toHaveTextContent('1勝 0敗 0分'));
+  });
+
+  it('records a push END round', async () => {
+    mockApi.mockResolvedValue(endPush);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(screen.getByTestId('thb-session-tally')).toHaveTextContent('0勝 0敗 1分'));
+  });
+
+  it('does not record a round before END phase', async () => {
+    mockApi.mockResolvedValue(preFlopState);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ/ })).toBeInTheDocument());
+    expect(screen.queryByTestId('thb-session-stats')).not.toBeInTheDocument();
+  });
+
   it('hides the session block until a hand has been recorded, and clears it on request', async () => {
     // **ハンド数が 0 のあいだはブロックごと出ない** (`tally.hands > 0` の枝)。
     mockApi.mockResolvedValue(preFlopState);

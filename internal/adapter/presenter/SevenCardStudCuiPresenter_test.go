@@ -430,6 +430,40 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestSevenCardStudCuiPresenterAnteLevelUpBoundaries(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	for _, tt := range []struct {
+		name      string
+		handCount int
+		want      bool
+	}{
+		{name: "level up at hand 11", handCount: 11, want: true},
+		{name: "not yet at hand 12", handCount: 12, want: false},
+		{name: "first hand", handCount: 1, want: false},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			s, _ := makeSevenCardStudForPresenter()
+			cfg := s.GetConfig()
+			cfg.TournamentMode = true
+			cfg.Ante = 2
+			cfg.AnteMultiplier = 200
+			cfg.AnteLevelHands = 10
+			s.SetConfig(cfg)
+			s.SetHandCount(tt.handCount)
+
+			output := new(presenter.SevenCardStudCuiPresenter).Output(s, nil)
+			if tt.want {
+				assert.Contains(t, output, "アンティが上昇しました: 1→2")
+			} else {
+				assert.NotContains(t, output, "アンティが上昇しました:")
+			}
+		})
+	}
+}
+
 func TestSevenCardStudCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
