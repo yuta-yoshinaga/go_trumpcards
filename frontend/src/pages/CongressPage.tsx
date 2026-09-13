@@ -34,6 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { CONGRESS_HELP, parseCongressCommand } from '../utils/cli/commands/congressCommands';
 import { formatCongressState } from '../utils/cli/formatters/congressFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { congressLegalTargets } from '../utils/congressLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
@@ -174,12 +175,24 @@ function CongressPageContent() {
   const wasteTop = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const wasteZone: CongressMoveZone = { zone: 'waste' };
   const stockZone: CongressMoveZone = { zone: 'stock' };
+  const selectedCard =
+    selectedSource?.zone === 'tableau'
+      ? state.tableau[selectedSource.col ?? -1]?.at(-1)
+      : selectedSource?.zone === 'waste'
+        ? wasteTop
+        : null;
+  const legalTargets = congressLegalTargets(state.tableau, state.foundation, selectedCard, selectedSource?.zone);
+  const targetRing = ' rounded ring-2 ring-ds-success';
 
   const renderPile = (pileIdx: number) => {
     const cards = state.tableau[pileIdx] ?? [];
     const pileZone: CongressMoveZone = { zone: 'tableau', col: pileIdx };
     return (
-      <div key={`pile-${pileIdx.toString()}`} className="flex-1 min-w-0">
+      <div
+        key={`pile-${pileIdx.toString()}`}
+        className={`flex-1 min-w-0${legalTargets.tableau.has(pileIdx) ? targetRing : ''}`}
+        data-legal-target={legalTargets.tableau.has(pileIdx) ? 'true' : undefined}
+      >
         <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
           #{pileIdx}
         </div>
@@ -293,7 +306,11 @@ function CongressPageContent() {
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: CongressMoveZone = { zone: 'foundation', col: idx };
                   return (
-                    <div key={`f-${idx.toString()}`} className="text-center">
+                    <div
+                      key={`f-${idx.toString()}`}
+                      className={`text-center${legalTargets.foundation.has(idx) ? targetRing : ''}`}
+                      data-legal-target={legalTargets.foundation.has(idx) ? 'true' : undefined}
+                    >
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
                       <DropZone
                         isDropTarget={dnd.isDropTarget(foundationZone)}
