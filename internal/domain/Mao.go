@@ -80,6 +80,12 @@ type MaoHiddenRule struct {
 	HintKey string `json:"ht"`
 }
 
+// MaoSayWordAttempt records a human's secret-rule word and its outcome.
+type MaoSayWordAttempt struct {
+	Word    string `json:"w"`
+	Penalty bool   `json:"p"`
+}
+
 // maoRuleSet は固定の隠しルール候補。ゲーム開始時に 1 つが決定的に選ばれる。
 var maoRuleSet = []MaoHiddenRule{
 	{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintKey: "hintSuit"},
@@ -113,6 +119,7 @@ type Mao struct {
 	playerCorrectCount int           // 人間が累計で正しく従った回数
 	hintUnlocked       bool          // ハーフヒントが解放されたか (3回正解で解放)
 	rulePenaltyFlag    bool          // 直近のアクションで隠しルール違反ペナルティが発生したか
+	sayWordHistory     []MaoSayWordAttempt
 }
 
 // NewMao コンストラクタ
@@ -158,6 +165,7 @@ func (g *Mao) Reset() {
 	g.playerCorrectCount = 0
 	g.hintUnlocked = false
 	g.rulePenaltyFlag = false
+	g.sayWordHistory = nil
 
 	for _, p := range g.players {
 		p.roundScore = 0
@@ -191,6 +199,7 @@ func (g *Mao) NextRound() {
 	g.currentPlayerIdx = 0
 	g.awaitingWord = false
 	g.rulePenaltyFlag = false
+	g.sayWordHistory = nil
 
 	for _, p := range g.players {
 		p.ResetRound()
@@ -326,10 +335,13 @@ func (g *Mao) PlayerDeclareWord(word string) error {
 	if !g.awaitingWord {
 		// 宣言待ちでないのに言葉を発した → ルール違反 (誤発言ペナルティ)
 		g.applyRulePenalty(humanIdx)
+		g.sayWordHistory = append(g.sayWordHistory, MaoSayWordAttempt{Word: strings.TrimSpace(word), Penalty: true})
 		return nil
 	}
-	correct := strings.EqualFold(strings.TrimSpace(word), g.hiddenRule.RequiredWord)
+	trimmed := strings.TrimSpace(word)
+	correct := strings.EqualFold(trimmed, g.hiddenRule.RequiredWord)
 	g.resolvePendingWord(humanIdx, correct)
+	g.sayWordHistory = append(g.sayWordHistory, MaoSayWordAttempt{Word: trimmed, Penalty: !correct})
 	return nil
 }
 
@@ -653,6 +665,11 @@ func (g *Mao) GetHintUnlocked() bool { return g.hintUnlocked }
 
 // GetRulePenaltyFlag 直近のアクションで隠しルール違反ペナルティが発生したか
 func (g *Mao) GetRulePenaltyFlag() bool { return g.rulePenaltyFlag }
+
+// GetSayWordHistory returns the secret-rule attempts made during this round.
+func (g *Mao) GetSayWordHistory() []MaoSayWordAttempt {
+	return append([]MaoSayWordAttempt(nil), g.sayWordHistory...)
+}
 
 // GetRuleHintKey 解放済みであればハーフヒントの i18n キーを返す。未解放なら空文字。
 // 解放後もトリガーのみを示し、宣言すべき言葉そのものは明かさない。
@@ -999,26 +1016,27 @@ func (g *Mao) GetValidPlayIndices(playerIdx int) []int {
 
 // maoJSON is the JSON wire format for Mao.
 type maoJSON struct {
-	TrumpCards         *TrumpCards       `json:"tc"`
-	Players            []*MaoPlayer      `json:"pl"`
-	Config             MaoConfig         `json:"cf"`
-	Phase              MaoPhase          `json:"ps"`
-	CurrentPlayerIdx   int               `json:"ci"`
-	DiscardPile        []*Card           `json:"dp"`
-	DrawPile           []*Card           `json:"wp"`
-	ChosenSuit         int               `json:"cs"`
-	PenaltyDrawCount   int               `json:"pd"`
-	Direction          int               `json:"dr"`
-	PendingSkip        bool              `json:"sk"`
-	GameEndFlag        bool              `json:"ge"`
-	WinnerIdx          int               `json:"wi"`
-	RoundNumber        int               `json:"rn"`
-	ActionLog          []*ActionLogEntry `json:"al"`
-	HiddenRule         MaoHiddenRule     `json:"hr"`
-	AwaitingWord       bool              `json:"aw"`
-	PlayerCorrectCount int               `json:"pc"`
-	HintUnlocked       bool              `json:"hu"`
-	RulePenaltyFlag    bool              `json:"rp"`
+	TrumpCards         *TrumpCards         `json:"tc"`
+	Players            []*MaoPlayer        `json:"pl"`
+	Config             MaoConfig           `json:"cf"`
+	Phase              MaoPhase            `json:"ps"`
+	CurrentPlayerIdx   int                 `json:"ci"`
+	DiscardPile        []*Card             `json:"dp"`
+	DrawPile           []*Card             `json:"wp"`
+	ChosenSuit         int                 `json:"cs"`
+	PenaltyDrawCount   int                 `json:"pd"`
+	Direction          int                 `json:"dr"`
+	PendingSkip        bool                `json:"sk"`
+	GameEndFlag        bool                `json:"ge"`
+	WinnerIdx          int                 `json:"wi"`
+	RoundNumber        int                 `json:"rn"`
+	ActionLog          []*ActionLogEntry   `json:"al"`
+	HiddenRule         MaoHiddenRule       `json:"hr"`
+	AwaitingWord       bool                `json:"aw"`
+	PlayerCorrectCount int                 `json:"pc"`
+	HintUnlocked       bool                `json:"hu"`
+	RulePenaltyFlag    bool                `json:"rp"`
+	SayWordHistory     []MaoSayWordAttempt `json:"sh"`
 }
 
 // MarshalJSON implements json.Marshaler. The hidden rule IS included so the
@@ -1046,6 +1064,7 @@ func (g *Mao) MarshalJSON() ([]byte, error) {
 		PlayerCorrectCount: g.playerCorrectCount,
 		HintUnlocked:       g.hintUnlocked,
 		RulePenaltyFlag:    g.rulePenaltyFlag,
+		SayWordHistory:     g.sayWordHistory,
 	})
 }
 
@@ -1060,7 +1079,8 @@ func (g *Mao) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Players) > maoMaxSliceLen || len(j.DiscardPile) > maoMaxSliceLen ||
-		len(j.DrawPile) > maoMaxSliceLen || len(j.ActionLog) > maoMaxSliceLen {
+		len(j.DrawPile) > maoMaxSliceLen || len(j.ActionLog) > maoMaxSliceLen ||
+		len(j.SayWordHistory) > maoMaxSliceLen {
 		return fmt.Errorf("mao: input array exceeds maximum allowed size")
 	}
 	if err := j.Config.Validate(); err != nil {
@@ -1129,5 +1149,6 @@ func (g *Mao) UnmarshalJSON(data []byte) error {
 	}
 	g.hintUnlocked = j.HintUnlocked
 	g.rulePenaltyFlag = j.RulePenaltyFlag
+	g.sayWordHistory = j.SayWordHistory
 	return nil
 }

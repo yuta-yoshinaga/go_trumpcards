@@ -158,6 +158,12 @@ func (_m *MockTysiacGame) GetDeclarerIdx() int {
 	return ret.Get(0).(int)
 }
 
+// GetTalonRecipientIdx モック
+func (_m *MockTysiacGame) GetTalonRecipientIdx() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 // GetContract モック
 func (_m *MockTysiacGame) GetContract() int {
 	ret := _m.Called()

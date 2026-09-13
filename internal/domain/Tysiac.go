@@ -1036,6 +1036,18 @@ func (g *Tysiac) GetForehandIdx() int { return g.forehandIdx }
 // GetDeclarerIdx declarer インデックス取得 (-1=未確定)
 func (g *Tysiac) GetDeclarerIdx() int { return g.declarerIdx }
 
+// GetTalonRecipientIdx returns the opponent receiving the next discarded card.
+func (g *Tysiac) GetTalonRecipientIdx() int {
+	if g.declarerIdx < 0 || g.discardCount < 0 || g.discardCount >= TysiacTalonSize {
+		return -1
+	}
+	recipients := g.opponentsOf(g.declarerIdx)
+	if g.discardCount >= len(recipients) {
+		return -1
+	}
+	return recipients[g.discardCount]
+}
+
 // SetDeclarerIdx declarer インデックス設定 (テスト用)
 func (g *Tysiac) SetDeclarerIdx(idx int) { g.declarerIdx = idx }
 

@@ -100,6 +100,10 @@ const (
 	KempsResultMiss = 4
 )
 
+// KempsCounterPenalty is the number of points lost by a team when a
+// Counter-Kemps declaration misses.
+const KempsCounterPenalty = 1
+
 // NewKemps はコンストラクタ。
 func NewKemps(trumpCards *TrumpCards, players []*KempsPlayer, config KempsConfig) *Kemps {
 	g := &Kemps{
@@ -613,7 +617,7 @@ func (g *Kemps) awardRound(team, result int) {
 // penalizeRound はチーム team から -1 して Counter 失敗を記録し、ラウンドを締める。
 func (g *Kemps) penalizeRound(team int) {
 	if team >= 0 && team < KempsTeamCnt {
-		g.teamScores[team]--
+		g.teamScores[team] -= KempsCounterPenalty
 		if g.teamScores[team] < 0 {
 			g.teamScores[team] = 0
 		}

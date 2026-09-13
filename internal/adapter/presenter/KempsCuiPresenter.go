@@ -87,6 +87,7 @@ func (p *KempsCuiPresenter) Output(g interfaces.KempsGame, lastErr error) string
 				b.WriteString(color.Yellow(i18n.T("kemps.promptOpponentSignal")) + "\n")
 			}
 			b.WriteString(i18n.T("kemps.promptDeclare") + "\n")
+			b.WriteString(color.Yellow(i18n.T("kemps.counterRisk")) + "\n")
 		case domain.KempsPhaseExchange:
 			if g.IsHumanTurn() {
 				b.WriteString(i18n.T("kemps.promptExchange") + "\n")

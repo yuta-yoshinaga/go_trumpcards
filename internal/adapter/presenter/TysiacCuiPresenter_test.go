@@ -36,6 +36,7 @@ func setupTysiacCuiMock() *interfaces.MockTysiacGame {
 	m.On("GetPhase").Return(domain.TysiacPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetDeclarerIdx").Return(0)
+	m.On("GetTalonRecipientIdx").Return(1)
 	m.On("GetContract").Return(100)
 	m.On("GetCurrentBid").Return(100)
 	m.On("GetConfig").Return(domain.DefaultTysiacConfig())

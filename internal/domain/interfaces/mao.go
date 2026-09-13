@@ -75,4 +75,6 @@ type MaoGame interface {
 	GetRuleHintKey() string
 	// GetRulePenaltyFlag 直近のアクションで隠しルール違反が発生したかを返す
 	GetRulePenaltyFlag() bool
+	// GetSayWordHistory returns secret-rule attempts made during this round.
+	GetSayWordHistory() []domain.MaoSayWordAttempt
 }

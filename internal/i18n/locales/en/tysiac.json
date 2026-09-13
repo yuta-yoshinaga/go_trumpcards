@@ -14,7 +14,7 @@
   "promptBid": "Bidding — current bid: {{bid}}  Turn: {{name}}",
   "promptBidHelp": "bid raise ... raise by 10  |  bid pass ... drop out of the auction",
   "promptTalon": "Talon exchange — Declarer: {{name}}",
-  "promptTalonHelp": "d <idx> ... give a card to each opponent (one to each, twice)",
+  "promptTalonHelp": "d <idx> ... give one card to {{recipient}} (the next goes to the other opponent)",
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> ... play a card (A>10>K>Q>J>9; must follow suit, then must trump if void)",
   "promptMarriageHelp": "Marriage: leading the K or Q of a same-suit K+Q sets that suit as trump and scores ♠40/♣60/♦80/♥100",
