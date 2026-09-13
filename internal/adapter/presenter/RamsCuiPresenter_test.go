@@ -10,9 +10,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -118,6 +120,60 @@ func TestRamsCuiPresenterRoundSettlementIsPureAndSurvivesJSON(t *testing.T) {
 
 	r.NextRound()
 	assert.NotContains(t, p.Output(r, nil), settlement)
+}
+
+func TestRamsRoundSettlementLineCoversPenaltyPayoutCombinations(t *testing.T) {
+	player := domain.NewRamsPlayer(false)
+	for _, tt := range []struct {
+		name    string
+		entries []*domain.ActionLogEntry
+		want    string
+	}{
+		{
+			name: "penalty only",
+			entries: []*domain.ActionLogEntry{{ActionType: "deal"},
+				{PlayerIdx: 0, ActionType: "penalty", Detail: "0 トリックで 5 支払い"}},
+			want: "精算: 支払い CPU 0 -5 / 受け取り ",
+		},
+		{
+			name: "payout only",
+			entries: []*domain.ActionLogEntry{{ActionType: "deal"},
+				{PlayerIdx: 0, ActionType: "payout", Detail: "1 トリックで 12 獲得"}},
+			want: "精算: 支払い  / 受け取り CPU 0 +12",
+		},
+		{
+			name: "multiple penalties and payouts",
+			entries: []*domain.ActionLogEntry{{ActionType: "deal"},
+				{PlayerIdx: 0, ActionType: "penalty", Detail: "0 トリックで 5 支払い"},
+				{PlayerIdx: 1, ActionType: "penalty", Detail: "0 トリックで 5 支払い"},
+				{PlayerIdx: 2, ActionType: "payout", Detail: "2 トリックで 20 獲得"},
+				{PlayerIdx: 3, ActionType: "payout", Detail: "1 トリックで 10 獲得"}},
+			want: "精算: 支払い CPU 0 -5, CPU 1 -5 / 受け取り CPU 2 +20, CPU 3 +10",
+		},
+		{
+			name:    "no deal yet",
+			entries: []*domain.ActionLogEntry{{PlayerIdx: 0, ActionType: "penalty", Detail: "0 トリックで 5 支払い"}},
+			want:    "精算: 支払い CPU 0 -5 / 受け取り ",
+		},
+		{
+			name:    "no settlement",
+			entries: []*domain.ActionLogEntry{{ActionType: "deal"}, {PlayerIdx: 0, ActionType: "play"}},
+			want:    "",
+		},
+		{
+			name: "negative player is ignored",
+			entries: []*domain.ActionLogEntry{{ActionType: "deal"},
+				{PlayerIdx: -1, ActionType: "penalty", Detail: "0 トリックで 5 支払い"}},
+			want: "",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			g := new(interfaces.MockRamsGame)
+			g.On("GetActionLog").Return(tt.entries)
+			g.On("GetPlayer", mock.AnythingOfType("int")).Return(player)
+			assert.Equal(t, tt.want, ramsPlain(ramsRoundSettlementLine(g)))
+		})
+	}
 }
 
 func TestRamsCuiPresenterError(t *testing.T) {
