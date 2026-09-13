@@ -23,13 +23,14 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { ShengJiResponse } from '../types/card';
+import type { Card, ShengJiResponse } from '../types/card';
 import { ShengJiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseShengJiCommand, SHENGJI_HELP } from '../utils/cli/commands/shengjiCommands';
 import { formatShengJiState } from '../utils/cli/formatters/shengjiFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { shengjiEvaluate } from '../utils/shengjiCombo';
 
 /** Combination names by wire code (sync: `ShengJiComboKind`). */
 const COMBO_KEYS: Readonly<Record<number, string>> = {
@@ -123,6 +124,12 @@ function ShengJiPageContent() {
     [frontendHint],
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const selectedCombo = useMemo(() => {
+    const hand = state?.players.find((player) => player.isHuman)?.cards ?? [];
+    const picked = selected.map((index) => hand[index]).filter((card): card is Card => card !== undefined);
+    return shengjiEvaluate(picked, state?.level ?? 2, state?.trumpSuit ?? 0);
+  }, [selected, state]);
 
   if (!state)
     return <GameSkeleton gameKey="shengji" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 12 }} />;
@@ -345,6 +352,22 @@ function ShengJiPageContent() {
                   </button>
                 ))}
               </div>
+              {isPlay && selected.length > 0 && (
+                <div className="mt-2 text-center text-xs" data-testid="shengji-combo-preview">
+                  {selectedCombo === null ? (
+                    <span className="font-medium text-ds-warning" data-testid="shengji-combo-invalid">
+                      {t('invalidCombo')}
+                    </span>
+                  ) : (
+                    <span className="text-ds-text-secondary">
+                      {t('comboPreview')}:{' '}
+                      <span className="font-medium text-ds-accent">
+                        {comboLabel(selectedCombo.kind)} ({selectedCombo.size})
+                      </span>
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             <ErrorAlert message={error} onRetry={retry} />
@@ -401,7 +424,7 @@ function ShengJiPageContent() {
                   type="button"
                   className={btnPrimary}
                   onClick={handlePlay}
-                  disabled={loading || selected.length === 0}
+                  disabled={loading || selectedCombo === null}
                 >
                   {t('playButton')}
                 </button>

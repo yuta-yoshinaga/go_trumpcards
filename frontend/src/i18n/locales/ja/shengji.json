@@ -18,6 +18,8 @@
   "comboSingle": "単張",
   "comboPair": "対子",
   "comboTractor": "拖拉機（連続対子）",
+  "comboPreview": "選択中の役",
+  "invalidCombo": "成立する役ではありません",
   "declareRules": "レベル札を見せて切札スートを宣言します。【強い宣言だけが上書きできます】（対子 > 単張）。全員がパスすると無主です。",
   "declareButton": "{{suit}} で亮牌 (x{{strength}})",
   "passButton": "パス",

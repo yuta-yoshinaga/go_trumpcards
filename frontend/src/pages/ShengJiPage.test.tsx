@@ -191,14 +191,48 @@ describe('ShengJiPage', () => {
   });
 
   it('plays the selected cards', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0, true, { cards: [card('SPADE', 7), card('SPADE', 7), card('HEART', 7)] }),
+          seat(1, false),
+          seat(2, false),
+          seat(3, false),
+        ],
+      }),
+    );
     renderWithProviders(<ShengJiPage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
 
     fireEvent.click(screen.getByTestId('hand-card-0'));
-    fireEvent.click(screen.getByTestId('hand-card-2'));
+    fireEvent.click(screen.getByTestId('hand-card-1'));
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndexes: [0, 2] }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndexes: [0, 1] }));
+  });
+
+  it('previews a valid pair and warns for an invalid selection', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0, true, { cards: [card('SPADE', 7), card('SPADE', 7), card('HEART', 7)] }),
+          seat(1, false),
+          seat(2, false),
+          seat(3, false),
+        ],
+      }),
+    );
+    renderWithProviders(<ShengJiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    expect(screen.getByTestId('shengji-combo-preview')).toHaveTextContent('選択中の役: 対子 (2)');
+    expect(screen.getByRole('button', { name: '出す' })).toBeEnabled();
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('hand-card-2'));
+    expect(screen.getByTestId('shengji-combo-invalid')).toHaveTextContent('成立する役ではありません');
+    expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
   });
 
   // **選び直せる。**一度選んだ札を外せないと手が組めない。
