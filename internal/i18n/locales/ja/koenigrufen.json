@@ -33,6 +33,7 @@
   "promptTrickEnd": "トリック完了",
   "promptTrickEndHelp": "n / next ... 次のトリックへ",
   "promptRoundEnd": "ディール完了 (デクレアラー {{declarer}}: {{outcome}})",
+  "promptRoundEndPoints": "デクレアラー側の獲得点: {{points}}",
   "promptRoundEndHelp": "nr / nextround ... 次のディールへ",
   "hintNone": "ヒントはありません。",
   "hintCard": "[ヒント: {{cards}} ({{reason}})]",

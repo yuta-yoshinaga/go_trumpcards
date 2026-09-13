@@ -18,6 +18,18 @@ func koenigrufenTrumpCard(v int) *domain.Card {
 	return domain.NewCard(domain.KoenigrufenTrumpDesign, v, false)
 }
 
+func TestKoenigrufenTeamPointsIncludesPartner(t *testing.T) {
+	g := domain.NewDefaultKoenigrufen()
+	g.Reset()
+	g.SetDeclarerIdx(0)
+	g.SetPartnerIdx(2)
+	g.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, domain.KoenigrufenKingValue, false)})
+	g.GetPlayer(2).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, domain.KoenigrufenKingValue, false)})
+	if got := g.GetTeamPoints(); got <= g.GetCardPoints(0) {
+		t.Fatalf("team points = %d, declarer points = %d; partner points must be included", got, g.GetCardPoints(0))
+	}
+}
+
 func koenigrufenSkusCard() *domain.Card {
 	return domain.NewCard(domain.KoenigrufenSkusDesign, domain.KoenigrufenSkusValue, false)
 }

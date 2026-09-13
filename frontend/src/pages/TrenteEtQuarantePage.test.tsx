@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { useEffect } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { trenteetquaranteApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -28,6 +29,13 @@ vi.mock('../hooks/useCliMode', () => ({
 
 const mockApi = vi.mocked(trenteetquaranteApi.exec);
 const mockUseCliMode = vi.mocked(useCliMode);
+vi.mock('../hooks/useMountReset', () => ({
+  useMountReset: (reset: () => void) => {
+    useEffect(() => {
+      void reset();
+    }, [reset]);
+  },
+}));
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -91,7 +99,7 @@ beforeEach(() => {
 describe('TrenteEtQuarantePage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<TrenteEtQuarantePage />);
-    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset', undefined, undefined, { defaultBet: 0 }));
   });
 
   it('renders the bet phase with the four bet buttons and a deal button', async () => {
@@ -102,6 +110,51 @@ describe('TrenteEtQuarantePage', () => {
     expect(screen.getByTestId(`teq-bet-${TrenteEtQuaranteBetType.ROUGE}`)).toBeInTheDocument();
     expect(screen.getByTestId(`teq-bet-${TrenteEtQuaranteBetType.COULEUR}`)).toBeInTheDocument();
     expect(screen.getByTestId(`teq-bet-${TrenteEtQuaranteBetType.INVERSE}`)).toBeInTheDocument();
+  });
+
+  it('renders the default bet setting', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await waitFor(() => expect(screen.getByLabelText('既定ベット')).toBeInTheDocument());
+    expect(screen.getByLabelText('既定ベット')).toHaveValue('0');
+  });
+
+  it('sends the changed default bet when resetting', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    const defaultBet = await screen.findByLabelText('既定ベット');
+    fireEvent.change(defaultBet, { target: { value: String(TrenteEtQuaranteBetType.INVERSE) } });
+    expect(defaultBet).toHaveValue(String(TrenteEtQuaranteBetType.INVERSE));
+
+    const resetButton = await screen.findByRole('button', { name: 'リセット' });
+    await waitFor(() => expect(resetButton).not.toBeDisabled());
+    mockApi.mockClear();
+    fireEvent.click(resetButton);
+    await waitFor(() => expect(screen.getByText('リセット確認')).toBeInTheDocument());
+    expect(mockApi).not.toHaveBeenCalledWith('reset');
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockApi).toHaveBeenCalledWith('reset', undefined, undefined, {
+        defaultBet: TrenteEtQuaranteBetType.INVERSE,
+      }),
+    );
+  });
+
+  it('does not reset when the reset confirmation is cancelled', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await screen.findByLabelText('既定ベット');
+    const resetButton = await screen.findByRole('button', { name: 'リセット' });
+    await waitFor(() => expect(resetButton).not.toBeDisabled());
+    mockApi.mockClear();
+
+    fireEvent.click(resetButton);
+    await waitFor(() => expect(screen.getByText('リセット確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalledWith('reset');
   });
 
   it('highlights the selected bet with a check mark and always shows the descriptions', async () => {
