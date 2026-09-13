@@ -138,3 +138,14 @@ func actionLogToTextWithNames(entries []*domain.ActionLogEntry, nameOf func(idx 
 	}
 	return sb.String()
 }
+
+func latestAction(entries []*domain.ActionLogEntry, actionType string) *domain.ActionLogEntry {
+	if len(entries) == 0 {
+		return nil
+	}
+	entry := entries[len(entries)-1]
+	if entry == nil || entry.ActionType != actionType {
+		return nil
+	}
+	return entry
+}

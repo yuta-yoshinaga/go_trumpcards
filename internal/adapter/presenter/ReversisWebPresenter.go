@@ -68,6 +68,18 @@ func (p *ReversisWebPresenter) buildMessage(r interfaces.ReversisGame, lastErr e
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}
+	if entry := latestAction(r.GetActionLog(), "marked"); entry != nil {
+		name := "CPU " + strconv.Itoa(entry.PlayerIdx)
+		if r.GetPlayer(entry.PlayerIdx).GetIsHuman() {
+			name = "You"
+		}
+		mark := "♥J"
+		if len(entry.Cards) > 0 && domain.ReversisIsDiamondAce(entry.Cards[0]) {
+			mark = "♦A"
+		}
+		return "", "reversis.marked", map[string]string{"name": name, "mark": mark,
+			"penalty": strconv.Itoa(domain.ReversisMarkedPenalty), "stake": strconv.Itoa(domain.ReversisMarkedStake)}
+	}
 	if r.GetGameEndFlag() {
 		if r.GetWinnerIdx() < 0 {
 			return "", "reversis.result.tie", nil

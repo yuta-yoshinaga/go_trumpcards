@@ -131,6 +131,25 @@ func TestHachiHachiWebPresenter_Error(t *testing.T) {
 	assert.Equal(t, "boom", decoded["message"])
 }
 
+func TestHachiHachiWebPresenterDrawCaptureMessageIsTransient(t *testing.T) {
+	g := domain.NewDefaultHachiHachi()
+	g.Reset()
+	drawn := domain.NewCard(domain.CardDesignSpade, 2, true)
+	captured := domain.NewCard(domain.CardDesignSpade, 3, true)
+	g.SetActionLogForTest([]*domain.ActionLogEntry{{ActionType: "draw", Cards: []*domain.Card{drawn, captured}}})
+
+	p := new(presenter.HachiHachiWebPresenter)
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	assert.Equal(t, "hachihachi.drawCapture", decoded["messageCode"])
+	assert.Equal(t, "松·カス", decoded["messageParams"].(map[string]any)["captured"])
+
+	g.SetActionLogForTest([]*domain.ActionLogEntry{{ActionType: "draw", Cards: []*domain.Card{drawn}}})
+	decoded = nil
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
+	assert.Empty(t, decoded["messageCode"], "捕獲なしでは一時メッセージを出さない")
+}
+
 func TestHachiHachiWebPresenter_GameEnd(t *testing.T) {
 	g := domain.NewDefaultHachiHachi()
 	g.Reset()

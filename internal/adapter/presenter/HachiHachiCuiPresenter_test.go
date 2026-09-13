@@ -47,6 +47,47 @@ func TestHachiHachiCuiPresenter_Output_AllPhases(t *testing.T) {
 	assert.NotEmpty(t, p.Output(g, nil))
 }
 
+func TestHachiHachiCuiPresenter_DrawCaptureMessage(t *testing.T) {
+	p := new(presenter.HachiHachiCuiPresenter)
+	drawn := domain.NewCard(1, 1, true)
+	captured := domain.NewCard(1, 3, true)
+	draw := &domain.ActionLogEntry{ActionType: "draw", Cards: []*domain.Card{drawn, captured}}
+
+	t.Run("shows drawn and captured cards", func(t *testing.T) {
+		g := domain.NewDefaultHachiHachi()
+		g.Reset()
+		g.SetActionLogForTest([]*domain.ActionLogEntry{draw})
+		out := p.Output(g, nil)
+		assert.Contains(t, out, "めくり札 ")
+		assert.Contains(t, out, "松·光")
+		assert.Contains(t, out, "松·カス")
+		assert.Contains(t, out, "獲得しました")
+	})
+
+	t.Run("does not show a non-capture draw", func(t *testing.T) {
+		g := domain.NewDefaultHachiHachi()
+		g.Reset()
+		g.SetActionLogForTest([]*domain.ActionLogEntry{{ActionType: "draw", Cards: []*domain.Card{drawn}}})
+		assert.NotContains(t, p.Output(g, nil), "めくり札")
+	})
+
+	t.Run("a later action hides the message", func(t *testing.T) {
+		g := domain.NewDefaultHachiHachi()
+		g.Reset()
+		g.SetActionLogForTest([]*domain.ActionLogEntry{draw, {ActionType: "play"}})
+		assert.NotContains(t, p.Output(g, nil), "めくり札")
+	})
+
+	t.Run("error takes precedence", func(t *testing.T) {
+		g := domain.NewDefaultHachiHachi()
+		g.Reset()
+		g.SetActionLogForTest([]*domain.ActionLogEntry{draw})
+		out := p.Output(g, errors.New("boom"))
+		assert.Contains(t, out, "boom")
+		assert.NotContains(t, out, "獲得しました")
+	})
+}
+
 func TestHachiHachiCuiPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.HachiHachiCuiPresenter)
 

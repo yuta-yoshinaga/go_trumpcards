@@ -215,3 +215,15 @@ func TestActionLogTextIsTranslated(t *testing.T) {
 		assert.Contains(t, result, "T1", "名前が引けなくても行そのものは出る")
 	})
 }
+
+func TestLatestActionOnlyReturnsTheCurrentEvent(t *testing.T) {
+	marked := &domain.ActionLogEntry{ActionType: "marked"}
+	draw := &domain.ActionLogEntry{ActionType: "draw", Cards: []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 1, true),
+		domain.NewCard(domain.CardDesignSpade, 2, true),
+	}}
+
+	assert.Same(t, marked, latestAction([]*domain.ActionLogEntry{marked}, "marked"))
+	assert.Nil(t, latestAction([]*domain.ActionLogEntry{marked, draw}, "marked"), "次の操作で一時メッセージを消す")
+	assert.Equal(t, "松·短", hachiHachiCapturedLabels(draw.Cards[1:]))
+}

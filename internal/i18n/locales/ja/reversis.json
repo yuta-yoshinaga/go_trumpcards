@@ -10,6 +10,7 @@
   "markQuinola": "♥J",
   "markDiamondAce": "♦A",
   "markNone": "無傷",
+  "marked": "{{name}} が{{mark}}を獲得: +{{penalty}}失点、プールに +{{stake}}チップ",
   "promptCurrentPlayer": "手番: {{name}}",
   "promptPlay": "play <idx>・・・カードを出す",
   "promptRoundEnd": "ラウンド終了。",

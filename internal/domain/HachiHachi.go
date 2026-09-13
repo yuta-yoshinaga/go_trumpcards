@@ -525,11 +525,11 @@ func (g *HachiHachi) hachihachiBestFieldMatch(matches []int) int {
 //   - 一致 3 枚: すべて捕獲 (場の同月 4 枚目)。
 //
 // 捕獲した場合は lastCapturer を playerIdx に更新する。
-func (g *HachiHachi) hachihachiPlaceCard(playerIdx int, card *Card, chosen int) {
+func (g *HachiHachi) hachihachiPlaceCard(playerIdx int, card *Card, chosen int) []*Card {
 	matches := g.hachihachiFieldMatches(card)
 	if len(matches) == 0 {
 		g.state.fieldCards = append(g.state.fieldCards, card)
-		return
+		return nil
 	}
 	var take []int
 	switch {
@@ -557,6 +557,7 @@ func (g *HachiHachi) hachihachiPlaceCard(playerIdx int, card *Card, chosen int) 
 	g.removeFieldByIndex(take)
 	g.players[playerIdx].AddCaptured(captured)
 	g.state.lastCapturer = playerIdx
+	return captured
 }
 
 // removeFieldByIndex は降順に並べ替えてから場札を削除する。
@@ -623,10 +624,14 @@ func (g *HachiHachi) applyTurn(playerIdx, handIdx, fieldIdx int) {
 		drawn := g.state.drawPile[0]
 		g.state.drawPile = g.state.drawPile[1:]
 		before2 := len(g.state.fieldCards)
-		g.hachihachiPlaceCard(playerIdx, drawn, -1)
+		drawnCaptured := g.hachihachiPlaceCard(playerIdx, drawn, -1)
 		drawCaptured := len(g.state.fieldCards) <= before2
+		drawLogCards := []*Card{drawn}
+		if drawCaptured {
+			drawLogCards = append(drawLogCards, drawnCaptured[1:]...)
+		}
 		g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws %s (%s)",
-			g.playerName(playerIdx), hachihachiCardStr(drawn), hachihachiCapturedWord(drawCaptured)), []*Card{drawn})
+			g.playerName(playerIdx), hachihachiCardStr(drawn), hachihachiCapturedWord(drawCaptured)), drawLogCards)
 	}
 
 	g.advanceTurn()
