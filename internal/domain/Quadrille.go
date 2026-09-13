@@ -171,7 +171,7 @@ type Quadrille struct {
 	bidTrump         [QuadrillePlayerCnt]int          // 各プレイヤーが宣言時に選んだ切り札 (-1=なし)
 	bidActed         [QuadrillePlayerCnt]bool         // 各プレイヤーが宣言済みか
 	playerScores     [QuadrillePlayerCnt]int          // 累積ゲーム点
-	lastTrickWinner  int                              // 最終トリック勝者 (-1=未確定)
+	lastTrickWinner  int                              // 直前トリックの勝者 (-1=未確定)
 
 	// 王呼び。calledKingSuit は指名された王のスート (-1=未指名)。
 	// **呼び声は卓で聞こえるので王自体は公開情報**だが、誰が持っているかは
@@ -753,8 +753,8 @@ func (g *Quadrille) ResolveTrick() {
 		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
+	g.lastTrickWinner = winnerIdx
 	if g.trickNumber >= QuadrilleTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.phase = QuadrillePhaseRoundEnd
 		g.enterRoundEnd()
 	} else {
@@ -1394,6 +1394,9 @@ func (g *Quadrille) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *Quadrille) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を取得する (-1=なし)
+func (g *Quadrille) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Quadrille) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }

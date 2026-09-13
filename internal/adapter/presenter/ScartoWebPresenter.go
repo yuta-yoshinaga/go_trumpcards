@@ -100,7 +100,7 @@ func (p *ScartoWebPresenter) buildBase(g interfaces.ScartoGame) *controller.Scar
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.PlayerScores = g.GetPlayerScores()
 	resObj.DealScores = g.GetDealScores()
-	resObj.LastTrickWinner = -1
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 	resObj.IsHumanScarto = g.IsHumanScartoTurn()
 

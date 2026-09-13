@@ -32,7 +32,7 @@ import { parseTysiacCommand, TYSIAC_HELP } from '../utils/cli/commands/tysiacCom
 import { formatTysiacState } from '../utils/cli/formatters/tysiacFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Suit symbols indexed by suit number (0=unset, 1=♠ 2=♣ 3=♥ 4=♦). */
@@ -251,6 +251,12 @@ function TysiacPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
+                  winnerLabel={
+                    isTrickEnd
+                      ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
+                      : undefined
+                  }
                   dataTutorial="tysiac-trick-display"
                 />
               </div>

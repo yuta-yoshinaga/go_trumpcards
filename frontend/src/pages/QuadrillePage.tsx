@@ -32,7 +32,7 @@ import { parseQuadrilleCommand, QUADRILLE_HELP } from '../utils/cli/commands/qua
 import { formatQuadrilleState } from '../utils/cli/formatters/quadrilleFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { MATADOR_NAME_KEY, matadorRank } from '../utils/quadrilleMatadors';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -290,6 +290,12 @@ function QuadrillePageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
+                  winnerLabel={
+                    isTrickEnd
+                      ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
+                      : undefined
+                  }
                   dataTutorial="quadrille-trick-display"
                 />
               </div>

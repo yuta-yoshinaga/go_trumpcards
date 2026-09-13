@@ -60,6 +60,23 @@ func TestQuadrille_ResetDeal(t *testing.T) {
 	assert.Equal(t, g.GetForehandIdx(), g.GetCurrentBidderIdx())
 }
 
+func TestQuadrilleLastTrickWinnerIsSetOnEveryTrick(t *testing.T) {
+	g := newTestQuadrille()
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.QuadrillePhaseTrickEnd)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: quadrilleCard(domain.CardDesignSpade, 13)},
+		{PlayerIdx: 1, Card: quadrilleCard(domain.CardDesignHeart, 2)},
+		{PlayerIdx: 2, Card: quadrilleCard(domain.CardDesignSpade, 12)},
+		{PlayerIdx: 3, Card: quadrilleCard(domain.CardDesignSpade, 11)},
+	})
+
+	g.ResolveTrick()
+
+	assert.NotEqual(t, -1, g.GetLastTrickWinner())
+	assert.Equal(t, g.GetLeadPlayerIdx(), g.GetLastTrickWinner())
+}
+
 func TestQuadrille_DeckIsUnique40(t *testing.T) {
 	g := newTestQuadrille()
 	seen := map[int]bool{}

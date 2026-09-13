@@ -47,6 +47,8 @@ type ScartoGame interface {
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetLastTrickWinner 直前トリックの勝者を取得する (-1=なし)
+	GetLastTrickWinner() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
 	// GetDealerIdx 親インデックスを取得する

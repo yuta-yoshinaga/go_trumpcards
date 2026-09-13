@@ -32,6 +32,22 @@ func scartoNewReset() *domain.Scarto {
 	return g
 }
 
+func TestScartoLastTrickWinnerIsSetOnEveryTrick(t *testing.T) {
+	g := scartoNewReset()
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.ScartoPhaseTrickEnd)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignSpade, 13)},
+		{PlayerIdx: 1, Card: scartoTrumpCard(2)},
+		{PlayerIdx: 2, Card: scartoSuitCard(domain.CardDesignSpade, 12)},
+	})
+
+	g.ResolveTrick()
+
+	assert.NotEqual(t, -1, g.GetLastTrickWinner())
+	assert.Equal(t, g.GetLeadPlayerIdx(), g.GetLastTrickWinner())
+}
+
 func scartoSetHand(g *domain.Scarto, idx int, cards ...*domain.Card) {
 	p := g.GetPlayer(idx)
 	p.Reset()

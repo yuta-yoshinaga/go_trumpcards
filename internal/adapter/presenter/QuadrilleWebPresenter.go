@@ -49,7 +49,7 @@ func (p *QuadrilleWebPresenter) buildBase(g interfaces.QuadrilleGame) *controlle
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.PlayerScores = g.GetPlayerScores()
-	resObj.LastTrickWinner = -1
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 	resObj.IsHumanBidTurn = g.IsHumanBidTurn()
 	resObj.IsHumanKingCallTurn = g.IsHumanKingCallTurn()

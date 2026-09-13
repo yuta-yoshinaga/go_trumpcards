@@ -487,6 +487,23 @@ func TestKoenigrufenResolveTrickCapturesAll(t *testing.T) {
 	assert.Equal(t, 8, g.GetCardPoints(3))
 }
 
+func TestKoenigrufenLastTrickWinnerIsSetOnEveryTrick(t *testing.T) {
+	g := koenigrufenNewReset()
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.KoenigrufenPhaseTrickEnd)
+	g.SetCurrentTrick(koenigrufenTrickCards(
+		&domain.TrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignSpade, 2)},
+		&domain.TrickCard{PlayerIdx: 1, Card: koenigrufenSuitCard(domain.CardDesignSpade, 3)},
+		&domain.TrickCard{PlayerIdx: 2, Card: koenigrufenTrumpCard(4)},
+		&domain.TrickCard{PlayerIdx: 3, Card: koenigrufenSkusCard()},
+	))
+
+	g.ResolveTrick()
+
+	assert.NotEqual(t, -1, g.GetLastTrickWinner())
+	assert.Equal(t, g.GetLeadPlayerIdx(), g.GetLastTrickWinner())
+}
+
 func TestKoenigrufenEnterRoundEndZeroSum(t *testing.T) {
 	g := koenigrufenNewReset()
 	g.SetDeclarerIdx(0)
