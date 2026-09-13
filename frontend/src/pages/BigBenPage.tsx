@@ -59,6 +59,7 @@ export const BigBenPage = withTutorial(BigBenPageContent, 'bigben', GC_TUTORIAL_
 
 function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, idx: number): string {
   if (zone === 'foundation') return t('frontendHint.foundation', { idx });
+  if (zone === 'stock') return t('frontendHint.stock');
   return t('frontendHint.tableau', { col: idx });
 }
 
@@ -366,7 +367,7 @@ function BigBenPageContent() {
             <div data-tutorial="gc-hint-display" data-testid="gc-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
-                  {t('hintAvailable')}: {formatHintZone(t, 'tableau', hint.fromCol)} →{' '}
+                  {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
                   {formatHintZone(t, hint.toZone, hint.toIdx)}
                 </div>
               )}
@@ -409,10 +410,10 @@ function BigBenPageContent() {
                       無くても詰みではない。残り枚数を添えて出す。 */}
                   <button
                     type="button"
-                    className={btnPrimary}
                     onClick={game.handleDeal}
                     disabled={loading || isAutoCompleting || state.stockCount === 0}
                     data-testid="bigben-deal-button"
+                    className={`${btnPrimary}${hint?.fromZone === 'stock' ? ` ${HINT_FROM_RING}` : ''}`}
                   >
                     {t('deal')} ({state.stockCount})
                   </button>
