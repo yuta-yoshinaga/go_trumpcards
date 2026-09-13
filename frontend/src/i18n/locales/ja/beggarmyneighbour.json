@@ -19,7 +19,9 @@
     "penaltyRemaining": "残りペナルティ",
     "lastCard": "最後のカード",
     "rounds": "ラウンド",
-    "maxRounds": "最大ラウンド"
+    "maxRounds": "最大ラウンド",
+    "turn": "手番: {{name}}",
+    "lastCardBy": "{{name}}が出した札"
   },
   "settings": {
     "maxRounds": "最大ラウンド数",

@@ -19,6 +19,7 @@ function makeState(overrides: Partial<BeggarMyNeighbourResponse> = {}): BeggarMy
     penaltyRemaining: 0,
     centralPileSize: 0,
     lastCardPlayed: null,
+    lastCardPlayerIdx: -1,
     roundsPlayed: 0,
     config: defaultConfig,
     message: '',

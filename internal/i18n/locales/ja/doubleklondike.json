@@ -7,6 +7,7 @@
   "helpUndo": "  u / undo              直近の手を取り消す",
   "helpGiveUp": "  g / giveup            投了する",
   "stockLine": "ストック: {{stock}}  ウェイスト: {{waste}}",
+  "progress": "組札: {{count}}/{{total}}枚",
   "foundationLabel": "組札{{idx}}:",
   "tableauLabel": "列{{idx}}:",
   "hintLine": "[HINT: {{from}}{{fromCol}} → {{to}}{{toCol}}]",

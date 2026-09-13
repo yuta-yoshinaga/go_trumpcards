@@ -10,7 +10,7 @@
   "boardPile": "Pile: {{count}} cards",
   "boardLastCard": "Last card: {{card}}",
   "boardLastCardEmpty": "Last card: --",
-  "promptPlay": "Use step to play the next card.",
+  "promptPlay": "{{name}}'s turn. Use step to play the next card.",
   "promptPayPenalty": "Paying penalty! {{name}} owes {{remaining}} more card(s).",
   "promptCollect": "Penalty paid off! step to collect the pile.",
   "gameWinHuman": "You win!",

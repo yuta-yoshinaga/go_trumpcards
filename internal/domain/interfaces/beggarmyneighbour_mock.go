@@ -111,6 +111,12 @@ func (_m *MockBeggarMyNeighbourGame) GetLastCardPlayed() *domain.Card {
 	return nil
 }
 
+// GetLastCardPlayerIdx モック
+func (_m *MockBeggarMyNeighbourGame) GetLastCardPlayerIdx() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetRoundsPlayed モック
 func (_m *MockBeggarMyNeighbourGame) GetRoundsPlayed() int {
 	ret := _m.Called()

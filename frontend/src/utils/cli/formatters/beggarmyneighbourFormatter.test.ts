@@ -20,6 +20,7 @@ const base: BeggarMyNeighbourResponse = {
   penaltyRemaining: 0,
   centralPileSize: 0,
   lastCardPlayed: null,
+  lastCardPlayerIdx: -1,
   roundsPlayed: 3,
   config: { maxRounds: 2000 },
   message: '',

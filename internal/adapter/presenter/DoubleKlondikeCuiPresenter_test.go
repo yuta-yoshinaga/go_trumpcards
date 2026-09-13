@@ -94,3 +94,20 @@ func TestDoubleKlondikeCuiPresenter_ShowsWhetherUndoIsAvailable(t *testing.T) {
 		assert.NotContains(t, out, i18n.T("cuiSolitaireUndoUnavailable"))
 	})
 }
+
+func TestDoubleKlondikeCuiPresenter_ShowsProgress(t *testing.T) {
+	p := new(presenter.DoubleKlondikeCuiPresenter)
+
+	t.Run("zero cards on foundation", func(t *testing.T) {
+		g := domain.NewDefaultDoubleKlondike()
+		g.Reset()
+		out := p.Output(g, nil)
+		assert.Contains(t, out, "組札: 0/104枚")
+	})
+
+	t.Run("two cards on foundation", func(t *testing.T) {
+		js := `{"ph":0,"fd":[[{"d":1,"v":1},{"d":1,"v":2}]]}`
+		out := p.Output(dkState(t, js), nil)
+		assert.Contains(t, out, "組札: 2/104枚")
+	})
+}

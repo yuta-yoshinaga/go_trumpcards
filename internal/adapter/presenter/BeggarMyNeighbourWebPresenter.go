@@ -19,6 +19,7 @@ func (p *BeggarMyNeighbourWebPresenter) Output(g interfaces.BeggarMyNeighbourGam
 	resObj.PenaltyRemaining = g.GetPenaltyRemaining()
 	resObj.CentralPileSize = g.GetCentralPileSize()
 	resObj.LastCardPlayed = cardToOutput(g.GetLastCardPlayed())
+	resObj.LastCardPlayerIdx = g.GetLastCardPlayerIdx()
 	resObj.RoundsPlayed = g.GetRoundsPlayed()
 	resObj.Config = controller.BeggarMyNeighbourWebOutputConfig{
 		MaxRounds: g.GetConfig().MaxRounds,
