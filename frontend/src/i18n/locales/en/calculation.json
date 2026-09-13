@@ -45,7 +45,8 @@
   "landscapeBanner": "Landscape mode recommended",
   "frontendHint": {
     "calculationStock": "The stock card can be played to a foundation",
-    "calculationWaste": "A waste pile top can be played to a foundation"
+    "calculationWaste": "A waste pile top can be played to a foundation",
+    "calculationStockToWaste": "The stock card is best discarded to waste {{idx}}"
   },
   "tutorial": {
     "foundations": "Four foundations at the top start with A, 2, 3, 4 and build up to K with +1, +2, +3, +4 step sizes respectively (mod 13).",

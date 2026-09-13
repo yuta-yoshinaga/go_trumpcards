@@ -121,6 +121,8 @@ func (p *CalculationCuiPresenter) HintOutput(g interfaces.CalculationGame) strin
 		return i18n.T("cuiHintNone") + "\n"
 	}
 	switch hint.FromZone {
+	case "stockToWaste":
+		return i18n.Tf("calculation.hintStockToWaste", "waste", strconv.Itoa(hint.WasteIdx)) + "\n"
 	case "stock":
 		return i18n.Tf("calculation.hintStock",
 			"foundation", strconv.Itoa(hint.FoundationIdx)) + "\n"

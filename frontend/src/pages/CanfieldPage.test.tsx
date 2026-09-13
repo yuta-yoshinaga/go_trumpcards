@@ -67,7 +67,12 @@ describe('CanfieldPage', () => {
 
   it('shows base rank', async () => {
     renderWithProviders(<CanfieldPage />);
-    await waitFor(() => expect(screen.getByText(/ベースランク/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('ベースランク: 5')).toBeInTheDocument());
+  });
+
+  it('explains the base-rank foundation cycle', async () => {
+    renderWithProviders(<CanfieldPage />);
+    expect(await screen.findByTestId('cf-base-rank-rule')).toHaveTextContent('Kの次はAへ循環');
   });
 
   it('reserve stack reflects remaining count via data-reserve-layers', async () => {

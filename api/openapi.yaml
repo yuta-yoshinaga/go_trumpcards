@@ -57098,10 +57098,17 @@ components:
       properties:
         fromZone:
           type: string
-          enum: [stock, waste]
+          enum: [stock, waste, stockToWaste]
+          description: >-
+            `stock`/`waste` name where a card goes to a foundation from.
+            `stockToWaste` is the advice given when no foundation move
+            exists, which is the ordinary case: it names which waste to
+            bury the stock's top card on.
         wasteIdx:
           type: integer
-          description: Waste pile index (-1 if fromZone is `stock`)
+          description: >-
+            Waste pile index. -1 when `fromZone` is `stock`; the destination
+            pile when it is `stockToWaste`.
         foundationIdx:
           type: integer
           description: Target foundation index (0..3)

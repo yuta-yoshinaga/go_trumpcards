@@ -288,6 +288,10 @@ function CanfieldPageContent() {
 
           <LandscapeBanner message={phaseName} />
 
+          <p className="mb-2 text-center text-xs text-ds-text-muted" data-testid="cf-base-rank-rule" role="note">
+            {t('baseRankRule')}
+          </p>
+
           <div className="flex-1 overflow-y-auto px-4 pt-3 lg:px-8">
             {/* Foundation */}
             <div className="mb-3 flex gap-2" data-tutorial="cf-foundation">
