@@ -43,6 +43,7 @@ func TestTongitsWebController_Method(t *testing.T) {
 	siMock.On("Challenge", []bool{true, false}).Return(mockOutput)
 	siMock.On("NextRound").Return(mockOutput)
 	siMock.On("ActionLog").Return(mockOutput)
+	siMock.On("Hint").Return(mockOutput)
 
 	factory := func() uc.TongitsInteractorIF { return siMock }
 	ctrl := controller.NewTongitsWebController(factory)
@@ -140,6 +141,19 @@ func TestTongitsWebController_Method(t *testing.T) {
 			recorded.CodeIs(http.StatusOK)
 			recorded.BodyIs(mockOutput)
 		}
+	})
+
+	// The structural guard checks wiring; this proves both aliases resolve to the
+	// interactor and return its response successfully.
+	t.Run("hint", func(t *testing.T) {
+		for _, cmd := range []string{"h", "hint"} {
+			var input controller.TongitsWebInput
+			_ = json.Unmarshal([]byte(fmt.Sprintf(`{"command":"%s","sessionId":"s1"}`, cmd)), &input)
+			recorded := execRequest(t, ctrl.Exec, &input)
+			recorded.CodeIs(http.StatusOK)
+			recorded.BodyIs(mockOutput)
+		}
+		siMock.AssertCalled(t, "Hint")
 	})
 
 	t.Run("unsupported command", func(t *testing.T) {

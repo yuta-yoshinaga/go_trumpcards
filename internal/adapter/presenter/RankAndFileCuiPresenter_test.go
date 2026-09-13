@@ -63,6 +63,15 @@ func TestRankAndFileCuiPresenterTargetsOutput(t *testing.T) {
 		assert.NotContains(t, out, "{{")
 		fg.AssertExpectations(t)
 	})
+
+	t.Run("指定された札を掴めないときは明示する", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		fg.On("SequenceStarts", 0).Return([]int{1})
+		out := p.TargetsOutput(fg, 0, 0)
+		assert.Contains(t, out, "掴めません")
+		assert.NotContains(t, out, "{{")
+		fg.AssertExpectations(t)
+	})
 }
 
 func TestRankAndFileCuiPresenter_Output(t *testing.T) {

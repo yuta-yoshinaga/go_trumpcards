@@ -987,6 +987,37 @@ func TestRankAndFile_SequenceStartsStopsAtTheBreakAndAtHiddenCards(t *testing.T)
 	assert.Nil(t, ft.SequenceStarts(domain.RankAndFileTableauCnt), "out of range is nil, not a panic")
 }
 
+func TestRankAndFile_LegalTargetsHandlesAvailableUnavailableAndUnmovable(t *testing.T) {
+	build := func() *domain.RankAndFile {
+		ft := setupPlayingRankAndFile()
+		clearRFTableau(ft)
+		var tableau [domain.RankAndFileTableauCnt][]*domain.RankAndFileTableauCard
+		tableau[0] = []*domain.RankAndFileTableauCard{makeRFTableauCard(domain.CardDesignHeart, 5)}
+		tableau[1] = []*domain.RankAndFileTableauCard{makeRFTableauCard(domain.CardDesignSpade, 6)}
+		for col := 2; col < domain.RankAndFileTableauCnt; col++ {
+			tableau[col] = []*domain.RankAndFileTableauCard{makeRFTableauCard(domain.CardDesignSpade, 4)}
+		}
+		ft.SetTableau(tableau)
+		return ft
+	}
+
+	t.Run("returns legal destinations", func(t *testing.T) {
+		assert.Equal(t, []int{1}, build().LegalTargets(0, 0))
+	})
+	t.Run("returns none when no column accepts the card", func(t *testing.T) {
+		ft := build()
+		tableau := ft.GetTableau()
+		tableau[1] = []*domain.RankAndFileTableauCard{makeRFTableauCard(domain.CardDesignSpade, 4)}
+		ft.SetTableau(tableau)
+		assert.Empty(t, ft.LegalTargets(0, 0))
+	})
+	t.Run("returns none for an invalid or out of range selection", func(t *testing.T) {
+		ft := build()
+		assert.Nil(t, ft.LegalTargets(0, 1))
+		assert.Nil(t, ft.LegalTargets(domain.RankAndFileTableauCnt, 0))
+	})
+}
+
 // **CUI の短縮形が届くこと。**`m <from> <to>` は cardIndex に -1 を渡す
 // (コントローラのコメントどおり「上札を動かす」の意)。範囲チェックが素直に
 // -1 を弾くと、ヘルプに載っている短縮形が必ず "invalid card index" で失敗する。
