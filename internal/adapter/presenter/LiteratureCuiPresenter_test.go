@@ -103,6 +103,18 @@ func TestLiteratureCuiPresenter_LimitsRecentAskHistoryAndCanShowAll(t *testing.T
 	}
 }
 
+func TestLiteratureCuiPresenter_AllAsksSkipsNilAsks(t *testing.T) {
+	o := defaultLiteratureOpts()
+	o.asks = []*domain.LiteratureAsk{
+		nil,
+		{From: 0, To: 1, Card: ltTestCard(domain.CardDesignSpade, 3), Success: true},
+	}
+
+	out := new(presenter.LiteratureCuiPresenter).AllAsksOutput(setupLiteratureCuiMock(o))
+	assert.Contains(t, out, "席0 → 席1: SPADE 3")
+	assert.NotContains(t, out, "<nil>")
+}
+
 // **要求の 4 条件を画面に書く。**味方に訊けないのが最も間違えやすい。
 func TestLiteratureCuiPresenter_StatesTheAskConditions(t *testing.T) {
 	out := new(presenter.LiteratureCuiPresenter).Output(setupLiteratureCuiMock(defaultLiteratureOpts()), nil)

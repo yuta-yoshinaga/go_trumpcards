@@ -260,6 +260,24 @@ describe('LiteraturePage', () => {
     expect(details?.querySelectorAll('[data-testid="literature-older-ask"]')).toHaveLength(1);
   });
 
+  it('does not show details when there are exactly five asks', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        asks: Array.from({ length: 5 }, (_, i) => ({ from: 0, to: 1, card: card('SPADE', i + 2), success: false })),
+      }),
+    );
+    renderWithProviders(<LiteraturePage />);
+    const history = await screen.findByTestId('literature-history');
+    expect(history.querySelector('details')).toBeNull();
+  });
+
+  it("renders '?' for an ask with no card", async () => {
+    mockExec.mockResolvedValue(makeState({ asks: [{ from: 0, to: 1, card: null, success: false }] }));
+    renderWithProviders(<LiteraturePage />);
+    const history = await screen.findByTestId('literature-history');
+    expect(history).toHaveTextContent('?');
+  });
+
   // **同数で終わることがある。**無効が絡むため。
   it('reports the outcome, a level finish included', async () => {
     for (const [team, text] of [

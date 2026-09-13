@@ -27,6 +27,12 @@ describe('parseConquianCommand', () => {
     });
   });
 
+  it('preserves a non-numeric extension target as NaN', () => {
+    expect(parseConquianCommand('meld 3@oops')).toEqual({
+      args: ['meld', undefined, undefined, [[3]], [Number.NaN]],
+    });
+  });
+
   it('parses discard with index', () => {
     expect(parseConquianCommand('d 3')).toEqual({ args: ['discard', 3] });
     expect(parseConquianCommand('dis 5')).toEqual({ args: ['discard', 5] });
