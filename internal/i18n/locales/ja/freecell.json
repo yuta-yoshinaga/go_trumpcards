@@ -1,4 +1,5 @@
 {
+  "autoCompleteReady": "オートコンプリート可能です (ac)",
   "helpTitle": "FreeCell (フリーセル)",
   "helpMove": "  m t <col> t <col>    move tableau top card to tableau",
   "helpMoveTF": "  m t <col> f          move tableau to foundation",

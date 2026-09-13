@@ -465,7 +465,7 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			CommandKeys:       []string{"memory.helpFlip", "memory.helpNext"},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"memory.helpSetDifficulty"},
+			SettingKeys:       []string{"memory.helpSetDifficulty", "memory.helpSetPairCount"},
 		}),
 	BindCuiFor("klondike",
 		func() usecase.KlondikeInteractorIF {

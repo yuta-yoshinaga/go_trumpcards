@@ -572,6 +572,31 @@ func (f *FreeCell) UndoN(n int) error {
 	return undoN(f, n)
 }
 
+// CanAutoComplete はいまオートコンプリートを押せば最後まで通るかを返す。
+//
+// Web の freeCellAutoCompleteReady と同じく、各タブロー列が下から上へ厳密に
+// 降順であることを調べる。フリーセルは単札で常に露出しており詰まらせないため
+// 見ない。同ランクは技術的には掃ける場合もあるが、掃除が詰まらないと約束しない
+// ため意図的に保守的に false とする。
+func (f *FreeCell) CanAutoComplete() bool {
+	if f.phase != FreeCellPhasePlaying {
+		return false
+	}
+	for _, col := range f.tableau {
+		var below *Card
+		for _, card := range col {
+			if card == nil {
+				continue
+			}
+			if below != nil && below.GetValue() <= card.GetValue() {
+				return false
+			}
+			below = card
+		}
+	}
+	return true
+}
+
 // --- State getters/setters ---
 
 // GetPhase フェーズ取得
