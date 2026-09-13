@@ -1691,6 +1691,9 @@ func (g *Koenigrufen) SetPlayerScores(s [KoenigrufenPlayerCnt]int) { g.playerSco
 // GetCardPoints プレイヤー i が獲得したカードポイント合計を返す (表示用)。
 func (g *Koenigrufen) GetCardPoints(i int) int { return g.playerTrickPoints(i) }
 
+// GetTeamPoints はデクレアラー側 (デクレアラー、パートナー、タロン) の獲得点を返す。
+func (g *Koenigrufen) GetTeamPoints() int { return g.teamCaptured() }
+
 // GetOutcome 直近ディールの結果取得
 func (g *Koenigrufen) GetOutcome() KoenigrufenOutcome { return g.outcome }
 

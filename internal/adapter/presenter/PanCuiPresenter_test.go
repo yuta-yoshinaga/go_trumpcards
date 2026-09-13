@@ -145,12 +145,12 @@ func TestPanCuiPresenter_MarksValleMelds(t *testing.T) {
 	}
 	assert.False(t, domain.PanIsValleMeld(run))
 
-	// 出力側: バジェにだけ印が付く。
+	// 出力側: チップユニット数を理由として表示する。
 	m, players := setupPanCuiMock()
 	players[0].SetLaidMelds([][]*domain.Card{set(5), set(4), run})
 	out := new(presenter.PanCuiPresenter).Output(m, nil)
-	assert.Contains(t, out, "★バジェ")
-	assert.Equal(t, 1, strings.Count(out, "★バジェ"))
+	assert.Contains(t, out, "チップ1ユニット")
+	assert.Equal(t, 2, strings.Count(out, "チップ1ユニット"))
 }
 
 // #5705: 「11 枚メルドしたら上がり」が勝利条件なのに、CUI は各自のメルド枚数しか

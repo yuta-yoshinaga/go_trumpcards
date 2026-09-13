@@ -6,6 +6,8 @@
   "emptyColumnAriaLabel": "Empty tableau column {{col}}",
   "emptyFaceAriaLabel": "Empty clock face {{idx}} ({{hour}} o'clock)",
   "faceAriaLabel": "Clock face {{idx}} ({{hour}} o'clock), target {{target}}, {{count}} cards",
+  "facePlacementAvailable": "card can be placed",
+  "facePlacementUnavailable": "card cannot be placed",
   "facesComplete": "Done {{count}}/{{total}}",
   "foundation": "Clock face",
   "frontendHint": {

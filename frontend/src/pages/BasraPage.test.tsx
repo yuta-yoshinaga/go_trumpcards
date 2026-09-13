@@ -64,6 +64,15 @@ describe('BasraPage', () => {
     });
   });
 
+  it('labels hand cards and exposes their selection state', async () => {
+    renderWithProviders(<BasraPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+    expect(handCard).toHaveAttribute('aria-label', '♥ 5');
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(handCard);
+    expect(handCard).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('capturing dispatches play with the selected hand and table indices', async () => {
     renderWithProviders(<BasraPage />);
     const handCard = await screen.findByTestId('hand-card-0');

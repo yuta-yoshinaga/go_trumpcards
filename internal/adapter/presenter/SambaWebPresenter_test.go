@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -38,6 +39,7 @@ func setupSambaWebMock() *interfaces.MockSambaGame {
 	m.On("GetConfig").Return(domain.DefaultSambaConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetTeamCount").Return(2)
+	m.On("GetTeamCompletedMeldCount", mock.Anything).Return(0)
 	m.On("GetTeamScore", 0).Return(0)
 	m.On("GetTeamScore", 1).Return(0)
 	return m
@@ -70,6 +72,7 @@ func TestSambaWebPresenter_Output(t *testing.T) {
 		require.Equal(80, resObj.DrawPileCount)
 		require.Equal(-1, resObj.WinnerIdx)
 		require.Equal(2, len(resObj.TeamScores))
+		require.Equal(domain.SambaGoOutRequiredMelds, resObj.Config.GoOutRequiredMelds)
 		require.Equal(0, resObj.Players[0].Team)
 		require.Equal(1, resObj.Players[1].Team)
 	})

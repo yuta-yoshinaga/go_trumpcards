@@ -78,6 +78,7 @@ type KoenigrufenWebOutput struct {
 	PlayerScores     [domain.KoenigrufenPlayerCnt]int `json:"playerScores"`
 	LastTrickWinner  int                              `json:"lastTrickWinner"`
 	Outcome          int                              `json:"outcome"`
+	TeamPoints       int                              `json:"teamPoints"`
 	Result           int                              `json:"result"`
 	PlayableIndices  []int                            `json:"playableIndices"`
 	GameEndFlag      bool                             `json:"gameEndFlag"`

@@ -19,6 +19,8 @@
   "frozenAnnounceOn": "The discard pile is frozen. Taking it now needs two matching natural cards.",
   "frozenIndicator": "❄️ Frozen",
   "goOutButton": "Go out",
+  "goOutProgress": "Completed melds {{completed}}/{{required}}",
+  "goOutUnavailable": "Your team needs {{required}} completed melds to go out",
   "hint": {
     "drawStock": "Draw from the stock pile",
     "takeDiscardPile": "Consider taking the discard pile",

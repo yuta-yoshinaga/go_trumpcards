@@ -36,11 +36,15 @@ func (p *SambaWebPresenter) Output(g interfaces.SambaGame, lastErr error) string
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.SambaWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		PointLimit:    cfg.PointLimit,
+		CpuDifficulty:      int(cfg.CpuDifficulty),
+		PointLimit:         cfg.PointLimit,
+		GoOutRequiredMelds: domain.SambaGoOutRequiredMelds,
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)
+	for team := 0; team < 2; team++ {
+		resObj.CompletedMelds[team] = g.GetTeamCompletedMeldCount(team)
+	}
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)

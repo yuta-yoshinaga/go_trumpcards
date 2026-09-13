@@ -24,6 +24,7 @@ import type {
   DoppelkopfResponse,
   EcarteResponse,
   EscobaResponse,
+  FiveHundredResponse,
   FortyFivesResponse,
   FrenchTarotResponse,
   GanjifaResponse,
@@ -2139,6 +2140,7 @@ const baseKoenigrufenState: KoenigrufenResponse = {
   playerScores: [0, 0, 0, 0],
   lastTrickWinner: -1,
   outcome: 0,
+  teamPoints: 0,
   result: 0,
   playableIndices: [0, 1, 2, 3, 4],
   gameEndFlag: false,
@@ -2973,6 +2975,56 @@ const baseFortyFivesState: FortyFivesResponse = {
  */
 export function makeFortyFivesState(overrides?: Partial<FortyFivesResponse>): FortyFivesResponse {
   return { ...baseFortyFivesState, ...overrides };
+}
+
+/** Base Five Hundred state used as the default for {@link makeFiveHundredState}. */
+const baseFiveHundredState: FiveHundredResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 3,
+      cards: [
+        { design: 'SPADE' as const, value: 5 },
+        { design: 'HEART' as const, value: 6 },
+        { design: 'DIAMOND' as const, value: 7 },
+      ],
+      team: 0,
+      trickCount: 0,
+      passed: false,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 0, cards: [], team: 1, trickCount: 0, passed: false, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 0, cards: [], team: 0, trickCount: 0, passed: false, isDeclarer: false },
+    { id: 3, isHuman: false, cardCount: 0, cards: [], team: 1, trickCount: 0, passed: false, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 0,
+  currentPlayerIdx: 0,
+  bidPlayerIdx: 0,
+  dealerIdx: 3,
+  leadPlayerIdx: 0,
+  trumpSuit: -1,
+  contractKind: 0,
+  contractTricks: 0,
+  contractValue: 0,
+  declarerIdx: -1,
+  highestBid: null,
+  highestBidder: -1,
+  jokerLeadSuit: -1,
+  kittyCount: 3,
+  currentTrick: [],
+  teamScores: [0, 0],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  config: { cpuDifficulty: 1, targetScore: 500 },
+  message: '',
+};
+
+/** Creates a Five Hundred state with sensible defaults (the human on the bid turn). */
+export function makeFiveHundredState(overrides?: Partial<FiveHundredResponse>): FiveHundredResponse {
+  return { ...baseFiveHundredState, ...overrides };
 }
 
 /** Base Twenty-Nine (29) state used as the default for {@link makeTwentyNineState}. A 4-player 2-team hidden-trump bidding trick-taker; defaults to a human Bid turn. */
@@ -4379,7 +4431,8 @@ const baseSambaState: SambaResponse = {
   winnerIdx: -1,
   message: '',
   messageCode: 'samba.drawPhase',
-  config: { cpuDifficulty: 1, pointLimit: 10000 },
+  config: { cpuDifficulty: 1, pointLimit: 10000, goOutRequiredMelds: 2 },
+  completedMelds: [0, 0],
 };
 
 /**

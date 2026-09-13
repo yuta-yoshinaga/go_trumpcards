@@ -129,6 +129,7 @@ func (p *CariocaCuiPresenter) Output(g interfaces.CariocaGame, lastErr error) st
 			}
 			b.WriteString(i18n.T("carioca.promptPlayHelpLayoff") + "\n")
 			b.WriteString(i18n.T("carioca.promptPlayHelpDiscard") + "\n")
+			b.WriteString(i18n.Tf("carioca.jokerRule", "points", strconv.Itoa(domain.CariocaJokerPenalty)) + "\n")
 		case domain.CariocaPhaseRoundEnd:
 			// **誰が上がってラウンドが終わったかは点数表からは読めない。**サーバは
 			// roundWinnerIdx を持っているのに Web も CUI も読んでいなかった (#6498)。

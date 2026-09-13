@@ -153,9 +153,15 @@ func (di *DesmocheInteractor) runCpuTurns() {
 		var err error
 		switch {
 		case phase == domain.DesmochePhaseDraw:
-			err = di.Game.DrawFromStock(idx)
+			if action.DrawFromDiscard {
+				err = di.Game.DrawFromDiscard(idx)
+			} else {
+				err = di.Game.DrawFromStock(idx)
+			}
 		case action.MeldIdxs != nil:
 			err = di.Game.Meld(idx, action.MeldIdxs)
+		case action.LayOff:
+			err = di.Game.LayOff(idx, action.LayOffHandIdx, action.LayOffMeldIdx)
 		case action.DiscardIdx >= 0:
 			err = di.Game.Discard(idx, action.DiscardIdx)
 		default:

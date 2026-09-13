@@ -65,6 +65,8 @@ flowchart TD
 ==========
 Canfield (キャンフィールド)
 ==========
+Base rank: 5
+ファンデーションはベースランクから始まり、Kの次はAへ循環します
 Foundations: [♠5] [♥-] [♦-] [♣-]
 Reserve(12): [♣K]
 Tableau:

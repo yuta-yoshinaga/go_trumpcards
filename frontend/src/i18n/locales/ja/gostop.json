@@ -25,6 +25,7 @@
   "captured": "捕獲: {{count}}",
   "score": "得点: {{score}}",
   "points": "現在: {{points}}点",
+  "goCount": "ゴー {{count}}回",
   "turnYours": "あなたの手番です — 手札を1枚選んで場札を捕獲します。",
   "turnCpu": "CPU がプレイ中です…",
   "gwang": "光",

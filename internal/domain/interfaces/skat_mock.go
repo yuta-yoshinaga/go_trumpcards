@@ -131,6 +131,14 @@ func (m *MockSkatGame) GetValidPlayIndices(playerIdx int) []int {
 	return args.Get(0).([]int)
 }
 
+func (m *MockSkatGame) GetTrumpIndices(playerIdx int) []int {
+	args := m.Called(playerIdx)
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).([]int)
+}
+
 func (m *MockSkatGame) GetHint() *domain.SkatHint {
 	args := m.Called()
 	if args.Get(0) == nil {

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -41,7 +42,7 @@ func (c *DesmocheCuiController) Exec(command string) string {
 			cfg := c.di.GetConfig()
 			return c.di.ResetWithConfig(cfg)
 		},
-		[]string{"ds", "dd", "m", "meld", "o", "layoff", "x", "desmoche", "d", "discard", "n", "next", "h", "hint", "log", "l"},
+		[]string{"ds", "dd", "m", "meld", "o", "layoff", "x", "desmoche", "d", "discard", "n", "next", "sd", "setdifficulty", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "ds", "drawstock":
@@ -58,6 +59,12 @@ func (c *DesmocheCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Discard)
 			case "n", "next":
 				return c.di.NextRound(), true
+			case "sd", "setdifficulty":
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
+					cfg := c.di.GetConfig()
+					cfg.CpuDifficulty = domain.DesmocheCpuDifficulty(v)
+					return c.di.ResetWithConfig(cfg)
+				})
 			default:
 				return handleCuiHintAndLog(cmd, c.di.Hint, c.di.ActionLog)
 			}

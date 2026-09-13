@@ -43,7 +43,16 @@
     "afTooltip": "AF (Aggression Factor): ratio of aggressive actions (bet/raise) to passive actions (call)"
   },
   "settings": {
-    "cpuMetaAI": "Meta-AI (CPU learns your play style)"
+    "cpuMetaAI": "Meta-AI (CPU learns your play style)",
+    "ante": "Ante",
+    "anteHelp": "The forced bet every player posts at the start of each hand.",
+    "bettingLimit": "Betting limit",
+    "bettingLimitHelp": "Choose fixed-limit, pot-limit, or no-limit betting.",
+    "fixedLimit": "Fixed limit",
+    "potLimit": "Pot limit",
+    "noLimit": "No limit",
+    "tournamentMode": "Tournament mode",
+    "tournamentModeHelp": "The ante rises every few hands (guide: it doubles every 10 hands). Changes take effect after reset."
   },
   "tutorial": {
     "playerHand": "Your cards. Some are face-down (only you see them) and some face-up (everyone sees them). The high hand is ordinary seven-card stud.",

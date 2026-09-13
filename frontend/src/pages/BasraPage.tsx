@@ -326,6 +326,8 @@ function BasraPageContent() {
                       handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
                     } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
                     data-testid={`hand-card-${i}`}
+                    aria-label={cardAlt(c)}
+                    aria-pressed={handIndex === i}
                   >
                     <AnimatedCard card={c} width={cardWidth} />
                   </button>

@@ -21,6 +21,7 @@
   "hintAvailable": "Hint available",
   "noHint": "No hint",
   "baseRank": "Base rank: {{rank}}",
+  "baseRankRule": "Foundations start at the base rank and wrap from K back to A",
   "foundationHeader": "Foundation: ",
   "reserveLine": "Reserve: {{count}} (top: {{card}})",
   "reserveEmpty": "Reserve: [empty]",

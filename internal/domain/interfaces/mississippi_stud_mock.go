@@ -131,6 +131,11 @@ func (m *MockMississippiStudGame) GetChips() int {
 	return args.Int(0)
 }
 
+func (m *MockMississippiStudGame) GetChipsRefilled() bool {
+	args := m.Called()
+	return args.Bool(0)
+}
+
 func (m *MockMississippiStudGame) GetActionLog() []*domain.ActionLogEntry {
 	args := m.Called()
 	if args.Get(0) == nil {

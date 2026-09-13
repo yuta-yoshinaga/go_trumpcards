@@ -13,6 +13,7 @@
   "discardLine": "捨て札: {{card}}",
   "playerLine": "{{name}}: 累積{{cum}}点 ラウンド{{round}}点 チップ{{chips}} メルド{{melded}}/{{goal}}枚 手札{{cards}}枚",
   "valleTag": "★バジェ",
+  "chipUnits": "チップ{{count}}ユニット",
   "meldLine": "  メルド[{{idx}}]: {{cards}}",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "promptDraw": "手番: {{name}} (ドローフェーズ)",

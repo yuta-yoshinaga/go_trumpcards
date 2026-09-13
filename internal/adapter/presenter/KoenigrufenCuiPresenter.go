@@ -212,6 +212,8 @@ func (p *KoenigrufenCuiPresenter) writePrompt(b *strings.Builder, g interfaces.K
 		b.WriteString(i18n.Tf("koenigrufen.promptRoundEnd",
 			"declarer", cuiPlayerName(g.GetPlayer(g.GetDeclarerIdx()), g.GetDeclarerIdx()),
 			"outcome", koenigrufenOutcomeLabel(g.GetOutcome())) + "\n")
+		b.WriteString(i18n.Tf("koenigrufen.promptRoundEndPoints",
+			"points", strconv.Itoa(g.GetTeamPoints())) + "\n")
 		b.WriteString(i18n.T("koenigrufen.promptRoundEndHelp") + "\n")
 	}
 }

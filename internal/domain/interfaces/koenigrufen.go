@@ -95,6 +95,8 @@ type KoenigrufenGame interface {
 	GetPlayerScores() [domain.KoenigrufenPlayerCnt]int
 	// GetCardPoints プレイヤー i の獲得カードポイントを取得する
 	GetCardPoints(i int) int
+	// GetTeamPoints デクレアラー側の獲得カードポイントを取得する
+	GetTeamPoints() int
 	// GetOutcome 直近ディールの結果を取得する
 	GetOutcome() domain.KoenigrufenOutcome
 	// GetResult 人間視点のマッチ結果を取得する

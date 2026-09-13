@@ -377,6 +377,10 @@ describe('BristolPage', () => {
 
     // 合法な移動先は 2 つ (タブロー 3 とファウンデーション 1) だけ。
     await waitFor(() => expect(screen.queryAllByTestId('bristol-legal-target')).toHaveLength(2));
+    expect(screen.getByRole('button', { name: /降順ビルド列 4/ })).toHaveAccessibleDescription('ここに置けます');
+    expect(screen.getByRole('button', { name: /降順ビルド列 2/ })).toHaveAccessibleDescription('ここには置けません');
+    expect(screen.getByRole('button', { name: /^組札 1/ })).toHaveAccessibleDescription('ここに置けます');
+    expect(screen.getByRole('button', { name: /^組札 0/ })).toHaveAccessibleDescription('ここには置けません');
   });
 });
 

@@ -109,6 +109,15 @@ describe('KillePage', () => {
     }
   });
 
+  it('explains effect cards with symbols and text, not colour alone', async () => {
+    renderWithProviders(<KillePage />);
+    const legend = await screen.findByTestId('kille-effect-legend');
+    expect(legend).toHaveTextContent('効果札の説明');
+    expect(legend).toHaveTextContent('🐦 Cuckoo: 交換は成立せず、その場でラウンド終了');
+    expect(legend).toHaveTextContent('⚔ Hussar: 仕掛けた側が脱落');
+    expect(legend).toHaveTextContent('🐖 Pig: 交換を巻き戻し、豚の元の持ち主が脱落');
+  });
+
   // 何が起きたか判らないと、いきなり落ちた理由が説明できない。
   it('narrates what each exchange did', async () => {
     mockExec.mockResolvedValue(

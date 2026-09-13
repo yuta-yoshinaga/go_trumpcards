@@ -36,7 +36,7 @@
   "blind": "Blind (Cego): {{count}} cards (hidden)",
   "bidPass": "Pass",
   "bidPlay": "Declare",
-  "bidPhase": "Auction — declare to play, or pass. The first to declare becomes the declarer.",
+  "bidTurn": "{{name}} is bidding",
   "contractPhase": "Choose your contract. Cego: lay down all but one card and take the blind — a gamble. Handspiel: keep your dealt hand.",
   "contractExplainTitle": "How to choose",
   "contractCegoDesc": "Cego: keep just 1 card, lay the rest down, and swap for the {{count}}-card blind. A gamble for a big score — but you cannot see the blind before choosing.",

@@ -406,6 +406,15 @@ function CariocaPageContent() {
               </section>
             )}
 
+            <details className="mx-4 mb-1 rounded bg-black/30 p-2" data-testid="ca-joker-penalty-help">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-xs">
+                {t('jokerRule.title')}
+              </summary>
+              <p className="mt-1 text-ds-text-muted text-xs">
+                {t('jokerRule.body', { points: state.config.jokerPenalty })}
+              </p>
+            </details>
+
             {humanPlayer && (
               <section className="px-4 py-2" data-tutorial="ca-hand">
                 <div className="text-white text-sm mb-1">

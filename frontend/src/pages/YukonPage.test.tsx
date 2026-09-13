@@ -126,6 +126,7 @@ describe('YukonPage', () => {
     const liveRegion = hintLiveRegion();
     expect(liveRegion).toHaveClass('sr-only');
     expect(liveRegion).toHaveTextContent('♥ 8');
+    expect(liveRegion).toHaveTextContent('優先度: 中・盤面を整える手');
   });
 
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
@@ -158,6 +159,7 @@ describe('YukonPage', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /ヒント: このカードを組札へ移動/ })).toBeInTheDocument(),
     );
+    expect(hintLiveRegion()).toHaveTextContent('優先度: 高・基礎へ送れる安全な手');
   });
 
   it('autocomplete button triggers autocomplete command when all face-up', async () => {

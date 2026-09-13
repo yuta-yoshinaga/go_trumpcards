@@ -67,13 +67,15 @@ type SambaWebOutput struct {
 	GameEndFlag      bool                    `json:"gameEndFlag"`
 	WinnerIdx        int                     `json:"winnerIdx"`
 	WebOutputBase
-	Config SambaWebOutputConfig `json:"config"`
+	Config         SambaWebOutputConfig `json:"config"`
+	CompletedMelds [2]int               `json:"completedMelds"`
 }
 
 // SambaWebOutputConfig サンバ設定アウトプット
 type SambaWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	PointLimit    int `json:"pointLimit"`
+	CpuDifficulty      int `json:"cpuDifficulty"`
+	PointLimit         int `json:"pointLimit"`
+	GoOutRequiredMelds int `json:"goOutRequiredMelds"`
 }
 
 // ToConfig builds a SambaConfig from the nested web config, applying bounds checking.

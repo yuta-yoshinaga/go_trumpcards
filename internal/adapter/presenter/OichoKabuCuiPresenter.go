@@ -58,6 +58,7 @@ func (p *OichoKabuCuiPresenter) Output(o interfaces.OichoKabuGame, lastErr error
 	sb.WriteString("----------\n")
 	sb.WriteString(i18n.Tf("oichokabu.chipsLine", "chips", strconv.Itoa(o.GetChips())) + "\n")
 	sb.WriteString(i18n.Tf("oichokabu.phaseLine", "phase", p.phaseStr(o.GetPhase())) + "\n")
+	sb.WriteString(i18n.T("oichokabu.rankRule") + "\n")
 	if o.GetBet() > 0 {
 		sb.WriteString(i18n.Tf("oichokabu.betLine", "bet", strconv.Itoa(o.GetBet())) + "\n")
 	}

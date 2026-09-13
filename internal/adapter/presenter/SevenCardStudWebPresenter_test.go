@@ -447,6 +447,60 @@ func TestSevenCardStudWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestSevenCardStudWebPresenterAnteLevelUpMessage(t *testing.T) {
+	p := new(presenter.SevenCardStudWebPresenter)
+
+	t.Run("uses the actual previous ante for lossy multipliers", func(t *testing.T) {
+		s, _ := makeSevenCardStudForPresenter()
+		cfg := s.GetConfig()
+		cfg.TournamentMode = true
+		cfg.Ante = 5
+		cfg.AnteMultiplier = 150
+		cfg.AnteLevelHands = 10
+		s.SetConfig(cfg)
+		s.SetHandCount(10)
+		assert.NoError(t, s.Reset())
+
+		var out controller.SevenCardStudWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(s, nil)), &out))
+		assert.Equal(t, "5", out.MessageParams["from"])
+		assert.Equal(t, "7", out.MessageParams["to"])
+	})
+
+	t.Run("tournament mode includes code and params", func(t *testing.T) {
+		s, _ := makeSevenCardStudForPresenter()
+		cfg := s.GetConfig()
+		cfg.TournamentMode = true
+		cfg.Ante = 1
+		cfg.AnteMultiplier = 200
+		cfg.AnteLevelHands = 10
+		s.SetConfig(cfg)
+		s.SetHandCount(10)
+		assert.NoError(t, s.Reset())
+
+		var out controller.SevenCardStudWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(s, nil)), &out))
+		assert.Equal(t, "sevencardstud.anteLevelUp", out.MessageCode)
+		assert.Equal(t, "1", out.MessageParams["from"])
+		assert.Equal(t, "2", out.MessageParams["to"])
+	})
+
+	t.Run("non tournament mode does not include ante level up", func(t *testing.T) {
+		s, _ := makeSevenCardStudForPresenter()
+		cfg := s.GetConfig()
+		cfg.Ante = 2
+		cfg.AnteMultiplier = 200
+		cfg.AnteLevelHands = 10
+		s.SetConfig(cfg)
+		s.SetHandCount(11)
+
+		var out controller.SevenCardStudWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(s, nil)), &out))
+		assert.NotEqual(t, "sevencardstud.anteLevelUp", out.MessageCode)
+		assert.Nil(t, out.MessageParams)
+	})
+}
+
 func TestSevenCardStudWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.SevenCardStudWebPresenter)
 

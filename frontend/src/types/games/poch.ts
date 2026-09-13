@@ -51,6 +51,8 @@ export interface PochHintPayload {
 
 /** Full Poch game state returned from the API. */
 export interface PochResponse extends BaseGameResponse {
+  /** Current game settings. */
+  config?: { cpuDifficulty: number; targetDeals: number };
   players: PochPlayer[];
   /** 0 = Staking, 1 = Pochen, 2 = Stops, 3 = DealEnd, 4 = GameEnd. */
   phase: number;

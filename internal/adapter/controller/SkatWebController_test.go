@@ -18,6 +18,8 @@ func mustSkatOutputJSON(msg string) string {
 	out := &controller.SkatWebOutput{
 		Players:           []*controller.SkatWebOutputPlayer{},
 		CurrentTrick:      []*controller.WebOutputTrickCard{},
+		PlayableIndices:   []int{},
+		TrumpIndices:      []int{},
 		WinnerSide:        domain.SkatWinnerUndecided,
 		DeclarerIdx:       -1,
 		ActiveBidActorIdx: -1,

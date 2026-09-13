@@ -31,6 +31,7 @@ func (p *CanfieldCuiPresenter) Output(c interfaces.CanfieldGame, lastErr error) 
 		// Base rank
 		b.WriteString(i18n.Tf("canfield.baseRank",
 			"rank", strconv.Itoa(c.GetBaseRank())) + "\n")
+		b.WriteString(i18n.T("canfield.baseRankRule") + "\n")
 
 		// Foundation
 		b.WriteString(i18n.T("canfield.foundationHeader"))

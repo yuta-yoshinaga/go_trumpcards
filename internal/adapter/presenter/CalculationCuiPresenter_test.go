@@ -124,6 +124,14 @@ func TestCalculationCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, result, "ファンデーション2")
 	})
 
+	t.Run("stock to waste hint", func(t *testing.T) {
+		g := new(interfaces.MockCalculationGame)
+		g.On("GetHint").Return(&domain.CalculationHint{FromZone: "stockToWaste", WasteIdx: 3, FoundationIdx: -1})
+		result := new(CalculationCuiPresenter).HintOutput(g)
+		assert.Contains(t, result, "ストック")
+		assert.Contains(t, result, "ウェイスト3")
+	})
+
 	t.Run("waste hint", func(t *testing.T) {
 		g := new(interfaces.MockCalculationGame)
 		g.On("GetHint").Return(&domain.CalculationHint{FromZone: "waste", WasteIdx: 1, FoundationIdx: 0})

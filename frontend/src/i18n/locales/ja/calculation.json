@@ -45,7 +45,8 @@
   "landscapeBanner": "横画面での表示を推奨します",
   "frontendHint": {
     "calculationStock": "ストックのカードをファンデーションに置けます",
-    "calculationWaste": "ウェイストのカードをファンデーションに置けます"
+    "calculationWaste": "ウェイストのカードをファンデーションに置けます",
+    "calculationStockToWaste": "ストックのカードはウェイスト{{idx}}へ捨てるのがおすすめです"
   },
   "tutorial": {
     "foundations": "上段の4つがファンデーション。A, 2, 3, 4 から始まり、それぞれ+1, +2, +3, +4 ずつ増やしてK(13)まで積み上げます。",

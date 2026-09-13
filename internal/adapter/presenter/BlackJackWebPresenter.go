@@ -155,12 +155,28 @@ func (bjp *BlackJackWebPresenter) buildMessage(bj interfaces.BlackJackGame, last
 		case domain.GameResultDraw:
 			return "It is a draw.", "blackjack.result.draw", nil
 		case domain.GameResultWin:
+			if spanish21Player21BeatsDealer21(bj) {
+				return "You win: in Spanish 21, a player 21 beats a dealer 21.", "spanish21.result.player21BeatsDealer21", nil
+			}
 			return "You are the winner.", "blackjack.result.win", nil
 		case domain.GameResultLose:
 			return "It is your loss.", "blackjack.result.lose", nil
 		}
 	}
 	return "", "", nil
+}
+
+func spanish21Player21BeatsDealer21(bj interfaces.BlackJackGame) bool {
+	variant := bj.GetVariant()
+	if variant == nil || variant.Name != domain.BJVariantSpanish21 || bj.GetDealer().GetScore() != 21 {
+		return false
+	}
+	for _, hand := range bj.GetPlayerHands() {
+		if hand.GetScore() == 21 {
+			return true
+		}
+	}
+	return false
 }
 
 // ActionLogOutput 棋譜をJSON出力

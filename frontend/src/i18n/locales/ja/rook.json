@@ -14,6 +14,12 @@
   "contractLine": "契約: {{value}}点 / 切り札",
   "trumpUndeclared": "未宣言",
   "teamScores": "チーム0: {{t0}}点 / チーム1: {{t1}}点",
+  "roundResult": {
+    "title": "ラウンド結果",
+    "summary": "落札チーム{{team}}: 獲得{{points}}点 / 契約{{bid}}点",
+    "made": "契約達成",
+    "failed": "セット（契約未達）"
+  },
   "teamShort": "T{{team}}",
   "passed": "パス",
   "pointsSuffix": "点",

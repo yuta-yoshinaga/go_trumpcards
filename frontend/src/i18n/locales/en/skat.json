@@ -21,6 +21,8 @@
   "handGame": "Hand game",
   "discardSelected": "Discard selected (2)",
   "trumpSuitLabel": "Trump suit",
+  "trump": "Trump",
+  "invalidPlay": "This card cannot follow the suit led",
   "spades": "Spades",
   "clubs": "Clubs",
   "hearts": "Hearts",

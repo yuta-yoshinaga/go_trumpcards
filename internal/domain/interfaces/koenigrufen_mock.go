@@ -166,6 +166,9 @@ func (_m *MockKoenigrufenGame) GetPlayerScores() [domain.KoenigrufenPlayerCnt]in
 // GetCardPoints モック
 func (_m *MockKoenigrufenGame) GetCardPoints(i int) int { return _m.Called(i).Int(0) }
 
+// GetTeamPoints モック
+func (_m *MockKoenigrufenGame) GetTeamPoints() int { return _m.Called().Int(0) }
+
 // GetOutcome モック
 func (_m *MockKoenigrufenGame) GetOutcome() domain.KoenigrufenOutcome {
 	return _m.Called().Get(0).(domain.KoenigrufenOutcome)

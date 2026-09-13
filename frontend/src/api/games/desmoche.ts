@@ -37,6 +37,7 @@ export const desmocheApi = {
     meldIndex?: number,
     cardIndices?: number[],
     move?: DesmocheMoveIndices,
+    config?: { cpuDifficulty?: number },
   ) =>
     gameExec<DesmocheResponse>('desmoche', {
       command,
@@ -45,5 +46,6 @@ export const desmocheApi = {
       cardIndices,
       fromMeldIndex: move?.fromMeldIndex,
       toMeldIndex: move?.toMeldIndex,
+      config,
     }),
 };
