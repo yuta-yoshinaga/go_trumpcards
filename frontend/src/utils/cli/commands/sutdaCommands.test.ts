@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseSutdaCommand, SUTDA_HELP } from './sutdaCommands';
+import { parseSutdaCommand, SUTDA_HELP, sutdaLocalCommand } from './sutdaCommands';
 
 describe('parseSutdaCommand', () => {
   it.each([
@@ -36,7 +36,13 @@ describe('parseSutdaCommand', () => {
   it('advertises only commands the parser accepts', () => {
     for (const line of SUTDA_HELP) {
       const first = line.split(/[\s/]/)[0];
+      if (first === 'ranks') continue; // handled locally by useCliGame
       expect(parseSutdaCommand(first)).not.toHaveProperty('error');
     }
+  });
+
+  it('shows the strength order without an API request', () => {
+    expect(sutdaLocalCommand('ranks')).toContain('1. gwang38');
+    expect(sutdaLocalCommand('rank')).toContain('29. mangtong');
   });
 });

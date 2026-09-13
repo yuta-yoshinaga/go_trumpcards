@@ -19,7 +19,50 @@ const VALID_COMMANDS = [
   'reset',
   'help',
   '?',
+  'ranks',
 ];
+
+/** Sutda hand identifiers in strength order, kept in sync by the domain guard test. */
+export const SUTDA_HAND_RANKING_KEYS = [
+  'gwang38',
+  'gwang18',
+  'gwang13',
+  'jangttaeng',
+  'ttaeng9',
+  'ttaeng8',
+  'ttaeng7',
+  'ttaeng6',
+  'ttaeng5',
+  'ttaeng4',
+  'ttaeng3',
+  'ttaeng2',
+  'ttaeng1',
+  'ali',
+  'doksa',
+  'gupping',
+  'jangpping',
+  'jangsa',
+  'seryuk',
+  'gabo',
+  'kkeut8',
+  'kkeut7',
+  'kkeut6',
+  'kkeut5',
+  'kkeut4',
+  'kkeut3',
+  'kkeut2',
+  'kkeut1',
+  'mangtong',
+] as const;
+
+/** Text returned by the local `ranks` CLI command. */
+export const SUTDA_RANKING = SUTDA_HAND_RANKING_KEYS.map((key, index) => `${index + 1}. ${key}`).join('\n');
+
+/** Handles Sutda commands that can be answered without an API request. */
+export function sutdaLocalCommand(input: string): string | null {
+  const { cmd } = splitCommand(input);
+  return cmd === 'rank' || cmd === 'ranks' ? SUTDA_RANKING : null;
+}
 
 /**
  * Parse a Sutda CLI command into API exec arguments.
@@ -65,4 +108,5 @@ export const SUTDA_HELP: string[] = [
   'nh/nexthand                      - Next hand',
   'h/hint                           - Show hint',
   'r/reset                          - Reset game',
+  'ranks                            - Show hand strength ranking (strongest first)',
 ];

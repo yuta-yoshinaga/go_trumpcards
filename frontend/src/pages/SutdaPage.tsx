@@ -31,7 +31,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SutdaResponse } from '../types/card';
 import { SutdaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { parseSutdaCommand, SUTDA_HELP } from '../utils/cli/commands/sutdaCommands';
+import { parseSutdaCommand, SUTDA_HELP, sutdaLocalCommand } from '../utils/cli/commands/sutdaCommands';
 import { formatSutdaState } from '../utils/cli/formatters/sutdaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
@@ -113,6 +113,7 @@ function SutdaPageContent() {
       parseCommand: parseSutdaCommand,
       formatResponse: formatSutdaState,
       helpText: SUTDA_HELP,
+      localCommand: sutdaLocalCommand,
     }),
     [],
   );
@@ -200,6 +201,22 @@ function SutdaPageContent() {
               },
             ]}
           />
+
+          <details className="px-4 pt-2" data-testid="sutda-hand-ranking">
+            <summary className="text-ds-text-primary text-sm cursor-pointer select-none hover:text-ds-accent">
+              {t('handRanking.title')}
+            </summary>
+            <div className="glass-panel rounded-lg p-3 mt-1 text-xs text-ds-text-primary">
+              <p className="mb-2 text-ds-text-muted">{t('handRanking.description')}</p>
+              <ol className="grid grid-cols-2 gap-x-4 gap-y-1 list-decimal list-inside">
+                {Object.keys(t('handName', { returnObjects: true }) as Record<string, string>)
+                  .filter((key) => key !== 'none')
+                  .map((key) => (
+                    <li key={key}>{t(`handName.${key}`)}</li>
+                  ))}
+              </ol>
+            </div>
+          </details>
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             <div className="text-ds-text-primary text-center mb-2">

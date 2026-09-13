@@ -81,6 +81,9 @@ const UNSUN_PHASE_KEYS: Readonly<Record<number, string>> = {
   [UnsunKarutaPhase.GAME_END]: 'gameEnd',
 };
 
+// 色はプレゼンタが `UnsunKarutaIsRoundSuit` から作っているので、規則の写しではなく結果を読んでいる。
+const isRoundSuit = (card: { deck?: string; color?: string }) => card.deck === 'unsun' && card.color === 'red';
+
 /**
  * Renders the Unsun Karuta (八人メリ) page: the 75-card five-suit Japanese
  * trick-taker for eight players in two teams.
@@ -237,6 +240,7 @@ function UnsunKarutaPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="unsunkaruta-trick-display"
+                  cardBadgeFor={(card) => (isRoundSuit(card) ? { glyph: '↺', title: t('roundSuitMark') } : null)}
                 />
               </div>
 
@@ -347,6 +351,9 @@ function UnsunKarutaPageContent() {
                 validIndices={handValidIndices}
                 legalIndices={handValidIndices}
                 restrictedTooltip={t('mustFollow')}
+                cardBadgeFor={(idx) =>
+                  isRoundSuit(humanPlayer.cards[idx]) ? { glyph: '↺', title: t('roundSuitMark') } : null
+                }
               />
             )}
 

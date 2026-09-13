@@ -14,6 +14,10 @@
     "normal": "Normal",
     "hard": "Hard"
   },
+  "handRanking": {
+    "title": "Hand strength ranking",
+    "description": "Listed strongest first, in the same order as the game's source of truth."
+  },
   "hand": "Hand {{n}}",
   "pot": "Pot {{pot}} / current bet {{bet}}",
   "chips": "{{n}} chips",

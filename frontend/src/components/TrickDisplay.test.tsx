@@ -131,6 +131,20 @@ describe('TrickDisplay', () => {
     render(<TrickDisplay currentTrick={trick} players={players} cardWidth={40} label="label" winnerIdx={0} />);
     expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('WIN');
   });
+
+  it('renders an accessible custom card role marker', () => {
+    render(
+      <TrickDisplay
+        currentTrick={trick}
+        players={players}
+        cardWidth={40}
+        label="label"
+        cardBadgeFor={(card) => (card.design === 'SPADE' ? { glyph: '↺', title: 'Round suit: 1 is strongest' } : null)}
+      />,
+    );
+    expect(screen.getByTitle('Round suit: 1 is strongest')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /Round suit: 1 is strongest/ })).toBeInTheDocument();
+  });
 });
 
 // **場札が席数に縛られないゲームがある** (#5756)。Bhabhi の pile は
