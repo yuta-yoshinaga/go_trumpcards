@@ -1,6 +1,7 @@
 {
   "title": "Trente et Quarante",
   "betGuide": "Pick a bet and a stake, then deal. Two rows (Noir, then Rouge) are dealt to 31+; the lower row wins.",
+  "settings": { "title": "Settings", "defaultBet": "Default bet" },
   "previousBet": "Use last bet ({{amount}})",
   "label": {
     "chips": "Chips",

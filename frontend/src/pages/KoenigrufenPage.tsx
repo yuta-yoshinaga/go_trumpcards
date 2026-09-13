@@ -416,7 +416,7 @@ function KoenigrufenPageContent() {
                         </div>
                         <div>
                           {t('roundResult.captured', {
-                            points: state.players[state.declarerIdx]?.cardPoints ?? 0,
+                            points: state.teamPoints,
                           })}
                         </div>
                       </>

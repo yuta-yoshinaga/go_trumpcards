@@ -77725,6 +77725,9 @@ components:
         partnerRevealed:
           type: boolean
           description: "True once the called king has been played and the partner is known."
+        teamPoints:
+          type: integer
+          description: "Card points captured by the declarer and the called partner together. This is the total the contract is settled against, so it can exceed the declarer's own cardPoints."
         talonCount:
           type: integer
           description: "Cards left in the talon."

@@ -91,7 +91,7 @@ beforeEach(() => {
 describe('TrenteEtQuarantePage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<TrenteEtQuarantePage />);
-    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset', undefined, undefined, { defaultBet: 0 }));
   });
 
   it('renders the bet phase with the four bet buttons and a deal button', async () => {
@@ -102,6 +102,13 @@ describe('TrenteEtQuarantePage', () => {
     expect(screen.getByTestId(`teq-bet-${TrenteEtQuaranteBetType.ROUGE}`)).toBeInTheDocument();
     expect(screen.getByTestId(`teq-bet-${TrenteEtQuaranteBetType.COULEUR}`)).toBeInTheDocument();
     expect(screen.getByTestId(`teq-bet-${TrenteEtQuaranteBetType.INVERSE}`)).toBeInTheDocument();
+  });
+
+  it('renders the default bet setting', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await waitFor(() => expect(screen.getByLabelText('既定ベット')).toBeInTheDocument());
+    expect(screen.getByLabelText('既定ベット')).toHaveValue('0');
   });
 
   it('highlights the selected bet with a check mark and always shows the descriptions', async () => {

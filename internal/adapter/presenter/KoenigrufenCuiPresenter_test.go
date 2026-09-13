@@ -105,6 +105,52 @@ func TestKoenigrufenCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestKoenigrufenCuiPresenter_RoundEndShowsTeamPointsConsistentWithOutcome(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	g := koenigrufenCuiGame()
+	g.SetDeclarerIdx(0)
+	g.SetPartnerIdx(2)
+	g.SetContract(domain.KoenigrufenBidRufer)
+	g.GetPlayer(0).ResetRound()
+	g.GetPlayer(2).ResetRound()
+	g.GetPlayer(0).AddTrick([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, domain.KoenigrufenKingValue, false),
+		domain.NewCard(domain.CardDesignSpade, domain.KoenigrufenKingValue, false),
+	})
+	g.GetPlayer(2).AddTrick([]*domain.Card{
+		domain.NewCard(domain.CardDesignClover, domain.KoenigrufenKingValue, false),
+		domain.NewCard(domain.CardDesignDiamond, domain.KoenigrufenKingValue, false),
+		domain.NewCard(domain.KoenigrufenTrumpDesign, domain.KoenigrufenPagatValue, false),
+		domain.NewCard(domain.KoenigrufenTrumpDesign, 21, false), // XXI
+		domain.NewCard(domain.KoenigrufenSkusDesign, domain.KoenigrufenSkusValue, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),   // queen
+		domain.NewCard(domain.CardDesignSpade, 7, false),   // queen
+		domain.NewCard(domain.CardDesignClover, 7, false),  // queen
+		domain.NewCard(domain.CardDesignDiamond, 7, false), // queen
+		domain.NewCard(domain.CardDesignHeart, 5, false),   // jack
+		domain.NewCard(domain.CardDesignSpade, 2, false),
+	})
+
+	declarerPoints := g.GetCardPoints(0)
+	teamPoints := g.GetTeamPoints()
+	if declarerPoints >= domain.KoenigrufenTotalPoints/2 {
+		t.Fatalf("fixture declarer points = %d; must be below the contract threshold", declarerPoints)
+	}
+	if teamPoints <= domain.KoenigrufenTotalPoints/2 {
+		t.Fatalf("fixture team points = %d; must be above the contract threshold", teamPoints)
+	}
+	assert.NotEqual(t, declarerPoints, teamPoints)
+	g.SetPhase(domain.KoenigrufenPhaseRoundEnd)
+	g.ScoreRound()
+
+	result := (new(presenter.KoenigrufenCuiPresenter)).Output(g, nil)
+	assert.Contains(t, result, "ディール完了 (デクレアラー あなた: 成功 (デクレアラー側の勝ち))")
+	assert.Contains(t, result, "デクレアラー側の獲得点: 54")
+}
+
 func TestKoenigrufenCuiPresenter_HintOutput(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)

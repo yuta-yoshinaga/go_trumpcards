@@ -1,6 +1,7 @@
 {
   "title": "トラント・エ・カラント",
   "betGuide": "ベットと賭け金を選んで配ります。ノワール→ルージュの順に2列を31以上まで配り、合計が小さい列が勝ちです。",
+  "settings": { "title": "設定", "defaultBet": "既定ベット" },
   "previousBet": "前回額を使う ({{amount}})",
   "label": {
     "chips": "チップ",

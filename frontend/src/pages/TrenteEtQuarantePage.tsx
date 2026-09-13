@@ -82,6 +82,9 @@ function TrenteEtQuarantePageContent() {
     handleBet,
     handleNextRound,
     handleRebet,
+    config,
+    handleConfigChange,
+    reset,
   } = useTrenteEtQuaranteGame();
 
   // Merge the locally selected bet into the state so the hint reflects the pending choice.
@@ -100,7 +103,7 @@ function TrenteEtQuarantePageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useMountReset(execApi);
+  useMountReset(reset);
 
   const actionBindings = useMemo(
     () => [
@@ -237,7 +240,23 @@ function TrenteEtQuarantePageContent() {
 
           <GameFooter className={`${gameTheme.trenteetquarante.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel title={tc('settings.title')} groups={[]} />
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select' as const,
+                      id: 'defaultBet',
+                      label: t('settings.defaultBet'),
+                      value: String(config.defaultBet),
+                      options: BET_OPTIONS.map((opt) => ({ value: String(opt.type), label: t(opt.labelKey) })),
+                      onSelect: (v: string) => handleConfigChange('defaultBet', v),
+                    },
+                  ],
+                },
+              ]}
+            />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-3 pb-2" data-tutorial="teq-bet-controls">
                 {/* biome-ignore lint/a11y/useSemanticElements: a flex row of bet buttons; fieldset would break the layout */}

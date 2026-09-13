@@ -2139,6 +2139,7 @@ const baseKoenigrufenState: KoenigrufenResponse = {
   playerScores: [0, 0, 0, 0],
   lastTrickWinner: -1,
   outcome: 0,
+  teamPoints: 0,
   result: 0,
   playableIndices: [0, 1, 2, 3, 4],
   gameEndFlag: false,
