@@ -123,6 +123,32 @@ describe('AccordionPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
+  it('explains why an offset three hint is preferred', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromIdx: 3, toIdx: 0 },
+      messageCode: 'accordion.hintAvailable',
+    });
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() =>
+      expect(screen.getAllByRole('status').some((el) => el.textContent?.includes('選択肢を温存できる重要な手'))).toBe(
+        true,
+      ),
+    );
+  });
+
+  it('explains why an offset one hint is less preferred', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromIdx: 1, toIdx: 0 },
+      messageCode: 'accordion.hintAvailable',
+    });
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() =>
+      expect(screen.getAllByRole('status').some((el) => el.textContent?.includes('選択肢を温存しにくい手'))).toBe(true),
+    );
+  });
+
   it('giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<AccordionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

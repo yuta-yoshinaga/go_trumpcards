@@ -50,6 +50,15 @@ func (pp *PaiGowCuiPresenter) Output(pg interfaces.PaiGowGame, lastErr error) st
 			} else {
 				sb.WriteString(i18n.T("paigow.foulSplitsNone") + "\n")
 			}
+			if hint := pg.GetHint(); hint != nil {
+				sb.WriteString(i18n.Tf("paigow.recommendedSplit",
+					"idx0", strconv.Itoa(hint.LowIdx0),
+					"idx1", strconv.Itoa(hint.LowIdx1),
+					"cards", cuiCardStr(playerCards[hint.LowIdx0])+" "+cuiCardStr(playerCards[hint.LowIdx1]),
+				) + "\n")
+			} else {
+				sb.WriteString(i18n.T("paigow.recommendedSplitUnavailable") + "\n")
+			}
 		}
 	}
 

@@ -29,5 +29,7 @@
   "helpExampleBet": "  b 100              100 チップを賭ける",
   "foulHighMustBeat": "ファウルです: ローの2枚はハイの5枚より弱くしてください (ローが強いと反則)",
   "foulSplits": "反則になる分割: {{splits}}",
-  "foulSplitsNone": "反則になる分割はありません。"
+  "foulSplitsNone": "反則になる分割はありません。",
+  "recommendedSplit": "ハウスウェイ推奨: [{{idx0}}] [{{idx1}}] ({{cards}}) をローハンドへ",
+  "recommendedSplitUnavailable": "ハウスウェイ推奨: 計算できません（この手札では自動分割できません）"
 }
