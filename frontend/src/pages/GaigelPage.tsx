@@ -77,6 +77,15 @@ const SUIT_LABEL_KEYS: Readonly<Record<number, string>> = {
 /** Renders the Gaigel game page (4-player / 2-team Schnapsen-family point-trick game, 48-card deck). */
 export const GaigelPage = withTutorial(GaigelPageContent, 'gaigel', GAIGEL_TUTORIAL_STEPS);
 
+/** Card design → the numeric suit the Go domain uses. Sync: `internal/domain/Card.go`. */
+const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
+
+/** Sync: `domain.GaigelRoyalMarriageBonus` — a marriage in the trump suit. */
+const GAIGEL_ROYAL_MARRIAGE_BONUS = 40;
+
+/** Sync: `domain.GaigelMarriageBonus` — a marriage in any other suit. */
+const GAIGEL_MARRIAGE_BONUS = 20;
+
 function GaigelPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('gaigel');
@@ -129,13 +138,24 @@ function GaigelPageContent() {
   const selectedIdx = selectedCardIndices.length === 1 ? selectedCardIndices[0] : -1;
   const canDeclareMarriage = isHumanTurn && selectedIdx >= 0 && state.marriageIndices.includes(selectedIdx);
 
-  // Surface a 💍 badge on hand cards that can start a marriage (King + Queen of
-  // the same suit, both currently held) so the 20/40-point opportunity is
-  // visible without probing each card. `marriageIndices` is scoped to the
-  // current player, so restrict it to the human's own lead turn.
+  // Badge hand cards that can start a marriage (King + Queen of the same suit,
+  // both currently held) so the opportunity is visible without probing each
+  // card. **The two marriages are not worth the same** — trump pays 40, any
+  // other suit 20 — so the badge says which one this is, the way
+  // DaifugoRulesBadges distinguishes its lock modes. `marriageIndices` is
+  // scoped to the current player, so restrict it to the human's own lead turn.
   const marriageIndices = isHumanTurn ? state.marriageIndices : [];
-  const marriageBadgeFor = (idx: number): { glyph: string; title: string } | null =>
-    marriageIndices.includes(idx) ? { glyph: '💍', title: t('marriageBadge') } : null;
+  // Sync: `Gaigel.declareMarriage` — 切り札スートのマリッジは
+  // `GaigelRoyalMarriageBonus`、それ以外は `GaigelMarriageBonus`。
+  const marriageBadgeFor = (idx: number): { glyph: string; title: string } | null => {
+    if (!marriageIndices.includes(idx)) return null;
+    const design = humanPlayer?.cards[idx]?.design;
+    const isTrump = design !== undefined && DESIGN_TO_SUIT[design] === state.trumpSuit;
+    return {
+      glyph: isTrump ? '👑' : '💍',
+      title: t('marriageBadge', { points: isTrump ? GAIGEL_ROYAL_MARRIAGE_BONUS : GAIGEL_MARRIAGE_BONUS }),
+    };
+  };
 
   return (
     <GamePageShell

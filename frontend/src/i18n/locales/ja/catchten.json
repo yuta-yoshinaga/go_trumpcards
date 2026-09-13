@@ -16,6 +16,7 @@
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
   "trumpSuit": "切り札",
+  "honorBadge": "名誉点: {{points}}点",
   "cards": "{{count}}枚",
   "cumulativeScore": "累計: {{score}}",
   "roundScore": "ラウンド: {{score}}",
