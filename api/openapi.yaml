@@ -62687,6 +62687,26 @@ components:
       type: object
       description: Response payload for /rams/exec
       properties:
+        missPenalty:
+          type: integer
+          description: >-
+            Chips a player who took no trick pays on top of the pot. Sent so
+            the screen can name the amount instead of hardcoding it.
+        roundSettlement:
+          type: array
+          description: >-
+            Per-seat chip movement for the round that just ended: the miss
+            penalty paid and the share of the pot received. Empty outside
+            the round-end phase.
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              penalty:
+                type: integer
+              payout:
+                type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -80867,6 +80887,12 @@ components:
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        talonRecipientIdx:
+          type: integer
+          description: >-
+            Seat the next discarded card goes to, following the order
+            giveDiscard uses (opponentsOf the declarer, indexed by
+            discardCount). -1 outside the talon phase.
         messageCode:
           type: string
         players:

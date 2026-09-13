@@ -1,4 +1,5 @@
 import type { kempsApi } from '../../../api/gameApi';
+import { KEMPS_COUNTER_PENALTY } from '../../../constants/kemps';
 import { splitCommand, suggestCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
@@ -98,7 +99,7 @@ export const KEMPS_HELP: string[] = [
   'p / pass            - Skip the swap (or decline in the declare window)',
   'sig <0-1>           - Set signal type (0=Sound, 1=Blink)',
   'k / kemps           - Declare Kemps!',
-  'c / counter <seat>  - Declare Counter-Kemps! on an opponent seat',
+  `c / counter <seat>  - Declare Counter-Kemps! on an opponent seat (a miss costs your team ${KEMPS_COUNTER_PENALTY} point)`,
   'n / next            - Next round',
   'sd <0-2>            - Set CPU difficulty (resets game)',
   'l / log             - Show action log',

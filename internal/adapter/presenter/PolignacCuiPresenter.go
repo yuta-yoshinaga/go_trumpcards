@@ -101,6 +101,13 @@ func (p *PolignacCuiPresenter) Output(g interfaces.PolignacGame, lastErr error) 
 			sb.WriteString(i18n.T("polignac.promptDeclareHelp") + "\n")
 			return
 		case domain.PolignacPhaseRoundEnd:
+			if g.GetCapotIdx() >= 0 {
+				key := "polignac.capotFailed"
+				if g.GetCapotTricks() >= domain.PolignacTricksPerRound {
+					key = "polignac.capotSuccess"
+				}
+				sb.WriteString(color.Green(i18n.T(key)) + "\n")
+			}
 			sb.WriteString(i18n.T("polignac.promptRoundEnd") + "\n")
 			sb.WriteString(i18n.T("polignac.promptNext") + "\n")
 			return

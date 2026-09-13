@@ -5,6 +5,7 @@
   "helpSetDifficulty": "  sd <0-2>             CPU難易度設定 (0=易, 1=普, 2=難)",
   "roundLine": "ラウンド: {{round}}/{{total}}  山札: {{deck}}",
   "fieldLine": "場: {{field}}",
+  "drawCapture": "めくり札 {{card}} が {{captured}} を獲得しました",
   "playerLine": "{{name}}: 手札{{hand}}枚  取り札: {{captured}}  素点: {{raw}}  累計: {{score}}  役: {{yaku}}",
   "promptPlay": "手番: {{name}}",
   "promptGameEnd": "ゲーム終了。nr で新しいゲームを始めます。",

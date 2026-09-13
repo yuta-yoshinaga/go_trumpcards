@@ -37,16 +37,20 @@ func spadesPlayerStr(player *domain.SpadesPlayer, i, bagThreshold int) string {
 		"round", strconv.Itoa(player.GetRoundScore()),
 		"cards", strconv.Itoa(player.GetCardsSize()),
 	))
-	// The Web badges nil progress for the whole round (#5497). Without it the
+	// The Web badge shows bid progress for the whole round (#5497). Without it the
 	// CUI player has to compare bid against trick count by eye every trick, and
 	// a broken nil -- which is decided by a single trick and cannot be recovered
 	// -- looks the same as one still alive.
-	if player.GetBid() == 0 {
-		switch domain.SpadesBidProgressOf(player.GetBid(), player.GetTrickCount()).Kind {
+	if player.GetBid() >= 0 {
+		switch progress := domain.SpadesBidProgressOf(player.GetBid(), player.GetTrickCount()); progress.Kind {
 		case domain.SpadesBidNilFail:
 			b.WriteString("  " + color.Red(i18n.T("spades.nilFail")) + "\n")
 		case domain.SpadesBidNilOk:
 			b.WriteString("  " + color.Green(i18n.T("spades.nilOk")) + "\n")
+		case domain.SpadesBidRemaining:
+			b.WriteString("  " + i18n.Tf("spades.bidRemaining", "remaining", strconv.Itoa(progress.Remaining)) + "\n")
+		case domain.SpadesBidMade:
+			b.WriteString("  " + i18n.Tf("spades.bidMade", "bags", strconv.Itoa(progress.Bags)) + "\n")
 		}
 	}
 	b.WriteString("\n")
