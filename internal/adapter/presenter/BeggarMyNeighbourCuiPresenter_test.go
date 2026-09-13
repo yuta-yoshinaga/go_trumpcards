@@ -69,7 +69,7 @@ func TestBeggarMyNeighbourCuiPresenter_Output(t *testing.T) {
 
 		g := setupBeggarMyNeighbourTest()
 		out := p.Output(g, nil)
-		assert.Contains(t, out, "You's turn. Use step to play the next card.")
+		assert.Contains(t, out, "Turn: You. Use step to play the next card.")
 		assert.NotContains(t, out, "{{")
 	})
 
