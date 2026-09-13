@@ -20,6 +20,7 @@ func setupCalabresellaWebMock() *interfaces.MockCalabresellaGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.CalabresellaPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -78,6 +79,17 @@ func TestCalabresellaWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 1, resObj.ForehandIdx)
 		assert.Equal(t, int(domain.CalabresellaBidChiamo), resObj.WinningBid)
 		assert.True(t, resObj.IsHumanTurn)
+	})
+
+	t.Run("includes the last trick winner", func(t *testing.T) {
+		m, _ := setupCalabresellaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickWinner")
+		m.On("GetLastTrickWinner").Return(2)
+
+		result := p.Output(m, nil)
+		var resObj controller.CalabresellaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, 2, resObj.LastTrickWinner)
 	})
 
 	t.Run("config values", func(t *testing.T) {

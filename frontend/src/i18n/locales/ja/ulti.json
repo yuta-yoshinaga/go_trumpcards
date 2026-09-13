@@ -36,6 +36,7 @@
   "points": "{{points}}点",
   "coins": "コイン: {{coins}}",
   "currentTrick": "現在のトリック",
+  "previousTrickWinner": "{{name}} が獲得",
   "players": "プレイヤー",
   "you": "あなた",
   "cpu": "CPU {{id}}",

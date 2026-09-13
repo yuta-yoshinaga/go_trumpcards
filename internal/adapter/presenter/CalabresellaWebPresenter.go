@@ -47,7 +47,7 @@ func (p *CalabresellaWebPresenter) buildBase(g interfaces.CalabresellaGame) *con
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.PlayerScores = g.GetPlayerScores()
 	resObj.RoundThirds = g.GetRoundThirds()
-	resObj.LastTrickWinner = -1
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 
 	resObj.PlayableIndices = p.playableIndices(g)

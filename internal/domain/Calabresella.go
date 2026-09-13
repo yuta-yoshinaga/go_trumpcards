@@ -122,7 +122,7 @@ type Calabresella struct {
 	discardCount     int                                    // discard で捨てた枚数 (0..CalabresellaMonteSize)
 	playerScores     [CalabresellaPlayerCnt]int             // 累積ゲーム点
 	roundThirds      [CalabresellaPlayerCnt]int             // 現ラウンドのプレイヤー別 1/3 点
-	lastTrickWinner  int                                    // 最終トリック勝者 (-1=未確定)
+	lastTrickWinner  int                                    // 直前トリックの勝者 (-1=未確定)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
 	actionLogBase
@@ -544,8 +544,12 @@ func (g *Calabresella) ResolveTrick() {
 		fmt.Sprintf("%s wins trick %d (+%d/3%s)", playerName(g.players, winnerIdx), g.trickNumber, thirds, bonus), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
+	// **どのトリックの勝者も憶えておく。** 以前は最終トリックのぶんしか入れて
+	// おらず、しかもその枝は同時に RoundEnd へ移るので、TrickEnd の画面では
+	// この値がいつも -1 だった。King (King.go:333) は毎トリック入れており、
+	// getter の説明「直前トリックの勝者」もそちらの意味で書かれている。
+	g.lastTrickWinner = winnerIdx
 	if g.trickNumber >= CalabresellaTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.phase = CalabresellaPhaseRoundEnd
 	} else {
 		g.phase = CalabresellaPhaseTrickEnd
@@ -930,6 +934,9 @@ func (g *Calabresella) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *Calabresella) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を返す (-1 = なし)。
+func (g *Calabresella) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Calabresella) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }

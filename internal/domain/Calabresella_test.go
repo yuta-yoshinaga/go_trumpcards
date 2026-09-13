@@ -703,3 +703,30 @@ func TestCalabresellaConfig_Validate(t *testing.T) {
 	assert.Error(t, domain.CalabresellaConfig{CpuDifficulty: 99, TargetPoints: 21}.Validate())
 	assert.Error(t, domain.CalabresellaConfig{CpuDifficulty: domain.CalabresellaCpuDifficultyEasy, TargetPoints: 0}.Validate())
 }
+
+// TestCalabresella_LastTrickWinner_IsSetOnEveryTrick は、最終トリックだけでなく
+// **どのトリックの解決でも** lastTrickWinner が入ることを固定する。
+// 以前は代入が「最終トリックか」の枝の中にあり、しかもその枝は同時に RoundEnd へ
+// 移るので、**TrickEnd の画面ではこの値がいつでも -1** だった。Web の勝者バッジは
+// これを読む。
+func TestCalabresella_LastTrickWinner_IsSetOnEveryTrick(t *testing.T) {
+	g := newTestCalabresella()
+	g.SetSoloistIdx(0)
+	g.SetTrickNumber(1) // 最終トリックではない
+	g.SetPhase(domain.CalabresellaPhaseTrickEnd)
+	g.SetLeadPlayerIdx(0)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: calCard(domain.CardDesignSpade, 13)},
+		{PlayerIdx: 1, Card: calCard(domain.CardDesignSpade, 1)}, // A がこのトリックを取る
+		{PlayerIdx: 2, Card: calCard(domain.CardDesignSpade, 10)},
+	})
+
+	g.ResolveTrick()
+
+	assert.Equal(t, domain.CalabresellaPhaseTrickEnd, g.GetPhase(), "最終トリックでないので TrickEnd で止まる")
+	// 勝者が誰になるかは各ゲームの序列規則の話なので、ここでは問わない。見たいのは
+	// **同じ winnerIdx から作られる 2 つの値が一致すること**。leadPlayerIdx は常に
+	// 入っていたので、片方だけ -1 のままなら代入が枝の中に残っている。
+	assert.NotEqual(t, -1, g.GetLastTrickWinner(), "TrickEnd の時点で勝者が読めなければ画面に出せない")
+	assert.Equal(t, g.GetLeadPlayerIdx(), g.GetLastTrickWinner(), "次にリードする席がそのトリックを取った席")
+}

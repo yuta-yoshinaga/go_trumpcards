@@ -163,7 +163,7 @@ type Ombre struct {
 	bidTrump         [OmbrePlayerCnt]int      // 各プレイヤーが宣言時に選んだ切り札 (-1=なし)
 	bidActed         [OmbrePlayerCnt]bool     // 各プレイヤーが宣言済みか
 	playerScores     [OmbrePlayerCnt]int      // 累積ゲーム点
-	lastTrickWinner  int                      // 最終トリック勝者 (-1=未確定)
+	lastTrickWinner  int                      // 直前トリックの勝者 (-1=未確定)
 	outcome          OmbreOutcome             // 直近ディールの結果
 	result           OmbreResult              // 人間視点のマッチ結果
 	scored           bool                     // 当該ディールの得点計算済みか (RoundEnd 突入時に一度だけ)
@@ -555,8 +555,12 @@ func (g *Ombre) ResolveTrick() {
 		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
+	// **どのトリックの勝者も憶えておく。** 以前は最終トリックのぶんしか入れて
+	// おらず、しかもその枝は同時に RoundEnd へ移るので、TrickEnd の画面では
+	// この値がいつも -1 だった。King (King.go:333) は毎トリック入れており、
+	// getter の説明「直前トリックの勝者」もそちらの意味で書かれている。
+	g.lastTrickWinner = winnerIdx
 	if g.trickNumber >= OmbreTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.phase = OmbrePhaseRoundEnd
 		g.enterRoundEnd()
 	} else {
@@ -1176,6 +1180,9 @@ func (g *Ombre) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *Ombre) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を返す (-1 = なし)。
+func (g *Ombre) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Ombre) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
