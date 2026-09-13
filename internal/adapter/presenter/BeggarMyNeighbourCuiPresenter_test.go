@@ -43,6 +43,36 @@ func TestBeggarMyNeighbourCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "[場の山]")
 	})
 
+	t.Run("shows player turn in play phase", func(t *testing.T) {
+		g := setupBeggarMyNeighbourTest()
+		out := p.Output(g, nil)
+		assert.Contains(t, out, "あなたの手番です。step コマンドで次のカードを出します。")
+		assert.NotContains(t, out, "{{")
+
+		// CPU 手番
+		data, _ := json.Marshal(g)
+		var raw map[string]json.RawMessage
+		_ = json.Unmarshal(data, &raw)
+		raw["cu"], _ = json.Marshal(1)
+		newData, _ := json.Marshal(raw)
+		_ = json.Unmarshal(newData, g)
+
+		outCpu := p.Output(g, nil)
+		assert.Contains(t, outCpu, "CPU 1の手番です。step コマンドで次のカードを出します。")
+		assert.NotContains(t, outCpu, "{{")
+	})
+
+	t.Run("shows player turn in play phase in english", func(t *testing.T) {
+		orig := i18n.Lang()
+		i18n.SetLang("en")
+		defer i18n.SetLang(orig)
+
+		g := setupBeggarMyNeighbourTest()
+		out := p.Output(g, nil)
+		assert.Contains(t, out, "Turn: You. Use step to play the next card.")
+		assert.NotContains(t, out, "{{")
+	})
+
 	t.Run("error", func(t *testing.T) {
 		g := setupBeggarMyNeighbourTest()
 		result := p.Output(g, errors.New("oops"))

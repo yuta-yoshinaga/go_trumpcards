@@ -11,6 +11,7 @@
   "tableau": "Tableau",
   "stockCount": "Stock left: {{count}}",
   "moveCount": "Moves: {{count}}",
+  "progress": "Foundations: {{count}}/{{total}}",
   "draw": "Draw",
   "auto": "Auto-complete",
   "giveup": "Give up",

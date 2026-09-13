@@ -67,7 +67,9 @@ func (p *BeggarMyNeighbourCuiPresenter) Output(g interfaces.BeggarMyNeighbourGam
 
 		switch g.GetPhase() {
 		case domain.BeggarMyNeighbourPhasePlay:
-			b.WriteString(i18n.T("beggarmyneighbour.promptPlay") + "\n")
+			cur := g.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("beggarmyneighbour.promptPlay",
+				"name", cuiPlayerName(g.GetPlayer(cur), cur)) + "\n")
 		case domain.BeggarMyNeighbourPhasePayPenalty:
 			// **誰が払っているかも言う。**残り枚数だけでは、自分が払う側か相手が
 			// 払う側か分からない (#6478)。Web / CLI と同じ情報にそろえる。

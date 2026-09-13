@@ -73704,6 +73704,12 @@ components:
           type: integer
         centralPileSize:
           type: integer
+        lastCardPlayerIdx:
+          type: integer
+          description: |
+            Seat that played lastCardPlayed, or -1. Not derivable from
+            currentPlayerIdx: the turn moves on in the same call that sets
+            the card, so reading it back would name the wrong seat.
         lastCardPlayed:
           nullable: true
           allOf:

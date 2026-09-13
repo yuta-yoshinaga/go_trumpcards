@@ -50,6 +50,9 @@ func (p *DoubleKlondikeCuiPresenter) Output(g interfaces.DoubleKlondikeGame, las
 			"stock", strconv.Itoa(g.GetStockCount()),
 			"waste", dkPileStr(g.GetWaste())) + "\n")
 		foundation := g.GetFoundation()
+		sb.WriteString(i18n.Tf("doubleklondike.progress",
+			"count", strconv.Itoa(cuiCountPileCards(foundation[:]...)),
+			"total", strconv.Itoa(domain.DoubleKlondikeTotalCards)) + "\n")
 		for i := 0; i < domain.DoubleKlondikeFoundationCnt; i++ {
 			sb.WriteString(i18n.Tf("doubleklondike.foundationLabel", "idx", strconv.Itoa(i)))
 			sb.WriteString(" " + dkPileStr(foundation[i]) + "\n")

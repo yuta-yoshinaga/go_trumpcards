@@ -10,7 +10,7 @@
   "boardPile": "場のカード: {{count}}枚",
   "boardLastCard": "最後に出たカード: {{card}}",
   "boardLastCardEmpty": "最後に出たカード: --",
-  "promptPlay": "step コマンドで次のカードを出します。",
+  "promptPlay": "{{name}}の手番です。step コマンドで次のカードを出します。",
   "promptPayPenalty": "ペナルティ支払い中！ {{name}} があと{{remaining}}枚 step で払います。",
   "promptCollect": "ペナルティを払いきった！ step で山を回収します。",
   "gameWinHuman": "あなたの勝ちです！",

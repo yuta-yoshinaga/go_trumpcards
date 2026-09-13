@@ -15,6 +15,8 @@ const (
 	DoubleKlondikeFoundationCnt = 8
 	// DoubleKlondikeDrawCount ストックから一度にめくる枚数。
 	DoubleKlondikeDrawCount = 3
+	// DoubleKlondikeTotalCards 2 デッキの総枚数。
+	DoubleKlondikeTotalCards = 104
 	// doubleKlondikeMaxSliceLen JSON 復元時のスライス長上限。
 	doubleKlondikeMaxSliceLen = 10000
 )
@@ -310,13 +312,13 @@ func (g *DoubleKlondike) GiveUp() {
 	}
 }
 
-// checkGameClear 8 ファウンデーション全完成 (104 枚) でクリア。
+// checkGameClear 8 ファウンデーション全完成 (DoubleKlondikeTotalCards 枚) でクリア。
 func (g *DoubleKlondike) checkGameClear() {
 	total := 0
 	for _, pile := range g.foundation {
 		total += len(pile)
 	}
-	if total == 104 {
+	if total == DoubleKlondikeTotalCards {
 		g.phase = DoubleKlondikePhaseGameClear
 		g.appendLog("clear", "クリア！", nil)
 	}

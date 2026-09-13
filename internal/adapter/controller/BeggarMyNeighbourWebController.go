@@ -48,8 +48,11 @@ type BeggarMyNeighbourWebOutput struct {
 	PenaltyRemaining int                                 `json:"penaltyRemaining"`
 	CentralPileSize  int                                 `json:"centralPileSize"`
 	LastCardPlayed   *WebOutputCard                      `json:"lastCardPlayed"`
-	RoundsPlayed     int                                 `json:"roundsPlayed"`
-	Config           BeggarMyNeighbourWebOutputConfig    `json:"config"`
+	// LastCardPlayerIdx は LastCardPlayed を出した席 (-1=まだ無い)。CurrentPlayerIdx は
+	// 出した直後に相手へ移るので、そちらから逆算すると 1 手ずれる。
+	LastCardPlayerIdx int                              `json:"lastCardPlayerIdx"`
+	RoundsPlayed      int                              `json:"roundsPlayed"`
+	Config            BeggarMyNeighbourWebOutputConfig `json:"config"`
 	WebOutputBase
 }
 

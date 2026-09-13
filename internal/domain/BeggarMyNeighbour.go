@@ -53,9 +53,12 @@ type BeggarMyNeighbour struct {
 	penaltyOwnerIdx  int
 	penaltyRemaining int
 	lastCardPlayed   *Card
-	gameEndFlag      bool
-	winnerIdx        int
-	roundsPlayed     int
+	// lastCardPlayerIdx は lastCardPlayed を出した席。currentPlayerIdx は
+	// 出した直後に相手へ移るので、そちらから逆算すると必ず 1 手ずれる。
+	lastCardPlayerIdx int
+	gameEndFlag       bool
+	winnerIdx         int
+	roundsPlayed      int
 	actionLogBase
 }
 
@@ -91,6 +94,7 @@ func (g *BeggarMyNeighbour) Reset() {
 	g.penaltyOwnerIdx = -1
 	g.penaltyRemaining = 0
 	g.lastCardPlayed = nil
+	g.lastCardPlayerIdx = -1
 	g.gameEndFlag = false
 	g.winnerIdx = -1
 	g.roundsPlayed = 0
@@ -168,6 +172,7 @@ func (g *BeggarMyNeighbour) stepPlay() error {
 	}
 	g.centralPile = append(g.centralPile, c)
 	g.lastCardPlayed = c
+	g.lastCardPlayerIdx = g.currentPlayerIdx
 	g.appendLog(g.currentPlayerIdx, "play", "play card", []*Card{c})
 
 	if pv := beggarMyNeighbourPenaltyValue(c); pv > 0 {
@@ -195,6 +200,7 @@ func (g *BeggarMyNeighbour) stepPayPenalty() error {
 	}
 	g.centralPile = append(g.centralPile, c)
 	g.lastCardPlayed = c
+	g.lastCardPlayerIdx = g.currentPlayerIdx
 	g.penaltyRemaining--
 	g.appendLog(g.currentPlayerIdx, "pay", fmt.Sprintf("pay penalty (%d remaining)", g.penaltyRemaining), []*Card{c})
 
@@ -310,6 +316,9 @@ func (g *BeggarMyNeighbour) GetCentralPileSize() int { return len(g.centralPile)
 // GetLastCardPlayed 最後に出されたカード取得
 func (g *BeggarMyNeighbour) GetLastCardPlayed() *Card { return g.lastCardPlayed }
 
+// GetLastCardPlayerIdx は最後の札を出した席を返す (-1 = まだ無い)。
+func (g *BeggarMyNeighbour) GetLastCardPlayerIdx() int { return g.lastCardPlayerIdx }
+
 // GetRoundsPlayed 消化ラウンド数取得
 func (g *BeggarMyNeighbour) GetRoundsPlayed() int { return g.roundsPlayed }
 
@@ -329,37 +338,39 @@ func (g *BeggarMyNeighbour) IsHumanTurn() bool { return !g.gameEndFlag }
 
 // beggarMyNeighbourJSON is the JSON wire format for BeggarMyNeighbour.
 type beggarMyNeighbourJSON struct {
-	TrumpCards       *TrumpCards                                          `json:"tc"`
-	Players          [BeggarMyNeighbourPlayerCnt]*BeggarMyNeighbourPlayer `json:"ps"`
-	Config           BeggarMyNeighbourConfig                              `json:"cf"`
-	Phase            BeggarMyNeighbourPhase                               `json:"ph"`
-	CentralPile      []*Card                                              `json:"cp"`
-	CurrentPlayerIdx int                                                  `json:"cu"`
-	PenaltyOwnerIdx  int                                                  `json:"po"`
-	PenaltyRemaining int                                                  `json:"pr"`
-	LastCardPlayed   *Card                                                `json:"lc"`
-	GameEndFlag      bool                                                 `json:"gf"`
-	WinnerIdx        int                                                  `json:"wi"`
-	RoundsPlayed     int                                                  `json:"rp"`
-	ActionLog        []*ActionLogEntry                                    `json:"al"`
+	TrumpCards        *TrumpCards                                          `json:"tc"`
+	Players           [BeggarMyNeighbourPlayerCnt]*BeggarMyNeighbourPlayer `json:"ps"`
+	Config            BeggarMyNeighbourConfig                              `json:"cf"`
+	Phase             BeggarMyNeighbourPhase                               `json:"ph"`
+	CentralPile       []*Card                                              `json:"cp"`
+	CurrentPlayerIdx  int                                                  `json:"cu"`
+	PenaltyOwnerIdx   int                                                  `json:"po"`
+	PenaltyRemaining  int                                                  `json:"pr"`
+	LastCardPlayed    *Card                                                `json:"lc"`
+	LastCardPlayerIdx int                                                  `json:"lcp"`
+	GameEndFlag       bool                                                 `json:"gf"`
+	WinnerIdx         int                                                  `json:"wi"`
+	RoundsPlayed      int                                                  `json:"rp"`
+	ActionLog         []*ActionLogEntry                                    `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (g *BeggarMyNeighbour) MarshalJSON() ([]byte, error) {
 	return json.Marshal(beggarMyNeighbourJSON{
-		TrumpCards:       g.trumpCards,
-		Players:          g.players,
-		Config:           g.config,
-		Phase:            g.phase,
-		CentralPile:      g.centralPile,
-		CurrentPlayerIdx: g.currentPlayerIdx,
-		PenaltyOwnerIdx:  g.penaltyOwnerIdx,
-		PenaltyRemaining: g.penaltyRemaining,
-		LastCardPlayed:   g.lastCardPlayed,
-		GameEndFlag:      g.gameEndFlag,
-		WinnerIdx:        g.winnerIdx,
-		RoundsPlayed:     g.roundsPlayed,
-		ActionLog:        g.actionLog,
+		TrumpCards:        g.trumpCards,
+		Players:           g.players,
+		Config:            g.config,
+		Phase:             g.phase,
+		CentralPile:       g.centralPile,
+		CurrentPlayerIdx:  g.currentPlayerIdx,
+		PenaltyOwnerIdx:   g.penaltyOwnerIdx,
+		PenaltyRemaining:  g.penaltyRemaining,
+		LastCardPlayed:    g.lastCardPlayed,
+		LastCardPlayerIdx: g.lastCardPlayerIdx,
+		GameEndFlag:       g.gameEndFlag,
+		WinnerIdx:         g.winnerIdx,
+		RoundsPlayed:      g.roundsPlayed,
+		ActionLog:         g.actionLog,
 	})
 }
 
@@ -378,6 +389,7 @@ func (g *BeggarMyNeighbour) UnmarshalJSON(data []byte) error {
 	g.penaltyOwnerIdx = j.PenaltyOwnerIdx
 	g.penaltyRemaining = j.PenaltyRemaining
 	g.lastCardPlayed = j.LastCardPlayed
+	g.lastCardPlayerIdx = j.LastCardPlayerIdx
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerIdx = j.WinnerIdx
 	g.roundsPlayed = j.RoundsPlayed

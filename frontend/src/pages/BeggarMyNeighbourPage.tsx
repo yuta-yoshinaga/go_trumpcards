@@ -234,6 +234,15 @@ function BeggarMyNeighbourPageContent() {
       ? tc('player.you')
       : tc('player.cpu', { id: state.penaltyOwnerIdx });
 
+  // PLAY フェーズの手番プレイヤー表示 (#7341)。通常プレイ時にどちらの手番かが
+  // 分かるようにする。PLAY フェーズ以外では表示しない。
+  const isPlaying = state.phase === BeggarMyNeighbourPhase.PLAY;
+  const currentPlayerName = !isPlaying
+    ? ''
+    : state.currentPlayerIdx === 0
+      ? tc('player.you')
+      : tc('player.cpu', { id: state.currentPlayerIdx });
+
   // Phase transitions (and the penalty countdown) are conveyed only by the
   // central-pile ring color, so mirror them into an sr-only live region.
   const phaseAnnouncement = isPayingPenalty
@@ -332,6 +341,11 @@ function BeggarMyNeighbourPageContent() {
                 <div className="text-sm text-ds-text-primary font-semibold">
                   {t('label.centralPile')}: {state.centralPileSize}
                 </div>
+                {isPlaying && (
+                  <div className="text-xs text-ds-text-muted mt-1" data-testid="bmn-current-turn">
+                    {t('label.turn', { name: currentPlayerName })}
+                  </div>
+                )}
                 {isPayingPenalty && (
                   <>
                     <div className="text-xs text-ds-warning mt-1" data-testid="bmn-penalty-owner">
@@ -371,7 +385,16 @@ function BeggarMyNeighbourPageContent() {
                 )}
                 {state.lastCardPlayed && (
                   <div className="mt-2">
-                    <div className="text-xs text-ds-text-muted mb-1">{t('label.lastCard')}</div>
+                    <div className="text-xs text-ds-text-muted mb-1" data-testid="bmn-last-card-label">
+                      {state.lastCardPlayerIdx >= 0
+                        ? t('label.lastCardBy', {
+                            name:
+                              state.lastCardPlayerIdx === 0
+                                ? tc('player.you')
+                                : tc('player.cpu', { id: state.lastCardPlayerIdx }),
+                          })
+                        : t('label.lastCard')}
+                    </div>
                     <AnimatedCard card={state.lastCardPlayed} width={cardWidth * 1.1} />
                   </div>
                 )}

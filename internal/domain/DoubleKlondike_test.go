@@ -49,8 +49,8 @@ func TestDoubleKlondike_ResetDeals(t *testing.T) {
 	if total != 45 {
 		t.Errorf("tableau total = %d, want 45", total)
 	}
-	if g.GetStockCount() != 104-45 {
-		t.Errorf("stock = %d, want %d", g.GetStockCount(), 104-45)
+	if g.GetStockCount() != DoubleKlondikeTotalCards-45 {
+		t.Errorf("stock = %d, want %d", g.GetStockCount(), DoubleKlondikeTotalCards-45)
 	}
 }
 
@@ -278,5 +278,28 @@ func TestDoubleKlondike_JSONRoundTrip(t *testing.T) {
 	}
 	if err := json.Unmarshal([]byte(`{"ph":9}`), NewDefaultDoubleKlondike()); err == nil {
 		t.Error("expected error for invalid phase")
+	}
+}
+
+func TestDoubleKlondike_CheckGameClear(t *testing.T) {
+	g := newDkGame()
+	// Fill 8 foundations with 13 cards each (total 104 = DoubleKlondikeTotalCards)
+	for i := 0; i < DoubleKlondikeFoundationCnt; i++ {
+		for v := 1; v <= 13; v++ {
+			g.foundation[i] = append(g.foundation[i], dblkCard(1, v))
+		}
+	}
+	// Pop one card to test partial completion
+	g.foundation[DoubleKlondikeFoundationCnt-1] = g.foundation[DoubleKlondikeFoundationCnt-1][:12]
+	g.checkGameClear()
+	if g.GetPhase() == DoubleKlondikePhaseGameClear {
+		t.Errorf("phase should not be GameClear with %d cards", DoubleKlondikeTotalCards-1)
+	}
+
+	// Add the last card to reach DoubleKlondikeTotalCards
+	g.foundation[DoubleKlondikeFoundationCnt-1] = append(g.foundation[DoubleKlondikeFoundationCnt-1], dblkCard(1, 13))
+	g.checkGameClear()
+	if g.GetPhase() != DoubleKlondikePhaseGameClear {
+		t.Errorf("phase = %v, want GameClear with DoubleKlondikeTotalCards (%d) cards", g.GetPhase(), DoubleKlondikeTotalCards)
 	}
 }
