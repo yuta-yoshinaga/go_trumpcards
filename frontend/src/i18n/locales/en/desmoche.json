@@ -38,5 +38,9 @@
   "tutorial.pot": "If the stock runs out with nobody down to ten, there is no winner and the pot carries over into the next deal.",
   "meldOwnerYou": "Your meld",
   "foreignMeldWarning": "This meld belongs to another player: adding to it does not count toward your going out, and moving your own card here reduces your count.",
-  "roundWinnerYou": "You melded ten and took the pot"
+  "roundWinnerYou": "You melded ten and took the pot",
+  "settings.cpuDifficulty": "CPU difficulty",
+  "settings.difficulty.easy": "Easy",
+  "settings.difficulty.normal": "Normal",
+  "settings.difficulty.hard": "Hard"
 }

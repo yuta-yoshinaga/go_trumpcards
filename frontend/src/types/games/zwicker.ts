@@ -66,6 +66,8 @@ export interface ZwickerHintPayload {
 
 /** Full Zwicker game state returned from the API. */
 export interface ZwickerResponse extends BaseGameResponse {
+  /** Current game settings. */
+  config?: { cpuDifficulty: number; targetScore: number };
   players: ZwickerPlayer[];
   /** 0 = Play, 1 = RoundEnd, 2 = GameEnd. */
   phase: number;

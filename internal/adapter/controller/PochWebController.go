@@ -112,7 +112,7 @@ type PochWebOutputConfig struct {
 func (c *PochWebConfig) ToConfig() domain.PochConfig {
 	cfg := domain.DefaultPochConfig()
 	cfg.CpuDifficulty = domain.PochCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.PochCpuDifficultyNormal), int(domain.PochCpuDifficultyNormal),
+		int(domain.PochCpuDifficultyEasy), int(domain.PochCpuDifficultyHard),
 		int(cfg.CpuDifficulty)))
 	webutil.ApplyBoundedInt(&cfg.TargetDeals, c.TargetDeals, 1, 100)
 	return cfg

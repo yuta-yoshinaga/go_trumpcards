@@ -7,8 +7,12 @@ type PochCpuDifficulty int
 
 // Poch の CPU 難易度定数
 const (
-	// PochCpuDifficultyNormal 中難易度 (v1 はこれのみ)
-	PochCpuDifficultyNormal PochCpuDifficulty = iota
+	// PochCpuDifficultyEasy 低難易度。
+	PochCpuDifficultyEasy PochCpuDifficulty = iota
+	// PochCpuDifficultyNormal 中難易度。
+	PochCpuDifficultyNormal
+	// PochCpuDifficultyHard 高難易度。
+	PochCpuDifficultyHard
 )
 
 // PochConfig ポッホのゲーム設定
@@ -29,7 +33,7 @@ func DefaultPochConfig() PochConfig {
 // Validate 設定値のドメインバリデーション
 func (c PochConfig) Validate() error {
 	if err := ValidateRange("CPU difficulty", int(c.CpuDifficulty),
-		int(PochCpuDifficultyNormal), int(PochCpuDifficultyNormal)); err != nil {
+		int(PochCpuDifficultyEasy), int(PochCpuDifficultyHard)); err != nil {
 		return err
 	}
 	return ValidateRange("target deals", c.TargetDeals, 1, 100)

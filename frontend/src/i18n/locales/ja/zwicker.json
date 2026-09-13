@@ -28,5 +28,9 @@
   "tutorial.jokers": "ジョーカーはワイルドではありません。3枚それぞれ15・20・25で固定です。値は選べませんが、7点・6点・5点と最大の得点札です",
   "tutorial.zwick": "「Zwick」は場を空にしたときのボーナス（1点）です。複数の組をまとめて取ることの名前ではありません",
   "tutorial.scoring": "1ディールの得点はちょうど30点。ジョーカー7/6/5、♦10が3、♠10・♠2・各Aが1、そして枚数最多が3です。枚数が同数なら3点はどちらにも入りません",
-  "announceYourTurn": "あなたの手番です"
+  "announceYourTurn": "あなたの手番です",
+  "settings.cpuDifficulty": "CPU難易度",
+  "settings.difficulty.easy": "やさしい",
+  "settings.difficulty.normal": "ふつう",
+  "settings.difficulty.hard": "むずかしい"
 }

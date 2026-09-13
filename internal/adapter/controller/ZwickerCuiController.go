@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -38,7 +39,7 @@ func (c *ZwickerCuiController) Exec(command string) string {
 			cfg := c.zi.GetConfig()
 			return c.zi.ResetWithConfig(cfg)
 		},
-		[]string{"t", "take", "b", "build", "tr", "trail", "n", "next", "h", "hint", "log", "l"},
+		[]string{"t", "take", "b", "build", "tr", "trail", "n", "next", "sd", "setdifficulty", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "t", "take":
@@ -49,6 +50,12 @@ func (c *ZwickerCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.zi.Trail)
 			case "n", "next":
 				return c.zi.NextRound(), true
+			case "sd", "setdifficulty":
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
+					cfg := c.zi.GetConfig()
+					cfg.CpuDifficulty = domain.ZwickerCpuDifficulty(v)
+					return c.zi.ResetWithConfig(cfg)
+				})
 			default:
 				return handleCuiHintAndLog(cmd, c.zi.Hint, c.zi.ActionLog)
 			}

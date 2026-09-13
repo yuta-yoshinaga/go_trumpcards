@@ -28,5 +28,9 @@
   "tutorial.jokers": "Jokers are not wild. The three are fixed at 15, 20 and 25 -- you cannot choose -- but they are the biggest scorers at 7, 6 and 5.",
   "tutorial.zwick": "A \"Zwick\" is the bonus for clearing the table, worth 1. It is not the name for taking several groups at once.",
   "tutorial.scoring": "A deal is worth exactly 30: jokers 7/6/5, the ten of diamonds 3, the ten of spades, the two of spades and each ace 1, and the majority of cards 3. Level counts leave the three unawarded.",
-  "announceYourTurn": "Your turn"
+  "announceYourTurn": "Your turn",
+  "settings.cpuDifficulty": "CPU difficulty",
+  "settings.difficulty.easy": "Easy",
+  "settings.difficulty.normal": "Normal",
+  "settings.difficulty.hard": "Hard"
 }

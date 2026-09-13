@@ -7,8 +7,12 @@ type DesmocheCpuDifficulty int
 
 // Desmoche の CPU 難易度定数
 const (
-	// DesmocheCpuDifficultyNormal 中難易度 (v1 はこれのみ)
-	DesmocheCpuDifficultyNormal DesmocheCpuDifficulty = iota
+	// DesmocheCpuDifficultyEasy 低難易度。
+	DesmocheCpuDifficultyEasy DesmocheCpuDifficulty = iota
+	// DesmocheCpuDifficultyNormal 中難易度。
+	DesmocheCpuDifficultyNormal
+	// DesmocheCpuDifficultyHard 高難易度。
+	DesmocheCpuDifficultyHard
 )
 
 // DesmocheConfig デスモチェのゲーム設定
@@ -24,5 +28,5 @@ func DefaultDesmocheConfig() DesmocheConfig {
 // Validate 設定値のドメインバリデーション
 func (c DesmocheConfig) Validate() error {
 	return ValidateRange("CPU difficulty", int(c.CpuDifficulty),
-		int(DesmocheCpuDifficultyNormal), int(DesmocheCpuDifficultyNormal))
+		int(DesmocheCpuDifficultyEasy), int(DesmocheCpuDifficultyHard))
 }
