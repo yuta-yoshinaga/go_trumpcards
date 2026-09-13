@@ -31,6 +31,7 @@ func NewMinchiateCuiController(di usecase.MinchiateInteractorIF) *MinchiateCuiCo
 //	n / next                 → 次のトリックへ
 //	nr / nextround           → 次のラウンドへ (スコアリング)
 //	sd / setdifficulty <0-2> → CPU難易度設定
+//	str / settargetrounds <4-100> → マッチの目標ラウンド数設定
 //	h / hint                 → ヒント表示
 //	log / l                  → 棋譜表示
 func (c *MinchiateCuiController) Exec(command string) string {
@@ -43,7 +44,7 @@ func (c *MinchiateCuiController) Exec(command string) string {
 		[]string{
 			"scarto", "discard", "play",
 			"n", "next", "nr", "nextround",
-			"sd", "setdifficulty", "h", "hint", "log", "l",
+			"sd", "setdifficulty", "str", "settargetrounds", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -59,6 +60,17 @@ func (c *MinchiateCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuDifficulty = domain.MinchiateCpuDifficulty(v)
+					return c.di.ResetWithConfig(cfg)
+				})
+			case "str", "settargetrounds":
+				return cuiutil.WithParsedIntKeys(args, "minchiate.targetRoundsRequired", "minchiate.invalidTargetRounds", domain.MinchiatePlayerCnt, domain.MinchiateMaxTargetRounds, func(v int) string {
+					cfg := c.di.GetConfig()
+					cfg.TargetRounds = v
+					// WithParsedIntKeys handles the range; Validate supplies the game's
+					// existing multiple-of-player-count rule (6 is rejected here).
+					if err := cfg.Validate(); err != nil {
+						return invalidArg("minchiate.invalidTargetRounds", "val", fmt.Sprint(v))
+					}
 					return c.di.ResetWithConfig(cfg)
 				})
 			default:

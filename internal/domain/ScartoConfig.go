@@ -5,6 +5,12 @@ package domain
 // ScartoCpuDifficulty CPU の難易度レベル
 type ScartoCpuDifficulty int
 
+// ScartoMaxTargetDeals は CUI で指定できる最大ディール数。
+// **ドメイン (Validate) に上限は無い。**Web のセレクトが 3/5/7 しか出さないのは
+// 見せ方の都合で、9 ディールを「無効」と言う理由はドメインの側に無い。CUI に
+// 上限が要るのは打ち間違いで遊べない長さのマッチが始まらないようにするためだけ。
+const ScartoMaxTargetDeals = 100
+
 // Scarto の CPU 難易度定数
 const (
 	// ScartoCpuDifficultyEasy 低難易度 (ランダムプレイ)
