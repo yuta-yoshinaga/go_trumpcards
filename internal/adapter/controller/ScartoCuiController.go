@@ -3,8 +3,6 @@
 package controller
 
 import (
-	"fmt"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -66,9 +64,9 @@ func (c *ScartoCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "scarto.targetDealsRequired", "scarto.invalidTargetDeals", 1, domain.ScartoMaxTargetDeals, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.TargetDeals = v
-					if err := cfg.Validate(); err != nil {
-						return invalidArg("scarto.invalidTargetDeals", "val", fmt.Sprint(v))
-					}
+					// Minchiate の str と違い、ここに追加の規則は無い。
+					// ScartoConfig.Validate() が見るのは TargetDeals >= 1 だけで、
+					// それは上の WithParsedIntKeys の下限がもう見ている。
 					return c.di.ResetWithConfig(cfg)
 				})
 			default:
