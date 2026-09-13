@@ -119,3 +119,6 @@ func (p *TongitsWebPresenter) buildMessage(g interfaces.TongitsGame, lastErr err
 func (p *TongitsWebPresenter) ActionLogOutput(g interfaces.TongitsGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// HintOutput returns the normal JSON state for the Web presenter.
+func (p *TongitsWebPresenter) HintOutput(g interfaces.TongitsGame) string { return p.Output(g, nil) }

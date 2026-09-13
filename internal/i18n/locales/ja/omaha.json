@@ -21,6 +21,7 @@
   "dealerLine": "ディーラー: {{name}}",
   "communityNone": "コミュニティ: (なし)",
   "communityCards": "コミュニティ: {{cards}}",
+  "preflopCommunityNotice": "※プリフロップにコミュニティカード{{count}}枚を先に公開しています",
   "potLine": "ポット: {{pot}}",
   "limitLine": "リミット: {{name}}",
   "playerChips": " チップ:{{chips}}",

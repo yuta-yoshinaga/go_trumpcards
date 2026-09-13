@@ -72,6 +72,36 @@ func tongitsHandCards(player *domain.TongitsPlayer) []*domain.Card {
 // TongitsCuiPresenter renders the Tongits CUI view.
 type TongitsCuiPresenter struct{}
 
+// HintOutput emits the current Tongits recommendation.
+func (p *TongitsCuiPresenter) HintOutput(g interfaces.TongitsGame) string {
+	hint := g.GetHint()
+	if hint == nil {
+		return i18n.T("cuiHintNone") + "\n"
+	}
+	switch hint.Action {
+	case "draw_discard":
+		return i18n.T("tongits.hintDrawDiscard") + "\n"
+	case "draw_stock":
+		return i18n.T("tongits.hintDrawStock") + "\n"
+	case "meld":
+		return i18n.Tf("tongits.hintMeld", "indices", intsToString(hint.MeldIndices)) + "\n"
+	case "sapaw":
+		return i18n.Tf("tongits.hintSapaw", "player", strconv.Itoa(hint.TargetPlayerIdx), "meld", strconv.Itoa(hint.MeldIdx), "card", strconv.Itoa(hint.SapawCardIndex)) + "\n"
+	case "challenge":
+		return i18n.T("tongits.hintChallenge") + "\n"
+	default:
+		return i18n.Tf("tongits.hintDiscard", "card", strconv.Itoa(hint.CardIndex)) + "\n"
+	}
+}
+
+func intsToString(values []int) string {
+	parts := make([]string, len(values))
+	for i, v := range values {
+		parts[i] = strconv.Itoa(v)
+	}
+	return strings.Join(parts, ", ")
+}
+
 // Output renders the current game state for the active locale (#1699).
 func (p *TongitsCuiPresenter) Output(g interfaces.TongitsGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("tongits.helpTitle"), func(b *strings.Builder) {

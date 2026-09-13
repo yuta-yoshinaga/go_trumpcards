@@ -58,6 +58,11 @@ func (_m *MockTongitsInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }
 
+func (_m *MockTongitsInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.String(0)
+}
+
 // Snapshot モック
 func (_m *MockTongitsInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()

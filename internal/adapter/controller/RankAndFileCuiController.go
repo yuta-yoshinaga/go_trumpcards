@@ -22,7 +22,7 @@ var rankAndFileNoArgCommands = cuiutil.NewCommandMap[usecase.RankAndFileInteract
 
 // rankAndFileArgfulCommands lists alias names for argful commands handled in
 // the Exec switch.
-var rankAndFileArgfulCommands = []string{"m", "move"}
+var rankAndFileArgfulCommands = []string{"m", "move", "t", "targets"}
 
 // RankAndFileCuiController ランク・アンド・ファイルCUIコントローラークラス
 type RankAndFileCuiController struct {
@@ -49,11 +49,31 @@ func (c *RankAndFileCuiController) Exec(command string) string {
 			switch cmd {
 			case "m", "move":
 				return c.handleMove(args), true
+			case "t", "targets":
+				return c.handleTargets(args), true
 			default:
 				return "", false
 			}
 		},
 	)
+}
+
+func (c *RankAndFileCuiController) handleTargets(args []string) string {
+	if len(args) == 0 {
+		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "t {0}")
+	}
+	col, err := strconv.Atoi(args[0])
+	if err != nil {
+		return invalidArg("invalidColumn", "val", args[0])
+	}
+	idx := -1
+	if len(args) > 1 {
+		idx, err = strconv.Atoi(args[1])
+		if err != nil {
+			return invalidArg("invalidCardIndex", "val", args[1])
+		}
+	}
+	return c.fi.Targets(col, idx)
 }
 
 // handleMove 移動コマンドを処理

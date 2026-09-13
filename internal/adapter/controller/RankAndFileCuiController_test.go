@@ -52,6 +52,14 @@ func TestRankAndFileCuiControllerHint(t *testing.T) {
 	assert.Equal(t, "hint_output", c.Exec("hint"))
 }
 
+func TestRankAndFileCuiControllerTargets(t *testing.T) {
+	fi := newMockRankAndFileInteractor()
+	c := NewRankAndFileCuiController(fi)
+	fi.On("Targets", 2, -1).Return("targets_output")
+	assert.Equal(t, "targets_output", c.Exec("t 2"))
+	assert.Equal(t, "targets_output", c.Exec("targets 2"))
+}
+
 func TestRankAndFileCuiControllerAutoComplete(t *testing.T) {
 	fi := newMockRankAndFileInteractor()
 	c := NewRankAndFileCuiController(fi)

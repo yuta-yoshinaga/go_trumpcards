@@ -197,7 +197,7 @@ function CurdsAndWheyPageContent() {
     return (
       <div
         key={`col-${col}`}
-        className={`flex flex-col items-center rounded p-0.5 ${isDestination ? 'ring-1 ring-ds-success' : ''}`}
+        className={`flex flex-col items-center rounded p-0.5 ${isDestination ? 'ring-1 ring-ds-success' : ''} ${frontendHint && state.hint?.toCol === col ? 'ring-2 ring-ds-info' : ''}`}
         style={{ minHeight: Math.round(w * 1.4) }}
         data-testid={`column-${col}`}
       >

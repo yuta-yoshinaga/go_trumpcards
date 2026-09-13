@@ -40,6 +40,31 @@ func setupRankAndFileCuiMockDefaults(fg *interfaces.MockRankAndFileGame) {
 	fg.On("GetFoundation").Return(foundation).Maybe()
 }
 
+func TestRankAndFileCuiPresenterTargetsOutput(t *testing.T) {
+	p := &RankAndFileCuiPresenter{}
+
+	t.Run("列挙する", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		fg.On("SequenceStarts", 0).Return([]int{1})
+		fg.On("LegalTargets", 0, 1).Return([]int{3, 7})
+		out := p.TargetsOutput(fg, 0, -1)
+		assert.Contains(t, out, "列3")
+		assert.Contains(t, out, "列7")
+		assert.NotContains(t, out, "{{")
+		fg.AssertExpectations(t)
+	})
+
+	t.Run("置ける先がないときは明示する", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		fg.On("SequenceStarts", 0).Return([]int{1})
+		fg.On("LegalTargets", 0, 1).Return([]int{})
+		out := p.TargetsOutput(fg, 0, -1)
+		assert.Contains(t, out, "ありません")
+		assert.NotContains(t, out, "{{")
+		fg.AssertExpectations(t)
+	})
+}
+
 func TestRankAndFileCuiPresenter_Output(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)

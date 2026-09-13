@@ -1,6 +1,7 @@
 package presenter_test
 
 import (
+	"encoding/json"
 	"errors"
 	"strings"
 	"testing"
@@ -494,6 +495,27 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 		result := p.Output(h, nil)
 		assert.NotContains(t, result, "トーナメント")
 	})
+}
+
+func TestOmahaCuiPresenterDoesNotAddPreflopNoticeToStandardOmaha(t *testing.T) {
+	h, _ := makeOmahaForPresenter()
+	h.SetPhase(domain.OmahaPhasePreFlop)
+	assert.NotContains(t, (&presenter.OmahaCuiPresenter{}).Output(h, nil), "exposed before the flop")
+}
+
+func TestOmahaCuiPresenterShowsCourchevelPreflopNotice(t *testing.T) {
+	h, _ := makeOmahaForPresenter()
+	raw, err := json.Marshal(h)
+	require.NoError(t, err)
+	var payload map[string]any
+	require.NoError(t, json.Unmarshal(raw, &payload))
+	payload["pfc"] = float64(1)
+	raw, err = json.Marshal(payload)
+	require.NoError(t, err)
+	courchevel := new(domain.Omaha)
+	require.NoError(t, json.Unmarshal(raw, courchevel))
+	courchevel.SetPhase(domain.OmahaPhasePreFlop)
+	assert.Contains(t, (&presenter.OmahaCuiPresenter{}).Output(courchevel, nil), "プリフロップにコミュニティカード1枚を先に公開")
 }
 
 func TestOmahaCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {

@@ -19,6 +19,7 @@ export function getCurdsAndWheyHint(state: CurdsAndWheyResponse): HintResult | n
   return {
     targetAction: `col-${hint.fromCol}`,
     reason: 'frontendHint.curdsandwheyMove',
+    reasonParams: { fromCol: hint.fromCol + 1, toCol: hint.toCol + 1 },
     confidence: 'moderate',
   };
 }

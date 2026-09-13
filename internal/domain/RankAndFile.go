@@ -596,6 +596,37 @@ func (ft *RankAndFile) sequenceStarts(col int) []int {
 // 掴めるか」を判断するために使う。
 func (ft *RankAndFile) SequenceStarts(col int) []int { return ft.sequenceStarts(col) }
 
+// LegalTargets returns tableau columns that accept the selected run.
+func (ft *RankAndFile) LegalTargets(fromCol, cardIndex int) []int {
+	if fromCol < 0 || fromCol >= RankAndFileTableauCnt {
+		return nil
+	}
+	starts := ft.sequenceStarts(fromCol)
+	if cardIndex < 0 {
+		if len(starts) == 0 {
+			return nil
+		}
+		cardIndex = starts[0]
+	}
+	valid := false
+	for _, start := range starts {
+		if start == cardIndex {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return nil
+	}
+	targets := make([]int, 0, RankAndFileTableauCnt)
+	for col := range RankAndFileTableauCnt {
+		if col != fromCol && ft.canPlaceOnTableau(ft.tableau[fromCol][cardIndex].Card, col) {
+			targets = append(targets, col)
+		}
+	}
+	return targets
+}
+
 // isRankAndFileSequence は列 col の cardIndex 以降が異色降順に並んでいるかを返す。
 //
 // 一括で動かせるのはこの並びだけで、途中で色かランクが切れたら1枚も動かない。

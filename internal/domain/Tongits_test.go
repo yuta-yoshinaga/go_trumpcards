@@ -23,6 +23,15 @@ func tongitsTestGame() *domain.Tongits {
 }
 func tongitsCard(suit, value int) *domain.Card { return domain.NewCard(suit, value, false) }
 
+func TestTongitsGetHintDrawsFromStockWhenDiscardDoesNotImprove(t *testing.T) {
+	g := tongitsTestGame()
+	g.SetPhase(domain.TongitsPhaseDraw)
+	g.SetCurrentPlayerIdx(0)
+	hint := g.GetHint()
+	require.NotNil(t, hint)
+	assert.Equal(t, "draw_stock", hint.Action)
+}
+
 func TestTongitsThreePlayerDeal(t *testing.T) {
 	g := tongitsTestGame()
 	g.Reset()

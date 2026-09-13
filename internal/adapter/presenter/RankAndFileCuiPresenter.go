@@ -133,6 +133,40 @@ func (p *RankAndFileCuiPresenter) HintOutput(ft interfaces.RankAndFileGame) stri
 	return i18n.Tf("rankandfile.hintLine", "from", from, "to", to) + "\n"
 }
 
+// TargetsOutput emits legal tableau destinations for a movable run.
+func (p *RankAndFileCuiPresenter) TargetsOutput(ft interfaces.RankAndFileGame, fromCol, cardIndex int) string {
+	if fromCol < 0 || fromCol >= domain.RankAndFileTableauCnt {
+		return i18n.MarkError(i18n.Tf("invalidColumn", "val", strconv.Itoa(fromCol))) + "\n"
+	}
+	starts := ft.SequenceStarts(fromCol)
+	if cardIndex < 0 {
+		if len(starts) == 0 {
+			return i18n.Tf("rankandfile.targetsNone", "col", strconv.Itoa(fromCol)) + "\n"
+		}
+		cardIndex = starts[0]
+	} else {
+		valid := false
+		for _, start := range starts {
+			if start == cardIndex {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			return i18n.Tf("rankandfile.targetsNotMovable", "col", strconv.Itoa(fromCol), "idx", strconv.Itoa(cardIndex)) + "\n"
+		}
+	}
+	targets := ft.LegalTargets(fromCol, cardIndex)
+	if len(targets) == 0 {
+		return i18n.Tf("rankandfile.targetsNone", "col", strconv.Itoa(fromCol)) + "\n"
+	}
+	parts := make([]string, len(targets))
+	for i, col := range targets {
+		parts[i] = i18n.Tf("rankandfile.targetTableau", "col", strconv.Itoa(col))
+	}
+	return i18n.Tf("rankandfile.targetsLine", "col", strconv.Itoa(fromCol), "idx", strconv.Itoa(cardIndex), "targets", strings.Join(parts, " / ")) + "\n"
+}
+
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *RankAndFileCuiPresenter) ActionLogOutput(ft interfaces.RankAndFileGame) string {
 	if ft.GetPhase() == domain.RankAndFilePhasePlaying {

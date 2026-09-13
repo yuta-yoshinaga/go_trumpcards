@@ -49,6 +49,11 @@ func (_m *MockRankAndFileInteractor) Hint() string {
 	return ret.Get(0).(string)
 }
 
+func (_m *MockRankAndFileInteractor) Targets(fromCol, cardIndex int) string {
+	ret := _m.Called(fromCol, cardIndex)
+	return ret.String(0)
+}
+
 func (_m *MockRankAndFileInteractor) AutoComplete() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)

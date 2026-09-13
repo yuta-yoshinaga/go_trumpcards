@@ -21,6 +21,7 @@
   "dealerLine": "Dealer: {{name}}",
   "communityNone": "Community: (none)",
   "communityCards": "Community: {{cards}}",
+  "preflopCommunityNotice": "* {{count}} community card(s) are exposed before the flop",
   "potLine": "Pot: {{pot}}",
   "limitLine": "Limit: {{name}}",
   "playerChips": " chips:{{chips}}",

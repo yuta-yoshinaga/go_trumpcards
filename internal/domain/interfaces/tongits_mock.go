@@ -29,6 +29,13 @@ func (m *MockTongitsGame) ScoreRound()                         { m.Called() }
 func (m *MockTongitsGame) GetConfig() domain.TongitsConfig {
 	return m.Called().Get(0).(domain.TongitsConfig)
 }
+func (m *MockTongitsGame) GetHint() *domain.TongitsHint {
+	ret := m.Called()
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).(*domain.TongitsHint)
+}
 func (m *MockTongitsGame) SetConfig(cfg domain.TongitsConfig) { m.Called(cfg) }
 func (m *MockTongitsGame) GetGameEndFlag() bool               { return m.Called().Bool(0) }
 func (m *MockTongitsGame) GetPhase() domain.TongitsPhase {

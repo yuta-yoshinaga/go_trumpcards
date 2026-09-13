@@ -133,6 +133,11 @@ func (p *RankAndFileWebPresenter) HintOutput(ft interfaces.RankAndFileGame) stri
 	return marshalOrError(resObj)
 }
 
+// TargetsOutput returns the normal board response for Web clients.
+func (p *RankAndFileWebPresenter) TargetsOutput(ft interfaces.RankAndFileGame, _ int, _ int) string {
+	return p.Output(ft, nil)
+}
+
 // ActionLogOutput 棋譜をJSON出力
 func (p *RankAndFileWebPresenter) ActionLogOutput(ft interfaces.RankAndFileGame) string {
 	return actionLogOutputJSON(ft)
