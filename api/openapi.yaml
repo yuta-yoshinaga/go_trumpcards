@@ -35721,6 +35721,11 @@ components:
           type: integer
         pendingCard:
           $ref: '#/components/schemas/ChineseTenCard'
+        pendingFlip:
+          type: boolean
+          description: |
+            True when pendingCard came off the stock flip that follows a play,
+            not from the hand. The label the client shows differs.
         selectableIndices:
           type: array
           description: |
