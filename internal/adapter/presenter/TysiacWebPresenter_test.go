@@ -28,6 +28,7 @@ func setupTysiacWebMock() *interfaces.MockTysiacGame {
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetForehandIdx").Return(1)
 	m.On("GetDeclarerIdx").Return(0)
+	m.On("GetTalonRecipientIdx").Return(1)
 	m.On("GetContract").Return(100)
 	m.On("GetCurrentBid").Return(100)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)

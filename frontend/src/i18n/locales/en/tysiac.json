@@ -22,7 +22,7 @@
   "contract": "Contract: {{points}}",
   "currentBid": "Bid: {{points}}",
   "bidPhase": "Bidding phase — raise (+10) or pass.",
-  "talonPhase": "Talon exchange — give a card to each opponent.",
+  "talonPhase": "Talon exchange — give this card to {{name}}.",
   "bidRaise": "Raise +10",
   "bidRaiseTo": "Raise ({{points}})",
   "bidPass": "Pass",

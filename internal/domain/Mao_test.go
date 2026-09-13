@@ -143,6 +143,17 @@ func TestMao_DeclareWordWrong_AppliesPenalty(t *testing.T) {
 	assert.Equal(t, 0, g.GetPlayerCorrectCount())
 	assert.True(t, g.GetRulePenaltyFlag())
 	assert.Equal(t, before+1, g.GetPlayer(0).GetCardsSize())
+	assert.Equal(t, []MaoSayWordAttempt{{Word: "wrong", Penalty: true}}, g.GetSayWordHistory())
+}
+
+func TestMao_SayWordHistoryClearsAtNextRound(t *testing.T) {
+	g := newTestMao()
+	g.Reset()
+	g.SetAwaitingWord(true)
+	require.NoError(t, g.PlayerDeclareWord("spade"))
+	g.SetPhase(MaoPhaseRoundEnd)
+	g.NextRound()
+	assert.Empty(t, g.GetSayWordHistory())
 }
 
 func TestMao_DeclareWordWhenNotAwaiting_Penalty(t *testing.T) {
@@ -158,6 +169,7 @@ func TestMao_DeclareWordWhenNotAwaiting_Penalty(t *testing.T) {
 	require.NoError(t, g.PlayerDeclareWord("spade"))
 	assert.True(t, g.GetRulePenaltyFlag())
 	assert.Equal(t, before+1, g.GetPlayer(0).GetCardsSize())
+	assert.Equal(t, []MaoSayWordAttempt{{Word: "spade", Penalty: true}}, g.GetSayWordHistory())
 }
 
 func TestMao_HintUnlocksAfterThreeCorrect(t *testing.T) {
@@ -382,6 +394,51 @@ func TestMao_JSONRoundTripIncludesHiddenRule(t *testing.T) {
 	assert.True(t, restored.GetAwaitingWord())
 	assert.Equal(t, 2, restored.GetPlayerCorrectCount())
 	assert.Equal(t, MaoPlayerCnt, restored.GetPlayerCnt())
+}
+
+// **宣言履歴は Worker の往復を越えること。** Worker はリクエストごとに JSON から
+// 卓を組み直すので、載っていなければ CUI の履歴は本番で永久に空になる。同じ形で
+// Rams のラウンド終了メッセージが死んでいた。
+func TestMao_JSONRoundTripKeepsTheSayWordHistory(t *testing.T) {
+	g := newTestMao()
+	g.Reset()
+	g.sayWordHistory = []MaoSayWordAttempt{{Word: "seven", Penalty: false}, {Word: "eight", Penalty: true}}
+
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var restored Mao
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, g.GetSayWordHistory(), restored.GetSayWordHistory())
+
+	// **getter は複製を返すこと。** 呼び手が書き換えても盤の履歴は動かない。
+	got := restored.GetSayWordHistory()
+	got[0].Word = "mutated"
+	assert.Equal(t, "seven", restored.GetSayWordHistory()[0].Word)
+}
+
+func TestMao_SayWordHistoryWordLengthLimit(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		word string
+		want int
+	}{
+		{name: "at limit", word: strings.Repeat("あ", maoMaxWordLen), want: maoMaxWordLen},
+		{name: "over limit", word: strings.Repeat("い", maoMaxWordLen+1), want: maoMaxWordLen},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newTestMao()
+			require.NoError(t, g.PlayerDeclareWord(tc.word))
+			assert.Len(t, []rune(g.GetSayWordHistory()[0].Word), tc.want)
+		})
+	}
+
+	g := newTestMao()
+	g.Reset()
+	g.sayWordHistory = []MaoSayWordAttempt{{Word: strings.Repeat("う", maoMaxWordLen+1)}}
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var restored Mao
+	assert.Error(t, json.Unmarshal(data, &restored))
 }
 
 func TestMao_UnmarshalRejectsBadInput(t *testing.T) {

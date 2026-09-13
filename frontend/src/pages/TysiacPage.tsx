@@ -399,7 +399,11 @@ function TysiacPageContent() {
                   className="mb-1 text-center text-sm text-ds-accent font-semibold"
                   data-testid="tysiac-talon-prompt"
                 >
-                  {t('talonPhase')}
+                  {t('talonPhase', {
+                    name: state.players[state.talonRecipientIdx]?.isHuman
+                      ? t('you')
+                      : t('cpu', { id: state.players[state.talonRecipientIdx]?.id }),
+                  })}
                 </div>
               )}
             </div>

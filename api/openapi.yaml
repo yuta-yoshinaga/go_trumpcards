@@ -80860,6 +80860,12 @@ components:
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        talonRecipientIdx:
+          type: integer
+          description: >-
+            Seat the next discarded card goes to, following the order
+            giveDiscard uses (opponentsOf the declarer, indexed by
+            discardCount). -1 outside the talon phase.
         messageCode:
           type: string
         players:

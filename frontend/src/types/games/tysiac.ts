@@ -58,6 +58,8 @@ export interface TysiacResponse extends BaseGameResponse {
   forehandIdx: number;
   /** Seat index of the round's Declarer (bid winner). */
   declarerIdx: number;
+  /** Seat index receiving the next talon card, or -1 outside the exchange. */
+  talonRecipientIdx: number;
   /** The Declarer's contract (target card points for the round). */
   contract: number;
   /** The current highest bid in the Bid phase. */
