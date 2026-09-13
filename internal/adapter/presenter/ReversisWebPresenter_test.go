@@ -91,6 +91,20 @@ func TestReversisWebPresenterMarkedMessageIsTransient(t *testing.T) {
 	assert.Equal(t, "reversis.play", decodeReversis(t, p.Output(r, nil))["messageCode"])
 }
 
+func TestReversisWebPresenterCombinesConsecutiveMarkedMessages(t *testing.T) {
+	p := new(ReversisWebPresenter)
+	r := newReversisForWeb(t)
+	r.SetActionLogForTest([]*domain.ActionLogEntry{
+		{ActionType: "marked", PlayerIdx: 0, Cards: []*domain.Card{domain.NewCard(domain.CardDesignHeart, domain.ReversisQuinolaValue, true)}},
+		{ActionType: "marked", PlayerIdx: 0, Cards: []*domain.Card{domain.NewCard(domain.CardDesignDiamond, 1, true)}},
+	})
+
+	params := decodeReversis(t, p.Output(r, nil))["messageParams"].(map[string]any)
+	assert.Equal(t, "♥J, ♦A", params["mark"])
+	assert.Equal(t, "10", params["penalty"])
+	assert.Equal(t, "10", params["stake"])
+}
+
 func TestReversisWebPresenterRoundEndMessage(t *testing.T) {
 	p := new(ReversisWebPresenter)
 	r := newReversisForWeb(t)
