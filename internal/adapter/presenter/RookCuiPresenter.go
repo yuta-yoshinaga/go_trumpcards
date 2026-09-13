@@ -127,7 +127,11 @@ func (p *RookCuiPresenter) Output(g interfaces.RookGame, lastErr error) string {
 		)
 
 		cuiErrorBlock(b, lastErr)
-		if result := g.GetRoundResult(); result != nil {
+		// **ラウンド終了の画面でだけ出す。** `GetRoundResult()` は次のラウンドが
+		// 始まっても直前の結果を持ち続けるので、フェーズを見ないと play 中の盤に
+		// 「契約達成」が貼りついたままになる。
+		if result := g.GetRoundResult(); result != nil &&
+			(g.GetPhase() == domain.RookPhaseRoundEnd || g.GetGameEndFlag()) {
 			status := i18n.T("rook.contractFailed")
 			if result.Made {
 				status = i18n.T("rook.contractMade")

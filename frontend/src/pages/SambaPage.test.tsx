@@ -115,6 +115,24 @@ describe('SambaPage', () => {
     );
   });
 
+  it.each([
+    [0, '完成メルド 0/2', '上がるにはチームで完成メルドが2個必要です'],
+    [1, '完成メルド 1/2', '上がるにはチームで完成メルドが2個必要です'],
+    [2, '完成メルド 2/2', undefined],
+  ] as const)('shows go-out progress for %d completed melds', async (completed, progress, title) => {
+    mockExec.mockResolvedValue(makeSambaState({ phase: 2, completedMelds: [completed, 0] }));
+    renderWithProviders(<SambaPage />);
+    await waitFor(() => expect(screen.getByTestId('sa-go-out-progress')).toHaveTextContent(progress));
+    const goOut = screen.getByRole('button', { name: '上がる' });
+    if (title) {
+      expect(goOut).toHaveAttribute('title', title);
+    } else {
+      expect(goOut).toBeEnabled();
+      fireEvent.click(goOut);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('goout'));
+    }
+  });
+
   it('shows next round button at round end', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<SambaPage />);

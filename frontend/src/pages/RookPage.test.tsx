@@ -287,7 +287,7 @@ describe('RookPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
-  it('shows the authoritative round scoring result', async () => {
+  it('shows a made authoritative round scoring result at round end', async () => {
     mockExec.mockResolvedValue(
       makeState({
         phase: 4,
@@ -299,6 +299,32 @@ describe('RookPage', () => {
     const result = await screen.findByTestId('rook-round-result');
     expect(result).toHaveTextContent('落札チーム0: 獲得85点 / 契約80点');
     expect(result).toHaveTextContent('契約達成 (+85)');
+  });
+
+  it('shows a failed authoritative round scoring result at round end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 4,
+        roundResult: { declarerTeam: 1, teamPoints: 60, contractBid: 80, made: false, scoreDelta: -80 },
+      }),
+    );
+    renderWithProviders(<RookPage />);
+    const result = await screen.findByTestId('rook-round-result');
+    expect(result).toHaveTextContent('落札チーム1: 獲得60点 / 契約80点');
+    expect(result).toHaveTextContent('セット（契約未達） (-80)');
+  });
+
+  it('does not show a round result outside round end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        roundResult: { declarerTeam: 0, teamPoints: 85, contractBid: 80, made: true, scoreDelta: 85 },
+      }),
+    );
+    renderWithProviders(<RookPage />);
+    await screen.findByTestId('play-button');
+    expect(screen.queryByTestId('rook-round-result')).not.toBeInTheDocument();
+    expect(screen.queryByText('契約達成 (+85)')).not.toBeInTheDocument();
   });
 });
 
