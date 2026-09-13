@@ -461,6 +461,9 @@ func TestZheng_HasPlayableResponse_GuardsInvalidState(t *testing.T) {
 	t.Run("game ended", func(t *testing.T) {
 		z := newZhengTestGame()
 		z.round.gameEndFlag = true
+		z.round.tableCards = []*Card{zhengCard(10, CardDesignSpade)}
+		z.round.tablePlayType = ZhengPlaySingle
+		z.players[0].AddCard(zhengCard(11, CardDesignHeart))
 		assert.False(t, z.HasPlayableResponse())
 	})
 	t.Run("current turn out of range", func(t *testing.T) {
@@ -471,6 +474,7 @@ func TestZheng_HasPlayableResponse_GuardsInvalidState(t *testing.T) {
 	t.Run("current player is nil", func(t *testing.T) {
 		z := newZhengTestGame()
 		z.players[0] = nil
+		z.round.tableCards = []*Card{zhengCard(10, CardDesignSpade)}
 		assert.False(t, z.HasPlayableResponse())
 	})
 }
