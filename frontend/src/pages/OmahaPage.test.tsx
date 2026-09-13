@@ -834,7 +834,9 @@ describe('OmahaPage', () => {
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false, bettingLimit: 0 }),
+    );
   });
 
   it('uses outline style for reset button', async () => {
@@ -1276,7 +1278,9 @@ describe('OmahaPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false, bettingLimit: 0 }),
+    );
   });
 
   it('sends cpuMetaAI true when checkbox is checked before reset', async () => {
@@ -1290,7 +1294,9 @@ describe('OmahaPage', () => {
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: true }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: true, bettingLimit: 0 }),
+    );
   });
 
   // ---- Keyboard navigation ----
@@ -1603,5 +1609,35 @@ describe('OmahaPage', () => {
 
     expect(panelWithBet).toHaveTextContent('コール');
     expect(panelWithBet).not.toHaveTextContent('チェック');
+  });
+
+  // ---- Betting limit select (#7139) ----
+  it('shows betting limit select with three options', async () => {
+    renderWithProviders(<OmahaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const select = document.getElementById('omahaBettingLimit');
+    if (!(select instanceof HTMLSelectElement)) throw new Error('betting limit select not rendered');
+    // 3 options: fixed (0), pot limit (1), no limit (2)
+    expect(select.options.length).toBe(3);
+    expect(select.options[0].value).toBe('0');
+    expect(select.options[1].value).toBe('1');
+    expect(select.options[2].value).toBe('2');
+    expect(select.value).toBe('0');
+  });
+
+  it('sends the chosen betting limit when the game is reset', async () => {
+    renderWithProviders(<OmahaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const select = document.getElementById('omahaBettingLimit');
+    if (!(select instanceof HTMLSelectElement)) throw new Error('betting limit select not rendered');
+    expect(select.value).toBe('0');
+    fireEvent.change(select, { target: { value: '2' } });
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    // The selector is only worth having if the value reaches the reset call.
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.objectContaining({ bettingLimit: 2 })),
+    );
   });
 });
