@@ -37,6 +37,10 @@ func (_m *MockLiteratureInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }
 
+func (_m *MockLiteratureInteractor) AllAsks() string {
+	return _m.Called().String(0)
+}
+
 // Snapshot モック
 func (_m *MockLiteratureInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()

@@ -290,15 +290,41 @@ function LiteraturePageContent() {
             {state.asks.length > 0 && (
               <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="literature-history">
                 <div className="mb-1 text-ds-text-primary">{t('historyTitle')}</div>
-                {state.asks.slice(-5).map((a, i) => (
-                  <div key={`ask-${a.from}-${a.to}-${a.card?.design}-${a.card?.value}-${i}`}>
-                    {t(a.success ? 'askHitLine' : 'askMissLine', {
-                      from: a.from,
-                      to: a.to,
-                      card: a.card ? `${suitLabel(suitOf(a.card.design))}${a.card.value}` : '?',
-                    })}
-                  </div>
-                ))}
+                <div className="mt-1">
+                  {state.asks.slice(-5).map((a, i) => (
+                    <div
+                      data-testid="literature-recent-ask"
+                      key={`ask-${a.from}-${a.to}-${a.card?.design}-${a.card?.value}-${i}`}
+                    >
+                      {t(a.success ? 'askHitLine' : 'askMissLine', {
+                        from: a.from,
+                        to: a.to,
+                        card: a.card ? `${suitLabel(suitOf(a.card.design))}${a.card.value}` : '?',
+                      })}
+                    </div>
+                  ))}
+                </div>
+                {state.asks.length > 5 && (
+                  <details>
+                    <summary className="cursor-pointer text-ds-text-primary">
+                      {t('historyMore', { count: state.asks.length - 5 })}
+                    </summary>
+                    <div className="mt-1">
+                      {state.asks.slice(0, -5).map((a, i) => (
+                        <div
+                          data-testid="literature-older-ask"
+                          key={`old-ask-${a.from}-${a.to}-${a.card?.design}-${a.card?.value}-${i}`}
+                        >
+                          {t(a.success ? 'askHitLine' : 'askMissLine', {
+                            from: a.from,
+                            to: a.to,
+                            card: a.card ? `${suitLabel(suitOf(a.card.design))}${a.card.value}` : '?',
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                )}
               </div>
             )}
 

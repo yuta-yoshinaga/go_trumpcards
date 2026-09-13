@@ -395,6 +395,20 @@ describe('HandAndFootPage', () => {
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeDisabled();
   });
 
+  it('includes the four core rules in the tutorial', async () => {
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    const next = () => fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    next();
+    next();
+    next();
+    next();
+    expect(screen.getByRole('dialog')).toHaveTextContent(
+      '凍結中の捨て札を取るには、同ランクのナチュラルカードを2枚使います。',
+    );
+  });
+
   afterEach(() => {
     localStorage.clear();
   });

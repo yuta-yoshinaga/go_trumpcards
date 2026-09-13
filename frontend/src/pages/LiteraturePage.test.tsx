@@ -235,6 +235,31 @@ describe('LiteraturePage', () => {
     expect(history).toHaveTextContent('空振り');
   });
 
+  it('keeps five recent asks outside the details and exposes older asks when expanded', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        asks: Array.from({ length: 6 }, (_, i) => ({
+          from: 0,
+          to: 1,
+          card: card('SPADE', i + 2),
+          success: false,
+        })),
+      }),
+    );
+    renderWithProviders(<LiteraturePage />);
+    const history = await waitFor(() => screen.findByTestId('literature-history'));
+    const details = history.querySelector('details');
+    expect(details).not.toBeNull();
+    const recentAsks = history.querySelectorAll('[data-testid="literature-recent-ask"]');
+    expect(recentAsks).toHaveLength(5);
+    for (const ask of recentAsks) expect(details?.contains(ask)).toBe(false);
+    expect(details).toHaveTextContent('さらに1件（展開すると全件表示）');
+    fireEvent.click(details?.querySelector('summary') as HTMLElement);
+    expect(history).toHaveTextContent('♠2');
+    expect(details).toHaveTextContent('♠2');
+    expect(details?.querySelectorAll('[data-testid="literature-older-ask"]')).toHaveLength(1);
+  });
+
   // **同数で終わることがある。**無効が絡むため。
   it('reports the outcome, a level finish included', async () => {
     for (const [team, text] of [

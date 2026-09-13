@@ -36,10 +36,18 @@ export function parseConquianCommand(input: string): CliParseResult<ConquianArgs
       return { args: ['drawdiscard'] };
     case 'm':
     case 'meld': {
-      // meld <idx...> — all indices form one meld group
-      const parsed = parseIntSlice(args);
-      if ('error' in parsed) return { error: 'Usage: meld <idx...>' };
-      return { args: ['meld', undefined, undefined, [parsed.values]] };
+      // Groups are separated by ';'. An extension group may end in @meldIndex,
+      // matching the CUI syntax and the Web API's extendTargets array.
+      const groups: number[][] = [];
+      const targets: number[] = [];
+      for (const rawGroup of args.join(' ').split(';')) {
+        const [rawIndices, rawTarget] = rawGroup.split('@', 2);
+        const parsed = parseIntSlice((rawIndices ?? '').replaceAll(',', ' ').trim().split(/\s+/).filter(Boolean));
+        if ('error' in parsed) return { error: 'Usage: meld <idx...>[;<idx...>@<meldIndex>]' };
+        groups.push(parsed.values);
+        targets.push(rawTarget === undefined ? -1 : Number.parseInt(rawTarget.trim(), 10));
+      }
+      return { args: ['meld', undefined, undefined, groups, targets] };
     }
     case 'd':
     case 'dis':
@@ -68,7 +76,7 @@ export function parseConquianCommand(input: string): CliParseResult<ConquianArgs
 export const CONQUIAN_HELP: string[] = [
   'ds/drawstock   - Draw from stock',
   'dd/drawdiscard - Draw from discard',
-  'meld <idx...>  - Lay down a meld',
+  'meld <idx...>[;<idx...>@<meldIndex>] - Lay down melds; choose an extension target',
   'd <idx>        - Discard a card',
   'nr/nextround   - Next round',
   'log            - Show action log',

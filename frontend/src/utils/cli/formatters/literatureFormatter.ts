@@ -42,10 +42,10 @@ export function formatLiteratureState(state: LiteratureResponse): string {
   });
   lines.push('----------');
 
-  // **要求の履歴は公開情報。**直近だけ出す。
+  // **要求の履歴は公開情報。**CUI は折りたたみがないため全件出す。
   if (state.asks.length > 0) {
-    lines.push('recent asks (everyone sees these):');
-    for (const a of state.asks.slice(-5)) {
+    lines.push('all asks (everyone sees these):');
+    for (const a of state.asks) {
       const card = a.card ? formatCard(a.card) : '?';
       lines.push(`  seat ${a.from} -> seat ${a.to}: ${card} ... ${a.success ? 'hit' : 'miss'}`);
     }

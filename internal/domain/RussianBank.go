@@ -431,7 +431,8 @@ func (g *RussianBank) Discard() error {
 }
 
 // checkStalemate 両者が連続でスタック・パスした場合に停滞として決着させる。
-// 残リザーブが少ない側を勝者とし、同数なら引き分け (winner=-1)。
+// 残リザーブが少ない側を勝者とし、同数なら stop の回数を副次スコアとして
+// 比較する。それも同数なら引き分け (winner=-1)。
 func (g *RussianBank) checkStalemate() bool {
 	if g.passStreak < RussianBankPlayerCnt {
 		return false
@@ -442,6 +443,10 @@ func (g *RussianBank) checkStalemate() bool {
 	case r0 < r1:
 		g.winner = 0
 	case r1 < r0:
+		g.winner = 1
+	case g.stopPoints[0] > g.stopPoints[1]:
+		g.winner = 0
+	case g.stopPoints[1] > g.stopPoints[0]:
 		g.winner = 1
 	default:
 		g.winner = -1

@@ -22,7 +22,7 @@ func TestConquianCuiController_Exec(t *testing.T) {
 		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
 		m.On("DrawFromStock").Return(mockOutput)
 		m.On("DrawFromDiscard").Return(mockOutput)
-		m.On("Meld", mock.Anything).Return(mockOutput)
+		m.On("MeldWithTargets", mock.Anything, mock.Anything).Return(mockOutput)
 		m.On("Discard", mock.Anything).Return(mockOutput)
 		m.On("NextRound").Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
@@ -55,13 +55,19 @@ func TestConquianCuiController_Exec(t *testing.T) {
 	t.Run("meld m with groups", func(t *testing.T) {
 		m := newMock()
 		assert.Equal(t, mockOutput, controller.NewConquianCuiController(m).Exec("m 0,1,2;3"))
-		m.AssertCalled(t, "Meld", [][]int{{0, 1, 2}, {3}})
+		m.AssertCalled(t, "MeldWithTargets", [][]int{{0, 1, 2}, {3}}, []int{-1, -1})
 	})
 
 	t.Run("meld m no args", func(t *testing.T) {
 		m := newMock()
 		assert.Equal(t, mockOutput, controller.NewConquianCuiController(m).Exec("m"))
-		m.AssertCalled(t, "Meld", ([][]int)(nil))
+		m.AssertCalled(t, "MeldWithTargets", ([][]int)(nil), ([]int)(nil))
+	})
+
+	t.Run("meld accepts explicit extension target", func(t *testing.T) {
+		m := newMock()
+		assert.Equal(t, mockOutput, controller.NewConquianCuiController(m).Exec("m 0,1,2;3@1"))
+		m.AssertCalled(t, "MeldWithTargets", [][]int{{0, 1, 2}, {3}}, []int{-1, 1})
 	})
 
 	t.Run("discard d with index", func(t *testing.T) {

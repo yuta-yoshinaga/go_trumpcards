@@ -23,6 +23,7 @@ func TestLiteratureCuiController_Exec(t *testing.T) {
 		m.On("Ask", mock.Anything, mock.Anything, mock.Anything).Return(mockOutput)
 		m.On("Claim", mock.Anything, mock.Anything).Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
+		m.On("AllAsks").Return("全件の要求履歴")
 		return m
 	}
 
@@ -153,5 +154,13 @@ func TestLiteratureCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, c.Exec("log"))
 		m.AssertCalled(t, "ActionLog")
 		assert.Contains(t, c.Exec("unknown"), "コマンドが不明です")
+	})
+
+	t.Run("shows all asks", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewLiteratureCuiController(m)
+		assert.Equal(t, "全件の要求履歴", c.Exec("ah"))
+		assert.Equal(t, "全件の要求履歴", c.Exec("history"))
+		m.AssertNumberOfCalls(t, "AllAsks", 2)
 	})
 }

@@ -84,11 +84,23 @@ describe('formatLiteratureState', () => {
         ],
       }),
     );
-    expect(out).toContain('everyone sees these');
+    expect(out).toContain('all asks (everyone sees these)');
     expect(out).toContain('... hit');
     expect(out).toContain('... miss');
     // card が無くても落ちない。
     expect(out).toContain('seat 2 -> seat 3: ?');
+  });
+
+  it('shows older asks so the CUI retains the complete public history', () => {
+    const asks = Array.from({ length: 6 }, (_, i) => ({
+      from: 0,
+      to: 1,
+      card: card('SPADE', i + 2),
+      success: false,
+    }));
+    const out = formatLiteratureState(makeState({ asks }));
+    expect(out).toContain('♠2 ... miss');
+    expect(out).toContain('♠7 ... miss');
   });
 
   // **宣言の結末は 3 通り。**無効は「相手に渡る」とは違う。

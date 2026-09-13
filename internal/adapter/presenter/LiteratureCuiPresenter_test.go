@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -32,10 +33,14 @@ func setupLiteratureCuiMock(o literatureMockOpts) *interfaces.MockLiteratureGame
 	m.On("GetPlayers").Return(players)
 	m.On("GetLastAsk").Return(o.lastAsk)
 	m.On("GetLastClaim").Return(o.lastClaim)
-	m.On("GetAsks").Return([]*domain.LiteratureAsk{
-		{From: 0, To: 1, Card: ltTestCard(domain.CardDesignSpade, 3), Success: true},
-		{From: 1, To: 0, Card: ltTestCard(domain.CardDesignHeart, 9), Success: false},
-	})
+	asks := o.asks
+	if asks == nil {
+		asks = []*domain.LiteratureAsk{
+			{From: 0, To: 1, Card: ltTestCard(domain.CardDesignSpade, 3), Success: true},
+			{From: 1, To: 0, Card: ltTestCard(domain.CardDesignHeart, 9), Success: false},
+		}
+	}
+	m.On("GetAsks").Return(asks)
 	m.On("GetClaims").Return([]*domain.LiteratureClaimResult{})
 	m.On("LiteratureTeamHalfSuits", 0).Return(o.team0)
 	m.On("LiteratureTeamHalfSuits", 1).Return(o.team1)
@@ -76,6 +81,26 @@ func TestLiteratureCuiPresenter_ShowsTheAskHistory(t *testing.T) {
 	assert.Contains(t, out, "全員に公開されています")
 	assert.Contains(t, out, "的中")
 	assert.Contains(t, out, "空振り")
+}
+
+func TestLiteratureCuiPresenter_LimitsRecentAskHistoryAndCanShowAll(t *testing.T) {
+	o := defaultLiteratureOpts()
+	o.asks = make([]*domain.LiteratureAsk, 6)
+	for i := range o.asks {
+		o.asks[i] = &domain.LiteratureAsk{From: 0, To: 1, Card: ltTestCard(domain.CardDesignSpade, i+2)}
+	}
+	p := new(presenter.LiteratureCuiPresenter)
+	recent := p.Output(setupLiteratureCuiMock(o), nil)
+	assert.Contains(t, recent, "直近の要求")
+	assert.NotContains(t, recent, "席0 → 席1: SPADE 2")
+	assert.Contains(t, recent, "席0 → 席1: SPADE 3")
+	assert.Contains(t, recent, "席0 → 席1: SPADE 7")
+
+	all := p.AllAsksOutput(setupLiteratureCuiMock(o))
+	assert.Contains(t, all, "全件")
+	for i := 2; i <= 7; i++ {
+		assert.Contains(t, all, "席0 → 席1: SPADE "+strconv.Itoa(i))
+	}
 }
 
 // **要求の 4 条件を画面に書く。**味方に訊けないのが最も間違えやすい。

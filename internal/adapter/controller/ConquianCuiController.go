@@ -4,6 +4,8 @@ package controller
 
 import (
 	"math"
+	"strconv"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -45,7 +47,8 @@ func (c *ConquianCuiController) Exec(command string) string {
 			case "dd", "drawdiscard":
 				return c.ci.DrawFromDiscard(), true
 			case "m", "meld":
-				return c.ci.Meld(parseMeldGroups(args)), true
+				groups, targets := parseConquianMeld(args)
+				return c.ci.MeldWithTargets(groups, targets), true
 			case "d", "discard":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
 			case "nr", "nextround":
@@ -67,4 +70,31 @@ func (c *ConquianCuiController) Exec(command string) string {
 			}
 		},
 	)
+}
+
+// parseConquianMeld parses groups and optional explicit extension targets.
+// Each group may end in @meldIndex, for example "m 0,1,2;3@1".
+func parseConquianMeld(args []string) ([][]int, []int) {
+	if len(args) == 0 {
+		return nil, nil
+	}
+	groups := make([][]int, 0)
+	targets := make([]int, 0)
+	for _, raw := range strings.Split(strings.Join(args, " "), ";") {
+		parts := strings.SplitN(raw, "@", 2)
+		indices := strings.FieldsFunc(parts[0], func(r rune) bool { return r == ',' || r == ' ' })
+		group := make([]int, 0, len(indices))
+		for _, s := range indices {
+			if n, err := strconv.Atoi(s); err == nil {
+				group = append(group, n)
+			}
+		}
+		groups = append(groups, group)
+		target := -1
+		if len(parts) == 2 {
+			target, _ = strconv.Atoi(strings.TrimSpace(parts[1]))
+		}
+		targets = append(targets, target)
+	}
+	return groups, targets
 }
