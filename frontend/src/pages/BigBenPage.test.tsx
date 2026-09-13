@@ -253,6 +253,32 @@ describe('BigBenPage', () => {
     expect(screen.getByRole('button', { name: '空のタブロー列 7' })).toBeInTheDocument();
   });
 
+  it('shows hint rings on source and destination cards after fetching a hint', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({
+      ...playingState,
+      hint: { fromZone: 'tableau', fromCol: 0, toZone: 'tableau', toIdx: 1 },
+    });
+    renderWithProviders(<BigBenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => {
+      const sourceCard = screen.getByAltText('♠ 6').closest('button');
+      expect(sourceCard?.className).toContain('ring-ds-info');
+      const targetCol = screen.getByText('#1').closest('.flex-1');
+      expect(targetCol?.className).toContain('ring-ds-success');
+    });
+  });
+
+  it('does not show hint rings when there is no hint', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce(playingState);
+    renderWithProviders(<BigBenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await flushPendingDispatch();
+    const sourceCard = screen.getByAltText('♠ 6').closest('button');
+    expect(sourceCard?.className).not.toContain('ring-ds-info');
+  });
+
   it.each([
     ['foundation', { fromZone: 'tableau', fromCol: 1, toZone: 'foundation', toIdx: 4 }, '文字盤4'],
     ['tableau', { fromZone: 'tableau', fromCol: 1, toZone: 'tableau', toIdx: 5 }, 'タブロー列5'],
@@ -291,6 +317,32 @@ describe('BigBenPage keyboard shortcuts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('shows hint rings on source and destination cards after fetching a hint', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({
+      ...playingState,
+      hint: { fromZone: 'tableau', fromCol: 0, toZone: 'tableau', toIdx: 1 },
+    });
+    renderWithProviders(<BigBenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => {
+      const sourceCard = screen.getByAltText('♠ 6').closest('button');
+      expect(sourceCard?.className).toContain('ring-ds-info');
+      const targetCol = screen.getByText('#1').closest('.flex-1');
+      expect(targetCol?.className).toContain('ring-ds-success');
+    });
+  });
+
+  it('does not show hint rings when there is no hint', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce(playingState);
+    renderWithProviders(<BigBenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await flushPendingDispatch();
+    const sourceCard = screen.getByAltText('♠ 6').closest('button');
+    expect(sourceCard?.className).not.toContain('ring-ds-info');
   });
 
   it.each([

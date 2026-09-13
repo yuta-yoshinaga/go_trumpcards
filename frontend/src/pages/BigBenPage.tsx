@@ -26,6 +26,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { HINT_FROM_RING, HINT_TO_RING } from '../styles/cardStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BigBenMoveZone, BigBenResponse } from '../types/card';
 import { BigBenPhase } from '../types/phases';
@@ -165,11 +166,17 @@ function BigBenPageContent() {
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
 
+  const isHintFrom = (col: number) => hint !== null && hint.fromCol === col;
+  const isHintTo = (zone: string, idx: number) => hint !== null && hint.toZone === zone && hint.toIdx === idx;
+
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx] ?? [];
     const tableauColZone: BigBenMoveZone = { zone: 'tableau', col: colIdx };
     return (
-      <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+      <div
+        key={`col-${colIdx.toString()}`}
+        className={`flex-1 min-w-0 rounded ${isHintTo('tableau', colIdx) ? HINT_TO_RING : ''}`}
+      >
         <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
           #{colIdx}
         </div>
@@ -220,7 +227,7 @@ function BigBenPageContent() {
                         draggable={isPlaying && !loading && isTop}
                         onDragStart={dnd.handleDragStart(tableauColZone)}
                         onDragEnd={dnd.handleDragEnd}
-                        className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(tableauColZone) ? 'opacity-50' : ''}`}
+                        className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSelected ? 'ring-2 ring-ds-warning' : isTop && isHintFrom(colIdx) ? HINT_FROM_RING : ''} ${dnd.isDragSource(tableauColZone) ? 'opacity-50' : ''}`}
                       >
                         <AnimatedCard
                           card={tc2.card}
@@ -281,7 +288,10 @@ function BigBenPageContent() {
                 const faceZone: BigBenMoveZone = { zone: 'foundation', col: idx };
                 const top = face.cards.length > 0 ? face.cards[face.cards.length - 1] : null;
                 return (
-                  <div key={`f-${idx.toString()}`} className="text-center">
+                  <div
+                    key={`f-${idx.toString()}`}
+                    className={`text-center rounded ${isHintTo('foundation', idx) ? HINT_TO_RING : ''}`}
+                  >
                     <div className="text-game-text-muted text-xs mb-1">
                       {t('hourLabel', { hour: CLOCK_HOURS[idx] })}
                     </div>

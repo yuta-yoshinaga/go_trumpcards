@@ -29,6 +29,7 @@ import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useNarcoticGame } from '../hooks/useNarcoticGame';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { HINT_FROM_RING } from '../styles/cardStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { NarcoticResponse } from '../types/card';
 import { NarcoticPhase } from '../types/phases';
@@ -415,7 +416,7 @@ function NarcoticPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnSecondary}
+                    className={`${btnSecondary} ${hint?.type === 'remove' && hint?.col === -1 ? HINT_FROM_RING : ''}`}
                     onClick={handleRemove}
                     disabled={busy || !canDiscardSet}
                     data-testid="narcotic-remove-all"

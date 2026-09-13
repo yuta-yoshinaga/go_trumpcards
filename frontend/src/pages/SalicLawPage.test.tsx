@@ -73,6 +73,7 @@ const gameOverState: SalicLawResponse = {
 describe('SalicLawPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.removeItem('cli-mode-saliclaw');
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   });
 
@@ -360,6 +361,34 @@ describe('SalicLawPage', () => {
     await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
   });
 
+  it('shows hint rings on source and destination cards after fetching a hint', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({
+      ...playingState,
+      hint: { fromZone: 'tableau', fromIdx: 0, toZone: 'foundation', toIdx: 0 },
+    });
+    renderWithProviders(<SalicLawPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => {
+      const sourceCard = screen.getByAltText('♠ 9').closest('button');
+      expect(sourceCard?.className).toContain('ring-ds-info');
+      const targetCol = screen.getByRole('button', { name: /空の組札0/ }).closest('.text-center');
+      expect(targetCol?.className).toContain('ring-ds-success');
+    });
+  });
+
+  it('does not show hint rings when there is no hint', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce(playingState);
+    renderWithProviders(<SalicLawPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await flushPendingDispatch();
+    const sourceCard = screen.getByAltText('♠ 9').closest('button');
+    expect(sourceCard?.className).not.toContain('ring-ds-info');
+    const targetCol = screen.getByRole('button', { name: /空の組札0/ }).closest('.text-center');
+    expect(targetCol?.className).not.toContain('ring-ds-success');
+  });
+
   it.each([
     ['foundation', { fromZone: 'tableau', fromIdx: 1, toZone: 'foundation', toIdx: 2 }, '組札2'],
     ['bare king', { fromZone: 'tableau', fromIdx: 0, toZone: 'tableau', toIdx: 5 }, '列5'],
@@ -391,7 +420,36 @@ describe('SalicLawPage', () => {
 describe('SalicLawPage keyboard shortcuts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.removeItem('cli-mode-saliclaw');
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('shows hint rings on source and destination cards after fetching a hint', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({
+      ...playingState,
+      hint: { fromZone: 'tableau', fromIdx: 0, toZone: 'foundation', toIdx: 0 },
+    });
+    renderWithProviders(<SalicLawPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => {
+      const sourceCard = screen.getByAltText('♠ 9').closest('button');
+      expect(sourceCard?.className).toContain('ring-ds-info');
+      const targetCol = screen.getByRole('button', { name: /空の組札0/ }).closest('.text-center');
+      expect(targetCol?.className).toContain('ring-ds-success');
+    });
+  });
+
+  it('does not show hint rings when there is no hint', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce(playingState);
+    renderWithProviders(<SalicLawPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await flushPendingDispatch();
+    const sourceCard = screen.getByAltText('♠ 9').closest('button');
+    expect(sourceCard?.className).not.toContain('ring-ds-info');
+    const targetCol = screen.getByRole('button', { name: /空の組札0/ }).closest('.text-center');
+    expect(targetCol?.className).not.toContain('ring-ds-success');
   });
 
   it.each([

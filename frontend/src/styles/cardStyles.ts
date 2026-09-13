@@ -152,3 +152,9 @@ export function smartHighlightStyle(isPlayable: boolean): React.CSSProperties {
     transition: 'border 0.15s, box-shadow 0.15s',
   };
 }
+
+/** Tailwind classes for a ring indicating a hint source card. */
+export const HINT_FROM_RING = 'ring-2 ring-ds-info motion-safe:animate-pulse';
+
+/** Tailwind classes for a ring indicating a hint destination card/slot. */
+export const HINT_TO_RING = 'ring-2 ring-ds-success motion-safe:animate-pulse';
