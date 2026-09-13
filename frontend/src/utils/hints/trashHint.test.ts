@@ -19,6 +19,7 @@ function base(overrides: Partial<TrashResponse> = {}) {
     ],
     stockSize: 20,
     discardSize: 3,
+    suggestedWildSlot: -1,
     moveCount: 0,
     winner: -1,
     ...overrides,
@@ -38,8 +39,7 @@ describe('getTrashHint', () => {
     expect(getTrashHint(base())?.targetAction).toBe('draw');
   });
 
-  it('places a wild in the lowest empty slot', () => {
-    // 0-2 は埋まっている。次に空くのは 3。
+  it('places a wild in the domain-suggested slot', () => {
     const s = base({
       phase: TrashPhase.AWAIT_WILD,
       players: [
@@ -47,13 +47,15 @@ describe('getTrashHint', () => {
         { slots: slots([]), isCpu: true },
       ],
     });
-    expect(getTrashHint(s)?.targetAction).toBe('slot-3');
+    const suggested = { ...s, suggestedWildSlot: 7 };
+    expect(getTrashHint(suggested)?.targetAction).toBe('slot-7');
   });
 
   it('keeps slot 0 as a valid answer', () => {
     // **位置 0 も正当。**真偽値で見ると先頭だけ落ちる。
     const s = base({
       phase: TrashPhase.AWAIT_WILD,
+      suggestedWildSlot: 0,
       players: [
         { slots: slots([1, 2, 3]), isCpu: false },
         { slots: slots([]), isCpu: true },
@@ -62,20 +64,22 @@ describe('getTrashHint', () => {
     expect(getTrashHint(s)?.targetAction).toBe('slot-0');
   });
 
-  it('skips a filled low slot to reach the first gap', () => {
+  it('uses the domain suggestion when lower slots are filled', () => {
     const s = base({
       phase: TrashPhase.AWAIT_WILD,
+      suggestedWildSlot: 8,
       players: [
         { slots: slots([0, 1, 2, 3, 4, 6]), isCpu: false },
         { slots: slots([]), isCpu: true },
       ],
     });
-    expect(getTrashHint(s)?.targetAction).toBe('slot-5');
+    expect(getTrashHint(s)?.targetAction).toBe('slot-8');
   });
 
   it('says nothing when every slot is already filled', () => {
     const s = base({
       phase: TrashPhase.AWAIT_WILD,
+      suggestedWildSlot: -1,
       players: [
         { slots: slots([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), isCpu: false },
         { slots: slots([]), isCpu: true },

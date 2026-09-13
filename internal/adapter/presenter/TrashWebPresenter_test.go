@@ -15,18 +15,20 @@ import (
 )
 
 type trashMockOpts struct {
-	phase       domain.TrashPhase
-	current     int
-	isCpuTurn   bool
-	stockSize   int
-	discardSize int
-	discardTop  *domain.Card
-	pending     *domain.Card
-	moveCount   int
-	winner      int
-	winnerSet   bool // distinguishes explicit winner=0 from the default (-1)
-	p0Slots     []domain.TrashSlot
-	p1Slots     []domain.TrashSlot
+	phase                domain.TrashPhase
+	current              int
+	isCpuTurn            bool
+	stockSize            int
+	discardSize          int
+	discardTop           *domain.Card
+	pending              *domain.Card
+	suggestedWildSlot    int
+	suggestedWildSlotSet bool
+	moveCount            int
+	winner               int
+	winnerSet            bool // distinguishes explicit winner=0 from the default (-1)
+	p0Slots              []domain.TrashSlot
+	p1Slots              []domain.TrashSlot
 }
 
 // buildTrashMock constructs a fresh MockTrashGame with the supplied options.
@@ -39,6 +41,10 @@ func buildTrashMock(o trashMockOpts) *interfaces.MockTrashGame {
 	winner := o.winner
 	if !o.winnerSet {
 		winner = -1
+	}
+	suggestedWildSlot := o.suggestedWildSlot
+	if !o.suggestedWildSlotSet {
+		suggestedWildSlot = -1
 	}
 	defaultSlots := func() []domain.TrashSlot {
 		slots := make([]domain.TrashSlot, domain.TrashSlotCnt)
@@ -59,6 +65,7 @@ func buildTrashMock(o trashMockOpts) *interfaces.MockTrashGame {
 	tg.On("GetDiscardSize").Return(o.discardSize).Maybe()
 	tg.On("GetDiscardTop").Return(o.discardTop).Maybe()
 	tg.On("GetPending").Return(o.pending).Maybe()
+	tg.On("SuggestWildSlot").Return(suggestedWildSlot).Maybe()
 	tg.On("GetMoveCount").Return(o.moveCount).Maybe()
 	tg.On("GetWinner").Return(winner).Maybe()
 	tg.On("IsCpuTurn").Return(o.isCpuTurn).Maybe()
@@ -85,6 +92,7 @@ func TestTrashWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, result.Phase)
 		assert.Equal(t, "trash.playerTurn", result.MessageCode)
 		assert.Equal(t, 34, result.StockSize)
+		assert.Equal(t, -1, result.SuggestedWildSlot)
 	})
 
 	t.Run("cpu turn", func(t *testing.T) {

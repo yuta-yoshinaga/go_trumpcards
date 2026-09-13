@@ -139,20 +139,22 @@ func TestTrashCuiPresenter_ActionLogOutput(t *testing.T) {
 func TestTrashCuiPresenter_HintOutput(t *testing.T) {
 	p := new(TrashCuiPresenter)
 
-	t.Run("await wild lists candidate slots and recommends the highest open one", func(t *testing.T) {
+	t.Run("await wild lists candidate slots and recommends the domain slot", func(t *testing.T) {
 		slots := make([]domain.TrashSlot, domain.TrashSlotCnt)
 		for i := range slots {
 			// Slots 1-3 already filled (face up); 4-10 are open.
 			slots[i] = domain.TrashSlot{Card: domain.NewCard(domain.CardDesignSpade, i+1, false), FaceUp: i < 3}
 		}
 		tg := buildTrashMock(trashMockOpts{
-			phase:   domain.TrashPhaseAwaitWild,
-			pending: domain.NewCard(domain.CardDesignSpade, 13, false),
-			p0Slots: slots,
+			phase:                domain.TrashPhaseAwaitWild,
+			pending:              domain.NewCard(domain.CardDesignSpade, 13, false),
+			p0Slots:              slots,
+			suggestedWildSlot:    3,
+			suggestedWildSlotSet: true,
 		})
 		out := p.HintOutput(tg)
 		assert.Contains(t, out, "配置候補: 4, 5, 6, 7, 8, 9, 10")
-		assert.Contains(t, out, "推奨: 10")
+		assert.Contains(t, out, "推奨: 4")
 	})
 
 	t.Run("player turn advises drawing even when discard is a matching rank", func(t *testing.T) {

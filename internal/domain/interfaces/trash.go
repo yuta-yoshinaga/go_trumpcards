@@ -31,6 +31,8 @@ type TrashGame interface {
 	GetDiscardTop() *domain.Card
 	// GetPending 連鎖中のpendingカード
 	GetPending() *domain.Card
+	// SuggestWildSlot ワイルドを置く推奨スロット (0始まり、なければ-1)
+	SuggestWildSlot() int
 	// GetPlayerSlots プレイヤーのスロット一覧
 	GetPlayerSlots(idx int) []domain.TrashSlot
 	// GetWinner 勝者インデックス (-1 なら未決着)
