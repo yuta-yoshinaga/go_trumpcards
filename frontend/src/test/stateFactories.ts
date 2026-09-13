@@ -541,6 +541,7 @@ const baseTwoTenJackState: TwoTenJackResponse = {
   gameEndFlag: false,
   winnerTeam: -1,
   leadPlayerIdx: 0,
+  validPlayIndices: [0, 1],
   message: '',
   config: { cpuDifficulty: 1, pointLimit: 50 },
 };

@@ -47,6 +47,7 @@ export interface TwoTenJackResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   winnerTeam: number;
   leadPlayerIdx: number;
+  validPlayIndices: number[];
   config: TwoTenJackConfig;
   hint?: TwoTenJackHint;
 }

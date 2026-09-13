@@ -60,6 +60,14 @@ func (m *MockTwoTenJackGame) IsHumanDeclareTurn() bool {
 	return args.Bool(0)
 }
 
+func (m *MockTwoTenJackGame) GetValidPlayIndices(playerIdx int) []int {
+	args := m.Called(playerIdx)
+	if v := args.Get(0); v != nil {
+		return v.([]int)
+	}
+	return nil
+}
+
 func (m *MockTwoTenJackGame) GetRoundNumber() int {
 	args := m.Called()
 	return args.Int(0)

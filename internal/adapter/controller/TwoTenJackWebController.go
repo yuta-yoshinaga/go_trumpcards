@@ -54,6 +54,7 @@ type TwoTenJackWebOutput struct {
 	GameEndFlag      bool                         `json:"gameEndFlag"`
 	WinnerTeam       int                          `json:"winnerTeam"`
 	LeadPlayerIdx    int                          `json:"leadPlayerIdx"`
+	ValidPlayIndices []int                        `json:"validPlayIndices"`
 	Hint             *TwoTenJackWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 	Config TwoTenJackWebOutputConfig `json:"config"`

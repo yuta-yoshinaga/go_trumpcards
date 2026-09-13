@@ -45972,6 +45972,11 @@ components:
       type: object
       description: Current state of the Two Ten Jack game
       properties:
+        validPlayIndices:
+          type: array
+          description: Hand indices the human may legally play this trick
+          items:
+            type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -77389,6 +77394,11 @@ components:
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        validPlayIndices:
+          type: array
+          description: Hand indices the human may legally play this trick
+          items:
+            type: integer
         messageCode:
           type: string
         players:

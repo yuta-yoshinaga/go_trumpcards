@@ -21,6 +21,8 @@ func setupJassWebMock() *interfaces.MockJassGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.JassPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("IsHumanTurn").Return(true).Maybe()
+	m.On("GetValidPlayIndices", 0).Return([]int{}).Maybe()
 	m.On("GetBidPlayerIdx").Return(0)
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetForehandIdx").Return(1)
@@ -98,6 +100,52 @@ func TestJassWebPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "jass.result.team0Win")
 	})
+}
+
+func TestJassWebPresenter_ValidPlayIndices(t *testing.T) {
+	m, _ := setupJassWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+	m.On("GetValidPlayIndices", 0).Return([]int{1, 3})
+
+	var output controller.JassWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.JassWebPresenter).Output(m, nil)), &output))
+	assert.Equal(t, []int{1, 3}, output.ValidPlayIndices)
+}
+
+func TestJassWebPresenter_ValidPlayIndices_NonPlayPhase(t *testing.T) {
+	m, _ := setupJassWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.JassPhaseBidTrump)
+
+	result := new(presenter.JassWebPresenter).Output(m, nil)
+	var output controller.JassWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Equal(t, []int{}, output.ValidPlayIndices)
+	assert.Contains(t, result, `"validPlayIndices":[]`)
+}
+
+func TestJassWebPresenter_ValidPlayIndices_NonHumanTurn(t *testing.T) {
+	m, _ := setupJassWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+	m.On("IsHumanTurn").Return(false)
+
+	result := new(presenter.JassWebPresenter).Output(m, nil)
+	var output controller.JassWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Equal(t, []int{}, output.ValidPlayIndices)
+	assert.Contains(t, result, `"validPlayIndices":[]`)
+}
+
+func TestJassWebPresenter_ValidPlayIndices_Nil(t *testing.T) {
+	m, _ := setupJassWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+	m.On("GetValidPlayIndices", 0).Return([]int(nil))
+
+	result := new(presenter.JassWebPresenter).Output(m, nil)
+	var output controller.JassWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Equal(t, []int{}, output.ValidPlayIndices)
+	assert.Contains(t, result, `"validPlayIndices":[]`)
 }
 
 func TestJassWebPresenter_LastTrick(t *testing.T) {

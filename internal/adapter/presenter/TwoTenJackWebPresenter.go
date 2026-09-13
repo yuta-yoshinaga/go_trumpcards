@@ -9,6 +9,18 @@ import (
 // TwoTenJackWebPresenter ツーテンジャックWebプレゼンタークラス
 type TwoTenJackWebPresenter struct{}
 
+// validPlayIndices returns the legal cards in the human player's hand.
+func (p *TwoTenJackWebPresenter) validPlayIndices(s interfaces.TwoTenJackGame) []int {
+	if s.GetPhase() != domain.TwoTenJackPhasePlay || !s.IsHumanTurn() {
+		return make([]int, 0)
+	}
+	idx := s.GetValidPlayIndices(s.GetCurrentPlayerIdx())
+	if idx == nil {
+		return make([]int, 0)
+	}
+	return idx
+}
+
 // Output ゲーム状態をJSON出力
 func (p *TwoTenJackWebPresenter) Output(s interfaces.TwoTenJackGame, lastErr error) string {
 	resObj := p.buildBase(s)
@@ -42,6 +54,7 @@ func (p *TwoTenJackWebPresenter) buildBase(s interfaces.TwoTenJackGame) *control
 	resObj.GameEndFlag = s.GetGameEndFlag()
 	resObj.WinnerTeam = s.GetWinnerTeam()
 	resObj.LeadPlayerIdx = s.GetLeadPlayerIdx()
+	resObj.ValidPlayIndices = p.validPlayIndices(s)
 
 	cfg := s.GetConfig()
 	resObj.Config = controller.TwoTenJackWebOutputConfig{

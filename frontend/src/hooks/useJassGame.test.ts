@@ -45,6 +45,7 @@ function makeState(overrides: Partial<JassResponse> = {}): JassResponse {
     gameEndFlag: false,
     winnerTeam: -1,
     leadPlayerIdx: 0,
+    validPlayIndices: [],
     message: '',
     config: { cpuDifficulty: 1, targetScore: 1000, lastTrickBonus: 5, enableWeis: true },
     ...overrides,
