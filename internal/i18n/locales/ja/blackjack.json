@@ -43,6 +43,7 @@
   "multiHandResultPrefix": "ハンド {{idx}}: ",
   "resultDraw": "引き分けです。",
   "resultWin": "あなたの勝ちです。",
+  "spanish21Player21BeatsDealer21": "スパニッシュ21では、ディーラーも21でもプレイヤーの21が勝ちです。",
   "resultLose": "あなたの負けです。",
   "phaseBet": "BET",
   "phaseDeal": "DEAL",

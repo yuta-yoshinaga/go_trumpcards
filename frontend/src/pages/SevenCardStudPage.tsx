@@ -188,14 +188,17 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
 
   const [betAmount, setBetAmount] = useState(20);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
+  const [ante, setAnte] = useState(1);
+  const [tournamentMode, setTournamentMode] = useState(false);
+  const [bettingLimit, setBettingLimit] = useState(0);
   const turnStartRef = useRef(0);
 
   useMountReset(execApi);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
-    void execApi('reset', undefined, { cpuMetaAI });
-  }, [execApi, hideActionLog, cpuMetaAI]);
+    void execApi('reset', undefined, { ante, tournamentMode, bettingLimit, cpuMetaAI });
+  }, [execApi, hideActionLog, ante, tournamentMode, bettingLimit, cpuMetaAI]);
 
   useEffect(() => {
     if (state?.minRaise && state.minRaise > 0) {
@@ -437,6 +440,43 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
             groups={[
               {
                 items: [
+                  {
+                    type: 'select' as const,
+                    id: 'sevencardstudAnte',
+                    label: t('settings.ante'),
+                    tooltip: t('settings.anteHelp'),
+                    value: ante,
+                    options: [
+                      { value: 1, label: '1' },
+                      { value: 2, label: '2' },
+                      { value: 5, label: '5' },
+                      { value: 10, label: '10' },
+                    ],
+                    onSelect: (value) => setAnte(Number(value)),
+                    testId: 'sevencardstud-ante-select',
+                  },
+                  {
+                    type: 'select' as const,
+                    id: 'sevencardstudBettingLimit',
+                    label: t('settings.bettingLimit'),
+                    tooltip: t('settings.bettingLimitHelp'),
+                    value: bettingLimit,
+                    options: [
+                      { value: 0, label: t('settings.fixedLimit') },
+                      { value: 1, label: t('settings.potLimit') },
+                      { value: 2, label: t('settings.noLimit') },
+                    ],
+                    onSelect: (value) => setBettingLimit(Number(value)),
+                    testId: 'sevencardstud-betting-limit-select',
+                  },
+                  {
+                    type: 'checkbox' as const,
+                    id: 'sevencardstudTournamentMode',
+                    label: t('settings.tournamentMode'),
+                    tooltip: t('settings.tournamentModeHelp'),
+                    checked: tournamentMode,
+                    onToggle: setTournamentMode,
+                  },
                   hintCheckboxItem(tc, hintEnabled, setHintEnabled),
                   {
                     type: 'checkbox' as const,

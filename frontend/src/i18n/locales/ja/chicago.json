@@ -43,7 +43,17 @@
     "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率"
   },
   "settings": {
-    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）",
+    "ante": "アンティ額",
+    "anteHelp": "各ハンドの開始時に全員が支払う強制ベット額です。",
+    "bettingLimit": "ベッティングリミット",
+    "bettingLimitHelp": "固定リミット、ポットリミット、ノーリミットから選びます。",
+    "fixedLimit": "固定リミット",
+    "potLimit": "ポットリミット",
+    "noLimit": "ノーリミット",
+    "tournamentMode": "トーナメントモード",
+    "tournamentModeHelp": "一定ハンドごとにアンティが上昇します（目安: 10ハンドごとに2倍）。変更はリセット後から反映されます。",
+    "anteLevelUp": "アンティが上昇しました: {{from}}→{{to}}"
   },
   "tutorial": {
     "playerHand": "手札です。伏せ札（自分だけに見えている札）と表札（全員に見えている札）があります。役の強さは通常の7カードスタッドと同じです。",

@@ -3,6 +3,8 @@
 package presenter
 
 import (
+	"strconv"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -204,6 +206,10 @@ func (p *SevenCardStudWebPresenter) buildMessage(s interfaces.SevenCardStudGame,
 	}
 	if s.IsMuckAvailable() {
 		return "", "sevencardstud.muck.prompt", nil
+	}
+	if cfg := s.GetConfig(); cfg.TournamentMode && cfg.AnteLevelHands > 0 && s.GetHandCount() > 1 && (s.GetHandCount()-1)%cfg.AnteLevelHands == 0 {
+		previous := cfg.Ante * 100 / cfg.AnteMultiplier
+		return "", "sevencardstud.anteLevelUp", map[string]string{"from": strconv.Itoa(previous), "to": strconv.Itoa(cfg.Ante)}
 	}
 	if s.GetGameEndFlag() {
 		msg, code := p.buildResultMessage(s)

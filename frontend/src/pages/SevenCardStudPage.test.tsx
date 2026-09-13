@@ -432,7 +432,14 @@ describe('SevenCardStudPage', () => {
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        ante: 1,
+        bettingLimit: 0,
+        cpuMetaAI: false,
+        tournamentMode: false,
+      }),
+    );
   });
 
   it('uses outline style for reset button', async () => {
@@ -737,7 +744,14 @@ describe('SevenCardStudPage', () => {
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: true }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        ante: 1,
+        bettingLimit: 0,
+        cpuMetaAI: true,
+        tournamentMode: false,
+      }),
+    );
   });
 
   // ---- end phase + win celebration ----

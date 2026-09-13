@@ -228,6 +228,24 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 	})
 }
 
+func TestBlackJackWebPresenterSpanish21ExplainsPlayer21(t *testing.T) {
+	bj := domain.NewSpanish21BlackJack()
+	bj.Reset()
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
+	dealer := bj.GetDealer()
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 11, false))
+	bj.SetPhase(domain.BJPhaseAction)
+	_ = bj.PlayerStand()
+
+	var result controller.BlackJackWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.BlackJackWebPresenter).Output(bj, nil)), &result))
+	assert.Equal(t, "spanish21.result.player21BeatsDealer21", result.MessageCode)
+}
+
 func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
 	tbp := new(presenter.BlackJackWebPresenter)
 
