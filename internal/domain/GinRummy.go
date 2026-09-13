@@ -938,7 +938,11 @@ func (g *GinRummy) GetHint() *GinRummyHint {
 		return &GinRummyHint{Action: "drawStock", Reason: "draw_stock"}
 
 	case GinRummyPhaseDiscard:
-		// Sync: frontend/src/utils/hints/ginrummyHint.ts (getDiscardHint)
+		// 判断は frontend/src/utils/hints/ginrummyHint.ts (getDiscardHint) と同じ —
+		// **ただし写しではない。** あちらの findMelds は「セット優先」「ラン優先」の
+		// 2 通りだけ試して小さいほうを取る貪欲法で、最小デッドウッドの分割問題としては
+		// 不完全。こちらは FindBestMelds の全探索なので、真の最適が両順序のどちらとも
+		// 違う手では、ノック閾値の境目で助言が食い違いうる。**強いのはこちら。**
 		bestDw := GinRummyBestDeadwood(player)
 		if bestDw == 0 {
 			return &GinRummyHint{Action: "knock", Reason: "gin_opportunity"}

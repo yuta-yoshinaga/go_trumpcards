@@ -703,7 +703,11 @@ func (g *IndianRummy) GetHint() *IndianRummyHint {
 		return &IndianRummyHint{Action: "drawStock", Reason: "draw_stock"}
 
 	case IndianRummyPhaseDiscard:
-		// Sync: frontend/src/utils/hints/indianRummyHint.ts (getDiscardHint)
+		// 判断は frontend/src/utils/hints/indianRummyHint.ts (getDiscardHint) と同じ —
+		// **ただし写しではない。** あちらは calcDeadwood が 0 になるかしか見ておらず、
+		// 「シーケンス 2 つ以上・うち 1 つはピュア」の宣言条件を検査していない。
+		// こちらは IndianRummyValidateDeclaration を通す本物の検査なので、
+		// **無効な宣言を勧めない。** フロント側の穴は #7736。
 		if _, canDeclare := g.cpuFindDeclareCard(player); canDeclare {
 			return &IndianRummyHint{Action: "declare", Reason: "declare_now"}
 		}
