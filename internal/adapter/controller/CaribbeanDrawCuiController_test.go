@@ -20,6 +20,7 @@ func newMockCaribbeanDrawInteractor() *usecase.MockCaribbeanDrawInteractor {
 	m.On("Fold").Return("fold result")
 	m.On("ActionLog").Return("action log result")
 	m.On("Hint").Return("hint result")
+	m.On("ClearSession").Return("clear stats result")
 	return m
 }
 
@@ -133,4 +134,11 @@ func TestCaribbeanDrawCuiController_Hint(t *testing.T) {
 
 	assert.Equal(t, "hint result", c.Exec("h"))
 	assert.Equal(t, "hint result", c.Exec("hint"))
+}
+
+func TestCaribbeanDrawCuiController_ClearSession(t *testing.T) {
+	m := newMockCaribbeanDrawInteractor()
+	c := controller.NewCaribbeanDrawCuiController(m)
+
+	assert.Equal(t, "clear stats result", c.Exec("clearstats"))
 }

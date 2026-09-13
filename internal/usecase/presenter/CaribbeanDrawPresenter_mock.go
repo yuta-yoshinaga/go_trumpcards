@@ -14,3 +14,6 @@ func (_m *MockCaribbeanDrawPresenter) HintOutput(cs interfaces.CaribbeanDrawGame
 	ret := _m.Called(cs)
 	return ret.Get(0).(string)
 }
+
+// ClearSession モック
+func (_m *MockCaribbeanDrawPresenter) ClearSession() { _m.Called() }
