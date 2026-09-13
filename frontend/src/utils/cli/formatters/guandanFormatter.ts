@@ -54,7 +54,11 @@ export function formatGuandanState(state: GuandanResponse): string {
 
   if (state.lastCombo) {
     const kind = COMBO_NAMES[state.lastCombo.kind] ?? String(state.lastCombo.kind);
-    lines.push(`table: ${kind} (${state.lastCombo.size} cards) played by seat ${state.lastPlayerIdx}`);
+    const cards =
+      state.lastCombo.cards && state.lastCombo.cards.length > 0
+        ? `: ${state.lastCombo.cards.map(formatCard).join(' ')}`
+        : '';
+    lines.push(`table: ${kind} (${state.lastCombo.size} cards) played by seat ${state.lastPlayerIdx}${cards}`);
   } else {
     lines.push('table: clear — lead anything you like');
   }

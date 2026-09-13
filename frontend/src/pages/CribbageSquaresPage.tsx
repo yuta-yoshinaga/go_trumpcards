@@ -335,6 +335,14 @@ function CribbageSquaresPageContent() {
                                   {parts.join(' ')}
                                 </div>
                               )}
+                              {(state.rowDetails?.[i]?.cards?.length ?? 0) > 0 && (
+                                <div
+                                  data-testid={`row-score-cards-${i}`}
+                                  className="text-[9px] text-ds-text-muted leading-none mt-0.5"
+                                >
+                                  {state.rowDetails?.[i]?.cards?.map(cardAlt).join(' ')}
+                                </div>
+                              )}
                               {partial.length > 0 && (
                                 <div
                                   data-testid={`row-partial-${i}`}
@@ -381,6 +389,14 @@ function CribbageSquaresPageContent() {
                                 className="text-[10px] text-ds-text-muted leading-none mt-0.5"
                               >
                                 {parts.join(' ')}
+                              </div>
+                            )}
+                            {(state.colDetails?.[i]?.cards?.length ?? 0) > 0 && (
+                              <div
+                                data-testid={`col-score-cards-${i}`}
+                                className="text-[9px] text-ds-text-muted leading-none mt-0.5"
+                              >
+                                {state.colDetails?.[i]?.cards?.map(cardAlt).join(' ')}
                               </div>
                             )}
                             {partial.length > 0 && (
