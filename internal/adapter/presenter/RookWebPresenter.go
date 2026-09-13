@@ -85,6 +85,9 @@ func (p *RookWebPresenter) buildBase(g interfaces.RookGame) *controller.RookWebO
 	resObj.CurrentTrick = trickCardsToOutputWithFace(g.GetCurrentTrick(), rookFace)
 	resObj.PlayableIndices = p.playableIndices(g)
 	resObj.Players = p.buildPlayersOutput(g)
+	if result := g.GetRoundResult(); result != nil {
+		resObj.RoundResult = &controller.RookWebOutputRoundResult{DeclarerTeam: result.DeclarerTeam, TeamPoints: result.TeamPoints, ContractBid: result.ContractBid, Made: result.Made, ScoreDelta: result.ScoreDelta}
+	}
 	return resObj
 }
 

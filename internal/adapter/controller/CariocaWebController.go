@@ -73,6 +73,7 @@ type CariocaWebOutputConfig struct {
 	PlayerCount         int `json:"playerCount"`
 	CpuDifficulty       int `json:"cpuDifficulty"`
 	FailContractPenalty int `json:"failContractPenalty"`
+	JokerPenalty        int `json:"jokerPenalty"`
 }
 
 // ToConfig builds a CariocaConfig from the nested web config, applying bounds checking.

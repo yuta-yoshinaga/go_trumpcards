@@ -29,7 +29,8 @@ type PanWebConfig struct {
 
 // PanWebOutputMeld メルドのアウトプット
 type PanWebOutputMeld struct {
-	Cards []*WebOutputCard `json:"cards"`
+	Cards     []*WebOutputCard `json:"cards"`
+	ChipUnits int              `json:"chipUnits"`
 }
 
 // PanWebOutputPlayer プレイヤーのアウトプット

@@ -54,6 +54,8 @@ export interface SambaResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   config: SambaConfig;
+  /** Completed canasta/samba counts by team, calculated by the domain rule. */
+  completedMelds: [number, number];
 }
 
 // --- Hand and Foot (ハンド・アンド・フット) ---

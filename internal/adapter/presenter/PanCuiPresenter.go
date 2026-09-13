@@ -19,11 +19,8 @@ func panMeldLine(meld []*domain.Card) string {
 		parts = append(parts, cuiCardStr(c))
 	}
 	line := strings.Join(parts, ",")
-	// **チップが動いた理由が分かるようにする。**バジェ (3/5/7 のセット) は
-	// 各プレイヤーにチップを配る特別ルールなのに、盤面のどのメルドがそれなのか
-	// どこにも出ていなかった (#4853)。
-	if domain.PanIsValleMeld(meld) {
-		line += " " + i18n.T("pan.valleTag")
+	if units := domain.PanMeldChipUnits(meld); units > 0 {
+		line += " " + i18n.Tf("pan.chipUnits", "count", strconv.Itoa(units))
 	}
 	return line
 }

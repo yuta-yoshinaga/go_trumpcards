@@ -127,6 +127,13 @@ func (p *RookCuiPresenter) Output(g interfaces.RookGame, lastErr error) string {
 		)
 
 		cuiErrorBlock(b, lastErr)
+		if result := g.GetRoundResult(); result != nil {
+			status := i18n.T("rook.contractFailed")
+			if result.Made {
+				status = i18n.T("rook.contractMade")
+			}
+			b.WriteString(i18n.Tf("rook.roundResult", "team", strconv.Itoa(result.DeclarerTeam), "points", strconv.Itoa(result.TeamPoints), "bid", strconv.Itoa(result.ContractBid), "status", status, "delta", strconv.Itoa(result.ScoreDelta)) + "\n")
+		}
 
 		if g.GetGameEndFlag() {
 			banner := i18n.Tf("rook.gameEnd", "team", strconv.Itoa(g.GetWinnerTeam()))

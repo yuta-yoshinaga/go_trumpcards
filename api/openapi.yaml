@@ -74474,6 +74474,12 @@ components:
         config:
           type: object
           properties:
+            jokerPenalty:
+              type: integer
+              description: >-
+                Points charged for each joker left in hand at round end
+                (CariocaJokerPenalty), so the screen names the figure rather
+                than hardcoding it.
             playerCount:
               type: integer
             cpuDifficulty:
@@ -78577,6 +78583,12 @@ components:
                       type: array
                       items:
                         $ref: '#/components/schemas/Card'
+                    chipUnits:
+                      type: integer
+                      description: >-
+                        Chip units this meld earns (PanMeldChipUnits): a valle set,
+                        a run or a set of four or more each count one, so a meld can
+                        be worth two.
               meldedCount:
                 type: integer
               chips:
@@ -79339,6 +79351,22 @@ components:
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        roundResult:
+          type: object
+          description: >-
+            Outcome of the round just scored, taken from ScoreRound rather than
+            re-parsed from the action log. Absent outside the round-end phase.
+          properties:
+            declarerTeam:
+              type: integer
+            teamPoints:
+              type: integer
+            contractBid:
+              type: integer
+            made:
+              type: boolean
+            scoreDelta:
+              type: integer
         messageCode:
           type: string
         players:
@@ -79561,6 +79589,13 @@ components:
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        completedMelds:
+          type: array
+          description: >-
+            Canastas/sambas each team has completed, indexed by team. Going out
+            needs SambaGoOutRequiredMelds of them.
+          items:
+            type: integer
         messageCode:
           type: string
         teamScores:

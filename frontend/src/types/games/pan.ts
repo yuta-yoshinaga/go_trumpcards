@@ -6,6 +6,7 @@ import type { BaseGameResponse, Card } from '../common';
 /** A meld (set or rope/run) laid on the table by a Panguingue player. */
 export interface PanMeld {
   cards: Card[];
+  chipUnits: number;
 }
 
 /** Panguingue player data with laid melds, chips, and scores. */

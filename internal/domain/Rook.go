@@ -103,7 +103,17 @@ type Rook struct {
 	teamScores  [RookTeamCnt]int
 	gameEndFlag bool
 	winnerTeam  int // 勝利チーム (-1 = 未確定)
+	roundResult *RookRoundResult
 	actionLogBase
+}
+
+// RookRoundResult is the authoritative scoring outcome of the latest round.
+type RookRoundResult struct {
+	DeclarerTeam int
+	TeamPoints   int
+	ContractBid  int
+	Made         bool
+	ScoreDelta   int
 }
 
 // NewRook コンストラクタ
@@ -169,6 +179,7 @@ func (g *Rook) NextRound() {
 
 // startRound ラウンドの状態を初期化して配り直す
 func (g *Rook) startRound() {
+	g.roundResult = nil
 	g.trickNumber = 0
 	g.currentTrick = nil
 	g.leadPlayerIdx = -1
@@ -530,10 +541,12 @@ func (g *Rook) ScoreRound() {
 	defPoints := g.teamPoints(defTeam)
 
 	if declPoints >= g.contractBid {
+		g.roundResult = &RookRoundResult{DeclarerTeam: declTeam, TeamPoints: declPoints, ContractBid: g.contractBid, Made: true, ScoreDelta: declPoints}
 		g.teamScores[declTeam] += declPoints
 		g.appendLog(-1, "contract_made",
 			fmt.Sprintf("Team %d makes the bid (%d/%d). +%d", declTeam, declPoints, g.contractBid, declPoints), nil)
 	} else {
+		g.roundResult = &RookRoundResult{DeclarerTeam: declTeam, TeamPoints: declPoints, ContractBid: g.contractBid, Made: false, ScoreDelta: -g.contractBid}
 		g.teamScores[declTeam] -= g.contractBid
 		g.appendLog(-1, "contract_failed",
 			fmt.Sprintf("Team %d is set (%d/%d). -%d", declTeam, declPoints, g.contractBid, g.contractBid), nil)
@@ -1112,6 +1125,9 @@ func (g *Rook) GetTeamPoints(team int) int {
 	}
 	return g.teamPoints(team)
 }
+
+// GetRoundResult returns the result produced by the latest ScoreRound call.
+func (g *Rook) GetRoundResult() *RookRoundResult { return g.roundResult }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *Rook) IsHumanTurn() bool {

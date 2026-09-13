@@ -55,7 +55,7 @@ func (p *PanWebPresenter) buildPlayersOutput(g interfaces.PanGame) []*controller
 		melds := player.GetLaidMelds()
 		laid := make([]*controller.PanWebOutputMeld, 0, len(melds))
 		for _, m := range melds {
-			meldOut := &controller.PanWebOutputMeld{Cards: make([]*controller.WebOutputCard, 0, len(m))}
+			meldOut := &controller.PanWebOutputMeld{Cards: make([]*controller.WebOutputCard, 0, len(m)), ChipUnits: domain.PanMeldChipUnits(m)}
 			for _, c := range m {
 				meldOut.Cards = append(meldOut.Cards, cardToOutput(c))
 			}

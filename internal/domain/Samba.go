@@ -243,6 +243,9 @@ func (g *Samba) teamCompletedCount(team int) int {
 	return n
 }
 
+// GetTeamCompletedMeldCount returns the completed canasta/samba count for a team.
+func (g *Samba) GetTeamCompletedMeldCount(team int) int { return g.teamCompletedCount(team) }
+
 // canGoOut 上がり条件: チームが必要数の完成メルドを持っているか
 func (g *Samba) canGoOut(playerIdx int) bool {
 	return g.teamCompletedCount(g.players[playerIdx].team) >= SambaGoOutRequiredMelds
