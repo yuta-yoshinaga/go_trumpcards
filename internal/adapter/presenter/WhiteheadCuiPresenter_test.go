@@ -135,11 +135,16 @@ func TestWhiteheadCuiPresenter_Output(t *testing.T) {
 		kg := new(interfaces.MockWhiteheadGame)
 		setupWhiteheadCuiMockDefaults(kg)
 		kg.ExpectedCalls = filterCallsWH(kg.ExpectedCalls, "GetPhase")
+		kg.ExpectedCalls = filterCallsWH(kg.ExpectedCalls, "GetFoundation")
 		kg.On("GetPhase").Return(domain.WhiteheadPhaseGameOver)
+		var foundation [domain.WhiteheadFoundationCnt][]*domain.Card
+		foundation[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+		kg.On("GetFoundation").Return(foundation)
 
 		p := new(WhiteheadCuiPresenter)
 		result := p.Output(kg, nil)
 		assert.Contains(t, result, "ゲームオーバー")
+		assert.Contains(t, result, "組札 1/52 枚（2%）まで到達")
 	})
 
 	t.Run("stalemate", func(t *testing.T) {

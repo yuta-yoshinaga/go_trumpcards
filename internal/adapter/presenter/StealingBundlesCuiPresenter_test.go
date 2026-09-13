@@ -73,7 +73,7 @@ func TestStealingBundlesCuiPresenterPromptsByWhatIsLegal(t *testing.T) {
 
 	out := p.Output(s, nil)
 	assert.Contains(t, out, i18n.T("stealingbundles.promptMustCapture"))
-	assert.Contains(t, out, i18n.T("stealingbundles.promptTake"))
+	assert.Contains(t, out, "HEART 7")
 	assert.NotContains(t, out, i18n.T("stealingbundles.promptTrail"))
 
 	// **負のコントロール: 取れなければ置く促しに変わる。**

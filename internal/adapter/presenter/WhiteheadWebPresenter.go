@@ -98,6 +98,14 @@ func (p *WhiteheadWebPresenter) Output(k interfaces.WhiteheadGame, lastErr error
 		case domain.WhiteheadPhaseGameOver:
 			resObj.Message = "ゲームオーバー"
 			resObj.MessageCode = "whitehead.gameOver"
+			foundationCount := 0
+			for _, pile := range k.GetFoundation() {
+				foundationCount += len(pile)
+			}
+			resObj.MessageParams = map[string]string{
+				"foundationCount":   fmt.Sprintf("%d", foundationCount),
+				"foundationPercent": fmt.Sprintf("%d", foundationCount*100/52),
+			}
 		}
 	}
 

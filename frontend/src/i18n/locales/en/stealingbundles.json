@@ -20,7 +20,7 @@
     "lastCaptureSteal": "[stole {{name}}'s bundle]"
   },
   "actions": {
-    "take": "Capture from the table",
+    "take": "Capture from the table: {{cards}}",
     "steal": "Steal {{name}}'s bundle",
     "trail": "Place on the table",
     "cancel": "Pick another card",

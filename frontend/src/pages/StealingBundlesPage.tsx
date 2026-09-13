@@ -299,7 +299,9 @@ function StealingBundlesPageContent() {
                     disabled={loading}
                     data-testid="sb-take-btn"
                   >
-                    {t('actions.take')}
+                    {t('actions.take', {
+                      cards: selectedTakes.map((i) => cardAlt(state.tableCards[i])).join(', '),
+                    })}
                   </button>
                 )}
                 {selectedSteals.map((victim) => (
