@@ -146,6 +146,12 @@ describe('FourSeasonsPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'tableau', idx: 3 }));
   });
 
+  it('shows the next accepted rank, or any-card text for an empty cross space', async () => {
+    renderWithProviders(<FourSeasonsPage />);
+    expect(await screen.findByTestId('fs-tableau-next-0')).toHaveTextContent('次:J');
+    expect(screen.getByTestId('fs-tableau-next-3')).toHaveTextContent('どのカードでも置けます');
+  });
+
   it('does not move when nothing is selected', async () => {
     renderWithProviders(<FourSeasonsPage />);
     await waitFor(() => expect(screen.getByTestId('fs-foundation-0')).toBeDisabled());

@@ -200,7 +200,10 @@ function NainJaunePageContent() {
 
             {state.playedPile.length > 0 && (
               <div className="text-center mb-3">
-                <div className="text-game-text-muted text-xs mb-1">{t('played')}</div>
+                <div className="text-game-text-muted text-xs mb-1">
+                  {t('played')}
+                  {state.runRank === 0 && <span data-testid="nainjaune-run-stopped"> · {t('runStopped')}</span>}
+                </div>
                 <div className="flex gap-1 justify-center flex-wrap">
                   {state.playedPile.slice(-10).map((card, i) => (
                     <AnimatedCard

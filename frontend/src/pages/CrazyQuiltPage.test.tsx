@@ -63,6 +63,18 @@ describe('CrazyQuiltPage', () => {
     expect(screen.queryByTestId('cq-cell-64')).not.toBeInTheDocument();
   });
 
+  it('keeps every cell at the card dimensions while exposing orientation', async () => {
+    renderWithProviders(<CrazyQuiltPage />);
+    await waitFor(() => expect(screen.getByTestId('cq-cell-0')).toBeInTheDocument());
+
+    const vertical = screen.getByTestId('cq-cell-0');
+    const horizontal = screen.getByTestId('cq-cell-1');
+    expect(vertical).toHaveAttribute('data-orientation', 'vertical');
+    expect(horizontal).toHaveAttribute('data-orientation', 'horizontal');
+    expect(horizontal).toHaveStyle({ width: vertical.style.width, height: vertical.style.height });
+    expect(horizontal.querySelector('.rotate-90')).not.toBeInTheDocument();
+  });
+
   // **The rule the issue got wrong.** Availability depends on the card's
   // orientation, so the server decides it and the page only obeys.
   it('only lets an available card be picked up', async () => {

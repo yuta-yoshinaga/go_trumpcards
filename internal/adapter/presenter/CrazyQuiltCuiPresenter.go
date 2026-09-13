@@ -20,6 +20,29 @@ func crazyQuiltSeriesMark(ascending bool) string {
 	return "\u2193"
 }
 
+// crazyQuiltCellMark renders orientation and availability without hiding either
+// fact when a card is locked.
+func crazyQuiltCellMark(card string, available, vertical bool) string {
+	mark := " "
+	if available {
+		mark = "*"
+	}
+	// Keep every cell the same width so that the 8x8 board remains a grid.
+	const cardWidth = len("DIAMOND 13")
+	const redPrefix = "\033[31m"
+	const colorSuffix = "\033[0m"
+	if strings.HasPrefix(card, redPrefix) && strings.HasSuffix(card, colorSuffix) {
+		plainCard := card[len(redPrefix) : len(card)-len(colorSuffix)]
+		card = redPrefix + plainCard + strings.Repeat(" ", cardWidth-len(plainCard)) + colorSuffix
+	} else {
+		card += strings.Repeat(" ", cardWidth-len(card))
+	}
+	if vertical {
+		return "[" + mark + card + "]"
+	}
+	return "(" + mark + card + ")"
+}
+
 // CrazyQuiltCuiPresenter renders the CrazyQuilt CUI view.
 type CrazyQuiltCuiPresenter struct{}
 
@@ -65,14 +88,10 @@ func (p *CrazyQuiltCuiPresenter) Output(c interfaces.CrazyQuiltGame, lastErr err
 				idx := row*domain.CrazyQuiltGridSize + col
 				card := quilt[idx]
 				if card == nil {
-					b.WriteString(i18n.T("crazyquilt.emptyCell"))
+					b.WriteString(crazyQuiltCellMark(i18n.T("crazyquilt.emptyCell"), false, domain.CrazyQuiltIsVertical(idx)))
 					continue
 				}
-				mark := " "
-				if c.IsAvailable(idx) {
-					mark = "*"
-				}
-				b.WriteString(mark + cuiCardStr(card))
+				b.WriteString(crazyQuiltCellMark(cuiCardStr(card), c.IsAvailable(idx), domain.CrazyQuiltIsVertical(idx)))
 			}
 			b.WriteString("\n")
 		}

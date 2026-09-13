@@ -4,9 +4,11 @@ package presenter
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -71,8 +73,16 @@ func TestCrazyQuiltCuiPresenter_Output(t *testing.T) {
 
 		out := new(CrazyQuiltCuiPresenter).Output(g, nil)
 		// 凡例そのものに * が入るので、**札に付いた印**だけを数える。
-		assert.Contains(t, out, "*SPADE", "available cards carry a marker")
+		assert.Contains(t, out, "[*SPADE 1   ]", "available vertical cards carry a marker")
+		assert.Contains(t, out, "( SPADE 11  )", "locked horizontal cards still show orientation")
 		assert.Contains(t, out, i18n.T("crazyquilt.availableLegend"))
+
+		board := strings.Split(out, "----------\n")[1]
+		rows := strings.Split(board, "\n")[:domain.CrazyQuiltGridSize]
+		require.Len(t, rows, domain.CrazyQuiltGridSize)
+		for _, row := range rows[1:] {
+			assert.Len(t, row, len(rows[0]), "every Crazy Quilt row has the same display width")
+		}
 	})
 
 	// 負のコントロール: 1 枚も取れない盤面では印が出ない。
@@ -85,7 +95,7 @@ func TestCrazyQuiltCuiPresenter_Output(t *testing.T) {
 		}
 
 		out := new(CrazyQuiltCuiPresenter).Output(g, nil)
-		assert.NotContains(t, out, "*SPADE", "no card is marked")
+		assert.NotContains(t, out, "[*", "no card is marked")
 		// 凡例は常に出るので、それだけは残る。
 		assert.Contains(t, out, i18n.T("crazyquilt.availableLegend"))
 	})
