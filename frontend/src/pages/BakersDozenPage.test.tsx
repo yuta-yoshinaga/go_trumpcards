@@ -462,19 +462,23 @@ describe('BakersDozenPage empty column rule banner', () => {
     const { container } = renderWithProviders(<BakersDozenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
-    // プレイ中に文が出ること。実際の文字列で assert（注意: 空列は再利用できません）
-    const banner = screen.getByText('注意: 空列は再利用できません');
-    expect(banner).toBeInTheDocument();
+    // プレイ中にそれぞれの文が出ること。実際の文字列で assert
+    const emptyColumnNote = screen.getByText('注意: 空列は再利用できません');
+    const kingRule = screen.getByText('配り時にキングは各列の一番下へ移動します。');
+    expect(emptyColumnNote).toBeInTheDocument();
+    expect(kingRule).toBeInTheDocument();
 
     // 位置とスタイルが先例と同じであること
-    expect(banner.className).toContain('text-ds-warning');
+    const banner = emptyColumnNote.parentElement;
+    expect(banner).toBeInTheDocument();
+    expect(banner?.className).toContain('text-ds-warning');
     expect(banner).toHaveClass('text-center', 'text-xs', 'text-ds-warning', 'mb-3', 'font-medium');
     expect(banner).toHaveAttribute('data-tutorial', 'bd-rule');
 
     // ファンデーション行の上にあること
     const foundation = container.querySelector('[data-tutorial="bd-foundation"]');
     expect(foundation).toBeInTheDocument();
-    if (foundation) {
+    if (foundation && banner) {
       expect(banner.compareDocumentPosition(foundation) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     }
   });
@@ -484,6 +488,7 @@ describe('BakersDozenPage empty column rule banner', () => {
     renderWithProviders(<BakersDozenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.getByText('注意: 空列は再利用できません')).toBeInTheDocument();
+    expect(screen.getByText('配り時にキングは各列の一番下へ移動します。')).toBeInTheDocument();
   });
 
   it('displays the empty column rule banner in game over state', async () => {
@@ -491,5 +496,6 @@ describe('BakersDozenPage empty column rule banner', () => {
     renderWithProviders(<BakersDozenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.getByText('注意: 空列は再利用できません')).toBeInTheDocument();
+    expect(screen.getByText('配り時にキングは各列の一番下へ移動します。')).toBeInTheDocument();
   });
 });

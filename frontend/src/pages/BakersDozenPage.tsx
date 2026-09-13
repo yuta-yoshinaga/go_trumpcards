@@ -271,7 +271,8 @@ function BakersDozenPageContent() {
           {/* Scrollable area */}
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div className="text-center text-xs text-ds-warning mb-3 font-medium" data-tutorial="bd-rule">
-              {t('emptyColNote')}
+              <div>{t('emptyColNote')}</div>
+              <div>{t('kingRule')}</div>
             </div>
 
             {/* Foundation row */}
