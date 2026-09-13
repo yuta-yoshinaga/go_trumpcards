@@ -217,6 +217,21 @@ describe('ChinesePokerPage', () => {
     expect(mockExec).toHaveBeenCalledWith('bet', 100);
   });
 
+  it('assigns a selected card to a row with the existing card and action navigation', async () => {
+    mockExec.mockResolvedValue(setHandsState);
+    renderWithProviders(<ChinesePokerPage />);
+    await screen.findByTestId('cp-row-preview');
+
+    fireEvent.keyDown(document, { key: '1' });
+    fireEvent.keyDown(document, { key: 'f' });
+    expect(screen.getByRole('button', { name: '♥ A（フロント）' })).toBeInTheDocument();
+
+    // q/w/e extend the existing number-key navigation to cards 11–13.
+    fireEvent.keyDown(document, { key: 'q' });
+    fireEvent.keyDown(document, { key: 'm' });
+    expect(screen.getByRole('button', { name: '♦ J（ミドル）' })).toBeInTheDocument();
+  });
+
   it('submits the edited bet amount via the ChipBetInput', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderWithProviders(<ChinesePokerPage />);

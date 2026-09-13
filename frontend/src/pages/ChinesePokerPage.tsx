@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { chinesepokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -17,6 +18,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -80,6 +82,7 @@ const CP_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 type HandAssignment = 'front' | 'middle' | undefined;
+const EXTRA_CARD_KEYS = ['q', 'w', 'e'] as const;
 
 /** Renders the Chinese Poker game page. */
 export const ChinesePokerPage = withTutorial(ChinesePokerPageContent, 'chinesepoker', CP_TUTORIAL_STEPS);
@@ -91,6 +94,7 @@ function ChinesePokerPageContent() {
 
   const [betAmount, setBetAmount] = useState(100);
   const [assignments, setAssignments] = useState<HandAssignment[]>([]);
+  const [keyboardCardIndex, setKeyboardCardIndex] = useState<number | null>(null);
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(chinesepokerApi.exec);
@@ -114,6 +118,7 @@ function ChinesePokerPageContent() {
   useEffect(() => {
     if (state?.phase !== ChinesePokerPhase.SET_HANDS) {
       setAssignments([]);
+      setKeyboardCardIndex(null);
     } else {
       setAssignments(new Array(cardCount).fill(undefined));
     }
@@ -169,6 +174,26 @@ function ChinesePokerPageContent() {
     });
   }, []);
 
+  const assignCard = useCallback((index: number, row: 'front' | 'middle' | 'back') => {
+    setAssignments((prev) => {
+      const next = [...prev];
+      if (row === 'front' && next.filter((a) => a === 'front').length >= 3 && next[index] !== 'front') return prev;
+      if (row === 'middle' && next.filter((a) => a === 'middle').length >= 5 && next[index] !== 'middle') return prev;
+      next[index] = row === 'back' ? undefined : row;
+      return next;
+    });
+  }, []);
+
+  const selectKeyboardCard = useCallback((index: number) => setKeyboardCardIndex(index), []);
+
+  useCardKeyboardNav({
+    cardCount,
+    onToggle: selectKeyboardCard,
+    onConfirm: () => undefined,
+    onClear: () => setKeyboardCardIndex(null),
+    enabled: isSetHandsPhase && !loading,
+  });
+
   const actionBindings = useMemo(
     () => [
       { key: 'b', action: () => execApi('bet', betAmount), enabled: isBetPhase && !betInvalid, label: 'bet' },
@@ -181,8 +206,47 @@ function ChinesePokerPageContent() {
         label: 'setHands',
       },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase, label: 'reset' },
+      ...EXTRA_CARD_KEYS.map((key, offset) => ({
+        key,
+        action: () => selectKeyboardCard(10 + offset),
+        enabled: isSetHandsPhase && cardCount > 10 + offset,
+        label: 'selectCardNamed',
+        labelParams: { name: `${11 + offset}` },
+      })),
+      {
+        key: 'f',
+        action: () => keyboardCardIndex !== null && assignCard(keyboardCardIndex, 'front'),
+        enabled: isSetHandsPhase && keyboardCardIndex !== null,
+        label: 'setFront',
+      },
+      {
+        key: 'm',
+        action: () => keyboardCardIndex !== null && assignCard(keyboardCardIndex, 'middle'),
+        enabled: isSetHandsPhase && keyboardCardIndex !== null,
+        label: 'setMiddle',
+      },
+      {
+        key: 'b',
+        action: () => keyboardCardIndex !== null && assignCard(keyboardCardIndex, 'back'),
+        enabled: isSetHandsPhase && keyboardCardIndex !== null,
+        label: 'setBack',
+      },
     ],
-    [execApi, betAmount, betInvalid, frontIndices, middleIndices, isBetPhase, isSetHandsPhase, isEndPhase, canSet],
+    [
+      execApi,
+      betAmount,
+      betInvalid,
+      frontIndices,
+      middleIndices,
+      isBetPhase,
+      isSetHandsPhase,
+      isEndPhase,
+      canSet,
+      cardCount,
+      selectKeyboardCard,
+      keyboardCardIndex,
+      assignCard,
+    ],
   );
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
@@ -271,13 +335,16 @@ function ChinesePokerPageContent() {
                       // 「ファウルの危険がある」だけでは、どれを動かせばいいのか
                       // プレイヤーが総当たりすることになる (#5615)。
                       data-hint-front={hintEnabled && hint?.targetIndices?.includes(i) ? 'true' : undefined}
-                      onClick={() => toggleCard(i)}
+                      onClick={() => {
+                        setKeyboardCardIndex(null);
+                        toggleCard(i);
+                      }}
                       className={`relative transition-transform ${ringClass(assignments[i])} ${
                         hintEnabled && hint?.targetIndices?.includes(i) && !assignments[i]
                           ? 'ring-2 ring-ds-warning rounded-lg'
                           : ''
                       }`}
-                      aria-pressed={!!assignments[i]}
+                      aria-pressed={keyboardCardIndex === i || !!assignments[i]}
                       aria-label={
                         assignments[i]
                           ? t('cardAssignedAria', {
@@ -505,6 +572,7 @@ function ChinesePokerPageContent() {
                 </button>
               </div>
             )}
+            {isSetHandsPhase && <CardNavShortcutsPanel data-testid="chinese-poker-card-kbd-shortcuts" />}
             <ActionShortcutsPanel bindings={actionBindings} data-testid="chinese-poker-kbd-shortcuts" />
           </GameFooter>
         </>

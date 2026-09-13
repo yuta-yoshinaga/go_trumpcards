@@ -194,6 +194,7 @@ describe('WindmillPage', () => {
       const corner = screen.getByRole('button', { name: cornerName });
       expect(corner).toBeDisabled();
       expect(corner).toHaveAttribute('title', expect.stringContaining('引き戻した直後'));
+      expect(corner).toHaveAccessibleName(/引き戻した直後/);
     });
 
     it('is still usable as a target once something is selected', async () => {

@@ -2985,6 +2985,7 @@
   "kbd": {
     "title": "Keyboard shortcuts",
     "selectCard": "Select a card in your hand by number",
+    "selectCardNamed": "Select card {{name}}",
     "playCard": "Play a card from your hand directly by number",
     "confirm": "Play the selected card",
     "clear": "Clear the card selection",
@@ -3031,6 +3032,9 @@
       "selectTargetNamed": "Select {{name}}",
       "selectWastePile": "Select the waste pile",
       "setHands": "Confirm the hands",
+      "setFront": "Send the selected card to the front row",
+      "setMiddle": "Send the selected card to the middle row",
+      "setBack": "Send the selected card to the back row",
       "shift": "Shift a column",
       "shuffle": "Shuffle",
       "split": "Split",

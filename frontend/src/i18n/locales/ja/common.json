@@ -2985,6 +2985,7 @@
   "kbd": {
     "title": "キーボードショートカット",
     "selectCard": "数字キーで手札のカードを選択",
+    "selectCardNamed": "{{name}} のカードを選択",
     "playCard": "数字キーで手札のカードをそのまま出す",
     "confirm": "選択したカードを出す",
     "clear": "カードの選択を解除",
@@ -3031,6 +3032,9 @@
       "selectTargetNamed": "{{name}} を選ぶ",
       "selectWastePile": "廃棄の山を選ぶ",
       "setHands": "手役を確定する",
+      "setFront": "選んだ札を前列へ送る",
+      "setMiddle": "選んだ札を中列へ送る",
+      "setBack": "選んだ札を後列へ送る",
       "shift": "列をずらす",
       "shuffle": "シャッフルする",
       "split": "スプリット",
