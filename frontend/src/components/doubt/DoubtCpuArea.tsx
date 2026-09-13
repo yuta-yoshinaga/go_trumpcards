@@ -22,6 +22,7 @@ export function DoubtCpuArea({
   return (
     <CpuTurnArea
       playerId={player.id}
+      testId={`doubt-cpu-${player.id}`}
       isHuman={player.isHuman}
       isCurrentTurn={isCurrentTurn}
       isFinished={player.isFinished}
