@@ -61,7 +61,6 @@
   "errHandMustHaveAtMostOneCardToGoOut": "上がるには手札が0枚または1枚でなければなりません",
   "errMeldNeedsAtLeastThreeCards": "メルドには最低3枚のカードが必要です",
   "errBlackThreeCannotMeld": "黒3はメルドできません",
-  "errMeldCardsMustHaveSameRank": "メルドは同じランクのカードで構成する必要があります",
   "errMeldNeedsAtLeastTwoNaturalCards": "メルドにはナチュラルカードが最低2枚必要です",
   "errMeldAllowsAtMostThreeWildCards": "メルドにはワイルドカードは最大3枚までです",
   "errWildCardsCannotExceedNaturalCards": "ワイルドカードの数がナチュラルカードの数を超えてはいけません",

@@ -791,7 +791,6 @@
     "bolivia.errHandMustHaveAtMostOneCardToGoOut": "上がるには手札が0枚または1枚でなければなりません",
     "bolivia.errMeldNeedsAtLeastThreeCards": "メルドには最低3枚のカードが必要です",
     "bolivia.errBlackThreeCannotMeld": "黒3はメルドできません",
-    "bolivia.errMeldCardsMustHaveSameRank": "メルドは同じランクのカードで構成する必要があります",
     "bolivia.errMeldNeedsAtLeastTwoNaturalCards": "メルドにはナチュラルカードが最低2枚必要です",
     "bolivia.errMeldAllowsAtMostThreeWildCards": "メルドにはワイルドカードは最大3枚までです",
     "bolivia.errWildCardsCannotExceedNaturalCards": "ワイルドカードの数がナチュラルカードの数を超えてはいけません",

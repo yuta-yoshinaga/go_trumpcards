@@ -791,7 +791,6 @@
     "bolivia.errHandMustHaveAtMostOneCardToGoOut": "You must have zero or one card in hand to go out.",
     "bolivia.errMeldNeedsAtLeastThreeCards": "A meld needs at least three cards.",
     "bolivia.errBlackThreeCannotMeld": "Black threes cannot be melded.",
-    "bolivia.errMeldCardsMustHaveSameRank": "A meld must contain cards of the same rank.",
     "bolivia.errMeldNeedsAtLeastTwoNaturalCards": "A meld needs at least two natural cards.",
     "bolivia.errMeldAllowsAtMostThreeWildCards": "A meld can contain at most three wild cards.",
     "bolivia.errWildCardsCannotExceedNaturalCards": "Wild cards cannot outnumber natural cards.",

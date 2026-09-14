@@ -61,7 +61,6 @@
   "errHandMustHaveAtMostOneCardToGoOut": "You must have zero or one card in hand to go out.",
   "errMeldNeedsAtLeastThreeCards": "A meld needs at least three cards.",
   "errBlackThreeCannotMeld": "Black threes cannot be melded.",
-  "errMeldCardsMustHaveSameRank": "A meld must contain cards of the same rank.",
   "errMeldNeedsAtLeastTwoNaturalCards": "A meld needs at least two natural cards.",
   "errMeldAllowsAtMostThreeWildCards": "A meld can contain at most three wild cards.",
   "errWildCardsCannotExceedNaturalCards": "Wild cards cannot outnumber natural cards.",

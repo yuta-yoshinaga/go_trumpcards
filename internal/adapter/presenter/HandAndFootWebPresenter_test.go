@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -138,6 +139,15 @@ func TestHandAndFootWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("error message", func(t *testing.T) {
+		m, _ := setupHandAndFootWebMockWithPlayers()
+		result := p.Output(m, errors.New("test error"))
+		var resObj controller.HandAndFootWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.Equal(t, "test error", resObj.Message)
+		assert.Empty(t, resObj.MessageCode)
+	})
+
+	t.Run("domain error uses message code", func(t *testing.T) {
 		m, _ := setupHandAndFootWebMockWithPlayers()
 		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "handandfoot.errCardIndexOutOfRange", nil))
 		var resObj controller.HandAndFootWebOutput
