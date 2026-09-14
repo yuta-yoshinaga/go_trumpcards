@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { batakApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -205,6 +205,68 @@ describe('BatakPage', () => {
 
     fireEvent.click(blocked);
     expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
+  });
+
+  it('shows the reason-specific tooltip for each illegal Batak play', async () => {
+    const stateFor = (
+      cards: { design: 'SPADE' | 'HEART' | 'DIAMOND'; value: number }[],
+      validPlayIndices: number[],
+      currentTrick: BatakResponse['currentTrick'],
+    ) =>
+      makeBatakState({
+        validPlayIndices,
+        currentTrick,
+        players: makeBatakState().players.map((player, index) =>
+          index === 0 ? { ...player, cards, cardCount: cards.length } : player,
+        ),
+      });
+
+    const cases = [
+      {
+        state: stateFor(
+          [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 11 },
+          ],
+          [1],
+          [],
+        ),
+        card: '♠ A',
+        tooltip: 'このカードは出せません (スペードはまだブレイクされていません)',
+      },
+      {
+        state: stateFor(
+          [
+            { design: 'DIAMOND', value: 3 },
+            { design: 'HEART', value: 11 },
+          ],
+          [0],
+          [{ playerIdx: 1, card: { design: 'DIAMOND', value: 3 } }],
+        ),
+        card: '♥ J',
+        tooltip: 'このカードは出せません (リードスートに従ってください)',
+      },
+      {
+        state: stateFor(
+          [
+            { design: 'HEART', value: 11 },
+            { design: 'SPADE', value: 1 },
+          ],
+          [1],
+          [{ playerIdx: 1, card: { design: 'DIAMOND', value: 3 } }],
+        ),
+        card: '♥ J',
+        tooltip: 'このカードは出せません (リードスートが無い場合はスペードで切らなければなりません)',
+      },
+    ];
+
+    for (const { state, card, tooltip } of cases) {
+      mockExec.mockResolvedValue(state);
+      renderWithProviders(<BatakPage />);
+      await waitFor(() => expect(screen.getByAltText(card)).toBeInTheDocument());
+      expect(screen.getByAltText(card).closest('button')).toHaveAttribute('title', tooltip);
+      cleanup();
+    }
   });
 
   it('does not show play button when not human turn', async () => {
