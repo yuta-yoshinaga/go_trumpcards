@@ -132,6 +132,26 @@ func TestT_GameSpecific_en(t *testing.T) {
 	assert.Equal(t, "Timeout: skipping doubt", i18n.T("doubt.timeout"))
 }
 
+func TestT_CanastaErrorCodes_BothLangs(t *testing.T) {
+	keys := []struct {
+		key string
+		ja  string
+		en  string
+	}{
+		{"errDiscardPileEmpty", "捨て札の山が空です", "The discard pile is empty."},
+		{"errBlackThreeCannotMeld", "黒3はメルドできません", "Black threes cannot be melded."},
+		{"errInitialMeldMinimumNotMet", "初回メルドの最低点({{min}})を満たしていません（現在{{score}}点）", "The initial meld minimum of {{min}} points is not met (current value: {{score}})."},
+	}
+	for _, tc := range keys {
+		t.Run(tc.key, func(t *testing.T) {
+			i18n.SetLang("ja")
+			assert.Equal(t, tc.ja, i18n.T("canasta."+tc.key))
+			i18n.SetLang("en")
+			assert.Equal(t, tc.en, i18n.T("canasta."+tc.key))
+		})
+	}
+}
+
 func TestT_HoldemKeys_ja(t *testing.T) {
 	i18n.SetLang("ja")
 	assert.Contains(t, i18n.T("holdem.amountRequired"), "ベット")

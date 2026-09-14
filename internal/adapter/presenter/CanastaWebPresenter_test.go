@@ -223,6 +223,18 @@ func TestCanastaWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("domain error uses message code", func(t *testing.T) {
+		m, _ := setupCanastaWebMockWithPlayers()
+
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "canasta.errBlackThreeCannotMeld", nil))
+		var resObj controller.CanastaWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "canasta.errBlackThreeCannotMeld", resObj.MessageCode)
+		assert.Nil(t, resObj.MessageParams)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupCanastaWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
