@@ -153,6 +153,15 @@ func TestRummy500WebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestRummy500WebPresenter_CodedError(t *testing.T) {
+	m, _ := setupRummy500WebMock()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "rummy500.errInvalidMeld", nil)
+	p := &presenter.Rummy500WebPresenter{}
+	out := p.Output(m, err)
+	assert.Contains(t, out, `"messageCode":"rummy500.errInvalidMeld"`)
+	assert.NotContains(t, out, `"message":"有効なメルド`)
+}
+
 func TestRummy500WebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.Rummy500WebPresenter)
 	m := new(interfaces.MockRummy500Game)

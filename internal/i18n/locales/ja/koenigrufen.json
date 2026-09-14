@@ -48,5 +48,15 @@
   "hintReasonFollowDuck": "勝てない/取るべきでない — 低い札を出す",
   "promptTalonLegend": "埋め不可: キング・トゥルル（パガト/XXI/スキュース）。平トランプは埋められる平札が6枚未満のときのみ可。",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "errInvalidBid": "無効な入札です (rufer)",
+  "errBidHigherThanHighest": "ビッドは現在の{{bid}}より大きくなければなりません。",
+  "errInvalidSuit": "無効なスートです。",
+  "errKingInOwnHand": "自分が持つキングは呼べません",
+  "errScartoCount": "ちょうど{{n}}枚を捨ててください",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errDuplicateCardIndex": "カードインデックスが重複しています",
+  "errDiscardKing": "キングは捨てられません",
+  "errDiscardTrull": "トゥルル (Pagat/XXI/Sküs) は捨てられません",
+  "errDiscardTrump": "切り札は（やむを得ない場合を除き）捨てられません。"
 }
