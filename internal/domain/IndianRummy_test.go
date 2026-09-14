@@ -216,6 +216,85 @@ func TestIndianRummy_ValidateDeclaration_ImpurePlusPure(t *testing.T) {
 	assert.True(t, domain.IndianRummyValidateDeclaration(hand, 0))
 }
 
+func TestIndianRummy_GetDeclarableDiscards(t *testing.T) {
+	t.Run("rejects a zero-deadwood hand without two sequences", func(t *testing.T) {
+		g := newTestIndianRummy(2)
+		cards := []*domain.Card{
+			indianRummyCard(domain.CardDesignSpade, 3),
+			indianRummyCard(domain.CardDesignSpade, 4),
+			indianRummyCard(domain.CardDesignSpade, 5),
+			indianRummyCard(domain.CardDesignHeart, 6),
+			indianRummyCard(domain.CardDesignSpade, 6),
+			indianRummyCard(domain.CardDesignDiamond, 6),
+			indianRummyCard(domain.CardDesignHeart, 8),
+			indianRummyCard(domain.CardDesignSpade, 8),
+			indianRummyCard(domain.CardDesignDiamond, 8),
+			indianRummyCard(domain.CardDesignHeart, 10),
+			indianRummyCard(domain.CardDesignSpade, 10),
+			indianRummyCard(domain.CardDesignDiamond, 10),
+			indianRummyCard(domain.CardDesignClover, 10),
+			indianRummyCard(domain.CardDesignDiamond, 2),
+		}
+		setIndianRummyHand(g.GetPlayer(0), cards)
+		g.SetCurrentPlayerIdx(0)
+		g.SetPhase(domain.IndianRummyPhaseDiscard)
+		assert.Equal(t, 0, domain.IndianRummyDeadwoodScore(cards[:13], 0))
+		assert.NotContains(t, g.GetDeclarableDiscards(), 13)
+	})
+
+	t.Run("includes every valid finish index in ascending order", func(t *testing.T) {
+		g := newTestIndianRummy(2)
+		cards := validIndianRummyHand()
+		cards = append(cards, indianRummyCard(domain.CardDesignClover, 2))
+		setIndianRummyHand(g.GetPlayer(0), cards)
+		g.SetCurrentPlayerIdx(0)
+		g.SetPhase(domain.IndianRummyPhaseDiscard)
+		assert.Equal(t, []int{13}, g.GetDeclarableDiscards())
+	})
+
+	t.Run("returns a non-nil empty slice when no player is selected", func(t *testing.T) {
+		g := newTestIndianRummy(2)
+		g.SetCurrentPlayerIdx(-1)
+		assert.Equal(t, []int{}, g.GetDeclarableDiscards())
+	})
+
+	t.Run("returns an empty slice outside the human discard turn", func(t *testing.T) {
+		g := newTestIndianRummy(2)
+		cards := append(validIndianRummyHand(), indianRummyCard(domain.CardDesignClover, 2))
+		setIndianRummyHand(g.GetPlayer(0), cards)
+		g.SetCurrentPlayerIdx(0)
+		assert.Equal(t, []int{}, g.GetDeclarableDiscards())
+
+		g.SetPhase(domain.IndianRummyPhaseDiscard)
+		g.SetCurrentPlayerIdx(1)
+		assert.Equal(t, []int{}, g.GetDeclarableDiscards())
+	})
+}
+
+func BenchmarkIndianRummyGetDeclarableDiscards(b *testing.B) {
+	g := newTestIndianRummy(2)
+	cards := validIndianRummyHand()
+	cards = append(cards, indianRummyCard(domain.CardDesignClover, 2))
+	setIndianRummyHand(g.GetPlayer(0), cards)
+	g.SetCurrentPlayerIdx(0)
+	g.SetPhase(domain.IndianRummyPhaseDiscard)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = g.GetDeclarableDiscards()
+	}
+}
+
+func BenchmarkIndianRummyGetDeclarableDiscardsOutsideDiscard(b *testing.B) {
+	g := newTestIndianRummy(2)
+	cards := append(validIndianRummyHand(), indianRummyCard(domain.CardDesignClover, 2))
+	setIndianRummyHand(g.GetPlayer(0), cards)
+	g.SetCurrentPlayerIdx(0)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = g.GetDeclarableDiscards()
+	}
+}
+
 func TestIndianRummy_DeadwoodScore(t *testing.T) {
 	// No pure sequence → full cap 80.
 	noPure := []*domain.Card{

@@ -42,6 +42,7 @@ function makeState(overrides: Partial<IndianRummyResponse> = {}): IndianRummyRes
     winnerIdx: -1,
     declarerIdx: -1,
     declarationValid: false,
+    declarableDiscards: [],
     config: { playerCount: 2, cpuDifficulty: 1, targetRounds: 5 },
     message: '',
     messageCode: '',

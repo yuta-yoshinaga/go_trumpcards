@@ -77405,6 +77405,11 @@ components:
           type: integer
         declarerIdx:
           type: integer
+        declarableDiscards:
+          type: array
+          description: "Hand indices whose discard would leave a valid declaration. Empty outside the human player's discard turn."
+          items:
+            type: integer
         config:
           type: object
           properties:

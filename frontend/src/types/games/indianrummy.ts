@@ -25,6 +25,7 @@ export interface IndianRummyConfig {
 /** Full Indian Rummy game state returned from the API. */
 export interface IndianRummyResponse extends BaseGameResponse {
   players: IndianRummyPlayer[];
+  declarableDiscards: number[];
   phase: number;
   roundNumber: number;
   targetRounds: number;

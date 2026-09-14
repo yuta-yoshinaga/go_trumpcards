@@ -18,7 +18,7 @@ export function getIndianRummyHint(state: IndianRummyResponse): HintResult | nul
     return getDrawHint(human.cards, state.discardTop, state.wildRank);
   }
   if (state.phase === IndianRummyPhase.DISCARD) {
-    return getDiscardHint(human.cards, state.wildRank);
+    return getDiscardHint(human.cards, state.wildRank, state.declarableDiscards);
   }
   return null;
 }
@@ -31,8 +31,8 @@ function getDrawHint(hand: Card[], discardTop: Card | null, wildRank: number): H
   return { targetAction: 'drawStock', reason: 'hint.drawFromStock', confidence: 'moderate' };
 }
 
-/** Discard phase: declare when a single discard clears all deadwood, else drop deadwood. */
-function getDiscardHint(hand: Card[], wildRank: number): HintResult {
+/** Discard phase: declare for a server-approved discard, else drop deadwood. */
+function getDiscardHint(hand: Card[], wildRank: number, declarableDiscards: number[]): HintResult {
   let best = Number.POSITIVE_INFINITY;
   for (let i = 0; i < hand.length; i++) {
     const dv = calcDeadwood(
@@ -43,7 +43,7 @@ function getDiscardHint(hand: Card[], wildRank: number): HintResult {
     if (best === 0) break;
   }
 
-  if (best === 0) {
+  if (declarableDiscards.length > 0) {
     return { targetAction: 'declare', reason: 'hint.declareNow', confidence: 'strong' };
   }
   return { targetAction: 'discard', reason: 'hint.discardDeadwood', confidence: 'moderate' };

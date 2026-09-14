@@ -64,3 +64,6 @@ func (m *MockIndianRummyGame) PlayerDeadwoodValue(i int) int { return m.Called(i
 func (m *MockIndianRummyGame) PlayerHasPureSequence(i int) bool {
 	return m.Called(i).Bool(0)
 }
+func (m *MockIndianRummyGame) GetDeclarableDiscards() []int {
+	return m.Called().Get(0).([]int)
+}

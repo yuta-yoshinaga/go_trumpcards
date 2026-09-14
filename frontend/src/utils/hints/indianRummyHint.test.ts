@@ -37,6 +37,7 @@ function makeState(overrides: Partial<IndianRummyResponse> = {}): IndianRummyRes
     winnerIdx: -1,
     declarerIdx: -1,
     declarationValid: false,
+    declarableDiscards: [],
     message: '',
     config: { playerCount: 2, cpuDifficulty: 1, targetRounds: 3 },
     ...overrides,
@@ -121,7 +122,7 @@ describe('getIndianRummyHint', () => {
   });
 
   describe('discard phase', () => {
-    it('suggests declare when one discard clears all deadwood', () => {
+    it('suggests declare when the server approves a discard', () => {
       const state = makeState({
         phase: IndianRummyPhase.DISCARD,
         players: [
@@ -145,11 +146,43 @@ describe('getIndianRummyHint', () => {
             ],
           }),
         ],
+        declarableDiscards: [13],
       });
       const hint = getIndianRummyHint(state);
       expect(hint?.targetAction).toBe('declare');
       expect(hint?.reason).toBe('hint.declareNow');
       expect(hint?.confidence).toBe('strong');
+    });
+
+    it('does not suggest declare when deadwood is zero but the server rejects every discard', () => {
+      const state = makeState({
+        phase: IndianRummyPhase.DISCARD,
+        players: [
+          player({
+            cardCount: 14,
+            cards: [
+              card('SPADE', 3),
+              card('SPADE', 4),
+              card('SPADE', 5),
+              card('HEART', 6),
+              card('SPADE', 6),
+              card('DIAMOND', 6),
+              card('HEART', 8),
+              card('SPADE', 8),
+              card('DIAMOND', 8),
+              card('HEART', 10),
+              card('SPADE', 10),
+              card('DIAMOND', 10),
+              card('CLOVER', 10),
+              card('DIAMOND', 2),
+            ],
+          }),
+        ],
+        declarableDiscards: [],
+      });
+      const hint = getIndianRummyHint(state);
+      expect(hint?.targetAction).toBe('discard');
+      expect(hint?.reason).toBe('hint.discardDeadwood');
     });
 
     it('suggests discard when deadwood cannot be cleared', () => {
