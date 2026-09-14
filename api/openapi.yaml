@@ -49883,6 +49883,18 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         variantName:
           type: string
+        hands:
+          type: integer
+          description: Number of completed hands in the session
+          example: 0
+        winRate:
+          type: integer
+          description: Session win rate percentage
+          example: 0
+        net:
+          type: integer
+          description: Session net payout minus bets
+          example: 0
         handKey:
           type: string
           description: "i18n key of the hand ranking. Translate this rather than the prose in `handName`."

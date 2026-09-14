@@ -24,16 +24,11 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 	sb.WriteString("----------\n")
 	sb.WriteString(i18n.Tf("videopoker.chipsLine", "chips", strconv.Itoa(vp.GetChips())) + "\n")
 	sb.WriteString(i18n.Tf("videopoker.phaseLine", "phase", vpp.phaseStr(vp.GetPhase())) + "\n")
-	hands := vp.GetHands()
-	winRate := 0
-	if hands > 0 {
-		winRate = (vp.GetWins()*200 + hands) / (hands * 2)
-	}
-	net := vp.GetTotalPayout() - vp.GetTotalBet()
+	stats := videoPokerSessionStats(vp)
 	sb.WriteString(i18n.Tf("videopoker.statsSummary",
-		"hands", strconv.Itoa(hands),
-		"winRate", strconv.Itoa(winRate),
-		"net", formatSigned(net)) + "\n")
+		"hands", strconv.Itoa(stats.hands),
+		"winRate", strconv.Itoa(stats.winRate),
+		"net", formatSigned(stats.net)) + "\n")
 
 	hand := vp.GetHand()
 	if len(hand) > 0 {
