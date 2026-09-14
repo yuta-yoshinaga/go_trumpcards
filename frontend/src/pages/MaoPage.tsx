@@ -496,6 +496,7 @@ function MaoPageContent() {
                     : ''
                 }
               />
+              <LiveAnnouncement message={state.rulePenalty ? t('rulePenalty') : ''} />
               {sayWordHistory.length > 0 && (
                 <details className="rounded bg-black/20 px-2 py-1" data-testid="mao-sayword-history">
                   <summary className="cursor-pointer select-none text-ds-text-muted">

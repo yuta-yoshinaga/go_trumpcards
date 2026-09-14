@@ -70,6 +70,22 @@ describe('HokmPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('announces the completed hand result', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, lastHandWinner: 0, lastHandKot: true }));
+    renderWithProviders(<HokmPage />);
+
+    const visible = await screen.findByTestId('hk-hand-result');
+    const live = await waitFor(() => {
+      const element = [...document.querySelectorAll('[role="status"][aria-live="polite"][aria-atomic="true"]')].find(
+        (candidate) => candidate.textContent === visible.textContent,
+      );
+      expect(element).not.toBeUndefined();
+      return element;
+    });
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveAttribute('aria-atomic', 'true');
+  });
+
   // **13トリック打ち切らないことは盤面から読めない。** 7先取の競り合いを常に出す。
   it('leads with the race to seven tricks', async () => {
     mockExec.mockResolvedValue(playing({ teamTricks: [5, 2] } as Partial<HokmResponse>));

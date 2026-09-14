@@ -289,6 +289,22 @@ describe('MendikotPage trump-setting warning', () => {
     expect(await screen.findByTestId('md-sets-trump-warning')).toHaveTextContent('切り札になります');
   });
 
+  it('announces when the human will set trump', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 0, willSetTrump: true }));
+    renderWithProviders(<MendikotPage />);
+
+    const visible = await screen.findByTestId('md-sets-trump-warning');
+    const live = await waitFor(() => {
+      const element = [...document.querySelectorAll('[role="status"][aria-live="polite"][aria-atomic="true"]')].find(
+        (candidate) => candidate.textContent === visible.textContent,
+      );
+      expect(element).not.toBeUndefined();
+      return element;
+    });
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveAttribute('aria-atomic', 'true');
+  });
+
   it('stays quiet when the human can follow', async () => {
     mockExec.mockResolvedValue(makeState({ trumpSuit: 0, willSetTrump: false }));
     renderWithProviders(<MendikotPage />);

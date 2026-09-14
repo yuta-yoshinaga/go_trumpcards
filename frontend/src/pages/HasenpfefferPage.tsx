@@ -9,6 +9,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -233,6 +234,7 @@ function HasenpfefferPageContent() {
                 {t('header.mustBid')}
               </div>
             )}
+            <LiveAnnouncement message={isHumanBidTurn && state.mustBid ? t('header.mustBid') : ''} />
 
             <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="hpf-seats">
               {state.players.map((p, playerIdx) => (

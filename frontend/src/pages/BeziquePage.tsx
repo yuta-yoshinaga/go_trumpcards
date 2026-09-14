@@ -10,6 +10,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
@@ -451,6 +452,15 @@ function BeziquePageContent() {
                   </button>
                 </>
               )}
+              <LiveAnnouncement
+                message={
+                  isHumanMeldTurn
+                    ? state.availableMelds.length > 0
+                      ? t('meldLiveCount', { count: state.availableMelds.length })
+                      : t('meldLiveNone')
+                    : ''
+                }
+              />
               {isRoundEnd && (
                 <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
                   {t('nextRound')}
