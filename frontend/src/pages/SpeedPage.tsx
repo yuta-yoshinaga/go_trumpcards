@@ -22,6 +22,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { AUTO_FLIP_DELAY_MS, CPU_DIFFICULTY_OPTIONS, useSpeedGame } from '../hooks/useSpeedGame';
 import { useSpeedTimer } from '../hooks/useSpeedTimer';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnOutline } from '../styles/buttonStyles';
 import { focusRingCard, playableRingStyle, selectedCardStyle } from '../styles/cardStyles';
 import type { SpeedResponse } from '../types/card';
@@ -335,7 +336,7 @@ function SpeedPageContent() {
             {/* Stuck message, flip button, and inline auto-flip toggle */}
             {isStuck && (
               <div
-                className="flex flex-col items-center gap-2 bg-ds-warning/10 ring-2 ring-ds-warning rounded-lg p-3"
+                className={`flex flex-col items-center gap-2 ${badgeWarningColors} ring-2 ring-ds-warning rounded-lg p-3`}
                 data-testid="stuck-emphasis-container"
                 role="status"
                 aria-live="polite"

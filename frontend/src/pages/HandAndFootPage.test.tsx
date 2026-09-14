@@ -360,6 +360,12 @@ describe('HandAndFootPage', () => {
     mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
     renderWithProviders(<HandAndFootPage />);
     await waitFor(() => expect(screen.getByTestId('hf-frozen-badge')).toBeInTheDocument());
+    expect(screen.getByTestId('hf-discard-pile')).toHaveClass(
+      'bg-ds-surface',
+      'border-ds-border-subtle',
+      'ring-2',
+      'ring-ds-info',
+    );
     expect(screen.getByTestId('hf-draw-discard-reason')).toHaveTextContent(
       'フリーズ中はワイルドカードでの代用ができません',
     );

@@ -22,6 +22,7 @@ import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCrazyEightsGame } from 
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeSuccessColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -419,8 +420,8 @@ function CrazyEightsPageContent() {
                             key={p.id}
                             data-testid={`ce-score-row-${p.id}`}
                             data-winner={isWinner ? 'true' : undefined}
-                            className={`${p.isHuman ? 'text-ds-accent' : ''}${
-                              isWinner ? ' bg-ds-success/15 font-bold' : ''
+                            className={`${p.isHuman && !isWinner ? 'text-ds-accent' : ''}${
+                              isWinner ? ` ${badgeSuccessColors} font-bold` : ''
                             }`}
                           >
                             <td>

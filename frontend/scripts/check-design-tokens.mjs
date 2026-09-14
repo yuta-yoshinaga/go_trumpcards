@@ -6,6 +6,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { findBadgeContrastViolations } from './lib/badge-contrast.mjs';
 import { collectDesignTokens, findUndefinedDesignUtilities } from './lib/design-token-utilities.mjs';
 import { assertFloor } from './lib/floor.mjs';
 
@@ -300,58 +301,17 @@ console.log('tap-targets: OK (every checkbox/radio sits in a 44px label row; ind
 // the inherited colour is itself low-contrast, which this cannot see, and
 // DESIGN.md still permits opacity for decorative tints. Widening this rule
 // needs a per-site judgement call, not a regex.
-const BADGE_TOKEN = /\bbg-ds-(warning|info|success|error)\/\d+\b/g;
-
-/**
- * Every `className` value in `text`, as {start, end} offsets covering the whole
- * value — the quoted string, or the brace-balanced expression.
- *
- * Matching per *line* instead would miss a violation split across a multi-line
- * ternary (background on one line, foreground on the next), which is exactly how
- * several of the sites fixed for #4367 were written. A guard that the common
- * formatting of the thing it guards can slip past is not much of a guard.
- */
-function classNameValues(text) {
-  const out = [];
-  for (const m of text.matchAll(/className=/g)) {
-    const i = m.index + m[0].length;
-    if (text[i] === '"' || text[i] === "'") {
-      const end = text.indexOf(text[i], i + 1);
-      if (end !== -1) out.push({ start: i, end: end + 1 });
-    } else if (text[i] === '{') {
-      let depth = 0;
-      for (let j = i; j < text.length; j += 1) {
-        if (text[j] === '{') depth += 1;
-        else if (text[j] === '}') {
-          depth -= 1;
-          if (depth === 0) {
-            out.push({ start: i, end: j + 1 });
-            break;
-          }
-        }
-      }
-    }
-  }
-  return out;
-}
-
 const badgeViolations = [];
 for (const file of files) {
   if (file.endsWith('badgeStyles.ts')) continue; // the sanctioned home for these tokens
   const text = stripComments(await readFile(file, 'utf8'));
-  for (const { start, end } of classNameValues(text)) {
-    const value = text.slice(start, end);
-    for (const m of value.matchAll(BADGE_TOKEN)) {
-      const kind = m[1];
-      // Only when the same className also sets the matching semantic foreground.
-      if (!new RegExp(String.raw`\btext-ds-${kind}\b`).test(value)) continue;
-      badgeViolations.push({
-        file: relative(ROOT, file),
-        line: text.slice(0, start + m.index).split('\n').length,
-        kind,
-        match: m[0],
-      });
-    }
+  for (const violation of findBadgeContrastViolations(text)) {
+    badgeViolations.push({
+      file: relative(ROOT, file),
+      line: text.slice(0, violation.start).split('\n').length,
+      kind: violation.kind,
+      match: violation.match,
+    });
   }
 }
 

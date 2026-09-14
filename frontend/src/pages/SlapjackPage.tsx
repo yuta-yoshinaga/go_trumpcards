@@ -240,7 +240,7 @@ function SlapjackPageContent() {
             {/* Center pile / arena */}
             <div
               className={`relative flex items-center justify-center gap-8 py-3 rounded-lg transition-colors ${
-                state.isTopJack ? 'bg-ds-warning/30' : 'bg-black/20'
+                state.isTopJack ? 'bg-ds-surface border border-ds-warning' : 'bg-black/20'
               } ${lastEvent === SlapjackEventKind.SLAP_WRONG ? 'ring-2 ring-ds-error' : ''}`}
               data-tutorial="sj-arena"
             >
