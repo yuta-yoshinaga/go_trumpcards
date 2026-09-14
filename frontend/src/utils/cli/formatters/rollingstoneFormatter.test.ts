@@ -49,6 +49,17 @@ describe('formatRollingStoneState', () => {
     expect(out).toContain('PLAY');
   });
 
+  it('shows the number of finishers and changes when a seat finishes', () => {
+    const active = formatRollingStoneState(state());
+    const oneFinished = formatRollingStoneState(
+      state({ players: [seat(0), seat(1, { finishedAt: 1, cardCount: 0 }), seat(2), seat(3)] }),
+    );
+
+    expect(active).toContain('Out 0 / 4 players');
+    expect(oneFinished).toContain('Out 1 / 4 players');
+    expect(oneFinished).not.toContain('Out 0 / 4 players');
+  });
+
   // **勝利条件が逆さまなのが規則そのもの。**
   it('states the inverted goal every time', () => {
     const out = formatRollingStoneState(state());

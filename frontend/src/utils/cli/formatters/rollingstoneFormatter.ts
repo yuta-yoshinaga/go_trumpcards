@@ -20,6 +20,8 @@ export function formatRollingStoneState(state: RollingStoneResponse | null): str
       PHASE_NAMES[state.phase] ?? state.phase
     }`,
   );
+  const finished = state.players.filter((p) => p.finishedAt > 0).length;
+  lines.push(`Out ${finished} / ${state.players.length} players`);
   // **勝利条件が逆さまなのが規則そのもの。** 毎回書く。
   lines.push('winning a trick scores nothing — run out of cards first, and failing to follow hands you the trick');
 
