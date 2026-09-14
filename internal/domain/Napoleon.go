@@ -211,10 +211,10 @@ func (n *Napoleon) PlayerBid(bid int) error {
 
 	if bid != 0 {
 		if bid < n.config.MinBid || bid > NapoleonMaxPictureCards {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは%d〜%dで指定してください（0でパス）", n.config.MinBid, NapoleonMaxPictureCards))
+			return NewDomainErrorCode(ErrInvalidPlay, "napoleon.errBidRange", map[string]string{"min": fmt.Sprintf("%d", n.config.MinBid), "max": fmt.Sprintf("%d", NapoleonMaxPictureCards)})
 		}
 		if bid <= n.round.highestBid {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("現在の最高ビッド%dより高い値を指定してください", n.round.highestBid))
+			return NewDomainErrorCode(ErrInvalidPlay, "napoleon.errBidHigherThanHighest", map[string]string{"bid": fmt.Sprintf("%d", n.round.highestBid)})
 		}
 	}
 
@@ -251,19 +251,19 @@ func (n *Napoleon) PlayerDeclareTrump(suit int, adjSuit int, adjVal int) error {
 	}
 
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "無効なスートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "napoleon.errInvalidSuit", nil)
 	}
 	if adjSuit == CardDesignJoker {
 		// ジョーカーを副官に指名
 		if adjVal != 1 {
-			return NewDomainError(ErrInvalidPlay, "ジョーカーのvalueは1です")
+			return NewDomainErrorCode(ErrInvalidPlay, "napoleon.errJokerValue", nil)
 		}
 	} else {
 		if adjSuit < CardDesignSpade || adjSuit > CardDesignDiamond {
-			return NewDomainError(ErrInvalidPlay, "無効な副官スートです")
+			return NewDomainErrorCode(ErrInvalidPlay, "napoleon.errInvalidAdjutantSuit", nil)
 		}
 		if adjVal < 1 || adjVal > CardValueMax {
-			return NewDomainError(ErrInvalidPlay, "無効な副官カード値です")
+			return NewDomainErrorCode(ErrInvalidPlay, "napoleon.errInvalidAdjutantValue", nil)
 		}
 	}
 
@@ -299,7 +299,7 @@ func (n *Napoleon) PlayerExchangeKitty(discardIndex int) error {
 	player := n.players[n.round.napoleonIdx]
 	// 場札はすでに手札に追加されている (14枚)
 	if discardIndex < 0 || discardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "napoleon.errCardIndexOutOfRange", nil)
 	}
 
 	n.applyExchangeKitty(discardIndex)
@@ -333,7 +333,7 @@ func (n *Napoleon) PlayerPlay(cardIndex int) error {
 
 	player := n.players[n.round.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "napoleon.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -842,7 +842,7 @@ func (n *Napoleon) validatePlay(playerIdx int, card *Card) error {
 	// フォロースート
 	if card.GetDesign() != leadSuit {
 		if n.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "napoleon.errMustFollowLeadSuit", nil)
 		}
 	}
 

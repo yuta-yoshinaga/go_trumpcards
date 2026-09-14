@@ -124,6 +124,15 @@ func TestConquianWebPresenter_Output(t *testing.T) {
 		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
 		assert.Equal(t, "boom", parsed.Message)
 	})
+
+	t.Run("coded error is returned for translation", func(t *testing.T) {
+		m, _ := setupConquianWebMock(domain.ConquianPhaseDraw, false, -1, -1)
+		out := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "conquian.errInvalidMeld", nil))
+		var parsed controller.ConquianWebOutput
+		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
+		assert.Empty(t, parsed.Message)
+		assert.Equal(t, "conquian.errInvalidMeld", parsed.MessageCode)
+	})
 }
 
 func TestConquianWebPresenter_ActionLogOutput(t *testing.T) {

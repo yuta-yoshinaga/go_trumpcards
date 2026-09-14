@@ -125,6 +125,9 @@ func (p *NapoleonWebPresenter) buildPlayersOutput(n interfaces.NapoleonGame) []*
 // buildMessage ゲーム結果メッセージを構築
 func (p *NapoleonWebPresenter) buildMessage(n interfaces.NapoleonGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if n.GetGameEndFlag() {

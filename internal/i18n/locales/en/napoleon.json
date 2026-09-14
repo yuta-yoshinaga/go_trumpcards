@@ -48,5 +48,13 @@
   "hintReasonDiscardLow": "discard a low card",
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
-  "pointLimitLine": "Target: game ends at ±{{limit}} points"
+  "pointLimitLine": "Target: game ends at ±{{limit}} points",
+  "errBidRange": "Specify a bid from {{min}} to {{max}} (0 passes).",
+  "errBidHigherThanHighest": "Specify a bid higher than the current highest bid of {{bid}}.",
+  "errInvalidSuit": "The suit is invalid.",
+  "errJokerValue": "The Joker's value must be 1.",
+  "errInvalidAdjutantSuit": "The adjutant suit is invalid.",
+  "errInvalidAdjutantValue": "The adjutant card value is invalid.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errMustFollowLeadSuit": "Follow the led suit."
 }
