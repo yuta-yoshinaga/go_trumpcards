@@ -249,6 +249,17 @@ function CucumberPageContent() {
               </div>
             )}
 
+            <LiveAnnouncement
+              message={
+                isRoundEnd && state.lastTrickWinnerIdx >= 0
+                  ? t('status.roundEnd', {
+                      name: seatName(state.lastTrickWinnerIdx),
+                      n: String(state.lastPenalty),
+                    })
+                  : ''
+              }
+            />
+
             {/* **「選べる」と「決まっている」を言い分けます。** */}
             {isHumanTurn && (
               <div className="mt-3 text-center text-ds-text-muted" role="status" data-testid="cu-status">

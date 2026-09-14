@@ -237,6 +237,20 @@ function BhabhiPageContent() {
 
             <LiveAnnouncement
               message={
+                state.lastPickupIdx >= 0 && !isGameEnd
+                  ? t('lastPickup', {
+                      name:
+                        state.lastPickupIdx === 0
+                          ? t('header.you')
+                          : t('header.cpu', { idx: String(state.lastPickupIdx) }),
+                      n: String(state.lastPickupSize),
+                    })
+                  : ''
+              }
+            />
+
+            <LiveAnnouncement
+              message={
                 state.lastFinishedIdx >= 0 && !isGameEnd
                   ? t('lastFinished', {
                       name:
