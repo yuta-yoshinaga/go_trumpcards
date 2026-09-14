@@ -122,6 +122,18 @@ describe('AnacondaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', undefined, 'call'));
   });
 
+  it('announces the raise count through the atomic polite live region', async () => {
+    mockExec.mockResolvedValue(rollState);
+    const { container } = renderWithProviders(<AnacondaPage />);
+
+    const live = await waitFor(() => {
+      const element = container.querySelector('[role="status"][aria-live="polite"][aria-atomic="true"]');
+      expect(element).not.toBeNull();
+      return element;
+    });
+    expect(live).toHaveTextContent('レイズ 0/3回');
+  });
+
   it('disables the Raise button when canRaise is false', async () => {
     mockExec.mockResolvedValue(makeAnacondaState({ phase: 2, isHumanTurn: true, canRaise: false }));
     renderWithProviders(<AnacondaPage />);

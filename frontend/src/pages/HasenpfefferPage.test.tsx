@@ -81,6 +81,22 @@ describe('HasenpfefferPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('announces when the human must bid', async () => {
+    mockExec.mockResolvedValue(makeState({ mustBid: true }));
+    renderWithProviders(<HasenpfefferPage />);
+
+    const visible = await screen.findByTestId('hpf-must-bid');
+    const live = await waitFor(() => {
+      const element = [...document.querySelectorAll('[role="status"][aria-live="polite"][aria-atomic="true"]')].find(
+        (candidate) => candidate.textContent === visible.textContent,
+      );
+      expect(element).not.toBeUndefined();
+      return element;
+    });
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveAttribute('aria-atomic', 'true');
+  });
+
   it('marks only the dealer seat', async () => {
     mockExec.mockResolvedValue(makeState({ dealerIdx: 2 }));
     renderWithProviders(<HasenpfefferPage />);

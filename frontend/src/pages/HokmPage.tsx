@@ -9,6 +9,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -246,6 +247,20 @@ function HokmPageContent() {
                 </span>
               </div>
             )}
+            <LiveAnnouncement
+              message={
+                isHandEnd && state.lastHandWinner >= 0
+                  ? state.lastHandKot
+                    ? `${t('handEnd.kot', { team: String(state.lastHandWinner) })}${
+                        state.lastHandHakemChanged ? t('handEnd.hakemMoves') : t('handEnd.hakemStays')
+                      }`
+                    : `${t('handEnd.normal', {
+                        team: String(state.lastHandWinner),
+                        need: String(state.tricksToWin),
+                      })}${state.lastHandHakemChanged ? t('handEnd.hakemMoves') : t('handEnd.hakemStays')}`
+                  : ''
+              }
+            />
 
             {resultBanner && (
               <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">

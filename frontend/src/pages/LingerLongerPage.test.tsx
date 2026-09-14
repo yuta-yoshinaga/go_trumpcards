@@ -65,6 +65,22 @@ describe('LingerLongerPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('announces when the human is eliminated', async () => {
+    mockExec.mockResolvedValue(makeState({ players: [seat(0, { eliminatedAt: 1 }), seat(1), seat(2), seat(3)] }));
+    renderWithProviders(<LingerLongerPage />);
+
+    const visible = await screen.findByTestId('ll-eliminated');
+    const live = await waitFor(() => {
+      const element = [...document.querySelectorAll('[role="status"][aria-live="polite"][aria-atomic="true"]')].find(
+        (candidate) => candidate.textContent === visible.textContent,
+      );
+      expect(element).not.toBeUndefined();
+      return element;
+    });
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveAttribute('aria-atomic', 'true');
+  });
+
   // **取っても得点にならず、補充できるだけ。** 直感と逆なので毎回出す。
   it('states that a trick only buys you a card', async () => {
     renderWithProviders(<LingerLongerPage />);

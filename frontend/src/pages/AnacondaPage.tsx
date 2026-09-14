@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import {
@@ -550,6 +551,17 @@ function AnacondaPageContent() {
                   </button>
                 </>
               )}
+              <LiveAnnouncement
+                message={
+                  isRollPhase && humanTurn
+                    ? raiseBlock === 'cap'
+                      ? t('raiseCapReached', { max: state.maxRaises })
+                      : raiseBlock === 'chips'
+                        ? t('raiseNoChips', { cost: raiseNeeded })
+                        : t('raiseCount', { count: state.raiseCount, max: state.maxRaises })
+                    : ''
+                }
+              />
 
               {isResultPhase && !isGameEnd && (
                 <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>

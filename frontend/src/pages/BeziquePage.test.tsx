@@ -133,6 +133,18 @@ describe('BeziquePage', () => {
     expect(live).toHaveTextContent('2');
   });
 
+  it('announces meld availability through the atomic polite live region', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    const { container } = renderWithProviders(<BeziquePage />);
+
+    const live = await waitFor(() => {
+      const element = container.querySelector('[role="status"][aria-live="polite"][aria-atomic="true"]');
+      expect(element).not.toBeNull();
+      return element;
+    });
+    expect(live).toHaveTextContent('2');
+  });
+
   // **0件でも読み上げる。**沈黙は「まだ自分の番でない」と区別が付かない。
   it('announces that nothing can be declared when the list is empty', async () => {
     mockExec.mockResolvedValue(makeBeziqueState({ ...meldPhaseState, availableMelds: [] }));

@@ -9,6 +9,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -234,6 +235,7 @@ function LingerLongerPageContent() {
                 {t('result.eliminated')}
               </div>
             )}
+            <LiveAnnouncement message={isEliminated ? t('result.eliminated') : ''} />
 
             {human && human.cards.length > 0 && (
               <div className="mt-4" data-tutorial="ll-hand">
