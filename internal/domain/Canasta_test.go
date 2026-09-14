@@ -264,6 +264,8 @@ func TestCanasta_PlayerDrawFromDiscard_EmptyPile(t *testing.T) {
 
 	err := g.PlayerDrawFromDiscard([]int{0, 1})
 	assert.Error(t, err)
+	code, _ := domain.ErrorMessageCode(err)
+	assert.Equal(t, "canasta.errDiscardPileEmpty", code)
 }
 
 func TestCanasta_PlayerDrawFromDiscard_Black3OnTop(t *testing.T) {
@@ -274,6 +276,8 @@ func TestCanasta_PlayerDrawFromDiscard_Black3OnTop(t *testing.T) {
 
 	err := g.PlayerDrawFromDiscard([]int{0, 1})
 	assert.Error(t, err)
+	code, _ := domain.ErrorMessageCode(err)
+	assert.Equal(t, "canasta.errBlackThreeCannotTakeDiscardPile", code)
 }
 
 func TestCanasta_PlayerDrawFromDiscard_WildOnTop(t *testing.T) {
@@ -458,6 +462,8 @@ func TestCanasta_PlayerDiscard_InvalidIndex(t *testing.T) {
 
 	err := g.PlayerDiscard(999)
 	assert.Error(t, err)
+	code, _ := domain.ErrorMessageCode(err)
+	assert.Equal(t, "canasta.errCardIndexOutOfRange", code)
 }
 
 func TestCanasta_PlayerDiscard_Red3Rejected(t *testing.T) {

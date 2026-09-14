@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // CanastaPlayerCnt カナスタプレイヤー数
@@ -378,34 +379,34 @@ func (g *Canasta) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 	}
 
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札の山が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errDiscardPileEmpty", nil)
 	}
 
 	topCard := g.discardPile[len(g.discardPile)-1]
 
 	// 黒3がトップの場合は取れない
 	if CanastaIsBlack3(topCard) {
-		return NewDomainError(ErrInvalidPlay, "黒3がトップの場合は捨て札の山を取れません")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errBlackThreeCannotTakeDiscardPile", nil)
 	}
 
 	// ワイルドカードがトップの場合は取れない（通常はワイルドカードがトップにくると山がフリーズ）
 	if CanastaIsWild(topCard) {
-		return NewDomainError(ErrInvalidPlay, "ワイルドカードがトップの場合は捨て札の山を取れません")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errWildCardCannotTakeDiscardPile", nil)
 	}
 
 	// ナチュラルペアの検証
 	if len(naturalPairIndices) != 2 {
-		return NewDomainError(ErrInvalidPlay, "ナチュラルペア（同ランクの自然カード2枚）のインデックスを指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errNaturalPairIndicesRequired", nil)
 	}
 
 	player := g.players[g.currentPlayerIdx]
 	for _, idx := range naturalPairIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "canasta.errCardIndexOutOfRange", nil)
 		}
 	}
 	if naturalPairIndices[0] == naturalPairIndices[1] {
-		return NewDomainError(ErrInvalidCard, "同じカードは指定できません")
+		return NewDomainErrorCode(ErrInvalidCard, "canasta.errSameCard", nil)
 	}
 
 	card0 := player.GetCard(naturalPairIndices[0])
@@ -413,10 +414,10 @@ func (g *Canasta) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 
 	// ペアは両方ナチュラルカードで、トップカードと同ランクでなければならない
 	if CanastaIsWild(card0) || CanastaIsWild(card1) {
-		return NewDomainError(ErrInvalidPlay, "ペアはナチュラルカード（ワイルドカード以外）でなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errPairMustBeNatural", nil)
 	}
 	if card0.GetValue() != topCard.GetValue() || card1.GetValue() != topCard.GetValue() {
-		return NewDomainError(ErrInvalidPlay, "ペアのランクが捨て札のトップカードと一致しません")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errPairRankMismatch", nil)
 	}
 
 	// 初回メルド要件チェック: 捨て札の山を取る場合、初回メルドの最低点を満たすメルドが必要
@@ -425,7 +426,7 @@ func (g *Canasta) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 		meldValue := CanastaCardValue(topCard) + CanastaCardValue(card0) + CanastaCardValue(card1)
 		minReq := g.minimumMeldValue(g.currentPlayerIdx)
 		if meldValue < minReq {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("初回メルドの最低点(%d)を満たしていません（現在%d点）", minReq, meldValue))
+			return NewDomainErrorCode(ErrInvalidPlay, "canasta.errInitialMeldMinimumNotMet", map[string]string{"min": strconv.Itoa(minReq), "score": strconv.Itoa(meldValue)})
 		}
 	}
 
@@ -466,7 +467,7 @@ func (g *Canasta) PlayerMeld(meldGroups [][]int) error {
 	if len(meldGroups) == 0 {
 		// メルドなしでディスカードフェーズへ
 		if g.drewFromDiscard {
-			return NewDomainError(ErrInvalidPlay, "捨て札の山を取った場合はトップカードをメルドに含める必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "canasta.errTopCardMustBeMelded", nil)
 		}
 		g.phase = CanastaPhaseDiscard
 		return nil
@@ -479,10 +480,10 @@ func (g *Canasta) PlayerMeld(meldGroups [][]int) error {
 	for _, group := range meldGroups {
 		for _, idx := range group {
 			if idx < 0 || idx >= player.GetCardsSize() {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+				return NewDomainErrorCode(ErrInvalidCard, "canasta.errCardIndexOutOfRange", nil)
 			}
 			if allIndices[idx] {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+				return NewDomainErrorCode(ErrInvalidCard, "canasta.errDuplicateCardIndex", nil)
 			}
 			allIndices[idx] = true
 		}
@@ -517,7 +518,7 @@ func (g *Canasta) PlayerMeld(meldGroups [][]int) error {
 			}
 		}
 		if !found {
-			return NewDomainError(ErrInvalidPlay, "捨て札の山を取った場合はトップカードをメルドに含める必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "canasta.errTopCardMustBeMelded", nil)
 		}
 	}
 
@@ -574,7 +575,7 @@ func (g *Canasta) PlayerMeld(meldGroups [][]int) error {
 	if isInitialMeld {
 		minReq := g.minimumMeldValue(g.currentPlayerIdx)
 		if totalMeldValue < minReq {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("初回メルドの最低点(%d)を満たしていません（現在%d点）", minReq, totalMeldValue))
+			return NewDomainErrorCode(ErrInvalidPlay, "canasta.errInitialMeldMinimumNotMet", map[string]string{"min": strconv.Itoa(minReq), "score": strconv.Itoa(totalMeldValue)})
 		}
 	}
 
@@ -656,7 +657,7 @@ func (g *Canasta) PlayerSkipMeld() error {
 		return ErrNotHumanTurn
 	}
 	if g.drewFromDiscard {
-		return NewDomainError(ErrInvalidPlay, "捨て札の山を取った場合はトップカードをメルドに含める必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errTopCardMustBeMelded", nil)
 	}
 
 	g.phase = CanastaPhaseDiscard
@@ -677,14 +678,14 @@ func (g *Canasta) PlayerDiscard(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "canasta.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 
 	// 赤3は捨てられない
 	if CanastaIsRed3(card) {
-		return NewDomainError(ErrInvalidPlay, "赤3は捨てられません")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errRedThreeCannotBeDiscarded", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)
@@ -721,17 +722,17 @@ func (g *Canasta) PlayerGoOut() error {
 	player := g.players[g.currentPlayerIdx]
 
 	if g.usesPozzetto() && !player.tookPozzetto {
-		return NewDomainError(ErrInvalidPlay, "上がるにはポゼット（予備手札）を獲得している必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errPozzettoRequiredToGoOut", nil)
 	}
 	if !player.HasCanasta() {
-		return NewDomainError(ErrInvalidPlay, "上がるには少なくとも1つのカナスタが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errCanastaRequiredToGoOut", nil)
 	}
 
 	// 手札が1枚の場合、最後のカードを捨てて上がる
 	if player.GetCardsSize() == 1 {
 		card := player.GetCard(0)
 		if CanastaIsRed3(card) {
-			return NewDomainError(ErrInvalidPlay, "赤3は捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "canasta.errRedThreeCannotBeDiscarded", nil)
 		}
 		discarded := player.RemoveCard(0)
 		g.discardPile = append(g.discardPile, discarded)
@@ -740,7 +741,7 @@ func (g *Canasta) PlayerGoOut() error {
 		}
 		g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 	} else if player.GetCardsSize() > 1 {
-		return NewDomainError(ErrInvalidPlay, "上がるには手札が0枚または1枚でなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errHandMustHaveAtMostOneCardToGoOut", nil)
 	}
 
 	concealed := !player.hasInitMeld
@@ -1290,7 +1291,7 @@ func (g *Canasta) checkGameEnd() {
 // validateNewMeld 新規メルドの検証
 func (g *Canasta) validateNewMeld(cards []*Card) error {
 	if len(cards) < 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドには最低3枚のカードが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errMeldNeedsAtLeastThreeCards", nil)
 	}
 
 	if g.config.UseBiriba {
@@ -1307,7 +1308,7 @@ func (g *Canasta) validateNewMeld(cards []*Card) error {
 			if rank == 0 {
 				rank = c.GetValue()
 			} else if c.GetValue() != rank {
-				return NewDomainError(ErrInvalidPlay, "メルドは同じランクのカードで構成する必要があります")
+				return NewDomainErrorCode(ErrInvalidPlay, "canasta.errMeldCardsMustHaveSameRank", nil)
 			}
 		}
 	}
@@ -1315,20 +1316,20 @@ func (g *Canasta) validateNewMeld(cards []*Card) error {
 	// 黒3はメルドできない
 	for _, c := range cards {
 		if CanastaIsBlack3(c) {
-			return NewDomainError(ErrInvalidPlay, "黒3はメルドできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "canasta.errBlackThreeCannotMeld", nil)
 		}
 	}
 
 	if naturalCount < 2 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはナチュラルカードが最低2枚必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errMeldNeedsAtLeastTwoNaturalCards", nil)
 	}
 
 	if wildCount > 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはワイルドカードは最大3枚までです")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errMeldAllowsAtMostThreeWildCards", nil)
 	}
 
 	if wildCount > naturalCount {
-		return NewDomainError(ErrInvalidPlay, "ワイルドカードの数がナチュラルカードの数を超えてはいけません")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errWildCardsCannotExceedNaturalCards", nil)
 	}
 
 	return nil
@@ -1354,15 +1355,15 @@ func (g *Canasta) validateMeldAddition(existing *CanastaMeld, cards []*Card) err
 		if CanastaIsWild(c) {
 			newWildCount++
 		} else if c.GetValue() != rank {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ランク%dのメルドにランク%dのカードは追加できません", rank, c.GetValue()))
+			return NewDomainErrorCode(ErrInvalidPlay, "canasta.errMeldCardRankMismatch", map[string]string{"meldRank": strconv.Itoa(rank), "cardRank": strconv.Itoa(c.GetValue())})
 		}
 		if CanastaIsBlack3(c) {
-			return NewDomainError(ErrInvalidPlay, "黒3はメルドできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "canasta.errBlackThreeCannotMeld", nil)
 		}
 	}
 
 	if newWildCount > 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはワイルドカードは最大3枚までです")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errMeldAllowsAtMostThreeWildCards", nil)
 	}
 
 	return nil
@@ -1408,7 +1409,7 @@ func (g *Canasta) usesPozzetto() bool { return g.config.UsePozzetto || g.config.
 // be supplied in rank order.
 func validateBiribaSequence(cards []*Card) error {
 	if len(cards) < 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドには最低3枚のカードが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errMeldNeedsAtLeastThreeCards", nil)
 	}
 	naturalCount, wildCount := 0, 0
 	suit, minRank, maxRank := 0, 0, 0
@@ -1419,17 +1420,17 @@ func validateBiribaSequence(cards []*Card) error {
 			continue
 		}
 		if CanastaIsBlack3(c) {
-			return NewDomainError(ErrInvalidPlay, "黒3はメルドできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "canasta.errBlackThreeCannotMeld", nil)
 		}
 		naturalCount++
 		if suit == 0 {
 			suit = c.GetDesign()
 		} else if c.GetDesign() != suit {
-			return NewDomainError(ErrInvalidPlay, "シーケンスは同じスートで構成する必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "canasta.errSequenceMustUseSameSuit", nil)
 		}
 		rank := c.GetValue()
 		if seen[rank] {
-			return NewDomainError(ErrInvalidPlay, "シーケンスに同じランクを重複させることはできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "canasta.errSequenceCannotDuplicateRank", nil)
 		}
 		seen[rank] = true
 		if minRank == 0 || rank < minRank {
@@ -1440,19 +1441,19 @@ func validateBiribaSequence(cards []*Card) error {
 		}
 	}
 	if naturalCount < 2 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはナチュラルカードが最低2枚必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errMeldNeedsAtLeastTwoNaturalCards", nil)
 	}
 	if wildCount > 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはワイルドカードは最大3枚までです")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errMeldAllowsAtMostThreeWildCards", nil)
 	}
 	missing := (maxRank - minRank + 1) - naturalCount
 	if missing > wildCount {
-		return NewDomainError(ErrInvalidPlay, "シーケンスのランクが連続していません")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errSequenceRanksNotConsecutive", nil)
 	}
 	remainingWildCount := wildCount - missing
 	availableExtension := (minRank - 1) + (CardValueMax - maxRank)
 	if remainingWildCount > availableExtension {
-		return NewDomainError(ErrInvalidPlay, "ワイルドカードでシーケンスのランク範囲を超えることはできません")
+		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errWildCardsExceedSequenceRange", nil)
 	}
 	return nil
 }
