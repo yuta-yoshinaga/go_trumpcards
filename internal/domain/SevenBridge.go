@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // SevenBridgePlayerCnt セブンブリッジのプレイヤー数
@@ -267,20 +268,20 @@ func (g *SevenBridge) PlayerClaimChi(cardIndices []int) error {
 // applyPonClaim ポン成立処理（人間・CPU 共通）
 func (g *SevenBridge) applyPonClaim(cardIndices []int) error {
 	if len(cardIndices) != 2 {
-		return NewDomainError(ErrInvalidPlay, "ポンには手札 2 枚のインデックスが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errPonCardIndicesRequired", nil)
 	}
 	if err := validateIndexPair(cardIndices, g.players[g.currentPlayerIdx].GetCardsSize()); err != nil {
 		return err
 	}
 	top := g.GetDiscardTop()
 	if top == nil {
-		return NewDomainError(ErrInvalidPlay, "捨て札が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errDiscardPileEmpty", nil)
 	}
 	player := g.players[g.currentPlayerIdx]
 	c1 := player.GetCard(cardIndices[0])
 	c2 := player.GetCard(cardIndices[1])
 	if c1.GetValue() != top.GetValue() || c2.GetValue() != top.GetValue() {
-		return NewDomainError(ErrInvalidPlay, "ポンの 2 枚は捨て札と同じランクでなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errPonRankMismatch", nil)
 	}
 
 	// 捨て札トップを取り出し、手札 2 枚と合わせて新メルドを登録
@@ -309,26 +310,26 @@ func (g *SevenBridge) applyPonClaim(cardIndices []int) error {
 // applyChiClaim チー成立処理（人間・CPU 共通）
 func (g *SevenBridge) applyChiClaim(cardIndices []int) error {
 	if len(cardIndices) != 2 {
-		return NewDomainError(ErrInvalidPlay, "チーには手札 2 枚のインデックスが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errChiCardIndicesRequired", nil)
 	}
 	if err := validateIndexPair(cardIndices, g.players[g.currentPlayerIdx].GetCardsSize()); err != nil {
 		return err
 	}
 	top := g.GetDiscardTop()
 	if top == nil {
-		return NewDomainError(ErrInvalidPlay, "捨て札が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errDiscardPileEmpty", nil)
 	}
 	player := g.players[g.currentPlayerIdx]
 	c1 := player.GetCard(cardIndices[0])
 	c2 := player.GetCard(cardIndices[1])
 	if c1.GetDesign() != top.GetDesign() || c2.GetDesign() != top.GetDesign() {
-		return NewDomainError(ErrInvalidPlay, "チーの 2 枚は捨て札と同じスートでなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errChiSuitMismatch", nil)
 	}
 
 	combo := []int{top.GetValue(), c1.GetValue(), c2.GetValue()}
 	sort.Ints(combo)
 	if combo[0]+1 != combo[1] || combo[1]+1 != combo[2] {
-		return NewDomainError(ErrInvalidPlay, "チーは捨て札と連続する 3 枚のランでなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errChiNotConsecutive", nil)
 	}
 
 	claimed := g.popDiscardTop()
@@ -369,7 +370,7 @@ func (g *SevenBridge) PlayerMeld(cardIndices []int) error {
 
 func (g *SevenBridge) applyMeld(cardIndices []int) error {
 	if len(cardIndices) < SevenBridgeMeldMinSize {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("メルドには最低 %d 枚必要です", SevenBridgeMeldMinSize))
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errMeldMinimumCards", map[string]string{"min": strconv.Itoa(SevenBridgeMeldMinSize)})
 	}
 	player := g.players[g.currentPlayerIdx]
 	if err := validateIndexList(cardIndices, player.GetCardsSize()); err != nil {
@@ -381,7 +382,7 @@ func (g *SevenBridge) applyMeld(cardIndices []int) error {
 		cards = append(cards, player.GetCard(idx))
 	}
 	if !IsSevenBridgeMeld(cards) {
-		return NewDomainError(ErrInvalidPlay, "有効なメルド（セットまたはラン）ではありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errInvalidMeld", nil)
 	}
 
 	// 既存のメルドに影響を与えないよう昇順ソートして保存
@@ -428,21 +429,21 @@ func (g *SevenBridge) PlayerLayoff(targetPlayerIdx, meldIdx, cardIndex int) erro
 
 func (g *SevenBridge) applyLayoff(targetPlayerIdx, meldIdx, cardIndex int) error {
 	if targetPlayerIdx < 0 || targetPlayerIdx >= len(g.players) {
-		return NewDomainError(ErrInvalidPlay, "対象プレイヤーが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errTargetPlayerInvalid", nil)
 	}
 	target := g.players[targetPlayerIdx]
 	if meldIdx < 0 || meldIdx >= target.GetMeldCount() {
-		return NewDomainError(ErrInvalidPlay, "対象メルドが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errTargetMeldInvalid", nil)
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "sevenbridge.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 	meld := target.GetMeld(meldIdx)
 	if !canAddToMeld(meld, card) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("%s はそのメルドに追加できません", cardStr(card)))
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errLayoffCardCannotAdd", map[string]string{"card": cardStr(card)})
 	}
 	target.AddCardToMeld(meldIdx, card)
 	player.RemoveCard(cardIndex)
@@ -471,13 +472,13 @@ func (g *SevenBridge) PlayerDiscard(cardIndex int) error {
 func (g *SevenBridge) applyDiscard(cardIndex int) error {
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "sevenbridge.errCardIndexOutOfRange", nil)
 	}
 	// メルド無しで最後の 1 枚を捨てて上がる不正ルートを人間プレイヤー側で禁止する。
 	// CPU は chooseCpuDiscard の合法手優先と applyLayoff/applyMeld の上がり判定で
 	// このゾンビ状態に入る前にターンを抜けるため対象外。
 	if player.GetIsHuman() && player.GetCardsSize() == 1 && player.GetMeldCount() == 0 {
-		return NewDomainError(ErrInvalidPlay, "上がりには最低 1 つのメルドが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errMeldRequiredToGoOut", nil)
 	}
 	card := player.GetCard(cardIndex)
 
@@ -485,7 +486,7 @@ func (g *SevenBridge) applyDiscard(cardIndex int) error {
 	if top != nil && !IsDiscardLegal(card, top) {
 		// 合法的な捨て札が存在する場合のみ制限する（詰み回避）
 		if g.hasAnyLegalDiscard(player, top) {
-			return NewDomainError(ErrInvalidPlay, "7 と同じランク／±1 のランク、または 7 のみ捨てられます")
+			return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errDiscardRestriction", nil)
 		}
 	}
 

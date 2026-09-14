@@ -30,6 +30,75 @@ const canastaErrorCodes = [
   'canasta.errWildCardsExceedSequenceRange',
 ] as const;
 
+const domainErrorCodes = {
+  contractrummy: [
+    'contractrummy.errDiscardPileEmpty',
+    'contractrummy.errContractAlreadyMet',
+    'contractrummy.errContractMeldCount',
+    'contractrummy.errContractSlotCardCount',
+    'contractrummy.errCardIndexOutOfRange',
+    'contractrummy.errDuplicateCardIndex',
+    'contractrummy.errContractSlotInvalid',
+    'contractrummy.errExtraMeldContractRequired',
+    'contractrummy.errMeldMinimumCards',
+    'contractrummy.errInvalidMeld',
+    'contractrummy.errLayoffContractRequired',
+    'contractrummy.errTargetPlayerInvalid',
+    'contractrummy.errTargetContractNotMet',
+    'contractrummy.errTargetMeldInvalid',
+    'contractrummy.errLayoffCardCannotAdd',
+    'contractrummy.errContractRequiredToGoOut',
+  ],
+  carioca: [
+    'carioca.errDiscardPileEmpty',
+    'carioca.errContractAlreadyMet',
+    'carioca.errContractMeldCount',
+    'carioca.errContractSlotCardCount',
+    'carioca.errCardIndexOutOfRange',
+    'carioca.errDuplicateCardIndex',
+    'carioca.errContractSlotInvalid',
+    'carioca.errExtraMeldContractRequired',
+    'carioca.errMeldMinimumCards',
+    'carioca.errInvalidMeld',
+    'carioca.errLayoffContractRequired',
+    'carioca.errTargetPlayerInvalid',
+    'carioca.errTargetContractNotMet',
+    'carioca.errTargetMeldInvalid',
+    'carioca.errLayoffCardCannotAdd',
+    'carioca.errContractRequiredToGoOut',
+  ],
+  kalooki: [
+    'kalooki.errDiscardPileEmpty',
+    'kalooki.errMeldRequired',
+    'kalooki.errMeldMinimumCards',
+    'kalooki.errCardIndexOutOfRange',
+    'kalooki.errDuplicateCardIndex',
+    'kalooki.errInvalidMeld',
+    'kalooki.errOpeningMinimumNotMet',
+    'kalooki.errLayoffOpenRequired',
+    'kalooki.errTargetPlayerInvalid',
+    'kalooki.errTargetNotOpen',
+    'kalooki.errTargetMeldInvalid',
+    'kalooki.errLayoffCardCannotAdd',
+  ],
+  sevenbridge: [
+    'sevenbridge.errPonCardIndicesRequired',
+    'sevenbridge.errDiscardPileEmpty',
+    'sevenbridge.errPonRankMismatch',
+    'sevenbridge.errChiCardIndicesRequired',
+    'sevenbridge.errChiSuitMismatch',
+    'sevenbridge.errChiNotConsecutive',
+    'sevenbridge.errMeldMinimumCards',
+    'sevenbridge.errInvalidMeld',
+    'sevenbridge.errTargetPlayerInvalid',
+    'sevenbridge.errTargetMeldInvalid',
+    'sevenbridge.errCardIndexOutOfRange',
+    'sevenbridge.errLayoffCardCannotAdd',
+    'sevenbridge.errMeldRequiredToGoOut',
+    'sevenbridge.errDiscardRestriction',
+  ],
+} as const;
+
 describe('i18n lang sync', () => {
   const originalLang = document.documentElement.lang;
 
@@ -67,6 +136,32 @@ describe('i18n lang sync', () => {
     expect(enDiscardPileEmpty).not.toBe(jaDiscardPileEmpty);
 
     for (const code of canastaErrorCodes) {
+      const translation = i18n.t(`messageCode.${code}`);
+      expect(translation).not.toBe('');
+      expect(translation).not.toMatch(/^messageCode\./);
+    }
+  });
+
+  it.each([
+    ['contractrummy', '捨て札が空です', 'The discard pile is empty.'],
+    ['carioca', '捨て札が空です', 'The discard pile is empty.'],
+    ['kalooki', '捨て札が空です', 'The discard pile is empty.'],
+    ['sevenbridge', 'ポンには手札2枚のインデックスが必要です', 'Pon requires two hand card indices.'],
+  ] as const)('resolves %s error message codes through the common namespace', async (game, jaExpected, enExpected) => {
+    await i18n.changeLanguage('ja');
+    const ja = i18n.t(`messageCode.${domainErrorCodes[game][0]}`);
+    expect(ja).toBe(jaExpected);
+    for (const code of domainErrorCodes[game]) {
+      const translation = i18n.t(`messageCode.${code}`);
+      expect(translation).not.toBe('');
+      expect(translation).not.toMatch(/^messageCode\./);
+    }
+
+    await i18n.changeLanguage('en');
+    const en = i18n.t(`messageCode.${domainErrorCodes[game][0]}`);
+    expect(en).toBe(enExpected);
+    expect(en).not.toBe(ja);
+    for (const code of domainErrorCodes[game]) {
       const translation = i18n.t(`messageCode.${code}`);
       expect(translation).not.toBe('');
       expect(translation).not.toMatch(/^messageCode\./);

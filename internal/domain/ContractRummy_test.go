@@ -158,6 +158,30 @@ func TestContractRummy_PlayerDrawFromDiscard_EmptyError(t *testing.T) {
 	g.SetDiscardPile(nil)
 	if err := g.PlayerDrawFromDiscard(); err == nil {
 		t.Error("expected error for empty discard")
+	} else if code, _ := ErrorMessageCode(err); code != "contractrummy.errDiscardPileEmpty" {
+		t.Fatalf("code = %q", code)
+	}
+}
+
+func TestContractRummy_DomainErrorsHaveMessageCodes(t *testing.T) {
+	g := helperContractRummyHand(t)
+	g.SetPhase(ContractRummyPhasePlay)
+	if err := g.PlayerMeldContract(nil); err == nil {
+		t.Fatal("expected contract error")
+	} else if code, _ := ErrorMessageCode(err); code != "contractrummy.errContractMeldCount" {
+		t.Fatalf("code = %q", code)
+	}
+
+	if err := g.PlayerMeldExtra([]int{0}); err == nil {
+		t.Fatal("expected extra meld error")
+	} else if code, _ := ErrorMessageCode(err); code != "contractrummy.errExtraMeldContractRequired" {
+		t.Fatalf("code = %q", code)
+	}
+
+	if err := g.PlayerDiscard(-1); err == nil {
+		t.Fatal("expected index error")
+	} else if code, _ := ErrorMessageCode(err); code != "contractrummy.errCardIndexOutOfRange" {
+		t.Fatalf("code = %q", code)
 	}
 }
 

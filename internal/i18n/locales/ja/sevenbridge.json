@@ -34,5 +34,19 @@
   "hintDraw": "捨て札は使えません。山札から引きましょう。",
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpLog": "  l                    行動ログを表示",
-  "claimedThisTurn": "※このターンは捨て札をポン/チーで取得済みです"
+  "claimedThisTurn": "※このターンは捨て札をポン/チーで取得済みです",
+  "errPonCardIndicesRequired": "ポンには手札2枚のインデックスが必要です",
+  "errDiscardPileEmpty": "捨て札が空です",
+  "errPonRankMismatch": "ポンの2枚は捨て札と同じランクでなければなりません",
+  "errChiCardIndicesRequired": "チーには手札2枚のインデックスが必要です",
+  "errChiSuitMismatch": "チーの2枚は捨て札と同じスートでなければなりません",
+  "errChiNotConsecutive": "チーは捨て札と連続する3枚のランでなければなりません",
+  "errMeldMinimumCards": "メルドには最低{{min}}枚必要です",
+  "errInvalidMeld": "有効なメルドではありません",
+  "errTargetPlayerInvalid": "対象プレイヤーが不正です",
+  "errTargetMeldInvalid": "対象メルドが不正です",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errLayoffCardCannotAdd": "{{card}}はそのメルドに追加できません",
+  "errMeldRequiredToGoOut": "上がるには最低1つのメルドが必要です",
+  "errDiscardRestriction": "7、同じランク、または7の前後1ランクのカードのみ捨てられます"
 }

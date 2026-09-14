@@ -90,6 +90,9 @@ func (p *CariocaWebPresenter) buildPlayersOutput(g interfaces.CariocaGame) []*co
 // buildMessage ゲーム結果メッセージを構築
 func (p *CariocaWebPresenter) buildMessage(g interfaces.CariocaGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

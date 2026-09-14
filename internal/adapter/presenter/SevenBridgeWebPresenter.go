@@ -78,6 +78,9 @@ func (p *SevenBridgeWebPresenter) buildPlayersOutput(g interfaces.SevenBridgeGam
 // buildMessage ゲーム結果メッセージを構築
 func (p *SevenBridgeWebPresenter) buildMessage(g interfaces.SevenBridgeGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

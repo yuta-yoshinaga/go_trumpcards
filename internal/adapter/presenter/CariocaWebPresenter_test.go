@@ -70,6 +70,12 @@ func TestCariocaWebPresenter_Output(t *testing.T) {
 		out := unmarshalCarioca(t, p.Output(m, errors.New("boom")))
 		assert.Equal(t, "boom", out.Message)
 	})
+	t.Run("with coded error", func(t *testing.T) {
+		m, _ := setupCariocaWebMock()
+		out := unmarshalCarioca(t, p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "carioca.errInvalidMeld", nil)))
+		assert.Empty(t, out.Message)
+		assert.Equal(t, "carioca.errInvalidMeld", out.MessageCode)
+	})
 
 	t.Run("game ended", func(t *testing.T) {
 		m := new(interfaces.MockCariocaGame)

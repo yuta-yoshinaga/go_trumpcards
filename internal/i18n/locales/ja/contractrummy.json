@@ -34,5 +34,21 @@
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "helpExampleDraw": "  ds                   手番の最初に山札から 1 枚引く",
   "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "errDiscardPileEmpty": "捨て札が空です",
+  "errContractAlreadyMet": "コントラクトはすでに達成しています",
+  "errContractMeldCount": "コントラクトには{{count}}個のメルドが必要です",
+  "errContractSlotCardCount": "スロット{{slot}}には{{count}}枚必要です",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errDuplicateCardIndex": "カードインデックスが重複しています",
+  "errContractSlotInvalid": "スロット{{slot}}が{{kind}}の条件を満たしていません",
+  "errExtraMeldContractRequired": "追加メルドの前にコントラクトを達成する必要があります",
+  "errMeldMinimumCards": "メルドには最低{{min}}枚必要です",
+  "errInvalidMeld": "有効なメルドではありません",
+  "errLayoffContractRequired": "レイオフはコントラクト達成後にのみ可能です",
+  "errTargetPlayerInvalid": "対象プレイヤーが不正です",
+  "errTargetContractNotMet": "対象プレイヤーはまだコントラクトを達成していません",
+  "errTargetMeldInvalid": "対象メルドが不正です",
+  "errLayoffCardCannotAdd": "{{card}}はそのメルドに追加できません",
+  "errContractRequiredToGoOut": "上がるにはコントラクト達成が必要です"
 }

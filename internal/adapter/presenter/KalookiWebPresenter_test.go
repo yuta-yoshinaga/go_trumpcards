@@ -74,6 +74,12 @@ func TestKalookiWebPresenter_Output(t *testing.T) {
 		out := unmarshalKalooki(t, p.Output(m, errors.New("boom")))
 		assert.Equal(t, "boom", out.Message)
 	})
+	t.Run("with coded error", func(t *testing.T) {
+		m, _ := setupKalookiWebMock()
+		out := unmarshalKalooki(t, p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "kalooki.errInvalidMeld", nil)))
+		assert.Empty(t, out.Message)
+		assert.Equal(t, "kalooki.errInvalidMeld", out.MessageCode)
+	})
 
 	t.Run("meld phase", func(t *testing.T) {
 		m := new(interfaces.MockKalookiGame)

@@ -34,5 +34,19 @@
   "hintDraw": "The discard is no use here; draw from the stock.",
   "helpExampleHint": "  h                    ask for a move",
   "helpLog": "  l                    show the action log",
-  "claimedThisTurn": "Note: this turn took the discard with a pon/chi claim"
+  "claimedThisTurn": "Note: this turn took the discard with a pon/chi claim",
+  "errPonCardIndicesRequired": "Pon requires two hand card indices.",
+  "errDiscardPileEmpty": "The discard pile is empty.",
+  "errPonRankMismatch": "The pon cards must have the same rank as the discard.",
+  "errChiCardIndicesRequired": "Chi requires two hand card indices.",
+  "errChiSuitMismatch": "The chi cards must have the same suit as the discard.",
+  "errChiNotConsecutive": "Chi must form three consecutive cards with the discard.",
+  "errMeldMinimumCards": "A meld needs at least {{min}} cards.",
+  "errInvalidMeld": "This is not a valid meld.",
+  "errTargetPlayerInvalid": "The target player is invalid.",
+  "errTargetMeldInvalid": "The target meld is invalid.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errLayoffCardCannotAdd": "{{card}} cannot be added to that meld.",
+  "errMeldRequiredToGoOut": "At least one meld is required to go out.",
+  "errDiscardRestriction": "You may discard only a 7, a card of the same rank, or an adjacent rank."
 }
