@@ -83,6 +83,30 @@ func TestNewHandAndFoot(t *testing.T) {
 	assert.Equal(t, 4, g.GetPlayerCnt())
 }
 
+func TestHandAndFoot_DomainErrorsExposeMessageCodes(t *testing.T) {
+	g := newTestHandAndFoot()
+	g.SetPhase(domain.HandAndFootPhaseDraw)
+	cases := []struct {
+		name  string
+		setup func()
+		code  string
+	}{
+		{"empty discard", func() { g.SetDiscardPile(nil) }, "handandfoot.errDiscardPileEmpty"},
+		{"black three", func() { g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)}) }, "handandfoot.errBlackThreeCannotTakeDiscardPile"},
+		{"wild card", func() {
+			g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false)})
+		}, "handandfoot.errWildCardCannotTakeDiscardPile"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.setup()
+			code, params := domain.ErrorMessageCode(g.PlayerDrawFromDiscard([]int{0, 1}))
+			assert.Equal(t, tc.code, code)
+			assert.Nil(t, params)
+		})
+	}
+}
+
 func TestHandAndFoot_TeamOf(t *testing.T) {
 	assert.Equal(t, 0, domain.HandAndFootTeamOf(0))
 	assert.Equal(t, 1, domain.HandAndFootTeamOf(1))

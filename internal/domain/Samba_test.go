@@ -85,6 +85,28 @@ func TestNewSamba(t *testing.T) {
 	assert.Equal(t, 2, g.GetTeamCount())
 }
 
+func TestSamba_DomainErrorsExposeMessageCodes(t *testing.T) {
+	g := newTestSamba()
+	g.SetPhase(domain.SambaPhaseDraw)
+	cases := []struct {
+		name  string
+		setup func()
+		code  string
+	}{
+		{"empty discard", func() { g.SetDiscardPile(nil) }, "samba.errDiscardPileEmpty"},
+		{"black three", func() { g.SetDiscardPile([]*domain.Card{sambaCard(domain.CardDesignSpade, 3)}) }, "samba.errBlackThreeCannotTakeDiscardPile"},
+		{"wild card", func() { g.SetDiscardPile([]*domain.Card{sambaCard(domain.CardDesignJoker, domain.CardValueJoker)}) }, "samba.errWildCardCannotTakeDiscardPile"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.setup()
+			code, params := domain.ErrorMessageCode(g.PlayerDrawFromDiscard([]int{0, 1}))
+			assert.Equal(t, tc.code, code)
+			assert.Nil(t, params)
+		})
+	}
+}
+
 func TestSamba_Reset(t *testing.T) {
 	g := newTestSamba()
 	g.Reset()

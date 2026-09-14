@@ -103,6 +103,9 @@ func (p *BoliviaWebPresenter) buildPlayersOutput(g interfaces.BoliviaGame) []*co
 // buildMessage ゲーム結果メッセージを構築
 func (p *BoliviaWebPresenter) buildMessage(g interfaces.BoliviaGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {
