@@ -734,6 +734,20 @@ describe('KlondikePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
+  it('pressing d repeatedly while loading dispatches draw only once', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockReturnValue(new Promise(() => undefined));
+
+    fireEvent.keyDown(document, { key: 'd' });
+    fireEvent.keyDown(document, { key: 'd' });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+    expect(mockExec).toHaveBeenCalledTimes(1);
+  });
+
   it('pressing h triggers hint in PLAYING phase', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<KlondikePage />);

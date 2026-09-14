@@ -33,7 +33,7 @@ export interface SolitaireGameBase<TState, TArgs extends unknown[], THint> {
   hintError: string | null;
   isAutoCompleting: boolean;
   startAutoComplete: () => void;
-  /** Calls `onClearSelection`, clears hint, then forwards args to `apiCall`. */
+  /** Calls `onClearSelection`, clears hint, and forwards one in-flight action to `apiCall`. */
   runAction: (...args: TArgs) => void;
   /** Convenience: `runAction('reset' as TArgs[0])`. */
   handleReset: () => void;
@@ -78,6 +78,8 @@ export function useSolitaireGameBase<TState, TArgs extends unknown[], THint, THi
   // literal (a fresh reference every render). PR #1573 review.
   const optionsRef = useRef(options);
   optionsRef.current = options;
+  const actionInFlightRef = useRef(false);
+  const isMounted = useIsMounted();
 
   useEffect(() => {
     void apiCall(...(['reset'] as unknown as TArgs));
@@ -85,14 +87,20 @@ export function useSolitaireGameBase<TState, TArgs extends unknown[], THint, THi
 
   const runAction = useCallback(
     (...args: TArgs) => {
+      if (actionInFlightRef.current) return;
+      actionInFlightRef.current = true;
       optionsRef.current.onClearSelection?.();
       setHint(null);
-      void apiCall(...args);
+      void (async () => {
+        try {
+          await apiCall(...args);
+        } finally {
+          if (isMounted()) actionInFlightRef.current = false;
+        }
+      })();
     },
-    [apiCall],
+    [apiCall, isMounted],
   );
-
-  const isMounted = useIsMounted();
 
   const handleReset = useCallback(() => runAction(...(['reset'] as unknown as TArgs)), [runAction]);
   const handleGiveUp = useCallback(() => runAction(...(['giveup'] as unknown as TArgs)), [runAction]);

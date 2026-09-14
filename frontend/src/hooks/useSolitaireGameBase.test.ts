@@ -94,6 +94,51 @@ describe('useSolitaireGameBase', () => {
     expect(result.current).toBe(before);
   });
 
+  it('ignores repeated actions while the first action is in flight', async () => {
+    let resolveAction: ((value: FakeState) => void) | undefined;
+    mockExec = vi.fn(async (...args: unknown[]) => {
+      if (args[0] === 'reset') return okState;
+      return new Promise<FakeState>((resolve) => {
+        resolveAction = resolve;
+      });
+    });
+    const { result } = renderHook(
+      () => useSolitaireGameBase<FakeState, ['reset' | 'deal'], { kind: string }>(mockExec),
+      { wrapper: createWrapper() },
+    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    act(() => {
+      result.current.runAction('deal');
+      result.current.runAction('deal');
+    });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
+    expect(mockExec).toHaveBeenCalledTimes(2);
+
+    resolveAction?.(okState);
+  });
+
+  it('allows the next action after the API call fails', async () => {
+    mockExec = vi
+      .fn<(...args: unknown[]) => Promise<FakeState>>()
+      .mockResolvedValueOnce(okState)
+      .mockRejectedValueOnce(new Error('network failure'))
+      .mockResolvedValueOnce(okState);
+    const { result } = renderHook(
+      () => useSolitaireGameBase<FakeState, ['reset' | 'deal'], { kind: string }>(mockExec),
+      { wrapper: createWrapper() },
+    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    act(() => result.current.runAction('deal'));
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+
+    act(() => result.current.runAction('deal'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(3));
+    expect(mockExec).toHaveBeenNthCalledWith(2, 'deal');
+    expect(mockExec).toHaveBeenNthCalledWith(3, 'deal');
+  });
+
   // `selectHint` runs AFTER the mounted check, so it is the observable that
   // distinguishes a guarded hook from an unguarded one: asserting on the returned
   // hint cannot, because React no-ops a post-unmount setState either way. #4447

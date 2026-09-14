@@ -277,7 +277,7 @@ describe('WillOTheWispPage keyboard shortcuts', () => {
     fireEvent.keyDown(document, { key: 'd' });
     fireEvent.keyDown(document, { key: 'd' });
 
-    await flushPendingDispatch();
+    await waitFor(() => expect(mockSend).toHaveBeenCalledTimes(1));
     expect(mockSend).toHaveBeenCalledTimes(1);
     expect(mockSend).toHaveBeenCalledWith('deal');
   });
