@@ -281,7 +281,7 @@ function DoudizhuPageContent() {
                 <span className="text-ds-text-primary text-xs ml-2">{state.tableCombo}</span>
               </>
             ) : (
-              <span className="text-ds-text-secondary text-sm">{t('label.table')}: ---</span>
+              <span className="text-ds-text-muted text-sm">{t('label.table')}: ---</span>
             )}
           </div>
 

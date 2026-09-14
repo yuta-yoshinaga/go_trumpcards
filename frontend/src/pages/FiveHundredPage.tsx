@@ -439,7 +439,7 @@ function FiveHundredPageContent() {
                     id="fh-bid-tricks"
                     value={bidTricks}
                     onChange={(e) => setBidTricks(Number.parseInt(e.target.value, 10))}
-                    className="rounded px-2 py-2 text-sm text-ds-text bg-ds-surface"
+                    className="rounded px-2 py-2 text-sm text-ds-text-primary bg-ds-surface"
                   >
                     {[6, 7, 8, 9, 10].map((n) => (
                       <option key={n} value={n}>
@@ -484,7 +484,7 @@ function FiveHundredPageContent() {
                     onClick={bidMisere}
                     disabled={loading}
                     data-testid="fh-bid-misere"
-                    className="flex flex-col items-center rounded-lg bg-ds-surface px-3 py-1.5 text-sm text-ds-text disabled:opacity-40"
+                    className="flex flex-col items-center rounded-lg bg-ds-surface px-3 py-1.5 text-sm text-ds-text-primary disabled:opacity-40"
                   >
                     <span>{t('misereButton')}</span>
                     <span className="text-[10px] text-ds-text-muted">
@@ -496,7 +496,7 @@ function FiveHundredPageContent() {
                     onClick={bidOpenMisere}
                     disabled={loading}
                     data-testid="fh-bid-open-misere"
-                    className="flex flex-col items-center rounded-lg bg-ds-surface px-3 py-1.5 text-sm text-ds-text disabled:opacity-40"
+                    className="flex flex-col items-center rounded-lg bg-ds-surface px-3 py-1.5 text-sm text-ds-text-primary disabled:opacity-40"
                   >
                     <span>{t('openMisereButton')}</span>
                     <span className="text-[10px] text-ds-text-muted">

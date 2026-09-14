@@ -6,6 +6,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { collectDesignTokens, findUndefinedDesignUtilities } from './lib/design-token-utilities.mjs';
 import { assertFloor } from './lib/floor.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -74,6 +75,40 @@ if (violations.length > 0) {
 // enforced by a single universal block, not a class-name allowlist that
 // silently misses arbitrary animate-[…] utilities and future animations.
 const indexCss = await readFile(join(SRC_DIR, 'index.css'), 'utf8');
+
+// Tailwind v4 silently omits utilities whose design-system token is absent from @theme.
+// Keep color-backed shadow utilities valid too: shadow-ds-error/50 and shadow-ds-warning/50
+// resolve their color through --color-ds-*, while named shadows resolve through --shadow-ds-*.
+const designTokens = collectDesignTokens(indexCss);
+const designUtilityViolations = [];
+for (const file of files) {
+  const text = await readFile(file, 'utf8');
+  const lineOf = (index) => text.slice(0, index).split('\n').length;
+  for (const violation of findUndefinedDesignUtilities(text, designTokens)) {
+    designUtilityViolations.push({
+      file: relative(ROOT, file),
+      line: lineOf(violation.index),
+      utility: violation.utility,
+    });
+  }
+}
+
+if (designUtilityViolations.length > 0) {
+  const byUtility = new Map();
+  for (const violation of designUtilityViolations) {
+    const entries = byUtility.get(violation.utility) ?? [];
+    entries.push(violation);
+    byUtility.set(violation.utility, entries);
+  }
+  console.error('\nDesign-token utility references without an @theme definition:\n');
+  for (const [utility, entries] of byUtility) {
+    console.error(`  ${utility} (${entries.length} occurrence(s))`);
+    for (const entry of entries) console.error(`    ${entry.file}:${entry.line}`);
+  }
+  console.error(`\n${byUtility.size} undefined design-token utility(ies).`);
+  process.exit(1);
+}
+
 const rmIdx = indexCss.indexOf('@media (prefers-reduced-motion: reduce)');
 // Read to the at-rule's own closing brace — the only `}` in column 0 after it,
 // since the nested `*` rule closes indented. This used to slice a fixed 400

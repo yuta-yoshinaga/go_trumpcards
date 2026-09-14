@@ -615,7 +615,7 @@ function HoldemPageContent() {
                       </label>
                     </div>
                   )}
-                  <p className="text-ds-text-secondary text-xs">{t('settings.tournamentNote')}</p>
+                  <p className="text-ds-text-muted text-xs">{t('settings.tournamentNote')}</p>
                 </div>
               </div>
             </details>

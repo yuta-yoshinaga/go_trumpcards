@@ -194,7 +194,7 @@ function BarbuPageContent() {
                 name: state.dealerIdx === 0 ? tc('player.you') : tc('player.cpu', { id: state.dealerIdx }),
               })}
               {state.currentContract >= 0 && (
-                <span className="ml-2 text-ds-text">
+                <span className="ml-2 text-ds-text-primary">
                   · {t('label.contract')}: {t(`contract.${state.currentContract}`)}
                   {state.trumpSuit >= 1 && ` (${SUIT_SYMBOLS[state.trumpSuit]})`}
                 </span>
@@ -281,7 +281,7 @@ function BarbuPageContent() {
                     {[1, 2, 3, 4].map((suit) => {
                       const vals = expandPlaced(state.tablePlaced[suit] ?? 0);
                       return (
-                        <div key={suit} className="text-sm text-ds-text text-center">
+                        <div key={suit} className="text-sm text-ds-text-primary text-center">
                           <span className="mr-2">{SUIT_SYMBOLS[suit]}</span>
                           {vals.length === 0 ? <span className="text-ds-text-muted">—</span> : vals.join(' · ')}
                         </div>
@@ -396,7 +396,7 @@ function BarbuPageContent() {
                     {state.dealHistory.map((d, i) => (
                       <tr key={i} className="border-t border-white/10">
                         <td className="px-2 py-1 text-center">{i + 1}</td>
-                        <td className="px-2 py-1 whitespace-nowrap text-ds-text">
+                        <td className="px-2 py-1 whitespace-nowrap text-ds-text-primary">
                           {t(`contract.${d.contract}`)}
                           {d.contract === CONTRACT_TRUMPS && d.trumpSuit >= 1 && ` (${SUIT_SYMBOLS[d.trumpSuit]})`}
                         </td>

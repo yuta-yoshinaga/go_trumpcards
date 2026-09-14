@@ -310,7 +310,7 @@ function LaBelleLuciePageContent() {
         )}
         {deadlocked && (
           <div
-            className="mt-1 flex items-center gap-2 text-ds-danger text-sm font-medium"
+            className="mt-1 flex items-center gap-2 text-ds-error text-sm font-medium"
             role="status"
             data-testid="ll-deadlock-banner"
           >

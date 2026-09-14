@@ -314,7 +314,11 @@ function GolfPageContent() {
                               key={`s-${(i + 1).toString()}`}
                               data-testid={`golf-hole-${(i + 1).toString()}`}
                               className={`px-1 py-0.5 tabular-nums ${
-                                isCurrent ? 'text-ds-info font-bold' : played ? 'text-ds-text' : 'text-game-text-muted'
+                                isCurrent
+                                  ? 'text-ds-info font-bold'
+                                  : played
+                                    ? 'text-ds-text-primary'
+                                    : 'text-game-text-muted'
                               }`}
                             >
                               {played ? nineHole.scores[i] : t('nineHole.pending')}

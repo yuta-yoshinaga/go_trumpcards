@@ -64,7 +64,7 @@ type RoundResult = 'trischaken' | 'won' | 'lost';
 const ROUND_RESULT_COLORS: Record<RoundResult, string> = {
   trischaken: 'text-ds-text-muted',
   won: 'text-ds-success',
-  lost: 'text-ds-danger',
+  lost: 'text-ds-error',
 };
 
 /** CPU difficulty options. */

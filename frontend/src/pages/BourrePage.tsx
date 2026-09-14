@@ -342,14 +342,14 @@ function BourrePageContent() {
                   tcd.card ? (
                     <div key={`trick-${tcd.playerIdx}-${tcd.card.design}-${tcd.card.value}`} className="text-center">
                       <AnimatedCard card={tcd.card} width={cardWidth * 0.8} />
-                      <div className="text-xs text-ds-text-secondary">
+                      <div className="text-xs text-ds-text-muted">
                         {playerName(tcd.playerIdx, tcd.playerIdx === humanIdx)}
                       </div>
                     </div>
                   ) : null,
                 )
               ) : (
-                <span className="text-ds-text-secondary text-sm">{t('label.table')}: ---</span>
+                <span className="text-ds-text-muted text-sm">{t('label.table')}: ---</span>
               )}
             </div>
           </div>

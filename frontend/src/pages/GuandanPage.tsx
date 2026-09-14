@@ -358,7 +358,7 @@ function GuandanPageContent() {
                       {t('invalidCombo')}
                     </span>
                   ) : (
-                    <span className="text-ds-text-secondary">
+                    <span className="text-ds-text-muted">
                       {t('comboPreview')}:{' '}
                       <span className="font-medium text-ds-accent">
                         {comboLabel(selectedCombo.kind)} ({selectedCombo.size})

@@ -397,11 +397,11 @@ function ChinesePokerPageContent() {
                 </div>
                 {isFoul && (
                   <div
-                    className="mt-2 rounded border border-ds-danger/60 bg-ds-danger/10 px-2 py-1 text-ds-danger text-xs"
+                    className="mt-2 rounded border border-ds-error/60 bg-ds-error/10 px-2 py-1 text-xs"
                     role="alert"
                     data-testid="cp-foul-warning"
                   >
-                    {t('foulWarning')}
+                    <span className="text-ds-error">{t('foulWarning')}</span>
                   </div>
                 )}
               </div>
@@ -479,7 +479,7 @@ function ChinesePokerPageContent() {
                         {t('label.playerRoyalty')}: {state.playerRoyalty} | {t('label.dealerRoyalty')}:{' '}
                         {state.dealerRoyalty}
                       </div>
-                      <div className="text-xs text-ds-text-secondary" data-testid="royalty-breakdown">
+                      <div className="text-xs text-ds-text-muted" data-testid="royalty-breakdown">
                         {t('label.playerRoyaltyBreakdown', {
                           front: state.playerFrontRoyalty,
                           middle: state.playerMiddleRoyalty,

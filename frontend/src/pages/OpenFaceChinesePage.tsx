@@ -318,7 +318,7 @@ function OpenFaceChinesePageContent() {
                 <span className="text-ds-text-primary text-sm">{t('placePrompt')}</span>
                 {/* 反則になる段は色だけでなく文言でも知らせる (色は SR に届かない)。 */}
                 <span
-                  className={anyFoulRisk ? 'text-ds-danger text-xs' : 'sr-only'}
+                  className={anyFoulRisk ? 'text-ds-error text-xs' : 'sr-only'}
                   role="status"
                   aria-live="polite"
                   data-testid="ofc-foul-risk-warning"
@@ -335,7 +335,7 @@ function OpenFaceChinesePageContent() {
                 <div className="flex flex-wrap justify-center gap-2 mt-1">
                   <button
                     type="button"
-                    className={[btnSuccess, foulRisk.front ? 'ring-2 ring-ds-danger' : ''].filter(Boolean).join(' ')}
+                    className={[btnSuccess, foulRisk.front ? 'ring-2 ring-ds-error' : ''].filter(Boolean).join(' ')}
                     onClick={() => handlePlace(ROW_FRONT)}
                     disabled={loading || frontFull}
                     aria-disabled={frontFull}
@@ -346,7 +346,7 @@ function OpenFaceChinesePageContent() {
                   </button>
                   <button
                     type="button"
-                    className={[btnSuccess, foulRisk.middle ? 'ring-2 ring-ds-danger' : ''].filter(Boolean).join(' ')}
+                    className={[btnSuccess, foulRisk.middle ? 'ring-2 ring-ds-error' : ''].filter(Boolean).join(' ')}
                     onClick={() => handlePlace(ROW_MIDDLE)}
                     disabled={loading || middleFull}
                     aria-disabled={middleFull}
@@ -357,7 +357,7 @@ function OpenFaceChinesePageContent() {
                   </button>
                   <button
                     type="button"
-                    className={[btnSuccess, foulRisk.back ? 'ring-2 ring-ds-danger' : ''].filter(Boolean).join(' ')}
+                    className={[btnSuccess, foulRisk.back ? 'ring-2 ring-ds-error' : ''].filter(Boolean).join(' ')}
                     onClick={() => handlePlace(ROW_BACK)}
                     disabled={loading || backFull}
                     aria-disabled={backFull}

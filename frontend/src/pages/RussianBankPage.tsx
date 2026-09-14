@@ -288,7 +288,7 @@ function RussianBankPageContent() {
         <div className="flex flex-col items-center gap-0.5">
           <span className="text-ds-text-muted text-[11px]">{t('hand', { n: p.handCount })}</span>
           <div
-            className="rounded border border-white/15 bg-ds-primary/40"
+            className="rounded border border-white/15 bg-ds-surface/40"
             style={{ width: w, height: Math.round(w * 1.4) }}
           />
         </div>
