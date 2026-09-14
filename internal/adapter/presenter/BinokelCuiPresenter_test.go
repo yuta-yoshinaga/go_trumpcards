@@ -180,6 +180,14 @@ func TestBinokelCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "invalid bid")
 	})
 
+	t.Run("resolves coded error message", func(t *testing.T) {
+		m, _ := setupBinokelCuiMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrWrongPhase, "binokel.errWrongPhase", nil)
+		result := p.Output(m, err)
+		assert.Contains(t, result, i18n.T("binokel.errWrongPhase"))
+		assert.NotContains(t, result, "binokel.errWrongPhase")
+	})
+
 	t.Run("shows game end message", func(t *testing.T) {
 		m, _ := setupBinokelCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

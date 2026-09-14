@@ -163,6 +163,14 @@ func TestPinochleCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "invalid bid")
 	})
 
+	t.Run("resolves coded error message", func(t *testing.T) {
+		m, _ := setupPinochleCuiMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrWrongPhase, "pinochle.errWrongPhase", nil)
+		result := p.Output(m, err)
+		assert.Contains(t, result, i18n.T("pinochle.errWrongPhase"))
+		assert.NotContains(t, result, "pinochle.errWrongPhase")
+	})
+
 	t.Run("shows game end message", func(t *testing.T) {
 		m, _ := setupPinochleCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
