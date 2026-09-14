@@ -29,6 +29,7 @@ func (m *MockMarriageGame) GetPhase() domain.MarriagePhase {
 	return m.Called().Get(0).(domain.MarriagePhase)
 }
 func (m *MockMarriageGame) IsHumanTurn() bool        { return m.Called().Bool(0) }
+func (m *MockMarriageGame) CanDeclare() bool         { return m.Called().Bool(0) }
 func (m *MockMarriageGame) GetRoundNumber() int      { return m.Called().Int(0) }
 func (m *MockMarriageGame) GetTargetRounds() int     { return m.Called().Int(0) }
 func (m *MockMarriageGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }

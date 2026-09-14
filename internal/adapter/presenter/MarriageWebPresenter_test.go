@@ -39,6 +39,7 @@ func setupMarriageWebMock(phase domain.MarriagePhase, gameEnd bool) (*interfaces
 	m.On("GetWinnerIdx").Return(winner)
 	m.On("GetDeclarerIdx").Return(-1)
 	m.On("GetDeclarationValid").Return(false)
+	m.On("CanDeclare").Return(phase == domain.MarriagePhaseDiscard && !gameEnd)
 	m.On("GetConfig").Return(domain.DefaultMarriageConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetPlayerCnt").Return(2)

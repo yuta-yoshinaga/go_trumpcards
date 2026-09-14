@@ -20,6 +20,7 @@ func mustMarriageOutputJSON(msg string) string {
 		Players:       []*controller.MarriageWebOutputPlayer{},
 		WinnerIdx:     -1,
 		DeclarerIdx:   -1,
+		CanDeclare:    false,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

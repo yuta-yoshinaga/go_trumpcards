@@ -58,6 +58,7 @@ const defaultState: MarriageResponse = {
   winnerIdx: -1,
   declarerIdx: -1,
   declarationValid: false,
+  canDeclare: false,
   message: '',
   config: { playerCount: 5, cpuDifficulty: 1, targetRounds: 3 },
 };

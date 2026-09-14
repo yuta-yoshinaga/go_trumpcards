@@ -21,6 +21,7 @@ describe('marriageApi', () => {
     winnerIdx: -1,
     declarerIdx: -1,
     declarationValid: false,
+    canDeclare: false,
     config: { playerCount: 2, cpuDifficulty: 1, targetRounds: 3 },
   };
 
