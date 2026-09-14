@@ -48,5 +48,14 @@
   "hintReasonPlayExcuse": "Play the Excuse — you keep it and it cannot be captured",
   "promptBidLegend": "Contract multipliers: Petite×1 / Garde×2 / Garde-Sans×4 / Garde-Contre×6 (only a contract above the current highest bid may be bid)",
   "helpExamplePlay": "  play 0                    play hand card 0",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "errInvalidBid": "The bid is invalid (petite/garde/gardesans/gardecontre).",
+  "errBidHigherThanHighest": "The bid must be higher than the current bid of {{bid}}.",
+  "errScartoCount": "Discard exactly {{n}} card(s).",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errDuplicateCardIndex": "Card indices cannot be duplicated.",
+  "errDiscardExcuse": "The Excuse cannot be discarded.",
+  "errDiscardBout": "The Petit and 21 cannot be discarded.",
+  "errDiscardKing": "Kings cannot be discarded.",
+  "errDiscardTrump": "Trumps cannot be discarded unless you have no choice."
 }
