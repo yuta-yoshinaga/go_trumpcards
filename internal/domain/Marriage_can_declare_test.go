@@ -89,12 +89,14 @@ func TestMarriageCanDeclareRejectsUnmeldableHandWithThreePureSequences(t *testin
 func TestMarriageCanDeclareTurnGuards(t *testing.T) {
 	cards := append(marriageValidDeclarationHand(), NewCard(CardDesignClover, 7, false))
 	tests := []struct {
-		name  string
-		phase MarriagePhase
-		idx   int
+		name    string
+		phase   MarriagePhase
+		idx     int
+		gameEnd bool
 	}{
-		{name: "draw phase", phase: MarriagePhaseDraw, idx: 0},
-		{name: "cpu turn", phase: MarriagePhaseDiscard, idx: 1},
+		{name: "draw phase", phase: MarriagePhaseDraw, idx: 0, gameEnd: false},
+		{name: "cpu turn", phase: MarriagePhaseDiscard, idx: 1, gameEnd: false},
+		{name: "game ended", phase: MarriagePhaseDiscard, idx: 0, gameEnd: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -102,6 +104,7 @@ func TestMarriageCanDeclareTurnGuards(t *testing.T) {
 				players:          []*MarriagePlayer{marriageCanDeclareTestPlayer(true, cards), NewMarriagePlayer(false)},
 				currentPlayerIdx: tt.idx,
 				phase:            tt.phase,
+				gameEndFlag:      tt.gameEnd,
 			}
 			if g.CanDeclare() {
 				t.Fatal("CanDeclare() = true outside the human discard turn")
