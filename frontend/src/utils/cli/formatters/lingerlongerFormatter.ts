@@ -14,8 +14,7 @@ export function formatLingerLongerState(state: LingerLongerResponse | null): str
 
   lines.push(formatHeader('Linger Longer'));
   lines.push(`trick ${state.trickNumber + 1} | stock ${state.stockSize} | ${PHASE_NAMES[state.phase] ?? state.phase}`);
-  const eliminated = state.players.filter((p) => p.eliminatedAt > 0).length;
-  lines.push(`Eliminated ${eliminated} / ${state.players.length} players`);
+  lines.push(`Eliminated ${state.eliminatedCnt} / ${state.players.length} players`);
   // **取っても得点にならない規則を毎回書く。** 直感と逆なので。
   lines.push('winning a trick only earns you one card from the stock — the last player still holding cards wins');
 

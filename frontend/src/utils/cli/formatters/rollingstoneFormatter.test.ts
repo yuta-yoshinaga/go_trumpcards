@@ -52,7 +52,10 @@ describe('formatRollingStoneState', () => {
   it('shows the number of finishers and changes when a seat finishes', () => {
     const active = formatRollingStoneState(state());
     const oneFinished = formatRollingStoneState(
-      state({ players: [seat(0), seat(1, { finishedAt: 1, cardCount: 0 }), seat(2), seat(3)] }),
+      state({
+        players: [seat(0), seat(1, { finishedAt: 1, cardCount: 0 }), seat(2), seat(3)],
+        finishedCnt: 1,
+      }),
     );
 
     expect(active).toContain('Out 0 / 4 players');

@@ -51,7 +51,10 @@ describe('formatLingerLongerState', () => {
   it('shows the number of eliminated seats and changes when a seat is eliminated', () => {
     const active = formatLingerLongerState(state());
     const oneOut = formatLingerLongerState(
-      state({ players: [seat(0), seat(1, { eliminatedAt: 1 }), seat(2), seat(3)] }),
+      state({
+        players: [seat(0), seat(1, { eliminatedAt: 1 }), seat(2), seat(3)],
+        eliminatedCnt: 1,
+      }),
     );
 
     expect(active).toContain('Eliminated 0 / 4 players');
