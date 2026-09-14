@@ -18,8 +18,8 @@ const SCAN_ROOT = path.join(ROOT, 'internal');
 // 件数が減ったら、実測値に合わせてこの定数を下げる。
 // 内訳: 素のリテラル 490 / fmt.Sprintf 43 / 複数行 0。
 const JAPANESE_LITERAL_CEILING = 533;
-// floor.mjs の指針どおり現在値の約 2/3。走査自体が壊れて激減したら落とすためのもの。
-const JAPANESE_LITERAL_FLOOR = 528;
+// floor.mjs の指針どおり現在値の約 2/3 (533 × 2/3 ≈ 355)。天井が下がり続けるため、floor も追随して下げる。
+const JAPANESE_LITERAL_FLOOR = 355;
 
 async function goFiles(dir) {
   const files = [];
