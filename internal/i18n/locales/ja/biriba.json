@@ -7,6 +7,8 @@
   "helpDiscard": "  d <idx>              カードを捨てる",
   "helpGoOut": "  go                   上がる (ポゼット獲得＋ビリバが必要)",
   "helpNextRound": "  nr                   次のラウンドへ",
+  "helpHint": "  h                    ヒント (おすすめの行動)",
+  "helpLog": "  l                    アクションログ",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetLimit": "  sl <n>               ポイント上限",
   "header": "ラウンド: {{round}}  山札: {{stock}}枚  廃棄山: {{discard}}枚",

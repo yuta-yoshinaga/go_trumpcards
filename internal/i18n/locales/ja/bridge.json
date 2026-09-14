@@ -1,5 +1,12 @@
 {
   "helpTitle": "Contract Bridge (コントラクトブリッジ)",
+  "helpBid": "  b <type> <level> <suit>  ビッド (type: 0=パス,1=ビッド,2=ダブル,3=リダブル; level: 1-7; suit: 1-5)",
+  "helpPlay": "  p <index>                カードを出す",
+  "helpNext": "  n                        次のトリックへ",
+  "helpNextRound": "  nr                       次のラウンドへ (スコアを記録して進む)",
+  "helpHint": "  h                        ヒント",
+  "helpLog": "  l                        アクションログ",
+  "helpSetDifficulty": "  sd <0-2>                 CPU難易度 (0=Easy,1=Normal,2=Hard)",
   "playerLine": "{{name}}: チーム{{team}} 獲得{{tricks}}トリック {{cards}}枚",
   "round": "ラウンド: {{round}}  トリック: {{trick}}",
   "dealer": "ディーラー: {{name}}",

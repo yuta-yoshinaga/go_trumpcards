@@ -1,5 +1,12 @@
 {
   "helpTitle": "Contract Bridge",
+  "helpBid": "  b <type> <level> <suit>  bid (type: 0=pass,1=bid,2=dbl,3=rdbl; level: 1-7; suit: 1-5)",
+  "helpPlay": "  p <index>                play a card",
+  "helpNext": "  n                        next trick",
+  "helpNextRound": "  nr                       next round (score & proceed)",
+  "helpHint": "  h                        hint",
+  "helpLog": "  l                        action log",
+  "helpSetDifficulty": "  sd <0-2>                 set CPU difficulty (0=Easy,1=Normal,2=Hard)",
   "playerLine": "{{name}}: team {{team}} won {{tricks}} tricks, {{cards}} cards",
   "round": "Round: {{round}}  Trick: {{trick}}",
   "dealer": "Dealer: {{name}}",
