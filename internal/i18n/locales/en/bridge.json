@@ -48,5 +48,16 @@
   "hintReasonCompetitiveBid": "competitive bid",
   "bidHistory": "Auction: {{bids}}",
   "bidHistoryEntry": "{{name}}: {{bid}}",
-  "promptPlayDummy": "Your turn — play from the dummy's hand ({{seat}})"
+  "promptPlayDummy": "Your turn — play from the dummy's hand ({{seat}})",
+  "errInvalidBidType": "Invalid bid type.",
+  "errBidLevelRange": "Bid level must be 1-7.",
+  "errInvalidBidSuit": "Invalid bid suit.",
+  "errBidHigherThanContract": "The bid must be higher than the current contract.",
+  "errCannotDoubleWithoutBid": "You cannot double without a bid.",
+  "errAlreadyDoubled": "The contract has already been doubled or redoubled.",
+  "errCannotDoubleOwnTeam": "You cannot double your own team's bid.",
+  "errCannotRedoubleWithoutDouble": "You cannot redouble without a double.",
+  "errCannotRedoubleOwnTeam": "You can only redouble the opponents' double.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errFollowLeadSuit": "You must follow the lead suit."
 }

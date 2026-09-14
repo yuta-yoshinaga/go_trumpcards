@@ -324,6 +324,15 @@ func TestBridgeWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupBridgeWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "bridge.errInvalidBidType", nil))
+		var resObj controller.BridgeWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "bridge.errInvalidBidType", resObj.MessageCode)
+	})
+
 	t.Run("game end team 0 wins", func(t *testing.T) {
 		m, _ := setupBridgeWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

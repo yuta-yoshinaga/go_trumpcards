@@ -258,7 +258,7 @@ func (b *Bridge) executeBid(playerIdx int, bidType BridgeBidType, level int, sui
 	case BridgeBidRedouble:
 		return b.doBidRedouble(playerIdx)
 	default:
-		return NewDomainError(ErrInvalidPlay, "無効なビッド種類です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errInvalidBidType", nil)
 	}
 }
 
@@ -335,15 +335,15 @@ func (b *Bridge) BridgeCanRedouble(playerIdx int) bool {
 // doBidNormal 通常ビッドする
 func (b *Bridge) doBidNormal(playerIdx int, level int, suit int) error {
 	if level < 1 || level > 7 {
-		return NewDomainError(ErrInvalidPlay, "ビッドレベルは1-7です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errBidLevelRange", nil)
 	}
 	if suit < BridgeBidSuitClub || suit > BridgeBidSuitNT {
-		return NewDomainError(ErrInvalidPlay, "無効なビッドスートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errInvalidBidSuit", nil)
 	}
 
 	// 現在のコントラクトより高いビッドのみ有効
 	if !b.isHigherBid(level, suit) {
-		return NewDomainError(ErrInvalidPlay, "現在のコントラクトより高いビッドが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errBidHigherThanContract", nil)
 	}
 
 	b.bidHistory = append(b.bidHistory, &BridgeBidEntry{
@@ -371,14 +371,14 @@ func (b *Bridge) doBidNormal(playerIdx int, level int, suit int) error {
 // doBidDouble ダブルする
 func (b *Bridge) doBidDouble(playerIdx int) error {
 	if b.contractLevel == 0 {
-		return NewDomainError(ErrInvalidPlay, "ビッドがない状態ではダブルできません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errCannotDoubleWithoutBid", nil)
 	}
 	if b.doubled != 0 {
-		return NewDomainError(ErrInvalidPlay, "既にダブル/リダブルされています")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errAlreadyDoubled", nil)
 	}
 	// 相手チームのビッドのみダブル可能
 	if b.players[playerIdx].GetTeam() == b.lastBidTeam {
-		return NewDomainError(ErrInvalidPlay, "自分のチームのビッドはダブルできません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errCannotDoubleOwnTeam", nil)
 	}
 
 	b.bidHistory = append(b.bidHistory, &BridgeBidEntry{
@@ -398,11 +398,11 @@ func (b *Bridge) doBidDouble(playerIdx int) error {
 // doBidRedouble リダブルする
 func (b *Bridge) doBidRedouble(playerIdx int) error {
 	if b.doubled != 1 {
-		return NewDomainError(ErrInvalidPlay, "ダブルされていない状態ではリダブルできません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errCannotRedoubleWithoutDouble", nil)
 	}
 	// ダブルされた側のチームのみリダブル可能
 	if b.players[playerIdx].GetTeam() != b.lastBidTeam {
-		return NewDomainError(ErrInvalidPlay, "相手チームのダブルにのみリダブルできます")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errCannotRedoubleOwnTeam", nil)
 	}
 
 	b.bidHistory = append(b.bidHistory, &BridgeBidEntry{
@@ -504,7 +504,7 @@ func (b *Bridge) PlayerPlay(cardIndex int) error {
 
 	player := b.players[actingPlayer]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "bridge.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -912,6 +912,16 @@ func (b *Bridge) GetDoubled() int { return b.doubled }
 // SetDoubled ダブル状態設定 (テスト用)
 func (b *Bridge) SetDoubled(d int) { b.doubled = d }
 
+// GetLastBidTeam 最後にビッドしたチーム取得 (-1=なし)
+func (b *Bridge) GetLastBidTeam() int { return b.lastBidTeam }
+
+// SetLastBidTeam 最後にビッドしたチーム設定 (テスト用)
+//
+// リダブルは**ダブルされた側だけ**が行える。相手側が試みたときの分岐は、
+// 人間以外がビッドした局面でしか起きない (PlayerBid は人間の手番しか通さない)
+// ため、この setter を通さずには到達できない。
+func (b *Bridge) SetLastBidTeam(team int) { b.lastBidTeam = team }
+
 // GetDeclarerIdx デクレアラーインデックス取得
 func (b *Bridge) GetDeclarerIdx() int { return b.declarerIdx }
 
@@ -1105,7 +1115,7 @@ func (b *Bridge) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := b.currentTrick[0].Card.GetDesign()
 	if card.GetDesign() != leadSuit {
 		if b.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "bridge.errFollowLeadSuit", nil)
 		}
 	}
 

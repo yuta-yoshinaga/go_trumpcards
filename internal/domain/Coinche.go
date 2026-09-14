@@ -289,13 +289,13 @@ func (b *Coinche) PlayerBid(points, suit int) error {
 		return ErrNotHumanTurn
 	}
 	if suit < CardDesignSpade || suit > CardDesignMax {
-		return NewDomainError(ErrInvalidPlay, "切り札スートを指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "coinche.errTrumpSuitRequired", nil)
 	}
 	if !coincheIsBiddablePoints(points) {
-		return NewDomainError(ErrInvalidPlay, "その目標点は宣言できません")
+		return NewDomainErrorCode(ErrInvalidPlay, "coinche.errBidRange", nil)
 	}
 	if points <= b.contractPoints {
-		return NewDomainError(ErrInvalidPlay, "今の契約を上回る点が必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "coinche.errBidHigherThanHighest", nil)
 	}
 	b.doBid(humanIdx, points, suit)
 	return nil
@@ -509,12 +509,12 @@ func (b *Coinche) checkDoubleTurn(maker bool) error {
 	if maker {
 		// シュルコワンシュは「コワンシュされた宣言側」だけ。
 		if !onMakerTeam || b.double != CoincheDoubleCoinche {
-			return NewDomainError(ErrInvalidPlay, "再倍化はできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "coinche.errSurcoincheNotAllowed", nil)
 		}
 		return nil
 	}
 	if onMakerTeam || b.double != CoincheDoubleNone {
-		return NewDomainError(ErrInvalidPlay, "倍化はできません")
+		return NewDomainErrorCode(ErrInvalidPlay, "coinche.errCoincheNotAllowed", nil)
 	}
 	return nil
 }
@@ -557,7 +557,7 @@ func (b *Coinche) PlayerPlay(cardIndex int) error {
 
 	player := b.players[b.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "coinche.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -1037,12 +1037,12 @@ func (b *Coinche) validatePlay(playerIdx int, card *Card) error {
 		// リードがトランプ: トランプを必ず出す。出すなら可能な限りオーバートランプ。
 		if hasLead {
 			if cardSuit != b.trumpSuit {
-				return NewDomainError(ErrInvalidPlay, "リードスート (切り札) に従ってください")
+				return NewDomainErrorCode(ErrInvalidPlay, "coinche.errMustFollowTrump", nil)
 			}
 			highest := b.highestTrumpInTrick()
 			canOverTrump := b.playerCanBeatTrump(player, highest)
 			if canOverTrump && coincheTrumpRank(card.GetValue()) <= highest {
-				return NewDomainError(ErrInvalidPlay, "オーバートランプしてください (obligation à monter)")
+				return NewDomainErrorCode(ErrInvalidPlay, "coinche.errMustOvertrump", nil)
 			}
 			return nil
 		}
@@ -1053,7 +1053,7 @@ func (b *Coinche) validatePlay(playerIdx int, card *Card) error {
 	// リードが非トランプ
 	if hasLead {
 		if cardSuit != leadSuit {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "coinche.errFollowLeadSuit", nil)
 		}
 		return nil
 	}
@@ -1067,14 +1067,14 @@ func (b *Coinche) validatePlay(playerIdx int, card *Card) error {
 	if hasTrump && !partnerWinning {
 		// トランプ義務
 		if cardSuit != b.trumpSuit {
-			return NewDomainError(ErrInvalidPlay, "切り札を出してください (obligation à couper)")
+			return NewDomainErrorCode(ErrInvalidPlay, "coinche.errMustPlayTrump", nil)
 		}
 		// オーバートランプ義務 (トリックに既に切り札が出ている場合)
 		if trickHasTrump {
 			highest := b.highestTrumpInTrick()
 			canOverTrump := b.playerCanBeatTrump(player, highest)
 			if canOverTrump && coincheTrumpRank(card.GetValue()) <= highest {
-				return NewDomainError(ErrInvalidPlay, "オーバートランプしてください (obligation à monter)")
+				return NewDomainErrorCode(ErrInvalidPlay, "coinche.errMustOvertrump", nil)
 			}
 		}
 		return nil

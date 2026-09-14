@@ -48,5 +48,16 @@
   "hintReasonCompetitiveBid": "競り合い",
   "bidHistory": "オークション: {{bids}}",
   "bidHistoryEntry": "{{name}}:{{bid}}",
-  "promptPlayDummy": "あなたの手番です（ダミー {{seat}} の手札から出してください）"
+  "promptPlayDummy": "あなたの手番です（ダミー {{seat}} の手札から出してください）",
+  "errInvalidBidType": "無効なビッド種類です",
+  "errBidLevelRange": "ビッドレベルは1-7です",
+  "errInvalidBidSuit": "無効なビッドスートです",
+  "errBidHigherThanContract": "現在のコントラクトより高いビッドが必要です",
+  "errCannotDoubleWithoutBid": "ビッドがない状態ではダブルできません",
+  "errAlreadyDoubled": "既にダブル/リダブルされています",
+  "errCannotDoubleOwnTeam": "自分のチームのビッドはダブルできません",
+  "errCannotRedoubleWithoutDouble": "ダブルされていない状態ではリダブルできません",
+  "errCannotRedoubleOwnTeam": "相手チームのダブルにのみリダブルできます",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }
