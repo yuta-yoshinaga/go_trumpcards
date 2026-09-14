@@ -131,6 +131,11 @@ describe('BhabhiPage', () => {
     mockExec.mockResolvedValue(makeState({ lastPickupIdx: 2, lastPickupSize: 5 }));
     renderWithProviders(<BhabhiPage />);
     expect(await screen.findByTestId('bh-last-pickup')).toHaveTextContent('5');
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole('status').some((node) => node.textContent === '直前に CPU2 が 5 枚引き取りました。'),
+      ).toBe(true),
+    );
   });
 
   it('announces and shows the player who just finished', async () => {

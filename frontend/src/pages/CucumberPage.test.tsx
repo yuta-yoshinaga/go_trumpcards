@@ -16,12 +16,6 @@ vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
-vi.mock('../components/LiveAnnouncement', () => ({
-  LiveAnnouncement: ({ message }: { message: string }) => (
-    <div data-testid="live-announcement" data-message={message} />
-  ),
-}));
-
 const mockExec = vi.mocked(cucumberApi.exec);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
@@ -89,10 +83,11 @@ describe('CucumberPage', () => {
       'これは最終トリックです。取った人だけが失点します。',
     );
     expect(screen.getByTestId('cu-final-trick')).not.toHaveAttribute('role', 'status');
-    expect(screen.getByTestId('live-announcement')).toHaveAttribute(
-      'data-message',
-      'これは最終トリックです。取った人だけが失点します。',
-    );
+    expect(
+      [...document.querySelectorAll('[role="status"][aria-live="polite"][aria-atomic="true"]')].some(
+        (node) => node.textContent === 'これは最終トリックです。取った人だけが失点します。',
+      ),
+    ).toBe(true);
     expect(screen.getByTestId('cu-status')).toHaveTextContent('9 より高い札を出してください。');
   });
 
@@ -102,7 +97,11 @@ describe('CucumberPage', () => {
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByTestId('cu-final-trick')).not.toBeInTheDocument();
-    expect(screen.getByTestId('live-announcement')).toHaveAttribute('data-message', '');
+    expect(
+      [...document.querySelectorAll('[role="status"][aria-live="polite"][aria-atomic="true"]')].every(
+        (node) => node.textContent === '',
+      ),
+    ).toBe(true);
   });
 
   it('states the comparison rule and that only the last trick scores', async () => {
@@ -218,6 +217,13 @@ describe('CucumberPage', () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, lastTrickWinnerIdx: 1, lastPenalty: 13 }));
     renderWithProviders(<CucumberPage />);
     expect(await screen.findByTestId('cu-round-end')).toHaveTextContent(/CPU1 が最終トリックを取り/);
+    await waitFor(() =>
+      expect(
+        [...document.querySelectorAll('[role="status"][aria-live="polite"][aria-atomic="true"]')].some(
+          (node) => node.textContent === 'CPU1 が最終トリックを取り、13 点の失点を負いました。',
+        ),
+      ).toBe(true),
+    );
 
     mockExec.mockClear();
     fireEvent.click(screen.getByTestId('cu-next-btn'));
