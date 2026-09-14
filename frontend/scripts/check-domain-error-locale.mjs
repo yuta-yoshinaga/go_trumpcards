@@ -8,13 +8,18 @@ import { assertFloor } from './lib/floor.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = process.argv[2] ? path.resolve(process.argv[2]) : path.resolve(HERE, '..', '..');
-const DOMAIN = path.join(ROOT, 'internal', 'domain');
+// **internal/ 全体を歩く。** NewDomainError の呼び出しはドメインだけではなく、
+// internal/usecase/BouillotteInteractor.go や PrimeroInteractor.go からも呼ばれている。
+// いまはどれも英語なので件数は変わらないが、domain だけを見ていると
+// そこに日本語を足したときに天井をすり抜ける (PR #7810 のレビュー指摘)。
+const SCAN_ROOT = path.join(ROOT, 'internal');
 
 // この天井は、既存のドメイン日本語文言を別 PR で翻訳するまで増加を防ぐためのもの。
 // 件数が減ったら、実測値に合わせてこの定数を下げる。
 // 内訳: 素のリテラル 716 / fmt.Sprintf 73 / 複数行 3。
 const JAPANESE_LITERAL_CEILING = 792;
-const JAPANESE_LITERAL_FLOOR = 470;
+// floor.mjs の指針どおり現在値の約 2/3。走査自体が壊れて激減したら落とすためのもの。
+const JAPANESE_LITERAL_FLOOR = 528;
 
 async function goFiles(dir) {
   const files = [];
@@ -102,7 +107,7 @@ function japaneseNewDomainErrors(source) {
   return count;
 }
 
-const files = await goFiles(DOMAIN);
+const files = await goFiles(SCAN_ROOT);
 let count = 0;
 let matchingFiles = 0;
 for (const file of files) {
