@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -139,6 +141,18 @@ func TestFrenchTarotWebPresenter_Error(t *testing.T) {
 	out := p.Output(g, errors.New("boom"))
 	if !strings.Contains(out, "boom") {
 		t.Errorf("error message not propagated: %s", out)
+	}
+}
+
+func TestFrenchTarotWebPresenter_CodedError(t *testing.T) {
+	g := newFrenchTarotGame()
+	g.Reset()
+	p := &presenter.FrenchTarotWebPresenter{}
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "frenchtarot.errInvalidBid", nil)
+	var parsed controller.FrenchTarotWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, err)), &parsed))
+	if parsed.Message != "" || parsed.MessageCode != "frenchtarot.errInvalidBid" {
+		t.Errorf("message = %q, messageCode = %q", parsed.Message, parsed.MessageCode)
 	}
 }
 

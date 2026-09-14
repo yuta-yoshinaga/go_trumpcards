@@ -185,6 +185,9 @@ func (p *FrenchTarotWebPresenter) buildPlayersOutput(g interfaces.FrenchTarotGam
 // buildMessage ゲーム結果/フェーズメッセージを構築
 func (p *FrenchTarotWebPresenter) buildMessage(g interfaces.FrenchTarotGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

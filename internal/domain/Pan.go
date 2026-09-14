@@ -263,7 +263,7 @@ func (g *Pan) drawFromStock() error {
 
 func (g *Pan) drawFromDiscard() error {
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "pan.errDiscardPileEmpty", nil)
 	}
 	card := g.discardPile[len(g.discardPile)-1]
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
@@ -289,16 +289,16 @@ func (g *Pan) PlayerMeld(cardIndices []int) error {
 func (g *Pan) executeMeld(playerIdx int, cardIndices []int) error {
 	player := g.players[playerIdx]
 	if len(cardIndices) < PanMeldMin {
-		return NewDomainError(ErrInvalidPlay, "メルドは3枚以上のカードが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "pan.errMeldNeedsAtLeastThreeCards", map[string]string{"min": fmt.Sprintf("%d", PanMeldMin)})
 	}
 
 	seen := make(map[int]bool)
 	for _, i := range cardIndices {
 		if i < 0 || i >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "pan.errCardIndexOutOfRange", nil)
 		}
 		if seen[i] {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+			return NewDomainErrorCode(ErrInvalidCard, "pan.errDuplicateCardIndex", nil)
 		}
 		seen[i] = true
 	}
@@ -308,7 +308,7 @@ func (g *Pan) executeMeld(playerIdx int, cardIndices []int) error {
 		meld[i] = player.GetCard(idx)
 	}
 	if !PanIsValidMeld(meld) {
-		return NewDomainError(ErrInvalidPlay, "有効なメルド（同ランク3枚以上 または 同スート連続3枚以上）ではありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "pan.errInvalidMeld", nil)
 	}
 
 	sortedIdx := make([]int, len(cardIndices))
@@ -339,21 +339,21 @@ func (g *Pan) PlayerLayoff(meldOwner, meldIdx, cardIndex int) error {
 // executeLayoff レイオフを実行する（人間／CPU 共通）
 func (g *Pan) executeLayoff(playerIdx, meldOwner, meldIdx, cardIndex int) error {
 	if meldOwner < 0 || meldOwner >= len(g.players) {
-		return NewDomainError(ErrInvalidPlay, "メルド所有者が不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "pan.errTargetPlayerInvalid", nil)
 	}
 	owner := g.players[meldOwner]
 	melds := owner.GetLaidMelds()
 	if meldIdx < 0 || meldIdx >= len(melds) {
-		return NewDomainError(ErrInvalidPlay, "メルドインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "pan.errTargetMeldInvalid", nil)
 	}
 	player := g.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "pan.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 	if !PanCanLayoff(melds[meldIdx], card) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("%sはレイオフできません", cardStr(card)))
+		return NewDomainErrorCode(ErrInvalidPlay, "pan.errLayoffCardCannotAdd", map[string]string{"card": cardStr(card)})
 	}
 
 	owner.AppendToLaidMeld(meldIdx, card)
@@ -412,7 +412,7 @@ func (g *Pan) PlayerDiscard(cardIndex int) error {
 func (g *Pan) applyDiscard(cardIndex int) error {
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "pan.errCardIndexOutOfRange", nil)
 	}
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
