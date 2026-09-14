@@ -35,5 +35,13 @@
   "hintLayoffEntry": "{{card}} -> {{name}} の [{{meld}}]",
   "helpExampleDraw": "  ds                   手番の最初に山札から 1 枚引く",
   "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errDiscardPileEmpty": "捨て札が空です",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errMeldMinimumCards": "メルドには最低{{min}}枚必要です",
+  "errDuplicateCardIndex": "カードインデックスが重複しています",
+  "errInvalidMeld": "有効なメルドではありません",
+  "errTargetPlayerInvalid": "対象プレイヤーが不正です",
+  "errTargetMeldInvalid": "対象メルドが不正です",
+  "errLayoffCardCannotAdd": "{{card}}はそのメルドに追加できません"
 }

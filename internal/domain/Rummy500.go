@@ -201,10 +201,10 @@ func (g *Rummy500) PlayerDrawFromDiscard(idx int) error {
 	}
 
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札がありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "rummy500.errDiscardPileEmpty", nil)
 	}
 	if idx < 0 || idx >= len(g.discardPile) {
-		return NewDomainError(ErrInvalidCard, "捨て札インデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "rummy500.errCardIndexOutOfRange", nil)
 	}
 
 	taken := append([]*Card(nil), g.discardPile[idx:]...)
@@ -242,16 +242,16 @@ func (g *Rummy500) executeMeld(playerIdx int, cardIndices []int) error {
 	player := g.players[playerIdx]
 
 	if len(cardIndices) < 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドは3枚以上のカードが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "rummy500.errMeldMinimumCards", map[string]string{"min": "3"})
 	}
 
 	seen := make(map[int]bool)
 	for _, i := range cardIndices {
 		if i < 0 || i >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "rummy500.errCardIndexOutOfRange", nil)
 		}
 		if seen[i] {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+			return NewDomainErrorCode(ErrInvalidCard, "rummy500.errDuplicateCardIndex", nil)
 		}
 		seen[i] = true
 	}
@@ -261,7 +261,7 @@ func (g *Rummy500) executeMeld(playerIdx int, cardIndices []int) error {
 		meld[i] = player.GetCard(idx)
 	}
 	if !Rummy500IsValidMeld(meld) {
-		return NewDomainError(ErrInvalidPlay, "有効なメルド（同ランク3枚以上 または 同スート連続3枚以上）ではありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "rummy500.errInvalidMeld", nil)
 	}
 
 	// 降順にインデックスを並べてカードを取り除く
@@ -299,21 +299,21 @@ func (g *Rummy500) PlayerLayoff(meldOwner, meldIdx, cardIndex int) error {
 // executeLayoff レイオフを実行する（人間/CPU共通）
 func (g *Rummy500) executeLayoff(playerIdx, meldOwner, meldIdx, cardIndex int) error {
 	if meldOwner < 0 || meldOwner >= len(g.players) {
-		return NewDomainError(ErrInvalidPlay, "メルド所有者が不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "rummy500.errTargetPlayerInvalid", nil)
 	}
 	owner := g.players[meldOwner]
 	melds := owner.GetLaidMelds()
 	if meldIdx < 0 || meldIdx >= len(melds) {
-		return NewDomainError(ErrInvalidPlay, "メルドインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "rummy500.errTargetMeldInvalid", nil)
 	}
 	player := g.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "rummy500.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 	if !Rummy500CanLayoff(melds[meldIdx], card) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("%sはレイオフできません", cardStr(card)))
+		return NewDomainErrorCode(ErrInvalidPlay, "rummy500.errLayoffCardCannotAdd", map[string]string{"card": cardStr(card)})
 	}
 
 	owner.AppendToLaidMeld(meldIdx, card)
@@ -338,7 +338,7 @@ func (g *Rummy500) PlayerDiscard(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "rummy500.errCardIndexOutOfRange", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)

@@ -16,8 +16,8 @@ const SCAN_ROOT = path.join(ROOT, 'internal');
 
 // この天井は、既存のドメイン日本語文言を別 PR で翻訳するまで増加を防ぐためのもの。
 // 件数が減ったら、実測値に合わせてこの定数を下げる。
-// 内訳: 素のリテラル 439 / fmt.Sprintf 43 / 複数行 0。
-const JAPANESE_LITERAL_CEILING = 482;
+// 内訳: 素のリテラル 427 / fmt.Sprintf 33 / 複数行 0. (実測。従来の 439/43 は合計のみ一致し内訳が誤りだった)
+const JAPANESE_LITERAL_CEILING = 460;
 // floor.mjs の指針どおり現在値の約 2/3 (533 × 2/3 ≈ 355)。天井が下がり続けるため、floor も追随して下げる。
 const JAPANESE_LITERAL_FLOOR = 355;
 

@@ -8,6 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -41,6 +44,16 @@ func TestKoenigrufenWebPresenter_Output(t *testing.T) {
 	if parsed.TalonCount != domain.KoenigrufenTalonSize {
 		t.Errorf("talonCount = %d", parsed.TalonCount)
 	}
+}
+
+func TestKoenigrufenWebPresenter_CodedError(t *testing.T) {
+	g := newKoenigrufenGame()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "koenigrufen.errInvalidSuit", nil)
+	p := &presenter.KoenigrufenWebPresenter{}
+	var parsed controller.KoenigrufenWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, err)), &parsed))
+	assert.Empty(t, parsed.Message)
+	assert.Equal(t, "koenigrufen.errInvalidSuit", parsed.MessageCode)
 }
 
 func TestKoenigrufenWebPresenterOutputsLastTrickWinner(t *testing.T) {

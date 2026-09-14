@@ -388,10 +388,10 @@ func (g *Koenigrufen) PlayerBid(bid KoenigrufenBid) error {
 		return ErrNotHumanTurn
 	}
 	if !koenigrufenValidBid(bid) {
-		return NewDomainError(ErrInvalidPlay, "無効な入札です (rufer)")
+		return NewDomainErrorCode(ErrInvalidPlay, "koenigrufen.errInvalidBid", nil)
 	}
 	if bid <= g.highestBid {
-		return NewDomainError(ErrInvalidPlay, "現在の入札より高い入札が必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "koenigrufen.errBidHigherThanHighest", map[string]string{"bid": fmt.Sprintf("%d", g.highestBid)})
 	}
 	g.applyBid(g.bidPlayerIdx, bid)
 	return nil
@@ -501,10 +501,10 @@ func (g *Koenigrufen) PlayerCallKing(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if suit < 1 || suit > KoenigrufenSuitCnt {
-		return NewDomainError(ErrInvalidPlay, "スートは 1..4 で指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "koenigrufen.errInvalidSuit", nil)
 	}
 	if g.playerHoldsKing(g.declarerIdx, suit) {
-		return NewDomainError(ErrInvalidPlay, "自分が持つキングは呼べません")
+		return NewDomainErrorCode(ErrInvalidPlay, "koenigrufen.errKingInOwnHand", nil)
 	}
 	g.applyCallKing(suit)
 	return nil
@@ -629,15 +629,15 @@ func (g *Koenigrufen) CpuDiscard() {
 func (g *Koenigrufen) doDiscard(cardIndices []int) error {
 	player := g.players[g.declarerIdx]
 	if len(cardIndices) != KoenigrufenTalonSize {
-		return NewDomainError(ErrInvalidCard, "ちょうど 6 枚を捨ててください")
+		return NewDomainErrorCode(ErrInvalidCard, "koenigrufen.errScartoCount", map[string]string{"n": fmt.Sprintf("%d", KoenigrufenTalonSize)})
 	}
 	seen := make(map[int]bool, KoenigrufenTalonSize)
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "koenigrufen.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "同じカードを 2 回選べません")
+			return NewDomainErrorCode(ErrInvalidCard, "koenigrufen.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}
@@ -667,13 +667,13 @@ func (g *Koenigrufen) validateDiscards(player *KoenigrufenPlayer, cardIndices []
 	for _, idx := range cardIndices {
 		c := player.GetCard(idx)
 		if koenigrufenIsKing(c) {
-			return NewDomainError(ErrInvalidPlay, "キングは捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "koenigrufen.errDiscardKing", nil)
 		}
 		if koenigrufenIsTrull(c) {
-			return NewDomainError(ErrInvalidPlay, "トゥルル (Pagat/XXI/Sküs) は捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "koenigrufen.errDiscardTrull", nil)
 		}
 		if koenigrufenIsTrumpLike(c) && !allowTrump {
-			return NewDomainError(ErrInvalidPlay, "切り札は (やむを得ない場合を除き) 捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "koenigrufen.errDiscardTrump", nil)
 		}
 	}
 	return nil
@@ -712,7 +712,7 @@ func (g *Koenigrufen) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "koenigrufen.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
