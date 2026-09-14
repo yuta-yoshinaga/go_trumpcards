@@ -118,6 +118,20 @@ func TestBigBenWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "test error", result.Message)
 	})
 
+	t.Run("error message code", func(t *testing.T) {
+		g := new(interfaces.MockBigBenGame)
+		setupBigBenOutputMock(g)
+
+		result := parseBigBenOutput(t, new(BigBenWebPresenter).Output(g,
+			domain.NewDomainErrorCode(domain.ErrInvalidPlay, "bigben.errSomething", nil)))
+		assert.Equal(t, "bigben.errSomething", result.MessageCode)
+		assert.Empty(t, result.Message)
+
+		result = parseBigBenOutput(t, new(BigBenWebPresenter).Output(g, errors.New("test error")))
+		assert.Equal(t, "test error", result.Message)
+		assert.Empty(t, result.MessageCode)
+	})
+
 	for _, tc := range []struct {
 		name string
 		val  domain.BigBenPhase

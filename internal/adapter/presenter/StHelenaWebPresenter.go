@@ -59,7 +59,12 @@ func (p *StHelenaWebPresenter) Output(cr interfaces.StHelenaGame, lastErr error)
 	}
 
 	if lastErr != nil {
-		resObj.Message = lastErr.Error()
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			resObj.MessageCode = code
+			resObj.MessageParams = params
+		} else {
+			resObj.Message = lastErr.Error()
+		}
 	} else {
 		switch cr.GetPhase() {
 		case domain.StHelenaPhasePlaying:
