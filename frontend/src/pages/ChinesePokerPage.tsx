@@ -397,11 +397,11 @@ function ChinesePokerPageContent() {
                 </div>
                 {isFoul && (
                   <div
-                    className="mt-2 rounded border border-ds-error/60 bg-ds-error/10 px-2 py-1 text-xs"
+                    className="mt-2 rounded border border-ds-error bg-ds-surface px-2 py-1 text-ds-text-primary text-xs"
                     role="alert"
                     data-testid="cp-foul-warning"
                   >
-                    <span className="text-ds-error">{t('foulWarning')}</span>
+                    {t('foulWarning')}
                   </div>
                 )}
               </div>

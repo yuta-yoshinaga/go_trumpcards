@@ -303,7 +303,7 @@ function LaBelleLuciePageContent() {
             data-testid="ll-stuck-banner"
           >
             <span>{t('stuckRedeal')}</span>
-            <span className="rounded-full bg-ds-warning/20 px-2 py-0.5 text-xs font-bold tabular-nums">
+            <span className="rounded-full border border-ds-warning bg-ds-surface px-2 py-0.5 text-ds-warning text-xs font-bold tabular-nums">
               {t('redealsLeftBadge', { count: state.redealsLeft })}
             </span>
           </div>
