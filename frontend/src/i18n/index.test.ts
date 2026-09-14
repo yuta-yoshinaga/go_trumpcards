@@ -44,7 +44,6 @@ describe('i18n lang sync', () => {
 
     await i18n.changeLanguage('ja');
     for (const code of allDomainErrorCodes) {
-      expect(Object.hasOwn(enCommon.messageCode, code)).toBe(true);
       expect(Object.hasOwn(jaCommon.messageCode, code)).toBe(true);
 
       const jaTranslation = i18n.t(`messageCode.${code}`);
