@@ -71,6 +71,29 @@ func TestCarioca_Reset_DealsHand(t *testing.T) {
 	}
 }
 
+func TestCarioca_DomainErrorsHaveMessageCodes(t *testing.T) {
+	g := helperCariocaHand(t)
+	g.SetDiscardPile(nil)
+	if err := g.PlayerDrawFromDiscard(); err == nil {
+		t.Fatal("expected discard error")
+	} else if code, _ := ErrorMessageCode(err); code != "carioca.errDiscardPileEmpty" {
+		t.Fatalf("code = %q", code)
+	}
+
+	g.SetPhase(CariocaPhasePlay)
+	if err := g.PlayerMeldContract(nil); err == nil {
+		t.Fatal("expected contract error")
+	} else if code, _ := ErrorMessageCode(err); code != "carioca.errContractMeldCount" {
+		t.Fatalf("code = %q", code)
+	}
+
+	if err := g.PlayerMeldExtra([]int{0}); err == nil {
+		t.Fatal("expected extra meld error")
+	} else if code, _ := ErrorMessageCode(err); code != "carioca.errExtraMeldContractRequired" {
+		t.Fatalf("code = %q", code)
+	}
+}
+
 func TestCarioca_Reset_RebuildsPlayersFromConfig(t *testing.T) {
 	g := NewDefaultCarioca()
 	cfg := g.GetConfig()

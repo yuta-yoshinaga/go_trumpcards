@@ -67,6 +67,12 @@ func TestContractRummyWebPresenter_Output(t *testing.T) {
 		out := unmarshalContractRummy(t, p.Output(m, errors.New("boom")))
 		assert.Equal(t, "boom", out.Message)
 	})
+	t.Run("with coded error", func(t *testing.T) {
+		m, _ := setupContractRummyWebMock()
+		out := unmarshalContractRummy(t, p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "contractrummy.errInvalidMeld", nil)))
+		assert.Empty(t, out.Message)
+		assert.Equal(t, "contractrummy.errInvalidMeld", out.MessageCode)
+	})
 
 	t.Run("game ended", func(t *testing.T) {
 		m := new(interfaces.MockContractRummyGame)

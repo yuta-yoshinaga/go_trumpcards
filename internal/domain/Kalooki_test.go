@@ -82,6 +82,29 @@ func TestKalooki_Reset_DealsHand(t *testing.T) {
 	}
 }
 
+func TestKalooki_DomainErrorsHaveMessageCodes(t *testing.T) {
+	g := newTestKalooki()
+	g.SetDiscardPile(nil)
+	if err := g.PlayerDrawFromDiscard(); err == nil {
+		t.Fatal("expected discard error")
+	} else if code, _ := ErrorMessageCode(err); code != "kalooki.errDiscardPileEmpty" {
+		t.Fatalf("code = %q", code)
+	}
+
+	g.SetPhase(KalookiPhaseMeld)
+	if err := g.PlayerMeld(nil); err == nil {
+		t.Fatal("expected meld error")
+	} else if code, _ := ErrorMessageCode(err); code != "kalooki.errMeldRequired" {
+		t.Fatalf("code = %q", code)
+	}
+
+	if err := g.PlayerDiscard(-1); err == nil {
+		t.Fatal("expected index error")
+	} else if code, _ := ErrorMessageCode(err); code != "kalooki.errCardIndexOutOfRange" {
+		t.Fatalf("code = %q", code)
+	}
+}
+
 func TestKalooki_Reset_RebuildsPlayersOnConfigChange(t *testing.T) {
 	g := NewDefaultKalooki()
 	cfg := DefaultKalookiConfig()

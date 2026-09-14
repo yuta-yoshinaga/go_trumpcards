@@ -78,6 +78,49 @@ func TestSevenBridge_Reset(t *testing.T) {
 	assert.Equal(t, domain.SevenBridgePivotRank, top.GetValue())
 }
 
+func TestSevenBridge_DomainErrorsHaveMessageCodes(t *testing.T) {
+	g := newTestSevenBridge()
+	g.Reset()
+	g.SetPhase(domain.SevenBridgePhaseDraw)
+	g.SetDiscardPile([]*domain.Card{})
+	if err := g.PlayerClaimPon([]int{0, 1}); err == nil {
+		t.Fatal("expected discard error")
+	} else if code, _ := domain.ErrorMessageCode(err); code != "sevenbridge.errDiscardPileEmpty" {
+		t.Fatalf("code = %q", code)
+	}
+
+	if err := g.PlayerClaimChi([]int{0}); err == nil {
+		t.Fatal("expected indices error")
+	} else if code, _ := domain.ErrorMessageCode(err); code != "sevenbridge.errChiCardIndicesRequired" {
+		t.Fatalf("code = %q", code)
+	}
+
+	g.SetPhase(domain.SevenBridgePhasePlay)
+	if err := g.PlayerMeld([]int{0}); err == nil {
+		t.Fatal("expected meld size error")
+	} else if code, _ := domain.ErrorMessageCode(err); code != "sevenbridge.errMeldMinimumCards" {
+		t.Fatalf("code = %q", code)
+	}
+}
+
+func TestSevenBridge_ChiRejectsEmptyDiscardWithCode(t *testing.T) {
+	g := newTestSevenBridge()
+	g.Reset()
+	p := g.GetPlayer(0)
+	p.Reset()
+	p.AddCard(domain.NewCard(domain.CardDesignSpade, 5, true))
+	p.AddCard(domain.NewCard(domain.CardDesignSpade, 6, true))
+	g.SetPhase(domain.SevenBridgePhaseDraw)
+	g.SetDiscardPile([]*domain.Card{})
+
+	err := g.PlayerClaimChi([]int{0, 1})
+	require.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+	de, ok := err.(*domain.DomainError)
+	require.True(t, ok, "expected DomainError, got %T", err)
+	assert.Equal(t, "sevenbridge.errDiscardPileEmpty", de.MessageCode())
+}
+
 func TestSevenBridge_Reset_ClearsState(t *testing.T) {
 	g := newTestSevenBridge()
 	g.Reset()

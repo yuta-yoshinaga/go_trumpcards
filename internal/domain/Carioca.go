@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // CariocaHandSize 各ラウンドの初期配布枚数（最大コントラクト R7=3 ラン×4 の 12 枚を賄う）
@@ -260,7 +261,7 @@ func (g *Carioca) drawFromStock() error {
 
 func (g *Carioca) drawFromDiscard() error {
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "carioca.errDiscardPileEmpty", nil)
 	}
 	card := g.discardPile[len(g.discardPile)-1]
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
@@ -297,12 +298,12 @@ func (g *Carioca) PlayerMeldContract(indicesPerSlot [][]int) error {
 func (g *Carioca) applyContractMeld(indicesPerSlot [][]int) error {
 	player := g.players[g.currentPlayerIdx]
 	if player.IsContractMet() {
-		return NewDomainError(ErrInvalidPlay, "既にコントラクトを達成しています")
+		return NewDomainErrorCode(ErrInvalidPlay, "carioca.errContractAlreadyMet", nil)
 	}
 
 	contract := CariocaContractForRound(g.roundNumber)
 	if len(indicesPerSlot) != len(contract.Slots) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("コントラクトには %d 個のメルドが必要です", len(contract.Slots)))
+		return NewDomainErrorCode(ErrInvalidPlay, "carioca.errContractMeldCount", map[string]string{"count": strconv.Itoa(len(contract.Slots))})
 	}
 
 	// 全インデックスのバリデーションと重複チェック（スロット間も含む）
@@ -310,14 +311,14 @@ func (g *Carioca) applyContractMeld(indicesPerSlot [][]int) error {
 	for slotIdx, indices := range indicesPerSlot {
 		slot := contract.Slots[slotIdx]
 		if len(indices) != slot.Size {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("スロット %d は %d 枚必要です", slotIdx+1, slot.Size))
+			return NewDomainErrorCode(ErrInvalidPlay, "carioca.errContractSlotCardCount", map[string]string{"slot": strconv.Itoa(slotIdx + 1), "count": strconv.Itoa(slot.Size)})
 		}
 		for _, idx := range indices {
 			if idx < 0 || idx >= player.GetCardsSize() {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+				return NewDomainErrorCode(ErrInvalidCard, "carioca.errCardIndexOutOfRange", nil)
 			}
 			if allSeen[idx] {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+				return NewDomainErrorCode(ErrInvalidCard, "carioca.errDuplicateCardIndex", nil)
 			}
 			allSeen[idx] = true
 		}
@@ -332,7 +333,7 @@ func (g *Carioca) applyContractMeld(indicesPerSlot [][]int) error {
 		}
 		slot := contract.Slots[slotIdx]
 		if !cariocaValidateContractSlot(slot, cards) {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("スロット %d は %s の条件を満たしていません", slotIdx+1, contractSlotLabel(slot)))
+			return NewDomainErrorCode(ErrInvalidPlay, "carioca.errContractSlotInvalid", map[string]string{"slot": strconv.Itoa(slotIdx + 1), "kind": contractSlotLabel(slot)})
 		}
 		slotCards[slotIdx] = cards
 	}
@@ -386,10 +387,10 @@ func (g *Carioca) PlayerMeldExtra(indices []int) error {
 func (g *Carioca) applyExtraMeld(indices []int) error {
 	player := g.players[g.currentPlayerIdx]
 	if !player.IsContractMet() {
-		return NewDomainError(ErrInvalidPlay, "追加メルドの前にコントラクトを達成する必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "carioca.errExtraMeldContractRequired", nil)
 	}
 	if len(indices) < CariocaSetSize {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("メルドには最低 %d 枚必要です", CariocaSetSize))
+		return NewDomainErrorCode(ErrInvalidPlay, "carioca.errMeldMinimumCards", map[string]string{"min": strconv.Itoa(CariocaSetSize)})
 	}
 	if err := validateIndexList(indices, player.GetCardsSize()); err != nil {
 		return err
@@ -399,7 +400,7 @@ func (g *Carioca) applyExtraMeld(indices []int) error {
 		cards[i] = player.GetCard(idx)
 	}
 	if !cariocaIsMeld(cards) {
-		return NewDomainError(ErrInvalidPlay, "有効なメルド（セットまたはラン）ではありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "carioca.errInvalidMeld", nil)
 	}
 
 	meldCopy := make([]*Card, len(cards))
@@ -439,26 +440,26 @@ func (g *Carioca) PlayerLayoff(targetPlayerIdx, meldIdx, cardIndex int) error {
 func (g *Carioca) applyLayoff(targetPlayerIdx, meldIdx, cardIndex int) error {
 	current := g.players[g.currentPlayerIdx]
 	if !current.IsContractMet() {
-		return NewDomainError(ErrInvalidPlay, "レイオフはコントラクト達成後にのみ可能です")
+		return NewDomainErrorCode(ErrInvalidPlay, "carioca.errLayoffContractRequired", nil)
 	}
 	if targetPlayerIdx < 0 || targetPlayerIdx >= len(g.players) {
-		return NewDomainError(ErrInvalidPlay, "対象プレイヤーが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "carioca.errTargetPlayerInvalid", nil)
 	}
 	target := g.players[targetPlayerIdx]
 	if !target.IsContractMet() {
-		return NewDomainError(ErrInvalidPlay, "対象プレイヤーがまだコントラクトを達成していません")
+		return NewDomainErrorCode(ErrInvalidPlay, "carioca.errTargetContractNotMet", nil)
 	}
 	if meldIdx < 0 || meldIdx >= target.GetMeldCount() {
-		return NewDomainError(ErrInvalidPlay, "対象メルドが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "carioca.errTargetMeldInvalid", nil)
 	}
 	if cardIndex < 0 || cardIndex >= current.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "carioca.errCardIndexOutOfRange", nil)
 	}
 
 	card := current.GetCard(cardIndex)
 	meld := target.GetMeld(meldIdx)
 	if !canAddToCariocaMeld(meld, card) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("%s はそのメルドに追加できません", cardStr(card)))
+		return NewDomainErrorCode(ErrInvalidPlay, "carioca.errLayoffCardCannotAdd", map[string]string{"card": cardStr(card)})
 	}
 	target.AddCardToMeld(meldIdx, card)
 	current.RemoveCard(cardIndex)
@@ -487,11 +488,11 @@ func (g *Carioca) PlayerDiscard(cardIndex int) error {
 func (g *Carioca) applyDiscard(cardIndex int) error {
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "carioca.errCardIndexOutOfRange", nil)
 	}
 	// 手札最後の 1 枚を捨てて上がるとき、コントラクト未達なら不可
 	if player.GetCardsSize() == 1 && !player.IsContractMet() {
-		return NewDomainError(ErrInvalidPlay, "上がりにはコントラクト達成が必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "carioca.errContractRequiredToGoOut", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)

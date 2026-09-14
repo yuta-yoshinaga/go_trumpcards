@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // Kalooki（カルーキ）はジャマイカ／英国系のジョーカーワイルド・ラミー。
@@ -220,7 +221,7 @@ func (g *Kalooki) drawFromStock() error {
 
 func (g *Kalooki) drawFromDiscard() error {
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errDiscardPileEmpty", nil)
 	}
 	card := g.discardPile[len(g.discardPile)-1]
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
@@ -256,7 +257,7 @@ func (g *Kalooki) PlayerMeld(meldGroups [][]int) error {
 func (g *Kalooki) applyMeld(meldGroups [][]int) error {
 	player := g.players[g.currentPlayerIdx]
 	if len(meldGroups) == 0 {
-		return NewDomainError(ErrInvalidPlay, "メルドが指定されていません")
+		return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errMeldRequired", nil)
 	}
 
 	// 全インデックスの検証と（グループ間も含む）重複チェック
@@ -264,21 +265,21 @@ func (g *Kalooki) applyMeld(meldGroups [][]int) error {
 	groupCards := make([][]*Card, len(meldGroups))
 	for gi, indices := range meldGroups {
 		if len(indices) < KalookiMeldMinSize {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("メルドには最低 %d 枚必要です", KalookiMeldMinSize))
+			return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errMeldMinimumCards", map[string]string{"min": strconv.Itoa(KalookiMeldMinSize)})
 		}
 		cards := make([]*Card, 0, len(indices))
 		for _, idx := range indices {
 			if idx < 0 || idx >= player.GetCardsSize() {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+				return NewDomainErrorCode(ErrInvalidCard, "kalooki.errCardIndexOutOfRange", nil)
 			}
 			if allSeen[idx] {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+				return NewDomainErrorCode(ErrInvalidCard, "kalooki.errDuplicateCardIndex", nil)
 			}
 			allSeen[idx] = true
 			cards = append(cards, player.GetCard(idx))
 		}
 		if !kalookiIsValidMeld(cards) {
-			return NewDomainError(ErrInvalidPlay, "有効なメルド（セットまたはラン）ではありません")
+			return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errInvalidMeld", nil)
 		}
 		groupCards[gi] = cards
 	}
@@ -290,7 +291,7 @@ func (g *Kalooki) applyMeld(meldGroups [][]int) error {
 			total += kalookiMeldValue(cards)
 		}
 		if total < g.config.OpeningThreshold {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("オープニングには合計 %d 点必要です（現在 %d 点）", g.config.OpeningThreshold, total))
+			return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errOpeningMinimumNotMet", map[string]string{"min": strconv.Itoa(g.config.OpeningThreshold), "score": strconv.Itoa(total)})
 		}
 		player.SetHasOpened(true)
 	}
@@ -339,26 +340,26 @@ func (g *Kalooki) PlayerLayoff(targetPlayerIdx, meldIdx, cardIndex int) error {
 func (g *Kalooki) applyLayoff(targetPlayerIdx, meldIdx, cardIndex int) error {
 	current := g.players[g.currentPlayerIdx]
 	if !current.HasOpened() {
-		return NewDomainError(ErrInvalidPlay, "レイオフはオープン後にのみ可能です")
+		return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errLayoffOpenRequired", nil)
 	}
 	if targetPlayerIdx < 0 || targetPlayerIdx >= len(g.players) {
-		return NewDomainError(ErrInvalidPlay, "対象プレイヤーが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errTargetPlayerInvalid", nil)
 	}
 	target := g.players[targetPlayerIdx]
 	if !target.HasOpened() {
-		return NewDomainError(ErrInvalidPlay, "対象プレイヤーがまだオープンしていません")
+		return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errTargetNotOpen", nil)
 	}
 	if meldIdx < 0 || meldIdx >= target.GetMeldCount() {
-		return NewDomainError(ErrInvalidPlay, "対象メルドが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errTargetMeldInvalid", nil)
 	}
 	if cardIndex < 0 || cardIndex >= current.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "kalooki.errCardIndexOutOfRange", nil)
 	}
 
 	card := current.GetCard(cardIndex)
 	meld := target.GetMeld(meldIdx)
 	if !canAddToKalookiMeld(meld, card) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("%s はそのメルドに追加できません", cardStr(card)))
+		return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errLayoffCardCannotAdd", map[string]string{"card": cardStr(card)})
 	}
 	target.AddCardToMeld(meldIdx, card)
 	current.RemoveCard(cardIndex)
@@ -387,7 +388,7 @@ func (g *Kalooki) PlayerDiscard(cardIndex int) error {
 func (g *Kalooki) applyDiscard(cardIndex int) error {
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "kalooki.errCardIndexOutOfRange", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)
