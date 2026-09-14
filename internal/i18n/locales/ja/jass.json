@@ -32,5 +32,13 @@
   "hintTrump": "[HINT: {{suit}}を切り札に ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errInvalidSuit": "無効なスートです",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "errInvalidPhase": "無効なフェーズです",
+  "errInvalidTrumpSuit": "無効な切り札スートです",
+  "errInvalidPlayerCount": "プレイヤー数が不正です",
+  "errPlayerNil": "プレイヤーが nil です",
+  "errTrickCardNil": "トリックカードが nil です"
 }
