@@ -13,6 +13,7 @@ const baseState = (overrides: Partial<GolfResponse> = {}): GolfResponse => ({
   waste: [card(2), card(7)],
   phase: GolfPhase.PLAYING,
   moveCount: 0,
+  chainCombo: 0,
   canUndo: false,
   isStalemate: false,
   message: '',

@@ -70,6 +70,11 @@ func (_m *MockGolfGame) GetMoveCount() int {
 	return ret.Get(0).(int)
 }
 
+func (_m *MockGolfGame) GetChainCombo() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 func (_m *MockGolfGame) GetStockCount() int {
 	ret := _m.Called()
 	return ret.Get(0).(int)

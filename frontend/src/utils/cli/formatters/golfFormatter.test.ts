@@ -12,6 +12,7 @@ function makeState(overrides?: Partial<GolfResponse>): GolfResponse {
     waste: [{ design: 'CLOVER', value: 5 }],
     phase: 0,
     moveCount: 6,
+    chainCombo: 0,
     canUndo: true,
     isStalemate: false,
     message: '',
@@ -34,6 +35,10 @@ describe('formatGolfState', () => {
 
   it('reports a stalemate', () => {
     expect(formatGolfState(makeState({ isStalemate: true }))).toContain('Stalemate');
+  });
+
+  it('shows the chain combo when it reaches two', () => {
+    expect(formatGolfState(makeState({ chainCombo: 2 }))).toContain('combo: ×2');
   });
 
   // **HINT 行は hint を頼んだときだけ。**受動ヒントが Output に載るように

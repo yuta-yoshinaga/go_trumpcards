@@ -11,14 +11,7 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { golf: vi.fn() },
 }));
 
-vi.mock('../hooks/useChainCombo', () => ({
-  useChainCombo: vi.fn().mockReturnValue(0),
-}));
-
-import { useChainCombo } from '../hooks/useChainCombo';
-
 const mockExec = vi.mocked(golfApi.exec);
-const mockCombo = vi.mocked(useChainCombo);
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -49,6 +42,7 @@ const playingState: GolfResponse = {
   waste: [card('CLOVER', 4)],
   phase: 0,
   moveCount: 3,
+  chainCombo: 0,
   canUndo: true,
   isStalemate: false,
   message: '',
@@ -72,7 +66,6 @@ const gameOverState: GolfResponse = {
 beforeEach(() => {
   localStorage.clear();
   mockExec.mockResolvedValue(playingState);
-  mockCombo.mockReturnValue(0);
 });
 
 describe('GolfPage', () => {
@@ -282,28 +275,28 @@ describe('GolfPage', () => {
   });
 
   it('does not render the combo badge when combo < 2', async () => {
-    mockCombo.mockReturnValue(1);
+    mockExec.mockResolvedValue({ ...playingState, chainCombo: 1 });
     renderWithProviders(<GolfPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('combo-badge')).not.toBeInTheDocument();
   });
 
   it('renders the combo badge with blue styling when combo is 2', async () => {
-    mockCombo.mockReturnValue(2);
+    mockExec.mockResolvedValue({ ...playingState, chainCombo: 2 });
     renderWithProviders(<GolfPage />);
     const badge = await screen.findByTestId('combo-badge');
     expect(badge.className).toContain('bg-ds-info');
   });
 
   it('renders the combo badge with warning styling when combo is between 3 and 4', async () => {
-    mockCombo.mockReturnValue(3);
+    mockExec.mockResolvedValue({ ...playingState, chainCombo: 3 });
     renderWithProviders(<GolfPage />);
     const badge = await screen.findByTestId('combo-badge');
     expect(badge.className).toContain('bg-ds-warning');
   });
 
   it('renders the combo badge with error styling when combo >= 5', async () => {
-    mockCombo.mockReturnValue(5);
+    mockExec.mockResolvedValue({ ...playingState, chainCombo: 5 });
     renderWithProviders(<GolfPage />);
     const badge = await screen.findByTestId('combo-badge');
     expect(badge.className).toContain('bg-ds-error');
@@ -312,7 +305,7 @@ describe('GolfPage', () => {
   // **コンボは色とテキストだけで示されていた。** 読み上げ利用者には継続も
   // 途切れも届かない (#5520)。
   it('announces a running combo to screen readers', async () => {
-    mockCombo.mockReturnValue(3);
+    mockExec.mockResolvedValue({ ...playingState, chainCombo: 3 });
     renderWithProviders(<GolfPage />);
     const live = await screen.findByTestId('golf-combo-announce');
     expect(live).toHaveAttribute('role', 'status');
@@ -322,7 +315,7 @@ describe('GolfPage', () => {
   });
 
   it('stays silent while there is no combo', async () => {
-    mockCombo.mockReturnValue(1);
+    mockExec.mockResolvedValue({ ...playingState, chainCombo: 1 });
     renderWithProviders(<GolfPage />);
     const live = await screen.findByTestId('golf-combo-announce');
     // 要素は常に置く（出し入れすると読み上げが飛ぶ）が、中身は空。

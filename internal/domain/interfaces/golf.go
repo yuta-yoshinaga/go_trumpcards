@@ -32,6 +32,8 @@ type GolfGame interface {
 	GetPhase() domain.GolfPhase
 	// GetMoveCount 移動回数を取得する
 	GetMoveCount() int
+	// GetChainCombo 連続除去コンボ数を取得する
+	GetChainCombo() int
 	// GetStockCount 山札の残り枚数を取得する
 	GetStockCount() int
 	// GetWaste ウェイストのカード一覧を取得する

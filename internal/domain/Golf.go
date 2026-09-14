@@ -50,6 +50,7 @@ type Golf struct {
 	waste      []*Card
 	phase      GolfPhase
 	moveCount  int
+	chainCombo int
 	actionLogBase
 	history     []*golfSnapshot
 	isStalemate bool
@@ -83,6 +84,7 @@ func (g *Golf) Reset() {
 	g.trumpCards.Shuffle()
 	g.phase = GolfPhasePlaying
 	g.moveCount = 0
+	g.chainCombo = 0
 	g.actionLog = nil
 	g.history = nil
 	g.isStalemate = false
@@ -134,6 +136,7 @@ func (g *Golf) Draw() error {
 	g.stock = g.stock[:len(g.stock)-1]
 	g.waste = append(g.waste, card)
 	g.moveCount++
+	g.chainCombo = 0
 	g.appendLog("draw", "ストックからカードを引きました", []*Card{card})
 	g.checkStalemate()
 	return nil
@@ -165,6 +168,7 @@ func (g *Golf) Remove(col int) error {
 	// 除去したカードをウェイストの上に置く
 	g.waste = append(g.waste, gc.Card)
 	g.moveCount++
+	g.chainCombo++
 	g.appendLog("remove", fmt.Sprintf("カード除去: 列%d", col), []*Card{gc.Card})
 	g.checkGameClear()
 	g.checkStalemate()
@@ -222,6 +226,7 @@ func (g *Golf) Undo() error {
 	snap := g.history[len(g.history)-1]
 	g.history = g.history[:len(g.history)-1]
 	g.restoreSnapshot(snap)
+	g.chainCombo = 0
 	return nil
 }
 
@@ -232,6 +237,7 @@ func (g *Golf) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (g *Golf) UndoToEscape() int {
+	g.chainCombo = 0
 	return undoToEscape(g.isStalemate, g.history, func(s *golfSnapshot) bool { return s.isStalemate })
 }
 
@@ -250,6 +256,9 @@ func (g *Golf) SetPhase(phase GolfPhase) { g.phase = phase }
 
 // GetMoveCount 移動回数取得
 func (g *Golf) GetMoveCount() int { return g.moveCount }
+
+// GetChainCombo 連続除去コンボ数を取得する
+func (g *Golf) GetChainCombo() int { return g.chainCombo }
 
 // GetStockCount ストック枚数取得
 func (g *Golf) GetStockCount() int { return len(g.stock) }
@@ -417,6 +426,7 @@ type golfJSON struct {
 	Waste       []*Card                           `json:"wa"`
 	Phase       GolfPhase                         `json:"ps"`
 	MoveCount   int                               `json:"mc"`
+	ChainCombo  int                               `json:"cc"`
 	ActionLog   []*ActionLogEntry                 `json:"al"`
 	IsStalemate bool                              `json:"sm"`
 	History     []*golfSnapshot                   `json:"hi,omitempty"`
@@ -483,6 +493,7 @@ func (g *Golf) MarshalJSON() ([]byte, error) {
 		Waste:       g.waste,
 		Phase:       g.phase,
 		MoveCount:   g.moveCount,
+		ChainCombo:  g.chainCombo,
 		ActionLog:   g.actionLog,
 		IsStalemate: g.isStalemate,
 		History:     g.history,
@@ -518,6 +529,7 @@ func (g *Golf) UnmarshalJSON(data []byte) error {
 	}
 	g.phase = j.Phase
 	g.moveCount = j.MoveCount
+	g.chainCombo = j.ChainCombo
 	g.actionLog = j.ActionLog
 	if g.actionLog == nil {
 		g.actionLog = make([]*ActionLogEntry, 0)

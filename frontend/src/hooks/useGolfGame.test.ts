@@ -25,6 +25,7 @@ const defaultState: GolfResponse = {
   waste: [{ design: 'CLOVER', value: 4 }],
   phase: 0,
   moveCount: 0,
+  chainCombo: 0,
   canUndo: false,
   isStalemate: false,
   message: '',

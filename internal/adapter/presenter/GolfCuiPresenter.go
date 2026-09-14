@@ -44,33 +44,6 @@ type GolfCuiPresenter struct {
 	// チェックボックスで明示的に有効にする任意機能なのに、CUI は最初の
 	// ディールが終わった瞬間から無言で数え始めていた (#6314)。
 	nineHoleAnnounced bool
-	// combo は山札を引かずに連続除去した回数。
-	combo int
-	// comboStateRecorded は前回の move/stock 数が記録済みか。
-	comboStateRecorded bool
-	previousMoveCount  int
-	previousStockCount int
-}
-
-// updateCombo applies the same move/stock-derived chain rules as the web UI.
-func (pr *GolfCuiPresenter) updateCombo(moveCount, stockCount int) {
-	if !pr.comboStateRecorded {
-		pr.previousMoveCount = moveCount
-		pr.previousStockCount = stockCount
-		pr.comboStateRecorded = true
-		return
-	}
-	if moveCount == 0 {
-		pr.combo = 0
-	} else if stockCount != pr.previousStockCount {
-		pr.combo = 0
-	} else if moveCount < pr.previousMoveCount {
-		pr.combo = 0
-	} else if moveCount > pr.previousMoveCount {
-		pr.combo++
-	}
-	pr.previousMoveCount = moveCount
-	pr.previousStockCount = stockCount
 }
 
 // golfRemainingCount counts the cards still on the tableau — the deal's score.
@@ -128,6 +101,7 @@ func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 		layout := g.GetLayout()
 		moveCount := g.GetMoveCount()
 		stockCount := g.GetStockCount()
+		combo := g.GetChainCombo()
 
 		// Waste top drives the ±1 playable check for exposed tableau cards.
 		waste := g.GetWaste()
@@ -187,8 +161,6 @@ func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 			pr.recordHole(golfRemainingCount(layout))
 			pr.dealRecorded = true
 		}
-		pr.updateCombo(moveCount, stockCount)
-
 		switch g.GetPhase() {
 		case domain.GolfPhasePlaying:
 			if g.IsStalemate() {
@@ -209,8 +181,8 @@ func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 		case domain.GolfPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}
-		if pr.combo >= 2 {
-			b.WriteString(i18n.Tf("golf.combo", "count", strconv.Itoa(pr.combo)) + "\n")
+		if combo >= 2 {
+			b.WriteString(i18n.Tf("golf.combo", "count", strconv.Itoa(combo)) + "\n")
 		}
 
 		pr.golfHoleLines(b)

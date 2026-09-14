@@ -77134,6 +77134,9 @@ components:
           type: integer
         moveCount:
           type: integer
+        chainCombo:
+          type: integer
+          description: Consecutive removals without drawing from the stock.
         canUndo:
           type: boolean
         isStalemate:

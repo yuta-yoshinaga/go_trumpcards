@@ -17,6 +17,7 @@ import (
 func setupGolfWebMockDefaults(gg *interfaces.MockGolfGame) {
 	gg.On("GetPhase").Return(domain.GolfPhasePlaying).Maybe()
 	gg.On("GetMoveCount").Return(0).Maybe()
+	gg.On("GetChainCombo").Return(0).Maybe()
 	gg.On("GetStockCount").Return(16).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
@@ -92,6 +93,7 @@ func TestGolfWebPresenterOutput_Stalemate(t *testing.T) {
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhasePlaying).Maybe()
 	gg.On("GetMoveCount").Return(5).Maybe()
+	gg.On("GetChainCombo").Return(0).Maybe()
 	gg.On("GetStockCount").Return(0).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
@@ -118,6 +120,7 @@ func TestGolfWebPresenterOutput_GameClear(t *testing.T) {
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhaseGameClear).Maybe()
 	gg.On("GetMoveCount").Return(10).Maybe()
+	gg.On("GetChainCombo").Return(0).Maybe()
 	gg.On("GetStockCount").Return(0).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
@@ -145,6 +148,7 @@ func TestGolfWebPresenterOutput_GameOver(t *testing.T) {
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhaseGameOver).Maybe()
 	gg.On("GetMoveCount").Return(5).Maybe()
+	gg.On("GetChainCombo").Return(0).Maybe()
 	gg.On("GetStockCount").Return(0).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
@@ -196,6 +200,7 @@ func TestGolfWebPresenterHintOutput(t *testing.T) {
 		gg.On("GetHint").Return(&domain.GolfHint{Type: "remove", Col: 3})
 		gg.On("GetPhase").Return(domain.GolfPhasePlaying)
 		gg.On("GetMoveCount").Return(0)
+		gg.On("GetChainCombo").Return(0)
 		gg.On("GetStockCount").Return(16)
 		gg.On("CanUndo").Return(false)
 		gg.On("IsStalemate").Return(false)
@@ -215,6 +220,7 @@ func TestGolfWebPresenterHintOutput(t *testing.T) {
 		gg.On("GetHint").Return((*domain.GolfHint)(nil))
 		gg.On("GetPhase").Return(domain.GolfPhasePlaying)
 		gg.On("GetMoveCount").Return(0)
+		gg.On("GetChainCombo").Return(0)
 		gg.On("GetStockCount").Return(0)
 		gg.On("CanUndo").Return(false)
 		gg.On("IsStalemate").Return(false)

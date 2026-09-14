@@ -31,6 +31,7 @@ type GolfWebOutputHint struct {
 type GolfWebOutput struct {
 	Layout     [][]*GolfWebOutputCard `json:"layout"`
 	StockCount int                    `json:"stockCount"`
+	ChainCombo int                    `json:"chainCombo"`
 	Waste      []*WebOutputCard       `json:"waste"`
 	Hint       *GolfWebOutputHint     `json:"hint,omitempty"`
 	SolitaireWebOutputBase

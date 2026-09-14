@@ -18,6 +18,7 @@ func (pr *GolfWebPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 	resObj := new(controller.GolfWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, g, int(g.GetPhase()))
 	resObj.StockCount = g.GetStockCount()
+	resObj.ChainCombo = g.GetChainCombo()
 
 	// ウェイスト
 	waste := g.GetWaste()
@@ -94,6 +95,7 @@ func (pr *GolfWebPresenter) HintOutput(g interfaces.GolfGame) string {
 	resObj := new(controller.GolfWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, g, int(g.GetPhase()))
 	resObj.StockCount = g.GetStockCount()
+	resObj.ChainCombo = g.GetChainCombo()
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Layout = make([][]*controller.GolfWebOutputCard, 0)
 

@@ -17,6 +17,7 @@ import (
 func setupGolfCuiMockDefaults(gg *interfaces.MockGolfGame) {
 	gg.On("GetPhase").Return(domain.GolfPhasePlaying).Maybe()
 	gg.On("GetMoveCount").Return(0).Maybe()
+	gg.On("GetChainCombo").Return(0).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("GetStockCount").Return(16).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
@@ -56,10 +57,11 @@ func TestGolfCuiPresenterOutput_Playing(t *testing.T) {
 	assert.Contains(t, result, "手数: 0")
 }
 
-func golfComboGame(moveCount, stockCount int, phase domain.GolfPhase) *interfaces.MockGolfGame {
+func golfComboGame(moveCount, stockCount, chainCombo int, phase domain.GolfPhase) *interfaces.MockGolfGame {
 	gg := new(interfaces.MockGolfGame)
 	gg.On("GetPhase").Return(phase).Maybe()
 	gg.On("GetMoveCount").Return(moveCount).Maybe()
+	gg.On("GetChainCombo").Return(chainCombo).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("GetStockCount").Return(stockCount).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
@@ -73,33 +75,17 @@ func golfComboGame(moveCount, stockCount int, phase domain.GolfPhase) *interface
 func TestGolfCuiPresenterOutput_ChainCombo(t *testing.T) {
 	p := &GolfCuiPresenter{}
 
-	assert.NotContains(t, p.Output(golfComboGame(0, 16, domain.GolfPhasePlaying), nil), "コンボ ×")
-	assert.NotContains(t, p.Output(golfComboGame(1, 16, domain.GolfPhasePlaying), nil), "コンボ ×")
-
-	// Re-rendering the same state must not increase the combo.
-	sameState := p.Output(golfComboGame(1, 16, domain.GolfPhasePlaying), nil)
-	assert.NotContains(t, sameState, "コンボ ×")
-
-	assert.Contains(t, p.Output(golfComboGame(2, 16, domain.GolfPhasePlaying), nil), "コンボ ×2")
-
-	// Drawing from the stock resets the chain, including after another remove.
-	assert.NotContains(t, p.Output(golfComboGame(3, 15, domain.GolfPhasePlaying), nil), "コンボ ×")
-	assert.NotContains(t, p.Output(golfComboGame(4, 15, domain.GolfPhasePlaying), nil), "コンボ ×")
-	assert.Contains(t, p.Output(golfComboGame(5, 15, domain.GolfPhasePlaying), nil), "コンボ ×2")
-
-	// Undo resets the chain so undo + redo cannot inflate it.
-	assert.NotContains(t, p.Output(golfComboGame(4, 15, domain.GolfPhasePlaying), nil), "コンボ ×")
-	assert.NotContains(t, p.Output(golfComboGame(5, 15, domain.GolfPhasePlaying), nil), "コンボ ×")
-
-	// A new deal restarts at move 0, which zeroes the chain on its own.
-	assert.NotContains(t, p.Output(golfComboGame(0, 16, domain.GolfPhasePlaying), nil), "コンボ ×")
-	assert.NotContains(t, p.Output(golfComboGame(1, 16, domain.GolfPhasePlaying), nil), "コンボ ×")
+	assert.NotContains(t, p.Output(golfComboGame(0, 16, 0, domain.GolfPhasePlaying), nil), "コンボ ×")
+	assert.NotContains(t, p.Output(golfComboGame(1, 16, 1, domain.GolfPhasePlaying), nil), "コンボ ×")
+	assert.Contains(t, p.Output(golfComboGame(2, 16, 2, domain.GolfPhasePlaying), nil), "コンボ ×2")
+	assert.NotContains(t, p.Output(golfComboGame(3, 15, 0, domain.GolfPhasePlaying), nil), "コンボ ×")
 }
 
 func TestGolfCuiPresenterOutput_PlayableMarker(t *testing.T) {
 	gg := new(interfaces.MockGolfGame)
 	gg.On("GetPhase").Return(domain.GolfPhasePlaying).Maybe()
 	gg.On("GetMoveCount").Return(0).Maybe()
+	gg.On("GetChainCombo").Return(0).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("GetStockCount").Return(10).Maybe()
 	gg.On("IsStalemate").Return(false).Maybe()
@@ -140,6 +126,7 @@ func TestGolfCuiPresenterOutput_Stalemate(t *testing.T) {
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhasePlaying).Maybe()
 	gg.On("GetMoveCount").Return(5).Maybe()
+	gg.On("GetChainCombo").Return(0).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("GetStockCount").Return(0).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
@@ -164,6 +151,7 @@ func TestGolfCuiPresenterOutput_GameClear(t *testing.T) {
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhaseGameClear).Maybe()
 	gg.On("GetMoveCount").Return(10).Maybe()
+	gg.On("GetChainCombo").Return(0).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("GetStockCount").Return(0).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
@@ -187,6 +175,7 @@ func TestGolfCuiPresenterOutput_GameOver(t *testing.T) {
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhaseGameOver).Maybe()
 	gg.On("GetMoveCount").Return(5).Maybe()
+	gg.On("GetChainCombo").Return(0).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("GetStockCount").Return(0).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
@@ -210,6 +199,7 @@ func TestGolfCuiPresenterOutput_WithWaste(t *testing.T) {
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhasePlaying).Maybe()
 	gg.On("GetMoveCount").Return(1).Maybe()
+	gg.On("GetChainCombo").Return(0).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("GetStockCount").Return(15).Maybe()
 	gg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, true)}).Maybe()
@@ -306,6 +296,7 @@ func TestGolfCuiPresenter_NineHoleScorecard(t *testing.T) {
 		g.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 		g.On("GetStockCount").Return(0).Maybe()
 		g.On("GetMoveCount").Return(10).Maybe()
+		g.On("GetChainCombo").Return(0).Maybe()
 		g.On("CanUndo").Return(false).Maybe()
 		g.On("IsStalemate").Return(false).Maybe()
 		g.On("IsExposed", mock.Anything, mock.Anything).Return(false).Maybe()
