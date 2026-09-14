@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 
 /** A dealt card with its rank (A=14 high), suit symbol, and 0-based button index. */
 type PCard = { r: number; s: string; i: number };
@@ -127,46 +127,68 @@ function legalArrangement(cards: PCard[]): { front: number[]; middle: number[] }
 
 test.describe('Chinese Poker E2E', () => {
   test('plays a round: bet → set hands → result → reset', async ({ page }) => {
+    // The scorer above does not model every server hand category. A deal with
+    // a front straight/flush or a royal flush can make its first arrangement
+    // fail the server's authoritative foul check, so submit and redeal when
+    // the game remains in SET_HANDS.
+    const maxDeals = 5;
+    let reachedEnd = false;
+
     await navigateTo(page, '/chinesepoker');
 
-    // BET phase: click ベット
-    const betButton = page.getByRole('button', { name: 'ベット', exact: true });
-    await expect(betButton).toBeVisible();
-    await betButton.click();
-    await waitForLoaded(page);
+    for (let deal = 0; deal < maxDeals; deal++) {
+      if (deal > 0) {
+        // Reset on mount is the supported way to deal an independent hand.
+        await page.reload();
+        await waitForLoaded(page);
+      }
 
-    // SET HANDS phase: read the 13 dealt cards and compute a legal arrangement.
-    // A naive "first 3 → front, next 5 → middle" split is almost always a foul
-    // (front ≤ middle ≤ back is violated), which the server rejects — so the
-    // arrangement must be rank-aware to reliably reach the END phase.
-    const cards = page.locator('[data-testid^="cp-hand-card-"]');
-    await expect(cards.first()).toBeVisible({ timeout: 10_000 });
-    const count = await cards.count();
+      // BET phase: the first deal may still be resolving the game loop.
+      const betButton = page.getByRole('button', { name: 'ベット', exact: true });
+      await expect(betButton).toBeVisible({ timeout: deal === 0 ? TIMEOUT_GAME_LOOP : TIMEOUT_ACTION });
+      await betButton.click();
+      await waitForLoaded(page);
 
-    const dealt: PCard[] = [];
-    for (let i = 0; i < count; i++) {
-      const label = (await cards.nth(i).locator('img').first().getAttribute('alt')) ?? '';
-      dealt.push({ r: parseRank(label), s: parseSuit(label), i });
+      // SET HANDS phase: read the 13 dealt cards and compute a rank-aware split.
+      const cards = page.locator('[data-testid^="cp-hand-card-"]');
+      await expect(cards.first()).toBeVisible({ timeout: TIMEOUT_ACTION });
+      const count = await cards.count();
+
+      const dealt: PCard[] = [];
+      for (let i = 0; i < count; i++) {
+        const label = (await cards.nth(i).locator('img').first().getAttribute('alt')) ?? '';
+        dealt.push({ r: parseRank(label), s: parseSuit(label), i });
+      }
+
+      const arrangement = legalArrangement(dealt);
+      if (!arrangement) continue;
+
+      // Click the 3 front cards first, then the 5 middle cards; the remainder
+      // forms the back row automatically.
+      for (const i of arrangement.front) await cards.nth(i).click();
+      for (const i of arrangement.middle) await cards.nth(i).click();
+
+      const setButton = page.locator('[data-testid="set-hands-button"]:not([disabled]):not([aria-disabled="true"])');
+      await expect(setButton).toBeVisible({ timeout: TIMEOUT_ACTION });
+      await setButton.click();
+      await waitForLoaded(page);
+
+      const nextButton = page
+        .locator('button:not([disabled]):not([aria-disabled="true"])')
+        .filter({ hasText: '次のゲーム' });
+      if (await isVisibleWithin(nextButton, TIMEOUT_ACTION)) {
+        reachedEnd = true;
+        break;
+      }
     }
 
-    const arrangement = legalArrangement(dealt);
-    // A legal arrangement effectively always exists for a random 13-card deal;
-    // throwing (rather than asserting) narrows the type for the clicks below.
-    if (!arrangement) throw new Error('no legal (non-foul) arrangement for the dealt hand');
-
-    // Click the 3 front cards first (they fill the front slots), then the 5
-    // middle cards (they fill the middle slots); the remaining 5 fall to back.
-    for (const i of arrangement.front) await cards.nth(i).click();
-    for (const i of arrangement.middle) await cards.nth(i).click();
-
-    const setButton = page.getByRole('button', { name: 'セット' });
-    await expect(setButton).toBeVisible();
-    await setButton.click();
-    await waitForLoaded(page);
+    await expect(reachedEnd, `${maxDeals} 回の配りでサーバーが受理する合法な分割に到達できなかった`).toBe(true);
 
     // END phase: 次のゲーム button should be visible
-    const resetButton = page.getByRole('button', { name: '次のゲーム' });
-    await expect(resetButton).toBeVisible({ timeout: 10_000 });
+    const resetButton = page
+      .locator('button:not([disabled]):not([aria-disabled="true"])')
+      .filter({ hasText: '次のゲーム' });
+    await expect(resetButton).toBeVisible({ timeout: TIMEOUT_ACTION });
 
     // Reset back to bet phase
     await resetButton.click();
