@@ -33,7 +33,7 @@ export interface SolitaireGameBase<TState, TArgs extends unknown[], THint> {
   hintError: string | null;
   isAutoCompleting: boolean;
   startAutoComplete: () => void;
-  /** Calls `onClearSelection`, clears hint, then forwards args to `apiCall`. */
+  /** Calls `onClearSelection`, clears hint, and forwards one in-flight action to `apiCall`. */
   runAction: (...args: TArgs) => void;
   /** Convenience: `runAction('reset' as TArgs[0])`. */
   handleReset: () => void;
@@ -78,6 +78,8 @@ export function useSolitaireGameBase<TState, TArgs extends unknown[], THint, THi
   // literal (a fresh reference every render). PR #1573 review.
   const optionsRef = useRef(options);
   optionsRef.current = options;
+  const actionInFlightRef = useRef(false);
+  const isMounted = useIsMounted();
 
   useEffect(() => {
     void apiCall(...(['reset'] as unknown as TArgs));
@@ -85,14 +87,29 @@ export function useSolitaireGameBase<TState, TArgs extends unknown[], THint, THi
 
   const runAction = useCallback(
     (...args: TArgs) => {
-      optionsRef.current.onClearSelection?.();
-      setHint(null);
-      void apiCall(...args);
+      if (actionInFlightRef.current) return;
+      actionInFlightRef.current = true;
+      // These two run before the await, so they sit outside the `finally` below.
+      // A throw in a game-specific `onClearSelection` would leave the flag set and
+      // wedge the page for the rest of the session -- the exact failure this guard
+      // exists to prevent, one span earlier. #7807 review.
+      try {
+        optionsRef.current.onClearSelection?.();
+        setHint(null);
+      } catch (e) {
+        actionInFlightRef.current = false;
+        throw e;
+      }
+      void (async () => {
+        try {
+          await apiCall(...args);
+        } finally {
+          if (isMounted()) actionInFlightRef.current = false;
+        }
+      })();
     },
-    [apiCall],
+    [apiCall, isMounted],
   );
-
-  const isMounted = useIsMounted();
 
   const handleReset = useCallback(() => runAction(...(['reset'] as unknown as TArgs)), [runAction]);
   const handleGiveUp = useCallback(() => runAction(...(['giveup'] as unknown as TArgs)), [runAction]);
