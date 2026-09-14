@@ -138,6 +138,18 @@ describe('BhabhiPage', () => {
     );
   });
 
+  // **自分が引き取ったときは席名でなく「あなた」と読み上げる。** CPU 側だけ試験すると
+  // 席 0 の分岐を一度も通らない。
+  it('names the human when the human is the one who picked up', async () => {
+    mockExec.mockResolvedValue(makeState({ lastPickupIdx: 0, lastPickupSize: 3 }));
+    renderWithProviders(<BhabhiPage />);
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole('status').some((node) => node.textContent === '直前に あなた が 3 枚引き取りました。'),
+      ).toBe(true),
+    );
+  });
+
   it('announces and shows the player who just finished', async () => {
     mockExec.mockResolvedValue(makeState({ lastFinishedIdx: 2, lastFinishedRank: 1 }));
     renderWithProviders(<BhabhiPage />);
