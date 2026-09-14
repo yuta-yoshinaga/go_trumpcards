@@ -53,6 +53,7 @@ type MarriageWebOutput struct {
 	WinnerIdx        int                        `json:"winnerIdx"`
 	DeclarerIdx      int                        `json:"declarerIdx"`
 	DeclarationValid bool                       `json:"declarationValid"`
+	CanDeclare       bool                       `json:"canDeclare"`
 	WebOutputBase
 	Config MarriageWebOutputConfig `json:"config"`
 }

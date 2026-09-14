@@ -77458,6 +77458,9 @@ components:
                 type: integer
               hasPureSequence:
                 type: boolean
+        canDeclare:
+          type: boolean
+          description: "True while the human seat can declare by discarding one card."
         phase:
           type: integer
           enum: [0, 1, 2, 3]

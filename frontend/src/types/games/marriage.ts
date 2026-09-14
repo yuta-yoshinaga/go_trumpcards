@@ -39,6 +39,7 @@ export interface MarriageResponse extends BaseGameResponse {
   winnerIdx: number;
   declarerIdx: number;
   declarationValid: boolean;
+  canDeclare: boolean;
   config: MarriageConfig;
 }
 

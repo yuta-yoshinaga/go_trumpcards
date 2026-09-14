@@ -2768,6 +2768,7 @@ describe('gameApi', () => {
       winnerIdx: -1,
       declarerIdx: -1,
       declarationValid: false,
+      canDeclare: false,
       message: '',
       config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
     };

@@ -44,6 +44,7 @@ function makeState(overrides: Partial<MarriageResponse> = {}): MarriageResponse 
     winnerIdx: -1,
     declarerIdx: -1,
     declarationValid: false,
+    canDeclare: false,
     config: { playerCount: 2, cpuDifficulty: 1, targetRounds: 5 },
     message: '',
     messageCode: '',

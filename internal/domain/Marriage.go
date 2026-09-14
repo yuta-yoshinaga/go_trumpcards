@@ -482,12 +482,23 @@ func (g *Marriage) cpuDiscardOrDeclare() {
 
 // cpuFindDeclareCard 22 枚のうち 1 枚をフィニッシュに回して残り 21 枚が有効宣言になるカードを探す。
 func (g *Marriage) cpuFindDeclareCard(player *MarriagePlayer) (int, bool) {
-	n := player.GetCardsSize()
+	return g.findDeclareCard(player)
+}
+
+// findDeclareCard 22 枚のうち 1 枚をフィニッシュに回して残り 21 枚が有効宣言になるカードを探す。
+func (g *Marriage) findDeclareCard(player *MarriagePlayer) (int, bool) {
+	cards := marriageCollectCards(player)
+	// 3 本の純正シーケンスが無い手札は、どのカードを捨てても宣言できない。
+	// 探索上限到達時は宣言可能でも勧めない安全側の誤りになるが、人間と CPU で同じ挙動にする。
+	if !MarriageHasPureSequences(cards, g.wildRank, 3) {
+		return 0, false
+	}
+	n := len(cards)
 	for f := 0; f < n; f++ {
 		rem := make([]*Card, 0, n-1)
 		for i := 0; i < n; i++ {
 			if i != f {
-				rem = append(rem, player.GetCard(i))
+				rem = append(rem, cards[i])
 			}
 		}
 		if MarriageValidateDeclaration(rem, g.wildRank) {
@@ -495,6 +506,15 @@ func (g *Marriage) cpuFindDeclareCard(player *MarriagePlayer) (int, bool) {
 		}
 	}
 	return 0, false
+}
+
+// CanDeclare 現在の手番の人間が 1 枚捨てて有効宣言できるかを返す。
+func (g *Marriage) CanDeclare() bool {
+	if g.gameEndFlag || g.phase != MarriagePhaseDiscard || !g.IsHumanTurn() {
+		return false
+	}
+	_, ok := g.findDeclareCard(g.players[g.currentPlayerIdx])
+	return ok
 }
 
 // chooseCpuDiscard CPU が捨てるカードを選ぶ（デッドウッド点が最大のカード）。

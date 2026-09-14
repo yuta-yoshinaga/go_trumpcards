@@ -33,6 +33,8 @@ type MarriageGame interface {
 	GetPhase() domain.MarriagePhase
 	// IsHumanTurn 現在の手番が人間か
 	IsHumanTurn() bool
+	// CanDeclare 現在の手番の人間が 1 枚捨てて有効宣言できるか
+	CanDeclare() bool
 	// GetRoundNumber 現在のラウンド番号
 	GetRoundNumber() int
 	// GetTargetRounds ゲーム終了までのラウンド数

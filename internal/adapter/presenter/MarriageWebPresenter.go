@@ -25,6 +25,7 @@ func (p *MarriageWebPresenter) Output(g interfaces.MarriageGame, lastErr error) 
 	resObj.WinnerIdx = g.GetWinnerIdx()
 	resObj.DeclarerIdx = g.GetDeclarerIdx()
 	resObj.DeclarationValid = g.GetDeclarationValid()
+	resObj.CanDeclare = g.CanDeclare()
 
 	if top := g.GetDiscardTop(); top != nil {
 		resObj.DiscardTop = cardToOutput(top)

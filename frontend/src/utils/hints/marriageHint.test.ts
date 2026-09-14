@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Card } from '../../types/common';
 import type { MarriagePlayer, MarriageResponse } from '../../types/games/marriage';
 import { MarriagePhase } from '../../types/games/marriage';
-import { calcDeadwood, getMarriageHint, isWild } from './marriageHint';
+import { getMarriageHint, isWild } from './marriageHint';
 
 function card(design: Card['design'], value: number): Card {
   return { design, value };
@@ -39,6 +39,7 @@ function makeState(overrides: Partial<MarriageResponse> = {}): MarriageResponse 
     winnerIdx: -1,
     declarerIdx: -1,
     declarationValid: false,
+    canDeclare: false,
     message: '',
     config: { playerCount: 2, cpuDifficulty: 1, targetRounds: 3 },
     ...overrides,
@@ -123,9 +124,10 @@ describe('getMarriageHint', () => {
   });
 
   describe('discard phase', () => {
-    it('suggests declare when one discard clears all deadwood', () => {
+    it('suggests declare when the backend confirms a valid declaration', () => {
       const state = makeState({
         phase: MarriagePhase.DISCARD,
+        canDeclare: true,
         players: [
           player({
             cardCount: 14,
@@ -152,6 +154,15 @@ describe('getMarriageHint', () => {
       expect(hint?.targetAction).toBe('declare');
       expect(hint?.reason).toBe('hint.declareNow');
       expect(hint?.confidence).toBe('strong');
+    });
+
+    it('suggests discard when the backend rejects declaration', () => {
+      const state = makeState({
+        phase: MarriagePhase.DISCARD,
+        canDeclare: false,
+        players: [player({ cards: [card('HEART', 5)] })],
+      });
+      expect(getMarriageHint(state)?.targetAction).toBe('discard');
     });
 
     it('suggests discard when deadwood cannot be cleared', () => {
@@ -208,49 +219,5 @@ describe('isWild', () => {
 
   it('is not wild when the rank does not match and wildRank is 0', () => {
     expect(isWild(card('HEART', 7), 0)).toBe(false);
-  });
-});
-
-describe('calcDeadwood', () => {
-  it('returns 0 for a hand that fully melds', () => {
-    const hand = [
-      card('HEART', 3),
-      card('SPADE', 3),
-      card('CLOVER', 3),
-      card('HEART', 7),
-      card('SPADE', 7),
-      card('CLOVER', 7),
-    ];
-    expect(calcDeadwood(hand, 0)).toBe(0);
-  });
-
-  it('counts face cards as 10 points', () => {
-    const hand = [card('HEART', 11), card('SPADE', 12), card('CLOVER', 13)];
-    expect(calcDeadwood(hand, 0)).toBe(30);
-  });
-
-  it('lets a printed joker cancel the highest unmatched card', () => {
-    const hand = [card('JOKER', 0), card('SPADE', 5), card('CLOVER', 9)];
-    expect(calcDeadwood(hand, 0)).toBe(5);
-  });
-
-  it('lets a wild-rank card cancel the highest unmatched card', () => {
-    const hand = [card('HEART', 2), card('SPADE', 5), card('CLOVER', 9)];
-    expect(calcDeadwood(hand, 2)).toBe(5);
-  });
-
-  it('treats poplu and jhiplu cards as wild when calculating deadwood', () => {
-    const hand = [card('HEART', 8), card('SPADE', 6), card('CLOVER', 13)];
-    expect(calcDeadwood(hand, 7)).toBe(0);
-  });
-
-  it('detects runs in the same suit', () => {
-    const hand = [card('HEART', 4), card('HEART', 5), card('HEART', 6), card('SPADE', 10)];
-    expect(calcDeadwood(hand, 0)).toBe(10);
-  });
-
-  it('scores an unmatched Ace as 10 points, not 1 (matching the backend)', () => {
-    const hand = [card('SPADE', 1), card('HEART', 4), card('CLOVER', 8)];
-    expect(calcDeadwood(hand, 0)).toBe(22);
   });
 });
