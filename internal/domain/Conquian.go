@@ -292,12 +292,12 @@ func (g *Conquian) PlayerDrawFromDiscard() error {
 		return ErrNotHumanTurn
 	}
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札がありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "conquian.errDiscardPileEmpty", nil)
 	}
 
 	card := g.discardPile[len(g.discardPile)-1]
 	if !g.canUseCardInMeld(g.currentPlayerIdx, card) {
-		return NewDomainError(ErrInvalidPlay, "そのカードはメルドに使えないため捨て札から取れません")
+		return NewDomainErrorCode(ErrInvalidPlay, "conquian.errDiscardCardCannotBeMelded", nil)
 	}
 
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
@@ -349,14 +349,14 @@ func (g *Conquian) PlayerMeldWithTargets(meldGroups [][]int, extendTargets []int
 	seen := make(map[int]bool)
 	for _, group := range meldGroups {
 		if len(group) == 0 {
-			return NewDomainError(ErrInvalidPlay, "空のメルドグループは指定できません")
+			return NewDomainErrorCode(ErrInvalidPlay, "conquian.errInvalidMeld", nil)
 		}
 		for _, idx := range group {
 			if idx < 0 || idx >= player.GetCardsSize() {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+				return NewDomainErrorCode(ErrInvalidCard, "conquian.errCardIndexOutOfRange", nil)
 			}
 			if seen[idx] {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+				return NewDomainErrorCode(ErrInvalidCard, "conquian.errDuplicateCardIndex", nil)
 			}
 			seen[idx] = true
 		}
@@ -389,7 +389,7 @@ func (g *Conquian) PlayerMeldWithTargets(meldGroups [][]int, extendTargets []int
 				continue
 			}
 		}
-		return NewDomainError(ErrInvalidPlay, "無効なメルドです")
+		return NewDomainErrorCode(ErrInvalidPlay, "conquian.errInvalidMeld", nil)
 	}
 
 	// 強制使用ルール: 捨て札を取った場合、そのカードがどれかのメルドに含まれていなければならない。
@@ -403,7 +403,7 @@ func (g *Conquian) PlayerMeldWithTargets(meldGroups [][]int, extendTargets []int
 			}
 		}
 		if !used {
-			return NewDomainError(ErrInvalidPlay, "捨て札から取ったカードはメルドに使う必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "conquian.errMeldRequired", nil)
 		}
 	}
 
@@ -453,10 +453,10 @@ func (g *Conquian) PlayerDiscard(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "conquian.errCardIndexOutOfRange", nil)
 	}
 	if g.tookDiscard {
-		return NewDomainError(ErrInvalidPlay, "捨て札から取ったカードを先にメルドに使ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "conquian.errMeldRequired", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)
@@ -470,7 +470,7 @@ func (g *Conquian) PlayerDiscard(cardIndex int) error {
 // finishMeldStep はメルドを並べずにメルドフェーズを終える際の検証を行う。
 func (g *Conquian) finishMeldStep() error {
 	if g.tookDiscard {
-		return NewDomainError(ErrInvalidPlay, "捨て札から取ったカードはメルドに使う必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "conquian.errMeldRequired", nil)
 	}
 	// 何もしない (続いて discard が呼ばれる)
 	return nil
