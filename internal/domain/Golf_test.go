@@ -151,8 +151,9 @@ func TestGolf_ChainComboRules(t *testing.T) {
 
 	require.NoError(t, g.Remove(0))
 	g.SetIsStalemate(true)
+	chainComboBeforeUndoToEscape := g.GetChainCombo()
 	assert.Equal(t, 1, g.UndoToEscape())
-	assert.Equal(t, 0, g.GetChainCombo())
+	assert.Equal(t, chainComboBeforeUndoToEscape, g.GetChainCombo())
 
 	require.NoError(t, g.Remove(1))
 	g.Reset()

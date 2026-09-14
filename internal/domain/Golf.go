@@ -237,7 +237,6 @@ func (g *Golf) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (g *Golf) UndoToEscape() int {
-	g.chainCombo = 0
 	return undoToEscape(g.isStalemate, g.history, func(s *golfSnapshot) bool { return s.isStalemate })
 }
 
