@@ -32,6 +32,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BatakResponse } from '../types/card';
 import { BatakPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { type BatakIllegalReason, batakIllegalReason } from '../utils/batakIllegalReason';
 import { cardAlt } from '../utils/cardAlt';
 import { BATAK_HELP, parseBatakCommand } from '../utils/cli/commands/batakCommands';
 import { formatBatakState } from '../utils/cli/formatters/batakFormatter';
@@ -188,6 +189,21 @@ function BatakPageContent() {
   const isGameEnd = state.phase === BatakPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
+  const cardTitleFor = (idx: number): string | undefined => {
+    const reason = batakIllegalReason(
+      idx,
+      humanPlayer?.cards ?? [],
+      state.currentTrick,
+      state.spadesBroken,
+      state.validPlayIndices,
+    );
+    const reasonKeys: Record<BatakIllegalReason, string> = {
+      spadesNotBroken: 'spadesNotBrokenTooltip',
+      followSuit: 'followSuitTooltip',
+      mustTrumpSpade: 'mustTrumpSpadeTooltip',
+    };
+    return reason ? t(reasonKeys[reason]) : undefined;
+  };
 
   return (
     <GamePageShell
@@ -465,7 +481,8 @@ function BatakPageContent() {
                   isMobile={isMobile}
                   dataTutorialPrefix="batak"
                   validIndices={isHumanTurn ? state.validPlayIndices : undefined}
-                  restrictedTooltip={t('mustTrumpSpadeTooltip')}
+                  restrictedTooltip={t('restrictedTooltip')}
+                  cardTitleFor={isHumanTurn ? cardTitleFor : undefined}
                 />
               </>
             )}
