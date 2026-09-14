@@ -13,8 +13,9 @@ import { NavBar } from './NavBar';
 //
 // テストが遅いのは検査の性質であって欠陥ではない（全ルートを網羅する検査を
 // 速くする方法は「検査を減らす」しかない）ので、このファイルだけ上限を上げる。
-// このファイルのテストとフックの上限を上げる。setup.ts の cleanup フックの上限は
-// テスト本体の評価前に登録されるため、vite.config.ts 側で設定する。
+// ただしこれが効くのは、この行より後にこのファイルが登録するフックだけ。
+// setup.ts の cleanup フックはテスト本体の評価前に登録されるので届かず、
+// そちらの上限は vite.config.ts の hookTimeout で設定している。
 vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 vi.mock('../providers/SoundProvider', () => ({
