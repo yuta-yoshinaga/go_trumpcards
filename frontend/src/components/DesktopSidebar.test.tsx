@@ -13,9 +13,9 @@ import { DesktopSidebar } from './DesktopSidebar';
 //
 // テストが遅いのは検査の性質であって欠陥ではない（全ルートを網羅する検査を
 // 速くする方法は「検査を減らす」しかない）ので、このファイルだけ上限を上げる。
-// hookTimeout も同じ理由で上げる。**片方だけでは足りない** —— 316 ゲームぶんの
-// DOM を畳む RTL の自動 cleanup は afterEach フックで走るので、既定の 10 秒だと
-// 「Hook timed out」で落ちる（CI で実際に落ちた）。
+// ただしこれが効くのは、この行より後にこのファイルが登録するフックだけ。
+// setup.ts の cleanup フックはテスト本体の評価前に登録されるので届かず、
+// そちらの上限は vite.config.ts の hookTimeout で設定している。
 vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 vi.mock('../providers/SoundProvider', () => ({
