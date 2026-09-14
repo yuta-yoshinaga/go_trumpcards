@@ -42,16 +42,18 @@ describe('i18n lang sync', () => {
   it('resolves every derived domain error message code in both locales', async () => {
     expect(allDomainErrorCodes.length).toBeGreaterThanOrEqual(200);
 
+    await i18n.changeLanguage('ja');
     for (const code of allDomainErrorCodes) {
       expect(Object.hasOwn(enCommon.messageCode, code)).toBe(true);
       expect(Object.hasOwn(jaCommon.messageCode, code)).toBe(true);
 
-      await i18n.changeLanguage('ja');
       const jaTranslation = i18n.t(`messageCode.${code}`);
       expect(jaTranslation).not.toBe('');
       expect(jaTranslation).not.toMatch(/^messageCode\./);
+    }
 
-      await i18n.changeLanguage('en');
+    await i18n.changeLanguage('en');
+    for (const code of allDomainErrorCodes) {
       const enTranslation = i18n.t(`messageCode.${code}`);
       expect(enTranslation).not.toBe('');
       expect(enTranslation).not.toMatch(/^messageCode\./);
