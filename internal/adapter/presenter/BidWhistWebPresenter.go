@@ -116,6 +116,9 @@ func (p *BidWhistWebPresenter) buildPlayersOutput(g interfaces.BidWhistGame) []*
 // buildMessage ゲーム結果/フェーズメッセージを構築
 func (p *BidWhistWebPresenter) buildMessage(g interfaces.BidWhistGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

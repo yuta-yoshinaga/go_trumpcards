@@ -34,5 +34,13 @@
   "helpExamplePass": "  pass 0 3 7           手札の 0/3/7 番を渡す",
   "helpExamplePlay": "  p 0                  手札の 0 番を出す",
   "helpHint": "  h                    助言を表示",
-  "shootTheMoonAlert": "⚠ シュート・ザ・ムーン警戒: {{name}} がこのラウンドの罰点を独占しています"
+  "shootTheMoonAlert": "⚠ シュート・ザ・ムーン警戒: {{name}} がこのラウンドの罰点を独占しています",
+  "errPassAlreadySelected": "すでにカードを選択済みです",
+  "errPassCardCount": "{{count}}枚のカードを選択してください",
+  "errDuplicateCardIndex": "カードインデックスが重複しています",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errFirstTrickMustLeadTwoOfClubs": "最初のトリックは2♣でリードしてください",
+  "errHeartsNotBroken": "ハーツはまだブレイクされていません",
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "errFirstTrickNoPointCards": "最初のトリックではポイントカードを出せません"
 }

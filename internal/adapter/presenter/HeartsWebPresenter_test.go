@@ -279,6 +279,17 @@ func TestHeartsWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error message", func(t *testing.T) {
+		m, _ := setupHeartsWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "hearts.errFollowLeadSuit", nil))
+		var resObj controller.HeartsWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "hearts.errFollowLeadSuit", resObj.MessageCode)
+		assert.Nil(t, resObj.MessageParams)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupHeartsWebMockWithPlayers()
 		m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "GetGameEndFlag")
