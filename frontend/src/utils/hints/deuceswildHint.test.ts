@@ -25,6 +25,9 @@ function makeState(overrides: Partial<VideoPokerResponse> = {}): VideoPokerRespo
     handName: '',
     heldIndices: [false, false, false, false, false],
     variantName: '',
+    hands: 0,
+    winRate: 0,
+    net: 0,
     message: '',
     ...overrides,
   };

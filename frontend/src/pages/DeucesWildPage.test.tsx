@@ -23,6 +23,9 @@ const betPhaseState: VideoPokerResponse = {
   handName: '',
   heldIndices: [false, false, false, false, false],
   variantName: 'deuceswild',
+  hands: 0,
+  winRate: 0,
+  net: 0,
   message: '',
 };
 
@@ -39,6 +42,9 @@ const drawPhaseState: VideoPokerResponse = {
   handName: '',
   heldIndices: [false, false, false, false, false],
   variantName: 'deuceswild',
+  hands: 0,
+  winRate: 0,
+  net: 0,
   message: '',
 };
 
@@ -53,6 +59,9 @@ const resultPhaseState: VideoPokerResponse = {
   handName: '',
   heldIndices: [true, true, false, false, false],
   variantName: 'deuceswild',
+  hands: 0,
+  winRate: 0,
+  net: 0,
   message: '',
 };
 

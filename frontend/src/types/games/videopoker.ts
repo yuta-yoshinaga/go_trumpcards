@@ -22,6 +22,9 @@ export interface VideoPokerResponse extends BaseGameResponse {
   handKey?: string;
   heldIndices: boolean[];
   variantName: string;
+  hands: number;
+  winRate: number;
+  net: number;
 }
 
 // --- Cribbage (クリベッジ) ---
