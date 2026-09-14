@@ -35,5 +35,11 @@
   "helpExampleFlipFirst": "  fi 0                 裏向きの札を 1 枚めくる",
   "helpExampleFlipSecond": "  fi 1                 2 枚目をめくって準備を終える",
   "helpHint": "  h                    助言を表示",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "errCardIndexOutOfRange": "位置が範囲外です",
+  "errAlreadyFaceUp": "既に表向きです",
+  "errStockEmpty": "山札がありません",
+  "errDiscardPileEmpty": "捨て札がありません",
+  "errCannotFlip": "めくれません",
+  "errCannotSkip": "スキップ不可"
 }
