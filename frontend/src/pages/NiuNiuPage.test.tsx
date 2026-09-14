@@ -157,6 +157,21 @@ describe('NiuNiuPage', () => {
     expect(screen.getByText(/10の倍数/)).toBeInTheDocument();
   });
 
+  it('marks a losing payout as an error after the round', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        bankerRankKey: 'none',
+        seats: [{ name: 'あなた', isCpu: false, hand: hand({ payout: -100 }) }],
+        bankerHand: hand({ rank: 0, rankKey: 'none', multiplier: 1, comboIdx: [] }),
+      }),
+    );
+    renderWithProviders(<NiuNiuPage />);
+    const payout = await screen.findByText('-100');
+    expect(payout).toHaveClass('text-ds-error');
+    expect(payout).not.toHaveClass('text-ds-success');
+  });
+
   it('skips a seat with no hand', async () => {
     mockExec.mockResolvedValue(makeState());
     renderWithProviders(<NiuNiuPage />);

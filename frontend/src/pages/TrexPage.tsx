@@ -293,7 +293,7 @@ function TrexPageContent() {
                   onClick={() => state.canPass && game.handlePass()}
                   className={[
                     'px-4 py-2 rounded font-bold min-h-11',
-                    state.canPass ? 'bg-ds-accent text-ds-on-accent' : 'bg-ds-surface-2 text-ds-text-muted',
+                    state.canPass ? 'bg-ds-accent text-ds-text-on-accent' : 'bg-ds-surface-elevated text-ds-text-muted',
                   ].join(' ')}
                 >
                   {t('pass')}

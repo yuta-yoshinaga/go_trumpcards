@@ -302,7 +302,7 @@ function TrashPageContent() {
               />
               {state.pending && (
                 <div className="flex flex-col items-center">
-                  <span className="text-xs text-ds-secondary mb-1">{t('label.pending')}</span>
+                  <span className="text-xs text-ds-text-muted mb-1">{t('label.pending')}</span>
                   <AnimatedCard card={state.pending} width={cardWidth} />
                 </div>
               )}
@@ -418,10 +418,10 @@ function PlayerRow({
 }) {
   return (
     <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
-      <span className="text-sm text-ds-secondary mb-1">
+      <span className="text-sm text-ds-text-muted mb-1">
         {label}
         {badge && (
-          <span className="ml-2 px-1.5 py-0.5 rounded bg-ds-surface/70 text-xs text-ds-secondary whitespace-nowrap">
+          <span className="ml-2 px-1.5 py-0.5 rounded bg-ds-surface/70 text-xs text-ds-text-muted whitespace-nowrap">
             {badge}
           </span>
         )}
@@ -468,7 +468,7 @@ function FaceDownSlot({ idx, width }: { idx: number; width: number }) {
   const height = Math.round(width * 1.4);
   return (
     <div
-      className="flex items-center justify-center bg-ds-surface/70 border border-dashed border-ds-secondary rounded-md text-ds-secondary text-sm"
+      className="flex items-center justify-center bg-ds-surface/70 border border-dashed border-ds-border-subtle rounded-md text-ds-text-muted text-sm"
       style={{ width, height }}
     >
       {idx}
@@ -485,7 +485,7 @@ function StockPile({ size, onClick, disabled }: { size: number; onClick: () => v
       disabled={disabled}
     >
       <span className="text-3xl">🂠</span>
-      <span className="text-xs text-ds-secondary mt-1">{size}</span>
+      <span className="text-xs text-ds-text-muted mt-1">{size}</span>
     </button>
   );
 }
@@ -503,7 +503,7 @@ function DiscardPile({
 }) {
   return (
     <div className="flex flex-col items-center">
-      <span className="text-xs text-ds-secondary mb-1">
+      <span className="text-xs text-ds-text-muted mb-1">
         {label} ({size})
       </span>
       {top ? (

@@ -226,7 +226,7 @@ function SetteEMezzoPageContent() {
                       <div className="text-game-text-muted text-xs mt-1">
                         {t('bet')}: {seat.hand.bet}
                         {ended && seat.hand.payout !== 0 && (
-                          <span className={seat.hand.payout > 0 ? ' text-ds-success' : ' text-ds-danger'}>
+                          <span className={seat.hand.payout > 0 ? ' text-ds-success' : ' text-ds-error'}>
                             {' '}
                             {seat.hand.payout > 0 ? `+${seat.hand.payout}` : seat.hand.payout}
                           </span>

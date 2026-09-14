@@ -245,7 +245,7 @@ function ZhengPageContent() {
                     >
                       <span>{p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}</span>
                       {p.isFinished ? (
-                        <span className="font-bold text-ds-text">{t(`rank.${p.rank}`)}</span>
+                        <span className="font-bold text-ds-text-primary">{t(`rank.${p.rank}`)}</span>
                       ) : (
                         <span className="text-ds-text-muted">{t('cardCount', { count: p.cardCount })}</span>
                       )}

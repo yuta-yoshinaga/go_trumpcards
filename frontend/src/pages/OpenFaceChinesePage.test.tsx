@@ -353,6 +353,19 @@ describe('OpenFaceChinesePage foul-risk warning', () => {
     expect(warning).toHaveTextContent('反則');
   });
 
+  it('uses the error token for the warning and risky placement row', async () => {
+    mockExec.mockResolvedValue(aboutToFoul);
+    renderWithProviders(<OpenFaceChinesePage />);
+
+    const warning = await screen.findByTestId('ofc-foul-risk-warning');
+    expect(warning.className).toContain('text-ds-error');
+    expect(warning.className).not.toContain('sr-only');
+
+    const riskyButton = screen.getByTestId('place-front');
+    expect(riskyButton).toHaveAttribute('data-foul-risk', 'true');
+    expect(riskyButton.className).toContain('ring-ds-error');
+  });
+
   it('says nothing while no placement would foul', async () => {
     mockExec.mockResolvedValue(placingState);
     renderWithProviders(<OpenFaceChinesePage />);

@@ -305,7 +305,7 @@ function ScopaPageContent() {
             )}
 
             {isRoundEnd && roundDetail && (
-              <div className="bg-black/25 rounded-lg p-3 text-sm text-ds-text" data-testid="sc-score-breakdown">
+              <div className="bg-black/25 rounded-lg p-3 text-sm text-ds-text-primary" data-testid="sc-score-breakdown">
                 <div className="text-center font-semibold mb-2">{t('breakdown.title')}</div>
                 <dl className="max-w-xs mx-auto space-y-1">
                   {breakdownRows.map((row) => (

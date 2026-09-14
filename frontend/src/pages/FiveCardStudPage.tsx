@@ -311,7 +311,7 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
             {gameKey === 'soko' && (
               <div className="mb-3 p-2 rounded bg-black/30 text-xs" data-testid="soko-hand-ranking">
                 <div className="mb-1 text-ds-text-primary">{t('ranking.title')}</div>
-                <ol className="flex flex-wrap gap-x-2 gap-y-0.5 text-ds-text-secondary">
+                <ol className="flex flex-wrap gap-x-2 gap-y-0.5 text-ds-text-muted">
                   {(t('ranking.hands', { returnObjects: true }) as string[]).map((name, i) => (
                     <li key={name} className={SOKO_INSERTED_RANKS.includes(i) ? 'font-bold text-ds-accent' : ''}>
                       {i + 1}. {name}

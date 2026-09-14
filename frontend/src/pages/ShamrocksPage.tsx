@@ -281,7 +281,7 @@ function ShamrocksPageContent() {
         <div className="mt-2 text-ds-text-muted text-xs">{t('moveCount', { count: state.moveCount })}</div>
         {deadlocked && (
           <div
-            className="mt-1 flex items-center gap-2 text-ds-danger text-sm font-medium"
+            className="mt-1 flex items-center gap-2 text-ds-error text-sm font-medium"
             role="status"
             data-testid="ll-deadlock-banner"
           >

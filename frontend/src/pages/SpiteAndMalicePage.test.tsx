@@ -257,6 +257,17 @@ describe('SpiteAndMalicePage', () => {
     expect(screen.getByText(/CPUゴール: 0/)).toBeInTheDocument();
   });
 
+  it('uses the muted token for an empty human hand', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      players: [{ ...baseState.players[0], hand: [] }, baseState.players[1]],
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+
+    const emptyHand = await screen.findByText('空');
+    expect(emptyHand.className).toContain('text-ds-text-muted');
+  });
+
   it('renders the CPU side piles with a count badge on non-empty piles', async () => {
     mockExec.mockResolvedValue({
       ...baseState,

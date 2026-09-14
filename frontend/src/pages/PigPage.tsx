@@ -202,7 +202,7 @@ function PigPageContent() {
                   data-testid={`pig-seat-${p.id.toString()}`}
                 >
                   <span className="text-ds-text-primary">{seatName(p.id)}</span>
-                  {p.eliminated && <span className="ml-1 text-ds-danger">{t('header.out')}</span>}
+                  {p.eliminated && <span className="ml-1 text-ds-error">{t('header.out')}</span>}
                   {!p.eliminated && p.noticedOrder > 0 && (
                     <span className="ml-1 text-ds-success">
                       {t('header.noticed', { order: String(p.noticedOrder) })}

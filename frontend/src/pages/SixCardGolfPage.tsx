@@ -473,7 +473,7 @@ function GridSlotButton({
         <AnimatedCard card={slot.card} width={cardWidth} />
       ) : (
         <div
-          className="flex items-center justify-center bg-ds-surface/70 border border-dashed border-ds-secondary rounded-md text-ds-secondary text-sm"
+          className="flex items-center justify-center bg-ds-surface/70 border border-dashed border-ds-border-subtle rounded-md text-ds-text-muted text-sm"
           style={{ width: cardWidth, height: cardWidth * 1.5 }}
         >
           ?

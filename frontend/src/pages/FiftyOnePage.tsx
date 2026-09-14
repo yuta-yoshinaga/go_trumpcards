@@ -311,7 +311,7 @@ function FiftyOnePageContent() {
                   const isRed = d === 'HEART' || d === 'DIAMOND';
                   const classes = isLeader
                     ? 'bg-ds-accent text-ds-text-on-accent border-ds-accent'
-                    : 'bg-ds-surface text-ds-text border-ds-border';
+                    : 'bg-ds-surface text-ds-text-primary border-ds-border';
                   return (
                     <li
                       key={d}

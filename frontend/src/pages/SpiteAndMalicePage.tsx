@@ -379,7 +379,7 @@ function SpiteAndMalicePageContent() {
               ))}
             </div>
 
-            <div className="text-center text-xs text-ds-secondary">
+            <div className="text-center text-xs text-ds-text-muted">
               {t('label.stock')}: {state.stockSize} / {t('label.completed')}: {state.completedSize}
             </div>
 
@@ -493,20 +493,20 @@ function PlayerSummary({
   const sideWidth = Math.round(cardWidth * 0.5);
   return (
     <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
-      <span className="text-sm text-ds-secondary mb-1">
+      <span className="text-sm text-ds-text-muted mb-1">
         {label} ({handCountLabel(player.hand.length)})
       </span>
       <div className="flex gap-2 items-end">
         {player.goalTop ? (
           <div className="flex flex-col items-center">
-            <span className="text-xs text-ds-secondary">{goalLabel(player.goalSize)}</span>
+            <span className="text-xs text-ds-text-muted">{goalLabel(player.goalSize)}</span>
             <AnimatedCard card={player.goalTop} width={cardWidth} />
           </div>
         ) : (
-          <span className="text-xs text-ds-secondary">{goalLabel(0)}</span>
+          <span className="text-xs text-ds-text-muted">{goalLabel(0)}</span>
         )}
         <div className="flex flex-col items-center" data-testid="sam-cpu-sides">
-          <span className="text-xs text-ds-secondary">{sidesLabel}</span>
+          <span className="text-xs text-ds-text-muted">{sidesLabel}</span>
           <div className="flex gap-1">
             {player.sides.map((pile, i) => {
               const top = pile.length > 0 ? pile[pile.length - 1] : undefined;
@@ -578,7 +578,7 @@ function FoundationPile({
       aria-label={ariaLabel}
     >
       {top ? <AnimatedCard card={top} width={cardWidth} /> : <FaceDownSlot label={`F${idx + 1}`} width={cardWidth} />}
-      <span className="absolute -top-2 -right-1 text-[10px] bg-ds-surface px-1 rounded text-ds-secondary">
+      <span className="absolute -top-2 -right-1 text-[10px] bg-ds-surface px-1 rounded text-ds-text-muted">
         {topValue === 0 ? '-' : topValue}
       </span>
     </button>
@@ -589,7 +589,7 @@ function FaceDownSlot({ label, width }: { label: string; width: number }) {
   const height = Math.round(width * 1.4);
   return (
     <div
-      className="flex items-center justify-center bg-ds-surface/70 border border-dashed border-ds-secondary rounded-md text-ds-secondary text-sm"
+      className="flex items-center justify-center bg-ds-surface/70 border border-dashed border-ds-border-subtle rounded-md text-ds-text-muted text-sm"
       style={{ width, height }}
     >
       {label}
@@ -638,7 +638,7 @@ function GoalPile({
       disabled={size === 0}
       aria-label={top ? ariaTop(cardAlt(top), size) : ariaEmpty}
     >
-      <span className="text-xs text-ds-secondary mb-1">
+      <span className="text-xs text-ds-text-muted mb-1">
         {label} ({size})
       </span>
       {top ? <AnimatedCard card={top} width={cardWidth} /> : <FaceDownSlot label={label} width={cardWidth} />}
@@ -673,10 +673,10 @@ function HandRow({
 }) {
   return (
     <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
-      <span className="text-sm text-ds-secondary mb-1">{label}</span>
+      <span className="text-sm text-ds-text-muted mb-1">{label}</span>
       <div className="flex gap-2 flex-wrap justify-center">
         {hand.length === 0 ? (
-          <span className="text-xs text-ds-secondary">{emptyLabel}</span>
+          <span className="text-xs text-ds-text-muted">{emptyLabel}</span>
         ) : (
           hand.map((card, idx) => {
             const selected = selectedIdx === idx;
@@ -746,7 +746,7 @@ function SideRow({
 }) {
   return (
     <div className="flex flex-col items-center gap-2" data-tutorial={dataTutorial}>
-      <span className="text-sm text-ds-secondary">{cpuLabel ? `CPU ${label}` : label}</span>
+      <span className="text-sm text-ds-text-muted">{cpuLabel ? `CPU ${label}` : label}</span>
       {/* Shared reason for the discard buttons' disabled state (they all gate on
           a selected hand card), announced via aria-describedby below. */}
       <span id="sam-discard-hint" className="sr-only" data-testid="sam-discard-hint">
@@ -773,7 +773,7 @@ function SideRow({
                   <FaceDownSlot label={`S${idx + 1}`} width={cardWidth} />
                 )}
               </button>
-              <span className="text-[10px] text-ds-secondary">
+              <span className="text-[10px] text-ds-text-muted">
                 {label} {idx + 1} ({pile.length})
               </span>
               <button

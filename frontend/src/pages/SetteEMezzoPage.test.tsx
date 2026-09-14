@@ -236,6 +236,20 @@ describe('SetteEMezzoPage', () => {
     await waitFor(() => expect(screen.getByText(/\+100/)).toBeInTheDocument());
   });
 
+  it('marks a losing payout as an error after the round', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 4,
+        lastResult: '親は 4',
+        seats: [{ name: 'あなた', isCpu: false, hand: hand({ payout: -100, totalLabel: '7.5' }) }],
+      }),
+    );
+    renderWithProviders(<SetteEMezzoPage />);
+    const payout = await screen.findByText('-100');
+    expect(payout).toHaveClass('text-ds-error');
+    expect(payout).not.toHaveClass('text-ds-success');
+  });
+
   it('swaps the board for a terminal when CLI mode is toggled', async () => {
     mockExec.mockResolvedValue(makeState());
     renderWithProviders(<SetteEMezzoPage />);

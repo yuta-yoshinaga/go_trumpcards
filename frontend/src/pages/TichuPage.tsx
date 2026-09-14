@@ -314,7 +314,7 @@ function TichuPageContent() {
                 <span className="text-ds-text-primary text-xs ml-2">{state.tableCombo}</span>
               </>
             ) : (
-              <span className="text-ds-text-secondary text-sm">{t('label.table')}: ---</span>
+              <span className="text-ds-text-muted text-sm">{t('label.table')}: ---</span>
             )}
           </div>
 
@@ -375,14 +375,14 @@ function TichuPageContent() {
                       {t('invalidCombo')}
                     </span>
                   ) : (
-                    <span className="text-ds-text-secondary">
+                    <span className="text-ds-text-muted">
                       {t('comboPreview')}:{' '}
                       <span className="font-medium text-ds-accent">
                         {t(`combo.${selectedCombo.type}`)}
                         {selectedCombo.length > 0 ? ` (${selectedCombo.length})` : ''}
                       </span>
                       {selectedCombo.type === 'dog' && (
-                        <span className="ml-1 text-ds-text-secondary" data-testid="tichu-dog-note">
+                        <span className="ml-1 text-ds-text-muted" data-testid="tichu-dog-note">
                           ({t('dogLeadNote')})
                         </span>
                       )}

@@ -50,7 +50,7 @@ const KILLE_MAX_REENTRIES = 3;
 const KILLE_LADDER = [
   { label: 'Harlequin', color: 'text-ds-accent' },
   { label: 'Cuckoo', color: 'text-ds-info' },
-  { label: 'Hussar', color: 'text-ds-danger' },
+  { label: 'Hussar', color: 'text-ds-error' },
   { label: 'Pig', color: 'text-ds-warning' },
   { label: 'Cavalier', color: 'text-ds-success' },
   { label: 'Inn', color: 'text-ds-success' },
@@ -278,7 +278,7 @@ function KillePageContent() {
                     <span>{t('reentriesUsed', { used: p.reentries, max: KILLE_MAX_REENTRIES })}</span>
                   )}
                   {p.isSatisfied && !p.isOut && <span className="text-ds-success">[{t('satisfied')}]</span>}
-                  {p.isOut && <span className="text-ds-danger">[{outReason(p)}]</span>}
+                  {p.isOut && <span className="text-ds-error">[{outReason(p)}]</span>}
                   {p.isFinished && <span>({t('eliminated')})</span>}
                   {!p.isHuman && p.card && <CardImage card={p.card} width={cardWidth} />}
                 </div>

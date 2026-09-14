@@ -242,7 +242,9 @@ function LaughAndLieDownPageContent() {
                           onClick={() => setThreeArmed(threeArmed === i ? null : i)}
                           className={[
                             'mt-1 px-2 py-1 rounded text-[10px] min-h-11',
-                            threeArmed === i ? 'bg-ds-accent text-ds-on-accent' : 'bg-ds-surface-2 text-ds-text',
+                            threeArmed === i
+                              ? 'bg-ds-accent text-ds-text-on-accent'
+                              : 'bg-ds-surface-elevated text-ds-text-primary',
                             // **ヒントが 3 枚取りを勧めているなら、そのボタンも
                             // 示す。**カードを光らせるだけでは、さらにこれを
                             // 押す必要があることが伝わらない (#4884)。

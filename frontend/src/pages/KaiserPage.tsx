@@ -248,7 +248,7 @@ function KaiserPageContent() {
               <div className="mb-1 text-ds-text-primary">{t('specialTitle')}</div>
               <div className="flex flex-wrap gap-x-3">
                 <span className="text-ds-success font-semibold">{t('heartFive')}</span>
-                <span className="text-ds-danger font-semibold">{t('spadeThree')}</span>
+                <span className="text-ds-error font-semibold">{t('spadeThree')}</span>
               </div>
               <div className="mt-1 text-ds-text-muted">{t('specialNote')}</div>
               {state.heartFiveBy >= 0 && (
