@@ -57,6 +57,18 @@ const ASSIGN_FORM = `func (p *DemoWebPresenter) Output() string {
 }
 `;
 
+// **メソッド形も同じ経路。** レシーバが付くと正規表現が空振りしていた
+// (PR #7803 のレビュー指摘)。ブロックコメントの中の波括弧で深さがずれないことも
+// 同時に見る。
+const METHOD_HELPER_FORM = `func (p *DemoWebPresenter) demoMessageCode(outcome int) string {
+	/* } this brace is inside a comment */
+	if outcome == 1 {
+		return "demo.method.one"
+	}
+	return "demo.method.default"
+}
+`;
+
 const HELPER_FORM = `func demoMessageCode(outcome int) string {
 	switch outcome {
 	case 1:
@@ -97,6 +109,18 @@ describe('check-message-codes', () => {
   it('sees string literals returned by MessageCode helpers', () => {
     const r = check(HELPER_FORM, ['demo.helper.one', 'demo.helper.default']);
     expect(r.code).toBe(0);
+  });
+
+  it('sees codes returned by a MessageCode method, past a brace inside a comment', () => {
+    const r = check(METHOD_HELPER_FORM, ['demo.method.one', 'demo.method.default']);
+    expect(r.code).toBe(0);
+  });
+
+  it('rejects an untranslated code returned by a MessageCode method', () => {
+    const r = check(METHOD_HELPER_FORM, []);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain('demo.method.one');
+    expect(r.out).toContain('demo.method.default');
   });
 
   it('rejects an untranslated string literal returned by a MessageCode helper', () => {

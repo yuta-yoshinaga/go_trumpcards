@@ -116,6 +116,19 @@ function matchingBrace(text, start) {
       quote = c;
       continue;
     }
+    // A brace inside a comment would desync the depth count.
+    if (c === '/' && text[i + 1] === '/') {
+      const nl = text.indexOf('\n', i);
+      if (nl < 0) return -1;
+      i = nl;
+      continue;
+    }
+    if (c === '/' && text[i + 1] === '*') {
+      const end = text.indexOf('*/', i + 2);
+      if (end < 0) return -1;
+      i = end + 1;
+      continue;
+    }
     if (c === '{') depth += 1;
     else if (c === '}' && --depth === 0) return i;
   }
@@ -165,7 +178,10 @@ async function emittedCodes() {
     // `piquetPhaseMessageCode`, which the tuple-return scan cannot see. Restrict
     // this scan to functions whose names end in MessageCode so ordinary string
     // returns (labels, errors, etc.) are not mistaken for i18n keys.
-    for (const m of text.matchAll(/func\s+(\w*MessageCode)\s*\([^)]*\)\s+string\s*\{/g)) {
+    // The receiver group matters: a method (func (p *FooWebPresenter) fooMessageCode)
+    // would otherwise slip past, and this guard exists precisely because a silent
+    // miss looks identical to a pass.
+    for (const m of text.matchAll(/func\s+(?:\([^)]*\)\s*)?(\w*MessageCode)\s*\([^)]*\)\s+string\s*\{/g)) {
       const bodyEnd = matchingBrace(text, m.index + m[0].length - 1);
       if (bodyEnd < 0) continue;
       const body = text.slice(m.index + m[0].length, bodyEnd);
