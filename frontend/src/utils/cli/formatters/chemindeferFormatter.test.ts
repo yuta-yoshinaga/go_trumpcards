@@ -48,6 +48,15 @@ const base = {
 const at = (over: Partial<ChemindeFerResponse>) => ({ ...base, ...over }) as ChemindeFerResponse;
 
 describe('formatChemindeFerState', () => {
+  it('shows the shoe count and changes when cards are drawn', () => {
+    const fullShoe = formatChemindeFerState(at({ remainingCards: 312 }));
+    const drawnShoe = formatChemindeFerState(at({ remainingCards: 306 }));
+
+    expect(fullShoe).toContain('Shoe: 312 card(s) left');
+    expect(drawnShoe).toContain('Shoe: 306 card(s) left');
+    expect(drawnShoe).not.toContain('Shoe: 312 card(s) left');
+  });
+
   it('フェーズ・ラウンド・親を出す', () => {
     const out = formatChemindeFerState(at({ config: { rounds: 12, initialChips: 1000 } }));
     expect(out).toContain('STAKE');
