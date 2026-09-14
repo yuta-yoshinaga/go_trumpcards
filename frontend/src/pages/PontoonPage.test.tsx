@@ -217,6 +217,23 @@ describe('PontoonPage', () => {
     expect(screen.getByText(/\+200/)).toBeInTheDocument();
   });
 
+  it('marks a losing payout as an error after the round', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 4,
+        seats: [
+          { name: 'あなた', isCpu: false, hands: [hand({ payout: -100 })] },
+          { name: 'CPU1', isCpu: true, hands: [] },
+          { name: 'CPU2', isCpu: true, hands: [] },
+        ],
+      }),
+    );
+    renderWithProviders(<PontoonPage />);
+    const payout = await screen.findByText('-100');
+    expect(payout).toHaveClass('text-ds-error');
+    expect(payout).not.toHaveClass('text-ds-success');
+  });
+
   it('marks the hand on turn', async () => {
     mockExec.mockResolvedValue(makeState());
     renderWithProviders(<PontoonPage />);
