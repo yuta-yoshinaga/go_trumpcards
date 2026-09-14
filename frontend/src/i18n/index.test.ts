@@ -105,6 +105,24 @@ describe('i18n lang sync', () => {
     ],
     ['gaigel', 'gaigel.errCardIndexOutOfRange', 'カードインデックスが範囲外です', 'The card index is out of range.'],
     ['watten', 'watten.errInvalidSchlagRank', '無効な Schlag ランクです', 'Invalid Schlag rank.'],
+    [
+      'binokel',
+      'binokel.errBidMinimum',
+      'ビッドは{{min}}以上でなければなりません。',
+      'The bid must be at least {{min}}.',
+    ],
+    [
+      'pinochle',
+      'pinochle.errBidMinimum',
+      'ビッドは{{min}}以上でなければなりません。',
+      'The bid must be at least {{min}}.',
+    ],
+    [
+      'mighty',
+      'mighty.errBidRange',
+      '{{min}}〜{{max}}のビッドを指定してください（0でパス）。',
+      'Specify a bid from {{min}} to {{max}} (0 passes).',
+    ],
   ] as const)(
     'resolves %s error message codes through the common namespace',
     async (_game, code, jaExpected, enExpected) => {
@@ -118,4 +136,15 @@ describe('i18n lang sync', () => {
       expect(en).not.toBe(ja);
     },
   );
+
+  it.each([
+    ['binokel', 'ビッドフェーズではありません。', 'This is not the bidding phase.'],
+    ['pinochle', 'ビッドフェーズではありません。', 'This is not the bidding phase.'],
+  ] as const)('resolves %s wrong-phase messages consistently', async (game, jaExpected, enExpected) => {
+    await i18n.changeLanguage('ja');
+    expect(i18n.t(`messageCode.${game}.errWrongPhase`)).toBe(jaExpected);
+
+    await i18n.changeLanguage('en');
+    expect(i18n.t(`messageCode.${game}.errWrongPhase`)).toBe(enExpected);
+  });
 });
