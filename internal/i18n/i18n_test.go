@@ -152,6 +152,18 @@ func TestT_CanastaErrorCodes_BothLangs(t *testing.T) {
 	}
 }
 
+func TestT_BinokelAndPinochleWrongPhase_BothLangs(t *testing.T) {
+	for _, game := range []string{"binokel", "pinochle"} {
+		t.Run(game, func(t *testing.T) {
+			i18n.SetLang("ja")
+			assert.Equal(t, "ビッドフェーズではありません。", i18n.T(game+".errWrongPhase"))
+
+			i18n.SetLang("en")
+			assert.Equal(t, "This is not the bidding phase.", i18n.T(game+".errWrongPhase"))
+		})
+	}
+}
+
 func TestT_HoldemKeys_ja(t *testing.T) {
 	i18n.SetLang("ja")
 	assert.Contains(t, i18n.T("holdem.amountRequired"), "ベット")
