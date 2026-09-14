@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // HandAndFootPlayerCnt ハンドアンドフットのプレイヤー数 (4人/2チーム)
@@ -387,38 +388,38 @@ func (g *HandAndFoot) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 	}
 
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札の山が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errDiscardPileEmpty", nil)
 	}
 
 	topCard := g.discardPile[len(g.discardPile)-1]
 	if CanastaIsBlack3(topCard) {
-		return NewDomainError(ErrInvalidPlay, "黒3がトップの場合は捨て札の山を取れません")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errBlackThreeCannotTakeDiscardPile", nil)
 	}
 	if CanastaIsWild(topCard) {
-		return NewDomainError(ErrInvalidPlay, "ワイルドカードがトップの場合は捨て札の山を取れません")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errWildCardCannotTakeDiscardPile", nil)
 	}
 
 	if len(naturalPairIndices) != 2 {
-		return NewDomainError(ErrInvalidPlay, "ナチュラルペア（同ランクの自然カード2枚）のインデックスを指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errNaturalPairIndicesRequired", nil)
 	}
 
 	player := g.players[g.currentPlayerIdx]
 	for _, idx := range naturalPairIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "handandfoot.errCardIndexOutOfRange", nil)
 		}
 	}
 	if naturalPairIndices[0] == naturalPairIndices[1] {
-		return NewDomainError(ErrInvalidCard, "同じカードは指定できません")
+		return NewDomainErrorCode(ErrInvalidCard, "handandfoot.errSameCard", nil)
 	}
 
 	card0 := player.GetCard(naturalPairIndices[0])
 	card1 := player.GetCard(naturalPairIndices[1])
 	if CanastaIsWild(card0) || CanastaIsWild(card1) {
-		return NewDomainError(ErrInvalidPlay, "ペアはナチュラルカード（ワイルドカード以外）でなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errPairMustBeNatural", nil)
 	}
 	if card0.GetValue() != topCard.GetValue() || card1.GetValue() != topCard.GetValue() {
-		return NewDomainError(ErrInvalidPlay, "ペアのランクが捨て札のトップカードと一致しません")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errPairRankMismatch", nil)
 	}
 
 	// トップ + 直下最大6枚 (計7枚) を獲得
@@ -465,7 +466,7 @@ func (g *HandAndFoot) PlayerMeld(meldGroups [][]int) error {
 
 	if len(meldGroups) == 0 {
 		if g.drewFromDiscard {
-			return NewDomainError(ErrInvalidPlay, "捨て札の山を取った場合はトップカードをメルドに含める必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errTopCardMustBeMelded", nil)
 		}
 		g.phase = HandAndFootPhaseDiscard
 		return nil
@@ -478,10 +479,10 @@ func (g *HandAndFoot) PlayerMeld(meldGroups [][]int) error {
 	for _, group := range meldGroups {
 		for _, idx := range group {
 			if idx < 0 || idx >= player.GetCardsSize() {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+				return NewDomainErrorCode(ErrInvalidCard, "handandfoot.errCardIndexOutOfRange", nil)
 			}
 			if allIndices[idx] {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+				return NewDomainErrorCode(ErrInvalidCard, "handandfoot.errDuplicateCardIndex", nil)
 			}
 			allIndices[idx] = true
 		}
@@ -515,7 +516,7 @@ func (g *HandAndFoot) PlayerMeld(meldGroups [][]int) error {
 			}
 		}
 		if !found {
-			return NewDomainError(ErrInvalidPlay, "捨て札の山を取った場合はトップカードをメルドに含める必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errTopCardMustBeMelded", nil)
 		}
 	}
 
@@ -607,7 +608,7 @@ func (g *HandAndFoot) PlayerSkipMeld() error {
 		return ErrNotHumanTurn
 	}
 	if g.drewFromDiscard {
-		return NewDomainError(ErrInvalidPlay, "捨て札の山を取った場合はトップカードをメルドに含める必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errTopCardMustBeMelded", nil)
 	}
 
 	g.phase = HandAndFootPhaseDiscard
@@ -628,12 +629,12 @@ func (g *HandAndFoot) PlayerDiscard(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "handandfoot.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 	if CanastaIsRed3(card) {
-		return NewDomainError(ErrInvalidPlay, "赤3は捨てられません")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errRedThreeCannotBeDiscarded", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)
@@ -664,13 +665,13 @@ func (g *HandAndFoot) PlayerGoOut() error {
 
 	player := g.players[g.currentPlayerIdx]
 	if !g.canGoOut(g.currentPlayerIdx) {
-		return NewDomainError(ErrInvalidPlay, "上がり条件（フット取り込み・必要なカナスタ）を満たしていません")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errGoOutRequirementsNotMet", nil)
 	}
 
 	if player.GetCardsSize() == 1 {
 		card := player.GetCard(0)
 		if CanastaIsRed3(card) {
-			return NewDomainError(ErrInvalidPlay, "赤3は捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errRedThreeCannotBeDiscarded", nil)
 		}
 		discarded := player.RemoveCard(0)
 		g.discardPile = append(g.discardPile, discarded)
@@ -679,7 +680,7 @@ func (g *HandAndFoot) PlayerGoOut() error {
 		}
 		g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 	} else if player.GetCardsSize() > 1 {
-		return NewDomainError(ErrInvalidPlay, "上がるには手札が0枚または1枚でなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errHandMustHaveAtMostOneCardToGoOut", nil)
 	}
 
 	g.goOut(g.currentPlayerIdx)
@@ -1112,7 +1113,7 @@ func (g *HandAndFoot) teamCumulativeScore(team int) int {
 // validateNewMeld 新規メルドの検証
 func (g *HandAndFoot) validateNewMeld(cards []*Card) error {
 	if len(cards) < 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドには最低3枚のカードが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errMeldNeedsAtLeastThreeCards", nil)
 	}
 
 	var naturalCount, wildCount int
@@ -1125,25 +1126,25 @@ func (g *HandAndFoot) validateNewMeld(cards []*Card) error {
 			if rank == 0 {
 				rank = c.GetValue()
 			} else if c.GetValue() != rank {
-				return NewDomainError(ErrInvalidPlay, "メルドは同じランクのカードで構成する必要があります")
+				return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errMeldCardsMustHaveSameRank", nil)
 			}
 		}
 	}
 
 	for _, c := range cards {
 		if CanastaIsBlack3(c) {
-			return NewDomainError(ErrInvalidPlay, "黒3はメルドできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errBlackThreeCannotMeld", nil)
 		}
 	}
 
 	if naturalCount < 2 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはナチュラルカードが最低2枚必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errMeldNeedsAtLeastTwoNaturalCards", nil)
 	}
 	if wildCount > 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはワイルドカードは最大3枚までです")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errMeldAllowsAtMostThreeWildCards", nil)
 	}
 	if wildCount > naturalCount {
-		return NewDomainError(ErrInvalidPlay, "ワイルドカードの数がナチュラルカードの数を超えてはいけません")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errWildCardsCannotExceedNaturalCards", nil)
 	}
 
 	return nil
@@ -1168,21 +1169,21 @@ func (g *HandAndFoot) validateMeldAddition(existing *CanastaMeld, cards []*Card)
 		if CanastaIsWild(c) {
 			newWildCount++
 		} else if c.GetValue() != rank {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ランク%dのメルドにランク%dのカードは追加できません", rank, c.GetValue()))
+			return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errMeldCardRankMismatch", map[string]string{"meldRank": strconv.Itoa(rank), "cardRank": strconv.Itoa(c.GetValue())})
 		} else {
 			newNaturalCount++
 		}
 		if CanastaIsBlack3(c) {
-			return NewDomainError(ErrInvalidPlay, "黒3はメルドできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errBlackThreeCannotMeld", nil)
 		}
 	}
 
 	// 7枚到達 (カナスタ完成) 時はワイルド最大3枚。それ以外はナチュラル多数を維持。
 	if newWildCount > 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはワイルドカードは最大3枚までです")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errMeldAllowsAtMostThreeWildCards", nil)
 	}
 	if newWildCount > newNaturalCount {
-		return NewDomainError(ErrInvalidPlay, "ワイルドカードの数がナチュラルカードの数を超えてはいけません")
+		return NewDomainErrorCode(ErrInvalidPlay, "handandfoot.errWildCardsCannotExceedNaturalCards", nil)
 	}
 
 	return nil

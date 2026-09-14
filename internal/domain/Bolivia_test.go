@@ -36,6 +36,26 @@ func TestBolivia_WildOnlyMeldIsLegal(t *testing.T) {
 	assert.Error(t, g.validateNewSet(mixed), "ナチュラル 1 枚の混成が通ってしまっている")
 }
 
+func TestBolivia_DomainErrorsExposeMessageCodes(t *testing.T) {
+	g := newBoliviaGame(t)
+	cases := []struct {
+		name string
+		err  error
+		code string
+	}{
+		{"meld minimum", g.validateNewSet(nil), "bolivia.errMeldNeedsAtLeastThreeCards"},
+		{"sequence minimum", g.validateNewEscalera(nil), "bolivia.errSequenceNeedsAtLeastThreeCards"},
+		{"black three", g.validateNewSet([]*Card{bolCard(CardDesignSpade, 3), bolCard(CardDesignHeart, 3), bolCard(CardDesignClover, 3)}), "bolivia.errBlackThreeCannotMeld"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			code, params := ErrorMessageCode(tc.err)
+			assert.Equal(t, tc.code, code)
+			assert.Nil(t, params)
+		})
+	}
+}
+
 func TestBoliviaIsWildOnly(t *testing.T) {
 	assert.True(t, BoliviaIsWildOnly([]*Card{bolCard(CardDesignSpade, 2), bolJoker()}))
 	assert.False(t, BoliviaIsWildOnly([]*Card{bolCard(CardDesignSpade, 2), bolCard(CardDesignSpade, 5)}))
@@ -385,8 +405,8 @@ func TestBolivia_GoOutRefusalNamesTheRealReason(t *testing.T) {
 		require.NoError(t, g.PlayerSkipMeld())
 		err := g.PlayerGoOut()
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "完成メルド")
-		assert.NotContains(t, err.Error(), "エスカレラ")
+		code, _ := ErrorMessageCode(err)
+		assert.Equal(t, "bolivia.errCompletedMeldsRequiredToGoOut", code)
 	})
 
 	// **数は足りているがエスカレラが無い**とき、その一点を名指すこと。
@@ -402,7 +422,8 @@ func TestBolivia_GoOutRefusalNamesTheRealReason(t *testing.T) {
 
 		err := g.PlayerGoOut()
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "エスカレラ", "エスカレラが無いことを言っていない")
+		code, _ := ErrorMessageCode(err)
+		assert.Equal(t, "bolivia.errEscaleraRequiredToGoOut", code, "エスカレラが無いことを言っていない")
 
 		// 負のコントロール: パートナーがエスカレラを持てば上がれる。
 		// **上がりは手札を出し切ってから**なので、手札も 1 枚まで減らす。

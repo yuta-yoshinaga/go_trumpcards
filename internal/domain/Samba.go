@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // SambaPlayerCnt サンバのプレイヤー数 (2チーム × 2人のパートナーシップ)
@@ -304,47 +305,47 @@ func (g *Samba) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 	}
 
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札の山が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errDiscardPileEmpty", nil)
 	}
 
 	topCard := g.discardPile[len(g.discardPile)-1]
 
 	if SambaIsBlack3(topCard) {
-		return NewDomainError(ErrInvalidPlay, "黒3がトップの場合は捨て札の山を取れません")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errBlackThreeCannotTakeDiscardPile", nil)
 	}
 	if SambaIsWild(topCard) {
-		return NewDomainError(ErrInvalidPlay, "ワイルドカードがトップの場合は捨て札の山を取れません")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errWildCardCannotTakeDiscardPile", nil)
 	}
 
 	if len(naturalPairIndices) != 2 {
-		return NewDomainError(ErrInvalidPlay, "ナチュラルペア（同ランクの自然カード2枚）のインデックスを指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errNaturalPairIndicesRequired", nil)
 	}
 
 	player := g.players[g.currentPlayerIdx]
 	for _, idx := range naturalPairIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "samba.errCardIndexOutOfRange", nil)
 		}
 	}
 	if naturalPairIndices[0] == naturalPairIndices[1] {
-		return NewDomainError(ErrInvalidCard, "同じカードは指定できません")
+		return NewDomainErrorCode(ErrInvalidCard, "samba.errSameCard", nil)
 	}
 
 	card0 := player.GetCard(naturalPairIndices[0])
 	card1 := player.GetCard(naturalPairIndices[1])
 
 	if SambaIsWild(card0) || SambaIsWild(card1) {
-		return NewDomainError(ErrInvalidPlay, "ペアはナチュラルカード（ワイルドカード以外）でなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errPairMustBeNatural", nil)
 	}
 	if card0.GetValue() != topCard.GetValue() || card1.GetValue() != topCard.GetValue() {
-		return NewDomainError(ErrInvalidPlay, "ペアのランクが捨て札のトップカードと一致しません")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errPairRankMismatch", nil)
 	}
 
 	if !player.hasInitMeld {
 		meldValue := SambaCardValue(topCard) + SambaCardValue(card0) + SambaCardValue(card1)
 		minReq := g.minimumMeldValue(g.currentPlayerIdx)
 		if meldValue < minReq {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("初回メルドの最低点(%d)を満たしていません（現在%d点）", minReq, meldValue))
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errInitialMeldMinimumNotMet", map[string]string{"min": strconv.Itoa(minReq), "score": strconv.Itoa(meldValue)})
 		}
 	}
 
@@ -388,7 +389,7 @@ func (g *Samba) PlayerMeld(meldGroups [][]int) error {
 
 	if len(meldGroups) == 0 {
 		if g.drewFromDiscard {
-			return NewDomainError(ErrInvalidPlay, "捨て札の山を取った場合はトップカードをメルドに含める必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errTopCardMustBeMelded", nil)
 		}
 		g.phase = SambaPhaseDiscard
 		return nil
@@ -400,10 +401,10 @@ func (g *Samba) PlayerMeld(meldGroups [][]int) error {
 	for _, group := range meldGroups {
 		for _, idx := range group {
 			if idx < 0 || idx >= player.GetCardsSize() {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+				return NewDomainErrorCode(ErrInvalidCard, "samba.errCardIndexOutOfRange", nil)
 			}
 			if allIndices[idx] {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+				return NewDomainErrorCode(ErrInvalidCard, "samba.errDuplicateCardIndex", nil)
 			}
 			allIndices[idx] = true
 		}
@@ -437,7 +438,7 @@ func (g *Samba) PlayerMeld(meldGroups [][]int) error {
 			}
 		}
 		if !found {
-			return NewDomainError(ErrInvalidPlay, "捨て札の山を取った場合はトップカードをメルドに含める必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errTopCardMustBeMelded", nil)
 		}
 	}
 
@@ -461,7 +462,7 @@ func (g *Samba) PlayerMeld(meldGroups [][]int) error {
 	if isInitialMeld {
 		minReq := g.minimumMeldValue(g.currentPlayerIdx)
 		if totalMeldValue < minReq {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("初回メルドの最低点(%d)を満たしていません（現在%d点）", minReq, totalMeldValue))
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errInitialMeldMinimumNotMet", map[string]string{"min": strconv.Itoa(minReq), "score": strconv.Itoa(totalMeldValue)})
 		}
 	}
 
@@ -590,7 +591,7 @@ func (g *Samba) PlayerSkipMeld() error {
 		return ErrNotHumanTurn
 	}
 	if g.drewFromDiscard {
-		return NewDomainError(ErrInvalidPlay, "捨て札の山を取った場合はトップカードをメルドに含める必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errTopCardMustBeMelded", nil)
 	}
 
 	g.phase = SambaPhaseDiscard
@@ -611,12 +612,12 @@ func (g *Samba) PlayerDiscard(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "samba.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 	if SambaIsRed3(card) {
-		return NewDomainError(ErrInvalidPlay, "赤3は捨てられません")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errRedThreeCannotBeDiscarded", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)
@@ -647,13 +648,13 @@ func (g *Samba) PlayerGoOut() error {
 	player := g.players[g.currentPlayerIdx]
 
 	if !g.canGoOut(g.currentPlayerIdx) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("上がるにはチームで%d個以上のカナスタ/サンバが必要です", SambaGoOutRequiredMelds))
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errCompletedMeldsRequiredToGoOut", map[string]string{"required": strconv.Itoa(SambaGoOutRequiredMelds)})
 	}
 
 	if player.GetCardsSize() == 1 {
 		card := player.GetCard(0)
 		if SambaIsRed3(card) {
-			return NewDomainError(ErrInvalidPlay, "赤3は捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errRedThreeCannotBeDiscarded", nil)
 		}
 		discarded := player.RemoveCard(0)
 		g.discardPile = append(g.discardPile, discarded)
@@ -662,7 +663,7 @@ func (g *Samba) PlayerGoOut() error {
 		}
 		g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 	} else if player.GetCardsSize() > 1 {
-		return NewDomainError(ErrInvalidPlay, "上がるには手札が0枚または1枚でなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errHandMustHaveAtMostOneCardToGoOut", nil)
 	}
 
 	g.goOut(g.currentPlayerIdx)
@@ -1282,14 +1283,14 @@ func (g *Samba) checkGameEnd() {
 // validateNewSet 新規セットメルドの検証
 func (g *Samba) validateNewSet(cards []*Card) error {
 	if len(cards) < 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドには最低3枚のカードが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errMeldNeedsAtLeastThreeCards", nil)
 	}
 
 	var naturalCount, wildCount int
 	rank := 0
 	for _, c := range cards {
 		if SambaIsBlack3(c) {
-			return NewDomainError(ErrInvalidPlay, "黒3はメルドできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errBlackThreeCannotMeld", nil)
 		}
 		if SambaIsWild(c) {
 			wildCount++
@@ -1299,18 +1300,18 @@ func (g *Samba) validateNewSet(cards []*Card) error {
 		if rank == 0 {
 			rank = c.GetValue()
 		} else if c.GetValue() != rank {
-			return NewDomainError(ErrInvalidPlay, "セットメルドは同じランクのカードで構成する必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errSetMeldCardsMustHaveSameRank", nil)
 		}
 	}
 
 	if naturalCount < 2 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはナチュラルカードが最低2枚必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errMeldNeedsAtLeastTwoNaturalCards", nil)
 	}
 	if wildCount > 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはワイルドカードは最大3枚までです")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errMeldAllowsAtMostThreeWildCards", nil)
 	}
 	if wildCount > naturalCount {
-		return NewDomainError(ErrInvalidPlay, "ワイルドカードの数がナチュラルカードの数を超えてはいけません")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errWildCardsCannotExceedNaturalCards", nil)
 	}
 	return nil
 }
@@ -1326,16 +1327,16 @@ func (g *Samba) validateSetAddition(existing *SambaMeld, cards []*Card) error {
 	}
 	for _, c := range cards {
 		if SambaIsBlack3(c) {
-			return NewDomainError(ErrInvalidPlay, "黒3はメルドできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errBlackThreeCannotMeld", nil)
 		}
 		if SambaIsWild(c) {
 			wildCount++
 		} else if c.GetValue() != rank {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ランク%dのメルドにランク%dのカードは追加できません", rank, c.GetValue()))
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errMeldCardRankMismatch", map[string]string{"meldRank": strconv.Itoa(rank), "cardRank": strconv.Itoa(c.GetValue())})
 		}
 	}
 	if wildCount > 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはワイルドカードは最大3枚までです")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errMeldAllowsAtMostThreeWildCards", nil)
 	}
 	return nil
 }
@@ -1358,31 +1359,31 @@ func (g *Samba) validateSequenceAddition(existing *SambaMeld, cards []*Card) err
 // 必ず値をソートする。
 func sambaValidateSequenceCards(cards []*Card) error {
 	if len(cards) < 3 {
-		return NewDomainError(ErrInvalidPlay, "シーケンスには最低3枚のカードが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errSequenceNeedsAtLeastThreeCards", nil)
 	}
 	design := -1
 	vals := make([]int, 0, len(cards))
 	for _, c := range cards {
 		if SambaIsWild(c) {
-			return NewDomainError(ErrInvalidPlay, "シーケンスメルドにワイルドカードは使えません")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errSequenceCannotUseWildCards", nil)
 		}
 		if c.GetValue() == 3 {
-			return NewDomainError(ErrInvalidPlay, "3はシーケンスメルドに使えません")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errThreeCannotBeUsedInSequence", nil)
 		}
 		if design == -1 {
 			design = c.GetDesign()
 		} else if c.GetDesign() != design {
-			return NewDomainError(ErrInvalidPlay, "シーケンスメルドは同じスートで構成する必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errSequenceMeldMustUseSameSuit", nil)
 		}
 		vals = append(vals, sambaSequenceValue(c))
 	}
 	sort.Ints(vals)
 	for i := 1; i < len(vals); i++ {
 		if vals[i] == vals[i-1] {
-			return NewDomainError(ErrInvalidPlay, "シーケンスメルドに同じカードは含められません")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errSequenceMeldCannotDuplicateCard", nil)
 		}
 		if vals[i] != vals[i-1]+1 {
-			return NewDomainError(ErrInvalidPlay, "シーケンスメルドは連番でなければなりません")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errSequenceMeldRanksMustBeConsecutive", nil)
 		}
 	}
 	return nil

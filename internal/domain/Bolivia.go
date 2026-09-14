@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // BoliviaPlayerCnt ボリビアのプレイヤー数 (2チーム × 2人のパートナーシップ)
@@ -343,47 +344,47 @@ func (g *Bolivia) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 	}
 
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札の山が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errDiscardPileEmpty", nil)
 	}
 
 	topCard := g.discardPile[len(g.discardPile)-1]
 
 	if BoliviaIsBlack3(topCard) {
-		return NewDomainError(ErrInvalidPlay, "黒3がトップの場合は捨て札の山を取れません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errBlackThreeCannotTakeDiscardPile", nil)
 	}
 	if BoliviaIsWild(topCard) {
-		return NewDomainError(ErrInvalidPlay, "ワイルドカードがトップの場合は捨て札の山を取れません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errWildCardCannotTakeDiscardPile", nil)
 	}
 
 	if len(naturalPairIndices) != 2 {
-		return NewDomainError(ErrInvalidPlay, "ナチュラルペア（同ランクの自然カード2枚）のインデックスを指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errNaturalPairIndicesRequired", nil)
 	}
 
 	player := g.players[g.currentPlayerIdx]
 	for _, idx := range naturalPairIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "bolivia.errCardIndexOutOfRange", nil)
 		}
 	}
 	if naturalPairIndices[0] == naturalPairIndices[1] {
-		return NewDomainError(ErrInvalidCard, "同じカードは指定できません")
+		return NewDomainErrorCode(ErrInvalidCard, "bolivia.errSameCard", nil)
 	}
 
 	card0 := player.GetCard(naturalPairIndices[0])
 	card1 := player.GetCard(naturalPairIndices[1])
 
 	if BoliviaIsWild(card0) || BoliviaIsWild(card1) {
-		return NewDomainError(ErrInvalidPlay, "ペアはナチュラルカード（ワイルドカード以外）でなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errPairMustBeNatural", nil)
 	}
 	if card0.GetValue() != topCard.GetValue() || card1.GetValue() != topCard.GetValue() {
-		return NewDomainError(ErrInvalidPlay, "ペアのランクが捨て札のトップカードと一致しません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errPairRankMismatch", nil)
 	}
 
 	if !player.hasInitMeld {
 		meldValue := BoliviaCardValue(topCard) + BoliviaCardValue(card0) + BoliviaCardValue(card1)
 		minReq := g.minimumMeldValue(g.currentPlayerIdx)
 		if meldValue < minReq {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("初回メルドの最低点(%d)を満たしていません（現在%d点）", minReq, meldValue))
+			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errInitialMeldMinimumNotMet", map[string]string{"min": strconv.Itoa(minReq), "score": strconv.Itoa(meldValue)})
 		}
 	}
 
@@ -427,7 +428,7 @@ func (g *Bolivia) PlayerMeld(meldGroups [][]int) error {
 
 	if len(meldGroups) == 0 {
 		if g.drewFromDiscard {
-			return NewDomainError(ErrInvalidPlay, "捨て札の山を取った場合はトップカードをメルドに含める必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errTopCardMustBeMelded", nil)
 		}
 		g.phase = BoliviaPhaseDiscard
 		return nil
@@ -439,10 +440,10 @@ func (g *Bolivia) PlayerMeld(meldGroups [][]int) error {
 	for _, group := range meldGroups {
 		for _, idx := range group {
 			if idx < 0 || idx >= player.GetCardsSize() {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+				return NewDomainErrorCode(ErrInvalidCard, "bolivia.errCardIndexOutOfRange", nil)
 			}
 			if allIndices[idx] {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+				return NewDomainErrorCode(ErrInvalidCard, "bolivia.errDuplicateCardIndex", nil)
 			}
 			allIndices[idx] = true
 		}
@@ -476,7 +477,7 @@ func (g *Bolivia) PlayerMeld(meldGroups [][]int) error {
 			}
 		}
 		if !found {
-			return NewDomainError(ErrInvalidPlay, "捨て札の山を取った場合はトップカードをメルドに含める必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errTopCardMustBeMelded", nil)
 		}
 	}
 
@@ -500,7 +501,7 @@ func (g *Bolivia) PlayerMeld(meldGroups [][]int) error {
 	if isInitialMeld {
 		minReq := g.minimumMeldValue(g.currentPlayerIdx)
 		if totalMeldValue < minReq {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("初回メルドの最低点(%d)を満たしていません（現在%d点）", minReq, totalMeldValue))
+			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errInitialMeldMinimumNotMet", map[string]string{"min": strconv.Itoa(minReq), "score": strconv.Itoa(totalMeldValue)})
 		}
 	}
 
@@ -549,14 +550,12 @@ func (g *Bolivia) resolveMeldGroup(playerIdx int, cards []*Card) (boliviaMeldRes
 			}
 			// **完成したボリビアには足せない。** 7 枚でそれきり。
 			if m.IsBoliviaCanasta() {
-				return boliviaMeldResolution{}, NewDomainError(ErrInvalidPlay,
-					"完成したボリビアにカードは追加できません")
+				return boliviaMeldResolution{}, NewDomainErrorCode(ErrInvalidPlay, "bolivia.errCompletedBoliviaCannotBeExtended", nil)
 			}
 			return boliviaMeldResolution{isNew: false, existingIdx: i, kind: BoliviaMeldWild}, nil
 		}
 		if len(cards) < 3 {
-			return boliviaMeldResolution{}, NewDomainError(ErrInvalidPlay,
-				"メルドには最低3枚のカードが必要です")
+			return boliviaMeldResolution{}, NewDomainErrorCode(ErrInvalidPlay, "bolivia.errMeldNeedsAtLeastThreeCards", nil)
 		}
 		return boliviaMeldResolution{isNew: true, existingIdx: -1, kind: BoliviaMeldWild}, nil
 	}
@@ -652,7 +651,7 @@ func (g *Bolivia) PlayerSkipMeld() error {
 		return ErrNotHumanTurn
 	}
 	if g.drewFromDiscard {
-		return NewDomainError(ErrInvalidPlay, "捨て札の山を取った場合はトップカードをメルドに含める必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errTopCardMustBeMelded", nil)
 	}
 
 	g.phase = BoliviaPhaseDiscard
@@ -673,12 +672,12 @@ func (g *Bolivia) PlayerDiscard(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "bolivia.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 	if BoliviaIsRed3(card) {
-		return NewDomainError(ErrInvalidPlay, "赤3は捨てられません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errRedThreeCannotBeDiscarded", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)
@@ -713,17 +712,15 @@ func (g *Bolivia) PlayerGoOut() error {
 		// 無い場合は直し方がまったく違う ── 「カナスタが N 個要る」とだけ
 		// 言われた側は、カナスタを増やし続けて永久に上がれない。
 		if g.teamCompletedCount(g.players[g.currentPlayerIdx].team) < BoliviaGoOutRequiredMelds {
-			return NewDomainError(ErrInvalidPlay,
-				fmt.Sprintf("上がるにはチームで完成メルドが%d個以上必要です", BoliviaGoOutRequiredMelds))
+			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errCompletedMeldsRequiredToGoOut", map[string]string{"required": strconv.Itoa(BoliviaGoOutRequiredMelds)})
 		}
-		return NewDomainError(ErrInvalidPlay,
-			"上がるにはチームで最低1本のエスカレラ(ワイルド無しの同スート7枚連番)が必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errEscaleraRequiredToGoOut", nil)
 	}
 
 	if player.GetCardsSize() == 1 {
 		card := player.GetCard(0)
 		if BoliviaIsRed3(card) {
-			return NewDomainError(ErrInvalidPlay, "赤3は捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errRedThreeCannotBeDiscarded", nil)
 		}
 		discarded := player.RemoveCard(0)
 		g.discardPile = append(g.discardPile, discarded)
@@ -732,7 +729,7 @@ func (g *Bolivia) PlayerGoOut() error {
 		}
 		g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 	} else if player.GetCardsSize() > 1 {
-		return NewDomainError(ErrInvalidPlay, "上がるには手札が0枚または1枚でなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errHandMustHaveAtMostOneCardToGoOut", nil)
 	}
 
 	g.goOut(g.currentPlayerIdx)
@@ -1380,14 +1377,14 @@ func (g *Bolivia) checkGameEnd() {
 // validateNewSet 新規セットメルドの検証
 func (g *Bolivia) validateNewSet(cards []*Card) error {
 	if len(cards) < 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドには最低3枚のカードが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errMeldNeedsAtLeastThreeCards", nil)
 	}
 
 	var naturalCount, wildCount int
 	rank := 0
 	for _, c := range cards {
 		if BoliviaIsBlack3(c) {
-			return NewDomainError(ErrInvalidPlay, "黒3はメルドできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errBlackThreeCannotMeld", nil)
 		}
 		if BoliviaIsWild(c) {
 			wildCount++
@@ -1397,7 +1394,7 @@ func (g *Bolivia) validateNewSet(cards []*Card) error {
 		if rank == 0 {
 			rank = c.GetValue()
 		} else if c.GetValue() != rank {
-			return NewDomainError(ErrInvalidPlay, "セットメルドは同じランクのカードで構成する必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errSetMeldCardsMustHaveSameRank", nil)
 		}
 	}
 
@@ -1408,13 +1405,13 @@ func (g *Bolivia) validateNewSet(cards []*Card) error {
 		return nil
 	}
 	if naturalCount < 2 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはナチュラルカードが最低2枚必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errMeldNeedsAtLeastTwoNaturalCards", nil)
 	}
 	if wildCount > 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはワイルドカードは最大3枚までです")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errMeldAllowsAtMostThreeWildCards", nil)
 	}
 	if wildCount > naturalCount {
-		return NewDomainError(ErrInvalidPlay, "ワイルドカードの数がナチュラルカードの数を超えてはいけません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errWildCardsCannotExceedNaturalCards", nil)
 	}
 	return nil
 }
@@ -1444,16 +1441,16 @@ func (g *Bolivia) validateSetAddition(existing *BoliviaMeld, cards []*Card) erro
 	}
 	for _, c := range cards {
 		if BoliviaIsBlack3(c) {
-			return NewDomainError(ErrInvalidPlay, "黒3はメルドできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errBlackThreeCannotMeld", nil)
 		}
 		if BoliviaIsWild(c) {
 			wildCount++
 		} else if c.GetValue() != rank {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ランク%dのメルドにランク%dのカードは追加できません", rank, c.GetValue()))
+			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errMeldCardRankMismatch", map[string]string{"meldRank": strconv.Itoa(rank), "cardRank": strconv.Itoa(c.GetValue())})
 		}
 	}
 	if wildCount > 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはワイルドカードは最大3枚までです")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errMeldAllowsAtMostThreeWildCards", nil)
 	}
 	return nil
 }
@@ -1476,31 +1473,31 @@ func (g *Bolivia) validateEscaleraAddition(existing *BoliviaMeld, cards []*Card)
 // 必ず値をソートする。
 func boliviaValidateEscaleraCards(cards []*Card) error {
 	if len(cards) < 3 {
-		return NewDomainError(ErrInvalidPlay, "シーケンスには最低3枚のカードが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errSequenceNeedsAtLeastThreeCards", nil)
 	}
 	design := -1
 	vals := make([]int, 0, len(cards))
 	for _, c := range cards {
 		if BoliviaIsWild(c) {
-			return NewDomainError(ErrInvalidPlay, "シーケンスメルドにワイルドカードは使えません")
+			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errSequenceCannotUseWildCards", nil)
 		}
 		if c.GetValue() == 3 {
-			return NewDomainError(ErrInvalidPlay, "3はシーケンスメルドに使えません")
+			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errThreeCannotBeUsedInSequence", nil)
 		}
 		if design == -1 {
 			design = c.GetDesign()
 		} else if c.GetDesign() != design {
-			return NewDomainError(ErrInvalidPlay, "シーケンスメルドは同じスートで構成する必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errSequenceMeldMustUseSameSuit", nil)
 		}
 		vals = append(vals, boliviaEscaleraValue(c))
 	}
 	sort.Ints(vals)
 	for i := 1; i < len(vals); i++ {
 		if vals[i] == vals[i-1] {
-			return NewDomainError(ErrInvalidPlay, "シーケンスメルドに同じカードは含められません")
+			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errSequenceMeldCannotDuplicateCard", nil)
 		}
 		if vals[i] != vals[i-1]+1 {
-			return NewDomainError(ErrInvalidPlay, "シーケンスメルドは連番でなければなりません")
+			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errSequenceMeldRanksMustBeConsecutive", nil)
 		}
 	}
 	return nil

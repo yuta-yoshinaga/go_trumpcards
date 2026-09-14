@@ -4,7 +4,6 @@ package presenter_test
 
 import (
 	"encoding/json"
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -154,11 +153,11 @@ func TestSambaWebPresenter_Output(t *testing.T) {
 
 	t.Run("error message", func(t *testing.T) {
 		m, _ := setupSambaWebMockWithPlayers()
-		result := p.Output(m, errors.New("test error"))
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "samba.errCardIndexOutOfRange", nil))
 		var resObj controller.SambaWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
-		assert.Equal(t, "test error", resObj.Message)
-		assert.Empty(t, resObj.MessageCode)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "samba.errCardIndexOutOfRange", resObj.MessageCode)
 	})
 
 	t.Run("game end human team wins", func(t *testing.T) {
