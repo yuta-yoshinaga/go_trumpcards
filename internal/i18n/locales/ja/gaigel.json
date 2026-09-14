@@ -36,5 +36,18 @@
   "promptMarriageCards": "宣言可能: {{cards}}",
   "marriageCardPoints": "{{points}}点",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errMarriageLeadOnly": "マリアージュはリード時のみ宣言できます",
+  "errMarriageUnavailable": "そのカードでマリアージュは宣言できません",
+  "errInvalidPhase": "無効なフェーズです",
+  "errInvalidTrumpSuit": "無効な切り札スートです",
+  "errInvalidPlayerCount": "プレイヤー数が不正です",
+  "errPlayerIndexOutOfRange": "プレイヤーインデックスが範囲外です",
+  "errLeadWinnerIndexOutOfRange": "リード/勝者インデックスが範囲外です",
+  "errWinnerTeamOutOfRange": "勝者チームが範囲外です",
+  "errStateSliceInvalid": "状態スライスが不正です",
+  "errPlayerNil": "プレイヤーが nil です",
+  "errTrickCardNil": "トリックカードが nil です",
+  "errActionLogEntryNil": "棋譜エントリが nil です"
 }

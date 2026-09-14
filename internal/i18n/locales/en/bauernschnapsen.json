@@ -41,5 +41,22 @@
   "contractBettel": "Bettel",
   "promptContract": "Declare your contract",
   "promptContractHelp": "c <0-3> [suit 1-4] (0=pass 1=Rufer 2=Farbenzwang 3=Bettel / suit 1=S 2=C 3=H 4=D)",
-  "helpExampleContract": "  c 1 1                declare Rufer with spades as trump"
+  "helpExampleContract": "  c 1 1                declare Rufer with spades as trump",
+  "errNotContractPhase": "This is not the contract phase.",
+  "errNotYourTurn": "It is not your turn.",
+  "errContractUnavailable": "That contract cannot be declared.",
+  "errTrumpSuitRequired": "Choose a trump suit.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errMarriageLeadOnly": "You can declare a marriage only when leading.",
+  "errMarriageUnavailable": "That card cannot be used to declare a marriage.",
+  "errInvalidPhase": "Invalid phase.",
+  "errInvalidTrumpSuit": "Invalid trump suit.",
+  "errInvalidPlayerCount": "Invalid player count.",
+  "errPlayerIndexOutOfRange": "The player index is out of range.",
+  "errLeadWinnerIndexOutOfRange": "The lead or winner index is out of range.",
+  "errWinnerTeamOutOfRange": "The winner team is out of range.",
+  "errStateSliceInvalid": "The state slice is invalid.",
+  "errPlayerNil": "Player is nil.",
+  "errTrickCardNil": "Trick card is nil.",
+  "errActionLogEntryNil": "Action log entry is nil."
 }

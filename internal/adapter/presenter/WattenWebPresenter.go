@@ -90,6 +90,9 @@ func (p *WattenWebPresenter) buildPlayersOutput(g interfaces.WattenGame) []*cont
 
 func (p *WattenWebPresenter) buildMessage(g interfaces.WattenGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

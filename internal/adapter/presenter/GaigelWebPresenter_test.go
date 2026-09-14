@@ -104,6 +104,16 @@ func TestGaigelWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "boom", resObj.Message)
 	})
 
+	t.Run("domain error uses message code", func(t *testing.T) {
+		m, _ := setupGaigelWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "gaigel.errMarriageUnavailable", nil))
+		var resObj controller.GaigelWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "gaigel.errMarriageUnavailable", resObj.MessageCode)
+		assert.Nil(t, resObj.MessageParams)
+	})
+
 	t.Run("round end phase", func(t *testing.T) {
 		m, _ := setupGaigelWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
