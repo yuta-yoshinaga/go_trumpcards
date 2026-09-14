@@ -367,18 +367,18 @@ func (g *Bauernschnapsen) startContractPhase() {
 // 誰も宣言しなければ既定の通常契約でディーラーの左隣が declarer になる。
 func (g *Bauernschnapsen) DeclareContract(playerIdx int, c BauernschnapsenContract, trumpSuit int) error {
 	if g.phase != BauernschnapsenPhaseContract {
-		return NewDomainError(ErrWrongPhase, "契約フェーズではありません")
+		return NewDomainErrorCode(ErrWrongPhase, "bauernschnapsen.errNotContractPhase", nil)
 	}
 	if playerIdx != g.currentPlayerIdx {
-		return NewDomainError(ErrInvalidPlay, "あなたの手番ではありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errNotYourTurn", nil)
 	}
 	if c < BauernschnapsenContractNone || c > BauernschnapsenContractBettel {
-		return NewDomainError(ErrInvalidCard, "その契約は宣言できません")
+		return NewDomainErrorCode(ErrInvalidCard, "bauernschnapsen.errContractUnavailable", nil)
 	}
 	// **切り札を要る契約はスートも要る。** Bettel は切り札なしなので受け取らない。
 	if c == BauernschnapsenContractRufer || c == BauernschnapsenContractFarbenzwang {
 		if trumpSuit < CardDesignSpade || trumpSuit > CardDesignMax {
-			return NewDomainError(ErrInvalidCard, "切り札スートを指定してください")
+			return NewDomainErrorCode(ErrInvalidCard, "bauernschnapsen.errTrumpSuitRequired", nil)
 		}
 	}
 
@@ -511,7 +511,7 @@ func (g *Bauernschnapsen) PlayerPlay(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "bauernschnapsen.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -572,15 +572,15 @@ func (g *Bauernschnapsen) CpuPlay() {
 // 同一スートのマリアージュは 1 ラウンドにつき 1 回のみ宣言できる (先着優先)。
 func (g *Bauernschnapsen) declareMarriage(playerIdx, cardIndex int) error {
 	if len(g.currentTrick) != 0 {
-		return NewDomainError(ErrInvalidPlay, "マリアージュはリード時のみ宣言できます")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errMarriageLeadOnly", nil)
 	}
 	player := g.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "bauernschnapsen.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if !g.isMarriageStarter(player, card) {
-		return NewDomainError(ErrInvalidPlay, "そのカードでマリアージュは宣言できません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errMarriageUnavailable", nil)
 	}
 
 	suit := card.GetDesign()
@@ -1409,48 +1409,48 @@ func (g *Bauernschnapsen) UnmarshalJSON(data []byte) error {
 	// **下限は契約フェーズ。** Play より前に契約フェーズを足したので、
 	// Play を下限にすると配り直後の盤 (契約待ち) を復元できない。
 	if j.Phase < BauernschnapsenPhaseContract || j.Phase > BauernschnapsenPhaseGameEnd {
-		return NewDomainError(ErrInvalidPlay, "無効なフェーズです")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errInvalidPhase", nil)
 	}
 	// **未確定は BauernschnapsenNoTrump (-1)。** 切り札は宣言で決まるので、
 	// 配り直後や Bettel の局面ではスートが無い。0 だけを未確定として扱うと
 	// その盤を復元できない。
 	if j.TrumpSuit != BauernschnapsenNoTrump && j.TrumpSuit != 0 &&
 		(j.TrumpSuit < CardDesignSpade || j.TrumpSuit > CardDesignDiamond) {
-		return NewDomainError(ErrInvalidPlay, "無効な切り札スートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errInvalidTrumpSuit", nil)
 	}
 	if len(j.Players) != BauernschnapsenPlayerCnt {
-		return NewDomainError(ErrInvalidPlay, "プレイヤー数が不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errInvalidPlayerCount", nil)
 	}
 	// 直接インデックス参照される値の範囲検証 (不正な KV 状態でのパニック防止)。
 	// currentPlayerIdx / dealerIdx は常に有効なプレイヤー。leadPlayerIdx /
 	// lastTrickWinner / winnerTeam は未確定を表す -1 を許可する。
 	if j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= BauernschnapsenPlayerCnt ||
 		j.DealerIdx < 0 || j.DealerIdx >= BauernschnapsenPlayerCnt {
-		return NewDomainError(ErrInvalidPlay, "プレイヤーインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errPlayerIndexOutOfRange", nil)
 	}
 	if j.LeadPlayerIdx < -1 || j.LeadPlayerIdx >= BauernschnapsenPlayerCnt ||
 		j.LastTrickWinner < -1 || j.LastTrickWinner >= BauernschnapsenPlayerCnt {
-		return NewDomainError(ErrInvalidPlay, "リード/勝者インデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errLeadWinnerIndexOutOfRange", nil)
 	}
 	if j.WinnerTeam < -1 || j.WinnerTeam >= BauernschnapsenTeamCnt {
-		return NewDomainError(ErrInvalidPlay, "勝者チームが範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errWinnerTeamOutOfRange", nil)
 	}
 	if len(j.CurrentTrick) > BauernschnapsenPlayerCnt || len(j.ActionLog) > bauernschnapsenMaxSliceLen {
-		return NewDomainError(ErrInvalidPlay, "状態スライスが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errStateSliceInvalid", nil)
 	}
 	for _, p := range j.Players {
 		if p == nil {
-			return NewDomainError(ErrInvalidPlay, "プレイヤーが nil です")
+			return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errPlayerNil", nil)
 		}
 	}
 	for _, tc := range j.CurrentTrick {
 		if tc == nil || tc.Card == nil {
-			return NewDomainError(ErrInvalidPlay, "トリックカードが nil です")
+			return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errTrickCardNil", nil)
 		}
 	}
 	for _, entry := range j.ActionLog {
 		if entry == nil {
-			return NewDomainError(ErrInvalidPlay, "棋譜エントリが nil です")
+			return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errActionLogEntryNil", nil)
 		}
 	}
 

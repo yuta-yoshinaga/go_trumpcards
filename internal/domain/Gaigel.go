@@ -282,7 +282,7 @@ func (g *Gaigel) PlayerPlay(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "gaigel.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -343,15 +343,15 @@ func (g *Gaigel) CpuPlay() {
 // 同一スートのマリアージュは 1 ラウンドにつき 1 回のみ宣言できる (先着優先)。
 func (g *Gaigel) declareMarriage(playerIdx, cardIndex int) error {
 	if len(g.currentTrick) != 0 {
-		return NewDomainError(ErrInvalidPlay, "マリアージュはリード時のみ宣言できます")
+		return NewDomainErrorCode(ErrInvalidPlay, "gaigel.errMarriageLeadOnly", nil)
 	}
 	player := g.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "gaigel.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if !g.isMarriageStarter(player, card) {
-		return NewDomainError(ErrInvalidPlay, "そのカードでマリアージュは宣言できません")
+		return NewDomainErrorCode(ErrInvalidPlay, "gaigel.errMarriageUnavailable", nil)
 	}
 
 	suit := card.GetDesign()
@@ -1080,45 +1080,45 @@ func (g *Gaigel) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if j.Phase < GaigelPhasePlay || j.Phase > GaigelPhaseGameEnd {
-		return NewDomainError(ErrInvalidPlay, "無効なフェーズです")
+		return NewDomainErrorCode(ErrInvalidPlay, "gaigel.errInvalidPhase", nil)
 	}
 	// trumpSuit=0 (未確定) は許可。確定済みの場合のみ範囲チェック。
 	if j.TrumpSuit != 0 && (j.TrumpSuit < CardDesignSpade || j.TrumpSuit > CardDesignDiamond) {
-		return NewDomainError(ErrInvalidPlay, "無効な切り札スートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "gaigel.errInvalidTrumpSuit", nil)
 	}
 	if len(j.Players) != GaigelPlayerCnt {
-		return NewDomainError(ErrInvalidPlay, "プレイヤー数が不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "gaigel.errInvalidPlayerCount", nil)
 	}
 	// 直接インデックス参照される値の範囲検証 (不正な KV 状態でのパニック防止)。
 	// currentPlayerIdx / dealerIdx は常に有効なプレイヤー。leadPlayerIdx /
 	// lastTrickWinner / winnerTeam は未確定を表す -1 を許可する。
 	if j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= GaigelPlayerCnt ||
 		j.DealerIdx < 0 || j.DealerIdx >= GaigelPlayerCnt {
-		return NewDomainError(ErrInvalidPlay, "プレイヤーインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "gaigel.errPlayerIndexOutOfRange", nil)
 	}
 	if j.LeadPlayerIdx < -1 || j.LeadPlayerIdx >= GaigelPlayerCnt ||
 		j.LastTrickWinner < -1 || j.LastTrickWinner >= GaigelPlayerCnt {
-		return NewDomainError(ErrInvalidPlay, "リード/勝者インデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "gaigel.errLeadWinnerIndexOutOfRange", nil)
 	}
 	if j.WinnerTeam < -1 || j.WinnerTeam >= GaigelTeamCnt {
-		return NewDomainError(ErrInvalidPlay, "勝者チームが範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "gaigel.errWinnerTeamOutOfRange", nil)
 	}
 	if len(j.CurrentTrick) > GaigelPlayerCnt || len(j.ActionLog) > gaigelMaxSliceLen {
-		return NewDomainError(ErrInvalidPlay, "状態スライスが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "gaigel.errStateSliceInvalid", nil)
 	}
 	for _, p := range j.Players {
 		if p == nil {
-			return NewDomainError(ErrInvalidPlay, "プレイヤーが nil です")
+			return NewDomainErrorCode(ErrInvalidPlay, "gaigel.errPlayerNil", nil)
 		}
 	}
 	for _, tc := range j.CurrentTrick {
 		if tc == nil || tc.Card == nil {
-			return NewDomainError(ErrInvalidPlay, "トリックカードが nil です")
+			return NewDomainErrorCode(ErrInvalidPlay, "gaigel.errTrickCardNil", nil)
 		}
 	}
 	for _, entry := range j.ActionLog {
 		if entry == nil {
-			return NewDomainError(ErrInvalidPlay, "棋譜エントリが nil です")
+			return NewDomainErrorCode(ErrInvalidPlay, "gaigel.errActionLogEntryNil", nil)
 		}
 	}
 

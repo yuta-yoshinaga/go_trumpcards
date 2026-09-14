@@ -83,6 +83,16 @@ func TestWattenWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "boom", resObj.Message)
 	})
 
+	t.Run("domain error uses message code and params", func(t *testing.T) {
+		m, _ := setupWattenWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "watten.errPlayerNil", map[string]string{"idx": "2"}))
+		var resObj controller.WattenWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "watten.errPlayerNil", resObj.MessageCode)
+		assert.Equal(t, map[string]string{"idx": "2"}, resObj.MessageParams)
+	})
+
 	t.Run("declare phase", func(t *testing.T) {
 		m, _ := setupWattenWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
