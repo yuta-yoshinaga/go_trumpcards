@@ -102,6 +102,26 @@ function splitArgs(text, start) {
   return args;
 }
 
+function matchingBrace(text, start) {
+  let depth = 0;
+  let quote = null;
+  for (let i = start; i < text.length; i += 1) {
+    const c = text[i];
+    if (quote) {
+      if (c === '\\') i += 1;
+      else if (c === quote) quote = null;
+      continue;
+    }
+    if (c === '"' || c === '`') {
+      quote = c;
+      continue;
+    }
+    if (c === '{') depth += 1;
+    else if (c === '}' && --depth === 0) return i;
+  }
+  return -1;
+}
+
 async function emittedCodes() {
   const out = new Map();
   const files = (await readdir(PRESENTER_DIR)).filter((f) => f.endsWith('WebPresenter.go'));
@@ -139,6 +159,22 @@ async function emittedCodes() {
       if (!out.has(code)) out.set(code, { literals: new Set(), files: new Set() });
       out.get(code).literals.add('<assigned>');
       out.get(code).files.add(name);
+    }
+
+    // Some presenters return only a code from a helper such as
+    // `piquetPhaseMessageCode`, which the tuple-return scan cannot see. Restrict
+    // this scan to functions whose names end in MessageCode so ordinary string
+    // returns (labels, errors, etc.) are not mistaken for i18n keys.
+    for (const m of text.matchAll(/func\s+(\w*MessageCode)\s*\([^)]*\)\s+string\s*\{/g)) {
+      const bodyEnd = matchingBrace(text, m.index + m[0].length - 1);
+      if (bodyEnd < 0) continue;
+      const body = text.slice(m.index + m[0].length, bodyEnd);
+      for (const returned of body.matchAll(/\breturn\s+"([a-zA-Z0-9_.]+)"/g)) {
+        const code = returned[1];
+        if (!out.has(code)) out.set(code, { literals: new Set(), files: new Set() });
+        out.get(code).literals.add('<helper-return>');
+        out.get(code).files.add(name);
+      }
     }
   }
 

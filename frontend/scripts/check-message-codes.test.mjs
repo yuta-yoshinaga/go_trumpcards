@@ -57,6 +57,16 @@ const ASSIGN_FORM = `func (p *DemoWebPresenter) Output() string {
 }
 `;
 
+const HELPER_FORM = `func demoMessageCode(outcome int) string {
+	switch outcome {
+	case 1:
+		return "demo.helper.one"
+	default:
+		return "demo.helper.default"
+	}
+}
+`;
+
 describe('check-message-codes', () => {
   it('accepts a returned code that both locales translate', () => {
     const r = check(RETURN_FORM, ['demo.returned']);
@@ -82,6 +92,18 @@ describe('check-message-codes', () => {
     const r = check(ASSIGN_FORM, ['demo.assigned']);
     expect(r.code).toBe(0);
     expect(r.out).toContain('OK');
+  });
+
+  it('sees string literals returned by MessageCode helpers', () => {
+    const r = check(HELPER_FORM, ['demo.helper.one', 'demo.helper.default']);
+    expect(r.code).toBe(0);
+  });
+
+  it('rejects an untranslated string literal returned by a MessageCode helper', () => {
+    const r = check(HELPER_FORM, []);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain('demo.helper.one');
+    expect(r.out).toContain('demo.helper.default');
   });
 
   // **代入形式は「空箱」か「生リテラル」かをこの行から読めない。** Message は
