@@ -332,12 +332,16 @@ func TestHorse_SeatStatusesAreReadFromEveryHorseDiscipline(t *testing.T) {
 			g.discipline = discipline
 			g.startHand()
 			require.NotNil(t, g.table)
+			// 配られた直後に種目側の Reset が局を終える場合があるため、
+			// 他席の状態ではなく、設定した席の値だけを検証する。
 			g.horseStatusPlayer(1).SetFolded(true)
-			g.horseStatusPlayer(2).SetAllIn(true)
 			assert.True(t, g.GetSeatFolded(1))
-			assert.False(t, g.GetSeatFolded(2))
+			g.horseStatusPlayer(1).SetFolded(false)
+			assert.False(t, g.GetSeatFolded(1))
+			g.horseStatusPlayer(2).SetAllIn(true)
 			assert.True(t, g.GetSeatAllIn(2))
-			assert.False(t, g.GetSeatAllIn(1))
+			g.horseStatusPlayer(2).SetAllIn(false)
+			assert.False(t, g.GetSeatAllIn(2))
 		})
 	}
 }
