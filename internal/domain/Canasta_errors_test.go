@@ -178,6 +178,22 @@ func TestCanasta_ValidationErrorsHaveCodes(t *testing.T) {
 		p.SetHasInitMeld(true)
 		require.NoError(t, g.PlayerDrawFromDiscard([]int{0, 1}))
 		assertCanastaDomainError(t, g.PlayerSkipMeld(), domain.ErrInvalidPlay, "canasta.errTopCardMustBeMelded")
+
+		g, p = canastaErrorGame(domain.CanastaPhaseDraw)
+		g.SetDiscardPile([]*domain.Card{canastaCard(domain.CardDesignSpade, 7)})
+		p.AddCard(canastaCard(domain.CardDesignHeart, 7))
+		p.AddCard(canastaCard(domain.CardDesignDiamond, 7))
+		p.SetHasInitMeld(true)
+		require.NoError(t, g.PlayerDrawFromDiscard([]int{0, 1}))
+		assertCanastaDomainError(t, g.PlayerMeld(nil), domain.ErrInvalidPlay, "canasta.errTopCardMustBeMelded")
+
+		g, p = canastaErrorGame(domain.CanastaPhaseDraw)
+		g.SetDiscardPile([]*domain.Card{canastaCard(domain.CardDesignSpade, 7)})
+		p.AddCard(canastaCard(domain.CardDesignHeart, 7))
+		p.AddCard(canastaCard(domain.CardDesignDiamond, 7))
+		p.SetHasInitMeld(true)
+		require.NoError(t, g.PlayerDrawFromDiscard([]int{0, 1}))
+		assertCanastaDomainError(t, g.PlayerMeld([][]int{{}}), domain.ErrInvalidPlay, "canasta.errTopCardMustBeMelded")
 	})
 }
 
@@ -225,5 +241,93 @@ func TestCanasta_BiribaValidationErrorsHaveCodes(t *testing.T) {
 			indices[i] = i
 		}
 		assertCanastaDomainError(t, g.PlayerMeld([][]int{indices}), domain.ErrInvalidPlay, "canasta.errWildCardsExceedSequenceRange")
+	})
+}
+
+func TestCanasta_AdditionalValidationCallSitesHaveCodes(t *testing.T) {
+	t.Run("go out cannot discard red three", func(t *testing.T) {
+		g, p := canastaErrorGame(domain.CanastaPhaseDiscard)
+		p.SetHasInitMeld(true)
+		p.SetMelds([]*domain.CanastaMeld{{Cards: make([]*domain.Card, 7), IsNatural: true}})
+		p.AddCard(canastaCard(domain.CardDesignHeart, 3))
+		assertCanastaDomainError(t, g.PlayerGoOut(), domain.ErrInvalidPlay, "canasta.errRedThreeCannotBeDiscarded")
+	})
+
+	t.Run("existing meld rejects black three", func(t *testing.T) {
+		g, p := canastaErrorGame(domain.CanastaPhaseMeld)
+		p.SetHasInitMeld(true)
+		p.SetMelds([]*domain.CanastaMeld{{Cards: []*domain.Card{
+			canastaCard(domain.CardDesignHeart, 3),
+			canastaCard(domain.CardDesignDiamond, 3),
+		}, IsNatural: true}})
+		p.AddCard(canastaCard(domain.CardDesignClover, 3))
+		p.AddCard(canastaCard(domain.CardDesignSpade, 3))
+		assertCanastaDomainError(t, g.PlayerMeld([][]int{{0, 1}}), domain.ErrInvalidPlay, "canasta.errBlackThreeCannotMeld")
+	})
+
+	t.Run("existing meld rejects a fourth wild card", func(t *testing.T) {
+		g, p := canastaErrorGame(domain.CanastaPhaseMeld)
+		p.SetHasInitMeld(true)
+		p.SetMelds([]*domain.CanastaMeld{{Cards: []*domain.Card{
+			canastaCard(domain.CardDesignSpade, 7),
+			canastaCard(domain.CardDesignHeart, 7),
+			canastaCard(domain.CardDesignJoker, 1),
+			canastaCard(domain.CardDesignJoker, 2),
+			canastaCard(domain.CardDesignJoker, 3),
+		}, IsNatural: true}})
+		p.AddCard(canastaCard(domain.CardDesignDiamond, 7))
+		p.AddCard(canastaCard(domain.CardDesignJoker, 4))
+		assertCanastaDomainError(t, g.PlayerMeld([][]int{{0, 1}}), domain.ErrInvalidPlay, "canasta.errMeldAllowsAtMostThreeWildCards")
+	})
+
+	t.Run("biriba meld needs three cards", func(t *testing.T) {
+		g, p := canastaErrorGame(domain.CanastaPhaseMeld)
+		cfg := g.GetConfig()
+		cfg.UseBiriba = true
+		g.SetConfig(cfg)
+		p.SetHasInitMeld(true)
+		p.SetMelds([]*domain.CanastaMeld{{Cards: []*domain.Card{
+			canastaCard(domain.CardDesignSpade, 4),
+			canastaCard(domain.CardDesignSpade, 5),
+		}, IsNatural: true}})
+		assertCanastaDomainError(t, g.PlayerMeld([][]int{{}}), domain.ErrInvalidPlay, "canasta.errMeldNeedsAtLeastThreeCards")
+	})
+
+	t.Run("biriba meld rejects black three", func(t *testing.T) {
+		g, p := canastaErrorGame(domain.CanastaPhaseMeld)
+		cfg := g.GetConfig()
+		cfg.UseBiriba = true
+		g.SetConfig(cfg)
+		p.SetHasInitMeld(true)
+		p.AddCard(canastaCard(domain.CardDesignSpade, 3))
+		p.AddCard(canastaCard(domain.CardDesignSpade, 4))
+		p.AddCard(canastaCard(domain.CardDesignClover, 3))
+		assertCanastaDomainError(t, g.PlayerMeld([][]int{{0, 1, 2}}), domain.ErrInvalidPlay, "canasta.errBlackThreeCannotMeld")
+	})
+
+	t.Run("biriba meld needs two natural cards", func(t *testing.T) {
+		g, p := canastaErrorGame(domain.CanastaPhaseMeld)
+		cfg := g.GetConfig()
+		cfg.UseBiriba = true
+		g.SetConfig(cfg)
+		p.SetHasInitMeld(true)
+		for i := 0; i < 3; i++ {
+			p.AddCard(canastaCard(domain.CardDesignJoker, i+1))
+		}
+		assertCanastaDomainError(t, g.PlayerMeld([][]int{{0, 1, 2}}), domain.ErrInvalidPlay, "canasta.errMeldNeedsAtLeastTwoNaturalCards")
+	})
+
+	t.Run("biriba meld allows at most three wild cards", func(t *testing.T) {
+		g, p := canastaErrorGame(domain.CanastaPhaseMeld)
+		cfg := g.GetConfig()
+		cfg.UseBiriba = true
+		g.SetConfig(cfg)
+		p.SetHasInitMeld(true)
+		p.AddCard(canastaCard(domain.CardDesignSpade, 4))
+		p.AddCard(canastaCard(domain.CardDesignSpade, 5))
+		for i := 0; i < 4; i++ {
+			p.AddCard(canastaCard(domain.CardDesignJoker, i+1))
+		}
+		assertCanastaDomainError(t, g.PlayerMeld([][]int{{0, 1, 2, 3, 4, 5}}), domain.ErrInvalidPlay, "canasta.errMeldAllowsAtMostThreeWildCards")
 	})
 }
