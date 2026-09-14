@@ -25,7 +25,12 @@ func TestBinokelReachability_HumanWinsBid(t *testing.T) {
 	require.Equal(t, domain.BinokelPhaseBid, game.GetPhase())
 	require.True(t, game.IsHumanBidTurn())
 
-	// 人間が 500 点でビッド (CPU は降りる)
+	// CPU を先に降ろす。500 は CPU が必ず降りる額ではなく、
+	// cpuBidHard はメルド点を含む totalEstimate の 1.05 倍まで競るため。
+	for i := 1; i < domain.BinokelPlayerCnt; i++ {
+		game.GetPlayer(i).SetHasPassed(true)
+	}
+
 	_ = pi.Bid(500)
 
 	// 落札者が人間(0)になり、Dabb フェーズに遷移
