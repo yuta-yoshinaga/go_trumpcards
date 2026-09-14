@@ -381,10 +381,10 @@ func (g *FrenchTarot) PlayerBid(bid FrenchTarotBid) error {
 		return ErrNotHumanTurn
 	}
 	if !frenchTarotValidBid(bid) {
-		return NewDomainError(ErrInvalidPlay, "無効な入札です (petite/garde/gardesans/gardecontre)")
+		return NewDomainErrorCode(ErrInvalidPlay, "frenchtarot.errInvalidBid", nil)
 	}
 	if bid <= g.highestBid {
-		return NewDomainError(ErrInvalidPlay, "現在の入札より高い入札が必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "frenchtarot.errBidHigherThanHighest", map[string]string{"bid": fmt.Sprintf("%d", g.highestBid)})
 	}
 	g.applyBid(g.bidPlayerIdx, bid)
 	return nil
@@ -522,15 +522,15 @@ func (g *FrenchTarot) CpuDiscard() {
 func (g *FrenchTarot) doDiscard(cardIndices []int) error {
 	player := g.players[g.declarerIdx]
 	if len(cardIndices) != FrenchTarotChienSize {
-		return NewDomainError(ErrInvalidCard, "ちょうど 6 枚を捨ててください")
+		return NewDomainErrorCode(ErrInvalidCard, "frenchtarot.errScartoCount", map[string]string{"n": fmt.Sprintf("%d", FrenchTarotChienSize)})
 	}
 	seen := make(map[int]bool, FrenchTarotChienSize)
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "frenchtarot.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "同じカードを 2 回選べません")
+			return NewDomainErrorCode(ErrInvalidCard, "frenchtarot.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}
@@ -562,16 +562,16 @@ func (g *FrenchTarot) validateDiscards(player *FrenchTarotPlayer, cardIndices []
 	for _, idx := range cardIndices {
 		switch FrenchTarotUnburiableReason(player.GetCard(idx)) {
 		case FrenchTarotUnburiableExcuse:
-			return NewDomainError(ErrInvalidPlay, "エクスキューズは捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "frenchtarot.errDiscardExcuse", nil)
 		case FrenchTarotUnburiableBout:
 			// プティ (切り札1) と 21 は bout であり、公式ルール上いかなる場合も écart に
 			// 出せない (手札24枚中 bout は最大3枚なので、除外しても捨て札6枚は必ず確保できる)。
-			return NewDomainError(ErrInvalidPlay, "プティ・21 は捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "frenchtarot.errDiscardBout", nil)
 		case FrenchTarotUnburiableKing:
-			return NewDomainError(ErrInvalidPlay, "キングは捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "frenchtarot.errDiscardKing", nil)
 		case FrenchTarotUnburiableTrump:
 			if !allowTrump {
-				return NewDomainError(ErrInvalidPlay, "切り札は (やむを得ない場合を除き) 捨てられません")
+				return NewDomainErrorCode(ErrInvalidPlay, "frenchtarot.errDiscardTrump", nil)
 			}
 		}
 	}
@@ -670,7 +670,7 @@ func (g *FrenchTarot) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "frenchtarot.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {

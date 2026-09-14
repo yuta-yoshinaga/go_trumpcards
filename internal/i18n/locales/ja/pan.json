@@ -27,5 +27,13 @@
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "helpExampleDraw": "  ds                   手番の最初に山札から 1 枚引く",
-  "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる"
+  "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる",
+  "errDiscardPileEmpty": "捨て札が空です",
+  "errMeldNeedsAtLeastThreeCards": "メルドは{{min}}枚以上のカードが必要です",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errDuplicateCardIndex": "カードインデックスが重複しています",
+  "errInvalidMeld": "有効なメルドではありません",
+  "errTargetPlayerInvalid": "メルド所有者が不正です",
+  "errTargetMeldInvalid": "メルドインデックスが範囲外です",
+  "errLayoffCardCannotAdd": "{{card}}はレイオフできません"
 }
