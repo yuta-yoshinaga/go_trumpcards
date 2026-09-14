@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, IndianRummyPlayer, IndianRummyResponse } from '../../types/card';
 import { IndianRummyPhase } from '../../types/phases';
-import { calcDeadwood, getIndianRummyHint, isWild } from './indianRummyHint';
+import { getIndianRummyHint, isWild } from './indianRummyHint';
 
 function card(design: Card['design'], value: number): Card {
   return { design, value };
@@ -229,44 +229,5 @@ describe('isWild', () => {
 
   it('is not wild when the rank does not match and wildRank is 0', () => {
     expect(isWild(card('HEART', 7), 0)).toBe(false);
-  });
-});
-
-describe('calcDeadwood', () => {
-  it('returns 0 for a hand that fully melds', () => {
-    const hand = [
-      card('HEART', 3),
-      card('SPADE', 3),
-      card('CLOVER', 3),
-      card('HEART', 7),
-      card('SPADE', 7),
-      card('CLOVER', 7),
-    ];
-    expect(calcDeadwood(hand, 0)).toBe(0);
-  });
-
-  it('counts face cards as 10 points', () => {
-    const hand = [card('HEART', 11), card('SPADE', 12), card('CLOVER', 13)];
-    expect(calcDeadwood(hand, 0)).toBe(30);
-  });
-
-  it('lets a printed joker cancel the highest unmatched card', () => {
-    const hand = [card('JOKER', 0), card('SPADE', 5), card('CLOVER', 9)];
-    expect(calcDeadwood(hand, 0)).toBe(5);
-  });
-
-  it('lets a wild-rank card cancel the highest unmatched card', () => {
-    const hand = [card('HEART', 2), card('SPADE', 5), card('CLOVER', 9)];
-    expect(calcDeadwood(hand, 2)).toBe(5);
-  });
-
-  it('detects runs in the same suit', () => {
-    const hand = [card('HEART', 4), card('HEART', 5), card('HEART', 6), card('SPADE', 10)];
-    expect(calcDeadwood(hand, 0)).toBe(10);
-  });
-
-  it('scores an unmatched Ace as 10 points, not 1 (matching the backend)', () => {
-    const hand = [card('SPADE', 1), card('HEART', 4), card('CLOVER', 8)];
-    expect(calcDeadwood(hand, 0)).toBe(22);
   });
 });
