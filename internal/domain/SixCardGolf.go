@@ -253,10 +253,10 @@ func (g *SixCardGolf) FlipInitial(pos int) error {
 	}
 	p := g.players[g.currentPlayerIdx]
 	if pos < 0 || pos >= SixCardGolfGridSize {
-		return NewDomainError(ErrInvalidCard, "位置が範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "sixcardgolf.errCardIndexOutOfRange", nil)
 	}
 	if p.Grid[pos].FaceUp {
-		return NewDomainError(ErrInvalidPlay, "既に表向きです")
+		return NewDomainErrorCode(ErrInvalidPlay, "sixcardgolf.errAlreadyFaceUp", nil)
 	}
 
 	p.Grid[pos].FaceUp = true
@@ -287,7 +287,7 @@ func (g *SixCardGolf) DrawStock() error {
 		g.refillDrawPile()
 	}
 	if len(g.drawPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "山札がありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sixcardgolf.errStockEmpty", nil)
 	}
 
 	g.drawnCard = g.drawPile[len(g.drawPile)-1]
@@ -310,7 +310,7 @@ func (g *SixCardGolf) DrawDiscard() error {
 		return ErrNotHumanTurn
 	}
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札がありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sixcardgolf.errDiscardPileEmpty", nil)
 	}
 
 	g.drawnCard = g.discardPile[len(g.discardPile)-1]
@@ -333,7 +333,7 @@ func (g *SixCardGolf) SwapCard(pos int) error {
 		return ErrNotHumanTurn
 	}
 	if pos < 0 || pos >= SixCardGolfGridSize {
-		return NewDomainError(ErrInvalidCard, "位置が範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "sixcardgolf.errCardIndexOutOfRange", nil)
 	}
 
 	p := g.players[g.currentPlayerIdx]
@@ -392,18 +392,18 @@ func (g *SixCardGolf) FlipCard(pos int) error {
 		return ErrGameEnded
 	}
 	if !g.canFlip {
-		return NewDomainError(ErrInvalidPlay, "めくれません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sixcardgolf.errCannotFlip", nil)
 	}
 	if g.players[g.currentPlayerIdx].IsCpu {
 		return ErrNotHumanTurn
 	}
 	if pos < 0 || pos >= SixCardGolfGridSize {
-		return NewDomainError(ErrInvalidCard, "位置が範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "sixcardgolf.errCardIndexOutOfRange", nil)
 	}
 
 	p := g.players[g.currentPlayerIdx]
 	if p.Grid[pos].FaceUp {
-		return NewDomainError(ErrInvalidPlay, "既に表向きです")
+		return NewDomainErrorCode(ErrInvalidPlay, "sixcardgolf.errAlreadyFaceUp", nil)
 	}
 
 	p.Grid[pos].FaceUp = true
@@ -420,7 +420,7 @@ func (g *SixCardGolf) SkipFlip() error {
 		return ErrGameEnded
 	}
 	if !g.canFlip {
-		return NewDomainError(ErrInvalidPlay, "スキップ不可")
+		return NewDomainErrorCode(ErrInvalidPlay, "sixcardgolf.errCannotSkip", nil)
 	}
 	g.canFlip = false
 	g.advanceTurn()

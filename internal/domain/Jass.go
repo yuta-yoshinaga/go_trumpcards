@@ -212,7 +212,7 @@ func (g *Jass) PlayerChooseTrump(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "無効なスートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "jass.errInvalidSuit", nil)
 	}
 	g.doChooseTrump(g.bidPlayerIdx, suit)
 	return nil
@@ -296,7 +296,7 @@ func (g *Jass) PlayerPlay(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "jass.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -949,7 +949,7 @@ func (g *Jass) validatePlay(playerIdx int, card *Card) error {
 			return nil
 		}
 		if cardSuit != g.trumpSuit {
-			return NewDomainError(ErrInvalidPlay, "リードスート (切り札) に従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "jass.errFollowLeadSuit", nil)
 		}
 		return nil
 	}
@@ -960,7 +960,7 @@ func (g *Jass) validatePlay(playerIdx int, card *Card) error {
 	if cardSuit == leadSuit {
 		return nil
 	}
-	return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+	return NewDomainErrorCode(ErrInvalidPlay, "jass.errFollowLeadSuit", nil)
 }
 
 // onlyTrumpIsJack プレイヤーの手札中のトランプが J (Bauer) 1枚のみか
@@ -1404,23 +1404,23 @@ func (g *Jass) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if j.Phase < JassPhaseBidTrump || j.Phase > JassPhaseGameEnd {
-		return NewDomainError(ErrInvalidPlay, "無効なフェーズです")
+		return NewDomainErrorCode(ErrInvalidPlay, "jass.errInvalidPhase", nil)
 	}
 	// trumpSuit=0 (未確定) は許可。確定済みの場合のみ範囲チェック。
 	if j.TrumpSuit != 0 && (j.TrumpSuit < CardDesignSpade || j.TrumpSuit > CardDesignDiamond) {
-		return NewDomainError(ErrInvalidPlay, "無効な切り札スートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "jass.errInvalidTrumpSuit", nil)
 	}
 	if len(j.Players) != JassPlayerCnt {
-		return NewDomainError(ErrInvalidPlay, "プレイヤー数が不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "jass.errInvalidPlayerCount", nil)
 	}
 	for _, p := range j.Players {
 		if p == nil {
-			return NewDomainError(ErrInvalidPlay, "プレイヤーが nil です")
+			return NewDomainErrorCode(ErrInvalidPlay, "jass.errPlayerNil", nil)
 		}
 	}
 	for _, tc := range j.CurrentTrick {
 		if tc == nil || tc.Card == nil {
-			return NewDomainError(ErrInvalidPlay, "トリックカードが nil です")
+			return NewDomainErrorCode(ErrInvalidPlay, "jass.errTrickCardNil", nil)
 		}
 	}
 
