@@ -260,17 +260,17 @@ describe('PiedmonteseTarotPage', () => {
   // 最初から送っているのにページが読んでおらず、4 枚並んだ場札からタロッコの
   // 切り札優先を毎回自分で解き直すことになっていた。
   describe('trick winner highlight', () => {
-    const trickOf = (n: number) =>
-      Array.from({ length: n }, (_, i) => ({
+    const trickOf = (values: number[]) =>
+      values.map((value, i) => ({
         playerIdx: i,
-        card: { design: 'HEART' as const, value: i + 2, glyph: '♥', label: String(i + 2), color: 'red', deck: 'tarot' },
+        card: { design: 'HEART' as const, value, glyph: '♥', label: String(value), color: 'red', deck: 'tarot' },
       }));
 
     it('marks the winning seat once the trick is over', async () => {
       mockExec.mockResolvedValue(
         makePiedmonteseTarotState({
           phase: PiedmonteseTarotPhase.TRICK_END,
-          currentTrick: trickOf(4),
+          currentTrick: trickOf([2, 3, 9, 4]),
           lastTrickWinner: 2,
         }),
       );
@@ -285,7 +285,7 @@ describe('PiedmonteseTarotPage', () => {
       mockExec.mockResolvedValue(
         makePiedmonteseTarotState({
           phase: PiedmonteseTarotPhase.PLAY,
-          currentTrick: trickOf(3),
+          currentTrick: trickOf([2, 3, 4]),
           lastTrickWinner: 2,
         }),
       );
@@ -301,7 +301,20 @@ describe('PiedmonteseTarotPage', () => {
       mockExec.mockResolvedValue(
         makePiedmonteseTarotState({
           phase: PiedmonteseTarotPhase.TRICK_END,
-          currentTrick: trickOf(3),
+          trickCount: 25,
+          scartoCount: 3,
+          config: { seats: 3, cpuDifficulty: 1, targetDeals: 4 },
+          players: makePiedmonteseTarotState()
+            .players.slice(0, 3)
+            .map((p, i) => ({
+              ...p,
+              cardCount: 25,
+              isDealer: i === 2,
+            })),
+          playerScores: [0, 0, 0],
+          dealScores: [0, 0, 0],
+          dealerIdx: 2,
+          currentTrick: trickOf([9, 2, 3]),
           lastTrickWinner: 0,
         }),
       );

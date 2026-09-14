@@ -226,6 +226,31 @@ func TestPiedmonteseTarot_TheMattoStaysWithItsOwner(t *testing.T) {
 	assert.Zero(t, countPiedmonteseTarotCards(g.GetPlayers()[0]))
 }
 
+// **最終でないトリックの勝者も直後に記録する。** この値は TrickEnd 中に
+// フロントが表示するため、最終トリックだけ記録しても不十分。
+func TestPiedmonteseTarot_RecordsWinnerAfterAnOrdinaryTrick(t *testing.T) {
+	t.Parallel()
+	cfg := DefaultPiedmonteseTarotConfig()
+	players := newPiedmonteseTarotPlayers(cfg.Seats)
+	g := NewPiedmonteseTarot(players, cfg)
+	for i, p := range players {
+		p.AddCard(NewCard(CardDesignHeart, i+2, false))
+	}
+	g.currentTrick = []*TrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 2, false)},
+		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 3, false)},
+		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 9, false)},
+		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 4, false)},
+	}
+	g.trickNumber = 1
+	g.phase = PiedmonteseTarotPhaseTrickEnd
+
+	g.ResolveTrick()
+
+	assert.Equal(t, PiedmonteseTarotPhaseTrickEnd, g.GetPhase())
+	assert.Equal(t, 2, g.GetLastTrickWinner())
+}
+
 // countPiedmonteseTarotCards は獲得トリックの札数を返す。
 func countPiedmonteseTarotCards(p *PiedmonteseTarotPlayer) int {
 	n := 0

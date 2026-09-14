@@ -472,8 +472,8 @@ func (g *PiedmonteseTarot) ResolveTrick() {
 		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), allCards)
 
 	g.leadPlayerIdx = winnerIdx
+	g.lastTrickWinner = winnerIdx
 	if g.trickNumber >= g.HandSize() {
-		g.lastTrickWinner = winnerIdx
 		g.phase = PiedmonteseTarotPhaseRoundEnd
 		g.enterRoundEnd()
 		return
