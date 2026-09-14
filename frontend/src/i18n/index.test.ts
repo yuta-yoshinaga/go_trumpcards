@@ -61,6 +61,10 @@ describe('i18n lang sync', () => {
 
   it('resolves Canasta error message codes through the common namespace', async () => {
     const canastaErrorCodes = domainErrorCodes.canasta;
+    // Typed string[] but undefined at runtime if the canasta.err* keys are ever
+    // renamed. Assert it here so that regression reads as a failed expectation
+    // rather than a bare TypeError from the loop below.
+    expect(canastaErrorCodes?.length ?? 0).toBeGreaterThan(0);
     await i18n.changeLanguage('ja');
     const jaDiscardPileEmpty = i18n.t('messageCode.canasta.errDiscardPileEmpty');
     expect(jaDiscardPileEmpty).toBe('捨て札の山が空です');
