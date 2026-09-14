@@ -101,6 +101,16 @@ func TestPinochleWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "test error", resObj.Message)
 	})
 
+	t.Run("coded error message", func(t *testing.T) {
+		m, _ := setupPinochleWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "pinochle.errInvalidSuit", nil)
+		result := p.Output(m, err)
+		var resObj controller.PinochleWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "pinochle.errInvalidSuit", resObj.MessageCode)
+	})
+
 	t.Run("game end message", func(t *testing.T) {
 		m, _ := setupPinochleWebMockWithPlayers()
 		m.ExpectedCalls = nil

@@ -198,6 +198,16 @@ func TestMighty_PlayerBid_validations(t *testing.T) {
 	})
 }
 
+func TestMightyDomainErrorsHaveMessageCodes(t *testing.T) {
+	m := newTestMighty()
+	m.Reset()
+	err := m.PlayerBid(m.GetConfig().MinBid-1, false)
+	de, ok := err.(*domain.DomainError)
+	if !ok || de.MessageCode() != "mighty.errBidRange" {
+		t.Fatalf("expected mighty.errBidRange, got %T %v", err, err)
+	}
+}
+
 func TestMighty_PlayerBid_pass(t *testing.T) {
 	m := newTestMighty()
 	m.Reset()

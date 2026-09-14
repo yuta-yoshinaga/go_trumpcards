@@ -57,5 +57,21 @@
   "hintReasonPlayFollow": "リードスートに従う",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
-  "promptBidNoTrumpExtra": "ノートランプ (nt) を付けると、最低ビッドに +{{points}} 点が上乗せされます"
+  "promptBidNoTrumpExtra": "ノートランプ (nt) を付けると、最低ビッドに +{{points}} 点が上乗せされます",
+  "errBidRange": "{{min}}〜{{max}}のビッドを指定してください（0でパス）。",
+  "errBidHigherThanHighest": "現在の最高ビッド{{bid}}より高い値を指定してください。",
+  "errNoTrumpCannotHaveSuit": "ノートランプ宣言時は切り札スートを指定できません。",
+  "errInvalidSuit": "無効なスートです。",
+  "errJokerValue": "ジョーカーのvalueは1です。",
+  "errInvalidPartnerSuit": "無効なパートナースートです。",
+  "errInvalidPartnerValue": "無効なパートナーカード値です。",
+  "errKittyCardCount": "捨てるカードは{{count}}枚指定してください。",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です。",
+  "errDuplicateCardIndex": "同じカードを複数回指定することはできません。",
+  "errJokerLeadSuitRequired": "ジョーカーをリードする場合は要求スートも指定してください。",
+  "errJokerLeadOnlyAtTrickStart": "ジョーカーリードはトリックの最初にのみ可能です。",
+  "errJokerRequired": "ジョーカーリードはジョーカーで行ってください。",
+  "errInvalidDemandSuit": "無効な指定スートです。",
+  "errJokerCallRequiresJoker": "ジョーカーコール: ジョーカーを出してください。",
+  "errMustFollowLeadSuit": "リードスートに従ってください。"
 }

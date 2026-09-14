@@ -214,6 +214,16 @@ func TestMightyWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error message", func(t *testing.T) {
+		m, _ := setupMightyWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "mighty.errInvalidSuit", nil)
+		result := p.Output(m, err)
+		var resObj controller.MightyWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "mighty.errInvalidSuit", resObj.MessageCode)
+	})
+
 	t.Run("game end messageCodes by winner team", func(t *testing.T) {
 		for team, code := range map[int]string{
 			domain.MightyWinnerDeclarer:   "mighty.gameEnd.declarerWins",

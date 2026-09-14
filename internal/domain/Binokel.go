@@ -683,10 +683,10 @@ func binokelMeldTotalPoints(melds []*BinokelMeld) int {
 // PlayerBid 人間プレイヤーがビッドする
 func (p *Binokel) PlayerBid(amount int) error {
 	if p.phase != BinokelPhaseBid {
-		return NewDomainError(ErrWrongPhase, "ビッドフェーズではありません")
+		return NewDomainErrorCode(ErrWrongPhase, "binokel.errWrongPhase", nil)
 	}
 	if !p.players[p.bidPlayerIdx].GetIsHuman() {
-		return NewDomainError(ErrNotHumanTurn, "人間プレイヤーのターンではありません")
+		return NewDomainErrorCode(ErrNotHumanTurn, "binokel.errNotHumanTurn", nil)
 	}
 	return p.doBid(p.bidPlayerIdx, amount)
 }
@@ -694,10 +694,10 @@ func (p *Binokel) PlayerBid(amount int) error {
 // PlayerPass 人間プレイヤーがパスする
 func (p *Binokel) PlayerPass() error {
 	if p.phase != BinokelPhaseBid {
-		return NewDomainError(ErrWrongPhase, "ビッドフェーズではありません")
+		return NewDomainErrorCode(ErrWrongPhase, "binokel.errWrongPhase", nil)
 	}
 	if !p.players[p.bidPlayerIdx].GetIsHuman() {
-		return NewDomainError(ErrNotHumanTurn, "人間プレイヤーのターンではありません")
+		return NewDomainErrorCode(ErrNotHumanTurn, "binokel.errNotHumanTurn", nil)
 	}
 	return p.doPass(p.bidPlayerIdx)
 }
@@ -705,13 +705,13 @@ func (p *Binokel) PlayerPass() error {
 // doBid ビッドを実行
 func (p *Binokel) doBid(playerIdx, amount int) error {
 	if amount < BinokelMinBid {
-		return NewDomainError(ErrInvalidAmount, fmt.Sprintf("ビッドは%d以上でなければなりません", BinokelMinBid))
+		return NewDomainErrorCode(ErrInvalidAmount, "binokel.errBidMinimum", map[string]string{"min": fmt.Sprintf("%d", BinokelMinBid)})
 	}
 	if p.highestBid > 0 && amount <= p.highestBid {
-		return NewDomainError(ErrInvalidAmount, fmt.Sprintf("現在のビッド%dより大きくなければなりません", p.highestBid))
+		return NewDomainErrorCode(ErrInvalidAmount, "binokel.errBidHigherThanHighest", map[string]string{"bid": fmt.Sprintf("%d", p.highestBid)})
 	}
 	if (amount-BinokelMinBid)%BinokelBidStep != 0 {
-		return NewDomainError(ErrInvalidAmount, fmt.Sprintf("ビッドは%d刻みでなければなりません", BinokelBidStep))
+		return NewDomainErrorCode(ErrInvalidAmount, "binokel.errBidStep", map[string]string{"step": fmt.Sprintf("%d", BinokelBidStep)})
 	}
 
 	p.lastBidSpeaker = playerIdx
@@ -791,10 +791,10 @@ func (p *Binokel) finishBidding(bidder int) {
 // PlayerDiscardToDabb 人間落札者がDabbへ3枚伏せて捨てる
 func (p *Binokel) PlayerDiscardToDabb(cardIndices []int) error {
 	if p.phase != BinokelPhaseDabb {
-		return NewDomainError(ErrWrongPhase, "Dabbフェーズではありません")
+		return NewDomainErrorCode(ErrWrongPhase, "binokel.errDabbPhase", nil)
 	}
 	if !p.IsHumanDabbTurn() {
-		return NewDomainError(ErrNotHumanTurn, "人間プレイヤーのターンではありません")
+		return NewDomainErrorCode(ErrNotHumanTurn, "binokel.errNotHumanTurn", nil)
 	}
 	return p.doDiscardToDabb(p.currentPlayerIdx, cardIndices)
 }
@@ -814,7 +814,7 @@ func (p *Binokel) CpuDiscardToDabb() {
 
 func (p *Binokel) doDiscardToDabb(playerIdx int, cardIndices []int) error {
 	if len(cardIndices) != BinokelDabbSize {
-		return NewDomainError(ErrInvalidCard, fmt.Sprintf("%d枚のカードを選択してください", BinokelDabbSize))
+		return NewDomainErrorCode(ErrInvalidCard, "binokel.errDabbCardCount", map[string]string{"count": fmt.Sprintf("%d", BinokelDabbSize)})
 	}
 	player := p.players[playerIdx]
 	handSize := player.GetCardsSize()
@@ -822,10 +822,10 @@ func (p *Binokel) doDiscardToDabb(playerIdx int, cardIndices []int) error {
 	seen := make(map[int]bool)
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= handSize {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "binokel.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "同じカードが複数回指定されています")
+			return NewDomainErrorCode(ErrInvalidCard, "binokel.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}
@@ -1063,10 +1063,10 @@ func (p *Binokel) cpuEstimateTrickPoints(playerIdx, trumpSuit int) int {
 // PlayerCallTrump 人間プレイヤーがトランプスートを宣言する
 func (p *Binokel) PlayerCallTrump(suit int) error {
 	if p.phase != BinokelPhaseTrump {
-		return NewDomainError(ErrWrongPhase, "トランプ宣言フェーズではありません")
+		return NewDomainErrorCode(ErrWrongPhase, "binokel.errTrumpPhase", nil)
 	}
 	if !p.players[p.currentPlayerIdx].GetIsHuman() {
-		return NewDomainError(ErrNotHumanTurn, "人間プレイヤーのターンではありません")
+		return NewDomainErrorCode(ErrNotHumanTurn, "binokel.errNotHumanTurn", nil)
 	}
 	return p.doCallTrump(p.currentPlayerIdx, suit)
 }
@@ -1074,7 +1074,7 @@ func (p *Binokel) PlayerCallTrump(suit int) error {
 // doCallTrump トランプ宣言を実行
 func (p *Binokel) doCallTrump(playerIdx, suit int) error {
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "無効なスートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "binokel.errInvalidSuit", nil)
 	}
 	p.trumpSuit = suit
 	suitNames := map[int]string{
@@ -1218,10 +1218,10 @@ func (p *Binokel) getValidPlayIndices(playerIdx int) []int {
 // PlayerPlay 人間プレイヤーがカードをプレイする
 func (p *Binokel) PlayerPlay(cardIndex int) error {
 	if p.phase != BinokelPhasePlay {
-		return NewDomainError(ErrWrongPhase, "プレイフェーズではありません")
+		return NewDomainErrorCode(ErrWrongPhase, "binokel.errPlayPhase", nil)
 	}
 	if !p.players[p.currentPlayerIdx].GetIsHuman() {
-		return NewDomainError(ErrNotHumanTurn, "人間プレイヤーのターンではありません")
+		return NewDomainErrorCode(ErrNotHumanTurn, "binokel.errNotHumanTurn", nil)
 	}
 	return p.doPlay(p.currentPlayerIdx, cardIndex)
 }
@@ -1230,13 +1230,13 @@ func (p *Binokel) PlayerPlay(cardIndex int) error {
 func (p *Binokel) doPlay(playerIdx, cardIndex int) error {
 	player := p.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "無効なカードインデックスです")
+		return NewDomainErrorCode(ErrInvalidCard, "binokel.errInvalidCardIndex", nil)
 	}
 
 	// バリデーション
 	validIndices := p.getValidPlayIndices(playerIdx)
 	if !slices.Contains(validIndices, cardIndex) {
-		return NewDomainError(ErrInvalidPlay, "このカードはプレイできません")
+		return NewDomainErrorCode(ErrInvalidPlay, "binokel.errCardCannotBePlayed", nil)
 	}
 
 	card := player.RemoveCard(cardIndex)

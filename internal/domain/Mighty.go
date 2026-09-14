@@ -228,10 +228,10 @@ func (m *Mighty) PlayerBid(bid int, noTrump bool) error {
 			minBid = m.config.MinBid + m.config.NoTrumpExtra
 		}
 		if bid < minBid || bid > MightyMaxPoints {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは%d〜%dで指定してください（0でパス）", minBid, MightyMaxPoints))
+			return NewDomainErrorCode(ErrInvalidPlay, "mighty.errBidRange", map[string]string{"min": fmt.Sprintf("%d", minBid), "max": fmt.Sprintf("%d", MightyMaxPoints)})
 		}
 		if bid <= m.round.highestBid {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("現在の最高ビッド%dより高い値を指定してください", m.round.highestBid))
+			return NewDomainErrorCode(ErrInvalidPlay, "mighty.errBidHigherThanHighest", map[string]string{"bid": fmt.Sprintf("%d", m.round.highestBid)})
 		}
 	} else {
 		// パス時は noTrump フラグを無視する
@@ -272,23 +272,23 @@ func (m *Mighty) PlayerDeclareTrumpAndFriend(suit int, partnerSuit int, partnerV
 
 	if m.round.winningBidNoTrump {
 		if suit != MightyTrumpNone {
-			return NewDomainError(ErrInvalidPlay, "ノートランプ宣言時は切り札スートを指定できません")
+			return NewDomainErrorCode(ErrInvalidPlay, "mighty.errNoTrumpCannotHaveSuit", nil)
 		}
 	} else {
 		if suit < CardDesignSpade || suit > CardDesignDiamond {
-			return NewDomainError(ErrInvalidPlay, "無効なスートです")
+			return NewDomainErrorCode(ErrInvalidPlay, "mighty.errInvalidSuit", nil)
 		}
 	}
 	if partnerSuit == CardDesignJoker {
 		if partnerVal != 1 {
-			return NewDomainError(ErrInvalidPlay, "ジョーカーのvalueは1です")
+			return NewDomainErrorCode(ErrInvalidPlay, "mighty.errJokerValue", nil)
 		}
 	} else {
 		if partnerSuit < CardDesignSpade || partnerSuit > CardDesignDiamond {
-			return NewDomainError(ErrInvalidPlay, "無効なパートナースートです")
+			return NewDomainErrorCode(ErrInvalidPlay, "mighty.errInvalidPartnerSuit", nil)
 		}
 		if partnerVal < 1 || partnerVal > CardValueMax {
-			return NewDomainError(ErrInvalidPlay, "無効なパートナーカード値です")
+			return NewDomainErrorCode(ErrInvalidPlay, "mighty.errInvalidPartnerValue", nil)
 		}
 	}
 
@@ -322,16 +322,16 @@ func (m *Mighty) PlayerExchangeKitty(discardIndices []int) error {
 	}
 
 	if len(discardIndices) != MightyKittySize {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("捨てるカードは%d枚指定してください", MightyKittySize))
+		return NewDomainErrorCode(ErrInvalidPlay, "mighty.errKittyCardCount", map[string]string{"count": fmt.Sprintf("%d", MightyKittySize)})
 	}
 	player := m.players[m.round.declarerIdx]
 	seen := map[int]bool{}
 	for _, idx := range discardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "mighty.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidPlay, "同じカードを複数回指定することはできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "mighty.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}
@@ -367,13 +367,13 @@ func (m *Mighty) PlayerPlay(cardIndex int) error {
 
 	player := m.players[m.round.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "mighty.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 	// ジョーカーリードは PlayerPlayJokerLead を使う必要がある
 	if len(m.round.currentTrick) == 0 && card.GetDesign() == CardDesignJoker {
-		return NewDomainError(ErrInvalidPlay, "ジョーカーをリードする場合は要求スートも指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "mighty.errJokerLeadSuitRequired", nil)
 	}
 	if err := m.validatePlay(m.round.currentPlayerIdx, card); err != nil {
 		return err
@@ -396,19 +396,19 @@ func (m *Mighty) PlayerPlayJokerLead(cardIndex int, demandSuit int) error {
 		return ErrNotHumanTurn
 	}
 	if len(m.round.currentTrick) != 0 {
-		return NewDomainError(ErrInvalidPlay, "ジョーカーリードはトリックの最初にのみ可能です")
+		return NewDomainErrorCode(ErrInvalidPlay, "mighty.errJokerLeadOnlyAtTrickStart", nil)
 	}
 
 	player := m.players[m.round.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "mighty.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if card.GetDesign() != CardDesignJoker {
-		return NewDomainError(ErrInvalidPlay, "ジョーカーリードはジョーカーで行ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "mighty.errJokerRequired", nil)
 	}
 	if demandSuit < CardDesignSpade || demandSuit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "無効な指定スートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "mighty.errInvalidDemandSuit", nil)
 	}
 
 	played := player.RemoveCard(cardIndex)
@@ -1099,14 +1099,14 @@ func (m *Mighty) validatePlay(playerIdx int, card *Card) error {
 	// ここで通常カードを出そうとしているなら、ジョーカーを保有していたら違反。
 	if !leadIsJoker && m.isJokerCallCard(leadCard) && m.jokerCallActive() {
 		if m.playerHasJoker(playerIdx) {
-			return NewDomainError(ErrInvalidPlay, "ジョーカーコール: ジョーカーを出してください")
+			return NewDomainErrorCode(ErrInvalidPlay, "mighty.errJokerCallRequiresJoker", nil)
 		}
 	}
 
 	// フォロースート
 	if card.GetDesign() != leadSuit {
 		if m.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "mighty.errMustFollowLeadSuit", nil)
 		}
 	}
 

@@ -101,6 +101,16 @@ func TestBinokelWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "test error", resObj.Message)
 	})
 
+	t.Run("coded error message", func(t *testing.T) {
+		m, _ := setupBinokelWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "binokel.errInvalidSuit", nil)
+		result := p.Output(m, err)
+		var resObj controller.BinokelWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "binokel.errInvalidSuit", resObj.MessageCode)
+	})
+
 	t.Run("game end message", func(t *testing.T) {
 		m, _ := setupBinokelWebMockWithPlayers()
 		m.ExpectedCalls = nil
