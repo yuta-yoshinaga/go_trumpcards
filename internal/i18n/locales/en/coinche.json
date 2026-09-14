@@ -38,5 +38,15 @@
   "helpExamplePlay": "  p 0                  play the card at index 0",
   "helpExampleBid": "  b 120 1              bid 120 with spades as trump",
   "helpHint": "  h                    show a hint",
-  "dixDeDerNotice": "Last trick: Dix de Der +{{points}} to the winning team"
+  "dixDeDerNotice": "Last trick: Dix de Der +{{points}} to the winning team",
+  "errTrumpSuitRequired": "Choose a trump suit.",
+  "errBidRange": "That target cannot be bid.",
+  "errBidHigherThanHighest": "The bid must be higher than the current contract.",
+  "errSurcoincheNotAllowed": "You cannot redouble.",
+  "errCoincheNotAllowed": "You cannot double.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errMustFollowTrump": "You must follow the lead suit (trump).",
+  "errMustOvertrump": "You must overtrump (obligation à monter).",
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "errMustPlayTrump": "You must play a trump (obligation à couper)."
 }

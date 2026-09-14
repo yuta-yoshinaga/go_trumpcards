@@ -38,5 +38,15 @@
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpExampleBid": "  b 120 1              スペードを切り札に 120 を入札する",
   "helpHint": "  h                    助言を表示",
-  "dixDeDerNotice": "最終トリック: 勝ったチームに Dix de Der +{{points}} 点"
+  "dixDeDerNotice": "最終トリック: 勝ったチームに Dix de Der +{{points}} 点",
+  "errTrumpSuitRequired": "切り札スートを指定してください",
+  "errBidRange": "その目標点は宣言できません",
+  "errBidHigherThanHighest": "今の契約を上回る点が必要です",
+  "errSurcoincheNotAllowed": "再倍化はできません",
+  "errCoincheNotAllowed": "倍化はできません",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errMustFollowTrump": "リードスート (切り札) に従ってください",
+  "errMustOvertrump": "オーバートランプしてください (obligation à monter)",
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "errMustPlayTrump": "切り札を出してください (obligation à couper)"
 }
