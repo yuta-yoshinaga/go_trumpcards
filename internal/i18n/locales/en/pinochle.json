@@ -56,7 +56,7 @@
   "helpHint": "  h                    show a hint",
   "meldTableHeader": "Meld reference:\n  ",
   "meldTableEntry": "{{type}} {{points}}",
-  "errWrongPhase": "This is not the bidding, trump, or play phase.",
+  "errWrongPhase": "This is not the bidding phase.",
   "errNotHumanTurn": "It is not the human player's turn.",
   "errBidMinimum": "The bid must be at least {{min}}.",
   "errBidHigherThanHighest": "The bid must be higher than the current bid of {{bid}}.",

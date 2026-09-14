@@ -56,7 +56,7 @@
   "helpHint": "  h                    助言を表示",
   "meldTableHeader": "メルド早見表:\n  ",
   "meldTableEntry": "{{type}} {{points}}",
-  "errWrongPhase": "ビッド、トランプ宣言、プレイのいずれのフェーズでもありません。",
+  "errWrongPhase": "ビッドフェーズではありません。",
   "errNotHumanTurn": "人間プレイヤーのターンではありません。",
   "errBidMinimum": "ビッドは{{min}}以上でなければなりません。",
   "errBidHigherThanHighest": "ビッドは現在の{{bid}}より大きくなければなりません。",
