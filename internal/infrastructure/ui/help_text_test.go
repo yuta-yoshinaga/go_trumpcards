@@ -601,6 +601,46 @@ func gameHelpLocales(t *testing.T) map[string]map[string]string {
 
 var cachedHelpLocales map[string]map[string]string
 
+func TestFormerHandAuthoredHelpUsesLocaleKeys(t *testing.T) {
+	t.Cleanup(func() { i18n.SetLang("en") })
+	wantJapanese := map[string]string{
+		"canasta":      "山札から引く",
+		"biriba":       "山札から引く",
+		"burraco":      "山札から引く",
+		"durak":        "カードで攻撃する",
+		"bridge":       "カードを出す",
+		"pokersquares": "カードを配置",
+	}
+	wantEnglish := map[string]string{
+		"canasta":      "draw from stock",
+		"biriba":       "draw from stock",
+		"burraco":      "draw from stock",
+		"durak":        "attack with card",
+		"bridge":       "play a card",
+		"pokersquares": "place a card",
+	}
+
+	for _, lang := range []string{"en", "ja"} {
+		i18n.SetLang(lang)
+		var want map[string]string
+		if lang == "en" {
+			want = wantEnglish
+		} else {
+			want = wantJapanese
+		}
+		for _, entry := range gameRegistry {
+			expected, ok := want[entry.Name]
+			if !ok {
+				continue
+			}
+			lines := strings.Join(entry.NewCui().HelpLines(), "\n")
+			if !strings.Contains(lines, expected) {
+				t.Errorf("%s help in %s does not contain localized command %q:\n%s", entry.Name, lang, expected, lines)
+			}
+		}
+	}
+}
+
 // TestCuiHelpHasNoDuplicateLines asserts that no game's rendered help lists the
 // same command line twice.
 //

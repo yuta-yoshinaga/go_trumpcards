@@ -7,6 +7,8 @@
   "helpDiscard": "  d <idx>              discard a card",
   "helpGoOut": "  go                   go out (requires the pozzetto + a biriba)",
   "helpNextRound": "  nr                   next round",
+  "helpHint": "  h                    hint (recommended action)",
+  "helpLog": "  l                    action log",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetLimit": "  sl <n>               point limit",
   "header": "Round: {{round}}  Stock: {{stock}}  Discard: {{discard}}",
