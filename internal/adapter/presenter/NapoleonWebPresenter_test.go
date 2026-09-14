@@ -258,6 +258,15 @@ func TestNapoleonWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error is returned for translation", func(t *testing.T) {
+		m, _ := setupNapoleonWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "napoleon.errInvalidSuit", nil))
+		var resObj controller.NapoleonWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "napoleon.errInvalidSuit", resObj.MessageCode)
+	})
+
 	t.Run("game end napoleon wins", func(t *testing.T) {
 		m, _ := setupNapoleonWebMockWithPlayers()
 		m.ExpectedCalls = removeNapoleonWebMockCall(m.ExpectedCalls, "GetGameEndFlag")
