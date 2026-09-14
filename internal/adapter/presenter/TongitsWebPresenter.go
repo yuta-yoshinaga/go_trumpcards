@@ -93,6 +93,9 @@ func (p *TongitsWebPresenter) buildPlayersOutput(g interfaces.TongitsGame) []*co
 // buildMessage ゲーム結果メッセージを構築
 func (p *TongitsWebPresenter) buildMessage(g interfaces.TongitsGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

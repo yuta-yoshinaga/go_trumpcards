@@ -41,5 +41,12 @@
   "discardableLegendTrumpOk": "Note: bouts (trump 1/21), the Excuse, and court cards cannot be discarded. Too few pips remain, so **other trumps may be discarded**",
   "helpExamplePlay": "  play 0                    play hand card 0",
   "helpExampleNext": "  n                         read the trick result, then continue",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "errScartoCount": "Discard exactly {{n}} card(s).",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errSameCard": "You cannot select the same card twice.",
+  "errScartoInvalidCard": "The card is invalid.",
+  "errDiscardHonour": "The Excuse or a bout (trump 1/21) cannot be discarded.",
+  "errDiscardTrump": "Trumps cannot be discarded unless you have no choice.",
+  "errDiscardCourt": "Point cards (kings/court cards) cannot be discarded."
 }

@@ -45,5 +45,13 @@
   "hintMeld": "札{{indices}}でメルドを作ることを推奨します",
   "hintSapaw": "札{{card}}をプレイヤー{{player}}のメルド{{meld}}にサパウできます",
   "hintChallenge": "チャレンジを宣言することを推奨します",
-  "hintDiscard": "札{{card}}を捨てることを推奨します"
+  "hintDiscard": "札{{card}}を捨てることを推奨します",
+  "errDiscardPileEmpty": "捨て札がありません",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errMeldNeedsAtLeastThreeCards": "メルドには3枚以上必要です",
+  "errInvalidMeld": "有効なセットまたはランではありません",
+  "errTargetPlayerInvalid": "対象プレイヤーが不正です",
+  "errTargetMeldInvalid": "対象メルドが不正です",
+  "errLayoffCardCannotAdd": "{{card}}はそのメルドに付け足せません",
+  "errResponseCount": "応答数が不正です"
 }

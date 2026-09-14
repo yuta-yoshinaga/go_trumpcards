@@ -327,7 +327,7 @@ func (g *Tongits) PlayerDrawFromDiscard() error {
 	}
 
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札がありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "tongits.errDiscardPileEmpty", nil)
 	}
 
 	card := g.discardPile[len(g.discardPile)-1]
@@ -355,7 +355,7 @@ func (g *Tongits) PlayerDiscard(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "tongits.errCardIndexOutOfRange", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)
@@ -374,7 +374,7 @@ func (g *Tongits) PlayerMeld(indices []int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if len(indices) < 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドには3枚以上必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "tongits.errMeldNeedsAtLeastThreeCards", nil)
 	}
 	if err := validateIndexList(indices, player.GetCardsSize()); err != nil {
 		return err
@@ -384,7 +384,7 @@ func (g *Tongits) PlayerMeld(indices []int) error {
 		cards[i] = player.GetCard(idx)
 	}
 	if !tongitsIsMeld(cards) {
-		return NewDomainError(ErrInvalidPlay, "有効なセットまたはランではありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "tongits.errInvalidMeld", nil)
 	}
 	player.AppendMeld(append([]*Card(nil), cards...))
 	player.RemoveCards(indices)
@@ -401,19 +401,19 @@ func (g *Tongits) PlayerSapaw(targetPlayerIdx, meldIdx, cardIndex int) error {
 		return err
 	}
 	if targetPlayerIdx < 0 || targetPlayerIdx >= len(g.players) {
-		return NewDomainError(ErrInvalidPlay, "対象プレイヤーが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "tongits.errTargetPlayerInvalid", nil)
 	}
 	target := g.players[targetPlayerIdx]
 	if meldIdx < 0 || meldIdx >= len(target.GetMelds()) {
-		return NewDomainError(ErrInvalidPlay, "対象メルドが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "tongits.errTargetMeldInvalid", nil)
 	}
 	player := g.players[g.currentPlayerIdx]
 	card := player.GetCard(cardIndex)
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "tongits.errCardIndexOutOfRange", nil)
 	}
 	if !tongitsCanAddToMeld(target.GetMeld(meldIdx), card) {
-		return NewDomainError(ErrInvalidPlay, "そのメルドに付け足せません")
+		return NewDomainErrorCode(ErrInvalidPlay, "tongits.errLayoffCardCannotAdd", map[string]string{"card": cardStr(card)})
 	}
 	target.AddCardToMeld(meldIdx, card)
 	player.RemoveCard(cardIndex)
@@ -435,7 +435,7 @@ func (g *Tongits) PlayerChallenge(agreed []bool) error {
 
 func (g *Tongits) resolveChallenge(agreed []bool) error {
 	if len(agreed) != TongitsPlayerCnt-1 {
-		return NewDomainError(ErrInvalidPlay, "応答数が不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "tongits.errResponseCount", nil)
 	}
 	for _, ok := range agreed {
 		if !ok {
