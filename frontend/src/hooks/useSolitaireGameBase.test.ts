@@ -139,6 +139,32 @@ describe('useSolitaireGameBase', () => {
     expect(mockExec).toHaveBeenNthCalledWith(3, 'deal');
   });
 
+  // Without the reset in `runAction`'s catch, the throw leaves the in-flight flag
+  // set and every later action is swallowed by the guard -- so the second dispatch
+  // below is what fails if that catch is removed.
+  it('does not wedge the page when onClearSelection throws', async () => {
+    const onClearSelection = vi.fn<() => void>(() => {
+      throw new Error('selection cleanup failed');
+    });
+    const { result } = renderHook(
+      () =>
+        useSolitaireGameBase<FakeState, ['reset' | 'deal'], { kind: string }>(mockExec, {
+          onClearSelection,
+        }),
+      { wrapper: createWrapper() },
+    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(() => {
+      act(() => result.current.runAction('deal'));
+    }).toThrow('selection cleanup failed');
+    expect(mockExec).not.toHaveBeenCalledWith('deal');
+
+    onClearSelection.mockImplementation(() => undefined);
+    act(() => result.current.runAction('deal'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
+  });
+
   // `selectHint` runs AFTER the mounted check, so it is the observable that
   // distinguishes a guarded hook from an unguarded one: asserting on the returned
   // hint cannot, because React no-ops a post-unmount setState either way. #4447

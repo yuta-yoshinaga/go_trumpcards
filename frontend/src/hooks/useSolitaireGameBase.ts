@@ -89,8 +89,17 @@ export function useSolitaireGameBase<TState, TArgs extends unknown[], THint, THi
     (...args: TArgs) => {
       if (actionInFlightRef.current) return;
       actionInFlightRef.current = true;
-      optionsRef.current.onClearSelection?.();
-      setHint(null);
+      // These two run before the await, so they sit outside the `finally` below.
+      // A throw in a game-specific `onClearSelection` would leave the flag set and
+      // wedge the page for the rest of the session -- the exact failure this guard
+      // exists to prevent, one span earlier. #7807 review.
+      try {
+        optionsRef.current.onClearSelection?.();
+        setHint(null);
+      } catch (e) {
+        actionInFlightRef.current = false;
+        throw e;
+      }
       void (async () => {
         try {
           await apiCall(...args);
