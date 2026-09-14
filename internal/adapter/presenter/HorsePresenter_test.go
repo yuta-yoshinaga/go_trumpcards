@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"encoding/json"
+	"errors"
 	"strconv"
 	"strings"
 	"testing"
@@ -185,6 +186,28 @@ func TestHorseWebPresenter_OutputError(t *testing.T) {
 	require.NoError(t, json.Unmarshal(
 		[]byte(p.Output(newHorseForPresenter(t), assert.AnError)), &out))
 	assert.Equal(t, assert.AnError.Error(), out.Message)
+}
+
+func TestHorseWebPresenter_OutputErrorMessageCode(t *testing.T) {
+	p := &presenter.HorseWebPresenter{}
+	g := newHorseForPresenter(t)
+
+	var out struct {
+		Message     string `json:"message"`
+		MessageCode string `json:"messageCode"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g,
+		domain.NewDomainErrorCode(domain.ErrInvalidPlay, "horse.errSomething", nil))), &out))
+	assert.Equal(t, "horse.errSomething", out.MessageCode)
+	assert.Empty(t, out.Message)
+
+	out = struct {
+		Message     string `json:"message"`
+		MessageCode string `json:"messageCode"`
+	}{}
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, errors.New("test error"))), &out))
+	assert.Equal(t, "test error", out.Message)
+	assert.Empty(t, out.MessageCode)
 }
 
 // **決着したら勝者を messageCode で返す。** 画面はここを訳して出す。

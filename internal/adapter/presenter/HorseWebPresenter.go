@@ -15,7 +15,12 @@ type HorseWebPresenter struct{}
 func (p *HorseWebPresenter) Output(g interfaces.HorseGame, lastErr error) string {
 	resObj := p.buildBase(g)
 	if lastErr != nil {
-		resObj.Message = lastErr.Error()
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			resObj.MessageCode = code
+			resObj.MessageParams = params
+		} else {
+			resObj.Message = lastErr.Error()
+		}
 	} else if g.GetGameEndFlag() {
 		resObj.MessageCode = "horse.result.winner"
 		resObj.MessageParams = map[string]string{"name": g.GetSeatName(g.WinnerSeat())}

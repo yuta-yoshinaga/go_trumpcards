@@ -84,6 +84,21 @@ func TestStHelenaWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "boom", result.Message)
 	})
 
+	t.Run("error message code", func(t *testing.T) {
+		cg := new(interfaces.MockStHelenaGame)
+		setupStHelenaOutputMock(cg)
+		p := new(StHelenaWebPresenter)
+
+		result := parseStHelenaOutput(t, p.Output(cg,
+			domain.NewDomainErrorCode(domain.ErrInvalidPlay, "sthelena.errSomething", nil)))
+		assert.Equal(t, "sthelena.errSomething", result.MessageCode)
+		assert.Empty(t, result.Message)
+
+		result = parseStHelenaOutput(t, p.Output(cg, errors.New("test error")))
+		assert.Equal(t, "test error", result.Message)
+		assert.Empty(t, result.MessageCode)
+	})
+
 	t.Run("game clear", func(t *testing.T) {
 		cg := new(interfaces.MockStHelenaGame)
 		setupStHelenaOutputMock(cg)
