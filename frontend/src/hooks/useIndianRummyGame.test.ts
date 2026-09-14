@@ -56,6 +56,7 @@ const defaultState: IndianRummyResponse = {
   winnerIdx: -1,
   declarerIdx: -1,
   declarationValid: false,
+  declarableDiscards: [],
   message: '',
   config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
 };

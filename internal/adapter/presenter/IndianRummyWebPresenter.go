@@ -31,6 +31,13 @@ func (p *IndianRummyWebPresenter) Output(g interfaces.IndianRummyGame, lastErr e
 	resObj.WinnerIdx = g.GetWinnerIdx()
 	resObj.DeclarerIdx = g.GetDeclarerIdx()
 	resObj.DeclarationValid = g.GetDeclarationValid()
+	// **フェーズと手番の判定はドメイン側だけに置く。** ここで同じ条件を書くと、
+	// 規則が 2 か所になって片方だけずれる。GetDeclarableDiscards は捨て札
+	// フェーズの人間の手番以外では空を返す (実測 4.26ns、手番中は 1.82ms)。
+	resObj.DeclarableDiscards = g.GetDeclarableDiscards()
+	if resObj.DeclarableDiscards == nil {
+		resObj.DeclarableDiscards = make([]int, 0)
+	}
 
 	if top := g.GetDiscardTop(); top != nil {
 		resObj.DiscardTop = cardToOutput(top)

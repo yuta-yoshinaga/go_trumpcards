@@ -447,17 +447,9 @@ func (g *IndianRummy) cpuDiscardOrDeclare() {
 
 // cpuFindDeclareCard 14 枚のうち 1 枚をフィニッシュに回して残り 13 枚が有効宣言になるカードを探す。
 func (g *IndianRummy) cpuFindDeclareCard(player *IndianRummyPlayer) (int, bool) {
-	n := player.GetCardsSize()
-	for f := 0; f < n; f++ {
-		rem := make([]*Card, 0, n-1)
-		for i := 0; i < n; i++ {
-			if i != f {
-				rem = append(rem, player.GetCard(i))
-			}
-		}
-		if IndianRummyValidateDeclaration(rem, g.wildRank) {
-			return f, true
-		}
+	declarable := declarableIndianRummyDiscards(player, g.wildRank, true)
+	if len(declarable) > 0 {
+		return declarable[0], true
 	}
 	return 0, false
 }
@@ -643,6 +635,38 @@ func (g *IndianRummy) PlayerHasPureSequence(i int) bool {
 		return false
 	}
 	return IndianRummyHasPureSequence(indianRummyCollectCards(p), g.wildRank)
+}
+
+// GetDeclarableDiscards returns the hand indices whose discard leaves a valid declaration.
+func (g *IndianRummy) GetDeclarableDiscards() []int {
+	if g.phase != IndianRummyPhaseDiscard {
+		return []int{}
+	}
+	p := g.GetPlayer(g.currentPlayerIdx)
+	if p == nil || !p.GetIsHuman() {
+		return []int{}
+	}
+	return declarableIndianRummyDiscards(p, g.wildRank, false)
+}
+
+func declarableIndianRummyDiscards(player *IndianRummyPlayer, wildRank int, firstOnly bool) []int {
+	n := player.GetCardsSize()
+	declarable := make([]int, 0)
+	for f := 0; f < n; f++ {
+		rem := make([]*Card, 0, n-1)
+		for i := 0; i < n; i++ {
+			if i != f {
+				rem = append(rem, player.GetCard(i))
+			}
+		}
+		if IndianRummyValidateDeclaration(rem, wildRank) {
+			declarable = append(declarable, f)
+			if firstOnly {
+				break
+			}
+		}
+	}
+	return declarable
 }
 
 // indianRummyFitsWithHand checks if card fits with hand to form a potential meld.

@@ -65,4 +65,6 @@ type IndianRummyGame interface {
 	PlayerDeadwoodValue(i int) int
 	// PlayerHasPureSequence プレイヤー i がピュアシーケンスを持つか
 	PlayerHasPureSequence(i int) bool
+	// GetDeclarableDiscards 現在の手番の手札で宣言できる捨て札インデックスを取得する
+	GetDeclarableDiscards() []int
 }

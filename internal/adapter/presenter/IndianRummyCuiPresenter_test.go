@@ -40,6 +40,7 @@ func setupIndianRummyCuiMock(phase domain.IndianRummyPhase, gameEnd bool) (*inte
 	m.On("PlayerDeadwoodValue", 1).Return(20).Maybe()
 	m.On("PlayerHasPureSequence", 0).Return(false).Maybe()
 	m.On("PlayerHasPureSequence", 1).Return(false).Maybe()
+	m.On("GetDeclarableDiscards").Return([]int{}).Maybe()
 	return m, players
 }
 
