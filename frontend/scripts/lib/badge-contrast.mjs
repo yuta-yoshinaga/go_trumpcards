@@ -2,6 +2,7 @@ const BADGE_TOKEN = /\bbg-ds-(warning|info|success|error)\/\d+\b/g;
 
 /** Opening JSX tag starting at `start`, including its closing `>`. */
 function openingTag(text, start) {
+  if (!/^<\/?[A-Za-z][\w.-]*(?:\s|\/?>)/.test(text.slice(start))) return null;
   let braceDepth = 0;
   let quote = null;
   for (let i = start; i < text.length; i += 1) {
@@ -18,22 +19,37 @@ function openingTag(text, start) {
       return text.slice(start, i + 1);
     }
   }
-  return text.slice(start);
+  return null;
 }
 
 /** Return the next JSX tag, respecting `>` inside quoted attributes and braces. */
 function nextTag(text, start) {
-  const open = text.indexOf('<', start);
-  if (open === -1) return null;
-  const tag = openingTag(text, open);
-  if (!tag.endsWith('>')) return null;
-  return { start: open, end: open + tag.length, text: tag };
+  let braceDepth = 0;
+  let quote = null;
+  for (let i = start; i < text.length; i += 1) {
+    const ch = text[i];
+    if (quote) {
+      if (ch === quote && text[i - 1] !== '\\') quote = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'") {
+      quote = ch;
+    } else if (ch === '{') {
+      braceDepth += 1;
+    } else if (ch === '}') {
+      braceDepth = Math.max(0, braceDepth - 1);
+    } else if (ch === '<' && braceDepth === 0) {
+      const tag = openingTag(text, i);
+      if (tag) return { start: i, end: i + tag.length, text: tag };
+    }
+  }
+  return null;
 }
 
 /** Find the end of the JSX element whose opening tag starts at `start`. */
 function elementEnd(text, start) {
   const first = nextTag(text, start);
-  if (!first) return text.length;
+  if (!first) return -1;
   const name = /^<([A-Za-z][\w.-]*)\b/.exec(first.text)?.[1];
   if (!name || /\/\s*>$/.test(first.text)) return first.end;
 
@@ -41,7 +57,7 @@ function elementEnd(text, start) {
   let cursor = first.end;
   while (stack.length > 0) {
     const tag = nextTag(text, cursor);
-    if (!tag) return text.length;
+    if (!tag) return -1;
     cursor = tag.end;
     const closing = /^<\/([A-Za-z][\w.-]*)\s*>$/.exec(tag.text);
     if (closing && stack.at(-1) === closing[1]) {
@@ -86,8 +102,11 @@ export function findBadgeContrastViolations(text) {
   for (const { start, end } of classNameValues(text)) {
     const value = text.slice(start, end);
     const tagStart = text.lastIndexOf('<', start);
-    const tagEnd = tagStart === -1 ? -1 : openingTag(text, tagStart).length + tagStart;
-    const elementEndIndex = tagStart === -1 ? end : elementEnd(text, tagStart);
+    const tag = tagStart === -1 ? null : openingTag(text, tagStart);
+    if (!tag) continue;
+    const tagEnd = tagStart + tag.length;
+    const elementEndIndex = elementEnd(text, tagStart);
+    if (elementEndIndex === -1) continue;
     for (const match of value.matchAll(BADGE_TOKEN)) {
       const kind = match[1];
       const foreground = new RegExp(String.raw`\btext-ds-${kind}\b`);

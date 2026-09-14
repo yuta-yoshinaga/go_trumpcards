@@ -912,6 +912,8 @@ describe('CrazyEightsPage winner highlight', () => {
     const row = await screen.findByTestId('ce-score-row-0');
     expect(row).toHaveAttribute('data-winner', 'true');
     expect(row).toHaveClass('bg-ds-surface', 'border-ds-success', 'font-bold');
+    expect(row).toHaveClass('text-ds-success');
+    expect(row).not.toHaveClass('text-ds-accent');
     // スクリーンリーダーにも勝者だと分かること。色だけでは伝わらない。
     expect(row.textContent).toContain('勝者');
   });

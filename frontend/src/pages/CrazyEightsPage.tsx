@@ -420,7 +420,7 @@ function CrazyEightsPageContent() {
                             key={p.id}
                             data-testid={`ce-score-row-${p.id}`}
                             data-winner={isWinner ? 'true' : undefined}
-                            className={`${p.isHuman ? 'text-ds-accent' : ''}${
+                            className={`${p.isHuman && !isWinner ? 'text-ds-accent' : ''}${
                               isWinner ? ` ${badgeSuccessColors} font-bold` : ''
                             }`}
                           >

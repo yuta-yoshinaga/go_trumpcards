@@ -336,7 +336,7 @@ function DoubtPageContent() {
                         <div className="text-ds-text-primary font-bold mb-2">{t('doubtQuestion')}</div>
                         {state.lastAction && (
                           <div
-                            className={`${badgeWarningColors} border-2 rounded-lg py-2 px-3 mb-2 text-center animate-pulse`}
+                            className={`${badgeWarningColors} rounded-lg py-2 px-3 mb-2 text-center animate-pulse`}
                             data-testid="doubt-last-action-highlight"
                           >
                             <div className="text-ds-warning font-bold text-base sm:text-lg">

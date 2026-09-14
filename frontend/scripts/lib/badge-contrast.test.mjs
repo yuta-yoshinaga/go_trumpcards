@@ -24,4 +24,20 @@ describe('badge contrast element boundaries', () => {
   ])('%s: returns %i violation(s)', (_name, source, expected) => {
     expect(violations(source)).toBe(expected);
   });
+
+  it('does not let a comparison in a JSX expression swallow a sibling', () => {
+    expect(violations('<div className="bg-ds-warning/20">{a < b}</div><span className="text-ds-warning" />')).toBe(0);
+  });
+
+  it('keeps descendant matching across a comparison expression', () => {
+    expect(
+      violations(
+        '<div className="bg-ds-warning/20"><span>{x < 0 && <em>warning</em>}</span><p className="text-ds-warning" /></div>',
+      ),
+    ).toBe(1);
+  });
+
+  it('does not treat a greater-than comparison as a tag boundary', () => {
+    expect(violations('<div className="bg-ds-warning/20">{a > b}</div>')).toBe(0);
+  });
 });
