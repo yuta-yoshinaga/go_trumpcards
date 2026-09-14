@@ -23,6 +23,8 @@ export interface GolfResponse extends BaseGameResponse {
   waste: Card[];
   phase: number;
   moveCount: number;
+  /** Length of the unbroken removal chain; 0 after a draw or an undo. */
+  chainCombo: number;
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;

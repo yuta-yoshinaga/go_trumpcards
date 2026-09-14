@@ -17,6 +17,7 @@ import (
 func setupGolfWebMockDefaults(gg *interfaces.MockGolfGame) {
 	gg.On("GetPhase").Return(domain.GolfPhasePlaying).Maybe()
 	gg.On("GetMoveCount").Return(0).Maybe()
+	gg.On("GetChainCombo").Return(0).Maybe()
 	gg.On("GetStockCount").Return(16).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
@@ -75,6 +76,29 @@ func TestGolfWebPresenterOutput_Playing(t *testing.T) {
 	assert.Len(t, out.Layout, domain.GolfColCnt)
 }
 
+func TestGolfWebPresenterOutput_PreservesRealGolfChainCombo(t *testing.T) {
+	g := domain.NewGolf(domain.NewTrumpCards(0))
+	g.SetPhase(domain.GolfPhasePlaying)
+	var layout [domain.GolfColCnt][domain.GolfRowCnt]*domain.GolfCard
+	layout[0][domain.GolfRowCnt-1] = &domain.GolfCard{
+		Card:    domain.NewCard(domain.CardDesignSpade, 5, true),
+		Removed: false,
+	}
+	layout[1][domain.GolfRowCnt-1] = &domain.GolfCard{
+		Card:    domain.NewCard(domain.CardDesignSpade, 9, true),
+		Removed: false,
+	}
+	g.SetLayout(layout)
+	g.SetWaste([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 4, true)})
+	g.SetStock([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, 7, true)})
+
+	if assert.NoError(t, g.Remove(0)) {
+		assert.Equal(t, 1, g.GetChainCombo())
+		out := parseGolfOutput(t, new(GolfWebPresenter).Output(g, nil))
+		assert.Equal(t, 1, out.ChainCombo)
+	}
+}
+
 func TestGolfWebPresenterOutput_Error(t *testing.T) {
 	gg := new(interfaces.MockGolfGame)
 	setupGolfOutputMock(gg)
@@ -92,6 +116,7 @@ func TestGolfWebPresenterOutput_Stalemate(t *testing.T) {
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhasePlaying).Maybe()
 	gg.On("GetMoveCount").Return(5).Maybe()
+	gg.On("GetChainCombo").Return(0).Maybe()
 	gg.On("GetStockCount").Return(0).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
@@ -118,6 +143,7 @@ func TestGolfWebPresenterOutput_GameClear(t *testing.T) {
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhaseGameClear).Maybe()
 	gg.On("GetMoveCount").Return(10).Maybe()
+	gg.On("GetChainCombo").Return(0).Maybe()
 	gg.On("GetStockCount").Return(0).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
@@ -145,6 +171,7 @@ func TestGolfWebPresenterOutput_GameOver(t *testing.T) {
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhaseGameOver).Maybe()
 	gg.On("GetMoveCount").Return(5).Maybe()
+	gg.On("GetChainCombo").Return(0).Maybe()
 	gg.On("GetStockCount").Return(0).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
@@ -196,6 +223,7 @@ func TestGolfWebPresenterHintOutput(t *testing.T) {
 		gg.On("GetHint").Return(&domain.GolfHint{Type: "remove", Col: 3})
 		gg.On("GetPhase").Return(domain.GolfPhasePlaying)
 		gg.On("GetMoveCount").Return(0)
+		gg.On("GetChainCombo").Return(0)
 		gg.On("GetStockCount").Return(16)
 		gg.On("CanUndo").Return(false)
 		gg.On("IsStalemate").Return(false)
@@ -215,6 +243,7 @@ func TestGolfWebPresenterHintOutput(t *testing.T) {
 		gg.On("GetHint").Return((*domain.GolfHint)(nil))
 		gg.On("GetPhase").Return(domain.GolfPhasePlaying)
 		gg.On("GetMoveCount").Return(0)
+		gg.On("GetChainCombo").Return(0)
 		gg.On("GetStockCount").Return(0)
 		gg.On("CanUndo").Return(false)
 		gg.On("IsStalemate").Return(false)

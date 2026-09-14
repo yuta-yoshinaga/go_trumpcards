@@ -119,8 +119,45 @@ func TestGolf_Remove_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.True(t, g.layout[0][4].Removed)
 	assert.Equal(t, 1, g.GetMoveCount())
+	assert.Equal(t, 1, g.GetChainCombo())
 	// Removed card goes to waste
 	assert.Equal(t, 5, g.GetWaste()[len(g.GetWaste())-1].GetValue())
+}
+
+func TestGolf_ChainComboRules(t *testing.T) {
+	g := setupGolfForRemove(t)
+	g.layout[1][4] = &GolfCard{Card: NewCard(CardDesignHeart, 6, true), Removed: false}
+	g.layout[2][4] = &GolfCard{Card: NewCard(CardDesignHeart, 8, true), Removed: false}
+
+	require.NoError(t, g.Remove(0))
+	require.NoError(t, g.Remove(1))
+	assert.Equal(t, 2, g.GetChainCombo())
+
+	assert.EqualError(t, g.Remove(2), "card is not adjacent to waste top")
+	assert.Equal(t, 2, g.GetChainCombo(), "failed removes must not change the combo")
+
+	require.NoError(t, g.Draw())
+	assert.Equal(t, 0, g.GetChainCombo())
+
+	g = setupGolfForRemove(t)
+	g.layout[1][4] = &GolfCard{Card: NewCard(CardDesignHeart, 6, true), Removed: false}
+	require.NoError(t, g.Remove(0))
+	require.NoError(t, g.Undo())
+	assert.Equal(t, 0, g.GetChainCombo())
+
+	require.NoError(t, g.Remove(0))
+	require.NoError(t, g.UndoN(1))
+	assert.Equal(t, 0, g.GetChainCombo())
+
+	require.NoError(t, g.Remove(0))
+	g.SetIsStalemate(true)
+	chainComboBeforeUndoToEscape := g.GetChainCombo()
+	assert.Equal(t, 1, g.UndoToEscape())
+	assert.Equal(t, chainComboBeforeUndoToEscape, g.GetChainCombo())
+
+	require.NoError(t, g.Remove(1))
+	g.Reset()
+	assert.Equal(t, 0, g.GetChainCombo())
 }
 
 func TestGolf_Remove_KAWrap(t *testing.T) {
@@ -400,8 +437,7 @@ func TestGolf_IsAdjacentRank(t *testing.T) {
 
 func TestGolf_JSON_RoundTrip(t *testing.T) {
 	g := newTestGolf()
-	g.Reset()
-	_ = g.Draw()
+	g.chainCombo = 3
 
 	data, err := json.Marshal(g)
 	require.NoError(t, err)
@@ -412,6 +448,7 @@ func TestGolf_JSON_RoundTrip(t *testing.T) {
 
 	assert.Equal(t, g.GetPhase(), g2.GetPhase())
 	assert.Equal(t, g.GetMoveCount(), g2.GetMoveCount())
+	assert.Equal(t, g.GetChainCombo(), g2.GetChainCombo())
 	assert.Equal(t, g.GetStockCount(), g2.GetStockCount())
 	assert.Equal(t, len(g.GetWaste()), len(g2.GetWaste()))
 	assert.Equal(t, g.IsStalemate(), g2.IsStalemate())
