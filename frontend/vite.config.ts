@@ -24,6 +24,9 @@ export default defineConfig({
     environment: 'happy-dom',
     setupFiles: './src/test/setup.ts',
     testTimeout: 10000,
+    // setup.ts の afterEach はテスト本体の評価前に登録されるため、vi.setConfig では届かない。
+    // cleanup フックの上限はここで設定する。
+    hookTimeout: 30000,
     exclude: ['e2e/**', 'node_modules/**'],
     // Forked test workers inherit Node's default ~4 GB heap cap, which the
     // largest single file (NavBar.test.tsx, 489 tests) exceeds — the worker
