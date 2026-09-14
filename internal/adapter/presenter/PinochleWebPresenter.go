@@ -158,6 +158,9 @@ func (p *PinochleWebPresenter) buildMeldsOutput(g interfaces.PinochleGame) [4][]
 // buildMessage ゲーム結果メッセージを構築
 func (p *PinochleWebPresenter) buildMessage(g interfaces.PinochleGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

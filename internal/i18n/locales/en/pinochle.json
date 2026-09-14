@@ -55,5 +55,15 @@
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
   "meldTableHeader": "Meld reference:\n  ",
-  "meldTableEntry": "{{type}} {{points}}"
+  "meldTableEntry": "{{type}} {{points}}",
+  "errWrongPhase": "This is not the bidding phase.",
+  "errNotHumanTurn": "It is not the human player's turn.",
+  "errBidMinimum": "The bid must be at least {{min}}.",
+  "errBidHigherThanHighest": "The bid must be higher than the current bid of {{bid}}.",
+  "errCannotPass": "The last bidder cannot pass.",
+  "errTrumpPhase": "This is not the trump declaration phase.",
+  "errInvalidSuit": "The suit is invalid.",
+  "errPlayPhase": "This is not the play phase.",
+  "errInvalidCardIndex": "The card index is invalid.",
+  "errCardCannotBePlayed": "This card cannot be played."
 }

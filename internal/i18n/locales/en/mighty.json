@@ -57,5 +57,21 @@
   "hintReasonPlayFollow": "follow the lead suit",
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
-  "promptBidNoTrumpExtra": "Adding no-trump (nt) raises the minimum bid by {{points}}"
+  "promptBidNoTrumpExtra": "Adding no-trump (nt) raises the minimum bid by {{points}}",
+  "errBidRange": "Specify a bid from {{min}} to {{max}} (0 passes).",
+  "errBidHigherThanHighest": "Specify a bid higher than the current highest bid of {{bid}}.",
+  "errNoTrumpCannotHaveSuit": "A no-trump declaration cannot specify a trump suit.",
+  "errInvalidSuit": "The suit is invalid.",
+  "errJokerValue": "The Joker's value must be 1.",
+  "errInvalidPartnerSuit": "The partner suit is invalid.",
+  "errInvalidPartnerValue": "The partner card value is invalid.",
+  "errKittyCardCount": "Choose {{count}} cards to discard.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errDuplicateCardIndex": "The same card cannot be selected more than once.",
+  "errJokerLeadSuitRequired": "Specify the demanded suit when leading the Joker.",
+  "errJokerLeadOnlyAtTrickStart": "The Joker can only be led at the start of a trick.",
+  "errJokerRequired": "A Joker must be led with the Joker-lead command.",
+  "errInvalidDemandSuit": "The demanded suit is invalid.",
+  "errJokerCallRequiresJoker": "Joker call: play the Joker.",
+  "errMustFollowLeadSuit": "Follow the led suit."
 }

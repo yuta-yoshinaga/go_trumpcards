@@ -21,6 +21,33 @@ func newTestBinokel(cfg ...BinokelConfig) *Binokel {
 	return NewBinokel(NewTrumpCardsBinokel(), players, config)
 }
 
+func TestBinokelDomainErrorsHaveMessageCodes(t *testing.T) {
+	g := newTestBinokel()
+	g.Reset()
+	g.bidPlayerIdx = 0
+	err := g.PlayerBid(BinokelMinBid - BinokelBidStep)
+	de, ok := err.(*DomainError)
+	if !ok || de.MessageCode() != "binokel.errBidMinimum" {
+		t.Fatalf("expected binokel.errBidMinimum, got %T %v", err, err)
+	}
+}
+
+func TestBinokelUnplayableCardHasMessageCode(t *testing.T) {
+	g := newTestBinokel()
+	g.Reset()
+	g.players[0].Reset()
+	g.players[0].AddCard(NewCard(CardDesignSpade, 1, false))
+	g.players[0].AddCard(NewCard(CardDesignHeart, 1, false))
+	g.phase = BinokelPhasePlay
+	g.currentPlayerIdx = 0
+	g.currentTrick = []*TrickCard{{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 7, false)}}
+	err := g.PlayerPlay(1)
+	de, ok := err.(*DomainError)
+	if !ok || de.MessageCode() != "binokel.errCardCannotBePlayed" {
+		t.Fatalf("expected binokel.errCardCannotBePlayed, got %T %v", err, err)
+	}
+}
+
 // ─── 1. Deck Verification ─────────────────────────────────
 
 func TestBinokel_Deck(t *testing.T) {

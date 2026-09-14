@@ -560,10 +560,10 @@ func meldTotalPoints(melds []*PinochleMeld) int {
 // PlayerBid 人間プレイヤーがビッドする
 func (p *Pinochle) PlayerBid(amount int) error {
 	if p.phase != PinochlePhaseBid {
-		return NewDomainError(ErrWrongPhase, "ビッドフェーズではありません")
+		return NewDomainErrorCode(ErrWrongPhase, "pinochle.errWrongPhase", nil)
 	}
 	if !p.players[p.bidPlayerIdx].GetIsHuman() {
-		return NewDomainError(ErrNotHumanTurn, "人間プレイヤーのターンではありません")
+		return NewDomainErrorCode(ErrNotHumanTurn, "pinochle.errNotHumanTurn", nil)
 	}
 	return p.doBid(p.bidPlayerIdx, amount)
 }
@@ -571,10 +571,10 @@ func (p *Pinochle) PlayerBid(amount int) error {
 // PlayerPass 人間プレイヤーがパスする
 func (p *Pinochle) PlayerPass() error {
 	if p.phase != PinochlePhaseBid {
-		return NewDomainError(ErrWrongPhase, "ビッドフェーズではありません")
+		return NewDomainErrorCode(ErrWrongPhase, "pinochle.errWrongPhase", nil)
 	}
 	if !p.players[p.bidPlayerIdx].GetIsHuman() {
-		return NewDomainError(ErrNotHumanTurn, "人間プレイヤーのターンではありません")
+		return NewDomainErrorCode(ErrNotHumanTurn, "pinochle.errNotHumanTurn", nil)
 	}
 	return p.doPass(p.bidPlayerIdx)
 }
@@ -582,10 +582,10 @@ func (p *Pinochle) PlayerPass() error {
 // doBid ビッドを実行
 func (p *Pinochle) doBid(playerIdx, amount int) error {
 	if amount < PinochleMinBid {
-		return NewDomainError(ErrInvalidAmount, fmt.Sprintf("ビッドは%d以上でなければなりません", PinochleMinBid))
+		return NewDomainErrorCode(ErrInvalidAmount, "pinochle.errBidMinimum", map[string]string{"min": fmt.Sprintf("%d", PinochleMinBid)})
 	}
 	if p.highestBid > 0 && amount <= p.highestBid {
-		return NewDomainError(ErrInvalidAmount, fmt.Sprintf("現在のビッド%dより大きくなければなりません", p.highestBid))
+		return NewDomainErrorCode(ErrInvalidAmount, "pinochle.errBidHigherThanHighest", map[string]string{"bid": fmt.Sprintf("%d", p.highestBid)})
 	}
 
 	p.players[playerIdx].SetBid(amount)
@@ -606,7 +606,7 @@ func (p *Pinochle) doPass(playerIdx int) error {
 		}
 	}
 	if activeBidders <= 1 && p.highestBid > 0 {
-		return NewDomainError(ErrCannotPass, "最後のビッダーはパスできません")
+		return NewDomainErrorCode(ErrCannotPass, "pinochle.errCannotPass", nil)
 	}
 
 	p.players[playerIdx].SetHasPassed(true)
@@ -782,10 +782,10 @@ func (p *Pinochle) cpuEstimateTrickPoints(playerIdx, trumpSuit int) int {
 // PlayerCallTrump 人間プレイヤーがトランプスートを宣言する
 func (p *Pinochle) PlayerCallTrump(suit int) error {
 	if p.phase != PinochlePhaseTrump {
-		return NewDomainError(ErrWrongPhase, "トランプ宣言フェーズではありません")
+		return NewDomainErrorCode(ErrWrongPhase, "pinochle.errTrumpPhase", nil)
 	}
 	if !p.players[p.currentPlayerIdx].GetIsHuman() {
-		return NewDomainError(ErrNotHumanTurn, "人間プレイヤーのターンではありません")
+		return NewDomainErrorCode(ErrNotHumanTurn, "pinochle.errNotHumanTurn", nil)
 	}
 	return p.doCallTrump(p.currentPlayerIdx, suit)
 }
@@ -793,7 +793,7 @@ func (p *Pinochle) PlayerCallTrump(suit int) error {
 // doCallTrump トランプ宣言を実行
 func (p *Pinochle) doCallTrump(playerIdx, suit int) error {
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "無効なスートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "pinochle.errInvalidSuit", nil)
 	}
 	p.trumpSuit = suit
 	suitNames := map[int]string{
@@ -939,10 +939,10 @@ func (p *Pinochle) getValidPlayIndices(playerIdx int) []int {
 // PlayerPlay 人間プレイヤーがカードをプレイする
 func (p *Pinochle) PlayerPlay(cardIndex int) error {
 	if p.phase != PinochlePhasePlay {
-		return NewDomainError(ErrWrongPhase, "プレイフェーズではありません")
+		return NewDomainErrorCode(ErrWrongPhase, "pinochle.errPlayPhase", nil)
 	}
 	if !p.players[p.currentPlayerIdx].GetIsHuman() {
-		return NewDomainError(ErrNotHumanTurn, "人間プレイヤーのターンではありません")
+		return NewDomainErrorCode(ErrNotHumanTurn, "pinochle.errNotHumanTurn", nil)
 	}
 	return p.doPlay(p.currentPlayerIdx, cardIndex)
 }
@@ -951,13 +951,13 @@ func (p *Pinochle) PlayerPlay(cardIndex int) error {
 func (p *Pinochle) doPlay(playerIdx, cardIndex int) error {
 	player := p.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "無効なカードインデックスです")
+		return NewDomainErrorCode(ErrInvalidCard, "pinochle.errInvalidCardIndex", nil)
 	}
 
 	// バリデーション
 	validIndices := p.getValidPlayIndices(playerIdx)
 	if !slices.Contains(validIndices, cardIndex) {
-		return NewDomainError(ErrInvalidPlay, "このカードはプレイできません")
+		return NewDomainErrorCode(ErrInvalidPlay, "pinochle.errCardCannotBePlayed", nil)
 	}
 
 	card := player.RemoveCard(cardIndex)

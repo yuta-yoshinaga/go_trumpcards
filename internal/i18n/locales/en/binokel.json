@@ -64,5 +64,19 @@
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
   "meldTableHeader": "Meld reference:\n  ",
-  "meldTableEntry": "{{type}} {{points}}"
+  "meldTableEntry": "{{type}} {{points}}",
+  "errWrongPhase": "This is not the bidding phase.",
+  "errNotHumanTurn": "It is not the human player's turn.",
+  "errBidMinimum": "The bid must be at least {{min}}.",
+  "errBidHigherThanHighest": "The bid must be higher than the current bid of {{bid}}.",
+  "errBidStep": "The bid must be in increments of {{step}}.",
+  "errDabbPhase": "This is not the Dabb phase.",
+  "errDabbCardCount": "Choose {{count}} cards.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errDuplicateCardIndex": "The same card was selected more than once.",
+  "errTrumpPhase": "This is not the trump declaration phase.",
+  "errInvalidSuit": "The suit is invalid.",
+  "errPlayPhase": "This is not the play phase.",
+  "errInvalidCardIndex": "The card index is invalid.",
+  "errCardCannotBePlayed": "This card cannot be played."
 }

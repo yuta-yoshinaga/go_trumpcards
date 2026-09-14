@@ -55,5 +55,15 @@
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
   "meldTableHeader": "メルド早見表:\n  ",
-  "meldTableEntry": "{{type}} {{points}}"
+  "meldTableEntry": "{{type}} {{points}}",
+  "errWrongPhase": "ビッドフェーズではありません。",
+  "errNotHumanTurn": "人間プレイヤーのターンではありません。",
+  "errBidMinimum": "ビッドは{{min}}以上でなければなりません。",
+  "errBidHigherThanHighest": "ビッドは現在の{{bid}}より大きくなければなりません。",
+  "errCannotPass": "最後のビッダーはパスできません。",
+  "errTrumpPhase": "トランプ宣言フェーズではありません。",
+  "errInvalidSuit": "無効なスートです。",
+  "errPlayPhase": "プレイフェーズではありません。",
+  "errInvalidCardIndex": "無効なカードインデックスです。",
+  "errCardCannotBePlayed": "このカードはプレイできません。"
 }
