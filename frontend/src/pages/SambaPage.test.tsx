@@ -191,6 +191,12 @@ describe('SambaPage', () => {
     mockExec.mockResolvedValue(makeSambaState({ isFrozen: true }));
     renderWithProviders(<SambaPage />);
     await waitFor(() => expect(screen.getByTestId('sa-frozen-badge')).toBeInTheDocument());
+    expect(screen.getByTestId('sa-discard-pile')).toHaveClass(
+      'bg-ds-surface',
+      'border-ds-border-subtle',
+      'ring-2',
+      'ring-ds-info',
+    );
     expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent(
       'フリーズ中はワイルドカードでの代用ができません',
     );

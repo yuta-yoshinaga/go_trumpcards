@@ -400,7 +400,11 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByTestId('doubt-last-action-highlight')).toBeInTheDocument());
-    expect(screen.getByTestId('doubt-last-action-highlight')).toHaveClass('animate-pulse');
+    expect(screen.getByTestId('doubt-last-action-highlight')).toHaveClass(
+      'bg-ds-surface',
+      'border-ds-warning',
+      'animate-pulse',
+    );
   });
 
   it('Space key triggers doubt in doubt decision window', async () => {

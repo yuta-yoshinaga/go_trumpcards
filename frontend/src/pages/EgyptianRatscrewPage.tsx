@@ -290,7 +290,7 @@ function EgyptianRatscrewPageContent() {
             {/* Center pile / arena */}
             <div
               className={`relative flex items-center justify-center gap-8 py-3 rounded-lg transition-colors ${
-                state.isSlappable ? 'bg-ds-warning/30' : 'bg-black/20'
+                state.isSlappable ? 'bg-ds-surface border border-ds-warning' : 'bg-black/20'
               } ${lastEvent === EgyptianRatscrewEventKind.SLAP_WRONG ? 'ring-2 ring-ds-error' : ''}`}
               data-tutorial="er-arena"
             >

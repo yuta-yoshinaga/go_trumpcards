@@ -437,7 +437,12 @@ describe('SpeedPage', () => {
     mockExec.mockResolvedValue(stuckState);
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByTestId('flip-button')).toBeInTheDocument());
-    expect(screen.getByTestId('stuck-emphasis-container')).toBeInTheDocument();
+    expect(screen.getByTestId('stuck-emphasis-container')).toHaveClass(
+      'bg-ds-surface',
+      'border-ds-warning',
+      'ring-2',
+      'ring-ds-warning',
+    );
   });
 
   it('does not render the stuck emphasis container in play phase', async () => {

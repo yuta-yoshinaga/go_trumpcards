@@ -22,6 +22,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -255,7 +256,7 @@ function CanastaPageContent() {
                 {state.discardTop && (
                   <div
                     className={`my-3 p-3 rounded flex items-center gap-3 relative ${
-                      state.isFrozen ? 'bg-ds-info/20 ring-2 ring-ds-info' : 'bg-black/40'
+                      state.isFrozen ? `${badgeInfoColors} ring-2 ring-ds-info` : 'bg-black/40'
                     }`}
                     data-tutorial="ca-draw-area"
                     data-testid="ca-discard-pile"
