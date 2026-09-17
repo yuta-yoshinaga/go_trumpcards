@@ -48,5 +48,11 @@
   "roundPickerLost": "ピッカー組の負け（相手へチップを支払う）",
   "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
-  "dealer": "ディーラー: {{name}}"
+  "dealer": "ディーラー: {{name}}",
+  "errInvalidContract": "その契約は宣言できません",
+  "errTrumpSuitRequired": "切り札スートを指定してください",
+  "errContractNotHigher": "現在の宣言を上回る契約が必要です",
+  "errInvalidCallSuit": "そのスートは呼べません",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }

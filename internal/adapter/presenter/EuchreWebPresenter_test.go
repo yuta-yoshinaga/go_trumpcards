@@ -228,6 +228,15 @@ func TestEuchreWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error", func(t *testing.T) {
+		m, _ := setupEuchreWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "euchre.errInvalidSuit", nil))
+		var resObj controller.EuchreWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "euchre.errInvalidSuit", resObj.MessageCode)
+	})
+
 	t.Run("game end team 0 wins", func(t *testing.T) {
 		m, _ := setupEuchreWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

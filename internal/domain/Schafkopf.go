@@ -218,16 +218,16 @@ func (g *Schafkopf) PlayerDeclare(pick bool, contract SchafkopfContract, soloSui
 	}
 	if pick {
 		if contract < SchafkopfContractRufspiel || contract > SchafkopfContractSolo {
-			return NewDomainError(ErrInvalidPlay, "その契約は宣言できません")
+			return NewDomainErrorCode(ErrInvalidPlay, "schafkopf.errInvalidContract", nil)
 		}
 		// **Solo は切り札スートを要る。** 0 はスートではないので、
 		// 受け取ると「どの札とも一致しない切り札」の盤面ができる。
 		if contract == SchafkopfContractSolo &&
 			(soloSuit < CardDesignSpade || soloSuit > CardDesignMax) {
-			return NewDomainError(ErrInvalidCard, "切り札スートを指定してください")
+			return NewDomainErrorCode(ErrInvalidCard, "schafkopf.errTrumpSuitRequired", nil)
 		}
 		if !g.beatsBestBid(contract) {
-			return NewDomainError(ErrInvalidPlay, "現在の宣言を上回る契約が必要です")
+			return NewDomainErrorCode(ErrInvalidPlay, "schafkopf.errContractNotHigher", nil)
 		}
 	}
 	g.resolvePick(g.currentPlayerIdx, pick, contract, soloSuit)
@@ -337,7 +337,7 @@ func (g *Schafkopf) PlayerCall(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if !g.isCallableSuit(suit) {
-		return NewDomainError(ErrInvalidPlay, "そのスートは呼べません")
+		return NewDomainErrorCode(ErrInvalidPlay, "schafkopf.errInvalidCallSuit", nil)
 	}
 	g.applyCall(suit)
 	return nil
@@ -378,7 +378,7 @@ func (g *Schafkopf) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "schafkopf.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -607,7 +607,7 @@ func (g *Schafkopf) validatePlay(playerIdx int, card *Card) error {
 	}
 	leadSuit := g.suitID(g.currentTrick[0].Card)
 	if g.suitID(card) != leadSuit && g.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "schafkopf.errFollowLeadSuit", nil)
 	}
 	return nil
 }
