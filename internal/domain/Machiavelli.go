@@ -288,10 +288,10 @@ func (g *Machiavelli) PlayerLayoff(meldIdx, handIndex int) error {
 		return ErrNotHumanTurn
 	}
 	if meldIdx < 0 || meldIdx >= len(g.table) {
-		return NewDomainError(ErrInvalidPlay, "対象メルドが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "machiavelli.errInvalidMeldIndex", nil)
 	}
 	if handIndex < 0 || handIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "machiavelli.errCardIndexOutOfRange", nil)
 	}
 	newTable := machiavelliCloneTable(g.table)
 	newTable[meldIdx] = append(newTable[meldIdx], player.GetCard(handIndex))
@@ -304,7 +304,7 @@ func (g *Machiavelli) applyPlay(newTable [][]*Card, handIndices []int) error {
 
 	// (c) 少なくとも 1 枚は手札から出す
 	if len(handIndices) < 1 {
-		return NewDomainError(ErrInvalidPlay, "手札から少なくとも1枚出す必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "machiavelli.errHandCardRequired", nil)
 	}
 	if err := validateIndexList(handIndices, player.GetCardsSize()); err != nil {
 		return err
@@ -313,7 +313,7 @@ func (g *Machiavelli) applyPlay(newTable [][]*Card, handIndices []int) error {
 	// (a) 各メルドが有効なセット／ラン (>=3)
 	for _, meld := range newTable {
 		if !machiavelliIsValidMeld(meld) {
-			return NewDomainError(ErrInvalidPlay, "無効なメルドが含まれています")
+			return NewDomainErrorCode(ErrInvalidPlay, "machiavelli.errInvalidMeld", nil)
 		}
 	}
 
@@ -323,7 +323,7 @@ func (g *Machiavelli) applyPlay(newTable [][]*Card, handIndices []int) error {
 		playedCards[i] = player.GetCard(idx)
 	}
 	if !machiavelliConserves(g.table, playedCards, newTable) {
-		return NewDomainError(ErrInvalidPlay, "場のカード構成が一致しません")
+		return NewDomainErrorCode(ErrInvalidPlay, "machiavelli.errTableCardsMismatch", nil)
 	}
 
 	// 適用: 出した手札を降順で除去し、場を差し替える
@@ -708,12 +708,12 @@ func machiavelliRefsToTable(refs [][]MachiavelliCardRef) ([][]*Card, error) {
 	table := make([][]*Card, len(refs))
 	for i, meldRefs := range refs {
 		if len(meldRefs) == 0 {
-			return nil, NewDomainError(ErrInvalidPlay, "空のメルドは指定できません")
+			return nil, NewDomainErrorCode(ErrInvalidPlay, "machiavelli.errEmptyMeld", nil)
 		}
 		meld := make([]*Card, len(meldRefs))
 		for j, r := range meldRefs {
 			if r.Design < CardDesignSpade || r.Design > CardDesignDiamond || r.Value < 1 || r.Value > CardValueMax {
-				return nil, NewDomainError(ErrInvalidCard, "無効なカードが指定されました")
+				return nil, NewDomainErrorCode(ErrInvalidCard, "machiavelli.errInvalidCard", nil)
 			}
 			meld[j] = NewCard(r.Design, r.Value, false)
 		}

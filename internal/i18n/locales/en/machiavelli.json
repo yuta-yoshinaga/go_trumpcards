@@ -24,5 +24,12 @@
   "turnPhase": "Your turn. Draw or play.",
   "roundEnd": "Round complete. Advance to the next round.",
   "promptLayoffNone": "Layoff unavailable: no melds on the table",
-  "helpExampleDraw": "  dr                   draw from the stock and end the turn"
+  "helpExampleDraw": "  dr                   draw from the stock and end the turn",
+  "errInvalidMeldIndex": "The target meld is invalid.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errHandCardRequired": "You must play at least one card from your hand.",
+  "errInvalidMeld": "The play contains an invalid meld.",
+  "errTableCardsMismatch": "The table's card composition does not match.",
+  "errEmptyMeld": "An empty meld cannot be specified.",
+  "errInvalidCard": "An invalid card was specified."
 }

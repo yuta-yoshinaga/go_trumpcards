@@ -24,5 +24,12 @@
   "turnPhase": "あなたの手番です。引くかプレイしてください。",
   "roundEnd": "ラウンド終了。次のラウンドへ進んでください。",
   "promptLayoffNone": "レイオフ不可: 場にメルドがありません",
-  "helpExampleDraw": "  dr                   山札から 1 枚引いて手番を終える"
+  "helpExampleDraw": "  dr                   山札から 1 枚引いて手番を終える",
+  "errInvalidMeldIndex": "対象メルドが不正です",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errHandCardRequired": "手札から少なくとも1枚出す必要があります",
+  "errInvalidMeld": "無効なメルドが含まれています",
+  "errTableCardsMismatch": "場のカード構成が一致しません",
+  "errEmptyMeld": "空のメルドは指定できません",
+  "errInvalidCard": "無効なカードが指定されました"
 }

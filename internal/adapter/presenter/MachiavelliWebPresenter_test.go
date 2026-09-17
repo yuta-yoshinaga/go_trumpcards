@@ -103,6 +103,14 @@ func TestMachiavelliWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestMachiavelliWebPresenter_CodedError(t *testing.T) {
+	m, _ := setupMachiavelliWebMock(domain.MachiavelliPhaseTurn, false)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "machiavelli.errInvalidMeld", nil)
+	out := unmarshalMachiavelli(t, new(presenter.MachiavelliWebPresenter).Output(m, err))
+	assert.Empty(t, out.Message)
+	assert.Equal(t, "machiavelli.errInvalidMeld", out.MessageCode)
+}
+
 func TestMachiavelliWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.MachiavelliWebPresenter)
 	m, _ := setupMachiavelliWebMock(domain.MachiavelliPhaseTurn, false)

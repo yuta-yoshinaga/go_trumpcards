@@ -95,6 +95,9 @@ func (p *GinRummyWebPresenter) buildPlayersOutput(g interfaces.GinRummyGame) []*
 // buildMessage ゲーム結果メッセージを構築
 func (p *GinRummyWebPresenter) buildMessage(g interfaces.GinRummyGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

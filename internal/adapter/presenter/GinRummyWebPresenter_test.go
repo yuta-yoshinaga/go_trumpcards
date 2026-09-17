@@ -357,6 +357,16 @@ func TestGinRummyWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestGinRummyWebPresenter_CodedError(t *testing.T) {
+	m, _ := setupGinRummyWebMockWithPlayers()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "ginrummy.errDiscardPileEmpty", nil)
+	result := new(presenter.GinRummyWebPresenter).Output(m, err)
+	var output controller.GinRummyWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Empty(t, output.Message)
+	assert.Equal(t, "ginrummy.errDiscardPileEmpty", output.MessageCode)
+}
+
 // **レイオフフェーズの主題そのもの。**ディスカードフェーズは meldedIndices で
 // メルド/デッドウッドを見せているのに、レイオフには補助が無かった (#4823)。
 func TestGinRummyWebPresenter_LayoffTargets(t *testing.T) {

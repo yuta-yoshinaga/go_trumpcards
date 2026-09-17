@@ -49,5 +49,10 @@
   "hintReasonKnockNow": "deadwood is low enough",
   "hintReasonDiscardDeadwood": "reduce deadwood",
   "hintReasonLayoffCards": "cards fit the knocker's meld",
-  "hintReasonSkipLayoff": "no cards fit the knocker's melds"
+  "hintReasonSkipLayoff": "no cards fit the knocker's melds",
+  "errDiscardPileEmpty": "The discard pile is empty.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errKnockDeadwoodTooHigh": "You cannot knock unless deadwood is at most {{threshold}} points (currently {{deadwood}} points).",
+  "errDuplicateCardIndex": "Card indices cannot be duplicated.",
+  "errLayoffCardCannotAdd": "{{card}} cannot be added to a meld."
 }
