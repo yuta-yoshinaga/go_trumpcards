@@ -108,6 +108,9 @@ func (p *NinetyNineWebPresenter) buildPlayersOutput(o interfaces.NinetyNineGame)
 // buildMessage ゲーム結果メッセージを構築
 func (p *NinetyNineWebPresenter) buildMessage(o interfaces.NinetyNineGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if o.GetGameEndFlag() {

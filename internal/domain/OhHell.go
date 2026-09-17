@@ -147,10 +147,10 @@ func (o *OhHell) PlayerBid(bid int) error {
 		return ErrNotHumanTurn
 	}
 	if bid < 0 || bid > o.handSize {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは0〜%dで指定してください", o.handSize))
+		return NewDomainErrorCode(ErrInvalidPlay, "ohhell.errBidOutOfRange", map[string]string{"max": fmt.Sprintf("%d", o.handSize)})
 	}
 	if o.isRestrictedBid(bid) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ディーラーはビッド%dを選べません（合計がトリック数と一致するため）", bid))
+		return NewDomainErrorCode(ErrInvalidPlay, "ohhell.errRestrictedBid", map[string]string{"bid": fmt.Sprintf("%d", bid)})
 	}
 
 	o.players[humanIdx].SetBid(bid)
@@ -193,7 +193,7 @@ func (o *OhHell) PlayerPlay(cardIndex int) error {
 
 	player := o.players[o.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "ohhell.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -574,7 +574,7 @@ func (o *OhHell) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := o.currentTrick[0].Card.GetDesign()
 	if card.GetDesign() != leadSuit {
 		if o.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "ohhell.errFollowLeadSuit", nil)
 		}
 	}
 

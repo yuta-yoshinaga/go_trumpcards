@@ -85,6 +85,17 @@ func TestNinetyNineWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "test error", resObj.Message)
 	})
 
+	t.Run("coded error", func(t *testing.T) {
+		m, _ := setupNinetyNineWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "ninetynine.errBuryCount", map[string]string{"count": "3"})
+		result := p.Output(m, err)
+		var resObj controller.NinetyNineWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "ninetynine.errBuryCount", resObj.MessageCode)
+		assert.Equal(t, map[string]string{"count": "3"}, resObj.MessageParams)
+	})
+
 	t.Run("bid phase message", func(t *testing.T) {
 		m, _ := setupNinetyNineWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")

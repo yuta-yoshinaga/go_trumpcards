@@ -34,5 +34,9 @@
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
   "scoringVariantRequired01": "ss needs 0 (miss scores 0) or 1 (miss scores minus)",
-  "invalidScoringVariant01": "the scoring variant must be 0 or 1"
+  "invalidScoringVariant01": "the scoring variant must be 0 or 1",
+  "errBidOutOfRange": "The bid must be between 0 and {{max}}.",
+  "errRestrictedBid": "The dealer cannot choose bid {{bid}} because the total would equal the number of tricks.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errFollowLeadSuit": "You must follow the lead suit."
 }
