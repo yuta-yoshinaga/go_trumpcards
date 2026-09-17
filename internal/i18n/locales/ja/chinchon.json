@@ -1,4 +1,9 @@
 {
+  "errDiscardPileEmpty": "捨て札がありません",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errKnockDeadwoodTooHigh": "デッドウッドが{{threshold}}点以下でないとノックできません（現在{{deadwood}}点）",
+  "errDuplicateCardIndex": "カードインデックスが重複しています",
+  "errLayoffCardCannotAdd": "{{card}}はレイオフできません",
   "helpTitle": "Chinchón (チンチョン)",
   "helpDrawStock": "  ds                   山札から引く",
   "helpDrawDiscard": "  dd                   捨て札から引く",

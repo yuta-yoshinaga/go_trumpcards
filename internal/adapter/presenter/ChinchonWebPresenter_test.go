@@ -125,6 +125,15 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
 		assert.Equal(t, "boom", parsed.Message)
 	})
+
+	t.Run("coded error sets code and clears message", func(t *testing.T) {
+		m, _ := setupChinchonWebMock(domain.ChinchonPhaseDraw, false, -1, -1)
+		out := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "chinchon.errDiscardPileEmpty", nil))
+		var parsed controller.ChinchonWebOutput
+		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
+		assert.Empty(t, parsed.Message)
+		assert.Equal(t, "chinchon.errDiscardPileEmpty", parsed.MessageCode)
+	})
 }
 
 func TestChinchonWebPresenter_ActionLogOutput(t *testing.T) {

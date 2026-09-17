@@ -278,7 +278,7 @@ func (g *Chinchon) PlayerDrawFromDiscard() error {
 		return ErrNotHumanTurn
 	}
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札がありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "chinchon.errDiscardPileEmpty", nil)
 	}
 
 	g.doDrawDiscard(g.currentPlayerIdx)
@@ -318,7 +318,7 @@ func (g *Chinchon) PlayerDiscard(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "chinchon.errCardIndexOutOfRange", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)
@@ -348,14 +348,14 @@ func (g *Chinchon) PlayerKnock(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "chinchon.errCardIndexOutOfRange", nil)
 	}
 
 	testCards := cardsExcludingIndex(player, cardIndex)
 	_, deadwood := chinchonFindBestMelds(testCards)
 	deadwoodValue := CalcDeadwoodValue(deadwood)
 	if deadwoodValue > g.config.KnockThreshold {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("デッドウッドが%d点以下でないとノックできません（現在%d点）", g.config.KnockThreshold, deadwoodValue))
+		return NewDomainErrorCode(ErrInvalidPlay, "chinchon.errKnockDeadwoodTooHigh", map[string]string{"threshold": fmt.Sprintf("%d", g.config.KnockThreshold), "deadwood": fmt.Sprintf("%d", deadwoodValue)})
 	}
 
 	g.executeKnock(g.currentPlayerIdx, cardIndex)
@@ -406,19 +406,19 @@ func (g *Chinchon) PlayerLayoff(cardIndices []int) error {
 
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "chinchon.errCardIndexOutOfRange", nil)
 		}
 	}
 	seen := make(map[int]bool)
 	for _, idx := range cardIndices {
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+			return NewDomainErrorCode(ErrInvalidCard, "chinchon.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}
 	for _, idx := range cardIndices {
 		if !g.canLayoff(player.GetCard(idx)) {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("%sはレイオフできません", cardStr(player.GetCard(idx))))
+			return NewDomainErrorCode(ErrInvalidPlay, "chinchon.errLayoffCardCannotAdd", map[string]string{"card": cardStr(player.GetCard(idx))})
 		}
 	}
 

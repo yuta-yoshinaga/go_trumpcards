@@ -335,17 +335,16 @@ func (g *Vira) PlayerBid(bid ViraBid) error {
 // applyBid 入札を適用し、手番を進める。
 func (g *Vira) applyBid(idx int, bid ViraBid) error {
 	if bid < ViraBidPass || bid > ViraBidVira {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("不正な入札です: %d", bid))
+		return NewDomainErrorCode(ErrInvalidPlay, "vira.errInvalidBid", map[string]string{"bid": fmt.Sprintf("%d", bid)})
 	}
 	if g.bidDone[idx] {
-		return NewDomainError(ErrInvalidPlay, "既に入札済みです")
+		return NewDomainErrorCode(ErrInvalidPlay, "vira.errBidAlreadyPlaced", nil)
 	}
 	// **パス以外は現在の最高入札を上回らなければならない。**同値を許すと
 	// 誰が宣言者になるかが席順だけで決まり、階梯が意味を失う。
 	if bid != ViraBidPass {
 		if best, _ := g.highestBid(); bid <= best {
-			return NewDomainError(ErrInvalidPlay,
-				fmt.Sprintf("%s を上回る宣言が必要です", ViraBidNames[best]))
+			return NewDomainErrorCode(ErrInvalidPlay, "vira.errBidMustOutrank", map[string]string{"bid": ViraBidNames[best]})
 		}
 	}
 	g.bids[idx] = bid
@@ -521,7 +520,7 @@ func (g *Vira) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "vira.errCardIndexOutOfRange", nil)
 	}
 	if err := g.validatePlay(g.currentPlayerIdx, player.GetCard(cardIndex)); err != nil {
 		return err
@@ -552,14 +551,14 @@ func (g *Vira) CpuPlay() {
 // validatePlay マストフォローを検証する。
 func (g *Vira) validatePlay(playerIdx int, card *Card) error {
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードがありません")
+		return NewDomainErrorCode(ErrInvalidCard, "vira.errCardMissing", nil)
 	}
 	if len(g.currentTrick) == 0 {
 		return nil
 	}
 	leadSuit := g.currentTrick[0].Card.GetDesign()
 	if g.playerHasSuit(playerIdx, leadSuit) && card.GetDesign() != leadSuit {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "vira.errFollowLeadSuit", nil)
 	}
 	return nil
 }
@@ -861,7 +860,7 @@ func (g *Vira) GetActionLog() []*ActionLogEntry {
 // 「全パスなら流局しポットは持ち越す」の筋道は本番と同じものを通る。
 func (g *Vira) ForcePassForTest(idx int) error {
 	if idx < 0 || idx >= ViraPlayerCnt {
-		return NewDomainError(ErrInvalidPlay, "席が範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "vira.errPlayerIndexOutOfRange", nil)
 	}
 	return g.applyBid(idx, ViraBidPass)
 }
