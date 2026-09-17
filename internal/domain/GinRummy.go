@@ -237,7 +237,7 @@ func (g *GinRummy) PlayerDrawFromDiscard() error {
 	}
 
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札がありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "ginrummy.errDiscardPileEmpty", nil)
 	}
 
 	card := g.discardPile[len(g.discardPile)-1]
@@ -265,7 +265,7 @@ func (g *GinRummy) PlayerDiscard(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "ginrummy.errCardIndexOutOfRange", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)
@@ -291,7 +291,7 @@ func (g *GinRummy) PlayerKnock(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "ginrummy.errCardIndexOutOfRange", nil)
 	}
 
 	// ノック後のデッドウッド計算: カードを仮に除外してデッドウッドをチェック
@@ -306,7 +306,10 @@ func (g *GinRummy) PlayerKnock(cardIndex int) error {
 	deadwoodValue := CalcDeadwoodValue(deadwood)
 
 	if deadwoodValue > GinRummyKnockThreshold {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("デッドウッドが%d点以下でないとノックできません（現在%d点）", GinRummyKnockThreshold, deadwoodValue))
+		return NewDomainErrorCode(ErrInvalidPlay, "ginrummy.errKnockDeadwoodTooHigh", map[string]string{
+			"threshold": fmt.Sprintf("%d", GinRummyKnockThreshold),
+			"deadwood":  fmt.Sprintf("%d", deadwoodValue),
+		})
 	}
 
 	discarded := player.RemoveCard(cardIndex)
@@ -354,7 +357,7 @@ func (g *GinRummy) PlayerLayoff(cardIndices []int) error {
 	// インデックスのバリデーション
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "ginrummy.errCardIndexOutOfRange", nil)
 		}
 	}
 
@@ -362,7 +365,7 @@ func (g *GinRummy) PlayerLayoff(cardIndices []int) error {
 	seen := make(map[int]bool)
 	for _, idx := range cardIndices {
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+			return NewDomainErrorCode(ErrInvalidCard, "ginrummy.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}
@@ -371,7 +374,7 @@ func (g *GinRummy) PlayerLayoff(cardIndices []int) error {
 	for _, idx := range cardIndices {
 		card := player.GetCard(idx)
 		if !g.canLayoff(card) {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("%sはレイオフできません", cardStr(card)))
+			return NewDomainErrorCode(ErrInvalidPlay, "ginrummy.errLayoffCardCannotAdd", map[string]string{"card": cardStr(card)})
 		}
 	}
 

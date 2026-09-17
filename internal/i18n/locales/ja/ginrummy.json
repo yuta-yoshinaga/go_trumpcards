@@ -49,5 +49,10 @@
   "hintReasonKnockNow": "デッドウッドが十分低いです",
   "hintReasonDiscardDeadwood": "デッドウッドを減らします",
   "hintReasonLayoffCards": "ノッカーのメルドに付けられます",
-  "hintReasonSkipLayoff": "メルドに合うカードがありません"
+  "hintReasonSkipLayoff": "メルドに合うカードがありません",
+  "errDiscardPileEmpty": "捨て札がありません",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errKnockDeadwoodTooHigh": "デッドウッドが{{threshold}}点以下でないとノックできません（現在{{deadwood}}点）",
+  "errDuplicateCardIndex": "カードインデックスが重複しています",
+  "errLayoffCardCannotAdd": "{{card}}はレイオフできません"
 }
