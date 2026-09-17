@@ -96,6 +96,16 @@ func TestPitchWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "invalid bid", resObj.Message)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupPitchWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "pitch.errBidRange", map[string]string{"min": "2", "max": "4"})
+		var resObj controller.PitchWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "pitch.errBidRange", resObj.MessageCode)
+		assert.Equal(t, map[string]string{"min": "2", "max": "4"}, resObj.MessageParams)
+	})
+
 	t.Run("game end shows winner", func(t *testing.T) {
 		m, _ := setupPitchWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

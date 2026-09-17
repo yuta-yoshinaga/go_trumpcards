@@ -115,6 +115,9 @@ func (p *PitchWebPresenter) buildPlayersOutput(s interfaces.PitchGame) []*contro
 // buildMessage ゲーム結果メッセージを構築
 func (p *PitchWebPresenter) buildMessage(s interfaces.PitchGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if s.GetGameEndFlag() {

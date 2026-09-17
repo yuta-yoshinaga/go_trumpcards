@@ -1,5 +1,10 @@
 {
   "helpTitle": "Batak (バタック)",
+  "errBidRange": "ビッドは {{pass}} または {{min}}〜{{max}} で指定してください",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errSpadesNotBroken": "スペードはまだブレイクされていません",
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "errMustTrumpWhenVoid": "リードスートが無い場合はスペードで切らなければなりません",
   "helpBid": "  b <n> / pass         ビッド (5-13、0=パス) / パス",
   "helpPlay": "  p <idx>              カードを出す",
   "helpNext": "  n                    次のトリックへ",
