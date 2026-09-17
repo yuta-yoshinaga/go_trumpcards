@@ -190,7 +190,7 @@ func (cb *Batak) PlayerBid(bid int) error {
 	} else {
 		minLegal := cb.MinLegalBid()
 		if minLegal == BatakPassBid || bid < minLegal || bid > BatakMaxBid {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは %d または %d〜%d で指定してください", BatakPassBid, minLegal, BatakMaxBid))
+			return NewDomainErrorCode(ErrInvalidPlay, "batak.errBidRange", map[string]string{"pass": fmt.Sprintf("%d", BatakPassBid), "min": fmt.Sprintf("%d", minLegal), "max": fmt.Sprintf("%d", BatakMaxBid)})
 		}
 		cb.players[humanIdx].SetBid(bid)
 		cb.highBid = bid
@@ -247,7 +247,7 @@ func (cb *Batak) PlayerPlay(cardIndex int) error {
 
 	player := cb.players[cb.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "batak.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -532,7 +532,7 @@ func (cb *Batak) validatePlay(playerIdx int, card *Card) error {
 		// リード: スペード未ブレイクの場合、スペードでリードできない (他にカードがある場合)
 		if !cb.spadesBroken && card.GetDesign() == CardDesignSpade {
 			if cb.playerHasNonSpade(playerIdx) {
-				return NewDomainError(ErrInvalidPlay, "スペードはまだブレイクされていません")
+				return NewDomainErrorCode(ErrInvalidPlay, "batak.errSpadesNotBroken", nil)
 			}
 		}
 		return nil
@@ -543,7 +543,7 @@ func (cb *Batak) validatePlay(playerIdx int, card *Card) error {
 	// フォロースート優先
 	if cb.playerHasSuit(playerIdx, leadSuit) {
 		if card.GetDesign() != leadSuit {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "batak.errFollowLeadSuit", nil)
 		}
 		return nil
 	}
@@ -551,7 +551,7 @@ func (cb *Batak) validatePlay(playerIdx int, card *Card) error {
 	// ボイド: スペード (トランプ) を持っている場合は必ず切る必要がある
 	if leadSuit != CardDesignSpade && cb.playerHasSuit(playerIdx, CardDesignSpade) {
 		if card.GetDesign() != CardDesignSpade {
-			return NewDomainError(ErrInvalidPlay, "リードスートが無い場合はスペードで切らなければなりません")
+			return NewDomainErrorCode(ErrInvalidPlay, "batak.errMustTrumpWhenVoid", nil)
 		}
 	}
 	return nil

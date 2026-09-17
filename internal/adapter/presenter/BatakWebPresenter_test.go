@@ -82,6 +82,15 @@ func TestBatakWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "bad play", resObj.Message)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupBatakWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "batak.errFollowLeadSuit", nil)
+		var resObj controller.BatakWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "batak.errFollowLeadSuit", resObj.MessageCode)
+	})
+
 	t.Run("bid phase message code", func(t *testing.T) {
 		m, _ := setupBatakWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")

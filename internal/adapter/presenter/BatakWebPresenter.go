@@ -96,6 +96,9 @@ func (p *BatakWebPresenter) buildPlayersOutput(cb interfaces.BatakGame) []*contr
 // buildMessage ゲーム結果メッセージを構築
 func (p *BatakWebPresenter) buildMessage(cb interfaces.BatakGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if cb.GetGameEndFlag() {

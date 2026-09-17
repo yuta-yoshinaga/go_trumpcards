@@ -238,15 +238,15 @@ func (p *Pitch) validateBidValue(playerIdx, bid int) error {
 		// 親 (dealer) は他全員パスの状態で必ず stuck されるためパス不可。
 		// 親以外はパス可能。
 		if playerIdx == p.dealerIdx && p.currentBid == 0 {
-			return NewDomainError(ErrInvalidPlay, "親 (dealer) は全員パスの場合パスできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "pitch.errDealerCannotPass", nil)
 		}
 		return nil
 	}
 	if bid < PitchMinBid || bid > PitchMaxBid {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは pass(0) または %d〜%d で指定してください", PitchMinBid, PitchMaxBid))
+		return NewDomainErrorCode(ErrInvalidPlay, "pitch.errBidRange", map[string]string{"min": fmt.Sprintf("%d", PitchMinBid), "max": fmt.Sprintf("%d", PitchMaxBid)})
 	}
 	if bid <= p.currentBid {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは現在の最高 %d を超える必要があります", p.currentBid))
+		return NewDomainErrorCode(ErrInvalidPlay, "pitch.errBidMustExceedCurrent", map[string]string{"bid": fmt.Sprintf("%d", p.currentBid)})
 	}
 	return nil
 }
@@ -323,7 +323,7 @@ func (p *Pitch) PlayerPlay(cardIndex int) error {
 	}
 	player := p.players[p.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "pitch.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := p.validatePlay(p.currentPlayerIdx, card); err != nil {
@@ -392,7 +392,7 @@ func (p *Pitch) validatePlay(playerIdx int, card *Card) error {
 		return nil // トランプはいつでも合法
 	}
 	if p.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従うかトランプを切ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "pitch.errFollowLeadSuitOrTrump", nil)
 	}
 	return nil
 }

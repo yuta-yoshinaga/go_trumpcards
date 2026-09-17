@@ -1,5 +1,10 @@
 {
   "helpTitle": "Batak",
+  "errBidRange": "The bid must be {{pass}} or between {{min}} and {{max}}.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errSpadesNotBroken": "Spades have not been broken yet.",
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "errMustTrumpWhenVoid": "When void in the lead suit, you must trump with a spade.",
   "helpBid": "  b <n> / pass         bid (5-13, 0=pass) / pass",
   "helpPlay": "  p <idx>              play a card",
   "helpNext": "  n                    next trick",
