@@ -28,5 +28,10 @@
   "chipDeltaLine": "  {{name}}: {{delta}}",
   "helpExamplePlay": "  p 0                       play hand card 0",
   "helpExampleDecide": "  d 1                       stay in the hand rather than dropping out",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "errMustHead": "You must play a card that can win the trick.",
+  "errPlayTrump": "You must play a trump card.",
+  "errMustHeadTrump": "You must play a winning trump card."
 }
