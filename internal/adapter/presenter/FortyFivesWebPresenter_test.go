@@ -159,6 +159,16 @@ func TestFortyFivesWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error returns message code with empty message", func(t *testing.T) {
+		m, _ := setupFortyFivesWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "fortyfives.errInvalidBid", nil)
+		result := p.Output(m, err)
+		var resObj controller.FortyFivesWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "fortyfives.errInvalidBid", resObj.MessageCode)
+	})
+
 	t.Run("game end human team wins", func(t *testing.T) {
 		m, _ := setupFortyFivesWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

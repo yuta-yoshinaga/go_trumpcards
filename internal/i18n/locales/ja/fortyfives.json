@@ -48,5 +48,10 @@
   "contractFailed": "不成立が確定",
   "contractNeedMore": "あと{{remaining}}点",
   "helpExampleBid": "  pass                      入札を降りる",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "errInvalidBid": "入札値が不正です",
+  "errBidMustExceedCurrent": "現在の入札を上回る必要があります",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errMustFollowTrump": "切り札に従ってください",
+  "errMustFollowLeadSuit": "リードスートに従ってください"
 }

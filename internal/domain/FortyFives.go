@@ -228,11 +228,11 @@ func (g *FortyFives) CpuBid() {
 // applyBid 入札を記録し、次の入札者へ進める。全員入札したら契約を確定する。
 func (g *FortyFives) applyBid(idx int, bid FortyFivesBid) error {
 	if bid != FortyFivesBidPass && bid != FortyFivesBidFifteen && bid != FortyFivesBidTwenty && bid != FortyFivesBidTwentyFive {
-		return NewDomainError(ErrInvalidPlay, "入札値が不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "fortyfives.errInvalidBid", nil)
 	}
 	high, _ := g.highestBid()
 	if bid != FortyFivesBidPass && bid <= high {
-		return NewDomainError(ErrInvalidPlay, "現在の入札を上回る必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "fortyfives.errBidMustExceedCurrent", nil)
 	}
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
@@ -319,7 +319,7 @@ func (g *FortyFives) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "fortyfives.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -528,11 +528,11 @@ func (g *FortyFives) validatePlay(playerIdx int, card *Card) error {
 	}
 	if leadIsTrump {
 		if !g.isTrumpCard(card) {
-			return NewDomainError(ErrInvalidPlay, "切り札に従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "fortyfives.errMustFollowTrump", nil)
 		}
 	} else {
 		if card.GetDesign() != leadSuit || g.isTrumpCard(card) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "fortyfives.errMustFollowLeadSuit", nil)
 		}
 	}
 	return nil
