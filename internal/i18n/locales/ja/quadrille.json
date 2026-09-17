@@ -60,5 +60,12 @@
   "helpExampleBid": "  bid solo s           スペードを切り札に Solo を宣言する (最上位の宣言)",
   "helpExampleKing": "  king h               ハートの K を呼んで味方を作る",
   "rolePartner": "味方",
-  "promptKingChoices": "呼べる王: {{suits}}"
+  "promptKingChoices": "呼べる王: {{suits}}",
+  "errBidTooLow": "現在の最高ビッドを上回る宣言が必要です",
+  "errInvalidTrumpSuit": "切り札スートを選んでください (1..4)",
+  "errKingCallerOnly": "王を呼べるのは落札者だけです",
+  "errInvalidSuit": "スートを選んでください (1..4)",
+  "errOwnKingCannotBeCalled": "自分が持っている王は呼べません",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }

@@ -219,6 +219,16 @@ func TestQuadrilleWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestQuadrilleWebPresenter_CodedError(t *testing.T) {
+	m, _ := setupQuadrilleWebMockWithPlayers()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "quadrille.errFollowLeadSuit", nil)
+	result := new(presenter.QuadrilleWebPresenter).Output(m, err)
+	var output controller.QuadrilleWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Empty(t, output.Message)
+	assert.Equal(t, "quadrille.errFollowLeadSuit", output.MessageCode)
+}
+
 func TestQuadrilleWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.QuadrilleWebPresenter)
 

@@ -68,5 +68,12 @@
   "hintReasonBidPass": "この契約を支えられない手なのでパスする",
   "matadorSpadille": "スパディーユ",
   "matadorManille": "マニーユ",
-  "matadorBasta": "バスタ"
+  "matadorBasta": "バスタ",
+  "errBidTooLow": "現在の最高ビッドを上回る宣言が必要です",
+  "errInvalidTrumpSuit": "切り札スートを選んでください (1..4)",
+  "errAceCallerOnly": "エースを呼べるのは落札者だけです",
+  "errInvalidSuit": "スートを選んでください (1..4)",
+  "errOwnAceCannotBeCalled": "自分が持っているエースと切り札のエースは呼べません",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }

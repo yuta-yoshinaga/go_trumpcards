@@ -347,10 +347,10 @@ func (g *GermanSolo) PlayerBid(bid GermanSoloBid, trumpSuit int) error {
 		return ErrNotHumanTurn
 	}
 	if !g.isBidLegal(bid) {
-		return NewDomainError(ErrInvalidPlay, "現在の最高ビッドを上回る宣言が必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "germansolo.errBidTooLow", nil)
 	}
 	if bid != GermanSoloBidNone && !germanSoloValidSuit(trumpSuit) {
-		return NewDomainError(ErrInvalidPlay, "切り札スートを選んでください (1..4)")
+		return NewDomainErrorCode(ErrInvalidPlay, "germansolo.errInvalidTrumpSuit", nil)
 	}
 	g.applyBid(g.currentBidderIdx, bid, trumpSuit)
 	return nil
@@ -566,16 +566,16 @@ func (g *GermanSolo) DeclareAce(playerIdx, suit int) error {
 		return ErrWrongPhase
 	}
 	if playerIdx != g.declarerIdx {
-		return NewDomainError(ErrInvalidPlay, "エースを呼べるのは落札者だけです")
+		return NewDomainErrorCode(ErrInvalidPlay, "germansolo.errAceCallerOnly", nil)
 	}
 	if !germanSoloValidSuit(suit) {
-		return NewDomainError(ErrInvalidCard, "スートを選んでください (1..4)")
+		return NewDomainErrorCode(ErrInvalidCard, "germansolo.errInvalidSuit", nil)
 	}
 	if !slices.Contains(g.callableAceSuits(playerIdx), suit) {
 		// **自分が持っているエース・切り札のエースは呼べない。** 前者を通すと
 		// 味方が増えないまま「4 人卓の 1 対 3」が黙って成立し、後者を通すと
 		// 味方探しでなく切り札の補充になる。
-		return NewDomainError(ErrInvalidPlay, "自分が持っているエースと切り札のエースは呼べません")
+		return NewDomainErrorCode(ErrInvalidPlay, "germansolo.errOwnAceCannotBeCalled", nil)
 	}
 
 	g.calledAceSuit = suit
@@ -851,7 +851,7 @@ func (g *GermanSolo) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "germansolo.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -1101,7 +1101,7 @@ func (g *GermanSolo) validatePlay(playerIdx int, card *Card) error {
 	}
 	leadEff := germanSoloEffectiveSuit(g.currentTrick[0].Card, g.trumpSuit)
 	if germanSoloEffectiveSuit(card, g.trumpSuit) != leadEff && g.playerHasEffSuit(playerIdx, leadEff) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "germansolo.errFollowLeadSuit", nil)
 	}
 	return nil
 }

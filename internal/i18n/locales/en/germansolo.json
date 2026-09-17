@@ -68,5 +68,12 @@
   "hintReasonBidPass": "this hand cannot support that contract, so pass",
   "matadorSpadille": "Spadille",
   "matadorManille": "Manille",
-  "matadorBasta": "Basta"
+  "matadorBasta": "Basta",
+  "errBidTooLow": "You must declare a bid higher than the current highest bid.",
+  "errInvalidTrumpSuit": "Choose a trump suit (1..4).",
+  "errAceCallerOnly": "Only the winning bidder may call an ace.",
+  "errInvalidSuit": "Choose a suit (1..4).",
+  "errOwnAceCannotBeCalled": "You cannot call an ace that you hold or the ace of trumps.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errFollowLeadSuit": "You must follow the led suit."
 }
