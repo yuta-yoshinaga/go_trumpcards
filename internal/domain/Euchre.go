@@ -292,10 +292,10 @@ func (e *Euchre) PlayerCallTrump(suit int, goAlone bool) error {
 		return ErrNotHumanTurn
 	}
 	if e.faceUpCard != nil && suit == e.faceUpCard.GetDesign() {
-		return NewDomainError(ErrInvalidPlay, "表向きカードのスートは選べません")
+		return NewDomainErrorCode(ErrInvalidPlay, "euchre.errFaceUpSuit", nil)
 	}
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "無効なスートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "euchre.errInvalidSuit", nil)
 	}
 
 	e.doCallTrump(humanIdx, suit, goAlone)
@@ -316,7 +316,7 @@ func (e *Euchre) PlayerPassCall() error {
 	}
 	// スタックドディーラールール: ディーラーは必ず選ばなければならない
 	if e.bidPlayerIdx == e.dealerIdx {
-		return NewDomainError(ErrCannotPass, "ディーラーは必ずスートを選ばなければなりません")
+		return NewDomainErrorCode(ErrCannotPass, "euchre.errDealerMustChooseSuit", nil)
 	}
 
 	e.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", playerName(e.players, humanIdx)), nil)
@@ -389,7 +389,7 @@ func (e *Euchre) PlayerDiscard(cardIndex int) error {
 
 	player := e.players[e.dealerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "euchre.errCardIndexOutOfRange", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)
@@ -431,7 +431,7 @@ func (e *Euchre) PlayerPlay(cardIndex int) error {
 
 	player := e.players[e.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "euchre.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -813,7 +813,7 @@ func (e *Euchre) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := e.effectiveSuit(e.currentTrick[0].Card)
 	if e.effectiveSuit(card) != leadSuit {
 		if e.playerHasEffectiveSuit(playerIdx, leadSuit) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "euchre.errFollowLeadSuit", nil)
 		}
 	}
 

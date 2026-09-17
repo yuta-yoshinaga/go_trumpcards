@@ -46,5 +46,10 @@
   "helpExampleOrderUp": "  o                    ディーラーに表向きの札を取らせる",
   "helpExampleDiscard": "  d 0                  取ったあとに 1 枚捨てる",
   "helpHint": "  h                    助言を表示",
-  "hintScore": "  ハンド強度: {{score}} (オーダーアップ {{orderUp}}以上 / ゴーアローン {{goAlone}}以上)"
+  "hintScore": "  ハンド強度: {{score}} (オーダーアップ {{orderUp}}以上 / ゴーアローン {{goAlone}}以上)",
+  "errFaceUpSuit": "表向きカードのスートは選べません",
+  "errInvalidSuit": "無効なスートです",
+  "errDealerMustChooseSuit": "ディーラーは必ずスートを選ばなければなりません",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }
