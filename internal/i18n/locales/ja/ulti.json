@@ -52,5 +52,11 @@
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
   "helpExampleNext": "  n                         トリックの決着を見てから次へ",
   "helpExampleTalon": "  discard 0 1               タロンを取ったあと 2 枚を伏せて戻す",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "errInvalidContract": "コントラクトを選んでください (party/betli/durchmarsch/ulti)",
+  "errContractTrumpSuitRequired": "Party / Ulti では切り札スートを選んでください (1..4)",
+  "errDiscardCount": "ちょうど 2 枚を捨ててください",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errDuplicateCard": "同じカードを 2 回選べません",
+  "errFollowLeadOrOvertrump": "リードスートに従う (またはオーバートランプする) 必要があります"
 }

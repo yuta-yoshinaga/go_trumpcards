@@ -18,7 +18,12 @@ type CinchWebPresenter struct{}
 func (p *CinchWebPresenter) Output(g interfaces.CinchGame, lastErr error) string {
 	resObj := p.buildBase(g)
 	if lastErr != nil {
-		resObj.Message = lastErr.Error()
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			resObj.MessageCode = code
+			resObj.MessageParams = params
+		} else {
+			resObj.Message = lastErr.Error()
+		}
 	} else if g.GetGameEndFlag() {
 		resObj.Message = p.buildResultMessage(g)
 		resObj.MessageCode = "cinch.result.scores"

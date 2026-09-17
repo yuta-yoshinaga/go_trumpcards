@@ -38,5 +38,12 @@
   "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す",
   "helpExampleBid": "  bid 7                     14 点のうち 7 点を入札する",
   "helpExampleTrump": "  t 1                       落札後に切り札をスペードに決める",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "errDealerCannotPassWhenAllPass": "親 (dealer) は全員パスの場合パスできません",
+  "errBidRange": "ビッドは pass(0) または {{min}}〜{{max}} で指定してください",
+  "errBidMustExceedCurrent": "ビッドは現在の最高 {{bid}} を超える必要があります",
+  "errTrumpSuitRange": "切り札スートは 1〜4 で指定してください",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errFollowTrumpLead": "切り札のリードには切り札で従ってください",
+  "errFollowLeadOrTrump": "リードスートに従うか切り札を切ってください"
 }

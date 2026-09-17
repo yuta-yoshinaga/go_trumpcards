@@ -246,6 +246,17 @@ func TestUltiWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestUltiWebPresenter_CodedError(t *testing.T) {
+	p := new(presenter.UltiWebPresenter)
+	m, _ := setupUltiWebMockWithPlayers()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "ulti.errInvalidContract", nil)
+	result := p.Output(m, err)
+	var resObj controller.UltiWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+	assert.Empty(t, resObj.Message)
+	assert.Equal(t, "ulti.errInvalidContract", resObj.MessageCode)
+}
+
 func TestUltiWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.UltiWebPresenter)
 

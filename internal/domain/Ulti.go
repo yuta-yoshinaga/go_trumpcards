@@ -294,10 +294,10 @@ func (g *Ulti) PlayerBid(contract UltiContract, trumpSuit int) error {
 		return ErrNotHumanTurn
 	}
 	if !ultiValidContract(contract) {
-		return NewDomainError(ErrInvalidPlay, "コントラクトを選んでください (party/betli/durchmarsch/ulti)")
+		return NewDomainErrorCode(ErrInvalidPlay, "ulti.errInvalidContract", nil)
 	}
 	if ultiContractNeedsTrump(contract) && !ultiValidSuit(trumpSuit) {
-		return NewDomainError(ErrInvalidPlay, "Party / Ulti では切り札スートを選んでください (1..4)")
+		return NewDomainErrorCode(ErrInvalidPlay, "ulti.errContractTrumpSuitRequired", nil)
 	}
 	g.applyBid(contract, trumpSuit)
 	return nil
@@ -341,15 +341,15 @@ func (g *Ulti) PlayerDiscard(cardIndices []int) error {
 	}
 	player := g.players[g.declarerIdx]
 	if len(cardIndices) != UltiDiscardSize {
-		return NewDomainError(ErrInvalidPlay, "ちょうど 2 枚を捨ててください")
+		return NewDomainErrorCode(ErrInvalidPlay, "ulti.errDiscardCount", nil)
 	}
 	seen := map[int]bool{}
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "ulti.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidPlay, "同じカードを 2 回選べません")
+			return NewDomainErrorCode(ErrInvalidPlay, "ulti.errDuplicateCard", nil)
 		}
 		seen[idx] = true
 	}
@@ -391,7 +391,7 @@ func (g *Ulti) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "ulti.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -636,7 +636,7 @@ func (g *Ulti) validatePlay(playerIdx int, card *Card) error {
 			return nil
 		}
 	}
-	return NewDomainError(ErrInvalidPlay, "リードスートに従う (またはオーバートランプする) 必要があります")
+	return NewDomainErrorCode(ErrInvalidPlay, "ulti.errFollowLeadOrOvertrump", nil)
 }
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。

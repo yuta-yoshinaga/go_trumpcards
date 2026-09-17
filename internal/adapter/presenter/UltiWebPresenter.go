@@ -107,6 +107,9 @@ func (p *UltiWebPresenter) buildPlayersOutput(g interfaces.UltiGame) []*controll
 // buildMessage ゲーム結果メッセージを構築
 func (p *UltiWebPresenter) buildMessage(g interfaces.UltiGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {
