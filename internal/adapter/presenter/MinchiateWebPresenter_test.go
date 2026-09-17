@@ -193,6 +193,15 @@ func TestMinchiateWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestMinchiateWebPresenter_CodedErrorUsesMessageCode(t *testing.T) {
+	p := new(presenter.MinchiateWebPresenter)
+	m, _ := setupMinchiateWebMockWithPlayers()
+	var out controller.MinchiateWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "minchiate.errFollowLeadSuit", nil))), &out))
+	assert.Empty(t, out.Message)
+	assert.Equal(t, "minchiate.errFollowLeadSuit", out.MessageCode)
+}
+
 func TestMinchiateWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.MinchiateWebPresenter)
 

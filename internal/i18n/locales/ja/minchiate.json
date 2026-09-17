@@ -39,5 +39,10 @@
   "mattoNote": "マット（愚者）は特別 —— トリックを取らず、フォロー義務も免れ、リードスートも定めません",
   "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
   "helpExampleNext": "  n                    トリックの決着を見てから次へ",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errScartoCardCount": "捨てる札は {{count}} 枚選んでください",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errDuplicateScarto": "同じ札を 2 回選べません",
+  "errCannotDiscardTrumpOrMatto": "切札とマットは捨てられません",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }

@@ -410,8 +410,8 @@ func (g *Minchiate) PlayerScarto(cardIndices []int) error {
 		return ErrNotHumanTurn
 	}
 	if len(cardIndices) != MinchiateSurplus {
-		return NewDomainError(ErrInvalidIndices,
-			fmt.Sprintf("捨てる札は %d 枚選んでください", MinchiateSurplus))
+		return NewDomainErrorCode(ErrInvalidIndices, "minchiate.errScartoCardCount",
+			map[string]string{"count": fmt.Sprintf("%d", MinchiateSurplus)})
 	}
 	dealer := g.players[g.dealerIdx]
 	// **許可集合は毎回計算する。**スート札が足りない配りでは切札も開放される。
@@ -419,14 +419,14 @@ func (g *Minchiate) PlayerScarto(cardIndices []int) error {
 	seen := make(map[int]bool, len(cardIndices))
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= dealer.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "minchiate.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidIndices, "同じ札を 2 回選べません")
+			return NewDomainErrorCode(ErrInvalidIndices, "minchiate.errDuplicateScarto", nil)
 		}
 		seen[idx] = true
 		if !minchiateContainsIdx(allowed, idx) {
-			return NewDomainError(ErrInvalidPlay, "切札とマットは捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "minchiate.errCannotDiscardTrumpOrMatto", nil)
 		}
 	}
 	g.applyScarto(cardIndices)
@@ -557,10 +557,10 @@ func (g *Minchiate) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "minchiate.errCardIndexOutOfRange", nil)
 	}
 	if !minchiateContains(g.GetValidPlayIndices(g.currentPlayerIdx), cardIndex) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "minchiate.errFollowLeadSuit", nil)
 	}
 	g.playCard(g.currentPlayerIdx, player.RemoveCard(cardIndex))
 	return nil

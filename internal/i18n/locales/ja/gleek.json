@@ -53,5 +53,10 @@
   "hintReasonLeadHigh": "リードは強い札で主導する",
   "hintReasonFollowWin": "勝てるので取りに行く",
   "hintReasonFollowDuck": "取れないので安い札で流す",
-  "hintReasonDiscardHonour": "取れないトリックに名札を渡さない"
+  "hintReasonDiscardHonour": "取れないトリックに名札を渡さない",
+  "errInvalidBid": "競り上げる額は現在の最高額に刻みを足した値です",
+  "errDiscardCardCount": "捨てる札をちょうど {{count}} 枚選んでください",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errDuplicateDiscard": "同じ札を二度選べません",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }
