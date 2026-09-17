@@ -123,6 +123,9 @@ func (p *GermanSoloWebPresenter) buildPlayersOutput(g interfaces.GermanSoloGame)
 // buildMessage ゲーム結果メッセージを構築
 func (p *GermanSoloWebPresenter) buildMessage(g interfaces.GermanSoloGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

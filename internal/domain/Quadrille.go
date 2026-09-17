@@ -316,10 +316,10 @@ func (g *Quadrille) PlayerBid(bid QuadrilleBid, trumpSuit int) error {
 		return ErrNotHumanTurn
 	}
 	if !g.isBidLegal(bid) {
-		return NewDomainError(ErrInvalidPlay, "現在の最高ビッドを上回る宣言が必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "quadrille.errBidTooLow", nil)
 	}
 	if bid != QuadrilleBidNone && !quadrilleValidSuit(trumpSuit) {
-		return NewDomainError(ErrInvalidPlay, "切り札スートを選んでください (1..4)")
+		return NewDomainErrorCode(ErrInvalidPlay, "quadrille.errInvalidTrumpSuit", nil)
 	}
 	g.applyBid(g.currentBidderIdx, bid, trumpSuit)
 	return nil
@@ -488,15 +488,15 @@ func (g *Quadrille) DeclareKing(playerIdx, suit int) error {
 		return ErrWrongPhase
 	}
 	if playerIdx != g.quadrilleIdx {
-		return NewDomainError(ErrInvalidPlay, "王を呼べるのは落札者だけです")
+		return NewDomainErrorCode(ErrInvalidPlay, "quadrille.errKingCallerOnly", nil)
 	}
 	if !quadrilleValidSuit(suit) {
-		return NewDomainError(ErrInvalidCard, "スートを選んでください (1..4)")
+		return NewDomainErrorCode(ErrInvalidCard, "quadrille.errInvalidSuit", nil)
 	}
 	if !slices.Contains(g.callableKingSuits(playerIdx), suit) {
 		// **自分が持っている王は呼べない。** 呼べてしまうと味方が増えず、
 		// 単独プレイが「4 人卓の 1 対 3」ではなく黙って成立する。
-		return NewDomainError(ErrInvalidPlay, "自分が持っている王は呼べません")
+		return NewDomainErrorCode(ErrInvalidPlay, "quadrille.errOwnKingCannotBeCalled", nil)
 	}
 
 	g.calledKingSuit = suit
@@ -671,7 +671,7 @@ func (g *Quadrille) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "quadrille.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -908,7 +908,7 @@ func (g *Quadrille) validatePlay(playerIdx int, card *Card) error {
 	}
 	leadEff := quadrilleEffectiveSuit(g.currentTrick[0].Card, g.trumpSuit)
 	if quadrilleEffectiveSuit(card, g.trumpSuit) != leadEff && g.playerHasEffSuit(playerIdx, leadEff) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "quadrille.errFollowLeadSuit", nil)
 	}
 	return nil
 }
