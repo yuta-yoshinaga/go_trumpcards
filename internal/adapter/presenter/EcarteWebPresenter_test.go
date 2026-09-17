@@ -158,6 +158,17 @@ func TestEcarteWebPresenter_Output_Error(t *testing.T) {
 	assert.Equal(t, "boom", out.Message)
 }
 
+func TestEcarteWebPresenter_Output_CodedError(t *testing.T) {
+	p := new(presenter.EcarteWebPresenter)
+	m, _ := setupEcarteWebMockWithPlayers(nil)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "ecarte.errCardNil", nil)
+	got := p.Output(m, err)
+	var out controller.EcarteWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(got), &out))
+	assert.Empty(t, out.Message)
+	assert.Equal(t, "ecarte.errCardNil", out.MessageCode)
+}
+
 func TestEcarteWebPresenter_HintOutput_Card(t *testing.T) {
 	p := new(presenter.EcarteWebPresenter)
 	trump := domain.NewCard(domain.CardDesignSpade, 13, false)

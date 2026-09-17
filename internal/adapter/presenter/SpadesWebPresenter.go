@@ -99,6 +99,9 @@ func (p *SpadesWebPresenter) buildPlayersOutput(s interfaces.SpadesGame) []*cont
 // buildMessage ゲーム結果メッセージを構築
 func (p *SpadesWebPresenter) buildMessage(s interfaces.SpadesGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if s.GetGameEndFlag() {

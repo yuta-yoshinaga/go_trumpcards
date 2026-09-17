@@ -106,6 +106,9 @@ func (p *EcarteWebPresenter) buildValidPlays(b interfaces.EcarteGame) []int {
 // buildMessage ゲーム結果メッセージを構築
 func (p *EcarteWebPresenter) buildMessage(b interfaces.EcarteGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if b.GetGameEndFlag() {

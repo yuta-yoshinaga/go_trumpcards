@@ -159,7 +159,7 @@ func (s *Spades) PlayerBid(bid int) error {
 		return ErrNotHumanTurn
 	}
 	if bid < 0 || bid > SpadesHandSize {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは0〜%dで指定してください", SpadesHandSize))
+		return NewDomainErrorCode(ErrInvalidPlay, "spades.errBidOutOfRange", map[string]string{"max": fmt.Sprintf("%d", SpadesHandSize)})
 	}
 
 	s.players[humanIdx].SetBid(bid)
@@ -212,7 +212,7 @@ func (s *Spades) PlayerPlay(cardIndex int) error {
 
 	player := s.players[s.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "spades.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -480,7 +480,7 @@ func (s *Spades) validatePlay(playerIdx int, card *Card) error {
 	if s.trickNumber == 1 && len(s.currentTrick) == 0 {
 		if card.GetDesign() != CardDesignClover || card.GetValue() != 2 {
 			if s.playerHasCard(playerIdx, CardDesignClover, 2) {
-				return NewDomainError(ErrInvalidPlay, "最初のトリックは2♣でリードしてください")
+				return NewDomainErrorCode(ErrInvalidPlay, "spades.errLeadTwoOfClubs", nil)
 			}
 		}
 	}
@@ -489,7 +489,7 @@ func (s *Spades) validatePlay(playerIdx int, card *Card) error {
 		// リード: スペードが壊れていない場合、スペードでリードできない（他にカードがある場合）
 		if !s.spadesBroken && card.GetDesign() == CardDesignSpade {
 			if s.playerHasNonSpade(playerIdx) {
-				return NewDomainError(ErrInvalidPlay, "スペードはまだブレイクされていません")
+				return NewDomainErrorCode(ErrInvalidPlay, "spades.errSpadesNotBroken", nil)
 			}
 		}
 		return nil
@@ -499,7 +499,7 @@ func (s *Spades) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := s.currentTrick[0].Card.GetDesign()
 	if card.GetDesign() != leadSuit {
 		if s.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "spades.errFollowLeadSuit", nil)
 		}
 	}
 
