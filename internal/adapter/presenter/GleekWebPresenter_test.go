@@ -205,3 +205,11 @@ func TestGleekWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, decodeGleek(t, p.Output(m, nil)).PlayableIndices)
 	})
 }
+
+func TestGleekWebPresenter_CodedErrorUsesMessageCode(t *testing.T) {
+	p := new(presenter.GleekWebPresenter)
+	m, _ := setupGleekWebMockWithPlayers()
+	out := decodeGleek(t, p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "gleek.errInvalidBid", nil)))
+	assert.Empty(t, out.Message)
+	assert.Equal(t, "gleek.errInvalidBid", out.MessageCode)
+}

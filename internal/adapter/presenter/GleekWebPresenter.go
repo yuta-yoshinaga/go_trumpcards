@@ -134,6 +134,9 @@ func (p *GleekWebPresenter) buildPlayersOutput(g interfaces.GleekGame) []*contro
 // buildMessage ゲーム結果メッセージを構築
 func (p *GleekWebPresenter) buildMessage(g interfaces.GleekGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

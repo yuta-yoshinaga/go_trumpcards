@@ -53,5 +53,10 @@
   "hintReasonLeadHigh": "lead high and take control",
   "hintReasonFollowWin": "you can win this trick, so take it",
   "hintReasonFollowDuck": "you cannot win it, so play cheap",
-  "hintReasonDiscardHonour": "do not hand an honour to a trick you cannot win"
+  "hintReasonDiscardHonour": "do not hand an honour to a trick you cannot win",
+  "errInvalidBid": "The raise must be the current highest bid plus one step.",
+  "errDiscardCardCount": "Choose exactly {{count}} cards to discard.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errDuplicateDiscard": "You cannot choose the same card twice.",
+  "errFollowLeadSuit": "You must follow the led suit."
 }

@@ -371,7 +371,7 @@ func (g *Gleek) PlayerBid(bid int) error {
 		return ErrNotHumanTurn
 	}
 	if bid != 0 && bid != g.NextBidAmount() {
-		return NewDomainError(ErrInvalidPlay, "競り上げる額は現在の最高額に刻みを足した値です")
+		return NewDomainErrorCode(ErrInvalidPlay, "gleek.errInvalidBid", nil)
 	}
 	g.applyBid(g.currentBidderIdx, bid)
 	return nil
@@ -544,17 +544,17 @@ func (g *Gleek) PlayerDiscard(indices []int) error {
 // validateDiscard 捨て札の指定を検証する。
 func (g *Gleek) validateDiscard(indices []int) error {
 	if len(indices) != GleekSwapSize {
-		return NewDomainError(ErrInvalidPlay,
-			fmt.Sprintf("捨てる札をちょうど %d 枚選んでください", GleekSwapSize))
+		return NewDomainErrorCode(ErrInvalidPlay, "gleek.errDiscardCardCount",
+			map[string]string{"count": fmt.Sprintf("%d", GleekSwapSize)})
 	}
 	size := g.players[g.buyerIdx].GetCardsSize()
 	seen := map[int]bool{}
 	for _, idx := range indices {
 		if idx < 0 || idx >= size {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "gleek.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidPlay, "同じ札を二度選べません")
+			return NewDomainErrorCode(ErrInvalidPlay, "gleek.errDuplicateDiscard", nil)
 		}
 		seen[idx] = true
 	}
@@ -734,7 +734,7 @@ func (g *Gleek) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "gleek.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -922,7 +922,7 @@ func (g *Gleek) validatePlay(playerIdx int, card *Card) error {
 	}
 	lead := g.currentTrick[0].Card.GetDesign()
 	if card.GetDesign() != lead && g.playerHasSuit(playerIdx, lead) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "gleek.errFollowLeadSuit", nil)
 	}
 	return nil
 }
