@@ -2779,7 +2779,7 @@
     "sixcardgolf.setup": "Choose two cards to flip face up.",
     "sixcardgolf.errCardIndexOutOfRange": "The card index is out of range.",
     "sixcardgolf.errAlreadyFaceUp": "The card is already face up.",
-    "sixcardgolf.errStockEmpty": "The stock is empty",
+    "sixcardgolf.errStockEmpty": "The stock is empty.",
     "sixcardgolf.errDiscardPileEmpty": "The discard pile is empty.",
     "sixcardgolf.errCannotFlip": "You cannot flip a card.",
     "sixcardgolf.errCannotSkip": "You cannot skip.",
