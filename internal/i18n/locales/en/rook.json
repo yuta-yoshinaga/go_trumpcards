@@ -54,5 +54,12 @@
   "hintReasonDiscardWeak": "discard a weak card",
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpExamplePass": "  pa                   pass rather than bid",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "errInvalidBid": "The bid is invalid.",
+  "errHigherBidRequired": "The bid must be higher than the current bid.",
+  "errInvalidTrumpColor": "The trump color must be between 1 and 4.",
+  "errDiscardFiveCards": "You must discard 5 cards.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errDuplicateCardIndex": "You cannot select the same card twice.",
+  "errFollowLeadSuit": "You must follow the lead suit."
 }

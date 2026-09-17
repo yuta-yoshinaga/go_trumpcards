@@ -53,5 +53,11 @@
   "hintReasonFollowDuck": "勝てない/取るべきでない — 低い札を出す",
   "declarerLine": "宣言者: {{name}}（契約: {{contract}}）が全員と対戦",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "errInvalidBid": "無効な入札です (play)",
+  "errHigherBidRequired": "現在の入札より高い入札が必要です",
+  "errInvalidContract": "コントラクトは Cego か Handspiel を選んでください",
+  "errKeepOneCard": "残す札をちょうど 1 枚選んでください",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errDuplicateCardIndex": "同じカードを 2 回選べません"
 }

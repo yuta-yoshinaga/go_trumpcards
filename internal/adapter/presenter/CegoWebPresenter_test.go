@@ -151,6 +151,19 @@ func TestCegoWebPresenter_Error(t *testing.T) {
 	}
 }
 
+func TestCegoWebPresenter_CodedError(t *testing.T) {
+	g := newCegoGame()
+	p := &presenter.CegoWebPresenter{}
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "cego.errInvalidBid", nil)
+	var out controller.CegoWebOutput
+	if err := json.Unmarshal([]byte(p.Output(g, err)), &out); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if out.MessageCode != "cego.errInvalidBid" || out.Message != "" {
+		t.Errorf("coded error output = message %q, code %q", out.Message, out.MessageCode)
+	}
+}
+
 func TestCegoWebPresenter_Hint(t *testing.T) {
 	g := newCegoGame()
 	g.Reset()

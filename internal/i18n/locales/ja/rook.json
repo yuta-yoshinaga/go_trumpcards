@@ -54,5 +54,12 @@
   "hintReasonDiscardWeak": "弱いカードを処理",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpExamplePass": "  pa                   入札せずにパスする",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errInvalidBid": "無効なビッドです",
+  "errHigherBidRequired": "現在のビッドより高い必要があります",
+  "errInvalidTrumpColor": "切り札色は1〜4で指定してください",
+  "errDiscardFiveCards": "5枚捨ててください",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errDuplicateCardIndex": "同じカードは選べません",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }
