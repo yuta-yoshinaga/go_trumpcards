@@ -178,6 +178,15 @@ func TestViraWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error sets code and clears message", func(t *testing.T) {
+		m, _ := setupViraWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "vira.errFollowLeadSuit", nil))
+		var resObj controller.ViraWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "vira.errFollowLeadSuit", resObj.MessageCode)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupViraWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
