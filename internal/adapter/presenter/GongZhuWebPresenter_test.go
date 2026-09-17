@@ -207,6 +207,16 @@ func TestGongZhuWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestGongZhuWebPresenter_CodedError(t *testing.T) {
+	m, _ := setupGongZhuWebMockWithPlayers()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "gongzhu.errHeartsNotBroken", nil)
+	result := new(presenter.GongZhuWebPresenter).Output(m, err)
+	var output controller.GongZhuWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Empty(t, output.Message)
+	assert.Equal(t, "gongzhu.errHeartsNotBroken", output.MessageCode)
+}
+
 func TestGongZhuWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.GongZhuWebPresenter)
 
