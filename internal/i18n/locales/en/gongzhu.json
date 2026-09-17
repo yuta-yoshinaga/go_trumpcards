@@ -43,5 +43,11 @@
   "hintReasonDiscardHearts": "Discard hearts",
   "capturedLine": "  Taken: {{cards}}",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "errExposureAlreadySelected": "Exposure selection is already complete.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errDuplicateCardIndex": "The card index is duplicated.",
+  "errOnlyPointCardsExposable": "Only point cards (♠Q, ♦J, ♥A, ♣10) can be exposed.",
+  "errHeartsNotBroken": "Hearts have not been broken yet.",
+  "errFollowLeadSuit": "You must follow the lead suit."
 }

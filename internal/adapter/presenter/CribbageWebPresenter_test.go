@@ -403,6 +403,16 @@ func TestCribbageWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestCribbageWebPresenter_CodedError(t *testing.T) {
+	m, _ := setupCribbageWebMockWithPlayers()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "cribbage.errPlayableCardsRemain", nil)
+	result := new(presenter.CribbageWebPresenter).Output(m, err)
+	var output controller.CribbageWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Empty(t, output.Message)
+	assert.Equal(t, "cribbage.errPlayableCardsRemain", output.MessageCode)
+}
+
 func TestCribbageWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.CribbageWebPresenter)
 

@@ -159,21 +159,21 @@ func (g *GongZhu) PlayerExpose(cardIndices []int) error {
 		return ErrNotHumanTurn
 	}
 	if g.exposeReady[humanIdx] {
-		return NewDomainError(ErrInvalidPlay, "すでに公開選択は完了しています")
+		return NewDomainErrorCode(ErrInvalidPlay, "gongzhu.errExposureAlreadySelected", nil)
 	}
 
 	player := g.players[humanIdx]
 	seen := make(map[int]bool, len(cardIndices))
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "gongzhu.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+			return NewDomainErrorCode(ErrInvalidCard, "gongzhu.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 		if !gzIsSpecial(player.GetCard(idx)) {
-			return NewDomainError(ErrInvalidPlay, "公開できるのはポイントカード（♠Q, ♦J, ♥A, ♣10）のみです")
+			return NewDomainErrorCode(ErrInvalidPlay, "gongzhu.errOnlyPointCardsExposable", nil)
 		}
 	}
 
@@ -224,7 +224,7 @@ func (g *GongZhu) PlayerPlay(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "gongzhu.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -634,7 +634,7 @@ func (g *GongZhu) validatePlay(playerIdx int, card *Card) error {
 		// リード: ハーツが壊れていない場合、ハーツでリードできない（他にカードがある場合）
 		if !g.heartsBroken && card.GetDesign() == CardDesignHeart {
 			if g.playerHasNonHeart(playerIdx) {
-				return NewDomainError(ErrInvalidPlay, "ハーツはまだブレイクされていません")
+				return NewDomainErrorCode(ErrInvalidPlay, "gongzhu.errHeartsNotBroken", nil)
 			}
 		}
 		return nil
@@ -643,7 +643,7 @@ func (g *GongZhu) validatePlay(playerIdx int, card *Card) error {
 	// フォロースート
 	leadSuit := g.currentTrick[0].Card.GetDesign()
 	if card.GetDesign() != leadSuit && g.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "gongzhu.errFollowLeadSuit", nil)
 	}
 	return nil
 }

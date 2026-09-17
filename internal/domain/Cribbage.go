@@ -192,7 +192,7 @@ func (g *Cribbage) PlayerDiscard(indices []int) error {
 // doDiscard 指定プレイヤーのディスカード処理
 func (g *Cribbage) doDiscard(playerIdx int, indices []int) error {
 	if len(indices) != CribbageDiscardSize {
-		return NewDomainError(ErrInvalidIndices, fmt.Sprintf("%d枚選択してください", CribbageDiscardSize))
+		return NewDomainErrorCode(ErrInvalidIndices, "cribbage.errDiscardCount", map[string]string{"count": fmt.Sprintf("%d", CribbageDiscardSize)})
 	}
 
 	p := g.players[playerIdx]
@@ -201,11 +201,11 @@ func (g *Cribbage) doDiscard(playerIdx int, indices []int) error {
 	// インデックスの検証
 	for _, idx := range indices {
 		if idx < 0 || idx >= handSize {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "cribbage.errCardIndexOutOfRange", nil)
 		}
 	}
 	if indices[0] == indices[1] {
-		return NewDomainError(ErrInvalidIndices, "同じカードを2枚選択できません")
+		return NewDomainErrorCode(ErrInvalidIndices, "cribbage.errDuplicateCardIndex", nil)
 	}
 
 	// RemoveCards で安全に削除 (内部で降順削除される)
@@ -297,14 +297,14 @@ func (g *Cribbage) PlayerPeg(cardIndex int) error {
 func (g *Cribbage) doPeg(playerIdx int, cardIndex int) error {
 	p := g.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= p.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "cribbage.errCardIndexOutOfRange", nil)
 	}
 
 	card := p.GetCard(cardIndex)
 	cardVal := cribbageCardValue(card)
 
 	if g.pegCount+cardVal > CribbagePegLimit {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("合計が%dを超えます", CribbagePegLimit))
+		return NewDomainErrorCode(ErrInvalidPlay, "cribbage.errPeggingLimitExceeded", map[string]string{"limit": fmt.Sprintf("%d", CribbagePegLimit)})
 	}
 
 	// カードを出す
@@ -348,7 +348,7 @@ func (g *Cribbage) PlayerGo() error {
 	}
 	// プレイ可能なカードがない場合のみGoを許可
 	if g.canPeg(g.currentPlayerIdx) {
-		return NewDomainError(ErrInvalidPlay, "まだ出せるカードがあります")
+		return NewDomainErrorCode(ErrInvalidPlay, "cribbage.errPlayableCardsRemain", nil)
 	}
 	return g.doGo(g.currentPlayerIdx)
 }
