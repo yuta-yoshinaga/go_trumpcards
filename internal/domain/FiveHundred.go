@@ -271,10 +271,10 @@ func (g *FiveHundred) PlayerBid(kind FiveHundredContractKind, tricks, suit int) 
 	}
 	bid := FiveHundredBid{Kind: kind, Tricks: tricks, Suit: suit}
 	if !bid.valid() {
-		return NewDomainError(ErrInvalidPlay, "無効なビッドです")
+		return NewDomainErrorCode(ErrInvalidPlay, "fivehundred.errInvalidBid", nil)
 	}
 	if g.highestBid != nil && bid.Order() <= g.highestBid.Order() {
-		return NewDomainError(ErrInvalidPlay, "現在のビッドより高い必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "fivehundred.errBidMustBeHigher", nil)
 	}
 	g.applyBid(humanIdx, bid)
 	return nil
@@ -421,15 +421,15 @@ func (g *FiveHundred) CpuExchange() {
 func (g *FiveHundred) doExchange(discardIndices []int) error {
 	player := g.players[g.declarerIdx]
 	if len(discardIndices) != FiveHundredKittySize {
-		return NewDomainError(ErrInvalidCard, "3枚捨ててください")
+		return NewDomainErrorCode(ErrInvalidCard, "fivehundred.errDiscardThreeCards", nil)
 	}
 	seen := make(map[int]bool, FiveHundredKittySize)
 	for _, idx := range discardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "fivehundred.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "同じカードは選べません")
+			return NewDomainErrorCode(ErrInvalidCard, "fivehundred.errDuplicateCard", nil)
 		}
 		seen[idx] = true
 	}
@@ -472,7 +472,7 @@ func (g *FiveHundred) PlayerPlay(cardIndex, jokerSuit int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "fivehundred.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -810,7 +810,7 @@ func (g *FiveHundred) validatePlay(playerIdx int, card *Card) error {
 	}
 	ls := g.leadSuit()
 	if g.effectiveSuit(card) != ls && g.playerHasSuit(playerIdx, ls) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "fivehundred.errFollowLeadSuit", nil)
 	}
 	return nil
 }

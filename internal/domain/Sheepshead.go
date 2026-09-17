@@ -198,7 +198,7 @@ func (g *Sheepshead) PlayerPick(pick bool) error {
 		return ErrNotHumanTurn
 	}
 	if !pick && g.passCount >= SheepsheadPlayerCnt-1 {
-		return NewDomainError(ErrInvalidPlay, "最後のプレイヤーはパスできません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sheepshead.errLastPlayerCannotPass", nil)
 	}
 	g.resolvePick(g.currentPlayerIdx, pick)
 	return nil
@@ -254,16 +254,16 @@ func (g *Sheepshead) PlayerBury(indices []int) error {
 // validateBury 埋め札インデックスの妥当性を検証する。
 func (g *Sheepshead) validateBury(indices []int) error {
 	if len(indices) != SheepsheadBurySize {
-		return NewDomainError(ErrInvalidPlay, "埋める札はちょうど 2 枚です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sheepshead.errBuryCount", nil)
 	}
 	picker := g.players[g.pickerIdx]
 	seen := make(map[int]bool, len(indices))
 	for _, idx := range indices {
 		if idx < 0 || idx >= picker.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "sheepshead.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidPlay, "同じ札を 2 回指定できません")
+			return NewDomainErrorCode(ErrInvalidPlay, "sheepshead.errDuplicateCard", nil)
 		}
 		seen[idx] = true
 	}
@@ -298,7 +298,7 @@ func (g *Sheepshead) PlayerCall(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if !g.isCallableSuit(suit) {
-		return NewDomainError(ErrInvalidPlay, "そのスートは呼べません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sheepshead.errSuitNotCallable", nil)
 	}
 	g.applyCall(suit)
 	return nil
@@ -335,7 +335,7 @@ func (g *Sheepshead) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "sheepshead.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -555,7 +555,7 @@ func (g *Sheepshead) validatePlay(playerIdx int, card *Card) error {
 	}
 	leadSuit := sheepsheadSuitID(g.currentTrick[0].Card)
 	if sheepsheadSuitID(card) != leadSuit && g.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "sheepshead.errFollowLeadSuit", nil)
 	}
 	return nil
 }

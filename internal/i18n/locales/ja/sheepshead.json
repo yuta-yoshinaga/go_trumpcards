@@ -46,5 +46,11 @@
   "roundPickerWon": "ピッカー組の勝ち（相手からチップを受け取る）",
   "roundPickerLost": "ピッカー組の負け（相手へチップを支払う）",
   "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errLastPlayerCannotPass": "最後のプレイヤーはパスできません",
+  "errBuryCount": "埋める札はちょうど 2 枚です",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errDuplicateCard": "同じ札を 2 回指定できません",
+  "errSuitNotCallable": "そのスートは呼べません",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }
