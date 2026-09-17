@@ -48,5 +48,13 @@
   "hintReasonDiscardLow": "低いカードを捨てる",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
-  "pointLimitLine": "目標: ±{{limit}}点で決着"
+  "pointLimitLine": "目標: ±{{limit}}点で決着",
+  "errBidRange": "ビッドは{{min}}〜{{max}}で指定してください（0でパス）",
+  "errBidHigherThanHighest": "現在の最高ビッド{{bid}}より高い値を指定してください",
+  "errInvalidSuit": "無効なスートです",
+  "errJokerValue": "ジョーカーのvalueは1です",
+  "errInvalidAdjutantSuit": "無効な副官スートです",
+  "errInvalidAdjutantValue": "無効な副官カード値です",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errMustFollowLeadSuit": "リードスートに従ってください"
 }
