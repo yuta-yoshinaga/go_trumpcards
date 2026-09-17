@@ -38,5 +38,12 @@
   "helpExamplePlay": "  p 0                       play hand card 0",
   "helpExampleBid": "  bid 7                     bid seven of the fourteen points",
   "helpExampleTrump": "  t 1                       name spades as trump after winning the bid",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "errDealerCannotPassWhenAllPass": "The dealer cannot pass when everyone else passes.",
+  "errBidRange": "The bid must be pass (0) or between {{min}} and {{max}}.",
+  "errBidMustExceedCurrent": "The bid must exceed the current high bid of {{bid}}.",
+  "errTrumpSuitRange": "The trump suit must be from 1 to 4.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errFollowTrumpLead": "You must follow the trump suit when trump is led.",
+  "errFollowLeadOrTrump": "You must follow the lead suit or play a trump card."
 }

@@ -48,6 +48,18 @@ func TestCinchWebPresenter_Error(t *testing.T) {
 	assert.Equal(t, "boom", decoded["message"])
 }
 
+func TestCinchWebPresenter_CodedError(t *testing.T) {
+	g := domain.NewDefaultCinch()
+	g.Reset()
+	p := new(presenter.CinchWebPresenter)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "cinch.errTrumpSuitRange", nil)
+	out := p.Output(g, err)
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(out), &decoded))
+	assert.Empty(t, decoded["message"])
+	assert.Equal(t, "cinch.errTrumpSuitRange", decoded["messageCode"])
+}
+
 func TestCinchWebPresenter_GameEnd(t *testing.T) {
 	g := domain.NewDefaultCinch()
 	g.Reset()

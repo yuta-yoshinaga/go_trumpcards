@@ -403,15 +403,15 @@ func (g *Cinch) validateBidValue(playerIdx, bid int) error {
 	if bid == CinchPassBid {
 		// 親 (dealer) は他全員パスの場合、必ず stuck されるためパス不可。
 		if playerIdx == g.dealerIdx && g.currentBid == 0 && g.bidsCompleted() == CinchPlayerCnt-1 {
-			return NewDomainError(ErrInvalidPlay, "親 (dealer) は全員パスの場合パスできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "cinch.errDealerCannotPassWhenAllPass", nil)
 		}
 		return nil
 	}
 	if bid < CinchMinBid || bid > CinchMaxBid {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは pass(0) または %d〜%d で指定してください", CinchMinBid, CinchMaxBid))
+		return NewDomainErrorCode(ErrInvalidPlay, "cinch.errBidRange", map[string]string{"min": fmt.Sprintf("%d", CinchMinBid), "max": fmt.Sprintf("%d", CinchMaxBid)})
 	}
 	if bid <= g.currentBid {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは現在の最高 %d を超える必要があります", g.currentBid))
+		return NewDomainErrorCode(ErrInvalidPlay, "cinch.errBidMustExceedCurrent", map[string]string{"bid": fmt.Sprintf("%d", g.currentBid)})
 	}
 	return nil
 }
@@ -487,7 +487,7 @@ func (g *Cinch) NameTrump(suit int) error {
 // applyNameTrump は切り札宣言の共通処理 (human / CPU)。
 func (g *Cinch) applyNameTrump(suit int) error {
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "切り札スートは 1〜4 で指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "cinch.errTrumpSuitRange", nil)
 	}
 	g.trumpSuit = suit
 	g.appendLog(g.bidWinnerIdx, "trump_set", fmt.Sprintf("Trump is %s", suitName(suit)), nil)
@@ -517,7 +517,7 @@ func (g *Cinch) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "cinch.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -586,7 +586,7 @@ func (g *Cinch) validatePlay(playerIdx int, card *Card) error {
 			return nil
 		}
 		if g.playerHasTrump(playerIdx) {
-			return NewDomainError(ErrInvalidPlay, "切り札のリードには切り札で従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "cinch.errFollowTrumpLead", nil)
 		}
 		return nil
 	}
@@ -599,7 +599,7 @@ func (g *Cinch) validatePlay(playerIdx int, card *Card) error {
 		return nil
 	}
 	if g.playerHasOffSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従うか切り札を切ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "cinch.errFollowLeadOrTrump", nil)
 	}
 	return nil
 }
