@@ -3,6 +3,7 @@
 package domain_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -23,9 +24,20 @@ func assertNapoleonDomainError(t *testing.T, err error, sentinel error, code str
 func TestNapoleonDomainErrorsHaveMessageCodes(t *testing.T) {
 	n := newTestNapoleon()
 	n.Reset()
-	assertNapoleonDomainError(t, n.PlayerBid(11), domain.ErrInvalidPlay, "napoleon.errBidRange")
+	err := n.PlayerBid(11)
+	assertNapoleonDomainError(t, err, domain.ErrInvalidPlay, "napoleon.errBidRange")
+	de, ok := err.(*domain.DomainError)
+	require.True(t, ok)
+	assert.Equal(t, map[string]string{
+		"min": strconv.Itoa(n.GetConfig().MinBid),
+		"max": strconv.Itoa(domain.NapoleonMaxPictureCards),
+	}, de.MessageParams())
 	n.SetHighestBid(13)
-	assertNapoleonDomainError(t, n.PlayerBid(13), domain.ErrInvalidPlay, "napoleon.errBidHigherThanHighest")
+	err = n.PlayerBid(13)
+	assertNapoleonDomainError(t, err, domain.ErrInvalidPlay, "napoleon.errBidHigherThanHighest")
+	de, ok = err.(*domain.DomainError)
+	require.True(t, ok)
+	assert.Equal(t, map[string]string{"bid": "13"}, de.MessageParams())
 
 	setupDeclare := func() {
 		n.Reset()

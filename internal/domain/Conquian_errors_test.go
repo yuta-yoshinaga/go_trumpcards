@@ -43,6 +43,10 @@ func TestConquianDomainErrorsHaveMessageCodes(t *testing.T) {
 	cqSetHand(g.GetPlayer(0), cqCard(domain.CardDesignHeart, 5), cqCard(domain.CardDesignDiamond, 5), cqCard(domain.CardDesignClover, 2))
 	g.SetDiscardPile([]*domain.Card{cqCard(domain.CardDesignSpade, 5)})
 	require.NoError(t, g.PlayerDrawFromDiscard())
+	if g.GetPhase() != domain.ConquianPhaseMeld {
+		g.SetPhase(domain.ConquianPhaseMeld)
+	}
+	assertConquianDomainError(t, g.PlayerDiscard(0), domain.ErrInvalidPlay, "conquian.errMeldRequired")
 	assertConquianDomainError(t, g.PlayerMeld(nil), domain.ErrInvalidPlay, "conquian.errMeldRequired")
 
 	g.Reset()
