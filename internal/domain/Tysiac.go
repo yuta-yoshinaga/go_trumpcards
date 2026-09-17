@@ -398,7 +398,7 @@ func (g *Tysiac) PlayerDiscard(cardIndex int) error {
 	}
 	declarer := g.players[g.declarerIdx]
 	if cardIndex < 0 || cardIndex >= declarer.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "tysiac.errCardIndexOutOfRange", nil)
 	}
 	g.giveDiscard(cardIndex)
 	if g.discardCount >= TysiacTalonSize-1 {
@@ -483,7 +483,7 @@ func (g *Tysiac) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "tysiac.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -651,12 +651,12 @@ func (g *Tysiac) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := g.currentTrick[0].Card.GetDesign()
 	hasLeadSuit := g.playerHasSuit(playerIdx, leadSuit)
 	if hasLeadSuit && card.GetDesign() != leadSuit {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "tysiac.errFollowLeadSuit", nil)
 	}
 	if !hasLeadSuit {
 		hasTrump := g.trumpSuit != 0 && g.playerHasSuit(playerIdx, g.trumpSuit)
 		if hasTrump && card.GetDesign() != g.trumpSuit {
-			return NewDomainError(ErrInvalidPlay, "切り札を出してください")
+			return NewDomainErrorCode(ErrInvalidPlay, "tysiac.errMustPlayTrump", nil)
 		}
 	}
 	// オーバートランプ義務: 切り札を出す場合 (ボイド時の強制切り札でも切り札リードへの
@@ -665,7 +665,7 @@ func (g *Tysiac) validatePlay(playerIdx int, card *Card) error {
 		highestTrump := g.highestTrumpRankInTrick()
 		if highestTrump > 0 && g.canOvertrump(playerIdx, highestTrump) &&
 			g.tysiacRank(card) <= highestTrump {
-			return NewDomainError(ErrInvalidPlay, "高い切り札で勝ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "tysiac.errMustOvertrump", nil)
 		}
 	}
 	return nil

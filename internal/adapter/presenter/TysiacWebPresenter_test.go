@@ -169,6 +169,15 @@ func TestTysiacWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error returns message code and no message", func(t *testing.T) {
+		m, _ := setupTysiacWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "tysiac.errMustPlayTrump", nil)
+		var resObj controller.TysiacWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "tysiac.errMustPlayTrump", resObj.MessageCode)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupTysiacWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

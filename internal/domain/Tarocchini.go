@@ -377,21 +377,20 @@ func (g *Tarocchini) PlayerScarto(cardIndices []int) error {
 		return ErrNotHumanTurn
 	}
 	if len(cardIndices) != TarocchiniSurplus {
-		return NewDomainError(ErrInvalidIndices,
-			fmt.Sprintf("捨てる札は %d 枚選んでください", TarocchiniSurplus))
+		return NewDomainErrorCode(ErrInvalidIndices, "tarocchini.errDiscardCount", map[string]string{"count": fmt.Sprintf("%d", TarocchiniSurplus)})
 	}
 	dealer := g.players[g.dealerIdx]
 	seen := make(map[int]bool, len(cardIndices))
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= dealer.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "tarocchini.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidIndices, "同じ札を 2 回選べません")
+			return NewDomainErrorCode(ErrInvalidIndices, "tarocchini.errDuplicateCard", nil)
 		}
 		seen[idx] = true
 		if !tarocchiniCanDiscard(dealer.GetCard(idx)) {
-			return NewDomainError(ErrInvalidPlay, "切り札とマットは捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "tarocchini.errCannotDiscardTrumpOrMatto", nil)
 		}
 	}
 	g.applyScarto(cardIndices)
@@ -541,10 +540,10 @@ func (g *Tarocchini) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "tarocchini.errCardIndexOutOfRange", nil)
 	}
 	if !tarocchiniContains(g.GetValidPlayIndices(g.currentPlayerIdx), cardIndex) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "tarocchini.errFollowLeadSuit", nil)
 	}
 	g.playCard(g.currentPlayerIdx, player.RemoveCard(cardIndex))
 	return nil
