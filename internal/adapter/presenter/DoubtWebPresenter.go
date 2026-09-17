@@ -90,7 +90,13 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 
 	// メッセージ
 	if lastErr != nil {
-		resObj.Message = lastErr.Error()
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			resObj.Message = ""
+			resObj.MessageCode = code
+			resObj.MessageParams = params
+		} else {
+			resObj.Message = lastErr.Error()
+		}
 	} else if d.GetGameEndFlag() {
 		winnerIdx := d.GetWinnerIdx()
 		player := d.GetPlayer(winnerIdx)

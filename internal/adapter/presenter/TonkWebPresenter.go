@@ -105,6 +105,9 @@ func (p *TonkWebPresenter) buildPlayersOutput(g interfaces.TonkGame) []*controll
 // buildMessage ゲーム結果メッセージを構築
 func (p *TonkWebPresenter) buildMessage(g interfaces.TonkGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

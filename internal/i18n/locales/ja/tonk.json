@@ -34,5 +34,8 @@
   "opponentMeldsHeader": "[相手のメルド]",
   "opponentMeldLine": "  {{idx}}. {{type}}: {{cards}}",
   "opponentDeadwoodLine": "  相手のデッドウッド: {{cards}} ({{points}}点)",
-  "knockerDeadwoodLine": "  ノッカーのデッドウッド: {{cards}} ({{points}}点)"
+  "knockerDeadwoodLine": "  ノッカーのデッドウッド: {{cards}} ({{points}}点)",
+  "errDiscardPileEmpty": "捨て札がありません",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errKnockDeadwoodTooHigh": "デッドウッドが{{threshold}}点以下でないとノックできません（現在{{deadwood}}点）"
 }

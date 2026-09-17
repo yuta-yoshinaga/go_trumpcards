@@ -204,16 +204,16 @@ func (d *Doubt) PlayerPlay(cardIndices []int, claimedValue int, humanPlayMs int)
 		return ErrNotHumanTurn
 	}
 	if claimedValue < MinClaimedValue || claimedValue > MaxClaimedValue {
-		return NewDomainError(ErrInvalidPlay, "宣言する値は1から13の範囲で指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "doubt.errClaimedValueOutOfRange", nil)
 	}
 	if len(cardIndices) == 0 {
-		return NewDomainError(ErrInvalidPlay, "1枚以上のカードを指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "doubt.errNoCardsSpecified", nil)
 	}
 	// 重複チェック
 	seen := make(map[int]bool, len(cardIndices))
 	for _, idx := range cardIndices {
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+			return NewDomainErrorCode(ErrInvalidCard, "doubt.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}
@@ -221,7 +221,7 @@ func (d *Doubt) PlayerPlay(cardIndices []int, claimedValue int, humanPlayMs int)
 	player := d.players[d.currentTurn]
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "doubt.errCardIndexOutOfRange", nil)
 		}
 	}
 
