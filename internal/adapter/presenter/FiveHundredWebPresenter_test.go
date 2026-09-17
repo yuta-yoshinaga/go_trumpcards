@@ -59,6 +59,16 @@ func TestFiveHundredWebPresenter_Error(t *testing.T) {
 	}
 }
 
+func TestFiveHundredWebPresenter_CodedError(t *testing.T) {
+	g := newFiveHundredGame()
+	g.Reset()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "fivehundred.errInvalidBid", nil)
+	var parsed controller.FiveHundredWebOutput
+	require.NoError(t, json.Unmarshal([]byte((&presenter.FiveHundredWebPresenter{}).Output(g, err)), &parsed))
+	assert.Empty(t, parsed.Message)
+	assert.Equal(t, "fivehundred.errInvalidBid", parsed.MessageCode)
+}
+
 func TestFiveHundredWebPresenter_OpenMisereRevealsDeclarer(t *testing.T) {
 	g := newFiveHundredGame()
 	g.SetContract(domain.FiveHundredContractOpenMisere, 0, -1)

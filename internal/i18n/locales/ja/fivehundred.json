@@ -49,5 +49,11 @@
   "helpExampleBid": "  b 6 1                スペードを切り札に 6 トリックを入札する",
   "helpExampleKitty": "  e 0 1 2              キティを取ったあと 3 枚を捨てる",
   "helpHint": "  h                    助言を表示",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "errInvalidBid": "無効なビッドです",
+  "errBidMustBeHigher": "現在のビッドより高い必要があります",
+  "errDiscardThreeCards": "3枚捨ててください",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errDuplicateCard": "同じカードは選べません",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }
