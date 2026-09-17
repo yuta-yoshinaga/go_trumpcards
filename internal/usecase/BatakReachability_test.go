@@ -27,6 +27,7 @@ type batakOut struct {
 	ValidPlayIndices []int  `json:"validPlayIndices"`
 	GameEndFlag      bool   `json:"gameEndFlag"`
 	Message          string `json:"message"`
+	MessageCode      string `json:"messageCode"`
 }
 
 func parseBatakOut(t *testing.T, s string) batakOut {
@@ -48,9 +49,9 @@ func TestBatakInteractor_PlayableFromReset(t *testing.T) {
 	assert.Equal(t, 0, out.BidPlayerIdx, "初期ラウンドは人間 (seat 0) からビッド開始")
 	assert.Equal(t, domain.BatakMinBid, out.MinLegalBid, "初手なら MinLegalBid は 5")
 
-	// 不正なビッド (1〜4) はドメインエラーがそのまま返ること。
+	// 不正なビッド (1〜4) はドメインエラーのメッセージコードが返ること。
 	invalidOut := parseBatakOut(t, gi.Bid(3))
-	assert.NotEmpty(t, invalidOut.Message, "3 は MinLegalBid(5) 未満なのでエラーメッセージが返ること")
+	assert.Equal(t, "batak.errBidRange", invalidOut.MessageCode, "3 は MinLegalBid(5) 未満なのでエラーメッセージコードが返ること")
 	assert.Equal(t, int(domain.BatakPhaseBid), invalidOut.Phase, "エラー時はビッドフェーズのまま")
 
 	// 人間が適正なビッド (5) を宣言する。
