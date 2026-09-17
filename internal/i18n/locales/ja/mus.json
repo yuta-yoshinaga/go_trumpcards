@@ -59,5 +59,13 @@
   "resultAwarded": "ノキエロ（即時獲得）",
   "resultOrdago": "オルダゴ受諾",
   "helpExampleMus": "  m                     ムスを宣言して手札を交換する",
-  "helpHint": "  h                     助言を表示"
+  "helpHint": "  h                     助言を表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errDuplicateCardIndex": "同じ札を 2 回指定できません",
+  "errCannotPass": "保留中の賭けにはパスできません",
+  "errCannotEnvido": "オルダゴにはエンビードできません",
+  "errRaiseMustGoUp": "レイズは{{val}}より大きくなければなりません",
+  "errNoBetToAccept": "受ける賭けがありません",
+  "errNoBetToDecline": "降りる賭けがありません",
+  "errInvalidAction": "不正なアクションです"
 }

@@ -327,10 +327,10 @@ func (b *Belote) PlayerCallTrump(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if b.faceUpCard != nil && suit == b.faceUpCard.GetDesign() {
-		return NewDomainError(ErrInvalidPlay, "ラウンド1の表向きスートは選べません")
+		return NewDomainErrorCode(ErrInvalidPlay, "belote.errFaceUpSuit", nil)
 	}
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "無効なスートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "belote.errInvalidSuit", nil)
 	}
 	b.doCallTrump(humanIdx, suit)
 	return nil
@@ -418,7 +418,7 @@ func (b *Belote) PlayerPlay(cardIndex int) error {
 
 	player := b.players[b.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "belote.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -880,12 +880,12 @@ func (b *Belote) validatePlay(playerIdx int, card *Card) error {
 		// リードがトランプ: トランプを必ず出す。出すなら可能な限りオーバートランプ。
 		if hasLead {
 			if cardSuit != b.trumpSuit {
-				return NewDomainError(ErrInvalidPlay, "リードスート (切り札) に従ってください")
+				return NewDomainErrorCode(ErrInvalidPlay, "belote.errMustFollowTrump", nil)
 			}
 			highest := b.highestTrumpInTrick()
 			canOverTrump := b.playerCanBeatTrump(player, highest)
 			if canOverTrump && beloteTrumpRank(card.GetValue()) <= highest {
-				return NewDomainError(ErrInvalidPlay, "オーバートランプしてください (obligation à monter)")
+				return NewDomainErrorCode(ErrInvalidPlay, "belote.errMustOvertrump", nil)
 			}
 			return nil
 		}
@@ -896,7 +896,7 @@ func (b *Belote) validatePlay(playerIdx int, card *Card) error {
 	// リードが非トランプ
 	if hasLead {
 		if cardSuit != leadSuit {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "belote.errFollowLeadSuit", nil)
 		}
 		return nil
 	}
@@ -910,14 +910,14 @@ func (b *Belote) validatePlay(playerIdx int, card *Card) error {
 	if hasTrump && !partnerWinning {
 		// トランプ義務
 		if cardSuit != b.trumpSuit {
-			return NewDomainError(ErrInvalidPlay, "切り札を出してください (obligation à couper)")
+			return NewDomainErrorCode(ErrInvalidPlay, "belote.errMustPlayTrump", nil)
 		}
 		// オーバートランプ義務 (トリックに既に切り札が出ている場合)
 		if trickHasTrump {
 			highest := b.highestTrumpInTrick()
 			canOverTrump := b.playerCanBeatTrump(player, highest)
 			if canOverTrump && beloteTrumpRank(card.GetValue()) <= highest {
-				return NewDomainError(ErrInvalidPlay, "オーバートランプしてください (obligation à monter)")
+				return NewDomainErrorCode(ErrInvalidPlay, "belote.errMustOvertrump", nil)
 			}
 		}
 		return nil

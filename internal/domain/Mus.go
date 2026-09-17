@@ -286,10 +286,10 @@ func (g *Mus) validateDiscard(indices []int) error {
 	seen := make(map[int]bool, len(indices))
 	for _, idx := range indices {
 		if idx < 0 || idx >= p.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "mus.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidPlay, "同じ札を 2 回指定できません")
+			return NewDomainErrorCode(ErrInvalidPlay, "mus.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}
@@ -441,7 +441,7 @@ func (g *Mus) resolveBet(action, amount int) error {
 	switch action {
 	case MusActionPaso:
 		if g.pendingStake > 0 {
-			return NewDomainError(ErrInvalidPlay, "保留中の賭けにはパスできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "mus.errCannotPass", nil)
 		}
 		g.appendLog(-1, "paso", fmt.Sprintf("Team %s passes", teamName(g.betTeam)), nil)
 		if g.firstActorPaso {
@@ -456,13 +456,13 @@ func (g *Mus) resolveBet(action, amount int) error {
 	case MusActionEnvido:
 		if g.pendingStake < 0 {
 			// オルダゴには Quiero / NoQuiero でしか応答できない。
-			return NewDomainError(ErrInvalidPlay, "オルダゴにはエンビードできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "mus.errCannotEnvido", nil)
 		}
 		if amount < 1 {
 			amount = 2
 		}
 		if amount <= g.pendingStake {
-			return NewDomainError(ErrInvalidPlay, "レイズ額が不足しています")
+			return NewDomainErrorCode(ErrInvalidPlay, "mus.errRaiseMustGoUp", map[string]string{"val": fmt.Sprintf("%d", g.pendingStake)})
 		}
 		g.pendingStake = amount
 		g.lastBettorTeam = g.betTeam
@@ -477,7 +477,7 @@ func (g *Mus) resolveBet(action, amount int) error {
 		return nil
 	case MusActionQuiero:
 		if g.pendingStake == 0 {
-			return NewDomainError(ErrInvalidPlay, "受ける賭けがありません")
+			return NewDomainErrorCode(ErrInvalidPlay, "mus.errNoBetToAccept", nil)
 		}
 		if g.pendingStake < 0 { // ordago accepted
 			g.results[ri] = MusRoundResult{Kind: MusResultOrdago, Stake: 0, Team: -1}
@@ -490,7 +490,7 @@ func (g *Mus) resolveBet(action, amount int) error {
 		return nil
 	case MusActionNoQuiero:
 		if g.pendingStake == 0 {
-			return NewDomainError(ErrInvalidPlay, "降りる賭けがありません")
+			return NewDomainErrorCode(ErrInvalidPlay, "mus.errNoBetToDecline", nil)
 		}
 		// 賭け手チームが +1 (ノキエロは 1 アマ)。
 		win := g.lastBettorTeam
@@ -504,7 +504,7 @@ func (g *Mus) resolveBet(action, amount int) error {
 		g.advanceRound()
 		return nil
 	default:
-		return NewDomainError(ErrInvalidPlay, "不正なアクションです")
+		return NewDomainErrorCode(ErrInvalidPlay, "mus.errInvalidAction", nil)
 	}
 }
 
