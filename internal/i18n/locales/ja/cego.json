@@ -58,6 +58,5 @@
   "errHigherBidRequired": "現在の入札より高い入札が必要です",
   "errInvalidContract": "コントラクトは Cego か Handspiel を選んでください",
   "errKeepOneCard": "残す札をちょうど 1 枚選んでください",
-  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errDuplicateCardIndex": "同じカードを 2 回選べません"
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
 }

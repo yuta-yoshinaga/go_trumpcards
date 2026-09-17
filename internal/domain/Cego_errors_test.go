@@ -54,7 +54,9 @@ func TestCegoDomainErrorsHaveMessageCodes(t *testing.T) {
 	g = cegoErrorExchange()
 	assertCegoCodedError(t, g.PlayerDiscard([]int{99}), domain.ErrInvalidCard, "cego.errCardIndexOutOfRange")
 	g = cegoErrorExchange()
-	assertCegoCodedError(t, g.PlayerDiscard([]int{0, 0}), domain.ErrInvalidCard, "cego.errDuplicateCardIndex")
+	assertCegoCodedError(t, g.PlayerDiscard([]int{0, 0}), domain.ErrInvalidCard, "cego.errKeepOneCard")
+	// 件数検査は範囲検査より先に走る (枚数も範囲も誤っている入力で件数エラーが返る)。
+	assertCegoCodedError(t, g.PlayerDiscard([]int{99, 99}), domain.ErrInvalidCard, "cego.errKeepOneCard")
 
 	g = domain.NewDefaultCego()
 	g.SetPhase(domain.CegoPhasePlay)

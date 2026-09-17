@@ -58,6 +58,5 @@
   "errHigherBidRequired": "The bid must be higher than the current bid.",
   "errInvalidContract": "Choose either Cego or Handspiel as the contract.",
   "errKeepOneCard": "You must choose exactly 1 card to keep.",
-  "errCardIndexOutOfRange": "The card index is out of range.",
-  "errDuplicateCardIndex": "You cannot choose the same card twice."
+  "errCardIndexOutOfRange": "The card index is out of range."
 }

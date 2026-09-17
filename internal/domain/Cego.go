@@ -573,23 +573,18 @@ func (g *Cego) CpuDiscard() {
 // 場札 10 枚をデクレアラーの手札に加える。
 func (g *Cego) doExchange(keepIndices []int) error {
 	player := g.players[g.declarerIdx]
-	seen := make(map[int]bool, CegoKeepCount)
+	if len(keepIndices) != CegoKeepCount {
+		return NewDomainErrorCode(ErrInvalidCard, "cego.errKeepOneCard", nil)
+	}
 	for _, idx := range keepIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
 			return NewDomainErrorCode(ErrInvalidCard, "cego.errCardIndexOutOfRange", nil)
 		}
-		if seen[idx] {
-			return NewDomainErrorCode(ErrInvalidCard, "cego.errDuplicateCardIndex", nil)
-		}
-		seen[idx] = true
-	}
-	if len(keepIndices) != CegoKeepCount {
-		return NewDomainErrorCode(ErrInvalidCard, "cego.errKeepOneCard", nil)
 	}
 	// 残す札以外を伏せる。
 	layDown := make([]int, 0, CegoLayDownCount)
 	for i := 0; i < player.GetCardsSize(); i++ {
-		if !seen[i] {
+		if i != keepIndices[0] {
 			layDown = append(layDown, i)
 		}
 	}

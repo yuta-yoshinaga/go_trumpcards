@@ -1246,7 +1246,6 @@
     "cego.errInvalidContract": "コントラクトは Cego か Handspiel を選んでください",
     "cego.errKeepOneCard": "残す札をちょうど 1 枚選んでください",
     "cego.errCardIndexOutOfRange": "カードインデックスが範囲外です",
-    "cego.errDuplicateCardIndex": "同じカードを 2 回選べません",
     "chinchon.discardPhase": "手札から1枚捨てるか、その1枚を捨ててノックしてください",
     "chinchon.draw": "全員脱落で引き分けです",
     "chinchon.drawPhase": "山札または捨て札から1枚引いてください",
