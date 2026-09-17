@@ -171,6 +171,9 @@ func (p *CegoWebPresenter) buildPlayersOutput(g interfaces.CegoGame) []*controll
 // buildMessage ゲーム結果/フェーズメッセージを構築
 func (p *CegoWebPresenter) buildMessage(g interfaces.CegoGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

@@ -243,10 +243,10 @@ func (g *Rook) PlayerBid(bid int) error {
 		return ErrNotHumanTurn
 	}
 	if !g.validBid(bid) {
-		return NewDomainError(ErrInvalidPlay, "無効なビッドです")
+		return NewDomainErrorCode(ErrInvalidPlay, "rook.errInvalidBid", nil)
 	}
 	if bid <= g.highestBid {
-		return NewDomainError(ErrInvalidPlay, "現在のビッドより高い必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "rook.errHigherBidRequired", nil)
 	}
 	g.applyBid(humanIdx, bid)
 	return nil
@@ -394,19 +394,19 @@ func (g *Rook) CpuExchange() {
 // 最終トリックの勝者に加算するために記録する。
 func (g *Rook) doExchange(discardIndices []int, trumpColor int) error {
 	if trumpColor < 1 || trumpColor > RookColorCnt {
-		return NewDomainError(ErrInvalidPlay, "切り札色は1〜4で指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "rook.errInvalidTrumpColor", nil)
 	}
 	player := g.players[g.declarerIdx]
 	if len(discardIndices) != RookNestSize {
-		return NewDomainError(ErrInvalidCard, "5枚捨ててください")
+		return NewDomainErrorCode(ErrInvalidCard, "rook.errDiscardFiveCards", nil)
 	}
 	seen := make(map[int]bool, RookNestSize)
 	for _, idx := range discardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "rook.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "同じカードは選べません")
+			return NewDomainErrorCode(ErrInvalidCard, "rook.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}
@@ -448,7 +448,7 @@ func (g *Rook) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "rook.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -685,7 +685,7 @@ func (g *Rook) validatePlay(playerIdx int, card *Card) error {
 	}
 	ls := g.leadSuit()
 	if g.effectiveSuit(card) != ls && g.playerHasSuit(playerIdx, ls) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "rook.errFollowLeadSuit", nil)
 	}
 	return nil
 }

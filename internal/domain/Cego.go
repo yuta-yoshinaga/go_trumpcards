@@ -390,10 +390,10 @@ func (g *Cego) PlayerBid(bid CegoBid) error {
 		return ErrNotHumanTurn
 	}
 	if !cegoValidBid(bid) {
-		return NewDomainError(ErrInvalidPlay, "無効な入札です (play)")
+		return NewDomainErrorCode(ErrInvalidPlay, "cego.errInvalidBid", nil)
 	}
 	if bid <= g.highestBid {
-		return NewDomainError(ErrInvalidPlay, "現在の入札より高い入札が必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "cego.errHigherBidRequired", nil)
 	}
 	g.applyBid(g.bidPlayerIdx, bid)
 	return nil
@@ -489,7 +489,7 @@ func (g *Cego) PlayerChooseContract(ct CegoContract) error {
 		return ErrNotHumanTurn
 	}
 	if ct != CegoContractCego && ct != CegoContractHandspiel {
-		return NewDomainError(ErrInvalidPlay, "コントラクトは Cego か Handspiel を選んでください")
+		return NewDomainErrorCode(ErrInvalidPlay, "cego.errInvalidContract", nil)
 	}
 	g.applyContract(ct)
 	return nil
@@ -574,22 +574,17 @@ func (g *Cego) CpuDiscard() {
 func (g *Cego) doExchange(keepIndices []int) error {
 	player := g.players[g.declarerIdx]
 	if len(keepIndices) != CegoKeepCount {
-		return NewDomainError(ErrInvalidCard, "残す札をちょうど 1 枚選んでください")
+		return NewDomainErrorCode(ErrInvalidCard, "cego.errKeepOneCard", nil)
 	}
-	seen := make(map[int]bool, CegoKeepCount)
 	for _, idx := range keepIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "cego.errCardIndexOutOfRange", nil)
 		}
-		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "同じカードを 2 回選べません")
-		}
-		seen[idx] = true
 	}
 	// 残す札以外を伏せる。
 	layDown := make([]int, 0, CegoLayDownCount)
 	for i := 0; i < player.GetCardsSize(); i++ {
-		if !seen[i] {
+		if i != keepIndices[0] {
 			layDown = append(layDown, i)
 		}
 	}
@@ -668,7 +663,7 @@ func (g *Cego) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "cego.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
