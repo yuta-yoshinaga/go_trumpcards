@@ -254,7 +254,7 @@ func (g *Tonk) PlayerDrawFromDiscard() error {
 	}
 
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札がありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "tonk.errDiscardPileEmpty", nil)
 	}
 
 	card := g.discardPile[len(g.discardPile)-1]
@@ -282,7 +282,7 @@ func (g *Tonk) PlayerDiscard(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "tonk.errCardIndexOutOfRange", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)
@@ -308,7 +308,7 @@ func (g *Tonk) PlayerKnock(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "tonk.errCardIndexOutOfRange", nil)
 	}
 
 	testCards := make([]*Card, 0, player.GetCardsSize()-1)
@@ -322,7 +322,7 @@ func (g *Tonk) PlayerKnock(cardIndex int) error {
 	deadwoodValue := CalcDeadwoodValue(deadwood)
 
 	if deadwoodValue > TonkKnockThreshold {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("デッドウッドが%d点以下でないとノックできません（現在%d点）", TonkKnockThreshold, deadwoodValue))
+		return NewDomainErrorCode(ErrInvalidPlay, "tonk.errKnockDeadwoodTooHigh", map[string]string{"threshold": fmt.Sprintf("%d", TonkKnockThreshold), "deadwood": fmt.Sprintf("%d", deadwoodValue)})
 	}
 
 	discarded := player.RemoveCard(cardIndex)

@@ -35,5 +35,9 @@
   "tell": "（そわそわしている…）",
   "helpLog": "  l                    行動ログを表示",
   "helpSetHesitation": "  sh <0|1>             CPU hesitation delay (0=OFF, 1=ON)",
-  "cpuThinkTime": "({{sec}}秒)"
+  "cpuThinkTime": "({{sec}}秒)",
+  "errClaimedValueOutOfRange": "宣言する値は1から13の範囲で指定してください",
+  "errNoCardsSpecified": "1枚以上のカードを指定してください",
+  "errDuplicateCardIndex": "カードインデックスが重複しています",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
 }

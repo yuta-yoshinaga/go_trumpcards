@@ -11,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDoubtWebPresenter_Method(t *testing.T) {
@@ -470,6 +471,16 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		assert.Equal(t, "doubt.result.cpuWin", resObj.MessageCode)
 		assert.Equal(t, map[string]string{"cpuId": "99"}, resObj.MessageParams)
 	})
+}
+
+func TestDoubtWebPresenter_CodedError(t *testing.T) {
+	d := domain.NewDefaultDoubt()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "doubt.errNoCardsSpecified", nil)
+	result := new(presenter.DoubtWebPresenter).Output(d, err)
+	var output controller.DoubtWebOutput
+	require.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Empty(t, output.Message)
+	assert.Equal(t, "doubt.errNoCardsSpecified", output.MessageCode)
 }
 
 func TestDoubtWebPresenter_ActionLogOutput(t *testing.T) {

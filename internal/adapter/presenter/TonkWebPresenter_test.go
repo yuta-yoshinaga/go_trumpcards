@@ -207,6 +207,16 @@ func TestTonkWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestTonkWebPresenter_CodedError(t *testing.T) {
+	g := domain.NewDefaultTonk()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "tonk.errDiscardPileEmpty", nil)
+	result := new(presenter.TonkWebPresenter).Output(g, err)
+	var output controller.TonkWebOutput
+	require.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Empty(t, output.Message)
+	assert.Equal(t, "tonk.errDiscardPileEmpty", output.MessageCode)
+}
+
 // **CUI は毎ターン「ノック可能/不可」を出しているのに、Web はプレイヤーの
 // 手計算に任せていた (#4750)。**判断の基準 (閾値) ごと送るので、フロントは
 // 数値を写さずに済む。
