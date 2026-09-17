@@ -304,15 +304,15 @@ func (g *Scarto) CpuScarto() {
 func (g *Scarto) doScarto(cardIndices []int) error {
 	player := g.players[g.dealerIdx]
 	if len(cardIndices) != ScartoSurplus {
-		return NewDomainError(ErrInvalidCard, "ちょうど 3 枚を捨ててください")
+		return NewDomainErrorCode(ErrInvalidCard, "scarto.errScartoCount", map[string]string{"n": fmt.Sprintf("%d", ScartoSurplus)})
 	}
 	seen := make(map[int]bool, ScartoSurplus)
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "scarto.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "同じカードを 2 回選べません")
+			return NewDomainErrorCode(ErrInvalidCard, "scarto.errSameCard", nil)
 		}
 		seen[idx] = true
 	}
@@ -335,22 +335,22 @@ func (g *Scarto) validateScarto(player *ScartoPlayer, cardIndices []int) error {
 	for _, idx := range cardIndices {
 		c := player.GetCard(idx)
 		if c == nil {
-			return NewDomainError(ErrInvalidCard, "カードが不正です")
+			return NewDomainErrorCode(ErrInvalidCard, "scarto.errScartoInvalidCard", nil)
 		}
 		if scartoIsExcuse(c) {
-			return NewDomainError(ErrInvalidPlay, "エクスキューズは捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "scarto.errDiscardHonour", nil)
 		}
 		if scartoIsBout(c) {
-			return NewDomainError(ErrInvalidPlay, "ブー (切り札1/21) は捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "scarto.errDiscardHonour", nil)
 		}
 		if scartoIsTrump(c) {
 			if !allowTrump {
-				return NewDomainError(ErrInvalidPlay, "切り札は (やむを得ない場合を除き) 捨てられません")
+				return NewDomainErrorCode(ErrInvalidPlay, "scarto.errDiscardTrump", nil)
 			}
 			continue
 		}
 		if c.GetValue() >= ScartoCourtMin {
-			return NewDomainError(ErrInvalidPlay, "得点札 (King/コート札) は捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "scarto.errDiscardCourt", nil)
 		}
 	}
 	return nil
@@ -433,7 +433,7 @@ func (g *Scarto) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "scarto.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {

@@ -119,6 +119,16 @@ func TestTongitsWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "oops", resObj.Message)
 	})
 
+	t.Run("coded error uses messageCode", func(t *testing.T) {
+		m, _ := setupTongitsWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "tongits.errInvalidMeld", nil)
+		result := p.Output(m, err)
+		var resObj controller.TongitsWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "tongits.errInvalidMeld", resObj.MessageCode)
+	})
+
 	t.Run("player melds serialized", func(t *testing.T) {
 		m, players := setupTongitsWebMockWithPlayers()
 		players[1].AppendMeld([]*domain.Card{

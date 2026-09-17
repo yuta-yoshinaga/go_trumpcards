@@ -41,5 +41,12 @@
   "discardableLegendTrumpOk": "※ ブー (切り札1/21)・エクスキューズ・絵札は捨てられません。捨てられるピップが 3 枚に足りないので、**それ以外の切り札は捨てられます**",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
   "helpExampleNext": "  n                         トリックの決着を見てから次へ",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "errScartoCount": "ちょうど {{n}} 枚を捨ててください",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errSameCard": "同じカードを 2 回選べません",
+  "errScartoInvalidCard": "カードが不正です",
+  "errDiscardHonour": "エクスキューズまたはブー (切り札1/21) は捨てられません",
+  "errDiscardTrump": "切り札は (やむを得ない場合を除き) 捨てられません",
+  "errDiscardCourt": "得点札 (King/コート札) は捨てられません"
 }

@@ -129,6 +129,23 @@ func TestScartoWebPresenter_Error(t *testing.T) {
 	}
 }
 
+func TestScartoWebPresenter_CodedErrorUsesMessageCode(t *testing.T) {
+	g := newScartoGame()
+	g.Reset()
+	p := &presenter.ScartoWebPresenter{}
+	err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "scarto.errCardIndexOutOfRange", nil)
+	var parsed controller.ScartoWebOutput
+	if unmarshalErr := json.Unmarshal([]byte(p.Output(g, err)), &parsed); unmarshalErr != nil {
+		t.Fatalf("unmarshal: %v", unmarshalErr)
+	}
+	if parsed.Message != "" {
+		t.Errorf("message = %q, want empty", parsed.Message)
+	}
+	if parsed.MessageCode != "scarto.errCardIndexOutOfRange" {
+		t.Errorf("messageCode = %q", parsed.MessageCode)
+	}
+}
+
 func TestScartoWebPresenter_Hint(t *testing.T) {
 	g := newScartoGame()
 	g.Reset() // human dealer in scarto phase
