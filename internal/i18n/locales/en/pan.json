@@ -27,5 +27,13 @@
   "promptRoundEnd": "Round complete",
   "promptRoundEndHelp": "nr / nextround: advance to next round",
   "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
-  "helpExampleDiscard": "  d 0                  discard hand card 0"
+  "helpExampleDiscard": "  d 0                  discard hand card 0",
+  "errDiscardPileEmpty": "The discard pile is empty.",
+  "errMeldNeedsAtLeastThreeCards": "A meld needs at least {{min}} cards.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errDuplicateCardIndex": "Card indices cannot be duplicated.",
+  "errInvalidMeld": "This is not a valid meld.",
+  "errTargetPlayerInvalid": "The target player is invalid.",
+  "errTargetMeldInvalid": "The target meld is invalid.",
+  "errLayoffCardCannotAdd": "{{card}} cannot be added to that meld."
 }
