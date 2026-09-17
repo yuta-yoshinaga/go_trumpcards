@@ -34,5 +34,10 @@
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpExampleSee": "  s                    look at your hand and become seen",
   "helpHint": "  h                    show a hint",
-  "helpAutoPlay": "  ac                   play automatically"
+  "helpAutoPlay": "  ac                   play automatically",
+  "errAlreadySeen": "You have already seen your hand.",
+  "errRaiseMustExceedStake": "The raise must be greater than the current stake.",
+  "errShowRequiresTwoSeen": "Show is available only when two players remain and both have seen their hands.",
+  "errSideShowRequiresSeen": "A side show requires at least three remaining players who have seen their hands.",
+  "errInsufficientChips": "You do not have enough chips."
 }

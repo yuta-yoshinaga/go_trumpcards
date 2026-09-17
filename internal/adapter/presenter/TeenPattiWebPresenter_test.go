@@ -202,6 +202,16 @@ func TestTeenPattiWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error returns message code with empty message", func(t *testing.T) {
+		m, _ := tpSetupWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "teenpatti.errAlreadySeen", nil)
+		result := p.Output(m, err)
+		var resObj controller.TeenPattiWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "teenpatti.errAlreadySeen", resObj.MessageCode)
+	})
+
 	t.Run("game end human win", func(t *testing.T) {
 		m, _ := tpSetupWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

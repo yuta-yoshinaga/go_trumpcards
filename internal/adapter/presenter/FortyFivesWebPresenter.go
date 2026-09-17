@@ -124,6 +124,9 @@ func (p *FortyFivesWebPresenter) buildPlayersOutput(g interfaces.FortyFivesGame)
 // buildMessage ゲーム結果メッセージを構築
 func (p *FortyFivesWebPresenter) buildMessage(g interfaces.FortyFivesGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

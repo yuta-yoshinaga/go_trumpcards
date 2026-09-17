@@ -194,7 +194,7 @@ func (g *TeenPatti) PlayerSee() error {
 		return err
 	}
 	if g.players[g.currentPlayerIdx].GetSeen() {
-		return NewDomainError(ErrInvalidPlay, "すでに手札を見ています")
+		return NewDomainErrorCode(ErrInvalidPlay, "teenpatti.errAlreadySeen", nil)
 	}
 	g.players[g.currentPlayerIdx].SetSeen(true)
 	g.appendLog(g.currentPlayerIdx, "see", fmt.Sprintf("%s sees their hand", playerName(g.players, g.currentPlayerIdx)), nil)
@@ -215,7 +215,7 @@ func (g *TeenPatti) PlayerRaise(newStake int) error {
 		return err
 	}
 	if newStake <= g.stake {
-		return NewDomainError(ErrInvalidPlay, "レイズは現在の賭け単位より大きくする必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "teenpatti.errRaiseMustExceedStake", nil)
 	}
 	return g.applyRaise(g.currentPlayerIdx, newStake)
 }
@@ -235,7 +235,7 @@ func (g *TeenPatti) PlayerShow() error {
 		return err
 	}
 	if !g.canShow(g.currentPlayerIdx) {
-		return NewDomainError(ErrInvalidPlay, "Show は残り 2 人かつ Seen のときのみ要求できます")
+		return NewDomainErrorCode(ErrInvalidPlay, "teenpatti.errShowRequiresTwoSeen", nil)
 	}
 	g.applyShow(g.currentPlayerIdx)
 	return nil
@@ -248,7 +248,7 @@ func (g *TeenPatti) PlayerRequestSideShow() error {
 		return err
 	}
 	if !g.canRequestSideShow(g.currentPlayerIdx) {
-		return NewDomainError(ErrInvalidPlay, "サイドショーは Seen 同士・残り 3 人以上のときのみ申請できます")
+		return NewDomainErrorCode(ErrInvalidPlay, "teenpatti.errSideShowRequiresSeen", nil)
 	}
 	g.applyRequestSideShow(g.currentPlayerIdx)
 	return nil
@@ -385,7 +385,7 @@ func (g *TeenPatti) applyRaise(idx, newStake int) error {
 		cost = newStake * 2
 	}
 	if p.GetChips() < cost {
-		return NewDomainError(ErrInvalidPlay, "チップが不足しています")
+		return NewDomainErrorCode(ErrInvalidPlay, "teenpatti.errInsufficientChips", nil)
 	}
 	g.stake = newStake
 	p.SubtractChips(cost)

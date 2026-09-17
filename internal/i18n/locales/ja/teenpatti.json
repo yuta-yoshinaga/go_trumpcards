@@ -34,5 +34,10 @@
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpExampleSee": "  s                    手札を見てシーンになる",
   "helpHint": "  h                    助言を表示",
-  "helpAutoPlay": "  ac                   自動で進める"
+  "helpAutoPlay": "  ac                   自動で進める",
+  "errAlreadySeen": "すでに手札を見ています",
+  "errRaiseMustExceedStake": "レイズは現在の賭け単位より大きくする必要があります",
+  "errShowRequiresTwoSeen": "Show は残り 2 人かつ Seen のときのみ要求できます",
+  "errSideShowRequiresSeen": "サイドショーは Seen 同士・残り 3 人以上のときのみ申請できます",
+  "errInsufficientChips": "チップが不足しています"
 }
