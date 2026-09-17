@@ -337,7 +337,7 @@ func (g *Loo) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "loo.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -545,22 +545,22 @@ func (g *Loo) validatePlay(playerIdx int, card *Card) error {
 
 	if hasLead {
 		if card.GetDesign() != leadSuit {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "loo.errFollowLeadSuit", nil)
 		}
 		// マストヘッド: 現在勝っている札を上回れるなら上回る義務がある。
 		if g.canBeatWithSuit(playerIdx, leadSuit) && !g.beatsCurrentBest(card) {
-			return NewDomainError(ErrInvalidPlay, "勝てる札を出す必要があります (マストヘッド)")
+			return NewDomainErrorCode(ErrInvalidPlay, "loo.errMustHead", nil)
 		}
 		return nil
 	}
 	// リードスートなし。切り札を持つなら切り札を出さなければならない。
 	if hasTrump {
 		if card.GetDesign() != g.trumpSuit {
-			return NewDomainError(ErrInvalidPlay, "切り札を出してください")
+			return NewDomainErrorCode(ErrInvalidPlay, "loo.errPlayTrump", nil)
 		}
 		// マストヘッド: 切り札で現在の勝者を上回れるなら上回る義務がある。
 		if g.canBeatWithSuit(playerIdx, g.trumpSuit) && !g.beatsCurrentBest(card) {
-			return NewDomainError(ErrInvalidPlay, "勝てる切り札を出す必要があります (マストヘッド)")
+			return NewDomainErrorCode(ErrInvalidPlay, "loo.errMustHeadTrump", nil)
 		}
 		return nil
 	}

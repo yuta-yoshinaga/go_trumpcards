@@ -159,7 +159,10 @@ func (cb *CallBreak) PlayerBid(bid int) error {
 		return ErrNotHumanTurn
 	}
 	if bid < CallBreakMinBid || bid > CallBreakHandSize {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは %d〜%d で指定してください", CallBreakMinBid, CallBreakHandSize))
+		return NewDomainErrorCode(ErrInvalidPlay, "callbreak.errBidRange", map[string]string{
+			"min": fmt.Sprintf("%d", CallBreakMinBid),
+			"max": fmt.Sprintf("%d", CallBreakHandSize),
+		})
 	}
 
 	cb.players[humanIdx].SetBid(bid)
@@ -204,7 +207,7 @@ func (cb *CallBreak) PlayerPlay(cardIndex int) error {
 
 	player := cb.players[cb.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "callbreak.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -450,7 +453,7 @@ func (cb *CallBreak) validatePlay(playerIdx int, card *Card) error {
 		// リード: スペード未ブレイクの場合、スペードでリードできない (他にカードがある場合)
 		if !cb.spadesBroken && card.GetDesign() == CardDesignSpade {
 			if cb.playerHasNonSpade(playerIdx) {
-				return NewDomainError(ErrInvalidPlay, "スペードはまだブレイクされていません")
+				return NewDomainErrorCode(ErrInvalidPlay, "callbreak.errSpadesNotBroken", nil)
 			}
 		}
 		return nil
@@ -461,7 +464,7 @@ func (cb *CallBreak) validatePlay(playerIdx int, card *Card) error {
 	// フォロースート優先
 	if cb.playerHasSuit(playerIdx, leadSuit) {
 		if card.GetDesign() != leadSuit {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "callbreak.errFollowLeadSuit", nil)
 		}
 		return nil
 	}
@@ -469,7 +472,7 @@ func (cb *CallBreak) validatePlay(playerIdx int, card *Card) error {
 	// ボイド: スペード (トランプ) を持っている場合は必ず切る必要がある
 	if leadSuit != CardDesignSpade && cb.playerHasSuit(playerIdx, CardDesignSpade) {
 		if card.GetDesign() != CardDesignSpade {
-			return NewDomainError(ErrInvalidPlay, "リードスートが無い場合はスペードで切らなければなりません")
+			return NewDomainErrorCode(ErrInvalidPlay, "callbreak.errMustTrump", nil)
 		}
 	}
 	return nil
