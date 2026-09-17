@@ -267,12 +267,12 @@ func (e *Ecarte) checkNeg(step EcarteNegStep) error {
 func (e *Ecarte) applyDiscard(playerIdx int, indices []int) error {
 	p := e.players[playerIdx]
 	if len(indices) > e.trumpCards.GetRemainingCount() {
-		return NewDomainError(ErrInvalidCard, "山札の残り枚数を超えて交換できません")
+		return NewDomainErrorCode(ErrInvalidCard, "ecarte.errExchangeExceedsStock", nil)
 	}
 	seen := make(map[int]bool, len(indices))
 	for _, idx := range indices {
 		if idx < 0 || idx >= p.GetCardsSize() || seen[idx] {
-			return NewDomainError(ErrInvalidCard, "捨て札のインデックスが不正です")
+			return NewDomainErrorCode(ErrInvalidCard, "ecarte.errDiscardIndexInvalid", nil)
 		}
 		seen[idx] = true
 	}
@@ -350,7 +350,7 @@ func (e *Ecarte) PlayerPlay(cardIndex int) error {
 	}
 	player := e.players[e.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "ecarte.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := e.validatePlay(e.currentPlayerIdx, card); err != nil {
@@ -512,13 +512,13 @@ func (e *Ecarte) allHandsEmpty() bool {
 // validatePlay マストフォロー (フォロー→勝てるなら勝つ→出せないなら切り札) を検証する。
 func (e *Ecarte) validatePlay(playerIdx int, card *Card) error {
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
+		return NewDomainErrorCode(ErrInvalidCard, "ecarte.errCardNil", nil)
 	}
 	if len(e.currentTrick) == 0 {
 		return nil
 	}
 	if !e.cardSatisfiesFollow(playerIdx, card) {
-		return NewDomainError(ErrInvalidCard, "フォロールール (勝てるなら勝つ・切り札) に従ってください")
+		return NewDomainErrorCode(ErrInvalidCard, "ecarte.errFollowRule", nil)
 	}
 	return nil
 }

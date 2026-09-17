@@ -31,5 +31,10 @@
   "nilOk": "ニル継続中",
   "nilFail": "ニル失敗 (トリックを取得)",
   "bidRemaining": "あと{{remaining}}トリックでビッド達成",
-  "bidMade": "ビッド達成（バッグ{{bags}}）"
+  "bidMade": "ビッド達成（バッグ{{bags}}）",
+  "errBidOutOfRange": "ビッドは0〜{{max}}で指定してください",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errLeadTwoOfClubs": "最初のトリックは2♣でリードしてください",
+  "errSpadesNotBroken": "スペードはまだブレイクされていません",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }

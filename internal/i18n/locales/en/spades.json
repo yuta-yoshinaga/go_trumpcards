@@ -31,5 +31,10 @@
   "nilOk": "Nil still alive",
   "nilFail": "Nil broken (took a trick)",
   "bidRemaining": "{{remaining}} more trick(s) to make bid",
-  "bidMade": "Bid made ({{bags}} bags)"
+  "bidMade": "Bid made ({{bags}} bags)",
+  "errBidOutOfRange": "Bid must be between 0 and {{max}}.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errLeadTwoOfClubs": "You must lead the 2 of Clubs on the first trick.",
+  "errSpadesNotBroken": "Spades have not been broken yet.",
+  "errFollowLeadSuit": "You must follow the lead suit."
 }
