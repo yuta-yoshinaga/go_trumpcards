@@ -59,5 +59,13 @@
   "resultAwarded": "No quiero (awarded)",
   "resultOrdago": "Ordago accepted",
   "helpExampleMus": "  m                     declare Mus to exchange cards",
-  "helpHint": "  h                     show a hint"
+  "helpHint": "  h                     show a hint",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errDuplicateCardIndex": "The same card cannot be selected more than once.",
+  "errCannotPass": "You cannot pass while a bet is pending.",
+  "errCannotEnvido": "You cannot call Envido after an Ordago.",
+  "errRaiseMustGoUp": "A raise must go above {{val}}.",
+  "errNoBetToAccept": "There is no bet to accept.",
+  "errNoBetToDecline": "There is no bet to decline.",
+  "errInvalidAction": "The action is invalid."
 }

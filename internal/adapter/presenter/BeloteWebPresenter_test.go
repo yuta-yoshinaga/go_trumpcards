@@ -93,6 +93,16 @@ func TestBeloteWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "invalid play", resObj.Message)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupBeloteWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "belote.errInvalidSuit", nil)
+		result := p.Output(m, err)
+		var resObj controller.BeloteWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "belote.errInvalidSuit", resObj.MessageCode)
+	})
+
 	t.Run("game-end message", func(t *testing.T) {
 		m, _ := setupBeloteWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

@@ -36,5 +36,12 @@
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpExampleTake": "  o                    表向きの札のスートを切り札にする",
   "helpHint": "  h                    助言を表示",
-  "dixDeDerNotice": "最終トリック: 勝ったチームに Dix de Der +{{points}} 点"
+  "dixDeDerNotice": "最終トリック: 勝ったチームに Dix de Der +{{points}} 点",
+  "errFaceUpSuit": "ラウンド1の表向きスートは選べません",
+  "errInvalidSuit": "無効なスートです",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errMustFollowTrump": "リードスート (切り札) に従ってください",
+  "errMustOvertrump": "オーバートランプしてください (obligation à monter)",
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "errMustPlayTrump": "切り札を出してください (obligation à couper)"
 }

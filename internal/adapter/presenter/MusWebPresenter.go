@@ -124,6 +124,9 @@ func (p *MusWebPresenter) buildPlayersOutput(g interfaces.MusGame) []*controller
 // buildMessage ゲーム結果メッセージを構築
 func (p *MusWebPresenter) buildMessage(g interfaces.MusGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {
