@@ -147,6 +147,9 @@ func isHeartsPenaltyCard(card *domain.Card) bool {
 // buildMessage ゲーム結果メッセージを構築
 func (p *HeartsWebPresenter) buildMessage(h interfaces.HeartsGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if h.GetGameEndFlag() {

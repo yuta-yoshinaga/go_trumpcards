@@ -246,10 +246,10 @@ func (g *BidWhist) PlayerBid(tricks, direction int) error {
 	}
 	bid := BidWhistBid{Tricks: tricks, Direction: direction}
 	if !bid.valid() {
-		return NewDomainError(ErrInvalidPlay, "無効なビッドです")
+		return NewDomainErrorCode(ErrInvalidPlay, "bidwhist.errInvalidBid", nil)
 	}
 	if g.highestBid != nil && bid.Order() <= g.highestBid.Order() {
-		return NewDomainError(ErrInvalidPlay, "現在のビッドより強い必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "bidwhist.errBidHigherThanHighest", map[string]string{"bid": fmt.Sprintf("%d", g.highestBid.Tricks)})
 	}
 	g.applyBid(humanIdx, bid)
 	return nil
@@ -374,7 +374,7 @@ func (g *BidWhist) PlayerDeclareTrump(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if !bidWhistValidSuit(suit) {
-		return NewDomainError(ErrInvalidPlay, "切り札スートは ♠/♣/♥/♦ から選んでください")
+		return NewDomainErrorCode(ErrInvalidPlay, "bidwhist.errInvalidSuit", nil)
 	}
 	g.applyTrumpDeclaration(suit)
 	return nil
@@ -431,15 +431,15 @@ func (g *BidWhist) CpuExchange() {
 func (g *BidWhist) doExchange(discardIndices []int) error {
 	player := g.players[g.declarerIdx]
 	if len(discardIndices) != BidWhistKittySize {
-		return NewDomainError(ErrInvalidCard, "6枚捨ててください")
+		return NewDomainErrorCode(ErrInvalidCard, "bidwhist.errKittyCardCount", map[string]string{"count": fmt.Sprintf("%d", BidWhistKittySize)})
 	}
 	seen := make(map[int]bool, BidWhistKittySize)
 	for _, idx := range discardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "bidwhist.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "同じカードは選べません")
+			return NewDomainErrorCode(ErrInvalidCard, "bidwhist.errSameCard", nil)
 		}
 		seen[idx] = true
 	}
@@ -477,7 +477,7 @@ func (g *BidWhist) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "bidwhist.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -725,13 +725,13 @@ func (g *BidWhist) validatePlay(playerIdx int, card *Card) error {
 	if len(g.currentTrick) == 0 {
 		// ノートランプでは死札ジョーカーをリードできない (唯一の手札の場合を除く)
 		if g.isNoTrump() && g.isJoker(card) && g.players[playerIdx].GetCardsSize() > 1 {
-			return NewDomainError(ErrInvalidPlay, "ノートランプではジョーカーをリードできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "bidwhist.errNoTrumpJokerLead", nil)
 		}
 		return nil
 	}
 	ls := g.leadSuit()
 	if g.effectiveSuit(card) != ls && g.playerHasSuit(playerIdx, ls) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "bidwhist.errFollowLeadSuit", nil)
 	}
 	return nil
 }

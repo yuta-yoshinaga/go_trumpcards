@@ -52,5 +52,13 @@
   "helpExampleTrump": "  t 1                  切り札にスペードを宣言する",
   "helpExampleKitty": "  e 0 1 2 3 4 5        キティを取ったあと 6 枚を捨てる",
   "helpHint": "  h                    助言を表示",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "errInvalidBid": "無効なビッドです",
+  "errBidHigherThanHighest": "現在のビッドより強い必要があります",
+  "errInvalidSuit": "切り札スートは ♠/♣/♥/♦ から選んでください",
+  "errKittyCardCount": "{{count}}枚捨ててください",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errSameCard": "同じカードは選べません",
+  "errNoTrumpJokerLead": "ノートランプではジョーカーをリードできません",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }

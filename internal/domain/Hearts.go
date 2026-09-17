@@ -185,17 +185,17 @@ func (h *Hearts) PlayerPass(cardIndices []int) error {
 		return ErrNotHumanTurn
 	}
 	if h.passReady[humanIdx] {
-		return NewDomainError(ErrInvalidPlay, "すでにカードを選択済みです")
+		return NewDomainErrorCode(ErrInvalidPlay, "hearts.errPassAlreadySelected", nil)
 	}
 	if len(cardIndices) != HeartsPassCardCount {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("%d枚のカードを選択してください", HeartsPassCardCount))
+		return NewDomainErrorCode(ErrInvalidPlay, "hearts.errPassCardCount", map[string]string{"count": fmt.Sprintf("%d", HeartsPassCardCount)})
 	}
 
 	// 重複チェック
 	seen := make(map[int]bool, len(cardIndices))
 	for _, idx := range cardIndices {
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+			return NewDomainErrorCode(ErrInvalidCard, "hearts.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}
@@ -203,7 +203,7 @@ func (h *Hearts) PlayerPass(cardIndices []int) error {
 	player := h.players[humanIdx]
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "hearts.errCardIndexOutOfRange", nil)
 		}
 	}
 
@@ -267,7 +267,7 @@ func (h *Hearts) PlayerPlay(cardIndex int) error {
 
 	player := h.players[h.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "hearts.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -564,7 +564,7 @@ func (h *Hearts) validatePlay(playerIdx int, card *Card) error {
 		if card.GetDesign() != CardDesignClover || card.GetValue() != 2 {
 			// 2♣を持っているか確認
 			if h.playerHasCard(playerIdx, CardDesignClover, 2) {
-				return NewDomainError(ErrInvalidPlay, "最初のトリックは2♣でリードしてください")
+				return NewDomainErrorCode(ErrInvalidPlay, "hearts.errFirstTrickMustLeadTwoOfClubs", nil)
 			}
 		}
 	}
@@ -573,7 +573,7 @@ func (h *Hearts) validatePlay(playerIdx int, card *Card) error {
 		// リード: ハーツが壊れていない場合、ハーツでリードできない（他にカードがある場合）
 		if !h.heartsBroken && card.GetDesign() == CardDesignHeart {
 			if h.playerHasNonHeart(playerIdx) {
-				return NewDomainError(ErrInvalidPlay, "ハーツはまだブレイクされていません")
+				return NewDomainErrorCode(ErrInvalidPlay, "hearts.errHeartsNotBroken", nil)
 			}
 		}
 		return nil
@@ -584,12 +584,12 @@ func (h *Hearts) validatePlay(playerIdx int, card *Card) error {
 	if card.GetDesign() != leadSuit {
 		// そのスートを持っていない場合のみ許可
 		if h.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "hearts.errFollowLeadSuit", nil)
 		}
 		// 最初のトリックではハートとQ♠を出せない（強制される場合を除く）
 		if h.trickNumber == 1 {
 			if isPointCard(card, h.config.OmnibusJD) && h.playerHasNonPointCard(player) {
-				return NewDomainError(ErrInvalidPlay, "最初のトリックではポイントカードを出せません")
+				return NewDomainErrorCode(ErrInvalidPlay, "hearts.errFirstTrickNoPointCards", nil)
 			}
 		}
 	}
