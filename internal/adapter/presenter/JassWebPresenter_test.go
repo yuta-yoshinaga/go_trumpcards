@@ -83,6 +83,16 @@ func TestJassWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "boom", resObj.Message)
 	})
 
+	t.Run("with coded error", func(t *testing.T) {
+		m, _ := setupJassWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "jass.errInvalidSuit", nil)
+		result := p.Output(m, err)
+		var resObj controller.JassWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "jass.errInvalidSuit", resObj.MessageCode)
+	})
+
 	t.Run("bid trump phase", func(t *testing.T) {
 		m, _ := setupJassWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")

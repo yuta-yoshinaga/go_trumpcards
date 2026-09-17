@@ -35,5 +35,11 @@
   "helpExampleFlipFirst": "  fi 0                 flip your first face-down card",
   "helpExampleFlipSecond": "  fi 1                 flip the second one to finish the setup",
   "helpHint": "  h                    show a hint",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errAlreadyFaceUp": "The card is already face up.",
+  "errStockEmpty": "The stock is empty.",
+  "errDiscardPileEmpty": "The discard pile is empty.",
+  "errCannotFlip": "You cannot flip a card.",
+  "errCannotSkip": "You cannot skip."
 }
