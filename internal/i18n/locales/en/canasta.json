@@ -77,5 +77,17 @@
   "errSequenceMustUseSameSuit": "A sequence must use cards of the same suit.",
   "errSequenceCannotDuplicateRank": "A sequence cannot contain the same rank twice.",
   "errSequenceRanksNotConsecutive": "The ranks in a sequence must be consecutive.",
-  "errWildCardsExceedSequenceRange": "Wild cards cannot extend a sequence beyond the rank range."
+  "errWildCardsExceedSequenceRange": "Wild cards cannot extend a sequence beyond the rank range.",
+  "log.redThree": "{{name}} lays down red 3: {{card}}",
+  "log.pozzetto": "{{name}} takes the pozzetto ({{cards}} cards)",
+  "log.drawStock": "{{name}} draws from stock",
+  "log.drawDiscard": "{{name}} picks up the discard pile ({{cards}} cards)",
+  "log.meld": "{{name}} melds {{cards}} cards (rank {{rank}})",
+  "log.meldAdd": "{{name}} adds {{cards}} cards to meld (rank {{rank}})",
+  "log.canasta": "{{name}} completes a {{type}} canasta!",
+  "log.discard": "{{name}} discards {{card}}",
+  "log.goOut": "{{name}} goes out! (bonus: {{bonus}})",
+  "log.score": "{{name}} scores {{score}} points this round",
+  "log.roundEnd": "Round ends (stock empty)",
+  "log.gameEnd": "{{name}} wins the game!"
 }

@@ -249,6 +249,9 @@ func TestHandAndFoot_PlayerDrawFromStock_Draws2(t *testing.T) {
 
 	err := g.PlayerDrawFromStock()
 	require.NoError(t, err)
+	entry := findActionLogEntry(t, g.GetActionLog(), "handandfoot.log.drawStock")
+	assert.Contains(t, entry.DetailParams, "name")
+	assert.Empty(t, entry.Detail)
 	assert.Equal(t, domain.HandAndFootPhaseMeld, g.GetPhase())
 	assert.Equal(t, 3, g.GetPlayer(0).GetCardsSize()) // 1 + 2 drawn
 	assert.Equal(t, 1, g.GetDrawPileCount())

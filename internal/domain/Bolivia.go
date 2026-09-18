@@ -232,7 +232,7 @@ func (g *Bolivia) autoLayRed3s(playerIdx int) {
 			if BoliviaIsRed3(card) {
 				player.RemoveCard(i)
 				player.AddRed3(card)
-				g.appendLog(playerIdx, "red3", fmt.Sprintf("%s lays down red 3: %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+				g.appendLog(playerIdx, "red3", "bolivia.log.redThree", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 				if len(g.drawPile) > 0 {
 					replacement := g.drawPile[len(g.drawPile)-1]
 					g.drawPile = g.drawPile[:len(g.drawPile)-1]
@@ -312,7 +312,7 @@ func (g *Bolivia) PlayerDrawFromStock() error {
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	g.players[g.currentPlayerIdx].AddCard(card)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "bolivia.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 
 	if BoliviaIsRed3(card) {
 		g.autoLayRed3s(g.currentPlayerIdx)
@@ -398,7 +398,7 @@ func (g *Bolivia) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 	g.discardPile = nil
 	g.isFrozen = false
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up the discard pile (%d cards)", playerName(g.players, g.currentPlayerIdx), pileSize), []*Card{topCard})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", "bolivia.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(pileSize)}, []*Card{topCard})
 
 	g.autoLayRed3s(g.currentPlayerIdx)
 	g.sortHand(g.currentPlayerIdx)
@@ -614,7 +614,7 @@ func (g *Bolivia) applyResolvedMeld(playerIdx int, res boliviaMeldResolution, ca
 		}
 		meld := &BoliviaMeld{Cards: cards, Kind: res.kind, IsNatural: isNatural}
 		player.AddMeld(meld)
-		g.appendLog(playerIdx, "meld", fmt.Sprintf("%s melds a %s of %d cards", playerName(g.players, playerIdx), boliviaMeldKindStr(res.kind), len(cards)), cards)
+		g.appendLog(playerIdx, "meld", "bolivia.log.meld", map[string]string{"name": playerName(g.players, playerIdx), "type": boliviaMeldKindStr(res.kind), "cards": strconv.Itoa(len(cards))}, cards)
 		return
 	}
 	existing := player.melds[res.existingIdx]
@@ -624,7 +624,7 @@ func (g *Bolivia) applyResolvedMeld(playerIdx int, res boliviaMeldResolution, ca
 			existing.IsNatural = false
 		}
 	}
-	g.appendLog(playerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to a %s meld", playerName(g.players, playerIdx), len(cards), boliviaMeldKindStr(existing.Kind)), cards)
+	g.appendLog(playerIdx, "meld_add", "bolivia.log.meldAdd", map[string]string{"name": playerName(g.players, playerIdx), "cards": strconv.Itoa(len(cards)), "type": boliviaMeldKindStr(existing.Kind)}, cards)
 }
 
 // logCompletedMelds 完成したカナスタ/ボリビアをログに記録する
@@ -632,9 +632,9 @@ func (g *Bolivia) logCompletedMelds(playerIdx int) {
 	player := g.players[playerIdx]
 	for _, m := range player.melds {
 		if m.IsEscalera() {
-			g.appendLog(playerIdx, "bolivia", fmt.Sprintf("%s completes a bolivia!", playerName(g.players, playerIdx)), nil)
+			g.appendLog(playerIdx, "bolivia", "bolivia.log.bolivia", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 		} else if m.IsCanasta() {
-			g.appendLog(playerIdx, "canasta", fmt.Sprintf("%s completes a %s canasta!", playerName(g.players, playerIdx), boliviaCanastaTypeStr(m.IsNatural)), nil)
+			g.appendLog(playerIdx, "canasta", "bolivia.log.canasta", map[string]string{"name": playerName(g.players, playerIdx), "type": boliviaCanastaTypeStr(m.IsNatural)}, nil)
 		}
 	}
 }
@@ -687,7 +687,7 @@ func (g *Bolivia) PlayerDiscard(cardIndex int) error {
 		g.isFrozen = true
 	}
 
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "bolivia.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 
 	g.advanceTurn()
 	return nil
@@ -727,7 +727,7 @@ func (g *Bolivia) PlayerGoOut() error {
 		if BoliviaIsWild(discarded) {
 			g.isFrozen = true
 		}
-		g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+		g.appendLog(g.currentPlayerIdx, "discard", "bolivia.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 	} else if player.GetCardsSize() > 1 {
 		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errHandMustHaveAtMostOneCardToGoOut", nil)
 	}
@@ -739,7 +739,7 @@ func (g *Bolivia) PlayerGoOut() error {
 // goOut 上がり処理
 func (g *Bolivia) goOut(playerIdx int) {
 	bonus := BoliviaGoingOutBonus
-	g.appendLog(playerIdx, "go_out", fmt.Sprintf("%s goes out! (bonus: %d)", playerName(g.players, playerIdx), bonus), nil)
+	g.appendLog(playerIdx, "go_out", "bolivia.log.goOut", map[string]string{"name": playerName(g.players, playerIdx), "bonus": strconv.Itoa(bonus)}, nil)
 	g.scoreRound(playerIdx, bonus)
 }
 
@@ -760,6 +760,11 @@ func (g *Bolivia) CpuPlay() {
 	case BoliviaPhaseDiscard:
 		g.cpuDiscard()
 	}
+}
+
+// appendLog records a locale-independent action-log entry.
+func (g *Bolivia) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // cpuDraw CPUがドローする
@@ -797,7 +802,7 @@ func (g *Bolivia) cpuDraw() {
 						pileSize := len(g.discardPile)
 						g.discardPile = nil
 						g.isFrozen = false
-						g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up the discard pile (%d cards)", playerName(g.players, g.currentPlayerIdx), pileSize), []*Card{topCard})
+						g.appendLog(g.currentPlayerIdx, "draw_discard", "bolivia.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(pileSize)}, []*Card{topCard})
 						g.autoLayRed3s(g.currentPlayerIdx)
 						g.sortHand(g.currentPlayerIdx)
 						g.phase = BoliviaPhaseMeld
@@ -816,7 +821,7 @@ func (g *Bolivia) cpuDraw() {
 	card := g.drawPile[len(g.drawPile)-1]
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	player.AddCard(card)
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "bolivia.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 
 	if BoliviaIsRed3(card) {
 		g.autoLayRed3s(g.currentPlayerIdx)
@@ -876,7 +881,7 @@ func (g *Bolivia) cpuMeld() {
 					existing.IsNatural = false
 				}
 			}
-			g.appendLog(g.currentPlayerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to a %s meld", playerName(g.players, g.currentPlayerIdx), len(grp.cards), boliviaMeldKindStr(existing.Kind)), grp.cards)
+			g.appendLog(g.currentPlayerIdx, "meld_add", "bolivia.log.meldAdd", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(len(grp.cards)), "type": boliviaMeldKindStr(existing.Kind)}, grp.cards)
 		} else {
 			isNatural := true
 			for _, c := range grp.cards {
@@ -887,7 +892,7 @@ func (g *Bolivia) cpuMeld() {
 			}
 			meld := &BoliviaMeld{Cards: grp.cards, Kind: grp.kind, IsNatural: isNatural}
 			player.AddMeld(meld)
-			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds a %s of %d cards", playerName(g.players, g.currentPlayerIdx), boliviaMeldKindStr(grp.kind), len(grp.cards)), grp.cards)
+			g.appendLog(g.currentPlayerIdx, "meld", "bolivia.log.meld", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "type": boliviaMeldKindStr(grp.kind), "cards": strconv.Itoa(len(grp.cards))}, grp.cards)
 		}
 
 		for _, c := range grp.cards {
@@ -935,7 +940,7 @@ func (g *Bolivia) cpuDiscard() {
 			if BoliviaIsWild(discarded) {
 				g.isFrozen = true
 			}
-			g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+			g.appendLog(g.currentPlayerIdx, "discard", "bolivia.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 			g.goOut(g.currentPlayerIdx)
 			return
 		}
@@ -949,7 +954,7 @@ func (g *Bolivia) cpuDiscard() {
 		g.isFrozen = true
 	}
 
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "bolivia.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 	g.advanceTurn()
 }
 
@@ -1302,7 +1307,7 @@ func (g *Bolivia) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 			team = i % BoliviaTeamCnt
 		}
 		teamRound[team] += score
-		g.appendLog(i, "score", fmt.Sprintf("%s contributes %d points to team %d", playerName(g.players, i), score, team), nil)
+		g.appendLog(i, "score", "bolivia.log.score", map[string]string{"name": playerName(g.players, i), "score": strconv.Itoa(score), "team": strconv.Itoa(team)}, nil)
 	}
 
 	for t := 0; t < BoliviaTeamCnt; t++ {
@@ -1327,7 +1332,7 @@ func (g *Bolivia) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 
 // endRoundDraw 山札切れによるラウンド終了
 func (g *Bolivia) endRoundDraw() {
-	g.appendLog(-1, "draw", "Round ends (stock empty)", nil)
+	g.appendLog(-1, "draw", "bolivia.log.roundEnd", nil, nil)
 	g.scoreRound(-1, 0)
 }
 
@@ -1369,7 +1374,7 @@ func (g *Bolivia) checkGameEnd() {
 			g.winnerIdx = t
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("Team %d wins the game!", g.winnerIdx), nil)
+	g.appendLog(-1, "game_end", "bolivia.log.gameEnd", map[string]string{"team": strconv.Itoa(g.winnerIdx)}, nil)
 }
 
 // --- Meld Validation ---

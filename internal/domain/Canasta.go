@@ -231,7 +231,7 @@ func (g *Canasta) autoLayRed3s(playerIdx int) {
 			if CanastaIsRed3(card) {
 				player.RemoveCard(i)
 				player.AddRed3(card)
-				g.appendLog(playerIdx, "red3", fmt.Sprintf("%s lays down red 3: %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+				g.appendLog(playerIdx, "red3", "canasta.log.redThree", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 				// 山札から補充
 				if len(g.drawPile) > 0 {
 					replacement := g.drawPile[len(g.drawPile)-1]
@@ -261,7 +261,7 @@ func (g *Canasta) takePozzetto(playerIdx int) bool {
 		player.AddCard(c)
 	}
 	player.tookPozzetto = true
-	g.appendLog(playerIdx, "pozzetto", fmt.Sprintf("%s takes the pozzetto (%d cards)", playerName(g.players, playerIdx), len(pile)), nil)
+	g.appendLog(playerIdx, "pozzetto", "canasta.log.pozzetto", map[string]string{"name": playerName(g.players, playerIdx), "cards": strconv.Itoa(len(pile))}, nil)
 	// 獲得した手札に赤3があれば自動的に場に出す
 	g.autoLayRed3s(playerIdx)
 	g.sortHand(playerIdx)
@@ -299,7 +299,7 @@ func (g *Canasta) PlayerDrawFromStock() error {
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	g.players[g.currentPlayerIdx].AddCard(card)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "canasta.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 
 	// 赤3を引いた場合は自動的に場に出す (autoLayRed3s が補充まで処理する)
 	if CanastaIsRed3(card) {
@@ -442,7 +442,7 @@ func (g *Canasta) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 	g.discardPile = nil
 	g.isFrozen = false
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up the discard pile (%d cards)", playerName(g.players, g.currentPlayerIdx), pileSize), []*Card{topCard})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", "canasta.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(pileSize)}, []*Card{topCard})
 
 	// 手札に赤3があれば自動的に場に出す
 	g.autoLayRed3s(g.currentPlayerIdx)
@@ -601,7 +601,7 @@ func (g *Canasta) PlayerMeld(meldGroups [][]int) error {
 				IsNatural: isNatural,
 			}
 			player.AddMeld(meld)
-			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d cards (rank %d)", playerName(g.players, g.currentPlayerIdx), len(action.cards), meld.GetRank()), action.cards)
+			g.appendLog(g.currentPlayerIdx, "meld", "canasta.log.meld", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(len(action.cards)), "rank": strconv.Itoa(meld.GetRank())}, action.cards)
 		} else {
 			existing := player.melds[action.existingIdx]
 			for _, c := range action.cards {
@@ -610,7 +610,7 @@ func (g *Canasta) PlayerMeld(meldGroups [][]int) error {
 					existing.IsNatural = false
 				}
 			}
-			g.appendLog(g.currentPlayerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to meld (rank %d)", playerName(g.players, g.currentPlayerIdx), len(action.cards), existing.GetRank()), action.cards)
+			g.appendLog(g.currentPlayerIdx, "meld_add", "canasta.log.meldAdd", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(len(action.cards)), "rank": strconv.Itoa(existing.GetRank())}, action.cards)
 		}
 	}
 
@@ -626,7 +626,7 @@ func (g *Canasta) PlayerMeld(meldGroups [][]int) error {
 	// カナスタ完成チェック
 	for _, m := range player.melds {
 		if m.IsCanasta() {
-			g.appendLog(g.currentPlayerIdx, "canasta", fmt.Sprintf("%s completes a %s canasta!", playerName(g.players, g.currentPlayerIdx), canastaTypeStr(m.IsNatural)), nil)
+			g.appendLog(g.currentPlayerIdx, "canasta", "canasta.log.canasta", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "type": canastaTypeStr(m.IsNatural)}, nil)
 		}
 	}
 
@@ -696,7 +696,7 @@ func (g *Canasta) PlayerDiscard(cardIndex int) error {
 		g.isFrozen = true
 	}
 
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "canasta.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 
 	// Burraco: 捨て札で手札を出し切り、まだポゼット未獲得なら獲得する
 	if g.usesPozzetto() && player.GetCardsSize() == 0 && !player.tookPozzetto {
@@ -739,7 +739,7 @@ func (g *Canasta) PlayerGoOut() error {
 		if CanastaIsWild(discarded) {
 			g.isFrozen = true
 		}
-		g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+		g.appendLog(g.currentPlayerIdx, "discard", "canasta.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 	} else if player.GetCardsSize() > 1 {
 		return NewDomainErrorCode(ErrInvalidPlay, "canasta.errHandMustHaveAtMostOneCardToGoOut", nil)
 	}
@@ -755,7 +755,7 @@ func (g *Canasta) goOut(playerIdx int, concealed bool) {
 	if concealed {
 		bonus = CanastaConcealedGoingOutBonus
 	}
-	g.appendLog(playerIdx, "go_out", fmt.Sprintf("%s goes out! (bonus: %d)", playerName(g.players, playerIdx), bonus), nil)
+	g.appendLog(playerIdx, "go_out", "canasta.log.goOut", map[string]string{"name": playerName(g.players, playerIdx), "bonus": strconv.Itoa(bonus)}, nil)
 	g.scoreRound(playerIdx, bonus)
 }
 
@@ -776,6 +776,11 @@ func (g *Canasta) CpuPlay() {
 	case CanastaPhaseDiscard:
 		g.cpuDiscard()
 	}
+}
+
+// appendLog records a locale-independent action-log entry.
+func (g *Canasta) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // cpuDraw CPUがドローする
@@ -816,7 +821,7 @@ func (g *Canasta) cpuDraw() {
 						pileSize := len(g.discardPile)
 						g.discardPile = nil
 						g.isFrozen = false
-						g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up the discard pile (%d cards)", playerName(g.players, g.currentPlayerIdx), pileSize), []*Card{topCard})
+						g.appendLog(g.currentPlayerIdx, "draw_discard", "canasta.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(pileSize)}, []*Card{topCard})
 						g.autoLayRed3s(g.currentPlayerIdx)
 						g.sortHand(g.currentPlayerIdx)
 						g.phase = CanastaPhaseMeld
@@ -836,7 +841,7 @@ func (g *Canasta) cpuDraw() {
 	card := g.drawPile[len(g.drawPile)-1]
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	player.AddCard(card)
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "canasta.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 
 	// 赤3の処理 (autoLayRed3s が補充まで処理する)
 	if CanastaIsRed3(card) {
@@ -893,7 +898,7 @@ func (g *Canasta) cpuMeld() {
 					existing.IsNatural = false
 				}
 			}
-			g.appendLog(g.currentPlayerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to meld (rank %d)", playerName(g.players, g.currentPlayerIdx), len(group), existing.GetRank()), group)
+			g.appendLog(g.currentPlayerIdx, "meld_add", "canasta.log.meldAdd", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(len(group)), "rank": strconv.Itoa(existing.GetRank())}, group)
 		} else {
 			isNatural := true
 			for _, c := range group {
@@ -904,7 +909,7 @@ func (g *Canasta) cpuMeld() {
 			}
 			meld := &CanastaMeld{Cards: group, IsNatural: isNatural}
 			player.AddMeld(meld)
-			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d cards (rank %d)", playerName(g.players, g.currentPlayerIdx), len(group), meld.GetRank()), group)
+			g.appendLog(g.currentPlayerIdx, "meld", "canasta.log.meld", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(len(group)), "rank": strconv.Itoa(meld.GetRank())}, group)
 		}
 
 		// メルドに使ったカードを手札から削除
@@ -965,7 +970,7 @@ func (g *Canasta) cpuDiscard() {
 			if CanastaIsWild(discarded) {
 				g.isFrozen = true
 			}
-			g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+			g.appendLog(g.currentPlayerIdx, "discard", "canasta.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 			g.goOut(g.currentPlayerIdx, false)
 			return
 		}
@@ -980,7 +985,7 @@ func (g *Canasta) cpuDiscard() {
 		g.isFrozen = true
 	}
 
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "canasta.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 	g.advanceTurn()
 }
 
@@ -1224,7 +1229,7 @@ func (g *Canasta) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 		}
 
 		player.SetRoundScore(score)
-		g.appendLog(i, "score", fmt.Sprintf("%s scores %d points this round", playerName(g.players, i), score), nil)
+		g.appendLog(i, "score", "canasta.log.score", map[string]string{"name": playerName(g.players, i), "score": strconv.Itoa(score)}, nil)
 	}
 
 	for i := range g.players {
@@ -1239,7 +1244,7 @@ func (g *Canasta) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 
 // endRoundDraw 山札切れによるラウンド終了
 func (g *Canasta) endRoundDraw() {
-	g.appendLog(-1, "draw", "Round ends (stock empty)", nil)
+	g.appendLog(-1, "draw", "canasta.log.roundEnd", nil, nil)
 	g.scoreRound(-1, 0)
 }
 
@@ -1283,7 +1288,7 @@ func (g *Canasta) checkGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", "canasta.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx)}, nil)
 }
 
 // --- Meld Validation ---

@@ -70,5 +70,17 @@
   "errMeldAllowsAtMostThreeWildCards": "メルドにはワイルドカードは最大3枚までです",
   "errWildCardsCannotExceedNaturalCards": "ワイルドカードの数がナチュラルカードの数を超えてはいけません",
   "errMeldCardRankMismatch": "ランク{{meldRank}}のメルドにランク{{cardRank}}のカードは追加できません",
-  "errGoOutRequirementsNotMet": "上がり条件（フット取り込み・必要なカナスタ）を満たしていません"
+  "errGoOutRequirementsNotMet": "上がり条件（フット取り込み・必要なカナスタ）を満たしていません",
+  "log.redThree": "{{name}} が赤3を出しました: {{card}}",
+  "log.foot": "{{name}} がフットを取りました（{{cards}}枚）",
+  "log.drawStock": "{{name}} が山札から2枚引きました",
+  "log.drawDiscard": "{{name}} が捨て札から{{cards}}枚取りました",
+  "log.meld": "{{name}} が{{cards}}枚をメルドしました（ランク{{rank}}）",
+  "log.meldAdd": "{{name}} がメルドに{{cards}}枚を追加しました（ランク{{rank}}）",
+  "log.canasta": "{{name}} が{{type}}カナスタを完成させました！",
+  "log.discard": "{{name}} が{{card}}を捨てました",
+  "log.goOut": "{{name}} が上がりました！（ボーナス: {{bonus}}）",
+  "log.score": "チーム{{team}}がこのラウンドで{{score}}点を獲得しました",
+  "log.roundEnd": "ラウンド終了（山札が空です）",
+  "log.gameEnd": "チーム{{team}}がゲームに勝ちました！"
 }

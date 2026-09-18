@@ -77,5 +77,17 @@
   "errSequenceMustUseSameSuit": "シーケンスは同じスートで構成する必要があります",
   "errSequenceCannotDuplicateRank": "シーケンスに同じランクを重複させることはできません",
   "errSequenceRanksNotConsecutive": "シーケンスのランクが連続していません",
-  "errWildCardsExceedSequenceRange": "ワイルドカードでシーケンスのランク範囲を超えることはできません"
+  "errWildCardsExceedSequenceRange": "ワイルドカードでシーケンスのランク範囲を超えることはできません",
+  "log.redThree": "{{name}} が赤3を出しました: {{card}}",
+  "log.pozzetto": "{{name}} がポゼットを取りました（{{cards}}枚）",
+  "log.drawStock": "{{name}} が山札から引きました",
+  "log.drawDiscard": "{{name}} が捨て札の山を取りました（{{cards}}枚）",
+  "log.meld": "{{name}} が{{cards}}枚をメルドしました（ランク{{rank}}）",
+  "log.meldAdd": "{{name}} がメルドに{{cards}}枚を追加しました（ランク{{rank}}）",
+  "log.canasta": "{{name}} が{{type}}カナスタを完成させました！",
+  "log.discard": "{{name}} が{{card}}を捨てました",
+  "log.goOut": "{{name}} が上がりました！（ボーナス: {{bonus}}）",
+  "log.score": "{{name}} がこのラウンドで{{score}}点を獲得しました",
+  "log.roundEnd": "ラウンド終了（山札が空です）",
+  "log.gameEnd": "{{name}} がゲームに勝ちました！"
 }

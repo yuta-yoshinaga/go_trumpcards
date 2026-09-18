@@ -217,7 +217,7 @@ func (g *Samba) autoLayRed3s(playerIdx int) {
 			if SambaIsRed3(card) {
 				player.RemoveCard(i)
 				player.AddRed3(card)
-				g.appendLog(playerIdx, "red3", fmt.Sprintf("%s lays down red 3: %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+				g.appendLog(playerIdx, "red3", "samba.log.redThree", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 				if len(g.drawPile) > 0 {
 					replacement := g.drawPile[len(g.drawPile)-1]
 					g.drawPile = g.drawPile[:len(g.drawPile)-1]
@@ -273,7 +273,7 @@ func (g *Samba) PlayerDrawFromStock() error {
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	g.players[g.currentPlayerIdx].AddCard(card)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "samba.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 
 	if SambaIsRed3(card) {
 		g.autoLayRed3s(g.currentPlayerIdx)
@@ -359,7 +359,7 @@ func (g *Samba) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 	g.discardPile = nil
 	g.isFrozen = false
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up the discard pile (%d cards)", playerName(g.players, g.currentPlayerIdx), pileSize), []*Card{topCard})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", "samba.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(pileSize)}, []*Card{topCard})
 
 	g.autoLayRed3s(g.currentPlayerIdx)
 	g.sortHand(g.currentPlayerIdx)
@@ -554,7 +554,7 @@ func (g *Samba) applyResolvedMeld(playerIdx int, res sambaMeldResolution, cards 
 		}
 		meld := &SambaMeld{Cards: cards, Kind: res.kind, IsNatural: isNatural}
 		player.AddMeld(meld)
-		g.appendLog(playerIdx, "meld", fmt.Sprintf("%s melds a %s of %d cards", playerName(g.players, playerIdx), sambaMeldKindStr(res.kind), len(cards)), cards)
+		g.appendLog(playerIdx, "meld", "samba.log.meld", map[string]string{"name": playerName(g.players, playerIdx), "type": sambaMeldKindStr(res.kind), "cards": strconv.Itoa(len(cards))}, cards)
 		return
 	}
 	existing := player.melds[res.existingIdx]
@@ -564,7 +564,7 @@ func (g *Samba) applyResolvedMeld(playerIdx int, res sambaMeldResolution, cards 
 			existing.IsNatural = false
 		}
 	}
-	g.appendLog(playerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to a %s meld", playerName(g.players, playerIdx), len(cards), sambaMeldKindStr(existing.Kind)), cards)
+	g.appendLog(playerIdx, "meld_add", "samba.log.meldAdd", map[string]string{"name": playerName(g.players, playerIdx), "cards": strconv.Itoa(len(cards)), "type": sambaMeldKindStr(existing.Kind)}, cards)
 }
 
 // logCompletedMelds 完成したカナスタ/サンバをログに記録する
@@ -572,9 +572,9 @@ func (g *Samba) logCompletedMelds(playerIdx int) {
 	player := g.players[playerIdx]
 	for _, m := range player.melds {
 		if m.IsSamba() {
-			g.appendLog(playerIdx, "samba", fmt.Sprintf("%s completes a samba!", playerName(g.players, playerIdx)), nil)
+			g.appendLog(playerIdx, "samba", "samba.log.samba", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 		} else if m.IsCanasta() {
-			g.appendLog(playerIdx, "canasta", fmt.Sprintf("%s completes a %s canasta!", playerName(g.players, playerIdx), sambaCanastaTypeStr(m.IsNatural)), nil)
+			g.appendLog(playerIdx, "canasta", "samba.log.canasta", map[string]string{"name": playerName(g.players, playerIdx), "type": sambaCanastaTypeStr(m.IsNatural)}, nil)
 		}
 	}
 }
@@ -627,7 +627,7 @@ func (g *Samba) PlayerDiscard(cardIndex int) error {
 		g.isFrozen = true
 	}
 
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "samba.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 
 	g.advanceTurn()
 	return nil
@@ -661,7 +661,7 @@ func (g *Samba) PlayerGoOut() error {
 		if SambaIsWild(discarded) {
 			g.isFrozen = true
 		}
-		g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+		g.appendLog(g.currentPlayerIdx, "discard", "samba.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 	} else if player.GetCardsSize() > 1 {
 		return NewDomainErrorCode(ErrInvalidPlay, "samba.errHandMustHaveAtMostOneCardToGoOut", nil)
 	}
@@ -673,7 +673,7 @@ func (g *Samba) PlayerGoOut() error {
 // goOut 上がり処理
 func (g *Samba) goOut(playerIdx int) {
 	bonus := SambaGoingOutBonus
-	g.appendLog(playerIdx, "go_out", fmt.Sprintf("%s goes out! (bonus: %d)", playerName(g.players, playerIdx), bonus), nil)
+	g.appendLog(playerIdx, "go_out", "samba.log.goOut", map[string]string{"name": playerName(g.players, playerIdx), "bonus": strconv.Itoa(bonus)}, nil)
 	g.scoreRound(playerIdx, bonus)
 }
 
@@ -694,6 +694,11 @@ func (g *Samba) CpuPlay() {
 	case SambaPhaseDiscard:
 		g.cpuDiscard()
 	}
+}
+
+// appendLog records a locale-independent action-log entry.
+func (g *Samba) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // cpuDraw CPUがドローする
@@ -731,7 +736,7 @@ func (g *Samba) cpuDraw() {
 						pileSize := len(g.discardPile)
 						g.discardPile = nil
 						g.isFrozen = false
-						g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up the discard pile (%d cards)", playerName(g.players, g.currentPlayerIdx), pileSize), []*Card{topCard})
+						g.appendLog(g.currentPlayerIdx, "draw_discard", "samba.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(pileSize)}, []*Card{topCard})
 						g.autoLayRed3s(g.currentPlayerIdx)
 						g.sortHand(g.currentPlayerIdx)
 						g.phase = SambaPhaseMeld
@@ -750,7 +755,7 @@ func (g *Samba) cpuDraw() {
 	card := g.drawPile[len(g.drawPile)-1]
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	player.AddCard(card)
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "samba.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 
 	if SambaIsRed3(card) {
 		g.autoLayRed3s(g.currentPlayerIdx)
@@ -810,7 +815,7 @@ func (g *Samba) cpuMeld() {
 					existing.IsNatural = false
 				}
 			}
-			g.appendLog(g.currentPlayerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to a %s meld", playerName(g.players, g.currentPlayerIdx), len(grp.cards), sambaMeldKindStr(existing.Kind)), grp.cards)
+			g.appendLog(g.currentPlayerIdx, "meld_add", "samba.log.meldAdd", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(len(grp.cards)), "type": sambaMeldKindStr(existing.Kind)}, grp.cards)
 		} else {
 			isNatural := true
 			for _, c := range grp.cards {
@@ -821,7 +826,7 @@ func (g *Samba) cpuMeld() {
 			}
 			meld := &SambaMeld{Cards: grp.cards, Kind: grp.kind, IsNatural: isNatural}
 			player.AddMeld(meld)
-			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds a %s of %d cards", playerName(g.players, g.currentPlayerIdx), sambaMeldKindStr(grp.kind), len(grp.cards)), grp.cards)
+			g.appendLog(g.currentPlayerIdx, "meld", "samba.log.meld", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "type": sambaMeldKindStr(grp.kind), "cards": strconv.Itoa(len(grp.cards))}, grp.cards)
 		}
 
 		for _, c := range grp.cards {
@@ -869,7 +874,7 @@ func (g *Samba) cpuDiscard() {
 			if SambaIsWild(discarded) {
 				g.isFrozen = true
 			}
-			g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+			g.appendLog(g.currentPlayerIdx, "discard", "samba.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 			g.goOut(g.currentPlayerIdx)
 			return
 		}
@@ -883,7 +888,7 @@ func (g *Samba) cpuDiscard() {
 		g.isFrozen = true
 	}
 
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "samba.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 	g.advanceTurn()
 }
 
@@ -1208,7 +1213,7 @@ func (g *Samba) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 			team = i % SambaTeamCnt
 		}
 		teamRound[team] += score
-		g.appendLog(i, "score", fmt.Sprintf("%s contributes %d points to team %d", playerName(g.players, i), score, team), nil)
+		g.appendLog(i, "score", "samba.log.score", map[string]string{"name": playerName(g.players, i), "score": strconv.Itoa(score), "team": strconv.Itoa(team)}, nil)
 	}
 
 	for t := 0; t < SambaTeamCnt; t++ {
@@ -1233,7 +1238,7 @@ func (g *Samba) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 
 // endRoundDraw 山札切れによるラウンド終了
 func (g *Samba) endRoundDraw() {
-	g.appendLog(-1, "draw", "Round ends (stock empty)", nil)
+	g.appendLog(-1, "draw", "samba.log.roundEnd", nil, nil)
 	g.scoreRound(-1, 0)
 }
 
@@ -1275,7 +1280,7 @@ func (g *Samba) checkGameEnd() {
 			g.winnerIdx = t
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("Team %d wins the game!", g.winnerIdx), nil)
+	g.appendLog(-1, "game_end", "samba.log.gameEnd", map[string]string{"team": strconv.Itoa(g.winnerIdx)}, nil)
 }
 
 // --- Meld Validation ---
