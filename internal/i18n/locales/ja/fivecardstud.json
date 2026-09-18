@@ -58,5 +58,18 @@
   "helpExampleFold": "  f                    この手を降りる",
   "helpLog": "  l                    行動ログを表示",
   "sokoRanking": "役の強さ: {{list}}（【】が Soko 独自の 4 枚役。ワンペアとツーペアの間に入ります）",
-  "sokoRankingInserted": "【{{name}}】"
+  "sokoRankingInserted": "【{{name}}】",
+  "log.postsAnte": "アンテ{{amount}}を出す",
+  "log.bringsIn": "ブリングイン{{amount}}を出す",
+  "log.dealtThirdStreet": "サードストリートを配った",
+  "log.dealtFourthStreet": "フォースストリートを配った",
+  "log.dealtFifthStreet": "フィフスストリートを配った",
+  "log.showdown": "ショーダウン",
+  "log.fold": "フォールド",
+  "log.check": "チェック",
+  "log.call": "コール{{amount}}",
+  "log.bet": "ベット{{amount}}",
+  "log.raise": "{{amount}}にレイズ",
+  "log.allIn": "オールイン{{amount}}",
+  "log.rebuy": "リバイ"
 }

@@ -54,5 +54,17 @@
   "errContractNotHigher": "現在の宣言を上回る契約が必要です",
   "errInvalidCallSuit": "そのスートは呼べません",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errFollowLeadSuit": "リードスートに従ってください"
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.declares": "{{name}}が{{contract}}を宣言",
+  "log.passes": "{{name}}がパス",
+  "log.mustTakeRufspiel": "{{name}}がRufspielを引き受ける（全員パス）",
+  "log.takesContract": "{{name}}が契約を取る",
+  "log.playsContractAlone": "{{name}}が{{contract}}を単独でプレイ",
+  "log.playsAlone": "{{name}}が単独でプレイ",
+  "log.callsAce": "{{name}}が{{suit}}のエースを呼ぶ",
+  "log.playsCard": "{{name}}が{{card}}をプレイ",
+  "log.partnerRevealed": "{{name}}がピッカーの相棒だと判明",
+  "log.winsTrick": "{{name}}がトリック{{trick}}に勝つ（{{points}}点）",
+  "log.roundScore": "ラウンド{{round}}: ピッカー組{{points}}点（{{outcome}}、x{{multiplier}}）",
+  "log.winsGame": "{{name}}がゲームに勝利！"
 }

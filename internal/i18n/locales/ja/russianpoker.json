@@ -36,5 +36,21 @@
   "antePayoutLine": "アンテ払戻し: {{payout}}",
   "playPayoutLine": "プレイ払戻し: {{payout}}",
   "totalPayoutLine": "合計払戻し: {{payout}}",
-  "helpExampleBet": "  b 100                100 チップを賭ける"
+  "helpExampleBet": "  b 100                100 チップを賭ける",
+  "log.anteBet": "アンテ={{ante}}",
+  "log.exchange": "{{count}}枚交換、手数料={{fee}}",
+  "log.boughtSixthCard": "6枚目を購入、手数料={{fee}}",
+  "log.discard": "{{index}}番を捨てる",
+  "log.playBet": "プレイベット={{bet}}",
+  "log.playerFolds": "プレイヤーがフォールド",
+  "log.playerFolded": "プレイヤーがフォールドした",
+  "log.forceExchange": "ディーラーの最高カードを強制交換、手数料={{fee}}",
+  "log.declinedForceExchange": "強制交換を辞退した",
+  "log.dealerNotQualifiedDeclined": "ディーラーはクオリファイせず（辞退）",
+  "log.dealtFiveCards": "各プレイヤーに5枚配った",
+  "log.dealerNotQualified": "ディーラーはクオリファイしない",
+  "log.dealerStillNotQualified": "強制交換後もディーラーはクオリファイしない",
+  "log.playerWins": "プレイヤーの勝ち",
+  "log.push": "プッシュ",
+  "log.dealerWins": "ディーラーの勝ち"
 }
