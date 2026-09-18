@@ -1245,7 +1245,9 @@ func TestGinRummy_PlayerName(t *testing.T) {
 
 	log := g.GetActionLog()
 	assert.NotEmpty(t, log)
-	assert.Contains(t, log[0].Detail, "You")
+	assert.Equal(t, "ginrummy.log.drawStock", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"name": "You"}, log[0].DetailParams)
+	assert.Empty(t, log[0].Detail)
 }
 
 // --- Action log ---
@@ -1267,6 +1269,9 @@ func TestGinRummy_ActionLog(t *testing.T) {
 	assert.NotEmpty(t, log)
 	assert.Equal(t, "draw_stock", log[0].ActionType)
 	assert.Equal(t, 0, log[0].PlayerIdx)
+	assert.Equal(t, "ginrummy.log.drawStock", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"name": "You"}, log[0].DetailParams)
+	assert.Empty(t, log[0].Detail)
 }
 
 // --- scoreRound: gin, undercut, normal ---

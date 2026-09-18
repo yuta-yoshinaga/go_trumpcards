@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // SkatPlayerCnt 3 active players
@@ -231,7 +232,7 @@ func (s *Skat) startRound() {
 
 	s.round.phase = SkatPhaseBid
 
-	s.appendLog(-1, "round_start", fmt.Sprintf("Round %d: dealer=%s", s.round.roundNumber, playerName(s.players, s.round.dealerIdx)), nil)
+	s.appendLog(-1, "round_start", "skat.log.roundStart", map[string]string{"round": strconv.Itoa(s.round.roundNumber), "dealer": playerName(s.players, s.round.dealerIdx)}, nil)
 }
 
 // NextRound advances to the next round.
@@ -354,27 +355,25 @@ func (s *Skat) applyBidStep(actorIdx int, accept bool) {
 		// Bidder turn: call ladder[0] or pass.
 		if accept {
 			s.round.currentBid = SkatBidLadder[0]
-			s.appendLog(actorIdx, "bid_call",
-				fmt.Sprintf("%s calls %d", playerName(s.players, actorIdx), s.round.currentBid), nil)
+			s.appendLog(actorIdx, "bid_call", "skat.log.bidCall",
+				map[string]string{"name": playerName(s.players, actorIdx), "bid": strconv.Itoa(s.round.currentBid)}, nil)
 			s.round.bidStep = 1
 			return
 		}
 		// Bidder passed without calling.
 		s.round.passedAtCall[actorIdx] = true
-		s.appendLog(actorIdx, "bid_pass",
-			fmt.Sprintf("%s passes", playerName(s.players, actorIdx)), nil)
+		s.appendLog(actorIdx, "bid_pass", "skat.log.bidPass", map[string]string{"name": playerName(s.players, actorIdx)}, nil)
 		s.bidderDroppedOut()
 		return
 	}
 
 	// Responder turn.
 	if accept {
-		s.appendLog(actorIdx, "bid_yes",
-			fmt.Sprintf("%s answers yes at %d", playerName(s.players, actorIdx), s.round.currentBid), nil)
+		s.appendLog(actorIdx, "bid_yes", "skat.log.bidYes", map[string]string{"name": playerName(s.players, actorIdx), "bid": strconv.Itoa(s.round.currentBid)}, nil)
 		if s.round.bidStep < len(SkatBidLadder) {
 			s.round.currentBid = SkatBidLadder[s.round.bidStep]
-			s.appendLog(s.round.bidderIdx, "bid_call",
-				fmt.Sprintf("%s calls %d", playerName(s.players, s.round.bidderIdx), s.round.currentBid), nil)
+			s.appendLog(s.round.bidderIdx, "bid_call", "skat.log.bidCall",
+				map[string]string{"name": playerName(s.players, s.round.bidderIdx), "bid": strconv.Itoa(s.round.currentBid)}, nil)
 			s.round.bidStep++
 			return
 		}
@@ -385,8 +384,7 @@ func (s *Skat) applyBidStep(actorIdx int, accept bool) {
 
 	// Responder passes — bidder is round survivor.
 	s.round.passedAtCall[actorIdx] = true
-	s.appendLog(actorIdx, "bid_pass",
-		fmt.Sprintf("%s passes", playerName(s.players, actorIdx)), nil)
+	s.appendLog(actorIdx, "bid_pass", "skat.log.bidPass", map[string]string{"name": playerName(s.players, actorIdx)}, nil)
 	s.responderDroppedOut()
 }
 
@@ -442,8 +440,7 @@ func (s *Skat) declareDeclarer(idx int) {
 	s.round.declarerIdx = idx
 	s.players[idx].SetIsDeclarer(true)
 	s.players[idx].SetBid(s.round.currentBid)
-	s.appendLog(idx, "declarer",
-		fmt.Sprintf("%s wins the auction at %d", playerName(s.players, idx), s.round.currentBid), nil)
+	s.appendLog(idx, "declarer", "skat.log.declarer", map[string]string{"name": playerName(s.players, idx), "bid": strconv.Itoa(s.round.currentBid)}, nil)
 	s.round.phase = SkatPhaseSkatPickup
 }
 
@@ -485,16 +482,14 @@ func (s *Skat) applyPickSkat(pickup bool) {
 			declarer.AddCard(c)
 		}
 		s.sortHand(declarer)
-		s.appendLog(s.round.declarerIdx, "pick_skat",
-			fmt.Sprintf("%s picks up the skat", playerName(s.players, s.round.declarerIdx)), s.round.skat)
+		s.appendLog(s.round.declarerIdx, "pick_skat", "skat.log.pickSkat", map[string]string{"name": playerName(s.players, s.round.declarerIdx)}, s.round.skat)
 		s.round.skat = nil
 		s.round.phase = SkatPhaseDiscard
 		return
 	}
 
 	// Hand game — skat stays face-down; go straight to game declaration.
-	s.appendLog(s.round.declarerIdx, "hand_game",
-		fmt.Sprintf("%s plays a hand game", playerName(s.players, s.round.declarerIdx)), nil)
+	s.appendLog(s.round.declarerIdx, "hand_game", "skat.log.handGame", map[string]string{"name": playerName(s.players, s.round.declarerIdx)}, nil)
 	s.round.phase = SkatPhaseGameDeclaration
 }
 
@@ -547,9 +542,7 @@ func (s *Skat) applyDiscard(idxA, idxB int) {
 	cardLo := declarer.RemoveCard(lo)
 	s.round.skat = []*Card{cardLo, cardHi}
 	s.sortHand(declarer)
-	s.appendLog(s.round.declarerIdx, "discard",
-		fmt.Sprintf("%s discards 2 cards into the skat", playerName(s.players, s.round.declarerIdx)),
-		[]*Card{cardLo, cardHi})
+	s.appendLog(s.round.declarerIdx, "discard", "skat.log.discard", map[string]string{"name": playerName(s.players, s.round.declarerIdx)}, []*Card{cardLo, cardHi})
 	s.round.phase = SkatPhaseGameDeclaration
 }
 
@@ -596,8 +589,7 @@ func (s *Skat) applyGameDeclaration(gt SkatGameType, trumpSuit int) {
 	} else {
 		s.round.trumpSuit = 0
 	}
-	s.appendLog(s.round.declarerIdx, "declare_game",
-		fmt.Sprintf("%s declares %s", playerName(s.players, s.round.declarerIdx), s.gameTypeName()), nil)
+	s.appendLog(s.round.declarerIdx, "declare_game", "skat.log.declareGame", map[string]string{"name": playerName(s.players, s.round.declarerIdx), "game": s.gameTypeName()}, nil)
 	s.startPlay()
 }
 
@@ -666,8 +658,7 @@ func (s *Skat) CpuPlay() {
 // playCard appends the card to the current trick and advances the turn.
 func (s *Skat) playCard(playerIdx int, card *Card) {
 	s.round.currentTrick = append(s.round.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	s.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(s.players, playerIdx), cardStr(card)), []*Card{card})
+	s.appendLog(playerIdx, "play", "skat.log.play", map[string]string{"name": playerName(s.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 	if len(s.round.currentTrick) == SkatPlayerCnt {
 		s.round.phase = SkatPhaseTrickEnd
 		return
@@ -689,8 +680,7 @@ func (s *Skat) ResolveTrick() {
 	}
 	s.players[winnerIdx].AddTrick(cards)
 	s.players[winnerIdx].SetCardPoints(s.players[winnerIdx].GetCardPoints() + pts)
-	s.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d card points)", playerName(s.players, winnerIdx), s.round.trickNumber, pts), cards)
+	s.appendLog(winnerIdx, "trick_win", "skat.log.trickWin", map[string]string{"name": playerName(s.players, winnerIdx), "trick": strconv.Itoa(s.round.trickNumber), "points": strconv.Itoa(pts)}, cards)
 	s.round.leadPlayerIdx = winnerIdx
 	if s.round.trickNumber >= SkatTricksPerRound {
 		s.round.phase = SkatPhaseRoundEnd
@@ -743,19 +733,16 @@ func (s *Skat) ScoreRound() {
 		s.round.winnerSide = SkatWinnerDeclarer
 		declarer.SetRoundScore(gameValue)
 		declarer.IncRoundsWon()
-		s.appendLog(declarerIdx, "round_result",
-			fmt.Sprintf("%s wins (+%d)", playerName(s.players, declarerIdx), gameValue), nil)
+		s.appendLog(declarerIdx, "round_result", "skat.log.roundWin", map[string]string{"name": playerName(s.players, declarerIdx), "value": strconv.Itoa(gameValue)}, nil)
 	} else {
 		s.round.winnerSide = SkatWinnerDefenders
 		declarer.SetRoundScore(-gameValue)
 		declarer.IncRoundsLost()
-		s.appendLog(declarerIdx, "round_result",
-			fmt.Sprintf("%s loses (-%d)", playerName(s.players, declarerIdx), gameValue), nil)
+		s.appendLog(declarerIdx, "round_result", "skat.log.roundLoss", map[string]string{"name": playerName(s.players, declarerIdx), "value": strconv.Itoa(gameValue)}, nil)
 	}
 
 	declarer.CommitRoundScore()
-	s.appendLog(declarerIdx, "cumulative_score",
-		fmt.Sprintf("%s total=%d", playerName(s.players, declarerIdx), declarer.GetCumulativeScore()), nil)
+	s.appendLog(declarerIdx, "cumulative_score", "skat.log.cumulativeScore", map[string]string{"name": playerName(s.players, declarerIdx), "total": strconv.Itoa(declarer.GetCumulativeScore())}, nil)
 
 	s.checkGameEnd()
 }
@@ -1202,8 +1189,7 @@ func (s *Skat) checkGameEnd() {
 		if p.GetCumulativeScore() >= s.config.TargetScore {
 			s.round.gameEndFlag = true
 			s.round.phase = SkatPhaseGameEnd
-			s.appendLog(-1, "game_end",
-				fmt.Sprintf("%s reaches %d points and wins!", playerName(s.players, s.findIndex(p)), p.GetCumulativeScore()), nil)
+			s.appendLog(-1, "game_end", "skat.log.gameEnd", map[string]string{"name": playerName(s.players, s.findIndex(p)), "score": strconv.Itoa(p.GetCumulativeScore())}, nil)
 			return
 		}
 	}
@@ -1342,8 +1328,8 @@ func skatSuitName(suit int) string {
 }
 
 // appendLog appends an entry to the round action log.
-func (s *Skat) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.round.appendLog(playerIdx, actionType, detail, cards)
+func (s *Skat) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // sortAllHands sorts every player's hand.

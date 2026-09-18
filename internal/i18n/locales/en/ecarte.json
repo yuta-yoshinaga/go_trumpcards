@@ -53,5 +53,17 @@
   "errDiscardIndexInvalid": "The discard index is invalid.",
   "errCardIndexOutOfRange": "The card index is out of range.",
   "errCardNil": "The card is nil.",
-  "errFollowRule": "You must follow the rule to win when possible, including trumping."
+  "errFollowRule": "You must follow the rule to win when possible, including trumping.",
+  "log.trump": "Trump: {{card}}",
+  "log.kingTurn": "{{name}} scores the turned King (+1)",
+  "log.propose": "{{name}} proposes",
+  "log.stand": "{{name}} stands",
+  "log.refuse": "{{name}} refuses",
+  "log.accept": "{{name}} accepts",
+  "log.discard": "{{name}} exchanges {{count}} card(s)",
+  "log.king": "{{name}} declares the King of trumps (+1)",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.dealScore": "Deal {{deal}}: tricks {{tricks0}}-{{tricks1}}, deal {{deal0}}-{{deal1}} (match {{match0}}-{{match1}})",
+  "log.gameEnd": "Game end: {{score0}}-{{score1}}"
 }

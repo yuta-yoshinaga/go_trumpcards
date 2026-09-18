@@ -53,5 +53,17 @@
   "errDiscardIndexInvalid": "捨て札のインデックスが不正です",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errCardNil": "カードが nil です",
-  "errFollowRule": "フォロールール (勝てるなら勝つ・切り札) に従ってください"
+  "errFollowRule": "フォロールール (勝てるなら勝つ・切り札) に従ってください",
+  "log.trump": "切り札: {{card}}",
+  "log.kingTurn": "{{name}}が表向きのキングで1点獲得しました（+1）",
+  "log.propose": "{{name}}が交換を提案しました",
+  "log.stand": "{{name}}が勝負しました",
+  "log.refuse": "{{name}}が拒否しました",
+  "log.accept": "{{name}}が承諾しました",
+  "log.discard": "{{name}}が{{count}}枚交換しました",
+  "log.king": "{{name}}が手札の切り札のキングを宣言しました（+1）",
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.trickWin": "{{name}}が{{trick}}トリック目に勝ちました",
+  "log.dealScore": "ディール{{deal}}: トリック{{tricks0}}-{{tricks1}}、ディール得点{{deal0}}-{{deal1}}（マッチ{{match0}}-{{match1}}）",
+  "log.gameEnd": "ゲーム終了: {{score0}}-{{score1}}"
 }

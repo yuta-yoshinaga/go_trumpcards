@@ -59,5 +59,21 @@
   "errCannotRedoubleWithoutDouble": "You cannot redouble without a double.",
   "errCannotRedoubleOwnTeam": "You can only redouble the opponents' double.",
   "errCardIndexOutOfRange": "The card index is out of range.",
-  "errFollowLeadSuit": "You must follow the lead suit."
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "log.pass": "{{name}} passes",
+  "log.redeal": "All pass — redeal",
+  "log.bid": "{{name}} bids {{level}}{{suit}}",
+  "log.double": "{{name}} doubles",
+  "log.redouble": "{{name}} redoubles",
+  "log.contract": "Contract: {{level}}{{suit}} by {{name}}",
+  "log.doubled": "Doubled",
+  "log.redoubled": "Redoubled",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.tricks": "Declarer team tricks: {{declarer}} (needed: {{needed}})",
+  "log.contractMade": "Contract made! +{{points}} points for team {{team}}",
+  "log.contractDown": "Contract down {{undertricks}}! +{{points}} points for team {{team}}",
+  "log.teamScore": "Team {{team}}: {{points}} points (tricks: {{tricks}})",
+  "log.rubberEnd": "Team {{team}} wins the rubber!",
+  "log.play": "{{name}} plays {{card}}",
+  "log.dummyRevealed": "Dummy's hand (player {{player}}) is revealed"
 }

@@ -59,5 +59,21 @@
   "errCannotRedoubleWithoutDouble": "ダブルされていない状態ではリダブルできません",
   "errCannotRedoubleOwnTeam": "相手チームのダブルにのみリダブルできます",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errFollowLeadSuit": "リードスートに従ってください"
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.pass": "{{name}}がパスしました",
+  "log.redeal": "全員パス — リディールします",
+  "log.bid": "{{name}}が{{level}}{{suit}}をビッドしました",
+  "log.double": "{{name}}がダブルしました",
+  "log.redouble": "{{name}}がリダブルしました",
+  "log.contract": "コントラクト: {{level}}{{suit}}、{{name}}がデクレアラー",
+  "log.doubled": "ダブルされました",
+  "log.redoubled": "リダブルされました",
+  "log.trickWin": "{{name}}が{{trick}}トリック目に勝ちました",
+  "log.tricks": "デクレアラーチームのトリック: {{declarer}}（必要: {{needed}}）",
+  "log.contractMade": "コントラクト達成！チーム{{team}}に{{points}}点",
+  "log.contractDown": "コントラクトダウン{{undertricks}}！チーム{{team}}に{{points}}点",
+  "log.teamScore": "チーム{{team}}: {{points}}点（トリック: {{tricks}}）",
+  "log.rubberEnd": "チーム{{team}}がラバーに勝利しました！",
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.dummyRevealed": "ダミーの手札（プレイヤー{{player}}）が公開されました"
 }

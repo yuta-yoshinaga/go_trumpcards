@@ -54,5 +54,16 @@
   "errCardIndexOutOfRange": "The card index is out of range.",
   "errKnockDeadwoodTooHigh": "You cannot knock unless deadwood is at most {{threshold}} points (currently {{deadwood}} points).",
   "errDuplicateCardIndex": "Card indices cannot be duplicated.",
-  "errLayoffCardCannotAdd": "{{card}} cannot be added to a meld."
+  "errLayoffCardCannotAdd": "{{card}} cannot be added to a meld.",
+  "log.drawStock": "{{name}} draws from stock",
+  "log.drawDiscard": "{{name}} draws {{card}} from discard",
+  "log.discard": "{{name}} discards {{card}}",
+  "log.knock": "{{name}} knocks (deadwood: {{deadwood}})",
+  "log.gin": "{{name}} has Gin!",
+  "log.layoff": "{{name}} lays off {{card}}",
+  "log.scoreGin": "{{name}} scores {{total}} (Gin bonus {{bonus}} + deadwood {{deadwood}})",
+  "log.scoreUndercut": "{{name}} undercuts! Scores {{total}} (bonus {{bonus}} + difference {{difference}})",
+  "log.scoreKnock": "{{name}} scores {{total}} (deadwood difference)",
+  "log.roundDraw": "Round ends in a draw (stock empty)",
+  "log.gameEnd": "{{name}} wins the game!"
 }
