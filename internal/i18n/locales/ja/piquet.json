@@ -33,5 +33,6 @@
   "hintPlay": "ヒント: [{{idx}}] のカードをプレイ",
   "hintDiscard": "ヒント: 手札 {{idxs}} を捨ててください",
   "promptCardIndex": "プレイするカードのインデックス",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "log.carteBlanche": "カルトブランシュ +10", "log.deal": "ディール{{deal}}開始 (Elder={{elder}})", "log.partie": "パルティ終了", "log.elderExchange": "Elder交換 {{cards}}枚", "log.youngerExchange": "Younger交換 {{cards}}枚", "log.declare": "宣言結果 kind={{kind}} winner={{winner}} score={{score}}", "log.repique": "ルピーク +60", "log.play": "カードプレイ", "log.trickWin": "{{name}} wins trick {{trick}}", "log.trickPoint": "トリック点 +1", "log.lastTrickBonus": "最終トリックボーナス +1", "log.pique": "ピーク +30", "log.capot": "カポー +40", "log.cards": "カード +10", "log.round": "ディール{{deal}} 終了"
 }

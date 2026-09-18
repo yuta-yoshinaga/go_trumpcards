@@ -100,15 +100,26 @@ func TestPiquetResolveTrickLogsWinner(t *testing.T) {
 	if len(p.actionLog) < 2 {
 		t.Fatalf("action log length = %d, want trick result and point entries", len(p.actionLog))
 	}
-	entry := p.actionLog[0]
+	var entry *ActionLogEntry
+	for _, candidate := range p.actionLog {
+		if candidate.DetailCode == "piquet.log.trickWin" {
+			entry = candidate
+		}
+	}
+	if entry == nil {
+		t.Fatal("expected trick winner log")
+	}
 	if entry.ActionType != "trick_win" {
 		t.Errorf("action type = %q, want trick_win", entry.ActionType)
 	}
 	if entry.PlayerIdx != 1 {
 		t.Errorf("winner = %d, want 1", entry.PlayerIdx)
 	}
-	if entry.Detail != "CPU 1 wins trick 3" {
-		t.Errorf("detail = %q, want CPU 1 wins trick 3", entry.Detail)
+	if entry.DetailParams["name"] != "CPU 1" || entry.DetailParams["trick"] != "3" {
+		t.Errorf("detail params = %v, want CPU 1 / 3", entry.DetailParams)
+	}
+	if entry.Detail != "" {
+		t.Errorf("detail = %q, want empty", entry.Detail)
 	}
 	if len(entry.Cards) != 2 {
 		t.Errorf("cards = %d, want 2", len(entry.Cards))
@@ -603,6 +614,18 @@ func TestPlayCardLeadScoresAndAdvancesTurn(t *testing.T) {
 	}
 	if p.GetCurrentPlayerIdx() != 1 {
 		t.Errorf("turn not advanced: got %d", p.GetCurrentPlayerIdx())
+	}
+	var playLog *ActionLogEntry
+	for _, entry := range p.GetActionLog() {
+		if entry.DetailCode == "piquet.log.play" {
+			playLog = entry
+		}
+	}
+	if playLog == nil {
+		t.Fatal("expected play action log")
+	}
+	if playLog.Detail != "" || playLog.DetailParams != nil {
+		t.Fatalf("unexpected play log payload: code=%q params=%v detail=%q", playLog.DetailCode, playLog.DetailParams, playLog.Detail)
 	}
 }
 

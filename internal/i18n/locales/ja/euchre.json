@@ -51,5 +51,6 @@
   "errInvalidSuit": "無効なスートです",
   "errDealerMustChooseSuit": "ディーラーは必ずスートを選ばなければなりません",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errFollowLeadSuit": "リードスートに従ってください"
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.pass": "{{name}} がパスしました", "log.orderUpAlone": "{{name}} が{{card}}をオーダーアップしてゴーアローンしました", "log.orderUp": "{{name}} が{{card}}をオーダーアップしました", "log.callTrumpAlone": "{{name}} が{{suit}}を切り札に指定してゴーアローンしました", "log.callTrump": "{{name}} が{{suit}}を切り札に指定しました", "log.discard": "{{name}} がカードを1枚捨てました", "log.trickWin": "{{name}} が{{trick}}トリック目を取りました", "log.marchAlone": "チーム{{team}}がゴーアローンでマーチしました！ +4点", "log.march": "チーム{{team}}がマーチしました！ +2点", "log.makerWin": "チーム{{team}}がラウンドに勝利しました！ +1点", "log.euchred": "チーム{{makerTeam}}がユーカードされました！ チーム{{defenderTeam}} +2点", "log.teamScore": "チーム{{team}}: {{points}}点（トリック: {{tricks}}）", "log.play": "{{name}} が{{card}}をプレイしました", "log.gameEnd": "チーム{{team}}がゲームに勝利しました！"
 }

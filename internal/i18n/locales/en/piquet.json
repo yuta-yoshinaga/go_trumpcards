@@ -33,5 +33,6 @@
   "hintPlay": "Hint: play card [{{idx}}]",
   "hintDiscard": "Hint: discard cards {{idxs}}",
   "promptCardIndex": "card index to play",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "log.carteBlanche": "Carte Blanche +10", "log.deal": "Deal {{deal}} begins (Elder={{elder}})", "log.partie": "Partie ends", "log.elderExchange": "Elder exchanges {{cards}} cards", "log.youngerExchange": "Younger exchanges {{cards}} cards", "log.declare": "Declaration result kind={{kind}} winner={{winner}} score={{score}}", "log.repique": "Repique +60", "log.play": "Card played", "log.trickWin": "{{name}} wins trick {{trick}}", "log.trickPoint": "Trick point +1", "log.lastTrickBonus": "Last trick bonus +1", "log.pique": "Pique +30", "log.capot": "Capot +40", "log.cards": "Cards +10", "log.round": "Deal {{deal}} ends"
 }

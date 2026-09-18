@@ -4,8 +4,8 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // CoinchePlayerCnt コワンシュプレイヤー数
@@ -178,6 +178,10 @@ func (b *Coinche) Reset() {
 	}
 
 	b.beginRound()
+}
+
+func (b *Coinche) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NextRound 次のラウンドを開始する
@@ -377,15 +381,14 @@ func (b *Coinche) doBid(playerIdx, points, suit int) {
 	// **宣言のたびに連続パス数を戻す。** 戻さないと、競りの序盤に出た
 	// パスが後の宣言を追い越して競りを閉じてしまう。
 	b.bidPassCount = 0
-	b.appendLog(playerIdx, "bid",
-		fmt.Sprintf("%s bids %d in %s", playerName(b.players, playerIdx), points, suitStr(suit)), nil)
+	b.appendLog(playerIdx, "bid", "coinche.log.bid", map[string]string{"name": playerName(b.players, playerIdx), "points": strconv.Itoa(points), "suit": suitStr(suit)}, nil)
 	b.advanceBid()
 }
 
 // doPassBid パスを記録して手番を進める。
 func (b *Coinche) doPassBid(playerIdx int) {
 	b.bidPassCount++
-	b.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes", playerName(b.players, playerIdx)), nil)
+	b.appendLog(playerIdx, "pass", "coinche.log.pass", map[string]string{"name": playerName(b.players, playerIdx)}, nil)
 	b.advanceBid()
 }
 
@@ -411,18 +414,14 @@ func (b *Coinche) advanceBid() {
 		b.trumpSuit = b.cpuBestSuit(forced)
 		b.makerTeam = b.players[forced].GetTeam()
 		b.makerPlayerIdx = forced
-		b.appendLog(forced, "forced_bid",
-			fmt.Sprintf("%s must take %d in %s (all passed)",
-				playerName(b.players, forced), b.contractPoints, suitStr(b.trumpSuit)), nil)
+		b.appendLog(forced, "forced_bid", "coinche.log.forcedBid", map[string]string{"name": playerName(b.players, forced), "points": strconv.Itoa(b.contractPoints), "suit": suitStr(b.trumpSuit)}, nil)
 		b.closeBidding()
 	}
 }
 
 // closeBidding 競りを閉じ、コワンシュフェーズへ移る。
 func (b *Coinche) closeBidding() {
-	b.appendLog(b.makerPlayerIdx, "contract",
-		fmt.Sprintf("Contract: %d in %s by team %d",
-			b.contractPoints, suitStr(b.trumpSuit), b.makerTeam), nil)
+	b.appendLog(b.makerPlayerIdx, "contract", "coinche.log.contract", map[string]string{"points": strconv.Itoa(b.contractPoints), "suit": suitStr(b.trumpSuit), "team": strconv.Itoa(b.makerTeam)}, nil)
 	// 切り札が決まったので並べ直す。配った直後の並びは切り札を知らない。
 	b.sortAllHands()
 	b.detectBeloteHolder()
@@ -457,8 +456,7 @@ func (b *Coinche) PlayerCoinche() error {
 		return err
 	}
 	b.double = CoincheDoubleCoinche
-	b.appendLog(b.currentPlayerIdx, "coinche",
-		fmt.Sprintf("%s coinches (x2)", playerName(b.players, b.currentPlayerIdx)), nil)
+	b.appendLog(b.currentPlayerIdx, "coinche", "coinche.log.coinche", map[string]string{"name": playerName(b.players, b.currentPlayerIdx)}, nil)
 	// 倍化されたら、宣言側に再倍化の機会が回る。
 	b.currentPlayerIdx = b.makerPlayerIdx
 	return nil
@@ -470,8 +468,7 @@ func (b *Coinche) PlayerSurcoinche() error {
 		return err
 	}
 	b.double = CoincheDoubleSurcoinche
-	b.appendLog(b.currentPlayerIdx, "surcoinche",
-		fmt.Sprintf("%s surcoinches (x4)", playerName(b.players, b.currentPlayerIdx)), nil)
+	b.appendLog(b.currentPlayerIdx, "surcoinche", "coinche.log.surcoinche", map[string]string{"name": playerName(b.players, b.currentPlayerIdx)}, nil)
 	b.startPlayPhase()
 	return nil
 }
@@ -530,13 +527,13 @@ func (b *Coinche) CpuDouble() {
 	}
 	if b.double == CoincheDoubleNone && b.players[idx].GetTeam() != b.makerTeam && b.cpuWantsCoinche(idx) {
 		b.double = CoincheDoubleCoinche
-		b.appendLog(idx, "coinche", fmt.Sprintf("%s coinches (x2)", playerName(b.players, idx)), nil)
+		b.appendLog(idx, "coinche", "coinche.log.coinche", map[string]string{"name": playerName(b.players, idx)}, nil)
 		b.currentPlayerIdx = b.makerPlayerIdx
 		return
 	}
 	if b.double == CoincheDoubleCoinche && b.players[idx].GetTeam() == b.makerTeam && b.cpuWantsSurcoinche(idx) {
 		b.double = CoincheDoubleSurcoinche
-		b.appendLog(idx, "surcoinche", fmt.Sprintf("%s surcoinches (x4)", playerName(b.players, idx)), nil)
+		b.appendLog(idx, "surcoinche", "coinche.log.surcoinche", map[string]string{"name": playerName(b.players, idx)}, nil)
 	}
 	b.startPlayPhase()
 }
@@ -609,8 +606,7 @@ func (b *Coinche) ResolveTrick() {
 	b.roundPoints[b.players[winnerIdx].GetTeam()] += trickPoints
 
 	winnerName := playerName(b.players, winnerIdx)
-	b.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pts)", winnerName, b.trickNumber, trickPoints),
+	b.appendLog(winnerIdx, "trick_win", "coinche.log.trickWin", map[string]string{"name": winnerName, "trick": strconv.Itoa(b.trickNumber), "points": strconv.Itoa(trickPoints)},
 		trickCards)
 
 	b.leadPlayerIdx = winnerIdx
@@ -619,8 +615,7 @@ func (b *Coinche) ResolveTrick() {
 	if b.trickNumber >= CoincheHandSize {
 		// Dix de Der
 		b.roundPoints[b.players[winnerIdx].GetTeam()] += b.config.DixDeDer
-		b.appendLog(winnerIdx, "dix_de_der",
-			fmt.Sprintf("%s wins last trick +%d (Dix de Der)", winnerName, b.config.DixDeDer), nil)
+		b.appendLog(winnerIdx, "dix_de_der", "coinche.log.dixDeDer", map[string]string{"name": winnerName, "points": strconv.Itoa(b.config.DixDeDer)}, nil)
 		b.phase = CoinchePhaseRoundEnd
 	} else {
 		b.phase = CoinchePhaseTrickEnd
@@ -668,9 +663,7 @@ func (b *Coinche) ScoreRound() {
 	if made {
 		gain := (b.contractPoints + makerCardPts) * mult
 		b.teamScores[maker] += gain
-		b.appendLog(-1, "contract_made",
-			fmt.Sprintf("Team %d makes %d (took %d, x%d): +%d",
-				maker, b.contractPoints, makerCardPts, mult, gain), nil)
+		b.appendLog(-1, "contract_made", "coinche.log.contractMade", map[string]string{"team": strconv.Itoa(maker), "contract": strconv.Itoa(b.contractPoints), "taken": strconv.Itoa(makerCardPts), "multiplier": strconv.Itoa(mult), "gain": strconv.Itoa(gain)}, nil)
 	} else {
 		// **dedans は総取り。** 守備側が「場の総点 + 契約」を倍率込みで取り、
 		// 宣言側は 0。取ったカード点は宣言側に残らない。
@@ -678,24 +671,19 @@ func (b *Coinche) ScoreRound() {
 		// 直接書くと設定を変えたときだけ精算が静かにずれる。
 		gain := (CoincheRoundCardPointsTotal + b.config.DixDeDer + b.contractPoints) * mult
 		b.teamScores[defender] += gain
-		b.appendLog(-1, "dedans",
-			fmt.Sprintf("Team %d is dedans on %d (took %d, x%d): team %d +%d",
-				maker, b.contractPoints, makerCardPts, mult, defender, gain), nil)
+		b.appendLog(-1, "dedans", "coinche.log.dedans", map[string]string{"team": strconv.Itoa(maker), "contract": strconv.Itoa(b.contractPoints), "taken": strconv.Itoa(makerCardPts), "multiplier": strconv.Itoa(mult), "defender": strconv.Itoa(defender), "gain": strconv.Itoa(gain)}, nil)
 	}
 
 	// **Belote/Rebelote は契約の成否と無関係。** 宣言した側のチームに残る。
 	for ti := range CoincheTeamCnt {
 		if bonus := b.roundBeloteBonus[ti]; bonus > 0 {
 			b.teamScores[ti] += bonus
-			b.appendLog(-1, "belote_bonus",
-				fmt.Sprintf("Team %d keeps Belote/Rebelote: +%d", ti, bonus), nil)
+			b.appendLog(-1, "belote_bonus", "coinche.log.beloteBonus", map[string]string{"team": strconv.Itoa(ti), "bonus": strconv.Itoa(bonus)}, nil)
 		}
 	}
 
 	for ti := range CoincheTeamCnt {
-		b.appendLog(-1, "team_score",
-			fmt.Sprintf("Team %d: %d card points (total %d)",
-				ti, b.roundPoints[ti], b.teamScores[ti]), nil)
+		b.appendLog(-1, "team_score", "coinche.log.teamScore", map[string]string{"team": strconv.Itoa(ti), "points": strconv.Itoa(b.roundPoints[ti]), "total": strconv.Itoa(b.teamScores[ti])}, nil)
 	}
 
 	b.checkGameEnd()
@@ -976,8 +964,7 @@ func (b *Coinche) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	b.maybeDeclareBeloteRebelote(playerIdx, card)
-	b.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(b.players, playerIdx), cardStr(card)), []*Card{card})
+	b.appendLog(playerIdx, "play", "coinche.log.play", map[string]string{"name": playerName(b.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(b.currentTrick) == CoinchePlayerCnt {
 		b.phase = CoinchePhaseTrickEnd
@@ -1009,9 +996,7 @@ func (b *Coinche) maybeDeclareBeloteRebelote(playerIdx int, card *Card) {
 		team := b.players[playerIdx].GetTeam()
 		b.roundBeloteBonus[team] += CoincheRebeloteBonus
 		b.beloteDeclared = true
-		b.appendLog(playerIdx, "belote_rebelote",
-			fmt.Sprintf("%s declares Belote/Rebelote (+%d)",
-				playerName(b.players, playerIdx), CoincheRebeloteBonus), nil)
+		b.appendLog(playerIdx, "belote_rebelote", "coinche.log.beloteRebelote", map[string]string{"name": playerName(b.players, playerIdx), "points": strconv.Itoa(CoincheRebeloteBonus)}, nil)
 	}
 }
 
@@ -1193,8 +1178,7 @@ func (b *Coinche) checkGameEnd() {
 			} else {
 				b.winnerTeam = 1
 			}
-			b.appendLog(-1, "game_end",
-				fmt.Sprintf("Team %d wins the game!", b.winnerTeam), nil)
+			b.appendLog(-1, "game_end", "coinche.log.gameEnd", map[string]string{"team": strconv.Itoa(b.winnerTeam)}, nil)
 			return
 		}
 	}
