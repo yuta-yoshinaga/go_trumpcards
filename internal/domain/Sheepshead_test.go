@@ -206,6 +206,18 @@ func TestSheepshead_PickFlow(t *testing.T) {
 	if g.GetPhase() != SheepsheadPhaseBury {
 		t.Errorf("phase = %v, want Bury", g.GetPhase())
 	}
+	var pickLog *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "sheepshead.log.pick" {
+			pickLog = entry
+		}
+	}
+	if pickLog == nil {
+		t.Fatal("pick action log not found")
+	}
+	if pickLog.Detail != "" || pickLog.DetailCode != "sheepshead.log.pick" {
+		t.Fatalf("pick log = %#v, want code with empty detail", pickLog)
+	}
 }
 
 func TestSheepshead_PassThenForcedPick(t *testing.T) {

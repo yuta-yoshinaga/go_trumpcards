@@ -33,5 +33,17 @@
   "errFollowLeadSuit": "リードスートに従ってください",
   "errMustHead": "勝てる札を出す必要があります (マストヘッド)",
   "errPlayTrump": "切り札を出してください",
-  "errMustHeadTrump": "勝てる切り札を出す必要があります (マストヘッド)"
+  "errMustHeadTrump": "勝てる切り札を出す必要があります (マストヘッド)",
+  "log.ante": "各プレイヤーが{{ante}}をアンティとして支払い、ポットは{{pot}}",
+  "log.trumpSet": "切り札は{{suit}}（めくり札{{turnUp}}）",
+  "log.decidePlay": "{{name}}が参加",
+  "log.decidePass": "{{name}}が降りる",
+  "log.allPass": "全員が降りたため、ポットを繰り越し",
+  "log.walkover": "{{name}}だけが参加し、ポットを獲得",
+  "log.play": "{{name}}が{{card}}を出す",
+  "log.trickWin": "{{name}}がトリック{{trick}}に勝つ",
+  "log.settleNoPlayers": "参加者なし。ポット{{pot}}を繰り越し",
+  "log.settleWinner": "{{name}}がポット全額{{pot}}を獲得",
+  "log.looed": "{{name}}がルーとなり{{penalty}}をポットへ支払う",
+  "log.cumulativeChips": "{{name}}: 合計={{total}}"
 }

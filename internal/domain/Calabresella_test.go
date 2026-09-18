@@ -156,6 +156,9 @@ func TestCalabresella_MonteTakeLogRevealsCards(t *testing.T) {
 		}
 	}
 	require.NotNil(t, monteEntry, "monte_take entry must be logged")
+	assert.Equal(t, "calabresella.log.monteTake", monteEntry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "CPU 1"}, monteEntry.DetailParams)
+	assert.Empty(t, monteEntry.Detail)
 	assert.Len(t, monteEntry.Cards, domain.CalabresellaMonteSize)
 	for _, c := range monteEntry.Cards {
 		assert.NotNil(t, c)

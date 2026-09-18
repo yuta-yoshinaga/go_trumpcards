@@ -75,5 +75,16 @@
   "errInvalidSuit": "スートを選んでください (1..4)",
   "errOwnAceCannotBeCalled": "自分が持っているエースと切り札のエースは呼べません",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errFollowLeadSuit": "リードスートに従ってください"
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.bidPass": "{{name}}がパス",
+  "log.bid": "{{name}}が{{bid}}をビッド（切り札{{trump}}）",
+  "log.declarer": "{{name}}が{{bid}}を宣言（切り札{{trump}}）",
+  "log.mussfrage": "全員パス: {{name}}がムスフラーゲを引き受ける",
+  "log.playsAlone": "{{name}}が呼べるエースをすべて持ち、フラーゲを単独でプレイ",
+  "log.callAce": "{{name}}が{{suit}}のエースを呼ぶ",
+  "log.play": "{{name}}が{{card}}を出す",
+  "log.partnerRevealed": "{{name}}が呼ばれた{{suit}}のエースを持つジャーマン・ソロの相棒と判明",
+  "log.trickWin": "{{name}}がトリック{{trick}}に勝つ",
+  "log.roundScore": "ラウンド{{round}}: {{name}}は{{outcome}}（{{tricks}}/{{total}}トリック、必要{{needed}}、ステーク={{stake}}）",
+  "log.gameEnd": "{{name}}がマッチに勝利！"
 }

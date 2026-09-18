@@ -103,6 +103,15 @@ func TestTysiac_Bidding_RaiseAndPass(t *testing.T) {
 	base := g.GetCurrentBid()
 	require.NoError(t, g.PlayerBid(true))
 	assert.Equal(t, base+domain.TysiacBidStep, g.GetCurrentBid())
+	var bidLog *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "tysiac.log.bid" {
+			bidLog = entry
+		}
+	}
+	require.NotNil(t, bidLog)
+	assert.Equal(t, map[string]string{"name": "You", "bid": "110"}, bidLog.DetailParams)
+	assert.Empty(t, bidLog.Detail)
 
 	// Not human turn -> error.
 	if !g.GetPlayer(g.GetCurrentPlayerIdx()).GetIsHuman() {

@@ -44,5 +44,14 @@
   "helpHint": "  h                         助言を表示",
   "errBidMustExceed": "現在の最高ビッドを上回る宣言が必要です",
   "errDiscardCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errPlayCardIndexOutOfRange": "カードインデックスが範囲外です"
+  "errPlayCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "log.bidPass": "{{name}}がパス",
+  "log.bid": "{{name}}が{{bid}}をビッド",
+  "log.soloist": "{{name}}が{{bid}}でソリストになる",
+  "log.monteTake": "{{name}}がモンテを取る",
+  "log.discard": "{{name}}が{{card}}を捨てる",
+  "log.play": "{{name}}が{{card}}を出す",
+  "log.trickWin": "{{name}}がトリック{{trick}}に勝つ（+{{points}}/3{{bonus}}）",
+  "log.roundScore": "ラウンド{{round}}: ソリスト({{name}}) {{result}}（{{points}}/3、ステーク={{stake}}）",
+  "log.gameEnd": "{{name}}がマッチに勝利！"
 }

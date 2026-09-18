@@ -42,5 +42,15 @@
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errFollowLeadSuit": "リードスートに従ってください",
   "errMustPlayTrump": "切り札を出してください",
-  "errMustOvertrump": "高い切り札で勝ってください"
+  "errMustOvertrump": "高い切り札で勝ってください",
+  "log.bid": "{{name}}が{{bid}}をビッド",
+  "log.bidPass": "{{name}}がパス",
+  "log.declarer": "{{name}}が{{contract}}のコントラクトで宣言者になる",
+  "log.talonTake": "{{name}}がタロンを取る",
+  "log.discard": "{{from}}が{{to}}にカードを渡す",
+  "log.marriage": "{{name}}が{{suit}}のマリッジを宣言（+{{points}}、切り札={{suit}}）",
+  "log.play": "{{name}}が{{card}}を出す",
+  "log.trickWin": "{{name}}がトリック{{trick}}に勝つ（+{{points}}）",
+  "log.roundScore": "ラウンド{{round}}の得点: 宣言者({{declarer}}) コントラクト={{contract}}",
+  "log.gameEnd": "{{name}}がマッチに勝利！"
 }
