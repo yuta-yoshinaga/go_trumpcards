@@ -328,7 +328,7 @@ func (a *AllFours) PlayerPlay(cardIndex int) error {
 	}
 	player := a.players[a.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "allfours.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := a.validatePlay(a.currentPlayerIdx, card); err != nil {
@@ -386,7 +386,7 @@ func (a *AllFours) validatePlay(playerIdx int, card *Card) error {
 		return nil // トランプはいつでも合法
 	}
 	if a.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従うかトランプを切ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "allfours.errMustFollowLeadSuit", nil)
 	}
 	return nil
 }

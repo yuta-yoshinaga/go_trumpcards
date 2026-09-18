@@ -129,6 +129,13 @@ func TestPasurWebPresenterMessages(t *testing.T) {
 		assert.Empty(t, m["messageCode"])
 	})
 
+	t.Run("コード付きエラーはコードを返す", func(t *testing.T) {
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "pasur.errCardIndexOutOfRange", nil)
+		m := decodePasur(t, p.Output(newPasurForWeb(t), err))
+		assert.Empty(t, m["message"])
+		assert.Equal(t, "pasur.errCardIndexOutOfRange", m["messageCode"])
+	})
+
 	t.Run("プレイ中は場と山札の枚数を出す", func(t *testing.T) {
 		m := decodePasur(t, p.Output(newPasurForWeb(t), nil))
 		assert.Equal(t, "pasur.play", m["messageCode"])

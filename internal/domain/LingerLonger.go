@@ -221,14 +221,14 @@ func (l *LingerLonger) play(playerIdx, cardIndex int) error {
 	}
 	if !lingerLongerContains(l.GetValidPlayIndices(playerIdx), cardIndex) {
 		if cardIndex < 0 || cardIndex >= l.players[playerIdx].GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "lingerlonger.errCardIndexOutOfRange", nil)
 		}
 		return errors.New("must follow the led suit")
 	}
 
 	card := l.players[playerIdx].RemoveCard(cardIndex)
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードがありません")
+		return NewDomainErrorCode(ErrInvalidCard, "lingerlonger.errCardMissing", nil)
 	}
 	l.currentTrick = append(l.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	l.addLog(playerIdx, "play", "カードを出しました", []*Card{card})

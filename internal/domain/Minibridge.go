@@ -515,7 +515,7 @@ func (m *Minibridge) play(playerIdx, cardIndex int) error {
 	}
 	p := m.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= p.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "minibridge.errCardIndexOutOfRange", nil)
 	}
 	if !minibridgeContains(m.GetValidPlayIndices(playerIdx), cardIndex) {
 		return errors.New("must follow the led suit")
@@ -523,7 +523,7 @@ func (m *Minibridge) play(playerIdx, cardIndex int) error {
 
 	card := p.RemoveCard(cardIndex)
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードがありません")
+		return NewDomainErrorCode(ErrInvalidCard, "minibridge.errCardMissing", nil)
 	}
 	m.currentTrick = append(m.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	m.addLog(playerIdx, "play", "カードを出しました", []*Card{card})

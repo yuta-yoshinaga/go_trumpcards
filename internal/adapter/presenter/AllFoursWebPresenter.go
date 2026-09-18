@@ -139,6 +139,9 @@ func (p *AllFoursWebPresenter) buildRoundBreakdown(s interfaces.AllFoursGame) *c
 // buildMessage ゲーム結果メッセージを構築
 func (p *AllFoursWebPresenter) buildMessage(s interfaces.AllFoursGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if s.GetGameEndFlag() {

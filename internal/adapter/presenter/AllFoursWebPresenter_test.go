@@ -99,6 +99,15 @@ func TestAllFoursWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "invalid play", resObj.Message)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupAllFoursWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "allfours.errCardIndexOutOfRange", nil)
+		var resObj controller.AllFoursWebOutput
+		require.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "allfours.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end shows winner code", func(t *testing.T) {
 		m, _ := setupAllFoursWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

@@ -16,10 +16,10 @@ const SCAN_ROOT = path.join(ROOT, 'internal');
 
 // この天井は、既存のドメイン日本語文言を別 PR で翻訳するまで増加を防ぐためのもの。
 // 件数が減ったら、実測値に合わせてこの定数を下げる。
-// 内訳: 素のリテラル 26 / fmt.Sprintf 0 / 複数行 0. (実測)
-const JAPANESE_LITERAL_CEILING = 26;
-// floor.mjs の指針どおり現在値の約 2/3 (26 × 2/3 ≈ 17)。天井が下がり続けるため、floor も追随して下げる。
-const JAPANESE_LITERAL_FLOOR = 17;
+// 内訳: 素のリテラル 14 / fmt.Sprintf 0 / 複数行 0. (実測)
+const JAPANESE_LITERAL_CEILING = 14;
+// floor.mjs の指針どおり現在値の約 2/3 (14 × 2/3 ≈ 9)。天井が下がり続けるため、floor も追随して下げる。
+const JAPANESE_LITERAL_FLOOR = 9;
 
 async function goFiles(dir) {
   const files = [];

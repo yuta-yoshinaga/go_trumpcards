@@ -122,6 +122,13 @@ func TestMinibridgeWebPresenterMessages(t *testing.T) {
 		assert.Empty(t, m["messageCode"])
 	})
 
+	t.Run("コード付きエラーはコードを返す", func(t *testing.T) {
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "minibridge.errCardIndexOutOfRange", nil)
+		m := decodeMinibridge(t, p.Output(newMinibridgeForWeb(t), err))
+		assert.Empty(t, m["message"])
+		assert.Equal(t, "minibridge.errCardIndexOutOfRange", m["messageCode"])
+	})
+
 	for _, tc := range []struct {
 		name string
 		decl int

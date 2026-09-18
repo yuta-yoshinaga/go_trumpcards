@@ -3613,7 +3613,19 @@
     "zwanzigerrufen.result.scores": "Game over! Scores: {{scores}}",
     "tapptarock.result.scores": "Game over! Scores: {{scores}}",
     "zwicker.lose": "The other team wins",
-    "zwicker.win": "Your team wins"
+    "zwicker.win": "Your team wins",
+    "minibridge.errCardIndexOutOfRange": "The card index is out of range.",
+    "minibridge.errCardMissing": "The card is missing.",
+    "lingerlonger.errCardIndexOutOfRange": "The card index is out of range.",
+    "lingerlonger.errCardMissing": "The card is missing.",
+    "pasur.errCardIndexOutOfRange": "The card index is out of range.",
+    "pasur.errCardMissing": "The card is missing.",
+    "solowhist.errBidMustExceed": "Your bid must exceed the current bid.",
+    "solowhist.errCardIndexOutOfRange": "The card index is out of range.",
+    "twotenjack.errInvalidTrumpSuit": "The trump suit is invalid.",
+    "twotenjack.errCardIndexOutOfRange": "The card index is out of range.",
+    "allfours.errCardIndexOutOfRange": "The card index is out of range.",
+    "allfours.errMustFollowLeadSuit": "You must follow the lead suit or play a trump card."
   },
   "manual": {
     "ariaLabel": "Game Manual",

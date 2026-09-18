@@ -23,5 +23,7 @@
   "helpHint": "  h                    助言を表示",
   "gameEndLastTrickYou": "ゲーム終了！ 全員が同時に手札を出し切り、あなたが最後のトリックを取りました。",
   "gameEndLastTrickCpu": "ゲーム終了！ 全員が同時に手札を出し切り、{{name}} が最後のトリックを取りました。",
-  "gameEndGiveUp": "ゲーム終了！ あなたが投了し、{{name}} の勝ちです。"
+  "gameEndGiveUp": "ゲーム終了！ あなたが投了し、{{name}} の勝ちです。",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errCardMissing": "カードがありません"
 }

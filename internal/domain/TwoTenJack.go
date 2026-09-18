@@ -154,7 +154,7 @@ func (t *TwoTenJack) PlayerDeclareTrump(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if !isValidTwoTenJackSuit(suit) {
-		return NewDomainError(ErrInvalidPlay, "トランプスートが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "twotenjack.errInvalidTrumpSuit", nil)
 	}
 
 	t.trumpSuit = suit
@@ -197,7 +197,7 @@ func (t *TwoTenJack) PlayerPlay(cardIndex int) error {
 
 	player := t.players[t.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "twotenjack.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
