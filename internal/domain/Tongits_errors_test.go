@@ -20,13 +20,22 @@ func assertTongitsDomainError(t *testing.T, err error, sentinel error, code stri
 	assert.Equal(t, code, de.MessageCode())
 }
 
-func tongitsErrorGame() *domain.Tongits {
+func tongitsErrorGame(t *testing.T) *domain.Tongits {
+	t.Helper()
 	g := domain.NewDefaultTongits()
-	g.Reset()
-	g.SetCurrentPlayerIdx(0)
-	g.SetPhase(domain.TongitsPhaseDiscard)
-	g.GetPlayer(0).Reset()
-	return g
+	for attempts := 0; attempts < 1000; attempts++ {
+		// Reset calls checkTongitsOnDeal, so an initial Tongits deal sets gameEndFlag.
+		// Re-deal until the game remains active for these error-path assertions.
+		g.Reset()
+		if !g.GetGameEndFlag() {
+			g.SetCurrentPlayerIdx(0)
+			g.SetPhase(domain.TongitsPhaseDiscard)
+			g.GetPlayer(0).Reset()
+			return g
+		}
+	}
+	t.Fatalf("failed to deal a Tongits game without ending on deal after 1000 attempts")
+	return nil
 }
 
 func TestTongitsDomainErrorsHaveMessageCodes(t *testing.T) {
@@ -58,7 +67,7 @@ func TestTongitsDomainErrorsHaveMessageCodes(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := tongitsErrorGame()
+			g := tongitsErrorGame(t)
 			if tt.setup != nil {
 				tt.setup(g)
 			}
@@ -66,7 +75,7 @@ func TestTongitsDomainErrorsHaveMessageCodes(t *testing.T) {
 		})
 	}
 
-	g := tongitsErrorGame()
+	g := tongitsErrorGame(t)
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
 	g.GetPlayer(1).AppendMeld([]*domain.Card{
 		domain.NewCard(domain.CardDesignSpade, 7, false),
