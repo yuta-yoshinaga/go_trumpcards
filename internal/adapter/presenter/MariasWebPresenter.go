@@ -101,6 +101,9 @@ func (p *MariasWebPresenter) buildPlayersOutput(g interfaces.MariasGame) []*cont
 // buildMessage ゲーム結果メッセージを構築
 func (p *MariasWebPresenter) buildMessage(g interfaces.MariasGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

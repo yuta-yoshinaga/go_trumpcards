@@ -27,5 +27,8 @@
   "helpExamplePlay": "  play 0                   play hand card 0",
   "helpExampleNext": "  n                        read the trick result, then start the next trick",
   "helpHint": "  h                         show a hint",
-  "trumpRule": "(Trump is the Soloist’s longest suit, chosen automatically)"
+  "trumpRule": "(Trump is the Soloist’s longest suit, chosen automatically)",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errMustFollowSuit": "Follow the led suit.",
+  "errMustPlayTrump": "You must play a trump."
 }

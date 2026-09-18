@@ -140,6 +140,15 @@ func TestSpoilFiveWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("game coded error uses message code", func(t *testing.T) {
+		m, _ := setupSpoilFiveWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "spoilfive.errCardIndexOutOfRange", nil)
+		var resObj controller.SpoilFiveWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "spoilfive.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupSpoilFiveWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

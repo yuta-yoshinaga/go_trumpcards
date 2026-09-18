@@ -157,11 +157,11 @@ func TestNapWebPresenter_Output(t *testing.T) {
 
 	t.Run("coded error uses message code", func(t *testing.T) {
 		m, _ := setupNapWebMockWithPlayers()
-		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "shared.errCardIndexOutOfRange", nil)
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "nap.errCardIndexOutOfRange", nil)
 		var resObj controller.NapWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
 		assert.Empty(t, resObj.Message)
-		assert.Equal(t, "shared.errCardIndexOutOfRange", resObj.MessageCode)
+		assert.Equal(t, "nap.errCardIndexOutOfRange", resObj.MessageCode)
 	})
 
 	t.Run("game end human wins", func(t *testing.T) {

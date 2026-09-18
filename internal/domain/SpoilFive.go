@@ -171,7 +171,7 @@ func (g *SpoilFive) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "spoilfive.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -337,11 +337,11 @@ func (g *SpoilFive) validatePlay(playerIdx int, card *Card) error {
 	// 義務札がある: フォローしているか (切り札リードなら切り札、非切り札なら同スート) を確認。
 	if leadIsTrump {
 		if !g.isTrumpCard(card) {
-			return NewDomainError(ErrInvalidPlay, "切り札に従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "spoilfive.errMustFollowTrump", nil)
 		}
 	} else {
 		if card.GetDesign() != leadSuit || g.isTrumpCard(card) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "spoilfive.errMustFollowSuit", nil)
 		}
 	}
 	return nil
