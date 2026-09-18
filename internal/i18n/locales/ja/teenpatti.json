@@ -39,5 +39,16 @@
   "errRaiseMustExceedStake": "レイズは現在の賭け単位より大きくする必要があります",
   "errShowRequiresTwoSeen": "Show は残り 2 人かつ Seen のときのみ要求できます",
   "errSideShowRequiresSeen": "サイドショーは Seen 同士・残り 3 人以上のときのみ申請できます",
-  "errInsufficientChips": "チップが不足しています"
+  "errInsufficientChips": "チップが不足しています",
+  "log.gameEnd": "{{name}}がマッチに勝利",
+  "log.deal": "{{round}}回目のディール: アンティ{{ante}}、ポット{{pot}}",
+  "log.see": "{{name}}が手札を確認",
+  "log.sideShowRequest": "{{name}}が{{target}}にサイドショーを申請",
+  "log.sideShowAccept": "{{name}}が承諾し、{{loser}}がサイドショーに敗北",
+  "log.sideShowDecline": "{{name}}がサイドショーを拒否",
+  "log.bet": "{{name}}が{{amount}}をベット (ポット{{pot}})",
+  "log.raise": "{{name}}が{{raise}}にレイズし、{{amount}}をベット (ポット{{pot}})",
+  "log.fold": "{{name}}がフォールド",
+  "log.show": "{{name}}が確認のため{{amount}}を支払い (ポット{{pot}})",
+  "log.win": "{{name}}がポットを獲得 ({{pot}})"
 }

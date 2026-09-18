@@ -44,5 +44,16 @@
   "deadwoodLine": "Deadwood: {{value}} (knock at {{threshold}} or less)",
   "knockReady": "→ ready to knock",
   "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
-  "helpExampleDiscard": "  d 0                  discard hand card 0"
+  "helpExampleDiscard": "  d 0                  discard hand card 0",
+  "log.drawStock": "{{name}} draws from stock",
+  "log.drawDiscard": "{{name}} draws {{card}} from discard",
+  "log.discard": "{{name}} discards {{card}}",
+  "log.knock": "{{name}} knocks (deadwood: {{deadwood}})",
+  "log.layoff": "{{name}} lays off {{card}}",
+  "log.score": "{{name}} scores {{score}} (total {{total}})",
+  "log.eliminate": "{{name}} is eliminated ({{score}})",
+  "log.draw": "Round ends (stock exhausted)",
+  "log.chinchon": "{{name}} declares Chinchón and wins the game!",
+  "log.gameEnd": "{{name}} wins the match!",
+  "log.gameEndNoSurvivor": "Match ends with no survivor"
 }

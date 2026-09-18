@@ -55,5 +55,18 @@
   "errDiscardThreeCards": "3枚捨ててください",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errDuplicateCard": "同じカードは選べません",
-  "errFollowLeadSuit": "リードスートに従ってください"
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.bid": "{{name}}が{{bid}}をビッド",
+  "log.pass": "{{name}}がパス",
+  "log.redeal": "全員がパス。再ディールします。",
+  "log.winBid": "{{name}}が契約を獲得: {{bid}}",
+  "log.exchange": "{{name}}が{{cards}}枚を捨てた",
+  "log.play": "{{name}}が{{card}}を出した",
+  "log.trickWin": "{{name}}が{{trick}}トリックに勝利",
+  "log.misereMade": "チーム{{team}}がミゼール達成！ +{{points}}",
+  "log.misereFailed": "チーム{{team}}がミゼール失敗 ({{tricks}}トリック)。 -{{points}}",
+  "log.contractMade": "チーム{{team}}が契約達成 ({{tricks}}トリック)。 +{{points}}",
+  "log.contractFailed": "チーム{{team}}がセット ({{tricks}}/{{needed}}トリック)。 -{{points}}",
+  "log.teamScore": "チーム{{team}}: {{score}}点",
+  "log.gameEnd": "チーム{{team}}がゲームに勝利！"
 }

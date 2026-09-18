@@ -55,5 +55,18 @@
   "errDiscardThreeCards": "You must discard three cards.",
   "errCardIndexOutOfRange": "The card index is out of range.",
   "errDuplicateCard": "You cannot select the same card twice.",
-  "errFollowLeadSuit": "You must follow the lead suit."
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "log.bid": "{{name}} bids {{bid}}",
+  "log.pass": "{{name}} passes",
+  "log.redeal": "All players passed. Redealing.",
+  "log.winBid": "{{name}} wins the contract: {{bid}}",
+  "log.exchange": "{{name}} discards {{cards}} cards",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.misereMade": "Team {{team}} makes misere! +{{points}}",
+  "log.misereFailed": "Team {{team}} fails misere ({{tricks}} tricks). -{{points}}",
+  "log.contractMade": "Team {{team}} makes the contract ({{tricks}} tricks). +{{points}}",
+  "log.contractFailed": "Team {{team}} is set ({{tricks}}/{{needed}} tricks). -{{points}}",
+  "log.teamScore": "Team {{team}}: {{score}} points",
+  "log.gameEnd": "Team {{team}} wins the game!"
 }
