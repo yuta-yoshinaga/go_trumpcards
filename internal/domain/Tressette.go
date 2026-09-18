@@ -156,7 +156,7 @@ func (g *Tressette) PlayerPlay(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "tressette.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)

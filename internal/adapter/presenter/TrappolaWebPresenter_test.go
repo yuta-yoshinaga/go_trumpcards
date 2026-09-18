@@ -143,6 +143,15 @@ func TestTrappolaWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "shared.errCardIndexOutOfRange", resObj.MessageCode)
 	})
 
+	t.Run("game coded error uses message code", func(t *testing.T) {
+		m, _ := setupTrappolaWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "trappola.errCardIndexOutOfRange", nil)
+		var resObj controller.TrappolaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "trappola.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end human team wins", func(t *testing.T) {
 		m, _ := setupTrappolaWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

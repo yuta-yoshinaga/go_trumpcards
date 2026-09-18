@@ -27,5 +27,6 @@
   "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
   "roundBreakdown": "ラウンド内訳: チーム{{a}} thirds{{athird}} / チーム{{b}} thirds{{bthird}}（ラストトリック: チーム{{lastteam}}）",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
 }
