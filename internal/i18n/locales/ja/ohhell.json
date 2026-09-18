@@ -34,5 +34,9 @@
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
   "scoringVariantRequired01": "ss の後に 0 (外れは0点) か 1 (外れはマイナス点) を指定してください",
-  "invalidScoringVariant01": "得点方式は 0 か 1 で指定してください"
+  "invalidScoringVariant01": "得点方式は 0 か 1 で指定してください",
+  "errBidOutOfRange": "ビッドは0〜{{max}}で指定してください",
+  "errRestrictedBid": "ディーラーはビッド{{bid}}を選べません（合計がトリック数と一致するため）",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }

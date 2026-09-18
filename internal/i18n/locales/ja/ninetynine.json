@@ -25,5 +25,8 @@
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
-  "successBonusLine": "的中ボーナス: 的中者ひとりにつき +{{bonus}}点 (単独的中ほど高い)"
+  "successBonusLine": "的中ボーナス: 的中者ひとりにつき +{{bonus}}点 (単独的中ほど高い)",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errBuryCount": "伏せるカードは{{count}}枚指定してください",
+  "errDuplicateCardIndex": "同じカードを重複して指定できません"
 }

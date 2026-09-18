@@ -217,7 +217,7 @@ func (o *NinetyNine) PlayerPlay(cardIndex int) error {
 
 	player := o.players[o.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "ninetynine.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -494,16 +494,16 @@ func (o *NinetyNine) deal() {
 // validateBuryIndices 伏せる3枚のインデックスを検証し、昇順スライスを返す
 func (o *NinetyNine) validateBuryIndices(playerIdx int, indices []int) ([]int, error) {
 	if len(indices) != NinetyNineBurySize {
-		return nil, NewDomainError(ErrInvalidPlay, fmt.Sprintf("伏せるカードは%d枚指定してください", NinetyNineBurySize))
+		return nil, NewDomainErrorCode(ErrInvalidPlay, "ninetynine.errBuryCount", map[string]string{"count": fmt.Sprintf("%d", NinetyNineBurySize)})
 	}
 	player := o.players[playerIdx]
 	seen := make(map[int]bool, NinetyNineBurySize)
 	for _, idx := range indices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return nil, NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return nil, NewDomainErrorCode(ErrInvalidCard, "ninetynine.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return nil, NewDomainError(ErrInvalidPlay, "同じカードを重複して指定できません")
+			return nil, NewDomainErrorCode(ErrInvalidPlay, "ninetynine.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}
