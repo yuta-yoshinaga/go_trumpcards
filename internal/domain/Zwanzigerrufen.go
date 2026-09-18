@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // 卓とデッキの形。**Königrufen と同じ 54 枚タロックデッキを使う。**
@@ -260,7 +261,7 @@ func (g *Zwanzigerrufen) startRound() {
 	g.bidPlayerIdx = (g.dealerIdx + 1) % ZwanzigerrufenPlayerCnt
 	g.currentPlayerIdx = g.bidPlayerIdx
 	g.phase = ZwanzigerrufenPhaseBid
-	g.appendLog(-1, "deal", fmt.Sprintf("deal %d: 12 cards each, talon %d", g.roundNumber, len(g.talon)), nil)
+	g.appendLog(-1, "deal", "zwanzigerrufen.log.deal", map[string]string{"deal": strconv.Itoa(g.roundNumber), "talon": strconv.Itoa(len(g.talon))}, nil)
 }
 
 // deal 3 枚パケットで各プレイヤーへ 12 枚を配り、場札 6 枚を脇に置く。
@@ -359,7 +360,7 @@ func (g *Zwanzigerrufen) applyBid(idx int, bid ZwanzigerrufenBid) {
 	g.highestBid = bid
 	g.highestBidder = idx
 	g.bidActedCnt++
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", g.playerName(idx), ZwanzigerrufenBidName(bid)), nil)
+	g.appendLog(idx, "bid", "zwanzigerrufen.log.bid", map[string]string{"name": g.playerName(idx), "bid": ZwanzigerrufenBidName(bid)}, nil)
 	g.advanceBid()
 }
 
@@ -367,7 +368,7 @@ func (g *Zwanzigerrufen) applyBid(idx int, bid ZwanzigerrufenBid) {
 func (g *Zwanzigerrufen) applyPass(idx int) {
 	g.passed[idx] = true
 	g.bidActedCnt++
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+	g.appendLog(idx, "pass", "zwanzigerrufen.log.pass", map[string]string{"name": g.playerName(idx)}, nil)
 	g.advanceBid()
 }
 
@@ -402,7 +403,7 @@ func (g *Zwanzigerrufen) finalizeBid() {
 		g.stash = append([]*Card(nil), g.talon...)
 		g.talon = nil
 		g.stashOwner = -1
-		g.appendLog(-1, "contract", "everyone passed: Trischaken", nil)
+		g.appendLog(-1, "contract", "zwanzigerrufen.log.trischaken", nil, nil)
 		g.startPlay()
 		return
 	}
@@ -416,7 +417,7 @@ func (g *Zwanzigerrufen) finalizeBid() {
 		g.talon = nil
 		g.stashOwner = 1
 		g.appendLog(g.declarerIdx, "contract",
-			fmt.Sprintf("%s plays solo", g.playerName(g.declarerIdx)), nil)
+			"zwanzigerrufen.log.playsSolo", map[string]string{"name": g.playerName(g.declarerIdx)}, nil)
 		g.startPlay()
 		return
 	}
@@ -445,14 +446,14 @@ func (g *Zwanzigerrufen) resolveCall() {
 		g.calledTrump = t
 		g.partnerIdx = g.findTrumpHolder(t)
 		g.appendLog(g.declarerIdx, "call",
-			fmt.Sprintf("%s calls trump %d", g.playerName(g.declarerIdx), t), nil)
+			"zwanzigerrufen.log.callsTrump", map[string]string{"name": g.playerName(g.declarerIdx), "trump": strconv.Itoa(t)}, nil)
 		return
 	}
 	// 呼べる札が手元に全部ある: 単独で戦う。
 	g.calledTrump = -1
 	g.partnerIdx = -1
 	g.appendLog(g.declarerIdx, "call",
-		fmt.Sprintf("%s holds every callable trump and plays alone", g.playerName(g.declarerIdx)), nil)
+		"zwanzigerrufen.log.playsAlone", map[string]string{"name": g.playerName(g.declarerIdx)}, nil)
 }
 
 // handHasTrump プレイヤーが指定番号の切り札を持っているか。
@@ -537,7 +538,7 @@ func (g *Zwanzigerrufen) applyDiscard(indices []int) {
 	g.stashOwner = 0
 	g.sortAllHands()
 	g.appendLog(g.declarerIdx, "discard",
-		fmt.Sprintf("%s buries %d cards", g.playerName(g.declarerIdx), len(g.stash)), nil)
+		"zwanzigerrufen.log.buriesCards", map[string]string{"name": g.playerName(g.declarerIdx), "count": strconv.Itoa(len(g.stash))}, nil)
 	g.startPlay()
 }
 
@@ -654,13 +655,13 @@ func (g *Zwanzigerrufen) playCard(playerIdx, handIdx int) {
 	}
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), koenigrufenCardStr(card)), []*Card{card})
+		"zwanzigerrufen.log.playsCard", map[string]string{"name": g.playerName(playerIdx), "card": koenigrufenCardStr(card)}, []*Card{card})
 
 	// 呼ばれた切り札が出た瞬間にパートナーが明らかになる。
 	if g.calledTrump > 0 && koenigrufenIsTrump(card) && card.GetValue() == g.calledTrump {
 		g.partnerRevealed = true
 		g.appendLog(playerIdx, "reveal",
-			fmt.Sprintf("%s holds the called trump", g.playerName(playerIdx)), nil)
+			"zwanzigerrufen.log.holdsCalledTrump", map[string]string{"name": g.playerName(playerIdx)}, nil)
 	}
 
 	if len(g.currentTrick) < ZwanzigerrufenPlayerCnt {
@@ -681,7 +682,7 @@ func (g *Zwanzigerrufen) finishTrick() {
 	g.lastTrickWinner = winner
 	g.lastTrickCards = cards
 	g.appendLog(winner, "trick",
-		fmt.Sprintf("%s takes trick %d", g.playerName(winner), g.trickNumber), cards)
+		"zwanzigerrufen.log.takesTrick", map[string]string{"name": g.playerName(winner), "trick": strconv.Itoa(g.trickNumber)}, cards)
 	g.currentTrick = nil
 	g.phase = ZwanzigerrufenPhaseTrickEnd
 	g.currentPlayerIdx = winner
@@ -872,7 +873,7 @@ func (g *Zwanzigerrufen) finishRound() {
 	}
 	g.phase = ZwanzigerrufenPhaseRoundEnd
 	g.appendLog(-1, "score",
-		fmt.Sprintf("deal %d scored (%s)", g.roundNumber, ZwanzigerrufenBidName(g.contract)), nil)
+		"zwanzigerrufen.log.dealScored", map[string]string{"deal": strconv.Itoa(g.roundNumber), "contract": ZwanzigerrufenBidName(g.contract)}, nil)
 	if g.roundNumber >= g.config.TargetDeals {
 		g.finishGame()
 	}
@@ -1032,7 +1033,7 @@ func (g *Zwanzigerrufen) finishGame() {
 	}
 	g.gameEndFlag = true
 	g.phase = ZwanzigerrufenPhaseGameEnd
-	g.appendLog(g.winnerPlayer, "gameEnd", "match over", nil)
+	g.appendLog(g.winnerPlayer, "gameEnd", "zwanzigerrufen.log.matchOver", nil, nil)
 }
 
 // --- 補助 ---
@@ -1259,6 +1260,10 @@ func (g *Zwanzigerrufen) GetHint() *ZwanzigerrufenHint {
 // --- JSON ---
 
 // zwanzigerrufenJSON は Zwanzigerrufen の JSON 表現。
+func (g *Zwanzigerrufen) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 type zwanzigerrufenJSON struct {
 	Players         []*ZwanzigerrufenPlayer  `json:"pl"`
 	Config          ZwanzigerrufenConfig     `json:"cf"`

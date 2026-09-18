@@ -76,6 +76,9 @@ func TestFollowTheQueen_PlayerAction_Fold(t *testing.T) {
 	s := setupFollowTheQueenForHumanAction(FollowTheQueenPhaseThirdStreet)
 	err := s.PlayerAction(FollowTheQueenActionFold, 0, 0)
 	require.NoError(t, err)
+	entry := findActionLogEntry(t, s.GetActionLog(), "followthequeen.log.fold")
+	assert.Empty(t, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestFollowTheQueen_PlayerAction_Call(t *testing.T) {
@@ -658,9 +661,12 @@ func TestFollowTheQueen_ActionLog(t *testing.T) {
 	s := newTestFollowTheQueen()
 	assert.Empty(t, s.GetActionLog())
 
-	s.appendLog(0, "test", "test action", nil)
+	s.appendLog(0, "test", "followthequeen.log.testAction", nil, nil)
 	assert.Len(t, s.GetActionLog(), 1)
 	assert.Equal(t, 1, s.GetActionLog()[0].TurnNumber)
+	assert.Equal(t, "followthequeen.log.testAction", s.GetActionLog()[0].DetailCode)
+	assert.Nil(t, s.GetActionLog()[0].DetailParams)
+	assert.Empty(t, s.GetActionLog()[0].Detail)
 }
 
 func TestFollowTheQueen_CountActivePlayers(t *testing.T) {

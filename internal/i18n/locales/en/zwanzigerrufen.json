@@ -43,5 +43,18 @@
   "hintReasonAvoidPoints": "Trischaken — avoid taking points",
   "result.scores": "Game over! Scores: {{scores}}",
   "helpExamplePlay": "  play 0                    play hand card 0",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "log.deal": "deal {{deal}}: 12 cards each, talon {{talon}}",
+  "log.bid": "{{name}} bids {{bid}}",
+  "log.pass": "{{name}} passes",
+  "log.trischaken": "everyone passed: Trischaken",
+  "log.playsSolo": "{{name}} plays solo",
+  "log.callsTrump": "{{name}} calls trump {{trump}}",
+  "log.playsAlone": "{{name}} holds every callable trump and plays alone",
+  "log.buriesCards": "{{name}} buries {{count}} cards",
+  "log.playsCard": "{{name}} plays {{card}}",
+  "log.holdsCalledTrump": "{{name}} holds the called trump",
+  "log.takesTrick": "{{name}} takes trick {{trick}}",
+  "log.dealScored": "deal {{deal}} scored ({{contract}})",
+  "log.matchOver": "match over"
 }

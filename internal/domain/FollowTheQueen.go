@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // フェーズ定数
@@ -278,7 +279,7 @@ func (s *FollowTheQueen) postAntes() {
 		}
 		p.SubtractChips(ante)
 		s.pot += ante
-		s.appendLog(i, "ante", fmt.Sprintf("posts ante %d", ante), nil)
+		s.appendLog(i, "ante", "followthequeen.log.postsAnte", map[string]string{"ante": strconv.Itoa(ante)}, nil)
 		if p.GetChips() == 0 {
 			p.SetAllIn(true)
 			s.actedFlags[i] = true
@@ -330,7 +331,7 @@ func (s *FollowTheQueen) postBringIn() {
 	p.SetCurrentBet(bringIn)
 	s.pot += bringIn
 	s.lastBet = bringIn
-	s.appendLog(s.bringInPlayerIdx, "bringin", fmt.Sprintf("brings in %d", bringIn), nil)
+	s.appendLog(s.bringInPlayerIdx, "bringin", "followthequeen.log.bringsIn", map[string]string{"amount": strconv.Itoa(bringIn)}, nil)
 
 	if p.GetChips() == 0 {
 		p.SetAllIn(true)
@@ -462,25 +463,25 @@ func (s *FollowTheQueen) advancePhase() {
 		s.phase = FollowTheQueenPhaseFourthStreet
 		s.minRaise = s.config.SmallBet
 		s.dealStreetCard(true) // 表向き
-		s.appendLog(-1, "deal", "dealt fourth street", nil)
+		s.appendLog(-1, "deal", "followthequeen.log.dealtFourthStreet", nil, nil)
 	case FollowTheQueenPhaseFourthStreet:
 		s.phase = FollowTheQueenPhaseFifthStreet
 		s.minRaise = s.config.BigBet
 		s.dealStreetCard(true)
-		s.appendLog(-1, "deal", "dealt fifth street", nil)
+		s.appendLog(-1, "deal", "followthequeen.log.dealtFifthStreet", nil, nil)
 	case FollowTheQueenPhaseFifthStreet:
 		s.phase = FollowTheQueenPhaseSixthStreet
 		s.minRaise = s.config.BigBet
 		s.dealStreetCard(true)
-		s.appendLog(-1, "deal", "dealt sixth street", nil)
+		s.appendLog(-1, "deal", "followthequeen.log.dealtSixthStreet", nil, nil)
 	case FollowTheQueenPhaseSixthStreet:
 		s.phase = FollowTheQueenPhaseSeventhStreet
 		s.minRaise = s.config.BigBet
 		s.dealStreetCard(false) // 伏せ札
-		s.appendLog(-1, "deal", "dealt seventh street", nil)
+		s.appendLog(-1, "deal", "followthequeen.log.dealtSeventhStreet", nil, nil)
 	case FollowTheQueenPhaseSeventhStreet:
 		s.phase = FollowTheQueenPhaseShowdown
-		s.appendLog(-1, "showdown", "showdown", nil)
+		s.appendLog(-1, "showdown", "followthequeen.log.showdown", nil, nil)
 		s.resolveShowdown()
 		return
 	}
@@ -766,17 +767,17 @@ func (s *FollowTheQueen) getHandName(rank int) string {
 func (s *FollowTheQueen) logAction(playerIdx, action, amount int) {
 	switch action {
 	case FollowTheQueenActionFold:
-		s.appendLog(playerIdx, "fold", "fold", nil)
+		s.appendLog(playerIdx, "fold", "followthequeen.log.fold", nil, nil)
 	case FollowTheQueenActionCheck:
-		s.appendLog(playerIdx, "check", "check", nil)
+		s.appendLog(playerIdx, "check", "followthequeen.log.check", nil, nil)
 	case FollowTheQueenActionCall:
-		s.appendLog(playerIdx, "call", fmt.Sprintf("call %d", s.players[playerIdx].GetCurrentBet()), nil)
+		s.appendLog(playerIdx, "call", "followthequeen.log.call", map[string]string{"amount": strconv.Itoa(s.players[playerIdx].GetCurrentBet())}, nil)
 	case FollowTheQueenActionBet:
-		s.appendLog(playerIdx, "bet", fmt.Sprintf("bet %d", amount), nil)
+		s.appendLog(playerIdx, "bet", "followthequeen.log.bet", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 	case FollowTheQueenActionRaise:
-		s.appendLog(playerIdx, "raise", fmt.Sprintf("raise to %d", amount), nil)
+		s.appendLog(playerIdx, "raise", "followthequeen.log.raise", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 	case FollowTheQueenActionAllIn:
-		s.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", s.players[playerIdx].GetCurrentBet()), nil)
+		s.appendLog(playerIdx, "allin", "followthequeen.log.allIn", map[string]string{"amount": strconv.Itoa(s.players[playerIdx].GetCurrentBet())}, nil)
 	}
 }
 
@@ -953,6 +954,10 @@ func (s *FollowTheQueen) Resize(players []*FollowTheQueenPlayer) {
 // --- JSON ---
 
 // followTheQueenJSON is the JSON wire format.
+func (s *FollowTheQueen) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 type followTheQueenJSON struct {
 	TrumpCards       *TrumpCards               `json:"tc"`
 	Players          []*FollowTheQueenPlayer   `json:"pl"`

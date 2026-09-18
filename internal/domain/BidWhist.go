@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // BidWhistPlayerCnt Bid Whist のプレイヤー数
@@ -22,6 +23,10 @@ const BidWhistTeamCnt = 2
 
 // BidWhistTrickCnt 1ラウンドのトリック数
 const BidWhistTrickCnt = 12
+
+func (g *BidWhist) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
 
 // BidWhistBook ブック (この枚数を超えたトリックがビッドの達成にカウントされる)
 const BidWhistBook = 6
@@ -295,7 +300,7 @@ func (g *BidWhist) applyBid(idx int, bid BidWhistBid) {
 	g.players[idx].SetBid(&b)
 	g.highestBid = &b
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", g.playerName(idx), bidWhistBidLabel(b)), nil)
+	g.appendLog(idx, "bid", "bidwhist.log.bid", map[string]string{"name": g.playerName(idx), "bid": bidWhistBidLabel(b)}, nil)
 	g.advanceBid()
 }
 
@@ -303,7 +308,7 @@ func (g *BidWhist) applyBid(idx int, bid BidWhistBid) {
 func (g *BidWhist) applyPass(idx int) {
 	g.passed[idx] = true
 	g.players[idx].SetPassed(true)
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+	g.appendLog(idx, "pass", "bidwhist.log.pass", map[string]string{"name": g.playerName(idx)}, nil)
 	g.advanceBid()
 }
 
@@ -326,7 +331,7 @@ func (g *BidWhist) finishBid() {
 
 // redeal 全員パスした場合、同じディーラーで配り直す
 func (g *BidWhist) redeal() {
-	g.appendLog(-1, "redeal", "All players passed. Redealing.", nil)
+	g.appendLog(-1, "redeal", "bidwhist.log.redeal", nil, nil)
 	for _, p := range g.players {
 		p.ResetRound()
 	}
@@ -349,7 +354,7 @@ func (g *BidWhist) finalizeBid() {
 	}
 	g.kitty = nil
 	g.appendLog(g.declarerIdx, "win_bid",
-		fmt.Sprintf("%s wins the bid: %s", g.playerName(g.declarerIdx), bidWhistBidLabel(g.contract)), nil)
+		"bidwhist.log.winsBid", map[string]string{"name": g.playerName(g.declarerIdx), "bid": bidWhistBidLabel(g.contract)}, nil)
 	g.sortAllHands()
 	g.currentPlayerIdx = g.declarerIdx
 	if g.isNoTrump() {
@@ -395,7 +400,7 @@ func (g *BidWhist) CpuDeclareTrump() {
 func (g *BidWhist) applyTrumpDeclaration(suit int) {
 	g.trumpSuit = suit
 	g.appendLog(g.declarerIdx, "trump",
-		fmt.Sprintf("%s declares %s as trump", g.playerName(g.declarerIdx), suitName(suit)), nil)
+		"bidwhist.log.declaresTrump", map[string]string{"name": g.playerName(g.declarerIdx), "suit": suitName(suit)}, nil)
 	g.sortAllHands()
 	g.phase = BidWhistPhaseKittyExchange
 }
@@ -446,7 +451,7 @@ func (g *BidWhist) doExchange(discardIndices []int) error {
 	discarded := player.RemoveCards(discardIndices)
 	g.kitty = discarded
 	g.appendLog(g.declarerIdx, "exchange",
-		fmt.Sprintf("%s discards %d cards", g.playerName(g.declarerIdx), len(discarded)), discarded)
+		"bidwhist.log.discardsCards", map[string]string{"name": g.playerName(g.declarerIdx), "count": strconv.Itoa(len(discarded))}, discarded)
 	g.sortAllHands()
 	g.startPlayPhase()
 	return nil
@@ -511,7 +516,7 @@ func (g *BidWhist) CpuPlay() {
 func (g *BidWhist) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), bidWhistCardLabel(card)), []*Card{card})
+		"bidwhist.log.playsCard", map[string]string{"name": g.playerName(playerIdx), "card": bidWhistCardLabel(card)}, []*Card{card})
 	if len(g.currentTrick) == BidWhistPlayerCnt {
 		g.phase = BidWhistPhaseTrickEnd
 	} else {
@@ -531,7 +536,7 @@ func (g *BidWhist) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(cards)
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), cards)
+		"bidwhist.log.winsTrick", map[string]string{"name": g.playerName(winnerIdx), "trick": strconv.Itoa(g.trickNumber)}, cards)
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= BidWhistTrickCnt {
 		g.phase = BidWhistPhaseRoundEnd
@@ -568,20 +573,20 @@ func (g *BidWhist) ScoreRound() {
 		gain := declTricks - BidWhistBook
 		g.teamScores[declTeam] += gain
 		g.appendLog(-1, "contract_made",
-			fmt.Sprintf("Team %d makes the bid (%d/%d tricks). +%d", declTeam, declTricks, need, gain), nil)
+			"bidwhist.log.contractMade", map[string]string{"team": strconv.Itoa(declTeam), "tricks": strconv.Itoa(declTricks), "need": strconv.Itoa(need), "gain": strconv.Itoa(gain)}, nil)
 	} else {
 		g.teamScores[declTeam] -= bid
 		g.appendLog(-1, "contract_failed",
-			fmt.Sprintf("Team %d is set (%d/%d tricks). -%d", declTeam, declTricks, need, bid), nil)
+			"bidwhist.log.contractFailed", map[string]string{"team": strconv.Itoa(declTeam), "tricks": strconv.Itoa(declTricks), "need": strconv.Itoa(need), "bid": strconv.Itoa(bid)}, nil)
 	}
 	if defTricks := teamTricks[defTeam]; defTricks > BidWhistBook {
 		g.teamScores[defTeam] += defTricks - BidWhistBook
 		g.appendLog(-1, "defender_score",
-			fmt.Sprintf("Team %d (defenders) take %d over the book. +%d", defTeam, defTricks-BidWhistBook, defTricks-BidWhistBook), nil)
+			"bidwhist.log.defenderScore", map[string]string{"team": strconv.Itoa(defTeam), "tricks": strconv.Itoa(defTricks - BidWhistBook), "score": strconv.Itoa(defTricks - BidWhistBook)}, nil)
 	}
 
 	for ti := range BidWhistTeamCnt {
-		g.appendLog(-1, "team_score", fmt.Sprintf("Team %d: %d points", ti, g.teamScores[ti]), nil)
+		g.appendLog(-1, "team_score", "bidwhist.log.teamScore", map[string]string{"team": strconv.Itoa(ti), "score": strconv.Itoa(g.teamScores[ti])}, nil)
 	}
 	g.checkGameEnd(declTeam)
 }
@@ -609,7 +614,7 @@ func (g *BidWhist) checkGameEnd(declTeam int) {
 	default:
 		g.winnerTeam = declTeam
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("Team %d wins the game!", g.winnerTeam), nil)
+	g.appendLog(-1, "game_end", "bidwhist.log.gameEnd", map[string]string{"team": strconv.Itoa(g.winnerTeam)}, nil)
 }
 
 // --- Card ranking ---

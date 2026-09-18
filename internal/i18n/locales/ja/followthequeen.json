@@ -69,5 +69,19 @@
   "helpExampleFold": "  f                    この手を降りる",
   "helpHint": "  h                    助言を表示",
   "helpLog": "  l                    行動ログを表示",
-  "bringInLine": "ブリングイン: {{name}} (強制ベット、最初に行動)"
+  "bringInLine": "ブリングイン: {{name}} (強制ベット、最初に行動)",
+  "log.postsAnte": "アンティ{{ante}}を出す",
+  "log.bringsIn": "ブリングイン{{amount}}を出す",
+  "log.dealtFourthStreet": "フォースストリートを配る",
+  "log.dealtFifthStreet": "フィフスストリートを配る",
+  "log.dealtSixthStreet": "シックスストリートを配る",
+  "log.dealtSeventhStreet": "セブンスストリートを配る",
+  "log.showdown": "ショーダウン",
+  "log.fold": "フォールド",
+  "log.check": "チェック",
+  "log.call": "{{amount}}をコール",
+  "log.bet": "{{amount}}をベット",
+  "log.raise": "{{amount}}にレイズ",
+  "log.allIn": "{{amount}}でオールイン",
+  "log.rebuy": "リバイ"
 }

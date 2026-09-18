@@ -121,6 +121,11 @@ func TestQuadrille_Bidding_WrongPhaseAndSuitRequired(t *testing.T) {
 		assert.Error(t, g.PlayerBid(domain.QuadrilleBidEntrar, -1))
 		// Entrar with a valid trump suit succeeds.
 		require.NoError(t, g.PlayerBid(domain.QuadrilleBidEntrar, domain.CardDesignHeart))
+		entry := findActionLogEntry(t, g.GetActionLog(), "quadrille.log.bid")
+		assert.NotEmpty(t, entry.DetailParams["name"])
+		assert.NotEmpty(t, entry.DetailParams["bid"])
+		assert.NotEmpty(t, entry.DetailParams["trump"])
+		assert.Empty(t, entry.Detail)
 	}
 
 	// Wrong phase -> error.

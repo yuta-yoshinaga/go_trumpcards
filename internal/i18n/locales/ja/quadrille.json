@@ -67,5 +67,15 @@
   "errInvalidSuit": "スートを選んでください (1..4)",
   "errOwnKingCannotBeCalled": "自分が持っている王は呼べません",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errFollowLeadSuit": "リードスートに従ってください"
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.bidPass": "{{name}}がパス",
+  "log.bid": "{{name}}が{{bid}}をビッド (切り札{{trump}})",
+  "log.quadrille": "{{name}}が{{bid}}でカドリール（切り札{{trump}}）",
+  "log.roiSeul": "{{name}}がすべての王を持ち、単独でプレイ（Roi seul）",
+  "log.callsKing": "{{name}}が{{suit}}の王を呼ぶ",
+  "log.playsCard": "{{name}}が{{card}}をプレイ",
+  "log.partnerRevealed": "{{name}}が呼ばれた{{suit}}の王を持つカドリールの味方",
+  "log.winsTrick": "{{name}}がトリック{{trick}}に勝つ",
+  "log.roundScore": "ラウンド{{round}}: カドリール（{{name}}）{{outcome}}（掛け率={{stake}}）",
+  "log.gameEnd": "{{name}}がマッチに勝利！"
 }

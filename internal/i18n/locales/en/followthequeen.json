@@ -69,5 +69,19 @@
   "helpExampleFold": "  f                    fold this hand",
   "helpHint": "  h                    show a hint",
   "helpLog": "  l                    show the action log",
-  "bringInLine": "Bring-in: {{name}} (forced bet, acts first)"
+  "bringInLine": "Bring-in: {{name}} (forced bet, acts first)",
+  "log.postsAnte": "posts ante {{ante}}",
+  "log.bringsIn": "brings in {{amount}}",
+  "log.dealtFourthStreet": "dealt fourth street",
+  "log.dealtFifthStreet": "dealt fifth street",
+  "log.dealtSixthStreet": "dealt sixth street",
+  "log.dealtSeventhStreet": "dealt seventh street",
+  "log.showdown": "showdown",
+  "log.fold": "fold",
+  "log.check": "check",
+  "log.call": "call {{amount}}",
+  "log.bet": "bet {{amount}}",
+  "log.raise": "raise to {{amount}}",
+  "log.allIn": "all in {{amount}}",
+  "log.rebuy": "rebuy"
 }

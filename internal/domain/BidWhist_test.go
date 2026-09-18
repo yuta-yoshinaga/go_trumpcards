@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
@@ -286,6 +288,9 @@ func TestBidWhist_HumanBidValidationAndFlow(t *testing.T) {
 		if err := g.PlayerPass(); err != nil {
 			t.Errorf("pass failed: %v", err)
 		}
+		entry := findActionLogEntry(t, g.GetActionLog(), "bidwhist.log.pass")
+		assert.NotEmpty(t, entry.DetailParams["name"])
+		assert.Empty(t, entry.Detail)
 	}
 }
 

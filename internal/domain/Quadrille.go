@@ -38,10 +38,10 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"slices"
 	"sort"
+	"strconv"
 )
 
 // QuadrillePlayerCnt プレイヤー数 (人間 1 + CPU 3)
@@ -371,11 +371,11 @@ func (g *Quadrille) applyBid(playerIdx int, bid QuadrilleBid, trumpSuit int) {
 	if bid == QuadrilleBidNone {
 		g.bidTrump[playerIdx] = -1
 		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
+			"quadrille.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	} else {
 		g.bidTrump[playerIdx] = trumpSuit
 		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %s (trump %s)", playerName(g.players, playerIdx), quadrilleBidName(bid), quadrilleSuitName(trumpSuit)), nil)
+			"quadrille.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": quadrilleBidName(bid), "trump": quadrilleSuitName(trumpSuit)}, nil)
 	}
 
 	if g.allBidsActed() {
@@ -434,7 +434,7 @@ func (g *Quadrille) finalizeAuction() {
 		g.trumpSuit = g.cpuChooseTrump(quadrille)
 	}
 	g.appendLog(quadrille, "quadrille",
-		fmt.Sprintf("%s is Quadrille with %s (trump %s)", playerName(g.players, quadrille), quadrilleBidName(best), quadrilleSuitName(g.trumpSuit)), nil)
+		"quadrille.log.quadrille", map[string]string{"name": playerName(g.players, quadrille), "bid": quadrilleBidName(best), "trump": quadrilleSuitName(g.trumpSuit)}, nil)
 	g.startKingCall()
 }
 
@@ -447,8 +447,7 @@ func (g *Quadrille) startKingCall() {
 		g.roiSeul = true
 		g.partnerIdx = -1
 		g.appendLog(g.quadrilleIdx, "roi_seul",
-			fmt.Sprintf("%s holds every king and plays alone (Roi seul)",
-				playerName(g.players, g.quadrilleIdx)), nil)
+			"quadrille.log.roiSeul", map[string]string{"name": playerName(g.players, g.quadrilleIdx)}, nil)
 		g.startPlay()
 		return
 	}
@@ -503,7 +502,7 @@ func (g *Quadrille) DeclareKing(playerIdx, suit int) error {
 	g.partnerIdx = g.findKingHolder(suit)
 	g.partnerRevealed = false
 	g.appendLog(playerIdx, "call_king",
-		fmt.Sprintf("%s calls the King of %s", playerName(g.players, playerIdx), quadrilleSuitName(suit)), nil)
+		"quadrille.log.callsKing", map[string]string{"name": playerName(g.players, playerIdx), "suit": quadrilleSuitName(suit)}, nil)
 	g.startPlay()
 	return nil
 }
@@ -705,7 +704,7 @@ func (g *Quadrille) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Quadrille) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "quadrille.log.playsCard", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 	g.revealPartnerIfCalledKing(playerIdx, card)
 
 	if len(g.currentTrick) == QuadrillePlayerCnt {
@@ -728,8 +727,7 @@ func (g *Quadrille) revealPartnerIfCalledKing(playerIdx int, card *Card) {
 	}
 	g.partnerRevealed = true
 	g.appendLog(playerIdx, "partner_revealed",
-		fmt.Sprintf("%s holds the called King of %s and is the Quadrille's partner",
-			playerName(g.players, playerIdx), quadrilleSuitName(g.calledKingSuit)), nil)
+		"quadrille.log.partnerRevealed", map[string]string{"name": playerName(g.players, playerIdx), "suit": quadrilleSuitName(g.calledKingSuit)}, nil)
 }
 
 // ResolveTrick トリックを解決して勝者を決定する。最終トリックなら RoundEnd に入り、得点計算を発火する。
@@ -750,7 +748,7 @@ func (g *Quadrille) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+		"quadrille.log.winsTrick", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	g.lastTrickWinner = winnerIdx
@@ -787,8 +785,7 @@ func (g *Quadrille) enterRoundEnd() {
 		stake = 2
 	}
 	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: Quadrille(%s) %s (stake=%d)",
-			g.roundNumber, playerName(g.players, g.quadrilleIdx), quadrilleOutcomeName(g.outcome), stake), nil)
+		"quadrille.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "name": playerName(g.players, g.quadrilleIdx), "outcome": quadrilleOutcomeName(g.outcome), "stake": strconv.Itoa(stake)}, nil)
 	g.checkGameEnd()
 }
 
@@ -873,7 +870,7 @@ func (g *Quadrille) checkGameEnd() {
 	g.winnerPlayer = leader
 	g.phase = QuadrillePhaseGameEnd
 	g.result = g.humanResult(leader, tie)
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+	g.appendLog(-1, "game_end", "quadrille.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
 }
 
 // humanResult 人間 (seat 0) の視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None、他は Lose。
@@ -1521,6 +1518,10 @@ func (g *Quadrille) GetPlayableIndices(playerIdx int) []int {
 // --- JSON ---
 
 // quadrilleJSON is the JSON wire format for Quadrille.
+func (g *Quadrille) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 type quadrilleJSON struct {
 	TrumpCards       *TrumpCards                      `json:"tc"`
 	Players          []*QuadrillePlayer               `json:"ps"`

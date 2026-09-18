@@ -209,6 +209,9 @@ func TestDurak_PlayerAttack_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, domain.DurakPhaseDefend, d.GetPhase())
 	assert.Equal(t, 1, len(d.GetTablePairs()))
+	entry := findActionLogEntry(t, d.GetActionLog(), "durak.log.attackWithCard")
+	assert.NotEmpty(t, entry.DetailParams["card"])
+	assert.Empty(t, entry.Detail)
 }
 
 func TestDurak_PlayerAttack_GameEnded(t *testing.T) {
