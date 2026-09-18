@@ -26,9 +26,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // CalabresellaPlayerCnt プレイヤー数 (人間 1 + CPU 2)
@@ -126,6 +126,10 @@ type Calabresella struct {
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
 	actionLogBase
+}
+
+func (g *Calabresella) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewCalabresella コンストラクタ
@@ -283,11 +287,9 @@ func (g *Calabresella) applyBid(playerIdx int, bid CalabresellaBid) {
 	g.bids[playerIdx] = bid
 	g.bidActed[playerIdx] = true
 	if bid == CalabresellaBidNone {
-		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "bid_pass", "calabresella.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	} else {
-		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %s", playerName(g.players, playerIdx), calabresellaBidName(bid)), nil)
+		g.appendLog(playerIdx, "bid", "calabresella.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": calabresellaBidName(bid)}, nil)
 	}
 
 	if g.allBidsActed() {
@@ -339,8 +341,7 @@ func (g *Calabresella) finalizeAuction() {
 	}
 	g.soloistIdx = soloist
 	g.winningBid = best
-	g.appendLog(soloist, "soloist",
-		fmt.Sprintf("%s is soloist with %s", playerName(g.players, soloist), calabresellaBidName(best)), nil)
+	g.appendLog(soloist, "soloist", "calabresella.log.soloist", map[string]string{"name": playerName(g.players, soloist), "bid": calabresellaBidName(best)}, nil)
 
 	g.startDiscard()
 }
@@ -386,8 +387,7 @@ func (g *Calabresella) startDiscard() {
 	}
 	g.monte = nil
 	calabresellaSortHand(g.players[g.soloistIdx])
-	g.appendLog(g.soloistIdx, "monte_take",
-		fmt.Sprintf("%s takes the monte", playerName(g.players, g.soloistIdx)), revealed)
+	g.appendLog(g.soloistIdx, "monte_take", "calabresella.log.monteTake", map[string]string{"name": playerName(g.players, g.soloistIdx)}, revealed)
 	g.discardCount = 0
 	g.currentPlayerIdx = g.soloistIdx
 
@@ -424,8 +424,7 @@ func (g *Calabresella) discardOne(cardIndex int) {
 	// 捨て札はソリストの獲得札として扱う (トレセッテ系の慣習: 交換で捨てた札の得点はソリストに帰属)。
 	g.players[g.soloistIdx].AddTrick([]*Card{card})
 	g.roundThirds[g.soloistIdx] += calabresellaThirds(card.GetValue())
-	g.appendLog(g.soloistIdx, "discard",
-		fmt.Sprintf("%s discards %s", playerName(g.players, g.soloistIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.soloistIdx, "discard", "calabresella.log.discard", map[string]string{"name": playerName(g.players, g.soloistIdx), "card": cardStr(card)}, []*Card{card})
 	g.discardCount++
 }
 
@@ -512,7 +511,7 @@ func (g *Calabresella) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Calabresella) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "calabresella.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == CalabresellaPlayerCnt {
 		g.phase = CalabresellaPhaseTrickEnd
@@ -540,8 +539,7 @@ func (g *Calabresella) ResolveTrick() {
 		bonus = " +ultima"
 	}
 	g.roundThirds[winnerIdx] += thirds
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d/3%s)", playerName(g.players, winnerIdx), g.trickNumber, thirds, bonus), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "calabresella.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(thirds), "bonus": bonus}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// **どのトリックの勝者も憶えておく。** 以前は最終トリックのぶんしか入れて
@@ -599,9 +597,7 @@ func (g *Calabresella) ScoreRound() {
 	if soloistWon {
 		result = "wins"
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: soloist(%s) %s (%d/3, stake=%d)",
-			g.roundNumber, playerName(g.players, g.soloistIdx), result, soloistThirds, stake), nil)
+	g.appendLog(-1, "round_score", "calabresella.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "name": playerName(g.players, g.soloistIdx), "result": result, "points": strconv.Itoa(soloistThirds), "stake": strconv.Itoa(stake)}, nil)
 	g.checkGameEnd()
 }
 
@@ -618,7 +614,7 @@ func (g *Calabresella) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = CalabresellaPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+		g.appendLog(-1, "game_end", "calabresella.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
 	}
 }
 

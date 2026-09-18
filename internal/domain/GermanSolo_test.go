@@ -212,6 +212,15 @@ func TestGermanSolo_BidMustExceedTheStandingBid(t *testing.T) {
 	g := newTestGermanSolo()
 	require.NoError(t, g.PlayerBid(domain.GermanSoloBidSolo, domain.CardDesignHeart))
 	assert.Equal(t, domain.GermanSoloBidSolo, g.GetHighestBid())
+	var bidLog *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "germansolo.log.bid" {
+			bidLog = entry
+		}
+	}
+	require.NotNil(t, bidLog)
+	assert.Equal(t, map[string]string{"name": "You", "bid": "solo", "trump": "hearts"}, bidLog.DetailParams)
+	assert.Empty(t, bidLog.Detail)
 	assert.Equal(t, []int{int(domain.GermanSoloBidTout)}, g.GetBiddableBids(),
 		"Solo が立っていれば残る選択肢は Tout だけ")
 	// 人間の後は CPU が順に宣言し、全員が喋ると競りが閉じる。

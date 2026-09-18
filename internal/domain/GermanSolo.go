@@ -37,10 +37,10 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"slices"
 	"sort"
+	"strconv"
 )
 
 // GermanSoloPlayerCnt プレイヤー数 (人間 1 + CPU 3)
@@ -215,6 +215,10 @@ type GermanSolo struct {
 	gameEndFlag   bool
 	winnerPlayer  int // -1=未確定
 	actionLogBase
+}
+
+func (g *GermanSolo) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewGermanSolo コンストラクタ
@@ -405,12 +409,10 @@ func (g *GermanSolo) applyBid(playerIdx int, bid GermanSoloBid, trumpSuit int) {
 	g.bidActed[playerIdx] = true
 	if bid == GermanSoloBidNone {
 		g.bidTrump[playerIdx] = -1
-		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "bid_pass", "germansolo.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	} else {
 		g.bidTrump[playerIdx] = trumpSuit
-		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %s (trump %s)", playerName(g.players, playerIdx), germanSoloBidName(bid), germanSoloSuitName(trumpSuit)), nil)
+		g.appendLog(playerIdx, "bid", "germansolo.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": germanSoloBidName(bid), "trump": germanSoloSuitName(trumpSuit)}, nil)
 	}
 
 	if g.allBidsActed() {
@@ -468,8 +470,7 @@ func (g *GermanSolo) finalizeAuction() {
 	// **切り札が決まった時点で並べ替える。** プレイ開始まで待つと、エース呼びの
 	// 画面だけ配られたままの並びになり、どれが切り札か読めないまま指名させられる。
 	g.sortAllHands()
-	g.appendLog(declarer, "declarer",
-		fmt.Sprintf("%s declares %s (trump %s)", playerName(g.players, declarer), germanSoloBidName(best), germanSoloSuitName(g.trumpSuit)), nil)
+	g.appendLog(declarer, "declarer", "germansolo.log.declarer", map[string]string{"name": playerName(g.players, declarer), "bid": germanSoloBidName(best), "trump": germanSoloSuitName(g.trumpSuit)}, nil)
 	if germanSoloIsPartnerBid(best) {
 		g.startAceCall()
 		return
@@ -492,8 +493,7 @@ func (g *GermanSolo) forceMussfrage() (int, GermanSoloBid) {
 		declarer = g.forehandIdx
 	}
 	g.bidTrump[declarer] = g.cpuChooseTrump(declarer)
-	g.appendLog(declarer, "mussfrage",
-		fmt.Sprintf("all pass: %s must take the Mussfrage", playerName(g.players, declarer)), nil)
+	g.appendLog(declarer, "mussfrage", "germansolo.log.mussfrage", map[string]string{"name": playerName(g.players, declarer)}, nil)
 	return declarer, GermanSoloBidMussfrage
 }
 
@@ -518,9 +518,7 @@ func (g *GermanSolo) startAceCall() {
 	if len(g.callableAceSuits(g.declarerIdx)) == 0 {
 		g.playsAlone = true
 		g.partnerIdx = -1
-		g.appendLog(g.declarerIdx, "plays_alone",
-			fmt.Sprintf("%s holds every callable ace and plays the Frage alone",
-				playerName(g.players, g.declarerIdx)), nil)
+		g.appendLog(g.declarerIdx, "plays_alone", "germansolo.log.playsAlone", map[string]string{"name": playerName(g.players, g.declarerIdx)}, nil)
 		g.startPlay()
 		return
 	}
@@ -581,8 +579,7 @@ func (g *GermanSolo) DeclareAce(playerIdx, suit int) error {
 	g.calledAceSuit = suit
 	g.partnerIdx = g.findAceHolder(suit)
 	g.partnerRevealed = false
-	g.appendLog(playerIdx, "call_ace",
-		fmt.Sprintf("%s calls the Ace of %s", playerName(g.players, playerIdx), germanSoloSuitName(suit)), nil)
+	g.appendLog(playerIdx, "call_ace", "germansolo.log.callAce", map[string]string{"name": playerName(g.players, playerIdx), "suit": germanSoloSuitName(suit)}, nil)
 	g.startPlay()
 	return nil
 }
@@ -885,7 +882,7 @@ func (g *GermanSolo) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *GermanSolo) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "germansolo.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 	g.revealPartnerIfCalledAce(playerIdx, card)
 
 	if len(g.currentTrick) == GermanSoloPlayerCnt {
@@ -907,9 +904,7 @@ func (g *GermanSolo) revealPartnerIfCalledAce(playerIdx int, card *Card) {
 		return
 	}
 	g.partnerRevealed = true
-	g.appendLog(playerIdx, "partner_revealed",
-		fmt.Sprintf("%s holds the called Ace of %s and is the GermanSolo's partner",
-			playerName(g.players, playerIdx), germanSoloSuitName(g.calledAceSuit)), nil)
+	g.appendLog(playerIdx, "partner_revealed", "germansolo.log.partnerRevealed", map[string]string{"name": playerName(g.players, playerIdx), "suit": germanSoloSuitName(g.calledAceSuit)}, nil)
 }
 
 // ResolveTrick トリックを解決して勝者を決定する。最終トリックなら RoundEnd に入り、得点計算を発火する。
@@ -928,8 +923,7 @@ func (g *GermanSolo) ResolveTrick() {
 		trickCards[i] = tc.Card
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "germansolo.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= GermanSoloTrickCount {
@@ -961,10 +955,7 @@ func (g *GermanSolo) enterRoundEnd() {
 	g.outcome = g.evalOutcome()
 	g.applyScores(g.outcome)
 	ours, _ := g.sideTrickCounts()
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: %s %s with %d/%d tricks (needed %d, stake=%d)",
-			g.roundNumber, playerName(g.players, g.declarerIdx), germanSoloOutcomeName(g.outcome),
-			ours, GermanSoloTrickCount, g.RequiredTricks(), germanSoloBidValue(g.winningBid)), nil)
+	g.appendLog(-1, "round_score", "germansolo.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "name": playerName(g.players, g.declarerIdx), "outcome": germanSoloOutcomeName(g.outcome), "tricks": strconv.Itoa(ours), "total": strconv.Itoa(GermanSoloTrickCount), "needed": strconv.Itoa(g.RequiredTricks()), "stake": strconv.Itoa(germanSoloBidValue(g.winningBid))}, nil)
 	g.checkGameEnd()
 }
 
@@ -1066,7 +1057,7 @@ func (g *GermanSolo) checkGameEnd() {
 	g.winnerPlayer = leader
 	g.phase = GermanSoloPhaseGameEnd
 	g.result = g.humanResult(leader, tie)
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+	g.appendLog(-1, "game_end", "germansolo.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
 }
 
 // humanResult 人間 (seat 0) の視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None、他は Lose。

@@ -33,5 +33,17 @@
   "errFollowLeadSuit": "You must follow the lead suit.",
   "errMustHead": "You must play a card that can win the trick.",
   "errPlayTrump": "You must play a trump card.",
-  "errMustHeadTrump": "You must play a winning trump card."
+  "errMustHeadTrump": "You must play a winning trump card.",
+  "log.ante": "each antes {{ante}}; pot is {{pot}}",
+  "log.trumpSet": "Trump is {{suit}} (turn-up {{turnUp}})",
+  "log.decidePlay": "{{name}} plays",
+  "log.decidePass": "{{name}} passes",
+  "log.allPass": "all players passed; pot carries over",
+  "log.walkover": "{{name}} is the only player and takes the pot",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.settleNoPlayers": "no players; pot {{pot}} carries over",
+  "log.settleWinner": "{{name}} takes the whole pot {{pot}}",
+  "log.looed": "{{name}} is looed and pays {{penalty}} to the pot",
+  "log.cumulativeChips": "{{name}}: total={{total}}"
 }

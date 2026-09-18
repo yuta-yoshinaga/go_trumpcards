@@ -75,5 +75,16 @@
   "errInvalidSuit": "Choose a suit (1..4).",
   "errOwnAceCannotBeCalled": "You cannot call an ace that you hold or the ace of trumps.",
   "errCardIndexOutOfRange": "The card index is out of range.",
-  "errFollowLeadSuit": "You must follow the led suit."
+  "errFollowLeadSuit": "You must follow the led suit.",
+  "log.bidPass": "{{name}} passes",
+  "log.bid": "{{name}} bids {{bid}} (trump {{trump}})",
+  "log.declarer": "{{name}} declares {{bid}} (trump {{trump}})",
+  "log.mussfrage": "all pass: {{name}} must take the Mussfrage",
+  "log.playsAlone": "{{name}} holds every callable ace and plays the Frage alone",
+  "log.callAce": "{{name}} calls the Ace of {{suit}}",
+  "log.play": "{{name}} plays {{card}}",
+  "log.partnerRevealed": "{{name}} holds the called Ace of {{suit}} and is the GermanSolo's partner",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.roundScore": "round {{round}}: {{name}} {{outcome}} with {{tricks}}/{{total}} tricks (needed {{needed}}, stake={{stake}})",
+  "log.gameEnd": "{{name}} wins the match!"
 }

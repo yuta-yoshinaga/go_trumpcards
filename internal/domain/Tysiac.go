@@ -20,9 +20,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // TysiacPlayerCnt プレイヤー数 (人間 1 + CPU 2)
@@ -105,6 +105,10 @@ type Tysiac struct {
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
 	actionLogBase
+}
+
+func (g *Tysiac) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewTysiac コンストラクタ
@@ -251,12 +255,10 @@ func (g *Tysiac) CpuBid() {
 func (g *Tysiac) applyBid(playerIdx int, raise bool) {
 	if raise {
 		g.currentBid += TysiacBidStep
-		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %d", playerName(g.players, playerIdx), g.currentBid), nil)
+		g.appendLog(playerIdx, "bid", "tysiac.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": strconv.Itoa(g.currentBid)}, nil)
 	} else {
 		g.bidPassed[playerIdx] = true
-		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "bid_pass", "tysiac.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	}
 
 	if g.activeBidders() <= 1 {
@@ -293,8 +295,7 @@ func (g *Tysiac) finalizeAuction() {
 	}
 	g.declarerIdx = declarer
 	g.contract = g.currentBid
-	g.appendLog(declarer, "declarer",
-		fmt.Sprintf("%s is declarer with contract %d", playerName(g.players, declarer), g.contract), nil)
+	g.appendLog(declarer, "declarer", "tysiac.log.declarer", map[string]string{"name": playerName(g.players, declarer), "contract": strconv.Itoa(g.contract)}, nil)
 
 	g.startTalon()
 }
@@ -375,8 +376,7 @@ func (g *Tysiac) startTalon() {
 	}
 	g.talon = nil
 	tysiacSortHand(g.players[g.declarerIdx])
-	g.appendLog(g.declarerIdx, "talon_take",
-		fmt.Sprintf("%s takes the talon", playerName(g.players, g.declarerIdx)), nil)
+	g.appendLog(g.declarerIdx, "talon_take", "tysiac.log.talonTake", map[string]string{"name": playerName(g.players, g.declarerIdx)}, nil)
 	g.discardCount = 0
 	g.currentPlayerIdx = g.declarerIdx
 
@@ -415,8 +415,7 @@ func (g *Tysiac) giveDiscard(cardIndex int) {
 	card := g.players[g.declarerIdx].RemoveCard(cardIndex)
 	g.players[recipient].AddCard(card)
 	tysiacSortHand(g.players[recipient])
-	g.appendLog(g.declarerIdx, "discard",
-		fmt.Sprintf("%s gives a card to %s", playerName(g.players, g.declarerIdx), playerName(g.players, recipient)), nil)
+	g.appendLog(g.declarerIdx, "discard", "tysiac.log.discard", map[string]string{"from": playerName(g.players, g.declarerIdx), "to": playerName(g.players, recipient)}, nil)
 	g.discardCount++
 }
 
@@ -542,15 +541,13 @@ func (g *Tysiac) maybeDeclareMarriage(playerIdx int, card *Card) {
 	g.trumpSuit = suit
 	pts := tysiacMarriagePoints(suit)
 	g.roundMarriage[playerIdx] += pts
-	g.appendLog(playerIdx, "marriage",
-		fmt.Sprintf("%s declares a %s marriage (+%d, trump=%s)",
-			playerName(g.players, playerIdx), tysiacSuitName(suit), pts, tysiacSuitName(suit)), nil)
+	g.appendLog(playerIdx, "marriage", "tysiac.log.marriage", map[string]string{"name": playerName(g.players, playerIdx), "suit": tysiacSuitName(suit), "points": strconv.Itoa(pts)}, nil)
 }
 
 // playCard カードをプレイする共通処理。
 func (g *Tysiac) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "tysiac.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == TysiacPlayerCnt {
 		g.phase = TysiacPhaseTrickEnd
@@ -573,8 +570,7 @@ func (g *Tysiac) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundCardPts[winnerIdx] += pts
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "tysiac.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(pts)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	g.lastTrickWinner = winnerIdx
@@ -613,9 +609,7 @@ func (g *Tysiac) ScoreRound() {
 			g.playerScores[i] += tysiacRoundTo10(total)
 		}
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d scored: declarer(%s) contract=%d",
-			g.roundNumber, playerName(g.players, g.declarerIdx), g.contract), nil)
+	g.appendLog(-1, "round_score", "tysiac.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "declarer": playerName(g.players, g.declarerIdx), "contract": strconv.Itoa(g.contract)}, nil)
 	g.checkGameEnd()
 }
 
@@ -637,7 +631,7 @@ func (g *Tysiac) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = TysiacPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+		g.appendLog(-1, "game_end", "tysiac.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
 	}
 }
 

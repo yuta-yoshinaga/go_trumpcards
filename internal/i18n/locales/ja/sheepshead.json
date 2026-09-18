@@ -52,5 +52,15 @@
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errDuplicateCard": "同じ札を 2 回指定できません",
   "errSuitNotCallable": "そのスートは呼べません",
-  "errFollowLeadSuit": "リードスートに従ってください"
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.pass": "{{name}}がパス",
+  "log.pick": "{{name}}がブラインドを取る",
+  "log.bury": "{{name}}が{{cards}}枚を埋める",
+  "log.alone": "{{name}}が単独でプレイ",
+  "log.call": "{{name}}が{{suit}}のエースを呼ぶ",
+  "log.play": "{{name}}が{{card}}を出す",
+  "log.partnerReveal": "{{name}}がピッカーの相棒になる",
+  "log.trickWin": "{{name}}がトリック{{trick}}に勝つ（{{points}}点）",
+  "log.roundScore": "ラウンド{{round}}: ピッカー組{{points}}点（{{outcome}}、x{{multiplier}}）",
+  "log.gameEnd": "{{name}}がゲームに勝利！"
 }
