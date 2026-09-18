@@ -310,6 +310,15 @@ func TestWhistWebPresenter_ActionLogOutput(t *testing.T) {
 	assert.NotEmpty(t, result)
 }
 
+func TestWhistWebPresenter_Output_CodedError(t *testing.T) {
+	m, _ := setupWhistWebMockWithPlayers()
+	var out controller.WhistWebOutput
+	err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "whist.errCardIndexOutOfRange", nil)
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.WhistWebPresenter).Output(m, err)), &out))
+	assert.Empty(t, out.Message)
+	assert.Equal(t, "whist.errCardIndexOutOfRange", out.MessageCode)
+}
+
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
 // レスポンスで、ページの state にはマージされない (#4483)。
 func TestWhistWebPresenterOutputCarriesTheHint(t *testing.T) {

@@ -99,6 +99,15 @@ func TestPutWebPresenter_Output_Error(t *testing.T) {
 	assert.Equal(t, "boom", out.Message)
 }
 
+func TestPutWebPresenter_Output_CodedError(t *testing.T) {
+	p := new(presenter.PutWebPresenter)
+	g := newPutGame()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "put.errCardIndexOutOfRange", nil)
+	out := unmarshalPutOut(t, p.Output(g, err))
+	assert.Empty(t, out.Message)
+	assert.Equal(t, "put.errCardIndexOutOfRange", out.MessageCode)
+}
+
 func TestPutWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.PutWebPresenter)
 	g := newPutGame()

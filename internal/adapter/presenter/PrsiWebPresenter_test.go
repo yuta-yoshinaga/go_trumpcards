@@ -110,6 +110,15 @@ func TestPrsiWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error has message code and no message", func(t *testing.T) {
+		m, _ := setupPrsiWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "prsi.errCardIndexOutOfRange", nil)
+		var resObj controller.PrsiWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "prsi.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupPrsiWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

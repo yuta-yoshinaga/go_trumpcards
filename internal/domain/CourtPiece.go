@@ -201,7 +201,7 @@ func (c *CourtPiece) PlayerDeclareTrump(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if !isValidSuit(suit) {
-		return NewDomainError(ErrInvalidPlay, "トランプスートは ♠/♣/♥/♦ から選んでください")
+		return NewDomainErrorCode(ErrInvalidPlay, "courtpiece.errTrumpSuitOutOfRange", nil)
 	}
 	c.applyTrumpDeclaration(suit)
 	return nil
@@ -250,7 +250,7 @@ func (c *CourtPiece) PlayerPlay(cardIndex int) error {
 
 	player := c.players[c.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "courtpiece.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)

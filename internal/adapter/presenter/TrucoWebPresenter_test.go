@@ -99,6 +99,15 @@ func TestTrucoWebPresenter_Output_Error(t *testing.T) {
 	assert.Equal(t, "boom", out.Message)
 }
 
+func TestTrucoWebPresenter_Output_CodedError(t *testing.T) {
+	p := new(presenter.TrucoWebPresenter)
+	g := newTrucoGame()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "truco.errCardIndexOutOfRange", nil)
+	out := unmarshalTrucoOut(t, p.Output(g, err))
+	assert.Empty(t, out.Message)
+	assert.Equal(t, "truco.errCardIndexOutOfRange", out.MessageCode)
+}
+
 func TestTrucoWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.TrucoWebPresenter)
 	g := newTrucoGame()

@@ -142,7 +142,7 @@ func (w *Whist) PlayerPlay(cardIndex int) error {
 
 	player := w.players[w.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "whist.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -413,7 +413,7 @@ func (w *Whist) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := w.currentTrick[0].Card.GetDesign()
 	if card.GetDesign() != leadSuit {
 		if w.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "whist.errFollowLeadSuit", nil)
 		}
 	}
 

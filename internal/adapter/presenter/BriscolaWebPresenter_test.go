@@ -201,6 +201,15 @@ func TestBriscolaWebPresenter_Output_Error(t *testing.T) {
 	assert.Equal(t, "boom", out.Message)
 }
 
+func TestBriscolaWebPresenter_Output_CodedError(t *testing.T) {
+	m, _ := setupBriscolaWebMockWithPlayers(nil)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "briscola.errCardIndexOutOfRange", nil)
+	var out controller.BriscolaWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.BriscolaWebPresenter).Output(m, err)), &out))
+	assert.Empty(t, out.Message)
+	assert.Equal(t, "briscola.errCardIndexOutOfRange", out.MessageCode)
+}
+
 func TestBriscolaWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.BriscolaWebPresenter)
 	trump := domain.NewCard(domain.CardDesignSpade, 13, false)

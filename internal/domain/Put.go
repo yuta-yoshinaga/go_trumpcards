@@ -190,7 +190,7 @@ func (t *Put) PlayerPlay(cardIndex int) error {
 	}
 	player := t.players[t.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "put.errCardIndexOutOfRange", nil)
 	}
 	played := player.RemoveCard(cardIndex)
 	t.playCard(t.currentPlayerIdx, played)
@@ -207,7 +207,7 @@ func (t *Put) DeclarePut() error {
 		return ErrNotHumanTurn
 	}
 	if !t.canDeclare(actor) {
-		return NewDomainError(ErrWrongPhase, "これ以上引き上げできません")
+		return NewDomainErrorCode(ErrWrongPhase, "put.errCannotRaiseNow", nil)
 	}
 	t.callPut(actor)
 	return nil

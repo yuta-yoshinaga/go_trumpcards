@@ -168,7 +168,7 @@ func (b *Briscola) PlayerPlay(cardIndex int) error {
 
 	player := b.players[b.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "briscola.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -426,7 +426,7 @@ func (b *Briscola) playCard(playerIdx int, card *Card) {
 // Briscola には must-follow がないため、プレイヤーが手札に持つカードであれば常に有効。
 func (b *Briscola) validatePlay(_ int, card *Card) error {
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
+		return NewDomainErrorCode(ErrInvalidCard, "briscola.errCardNil", nil)
 	}
 	return nil
 }

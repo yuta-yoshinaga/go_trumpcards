@@ -55,6 +55,9 @@ func (p *PrsiWebPresenter) buildPlayersOutput(g interfaces.PrsiGame) []*controll
 // buildMessage ゲーム結果メッセージを構築
 func (p *PrsiWebPresenter) buildMessage(g interfaces.PrsiGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {
