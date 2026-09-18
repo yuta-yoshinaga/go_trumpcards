@@ -103,6 +103,15 @@ func TestTwoTenJackWebPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, `"message":"bad"`)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupTTJWebMock()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "shared.errCardIndexOutOfRange", nil)
+		var output controller.TwoTenJackWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &output))
+		assert.Empty(t, output.Message)
+		assert.Equal(t, "shared.errCardIndexOutOfRange", output.MessageCode)
+	})
+
 	t.Run("declare phase msg", func(t *testing.T) {
 		m, _ := setupTTJWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")

@@ -111,6 +111,9 @@ func (p *NapWebPresenter) buildPlayersOutput(g interfaces.NapGame) []*controller
 // buildMessage ゲーム結果メッセージを構築
 func (p *NapWebPresenter) buildMessage(g interfaces.NapGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

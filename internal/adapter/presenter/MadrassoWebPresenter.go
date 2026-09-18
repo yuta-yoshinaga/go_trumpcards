@@ -141,6 +141,9 @@ func (p *MadrassoWebPresenter) buildPlayersOutput(g interfaces.MadrassoGame) []*
 // buildMessage ゲーム結果メッセージを構築
 func (p *MadrassoWebPresenter) buildMessage(g interfaces.MadrassoGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

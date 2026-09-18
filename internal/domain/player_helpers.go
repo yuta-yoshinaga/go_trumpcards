@@ -445,7 +445,7 @@ func validateFollowSuit[P handReader](trick []*TrickCard, players []P, playerIdx
 	}
 	leadSuit := trick[0].Card.GetDesign()
 	if card.GetDesign() != leadSuit && handHasSuit(players[playerIdx], leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "shared.errFollowLeadSuit", nil)
 	}
 	return nil
 }
@@ -717,7 +717,7 @@ func validateCardIsPlayable[P handReader](valid []int, p P, card *Card) error {
 			return nil
 		}
 	}
-	return NewDomainError(ErrInvalidPlay, "フォロー義務・切り札義務・オーバートランプ義務に反しています")
+	return NewDomainErrorCode(ErrInvalidPlay, "shared.errFollowRuleViolation", nil)
 }
 
 // endgameFollower is a game whose follow rules only apply in its second phase.
@@ -730,13 +730,13 @@ type endgameFollower interface {
 // and a trick is under way. 3 games had this written out.
 func validateEndgameFollow(trick []*TrickCard, g endgameFollower, playerIdx int, card *Card) error {
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
+		return NewDomainErrorCode(ErrInvalidCard, "shared.errCardNil", nil)
 	}
 	if !g.IsEndgame() || len(trick) == 0 {
 		return nil
 	}
 	if !g.cardSatisfiesFollow(playerIdx, card) {
-		return NewDomainError(ErrInvalidCard, "第2フェーズではフォロールールに従う必要があります")
+		return NewDomainErrorCode(ErrInvalidCard, "shared.errMustFollowEndgameRule", nil)
 	}
 	return nil
 }
