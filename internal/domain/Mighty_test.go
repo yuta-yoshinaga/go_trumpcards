@@ -60,6 +60,22 @@ func TestNewDefaultMighty(t *testing.T) {
 	assert.Equal(t, 1, humanCount)
 }
 
+func TestMighty_ActionLogUsesDetailCode(t *testing.T) {
+	m := newTestMighty()
+	m.Reset()
+	require.NoError(t, m.PlayerBid(0, false))
+	var entry *domain.ActionLogEntry
+	for _, candidate := range m.GetActionLog() {
+		if candidate.DetailCode == "mighty.log.bidPass" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}
+
 func TestMighty_Reset_dealCards(t *testing.T) {
 	m := newTestMighty()
 	m.Reset()

@@ -49,5 +49,6 @@
   "helpHint": "  h                    show a hint",
   "helpLog": "  l                    show the action log",
   "errCardIndexOutOfRange": "The card index is out of range.",
-  "errMustFollowLeadSuit": "You must follow the lead suit or play a trump card."
+  "errMustFollowLeadSuit": "You must follow the lead suit or play a trump card.",
+  "log.turnUp": "Turn-up: {{card}} (trump {{suit}})", "log.begPhase": "{{name}} to stand or beg", "log.begPhaseRedeal": "{{name}} to stand or beg (re-deal)", "log.stand": "{{name}} stands", "log.beg": "{{name}} begs", "log.gift": "{{dealer}} gifts 1 point to {{elder}} (take-it)", "log.redeal": "Deck exhausted on run; re-dealing the hand", "log.run": "Run the cards: new turn-up {{card}}", "log.trumpSet": "New trump {{suit}}", "log.playStart": "Trump is {{suit}}. {{name}} leads.", "log.play": "{{name}} plays {{card}}", "log.trickWin": "{{name}} wins trick {{trick}}", "log.score": "{{name}} scores {{kind}}", "log.cumulativeScore": "{{name}}: total={{total}}", "log.gameEnd": "{{name}} wins the game!"
 }

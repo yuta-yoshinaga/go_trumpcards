@@ -73,5 +73,6 @@
   "errJokerRequired": "ジョーカーリードはジョーカーで行ってください。",
   "errInvalidDemandSuit": "無効な指定スートです。",
   "errJokerCallRequiresJoker": "ジョーカーコール: ジョーカーを出してください。",
-  "errMustFollowLeadSuit": "リードスートに従ってください。"
+  "errMustFollowLeadSuit": "リードスートに従ってください。",
+  "log.trickWin": "{{name}} が{{trick}}トリック目を取りました", "log.trickWinWithPoints": "{{name}} が{{trick}}トリック目を取りました（得点札{{points}}枚）", "log.roundResultDeclarer": "宣言者側の勝利です！（{{points}}/{{bid}}得点札）", "log.roundResultOpposition": "野党側の勝利です！（{{points}}/{{bid}}得点札）", "log.roundScore": "{{name}}: ラウンド={{score}}", "log.cumulativeScore": "{{name}}: 累積={{total}}", "log.bidPass": "{{name}} がパスしました", "log.bid": "{{name}} が{{bid}}をビッドしました", "log.bidNoTrump": "{{name}} が{{bid}}をノートランプでビッドしました", "log.forcedBid": "{{name}} は強制的に{{bid}}をビッドします（全員パス）", "log.declarer": "{{name}} が宣言者になります（ビッド{{bid}}）", "log.declareTrumpNoTrump": "{{name}} がノートランプを宣言しました", "log.declareTrump": "{{name}} が{{suit}}を切り札に宣言しました", "log.declarePartner": "{{name}} が{{card}}をパートナーカードに指名しました", "log.partnerSelf": "{{name}} がパートナーカードを自分で持っています（単独宣言者）", "log.partnerSelfDiscard": "{{name}} がパートナーカードを捨てました（単独宣言者）", "log.exchange": "{{name}} がキティのカード{{count}}枚を捨てました", "log.playJokerLead": "{{name}} が{{card}}を出しました（{{suit}}を要求）", "log.play": "{{name}} が{{card}}を出しました", "log.partnerReveal": "{{name}} がパートナーとして公開されました！", "log.gameEnd": "{{name}} の勝利でゲーム終了です！"
 }
