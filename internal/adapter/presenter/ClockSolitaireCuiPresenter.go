@@ -99,10 +99,6 @@ func (pr *ClockSolitaireCuiPresenter) Output(g interfaces.ClockSolitaireGame, la
 // ActionLogOutput emits the action-log transcript as plain text.
 func (pr *ClockSolitaireCuiPresenter) ActionLogOutput(g interfaces.ClockSolitaireGame) string {
 	return buildCuiOutput(i18n.T("clocksolitaire.actionLogTitle"), func(b *strings.Builder) {
-		for _, entry := range g.GetActionLog() {
-			b.WriteString(i18n.Tf("clocksolitaire.actionLogEntry",
-				"turn", strconv.Itoa(entry.TurnNumber),
-				"detail", entry.Detail) + "\n")
-		}
+		b.WriteString(actionLogToText(g.GetActionLog()))
 	})
 }

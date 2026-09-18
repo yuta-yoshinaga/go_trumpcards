@@ -44,3 +44,22 @@ func (b *actionLogBase) appendLogAt(turnNumber, playerIdx int, actionType, detai
 		Cards:      cards,
 	})
 }
+
+// appendLogCode records one action with a locale-independent detail code.
+// During the ADR-0040 migration, it coexists with appendLog (the Detail variant).
+func (b *actionLogBase) appendLogCode(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCodeAt(len(b.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+}
+
+// appendLogCodeAt records one action with a caller-supplied turn number and a locale-independent detail code.
+// During the ADR-0040 migration, it coexists with appendLog (the Detail variant).
+func (b *actionLogBase) appendLogCodeAt(turnNumber, playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.actionLog = append(b.actionLog, &ActionLogEntry{
+		TurnNumber:   turnNumber,
+		PlayerIdx:    playerIdx,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        cards,
+	})
+}

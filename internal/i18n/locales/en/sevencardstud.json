@@ -85,5 +85,19 @@
   "helpLog": "  l                    show the action log",
   "bringInLine": "Bring-in: {{name}} (forced bet, acts first)",
   "wonSplit": " (high: {{high}} / low: {{low}})",
-  "wonScoop": " *scoop*"
+  "wonScoop": " *scoop*",
+  "log.ante": "posts ante {{amount}}",
+  "log.bringIn": "brings in {{amount}}",
+  "log.dealtFourthStreet": "dealt fourth street",
+  "log.dealtFifthStreet": "dealt fifth street",
+  "log.dealtSixthStreet": "dealt sixth street",
+  "log.dealtSeventhStreet": "dealt seventh street",
+  "log.showdown": "showdown",
+  "log.fold": "fold",
+  "log.check": "check",
+  "log.call": "call {{amount}}",
+  "log.bet": "bet {{amount}}",
+  "log.raise": "raise to {{amount}}",
+  "log.allIn": "all in {{amount}}",
+  "log.rebuy": "rebuy"
 }

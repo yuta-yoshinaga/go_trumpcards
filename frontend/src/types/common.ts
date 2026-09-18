@@ -96,6 +96,10 @@ export interface ActionLogEntry {
   playerIdx: number;
   actionType: string;
   detail: string;
+  /** Translation key for the entry detail, when the entry has been migrated. */
+  detailCode?: string;
+  /** Interpolation values for {@link detailCode}. */
+  detailParams?: Record<string, string>;
   cards?: Card[];
 }
 

@@ -35,6 +35,46 @@ describe('ActionLogPanel', () => {
     expect(screen.getByText(/T3 \[Player 1\] stand: stood/)).toBeInTheDocument();
   });
 
+  it('translates detailCode with detailParams', () => {
+    render(
+      <ActionLogPanel
+        entries={[
+          {
+            turnNumber: 4,
+            playerIdx: 0,
+            actionType: 'play',
+            detail: 'fallback',
+            detailCode: 'player.cpu',
+            detailParams: { id: '7' },
+          },
+        ]}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/T4 \[Player 0\] play: CPU 7/)).toBeInTheDocument();
+  });
+
+  it('uses detail when detailCode is absent or untranslated', () => {
+    render(
+      <ActionLogPanel
+        entries={[
+          { turnNumber: 5, playerIdx: 0, actionType: 'play', detail: 'legacy detail' },
+          {
+            turnNumber: 6,
+            playerIdx: 0,
+            actionType: 'pass',
+            detail: 'untranslated fallback',
+            detailCode: 'missing.actionLog.detail',
+          },
+        ]}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/T5 \[Player 0\] play: legacy detail/)).toBeInTheDocument();
+    expect(screen.getByText(/T6 \[Player 0\] pass: untranslated fallback/)).toBeInTheDocument();
+    expect(screen.queryByText(/missing\.actionLog\.detail/)).not.toBeInTheDocument();
+  });
+
   it('shows empty message when entries is empty', () => {
     render(<ActionLogPanel entries={[]} onClose={vi.fn()} />);
     expect(screen.getByText('棋譜はありません。')).toBeInTheDocument();
