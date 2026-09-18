@@ -65,5 +65,18 @@
   "helpExampleRaise": "  ra 200               raise to 200 chips total",
   "helpExampleCall": "  c                    call the current bet",
   "helpLog": "  l                    show the action log",
-  "blindsLine": "SB:{{sb}} BB:{{bb}}"
+  "blindsLine": "SB:{{sb}} BB:{{bb}}",
+  "log.smallBlind": "posts small blind {{amount}}",
+  "log.bigBlind": "posts big blind {{amount}}",
+  "log.dealtFlop": "dealt flop",
+  "log.dealtTurn": "dealt turn",
+  "log.dealtRiver": "dealt river",
+  "log.showdown": "showdown",
+  "log.fold": "fold",
+  "log.check": "check",
+  "log.call": "call {{amount}}",
+  "log.bet": "bet {{amount}}",
+  "log.raise": "raise to {{amount}}",
+  "log.allIn": "all in {{amount}}",
+  "log.rebuy": "rebuy"
 }

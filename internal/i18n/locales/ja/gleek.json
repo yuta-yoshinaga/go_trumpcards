@@ -58,5 +58,19 @@
   "errDiscardCardCount": "捨てる札をちょうど {{count}} 枚選んでください",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errDuplicateDiscard": "同じ札を二度選べません",
-  "errFollowLeadSuit": "リードスートに従ってください"
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.bidOpen": "{{name}} は {{amount}} から競りを開始します",
+  "log.turnUp": "表向きの {{card}} により切り札は {{suit}} です",
+  "log.tiddyTurnUp": "ティディが表になり、{{name}} が各対戦相手から {{amount}} を受け取ります",
+  "log.bidPass": "{{name}} は競りから降りました",
+  "log.bid": "{{name}} が {{amount}} をビッドしました",
+  "log.buyStock": "{{name}} がストックを {{bid}} で購入し、各対戦相手に {{amount}} を支払いました",
+  "log.takeStock": "{{name}} がストックから {{count}} 枚取りました",
+  "log.discard": "{{name}} が {{count}} 枚捨てました",
+  "log.ruff": "{{name}} が {{suit}} の {{total}} でラフを取りました",
+  "log.meld": "{{name}} が各対戦相手から {{value}} の、{{rank}} の {{meld}} を宣言しました",
+  "log.play": "{{name}} が {{card}} を出しました",
+  "log.trickWin": "{{name}} が {{trick}} トリック目を {{points}} 点で取りました",
+  "log.roundScore": "{{name}} が {{total}} 点中 {{points}} 点を取り、基準 {{par}} に対して {{delta}} です",
+  "log.gameEnd": "{{name}} がマッチに勝利しました！"
 }

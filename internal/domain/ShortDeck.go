@@ -207,7 +207,10 @@ func (sd *ShortDeck) continueReset() error {
 
 // postBlinds ブラインド投入
 func (sd *ShortDeck) postBlinds() {
-	postBlindsFor(sd.players, sd.dealerIdx, sd.config.SmallBlind, sd.config.BigBlind, &sd.pot, &sd.lastBet, sd.actedFlags, sd)
+	postBlindsFor(sd.players, sd.dealerIdx, sd.config.SmallBlind, sd.config.BigBlind, &sd.pot, &sd.lastBet, sd.actedFlags,
+		func(playerIdx int, label string, amount int) {
+			sd.appendLog(playerIdx, "blind", fmt.Sprintf("posts %s %d", label, amount), nil)
+		})
 }
 
 // PlayerAction 人間プレイヤーのアクション実行

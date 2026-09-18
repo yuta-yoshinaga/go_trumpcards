@@ -62,5 +62,21 @@
   "phaseDraw": "Draw",
   "helpExampleBet": "  b 100               bet 100",
   "resultDraw": "  Draw hand: {{cards}}\n",
-  "tableSizeFixed": "Dramaha is 4-handed only — {{val}} seats would need more than the 52 cards in the deck (each seat can use up to 10)."
+  "tableSizeFixed": "Dramaha is 4-handed only — {{val}} seats would need more than the 52 cards in the deck (each seat can use up to 10).",
+  "log.exposedFlop": "exposed the first flop card",
+  "log.exchanged": "exchanged {{count}} card(s)",
+  "log.dealtFlop": "dealt flop",
+  "log.drawRound": "draw round",
+  "log.dealtTurn": "dealt turn",
+  "log.dealtRiver": "dealt river",
+  "log.showdown": "showdown",
+  "log.rebuy": "rebuy",
+  "log.fold": "fold",
+  "log.check": "check",
+  "log.call": "call {{amount}}",
+  "log.bet": "bet {{amount}}",
+  "log.raise": "raise to {{amount}}",
+  "log.allIn": "all in {{amount}}",
+  "log.smallBlind": "posts small blind {{amount}}",
+  "log.bigBlind": "posts big blind {{amount}}"
 }

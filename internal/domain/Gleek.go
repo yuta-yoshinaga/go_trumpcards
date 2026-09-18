@@ -330,11 +330,11 @@ func (g *Gleek) deal() {
 func (g *Gleek) openAuction() {
 	g.phase = GleekPhaseBid
 	g.bids[g.elderIdx] = GleekMinBid
-	g.appendLog(g.elderIdx, "bid_open",
-		fmt.Sprintf("%s must open at %d", playerName(g.players, g.elderIdx), GleekMinBid), nil)
+	g.appendLog(g.elderIdx, "bid_open", "gleek.log.bidOpen",
+		map[string]string{"name": playerName(g.players, g.elderIdx), "amount": fmt.Sprint(GleekMinBid)}, nil)
 	if g.turnUp != nil {
-		g.appendLog(-1, "turn_up",
-			fmt.Sprintf("turn-up %s sets trump to %s", cardStr(g.turnUp), gleekSuitName(g.trumpSuit)), []*Card{g.turnUp})
+		g.appendLog(-1, "turn_up", "gleek.log.turnUp",
+			map[string]string{"card": cardStr(g.turnUp), "suit": gleekSuitName(g.trumpSuit)}, []*Card{g.turnUp})
 		g.payTiddyTurnUp()
 	}
 	g.currentBidderIdx = g.nextBidder(g.elderIdx)
@@ -352,9 +352,8 @@ func (g *Gleek) payTiddyTurnUp() {
 		}
 		g.playerScores[i] -= GleekTiddyTurnUpBonus
 	}
-	g.appendLog(g.dealerIdx, "tiddy_turn_up",
-		fmt.Sprintf("Tiddy turned up: %s takes %d from each opponent",
-			playerName(g.players, g.dealerIdx), GleekTiddyTurnUpBonus), nil)
+	g.appendLog(g.dealerIdx, "tiddy_turn_up", "gleek.log.tiddyTurnUp",
+		map[string]string{"name": playerName(g.players, g.dealerIdx), "amount": fmt.Sprint(GleekTiddyTurnUpBonus)}, nil)
 }
 
 // --- Bidding ---
@@ -433,12 +432,12 @@ func (g *Gleek) highestBidderIdx() int {
 func (g *Gleek) applyBid(playerIdx, bid int) {
 	if bid == 0 {
 		g.passed[playerIdx] = true
-		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s drops out", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "bid_pass", "gleek.log.bidPass",
+			map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	} else {
 		g.bids[playerIdx] = bid
-		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %d", playerName(g.players, playerIdx), bid), nil)
+		g.appendLog(playerIdx, "bid", "gleek.log.bid",
+			map[string]string{"name": playerName(g.players, playerIdx), "amount": fmt.Sprint(bid)}, nil)
 	}
 
 	if g.activeBidders() <= 1 || g.NextBidAmount() == 0 {
@@ -493,9 +492,8 @@ func (g *Gleek) finalizeAuction() {
 		}
 		g.playerScores[i] += half
 	}
-	g.appendLog(buyer, "buy_stock",
-		fmt.Sprintf("%s buys the stock for %d, paying %d to each opponent",
-			playerName(g.players, buyer), g.winningBid, half), nil)
+	g.appendLog(buyer, "buy_stock", "gleek.log.buyStock",
+		map[string]string{"name": playerName(g.players, buyer), "bid": fmt.Sprint(g.winningBid), "amount": fmt.Sprint(half)}, nil)
 
 	g.giveStockToBuyer()
 	g.phase = GleekPhaseDiscard
@@ -517,8 +515,8 @@ func (g *Gleek) giveStockToBuyer() {
 		g.players[g.buyerIdx].AddCard(c)
 	}
 	g.stock = g.stock[:1]
-	g.appendLog(g.buyerIdx, "take_stock",
-		fmt.Sprintf("%s takes %d cards from the stock", playerName(g.players, g.buyerIdx), len(taken)), taken)
+	g.appendLog(g.buyerIdx, "take_stock", "gleek.log.takeStock",
+		map[string]string{"name": playerName(g.players, g.buyerIdx), "count": fmt.Sprint(len(taken))}, taken)
 }
 
 // --- Discard ---
@@ -573,8 +571,8 @@ func (g *Gleek) applyDiscard(playerIdx int, indices []int) {
 			discarded = append(discarded, c)
 		}
 	}
-	g.appendLog(playerIdx, "discard",
-		fmt.Sprintf("%s discards %d cards", playerName(g.players, playerIdx), len(discarded)), discarded)
+	g.appendLog(playerIdx, "discard", "gleek.log.discard",
+		map[string]string{"name": playerName(g.players, playerIdx), "count": fmt.Sprint(len(discarded))}, discarded)
 	g.startPlay()
 }
 
@@ -688,9 +686,8 @@ func (g *Gleek) scoreRuff() {
 		}
 		g.playerScores[i] -= GleekRuffStake
 	}
-	g.appendLog(winner, "ruff",
-		fmt.Sprintf("%s wins the ruff with %d in %s",
-			playerName(g.players, winner), g.ruffs[winner].Total, gleekSuitName(g.ruffs[winner].Suit)), nil)
+	g.appendLog(winner, "ruff", "gleek.log.ruff",
+		map[string]string{"name": playerName(g.players, winner), "total": fmt.Sprint(g.ruffs[winner].Total), "suit": gleekSuitName(g.ruffs[winner].Suit)}, nil)
 }
 
 // scoreMelds グリークとマーニヴァルを申告し、各相手から点を取る。
@@ -712,9 +709,8 @@ func (g *Gleek) scoreMelds() {
 				}
 				g.playerScores[j] -= value
 			}
-			g.appendLog(seat, "meld",
-				fmt.Sprintf("%s declares a %s of %s worth %d from each opponent",
-					playerName(g.players, seat), gleekMeldName(n), gleekRankName(rank), value), nil)
+			g.appendLog(seat, "meld", "gleek.log.meld",
+				map[string]string{"name": playerName(g.players, seat), "meld": gleekMeldName(n), "rank": gleekRankName(rank), "value": fmt.Sprint(value)}, nil)
 		}
 	}
 }
@@ -766,8 +762,8 @@ func (g *Gleek) playCard(playerIdx int, card *Card) {
 		return
 	}
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "gleek.log.play",
+		map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == GleekPlayerCnt {
 		g.phase = GleekPhaseTrickEnd
@@ -797,8 +793,8 @@ func (g *Gleek) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.trickPoints[winnerIdx] += points
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d for %d", playerName(g.players, winnerIdx), g.trickNumber, points), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "gleek.log.trickWin",
+		map[string]string{"name": playerName(g.players, winnerIdx), "trick": fmt.Sprint(g.trickNumber), "points": fmt.Sprint(points)}, trickCards)
 
 	// **毎トリック記録する。** 最終トリックだけ入れると、画面は「誰が取ったか」を
 	// 出せないまま次へ進むボタンだけ出すことになり、棋譜を開くまで分からない。
@@ -861,9 +857,8 @@ func (g *Gleek) applyTrickSettlement() {
 	for i := 0; i < GleekPlayerCnt; i++ {
 		delta := g.trickPoints[i] - par
 		g.playerScores[i] += delta
-		g.appendLog(i, "round_score",
-			fmt.Sprintf("%s takes %d of %d (par %d) for %+d",
-				playerName(g.players, i), g.trickPoints[i], total, par, delta), nil)
+		g.appendLog(i, "round_score", "gleek.log.roundScore",
+			map[string]string{"name": playerName(g.players, i), "points": fmt.Sprint(g.trickPoints[i]), "total": fmt.Sprint(total), "par": fmt.Sprint(par), "delta": fmt.Sprintf("%+d", delta)}, nil)
 	}
 }
 
@@ -895,7 +890,12 @@ func (g *Gleek) checkGameEnd() {
 	g.winnerPlayer = leader
 	g.phase = GleekPhaseGameEnd
 	g.result = g.humanResult(leader, tie)
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+	g.appendLog(-1, "game_end", "gleek.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
+}
+
+// appendLog records a Gleek action with a locale-independent detail code.
+func (g *Gleek) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // humanResult 人間 (seat 0) の視点でマッチ結果を返す。

@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -1244,8 +1245,8 @@ func (p *fakeBlindSeat) GetComparisonCards() []*Card { return nil }
 
 type fakeBlindLogger struct{ details []string }
 
-func (g *fakeBlindLogger) appendLog(_ int, _, detail string, _ []*Card) {
-	g.details = append(g.details, detail)
+func (g *fakeBlindLogger) logBlind(_ int, label string, amount int) {
+	g.details = append(g.details, fmt.Sprintf("posts %s %d", label, amount))
 }
 
 func TestPostBlindsFor(t *testing.T) {
@@ -1255,7 +1256,7 @@ func TestPostBlindsFor(t *testing.T) {
 	g := &fakeBlindLogger{}
 
 	// Dealer at 0, so seat 1 posts the small blind and seat 2 the big blind.
-	postBlindsFor(seats, 0, 5, 10, &pot, &lastBet, acted, g)
+	postBlindsFor(seats, 0, 5, 10, &pot, &lastBet, acted, g.logBlind)
 
 	assert.Equal(t, 95, seats[1].chips)
 	assert.Equal(t, 90, seats[2].chips)
@@ -1272,7 +1273,7 @@ func TestPostBlindsFor_ShortStackGoesAllIn(t *testing.T) {
 	acted := make([]bool, 3)
 	g := &fakeBlindLogger{}
 
-	postBlindsFor(seats, 0, 5, 10, &pot, &lastBet, acted, g)
+	postBlindsFor(seats, 0, 5, 10, &pot, &lastBet, acted, g.logBlind)
 
 	assert.Equal(t, 0, seats[1].chips)
 	assert.True(t, seats[1].allIn)
@@ -1288,7 +1289,7 @@ func TestPostBlindsFor_WrapsAroundFromTheDealer(t *testing.T) {
 	pot, lastBet := 0, 0
 	acted := make([]bool, 3)
 
-	postBlindsFor(seats, 2, 5, 10, &pot, &lastBet, acted, &fakeBlindLogger{})
+	postBlindsFor(seats, 2, 5, 10, &pot, &lastBet, acted, (&fakeBlindLogger{}).logBlind)
 
 	assert.Equal(t, 95, seats[0].chips, "small blind wraps to seat 0")
 	assert.Equal(t, 90, seats[1].chips, "big blind to seat 1")

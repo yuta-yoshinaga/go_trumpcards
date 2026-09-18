@@ -254,7 +254,7 @@ func (h *Holdem) postBlinds() {
 	h.players[sbIdx].SubtractChips(sbAmount)
 	h.players[sbIdx].SetCurrentBet(sbAmount)
 	h.pot += sbAmount
-	h.appendLog(sbIdx, "blind", fmt.Sprintf("posts small blind %d", sbAmount), nil)
+	h.appendLog(sbIdx, "blind", "holdem.log.smallBlind", map[string]string{"amount": fmt.Sprint(sbAmount)}, nil)
 
 	bbAmount := h.config.BigBlind
 	if h.players[bbIdx].GetChips() < bbAmount {
@@ -263,7 +263,7 @@ func (h *Holdem) postBlinds() {
 	h.players[bbIdx].SubtractChips(bbAmount)
 	h.players[bbIdx].SetCurrentBet(bbAmount)
 	h.pot += bbAmount
-	h.appendLog(bbIdx, "blind", fmt.Sprintf("posts big blind %d", bbAmount), nil)
+	h.appendLog(bbIdx, "blind", "holdem.log.bigBlind", map[string]string{"amount": fmt.Sprint(bbAmount)}, nil)
 
 	h.lastBet = bbAmount
 
@@ -381,24 +381,24 @@ func (h *Holdem) advancePhase() {
 				h.communityCards = append(h.communityCards, card)
 			}
 		}
-		h.appendLog(-1, "deal", "dealt flop", h.communityCards)
+		h.appendLog(-1, "deal", "holdem.log.dealtFlop", nil, h.communityCards)
 	case HoldemPhaseFlop:
 		h.phase = HoldemPhaseTurn
 		card := h.trumpCards.DrawCard()
 		if card != nil {
 			h.communityCards = append(h.communityCards, card)
 		}
-		h.appendLog(-1, "deal", "dealt turn", h.communityCards[3:])
+		h.appendLog(-1, "deal", "holdem.log.dealtTurn", nil, h.communityCards[3:])
 	case HoldemPhaseTurn:
 		h.phase = HoldemPhaseRiver
 		card := h.trumpCards.DrawCard()
 		if card != nil {
 			h.communityCards = append(h.communityCards, card)
 		}
-		h.appendLog(-1, "deal", "dealt river", h.communityCards[4:])
+		h.appendLog(-1, "deal", "holdem.log.dealtRiver", nil, h.communityCards[4:])
 	case HoldemPhaseRiver:
 		h.phase = HoldemPhaseShowdown
-		h.appendLog(-1, "showdown", "showdown", nil)
+		h.appendLog(-1, "showdown", "holdem.log.showdown", nil, nil)
 		h.resolveShowdown()
 		return
 	}
@@ -680,18 +680,23 @@ func (h *Holdem) GetHandCount() int { return h.handCount }
 func (h *Holdem) logAction(playerIdx, action, amount int) {
 	switch action {
 	case HoldemActionFold:
-		h.appendLog(playerIdx, "fold", "fold", nil)
+		h.appendLog(playerIdx, "fold", "holdem.log.fold", nil, nil)
 	case HoldemActionCheck:
-		h.appendLog(playerIdx, "check", "check", nil)
+		h.appendLog(playerIdx, "check", "holdem.log.check", nil, nil)
 	case HoldemActionCall:
-		h.appendLog(playerIdx, "call", fmt.Sprintf("call %d", h.players[playerIdx].GetCurrentBet()), nil)
+		h.appendLog(playerIdx, "call", "holdem.log.call", map[string]string{"amount": fmt.Sprint(h.players[playerIdx].GetCurrentBet())}, nil)
 	case HoldemActionBet:
-		h.appendLog(playerIdx, "bet", fmt.Sprintf("bet %d", amount), nil)
+		h.appendLog(playerIdx, "bet", "holdem.log.bet", map[string]string{"amount": fmt.Sprint(amount)}, nil)
 	case HoldemActionRaise:
-		h.appendLog(playerIdx, "raise", fmt.Sprintf("raise to %d", amount), nil)
+		h.appendLog(playerIdx, "raise", "holdem.log.raise", map[string]string{"amount": fmt.Sprint(amount)}, nil)
 	case HoldemActionAllIn:
-		h.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", h.players[playerIdx].GetCurrentBet()), nil)
+		h.appendLog(playerIdx, "allin", "holdem.log.allIn", map[string]string{"amount": fmt.Sprint(h.players[playerIdx].GetCurrentBet())}, nil)
 	}
+}
+
+// appendLog records a Hold'em action with a locale-independent detail code.
+func (h *Holdem) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	h.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // holdemJSON is the JSON wire format for Holdem.

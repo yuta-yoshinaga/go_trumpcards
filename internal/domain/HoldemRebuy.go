@@ -35,7 +35,7 @@ func (h *Holdem) Rebuy() error {
 		if p.GetIsHuman() && p.GetChips() <= 0 && h.rebuyCounts[i] < h.config.RebuyMaxCount {
 			p.AddChips(h.config.RebuyChips)
 			h.rebuyCounts[i]++
-			h.appendLog(i, "rebuy", "rebuy", nil)
+			h.appendLog(i, "rebuy", "holdem.log.rebuy", nil, nil)
 			break
 		}
 	}
