@@ -41,8 +41,8 @@ func (c ViraConfig) Validate() error {
 	// 倍数でないと各プレイヤーがディーラーを務めた回数が揃わず、
 	// 配り順の有利不利が精算に残ったままマッチが終わる。
 	if c.TargetRounds%ViraPlayerCnt != 0 {
-		return NewDomainError(ErrInvalidPlay,
-			fmt.Sprintf("局数は %d の倍数でなければなりません: %d", ViraPlayerCnt, c.TargetRounds))
+		return NewDomainErrorCode(ErrInvalidPlay, "vira.errTargetRoundsNotMultiple",
+			map[string]string{"min": fmt.Sprintf("%d", ViraPlayerCnt), "rounds": fmt.Sprintf("%d", c.TargetRounds)})
 	}
 	return nil
 }

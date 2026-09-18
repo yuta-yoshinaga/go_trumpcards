@@ -44,5 +44,6 @@
   "errCardIndexOutOfRange": "The card index is out of range.",
   "errDuplicateScarto": "You cannot choose the same card twice.",
   "errCannotDiscardTrumpOrMatto": "Trumps and the Matto cannot be discarded.",
-  "errFollowLeadSuit": "You must follow the led suit."
+  "errFollowLeadSuit": "You must follow the led suit.",
+  "errTargetRoundsNotMultiple": "The number of rounds must be a multiple of {{min}}: {{rounds}}."
 }

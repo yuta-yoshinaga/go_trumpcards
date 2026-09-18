@@ -58,7 +58,7 @@ func (p *BauernschnapsenPlayer) UnmarshalJSON(data []byte) error {
 		p.TrickHolder = *j.TrickHolder
 	}
 	if j.Team < 0 || j.Team >= BauernschnapsenTeamCnt {
-		return NewDomainError(ErrInvalidPlay, "チーム番号が範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errTeamOutOfRange", nil)
 	}
 	p.team = j.Team
 	return nil

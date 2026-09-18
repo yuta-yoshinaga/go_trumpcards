@@ -50,5 +50,6 @@
   "helpNextRound": "  nr                   go to next round",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpExampleBid": "  pass                 drop out of the bidding",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "errTargetRoundsNotMultiple": "The number of rounds must be a multiple of {{min}}: {{rounds}}."
 }
