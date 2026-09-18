@@ -84,6 +84,16 @@ func TestTarneebWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "boom", got.Message)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		tn := newTarneebForWebTest()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "tarneeb.errInvalidTrumpSuit", nil)
+		raw := p.Output(tn, err)
+		var got webOutPartial
+		require.NoError(t, json.Unmarshal([]byte(raw), &got))
+		assert.Empty(t, got.Message)
+		assert.Equal(t, "tarneeb.errInvalidTrumpSuit", got.MessageCode)
+	})
+
 	t.Run("trick end + round end", func(t *testing.T) {
 		tn := newTarneebForWebTest()
 		tn.SetPhase(domain.TarneebPhaseTrickEnd)

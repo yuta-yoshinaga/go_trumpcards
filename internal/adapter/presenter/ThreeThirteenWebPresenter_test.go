@@ -84,6 +84,14 @@ func TestThreeThirteenWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "boom", out.Message)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupThreeThirteenWebMock(domain.ThreeThirteenPhaseDraw, false)
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "threethirteen.errDiscardPileEmpty", nil)
+		out := unmarshalThreeThirteen(t, p.Output(m, err))
+		assert.Empty(t, out.Message)
+		assert.Equal(t, "threethirteen.errDiscardPileEmpty", out.MessageCode)
+	})
+
 	t.Run("game ended", func(t *testing.T) {
 		m, _ := setupThreeThirteenWebMock(domain.ThreeThirteenPhaseGameEnd, true)
 		out := unmarshalThreeThirteen(t, p.Output(m, nil))

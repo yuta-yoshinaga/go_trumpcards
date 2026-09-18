@@ -108,6 +108,9 @@ func (p *TarneebWebPresenter) buildPlayersOutput(t interfaces.TarneebGame) []*co
 // buildMessage ゲーム結果メッセージを構築
 func (p *TarneebWebPresenter) buildMessage(t interfaces.TarneebGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if t.GetGameEndFlag() {

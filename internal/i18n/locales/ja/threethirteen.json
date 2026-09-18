@@ -27,5 +27,9 @@
   "result.humanWin": "あなたの勝利です！",
   "result.cpuWin": "CPU {{cpuId}}の勝利です",
   "helpExampleDraw": "  ds                   手番の最初に山札から 1 枚引く",
-  "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる"
+  "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる",
+  "errDiscardPileEmpty": "捨て札が空です",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errAlreadyKnocked": "既にノックされています",
+  "errCannotKnock": "手札を完全にメルドできないためノックできません"
 }
