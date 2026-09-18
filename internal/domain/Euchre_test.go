@@ -898,6 +898,15 @@ func TestEuchre_ActionLog(t *testing.T) {
 	e.SetBidPlayerIdx(0)
 	_ = e.PlayerPickUp(false, false) // pass
 	assert.Greater(t, len(e.GetActionLog()), 0)
+	var passLog *domain.ActionLogEntry
+	for _, entry := range e.GetActionLog() {
+		if entry.DetailCode == "euchre.log.pass" {
+			passLog = entry
+		}
+	}
+	require.NotNil(t, passLog)
+	assert.Equal(t, map[string]string{"name": "You"}, passLog.DetailParams)
+	assert.Empty(t, passLog.Detail)
 }
 
 // --- ResolveTrick with going alone (3 cards) ---

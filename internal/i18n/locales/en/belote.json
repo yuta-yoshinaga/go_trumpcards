@@ -43,5 +43,6 @@
   "errMustFollowTrump": "You must follow the lead suit (trump).",
   "errMustOvertrump": "You must overtrump (obligation à monter).",
   "errFollowLeadSuit": "You must follow the lead suit.",
-  "errMustPlayTrump": "You must play a trump (obligation à couper)."
+  "errMustPlayTrump": "You must play a trump (obligation à couper).",
+  "log.pass": "{{name}} passes", "log.orderUp": "{{name}} takes {{card}} as trump", "log.callTrump": "{{name}} calls {{suit}} as trump", "log.passOut": "All players passed; redealing", "log.trickWin": "{{name}} wins trick {{trick}} ({{points}} pts)", "log.dixDeDer": "{{name}} wins last trick +{{points}} (Dix de Der)", "log.makerWin": "Team {{team}} (maker) wins the round: {{makerPoints}} vs {{defenderPoints}}", "log.litige": "Litige (tie {{makerPoints}}-{{defenderPoints}}): defenders take maker's card points", "log.dedans": "Team {{team}} (maker) is dedans: {{makerPoints}} < {{defenderPoints}}", "log.capot": "Team {{team}} capot (+90)", "log.capotDefender": "Team {{team}} capot against maker (+90)", "log.teamScore": "Team {{team}}: {{points}} points (total {{total}})", "log.play": "{{name}} plays {{card}}", "log.beloteRebelote": "{{name}} declares Belote/Rebelote (+{{points}})", "log.gameEnd": "Team {{team}} wins the game!"
 }
