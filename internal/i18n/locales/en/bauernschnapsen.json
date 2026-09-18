@@ -58,5 +58,6 @@
   "errStateSliceInvalid": "The state slice is invalid.",
   "errPlayerNil": "Player is nil.",
   "errTrickCardNil": "Trick card is nil.",
-  "errActionLogEntryNil": "Action log entry is nil."
+  "errActionLogEntryNil": "Action log entry is nil.",
+  "errTeamOutOfRange": "The team number is out of range."
 }

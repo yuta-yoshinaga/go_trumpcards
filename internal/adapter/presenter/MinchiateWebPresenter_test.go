@@ -157,6 +157,15 @@ func TestMinchiateWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, res.MessageCode)
 	})
 
+	t.Run("coded error returns message code and no message", func(t *testing.T) {
+		m, _ := setupMinchiateWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "minchiate.errTargetRoundsNotMultiple", map[string]string{"min": "4", "rounds": "5"})
+		var res controller.MinchiateWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &res))
+		assert.Empty(t, res.Message)
+		assert.Equal(t, "minchiate.errTargetRoundsNotMultiple", res.MessageCode)
+	})
+
 	// 勝敗はチーム単位。人間の席番号ではなく、人間の属するチームで判定する。
 	t.Run("game end reports the human's team, a rival team, or a draw", func(t *testing.T) {
 		cases := map[int]string{

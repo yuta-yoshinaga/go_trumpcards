@@ -50,5 +50,6 @@
   "helpNextRound": "  nr                   次のラウンドへ",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpExampleBid": "  pass                 入札を降りる",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errTargetRoundsNotMultiple": "局数は {{min}} の倍数でなければなりません: {{rounds}}"
 }

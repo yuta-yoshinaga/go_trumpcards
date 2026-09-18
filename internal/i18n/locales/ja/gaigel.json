@@ -49,5 +49,6 @@
   "errStateSliceInvalid": "状態スライスが不正です",
   "errPlayerNil": "プレイヤーが nil です",
   "errTrickCardNil": "トリックカードが nil です",
-  "errActionLogEntryNil": "棋譜エントリが nil です"
+  "errActionLogEntryNil": "棋譜エントリが nil です",
+  "errTeamOutOfRange": "チーム番号が範囲外です"
 }

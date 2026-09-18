@@ -117,6 +117,15 @@ func TestBauernschnapsenWebPresenter_Output(t *testing.T) {
 		assert.Nil(t, resObj.MessageParams)
 	})
 
+	t.Run("new coded error returns message code and no message", func(t *testing.T) {
+		m, _ := setupBauernschnapsenWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "bauernschnapsen.errTeamOutOfRange", nil))
+		var resObj controller.BauernschnapsenWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "bauernschnapsen.errTeamOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("round end phase", func(t *testing.T) {
 		m, _ := setupBauernschnapsenWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
