@@ -153,6 +153,15 @@ func TestYanivWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(p.Output(m, errors.New("oops"))), &resObj)
 		assert.Equal(t, "oops", resObj.Message)
 	})
+
+	t.Run("coded error returns message code and no message", func(t *testing.T) {
+		m, _ := setupYanivWebMock()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "yaniv.errInvalidCombo", nil)
+		var resObj controller.YanivWebOutput
+		_ = json.Unmarshal([]byte(p.Output(m, err)), &resObj)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "yaniv.errInvalidCombo", resObj.MessageCode)
+	})
 }
 
 func TestYanivWebPresenter_ActionLogOutput(t *testing.T) {

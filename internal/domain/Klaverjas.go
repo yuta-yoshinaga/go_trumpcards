@@ -192,7 +192,7 @@ func (g *Klaverjas) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "klaverjas.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -313,18 +313,18 @@ func (g *Klaverjas) validatePlay(playerIdx int, card *Card) error {
 	hasLeadSuit := g.playerHasSuit(playerIdx, leadSuit)
 	// リードスートを持っていれば必ず従う。
 	if hasLeadSuit && card.GetDesign() != leadSuit {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "klaverjas.errFollowLeadSuit", nil)
 	}
 	// リードスートのボイド: 切り札を持っていれば切り札を出す義務がある。
 	if !hasLeadSuit && g.playerHasSuit(playerIdx, g.trumpSuit) && card.GetDesign() != g.trumpSuit {
-		return NewDomainError(ErrInvalidPlay, "切り札を出してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "klaverjas.errMustPlayTrump", nil)
 	}
 	// 切り札を出す場合、追い越せる切り札があるなら追い越す義務がある。
 	// (リードスート自体が切り札のケースでも判定が漏れないよう、ここで一括検証する)
 	highest := g.highestTrumpStrengthInTrick()
 	if highest >= 0 && card.GetDesign() == g.trumpSuit {
 		if g.trumpStrength(card.GetValue()) <= highest && g.canOvertrump(playerIdx, highest) {
-			return NewDomainError(ErrInvalidPlay, "より強い切り札で追い越してください")
+			return NewDomainErrorCode(ErrInvalidPlay, "klaverjas.errMustOvertrump", nil)
 		}
 	}
 	return nil

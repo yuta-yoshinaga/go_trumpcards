@@ -195,7 +195,7 @@ func (g *Yaniv) PlayerDeclareYaniv() error {
 		return ErrNotHumanTurn
 	}
 	if g.players[g.currentPlayerIdx].HandTotal() > YanivCallThreshold {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("手札合計が%d点以下でないとYanivを宣言できません", YanivCallThreshold))
+		return NewDomainErrorCode(ErrInvalidPlay, "yaniv.errYanivCallTooHigh", map[string]string{"threshold": fmt.Sprintf("%d", YanivCallThreshold)})
 	}
 	g.resolveYaniv(g.currentPlayerIdx)
 	return nil
@@ -216,7 +216,7 @@ func (g *Yaniv) PlayerDrawFromPickup(end int) error {
 		return err
 	}
 	if len(g.pickupCards) == 0 {
-		return NewDomainError(ErrInvalidPlay, "引ける捨て札がありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "yaniv.errPickupEmpty", nil)
 	}
 	g.drawFromPickup(g.currentPlayerIdx, end)
 	return nil
@@ -243,10 +243,10 @@ func (g *Yaniv) discard(idx int, cardIndices []int) error {
 	p := g.players[idx]
 	cards, ok := g.collectComboCards(p, cardIndices)
 	if !ok {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "yaniv.errCardIndexOutOfRange", nil)
 	}
 	if !YanivValidCombo(cards) {
-		return NewDomainError(ErrInvalidPlay, "単札・同数の組・同スートの3枚以上の連番のみ捨てられます")
+		return NewDomainErrorCode(ErrInvalidPlay, "yaniv.errInvalidCombo", nil)
 	}
 
 	removed := p.RemoveCards(cardIndices)

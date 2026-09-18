@@ -24,5 +24,9 @@
   "limitLine": "スコア上限: {{limit}}（超過で脱落）",
   "nearOut": " ⚠脱落間近",
   "helpExampleDraw": "  ds                   捨てたあとに山札から 1 枚引く",
-  "helpExampleDiscard": "  d 0                  手番の最初に手札 0 番を捨てる"
+  "helpExampleDiscard": "  d 0                  手番の最初に手札 0 番を捨てる",
+  "errYanivCallTooHigh": "手札合計が{{threshold}}点以下でないとYanivを宣言できません",
+  "errPickupEmpty": "引ける捨て札がありません",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errInvalidCombo": "単札・同数の組・同スートの3枚以上の連番のみ捨てられます"
 }
