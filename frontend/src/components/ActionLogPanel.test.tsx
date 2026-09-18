@@ -54,6 +54,28 @@ describe('ActionLogPanel', () => {
     expect(screen.getByText(/T4 \[Player 0\] play: CPU 7/)).toBeInTheDocument();
   });
 
+  it('translates a migrated Clock Solitaire log detail when the legacy detail is empty', () => {
+    render(
+      <ActionLogPanel
+        entries={[
+          {
+            turnNumber: 1,
+            playerIdx: 0,
+            actionType: 'step',
+            detail: '',
+            detailCode: 'clocksolitaire.log.step',
+            detailParams: { pile: '5' },
+          },
+        ]}
+        onClose={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText(/T1 \[Player 0\] step: カードを5番パイルに配置/)).toBeInTheDocument();
+    expect(screen.queryByText(/clocksolitaire\.log\.step/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/T1 \[Player 0\] step:$/)).not.toBeInTheDocument();
+  });
+
   it('uses detail when detailCode is absent or untranslated', () => {
     render(
       <ActionLogPanel
