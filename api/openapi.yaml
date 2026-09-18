@@ -43352,6 +43352,16 @@ components:
           type: string
           description: Human-readable description of the action
           example: "Player 0 hit and drew ♠A"
+        detailCode:
+          type: string
+          description: i18n key for the action description; resolved by the client (empty for not-yet-migrated games)
+          example: clocksolitaire.log.step
+        detailParams:
+          type: object
+          description: Interpolation parameters for detailCode
+          additionalProperties:
+            type: string
+          example: {pile: "5"}
         cards:
           type: array
           description: Cards involved in the action (optional; revealed even if originally hidden)

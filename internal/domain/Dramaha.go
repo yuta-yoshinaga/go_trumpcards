@@ -256,7 +256,7 @@ func (o *Dramaha) continueReset() error {
 		}
 	}
 	if o.preflopCommunity > 0 {
-		o.appendLog(-1, "deal", "exposed the first flop card", o.communityCards)
+		o.appendLog(-1, "deal", "dramaha.log.exposedFlop", nil, o.communityCards)
 	}
 
 	o.phase = DramahaPhasePreFlop
@@ -270,7 +270,14 @@ func (o *Dramaha) continueReset() error {
 
 // postBlinds ブラインド投入
 func (o *Dramaha) postBlinds() {
-	postBlindsFor(o.players, o.dealerIdx, o.config.SmallBlind, o.config.BigBlind, &o.pot, &o.lastBet, o.actedFlags, o)
+	postBlindsFor(o.players, o.dealerIdx, o.config.SmallBlind, o.config.BigBlind, &o.pot, &o.lastBet, o.actedFlags,
+		func(playerIdx int, label string, amount int) {
+			code := "dramaha.log.smallBlind"
+			if label == "big blind" {
+				code = "dramaha.log.bigBlind"
+			}
+			o.appendLog(playerIdx, "blind", code, map[string]string{"amount": fmt.Sprint(amount)}, nil)
+		})
 }
 
 // PlayerAction 人間プレイヤーのアクション実行
@@ -437,7 +444,7 @@ func (o *Dramaha) Draw(playerIdx int, indices []int) error {
 		}
 	}
 	o.drawnFlags[playerIdx] = true
-	o.appendLog(playerIdx, "draw", fmt.Sprintf("exchanged %d card(s)", len(indices)), nil)
+	o.appendLog(playerIdx, "draw", "dramaha.log.exchanged", map[string]string{"count": fmt.Sprint(len(indices))}, nil)
 
 	if o.allDrawn() {
 		o.advancePhase()
@@ -542,7 +549,7 @@ func (o *Dramaha) advancePhase() {
 				o.communityCards = append(o.communityCards, card)
 			}
 		}
-		o.appendLog(-1, "deal", "dealt flop", o.communityCards)
+		o.appendLog(-1, "deal", "dramaha.log.dealtFlop", nil, o.communityCards)
 	case DramahaPhaseFlop:
 		// フロップのベッティングが終わったらドローラウンドへ。ターンはその後。
 		o.phase = DramahaPhaseDraw
@@ -552,7 +559,7 @@ func (o *Dramaha) advancePhase() {
 				o.drawnFlags[i] = true
 			}
 		}
-		o.appendLog(-1, "draw", "draw round", nil)
+		o.appendLog(-1, "draw", "dramaha.log.drawRound", nil, nil)
 		// **ここで return する。** autoDrawForCPUs は最後の CPU が引いた時点で
 		// Draw() 経由で advancePhase を**入れ子に**呼び、ターンを配って下の
 		// activeCnt ブロックまで走り切る。その後この外側のフレームが switch を
@@ -576,7 +583,7 @@ func (o *Dramaha) advancePhase() {
 		// 切ると slice bounds out of range で落ちる —— KV から戻した盤は
 		// cap == len なので、Worker 経路では必ず落ちる。
 		if len(o.communityCards) > 3 {
-			o.appendLog(-1, "deal", "dealt turn", o.communityCards[3:])
+			o.appendLog(-1, "deal", "dramaha.log.dealtTurn", nil, o.communityCards[3:])
 		}
 	case DramahaPhaseTurn:
 		o.phase = DramahaPhaseRiver
@@ -589,11 +596,11 @@ func (o *Dramaha) advancePhase() {
 		// 切ると slice bounds out of range で落ちる —— KV から戻した盤は
 		// cap == len なので、Worker 経路では必ず落ちる。
 		if len(o.communityCards) > 4 {
-			o.appendLog(-1, "deal", "dealt river", o.communityCards[4:])
+			o.appendLog(-1, "deal", "dramaha.log.dealtRiver", nil, o.communityCards[4:])
 		}
 	case DramahaPhaseRiver:
 		o.phase = DramahaPhaseShowdown
-		o.appendLog(-1, "showdown", "showdown", nil)
+		o.appendLog(-1, "showdown", "dramaha.log.showdown", nil, nil)
 		o.resolveShowdown()
 		return
 	}
@@ -1266,7 +1273,7 @@ func (o *Dramaha) Rebuy() error {
 		if p.GetIsHuman() && p.GetChips() <= 0 && o.rebuyCounts[i] < o.config.RebuyMaxCount {
 			p.AddChips(o.config.RebuyChips)
 			o.rebuyCounts[i]++
-			o.appendLog(i, "rebuy", "rebuy", nil)
+			o.appendLog(i, "rebuy", "dramaha.log.rebuy", nil, nil)
 			break
 		}
 	}
@@ -1503,18 +1510,23 @@ func (o *Dramaha) GetHandCount() int { return o.handCount }
 func (o *Dramaha) logAction(playerIdx, action, amount int) {
 	switch action {
 	case DramahaActionFold:
-		o.appendLog(playerIdx, "fold", "fold", nil)
+		o.appendLog(playerIdx, "fold", "dramaha.log.fold", nil, nil)
 	case DramahaActionCheck:
-		o.appendLog(playerIdx, "check", "check", nil)
+		o.appendLog(playerIdx, "check", "dramaha.log.check", nil, nil)
 	case DramahaActionCall:
-		o.appendLog(playerIdx, "call", fmt.Sprintf("call %d", o.players[playerIdx].GetCurrentBet()), nil)
+		o.appendLog(playerIdx, "call", "dramaha.log.call", map[string]string{"amount": fmt.Sprint(o.players[playerIdx].GetCurrentBet())}, nil)
 	case DramahaActionBet:
-		o.appendLog(playerIdx, "bet", fmt.Sprintf("bet %d", amount), nil)
+		o.appendLog(playerIdx, "bet", "dramaha.log.bet", map[string]string{"amount": fmt.Sprint(amount)}, nil)
 	case DramahaActionRaise:
-		o.appendLog(playerIdx, "raise", fmt.Sprintf("raise to %d", amount), nil)
+		o.appendLog(playerIdx, "raise", "dramaha.log.raise", map[string]string{"amount": fmt.Sprint(amount)}, nil)
 	case DramahaActionAllIn:
-		o.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", o.players[playerIdx].GetCurrentBet()), nil)
+		o.appendLog(playerIdx, "allin", "dramaha.log.allIn", map[string]string{"amount": fmt.Sprint(o.players[playerIdx].GetCurrentBet())}, nil)
 	}
+}
+
+// appendLog records a Dramaha action with a locale-independent detail code.
+func (o *Dramaha) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	o.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // dramahaJSON is the JSON wire format for Dramaha.

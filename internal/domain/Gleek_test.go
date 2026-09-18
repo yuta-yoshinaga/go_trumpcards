@@ -48,6 +48,18 @@ func TestGleek_ResetDeal(t *testing.T) {
 	assert.Equal(t, g.GetTurnUp().GetDesign(), g.GetTrumpSuit())
 }
 
+func TestGleek_ActionLogUsesDetailCode(t *testing.T) {
+	g := newTestGleek()
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "gleek.log.turnUp" {
+			assert.Empty(t, entry.Detail)
+			assert.Equal(t, map[string]string{"card": entry.DetailParams["card"], "suit": entry.DetailParams["suit"]}, entry.DetailParams)
+			return
+		}
+	}
+	t.Fatal("reset should record the turn-up action log entry")
+}
+
 // **人間がエルダー。** ディーラーが席 0 のままだと、人間は毎回最後に競り、
 // 最初のリードも取れない。
 func TestGleek_ElderIsTheHumanOnTheOpeningDeal(t *testing.T) {

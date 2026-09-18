@@ -65,5 +65,18 @@
   "helpExampleRaise": "  ra 200               合計 200 チップになるようレイズする",
   "helpExampleCall": "  c                    現在のベットにコールする",
   "helpLog": "  l                    行動ログを表示",
-  "blindsLine": "SB:{{sb}} BB:{{bb}}"
+  "blindsLine": "SB:{{sb}} BB:{{bb}}",
+  "log.smallBlind": "スモールブラインド {{amount}} を出しました",
+  "log.bigBlind": "ビッグブラインド {{amount}} を出しました",
+  "log.dealtFlop": "フロップを配りました",
+  "log.dealtTurn": "ターンを配りました",
+  "log.dealtRiver": "リバーを配りました",
+  "log.showdown": "ショーダウン",
+  "log.fold": "フォールド",
+  "log.check": "チェック",
+  "log.call": "{{amount}} にコール",
+  "log.bet": "{{amount}} をベット",
+  "log.raise": "{{amount}} までレイズ",
+  "log.allIn": "{{amount}} のオールイン",
+  "log.rebuy": "リバイ"
 }

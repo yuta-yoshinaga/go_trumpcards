@@ -588,11 +588,6 @@ func potBet(pot, potPct, bigBlind, minRaise int) int {
 	return bet
 }
 
-// blindLogger records the blinds as they are posted.
-type blindLogger interface {
-	appendLog(playerIdx int, actionType, detail string, cards []*Card)
-}
-
 // postBlindsFor takes the small and big blinds from the two seats after the
 // dealer, capping each at what the seat actually has and marking it all-in when
 // that empties its stack. lastBet ends up at the big blind. 3 games had this
@@ -601,7 +596,7 @@ type blindLogger interface {
 // pot, lastBet and actedFlags are passed directly because the helper writes all
 // three; keeping the fmt.Sprintf here means one copy rather than one per game.
 func postBlindsFor[P BettingPlayer](players []P, dealerIdx, smallBlind, bigBlind int,
-	pot, lastBet *int, actedFlags []bool, g blindLogger,
+	pot, lastBet *int, actedFlags []bool, logBlind func(playerIdx int, label string, amount int),
 ) {
 	// Returns what was actually posted, which is less than asked for when the
 	// seat is too short to cover the blind.
@@ -613,7 +608,7 @@ func postBlindsFor[P BettingPlayer](players []P, dealerIdx, smallBlind, bigBlind
 		players[idx].SubtractChips(amount)
 		players[idx].SetCurrentBet(amount)
 		*pot += amount
-		g.appendLog(idx, "blind", fmt.Sprintf("posts %s %d", label, amount), nil)
+		logBlind(idx, label, amount)
 		if players[idx].GetChips() == 0 {
 			players[idx].SetAllIn(true)
 			actedFlags[idx] = true

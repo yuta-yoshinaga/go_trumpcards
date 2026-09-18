@@ -62,7 +62,7 @@ func dramahaFullyPopulated() *Dramaha {
 	o.rebuyPhaseType = DramahaRebuyPhaseAddon
 	o.lastHumanPlayMs = 1234
 	o.humanProfile = &BettingHumanProfile{GamesPlayed: 7}
-	o.appendLog(0, "bet", "bet 60", nil)
+	o.appendLog(0, "bet", "dramaha.log.bet", map[string]string{"amount": "60"}, nil)
 
 	cfg := o.config
 	cfg.SmallBlind = 25

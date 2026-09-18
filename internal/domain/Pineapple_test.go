@@ -21,6 +21,15 @@ func TestNewPineapple(t *testing.T) {
 	assert.False(t, p.GetGameEndFlag())
 }
 
+func TestPineapple_ActionLogUsesDetailCode(t *testing.T) {
+	p := newTestPineapple()
+	p.appendLog(0, "call", "pineapple.log.call", map[string]string{"amount": "25"}, nil)
+	entry := p.GetActionLog()[len(p.GetActionLog())-1]
+	assert.Equal(t, "pineapple.log.call", entry.DetailCode)
+	assert.Equal(t, map[string]string{"amount": "25"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}
+
 func TestPineapple_PhaseConstants(t *testing.T) {
 	assert.Equal(t, 0, PineapplePhaseInit)
 	assert.Equal(t, 1, PineapplePhasePreFlop)

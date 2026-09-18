@@ -266,7 +266,10 @@ func (o *Omaha) continueReset() error {
 
 // postBlinds ブラインド投入
 func (o *Omaha) postBlinds() {
-	postBlindsFor(o.players, o.dealerIdx, o.config.SmallBlind, o.config.BigBlind, &o.pot, &o.lastBet, o.actedFlags, o)
+	postBlindsFor(o.players, o.dealerIdx, o.config.SmallBlind, o.config.BigBlind, &o.pot, &o.lastBet, o.actedFlags,
+		func(playerIdx int, label string, amount int) {
+			o.appendLog(playerIdx, "blind", fmt.Sprintf("posts %s %d", label, amount), nil)
+		})
 }
 
 // PlayerAction 人間プレイヤーのアクション実行
