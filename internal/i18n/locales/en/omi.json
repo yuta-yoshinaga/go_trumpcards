@@ -36,5 +36,7 @@
   "hintReasonLeadStrong": "lead highest card",
   "hintReasonFollowSuit": "follow suit",
   "hintReasonTrumpCut": "cut with trump",
-  "hintReasonDiscardWeak": "discard lowest card"
+  "hintReasonDiscardWeak": "discard lowest card",
+  "errInvalidSuit": "That suit is invalid.",
+  "errFollowLeadSuit": "You must follow the lead suit."
 }

@@ -50,5 +50,8 @@
   "result.cpuWin": "Game over! Team {{team}} wins!",
   "helpExampleBid": "  pass                      drop out of the bidding",
   "helpHint": "  h                         show a hint",
-  "trumpRevealed": "The hidden trump is revealed: {{trump}}"
+  "trumpRevealed": "The hidden trump is revealed: {{trump}}",
+  "errInvalidBid": "The bid is invalid.",
+  "errBidMustExceed": "The bid must exceed the current bid.",
+  "errCardIndexOutOfRange": "The card index is out of range."
 }

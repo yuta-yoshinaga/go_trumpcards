@@ -65,6 +65,9 @@ func (p *MacauWebPresenter) buildPlayersOutput(g interfaces.MacauGame) []*contro
 // buildMessage ゲーム結果メッセージを構築
 func (p *MacauWebPresenter) buildMessage(g interfaces.MacauGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

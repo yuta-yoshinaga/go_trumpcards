@@ -35,5 +35,8 @@
   "magicSeven": "  7                    skip the next player",
   "magicEight": "  8                    wild -- choose any suit, playable anytime",
   "magicJack": "  J                    reverse the play direction",
-  "magicNote": "  declare \"Macau!\" when down to your last card (forgetting costs 2 cards)"
+  "magicNote": "  declare \"Macau!\" when down to your last card (forgetting costs 2 cards)",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errCardNotPlayable": "That card cannot be played.",
+  "errSuitOutOfRange": "The suit must be between 1 and 4."
 }

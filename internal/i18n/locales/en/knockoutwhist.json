@@ -30,5 +30,7 @@
   "winnerMark": "★(winner) ",
   "helpExamplePlay": "  play 0                   play hand card 0",
   "helpExampleNext": "  n                        read the trick result, then start the next trick",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "errTrumpSuitOutOfRange": "The trump suit is out of range.",
+  "errCardIndexOutOfRange": "The card index is out of range."
 }

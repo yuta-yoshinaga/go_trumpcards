@@ -201,7 +201,7 @@ func (g *KnockoutWhist) PlayerSelectTrump(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "切り札スートが範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "knockoutwhist.errTrumpSuitOutOfRange", nil)
 	}
 	g.trumpSuit = suit
 	g.phase = KnockoutWhistPhasePlay
@@ -244,7 +244,7 @@ func (g *KnockoutWhist) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "knockoutwhist.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {

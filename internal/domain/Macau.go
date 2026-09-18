@@ -196,12 +196,12 @@ func (g *Macau) PlayerPlay(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "macau.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 	if !g.isValidPlay(card) {
-		return NewDomainError(ErrInvalidPlay, "そのカードは出せません")
+		return NewDomainErrorCode(ErrInvalidPlay, "macau.errCardNotPlayable", nil)
 	}
 
 	played := player.RemoveCard(cardIndex)
@@ -222,7 +222,7 @@ func (g *Macau) PlayerChooseSuit(suit int) error {
 	}
 
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "スートは1〜4で指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "macau.errSuitOutOfRange", nil)
 	}
 
 	g.chosenSuit = suit
