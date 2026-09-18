@@ -41,6 +41,22 @@ func TestNewAllFours(t *testing.T) {
 	assert.Equal(t, domain.AllFoursNonDealerIdx, a.GetNonDealerIdx())
 }
 
+func TestAllFours_ActionLogUsesDetailCode(t *testing.T) {
+	a := newTestAllFours()
+	a.Reset()
+	require.NoError(t, a.PlayerBeg(false))
+	var entry *domain.ActionLogEntry
+	for _, candidate := range a.GetActionLog() {
+		if candidate.DetailCode == "allfours.log.stand" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}
+
 func TestNewDefaultAllFours(t *testing.T) {
 	a := domain.NewDefaultAllFours()
 	assert.NotNil(t, a)

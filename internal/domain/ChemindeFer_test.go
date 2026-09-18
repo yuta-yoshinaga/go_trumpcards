@@ -62,6 +62,22 @@ func TestChemindeFerHandTotal(t *testing.T) {
 	}
 }
 
+func TestChemindeFer_ActionLogUsesDetailCode(t *testing.T) {
+	g := newChemindeFerAllCpu(t, 1)
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "chemindefer.log.start" {
+			entry = candidate
+			break
+		}
+	}
+	if entry == nil {
+		t.Fatal("start action log entry not found")
+	}
+	assert.Empty(t, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}
+
 // **子の引き方の規則は 0-9 の全域で定義されている。**
 func TestChemindeFer_PunterRuleCoversEveryTotal(t *testing.T) {
 	t.Parallel()
@@ -693,7 +709,7 @@ func TestChemindeFer_Accessors(t *testing.T) {
 func TestChemindeFer_ActionLogIsBounded(t *testing.T) {
 	g := newChemindeFerAllCpu(t, 17)
 	for range chemindeFerMaxSliceLen + 50 {
-		g.appendLog(0, "noise", "x", nil)
+		g.appendLog(0, "noise", "chemindefer.log.pass", nil, nil)
 	}
 	assert.Len(t, g.GetActionLog(), chemindeFerMaxSliceLen)
 }

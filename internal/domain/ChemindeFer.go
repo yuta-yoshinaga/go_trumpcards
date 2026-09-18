@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // chemindeFerMaxSliceLen はデシリアライズ時のスライス長上限。
@@ -128,7 +129,7 @@ func (g *ChemindeFer) reset() {
 	g.gameEndFlag = false
 	g.actionLog = nil
 	g.turnNumber = 0
-	g.appendLog(-1, "start", "chemin de fer begins", nil)
+	g.appendLog(-1, "start", "chemindefer.log.start", nil, nil)
 	g.startRound()
 }
 
@@ -225,7 +226,7 @@ func (g *ChemindeFer) setStake(amount int) error {
 		return errChemindeFerStakeRange
 	}
 	g.stake = amount
-	g.appendLog(g.bankerIdx, "stake", fmt.Sprintf("banks %d", amount), nil)
+	g.appendLog(g.bankerIdx, "stake", "chemindefer.log.stake", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 
 	g.betOrder = g.buildBetOrder()
 	if len(g.betOrder) == 0 {
@@ -313,9 +314,9 @@ func (g *ChemindeFer) placeBet(idx, amount int) error {
 	if amount > 0 {
 		g.players[idx].SubtractChips(amount)
 		g.players[idx].SetBet(amount)
-		g.appendLog(idx, "bet", fmt.Sprintf("bets %d", amount), nil)
+		g.appendLog(idx, "bet", "chemindefer.log.bet", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 	} else {
-		g.appendLog(idx, "pass", "passes", nil)
+		g.appendLog(idx, "pass", "chemindefer.log.pass", nil, nil)
 	}
 	g.advanceBetting()
 	return nil
@@ -359,7 +360,7 @@ func (g *ChemindeFer) GetTotalBet() int { return g.totalBet() }
 //
 // 「誰も賭けられるチップを持っていない」場合と「全員が降りた」場合の両方がここに来る。
 func (g *ChemindeFer) voidRound() {
-	g.appendLog(-1, "voidRound", "nobody covered the bank", nil)
+	g.appendLog(-1, "voidRound", "chemindefer.log.voidRound", nil, nil)
 	g.betOrder = nil
 	g.betPos = -1
 	g.result = ChemindeFerResultNone
@@ -383,14 +384,14 @@ func (g *ChemindeFer) deal() {
 		g.punterHand = append(g.punterHand, g.shoe.DrawCard())
 		g.bankerHand = append(g.bankerHand, g.shoe.DrawCard())
 	}
-	g.appendLog(g.represIdx, "deal", "cards dealt", nil)
+	g.appendLog(g.represIdx, "deal", "chemindefer.log.deal", nil, nil)
 	g.afterDeal()
 }
 
 // afterDeal はナチュラル判定と子側の判断への受け渡しを行う。
 func (g *ChemindeFer) afterDeal() {
 	if ChemindeFerIsNatural(g.GetPunterTotal()) || ChemindeFerIsNatural(g.GetBankerTotal()) {
-		g.appendLog(-1, "natural", "a natural ends the coup at once", nil)
+		g.appendLog(-1, "natural", "chemindefer.log.natural", nil, nil)
 		g.resolve()
 		return
 	}
@@ -477,14 +478,14 @@ func (g *ChemindeFer) punterDraw() {
 	c := g.shoe.DrawCard()
 	g.punterHand = append(g.punterHand, c)
 	g.punterDrew = true
-	g.appendLog(g.represIdx, "punterDraw", "the punter draws", []*Card{c})
+	g.appendLog(g.represIdx, "punterDraw", "chemindefer.log.punterDraw", nil, []*Card{c})
 	g.toBankerDraw()
 }
 
 // punterStand は子側を立たせる。
 func (g *ChemindeFer) punterStand() {
 	g.punterDrew = false
-	g.appendLog(g.represIdx, "punterStand", "the punter stands", nil)
+	g.appendLog(g.represIdx, "punterStand", "chemindefer.log.punterStand", nil, nil)
 	g.toBankerDraw()
 }
 
@@ -518,9 +519,9 @@ func (g *ChemindeFer) bankerAct(draw bool) error {
 	if draw {
 		c := g.shoe.DrawCard()
 		g.bankerHand = append(g.bankerHand, c)
-		g.appendLog(g.bankerIdx, "bankerDraw", "the banker draws", []*Card{c})
+		g.appendLog(g.bankerIdx, "bankerDraw", "chemindefer.log.bankerDraw", nil, []*Card{c})
 	} else {
-		g.appendLog(g.bankerIdx, "bankerStand", "the banker stands", nil)
+		g.appendLog(g.bankerIdx, "bankerStand", "chemindefer.log.bankerStand", nil, nil)
 	}
 	g.resolve()
 	return nil
@@ -614,7 +615,7 @@ func (g *ChemindeFer) settle() {
 			p.AddChips(bet) // 引き分け: 賭け金を返す
 		}
 	}
-	g.appendLog(-1, "result", ChemindeFerResultName(g.result), nil)
+	g.appendLog(-1, "result", "chemindefer.log.result", map[string]string{"result": ChemindeFerResultName(g.result)}, nil)
 	if g.result == ChemindeFerResultPunter {
 		g.passBank()
 	}
@@ -638,13 +639,13 @@ func (g *ChemindeFer) passBank() {
 		idx := (g.bankerIdx + step) % n
 		if g.players[idx].GetChips() >= ChemindeFerStakeMin {
 			g.bankerIdx = idx
-			g.appendLog(idx, "bankPassed", "the bank passes", nil)
+			g.appendLog(idx, "bankPassed", "chemindefer.log.bankPassed", nil, nil)
 			return
 		}
 	}
 	// 誰も張れない。ゲームはここで終わる。
 	g.gameEndFlag = true
-	g.appendLog(-1, "gameEnd", "nobody can bank any more", nil)
+	g.appendLog(-1, "gameEnd", "chemindefer.log.gameEndNoBank", nil, nil)
 }
 
 // PassBank は親が自分から親を降りる。ラウンド終了後のみ。
@@ -668,7 +669,7 @@ func (g *ChemindeFer) GiveUp() {
 	}
 	g.gameEndFlag = true
 	g.phase = ChemindeFerPhaseRoundEnd
-	g.appendLog(-1, "giveUp", "the player gives up", nil)
+	g.appendLog(-1, "giveUp", "chemindefer.log.giveUp", nil, nil)
 }
 
 // NextRound は次のラウンドを始める。
@@ -681,7 +682,7 @@ func (g *ChemindeFer) NextRound() error {
 	}
 	if g.roundNumber >= g.config.Rounds {
 		g.gameEndFlag = true
-		g.appendLog(-1, "gameEnd", "the session is over", nil)
+		g.appendLog(-1, "gameEnd", "chemindefer.log.gameEndSession", nil, nil)
 		return nil
 	}
 	// 親が張れなくなったらバンクは自動的に隣へ。
@@ -825,14 +826,15 @@ func (g *ChemindeFer) GetHint() *ChemindeFerHint {
 // --- ログ ---
 
 // appendLog は行動ログを 1 行足す。
-func (g *ChemindeFer) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+func (g *ChemindeFer) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
 	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.turnNumber,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
+		TurnNumber:   g.turnNumber,
+		PlayerIdx:    playerIdx,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        cards,
 	})
 	if len(g.actionLog) > chemindeFerMaxSliceLen {
 		g.actionLog = g.actionLog[len(g.actionLog)-chemindeFerMaxSliceLen:]

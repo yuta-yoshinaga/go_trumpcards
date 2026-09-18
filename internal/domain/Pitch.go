@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strconv"
 )
 
 // PitchPlayerCnt ピッチプレイヤー数 (4人, シングルハンド/カットスロート)
@@ -117,6 +118,11 @@ func NewDefaultPitch() *Pitch {
 		NewPitchPlayer(false),
 	}
 	return NewPitch(NewTrumpCards(0), players, DefaultPitchConfig())
+}
+
+// appendLog records a Pitch action with a locale-independent detail code.
+func (p *Pitch) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	p.appendLogCodeAt(len(p.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // Reset ゲーム初期化
@@ -262,7 +268,7 @@ func (p *Pitch) applyBid(playerIdx, bid int) {
 	if bid == PitchPassBid {
 		logBid = "pass"
 	}
-	p.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %s", playerName(p.players, playerIdx), logBid), nil)
+	p.appendLog(playerIdx, "bid", "pitch.log.bid", map[string]string{"name": playerName(p.players, playerIdx), "bid": logBid}, nil)
 }
 
 // advanceBid 次のビッド手番へ進める。全員終わればプレイ開始 (stuck dealer も処理)
@@ -273,7 +279,7 @@ func (p *Pitch) advanceBid() {
 		// 親に到達し、かつ全員パス済みの場合 stuck 強制
 		if p.bidPlayerIdx == p.dealerIdx && p.currentBid == 0 && bidsDone == PitchPlayerCnt-1 {
 			p.applyBid(p.dealerIdx, PitchMinBid)
-			p.appendLog(p.dealerIdx, "stuck", fmt.Sprintf("%s is stuck with %d", playerName(p.players, p.dealerIdx), PitchMinBid), nil)
+			p.appendLog(p.dealerIdx, "stuck", "pitch.log.stuck", map[string]string{"name": playerName(p.players, p.dealerIdx), "bid": strconv.Itoa(PitchMinBid)}, nil)
 			p.startPlayPhase()
 		}
 		return
@@ -305,9 +311,8 @@ func (p *Pitch) startPlayPhase() {
 	p.trickNumber = 1
 	p.currentTrick = nil
 	p.phase = PitchPhasePlay
-	p.appendLog(p.bidWinnerIdx, "bid_won",
-		fmt.Sprintf("%s wins the bid at %d (will lead first card to set trump)", playerName(p.players, p.bidWinnerIdx), p.currentBid),
-		nil)
+	p.appendLog(p.bidWinnerIdx, "bid_won", "pitch.log.bidWon",
+		map[string]string{"name": playerName(p.players, p.bidWinnerIdx), "bid": strconv.Itoa(p.currentBid)}, nil)
 }
 
 // PlayerPlay 人間プレイヤーがカードをプレイする
@@ -359,16 +364,13 @@ func (p *Pitch) playCard(playerIdx int, card *Card) {
 	// 最初のトリックのリードカードがトランプを設定
 	if p.trumpSuit == PitchTrumpUnset && len(p.currentTrick) == 0 {
 		p.trumpSuit = card.GetDesign()
-		p.appendLog(playerIdx, "trump_set",
-			fmt.Sprintf("Trump is %s", suitName(p.trumpSuit)), nil)
+		p.appendLog(playerIdx, "trump_set", "pitch.log.trumpSet", map[string]string{"suit": suitName(p.trumpSuit)}, nil)
 	}
 	p.currentTrick = append(p.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	p.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(p.players, playerIdx), cardStr(card)),
-		[]*Card{card})
+	p.appendLog(playerIdx, "play", "pitch.log.play", map[string]string{"name": playerName(p.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(p.currentTrick) == PitchPlayerCnt {
 		p.phase = PitchPhaseTrickEnd
@@ -413,9 +415,7 @@ func (p *Pitch) ResolveTrick() {
 		trickCards[i] = tc.Card
 	}
 	p.players[winnerIdx].AddTrick(trickCards)
-	p.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(p.players, winnerIdx), p.trickNumber),
-		trickCards)
+	p.appendLog(winnerIdx, "trick_win", "pitch.log.trickWin", map[string]string{"name": playerName(p.players, winnerIdx), "trick": strconv.Itoa(p.trickNumber)}, trickCards)
 	p.leadPlayerIdx = winnerIdx
 	if p.trickNumber >= PitchTotalTricks {
 		p.phase = PitchPhaseRoundEnd
@@ -530,20 +530,15 @@ func (p *Pitch) ScoreRound() {
 		if i == p.bidWinnerIdx {
 			if points < p.currentBid {
 				pl.SetRoundScore(-p.currentBid)
-				p.appendLog(i, "set_back",
-					fmt.Sprintf("%s set back: bid=%d earned=%d -> %d",
-						playerName(p.players, i), p.currentBid, points, -p.currentBid), nil)
+				p.appendLog(i, "set_back", "pitch.log.setBack", map[string]string{"name": playerName(p.players, i), "bid": strconv.Itoa(p.currentBid), "earned": strconv.Itoa(points), "score": strconv.Itoa(-p.currentBid)}, nil)
 			} else {
 				pl.SetRoundScore(points)
-				p.appendLog(i, "bid_made",
-					fmt.Sprintf("%s makes bid: bid=%d earned=%d -> +%d",
-						playerName(p.players, i), p.currentBid, points, points), nil)
+				p.appendLog(i, "bid_made", "pitch.log.bidMade", map[string]string{"name": playerName(p.players, i), "bid": strconv.Itoa(p.currentBid), "earned": strconv.Itoa(points), "score": "+" + strconv.Itoa(points)}, nil)
 			}
 		} else {
 			pl.SetRoundScore(points)
 			if points > 0 {
-				p.appendLog(i, "non_bidder_score",
-					fmt.Sprintf("%s scores %d", playerName(p.players, i), points), nil)
+				p.appendLog(i, "non_bidder_score", "pitch.log.nonBidderScore", map[string]string{"name": playerName(p.players, i), "score": strconv.Itoa(points)}, nil)
 			}
 		}
 	}
@@ -551,8 +546,7 @@ func (p *Pitch) ScoreRound() {
 		p.players[i].CommitRoundScore()
 	}
 	for i := 0; i < PitchPlayerCnt; i++ {
-		p.appendLog(i, "cumulative_score",
-			fmt.Sprintf("%s: total=%d", playerName(p.players, i), p.players[i].GetCumulativeScore()), nil)
+		p.appendLog(i, "cumulative_score", "pitch.log.cumulativeScore", map[string]string{"name": playerName(p.players, i), "total": strconv.Itoa(p.players[i].GetCumulativeScore())}, nil)
 	}
 	p.checkGameEnd()
 }
@@ -568,20 +562,16 @@ func (p *Pitch) computeRoundPoints() []int {
 		}
 	}
 	if bd.High != PitchNoScorer {
-		p.appendLog(bd.High, "score_high",
-			fmt.Sprintf("%s scores High", playerName(p.players, bd.High)), nil)
+		p.appendLog(bd.High, "score_high", "pitch.log.scoreHigh", map[string]string{"name": playerName(p.players, bd.High)}, nil)
 	}
 	if bd.Low != PitchNoScorer {
-		p.appendLog(bd.Low, "score_low",
-			fmt.Sprintf("%s scores Low", playerName(p.players, bd.Low)), nil)
+		p.appendLog(bd.Low, "score_low", "pitch.log.scoreLow", map[string]string{"name": playerName(p.players, bd.Low)}, nil)
 	}
 	if bd.Jack != PitchNoScorer {
-		p.appendLog(bd.Jack, "score_jack",
-			fmt.Sprintf("%s scores Jack", playerName(p.players, bd.Jack)), nil)
+		p.appendLog(bd.Jack, "score_jack", "pitch.log.scoreJack", map[string]string{"name": playerName(p.players, bd.Jack)}, nil)
 	}
 	if bd.Game != PitchNoScorer {
-		p.appendLog(bd.Game, "score_game",
-			fmt.Sprintf("%s scores Game (%d pip)", playerName(p.players, bd.Game), p.gamePipTotal(bd.Game)), nil)
+		p.appendLog(bd.Game, "score_game", "pitch.log.scoreGame", map[string]string{"name": playerName(p.players, bd.Game), "pip": strconv.Itoa(p.gamePipTotal(bd.Game))}, nil)
 	}
 	return points
 }
@@ -683,8 +673,7 @@ func (p *Pitch) checkGameEnd() {
 		p.gameEndFlag = true
 		p.phase = PitchPhaseGameEnd
 		p.winnerIdx = bidder
-		p.appendLog(-1, "game_end",
-			fmt.Sprintf("%s wins the game!", playerName(p.players, p.winnerIdx)), nil)
+		p.appendLog(-1, "game_end", "pitch.log.gameEnd", map[string]string{"name": playerName(p.players, p.winnerIdx)}, nil)
 		return
 	}
 	maxScore := -1 << 30
@@ -706,8 +695,7 @@ func (p *Pitch) checkGameEnd() {
 	p.gameEndFlag = true
 	p.phase = PitchPhaseGameEnd
 	p.winnerIdx = winner
-	p.appendLog(-1, "game_end",
-		fmt.Sprintf("%s wins the game!", playerName(p.players, p.winnerIdx)), nil)
+	p.appendLog(-1, "game_end", "pitch.log.gameEnd", map[string]string{"name": playerName(p.players, p.winnerIdx)}, nil)
 }
 
 // --- State getters / setters ---

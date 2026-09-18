@@ -73,5 +73,6 @@
   "errJokerRequired": "A Joker must be led with the Joker-lead command.",
   "errInvalidDemandSuit": "The demanded suit is invalid.",
   "errJokerCallRequiresJoker": "Joker call: play the Joker.",
-  "errMustFollowLeadSuit": "Follow the led suit."
+  "errMustFollowLeadSuit": "Follow the led suit.",
+  "log.trickWin": "{{name}} wins trick {{trick}}", "log.trickWinWithPoints": "{{name}} wins trick {{trick}} (+{{points}} point cards)", "log.roundResultDeclarer": "Declarer side wins! ({{points}}/{{bid}} point cards)", "log.roundResultOpposition": "Opposition wins! ({{points}}/{{bid}} point cards)", "log.roundScore": "{{name}}: round={{score}}", "log.cumulativeScore": "{{name}}: total={{total}}", "log.bidPass": "{{name}} passes", "log.bid": "{{name}} bids {{bid}}", "log.bidNoTrump": "{{name}} bids {{bid}} (no trump)", "log.forcedBid": "{{name}} is forced to bid {{bid}} (all pass)", "log.declarer": "{{name}} becomes Declarer (bid {{bid}})", "log.declareTrumpNoTrump": "{{name}} declares No-Trump", "log.declareTrump": "{{name}} declares {{suit}} as trump", "log.declarePartner": "{{name}} names {{card}} as partner card", "log.partnerSelf": "{{name}} holds the partner card themselves (solo declarer)", "log.partnerSelfDiscard": "{{name}} discards the partner card (solo declarer)", "log.exchange": "{{name}} discards {{count}} kitty cards", "log.playJokerLead": "{{name}} plays {{card}} (demands {{suit}})", "log.play": "{{name}} plays {{card}}", "log.partnerReveal": "{{name}} is revealed as the partner!", "log.gameEnd": "{{name}} wins the game!"
 }
