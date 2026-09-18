@@ -111,6 +111,9 @@ func (p *SoloWhistWebPresenter) buildPlayersOutput(g interfaces.SoloWhistGame) [
 // buildMessage ゲーム結果メッセージを構築
 func (p *SoloWhistWebPresenter) buildMessage(g interfaces.SoloWhistGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

@@ -111,6 +111,9 @@ func (p *BeziqueWebPresenter) buildMeldsOutput(b interfaces.BeziqueGame) []*cont
 // buildMessage ゲーム結果メッセージを構築
 func (p *BeziqueWebPresenter) buildMessage(b interfaces.BeziqueGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if b.GetGameEndFlag() {

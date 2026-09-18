@@ -90,6 +90,9 @@ func (p *TwoTenJackWebPresenter) buildPlayersOutput(s interfaces.TwoTenJackGame)
 // buildMessage ゲーム結果メッセージを構築
 func (p *TwoTenJackWebPresenter) buildMessage(s interfaces.TwoTenJackGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if s.GetGameEndFlag() {

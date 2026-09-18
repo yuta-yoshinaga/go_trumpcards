@@ -98,6 +98,9 @@ func (p *SuecaWebPresenter) buildPlayersOutput(g interfaces.SuecaGame) []*contro
 // buildMessage ゲーム結果メッセージを構築
 func (p *SuecaWebPresenter) buildMessage(g interfaces.SuecaGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

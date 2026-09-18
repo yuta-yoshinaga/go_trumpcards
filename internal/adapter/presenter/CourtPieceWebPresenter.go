@@ -103,6 +103,9 @@ func (p *CourtPieceWebPresenter) buildPlayersOutput(t interfaces.CourtPieceGame)
 // buildMessage ゲーム結果メッセージを構築
 func (p *CourtPieceWebPresenter) buildMessage(t interfaces.CourtPieceGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if t.GetGameEndFlag() {
