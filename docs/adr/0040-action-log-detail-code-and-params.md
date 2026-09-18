@@ -2,11 +2,13 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Date
 
 2026-09-13
+
+Accepted: 2026-09-18
 
 ## Context
 
@@ -94,17 +96,15 @@ type ActionLogEntry struct {
 
 ### 移行
 
-2,604 呼び出しを一度に変えることはしない。ゲーム単位で移す。
+実際には、2,300 箇所を最初の 1 手で一括変更せず、ゲーム単位で段階的に移す。
 
-1. `ActionLogEntry` を新しい形にし、`appendLog` の第 3 引数の型を変える。
-   コンパイルエラーが移行対象の完全な一覧になる (`Detail string` を消すので、
-   移し忘れたゲームはビルドが通らない)。**「タグ無しの静かな共存」を作らない**のが
-   この順序の目的である。
-2. 各ゲームの日本語/英語リテラルを `internal/i18n/locales/{ja,en}/<game>.json` の
-   `log.*` に移す。`check-message-codes.mjs` と locale-parity ガードが両ロケールの
-   存在を強制する。
-3. `action_log_helper_test.go` に「`DetailCode` が空のエントリでキー名が画面に出ない」
-   否定対照を置く。
+1. `Detail` は残したまま `DetailCode` / `DetailParams` を足し、CUI と Web の解決を先に入れる
+   (このコミット)。
+2. ゲームごとに `appendLog` のシグネチャを code + params に変え、文言を
+   `locales/{ja,en}/<game>.json` の `log.*` に移す。
+3. `check-action-log-detail.mjs` のラチェットが移行の進捗を CI で強制する (2338 → 0)。
+   「静かな共存」を防ぐ役割は、消えるフィールドではなくこの単調減少する天井が担う。
+4. 0 件になった時点で `Detail` / `d` と後方互換分岐を削除する (別 PR)。
 
 ### 保存済みセッションの扱い
 
@@ -121,6 +121,7 @@ type ActionLogEntry struct {
   4 層をまたぐ設計判断は本 ADR に閉じる。
 - #7767 の 3 通りの文字列解析が消え、CUI と Web が同じ数を見ることが型で保証される。
 - 文面を直しても数値の取り出しが壊れない。翻訳が壊れてもコードは動く。
+- 未登録キーは生キーを出さないことを CUI と Web の両面で実装した。
 - ワイヤはむしろ縮む可能性が高い (params 無しのエントリで `dc` は `d` より短いことが多い)。
 
 **悪くなること・引き受けるコスト**

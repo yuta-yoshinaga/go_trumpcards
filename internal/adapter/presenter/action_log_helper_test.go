@@ -227,6 +227,61 @@ func TestActionLogTextIsTranslated(t *testing.T) {
 	})
 }
 
+func TestActionLogDetailCodeIsTranslated(t *testing.T) {
+	defer i18n.SetLang("ja")
+	entry := &domain.ActionLogEntry{
+		TurnNumber: 1, PlayerIdx: 0, ActionType: "play",
+		DetailCode: "cuiActionLogPlayer", DetailParams: map[string]string{"idx": "7"},
+	}
+
+	i18n.SetLang("ja")
+	ja := actionLogToText([]*domain.ActionLogEntry{entry})
+	assert.Contains(t, ja, "座席7")
+
+	i18n.SetLang("en")
+	en := actionLogToText([]*domain.ActionLogEntry{entry})
+	assert.Contains(t, en, "Player 7")
+	assert.NotEqual(t, ja, en)
+}
+
+func TestActionLogUnregisteredDetailCodeFallsBackToDetail(t *testing.T) {
+	const code = "nosuch.log.key"
+
+	t.Run("uses legacy detail and hides the code", func(t *testing.T) {
+		result := actionLogToText([]*domain.ActionLogEntry{{
+			TurnNumber: 1, PlayerIdx: 0, ActionType: "play",
+			DetailCode: code, Detail: "legacy detail",
+		}})
+
+		assert.Contains(t, result, "legacy detail")
+		assert.NotContains(t, result, code)
+	})
+
+	t.Run("uses empty detail and hides the code", func(t *testing.T) {
+		result := actionLogToText([]*domain.ActionLogEntry{{
+			TurnNumber: 1, PlayerIdx: 0, ActionType: "play",
+			DetailCode: code,
+		}})
+
+		assert.NotContains(t, result, code)
+	})
+}
+
+func TestActionLogDetailFallsBackToLegacyDetail(t *testing.T) {
+	result := actionLogToText([]*domain.ActionLogEntry{{
+		TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "legacy detail",
+	}})
+	assert.Contains(t, result, "legacy detail")
+}
+
+func TestActionLogEmptyDetailDoesNotExposeCode(t *testing.T) {
+	result := actionLogToText([]*domain.ActionLogEntry{{
+		TurnNumber: 1, PlayerIdx: 0, ActionType: "play",
+	}})
+	assert.NotContains(t, result, "DetailCode")
+	assert.NotContains(t, result, "dc")
+}
+
 func TestLatestActionOnlyReturnsTheCurrentEvent(t *testing.T) {
 	marked := &domain.ActionLogEntry{ActionType: "marked"}
 	draw := &domain.ActionLogEntry{ActionType: "draw", Cards: []*domain.Card{

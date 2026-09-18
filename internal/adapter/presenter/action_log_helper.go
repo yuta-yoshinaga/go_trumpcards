@@ -99,11 +99,13 @@ func actionLogToJSON(entries []*domain.ActionLogEntry) string {
 	}
 	for i, e := range entries {
 		out.Entries[i] = &controller.ActionLogWebEntry{
-			TurnNumber: e.TurnNumber,
-			PlayerIdx:  e.PlayerIdx,
-			ActionType: e.ActionType,
-			Detail:     e.Detail,
-			Cards:      cardsToOutput(e.Cards),
+			TurnNumber:   e.TurnNumber,
+			PlayerIdx:    e.PlayerIdx,
+			ActionType:   e.ActionType,
+			Detail:       e.Detail,
+			DetailCode:   e.DetailCode,
+			DetailParams: e.DetailParams,
+			Cards:        cardsToOutput(e.Cards),
 		}
 	}
 	return marshalOrError(out)
@@ -139,7 +141,16 @@ func actionLogToTextWithNames(entries []*domain.ActionLogEntry, nameOf func(idx 
 				player = i18n.Tf("cuiActionLogPlayer", "idx", strconv.Itoa(e.PlayerIdx))
 			}
 		}
-		fmt.Fprintf(&sb, "T%d [%s] %s: %s", e.TurnNumber, player, e.ActionType, e.Detail)
+		detail := e.Detail
+		if e.DetailCode != "" {
+			translated := i18n.Tf(e.DetailCode, i18nPairs(e.DetailParams)...)
+			// 未登録キーは i18n がキー自身を返すため、そのまま描くと画面に dc が出る。
+			// 翻訳結果がキー自身なら、従来の Detail にフォールバックする。
+			if translated != e.DetailCode {
+				detail = translated
+			}
+		}
+		fmt.Fprintf(&sb, "T%d [%s] %s: %s", e.TurnNumber, player, e.ActionType, detail)
 		if len(e.Cards) > 0 {
 			cardStrs := make([]string, len(e.Cards))
 			for i, c := range e.Cards {

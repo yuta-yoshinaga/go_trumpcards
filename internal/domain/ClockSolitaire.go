@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // ClockSolitairePhase クロックソリティアゲームフェーズ
@@ -49,8 +50,8 @@ type ClockSolitaire struct {
 	currentCard *Card
 	phase       ClockSolitairePhase
 	stepCount   int
-	actionLog   []*ActionLogEntry
 	history     []*clockSolitaireSnapshot
+	actionLogBase
 }
 
 // clockSolitaireSnapshot アンドゥ用スナップショット
@@ -124,7 +125,7 @@ func (cs *ClockSolitaire) Step() error {
 	cs.faceUpCount[destIdx]++
 
 	cs.stepCount++
-	cs.appendLog("step", fmt.Sprintf("カードを%d番パイルに配置", destIdx+1),
+	cs.appendLog("step", "clocksolitaire.log.step", map[string]string{"pile": strconv.Itoa(destIdx + 1)},
 		[]*Card{cs.currentCard})
 
 	cs.currentCard = nil
@@ -173,7 +174,7 @@ func (cs *ClockSolitaire) Undo() error {
 	snap := cs.history[len(cs.history)-1]
 	cs.history = cs.history[:len(cs.history)-1]
 	cs.restoreSnapshot(snap)
-	cs.appendLog("undo", "1手戻す", nil)
+	cs.appendLog("undo", "clocksolitaire.log.undo", nil, nil)
 	return nil
 }
 
@@ -236,14 +237,8 @@ func (cs *ClockSolitaire) flipTopFaceDown(pileIdx int) {
 }
 
 // appendLog 棋譜エントリを追加
-func (cs *ClockSolitaire) appendLog(actionType, detail string, cards []*Card) {
-	cs.actionLog = append(cs.actionLog, &ActionLogEntry{
-		TurnNumber: cs.stepCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+func (cs *ClockSolitaire) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	cs.appendLogCodeAt(cs.stepCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // GetPhase フェーズ取得

@@ -124,16 +124,21 @@ func TestClockSolitaireCuiPresenterOutput_GameOver(t *testing.T) {
 }
 
 func TestClockSolitaireCuiPresenterActionLog(t *testing.T) {
-	gg := new(interfaces.MockClockSolitaireGame)
-	gg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, Detail: "テスト"},
-	})
+	defer i18n.SetLang("ja")
+	for _, tc := range []struct{ lang, want string }{
+		{lang: "ja", want: "カードを1番パイルに配置"},
+		{lang: "en", want: "Place the card on pile 1"},
+	} {
+		i18n.SetLang(tc.lang)
+		gg := new(interfaces.MockClockSolitaireGame)
+		gg.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "step", DetailCode: "clocksolitaire.log.step", DetailParams: map[string]string{"pile": "1"}},
+		})
 
-	p := &ClockSolitaireCuiPresenter{}
-	result := p.ActionLogOutput(gg)
-
-	assert.Contains(t, result, "Action Log")
-	assert.Contains(t, result, "テスト")
+		result := (&ClockSolitaireCuiPresenter{}).ActionLogOutput(gg)
+		assert.Contains(t, result, tc.want)
+		assert.NotContains(t, result, "clocksolitaire.log.")
+	}
 }
 
 // #5523: 「あと何山で揃うか」は CLI ターミナルを開いたときだけ見える隠れた

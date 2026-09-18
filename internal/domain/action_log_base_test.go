@@ -81,3 +81,36 @@ func TestActionLogBase_AppendLogStillNumbersByCount(t *testing.T) {
 	assert.Equal(t, 99, got[0].TurnNumber)
 	assert.Equal(t, 2, got[1].TurnNumber, "appendLog counts entries, ignoring the seeded number")
 }
+
+func TestActionLogBaseAppendLogCode(t *testing.T) {
+	params := map[string]string{"pile": "3"}
+	card := NewCard(CardDesignSpade, 7, true)
+	b := &actionLogBase{}
+
+	b.appendLogCode(2, "step", "clocksolitaire.log.step", params, []*Card{card})
+
+	assert.Equal(t, []*ActionLogEntry{{
+		TurnNumber:   1,
+		PlayerIdx:    2,
+		ActionType:   "step",
+		DetailCode:   "clocksolitaire.log.step",
+		DetailParams: params,
+		Cards:        []*Card{card},
+	}}, b.actionLog)
+}
+
+func TestActionLogBaseAppendLogCodeAt(t *testing.T) {
+	params := map[string]string{"amount": "25"}
+	b := &actionLogBase{}
+
+	b.appendLogCodeAt(9, 1, "raise", "sevencardstud.log.raise", params, nil)
+
+	assert.Equal(t, 1, len(b.actionLog))
+	assert.Equal(t, 9, b.actionLog[0].TurnNumber)
+	assert.Equal(t, 1, b.actionLog[0].PlayerIdx)
+	assert.Equal(t, "raise", b.actionLog[0].ActionType)
+	assert.Empty(t, b.actionLog[0].Detail)
+	assert.Equal(t, "sevencardstud.log.raise", b.actionLog[0].DetailCode)
+	assert.Equal(t, params, b.actionLog[0].DetailParams)
+	assert.Nil(t, b.actionLog[0].Cards)
+}
