@@ -37,5 +37,14 @@
   "errInvalidMeld": "This is not a valid meld.",
   "errCardIndexOutOfRange": "The card index is out of range.",
   "errDuplicateCardIndex": "Card indices cannot be duplicated.",
-  "errMeldRequired": "A card taken from the discard pile must be used in a meld."
+  "errMeldRequired": "A card taken from the discard pile must be used in a meld.",
+  "log.drawStock": "{{name}} draws from stock",
+  "log.drawDiscard": "{{name}} draws {{card}} from discard",
+  "log.extend": "{{name}} extends a meld with {{card}}",
+  "log.meld": "{{name}} lays a meld",
+  "log.discard": "{{name}} discards {{card}}",
+  "log.roundWin": "{{name}} goes out and wins the round!",
+  "log.draw": "Round ends in a draw (stock exhausted)",
+  "log.matchDraw": "Match ends (stock exhausted)",
+  "log.matchWin": "{{name}} wins the match!"
 }

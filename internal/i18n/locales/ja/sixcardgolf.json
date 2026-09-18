@@ -41,5 +41,14 @@
   "errStockEmpty": "山札がありません",
   "errDiscardPileEmpty": "捨て札がありません",
   "errCannotFlip": "めくれません",
-  "errCannotSkip": "スキップ不可"
+  "errCannotSkip": "スキップ不可",
+  "log.flipInitial": "{{actor}}{{player}}が位置{{position}}をめくった",
+  "log.drawStock": "{{actor}}{{player}}が山札から引いた",
+  "log.drawDiscard": "{{actor}}{{player}}が捨て札から引いた",
+  "log.swap": "{{actor}}{{player}}が位置{{position}}を交換",
+  "log.discard": "{{actor}}{{player}}が引いたカードを捨てた",
+  "log.flip": "{{actor}}{{player}}が位置{{position}}をめくった",
+  "log.trigger": "プレイヤー{{player}}が全カードを公開！最終ターン開始",
+  "log.gameOver": "ゲーム終了！プレイヤー{{player}}の勝利",
+  "log.roundOver": "ラウンド{{round}}終了"
 }

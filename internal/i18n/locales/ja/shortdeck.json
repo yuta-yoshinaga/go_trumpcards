@@ -54,5 +54,17 @@
   "learningHeader": "[学習モード]",
   "learningLine": "  勝率: {{equity}}% / ポットオッズ: {{potodds}}%",
   "learningEvPlus": "  +EV (勝率がポットオッズを上回っています。コール有利)",
-  "learningEvMinus": "  -EV (勝率がポットオッズ以下です。コール不利)"
+  "learningEvMinus": "  -EV (勝率がポットオッズ以下です。コール不利)",
+  "log.dealtFlop": "フロップを配る",
+  "log.dealtTurn": "ターンを配る",
+  "log.dealtRiver": "リバーを配る",
+  "log.showdown": "ショーダウン",
+  "log.rebuy": "リバイ",
+  "log.fold": "フォールド",
+  "log.check": "チェック",
+  "log.call": "{{amount}}をコール",
+  "log.bet": "{{amount}}をベット",
+  "log.raise": "{{amount}}にレイズ",
+  "log.allIn": "{{amount}}でオールイン",
+  "log.blind": "{{label}} {{amount}}を出しました"
 }

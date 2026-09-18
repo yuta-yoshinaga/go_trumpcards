@@ -54,5 +54,17 @@
   "learningHeader": "[Learning mode]",
   "learningLine": "  Equity: {{equity}}% / Pot odds: {{potodds}}%",
   "learningEvPlus": "  +EV (equity beats pot odds; calling is favorable)",
-  "learningEvMinus": "  -EV (equity at or below pot odds; calling is unfavorable)"
+  "learningEvMinus": "  -EV (equity at or below pot odds; calling is unfavorable)",
+  "log.dealtFlop": "dealt flop",
+  "log.dealtTurn": "dealt turn",
+  "log.dealtRiver": "dealt river",
+  "log.showdown": "showdown",
+  "log.rebuy": "rebuy",
+  "log.fold": "fold",
+  "log.check": "check",
+  "log.call": "call {{amount}}",
+  "log.bet": "bet {{amount}}",
+  "log.raise": "raise to {{amount}}",
+  "log.allIn": "all in {{amount}}",
+  "log.blind": "posts {{label}} {{amount}}"
 }

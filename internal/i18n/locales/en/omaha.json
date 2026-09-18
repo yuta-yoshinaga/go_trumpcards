@@ -62,5 +62,18 @@
   "boardLowLive": "Low: live (3 low ranks on the board)",
   "boardLowPossible": "Low: possible ({{needed}} more low rank(s) needed)",
   "boardLowImpossible": "Low: dead",
-  "scoop": "🏆 Scoop! took both the high and the low"
+  "scoop": "🏆 Scoop! took both the high and the low",
+  "log.exposedFirstFlopCard": "exposed the first flop card",
+  "log.dealtFlop": "dealt flop",
+  "log.dealtTurn": "dealt turn",
+  "log.dealtRiver": "dealt river",
+  "log.showdown": "showdown",
+  "log.rebuy": "rebuy",
+  "log.fold": "fold",
+  "log.check": "check",
+  "log.call": "call {{amount}}",
+  "log.bet": "bet {{amount}}",
+  "log.raise": "raise to {{amount}}",
+  "log.allIn": "all in {{amount}}",
+  "log.blind": "posts {{label}} {{amount}}"
 }

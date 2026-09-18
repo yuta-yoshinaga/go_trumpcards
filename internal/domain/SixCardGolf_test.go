@@ -880,6 +880,10 @@ func TestSixCardGolf_ActionLog(t *testing.T) {
 	g.Reset()
 	require.NoError(t, g.FlipInitial(0))
 	assert.True(t, len(g.GetActionLog()) > 0)
+	entry := g.GetActionLog()[0]
+	assert.Equal(t, "sixcardgolf.log.flipInitial", entry.DetailCode)
+	assert.Equal(t, map[string]string{"actor": "プレイヤー", "player": "0", "position": "0"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 // --- 4 players ---

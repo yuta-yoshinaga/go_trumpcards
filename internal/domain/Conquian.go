@@ -275,7 +275,7 @@ func (g *Conquian) PlayerDrawFromStock() error {
 	g.tookDiscard = false
 	g.pendingCard = nil
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "conquian.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 	g.phase = ConquianPhaseMeld
 	return nil
 }
@@ -306,7 +306,7 @@ func (g *Conquian) PlayerDrawFromDiscard() error {
 	g.tookDiscard = true
 	g.pendingCard = card
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", "conquian.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card)}, []*Card{card})
 	g.phase = ConquianPhaseMeld
 	return nil
 }
@@ -416,11 +416,11 @@ func (g *Conquian) PlayerMeldWithTargets(meldGroups [][]int, extendTargets []int
 	for _, pm := range pending {
 		if pm.extendIdx >= 0 {
 			player.melds[pm.extendIdx] = append(player.melds[pm.extendIdx], pm.cards[0])
-			g.appendLog(g.currentPlayerIdx, "extend", fmt.Sprintf("%s extends a meld with %s", playerName(g.players, g.currentPlayerIdx), cardStr(pm.cards[0])), pm.cards)
+			g.appendLog(g.currentPlayerIdx, "extend", "conquian.log.extend", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(pm.cards[0])}, pm.cards)
 		} else {
 			meldCopy := append([]*Card{}, pm.cards...)
 			player.AddMeld(meldCopy)
-			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s lays a meld", playerName(g.players, g.currentPlayerIdx)), meldCopy)
+			g.appendLog(g.currentPlayerIdx, "meld", "conquian.log.meld", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, meldCopy)
 		}
 	}
 
@@ -461,7 +461,7 @@ func (g *Conquian) PlayerDiscard(cardIndex int) error {
 
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "conquian.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 
 	g.advanceTurn()
 	return nil
@@ -601,7 +601,7 @@ func (g *Conquian) cpuDraw() {
 			g.sortHand(idx)
 			g.tookDiscard = true
 			g.pendingCard = top
-			g.appendLog(idx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, idx), cardStr(top)), []*Card{top})
+			g.appendLog(idx, "draw_discard", "conquian.log.drawDiscard", map[string]string{"name": playerName(g.players, idx), "card": cardStr(top)}, []*Card{top})
 			g.phase = ConquianPhaseMeld
 			return
 		}
@@ -616,7 +616,7 @@ func (g *Conquian) cpuDraw() {
 	g.sortHand(idx)
 	g.tookDiscard = false
 	g.pendingCard = nil
-	g.appendLog(idx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, idx)), nil)
+	g.appendLog(idx, "draw_stock", "conquian.log.drawStock", map[string]string{"name": playerName(g.players, idx)}, nil)
 	g.phase = ConquianPhaseMeld
 }
 
@@ -646,7 +646,7 @@ func (g *Conquian) cpuMeldAndDiscard() {
 	}
 	discarded := player.RemoveCard(discardIdx)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(idx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, idx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(idx, "discard", "conquian.log.discard", map[string]string{"name": playerName(g.players, idx), "card": cardStr(discarded)}, []*Card{discarded})
 	g.advanceTurn()
 }
 
@@ -674,7 +674,7 @@ func (g *Conquian) cpuLayMelds(idx int) {
 			}
 		}
 		player.AddMeld(append([]*Card{}, meld...))
-		g.appendLog(idx, "meld", fmt.Sprintf("%s lays a meld", playerName(g.players, idx)), meld)
+		g.appendLog(idx, "meld", "conquian.log.meld", map[string]string{"name": playerName(g.players, idx)}, meld)
 		sort.Sort(sort.Reverse(sort.IntSlice(removeIdx)))
 		for _, ri := range removeIdx {
 			player.RemoveCard(ri)
@@ -688,7 +688,7 @@ func (g *Conquian) cpuLayMelds(idx int) {
 			ext := g.findExtendableMeld(idx, card)
 			if ext >= 0 {
 				player.melds[ext] = append(player.melds[ext], card)
-				g.appendLog(idx, "extend", fmt.Sprintf("%s extends a meld with %s", playerName(g.players, idx), cardStr(card)), []*Card{card})
+				g.appendLog(idx, "extend", "conquian.log.extend", map[string]string{"name": playerName(g.players, idx), "card": cardStr(card)}, []*Card{card})
 				player.RemoveCard(i)
 				extended = true
 				break
@@ -777,7 +777,7 @@ func (g *Conquian) winRound(playerIdx int) {
 	g.winnerIdx = playerIdx
 	g.players[playerIdx].AddWin()
 	g.players[playerIdx].SetIsFinished(true)
-	g.appendLog(playerIdx, "round_win", fmt.Sprintf("%s goes out and wins the round!", playerName(g.players, playerIdx)), nil)
+	g.appendLog(playerIdx, "round_win", "conquian.log.roundWin", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	g.checkMatchEnd()
 	if !g.gameEndFlag {
 		g.phase = ConquianPhaseRoundEnd
@@ -787,7 +787,7 @@ func (g *Conquian) winRound(playerIdx int) {
 // endRoundDraw 山札切れによる引き分け (勝者なし)
 func (g *Conquian) endRoundDraw() {
 	g.winnerIdx = -1
-	g.appendLog(-1, "draw", "Round ends in a draw (stock exhausted)", nil)
+	g.appendLog(-1, "draw", "conquian.log.draw", nil, nil)
 	// 引き分けはマッチ勝利数に影響しないが、ゲームは必ず終了させる必要がある。
 	// 引き分けが起きたらマッチを終了する (累積勝利数が最大のプレイヤーが勝者、同数なら引き分け)。
 	g.endMatchOnDraw()
@@ -814,7 +814,7 @@ func (g *Conquian) endMatchOnDraw() {
 	if tie || best <= 0 {
 		g.matchWinnerIdx = -1
 	}
-	g.appendLog(-1, "game_end", "Match ends (stock exhausted)", nil)
+	g.appendLog(-1, "game_end", "conquian.log.matchDraw", nil, nil)
 }
 
 // checkMatchEnd はマッチ全体の終了判定を行う (TargetWins に到達したプレイヤーが勝者)。
@@ -824,7 +824,7 @@ func (g *Conquian) checkMatchEnd() {
 			g.gameEndFlag = true
 			g.matchWinnerIdx = i
 			g.phase = ConquianPhaseGameEnd
-			g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, i)), nil)
+			g.appendLog(-1, "game_end", "conquian.log.matchWin", map[string]string{"name": playerName(g.players, i)}, nil)
 			return
 		}
 	}
@@ -836,6 +836,11 @@ func (g *Conquian) advanceTurn() {
 	g.tookDiscard = false
 	g.pendingCard = nil
 	g.phase = ConquianPhaseDraw
+}
+
+// appendLog records a Conquian action with a locale-independent detail code.
+func (g *Conquian) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- State getters / setters ---

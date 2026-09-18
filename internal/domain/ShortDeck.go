@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strconv"
 )
 
 // ショートデックフェーズ定数 (Holdemと共通)
@@ -209,7 +210,10 @@ func (sd *ShortDeck) continueReset() error {
 func (sd *ShortDeck) postBlinds() {
 	postBlindsFor(sd.players, sd.dealerIdx, sd.config.SmallBlind, sd.config.BigBlind, &sd.pot, &sd.lastBet, sd.actedFlags,
 		func(playerIdx int, label string, amount int) {
-			sd.appendLog(playerIdx, "blind", fmt.Sprintf("posts %s %d", label, amount), nil)
+			sd.appendLog(playerIdx, "blind", "shortdeck.log.blind", map[string]string{
+				"label":  label,
+				"amount": strconv.Itoa(amount),
+			}, nil)
 		})
 }
 
@@ -363,24 +367,24 @@ func (sd *ShortDeck) advancePhase() {
 				sd.communityCards = append(sd.communityCards, card)
 			}
 		}
-		sd.appendLog(-1, "deal", "dealt flop", sd.communityCards)
+		sd.appendLog(-1, "deal", "shortdeck.log.dealtFlop", nil, sd.communityCards)
 	case ShortDeckPhaseFlop:
 		sd.phase = ShortDeckPhaseTurn
 		card := sd.trumpCards.DrawCard()
 		if card != nil {
 			sd.communityCards = append(sd.communityCards, card)
 		}
-		sd.appendLog(-1, "deal", "dealt turn", sd.communityCards[3:])
+		sd.appendLog(-1, "deal", "shortdeck.log.dealtTurn", nil, sd.communityCards[3:])
 	case ShortDeckPhaseTurn:
 		sd.phase = ShortDeckPhaseRiver
 		card := sd.trumpCards.DrawCard()
 		if card != nil {
 			sd.communityCards = append(sd.communityCards, card)
 		}
-		sd.appendLog(-1, "deal", "dealt river", sd.communityCards[4:])
+		sd.appendLog(-1, "deal", "shortdeck.log.dealtRiver", nil, sd.communityCards[4:])
 	case ShortDeckPhaseRiver:
 		sd.phase = ShortDeckPhaseShowdown
-		sd.appendLog(-1, "showdown", "showdown", nil)
+		sd.appendLog(-1, "showdown", "shortdeck.log.showdown", nil, nil)
 		sd.resolveShowdown()
 		return
 	}
@@ -904,7 +908,7 @@ func (sd *ShortDeck) Rebuy() error {
 		if p.GetIsHuman() && p.GetChips() <= 0 && sd.rebuyCounts[i] < sd.config.RebuyMaxCount {
 			p.AddChips(sd.config.RebuyChips)
 			sd.rebuyCounts[i]++
-			sd.appendLog(i, "rebuy", "rebuy", nil)
+			sd.appendLog(i, "rebuy", "shortdeck.log.rebuy", nil, nil)
 			break
 		}
 	}
@@ -1133,18 +1137,23 @@ func (sd *ShortDeck) GetHandCount() int { return sd.handCount }
 func (sd *ShortDeck) logAction(playerIdx, action, amount int) {
 	switch action {
 	case ShortDeckActionFold:
-		sd.appendLog(playerIdx, "fold", "fold", nil)
+		sd.appendLog(playerIdx, "fold", "shortdeck.log.fold", nil, nil)
 	case ShortDeckActionCheck:
-		sd.appendLog(playerIdx, "check", "check", nil)
+		sd.appendLog(playerIdx, "check", "shortdeck.log.check", nil, nil)
 	case ShortDeckActionCall:
-		sd.appendLog(playerIdx, "call", fmt.Sprintf("call %d", sd.players[playerIdx].GetCurrentBet()), nil)
+		sd.appendLog(playerIdx, "call", "shortdeck.log.call", map[string]string{"amount": strconv.Itoa(sd.players[playerIdx].GetCurrentBet())}, nil)
 	case ShortDeckActionBet:
-		sd.appendLog(playerIdx, "bet", fmt.Sprintf("bet %d", amount), nil)
+		sd.appendLog(playerIdx, "bet", "shortdeck.log.bet", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 	case ShortDeckActionRaise:
-		sd.appendLog(playerIdx, "raise", fmt.Sprintf("raise to %d", amount), nil)
+		sd.appendLog(playerIdx, "raise", "shortdeck.log.raise", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 	case ShortDeckActionAllIn:
-		sd.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", sd.players[playerIdx].GetCurrentBet()), nil)
+		sd.appendLog(playerIdx, "allin", "shortdeck.log.allIn", map[string]string{"amount": strconv.Itoa(sd.players[playerIdx].GetCurrentBet())}, nil)
 	}
+}
+
+// appendLog records a Short Deck action with a locale-independent detail code.
+func (sd *ShortDeck) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	sd.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // shortDeckJSON is the JSON wire format for ShortDeck.
