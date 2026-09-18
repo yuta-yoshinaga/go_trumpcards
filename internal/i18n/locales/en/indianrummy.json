@@ -37,5 +37,8 @@
   "hintReasonDrawDiscard": "it fits your hand",
   "hintReasonDrawStock": "discard does not fit your hand",
   "hintReasonDeclareNow": "all 13 cards form valid melds",
-  "hintReasonDiscardDeadwood": "reduce deadwood"
+  "hintReasonDiscardDeadwood": "reduce deadwood",
+  "errDiscardPileEmpty": "The discard pile is empty.",
+  "errDiscardCardIndexOutOfRange": "The card index is out of range.",
+  "errDeclareCardIndexOutOfRange": "The card index is out of range."
 }

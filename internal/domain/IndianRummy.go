@@ -295,7 +295,7 @@ func (g *IndianRummy) drawFromStock() error {
 
 func (g *IndianRummy) drawFromDiscard() error {
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "indianrummy.errDiscardPileEmpty", nil)
 	}
 	card := g.discardPile[len(g.discardPile)-1]
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
@@ -329,7 +329,7 @@ func (g *IndianRummy) PlayerDiscard(cardIndex int) error {
 func (g *IndianRummy) applyDiscard(cardIndex int) error {
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "indianrummy.errDiscardCardIndexOutOfRange", nil)
 	}
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
@@ -356,7 +356,7 @@ func (g *IndianRummy) PlayerDeclare(cardIndex int) error {
 func (g *IndianRummy) applyDeclare(cardIndex int) error {
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "indianrummy.errDeclareCardIndexOutOfRange", nil)
 	}
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)

@@ -37,5 +37,8 @@
   "hintReasonDrawDiscard": "手札に合います",
   "hintReasonDrawStock": "捨て札が合いません",
   "hintReasonDeclareNow": "13枚が有効な組み合わせです",
-  "hintReasonDiscardDeadwood": "デッドウッドを減らします"
+  "hintReasonDiscardDeadwood": "デッドウッドを減らします",
+  "errDiscardPileEmpty": "捨て札が空です",
+  "errDiscardCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errDeclareCardIndexOutOfRange": "カードインデックスが範囲外です"
 }

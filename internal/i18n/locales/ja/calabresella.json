@@ -41,5 +41,8 @@
   "helpExampleBid": "  bid pass                  入札を降りる",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
   "helpExampleNext": "  n                         トリックの決着を見てから次へ",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "errBidMustExceed": "現在の最高ビッドを上回る宣言が必要です",
+  "errDiscardCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errPlayCardIndexOutOfRange": "カードインデックスが範囲外です"
 }

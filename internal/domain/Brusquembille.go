@@ -200,7 +200,7 @@ func (b *Brusquembille) PlayerPlay(cardIndex int) error {
 
 	player := b.players[b.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "brusquembille.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -533,7 +533,7 @@ func (b *Brusquembille) leadSuit() int {
 
 func (b *Brusquembille) validatePlay(playerIdx int, card *Card) error {
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
+		return NewDomainErrorCode(ErrInvalidCard, "brusquembille.errCardNil", nil)
 	}
 	// 前半 (山札あり) は自由出し。クローン元と同じ。
 	if !b.IsFollowRequired() {
@@ -546,7 +546,7 @@ func (b *Brusquembille) validatePlay(playerIdx int, card *Card) error {
 	}
 	// **持っているのに違うスートを出すのは反則。** 持っていなければ自由。
 	if card.GetDesign() != lead && b.hasSuit(playerIdx, lead) {
-		return NewDomainError(ErrInvalidCard, "山札が尽きた後はリードスートに追従してください")
+		return NewDomainErrorCode(ErrInvalidCard, "brusquembille.errMustFollowSuit", nil)
 	}
 	return nil
 }
