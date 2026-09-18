@@ -45,5 +45,17 @@
   "errTrumpSuitRange": "切り札スートは 1〜4 で指定してください",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errFollowTrumpLead": "切り札のリードには切り札で従ってください",
-  "errFollowLeadOrTrump": "リードスートに従うか切り札を切ってください"
+  "errFollowLeadOrTrump": "リードスートに従うか切り札を切ってください",
+  "log.bid": "{{name}} が {{bid}} とビッド",
+  "log.stuck": "{{name}} は {{bid}} で強制ビッド",
+  "log.bidWon": "{{name}} が {{bid}} でビッドに勝ち、切り札を決めます",
+  "log.trumpSet": "切り札は {{suit}}",
+  "log.play": "{{name}} が {{card}} をプレイ",
+  "log.trickWin": "{{name}} がトリック {{trick}} を獲得",
+  "log.setBack": "{{name}} はセットバック: ビッド={{bid}} 獲得={{earned}} -> {{result}}",
+  "log.bidMade": "{{name}} はビッド達成: ビッド={{bid}} 獲得={{earned}} -> {{result}}",
+  "log.nonBidderScore": "{{name}} が {{points}} 点を獲得",
+  "log.cumulativeScore": "{{name}}: 合計={{total}}",
+  "log.scorePoint": "{{name}} が {{card}} を獲得 ({{points}} pt)",
+  "log.gameEnd": "{{name}} がゲームに勝利！"
 }

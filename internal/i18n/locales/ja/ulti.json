@@ -58,5 +58,11 @@
   "errDiscardCount": "ちょうど 2 枚を捨ててください",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errDuplicateCard": "同じカードを 2 回選べません",
-  "errFollowLeadOrOvertrump": "リードスートに従う (またはオーバートランプする) 必要があります"
+  "errFollowLeadOrOvertrump": "リードスートに従う (またはオーバートランプする) 必要があります",
+  "log.bid": "{{name}} が {{contract}} を宣言 (切り札 {{trump}})",
+  "log.discard": "{{name}} が {{count}} 枚を捨てる",
+  "log.play": "{{name}} が {{card}} をプレイ",
+  "log.trickWin": "{{name}} がトリック {{trick}} を獲得",
+  "log.roundScore": "ラウンド {{round}}: デクレアラー({{name}}) {{contract}} {{outcome}}",
+  "log.gameEnd": "{{name}} がマッチに勝利！"
 }

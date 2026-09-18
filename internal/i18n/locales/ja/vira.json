@@ -51,5 +51,13 @@
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpExampleBid": "  pass                 入札を降りる",
   "helpHint": "  h                    助言を表示",
-  "errTargetRoundsNotMultiple": "局数は {{min}} の倍数でなければなりません: {{rounds}}"
+  "errTargetRoundsNotMultiple": "局数は {{min}} の倍数でなければなりません: {{rounds}}",
+  "log.deal": "ラウンド {{round}} 開始 (ポット {{pot}})",
+  "log.bid": "ビッド: {{bid}}",
+  "log.allPass": "全員パス。ポットを持ち越して次のラウンドへ",
+  "log.declare": "{{bid}} を宣言 (切り札 {{trump}})",
+  "log.gameEnd": "マッチ終了 (ポット残 {{pot}})",
+  "log.play": "",
+  "log.trickWin": "トリック {{trick}} を獲得",
+  "log.settle": "{{bid}} {{outcome}} ({{tricks}} トリック, ポット {{pot}})"
 }

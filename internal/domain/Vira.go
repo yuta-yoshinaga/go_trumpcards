@@ -257,7 +257,7 @@ func (g *Vira) startRound() {
 	g.leadPlayerIdx = (g.dealerIdx + 1) % ViraPlayerCnt
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = ViraPhaseBid
-	g.appendLog(-1, "deal", fmt.Sprintf("ラウンド %d 開始 (ポット %d)", g.roundNumber, g.pot), nil)
+	g.appendLog(-1, "deal", "vira.log.deal", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "pot": fmt.Sprintf("%d", g.pot)}, nil)
 }
 
 // deal 各プレイヤーへ 13 枚ずつ配る。残り 13 枚のタロンは使わない。
@@ -349,7 +349,7 @@ func (g *Vira) applyBid(idx int, bid ViraBid) error {
 	}
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
-	g.appendLog(idx, "bid", ViraBidNames[bid], nil)
+	g.appendLog(idx, "bid", "vira.log.bid", map[string]string{"bid": ViraBidNames[bid]}, nil)
 
 	g.currentPlayerIdx = (g.currentPlayerIdx + 1) % ViraPlayerCnt
 	if g.allBidsDone() {
@@ -426,7 +426,7 @@ func (g *Vira) resolveBidding() {
 	best, idx := g.highestBid()
 	if idx < 0 {
 		// **全パスは流局。**ポットはそのまま次局へ持ち越す。
-		g.appendLog(-1, "allpass", "全員パス。ポットを持ち越して次のラウンドへ", nil)
+		g.appendLog(-1, "allpass", "vira.log.allPass", nil, nil)
 		g.phase = ViraPhaseRoundEnd
 		return
 	}
@@ -437,8 +437,7 @@ func (g *Vira) resolveBidding() {
 	}
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = ViraPhasePlay
-	g.appendLog(idx, "declare",
-		fmt.Sprintf("%s を宣言 (切り札 %s)", ViraBidNames[best], viraSuitName(g.trumpSuit)), nil)
+	g.appendLog(idx, "declare", "vira.log.declare", map[string]string{"bid": ViraBidNames[best], "trump": viraSuitName(g.trumpSuit)}, nil)
 }
 
 // viraSuitName 切り札スートの表示名。0 は切り札なし。
@@ -474,8 +473,8 @@ func (g *Vira) longestSuit(playerIdx int) int {
 }
 
 // appendLog 棋譜に 1 行追加する。
-func (g *Vira) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLogAt(len(g.actionLog)+1, playerIdx, actionType, detail, cards)
+func (g *Vira) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // finishMatch マッチを終え、持ち点最大のプレイヤーを勝者にする。
@@ -499,7 +498,7 @@ func (g *Vira) finishMatch() {
 	} else {
 		g.winnerPlayer = winner
 	}
-	g.appendLog(-1, "gameend", fmt.Sprintf("マッチ終了 (ポット残 %d)", g.pot), nil)
+	g.appendLog(-1, "gameend", "vira.log.gameEnd", map[string]string{"pot": fmt.Sprintf("%d", g.pot)}, nil)
 }
 
 // IsHumanTurn 人間のプレイ手番か。
@@ -594,7 +593,7 @@ func (g *Vira) GetValidPlayIndices(playerIdx int) []int {
 // playCard 1 枚を場に出し、トリックが揃えばフェーズを進める。
 func (g *Vira) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", "", []*Card{card})
+	g.appendLog(playerIdx, "play", "vira.log.play", nil, []*Card{card})
 	if len(g.currentTrick) < ViraPlayerCnt {
 		g.currentPlayerIdx = (g.currentPlayerIdx + 1) % ViraPlayerCnt
 		return
@@ -614,7 +613,7 @@ func (g *Vira) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(cards)
 	g.roundTricks[winnerIdx]++
-	g.appendLog(winnerIdx, "trickwin", fmt.Sprintf("トリック %d を獲得", g.trickNumber), cards)
+	g.appendLog(winnerIdx, "trickwin", "vira.log.trickWin", map[string]string{"trick": fmt.Sprintf("%d", g.trickNumber)}, cards)
 
 	// **場は NextTrick までクリアしない。**共通の CPU ループ
 	// (`runCpuTurnsLoop`) は TrickEnd フェーズで結果を見せてから NextTrick を
@@ -752,8 +751,7 @@ func (g *Vira) settleRound() {
 	for i := range g.playerScores {
 		g.lastRoundDelta[i] = g.playerScores[i] - before[i]
 	}
-	g.appendLog(g.declarerIdx, "settle",
-		fmt.Sprintf("%s %s (%d トリック, ポット %d)", ViraBidNames[g.contract], viraMadeLabel(made), won, g.pot), nil)
+	g.appendLog(g.declarerIdx, "settle", "vira.log.settle", map[string]string{"bid": ViraBidNames[g.contract], "outcome": viraMadeLabel(made), "tricks": fmt.Sprintf("%d", won), "pot": fmt.Sprintf("%d", g.pot)}, nil)
 }
 
 // viraMadeLabel 達成可否の表示。

@@ -321,8 +321,7 @@ func (g *Ulti) applyBid(contract UltiContract, trumpSuit int) {
 	g.talon = make([]*Card, 0)
 	g.talonTaken = true
 	g.sortAllHands()
-	g.appendLog(g.declarerIdx, "bid",
-		fmt.Sprintf("%s declares %s (trump %s)", playerName(g.players, g.declarerIdx), ultiContractName(contract), ultiSuitName(g.trumpSuit)), nil)
+	g.appendLog(g.declarerIdx, "bid", "ulti.log.bid", map[string]string{"name": playerName(g.players, g.declarerIdx), "contract": ultiContractName(contract), "trump": ultiSuitName(g.trumpSuit)}, nil)
 	g.phase = UltiPhaseDiscard
 }
 
@@ -360,8 +359,7 @@ func (g *Ulti) PlayerDiscard(cardIndices []int) error {
 	for _, idx := range sorted {
 		g.discards = append(g.discards, player.RemoveCard(idx))
 	}
-	g.appendLog(g.declarerIdx, "discard",
-		fmt.Sprintf("%s discards %d cards", playerName(g.players, g.declarerIdx), len(g.discards)), append([]*Card(nil), g.discards...))
+	g.appendLog(g.declarerIdx, "discard", "ulti.log.discard", map[string]string{"name": playerName(g.players, g.declarerIdx), "count": fmt.Sprintf("%d", len(g.discards))}, append([]*Card(nil), g.discards...))
 	g.startPlay()
 	return nil
 }
@@ -425,7 +423,7 @@ func (g *Ulti) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Ulti) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "ulti.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == UltiPlayerCnt {
 		g.phase = UltiPhaseTrickEnd
@@ -445,8 +443,7 @@ func (g *Ulti) ResolveTrick() {
 		trickCards[i] = tc.Card
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "ulti.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": fmt.Sprintf("%d", g.trickNumber)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// **どのトリックの勝者も憶えておく。** 以前は最終トリックのぶんしか入れて
@@ -481,9 +478,7 @@ func (g *Ulti) enterRoundEnd() {
 	g.scored = true
 	g.outcome = g.evalOutcome()
 	g.applyScores(g.outcome)
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: declarer(%s) %s %s",
-			g.roundNumber, playerName(g.players, g.declarerIdx), ultiContractName(g.contract), ultiOutcomeName(g.outcome)), nil)
+	g.appendLog(-1, "round_score", "ulti.log.roundScore", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "name": playerName(g.players, g.declarerIdx), "contract": ultiContractName(g.contract), "outcome": ultiOutcomeName(g.outcome)}, nil)
 	g.checkGameEnd()
 }
 
@@ -599,7 +594,12 @@ func (g *Ulti) checkGameEnd() {
 	g.winnerPlayer = leader
 	g.phase = UltiPhaseGameEnd
 	g.result = g.humanResult(leader, tie)
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+	g.appendLog(-1, "game_end", "ulti.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
+}
+
+// appendLog records an Ulti action with a locale-independent detail code.
+func (g *Ulti) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // humanResult 人間 (seat 0) の視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None、他は Lose。

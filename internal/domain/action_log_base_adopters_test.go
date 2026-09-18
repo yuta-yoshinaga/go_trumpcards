@@ -159,7 +159,7 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 			// rejects a never-Reset game ("invalid state values in json"), so the
 			// fixture has to be a dealt one.
 			g.Reset()
-			g.appendLog(1, "act", "detail", nil)
+			g.appendLog(1, "act", "vira.log.play", nil, nil)
 			return g, NewDefaultVira()
 		}},
 		{"Guandan", func() (any, any) {

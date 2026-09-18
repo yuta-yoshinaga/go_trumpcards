@@ -5,7 +5,6 @@ package domain_test
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -693,6 +692,17 @@ func TestBatak_GetActionLog(t *testing.T) {
 	require.NoError(t, cb.PlayerBid(5))
 	log := cb.GetActionLog()
 	assert.NotEmpty(t, log)
+	var entry *domain.ActionLogEntry
+	for _, candidate := range log {
+		if candidate.DetailCode == "batak.log.bid" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "batak.log.bid", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You", "bid": "5"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestBatak_JSONRoundTrip(t *testing.T) {
@@ -793,7 +803,7 @@ func TestBatak_Auction_Statistics(t *testing.T) {
 		// ActionLog から自発的なビッド (bids) があったかを判定
 		anyBid := false
 		for _, log := range cb.GetActionLog() {
-			if log.ActionType == "bid" && strings.Contains(log.Detail, "bids") {
+			if log.ActionType == "bid" && log.DetailCode == "batak.log.bid" {
 				anyBid = true
 				break
 			}

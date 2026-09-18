@@ -311,6 +311,23 @@ func TestVira_BidLadderAndValues(t *testing.T) {
 	}
 }
 
+func TestVira_ActionLogUsesDetailCode(t *testing.T) {
+	g := newTestVira(t)
+	g.SetCurrentPlayerIdx(0)
+	require.NoError(t, g.PlayerBid(ViraBidPass))
+
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "vira.log.bid" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"bid": "Pass"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}
+
 func TestVira_TrickWinner(t *testing.T) {
 	cases := []struct {
 		name  string

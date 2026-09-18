@@ -186,7 +186,7 @@ func (cb *Batak) PlayerBid(bid int) error {
 
 	if bid == BatakPassBid {
 		cb.players[humanIdx].SetBid(BatakPassBid)
-		cb.appendLog(humanIdx, "bid", fmt.Sprintf("%s passes", playerName(cb.players, humanIdx)), nil)
+		cb.appendLog(humanIdx, "bid", "batak.log.bidPass", nil, nil)
 	} else {
 		minLegal := cb.MinLegalBid()
 		if minLegal == BatakPassBid || bid < minLegal || bid > BatakMaxBid {
@@ -194,7 +194,7 @@ func (cb *Batak) PlayerBid(bid int) error {
 		}
 		cb.players[humanIdx].SetBid(bid)
 		cb.highBid = bid
-		cb.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %d", playerName(cb.players, humanIdx), bid), nil)
+		cb.appendLog(humanIdx, "bid", "batak.log.bid", map[string]string{"name": playerName(cb.players, humanIdx), "bid": fmt.Sprintf("%d", bid)}, nil)
 	}
 
 	cb.bidPlayerIdx = (cb.bidPlayerIdx + 1) % BatakPlayerCnt
@@ -223,10 +223,10 @@ func (cb *Batak) CpuBid() {
 
 	cb.players[cb.bidPlayerIdx].SetBid(bid)
 	if bid == BatakPassBid {
-		cb.appendLog(cb.bidPlayerIdx, "bid", fmt.Sprintf("%s passes", playerName(cb.players, cb.bidPlayerIdx)), nil)
+		cb.appendLog(cb.bidPlayerIdx, "bid", "batak.log.bidPass", nil, nil)
 	} else {
 		cb.highBid = bid
-		cb.appendLog(cb.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %d", playerName(cb.players, cb.bidPlayerIdx), bid), nil)
+		cb.appendLog(cb.bidPlayerIdx, "bid", "batak.log.bid", map[string]string{"name": playerName(cb.players, cb.bidPlayerIdx), "bid": fmt.Sprintf("%d", bid)}, nil)
 	}
 
 	cb.bidPlayerIdx = (cb.bidPlayerIdx + 1) % BatakPlayerCnt
@@ -294,7 +294,7 @@ func (cb *Batak) ResolveTrick() {
 	}
 
 	cb.players[winnerIdx].AddTrick(trickCards)
-	cb.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", playerName(cb.players, winnerIdx), cb.trickNumber), trickCards)
+	cb.appendLog(winnerIdx, "trick_win", "batak.log.trickWin", map[string]string{"name": playerName(cb.players, winnerIdx), "trick": fmt.Sprintf("%d", cb.trickNumber)}, trickCards)
 
 	cb.leadPlayerIdx = winnerIdx
 
@@ -343,8 +343,7 @@ func (cb *Batak) ScoreRound() {
 		}
 		p.SetRoundScore(score)
 
-		cb.appendLog(i, "round_score", fmt.Sprintf("%s: bid=%d tricks=%d round=%d",
-			playerName(cb.players, i), bid, tricks, score), nil)
+		cb.appendLog(i, "round_score", "batak.log.roundScore", map[string]string{"name": playerName(cb.players, i), "bid": fmt.Sprintf("%d", bid), "tricks": fmt.Sprintf("%d", tricks), "round": fmt.Sprintf("%d", score)}, nil)
 	}
 
 	// 累積スコアに加算
@@ -354,8 +353,7 @@ func (cb *Batak) ScoreRound() {
 
 	// スコアログ
 	for i := 0; i < BatakPlayerCnt; i++ {
-		cb.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			playerName(cb.players, i), cb.players[i].GetCumulativeScore()), nil)
+		cb.appendLog(i, "cumulative_score", "batak.log.cumulativeScore", map[string]string{"name": playerName(cb.players, i), "total": fmt.Sprintf("%d", cb.players[i].GetCumulativeScore())}, nil)
 	}
 
 	cb.checkGameEnd()
@@ -517,7 +515,7 @@ func (cb *Batak) playCard(playerIdx int, card *Card) {
 		cb.spadesBroken = true
 	}
 
-	cb.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(cb.players, playerIdx), cardStr(card)), []*Card{card})
+	cb.appendLog(playerIdx, "play", "batak.log.play", map[string]string{"name": playerName(cb.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(cb.currentTrick) == BatakPlayerCnt {
 		cb.phase = BatakPhaseTrickEnd
@@ -595,7 +593,12 @@ func (cb *Batak) checkGameEnd() {
 			cb.winnerIdx = i
 		}
 	}
-	cb.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(cb.players, cb.winnerIdx)), nil)
+	cb.appendLog(-1, "game_end", "batak.log.gameEnd", map[string]string{"name": playerName(cb.players, cb.winnerIdx)}, nil)
+}
+
+// appendLog records a Batak action with a locale-independent detail code.
+func (cb *Batak) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	cb.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする (スート → 値)

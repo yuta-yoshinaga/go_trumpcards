@@ -39,5 +39,12 @@
   "hintReasonTrumpCut": "スペードでカット",
   "hintReasonPassWeakHand": "手が弱い",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "log.bidPass": "パス",
+  "log.bid": "{{name}} は {{bid}} とビッド",
+  "log.trickWin": "{{name}} がトリック {{trick}} を獲得",
+  "log.roundScore": "{{name}}: ビッド={{bid}} トリック={{tricks}} ラウンド={{round}}",
+  "log.cumulativeScore": "{{name}}: 合計={{total}}",
+  "log.play": "{{name}} が {{card}} をプレイ",
+  "log.gameEnd": "{{name}} がゲームに勝利！"
 }

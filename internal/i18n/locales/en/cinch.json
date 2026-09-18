@@ -45,5 +45,17 @@
   "errTrumpSuitRange": "The trump suit must be from 1 to 4.",
   "errCardIndexOutOfRange": "The card index is out of range.",
   "errFollowTrumpLead": "You must follow the trump suit when trump is led.",
-  "errFollowLeadOrTrump": "You must follow the lead suit or play a trump card."
+  "errFollowLeadOrTrump": "You must follow the lead suit or play a trump card.",
+  "log.bid": "{{name}} bids {{bid}}",
+  "log.stuck": "{{name}} is stuck with {{bid}}",
+  "log.bidWon": "{{name}} wins the bid at {{bid}} and will name trump",
+  "log.trumpSet": "Trump is {{suit}}",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.setBack": "{{name}} set back: bid={{bid}} earned={{earned}} -> {{result}}",
+  "log.bidMade": "{{name}} makes bid: bid={{bid}} earned={{earned}} -> {{result}}",
+  "log.nonBidderScore": "{{name}} scores {{points}}",
+  "log.cumulativeScore": "{{name}}: total={{total}}",
+  "log.scorePoint": "{{name}} captures {{card}} ({{points}} pt)",
+  "log.gameEnd": "{{name}} wins the game!"
 }
