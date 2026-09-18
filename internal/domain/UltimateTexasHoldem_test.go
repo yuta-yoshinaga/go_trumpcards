@@ -177,6 +177,16 @@ func TestUltimateTexasHoldem_Bet_Success(t *testing.T) {
 	assert.Equal(t, 50, u.GetTripsBet())
 	assert.Len(t, u.GetPlayerHand(), 2)
 	assert.Len(t, u.GetDealerHand(), 2)
+	var entry *domain.ActionLogEntry
+	for _, candidate := range u.GetActionLog() {
+		if candidate.DetailCode == "ultimatetexasholdem.log.anteBlindTrips" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"ante": "100", "blind": "100", "trips": "50"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 	// 1000 - (ante 100 + blind 100 + trips 50) = 750
 	assert.Equal(t, domain.UltimateTexasHoldemDefaultChips-250, u.GetChips())
 }

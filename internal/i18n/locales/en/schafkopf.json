@@ -54,5 +54,17 @@
   "errContractNotHigher": "You must declare a contract higher than the current one.",
   "errInvalidCallSuit": "That suit cannot be called.",
   "errCardIndexOutOfRange": "The card index is out of range.",
-  "errFollowLeadSuit": "You must follow the lead suit."
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "log.declares": "{{name}} declares {{contract}}",
+  "log.passes": "{{name}} passes",
+  "log.mustTakeRufspiel": "{{name}} must take Rufspiel (all passed)",
+  "log.takesContract": "{{name}} takes the contract",
+  "log.playsContractAlone": "{{name}} plays {{contract}} alone",
+  "log.playsAlone": "{{name}} plays alone",
+  "log.callsAce": "{{name}} calls the {{suit}} Ace",
+  "log.playsCard": "{{name}} plays {{card}}",
+  "log.partnerRevealed": "{{name}} is the picker's partner",
+  "log.winsTrick": "{{name}} wins trick {{trick}} ({{points}} pts)",
+  "log.roundScore": "round {{round}}: picker team {{points}} pts ({{outcome}}, x{{multiplier}})",
+  "log.winsGame": "{{name}} wins the game!"
 }

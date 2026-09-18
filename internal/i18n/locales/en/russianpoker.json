@@ -36,5 +36,21 @@
   "antePayoutLine": "Ante payout: {{payout}}",
   "playPayoutLine": "Play payout: {{payout}}",
   "totalPayoutLine": "total payout: {{payout}}",
-  "helpExampleBet": "  b 100                bet 100 chips"
+  "helpExampleBet": "  b 100                bet 100 chips",
+  "log.anteBet": "ante={{ante}}",
+  "log.exchange": "exchange {{count}} card(s) fee={{fee}}",
+  "log.boughtSixthCard": "bought 6th card fee={{fee}}",
+  "log.discard": "discard index={{index}}",
+  "log.playBet": "play bet={{bet}}",
+  "log.playerFolds": "player folds",
+  "log.playerFolded": "player folded",
+  "log.forceExchange": "force exchange dealer's highest card fee={{fee}}",
+  "log.declinedForceExchange": "declined force exchange",
+  "log.dealerNotQualifiedDeclined": "dealer does not qualify (declined)",
+  "log.dealtFiveCards": "dealt 5 cards each",
+  "log.dealerNotQualified": "dealer does not qualify",
+  "log.dealerStillNotQualified": "dealer still does not qualify after force exchange",
+  "log.playerWins": "player wins",
+  "log.push": "push",
+  "log.dealerWins": "dealer wins"
 }

@@ -176,6 +176,19 @@ func TestSchafkopf_PickFlow(t *testing.T) {
 	if err := g.PlayerDeclare(true, SchafkopfContractRufspiel, 0); err != nil {
 		t.Fatalf("pick err: %v", err)
 	}
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "schafkopf.log.declares" {
+			entry = candidate
+			break
+		}
+	}
+	if entry == nil {
+		t.Fatal("declaration log entry not found")
+	}
+	if entry.Detail != "" || entry.DetailParams["name"] == "" || entry.DetailParams["contract"] != "Rufspiel" {
+		t.Fatalf("unexpected declaration log entry: %+v", entry)
+	}
 	// 宣言しただけでは競りは閉じない。残る 3 席が発言してから確定する。
 	if g.GetPickerIdx() >= 0 {
 		t.Error("one declaration must not settle the auction")

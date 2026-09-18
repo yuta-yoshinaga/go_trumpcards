@@ -36,5 +36,20 @@
   "bonusPayAKOff": "AK オフ {{mult}}:1",
   "bonusPayKKQQJJ": "KK/QQ/JJ {{mult}}:1",
   "bonusPayAQAJOff": "AQ/AJ オフ {{mult}}:1",
-  "bonusPayMediumPair": "22〜TT {{mult}}:1"
+  "bonusPayMediumPair": "22〜TT {{mult}}:1",
+  "log.anteBonus": "アンテ={{ante}} ボーナス={{bonus}}",
+  "log.flopBet": "フロップベット={{bet}}",
+  "log.playerFolds": "プレイヤーがフォールド",
+  "log.playerFolded": "プレイヤーがフォールドした",
+  "log.flopCheck": "フロップでチェック",
+  "log.turnCheck": "ターンでチェック",
+  "log.turnBet": "ターンベット={{bet}}",
+  "log.riverBet": "リバーベット={{bet}}",
+  "log.dealtTwoHoleCards": "各プレイヤーにホールカードを2枚配った",
+  "log.flopDealt": "フロップを配った",
+  "log.turnDealt": "ターンを配った",
+  "log.riverDealt": "リバーを配った",
+  "log.playerWins": "プレイヤーの勝ち",
+  "log.push": "プッシュ",
+  "log.dealerWins": "ディーラーの勝ち"
 }

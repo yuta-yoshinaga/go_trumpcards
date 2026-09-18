@@ -680,6 +680,16 @@ func TestTexasHoldemBonus_GetActionLog(t *testing.T) {
 	require.NoError(t, g.Fold())
 	log := g.GetActionLog()
 	assert.NotEmpty(t, log)
+	var entry *domain.ActionLogEntry
+	for _, candidate := range log {
+		if candidate.DetailCode == "texasholdembonus.log.anteBonus" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"ante": "100", "bonus": "0"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestTexasHoldemBonus_GetTotalPlayBet(t *testing.T) {

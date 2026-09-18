@@ -36,5 +36,20 @@
   "bonusPayAKOff": "AK offsuit {{mult}}:1",
   "bonusPayKKQQJJ": "KK/QQ/JJ {{mult}}:1",
   "bonusPayAQAJOff": "AQ/AJ offsuit {{mult}}:1",
-  "bonusPayMediumPair": "22-TT {{mult}}:1"
+  "bonusPayMediumPair": "22-TT {{mult}}:1",
+  "log.anteBonus": "ante={{ante}} bonus={{bonus}}",
+  "log.flopBet": "flop bet={{bet}}",
+  "log.playerFolds": "player folds",
+  "log.playerFolded": "player folded",
+  "log.flopCheck": "flop check",
+  "log.turnCheck": "turn check",
+  "log.turnBet": "turn bet={{bet}}",
+  "log.riverBet": "river bet={{bet}}",
+  "log.dealtTwoHoleCards": "dealt 2 hole cards each",
+  "log.flopDealt": "flop dealt",
+  "log.turnDealt": "turn dealt",
+  "log.riverDealt": "river dealt",
+  "log.playerWins": "player wins",
+  "log.push": "push",
+  "log.dealerWins": "dealer wins"
 }

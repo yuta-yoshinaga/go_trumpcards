@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // アルティメット・テキサスホールデムフェーズ定数
@@ -165,7 +166,7 @@ func (u *UltimateTexasHoldem) Bet(ante, trips int) error {
 	u.anteBet = ante
 	u.blindBet = ante
 	u.tripsBet = trips
-	u.appendLog(0, "bet", fmt.Sprintf("ante=%d blind=%d trips=%d", ante, u.blindBet, trips), nil)
+	u.appendLog(0, "bet", "ultimatetexasholdem.log.anteBlindTrips", map[string]string{"ante": strconv.Itoa(ante), "blind": strconv.Itoa(u.blindBet), "trips": strconv.Itoa(trips)}, nil)
 
 	u.dealHole()
 	u.phase = UltimateTexasHoldemPhasePreFlop
@@ -189,7 +190,7 @@ func (u *UltimateTexasHoldem) Play(multiplier int) error {
 			return NewDomainError(ErrInsufficientChips, "Insufficient chips for play bet.")
 		}
 		u.playBet = bet
-		u.appendLog(0, "play", fmt.Sprintf("preflop play=%dx (bet=%d)", multiplier, bet), nil)
+		u.appendLog(0, "play", "ultimatetexasholdem.log.preflopPlay", map[string]string{"multiplier": strconv.Itoa(multiplier), "bet": strconv.Itoa(bet)}, nil)
 		u.dealFlop()
 		u.dealTurn()
 		u.dealRiver()
@@ -204,7 +205,7 @@ func (u *UltimateTexasHoldem) Play(multiplier int) error {
 			return NewDomainError(ErrInsufficientChips, "Insufficient chips for play bet.")
 		}
 		u.playBet = bet
-		u.appendLog(0, "play", fmt.Sprintf("flop play=2x (bet=%d)", bet), nil)
+		u.appendLog(0, "play", "ultimatetexasholdem.log.flopPlay", map[string]string{"bet": strconv.Itoa(bet)}, nil)
 		u.dealTurn()
 		u.dealRiver()
 		u.resolve()
@@ -218,7 +219,7 @@ func (u *UltimateTexasHoldem) Play(multiplier int) error {
 			return NewDomainError(ErrInsufficientChips, "Insufficient chips for play bet.")
 		}
 		u.playBet = bet
-		u.appendLog(0, "play", fmt.Sprintf("river play=1x (bet=%d)", bet), nil)
+		u.appendLog(0, "play", "ultimatetexasholdem.log.riverPlay", map[string]string{"bet": strconv.Itoa(bet)}, nil)
 		u.resolve()
 		return nil
 	default:
@@ -231,12 +232,12 @@ func (u *UltimateTexasHoldem) Play(multiplier int) error {
 func (u *UltimateTexasHoldem) Check() error {
 	switch u.phase {
 	case UltimateTexasHoldemPhasePreFlop:
-		u.appendLog(0, "check", "preflop check", nil)
+		u.appendLog(0, "check", "ultimatetexasholdem.log.preflopCheck", nil, nil)
 		u.dealFlop()
 		u.phase = UltimateTexasHoldemPhaseFlop
 		return nil
 	case UltimateTexasHoldemPhaseFlop:
-		u.appendLog(0, "check", "flop check", nil)
+		u.appendLog(0, "check", "ultimatetexasholdem.log.flopCheck", nil, nil)
 		u.dealTurn()
 		u.dealRiver()
 		u.phase = UltimateTexasHoldemPhaseRiver
@@ -251,7 +252,7 @@ func (u *UltimateTexasHoldem) Fold() error {
 	if u.phase != UltimateTexasHoldemPhaseRiver {
 		return NewDomainError(ErrWrongPhase, "Fold is only allowed during the river phase.")
 	}
-	u.appendLog(0, "fold", "player folds", nil)
+	u.appendLog(0, "fold", "ultimatetexasholdem.log.playerFolds", nil, nil)
 
 	u.folded = true
 	u.result = GameResultLose
@@ -271,7 +272,7 @@ func (u *UltimateTexasHoldem) Fold() error {
 
 	u.gameEndFlag = true
 	u.phase = UltimateTexasHoldemPhaseEnd
-	u.appendLog(-1, "result", "player folded", nil)
+	u.appendLog(-1, "result", "ultimatetexasholdem.log.playerFolded", nil, nil)
 	return nil
 }
 
@@ -283,7 +284,7 @@ func (u *UltimateTexasHoldem) dealHole() {
 		u.playerHand = append(u.playerHand, u.trumpCards.DrawCard())
 		u.dealerHand = append(u.dealerHand, u.trumpCards.DrawCard())
 	}
-	u.appendLog(-1, "deal", "dealt 2 hole cards each", nil)
+	u.appendLog(-1, "deal", "ultimatetexasholdem.log.dealtTwoHoleCards", nil, nil)
 }
 
 // dealFlop 3枚のフロップを配る。
@@ -295,14 +296,14 @@ func (u *UltimateTexasHoldem) dealFlop() {
 		u.community = append(u.community, u.trumpCards.DrawCard())
 	}
 	u.updatePlayerCurrentRank()
-	u.appendLog(-1, "flop", "flop dealt", nil)
+	u.appendLog(-1, "flop", "ultimatetexasholdem.log.flopDealt", nil, nil)
 }
 
 // dealTurn ターン（4枚目）を配る。
 func (u *UltimateTexasHoldem) dealTurn() {
 	u.community = append(u.community, u.trumpCards.DrawCard())
 	u.updatePlayerCurrentRank()
-	u.appendLog(-1, "turn", "turn dealt", nil)
+	u.appendLog(-1, "turn", "ultimatetexasholdem.log.turnDealt", nil, nil)
 }
 
 // dealRiver リバー（5枚目）を配る。
@@ -311,7 +312,7 @@ func (u *UltimateTexasHoldem) dealRiver() {
 	// フロップ・ターンと同じく更新する。ここだけ抜けていたため、リバー後の
 	// playerHandRank は 6 枚時点の役のままだった（200 配りのうち 58 回ずれる）。
 	u.updatePlayerCurrentRank()
-	u.appendLog(-1, "river", "river dealt", nil)
+	u.appendLog(-1, "river", "ultimatetexasholdem.log.riverDealt", nil, nil)
 }
 
 // updatePlayerCurrentRank プレイヤーの現時点での最良ハンドランクを更新する（フロントエンドのヒント表示用）。
@@ -473,16 +474,19 @@ func (u *UltimateTexasHoldem) resolve() {
 	u.gameEndFlag = true
 	u.phase = UltimateTexasHoldemPhaseEnd
 
-	var resultStr string
+	resultCode := "ultimatetexasholdem.log.dealerWins"
 	switch u.result {
 	case GameResultWin:
-		resultStr = "player wins"
+		resultCode = "ultimatetexasholdem.log.playerWins"
 	case GameResultDraw:
-		resultStr = "push"
-	default:
-		resultStr = "dealer wins"
+		resultCode = "ultimatetexasholdem.log.push"
 	}
-	u.appendLog(-1, "result", resultStr, nil)
+	u.appendLog(-1, "result", resultCode, nil, nil)
+}
+
+// appendLog records an Ultimate Texas Hold'em action with a locale-independent detail code.
+func (u *UltimateTexasHoldem) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	u.appendLogCodeAt(len(u.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // compareBest 最良5枚の比較
