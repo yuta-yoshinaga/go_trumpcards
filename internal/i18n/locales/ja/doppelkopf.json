@@ -28,5 +28,8 @@
   "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
   "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
-  "livePoints": "現在の獲得点: Re {{rePts}}点（勝利ライン {{reTarget}}点） / Kontra {{kontraPts}}点（勝利ライン {{kontraTarget}}点）"
+  "livePoints": "現在の獲得点: Re {{rePts}}点（勝利ライン {{reTarget}}点） / Kontra {{kontraPts}}点（勝利ライン {{kontraTarget}}点）",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errAnnounceUnavailable": "宣言できる時間ではありません",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }

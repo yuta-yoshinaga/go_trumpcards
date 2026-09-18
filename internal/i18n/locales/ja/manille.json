@@ -26,5 +26,8 @@
   "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
   "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ",
   "helpHint": "  h                         助言を表示",
-  "roundProgress": "今ラウンドの取得点（チームA: {{ptsA}}点, チームB: {{ptsB}}点）"
+  "roundProgress": "今ラウンドの取得点（チームA: {{ptsA}}点, チームB: {{ptsB}}点）",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "errMustPlayTrump": "切り札を出してください"
 }

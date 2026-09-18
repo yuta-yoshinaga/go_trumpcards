@@ -177,7 +177,7 @@ func (o *Wizard) PlayerBid(bid int) error {
 		return ErrNotHumanTurn
 	}
 	if bid < 0 || bid > o.handSize {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは0〜%dで指定してください", o.handSize))
+		return NewDomainErrorCode(ErrInvalidPlay, "wizard.errBidRange", map[string]string{"max": fmt.Sprintf("%d", o.handSize)})
 	}
 	// Wizardはフックルール（合計制限）を持たない: 合計ビッド≠トリック数を許容する。
 
@@ -221,7 +221,7 @@ func (o *Wizard) PlayerPlay(cardIndex int) error {
 
 	player := o.players[o.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "wizard.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -616,7 +616,7 @@ func (o *Wizard) validatePlay(playerIdx int, card *Card) error {
 	if WizardIsLegalPlay(card, o.currentTrick, o.players[playerIdx]) {
 		return nil
 	}
-	return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+	return NewDomainErrorCode(ErrInvalidPlay, "wizard.errFollowLeadSuit", nil)
 }
 
 // WizardIsLegalPlay は card を現在のトリックに出せるかを返す。
