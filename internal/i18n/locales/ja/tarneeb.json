@@ -38,5 +38,9 @@
   "hintReasonTrumpLongest": "最も長いスートを切り札にする",
   "hintReasonTrumpCut": "切り札で取る",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errBidRange": "ビッドは {{min}}〜{{max}} またはパス(0) で指定してください",
+  "errBidHigherThanHighest": "ビッドは現在の最高 {{bid}} より大きくする必要があります",
+  "errInvalidTrumpSuit": "トランプスートは ♠/♣/♥/♦ から選んでください",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
 }

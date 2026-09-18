@@ -201,10 +201,13 @@ func (t *Tarneeb) validateBid(bid int) error {
 		return nil
 	}
 	if bid < t.config.MinBid || bid > TarneebMaxBid {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは %d〜%d またはパス(0) で指定してください", t.config.MinBid, TarneebMaxBid))
+		return NewDomainErrorCode(ErrInvalidPlay, "tarneeb.errBidRange", map[string]string{
+			"min": fmt.Sprintf("%d", t.config.MinBid),
+			"max": fmt.Sprintf("%d", TarneebMaxBid),
+		})
 	}
 	if bid <= t.highestBid {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは現在の最高 %d より大きくする必要があります", t.highestBid))
+		return NewDomainErrorCode(ErrInvalidPlay, "tarneeb.errBidHigherThanHighest", map[string]string{"bid": fmt.Sprintf("%d", t.highestBid)})
 	}
 	return nil
 }
@@ -256,7 +259,7 @@ func (t *Tarneeb) PlayerDeclareTrump(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if !isValidSuit(suit) {
-		return NewDomainError(ErrInvalidPlay, "トランプスートは ♠/♣/♥/♦ から選んでください")
+		return NewDomainErrorCode(ErrInvalidPlay, "tarneeb.errInvalidTrumpSuit", nil)
 	}
 	t.applyTrumpDeclaration(suit)
 	return nil
@@ -300,7 +303,7 @@ func (t *Tarneeb) PlayerPlay(cardIndex int) error {
 
 	player := t.players[t.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "tarneeb.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)

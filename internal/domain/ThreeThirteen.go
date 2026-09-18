@@ -253,7 +253,7 @@ func (g *ThreeThirteen) drawFromStock() error {
 
 func (g *ThreeThirteen) drawFromDiscard() error {
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "threethirteen.errDiscardPileEmpty", nil)
 	}
 	card := g.discardPile[len(g.discardPile)-1]
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
@@ -304,17 +304,17 @@ func (g *ThreeThirteen) guardHumanDiscard() error {
 func (g *ThreeThirteen) applyDiscard(cardIndex int, knock bool) error {
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "threethirteen.errCardIndexOutOfRange", nil)
 	}
 
 	if knock {
 		if g.knockerIdx >= 0 {
-			return NewDomainError(ErrInvalidPlay, "既にノックされています")
+			return NewDomainErrorCode(ErrInvalidPlay, "threethirteen.errAlreadyKnocked", nil)
 		}
 		remaining := handWithout(player, cardIndex)
 		_, deadwood := threeThirteenBestMelds(remaining, g.WildRank())
 		if threeThirteenDeadwoodValue(deadwood, g.WildRank()) != 0 {
-			return NewDomainError(ErrInvalidPlay, "手札を完全にメルドできないためノックできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "threethirteen.errCannotKnock", nil)
 		}
 	}
 
