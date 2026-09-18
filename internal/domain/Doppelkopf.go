@@ -192,7 +192,7 @@ func (g *Doppelkopf) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "doppelkopf.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -217,7 +217,7 @@ func (g *Doppelkopf) PlayerAnnounce() error {
 		return ErrNotHumanTurn
 	}
 	if !g.canAnnounce(human) {
-		return NewDomainError(ErrInvalidPlay, "宣言できる時間ではありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "doppelkopf.errAnnounceUnavailable", nil)
 	}
 	g.applyAnnounce(human)
 	return nil
@@ -437,7 +437,7 @@ func (g *Doppelkopf) validatePlay(playerIdx int, card *Card) error {
 	}
 	leadSuit := dkSuitID(g.currentTrick[0].Card)
 	if dkSuitID(card) != leadSuit && g.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "doppelkopf.errFollowLeadSuit", nil)
 	}
 	return nil
 }

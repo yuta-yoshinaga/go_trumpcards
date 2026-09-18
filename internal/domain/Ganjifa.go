@@ -456,7 +456,7 @@ func (g *Ganjifa) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "ganjifa.errCardIndexOutOfRange", nil)
 	}
 	if err := g.validatePlay(g.currentPlayerIdx, player.GetCard(cardIndex)); err != nil {
 		return err
@@ -487,14 +487,14 @@ func (g *Ganjifa) CpuPlay() {
 // validatePlay マストフォローを検証する。
 func (g *Ganjifa) validatePlay(playerIdx int, card *Card) error {
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードがありません")
+		return NewDomainErrorCode(ErrInvalidCard, "ganjifa.errCardMissing", nil)
 	}
 	if len(g.currentTrick) == 0 {
 		return nil
 	}
 	leadSuit := g.currentTrick[0].Card.GetDesign()
 	if g.playerHasSuit(playerIdx, leadSuit) && card.GetDesign() != leadSuit {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "ganjifa.errFollowLeadSuit", nil)
 	}
 	return nil
 }

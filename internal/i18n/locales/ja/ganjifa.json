@@ -31,5 +31,8 @@
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
   "helpExampleNext": "  n                    トリックの決着を見てから次のトリックへ",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errCardMissing": "カードがありません",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }

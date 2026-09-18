@@ -26,5 +26,8 @@
   "helpExamplePlay": "  play 0                   play hand card 0",
   "helpExampleNext": "  n                        read the trick result, then start the next trick",
   "helpHint": "  h                         show a hint",
-  "roundProgress": "Card points this round (Team A: {{ptsA}}, Team B: {{ptsB}})"
+  "roundProgress": "Card points this round (Team A: {{ptsA}}, Team B: {{ptsB}})",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "errMustPlayTrump": "You must play a trump card."
 }
