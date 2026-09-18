@@ -21,5 +21,6 @@
   "trickWinner": "{{name}} won the trick (+{{points}} pts)",
   "helpExamplePlay": "  play 0                   play hand card 0",
   "helpExampleNext": "  n                        read the trick result, then start the next trick",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "errCardIndexOutOfRange": "The card index is out of range."
 }

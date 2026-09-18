@@ -165,7 +165,7 @@ func (g *Sedma) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "sedma.errCardIndexOutOfRange", nil)
 	}
 	played := player.RemoveCard(cardIndex)
 	g.playCard(g.currentPlayerIdx, played)

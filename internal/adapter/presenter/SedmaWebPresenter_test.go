@@ -150,6 +150,16 @@ func TestSedmaWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error returns message code", func(t *testing.T) {
+		m, _ := setupSedmaWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "sedma.errCardIndexOutOfRange", nil)
+		result := p.Output(m, err)
+		var resObj controller.SedmaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "sedma.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end human team wins", func(t *testing.T) {
 		m, _ := setupSedmaWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

@@ -44,6 +44,19 @@ func TestTehonbikiWebPresenterHidesParentUntilResult(t *testing.T) {
 	}
 }
 
+func TestTehonbikiWebPresenterCodedErrorUsesMessageCode(t *testing.T) {
+	p := new(TehonbikiWebPresenter)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "tehonbiki.errInvalidHalfGroup", nil)
+	var output map[string]any
+	require.NoError(t, json.Unmarshal([]byte(p.Output(newTehonbikiPresenterGame(t), err)), &output))
+	if output["message"] != nil && output["message"] != "" {
+		t.Fatalf("message=%v", output["message"])
+	}
+	if output["messageCode"] != "tehonbiki.errInvalidHalfGroup" {
+		t.Fatalf("messageCode=%v", output["messageCode"])
+	}
+}
+
 func TestTehonbikiCuiPresenterShowsResultAndErrors(t *testing.T) {
 	p := new(TehonbikiCuiPresenter)
 	g := newTehonbikiPresenterGame(t)
