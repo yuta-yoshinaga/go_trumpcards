@@ -46,5 +46,8 @@
   "helpExampleBid": "  pass                      入札を降りる",
   "helpHint": "  h                         助言を表示",
   "payoutMade": "{{name}} が {{chips}} チップ獲得（契約達成）",
-  "payoutFailed": "他の各プレイヤーが {{chips}} チップ獲得（契約失敗）"
+  "payoutFailed": "他の各プレイヤーが {{chips}} チップ獲得（契約失敗）",
+  "errInvalidBid": "入札値が不正です",
+  "errBidMustExceed": "現在の入札を上回る必要があります",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
 }

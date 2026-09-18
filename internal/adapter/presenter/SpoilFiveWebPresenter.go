@@ -95,6 +95,9 @@ func (p *SpoilFiveWebPresenter) buildPlayersOutput(g interfaces.SpoilFiveGame) [
 // buildMessage ゲーム結果メッセージを構築
 func (p *SpoilFiveWebPresenter) buildMessage(g interfaces.SpoilFiveGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

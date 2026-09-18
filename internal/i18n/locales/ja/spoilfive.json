@@ -25,5 +25,8 @@
   "topTrumpLine": "強さ順: {{cards}} > その他の切り札 > 非切り札",
   "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
   "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errMustFollowTrump": "切り札に従ってください",
+  "errMustFollowSuit": "リードスートに従ってください"
 }

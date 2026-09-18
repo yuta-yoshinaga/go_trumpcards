@@ -102,6 +102,14 @@ func TestMarriageWebPresenter_Output(t *testing.T) {
 		out := unmarshalMarriage(t, p.Output(m, errors.New("boom")))
 		assert.Equal(t, "boom", out.Message)
 	})
+
+	t.Run("with coded error", func(t *testing.T) {
+		m, _ := setupMarriageWebMock(domain.MarriagePhaseDraw, false)
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "marriage.errDiscardCardIndexOutOfRange", nil)
+		out := unmarshalMarriage(t, p.Output(m, err))
+		assert.Empty(t, out.Message)
+		assert.Equal(t, "marriage.errDiscardCardIndexOutOfRange", out.MessageCode)
+	})
 }
 
 // **CUI は毎ターン出しているのに、Web は狭い条件でしか出していなかった (#4824)。**
