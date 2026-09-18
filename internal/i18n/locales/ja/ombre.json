@@ -51,5 +51,9 @@
   "matadorBasto": "バスト",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
   "helpExampleBid": "  bid pass                  入札から降りる",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "errBidTooLow": "現在の最高ビッドを上回る宣言が必要です",
+  "errTrumpSuitRequired": "切り札スートを選んでください (1..4)",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }

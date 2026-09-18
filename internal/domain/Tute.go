@@ -172,7 +172,7 @@ func (g *Tute) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "tute.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -195,7 +195,7 @@ func (g *Tute) PlayerDeclareMarriage(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if !g.canDeclareMarriage(g.currentPlayerIdx, suit) {
-		return NewDomainError(ErrInvalidPlay, "そのスートは結婚宣言できません")
+		return NewDomainErrorCode(ErrInvalidPlay, "tute.errInvalidMarriage", nil)
 	}
 	g.applyMarriage(g.currentPlayerIdx, suit)
 	return nil
@@ -213,7 +213,7 @@ func (g *Tute) PlayerDeclareTute() error {
 		return ErrNotHumanTurn
 	}
 	if !g.hasTute(g.currentPlayerIdx) {
-		return NewDomainError(ErrInvalidPlay, "Tute を宣言できません")
+		return NewDomainErrorCode(ErrInvalidPlay, "tute.errCannotDeclareTute", nil)
 	}
 	g.applyTute(g.currentPlayerIdx)
 	return nil

@@ -31,5 +31,8 @@
   "promptMarriageSuits": "宣言可能: {{suits}}",
   "marriageTrumpMark": "(切り札+40)",
   "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errInvalidMarriage": "そのスートは結婚宣言できません",
+  "errCannotDeclareTute": "Tute を宣言できません"
 }
