@@ -26,5 +26,9 @@
   "rankHelpTrump": "切り札の強さ: J > 9 > A > 10 > K > Q > 8 > 7（得点: J=20, 9=14, A=11, 10=10, K=4, Q=3, 8/7=0）",
   "rankHelpPlain": "切り札以外: A > 10 > K > Q > J > 9 > 8 > 7（得点: A=11, 10=10, K=4, Q=3, J=2, 9/8/7=0）",
   "roemBreakdown": "Roem 内訳: {{entries}}",
-  "roemEntry": "{{name}} {{points}}点"
+  "roemEntry": "{{name}} {{points}}点",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "errMustPlayTrump": "切り札を出してください",
+  "errMustOvertrump": "より強い切り札で追い越してください"
 }
