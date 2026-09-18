@@ -3613,7 +3613,19 @@
     "zwanzigerrufen.result.scores": "ゲーム終了！ 得点: {{scores}}",
     "tapptarock.result.scores": "ゲーム終了！ 得点: {{scores}}",
     "zwicker.lose": "負けました",
-    "zwicker.win": "勝ちました"
+    "zwicker.win": "勝ちました",
+    "minibridge.errCardIndexOutOfRange": "カードインデックスが範囲外です",
+    "minibridge.errCardMissing": "カードがありません",
+    "lingerlonger.errCardIndexOutOfRange": "カードインデックスが範囲外です",
+    "lingerlonger.errCardMissing": "カードがありません",
+    "pasur.errCardIndexOutOfRange": "カードインデックスが範囲外です",
+    "pasur.errCardMissing": "カードがありません",
+    "solowhist.errBidMustExceed": "現在の入札を上回る必要があります",
+    "solowhist.errCardIndexOutOfRange": "カードインデックスが範囲外です",
+    "twotenjack.errInvalidTrumpSuit": "トランプスートが不正です",
+    "twotenjack.errCardIndexOutOfRange": "カードインデックスが範囲外です",
+    "allfours.errCardIndexOutOfRange": "カードインデックスが範囲外です",
+    "allfours.errMustFollowLeadSuit": "リードスートに従うかトランプを切ってください"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

@@ -233,7 +233,7 @@ func (g *SoloWhist) applyBid(idx int, bid SoloWhistBid) error {
 	high, _ := g.highestBid()
 	// パス以外は現在の最高入札を上回る必要がある。
 	if bid != SoloWhistBidPass && bid <= high {
-		return NewDomainError(ErrInvalidPlay, "現在の入札を上回る必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "solowhist.errBidMustExceed", nil)
 	}
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
@@ -327,7 +327,7 @@ func (g *SoloWhist) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "solowhist.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {

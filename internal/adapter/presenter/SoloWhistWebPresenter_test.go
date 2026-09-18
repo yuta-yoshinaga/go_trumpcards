@@ -158,11 +158,11 @@ func TestSoloWhistWebPresenter_Output(t *testing.T) {
 
 	t.Run("coded error uses message code", func(t *testing.T) {
 		m, _ := setupSoloWhistWebMockWithPlayers()
-		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "shared.errCardIndexOutOfRange", nil)
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "solowhist.errCardIndexOutOfRange", nil)
 		var resObj controller.SoloWhistWebOutput
 		require.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
 		assert.Empty(t, resObj.Message)
-		assert.Equal(t, "shared.errCardIndexOutOfRange", resObj.MessageCode)
+		assert.Equal(t, "solowhist.errCardIndexOutOfRange", resObj.MessageCode)
 	})
 
 	t.Run("game end human wins", func(t *testing.T) {

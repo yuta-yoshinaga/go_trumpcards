@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
@@ -92,6 +93,9 @@ func (p *PasurWebPresenter) buildPlayersOutput(s interfaces.PasurGame) []*contro
 // buildMessage ゲーム結果メッセージを構築
 func (p *PasurWebPresenter) buildMessage(s interfaces.PasurGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if s.GetGameEndFlag() {

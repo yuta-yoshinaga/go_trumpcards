@@ -285,7 +285,7 @@ func (p *Pasur) play(playerIdx, cardIndex int, tableIndices []int) error {
 	}
 	pl := p.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= pl.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "pasur.errCardIndexOutOfRange", nil)
 	}
 	if err := p.validateCapture(playerIdx, cardIndex, tableIndices); err != nil {
 		return err
@@ -293,7 +293,7 @@ func (p *Pasur) play(playerIdx, cardIndex int, tableIndices []int) error {
 
 	card := pl.RemoveCard(cardIndex)
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードがありません")
+		return NewDomainErrorCode(ErrInvalidCard, "pasur.errCardMissing", nil)
 	}
 
 	if len(tableIndices) == 0 {

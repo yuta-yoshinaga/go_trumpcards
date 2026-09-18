@@ -106,6 +106,9 @@ func (p *MinibridgeWebPresenter) buildPlayersOutput(s interfaces.MinibridgeGame)
 // buildMessage ゲーム結果メッセージを構築
 func (p *MinibridgeWebPresenter) buildMessage(s interfaces.MinibridgeGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if s.GetGameEndFlag() {

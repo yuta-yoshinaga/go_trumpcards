@@ -47,5 +47,7 @@
   "hintReasonGiftRun": "弱い手札なので引き直す",
   "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errMustFollowLeadSuit": "リードスートに従うかトランプを切ってください"
 }

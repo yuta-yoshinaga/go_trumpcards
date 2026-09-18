@@ -45,5 +45,7 @@
   "result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
   "bidHistory": "ビッド状況: {{bids}}",
   "helpExampleBid": "  pass                      入札を降りる",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "errBidMustExceed": "現在の入札を上回る必要があります",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
 }

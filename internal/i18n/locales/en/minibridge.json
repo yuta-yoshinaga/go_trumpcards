@@ -36,5 +36,7 @@
   "suitDiamond": "D",
   "suitNoTrump": "NT",
   "helpExampleGiveUp": "  g                    give the round up",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errCardMissing": "The card is missing."
 }

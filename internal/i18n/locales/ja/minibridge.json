@@ -36,5 +36,7 @@
   "suitDiamond": "♦",
   "suitNoTrump": "NT",
   "helpExampleGiveUp": "  g                    この局を投了する",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errCardMissing": "カードがありません"
 }
