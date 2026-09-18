@@ -188,6 +188,18 @@ func TestPageOneCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestPageOneCuiPresenter_Output_TranslatesCodedError(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	m, _ := setupPageOneCuiMockWithPlayers()
+	p := new(presenter.PageOneCuiPresenter)
+	out := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "pageone.errInvalidPlay", nil))
+	assert.Contains(t, out, "そのカードは出せません")
+	assert.NotContains(t, out, "pageone.errInvalidPlay")
+}
+
 func TestPageOneCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.PageOneCuiPresenter)
 

@@ -42,6 +42,11 @@ func (tp *ThreeCardRummyWebPresenter) Output(tc interfaces.ThreeCardRummyGame, l
 
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			resObj.Message = ""
+			resObj.MessageCode = code
+			resObj.MessageParams = params
+		}
 	} else if tc.GetGameEndFlag() {
 		switch tc.GetResult() {
 		case domain.GameResultWin:

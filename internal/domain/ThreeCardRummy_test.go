@@ -201,7 +201,7 @@ func TestThreeCardRummy_RebetRepeatsTheLastAmountsAcrossReset(t *testing.T) {
 	tc := NewDefaultThreeCardRummy()
 	err := tc.Rebet()
 	require.Error(t, err, "まだ賭けていない")
-	assert.Contains(t, err.Error(), "再ベット", "額 0 のベットエラーではなく、専用のメッセージを返す")
+	assert.Equal(t, "threecardrummy.errCannotRebet", err.(*DomainError).MessageCode(), "額 0 のベットエラーではなく、専用のメッセージコードを返す")
 	require.NoError(t, tc.Bet(20, 10))
 	require.NoError(t, tc.Fold())
 	tc.Reset()

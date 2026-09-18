@@ -42,5 +42,6 @@
   "payoutRef.pairPlusFlush": "フラッシュ:           {{payout}}:1",
   "payoutRef.pairPlusStraight": "ストレート:           {{payout}}:1",
   "payoutRef.pairPlusThreeOfAKind": "スリーカード:         {{payout}}:1",
-  "payoutRef.pairPlusStraightFlush": "ストレートフラッシュ: {{payout}}:1"
+  "payoutRef.pairPlusStraightFlush": "ストレートフラッシュ: {{payout}}:1",
+  "errCannotRebet": "まだ賭けていないので再ベットできません"
 }

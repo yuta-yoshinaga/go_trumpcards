@@ -28,5 +28,8 @@
   "hintPlayable": "出せるカード: {{cards}}（p <idx> で出す）",
   "hintDraw": "出せるカードがありません。d でドローしてください。",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errInvalidPlay": "そのカードは出せません",
+  "errCannotDrawWithPlayableCard": "出せるカードがあるときは引けません"
 }

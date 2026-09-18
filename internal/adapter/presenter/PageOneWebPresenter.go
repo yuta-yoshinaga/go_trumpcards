@@ -62,6 +62,9 @@ func (p *PageOneWebPresenter) buildPlayersOutput(g interfaces.PageOneGame) []*co
 // buildMessage ゲーム結果メッセージを構築
 func (p *PageOneWebPresenter) buildMessage(g interfaces.PageOneGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

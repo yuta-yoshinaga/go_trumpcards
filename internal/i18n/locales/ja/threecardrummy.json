@@ -44,5 +44,6 @@
   "anteBonusPayoutLine": "アンテボーナス: {{payout}}",
   "lowBonusPayoutLine": "ローボーナス: {{payout}}",
   "totalPayoutLine": "配当合計: {{payout}}",
-  "playRequiredLine": "プレイに必要: {{play}}"
+  "playRequiredLine": "プレイに必要: {{play}}",
+  "errCannotRebet": "まだ賭けていないので再ベットできません"
 }

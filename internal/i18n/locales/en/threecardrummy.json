@@ -44,5 +44,6 @@
   "anteBonusPayoutLine": "Ante bonus: {{payout}}",
   "lowBonusPayoutLine": "Low bonus: {{payout}}",
   "totalPayoutLine": "Total payout: {{payout}}",
-  "playRequiredLine": "To play: {{play}}"
+  "playRequiredLine": "To play: {{play}}",
+  "errCannotRebet": "You cannot rebet before placing a bet."
 }

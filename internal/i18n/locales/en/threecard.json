@@ -42,5 +42,6 @@
   "payoutRef.pairPlusFlush": "Flush:           {{payout}}:1",
   "payoutRef.pairPlusStraight": "Straight:        {{payout}}:1",
   "payoutRef.pairPlusThreeOfAKind": "Three of a Kind: {{payout}}:1",
-  "payoutRef.pairPlusStraightFlush": "Straight Flush:  {{payout}}:1"
+  "payoutRef.pairPlusStraightFlush": "Straight Flush:  {{payout}}:1",
+  "errCannotRebet": "You cannot rebet before placing a bet."
 }
