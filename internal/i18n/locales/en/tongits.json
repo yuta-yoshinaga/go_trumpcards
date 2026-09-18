@@ -53,5 +53,15 @@
   "errTargetPlayerInvalid": "The target player is invalid.",
   "errTargetMeldInvalid": "The target meld is invalid.",
   "errLayoffCardCannotAdd": "{{card}} cannot be added to that meld.",
-  "errResponseCount": "The response count is invalid."
+  "errResponseCount": "The response count is invalid.",
+  "log.tongitsOnDeal": "{{name}} declares Tongits on deal! (hand value: {{value}})",
+  "log.drawStock": "{{name}} draws from stock",
+  "log.drawDiscard": "{{name}} draws {{card}} from discard",
+  "log.discard": "{{name}} discards {{card}}",
+  "log.meld": "{{name}} lays a meld",
+  "log.sapaw": "{{name}} adds a card to a public meld",
+  "log.tongits": "{{name}} wins by Tongits",
+  "log.tongitsScore": "{{name}} scores {{score}} (Tongits bonus {{bonus}} + hand {{hand}})",
+  "log.draw": "Round ends in a draw (stock empty)",
+  "log.gameEnd": "{{name}} wins the game!"
 }

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -403,6 +404,16 @@ func TestFiveHundred_PlayTrick_FollowSuitAndResolve(t *testing.T) {
 	if g.GetPlayer(2).GetTrickCount() != 1 {
 		t.Errorf("trump player (2) should win the trick")
 	}
+	var trickEntry *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "fivehundred.log.trickWin" {
+			trickEntry = entry
+			break
+		}
+	}
+	require.NotNil(t, trickEntry)
+	assert.Equal(t, map[string]string{"name": "CPU 2", "trick": "1"}, trickEntry.DetailParams)
+	assert.Empty(t, trickEntry.Detail)
 }
 
 func TestFiveHundred_FollowSuitEnforced(t *testing.T) {

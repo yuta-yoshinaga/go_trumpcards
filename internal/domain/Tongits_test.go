@@ -234,6 +234,16 @@ func TestTongitsPlayerDrawAndDiscard(t *testing.T) {
 		assert.Equal(t, domain.TongitsPhaseDiscard, g.GetPhase())
 		assert.Equal(t, 1, g.GetPlayer(0).GetCardsSize())
 		assert.Equal(t, 0, g.GetDrawPileCount())
+		var drawEntry *domain.ActionLogEntry
+		for _, entry := range g.GetActionLog() {
+			if entry.DetailCode == "tongits.log.drawStock" {
+				drawEntry = entry
+				break
+			}
+		}
+		require.NotNil(t, drawEntry)
+		assert.Equal(t, map[string]string{"name": "You"}, drawEntry.DetailParams)
+		assert.Empty(t, drawEntry.Detail)
 
 		require.NoError(t, g.PlayerDiscard(0))
 		assert.Equal(t, domain.TongitsPhaseDraw, g.GetPhase())

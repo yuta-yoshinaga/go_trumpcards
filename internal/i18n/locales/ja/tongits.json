@@ -53,5 +53,15 @@
   "errTargetPlayerInvalid": "対象プレイヤーが不正です",
   "errTargetMeldInvalid": "対象メルドが不正です",
   "errLayoffCardCannotAdd": "{{card}}はそのメルドに付け足せません",
-  "errResponseCount": "応答数が不正です"
+  "errResponseCount": "応答数が不正です",
+  "log.tongitsOnDeal": "{{name}}が配牌でTongitsを宣言！ (手札の価値: {{value}})",
+  "log.drawStock": "{{name}}が山札から引いた",
+  "log.drawDiscard": "{{name}}が捨て札から{{card}}を引いた",
+  "log.discard": "{{name}}が{{card}}を捨てた",
+  "log.meld": "{{name}}がメルドを出した",
+  "log.sapaw": "{{name}}が公開メルドにカードを追加",
+  "log.tongits": "{{name}}がTongitsで勝利",
+  "log.tongitsScore": "{{name}}が{{score}}点 (Tongitsボーナス{{bonus}} + 手札{{hand}})",
+  "log.draw": "山札切れでラウンド引き分け",
+  "log.gameEnd": "{{name}}がゲームに勝利！"
 }

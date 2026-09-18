@@ -263,6 +263,16 @@ func TestChinchon_DrawFromStock(t *testing.T) {
 	assert.Equal(t, before+1, g.GetPlayer(0).GetCardsSize())
 	assert.Equal(t, stockBefore-1, g.GetDrawPileCount())
 	assert.Equal(t, domain.ChinchonPhaseDiscard, g.GetPhase())
+	var drawEntry *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "chinchon.log.drawStock" {
+			drawEntry = entry
+			break
+		}
+	}
+	require.NotNil(t, drawEntry)
+	assert.Equal(t, map[string]string{"name": "You"}, drawEntry.DetailParams)
+	assert.Empty(t, drawEntry.Detail)
 }
 
 func TestChinchon_DrawFromStock_WrongPhase(t *testing.T) {

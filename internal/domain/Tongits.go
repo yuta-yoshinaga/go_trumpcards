@@ -68,6 +68,10 @@ type Tongits struct {
 	rng       *rand.Rand
 }
 
+func (g *Tongits) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewTongits コンストラクタ
 func NewTongits(trumpCards *TrumpCards, players []*TongitsPlayer, config TongitsConfig) *Tongits {
 	return &Tongits{
@@ -194,7 +198,7 @@ func (g *Tongits) checkTongitsOnDeal() {
 		}
 		if total == TongitsOnDealLow || total == TongitsOnDealHigh {
 			g.isTongits = true
-			g.appendLog(i, "tongits_on_deal", fmt.Sprintf("%s declares Tongits on deal! (hand value: %d)", playerName(g.players, i), total), nil)
+			g.appendLog(i, "tongits_on_deal", "tongits.log.tongitsOnDeal", map[string]string{"name": playerName(g.players, i), "value": fmt.Sprintf("%d", total)}, nil)
 			g.scoreTongits(i, total)
 			return
 		}
@@ -308,7 +312,7 @@ func (g *Tongits) PlayerDrawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "tongits.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 
 	g.phase = TongitsPhaseDiscard
 	return nil
@@ -335,7 +339,7 @@ func (g *Tongits) PlayerDrawFromDiscard() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", "tongits.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card)}, []*Card{card})
 
 	g.phase = TongitsPhaseDiscard
 	return nil
@@ -361,7 +365,7 @@ func (g *Tongits) PlayerDiscard(cardIndex int) error {
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
 
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "tongits.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 
 	g.advanceTurn()
 	return nil
@@ -388,7 +392,7 @@ func (g *Tongits) PlayerMeld(indices []int) error {
 	}
 	player.AppendMeld(append([]*Card(nil), cards...))
 	player.RemoveCards(indices)
-	g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s lays a meld", playerName(g.players, g.currentPlayerIdx)), cards)
+	g.appendLog(g.currentPlayerIdx, "meld", "tongits.log.meld", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, cards)
 	if player.GetCardsSize() == 0 {
 		g.finishTongits(g.currentPlayerIdx)
 	}
@@ -417,7 +421,7 @@ func (g *Tongits) PlayerSapaw(targetPlayerIdx, meldIdx, cardIndex int) error {
 	}
 	target.AddCardToMeld(meldIdx, card)
 	player.RemoveCard(cardIndex)
-	g.appendLog(g.currentPlayerIdx, "sapaw", fmt.Sprintf("%s adds a card to a public meld", playerName(g.players, g.currentPlayerIdx)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "sapaw", "tongits.log.sapaw", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, []*Card{card})
 	if player.GetCardsSize() == 0 {
 		g.finishTongits(g.currentPlayerIdx)
 	}
@@ -473,7 +477,7 @@ func (g *Tongits) validateHumanPlay(phase TongitsPhase) error {
 func (g *Tongits) finishTongits(winner int) {
 	g.winnerIdx, g.gameEndFlag, g.phase = winner, true, TongitsPhaseGameEnd
 	g.players[winner].SetIsFinished(true)
-	g.appendLog(winner, "tongits", fmt.Sprintf("%s wins by Tongits", playerName(g.players, winner)), nil)
+	g.appendLog(winner, "tongits", "tongits.log.tongits", map[string]string{"name": playerName(g.players, winner)}, nil)
 }
 
 // TongitsCardValue returns Tongits hand points: ace is 1, face cards are 10.
@@ -627,7 +631,7 @@ func (g *Tongits) cpuDraw() {
 			g.discardPile = g.discardPile[:len(g.discardPile)-1]
 			g.players[g.currentPlayerIdx].AddCard(card)
 			g.sortHand(g.currentPlayerIdx)
-			g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
+			g.appendLog(g.currentPlayerIdx, "draw_discard", "tongits.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card)}, []*Card{card})
 			g.phase = TongitsPhaseDiscard
 			return
 		}
@@ -642,7 +646,7 @@ func (g *Tongits) cpuDraw() {
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "tongits.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 	g.phase = TongitsPhaseDiscard
 }
 
@@ -672,7 +676,7 @@ func (g *Tongits) cpuDiscardOrChallenge() {
 	}
 	discarded := player.RemoveCard(discardIdx)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "tongits.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 	g.advanceTurn()
 }
 
@@ -681,7 +685,7 @@ func (g *Tongits) cpuDiscardOrChallenge() {
 func (g *Tongits) scoreTongits(winner int, handValue int) {
 	score := TongitsBonus + handValue
 	g.players[winner].SetRoundScore(score)
-	g.appendLog(winner, "tongits_score", fmt.Sprintf("%s scores %d (Tongits bonus %d + hand %d)", playerName(g.players, winner), score, TongitsBonus, handValue), nil)
+	g.appendLog(winner, "tongits_score", "tongits.log.tongitsScore", map[string]string{"name": playerName(g.players, winner), "score": fmt.Sprintf("%d", score), "bonus": fmt.Sprintf("%d", TongitsBonus), "hand": fmt.Sprintf("%d", handValue)}, nil)
 
 	for i := range g.players {
 		g.players[i].CommitRoundScore()
@@ -695,7 +699,7 @@ func (g *Tongits) scoreTongits(winner int, handValue int) {
 
 // endRoundDraw 山札切れによる引き分け (スコアなし)
 func (g *Tongits) endRoundDraw() {
-	g.appendLog(-1, "draw", "Round ends in a draw (stock empty)", nil)
+	g.appendLog(-1, "draw", "tongits.log.draw", nil, nil)
 
 	g.checkGameEnd()
 	if !g.gameEndFlag {
@@ -739,7 +743,7 @@ func (g *Tongits) checkGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", "tongits.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx)}, nil)
 }
 
 // --- State getters ---

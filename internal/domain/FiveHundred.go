@@ -164,6 +164,10 @@ type FiveHundred struct {
 	actionLogBase
 }
 
+func (g *FiveHundred) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewFiveHundred コンストラクタ
 func NewFiveHundred(trumpCards *TrumpCards, players []*FiveHundredPlayer, config FiveHundredConfig) *FiveHundred {
 	return &FiveHundred{
@@ -320,7 +324,7 @@ func (g *FiveHundred) applyBid(idx int, bid FiveHundredBid) {
 	g.players[idx].SetBid(&b)
 	g.highestBid = &b
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), fiveHundredBidLabel(b)), nil)
+	g.appendLog(idx, "bid", "fivehundred.log.bid", map[string]string{"name": playerName(g.players, idx), "bid": fiveHundredBidLabel(b)}, nil)
 	g.advanceBid()
 }
 
@@ -328,7 +332,7 @@ func (g *FiveHundred) applyBid(idx int, bid FiveHundredBid) {
 func (g *FiveHundred) applyPass(idx int) {
 	g.passed[idx] = true
 	g.players[idx].SetPassed(true)
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
+	g.appendLog(idx, "pass", "fivehundred.log.pass", map[string]string{"name": playerName(g.players, idx)}, nil)
 	g.advanceBid()
 }
 
@@ -357,7 +361,7 @@ func (g *FiveHundred) advanceBid() {
 
 // redeal 全員パスした場合、同じラウンドを配り直す
 func (g *FiveHundred) redeal() {
-	g.appendLog(-1, "redeal", "All players passed. Redealing.", nil)
+	g.appendLog(-1, "redeal", "fivehundred.log.redeal", nil, nil)
 	g.passed = [FiveHundredPlayerCnt]bool{}
 	g.highestBid = nil
 	g.highestBidder = -1
@@ -383,8 +387,7 @@ func (g *FiveHundred) finalizeBid() {
 		g.players[g.declarerIdx].AddCard(c)
 	}
 	g.kitty = nil
-	g.appendLog(g.declarerIdx, "win_bid",
-		fmt.Sprintf("%s wins the contract: %s", playerName(g.players, g.declarerIdx), fiveHundredBidLabel(g.contract)), nil)
+	g.appendLog(g.declarerIdx, "win_bid", "fivehundred.log.winBid", map[string]string{"name": playerName(g.players, g.declarerIdx), "bid": fiveHundredBidLabel(g.contract)}, nil)
 	g.sortAllHands()
 	g.phase = FiveHundredPhaseKittyExchange
 	g.currentPlayerIdx = g.declarerIdx
@@ -435,8 +438,7 @@ func (g *FiveHundred) doExchange(discardIndices []int) error {
 	}
 	discarded := player.RemoveCards(discardIndices)
 	g.kitty = discarded
-	g.appendLog(g.declarerIdx, "exchange",
-		fmt.Sprintf("%s discards %d cards", playerName(g.players, g.declarerIdx), len(discarded)), discarded)
+	g.appendLog(g.declarerIdx, "exchange", "fivehundred.log.exchange", map[string]string{"name": playerName(g.players, g.declarerIdx), "cards": fmt.Sprintf("%d", len(discarded))}, discarded)
 	g.sortAllHands()
 	g.startPlayPhase()
 	return nil
@@ -517,8 +519,7 @@ func (g *FiveHundred) playCard(playerIdx int, card *Card, jokerSuit int) {
 		}
 	}
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), fiveHundredCardLabel(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "fivehundred.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": fiveHundredCardLabel(card)}, []*Card{card})
 	if len(g.currentTrick) == g.activePlayerCount() {
 		g.phase = FiveHundredPhaseTrickEnd
 	} else {
@@ -537,8 +538,7 @@ func (g *FiveHundred) ResolveTrick() {
 		cards[i] = tc.Card
 	}
 	g.players[winnerIdx].AddTrick(cards)
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), cards)
+	g.appendLog(winnerIdx, "trick_win", "fivehundred.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": fmt.Sprintf("%d", g.trickNumber)}, cards)
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= FiveHundredTrickCnt {
 		g.phase = FiveHundredPhaseRoundEnd
@@ -646,22 +646,17 @@ func (g *FiveHundred) ScoreRound() {
 
 	switch {
 	case r.Misere && r.Made:
-		g.appendLog(-1, "misere_made",
-			fmt.Sprintf("Team %d makes misere! +%d", r.DeclarerTeam, r.ContractValue), nil)
+		g.appendLog(-1, "misere_made", "fivehundred.log.misereMade", map[string]string{"team": fmt.Sprintf("%d", r.DeclarerTeam), "points": fmt.Sprintf("%d", r.ContractValue)}, nil)
 	case r.Misere:
-		g.appendLog(-1, "misere_failed",
-			fmt.Sprintf("Team %d fails misere (%d tricks). -%d", r.DeclarerTeam, r.DeclarerTricks, r.ContractValue), nil)
+		g.appendLog(-1, "misere_failed", "fivehundred.log.misereFailed", map[string]string{"team": fmt.Sprintf("%d", r.DeclarerTeam), "tricks": fmt.Sprintf("%d", r.DeclarerTricks), "points": fmt.Sprintf("%d", r.ContractValue)}, nil)
 	case r.Made:
-		g.appendLog(-1, "contract_made",
-			fmt.Sprintf("Team %d makes the contract (%d tricks). +%d", r.DeclarerTeam, r.DeclarerTricks, r.DeclarerDelta), nil)
+		g.appendLog(-1, "contract_made", "fivehundred.log.contractMade", map[string]string{"team": fmt.Sprintf("%d", r.DeclarerTeam), "tricks": fmt.Sprintf("%d", r.DeclarerTricks), "points": fmt.Sprintf("%d", r.DeclarerDelta)}, nil)
 	default:
-		g.appendLog(-1, "contract_failed",
-			fmt.Sprintf("Team %d is set (%d/%d tricks). -%d", r.DeclarerTeam, r.DeclarerTricks, r.NeedTricks, r.ContractValue), nil)
+		g.appendLog(-1, "contract_failed", "fivehundred.log.contractFailed", map[string]string{"team": fmt.Sprintf("%d", r.DeclarerTeam), "tricks": fmt.Sprintf("%d", r.DeclarerTricks), "needed": fmt.Sprintf("%d", r.NeedTricks), "points": fmt.Sprintf("%d", r.ContractValue)}, nil)
 	}
 
 	for ti := range FiveHundredTeamCnt {
-		g.appendLog(-1, "team_score",
-			fmt.Sprintf("Team %d: %d points", ti, g.teamScores[ti]), nil)
+		g.appendLog(-1, "team_score", "fivehundred.log.teamScore", map[string]string{"team": fmt.Sprintf("%d", ti), "score": fmt.Sprintf("%d", g.teamScores[ti])}, nil)
 	}
 	g.checkGameEnd(r.DeclarerTeam)
 }
@@ -688,7 +683,7 @@ func (g *FiveHundred) endGame(team int) {
 	g.gameEndFlag = true
 	g.phase = FiveHundredPhaseGameEnd
 	g.winnerTeam = team
-	g.appendLog(-1, "game_end", fmt.Sprintf("Team %d wins the game!", team), nil)
+	g.appendLog(-1, "game_end", "fivehundred.log.gameEnd", map[string]string{"team": fmt.Sprintf("%d", team)}, nil)
 }
 
 // --- Card ranking (bowers + joker) ---

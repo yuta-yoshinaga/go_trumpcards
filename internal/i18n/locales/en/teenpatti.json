@@ -39,5 +39,16 @@
   "errRaiseMustExceedStake": "The raise must be greater than the current stake.",
   "errShowRequiresTwoSeen": "Show is available only when two players remain and both have seen their hands.",
   "errSideShowRequiresSeen": "A side show requires at least three remaining players who have seen their hands.",
-  "errInsufficientChips": "You do not have enough chips."
+  "errInsufficientChips": "You do not have enough chips.",
+  "log.gameEnd": "{{name}} wins the match",
+  "log.deal": "Deal {{round}}: ante {{ante}}, pot {{pot}}",
+  "log.see": "{{name}} sees their hand",
+  "log.sideShowRequest": "{{name}} requests a side show with {{target}}",
+  "log.sideShowAccept": "{{name}} accepts; {{loser}} loses the side show",
+  "log.sideShowDecline": "{{name}} declines the side show",
+  "log.bet": "{{name}} bets {{amount}} (pot {{pot}})",
+  "log.raise": "{{name}} raises to {{raise}}, bets {{amount}} (pot {{pot}})",
+  "log.fold": "{{name}} folds",
+  "log.show": "{{name}} pays {{amount}} to see (pot {{pot}})",
+  "log.win": "{{name}} wins the pot ({{pot}})"
 }
