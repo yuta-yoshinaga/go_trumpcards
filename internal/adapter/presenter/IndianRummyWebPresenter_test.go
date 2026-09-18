@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -138,6 +139,14 @@ func TestIndianRummyWebPresenter_ActionLogOutput(t *testing.T) {
 	m, _ := setupIndianRummyWebMock(domain.IndianRummyPhaseDraw, false)
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)
+}
+
+func TestIndianRummyWebPresenter_Output_CodedError(t *testing.T) {
+	m, _ := setupIndianRummyWebMock(domain.IndianRummyPhaseDraw, false)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "indianrummy.errDiscardPileEmpty", nil)
+	out := unmarshalIndianRummy(t, new(presenter.IndianRummyWebPresenter).Output(m, err))
+	require.Empty(t, out.Message)
+	assert.Equal(t, "indianrummy.errDiscardPileEmpty", out.MessageCode)
 }
 
 func TestIndianRummyWebPresenter_HintOutput(t *testing.T) {

@@ -41,5 +41,8 @@
   "helpExampleBid": "  bid pass                  drop out of the bidding",
   "helpExamplePlay": "  play 0                    play hand card 0",
   "helpExampleNext": "  n                         read the trick result, then continue",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "errBidMustExceed": "You must declare a bid higher than the current highest bid.",
+  "errDiscardCardIndexOutOfRange": "The card index is out of range.",
+  "errPlayCardIndexOutOfRange": "The card index is out of range."
 }

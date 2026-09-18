@@ -26,5 +26,8 @@
   "helpHint": "  h                    show a hint",
   "followLegend": "* = playable (the stock is gone, so you must follow the led suit)",
   "helpSetPlayers": "  sp <2-5>             set the table size and restart (2-5 players)",
-  "gameEndCpu": "Game over! CPU {{seat}} wins ({{scores}})."
+  "gameEndCpu": "Game over! CPU {{seat}} wins ({{scores}}).",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errCardNil": "The card is nil.",
+  "errMustFollowSuit": "After the stock is exhausted, you must follow the led suit."
 }

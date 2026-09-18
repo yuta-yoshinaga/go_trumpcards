@@ -26,5 +26,8 @@
   "helpHint": "  h                    助言を表示",
   "followLegend": "* = 出せる札（山札が尽きたのでリードスートに追従します）",
   "helpSetPlayers": "  sp <2-5>             席数を変更して再開 (2〜5人)",
-  "gameEndCpu": "ゲーム終了！ CPU {{seat}} の勝利です（{{scores}}）。"
+  "gameEndCpu": "ゲーム終了！ CPU {{seat}} の勝利です（{{scores}}）。",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errCardNil": "カードが nil です",
+  "errMustFollowSuit": "山札が尽きた後はリードスートに追従してください"
 }

@@ -154,6 +154,18 @@ func TestCrazyEightsWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupCrazyEightsWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "crazyeights.errCardIndexOutOfRange", nil)
+
+		result := p.Output(m, err)
+		var resObj controller.CrazyEightsWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "crazyeights.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupCrazyEightsWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

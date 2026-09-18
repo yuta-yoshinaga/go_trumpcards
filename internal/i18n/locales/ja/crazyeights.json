@@ -33,5 +33,8 @@
   "pointLegendEight": "  8                    50点",
   "pointLegendAce": "  A                     1点",
   "pointLegendFaceCards": "  J / Q / K            10点",
-  "pointLegendOther": "  その他               額面どおり"
+  "pointLegendOther": "  その他               額面どおり",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errCardCannotBePlayed": "そのカードは出せません",
+  "errSuitOutOfRange": "スートは1〜4で指定してください"
 }

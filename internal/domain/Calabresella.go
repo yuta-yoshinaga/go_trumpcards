@@ -238,7 +238,7 @@ func (g *Calabresella) PlayerBid(bid CalabresellaBid) error {
 		return ErrNotHumanTurn
 	}
 	if !g.isBidLegal(bid) {
-		return NewDomainError(ErrInvalidPlay, "現在の最高ビッドを上回る宣言が必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "calabresella.errBidMustExceed", nil)
 	}
 	g.applyBid(g.currentBidderIdx, bid)
 	return nil
@@ -409,7 +409,7 @@ func (g *Calabresella) PlayerDiscard(cardIndex int) error {
 	}
 	soloist := g.players[g.soloistIdx]
 	if cardIndex < 0 || cardIndex >= soloist.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "calabresella.errDiscardCardIndexOutOfRange", nil)
 	}
 	g.discardOne(cardIndex)
 	if g.discardCount >= CalabresellaMonteSize {
@@ -478,7 +478,7 @@ func (g *Calabresella) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "calabresella.errPlayCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
