@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // IronCrossPhase はゲームの進行段階。
@@ -130,7 +131,7 @@ func (g *IronCross) Reset() {
 	g.gameEndFlag = false
 	g.actionLog = nil
 	g.turnNumber = 0
-	g.appendLog(-1, "reset", "game reset", nil)
+	g.appendLogCode(-1, "reset", "ironcross.log.reset", nil, nil)
 	g.startHand()
 }
 
@@ -165,7 +166,7 @@ func (g *IronCross) startHand() {
 
 	g.phase = IronCrossPhaseBetting
 	g.turn = g.firstActiveSeat()
-	g.appendLog(-1, "deal", fmt.Sprintf("hand %d, ante %d", g.handNumber, g.config.Ante), nil)
+	g.appendLogCode(-1, "deal", "ironcross.log.deal", map[string]string{"hand": strconv.Itoa(g.handNumber), "ante": strconv.Itoa(g.config.Ante)}, nil)
 	g.advanceCpu()
 }
 
@@ -198,15 +199,15 @@ func (g *IronCross) applyAction(i, action, amount int) error {
 	switch action {
 	case IronCrossActionFold:
 		p.SetFolded(true)
-		g.appendLog(i, "fold", fmt.Sprintf("seat %d folds", i), nil)
+		g.appendLogCode(i, "fold", "ironcross.log.fold", map[string]string{"seat": strconv.Itoa(i)}, nil)
 	case IronCrossActionCheck:
 		if toCall > 0 {
 			return errIronCrossCannotCheck
 		}
-		g.appendLog(i, "check", fmt.Sprintf("seat %d checks", i), nil)
+		g.appendLogCode(i, "check", "ironcross.log.check", map[string]string{"seat": strconv.Itoa(i)}, nil)
 	case IronCrossActionCall:
 		g.moveToPot(p, toCall)
-		g.appendLog(i, "call", fmt.Sprintf("seat %d calls %d", i, toCall), nil)
+		g.appendLogCode(i, "call", "ironcross.log.call", map[string]string{"seat": strconv.Itoa(i), "amount": strconv.Itoa(toCall)}, nil)
 	case IronCrossActionBet:
 		if g.currentBet > 0 {
 			return errIronCrossCannotBet
@@ -217,7 +218,7 @@ func (g *IronCross) applyAction(i, action, amount int) error {
 		g.moveToPot(p, amount)
 		g.currentBet = p.GetCurrentBet()
 		g.raiseCount++
-		g.appendLog(i, "bet", fmt.Sprintf("seat %d bets %d", i, amount), nil)
+		g.appendLogCode(i, "bet", "ironcross.log.bet", map[string]string{"seat": strconv.Itoa(i), "amount": strconv.Itoa(amount)}, nil)
 	case IronCrossActionRaise:
 		if g.currentBet == 0 {
 			return errIronCrossCannotRaise
@@ -231,7 +232,7 @@ func (g *IronCross) applyAction(i, action, amount int) error {
 		g.moveToPot(p, toCall+amount)
 		g.currentBet = p.GetCurrentBet()
 		g.raiseCount++
-		g.appendLog(i, "raise", fmt.Sprintf("seat %d raises %d", i, amount), nil)
+		g.appendLogCode(i, "raise", "ironcross.log.raise", map[string]string{"seat": strconv.Itoa(i), "amount": strconv.Itoa(amount)}, nil)
 	default:
 		return errIronCrossBadAction
 	}
@@ -297,7 +298,7 @@ func (g *IronCross) nextStage() {
 		}
 		g.phase = IronCrossPhaseChoose
 		g.turn = g.HumanSeat()
-		g.appendLog(-1, "choose", "all five are up; pick a line", nil)
+		g.appendLogCode(-1, "choose", "ironcross.log.choose", nil, nil)
 		return
 	}
 	g.cross[g.revealOrder()] = g.deck.DrawCard()
@@ -309,7 +310,7 @@ func (g *IronCross) nextStage() {
 		p.SetCurrentBet(0)
 	}
 	g.turn = g.firstActiveSeat()
-	g.appendLog(-1, "reveal", fmt.Sprintf("cross card %d", g.revealed), nil)
+	g.appendLogCode(-1, "reveal", "ironcross.log.reveal", map[string]string{"number": strconv.Itoa(g.revealed)}, nil)
 
 	if g.activePlayers() <= 1 {
 		g.finishHand()
@@ -356,8 +357,7 @@ func (g *IronCross) ChooseLine(l IronCrossLine) error {
 	}
 	p := g.players[g.HumanSeat()]
 	p.SetLine(l)
-	g.appendLog(g.HumanSeat(), "line", fmt.Sprintf("seat %d takes the %s line",
-		g.HumanSeat(), IronCrossLineName(l)), nil)
+	g.appendLogCode(g.HumanSeat(), "line", "ironcross.log.line", map[string]string{"seat": strconv.Itoa(g.HumanSeat()), "line": IronCrossLineName(l)}, nil)
 	g.finishHand()
 	return nil
 }
@@ -397,7 +397,7 @@ func (g *IronCross) finishHand() {
 		}
 	}
 	g.pot = 0
-	g.appendLog(-1, "showdown", fmt.Sprintf("hand %d settled", g.handNumber), nil)
+	g.appendLogCode(-1, "showdown", "ironcross.log.showdown", map[string]string{"hand": strconv.Itoa(g.handNumber)}, nil)
 }
 
 // NextHand は次のハンドを始める。
@@ -421,7 +421,7 @@ func (g *IronCross) NextHand() error {
 func (g *IronCross) finish() {
 	g.gameEndFlag = true
 	g.phase = IronCrossPhaseGameEnd
-	g.appendLog(-1, "gameEnd", fmt.Sprintf("winner seat %d", g.WinnerSeat()), nil)
+	g.appendLogCode(-1, "gameEnd", "ironcross.log.gameEnd", map[string]string{"seat": strconv.Itoa(g.WinnerSeat())}, nil)
 }
 
 // --- CPU ---
@@ -600,14 +600,15 @@ func (g *IronCross) GetRemainingCards() int { return g.deck.GetRemainingCount() 
 func (g *IronCross) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // appendLog は棋譜に 1 行足す。
-func (g *IronCross) appendLog(seat int, actionType, detail string, cards []*Card) {
+func (g *IronCross) appendLogCode(seat int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
 	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.turnNumber,
-		PlayerIdx:  seat,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
+		TurnNumber:   g.turnNumber,
+		PlayerIdx:    seat,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        cards,
 	})
 	if len(g.actionLog) > ironCrossMaxSliceLen {
 		g.actionLog = g.actionLog[len(g.actionLog)-ironCrossMaxSliceLen:]

@@ -364,6 +364,18 @@ func TestIronCross_Accessors(t *testing.T) {
 	assert.Equal(t, 2, g.WinnerSeat())
 }
 
+func TestIronCrossActionLogUsesDetailCode(t *testing.T) {
+	g := newIronCrossForTest(t)
+	for _, entry := range g.GetActionLog() {
+		if entry.ActionType == "reset" {
+			assert.Equal(t, "ironcross.log.reset", entry.DetailCode)
+			assert.Empty(t, entry.Detail)
+			return
+		}
+	}
+	t.Fatal("reset log entry not found")
+}
+
 // **CpuPlay は人間の手番まで進める。**
 func TestIronCross_CpuPlayAdvancesToTheHuman(t *testing.T) {
 	t.Parallel()

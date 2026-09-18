@@ -32,5 +32,11 @@
   "helpHint": "  h                         show a hint",
   "errCardIndexOutOfRange": "The card index is out of range.",
   "errFollowLeadSuit": "You must follow the lead suit.",
-  "errMustPlayTrump": "You must play a trump card."
+  "errMustPlayTrump": "You must play a trump card.",
+  "log.marriage": "{{name}} declares a {{suit}} marriage (+{{points}}, trump={{suit}})",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}} (+{{points}})",
+  "log.pussiWin": "team {{team}} wins the pussi (+{{points}})",
+  "log.roundScore": "round {{round}} scored: team 0={{team0}} (+{{points0}}), team 1={{team1}} (+{{points1}}) (pussi won by team {{pussiTeam}})",
+  "log.gameEnd": "team {{team}} wins the match!"
 }

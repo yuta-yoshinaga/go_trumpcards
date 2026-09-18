@@ -61,5 +61,17 @@
   "errDiscardFiveCards": "You must discard 5 cards.",
   "errCardIndexOutOfRange": "The card index is out of range.",
   "errDuplicateCardIndex": "You cannot select the same card twice.",
-  "errFollowLeadSuit": "You must follow the lead suit."
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "log.bid": "{{name}} bids {{points}}",
+  "log.pass": "{{name}} passes",
+  "log.redeal": "All players passed. Redealing.",
+  "log.winBid": "{{name}} wins the auction for {{bid}}",
+  "log.exchange": "{{name}} discards {{count}} cards, trump={{trump}}",
+  "log.play": "{{name}} plays {{card}}",
+  "log.lastTrick": "{{name}} wins the last trick {{trick}} (+{{nest}} nest)",
+  "log.trickWin": "{{name}} wins trick {{trick}} (+{{points}})",
+  "log.contractMade": "Team {{team}} makes the bid ({{points}}/{{bid}}). +{{points}}",
+  "log.contractFailed": "Team {{team}} is set ({{points}}/{{bid}}). -{{bid}}",
+  "log.teamScore": "Team {{team}}: {{points}} points",
+  "log.gameEnd": "Team {{team}} wins the game!"
 }

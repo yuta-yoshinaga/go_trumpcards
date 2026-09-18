@@ -51,6 +51,24 @@ func TestRookResetDealsFullDeck(t *testing.T) {
 	}
 }
 
+func TestRookActionLogUsesDetailCode(t *testing.T) {
+	g := rookNewGame()
+	g.Reset()
+	g.SetBidPlayerIdx(0)
+	if err := g.PlayerBid(75); err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range g.GetActionLog() {
+		if entry.ActionType == "bid" {
+			assert.Equal(t, "rook.log.bid", entry.DetailCode)
+			assert.Equal(t, "75", entry.DetailParams["points"])
+			assert.Empty(t, entry.Detail)
+			return
+		}
+	}
+	t.Fatal("bid log entry not found")
+}
+
 func TestRookCardPoints(t *testing.T) {
 	g := rookNewGame()
 	cases := []struct {

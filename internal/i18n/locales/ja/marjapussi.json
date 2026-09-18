@@ -32,5 +32,11 @@
   "helpHint": "  h                         助言を表示",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errFollowLeadSuit": "リードスートに従ってください",
-  "errMustPlayTrump": "切り札を出してください"
+  "errMustPlayTrump": "切り札を出してください",
+  "log.marriage": "{{name}}が{{suit}}のマリッジを宣言（+{{points}}、切り札={{suit}}）",
+  "log.play": "{{name}}が{{card}}を出す",
+  "log.trickWin": "{{name}}が第{{trick}}トリックに勝利（+{{points}}）",
+  "log.pussiWin": "チーム{{team}}がプッシを獲得（+{{points}}）",
+  "log.roundScore": "ラウンド{{round}}の得点: チーム0={{team0}}（+{{points0}}）、チーム1={{team1}}（+{{points1}}）（プッシ獲得チーム{{pussiTeam}}）",
+  "log.gameEnd": "チーム{{team}}がマッチに勝利！"
 }

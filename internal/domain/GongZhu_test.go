@@ -81,6 +81,26 @@ func TestGongZhuReset(t *testing.T) {
 	assert.Equal(t, 52, total)
 }
 
+func TestGongZhuActionLogUsesDetailCode(t *testing.T) {
+	g := newTestGongZhu()
+	g.Reset()
+	g.SetPhase(domain.GongZhuPhaseExpose)
+	assert.NoError(t, g.PlayerExpose([]int{}))
+	g.CpuExpose()
+	g.CpuExpose()
+	g.CpuExpose()
+	g.ExecuteExpose()
+	for _, entry := range g.GetActionLog() {
+		if entry.ActionType == "expose" {
+			assert.Equal(t, "gongzhu.log.expose", entry.DetailCode)
+			assert.Equal(t, "1", entry.DetailParams["round"])
+			assert.Empty(t, entry.Detail)
+			return
+		}
+	}
+	t.Fatal("expose log entry not found")
+}
+
 // --- config ---
 
 func TestGongZhuConfigValidate(t *testing.T) {

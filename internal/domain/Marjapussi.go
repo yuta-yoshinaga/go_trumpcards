@@ -33,9 +33,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // MarjapussiPlayerCnt プレイヤー数 (人間 1 + CPU 3 = 4 人)
@@ -308,15 +308,13 @@ func (g *Marjapussi) maybeDeclareMarriage(playerIdx int, card *Card) {
 	g.trumpSuit = suit
 	teamIdx := marjapussiPlayerTeam(playerIdx)
 	g.roundMarriage[teamIdx] += pts
-	g.appendLog(playerIdx, "marriage",
-		fmt.Sprintf("%s declares a %s marriage (+%d, trump=%s)",
-			playerName(g.players, playerIdx), marjapussiSuitName(suit), pts, marjapussiSuitName(suit)), nil)
+	g.appendLogCode(playerIdx, "marriage", "marjapussi.log.marriage", map[string]string{"name": playerName(g.players, playerIdx), "suit": marjapussiSuitName(suit), "points": strconv.Itoa(pts)}, nil)
 }
 
 // playCard カードをプレイする共通処理。
 func (g *Marjapussi) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLogCode(playerIdx, "play", "marjapussi.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == MarjapussiPlayerCnt {
 		g.phase = MarjapussiPhaseTrickEnd
@@ -340,8 +338,7 @@ func (g *Marjapussi) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundCardPts[winnerTeam] += pts
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
+	g.appendLogCode(winnerIdx, "trick_win", "marjapussi.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(pts)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= MarjapussiTrickCount {
@@ -352,8 +349,7 @@ func (g *Marjapussi) ResolveTrick() {
 			pussiPts += marjapussiCardPoints(c)
 		}
 		g.roundCardPts[winnerTeam] += pussiPts
-		g.appendLog(winnerIdx, "pussi_win",
-			fmt.Sprintf("team %d wins the pussi (+%d)", winnerTeam, pussiPts), g.pussi)
+		g.appendLogCode(winnerIdx, "pussi_win", "marjapussi.log.pussiWin", map[string]string{"team": strconv.Itoa(winnerTeam), "points": strconv.Itoa(pussiPts)}, g.pussi)
 		g.phase = MarjapussiPhaseRoundEnd
 	} else {
 		g.phase = MarjapussiPhaseTrickEnd
@@ -383,12 +379,7 @@ func (g *Marjapussi) ScoreRound() {
 	if g.lastTrickWinner >= 0 {
 		pussiWinnerTeam = marjapussiPlayerTeam(g.lastTrickWinner)
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d scored: team 0=%d (+%d), team 1=%d (+%d) (pussi won by team %d)",
-			g.roundNumber,
-			g.teamScores[0], g.roundCardPts[0]+g.roundMarriage[0],
-			g.teamScores[1], g.roundCardPts[1]+g.roundMarriage[1],
-			pussiWinnerTeam), nil)
+	g.appendLogCode(-1, "round_score", "marjapussi.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "team0": strconv.Itoa(g.teamScores[0]), "points0": strconv.Itoa(g.roundCardPts[0] + g.roundMarriage[0]), "team1": strconv.Itoa(g.teamScores[1]), "points1": strconv.Itoa(g.roundCardPts[1] + g.roundMarriage[1]), "pussiTeam": strconv.Itoa(pussiWinnerTeam)}, nil)
 	g.checkGameEnd()
 }
 
@@ -414,7 +405,7 @@ func (g *Marjapussi) checkGameEnd() {
 			g.winnerTeam = wt
 			g.winnerPlayer = wt
 		}
-		g.appendLog(-1, "game_end", fmt.Sprintf("team %d wins the match!", g.winnerTeam), nil)
+		g.appendLogCode(-1, "game_end", "marjapussi.log.gameEnd", map[string]string{"team": strconv.Itoa(g.winnerTeam)}, nil)
 	}
 }
 

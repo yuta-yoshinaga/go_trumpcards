@@ -12,8 +12,8 @@ const SCAN_ROOT = path.join(ROOT, 'internal');
 
 // ADR-0040 の移行が進むたびに実測して下げる。0 になったら
 // `check-domain-error-locale.mjs` と同じく床を走査ファイル数へ移す。
-// 実測値: 日本語 457 / 英語 1119、265 ファイル。
-const DETAIL_LITERAL_CEILING = 1576;
+// 実測値: 日本語 446 / 英語 1080、259 ファイル。
+const DETAIL_LITERAL_CEILING = 1526;
 // フィクスチャは数え方のテスト用で本番の件数ではないため、天井を緩くする。
 const FIXTURE_CEILING = 100;
 const CEILING = process.argv[2] ? FIXTURE_CEILING : DETAIL_LITERAL_CEILING;

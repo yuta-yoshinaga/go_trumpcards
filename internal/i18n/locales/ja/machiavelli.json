@@ -31,5 +31,10 @@
   "errInvalidMeld": "無効なメルドが含まれています",
   "errTableCardsMismatch": "場のカード構成が一致しません",
   "errEmptyMeld": "空のメルドは指定できません",
-  "errInvalidCard": "無効なカードが指定されました"
+  "errInvalidCard": "無効なカードが指定されました",
+  "log.draw": "{{name}}が山札から引く",
+  "log.play": "{{name}}が{{count}}枚のカードを場に出す",
+  "log.roundWin": "{{name}}が上がる（ラウンド{{round}}）",
+  "log.roundDraw": "ラウンド終了（山札切れ）",
+  "log.gameEnd": "{{name}}が{{points}}点でゲームに勝利！"
 }

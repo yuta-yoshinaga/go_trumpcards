@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // GongZhuPlayerCnt 拱猪（Gong Zhu）プレイヤー数
@@ -205,7 +206,7 @@ func (g *GongZhu) ExecuteExpose() {
 		}
 	}
 
-	g.appendLog(-1, "expose", fmt.Sprintf("round %d: %s", g.roundNumber, g.exposureSummary()), nil)
+	g.appendLogCode(-1, "expose", "gongzhu.log.expose", map[string]string{"round": strconv.Itoa(g.roundNumber), "summary": g.exposureSummary()}, nil)
 	g.phase = GongZhuPhasePlay
 	g.startPlayPhase()
 }
@@ -275,7 +276,7 @@ func (g *GongZhu) ResolveTrick() {
 	for _, c := range trickCards {
 		rawPts += gzCardRawPoints(c)
 	}
-	g.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d (raw %+d)", playerName(g.players, winnerIdx), g.trickNumber, rawPts), trickCards)
+	g.appendLogCode(winnerIdx, "trick_win", "gongzhu.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "raw": fmt.Sprintf("%+d", rawPts)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= GongZhuHandSize {
@@ -304,7 +305,7 @@ func (g *GongZhu) ScoreRound() {
 
 	for i := 0; i < GongZhuPlayerCnt; i++ {
 		if g.playerHeartCount(i) == GongZhuHandSize {
-			g.appendLog(i, "all_hearts", fmt.Sprintf("%s collected all hearts!", playerName(g.players, i)), nil)
+			g.appendLogCode(i, "all_hearts", "gongzhu.log.allHearts", map[string]string{"name": playerName(g.players, i)}, nil)
 		}
 		g.players[i].SetRoundScore(g.scoreForPlayer(i))
 	}
@@ -314,8 +315,7 @@ func (g *GongZhu) ScoreRound() {
 	}
 
 	for i := 0; i < GongZhuPlayerCnt; i++ {
-		g.appendLog(i, "round_score", fmt.Sprintf("%s: round=%+d, total=%+d",
-			playerName(g.players, i), g.players[i].GetRoundScore(), g.players[i].GetCumulativeScore()), nil)
+		g.appendLogCode(i, "round_score", "gongzhu.log.roundScore", map[string]string{"name": playerName(g.players, i), "round": fmt.Sprintf("%+d", g.players[i].GetRoundScore()), "total": fmt.Sprintf("%+d", g.players[i].GetCumulativeScore())}, nil)
 	}
 
 	ended := false
@@ -338,7 +338,7 @@ func (g *GongZhu) ScoreRound() {
 				g.winnerIdx = i
 			}
 		}
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
+		g.appendLogCode(-1, "game_end", "gongzhu.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx)}, nil)
 	}
 }
 
@@ -619,7 +619,7 @@ func (g *GongZhu) playCard(playerIdx int, card *Card) {
 		g.heartsBroken = true
 	}
 
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLogCode(playerIdx, "play", "gongzhu.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == GongZhuPlayerCnt {
 		g.phase = GongZhuPhaseTrickEnd

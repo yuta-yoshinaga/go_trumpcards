@@ -59,6 +59,22 @@ func TestMarjapussi_ResetDeal(t *testing.T) {
 	assert.Equal(t, expectedLead, g.GetCurrentPlayerIdx())
 }
 
+func TestMarjapussiActionLogUsesDetailCode(t *testing.T) {
+	g := newTestMarjapussi()
+	g.SetCurrentPlayerIdx(0)
+	setMarjapussiHand(g, 0, marjapussiCard(domain.CardDesignSpade, 13))
+	assert.NoError(t, g.PlayerPlay(0))
+	for _, entry := range g.GetActionLog() {
+		if entry.ActionType == "play" {
+			assert.Equal(t, "marjapussi.log.play", entry.DetailCode)
+			assert.Equal(t, "♠K", entry.DetailParams["card"])
+			assert.Empty(t, entry.Detail)
+			return
+		}
+	}
+	t.Fatal("play log entry not found")
+}
+
 func TestMarjapussi_DeckAndDeal_36CardsUnique(t *testing.T) {
 	// Reconstruct the whole round's cards (8*4 hands + 4 pussi) and
 	// verify 36 unique cards: 6,7,8,9,10,J(11),Q(12),K(13),A(1) across 4 suits.
