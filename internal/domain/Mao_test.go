@@ -99,6 +99,15 @@ func TestMao_PlayTriggersAwaitingWord(t *testing.T) {
 
 	require.NoError(t, g.PlayerPlay(0))
 	assert.True(t, g.GetAwaitingWord())
+	var playLog *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "mao.log.play" {
+			playLog = entry
+		}
+	}
+	require.NotNil(t, playLog)
+	assert.Empty(t, playLog.Detail)
+	assert.Equal(t, map[string]string{"name": "You", "card": "♠9"}, playLog.DetailParams)
 }
 
 func TestMao_DeclareWordCorrect(t *testing.T) {

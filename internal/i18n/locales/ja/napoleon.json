@@ -56,5 +56,21 @@
   "errInvalidAdjutantSuit": "無効な副官スートです",
   "errInvalidAdjutantValue": "無効な副官カード値です",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errMustFollowLeadSuit": "リードスートに従ってください"
+  "errMustFollowLeadSuit": "リードスートに従ってください",
+  "log.trickWin": "{{name}}がトリック{{trick}}に勝利しました",
+  "log.trickWinWithPictures": "{{name}}がトリック{{trick}}に勝利しました（絵札{{pictures}}枚）",
+  "log.napoleonTeamWins": "ナポレオン軍が勝利！（絵札{{pictures}}/{{bid}}枚）",
+  "log.alliedForcesWin": "連合軍が勝利！（絵札{{pictures}}/{{bid}}枚）",
+  "log.roundScore": "{{name}}: ラウンド={{score}}",
+  "log.cumulativeScore": "{{name}}: 合計={{score}}",
+  "log.pass": "{{name}}はパスしました",
+  "log.bid": "{{name}}は{{bid}}をビッドしました",
+  "log.forcedBid": "{{name}}は強制的に{{bid}}をビッドしました（全員パス）",
+  "log.becomesNapoleon": "{{name}}がナポレオンになりました（ビッド{{bid}}）",
+  "log.declareTrump": "{{name}}が{{suit}}を切り札として宣言しました",
+  "log.declareAdjutant": "{{name}}が{{card}}を副官カードに指名しました",
+  "log.exchange": "{{name}}が場札を交換しました",
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.adjutantReveal": "{{name}}が副官として公開されました！",
+  "log.gameEnd": "{{name}}がゲームに勝利しました！"
 }

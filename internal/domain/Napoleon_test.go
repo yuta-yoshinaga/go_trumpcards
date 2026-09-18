@@ -75,6 +75,15 @@ func TestNapoleon_PlayerBid(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 12, n.GetPlayer(0).GetBid())
 		assert.Equal(t, 12, n.GetHighestBid())
+		var bidLog *domain.ActionLogEntry
+		for _, entry := range n.GetActionLog() {
+			if entry.DetailCode == "napoleon.log.bid" {
+				bidLog = entry
+			}
+		}
+		require.NotNil(t, bidLog)
+		assert.Empty(t, bidLog.Detail)
+		assert.Equal(t, map[string]string{"name": "You", "bid": "12"}, bidLog.DetailParams)
 	})
 
 	t.Run("pass (bid 0)", func(t *testing.T) {
