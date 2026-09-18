@@ -75,6 +75,15 @@ func TestThreeCardRummyCuiPresenter_Output_BetPhaseExplainsTheInvertedRule(t *te
 	}
 }
 
+func TestThreeCardRummyCuiPresenter_Output_TranslatesCodedError(t *testing.T) {
+	p := new(ThreeCardRummyCuiPresenter)
+	g := tcrGame(t, domain.ThreeCardRummyPhaseBet)
+
+	out := p.Output(g, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "threecardrummy.errCannotRebet", nil))
+	assert.Contains(t, out, "まだ賭けていないので再ベットできません")
+	assert.NotContains(t, out, "threecardrummy.errCannotRebet")
+}
+
 func TestThreeCardRummyCuiPresenter_Output_ScoringNotesOnlyInTheBetPhase(t *testing.T) {
 	p := new(ThreeCardRummyCuiPresenter)
 

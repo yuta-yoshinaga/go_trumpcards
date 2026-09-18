@@ -69,7 +69,7 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
+		cuiErrorBlock(&sb, lastErr)
 	}
 
 	if tc.GetGameEndFlag() {

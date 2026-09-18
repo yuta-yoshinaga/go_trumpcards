@@ -78,7 +78,7 @@ func (tp *ThreeCardRummyCuiPresenter) Output(tc interfaces.ThreeCardRummyGame, l
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
+		cuiErrorBlock(&sb, lastErr)
 	}
 
 	// **賭けた額を覚えておかせない。** Web はアクション中ずっと内訳を出して

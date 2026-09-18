@@ -35,6 +35,11 @@ func (tp *ThreeCardWebPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			resObj.Message = ""
+			resObj.MessageCode = code
+			resObj.MessageParams = params
+		}
 	} else if tc.GetGameEndFlag() {
 		switch tc.GetResult() {
 		case domain.GameResultWin:

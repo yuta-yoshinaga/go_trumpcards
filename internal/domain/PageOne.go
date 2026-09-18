@@ -168,12 +168,12 @@ func (g *PageOne) PlayerPlay(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "pageone.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 	if !g.isValidPlay(card) {
-		return NewDomainError(ErrInvalidPlay, "そのカードは出せません")
+		return NewDomainErrorCode(ErrInvalidPlay, "pageone.errInvalidPlay", nil)
 	}
 
 	played := player.RemoveCard(cardIndex)
@@ -194,7 +194,7 @@ func (g *PageOne) PlayerDraw() error {
 		return ErrNotHumanTurn
 	}
 	if g.hasPlayableCard(g.currentPlayerIdx) {
-		return NewDomainError(ErrInvalidPlay, "出せるカードがあるときは引けません")
+		return NewDomainErrorCode(ErrInvalidPlay, "pageone.errCannotDrawWithPlayableCard", nil)
 	}
 
 	return g.drawCard(g.currentPlayerIdx)

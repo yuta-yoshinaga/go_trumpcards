@@ -85,7 +85,7 @@ func NewDefaultThreeCard() *ThreeCard {
 // 別に書くと、チップ不足や上限の扱いが通常のベットとずれる。
 func (tc *ThreeCard) Rebet() error {
 	if tc.lastAnteBet <= 0 {
-		return NewDomainError(ErrInvalidPlay, "まだ賭けていないので再ベットできません")
+		return NewDomainErrorCode(ErrInvalidPlay, "threecard.errCannotRebet", nil)
 	}
 	return tc.Bet(tc.lastAnteBet, tc.lastPairPlusBet)
 }

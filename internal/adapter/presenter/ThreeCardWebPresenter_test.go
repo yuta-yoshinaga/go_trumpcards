@@ -74,6 +74,17 @@ func TestThreeCardWebPresenter_Output_Error(t *testing.T) {
 	assert.Equal(t, "test error", result.Message)
 }
 
+func TestThreeCardWebPresenter_Output_CodedError(t *testing.T) {
+	p := new(ThreeCardWebPresenter)
+	m := new(interfaces.MockThreeCardGame)
+	setupThreeCardWebMockDefaults(m)
+
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "threecard.errCannotRebet", nil)
+	result := parseThreeCardOutput(t, p.Output(m, err))
+	assert.Empty(t, result.Message)
+	assert.Equal(t, "threecard.errCannotRebet", result.MessageCode)
+}
+
 func TestThreeCardWebPresenter_Output_PlayerWins(t *testing.T) {
 	p := new(ThreeCardWebPresenter)
 	m := new(interfaces.MockThreeCardGame)

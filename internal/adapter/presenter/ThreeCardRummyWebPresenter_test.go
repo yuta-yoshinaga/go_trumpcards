@@ -293,6 +293,16 @@ func TestThreeCardRummyWebPresenter_Output_Error(t *testing.T) {
 	assert.Empty(t, result.MessageCode)
 }
 
+func TestThreeCardRummyWebPresenter_Output_CodedError(t *testing.T) {
+	p := new(ThreeCardRummyWebPresenter)
+	g := newThreeCardRummyDealtGame(domain.ThreeCardRummyPhaseEnd)
+
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "threecardrummy.errCannotRebet", nil)
+	result := parseThreeCardRummyOutput(t, p.Output(g, err))
+	assert.Empty(t, result.Message)
+	assert.Equal(t, "threecardrummy.errCannotRebet", result.MessageCode)
+}
+
 func TestThreeCardRummyWebPresenter_HintOutput_MirrorsOutput(t *testing.T) {
 	p := new(ThreeCardRummyWebPresenter)
 	g := newThreeCardRummyDealtGame(domain.ThreeCardRummyPhaseEnd)

@@ -625,7 +625,7 @@ func TestThreeCard_Rebet(t *testing.T) {
 	t.Run("refuses before any bet has been placed, and says why", func(t *testing.T) {
 		err := newBetPhase().Rebet()
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "まだ賭けていない")
+		assert.Equal(t, "threecard.errCannotRebet", err.(*domain.DomainError).MessageCode())
 	})
 
 	// **チップ不足は明確に断る。** Bet と同じ検査を通すので理由も同じ。

@@ -132,6 +132,16 @@ func TestPageOneWebPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "boom")
 	})
 
+	t.Run("coded error returns message code", func(t *testing.T) {
+		m := setupPageOneWebMock()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "pageone.errInvalidPlay", nil)
+		result := p.Output(m, err)
+		var out map[string]interface{}
+		assert.NoError(t, json.Unmarshal([]byte(result), &out))
+		assert.Empty(t, out["message"])
+		assert.Equal(t, "pageone.errInvalidPlay", out["messageCode"])
+	})
+
 	t.Run("discard top included", func(t *testing.T) {
 		m := setupPageOneWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")

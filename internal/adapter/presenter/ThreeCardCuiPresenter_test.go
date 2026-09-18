@@ -63,6 +63,16 @@ func TestThreeCardCuiPresenter_Output_BetPhase(t *testing.T) {
 	assert.Contains(t, result, "フェーズ: BET")
 }
 
+func TestThreeCardCuiPresenter_Output_TranslatesCodedError(t *testing.T) {
+	p := new(ThreeCardCuiPresenter)
+	m := new(interfaces.MockThreeCardGame)
+	setupThreeCardCuiMockDefaults(m)
+
+	out := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "threecard.errCannotRebet", nil))
+	assert.Contains(t, out, "まだ賭けていないので再ベットできません")
+	assert.NotContains(t, out, "threecard.errCannotRebet")
+}
+
 func TestThreeCardCuiPresenter_Output_BetPhase_PayoutTable(t *testing.T) {
 	p := new(ThreeCardCuiPresenter)
 	m := new(interfaces.MockThreeCardGame)
