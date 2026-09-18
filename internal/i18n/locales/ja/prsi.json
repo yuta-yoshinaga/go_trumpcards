@@ -14,5 +14,7 @@
   "legalPlays": "出せる札: {{cards}}",
   "noLegalPlay": "出せる札がありません → draw で引いてください",
   "pendingSkips": " / スキップ{{count}}人ぶん",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errCardNotPlayable": "そのカードは出せません"
 }

@@ -202,7 +202,7 @@ func (t *Truco) PlayerPlay(cardIndex int) error {
 	}
 	player := t.players[t.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "truco.errCardIndexOutOfRange", nil)
 	}
 	played := player.RemoveCard(cardIndex)
 	t.playCard(t.currentPlayerIdx, played)
@@ -219,7 +219,7 @@ func (t *Truco) DeclareTruco() error {
 		return ErrNotHumanTurn
 	}
 	if !t.canDeclare(actor) {
-		return NewDomainError(ErrWrongPhase, "これ以上引き上げできません")
+		return NewDomainErrorCode(ErrWrongPhase, "truco.errCannotRaiseNow", nil)
 	}
 	t.callTruco(actor)
 	return nil

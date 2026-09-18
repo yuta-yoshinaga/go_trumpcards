@@ -14,12 +14,14 @@ const ROOT = process.argv[2] ? path.resolve(process.argv[2]) : path.resolve(HERE
 // そこに日本語を足したときに天井をすり抜ける (PR #7810 のレビュー指摘)。
 const SCAN_ROOT = path.join(ROOT, 'internal');
 
-// この天井は、既存のドメイン日本語文言を別 PR で翻訳するまで増加を防ぐためのもの。
-// 件数が減ったら、実測値に合わせてこの定数を下げる。
-// 内訳: 素のリテラル 14 / fmt.Sprintf 0 / 複数行 0. (実測)
-const JAPANESE_LITERAL_CEILING = 14;
-// floor.mjs の指針どおり現在値の約 2/3 (14 × 2/3 ≈ 9)。天井が下がり続けるため、floor も追随して下げる。
-const JAPANESE_LITERAL_FLOOR = 9;
+// 日本語リテラルは 0 件。1 件でも増えたら落とす。
+const JAPANESE_LITERAL_CEILING = 0;
+// 試験は数え方を検査するので、本番の天井 0 を当てるとリテラル 1 件のフィクスチャが違反になって数え方を検査できない。
+// 超過検出の試験は 793 件なので 100 で落ちる。
+const FIXTURE_CEILING = 100;
+const CEILING = process.argv[2] ? FIXTURE_CEILING : JAPANESE_LITERAL_CEILING;
+// 実測 4859 ファイル (2026-09-18)。walk が壊れたことを検出するための床であって、違反数の床ではない。
+const SCANNED_FILE_FLOOR = 3000;
 
 async function goFiles(dir) {
   const files = [];
@@ -107,7 +109,13 @@ function japaneseNewDomainErrors(source) {
   return count;
 }
 
-const files = await goFiles(SCAN_ROOT);
+let files;
+try {
+  files = await goFiles(SCAN_ROOT);
+} catch (error) {
+  if (error?.code !== 'ENOENT') throw error;
+  files = [];
+}
 let count = 0;
 let matchingFiles = 0;
 for (const file of files) {
@@ -117,18 +125,13 @@ for (const file of files) {
 }
 
 if (!process.argv[2]) {
-  assertFloor('domain-error-locale', count, JAPANESE_LITERAL_FLOOR, 'Japanese literals in NewDomainError');
+  assertFloor('domain-error-locale', files.length, SCANNED_FILE_FLOOR, 'Go files scanned');
 }
 
-if (count > JAPANESE_LITERAL_CEILING) {
-  console.error(
-    `domain-error-locale: ${count} Japanese literals in NewDomainError exceeds ceiling ${JAPANESE_LITERAL_CEILING}.`,
-  );
+if (count > CEILING) {
+  console.error(`domain-error-locale: ${count} Japanese literals in NewDomainError exceeds ceiling ${CEILING}.`);
   process.exit(1);
 }
-if (count < JAPANESE_LITERAL_CEILING) {
-  console.error(`domain-error-locale: ${count} Japanese literals found; lower the ceiling to ${count}.`);
-}
 console.log(
-  `domain-error-locale: OK (${count} Japanese literals in NewDomainError across ${matchingFiles} file(s); ceiling ${JAPANESE_LITERAL_CEILING}).`,
+  `domain-error-locale: OK (${count} Japanese literals in NewDomainError across ${matchingFiles} file(s); ${files.length} Go files scanned).`,
 );

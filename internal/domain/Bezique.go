@@ -268,7 +268,7 @@ func (b *Bezique) PlayerPlay(cardIndex int) error {
 	}
 	player := b.players[b.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "bezique.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := b.validatePlay(b.currentPlayerIdx, card); err != nil {
@@ -312,7 +312,7 @@ func (b *Bezique) PlayerDeclareMeld(meldIndex int) error {
 	}
 	melds := b.availableMelds(b.currentPlayerIdx)
 	if meldIndex < 0 || meldIndex >= len(melds) {
-		return NewDomainError(ErrInvalidPlay, "宣言できる役がありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bezique.errNoMeldAvailable", nil)
 	}
 	b.applyMeld(b.currentPlayerIdx, melds[meldIndex])
 	b.afterMeld()
