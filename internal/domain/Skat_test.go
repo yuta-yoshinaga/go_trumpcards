@@ -70,6 +70,22 @@ func TestSkatBidAllPassMakesForehandDeclarer(t *testing.T) {
 	}
 }
 
+func TestSkatBidActionLogCode(t *testing.T) {
+	g := newSkatForTest(t, DefaultSkatConfig())
+	idx := g.GetActiveBidActorIdx()
+	g.applyBidStep(idx, false)
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "skat.log.bidPass" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.NotEmpty(t, entry.DetailParams["name"])
+	assert.Empty(t, entry.Detail)
+}
+
 func TestSkatBidRoundFlow(t *testing.T) {
 	g := newSkatForTest(t, DefaultSkatConfig())
 	// Middle calls 18.

@@ -88,6 +88,26 @@ func TestEcarte_ProposeRefuseStartsPlay(t *testing.T) {
 	// so drive via the domain: set current to dealer-as-human is not set; just test refuse via CPU path.
 }
 
+func TestEcarteProposeActionLogCode(t *testing.T) {
+	e := newTestEcarte(true)
+	e.Reset()
+	e.SetDealerIdx(1)
+	e.SetPhase(domain.EcartePhaseExchange)
+	e.SetNegStep(domain.EcarteNegElderDecide)
+	e.SetCurrentPlayerIdx(0)
+	require.NoError(t, e.PlayerPropose())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range e.GetActionLog() {
+		if candidate.DetailCode == "ecarte.log.propose" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}
+
 func TestEcarte_StandStartsPlay(t *testing.T) {
 	e := newTestEcarte(true)
 	e.Reset()

@@ -1258,7 +1258,26 @@ func TestBridgeRubberBonus(t *testing.T) {
 	b.ScoreRound()
 	// 700 rubber bonus for 2-0
 	assert.True(t, b.GetGameEndFlag())
-	assert.Contains(t, b.actionLog[len(b.actionLog)-1].Detail, "rubber")
+	var rubberEnd *ActionLogEntry
+	for _, entry := range b.actionLog {
+		if entry.DetailCode == "bridge.log.rubberEnd" {
+			rubberEnd = entry
+			break
+		}
+	}
+	require.NotNil(t, rubberEnd)
+	assert.Equal(t, map[string]string{"team": "0"}, rubberEnd.DetailParams)
+	assert.Empty(t, rubberEnd.Detail)
+}
+
+func TestBridgePlayerBidPassActionLogCode(t *testing.T) {
+	b := newTestBridgeWithReset()
+	b.SetBidPlayerIdx(0)
+	require.NoError(t, b.PlayerBid(int(BridgeBidPass), 0, 0))
+	entry := b.actionLog[len(b.actionLog)-1]
+	assert.Equal(t, "bridge.log.pass", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You (North)"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestBridgeCpuBidNormalDouble(t *testing.T) {

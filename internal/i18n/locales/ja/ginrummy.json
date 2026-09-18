@@ -54,5 +54,16 @@
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errKnockDeadwoodTooHigh": "デッドウッドが{{threshold}}点以下でないとノックできません（現在{{deadwood}}点）",
   "errDuplicateCardIndex": "カードインデックスが重複しています",
-  "errLayoffCardCannotAdd": "{{card}}はレイオフできません"
+  "errLayoffCardCannotAdd": "{{card}}はレイオフできません",
+  "log.drawStock": "{{name}}が山札から引きました",
+  "log.drawDiscard": "{{name}}が捨て札から{{card}}を引きました",
+  "log.discard": "{{name}}が{{card}}を捨てました",
+  "log.knock": "{{name}}がノックしました（デッドウッド: {{deadwood}}）",
+  "log.gin": "{{name}}がジンを宣言しました！",
+  "log.layoff": "{{name}}が{{card}}をレイオフしました",
+  "log.scoreGin": "{{name}}が{{total}}点を獲得しました（ジンボーナス{{bonus}} + デッドウッド{{deadwood}}）",
+  "log.scoreUndercut": "{{name}}がアンダーカットしました！{{total}}点を獲得（ボーナス{{bonus}} + 差{{difference}}）",
+  "log.scoreKnock": "{{name}}が{{total}}点を獲得しました（デッドウッド差）",
+  "log.roundDraw": "ラウンドは引き分けで終了しました（山札が空です）",
+  "log.gameEnd": "{{name}}がゲームに勝利しました！"
 }

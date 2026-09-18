@@ -57,5 +57,20 @@
   "bonusSchneider": "シュナイダー",
   "bonusSchwarz": "シュヴァルツ",
   "scoreBreakdownLineDoubled": "内訳: 基礎点 {{base}} × 乗数 {{multiplier}} × 2（敗北のため2倍・マタドール {{matadors}}）= {{value}}{{bonuses}}",
-  "scoreBreakdownLineOverbid": "内訳: オーバービッド — 入札 {{bid}} × 2 = {{value}}（基礎点 {{base}} × 乗数 {{multiplier}} では入札に届かなかった）"
+  "scoreBreakdownLineOverbid": "内訳: オーバービッド — 入札 {{bid}} × 2 = {{value}}（基礎点 {{base}} × 乗数 {{multiplier}} では入札に届かなかった）",
+  "log.roundStart": "ラウンド{{round}}: ディーラー={{dealer}}",
+  "log.bidCall": "{{name}}が{{bid}}をコールしました",
+  "log.bidPass": "{{name}}がパスしました",
+  "log.bidYes": "{{name}}が{{bid}}でイエスと答えました",
+  "log.declarer": "{{name}}が{{bid}}で競り勝ちました",
+  "log.pickSkat": "{{name}}がスカートを拾いました",
+  "log.handGame": "{{name}}がハンドゲームを行います",
+  "log.discard": "{{name}}がスカートに2枚捨てました",
+  "log.declareGame": "{{name}}が{{game}}を宣言しました",
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.trickWin": "{{name}}が{{trick}}トリック目に勝ちました（カード点{{points}}）",
+  "log.roundWin": "{{name}}の勝ち（+{{value}}）",
+  "log.roundLoss": "{{name}}の負け（-{{value}}）",
+  "log.cumulativeScore": "{{name}}の合計={{total}}",
+  "log.gameEnd": "{{name}}が{{score}}点に到達して勝利しました！"
 }
