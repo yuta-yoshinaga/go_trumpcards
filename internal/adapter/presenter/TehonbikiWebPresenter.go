@@ -24,7 +24,12 @@ func (*TehonbikiWebPresenter) Output(c interfaces.TehonbikiGame, e error) string
 	cfg := c.GetConfig()
 	o.Config = &controller.TehonbikiWebOutCfg{InitialChips: cfg.InitialChips, DefaultBet: cfg.DefaultBet}
 	if e != nil {
-		o.Message = e.Error()
+		if code, params := domain.ErrorMessageCode(e); code != "" {
+			o.MessageCode = code
+			o.MessageParams = params
+		} else {
+			o.Message = e.Error()
+		}
 	}
 	return marshalOrError(o)
 }

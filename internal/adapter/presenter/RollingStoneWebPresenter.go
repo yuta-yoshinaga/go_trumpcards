@@ -76,6 +76,9 @@ func (p *RollingStoneWebPresenter) buildPlayersOutput(s interfaces.RollingStoneG
 // buildMessage ゲーム結果メッセージを構築
 func (p *RollingStoneWebPresenter) buildMessage(s interfaces.RollingStoneGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if s.GetGameEndFlag() {

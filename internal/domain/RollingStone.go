@@ -308,9 +308,6 @@ func (r *RollingStone) play(playerIdx, cardIndex int) error {
 	}
 
 	card := r.players[playerIdx].RemoveCard(cardIndex)
-	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードがありません")
-	}
 	r.currentTrick = append(r.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	r.addLog(playerIdx, "play", "カードを出しました", []*Card{card})
 

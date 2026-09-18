@@ -117,7 +117,7 @@ func (g *Tehonbiki) PlaceBet(ns []int, k TehonbikiBetType, bet int) error {
 		seen[n] = true
 	}
 	if k == TehonbikiBetHalf && !tehonbikiIsHalfGroup(seen) {
-		return NewDomainError(ErrInvalidPlay, "片山は1,2,3または4,5,6の組を指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "tehonbiki.errInvalidHalfGroup", nil)
 	}
 	if bet < TehonbikiMinBet || bet > TehonbikiMaxBet || !g.player.SubtractChips(bet) {
 		return errors.New("tehonbiki: invalid or insufficient bet")

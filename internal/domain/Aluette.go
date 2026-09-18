@@ -414,7 +414,7 @@ func (g *Aluette) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "aluette.errCardIndexOutOfRange", nil)
 	}
 	g.playCard(g.currentPlayerIdx, player.RemoveCard(cardIndex))
 	return nil

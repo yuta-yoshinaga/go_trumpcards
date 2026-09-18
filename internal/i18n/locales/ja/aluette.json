@@ -31,5 +31,6 @@
   "teamLine": "得点  チーム0: {{team0}}  チーム1: {{team1}}  （{{target}}点先取）",
   "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
   "helpExampleNext": "  n                    トリックの決着を見てから次のトリックへ",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
 }
