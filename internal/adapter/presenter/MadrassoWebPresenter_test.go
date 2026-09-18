@@ -140,6 +140,15 @@ func TestMadrassoWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "shared.errCardIndexOutOfRange", resObj.MessageCode)
 	})
 
+	t.Run("game coded error uses message code", func(t *testing.T) {
+		m, _ := setupMadrassoWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "madrasso.errCardIndexOutOfRange", nil)
+		var resObj controller.MadrassoWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "madrasso.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end human team wins", func(t *testing.T) {
 		m, _ := setupMadrassoWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

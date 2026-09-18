@@ -134,6 +134,15 @@ func TestTressetteWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "shared.errCardIndexOutOfRange", resObj.MessageCode)
 	})
 
+	t.Run("game coded error uses message code", func(t *testing.T) {
+		m, _ := setupTressetteWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "tressette.errCardIndexOutOfRange", nil)
+		var resObj controller.TressetteWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "tressette.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end human team wins", func(t *testing.T) {
 		m, _ := setupTressetteWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
