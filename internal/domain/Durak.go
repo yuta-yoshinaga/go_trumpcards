@@ -2,7 +2,6 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 // DurakPhase ゲームフェーズ
@@ -219,7 +218,7 @@ func (d *Durak) PlayerAttack(cardIdx int) error {
 	}
 	d.round.cpuActions = nil
 
-	d.appendLog(d.round.attackerIdx, "attack", fmt.Sprintf("attacks with %s", cardStr(played)), []*Card{played})
+	d.appendLog(d.round.attackerIdx, "attack", "durak.log.attackWithCard", map[string]string{"card": cardStr(played)}, []*Card{played})
 
 	// 攻撃者の手札がなくなった場合のチェック
 	if player.GetCardsSize() == 0 && len(d.stock) == 0 {
@@ -273,7 +272,7 @@ func (d *Durak) PlayerDefend(attackIdx, handIdx int) error {
 	}
 	d.round.cpuActions = nil
 
-	d.appendLog(d.round.defenderIdx, "defend", fmt.Sprintf("defends %s with %s", cardStr(atkCard), cardStr(played)), []*Card{played})
+	d.appendLog(d.round.defenderIdx, "defend", "durak.log.defendCard", map[string]string{"attack": cardStr(atkCard), "card": cardStr(played)}, []*Card{played})
 
 	// 全て防御完了した場合
 	if d.countUndefended() == 0 {
@@ -312,7 +311,7 @@ func (d *Durak) PlayerPass() error {
 	}
 	d.round.cpuActions = nil
 
-	d.appendLog(d.round.attackerIdx, "pass", "stops attacking", nil)
+	d.appendLog(d.round.attackerIdx, "pass", "durak.log.stopsAttacking", nil, nil)
 
 	// 未防御カードがあるかチェック
 	if d.countUndefended() > 0 {
@@ -346,7 +345,7 @@ func (d *Durak) PlayerTakeCards() error {
 	}
 	d.round.cpuActions = nil
 
-	d.appendLog(d.round.defenderIdx, "take", "picks up all table cards", nil)
+	d.appendLog(d.round.defenderIdx, "take", "durak.log.picksUpTableCards", nil, nil)
 
 	d.endBout(false)
 	return nil
@@ -425,7 +424,7 @@ func (d *Durak) PlayerTransfer(handIdx int) error {
 	}
 	d.round.cpuActions = nil
 
-	d.appendLog(oldDefenderIdx, "transfer", fmt.Sprintf("plays %s to transfer", cardStr(played)), []*Card{played})
+	d.appendLog(oldDefenderIdx, "transfer", "durak.log.transferCard", map[string]string{"card": cardStr(played)}, []*Card{played})
 
 	return nil
 }
@@ -693,7 +692,7 @@ func (d *Durak) endBout(defended bool) {
 				d.discardPile = append(d.discardPile, pair.Defense)
 			}
 		}
-		d.appendLog(-1, "bout", "defense successful, cards discarded", nil)
+		d.appendLog(-1, "bout", "durak.log.defenseSuccessful", nil, nil)
 	} else {
 		// 防御失敗: 防御者がテーブルカードを全て引き取る
 		for _, pair := range d.round.tablePairs {
@@ -702,7 +701,7 @@ func (d *Durak) endBout(defended bool) {
 				defender.AddCard(pair.Defense)
 			}
 		}
-		d.appendLog(-1, "bout", "defender picks up all cards", nil)
+		d.appendLog(-1, "bout", "durak.log.defenderPicksUpCards", nil, nil)
 	}
 
 	d.round.tablePairs = nil
@@ -744,7 +743,7 @@ func (d *Durak) endBout(defended bool) {
 			}
 		}
 		d.round.loserIdx = worst
-		d.appendLog(-1, "bout", "bout limit reached, the player holding the most cards loses", nil)
+		d.appendLog(-1, "bout", "durak.log.boutLimitReached", nil, nil)
 		return
 	}
 	if activePlayers <= 1 {
@@ -891,8 +890,8 @@ func (d *Durak) sortAllHands() {
 }
 
 // appendLog 棋譜にエントリを追加
-func (d *Durak) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	d.round.appendLog(playerIdx, actionType, detail, cards)
+func (d *Durak) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	d.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ---- 内部メソッド: CPU AI ----
@@ -912,7 +911,7 @@ func (d *Durak) cpuAttack() {
 		d.round.cpuActions = append(d.round.cpuActions, &DurakCpuAction{
 			PlayerIdx: d.round.attackerIdx, ActionType: DurakActionAttack, CardIdx: idx, AttackIdx: -1, Card: played,
 		})
-		d.appendLog(d.round.attackerIdx, "attack", fmt.Sprintf("attacks with %s", cardStr(played)), []*Card{played})
+		d.appendLog(d.round.attackerIdx, "attack", "durak.log.attackWithCard", map[string]string{"card": cardStr(played)}, []*Card{played})
 
 		if attacker.GetCardsSize() == 0 && len(d.stock) == 0 {
 			attacker.SetIsFinished(true)
@@ -929,7 +928,7 @@ func (d *Durak) cpuAttack() {
 		d.round.cpuActions = append(d.round.cpuActions, &DurakCpuAction{
 			PlayerIdx: d.round.attackerIdx, ActionType: DurakActionPass, CardIdx: -1, AttackIdx: -1,
 		})
-		d.appendLog(d.round.attackerIdx, "pass", "stops attacking", nil)
+		d.appendLog(d.round.attackerIdx, "pass", "durak.log.stopsAttacking", nil, nil)
 
 		if d.countUndefended() > 0 {
 			d.round.phase = DurakPhaseDefend
@@ -945,7 +944,7 @@ func (d *Durak) cpuAttack() {
 	d.round.cpuActions = append(d.round.cpuActions, &DurakCpuAction{
 		PlayerIdx: d.round.attackerIdx, ActionType: DurakActionAttack, CardIdx: idx, AttackIdx: -1, Card: played,
 	})
-	d.appendLog(d.round.attackerIdx, "attack", fmt.Sprintf("attacks with %s", cardStr(played)), []*Card{played})
+	d.appendLog(d.round.attackerIdx, "attack", "durak.log.attackWithCard", map[string]string{"card": cardStr(played)}, []*Card{played})
 
 	if attacker.GetCardsSize() == 0 && len(d.stock) == 0 {
 		attacker.SetIsFinished(true)
@@ -971,7 +970,7 @@ func (d *Durak) cpuDefend() {
 			d.round.cpuActions = append(d.round.cpuActions, &DurakCpuAction{
 				PlayerIdx: d.round.defenderIdx, ActionType: DurakActionTake, CardIdx: -1, AttackIdx: -1,
 			})
-			d.appendLog(d.round.defenderIdx, "take", "picks up all table cards", nil)
+			d.appendLog(d.round.defenderIdx, "take", "durak.log.picksUpTableCards", nil, nil)
 			d.endBout(false)
 			return
 		}
@@ -981,7 +980,7 @@ func (d *Durak) cpuDefend() {
 		d.round.cpuActions = append(d.round.cpuActions, &DurakCpuAction{
 			PlayerIdx: d.round.defenderIdx, ActionType: DurakActionDefend, CardIdx: bestIdx, AttackIdx: pairIdx, Card: played,
 		})
-		d.appendLog(d.round.defenderIdx, "defend", fmt.Sprintf("defends %s with %s", cardStr(pair.Attack), cardStr(played)), []*Card{played})
+		d.appendLog(d.round.defenderIdx, "defend", "durak.log.defendCard", map[string]string{"attack": cardStr(pair.Attack), "card": cardStr(played)}, []*Card{played})
 	}
 
 	// 全て防御完了

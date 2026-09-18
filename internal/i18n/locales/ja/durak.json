@@ -35,5 +35,13 @@
   "hintReasonAttackAdditional": "同じ数字で追撃できる",
   "hintReasonDefendBeat": "この札で返せる",
   "hintReasonTakeCannotBeat": "返せる札が無い",
-  "hintReasonPassNoAddition": "追撃できる札が無い"
+  "hintReasonPassNoAddition": "追撃できる札が無い",
+  "log.attackWithCard": "{{card}}で攻撃",
+  "log.defendCard": "{{attack}}を{{card}}で防御",
+  "log.stopsAttacking": "攻撃を終了",
+  "log.picksUpTableCards": "場のカードをすべて引き取る",
+  "log.transferCard": "{{card}}を出して攻撃を移す",
+  "log.defenseSuccessful": "防御成功、カードを捨てる",
+  "log.defenderPicksUpCards": "防御者がすべてのカードを引き取る",
+  "log.boutLimitReached": "バウト上限に達したため、最も多くカードを持つプレイヤーが負け"
 }

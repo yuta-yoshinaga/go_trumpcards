@@ -35,5 +35,13 @@
   "hintReasonAttackAdditional": "you can pile on the same rank",
   "hintReasonDefendBeat": "this card beats it",
   "hintReasonTakeCannotBeat": "nothing in hand beats it",
-  "hintReasonPassNoAddition": "nothing left to pile on"
+  "hintReasonPassNoAddition": "nothing left to pile on",
+  "log.attackWithCard": "attacks with {{card}}",
+  "log.defendCard": "defends {{attack}} with {{card}}",
+  "log.stopsAttacking": "stops attacking",
+  "log.picksUpTableCards": "picks up all table cards",
+  "log.transferCard": "plays {{card}} to transfer",
+  "log.defenseSuccessful": "defense successful, cards discarded",
+  "log.defenderPicksUpCards": "defender picks up all cards",
+  "log.boutLimitReached": "bout limit reached, the player holding the most cards loses"
 }
