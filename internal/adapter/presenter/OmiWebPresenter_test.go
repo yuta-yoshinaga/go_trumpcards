@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -197,6 +198,15 @@ func TestOmiWebPresenter_Output(t *testing.T) {
 
 		assert.Equal(t, "test error", resObj.Message)
 		assert.Empty(t, resObj.MessageCode)
+	})
+
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupOmiWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "omi.errFollowLeadSuit", nil)
+		var resObj controller.OmiWebOutput
+		require.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "omi.errFollowLeadSuit", resObj.MessageCode)
 	})
 
 	t.Run("game end team 0 wins", func(t *testing.T) {

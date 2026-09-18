@@ -35,5 +35,8 @@
   "magicSeven": "  7                    次のプレイヤーをスキップ",
   "magicEight": "  8                    ワイルド — 好きなスートを指定、いつでも出せる",
   "magicJack": "  J                    プレイ方向を反転 (リバース)",
-  "magicNote": "  手札が残り1枚になったら「マカオ!」を宣言 (忘れると2枚ペナルティ)"
+  "magicNote": "  手札が残り1枚になったら「マカオ!」を宣言 (忘れると2枚ペナルティ)",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errCardNotPlayable": "そのカードは出せません",
+  "errSuitOutOfRange": "スートは1〜4で指定してください"
 }

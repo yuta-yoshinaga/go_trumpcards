@@ -158,11 +158,11 @@ func TestTwentyNineWebPresenter_Output(t *testing.T) {
 
 	t.Run("coded error uses message code", func(t *testing.T) {
 		m, _ := setupTwentyNineWebMockWithPlayers()
-		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "shared.errCardIndexOutOfRange", nil)
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "twentynine.errCardIndexOutOfRange", nil)
 		var resObj controller.TwentyNineWebOutput
 		require.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
 		assert.Empty(t, resObj.Message)
-		assert.Equal(t, "shared.errCardIndexOutOfRange", resObj.MessageCode)
+		assert.Equal(t, "twentynine.errCardIndexOutOfRange", resObj.MessageCode)
 	})
 
 	t.Run("game end human team wins", func(t *testing.T) {

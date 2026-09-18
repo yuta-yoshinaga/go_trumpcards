@@ -36,5 +36,7 @@
   "hintReasonLeadStrong": "最強カードでリード",
   "hintReasonFollowSuit": "リードスートに従う",
   "hintReasonTrumpCut": "切り札で勝負",
-  "hintReasonDiscardWeak": "最弱カードを捨てる"
+  "hintReasonDiscardWeak": "最弱カードを捨てる",
+  "errInvalidSuit": "無効なスートです",
+  "errFollowLeadSuit": "リードスートに従ってください"
 }

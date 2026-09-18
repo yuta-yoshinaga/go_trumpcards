@@ -201,7 +201,7 @@ func (e *Omi) PlayerCallTrump(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "無効なスートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "omi.errInvalidSuit", nil)
 	}
 
 	e.doCallTrump(humanIdx, suit)
@@ -454,7 +454,7 @@ func (e *Omi) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := e.currentTrick[0].Card.GetDesign()
 	if card.GetDesign() != leadSuit {
 		if e.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "omi.errFollowLeadSuit", nil)
 		}
 	}
 	return nil

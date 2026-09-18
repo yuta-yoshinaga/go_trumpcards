@@ -135,11 +135,11 @@ func TestKnockoutWhistWebPresenter_Output(t *testing.T) {
 
 	t.Run("coded error uses message code", func(t *testing.T) {
 		m, _ := setupKnockoutWhistWebMockWithPlayers()
-		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "shared.errCardIndexOutOfRange", nil)
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "knockoutwhist.errCardIndexOutOfRange", nil)
 		var resObj controller.KnockoutWhistWebOutput
 		require.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
 		assert.Empty(t, resObj.Message)
-		assert.Equal(t, "shared.errCardIndexOutOfRange", resObj.MessageCode)
+		assert.Equal(t, "knockoutwhist.errCardIndexOutOfRange", resObj.MessageCode)
 	})
 
 	t.Run("game end human wins", func(t *testing.T) {
