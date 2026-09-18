@@ -85,7 +85,11 @@ func (p *MarjapussiCuiPresenter) Output(g interfaces.MarjapussiGame, lastErr err
 		marriageStr := i18n.T("marjapussi.marriageNone")
 		for _, log := range g.GetActionLog() {
 			if log.ActionType == "marriage" {
-				marriageStr = log.Detail
+				if log.DetailCode != "" {
+					marriageStr = i18n.Tf(log.DetailCode, i18nPairs(log.DetailParams)...)
+				} else {
+					marriageStr = log.Detail
+				}
 			}
 		}
 		b.WriteString(i18n.Tf("marjapussi.headerMarriage",

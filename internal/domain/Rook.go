@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // RookPlayerCnt ルークのプレイヤー数
@@ -296,7 +297,7 @@ func (g *Rook) applyBid(idx, bid int) {
 	g.players[idx].SetBid(bid)
 	g.highestBid = bid
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", playerName(g.players, idx), bid), nil)
+	g.appendLogCode(idx, "bid", "rook.log.bid", map[string]string{"name": playerName(g.players, idx), "points": strconv.Itoa(bid)}, nil)
 	g.advanceBid()
 }
 
@@ -304,7 +305,7 @@ func (g *Rook) applyBid(idx, bid int) {
 func (g *Rook) applyPass(idx int) {
 	g.passed[idx] = true
 	g.players[idx].SetPassed(true)
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
+	g.appendLogCode(idx, "pass", "rook.log.pass", map[string]string{"name": playerName(g.players, idx)}, nil)
 	g.advanceBid()
 }
 
@@ -333,7 +334,7 @@ func (g *Rook) advanceBid() {
 
 // redeal 全員パスした場合、同じラウンドを配り直す
 func (g *Rook) redeal() {
-	g.appendLog(-1, "redeal", "All players passed. Redealing.", nil)
+	g.appendLogCode(-1, "redeal", "rook.log.redeal", nil, nil)
 	g.passed = [RookPlayerCnt]bool{}
 	g.highestBid = 0
 	g.highestBidder = -1
@@ -354,8 +355,7 @@ func (g *Rook) finalizeBid() {
 		g.players[g.declarerIdx].AddCard(c)
 	}
 	g.nest = nil
-	g.appendLog(g.declarerIdx, "win_bid",
-		fmt.Sprintf("%s wins the auction for %d", playerName(g.players, g.declarerIdx), g.contractBid), nil)
+	g.appendLogCode(g.declarerIdx, "win_bid", "rook.log.winBid", map[string]string{"name": playerName(g.players, g.declarerIdx), "bid": strconv.Itoa(g.contractBid)}, nil)
 	g.sortAllHands()
 	g.phase = RookPhaseNestExchange
 	g.currentPlayerIdx = g.declarerIdx
@@ -417,8 +417,7 @@ func (g *Rook) doExchange(discardIndices []int, trumpColor int) error {
 		g.nestPoints += rookCardPoints(c)
 	}
 	g.trumpColor = trumpColor
-	g.appendLog(g.declarerIdx, "exchange",
-		fmt.Sprintf("%s discards %d cards, trump=%s", playerName(g.players, g.declarerIdx), len(discarded), rookColorName(trumpColor)), discarded)
+	g.appendLogCode(g.declarerIdx, "exchange", "rook.log.exchange", map[string]string{"name": playerName(g.players, g.declarerIdx), "count": strconv.Itoa(len(discarded)), "trump": rookColorName(trumpColor)}, discarded)
 	g.sortAllHands()
 	g.startPlayPhase()
 	return nil
@@ -481,8 +480,7 @@ func (g *Rook) CpuPlay() {
 // playCard カードをプレイする共通処理
 func (g *Rook) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), rookCardLabel(card)), []*Card{card})
+	g.appendLogCode(playerIdx, "play", "rook.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": rookCardLabel(card)}, []*Card{card})
 	if len(g.currentTrick) == RookPlayerCnt {
 		g.phase = RookPhaseTrickEnd
 	} else {
@@ -507,14 +505,12 @@ func (g *Rook) ResolveTrick() {
 	g.players[winnerIdx].AddPoints(trickPts)
 	if g.trickNumber >= RookTrickCnt {
 		g.players[winnerIdx].AddPoints(g.nestPoints)
-		g.appendLog(winnerIdx, "trick_win",
-			fmt.Sprintf("%s wins the last trick %d (+%d nest)", playerName(g.players, winnerIdx), g.trickNumber, g.nestPoints), cards)
+		g.appendLogCode(winnerIdx, "trick_win", "rook.log.lastTrick", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "nest": strconv.Itoa(g.nestPoints)}, cards)
 		g.leadPlayerIdx = winnerIdx
 		g.phase = RookPhaseRoundEnd
 		return
 	}
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, trickPts), cards)
+	g.appendLogCode(winnerIdx, "trick_win", "rook.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(trickPts)}, cards)
 	g.leadPlayerIdx = winnerIdx
 	g.phase = RookPhaseTrickEnd
 }
@@ -543,19 +539,16 @@ func (g *Rook) ScoreRound() {
 	if declPoints >= g.contractBid {
 		g.roundResult = &RookRoundResult{DeclarerTeam: declTeam, TeamPoints: declPoints, ContractBid: g.contractBid, Made: true, ScoreDelta: declPoints}
 		g.teamScores[declTeam] += declPoints
-		g.appendLog(-1, "contract_made",
-			fmt.Sprintf("Team %d makes the bid (%d/%d). +%d", declTeam, declPoints, g.contractBid, declPoints), nil)
+		g.appendLogCode(-1, "contract_made", "rook.log.contractMade", map[string]string{"team": strconv.Itoa(declTeam), "points": strconv.Itoa(declPoints), "bid": strconv.Itoa(g.contractBid)}, nil)
 	} else {
 		g.roundResult = &RookRoundResult{DeclarerTeam: declTeam, TeamPoints: declPoints, ContractBid: g.contractBid, Made: false, ScoreDelta: -g.contractBid}
 		g.teamScores[declTeam] -= g.contractBid
-		g.appendLog(-1, "contract_failed",
-			fmt.Sprintf("Team %d is set (%d/%d). -%d", declTeam, declPoints, g.contractBid, g.contractBid), nil)
+		g.appendLogCode(-1, "contract_failed", "rook.log.contractFailed", map[string]string{"team": strconv.Itoa(declTeam), "points": strconv.Itoa(declPoints), "bid": strconv.Itoa(g.contractBid)}, nil)
 	}
 	g.teamScores[defTeam] += defPoints
 
 	for ti := range RookTeamCnt {
-		g.appendLog(-1, "team_score",
-			fmt.Sprintf("Team %d: %d points", ti, g.teamScores[ti]), nil)
+		g.appendLogCode(-1, "team_score", "rook.log.teamScore", map[string]string{"team": strconv.Itoa(ti), "points": strconv.Itoa(g.teamScores[ti])}, nil)
 	}
 	g.checkGameEnd(declTeam)
 }
@@ -583,7 +576,7 @@ func (g *Rook) endGame(team int) {
 	g.gameEndFlag = true
 	g.phase = RookPhaseGameEnd
 	g.winnerTeam = team
-	g.appendLog(-1, "game_end", fmt.Sprintf("Team %d wins the game!", team), nil)
+	g.appendLogCode(-1, "game_end", "rook.log.gameEnd", map[string]string{"team": strconv.Itoa(team)}, nil)
 }
 
 // --- Card ranking / points ---

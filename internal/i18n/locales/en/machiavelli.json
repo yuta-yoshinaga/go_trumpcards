@@ -31,5 +31,10 @@
   "errInvalidMeld": "The play contains an invalid meld.",
   "errTableCardsMismatch": "The table's card composition does not match.",
   "errEmptyMeld": "An empty meld cannot be specified.",
-  "errInvalidCard": "An invalid card was specified."
+  "errInvalidCard": "An invalid card was specified.",
+  "log.draw": "{{name}} draws from stock",
+  "log.play": "{{name}} plays {{count}} card(s) to the table",
+  "log.roundWin": "{{name}} goes out (round {{round}})",
+  "log.roundDraw": "Round ends (stock exhausted)",
+  "log.gameEnd": "{{name}} wins the game with {{points}} points!"
 }

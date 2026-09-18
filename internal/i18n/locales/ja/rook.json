@@ -61,5 +61,17 @@
   "errDiscardFiveCards": "5枚捨ててください",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errDuplicateCardIndex": "同じカードは選べません",
-  "errFollowLeadSuit": "リードスートに従ってください"
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.bid": "{{name}}が{{points}}点をビッド",
+  "log.pass": "{{name}}がパス",
+  "log.redeal": "全員がパスしました。再配りします。",
+  "log.winBid": "{{name}}が{{bid}}点で落札",
+  "log.exchange": "{{name}}が{{count}}枚を捨て、切り札色{{trump}}を宣言",
+  "log.play": "{{name}}が{{card}}を出す",
+  "log.lastTrick": "{{name}}が最後の{{trick}}トリックに勝利（ネスト+{{nest}}）",
+  "log.trickWin": "{{name}}が第{{trick}}トリックに勝利（+{{points}}）",
+  "log.contractMade": "チーム{{team}}が契約達成（{{points}}/{{bid}}）。+{{points}}",
+  "log.contractFailed": "チーム{{team}}がセット（{{points}}/{{bid}}）。-{{bid}}",
+  "log.teamScore": "チーム{{team}}: {{points}}点",
+  "log.gameEnd": "チーム{{team}}がゲームに勝利！"
 }

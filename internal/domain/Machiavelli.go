@@ -34,6 +34,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // MachiavelliHandSize 各プレイヤーの初期手札枚数
@@ -227,7 +228,7 @@ func (g *Machiavelli) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLogCode(g.currentPlayerIdx, "draw", "machiavelli.log.draw", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 	g.advanceTurn()
 	return nil
 }
@@ -334,7 +335,7 @@ func (g *Machiavelli) applyPlay(newTable [][]*Card, handIndices []int) error {
 	}
 	g.table = newTable
 
-	g.appendLog(g.currentPlayerIdx, "play", fmt.Sprintf("%s plays %d card(s) to the table", playerName(g.players, g.currentPlayerIdx), len(handIndices)), playedCards)
+	g.appendLogCode(g.currentPlayerIdx, "play", "machiavelli.log.play", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "count": strconv.Itoa(len(handIndices))}, playedCards)
 
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -542,9 +543,9 @@ func (g *Machiavelli) finishRound(winnerIdx int) {
 	}
 
 	if winnerIdx >= 0 {
-		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out (round %d)", playerName(g.players, winnerIdx), g.roundNumber), nil)
+		g.appendLogCode(winnerIdx, "round_win", "machiavelli.log.roundWin", map[string]string{"name": playerName(g.players, winnerIdx), "round": strconv.Itoa(g.roundNumber)}, nil)
 	} else {
-		g.appendLog(-1, "draw", "Round ends (stock exhausted)", nil)
+		g.appendLogCode(-1, "draw", "machiavelli.log.roundDraw", nil, nil)
 	}
 
 	for i := range g.players {
@@ -576,7 +577,7 @@ func (g *Machiavelli) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", playerName(g.players, g.winnerIdx), minScore), nil)
+	g.appendLogCode(-1, "game_end", "machiavelli.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx), "points": strconv.Itoa(minScore)}, nil)
 }
 
 // --- Getters / Setters ---

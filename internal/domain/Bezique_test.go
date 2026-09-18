@@ -78,6 +78,20 @@ func TestBezique_ResetDealsAndTurnsTrump(t *testing.T) {
 	assert.Equal(t, 47, b.GetStockRemaining())
 }
 
+func TestBeziqueActionLogUsesDetailCode(t *testing.T) {
+	b := newTestBezique(true)
+	b.Reset()
+	for _, entry := range b.GetActionLog() {
+		if entry.ActionType == "trump" {
+			assert.Equal(t, "bezique.log.trump", entry.DetailCode)
+			assert.Equal(t, map[string]string{"card": entry.DetailParams["card"]}, entry.DetailParams)
+			assert.Empty(t, entry.Detail)
+			return
+		}
+	}
+	t.Fatal("trump log entry not found")
+}
+
 func TestBezique_PlayMustFollowOnlyInEndgame(t *testing.T) {
 	b := newTestBezique(true)
 	b.SetPhase(domain.BeziquePhasePlay)

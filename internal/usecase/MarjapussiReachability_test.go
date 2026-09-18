@@ -3,7 +3,6 @@
 package usecase_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -134,7 +133,7 @@ func TestMarjapussiReachability_Marriage(t *testing.T) {
 	expectedSuitName := suitNames[foundSuit]
 	hasMarriageLog := false
 	for _, log := range foundGame.GetActionLog() {
-		if log.PlayerIdx == 0 && log.ActionType == "marriage" && strings.Contains(log.Detail, expectedSuitName) {
+		if log.PlayerIdx == 0 && log.ActionType == "marriage" && log.DetailCode == "marjapussi.log.marriage" && log.DetailParams["suit"] == expectedSuitName {
 			hasMarriageLog = true
 			break
 		}
@@ -202,11 +201,11 @@ func TestMarjapussiReachability_CpuOverwritesTrumpByMarriage(t *testing.T) {
 	humanMarriageFound := false
 	cpuMarriageFound := false
 	for _, log := range g.GetActionLog() {
-		if log.ActionType == "marriage" {
-			if log.PlayerIdx == 0 && strings.Contains(log.Detail, "Spades") {
+		if log.ActionType == "marriage" && log.DetailCode == "marjapussi.log.marriage" {
+			if log.PlayerIdx == 0 && log.DetailParams["suit"] == "Spades" {
 				humanMarriageFound = true
 			}
-			if log.PlayerIdx == 1 && strings.Contains(log.Detail, "Hearts") {
+			if log.PlayerIdx == 1 && log.DetailParams["suit"] == "Hearts" {
 				cpuMarriageFound = true
 			}
 		}

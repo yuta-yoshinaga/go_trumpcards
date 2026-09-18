@@ -49,5 +49,11 @@
   "errDuplicateCardIndex": "The card index is duplicated.",
   "errOnlyPointCardsExposable": "Only point cards (♠Q, ♦J, ♥A, ♣10) can be exposed.",
   "errHeartsNotBroken": "Hearts have not been broken yet.",
-  "errFollowLeadSuit": "You must follow the lead suit."
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "log.expose": "round {{round}}: {{summary}}",
+  "log.trickWin": "{{name}} wins trick {{trick}} (raw {{raw}})",
+  "log.allHearts": "{{name}} collected all hearts!",
+  "log.roundScore": "{{name}}: round={{round}}, total={{total}}",
+  "log.gameEnd": "{{name}} wins the game!",
+  "log.play": "{{name}} plays {{card}}"
 }

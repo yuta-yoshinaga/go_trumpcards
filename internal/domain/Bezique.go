@@ -22,7 +22,7 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
+	"strconv"
 )
 
 // BeziqueHandSize 各プレイヤーの手札最大枚数 (山札がある間は補充される)
@@ -245,7 +245,7 @@ func (b *Bezique) startDeal() {
 	b.trumpCard = b.trumpCards.DrawCard()
 	if b.trumpCard != nil {
 		b.trumpSuit = b.trumpCard.GetDesign()
-		b.appendLog(-1, "trump", fmt.Sprintf("Trump: %s", cardStr(b.trumpCard)), []*Card{b.trumpCard})
+		b.appendLogCode(-1, "trump", "bezique.log.trump", map[string]string{"card": cardStr(b.trumpCard)}, []*Card{b.trumpCard})
 	}
 	b.sortAllHands()
 
@@ -330,7 +330,7 @@ func (b *Bezique) PlayerSkipMeld() error {
 	if !b.players[b.currentPlayerIdx].GetIsHuman() {
 		return ErrNotHumanTurn
 	}
-	b.appendLog(b.currentPlayerIdx, "meld_skip", fmt.Sprintf("%s declares no meld", playerName(b.players, b.currentPlayerIdx)), nil)
+	b.appendLogCode(b.currentPlayerIdx, "meld_skip", "bezique.log.meldSkip", map[string]string{"name": playerName(b.players, b.currentPlayerIdx)}, nil)
 	b.afterMeld()
 	return nil
 }
@@ -346,7 +346,7 @@ func (b *Bezique) CpuMeld() {
 	}
 	melds := b.availableMelds(idx)
 	if len(melds) == 0 {
-		b.appendLog(idx, "meld_skip", fmt.Sprintf("%s declares no meld", playerName(b.players, idx)), nil)
+		b.appendLogCode(idx, "meld_skip", "bezique.log.meldSkip", map[string]string{"name": playerName(b.players, idx)}, nil)
 		b.afterMeld()
 		return
 	}
@@ -539,7 +539,7 @@ func (b *Bezique) GetHint() *BeziqueHint {
 // playCard カードをプレイする共通処理。2枚出そろったらトリックを解決する。
 func (b *Bezique) playCard(playerIdx int, card *Card) {
 	b.currentTrick = append(b.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	b.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(b.players, playerIdx), cardStr(card)), []*Card{card})
+	b.appendLogCode(playerIdx, "play", "bezique.log.play", map[string]string{"name": playerName(b.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 	if len(b.currentTrick) == BeziquePlayerCnt {
 		b.resolveTrick()
 		return
@@ -560,15 +560,13 @@ func (b *Bezique) resolveTrick() {
 	b.dealPoints[winnerIdx] += trickPoints
 	b.leadPlayerIdx = winnerIdx
 	b.currentPlayerIdx = winnerIdx
-	b.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(b.players, winnerIdx), b.trickNumber, trickPoints), trickCards)
+	b.appendLogCode(winnerIdx, "trick_win", "bezique.log.trickWin", map[string]string{"name": playerName(b.players, winnerIdx), "trick": strconv.Itoa(b.trickNumber), "points": strconv.Itoa(trickPoints)}, trickCards)
 
 	if b.IsEndgame() {
 		// 第2フェーズ: 役宣言・補充なし。
 		if b.allHandsEmpty() {
 			b.dealPoints[winnerIdx] += BeziqueLastTrickBonus
-			b.appendLog(winnerIdx, "last_trick",
-				fmt.Sprintf("%s takes the last trick (+%d)", playerName(b.players, winnerIdx), BeziqueLastTrickBonus), nil)
+			b.appendLogCode(winnerIdx, "last_trick", "bezique.log.lastTrick", map[string]string{"name": playerName(b.players, winnerIdx), "bonus": strconv.Itoa(BeziqueLastTrickBonus)}, nil)
 			b.scoreDeal()
 			return
 		}
@@ -621,9 +619,7 @@ func (b *Bezique) scoreDeal() {
 		b.players[i].SetRoundScore(b.dealPoints[i])
 		b.players[i].CommitRoundScore()
 	}
-	b.appendLog(-1, "deal_score",
-		fmt.Sprintf("Deal %d: %d-%d (match %d-%d)", b.roundNumber,
-			b.dealPoints[0], b.dealPoints[1], b.matchScore[0], b.matchScore[1]), nil)
+	b.appendLogCode(-1, "deal_score", "bezique.log.dealScore", map[string]string{"deal": strconv.Itoa(b.roundNumber), "dealScore0": strconv.Itoa(b.dealPoints[0]), "dealScore1": strconv.Itoa(b.dealPoints[1]), "matchScore0": strconv.Itoa(b.matchScore[0]), "matchScore1": strconv.Itoa(b.matchScore[1])}, nil)
 
 	if b.matchScore[0] >= b.config.TargetScore || b.matchScore[1] >= b.config.TargetScore {
 		b.finishGame()
@@ -644,7 +640,7 @@ func (b *Bezique) finishGame() {
 	default:
 		b.winnerIdx = b.leadPlayerIdx
 	}
-	b.appendLog(-1, "game_end", fmt.Sprintf("Game end: %d-%d", b.matchScore[0], b.matchScore[1]), nil)
+	b.appendLogCode(-1, "game_end", "bezique.log.gameEnd", map[string]string{"score0": strconv.Itoa(b.matchScore[0]), "score1": strconv.Itoa(b.matchScore[1])}, nil)
 }
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
@@ -802,8 +798,7 @@ func (b *Bezique) applyMeld(playerIdx int, m BeziqueMeld) {
 	b.meldsDeclared[playerIdx] |= 1 << bit
 	b.dealPoints[playerIdx] += m.Points
 	b.dealMeldPoints[playerIdx] += m.Points
-	b.appendLog(playerIdx, "meld",
-		fmt.Sprintf("%s declares %s (+%d)", playerName(b.players, playerIdx), beziqueMeldName(m), m.Points), nil)
+	b.appendLogCode(playerIdx, "meld", "bezique.log.meld", map[string]string{"name": playerName(b.players, playerIdx), "meld": beziqueMeldName(m), "points": strconv.Itoa(m.Points)}, nil)
 }
 
 // beziqueMeldBit メルドの宣言済みビット位置を返す。

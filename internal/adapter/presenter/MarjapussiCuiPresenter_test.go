@@ -105,10 +105,11 @@ func TestMarjapussiCuiPresenter_Output(t *testing.T) {
 		m, _ := setupMarjapussiCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
 		m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{ActionType: "marriage", Detail: "Player declares a Spades marriage (+40, trump=Spades)"},
+			{ActionType: "marriage", DetailCode: "marjapussi.log.marriage", DetailParams: map[string]string{"name": "Player", "suit": "Spades", "points": "40"}},
 		})
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "直近のマリッジ: Player declares a Spades marriage (+40, trump=Spades)")
+		assert.Contains(t, result, "直近のマリッジ: PlayerがSpadesのマリッジを宣言（+40、切り札=Spades）")
+		assert.NotContains(t, result, "marjapussi.log.marriage")
 	})
 
 	t.Run("trick end prompt", func(t *testing.T) {
