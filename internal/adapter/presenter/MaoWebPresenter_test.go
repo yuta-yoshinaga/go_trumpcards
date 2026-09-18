@@ -138,6 +138,14 @@ func TestMaoWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "test error", resObj.Message)
 	})
 
+	t.Run("coded error returns message code without message", func(t *testing.T) {
+		m, _ := setupMaoWebMockWithPlayers()
+		var resObj controller.MaoWebOutput
+		_ = json.Unmarshal([]byte(p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "mao.errCardNotPlayable", nil))), &resObj)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "mao.errCardNotPlayable", resObj.MessageCode)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupMaoWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

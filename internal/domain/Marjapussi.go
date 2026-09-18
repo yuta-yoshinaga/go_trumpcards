@@ -247,7 +247,7 @@ func (g *Marjapussi) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "marjapussi.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -437,14 +437,14 @@ func (g *Marjapussi) validatePlay(playerIdx int, card *Card) error {
 	hasLeadSuit := g.playerHasSuit(playerIdx, leadSuit)
 	if hasLeadSuit {
 		if card.GetDesign() != leadSuit {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "marjapussi.errFollowLeadSuit", nil)
 		}
 		return nil
 	}
 	// リードスートを持っていない場合
 	if g.trumpSuit != 0 && g.playerHasSuit(playerIdx, g.trumpSuit) {
 		if card.GetDesign() != g.trumpSuit {
-			return NewDomainError(ErrInvalidPlay, "切り札を出してください")
+			return NewDomainErrorCode(ErrInvalidPlay, "marjapussi.errMustPlayTrump", nil)
 		}
 		return nil
 	}

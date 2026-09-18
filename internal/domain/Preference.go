@@ -238,11 +238,11 @@ func (g *Preference) CpuBid() {
 // applyBid 入札を記録し、次の入札者へ進める。全員入札したら契約を確定する。
 func (g *Preference) applyBid(idx int, bid PreferenceBid) error {
 	if bid < PreferenceBidPass || bid > PreferenceBidEight {
-		return NewDomainError(ErrInvalidPlay, "入札値が不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "preference.errInvalidBid", nil)
 	}
 	high, _ := g.highestBid()
 	if bid != PreferenceBidPass && bid <= high {
-		return NewDomainError(ErrInvalidPlay, "現在の入札を上回る必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "preference.errBidMustExceed", nil)
 	}
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
@@ -336,7 +336,7 @@ func (g *Preference) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "preference.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
