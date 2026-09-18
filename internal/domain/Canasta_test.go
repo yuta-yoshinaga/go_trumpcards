@@ -14,6 +14,17 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
+func findActionLogEntry(t *testing.T, log []*domain.ActionLogEntry, detailCode string) *domain.ActionLogEntry {
+	t.Helper()
+	for i := len(log) - 1; i >= 0; i-- {
+		if log[i].DetailCode == detailCode {
+			return log[i]
+		}
+	}
+	t.Fatalf("action log entry %q not found", detailCode)
+	return nil
+}
+
 func newTestCanasta() *domain.Canasta {
 	players := []*domain.CanastaPlayer{
 		domain.NewCanastaPlayer(true),
@@ -225,6 +236,9 @@ func TestCanasta_PlayerDrawFromStock(t *testing.T) {
 
 	err := g.PlayerDrawFromStock()
 	require.NoError(t, err)
+	entry := findActionLogEntry(t, g.GetActionLog(), "canasta.log.drawStock")
+	assert.Contains(t, entry.DetailParams, "name")
+	assert.Empty(t, entry.Detail)
 
 	// Phase should advance to Meld
 	assert.Equal(t, domain.CanastaPhaseMeld, g.GetPhase())

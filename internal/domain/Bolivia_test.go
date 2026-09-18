@@ -352,9 +352,20 @@ func boliviaSeven(design, from int) []*Card {
 // 誰も見ていない ── ドロー・メルド・ディスカードの入口はどれも 0% だった。
 func TestBolivia_HumanTurnRunsThroughEveryPhase(t *testing.T) {
 	g := boliviaHumanTurn(t)
+	g.drawPile = []*Card{bolCard(CardDesignSpade, 4)}
 	before := g.players[0].GetCardsSize()
 
 	assert.NoError(t, g.PlayerDrawFromStock())
+	var entry *ActionLogEntry
+	for i := len(g.GetActionLog()) - 1; i >= 0; i-- {
+		if g.GetActionLog()[i].DetailCode == "bolivia.log.drawStock" {
+			entry = g.GetActionLog()[i]
+			break
+		}
+	}
+	require.NotNil(t, entry, "action log entry %q not found", "bolivia.log.drawStock")
+	assert.Contains(t, entry.DetailParams, "name")
+	assert.Empty(t, entry.Detail)
 	assert.Equal(t, before+1, g.players[0].GetCardsSize())
 	assert.Equal(t, BoliviaPhaseMeld, g.GetPhase())
 

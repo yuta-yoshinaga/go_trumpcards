@@ -69,5 +69,17 @@
   "errSequenceMeldMustUseSameSuit": "シーケンスメルドは同じスートで構成する必要があります",
   "errSequenceMeldCannotDuplicateCard": "シーケンスメルドに同じカードは含められません",
   "errSequenceMeldRanksMustBeConsecutive": "シーケンスメルドは連番でなければなりません",
-  "errCompletedMeldsRequiredToGoOut": "上がるにはチームで{{required}}個以上の完成メルドが必要です"
+  "errCompletedMeldsRequiredToGoOut": "上がるにはチームで{{required}}個以上の完成メルドが必要です",
+  "log.redThree": "{{name}} が赤3を出しました: {{card}}",
+  "log.drawStock": "{{name}} が山札から引きました",
+  "log.drawDiscard": "{{name}} が捨て札の山を取りました（{{cards}}枚）",
+  "log.meld": "{{name}} が{{type}}のメルドを{{cards}}枚出しました",
+  "log.meldAdd": "{{name}} が{{type}}メルドに{{cards}}枚追加しました",
+  "log.canasta": "{{name}} が{{type}}カナスタを完成させました！",
+  "log.discard": "{{name}} が{{card}}を捨てました",
+  "log.goOut": "{{name}} が上がりました！（ボーナス: {{bonus}}）",
+  "log.score": "{{name}} がチーム{{team}}に{{score}}点を貢献しました",
+  "log.roundEnd": "ラウンド終了（山札が空です）",
+  "log.gameEnd": "チーム{{team}}がゲームに勝ちました！",
+  "log.samba": "{{name}} がサンバを完成させました！"
 }

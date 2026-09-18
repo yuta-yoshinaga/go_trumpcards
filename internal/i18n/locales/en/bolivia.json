@@ -74,5 +74,17 @@
   "errSequenceMeldCannotDuplicateCard": "A sequence meld cannot contain the same card twice.",
   "errSequenceMeldRanksMustBeConsecutive": "The ranks in a sequence meld must be consecutive.",
   "errCompletedMeldsRequiredToGoOut": "You need at least {{required}} completed melds to go out.",
-  "errEscaleraRequiredToGoOut": "You need at least one seven-card natural same-suit sequence (escalera) to go out."
+  "errEscaleraRequiredToGoOut": "You need at least one seven-card natural same-suit sequence (escalera) to go out.",
+  "log.redThree": "{{name}} lays down red 3: {{card}}",
+  "log.drawStock": "{{name}} draws from stock",
+  "log.drawDiscard": "{{name}} picks up the discard pile ({{cards}} cards)",
+  "log.meld": "{{name}} melds a {{type}} of {{cards}} cards",
+  "log.meldAdd": "{{name}} adds {{cards}} cards to a {{type}} meld",
+  "log.canasta": "{{name}} completes a {{type}} canasta!",
+  "log.discard": "{{name}} discards {{card}}",
+  "log.goOut": "{{name}} goes out! (bonus: {{bonus}})",
+  "log.score": "{{name}} contributes {{score}} points to team {{team}}",
+  "log.roundEnd": "Round ends (stock empty)",
+  "log.gameEnd": "Team {{team}} wins the game!",
+  "log.bolivia": "{{name}} completes a bolivia!"
 }
