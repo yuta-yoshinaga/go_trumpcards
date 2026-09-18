@@ -31,5 +31,9 @@
   "helpExampleSee": "  s                    look at your hand and become seen",
   "helpHint": "  h                    show a hint",
   "costNoticeBlind": "Blind: your bet costs the stake ({{cost}} chips). Seeing your hand doubles future bets.",
-  "costNoticeSeen": "Seen: your bets cost double the stake — a call now costs {{cost}} chips."
+  "costNoticeSeen": "Seen: your bets cost double the stake — a call now costs {{cost}} chips.",
+  "errAlreadySeen": "You have already seen your hand.",
+  "errRaiseMustExceedStake": "The raise must be greater than the current stake.",
+  "errShowUnavailable": "Show is available only with two players remaining and your hand seen.",
+  "errInsufficientChips": "You do not have enough chips."
 }

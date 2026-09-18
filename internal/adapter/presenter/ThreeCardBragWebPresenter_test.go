@@ -155,6 +155,16 @@ func TestThreeCardBragWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error returns message code", func(t *testing.T) {
+		m, _ := tcbSetupWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "threecardbrag.errShowUnavailable", nil)
+		result := p.Output(m, err)
+		var resObj controller.ThreeCardBragWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "threecardbrag.errShowUnavailable", resObj.MessageCode)
+	})
+
 	t.Run("game end human win", func(t *testing.T) {
 		m, _ := tcbSetupWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
