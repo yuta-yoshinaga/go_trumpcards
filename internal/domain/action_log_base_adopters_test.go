@@ -145,7 +145,7 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 		}},
 		{"Koenigrufen", func() (any, any) {
 			g := NewDefaultKoenigrufen()
-			g.appendLog(1, "act", "detail", nil)
+			g.appendLog(1, "act", "koenigrufen.log.test", nil, nil)
 			return g, NewDefaultKoenigrufen()
 		}},
 		{"Scarto", func() (any, any) {

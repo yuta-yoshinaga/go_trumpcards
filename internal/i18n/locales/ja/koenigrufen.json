@@ -58,5 +58,17 @@
   "errDuplicateCardIndex": "カードインデックスが重複しています",
   "errDiscardKing": "キングは捨てられません",
   "errDiscardTrull": "トゥルル (Pagat/XXI/Sküs) は捨てられません",
-  "errDiscardTrump": "切り札は（やむを得ない場合を除き）捨てられません。"
+  "errDiscardTrump": "切り札は（やむを得ない場合を除き）捨てられません。",
+  "log.bid": "{{name}} が {{bid}} に入札しました",
+  "log.pass": "{{name}} がパスしました",
+  "log.forced": "全員パスしたため、{{name}} がルーファーを強制的に引き受けます",
+  "log.winBid": "{{name}} が {{contract}} の契約を取りました",
+  "log.solo": "{{name}} は4枚すべてのキングを持っているため単独でプレイします",
+  "log.callKing": "{{name}} がスート {{suit}} のキングを呼びました",
+  "log.discard": "{{name}} が {{cards}} 枚を場札に捨てました",
+  "log.play": "{{name}} が {{card}} を出しました",
+  "log.trickWin": "{{name}} が {{trick}} トリック目を取りました",
+  "log.roundScore": "ディール{{deal}}: デクレアラー({{declarer}}) {{contract}} teamPts={{teamPoints}}/{{totalPoints}} won={{won}} base={{base}}",
+  "log.gameEndDraw": "マッチは引き分けで終了しました",
+  "log.gameEndWin": "{{name}} がマッチに勝利しました！"
 }

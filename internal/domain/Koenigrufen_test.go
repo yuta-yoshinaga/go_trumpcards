@@ -196,6 +196,16 @@ func TestKoenigrufenBiddingRufer(t *testing.T) {
 	require.NoError(t, g.PlayerBid(domain.KoenigrufenBidRufer))
 	assert.Equal(t, domain.KoenigrufenBidRufer, g.GetHighestBid())
 	assert.Equal(t, 0, g.GetHighestBidder())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "koenigrufen.log.bid" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "rufer", entry.DetailParams["bid"])
+	assert.Empty(t, entry.Detail)
 }
 
 func TestKoenigrufenBidInvalid(t *testing.T) {

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // ShelemPhase シェレムのゲームフェーズ
@@ -204,7 +205,7 @@ func (s *Shelem) dealRound() {
 	s.bidPlayerIdx = (s.dealerIdx + 1) % ShelemPlayerCnt
 	s.currentPlayerIdx = s.bidPlayerIdx
 	s.leadPlayerIdx = s.bidPlayerIdx
-	s.appendLog(-1, "deal", fmt.Sprintf("ラウンド%d を開始", s.roundNumber), nil)
+	s.appendLog(-1, "deal", "shelem.log.roundStart", map[string]string{"round": strconv.Itoa(s.roundNumber)}, nil)
 }
 
 // sortAllHands 手札をスート・ランク順に並べ替える
@@ -325,9 +326,9 @@ func (s *Shelem) acceptBid(idx, bid int, shelem bool) {
 	s.players[idx].SetDeclaredShelem(shelem)
 	s.contract, s.declarerIdx, s.shelemBid = bid, idx, shelem
 	if shelem {
-		s.appendLog(idx, "shelem", "Shelem（全トリック独占）を宣言", nil)
+		s.appendLog(idx, "shelem", "shelem.log.shelem", nil, nil)
 	} else {
-		s.appendLog(idx, "bid", fmt.Sprintf("%d 点で入札", bid), nil)
+		s.appendLog(idx, "bid", "shelem.log.bid", map[string]string{"bid": strconv.Itoa(bid)}, nil)
 	}
 	s.advanceBidding()
 }
@@ -335,7 +336,7 @@ func (s *Shelem) acceptBid(idx, bid int, shelem bool) {
 // acceptPass 降りたことを記録して次の席へ回す
 func (s *Shelem) acceptPass(idx int) {
 	s.players[idx].SetPassed(true)
-	s.appendLog(idx, "pass", "競りを降りた", nil)
+	s.appendLog(idx, "pass", "shelem.log.pass", nil, nil)
 	s.advanceBidding()
 }
 
@@ -370,8 +371,7 @@ func (s *Shelem) closeBidding() {
 	}
 	s.widow = nil
 	s.sortAllHands()
-	s.appendLog(s.declarerIdx, "widow",
-		fmt.Sprintf("ウィドウ %d 枚を取り込んだ（契約 %d 点）", ShelemWidowSize, s.contract), nil)
+	s.appendLog(s.declarerIdx, "widow", "shelem.log.widow", map[string]string{"cards": strconv.Itoa(ShelemWidowSize), "contract": strconv.Itoa(s.contract)}, nil)
 
 	// CPU が落札したなら、その場で捨てて切り札も決める。
 	if s.declarerIdx != 0 {
@@ -478,7 +478,7 @@ func (s *Shelem) acceptTrump(suit int) {
 	s.leadPlayerIdx = s.declarerIdx
 	s.currentPlayerIdx = s.declarerIdx
 	s.sortAllHands()
-	s.appendLog(s.declarerIdx, "trump", fmt.Sprintf("切り札を %d に決めた", suit), nil)
+	s.appendLog(s.declarerIdx, "trump", "shelem.log.trump", map[string]string{"suit": strconv.Itoa(suit)}, nil)
 }
 
 // longestSuit いちばん枚数の多いスート
@@ -559,7 +559,7 @@ func (s *Shelem) play(playerIdx, cardIndex int) error {
 	}
 	p.RemoveCard(cardIndex)
 	s.currentTrick = append(s.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	s.appendLog(playerIdx, "play", cardStr(card), []*Card{card})
+	s.appendLog(playerIdx, "play", "shelem.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if len(s.currentTrick) < ShelemPlayerCnt {
 		s.currentPlayerIdx = (playerIdx + 1) % ShelemPlayerCnt
@@ -667,23 +667,19 @@ func (s *Shelem) finishRound() {
 		took := s.teamTricks(declTeam)
 		if took == ShelemTricksPerRound {
 			s.scores[declTeam] += ShelemValue
-			s.appendLog(-1, "score", fmt.Sprintf("Shelem 成功。チーム%d に +%d", declTeam, ShelemValue), nil)
+			s.appendLog(-1, "score", "shelem.log.shelemSuccess", map[string]string{"team": strconv.Itoa(declTeam), "points": strconv.Itoa(ShelemValue)}, nil)
 		} else {
 			s.scores[declTeam] -= ShelemValue
-			s.appendLog(-1, "score",
-				fmt.Sprintf("Shelem 失敗（%d/%d トリック）。チーム%d に -%d",
-					took, ShelemTricksPerRound, declTeam, ShelemValue), nil)
+			s.appendLog(-1, "score", "shelem.log.shelemFailure", map[string]string{"took": strconv.Itoa(took), "total": strconv.Itoa(ShelemTricksPerRound), "team": strconv.Itoa(declTeam), "points": strconv.Itoa(ShelemValue)}, nil)
 		}
 	} else {
 		got := s.roundPoints[declTeam]
 		if got >= s.contract {
 			s.scores[declTeam] += s.contract
-			s.appendLog(-1, "score",
-				fmt.Sprintf("契約 %d 点を %d 点で達成。チーム%d に +%d", s.contract, got, declTeam, s.contract), nil)
+			s.appendLog(-1, "score", "shelem.log.contractSuccess", map[string]string{"contract": strconv.Itoa(s.contract), "got": strconv.Itoa(got), "team": strconv.Itoa(declTeam), "points": strconv.Itoa(s.contract)}, nil)
 		} else {
 			s.scores[declTeam] -= s.contract
-			s.appendLog(-1, "score",
-				fmt.Sprintf("契約 %d 点に %d 点で未達。チーム%d に -%d", s.contract, got, declTeam, s.contract), nil)
+			s.appendLog(-1, "score", "shelem.log.contractFailure", map[string]string{"contract": strconv.Itoa(s.contract), "got": strconv.Itoa(got), "team": strconv.Itoa(declTeam), "points": strconv.Itoa(s.contract)}, nil)
 		}
 		// **相手チームは取ったカード点をそのまま得る。**
 		s.scores[other] += s.roundPoints[other]
@@ -737,7 +733,7 @@ func (s *Shelem) finishGame() {
 	default:
 		s.winnerTeam = -1
 	}
-	s.appendLog(-1, "result", fmt.Sprintf("最終得点 %d - %d", s.scores[0], s.scores[1]), nil)
+	s.appendLog(-1, "result", "shelem.log.result", map[string]string{"team0": strconv.Itoa(s.scores[0]), "team1": strconv.Itoa(s.scores[1])}, nil)
 }
 
 // chooseCpuCard CPU の手。味方が勝っていれば点を乗せ、そうでなければ取りに行く。
@@ -979,12 +975,12 @@ func (s *Shelem) GiveUp() {
 	s.phase = ShelemPhaseGameEnd
 	s.gameEndFlag = true
 	s.winnerTeam = 1
-	s.appendLog(0, "giveup", "ギブアップしました", nil)
+	s.appendLog(0, "giveup", "shelem.log.giveup", nil, nil)
 }
 
 // appendLog 棋譜エントリを追加
-func (s *Shelem) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.appendLogAt(s.trickNumber, playerIdx, actionType, detail, cards)
+func (s *Shelem) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(s.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // shelemJSON is the KV snapshot format for Shelem.

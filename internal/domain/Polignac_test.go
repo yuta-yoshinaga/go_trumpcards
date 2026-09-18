@@ -210,6 +210,15 @@ func TestPolignac_DeclareCapotStartsPlay(t *testing.T) {
 	assert.Equal(t, 0, p.GetCapotIdx())
 	assert.True(t, p.GetPlayer(0).GetDeclaredCapot())
 	assert.Equal(t, PolignacPhasePlay, p.GetPhase())
+	var entry *ActionLogEntry
+	for _, candidate := range p.GetActionLog() {
+		if candidate.DetailCode == "polignac.log.capotDeclare" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestPolignac_PassDeclarationStartsPlay(t *testing.T) {
