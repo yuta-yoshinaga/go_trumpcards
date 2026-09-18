@@ -55,5 +55,14 @@
   "lowballRankBest": "Best: 7-5-4-3-2 (not all one suit)",
   "lowballRankAceHigh": "The ace is always high, so it is the worst card for a low",
   "lowballRankStraightFlush": "Straights and flushes still count, and count against you",
-  "lowballRankGoal": "Aim for the lowest five avoiding a pair, a straight and a flush"
+  "lowballRankGoal": "Aim for the lowest five avoiding a pair, a straight and a flush",
+  "log.ante": "ante {{amount}} chips",
+  "log.exchange": "exchange {{cards}} card(s)",
+  "log.showdown": "showdown: {{hand}}",
+  "log.fold": "fold",
+  "log.check": "check",
+  "log.call": "call {{amount}}",
+  "log.bet": "bet {{amount}}",
+  "log.raise": "raise to {{amount}}",
+  "log.allIn": "all in {{amount}}"
 }

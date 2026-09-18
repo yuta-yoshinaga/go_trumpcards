@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // PolignacPhase ポリニャックのゲームフェーズ
@@ -154,7 +155,7 @@ func (p *Polignac) dealRound() {
 	p.leadPlayerIdx = (p.dealerIdx + 1) % PolignacPlayerCnt
 	p.currentPlayerIdx = p.leadPlayerIdx
 	p.sortAllHands()
-	p.appendLog(-1, "deal", fmt.Sprintf("ラウンド%d を開始", p.roundNumber), nil)
+	p.appendLog(-1, "deal", "polignac.log.roundStart", map[string]string{"round": strconv.Itoa(p.roundNumber)}, nil)
 }
 
 // sortAllHands 手札をスートごと・強さ順に並べる
@@ -179,7 +180,7 @@ func (p *Polignac) DeclareCapot() error {
 	}
 	p.capotIdx = 0
 	p.players[0].SetDeclaredCapot(true)
-	p.appendLog(0, "capot", "capot（全トリック獲得）を宣言", nil)
+	p.appendLog(0, "capot", "polignac.log.capotDeclare", nil, nil)
 	p.startPlay()
 	return nil
 }
@@ -190,7 +191,7 @@ func (p *Polignac) PassDeclaration() error {
 	if p.phase != PolignacPhaseDeclare {
 		return errors.New("not the declaration phase")
 	}
-	p.appendLog(0, "pass", "宣言なし", nil)
+	p.appendLog(0, "pass", "polignac.log.pass", nil, nil)
 	p.startPlay()
 	return nil
 }
@@ -235,7 +236,7 @@ func (p *Polignac) play(playerIdx, cardIndex int) error {
 	}
 	pl.RemoveCard(cardIndex)
 	p.currentTrick = append(p.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	p.appendLog(playerIdx, "play", cardStr(card), []*Card{card})
+	p.appendLog(playerIdx, "play", "polignac.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if len(p.currentTrick) < PolignacPlayerCnt {
 		p.currentPlayerIdx = (playerIdx + 1) % PolignacPlayerCnt
@@ -290,7 +291,7 @@ func (p *Polignac) resolveTrick() {
 	p.players[winner].AddTrick(cards)
 	if penalty > 0 {
 		p.players[winner].AddRoundPenalty(penalty)
-		p.appendLog(winner, "penalty", fmt.Sprintf("ジャックを取って +%d 失点", penalty), nil)
+		p.appendLog(winner, "penalty", "polignac.log.jackPenalty", map[string]string{"points": strconv.Itoa(penalty)}, nil)
 	}
 	if winner == p.capotIdx {
 		p.capotTricks++
@@ -326,7 +327,7 @@ func (p *Polignac) finishRound() {
 		for i, pl := range p.players {
 			if n := pl.GetRoundPenalty(); n > 0 {
 				pl.AddScore(n)
-				p.appendLog(i, "score", fmt.Sprintf("失点 %d", n), nil)
+				p.appendLog(i, "score", "polignac.log.score", map[string]string{"points": strconv.Itoa(n)}, nil)
 			}
 		}
 	}
@@ -350,16 +351,16 @@ func (p *Polignac) settleCapot() {
 				pl.AddScore(PolignacCapotStake)
 			}
 		}
-		p.appendLog(p.capotIdx, "capot", "capot 成功。他の全員に 5 失点", nil)
+		p.appendLog(p.capotIdx, "capot", "polignac.log.capotSuccess", nil, nil)
 		return
 	}
 	declarer.AddScore(PolignacCapotStake)
-	p.appendLog(p.capotIdx, "capot", "capot 失敗。宣言者に 5 失点", nil)
+	p.appendLog(p.capotIdx, "capot", "polignac.log.capotFailure", nil, nil)
 	// 失敗した場合、そのラウンドのジャックの失点も通常どおり科す。
 	for i, pl := range p.players {
 		if n := pl.GetRoundPenalty(); n > 0 {
 			pl.AddScore(n)
-			p.appendLog(i, "score", fmt.Sprintf("失点 %d", n), nil)
+			p.appendLog(i, "score", "polignac.log.score", map[string]string{"points": strconv.Itoa(n)}, nil)
 		}
 	}
 }
@@ -392,11 +393,11 @@ func (p *Polignac) finishGame() {
 	}
 	if tied {
 		p.winnerIdx = -1
-		p.appendLog(-1, "result", "同点で決着つかず", nil)
+		p.appendLog(-1, "result", "polignac.log.draw", nil, nil)
 		return
 	}
 	p.winnerIdx = bestIdx
-	p.appendLog(bestIdx, "result", fmt.Sprintf("勝者（失点 %d）", best), nil)
+	p.appendLog(bestIdx, "result", "polignac.log.winner", map[string]string{"points": strconv.Itoa(best)}, nil)
 }
 
 // trickWinner 現在のトリックの勝者。切り札が無いので、リードのスートの最強札。
@@ -702,12 +703,12 @@ func (p *Polignac) GiveUp() {
 	p.phase = PolignacPhaseGameEnd
 	p.gameEndFlag = true
 	p.winnerIdx = -1
-	p.appendLog(0, "giveup", "ギブアップしました", nil)
+	p.appendLog(0, "giveup", "polignac.log.giveup", nil, nil)
 }
 
 // appendLog 棋譜エントリを追加
-func (p *Polignac) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.appendLogAt(p.trickNumber, playerIdx, actionType, detail, cards)
+func (p *Polignac) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	p.appendLogCodeAt(p.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // polignacJSON is the KV snapshot format for Polignac.

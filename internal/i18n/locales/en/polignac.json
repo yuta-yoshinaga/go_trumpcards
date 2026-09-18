@@ -31,5 +31,16 @@
   "hintReasonBlockCapot": "take this trick to break the capot",
   "hintReasonWinCapot": "your own capot: you must win every trick, so take this one",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "log.roundStart": "round {{round}} started",
+  "log.capotDeclare": "declared capot (winning every trick)",
+  "log.pass": "no declaration",
+  "log.play": "{{card}}",
+  "log.jackPenalty": "took a jack and lost {{points}} points",
+  "log.score": "lost {{points}} points",
+  "log.capotSuccess": "capot succeeded. Everyone else loses 5 points",
+  "log.capotFailure": "capot failed. The declarer loses 5 points",
+  "log.draw": "the game is undecided after a tie",
+  "log.winner": "winner ({{points}} penalty points)",
+  "log.giveup": "gave up"
 }

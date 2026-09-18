@@ -58,5 +58,17 @@
   "errDuplicateCardIndex": "Card indices cannot be duplicated.",
   "errDiscardKing": "Kings cannot be discarded.",
   "errDiscardTrull": "The trull (Pagat/XXI/Sküs) cannot be discarded.",
-  "errDiscardTrump": "Trumps cannot be discarded unless you have no choice."
+  "errDiscardTrump": "Trumps cannot be discarded unless you have no choice.",
+  "log.bid": "{{name}} bids {{bid}}",
+  "log.pass": "{{name}} passes",
+  "log.forced": "all passed — {{name}} is forced to take Rufer",
+  "log.winBid": "{{name}} takes the contract {{contract}}",
+  "log.solo": "{{name}} holds all four kings and plays solo",
+  "log.callKing": "{{name}} calls the King of suit {{suit}}",
+  "log.discard": "{{name}} discards {{cards}} cards to the talon",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.roundScore": "deal {{deal}}: declarer({{declarer}}) {{contract}} teamPts={{teamPoints}}/{{totalPoints}} won={{won}} base={{base}}",
+  "log.gameEndDraw": "the match ends in a draw",
+  "log.gameEndWin": "{{name}} wins the match!"
 }
