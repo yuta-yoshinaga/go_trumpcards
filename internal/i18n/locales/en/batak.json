@@ -39,5 +39,12 @@
   "hintReasonTrumpCut": "cut with a spade",
   "hintReasonPassWeakHand": "weak hand",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "log.bidPass": "pass",
+  "log.bid": "{{name}} bids {{bid}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.roundScore": "{{name}}: bid={{bid}} tricks={{tricks}} round={{round}}",
+  "log.cumulativeScore": "{{name}}: total={{total}}",
+  "log.play": "{{name}} plays {{card}}",
+  "log.gameEnd": "{{name}} wins the game!"
 }

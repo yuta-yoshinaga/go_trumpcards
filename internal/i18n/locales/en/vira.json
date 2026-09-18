@@ -51,5 +51,13 @@
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpExampleBid": "  pass                 drop out of the bidding",
   "helpHint": "  h                    show a hint",
-  "errTargetRoundsNotMultiple": "The number of rounds must be a multiple of {{min}}: {{rounds}}."
+  "errTargetRoundsNotMultiple": "The number of rounds must be a multiple of {{min}}: {{rounds}}.",
+  "log.deal": "Round {{round}} started (pot {{pot}})",
+  "log.bid": "{{bid}}",
+  "log.allPass": "Everyone passes. The pot carries forward to the next round",
+  "log.declare": "Declare {{bid}} (trump {{trump}})",
+  "log.gameEnd": "Match ended (pot remaining {{pot}})",
+  "log.play": "",
+  "log.trickWin": "Won trick {{trick}}",
+  "log.settle": "{{bid}} {{outcome}} ({{tricks}} tricks, pot {{pot}})"
 }
