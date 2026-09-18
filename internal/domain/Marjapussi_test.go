@@ -201,7 +201,7 @@ func TestMarjapussi_FollowRules_MustFollowAndMustTrump(t *testing.T) {
 	heartAceIdx := 1
 	err := g.PlayerPlay(heartAceIdx)
 	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
-	assert.Contains(t, err.Error(), "リードスート")
+	assert.Equal(t, "marjapussi.errFollowLeadSuit", err.(*domain.DomainError).MessageCode())
 
 	// Legal to play Spade 7
 	spade7Idx := 0
@@ -217,7 +217,7 @@ func TestMarjapussi_FollowRules_MustFollowAndMustTrump(t *testing.T) {
 	cloverIdx := 1
 	err = g.PlayerPlay(cloverIdx)
 	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
-	assert.Contains(t, err.Error(), "切り札")
+	assert.Equal(t, "marjapussi.errMustPlayTrump", err.(*domain.DomainError).MessageCode())
 	// Playing trump Heart 8 is valid
 	trumpIdx := 0
 	gCopy2 := *g

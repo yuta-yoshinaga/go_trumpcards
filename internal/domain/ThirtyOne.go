@@ -208,7 +208,7 @@ func (g *ThirtyOne) PlayerDrawFromDiscard() error {
 		return err
 	}
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札がありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "thirtyone.errDiscardPileEmpty", nil)
 	}
 	g.drawFromDiscard(g.currentPlayerIdx)
 	return nil
@@ -227,7 +227,7 @@ func (g *ThirtyOne) PlayerDiscard(cardIndex int) error {
 	}
 	p := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= p.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "thirtyone.errCardIndexOutOfRange", nil)
 	}
 	g.discardAndResolve(g.currentPlayerIdx, cardIndex)
 	return nil
@@ -245,7 +245,7 @@ func (g *ThirtyOne) PlayerKnock() error {
 		return ErrNotHumanTurn
 	}
 	if g.knockerIdx >= 0 {
-		return NewDomainError(ErrInvalidPlay, "既にノックされています")
+		return NewDomainErrorCode(ErrInvalidPlay, "thirtyone.errAlreadyKnocked", nil)
 	}
 	g.knock(g.currentPlayerIdx)
 	return nil

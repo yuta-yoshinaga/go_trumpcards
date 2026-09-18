@@ -51,5 +51,8 @@
   "helpExampleBid": "  pass                      入札を降りる",
   "helpHint": "  h                         助言を表示",
   "progressMade": " — 達成",
-  "progressFailed": " — 失敗確定"
+  "progressFailed": " — 失敗確定",
+  "errInvalidBid": "入札値が不正です",
+  "errBidMustExceed": "現在の入札を上回る必要があります",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
 }

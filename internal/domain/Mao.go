@@ -299,12 +299,12 @@ func (g *Mao) PlayerPlay(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "mao.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 	if !g.isValidPlay(card) {
-		return NewDomainError(ErrInvalidPlay, "そのカードは出せません")
+		return NewDomainErrorCode(ErrInvalidPlay, "mao.errCardNotPlayable", nil)
 	}
 
 	// 選択カードを先に取り除く。宣言待ちペナルティは手札を引いて並べ替えるため、
@@ -395,7 +395,7 @@ func (g *Mao) PlayerChooseSuit(suit int) error {
 	}
 
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "スートは1〜4で指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "mao.errSuitOutOfRange", nil)
 	}
 
 	g.chosenSuit = suit
