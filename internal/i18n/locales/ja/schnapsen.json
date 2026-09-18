@@ -32,5 +32,8 @@
   "suitHeart": "ハート",
   "suitDiamond": "ダイヤ",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errMarriageLeadOnly": "マリアージュはリード時のみ宣言できます",
+  "errMarriageUnavailable": "そのカードでマリアージュは宣言できません"
 }

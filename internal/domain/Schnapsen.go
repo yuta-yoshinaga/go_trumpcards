@@ -188,7 +188,7 @@ func (s *Schnapsen) PlayerPlay(cardIndex int) error {
 
 	player := s.players[s.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "schnapsen.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -478,15 +478,15 @@ func (s *Schnapsen) startPlayPhase() {
 // declareMarriage マリアージュを宣言してボーナス加点し、指定の K/Q をリードする共通処理。
 func (s *Schnapsen) declareMarriage(playerIdx, cardIndex int) error {
 	if len(s.currentTrick) != 0 {
-		return NewDomainError(ErrInvalidPlay, "マリアージュはリード時のみ宣言できます")
+		return NewDomainErrorCode(ErrInvalidPlay, "schnapsen.errMarriageLeadOnly", nil)
 	}
 	player := s.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "schnapsen.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if !s.isMarriageStarter(player, card) {
-		return NewDomainError(ErrInvalidPlay, "そのカードでマリアージュは宣言できません")
+		return NewDomainErrorCode(ErrInvalidPlay, "schnapsen.errMarriageUnavailable", nil)
 	}
 
 	suit := card.GetDesign()

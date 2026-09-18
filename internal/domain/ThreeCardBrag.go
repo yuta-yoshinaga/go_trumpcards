@@ -274,7 +274,7 @@ func (g *ThreeCardBrag) PlayerSee() error {
 		return err
 	}
 	if g.players[g.currentPlayerIdx].GetSeen() {
-		return NewDomainError(ErrInvalidPlay, "すでに手札を見ています")
+		return NewDomainErrorCode(ErrInvalidPlay, "threecardbrag.errAlreadySeen", nil)
 	}
 	g.players[g.currentPlayerIdx].SetSeen(true)
 	g.appendLog(g.currentPlayerIdx, "see", fmt.Sprintf("%s sees their hand", playerName(g.players, g.currentPlayerIdx)), nil)
@@ -295,7 +295,7 @@ func (g *ThreeCardBrag) PlayerRaise(newStake int) error {
 		return err
 	}
 	if newStake <= g.stake {
-		return NewDomainError(ErrInvalidPlay, "レイズは現在の賭け単位より大きくする必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "threecardbrag.errRaiseMustExceedStake", nil)
 	}
 	return g.applyRaise(g.currentPlayerIdx, newStake)
 }
@@ -315,7 +315,7 @@ func (g *ThreeCardBrag) PlayerShow() error {
 		return err
 	}
 	if !g.canShow(g.currentPlayerIdx) {
-		return NewDomainError(ErrInvalidPlay, "Show は残り 2 人かつ Seen のときのみ要求できます")
+		return NewDomainErrorCode(ErrInvalidPlay, "threecardbrag.errShowUnavailable", nil)
 	}
 	g.applyShow(g.currentPlayerIdx)
 	return nil
@@ -359,7 +359,7 @@ func (g *ThreeCardBrag) applyRaise(idx, newStake int) error {
 	cost := g.callCost(idx)
 	p := g.players[idx]
 	if p.GetChips() < cost {
-		return NewDomainError(ErrInvalidPlay, "チップが不足しています")
+		return NewDomainErrorCode(ErrInvalidPlay, "threecardbrag.errInsufficientChips", nil)
 	}
 	p.SubtractChips(cost)
 	p.AddRoundBet(cost)
