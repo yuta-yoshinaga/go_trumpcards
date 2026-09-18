@@ -37,5 +37,14 @@
   "errInvalidMeld": "無効なメルドです",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errDuplicateCardIndex": "カードインデックスが重複しています",
-  "errMeldRequired": "捨て札から取ったカードはメルドに使う必要があります"
+  "errMeldRequired": "捨て札から取ったカードはメルドに使う必要があります",
+  "log.drawStock": "{{name}}が山札から引く",
+  "log.drawDiscard": "{{name}}が捨て札から{{card}}を引く",
+  "log.extend": "{{name}}が{{card}}でメルドを拡張する",
+  "log.meld": "{{name}}がメルドを並べる",
+  "log.discard": "{{name}}が{{card}}を捨てる",
+  "log.roundWin": "{{name}}が上がってラウンドに勝利！",
+  "log.draw": "ラウンドは引き分けで終了 (山札切れ)",
+  "log.matchDraw": "マッチ終了 (山札切れ)",
+  "log.matchWin": "{{name}}がマッチに勝利！"
 }

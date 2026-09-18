@@ -129,6 +129,15 @@ func TestOmaha_PlayerAction_Bet(t *testing.T) {
 
 	err := o.PlayerAction(OmahaActionBet, 20, 0)
 	assert.NoError(t, err)
+	var entry *ActionLogEntry
+	for _, candidate := range o.GetActionLog() {
+		if candidate.DetailCode == "omaha.log.bet" && candidate.DetailParams["amount"] == "20" {
+			entry = candidate
+		}
+	}
+	assert.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"amount": "20"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestOmaha_PlayerAction_GameEnded(t *testing.T) {

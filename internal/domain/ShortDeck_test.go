@@ -128,6 +128,15 @@ func TestShortDeck_PlayerAction_Bet(t *testing.T) {
 
 	err := sd.PlayerAction(domain.ShortDeckActionBet, 20, 0)
 	assert.NoError(t, err)
+	var entry *domain.ActionLogEntry
+	for _, candidate := range sd.GetActionLog() {
+		if candidate.DetailCode == "shortdeck.log.bet" && candidate.DetailParams["amount"] == "20" {
+			entry = candidate
+		}
+	}
+	assert.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"amount": "20"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestShortDeck_PlayerAction_GameEnded(t *testing.T) {

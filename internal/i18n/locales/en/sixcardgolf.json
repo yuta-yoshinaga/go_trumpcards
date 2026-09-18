@@ -41,5 +41,14 @@
   "errStockEmpty": "The stock is empty.",
   "errDiscardPileEmpty": "The discard pile is empty.",
   "errCannotFlip": "You cannot flip a card.",
-  "errCannotSkip": "You cannot skip."
+  "errCannotSkip": "You cannot skip.",
+  "log.flipInitial": "{{actor}}{{player}} flips position {{position}}",
+  "log.drawStock": "{{actor}}{{player}} draws from the stock",
+  "log.drawDiscard": "{{actor}}{{player}} draws from the discard pile",
+  "log.swap": "{{actor}}{{player}} swaps position {{position}}",
+  "log.discard": "{{actor}}{{player}} discards the drawn card",
+  "log.flip": "{{actor}}{{player}} flips position {{position}}",
+  "log.trigger": "Player {{player}} reveals all cards! Final turn begins",
+  "log.gameOver": "Game over! Player {{player}} wins",
+  "log.roundOver": "Round {{round}} ends"
 }
