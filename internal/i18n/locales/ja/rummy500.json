@@ -43,5 +43,15 @@
   "errInvalidMeld": "有効なメルドではありません",
   "errTargetPlayerInvalid": "対象プレイヤーが不正です",
   "errTargetMeldInvalid": "対象メルドが不正です",
-  "errLayoffCardCannotAdd": "{{card}}はそのメルドに追加できません"
+  "errLayoffCardCannotAdd": "{{card}}はそのメルドに追加できません",
+  "log.drawStock": "{{name}}は山札から引きました",
+  "log.drawDiscard": "{{name}}は捨て札から{{card}}を引きました（{{count}}枚追加）",
+  "log.drawDiscardSingle": "{{name}}は捨て札から{{card}}を引きました",
+  "log.meld": "{{name}}は{{cards}}をメルドしました",
+  "log.layoff": "{{name}}は{{card}}をレイオフしました",
+  "log.discard": "{{name}}は{{card}}を捨てました",
+  "log.goOut": "{{name}}が上がりました！",
+  "log.score": "{{name}}は{{score}}点（メルド{{melds}}点 - 手札{{hand}}点）",
+  "log.stockEmpty": "山札が空になり、ラウンドが終了します",
+  "log.gameEnd": "{{name}}がゲームに勝利しました！"
 }

@@ -386,11 +386,13 @@ func (n *Napoleon) ResolveTrick() {
 	n.players[winnerIdx].pictureCards += picCount
 
 	winnerName := playerName(n.players, winnerIdx)
-	s := fmt.Sprintf("%s wins trick %d", winnerName, n.round.trickNumber)
+	params := map[string]string{"name": winnerName, "trick": fmt.Sprintf("%d", n.round.trickNumber)}
+	detailCode := "napoleon.log.trickWin"
 	if picCount > 0 {
-		s += fmt.Sprintf(" (+%d picture cards)", picCount)
+		detailCode = "napoleon.log.trickWinWithPictures"
+		params["pictures"] = fmt.Sprintf("%d", picCount)
 	}
-	n.appendLog(winnerIdx, "trick_win", s, trickCards)
+	n.appendLog(winnerIdx, "trick_win", detailCode, params, trickCards)
 
 	n.round.leadPlayerIdx = winnerIdx
 
@@ -431,10 +433,10 @@ func (n *Napoleon) ScoreRound() {
 
 	if napoleonWon {
 		n.round.winnerTeam = NapoleonWinnerNapoleon
-		n.appendLog(-1, "round_result", fmt.Sprintf("Napoleon's team wins! (%d/%d picture cards)", napoleonTeamPictures, bid), nil)
+		n.appendLog(-1, "round_result", "napoleon.log.napoleonTeamWins", map[string]string{"pictures": fmt.Sprintf("%d", napoleonTeamPictures), "bid": fmt.Sprintf("%d", bid)}, nil)
 	} else {
 		n.round.winnerTeam = NapoleonWinnerAllied
-		n.appendLog(-1, "round_result", fmt.Sprintf("Allied forces win! (%d/%d picture cards)", napoleonTeamPictures, bid), nil)
+		n.appendLog(-1, "round_result", "napoleon.log.alliedForcesWin", map[string]string{"pictures": fmt.Sprintf("%d", napoleonTeamPictures), "bid": fmt.Sprintf("%d", bid)}, nil)
 	}
 
 	// スコア計算: ナポレオン軍勝利 → ナポレオン+bid, 副官+bid/2, 連合軍-bid
@@ -458,7 +460,7 @@ func (n *Napoleon) ScoreRound() {
 				p.roundScore = bid
 			}
 		}
-		n.appendLog(i, "round_score", fmt.Sprintf("%s: round=%d", playerName(n.players, i), p.roundScore), nil)
+		n.appendLog(i, "round_score", "napoleon.log.roundScore", map[string]string{"name": playerName(n.players, i), "score": fmt.Sprintf("%d", p.roundScore)}, nil)
 	}
 
 	// 累積スコアに加算
@@ -468,8 +470,7 @@ func (n *Napoleon) ScoreRound() {
 
 	// 累積スコアログ
 	for i := range NapoleonPlayerCnt {
-		n.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			playerName(n.players, i), n.players[i].cumulativeScore), nil)
+		n.appendLog(i, "cumulative_score", "napoleon.log.cumulativeScore", map[string]string{"name": playerName(n.players, i), "score": fmt.Sprintf("%d", n.players[i].cumulativeScore)}, nil)
 	}
 
 	// ゲーム終了判定
@@ -711,10 +712,10 @@ func (n *Napoleon) applyBid(playerIdx int, bid int) {
 	n.players[playerIdx].SetBid(bid)
 
 	if bid == 0 {
-		n.appendLog(playerIdx, "bid", fmt.Sprintf("%s passes", playerName(n.players, playerIdx)), nil)
+		n.appendLog(playerIdx, "bid", "napoleon.log.pass", map[string]string{"name": playerName(n.players, playerIdx)}, nil)
 		n.round.passCount++
 	} else {
-		n.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %d", playerName(n.players, playerIdx), bid), nil)
+		n.appendLog(playerIdx, "bid", "napoleon.log.bid", map[string]string{"name": playerName(n.players, playerIdx), "bid": fmt.Sprintf("%d", bid)}, nil)
 		n.round.highestBid = bid
 		n.round.highestBidder = playerIdx
 	}
@@ -734,12 +735,12 @@ func (n *Napoleon) checkBidComplete() {
 		n.round.highestBid = n.config.MinBid
 		n.round.highestBidder = 0
 		n.players[0].SetBid(n.config.MinBid)
-		n.appendLog(0, "forced_bid", fmt.Sprintf("%s is forced to bid %d (all pass)", playerName(n.players, 0), n.config.MinBid), nil)
+		n.appendLog(0, "forced_bid", "napoleon.log.forcedBid", map[string]string{"name": playerName(n.players, 0), "bid": fmt.Sprintf("%d", n.config.MinBid)}, nil)
 	}
 
 	n.round.napoleonIdx = n.round.highestBidder
 	n.players[n.round.napoleonIdx].SetIsNapoleon(true)
-	n.appendLog(n.round.napoleonIdx, "napoleon", fmt.Sprintf("%s becomes Napoleon (bid %d)", playerName(n.players, n.round.napoleonIdx), n.round.highestBid), nil)
+	n.appendLog(n.round.napoleonIdx, "napoleon", "napoleon.log.becomesNapoleon", map[string]string{"name": playerName(n.players, n.round.napoleonIdx), "bid": fmt.Sprintf("%d", n.round.highestBid)}, nil)
 
 	n.round.phase = NapoleonPhaseTrumpDeclaration
 }
@@ -754,10 +755,8 @@ func (n *Napoleon) applyDeclareTrump(suit int, adjSuit int, adjVal int) {
 		CardDesignHeart: "Heart", CardDesignDiamond: "Diamond",
 		CardDesignJoker: "Joker",
 	}
-	n.appendLog(n.round.napoleonIdx, "declare_trump",
-		fmt.Sprintf("%s declares %s as trump", playerName(n.players, n.round.napoleonIdx), suitNames[suit]), nil)
-	n.appendLog(n.round.napoleonIdx, "declare_adjutant",
-		fmt.Sprintf("%s names %s as adjutant card", playerName(n.players, n.round.napoleonIdx), napoleonCardStr(n.round.adjutantCard)), nil)
+	n.appendLog(n.round.napoleonIdx, "declare_trump", "napoleon.log.declareTrump", map[string]string{"name": playerName(n.players, n.round.napoleonIdx), "suit": suitNames[suit]}, nil)
+	n.appendLog(n.round.napoleonIdx, "declare_adjutant", "napoleon.log.declareAdjutant", map[string]string{"name": playerName(n.players, n.round.napoleonIdx), "card": napoleonCardStr(n.round.adjutantCard)}, nil)
 
 	// 副官を特定
 	n.round.adjutantIdx = n.findAdjutantHolder()
@@ -785,7 +784,7 @@ func (n *Napoleon) applyExchangeKitty(discardIndex int) {
 	discarded := player.RemoveCard(discardIndex)
 	n.round.kitty = []*Card{discarded}
 
-	n.appendLog(n.round.napoleonIdx, "exchange", fmt.Sprintf("%s exchanges kitty card", playerName(n.players, n.round.napoleonIdx)), nil)
+	n.appendLog(n.round.napoleonIdx, "exchange", "napoleon.log.exchange", map[string]string{"name": playerName(n.players, n.round.napoleonIdx)}, nil)
 
 	n.sortHand(player)
 	n.startPlayPhase()
@@ -807,7 +806,7 @@ func (n *Napoleon) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	n.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(n.players, playerIdx), napoleonCardStr(card)), []*Card{card})
+	n.appendLog(playerIdx, "play", "napoleon.log.play", map[string]string{"name": playerName(n.players, playerIdx), "card": napoleonCardStr(card)}, []*Card{card})
 
 	// 副官カードが出されたら公開
 	n.checkAdjutantReveal(playerIdx, card)
@@ -975,7 +974,7 @@ func (n *Napoleon) checkAdjutantReveal(playerIdx int, card *Card) {
 			n.round.adjutantIdx = playerIdx
 			n.players[playerIdx].SetIsAdjutant(true)
 		}
-		n.appendLog(playerIdx, "adjutant_reveal", fmt.Sprintf("%s is revealed as the adjutant!", playerName(n.players, playerIdx)), []*Card{card})
+		n.appendLog(playerIdx, "adjutant_reveal", "napoleon.log.adjutantReveal", map[string]string{"name": playerName(n.players, playerIdx)}, []*Card{card})
 	}
 }
 
@@ -1018,7 +1017,7 @@ func (n *Napoleon) checkGameEnd() {
 			winnerIdx = i
 		}
 	}
-	n.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(n.players, winnerIdx)), nil)
+	n.appendLog(-1, "game_end", "napoleon.log.gameEnd", map[string]string{"name": playerName(n.players, winnerIdx)}, nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -1038,8 +1037,8 @@ func (n *Napoleon) sortHand(p *NapoleonPlayer) {
 }
 
 // appendLog 棋譜にエントリを追加する
-func (n *Napoleon) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	n.round.appendLog(playerIdx, actionType, detail, cards)
+func (n *Napoleon) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	n.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // napoleonCardStr カードの文字列表現 (ジョーカー対応)

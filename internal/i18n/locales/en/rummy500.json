@@ -43,5 +43,15 @@
   "errInvalidMeld": "This is not a valid meld.",
   "errTargetPlayerInvalid": "The target player is invalid.",
   "errTargetMeldInvalid": "The target meld is invalid.",
-  "errLayoffCardCannotAdd": "{{card}} cannot be added to that meld."
+  "errLayoffCardCannotAdd": "{{card}} cannot be added to that meld.",
+  "log.drawStock": "{{name}} draws from stock",
+  "log.drawDiscard": "{{name}} draws {{card}} from discard (+{{count}} card(s))",
+  "log.drawDiscardSingle": "{{name}} draws {{card}} from discard",
+  "log.meld": "{{name}} melds {{cards}}",
+  "log.layoff": "{{name}} lays off {{card}}",
+  "log.discard": "{{name}} discards {{card}}",
+  "log.goOut": "{{name}} goes out!",
+  "log.score": "{{name}} scores {{score}} (melds {{melds}} - hand {{hand}})",
+  "log.stockEmpty": "Stock is empty, round ends",
+  "log.gameEnd": "{{name}} wins the game!"
 }

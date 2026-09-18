@@ -37,5 +37,15 @@
   "knockerDeadwoodLine": "  ノッカーのデッドウッド: {{cards}} ({{points}}点)",
   "errDiscardPileEmpty": "捨て札がありません",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errKnockDeadwoodTooHigh": "デッドウッドが{{threshold}}点以下でないとノックできません（現在{{deadwood}}点）"
+  "errKnockDeadwoodTooHigh": "デッドウッドが{{threshold}}点以下でないとノックできません（現在{{deadwood}}点）",
+  "log.tonkOnDeal": "{{name}}は配牌でTonkを宣言しました！（手札の点数: {{value}}）",
+  "log.drawStock": "{{name}}は山札から引きました",
+  "log.drawDiscard": "{{name}}は捨て札から{{card}}を引きました",
+  "log.discard": "{{name}}は{{card}}を捨てました",
+  "log.knock": "{{name}}はノックしました（デッドウッド: {{deadwood}}）",
+  "log.undercut": "{{name}}がアンダーカット！{{score}}点（ペナルティ{{penalty}}点 + 差{{difference}}点）",
+  "log.score": "{{name}}は{{score}}点（デッドウッドの差）",
+  "log.tonkScore": "{{name}}は{{score}}点（Tonkボーナス{{bonus}}点 + 手札{{hand}}点）",
+  "log.draw": "山札が空になり、ラウンドは引き分けで終了します",
+  "log.gameEnd": "{{name}}がゲームに勝利しました！"
 }

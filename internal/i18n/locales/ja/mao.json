@@ -44,5 +44,19 @@
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errCardNotPlayable": "そのカードは出せません",
-  "errSuitOutOfRange": "スートは1〜4で指定してください"
+  "errSuitOutOfRange": "スートは1〜4で指定してください",
+  "log.ruleOk": "{{name}}は秘密のルールに従いました",
+  "log.penalty": "{{name}}はペナルティを受けました（{{count}}枚追加）",
+  "log.chooseSuit": "{{name}}は{{suit}}を選びました",
+  "log.declare": "{{name}}はMaoを宣言しました！",
+  "log.forgotDeclare": "{{name}}はMaoの宣言を忘れました！（{{count}}枚追加）",
+  "log.handScore": "{{name}}: 残り{{score}}点",
+  "log.roundWin": "{{name}}が{{round}}ラウンドに勝利（{{points}}点）",
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.drawTwo": "ドロースタックは{{count}}枚になりました",
+  "log.skip": "次のプレイヤーはスキップされます",
+  "log.takePenalty": "{{name}}はペナルティカードを{{count}}枚引きました",
+  "log.pass": "{{name}}はパスしました（引くカードがありません）",
+  "log.draw": "{{name}}はカードを1枚引きました",
+  "log.gameEnd": "{{name}}がゲームに勝利しました！"
 }

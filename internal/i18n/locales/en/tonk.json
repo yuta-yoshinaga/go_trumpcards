@@ -37,5 +37,15 @@
   "knockerDeadwoodLine": "  knocker deadwood: {{cards}} ({{points}} pts)",
   "errDiscardPileEmpty": "The discard pile is empty.",
   "errCardIndexOutOfRange": "The card index is out of range.",
-  "errKnockDeadwoodTooHigh": "You cannot knock unless deadwood is at most {{threshold}} points (currently {{deadwood}} points)."
+  "errKnockDeadwoodTooHigh": "You cannot knock unless deadwood is at most {{threshold}} points (currently {{deadwood}} points).",
+  "log.tonkOnDeal": "{{name}} declares Tonk on deal! (hand value: {{value}})",
+  "log.drawStock": "{{name}} draws from stock",
+  "log.drawDiscard": "{{name}} draws {{card}} from discard",
+  "log.discard": "{{name}} discards {{card}}",
+  "log.knock": "{{name}} knocks (deadwood: {{deadwood}})",
+  "log.undercut": "{{name}} undercuts! Scores {{score}} (penalty {{penalty}} + difference {{difference}})",
+  "log.score": "{{name}} scores {{score}} (deadwood difference)",
+  "log.tonkScore": "{{name}} scores {{score}} (Tonk bonus {{bonus}} + hand {{hand}})",
+  "log.draw": "Round ends in a draw (stock empty)",
+  "log.gameEnd": "{{name}} wins the game!"
 }
