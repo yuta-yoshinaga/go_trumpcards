@@ -618,14 +618,16 @@ func TestCrazyEights_appendLog(t *testing.T) {
 	g := newInternalTestCrazyEights()
 	g.actionLog = nil
 
-	g.appendLog(0, "play", "test detail", nil)
+	g.appendLog(0, "play", "crazyeights.log.play", map[string]string{"name": "Alice", "card": "♠3"}, nil)
 	assert.Len(t, g.actionLog, 1)
 	assert.Equal(t, 1, g.actionLog[0].TurnNumber)
 	assert.Equal(t, 0, g.actionLog[0].PlayerIdx)
 	assert.Equal(t, "play", g.actionLog[0].ActionType)
-	assert.Equal(t, "test detail", g.actionLog[0].Detail)
+	assert.Equal(t, "crazyeights.log.play", g.actionLog[0].DetailCode)
+	assert.Equal(t, map[string]string{"name": "Alice", "card": "♠3"}, g.actionLog[0].DetailParams)
+	assert.Empty(t, g.actionLog[0].Detail)
 
-	g.appendLog(1, "draw", "draw detail", nil)
+	g.appendLog(1, "draw", "crazyeights.log.draw", map[string]string{"name": "Bob"}, nil)
 	assert.Len(t, g.actionLog, 2)
 	assert.Equal(t, 2, g.actionLog[1].TurnNumber)
 }

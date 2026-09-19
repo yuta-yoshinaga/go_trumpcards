@@ -36,5 +36,12 @@
   "pointLegendOther": "  その他               額面どおり",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errCardCannotBePlayed": "そのカードは出せません",
-  "errSuitOutOfRange": "スートは1〜4で指定してください"
+  "errSuitOutOfRange": "スートは1〜4で指定してください",
+  "log.chooseSuit": "{{name}}が{{suit}}を選びました",
+  "log.handScore": "{{name}}: 残り{{score}}点",
+  "log.roundWin": "{{name}}がラウンド{{round}}に勝利（+{{points}}点）",
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.pass": "{{name}}はパスしました（引けるカードがありません）",
+  "log.draw": "{{name}}がカードを1枚引きました",
+  "log.gameEnd": "{{name}}がゲームに勝利しました！"
 }

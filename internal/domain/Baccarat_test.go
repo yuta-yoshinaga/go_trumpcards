@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewBaccarat(t *testing.T) {
@@ -208,6 +209,16 @@ func TestBaccarat_Bet_Success(t *testing.T) {
 	assert.LessOrEqual(t, len(b.GetPlayerHand()), 3)
 	assert.LessOrEqual(t, len(b.GetBankerHand()), 3)
 	assert.NotNil(t, b.GetActionLog())
+	var betLog *ActionLogEntry
+	for _, entry := range b.GetActionLog() {
+		if entry.DetailCode == "baccarat.log.bet" {
+			betLog = entry
+			break
+		}
+	}
+	require.NotNil(t, betLog)
+	assert.Equal(t, map[string]string{"amount": "100", "type": "player"}, betLog.DetailParams)
+	assert.Empty(t, betLog.Detail)
 	// history should have one entry
 	assert.Len(t, b.GetHistory(), 1)
 }

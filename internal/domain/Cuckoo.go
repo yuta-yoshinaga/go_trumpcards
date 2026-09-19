@@ -33,6 +33,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // CuckooPlayerCnt Cuckoo プレイヤー数 (人間 1 + CPU 3)
@@ -82,6 +83,10 @@ type Cuckoo struct {
 	roundLosers      []int // 直近ラウンドでライフを失ったプレイヤー
 	actionLogBase
 	rng *rand.Rand
+}
+
+func (g *Cuckoo) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewCuckoo コンストラクタ
@@ -259,7 +264,7 @@ func (g *Cuckoo) guardHumanTurn() error {
 
 // keep 手札を保持してターンを進める
 func (g *Cuckoo) keep(idx int) {
-	g.appendLog(idx, "keep", fmt.Sprintf("%s keeps", playerName(g.players, idx)), nil)
+	g.appendLog(idx, "keep", "cuckoo.log.keep", map[string]string{"name": playerName(g.players, idx)}, nil)
 	g.advanceTurn()
 }
 
@@ -300,13 +305,13 @@ func (g *Cuckoo) performSwap(a, b int) {
 	cb := g.players[b].Card()
 	g.players[a].SetCard(cb)
 	g.players[b].SetCard(ca)
-	g.appendLog(a, "swap", fmt.Sprintf("%s swaps with %s", playerName(g.players, a), playerName(g.players, b)), nil)
+	g.appendLog(a, "swap", "cuckoo.log.swap", map[string]string{"name": playerName(g.players, a), "target": playerName(g.players, b)}, nil)
 }
 
 // swapWithStock ディーラーが山札から新しいカードを引いて交換する
 func (g *Cuckoo) swapWithStock(idx int) {
 	if len(g.stock) == 0 {
-		g.appendLog(idx, "keep", fmt.Sprintf("%s keeps (stock empty)", playerName(g.players, idx)), nil)
+		g.appendLog(idx, "keep", "cuckoo.log.keepStockEmpty", map[string]string{"name": playerName(g.players, idx)}, nil)
 		return
 	}
 	newCard := g.stock[len(g.stock)-1]
@@ -316,7 +321,7 @@ func (g *Cuckoo) swapWithStock(idx int) {
 	if old != nil {
 		g.stock = append([]*Card{old}, g.stock...)
 	}
-	g.appendLog(idx, "swap_stock", fmt.Sprintf("%s swaps with the stock", playerName(g.players, idx)), nil)
+	g.appendLog(idx, "swap_stock", "cuckoo.log.swapStock", map[string]string{"name": playerName(g.players, idx)}, nil)
 }
 
 // resolveRefuse 拒否フェーズを解決する。refused=true なら King 公開で交換は不成立、
@@ -328,7 +333,7 @@ func (g *Cuckoo) resolveRefuse(refused bool) {
 		if to >= 0 && to < len(g.revealedKings) {
 			g.revealedKings[to] = true
 		}
-		g.appendLog(to, "refuse", fmt.Sprintf("%s reveals a King and refuses", playerName(g.players, to)), nil)
+		g.appendLog(to, "refuse", "cuckoo.log.refuse", map[string]string{"name": playerName(g.players, to)}, nil)
 	} else {
 		g.performSwap(from, to)
 	}
@@ -425,7 +430,7 @@ func (g *Cuckoo) endRound() {
 		if p.CardValue() == lowest {
 			p.LoseLife()
 			g.roundLosers = append(g.roundLosers, i)
-			g.appendLog(i, "lose_life", fmt.Sprintf("%s loses a life (lowest: %d)", playerName(g.players, i), lowest), nil)
+			g.appendLog(i, "lose_life", "cuckoo.log.loseLife", map[string]string{"name": playerName(g.players, i), "lowest": strconv.Itoa(lowest)}, nil)
 		}
 	}
 
@@ -441,7 +446,7 @@ func (g *Cuckoo) endRound() {
 			}
 		}
 		g.players[survivor].SetLives(1)
-		g.appendLog(survivor, "survive", fmt.Sprintf("%s survives the tie-break", playerName(g.players, survivor)), nil)
+		g.appendLog(survivor, "survive", "cuckoo.log.survive", map[string]string{"name": playerName(g.players, survivor)}, nil)
 	}
 
 	g.finishRound()
@@ -468,7 +473,7 @@ func (g *Cuckoo) checkGameEnd() {
 	g.gameEndFlag = true
 	g.phase = CuckooPhaseGameEnd
 	g.winnerIdx = g.leaderIdx()
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", "cuckoo.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx)}, nil)
 }
 
 // forceGameEnd 防御的なラウンド上限到達時に強制終了する

@@ -71,6 +71,17 @@ func TestMichigan_PlaceHumanBet_TransitionsToPlay(t *testing.T) {
 	// Lead player is to the dealer's left — seat 0, the human.
 	assert.Equal(t, 0, g.GetLeadPlayerIdx())
 	assert.True(t, g.IsHumanTurn())
+	var betLog *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "michigan.log.bet" && entry.PlayerIdx == 0 {
+			betLog = entry
+			break
+		}
+	}
+	require.NotNil(t, betLog)
+	assert.Equal(t, "michigan.log.bet", betLog.DetailCode)
+	assert.NotEmpty(t, betLog.DetailParams["total"])
+	assert.Empty(t, betLog.Detail)
 }
 
 // michiganEvenBet は budget を 4 分割した賭けスライスを返す。

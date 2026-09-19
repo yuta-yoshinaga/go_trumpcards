@@ -27,5 +27,13 @@
   "roundEnd": "Round over",
   "result.humanWin": "Game over! You win!",
   "result.cpuWin": "Game over! CPU {{cpuId}} wins!",
-  "helpExampleKeep": "  k                         keep your card instead of swapping"
+  "helpExampleKeep": "  k                         keep your card instead of swapping",
+  "log.keep": "{{name}} keeps",
+  "log.swap": "{{name}} swaps with {{target}}",
+  "log.keepStockEmpty": "{{name}} keeps (stock empty)",
+  "log.swapStock": "{{name}} swaps with the stock",
+  "log.refuse": "{{name}} reveals a King and refuses",
+  "log.loseLife": "{{name}} loses a life (lowest: {{lowest}})",
+  "log.survive": "{{name}} survives the tie-break",
+  "log.gameEnd": "{{name}} wins the game!"
 }
