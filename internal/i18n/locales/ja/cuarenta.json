@@ -22,5 +22,11 @@
   "promptHelp": "p <hand> で捕獲または場に置く / n で次のラウンド",
   "teamCaptured": "チーム{{team}} 捕獲: {{count}}枚（{{need}}枚以上で +{{bonus}}）",
   "helpExamplePlay": "  p 0                      手札の 0 番を場に置く (場札を取らない)",
-  "helpExampleNext": "  n                        ラウンドの結果を見てから次へ"
+  "helpExampleNext": "  n                        ラウンドの結果を見てから次へ",
+  "log.deal": "{{cards}}枚の場札を配りました",
+  "log.play": "場に置きました",
+  "log.capture": "{{cards}}枚を取りました",
+  "log.lastTake": "最後に{{cards}}枚を取りました",
+  "log.gameEnd": "{{points}}点でゲーム終了",
+  "log.roundEnd": "ラウンド終了"
 }

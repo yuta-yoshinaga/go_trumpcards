@@ -226,7 +226,7 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 		{"SimpleSimon", func() (any, any) {
 			g := NewDefaultSimpleSimon()
 			g.Reset()
-			g.appendLog("act", "detail", nil)
+			g.appendLog("act", "simplesimon.log.test", nil, nil)
 			return g, NewDefaultSimpleSimon()
 		}},
 	}

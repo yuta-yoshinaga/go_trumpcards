@@ -4,7 +4,7 @@ package domain
 
 import (
 	"errors"
-	"fmt"
+	"strconv"
 )
 
 // Simple Simon 盤面定数。
@@ -83,7 +83,7 @@ func (g *SimpleSimon) Reset() {
 			g.columns[i] = append(g.columns[i], g.trumpCards.DrawCard())
 		}
 	}
-	g.appendLog("deal", "新しいゲームを開始しました", nil)
+	g.appendLog("deal", "simplesimon.log.deal", nil, nil)
 }
 
 // --- rules ---
@@ -151,7 +151,7 @@ func (g *SimpleSimon) MoveSequence(fromCol, cardIndex, toCol int) error {
 	g.columns[fromCol] = src[:cardIndex]
 	g.columns[toCol] = append(g.columns[toCol], moving...)
 	g.moveCount++
-	g.appendLog("move", fmt.Sprintf("列%d[%d]→列%d", fromCol, cardIndex, toCol), nil)
+	g.appendLog("move", "simplesimon.log.move", map[string]string{"from": strconv.Itoa(fromCol), "index": strconv.Itoa(cardIndex), "to": strconv.Itoa(toCol)}, nil)
 	g.checkAndRemoveCompleted(toCol)
 	g.checkGameOver()
 	return nil
@@ -172,7 +172,7 @@ func (g *SimpleSimon) checkAndRemoveCompleted(col int) {
 	}
 	g.columns[col] = cards[:len(cards)-CardValueMax]
 	g.completedSuits++
-	g.appendLog("complete", fmt.Sprintf("列%dでスートが完成しました", col), nil)
+	g.appendLog("complete", "simplesimon.log.complete", map[string]string{"column": strconv.Itoa(col)}, nil)
 	g.checkGameClear()
 }
 
@@ -180,7 +180,7 @@ func (g *SimpleSimon) checkAndRemoveCompleted(col int) {
 func (g *SimpleSimon) checkGameClear() {
 	if g.completedSuits >= SimpleSimonFoundationCnt {
 		g.phase = SimpleSimonPhaseGameClear
-		g.appendLog("clear", "クリア！", nil)
+		g.appendLog("clear", "simplesimon.log.clear", nil, nil)
 	}
 }
 
@@ -215,7 +215,7 @@ func (g *SimpleSimon) hasAnyLegalMove() bool {
 func (g *SimpleSimon) checkGameOver() {
 	if g.phase == SimpleSimonPhasePlaying && !g.hasAnyLegalMove() {
 		g.phase = SimpleSimonPhaseGameOver
-		g.appendLog("gameover", "手詰まりです", nil)
+		g.appendLog("gameover", "simplesimon.log.gameover", nil, nil)
 	}
 }
 
@@ -223,7 +223,7 @@ func (g *SimpleSimon) checkGameOver() {
 func (g *SimpleSimon) GiveUp() {
 	if g.phase == SimpleSimonPhasePlaying {
 		g.phase = SimpleSimonPhaseGameOver
-		g.appendLog("giveup", "ギブアップしました", nil)
+		g.appendLog("giveup", "simplesimon.log.giveup", nil, nil)
 	}
 }
 
@@ -255,8 +255,8 @@ func (g *SimpleSimon) GetHint() *SimpleSimonHint {
 	return nil
 }
 
-func (g *SimpleSimon) appendLog(action, detail string, cards []*Card) {
-	g.appendLogAt(g.moveCount, 0, action, detail, cards)
+func (g *SimpleSimon) appendLog(action, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(g.moveCount, 0, action, detailCode, detailParams, cards)
 }
 
 // --- undo ---
