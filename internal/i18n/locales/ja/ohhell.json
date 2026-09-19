@@ -38,5 +38,13 @@
   "errBidOutOfRange": "ビッドは0〜{{max}}で指定してください",
   "errRestrictedBid": "ディーラーはビッド{{bid}}を選べません（合計がトリック数と一致するため）",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errFollowLeadSuit": "リードスートに従ってください"
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.bid": "{{name}}は{{bid}}をビッドしました",
+  "log.trickWin": "{{name}}が{{trick}}トリックを取りました",
+  "log.bidSuccess": "{{name}}は{{bid}}をビッドし、{{tricks}}トリックを取りました: +{{points}}",
+  "log.bidFail": "{{name}}は{{bid}}をビッドし、{{tricks}}トリックを取りました: {{points}}",
+  "log.bidFailZero": "{{name}}は{{bid}}をビッドし、{{tricks}}トリックを取りました: 0",
+  "log.cumulativeScore": "{{name}}: 合計={{total}}",
+  "log.play": "{{name}}が{{card}}をプレイしました",
+  "log.gameEnd": "{{name}}の勝利でゲーム終了！"
 }

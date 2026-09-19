@@ -501,8 +501,7 @@ func (t *Put) callPut(caller int) {
 	t.putCallerIdx = caller
 	t.responderIdx = 1 - caller
 	t.phase = PutPhaseRespond
-	t.appendLog(caller, "put",
-		fmt.Sprintf("%s calls %s", playerName(t.players, caller), putLevelName(t.pendingLevel)), nil)
+	t.appendLog(caller, "put", "put.log.put", map[string]string{"name": playerName(t.players, caller), "level": putLevelName(t.pendingLevel)}, nil)
 }
 
 // respond responder が宣言に応答する。
@@ -514,8 +513,7 @@ func (t *Put) respond(responder int, accept bool) {
 		t.putCallerIdx = -1
 		t.responderIdx = -1
 		t.phase = PutPhasePlay
-		t.appendLog(responder, "accept",
-			fmt.Sprintf("%s accepts (stake %d)", playerName(t.players, responder), t.handStake), nil)
+		t.appendLog(responder, "accept", "put.log.accept", map[string]string{"name": playerName(t.players, responder), "stake": fmt.Sprint(t.handStake)}, nil)
 		return
 	}
 	// 拒否: 宣言者が直前の確定点でマノを取る
@@ -525,9 +523,7 @@ func (t *Put) respond(responder int, accept bool) {
 	t.putCallerIdx = -1
 	t.handWinnerIdx = caller
 	t.phase = PutPhaseHandEnd
-	t.appendLog(responder, "decline",
-		fmt.Sprintf("%s declines; %s wins hand (%d pt)",
-			playerName(t.players, responder), playerName(t.players, caller), t.handStake), nil)
+	t.appendLog(responder, "decline", "put.log.decline", map[string]string{"name": playerName(t.players, responder), "winner": playerName(t.players, caller), "points": fmt.Sprint(t.handStake)}, nil)
 }
 
 // --- Private: trick / hand progression ---
@@ -535,8 +531,7 @@ func (t *Put) respond(responder int, accept bool) {
 // playCard カードをプレイする共通処理。
 func (t *Put) playCard(playerIdx int, card *Card) {
 	t.currentTrick = append(t.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	t.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(t.players, playerIdx), cardStr(card)), []*Card{card})
+	t.appendLog(playerIdx, "play", "put.log.play", map[string]string{"name": playerName(t.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 	if len(t.currentTrick) == PutPlayerCnt {
 		t.finishBaza()
 	} else {
@@ -550,12 +545,11 @@ func (t *Put) finishBaza() {
 	t.trickResults = append(t.trickResults, result)
 	cards := []*Card{t.currentTrick[0].Card, t.currentTrick[1].Card}
 	if result < 0 {
-		t.appendLog(-1, "baza_tie", fmt.Sprintf("Baza %d: parda", t.trickNumber), cards)
+		t.appendLog(-1, "baza_tie", "put.log.bazaTie", map[string]string{"baza": fmt.Sprint(t.trickNumber)}, cards)
 		// パルダはリードプレイヤーが維持
 	} else {
 		t.leadPlayerIdx = result
-		t.appendLog(result, "baza_win",
-			fmt.Sprintf("%s wins baza %d", playerName(t.players, result), t.trickNumber), cards)
+		t.appendLog(result, "baza_win", "put.log.bazaWin", map[string]string{"name": playerName(t.players, result), "baza": fmt.Sprint(t.trickNumber)}, cards)
 	}
 	t.phase = PutPhaseTrickEnd
 }
@@ -579,17 +573,13 @@ func (t *Put) advanceHand() {
 	if t.handWinnerIdx >= 0 && t.handWinnerIdx < len(t.playerMatchPoints) {
 		t.playerMatchPoints[t.handWinnerIdx] += t.handStake
 	}
-	t.appendLog(t.handWinnerIdx, "hand_end",
-		fmt.Sprintf("Hand %d: %s +%d (match %d-%d)", t.handNumber,
-			playerName(t.players, t.handWinnerIdx), t.handStake,
-			t.playerMatchPoints[0], t.playerMatchPoints[1]), nil)
+	t.appendLog(t.handWinnerIdx, "hand_end", "put.log.handEnd", map[string]string{"hand": fmt.Sprint(t.handNumber), "name": playerName(t.players, t.handWinnerIdx), "points": fmt.Sprint(t.handStake), "p0": fmt.Sprint(t.playerMatchPoints[0]), "p1": fmt.Sprint(t.playerMatchPoints[1])}, nil)
 
 	if t.playerMatchPoints[t.handWinnerIdx] >= t.matchTarget {
 		t.gameEndFlag = true
 		t.winnerIdx = t.handWinnerIdx
 		t.phase = PutPhaseGameEnd
-		t.appendLog(-1, "game_end",
-			fmt.Sprintf("Match end: %d-%d", t.playerMatchPoints[0], t.playerMatchPoints[1]), nil)
+		t.appendLog(-1, "game_end", "put.log.gameEnd", map[string]string{"p0": fmt.Sprint(t.playerMatchPoints[0]), "p1": fmt.Sprint(t.playerMatchPoints[1])}, nil)
 		return
 	}
 	t.dealerIdx = 1 - t.dealerIdx
@@ -627,8 +617,11 @@ func (t *Put) dealHand() {
 	t.leadPlayerIdx = t.manoIdx
 	t.currentPlayerIdx = t.manoIdx
 	t.phase = PutPhasePlay
-	t.appendLog(-1, "deal", fmt.Sprintf("Hand %d dealt (dealer=%s)",
-		t.handNumber, playerName(t.players, t.dealerIdx)), nil)
+	t.appendLog(-1, "deal", "put.log.deal", map[string]string{"hand": fmt.Sprint(t.handNumber), "dealer": playerName(t.players, t.dealerIdx)}, nil)
+}
+
+func (t *Put) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	t.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Pure rule helpers ---

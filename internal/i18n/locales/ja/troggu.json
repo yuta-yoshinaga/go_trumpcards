@@ -42,5 +42,14 @@
   "hintReasonPlayDuck": "取ってはいけないので安い札を落とす",
   "result.scores": "ゲーム終了！ 得点: {{scores}}",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "log.deal": "{{round}}ディール: 1人{{cards}}枚、タロン{{talon}}枚",
+  "log.bid": "{{name}}が{{bid}}をビッドしました",
+  "log.pass": "{{name}}がパスしました",
+  "log.everyonePassed": "全員がパスしたため、ディールは流れました",
+  "log.contract": "{{name}}が{{contract}}をプレイします",
+  "log.play": "{{name}}が{{card}}をプレイしました",
+  "log.trick": "{{name}}が{{trick}}トリックを取りました",
+  "log.score": "{{round}}ディールの得点 ({{contract}})",
+  "log.matchOver": "マッチ終了"
 }

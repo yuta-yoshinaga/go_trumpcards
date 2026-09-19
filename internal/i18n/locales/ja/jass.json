@@ -40,5 +40,14 @@
   "errInvalidTrumpSuit": "無効な切り札スートです",
   "errInvalidPlayerCount": "プレイヤー数が不正です",
   "errPlayerNil": "プレイヤーが nil です",
-  "errTrickCardNil": "トリックカードが nil です"
+  "errTrickCardNil": "トリックカードが nil です",
+  "log.schieben": "{{name}}がSchiebenしました（パートナーにパス）",
+  "log.chooseTrump": "{{name}}が{{suit}}を切り札に選びました",
+  "log.trickWin": "{{name}}が{{trick}}トリックに勝ちました（{{points}}点）",
+  "log.lastTrick": "{{name}}が最後のトリックに勝ちました +{{points}}",
+  "log.teamScore": "チーム{{team}}: カード{{card}}点 + Weis{{weis}}点 + Stöck{{stock}}点 = {{total}}点（合計{{score}}）",
+  "log.weis": "チーム{{team}}がWeisに勝ちました（+{{points}}）",
+  "log.stock": "{{name}}にStöck（チーム{{team}}に+{{points}}）",
+  "log.play": "{{name}}が{{card}}をプレイしました",
+  "log.gameEnd": "チーム{{team}}の勝利でゲーム終了！"
 }

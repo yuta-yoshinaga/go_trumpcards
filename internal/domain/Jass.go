@@ -260,8 +260,7 @@ func (g *Jass) CpuBid() {
 // doSchieben Schieben (パートナーへの委譲) を確定する
 func (g *Jass) doSchieben(playerIdx int) {
 	g.schieben = true
-	g.appendLog(playerIdx, "schieben",
-		fmt.Sprintf("%s schiebt (passes to partner)", playerName(g.players, playerIdx)), nil)
+	g.appendLog(playerIdx, "schieben", "jass.log.schieben", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	g.bidPlayerIdx = (playerIdx + 2) % JassPlayerCnt
 	g.phase = JassPhaseBidPartner
 }
@@ -271,8 +270,7 @@ func (g *Jass) doChooseTrump(playerIdx, suit int) {
 	g.trumpSuit = suit
 	g.makerTeam = g.players[playerIdx].GetTeam()
 	g.makerPlayerIdx = playerIdx
-	g.appendLog(playerIdx, "choose_trump",
-		fmt.Sprintf("%s chooses %s as trump", playerName(g.players, playerIdx), suitStr(suit)), nil)
+	g.appendLog(playerIdx, "choose_trump", "jass.log.chooseTrump", map[string]string{"name": playerName(g.players, playerIdx), "suit": suitStr(suit)}, nil)
 
 	g.sortAllHands()
 	g.resolveWeis()
@@ -348,9 +346,7 @@ func (g *Jass) ResolveTrick() {
 	g.roundPoints[g.players[winnerIdx].GetTeam()] += trickPoints
 
 	winnerName := playerName(g.players, winnerIdx)
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pts)", winnerName, g.trickNumber, trickPoints),
-		trickCards)
+	g.appendLog(winnerIdx, "trick_win", "jass.log.trickWin", map[string]string{"name": winnerName, "trick": fmt.Sprint(g.trickNumber), "points": fmt.Sprint(trickPoints)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	g.lastTrickWinner = winnerIdx
@@ -358,8 +354,7 @@ func (g *Jass) ResolveTrick() {
 	if g.trickNumber >= JassHandSize {
 		// 最終トリックボーナス
 		g.roundPoints[g.players[winnerIdx].GetTeam()] += g.config.LastTrickBonus
-		g.appendLog(winnerIdx, "last_trick",
-			fmt.Sprintf("%s wins last trick +%d", winnerName, g.config.LastTrickBonus), nil)
+		g.appendLog(winnerIdx, "last_trick", "jass.log.lastTrick", map[string]string{"name": winnerName, "points": fmt.Sprint(g.config.LastTrickBonus)}, nil)
 		g.phase = JassPhaseRoundEnd
 	} else {
 		g.phase = JassPhaseTrickEnd
@@ -386,10 +381,7 @@ func (g *Jass) ScoreRound() {
 	for ti := range JassTeamCnt {
 		total := g.roundPoints[ti] + g.roundWeisPoints[ti] + g.roundStockPoints[ti]
 		g.teamScores[ti] += total
-		g.appendLog(-1, "team_score",
-			fmt.Sprintf("Team %d: %d card + %d weis + %d stock = %d (total %d)",
-				ti, g.roundPoints[ti], g.roundWeisPoints[ti], g.roundStockPoints[ti],
-				total, g.teamScores[ti]), nil)
+		g.appendLog(-1, "team_score", "jass.log.teamScore", map[string]string{"team": fmt.Sprint(ti), "card": fmt.Sprint(g.roundPoints[ti]), "weis": fmt.Sprint(g.roundWeisPoints[ti]), "stock": fmt.Sprint(g.roundStockPoints[ti]), "total": fmt.Sprint(total), "score": fmt.Sprint(g.teamScores[ti])}, nil)
 	}
 
 	g.checkGameEnd()
@@ -849,8 +841,7 @@ func (g *Jass) resolveWeis() {
 		}
 	}
 	if g.roundWeisPoints[winTeam] > 0 {
-		g.appendLog(bestPlayer, "weis",
-			fmt.Sprintf("Team %d wins Weis (+%d)", winTeam, g.roundWeisPoints[winTeam]), nil)
+		g.appendLog(bestPlayer, "weis", "jass.log.weis", map[string]string{"team": fmt.Sprint(winTeam), "points": fmt.Sprint(g.roundWeisPoints[winTeam])}, nil)
 	}
 }
 
@@ -889,9 +880,7 @@ func (g *Jass) resolveStock() {
 		if hasK && hasQ {
 			team := p.GetTeam()
 			g.roundStockPoints[team] += JassStockBonus
-			g.appendLog(i, "stock",
-				fmt.Sprintf("%s has Stöck (+%d for team %d)",
-					playerName(g.players, i), JassStockBonus, team), nil)
+			g.appendLog(i, "stock", "jass.log.stock", map[string]string{"name": playerName(g.players, i), "points": fmt.Sprint(JassStockBonus), "team": fmt.Sprint(team)}, nil)
 		}
 	}
 }
@@ -913,8 +902,7 @@ func (g *Jass) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "jass.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == JassPlayerCnt {
 		g.phase = JassPhaseTrickEnd
@@ -1045,11 +1033,14 @@ func (g *Jass) checkGameEnd() {
 			} else {
 				g.winnerTeam = 1
 			}
-			g.appendLog(-1, "game_end",
-				fmt.Sprintf("Team %d wins the game!", g.winnerTeam), nil)
+			g.appendLog(-1, "game_end", "jass.log.gameEnd", map[string]string{"team": fmt.Sprint(g.winnerTeam)}, nil)
 			return
 		}
 	}
+}
+
+func (g *Jass) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする (スート → ランク)

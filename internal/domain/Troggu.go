@@ -242,8 +242,7 @@ func (g *Troggu) startRound() {
 	g.bidPlayerIdx = (g.dealerIdx + 1) % TrogguPlayerCnt
 	g.currentPlayerIdx = g.bidPlayerIdx
 	g.phase = TrogguPhaseBid
-	g.appendLog(-1, "deal",
-		fmt.Sprintf("deal %d: %d cards each, talon %d", g.roundNumber, TrogguHandSize, len(g.talon)), nil)
+	g.appendLog(-1, "deal", "troggu.log.deal", map[string]string{"round": fmt.Sprint(g.roundNumber), "cards": fmt.Sprint(TrogguHandSize), "talon": fmt.Sprint(len(g.talon))}, nil)
 }
 
 // deal 3 枚パケットで各プレイヤーへ 18 枚を配り、場札 6 枚を脇に置く。
@@ -334,7 +333,7 @@ func (g *Troggu) applyBid(idx int, bid TrogguBid) {
 	g.highestBid = bid
 	g.highestBidder = idx
 	g.bidActedCnt++
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", g.playerName(idx), TrogguBidName(bid)), nil)
+	g.appendLog(idx, "bid", "troggu.log.bid", map[string]string{"name": g.playerName(idx), "bid": TrogguBidName(bid)}, nil)
 	g.advanceBid()
 }
 
@@ -342,7 +341,7 @@ func (g *Troggu) applyBid(idx int, bid TrogguBid) {
 func (g *Troggu) applyPass(idx int) {
 	g.passed[idx] = true
 	g.bidActedCnt++
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+	g.appendLog(idx, "pass", "troggu.log.pass", map[string]string{"name": g.playerName(idx)}, nil)
 	g.advanceBid()
 }
 
@@ -368,7 +367,7 @@ func (g *Troggu) advanceBid() {
 // 決まらない ── 目標の無いディールを 18 トリック打たせても誰の得にもならない。
 func (g *Troggu) finalizeBid() {
 	if g.highestBidder < 0 {
-		g.appendLog(-1, "contract", "everyone passed: the deal is thrown in", nil)
+		g.appendLog(-1, "contract", "troggu.log.everyonePassed", nil, nil)
 		g.outcome = TrogguOutcomeNone
 		g.breakdown = nil
 		g.scored = true
@@ -380,8 +379,7 @@ func (g *Troggu) finalizeBid() {
 	}
 	g.declarerIdx = g.highestBidder
 	g.contract = g.highestBid
-	g.appendLog(g.declarerIdx, "contract",
-		fmt.Sprintf("%s plays %s", g.playerName(g.declarerIdx), TrogguBidName(g.contract)), nil)
+	g.appendLog(g.declarerIdx, "contract", "troggu.log.contract", map[string]string{"name": g.playerName(g.declarerIdx), "contract": TrogguBidName(g.contract)}, nil)
 	g.startPlay()
 }
 
@@ -436,8 +434,7 @@ func (g *Troggu) playCard(playerIdx, handIdx int) {
 		return
 	}
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), frenchTarotCardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "troggu.log.play", map[string]string{"name": g.playerName(playerIdx), "card": frenchTarotCardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) < TrogguPlayerCnt {
 		g.currentPlayerIdx = (g.currentPlayerIdx + 1) % TrogguPlayerCnt
@@ -456,8 +453,7 @@ func (g *Troggu) finishTrick() {
 	g.players[winner].AddTrick(cards)
 	g.lastTrickWinner = winner
 	g.lastTrickCards = cards
-	g.appendLog(winner, "trick",
-		fmt.Sprintf("%s takes trick %d", g.playerName(winner), g.trickNumber), cards)
+	g.appendLog(winner, "trick", "troggu.log.trick", map[string]string{"name": g.playerName(winner), "trick": fmt.Sprint(g.trickNumber)}, cards)
 	g.currentTrick = nil
 	g.phase = TrogguPhaseTrickEnd
 	g.currentPlayerIdx = winner
@@ -646,8 +642,7 @@ func (g *Troggu) finishRound() {
 		g.playerScores[i] += delta
 	}
 	g.phase = TrogguPhaseRoundEnd
-	g.appendLog(-1, "score",
-		fmt.Sprintf("deal %d scored (%s)", g.roundNumber, TrogguBidName(g.contract)), nil)
+	g.appendLog(-1, "score", "troggu.log.score", map[string]string{"round": fmt.Sprint(g.roundNumber), "contract": TrogguBidName(g.contract)}, nil)
 	if g.roundNumber >= g.config.TargetDeals {
 		g.finishGame()
 	}
@@ -765,7 +760,11 @@ func (g *Troggu) finishGame() {
 	}
 	g.gameEndFlag = true
 	g.phase = TrogguPhaseGameEnd
-	g.appendLog(g.winnerPlayer, "gameEnd", "match over", nil)
+	g.appendLog(g.winnerPlayer, "gameEnd", "troggu.log.matchOver", nil, nil)
+}
+
+func (g *Troggu) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- 補助 ---

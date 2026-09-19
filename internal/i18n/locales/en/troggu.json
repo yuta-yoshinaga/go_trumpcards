@@ -42,5 +42,14 @@
   "hintReasonPlayDuck": "you must not take it, so let a cheap card go",
   "result.scores": "Game over! Scores: {{scores}}",
   "helpExamplePlay": "  play 0                    play hand card 0",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "log.deal": "deal {{round}}: {{cards}} cards each, talon {{talon}}",
+  "log.bid": "{{name}} bids {{bid}}",
+  "log.pass": "{{name}} passes",
+  "log.everyonePassed": "everyone passed: the deal is thrown in",
+  "log.contract": "{{name}} plays {{contract}}",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trick": "{{name}} takes trick {{trick}}",
+  "log.score": "deal {{round}} scored ({{contract}})",
+  "log.matchOver": "match over"
 }

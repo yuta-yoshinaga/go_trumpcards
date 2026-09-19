@@ -38,5 +38,14 @@
   "helpHint": "  h                    助言を表示",
   "helpLog": "  l                    行動ログを表示",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errCannotRaiseNow": "これ以上引き上げできません"
+  "errCannotRaiseNow": "これ以上引き上げできません",
+  "log.truco": "{{name}}が{{level}}を宣言しました",
+  "log.accept": "{{name}}が受けました（賭け点{{stake}}）",
+  "log.decline": "{{name}}が降り、{{winner}}がハンドに勝ちました（{{points}}点）",
+  "log.play": "{{name}}が{{card}}をプレイしました",
+  "log.bazaTie": "バサ{{baza}}: パルダ",
+  "log.bazaWin": "{{name}}がバサ{{baza}}に勝ちました",
+  "log.handEnd": "ハンド{{hand}}: {{name}} +{{points}}（マッチ {{p0}}-{{p1}}）",
+  "log.gameEnd": "マッチ終了: {{p0}}-{{p1}}",
+  "log.deal": "ハンド{{hand}}を配りました（ディーラー={{dealer}}）"
 }
