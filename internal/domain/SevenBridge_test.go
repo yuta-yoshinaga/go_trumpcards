@@ -934,8 +934,17 @@ func TestSevenBridge_GetActionLog(t *testing.T) {
 	g.SetCurrentPlayerIdx(0)
 	require.NoError(t, g.PlayerMeld([]int{0, 1, 2}))
 	log := g.GetActionLog()
-	assert.NotEmpty(t, log)
-	assert.Equal(t, "meld", log[len(log)-1].ActionType)
+	var meld *domain.ActionLogEntry
+	for _, entry := range log {
+		if entry.DetailCode == "sevenbridge.log.meldsCards" {
+			meld = entry
+			break
+		}
+	}
+	require.NotNil(t, meld)
+	assert.Equal(t, "meld", meld.ActionType)
+	assert.Equal(t, map[string]string{"name": "You", "count": "3"}, meld.DetailParams)
+	assert.Empty(t, meld.Detail)
 }
 
 func TestSevenBridge_SetRoundNumber(t *testing.T) {

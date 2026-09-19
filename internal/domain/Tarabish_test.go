@@ -752,6 +752,16 @@ func TestTarabish_UnmarshalRejectsGarbage(t *testing.T) {
 func TestTarabish_ActionLog(t *testing.T) {
 	tb := newTestTarabish(t)
 	assert.NotEmpty(t, tb.GetActionLog())
+	var deal *ActionLogEntry
+	for _, entry := range tb.GetActionLog() {
+		if entry.DetailCode == "tarabish.log.roundStarted" {
+			deal = entry
+			break
+		}
+	}
+	require.NotNil(t, deal)
+	assert.Equal(t, map[string]string{"round": "1"}, deal.DetailParams)
+	assert.Empty(t, deal.Detail)
 }
 
 // **切り札の 10 は K/Q に勝つ。** 素の GetValue() に落とすと 10 < 12 < 13 で

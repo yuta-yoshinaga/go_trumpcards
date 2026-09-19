@@ -651,6 +651,16 @@ func TestJulepe_UnmarshalRejectsBadConfig(t *testing.T) {
 func TestJulepe_ActionLog(t *testing.T) {
 	r := newTestJulepe(t)
 	assert.NotEmpty(t, r.GetActionLog())
+	var deal *ActionLogEntry
+	for _, entry := range r.GetActionLog() {
+		if entry.DetailCode == "julepe.log.roundStarted" {
+			deal = entry
+			break
+		}
+	}
+	require.NotNil(t, deal)
+	assert.Equal(t, map[string]string{"round": "1", "pot": "12"}, deal.DetailParams)
+	assert.Empty(t, deal.Detail)
 }
 
 // TestJulepe_RequiredTricksScalesWithTheTable は、規定トリック数が

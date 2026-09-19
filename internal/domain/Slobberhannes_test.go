@@ -520,6 +520,16 @@ func TestSlobberhannes_UnmarshalRejectsGarbage(t *testing.T) {
 func TestSlobberhannes_ActionLog(t *testing.T) {
 	s := newTestSlobberhannes(t)
 	assert.NotEmpty(t, s.GetActionLog(), "配りが棋譜に残る")
+	var deal *ActionLogEntry
+	for _, entry := range s.GetActionLog() {
+		if entry.DetailCode == "slobberhannes.log.roundStarted" {
+			deal = entry
+			break
+		}
+	}
+	require.NotNil(t, deal)
+	assert.Equal(t, map[string]string{"round": "1"}, deal.DetailParams)
+	assert.Empty(t, deal.Detail)
 }
 
 // --- ヒント ---

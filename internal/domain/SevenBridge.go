@@ -69,6 +69,11 @@ func NewSevenBridge(trumpCards *TrumpCards, players []*SevenBridgePlayer, config
 	}
 }
 
+// appendLog records a Seven Bridge action with a locale-independent detail code.
+func (g *SevenBridge) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewDefaultSevenBridge 標準構成（人間 1 / CPU 1）でコンストラクトする。
 // CUI・Web・Worker のすべての起動経路から呼び出される SSoT。
 func NewDefaultSevenBridge() *SevenBridge {
@@ -229,7 +234,7 @@ func (g *SevenBridge) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "sevenbridge.log.drawsFromStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 	g.claimedThisTurn = false
 	g.phase = SevenBridgePhasePlay
 	return nil
@@ -297,7 +302,7 @@ func (g *SevenBridge) applyPonClaim(cardIndices []int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "pon", fmt.Sprintf("%s calls Pon on %s", playerName(g.players, g.currentPlayerIdx), cardStr(claimed)), []*Card{claimed, c1, c2})
+	g.appendLog(g.currentPlayerIdx, "pon", "sevenbridge.log.callsPon", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(claimed)}, []*Card{claimed, c1, c2})
 	g.claimedThisTurn = true
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -344,7 +349,7 @@ func (g *SevenBridge) applyChiClaim(cardIndices []int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "chi", fmt.Sprintf("%s calls Chi on %s", playerName(g.players, g.currentPlayerIdx), cardStr(claimed)), []*Card{claimed, c1, c2})
+	g.appendLog(g.currentPlayerIdx, "chi", "sevenbridge.log.callsChi", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(claimed)}, []*Card{claimed, c1, c2})
 	g.claimedThisTurn = true
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -403,7 +408,7 @@ func (g *SevenBridge) applyMeld(cardIndices []int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d cards", playerName(g.players, g.currentPlayerIdx), len(cards)), cards)
+	g.appendLog(g.currentPlayerIdx, "meld", "sevenbridge.log.meldsCards", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "count": strconv.Itoa(len(cards))}, cards)
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
 	}
@@ -448,7 +453,7 @@ func (g *SevenBridge) applyLayoff(targetPlayerIdx, meldIdx, cardIndex int) error
 	target.AddCardToMeld(meldIdx, card)
 	player.RemoveCard(cardIndex)
 
-	g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "layoff", "sevenbridge.log.laysOff", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card)}, []*Card{card})
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
 	}
@@ -492,7 +497,7 @@ func (g *SevenBridge) applyDiscard(cardIndex int) error {
 
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "sevenbridge.log.discards", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 
 	// 上がり判定（手札 0）
 	if player.GetCardsSize() == 0 && player.GetMeldCount() > 0 {
@@ -814,9 +819,9 @@ func (g *SevenBridge) finishRound(winnerIdx int) {
 		}
 		// 勝者のラウンドスコア = 相手のペナルティ
 		g.players[winnerIdx].SetRoundScore(loserTotal)
-		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out! Opponent penalty: %d", playerName(g.players, winnerIdx), loserTotal), nil)
+		g.appendLog(winnerIdx, "round_win", "sevenbridge.log.goesOut", map[string]string{"name": playerName(g.players, winnerIdx), "penalty": strconv.Itoa(loserTotal)}, nil)
 	} else {
-		g.appendLog(-1, "draw", "Round ends in a draw (stock empty)", nil)
+		g.appendLog(-1, "draw", "sevenbridge.log.roundDraw", nil, nil)
 	}
 
 	for i := range g.players {
@@ -857,7 +862,7 @@ func (g *SevenBridge) checkGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", "sevenbridge.log.gameWinner", map[string]string{"name": playerName(g.players, g.winnerIdx)}, nil)
 }
 
 // hasAnyLegalDiscard 手札に top に対して合法な捨て札があるか

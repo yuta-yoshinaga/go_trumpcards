@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // TarabishPhase タラビッシュのゲームフェーズ
@@ -188,7 +189,7 @@ func (t *Tarabish) dealRound() {
 	t.leadPlayerIdx = (t.dealerIdx + 1) % TarabishPlayerCnt
 	t.currentPlayerIdx = t.leadPlayerIdx
 	t.sortAllHands()
-	t.appendLog(-1, "deal", fmt.Sprintf("ラウンド%d を開始", t.roundNumber), nil)
+	t.appendLog(-1, "deal", "tarabish.log.roundStarted", map[string]string{"round": strconv.Itoa(t.roundNumber)}, nil)
 }
 
 // sortAllHands 手札をスートごと・札の並び順に整える
@@ -234,7 +235,7 @@ func (t *Tarabish) PassTrump() error {
 	if t.dealerIdx == 0 {
 		return errors.New("the dealer must take the trump")
 	}
-	t.appendLog(0, "pass", "切り札を見送った", nil)
+	t.appendLog(0, "pass", "tarabish.log.passedTrump", nil, nil)
 	t.advanceBid()
 	return nil
 }
@@ -249,7 +250,7 @@ func (t *Tarabish) CpuBid() {
 		t.acceptTrump(idx)
 		return
 	}
-	t.appendLog(idx, "pass", "切り札を見送った", nil)
+	t.appendLog(idx, "pass", "tarabish.log.passedTrump", nil, nil)
 	t.advanceBid()
 }
 
@@ -259,7 +260,7 @@ func (t *Tarabish) acceptTrump(idx int) {
 	if t.upCard != nil {
 		t.trumpSuit = t.upCard.GetDesign()
 	}
-	t.appendLog(idx, "trump", fmt.Sprintf("切り札を引き受けた（%s）", tarabishCardLabel(t.upCard)), nil)
+	t.appendLog(idx, "trump", "tarabish.log.acceptedTrump", map[string]string{"suit": tarabishCardLabel(t.upCard)}, nil)
 	t.completeDeal()
 	t.countMelds()
 	t.sortAllHands()
@@ -352,7 +353,7 @@ func (t *Tarabish) countMelds() {
 		p.SetHasBella(bella)
 		p.SetMeldPoints(pts)
 		if pts > 0 {
-			t.appendLog(i, "meld", fmt.Sprintf("メルド %d 点", pts), nil)
+			t.appendLog(i, "meld", "tarabish.log.meldPoints", map[string]string{"points": strconv.Itoa(pts)}, nil)
 		}
 	}
 }
@@ -457,7 +458,7 @@ func (t *Tarabish) play(playerIdx, cardIndex int) error {
 	}
 	p.RemoveCard(cardIndex)
 	t.currentTrick = append(t.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	t.appendLog(playerIdx, "play", cardStr(card), []*Card{card})
+	t.appendLog(playerIdx, "play", "tarabish.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if len(t.currentTrick) < TarabishPlayerCnt {
 		t.currentPlayerIdx = (playerIdx + 1) % TarabishPlayerCnt
@@ -522,7 +523,7 @@ func (t *Tarabish) resolveTrick() {
 		team := TarabishTeamOf(winner)
 		t.roundPoints[team] += TarabishLastTrickBonus
 		t.lastTrickBonusTeam = team
-		t.appendLog(winner, "last", fmt.Sprintf("最終トリック +%d", TarabishLastTrickBonus), nil)
+		t.appendLog(winner, "last", "tarabish.log.lastTrickBonus", map[string]string{"bonus": strconv.Itoa(TarabishLastTrickBonus)}, nil)
 		t.finishRound()
 	}
 }
@@ -576,7 +577,7 @@ func (t *Tarabish) finishRound() {
 	}
 	for team := range TarabishTeamCnt {
 		t.scores[team] += t.roundPoints[team]
-		t.appendLog(-1, "score", fmt.Sprintf("チーム%d に %d 点", team, t.roundPoints[team]), nil)
+		t.appendLog(-1, "score", "tarabish.log.teamScore", map[string]string{"team": strconv.Itoa(team), "points": strconv.Itoa(t.roundPoints[team])}, nil)
 	}
 
 	if t.scores[0] >= t.config.Target || t.scores[1] >= t.config.Target {
@@ -608,7 +609,7 @@ func (t *Tarabish) finishGame() {
 	default:
 		t.winnerTeam = -1
 	}
-	t.appendLog(-1, "result", fmt.Sprintf("最終得点 %d - %d", t.scores[0], t.scores[1]), nil)
+	t.appendLog(-1, "result", "tarabish.log.finalScore", map[string]string{"team0": strconv.Itoa(t.scores[0]), "team1": strconv.Itoa(t.scores[1])}, nil)
 }
 
 // trickWinner 現在のトリックの勝者
@@ -900,12 +901,12 @@ func (t *Tarabish) GiveUp() {
 	t.phase = TarabishPhaseGameEnd
 	t.gameEndFlag = true
 	t.winnerTeam = 1
-	t.appendLog(0, "giveup", "ギブアップしました", nil)
+	t.appendLog(0, "giveup", "tarabish.log.giveUp", nil, nil)
 }
 
 // appendLog 棋譜エントリを追加
-func (t *Tarabish) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.appendLogAt(t.trickNumber, playerIdx, actionType, detail, cards)
+func (t *Tarabish) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	t.appendLogCodeAt(t.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // tarabishJSON is the KV snapshot format for Tarabish.
