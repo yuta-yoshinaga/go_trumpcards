@@ -40,5 +40,14 @@
   "errInvalidTrumpSuit": "Invalid trump suit.",
   "errInvalidPlayerCount": "Invalid player count.",
   "errPlayerNil": "Player is nil.",
-  "errTrickCardNil": "Trick card is nil."
+  "errTrickCardNil": "Trick card is nil.",
+  "log.schieben": "{{name}} schiebt (passes to partner)",
+  "log.chooseTrump": "{{name}} chooses {{suit}} as trump",
+  "log.trickWin": "{{name}} wins trick {{trick}} ({{points}} pts)",
+  "log.lastTrick": "{{name}} wins last trick +{{points}}",
+  "log.teamScore": "Team {{team}}: {{card}} card + {{weis}} weis + {{stock}} stock = {{total}} (total {{score}})",
+  "log.weis": "Team {{team}} wins Weis (+{{points}})",
+  "log.stock": "{{name}} has Stöck (+{{points}} for team {{team}})",
+  "log.play": "{{name}} plays {{card}}",
+  "log.gameEnd": "Team {{team}} wins the game!"
 }
