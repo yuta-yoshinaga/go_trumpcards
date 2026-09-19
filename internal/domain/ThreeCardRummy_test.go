@@ -172,6 +172,16 @@ func TestThreeCardRummy_BetRejectsBadAmountsAndDealsSixCards(t *testing.T) {
 	assert.Equal(t, ThreeCardRummyPhaseBet, tc.GetPhase(), "弾いたベットで進まない")
 
 	require.NoError(t, tc.Bet(10, 20))
+	var entry *ActionLogEntry
+	for _, candidate := range tc.GetActionLog() {
+		if candidate.DetailCode == "threecardrummy.log.bet" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"ante": "10", "lowBonus": "20"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 	assert.Len(t, tc.GetPlayerHand(), ThreeCardRummyHandSize)
 	assert.Len(t, tc.GetDealerHand(), ThreeCardRummyHandSize)
 	assert.Equal(t, ThreeCardRummyPhaseAction, tc.GetPhase())

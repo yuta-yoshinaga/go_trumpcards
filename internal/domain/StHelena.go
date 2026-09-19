@@ -208,7 +208,7 @@ func (cr *StHelena) MoveTableauToTableau(fromCol, toCol int) error {
 	cr.tableau[toCol] = append(cr.tableau[toCol], tc)
 	cr.tableau[fromCol] = fromCards[:len(fromCards)-1]
 	cr.moveCount++
-	cr.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), []*Card{tc.Card})
+	cr.appendLog("move", "sthelena.log.moveTableau", map[string]string{"fromCol": fmt.Sprintf("%d", fromCol), "toCol": fmt.Sprintf("%d", toCol)}, []*Card{tc.Card})
 	cr.checkStHelenaStalemate()
 	return nil
 }
@@ -263,7 +263,7 @@ func (cr *StHelena) MoveTableauToFoundation(fromCol, foundationIdx int) error {
 	cr.tableau[fromCol] = fromCards[:len(fromCards)-1]
 	cr.foundation[foundationIdx] = append(cr.foundation[foundationIdx], tc.Card)
 	cr.moveCount++
-	cr.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション%d", fromCol, foundationIdx), []*Card{tc.Card})
+	cr.appendLog("move", "sthelena.log.moveFoundation", map[string]string{"fromCol": fmt.Sprintf("%d", fromCol), "foundationIdx": fmt.Sprintf("%d", foundationIdx)}, []*Card{tc.Card})
 	cr.checkGameClear()
 	cr.checkStHelenaStalemate()
 	return nil
@@ -295,7 +295,7 @@ func (cr *StHelena) Redeal() error {
 	cr.restrictionsActive = false
 	cr.redealsRemaining--
 	cr.moveCount++
-	cr.appendLog("redeal", fmt.Sprintf("再配り (残り%d回)", cr.redealsRemaining), nil)
+	cr.appendLog("redeal", "sthelena.log.redeal", map[string]string{"remaining": fmt.Sprintf("%d", cr.redealsRemaining)}, nil)
 	cr.checkStHelenaStalemate()
 	return nil
 }
@@ -304,7 +304,7 @@ func (cr *StHelena) Redeal() error {
 func (cr *StHelena) GiveUp() {
 	if cr.phase == StHelenaPhasePlaying {
 		cr.phase = StHelenaPhaseGameOver
-		cr.appendLog("giveup", "ギブアップしました", nil)
+		cr.appendLog("giveup", "sthelena.log.giveUp", nil, nil)
 	}
 }
 
@@ -376,7 +376,7 @@ func (cr *StHelena) AutoComplete() error {
 			break
 		}
 	}
-	cr.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	cr.appendLog("autocomplete", "sthelena.log.autocomplete", nil, nil)
 	cr.checkGameClear()
 	cr.checkStHelenaStalemate()
 	return nil
@@ -624,8 +624,8 @@ func (cr *StHelena) restoreSnapshot(snap *stHelenaSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加。
-func (cr *StHelena) appendLog(actionType, detail string, cards []*Card) {
-	cr.appendLogAt(cr.moveCount, 0, actionType, detail, cards)
+func (cr *StHelena) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	cr.appendLogCodeAt(cr.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // stHelenaJSON StHelena の永続化用ワイヤーフォーマット。

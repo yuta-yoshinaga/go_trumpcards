@@ -45,5 +45,13 @@
   "lowBonusPayoutLine": "ローボーナス: {{payout}}",
   "totalPayoutLine": "配当合計: {{payout}}",
   "playRequiredLine": "プレイに必要: {{play}}",
-  "errCannotRebet": "まだ賭けていないので再ベットできません"
+  "errCannotRebet": "まだ賭けていないので再ベットできません",
+  "log.bet": "アンテ={{ante}} ローボーナス={{lowBonus}}",
+  "log.play": "プレイベット={{amount}}",
+  "log.fold": "プレイヤーがフォールドします",
+  "log.playerFolded": "プレイヤーはフォールドしました",
+  "log.deal": "各プレイヤーに3枚ずつ配りました",
+  "log.playerWins": "プレイヤーの勝ち",
+  "log.push": "引き分け",
+  "log.dealerWins": "ディーラーの勝ち"
 }

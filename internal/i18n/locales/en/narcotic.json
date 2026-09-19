@@ -26,5 +26,10 @@
   "loopDetected": "The same board keeps returning — there is no further progress",
   "helpExampleHint": "  h                         ask for the next move",
   "helpUndo": "  u                        undo one move",
-  "helpLog": "  l                        show the action log"
+  "helpLog": "  l                        show the action log",
+  "log.draw": "Dealt one card to each pile",
+  "log.remove": "Removed the four cards because their ranks matched",
+  "log.move": "Moved card: col{{fromCol}} → col{{toCol}}",
+  "log.redeal": "Gathered and re-dealt ({{count}}th time)",
+  "log.giveUp": "Gave up"
 }

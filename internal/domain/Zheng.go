@@ -126,7 +126,7 @@ func (z *Zheng) PlayerPlay(indices []int) error {
 		}
 		z.round.passCount++
 		z.round.humanAction = &ZhengAction{PlayerIdx: z.round.currentTurn, PlayedCards: nil}
-		z.appendLog(z.round.currentTurn, "pass", "pass", nil)
+		z.appendLog(z.round.currentTurn, "pass", "zheng.log.pass", nil, nil)
 		z.advanceTurn()
 		z.checkPassClear()
 		return nil
@@ -165,7 +165,7 @@ func (z *Zheng) PlayerPlay(indices []int) error {
 	cards := player.RemoveCards(indices)
 	playType := zhengClassifyPlay(cards)
 	z.round.humanAction = &ZhengAction{PlayerIdx: z.round.currentTurn, PlayedCards: cards}
-	z.appendLog(z.round.currentTurn, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+	z.appendLog(z.round.currentTurn, "play", "zheng.log.play", map[string]string{"count": fmt.Sprintf("%d", len(cards))}, cards)
 	z.playCards(z.round.currentTurn, cards, playType)
 	return nil
 }
@@ -202,7 +202,7 @@ func (z *Zheng) CpuPlay() {
 		z.round.passCount++
 		action := &ZhengAction{PlayerIdx: playerIdx, PlayedCards: nil}
 		z.round.cpuActions = append(z.round.cpuActions, action)
-		z.appendLog(playerIdx, "pass", "pass", nil)
+		z.appendLog(playerIdx, "pass", "zheng.log.pass", nil, nil)
 		z.advanceTurn()
 		z.checkPassClear()
 	} else {
@@ -210,7 +210,7 @@ func (z *Zheng) CpuPlay() {
 		playType := zhengClassifyPlay(cards)
 		action := &ZhengAction{PlayerIdx: playerIdx, PlayedCards: cards}
 		z.round.cpuActions = append(z.round.cpuActions, action)
-		z.appendLog(playerIdx, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+		z.appendLog(playerIdx, "play", "zheng.log.play", map[string]string{"count": fmt.Sprintf("%d", len(cards))}, cards)
 		z.playCards(playerIdx, cards, playType)
 	}
 }
@@ -264,7 +264,7 @@ func (z *Zheng) finishPlayer(idx int) {
 	rank := z.countFinished() + 1
 	z.players[idx].SetIsFinished(true)
 	z.players[idx].SetRank(rank)
-	z.appendLog(idx, "finish", fmt.Sprintf("player %d finished (rank %d)", idx, rank), nil)
+	z.appendLog(idx, "finish", "zheng.log.finish", map[string]string{"player": fmt.Sprintf("%d", idx), "rank": fmt.Sprintf("%d", rank)}, nil)
 }
 
 // checkGameEnd ゲーム終了チェック
@@ -425,8 +425,8 @@ func (z *Zheng) SetConfig(config ZhengConfig) { z.config = config }
 func (z *Zheng) GetActionLog() []*ActionLogEntry { return z.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
-func (z *Zheng) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	z.round.appendLog(playerIdx, actionType, detail, cards)
+func (z *Zheng) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	z.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- JSON Serialization ---

@@ -145,7 +145,7 @@ func TestZhengCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockZhengGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played 1 card(s)"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "zheng.log.play", DetailParams: map[string]string{"count": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewZhengPlayer(true)).Maybe()

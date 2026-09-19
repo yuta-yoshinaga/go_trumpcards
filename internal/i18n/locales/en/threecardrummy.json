@@ -45,5 +45,13 @@
   "lowBonusPayoutLine": "Low bonus: {{payout}}",
   "totalPayoutLine": "Total payout: {{payout}}",
   "playRequiredLine": "To play: {{play}}",
-  "errCannotRebet": "You cannot rebet before placing a bet."
+  "errCannotRebet": "You cannot rebet before placing a bet.",
+  "log.bet": "ante={{ante}} lowbonus={{lowBonus}}",
+  "log.play": "play bet={{amount}}",
+  "log.fold": "player folds",
+  "log.playerFolded": "player folded",
+  "log.deal": "dealt 3 cards each",
+  "log.playerWins": "player wins",
+  "log.push": "push",
+  "log.dealerWins": "dealer wins"
 }

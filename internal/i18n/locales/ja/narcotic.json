@@ -26,5 +26,10 @@
   "loopDetected": "同じ盤面が繰り返しています。これ以上は進みません",
   "helpExampleHint": "  h                         次の一手を教えてもらう",
   "helpUndo": "  u                        1手戻す",
-  "helpLog": "  l                        棋譜を表示"
+  "helpLog": "  l                        棋譜を表示",
+  "log.draw": "各列にカードを配りました",
+  "log.remove": "4枚のランクが揃ったので取り除きました",
+  "log.move": "カード移動: 列{{fromCol}}→列{{toCol}}",
+  "log.redeal": "集めて配り直しました ({{count}}回目)",
+  "log.giveUp": "ギブアップしました"
 }

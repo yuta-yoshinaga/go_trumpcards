@@ -35,5 +35,10 @@
   "columnRowTop": "(上)",
   "columnRowBottom": "(下)",
   "columnRowSide": "(横)",
-  "errRestricted": "その列からその組札へは送れません（初回の配りの間だけの制限。再配りで解けます）"
+  "errRestricted": "その列からその組札へは送れません（初回の配りの間だけの制限。再配りで解けます）",
+  "log.moveTableau": "タブロー列{{fromCol}}→タブロー列{{toCol}}",
+  "log.moveFoundation": "タブロー列{{fromCol}}→ファンデーション{{foundationIdx}}",
+  "log.redeal": "再配り (残り{{remaining}}回)",
+  "log.giveUp": "ギブアップしました",
+  "log.autocomplete": "オートコンプリートを実行しました"
 }

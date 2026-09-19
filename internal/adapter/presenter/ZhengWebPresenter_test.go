@@ -132,7 +132,7 @@ func TestZhengWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockZhengGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played 1 card(s)"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "zheng.log.play", DetailParams: map[string]string{"count": "1"}},
 	})
 	assert.Contains(t, p.ActionLogOutput(m), "play")
 }

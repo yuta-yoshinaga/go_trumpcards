@@ -25,5 +25,8 @@
   "comboThreePairRun": "3連ペア",
   "comboFourOfAKind": "フォーカード",
   "comboInvalid": "不明",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "log.pass": "パス",
+  "log.play": "{{count}}枚のカードを出しました",
+  "log.finish": "プレイヤー{{player}}が{{rank}}位で上がりました"
 }

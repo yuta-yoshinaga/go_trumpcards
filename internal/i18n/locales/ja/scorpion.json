@@ -33,5 +33,10 @@
   "helpUndoN": "  un [<n>]             n手まとめて戻す（手詰まりからの脱出用）",
   "invalidUndoCount": "無効なアンドゥ回数です: {{val}}（1以上の整数を指定してください）",
   "noUndoToEscape": "手詰まり状態ではないか、脱出可能なアンドゥがありません",
-  "hintExposes": "（裏カードが1枚開きます）"
+  "hintExposes": "（裏カードが1枚開きます）",
+  "log.deal": "ストックから列0-2に1枚ずつ配りました",
+  "log.move": "タブロー列{{fromCol}}→タブロー列{{toCol}}",
+  "log.giveUp": "ギブアップしました",
+  "log.autocomplete": "オートコンプリートを実行しました",
+  "log.complete": "タブロー列{{col}}でスートが完成しました"
 }
