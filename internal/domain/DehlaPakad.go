@@ -374,11 +374,11 @@ func (d *DehlaPakad) collectCentrePile(winner int, lastTrick bool) {
 	}
 	d.teamTens[DehlaPakadTeamOf(winner)] += tens
 	d.players[winner].AddTrick(d.centrePile)
-	reason := "two in a row"
+	detailCode := "dehlapakad.log.collectTwoInARow"
 	if lastTrick && winner != d.prevTrickWinner {
-		reason = "last trick"
+		detailCode = "dehlapakad.log.collectLastTrick"
 	}
-	d.appendLog(winner, "collect", "dehlapakad.log.collect", map[string]string{"player": strconv.Itoa(winner), "cards": strconv.Itoa(len(d.centrePile)), "reason": reason, "tens": strconv.Itoa(tens)}, d.centrePile)
+	d.appendLog(winner, "collect", detailCode, map[string]string{"player": strconv.Itoa(winner), "cards": strconv.Itoa(len(d.centrePile)), "tens": strconv.Itoa(tens)}, d.centrePile)
 	d.centrePile = nil
 }
 

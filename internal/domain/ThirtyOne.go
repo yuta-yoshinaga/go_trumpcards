@@ -196,7 +196,7 @@ func (g *ThirtyOne) PlayerDrawFromStock() error {
 		return err
 	}
 	if len(g.drawPile) == 0 {
-		g.endRound("stock empty")
+		g.endRound(true)
 		return nil
 	}
 	g.drawFromStock(g.currentPlayerIdx)
@@ -344,7 +344,7 @@ func (g *ThirtyOne) cpuDraw() {
 	}
 
 	if len(g.drawPile) == 0 {
-		g.endRound("stock empty")
+		g.endRound(true)
 		return
 	}
 	g.drawFromStock(idx)
@@ -517,9 +517,9 @@ func (g *ThirtyOne) declareThirtyOne(idx int) {
 }
 
 // endRound ノック後または山札切れでラウンドを精算し、最低点のプレイヤーがライフを失う
-func (g *ThirtyOne) endRound(reason string) {
-	if reason != "" {
-		g.appendLog(-1, "round_end", "thirtyone.log.roundEnd", map[string]string{"reason": reason}, nil)
+func (g *ThirtyOne) endRound(stockEmpty bool) {
+	if stockEmpty {
+		g.appendLog(-1, "round_end", "thirtyone.log.roundEndStockEmpty", nil, nil)
 	}
 
 	minScore := -1
@@ -598,7 +598,7 @@ func (g *ThirtyOne) leaderIdx() int {
 func (g *ThirtyOne) advanceTurn() {
 	next := g.nextActiveIdx(g.currentPlayerIdx)
 	if g.knockerIdx >= 0 && next == g.knockerIdx {
-		g.endRound("")
+		g.endRound(false)
 		return
 	}
 	g.currentPlayerIdx = next

@@ -882,8 +882,27 @@ func TestSixCardGolf_ActionLog(t *testing.T) {
 	assert.True(t, len(g.GetActionLog()) > 0)
 	entry := g.GetActionLog()[0]
 	assert.Equal(t, "sixcardgolf.log.flipInitial", entry.DetailCode)
-	assert.Equal(t, map[string]string{"actor": "プレイヤー", "player": "0", "position": "0"}, entry.DetailParams)
+	assert.Equal(t, map[string]string{"player": "0", "position": "0"}, entry.DetailParams)
 	assert.Empty(t, entry.Detail)
+}
+
+func TestSixCardGolf_CpuActionLogUsesCpuCodeWithoutActorParam(t *testing.T) {
+	g := newTestSixCardGolf()
+	g.Reset()
+	g.SetPhase(SixCardGolfPhasePlayerTurn)
+	g.SetCurrentPlayerIdx(1)
+	g.CpuPlay()
+
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "sixcardgolf.log.drawStockCpu" || candidate.DetailCode == "sixcardgolf.log.drawDiscardCpu" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.NotContains(t, entry.DetailParams, "actor")
+	assert.Equal(t, map[string]string{"player": "1"}, entry.DetailParams)
 }
 
 // --- 4 players ---
