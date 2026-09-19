@@ -2,7 +2,10 @@
 
 package domain
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 // BarbuDominoes.go は Dominoes コントラクト (7 並べ / fan-tan) のレイアウト処理。
 // Sevens の bitmask 方式を踏襲し、各スートを 7 を起点に上下へ伸ばす。手札を
@@ -76,7 +79,7 @@ func (b *Barbu) applyDominoPlay(playerIdx, handIdx int) error {
 			return NewDomainError(ErrInvalidPlay, "you have a playable card and cannot pass")
 		}
 		b.passCount[playerIdx]++
-		b.appendLog(playerIdx, "pass", fmt.Sprintf("player %d passes", playerIdx), nil)
+		b.appendLog(playerIdx, "pass", "barbu.log.pass", map[string]string{"player": strconv.Itoa(playerIdx)}, nil)
 		b.advanceDominoTurn()
 		return nil
 	}
@@ -91,13 +94,13 @@ func (b *Barbu) applyDominoPlay(playerIdx, handIdx int) error {
 
 	played := player.RemoveCard(handIdx)
 	b.tablePlaced[played.GetDesign()] |= uint16(1) << uint(played.GetValue())
-	b.appendLog(playerIdx, "place", fmt.Sprintf("player %d places %s", playerIdx, cardStr(played)), []*Card{played})
+	b.appendLog(playerIdx, "place", "barbu.log.place", map[string]string{"player": strconv.Itoa(playerIdx), "card": cardStr(played)}, []*Card{played})
 
 	if player.GetCardsSize() == 0 {
 		b.dominoFinished++
 		player.SetDominoRank(b.dominoFinished)
 		player.SetIsFinished(true)
-		b.appendLog(playerIdx, "finish", fmt.Sprintf("player %d goes out (rank %d)", playerIdx, b.dominoFinished), nil)
+		b.appendLog(playerIdx, "finish", "barbu.log.dominoFinish", map[string]string{"player": strconv.Itoa(playerIdx), "rank": strconv.Itoa(b.dominoFinished)}, nil)
 	}
 	b.advanceDominoTurn()
 	return nil
@@ -125,7 +128,7 @@ func (b *Barbu) finishDominoDeal() {
 			b.dominoFinished++
 			p.SetDominoRank(BarbuPlayerCnt)
 			p.SetIsFinished(true)
-			b.appendLog(i, "finish", fmt.Sprintf("player %d is last (rank %d)", i, BarbuPlayerCnt), nil)
+			b.appendLog(i, "finish", "barbu.log.dominoLast", map[string]string{"player": strconv.Itoa(i), "rank": strconv.Itoa(BarbuPlayerCnt)}, nil)
 		}
 	}
 	b.finishDeal()

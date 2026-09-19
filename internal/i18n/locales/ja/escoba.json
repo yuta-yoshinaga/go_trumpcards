@@ -1,4 +1,11 @@
 {
+  "log.deal": "ラウンド{{round}}: 場に4枚、各{{cards}}枚",
+  "log.play": "場に置きました",
+  "log.escoba": "場を掃きました（エスコバ）",
+  "log.capture": "{{cards}}枚を取りました",
+  "log.sweepLeftover": "場に残った{{cards}}枚を取りました",
+  "log.roundScore": "ラウンド{{round}}を得点計算しました",
+  "log.gameEnd": "プレイヤー{{player}}が{{score}}点で勝ちました",
   "helpTitle": "Escoba (エスコバ)",
   "hintNone": "ヒントはありません",
   "hintNoCapture": "合計15で捕獲できる手はありません。最小札を場に置きましょう",

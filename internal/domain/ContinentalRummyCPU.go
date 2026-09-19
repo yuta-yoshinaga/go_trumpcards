@@ -3,8 +3,8 @@
 package domain
 
 import (
-	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // continentalRummyCpuLoopCap は CPU の手番を回す上限。
@@ -64,7 +64,7 @@ func (c *ContinentalRummy) playCpuTurn(seat int) {
 	card := p.RemoveCard(i)
 	c.discardPile = append(c.discardPile, card)
 	c.turnsThisRound[seat]++
-	c.appendLog(seat, "discard", fmt.Sprintf("seat %d discards", seat), []*Card{card})
+	c.appendLog(seat, "discard", "continentalrummy.log.discard", map[string]string{"seat": strconv.Itoa(seat)}, []*Card{card})
 	c.advanceNoRecurse()
 }
 

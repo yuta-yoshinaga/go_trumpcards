@@ -1,4 +1,11 @@
 {
+  "log.deal": "round {{round}}: 4 table cards, {{cards}} to each",
+  "log.play": "placed on table",
+  "log.escoba": "swept the table (escoba)",
+  "log.capture": "captured {{cards}} card(s)",
+  "log.sweepLeftover": "took {{cards}} leftover table card(s)",
+  "log.roundScore": "round {{round}} scored",
+  "log.gameEnd": "player {{player}} wins with {{score}}",
   "helpTitle": "Escoba",
   "hintNone": "No hint available",
   "hintNoCapture": "No capture summing to 15; lay your lowest card",

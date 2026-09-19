@@ -1,4 +1,11 @@
 {
+  "log.draw": "ストックからカードを引きました",
+  "log.wasteToTableau": "ウェイスト→タブロー列{{column}}",
+  "log.wasteToFoundation": "ウェイスト→ファンデーション",
+  "log.tableauToTableau": "タブロー列{{fromColumn}}→タブロー列{{toColumn}}",
+  "log.tableauToFoundation": "タブロー列{{column}}→ファンデーション",
+  "log.giveup": "ギブアップしました",
+  "log.autocomplete": "オートコンプリートを実行しました",
   "helpTitle": "Rank and File (ランク・アンド・ファイル)",
   "helpDraw": "  d                    draw from stock",
   "helpMove": "  m w t <col>          move waste to tableau",
