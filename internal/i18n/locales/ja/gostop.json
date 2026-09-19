@@ -41,5 +41,14 @@
   "bak.pi": "피박",
   "bak.go": "고박",
   "categoryCounts": "  獲得内訳: 光{{gwang}} 열끗{{yeol}} 띠{{tti}} 피{{pi}}",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "log.deal": "ラウンド{{round}}を配りました（場{{field}}枚、山札{{draw}}枚）",
+  "log.play": "{{name}}が{{card}}を出しました（{{result}}）",
+  "log.draw": "{{name}}が{{card}}を引きました（{{result}}）",
+  "log.score": "{{name}}が{{points}}点に到達しました",
+  "log.go": "{{name}}がゴーを宣言しました（×{{count}}）",
+  "log.stop": "{{name}}がストップしました",
+  "log.roundWin": "{{name}}が{{points}}点でラウンドに勝利しました（バク×{{bak}}）",
+  "log.roundDraw": "ラウンドは引き分けでした（勝者なし）",
+  "log.gameEnd": "ゲーム終了（勝者{{winner}}）"
 }

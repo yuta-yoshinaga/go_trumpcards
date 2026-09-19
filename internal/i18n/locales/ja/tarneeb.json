@@ -42,5 +42,14 @@
   "errBidRange": "ビッドは {{min}}〜{{max}} またはパス(0) で指定してください",
   "errBidHigherThanHighest": "ビッドは現在の最高 {{bid}} より大きくする必要があります",
   "errInvalidTrumpSuit": "トランプスートは ♠/♣/♥/♦ から選んでください",
-  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "log.bid": "{{name}}が{{bid}}とビッドしました",
+  "log.redeal": "全員パス（再配布{{count}}回目）",
+  "log.bidWin": "{{name}}が{{bid}}でオークションに勝ちました",
+  "log.trump": "{{name}}が{{suit}}を切り札に指定しました",
+  "log.trickWin": "{{name}}がトリック{{trick}}を取りました",
+  "log.roundScoreBidder": "チーム{{team}}（ビッド側）: ビッド={{bid}} トリック={{tricks}} 増減={{delta}} 合計={{total}}",
+  "log.roundScoreDefender": "チーム{{team}}（守備側）: トリック={{tricks}} 増減={{delta}} 合計={{total}}",
+  "log.gameEnd": "チーム{{team}}がゲームに勝利しました！",
+  "log.play": "{{name}}が{{card}}を出しました"
 }

@@ -261,7 +261,7 @@ func (g *ContractRummy) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLogCode(g.currentPlayerIdx, "draw_stock", "contractrummy.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 	g.phase = ContractRummyPhasePlay
 	return nil
 }
@@ -275,7 +275,7 @@ func (g *ContractRummy) drawFromDiscard() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLogCode(g.currentPlayerIdx, "draw_discard", "contractrummy.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card)}, []*Card{card})
 	g.phase = ContractRummyPhasePlay
 	return nil
 }
@@ -368,7 +368,7 @@ func (g *ContractRummy) applyContractMeld(indicesPerSlot [][]int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "meld_contract", fmt.Sprintf("%s meets the contract (round %d)", playerName(g.players, g.currentPlayerIdx), g.roundNumber), nil)
+	g.appendLogCode(g.currentPlayerIdx, "meld_contract", "contractrummy.log.meldContract", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "round": strconv.Itoa(g.roundNumber)}, nil)
 
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -422,7 +422,7 @@ func (g *ContractRummy) applyExtraMeld(indices []int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "meld_extra", fmt.Sprintf("%s melds %d extra cards", playerName(g.players, g.currentPlayerIdx), len(cards)), cards)
+	g.appendLogCode(g.currentPlayerIdx, "meld_extra", "contractrummy.log.meldExtra", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "count": strconv.Itoa(len(cards))}, cards)
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
 	}
@@ -471,7 +471,7 @@ func (g *ContractRummy) applyLayoff(targetPlayerIdx, meldIdx, cardIndex int) err
 	target.AddCardToMeld(meldIdx, card)
 	current.RemoveCard(cardIndex)
 
-	g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s on player %d's meld", playerName(g.players, g.currentPlayerIdx), cardStr(card), targetPlayerIdx), []*Card{card})
+	g.appendLogCode(g.currentPlayerIdx, "layoff", "contractrummy.log.layoff", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card), "target": strconv.Itoa(targetPlayerIdx)}, []*Card{card})
 	if current.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
 	}
@@ -504,7 +504,7 @@ func (g *ContractRummy) applyDiscard(cardIndex int) error {
 
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLogCode(g.currentPlayerIdx, "discard", "contractrummy.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 
 	if player.GetCardsSize() == 0 && player.IsContractMet() {
 		g.finishRound(g.currentPlayerIdx)
@@ -712,9 +712,9 @@ func (g *ContractRummy) finishRound(winnerIdx int) {
 	}
 
 	if winnerIdx >= 0 {
-		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out (round %d)", playerName(g.players, winnerIdx), g.roundNumber), nil)
+		g.appendLogCode(winnerIdx, "round_win", "contractrummy.log.roundWin", map[string]string{"name": playerName(g.players, winnerIdx), "round": strconv.Itoa(g.roundNumber)}, nil)
 	} else {
-		g.appendLog(-1, "draw", "Round ends in a draw (stock empty)", nil)
+		g.appendLogCode(-1, "draw", "contractrummy.log.draw", nil, nil)
 	}
 
 	for i := range g.players {
@@ -746,7 +746,7 @@ func (g *ContractRummy) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d penalty points!", playerName(g.players, g.winnerIdx), minScore), nil)
+	g.appendLogCode(-1, "game_end", "contractrummy.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx), "points": strconv.Itoa(minScore)}, nil)
 }
 
 // --- Getters / Setters ---

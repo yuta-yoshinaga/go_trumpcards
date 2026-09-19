@@ -56,5 +56,14 @@
   "errTargetContractNotMet": "The target player has not met the contract.",
   "errTargetMeldInvalid": "The target meld is invalid.",
   "errLayoffCardCannotAdd": "{{card}} cannot be added to that meld.",
-  "errContractRequiredToGoOut": "You must meet the contract before going out."
+  "errContractRequiredToGoOut": "You must meet the contract before going out.",
+  "log.drawStock": "{{name}} draws from stock",
+  "log.drawDiscard": "{{name}} draws {{card}} from discard",
+  "log.meldContract": "{{name}} meets the contract (round {{round}})",
+  "log.meldExtra": "{{name}} melds {{count}} extra cards",
+  "log.layoff": "{{name}} lays off {{card}} on player {{target}}'s meld",
+  "log.discard": "{{name}} discards {{card}}",
+  "log.roundWin": "{{name}} goes out (round {{round}})",
+  "log.draw": "Round ends in a draw (stock empty)",
+  "log.gameEnd": "{{name}} wins the game with {{points}} penalty points!"
 }
