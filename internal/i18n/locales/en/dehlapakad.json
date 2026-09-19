@@ -48,7 +48,8 @@
   "log.trump": "player {{player}} calls {{suit}}",
   "log.play": "player {{player}} plays {{card}}",
   "log.trickWin": "player {{player}} wins trick {{trick}}",
-  "log.collect": "player {{player}} gathers {{cards}} card(s) ({{reason}}), {{tens}} ten(s)",
+  "log.collectTwoInARow": "player {{player}} gathers {{cards}} card(s) (two in a row), {{tens}} ten(s)",
+  "log.collectLastTrick": "player {{player}} gathers {{cards}} card(s) (last trick), {{tens}} ten(s)",
   "log.handEnd": "hand {{hand}}: team {{team}} wins (tens {{tens}}, kot={{kot}})",
   "log.gameEnd": "team {{team}} takes the match"
 }

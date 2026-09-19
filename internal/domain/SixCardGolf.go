@@ -261,7 +261,7 @@ func (g *SixCardGolf) FlipInitial(pos int) error {
 	}
 
 	p.Grid[pos].FaceUp = true
-	g.appendLog("flipInitial", "sixcardgolf.log.flipInitial", map[string]string{"actor": "プレイヤー", "player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(pos)}, []*Card{p.Grid[pos].Card})
+	g.appendLog("flipInitial", "sixcardgolf.log.flipInitial", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(pos)}, []*Card{p.Grid[pos].Card})
 
 	if p.FaceUpCount() >= SixCardGolfInitialFlips {
 		g.currentPlayerIdx++
@@ -295,7 +295,7 @@ func (g *SixCardGolf) DrawStock() error {
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	g.drawnFromDiscard = false
 	g.phase = SixCardGolfPhaseDrawPending
-	g.appendLog("drawStock", "sixcardgolf.log.drawStock", map[string]string{"actor": "プレイヤー", "player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
+	g.appendLog("drawStock", "sixcardgolf.log.drawStock", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
 	return nil
 }
 
@@ -318,7 +318,7 @@ func (g *SixCardGolf) DrawDiscard() error {
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
 	g.drawnFromDiscard = true
 	g.phase = SixCardGolfPhaseDrawPending
-	g.appendLog("drawDiscard", "sixcardgolf.log.drawDiscard", map[string]string{"actor": "プレイヤー", "player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
+	g.appendLog("drawDiscard", "sixcardgolf.log.drawDiscard", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
 	return nil
 }
 
@@ -342,7 +342,7 @@ func (g *SixCardGolf) SwapCard(pos int) error {
 	p.Grid[pos].Card = g.drawnCard
 	p.Grid[pos].FaceUp = true
 	g.discardPile = append(g.discardPile, old)
-	g.appendLog("swap", "sixcardgolf.log.swap", map[string]string{"actor": "プレイヤー", "player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(pos)}, []*Card{g.drawnCard, old})
+	g.appendLog("swap", "sixcardgolf.log.swap", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(pos)}, []*Card{g.drawnCard, old})
 
 	g.drawnCard = nil
 	g.canFlip = false
@@ -363,7 +363,7 @@ func (g *SixCardGolf) DiscardDrawn() error {
 	}
 
 	g.discardPile = append(g.discardPile, g.drawnCard)
-	g.appendLog("discard", "sixcardgolf.log.discard", map[string]string{"actor": "プレイヤー", "player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
+	g.appendLog("discard", "sixcardgolf.log.discard", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
 	g.drawnCard = nil
 
 	if !g.drawnFromDiscard {
@@ -408,7 +408,7 @@ func (g *SixCardGolf) FlipCard(pos int) error {
 	}
 
 	p.Grid[pos].FaceUp = true
-	g.appendLog("flip", "sixcardgolf.log.flip", map[string]string{"actor": "プレイヤー", "player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(pos)}, []*Card{p.Grid[pos].Card})
+	g.appendLog("flip", "sixcardgolf.log.flip", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(pos)}, []*Card{p.Grid[pos].Card})
 
 	g.canFlip = false
 	g.advanceTurn()
@@ -466,7 +466,7 @@ func (g *SixCardGolf) cpuSetup() {
 		}
 		if !p.Grid[i].FaceUp {
 			p.Grid[i].FaceUp = true
-			g.appendLog("flipInitial", "sixcardgolf.log.flipInitial", map[string]string{"actor": "CPU", "player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(i)}, []*Card{p.Grid[i].Card})
+			g.appendLog("flipInitial", "sixcardgolf.log.flipInitialCpu", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(i)}, []*Card{p.Grid[i].Card})
 			flipped++
 		}
 	}
@@ -484,7 +484,7 @@ func (g *SixCardGolf) cpuDraw() {
 		g.drawnCard = g.discardPile[len(g.discardPile)-1]
 		g.discardPile = g.discardPile[:len(g.discardPile)-1]
 		g.drawnFromDiscard = true
-		g.appendLog("drawDiscard", "sixcardgolf.log.drawDiscard", map[string]string{"actor": "CPU", "player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
+		g.appendLog("drawDiscard", "sixcardgolf.log.drawDiscardCpu", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
 	} else {
 		if len(g.drawPile) == 0 {
 			g.refillDrawPile()
@@ -495,7 +495,7 @@ func (g *SixCardGolf) cpuDraw() {
 		g.drawnCard = g.drawPile[len(g.drawPile)-1]
 		g.drawPile = g.drawPile[:len(g.drawPile)-1]
 		g.drawnFromDiscard = false
-		g.appendLog("drawStock", "sixcardgolf.log.drawStock", map[string]string{"actor": "CPU", "player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
+		g.appendLog("drawStock", "sixcardgolf.log.drawStockCpu", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
 	}
 	g.phase = SixCardGolfPhaseDrawPending
 }
@@ -539,13 +539,13 @@ func (g *SixCardGolf) cpuSwapOrDiscard() {
 		p.Grid[bestPos].Card = g.drawnCard
 		p.Grid[bestPos].FaceUp = true
 		g.discardPile = append(g.discardPile, old)
-		g.appendLog("swap", "sixcardgolf.log.swap", map[string]string{"actor": "CPU", "player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(bestPos)}, []*Card{g.drawnCard, old})
+		g.appendLog("swap", "sixcardgolf.log.swapCpu", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(bestPos)}, []*Card{g.drawnCard, old})
 		g.drawnCard = nil
 		g.canFlip = false
 		g.advanceTurn()
 	} else {
 		g.discardPile = append(g.discardPile, g.drawnCard)
-		g.appendLog("discard", "sixcardgolf.log.discard", map[string]string{"actor": "CPU", "player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
+		g.appendLog("discard", "sixcardgolf.log.discardCpu", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
 		g.drawnCard = nil
 		if !g.drawnFromDiscard {
 			g.canFlip = true
@@ -563,7 +563,7 @@ func (g *SixCardGolf) cpuFlipAfterDiscard() {
 	for i := 0; i < SixCardGolfGridSize; i++ {
 		if !p.Grid[i].FaceUp {
 			p.Grid[i].FaceUp = true
-			g.appendLog("flip", "sixcardgolf.log.flip", map[string]string{"actor": "CPU", "player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(i)}, []*Card{p.Grid[i].Card})
+			g.appendLog("flip", "sixcardgolf.log.flipCpu", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(i)}, []*Card{p.Grid[i].Card})
 			break
 		}
 	}

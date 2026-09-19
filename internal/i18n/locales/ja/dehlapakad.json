@@ -48,7 +48,8 @@
   "log.trump": "プレイヤー{{player}}が{{suit}}を切り札と宣言",
   "log.play": "プレイヤー{{player}}が{{card}}を出す",
   "log.trickWin": "プレイヤー{{player}}がトリック{{trick}}を取る",
-  "log.collect": "プレイヤー{{player}}が{{cards}}枚を回収（{{reason}}）、10が{{tens}}枚",
+  "log.collectTwoInARow": "プレイヤー{{player}}が{{cards}}枚を回収（2 回連続）、10が{{tens}}枚",
+  "log.collectLastTrick": "プレイヤー{{player}}が{{cards}}枚を回収（最終トリック）、10が{{tens}}枚",
   "log.handEnd": "ハンド{{hand}}: チーム{{team}}の勝ち（10={{tens}}、コート={{kot}}）",
   "log.gameEnd": "チーム{{team}}がマッチを制す"
 }

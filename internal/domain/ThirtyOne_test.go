@@ -107,6 +107,15 @@ func TestThirtyOne_DrawStockEmptyEndsRound(t *testing.T) {
 	g.SetDrawPile([]*Card{})
 	require.NoError(t, g.PlayerDrawFromStock())
 	assert.Contains(t, []ThirtyOnePhase{ThirtyOnePhaseRoundEnd, ThirtyOnePhaseGameEnd}, g.GetPhase())
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "thirtyone.log.roundEndStockEmpty" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Empty(t, entry.DetailParams)
 }
 
 func TestThirtyOne_DiscardWrongPhaseAndIndex(t *testing.T) {

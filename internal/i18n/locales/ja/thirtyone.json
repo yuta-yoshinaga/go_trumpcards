@@ -47,7 +47,7 @@
   "log.thirtyOne": "{{name}} が31に到達しました!",
   "log.knock": "{{name}} がノックしました (スコア: {{score}})",
   "log.roundWin": "{{name}} が31でラウンドに勝ちました",
-  "log.roundEnd": "ラウンド終了 ({{reason}})",
+  "log.roundEndStockEmpty": "ラウンド終了 (山札切れ)",
   "log.loseLife": "{{name}} がライフを失いました (スコア: {{score}})",
   "log.gameEnd": "{{name}} がゲームに勝ちました!"
 }

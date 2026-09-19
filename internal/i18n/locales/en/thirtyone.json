@@ -47,7 +47,7 @@
   "log.thirtyOne": "{{name}} reaches 31!",
   "log.knock": "{{name}} knocks (score: {{score}})",
   "log.roundWin": "{{name}} wins the round with 31",
-  "log.roundEnd": "Round ends ({{reason}})",
+  "log.roundEndStockEmpty": "Round ends (stock empty)",
   "log.loseLife": "{{name}} loses a life (score: {{score}})",
   "log.gameEnd": "{{name}} wins the game!"
 }
