@@ -244,7 +244,7 @@ func TestGanjifaWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockGanjifaGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays Taj 12"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "ganjifa.log.play"},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

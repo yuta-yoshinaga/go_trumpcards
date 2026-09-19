@@ -264,7 +264,7 @@ func TestWizardWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.WizardWebPresenter)
 	m := setupWizardWebMock()
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", Detail: "test"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", DetailCode: "wizard.log.bid", DetailParams: map[string]string{"name": "You", "bid": "3"}},
 	})
 
 	result := p.ActionLogOutput(m)

@@ -31,5 +31,11 @@
   "livePoints": "Card points so far: Re {{rePts}} (needs {{reTarget}}) / Kontra {{kontraPts}} (needs {{kontraTarget}})",
   "errCardIndexOutOfRange": "The card index is out of range.",
   "errAnnounceUnavailable": "Announcements are not available at this time.",
-  "errFollowLeadSuit": "You must follow the lead suit."
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "log.announceRe": "{{name}} announces Re",
+  "log.announceKontra": "{{name}} announces Kontra",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}} ({{points}} pts)",
+  "log.roundScore": "round {{round}}: Re {{rePoints}} pts ({{outcome}}, {{gamePoints}} game pts)",
+  "log.gameEnd": "{{name}} wins the game!"
 }

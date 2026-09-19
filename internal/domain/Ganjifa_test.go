@@ -493,6 +493,19 @@ func TestGanjifa_ActionLogRecordsPlay(t *testing.T) {
 	}
 	assert.Equal(t, GanjifaPlayerCnt, types["play"])
 	assert.Equal(t, 1, types["trickwin"])
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "ganjifa.log.trickWin" {
+			entry = candidate
+			break
+		}
+	}
+	if entry == nil {
+		t.Fatal("trick win action log entry not found")
+	}
+	if entry.DetailParams["trick"] != "1" || entry.Detail != "" {
+		t.Fatalf("trick win detail = %#v, want trick=1 and empty legacy detail", entry)
+	}
 }
 
 func TestGanjifa_ConfigAccessors(t *testing.T) {

@@ -209,7 +209,7 @@ func TestManilleWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockManilleGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "manille.log.play", DetailParams: map[string]string{"name": "You", "card": "♠K"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

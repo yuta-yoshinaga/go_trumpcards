@@ -29,5 +29,9 @@
   "roundProgress": "今ラウンドの取得点（チームA: {{ptsA}}点, チームB: {{ptsB}}点）",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errFollowLeadSuit": "リードスートに従ってください",
-  "errMustPlayTrump": "切り札を出してください"
+  "errMustPlayTrump": "切り札を出してください",
+  "log.play": "{{name}}が{{card}}を出す",
+  "log.trickWin": "{{name}}がトリック{{trick}}を獲得（+{{points}}点）",
+  "log.roundScore": "ラウンド{{round}}: A={{teamAScore}}（ラウンド{{teamARound}}）, B={{teamBScore}}（ラウンド{{teamBRound}}）",
+  "log.gameEnd": "チーム{{team}}がマッチに勝利！"
 }
