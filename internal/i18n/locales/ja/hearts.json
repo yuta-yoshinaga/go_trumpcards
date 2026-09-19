@@ -42,5 +42,14 @@
   "errFirstTrickMustLeadTwoOfClubs": "最初のトリックは2♣でリードしてください",
   "errHeartsNotBroken": "ハーツはまだブレイクされていません",
   "errFollowLeadSuit": "リードスートに従ってください",
-  "errFirstTrickNoPointCards": "最初のトリックではポイントカードを出せません"
+  "errFirstTrickNoPointCards": "最初のトリックではポイントカードを出せません",
+  "log.passLeft": "ラウンド{{round}}: 左へカードを渡しました",
+  "log.passRight": "ラウンド{{round}}: 右へカードを渡しました",
+  "log.passAcross": "ラウンド{{round}}: 向かいへカードを渡しました",
+  "log.passNone": "ラウンド{{round}}: カードを渡しませんでした",
+  "log.trickWin": "{{name}}がトリック{{trick}}を取りました（{{points}}点）",
+  "log.shootMoon": "{{name}}がシュート・ザ・ムーンを達成しました！",
+  "log.roundScore": "{{name}}: ラウンド={{round}}、合計={{total}}",
+  "log.gameEnd": "{{name}}がゲームに勝利しました！",
+  "log.play": "{{name}}が{{card}}を出しました"
 }

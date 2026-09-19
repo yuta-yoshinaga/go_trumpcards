@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // crazyFourPokerMaxSliceLen はデシリアライズ時のスライス長上限。
@@ -127,7 +128,7 @@ func (g *CrazyFourPoker) Reset() {
 	g.gameEndFlag = false
 	g.actionLog = nil
 	g.turnNumber = 0
-	g.appendLog("start", "crazy 4 poker begins", nil)
+	g.appendLog("start", "crazyfourpoker.log.start", nil, nil)
 	g.startRound()
 }
 
@@ -162,7 +163,7 @@ func (g *CrazyFourPoker) NextRound() error {
 	// **最低額のアンティも置けなくなったら終わり。**
 	if g.player.GetChips() < g.minTotalWager() {
 		g.gameEndFlag = true
-		g.appendLog("gameEnd", "out of chips", nil)
+		g.appendLog("gameEnd", "crazyfourpoker.log.outOfChips", nil, nil)
 	}
 	return nil
 }
@@ -211,7 +212,7 @@ func (g *CrazyFourPoker) PlaceBet(ante, queensUp int) error {
 	g.anteBet = ante
 	g.superBet = ante
 	g.queensUpBet = queensUp
-	g.appendLog("bet", fmt.Sprintf("ante %d, super %d, queensUp %d", ante, ante, queensUp), nil)
+	g.appendLog("bet", "crazyfourpoker.log.bet", map[string]string{"ante": strconv.Itoa(ante), "super": strconv.Itoa(ante), "queensUp": strconv.Itoa(queensUp)}, nil)
 
 	g.deal()
 	return nil
@@ -225,7 +226,7 @@ func (g *CrazyFourPoker) deal() {
 	}
 	g.playerBest = pickBestFour(g.playerHand)
 	g.dealerBest = pickBestFour(g.dealerHand)
-	g.appendLog("deal", "cards dealt", g.playerHand)
+	g.appendLog("deal", "crazyfourpoker.log.deal", nil, g.playerHand)
 	g.phase = CrazyFourPokerPhaseDecide
 }
 
@@ -264,7 +265,7 @@ func (g *CrazyFourPoker) Play(multiplier int) error {
 	}
 	g.playBet = bet
 	g.playMult = multiplier
-	g.appendLog("play", fmt.Sprintf("play %d (x%d)", bet, multiplier), nil)
+	g.appendLog("play", "crazyfourpoker.log.play", map[string]string{"bet": strconv.Itoa(bet), "multiplier": strconv.Itoa(multiplier)}, nil)
 	g.resolve()
 	return nil
 }
@@ -278,7 +279,7 @@ func (g *CrazyFourPoker) Fold() error {
 		return errCrazyFourPokerWrongPhase
 	}
 	g.result = CrazyFourPokerResultFold
-	g.appendLog("fold", "folded", nil)
+	g.appendLog("fold", "crazyfourpoker.log.fold", nil, nil)
 	// 降りても Queens Up は自分の役だけで決まるので生きている。
 	g.payout = g.queensUpPayout()
 	g.player.AddChips(g.payout)
@@ -367,7 +368,17 @@ func (g *CrazyFourPoker) resolve() {
 
 	g.payout = g.antePlayPayout(cmp, qualifies) + g.superBonusPayout(cmp, qualifies) + g.queensUpPayout()
 	g.player.AddChips(g.payout)
-	g.appendLog("result", CrazyFourPokerResultName(g.result), nil)
+	resultCode := map[CrazyFourPokerResult]string{
+		CrazyFourPokerResultFold:               "crazyfourpoker.log.resultFold",
+		CrazyFourPokerResultWin:                "crazyfourpoker.log.resultWin",
+		CrazyFourPokerResultLose:               "crazyfourpoker.log.resultLose",
+		CrazyFourPokerResultPush:               "crazyfourpoker.log.resultPush",
+		CrazyFourPokerResultDealerNotQualified: "crazyfourpoker.log.resultDealerNotQualified",
+	}[g.result]
+	if resultCode == "" {
+		resultCode = "crazyfourpoker.log.resultNone"
+	}
+	g.appendLog("result", resultCode, nil, nil)
 	g.phase = CrazyFourPokerPhaseResult
 }
 
@@ -461,15 +472,9 @@ func (g *CrazyFourPoker) GetHint() *CrazyFourPokerHint {
 // --- ログ ---
 
 // appendLog は行動ログを 1 行足す。
-func (g *CrazyFourPoker) appendLog(actionType, detail string, cards []*Card) {
+func (g *CrazyFourPoker) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.turnNumber,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.actionLog = append(g.actionLog, &ActionLogEntry{TurnNumber: g.turnNumber, PlayerIdx: 0, ActionType: actionType, DetailCode: detailCode, DetailParams: detailParams, Cards: cards})
 	if len(g.actionLog) > crazyFourPokerMaxSliceLen {
 		g.actionLog = g.actionLog[len(g.actionLog)-crazyFourPokerMaxSliceLen:]
 	}

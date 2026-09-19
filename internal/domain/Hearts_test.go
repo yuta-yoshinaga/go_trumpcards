@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -1135,6 +1136,17 @@ func TestHearts_GetActionLog(t *testing.T) {
 	log := h.GetActionLog()
 	assert.NotNil(t, log)
 	assert.Greater(t, len(log), 0)
+	var found *domain.ActionLogEntry
+	for _, entry := range log {
+		if entry.ActionType == "pass" {
+			found = entry
+			break
+		}
+	}
+	require.NotNil(t, found)
+	assert.Equal(t, "hearts.log.passLeft", found.DetailCode)
+	assert.Equal(t, map[string]string{"round": "1"}, found.DetailParams)
+	assert.Empty(t, found.Detail)
 }
 
 func TestHearts_GetPassedCards(t *testing.T) {
@@ -1754,7 +1766,9 @@ func TestHearts_ActionLog_PlayerNames(t *testing.T) {
 
 	log := h.GetActionLog()
 	assert.NotNil(t, log)
-	assert.Contains(t, log[0].Detail, "You")
+	assert.Equal(t, "hearts.log.play", log[0].DetailCode)
+	assert.Equal(t, "You", log[0].DetailParams["name"])
+	assert.Empty(t, log[0].Detail)
 
 	// CPU plays -> log should contain "CPU"
 	cpu := h.GetPlayer(1)
@@ -1763,7 +1777,9 @@ func TestHearts_ActionLog_PlayerNames(t *testing.T) {
 
 	h.CpuPlay()
 	log = h.GetActionLog()
-	assert.Contains(t, log[1].Detail, "CPU")
+	assert.Equal(t, "hearts.log.play", log[1].DetailCode)
+	assert.Equal(t, "CPU 1", log[1].DetailParams["name"])
+	assert.Empty(t, log[1].Detail)
 }
 
 // --- Full round scoring flow ---
@@ -1815,7 +1831,9 @@ func TestHearts_CardStr_UnknownDesignAndValue(t *testing.T) {
 	assert.NoError(t, err)
 
 	log := h.GetActionLog()
-	assert.Contains(t, log[0].Detail, "?")
+	assert.Equal(t, "hearts.log.play", log[0].DetailCode)
+	assert.Equal(t, "??", log[0].DetailParams["card"])
+	assert.Empty(t, log[0].Detail)
 }
 
 // --- isPointCard branches ---
@@ -2098,10 +2116,11 @@ func TestHearts_ExecutePass_LogDirectionStrings(t *testing.T) {
 	for _, tc := range []struct {
 		round int
 		dir   string
+		code  string
 	}{
-		{1, "left"},
-		{2, "right"},
-		{3, "across"},
+		{1, "left", "hearts.log.passLeft"},
+		{2, "right", "hearts.log.passRight"},
+		{3, "across", "hearts.log.passAcross"},
 	} {
 		h := newTestHearts()
 		h.Reset()
@@ -2125,7 +2144,7 @@ func TestHearts_ExecutePass_LogDirectionStrings(t *testing.T) {
 		found := false
 		for _, entry := range log {
 			if entry.ActionType == "pass" {
-				assert.Contains(t, entry.Detail, tc.dir)
+				assert.Equal(t, tc.code, entry.DetailCode)
 				found = true
 			}
 		}
@@ -2194,7 +2213,8 @@ func TestHearts_ResolveTrick_ActionLog(t *testing.T) {
 	for _, entry := range log {
 		if entry.ActionType == "trick_win" {
 			found = true
-			assert.Contains(t, entry.Detail, "wins trick")
+			assert.Equal(t, "hearts.log.trickWin", entry.DetailCode)
+			assert.Empty(t, entry.Detail)
 			assert.NotNil(t, entry.Cards)
 			assert.Equal(t, 4, len(entry.Cards))
 		}
@@ -2448,11 +2468,6 @@ func TestHearts_Reset_AlwaysStartsPassPhase(t *testing.T) {
 }
 
 // Defensive guard tests for private methods are in Hearts_internal_test.go
-
-func TestHearts_PassDirectionStr_Default(t *testing.T) {
-	// passDirectionStr default: only used in ExecutePass log.
-	// Since ExecutePass skips for PassNone, the "none" branch is unreachable.
-}
 
 func TestHearts_CpuSelectPlayCard_EmptyValidIndices(t *testing.T) {
 	// Line 843: len(validIndices) == 0, return 0

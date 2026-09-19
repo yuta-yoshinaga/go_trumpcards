@@ -40,5 +40,17 @@
   "helpExampleBet": "  bet 100            100 チップを賭ける",
   "queensUpPayoutLine": "Queens Up 配当: {{table}}",
   "superBonusPayoutLine": "Super Bonus 配当（アンティと同額が自動で付きます。エースのペア以上で下表どおり、届かなくてもディーラーに勝ちか引き分けなら返却）: {{table}}",
-  "fourAces": "4 枚のエース"
+  "fourAces": "4 枚のエース",
+  "log.start": "クレイジー4ポーカーを開始しました",
+  "log.outOfChips": "チップが尽きました",
+  "log.bet": "アンティ {{ante}}、Super Bonus {{super}}、Queens Up {{queensUp}}",
+  "log.deal": "カードを配りました",
+  "log.play": "プレイベット {{bet}}（x{{multiplier}}）",
+  "log.fold": "降りました",
+  "log.resultNone": "未決着",
+  "log.resultFold": "降りた",
+  "log.resultWin": "勝ち",
+  "log.resultLose": "負け",
+  "log.resultPush": "引き分け",
+  "log.resultDealerNotQualified": "ディーラー不成立"
 }

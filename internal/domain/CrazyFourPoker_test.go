@@ -626,6 +626,16 @@ func TestCrazyFourPoker_Accessors(t *testing.T) {
 	assert.Zero(t, g.GetDealerHandRank())
 
 	require.NoError(t, g.PlaceBet(50, 0))
+	var betLog *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "crazyfourpoker.log.bet" {
+			betLog = entry
+			break
+		}
+	}
+	require.NotNil(t, betLog)
+	assert.Equal(t, map[string]string{"ante": "50", "super": "50", "queensUp": "0"}, betLog.DetailParams)
+	assert.Empty(t, betLog.Detail)
 	assert.Len(t, g.GetPlayerHand(), CrazyFourPokerHandSize)
 	assert.Len(t, g.GetDealerHand(), CrazyFourPokerHandSize)
 	assert.Len(t, g.GetPlayerBest(), CrazyFourPokerBestSize)
@@ -640,7 +650,7 @@ func TestCrazyFourPoker_Accessors(t *testing.T) {
 func TestCrazyFourPoker_ActionLogIsBounded(t *testing.T) {
 	g := newCrazyFourPokerForTest(t)
 	for range crazyFourPokerMaxSliceLen + 50 {
-		g.appendLog("noise", "x", nil)
+		g.appendLog("noise", "crazyfourpoker.log.start", nil, nil)
 	}
 	assert.Len(t, g.GetActionLog(), crazyFourPokerMaxSliceLen)
 }

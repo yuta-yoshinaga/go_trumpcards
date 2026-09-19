@@ -23,5 +23,11 @@
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
   "errCardIndexOutOfRange": "That card index is out of range.",
-  "errFollowLeadSuit": "You must follow the lead suit."
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "log.trickWin": "{{name}} wins trick {{trick}} (honors: {{honors}})",
+  "log.roundScore": "Team {{team}}: {{honors}} honors (total: {{total}})",
+  "log.trump": "Trump suit: {{suit}}",
+  "log.play": "{{name}} plays {{card}}",
+  "log.gameEndDraw": "Game ends in a draw!",
+  "log.gameEnd": "Team {{team}} wins the game!"
 }

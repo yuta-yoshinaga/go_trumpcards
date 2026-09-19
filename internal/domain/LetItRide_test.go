@@ -100,6 +100,16 @@ func TestLetItRide_Bet_Success(t *testing.T) {
 	assert.Len(t, lir.GetPlayerHand(), 3)
 	assert.Len(t, lir.GetCommunityCards(), 2)
 	assert.Equal(t, domain.LetItRideDefaultChips-300, lir.GetChips())
+	var found *domain.ActionLogEntry
+	for _, entry := range lir.GetActionLog() {
+		if entry.DetailCode == "letitride.log.bet" {
+			found = entry
+			break
+		}
+	}
+	require.NotNil(t, found)
+	assert.Equal(t, map[string]string{"amount": "100", "total": "300"}, found.DetailParams)
+	assert.Empty(t, found.Detail)
 }
 
 func TestLetItRide_Pull_WrongPhase(t *testing.T) {
