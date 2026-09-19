@@ -88,7 +88,7 @@ func (g *LaBelleLucie) Reset() {
 		cards = append(cards, g.trumpCards.DrawCard())
 	}
 	g.dealFans(cards)
-	g.appendLog("deal", "新しいゲームを開始しました", nil)
+	g.appendLog("deal", "labellelucie.log.deal", nil, nil)
 }
 
 // dealFans カード列を 3 枚ずつの扇に配る (末尾の扇は 1〜3 枚)。
@@ -165,7 +165,7 @@ func (g *LaBelleLucie) MoveFanToFan(from, to int) error {
 	g.fans[from] = g.fans[from][:len(g.fans[from])-1]
 	g.fans[to] = append(g.fans[to], card)
 	g.moveCount++
-	g.appendLog("move", fmt.Sprintf("扇%d→扇%d", from, to), []*Card{card})
+	g.appendLog("move", "labellelucie.log.moveFanToFan", map[string]string{"from": fmt.Sprint(from), "to": fmt.Sprint(to)}, []*Card{card})
 	g.checkGameOver()
 	return nil
 }
@@ -190,7 +190,7 @@ func (g *LaBelleLucie) MoveFanToFoundation(from int) error {
 	g.fans[from] = g.fans[from][:len(g.fans[from])-1]
 	g.foundation[fIdx] = append(g.foundation[fIdx], card)
 	g.moveCount++
-	g.appendLog("foundation", fmt.Sprintf("扇%d→ファウンデーション", from), []*Card{card})
+	g.appendLog("foundation", "labellelucie.log.moveFanToFoundation", map[string]string{"from": fmt.Sprint(from)}, []*Card{card})
 	g.checkGameClear()
 	g.checkGameOver()
 	return nil
@@ -213,7 +213,7 @@ func (g *LaBelleLucie) Redeal() error {
 	g.redealsLeft--
 	g.dealFans(cards)
 	g.moveCount++
-	g.appendLog("redeal", fmt.Sprintf("集めてシャッフル (残り%d回)", g.redealsLeft), nil)
+	g.appendLog("redeal", "labellelucie.log.redeal", map[string]string{"remaining": fmt.Sprint(g.redealsLeft)}, nil)
 	g.checkGameOver()
 	return nil
 }
@@ -222,7 +222,7 @@ func (g *LaBelleLucie) Redeal() error {
 func (g *LaBelleLucie) GiveUp() {
 	if g.phase == LaBelleLuciePhasePlaying {
 		g.phase = LaBelleLuciePhaseGameOver
-		g.appendLog("giveup", "ギブアップしました", nil)
+		g.appendLog("giveup", "labellelucie.log.giveUp", nil, nil)
 	}
 }
 
@@ -277,7 +277,7 @@ func (g *LaBelleLucie) checkGameClear() {
 	}
 	if total == 52 {
 		g.phase = LaBelleLuciePhaseGameClear
-		g.appendLog("clear", "クリア！", nil)
+		g.appendLog("clear", "labellelucie.log.clear", nil, nil)
 	}
 }
 
@@ -288,7 +288,7 @@ func (g *LaBelleLucie) checkGameOver() {
 	}
 	if g.redealsLeft == 0 && !g.hasAnyLegalMove() {
 		g.phase = LaBelleLuciePhaseGameOver
-		g.appendLog("gameover", "手詰まりです", nil)
+		g.appendLog("gameover", "labellelucie.log.gameOver", nil, nil)
 	}
 }
 
@@ -390,8 +390,8 @@ func (g *LaBelleLucie) UndoN(n int) error {
 	return nil
 }
 
-func (g *LaBelleLucie) appendLog(action, detail string, cards []*Card) {
-	g.appendLogAt(g.moveCount, 0, action, detail, cards)
+func (g *LaBelleLucie) appendLog(action, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(g.moveCount, 0, action, detailCode, detailParams, cards)
 }
 
 // --- accessors ---

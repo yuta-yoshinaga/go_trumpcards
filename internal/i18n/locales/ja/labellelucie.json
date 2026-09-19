@@ -16,5 +16,12 @@
   "stuckDeadlock": "これ以上動かせる手がありません。再配札も残っていません — giveup でギブアップできます。",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
   "helpHint": "  h                    助言を表示",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "log.deal": "新しいゲームを開始しました",
+  "log.moveFanToFan": "扇{{from}}→扇{{to}}",
+  "log.moveFanToFoundation": "扇{{from}}→ファウンデーション",
+  "log.redeal": "集めてシャッフル (残り{{remaining}}回)",
+  "log.giveUp": "ギブアップしました",
+  "log.clear": "クリア！",
+  "log.gameOver": "手詰まりです"
 }

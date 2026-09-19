@@ -43,5 +43,11 @@
   "result.cpuWin": "Game over! Player {{player}} wins!",
   "remainingContracts": "Remaining contracts: {{contracts}}",
   "helpExamplePlay": "  play 0                    play hand card 0",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "log.gameEnd": "all contracts completed",
+  "log.deal": "deal {{deal}}/{{total}}, dealer={{dealer}}",
+  "log.selectContract": "dealer {{dealer}} selects {{contract}}",
+  "log.play": "player {{player}} plays {{card}}",
+  "log.trickWin": "player {{player}} wins trick {{trick}}",
+  "log.dealEnd": "deal {{deal}} scored ({{contract}})"
 }

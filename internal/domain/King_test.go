@@ -165,6 +165,16 @@ func TestKing_SelectContract_MarksUsedAndStartsPlay(t *testing.T) {
 	assert.Equal(t, domain.KingContractNoHearts, g.GetCurrentContract())
 	assert.Equal(t, -1, g.GetTrumpSuit())
 	assert.Equal(t, 0, g.GetCurrentTurn(), "dealer leads first trick")
+	var contractLog *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "king.log.selectContract" {
+			contractLog = entry
+			break
+		}
+	}
+	require.NotNil(t, contractLog)
+	assert.Equal(t, map[string]string{"dealer": "0", "contract": "No Hearts"}, contractLog.DetailParams)
+	assert.Empty(t, contractLog.Detail)
 	used := g.GetUsedContracts()
 	assert.True(t, used[domain.KingContractNoHearts])
 

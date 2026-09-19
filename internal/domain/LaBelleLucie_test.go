@@ -82,6 +82,22 @@ func TestLaBelleLucie_FoundationAndClear(t *testing.T) {
 	if len(g.foundation[0]) != 1 {
 		t.Errorf("foundation size = %d, want 1", len(g.foundation[0]))
 	}
+	var log *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "labellelucie.log.moveFanToFoundation" {
+			log = entry
+			break
+		}
+	}
+	if log == nil {
+		t.Fatal("foundation move log not found")
+	}
+	if got := log.DetailParams["from"]; got != "0" {
+		t.Errorf("from param = %q, want 0", got)
+	}
+	if log.Detail != "" {
+		t.Errorf("detail = %q, want empty", log.Detail)
+	}
 	// A non-startable card errors.
 	g.fans = [][]*Card{{llCard(CardDesignClover, 5)}}
 	if err := g.MoveFanToFoundation(0); err == nil {

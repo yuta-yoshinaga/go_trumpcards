@@ -43,5 +43,11 @@
   "result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
   "remainingContracts": "残りコントラクト: {{contracts}}",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "log.gameEnd": "すべてのコントラクトが完了しました",
+  "log.deal": "ディール{{deal}}/{{total}}、親={{dealer}}",
+  "log.selectContract": "親{{dealer}}が{{contract}}を選択しました",
+  "log.play": "プレイヤー{{player}}が{{card}}を出しました",
+  "log.trickWin": "プレイヤー{{player}}がトリック{{trick}}を取りました",
+  "log.dealEnd": "ディール{{deal}}の得点を計算しました（{{contract}}）"
 }

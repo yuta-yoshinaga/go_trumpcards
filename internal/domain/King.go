@@ -172,7 +172,7 @@ func (g *King) NextDeal() {
 	if g.dealNumber >= KingTotalDeals {
 		g.gameEndFlag = true
 		g.phase = KingPhaseGameEnd
-		g.appendLog(-1, "gameEnd", "all contracts completed", nil)
+		g.appendLog(-1, "gameEnd", "king.log.gameEnd", nil, nil)
 		return
 	}
 	g.startDeal()
@@ -197,7 +197,7 @@ func (g *King) startDeal() {
 		kingSortHand(p)
 	}
 	g.phase = KingPhaseSelectContract
-	g.appendLog(-1, "deal", fmt.Sprintf("deal %d/%d, dealer=%d", g.dealNumber+1, KingTotalDeals, g.dealerIdx), nil)
+	g.appendLog(-1, "deal", "king.log.deal", map[string]string{"deal": fmt.Sprint(g.dealNumber + 1), "total": fmt.Sprint(KingTotalDeals), "dealer": fmt.Sprint(g.dealerIdx)}, nil)
 }
 
 // SelectContract は親がコントラクトを選択する。
@@ -237,8 +237,8 @@ func (g *King) applySelectContract(contract, trumpSuit int) error {
 	g.leadPlayer = g.dealerIdx
 	g.currentPlayer = g.dealerIdx
 	g.trickNumber = 1
-	g.appendLog(g.dealerIdx, "selectContract",
-		fmt.Sprintf("dealer %d selects %s", g.dealerIdx, kingContractName(contract)), nil)
+	g.appendLog(g.dealerIdx, "selectContract", "king.log.selectContract",
+		map[string]string{"dealer": fmt.Sprint(g.dealerIdx), "contract": kingContractName(contract)}, nil)
 	return nil
 }
 
@@ -291,7 +291,7 @@ func (g *King) applyTrickPlay(playerIdx, handIdx int) error {
 	}
 	played := player.RemoveCard(handIdx)
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: played})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("player %d plays %s", playerIdx, cardStr(played)), []*Card{played})
+	g.appendLog(playerIdx, "play", "king.log.play", map[string]string{"player": fmt.Sprint(playerIdx), "card": cardStr(played)}, []*Card{played})
 
 	if len(g.currentTrick) == KingPlayerCnt {
 		g.resolveTrick()
@@ -331,7 +331,7 @@ func (g *King) resolveTrick() {
 	g.players[winner].AddTrickWithRank(cards, g.trickNumber)
 	g.lastTrick = g.currentTrick
 	g.lastTrickWinner = winner
-	g.appendLog(winner, "trickWin", fmt.Sprintf("player %d wins trick %d", winner, g.trickNumber), cards)
+	g.appendLog(winner, "trickWin", "king.log.trickWin", map[string]string{"player": fmt.Sprint(winner), "trick": fmt.Sprint(g.trickNumber)}, cards)
 
 	g.currentTrick = nil
 	g.leadPlayer = winner
@@ -401,14 +401,19 @@ func (g *King) finishDeal() {
 		p.AddScore(detail.Gained[i])
 	}
 	g.phase = KingPhaseDealEnd
-	g.appendLog(-1, "dealEnd",
-		fmt.Sprintf("deal %d scored (%s)", g.dealNumber+1, kingContractName(g.currentContract)), nil)
+	g.appendLog(-1, "dealEnd", "king.log.dealEnd",
+		map[string]string{"deal": fmt.Sprint(g.dealNumber + 1), "contract": kingContractName(g.currentContract)}, nil)
 	// 最終ディールが終わったら、NextDeal を待たずにゲーム終了とする。
 	if g.dealNumber >= KingTotalDeals-1 {
 		g.gameEndFlag = true
 		g.phase = KingPhaseGameEnd
-		g.appendLog(-1, "gameEnd", "all contracts completed", nil)
+		g.appendLog(-1, "gameEnd", "king.log.gameEnd", nil, nil)
 	}
+}
+
+// appendLog records a locale-independent action-log detail code.
+func (g *King) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // kingSortHand はプレイヤーの手札をスート→値の順にソートする。
