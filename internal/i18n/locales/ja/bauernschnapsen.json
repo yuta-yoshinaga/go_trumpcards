@@ -1,4 +1,12 @@
 {
+  "log.deal": "5 枚ずつ配り、山札はありません",
+  "log.contract": "{{contract}} を宣言しました",
+  "log.contractFinal": "契約 {{contract}}、切り札 {{trump}}",
+  "log.marriage": "{{player}} が {{suit}} でマリアージュを宣言（チーム {{team}} に +{{bonus}}）",
+  "log.play": "{{player}} が {{card}} を出しました",
+  "log.trickWin": "{{player}} が第 {{trick}} トリックに勝利（{{points}} 点）",
+  "log.teamScore": "チーム {{team}}: カード {{cardPoints}} 点、マリアージュ {{marriage}} 点、{{tricks}} トリック → +{{gained}}（合計 {{total}}）",
+  "log.gameEnd": "チーム {{team}} の勝利です！",
   "helpTitle": "バウエルンシュナプセン",
   "helpPlay": "  p <idx>              カードをプレイ",
   "helpMarriage": "  m <idx>              マリアージュ宣言 (K/Q をリード)",

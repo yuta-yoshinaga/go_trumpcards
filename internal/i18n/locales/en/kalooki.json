@@ -1,4 +1,13 @@
 {
+  "log.recycle": "Discard pile recycled into stock ({{cards}} cards)",
+  "log.drawStock": "{{player}} draws from stock",
+  "log.drawDiscard": "{{player}} draws {{card}} from discard",
+  "log.meld": "{{player}} melds {{groups}} group(s)",
+  "log.layoff": "{{player}} lays off {{card}} on player {{targetPlayer}}'s meld",
+  "log.discard": "{{player}} discards {{card}}",
+  "log.roundWin": "{{player}} goes out!",
+  "log.draw": "Round ends in a draw (stock empty)",
+  "log.gameEnd": "{{player}} wins the game!",
   "helpTitle": "Kalooki",
   "helpDrawStock": "  ds                   draw from stock",
   "helpDrawDiscard": "  dd                   take the discard top",

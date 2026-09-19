@@ -21,6 +21,20 @@ func newTestWatten() *domain.Watten {
 	return domain.NewWatten(domain.NewDefaultWatten().GetConfigDeckHelper(), players, domain.DefaultWattenConfig())
 }
 
+func TestWatten_ActionLogUsesDetailCode(t *testing.T) {
+	g := newTestWatten()
+	g.Reset()
+	assert.NoError(t, g.PlayerDeclare(7, domain.CardDesignHeart))
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "watten.log.declare" {
+			assert.Empty(t, entry.Detail)
+			assert.Equal(t, "7", entry.DetailParams["rank"])
+			return
+		}
+	}
+	t.Fatal("declare action log entry not found")
+}
+
 func wattenSetHand(g *domain.Watten, playerIdx int, cards []*domain.Card) {
 	p := g.GetPlayer(playerIdx)
 	p.Reset()

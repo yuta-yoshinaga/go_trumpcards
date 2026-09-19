@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // handHolder is the minimal interface for a player whose hand can be sorted in
@@ -526,6 +527,10 @@ type stockRecycler interface {
 	appendLog(playerIdx int, actionType, detail string, cards []*Card)
 }
 
+type codedStockRecycler interface {
+	appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card)
+}
+
 // recycleDiscardIntoStock moves everything but the top discard back under the
 // draw pile, shuffled, and logs it. Returns false when there is nothing to
 // recycle. 5 games had this written out.
@@ -533,7 +538,7 @@ type stockRecycler interface {
 // The piles are passed by pointer because the helper rewrites both. Keeping the
 // fmt.Sprintf here rather than at each call site means one copy of it instead
 // of five.
-func recycleDiscardIntoStock(discard, draw *[]*Card, g stockRecycler) bool {
+func recycleDiscardIntoStock(discard, draw *[]*Card, g any) bool {
 	if len(*discard) <= 1 {
 		return false
 	}
@@ -542,7 +547,11 @@ func recycleDiscardIntoStock(discard, draw *[]*Card, g stockRecycler) bool {
 	*discard = []*Card{top}
 	rand.Shuffle(len(rest), func(i, j int) { rest[i], rest[j] = rest[j], rest[i] })
 	*draw = append(*draw, rest...)
-	g.appendLog(-1, "recycle", fmt.Sprintf("Discard pile recycled into stock (%d cards)", len(rest)), nil)
+	if coded, ok := g.(codedStockRecycler); ok {
+		coded.appendLog(-1, "recycle", "kalooki.log.recycle", map[string]string{"cards": strconv.Itoa(len(rest))}, nil)
+	} else if legacy, ok := g.(stockRecycler); ok {
+		legacy.appendLog(-1, "recycle", fmt.Sprintf("Discard pile recycled into stock (%d cards)", len(rest)), nil)
+	}
 	return true
 }
 

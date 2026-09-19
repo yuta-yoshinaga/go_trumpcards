@@ -1,4 +1,12 @@
 {
+  "log.declare": "{{player}} declares Schlag={{rank}} critical={{suit}}",
+  "log.play": "{{player}} plays {{card}}",
+  "log.trickWin": "{{player}} wins trick {{trick}}",
+  "log.raise": "Team {{team}} raises stake to {{stake}}",
+  "log.hold": "{{player}} holds (stake {{stake}}, team {{team}} leads)",
+  "log.fold": "{{player}} folds; team {{team}} wins deal ({{points}} pt)",
+  "log.dealScore": "Team {{team}} wins deal +{{stake}} (match {{team0}}-{{team1}})",
+  "log.gameEnd": "Team {{team}} wins the match!",
   "helpTitle": "Watten",
   "helpDeclare": "  d <r> <s>            declare (Schlag rank + critical suit 1=S,2=C,3=H,4=D)",
   "helpPlay": "  p <idx>              play a card",

@@ -24,8 +24,8 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // BauernschnapsenNoTrump は「切り札スート未定 / 切り札なし」を表す。
@@ -342,7 +342,7 @@ func (g *Bauernschnapsen) dealInitial() {
 	}
 	// 切り札はまだ決まらない。契約の宣言で決める。
 	g.trumpSuit = BauernschnapsenNoTrump
-	g.appendLog(-1, "deal", "dealt 5 cards each; no talon", nil)
+	g.appendLog(-1, "deal", "bauernschnapsen.log.deal", nil, nil)
 }
 
 // startContractPhase 契約フェーズ開始: ディーラーの左隣から宣言する。
@@ -392,7 +392,7 @@ func (g *Bauernschnapsen) DeclareContract(playerIdx int, c BauernschnapsenContra
 			g.trumpSuit = trumpSuit
 		}
 	}
-	g.appendLog(playerIdx, "contract", fmt.Sprintf("declared %d", c), nil)
+	g.appendLog(playerIdx, "contract", "bauernschnapsen.log.contract", map[string]string{"contract": strconv.Itoa(int(c))}, nil)
 
 	g.currentPlayerIdx = (g.currentPlayerIdx + 1) % BauernschnapsenPlayerCnt
 	if g.currentPlayerIdx == g.leadPlayerIdx {
@@ -410,8 +410,9 @@ func (g *Bauernschnapsen) finishContractPhase() {
 		g.declarerIdx = g.leadPlayerIdx
 		g.trumpSuit = g.pickDefaultTrump(g.declarerIdx)
 	}
-	g.appendLog(g.declarerIdx, "contractFinal",
-		fmt.Sprintf("contract %d, trump %d", g.contract, g.trumpSuit), nil)
+	g.appendLog(g.declarerIdx, "contractFinal", "bauernschnapsen.log.contractFinal", map[string]string{
+		"contract": strconv.Itoa(int(g.contract)), "trump": strconv.Itoa(g.trumpSuit),
+	}, nil)
 	g.startPlayPhase()
 }
 
@@ -591,9 +592,10 @@ func (g *Bauernschnapsen) declareMarriage(playerIdx, cardIndex int) error {
 	team := player.GetTeam()
 	g.marriageDeclared[suit] = true
 	g.roundMarriage[team] += bonus
-	g.appendLog(playerIdx, "marriage",
-		fmt.Sprintf("%s declares marriage in %s (+%d for team %d)",
-			playerName(g.players, playerIdx), suitStr(suit), bonus, team), nil)
+	g.appendLog(playerIdx, "marriage", "bauernschnapsen.log.marriage", map[string]string{
+		"player": playerName(g.players, playerIdx), "suit": suitStr(suit),
+		"bonus": strconv.Itoa(bonus), "team": strconv.Itoa(team),
+	}, nil)
 
 	played := player.RemoveCard(cardIndex)
 	g.playCard(playerIdx, played)
@@ -634,9 +636,9 @@ func (g *Bauernschnapsen) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)),
-		[]*Card{card})
+	g.appendLog(playerIdx, "play", "bauernschnapsen.log.play", map[string]string{
+		"player": playerName(g.players, playerIdx), "card": cardStr(card),
+	}, []*Card{card})
 
 	if len(g.currentTrick) == BauernschnapsenPlayerCnt {
 		g.phase = BauernschnapsenPhaseTrickEnd
@@ -664,9 +666,10 @@ func (g *Bauernschnapsen) ResolveTrick() {
 	g.roundTricks[g.players[winnerIdx].GetTeam()]++
 	g.seatTricks[winnerIdx]++
 
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(g.players, winnerIdx), g.trickNumber, trickPoints),
-		trickCards)
+	g.appendLog(winnerIdx, "trick_win", "bauernschnapsen.log.trickWin", map[string]string{
+		"player": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber),
+		"points": strconv.Itoa(trickPoints),
+	}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	g.lastTrickWinner = winnerIdx
@@ -716,10 +719,11 @@ func (g *Bauernschnapsen) ScoreRound() {
 			gained = value
 		}
 		g.teamScores[ti] += gained
-		g.appendLog(-1, "team_score",
-			fmt.Sprintf("Team %d: %d card pts, %d marriage, %d tricks -> +%d (total %d)",
-				ti, g.roundPoints[ti], g.roundMarriage[ti], g.roundTricks[ti],
-				gained, g.teamScores[ti]), nil)
+		g.appendLog(-1, "team_score", "bauernschnapsen.log.teamScore", map[string]string{
+			"team": strconv.Itoa(ti), "cardPoints": strconv.Itoa(g.roundPoints[ti]),
+			"marriage": strconv.Itoa(g.roundMarriage[ti]), "tricks": strconv.Itoa(g.roundTricks[ti]),
+			"gained": strconv.Itoa(gained), "total": strconv.Itoa(g.teamScores[ti]),
+		}, nil)
 	}
 
 	g.checkGameEnd()
@@ -863,11 +867,14 @@ func (g *Bauernschnapsen) checkGameEnd() {
 			} else {
 				g.winnerTeam = 1
 			}
-			g.appendLog(-1, "game_end",
-				fmt.Sprintf("Team %d wins the game!", g.winnerTeam), nil)
+			g.appendLog(-1, "game_end", "bauernschnapsen.log.gameEnd", map[string]string{"team": strconv.Itoa(g.winnerTeam)}, nil)
 			return
 		}
 	}
+}
+
+func (g *Bauernschnapsen) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- State getters / setters ---
