@@ -11,5 +11,10 @@
   "acceptableRanksNone": "出せるランク: なし",
   "legalMoveCount": "残り合法手: {{count}}",
   "helpHint": "  h                    助言を表示",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "log.deal": "新しいゲームを開始しました",
+  "log.move": "扇{{fan}}→ブラックホール",
+  "log.giveUp": "投了しました",
+  "log.clear": "ブラックホールに全カードを吸い込みました",
+  "log.gameOver": "合法手がなくなりました"
 }

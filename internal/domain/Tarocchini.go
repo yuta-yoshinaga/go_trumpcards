@@ -347,12 +347,12 @@ func (g *Tarocchini) finishMatch() {
 		// **同点なら勝者なし。**席順で決めると片方のチームが常に得をする。
 		g.winnerTeam = -1
 	}
-	g.appendLog(-1, "gameend", "マッチ終了", nil)
+	g.appendLog(-1, "gameend", "tarocchini.log.matchEnd", nil, nil)
 }
 
 // appendLog 棋譜に 1 件追加する。
-func (g *Tarocchini) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLogAt(g.trickNumber, playerIdx, actionType, detail, cards)
+func (g *Tarocchini) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(g.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- スカルト (ディーラーの捨て札) ---
@@ -410,7 +410,7 @@ func (g *Tarocchini) applyScarto(cardIndices []int) {
 		}
 	}
 	g.scarto = discarded
-	g.appendLog(g.dealerIdx, "scarto", fmt.Sprintf("%d 枚を捨てた", len(discarded)), discarded)
+	g.appendLog(g.dealerIdx, "scarto", "tarocchini.log.scarto", map[string]string{"count": fmt.Sprintf("%d", len(discarded))}, discarded)
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = TarocchiniPhasePlay
 }
@@ -630,7 +630,7 @@ func (g *Tarocchini) lowestOf(playerIdx int, valid []int, led int) int {
 // playCard 1 枚を場に出し、トリックが揃えばフェーズを進める。
 func (g *Tarocchini) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", "", []*Card{card})
+	g.appendLog(playerIdx, "play", "tarocchini.log.play", nil, []*Card{card})
 	if len(g.currentTrick) < TarocchiniPlayerCnt {
 		g.currentPlayerIdx = (g.currentPlayerIdx + 1) % TarocchiniPlayerCnt
 		return
@@ -651,7 +651,7 @@ func (g *Tarocchini) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(cards)
 	g.roundTricks[winnerIdx]++
 	g.lastTrickWinner = winnerIdx
-	g.appendLog(winnerIdx, "trickwin", fmt.Sprintf("トリック %d を獲得", g.trickNumber), cards)
+	g.appendLog(winnerIdx, "trickwin", "tarocchini.log.trickWin", map[string]string{"trick": fmt.Sprintf("%d", g.trickNumber)}, cards)
 
 	g.leadPlayerIdx = winnerIdx
 	g.currentPlayerIdx = winnerIdx
@@ -687,7 +687,7 @@ func (g *Tarocchini) settleRound() {
 	if len(g.scarto) > 0 {
 		g.teamScores[TarocchiniTeamOf(g.dealerIdx)] += len(g.scarto)
 	}
-	g.appendLog(-1, "settle", fmt.Sprintf("ラウンド %d 終了", g.roundNumber), nil)
+	g.appendLog(-1, "settle", "tarocchini.log.roundEnd", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber)}, nil)
 }
 
 // TarocchiniLastTrickBonus 最終トリック獲得ボーナス。

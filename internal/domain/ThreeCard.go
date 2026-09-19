@@ -62,6 +62,11 @@ type ThreeCard struct {
 	actionLogBase
 }
 
+// appendLog records a Three Card Poker action with a locale-independent detail code.
+func (tc *ThreeCard) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	tc.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewThreeCard コンストラクタ
 func NewThreeCard(trumpCards *TrumpCards) *ThreeCard {
 	trumpCards.Shuffle()
@@ -141,7 +146,7 @@ func (tc *ThreeCard) Bet(ante, pairPlus int) error {
 	tc.lastAnteBet = ante
 	tc.pairPlusBet = pairPlus
 	tc.lastPairPlusBet = pairPlus
-	tc.appendLog(0, "bet", fmt.Sprintf("ante=%d pairplus=%d", ante, pairPlus), nil)
+	tc.appendLog(0, "bet", "threecard.log.bet", map[string]string{"ante": fmt.Sprintf("%d", ante), "pairplus": fmt.Sprintf("%d", pairPlus)}, nil)
 
 	// ディール: 3枚ずつ配る
 	tc.deal()
@@ -159,7 +164,7 @@ func (tc *ThreeCard) Play() error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for play bet.")
 	}
 	tc.playBet = tc.anteBet
-	tc.appendLog(0, "play", fmt.Sprintf("play bet=%d", tc.playBet), nil)
+	tc.appendLog(0, "play", "threecard.log.play", map[string]string{"bet": fmt.Sprintf("%d", tc.playBet)}, nil)
 
 	tc.resolve()
 	return nil
@@ -170,7 +175,7 @@ func (tc *ThreeCard) Fold() error {
 	if tc.phase != ThreeCardPhaseAction {
 		return NewDomainError(ErrWrongPhase, "Fold is only allowed during the action phase.")
 	}
-	tc.appendLog(0, "fold", "player folds", nil)
+	tc.appendLog(0, "fold", "threecard.log.playerFolds", nil, nil)
 
 	tc.result = GameResultLose
 	tc.playerHandRank = evalThreeCardHand(tc.playerHand)
@@ -181,7 +186,7 @@ func (tc *ThreeCard) Fold() error {
 
 	tc.gameEndFlag = true
 	tc.phase = ThreeCardPhaseEnd
-	tc.appendLog(-1, "result", "player folded", nil)
+	tc.appendLog(-1, "result", "threecard.log.playerFolded", nil, nil)
 	return nil
 }
 
@@ -193,7 +198,7 @@ func (tc *ThreeCard) deal() {
 		tc.playerHand = append(tc.playerHand, tc.trumpCards.DrawCard())
 		tc.dealerHand = append(tc.dealerHand, tc.trumpCards.DrawCard())
 	}
-	tc.appendLog(-1, "deal", "dealt 3 cards each", nil)
+	tc.appendLog(-1, "deal", "threecard.log.deal", nil, nil)
 }
 
 // resolve ゲーム解決（Play後の処理）
@@ -234,16 +239,14 @@ func (tc *ThreeCard) resolve() {
 	tc.gameEndFlag = true
 	tc.phase = ThreeCardPhaseEnd
 
-	var resultStr string
 	switch tc.result {
 	case GameResultWin:
-		resultStr = "player wins"
+		tc.appendLog(-1, "result", "threecard.log.playerWins", nil, nil)
 	case GameResultDraw:
-		resultStr = "push"
+		tc.appendLog(-1, "result", "threecard.log.push", nil, nil)
 	default:
-		resultStr = "dealer wins"
+		tc.appendLog(-1, "result", "threecard.log.dealerWins", nil, nil)
 	}
-	tc.appendLog(-1, "result", resultStr, nil)
 }
 
 // checkDealerQualifies ディーラーがクオリファイするか（Qハイ以上、またはペア以上）

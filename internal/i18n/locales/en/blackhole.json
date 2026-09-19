@@ -11,5 +11,10 @@
   "acceptableRanksNone": "Accepted ranks: none",
   "legalMoveCount": "Legal moves: {{count}}",
   "helpHint": "  h                    show a hint",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "log.deal": "A new game has started",
+  "log.move": "Fan {{fan}}→black hole",
+  "log.giveUp": "Gave up",
+  "log.clear": "All cards were swallowed by the black hole",
+  "log.gameOver": "No legal moves remain"
 }

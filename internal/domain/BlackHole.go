@@ -97,7 +97,7 @@ func (g *BlackHole) Reset() {
 		g.blackHole = nil
 	}
 	g.dealFans(cards)
-	g.appendLog("deal", "新しいゲームを開始しました", nil)
+	g.appendLog("deal", "blackhole.log.deal", nil, nil)
 }
 
 // dealFans カード列を 3 枚ずつの扇に配る。
@@ -199,7 +199,7 @@ func (g *BlackHole) MoveFanToBlackHole(idx int) error {
 	g.fans[idx] = g.fans[idx][:len(g.fans[idx])-1]
 	g.blackHole = append(g.blackHole, card)
 	g.moveCount++
-	g.appendLog("move", fmt.Sprintf("扇%d→ブラックホール", idx), []*Card{card})
+	g.appendLog("move", "blackhole.log.move", map[string]string{"fan": fmt.Sprintf("%d", idx)}, []*Card{card})
 	g.checkGameEnd()
 	return nil
 }
@@ -208,7 +208,7 @@ func (g *BlackHole) MoveFanToBlackHole(idx int) error {
 func (g *BlackHole) GiveUp() {
 	if g.phase == BlackHolePhasePlaying {
 		g.phase = BlackHolePhaseGameOver
-		g.appendLog("giveup", "投了しました", nil)
+		g.appendLog("giveup", "blackhole.log.giveUp", nil, nil)
 	}
 }
 
@@ -282,12 +282,12 @@ func (g *BlackHole) IsStalemate() bool {
 func (g *BlackHole) checkGameEnd() {
 	if len(g.blackHole) == BlackHoleTotalCards {
 		g.phase = BlackHolePhaseGameClear
-		g.appendLog("clear", "ブラックホールに全カードを吸い込みました", nil)
+		g.appendLog("clear", "blackhole.log.clear", nil, nil)
 		return
 	}
 	if !g.hasAnyLegalMove() {
 		g.phase = BlackHolePhaseGameOver
-		g.appendLog("gameover", "合法手がなくなりました", nil)
+		g.appendLog("gameover", "blackhole.log.gameOver", nil, nil)
 	}
 }
 
@@ -363,6 +363,6 @@ func (g *BlackHole) GetBlackHole() []*Card { return g.blackHole }
 func (g *BlackHole) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // appendLog アクションログを追加する。
-func (g *BlackHole) appendLog(action, detail string, cards []*Card) {
-	g.appendLogAt(g.moveCount, 0, action, detail, cards)
+func (g *BlackHole) appendLog(action, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(g.moveCount, 0, action, detailCode, detailParams, cards)
 }

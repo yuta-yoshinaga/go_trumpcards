@@ -277,6 +277,16 @@ func TestHorse_Reset(t *testing.T) {
 	assert.Equal(t, "YOU", g.GetSeatName(0))
 	assert.False(t, g.GetGameEndFlag())
 	assert.NotEmpty(t, g.GetActionLog())
+	var resetLog *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "horse.log.reset" {
+			resetLog = entry
+			break
+		}
+	}
+	require.NotNil(t, resetLog)
+	assert.Empty(t, resetLog.Detail)
+	assert.Empty(t, resetLog.DetailParams)
 }
 
 func TestHorse_PhaseGuards(t *testing.T) {

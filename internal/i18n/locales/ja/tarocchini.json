@@ -45,5 +45,10 @@
   "errDuplicateCard": "同じ札を 2 回選べません",
   "errCannotDiscardTrumpOrMatto": "切り札とマットは捨てられません",
   "errFollowLeadSuit": "リードスートに従ってください",
-  "errTargetRoundsNotMultiple": "局数は {{min}} の倍数でなければなりません: {{rounds}}"
+  "errTargetRoundsNotMultiple": "局数は {{min}} の倍数でなければなりません: {{rounds}}",
+  "log.matchEnd": "マッチ終了",
+  "log.scarto": "{{count}} 枚を捨てた",
+  "log.play": "",
+  "log.trickWin": "トリック {{trick}} を獲得",
+  "log.roundEnd": "ラウンド {{round}} 終了"
 }

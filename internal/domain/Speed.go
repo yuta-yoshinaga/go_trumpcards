@@ -48,6 +48,11 @@ type Speed struct {
 	actionLogBase
 }
 
+// appendLog records a Speed action with a locale-independent detail code.
+func (s *Speed) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewSpeed コンストラクタ
 func NewSpeed(trumpCards *TrumpCards, players []*SpeedPlayer, config SpeedConfig) *Speed {
 	s := &Speed{
@@ -189,7 +194,7 @@ func (s *Speed) PlayerPlay(cardIndex, pileIndex int) error {
 	s.centerPiles[pileIndex] = played
 	p.RefillHand(SpeedHandSize)
 
-	s.appendLog(0, "play", fmt.Sprintf("→ pile %d", pileIndex), []*Card{played})
+	s.appendLog(0, "play", "speed.log.play", map[string]string{"pile": fmt.Sprintf("%d", pileIndex)}, []*Card{played})
 
 	s.checkWin()
 	return nil
@@ -237,7 +242,7 @@ func (s *Speed) cpuPlayEasy() []*SpeedCpuAction {
 	s.centerPiles[chosen.PileIndex] = played
 	p.RefillHand(SpeedHandSize)
 
-	s.appendLog(1, "play", fmt.Sprintf("→ pile %d", chosen.PileIndex), []*Card{played})
+	s.appendLog(1, "play", "speed.log.play", map[string]string{"pile": fmt.Sprintf("%d", chosen.PileIndex)}, []*Card{played})
 	s.checkWin()
 
 	return []*SpeedCpuAction{&chosen}
@@ -274,7 +279,7 @@ func (s *Speed) cpuPlayGreedy() []*SpeedCpuAction {
 		s.centerPiles[bestPI] = played
 		p.RefillHand(SpeedHandSize)
 
-		s.appendLog(1, "play", fmt.Sprintf("→ pile %d", bestPI), []*Card{played})
+		s.appendLog(1, "play", "speed.log.play", map[string]string{"pile": fmt.Sprintf("%d", bestPI)}, []*Card{played})
 
 		actions = append(actions, &SpeedCpuAction{CardIndex: bestCI, PileIndex: bestPI, Card: played})
 		s.checkWin()
@@ -316,7 +321,7 @@ func (s *Speed) cpuPlayHard() []*SpeedCpuAction {
 		s.centerPiles[bestPI] = played
 		p.RefillHand(SpeedHandSize)
 
-		s.appendLog(1, "play", fmt.Sprintf("→ pile %d", bestPI), []*Card{played})
+		s.appendLog(1, "play", "speed.log.play", map[string]string{"pile": fmt.Sprintf("%d", bestPI)}, []*Card{played})
 
 		actions = append(actions, &SpeedCpuAction{CardIndex: bestCI, PileIndex: bestPI, Card: played})
 		s.checkWin()
@@ -369,7 +374,7 @@ func (s *Speed) Flip() error {
 				lastIdx := p.GetCardsSize() - 1
 				card := p.RemoveCard(lastIdx)
 				s.centerPiles[pi] = card
-				s.appendLog(pi, "flip", "flip center", []*Card{card})
+				s.appendLog(pi, "flip", "speed.log.flip", nil, []*Card{card})
 				flipped = true
 			}
 		}

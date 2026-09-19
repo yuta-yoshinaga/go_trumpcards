@@ -18,5 +18,7 @@
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpLog": "  l                    行動ログを表示",
   "elapsedTime": "経過時間: {{time}}",
-  "sessionBestTime": "セッション自己ベスト: {{time}}"
+  "sessionBestTime": "セッション自己ベスト: {{time}}",
+  "log.play": "→ {{pile}}番の台札",
+  "log.flip": "台札をめくった"
 }

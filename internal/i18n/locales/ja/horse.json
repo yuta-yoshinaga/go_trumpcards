@@ -35,5 +35,10 @@
   "errFinished": "このマッチは終わっています。",
   "errWrongPhase": "いまはその操作を受け付けません。",
   "errNoTable": "進行中のハンドがありません。",
-  "errNoDraw": "いまの種目に引き直しはありません。"
+  "errNoDraw": "いまの種目に引き直しはありません。",
+  "log.reset": "ゲームをリセットしました",
+  "log.hand": "{{letter}} ハンド {{hand}}（{{name}}）",
+  "log.show": "ハンド{{hand}}を公開しました",
+  "log.handEnd": "ハンド{{hand}}を精算しました",
+  "log.gameEnd": "勝者は{{seat}}番席です"
 }

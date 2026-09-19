@@ -35,5 +35,10 @@
   "errFinished": "This match is already over.",
   "errWrongPhase": "That is not allowed right now.",
   "errNoTable": "No hand is in progress.",
-  "errNoDraw": "The current discipline has no draw."
+  "errNoDraw": "The current discipline has no draw.",
+  "log.reset": "game reset",
+  "log.hand": "{{letter}} hand {{hand}} ({{name}})",
+  "log.show": "hand {{hand}} shown down",
+  "log.handEnd": "hand {{hand}} settled",
+  "log.gameEnd": "winner seat {{seat}}"
 }
