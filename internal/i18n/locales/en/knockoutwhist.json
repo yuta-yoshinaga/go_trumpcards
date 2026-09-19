@@ -32,5 +32,12 @@
   "helpExampleNext": "  n                        read the trick result, then start the next trick",
   "helpHint": "  h                         show a hint",
   "errTrumpSuitOutOfRange": "The trump suit is out of range.",
-  "errCardIndexOutOfRange": "The card index is out of range."
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "log.trumpSelect": "round {{round}}: {{cards}} cards each, {{name}} chooses trump",
+  "log.roundStart": "round {{round}}: {{cards}} cards each, trump {{trump}}, {{name}} leads",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.dogbone": "{{name}} spends a dogbone to survive",
+  "log.eliminated": "{{name}} is knocked out",
+  "log.gameEnd": "{{name}} wins the match!"
 }

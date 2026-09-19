@@ -32,5 +32,12 @@
   "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ",
   "helpHint": "  h                         助言を表示",
   "errTrumpSuitOutOfRange": "切り札スートが範囲外です",
-  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "log.trumpSelect": "{{round}}ラウンド目: 1人{{cards}}枚、{{name}}が切り札を選択",
+  "log.roundStart": "{{round}}ラウンド目: 1人{{cards}}枚、切り札{{trump}}、{{name}}がリード",
+  "log.play": "{{name}}が{{card}}を出す",
+  "log.trickWin": "{{name}}が{{trick}}トリックに勝利",
+  "log.dogbone": "{{name}}がドッグボーンを使って生き残る",
+  "log.eliminated": "{{name}}が脱落",
+  "log.gameEnd": "{{name}}がマッチに勝利！"
 }

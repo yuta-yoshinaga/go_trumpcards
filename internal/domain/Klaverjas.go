@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // KlaverjasPlayerCnt プレイヤー数 (人間 1 + CPU 3)
@@ -174,7 +175,9 @@ func (g *Klaverjas) detectRoem() {
 		if roem > 0 {
 			g.roundPlayerRoem[i] = roem
 			g.roundRoem[KlaverjasTeamOf(i)] += roem
-			g.appendLog(i, "roem", fmt.Sprintf("%s scores %d roem", playerName(g.players, i), roem), nil)
+			g.appendLog(i, "roem", "klaverjas.log.roem", map[string]string{
+				"name": playerName(g.players, i), "roem": strconv.Itoa(roem),
+			}, nil)
 		}
 	}
 }
@@ -226,7 +229,9 @@ func (g *Klaverjas) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Klaverjas) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "klaverjas.log.play", map[string]string{
+		"name": playerName(g.players, playerIdx), "card": cardStr(card),
+	}, []*Card{card})
 
 	if len(g.currentTrick) == KlaverjasPlayerCnt {
 		g.phase = KlaverjasPhaseTrickEnd
@@ -255,8 +260,10 @@ func (g *Klaverjas) ResolveTrick() {
 		g.roundCardPts[team] += KlaverjasLastTrickBonus
 		bonus = fmt.Sprintf(" +%d last", KlaverjasLastTrickBonus)
 	}
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d%s)", playerName(g.players, winnerIdx), g.trickNumber, pts, bonus), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "klaverjas.log.trickWin", map[string]string{
+		"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber),
+		"points": strconv.Itoa(pts), "bonus": bonus,
+	}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= KlaverjasTrickCount {
@@ -285,10 +292,12 @@ func (g *Klaverjas) ScoreRound() {
 	for t := 0; t < KlaverjasTeamCnt; t++ {
 		g.teamScores[t] += g.roundCardPts[t] + g.roundRoem[t]
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: A=%d (cards %d + roem %d), B=%d (cards %d + roem %d)",
-			g.roundNumber, g.teamScores[0], g.roundCardPts[0], g.roundRoem[0],
-			g.teamScores[1], g.roundCardPts[1], g.roundRoem[1]), nil)
+	g.appendLog(-1, "round_score", "klaverjas.log.roundScore", map[string]string{
+		"round": strconv.Itoa(g.roundNumber), "teamAScore": strconv.Itoa(g.teamScores[0]),
+		"teamACards": strconv.Itoa(g.roundCardPts[0]), "teamARoem": strconv.Itoa(g.roundRoem[0]),
+		"teamBScore": strconv.Itoa(g.teamScores[1]), "teamBCards": strconv.Itoa(g.roundCardPts[1]),
+		"teamBRoem": strconv.Itoa(g.roundRoem[1]),
+	}, nil)
 
 	leader, other := 0, 1
 	if g.teamScores[1] > g.teamScores[0] {
@@ -298,8 +307,13 @@ func (g *Klaverjas) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = KlaverjasPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("Team %s wins the match!", klaverjasTeamName(leader)), nil)
+		g.appendLog(-1, "game_end", "klaverjas.log.gameEnd", map[string]string{"team": klaverjasTeamName(leader)}, nil)
 	}
+}
+
+// appendLog records a Klaverjas action with a locale-independent detail code.
+func (g *Klaverjas) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Trick / play helpers ---

@@ -13,9 +13,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // KnockoutWhistPlayerCnt プレイヤー数 (人間 1 + CPU 3)
@@ -176,17 +176,19 @@ func (g *KnockoutWhist) startRound() {
 	// 対話的に選択する。CPU 勝者と第 1 ラウンド (前ラウンド勝者なし) は最長スートを自動選択。
 	if g.roundNumber > 1 && g.players[g.leadPlayerIdx].GetIsHuman() {
 		g.phase = KnockoutWhistPhaseTrumpSelect
-		g.appendLog(g.leadPlayerIdx, "trump_select",
-			fmt.Sprintf("round %d: %d cards each, %s chooses trump",
-				g.roundNumber, g.handSize, playerName(g.players, g.leadPlayerIdx)), nil)
+		g.appendLog(g.leadPlayerIdx, "trump_select", "knockoutwhist.log.trumpSelect", map[string]string{
+			"round": strconv.Itoa(g.roundNumber), "cards": strconv.Itoa(g.handSize),
+			"name": playerName(g.players, g.leadPlayerIdx),
+		}, nil)
 		return
 	}
 
 	g.trumpSuit = g.longestSuit(g.leadPlayerIdx)
 	g.phase = KnockoutWhistPhasePlay
-	g.appendLog(g.leadPlayerIdx, "round_start",
-		fmt.Sprintf("round %d: %d cards each, trump %d, %s leads",
-			g.roundNumber, g.handSize, g.trumpSuit, playerName(g.players, g.leadPlayerIdx)), nil)
+	g.appendLog(g.leadPlayerIdx, "round_start", "knockoutwhist.log.roundStart", map[string]string{
+		"round": strconv.Itoa(g.roundNumber), "cards": strconv.Itoa(g.handSize),
+		"trump": strconv.Itoa(g.trumpSuit), "name": playerName(g.players, g.leadPlayerIdx),
+	}, nil)
 }
 
 // PlayerSelectTrump 人間のラウンド勝者が次ラウンドの切り札スートを選択する (1-4)。
@@ -205,9 +207,10 @@ func (g *KnockoutWhist) PlayerSelectTrump(suit int) error {
 	}
 	g.trumpSuit = suit
 	g.phase = KnockoutWhistPhasePlay
-	g.appendLog(g.leadPlayerIdx, "round_start",
-		fmt.Sprintf("round %d: %d cards each, trump %d, %s leads",
-			g.roundNumber, g.handSize, g.trumpSuit, playerName(g.players, g.leadPlayerIdx)), nil)
+	g.appendLog(g.leadPlayerIdx, "round_start", "knockoutwhist.log.roundStart", map[string]string{
+		"round": strconv.Itoa(g.roundNumber), "cards": strconv.Itoa(g.handSize),
+		"trump": strconv.Itoa(g.trumpSuit), "name": playerName(g.players, g.leadPlayerIdx),
+	}, nil)
 	return nil
 }
 
@@ -278,7 +281,9 @@ func (g *KnockoutWhist) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *KnockoutWhist) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "knockoutwhist.log.play", map[string]string{
+		"name": playerName(g.players, playerIdx), "card": cardStr(card),
+	}, []*Card{card})
 
 	if len(g.currentTrick) >= g.activeCount() {
 		g.phase = KnockoutWhistPhaseTrickEnd
@@ -299,8 +304,9 @@ func (g *KnockoutWhist) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.players[winnerIdx].IncRoundTricks()
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "knockoutwhist.log.trickWin", map[string]string{
+		"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber),
+	}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= g.handSize {
@@ -342,11 +348,11 @@ func (g *KnockoutWhist) ScoreRound() {
 			if p.GetDogbones() > 0 {
 				p.SetDogbones(p.GetDogbones() - 1)
 				g.roundSurvivedIdx = append(g.roundSurvivedIdx, i)
-				g.appendLog(i, "dogbone", fmt.Sprintf("%s spends a dogbone to survive", playerName(g.players, i)), nil)
+				g.appendLog(i, "dogbone", "knockoutwhist.log.dogbone", map[string]string{"name": playerName(g.players, i)}, nil)
 			} else {
 				p.SetEliminated(true)
 				g.roundEliminatedIdx = append(g.roundEliminatedIdx, i)
-				g.appendLog(i, "eliminated", fmt.Sprintf("%s is knocked out", playerName(g.players, i)), nil)
+				g.appendLog(i, "eliminated", "knockoutwhist.log.eliminated", map[string]string{"name": playerName(g.players, i)}, nil)
 			}
 		}
 	}
@@ -361,8 +367,13 @@ func (g *KnockoutWhist) ScoreRound() {
 			// 全滅 (同時 0 トリック) や最終ラウンド到達時はラウンド勝者を優勝とする。
 			g.winnerPlayer = g.roundWinnerIdx
 		}
-		g.appendLog(g.winnerPlayer, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, g.winnerPlayer)), nil)
+		g.appendLog(g.winnerPlayer, "game_end", "knockoutwhist.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerPlayer)}, nil)
 	}
+}
+
+// appendLog records a Knockout Whist action with a locale-independent detail code.
+func (g *KnockoutWhist) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // mostTricksPlayer 現ラウンドで最多トリックを取った未脱落プレイヤーを返す。

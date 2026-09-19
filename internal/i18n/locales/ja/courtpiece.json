@@ -33,5 +33,11 @@
   "helpExampleTrump": "  t 1                  切り札にスペードを宣言する",
   "helpHint": "  h                    助言を表示",
   "errTrumpSuitOutOfRange": "トランプスートは ♠/♣/♥/♦ から選んでください",
-  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "log.deal": "{{name}}が最初の{{count}}枚を確認",
+  "log.trump": "{{name}}が{{suit}}を切り札に宣言",
+  "log.trickWin": "{{name}}が{{trick}}トリックに勝利",
+  "log.roundScore": "チーム{{team}}がラウンドに勝利（{{label}}、{{tricks}}トリック、+{{points}}、合計{{total}}）",
+  "log.gameEnd": "チーム{{team}}がゲームに勝利！",
+  "log.play": "{{name}}が{{card}}を出す"
 }

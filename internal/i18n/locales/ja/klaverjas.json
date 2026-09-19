@@ -30,5 +30,10 @@
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errFollowLeadSuit": "リードスートに従ってください",
   "errMustPlayTrump": "切り札を出してください",
-  "errMustOvertrump": "より強い切り札で追い越してください"
+  "errMustOvertrump": "より強い切り札で追い越してください",
+  "log.roem": "{{name}}が{{roem}}ロエムを獲得",
+  "log.play": "{{name}}が{{card}}を出す",
+  "log.trickWin": "{{name}}が{{trick}}トリックに勝利（+{{points}}{{bonus}}）",
+  "log.roundScore": "{{round}}ラウンド目: A={{teamAScore}}（カード{{teamACards}} + ロエム{{teamARoem}}）、B={{teamBScore}}（カード{{teamBCards}} + ロエム{{teamBRoem}}）",
+  "log.gameEnd": "チーム{{team}}がマッチに勝利！"
 }

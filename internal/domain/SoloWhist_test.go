@@ -87,6 +87,23 @@ func TestSoloWhist_BiddingResolvesHighestDeclarer(t *testing.T) {
 	}
 }
 
+func TestSoloWhist_ActionLogUsesDetailCode(t *testing.T) {
+	g := newSwAllHuman()
+	g.Reset()
+	if err := g.PlayerBid(SoloWhistBidSolo); err != nil {
+		t.Fatalf("PlayerBid: %v", err)
+	}
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "solowhist.log.bid" {
+			if entry.Detail != "" || entry.DetailParams["name"] == "" || entry.DetailParams["bid"] == "" {
+				t.Fatalf("bid log = %#v, want code params and empty detail", entry)
+			}
+			return
+		}
+	}
+	t.Fatal("bid log entry not found")
+}
+
 func TestSoloWhist_BiddingCannotUnderbid(t *testing.T) {
 	g := newSwAllHuman()
 	g.Reset()
