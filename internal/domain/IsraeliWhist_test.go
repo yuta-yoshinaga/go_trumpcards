@@ -742,6 +742,15 @@ func TestIsraeliWhist_ActionLog(t *testing.T) {
 		kinds[e.ActionType] = true
 	}
 	assert.True(t, kinds["auction"])
+	var entry *ActionLogEntry
+	for _, candidate := range w.actionLog {
+		if candidate.DetailCode == "israeliwhist.log.auction" {
+			entry = candidate
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Empty(t, entry.Detail)
+	assert.Equal(t, map[string]string{"bid": "6", "suit": "1"}, entry.DetailParams)
 }
 
 // **全員的中と全員外しはどちらも 2 倍** (#5752)。発動したかどうかを

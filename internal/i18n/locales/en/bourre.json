@@ -23,5 +23,18 @@
   "handResult": "Hand result",
   "gameEndWinner": "{{name}} wins the game!",
   "you": "You",
-  "helpExampleDecide": "  d 1                  stay in for this hand"
+  "helpExampleDecide": "  d 1                  stay in for this hand",
+  "log.ante": "{{name}} antes {{amount}}",
+  "log.trump": "Trump suit: {{suit}}",
+  "log.play": "{{name}} plays",
+  "log.fold": "{{name}} folds",
+  "log.draw": "{{name}} draws {{count}}",
+  "log.playCard": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.potWinUncontested": "{{name}} takes the pot ({{amount}}) uncontested",
+  "log.potCarryAllFolded": "All folded — pot of {{amount}} carries over",
+  "log.bourre": "{{name}} is bourréd! pays {{amount}} penalty",
+  "log.potWin": "{{name}} wins the pot ({{amount}}) with {{tricks}} tricks",
+  "log.potCarryTie": "Tie for most tricks — pot of {{amount}} carries over",
+  "log.gameEnd": "{{name}} wins the game with {{chips}} chips!"
 }

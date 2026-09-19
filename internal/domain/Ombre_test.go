@@ -28,6 +28,26 @@ func setOmbreHand(g *domain.Ombre, i int, cards ...*domain.Card) {
 	}
 }
 
+func TestOmbreActionLogUsesDetailCode(t *testing.T) {
+	g := newTestOmbre()
+	for i := 0; i < 10 && g.GetPhase() == domain.OmbrePhaseBid; i++ {
+		if g.IsHumanBidTurn() {
+			require.NoError(t, g.PlayerBid(domain.OmbreBidNone, 0))
+		} else {
+			g.CpuBid()
+		}
+	}
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "ombre.log.bidPass" {
+			entry = candidate
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Empty(t, entry.Detail)
+	assert.NotEmpty(t, entry.DetailParams["name"])
+}
+
 // ombreCard is a shorthand constructor for a face-up card.
 func ombreCard(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
 

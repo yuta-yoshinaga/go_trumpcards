@@ -38,9 +38,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // OmbrePlayerCnt プレイヤー数 (人間 1 + CPU 2)
@@ -346,12 +346,10 @@ func (g *Ombre) applyBid(playerIdx int, bid OmbreBid, trumpSuit int) {
 	g.bidActed[playerIdx] = true
 	if bid == OmbreBidNone {
 		g.bidTrump[playerIdx] = -1
-		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "bid_pass", "ombre.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	} else {
 		g.bidTrump[playerIdx] = trumpSuit
-		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %s (trump %s)", playerName(g.players, playerIdx), ombreBidName(bid), ombreSuitName(trumpSuit)), nil)
+		g.appendLog(playerIdx, "bid", "ombre.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": ombreBidName(bid), "trump": ombreSuitName(trumpSuit)}, nil)
 	}
 
 	if g.allBidsActed() {
@@ -410,8 +408,7 @@ func (g *Ombre) finalizeAuction() {
 	if !ombreValidSuit(g.trumpSuit) {
 		g.trumpSuit = g.cpuChooseTrump(ombre)
 	}
-	g.appendLog(ombre, "ombre",
-		fmt.Sprintf("%s is Ombre with %s (trump %s)", playerName(g.players, ombre), ombreBidName(best), ombreSuitName(g.trumpSuit)), nil)
+	g.appendLog(ombre, "ombre", "ombre.log.ombre", map[string]string{"name": playerName(g.players, ombre), "bid": ombreBidName(best), "trump": ombreSuitName(g.trumpSuit)}, nil)
 	g.startPlay()
 }
 
@@ -531,7 +528,7 @@ func (g *Ombre) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Ombre) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "ombre.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == OmbrePlayerCnt {
 		g.phase = OmbrePhaseTrickEnd
@@ -551,8 +548,7 @@ func (g *Ombre) ResolveTrick() {
 		trickCards[i] = tc.Card
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "ombre.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// **どのトリックの勝者も憶えておく。** 以前は最終トリックのぶんしか入れて
@@ -591,9 +587,9 @@ func (g *Ombre) enterRoundEnd() {
 	if g.winningBid == OmbreBidSolo {
 		stake = 2
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: Ombre(%s) %s (stake=%d)",
-			g.roundNumber, playerName(g.players, g.ombreIdx), ombreOutcomeName(g.outcome), stake), nil)
+	g.appendLog(-1, "round_score", "ombre.log.roundScore", map[string]string{
+		"round": strconv.Itoa(g.roundNumber), "name": playerName(g.players, g.ombreIdx), "outcome": ombreOutcomeName(g.outcome), "stake": strconv.Itoa(stake),
+	}, nil)
 	g.checkGameEnd()
 }
 
@@ -661,7 +657,7 @@ func (g *Ombre) checkGameEnd() {
 	g.winnerPlayer = leader
 	g.phase = OmbrePhaseGameEnd
 	g.result = g.humanResult(leader, tie)
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+	g.appendLog(-1, "game_end", "ombre.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
 }
 
 // humanResult 人間 (seat 0) の視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None、他は Lose。
@@ -677,6 +673,11 @@ func (g *Ombre) humanResult(leader int, tie bool) OmbreResult {
 		return OmbreResultWin
 	}
 	return OmbreResultLose
+}
+
+// appendLog records an Ombre action with a locale-independent detail code.
+func (g *Ombre) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ScoreRound RoundEnd フェーズでの得点計算を行う (enterRoundEnd を idempotent に呼ぶ、インタフェース互換)。

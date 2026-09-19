@@ -573,5 +573,15 @@ func TestPanActionLog(t *testing.T) {
 	g.SetDrawPile([]*domain.Card{panCard(panSp, 5)})
 	panSetHand(g.GetPlayer(0), panCard(panCl, 7))
 	require.NoError(t, g.PlayerDrawFromStock())
-	assert.NotEmpty(t, g.GetActionLog())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "pan.log.drawStock" {
+			entry = candidate
+		}
+	}
+	if entry == nil {
+		t.Fatal("draw action log entry not found")
+	}
+	assert.Empty(t, entry.Detail)
+	assert.NotEmpty(t, entry.DetailParams["name"])
 }

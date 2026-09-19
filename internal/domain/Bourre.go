@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // Bourréのゲーム定数
@@ -143,7 +144,7 @@ func (b *Bourre) startHand() {
 		ante := min(BourreAnte, p.GetChips())
 		p.SubtractChips(ante)
 		b.pot += ante
-		b.appendLog(i, "ante", fmt.Sprintf("%s antes %d", playerName(b.players, i), ante), nil)
+		b.appendLog(i, "ante", "bourre.log.ante", map[string]string{"name": playerName(b.players, i), "amount": strconv.Itoa(ante)}, nil)
 	}
 
 	// 配札 (ディーラーの左から、ディーラーが最後)
@@ -169,7 +170,7 @@ func (b *Bourre) startHand() {
 		b.sortHand(b.players[idx])
 	}
 
-	b.appendLog(-1, "trump", fmt.Sprintf("Trump suit: %s", suitNameOf(b.trumpSuit)), trumpCardSlice(b.trumpCard))
+	b.appendLog(-1, "trump", "bourre.log.trump", map[string]string{"suit": suitNameOf(b.trumpSuit)}, trumpCardSlice(b.trumpCard))
 
 	b.phase = BourrePhaseDecide
 	if len(order) > 0 {
@@ -226,12 +227,13 @@ func (b *Bourre) applyDecide(idx int, play bool) {
 	p.SetDecided(true)
 	p.SetFolded(!play)
 	action := "play"
-	detail := fmt.Sprintf("%s plays", playerName(b.players, idx))
+	detailCode := "bourre.log.play"
+	detailParams := map[string]string{"name": playerName(b.players, idx)}
 	if !play {
 		action = "fold"
-		detail = fmt.Sprintf("%s folds", playerName(b.players, idx))
+		detailCode = "bourre.log.fold"
 	}
-	b.appendLog(idx, action, detail, nil)
+	b.appendLog(idx, action, detailCode, detailParams, nil)
 	b.advanceDecide()
 }
 
@@ -323,7 +325,7 @@ func (b *Bourre) applyDraw(idx int, indices []int) {
 	}
 	b.sortHand(p)
 	p.SetDrawn(true)
-	b.appendLog(idx, "draw", fmt.Sprintf("%s draws %d", playerName(b.players, idx), len(removed)), nil)
+	b.appendLog(idx, "draw", "bourre.log.draw", map[string]string{"name": playerName(b.players, idx), "count": strconv.Itoa(len(removed))}, nil)
 	b.advanceDraw()
 }
 
@@ -415,7 +417,7 @@ func (b *Bourre) CpuPlay() {
 // playCard カードをトリックに加える共通処理
 func (b *Bourre) playCard(playerIdx int, card *Card) {
 	b.currentTrick = append(b.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	b.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(b.players, playerIdx), cardStr(card)), []*Card{card})
+	b.appendLog(playerIdx, "play", "bourre.log.playCard", map[string]string{"name": playerName(b.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(b.currentTrick) == b.activeCount() {
 		b.resolveTrick()
@@ -432,7 +434,7 @@ func (b *Bourre) resolveTrick() {
 		trickCards[i] = tc.Card
 	}
 	b.players[winner].AddTrick(trickCards)
-	b.appendLog(winner, "trick_win", fmt.Sprintf("%s wins trick %d", playerName(b.players, winner), b.trickNumber), trickCards)
+	b.appendLog(winner, "trick_win", "bourre.log.trickWin", map[string]string{"name": playerName(b.players, winner), "trick": strconv.Itoa(b.trickNumber)}, trickCards)
 
 	b.leadPlayerIdx = winner
 	b.lastTrick = b.currentTrick
@@ -499,10 +501,10 @@ func (b *Bourre) resolveNoContest() {
 	}
 	if soleWinner >= 0 {
 		b.players[soleWinner].AddChips(potValue)
-		b.appendLog(soleWinner, "pot_win", fmt.Sprintf("%s takes the pot (%d) uncontested", playerName(b.players, soleWinner), potValue), nil)
+		b.appendLog(soleWinner, "pot_win", "bourre.log.potWinUncontested", map[string]string{"name": playerName(b.players, soleWinner), "amount": strconv.Itoa(potValue)}, nil)
 	} else {
 		b.carryPot += potValue
-		b.appendLog(-1, "pot_carry", fmt.Sprintf("All folded — pot of %d carries over", potValue), nil)
+		b.appendLog(-1, "pot_carry", "bourre.log.potCarryAllFolded", map[string]string{"amount": strconv.Itoa(potValue)}, nil)
 	}
 	b.pot = 0
 	b.buildResults(potValue, soleWinner)
@@ -534,7 +536,7 @@ func (b *Bourre) scoreHand() {
 			pen := min(potValue, b.players[i].GetChips())
 			b.players[i].SubtractChips(pen)
 			b.carryPot += pen
-			b.appendLog(i, "bourre", fmt.Sprintf("%s is bourréd! pays %d penalty", playerName(b.players, i), pen), nil)
+			b.appendLog(i, "bourre", "bourre.log.bourre", map[string]string{"name": playerName(b.players, i), "amount": strconv.Itoa(pen)}, nil)
 		}
 	}
 
@@ -542,10 +544,10 @@ func (b *Bourre) scoreHand() {
 	if len(winners) == 1 {
 		winnerIdx = winners[0]
 		b.players[winnerIdx].AddChips(potValue)
-		b.appendLog(winnerIdx, "pot_win", fmt.Sprintf("%s wins the pot (%d) with %d tricks", playerName(b.players, winnerIdx), potValue, maxTricks), nil)
+		b.appendLog(winnerIdx, "pot_win", "bourre.log.potWin", map[string]string{"name": playerName(b.players, winnerIdx), "amount": strconv.Itoa(potValue), "tricks": strconv.Itoa(maxTricks)}, nil)
 	} else {
 		b.carryPot += potValue
-		b.appendLog(-1, "pot_carry", fmt.Sprintf("Tie for most tricks — pot of %d carries over", potValue), nil)
+		b.appendLog(-1, "pot_carry", "bourre.log.potCarryTie", map[string]string{"amount": strconv.Itoa(potValue)}, nil)
 	}
 	b.pot = 0
 	b.buildResults(potValue, winnerIdx)
@@ -607,7 +609,7 @@ func (b *Bourre) checkGameEnd() {
 			b.winnerIdx = i
 		}
 	}
-	b.appendLog(b.winnerIdx, "game_end", fmt.Sprintf("%s wins the game with %d chips!", playerName(b.players, b.winnerIdx), b.players[b.winnerIdx].GetChips()), nil)
+	b.appendLog(b.winnerIdx, "game_end", "bourre.log.gameEnd", map[string]string{"name": playerName(b.players, b.winnerIdx), "chips": strconv.Itoa(b.players[b.winnerIdx].GetChips())}, nil)
 }
 
 // --- 補助 ---
@@ -917,6 +919,11 @@ func (b *Bourre) GetValidPlayIndices(idx int) []int {
 		return nil
 	}
 	return b.legalPlays(idx)
+}
+
+// appendLog records a Bourré action with a locale-independent detail code.
+func (b *Bourre) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCodeAt(len(b.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // bourreJSON is the JSON wire format for Bourre.

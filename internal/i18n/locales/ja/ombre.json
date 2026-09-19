@@ -55,5 +55,12 @@
   "errBidTooLow": "現在の最高ビッドを上回る宣言が必要です",
   "errTrumpSuitRequired": "切り札スートを選んでください (1..4)",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errFollowLeadSuit": "リードスートに従ってください"
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.bidPass": "{{name}} がパスします",
+  "log.bid": "{{name}} が {{bid}} をビッドします (切り札 {{trump}})",
+  "log.ombre": "{{name}} が {{bid}} でオンブルです (切り札 {{trump}})",
+  "log.play": "{{name}} が {{card}} を出します",
+  "log.trickWin": "{{name}} がトリック {{trick}} に勝ちます",
+  "log.roundScore": "ラウンド {{round}}: オンブル({{name}}) {{outcome}} (賭け金={{stake}})",
+  "log.gameEnd": "{{name}} がマッチに勝ちます!"
 }

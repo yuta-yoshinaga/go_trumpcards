@@ -359,7 +359,15 @@ func TestThirtyOne_ActionLogRecorded(t *testing.T) {
 	g.SetCurrentPlayerIdx(0)
 	g.SetPhase(ThirtyOnePhaseDraw)
 	require.NoError(t, g.PlayerDrawFromStock())
-	assert.NotEmpty(t, g.GetActionLog())
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "thirtyone.log.drawStock" {
+			entry = candidate
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Empty(t, entry.Detail)
+	assert.Equal(t, playerName(g.players, 0), entry.DetailParams["name"])
 }
 
 // **CPU と同じ材料で判断すること (#4806)。**別の計算を書くと、CPU には有利と

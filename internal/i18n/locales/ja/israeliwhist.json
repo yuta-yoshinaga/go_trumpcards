@@ -49,5 +49,16 @@
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
   "doubledAllExact": "！ 全員が宣言通り。このラウンドの得点は 2 倍です。",
-  "doubledAllMissed": "！ 全員が外しました。このラウンドの減点は 2 倍です。"
+  "doubledAllMissed": "！ 全員が外しました。このラウンドの減点は 2 倍です。",
+  "log.deal": "ラウンド{{round}} を開始",
+  "log.auction": "{{bid}} トリック・切り札 {{suit}} で入札",
+  "log.pass": "オークションを降りた",
+  "log.trump": "切り札 {{suit}}・最低ノルマ {{bid}} で落札",
+  "log.bid": "{{bid}} トリックを宣言",
+  "log.play": "{{card}}",
+  "log.score": "宣言{{bid}} 獲得{{tricks}}: {{score}}",
+  "log.bonusExact": "全員が的中。得点は 2 倍",
+  "log.bonusMissed": "全員が外した。減点は 2 倍",
+  "log.result": "最終得点 {{score0}}/{{score1}}/{{score2}}/{{score3}}",
+  "log.giveup": "ギブアップしました"
 }

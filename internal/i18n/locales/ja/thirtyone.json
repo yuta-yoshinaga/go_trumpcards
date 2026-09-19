@@ -39,5 +39,15 @@
   "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる",
   "errDiscardPileEmpty": "捨て札がありません",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errAlreadyKnocked": "既にノックされています"
+  "errAlreadyKnocked": "既にノックされています",
+  "log.blitz": "{{name}} に31が配られました!",
+  "log.drawStock": "{{name}} が山札から引きます",
+  "log.drawDiscard": "{{name}} が捨て札から {{card}} を引きます",
+  "log.discard": "{{name}} が {{card}} を捨てます",
+  "log.thirtyOne": "{{name}} が31に到達しました!",
+  "log.knock": "{{name}} がノックしました (スコア: {{score}})",
+  "log.roundWin": "{{name}} が31でラウンドに勝ちました",
+  "log.roundEnd": "ラウンド終了 ({{reason}})",
+  "log.loseLife": "{{name}} がライフを失いました (スコア: {{score}})",
+  "log.gameEnd": "{{name}} がゲームに勝ちました!"
 }
