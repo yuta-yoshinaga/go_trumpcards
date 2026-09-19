@@ -48,5 +48,14 @@
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errLayoffCardCannotAdd": "{{card}}はそのメルドに追加できません",
   "errMeldRequiredToGoOut": "上がるには最低1つのメルドが必要です",
-  "errDiscardRestriction": "7、同じランク、または7の前後1ランクのカードのみ捨てられます"
+  "errDiscardRestriction": "7、同じランク、または7の前後1ランクのカードのみ捨てられます",
+  "log.drawsFromStock": "{{name}} が山札から引きました",
+  "log.callsPon": "{{name}} が {{card}} にポンしました",
+  "log.callsChi": "{{name}} が {{card}} にチーしました",
+  "log.meldsCards": "{{name}} が {{count}} 枚をメルドしました",
+  "log.laysOff": "{{name}} が {{card}} を追加しました",
+  "log.discards": "{{name}} が {{card}} を捨てました",
+  "log.goesOut": "{{name}} が上がりました！ 相手のペナルティ: {{penalty}}",
+  "log.roundDraw": "山札切れでラウンドは引き分けです",
+  "log.gameWinner": "{{name}} がゲームに勝利しました！"
 }

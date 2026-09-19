@@ -40,5 +40,14 @@
   "suitDiamond": "Diamonds",
   "helpExampleNext": "  n                    read the trick result, then continue",
   "helpHint": "  h                    show a hint",
-  "handCard": "[{{idx}}]{{card}} ({{points}})"
+  "handCard": "[{{idx}}]{{card}} ({{points}})",
+  "log.roundStarted": "Round {{round}} started",
+  "log.passedTrump": "Passed on trump",
+  "log.acceptedTrump": "Accepted trump ({{suit}})",
+  "log.meldPoints": "Meld {{points}} points",
+  "log.play": "{{card}}",
+  "log.lastTrickBonus": "Last trick +{{bonus}}",
+  "log.teamScore": "Team {{team}} scored {{points}} points",
+  "log.finalScore": "Final score {{team0}} - {{team1}}",
+  "log.giveUp": "Gave up"
 }

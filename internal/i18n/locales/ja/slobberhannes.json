@@ -25,5 +25,15 @@
   "hintReasonDump": "安全なうちに高い札を処分する",
   "hintReasonLeadLow": "低い札でリードして様子を見る",
   "helpExampleGiveUp": "  g                    この局を投了する",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "log.roundStarted": "ラウンド{{round}} を開始",
+  "log.play": "{{card}}",
+  "log.tookFirstTrick": "最初のトリックを取った",
+  "log.tookLastTrick": "最後のトリックを取った",
+  "log.tookQueen": "クラブのクイーンを取った",
+  "log.cleanBonus": "全回避ボーナス +1",
+  "log.penalty": "罰点 {{points}}",
+  "log.draw": "同点で決着つかず",
+  "log.winner": "勝者（{{score}}点）",
+  "log.giveUp": "ギブアップしました"
 }

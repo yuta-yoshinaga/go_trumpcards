@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // SlobberhannesPhase スロバーハンネスのゲームフェーズ
@@ -149,7 +150,7 @@ func (s *Slobberhannes) dealRound() {
 	s.leadPlayerIdx = (s.dealerIdx + 1) % SlobberhannesPlayerCnt
 	s.currentPlayerIdx = s.leadPlayerIdx
 	s.sortAllHands()
-	s.appendLog(-1, "deal", fmt.Sprintf("ラウンド%d を開始", s.roundNumber), nil)
+	s.appendLog(-1, "deal", "slobberhannes.log.roundStarted", map[string]string{"round": strconv.Itoa(s.roundNumber)}, nil)
 }
 
 // sortAllHands 手札をスートごと・強さ順に並べる
@@ -203,7 +204,7 @@ func (s *Slobberhannes) play(playerIdx, cardIndex int) error {
 	}
 	p.RemoveCard(cardIndex)
 	s.currentTrick = append(s.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	s.appendLog(playerIdx, "play", cardStr(card), []*Card{card})
+	s.appendLog(playerIdx, "play", "slobberhannes.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if len(s.currentTrick) < SlobberhannesPlayerCnt {
 		s.currentPlayerIdx = (playerIdx + 1) % SlobberhannesPlayerCnt
@@ -262,15 +263,15 @@ func (s *Slobberhannes) resolveTrick() {
 	// **位置による罰**。最初と最後のトリックは、中身に関係なく危険。
 	if s.trickNumber == 0 {
 		s.players[winner].tookFirstTrick = true
-		s.appendLog(winner, "penalty", "最初のトリックを取った", nil)
+		s.appendLog(winner, "penalty", "slobberhannes.log.tookFirstTrick", nil, nil)
 	}
 	if s.trickNumber == SlobberhannesTricksPerRound-1 {
 		s.players[winner].tookLastTrick = true
-		s.appendLog(winner, "penalty", "最後のトリックを取った", nil)
+		s.appendLog(winner, "penalty", "slobberhannes.log.tookLastTrick", nil, nil)
 	}
 	if hasQueen {
 		s.players[winner].tookQueen = true
-		s.appendLog(winner, "penalty", "クラブのクイーンを取った", nil)
+		s.appendLog(winner, "penalty", "slobberhannes.log.tookQueen", nil, nil)
 	}
 
 	s.trickNumber++
@@ -289,11 +290,11 @@ func (s *Slobberhannes) finishRound() {
 		n := p.PenaltyCount()
 		if n == 0 {
 			p.AddScore(SlobberhannesCleanBonus)
-			s.appendLog(i, "score", "全回避ボーナス +1", nil)
+			s.appendLog(i, "score", "slobberhannes.log.cleanBonus", nil, nil)
 			continue
 		}
 		p.AddScore(SlobberhannesPenalty * n)
-		s.appendLog(i, "score", fmt.Sprintf("罰点 %d", SlobberhannesPenalty*n), nil)
+		s.appendLog(i, "score", "slobberhannes.log.penalty", map[string]string{"points": strconv.Itoa(SlobberhannesPenalty * n)}, nil)
 	}
 
 	if s.roundNumber >= s.config.Rounds {
@@ -334,11 +335,11 @@ func (s *Slobberhannes) finishGame() {
 	}
 	if tied {
 		s.winnerIdx = -1
-		s.appendLog(-1, "result", "同点で決着つかず", nil)
+		s.appendLog(-1, "result", "slobberhannes.log.draw", nil, nil)
 		return
 	}
 	s.winnerIdx = bestIdx
-	s.appendLog(bestIdx, "result", fmt.Sprintf("勝者（%d点）", best), nil)
+	s.appendLog(bestIdx, "result", "slobberhannes.log.winner", map[string]string{"score": strconv.Itoa(best)}, nil)
 }
 
 // trickWinner 現在のトリックの勝者。切り札が無いので、リードのスートの最強札。
@@ -576,12 +577,12 @@ func (s *Slobberhannes) GiveUp() {
 	s.phase = SlobberhannesPhaseGameEnd
 	s.gameEndFlag = true
 	s.winnerIdx = -1
-	s.appendLog(0, "giveup", "ギブアップしました", nil)
+	s.appendLog(0, "giveup", "slobberhannes.log.giveUp", nil, nil)
 }
 
 // appendLog 棋譜エントリを追加
-func (s *Slobberhannes) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.appendLogAt(s.trickNumber, playerIdx, actionType, detail, cards)
+func (s *Slobberhannes) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(s.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // slobberhannesJSON is the KV snapshot format for Slobberhannes.

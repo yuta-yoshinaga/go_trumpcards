@@ -38,5 +38,14 @@
   "yaku.kasu": "Kasu (Chaff)",
   "yaku.hanami": "Hanami-zake (Flower Viewing)",
   "yaku.tsukimi": "Tsukimi-zake (Moon Viewing)",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "log.roundDealt": "Round {{round}} dealt (field {{field}}, draw {{draw}})",
+  "log.play": "{{name}} plays {{card}} ({{captured}})",
+  "log.draw": "{{name}} draws {{card}} ({{captured}})",
+  "log.formsYaku": "{{name}} forms a yaku worth {{points}}",
+  "log.callsKoiKoi": "{{name}} calls Koi-Koi",
+  "log.stopsShobu": "{{name}} stops (Shobu)",
+  "log.roundWin": "{{name}} wins round with {{total}} points (x{{multiplier}})",
+  "log.roundDraw": "Round drawn (no winner)",
+  "log.gameEnded": "Game ended (winner {{winner}})"
 }

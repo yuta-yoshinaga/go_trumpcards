@@ -40,5 +40,14 @@
   "suitDiamond": "ダイヤ",
   "helpExampleNext": "  n                    トリックの決着を見てから次へ",
   "helpHint": "  h                    助言を表示",
-  "handCard": "[{{idx}}]{{card}}({{points}}点)"
+  "handCard": "[{{idx}}]{{card}}({{points}}点)",
+  "log.roundStarted": "ラウンド{{round}} を開始",
+  "log.passedTrump": "切り札を見送った",
+  "log.acceptedTrump": "切り札を引き受けた（{{suit}}）",
+  "log.meldPoints": "メルド {{points}} 点",
+  "log.play": "{{card}}",
+  "log.lastTrickBonus": "最終トリック +{{bonus}}",
+  "log.teamScore": "チーム{{team}} に {{points}} 点",
+  "log.finalScore": "最終得点 {{team0}} - {{team1}}",
+  "log.giveUp": "ギブアップしました"
 }
