@@ -38,5 +38,15 @@
   "errAmount": "Invalid amount. Please enter a number.",
   "errRankDepleted": "All cards of that rank have already been dealt.",
   "errCallArgs": "A call needs a sequence of ranks. Example: call 3 9 12",
-  "helpExampleBet": "  b 1 100                bet 100 on the ace"
+  "helpExampleBet": "  b 1 100                bet 100 on the ace",
+  "log.gameEnd": "player out of chips",
+  "log.soda": "burned soda card",
+  "log.bet": "rank={{rank}} amount={{amount}} copper={{copper}}",
+  "log.clearBet": "rank={{rank}}",
+  "log.clearAll": "cleared all bets",
+  "log.turn": "losing={{losing}} winning={{winning}} split={{split}} net={{net}}",
+  "log.callReady": "three cards remain; call is available",
+  "log.callSkipped": "skipped call",
+  "log.callWon": "call won payout={{payout}}",
+  "log.callLost": "call lost"
 }

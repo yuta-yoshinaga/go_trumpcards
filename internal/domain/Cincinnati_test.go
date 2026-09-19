@@ -274,6 +274,20 @@ func TestCincinnati_Accessors(t *testing.T) {
 	assert.Equal(t, 500, g.GetConfig().InitialChips)
 }
 
+func TestCincinnati_ActionLogUsesDetailCode(t *testing.T) {
+	g := newCincinnatiForTest(t)
+	var reset *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "cincinnati.log.reset" {
+			reset = entry
+			break
+		}
+	}
+	require.NotNil(t, reset)
+	assert.Empty(t, reset.Detail)
+	assert.Empty(t, reset.DetailParams)
+}
+
 // **人間が賭けられなくなったら終わる。**
 func TestCincinnati_EndsWhenTheHumanIsBroke(t *testing.T) {
 	t.Parallel()

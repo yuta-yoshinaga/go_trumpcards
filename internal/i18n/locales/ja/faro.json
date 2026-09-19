@@ -38,5 +38,15 @@
   "errAmount": "金額が不正です。数値を入力してください。",
   "errRankDepleted": "そのランクのカードはすべて出ています。",
   "errCallArgs": "コールにはランクの並びが必要です。例: call 3 9 12",
-  "helpExampleBet": "  b 1 100           A に 100 賭ける"
+  "helpExampleBet": "  b 1 100           A に 100 賭ける",
+  "log.gameEnd": "チップが尽きた",
+  "log.soda": "ソーダカードを焼いた",
+  "log.bet": "ランク={{rank}} 金額={{amount}} カッパー={{copper}}",
+  "log.clearBet": "ランク{{rank}}のベットを取り消した",
+  "log.clearAll": "すべてのベットを取り消した",
+  "log.turn": "敗北札={{losing}} 勝利札={{winning}} スプリット={{split}} 純損益={{net}}",
+  "log.callReady": "残り3枚になり、コール可能",
+  "log.callSkipped": "コールを見送った",
+  "log.callWon": "コール成功、配当={{payout}}",
+  "log.callLost": "コール失敗"
 }

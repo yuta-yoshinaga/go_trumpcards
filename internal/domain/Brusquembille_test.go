@@ -60,6 +60,24 @@ func TestBrusquembille_Reset(t *testing.T) {
 	}
 }
 
+func TestBrusquembille_ActionLogUsesDetailCode(t *testing.T) {
+	b := newTestBrusquembille()
+	b.Reset()
+	var trump *domain.ActionLogEntry
+	for _, entry := range b.GetActionLog() {
+		if entry.DetailCode == "brusquembille.log.trump" {
+			trump = entry
+			break
+		}
+	}
+	if trump == nil {
+		t.Fatal("trump action log entry not found")
+	}
+	if trump.Detail != "" || trump.DetailParams["card"] == "" {
+		t.Fatalf("trump log = %+v, want code params and empty detail", trump)
+	}
+}
+
 func TestBrusquembille_CardPointsAndRank(t *testing.T) {
 	// A > 10 > K > Q > J > 9 > 8 > 7、点は A=11 / 10=10 / K=4 / Q=3 / J=2。
 	//
