@@ -1,4 +1,13 @@
 {
+  "log.recycle": "捨て札から {{cards}} 枚を山札に戻しました",
+  "log.drawStock": "{{player}} が山札から引きました",
+  "log.drawDiscard": "{{player}} が捨て札から {{card}} を引きました",
+  "log.meld": "{{player}} が {{groups}} グループをメルドしました",
+  "log.layoff": "{{player}} がプレイヤー {{targetPlayer}} のメルドに {{card}} をレイオフしました",
+  "log.discard": "{{player}} が {{card}} を捨てました",
+  "log.roundWin": "{{player}} が上がりました！",
+  "log.draw": "山札が空になり、ラウンドは引き分けで終了しました",
+  "log.gameEnd": "{{player}} がゲームに勝利しました！",
   "helpTitle": "Kalooki (カルーキ)",
   "helpDrawStock": "  ds                   山札から引く",
   "helpDrawDiscard": "  dd                   捨て札トップを取る",

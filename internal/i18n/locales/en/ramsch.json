@@ -1,4 +1,12 @@
 {
+  "log.roundStart": "Round {{round}}: dealer={{dealer}}",
+  "log.play": "{{player}} plays {{card}}",
+  "log.trickWin": "{{player}} wins trick {{trick}} ({{points}} card points)",
+  "log.skatAward": "{{player}} takes the skat ({{points}} card points)",
+  "log.durchmarsch": "{{player}} takes every trick (Durchmarsch): the others lose {{points}} each",
+  "log.roundResult": "{{player}} took the most card points (-{{points}})",
+  "log.cumulativeScore": "{{player}} total={{total}}",
+  "log.gameEnd": "{{player}} hits {{points}} penalty points; the match ends and the lowest total wins",
   "helpTitle": "Ramsch",
   "helpPlay": "  p <idx>              play a card",
   "helpNext": "  n                    next trick",

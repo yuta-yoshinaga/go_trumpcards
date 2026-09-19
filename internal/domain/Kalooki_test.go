@@ -742,4 +742,13 @@ func TestKalooki_GetActionLog(t *testing.T) {
 	if len(g.GetActionLog()) == 0 {
 		t.Error("action log should record the draw")
 	}
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "kalooki.log.drawStock" {
+			if entry.Detail != "" || entry.DetailParams["player"] == "" {
+				t.Fatalf("unexpected detail: %#v", entry)
+			}
+			return
+		}
+	}
+	t.Fatal("drawStock action log entry not found")
 }

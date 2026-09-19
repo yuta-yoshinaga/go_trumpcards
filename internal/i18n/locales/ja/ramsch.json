@@ -1,4 +1,12 @@
 {
+  "log.roundStart": "第 {{round}} ラウンド：ディーラー={{dealer}}",
+  "log.play": "{{player}} が {{card}} を出しました",
+  "log.trickWin": "{{player}} が第 {{trick}} トリックに勝利（カード {{points}} 点）",
+  "log.skatAward": "{{player}} がスカートを獲得（カード {{points}} 点）",
+  "log.durchmarsch": "{{player}} が全トリックを獲得（Durchmarsch）：他のプレイヤーはそれぞれ {{points}} 点を失います",
+  "log.roundResult": "{{player}} が最も多くカード点を取りました（-{{points}}）",
+  "log.cumulativeScore": "{{player}} の合計={{total}}",
+  "log.gameEnd": "{{player}} が罰点 {{points}} に達しました。対戦を終了し、合計が最も少ないプレイヤーが勝利します",
   "helpTitle": "Ramsch (ラムシュ)",
   "helpPlay": "  p <idx>              play a card",
   "helpNext": "  n                    next trick",

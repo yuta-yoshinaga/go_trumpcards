@@ -30,6 +30,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // WattenPlayerCnt ヴァッテンのプレイヤー数
@@ -267,9 +268,7 @@ func (g *Watten) CpuDeclare() {
 func (g *Watten) doDeclare(playerIdx, rank, suit int) {
 	g.schlagRank = rank
 	g.criticalSuit = suit
-	g.appendLog(playerIdx, "declare",
-		fmt.Sprintf("%s declares Schlag=%d critical=%s",
-			playerName(g.players, playerIdx), rank, suitStr(suit)), nil)
+	g.appendLog(playerIdx, "declare", "watten.log.declare", map[string]string{"player": playerName(g.players, playerIdx), "rank": strconv.Itoa(rank), "suit": suitStr(suit)}, nil)
 	g.sortAllHands()
 	g.startPlayPhase()
 }
@@ -337,8 +336,7 @@ func (g *Watten) CpuPlay() {
 // playCard カードをプレイする共通処理
 func (g *Watten) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "watten.log.play", map[string]string{"player": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == WattenPlayerCnt {
 		g.phase = WattenPhaseTrickEnd
@@ -361,8 +359,7 @@ func (g *Watten) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.teamTricks[winnerTeam]++
 	g.leadPlayerIdx = winnerIdx
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "watten.log.trickWin", map[string]string{"player": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber)}, trickCards)
 
 	if g.trickNumber >= WattenHandSize {
 		g.enterRoundEnd(g.dealWinnerByTricks())
@@ -436,8 +433,7 @@ func (g *Watten) callRaise(team int) {
 	oppTeam := 1 - team
 	g.responderIdx = g.teamRepresentative(oppTeam)
 	g.phase = WattenPhaseRespond
-	g.appendLog(g.teamRepresentative(team), "raise",
-		fmt.Sprintf("Team %d raises stake to %d", team, g.pendingStake), nil)
+	g.appendLog(g.teamRepresentative(team), "raise", "watten.log.raise", map[string]string{"team": strconv.Itoa(team), "stake": strconv.Itoa(g.pendingStake)}, nil)
 }
 
 // teamRepresentative チームの代表応答プレイヤーを返す (チーム 0 → 人間 0, チーム 1 → 1)。
@@ -493,9 +489,7 @@ func (g *Watten) respond(responder int, hold bool) {
 		g.phase = WattenPhasePlay
 		// レイズしたチームのリードプレイヤーに手番を戻す。
 		g.currentPlayerIdx = g.leadPlayerIdx
-		g.appendLog(responder, "hold",
-			fmt.Sprintf("%s holds (stake %d, team %d leads)",
-				playerName(g.players, responder), g.stake, raiser), nil)
+		g.appendLog(responder, "hold", "watten.log.hold", map[string]string{"player": playerName(g.players, responder), "stake": strconv.Itoa(g.stake), "team": strconv.Itoa(raiser)}, nil)
 		return
 	}
 	// fold: レイズしたチームが直前の確定ステークでディールを取る。
@@ -503,9 +497,7 @@ func (g *Watten) respond(responder int, hold bool) {
 	g.pendingStake = 0
 	g.raiserTeam = -1
 	g.responderIdx = -1
-	g.appendLog(responder, "fold",
-		fmt.Sprintf("%s folds; team %d wins deal (%d pt)",
-			playerName(g.players, responder), raiser, g.stake), nil)
+	g.appendLog(responder, "fold", "watten.log.fold", map[string]string{"player": playerName(g.players, responder), "team": strconv.Itoa(raiser), "points": strconv.Itoa(g.stake)}, nil)
 	g.enterRoundEnd(raiser)
 }
 
@@ -527,9 +519,7 @@ func (g *Watten) scoreDeal() {
 	}
 	g.scored = true
 	g.teamScores[g.dealWinnerTeam] += g.stake
-	g.appendLog(-1, "deal_score",
-		fmt.Sprintf("Team %d wins deal +%d (match %d-%d)",
-			g.dealWinnerTeam, g.stake, g.teamScores[0], g.teamScores[1]), nil)
+	g.appendLog(-1, "deal_score", "watten.log.dealScore", map[string]string{"team": strconv.Itoa(g.dealWinnerTeam), "stake": strconv.Itoa(g.stake), "team0": strconv.Itoa(g.teamScores[0]), "team1": strconv.Itoa(g.teamScores[1])}, nil)
 	g.checkGameEnd()
 }
 
@@ -557,11 +547,14 @@ func (g *Watten) checkGameEnd() {
 			} else {
 				g.result = WattenResultLose
 			}
-			g.appendLog(-1, "game_end",
-				fmt.Sprintf("Team %d wins the match!", g.winnerTeam), nil)
+			g.appendLog(-1, "game_end", "watten.log.gameEnd", map[string]string{"team": strconv.Itoa(g.winnerTeam)}, nil)
 			return
 		}
 	}
+}
+
+func (g *Watten) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Ranking ---

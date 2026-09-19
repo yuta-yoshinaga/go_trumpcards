@@ -1,4 +1,12 @@
 {
+  "log.declare": "{{player}} がシュラーク={{rank}}、切り札={{suit}} を宣言しました",
+  "log.play": "{{player}} が {{card}} を出しました",
+  "log.trickWin": "{{player}} が第 {{trick}} トリックに勝利",
+  "log.raise": "チーム {{team}} がステークを {{stake}} に上げました",
+  "log.hold": "{{player}} がホールド（ステーク {{stake}}、チーム {{team}} のリード）",
+  "log.fold": "{{player}} がフォールドし、チーム {{team}} がディールを獲得（{{points}} 点）",
+  "log.dealScore": "チーム {{team}} がディールを獲得 +{{stake}}（マッチ {{team0}}-{{team1}}）",
+  "log.gameEnd": "チーム {{team}} がマッチに勝利しました！",
   "helpTitle": "Watten (ヴァッテン)",
   "helpDeclare": "  d <r> <s>            宣言 (Schlagランク + 切り札スート 1=S,2=C,3=H,4=D)",
   "helpPlay": "  p <idx>              カードをプレイ",

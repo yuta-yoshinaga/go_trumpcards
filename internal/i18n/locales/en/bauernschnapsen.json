@@ -1,4 +1,12 @@
 {
+  "log.deal": "dealt 5 cards each; no talon",
+  "log.contract": "declared {{contract}}",
+  "log.contractFinal": "contract {{contract}}, trump {{trump}}",
+  "log.marriage": "{{player}} declares marriage in {{suit}} (+{{bonus}} for team {{team}})",
+  "log.play": "{{player}} plays {{card}}",
+  "log.trickWin": "{{player}} wins trick {{trick}} ({{points}} pt)",
+  "log.teamScore": "Team {{team}}: {{cardPoints}} card pts, {{marriage}} marriage, {{tricks}} tricks -> +{{gained}} (total {{total}})",
+  "log.gameEnd": "Team {{team}} wins the game!",
   "helpTitle": "Bauernschnapsen",
   "helpPlay": "  p <idx>              play a card",
   "helpMarriage": "  m <idx>              declare marriage (lead the K/Q)",
