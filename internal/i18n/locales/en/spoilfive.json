@@ -28,5 +28,11 @@
   "helpHint": "  h                         show a hint",
   "errCardIndexOutOfRange": "The card index is out of range.",
   "errMustFollowTrump": "Follow the trump suit.",
-  "errMustFollowSuit": "Follow the led suit."
+  "errMustFollowSuit": "Follow the led suit.",
+  "log.roundStart": "round {{round}}: trump {{trump}}, pot {{pot}}, {{name}} leads",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.roundWin": "{{name}} wins the pot of {{pot}}",
+  "log.spoil": "spoiled! pot of {{pot}} carries over",
+  "log.gameEnd": "{{name}} wins the match!"
 }

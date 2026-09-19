@@ -21,6 +21,19 @@ func newPiedmonteseTarotForTest(t *testing.T, seats int) *PiedmonteseTarot {
 	return g
 }
 
+func TestPiedmonteseTarot_ActionLogUsesDetailCode(t *testing.T) {
+	g := newPiedmonteseTarotForTest(t, 4)
+	dealer := g.GetPlayers()[g.GetDealerIdx()]
+	dealer.Reset()
+	dealer.AddCard(NewCard(CardDesignHeart, 2, false))
+	dealer.AddCard(NewCard(CardDesignSpade, 3, false))
+	assert.NoError(t, g.PlayerScarto([]int{0, 1}))
+	entry := g.GetActionLog()[0]
+	assert.Equal(t, "piedmontesetarot.log.scarto", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You", "count": "2"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}
+
 // piedmonteseTarotPlayHand は 1 ディールを最後まで打つ。合法手の先頭を出し続ける
 // 乱暴な打ち方だが、**規則を書き直さずに** 1 ディールを通せる唯一の打ち方でもある。
 func piedmonteseTarotPlayHand(t *testing.T, g *PiedmonteseTarot) {

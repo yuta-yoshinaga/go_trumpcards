@@ -150,7 +150,7 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 		}},
 		{"Scarto", func() (any, any) {
 			g := NewDefaultScarto()
-			g.appendLog(1, "act", "detail", nil)
+			g.appendLog(1, "act", "scarto.log.test", nil, nil)
 			return g, NewDefaultScarto()
 		}},
 		{"Vira", func() (any, any) {

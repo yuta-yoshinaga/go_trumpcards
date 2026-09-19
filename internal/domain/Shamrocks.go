@@ -82,7 +82,7 @@ func (g *Shamrocks) Reset() {
 		cards = append(cards, g.trumpCards.DrawCard())
 	}
 	g.dealFans(cards)
-	g.appendLog("deal", "新しいゲームを開始しました", nil)
+	g.appendLog("deal", "shamrocks.log.deal", nil, nil)
 }
 
 // dealFans カード列を 3 枚ずつの扇に配る (末尾の扇は 1〜3 枚)。
@@ -189,7 +189,7 @@ func (g *Shamrocks) MoveFanToFan(from, to int) error {
 	g.fans[from] = g.fans[from][:len(g.fans[from])-1]
 	g.fans[to] = append(g.fans[to], card)
 	g.moveCount++
-	g.appendLog("move", fmt.Sprintf("扇%d→扇%d", from, to), []*Card{card})
+	g.appendLog("move", "shamrocks.log.move", map[string]string{"from": fmt.Sprint(from), "to": fmt.Sprint(to)}, []*Card{card})
 	g.checkGameOver()
 	return nil
 }
@@ -214,7 +214,7 @@ func (g *Shamrocks) MoveFanToFoundation(from int) error {
 	g.fans[from] = g.fans[from][:len(g.fans[from])-1]
 	g.foundation[fIdx] = append(g.foundation[fIdx], card)
 	g.moveCount++
-	g.appendLog("foundation", fmt.Sprintf("扇%d→ファウンデーション", from), []*Card{card})
+	g.appendLog("foundation", "shamrocks.log.foundation", map[string]string{"from": fmt.Sprint(from)}, []*Card{card})
 	g.checkGameClear()
 	g.checkGameOver()
 	return nil
@@ -224,7 +224,7 @@ func (g *Shamrocks) MoveFanToFoundation(from int) error {
 func (g *Shamrocks) GiveUp() {
 	if g.phase == ShamrocksPhasePlaying {
 		g.phase = ShamrocksPhaseGameOver
-		g.appendLog("giveup", "ギブアップしました", nil)
+		g.appendLog("giveup", "shamrocks.log.giveUp", nil, nil)
 	}
 }
 
@@ -264,7 +264,7 @@ func (g *Shamrocks) checkGameClear() {
 	}
 	if total == 52 {
 		g.phase = ShamrocksPhaseGameClear
-		g.appendLog("clear", "クリア！", nil)
+		g.appendLog("clear", "shamrocks.log.clear", nil, nil)
 	}
 }
 
@@ -275,7 +275,7 @@ func (g *Shamrocks) checkGameOver() {
 	}
 	if !g.hasAnyLegalMove() {
 		g.phase = ShamrocksPhaseGameOver
-		g.appendLog("gameover", "手詰まりです", nil)
+		g.appendLog("gameover", "shamrocks.log.gameOver", nil, nil)
 	}
 }
 
@@ -376,8 +376,8 @@ func (g *Shamrocks) UndoN(n int) error {
 	return nil
 }
 
-func (g *Shamrocks) appendLog(action, detail string, cards []*Card) {
-	g.appendLogAt(g.moveCount, 0, action, detail, cards)
+func (g *Shamrocks) appendLog(action, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(g.moveCount, 0, action, detailCode, detailParams, cards)
 }
 
 // --- accessors ---

@@ -48,5 +48,11 @@
   "errScartoInvalidCard": "The card is invalid.",
   "errDiscardHonour": "The Excuse or a bout (trump 1/21) cannot be discarded.",
   "errDiscardTrump": "Trumps cannot be discarded unless you have no choice.",
-  "errDiscardCourt": "Point cards (kings/court cards) cannot be discarded."
+  "errDiscardCourt": "Point cards (kings/court cards) cannot be discarded.",
+  "log.scarto": "{{name}} discards {{count}} cards (scarto)",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.roundScore": "deal {{round}}: captured half-points {{half}} -> deal scores {{scores}}",
+  "log.gameEndDraw": "the match ends in a draw",
+  "log.gameEnd": "{{name}} wins the match!"
 }
