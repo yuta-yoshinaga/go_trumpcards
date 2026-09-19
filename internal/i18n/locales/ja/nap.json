@@ -49,5 +49,13 @@
   "payoutFailed": "他の各プレイヤーが {{chips}} チップ獲得（契約失敗）",
   "errInvalidBid": "入札値が不正です",
   "errBidMustExceed": "現在の入札を上回る必要があります",
-  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "log.bid": "{{name}} が {{bid}} に入札しました",
+  "log.pass": "{{name}} がパスしました",
+  "log.passedOut": "全員がパスしたため、このラウンドは流れました。",
+  "log.contract": "{{name}} が {{contract}} を宣言しました（切り札 {{trump}}）",
+  "log.play": "{{name}} が {{card}} をプレイしました",
+  "log.trickWin": "{{name}} が {{trick}} トリックに勝ちました",
+  "log.roundScore": "ラウンド {{round}}: {{contract}} {{result}}（{{won}}/{{target}} トリック）",
+  "log.gameEnd": "{{name}} がマッチに勝利しました！"
 }

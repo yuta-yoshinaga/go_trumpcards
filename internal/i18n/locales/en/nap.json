@@ -49,5 +49,13 @@
   "payoutFailed": "each opponent gains {{chips}} chips (contract failed)",
   "errInvalidBid": "The bid is invalid.",
   "errBidMustExceed": "You must outbid the current bid.",
-  "errCardIndexOutOfRange": "The card index is out of range."
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "log.bid": "{{name}} bids {{bid}}",
+  "log.pass": "{{name}} passes",
+  "log.passedOut": "all players passed; round is void",
+  "log.contract": "{{name}} declares {{contract}} (trump {{trump}})",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.roundScore": "round {{round}}: {{contract}} {{result}} ({{won}}/{{target}} tricks)",
+  "log.gameEnd": "{{name}} wins the match!"
 }

@@ -786,6 +786,9 @@ func TestKlondike_ActionLog(t *testing.T) {
 	_ = k.Draw()
 	assert.NotNil(t, k.GetActionLog())
 	assert.Equal(t, 1, len(k.GetActionLog()))
+	assert.Equal(t, "klondike.log.draw", k.GetActionLog()[0].DetailCode)
+	assert.Nil(t, k.GetActionLog()[0].DetailParams)
+	assert.Empty(t, k.GetActionLog()[0].Detail)
 }
 
 func TestKlondike_MoveWasteToFoundation_DifferentSuit(t *testing.T) {

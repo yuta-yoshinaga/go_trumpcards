@@ -66,6 +66,10 @@ type OichoKabu struct {
 	actionLogBase
 }
 
+func (o *OichoKabu) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	o.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewOichoKabu コンストラクタ。40 枚のカブ札を組み立ててシャッフルする。
 func NewOichoKabu() *OichoKabu {
 	o := &OichoKabu{phase: OichoKabuPhaseBet}
@@ -129,7 +133,7 @@ func (o *OichoKabu) Bet(amount int) error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	o.bet = amount
-	o.appendLog(0, "bet", fmt.Sprintf("bet=%d", amount), nil)
+	o.appendLog(0, "bet", "oichokabu.log.bet", map[string]string{"amount": fmt.Sprintf("%d", amount)}, nil)
 
 	o.playerHand = make([]*Card, 0, OichoKabuHandMax)
 	o.bankerHand = make([]*Card, 0, OichoKabuHandMax)
@@ -137,7 +141,7 @@ func (o *OichoKabu) Bet(amount int) error {
 		o.playerHand = append(o.playerHand, o.drawCard())
 		o.bankerHand = append(o.bankerHand, o.drawCard())
 	}
-	o.appendLog(-1, "deal", "dealt 2 cards each", o.playerHand)
+	o.appendLog(-1, "deal", "oichokabu.log.deal", nil, o.playerHand)
 	o.phase = OichoKabuPhaseDraw
 	return nil
 }
@@ -154,7 +158,7 @@ func (o *OichoKabu) Draw() error {
 	if c != nil {
 		o.playerHand = append(o.playerHand, c)
 	}
-	o.appendLog(0, "draw", "player draws a third card", []*Card{c})
+	o.appendLog(0, "draw", "oichokabu.log.playerDraw", nil, []*Card{c})
 	o.resolve()
 	return nil
 }
@@ -164,7 +168,7 @@ func (o *OichoKabu) Stand() error {
 	if o.phase != OichoKabuPhaseDraw {
 		return NewDomainError(ErrWrongPhase, "Stand is only allowed during the draw phase.")
 	}
-	o.appendLog(0, "stand", "player stands", nil)
+	o.appendLog(0, "stand", "oichokabu.log.playerStand", nil, nil)
 	o.resolve()
 	return nil
 }
@@ -177,7 +181,7 @@ func (o *OichoKabu) resolve() {
 		if c != nil {
 			o.bankerHand = append(o.bankerHand, c)
 		}
-		o.appendLog(-1, "draw", "banker draws a third card", []*Card{c})
+		o.appendLog(-1, "draw", "oichokabu.log.bankerDraw", nil, []*Card{c})
 	}
 
 	pr, br := o.playerRank(), o.bankerRank()
@@ -186,16 +190,16 @@ func (o *OichoKabu) resolve() {
 		o.result = OichoKabuResultWin
 		o.totalPayout = o.bet * 2 // 掛け金返却 + 1:1 配当
 		o.chips.AddChips(o.totalPayout)
-		o.appendLog(-1, "result", "player wins", nil)
+		o.appendLog(-1, "result", "oichokabu.log.playerWins", nil, nil)
 	case pr < br:
 		o.result = OichoKabuResultLose
 		o.totalPayout = 0
-		o.appendLog(-1, "result", "banker wins", nil)
+		o.appendLog(-1, "result", "oichokabu.log.bankerWins", nil, nil)
 	default:
 		o.result = OichoKabuResultDraw // プッシュ
 		o.totalPayout = o.bet          // 掛け金返却
 		o.chips.AddChips(o.totalPayout)
-		o.appendLog(-1, "result", "push", nil)
+		o.appendLog(-1, "result", "oichokabu.log.push", nil, nil)
 	}
 	o.gameEndFlag = true
 	o.phase = OichoKabuPhaseEnd

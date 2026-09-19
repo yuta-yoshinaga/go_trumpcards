@@ -253,7 +253,7 @@ func (g *Yaniv) discard(idx int, cardIndices []int) error {
 	sortCardsForDiscard(removed)
 	g.pendingDiscard = removed
 
-	g.appendLog(idx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, idx), cardsStr(removed)), removed)
+	g.appendLog(idx, "discard", "yaniv.log.discard", map[string]string{"name": playerName(g.players, idx), "cards": cardsStr(removed)}, removed)
 	g.phase = YanivPhaseDraw
 	return nil
 }
@@ -288,7 +288,7 @@ func (g *Yaniv) drawFromStock(idx int) {
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	g.players[idx].AddCard(card)
 	g.sortHand(idx)
-	g.appendLog(idx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, idx)), nil)
+	g.appendLog(idx, "draw_stock", "yaniv.log.drawStock", map[string]string{"name": playerName(g.players, idx)}, nil)
 	g.finalizeDraw(-1)
 }
 
@@ -301,7 +301,7 @@ func (g *Yaniv) drawFromPickup(idx, end int) {
 	card := g.pickupCards[takenIdx]
 	g.players[idx].AddCard(card)
 	g.sortHand(idx)
-	g.appendLog(idx, "draw_pickup", fmt.Sprintf("%s takes %s from the discard", playerName(g.players, idx), cardStr(card)), []*Card{card})
+	g.appendLog(idx, "draw_pickup", "yaniv.log.drawPickup", map[string]string{"name": playerName(g.players, idx), "card": cardStr(card)}, []*Card{card})
 	g.finalizeDraw(takenIdx)
 }
 
@@ -461,8 +461,7 @@ func (g *Yaniv) resolveYaniv(callerIdx int) {
 	if g.isAsaf {
 		g.asafWinnerIdx = asafWinner
 		scores[callerIdx] = YanivAsafPenalty
-		g.appendLog(callerIdx, "asaf", fmt.Sprintf("%s calls Yaniv (%d) but is undercut by %s (%d)! +%d penalty",
-			playerName(g.players, callerIdx), callerTotal, playerName(g.players, asafWinner), minOpp, YanivAsafPenalty), nil)
+		g.appendLog(callerIdx, "asaf", "yaniv.log.asaf", map[string]string{"caller": playerName(g.players, callerIdx), "callerTotal": fmt.Sprintf("%d", callerTotal), "winner": playerName(g.players, asafWinner), "winnerTotal": fmt.Sprintf("%d", minOpp), "penalty": fmt.Sprintf("%d", YanivAsafPenalty)}, nil)
 		for i, p := range g.players {
 			if i == callerIdx || p.IsEliminated() || i == asafWinner {
 				continue
@@ -471,7 +470,7 @@ func (g *Yaniv) resolveYaniv(callerIdx int) {
 		}
 	} else {
 		scores[callerIdx] = 0
-		g.appendLog(callerIdx, "yaniv", fmt.Sprintf("%s calls Yaniv with %d and wins the round!", playerName(g.players, callerIdx), callerTotal), nil)
+		g.appendLog(callerIdx, "yaniv", "yaniv.log.yaniv", map[string]string{"name": playerName(g.players, callerIdx), "total": fmt.Sprintf("%d", callerTotal)}, nil)
 		for i, p := range g.players {
 			if i == callerIdx || p.IsEliminated() {
 				continue
@@ -488,7 +487,7 @@ func (g *Yaniv) resolveYaniv(callerIdx int) {
 	for i, p := range g.players {
 		if !p.IsEliminated() && p.GetScore() > g.config.ScoreLimit {
 			p.SetEliminated(true)
-			g.appendLog(i, "eliminate", fmt.Sprintf("%s is eliminated (score: %d)", playerName(g.players, i), p.GetScore()), nil)
+			g.appendLog(i, "eliminate", "yaniv.log.eliminate", map[string]string{"name": playerName(g.players, i), "score": fmt.Sprintf("%d", p.GetScore())}, nil)
 		}
 	}
 
@@ -499,7 +498,7 @@ func (g *Yaniv) resolveYaniv(callerIdx int) {
 func (g *Yaniv) endRoundNoContest() {
 	g.callerIdx = -1
 	g.roundScores = make([]int, len(g.players))
-	g.appendLog(-1, "round_end", "Round ends with no Yaniv (deck exhausted)", nil)
+	g.appendLog(-1, "round_end", "yaniv.log.roundEnd", nil, nil)
 	g.finishRound()
 }
 
@@ -529,7 +528,7 @@ func (g *Yaniv) checkGameEnd() {
 	g.gameEndFlag = true
 	g.phase = YanivPhaseGameEnd
 	g.winnerIdx = g.leaderIdx()
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", "yaniv.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx)}, nil)
 }
 
 // leaderIdx 生存者のうち最も失点が少ないプレイヤー (同点は若いインデックス) を返す
@@ -856,6 +855,10 @@ type yanivJSON struct {
 // yanivMaxSliceLen caps slice sizes during deserialisation to prevent
 // excessive memory allocation from malformed input.
 const yanivMaxSliceLen = 1000
+
+func (g *Yaniv) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
 
 // MarshalJSON implements json.Marshaler.
 func (g *Yaniv) MarshalJSON() ([]byte, error) {
