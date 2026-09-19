@@ -3,7 +3,6 @@
 package presenter
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -133,10 +132,9 @@ func ramsRoundSettlement(r interfaces.RamsGame) []*controller.RamsWebRoundSettle
 		}
 		switch entry.ActionType {
 		case "penalty":
-			_, _ = fmt.Sscanf(entry.Detail, "0 トリックで %d 支払い", &item.Penalty)
+			item.Penalty, _ = strconv.Atoi(entry.DetailParams["amount"])
 		case "payout":
-			var tricks int
-			_, _ = fmt.Sscanf(entry.Detail, "%d トリックで %d 獲得", &tricks, &item.Payout)
+			item.Payout, _ = strconv.Atoi(entry.DetailParams["amount"])
 		}
 	}
 	return settlement

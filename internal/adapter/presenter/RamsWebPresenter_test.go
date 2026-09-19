@@ -161,11 +161,11 @@ func TestRamsWebPresenterShowsSettlementOnFinalRound(t *testing.T) {
 func TestRamsWebPresenterRoundSettlementJSONBranches(t *testing.T) {
 	entries := []*domain.ActionLogEntry{
 		{ActionType: "deal"},
-		{PlayerIdx: 0, ActionType: "penalty", Detail: "0 トリックで 5 支払い"},
-		{PlayerIdx: 1, ActionType: "penalty", Detail: "0 トリックで 5 支払い"},
-		{PlayerIdx: 2, ActionType: "payout", Detail: "2 トリックで 20 獲得"},
-		{PlayerIdx: 3, ActionType: "payout", Detail: "1 トリックで 10 獲得"},
-		{PlayerIdx: -1, ActionType: "penalty", Detail: "0 トリックで 5 支払い"},
+		{PlayerIdx: 0, ActionType: "penalty", DetailCode: "rams.log.penalty", DetailParams: map[string]string{"amount": "5", "tricks": "0"}},
+		{PlayerIdx: 1, ActionType: "penalty", DetailCode: "rams.log.penalty", DetailParams: map[string]string{"amount": "5", "tricks": "0"}},
+		{PlayerIdx: 2, ActionType: "payout", DetailCode: "rams.log.payout", DetailParams: map[string]string{"amount": "20", "tricks": "2"}},
+		{PlayerIdx: 3, ActionType: "payout", DetailCode: "rams.log.payout", DetailParams: map[string]string{"amount": "10", "tricks": "1"}},
+		{PlayerIdx: -1, ActionType: "penalty", DetailCode: "rams.log.penalty", DetailParams: map[string]string{"amount": "5", "tricks": "0"}},
 	}
 	g := new(interfaces.MockRamsGame)
 	g.On("GetConfig").Return(domain.DefaultRamsConfig())
@@ -202,7 +202,7 @@ func TestRamsWebPresenterRoundSettlementJSONBranches(t *testing.T) {
 	assert.Empty(t, ramsRoundSettlement(g))
 
 	g.ExpectedCalls = nil
-	g.On("GetActionLog").Return([]*domain.ActionLogEntry{{PlayerIdx: 0, ActionType: "payout", Detail: "1 トリックで 12 獲得"}})
+	g.On("GetActionLog").Return([]*domain.ActionLogEntry{{PlayerIdx: 0, ActionType: "payout", DetailCode: "rams.log.payout", DetailParams: map[string]string{"amount": "12", "tricks": "1"}}})
 	settlement := ramsRoundSettlement(g)
 	require.Len(t, settlement, 1)
 	assert.Equal(t, 0, settlement[0].PlayerIdx)

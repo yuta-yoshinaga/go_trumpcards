@@ -141,11 +141,11 @@ func ramsRoundSettlementLine(r interfaces.RamsGame) string {
 		}
 		name := cuiPlayerName(r.GetPlayer(entry.PlayerIdx), entry.PlayerIdx)
 		if entry.ActionType == "penalty" {
-			amount := lastActionLogNumber(entry.Detail)
+			amount, _ := strconv.Atoi(entry.DetailParams["amount"])
 			penalties = append(penalties, i18n.Tf("rams.roundPenalty", "name", name, "amount", strconv.Itoa(amount)))
 		}
 		if entry.ActionType == "payout" {
-			amount := lastActionLogNumber(entry.Detail)
+			amount, _ := strconv.Atoi(entry.DetailParams["amount"])
 			payouts = append(payouts, i18n.Tf("rams.roundPayout", "name", name, "amount", strconv.Itoa(amount)))
 		}
 	}
@@ -153,16 +153,6 @@ func ramsRoundSettlementLine(r interfaces.RamsGame) string {
 		return ""
 	}
 	return i18n.Tf("rams.roundSettlement", "penalties", strings.Join(penalties, ", "), "payouts", strings.Join(payouts, ", "))
-}
-
-func lastActionLogNumber(detail string) int {
-	fields := strings.Fields(detail)
-	for i := len(fields) - 1; i >= 0; i-- {
-		if amount, err := strconv.Atoi(fields[i]); err == nil {
-			return amount
-		}
-	}
-	return 0
 }
 
 // HintOutput emits the current hint.

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // RamsPhase ラムスのゲームフェーズ
@@ -162,7 +163,10 @@ func (r *Rams) dealRound() {
 	r.leadPlayerIdx = (r.dealerIdx + 1) % len(r.players)
 	r.currentPlayerIdx = r.leadPlayerIdx
 	r.sortAllHands()
-	r.appendLog(-1, "deal", fmt.Sprintf("ラウンド%d 開始（ポット %d）", r.roundNumber, r.pot), nil)
+	r.appendLog(-1, "deal", "rams.log.roundStart", map[string]string{
+		"round": strconv.Itoa(r.roundNumber),
+		"pot":   strconv.Itoa(r.pot),
+	}, nil)
 }
 
 // sortAllHands 手札を切り札を最後に、スートごと・強さ順に並べる
@@ -205,11 +209,14 @@ func (r *Rams) setDecision(idx int, play bool) {
 	p.SetDecided(true)
 	p.SetInRound(play)
 	action := "pass"
-	detail := "降りた"
 	if play {
-		action, detail = "play", "参加した"
+		action = "play"
 	}
-	r.appendLog(idx, action, detail, nil)
+	detailCode := "rams.log.passOut"
+	if play {
+		detailCode = "rams.log.playIn"
+	}
+	r.appendLog(idx, action, detailCode, nil, nil)
 }
 
 // cpuDecide 未決定の CPU に選択させる
@@ -249,7 +256,7 @@ func (r *Rams) startPlayIfReady() {
 	}
 	if r.activeCount() == 0 {
 		// 全員降りた。ポットは次ラウンドへ持ち越す。
-		r.appendLog(-1, "allpass", fmt.Sprintf("全員降りた。ポット %d を持ち越し", r.pot), nil)
+		r.appendLog(-1, "allpass", "rams.log.allPass", map[string]string{"pot": strconv.Itoa(r.pot)}, nil)
 		r.finishRound()
 		return
 	}
@@ -322,7 +329,7 @@ func (r *Rams) play(playerIdx, cardIndex int) error {
 	}
 	p.RemoveCard(cardIndex)
 	r.currentTrick = append(r.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	r.appendLog(playerIdx, "play", cardStr(card), []*Card{card})
+	r.appendLog(playerIdx, "play", "rams.log.playCard", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if len(r.currentTrick) < r.activeCount() {
 		r.currentPlayerIdx = r.nextActiveAfter(playerIdx)
@@ -395,7 +402,10 @@ func (r *Rams) finishRound() {
 		if p.GetInRound() && p.GetRoundTricks() == 0 {
 			p.AddChips(-RamsMissPenalty)
 			r.pot += RamsMissPenalty
-			r.appendLog(i, "penalty", fmt.Sprintf("0 トリックで %d 支払い", RamsMissPenalty), nil)
+			r.appendLog(i, "penalty", "rams.log.penalty", map[string]string{
+				"amount": strconv.Itoa(RamsMissPenalty),
+				"tricks": "0",
+			}, nil)
 		}
 	}
 
@@ -411,7 +421,10 @@ func (r *Rams) finishRound() {
 				amount := share * n
 				p.AddChips(amount)
 				paid += amount
-				r.appendLog(i, "payout", fmt.Sprintf("%d トリックで %d 獲得", n, amount), nil)
+				r.appendLog(i, "payout", "rams.log.payout", map[string]string{
+					"amount": strconv.Itoa(amount),
+					"tricks": strconv.Itoa(n),
+				}, nil)
 			}
 		}
 		// **端数は持ち越す。** 配り切れないぶんを消すとチップが減る。
@@ -459,9 +472,15 @@ func (r *Rams) drainPot() {
 			amount++
 		}
 		r.players[idx].AddChips(amount)
-		r.appendLog(idx, "payout", fmt.Sprintf("0 トリックで %d 獲得", amount), nil)
+		r.appendLog(idx, "payout", "rams.log.finalPayout", map[string]string{
+			"amount": strconv.Itoa(amount),
+			"tricks": "0",
+		}, nil)
 	}
-	r.appendLog(-1, "pot", fmt.Sprintf("最終ラウンド。残りポット %d を %d 人で分配", r.pot, len(recipients)), nil)
+	r.appendLog(-1, "pot", "rams.log.potDistribution", map[string]string{
+		"pot":        strconv.Itoa(r.pot),
+		"recipients": strconv.Itoa(len(recipients)),
+	}, nil)
 	r.pot = 0
 }
 
@@ -491,11 +510,11 @@ func (r *Rams) finishGame() {
 	}
 	if tied {
 		r.winnerIdx = -1
-		r.appendLog(-1, "result", "同点で決着つかず", nil)
+		r.appendLog(-1, "result", "rams.log.tie", nil, nil)
 		return
 	}
 	r.winnerIdx = bestIdx
-	r.appendLog(bestIdx, "result", fmt.Sprintf("勝者（%dチップ）", best), nil)
+	r.appendLog(bestIdx, "result", "rams.log.winner", map[string]string{"chips": strconv.Itoa(best)}, nil)
 }
 
 // trickWinner 現在のトリックの勝者。切り札が最強、次いでリードのスート。
@@ -704,12 +723,12 @@ func (r *Rams) GiveUp() {
 	r.phase = RamsPhaseGameEnd
 	r.gameEndFlag = true
 	r.winnerIdx = -1
-	r.appendLog(0, "giveup", "ギブアップしました", nil)
+	r.appendLog(0, "giveup", "rams.log.giveUp", nil, nil)
 }
 
 // appendLog 棋譜エントリを追加
-func (r *Rams) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	r.appendLogAt(r.trickNumber, playerIdx, actionType, detail, cards)
+func (r *Rams) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	r.appendLogCodeAt(r.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ramsJSON is the KV snapshot format for Rams.

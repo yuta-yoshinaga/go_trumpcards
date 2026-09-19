@@ -5158,5 +5158,17 @@
   "tute.log.play": "{{name}} が {{card}} をプレイしました",
   "tute.log.trickWin": "{{name}} が {{trick}} トリックに勝ちました（+{{points}}{{bonus}}）",
   "tute.log.roundScore": "ラウンド {{round}}: チームA={{teamA}}（+{{pointsA}}）、チームB={{teamB}}（+{{pointsB}}）",
-  "tute.log.gameEnd": "チーム{{team}}がゲームに勝利しました！"
+  "tute.log.gameEnd": "チーム{{team}}がゲームに勝利しました！",
+  "rams.log.roundStart": "ラウンド{{round}} 開始（ポット {{pot}}）",
+  "rams.log.playIn": "参加した",
+  "rams.log.passOut": "降りた",
+  "rams.log.allPass": "全員降りた。ポット {{pot}} を持ち越し",
+  "rams.log.playCard": "{{card}}",
+  "rams.log.penalty": "{{tricks}} トリックで {{amount}} 支払い",
+  "rams.log.payout": "{{tricks}} トリックで {{amount}} 獲得",
+  "rams.log.finalPayout": "{{tricks}} トリックで {{amount}} 獲得",
+  "rams.log.potDistribution": "最終ラウンド。残りポット {{pot}} を {{recipients}} 人で分配",
+  "rams.log.tie": "同点で決着つかず",
+  "rams.log.winner": "勝者（{{chips}}チップ）",
+  "rams.log.giveUp": "ギブアップしました"
 }

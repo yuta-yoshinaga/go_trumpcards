@@ -5158,5 +5158,17 @@
   "tute.log.play": "{{name}} plays {{card}}",
   "tute.log.trickWin": "{{name}} wins trick {{trick}} (+{{points}}{{bonus}})",
   "tute.log.roundScore": "round {{round}}: Team A={{teamA}} (+{{pointsA}}), Team B={{teamB}} (+{{pointsB}})",
-  "tute.log.gameEnd": "Team {{team}} wins the game!"
+  "tute.log.gameEnd": "Team {{team}} wins the game!",
+  "rams.log.roundStart": "Round {{round}} starts (pot {{pot}})",
+  "rams.log.playIn": "played in",
+  "rams.log.passOut": "dropped out",
+  "rams.log.allPass": "Everyone dropped out. Pot {{pot}} carries over",
+  "rams.log.playCard": "{{card}}",
+  "rams.log.penalty": "{{tricks}} tricks, {{amount}} paid",
+  "rams.log.payout": "{{tricks}} tricks, {{amount}} received",
+  "rams.log.finalPayout": "{{tricks}} tricks, {{amount}} received",
+  "rams.log.potDistribution": "Final round. Remaining pot {{pot}} split among {{recipients}} players",
+  "rams.log.tie": "The game ends tied",
+  "rams.log.winner": "Winner ({{chips}} chips)",
+  "rams.log.giveUp": "Gave up"
 }
