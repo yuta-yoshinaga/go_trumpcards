@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // FlowerGardenPhase Flower Garden game phase
@@ -167,7 +168,7 @@ func (fg *FlowerGarden) MoveTableauToTableau(fromCol, cardIndex, toCol int) erro
 	fg.tableau[toCol] = append(fg.tableau[toCol], tc)
 	fg.tableau[fromCol] = fromCards[:cardIndex]
 	fg.moveCount++
-	fg.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), []*Card{tc.Card})
+	fg.appendLog("move", "flowergarden.log.tableauToTableau", map[string]string{"fromCol": strconv.Itoa(fromCol), "toCol": strconv.Itoa(toCol)}, []*Card{tc.Card})
 	fg.checkStalemate()
 	return nil
 }
@@ -194,7 +195,7 @@ func (fg *FlowerGarden) MoveTableauToFoundation(col int) error {
 	fg.tableau[col] = fromCards[:len(fromCards)-1]
 	fg.foundation[fIdx] = append(fg.foundation[fIdx], card)
 	fg.moveCount++
-	fg.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	fg.appendLog("move", "flowergarden.log.tableauToFoundation", map[string]string{"col": strconv.Itoa(col)}, []*Card{card})
 	fg.checkGameClear()
 	fg.checkStalemate()
 	return nil
@@ -222,7 +223,7 @@ func (fg *FlowerGarden) MoveReserveToTableau(reserveIdx, toCol int) error {
 	fg.reserve[reserveIdx] = nil
 	fg.tableau[toCol] = append(fg.tableau[toCol], &FlowerGardenTableauCard{Card: card, FaceUp: true})
 	fg.moveCount++
-	fg.appendLog("move", fmt.Sprintf("リザーブ%d→タブロー列%d", reserveIdx, toCol), []*Card{card})
+	fg.appendLog("move", "flowergarden.log.reserveToTableau", map[string]string{"reserveIdx": strconv.Itoa(reserveIdx), "toCol": strconv.Itoa(toCol)}, []*Card{card})
 	fg.checkStalemate()
 	return nil
 }
@@ -247,7 +248,7 @@ func (fg *FlowerGarden) MoveReserveToFoundation(reserveIdx int) error {
 	fg.reserve[reserveIdx] = nil
 	fg.foundation[fIdx] = append(fg.foundation[fIdx], card)
 	fg.moveCount++
-	fg.appendLog("move", fmt.Sprintf("リザーブ%d→ファンデーション", reserveIdx), []*Card{card})
+	fg.appendLog("move", "flowergarden.log.reserveToFoundation", map[string]string{"reserveIdx": strconv.Itoa(reserveIdx)}, []*Card{card})
 	fg.checkGameClear()
 	fg.checkStalemate()
 	return nil
@@ -257,7 +258,7 @@ func (fg *FlowerGarden) MoveReserveToFoundation(reserveIdx int) error {
 func (fg *FlowerGarden) GiveUp() {
 	if fg.phase == FlowerGardenPhasePlaying {
 		fg.phase = FlowerGardenPhaseGameOver
-		fg.appendLog("giveup", "ギブアップしました", nil)
+		fg.appendLog("giveup", "flowergarden.log.giveup", nil, nil)
 	}
 }
 
@@ -432,7 +433,7 @@ func (fg *FlowerGarden) AutoComplete() error {
 			break
 		}
 	}
-	fg.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	fg.appendLog("autocomplete", "flowergarden.log.autocomplete", nil, nil)
 	fg.checkGameClear()
 	fg.checkStalemate()
 	return nil
@@ -604,8 +605,8 @@ func (fg *FlowerGarden) restoreSnapshot(snap *flowerGardenSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (fg *FlowerGarden) appendLog(actionType, detail string, cards []*Card) {
-	fg.appendLogAt(fg.moveCount, 0, actionType, detail, cards)
+func (fg *FlowerGarden) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	fg.appendLogCodeAt(fg.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // flowerGardenJSON is the JSON wire format for FlowerGarden.

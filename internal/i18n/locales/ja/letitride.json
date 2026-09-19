@@ -28,5 +28,13 @@
   "pullUnavailable": "いまは引き下げられません。",
   "helpExampleBet": "  b 100              100 チップを賭ける",
   "totalRiskLine": "いまのリスク総額: {{risk}}",
-  "nothingToConfirm": "確認待ちの Pull はありません。"
+  "nothingToConfirm": "確認待ちの Pull はありません。",
+  "log.bet": "ベット={{amount}} (x3={{total}})",
+  "log.pullBet3": "ベット3を取り下げました",
+  "log.pullBet2": "ベット2を取り下げました",
+  "log.letItRideBet3": "ベット3をそのままにしました",
+  "log.letItRideBet2": "ベット2をそのままにしました",
+  "log.deal": "プレイヤーに3枚、コミュニティに2枚配りました",
+  "log.playerWins": "プレイヤーの勝ち",
+  "log.playerLoses": "プレイヤーの負け"
 }

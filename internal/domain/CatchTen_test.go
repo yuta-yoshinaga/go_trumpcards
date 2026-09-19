@@ -494,6 +494,16 @@ func TestCatchTen_GetActionLog(t *testing.T) {
 	g := newTestCatchTen()
 	g.Reset()
 	assert.NotEmpty(t, g.GetActionLog())
+	var found *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "catchten.log.trump" {
+			found = entry
+			break
+		}
+	}
+	require.NotNil(t, found)
+	assert.Empty(t, found.Detail)
+	assert.NotEmpty(t, found.DetailParams["suit"])
 }
 
 func TestCatchTen_DealerAndPlayerCntAccessors(t *testing.T) {

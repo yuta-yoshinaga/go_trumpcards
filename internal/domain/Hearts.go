@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // HeartsPlayerCnt ハーツプレイヤー数
@@ -246,7 +247,11 @@ func (h *Hearts) ExecutePass() {
 		}
 	}
 
-	h.appendLog(-1, "pass", fmt.Sprintf("round %d: cards passed (%s)", h.roundNumber, h.passDirectionStr(dir)), nil)
+	passCode := map[HeartsPassDirection]string{HeartsPassLeft: "hearts.log.passLeft", HeartsPassRight: "hearts.log.passRight", HeartsPassAcross: "hearts.log.passAcross"}[dir]
+	if passCode == "" {
+		passCode = "hearts.log.passNone"
+	}
+	h.appendLog(-1, "pass", passCode, map[string]string{"round": strconv.Itoa(h.roundNumber)}, nil)
 
 	h.sortAllHands()
 	h.phase = HeartsPhasePlay
@@ -323,7 +328,7 @@ func (h *Hearts) ResolveTrick() {
 	h.players[winnerIdx].roundScore += points
 
 	winnerName := playerName(h.players, winnerIdx)
-	h.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d (%+d pts)", winnerName, h.trickNumber, points), trickCards)
+	h.appendLog(winnerIdx, "trick_win", "hearts.log.trickWin", map[string]string{"name": winnerName, "trick": strconv.Itoa(h.trickNumber), "points": fmt.Sprintf("%+d", points)}, trickCards)
 
 	h.leadPlayerIdx = winnerIdx
 
@@ -371,7 +376,7 @@ func (h *Hearts) ScoreRound() {
 	}
 
 	if moonShooter >= 0 {
-		h.appendLog(moonShooter, "shoot_moon", fmt.Sprintf("%s shot the moon!", playerName(h.players, moonShooter)), nil)
+		h.appendLog(moonShooter, "shoot_moon", "hearts.log.shootMoon", map[string]string{"name": playerName(h.players, moonShooter)}, nil)
 		h.players[moonShooter].roundScore = 0
 		for i := 0; i < HeartsPlayerCnt; i++ {
 			if i != moonShooter {
@@ -387,8 +392,7 @@ func (h *Hearts) ScoreRound() {
 
 	// スコアログ
 	for i := 0; i < HeartsPlayerCnt; i++ {
-		h.appendLog(i, "round_score", fmt.Sprintf("%s: round=%d, total=%d",
-			playerName(h.players, i), h.players[i].roundScore, h.players[i].cumulativeScore), nil)
+		h.appendLog(i, "round_score", "hearts.log.roundScore", map[string]string{"name": playerName(h.players, i), "round": strconv.Itoa(h.players[i].roundScore), "total": strconv.Itoa(h.players[i].cumulativeScore)}, nil)
 	}
 
 	// ゲーム終了判定
@@ -412,7 +416,7 @@ func (h *Hearts) ScoreRound() {
 				h.winnerIdx = i
 			}
 		}
-		h.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(h.players, h.winnerIdx)), nil)
+		h.appendLog(-1, "game_end", "hearts.log.gameEnd", map[string]string{"name": playerName(h.players, h.winnerIdx)}, nil)
 	}
 }
 
@@ -546,13 +550,18 @@ func (h *Hearts) playCard(playerIdx int, card *Card) {
 		h.heartsBroken = true
 	}
 
-	h.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(h.players, playerIdx), cardStr(card)), []*Card{card})
+	h.appendLog(playerIdx, "play", "hearts.log.play", map[string]string{"name": playerName(h.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(h.currentTrick) == HeartsPlayerCnt {
 		h.phase = HeartsPhaseTrickEnd
 	} else {
 		h.currentPlayerIdx = (h.currentPlayerIdx + 1) % HeartsPlayerCnt
 	}
+}
+
+// appendLog records a Hearts action with a locale-independent detail code.
+func (h *Hearts) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	h.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // validatePlay カードのプレイが有効か検証する
@@ -698,7 +707,7 @@ func (h *Hearts) passTarget(from int, dir HeartsPassDirection) int {
 	}
 }
 
-// passDirectionStr パス方向の文字列表現
+// passDirectionStr はパス方向の文字列表現を返す。
 func (h *Hearts) passDirectionStr(dir HeartsPassDirection) string {
 	switch dir {
 	case HeartsPassLeft:

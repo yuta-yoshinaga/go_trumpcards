@@ -42,5 +42,14 @@
   "errFirstTrickMustLeadTwoOfClubs": "Lead the 2♣ on the first trick.",
   "errHeartsNotBroken": "Hearts have not been broken yet.",
   "errFollowLeadSuit": "You must follow the lead suit.",
-  "errFirstTrickNoPointCards": "Point cards cannot be played on the first trick."
+  "errFirstTrickNoPointCards": "Point cards cannot be played on the first trick.",
+  "log.passLeft": "round {{round}}: cards passed (left)",
+  "log.passRight": "round {{round}}: cards passed (right)",
+  "log.passAcross": "round {{round}}: cards passed (across)",
+  "log.passNone": "round {{round}}: cards passed (none)",
+  "log.trickWin": "{{name}} wins trick {{trick}} ({{points}} pts)",
+  "log.shootMoon": "{{name}} shot the moon!",
+  "log.roundScore": "{{name}}: round={{round}}, total={{total}}",
+  "log.gameEnd": "{{name}} wins the game!",
+  "log.play": "{{name}} plays {{card}}"
 }

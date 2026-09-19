@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // レット・イット・ライドフェーズ定数
@@ -116,7 +117,7 @@ func (lir *LetItRide) Bet(amount int) error {
 	lir.bet1Active = true
 	lir.bet2Active = true
 	lir.bet3Active = true
-	lir.appendLog(0, "bet", fmt.Sprintf("bet=%d (x3=%d)", amount, totalCost), nil)
+	lir.appendLog(0, "bet", "letitride.log.bet", map[string]string{"amount": strconv.Itoa(amount), "total": strconv.Itoa(totalCost)}, nil)
 
 	lir.deal()
 	lir.phase = LetItRidePhaseFirstDecision
@@ -129,13 +130,13 @@ func (lir *LetItRide) Pull() error {
 	case LetItRidePhaseFirstDecision:
 		lir.bet3Active = false
 		lir.chips.AddChips(lir.betAmount)
-		lir.appendLog(0, "pull", "pull bet 3", nil)
+		lir.appendLog(0, "pull", "letitride.log.pullBet3", nil, nil)
 		lir.phase = LetItRidePhaseSecondDecision
 		return nil
 	case LetItRidePhaseSecondDecision:
 		lir.bet2Active = false
 		lir.chips.AddChips(lir.betAmount)
-		lir.appendLog(0, "pull", "pull bet 2", nil)
+		lir.appendLog(0, "pull", "letitride.log.pullBet2", nil, nil)
 		lir.resolve()
 		return nil
 	default:
@@ -181,11 +182,11 @@ func (lir *LetItRide) GetPullPreview() *LetItRidePullPreview {
 func (lir *LetItRide) LetItRideAction() error {
 	switch lir.phase {
 	case LetItRidePhaseFirstDecision:
-		lir.appendLog(0, "letitride", "let it ride (bet 3)", nil)
+		lir.appendLog(0, "letitride", "letitride.log.letItRideBet3", nil, nil)
 		lir.phase = LetItRidePhaseSecondDecision
 		return nil
 	case LetItRidePhaseSecondDecision:
-		lir.appendLog(0, "letitride", "let it ride (bet 2)", nil)
+		lir.appendLog(0, "letitride", "letitride.log.letItRideBet2", nil, nil)
 		lir.resolve()
 		return nil
 	default:
@@ -203,7 +204,12 @@ func (lir *LetItRide) deal() {
 	for range LetItRideCommunitySize {
 		lir.communityCards = append(lir.communityCards, lir.trumpCards.DrawCard())
 	}
-	lir.appendLog(-1, "deal", "dealt 3 player cards + 2 community cards", nil)
+	lir.appendLog(-1, "deal", "letitride.log.deal", nil, nil)
+}
+
+// appendLog records a Let It Ride action with a locale-independent detail code.
+func (lir *LetItRide) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	lir.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // resolve ゲーム解決（最終ハンド評価＆配当計算）
@@ -238,13 +244,11 @@ func (lir *LetItRide) resolve() {
 	lir.gameEndFlag = true
 	lir.phase = LetItRidePhaseEnd
 
-	var resultStr string
 	if lir.result == GameResultWin {
-		resultStr = "player wins"
+		lir.appendLog(-1, "result", "letitride.log.playerWins", nil, nil)
 	} else {
-		resultStr = "player loses"
+		lir.appendLog(-1, "result", "letitride.log.playerLoses", nil, nil)
 	}
-	lir.appendLog(-1, "result", resultStr, nil)
 }
 
 // payoutMultiplier ハンドランクに基づく配当倍率（0 = 配当なし）

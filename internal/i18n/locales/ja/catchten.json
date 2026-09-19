@@ -23,5 +23,11 @@
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errFollowLeadSuit": "リードスートに従ってください"
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.trickWin": "{{name}}がトリック{{trick}}を取りました（名誉点: {{honors}}）",
+  "log.roundScore": "チーム{{team}}: {{honors}}名誉点（合計: {{total}}）",
+  "log.trump": "トランプ: {{suit}}",
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.gameEndDraw": "ゲーム終了！ 引き分けです！",
+  "log.gameEnd": "チーム{{team}}がゲームに勝利しました！"
 }

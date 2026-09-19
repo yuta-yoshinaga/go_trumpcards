@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // CatchTenHandSize 各プレイヤーの手札枚数 (36枚 / 4人)
@@ -249,8 +250,7 @@ func (g *CatchTen) ResolveTrick() {
 	}
 
 	winnerName := playerName(g.players, winnerIdx)
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (honors: %d)", winnerName, g.trickNumber, honor), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "catchten.log.trickWin", map[string]string{"name": winnerName, "trick": strconv.Itoa(g.trickNumber), "honors": strconv.Itoa(honor)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 
@@ -286,8 +286,7 @@ func (g *CatchTen) ScoreRound() {
 
 	for ti := 0; ti < CatchTenTeamCnt; ti++ {
 		g.teamScores[ti] += teamHonor[ti]
-		g.appendLog(-1, "round_score",
-			fmt.Sprintf("Team %d: %d honors (total: %d)", ti, teamHonor[ti], g.teamScores[ti]), nil)
+		g.appendLog(-1, "round_score", "catchten.log.roundScore", map[string]string{"team": strconv.Itoa(ti), "honors": strconv.Itoa(teamHonor[ti]), "total": strconv.Itoa(g.teamScores[ti])}, nil)
 	}
 
 	g.checkGameEnd()
@@ -419,7 +418,7 @@ func (g *CatchTen) dealAndSetTrump() {
 		g.trumpSuit = CardDesignSpade
 	}
 
-	g.appendLog(-1, "trump", fmt.Sprintf("Trump suit: %s", suitName(g.trumpSuit)), nil)
+	g.appendLog(-1, "trump", "catchten.log.trump", map[string]string{"suit": suitName(g.trumpSuit)}, nil)
 }
 
 // startPlayPhase プレイフェーズ開始: ディーラーの左隣がリード
@@ -438,13 +437,18 @@ func (g *CatchTen) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "catchten.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == CatchTenPlayerCnt {
 		g.phase = CatchTenPhaseTrickEnd
 	} else {
 		g.currentPlayerIdx = (g.currentPlayerIdx + 1) % CatchTenPlayerCnt
 	}
+}
+
+// appendLog records a Catch Ten action with a locale-independent detail code.
+func (g *CatchTen) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // validatePlay カードのプレイが有効か検証する
@@ -531,9 +535,9 @@ func (g *CatchTen) checkGameEnd() {
 	}
 
 	if g.winnerTeam == CatchTenDrawTeam {
-		g.appendLog(-1, "game_end", "Game ends in a draw!", nil)
+		g.appendLog(-1, "game_end", "catchten.log.gameEndDraw", nil, nil)
 	} else {
-		g.appendLog(-1, "game_end", fmt.Sprintf("Team %d wins the game!", g.winnerTeam), nil)
+		g.appendLog(-1, "game_end", "catchten.log.gameEnd", map[string]string{"team": strconv.Itoa(g.winnerTeam)}, nil)
 	}
 }
 

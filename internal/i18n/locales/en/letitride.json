@@ -28,5 +28,13 @@
   "pullUnavailable": "You cannot pull right now.",
   "helpExampleBet": "  b 100                bet 100 chips",
   "totalRiskLine": "At risk right now: {{risk}}",
-  "nothingToConfirm": "There is no pull waiting for confirmation."
+  "nothingToConfirm": "There is no pull waiting for confirmation.",
+  "log.bet": "bet={{amount}} (x3={{total}})",
+  "log.pullBet3": "pull bet 3",
+  "log.pullBet2": "pull bet 2",
+  "log.letItRideBet3": "let it ride (bet 3)",
+  "log.letItRideBet2": "let it ride (bet 2)",
+  "log.deal": "dealt 3 player cards + 2 community cards",
+  "log.playerWins": "player wins",
+  "log.playerLoses": "player loses"
 }
