@@ -53,5 +53,14 @@
   "errBidMustExceedCurrent": "現在の入札を上回る必要があります",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errMustFollowTrump": "切り札に従ってください",
-  "errMustFollowLeadSuit": "リードスートに従ってください"
+  "errMustFollowLeadSuit": "リードスートに従ってください",
+  "log.bid": "{{name}} が {{bid}} をビッドしました",
+  "log.pass": "{{name}} がパスしました",
+  "log.passedOut": "全員がパスしたため、ラウンドは無効です",
+  "log.contract": "{{name}}（チーム{{team}}）が {{bid}} をビッド、切り札は {{trump}}",
+  "log.play": "{{name}} が {{card}} をプレイしました",
+  "log.trickWin": "{{name}} が {{trick}} トリックに勝ちました（+{{points}}）",
+  "log.roundScore": "ラウンド {{round}}: チーム{{team}}は{{bid}}をビッドして{{got}}点、チーム{{otherTeam}}は{{otherGot}}点",
+  "log.jink": "ジンク！ チーム{{team}}が全トリックを取り、勝利しました",
+  "log.gameEnd": "チーム{{team}}がマッチに勝利しました！"
 }

@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // TutePlayerCnt プレイヤー数 (人間 1 + CPU 3)
@@ -239,8 +240,7 @@ func (g *Tute) applyMarriage(playerIdx, suit int) {
 	}
 	team := TuteTeamOf(playerIdx)
 	g.roundTeamPts[team] += pts
-	g.appendLog(playerIdx, "marriage",
-		fmt.Sprintf("%s declares a %s marriage (+%d)", playerName(g.players, playerIdx), suitStr(suit), pts), nil)
+	g.appendLog(playerIdx, "marriage", "tute.log.marriage", map[string]string{"name": playerName(g.players, playerIdx), "suit": suitStr(suit), "points": strconv.Itoa(pts)}, nil)
 }
 
 // hasTute プレイヤーが 4 枚の K または 4 枚の Q を持つか。
@@ -254,8 +254,7 @@ func (g *Tute) applyTute(playerIdx int) {
 	g.gameEndFlag = true
 	g.winnerTeam = team
 	g.phase = TutePhaseGameEnd
-	g.appendLog(playerIdx, "tute",
-		fmt.Sprintf("%s declares TUTE! Team %s wins the game!", playerName(g.players, playerIdx), teamName(team)), nil)
+	g.appendLog(playerIdx, "tute", "tute.log.tute", map[string]string{"name": playerName(g.players, playerIdx), "team": teamName(team)}, nil)
 }
 
 // CpuPlay 現在の手番が CPU の場合に 1 ターン実行する。
@@ -291,7 +290,7 @@ func (g *Tute) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Tute) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "tute.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == TutePlayerCnt {
 		g.phase = TutePhaseTrickEnd
@@ -320,8 +319,7 @@ func (g *Tute) ResolveTrick() {
 		g.roundTeamPts[team] += TuteLastTrickBonus
 		bonus = fmt.Sprintf(" +%d last", TuteLastTrickBonus)
 	}
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d%s)", playerName(g.players, winnerIdx), g.trickNumber, pts, bonus), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "tute.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(pts), "bonus": bonus}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// Keep currentTrick intact through TrickEnd so the resolved trick stays
@@ -352,9 +350,7 @@ func (g *Tute) ScoreRound() {
 	for t := 0; t < TuteTeamCnt; t++ {
 		g.teamScores[t] += g.roundTeamPts[t]
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: Team A=%d (+%d), Team B=%d (+%d)",
-			g.roundNumber, g.teamScores[0], g.roundTeamPts[0], g.teamScores[1], g.roundTeamPts[1]), nil)
+	g.appendLog(-1, "round_score", "tute.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "teamA": strconv.Itoa(g.teamScores[0]), "pointsA": strconv.Itoa(g.roundTeamPts[0]), "teamB": strconv.Itoa(g.teamScores[1]), "pointsB": strconv.Itoa(g.roundTeamPts[1])}, nil)
 
 	leader, other := 0, 1
 	if g.teamScores[1] > g.teamScores[0] {
@@ -364,8 +360,13 @@ func (g *Tute) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = TutePhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("Team %s wins the game!", teamName(leader)), nil)
+		g.appendLog(-1, "game_end", "tute.log.gameEnd", map[string]string{"team": teamName(leader)}, nil)
 	}
+}
+
+// appendLog records a Tute action with a locale-independent detail code.
+func (g *Tute) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Trick / play helpers ---

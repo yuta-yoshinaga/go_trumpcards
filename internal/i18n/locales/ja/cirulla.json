@@ -45,5 +45,13 @@
   "errCardRange": "カードの番号が範囲外です。",
   "errMustCapture": "取れる札があるときは置けません。",
   "errInvalidCapture": "その組み合わせでは取れません。",
-  "invalidTargetScore": "無効な目標スコアです: {{val}}。11〜51 を指定してください。"
+  "invalidTargetScore": "無効な目標スコアです: {{val}}。11〜51 を指定してください。",
+  "log.deal": "ラウンド {{round}}: ディーラー={{dealer}}、場={{table}}",
+  "log.bonus": "プレイヤー {{player}} が {{bonus}} で {{points}} 点を獲得",
+  "log.discard": "プレイヤー {{player}} が {{card}} を置きました",
+  "log.capture": "プレイヤー {{player}} が {{card}} で {{count}} 枚を取りました",
+  "log.scopa": "プレイヤー {{player}} が場を一掃しました",
+  "log.sweep": "プレイヤー {{player}} が場に残った {{count}} 枚を取りました",
+  "log.roundEnd": "ラウンド {{round}}: {{score0}} - {{score1}}",
+  "log.gameEnd": "プレイヤー {{player}} がマッチに勝利しました"
 }
