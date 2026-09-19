@@ -21,5 +21,12 @@
   "result.scores": "ゲーム終了！ 得点: {{scores}}",
   "captureHint": "{{hand}} → 場{{table}}",
   "helpExamplePlay": "  p 0                       手札の 0 番を場に置く (場札を取らない)",
-  "helpExampleNext": "  nr                        新しいゲームを始める"
+  "helpExampleNext": "  nr                        新しいゲームを始める",
+  "log.dealtTableCards": "場札を{{count}}枚配りました",
+  "log.trails": "{{name}}が{{card}}を捨てました",
+  "log.scoresTabla": "{{name}}がタブラを達成し、{{count}}枚を捕獲しました",
+  "log.sweepsWithJack": "{{name}}がジャックで{{count}}枚を一掃しました",
+  "log.captures": "{{name}}が{{count}}枚を捕獲しました",
+  "log.lastTake": "最後に取った札: {{count}}枚",
+  "log.gameEnded": "ゲーム終了（最高得点 {{score}}）"
 }

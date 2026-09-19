@@ -52,6 +52,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // RistikontraPhase はリスティコントラのフェーズを表す。
@@ -183,7 +184,7 @@ func (g *Ristikontra) dealInitialPile() {
 	// **一番上のジャックを避ける処理は要らない。** クローン元のピシュティは
 	// ジャックが万能の捕獲札なので、初手でいきなり全部さらわれないよう
 	// 上に来ないようにしていた。リスティコントラのジャックはただの札。
-	g.appendLog(-1, "deal", fmt.Sprintf("dealt %d pile cards", len(g.state.pile)), append([]*Card(nil), g.state.pile...))
+	g.appendLog(-1, "deal", "ristikontra.log.dealtPileCards", map[string]string{"count": strconv.Itoa(len(g.state.pile))}, append([]*Card(nil), g.state.pile...))
 }
 
 // RistikontraTeamCnt はチーム数。席 0・2 = チーム 0、席 1・3 = チーム 1。
@@ -273,8 +274,7 @@ func (g *Ristikontra) applyPlay(playerIdx, cardIndex int) error {
 		g.state.lastCaptureIdx = playerIdx
 		g.state.counterCards = taken
 		g.state.counterRank = card.GetValue()
-		g.appendLog(playerIdx, "counter",
-			fmt.Sprintf("countered for %d card(s)", len(taken)), taken)
+		g.appendLog(playerIdx, "counter", "ristikontra.log.countered", map[string]string{"count": strconv.Itoa(len(taken))}, taken)
 
 	case captures:
 		g.state.pile = append(g.state.pile, card)
@@ -285,15 +285,14 @@ func (g *Ristikontra) applyPlay(playerIdx, cardIndex int) error {
 		// 次の 1 手だけ、この束は打ち返しの的になる。
 		g.state.counterCards = taken
 		g.state.counterRank = card.GetValue()
-		g.appendLog(playerIdx, "capture",
-			fmt.Sprintf("captured %d card(s)", len(taken)), taken)
+		g.appendLog(playerIdx, "capture", "ristikontra.log.captured", map[string]string{"count": strconv.Itoa(len(taken))}, taken)
 
 	default:
 		// 捕獲も打ち返しも起きなかったので、打ち返しの機会は閉じる。
 		g.state.counterCards = nil
 		g.state.counterRank = 0
 		g.state.pile = append(g.state.pile, card)
-		g.appendLog(playerIdx, "play", "played onto pile", []*Card{card})
+		g.appendLog(playerIdx, "play", "ristikontra.log.playedOntoPile", nil, []*Card{card})
 	}
 
 	g.advanceTurn()
@@ -340,7 +339,7 @@ func (g *Ristikontra) finishGame() {
 	if g.state.lastCaptureIdx >= 0 && len(g.state.pile) > 0 {
 		leftover := append([]*Card(nil), g.state.pile...)
 		g.players[g.state.lastCaptureIdx].AddCaptured(leftover)
-		g.appendLog(g.state.lastCaptureIdx, "lastTake", fmt.Sprintf("last-take: %d card(s)", len(leftover)), leftover)
+		g.appendLog(g.state.lastCaptureIdx, "lastTake", "ristikontra.log.lastTake", map[string]string{"count": strconv.Itoa(len(leftover))}, leftover)
 	}
 	g.state.pile = g.state.pile[:0]
 
@@ -369,7 +368,7 @@ func (g *Ristikontra) finishGame() {
 	maxScore := bestCount
 	g.state.gameEndFlag = true
 	g.state.phase = RistikontraPhaseGameEnd
-	g.appendLog(-1, "gameEnd", fmt.Sprintf("game ended (top score %d)", maxScore), nil)
+	g.appendLog(-1, "gameEnd", "ristikontra.log.gameEnded", map[string]string{"score": strconv.Itoa(maxScore)}, nil)
 }
 
 // calcFinalScore は各プレイヤーの最終得点を計算する。
@@ -506,8 +505,8 @@ func (g *Ristikontra) lowestValueCardIdx(player *RistikontraPlayer) int {
 }
 
 // appendLog は棋譜にエントリを追加する。
-func (g *Ristikontra) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.appendLog(playerIdx, actionType, detail, cards)
+func (g *Ristikontra) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.state.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- 状態アクセサ ---

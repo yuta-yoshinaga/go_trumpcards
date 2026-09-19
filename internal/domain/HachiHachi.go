@@ -53,6 +53,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strconv"
 )
 
 // HachiHachiPlayerCnt は八八のプレイヤー数 (固定 3)。
@@ -478,8 +479,7 @@ func (g *HachiHachi) startRound() {
 	g.state.drawPile = append([]*Card(nil), deck[pos:]...)
 
 	g.sortHumanHand()
-	g.appendLog(-1, "deal", fmt.Sprintf("round %d dealt (field %d, draw %d)",
-		g.state.roundNumber, len(g.state.fieldCards), len(g.state.drawPile)),
+	g.appendLog(-1, "deal", "hachihachi.log.roundDealt", map[string]string{"round": strconv.Itoa(g.state.roundNumber), "field": strconv.Itoa(len(g.state.fieldCards)), "draw": strconv.Itoa(len(g.state.drawPile))},
 		append([]*Card(nil), g.state.fieldCards...))
 }
 
@@ -616,8 +616,7 @@ func (g *HachiHachi) applyTurn(playerIdx, handIdx, fieldIdx int) {
 	beforeField := len(g.state.fieldCards)
 	g.hachihachiPlaceCard(playerIdx, card, fieldIdx)
 	handCaptured := len(g.state.fieldCards) <= beforeField
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s (%s)",
-		g.playerName(playerIdx), hachihachiCardStr(card), hachihachiCapturedWord(handCaptured)), []*Card{card})
+	g.appendLog(playerIdx, "play", "hachihachi.log.plays", map[string]string{"name": g.playerName(playerIdx), "card": hachihachiCardStr(card), "result": hachihachiCapturedWord(handCaptured)}, []*Card{card})
 
 	// めくり札。
 	if len(g.state.drawPile) > 0 {
@@ -630,8 +629,7 @@ func (g *HachiHachi) applyTurn(playerIdx, handIdx, fieldIdx int) {
 		if drawCaptured {
 			drawLogCards = append(drawLogCards, drawnCaptured[1:]...)
 		}
-		g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws %s (%s)",
-			g.playerName(playerIdx), hachihachiCardStr(drawn), hachihachiCapturedWord(drawCaptured)), drawLogCards)
+		g.appendLog(playerIdx, "draw", "hachihachi.log.draws", map[string]string{"name": g.playerName(playerIdx), "card": hachihachiCardStr(drawn), "result": hachihachiCapturedWord(drawCaptured)}, drawLogCards)
 	}
 
 	g.advanceTurn()
@@ -679,8 +677,7 @@ func (g *HachiHachi) endRound() {
 		best = -1
 	}
 	g.state.lastRoundResult = &HachiHachiRoundResult{Scores: scores, Best: best}
-	g.appendLog(best, "roundEnd",
-		fmt.Sprintf("round %d settled (best %d)", g.state.roundNumber, best), nil)
+	g.appendLog(best, "roundEnd", "hachihachi.log.roundSettled", map[string]string{"round": strconv.Itoa(g.state.roundNumber), "best": strconv.Itoa(best)}, nil)
 
 	if g.state.roundNumber >= g.config.TargetRounds {
 		g.finishGame()
@@ -701,8 +698,7 @@ func (g *HachiHachi) sweepFieldToLastCapturer() {
 		target = g.state.currentTurn
 	}
 	g.players[target].AddCaptured(append([]*Card(nil), g.state.fieldCards...))
-	g.appendLog(target, "sweep",
-		fmt.Sprintf("%s sweeps %d leftover field card(s)", g.playerName(target), len(g.state.fieldCards)),
+	g.appendLog(target, "sweep", "hachihachi.log.sweepsLeftover", map[string]string{"name": g.playerName(target), "count": strconv.Itoa(len(g.state.fieldCards))},
 		append([]*Card(nil), g.state.fieldCards...))
 	g.state.fieldCards = make([]*Card, 0)
 }
@@ -729,7 +725,7 @@ func (g *HachiHachi) finishGame() {
 	g.state.winner = best
 	g.state.gameEndFlag = true
 	g.state.phase = HachiHachiPhaseGameEnd
-	g.appendLog(-1, "gameEnd", fmt.Sprintf("game ended (winner %d)", best), nil)
+	g.appendLog(-1, "gameEnd", "hachihachi.log.gameEnded", map[string]string{"winner": strconv.Itoa(best)}, nil)
 }
 
 // --- CPU AI ---
@@ -820,8 +816,8 @@ func (g *HachiHachi) playerName(idx int) string {
 	return fmt.Sprintf("CPU%d", idx)
 }
 
-func (g *HachiHachi) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.appendLog(playerIdx, actionType, detail, cards)
+func (g *HachiHachi) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.state.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // hachihachiCardStr は札を "松·光" のように表す (ログ/デバッグ用)。

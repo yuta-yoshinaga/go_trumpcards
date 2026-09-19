@@ -57,6 +57,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // PishtiPhase は Pişti のフェーズを表す。
@@ -191,7 +192,7 @@ func (g *Pishti) dealInitialPile() {
 			}
 		}
 	}
-	g.appendLog(-1, "deal", fmt.Sprintf("dealt %d pile cards", len(g.state.pile)), append([]*Card(nil), g.state.pile...))
+	g.appendLog(-1, "deal", "pishti.log.dealtPileCards", map[string]string{"count": strconv.Itoa(len(g.state.pile))}, append([]*Card(nil), g.state.pile...))
 }
 
 // pishtiIsJack はジャック (value 11) かどうか。
@@ -270,12 +271,12 @@ func (g *Pishti) applyPlay(playerIdx, cardIndex int) error {
 		g.state.lastCaptureIdx = playerIdx
 		if bonus > 0 {
 			player.AddPistiBonus(bonus)
-			g.appendLog(playerIdx, "pisti", fmt.Sprintf("Pişti +%d (captured %d)", bonus, len(captured)), captured)
+			g.appendLog(playerIdx, "pisti", "pishti.log.pisti", map[string]string{"bonus": strconv.Itoa(bonus), "count": strconv.Itoa(len(captured))}, captured)
 		} else {
-			g.appendLog(playerIdx, "capture", fmt.Sprintf("captured %d card(s)", len(captured)), captured)
+			g.appendLog(playerIdx, "capture", "pishti.log.captured", map[string]string{"count": strconv.Itoa(len(captured))}, captured)
 		}
 	} else {
-		g.appendLog(playerIdx, "play", "played onto pile", []*Card{card})
+		g.appendLog(playerIdx, "play", "pishti.log.playedOntoPile", nil, []*Card{card})
 	}
 
 	g.advanceTurn()
@@ -313,7 +314,7 @@ func (g *Pishti) finishGame() {
 	if g.state.lastCaptureIdx >= 0 && len(g.state.pile) > 0 {
 		leftover := append([]*Card(nil), g.state.pile...)
 		g.players[g.state.lastCaptureIdx].AddCaptured(leftover)
-		g.appendLog(g.state.lastCaptureIdx, "lastTake", fmt.Sprintf("last-take: %d card(s)", len(leftover)), leftover)
+		g.appendLog(g.state.lastCaptureIdx, "lastTake", "pishti.log.lastTake", map[string]string{"count": strconv.Itoa(len(leftover))}, leftover)
 	}
 	g.state.pile = g.state.pile[:0]
 
@@ -333,7 +334,7 @@ func (g *Pishti) finishGame() {
 	g.state.winners = winners
 	g.state.gameEndFlag = true
 	g.state.phase = PishtiPhaseGameEnd
-	g.appendLog(-1, "gameEnd", fmt.Sprintf("game ended (top score %d)", maxScore), nil)
+	g.appendLog(-1, "gameEnd", "pishti.log.gameEnded", map[string]string{"score": strconv.Itoa(maxScore)}, nil)
 }
 
 // calcFinalScore は各プレイヤーの最終得点を計算する。
@@ -512,8 +513,8 @@ func (g *Pishti) lowestValueCardIdx(player *PishtiPlayer) int {
 }
 
 // appendLog は棋譜にエントリを追加する。
-func (g *Pishti) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.appendLog(playerIdx, actionType, detail, cards)
+func (g *Pishti) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.state.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- 状態アクセサ ---
