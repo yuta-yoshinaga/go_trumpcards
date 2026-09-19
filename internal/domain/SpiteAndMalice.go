@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // SpiteAndMalicePhase Spite & Malice ゲームフェーズ
@@ -74,8 +75,8 @@ type SpiteAndMalice struct {
 	phase       SpiteAndMalicePhase
 	moveCount   int
 	winner      int
-	actionLog   []*ActionLogEntry
-	config      SpiteAndMaliceConfig
+	actionLogBase
+	config SpiteAndMaliceConfig
 }
 
 // NewSpiteAndMalice コンストラクタ
@@ -160,7 +161,7 @@ func (s *SpiteAndMalice) PlayFromHand(handIdx, foundationIdx int) error {
 	p.RemoveFromHand(handIdx)
 	s.appendToFoundation(foundationIdx, card)
 	s.moveCount++
-	s.appendLog("playHand", fmt.Sprintf("プレイヤー%dが手札からファウンデーション%dへ", s.current, foundationIdx+1), []*Card{card})
+	s.appendLog("playHand", "spiteandmalice.log.playHand", map[string]string{"player": strconv.Itoa(s.current), "foundation": strconv.Itoa(foundationIdx + 1)}, []*Card{card})
 	s.afterPlay()
 	return nil
 }
@@ -184,11 +185,11 @@ func (s *SpiteAndMalice) PlayFromGoal(foundationIdx int) error {
 	card := p.PopGoal()
 	s.appendToFoundation(foundationIdx, card)
 	s.moveCount++
-	s.appendLog("playGoal", fmt.Sprintf("プレイヤー%dがゴール→ファウンデーション%dへ", s.current, foundationIdx+1), []*Card{card})
+	s.appendLog("playGoal", "spiteandmalice.log.playGoal", map[string]string{"player": strconv.Itoa(s.current), "foundation": strconv.Itoa(foundationIdx + 1)}, []*Card{card})
 	if p.GoalSize() == 0 {
 		s.winner = s.current
 		s.phase = SpiteAndMalicePhaseGameOver
-		s.appendLog("win", fmt.Sprintf("プレイヤー%dがゴールパイルを出し切った", s.current), nil)
+		s.appendLog("win", "spiteandmalice.log.win", map[string]string{"player": strconv.Itoa(s.current)}, nil)
 		return nil
 	}
 	s.afterPlay()
@@ -217,7 +218,7 @@ func (s *SpiteAndMalice) PlayFromSide(sideIdx, foundationIdx int) error {
 	card := p.PopSide(sideIdx)
 	s.appendToFoundation(foundationIdx, card)
 	s.moveCount++
-	s.appendLog("playSide", fmt.Sprintf("プレイヤー%dがサイド%d→ファウンデーション%dへ", s.current, sideIdx+1, foundationIdx+1), []*Card{card})
+	s.appendLog("playSide", "spiteandmalice.log.playSide", map[string]string{"player": strconv.Itoa(s.current), "side": strconv.Itoa(sideIdx + 1), "foundation": strconv.Itoa(foundationIdx + 1)}, []*Card{card})
 	s.afterPlay()
 	return nil
 }
@@ -239,7 +240,7 @@ func (s *SpiteAndMalice) Discard(handIdx, sideIdx int) error {
 	p.RemoveFromHand(handIdx)
 	p.PushSide(sideIdx, card)
 	s.moveCount++
-	s.appendLog("discard", fmt.Sprintf("プレイヤー%dがサイド%dへディスカードしてターン終了", s.current, sideIdx+1), []*Card{card})
+	s.appendLog("discard", "spiteandmalice.log.discard", map[string]string{"player": strconv.Itoa(s.current), "side": strconv.Itoa(sideIdx + 1)}, []*Card{card})
 	s.endTurn()
 	return nil
 }
@@ -476,7 +477,7 @@ func (s *SpiteAndMalice) appendToFoundation(foundationIdx int, card *Card) {
 		// Q まで積まれたら完成済みに回収
 		s.completed = append(s.completed, s.foundations[foundationIdx]...)
 		s.foundations[foundationIdx] = nil
-		s.appendLog("complete", fmt.Sprintf("ファウンデーション%dが完成", foundationIdx+1), nil)
+		s.appendLog("complete", "spiteandmalice.log.complete", map[string]string{"foundation": strconv.Itoa(foundationIdx + 1)}, nil)
 	}
 }
 
@@ -526,17 +527,11 @@ func (s *SpiteAndMalice) refillStockFromCompleted() {
 	rand.Shuffle(len(rest), func(i, j int) { rest[i], rest[j] = rest[j], rest[i] })
 	s.stock = append(s.stock, rest...)
 	s.completed = nil
-	s.appendLog("refill", "完成済み山をシャッフルしてストックへ戻した", nil)
+	s.appendLog("refill", "spiteandmalice.log.refill", nil, nil)
 }
 
-func (s *SpiteAndMalice) appendLog(actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: s.moveCount,
-		PlayerIdx:  s.current,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+func (s *SpiteAndMalice) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(s.moveCount, s.current, actionType, detailCode, detailParams, cards)
 }
 
 // --- CPU / Hint logic ---

@@ -40,5 +40,6 @@
   "hintSide": "ヒント: サイド{{idx}} → ファウンデーション{{foundation}}",
   "helpExampleHint": "  h                   次の一手を教えてもらう",
   "helpAutoPlay": "  ac                  自動で進める",
-  "wildMark": "*"
+  "wildMark": "*",
+  "log.playHand": "プレイヤー{{player}}が手札からファウンデーション{{foundation}}へ", "log.playGoal": "プレイヤー{{player}}がゴール→ファウンデーション{{foundation}}へ", "log.win": "プレイヤー{{player}}がゴールパイルを出し切った", "log.playSide": "プレイヤー{{player}}がサイド{{side}}→ファウンデーション{{foundation}}へ", "log.discard": "プレイヤー{{player}}がサイド{{side}}へディスカードしてターン終了", "log.complete": "ファウンデーション{{foundation}}が完成", "log.refill": "完成済み山をシャッフルしてストックへ戻した"
 }
