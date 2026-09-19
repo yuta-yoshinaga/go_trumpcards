@@ -105,6 +105,31 @@ func TestDoppelkopf_Classification(t *testing.T) {
 	}
 }
 
+func TestDoppelkopf_ActionLogUsesDetailCode(t *testing.T) {
+	g := newDKGame(true)
+	g.SetPhase(DoppelkopfPhasePlay)
+	g.SetCurrentPlayerIdx(0)
+	g.SetCurrentTrick(nil)
+	card := dkCard(CardDesignClover, 9)
+	dkSetHand(g.GetPlayer(0), card)
+	if err := g.PlayerPlay(0); err != nil {
+		t.Fatalf("play failed: %v", err)
+	}
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "doppelkopf.log.play" {
+			entry = candidate
+			break
+		}
+	}
+	if entry == nil {
+		t.Fatal("play action log entry not found")
+	}
+	if entry.DetailParams["card"] != cardStr(card) || entry.Detail != "" {
+		t.Fatalf("play detail = %#v, want card and empty legacy detail", entry)
+	}
+}
+
 func TestDoppelkopf_CardPointsTotal240(t *testing.T) {
 	want := map[int]int{1: 11, 10: 10, 13: 4, 12: 3, 11: 2, 9: 0}
 	for v, p := range want {

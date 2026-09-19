@@ -200,7 +200,7 @@ func TestDoppelkopfCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockDoppelkopfGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠Q"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "doppelkopf.log.play", DetailParams: map[string]string{"name": "You", "card": "♠Q"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewDoppelkopfPlayer(true, 0)).Maybe()

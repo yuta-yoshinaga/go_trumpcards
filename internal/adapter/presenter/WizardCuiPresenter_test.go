@@ -292,7 +292,7 @@ func TestWizardCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.WizardCuiPresenter)
 	m := setupWizardCuiMock()
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", Detail: "You bids 3"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", DetailCode: "wizard.log.bid", DetailParams: map[string]string{"name": "You", "bid": "3"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)

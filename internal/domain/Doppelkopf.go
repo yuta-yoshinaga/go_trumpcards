@@ -238,10 +238,10 @@ func (g *Doppelkopf) canAnnounce(playerIdx int) bool {
 func (g *Doppelkopf) applyAnnounce(playerIdx int) {
 	if g.reTeam[playerIdx] {
 		g.reAnnounced = true
-		g.appendLog(playerIdx, "announce_re", fmt.Sprintf("%s announces Re", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "announce_re", "doppelkopf.log.announceRe", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	} else {
 		g.kontraAnnounced = true
-		g.appendLog(playerIdx, "announce_kontra", fmt.Sprintf("%s announces Kontra", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "announce_kontra", "doppelkopf.log.announceKontra", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	}
 }
 
@@ -273,7 +273,7 @@ func (g *Doppelkopf) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Doppelkopf) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "doppelkopf.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == DoppelkopfPlayerCnt {
 		g.phase = DoppelkopfPhaseTrickEnd
@@ -296,8 +296,7 @@ func (g *Doppelkopf) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.lastTrickPoints = pts
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pts)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "doppelkopf.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": fmt.Sprintf("%d", g.trickNumber), "points": fmt.Sprintf("%d", pts)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// Clear the resolved trick so a spurious second ResolveTrick call cannot
@@ -342,15 +341,13 @@ func (g *Doppelkopf) ScoreRound() {
 	g.roundGamePts = gamePts
 	g.settleChips(reWon, gamePts)
 
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: Re %d pts (%s, %d game pts)",
-			g.roundNumber, rePts, dkOutcomeStr(reWon), gamePts), nil)
+	g.appendLog(-1, "round_score", "doppelkopf.log.roundScore", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "rePoints": fmt.Sprintf("%d", rePts), "outcome": dkOutcomeStr(reWon), "gamePoints": fmt.Sprintf("%d", gamePts)}, nil)
 
 	if w := g.chipLeaderAtTarget(); w >= 0 {
 		g.gameEndFlag = true
 		g.winnerIdx = w
 		g.phase = DoppelkopfPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, w)), nil)
+		g.appendLog(-1, "game_end", "doppelkopf.log.gameEnd", map[string]string{"name": playerName(g.players, w)}, nil)
 	}
 }
 
@@ -1030,4 +1027,8 @@ func (g *Doppelkopf) UnmarshalJSON(data []byte) error {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	}
 	return nil
+}
+
+func (g *Doppelkopf) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }

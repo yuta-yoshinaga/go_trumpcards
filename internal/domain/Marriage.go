@@ -318,7 +318,7 @@ func (g *Marriage) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "marriage.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 	g.phase = MarriagePhaseDiscard
 	return nil
 }
@@ -332,14 +332,23 @@ func (g *Marriage) drawFromDiscard() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", "marriage.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card)}, []*Card{card})
 	g.phase = MarriagePhaseDiscard
 	return nil
 }
 
 // recycleDiscardIntoStock 山札が空のとき捨て札トップ 1 枚を残して残りを山札へ戻しシャッフルする。
 func (g *Marriage) recycleDiscardIntoStock() bool {
-	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g)
+	if len(g.discardPile) <= 1 {
+		return false
+	}
+	top := g.discardPile[len(g.discardPile)-1]
+	rest := g.discardPile[:len(g.discardPile)-1]
+	g.discardPile = []*Card{top}
+	rand.Shuffle(len(rest), func(i, j int) { rest[i], rest[j] = rest[j], rest[i] })
+	g.drawPile = append(g.drawPile, rest...)
+	g.appendLog(-1, "recycle", "marriage.log.recycle", map[string]string{"cards": fmt.Sprintf("%d", len(rest))}, nil)
+	return true
 }
 
 // PlayerDiscard 人間プレイヤーが手札 1 枚を捨ててターンを終了する
@@ -363,7 +372,7 @@ func (g *Marriage) applyDiscard(cardIndex int) error {
 	}
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "marriage.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 	g.advanceTurn()
 	return nil
 }
@@ -399,7 +408,7 @@ func (g *Marriage) applyDeclare(cardIndex int) error {
 	if !g.declarationValid {
 		status = "invalid"
 	}
-	g.appendLog(g.currentPlayerIdx, "declare", fmt.Sprintf("%s declares (%s)", playerName(g.players, g.currentPlayerIdx), status), nil)
+	g.appendLog(g.currentPlayerIdx, "declare", "marriage.log.declare", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "status": status}, nil)
 
 	g.enterRoundEnd()
 	return nil
@@ -551,7 +560,7 @@ func (g *Marriage) enterRoundEnd() {
 // endRoundStockOut 山札枯渇によるラウンド終了（宣言なし・全員デッドウッド採点）。
 func (g *Marriage) endRoundStockOut() {
 	g.declarerIdx = -1
-	g.appendLog(-1, "stock_out", "Round ends (stock exhausted)", nil)
+	g.appendLog(-1, "stock_out", "marriage.log.stockOut", nil, nil)
 	g.enterRoundEnd()
 }
 
@@ -572,14 +581,14 @@ func (g *Marriage) scoreRound() {
 		s -= maal
 		g.players[i].SetRoundScore(s)
 		if maal != 0 {
-			g.appendLog(i, "maal", fmt.Sprintf("%s scores %d maal points", playerName(g.players, i), maal), nil)
+			g.appendLog(i, "maal", "marriage.log.maal", map[string]string{"name": playerName(g.players, i), "maal": fmt.Sprintf("%d", maal)}, nil)
 		}
 	}
 
 	if g.declarerIdx >= 0 && g.declarationValid {
-		g.appendLog(g.declarerIdx, "round_win", fmt.Sprintf("%s wins the round with a valid declaration", playerName(g.players, g.declarerIdx)), nil)
+		g.appendLog(g.declarerIdx, "round_win", "marriage.log.roundWin", map[string]string{"name": playerName(g.players, g.declarerIdx)}, nil)
 	} else if g.declarerIdx >= 0 {
-		g.appendLog(g.declarerIdx, "round_end", fmt.Sprintf("%s made an invalid declaration (+%d penalty)", playerName(g.players, g.declarerIdx), MarriageDeadwoodCap), nil)
+		g.appendLog(g.declarerIdx, "round_end", "marriage.log.roundEnd", map[string]string{"name": playerName(g.players, g.declarerIdx), "penalty": fmt.Sprintf("%d", MarriageDeadwoodCap)}, nil)
 	}
 
 	for i := range g.players {
@@ -600,7 +609,7 @@ func (g *Marriage) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", playerName(g.players, g.winnerIdx), minScore), nil)
+	g.appendLog(-1, "game_end", "marriage.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx), "points": fmt.Sprintf("%d", minScore)}, nil)
 }
 
 // --- Getters / Setters ---
@@ -1401,4 +1410,8 @@ func marriageFilterNilCards(cards []*Card) []*Card {
 		}
 	}
 	return out
+}
+
+func (g *Marriage) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }

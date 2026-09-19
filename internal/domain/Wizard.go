@@ -182,7 +182,7 @@ func (o *Wizard) PlayerBid(bid int) error {
 	// Wizardはフックルール（合計制限）を持たない: 合計ビッド≠トリック数を許容する。
 
 	o.players[humanIdx].SetBid(bid)
-	o.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %d", playerName(o.players, humanIdx), bid), nil)
+	o.appendLog(humanIdx, "bid", "wizard.log.bid", map[string]string{"name": playerName(o.players, humanIdx), "bid": fmt.Sprintf("%d", bid)}, nil)
 
 	o.advanceBid()
 	return nil
@@ -202,7 +202,7 @@ func (o *Wizard) CpuBid() {
 
 	bid := o.cpuSelectBid(o.bidPlayerIdx)
 	o.players[o.bidPlayerIdx].SetBid(bid)
-	o.appendLog(o.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %d", playerName(o.players, o.bidPlayerIdx), bid), nil)
+	o.appendLog(o.bidPlayerIdx, "bid", "wizard.log.bid", map[string]string{"name": playerName(o.players, o.bidPlayerIdx), "bid": fmt.Sprintf("%d", bid)}, nil)
 
 	o.advanceBid()
 }
@@ -270,7 +270,7 @@ func (o *Wizard) ResolveTrick() {
 	o.players[winnerIdx].AddTrick(trickCards)
 
 	winnerName := playerName(o.players, winnerIdx)
-	o.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, o.trickNumber), trickCards)
+	o.appendLog(winnerIdx, "trick_win", "wizard.log.trickWin", map[string]string{"name": winnerName, "trick": fmt.Sprintf("%d", o.trickNumber)}, trickCards)
 
 	o.leadPlayerIdx = winnerIdx
 
@@ -306,8 +306,7 @@ func (o *Wizard) ScoreRound() {
 		if tricks == bid {
 			// ビッド的中: 20 + 10×bid ポイント
 			p.roundScore = 20 + 10*bid
-			o.appendLog(i, "bid_success", fmt.Sprintf("%s bid %d, took %d: +%d",
-				playerName(o.players, i), bid, tricks, p.roundScore), nil)
+			o.appendLog(i, "bid_success", "wizard.log.bidSuccess", map[string]string{"name": playerName(o.players, i), "bid": fmt.Sprintf("%d", bid), "tricks": fmt.Sprintf("%d", tricks), "points": fmt.Sprintf("%d", p.roundScore)}, nil)
 		} else {
 			// 外れ: -10×|トリック数 - ビッド|
 			diff := tricks - bid
@@ -315,8 +314,7 @@ func (o *Wizard) ScoreRound() {
 				diff = -diff
 			}
 			p.roundScore = -10 * diff
-			o.appendLog(i, "bid_fail", fmt.Sprintf("%s bid %d, took %d: %d",
-				playerName(o.players, i), bid, tricks, p.roundScore), nil)
+			o.appendLog(i, "bid_fail", "wizard.log.bidFail", map[string]string{"name": playerName(o.players, i), "bid": fmt.Sprintf("%d", bid), "tricks": fmt.Sprintf("%d", tricks), "points": fmt.Sprintf("%d", p.roundScore)}, nil)
 		}
 	}
 
@@ -327,8 +325,7 @@ func (o *Wizard) ScoreRound() {
 
 	// スコアログ
 	for i := range WizardPlayerCnt {
-		o.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			playerName(o.players, i), o.players[i].cumulativeScore), nil)
+		o.appendLog(i, "cumulative_score", "wizard.log.cumulativeScore", map[string]string{"name": playerName(o.players, i), "total": fmt.Sprintf("%d", o.players[i].cumulativeScore)}, nil)
 	}
 
 	// ゲーム終了判定
@@ -579,7 +576,7 @@ func (o *Wizard) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	o.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(o.players, playerIdx), wizardCardStr(card)), []*Card{card})
+	o.appendLog(playerIdx, "play", "wizard.log.play", map[string]string{"name": playerName(o.players, playerIdx), "card": wizardCardStr(card)}, []*Card{card})
 
 	if len(o.currentTrick) == WizardPlayerCnt {
 		o.phase = WizardPhaseTrickEnd
@@ -728,7 +725,7 @@ func (o *Wizard) determineWinner() {
 			o.winnerIdx = i
 		}
 	}
-	o.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(o.players, o.winnerIdx)), nil)
+	o.appendLog(-1, "game_end", "wizard.log.gameEnd", map[string]string{"name": playerName(o.players, o.winnerIdx)}, nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -1328,4 +1325,8 @@ func (o *Wizard) UnmarshalJSON(data []byte) error {
 		o.actionLog = make([]*ActionLogEntry, 0)
 	}
 	return nil
+}
+
+func (o *Wizard) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	o.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }

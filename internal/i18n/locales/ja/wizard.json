@@ -39,5 +39,12 @@
   "helpHint": "  h                    助言を表示",
   "errBidRange": "ビッドは0〜{{max}}で指定してください",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errFollowLeadSuit": "リードスートに従ってください"
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.bid": "{{name}}が{{bid}}をビッド",
+  "log.trickWin": "{{name}}がトリック{{trick}}を獲得",
+  "log.bidSuccess": "{{name}}のビッド{{bid}}、獲得{{tricks}}トリック: +{{points}}",
+  "log.bidFail": "{{name}}のビッド{{bid}}、獲得{{tricks}}トリック: {{points}}",
+  "log.cumulativeScore": "{{name}}: 合計={{total}}",
+  "log.play": "{{name}}が{{card}}を出す",
+  "log.gameEnd": "{{name}}がゲームに勝利！"
 }

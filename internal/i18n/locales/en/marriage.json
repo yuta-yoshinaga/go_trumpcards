@@ -31,5 +31,15 @@
   "pointsLegend": "Points: A, 10, J, Q, K = 10 / 2-9 = face value / wild = 0",
   "errDiscardPileEmpty": "The discard pile is empty.",
   "errDiscardCardIndexOutOfRange": "The card index is out of range.",
-  "errDeclareCardIndexOutOfRange": "The card index is out of range."
+  "errDeclareCardIndexOutOfRange": "The card index is out of range.",
+  "log.drawStock": "{{name}} draws from stock",
+  "log.drawDiscard": "{{name}} draws {{card}} from discard",
+  "log.discard": "{{name}} discards {{card}}",
+  "log.declare": "{{name}} declares ({{status}})",
+  "log.recycle": "Discard pile recycled into stock ({{cards}} cards)",
+  "log.stockOut": "Round ends (stock exhausted)",
+  "log.maal": "{{name}} scores {{maal}} maal points",
+  "log.roundWin": "{{name}} wins the round with a valid declaration",
+  "log.roundEnd": "{{name}} made an invalid declaration (+{{penalty}} penalty)",
+  "log.gameEnd": "{{name}} wins the game with {{points}} points!"
 }

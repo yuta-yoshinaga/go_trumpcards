@@ -31,5 +31,11 @@
   "livePoints": "現在の獲得点: Re {{rePts}}点（勝利ライン {{reTarget}}点） / Kontra {{kontraPts}}点（勝利ライン {{kontraTarget}}点）",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errAnnounceUnavailable": "宣言できる時間ではありません",
-  "errFollowLeadSuit": "リードスートに従ってください"
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.announceRe": "{{name}}がReを宣言",
+  "log.announceKontra": "{{name}}がKontraを宣言",
+  "log.play": "{{name}}が{{card}}を出す",
+  "log.trickWin": "{{name}}がトリック{{trick}}に勝利（{{points}}点）",
+  "log.roundScore": "ラウンド{{round}}: Re {{rePoints}}点（{{outcome}}、{{gamePoints}}ゲームポイント）",
+  "log.gameEnd": "{{name}}がゲームに勝利！"
 }

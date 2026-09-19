@@ -727,5 +727,15 @@ func TestMarriage_ActionLogAccumulates(t *testing.T) {
 	g.SetCurrentPlayerIdx(0)
 	g.SetPhase(domain.MarriagePhaseDraw)
 	require.NoError(t, g.PlayerDrawFromStock())
-	assert.NotEmpty(t, g.GetActionLog())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "marriage.log.drawStock" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "marriage.log.drawStock", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
