@@ -72,6 +72,19 @@ func TestCourtPiece_ResetDealsPeekToCaller(t *testing.T) {
 	assert.Equal(t, 0, c.GetPlayer(1).GetCardsSize())
 }
 
+func TestCourtPiece_ActionLogUsesDetailCode(t *testing.T) {
+	c := newTestCourtPiece(true)
+	c.Reset()
+	for _, entry := range c.GetActionLog() {
+		if entry.DetailCode == "courtpiece.log.deal" {
+			assert.Empty(t, entry.Detail)
+			assert.Equal(t, "5", entry.DetailParams["count"])
+			return
+		}
+	}
+	t.Fatal("deal log entry not found")
+}
+
 func TestCourtPiece_DeclareTrumpDealsRest(t *testing.T) {
 	c := newTestCourtPiece(true)
 	c.Reset()

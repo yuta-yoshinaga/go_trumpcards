@@ -58,6 +58,24 @@ func TestKlaverjas_ResetDealsAndSetsTrump(t *testing.T) {
 	}
 }
 
+func TestKlaverjas_ActionLogUsesDetailCode(t *testing.T) {
+	g := newKlavGame(true)
+	g.Reset()
+	g.SetCurrentPlayerIdx(0)
+	if err := g.PlayerPlay(0); err != nil {
+		t.Fatalf("PlayerPlay: %v", err)
+	}
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "klaverjas.log.play" {
+			if entry.Detail != "" || entry.DetailParams["name"] == "" || entry.DetailParams["card"] == "" {
+				t.Fatalf("play log = %#v, want code params and empty detail", entry)
+			}
+			return
+		}
+	}
+	t.Fatal("play log entry not found")
+}
+
 func TestKlaverjas_TrumpStrengthJassHigh(t *testing.T) {
 	g := newKlavGame(false)
 	// trump strength: J>9>A>10>K>Q>8>7

@@ -58,6 +58,19 @@ func TestWhist_Reset(t *testing.T) {
 	assert.True(t, trumpSuit >= domain.CardDesignSpade && trumpSuit <= domain.CardDesignDiamond)
 }
 
+func TestWhist_ActionLogUsesDetailCode(t *testing.T) {
+	w := newTestWhist()
+	w.Reset()
+	for _, entry := range w.GetActionLog() {
+		if entry.DetailCode == "whist.log.trump" {
+			assert.Empty(t, entry.Detail)
+			assert.NotEmpty(t, entry.DetailParams["suit"])
+			return
+		}
+	}
+	t.Fatal("trump log entry not found")
+}
+
 func TestWhist_Reset_ClearsAllState(t *testing.T) {
 	w := newTestWhist()
 	w.Reset()
