@@ -1,4 +1,11 @@
 {
+  "log.deal": "round {{round}} dealt (field {{field}}, stock {{stock}})",
+  "log.play": "{{player}} plays {{card}} ({{took}})",
+  "log.draw": "{{player}} flips {{card}} ({{took}})",
+  "log.roundWin": "{{player}} takes round {{round}} with {{points}} points",
+  "log.roundTie": "round {{round}} is a tie",
+  "log.gameWin": "{{player}} wins with {{points}} points",
+  "log.gameTie": "the game ends in a tie",
   "helpTitle": "Sakura (Higo-bana / Hanafuda)",
   "helpPlay": "  p <h> [f]            play hand card h (f = field card when two match)",
   "helpNextRound": "  nr                   go to the next round",

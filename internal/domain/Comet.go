@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // 卓の形。
@@ -73,6 +74,11 @@ type Comet struct {
 	gameEndFlag bool
 	winnerIdx   int
 	actionLogBase
+}
+
+// appendLog records a Comet action with a locale-independent detail code.
+func (c *Comet) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewComet はコンストラクタ。
@@ -157,8 +163,10 @@ func (c *Comet) startRound() {
 	c.lastPlayer = -1
 	c.phase = CometPhasePlay
 	c.currentIdx = (c.dealerIdx + 1) % n
-	c.appendLog(-1, "deal", fmt.Sprintf("round %d: dealer=%d, %d each, %d dead",
-		c.roundNumber, c.dealerIdx, per, len(c.dead)), nil)
+	c.appendLog(-1, "deal", "comet.log.deal", map[string]string{
+		"round": strconv.Itoa(c.roundNumber), "dealer": strconv.Itoa(c.dealerIdx),
+		"each": strconv.Itoa(per), "dead": strconv.Itoa(len(c.dead)),
+	}, nil)
 }
 
 // PlayerPlay は人間が 1 枚出す。
@@ -218,7 +226,7 @@ func (c *Comet) applyPlay(seat, handIdx int) error {
 	c.pile = append(c.pile, card)
 	c.lastPlayer = seat
 	c.passStreak = 0
-	c.appendLog(seat, "play", fmt.Sprintf("player %d plays", seat), []*Card{card})
+	c.appendLog(seat, "play", "comet.log.play", map[string]string{"player": strconv.Itoa(seat)}, []*Card{card})
 
 	if p.GetCardsSize() == 0 {
 		c.finishRound(seat)
@@ -228,7 +236,7 @@ func (c *Comet) applyPlay(seat, handIdx int) error {
 	if CometStopsSequence(card) {
 		// **K とコメットは止まる。** 出した本人が次の連なりを始める。
 		c.need = 0
-		c.appendLog(seat, "stop", fmt.Sprintf("player %d starts a new sequence", seat), nil)
+		c.appendLog(seat, "stop", "comet.log.stop", map[string]string{"player": strconv.Itoa(seat)}, nil)
 		return nil
 	}
 	c.need = card.GetValue() + 1
@@ -239,7 +247,7 @@ func (c *Comet) applyPlay(seat, handIdx int) error {
 // applyPass はパスを反映する。
 func (c *Comet) applyPass(seat int) {
 	c.passStreak++
-	c.appendLog(seat, "pass", fmt.Sprintf("player %d passes", seat), nil)
+	c.appendLog(seat, "pass", "comet.log.pass", map[string]string{"player": strconv.Itoa(seat)}, nil)
 	if c.passStreak >= len(c.players) {
 		// **全員が出せなければストップ。** 最後に出した席が好きな札で再開する。
 		c.need = 0
@@ -247,7 +255,7 @@ func (c *Comet) applyPass(seat int) {
 		if c.lastPlayer >= 0 {
 			c.currentIdx = c.lastPlayer
 		}
-		c.appendLog(-1, "stopAll", "nobody could continue; the last player restarts", nil)
+		c.appendLog(-1, "stopAll", "comet.log.stopAll", nil, nil)
 		return
 	}
 	c.advance()
@@ -306,7 +314,9 @@ func (c *Comet) finishRound(winner int) {
 	}
 
 	c.lastResult = res
-	c.appendLog(winner, "goOut", fmt.Sprintf("player %d goes out for %d", winner, gain), nil)
+	c.appendLog(winner, "goOut", "comet.log.goOut", map[string]string{
+		"player": strconv.Itoa(winner), "points": strconv.Itoa(gain),
+	}, nil)
 	c.phase = CometPhaseRoundEnd
 	c.checkGameEnd()
 }
@@ -330,7 +340,7 @@ func (c *Comet) checkGameEnd() {
 	c.gameEndFlag = true
 	c.winnerIdx = bestIdx
 	c.phase = CometPhaseGameEnd
-	c.appendLog(-1, "gameEnd", fmt.Sprintf("player %d wins the match", bestIdx), nil)
+	c.appendLog(-1, "gameEnd", "comet.log.gameEnd", map[string]string{"player": strconv.Itoa(bestIdx)}, nil)
 }
 
 // IsHumanTurn は人間の手番かを返す。

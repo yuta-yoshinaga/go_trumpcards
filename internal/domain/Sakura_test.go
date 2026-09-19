@@ -339,6 +339,20 @@ func TestSakuraNewDefaultSakura(t *testing.T) {
 	assert.Equal(t, DefaultSakuraConfig(), g.GetConfig())
 }
 
+func TestSakura_ActionLogUsesDetailCode(t *testing.T) {
+	g := newSakuraForTest(t, 2)
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "sakura.log.deal" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "1", entry.DetailParams["round"])
+	assert.Empty(t, entry.Detail)
+}
+
 // --- 手番 ---
 
 func TestSakuraPlayerPlay_CapturesTheSameMonth(t *testing.T) {

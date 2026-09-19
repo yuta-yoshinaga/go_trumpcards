@@ -17,6 +17,20 @@ func newCometGame(t *testing.T) *Comet {
 	return c
 }
 
+func TestComet_ActionLogUsesDetailCode(t *testing.T) {
+	c := newCometGame(t)
+	var entry *ActionLogEntry
+	for _, candidate := range c.GetActionLog() {
+		if candidate.DetailCode == "comet.log.deal" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "1", entry.DetailParams["round"])
+	assert.Empty(t, entry.Detail)
+}
+
 // **開幕は人間の手番。** 親の左隣が先に打つ規則なので親を最後の席にしてある ──
 // 親を 0 にすると人間は最初の連なりの先頭を選べない。
 func TestComet_ResetDealsAndStartsWithTheHuman(t *testing.T) {

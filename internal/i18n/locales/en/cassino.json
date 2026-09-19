@@ -1,4 +1,11 @@
 {
+  "log.deal": "dealt {{cards}} table cards",
+  "log.take": "took {{cards}} card(s)",
+  "log.build": "built value {{value}}",
+  "log.trail": "trailed",
+  "log.lastTake": "last-take: {{cards}} card(s)",
+  "log.gameEnd": "game ended at {{points}} points",
+  "log.roundEnd": "round ended",
   "helpTitle": "Cassino",
   "helpTake": "  t <h> <t...> [b <bi>...] take using hand card h (and builds if given)",
   "helpBuild": "  b <h> <value> <t...>     build declared value from hand h + table cards",

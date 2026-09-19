@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // カリビアン・ドロー・ポーカーフェーズ定数
@@ -92,6 +93,11 @@ type CaribbeanDraw struct {
 	actionLogBase
 }
 
+// appendLog records a Caribbean Draw action with a locale-independent detail code.
+func (cs *CaribbeanDraw) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	cs.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewCaribbeanDraw コンストラクタ
 func NewCaribbeanDraw(trumpCards *TrumpCards) *CaribbeanDraw {
 	trumpCards.Shuffle()
@@ -155,7 +161,9 @@ func (cs *CaribbeanDraw) Bet(ante, jackpot int) error {
 	}
 	cs.anteBet = ante
 	cs.jackpotBet = jackpot
-	cs.appendLog(0, "bet", fmt.Sprintf("ante=%d jackpot=%d", ante, jackpot), nil)
+	cs.appendLog(0, "bet", "caribbeandraw.log.bet", map[string]string{
+		"ante": strconv.Itoa(ante), "jackpot": strconv.Itoa(jackpot),
+	}, nil)
 
 	cs.deal()
 	cs.phase = CaribbeanDrawPhaseDraw
@@ -206,9 +214,11 @@ func (cs *CaribbeanDraw) Draw(indices []int) error {
 		// 引いた後の手で役を取り直す。ここを忘れると、交換して完成させた役が
 		// 画面に出ないまま勝負することになる。
 		cs.playerHandRank = evalFiveCardHand(cs.playerHand)
-		cs.appendLog(0, "draw", fmt.Sprintf("exchanged %d card(s) for %d", len(indices), cost), nil)
+		cs.appendLog(0, "draw", "caribbeandraw.log.exchange", map[string]string{
+			"cards": strconv.Itoa(len(indices)), "cost": strconv.Itoa(cost),
+		}, nil)
 	} else {
-		cs.appendLog(0, "draw", "stands pat", nil)
+		cs.appendLog(0, "draw", "caribbeandraw.log.standPat", nil, nil)
 	}
 
 	cs.phase = CaribbeanDrawPhaseAction
@@ -225,7 +235,7 @@ func (cs *CaribbeanDraw) Play() error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for play bet.")
 	}
 	cs.playBet = playBet
-	cs.appendLog(0, "play", fmt.Sprintf("play bet=%d", cs.playBet), nil)
+	cs.appendLog(0, "play", "caribbeandraw.log.play", map[string]string{"bet": strconv.Itoa(cs.playBet)}, nil)
 
 	cs.resolve()
 	return nil
@@ -236,7 +246,7 @@ func (cs *CaribbeanDraw) Fold() error {
 	if cs.phase != CaribbeanDrawPhaseAction {
 		return NewDomainError(ErrWrongPhase, "Fold is only allowed during the action phase.")
 	}
-	cs.appendLog(0, "fold", "player folds", nil)
+	cs.appendLog(0, "fold", "caribbeandraw.log.fold", nil, nil)
 
 	cs.result = GameResultLose
 	cs.playerHandRank = evalFiveCardHand(cs.playerHand)
@@ -253,7 +263,7 @@ func (cs *CaribbeanDraw) Fold() error {
 
 	cs.gameEndFlag = true
 	cs.phase = CaribbeanDrawPhaseEnd
-	cs.appendLog(-1, "result", "player folded", nil)
+	cs.appendLog(-1, "result", "caribbeandraw.log.resultFold", nil, nil)
 	return nil
 }
 
@@ -269,7 +279,7 @@ func (cs *CaribbeanDraw) deal() {
 	// 無く、むしろ「どれを捨てるか」を決める唯一の材料。resolve まで 0 の
 	// ままだと、フラッシュを配られても画面には "High Card" と出る。
 	cs.playerHandRank = evalFiveCardHand(cs.playerHand)
-	cs.appendLog(-1, "deal", "dealt 5 cards each", nil)
+	cs.appendLog(-1, "deal", "caribbeandraw.log.deal", nil, nil)
 }
 
 // resolve ゲーム解決（Play後の処理）
@@ -305,16 +315,14 @@ func (cs *CaribbeanDraw) resolve() {
 	cs.gameEndFlag = true
 	cs.phase = CaribbeanDrawPhaseEnd
 
-	var resultStr string
+	resultCode := "caribbeandraw.log.resultDealerWins"
 	switch cs.result {
 	case GameResultWin:
-		resultStr = "player wins"
+		resultCode = "caribbeandraw.log.resultPlayerWins"
 	case GameResultDraw:
-		resultStr = "push"
-	default:
-		resultStr = "dealer wins"
+		resultCode = "caribbeandraw.log.resultTie"
 	}
-	cs.appendLog(-1, "result", resultStr, nil)
+	cs.appendLog(-1, "result", resultCode, nil, nil)
 }
 
 // compareHands プレイヤーとディーラーのハンドを比較する

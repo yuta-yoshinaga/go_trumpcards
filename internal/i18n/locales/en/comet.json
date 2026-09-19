@@ -1,4 +1,11 @@
 {
+  "log.deal": "round {{round}}: dealer={{dealer}}, {{each}} each, {{dead}} dead",
+  "log.play": "player {{player}} plays",
+  "log.stop": "player {{player}} starts a new sequence",
+  "log.pass": "player {{player}} passes",
+  "log.stopAll": "nobody could continue; the last player restarts",
+  "log.goOut": "player {{player}} goes out for {{points}}",
+  "log.gameEnd": "player {{player}} wins the match",
   "helpTitle": "Comet",
   "helpPlay": "  play / p <idx>            play a card",
   "helpPass": "  pass                      pass (only with nothing playable)",
