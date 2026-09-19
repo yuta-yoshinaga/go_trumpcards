@@ -32,6 +32,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // PanHandSize 各プレイヤーの初期手札枚数
@@ -256,7 +257,7 @@ func (g *Pan) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "pan.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 	g.phase = PanPhasePlay
 	return nil
 }
@@ -270,7 +271,7 @@ func (g *Pan) drawFromDiscard() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", "pan.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card)}, []*Card{card})
 	g.phase = PanPhasePlay
 	return nil
 }
@@ -321,7 +322,7 @@ func (g *Pan) executeMeld(playerIdx int, cardIndices []int) error {
 
 	cardsCopy := make([]*Card, len(meld))
 	copy(cardsCopy, meld)
-	g.appendLog(playerIdx, "meld", fmt.Sprintf("%s melds %s", playerName(g.players, playerIdx), formatCards(meld)), cardsCopy)
+	g.appendLog(playerIdx, "meld", "pan.log.meld", map[string]string{"name": playerName(g.players, playerIdx), "cards": formatCards(meld)}, cardsCopy)
 
 	g.payChipConditions(playerIdx, meld)
 	g.checkPanDeclaration(playerIdx)
@@ -359,7 +360,7 @@ func (g *Pan) executeLayoff(playerIdx, meldOwner, meldIdx, cardIndex int) error 
 	owner.AppendToLaidMeld(meldIdx, card)
 	player.RemoveCard(cardIndex)
 
-	g.appendLog(playerIdx, "layoff", fmt.Sprintf("%s lays off %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "layoff", "pan.log.layoff", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	// レイオフ先の所有者が 11 枚に到達したらその所有者があがる。
 	g.checkPanDeclaration(meldOwner)
@@ -382,7 +383,7 @@ func (g *Pan) payChipConditions(playerIdx int, meld []*Card) {
 		}
 	}
 	g.players[playerIdx].AddChips(units * opponents)
-	g.appendLog(playerIdx, "chips", fmt.Sprintf("%s collects %d chip(s) from each opponent", playerName(g.players, playerIdx), units), nil)
+	g.appendLog(playerIdx, "chips", "pan.log.chips", map[string]string{"name": playerName(g.players, playerIdx), "units": strconv.Itoa(units)}, nil)
 }
 
 // checkPanDeclaration playerIdx が 11 枚を場に出していれば「パン」あがりとしてラウンドを終える。
@@ -395,7 +396,7 @@ func (g *Pan) checkPanDeclaration(playerIdx int) {
 	}
 	g.panDeclarerIdx = playerIdx
 	g.players[playerIdx].SetIsFinished(true)
-	g.appendLog(playerIdx, "pan", fmt.Sprintf("%s declares Pan!", playerName(g.players, playerIdx)), nil)
+	g.appendLog(playerIdx, "pan", "pan.log.pan", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	g.enterRoundEnd()
 }
 
@@ -416,7 +417,7 @@ func (g *Pan) applyDiscard(cardIndex int) error {
 	}
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "pan.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 	g.advanceTurn()
 	return nil
 }
@@ -589,7 +590,7 @@ func (g *Pan) enterRoundEnd() {
 // endRoundStockOut 山札枯渇によるラウンド終了（パンなし・全員手札点採点）。
 func (g *Pan) endRoundStockOut() {
 	g.panDeclarerIdx = -1
-	g.appendLog(-1, "stock_out", "Round ends (stock exhausted)", nil)
+	g.appendLog(-1, "stock_out", "pan.log.stockOut", nil, nil)
 	g.enterRoundEnd()
 }
 
@@ -606,7 +607,7 @@ func (g *Pan) scoreRound() {
 	}
 
 	if g.panDeclarerIdx >= 0 {
-		g.appendLog(g.panDeclarerIdx, "round_win", fmt.Sprintf("%s wins the round with Pan", playerName(g.players, g.panDeclarerIdx)), nil)
+		g.appendLog(g.panDeclarerIdx, "round_win", "pan.log.roundWin", map[string]string{"name": playerName(g.players, g.panDeclarerIdx)}, nil)
 	}
 
 	for i := range g.players {
@@ -627,7 +628,7 @@ func (g *Pan) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", playerName(g.players, g.winnerIdx), minScore), nil)
+	g.appendLog(-1, "game_end", "pan.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx), "points": strconv.Itoa(minScore)}, nil)
 }
 
 // --- Getters / Setters ---
@@ -637,6 +638,11 @@ func (g *Pan) GetPhase() PanPhase { return g.phase }
 
 // SetPhase フェーズ設定（テスト用）
 func (g *Pan) SetPhase(p PanPhase) { g.phase = p }
+
+// appendLog records a Pan action with a locale-independent detail code.
+func (g *Pan) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+}
 
 // GetRoundNumber 現在のラウンド番号
 func (g *Pan) GetRoundNumber() int { return g.roundNumber }

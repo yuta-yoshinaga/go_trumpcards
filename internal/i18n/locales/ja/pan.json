@@ -35,5 +35,15 @@
   "errInvalidMeld": "有効なメルドではありません",
   "errTargetPlayerInvalid": "メルド所有者が不正です",
   "errTargetMeldInvalid": "メルドインデックスが範囲外です",
-  "errLayoffCardCannotAdd": "{{card}}はレイオフできません"
+  "errLayoffCardCannotAdd": "{{card}}はレイオフできません",
+  "log.drawStock": "{{name}} が山札から引きます",
+  "log.drawDiscard": "{{name}} が捨て札から {{card}} を引きます",
+  "log.meld": "{{name}} が {{cards}} をメルドします",
+  "log.layoff": "{{name}} が {{card}} をレイオフします",
+  "log.chips": "{{name}} が各相手から {{units}} チップを集めます",
+  "log.pan": "{{name}} が Pan を宣言します!",
+  "log.discard": "{{name}} が {{card}} を捨てます",
+  "log.stockOut": "ラウンド終了 (山札が尽きました)",
+  "log.roundWin": "{{name}} が Pan でラウンドに勝ちました",
+  "log.gameEnd": "{{name}} が {{points}} 点でゲームに勝ちました!"
 }

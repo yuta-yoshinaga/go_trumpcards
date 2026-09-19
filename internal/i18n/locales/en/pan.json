@@ -35,5 +35,15 @@
   "errInvalidMeld": "This is not a valid meld.",
   "errTargetPlayerInvalid": "The target player is invalid.",
   "errTargetMeldInvalid": "The target meld is invalid.",
-  "errLayoffCardCannotAdd": "{{card}} cannot be added to that meld."
+  "errLayoffCardCannotAdd": "{{card}} cannot be added to that meld.",
+  "log.drawStock": "{{name}} draws from stock",
+  "log.drawDiscard": "{{name}} draws {{card}} from discard",
+  "log.meld": "{{name}} melds {{cards}}",
+  "log.layoff": "{{name}} lays off {{card}}",
+  "log.chips": "{{name}} collects {{units}} chip(s) from each opponent",
+  "log.pan": "{{name}} declares Pan!",
+  "log.discard": "{{name}} discards {{card}}",
+  "log.stockOut": "Round ends (stock exhausted)",
+  "log.roundWin": "{{name}} wins the round with Pan",
+  "log.gameEnd": "{{name}} wins the game with {{points}} points!"
 }
