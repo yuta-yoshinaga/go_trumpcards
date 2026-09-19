@@ -99,6 +99,15 @@ func TestThreeCardBrag_SeeAndBet(t *testing.T) {
 	g.SetCurrentPlayerIdx(0)
 	require.False(t, g.GetPlayer(0).GetSeen())
 	require.NoError(t, g.PlayerSee())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "threecardbrag.log.see" {
+			entry = candidate
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"player": "You"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 	assert.True(t, g.GetPlayer(0).GetSeen())
 	assert.Error(t, g.PlayerSee()) // already seen
 	potBefore := g.GetPot()

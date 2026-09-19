@@ -35,5 +35,13 @@
   "errAlreadySeen": "すでに手札を見ています",
   "errRaiseMustExceedStake": "レイズは現在の賭け単位より大きくする必要があります",
   "errShowUnavailable": "Show は残り 2 人かつ Seen のときのみ要求できます",
-  "errInsufficientChips": "チップが不足しています"
+  "errInsufficientChips": "チップが不足しています",
+  "log.gameEnd": "{{player}} がマッチに勝ちました",
+  "log.deal": "ディール {{round}}: アンティ {{ante}}、ポット {{pot}}",
+  "log.see": "{{player}} が手札を確認しました",
+  "log.bet": "{{player}} が {{amount}} をベットしました（ポット {{pot}}）",
+  "log.raise": "{{player}} が {{stake}} にレイズし、{{amount}} をベットしました（ポット {{pot}}）",
+  "log.fold": "{{player}} がフォールドしました",
+  "log.show": "{{player}} が {{amount}} を支払って確認しました（ポット {{pot}}）",
+  "log.win": "{{player}} がポット（{{pot}}）を獲得しました"
 }

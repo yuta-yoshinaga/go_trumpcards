@@ -30,5 +30,16 @@
   "overallLose": "overall: net loss",
   "helpExampleBet": "  b 100                bet 100 chips",
   "switchPreviewLine": "After switching: hand 0 = {{first}} / hand 1 = {{second}}",
-  "switchPreviewBust": "{{score}} (bust)"
+  "switchPreviewBust": "{{score}} (bust)",
+  "log.bet": "bet {{amount}} on each hand",
+  "log.switch": "switch second cards",
+  "log.keep": "keep current hands",
+  "log.hit": "hit",
+  "log.stand": "stand",
+  "log.doubleDown": "double down",
+  "log.dealerStand": "dealer stand",
+  "log.dealerHit": "dealer hit",
+  "log.resultWin": "player wins",
+  "log.resultDraw": "draw",
+  "log.resultLose": "player loses"
 }

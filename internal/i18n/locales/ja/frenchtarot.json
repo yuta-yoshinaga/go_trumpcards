@@ -57,5 +57,15 @@
   "errDiscardExcuse": "エクスキューズは捨てられません",
   "errDiscardBout": "プティ・21 は捨てられません",
   "errDiscardKing": "キングは捨てられません",
-  "errDiscardTrump": "切り札は (やむを得ない場合を除き) 捨てられません"
+  "errDiscardTrump": "切り札は (やむを得ない場合を除き) 捨てられません",
+  "log.bid": "{{player}} が {{bid}} を入札しました",
+  "log.pass": "{{player}} がパスしました",
+  "log.redeal": "全員がパスしました。配り直します。",
+  "log.winBid": "{{player}} が {{bid}} のコントラクトを取りました",
+  "log.discard": "{{player}} が {{count}} 枚をシアンに捨てました",
+  "log.play": "{{player}} が {{card}} を出しました",
+  "log.trickWin": "{{player}} がトリック {{trick}} を取りました",
+  "log.roundScore": "ディール {{deal}}: デクレアラー({{declarer}}) {{bid}} 目標={{target}} 点={{points}}/2 ブー={{bouts}} 基礎点={{base}}",
+  "log.gameEndDraw": "マッチは引き分けで終了しました",
+  "log.gameEndWin": "{{player}} がマッチに勝ちました！"
 }

@@ -60,5 +60,15 @@
   "errNotYourTurn": "あなたの手番ではありません。",
   "errCardRange": "無効なカード位置です: {{idx}}",
   "errWouldExceed": "その札では 31 を超えます（累計 {{total}}）。",
-  "mogDiscard": "交換すると {{card}} を手放します。"
+  "mogDiscard": "交換すると {{card}} を手放します。",
+  "log.deal": "ディール {{deal}}: 親={{dealer}}、表向きのカードあり",
+  "log.heels": "プレイヤー {{player}} がヒールで {{points}} 点を得ました",
+  "log.mogRefused": "プレイヤー {{refuser}} は拒否し、プレイヤー {{player}} が {{points}} 点を得ました",
+  "log.mog": "プレイヤー {{player}} と {{other}} がカードを交換しました",
+  "log.peg": "プレイヤー {{player}} が {{points}} 点を得ました（{{reasons}}）",
+  "log.play": "プレイヤー {{player}} がプレイし、合計は {{total}} です",
+  "log.go": "プレイヤー {{goer}} がゴーを宣言し、プレイヤー {{player}} が {{points}} 点を得ました",
+  "log.latter": "プレイヤー {{player}} がラターで {{points}} 点を得ました",
+  "log.show": "ディール {{deal}} のショー: {{first}} - {{second}}",
+  "log.gameEnd": "プレイヤー {{player}} がマッチに勝ちました"
 }

@@ -76,6 +76,10 @@ type CostlyColours struct {
 	actionLogBase
 }
 
+func (c *CostlyColours) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewCostlyColours はコンストラクタ。
 func NewCostlyColours(players []*CostlyColoursPlayer, config CostlyColoursConfig) *CostlyColours {
 	return &CostlyColours{
@@ -155,13 +159,11 @@ func (c *CostlyColours) startDeal() {
 	c.phase = CostlyColoursPhaseMog
 	c.currentIdx = (c.dealerIdx + 1) % CostlyColoursPlayerCnt
 
-	c.appendLog(-1, "deal", fmt.Sprintf("deal %d: dealer=%d, turn-up shown",
-		c.dealNumber, c.dealerIdx), nil)
+	c.appendLog(-1, "deal", "costlycolours.log.deal", map[string]string{"deal": fmt.Sprint(c.dealNumber), "dealer": fmt.Sprint(c.dealerIdx)}, nil)
 	// **表に返した J は親の 4 点。** 打ち始める前に入る ("for his heels")。
 	if c.turnUp != nil && c.turnUp.GetValue() == 11 {
 		c.players[c.dealerIdx].AddScore(CostlyHeelsPoints)
-		c.appendLog(c.dealerIdx, "heels",
-			fmt.Sprintf("player %d pegs %d for his heels", c.dealerIdx, CostlyHeelsPoints), nil)
+		c.appendLog(c.dealerIdx, "heels", "costlycolours.log.heels", map[string]string{"player": fmt.Sprint(c.dealerIdx), "points": fmt.Sprint(CostlyHeelsPoints)}, nil)
 		c.checkGameEnd()
 	}
 }
@@ -201,11 +203,10 @@ func (c *CostlyColours) resolveMog(seat int, accept bool) {
 	if !accept {
 		// **断った側ではなく、断られた側に 1 点。**
 		c.players[other].AddScore(CostlyMogRefusalPoints)
-		c.appendLog(seat, "mogRefused",
-			fmt.Sprintf("player %d refuses; player %d pegs %d", seat, other, CostlyMogRefusalPoints), nil)
+		c.appendLog(seat, "mogRefused", "costlycolours.log.mogRefused", map[string]string{"refuser": fmt.Sprint(seat), "player": fmt.Sprint(other), "points": fmt.Sprint(CostlyMogRefusalPoints)}, nil)
 	} else {
 		c.swapOneCard(seat, other)
-		c.appendLog(seat, "mog", fmt.Sprintf("player %d and %d exchange a card", seat, other), nil)
+		c.appendLog(seat, "mog", "costlycolours.log.mog", map[string]string{"player": fmt.Sprint(seat), "other": fmt.Sprint(other)}, nil)
 	}
 	c.phase = CostlyColoursPhasePlay
 	c.currentIdx = (c.dealerIdx + 1) % CostlyColoursPlayerCnt
@@ -328,9 +329,9 @@ func (c *CostlyColours) applyPlay(seat, handIdx int) error {
 	pts, reasons := CostlyPlayScore(c.pile, c.total)
 	if pts > 0 {
 		p.AddScore(pts)
-		c.appendLog(seat, "peg", fmt.Sprintf("player %d pegs %d (%v)", seat, pts, reasons), []*Card{card})
+		c.appendLog(seat, "peg", "costlycolours.log.peg", map[string]string{"player": fmt.Sprint(seat), "points": fmt.Sprint(pts), "reasons": fmt.Sprint(reasons)}, []*Card{card})
 	} else {
-		c.appendLog(seat, "play", fmt.Sprintf("player %d plays, total %d", seat, c.total), []*Card{card})
+		c.appendLog(seat, "play", "costlycolours.log.play", map[string]string{"player": fmt.Sprint(seat), "total": fmt.Sprint(c.total)}, []*Card{card})
 	}
 	c.checkGameEnd()
 	if c.gameEndFlag {
@@ -364,8 +365,7 @@ func (c *CostlyColours) advanceAfterPlay(seat int) {
 		if c.wentOut != other {
 			c.players[seat].AddScore(CostlyGoPoints)
 			c.wentOut = other
-			c.appendLog(other, "go", fmt.Sprintf("player %d says go; player %d pegs %d",
-				other, seat, CostlyGoPoints), nil)
+			c.appendLog(other, "go", "costlycolours.log.go", map[string]string{"goer": fmt.Sprint(other), "player": fmt.Sprint(seat), "points": fmt.Sprint(CostlyGoPoints)}, nil)
 			c.checkGameEnd()
 		}
 		c.currentIdx = seat
@@ -386,8 +386,7 @@ func (c *CostlyColours) awardLatter(seat int) {
 		return
 	}
 	c.players[seat].AddScore(CostlyLatterPoints)
-	c.appendLog(seat, "latter",
-		fmt.Sprintf("player %d pegs %d for the latter", seat, CostlyLatterPoints), nil)
+	c.appendLog(seat, "latter", "costlycolours.log.latter", map[string]string{"player": fmt.Sprint(seat), "points": fmt.Sprint(CostlyLatterPoints)}, nil)
 	c.checkGameEnd()
 }
 
@@ -484,8 +483,7 @@ func (c *CostlyColours) finishDeal() {
 	// 届いたらそこで終わり ── 親の手は数えない。打っている最中の点と同じで、
 	// 「先に届いたほうが勝ち」を集計でも守る。
 	c.lastResult = res
-	c.appendLog(-1, "show", fmt.Sprintf("deal %d show: %d - %d",
-		c.dealNumber, res.Totals[0], res.Totals[1]), nil)
+	c.appendLog(-1, "show", "costlycolours.log.show", map[string]string{"deal": fmt.Sprint(c.dealNumber), "first": fmt.Sprint(res.Totals[0]), "second": fmt.Sprint(res.Totals[1])}, nil)
 	c.phase = CostlyColoursPhaseShow
 	elder := (c.dealerIdx + 1) % CostlyColoursPlayerCnt
 	for _, i := range []int{elder, c.dealerIdx} {
@@ -521,7 +519,7 @@ func (c *CostlyColours) checkGameEnd() {
 	c.gameEndFlag = true
 	c.winnerIdx = bestIdx
 	c.phase = CostlyColoursPhaseGameEnd
-	c.appendLog(-1, "gameEnd", fmt.Sprintf("player %d wins the match", bestIdx), nil)
+	c.appendLog(-1, "gameEnd", "costlycolours.log.gameEnd", map[string]string{"player": fmt.Sprint(bestIdx)}, nil)
 }
 
 // IsHumanTurn は人間の手番かを返す。

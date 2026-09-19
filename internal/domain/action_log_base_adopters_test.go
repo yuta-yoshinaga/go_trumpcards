@@ -131,7 +131,7 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 		}},
 		{"FrenchTarot", func() (any, any) {
 			g := NewDefaultFrenchTarot()
-			g.appendLog(1, "act", "detail", nil)
+			g.appendLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultFrenchTarot()
 		}},
 		{"Ganjifa", func() (any, any) {

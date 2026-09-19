@@ -427,14 +427,14 @@ func (g *FrenchTarot) CpuBid() {
 func (g *FrenchTarot) applyBid(idx int, bid FrenchTarotBid) {
 	g.highestBid = bid
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), frenchTarotBidName(bid)), nil)
+	g.appendLog(idx, "bid", "frenchtarot.log.bid", map[string]string{"player": playerName(g.players, idx), "bid": frenchTarotBidName(bid)}, nil)
 	g.advanceBid()
 }
 
 // applyPass パスを適用する。
 func (g *FrenchTarot) applyPass(idx int) {
 	g.passed[idx] = true
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
+	g.appendLog(idx, "pass", "frenchtarot.log.pass", map[string]string{"player": playerName(g.players, idx)}, nil)
 	g.advanceBid()
 }
 
@@ -454,7 +454,7 @@ func (g *FrenchTarot) advanceBid() {
 
 // redeal 全員パスした場合、次のディーラーで配り直す。
 func (g *FrenchTarot) redeal() {
-	g.appendLog(-1, "redeal", "All players passed. Redealing.", nil)
+	g.appendLog(-1, "redeal", "frenchtarot.log.redeal", nil, nil)
 	g.dealerIdx = (g.dealerIdx + 1) % FrenchTarotPlayerCnt
 	g.startRound()
 }
@@ -463,8 +463,7 @@ func (g *FrenchTarot) redeal() {
 func (g *FrenchTarot) finalizeBid() {
 	g.declarerIdx = g.highestBidder
 	g.contract = g.highestBid
-	g.appendLog(g.declarerIdx, "win_bid",
-		fmt.Sprintf("%s takes the contract %s", playerName(g.players, g.declarerIdx), frenchTarotBidName(g.contract)), nil)
+	g.appendLog(g.declarerIdx, "win_bid", "frenchtarot.log.winBid", map[string]string{"player": playerName(g.players, g.declarerIdx), "bid": frenchTarotBidName(g.contract)}, nil)
 	switch g.contract {
 	case FrenchTarotBidPetite, FrenchTarotBidGarde:
 		// シアンを公開してデクレアラーの手札に加え、エカルトを待つ。
@@ -540,8 +539,7 @@ func (g *FrenchTarot) doDiscard(cardIndices []int) error {
 	discarded := player.RemoveCards(cardIndices)
 	g.stash = discarded
 	g.stashOwner = 0
-	g.appendLog(g.declarerIdx, "discard",
-		fmt.Sprintf("%s discards %d cards to the chien", playerName(g.players, g.declarerIdx), len(discarded)), discarded)
+	g.appendLog(g.declarerIdx, "discard", "frenchtarot.log.discard", map[string]string{"player": playerName(g.players, g.declarerIdx), "count": fmt.Sprint(len(discarded))}, discarded)
 	g.sortAllHands()
 	g.startPlay()
 	return nil
@@ -704,7 +702,7 @@ func (g *FrenchTarot) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *FrenchTarot) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), frenchTarotCardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "frenchtarot.log.play", map[string]string{"player": playerName(g.players, playerIdx), "card": frenchTarotCardStr(card)}, []*Card{card})
 	if len(g.currentTrick) == FrenchTarotPlayerCnt {
 		g.phase = FrenchTarotPhaseTrickEnd
 	} else {
@@ -743,8 +741,7 @@ func (g *FrenchTarot) ResolveTrick() {
 		// エクスキューズは所有者が自分のトリック山に保持する (低点札の返却は省略)。
 		g.players[excuseOwner].AddTrick([]*Card{excuseCard})
 	}
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), allCards)
+	g.appendLog(winnerIdx, "trick_win", "frenchtarot.log.trickWin", map[string]string{"player": playerName(g.players, winnerIdx), "trick": fmt.Sprint(g.trickNumber)}, allCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= FrenchTarotTrickCount {
@@ -796,10 +793,7 @@ func (g *FrenchTarot) enterRoundEnd() {
 			g.playerScores[i] += bd.DefenderScore
 		}
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("deal %d: declarer(%s) %s target=%d pts=%d/2 bouts=%d base=%d",
-			g.roundNumber, playerName(g.players, g.declarerIdx), frenchTarotBidName(g.contract),
-			bd.Target, bd.DeclarerHalfPoints, bd.Bouts, bd.Base), nil)
+	g.appendLog(-1, "round_score", "frenchtarot.log.roundScore", map[string]string{"deal": fmt.Sprint(g.roundNumber), "declarer": playerName(g.players, g.declarerIdx), "bid": frenchTarotBidName(g.contract), "target": fmt.Sprint(bd.Target), "points": fmt.Sprint(bd.DeclarerHalfPoints), "bouts": fmt.Sprint(bd.Bouts), "base": fmt.Sprint(bd.Base)}, nil)
 	g.checkGameEnd()
 }
 
@@ -890,10 +884,10 @@ func (g *FrenchTarot) checkGameEnd() {
 		// 同点トップは引き分け: winnerPlayer を -1 にして勝者演出/メッセージを抑制する
 		// (GoStop/HachiHachi と同様。GetResult も None を返す)。
 		g.winnerPlayer = -1
-		g.appendLog(-1, "game_end", "the match ends in a draw", nil)
+		g.appendLog(-1, "game_end", "frenchtarot.log.gameEndDraw", nil, nil)
 	} else {
 		g.winnerPlayer = leader
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+		g.appendLog(-1, "game_end", "frenchtarot.log.gameEndWin", map[string]string{"player": playerName(g.players, leader)}, nil)
 	}
 }
 
@@ -1532,8 +1526,8 @@ func (g *FrenchTarot) isHumanBidTurn() bool {
 }
 
 // appendLog 棋譜にエントリを追加する。
-func (g *FrenchTarot) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLogAt(len(g.actionLog)+1, playerIdx, actionType, detail, cards)
+func (g *FrenchTarot) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // frenchTarotBidName 入札の表示名を返す。

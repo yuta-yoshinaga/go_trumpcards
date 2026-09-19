@@ -39,5 +39,15 @@
   "helpUndo": "  u                    1手戻す",
   "errEmptyColumnAutoFillOnly": "リザーブがある場合、空列には自動補充のみ行われます。自分で置くことはできません。",
   "errNotAlternateDescending": "カードの色を交互にし、数字が1つ小さくなるように置いてください。",
-  "reserveEmptyColumnRule": "※ リザーブがある場合、空列への移動はできません（自動で補充されます）"
+  "reserveEmptyColumnRule": "※ リザーブがある場合、空列への移動はできません（自動で補充されます）",
+  "log.recycle": "ウェイストをストックに戻しました",
+  "log.draw": "ストックからカードを引きました",
+  "log.wasteToTableau": "ウェイスト→タブロー列{{column}}",
+  "log.wasteToFoundation": "ウェイスト→ファンデーション",
+  "log.tableauToTableau": "タブロー列{{from}}→タブロー列{{to}}",
+  "log.tableauToFoundation": "タブロー列{{column}}→ファンデーション",
+  "log.reserveToTableau": "リザーブ→タブロー列{{column}}",
+  "log.reserveToFoundation": "リザーブ→ファンデーション",
+  "log.giveUp": "ギブアップしました",
+  "log.autocomplete": "オートコンプリートを実行しました"
 }
