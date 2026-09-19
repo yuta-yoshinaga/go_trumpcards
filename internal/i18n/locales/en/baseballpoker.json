@@ -49,5 +49,17 @@
   "reason.seeAnotherCard": "your hand is still weak, so take the free card",
   "reason.wildsRaiseTheBar": "with eight wilds in the deck this hand does not meet the going rate",
   "result.gameEnd": "The game is over",
-  "helpExampleBet": "  bet 100              bet 100 chips"
+  "helpExampleBet": "  bet 100              bet 100 chips",
+  "log.dealInitial": "up",
+  "log.dealStreetUp": "dealt street {{street}} face up",
+  "log.dealStreetDown": "dealt street {{street}} face down",
+  "log.bonus": "four",
+  "log.buyInAsked": "asked",
+  "log.buyInFold": "fold",
+  "log.buyInPay": "pay",
+  "log.fold": "",
+  "log.check": "",
+  "log.call": "",
+  "log.bet": "",
+  "log.raise": ""
 }

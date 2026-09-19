@@ -59,8 +59,8 @@ type Nertz struct {
 	winnerIdx   int // ラウンド勝者 (Nertzコール); -1 = 未確定
 	matchWinner int // マッチ勝者; -1 = 未確定
 	moveCount   int
-	actionLog   []*ActionLogEntry
-	history     []*nertzSnapshot // 人間の単一ステップ Undo 用
+	actionLogBase
+	history []*nertzSnapshot // 人間の単一ステップ Undo 用
 }
 
 // nertzSnapshot Undo 用スナップショット
@@ -183,7 +183,7 @@ func (g *Nertz) DrawStock(playerIdx int) error {
 		}
 		g.takeSnapshot(playerIdx)
 		p.RecycleWasteToStock()
-		g.appendLog(playerIdx, "recycle", "ウェイストをストックに戻しました", nil)
+		g.appendLog(playerIdx, "recycle", "nertz.log.recycle", nil, nil)
 		return nil
 	}
 	g.takeSnapshot(playerIdx)
@@ -195,7 +195,7 @@ func (g *Nertz) DrawStock(playerIdx int) error {
 		drawn = append(drawn, c)
 	}
 	g.moveCount++
-	g.appendLog(playerIdx, "draw", "ストックからカードを引きました", drawn)
+	g.appendLog(playerIdx, "draw", "nertz.log.draw", nil, drawn)
 	return nil
 }
 
@@ -225,7 +225,7 @@ func (g *Nertz) MoveNertzToFoundation(playerIdx, foundationIdx int) error {
 		return err
 	}
 	g.moveCount++
-	g.appendLog(playerIdx, "moveNF", fmt.Sprintf("プレイヤー%dがナッツ→ファウンデーション%d", playerIdx, foundationIdx), []*Card{c})
+	g.appendLog(playerIdx, "moveNF", "nertz.log.moveNf", map[string]string{"player": fmt.Sprint(playerIdx), "foundation": fmt.Sprint(foundationIdx)}, []*Card{c})
 	g.checkRoundEndForPlayer(playerIdx)
 	return nil
 }
@@ -253,7 +253,7 @@ func (g *Nertz) MoveNertzToTableau(playerIdx, toCol int) error {
 	c := p.PopNertz()
 	p.PushTableau(toCol, &NertzTableauCard{Card: c, FaceUp: true})
 	g.moveCount++
-	g.appendLog(playerIdx, "moveNT", fmt.Sprintf("プレイヤー%dがナッツ→タブロー%d", playerIdx, toCol), []*Card{c})
+	g.appendLog(playerIdx, "moveNT", "nertz.log.moveNt", map[string]string{"player": fmt.Sprint(playerIdx), "tableau": fmt.Sprint(toCol)}, []*Card{c})
 	g.checkRoundEndForPlayer(playerIdx)
 	return nil
 }
@@ -284,7 +284,7 @@ func (g *Nertz) MoveWasteToFoundation(playerIdx, foundationIdx int) error {
 		return err
 	}
 	g.moveCount++
-	g.appendLog(playerIdx, "moveWF", fmt.Sprintf("プレイヤー%dがウェイスト→ファウンデーション%d", playerIdx, foundationIdx), []*Card{c})
+	g.appendLog(playerIdx, "moveWF", "nertz.log.moveWf", map[string]string{"player": fmt.Sprint(playerIdx), "foundation": fmt.Sprint(foundationIdx)}, []*Card{c})
 	return nil
 }
 
@@ -311,7 +311,7 @@ func (g *Nertz) MoveWasteToTableau(playerIdx, toCol int) error {
 	c := p.PopWaste()
 	p.PushTableau(toCol, &NertzTableauCard{Card: c, FaceUp: true})
 	g.moveCount++
-	g.appendLog(playerIdx, "moveWT", fmt.Sprintf("プレイヤー%dがウェイスト→タブロー%d", playerIdx, toCol), []*Card{c})
+	g.appendLog(playerIdx, "moveWT", "nertz.log.moveWt", map[string]string{"player": fmt.Sprint(playerIdx), "tableau": fmt.Sprint(toCol)}, []*Card{c})
 	return nil
 }
 
@@ -346,7 +346,7 @@ func (g *Nertz) MoveTableauToFoundation(playerIdx, fromCol, foundationIdx int) e
 	}
 	g.autoFillFromNertz(p, fromCol)
 	g.moveCount++
-	g.appendLog(playerIdx, "moveTF", fmt.Sprintf("プレイヤー%dがタブロー%d→ファウンデーション%d", playerIdx, fromCol, foundationIdx), []*Card{tail[0].Card})
+	g.appendLog(playerIdx, "moveTF", "nertz.log.moveTf", map[string]string{"player": fmt.Sprint(playerIdx), "tableau": fmt.Sprint(fromCol), "foundation": fmt.Sprint(foundationIdx)}, []*Card{tail[0].Card})
 	g.checkRoundEndForPlayer(playerIdx)
 	return nil
 }
@@ -384,7 +384,7 @@ func (g *Nertz) MoveTableauToTableau(playerIdx, fromCol, fromIdx, toCol int) err
 	}
 	g.autoFillFromNertz(p, fromCol)
 	g.moveCount++
-	g.appendLog(playerIdx, "moveTT", fmt.Sprintf("プレイヤー%dがタブロー%d→タブロー%d", playerIdx, fromCol, toCol), moved)
+	g.appendLog(playerIdx, "moveTT", "nertz.log.moveTt", map[string]string{"player": fmt.Sprint(playerIdx), "fromTableau": fmt.Sprint(fromCol), "toTableau": fmt.Sprint(toCol)}, moved)
 	return nil
 }
 
@@ -407,7 +407,7 @@ func (g *Nertz) checkRoundEndForPlayer(playerIdx int) {
 		g.phase = NertzPhaseRoundEnd
 		g.winnerIdx = playerIdx
 		g.applyRoundScoring()
-		g.appendLog(playerIdx, "nertz", fmt.Sprintf("プレイヤー%dがナッツパイルを出し切った", playerIdx), nil)
+		g.appendLog(playerIdx, "nertz", "nertz.log.nertz", map[string]string{"player": fmt.Sprint(playerIdx)}, nil)
 		if g.checkMatchEnd() {
 			g.phase = NertzPhaseGameEnd
 		}
@@ -1041,14 +1041,8 @@ func (g *Nertz) foundation(idx int) (*NertzFoundation, error) {
 	return g.foundations[idx], nil
 }
 
-func (g *Nertz) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.moveCount,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+func (g *Nertz) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(g.moveCount, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Snapshot / Undo ---
