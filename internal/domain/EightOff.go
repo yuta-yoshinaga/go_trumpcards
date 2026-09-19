@@ -158,7 +158,7 @@ func (e *EightOff) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	e.moveCount++
 	movedCards := make([]*Card, len(movingCards))
 	copy(movedCards, movingCards)
-	e.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	e.appendLog("move", "eightoff.log.moveTableauToTableau", map[string]string{"from": fmt.Sprint(fromCol), "to": fmt.Sprint(toCol)}, movedCards)
 	e.checkStalemate()
 	return nil
 }
@@ -187,7 +187,7 @@ func (e *EightOff) MoveTableauToFoundation(col int) error {
 	e.tableau[col] = fromCards[:len(fromCards)-1]
 	e.foundation[fIdx] = append(e.foundation[fIdx], card)
 	e.moveCount++
-	e.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	e.appendLog("move", "eightoff.log.moveTableauToFoundation", map[string]string{"col": fmt.Sprint(col)}, []*Card{card})
 	e.checkGameClear()
 	e.checkStalemate()
 	return nil
@@ -216,7 +216,7 @@ func (e *EightOff) MoveTableauToFreeCell(col, cell int) error {
 	e.tableau[col] = fromCards[:len(fromCards)-1]
 	e.freeCells[cell] = card
 	e.moveCount++
-	e.appendLog("move", fmt.Sprintf("タブロー列%d→フリーセル%d", col, cell), []*Card{card})
+	e.appendLog("move", "eightoff.log.moveTableauToFreeCell", map[string]string{"col": fmt.Sprint(col), "cell": fmt.Sprint(cell)}, []*Card{card})
 	e.checkStalemate()
 	return nil
 }
@@ -243,7 +243,7 @@ func (e *EightOff) MoveFreeCellToTableau(cell, col int) error {
 	e.freeCells[cell] = nil
 	e.tableau[col] = append(e.tableau[col], card)
 	e.moveCount++
-	e.appendLog("move", fmt.Sprintf("フリーセル%d→タブロー列%d", cell, col), []*Card{card})
+	e.appendLog("move", "eightoff.log.moveFreeCellToTableau", map[string]string{"cell": fmt.Sprint(cell), "col": fmt.Sprint(col)}, []*Card{card})
 	e.checkStalemate()
 	return nil
 }
@@ -271,7 +271,7 @@ func (e *EightOff) MoveFreeCellToFoundation(cell int) error {
 	e.freeCells[cell] = nil
 	e.foundation[fIdx] = append(e.foundation[fIdx], card)
 	e.moveCount++
-	e.appendLog("move", fmt.Sprintf("フリーセル%d→ファンデーション", cell), []*Card{card})
+	e.appendLog("move", "eightoff.log.moveFreeCellToFoundation", map[string]string{"cell": fmt.Sprint(cell)}, []*Card{card})
 	e.checkGameClear()
 	e.checkStalemate()
 	return nil
@@ -281,7 +281,7 @@ func (e *EightOff) MoveFreeCellToFoundation(cell int) error {
 func (e *EightOff) GiveUp() {
 	if e.phase == EightOffPhasePlaying {
 		e.phase = EightOffPhaseGameOver
-		e.appendLog("giveup", "ギブアップしました", nil)
+		e.appendLog("giveup", "eightoff.log.giveUp", nil, nil)
 	}
 }
 
@@ -449,7 +449,7 @@ func (e *EightOff) AutoComplete() error {
 			break
 		}
 	}
-	e.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	e.appendLog("autocomplete", "eightoff.log.autoComplete", nil, nil)
 	e.checkGameClear()
 	e.checkStalemate()
 	return nil
@@ -624,8 +624,8 @@ func (e *EightOff) checkStalemate() {
 }
 
 // appendLog 棋譜エントリを追加
-func (e *EightOff) appendLog(actionType, detail string, cards []*Card) {
-	e.appendLogAt(e.moveCount, 0, actionType, detail, cards)
+func (e *EightOff) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	e.appendLogCodeAt(e.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // eightOffJSON is the JSON wire format for EightOff.

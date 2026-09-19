@@ -220,7 +220,7 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 		{"LaBelleLucie", func() (any, any) {
 			g := NewDefaultLaBelleLucie()
 			g.Reset()
-			g.appendLog("act", "detail", nil)
+			g.appendLog("act", "labellelucie.log.test", nil, nil)
 			return g, NewDefaultLaBelleLucie()
 		}},
 		{"SimpleSimon", func() (any, any) {

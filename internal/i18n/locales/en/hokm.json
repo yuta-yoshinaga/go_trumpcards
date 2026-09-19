@@ -34,5 +34,13 @@
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
   "hakemMoves": "The hakem passes to the next seat, so a different seat calls the trump.",
-  "hakemStays": "The hakem keeps the deal and calls the trump again."
+  "hakemStays": "The hakem keeps the deal and calls the trump again.",
+  "log.deal": "Hand {{hand}} started (dealer: {{hakem}})",
+  "log.declareTrump": "Declared {{suit}} as trump",
+  "log.play": "{{card}}",
+  "log.kot": "Team {{team}} won by Kot (the opponents took 0 tricks) for +{{points}}",
+  "log.handWin": "Team {{team}} won the hand for +{{points}}",
+  "log.hakemChanged": "The deal moved to player {{hakem}}",
+  "log.result": "Final score {{team0}} - {{team1}}",
+  "log.giveUp": "Gave up"
 }
