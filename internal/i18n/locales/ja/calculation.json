@@ -34,5 +34,10 @@
   "helpExampleHint": "  h                   次の一手を教えてもらう",
   "helpExampleAuto": "  ac                  置ける札を自動で送る",
   "upcomingRanks": " 先読み: {{ranks}}",
-  "upcomingRanksLabel": "先読み:"
+  "upcomingRanksLabel": "先読み:",
+  "log.stockToFoundation": "ストック→ファンデーション{{foundation}}",
+  "log.stockToWaste": "ストック→ウェイスト{{waste}}",
+  "log.wasteToFoundation": "ウェイスト{{waste}}→ファンデーション{{foundation}}",
+  "log.giveUp": "ギブアップしました",
+  "log.autocomplete": "オートコンプリートを実行しました"
 }

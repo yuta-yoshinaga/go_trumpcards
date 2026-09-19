@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // CalculationPhase カルキュレーションゲームフェーズ
@@ -124,7 +125,7 @@ func (c *Calculation) PlayStockToFoundation(fIdx int) error {
 	c.stock = c.stock[:len(c.stock)-1]
 	c.foundations[fIdx] = append(c.foundations[fIdx], card)
 	c.moveCount++
-	c.appendLog("move", fmt.Sprintf("ストック→ファンデーション%d", fIdx+1), []*Card{card})
+	c.appendLog("move", "calculation.log.stockToFoundation", map[string]string{"foundation": strconv.Itoa(fIdx + 1)}, []*Card{card})
 	c.checkGameClear()
 	c.checkStalemate()
 	return nil
@@ -146,7 +147,7 @@ func (c *Calculation) PlayStockToWaste(wasteIdx int) error {
 	c.stock = c.stock[:len(c.stock)-1]
 	c.wastes[wasteIdx] = append(c.wastes[wasteIdx], card)
 	c.moveCount++
-	c.appendLog("move", fmt.Sprintf("ストック→ウェイスト%d", wasteIdx+1), []*Card{card})
+	c.appendLog("move", "calculation.log.stockToWaste", map[string]string{"waste": strconv.Itoa(wasteIdx + 1)}, []*Card{card})
 	c.checkStalemate()
 	return nil
 }
@@ -173,7 +174,7 @@ func (c *Calculation) PlayWasteToFoundation(wasteIdx, fIdx int) error {
 	c.wastes[wasteIdx] = c.wastes[wasteIdx][:len(c.wastes[wasteIdx])-1]
 	c.foundations[fIdx] = append(c.foundations[fIdx], card)
 	c.moveCount++
-	c.appendLog("move", fmt.Sprintf("ウェイスト%d→ファンデーション%d", wasteIdx+1, fIdx+1), []*Card{card})
+	c.appendLog("move", "calculation.log.wasteToFoundation", map[string]string{"waste": strconv.Itoa(wasteIdx + 1), "foundation": strconv.Itoa(fIdx + 1)}, []*Card{card})
 	c.checkGameClear()
 	c.checkStalemate()
 	return nil
@@ -183,7 +184,7 @@ func (c *Calculation) PlayWasteToFoundation(wasteIdx, fIdx int) error {
 func (c *Calculation) GiveUp() {
 	if c.phase == CalculationPhasePlaying {
 		c.phase = CalculationPhaseGameOver
-		c.appendLog("giveup", "ギブアップしました", nil)
+		c.appendLog("giveup", "calculation.log.giveUp", nil, nil)
 	}
 }
 
@@ -277,7 +278,7 @@ func (c *Calculation) AutoComplete() error {
 			break
 		}
 	}
-	c.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	c.appendLog("autocomplete", "calculation.log.autocomplete", nil, nil)
 	c.checkGameClear()
 	c.checkStalemate()
 	return nil
@@ -487,8 +488,8 @@ func (c *Calculation) restoreSnapshot(snap *calculationSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (c *Calculation) appendLog(actionType, detail string, cards []*Card) {
-	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
+func (c *Calculation) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCodeAt(c.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // calculationJSON is the JSON wire format for Calculation.

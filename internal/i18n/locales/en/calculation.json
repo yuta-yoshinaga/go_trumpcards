@@ -34,5 +34,10 @@
   "helpExampleHint": "  h                   ask for a move",
   "helpExampleAuto": "  ac                  play everything that can go up",
   "upcomingRanks": " upcoming: {{ranks}}",
-  "upcomingRanksLabel": "Upcoming:"
+  "upcomingRanksLabel": "Upcoming:",
+  "log.stockToFoundation": "Stock → foundation {{foundation}}",
+  "log.stockToWaste": "Stock → waste {{waste}}",
+  "log.wasteToFoundation": "Waste {{waste}} → foundation {{foundation}}",
+  "log.giveUp": "Give up",
+  "log.autocomplete": "Run auto-complete"
 }

@@ -41,5 +41,9 @@
   "errCannotPlaceFoundation": "基礎札は同じスートで1つ上の札にしか置けません",
   "errNotAllFaceUp": "裏向きの札が残っているため自動で完成させられません",
   "errUndoNotPlaying": "プレイ中ではないため取り消せません",
-  "errNothingToUndo": "取り消せる手がありません"
+  "errNothingToUndo": "取り消せる手がありません",
+  "log.moveTableau": "タブロー列{{from}}→タブロー列{{to}}",
+  "log.moveFoundation": "タブロー列{{col}}→ファンデーション",
+  "log.giveUp": "ギブアップしました",
+  "log.autocomplete": "オートコンプリートを実行しました"
 }
