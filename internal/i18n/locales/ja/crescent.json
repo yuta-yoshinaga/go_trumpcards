@@ -29,5 +29,10 @@
   "noHint": "ヒントなし",
   "helpExampleHint": "  h                        次の一手を教えてもらう",
   "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る",
-  "helpUndo": "  u 1手戻す"
+  "helpUndo": "  u 1手戻す",
+  "log.tableauMove": "タブロー列{{from}}→タブロー列{{to}}",
+  "log.tableauToFoundation": "タブロー列{{from}}→ファンデーション{{foundation}}",
+  "log.redeal": "再配り (残り{{remaining}}回)",
+  "log.giveUp": "ギブアップしました",
+  "log.autocomplete": "オートコンプリートを実行しました"
 }

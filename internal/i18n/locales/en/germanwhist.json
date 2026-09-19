@@ -24,5 +24,11 @@
   "suitHeart": "Hearts",
   "suitDiamond": "Diamonds",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "log.trump": "Trump: {{card}}",
+  "log.play": "Played {{card}}",
+  "log.trickWin": "Won trick {{trick}}",
+  "log.secondHalfStart": "Second half (scoring tricks) started",
+  "log.result": "Second-half tricks {{p0}} - {{p1}}",
+  "log.giveUp": "Gave up"
 }

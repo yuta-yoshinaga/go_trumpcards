@@ -19,5 +19,8 @@
   "rankN": "{{rank}}位",
   "yourTurn": "あなたのターンです",
   "actionPass": "パス",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "log.pass": "パス",
+  "log.play": "{{count}}枚を出しました",
+  "log.finish": "プレイヤー{{player}}が上がりました（順位{{rank}}位）"
 }

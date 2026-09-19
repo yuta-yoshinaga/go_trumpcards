@@ -19,5 +19,8 @@
   "rankN": "Rank {{rank}}",
   "yourTurn": "Your turn",
   "actionPass": "pass",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "log.pass": "pass",
+  "log.play": "played {{count}} card(s)",
+  "log.finish": "player {{player}} finished (rank {{rank}})"
 }

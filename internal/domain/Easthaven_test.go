@@ -245,6 +245,10 @@ func TestEasthaven_MoveTableauToTableau(t *testing.T) {
 		require.NoError(t, e.MoveTableauToTableau(0, 0, 1))
 		assert.Equal(t, 0, len(e.GetTableau()[0]))
 		assert.Equal(t, 2, len(e.GetTableau()[1]))
+		entry := e.GetActionLog()[0]
+		assert.Equal(t, "easthaven.log.tableauMove", entry.DetailCode)
+		assert.Equal(t, map[string]string{"from": "0", "to": "1"}, entry.DetailParams)
+		assert.Empty(t, entry.Detail)
 	})
 
 	t.Run("valid multi-card sequence move", func(t *testing.T) {

@@ -47,5 +47,13 @@
   "result.gameEnd": "The game is over",
   "helpExampleDraw": "  draw                 draw one card from the stock",
   "meldPointsLine": "Meld points: {{table}}",
-  "meld.points": "{{points}} pts"
+  "meld.points": "{{points}} pts",
+  "log.deal": "dealt the hands",
+  "log.drawDiscard": "from the discard",
+  "log.drawStock": "from the stock",
+  "log.meldSameColorSet": "three of one colour",
+  "log.meldChariotTrio": "chariot-horse-cannon",
+  "log.meldSoldierSet": "five soldiers",
+  "log.discard": "",
+  "log.roundOver": "round over"
 }

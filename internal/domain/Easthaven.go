@@ -5,7 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
+	"strconv"
 )
 
 // EasthavenPhase イーストヘイブンゲームフェーズ
@@ -134,7 +134,7 @@ func (e *Easthaven) Deal() error {
 		e.tableau[i] = append(e.tableau[i], &KlondikeTableauCard{Card: card, FaceUp: true})
 	}
 	e.moveCount++
-	e.appendLog("deal", "ストックから各列にカードを配りました", nil)
+	e.appendLog("deal", "easthaven.log.deal", nil, nil)
 	e.checkEasthavenStalemate()
 	return nil
 }
@@ -185,7 +185,7 @@ func (e *Easthaven) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	e.tableau[fromCol] = fromCards[:cardIndex]
 	e.autoFlipTableau(fromCol)
 	e.moveCount++
-	e.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	e.appendLog("move", "easthaven.log.tableauMove", map[string]string{"from": strconv.Itoa(fromCol), "to": strconv.Itoa(toCol)}, movedCards)
 	e.checkEasthavenStalemate()
 	return nil
 }
@@ -219,7 +219,7 @@ func (e *Easthaven) MoveTableauToFoundation(col int) error {
 	e.foundation[fIdx] = append(e.foundation[fIdx], card)
 	e.autoFlipTableau(col)
 	e.moveCount++
-	e.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	e.appendLog("move", "easthaven.log.tableauToFoundation", map[string]string{"column": strconv.Itoa(col)}, []*Card{card})
 	e.checkGameClear()
 	e.checkEasthavenStalemate()
 	return nil
@@ -229,7 +229,7 @@ func (e *Easthaven) MoveTableauToFoundation(col int) error {
 func (e *Easthaven) GiveUp() {
 	if e.phase == EasthavenPhasePlaying {
 		e.phase = EasthavenPhaseGameOver
-		e.appendLog("giveup", "ギブアップしました", nil)
+		e.appendLog("giveup", "easthaven.log.giveUp", nil, nil)
 	}
 }
 
@@ -344,7 +344,7 @@ func (e *Easthaven) AutoComplete() error {
 			break
 		}
 	}
-	e.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	e.appendLog("autocomplete", "easthaven.log.autocomplete", nil, nil)
 	e.checkGameClear()
 	return nil
 }
@@ -576,8 +576,8 @@ func (e *Easthaven) restoreSnapshot(snap *easthavenSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (e *Easthaven) appendLog(actionType, detail string, cards []*Card) {
-	e.appendLogAt(e.moveCount, 0, actionType, detail, cards)
+func (e *Easthaven) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	e.appendLogCodeAt(e.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // easthavenMaxSliceLen caps slice sizes during deserialisation.

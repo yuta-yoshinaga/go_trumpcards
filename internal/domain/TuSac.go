@@ -86,18 +86,18 @@ type TuSac struct {
 	results     []TuSacResult
 	gameEndFlag bool
 
-	actionLog  []*ActionLogEntry
+	actionLogBase
 	turnNumber int
 }
 
 // NewTuSac は TuSac を構築する。
 func NewTuSac(players []*TuSacPlayer, config TuSacConfig) *TuSac {
 	return &TuSac{
-		players:   players,
-		config:    config,
-		wentOut:   -1,
-		results:   make([]TuSacResult, 0, len(players)),
-		actionLog: make([]*ActionLogEntry, 0),
+		players:       players,
+		config:        config,
+		wentOut:       -1,
+		results:       make([]TuSacResult, 0, len(players)),
+		actionLogBase: actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 }
 
@@ -144,7 +144,7 @@ func (g *TuSac) startRound() {
 	// 選択肢を与えるため ── 空だと最初の 1 手だけ選択肢が 1 つ少ない。
 	g.discard = []*Card{deck[0]}
 	g.stock = deck[1:]
-	g.appendLog(-1, "deal", "dealt the hands", nil)
+	g.appendLog(-1, "deal", "tusac.log.deal", nil, nil)
 	g.runCpuTurns()
 }
 
@@ -176,7 +176,7 @@ func (g *TuSac) drawFor(i int, fromDiscard bool) error {
 		top := g.discard[len(g.discard)-1]
 		g.discard = g.discard[:len(g.discard)-1]
 		p.AddCard(top)
-		g.appendLog(i, "draw", "from the discard", []*Card{top})
+		g.appendLog(i, "draw", "tusac.log.drawDiscard", nil, []*Card{top})
 		return nil
 	}
 	if len(g.stock) == 0 {
@@ -185,7 +185,7 @@ func (g *TuSac) drawFor(i int, fromDiscard bool) error {
 	c := g.stock[0]
 	g.stock = g.stock[1:]
 	p.AddCard(c)
-	g.appendLog(i, "draw", "from the stock", nil)
+	g.appendLog(i, "draw", "tusac.log.drawStock", nil, nil)
 	return nil
 }
 
@@ -215,7 +215,14 @@ func (g *TuSac) meldFor(i int, indexes []int) error {
 	}
 	p.AddMeld(kind, picked)
 	p.RemoveCardsAt(indexes)
-	g.appendLog(i, "meld", TuSacMeldKindName(kind), picked)
+	meldCode := "tusac.log.meldSoldierSet"
+	switch kind {
+	case TuSacMeldSameColorSet:
+		meldCode = "tusac.log.meldSameColorSet"
+	case TuSacMeldChariotTrio:
+		meldCode = "tusac.log.meldChariotTrio"
+	}
+	g.appendLog(i, "meld", meldCode, nil, picked)
 
 	// **出し切ったらそこで上がり。** 捨てる札が残っていないので、捨てるまで
 	// 手番が終わらない規則のままだと、上がった席が「捨てられないまま進めない」
@@ -254,7 +261,7 @@ func (g *TuSac) discardFor(i, index int) error {
 	c := p.GetCards()[index]
 	p.RemoveCardsAt([]int{index})
 	g.discard = append(g.discard, c)
-	g.appendLog(i, "discard", "", []*Card{c})
+	g.appendLog(i, "discard", "tusac.log.discard", nil, []*Card{c})
 	return nil
 }
 
@@ -419,7 +426,7 @@ func (g *TuSac) finishRound() {
 			RoundScore: round, WentOut: i == g.wentOut,
 		})
 	}
-	g.appendLog(-1, "round", "round over", nil)
+	g.appendLog(-1, "round", "tusac.log.roundOver", nil, nil)
 
 	if g.roundNumber >= g.config.Rounds {
 		g.finish()
@@ -511,19 +518,10 @@ func (g *TuSac) GetWentOutSeat() int { return g.wentOut }
 // GetResults は直近のラウンド結果を返す。
 func (g *TuSac) GetResults() []TuSacResult { return g.results }
 
-// GetActionLog は棋譜を返す。
-func (g *TuSac) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // appendLog は棋譜に 1 行足す。
-func (g *TuSac) appendLog(seat int, actionType, detail string, cards []*Card) {
+func (g *TuSac) appendLog(seat int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.turnNumber,
-		PlayerIdx:  seat,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogCodeAt(g.turnNumber, seat, actionType, detailCode, detailParams, cards)
 }
 
 // --- 助言 ---
