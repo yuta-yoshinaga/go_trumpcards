@@ -13,5 +13,11 @@
   "stuckDeadlock": "No legal move remains, and Shamrocks has no redeal - type giveup to concede.",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
   "helpHint": "  h                    show a hint",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "log.deal": "A new game has started",
+  "log.move": "fan {{from}}→fan {{to}}",
+  "log.foundation": "fan {{from}}→foundation",
+  "log.giveUp": "Gave up",
+  "log.clear": "Clear!",
+  "log.gameOver": "No legal move remains"
 }

@@ -47,5 +47,11 @@
   "errDuplicateCard": "同じカードを 2 回選べません。",
   "errDiscardHonour": "オヌール（切り札1・21・マット）は捨てられません。",
   "errDiscardTrump": "切り札は（やむを得ない場合を除き）捨てられません。",
-  "errDiscardCourt": "コート札は捨てられません。"
+  "errDiscardCourt": "コート札は捨てられません。",
+  "log.scarto": "{{name}}が{{count}}枚をスカルトとして捨てました",
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.trickWin": "{{name}}がトリック{{trick}}を取りました",
+  "log.roundScore": "ディール{{round}}: 獲得サード{{thirds}} → ディール得点{{scores}}",
+  "log.gameEndDraw": "引き分けでマッチ終了",
+  "log.gameEnd": "{{name}}がマッチに勝ちました！"
 }

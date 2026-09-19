@@ -48,5 +48,11 @@
   "errScartoInvalidCard": "カードが不正です",
   "errDiscardHonour": "エクスキューズまたはブー (切り札1/21) は捨てられません",
   "errDiscardTrump": "切り札は (やむを得ない場合を除き) 捨てられません",
-  "errDiscardCourt": "得点札 (King/コート札) は捨てられません"
+  "errDiscardCourt": "得点札 (King/コート札) は捨てられません",
+  "log.scarto": "{{name}}が{{count}}枚をスカルトとして捨てました",
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.trickWin": "{{name}}がトリック{{trick}}を取りました",
+  "log.roundScore": "ディール{{round}}: 獲得ハーフポイント{{half}} → ディール得点{{scores}}",
+  "log.gameEndDraw": "引き分けでマッチ終了",
+  "log.gameEnd": "{{name}}がマッチに勝ちました！"
 }

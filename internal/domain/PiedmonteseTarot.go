@@ -32,6 +32,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // PiedmonteseTarotPhase はゲームの進行段階。
@@ -288,8 +289,7 @@ func (g *PiedmonteseTarot) doScarto(cardIndices []int) error {
 	}
 	discarded := player.RemoveCards(cardIndices)
 	g.scarto = discarded
-	g.appendLog(g.dealerIdx, "scarto",
-		fmt.Sprintf("%s discards %d cards (scarto)", playerName(g.players, g.dealerIdx), len(discarded)), discarded)
+	g.appendLog(g.dealerIdx, "scarto", "piedmontesetarot.log.scarto", map[string]string{"name": playerName(g.players, g.dealerIdx), "count": strconv.Itoa(len(discarded))}, discarded)
 	g.sortAllHands()
 	g.startPlay()
 	return nil
@@ -433,8 +433,7 @@ func (g *PiedmonteseTarot) CpuPlay() {
 // playCard は 1 枚出す共通処理。
 func (g *PiedmonteseTarot) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), piedmonteseTarotCardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "piedmontesetarot.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": piedmonteseTarotCardStr(card)}, []*Card{card})
 	if len(g.currentTrick) == len(g.players) {
 		g.phase = PiedmonteseTarotPhaseTrickEnd
 	} else {
@@ -468,8 +467,7 @@ func (g *PiedmonteseTarot) ResolveTrick() {
 	if excuseOwner >= 0 && excuseCard != nil {
 		g.players[excuseOwner].AddTrick([]*Card{excuseCard})
 	}
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), allCards)
+	g.appendLog(winnerIdx, "trick_win", "piedmontesetarot.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber)}, allCards)
 
 	g.leadPlayerIdx = winnerIdx
 	g.lastTrickWinner = winnerIdx
@@ -562,9 +560,7 @@ func (g *PiedmonteseTarot) enterRoundEnd() {
 		g.playerScores[i] += g.dealScores[i]
 	}
 	g.outcome = g.humanOutcome()
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("deal %d: captured thirds %v -> deal scores %v",
-			g.roundNumber, thirds, g.dealScores), nil)
+	g.appendLog(-1, "round_score", "piedmontesetarot.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "thirds": fmt.Sprint(thirds), "scores": fmt.Sprint(g.dealScores)}, nil)
 	g.checkGameEnd()
 }
 
@@ -704,11 +700,16 @@ func (g *PiedmonteseTarot) checkGameEnd() {
 	g.result = g.humanResult(leader, tie)
 	if tie {
 		g.winnerPlayer = -1
-		g.appendLog(-1, "game_end", "the match ends in a draw", nil)
+		g.appendLog(-1, "game_end", "piedmontesetarot.log.gameEndDraw", nil, nil)
 		return
 	}
 	g.winnerPlayer = leader
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+	g.appendLog(-1, "game_end", "piedmontesetarot.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
+}
+
+// appendLog records a Piedmontese Tarot action with a locale-independent detail code.
+func (g *PiedmonteseTarot) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // humanResult は人間視点のマッチ結果を返す。

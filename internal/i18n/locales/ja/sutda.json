@@ -66,5 +66,11 @@
   "handName.kkeut2": "2ット",
   "handName.kkeut1": "1ット",
   "handName.mangtong": "マントン（0ット）",
-  "handName.none": "—"
+  "handName.none": "—",
+  "log.deal": "ハンド{{hand}}: 親={{dealer}}、参加料={{ante}}、ポット={{pot}}",
+  "log.fold": "プレイヤー{{player}}がフォールドしました",
+  "log.call": "プレイヤー{{player}}が{{bet}}までコールしました",
+  "log.raise": "プレイヤー{{player}}が{{bet}}までレイズしました",
+  "log.showdown": "ハンド{{hand}}: ポット{{pot}}を{{winners}}が獲得",
+  "log.gameEnd": "プレイヤー{{winner}}が卓を制しました"
 }
