@@ -30,5 +30,11 @@
   "trumpRule": "(Trump is the Soloist’s longest suit, chosen automatically)",
   "errCardIndexOutOfRange": "The card index is out of range.",
   "errMustFollowSuit": "Follow the led suit.",
-  "errMustPlayTrump": "You must play a trump."
+  "errMustPlayTrump": "You must play a trump.",
+  "log.marriageDeclared": "{{name}} declares marriages worth {{points}}",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWon": "{{name}} wins trick {{trick}} (+{{points}})",
+  "log.roundScoreSoloistWins": "round {{round}}: soloist({{soloist}})={{soloistTotal}} defense={{defenseTotal}} -> soloist wins",
+  "log.roundScoreDefenseWins": "round {{round}}: soloist({{soloist}})={{soloistTotal}} defense={{defenseTotal}} -> defense wins",
+  "log.matchWon": "{{name}} wins the match!"
 }

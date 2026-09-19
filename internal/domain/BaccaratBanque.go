@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // 席。**バンカー 1 + 左右 2 つの子。**
@@ -135,7 +136,7 @@ func (b *BaccaratBanque) Reset() {
 func (b *BaccaratBanque) buildShoe() {
 	b.shoe = NewBaccaratBanqueShoe()
 	b.drawIdx = 0
-	b.appendLog(-1, "shoe", fmt.Sprintf("new shoe of %d cards", len(b.shoe)), nil)
+	b.appendLogCode(-1, "shoe", "baccaratbanque.log.newShoe", map[string]string{"cards": strconv.Itoa(len(b.shoe))}, nil)
 }
 
 // NextCoup は次のクーを始める。
@@ -175,7 +176,7 @@ func (b *BaccaratBanque) startCoup() {
 			}
 		}
 	}
-	b.appendLog(-1, "deal", fmt.Sprintf("coup %d dealt", b.coupNumber), nil)
+	b.appendLogCode(-1, "deal", "baccaratbanque.log.coupDealt", map[string]string{"coup": strconv.Itoa(b.coupNumber)}, nil)
 	b.phase = BaccaratBanquePhasePunters
 	b.resolvePunters()
 }
@@ -224,7 +225,7 @@ func (b *BaccaratBanque) dealThird(idx int) {
 	}
 	b.players[idx].AddCard(c)
 	b.players[idx].SetDrawn(true)
-	b.appendLog(idx, "draw", fmt.Sprintf("seat %d draws a third card", idx), []*Card{c})
+	b.appendLogCode(idx, "draw", "baccaratbanque.log.thirdCard", map[string]string{"seat": strconv.Itoa(idx)}, []*Card{c})
 }
 
 // BankerDraw は人間 (バンカー) が 3 枚目を引くかを決める。
@@ -275,8 +276,7 @@ func (b *BaccaratBanque) settle() {
 	}
 
 	b.lastResult = res
-	b.appendLog(BaccaratBanqueBankerIdx, "settle",
-		fmt.Sprintf("coup %d: banker %d, delta %+d", b.coupNumber, bankerTotal, res.BankerDelta), nil)
+	b.appendLogCode(BaccaratBanqueBankerIdx, "settle", "baccaratbanque.log.settle", map[string]string{"coup": strconv.Itoa(b.coupNumber), "banker": strconv.Itoa(bankerTotal), "delta": fmt.Sprintf("%+d", res.BankerDelta)}, nil)
 	b.phase = BaccaratBanquePhaseResult
 
 	// **1 回負けてもバンクは動かない。** 資金が尽きたときだけ終わる。
@@ -317,8 +317,12 @@ func (b *BaccaratBanque) endBank(reason string) {
 	if b.players[BaccaratBanqueBankerIdx].GetChips() > b.config.StartChips {
 		b.winnerIdx = BaccaratBanqueBankerIdx
 	}
-	b.appendLog(-1, "bankEnd",
-		fmt.Sprintf("bank ends after %d coup(s): %s", b.bankHeld, reason), nil)
+	code := map[string]string{
+		BaccaratBanqueEndRetired:       "baccaratbanque.log.bankRetired",
+		BaccaratBanqueEndBankrupt:      "baccaratbanque.log.bankrupt",
+		BaccaratBanqueEndShoeExhausted: "baccaratbanque.log.shoeExhausted",
+	}[reason]
+	b.appendLogCode(-1, "bankEnd", code, map[string]string{"coups": strconv.Itoa(b.bankHeld)}, nil)
 }
 
 // GetEndReason はバンクの終わり方を返す。終わっていなければ空。

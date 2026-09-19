@@ -29,5 +29,13 @@
   "hintRaise1x": "Recommended: raise 1x (flush of 4)",
   "hintRaise1xMarginal": "Recommended: raise 1x (only 3, but the high card is Queen or better)",
   "helpExampleBet": "  b 100                                   bet 100 chips",
-  "helpHint": "  h                                       show a hint"
+  "helpHint": "  h                                       show a hint",
+  "log.bet": "ante={{ante}} flush_bonus={{flushBonus}} straight_flush={{straightFlush}}",
+  "log.raise": "raise bet={{bet}} (x{{multiplier}})",
+  "log.playerFolds": "player folds",
+  "log.playerFolded": "player folded",
+  "log.deal": "dealt 7 cards each (player flush={{flush}})",
+  "log.playerWins": "player wins",
+  "log.push": "push",
+  "log.dealerWins": "dealer wins"
 }

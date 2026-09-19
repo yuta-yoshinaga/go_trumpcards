@@ -613,6 +613,16 @@ func TestFreeBet_Accessors(t *testing.T) {
 	assert.Len(t, g.GetDealerCards(), 2)
 	assert.Zero(t, g.GetActiveHandIdx())
 	assert.Equal(t, 1, g.GetRoundNumber())
+	var dealLog *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.ActionType == "deal" {
+			dealLog = entry
+		}
+	}
+	require.NotNil(t, dealLog)
+	assert.Equal(t, "freebetblackjack.log.deal", dealLog.DetailCode)
+	assert.Empty(t, dealLog.Detail)
+	assert.Equal(t, "50", dealLog.DetailParams["ante"])
 	// 配った直後はまだ何も戻っていない。
 	assert.Zero(t, g.GetPayout())
 
@@ -623,7 +633,7 @@ func TestFreeBet_Accessors(t *testing.T) {
 func TestFreeBet_ActionLogIsBounded(t *testing.T) {
 	g := newFreeBetForTest(t)
 	for range freeBetMaxSliceLen + 50 {
-		g.appendLog("noise", "x", nil)
+		g.appendLog("noise", "freebetblackjack.log.hit", nil, nil)
 	}
 	assert.Len(t, g.GetActionLog(), freeBetMaxSliceLen)
 }

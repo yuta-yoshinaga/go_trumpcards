@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // PerseverancePhase パーシビアランスゲームフェーズ
@@ -187,7 +188,7 @@ func (bd *Perseverance) Redeal() error {
 	bd.dealColumns(gathered)
 	bd.redealsLeft--
 	bd.moveCount++
-	bd.appendLog("redeal", fmt.Sprintf("集めて配り直しました (残り%d回)", bd.redealsLeft), nil)
+	bd.appendLog("redeal", "perseverance.log.redeal", map[string]string{"remaining": strconv.Itoa(bd.redealsLeft)}, nil)
 	bd.checkStalemate()
 	return nil
 }
@@ -233,7 +234,7 @@ func (bd *Perseverance) MoveTableauToTableau(fromCol, cardIndex, toCol int) erro
 	for i, m := range moving {
 		movedCards[i] = m.Card
 	}
-	bd.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	bd.appendLog("move", "perseverance.log.tableauMove", map[string]string{"from": strconv.Itoa(fromCol), "to": strconv.Itoa(toCol)}, movedCards)
 	bd.checkStalemate()
 	return nil
 }
@@ -260,7 +261,7 @@ func (bd *Perseverance) MoveTableauToFoundation(col int) error {
 	bd.tableau[col] = fromCards[:len(fromCards)-1]
 	bd.foundation[fIdx] = append(bd.foundation[fIdx], card)
 	bd.moveCount++
-	bd.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	bd.appendLog("move", "perseverance.log.tableauToFoundation", map[string]string{"column": strconv.Itoa(col)}, []*Card{card})
 	bd.checkGameClear()
 	bd.checkStalemate()
 	return nil
@@ -270,7 +271,7 @@ func (bd *Perseverance) MoveTableauToFoundation(col int) error {
 func (bd *Perseverance) GiveUp() {
 	if bd.phase == PerseverancePhasePlaying {
 		bd.phase = PerseverancePhaseGameOver
-		bd.appendLog("giveup", "ギブアップしました", nil)
+		bd.appendLog("giveup", "perseverance.log.giveUp", nil, nil)
 	}
 }
 
@@ -375,7 +376,7 @@ func (bd *Perseverance) AutoComplete() error {
 			break
 		}
 	}
-	bd.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	bd.appendLog("autocomplete", "perseverance.log.autocomplete", nil, nil)
 	bd.checkGameClear()
 	return nil
 }
@@ -582,8 +583,8 @@ func (bd *Perseverance) restoreSnapshot(snap *perseveranceSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (bd *Perseverance) appendLog(actionType, detail string, cards []*Card) {
-	bd.appendLogAt(bd.moveCount, 0, actionType, detail, cards)
+func (bd *Perseverance) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	bd.appendLogCodeAt(bd.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // perseveranceJSON is the JSON wire format for Perseverance.
