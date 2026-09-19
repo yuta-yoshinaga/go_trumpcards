@@ -48,5 +48,13 @@
   "errCardRange": "カードの番号が範囲外です。",
   "promptTrickEndWinner": "トリックが決まりました — {{name}}が取りました。",
   "declarationMeri": "※ メリ（切り札リードの宣言）— 台札のスートに従ってください。",
-  "declarationMonchi": "※ モンチ（平札リードの宣言）— 台札のスートに従ってください。"
+  "declarationMonchi": "※ モンチ（平札リードの宣言）— 台札のスートに従ってください。",
+  "log.deal": "ディール {{round}}: 切り札は{{suit}}",
+  "log.declareMeri": "{{name}}がメリを宣言",
+  "log.declareMonchi": "{{name}}がモンチを宣言",
+  "log.play": "{{name}}が{{card}}を出した",
+  "log.trickWin": "{{name}}がトリック{{trick}}を組{{team}}のために取った",
+  "log.roundScore": "ディール {{round}}: コ {{tricks}} -> 累計 {{totals}}",
+  "log.gameEndDraw": "ゲーム終了！ 引き分けです。",
+  "log.gameEndWin": "組{{team}}がマッチに勝利"
 }

@@ -48,5 +48,13 @@
   "errCardRange": "That card number is out of range.",
   "promptTrickEndWinner": "The trick goes to {{name}}.",
   "declarationMeri": "* Meri (declared on a trump lead) - you must follow the led suit.",
-  "declarationMonchi": "* Monchi (declared on a plain lead) - you must follow the led suit."
+  "declarationMonchi": "* Monchi (declared on a plain lead) - you must follow the led suit.",
+  "log.deal": "deal {{round}}: trump is {{suit}}",
+  "log.declareMeri": "{{name}} declares meri",
+  "log.declareMonchi": "{{name}} declares monchi",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}} for team {{team}}",
+  "log.roundScore": "deal {{round}}: tricks {{tricks}} -> totals {{totals}}",
+  "log.gameEndDraw": "the match ends in a draw",
+  "log.gameEndWin": "team {{team}} wins the match"
 }

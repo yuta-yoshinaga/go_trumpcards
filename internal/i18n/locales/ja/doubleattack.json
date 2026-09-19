@@ -47,5 +47,16 @@
   "chaseDealer": "ディーラーが強いので追いかけます",
   "splitAces": "エースは分けるのが定石です",
   "helpExampleBet": "  bet 100            100 チップを賭ける",
-  "helpSort": "  s                    手札を並べ替える"
+  "helpSort": "  s                    手札を並べ替える",
+  "log.start": "追加ベット・ブラックジャックが始まります",
+  "log.gameEnd": "チップが尽きました",
+  "log.bet": "アンティ {{ante}}、Bust It {{bustIt}}",
+  "log.deal": "カードを配りました",
+  "log.attack": "ダブルアタック {{amount}}",
+  "log.hit": "ヒット",
+  "log.stand": "スタンド",
+  "log.double": "{{bet}}までダブル",
+  "log.split": "{{hands}}ハンドにスプリット",
+  "log.dealer": "ディーラーがプレイ",
+  "log.result": "払戻し {{payout}}"
 }

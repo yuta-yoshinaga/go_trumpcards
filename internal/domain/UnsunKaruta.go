@@ -31,6 +31,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // デッキの形。
@@ -285,8 +286,9 @@ func (g *UnsunKaruta) startRound() {
 	g.leadPlayerIdx = (g.dealerIdx + 1) % UnsunKarutaPlayerCnt
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = UnsunKarutaPhasePlay
-	g.appendLog(-1, "deal", fmt.Sprintf("deal %d: trump is %s", g.roundNumber,
-		UnsunKarutaSuitName(g.trumpSuit)), []*Card{g.TrumpCard()})
+	g.appendLog(-1, "deal", "unsunkaruta.log.deal", map[string]string{
+		"round": strconv.Itoa(g.roundNumber), "suit": UnsunKarutaSuitName(g.trumpSuit),
+	}, []*Card{g.TrumpCard()})
 }
 
 // deal は 3 枚ずつ 3 巡で 9 枚を配り、残り 3 枚を中央へ置いて切り札を返す。
@@ -370,12 +372,13 @@ func (g *UnsunKaruta) setDeclaration(declare bool, lead *Card) {
 	if !declare {
 		return
 	}
-	name := "monchi"
+	declarationCode := "unsunkaruta.log.declareMonchi"
 	if lead != nil && lead.GetDesign() == g.trumpSuit {
-		name = "meri"
+		declarationCode = "unsunkaruta.log.declareMeri"
 	}
-	g.appendLog(g.currentPlayerIdx, "declare",
-		fmt.Sprintf("%s declares %s", playerName(g.players, g.currentPlayerIdx), name), nil)
+	g.appendLog(g.currentPlayerIdx, "declare", declarationCode, map[string]string{
+		"name": playerName(g.players, g.currentPlayerIdx),
+	}, nil)
 }
 
 // CpuPlay は CPU が 1 枚出す。
@@ -402,9 +405,9 @@ func (g *UnsunKaruta) CpuPlay() {
 // playCard は 1 枚出す共通処理。
 func (g *UnsunKaruta) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), UnsunKarutaCardName(card)),
-		[]*Card{card})
+	g.appendLog(playerIdx, "play", "unsunkaruta.log.play", map[string]string{
+		"name": playerName(g.players, playerIdx), "card": UnsunKarutaCardName(card),
+	}, []*Card{card})
 	if len(g.currentTrick) == UnsunKarutaPlayerCnt {
 		g.phase = UnsunKarutaPhaseTrickEnd
 		return
@@ -427,9 +430,10 @@ func (g *UnsunKaruta) ResolveTrick() {
 	g.players[winner].AddTrick(cards)
 	g.teamTricks[UnsunKarutaTeamOf(winner)]++
 	g.lastTrickWinner = winner
-	g.appendLog(winner, "trick_win",
-		fmt.Sprintf("%s wins trick %d for team %d",
-			playerName(g.players, winner), g.trickNumber, UnsunKarutaTeamOf(winner)), cards)
+	g.appendLog(winner, "trick_win", "unsunkaruta.log.trickWin", map[string]string{
+		"name": playerName(g.players, winner), "trick": strconv.Itoa(g.trickNumber),
+		"team": strconv.Itoa(UnsunKarutaTeamOf(winner)),
+	}, cards)
 
 	g.leadPlayerIdx = winner
 	if g.trickNumber >= UnsunKarutaTrickCount {
@@ -552,8 +556,9 @@ func (g *UnsunKaruta) enterRoundEnd() {
 	for i := range g.teamScores {
 		g.teamScores[i] += g.teamTricks[i]
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("deal %d: tricks %v -> totals %v", g.roundNumber, g.teamTricks, g.teamScores), nil)
+	g.appendLog(-1, "round_score", "unsunkaruta.log.roundScore", map[string]string{
+		"round": strconv.Itoa(g.roundNumber), "tricks": fmt.Sprint(g.teamTricks), "totals": fmt.Sprint(g.teamScores),
+	}, nil)
 	g.checkGameEnd()
 }
 
@@ -574,10 +579,15 @@ func (g *UnsunKaruta) checkGameEnd() {
 	}
 	g.result = g.humanResult()
 	if g.winnerTeam < 0 {
-		g.appendLog(-1, "game_end", "the match ends in a draw", nil)
+		g.appendLog(-1, "game_end", "unsunkaruta.log.gameEndDraw", nil, nil)
 		return
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("team %d wins the match", g.winnerTeam), nil)
+	g.appendLog(-1, "game_end", "unsunkaruta.log.gameEndWin", map[string]string{"team": strconv.Itoa(g.winnerTeam)}, nil)
+}
+
+// appendLog は行動ログを追加する。
+func (g *UnsunKaruta) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // humanResult は人間のチームから見た結果を返す。

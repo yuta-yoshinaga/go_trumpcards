@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // TrashPhase トラッシュゲームフェーズ
@@ -58,7 +59,7 @@ type Trash struct {
 	pending    *Card
 	moveCount  int
 	winner     int
-	actionLog  []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTrash コンストラクタ
@@ -113,7 +114,7 @@ func (t *Trash) Draw() error {
 	t.pending = t.stock[0]
 	t.stock = t.stock[1:]
 	t.moveCount++
-	t.appendLog("draw", fmt.Sprintf("プレイヤー%dがカードを引いた", t.current), []*Card{t.pending})
+	t.appendLog("draw", "trash.log.draw", map[string]string{"player": strconv.Itoa(t.current)}, []*Card{t.pending})
 	t.resolveChain()
 	return nil
 }
@@ -150,7 +151,9 @@ func (t *Trash) placeWildAt(idx int) {
 	p.Slots[idx].Card = wild
 	p.Slots[idx].FaceUp = true
 	t.pending = old
-	t.appendLog("placeWild", fmt.Sprintf("プレイヤー%dが位置%dにワイルドを配置", t.current, idx+1), []*Card{wild})
+	t.appendLog("placeWild", "trash.log.placeWild", map[string]string{
+		"player": strconv.Itoa(t.current), "position": strconv.Itoa(idx + 1),
+	}, []*Card{wild})
 
 	if t.isWin(t.current) {
 		t.winner = t.current
@@ -159,7 +162,7 @@ func (t *Trash) placeWildAt(idx int) {
 			t.discard = append(t.discard, t.pending)
 			t.pending = nil
 		}
-		t.appendLog("win", fmt.Sprintf("プレイヤー%dの勝利", t.current), nil)
+		t.appendLog("win", "trash.log.win", map[string]string{"player": strconv.Itoa(t.current)}, nil)
 		return
 	}
 	t.phase = TrashPhasePlayerTurn
@@ -335,9 +338,6 @@ func (t *Trash) IsCpuPlayer(idx int) bool {
 // GetWinner 勝者インデックス (-1 なら未決着)
 func (t *Trash) GetWinner() int { return t.winner }
 
-// GetActionLog 棋譜取得
-func (t *Trash) GetActionLog() []*ActionLogEntry { return t.actionLog }
-
 // --- Private helpers ---
 
 // resolveChain pendingカードを順次解決する。連鎖中にAwaitWild/GameOver/EndTurnのいずれかに到達したら終了。
@@ -381,7 +381,9 @@ func (t *Trash) resolveChain() {
 			p.Slots[idx].Card = c
 			p.Slots[idx].FaceUp = true
 			t.pending = old
-			t.appendLog("place", fmt.Sprintf("プレイヤー%dが位置%dにカードを配置", t.current, pos), []*Card{c})
+			t.appendLog("place", "trash.log.place", map[string]string{
+				"player": strconv.Itoa(t.current), "position": strconv.Itoa(pos),
+			}, []*Card{c})
 			if t.isWin(t.current) {
 				t.winner = t.current
 				t.phase = TrashPhaseGameOver
@@ -389,7 +391,7 @@ func (t *Trash) resolveChain() {
 					t.discard = append(t.discard, t.pending)
 					t.pending = nil
 				}
-				t.appendLog("win", fmt.Sprintf("プレイヤー%dの勝利", t.current), nil)
+				t.appendLog("win", "trash.log.win", map[string]string{"player": strconv.Itoa(t.current)}, nil)
 				return
 			}
 		}
@@ -400,10 +402,10 @@ func (t *Trash) resolveChain() {
 func (t *Trash) endTurn() {
 	if t.pending != nil {
 		t.discard = append(t.discard, t.pending)
-		t.appendLog("end", fmt.Sprintf("プレイヤー%dのターン終了", t.current), []*Card{t.pending})
+		t.appendLog("end", "trash.log.end", map[string]string{"player": strconv.Itoa(t.current)}, []*Card{t.pending})
 		t.pending = nil
 	} else {
-		t.appendLog("end", fmt.Sprintf("プレイヤー%dのターン終了", t.current), nil)
+		t.appendLog("end", "trash.log.end", map[string]string{"player": strconv.Itoa(t.current)}, nil)
 	}
 	t.current = (t.current + 1) % TrashPlayerCnt
 	t.phase = TrashPhasePlayerTurn
@@ -433,14 +435,8 @@ func (t *Trash) isWin(idx int) bool {
 }
 
 // appendLog 棋譜エントリを追加
-func (t *Trash) appendLog(actionType, detail string, cards []*Card) {
-	t.actionLog = append(t.actionLog, &ActionLogEntry{
-		TurnNumber: t.moveCount,
-		PlayerIdx:  t.current,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+func (t *Trash) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	t.appendLogCodeAt(t.moveCount, t.current, actionType, detailCode, detailParams, cards)
 }
 
 // isTrashWild ワイルド (キング または ジョーカー) か
