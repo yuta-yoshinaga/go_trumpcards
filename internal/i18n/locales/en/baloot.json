@@ -41,5 +41,16 @@
   "suitHeart": "Hearts",
   "suitDiamond": "Diamonds",
   "helpExampleGiveUp": "  g                    give the round up",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "log.deal": "Round {{round}} started",
+  "log.pass": "Passed on declaration",
+  "log.declareHokom": "Declared Hokom (trump {{suit}})",
+  "log.declareSun": "Declared Sun",
+  "log.baloot": "Baloot (trump K+Q) +{{bonus}}",
+  "log.play": "{{card}}",
+  "log.revealBaloot": "Baloot revealed",
+  "log.last": "Final trick +{{bonus}}",
+  "log.score": "Team {{team}}: {{points}} points",
+  "log.result": "Final score {{score0}} - {{score1}}",
+  "log.giveup": "Gave up"
 }

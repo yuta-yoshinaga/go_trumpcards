@@ -67,5 +67,16 @@
   "errRaiseMustGoUp": "レイズは{{val}}より大きくなければなりません",
   "errNoBetToAccept": "受ける賭けがありません",
   "errNoBetToDecline": "降りる賭けがありません",
-  "errInvalidAction": "不正なアクションです"
+  "errInvalidAction": "不正なアクションです",
+  "log.corte": "{{name}}がムスを宣言せず賭けを開始",
+  "log.mus": "{{name}}がムスを希望",
+  "log.discard": "{{name}}が{{count}}枚を交換",
+  "log.paso": "チーム{{team}}がパス",
+  "log.envido": "チーム{{team}}が{{amount}}を賭ける",
+  "log.ordago": "チーム{{team}}がオルダゴを宣言！",
+  "log.quiero": "チーム{{team}}が受ける（{{amount}}）",
+  "log.noQuiero": "チーム{{team}}が降りる。チーム{{winTeam}}に+1",
+  "log.ordagoResult": "オルダゴ成立: チーム{{team}}がゲームに勝利！",
+  "log.showdown": "{{round}}: チーム{{team}}が{{stake}}点を獲得",
+  "log.gameEnd": "チーム{{team}}がゲームに勝利！"
 }

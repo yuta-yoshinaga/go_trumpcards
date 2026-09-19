@@ -51,6 +51,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // CegoPlayerCnt プレイヤー数 (人間 1 + CPU 3)
@@ -436,14 +437,14 @@ func (g *Cego) CpuBid() {
 func (g *Cego) applyBid(idx int, bid CegoBid) {
 	g.highestBid = bid
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), cegoBidName(bid)), nil)
+	g.appendLog(idx, "bid", "cego.log.bid", map[string]string{"name": playerName(g.players, idx), "bid": cegoBidName(bid)}, nil)
 	g.advanceBid()
 }
 
 // applyPass パスを適用する。
 func (g *Cego) applyPass(idx int) {
 	g.passed[idx] = true
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
+	g.appendLog(idx, "pass", "cego.log.pass", map[string]string{"name": playerName(g.players, idx)}, nil)
 	g.advanceBid()
 }
 
@@ -463,13 +464,11 @@ func (g *Cego) finalizeBid() {
 	if g.highestBidder < 0 {
 		g.declarerIdx = (g.dealerIdx + 1) % CegoPlayerCnt
 		g.contract = CegoBidPlay
-		g.appendLog(g.declarerIdx, "forced",
-			fmt.Sprintf("all passed — %s is forced to declare", playerName(g.players, g.declarerIdx)), nil)
+		g.appendLog(g.declarerIdx, "forced", "cego.log.forced", map[string]string{"name": playerName(g.players, g.declarerIdx)}, nil)
 	} else {
 		g.declarerIdx = g.highestBidder
 		g.contract = g.highestBid
-		g.appendLog(g.declarerIdx, "win_bid",
-			fmt.Sprintf("%s takes the declaration", playerName(g.players, g.declarerIdx)), nil)
+		g.appendLog(g.declarerIdx, "win_bid", "cego.log.winBid", map[string]string{"name": playerName(g.players, g.declarerIdx)}, nil)
 	}
 	g.currentPlayerIdx = g.declarerIdx
 	g.phase = CegoPhaseContract
@@ -510,8 +509,7 @@ func (g *Cego) CpuChooseContract() {
 // 渡して即プレイへ進む。
 func (g *Cego) applyContract(ct CegoContract) {
 	g.contractType = ct
-	g.appendLog(g.declarerIdx, "contract",
-		fmt.Sprintf("%s chooses %s", playerName(g.players, g.declarerIdx), cegoContractName(ct)), nil)
+	g.appendLog(g.declarerIdx, "contract", "cego.log.contract", map[string]string{"name": playerName(g.players, g.declarerIdx), "contract": cegoContractName(ct)}, nil)
 	if ct == CegoContractHandspiel {
 		// 場札は対戦側の得点山に渡る (伏せたまま公開しない)。
 		g.stash = g.blind
@@ -596,8 +594,7 @@ func (g *Cego) doExchange(keepIndices []int) error {
 		player.AddCard(c)
 	}
 	g.blind = make([]*Card, 0)
-	g.appendLog(g.declarerIdx, "exchange",
-		fmt.Sprintf("%s lays down %d cards and takes the Cego", playerName(g.players, g.declarerIdx), len(discarded)), discarded)
+	g.appendLog(g.declarerIdx, "exchange", "cego.log.exchange", map[string]string{"name": playerName(g.players, g.declarerIdx), "count": strconv.Itoa(len(discarded))}, discarded)
 	g.sortAllHands()
 	g.startPlay()
 	return nil
@@ -697,7 +694,7 @@ func (g *Cego) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Cego) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cegoCardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "cego.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cegoCardStr(card)}, []*Card{card})
 	if len(g.currentTrick) == CegoPlayerCnt {
 		g.phase = CegoPhaseTrickEnd
 	} else {
@@ -718,8 +715,7 @@ func (g *Cego) ResolveTrick() {
 		allCards = append(allCards, tc.Card)
 	}
 	g.players[winnerIdx].AddTrick(allCards)
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), allCards)
+	g.appendLog(winnerIdx, "trick_win", "cego.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber)}, allCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= CegoTrickCount {
@@ -769,10 +765,7 @@ func (g *Cego) enterRoundEnd() {
 			g.playerScores[i] += bd.OpponentScore
 		}
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("deal %d: declarer(%s) %s declPts=%d/%d won=%t base=%d",
-			g.roundNumber, playerName(g.players, g.declarerIdx), cegoContractName(g.contractType),
-			bd.DeclarerPoints, CegoTotalPoints, bd.Won, bd.Base), nil)
+	g.appendLog(-1, "round_score", "cego.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "declarer": playerName(g.players, g.declarerIdx), "contract": cegoContractName(g.contractType), "declarerPoints": strconv.Itoa(bd.DeclarerPoints), "totalPoints": strconv.Itoa(CegoTotalPoints), "won": strconv.FormatBool(bd.Won), "base": strconv.Itoa(bd.Base)}, nil)
 	g.checkGameEnd()
 }
 
@@ -828,10 +821,10 @@ func (g *Cego) checkGameEnd() {
 	g.result = g.humanResult(leader, tie)
 	if tie {
 		g.winnerPlayer = -1
-		g.appendLog(-1, "game_end", "the match ends in a draw", nil)
+		g.appendLog(-1, "game_end", "cego.log.gameEndDraw", nil, nil)
 	} else {
 		g.winnerPlayer = leader
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+		g.appendLog(-1, "game_end", "cego.log.gameEndWin", map[string]string{"name": playerName(g.players, leader)}, nil)
 	}
 }
 
@@ -1392,8 +1385,8 @@ func (g *Cego) isHumanBidTurn() bool {
 }
 
 // appendLog 棋譜にエントリを追加する。
-func (g *Cego) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLogAt(len(g.actionLog)+1, playerIdx, actionType, detail, cards)
+func (g *Cego) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // cegoBidName 入札の表示名を返す。

@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // MusPlayerCnt プレイヤー数 (人間 1 + CPU 3)
@@ -247,11 +248,11 @@ func (g *Mus) resolveMus(mus bool) {
 		mus = false
 	}
 	if !mus {
-		g.appendLog(g.musTurn, "corte", fmt.Sprintf("%s cuts (no mus)", playerName(g.players, g.musTurn)), nil)
+		g.appendLog(g.musTurn, "corte", "mus.log.corte", map[string]string{"name": playerName(g.players, g.musTurn)}, nil)
 		g.beginBetting()
 		return
 	}
-	g.appendLog(g.musTurn, "mus", fmt.Sprintf("%s wants mus", playerName(g.players, g.musTurn)), nil)
+	g.appendLog(g.musTurn, "mus", "mus.log.mus", map[string]string{"name": playerName(g.players, g.musTurn)}, nil)
 	g.musAgreed++
 	if g.musAgreed >= MusPlayerCnt {
 		// 全員合意 → 交換フェーズ。
@@ -312,8 +313,7 @@ func (g *Mus) applyDiscard(indices []int) {
 		g.discarded = append(g.discarded, removed...)
 		musSortHand(p)
 	}
-	g.appendLog(g.discardTurn, "discard",
-		fmt.Sprintf("%s exchanges %d cards", playerName(g.players, g.discardTurn), len(indices)), nil)
+	g.appendLog(g.discardTurn, "discard", "mus.log.discard", map[string]string{"name": playerName(g.players, g.discardTurn), "count": strconv.Itoa(len(indices))}, nil)
 
 	if g.discardTurn == (g.manoIdx+MusPlayerCnt-1)%MusPlayerCnt {
 		// 全員交換完了 → 再び Mus 宣言へ。
@@ -443,7 +443,7 @@ func (g *Mus) resolveBet(action, amount int) error {
 		if g.pendingStake > 0 {
 			return NewDomainErrorCode(ErrInvalidPlay, "mus.errCannotPass", nil)
 		}
-		g.appendLog(-1, "paso", fmt.Sprintf("Team %s passes", teamName(g.betTeam)), nil)
+		g.appendLog(-1, "paso", "mus.log.paso", map[string]string{"team": teamName(g.betTeam)}, nil)
 		if g.firstActorPaso {
 			// 両チーム・パソ → 流局 (showdown で +1)。
 			g.results[ri] = MusRoundResult{Kind: MusResultDeferred, Stake: 1, Team: -1}
@@ -466,13 +466,13 @@ func (g *Mus) resolveBet(action, amount int) error {
 		}
 		g.pendingStake = amount
 		g.lastBettorTeam = g.betTeam
-		g.appendLog(-1, "envido", fmt.Sprintf("Team %s bets %d", teamName(g.betTeam), amount), nil)
+		g.appendLog(-1, "envido", "mus.log.envido", map[string]string{"team": teamName(g.betTeam), "amount": strconv.Itoa(amount)}, nil)
 		g.betTeam = 1 - g.betTeam
 		return nil
 	case MusActionOrdago:
 		g.pendingStake = -1 // sentinel: ordago
 		g.lastBettorTeam = g.betTeam
-		g.appendLog(-1, "ordago", fmt.Sprintf("Team %s declares Ordago!", teamName(g.betTeam)), nil)
+		g.appendLog(-1, "ordago", "mus.log.ordago", map[string]string{"team": teamName(g.betTeam)}, nil)
 		g.betTeam = 1 - g.betTeam
 		return nil
 	case MusActionQuiero:
@@ -485,7 +485,7 @@ func (g *Mus) resolveBet(action, amount int) error {
 			return nil
 		}
 		g.results[ri] = MusRoundResult{Kind: MusResultAccepted, Stake: g.pendingStake, Team: -1}
-		g.appendLog(-1, "quiero", fmt.Sprintf("Team %s accepts (%d)", teamName(g.betTeam), g.pendingStake), nil)
+		g.appendLog(-1, "quiero", "mus.log.quiero", map[string]string{"team": teamName(g.betTeam), "amount": strconv.Itoa(g.pendingStake)}, nil)
 		g.advanceRound()
 		return nil
 	case MusActionNoQuiero:
@@ -496,7 +496,7 @@ func (g *Mus) resolveBet(action, amount int) error {
 		win := g.lastBettorTeam
 		g.results[ri] = MusRoundResult{Kind: MusResultAwarded, Stake: 1, Team: win}
 		g.amarrakos[win]++
-		g.appendLog(-1, "no_quiero", fmt.Sprintf("Team %s declines; Team %s +1", teamName(g.betTeam), teamName(win)), nil)
+		g.appendLog(-1, "no_quiero", "mus.log.noQuiero", map[string]string{"team": teamName(g.betTeam), "winTeam": teamName(win)}, nil)
 		g.checkGameEnd()
 		if g.gameEndFlag {
 			return nil
@@ -515,7 +515,7 @@ func (g *Mus) resolveOrdago(ri int) {
 	g.gameEndFlag = true
 	g.winnerTeam = win
 	g.phase = MusPhaseGameEnd
-	g.appendLog(-1, "ordago_result", fmt.Sprintf("Ordago resolved: Team %s wins the game!", teamName(win)), nil)
+	g.appendLog(-1, "ordago_result", "mus.log.ordagoResult", map[string]string{"team": teamName(win)}, nil)
 }
 
 // advanceRound 次の賭けラウンドへ進む。Juego の後は showdown。
@@ -549,7 +549,7 @@ func (g *Mus) Showdown() {
 		win := g.roundWinner(ri)
 		r.Team = win
 		g.amarrakos[win] += r.Stake
-		g.appendLog(-1, "showdown", fmt.Sprintf("%s: Team %s wins +%d", musRoundName(ri), teamName(win), r.Stake), nil)
+		g.appendLog(-1, "showdown", "mus.log.showdown", map[string]string{"round": musRoundName(ri), "team": teamName(win), "stake": strconv.Itoa(r.Stake)}, nil)
 		if g.checkGameEnd() {
 			return
 		}
@@ -564,7 +564,7 @@ func (g *Mus) checkGameEnd() bool {
 			g.gameEndFlag = true
 			g.winnerTeam = t
 			g.phase = MusPhaseGameEnd
-			g.appendLog(-1, "game_end", fmt.Sprintf("Team %s wins the game!", teamName(t)), nil)
+			g.appendLog(-1, "game_end", "mus.log.gameEnd", map[string]string{"team": teamName(t)}, nil)
 			return true
 		}
 	}
@@ -1162,6 +1162,10 @@ type musJSON struct {
 }
 
 // MarshalJSON implements json.Marshaler.
+func (g *Mus) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 func (g *Mus) MarshalJSON() ([]byte, error) {
 	return json.Marshal(musJSON{
 		TrumpCards:     g.trumpCards,

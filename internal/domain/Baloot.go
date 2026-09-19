@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // BalootMode バルートのモード。**同じハンドの中でトリック評価の規則そのものが変わる。**
@@ -167,7 +168,7 @@ func (b *Baloot) dealRound() {
 	b.leadPlayerIdx = (b.dealerIdx + 1) % BalootPlayerCnt
 	b.currentPlayerIdx = b.leadPlayerIdx
 	b.sortAllHands()
-	b.appendLog(-1, "deal", fmt.Sprintf("ラウンド%d を開始", b.roundNumber), nil)
+	b.appendLog(-1, "deal", "baloot.log.deal", map[string]string{"round": strconv.Itoa(b.roundNumber)}, nil)
 }
 
 // sortAllHands 手札を並べ替える。**モードで強さが変わるので並びも変わる。**
@@ -213,7 +214,7 @@ func (b *Baloot) PassDeclaration() error {
 		return errors.New("the dealer must declare")
 	}
 	b.players[0].SetDeclared(true)
-	b.appendLog(0, "pass", "宣言を見送った", nil)
+	b.appendLog(0, "pass", "baloot.log.pass", nil, nil)
 	b.advanceDeclare()
 	return nil
 }
@@ -243,7 +244,7 @@ func (b *Baloot) CpuDeclare() {
 		return
 	}
 	b.players[idx].SetDeclared(true)
-	b.appendLog(idx, "pass", "宣言を見送った", nil)
+	b.appendLog(idx, "pass", "baloot.log.pass", nil, nil)
 	b.advanceDeclare()
 }
 
@@ -272,10 +273,10 @@ func (b *Baloot) accept(idx int, mode BalootMode, suit int) {
 	b.players[idx].SetDeclared(true)
 	if mode == BalootModeHokom {
 		b.trumpSuit = suit
-		b.appendLog(idx, "declare", fmt.Sprintf("Hokom を宣言（切り札 %d）", suit), nil)
+		b.appendLog(idx, "declare", "baloot.log.declareHokom", map[string]string{"suit": strconv.Itoa(suit)}, nil)
 	} else {
 		b.trumpSuit = 0
-		b.appendLog(idx, "declare", "Sun を宣言", nil)
+		b.appendLog(idx, "declare", "baloot.log.declareSun", nil, nil)
 	}
 	b.completeDeal()
 	b.markBaloot()
@@ -323,7 +324,7 @@ func (b *Baloot) markBaloot() {
 			// **自分の手札は自分には見えている。**対戦相手のぶんは、実際に
 			// 切り札の K か Q を出すまで伏せる (#5750)。
 			p.SetBalootRevealed(p.GetIsHuman())
-			b.appendLog(i, "baloot", fmt.Sprintf("Baloot（切り札のK+Q）+%d", BalootBonus), nil)
+			b.appendLog(i, "baloot", "baloot.log.baloot", map[string]string{"bonus": strconv.Itoa(BalootBonus)}, nil)
 		}
 	}
 }
@@ -428,11 +429,11 @@ func (b *Baloot) play(playerIdx, cardIndex int) error {
 	}
 	p.RemoveCard(cardIndex)
 	b.currentTrick = append(b.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	b.appendLog(playerIdx, "play", cardStr(card), []*Card{card})
+	b.appendLog(playerIdx, "play", "baloot.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 	// **K か Q を出した時点で Baloot は明かされる。**それまでは伏せておく。
 	if b.balootRevealingCard(card) && p.GetHasBaloot() && !p.GetBalootRevealed() {
 		p.SetBalootRevealed(true)
-		b.appendLog(playerIdx, "baloot", "Baloot を公開", nil)
+		b.appendLog(playerIdx, "baloot", "baloot.log.revealBaloot", nil, nil)
 	}
 
 	if len(b.currentTrick) < BalootPlayerCnt {
@@ -506,7 +507,7 @@ func (b *Baloot) resolveTrick() {
 
 	if b.trickNumber >= BalootTricksPerRound {
 		b.roundPoints[BalootTeamOf(winner)] += BalootLastTrickBonus
-		b.appendLog(winner, "last", fmt.Sprintf("最終トリック +%d", BalootLastTrickBonus), nil)
+		b.appendLog(winner, "last", "baloot.log.last", map[string]string{"bonus": strconv.Itoa(BalootLastTrickBonus)}, nil)
 		b.finishRound()
 	}
 }
@@ -570,7 +571,7 @@ func (b *Baloot) finishRound() {
 	}
 	for team := range BalootTeamCnt {
 		b.scores[team] += b.roundPoints[team]
-		b.appendLog(-1, "score", fmt.Sprintf("チーム%d に %d 点", team, b.roundPoints[team]), nil)
+		b.appendLog(-1, "score", "baloot.log.score", map[string]string{"team": strconv.Itoa(team), "points": strconv.Itoa(b.roundPoints[team])}, nil)
 	}
 
 	if b.scores[0] >= b.config.Target || b.scores[1] >= b.config.Target {
@@ -602,7 +603,7 @@ func (b *Baloot) finishGame() {
 	default:
 		b.winnerTeam = -1
 	}
-	b.appendLog(-1, "result", fmt.Sprintf("最終得点 %d - %d", b.scores[0], b.scores[1]), nil)
+	b.appendLog(-1, "result", "baloot.log.result", map[string]string{"score0": strconv.Itoa(b.scores[0]), "score1": strconv.Itoa(b.scores[1])}, nil)
 }
 
 // trickWinner 現在のトリックの勝者
@@ -915,12 +916,12 @@ func (b *Baloot) GiveUp() {
 	b.phase = BalootPhaseGameEnd
 	b.gameEndFlag = true
 	b.winnerTeam = 1
-	b.appendLog(0, "giveup", "ギブアップしました", nil)
+	b.appendLog(0, "giveup", "baloot.log.giveup", nil, nil)
 }
 
 // appendLog 棋譜エントリを追加
-func (b *Baloot) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.appendLogAt(b.trickNumber, playerIdx, actionType, detail, cards)
+func (b *Baloot) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCodeAt(b.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // balootJSON is the KV snapshot format for Baloot.

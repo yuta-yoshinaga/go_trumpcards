@@ -67,5 +67,16 @@
   "errRaiseMustGoUp": "A raise must go above {{val}}.",
   "errNoBetToAccept": "There is no bet to accept.",
   "errNoBetToDecline": "There is no bet to decline.",
-  "errInvalidAction": "The action is invalid."
+  "errInvalidAction": "The action is invalid.",
+  "log.corte": "{{name}} cuts (no mus)",
+  "log.mus": "{{name}} wants mus",
+  "log.discard": "{{name}} exchanges {{count}} cards",
+  "log.paso": "Team {{team}} passes",
+  "log.envido": "Team {{team}} bets {{amount}}",
+  "log.ordago": "Team {{team}} declares Ordago!",
+  "log.quiero": "Team {{team}} accepts ({{amount}})",
+  "log.noQuiero": "Team {{team}} declines; Team {{winTeam}} +1",
+  "log.ordagoResult": "Ordago resolved: Team {{team}} wins the game!",
+  "log.showdown": "{{round}}: Team {{team}} wins +{{stake}}",
+  "log.gameEnd": "Team {{team}} wins the game!"
 }
