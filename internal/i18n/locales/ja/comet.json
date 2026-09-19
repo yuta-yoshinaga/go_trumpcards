@@ -1,4 +1,11 @@
 {
+  "log.deal": "第{{round}}局: 親={{dealer}}、1人{{each}}枚、死に手{{dead}}枚",
+  "log.play": "プレイヤー{{player}}が出しました",
+  "log.stop": "プレイヤー{{player}}が新しい連なりを始めます",
+  "log.pass": "プレイヤー{{player}}がパスしました",
+  "log.stopAll": "誰も続けられないため、最後のプレイヤーが再開します",
+  "log.goOut": "プレイヤー{{player}}が{{points}}点で上がりました",
+  "log.gameEnd": "プレイヤー{{player}}がマッチに勝利しました",
   "helpTitle": "コメット",
   "helpPlay": "  play / p <idx>            手札を 1 枚出す",
   "helpPass": "  pass                      パス（出せる札が無いときだけ）",

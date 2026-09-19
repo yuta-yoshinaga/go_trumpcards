@@ -1,4 +1,11 @@
 {
+  "log.deal": "場札を{{cards}}枚配りました",
+  "log.take": "{{cards}}枚を取りました",
+  "log.build": "{{value}}をビルドしました",
+  "log.trail": "捨て札を出しました",
+  "log.lastTake": "最後に場に残った{{cards}}枚を取りました",
+  "log.gameEnd": "{{points}}点に達してゲーム終了しました",
+  "log.roundEnd": "ラウンドが終了しました",
   "helpTitle": "Cassino (カッシーノ)",
   "helpTake": "  t <h> <t...> [b <bi>...] 手札h番で場札(と必要ならビルド)を捕獲",
   "helpBuild": "  b <h> <value> <t...>     手札hと場札でビルドを作成",

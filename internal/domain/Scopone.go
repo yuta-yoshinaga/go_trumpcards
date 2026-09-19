@@ -18,7 +18,6 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strconv"
 )
 
@@ -67,6 +66,11 @@ type Scopone struct {
 	winnerTeam      int // -1: 未確定
 	lastRoundDetail *ScoponeScoreDetail
 	actionLogBase
+}
+
+// appendLog records a Scopone action with a locale-independent detail code.
+func (s *Scopone) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewScopone コンストラクタ
@@ -139,7 +143,9 @@ func (s *Scopone) startRound() {
 	}
 	s.currentTurn = (s.dealerIdx + 1) % ScoponePlayerCnt
 	s.phase = ScoponePhasePlayerTurn
-	s.appendLog(-1, "deal", fmt.Sprintf("round %d: dealt %d cards each", s.roundNumber, ScoponeHandSize), nil)
+	s.appendLog(-1, "deal", "scopone.log.deal", map[string]string{
+		"round": strconv.Itoa(s.roundNumber), "cards": strconv.Itoa(ScoponeHandSize),
+	}, nil)
 }
 
 // PlayerPlay 人間プレイヤーが手札 handIdx を出し、tableIdxs の場札を捕獲する (空なら場に置く)。
@@ -193,7 +199,7 @@ func (s *Scopone) applyPlay(playerIdx, handIdx int, tableIdxs []int) error {
 
 	if len(tableIdxs) == 0 {
 		s.tableCards = append(s.tableCards, handCard)
-		s.appendLog(playerIdx, "play", "placed on table", []*Card{handCard})
+		s.appendLog(playerIdx, "play", "scopone.log.place", nil, []*Card{handCard})
 		s.postActionAdvance()
 		return nil
 	}
@@ -211,9 +217,9 @@ func (s *Scopone) applyPlay(playerIdx, handIdx int, tableIdxs []int) error {
 
 	if len(s.tableCards) == 0 && !s.allHandsEmpty() {
 		player.IncrementScopa()
-		s.appendLog(playerIdx, "scopa", "swept the table (scopa)", pile)
+		s.appendLog(playerIdx, "scopa", "scopone.log.scopa", nil, pile)
 	} else {
-		s.appendLog(playerIdx, "capture", fmt.Sprintf("captured %d card(s)", len(captured)), pile)
+		s.appendLog(playerIdx, "capture", "scopone.log.capture", map[string]string{"cards": strconv.Itoa(len(captured))}, pile)
 	}
 	s.postActionAdvance()
 	return nil
@@ -232,7 +238,7 @@ func (s *Scopone) postActionAdvance() {
 func (s *Scopone) finishRound() {
 	if s.lastCaptureIdx >= 0 && len(s.tableCards) > 0 {
 		s.players[s.lastCaptureIdx].AddCaptured(s.tableCards)
-		s.appendLog(s.lastCaptureIdx, "sweep_leftover", fmt.Sprintf("took %d leftover table card(s)", len(s.tableCards)), s.tableCards)
+		s.appendLog(s.lastCaptureIdx, "sweep_leftover", "scopone.log.sweepLeftover", map[string]string{"cards": strconv.Itoa(len(s.tableCards))}, s.tableCards)
 		s.tableCards = nil
 	}
 	det := s.scoreRound()
@@ -240,8 +246,11 @@ func (s *Scopone) finishRound() {
 	for t := 0; t < ScoponeTeamCnt; t++ {
 		s.teamScores[t] += det.Gained[t]
 	}
-	s.appendLog(-1, "round_score", fmt.Sprintf("round %d: team0 +%d (%d), team1 +%d (%d)",
-		s.roundNumber, det.Gained[0], s.teamScores[0], det.Gained[1], s.teamScores[1]), nil)
+	s.appendLog(-1, "round_score", "scopone.log.roundScore", map[string]string{
+		"round": strconv.Itoa(s.roundNumber), "team0Gained": strconv.Itoa(det.Gained[0]),
+		"team0Score": strconv.Itoa(s.teamScores[0]), "team1Gained": strconv.Itoa(det.Gained[1]),
+		"team1Score": strconv.Itoa(s.teamScores[1]),
+	}, nil)
 
 	if s.teamScores[0] >= s.config.TargetScore || s.teamScores[1] >= s.config.TargetScore {
 		s.finishGame()
@@ -307,7 +316,9 @@ func (s *Scopone) finishGame() {
 	default:
 		s.winnerTeam = ScoponeTeamOf(s.lastCaptureIdx) // タイブレーク: 最後に捕獲したチーム
 	}
-	s.appendLog(-1, "game_end", fmt.Sprintf("team %d wins (%d-%d)", s.winnerTeam, s.teamScores[0], s.teamScores[1]), nil)
+	s.appendLog(-1, "game_end", "scopone.log.gameEnd", map[string]string{
+		"team": strconv.Itoa(s.winnerTeam), "team0": strconv.Itoa(s.teamScores[0]), "team1": strconv.Itoa(s.teamScores[1]),
+	}, nil)
 }
 
 // removeTableCardsByIndex は降順に並び替えてから tableCards を削除する。

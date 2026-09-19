@@ -1,4 +1,11 @@
 {
+  "log.deal": "ラウンド{{round}}を配りました（場{{field}}枚、山札{{stock}}枚）",
+  "log.play": "{{player}}が{{card}}を出しました（{{took}}）",
+  "log.draw": "{{player}}が{{card}}をめくりました（{{took}}）",
+  "log.roundWin": "{{player}}がラウンド{{round}}を{{points}}点で取りました",
+  "log.roundTie": "ラウンド{{round}}は同点でした",
+  "log.gameWin": "{{player}}が{{points}}点で勝ちました",
+  "log.gameTie": "引き分けでゲーム終了しました",
   "helpTitle": "さくら（肥後花 / 花札）",
   "helpPlay": "  p <h> [f]            手札hを出す (f=2枚一致時の場札)",
   "helpNextRound": "  nr                   次のラウンドへ",

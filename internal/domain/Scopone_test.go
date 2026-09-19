@@ -69,6 +69,21 @@ func TestScopone_ResetDealsAllCards(t *testing.T) {
 	assert.Equal(t, 0, len(s.GetTableCards()))
 }
 
+func TestScopone_ActionLogUsesDetailCode(t *testing.T) {
+	s := newTestScopone(true)
+	s.Reset()
+	var entry *domain.ActionLogEntry
+	for _, candidate := range s.GetActionLog() {
+		if candidate.DetailCode == "scopone.log.deal" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "1", entry.DetailParams["round"])
+	assert.Empty(t, entry.Detail)
+}
+
 func TestScopone_PlaceWhenNoCapture(t *testing.T) {
 	s := newTestScopone(true)
 	s.SetPhase(domain.ScoponePhasePlayerTurn)

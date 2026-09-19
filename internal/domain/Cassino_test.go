@@ -69,6 +69,21 @@ func TestCassinoConfig(t *testing.T) {
 	})
 }
 
+func TestCassino_ActionLogUsesDetailCode(t *testing.T) {
+	c := newTestCassino(t, domain.DefaultCassinoConfig())
+	c.Reset()
+	var entry *domain.ActionLogEntry
+	for _, candidate := range c.GetActionLog() {
+		if candidate.DetailCode == "cassino.log.deal" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "4", entry.DetailParams["cards"])
+	assert.Empty(t, entry.Detail)
+}
+
 func TestCassinoCardValueAndFlags(t *testing.T) {
 	t.Run("CassinoCardValue: A=1, 2-10=face, J/Q/K=11/12/13", func(t *testing.T) {
 		assert.Equal(t, 1, domain.CassinoCardValue(cass_h(1)))
